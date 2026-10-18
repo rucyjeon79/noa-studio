@@ -1,0 +1,43 @@
+{
+  "name": "NOA STUDIO",
+  "short_name": "NOA STUDIO",
+  "description": "AI Artist Noa EP Studio",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0B0B0D",
+  "background_color": "#0B0B0D",
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://noa-studio.grok.me/manifest.webmanifest"
+    },
+    {
+      "platform": "webapp",
+      "url": "https://noa-studio.grok.me/__grok/manifest.webmanifest"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

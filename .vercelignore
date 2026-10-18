@@ -1,0 +1,11 @@
+node_modules
+.vercel
+.output
+dist
+.git
+attachments
+artifacts
+screenshots
+data/live/pglite
+data/live/pglite-broken
+*.zip
