@@ -1,0 +1,39 @@
+name: NOA secure transport check
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-secure-transport.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Verify FTPS before sending credentials
+        env:
+          FTP_HOST: ${{ secrets.NOA_FTP_HOST }}
+          FTP_USER: ${{ secrets.NOA_FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: |
+          python3 - <<'PY'
+          import ftplib, os, ssl
+          ftp = ftplib.FTP_TLS(context=ssl.create_default_context(), timeout=15)
+          try:
+              ftp.connect(os.environ['FTP_HOST'],21)
+              ftp.auth()
+              print('FTPS certificate verified')
+              ftp.login(os.environ['FTP_USER'], os.environ['FTP_PASSWORD'])
+              ftp.prot_p()
+              ftp.cwd('/hosting/noastudio/html')
+              names = set(ftp.nlst())
+              print('Authenticated; common.php:', 'common.php' in names)
+              print('Root entry count:', len(names))
+              print('NOA entry exists:', 'noa2.php' in names)
+          except Exception as exc:
+              print(type(exc).__name__ + ': ' + str(exc))
+              raise SystemExit(1)
+          finally:
+              ftp.close()
+          PY
