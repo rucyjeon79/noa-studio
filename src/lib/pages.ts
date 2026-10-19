@@ -818,6 +818,9 @@ export const saveStudioPage = createServerFn({ method: "POST" })
       const rev = typeof file.rev === "number" ? file.rev : 0;
       const savedKeys = Array.isArray(file.savedKeys) ? file.savedKeys : [];
       const rejectedKeys = Array.isArray(file.rejectedKeys) ? file.rejectedKeys : [];
+      const fileError = typeof file.error === "string" ? file.error : "";
+      const fileStatus = typeof file.status === "string" ? file.status : "";
+      const filePath = typeof file.path === "string" ? file.path : "";
       let dbError = "";
       if (wroteBody) {
         try {
@@ -834,12 +837,14 @@ export const saveStudioPage = createServerFn({ method: "POST" })
           dbError = "db";
         }
       }
-      if (wroteBody) return { ok: true as const, status: "written" as const, rev, savedKeys, rejectedKeys, ...(dbError ? { error: dbError } : {}) };
-      if (unchanged && !rejected) return { ok: true as const, status: "unchanged" as const, rev, savedKeys, rejectedKeys };
+      if (wroteBody) return { ok: true as const, status: (fileStatus || "written") as "written", rev, savedKeys, rejectedKeys, path: filePath, error: fileError || dbError || "" };
+      if (unchanged && !rejected) return { ok: true as const, status: (fileStatus || "unchanged") as "unchanged", rev, savedKeys, rejectedKeys, path: filePath, error: fileError };
       const conflict = file.status === "conflict";
-      return { ok: false as const, status: conflict ? "conflict" as const : "error" as const, error: conflict ? "conflict" : rejected ? "rejected" : "kept", rev, savedKeys, rejectedKeys };
-    } catch {
-      return { ok: false as const, status: "error" as const, error: "write", rev: 0, savedKeys: [] as string[], rejectedKeys: [] as string[] };
+      return { ok: false as const, status: (fileStatus || (conflict ? "conflict" : "error")) as "conflict" | "error", error: fileError || (conflict ? "conflict" : rejected ? "rejected" : "kept"), rev, savedKeys, rejectedKeys, path: filePath };
+    } catch (err) {
+      const thrown = err instanceof Error ? err.message : "throw";
+      console.error("[noa-save]", thrown);
+      return { ok: false as const, status: "error" as const, error: "write", thrown, rev: 0, savedKeys: [] as string[], rejectedKeys: [] as string[], path: "" };
     }
   });
 
@@ -886,6 +891,11 @@ export const saveStudioPages = createServerFn({ method: "POST" })
     const suno: Record<string, string> = {};
     const sqlLeft: Promise<unknown>[] = [];
     let dbError = "";
+    const rejectedKeys: string[] = [];
+    let fileError = "";
+    let fileRev = 0;
+    let filePath = "";
+    let thrown = "";
     for (const row of rows) {
       let wrote = false;
       let wroteBody = false;
@@ -907,6 +917,10 @@ export const saveStudioPages = createServerFn({ method: "POST" })
         written.push(...keys.written);
         kept.push(...keys.kept);
         if (Array.isArray(keys.rejected)) rejected.push(...keys.rejected);
+        if (Array.isArray(keys.rejectedKeys)) rejectedKeys.push(...keys.rejectedKeys.filter((key) => typeof key === "string" && key));
+        if (typeof keys.error === "string" && keys.error) fileError = keys.error;
+        if (typeof keys.rev === "number") fileRev = keys.rev;
+        if (typeof keys.path === "string" && keys.path) filePath = keys.path;
         if (keys.status === "conflict") sawConflict = true;
         wroteBody = keys.written.length > 0;
         const rejected = Array.isArray(keys.rejected) && keys.rejected.length > 0;
@@ -919,7 +933,9 @@ export const saveStudioPages = createServerFn({ method: "POST" })
           const got = String(page?.pkg?.sunoUrl || "").trim();
           if (got === wantedSuno) suno[key] = got;
         }
-      } catch {
+      } catch (err) {
+        thrown = err instanceof Error ? err.message : "throw";
+        console.error("[noa-save]", thrown);
         missed.push(row.kind === "single" ? `${row.genreId}:${row.ep}` : `${row.genreId}:act:${row.act}`);
       }
       if (wroteBody) {
@@ -943,10 +959,11 @@ export const saveStudioPages = createServerFn({ method: "POST" })
     } catch {
       dbError = "db";
     }
-    if (!rows.length) return { ok: true as const, status: "unchanged" as const, n: 0, written: [] as string[], kept: [] as string[], rejected: [] as string[], suno };
+    if (!rows.length) return { ok: true as const, status: "unchanged" as const, n: 0, written: [] as string[], kept: [] as string[], rejected: [] as string[], suno, error: "", rev: 0, rejectedKeys: [] as string[], path: "", thrown: "" };
+    const diag = { error: fileError, rev: fileRev, rejectedKeys, path: filePath, thrown };
     return missed.length === 0
-      ? { ok: true as const, status: written.length ? "written" as const : "unchanged" as const, n: stored, written, kept, rejected, suno, ...(dbError ? { db: "error" as const } : {}) }
-      : { ok: false as const, status: sawConflict && written.length === 0 ? "conflict" as const : "error" as const, n: stored, missed, written, kept, rejected, suno, ...(dbError ? { db: "error" as const } : {}) };
+      ? { ok: true as const, status: written.length ? "written" as const : "unchanged" as const, n: stored, written, kept, rejected, suno, ...diag, ...(dbError ? { db: "error" as const } : {}) }
+      : { ok: false as const, status: sawConflict && written.length === 0 ? "conflict" as const : "error" as const, n: stored, missed, written, kept, rejected, suno, ...diag, ...(dbError ? { db: "error" as const } : {}) };
   });
 
 export const saveOpenRepairs = createServerFn({ method: "POST" })

@@ -1,7 +1,7 @@
 import seedDump from "@/data/encyclopedia.json";
 import type { EncMeta } from "./encyclopedia-types";
 import { parseListOrder } from "./encyclopedia-types";
-import { serverOk } from "./server-plain";
+import { serverOk, serverPlain } from "./server-plain";
 import { mergeLatestBody, readFieldStamps } from "./latest-text";
 import { traceField } from "./field-trace";
 
@@ -398,6 +398,37 @@ export function saveMetaNow() {
 
 let persistFlight: Promise<boolean> | null = null;
 
+export type SaveDiag = {
+  at: number;
+  ok: boolean;
+  status: string;
+  error: string;
+  rev: number;
+  rejectedKeys: string[];
+  path: string;
+  thrown: string;
+};
+
+let lastSaveDiag: SaveDiag | null = null;
+
+export function readSaveDiag() {
+  return lastSaveDiag;
+}
+
+function noteSaveDiag(saved: Record<string, unknown> | null, thrown: string) {
+  const rejectedKeys = Array.isArray(saved?.rejectedKeys) ? saved.rejectedKeys.filter((key): key is string => typeof key === "string" && key) : [];
+  lastSaveDiag = {
+    at: Date.now(),
+    ok: Boolean(saved && saved.ok === true) && !thrown,
+    status: typeof saved?.status === "string" ? saved.status : "",
+    error: typeof saved?.error === "string" ? saved.error : "",
+    rev: typeof saved?.rev === "number" ? saved.rev : 0,
+    rejectedKeys,
+    path: typeof saved?.path === "string" ? saved.path : "",
+    thrown,
+  };
+}
+
 export function flushAppPagesNow(): Promise<boolean> {
   wantPages = true;
   if (typeof window === "undefined") return Promise.resolve(false);
@@ -423,6 +454,7 @@ async function flushPersist(): Promise<boolean> {
   const queued = pages ? [...pageQueue.values()] : [];
   if (pages) pageQueue.clear();
   let pagesOk = true;
+  let studioSeen = false;
   try {
     const api = await import("./pages");
     if (queued.length) {
@@ -441,6 +473,8 @@ async function flushPersist(): Promise<boolean> {
             })),
           },
         });
+        noteSaveDiag(serverPlain<Record<string, unknown>>(saved), "");
+        studioSeen = true;
         if (!serverOk(saved)) throw new Error("save failed");
       }
       for (const row of queued.filter((item) => item.kind === "story")) {
@@ -449,8 +483,12 @@ async function flushPersist(): Promise<boolean> {
         if (!serverOk(saved)) throw new Error("save failed");
       }
     }
-  } catch {
+  } catch (err) {
     pagesOk = false;
+    const thrown = err instanceof Error ? err.message : "throw";
+    if (!studioSeen) noteSaveDiag(null, thrown);
+    else if (lastSaveDiag && !lastSaveDiag.thrown) noteSaveDiag(lastSaveDiag, thrown);
+    console.info("[noa-save]", lastSaveDiag);
     for (const row of queued) {
       const slot = pageSlot(row);
       if (!pageQueue.has(slot)) pageQueue.set(slot, row);

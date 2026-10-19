@@ -21,7 +21,7 @@ import { DEFAULT_GENRE, EPS, GENRES, actFromEp, actTrackLine, actsForEntries, al
 import { applyFixedOrder, moveId, readListOrder, writeListOrder } from "@/lib/list-order";
 import { PREF_EVENT, applyDumpPrefs, hasStoredPref, lockPolicy, normalizePref, readCommon, readPref, syncCurrentPrefs, useDesignRule, useGenrePref, writePref } from "@/lib/user-prefs";
 import { traceField } from "@/lib/field-trace";
-import { appDumpRev, cancelQueuedPage, flushAppPagesNow, holdPageLink, markMetaHydrated, patchApp, patchQueuedBody, readAppDump, saveMetaNow } from "@/lib/app-memory";
+import { appDumpRev, cancelQueuedPage, flushAppPagesNow, holdPageLink, markMetaHydrated, patchApp, patchQueuedBody, readAppDump, readSaveDiag, saveMetaNow } from "@/lib/app-memory";
 import { collectOriginals, extrasAsEps, getOriginal, readOriginals, upsertOriginal } from "@/lib/originals";
 import { SEED_ORIGINALS } from "@/lib/originals-seed";
 import { formatSource } from "@/lib/source-draft";
@@ -4213,6 +4213,18 @@ export function StudioApp() {
 		return { ok: true, which: "" };
 	}
 	async function saveVisible() {
+		const saveStarted = Date.now();
+		const screenSaveText = (value) => String(value || "").replace(/(?:[A-Za-z]:)?[\\/][^\s]+/g, "").replace(/\s+/g, " ").trim();
+		const showSaveFault = () => {
+			const diag = readSaveDiag();
+			if (!diag || diag.at < saveStarted || diag.ok !== false) return;
+			const code = screenSaveText(diag.error || diag.status);
+			const fields = diag.rejectedKeys.map((key) => screenSaveText(key)).filter(Boolean).join(", ");
+			const thrown = screenSaveText(diag.thrown);
+			const line = [code ? `저장 실패 ${code}` : "", fields, thrown ? `요청 예외: ${thrown}` : ""].filter(Boolean).join(" · ");
+			if (line) setError(line);
+			console.info("[noa-save]", diag);
+		};
 		fileLoadGen.current += 1;
 		followPressed("");
 		say("저장: 최신 값만 남기는 중");
@@ -4330,11 +4342,15 @@ export function StudioApp() {
 					saveMetaNow();
 					await flushAppPagesNow().catch(() => false);
 					const stuck = await stickPane(shot);
-					if (!noteStick(stuck, true)) return false;
+					if (!noteStick(stuck, true)) {
+						showSaveFault();
+						return false;
+					}
 					releaseQueue();
 					if (!(await finishLinks())) return false;
 					rememberLinks();
 					say("저장: 주소를 남겼습니다.");
+					showSaveFault();
 					return true;
 				}
 				let keptSong = false;
@@ -4345,11 +4361,15 @@ export function StudioApp() {
 				}
 				if (!keptSong) {
 					const stuck = await stickPane(shot);
-					if (!noteStick(stuck, true)) return false;
+					if (!noteStick(stuck, true)) {
+						showSaveFault();
+						return false;
+					}
 					releaseQueue();
 					if (!(await finishLinks())) return false;
 					rememberLinks();
 					say("저장: 파일에 남겼습니다.");
+					showSaveFault();
 					return true;
 				}
 				writeLinkPremium(genreId, id, "song", ytPremium, "ep");
@@ -4360,11 +4380,15 @@ export function StudioApp() {
 				]);
 				saveMetaNow();
 				const stuck = await stickPane(shot);
-				if (!noteStick(stuck, Boolean(ok))) return false;
+				if (!noteStick(stuck, Boolean(ok))) {
+					showSaveFault();
+					return false;
+				}
 				releaseQueue();
 				if (!(await finishLinks())) return false;
 				rememberLinks();
 				say(ok ? "저장: 최신 값만 남겼습니다." : "저장: 파일에 남겼습니다.");
+				showSaveFault();
 				return true;
 			}
 			if (playlistRef.current && hasPlaylistBody(playlistRef.current) || playlist && hasPlaylistBody(playlist)) {
@@ -4390,11 +4414,15 @@ export function StudioApp() {
 				]);
 				saveMetaNow();
 				const stuck = await stickPane(shot);
-				if (!noteStick(stuck, Boolean(ok))) return false;
+				if (!noteStick(stuck, Boolean(ok))) {
+					showSaveFault();
+					return false;
+				}
 				releaseQueue();
 				if (!(await finishLinks())) return false;
 				rememberLinks();
 				say(ok ? "저장: 최신 값만 남겼습니다." : "저장: 파일에 남겼습니다.");
+				showSaveFault();
 				return true;
 			}
 			if (ytLive.current.trim() || mvLive.current.trim() || sunoLive.current.trim()) {
@@ -4406,17 +4434,23 @@ export function StudioApp() {
 				saveMetaNow();
 				await flushAppPagesNow().catch(() => false);
 				const stuck = await stickPane(shot);
-				if (!noteStick(stuck, true)) return false;
+				if (!noteStick(stuck, true)) {
+					showSaveFault();
+					return false;
+				}
 					releaseQueue();
 					if (!(await finishLinks())) return false;
 				rememberLinks();
 				say("저장: 주소를 남겼습니다.");
+				showSaveFault();
 				return true;
 			}
 			setError("저장할 결과가 없습니다.");
 			return false;
-		} catch {
-			setError("저장하지 못했습니다.");
+		} catch (err) {
+			const thrown = String(err instanceof Error ? err.message : "throw").replace(/(?:[A-Za-z]:)?[\\/][^\s]+/g, "").replace(/\s+/g, " ").trim();
+			console.info("[noa-save]", { thrown: err instanceof Error ? err.message : err });
+			setError(thrown ? `요청 예외: ${thrown}` : "저장하지 못했습니다.");
 			return false;
 		}
 	}
