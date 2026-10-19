@@ -1,0 +1,26 @@
+-- Additive schema. Never modifies existing GnuBoard g5_* tables.
+CREATE TABLE IF NOT EXISTS noa_documents (
+ doc_key VARCHAR(191) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY,
+ kind VARCHAR(32) NOT NULL,
+ payload LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+ revision BIGINT UNSIGNED NOT NULL,
+ updated_by VARCHAR(20) NOT NULL,
+ updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ CONSTRAINT noa_document_json CHECK (JSON_VALID(payload))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS noa_document_history (
+ doc_key VARCHAR(191) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+ revision BIGINT UNSIGNED NOT NULL,
+ payload LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+ changed_by VARCHAR(20) NOT NULL,
+ changed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ PRIMARY KEY(doc_key,revision),
+ CONSTRAINT noa_history_json CHECK (JSON_VALID(payload))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS noa_request_log (
+ request_id CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY,
+ doc_key VARCHAR(191) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+ request_hash CHAR(64) CHARACTER SET ascii NOT NULL,
+ revision BIGINT UNSIGNED NOT NULL,
+ created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
