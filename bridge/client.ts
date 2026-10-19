@@ -50,9 +50,14 @@ async function decode<T>(response: Response): Promise<T> {
 export async function readBridgeDocument<T extends Record<string, unknown>>(
   endpoint: string,
   key: string,
+  revision?: number,
 ): Promise<BridgeDocument<T>> {
   const url = assertSameOrigin(endpoint);
   url.searchParams.set("key", key);
+  if (revision !== undefined) {
+    if (!Number.isSafeInteger(revision) || revision < 1) throw new Error("Invalid history revision");
+    url.searchParams.set("revision", String(revision));
+  }
   return decode<BridgeDocument<T>>(await fetch(url, {
     method: "GET",
     credentials: "same-origin",
