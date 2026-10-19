@@ -417,15 +417,17 @@ export function readSaveDiag() {
 
 function noteSaveDiag(saved: Record<string, unknown> | null, thrown: string) {
   const rejectedKeys = Array.isArray(saved?.rejectedKeys) ? saved.rejectedKeys.filter((key): key is string => typeof key === "string" && key) : [];
+  const serverThrown = typeof saved?.thrown === "string" ? saved.thrown : "";
+  const visibleThrown = serverThrown || (thrown === "save failed" ? "" : thrown);
   lastSaveDiag = {
     at: Date.now(),
-    ok: Boolean(saved && saved.ok === true) && !thrown,
+    ok: Boolean(saved && saved.ok === true) && !serverThrown,
     status: typeof saved?.status === "string" ? saved.status : "",
     error: typeof saved?.error === "string" ? saved.error : "",
     rev: typeof saved?.rev === "number" ? saved.rev : 0,
     rejectedKeys,
     path: typeof saved?.path === "string" ? saved.path : "",
-    thrown,
+    thrown: visibleThrown,
   };
 }
 

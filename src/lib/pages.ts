@@ -923,9 +923,9 @@ export const saveStudioPages = createServerFn({ method: "POST" })
         if (typeof keys.path === "string" && keys.path) filePath = keys.path;
         if (keys.status === "conflict") sawConflict = true;
         wroteBody = keys.written.length > 0;
-        const rejected = Array.isArray(keys.rejected) && keys.rejected.length > 0;
+        const rowRejected = Array.isArray(keys.rejected) && keys.rejected.length > 0;
         const unchanged = Array.isArray(keys.unchanged) && keys.unchanged.length > 0;
-        wrote = wroteBody || (unchanged && !rejected);
+        wrote = wroteBody || (unchanged && !rowRejected);
         if (!wrote) missed.push(row.kind === "single" ? `${row.genreId}:${row.ep}` : `${row.genreId}:act:${row.act}`);
         if (wantedSuno) {
           const key = row.kind === "single" ? `${row.genreId}:${row.ep}` : `${row.genreId}:act:${row.act}`;
