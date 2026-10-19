@@ -1,0 +1,90 @@
+-- NOA STUDIO 2.0 schema. Creates only noa_* tables.
+-- Does not alter Gnuboard tables. Not applied to the live database.
+
+CREATE TABLE IF NOT EXISTS noa_songs (
+  song_key VARCHAR(191) NOT NULL,
+  kind VARCHAR(16) NOT NULL,
+  genre_id VARCHAR(64) NOT NULL,
+  ep VARCHAR(16) NULL,
+  act SMALLINT NULL,
+  title TEXT NOT NULL,
+  confirmed TINYINT NOT NULL DEFAULT 0,
+  pkg JSON NOT NULL,
+  rev INT UNSIGNED NOT NULL DEFAULT 0,
+  source_path VARCHAR(255) NULL,
+  source_sha CHAR(64) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (song_key),
+  KEY idx_noa_songs_genre (genre_id, kind, ep)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS noa_acts (
+  act_key VARCHAR(191) NOT NULL,
+  genre_id VARCHAR(64) NOT NULL,
+  act SMALLINT NOT NULL,
+  title TEXT NOT NULL,
+  activated TINYINT NOT NULL DEFAULT 0,
+  pkg JSON NOT NULL,
+  rev INT UNSIGNED NOT NULL DEFAULT 0,
+  source_path VARCHAR(255) NULL,
+  source_sha CHAR(64) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (act_key),
+  UNIQUE KEY uq_noa_acts (genre_id, act)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS noa_settings (
+  setting_key VARCHAR(191) NOT NULL,
+  body JSON NOT NULL,
+  rev INT UNSIGNED NOT NULL DEFAULT 0,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (setting_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS noa_originals (
+  original_key VARCHAR(191) NOT NULL,
+  genre_id VARCHAR(64) NOT NULL,
+  ep VARCHAR(16) NOT NULL,
+  body JSON NOT NULL,
+  rev INT UNSIGNED NOT NULL DEFAULT 0,
+  source_sha CHAR(64) NULL,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (original_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS noa_assets (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  owner_key VARCHAR(191) NOT NULL,
+  kind VARCHAR(32) NOT NULL,
+  url TEXT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_noa_assets_owner (owner_key, kind)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS noa_save_history (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  target_key VARCHAR(191) NOT NULL,
+  base_rev INT UNSIGNED NOT NULL,
+  new_rev INT UNSIGNED NULL,
+  changed_keys JSON NOT NULL,
+  result VARCHAR(16) NOT NULL,
+  actor VARCHAR(64) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_noa_history_target (target_key, id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS noa_migration_log (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  source_path VARCHAR(255) NOT NULL,
+  source_sha CHAR(64) NOT NULL,
+  target_key VARCHAR(191) NOT NULL,
+  status VARCHAR(16) NOT NULL,
+  note VARCHAR(255) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_noa_migration_source (source_path, source_sha)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -1,0 +1,51 @@
+name: Dothome selective FTP
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: DEPLOY 라고 입력해야 업로드한다
+        required: true
+        type: string
+      server_dir:
+        description: 닷홈 FTP 기준 웹 루트
+        required: true
+        default: /hosting/noastudio/html/
+        type: string
+
+jobs:
+  upload:
+    if: github.event.inputs.confirm == 'DEPLOY'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stage only theme, API, and extend
+        run: |
+          set -eu
+          rm -rf "$RUNNER_TEMP/noa-stage"
+          mkdir -p "$RUNNER_TEMP/noa-stage/theme" "$RUNNER_TEMP/noa-stage/noa-api" "$RUNNER_TEMP/noa-stage/extend"
+          cp -a deploy/noastudio/theme/noastudio "$RUNNER_TEMP/noa-stage/theme/noastudio"
+          cp -a deploy/noastudio/api "$RUNNER_TEMP/noa-stage/noa-api"
+          cp deploy/noastudio/extend/noa.studio.php "$RUNNER_TEMP/noa-stage/extend/noa.studio.php"
+          test ! -e "$RUNNER_TEMP/noa-stage/data"
+          test ! -e "$RUNNER_TEMP/noa-stage/config.php"
+          find "$RUNNER_TEMP/noa-stage" -type f -print
+      - name: Upload without deleting remote files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.DOTHOME_FTP_HOST }}
+          username: ${{ secrets.DOTHOME_FTP_USERNAME }}
+          password: ${{ secrets.DOTHOME_FTP_PASSWORD }}
+          port: 21
+          protocol: ftp
+          local-dir: ${{ runner.temp }}/noa-stage/
+          server-dir: ${{ github.event.inputs.server_dir }}
+          dangerous-clean-slate: false
+          log-level: minimal
+          exclude: |
+            **/.git*
+            **/.github/**
+            **/data/**
+            **/config.php
+            **/dbconfig.php
+            **/pglite/**
