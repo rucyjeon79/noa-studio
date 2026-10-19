@@ -25,3 +25,6 @@ No production hosting, DNS, Grok Build runtime or database changes are authorize
 - Reconnect after lost response does not duplicate writes.
 - Every legacy genre/EP/ACT slot and story mapping round-trips without collisions.
 - Grok music generation continues unchanged before and after cutover.
+
+## Read-only operational health check
+Once the bridge has been installed and its `noa_*` schema is present, a signed-in GnuBoard administrator can request `GET https://noastudio.ai.kr/noa-bridge/index.php?health=1`. A healthy result is `{"ok":true,"status":"ready","schema":"001"}`. Missing database configuration returns HTTP 503; a database/table error returns HTTP 500 with a generic error body. This endpoint does not read or write music payloads, and must not be used as proof that Grok cross-origin authentication or music persistence is integrated.
