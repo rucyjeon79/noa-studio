@@ -1,0 +1,51 @@
+name: NOA Dothome Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_live:
+        description: 'CHECK = inspect only; DEPLOY = create NOA-owned files on live server'
+        required: true
+        type: choice
+        options:
+          - CHECK
+          - DEPLOY
+        default: CHECK
+
+permissions:
+  contents: read
+
+concurrency:
+  group: noa-dothome-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout pinned NOA deployment files
+        uses: actions/checkout@v4
+        with:
+          ref: 7cd11530abe396610ee26bbf4a3e4b38ebcf5062
+          persist-credentials: false
+      - name: PHP syntax validation
+        run: |
+          php -l deploy/noa2.php
+          php -l deploy/noa-library.php
+          php -l bridge/index.php
+          php -l bridge/library.php
+      - name: Verify FTP configuration and check/deploy
+        env:
+          FTP_HOST: ${{ secrets.NOA_FTP_HOST }}
+          FTP_USER: ${{ secrets.NOA_FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          FTP_ROOT: ${{ vars.NOA_FTP_ROOT }}
+          NOA_DEPLOY_CONFIRM: ${{ inputs.confirm_live }}
+        run: |
+          set -eu
+          test -n "$FTP_HOST"
+          test -n "$FTP_USER"
+          test -n "$FTP_PASSWORD"
+          test -n "$FTP_ROOT"
+          python3 scripts/deploy_noa_ftp.py
