@@ -791,7 +791,6 @@ export const saveStudioPage = createServerFn({ method: "POST" })
       (data.kind === "single"
         ? (stored as StudioPackage).confirmedTitle
         : (stored as PlaylistPackage).youtubeTitle);
-    let wrote = false;
     let wroteBody = false;
     try {
       const file = (await enc()).putEncMany([
@@ -814,22 +813,30 @@ export const saveStudioPage = createServerFn({ method: "POST" })
             },
       ]);
       wroteBody = file.written.length > 0;
-      if (file.written.length || file.kept.length) wrote = true;
+      const rejected = Array.isArray(file.rejected) ? file.rejected.length > 0 : false;
+      const unchanged = Array.isArray(file.unchanged) ? file.unchanged.length > 0 : false;
+      let dbError = "";
+      if (wroteBody) {
+        try {
+          await upsertStoredPage({
+            kind: data.kind,
+            genreId: data.genreId,
+            ep: data.kind === "single" ? data.ep : "",
+            act: data.act,
+            title,
+            body: stored,
+            rewrite: data.rewrite,
+          });
+        } catch {
+          dbError = "db";
+        }
+      }
+      if (wroteBody) return { ok: true as const, status: "written" as const, rev: 0, savedKeys: [] as string[], rejectedKeys: [] as string[], ...(dbError ? { error: dbError } : {}) };
+      if (unchanged && !rejected) return { ok: true as const, status: "unchanged" as const, rev: 0, savedKeys: [] as string[], rejectedKeys: [] as string[] };
+      return { ok: false as const, status: "error" as const, error: rejected ? "rejected" : "kept", rev: 0, savedKeys: [] as string[], rejectedKeys: [] as string[] };
     } catch {
-      /* the file is the save */
+      return { ok: false as const, status: "error" as const, error: "write", rev: 0, savedKeys: [] as string[], rejectedKeys: [] as string[] };
     }
-    if (wroteBody) {
-      void upsertStoredPage({
-        kind: data.kind,
-        genreId: data.genreId,
-        ep: data.kind === "single" ? data.ep : "",
-        act: data.act,
-        title,
-        body: stored,
-        rewrite: data.rewrite,
-      }).catch(() => false);
-    }
-    return wrote ? { ok: true as const } : { ok: false as const };
   });
 
 export const saveStudioPages = createServerFn({ method: "POST" })
@@ -893,7 +900,10 @@ export const saveStudioPages = createServerFn({ method: "POST" })
         written.push(...keys.written);
         kept.push(...keys.kept);
         wroteBody = keys.written.length > 0;
-        if (keys.written.length || keys.kept.length) wrote = true;
+        const rejected = Array.isArray(keys.rejected) && keys.rejected.length > 0;
+        const unchanged = Array.isArray(keys.unchanged) && keys.unchanged.length > 0;
+        wrote = wroteBody || (unchanged && !rejected);
+        if (!wrote) missed.push(row.kind === "single" ? `${row.genreId}:${row.ep}` : `${row.genreId}:act:${row.act}`);
         if (wantedSuno) {
           const key = row.kind === "single" ? `${row.genreId}:${row.ep}` : `${row.genreId}:act:${row.act}`;
           const page = row.kind === "single" ? store.readSongPage(row.genreId, row.ep) : store.readActPage(row.genreId, row.act);
@@ -901,7 +911,7 @@ export const saveStudioPages = createServerFn({ method: "POST" })
           if (got === wantedSuno) suno[key] = got;
         }
       } catch {
-        /* the file is the save */
+        missed.push(row.kind === "single" ? `${row.genreId}:${row.ep}` : `${row.genreId}:act:${row.act}`);
       }
       if (wroteBody) {
         sqlLeft.push(upsertStoredPage({
@@ -912,16 +922,23 @@ export const saveStudioPages = createServerFn({ method: "POST" })
           title: row.title,
           body: row.body,
           rewrite: row.rewrite,
-        }).catch(() => false));
+        }).then((row) => row, () => {
+          dbError = "db";
+          return false;
+        }));
       }
       if (wrote) stored += 1;
-      else missed.push(row.kind === "single" ? `${row.genreId}:${row.ep}` : `${row.genreId}:act:${row.act}`);
     }
-    void Promise.all(sqlLeft);
-    if (!rows.length) return { ok: true as const, n: 0, written: [] as string[], kept: [] as string[], suno };
+    let dbError = "";
+    try {
+      await Promise.all(sqlLeft);
+    } catch {
+      dbError = "db";
+    }
+    if (!rows.length) return { ok: true as const, status: "unchanged" as const, n: 0, written: [] as string[], kept: [] as string[], suno };
     return missed.length === 0
-      ? { ok: true as const, n: stored, written, kept, suno }
-      : { ok: false as const, n: stored, missed, written, kept, suno };
+      ? { ok: true as const, status: written.length ? "written" as const : "unchanged" as const, n: stored, written, kept, suno, ...(dbError ? { db: "error" as const } : {}) }
+      : { ok: false as const, status: "error" as const, n: stored, missed, written, kept, suno, ...(dbError ? { db: "error" as const } : {}) };
   });
 
 export const saveOpenRepairs = createServerFn({ method: "POST" })

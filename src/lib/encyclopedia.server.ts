@@ -31,9 +31,11 @@ function isReadOnlyFs(err) {
 function diskWriteDenied() {
   return diskDenied;
 }
+let lastLiveWrite = { ok: false, status: "error", error: "", rev: 0, savedKeys: [], rejectedKeys: [] };
 function writeJson(path, value) {
   if (isContentPath(path)) {
     const saved = applyLiveWrite(path, value && typeof value === "object" ? value : {});
+    lastLiveWrite = saved;
     diskDenied = !saved.ok && saved.error === "write";
     return saved.ok;
   }
@@ -1218,7 +1220,9 @@ function writeSong(genreId, ep, title, pkg, _force = false) {
     ep,
     title: viewTitle,
     pkg: payloadPkg,
-    rev: diskRev + 1,
+    strict: true,
+    ...(_force ? { rewrite: true } : {}),
+    ...(Number.isInteger(baseRev) && baseRev >= 0 ? { baseRev } : {}),
     ...freshSongState(genreId, ep, prev)
   });
   forgetLegacySong(genreId, ep);
@@ -1233,7 +1237,7 @@ function writeSong(genreId, ep, title, pkg, _force = false) {
       return check.every((key) => String(pkg2?.[key] ?? "").trim() === String(guarded[key] ?? "").trim());
     };
     if (landed(readSongRecord(genreId, ep)?.pkg)) return true;
-    if (!writeJson(path, { genreId, ep, title: viewTitle, pkg: payloadPkg, rev: diskRev + 1, ...freshSongState(genreId, ep, prev) })) return false;
+    if (!writeJson(path, { genreId, ep, title: viewTitle, pkg: payloadPkg, strict: true, rewrite: true, ...(Number.isInteger(baseRev) && baseRev >= 0 ? { baseRev } : {}), ...freshSongState(genreId, ep, prev) })) return false;
     return landed(readSongRecord(genreId, ep)?.pkg);
   }
   return true;
@@ -1281,7 +1285,9 @@ function putEncPlaylist(genreId, act, title, pkg) {
 function putEncMany(rows) {
   const written = [];
   const kept = [];
-  if (!rows.length || !LIVE) return { written, kept };
+  const unchanged = [];
+  const rejected = [];
+  if (!rows.length || !LIVE) return { written, kept, unchanged, rejected };
   for (const row of rows) {
     if (row.kind === "single" && row.ep) {
       const key = `${row.genreId}:${row.ep}`;
@@ -1311,14 +1317,17 @@ function putEncMany(rows) {
       if (!row.rewrite && prevNorm && !shouldReplaceStudio(prevNorm, nextNorm, open)) {
         pinEmptyLink();
       } else if (writeSong(row.genreId, row.ep, row.title, next, Boolean(row.rewrite))) {
-        wroteBody = true;
-      } else if (prevNorm && hasPageBody(prevNorm)) {
-        pinEmptyLink();
+        if (lastLiveWrite.status === "unchanged") unchanged.push(key);
+        else wroteBody = true;
+      } else {
+        rejected.push(key);
+        if (prevNorm && hasPageBody(prevNorm)) pinEmptyLink();
       }
       if (!landSunoFile("song", row.genreId, n, wantedSuno, hasExact) && !hasExact) continue;
       const sealed = hasExact ? sealShownExact(songPath(row.genreId, n), row.pkg, { genreId: row.genreId, ep: n }) : true;
-      if (wroteBody || httpAddress(wantedSuno) || hasExact && sealed) written.push(key);else
-      if (!row.rewrite && prevNorm && hasPageBody(prevNorm)) kept.push(key);
+      if (wroteBody) written.push(key);
+      else if ((httpAddress(wantedSuno) || hasExact) && sealed) written.push(key);
+      else if (!rejected.includes(key) && lastLiveWrite.status !== "unchanged" && !row.rewrite && prevNorm && hasPageBody(prevNorm)) kept.push(key);
     } else if (row.kind === "playlist") {
       const act = row.act ?? 1;
       const prev = readJson(actPath(row.genreId, act));
@@ -1380,6 +1389,9 @@ function putEncMany(rows) {
         act,
         title: actTitle,
         pkg: actPayload,
+        strict: true,
+        ...(row.rewrite ? { rewrite: true } : {}),
+        ...(Number.isInteger(actBase) && actBase >= 0 ? { baseRev: actBase } : {}),
         ...(prev?.confirmed === true ? { confirmed: true } : {}),
         ...(prev?.activated === true || songsReady ? { activated: true } : {})
       });
