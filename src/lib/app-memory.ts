@@ -458,6 +458,7 @@ async function flushPersist(): Promise<boolean> {
   if (pages) pageQueue.clear();
   let pagesOk = true;
   let studioSeen = false;
+  const completedSlots = new Set<string>();
   try {
     const api = await import("./pages");
     if (queued.length) {
@@ -479,11 +480,13 @@ async function flushPersist(): Promise<boolean> {
         noteSaveDiag(serverPlain<Record<string, unknown>>(saved), "");
         studioSeen = true;
         if (!serverOk(saved)) throw new Error("save failed");
+        for (const row of studio) completedSlots.add(pageSlot(row));
       }
       for (const row of queued.filter((item) => item.kind === "story")) {
         if (!row.title) continue;
         const saved = await api.saveStoryPage({ data: { title: row.title, body: row.body as never, genreId: row.genreId === "cover-reborn" ? "cover-reborn" : "your-story" } });
         if (!serverOk(saved)) throw new Error("save failed");
+        completedSlots.add(pageSlot(row));
       }
     }
   } catch (err) {
@@ -494,9 +497,10 @@ async function flushPersist(): Promise<boolean> {
     console.info("[noa-save]", lastSaveDiag);
     for (const row of queued) {
       const slot = pageSlot(row);
-      if (!pageQueue.has(slot)) pageQueue.set(slot, row);
+      // Never replay a successfully committed row after a later row fails.
+      if (!completedSlots.has(slot) && !pageQueue.has(slot)) pageQueue.set(slot, row);
     }
-    if (queued.length) wantPages = true;
+    if (pageQueue.size) wantPages = true;
   }
   if (saveMeta && !metaHydrated) {
     wantMeta = true;
