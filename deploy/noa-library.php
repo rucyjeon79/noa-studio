@@ -28,17 +28,10 @@ if (!is_string($kind) || ($kind !== '' && !in_array($kind, $allowed, true))
 $items = [];
 $next = null;
 $error = null;
-$dsn = getenv('NOA_MYSQL_DSN');
-$user = getenv('NOA_MYSQL_USER');
-$pass = getenv('NOA_MYSQL_PASSWORD');
-if (!$dsn || !$user || $pass === false) {
-    $error = 'NOA Bridge 데이터베이스 연결이 아직 설정되지 않았습니다.';
-} else {
+require_once __DIR__ . '/noa-bridge/storage.php';
+{
     try {
-        $db = new PDO($dsn, $user, $pass, [
-            PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_EMULATE_PREPARES=>false,
-        ]);
+        $db = noa_bridge_pdo();
         $sql = 'SELECT doc_key,kind,revision,updated_at FROM noa_documents WHERE doc_key > :cursor';
         if ($kind !== '') $sql .= ' AND kind = :kind';
         $sql .= ' ORDER BY doc_key ASC LIMIT 51';
@@ -67,7 +60,7 @@ table{width:100%;border-collapse:collapse;background:#15161b;border-radius:12px;
 th{color:#d7ad62}.scroll{overflow-x:auto}.error{padding:16px;border:1px solid #785333;border-radius:8px;color:#efc69c}
 p{color:#aaa}.next{display:inline-block;margin-top:22px;padding:10px 20px;border:1px solid #d7ad62;border-radius:8px}
 </style></head><body><main>
-<a href="/noa2.php">← NOA STUDIO</a><h1>Music Library</h1><p>관리자 전용 · NOA Bridge 저장소 조회 · 읽기 전용</p>
+<a href="/noa2.php">← NOA STUDIO</a><h1>Music Library</h1><a href="/noa-bridge/setup.php">저장소 연결 상태 확인</a><p>관리자 전용 · NOA Bridge 저장소 조회 · 읽기 전용</p>
 <nav aria-label="콘텐츠 분류">
 <?php foreach (array_merge([''=>'전체'], array_combine($allowed, ['EP 싱글','ACT 플레이리스트','사연곡','메타','설정'])) as $value=>$label): ?>
 <a href="?<?=noa_escape(http_build_query(['kind'=>$value]))?>"><?=noa_escape($label)?></a>
