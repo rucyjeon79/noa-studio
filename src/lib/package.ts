@@ -1707,14 +1707,8 @@ export function writeCachedPackage(epN: string, genreId: string, pkg: StudioPack
     stamped as unknown as Record<string, unknown>,
   ) as StudioPackage & { sunoExact?: boolean; levelExact?: boolean; blankFields?: string[] };
   if (stamped.sunoExact === true) merged.sunoUrl = String(stamped.sunoUrl ?? "");
-  if (stamped.levelExact === true) {
-    const level = cleanAudioLevel(stamped.audioLevel);
-    merged.audioLevel = level || (String(stamped.audioLevel ?? "").trim() ? merged.audioLevel : "");
-  }
-  if ((stamped as { analysisExact?: boolean }).analysisExact === true) {
-    const analysis = cleanAudioAnalysis((stamped as { audioAnalysis?: string }).audioAnalysis);
-    merged.audioAnalysis = analysis || (String((stamped as { audioAnalysis?: string }).audioAnalysis ?? "").trim() ? merged.audioAnalysis : "");
-  }
+  if (stamped.levelExact === true) merged.audioLevel = String(stamped.audioLevel ?? "");
+  if ((stamped as { analysisExact?: boolean }).analysisExact === true) merged.audioAnalysis = String((stamped as { audioAnalysis?: string }).audioAnalysis ?? "");
   const savedList = Array.isArray((stamped as { savedKeys?: unknown }).savedKeys)
     ? (stamped as { savedKeys: unknown[] }).savedKeys.filter((key): key is string => typeof key === "string")
     : [];
@@ -1774,14 +1768,8 @@ export function writeCachedPlaylist(act: number, genreId: string, pkg: PlaylistP
   const stamped = stampChangedFields(prev as unknown as Record<string, unknown> | null, cloned, new Date().toISOString(), Boolean(rewrite)) as Record<string, unknown>;
   const slim = mergeLatestBody(prev as unknown as Record<string, unknown> | null, stamped) as PlaylistPackage & { sunoExact?: boolean; levelExact?: boolean };
   if (stamped.sunoExact === true) slim.sunoUrl = String(stamped.sunoUrl ?? "");
-  if (stamped.levelExact === true) {
-    const level = cleanAudioLevel(stamped.audioLevel);
-    slim.audioLevel = level || (String(stamped.audioLevel ?? "").trim() ? slim.audioLevel : "");
-  }
-  if ((stamped as { analysisExact?: boolean }).analysisExact === true) {
-    const analysis = cleanAudioAnalysis((stamped as { audioAnalysis?: string }).audioAnalysis);
-    slim.audioAnalysis = analysis || (String((stamped as { audioAnalysis?: string }).audioAnalysis ?? "").trim() ? slim.audioAnalysis : "");
-  }
+  if (stamped.levelExact === true) slim.audioLevel = String(stamped.audioLevel ?? "");
+  if ((stamped as { analysisExact?: boolean }).analysisExact === true) slim.audioAnalysis = String((stamped as { audioAnalysis?: string }).audioAnalysis ?? "");
   const savedList = Array.isArray((stamped as { savedKeys?: unknown }).savedKeys)
     ? (stamped as { savedKeys: unknown[] }).savedKeys.filter((key): key is string => typeof key === "string")
     : [];

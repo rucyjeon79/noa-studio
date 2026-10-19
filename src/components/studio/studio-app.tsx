@@ -350,12 +350,10 @@ function sunoAddress(raw) {
 const PANE_KEYS = ["summary", "confirmedTitle", "lyricsBlock", "sunoStyle", "geminiPrompt", "youtubeTitle", "youtubeDescription", "fanLetter", "communityPost", "tracklist", "youtubeUrl", "mvUrl", "sunoUrl", "audioAnalysis", "audioLevel"];
 const DRAFT_PANE_KEY = { summary: "summary", title: "confirmedTitle", lyrics: "lyricsBlock", tracks: "tracklist", suno: "sunoStyle", thumb: "geminiPrompt", "yt-title": "youtubeTitle", "yt-desc": "youtubeDescription", letter: "fanLetter", community: "communityPost" };
 function analysisText(raw) {
-	const text = String(raw || "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
-	return /^lufs=-?\d+(?:\.\d+)?;peak=-?\d+(?:\.\d+)?;lift=\d+(?:\.\d+)?$/.test(text) ? text.slice(0, 80) : "";
+	return String(raw || "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
 }
 function levelText(raw) {
-	const text = String(raw || "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
-	return /^lufs=-?\d+(?:\.\d+)?;gain=-?\d+(?:\.\d+)?;peak=\d+(?:\.\d+)?$/.test(text) ? text.slice(0, 80) : "";
+	return String(raw || "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
 }
 function paneGap(shown, disk, blanks) {
 	const out = {};
@@ -4029,8 +4027,6 @@ export function StudioApp() {
 			fileFields.current = { page, fields: first.fields };
 			fileLoadGen.current += 1;
 			setFileRev((n) => n + 1);
-			if (levelBad) return { ok: false, wrote: false, error: "보정값은 lufs=숫자;gain=숫자;peak=숫자 만 저장됩니다. 다른 칸은 막지 않았습니다.", left: { audioLevel: seenLevel.text } };
-			if (analysisBad) return { ok: false, wrote: false, error: "분석값은 lufs=숫자;peak=숫자;lift=숫자 만 저장됩니다. 다른 칸은 막지 않았습니다.", left: { audioAnalysis: seenAnalysis.text } };
 			return { ok: true, wrote: false, error: "", left: {} };
 		}
 		const urlGaps = {};
@@ -4103,11 +4099,9 @@ export function StudioApp() {
 					if (row?.pkg && sunoAddress(row.pkg.sunoUrl) !== pinned) row.pkg = { ...row.pkg, sunoUrl: pinned };
 				}, false);
 			}
-			if (levelBad) return { ok: false, wrote: Object.keys(gaps).length > 0, error: "보정값은 lufs=숫자;gain=숫자;peak=숫자 만 저장됩니다. 다른 칸은 막지 않았습니다.", left: { audioLevel: seenLevel.text } };
-			if (analysisBad) return { ok: false, wrote: Object.keys(gaps).length > 0, error: "분석값은 lufs=숫자;peak=숫자;lift=숫자 만 저장됩니다. 다른 칸은 막지 않았습니다.", left: { audioAnalysis: seenAnalysis.text } };
 			return { ok: true, wrote: Object.keys(gaps).length > 0, error: "", left: {} };
 		}
-		return { ok: false, wrote: true, error: levelBad && !Object.keys(left).some((key) => key !== "audioLevel") ? "보정값은 lufs=숫자;gain=숫자;peak=숫자 만 저장됩니다. 다른 칸은 막지 않았습니다." : analysisBad && !Object.keys(left).some((key) => key !== "audioAnalysis") ? "분석값은 lufs=숫자;peak=숫자;lift=숫자 만 저장됩니다. 다른 칸은 막지 않았습니다." : fault || linkFault || Object.keys(left).join(","), left };
+		return { ok: false, wrote: true, error: fault || linkFault || Object.keys(left).join(","), left };
 	}
 	function noteStick(stuck, flushOk) {
 		void flushOk;
@@ -4270,12 +4264,8 @@ export function StudioApp() {
 			const id = isSingle ? padEp(epN) : "";
 			const releaseQueue = () => cancelQueuedPage(id ? `single:${genreId}:${id}` : `playlist:${genreId}:${actN}`);
 			const seenLink = intent.patch.sunoExact ? { onScreen: true, url: String(intent.patch.sunoUrl || "") } : { onScreen: false, url: "" };
-			const seenLevel = intent.bad ? { onScreen: true, text: intent.raw } : intent.patch.levelExact ? { onScreen: true, text: String(intent.patch.audioLevel || "") } : { onScreen: false, text: "" };
-			const seenAnalysis = intent.analysisBad ? { onScreen: true, text: intent.analysisRaw } : intent.patch.analysisExact ? { onScreen: true, text: String(intent.patch.audioAnalysis || "") } : { onScreen: false, text: "" };
-			const levelBad = intent.bad;
-			const analysisBad = intent.analysisBad;
-			if (levelBad) setError("보정값은 lufs=숫자;gain=숫자;peak=숫자 만 저장됩니다. 다른 칸은 저장합니다.");
-			else if (analysisBad) setError("분석값은 lufs=숫자;peak=숫자;lift=숫자 만 저장됩니다. 다른 칸은 저장합니다.");
+			const seenLevel = intent.patch.levelExact ? { onScreen: true, text: String(intent.patch.audioLevel || "") } : { onScreen: false, text: "" };
+			const seenAnalysis = intent.patch.analysisExact ? { onScreen: true, text: String(intent.patch.audioAnalysis || "") } : { onScreen: false, text: "" };
 			pinScreenHold();
 			const blanks = new Set();
 			const shownShot = paneNow();
