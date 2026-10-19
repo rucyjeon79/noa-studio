@@ -34,3 +34,16 @@ test("metadata is snapshotted", () => {
   meta.locks.ep31 = false;
   assert.equal((mapped.payload.locks as { ep31: boolean }).ep31, true);
 });
+
+test("real catalog genre IDs and zero-padded EP remain intact", () => {
+  const kr = mapGrokStudioPage({ kind: "single", genreId: "kpop-original", ep: "01", body: {} });
+  const jp = mapGrokStudioPage({ kind: "single", genreId: "jpop-original", ep: "01", body: {} });
+  assert.equal(kr.key, "single:kpop-original:01");
+  assert.equal(jp.key, "single:jpop-original:01");
+  assert.notEqual(kr.key, jp.key);
+});
+
+test("independent collection genre is not forced into original EP namespace", () => {
+  const page = mapGrokStudioPage({ kind: "playlist", genreId: "groovy-airy-pop", act: 1, body: {} });
+  assert.equal(page.key, "playlist:groovy-airy-pop:act-1");
+});
