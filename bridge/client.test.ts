@@ -46,6 +46,7 @@ test("write forwards revision and idempotency request unchanged", async () => {
   assert.equal(result.revision, 3);
   assert.equal(request?.credentials, "same-origin");
   assert.equal(request?.method, "PUT");
+  assert.equal(request?.headers.get("X-NOA-Bridge-Request"), "1");
   assert.equal(new URL(request!.url).searchParams.get("key"), "single:kpop:31");
   const body = JSON.parse(await request!.text());
   assert.equal(body.expectedRevision, 2);
