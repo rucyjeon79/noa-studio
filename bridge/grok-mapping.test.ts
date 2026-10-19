@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { mapGrokMeta, mapGrokStudioPage } from "./grok-mapping.ts";
+import { mapGrokMeta, mapGrokStory, mapGrokStudioPage } from "./grok-mapping.ts";
 
 test("single pages preserve genre and EP in unique bridge key", () => {
   const input = { kind: "single" as const, genreId: "kpop", ep: "31", title: "First Glance", body: { lyrics: "test" } };
@@ -46,4 +46,18 @@ test("real catalog genre IDs and zero-padded EP remain intact", () => {
 test("independent collection genre is not forced into original EP namespace", () => {
   const page = mapGrokStudioPage({ kind: "playlist", genreId: "groovy-airy-pop", act: 1, body: {} });
   assert.equal(page.key, "playlist:groovy-airy-pop:act-1");
+});
+
+test("story title changes retain the same stable key", () => {
+  const a = mapGrokStory({ genreId: "your-story", title: "첫 이야기", body: {} }, "story_123");
+  const b = mapGrokStory({ genreId: "your-story", title: "수정된 제목", body: {} }, "story_123");
+  assert.equal(a.key, b.key);
+  assert.equal(a.kind, "story");
+});
+
+test("story collections stay separated and missing IDs fail closed", () => {
+  const a = mapGrokStory({ genreId: "your-story", title: "동일 제목", body: {} }, "story_123");
+  const b = mapGrokStory({ genreId: "cover-reborn", title: "동일 제목", body: {} }, "story_123");
+  assert.notEqual(a.key, b.key);
+  assert.throws(() => mapGrokStory({ genreId: "your-story", title: "제목", body: {} }, ""));
 });
