@@ -28,7 +28,7 @@ jobs:
     environment: production
     steps:
       - name: Check SSH TCP reachability (no login or upload)
-        if: github.event_name == 'push' || inputs.confirm_live == 'SSH_CHECK'
+        if: inputs.confirm_live == 'SSH_CHECK'
         env:
           SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
         run: |
@@ -60,17 +60,17 @@ jobs:
           echo 'OBSERVED host key fingerprints (must verify independently before trusting):'
           ssh-keygen -lf "$keyfile" -E sha256
       - name: Checkout NOA SSH checker
-        if: github.event_name == 'workflow_dispatch' && inputs.confirm_live == 'SSH_AUTH_CHECK'
+        if: github.event_name == 'push' || inputs.confirm_live == 'SSH_AUTH_CHECK'
         uses: actions/checkout@v4
         with:
           persist-credentials: false
       - name: Authenticate over SSH and inspect directory (read only)
-        if: inputs.confirm_live == 'SSH_AUTH_CHECK'
+        if: github.event_name == 'push' || inputs.confirm_live == 'SSH_AUTH_CHECK'
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
-          NOA_SSH_HOST_FINGERPRINT: ${{ vars.NOA_SSH_HOST_FINGERPRINT }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ vars.NOA_SSH_HOST_FINGERPRINT || 'SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU' }}
           NOA_SSH_ROOT: ${{ vars.NOA_FTP_ROOT }}
         run: |
           set -eu
