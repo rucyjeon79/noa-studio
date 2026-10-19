@@ -19,11 +19,13 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if (!in_array($method, ['GET', 'PUT'], true)) fail(405, 'method_not_allowed');
 // Same-origin only until an authenticated cross-origin handshake is implemented.
 if ($method === 'PUT') {
+    if (!str_starts_with(strtolower(trim(explode(';', $_SERVER['CONTENT_TYPE'] ?? '')[0])), 'application/json')) fail(415, 'json_required');
     $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
     $host = $_SERVER['HTTP_HOST'] ?? '';
     $expected = 'https://' . $host;
+    if (!preg_match('/^[a-z0-9.-]+(?::[0-9]{1,5})?$/i', $host)) fail(400, 'invalid_host');
     if (!$origin || !hash_equals($expected, $origin)) fail(403, 'origin_required');
-    if (($_SERVER['HTTP_SEC_FETCH_SITE'] ?? 'same-origin') === 'cross-site') fail(403, 'cross_site_forbidden');
+    if (isset($_SERVER['HTTP_SEC_FETCH_SITE']) && $_SERVER['HTTP_SEC_FETCH_SITE'] !== 'same-origin') fail(403, 'cross_site_forbidden');
     if (($_SERVER['CONTENT_LENGTH'] ?? 0) > 1048576) fail(413, 'too_large');
 }
 $key = (string) ($_GET['key'] ?? '');
@@ -48,14 +50,14 @@ try {
     $raw = file_get_contents('php://input', false, null, 0, 1048577);
     if ($raw === false || strlen($raw) > 1048576) fail(413, 'too_large');
     $data = json_decode($raw, true);
-    if (!is_array($data)) fail(400, 'invalid_json');
+    if (!is_array($data) || array_is_list($data)) fail(400, 'invalid_json');
     $kind = $data['kind'] ?? null;
     $expected = $data['expectedRevision'] ?? null;
     $requestId = $data['requestId'] ?? null;
     if (!in_array($kind, ['single','playlist','story','meta','prefs'], true)
         || !is_int($expected) || $expected < 0
         || !is_string($requestId) || !preg_match('/^[a-f0-9-]{36}$/i', $requestId)
-        || !array_key_exists('payload', $data) || !is_array($data['payload'])) fail(400, 'invalid_write');
+        || !array_key_exists('payload', $data) || !is_array($data['payload']) || array_is_list($data['payload'])) fail(400, 'invalid_write');
     $payload = json_encode($data['payload'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
     $hash = hash('sha256', $key . "\n" . $kind . "\n" . $expected . "\n" . $payload);
     $pdo->beginTransaction();
