@@ -27,7 +27,7 @@ jobs:
       - name: Checkout pinned NOA deployment files
         uses: actions/checkout@v4
         with:
-          ref: 7cd11530abe396610ee26bbf4a3e4b38ebcf5062
+          ref: fix/noa-save-reliability-20261020
           persist-credentials: false
       - name: PHP syntax validation
         run: |
