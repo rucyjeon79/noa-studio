@@ -25,7 +25,7 @@ export async function listBridgeLibrary(
   if (url.origin !== window.location.origin || url.protocol !== "https:" || url.username || url.password) {
     throw new Error("HTTPS same-origin required");
   }
-  url.searchParams.set("list", "1");
+  // The library listing has a dedicated read-only PHP endpoint.
   if (options.kind) url.searchParams.set("kind", options.kind);
   if (options.after) url.searchParams.set("after", options.after);
   const response = await fetch(url, { credentials: "same-origin", cache: "no-store", headers: { Accept: "application/json" } });
