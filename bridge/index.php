@@ -35,15 +35,9 @@ $healthCheck = $method === 'GET' && ($_GET['health'] ?? null) === '1';
 $key = (string) ($_GET['key'] ?? '');
 if (!$healthCheck && !preg_match('/^[a-z0-9][a-z0-9:_-]{0,190}$/', $key)) fail(400, 'invalid_key');
 // Configure via environment or an untracked server-only config, never browser JS.
-$dsn = getenv('NOA_MYSQL_DSN');
-$dbUser = getenv('NOA_MYSQL_USER');
-$dbPass = getenv('NOA_MYSQL_PASSWORD');
-if (!$dsn || !$dbUser || $dbPass === false) fail(503, 'bridge_not_configured');
+require_once __DIR__ . '/storage.php';
 try {
-    $pdo = new PDO($dsn, $dbUser, $dbPass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_EMULATE_PREPARES => false,
-    ]);
+    $pdo = noa_bridge_pdo();
     if ($healthCheck) {
         // Read-only: confirm required tables exist and the connection can read them.
         $tables = ['noa_documents', 'noa_document_history', 'noa_request_log'];
