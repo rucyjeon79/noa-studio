@@ -1296,6 +1296,52 @@ function putEncMany(rows) {
   const rejected = [];
   if (!rows.length || !LIVE) return { written, kept, unchanged, rejected };
   for (const row of rows) {
+    // User-edited media fields: save their literal input values directly to the
+    // selected EP/ACT JSON. Do not let generated-body merge rules overwrite them.
+    const directKeys = ["sunoUrl", "audioAnalysis", "audioLevel", "youtubeUrl"];
+    const userKeys = Array.isArray(row.pkg?.savedKeys) ? row.pkg.savedKeys : [];
+    const selected = userKeys.filter((k) => directKeys.includes(k) && Object.prototype.hasOwnProperty.call(row.pkg, k));
+    if (selected.length && userKeys.every((k) => directKeys.includes(k))) {
+      const isSong = row.kind === "single" && row.ep;
+      const isAct = row.kind === "playlist";
+      if (isSong || isAct) {
+        const key = isSong ? `${row.genreId}:${row.ep}` : `${row.genreId}:act:${row.act ?? 1}`;
+        const path = isSong ? songPath(row.genreId, row.ep) : actPath(row.genreId, row.act ?? 1);
+        const before = readJson(path);
+        if (!before || !before.pkg || typeof before.pkg !== "object") {
+          rejected.push(key);
+          lastLiveWrite = { ok: false, status: "rejected", error: "path", rev: 0, savedKeys: [], rejectedKeys: selected };
+          continue;
+        }
+        const updates = Object.fromEntries(selected.map((field) => [field, String(row.pkg[field] ?? "")]));
+        const changed = selected.filter((field) => before.pkg[field] !== updates[field]);
+        if (!changed.length) {
+          unchanged.push(key);
+          lastLiveWrite = { ok: true, status: "unchanged", rev: readRev(before), savedKeys: [], rejectedKeys: [] };
+          continue;
+        }
+        const expectedRev = readRev(before);
+        const requestedRev = Number(row.pkg?.baseRev);
+        if (Number.isInteger(requestedRev) && requestedRev >= 0 && requestedRev !== expectedRev) {
+          rejected.push(key);
+          lastLiveWrite = { ok: false, status: "conflict", error: "conflict", rev: expectedRev, savedKeys: [], rejectedKeys: selected };
+          continue;
+        }
+        const next = { ...before, pkg: { ...before.pkg, ...updates } };
+        // Atomic commit with revision check and immediate disk readback.
+        const committed = commitJsonFile(path, next, expectedRev);
+        const after = committed.ok ? readJson(path) : null;
+        const landed = committed.ok && after && selected.every((field) => after.pkg?.[field] === updates[field]);
+        if (!landed) {
+          rejected.push(key);
+          lastLiveWrite = { ok: false, status: committed.error === "conflict" ? "conflict" : "rejected", error: committed.error || "readback", rev: readRev(after ?? before), savedKeys: [], rejectedKeys: selected };
+          continue;
+        }
+        written.push(key);
+        lastLiveWrite = { ok: true, status: "written", rev: readRev(after), savedKeys: changed, rejectedKeys: [] };
+        continue;
+      }
+    }
     if (row.kind === "single" && row.ep) {
       const key = `${row.genreId}:${row.ep}`;
       const diskPrev = readSongRecord(row.genreId, row.ep);
@@ -1781,8 +1827,13 @@ function shownFileUpdatedAt(path) {
 function writeShownFields(path, incoming, shell = {}, allowCreate = true, allowBlank = false, expectRev) {
   diskDenied = false;
   const wanted = {};
+  const literalMedia = new Set(["sunoUrl", "audioAnalysis", "audioLevel", "youtubeUrl"]);
   for (const [key, value] of Object.entries(incoming || {})) {
     if (!SHOWN_KEYS.has(key)) continue;
+    if (literalMedia.has(key)) {
+      wanted[key] = String(value ?? "");
+      continue;
+    }
     const clean = cleanShownValue(key, value);
     if (!clean) {
       if (allowBlank && String(value ?? "").trim() === "") wanted[key] = "";
