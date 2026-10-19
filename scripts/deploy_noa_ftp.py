@@ -30,11 +30,17 @@ def main():
         # Refuse to deploy into an unexpected directory.
         if not base.endswith("/html"):
             raise RuntimeError("Remote FTP root must end with /html")
+        live = os.environ.get("NOA_DEPLOY_CONFIRM") == "DEPLOY"
+        print("Mode:", "LIVE" if live else "CHECK ONLY")
         existing = set(ftp.nlst())
-        if "noa-bridge" not in {p.rsplit("/", 1)[-1] for p in existing}:
+        bridge_exists = "noa-bridge" in {p.rsplit("/", 1)[-1] for p in existing}
+        if live and not bridge_exists:
             ftp.mkd("noa-bridge")
         for local, remote in FILES.items():
             directory, filename = remote.rsplit("/", 1) if "/" in remote else ("", remote)
+            if directory and not bridge_exists and not live:
+                print("CHECK:", remote, "parent directory missing; would create on deploy")
+                continue
             ftp.cwd(base + ("/" + directory if directory else ""))
             if filename in {p.rsplit("/", 1)[-1] for p in ftp.nlst()}:
                 raise RuntimeError(f"Refusing to overwrite existing remote file: {remote}")
@@ -42,6 +48,9 @@ def main():
             temp = filename + ".uploading"
             if temp in {p.rsplit("/", 1)[-1] for p in ftp.nlst()}:
                 raise RuntimeError(f"Stale temporary upload exists: {temp}")
+            if not live:
+                print("CHECK: available target", remote)
+                continue
             data = Path(local).read_bytes()
             ftp.storbinary("STOR " + temp, io.BytesIO(data))
             ftp.rename(temp, filename)
