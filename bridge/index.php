@@ -5,6 +5,8 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/common.php';
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: no-referrer');
 header('X-Content-Type-Options: nosniff');
 function respond(int $status, array $body): never {
     http_response_code($status);
@@ -19,13 +21,15 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if (!in_array($method, ['GET', 'PUT'], true)) fail(405, 'method_not_allowed');
 // Same-origin only until an authenticated cross-origin handshake is implemented.
 if ($method === 'PUT') {
-    if (!str_starts_with(strtolower(trim(explode(';', $_SERVER['CONTENT_TYPE'] ?? '')[0])), 'application/json')) fail(415, 'json_required');
+    $contentType = strtolower(trim(explode(';', $_SERVER['CONTENT_TYPE'] ?? '')[0]));
+    if ($contentType !== 'application/json') fail(415, 'json_required');
     $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
     // Fixed trusted origin: never derive the expected origin from an attacker-controlled Host header.
     $expected = 'https://noastudio.ai.kr';
     if (!$origin || !hash_equals($expected, $origin)) fail(403, 'origin_required');
     if (isset($_SERVER['HTTP_SEC_FETCH_SITE']) && $_SERVER['HTTP_SEC_FETCH_SITE'] !== 'same-origin') fail(403, 'cross_site_forbidden');
     if (($_SERVER['CONTENT_LENGTH'] ?? 0) > 1048576) fail(413, 'too_large');
+    if (empty($_SERVER['HTTP_X_NOA_BRIDGE_REQUEST']) || $_SERVER['HTTP_X_NOA_BRIDGE_REQUEST'] !== '1') fail(403, 'bridge_header_required');
 }
 $key = (string) ($_GET['key'] ?? '');
 if (!preg_match('/^[a-z0-9][a-z0-9:_-]{0,190}$/', $key)) fail(400, 'invalid_key');
