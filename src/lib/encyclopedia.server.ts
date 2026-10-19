@@ -1296,51 +1296,68 @@ function putEncMany(rows) {
   const rejected = [];
   if (!rows.length || !LIVE) return { written, kept, unchanged, rejected };
   for (const row of rows) {
-    // User-edited media fields: save their literal input values directly to the
-    // selected EP/ACT JSON. Do not let generated-body merge rules overwrite them.
-    const directKeys = ["sunoUrl", "audioAnalysis", "audioLevel", "youtubeUrl"];
-    const userKeys = Array.isArray(row.pkg?.savedKeys) ? row.pkg.savedKeys : [];
-    const selected = userKeys.filter((k) => directKeys.includes(k) && Object.prototype.hasOwnProperty.call(row.pkg, k));
-    if (selected.length && userKeys.every((k) => directKeys.includes(k))) {
-      const isSong = row.kind === "single" && row.ep;
-      const isAct = row.kind === "playlist";
-      if (isSong || isAct) {
-        const key = isSong ? `${row.genreId}:${row.ep}` : `${row.genreId}:act:${row.act ?? 1}`;
-        const path = isSong ? songPath(row.genreId, row.ep) : actPath(row.genreId, row.act ?? 1);
-        const before = readJson(path);
-        if (!before || !before.pkg || typeof before.pkg !== "object") {
-          rejected.push(key);
-          lastLiveWrite = { ok: false, status: "rejected", error: "path", rev: 0, savedKeys: [], rejectedKeys: selected };
-          continue;
-        }
-        const updates = Object.fromEntries(selected.map((field) => [field, String(row.pkg[field] ?? "")]));
-        const changed = selected.filter((field) => before.pkg[field] !== updates[field]);
-        if (!changed.length) {
-          unchanged.push(key);
-          lastLiveWrite = { ok: true, status: "unchanged", rev: readRev(before), savedKeys: [], rejectedKeys: [] };
-          continue;
-        }
-        const expectedRev = readRev(before);
-        const requestedRev = Number(row.pkg?.baseRev);
-        if (Number.isInteger(requestedRev) && requestedRev >= 0 && requestedRev !== expectedRev) {
-          rejected.push(key);
-          lastLiveWrite = { ok: false, status: "conflict", error: "conflict", rev: expectedRev, savedKeys: [], rejectedKeys: selected };
-          continue;
-        }
-        const next = { ...before, pkg: { ...before.pkg, ...updates } };
-        // Atomic commit with revision check and immediate disk readback.
-        const committed = commitJsonFile(path, next, expectedRev);
-        const after = committed.ok ? readJson(path) : null;
-        const landed = committed.ok && after && selected.every((field) => after.pkg?.[field] === updates[field]);
-        if (!landed) {
-          rejected.push(key);
-          lastLiveWrite = { ok: false, status: committed.error === "conflict" ? "conflict" : "rejected", error: committed.error || "readback", rev: readRev(after ?? before), savedKeys: [], rejectedKeys: selected };
-          continue;
-        }
-        written.push(key);
-        lastLiveWrite = { ok: true, status: "written", rev: readRev(after), savedKeys: changed, rejectedKeys: [] };
+    const literalKeys = new Set(["sunoUrl", "audioAnalysis", "audioLevel", "youtubeUrl", "mvUrl"]);
+    const flagKeys = new Set(["ytPremium", "mvPremium"]);
+    const userKeys = Array.isArray(row.pkg?.savedKeys) ? row.pkg.savedKeys.filter((key) => typeof key === "string" && key) : [];
+    const isSong = row.kind === "single" && row.ep;
+    const isAct = row.kind === "playlist";
+    if (userKeys.length && (isSong || isAct)) {
+      const key = isSong ? `${row.genreId}:${row.ep}` : `${row.genreId}:act:${row.act ?? 1}`;
+      const path = isSong ? songPath(row.genreId, row.ep) : actPath(row.genreId, row.act ?? 1);
+      const before = readJson(path);
+      const fail = (status, error, rejectedKeys, rev = readRev(before)) => {
+        rejected.push(key);
+        lastLiveWrite = { ok: false, status, error, rev, savedKeys: [], rejectedKeys, path };
+      };
+      if (!before || !before.pkg || typeof before.pkg !== "object") {
+        fail("rejected", "path", userKeys, 0);
         continue;
       }
+      const updates = {};
+      const badKeys = [];
+      for (const field of userKeys) {
+        if (!Object.prototype.hasOwnProperty.call(row.pkg, field)) {
+          badKeys.push(field);
+          continue;
+        }
+        if (flagKeys.has(field)) {
+          if (row.pkg[field] !== true && row.pkg[field] !== false) badKeys.push(field);
+          else updates[field] = row.pkg[field] === true;
+          continue;
+        }
+        const value = row.pkg[field];
+        if (literalKeys.has(field) || typeof value === "string" || value == null) {
+          updates[field] = String(value ?? "");
+          continue;
+        }
+        badKeys.push(field);
+      }
+      if (badKeys.length || !Object.keys(updates).length) {
+        fail("rejected", "field", badKeys.length ? badKeys : userKeys);
+        continue;
+      }
+      const requestedRev = Number(row.pkg?.baseRev);
+      const expectedRev = readRev(before);
+      if (Number.isInteger(requestedRev) && requestedRev >= 0 && requestedRev !== expectedRev) {
+        fail("conflict", "conflict", userKeys, expectedRev);
+        continue;
+      }
+      const changed = Object.keys(updates).filter((field) => before.pkg[field] !== updates[field]);
+      if (!changed.length) {
+        unchanged.push(key);
+        lastLiveWrite = { ok: true, status: "unchanged", error: "", rev: expectedRev, savedKeys: [], rejectedKeys: [], path };
+        continue;
+      }
+      const committed = commitJsonFile(path, { ...before, pkg: { ...before.pkg, ...updates } }, expectedRev);
+      const after = committed.ok ? readJson(path) : null;
+      const missed = Object.keys(updates).filter((field) => !after || after.pkg?.[field] !== updates[field]);
+      if (!committed.ok || missed.length || after?.confirmed !== before.confirmed) {
+        fail(committed.error === "conflict" ? "conflict" : "rejected", committed.error || "readback", missed.length ? missed : userKeys, readRev(after ?? before));
+        continue;
+      }
+      written.push(key);
+      lastLiveWrite = { ok: true, status: "written", error: "", rev: readRev(after), savedKeys: changed, rejectedKeys: [], path };
+      continue;
     }
     if (row.kind === "single" && row.ep) {
       const key = `${row.genreId}:${row.ep}`;
@@ -1466,9 +1483,11 @@ function putEncMany(rows) {
     unchanged,
     rejected,
     status: lastLiveWrite.status,
+    error: lastLiveWrite.error,
     rev: lastLiveWrite.rev,
     savedKeys: lastLiveWrite.savedKeys,
-    rejectedKeys: lastLiveWrite.rejectedKeys
+    rejectedKeys: lastLiveWrite.rejectedKeys,
+    path: lastLiveWrite.path || ""
   };
 }
 function readStoryUpdatedAt(title, genreId = "your-story") {
@@ -2126,15 +2145,16 @@ function pinShownPremium(kind, genreId, ep, act, title, which, on, vocal = "") {
   const prev = readJson(path) ?? {};
   const prevPkg = prev.pkg && typeof prev.pkg === "object" ? { ...prev.pkg } : {};
   if (prevPkg[field] === flag) return { ok: true, field, on: flag, error: "" };
-  const nextPkg = { ...prevPkg, [field]: flag };
-  if (!writeJson(path, { ...prev, pkg: nextPkg })) return { ok: false, field, on: flag, error: "write" };
-  const got = readJson(path);
-  if (got?.pkg?.[field] !== flag) return { ok: false, field, on: got?.pkg?.[field] === true, error: "read" };
+  const expectedRev = readRev(prev);
+  const committed = commitJsonFile(path, { ...prev, pkg: { ...prevPkg, [field]: flag } }, expectedRev);
+  const got = committed.ok ? readJson(path) : null;
+  if (!committed.ok || got?.pkg?.[field] !== flag) return { ok: false, field, on: got?.pkg?.[field] === true, error: committed.error || "readback" };
   const nowPkg = got?.pkg && typeof got.pkg === "object" ? got.pkg : {};
   for (const key of new Set([...Object.keys(prevPkg), ...Object.keys(nowPkg)])) {
     if (key === field) continue;
-    if (JSON.stringify(prevPkg[key]) !== JSON.stringify(nowPkg[key])) return { ok: false, field, on: flag, error: "read" };
+    if (JSON.stringify(prevPkg[key]) !== JSON.stringify(nowPkg[key])) return { ok: false, field, on: flag, error: "readback" };
   }
+  if (prev.confirmed !== got?.confirmed) return { ok: false, field, on: flag, error: "readback" };
   return { ok: true, field, on: flag, error: "" };
 }
 function pinEmptyJsonField(path, field, value) {

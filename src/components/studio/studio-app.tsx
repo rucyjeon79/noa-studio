@@ -2500,11 +2500,12 @@ export function StudioApp() {
 		if (!sealed) next = claimEp(next, id, gid);
 		if (typeof next.ytPremium !== "boolean" && typeof cur.ytPremium === "boolean") next = { ...next, ytPremium: cur.ytPremium };
 		if (typeof next.mvPremium !== "boolean" && typeof cur.mvPremium === "boolean") next = { ...next, mvPremium: cur.mvPremium };
-		if (!next.youtubeUrl?.trim() && cur.youtubeUrl?.trim()) next = { ...next, youtubeUrl: cur.youtubeUrl };
-		if (!next.mvUrl?.trim() && cur.mvUrl?.trim()) next = { ...next, mvUrl: cur.mvUrl };
-		if (next.sunoExact !== true && !next.sunoUrl?.trim() && cur.sunoUrl?.trim()) next = { ...next, sunoUrl: cur.sunoUrl };
-		if (next.levelExact !== true && !levelText(next.audioLevel) && levelText(cur.audioLevel)) next = { ...next, audioLevel: cur.audioLevel };
-		if (next.analysisExact !== true && !analysisText(next.audioAnalysis) && analysisText(cur.audioAnalysis)) next = { ...next, audioAnalysis: cur.audioAnalysis };
+		const saving = new Set(Array.isArray(next.savedKeys) ? next.savedKeys : []);
+		if (!saving.has("youtubeUrl") && !next.youtubeUrl?.trim() && cur.youtubeUrl?.trim()) next = { ...next, youtubeUrl: cur.youtubeUrl };
+		if (!saving.has("mvUrl") && !next.mvUrl?.trim() && cur.mvUrl?.trim()) next = { ...next, mvUrl: cur.mvUrl };
+		if (!saving.has("sunoUrl") && next.sunoExact !== true && !next.sunoUrl?.trim() && cur.sunoUrl?.trim()) next = { ...next, sunoUrl: cur.sunoUrl };
+		if (!saving.has("audioLevel") && next.levelExact !== true && !levelText(next.audioLevel) && levelText(cur.audioLevel)) next = { ...next, audioLevel: cur.audioLevel };
+		if (!saving.has("audioAnalysis") && next.analysisExact !== true && !analysisText(next.audioAnalysis) && analysisText(cur.audioAnalysis)) next = { ...next, audioAnalysis: cur.audioAnalysis };
 		const prevFit = readCachedPackage(n, gid);
 		const adminDirect = Boolean(direct);
 		const adminWrite = Boolean(adminDirect || (allowConfirmed && rewrite && sealed && isAdminDevice()));
@@ -2545,11 +2546,12 @@ export function StudioApp() {
 			...gid === genreId && act === actN ? locksLive.current : {}
 		};
 		next = takeLockedPlaylist(cur, next, pageLocks);
-		if (!next.youtubeUrl?.trim() && cur.youtubeUrl?.trim()) next = { ...next, youtubeUrl: cur.youtubeUrl };
-		if (!next.mvUrl?.trim() && cur.mvUrl?.trim()) next = { ...next, mvUrl: cur.mvUrl };
-		if (next.sunoExact !== true && !next.sunoUrl?.trim() && cur.sunoUrl?.trim()) next = { ...next, sunoUrl: cur.sunoUrl };
-		if (next.levelExact !== true && !levelText(next.audioLevel) && levelText(cur.audioLevel)) next = { ...next, audioLevel: cur.audioLevel };
-		if (next.analysisExact !== true && !analysisText(next.audioAnalysis) && analysisText(cur.audioAnalysis)) next = { ...next, audioAnalysis: cur.audioAnalysis };
+		const saving = new Set(Array.isArray(next.savedKeys) ? next.savedKeys : []);
+		if (!saving.has("youtubeUrl") && !next.youtubeUrl?.trim() && cur.youtubeUrl?.trim()) next = { ...next, youtubeUrl: cur.youtubeUrl };
+		if (!saving.has("mvUrl") && !next.mvUrl?.trim() && cur.mvUrl?.trim()) next = { ...next, mvUrl: cur.mvUrl };
+		if (!saving.has("sunoUrl") && next.sunoExact !== true && !next.sunoUrl?.trim() && cur.sunoUrl?.trim()) next = { ...next, sunoUrl: cur.sunoUrl };
+		if (!saving.has("audioLevel") && next.levelExact !== true && !levelText(next.audioLevel) && levelText(cur.audioLevel)) next = { ...next, audioLevel: cur.audioLevel };
+		if (!saving.has("audioAnalysis") && next.analysisExact !== true && !analysisText(next.audioAnalysis) && analysisText(cur.audioAnalysis)) next = { ...next, audioAnalysis: cur.audioAnalysis };
 		if (typeof next.ytPremium !== "boolean" && typeof cur.ytPremium === "boolean") next = { ...next, ytPremium: cur.ytPremium };
 		if (typeof next.mvPremium !== "boolean" && typeof cur.mvPremium === "boolean") next = { ...next, mvPremium: cur.mvPremium };
 		const confirmedList = isConfirmed("playlist", gid, String(act));
@@ -4290,6 +4292,9 @@ export function StudioApp() {
 			if (seenAnalysis.onScreen) {
 				savedKeys.push("audioAnalysis");
 				if (!String(seenAnalysis.text || "").trim()) blanks.add("audioAnalysis");
+			}
+			for (const key of ["youtubeUrl", "mvUrl", "ytPremium", "mvPremium"]) {
+				if (!savedKeys.includes(key)) savedKeys.push(key);
 			}
 			const linkExact = { ...intent.patch, savedKeys, baseRev: paneRev.current };
 			if (blanks.size) linkExact.blankFields = [...blanks];
