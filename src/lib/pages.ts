@@ -815,6 +815,9 @@ export const saveStudioPage = createServerFn({ method: "POST" })
       wroteBody = file.written.length > 0;
       const rejected = Array.isArray(file.rejected) ? file.rejected.length > 0 : false;
       const unchanged = Array.isArray(file.unchanged) ? file.unchanged.length > 0 : false;
+      const rev = typeof file.rev === "number" ? file.rev : 0;
+      const savedKeys = Array.isArray(file.savedKeys) ? file.savedKeys : [];
+      const rejectedKeys = Array.isArray(file.rejectedKeys) ? file.rejectedKeys : [];
       let dbError = "";
       if (wroteBody) {
         try {
@@ -831,9 +834,10 @@ export const saveStudioPage = createServerFn({ method: "POST" })
           dbError = "db";
         }
       }
-      if (wroteBody) return { ok: true as const, status: "written" as const, rev: 0, savedKeys: [] as string[], rejectedKeys: [] as string[], ...(dbError ? { error: dbError } : {}) };
-      if (unchanged && !rejected) return { ok: true as const, status: "unchanged" as const, rev: 0, savedKeys: [] as string[], rejectedKeys: [] as string[] };
-      return { ok: false as const, status: "error" as const, error: rejected ? "rejected" : "kept", rev: 0, savedKeys: [] as string[], rejectedKeys: [] as string[] };
+      if (wroteBody) return { ok: true as const, status: "written" as const, rev, savedKeys, rejectedKeys, ...(dbError ? { error: dbError } : {}) };
+      if (unchanged && !rejected) return { ok: true as const, status: "unchanged" as const, rev, savedKeys, rejectedKeys };
+      const conflict = file.status === "conflict";
+      return { ok: false as const, status: conflict ? "conflict" as const : "error" as const, error: conflict ? "conflict" : rejected ? "rejected" : "kept", rev, savedKeys, rejectedKeys };
     } catch {
       return { ok: false as const, status: "error" as const, error: "write", rev: 0, savedKeys: [] as string[], rejectedKeys: [] as string[] };
     }
@@ -876,9 +880,12 @@ export const saveStudioPages = createServerFn({ method: "POST" })
     let stored = 0;
     const written: string[] = [];
     const kept: string[] = [];
+    const rejected: string[] = [];
+    let sawConflict = false;
     const missed: string[] = [];
     const suno: Record<string, string> = {};
     const sqlLeft: Promise<unknown>[] = [];
+    let dbError = "";
     for (const row of rows) {
       let wrote = false;
       let wroteBody = false;
@@ -899,6 +906,8 @@ export const saveStudioPages = createServerFn({ method: "POST" })
         ]);
         written.push(...keys.written);
         kept.push(...keys.kept);
+        if (Array.isArray(keys.rejected)) rejected.push(...keys.rejected);
+        if (keys.status === "conflict") sawConflict = true;
         wroteBody = keys.written.length > 0;
         const rejected = Array.isArray(keys.rejected) && keys.rejected.length > 0;
         const unchanged = Array.isArray(keys.unchanged) && keys.unchanged.length > 0;
@@ -929,16 +938,15 @@ export const saveStudioPages = createServerFn({ method: "POST" })
       }
       if (wrote) stored += 1;
     }
-    let dbError = "";
     try {
       await Promise.all(sqlLeft);
     } catch {
       dbError = "db";
     }
-    if (!rows.length) return { ok: true as const, status: "unchanged" as const, n: 0, written: [] as string[], kept: [] as string[], suno };
+    if (!rows.length) return { ok: true as const, status: "unchanged" as const, n: 0, written: [] as string[], kept: [] as string[], rejected: [] as string[], suno };
     return missed.length === 0
-      ? { ok: true as const, status: written.length ? "written" as const : "unchanged" as const, n: stored, written, kept, suno, ...(dbError ? { db: "error" as const } : {}) }
-      : { ok: false as const, status: "error" as const, n: stored, missed, written, kept, suno, ...(dbError ? { db: "error" as const } : {}) };
+      ? { ok: true as const, status: written.length ? "written" as const : "unchanged" as const, n: stored, written, kept, rejected, suno, ...(dbError ? { db: "error" as const } : {}) }
+      : { ok: false as const, status: sawConflict && written.length === 0 ? "conflict" as const : "error" as const, n: stored, missed, written, kept, rejected, suno, ...(dbError ? { db: "error" as const } : {}) };
   });
 
 export const saveOpenRepairs = createServerFn({ method: "POST" })

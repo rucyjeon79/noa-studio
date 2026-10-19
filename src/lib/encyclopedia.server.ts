@@ -1090,8 +1090,12 @@ function patchSongState(genreId, ep, patch) {
     return false;
   }
 }
-function keepFilledText(_next, _prev, _keys, _skip) {}
-function keepConfirmedText(_next, _prev, _keys) {}
+function keepConfirmedText(next, prev, keys) {
+  if (!next || !prev || !Array.isArray(keys)) return;
+  for (const key of keys) {
+    if (Object.prototype.hasOwnProperty.call(prev, key)) next[key] = prev[key];
+  }
+}
 function songIsConfirmed(_genreId, _ep, prev) {
   return prev?.confirmed === true;
 }
@@ -1200,7 +1204,10 @@ function writeSong(genreId, ep, title, pkg, _force = false) {
     });
   }
   const baseRev = Number(pkg?.baseRev);
-  if (Number.isInteger(baseRev) && baseRev >= 0 && baseRev !== diskRev) return false;
+  if (Number.isInteger(baseRev) && baseRev >= 0 && baseRev !== diskRev) {
+    lastLiveWrite = { ok: false, status: "conflict", error: "conflict", rev: diskRev, savedKeys: [], rejectedKeys: [] };
+    return false;
+  }
   delete guarded.baseRev;
   const payloadPkg = omitUnsavedFields(guarded, [...watch], allowAll);
   const viewTitle = viewTitleForSave(prev?.title, title, [...watch], allowAll);
@@ -1297,11 +1304,9 @@ function putEncMany(rows) {
       const prevNorm = prev ? normalizePackage(prev) : null;
       const nextNorm = normalizePackage(next);
       const n = String(row.ep).replace(/\D/g, "").padStart(2, "0");
-      const wantedSuno = String(nextNorm.sunoUrl || "").trim();
       if (prevNorm && hasPageBody(prevNorm) && !hasPageBody(nextNorm)) {
-        if (!landSunoFile("song", row.genreId, n, wantedSuno)) continue;
-        if (httpAddress(wantedSuno)) written.push(key);else
-        kept.push(key);
+        rejected.push(key);
+        lastLiveWrite = { ok: false, status: "rejected", error: "empty-body", rev: readRev(diskPrev), savedKeys: [], rejectedKeys: [] };
         continue;
       }
       const open = Boolean(row.rewrite) || slotRewriteOpen(row.genreId, row.ep);
@@ -1314,20 +1319,26 @@ function putEncMany(rows) {
       };
       let wroteBody = false;
       const hasExact = exactMarks(row.pkg).sunoExact || exactMarks(row.pkg).levelExact || exactMarks(row.pkg).analysisExact;
+      let fileStatus = "kept";
       if (!row.rewrite && prevNorm && !shouldReplaceStudio(prevNorm, nextNorm, open)) {
         pinEmptyLink();
+        fileStatus = "kept";
       } else if (writeSong(row.genreId, row.ep, row.title, next, Boolean(row.rewrite))) {
-        if (lastLiveWrite.status === "unchanged") unchanged.push(key);
-        else wroteBody = true;
+        fileStatus = lastLiveWrite.status === "written" ? "written" : lastLiveWrite.status === "unchanged" ? "unchanged" : "rejected";
+        wroteBody = fileStatus === "written";
       } else {
-        rejected.push(key);
+        fileStatus = lastLiveWrite.status === "conflict" ? "conflict" : "rejected";
         if (prevNorm && hasPageBody(prevNorm)) pinEmptyLink();
       }
-      if (!landSunoFile("song", row.genreId, n, wantedSuno, hasExact) && !hasExact) continue;
-      const sealed = hasExact ? sealShownExact(songPath(row.genreId, n), row.pkg, { genreId: row.genreId, ep: n }) : true;
-      if (wroteBody) written.push(key);
-      else if ((httpAddress(wantedSuno) || hasExact) && sealed) written.push(key);
-      else if (!rejected.includes(key) && lastLiveWrite.status !== "unchanged" && !row.rewrite && prevNorm && hasPageBody(prevNorm)) kept.push(key);
+      if (hasExact) {
+        const sealed = sealShownExact(songPath(row.genreId, n), row.pkg, { genreId: row.genreId, ep: n });
+        if (sealed && lastLiveWrite.status === "written") fileStatus = "written";
+        else if (!sealed && fileStatus !== "written") fileStatus = "rejected";
+      }
+      if (fileStatus === "written" || wroteBody) written.push(key);
+      else if (fileStatus === "unchanged") unchanged.push(key);
+      else if (fileStatus === "conflict" || fileStatus === "rejected") rejected.push(key);
+      else kept.push(key);
     } else if (row.kind === "playlist") {
       const act = row.act ?? 1;
       const prev = readJson(actPath(row.genreId, act));
@@ -1343,9 +1354,6 @@ function putEncMany(rows) {
           if (!resultText(next, key) && resultText(prevPkg, key)) next[key] = resultText(prevPkg, key);
         }
       }
-      keepSavedSuno(pkg, String(readJson(actPath(row.genreId, act))?.pkg?.sunoUrl || ""));
-      keepSavedLevel(pkg, readPkgField(actPath(row.genreId, act), "audioLevel"));
-      keepSavedAnalysis(pkg, readPkgField(actPath(row.genreId, act), "audioAnalysis"));
       const actMarks = exactMarks(row.pkg);
       const actListed = Array.isArray(row.pkg?.savedKeys) ? row.pkg.savedKeys.filter((key) => typeof key === "string" && key) : null;
       const actWatchEarly = new Set(actListed ?? []);
@@ -1378,12 +1386,12 @@ function putEncMany(rows) {
       const actTitle = viewTitleForSave(prev?.title, row.title, [...actWatchEarly], actAllowAll);
       const actRev = readRev(prev);
       const actBase = Number(row.pkg?.baseRev);
+      const actKey = `${row.genreId}:act:${act}`;
       if (Number.isInteger(actBase) && actBase >= 0 && actBase !== actRev) {
-        kept.push(`${row.genreId}:act:${act}`);
+        rejected.push(actKey);
+        lastLiveWrite = { ok: false, status: "conflict", error: "conflict", rev: actRev, savedKeys: [], rejectedKeys: [] };
         continue;
       }
-      const wantedSuno = String(guardedAct.sunoUrl || "").trim();
-      const songsReady = Boolean(actSongsConfirmed(row.genreId, act));
       const wroteAct = writeJson(actPath(row.genreId, act), {
         genreId: row.genreId,
         act,
@@ -1393,18 +1401,29 @@ function putEncMany(rows) {
         ...(row.rewrite ? { rewrite: true } : {}),
         ...(Number.isInteger(actBase) && actBase >= 0 ? { baseRev: actBase } : {}),
         ...(prev?.confirmed === true ? { confirmed: true } : {}),
-        ...(prev?.activated === true || songsReady ? { activated: true } : {})
+        ...(prev?.activated === true || actSongsConfirmed(row.genreId, act) ? { activated: true } : {})
       });
       forgetLegacyAct(row.genreId, act);
-      const actExact = exactMarks(row.pkg);
-      const actHasExact = actExact.sunoExact || actExact.levelExact || actExact.analysisExact;
-      if (!landSunoFile("act", row.genreId, act, wantedSuno, actHasExact) && !actHasExact) continue;
-      const actSealed = actHasExact ? sealShownExact(actPath(row.genreId, act), row.pkg, { genreId: row.genreId, act }) : true;
-      if (wroteAct || httpAddress(wantedSuno) || actHasExact && actSealed) written.push(`${row.genreId}:act:${act}`);else
-      if (!row.rewrite) kept.push(`${row.genreId}:act:${act}`);
+      if (wroteAct && lastLiveWrite.status === "written") written.push(actKey);
+      else if (wroteAct && lastLiveWrite.status === "unchanged") unchanged.push(actKey);
+      else {
+        rejected.push(actKey);
+        if (lastLiveWrite.status !== "conflict") {
+          lastLiveWrite = { ok: false, status: "rejected", error: lastLiveWrite.error || "rejected", rev: actRev, savedKeys: [], rejectedKeys: lastLiveWrite.rejectedKeys || [] };
+        }
+      }
     }
   }
-  return { written, kept };
+  return {
+    written,
+    kept,
+    unchanged,
+    rejected,
+    status: lastLiveWrite.status,
+    rev: lastLiveWrite.rev,
+    savedKeys: lastLiveWrite.savedKeys,
+    rejectedKeys: lastLiveWrite.rejectedKeys
+  };
 }
 function readStoryUpdatedAt(title, genreId = "your-story") {
   if (!LIVE || !title.trim()) return 0;
@@ -1442,8 +1461,6 @@ function putEncStory(title, pkg, genreId = "your-story") {
     applyExactLink(wrap.pkg, exact2);
     delete wrap.pkg.sunoExact;
     delete wrap.pkg.levelExact;
-    keepDiskLink(path, wrap.pkg, exact2);
-    sealDiskMedia(wrap.pkg, path, wrap.pkg);
     sealPremiumFlags(wrap.pkg, path, wrap.pkg);
     writeJson(path, {
       title: storeId,
@@ -1492,8 +1509,6 @@ function putEncStory(title, pkg, genreId = "your-story") {
   const exact = exactMarks(clean);
   const kept = keepStoryText(prev?.pkg, clean);
   applyExactLink(kept, exact);
-  keepDiskLink(path, kept, exact);
-  sealDiskMedia(kept, path, clean);
   sealPremiumFlags(kept, path, clean);
   const wantedSuno = httpAddress(kept.sunoUrl);
   const shellTitle = song || (!isStoryStoreId(display) ? display : "") || storeId;
@@ -1917,7 +1932,6 @@ function storeSunoUrl(path, clean, prev, shell) {
   }
   return readPkgField(path, "sunoUrl") === url;
 }
-function keepDiskLink(_path, _pkg, _exact) {}
 function exactMarks(pkg) {
   const raw = pkg;
   return {
@@ -1943,15 +1957,6 @@ function sealShownExact(path, pkg, shell) {
   if (exact.levelExact) patch.audioLevel = exact.audioLevel.trim();
   if (exact.analysisExact) patch.audioAnalysis = exact.audioAnalysis.trim();
   return writeExactShown(path, patch, shell).ok;
-}
-function keepSavedSuno(merged, _disk) {
-  return merged;
-}
-function keepSavedLevel(merged, _disk) {
-  return merged;
-}
-function keepSavedAnalysis(merged, _disk) {
-  return merged;
 }
 function applyUserSavedKeys(guarded, pkg) {
   if (!guarded || !pkg) return guarded;
@@ -1994,9 +1999,6 @@ function keepUnsavedResultText(guarded, path, pkg) {
   if (Object.keys(stamps).length) guarded.fieldSavedAt = stamps;
   return guarded;
 }
-function sealDiskMedia(guarded, _path, _pkg) {
-  return guarded;
-}
 function sealPremiumFlags(guarded, path, pkg) {
   if (!guarded || !path || !existsSync(path)) return guarded;
   const keys = userSavedKeySet(pkg);
@@ -2021,7 +2023,6 @@ function sealPremiumFlags(guarded, path, pkg) {
 function sealShownWrite(guarded, path, pkg) {
   applyUserSavedKeys(guarded, pkg);
   keepUnsavedResultText(guarded, path, pkg);
-  sealDiskMedia(guarded, path, pkg);
   sealPremiumFlags(guarded, path, pkg);
   return guarded;
 }
@@ -2766,7 +2767,6 @@ function persistEncyclopedia(data) {
           if (!String(nextPkg[key] ?? "").trim() && String(prevPkg[key] ?? "").trim()) nextPkg[key] = String(prevPkg[key]);
         }
         if (nextPkg.sunoUrl == null && String(prevPkg.sunoUrl || "").trim()) nextPkg.sunoUrl = String(prevPkg.sunoUrl);
-        keepSavedSuno(nextPkg, String(readJson(path)?.pkg?.sunoUrl || ""));
       }
       if (prev2?.confirmed === true || readConfirmedFlags()[`${row.genreId}:act:${row.act}`] === true) {
         keepConfirmedText(nextPkg, prevPkg, ["summary", "confirmedTitle", "tracklist", "sunoStyle", "geminiPrompt", "youtubeTitle", "youtubeDescription", "communityPost", "fanLetter"]);
