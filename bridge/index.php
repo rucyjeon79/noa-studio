@@ -41,6 +41,15 @@ try {
         PDO::ATTR_EMULATE_PREPARES => false,
     ]);
     if ($method === 'GET') {
+        $historicalRevision = $_GET['revision'] ?? null;
+        if ($historicalRevision !== null) {
+            if (!is_string($historicalRevision) || !preg_match('/^[1-9][0-9]{0,15}$/', $historicalRevision)) fail(400, 'invalid_revision');
+            $stmt = $pdo->prepare('SELECT d.kind,h.payload,h.revision FROM noa_document_history h JOIN noa_documents d ON d.doc_key=h.doc_key WHERE h.doc_key=? AND h.revision=?');
+            $stmt->execute([$key, $historicalRevision]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$row) fail(404, 'revision_not_found');
+            respond(200, ['ok'=>true,'key'=>$key,'kind'=>$row['kind'],'payload'=>json_decode($row['payload'], true),'revision'=>(int)$row['revision'],'historical'=>true]);
+        }
         $stmt = $pdo->prepare('SELECT kind,payload,revision FROM noa_documents WHERE doc_key=?');
         $stmt->execute([$key]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
