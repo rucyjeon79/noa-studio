@@ -10,6 +10,7 @@ This folder contains a **not-deployed** additive MySQL schema and a PHP endpoint
 ## Files
 - `001_schema.sql`: three InnoDB utf8mb4 tables for documents, history, and idempotency.
 - `index.php`: **same-origin GnuBoard administrator-only** GET and PUT API. Do not expose to unauthenticated clients. It is not a Grok cross-origin integration yet.
+- `client.ts`: typed HTTPS same-origin client with explicit revision and retry request IDs. Deliberately not enabled in Grok Build.
 
 ## Server installation prerequisites (NOT DONE)
 1. Restore the private SQL backup in a disposable environment and verify it works. Do not commit it.
