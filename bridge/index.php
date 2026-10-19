@@ -21,9 +21,8 @@ if (!in_array($method, ['GET', 'PUT'], true)) fail(405, 'method_not_allowed');
 if ($method === 'PUT') {
     if (!str_starts_with(strtolower(trim(explode(';', $_SERVER['CONTENT_TYPE'] ?? '')[0])), 'application/json')) fail(415, 'json_required');
     $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-    $host = $_SERVER['HTTP_HOST'] ?? '';
-    $expected = 'https://' . $host;
-    if (!preg_match('/^[a-z0-9.-]+(?::[0-9]{1,5})?$/i', $host)) fail(400, 'invalid_host');
+    // Fixed trusted origin: never derive the expected origin from an attacker-controlled Host header.
+    $expected = 'https://noastudio.ai.kr';
     if (!$origin || !hash_equals($expected, $origin)) fail(403, 'origin_required');
     if (isset($_SERVER['HTTP_SEC_FETCH_SITE']) && $_SERVER['HTTP_SEC_FETCH_SITE'] !== 'same-origin') fail(403, 'cross_site_forbidden');
     if (($_SERVER['CONTENT_LENGTH'] ?? 0) > 1048576) fail(413, 'too_large');
