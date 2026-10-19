@@ -12,6 +12,7 @@ FILES = {
     'deploy/noa-library.php': 'noa-library.php',
     'bridge/index.php': 'noa-bridge/index.php',
     'bridge/library.php': 'noa-bridge/library.php',
+    'deploy/noa-home.extend.php': 'extend/noa.home.php',
 }
 PROTECTED = ['index.php', 'common.php', 'config.php', '.htaccess', 'data/dbconfig.php']
 
