@@ -34,3 +34,9 @@ A Grok-hosted app cannot automatically reuse a Dothome GnuBoard cookie across or
 - Add a server-side CSRF token to complement Origin checks if supporting older browsers or clients.
 - Implement document key and genre/EP/ACT authorization, a dedicated account permission model, and retention/restore policy.
 - Run PHP lint, MySQL migration and concurrency tests, and end-to-end Grok synchronization tests. **None have been run yet.**
+
+## GnuBoard administrator validation
+The endpoint checks the GnuBoard `$is_admin` value after loading `common.php`. Do not hardcode a membership level: GnuBoard administrator authorization is configuration-dependent. Before deployment verify a real admin is accepted and a non-admin member is rejected.
+
+## Grok story mapping
+`grok-mapping.ts` uses stable story IDs rather than mutable titles. The existing Grok save API currently keys stories by title; migration must obtain a stable source ID or create a reviewed mapping before enabling story synchronization. Never infer an ID from the title.
