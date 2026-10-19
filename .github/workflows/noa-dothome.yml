@@ -8,6 +8,7 @@ on:
         required: true
         type: choice
         options:
+          - SSH_CHECK
           - CHECK
           - DEPLOY
         default: CHECK
@@ -24,18 +25,41 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
+      - name: Check SSH TCP reachability (no login or upload)
+        if: inputs.confirm_live == 'SSH_CHECK'
+        env:
+          SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+        run: |
+          python3 - <<'PY'
+          import os, socket
+          host = os.environ['SSH_HOST']
+          if not host:
+              raise SystemExit('NOA_FTP_HOST is missing')
+          try:
+              with socket.create_connection((host, 2022), timeout=12) as conn:
+                  conn.settimeout(8)
+                  banner = conn.recv(256).decode('ascii', errors='replace').strip()
+                  print('TCP 2022 connected; SSH banner:', banner[:100])
+                  if not banner.startswith('SSH-'):
+                      raise SystemExit('Port 2022 did not return an SSH banner')
+          except OSError as exc:
+              raise SystemExit('SSH port 2022 unavailable: ' + str(exc))
+          PY
       - name: Checkout pinned NOA deployment files
+        if: inputs.confirm_live != 'SSH_CHECK'
         uses: actions/checkout@v4
         with:
           ref: fix/noa-save-reliability-20261020
           persist-credentials: false
       - name: PHP syntax validation
+        if: inputs.confirm_live != 'SSH_CHECK'
         run: |
           php -l deploy/noa2.php
           php -l deploy/noa-library.php
           php -l bridge/index.php
           php -l bridge/library.php
-      - name: Verify FTP configuration and check/deploy
+      - name: Verify FTPS configuration and check/deploy
+        if: inputs.confirm_live != 'SSH_CHECK'
         env:
           FTP_HOST: ${{ secrets.NOA_FTP_HOST }}
           FTP_USER: ${{ secrets.NOA_FTP_USER }}
