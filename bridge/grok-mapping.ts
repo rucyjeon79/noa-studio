@@ -59,6 +59,32 @@ export function mapGrokStudioPage(page: GrokStudioSave): BridgeMappedDocument {
   };
 }
 
+export type GrokStorySave = {
+  title: string;
+  genreId: "your-story" | "cover-reborn";
+  body: Record<string, unknown>;
+};
+
+/** A deterministic story key cannot use the title: titles are mutable and non-unique.
+ * A stable opaque story ID must come from the existing Grok record.
+ */
+export function mapGrokStory(story: GrokStorySave, stableId: string): BridgeMappedDocument {
+  const id = segment(stableId);
+  if (story.genreId !== "your-story" && story.genreId !== "cover-reborn") {
+    throw new Error("Invalid story genre");
+  }
+  if (!story.title.trim()) throw new Error("Story title is required");
+  return {
+    key: `story:${story.genreId}:${id}`,
+    kind: "story",
+    payload: {
+      title: story.title,
+      genreId: story.genreId,
+      body: structuredClone(story.body),
+    },
+  };
+}
+
 export function mapGrokMeta(meta: Record<string, unknown>): BridgeMappedDocument {
   return { key: "meta:studio", kind: "meta", payload: structuredClone(meta) };
 }
