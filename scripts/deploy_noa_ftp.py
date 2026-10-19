@@ -21,7 +21,16 @@ def main():
     root = os.environ.get("FTP_ROOT", "").strip()
     if not root or not root.startswith("/") or ".." in root.split("/"):
         raise RuntimeError("NOA_FTP_ROOT must be an absolute verified remote path")
-    # Never downgrade to cleartext FTP: credentials must stay encrypted.\n    with ftplib.FTP_TLS(timeout=30) as ftp:\n        ftp.connect(host, 21)\n        try:\n            ftp.login(user, password)\n        except ftplib.error_perm as exc:\n            if "AUTH" in str(exc).upper():\n                raise RuntimeError("Server does not support explicit FTPS (AUTH TLS). No credentials were sent. Ask host for SFTP/FTPS support; cleartext FTP is disabled.") from None\n            raise\n        ftp.prot_p()
+    # Never downgrade to cleartext FTP: credentials must stay encrypted.
+    with ftplib.FTP_TLS(timeout=30) as ftp:
+        ftp.connect(host, 21)
+        try:
+            ftp.login(user, password)
+        except ftplib.error_perm as exc:
+            if "AUTH" in str(exc).upper():
+                raise RuntimeError("Server does not support explicit FTPS (AUTH TLS). No credentials were sent. Ask host for SFTP/FTPS support; cleartext FTP is disabled.") from None
+            raise
+        ftp.prot_p()
         ftp.cwd(root)
         base = ftp.pwd()
         # Refuse to deploy into an unexpected directory.
