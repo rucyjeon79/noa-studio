@@ -450,15 +450,9 @@ export const loadStudioPage = createServerFn({ method: "POST" })
       const fileFits = Boolean(filePkg && packageFitsSong(data.genreId, data.ep, filePkg) && !copied(filePkg));
       const sqlFits = Boolean(sqlPkg && packageFitsSong(data.genreId, data.ep, sqlPkg) && !copied(sqlPkg));
       const fileBody = filePkg && hasPageBody(filePkg) ? filePkg : null;
-      const chosenBase = fileBody
-        ? fileWins(fileBody, sqlPkg, hasPageBody)
-        : sqlPkg && sqlFits && !fileFits
-          ? sqlPkg
-          : filePkg ?? sqlPkg;
-      const chosen = chosenBase && filePkg && chosenBase !== filePkg ? adoptSavedFileText(chosenBase, filePkg) : chosenBase;
-      const shown = chosen ? overlayStamps(chosen, sqlRaw, fileAt) : chosen;
+      const shown = fileBody ?? (sqlPkg && sqlFits ? sqlPkg : filePkg);
       const chosenAt = fileBody ? fileAt : sqlAt;
-      if (fileBody && sqlPkg && chosen && fileAt >= sqlAt) void dropStalePaneFields(resultSlot(data.genreId, data.ep, data.act), sqlPkg, chosen);
+      if (fileBody && sqlPkg && fileAt >= sqlAt) void dropStalePaneFields(resultSlot(data.genreId, data.ep, data.act), sqlPkg, fileBody);
       if (shown && hasPageBody(shown)) {
         return {
           kind: "single" as const,
@@ -489,15 +483,11 @@ export const loadStudioPage = createServerFn({ method: "POST" })
     const sqlRaw = row ? asObject(row.body) : null;
     const sqlPkg = sqlRaw ? asPlaylist(sqlRaw) : null;
     const fileBody = filePkg && hasPlaylistBody(filePkg) ? filePkg : null;
-    const base = fileBody
-      ? fileWins(fileBody, sqlPkg, hasPlaylistBody)
-      : sqlPkg ?? filePkg;
-    const pkg = filePkg && base && base !== filePkg ? adoptSavedFileText(base, filePkg) : base;
-    const shown = pkg ? overlayStamps(pkg, sqlRaw, fileAt) : pkg;
+    const shown = fileBody ?? sqlPkg;
     const updatedAt = fileBody ? fileAt : sqlAt;
-    if (fileBody && sqlPkg && pkg && fileAt >= sqlAt) void dropStalePaneFields(resultSlot(data.genreId, "", data.act), sqlPkg, pkg);
+    if (fileBody && sqlPkg && fileAt >= sqlAt) void dropStalePaneFields(resultSlot(data.genreId, "", data.act), sqlPkg, fileBody);
     if (!shown) return null;
-    return { kind: "playlist" as const, pkg: shown, updatedAt, title: (pkg === sqlPkg ? row?.title : fileHit?.title) || shown.youtubeTitle };
+    return { kind: "playlist" as const, pkg: shown, updatedAt, title: fileHit?.title || shown.youtubeTitle };
   });
 
 function fileWins<T extends object>(filePkg: T, sqlPkg: T | null, alive: (pkg: T | null) => boolean): T {
@@ -699,26 +689,6 @@ async function upsertStoredPage(row: {
     const prevFlags = premiumOf(prevRaw);
     const nextFlags = premiumOf(asObject(row.body));
     const bodyObj: Record<string, unknown> = { ...(asObject(row.body) ?? {}), ...(next ?? {}), ...prevFlags, ...nextFlags };
-    if (prevRaw?.pageConfirmed === true || prevRaw?.pageConfirmed === false) {
-      if (bodyObj.pageConfirmed !== true && bodyObj.pageConfirmed !== false) {
-        bodyObj.pageConfirmed = prevRaw.pageConfirmed === true;
-      }
-    }
-    const prevUrl = typeof prevRaw?.youtubeUrl === "string" ? prevRaw.youtubeUrl.trim() : "";
-    const nextUrl = typeof bodyObj.youtubeUrl === "string" ? bodyObj.youtubeUrl.trim() : "";
-    if (prevUrl && !nextUrl) bodyObj.youtubeUrl = prevUrl;
-    const prevSuno = typeof prevRaw?.sunoUrl === "string" ? prevRaw.sunoUrl.trim() : "";
-    const exactSuno = asObject(row.body)?.sunoExact === true;
-    const nextSuno = typeof bodyObj.sunoUrl === "string" ? bodyObj.sunoUrl.trim() : "";
-    if (prevSuno && !nextSuno && !exactSuno) bodyObj.sunoUrl = prevSuno;
-    const prevLevel = typeof prevRaw?.audioLevel === "string" ? prevRaw.audioLevel.trim() : "";
-    const exactLevel = asObject(row.body)?.levelExact === true;
-    const nextLevel = typeof bodyObj.audioLevel === "string" ? bodyObj.audioLevel.trim() : "";
-    if (prevLevel && !nextLevel && !exactLevel) bodyObj.audioLevel = prevLevel;
-    const prevAnalysis = typeof prevRaw?.audioAnalysis === "string" ? prevRaw.audioAnalysis.trim() : "";
-    const exactAnalysis = asObject(row.body)?.analysisExact === true;
-    const nextAnalysis = typeof bodyObj.audioAnalysis === "string" ? bodyObj.audioAnalysis.trim() : "";
-    if (prevAnalysis && !nextAnalysis && !exactAnalysis) bodyObj.audioAnalysis = prevAnalysis;
     const rawIncoming = asObject(row.body) ?? {};
     const blanks = new Set(
       Array.isArray(rawIncoming.blankFields)
@@ -739,16 +709,6 @@ async function upsertStoredPage(row: {
   const prevRows = await sql<{ body: unknown }>`select body from studio_pages where slot = ${slot} limit 1`;
   const prevRaw = asObject(prevRows[0]?.body);
   const incoming = asObject(row.body) ?? {};
-  const prevUrl = typeof prevRaw?.youtubeUrl === "string" ? prevRaw.youtubeUrl.trim() : "";
-  const prevMv = typeof prevRaw?.mvUrl === "string" ? prevRaw.mvUrl.trim() : "";
-  const nextUrl = typeof incoming.youtubeUrl === "string" ? incoming.youtubeUrl.trim() : "";
-  const nextMv = typeof incoming.mvUrl === "string" ? incoming.mvUrl.trim() : "";
-  const prevSuno = typeof prevRaw?.sunoUrl === "string" ? prevRaw.sunoUrl.trim() : "";
-  const prevLevel = typeof prevRaw?.audioLevel === "string" ? prevRaw.audioLevel.trim() : "";
-  const prevAnalysis = typeof prevRaw?.audioAnalysis === "string" ? prevRaw.audioAnalysis.trim() : "";
-  const nextSuno = typeof incoming.sunoUrl === "string" ? incoming.sunoUrl.trim() : "";
-  const nextLevel = typeof incoming.audioLevel === "string" ? incoming.audioLevel.trim() : "";
-  const nextAnalysis = typeof incoming.audioAnalysis === "string" ? incoming.audioAnalysis.trim() : "";
   const exactSuno = incoming.sunoExact === true;
   const exactLevel = incoming.levelExact === true;
   const exactAnalysis = incoming.analysisExact === true;
@@ -762,11 +722,6 @@ async function upsertStoredPage(row: {
   if (exactAnalysis) blanks.add("audioAnalysis");
   const guarded = mergeLatestBody(prevRaw, {
     ...incoming,
-    ...(prevUrl && !nextUrl ? { youtubeUrl: prevUrl } : {}),
-    ...(prevMv && !nextMv ? { mvUrl: prevMv } : {}),
-    ...(prevSuno && !nextSuno && !exactSuno ? { sunoUrl: prevSuno } : {}),
-    ...(prevLevel && !nextLevel && !exactLevel ? { audioLevel: prevLevel } : {}),
-    ...(prevAnalysis && !nextAnalysis && !exactAnalysis ? { audioAnalysis: prevAnalysis } : {}),
     ...premiumOf(prevRaw),
     ...premiumOf(incoming),
   }, blanks);
@@ -1302,25 +1257,22 @@ function within<T>(work: Promise<T>, ms: number): Promise<T> {
 }
 
 export const loadCommonPref = createServerFn({ method: "GET" }).handler(async () => {
-  const fromFile = async () => {
-    try {
-      return (await enc()).readEncPref("__common");
-    } catch {
-      return null;
-    }
-  };
+  try {
+    const file = (await enc()).readEncPref("__common");
+    if (file) return file;
+  } catch {
+    /* the database copy is only a fallback when the file is missing */
+  }
   try {
     const sql = await within(db(), 3000);
     const rows = await within(
       sql<PageRow>`select body from studio_pages where slot = ${COMMON_SLOT} limit 1`,
       3000,
     );
-    const parsed = rows[0] ? asObject(rows[0].body) : null;
-    if (parsed) return parsed;
+    return rows[0] ? asObject(rows[0].body) : null;
   } catch {
-    /* one pref file is enough when the database is busy */
+    return null;
   }
-  return (await fromFile()) ?? null;
 });
 
 export const saveCommonPref = createServerFn({ method: "POST" })
@@ -1342,8 +1294,17 @@ export const saveCommonPref = createServerFn({ method: "POST" })
     }
     const { keptAdmin } = await import("./user-prefs");
     admin = keptAdmin(prevAdmin, admin);
-    const stored = admin ? { ...data.pref, adminDevice: admin } : { ...data.pref, adminDevice: "" };
-    const payload = JSON.stringify(stored);
+    const baseRev = typeof data.pref.baseRev === "number" ? data.pref.baseRev : typeof data.pref.rev === "number" ? data.pref.rev : 0;
+    const stored = { ...(admin ? { ...data.pref, adminDevice: admin } : { ...data.pref, adminDevice: "" }), baseRev };
+    delete stored.rev;
+    try {
+      const wrote = (await enc()).putEncPref("__common", stored);
+      if (wrote === false) return { ok: false as const, error: "다른 저장이 먼저 반영되어 설정을 덮지 않았습니다.", rev: baseRev };
+    } catch {
+      return { ok: false as const, error: "설정을 파일에 쓰지 못했습니다.", rev: baseRev };
+    }
+    const savedRev = Number((await enc()).readEncPref("__common")?.rev) || baseRev + 1;
+    const payload = JSON.stringify({ ...stored, rev: savedRev });
     await sql`
       insert into studio_pages (slot, kind, genre_id, ep, act, title, body, updated_at)
       values (
@@ -1361,12 +1322,7 @@ export const saveCommonPref = createServerFn({ method: "POST" })
         body = excluded.body,
         updated_at = now()
     `;
-    try {
-      (await enc()).putEncPref("__common", stored);
-    } catch {
-      /* sql already stored */
-    }
-    return { ok: true as const };
+    return { ok: true as const, rev: savedRev };
   });
 
 export const loadGenrePref = createServerFn({ method: "GET" })
@@ -1375,14 +1331,22 @@ export const loadGenrePref = createServerFn({ method: "GET" })
     return { genreId: input.genreId };
   })
   .handler(async ({ data }) => {
-    const sql = await db();
-    const slot = prefSlot(data.genreId);
-    const rows = await sql<PageRow>`
-      select body from studio_pages where slot = ${slot} limit 1
-    `;
-    const row = rows[0];
-    if (!row) return null;
-    const parsed = asObject(row.body);
+    let parsed: Record<string, unknown> | null = null;
+    try {
+      const file = (await enc()).readEncPref(data.genreId);
+      parsed = file && typeof file === "object" ? file as Record<string, unknown> : null;
+    } catch {
+      parsed = null;
+    }
+    if (!parsed) {
+      const sql = await db();
+      const slot = prefSlot(data.genreId);
+      const rows = await sql<PageRow>`
+        select body from studio_pages where slot = ${slot} limit 1
+      `;
+      const row = rows[0];
+      parsed = row ? asObject(row.body) : null;
+    }
     if (!parsed) return null;
     return {
       lang: typeof parsed.lang === "string" ? parsed.lang : "",
@@ -1416,6 +1380,7 @@ export const loadGenrePref = createServerFn({ method: "GET" })
       forbidList: typeof parsed.forbidList === "string" ? parsed.forbidList : "",
       guideText: typeof parsed.guideText === "string" ? parsed.guideText : "",
       listRule: typeof parsed.listRule === "string" ? parsed.listRule : "",
+      rev: typeof parsed.rev === "number" ? parsed.rev : 0,
     };
   });
 
@@ -1448,15 +1413,32 @@ export const saveGenrePref = createServerFn({ method: "POST" })
       forbidList?: string;
       guideText?: string;
       listRule?: string;
+      baseRev?: number;
+      rev?: number;
     };
   }) => {
     if (!isGenre(input.genreId)) throw new Error("invalid genre");
     return { genreId: input.genreId, pref: input.pref };
   })
   .handler(async ({ data }) => {
+    const baseRev = typeof (data.pref as { baseRev?: unknown }).baseRev === "number"
+      ? (data.pref as { baseRev: number }).baseRev
+      : typeof (data.pref as { rev?: unknown }).rev === "number"
+        ? (data.pref as { rev: number }).rev
+        : 0;
+    const stored = { ...data.pref, baseRev } as Record<string, unknown>;
+    delete stored.rev;
+    let wrote = false;
+    try {
+      wrote = (await enc()).putEncPref(data.genreId, stored) !== false;
+    } catch {
+      wrote = false;
+    }
+    if (!wrote) return { ok: false as const, error: "다른 저장이 먼저 반영되어 장르 설정을 덮지 않았습니다.", slot: prefSlot(data.genreId), rev: baseRev };
+    const savedRev = Number((await enc()).readEncPref(data.genreId)?.rev) || baseRev + 1;
     const sql = await db();
     const slot = prefSlot(data.genreId);
-    const payload = JSON.stringify(data.pref);
+    const payload = JSON.stringify({ ...stored, rev: savedRev });
     await sql`
       insert into studio_pages (slot, kind, genre_id, ep, act, title, body, updated_at)
       values (
@@ -1474,12 +1456,7 @@ export const saveGenrePref = createServerFn({ method: "POST" })
         body = excluded.body,
         updated_at = now()
     `;
-    try {
-      (await enc()).putEncPref(data.genreId, data.pref);
-    } catch {
-      /* sql already stored */
-    }
-    return { ok: true as const, slot };
+    return { ok: true as const, slot, rev: savedRev };
   });
 
 export const saveOriginalSong = createServerFn({ method: "POST" })
@@ -2029,7 +2006,7 @@ export const readResultFile = createServerFn({ method: "POST" })
       return { ok: true as const, fields: { ...store.readShownFields(landedPath) }, missing: [] as string[], error: "", file: true as const };
     }
     const fields: Record<string, string> = onDisk ? { ...store.readShownFields(path) } : {};
-    if (onDisk) return { ok: true as const, fields, missing: [] as string[], error: "", file: true as const };
+    if (onDisk) return { ok: true as const, fields, missing: [] as string[], error: "", file: true as const, rev: store.readShownRev(path) };
     try {
       const target = paneSaveTarget(data.kind, data.genreId, data.ep, data.act, data.title);
       const raw = target.slot ? await readStoredBody(target.slot) : null;
@@ -2051,7 +2028,7 @@ export const readResultFile = createServerFn({ method: "POST" })
   });
 
 export const saveResultFields = createServerFn({ method: "POST" })
-  .validator((input: { kind?: string; genreId?: string; ep?: string; act?: number; title?: string; vocal?: string; fields?: Record<string, unknown>; blank?: boolean }) => ({
+  .validator((input: { kind?: string; genreId?: string; ep?: string; act?: number; title?: string; vocal?: string; fields?: Record<string, unknown>; blank?: boolean; rev?: number }) => ({
     kind: (input.kind === "act" || input.kind === "story" || input.kind === "cover" ? input.kind : "song") as "song" | "act" | "story" | "cover",
     genreId: String(input.genreId || ""),
     ep: padEp(input.ep || ""),
@@ -2060,6 +2037,7 @@ export const saveResultFields = createServerFn({ method: "POST" })
     vocal: String(input.vocal || "").trim(),
     fields: input.fields && typeof input.fields === "object" ? input.fields : {},
     blank: input.blank === true,
+    rev: typeof input.rev === "number" && Number.isInteger(input.rev) && input.rev >= 0 ? input.rev : undefined,
   }))
   .handler(async ({ data }) => {
     const store = await enc();
@@ -2076,22 +2054,23 @@ export const saveResultFields = createServerFn({ method: "POST" })
     if ((data.kind === "story" || data.kind === "cover") && !store.shownFileExists(path)) {
       if (!store.ensureEmptyShownFile(path, shell)) return { ok: false as const, fields: {} as Record<string, string>, missing: [] as string[], error: "write" };
     }
-    const saved = store.writeShownFields(path, data.fields, shell, true, data.blank);
-    return { ok: saved.ok, fields: saved.fields, missing: saved.missing, error: quietDiskFault(saved.error) };
+    const saved = store.writeShownFields(path, data.fields, shell, true, data.blank, data.rev);
+    return { ok: saved.ok, fields: saved.fields, missing: saved.missing, error: quietDiskFault(saved.error), rev: Number(saved.rev) || 0 };
   });
 
 export const saveAudioLevel = createServerFn({ method: "POST" })
-  .validator((input: { genreId?: string; ep?: string; audioLevel?: string; audioAnalysis?: string }) => ({
+  .validator((input: { genreId?: string; ep?: string; audioLevel?: string; audioAnalysis?: string; rev?: number }) => ({
     genreId: String(input.genreId || ""),
     ep: padEp(input.ep || ""),
     audioLevel: String(input.audioLevel || "").trim(),
     audioAnalysis: String(input.audioAnalysis || "").trim(),
+    rev: typeof input.rev === "number" && Number.isInteger(input.rev) && input.rev >= 0 ? input.rev : undefined,
   }))
   .handler(async ({ data }) => {
     if (!data.genreId || !data.ep) return { ok: false as const, audioLevel: "", audioAnalysis: "", error: "empty" };
     const store = await enc();
-    const saved = data.audioLevel ? store.pinAudioLevel(data.genreId, data.ep, data.audioLevel) : { ok: true as const, audioLevel: "", error: "" };
-    const analysis = data.audioAnalysis ? store.pinAudioAnalysis(data.genreId, data.ep, data.audioAnalysis) : { ok: true as const, audioAnalysis: "", error: "" };
+    const saved = data.audioLevel ? store.pinAudioLevel(data.genreId, data.ep, data.audioLevel, data.rev) : { ok: true as const, audioLevel: "", error: "" };
+    const analysis = data.audioAnalysis ? store.pinAudioAnalysis(data.genreId, data.ep, data.audioAnalysis, data.rev) : { ok: true as const, audioAnalysis: "", error: "" };
     const ok = saved.ok && analysis.ok;
     return { ok, audioLevel: saved.audioLevel, audioAnalysis: analysis.audioAnalysis, error: quietDiskFault(ok ? "" : saved.error || analysis.error) };
   });
@@ -2129,7 +2108,7 @@ export const pinShownPremiumFile = createServerFn({ method: "POST" })
   });
 
 export const saveExactLink = createServerFn({ method: "POST" })
-  .validator((input: { kind?: string; genreId?: string; ep?: string; act?: number; title?: string; sunoSet?: boolean; sunoUrl?: string; levelSet?: boolean; audioLevel?: string; analysisSet?: boolean; audioAnalysis?: string }) => ({
+  .validator((input: { kind?: string; genreId?: string; ep?: string; act?: number; title?: string; sunoSet?: boolean; sunoUrl?: string; levelSet?: boolean; audioLevel?: string; analysisSet?: boolean; audioAnalysis?: string; rev?: number }) => ({
     kind: (input.kind === "act" || input.kind === "story" || input.kind === "cover" ? input.kind : "song") as "song" | "act" | "story" | "cover",
     genreId: String(input.genreId || ""),
     ep: padEp(input.ep || ""),
@@ -2141,6 +2120,7 @@ export const saveExactLink = createServerFn({ method: "POST" })
     audioLevel: String(input.audioLevel ?? ""),
     analysisSet: input.analysisSet === true,
     audioAnalysis: String(input.audioAnalysis ?? ""),
+    rev: typeof input.rev === "number" && Number.isInteger(input.rev) && input.rev >= 0 ? input.rev : undefined,
   }))
   .handler(async ({ data }) => {
     const store = await enc();
@@ -2155,7 +2135,7 @@ export const saveExactLink = createServerFn({ method: "POST" })
     if (data.sunoSet) patch.sunoUrl = data.sunoUrl;
     if (data.levelSet) patch.audioLevel = data.audioLevel;
     if (data.analysisSet) patch.audioAnalysis = data.audioAnalysis;
-    const saved = store.writeExactShown(path, patch, shell);
+    const saved = store.writeExactShown(path, patch, shell, data.rev);
     const fileFields = store.readShownFields(path);
     const backSuno = data.sunoSet ? String(fileFields.sunoUrl || "") : saved.sunoUrl;
     const backLevel = data.levelSet ? String(fileFields.audioLevel || "") : saved.audioLevel;
@@ -2209,12 +2189,13 @@ export const sendStudioMail = createServerFn({ method: "POST" })
   });
 
 export const saveSongLink = createServerFn({ method: "POST" })
-  .validator((input: { genreId: string; ep?: string; act?: number; url: string; field?: string }) => ({
+  .validator((input: { genreId: string; ep?: string; act?: number; url: string; field?: string; rev?: number }) => ({
     genreId: String(input.genreId || ""),
     ep: padEp(input.ep || ""),
     act: Number(input.act) || 0,
     url: String(input.url ?? "").trim(),
     field: input.field === "mv" ? "mv" : input.field === "suno" ? "suno" : "youtube",
+    rev: typeof input.rev === "number" && Number.isInteger(input.rev) && input.rev >= 0 ? input.rev : undefined,
   }))
   .handler(async ({ data }) => {
     if (!data.genreId || (!data.ep && !data.act)) return { ok: false as const, url: "", error: "empty" };
@@ -2227,11 +2208,11 @@ export const saveSongLink = createServerFn({ method: "POST" })
     const metaKey = data.field === "mv" ? `${data.genreId}:mv:${data.ep}` : `${data.genreId}:${data.ep}`;
     let fileOk = false;
     let fault = "file";
+    const store = await enc();
     try {
-      const store = await enc();
       fileOk = data.act && !data.ep
-        ? store.putActLink(data.genreId, data.act, clean, bodyKey) === true
-        : store.putSongLink(data.genreId, data.ep, clean, bodyKey) === true;
+        ? store.putActLink(data.genreId, data.act, clean, bodyKey, data.rev) === true
+        : store.putSongLink(data.genreId, data.ep, clean, bodyKey, data.rev) === true;
       if (!fileOk && data.field === "suno") fault = store.lastSunoFault || "file";
     } catch (err) {
       fileOk = false;
@@ -2239,10 +2220,13 @@ export const saveSongLink = createServerFn({ method: "POST" })
     }
     if (!fileOk) {
       fault = quietDiskFault(fault);
-      const safe = /^(write|file|read|throw|request|path|empty|url|level|suno|live)$/i.test(fault) ? fault : "write";
+      const safe = /^(write|file|read|throw|request|path|empty|url|level|suno|live|conflict)$/i.test(fault) ? fault : "write";
       return { ok: false as const, url: "", error: safe };
     }
-    return { ok: true as const, url: clean };
+    const revPath = data.act && !data.ep
+      ? store.shownFilePath("act", data.genreId, "", data.act, "")
+      : store.shownFilePath("song", data.genreId, data.ep, 0, "");
+    return { ok: true as const, url: clean, rev: store.readShownRev(revPath) };
   });
 
 export const saveSongLinks = createServerFn({ method: "POST" })

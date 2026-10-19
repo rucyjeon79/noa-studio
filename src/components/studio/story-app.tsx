@@ -110,7 +110,7 @@ function storyUrlPins(shown: Record<string, unknown>) {
   return out;
 }
 
-function plainStory(saved: unknown): { ok?: boolean; file?: boolean; fields?: Record<string, string>; error?: string; missing?: string[]; sunoUrl?: string; audioLevel?: string } | null {
+function plainStory(saved: unknown): { ok?: boolean; file?: boolean; fields?: Record<string, string>; error?: string; missing?: string[]; sunoUrl?: string; audioLevel?: string; rev?: number } | null {
   return serverPlain(saved);
 }
 
@@ -131,7 +131,9 @@ async function stickStoryFile(kind: "story" | "cover", genreId: string, fileTitl
   const writeOnce = async (fields: Record<string, string>) => {
     if (!Object.keys(fields).length) return;
     try {
-      const saved = plainStory(await saveResultFields({ data: { ...query, fields, blank: Object.values(fields).some((value) => !String(value ?? "").trim()) } }));
+      const opened = plainStory(await readResultFile({ data: query }));
+      const rev = typeof opened?.rev === "number" ? opened.rev : 0;
+      const saved = plainStory(await saveResultFields({ data: { ...query, fields, blank: Object.values(fields).some((value) => !String(value ?? "").trim()), rev } }));
       if (saved?.ok === false && saved.error) fault = fault || quietDiskFault(String(saved.error));
     } catch (err) {
       fault = quietDiskFault(err instanceof Error ? err.message.trim() : "request");
@@ -1107,8 +1109,14 @@ export function StoryHome({ genreId = "your-story" }: { genreId?: "your-story" |
     const kind = cover ? "cover" : "story";
     const vocal = cover ? shownVocal() : "";
     void (async () => {
+      let opened: { ok?: boolean; fields?: Record<string, string>; rev?: number } | null = null;
       try {
-        await saveResultFields({ data: { kind, genreId, ep: "", act: 0, title, vocal, fields: { [fieldKey]: text }, blank: !String(text || "").trim() } });
+        opened = plainStory(await readResultFile({ data: { kind, genreId, ep: "", act: 0, title, vocal } }));
+      } catch {
+        opened = null;
+      }
+      try {
+        await saveResultFields({ data: { kind, genreId, ep: "", act: 0, title, vocal, fields: { [fieldKey]: text }, blank: !String(text || "").trim(), rev: typeof opened?.rev === "number" ? opened.rev : 0 } });
       } catch {
         /* the file read below decides */
       }
@@ -2513,7 +2521,8 @@ export function StoryHome({ genreId = "your-story" }: { genreId?: "your-story" |
                             const kind = genreId === "cover-reborn" ? "cover" : "story";
                             void (async () => {
                               try {
-                                await saveResultFields({ data: { kind, genreId, ep: "", act: 0, title: fileTitle, vocal: "", fields: { [fieldKey]: text }, blank: !String(text || "").trim() } });
+                                const opened = plainStory(await readResultFile({ data: { kind, genreId, ep: "", act: 0, title: fileTitle, vocal: "" } }));
+                                await saveResultFields({ data: { kind, genreId, ep: "", act: 0, title: fileTitle, vocal: "", fields: { [fieldKey]: text }, blank: !String(text || "").trim(), rev: typeof opened?.rev === "number" ? opened.rev : 0 } });
                               } catch {
                                 /* the file read below decides */
                               }
@@ -2587,7 +2596,8 @@ export function StoryHome({ genreId = "your-story" }: { genreId?: "your-story" |
                             const kind = genreId === "cover-reborn" ? "cover" : "story";
                             void (async () => {
                               try {
-                                await saveResultFields({ data: { kind, genreId, ep: "", act: 0, title: fileTitle, vocal: "", fields: { [fieldKey]: text }, blank: !String(text || "").trim() } });
+                                const opened = plainStory(await readResultFile({ data: { kind, genreId, ep: "", act: 0, title: fileTitle, vocal: "" } }));
+                                await saveResultFields({ data: { kind, genreId, ep: "", act: 0, title: fileTitle, vocal: "", fields: { [fieldKey]: text }, blank: !String(text || "").trim(), rev: typeof opened?.rev === "number" ? opened.rev : 0 } });
                               } catch {
                                 /* the file read below decides */
                               }

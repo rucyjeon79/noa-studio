@@ -6,7 +6,9 @@ import { asThumbCast } from "./characters";
 import { ACTS } from "./catalog";
 import { canKeepPackage, hasPageBody, isStoryFixture, isStoryStoreId, isStubResultToken, keepStoryText, keepUserEdits, normalizePackage, packageFitsSong, shouldReplaceStudio, storyShownTitle } from "./package";
 import { coverArtistOf, storyDiskName, storyFileStem } from "./story-filename";
-import { mergeLatestBody, readFieldStamps, stampChangedFields } from "./latest-text";
+import { mergeLatestBody, readFieldStamps, stampChangedFields, LATEST_TEXT_KEYS } from "./latest-text";
+import { commitJsonFile, readRev, applyLiveWrite, isContentPath, omitUnsavedFields, viewTitleForSave } from "./save-rev";
+import { traceField } from "./field-trace";
 import { blankMeta, emptyEncyclopedia } from "./encyclopedia-types";
 import { boundStoryAbs, capturePairs, noteMovedPairs, noteRemoved, ownersOf, preferBound, relFromAbs, relocatedActRows, relocatedSongRows, relocatedStoryHits } from "./live-bind.server";
 
@@ -30,6 +32,11 @@ function diskWriteDenied() {
   return diskDenied;
 }
 function writeJson(path, value) {
+  if (isContentPath(path)) {
+    const saved = applyLiveWrite(path, value && typeof value === "object" ? value : {});
+    diskDenied = !saved.ok && saved.error === "write";
+    return saved.ok;
+  }
   try {
     mkdirSync(dirname(path), { recursive: true });
   } catch (err) {
@@ -1041,17 +1048,6 @@ function readSongStateFlags() {
 }
 function applySongState(meta) {
   const song = readSongStateFlags();
-  const legacy = readConfirmedFlags();
-  for (const [key, value] of Object.entries(legacy)) {
-    if (value !== true || song.confirmed[key] === true || song.confirmed[key] === false) continue;
-    const match = /^(.+):ep:(.+)$/.exec(key);
-    if (match && readSongRecord(match[1], match[2])) patchSongState(match[1], match[2], { confirmed: true });
-    const actMatch = /^(.+):act:(\d+)$/.exec(key);
-    if (actMatch) {
-      const row = readJson(actPath(actMatch[1], Number(actMatch[2])));
-      if (row?.pkg && row.confirmed !== true && row.confirmed !== false) patchActConfirmed(actMatch[1], Number(actMatch[2]), true);
-    }
-  }
   const confirmed = unionConfirmed(readSongConfirmFlags(), readActConfirmFlags(), readStoryConfirmFlags());
   const rowLocks = { ...(meta.rowLocks ?? {}), ...song.rowLocks };
   for (const [key, value] of Object.entries(meta.rowLocks ?? {})) {
@@ -1145,18 +1141,21 @@ function writeSong(genreId, ep, title, pkg, _force = false) {
   if (merged.mvPremium !== true && merged.mvPremium !== false && (keptMv === true || keptMv === false)) merged.mvPremium = keptMv;
   if (prevPkg && hasPageBody(prevPkg) && !hasPageBody(merged)) return false;
   const marks = exactMarks(pkg);
+  const listed = Array.isArray(pkg?.savedKeys) ? pkg.savedKeys.filter((key) => typeof key === "string" && key) : null;
+  const watch = new Set(listed ?? []);
+  const allowAll = listed === null;
   applyExactLink(merged, marks);
   const nextStamps = { ...readFieldStamps(prevPkg), ...incomingStamps };
   const nowMs = Date.now();
-  if (marks.sunoExact) {
+  if (marks.sunoExact && (allowAll || watch.has("sunoUrl"))) {
     const prior = Date.parse(nextStamps.sunoUrl || "") || 0;
     nextStamps.sunoUrl = new Date(Math.max(nowMs, prior + 1)).toISOString();
   }
-  if (marks.levelExact) {
+  if (marks.levelExact && (allowAll || watch.has("audioLevel"))) {
     const prior = Date.parse(nextStamps.audioLevel || "") || 0;
     nextStamps.audioLevel = new Date(Math.max(nowMs, prior + 1)).toISOString();
   }
-  if (marks.analysisExact) {
+  if (marks.analysisExact && (allowAll || watch.has("audioAnalysis"))) {
     const prior = Date.parse(nextStamps.audioAnalysis || "") || 0;
     nextStamps.audioAnalysis = new Date(Math.max(nowMs, prior + 1)).toISOString();
   }
@@ -1164,23 +1163,62 @@ function writeSong(genreId, ep, title, pkg, _force = false) {
     prevPkg ? { ...prevPkg, fieldSavedAt: readFieldStamps(prevPkg) } : null,
     { ...merged, sunoExact: marks.sunoExact, levelExact: marks.levelExact, analysisExact: marks.analysisExact, fieldSavedAt: nextStamps }
   );
-  if (marks.sunoExact) guarded.sunoUrl = marks.sunoUrl.trim();
-  if (marks.levelExact) guarded.audioLevel = marks.audioLevel.trim();
-  if (marks.analysisExact) guarded.audioAnalysis = marks.audioAnalysis.trim();
+  if (marks.sunoExact && (allowAll || watch.has("sunoUrl"))) guarded.sunoUrl = marks.sunoUrl.trim();
+  if (marks.levelExact && (allowAll || watch.has("audioLevel"))) guarded.audioLevel = marks.audioLevel.trim();
+  if (marks.analysisExact && (allowAll || watch.has("audioAnalysis"))) guarded.audioAnalysis = marks.audioAnalysis.trim();
   delete guarded.sunoExact;
   delete guarded.levelExact;
   delete guarded.analysisExact;
+  if (!_force && prevPkg) {
+    const prevStamps = readFieldStamps(prevPkg);
+    const nextStamps = readFieldStamps(guarded);
+    for (const key of LATEST_TEXT_KEYS) {
+      const prevAt = Date.parse(prevStamps[key] || "") || 0;
+      const nextAt = Date.parse(nextStamps[key] || "") || 0;
+      if (prevAt > 0 && nextAt < prevAt) guarded[key] = prevPkg[key];
+    }
+  }
   if (songIsConfirmed(genreId, ep, prev) && prevPkg) {
     const watch = userSavedKeySet(pkg);
     const keptKeys = ["summary", "confirmedTitle", "lyricsBlock", "sunoStyle", "geminiPrompt", "youtubeTitle", "youtubeDescription", "fanLetter"].filter((key) => !watch.has(key));
     keepConfirmedText(guarded, prevPkg, keptKeys);
   }
   sealShownWrite(guarded, path, pkg);
+  const diskRev = readRev(prev);
+  for (const key of LATEST_TEXT_KEYS) {
+    if (String(guarded[key] ?? "") === String(prevPkg?.[key] ?? "")) continue;
+    traceField({
+      songId: `${genreId}:${ep}`,
+      field: key,
+      value: guarded[key],
+      source: "memory-package",
+      reader: "writeSong",
+      rev: diskRev,
+      note: "about-to-write-file",
+    });
+  }
+  const baseRev = Number(pkg?.baseRev);
+  if (Number.isInteger(baseRev) && baseRev >= 0 && baseRev !== diskRev) return false;
+  delete guarded.baseRev;
+  const payloadPkg = omitUnsavedFields(guarded, [...watch], allowAll);
+  const viewTitle = viewTitleForSave(prev?.title, title, [...watch], allowAll);
+  if (String(title || "") !== viewTitle) {
+    traceField({
+      songId: `${genreId}:${ep}`,
+      field: "title",
+      value: title || "",
+      source: "screen-excluded",
+      reader: "writeSong",
+      rev: diskRev,
+      note: "old-view-title-excluded",
+    });
+  }
   const wroteFile = writeJson(path, {
     genreId,
     ep,
-    title: title || prev?.title || "",
-    pkg: guarded,
+    title: viewTitle,
+    pkg: payloadPkg,
+    rev: diskRev + 1,
     ...freshSongState(genreId, ep, prev)
   });
   forgetLegacySong(genreId, ep);
@@ -1195,7 +1233,7 @@ function writeSong(genreId, ep, title, pkg, _force = false) {
       return check.every((key) => String(pkg2?.[key] ?? "").trim() === String(guarded[key] ?? "").trim());
     };
     if (landed(readSongRecord(genreId, ep)?.pkg)) return true;
-    if (!writeJson(path, { genreId, ep, title: title || prev?.title || "", pkg: guarded, ...freshSongState(genreId, ep, prev) })) return false;
+    if (!writeJson(path, { genreId, ep, title: viewTitle, pkg: payloadPkg, rev: diskRev + 1, ...freshSongState(genreId, ep, prev) })) return false;
     return landed(readSongRecord(genreId, ep)?.pkg);
   }
   return true;
@@ -1300,22 +1338,25 @@ function putEncMany(rows) {
       keepSavedLevel(pkg, readPkgField(actPath(row.genreId, act), "audioLevel"));
       keepSavedAnalysis(pkg, readPkgField(actPath(row.genreId, act), "audioAnalysis"));
       const actMarks = exactMarks(row.pkg);
+      const actListed = Array.isArray(row.pkg?.savedKeys) ? row.pkg.savedKeys.filter((key) => typeof key === "string" && key) : null;
+      const actWatchEarly = new Set(actListed ?? []);
+      const actAllowAll = actListed === null;
       applyExactLink(pkg, actMarks);
       const actBlanks = new Set(
         Array.isArray(row.pkg.blankFields) ? row.pkg.blankFields.filter((key) => typeof key === "string") : []
       );
       const guardedAct = mergeLatestBody(prevPkg ?? null, { ...pkg, sunoExact: actMarks.sunoExact, levelExact: actMarks.levelExact, analysisExact: actMarks.analysisExact }, actBlanks);
-      if (actMarks.sunoExact) {
+      if (actMarks.sunoExact && (actAllowAll || actWatchEarly.has("sunoUrl"))) {
         const raw = actMarks.sunoUrl.trim();
         const url = raw ? httpAddress(raw) : "";
         if (!raw || url) guardedAct.sunoUrl = url;
       }
-      if (actMarks.levelExact) {
+      if (actMarks.levelExact && (actAllowAll || actWatchEarly.has("audioLevel"))) {
         const raw = actMarks.audioLevel.trim();
         const level = raw ? cleanShownValue("audioLevel", raw) : "";
         if (!raw || level) guardedAct.audioLevel = level;
       }
-      if (actMarks.analysisExact) {
+      if (actMarks.analysisExact && (actAllowAll || actWatchEarly.has("audioAnalysis"))) {
         const raw = actMarks.audioAnalysis.trim();
         const analysis = raw ? cleanShownValue("audioAnalysis", raw) : "";
         if (!raw || analysis) guardedAct.audioAnalysis = analysis;
@@ -1324,13 +1365,21 @@ function putEncMany(rows) {
       delete guardedAct.levelExact;
       delete guardedAct.analysisExact;
       sealShownWrite(guardedAct, actPath(row.genreId, act), row.pkg);
+      const actPayload = omitUnsavedFields(guardedAct, [...actWatchEarly], actAllowAll);
+      const actTitle = viewTitleForSave(prev?.title, row.title, [...actWatchEarly], actAllowAll);
+      const actRev = readRev(prev);
+      const actBase = Number(row.pkg?.baseRev);
+      if (Number.isInteger(actBase) && actBase >= 0 && actBase !== actRev) {
+        kept.push(`${row.genreId}:act:${act}`);
+        continue;
+      }
       const wantedSuno = String(guardedAct.sunoUrl || "").trim();
       const songsReady = Boolean(actSongsConfirmed(row.genreId, act));
       const wroteAct = writeJson(actPath(row.genreId, act), {
         genreId: row.genreId,
         act,
-        title: row.title,
-        pkg: guardedAct,
+        title: actTitle,
+        pkg: actPayload,
         ...(prev?.confirmed === true ? { confirmed: true } : {}),
         ...(prev?.activated === true || songsReady ? { activated: true } : {})
       });
@@ -1485,11 +1534,12 @@ function readEncPref(genreId) {
   return readJson(next) ?? readJson(join(LIVE, "prefs", `${safePart(genreId)}.json`));
 }
 function putEncPref(genreId, pref) {
-  if (!LIVE) return;
+  if (!LIVE) return false;
   const next = genreId === "__common" ? prefCommonPath() : prefGenrePath(genreId);
-  writeJson(next, pref);
+  const wrote = writeJson(next, pref);
   const old = join(LIVE, "prefs", `${safePart(genreId)}.json`);
   if (existsSync(old)) unlinkSync(old);
+  return wrote;
 }
 function putEncOriginal(genreId, song) {
   if (!LIVE) return;
@@ -1596,60 +1646,11 @@ function nestedObjectSpan(raw, field) {
 }
 function patchPkgStringField(path, field, value) {
   if (!field || !existsSync(path)) return false;
-  let raw = "";
-  try {
-    raw = readFileSync(path, "utf8");
-  } catch {
-    return false;
-  }
-  let before;
-  try {
-    before = JSON.parse(raw);
-  } catch {
-    return false;
-  }
-  if (!before.pkg || typeof before.pkg !== "object") return false;
-  const clean = value.trim();
-  let next = "";
-  const hit = keyStringSpan(raw, field);
-  if (hit) {
-    next = raw.slice(0, hit.valueAt) + JSON.stringify(clean) + raw.slice(hit.valueEnd);
-  } else if (Object.prototype.hasOwnProperty.call(before.pkg, field)) {
-    return false;
-  } else {
-    const anchor = keyStringSpan(raw, "youtubeUrl");
-    const piece = `,"${field}":${JSON.stringify(clean)}`;
-    if (anchor) next = raw.slice(0, anchor.valueEnd) + piece + raw.slice(anchor.valueEnd);else
-    {
-      const mark = '"pkg":{';
-      const pkgAt = raw.indexOf(mark);
-      if (pkgAt < 0 || raw.indexOf(mark, pkgAt + mark.length) >= 0) return false;
-      next = raw.slice(0, pkgAt + mark.length) + `"${field}":${JSON.stringify(clean)},` + raw.slice(pkgAt + mark.length);
-    }
-  }
-  let after;
-  try {
-    after = JSON.parse(next);
-  } catch {
-    return false;
-  }
-  if (String(after?.pkg?.[field] ?? "").trim() !== clean) return false;
-  const prevPkg = before.pkg;
-  const nextPkg = after.pkg && typeof after.pkg === "object" ? after.pkg : {};
-  const keys = /* @__PURE__ */new Set([...Object.keys(prevPkg), ...Object.keys(nextPkg)]);
-  for (const key of keys) {
-    if (key === field) continue;
-    if (JSON.stringify(prevPkg[key]) !== JSON.stringify(nextPkg[key])) return false;
-  }
-  const { pkg: _beforePkg, ...beforeRest } = before;
-  const { pkg: _afterPkg, ...afterRest } = after;
-  if (JSON.stringify(beforeRest) !== JSON.stringify(afterRest)) return false;
-  try {
-    writeFileSync(path, next);
-  } catch {
-    return false;
-  }
-  return String(readJson(path)?.pkg?.[field] ?? "").trim() === clean;
+  const before = readJson(path);
+  if (!before?.pkg || typeof before.pkg !== "object") return false;
+  const clean = String(value ?? "").trim();
+  const saved = commitJsonFile(path, { ...before, pkg: { ...before.pkg, [field]: clean } });
+  return saved.ok && String(readJson(path)?.pkg?.[field] ?? "").trim() === clean;
 }
 function httpAddress(value) {
   const text = String(value ?? "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
@@ -1708,6 +1709,9 @@ function cleanShownValue(key, value) {
   }
   return text.length > 1e5 ? text.slice(0, 1e5) : text;
 }
+function readShownRev(path) {
+  return readRev(readJson(path));
+}
 function readShownFields(path) {
   const pkg = readJson(path)?.pkg;
   const fields = {};
@@ -1747,7 +1751,7 @@ function shownFileUpdatedAt(path) {
     return 0;
   }
 }
-function writeShownFields(path, incoming, shell = {}, allowCreate = true, allowBlank = false) {
+function writeShownFields(path, incoming, shell = {}, allowCreate = true, allowBlank = false, expectRev) {
   diskDenied = false;
   const wanted = {};
   for (const [key, value] of Object.entries(incoming || {})) {
@@ -1764,32 +1768,35 @@ function writeShownFields(path, incoming, shell = {}, allowCreate = true, allowB
     wanted[key] = clean;
   }
   const missing = [];
-  if (!path) return { ok: false, fields: {}, missing: Object.keys(wanted), error: "path" };
-  if (!Object.keys(wanted).length) return { ok: true, fields: readShownFields(path), missing, error: "" };
+  if (!path) return { ok: false, fields: {}, missing: Object.keys(wanted), error: "path", rev: 0 };
+  if (!Object.keys(wanted).length) return { ok: true, fields: readShownFields(path), missing, error: "", rev: readShownRev(path) };
   if (!existsSync(path)) {
-    if (!allowCreate) return { ok: false, fields: {}, missing: Object.keys(wanted), error: "path" };
-    if (!writeJson(path, { ...shell, pkg: { ...wanted } })) {
-      return { ok: false, fields: {}, missing: Object.keys(wanted), error: "write" };
-    }
-  } else if (!readJson(path)?.pkg || typeof readJson(path)?.pkg !== "object") {
-    const prev = readJson(path) ?? {};
-    if (!writeJson(path, { ...shell, ...prev, pkg: {} })) {
-      return { ok: false, fields: readShownFields(path), missing: Object.keys(wanted), error: "write" };
-    }
+    if (!allowCreate) return { ok: false, fields: {}, missing: Object.keys(wanted), error: "path", rev: 0 };
   }
-  for (const [key, value] of Object.entries(wanted)) {
-    if (readPkgField(path, key) === value) continue;
-    if (patchPkgStringField(path, key, value)) continue;
-    assignPkgField(path, key, value, shell);
-    if (readPkgField(path, key) !== value) missing.push(key);
+  const prev = existsSync(path) ? readJson(path) ?? {} : {};
+  const prevPkg = prev.pkg && typeof prev.pkg === "object" ? prev.pkg : {};
+  const saved = commitJsonFile(path, { ...shell, ...prev, pkg: { ...prevPkg, ...wanted } }, typeof expectRev === "number" ? expectRev : undefined);
+  if (!saved.ok) {
+    return { ok: false, fields: readShownFields(path), missing: Object.keys(wanted), error: saved.error || "write", rev: saved.rev };
   }
   const fields = readShownFields(path);
   for (const [key, value] of Object.entries(wanted)) {
     if (fields[key] === value || cleanShownValue(key, fields[key]) === value) continue;
-    if (!missing.includes(key)) missing.push(key);
+    missing.push(key);
   }
-  if (missing.length === 0) stampShownFields(path, Object.keys(wanted).filter((key) => fields[key] === wanted[key] || cleanShownValue(key, fields[key]) === wanted[key]));
-  return { ok: missing.length === 0, fields, missing, error: missing.length ? diskDenied ? "write" : "read" : "" };
+  if (missing.length === 0) stampShownFields(path, Object.keys(wanted));
+  for (const key of Object.keys(wanted)) {
+    traceField({
+      songId: path,
+      field: key,
+      value: wanted[key],
+      source: missing.length === 0 ? "writeShownFields" : "writeShownFields-rejected",
+      reader: "writeShownFields",
+      rev: readShownRev(path),
+      note: missing.length ? "read-mismatch" : saved.error || "",
+    });
+  }
+  return { ok: missing.length === 0, fields, missing, error: missing.length ? "read" : "", rev: readShownRev(path) };
 }
 function stampShownFields(path, keys) {
   if (!path || !keys.length || !existsSync(path)) return;
@@ -1807,7 +1814,7 @@ function stampShownFields(path, keys) {
   row.pkg.fieldSavedAt = stamps;
   writeJson(path, row);
 }
-function writeExactShown(path, patch, shell = {}) {
+function writeExactShown(path, patch, shell = {}, expectRev) {
   if (!path) return { ok: false, sunoUrl: "", audioLevel: "", audioAnalysis: "", error: "path" };
   if (!existsSync(path)) {
     if (!writeJson(path, { ...shell, pkg: { audioAnalysis: "", audioLevel: "" } })) return { ok: false, sunoUrl: "", audioLevel: "", audioAnalysis: "", error: "write" };
@@ -1820,7 +1827,7 @@ function writeExactShown(path, patch, shell = {}) {
   if (!Object.keys(incoming).length) {
     return { ok: false, sunoUrl: readPkgField(path, "sunoUrl"), audioLevel: readPkgField(path, "audioLevel"), audioAnalysis: readPkgField(path, "audioAnalysis"), error: fault || "empty" };
   }
-  const saved = writeShownFields(path, incoming, shell, true, true);
+  const saved = writeShownFields(path, incoming, shell, true, true, expectRev);
   return {
     ok: saved.ok && !fault,
     sunoUrl: String(saved.fields.sunoUrl || ""),
@@ -2006,30 +2013,25 @@ function sealShownWrite(guarded, path, pkg) {
   sealPremiumFlags(guarded, path, pkg);
   return guarded;
 }
-function pinShownString(genreId, ep, field, value) {
+function pinShownString(genreId, ep, field, value, expectRev) {
   diskDenied = false;
   const clean = cleanShownValue(field, value);
   if (!clean) return { ok: false, value: "", error: "empty" };
   const path = songPath(genreId, ep);
   if (!path || !existsSync(path)) return { ok: false, value: "", error: "path" };
-  if (!readJson(path)?.pkg) {
-    const prev = readJson(path) ?? {};
-    if (!writeJson(path, { ...prev, pkg: { audioAnalysis: "", audioLevel: "" } })) return { ok: false, value: "", error: "path" };
-  }
-  const have = cleanShownValue(field, readPkgField(path, field));
-  if (have) return { ok: true, value: have, error: "kept" };
-  if (readPkgField(path, field) === clean) return { ok: true, value: clean, error: "" };
-  if (!patchPkgStringField(path, field, clean) && !assignPkgField(path, field, clean, { genreId, ep })) return { ok: false, value: readPkgField(path, field), error: diskDenied ? "write" : "read" };
+  const opened = readRev(readJson(path));
+  const rev = typeof expectRev === "number" ? expectRev : opened;
+  const saved = writeShownFields(path, { [field]: clean }, { genreId, ep }, true, false, rev);
   const back = readPkgField(path, field);
-  if (back !== clean) return { ok: false, value: back, error: diskDenied ? "write" : "read" };
+  if (!saved.ok || back !== clean) return { ok: false, value: back, error: saved.error || (diskDenied ? "write" : "read") };
   return { ok: true, value: back, error: "" };
 }
-function pinAudioLevel(genreId, ep, value) {
-  const saved = pinShownString(genreId, ep, "audioLevel", value);
+function pinAudioLevel(genreId, ep, value, expectRev) {
+  const saved = pinShownString(genreId, ep, "audioLevel", value, expectRev);
   return { ok: saved.ok, audioLevel: saved.value, error: saved.error === "kept" ? "" : saved.error };
 }
-function pinAudioAnalysis(genreId, ep, value) {
-  const saved = pinShownString(genreId, ep, "audioAnalysis", value);
+function pinAudioAnalysis(genreId, ep, value, expectRev) {
+  const saved = pinShownString(genreId, ep, "audioAnalysis", value, expectRev);
   return { ok: saved.ok, audioAnalysis: saved.value, error: saved.error === "kept" ? "" : saved.error };
 }
 function pinShownAudio(kind, genreId, ep, act, title, audioLevel, audioAnalysis, vocal = "") {
@@ -2107,80 +2109,50 @@ function pinEmptyJsonField(path, field, value) {
   }
   return String(readJson(path)?.pkg?.[field] ?? "").trim() === clean;
 }
-function putSongLink(genreId, ep, url, field = "youtubeUrl") {
+function putSongLink(genreId, ep, url, field = "youtubeUrl", expectRev) {
   if (!LIVE || !genreId || !ep) {
     if (field === "sunoUrl") lastSunoFault = !LIVE ? "live" : "path";
     return false;
   }
   try {
     const path = songPath(genreId, ep);
+    if (!existsSync(path)) return false;
     const prev = readSongRecord(genreId, ep);
-    const clean = url.trim();
-    if (field === "sunoUrl") return storeSunoUrl(path, clean, prev, { genreId, ep, title: prev?.title || String(prev?.pkg?.confirmedTitle || "") });
-    const pkg = { ...(prev?.pkg ?? {}) };
-    const current = String(pkg[field] || "").trim();
-    if (!clean) {
-      if (!current) return true;
-      pkg[field] = "";
-      const cleared = { ...(prev ?? {}), genreId, ep, title: prev?.title || String(pkg.confirmedTitle || ""), pkg };
-      if (!writeJson(path, cleared)) return false;
-      return String(readJson(path)?.pkg?.[field] || "").trim() === "";
+    const clean = String(url ?? "").trim();
+    const opened = readRev(prev);
+    const rev = typeof expectRev === "number" ? expectRev : opened;
+    const saved = writeShownFields(path, { [field]: clean }, { genreId, ep, title: prev?.title || "" }, true, true, rev);
+    const back = String(readPkgField(path, field) || "").trim();
+    if (!saved.ok || back !== clean) {
+      if (field === "sunoUrl") lastSunoFault = saved.error || "write";
+      return false;
     }
-    if (current === clean) return true;
-    if (!current && pinEmptyJsonField(path, field, clean)) {
-      if (field === "youtubeUrl") mirrorYoutubeKey(`${genreId}:${ep}`, clean);
-      return true;
-    }
-    pkg[field] = clean;
-    const next = { ...(prev ?? {}), genreId, ep, title: prev?.title || String(pkg.confirmedTitle || ""), pkg };
-    if (!writeJson(path, next)) return false;
-    let saved = String(readJson(path)?.pkg?.[field] || "").trim();
-    if (saved !== clean) {
-      if (!writeJson(path, next)) return false;
-      saved = String(readJson(path)?.pkg?.[field] || "").trim();
-    }
-    if (saved !== clean) return false;
-    if (field === "youtubeUrl") mirrorYoutubeKey(`${genreId}:${ep}`, clean);
+    if (field === "youtubeUrl" && clean) mirrorYoutubeKey(`${genreId}:${ep}`, clean);
     return true;
   } catch (err) {
     if (field === "sunoUrl") lastSunoFault = isReadOnlyFs(err) ? "write" : "throw";
     return false;
   }
 }
-function putActLink(genreId, act, url, field = "youtubeUrl") {
+function putActLink(genreId, act, url, field = "youtubeUrl", expectRev) {
   if (!LIVE || !genreId || !act) {
     if (field === "sunoUrl") lastSunoFault = !LIVE ? "live" : "path";
     return false;
   }
   try {
     const path = actPath(genreId, act);
+    if (!existsSync(path)) return false;
     const prev = readJson(path);
-    const clean = url.trim();
-    if (field === "sunoUrl") return storeSunoUrl(path, clean, prev ?? null, { genreId, act, title: prev?.title || "" });
-    const pkg = { ...(prev?.pkg ?? {}) };
-    const current = String(pkg[field] || "").trim();
-    if (!clean) {
-      if (!current) return true;
-      pkg[field] = "";
-      const cleared = { ...(prev ?? {}), genreId, act, title: prev?.title || "", pkg };
-      if (!writeJson(path, cleared)) return false;
-      return String(readJson(path)?.pkg?.[field] || "").trim() === "";
+    const clean = String(url ?? "").trim();
+    const opened = readRev(prev);
+    const rev = typeof expectRev === "number" ? expectRev : opened;
+    const saved = writeShownFields(path, { [field]: clean }, { genreId, act, title: prev?.title || "" }, true, true, rev);
+    const back = String(readPkgField(path, field) || "").trim();
+    if (!saved.ok || back !== clean) {
+      if (field === "sunoUrl") lastSunoFault = saved.error || "write";
+      return false;
     }
-    if (current === clean) return true;
-    if (!current && pinEmptyJsonField(path, field, clean)) {
-      if (field === "youtubeUrl") mirrorYoutubeKey(`${genreId}:pl:${act}`, clean);
-      return true;
-    }
-    pkg[field] = clean;
-    const next = { ...(prev ?? {}), genreId, act, title: prev?.title || "", pkg };
-    if (!writeJson(path, next)) return false;
-    let saved = String(readJson(path)?.pkg?.[field] || "").trim();
-    if (saved !== clean) {
-      if (!writeJson(path, next)) return false;
-      saved = String(readJson(path)?.pkg?.[field] || "").trim();
-    }
-    if (saved !== clean) return false;
-    if (field === "youtubeUrl") mirrorYoutubeKey(`${genreId}:pl:${act}`, clean);
+    if (field === "youtubeUrl" && clean) mirrorYoutubeKey(`${genreId}:pl:${act}`, clean);
     return true;
   } catch (err) {
     if (field === "sunoUrl") lastSunoFault = isReadOnlyFs(err) ? "write" : "throw";
@@ -2759,7 +2731,7 @@ function putEncMeta(meta) {
     locks: { ...(prev?.locks ?? {}), ...(meta.locks ?? {}) },
     rowLocks: { ...(prev?.rowLocks ?? {}), ...(meta.rowLocks ?? {}) },
     youtube,
-    confirmed: unionConfirmed(prev?.confirmed, meta.confirmed, readConfirmedFlags()),
+    confirmed: liveConfirmed(),
     listOrder: { ...(prev?.listOrder ?? {}), ...(meta.listOrder ?? {}) }
   });
 }
@@ -2955,6 +2927,7 @@ export {
   readPrefUpdatedAt,
   readRowLockFile,
   readShownFields,
+  readShownRev,
   readSongConfirmFlags,
   readSongLinks,
   readSongPage,

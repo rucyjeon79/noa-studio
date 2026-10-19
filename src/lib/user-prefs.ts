@@ -1083,6 +1083,7 @@ function asCommon(raw) {
   take("linkRule");
   take("playRule");
   take("adminDevice");
+  if (typeof o.rev === "number" && Number.isInteger(o.rev) && o.rev >= 0) next.rev = o.rev;
   return next;
 }
 function readCommonRaw() {
@@ -1660,8 +1661,8 @@ function writeCommonField(key, value) {
   patchApp((d) => {
     d.prefs[COMMON_ID] = next;
   }, false);
-  persistCommon(next);
   pingPrefs();
+  return persistCommon(next);
 }
 function sandboxAdminText(text) {
   const lines = String(text || "").split("\n").map((line) => line.trim()).filter(Boolean);
@@ -1692,7 +1693,16 @@ function writeCommonPatch(patch, persist = true) {
 }
 function persistCommon(pref) {
   if (typeof window === "undefined") return Promise.resolve();
-  return import("./pages").then((api) => api.saveCommonPref({ data: { pref } })).catch(() => {
+  const baseRev = typeof pref?.rev === "number" ? pref.rev : 0;
+  return import("./pages").then((api) => api.saveCommonPref({ data: { pref: { ...pref, baseRev } } })).then((res) => {
+    if (res && res.ok === false) throw new Error(res.error || "설정을 덮지 않았습니다.");
+    if (typeof res?.rev === "number") {
+      patchApp((d) => {
+        const cur = d.prefs[COMMON_ID];
+        if (cur) d.prefs[COMMON_ID] = { ...cur, rev: res.rev };
+      }, false);
+    }
+    return res;
   });
 }
 function readFieldAudit(source) {

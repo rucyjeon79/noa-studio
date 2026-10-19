@@ -254,15 +254,14 @@ export function SettingsApp() {
 
   function persistCommon() {
     const now = readCommon();
-    void saveCommonPref({ data: { pref: { ...now } } }).catch(() => {});
+    const rev = typeof (now as { rev?: number }).rev === "number" ? (now as { rev?: number }).rev : 0;
+    void saveCommonPref({ data: { pref: { ...now, baseRev: rev } } }).catch(() => {});
   }
 
   async function saveItem<K extends CommonKey>(key: K, value: CommonPref[K]) {
     if (String(value ?? "") === String(common[key] ?? "")) return;
     try {
-      writeCommonField(key, value);
-      const now = readCommon();
-      await saveCommonPref({ data: { pref: { ...now } } });
+      await writeCommonField(key, value);
       setOpenKey("");
       setRowError("");
       bump();
@@ -332,8 +331,15 @@ export function SettingsApp() {
       listRule: draft.listRule,
     });
     const saved = readPref(genreId);
+    let baseRev = typeof (saved as { rev?: number }).rev === "number" ? (saved as { rev?: number }).rev : 0;
     try {
-      await saveGenrePref({
+      const remote = await loadGenrePref({ data: { genreId } });
+      if (remote && typeof remote.rev === "number") baseRev = remote.rev;
+    } catch {
+      /* 열어 둔 버전을 그대로 보낸다 */
+    }
+    try {
+      const genreSaved = await saveGenrePref({
         data: {
           genreId,
           pref: {
@@ -362,9 +368,11 @@ export function SettingsApp() {
             titleModeRule: saved.titleModeRule,
             guideText: saved.guideText,
             listRule: genreOnlyList(saved.listRule, readCommon().listRule),
+            baseRev,
           },
         },
       });
+      if (genreSaved && genreSaved.ok === false) throw new Error(genreSaved.error || "장르 설정을 덮지 않았습니다.");
     } catch (err) {
       setGenreError(err instanceof Error && err.message ? err.message : "저장되지 않았습니다.");
       followTarget(document.getElementById("genre-save"));

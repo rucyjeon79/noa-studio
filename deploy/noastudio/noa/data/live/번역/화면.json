@@ -1,0 +1,607 @@
+{
+  "설명란을 보려면 누르세요": {
+    "en": "Tap to see the description",
+    "ja": "説明を見るには押してください",
+    "th": "แตะเพื่อดูคำอธิบาย"
+  },
+  "결과창을 보려면 누르세요": {
+    "en": "Tap to see the result",
+    "ja": "結果を見るには押してください",
+    "th": "แตะเพื่อดูผลลัพธ์"
+  },
+  "설명 닫기": {
+    "en": "Close description",
+    "ja": "説明を閉じる",
+    "th": "ปิดคำอธิบาย"
+  },
+  "결과 닫기": {
+    "en": "Close result",
+    "ja": "結果を閉じる",
+    "th": "ปิดผลลัพธ์"
+  },
+  "원곡과 동일": {
+    "en": "Same as the original",
+    "ja": "原曲と同じ",
+    "th": "เหมือนต้นฉบับ"
+  },
+  "변환": {
+    "en": "Converted",
+    "ja": "変換",
+    "th": "แปลง"
+  },
+  "원곡": {
+    "en": "Original",
+    "ja": "原曲",
+    "th": "ต้นฉบับ"
+  },
+  "Grok 작동 중": {
+    "en": "Grok is working",
+    "ja": "Grok 作業中",
+    "th": "Grok กำลังทำงาน"
+  },
+  "조선 발라드": {
+    "en": "Joseon Ballad",
+    "ja": "朝鮮バラード",
+    "th": "บัลลาดโชซอน"
+  },
+  "당신의 이야기, 우리의 음악": {
+    "en": "Your story, our music",
+    "ja": "あなたの物語、私たちの音楽",
+    "th": "เรื่องราวของคุณ ดนตรีของเรา"
+  },
+  "재탄생, 유명곡 커버": {
+    "en": "Rebirth, famous song covers",
+    "ja": "再誕生、有名曲カバー",
+    "th": "เกิดใหม่ คัฟเวอร์เพลงดัง"
+  },
+  "내가 아는 유명곡의 재탄생": {
+    "en": "The rebirth of famous songs I know",
+    "ja": "私が知る有名曲の再誕生",
+    "th": "การเกิดใหม่ของเพลงดังที่ฉันรู้จัก"
+  },
+  "저장한 커버곡이 없습니다. 커버곡 입력에서 만든 곡이 여기에 모입니다.": {
+    "en": "No saved covers yet. Songs made in Cover input gather here.",
+    "ja": "保存したカバー曲がありません。カバー曲入力で作った曲がここに集まります。",
+    "th": "ยังไม่มีเพลงคัฟเวอร์ที่บันทึก เพลงที่ทำในช่องใส่เพลงคัฟเวอร์จะมารวมที่นี่"
+  },
+  "저장한 사연곡이 없습니다. 사연곡 입력에서 만든 곡이 여기에 모입니다.": {
+    "en": "No saved story songs yet. Songs made in Story input gather here.",
+    "ja": "保存したストーリー曲がありません。ストーリー曲入力で作った曲がここに集まります。",
+    "th": "ยังไม่มีเพลงเรื่องราวที่บันทึก เพลงที่ทำในช่องใส่เพลงเรื่องราวจะมารวมที่นี่"
+  },
+  "커버곡 여는 중": {
+    "en": "Opening cover songs",
+    "ja": "カバー曲を開いています",
+    "th": "กำลังเปิดเพลงคัฟเวอร์"
+  },
+  "사연곡 여는 중": {
+    "en": "Opening story songs",
+    "ja": "ストーリー曲を開いています",
+    "th": "กำลังเปิดเพลงเรื่องราว"
+  },
+  "설명란이 비어 있습니다.": {
+    "en": "The description is empty.",
+    "ja": "説明欄は空です。",
+    "th": "ช่องคำอธิบายว่างอยู่"
+  },
+  "FINALE : 별이 되다": {
+    "en": "FINALE: Become a Star",
+    "ja": "FINALE：星になる",
+    "th": "FINALE: กลายเป็นดาว"
+  },
+  "Light It Up(빛으로 널-II)": {
+    "en": "Light It Up (You, in Light II)",
+    "ja": "Light It Up（光で君を-II）",
+    "th": "Light It Up (เธอในแสง-II)"
+  },
+  "Touch You(난 다시 살아가-II)": {
+    "en": "Touch You (I Live Again II)",
+    "ja": "Touch You（僕はまた生きる-II）",
+    "th": "Touch You (ฉันใช้ชีวิตอีกครั้ง-II)"
+  },
+  "가까울수록": {
+    "en": "The Closer We Are",
+    "ja": "近いほど",
+    "th": "ยิ่งใกล้กัน"
+  },
+  "고천(高天)": {
+    "en": "High Heaven",
+    "ja": "高天",
+    "th": "สวรรค์สูง"
+  },
+  "근상(近傷)": {
+    "en": "A Close Wound",
+    "ja": "近傷",
+    "th": "บาดแผลที่ใกล้"
+  },
+  "나란히": {
+    "en": "Side by Side",
+    "ja": "並んで",
+    "th": "เคียงข้างกัน"
+  },
+  "난 다시 살아가": {
+    "en": "I Live Again",
+    "ja": "僕はまた生きる",
+    "th": "ฉันใช้ชีวิตอีกครั้ง"
+  },
+  "날아올라 Part.1 아침편": {
+    "en": "Fly Up Part.1 Morning",
+    "ja": "飛び立て Part.1 朝",
+    "th": "โบยบิน Part.1 ยามเช้า"
+  },
+  "날아올라 Part.2 밤하늘편": {
+    "en": "Fly Up Part.2 Night Sky",
+    "ja": "飛び立て Part.2 夜空",
+    "th": "โบยบิน Part.2 ท้องฟ้ายามค่ำ"
+  },
+  "날아올라 Part.3 Final": {
+    "en": "Fly Up Part.3 Final",
+    "ja": "飛び立て Part.3 Final",
+    "th": "โบยบิน Part.3 Final"
+  },
+  "남은 자리": {
+    "en": "The Place Left Behind",
+    "ja": "残された場所",
+    "th": "ที่ที่เหลืออยู่"
+  },
+  "냉루(冷淚)": {
+    "en": "Cold Tears",
+    "ja": "冷涙",
+    "th": "น้ำตาเย็น"
+  },
+  "너와의 모든 순간": {
+    "en": "Every Moment with You",
+    "ja": "君とのすべての瞬間",
+    "th": "ทุกช่วงเวลากับเธอ"
+  },
+  "느린 발걸음": {
+    "en": "Slow Steps",
+    "ja": "遅い足音",
+    "th": "ก้าวที่ช้า"
+  },
+  "다향(茶香)": {
+    "en": "Tea Fragrance",
+    "ja": "茶香",
+    "th": "กลิ่นชา"
+  },
+  "답광(答光)": {
+    "en": "Answered Light",
+    "ja": "答光",
+    "th": "แสงที่ตอบ"
+  },
+  "독연(獨戀)": {
+    "en": "A Love Alone",
+    "ja": "独恋",
+    "th": "รักเพียงลำพัง"
+  },
+  "등단(登壇)": {
+    "en": "Taking the Stage",
+    "ja": "登壇",
+    "th": "ขึ้นเวที"
+  },
+  "마음결": {
+    "en": "Grain of the Heart",
+    "ja": "心の目",
+    "th": "ลายของหัวใจ"
+  },
+  "만연(晩緣)": {
+    "en": "A Late Bond",
+    "ja": "晩縁",
+    "th": "พันธะที่มาสาย"
+  },
+  "망문(望門)": {
+    "en": "Looking Toward the Gate",
+    "ja": "望門",
+    "th": "มองไปที่ประตู"
+  },
+  "무너진 날들": {
+    "en": "Days That Fell Apart",
+    "ja": "崩れた日々",
+    "th": "วันที่พังทลาย"
+  },
+  "묵거(默去)": {
+    "en": "Leaving in Silence",
+    "ja": "黙去",
+    "th": "จากไปในความเงียบ"
+  },
+  "미안(未安)": {
+    "en": "I'm Sorry",
+    "ja": "未安",
+    "th": "เสียใจ"
+  },
+  "불꽃(비상-II)": {
+    "en": "Flame (Soaring II)",
+    "ja": "炎（飛翔-II）",
+    "th": "เปลวไฟ (โบยบิน-II)"
+  },
+  "비상(飛上)": {
+    "en": "Soaring",
+    "ja": "飛上",
+    "th": "โบยบิน"
+  },
+  "빛으로 널": {
+    "en": "You, in Light",
+    "ja": "光で君を",
+    "th": "เธอในแสง"
+  },
+  "빛의 자리": {
+    "en": "A Place of Light",
+    "ja": "光の場所",
+    "th": "ที่ของแสง"
+  },
+  "사랑이 스며든 날": {
+    "en": "The Day Love Soaked In",
+    "ja": "愛が染みた日",
+    "th": "วันที่ความรักซึมเข้ามา"
+  },
+  "세상 끝에서도": {
+    "en": "Even at the End of the World",
+    "ja": "世界の果てでも",
+    "th": "แม้สุดขอบโลก"
+  },
+  "세전(細顫)": {
+    "en": "A Fine Tremor",
+    "ja": "細顫",
+    "th": "สั่นเบา"
+  },
+  "세화(歲華)": {
+    "en": "The Year's Bloom",
+    "ja": "歳華",
+    "th": "ดอกไม้แห่งปี"
+  },
+  "소생(蘇生)": {
+    "en": "Revival",
+    "ja": "蘇生",
+    "th": "ฟื้นคืน"
+  },
+  "시린 울림": {
+    "en": "A Cold Ring",
+    "ja": "凍みる響き",
+    "th": "เสียงสะท้อนที่เย็น"
+  },
+  "심결(心結)": {
+    "en": "A Knot in the Heart",
+    "ja": "心結",
+    "th": "ปมในใจ"
+  },
+  "심등(心燈)": {
+    "en": "Lamp of the Heart",
+    "ja": "心灯",
+    "th": "โคมแห่งใจ"
+  },
+  "심연(深淵)": {
+    "en": "The Abyss",
+    "ja": "深淵",
+    "th": "ห้วงลึก"
+  },
+  "아직 그 자리에": {
+    "en": "Still in That Place",
+    "ja": "まだその場所に",
+    "th": "ยังอยู่ที่นั่น"
+  },
+  "야익(夜翼)": {
+    "en": "Night Wings",
+    "ja": "夜翼",
+    "th": "ปีกยามค่ำ"
+  },
+  "엇갈린 진심": {
+    "en": "Crossed Hearts",
+    "ja": "すれ違う本心",
+    "th": "ใจจริงที่สวนทาง"
+  },
+  "여향(餘響)": {
+    "en": "The After-ring",
+    "ja": "余響",
+    "th": "เสียงที่ค้าง"
+  },
+  "여휘(餘暉)": {
+    "en": "Afterglow",
+    "ja": "余暉",
+    "th": "แสงระเรื่อ"
+  },
+  "염광(染光)": {
+    "en": "Stained Light",
+    "ja": "染光",
+    "th": "แสงที่เปื้อน"
+  },
+  "염풍(焰風)": {
+    "en": "Flame Wind",
+    "ja": "焰風",
+    "th": "ลมเปลวไฟ"
+  },
+  "완보(緩步)": {
+    "en": "A Slow Walk",
+    "ja": "緩歩",
+    "th": "ก้าวช้า"
+  },
+  "완익(完翼)": {
+    "en": "Wings Complete",
+    "ja": "完翼",
+    "th": "ปีกที่ครบ"
+  },
+  "우물에 빠진 달빛": {
+    "en": "Moonlight Fallen in the Well",
+    "ja": "井戸に落ちた月明かり",
+    "th": "แสงจันทร์ที่ตกลงบ่อ"
+  },
+  "유등(留燈)": {
+    "en": "A Lamp Left Lit",
+    "ja": "留灯",
+    "th": "โคมที่ยังจุดไว้"
+  },
+  "작은 떨림": {
+    "en": "A Small Tremble",
+    "ja": "小さな震え",
+    "th": "การสั่นเล็กน้อย"
+  },
+  "잔광(殘光)": {
+    "en": "The Last Light",
+    "ja": "残光",
+    "th": "แสงสุดท้าย"
+  },
+  "잔성(殘星)": {
+    "en": "A Remaining Star",
+    "ja": "残星",
+    "th": "ดาวที่เหลือ"
+  },
+  "잔심(殘心)": {
+    "en": "A Heart Left Behind",
+    "ja": "残心",
+    "th": "ใจที่เหลือ"
+  },
+  "잔향(殘響)": {
+    "en": "A Lingering Echo",
+    "ja": "残響",
+    "th": "เสียงที่ยังก้อง"
+  },
+  "점등(點燈)": {
+    "en": "Lighting the Lamp",
+    "ja": "点灯",
+    "th": "จุดโคม"
+  },
+  "점요(漸搖)": {
+    "en": "A Growing Sway",
+    "ja": "漸揺",
+    "th": "ค่อย ๆ ไหว"
+  },
+  "정중월(井中月)": {
+    "en": "Moon in the Well",
+    "ja": "井中月",
+    "th": "จันทร์ในบ่อ"
+  },
+  "조익(朝翼)": {
+    "en": "Morning Wings",
+    "ja": "朝翼",
+    "th": "ปีกยามเช้า"
+  },
+  "지보(遲步)": {
+    "en": "Late Steps",
+    "ja": "遅歩",
+    "th": "ก้าวที่มาสาย"
+  },
+  "착심(錯心)": {
+    "en": "A Misread Heart",
+    "ja": "錯心",
+    "th": "ใจที่เข้าใจผิด"
+  },
+  "천애(天涯)": {
+    "en": "The Sky's Edge",
+    "ja": "天涯",
+    "th": "ขอบฟ้า"
+  },
+  "퇴락(頹落)": {
+    "en": "Falling Away",
+    "ja": "頽落",
+    "th": "ร่วงโรย"
+  },
+  "하루의 끝에": {
+    "en": "At the End of the Day",
+    "ja": "一日の終わりに",
+    "th": "ปลายวัน"
+  },
+  "하루의 끝에 - Reborn": {
+    "en": "At the End of the Day - Reborn",
+    "ja": "一日の終わりに - Reborn",
+    "th": "ปลายวัน - Reborn"
+  },
+  "한마디도 없이": {
+    "en": "Without a Word",
+    "ja": "一言もなく",
+    "th": "โดยไม่มีแม้คำเดียว"
+  },
+  "한향(寒響)": {
+    "en": "A Cold Echo",
+    "ja": "寒響",
+    "th": "เสียงสะท้อนเย็น"
+  },
+  "함구(緘口)": {
+    "en": "A Closed Mouth",
+    "ja": "緘口",
+    "th": "ปากที่ปิด"
+  },
+  "혼잣말": {
+    "en": "Talking to Myself",
+    "ja": "ひとりごと",
+    "th": "พูดกับตัวเอง"
+  },
+  "화광(火光)": {
+    "en": "Firelight",
+    "ja": "火光",
+    "th": "แสงไฟ"
+  },
+  "화성(化星)": {
+    "en": "Becoming a Star",
+    "ja": "化星",
+    "th": "กลายเป็นดาว"
+  },
+  "환혼곡(還魂曲)": {
+    "en": "Song of Returning Soul",
+    "ja": "還魂曲",
+    "th": "บทเพลงคืนวิญญาณ"
+  },
+  "회명(回明)": {
+    "en": "Light Returning",
+    "ja": "回明",
+    "th": "แสงที่หวนกลับ"
+  },
+  "(번호 + 제목)": {
+    "en": "(number + title)",
+    "ja": "（番号＋題名）",
+    "th": "(หมายเลข + ชื่อ)"
+  },
+  "(고르면 단곡. 10곡이 모두 확정되고 잠금이 풀리면 ACT 아래에서 결과창)": {
+    "en": "(Pick a song. When all 10 are confirmed and the lock is open, the result opens under the ACT.)",
+    "ja": "（選ぶと単曲。10曲がすべて確定し、ロックが解除されるとACTの下に結果）",
+    "th": "(เลือกเพลง เมื่อครบ 10 เพลงและปลดล็อก ผลลัพธ์จะเปิดใต้ ACT)"
+  },
+  "유튜브 영상": {
+    "en": "YouTube video",
+    "ja": "YouTube動画",
+    "th": "วิดีโอ YouTube"
+  },
+  "비어 있음": {
+    "en": "Empty",
+    "ja": "空",
+    "th": "ว่าง"
+  },
+  "장르": {
+    "en": "Genre",
+    "ja": "ジャンル",
+    "th": "แนว"
+  },
+  "필수": {
+    "en": "Required",
+    "ja": "必須",
+    "th": "จำเป็น"
+  },
+  "장르를 선택하세요": {
+    "en": "Choose a genre",
+    "ja": "ジャンルを選んでください",
+    "th": "เลือกแนวเพลง"
+  },
+  "가사": {
+    "en": "Lyrics",
+    "ja": "歌詞",
+    "th": "เนื้อเพลง"
+  },
+  "트랙리스트": {
+    "en": "Tracklist",
+    "ja": "トラックリスト",
+    "th": "รายชื่อเพลง"
+  },
+  "이 앱": {
+    "en": "This app",
+    "ja": "このアプリ",
+    "th": "แอปนี้"
+  },
+  "닫기": {
+    "en": "Close",
+    "ja": "閉じる",
+    "th": "ปิด"
+  },
+  "🎵 AI Artist Noa의 곡을 듣고 보는 화면입니다. 첫 화면에서 장르를 고르면 그 장르의 곡이 펼쳐집니다.": {
+    "en": "🎵 This is where you listen to and watch AI Artist Noa's songs. Pick a genre on the first screen and that genre's songs open.",
+    "ja": "🎵 AI Artist Noaの曲を聴いて見る画面です。最初の画面でジャンルを選ぶと、そのジャンルの曲が開きます。",
+    "th": "🎵 นี่คือหน้าสำหรับฟังและดูเพลงของ AI Artist Noa เลือกแนวในหน้าแรก แล้วเพลงของแนวนั้นจะเปิดขึ้น"
+  },
+  "📺 곡 아래 Song은 음원, MV는 뮤직비디오입니다. 그림을 누르면 그 자리에서 재생되고, Song이나 MV 글자를 누르면 유튜브로 이동합니다.": {
+    "en": "📺 Under a song, Song is the audio and MV is the music video. Tap the picture to play it here. Tap the words Song or MV to open YouTube.",
+    "ja": "📺 曲の下の Song は音源、MV はミュージックビデオです。画像を押すとその場で再生され、Song または MV の文字を押すと YouTube に移動します。",
+    "th": "📺 ใต้เพลง Song คือไฟล์เสียง และ MV คือมิวสิกวิดีโอ แตะรูปเพื่อเล่นตรงนี้ แตะคำว่า Song หรือ MV เพื่อไปที่ YouTube"
+  },
+  "✨ Song이나 MV 옆의 Premium은 고음질 영상이라는 표시입니다.": {
+    "en": "✨ Premium beside Song or MV means that video is high quality.",
+    "ja": "✨ Song または MV の横の Premium は、高音質の映像である印です。",
+    "th": "✨ Premium ข้าง Song หรือ MV คือเครื่องหมายว่าวิดีโอนั้นคุณภาพสูง"
+  },
+  "📖 설명란을 보려면 누르세요를 누르면 그 곡의 이야기를 읽을 수 있습니다. 오른쪽 위 국기로 화면 언어를 바꿀 수 있습니다.": {
+    "en": "📖 Tap to see the description, and you can read that song's story. The flag at the top right changes the screen language.",
+    "ja": "📖 説明を見るには押してくださいを押すと、その曲の話が読めます。右上の国旗で画面の言語を変えられます。",
+    "th": "📖 แตะเพื่อดูคำอธิบาย แล้วจะอ่านเรื่องราวของเพลงนั้นได้ ธงมุมขวาบนใช้เปลี่ยนภาษาของหน้าจอ"
+  },
+  "💛 장르를 고르고, 곡을 고르고, 재생하면 됩니다.": {
+    "en": "💛 Pick a genre, pick a song, and play it.",
+    "ja": "💛 ジャンルを選び、曲を選び、再生すれば大丈夫です。",
+    "th": "💛 เลือกแนว เลือกเพลง แล้วกดเล่น"
+  },
+  "🎧 곡 제목 오른쪽에 음원듣기가 있으면 누르면 주크박스에서 그 곡이 재생됩니다. 제목은 그 음원의 제목입니다. 폰 위 알림도 같은 곡이고, 앱을 내리거나 화면을 꺼도 이어서 들립니다.": {
+    "en": "🎧 If Listen is on the right of the title, tap it and that song plays in the jukebox. The title is the audio's own title. The notification at the top of the phone is the same song, and it keeps going if you leave the app or turn the screen off.",
+    "ja": "🎧 曲名の右に聴くがあれば、押すとジュークボックスでその曲が再生されます。タイトルはその音源の曲名です。スマホ上部の通知も同じ曲で、アプリを閉じたり画面を消しても続きます。",
+    "th": "🎧 ถ้ามีคำว่า ฟัง ทางขวาของชื่อเพลง ให้แตะแล้วเพลงนั้นจะเล่นในตู้เพลง ชื่อคือชื่อของไฟล์เสียงนั้น การแจ้งเตือนด้านบนของโทรศัพท์คือเพลงเดียวกัน และยังเล่นต่อแม้ปิดแอปหรือดับหน้าจอ"
+  },
+  "📺 미리보기 그림을 누르면 그 자리에서 영상이 재생됩니다. Song은 곡 영상, MV는 뮤직비디오입니다. Song이나 MV 글자를 누르면 유튜브로 이동합니다. 영상을 보면 주크박스는 멈추고, 주크박스를 재생하면 영상은 멈춥니다. 주크박스를 닫아도 보고 있던 영상은 계속 재생됩니다.": {
+    "en": "📺 Tap the preview picture to play the video right there. Song is the song video, and MV is the music video. Tap the words Song or MV to open YouTube. Starting a video pauses the jukebox, and starting the jukebox pauses the video. Closing the jukebox does not stop a video that is already playing.",
+    "ja": "📺 プレビューの絵を押すとその場で映像が再生されます。Song は曲の映像、MV はミュージックビデオです。Song または MV の文字を押すと YouTube に移動します。映像を見るとジュークボックスは止まり、ジュークボックスを再生すると映像は止まります。ジュークボックスを閉じても、見ていた映像はそのまま再生されます。",
+    "th": "📺 แตะรูปตัวอย่างเพื่อเล่นวิดีโอตรงนั้น Song คือวิดีโอเพลง และ MV คือมิวสิกวิดีโอ แตะคำว่า Song หรือ MV เพื่อเปิด YouTube เมื่อดูวิดีโอ ตู้เพลงจะหยุด และเมื่อเปิดตู้เพลง วิดีโอจะหยุด การปิดตู้เพลงไม่หยุดวิดีโอที่กำลังเล่น"
+  },
+  "🎛️ 재생 중인 영상 아래에는 다시 재생, 이전, 재생과 일시정지, 다음, 한 곡 반복, 순차, 셔플이 있습니다. 켜 둔 아이콘은 초록색이고, 그 곡 목록 안에서만 이어집니다. MV와 ACT 영상은 곡 목록으로 넘어가지 않고, ACT는 그 영상을 반복합니다.": {
+    "en": "🎛️ Under the video that is playing: replay, previous, play and pause, next, repeat one, in order, and shuffle. An icon you leave on is green, and it only continues inside that song list. MV and ACT videos do not move through the song list, and an ACT video repeats itself.",
+    "ja": "🎛️ 再生中の映像の下には、もう一度、前へ、再生と一時停止、次へ、1曲リピート、順番、シャッフルがあります。オンのままのアイコンは緑色で、その曲一覧の中だけ進みます。MV と ACT の映像は曲一覧へ進まず、ACT はその映像を繰り返します。",
+    "th": "🎛️ ใต้คลิปที่กำลังเล่นมี เล่นซ้ำ ก่อนหน้า เล่นและหยุดชั่วคราว ถัดไป เล่นซ้ำหนึ่งเพลง ตามลำดับ และสุ่ม ไอคอนที่เปิดค้างไว้เป็นสีเขียว และไปต่อเฉพาะในรายการเพลงนั้น วิดีโอ MV และ ACT ไม่ข้ามไปรายการเพลง และ ACT จะเล่นคลิปนั้นซ้ำ"
+  },
+  "💛 장르를 고르고, 듣고 싶으면 음원듣기, 보고 싶으면 미리보기를 누르면 됩니다.": {
+    "en": "💛 Pick a genre. Tap Listen to hear a song, or tap the preview to watch the video.",
+    "ja": "💛 ジャンルを選び、聴きたいときは聴く、見たいときはプレビューを押せば大丈夫です。",
+    "th": "💛 เลือกแนว อยากฟังให้แตะ ฟัง อยากดูให้แตะตัวอย่าง"
+  },
+  "🤖 이 앱은 Grok이 만들었고 Grok과 연결되어 있습니다. 위에 보이는 버전은 Grok 빌드 버전입니다.": {
+    "en": "🤖 Grok made this app, and it stays connected to Grok. The version above is the Grok build version.",
+    "ja": "🤖 このアプリは Grok が作り、Grok とつながっています。上に見えるバージョンは Grok のビルドバージョンです。",
+    "th": "🤖 Grok สร้างแอปนี้ และแอปนี้เชื่อมกับ Grok เวอร์ชันด้านบนคือเวอร์ชันบิลด์ของ Grok"
+  },
+  "음원듣기": {
+    "en": "Listen",
+    "ja": "聴く",
+    "th": "ฟัง"
+  },
+  "음원": {
+    "en": "Audio",
+    "ja": "音源",
+    "th": "เสียง"
+  },
+  "오늘의 사연이 음악이 됩니다": {
+    "en": "Today's story becomes music",
+    "ja": "今日の物語が音楽になります",
+    "th": "เรื่องราวของวันนี้กลายเป็นดนตรี"
+  },
+  "새 버전이 있습니다.": {
+    "en": "A new version is available.",
+    "ja": "新しいバージョンがあります。",
+    "th": "มีเวอร์ชันใหม่"
+  },
+  "나중에": {
+    "en": "Later",
+    "ja": "あとで",
+    "th": "ภายหลัง"
+  },
+  "적용": {
+    "en": "Apply",
+    "ja": "適用",
+    "th": "ใช้"
+  },
+  "NOA STUDIO를 설치 하시겠습니까?": {
+    "en": "Install NOA STUDIO?",
+    "ja": "NOA STUDIOをインストールしますか？",
+    "th": "ติดตั้ง NOA STUDIO หรือไม่"
+  },
+  "설치": {
+    "en": "Install",
+    "ja": "インストール",
+    "th": "ติดตั้ง"
+  },
+  "시간이 지나도 남는 노래 Vol.1": {
+    "en": "The Song That Remains as Time Passes Vol.1",
+    "ja": "時間が過ぎても残る歌 Vol.1",
+    "th": "เพลงที่ยังคงอยู่แม้เวลาจะผ่านไป Vol.1"
+  },
+  "시간이 지나도 남는 노래 Vol.2": {
+    "en": "The Song That Remains as Time Passes Vol.2",
+    "ja": "時間が過ぎても残る歌 Vol.2",
+    "th": "เพลงที่ยังคงอยู่แม้เวลาจะผ่านไป Vol.2"
+  },
+  "시간이 지나도 남는 노래 Vol.3": {
+    "en": "The Song That Remains as Time Passes Vol.3",
+    "ja": "時間が過ぎても残る歌 Vol.3",
+    "th": "เพลงที่ยังคงอยู่แม้เวลาจะผ่านไป Vol.3"
+  }
+}

@@ -20,6 +20,7 @@ import { defaultThumbCast, thumbCastFromVocal, THUMB_CASTS } from "@/lib/charact
 import { DEFAULT_GENRE, EPS, GENRES, actFromEp, actTrackLine, actsForEntries, alignActCopy, asTimedTracklist, getAct, getEp, getGenre, genreWantsSuno, isEpNumber, padEp, tracksForAct, readGenreSlot, writeGenreSlot } from "@/lib/catalog";
 import { applyFixedOrder, moveId, readListOrder, writeListOrder } from "@/lib/list-order";
 import { PREF_EVENT, applyDumpPrefs, hasStoredPref, lockPolicy, normalizePref, readCommon, readPref, syncCurrentPrefs, useDesignRule, useGenrePref, writePref } from "@/lib/user-prefs";
+import { traceField } from "@/lib/field-trace";
 import { appDumpRev, cancelQueuedPage, flushAppPagesNow, holdPageLink, markMetaHydrated, patchApp, patchQueuedBody, readAppDump, saveMetaNow } from "@/lib/app-memory";
 import { collectOriginals, extrasAsEps, getOriginal, readOriginals, upsertOriginal } from "@/lib/originals";
 import { SEED_ORIGINALS } from "@/lib/originals-seed";
@@ -385,9 +386,10 @@ function urlPins(shown) {
 }
 function linkSaved(saved) {
 	const body = serverPlain(saved) || plainServer(saved);
-	if (body?.ok === true) return { ok: true, url: String(body.url || ""), error: "" };
+	const rev = body && typeof body.rev === "number" ? body.rev : undefined;
+	if (body?.ok === true) return { ok: true, url: String(body.url || ""), error: "", rev };
 	const error = body && typeof body.error === "string" ? body.error : "file";
-	return { ok: false, url: "", error };
+	return { ok: false, url: "", error, rev };
 }
 function plainServer(saved) {
 	return serverPlain(saved);
@@ -506,6 +508,14 @@ export function StudioApp() {
 	const [gateAsk, setGateAsk] = useState(false);
 	const [lockReveal, setLockReveal] = useState(false);
 	const [adminHere, setAdminHere] = useState(false);
+	useEffect(() => {
+		try {
+			if (adminHere) sessionStorage.setItem("noa-field-trace", "1");
+			else sessionStorage.removeItem("noa-field-trace");
+		} catch {
+			/* the trace stays off when the browser blocks storage */
+		}
+	}, [adminHere]);
 	const holdTimer = useRef(0);
 	const logoHeld = useRef(false);
 	const holdPointer = useRef(null);
@@ -568,6 +578,7 @@ export function StudioApp() {
 	const mvLive = useRef("");
 	const sunoLive = useRef("");
 	const fileFields = useRef({ page: "", fields: {} });
+	const paneRev = useRef(0);
 	const heardLevel = useRef({ page: "", text: "" });
 	const heardAnalysis = useRef({ page: "", text: "" });
 	const heardBySong = useRef({});
@@ -1405,6 +1416,33 @@ export function StudioApp() {
 			if (!plain || plain.ok === false || !plain.fields || typeof plain.fields !== "object") return;
 			const fields = plain.fields;
 			fileFields.current = { page, fields };
+			paneRev.current = Number(plain.rev) || 0;
+			const cached = id ? readCachedPackage(id, genreId) : readCachedPlaylist(actN, genreId);
+			if (cached) {
+				for (const key of ["lyricsBlock", "confirmedTitle", "sunoUrl", "youtubeUrl"]) {
+					if (String(cached[key] ?? "") === String(fields[key] ?? "")) continue;
+					traceField({
+						songId: id ? `${genreId}:${id}` : `${genreId}:act:${actN}`,
+						field: key,
+						value: fields[key],
+						source: "song-file",
+						reader: "readResultFile",
+						component: "StudioApp",
+						rev: Number(plain.rev) || 0,
+						note: "memory-differs",
+					});
+					traceField({
+						songId: id ? `${genreId}:${id}` : `${genreId}:act:${actN}`,
+						field: key,
+						value: cached[key],
+						source: "app-memory",
+						reader: "readCachedPackage",
+						component: "StudioApp",
+						rev: Number(plain.rev) || 0,
+						note: "shown-until-adopt",
+					});
+				}
+			}
 			const filedYt = String(fields.youtubeUrl || "");
 			const filedMv = String(fields.mvUrl || "");
 			const linksIdle = String(ytLive.current || "") === String(linkHydrated.current.yt || "") && String(mvLive.current || "") === String(linkHydrated.current.mv || "");
@@ -1512,6 +1550,7 @@ export function StudioApp() {
 			if (!plain || plain.file !== true || !plain.fields || typeof plain.fields !== "object") return;
 			const fields = plain.fields;
 			fileFields.current = { page, fields };
+			paneRev.current = Number(plain.rev) || 0;
 			setFileRev((n) => n + 1);
 			const take = (raw) => {
 				if (!raw) return raw;
@@ -3579,7 +3618,7 @@ export function StudioApp() {
 			pinScreenHold();
 			const intent = exactLinkPatch();
 			try {
-				keepSingle(padEp(epN) || epN, { ...titled, userEdited: edited, ...intent.patch, ...(blankFields ? { blankFields } : {}), savedKeys }, true, genreId, false, true, true, true);
+				keepSingle(padEp(epN) || epN, { ...titled, userEdited: edited, ...intent.patch, ...(blankFields ? { blankFields } : {}), savedKeys, baseRev: paneRev.current }, true, genreId, false, true, true, true);
 			} catch {
 				/* 화면 메모리가 끊겨도 파일 저장은 이어서 한다 */
 			}
@@ -3589,7 +3628,13 @@ export function StudioApp() {
 			void (async () => {
 				try { await flushAppPagesNow(); } catch { /* 칸 저장이 마지막이다 */ }
 				try {
-					await saveResultFields({ data: { kind: "song", genreId, ep: idNow, act: actN, title: "", fields: cellFields, blank: savedKeys.some((key) => !String(cellFields[key] ?? "").trim()) } });
+					const saved = plainServer(await saveResultFields({ data: { kind: "song", genreId, ep: idNow, act: actN, title: "", fields: cellFields, blank: savedKeys.some((key) => !String(cellFields[key] ?? "").trim()), rev: paneRev.current } }));
+					if (saved && saved.ok === false && saved.error !== "conflict") {
+						window.dispatchEvent(new CustomEvent("noa-cell-save", { detail: { ok: false } }));
+						say("이 칸을 파일에 남기지 못했습니다.");
+						return;
+					}
+					if (typeof saved?.rev === "number") paneRev.current = saved.rev;
 				} catch {
 					/* the file read below decides */
 				}
@@ -3597,6 +3642,7 @@ export function StudioApp() {
 				const read = await readPaneFile({ kind: "song", genreId, ep: idNow, act: actN, title: "" });
 				if (read.ok) {
 					fileFields.current = { page: pageKey, fields: read.fields };
+					paneRev.current = Number(read.rev) || paneRev.current;
 					fileLoadGen.current += 1;
 					setFileRev((n) => n + 1);
 				}
@@ -3628,7 +3674,7 @@ export function StudioApp() {
 		pinScreenHold();
 		const intent = exactLinkPatch();
 		try {
-			keepPlaylist({ ...saved, ...intent.patch }, true, actN, genreId, true, false);
+			keepPlaylist({ ...saved, ...intent.patch, baseRev: paneRev.current }, true, actN, genreId, true, false);
 		} catch {
 			/* 화면 메모리가 끊겨도 파일 저장은 이어서 한다 */
 		}
@@ -3637,7 +3683,15 @@ export function StudioApp() {
 		void (async () => {
 			try { await flushAppPagesNow(); } catch { /* 칸 저장이 마지막이다 */ }
 			try {
-				if (listKey) await saveResultFields({ data: { kind: "act", genreId, ep: "", act: actN, title: "", fields: listFields, blank: !String(text || "").trim() } });
+				if (listKey) {
+					const saved = plainServer(await saveResultFields({ data: { kind: "act", genreId, ep: "", act: actN, title: "", fields: listFields, blank: !String(text || "").trim(), rev: paneRev.current } }));
+					if (saved && saved.ok === false && saved.error !== "conflict") {
+						window.dispatchEvent(new CustomEvent("noa-cell-save", { detail: { ok: false } }));
+						say("이 칸을 파일에 남기지 못했습니다.");
+						return;
+					}
+					if (typeof saved?.rev === "number") paneRev.current = saved.rev;
+				}
 			} catch {
 				/* the file read below decides */
 			}
@@ -3645,6 +3699,7 @@ export function StudioApp() {
 			const read = await readPaneFile({ kind: "act", genreId, ep: "", act: actN, title: "" });
 			if (read.ok) {
 				fileFields.current = { page: pageKey, fields: read.fields };
+				paneRev.current = Number(read.rev) || paneRev.current;
 				fileLoadGen.current += 1;
 				setFileRev((n) => n + 1);
 			}
@@ -3834,10 +3889,15 @@ export function StudioApp() {
 		}
 		return shown;
 	}
+	function noteLink(saved) {
+		const body = linkSaved(saved);
+		if (typeof body.rev === "number") paneRev.current = body.rev;
+		return body;
+	}
 	async function readPaneFile(query) {
 		try {
 			const plain = plainServer(await readResultFile({ data: query }));
-			if (plain && plain.ok !== false && plain.fields && typeof plain.fields === "object") return { ok: true, fields: plain.fields, error: "" };
+			if (plain && plain.ok !== false && plain.fields && typeof plain.fields === "object") return { ok: true, fields: plain.fields, error: "", rev: Number(plain.rev) || 0 };
 			return { ok: false, fields: null, error: String(plain?.error || "read") };
 		} catch (err) {
 			return { ok: false, fields: null, error: quietDiskFault(err instanceof Error ? err.message.trim() : "request") };
@@ -3869,6 +3929,7 @@ export function StudioApp() {
 				audioLevel: levelOn ? String(seenLevel.text || "").trim() : "",
 				analysisSet: analysisOn,
 				audioAnalysis: analysisOn ? String(seenAnalysis.text || "").trim() : "",
+				rev: paneRev.current,
 			} });
 			try {
 				exact = plainServer(await askExact());
@@ -3899,6 +3960,7 @@ export function StudioApp() {
 			const read = await readPaneFile(query);
 			if (read.ok) {
 				fileFields.current = { page, fields: read.fields };
+				paneRev.current = Number(read.rev) || paneRev.current;
 				fileLoadGen.current += 1;
 				setFileRev((n) => n + 1);
 			}
@@ -3978,18 +4040,24 @@ export function StudioApp() {
 		const writeGaps = async (fields) => {
 			if (!Object.keys(fields).length) return;
 			try {
-				const saved = plainServer(await saveResultFields({ data: { ...query, title: String(shown.confirmedTitle || ""), fields, blank: Object.values(fields).some((value) => !String(value ?? "").trim()) } }));
+				const saved = plainServer(await saveResultFields({ data: { ...query, title: String(shown.confirmedTitle || ""), fields, blank: Object.values(fields).some((value) => !String(value ?? "").trim()), rev: paneRev.current } }));
+				if (saved?.error === "conflict") {
+					fault = "다른 저장이 먼저 들어가서 이번 입력은 덮지 않았습니다. 입력은 화면에 그대로 있습니다.";
+					return;
+				}
+				if (typeof saved?.rev === "number") paneRev.current = saved.rev;
 				if (saved && saved.ok === false && saved.error) fault = fault || quietDiskFault(String(saved.error || (saved.missing || []).join(",")));
 			} catch (err) {
 				fault = quietDiskFault(err instanceof Error ? err.message.trim() : "request");
 			}
 		};
 		await writeGaps(urlGaps);
+		if (fault.startsWith("다른 저장이")) return { ok: false, wrote: false, error: fault, left: gaps };
 		if (urlGaps.sunoUrl) {
 			const mid = await readPaneFile(query);
 			if (!mid.ok || sunoAddress(mid.fields?.sunoUrl) !== urlGaps.sunoUrl) {
 				try {
-					const linked = linkSaved(await saveSongLink({ data: { genreId, ep: id, act: id ? 0 : actN, url: urlGaps.sunoUrl, field: "suno" } }));
+					const linked = noteLink(await saveSongLink({ data: { genreId, ep: id, act: id ? 0 : actN, url: urlGaps.sunoUrl, field: "suno", rev: paneRev.current } }));
 					if (!linked.ok) fault = fault || quietDiskFault(linked.error || "suno");
 				} catch (err) {
 					fault = fault || quietDiskFault(err instanceof Error ? err.message.trim() : "request");
@@ -3997,6 +4065,7 @@ export function StudioApp() {
 			}
 		}
 		await writeGaps(textGaps);
+		if (fault.startsWith("다른 저장이")) return { ok: false, wrote: false, error: fault, left: gaps };
 		const wantSuno = sunoAddress(urlGaps.sunoUrl || "");
 		let back = null;
 		for (let attempt = 0; attempt < 2 && !back; attempt += 1) {
@@ -4006,7 +4075,7 @@ export function StudioApp() {
 		}
 		if (wantSuno && (!back || sunoAddress(back.sunoUrl) !== wantSuno)) {
 			try {
-				const linked = linkSaved(await saveSongLink({ data: { genreId, ep: id, act: id ? 0 : actN, url: wantSuno, field: "suno" } }));
+				const linked = noteLink(await saveSongLink({ data: { genreId, ep: id, act: id ? 0 : actN, url: wantSuno, field: "suno", rev: paneRev.current } }));
 				if (!linked.ok) fault = fault || quietDiskFault(linked.error || "suno");
 			} catch (err) {
 				fault = fault || quietDiskFault(err instanceof Error ? err.message.trim() : "request");
@@ -4044,7 +4113,7 @@ export function StudioApp() {
 			saveMark.current = { key: saveMark.current.key, sig: saveSigRef.current };
 			return true;
 		}
-		setError("저장하지 못했습니다.");
+		setError(stuck.error && /[가-힣]/.test(stuck.error) ? stuck.error : "저장하지 못했습니다.");
 		return false;
 	}
 	async function pinTypedSuno(url) {
@@ -4054,18 +4123,23 @@ export function StudioApp() {
 		const query = { kind: id ? "song" : "act", genreId, ep: id, act: actN, title: "" };
 		let matched = false;
 		let fields = null;
+		let seenRev = 0;
 		for (let attempt = 0; attempt < 2 && !matched; attempt += 1) {
 			try {
-				await saveSongLink({ data: { genreId, ep: id, act: id ? 0 : actN, url: clean, field: "suno" } });
+				await saveSongLink({ data: { genreId, ep: id, act: id ? 0 : actN, url: clean, field: "suno", rev: paneRev.current } });
 			} catch {
 				/* the file read below decides whether the address landed */
 			}
 			const read = await readPaneFile(query);
 			matched = Boolean(read.ok && sunoAddress(read.fields?.sunoUrl) === clean);
-			if (matched) fields = read.fields;
+			if (matched) {
+				fields = read.fields;
+				seenRev = Number(read.rev) || 0;
+			}
 		}
 		if (!matched || !fields) return false;
 		fileFields.current = { page: pageKey, fields };
+		paneRev.current = seenRev;
 		fileLoadGen.current += 1;
 		setFileRev((n) => n + 1);
 		const slot = id ? `single:${genreId}:${id}` : `playlist:${genreId}:${actN}`;
@@ -4088,14 +4162,15 @@ export function StudioApp() {
 		const slot = id ? `single:${genreId}:${id}` : `playlist:${genreId}:${actN}`;
 		const query = { kind: id ? "song" : "act", genreId, ep: id, act: actN, title: "" };
 		try {
-			if (id) await saveAudioLevel({ data: { genreId, ep: id, audioLevel: clean } });
-			else await saveResultFields({ data: { ...query, fields: { audioLevel: clean } } });
+			if (id) await saveAudioLevel({ data: { genreId, ep: id, audioLevel: clean, rev: paneRev.current } });
+			else await saveResultFields({ data: { ...query, fields: { audioLevel: clean }, rev: paneRev.current } });
 		} catch {
 			return false;
 		}
 		const read = await readPaneFile(query);
 		if (!read.ok || levelText(read.fields?.audioLevel) !== clean) return false;
 		fileFields.current = { page, fields: read.fields };
+		paneRev.current = Number(read.rev) || paneRev.current;
 		fileLoadGen.current += 1;
 		setFileRev((n) => n + 1);
 		holdPageLink(slot, { audioLevel: clean });
@@ -4112,13 +4187,13 @@ export function StudioApp() {
 		const query = { kind: id ? "song" : "act", genreId, ep: id, act: actN, title: "" };
 		try {
 			if (sunoUrl) {
-				const saved = linkSaved(await saveSongLink({ data: { genreId, ep: id, act: id ? 0 : actN, url: sunoUrl, field: "suno" } }));
+				const saved = noteLink(await saveSongLink({ data: { genreId, ep: id, act: id ? 0 : actN, url: sunoUrl, field: "suno", rev: paneRev.current } }));
 				if (!saved.ok) return { ok: false, which: "suno" };
 			}
 			if (audioLevel || audioAnalysis) {
 				const saved = plainServer(id
-					? await saveAudioLevel({ data: { genreId, ep: id, audioLevel, audioAnalysis } })
-					: await saveResultFields({ data: { kind: "act", genreId, ep: "", act: actN, title: "", fields: { ...(audioLevel ? { audioLevel } : {}), ...(audioAnalysis ? { audioAnalysis } : {}) } } }));
+					? await saveAudioLevel({ data: { genreId, ep: id, audioLevel, audioAnalysis, rev: paneRev.current } })
+					: await saveResultFields({ data: { kind: "act", genreId, ep: "", act: actN, title: "", fields: { ...(audioLevel ? { audioLevel } : {}), ...(audioAnalysis ? { audioAnalysis } : {}) }, rev: paneRev.current } }));
 				if (!saved || saved.ok === false) return { ok: false, which: audioLevel ? "level" : "analysis" };
 			}
 		} catch {
@@ -4130,6 +4205,7 @@ export function StudioApp() {
 		if (audioLevel && String(read.fields?.audioLevel || "").trim() !== String(audioLevel || "").trim()) return { ok: false, which: "level" };
 		if (audioAnalysis && String(read.fields?.audioAnalysis || "").trim() !== String(audioAnalysis || "").trim()) return { ok: false, which: "analysis" };
 		fileFields.current = { page: pageKey, fields: read.fields };
+		paneRev.current = Number(read.rev) || paneRev.current;
 		fileLoadGen.current += 1;
 		setFileRev((n) => n + 1);
 		return { ok: true, which: "" };
@@ -4215,7 +4291,7 @@ export function StudioApp() {
 				savedKeys.push("audioAnalysis");
 				if (!String(seenAnalysis.text || "").trim()) blanks.add("audioAnalysis");
 			}
-			const linkExact = { ...intent.patch, savedKeys };
+			const linkExact = { ...intent.patch, savedKeys, baseRev: paneRev.current };
 			if (blanks.size) linkExact.blankFields = [...blanks];
 			const shot = { suno: seenLink, level: seenLevel, analysis: seenAnalysis, shown: shownShot, blanks };
 			if (id) {
@@ -4399,12 +4475,13 @@ export function StudioApp() {
 			saveSongLink({ data: {
 				genreId,
 				ep: id,
-				url
+				url,
+				rev: paneRev.current
 			} }).then((saved) => {
-				if (!linkSaved(saved).ok && url.trim()) setError(failNote("유튜브 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(linkSaved(saved).error ?? "") : ""));
+				if (!noteLink(saved).ok && url.trim()) setError(failNote("유튜브 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(noteLink(saved).error ?? "") : ""));
 			});
-			saveSongLink({ data: { genreId, ep: id, url: suno, field: "suno" } }).then((saved) => {
-				if (!linkSaved(saved).ok && suno.trim()) setError(failNote("수노 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(linkSaved(saved).error ?? "") : ""));
+			saveSongLink({ data: { genreId, ep: id, url: suno, field: "suno", rev: paneRev.current } }).then((saved) => {
+				if (!noteLink(saved).ok && suno.trim()) setError(failNote("수노 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(noteLink(saved).error ?? "") : ""));
 			});
 		} else if (actBody) {
 			writePlaylistYoutubeUrl(genreId, actN, url);
@@ -4413,16 +4490,16 @@ export function StudioApp() {
 			setYtDraft(url);
 			setMvDraft(mv);
 			setSunoDraft(suno);
-			saveSongLink({ data: { genreId, act: actN, url } }).then((saved) => {
-				if (!linkSaved(saved).ok && url.trim()) setError(failNote("유튜브 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(linkSaved(saved).error ?? "") : ""));
+			saveSongLink({ data: { genreId, act: actN, url, rev: paneRev.current } }).then((saved) => {
+				if (!noteLink(saved).ok && url.trim()) setError(failNote("유튜브 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(noteLink(saved).error ?? "") : ""));
 			});
 			if (mv.trim()) {
-				saveSongLink({ data: { genreId, act: actN, url: mv, field: "mv" } }).then((saved) => {
-					if (!linkSaved(saved).ok) setError(failNote("MV 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(linkSaved(saved).error ?? "") : ""));
+				saveSongLink({ data: { genreId, act: actN, url: mv, field: "mv", rev: paneRev.current } }).then((saved) => {
+					if (!noteLink(saved).ok) setError(failNote("MV 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(noteLink(saved).error ?? "") : ""));
 				});
 			}
-			saveSongLink({ data: { genreId, act: actN, url: suno, field: "suno" } }).then((saved) => {
-				if (!linkSaved(saved).ok && suno.trim()) setError(failNote("수노 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(linkSaved(saved).error ?? "") : ""));
+			saveSongLink({ data: { genreId, act: actN, url: suno, field: "suno", rev: paneRev.current } }).then((saved) => {
+				if (!noteLink(saved).ok && suno.trim()) setError(failNote("수노 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(noteLink(saved).error ?? "") : ""));
 			});
 		}
 		if (pageConfirmed) {
@@ -4439,7 +4516,7 @@ export function StudioApp() {
 		}
 		if (singleReady && id) {
 			const useBody = body ?? emptyStudio();
-			if (hasPageBody(useBody) || url.trim()) keepSingle(id, { ...useBody, youtubeUrl: url, mvUrl: mv, sunoUrl: suno, ytPremium, mvPremium }, true, genreId, false, true, true);
+			if (hasPageBody(useBody) || url.trim()) keepSingle(id, { ...useBody, youtubeUrl: url, mvUrl: mv, sunoUrl: suno, ytPremium, mvPremium, savedKeys: ["youtubeUrl", "mvUrl", "sunoUrl", "ytPremium", "mvPremium"], baseRev: paneRev.current }, true, genreId, false, true, true);
 			await flushAppPagesNow();
 			const saved = await writeConfirmed("single", genreId, id, true);
 			if (!saved.ok) {
@@ -4482,7 +4559,7 @@ export function StudioApp() {
 		}
 		if (!id && (actBody || urlReady)) {
 			const sheet = actBody ?? emptyPlaylist();
-			keepPlaylist({ ...sheet, youtubeUrl: url, mvUrl: mv, sunoUrl: suno, ytPremium, mvPremium }, true, actN, genreId, true);
+			keepPlaylist({ ...sheet, youtubeUrl: url, mvUrl: mv, sunoUrl: suno, ytPremium, mvPremium, savedKeys: ["youtubeUrl", "mvUrl", "sunoUrl", "ytPremium", "mvPremium"], baseRev: paneRev.current }, true, actN, genreId, true);
 			await flushAppPagesNow();
 			const saved = await writeConfirmed("playlist", genreId, String(actN), true);
 			if (!saved.ok) {
@@ -4635,9 +4712,10 @@ export function StudioApp() {
 			saveSongLink({ data: {
 				genreId: gid,
 				ep: id,
-				url
+				url,
+				rev: paneRev.current
 			} }).then((saved) => {
-				if (!linkSaved(saved).ok && url.trim()) setError(failNote("유튜브 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(linkSaved(saved).error ?? "") : ""));
+				if (!noteLink(saved).ok && url.trim()) setError(failNote("유튜브 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(noteLink(saved).error ?? "") : ""));
 				else setYtTick((n) => n + 1);
 			});
 			return;
@@ -4648,9 +4726,10 @@ export function StudioApp() {
 		saveSongLink({ data: {
 			genreId,
 			act: actN,
-			url
+			url,
+			rev: paneRev.current
 		} }).then((saved) => {
-			if (!linkSaved(saved).ok && url.trim()) setError(failNote("유튜브 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(linkSaved(saved).error ?? "") : ""));
+			if (!noteLink(saved).ok && url.trim()) setError(failNote("유튜브 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(noteLink(saved).error ?? "") : ""));
 		});
 	}
 	function saveMv(url) {
@@ -4663,9 +4742,10 @@ export function StudioApp() {
 				genreId,
 				ep: id,
 				url,
-				field: "mv"
+				field: "mv",
+				rev: paneRev.current
 			} }).then((saved) => {
-				if (!linkSaved(saved).ok && url.trim()) setError(failNote("MV 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(linkSaved(saved).error ?? "") : ""));
+				if (!noteLink(saved).ok && url.trim()) setError(failNote("MV 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(noteLink(saved).error ?? "") : ""));
 				else setYtTick((n) => n + 1);
 			});
 			return;
@@ -4677,9 +4757,10 @@ export function StudioApp() {
 			genreId,
 			act: actN,
 			url,
-			field: "mv"
+			field: "mv",
+			rev: paneRev.current
 		} }).then((saved) => {
-			if (!linkSaved(saved).ok && url.trim()) setError(failNote("MV 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(linkSaved(saved).error ?? "") : ""));
+			if (!noteLink(saved).ok && url.trim()) setError(failNote("MV 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(noteLink(saved).error ?? "") : ""));
 		});
 	}
 	function saveSuno(url) {
@@ -4694,13 +4775,14 @@ export function StudioApp() {
 					genreId,
 					ep: id,
 					url: clean,
-					field: "suno"
+					field: "suno",
+					rev: paneRev.current
 				} }).then((saved) => {
-					if (!linkSaved(saved).ok) setError(failNote("수노 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(linkSaved(saved).error ?? "") : ""));
+					if (!noteLink(saved).ok) setError(failNote("수노 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(noteLink(saved).error ?? "") : ""));
 					else setYtTick((n) => n + 1);
 				});
 			} else {
-				saveExactLink({ data: { kind: "song", genreId, ep: id, act: actN, title: "", sunoSet: true, sunoUrl: "" } }).then((saved) => {
+				saveExactLink({ data: { kind: "song", genreId, ep: id, act: actN, title: "", sunoSet: true, sunoUrl: "", rev: paneRev.current } }).then((saved) => {
 					const plain = plainServer(saved);
 					if (!plain || plain.ok === false) setError(failNote("수노 주소를 파일에서 비우지 못했습니다.", plain && "error" in plain ? String(plain.error ?? "") : ""));
 					else setYtTick((n) => n + 1);
@@ -4716,13 +4798,14 @@ export function StudioApp() {
 				genreId,
 				act: actN,
 				url: clean,
-				field: "suno"
+				field: "suno",
+				rev: paneRev.current
 			} }).then((saved) => {
-				if (!linkSaved(saved).ok) setError(failNote("수노 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(linkSaved(saved).error ?? "") : ""));
+				if (!noteLink(saved).ok) setError(failNote("수노 주소를 서버에 남기지 못했습니다.", saved && "error" in saved ? String(noteLink(saved).error ?? "") : ""));
 			});
 			return;
 		}
-		saveExactLink({ data: { kind: "act", genreId, ep: "", act: actN, title: "", sunoSet: true, sunoUrl: "" } }).then((saved) => {
+		saveExactLink({ data: { kind: "act", genreId, ep: "", act: actN, title: "", sunoSet: true, sunoUrl: "", rev: paneRev.current } }).then((saved) => {
 			const plain = plainServer(saved);
 			if (!plain || plain.ok === false) setError(failNote("수노 주소를 파일에서 비우지 못했습니다.", plain && "error" in plain ? String(plain.error ?? "") : ""));
 		});
@@ -4740,7 +4823,7 @@ export function StudioApp() {
 		if (id) {
 			writeLinkPremium(genreId, id, kind, on, "ep");
 			const cur = readCachedPackage(id, genreId) ?? emptyStudio();
-			const next = { ...cur, [field]: on, savedKeys: [field] };
+			const next = { ...cur, [field]: on, savedKeys: [field], baseRev: paneRev.current };
 			keepSingle(id, next, true, genreId, false, true, true, true);
 			saveMetaNow();
 			setYtTick((n) => n + 1);
@@ -4752,7 +4835,7 @@ export function StudioApp() {
 		}
 		writeLinkPremium(genreId, String(actN), kind, on, "act");
 		const cur = readCachedPlaylist(actN, genreId) ?? emptyPlaylist();
-		keepPlaylist({ ...cur, [field]: on, savedKeys: [field] }, true, actN, genreId, true);
+		keepPlaylist({ ...cur, [field]: on, savedKeys: [field], baseRev: paneRev.current }, true, actN, genreId, true);
 		saveMetaNow();
 		setYtTick((n) => n + 1);
 		void pinShownPremiumFile({ data: { kind: "act", genreId, ep: "", act: actN, title: "", which: kind, on } }).then((saved) => {
@@ -4792,7 +4875,9 @@ export function StudioApp() {
 					geminiPrompt: prompt,
 					thumbUrl: result.url,
 					thumbCast,
-					userEdited: edited
+					userEdited: edited,
+					savedKeys: ["geminiPrompt", "thumbUrl"],
+					baseRev: paneRev.current
 				}, true, genreId, false, true, true);
 			} else if (playlistRef.current) {
 				if (isConfirmed("playlist", genreId, String(actN)) && !isAdminDevice()) return;
@@ -4800,7 +4885,9 @@ export function StudioApp() {
 					...playlistRef.current,
 					geminiPrompt: prompt,
 					thumbUrl: result.url,
-					thumbCast
+					thumbCast,
+					savedKeys: ["geminiPrompt", "thumbUrl"],
+					baseRev: paneRev.current
 				}, true, actN, genreId, true);
 			}
 		} catch {

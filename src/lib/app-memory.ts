@@ -2,6 +2,8 @@ import seedDump from "@/data/encyclopedia.json";
 import type { EncMeta } from "./encyclopedia-types";
 import { parseListOrder } from "./encyclopedia-types";
 import { serverOk } from "./server-plain";
+import { mergeLatestBody, readFieldStamps } from "./latest-text";
+import { traceField } from "./field-trace";
 
 export type { EncMeta };
 
@@ -205,6 +207,10 @@ export function holdPageLink(slot: string, patch: { sunoUrl?: string; audioLevel
   patchQueuedExact(slot, patch);
 }
 
+function bodyLinkValue(bodyValue: unknown, _heldValue: unknown, exact: boolean) {
+  return exact ? String(bodyValue ?? "").trim() : String(bodyValue ?? "");
+}
+
 function withHeldLink(slot: string, body: unknown) {
   const held = heldLinks.get(slot);
   if (!body || typeof body !== "object") return body;
@@ -213,15 +219,13 @@ function withHeldLink(slot: string, body: unknown) {
   const levelExact = next.levelExact === true;
   const analysisExact = next.analysisExact === true;
   if (sunoExact) {
-    const suno = String(next.sunoUrl ?? "").trim();
+    const suno = bodyLinkValue(next.sunoUrl, held?.sunoUrl, true);
     next.sunoUrl = suno;
     next.sunoExact = true;
     heldLinks.set(slot, { ...(heldLinks.get(slot) ?? {}), sunoUrl: suno, sunoSet: true });
-  } else if (held?.sunoSet) {
-    next.sunoUrl = held.sunoUrl || "";
-    next.sunoExact = true;
-  } else if (held?.sunoUrl && !String(next.sunoUrl ?? "").trim()) {
-    next.sunoUrl = held.sunoUrl;
+  } else if (held?.sunoSet && String(next.sunoUrl ?? "") !== String(held.sunoUrl ?? "")) {
+    next.sunoUrl = bodyLinkValue(next.sunoUrl, held.sunoUrl, false);
+    traceField({ songId: slot, field: "sunoUrl", value: next.sunoUrl, source: "body", reader: "withHeldLink", component: "app-memory", note: "held-link-ignored" });
   }
   if (levelExact) {
     const level = String(next.audioLevel ?? "").trim();
@@ -229,10 +233,9 @@ function withHeldLink(slot: string, body: unknown) {
     next.levelExact = true;
     heldLinks.set(slot, { ...(heldLinks.get(slot) ?? {}), audioLevel: level, levelSet: true });
   } else if (held?.levelSet) {
-    next.audioLevel = held.audioLevel || "";
-    next.levelExact = true;
+    next.audioLevel = bodyLinkValue(next.audioLevel, held.audioLevel, false);
   } else if (held?.audioLevel && !String(next.audioLevel ?? "").trim()) {
-    next.audioLevel = held.audioLevel;
+    /* a late level does not fill or replace the body */
   }
   if (analysisExact) {
     const analysis = String(next.audioAnalysis ?? "").trim();
@@ -240,10 +243,9 @@ function withHeldLink(slot: string, body: unknown) {
     next.analysisExact = true;
     heldLinks.set(slot, { ...(heldLinks.get(slot) ?? {}), audioAnalysis: analysis, analysisSet: true });
   } else if (held?.analysisSet) {
-    next.audioAnalysis = held.audioAnalysis || "";
-    next.analysisExact = true;
+    next.audioAnalysis = bodyLinkValue(next.audioAnalysis, held.audioAnalysis, false);
   } else if (held?.audioAnalysis && !String(next.audioAnalysis ?? "").trim()) {
-    next.audioAnalysis = held.audioAnalysis;
+    /* a late analysis does not fill or replace the body */
   }
   if (next.pkg && typeof next.pkg === "object") {
     const inner = { ...(next.pkg as Record<string, unknown>) };
@@ -263,17 +265,14 @@ function withHeldLink(slot: string, body: unknown) {
       heldLinks.set(slot, { ...(heldLinks.get(slot) ?? {}), audioAnalysis: analysis, analysisSet: true });
     }
     const now = heldLinks.get(slot);
-    if (inner.sunoExact !== true && now?.sunoSet) {
-      inner.sunoUrl = now.sunoUrl || "";
-      inner.sunoExact = true;
+    if (inner.sunoExact !== true && now?.sunoSet && String(inner.sunoUrl ?? "") !== String(now.sunoUrl ?? "")) {
+      inner.sunoUrl = bodyLinkValue(inner.sunoUrl, now.sunoUrl, false);
     }
-    if (inner.levelExact !== true && now?.levelSet) {
-      inner.audioLevel = now.audioLevel || "";
-      inner.levelExact = true;
+    if (inner.levelExact !== true && now?.levelSet && String(inner.audioLevel ?? "") !== String(now.audioLevel ?? "")) {
+      inner.audioLevel = bodyLinkValue(inner.audioLevel, now.audioLevel, false);
     }
-    if (inner.analysisExact !== true && now?.analysisSet) {
-      inner.audioAnalysis = now.audioAnalysis || "";
-      inner.analysisExact = true;
+    if (inner.analysisExact !== true && now?.analysisSet && String(inner.audioAnalysis ?? "") !== String(now.audioAnalysis ?? "")) {
+      inner.audioAnalysis = bodyLinkValue(inner.audioAnalysis, now.audioAnalysis, false);
     }
     next.pkg = inner;
   }
@@ -307,8 +306,16 @@ export function enqueuePage(row: PageRow) {
         if (key in prevBody) merged[key] = prevBody[key];
       }
       if (Array.isArray(nextBody.blankFields)) merged.blankFields = nextBody.blankFields;
-    } else {
+    } else if (nextRow.rewrite === true) {
       delete merged.savedKeys;
+    } else if (Array.isArray(prevBody.savedKeys)) {
+      const prevKeys = prevBody.savedKeys.filter((key): key is string => typeof key === "string" && key);
+      merged.savedKeys = prevKeys;
+      for (const key of prevKeys) {
+        if (key in prevBody) merged[key] = prevBody[key];
+      }
+    } else {
+      merged.savedKeys = [];
     }
     if (blanks.size) {
       const prevBlanks = Array.isArray(merged.blankFields)

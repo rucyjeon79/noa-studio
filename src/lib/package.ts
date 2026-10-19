@@ -1,4 +1,4 @@
-import { enqueuePage, flushAppPagesNow, cancelQueuedPage, isSeedPackage, patchApp, patchQueuedBody, readAppDump, appDumpRev, replaceAppDump, saveMetaNow, type AppDump } from "./app-memory";
+import { enqueuePage, flushAppPagesNow, cancelQueuedPage, isSeedPackage, patchApp, readAppDump, appDumpRev, replaceAppDump, saveMetaNow, type AppDump } from "./app-memory";
 import { EPS, padEp, type GenreId } from "./catalog";
 import { asThumbCast, type ThumbCast } from "./characters";
 import { SEED_ORIGINALS } from "./originals-seed";
@@ -8,6 +8,7 @@ import { parseListOrder } from "./encyclopedia-types";
 import { readBrowserListOrder, writeBrowserListOrder } from "./list-order";
 import { serverError, serverOk } from "./server-plain";
 import { readFieldStamps, mergeLatestBody, stampChangedFields, touchFieldStamp } from "./latest-text";
+import { traceField } from "./field-trace";
 
 export type StudioPackage = {
   summary: string;
@@ -511,12 +512,36 @@ export function adoptSavedFileText<T extends Record<string, unknown>>(
   let next: Record<string, unknown> | null = null;
   const shownStamps = readFieldStamps(shown);
   const fileStamps = readFieldStamps(file);
+  const editedIds = new Set(
+    Array.isArray(shown.userEdited) ? shown.userEdited.filter((id): id is string => typeof id === "string") : [],
+  );
   for (const key of SAVED_PANE_KEYS) {
-    if (held.has(key)) continue;
+    const draftId = Object.keys(DRAFT_PANE_KEY).find((id) => DRAFT_PANE_KEY[id] === key);
+    if (held.has(key) || (draftId && editedIds.has(draftId))) {
+      traceField({
+        songId: "",
+        field: key,
+        value: shown[key],
+        source: held.has(key) ? "screen-draft" : "screen-memory",
+        reader: "adoptSavedFileText",
+        component: "result-pane",
+        note: "file-skipped",
+      });
+      continue;
+    }
     if (!Object.prototype.hasOwnProperty.call(file, key)) continue;
     if (String(shown[key] ?? "") === String(file[key] ?? "")) continue;
     if (!next) next = { ...shown, fieldSavedAt: { ...shownStamps } };
     next[key] = file[key];
+    traceField({
+      songId: "",
+      field: key,
+      value: file[key],
+      source: "song-file",
+      reader: "adoptSavedFileText",
+      component: "result-pane",
+      note: "screen-memory-replaced",
+    });
     if (fileStamps[key]) {
       const stamps = { ...(readFieldStamps(next)) };
       stamps[key] = fileStamps[key];
@@ -1849,25 +1874,11 @@ export function pinShownSong(genreId: string, epN: string, pkg: StudioPackage) {
   }, false);
   if (pkg.confirmedTitle.trim()) rememberTitle(genreId, n, pkg.confirmedTitle);
   if (pkg.youtubeDescription.trim()) rememberSongDesc(genreId, n, pkg.youtubeDescription);
-  const patch: Record<string, string> = {};
-  const songBag = pkg as unknown as Record<string, unknown>;
-  for (const key of SAVED_PANE_KEYS) {
-    const value = String(songBag[key] || "");
-    if (value.trim()) patch[key] = value;
-  }
-  patchQueuedBody(`single:${genreId}:${n}`, patch, readFieldStamps(pkg));
 }
 
 export function pinShownPlaylist(genreId: string, act: number, pkg: PlaylistPackage) {
   if (!genreId || !act) return;
   rememberPlaylist(act, genreId, pkg);
-  const patch: Record<string, string> = {};
-  const listBag = pkg as unknown as Record<string, unknown>;
-  for (const key of SAVED_PANE_KEYS) {
-    const value = String(listBag[key] || "");
-    if (value.trim()) patch[key] = value;
-  }
-  patchQueuedBody(`playlist:${genreId}:${act}`, patch, readFieldStamps(pkg));
 }
 
 export function readSongDesc(genreId: string, ep: string) {

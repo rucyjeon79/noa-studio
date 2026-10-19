@@ -1,4 +1,5 @@
 import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { commitJsonFile, readRev } from "./save-rev";
 import { dirname, extname, join, resolve, sep } from "node:path";
 import { capturePairs, noteMovedPairs, noteRemoved, ownersOf, relFromAbs } from "./live-bind.server";
 
@@ -93,11 +94,23 @@ export function liveWrite(rel: string, text: string) {
   if (!textFile(abs) && !TEXT_EXT.has(extname(abs).toLowerCase())) return { ok: false as const, error: "글 파일이 아니어서 저장하지 않습니다." };
   if (text.includes("\u0000")) return { ok: false as const, error: "글이 아닌 내용은 저장하지 않습니다." };
   if (extname(abs).toLowerCase() === ".json") {
+    let incoming: Record<string, unknown>;
     try {
-      JSON.parse(text);
+      incoming = JSON.parse(text) as Record<string, unknown>;
     } catch {
       return { ok: false as const, error: "JSON 형식이 아닙니다." };
     }
+    let diskRev = 0;
+    try {
+      diskRev = readRev(JSON.parse(readFileSync(abs, "utf8")));
+    } catch {
+      return { ok: false as const, error: "JSON 형식이 아닙니다." };
+    }
+    const sentRev = typeof incoming.rev === "number" && Number.isInteger(incoming.rev) ? incoming.rev : undefined;
+    if (diskRev > 0 && sentRev === undefined) return { ok: false as const, error: "버전 정보가 없습니다." };
+    const saved = commitJsonFile(abs, incoming, sentRev ?? diskRev);
+    if (!saved.ok) return { ok: false as const, error: saved.error === "conflict" ? "다른 저장이 먼저 반영되어 저장하지 않았습니다." : "파일을 저장할 수 없습니다." };
+    return { ok: true as const, error: "" };
   }
   writeFileSync(abs, text);
   return { ok: true as const, error: "" };

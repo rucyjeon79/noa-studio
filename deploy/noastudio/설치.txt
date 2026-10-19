@@ -1,0 +1,14 @@
+NOA STUDIO PHP
+압축을 /hosting/noastudio/html 에 바로 풉니다.
+
+풀기 전에 기존 index.php 를 index.gnuboard.php 로 바꾸세요.
+common.php, bbs, adm, data 는 이 압축에 없습니다.
+
+studio-live 권한은 707.
+주소는 https://noastudio.ai.kr/
+
+이 버전은 같은 곡 파일을 읽는 스튜디오입니다.
+장르, ACT, 곡 목록, 유튜브 주소가 있을 때만 미리보기, 결과창 저장, 확정, 이동, 삭제가 됩니다.
+저장은 그 곡 파일에 입력한 글 그대로 기록됩니다.
+수정은 그누보드 최고관리자 또는 레벨 9 이상입니다.
+AI 자동 채우기는 노드 서버 기능이라 이 패키지에는 없습니다.
