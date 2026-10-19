@@ -90,7 +90,7 @@ export async function writeBridgeDocument(
     method: "PUT",
     credentials: "same-origin",
     cache: "no-store",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    headers: { "Content-Type": "application/json", Accept: "application/json", "X-NOA-Bridge-Request": "1" },
     body: JSON.stringify({
       kind: data.kind,
       payload: data.payload,
