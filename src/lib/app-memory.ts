@@ -453,7 +453,8 @@ async function flushPersist(): Promise<boolean> {
   const pages = wantPages;
   wantMeta = false;
   wantPages = false;
-  const queued = pages ? [...pageQueue.values()] : [];
+  // Freeze the in-flight batch so subsequent edits cannot mutate a request already sent.
+  const queued = pages ? [...pageQueue.values()].map((row) => structuredClone(row)) : [];
   if (pages) pageQueue.clear();
   let pagesOk = true;
   let studioSeen = false;
