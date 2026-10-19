@@ -31,8 +31,9 @@ if ($method === 'PUT') {
     if (($_SERVER['CONTENT_LENGTH'] ?? 0) > 1048576) fail(413, 'too_large');
     if (empty($_SERVER['HTTP_X_NOA_BRIDGE_REQUEST']) || $_SERVER['HTTP_X_NOA_BRIDGE_REQUEST'] !== '1') fail(403, 'bridge_header_required');
 }
+$healthCheck = $method === 'GET' && ($_GET['health'] ?? null) === '1';
 $key = (string) ($_GET['key'] ?? '');
-if (!preg_match('/^[a-z0-9][a-z0-9:_-]{0,190}$/', $key)) fail(400, 'invalid_key');
+if (!$healthCheck && !preg_match('/^[a-z0-9][a-z0-9:_-]{0,190}$/', $key)) fail(400, 'invalid_key');
 // Configure via environment or an untracked server-only config, never browser JS.
 $dsn = getenv('NOA_MYSQL_DSN');
 $dbUser = getenv('NOA_MYSQL_USER');
@@ -43,6 +44,14 @@ try {
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_EMULATE_PREPARES => false,
     ]);
+    if ($healthCheck) {
+        // Read-only: confirm required tables exist and the connection can read them.
+        $tables = ['noa_documents', 'noa_document_history', 'noa_request_log'];
+        foreach ($tables as $table) {
+            $pdo->query('SELECT 1 FROM ' . $table . ' LIMIT 0');
+        }
+        respond(200, ['ok' => true, 'status' => 'ready', 'schema' => '001']);
+    }
     if ($method === 'GET') {
         $historicalRevision = $_GET['revision'] ?? null;
         if ($historicalRevision !== null) {
