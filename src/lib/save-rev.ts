@@ -254,6 +254,15 @@ export function readRev(row: unknown): number {
   return typeof rev === "number" && Number.isInteger(rev) && rev >= 0 ? rev : 0;
 }
 
+function writeFault(err: unknown) {
+  const code = err && typeof err === "object" && "code" in err ? String((err as { code?: unknown }).code || "") : "";
+  return code || "unknown";
+}
+
+function noteWriteFault(stage: string, err: unknown) {
+  console.error("[noa-save] write", stage, writeFault(err));
+}
+
 export function commitJsonFile(
   path: string,
   next: Record<string, unknown>,
@@ -282,28 +291,53 @@ export function commitJsonFile(
   const text = `${JSON.stringify(body)}\n`;
   const tmp = `${path}.${process.pid}.${Date.now()}.${Math.random().toString(16).slice(2)}.tmp`;
   let fd: number | null = null;
-  try {
-    mkdirSync(dirname(path), { recursive: true });
-    fd = openSync(tmp, "w");
-    writeSync(fd, text);
-    fsyncSync(fd);
-    closeSync(fd);
-    fd = null;
-    renameSync(tmp, path);
-  } catch {
+  const fail = (stage: string, err: unknown) => {
+    noteWriteFault(stage, err);
     if (fd !== null) {
       try {
         closeSync(fd);
       } catch {
         /* already closed */
       }
+      fd = null;
     }
     try {
       if (existsSync(tmp)) unlinkSync(tmp);
     } catch {
       /* leave the original file */
     }
-    return { ok: false, error: "write", rev };
+    return { ok: false as const, error: "write", rev };
+  };
+  try {
+    mkdirSync(dirname(path), { recursive: true });
+  } catch (err) {
+    return fail("mkdirSync", err);
+  }
+  try {
+    fd = openSync(tmp, "w");
+  } catch (err) {
+    return fail("openSync", err);
+  }
+  try {
+    writeSync(fd, text);
+  } catch (err) {
+    return fail("writeSync", err);
+  }
+  try {
+    fsyncSync(fd);
+  } catch (err) {
+    return fail("fsyncSync", err);
+  }
+  try {
+    closeSync(fd);
+    fd = null;
+  } catch (err) {
+    return fail("closeSync", err);
+  }
+  try {
+    renameSync(tmp, path);
+  } catch (err) {
+    return fail("renameSync", err);
   }
   try {
     const back = JSON.parse(readFileSync(path, "utf8"));
