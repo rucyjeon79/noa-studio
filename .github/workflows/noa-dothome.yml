@@ -49,8 +49,11 @@ jobs:
         if: inputs.confirm_live != 'SSH_CHECK'
         uses: actions/checkout@v4
         with:
-          ref: fix/noa-save-reliability-20261020
+          ref: d6861439e0189230726338c151e9a140066b0f0d
           persist-credentials: false
+      - name: Validate deployment script syntax
+        if: inputs.confirm_live != 'SSH_CHECK'
+        run: python3 -m py_compile scripts/deploy_noa_ftp.py
       - name: PHP syntax validation
         if: inputs.confirm_live != 'SSH_CHECK'
         run: |
