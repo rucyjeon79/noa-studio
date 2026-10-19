@@ -14,12 +14,16 @@ export type BridgeDocument<T extends Record<string, unknown>> = {
 export type BridgeWriteResult = { ok: true; revision: number; replayed: boolean };
 
 export class BridgeError extends Error {
+  readonly status: number;
+  readonly code: string;
   constructor(
-    public readonly status: number,
-    public readonly code: string,
+    status: number,
+    code: string,
   ) {
     super(`NOA Bridge: ${code} (HTTP ${status})`);
     this.name = "BridgeError";
+    this.status = status;
+    this.code = code;
   }
 }
 
