@@ -4,14 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       confirm_live:
-        description: 'CHECK = inspect only; DEPLOY = create NOA-owned files on live server'
+        description: 'SSH_CHECK = port probe; SSH_AUTH_CHECK = authenticated read-only inspection'
         required: true
         type: choice
         options:
           - SSH_CHECK
-          - CHECK
-          - DEPLOY
-        default: CHECK
+          - SSH_AUTH_CHECK
+        default: SSH_CHECK
 
 permissions:
   contents: read
@@ -45,34 +44,21 @@ jobs:
           except OSError as exc:
               raise SystemExit('SSH port 2022 unavailable: ' + str(exc))
           PY
-      - name: Checkout pinned NOA deployment files
-        if: inputs.confirm_live != 'SSH_CHECK'
+      - name: Checkout NOA SSH checker
+        if: inputs.confirm_live == 'SSH_AUTH_CHECK'
         uses: actions/checkout@v4
         with:
-          ref: d6861439e0189230726338c151e9a140066b0f0d
           persist-credentials: false
-      - name: Validate deployment script syntax
-        if: inputs.confirm_live != 'SSH_CHECK'
-        run: python3 -m py_compile scripts/deploy_noa_ftp.py
-      - name: PHP syntax validation
-        if: inputs.confirm_live != 'SSH_CHECK'
-        run: |
-          php -l deploy/noa2.php
-          php -l deploy/noa-library.php
-          php -l bridge/index.php
-          php -l bridge/library.php
-      - name: Verify FTPS configuration and check/deploy
-        if: inputs.confirm_live != 'SSH_CHECK'
+      - name: Authenticate over SSH and inspect directory (read only)
+        if: inputs.confirm_live == 'SSH_AUTH_CHECK'
         env:
-          FTP_HOST: ${{ secrets.NOA_FTP_HOST }}
-          FTP_USER: ${{ secrets.NOA_FTP_USER }}
-          FTP_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
-          FTP_ROOT: ${{ vars.NOA_FTP_ROOT }}
-          NOA_DEPLOY_CONFIRM: ${{ inputs.confirm_live }}
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ vars.NOA_SSH_HOST_FINGERPRINT }}
+          NOA_SSH_ROOT: ${{ vars.NOA_SSH_ROOT }}
         run: |
           set -eu
-          test -n "$FTP_HOST"
-          test -n "$FTP_USER"
-          test -n "$FTP_PASSWORD"
-          test -n "$FTP_ROOT"
-          python3 scripts/deploy_noa_ftp.py
+          python3 -m pip install --user 'paramiko==3.5.1'
+          python3 -m py_compile scripts/noa_ssh_check.py
+          python3 scripts/noa_ssh_check.py
