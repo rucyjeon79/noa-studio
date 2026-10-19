@@ -5,6 +5,7 @@ import io
 import os
 from pathlib import Path
 import stat
+import shlex
 import paramiko
 
 FILES = {
@@ -46,6 +47,41 @@ def main():
         if not stat.S_ISREG(sftp.lstat(root + '/common.php').st_mode):
             raise RuntimeError('GnuBoard missing')
         print('Root entries:', ', '.join(sorted(sftp.listdir(root))))
+        php = """define('_GNUBOARD_', true);
+        chdir('/hosting/noastudio/html');
+        include 'data/dbconfig.php';
+        try {
+          mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+          $db = new mysqli(G5_MYSQL_HOST,G5_MYSQL_USER,G5_MYSQL_PASSWORD,G5_MYSQL_DB);
+          $rows = $db->query('SHOW TABLES'); $out = [];
+          while ($r = $rows->fetch_row()) {
+            $name = $r[0];
+            if (preg_match('/^(g5_member|g5_board|g5_write_[a-z0-9_]+|noa_[a-z0-9_]+)$/D', $name)) {
+              $n = $db->query('SELECT COUNT(*) FROM `'.$name.'`')->fetch_row();
+              $out[$name] = (int)$n[0];
+            }
+          }
+          echo json_encode(['read_only_table_counts'=>$out]);
+        } catch (Throwable $e) { echo json_encode(['inspection_error'=>get_class($e)]); }
+        """
+        channel = transport.open_session(timeout=15)
+        channel.settimeout(20)
+        channel.exec_command('php -r '+shlex.quote(php))
+        chunks = []
+        while True:
+            block = channel.recv(4096)
+            if not block:
+                break
+            chunks.append(block)
+        diagnostic = b''.join(chunks).decode('utf-8', errors='replace').strip()
+        # Print only the intended JSON; never expose PHP diagnostics or config.
+        import json
+        try:
+            metadata = json.loads(diagnostic)
+            print('Database inspection:', json.dumps(metadata))
+        except ValueError:
+            print('Database inspection: CLI did not return metadata JSON')
+        channel.close()
         before = {p: digest(sftp, root+'/'+p) for p in PROTECTED if exists(sftp, root+'/'+p)}
         pending = []
         for local, relative in FILES.items():
