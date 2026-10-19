@@ -28,17 +28,9 @@ if (!is_string($kind) || ($kind !== '' && !in_array($kind, ['single','playlist',
 if (!is_string($after) || ($after !== '' && !preg_match('/^[a-z0-9][a-z0-9:_-]{0,190}$/', $after))) {
     noa_library_reply(400, ['ok'=>false,'error'=>'invalid_cursor']);
 }
-$dsn = getenv('NOA_MYSQL_DSN');
-$user = getenv('NOA_MYSQL_USER');
-$pass = getenv('NOA_MYSQL_PASSWORD');
-if (!$dsn || !$user || $pass === false) {
-    noa_library_reply(503, ['ok'=>false,'error'=>'bridge_not_configured']);
-}
+require_once __DIR__ . '/storage.php';
 try {
-    $pdo = new PDO($dsn, $user, $pass, [
-        PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_EMULATE_PREPARES=>false
-    ]);
+    $pdo = noa_bridge_pdo();
     $sql = 'SELECT doc_key,kind,revision,updated_at FROM noa_documents WHERE doc_key > :cursor';
     if ($kind !== '') $sql .= ' AND kind = :kind';
     $sql .= ' ORDER BY doc_key ASC LIMIT 51';
