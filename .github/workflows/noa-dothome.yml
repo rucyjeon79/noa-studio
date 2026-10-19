@@ -65,10 +65,10 @@ jobs:
         if: inputs.confirm_live == 'SSH_AUTH_CHECK'
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ vars.NOA_SSH_HOST_FINGERPRINT }}
-          NOA_SSH_ROOT: ${{ vars.NOA_SSH_ROOT }}
+          NOA_SSH_ROOT: ${{ vars.NOA_FTP_ROOT }}
         run: |
           set -eu
           python3 -m pip install --user 'paramiko==3.5.1'
