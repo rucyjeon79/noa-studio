@@ -14,6 +14,13 @@ FILES = {
     'bridge/index.php': 'noa-bridge/index.php',
     'bridge/library.php': 'noa-bridge/library.php',
     'deploy/noa-home.extend.php': 'extend/noa.home.php',
+    'bridge/storage.php': 'noa-bridge/storage.php',
+    'bridge/setup.php': 'noa-bridge/setup.php',
+}
+UPGRADE_FROM = {
+    'noa-library.php': 'b8ce5c4d3155549dc0e7e55c82bff15a3335448f4f1b0c0306e2ca19e0d91467',
+    'noa-bridge/index.php': 'a8b42ac0b5ee8a2524ec880b1b49701de30586d893f5a83936efdf2941574a3d',
+    'noa-bridge/library.php': '7c1a4429dc4826bf30bdc73b2a6c45aede16c982c171b6d2e8c8a9083f537fe1',
 }
 PROTECTED = ['index.php', 'common.php', 'config.php', '.htaccess', 'data/dbconfig.php']
 
@@ -89,9 +96,15 @@ def main():
             expected = hashlib.sha256(data).hexdigest()
             target = root+'/'+relative
             if exists(sftp, target):
-                if not stat.S_ISREG(sftp.lstat(target).st_mode) or digest(sftp, target) != expected:
+                if not stat.S_ISREG(sftp.lstat(target).st_mode):
                     raise RuntimeError('Refusing overwrite: '+relative)
-                print('Already identical:', relative)
+                current = digest(sftp, target)
+                if current == expected:
+                    print('Already identical:', relative)
+                elif current == UPGRADE_FROM.get(relative):
+                    pending.append((target, relative, data, expected))
+                else:
+                    raise RuntimeError('Refusing unknown existing version: '+relative)
             else:
                 if exists(sftp, target+'.upload.php'):
                     raise RuntimeError('Temporary target exists: '+relative)
@@ -107,15 +120,22 @@ def main():
             sftp.chmod(temp, 0o644)
             if digest(sftp, temp) != expected:
                 raise RuntimeError('Transfer verification failed: '+relative)
-            sftp.rename(temp, target)
+            if exists(sftp, target):
+                if digest(sftp, target) != UPGRADE_FROM.get(relative):
+                    raise RuntimeError('Concurrent remote change: '+relative)
+                sftp.posix_rename(temp, target)
+                action = 'UPDATED'
+            else:
+                sftp.rename(temp, target)
+                action = 'CREATED'
             if digest(sftp, target) != expected:
                 raise RuntimeError('Remote verification failed: '+relative)
-            print('CREATED', relative, 'bytes', len(data), 'sha256', expected)
+            print(action, relative, 'bytes', len(data), 'sha256', expected)
         after = {p: digest(sftp, root+'/'+p) for p in before}
         if before != after:
             raise RuntimeError('Protected file changed during deployment')
         print('Protected GnuBoard files unchanged:', ', '.join(before))
-        print('No SQL executed; no existing remote file overwritten or deleted')
+        print('No SQL writes executed; only known NOA versions updated; no legacy file overwritten or deleted')
         sftp.close()
     finally:
         transport.close()
