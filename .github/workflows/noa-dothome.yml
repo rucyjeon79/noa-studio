@@ -44,6 +44,18 @@ jobs:
           except OSError as exc:
               raise SystemExit('SSH port 2022 unavailable: ' + str(exc))
           PY
+      - name: Inspect presented SSH host key (not yet trusted)
+        if: inputs.confirm_live == 'SSH_CHECK'
+        env:
+          SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+        run: |
+          set -eu
+          keyfile="$(mktemp)"
+          trap 'rm -f "$keyfile"' EXIT
+          ssh-keyscan -T 12 -p 2022 "$SSH_HOST" 2>/dev/null > "$keyfile"
+          test -s "$keyfile" || { echo 'No SSH host key received'; exit 1; }
+          echo 'OBSERVED host key fingerprints (must verify independently before trusting):'
+          ssh-keygen -lf "$keyfile" -E sha256
       - name: Checkout NOA SSH checker
         if: inputs.confirm_live == 'SSH_AUTH_CHECK'
         uses: actions/checkout@v4
