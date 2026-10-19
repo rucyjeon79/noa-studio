@@ -12,7 +12,7 @@ function respond(int $status, array $body): never {
     exit;
 }
 function fail(int $status, string $code): never { respond($status, ['ok' => false, 'error' => $code]); }
-if (empty($is_member) || ($member['mb_level'] ?? 0) < 10 || empty($is_admin)) {
+if (empty($is_member) || empty($is_admin)) {
     fail(403, 'admin_required');
 }
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
