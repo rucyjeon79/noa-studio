@@ -504,7 +504,12 @@ async function flushPersist(): Promise<boolean> {
   if (saveMeta) {
     try {
       const api = await import("./pages");
-      await api.saveAppMeta({ data: dump.meta });
+      // Snapshot the payload: edits made during this request must be saved again.
+      const sentRev = dumpRev;
+      const snapshot = structuredClone(dump.meta);
+      const saved = await api.saveAppMeta({ data: snapshot });
+      if (!serverOk(saved)) throw new Error("meta save failed");
+      if (dumpRev !== sentRev) wantMeta = true;
     } catch {
       wantMeta = true;
       pagesOk = false;
