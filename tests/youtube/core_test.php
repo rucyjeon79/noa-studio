@@ -11,3 +11,7 @@ echo "YouTube: URL identity, Suno identity, variant ambiguity, title-only review
 
 check_yt(ny_api_response('{"items":[]}',200)===['items'=>[]],'successful provider JSON');
 try{ny_api_response('{"error":{"message":"Unsupported query","errors":[{"reason":"badRequest"}]}}',400);throw new RuntimeException('provider failure accepted');}catch(DomainException $e){check_yt(str_contains($e->getMessage(),'HTTP 400 / badRequest / Unsupported query'),'safe actual provider diagnostic');}
+
+check_yt(ny_video_classification(['snippet'=>['channelId'=>'owner','title'=>'EP.20 | Official MV (KR)']],'owner')==='official_mv','explicit owner MV label');
+check_yt(ny_video_classification(['snippet'=>['channelId'=>'other','title'=>'Official MV']],'owner')==='music','unverified channel label cannot classify owner MV');
+check_yt(ny_video_classification(['snippet'=>['channelId'=>'owner','title'=>'Unofficial MV / Official Audio']],'owner')==='music','audio and unofficial labels are not official MV');

@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Verify queue navigation and Android WebView video lifecycle after exact-hash repair.
+# Display explicitly labelled owner MVs; verify ACT navigation against actually public source data.
 on:
   push:
     branches: [main]
@@ -18,7 +18,7 @@ jobs:
         with: {persist-credentials: false}
       - name: Check PHP, JavaScript and existing playback invariants
         run: |
-          for f in deploy/noa*.php deploy/theme/noa_studio/*.php deploy/theme/noa_studio/mobile/*.php; do php -l "$f"; done
+          for f in bridge/youtube-*.php deploy/noa*.php deploy/theme/noa_studio/*.php deploy/theme/noa_studio/mobile/*.php; do php -l "$f"; done
           for f in deploy/noa-ui.js deploy/noa-home.js deploy/noa-browse.js deploy/noa-youtube.js; do node --check "$f"; done
           node --test scripts/qa/*.test.mjs scripts/noa_player_regression.test.mjs
           php tests/youtube/core_test.php

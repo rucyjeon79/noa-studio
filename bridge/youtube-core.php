@@ -42,3 +42,10 @@ function ny_api_response(string|false $raw,int $status):array{
  $message=preg_replace('/[\x00-\x1f\x7f]/',' ',$message)??'';
  throw new DomainException('Google API HTTP '.$status.' / '.$reason.($message!==''?' / '.mb_substr($message,0,350):''));
 }
+
+/** Display format only: never binds a song or changes an owner's metadata. */
+function ny_video_classification(array $video,string $verifiedChannel):string{
+ if($verifiedChannel===''||($video['snippet']['channelId']??'')!==$verifiedChannel)return 'music';
+ $title=(string)($video['snippet']['title']??'');
+ return preg_match('~\bOfficial\s+(?:M[/.]?V|Music\s+Video)\b|공식\s*(?:뮤직\s*비디오|MV)~iu',$title)?'official_mv':'music';
+}

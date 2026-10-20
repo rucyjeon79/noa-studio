@@ -28,10 +28,19 @@ if (!is_string($kind) || ($kind !== '' && !in_array($kind, $allowed, true))
 $items = [];
 $next = null;
 $error = null;
+$dataReview = [];
 require_once __DIR__ . '/noa-bridge/storage.php';
+require_once __DIR__ . '/noa-bridge/youtube-core.php';
 {
     try {
         $db = noa_bridge_pdo();
+        foreach($db->query("SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','playlist','story')") as $source){
+            $payload=json_decode($source['payload'],true);$body=$payload['body']??[];$genre=$payload['genreId']??'';$title=$body['confirmedTitle']??$payload['title']??'';
+            $expected=['kpop-original'=>'K-POP','jpop-original'=>'J-POP','thai-original'=>'THAI'][$genre]??null;
+            if($source['kind']==='playlist'&&$expected&&preg_match('/\b(?:K-POP|J-POP|THAI)\b/i',$title)&&!preg_match('/'.preg_quote($expected,'/').'/i',$title))$dataReview[]=['key'=>$source['doc_key'],'issue'=>'제목의 장르 라벨 검토 · 등록 장르 '.$expected];
+            if(!empty($body['youtubeUrl'])&&ny_video_id((string)$body['youtubeUrl'])===null)$dataReview[]=['key'=>$source['doc_key'],'issue'=>'유효한 YouTube 영상 ID 확인 필요'];
+        }
+
         $sql = 'SELECT doc_key,kind,revision,updated_at FROM noa_documents WHERE doc_key > :cursor';
         if ($kind !== '') $sql .= ' AND kind = :kind';
         $sql .= ' ORDER BY doc_key ASC LIMIT 51';
@@ -53,14 +62,15 @@ require_once __DIR__ . '/noa-bridge/storage.php';
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>NOA STUDIO | 라이브러리</title>
 <style>
-:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#090a0e;color:#f3eee4;font:15px/1.6 system-ui,"Malgun Gothic",sans-serif}
-main{max-width:1100px;margin:auto;padding:32px 20px}a{color:#d7ad62}h1{color:#d7ad62;font-family:Georgia,serif}
-nav{display:flex;flex-wrap:wrap;gap:14px;margin:25px 0}nav a{padding:8px 12px;border:1px solid #4c412f;border-radius:8px;text-decoration:none}
-table{width:100%;border-collapse:collapse;background:#15161b;border-radius:12px;overflow:hidden}td,th{text-align:left;padding:14px;border-bottom:1px solid #303036}
-th{color:#d7ad62}.scroll{overflow-x:auto}.error{padding:16px;border:1px solid #785333;border-radius:8px;color:#efc69c}
-p{color:#aaa}.next{display:inline-block;margin-top:22px;padding:10px 20px;border:1px solid #d7ad62;border-radius:8px}
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:var(--noa-bg);color:var(--noa-text);font:15px/1.6 system-ui,"Malgun Gothic",sans-serif}
+main{max-width:1100px;margin:auto;padding:32px 20px}a{color:var(--noa-accent)}h1{color:var(--noa-accent);font-family:Georgia,serif}
+nav{display:flex;flex-wrap:wrap;gap:14px;margin:25px 0}nav a{padding:8px 12px;border:1px solid var(--noa-line);border-radius:8px;text-decoration:none}
+table{width:100%;border-collapse:collapse;background:var(--noa-surface);border-radius:12px;overflow:hidden}td,th{text-align:left;padding:14px;border-bottom:1px solid var(--noa-line)}
+th{color:var(--noa-accent)}.scroll{overflow-x:auto}.error{padding:16px;border:1px solid var(--noa-line);border-radius:8px;color:var(--noa-text)}
+p{color:var(--noa-muted)}.next{display:inline-block;margin-top:22px;padding:10px 20px;border:1px solid var(--noa-accent);border-radius:8px}
 </style><link rel="stylesheet" href="/noa-ui.css?v=20261020-quality1"><script src="/noa-ui.js?v=20261020-quality1" defer></script></head><body class="noa-page"><main>
 <a href="/noa2.php">← NOA STUDIO</a><h1>Music Library</h1><p><a href="/noa-catalog-admin.php">음악 SQL 통합 · 충돌 검토</a> · <a href="/noa-catalog.php">통합 라이브러리</a> · <a href="/noa-ai-lab.php">NOA AI LAB · 영상 제작과 YouTube 성장</a></p><a href="/noa-bridge/setup.php">저장소 연결 상태 확인</a><p>관리자 전용 · 변경 이력 및 충돌 방지 저장</p><a href="/noa-editor.php">새 음악 등록</a>
+<?php if($dataReview):?><section class="noa-section"><h2>원본 메타데이터 검토 · <?=count($dataReview)?>건</h2><p>원본과 사용자 수정 값은 그대로 보존했습니다. 영상 ID와 제목의 장르 라벨을 확인해 주세요.</p><?php foreach($dataReview as $review):?><p><a href="/noa-editor.php?key=<?=noa_escape(rawurlencode($review['key']))?>"><?=noa_escape($review['key'])?></a> · <?=noa_escape($review['issue'])?></p><?php endforeach;?></section><?php endif;?>
 <nav aria-label="콘텐츠 분류">
 <?php foreach (array_merge([''=>'전체'], array_combine($allowed, ['EP 싱글','ACT 플레이리스트','사연곡','메타','설정'])) as $value=>$label): ?>
 <a href="?<?=noa_escape(http_build_query(['kind'=>$value]))?>"><?=noa_escape($label)?></a>
