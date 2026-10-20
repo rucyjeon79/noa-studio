@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Keep extension staging outside the auto-included GnuBoard extend directory.
+# Recover verified unregistered music into an immutable catalog edition.
 on:
   push:
     branches: [main]
@@ -23,8 +23,28 @@ jobs:
           node --test scripts/qa/*.test.mjs scripts/noa_player_regression.test.mjs
           php tests/youtube/core_test.php
           python3 -m py_compile scripts/noa_quality_deploy.py
+  recovery_validation:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: noa-test-only, MYSQL_DATABASE: noa_catalog_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -h localhost -pnoa-test-only" --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/noa_catalog_seed.py
+      - name: Verify immutable recovery and replay against MySQL
+        env:
+          NOA_TEST_MYSQL_DSN: mysql:host=127.0.0.1;port=3306;dbname=noa_catalog_test;charset=utf8mb4
+        run: |
+          php -l bridge/catalog-recovery.php
+          php tests/catalog/recovery_test.php
+          php -d memory_limit=256M tests/catalog/mysql_test.php
+          php tests/youtube/mysql_test.php
+          php tests/catalog/recovery_mysql_test.php
   release:
-    needs: validate
+    needs: [validate, recovery_validation]
     runs-on: ubuntu-latest
     environment: production
     steps:

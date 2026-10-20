@@ -36,6 +36,8 @@ jobs:
           php -d memory_limit=256M tests/catalog/mysql_test.php
           php tests/youtube/core_test.php
           php tests/youtube/mysql_test.php
+          php tests/catalog/recovery_test.php
+          php tests/catalog/recovery_mysql_test.php
           php tests/lab/core_test.php
           php tests/lab/oauth_test.php
           python3 tests/lab/http_test.py
