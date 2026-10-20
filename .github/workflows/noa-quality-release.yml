@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Repair GnuBoard descriptor warnings and distinguish songs from playlist records.
+# Verify queue navigation and Android WebView video lifecycle after exact-hash repair.
 on:
   push:
     branches: [main]
@@ -20,7 +20,7 @@ jobs:
         run: |
           for f in deploy/noa*.php deploy/theme/noa_studio/*.php deploy/theme/noa_studio/mobile/*.php; do php -l "$f"; done
           for f in deploy/noa-ui.js deploy/noa-home.js deploy/noa-browse.js deploy/noa-youtube.js; do node --check "$f"; done
-          node --test scripts/qa/noa-browse.test.mjs scripts/noa_player_regression.test.mjs
+          node --test scripts/qa/*.test.mjs scripts/noa_player_regression.test.mjs
           php tests/youtube/core_test.php
           python3 -m py_compile scripts/noa_quality_deploy.py
   release:
@@ -63,3 +63,16 @@ jobs:
           name: noa-quality-after-${{ matrix.width }}
           path: quality-results/
           retention-days: 14
+
+  production_flows:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Use existing production navigation and settings without account writes
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-quality" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-quality/node_modules/.bin/playwright" install --with-deps chromium
+          cp scripts/qa/noa-production-flows.mjs "$RUNNER_TEMP/noa-quality/flows.mjs"
+          node "$RUNNER_TEMP/noa-quality/flows.mjs"

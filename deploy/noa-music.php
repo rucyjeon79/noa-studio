@@ -47,7 +47,7 @@ function clearPlaybackWait(){if(playbackTimer!==null){clearTimeout(playbackTimer
 function waitForPlayback(){clearPlaybackWait();const waitingFor=selected;status.textContent='재생을 준비하는 중입니다.';playbackTimer=setTimeout(()=>{playbackTimer=null;if(selected!==waitingFor)return;if(!ready||player.getPlayerState()!==YT.PlayerState.PLAYING)status.textContent='재생이 시작되지 않으면 영상 안의 재생 버튼을 누르거나 YouTube에서 보기를 선택해 주세요.';},12000);}
 function requestPlayback(){if(!selected?.dataset.video)return;pendingAutoplay=true;waitForPlayback();if(ready)player.playVideo();else if(window.YT?.Player)createPlayer();}
 
-function queue(){return filteredQueue.filter(b=>b.dataset.video)}
+function queue(){const playable=filteredQueue.filter(b=>b.dataset.video);if(activeQueue)return playable;const playlist=selected&&lookup.get(selected.dataset.key)?.kind==='playlist',sameKind=playable.filter(b=>(lookup.get(b.dataset.key)?.kind==='playlist')===!!playlist);return sameKind.length?sameKind:playable;}
 function filter(){
  const q=search.value.trim().toLocaleLowerCase();let rows=records.filter(r=>!((activeQueue&&!activeQueue.includes(r.key))||(type.value&&r.kind!==type.value)||(genre.value&&r.genre!==genre.value)||(q&&!(r.title+' EP.'+r.ep+' ACT.'+r.act).toLocaleLowerCase().includes(q))));
  if(activeQueue)rows.sort((a,b)=>activeQueue.indexOf(a.key)-activeQueue.indexOf(b.key));
@@ -60,7 +60,7 @@ function resetQueue(){activeQueue=null;filter()}search.addEventListener('input',
 function select(b,autoplay){
  if(selected===b&&ready){if(autoplay)requestPlayback();return;}
  clearPlaybackWait();
- selected=b;pendingAutoplay=autoplay;const r=lookup.get(b.dataset.key);document.querySelector('.player').hidden=false;document.querySelector('.noa-transport').hidden=false;document.querySelector('[aria-label="곡 상세"]').hidden=false;buttons.forEach(x=>x.classList.toggle('selected',x===b));
+ selected=b;pendingAutoplay=autoplay;const r=lookup.get(b.dataset.key);document.querySelector('.player').hidden=false;document.querySelector('.noa-transport').hidden=false;document.querySelector('[aria-label="곡 상세"]').hidden=false;if(browse)filter();buttons.forEach(x=>x.classList.toggle('selected',x===b));
  document.getElementById('now-title').textContent=r.title;document.getElementById('dock-title').textContent=r.title;document.getElementById('now-genre').textContent=r.genre.replaceAll('-',' ').toUpperCase();
  document.getElementById('detail-title').textContent=(r.ep?'EP.'+r.ep+' · ':r.act?'ACT.'+r.act+' · ':'')+r.title;
  document.getElementById('detail-cast').textContent=({female:'노아 · 여성 솔로',male:'노엘 · 남성 솔로',duet:'노아 & 노엘 · 남녀 듀엣'})[r.cast]||'캐릭터 정보 미등록';

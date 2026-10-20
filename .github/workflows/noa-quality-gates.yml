@@ -1,0 +1,55 @@
+name: NOA existing feature quality gates
+on:
+  push:
+    branches: [main]
+    paths: ['deploy/**','bridge/**','lab/**','tests/**','android/**','scripts/qa/**','.github/workflows/noa-quality-gates.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  engines:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: noa-test-only, MYSQL_DATABASE: noa_catalog_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -h localhost -pnoa-test-only" --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Prepare isolated fixtures and verified processing tools
+        run: |
+          python3 scripts/noa_build_seed.py
+          python3 scripts/noa_catalog_seed.py
+          python3 -m pip install --user numpy==2.2.6 scipy==1.15.3
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-noto-cjk
+      - name: Verify existing engines, access checks and SQL invariants
+        env:
+          NOA_TEST_MYSQL_DSN: mysql:host=127.0.0.1;port=3306;dbname=noa_catalog_test;charset=utf8mb4
+        run: |
+          for f in bridge/*.php deploy/noa*.php deploy/theme/noa_studio/*.php deploy/theme/noa_studio/mobile/*.php; do php -l "$f"; done
+          php -d memory_limit=256M tests/catalog/merge_test.php
+          php -d memory_limit=256M tests/catalog/mysql_test.php
+          php tests/youtube/core_test.php
+          php tests/youtube/mysql_test.php
+          php tests/lab/core_test.php
+          php tests/lab/oauth_test.php
+          python3 tests/lab/http_test.py
+          node --test tests/lab/*.test.mjs scripts/noa_player_regression.test.mjs scripts/qa/*.test.mjs
+          python3 -m unittest discover -s tests/lab -p '*_test.py'
+          for f in deploy/noa*.js lab/*.mjs; do node --check "$f"; done
+      - name: Verify live public and protected routes without modifying data
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,json
+          cases={'/':200,'/noa-music.php':200,'/noa-youtube.php':200,'/noa-catalog.php':200,'/noa-my.php':200,'/bbs/login.php':200,'/bbs/register.php':200,'/bbs/search.php':200,'/noa-library.php':403,'/noa-editor.php':403,'/noa-catalog-admin.php':403,'/noa-youtube-admin.php':403,'/noa-bridge/lab-api.php':403,'/noa-bridge/source-audit.php':403,'/noa-bridge/user-playlists.php':401}
+          for path,expected in cases.items():
+              try:r=urllib.request.urlopen('https://noastudio.ai.kr'+path,timeout=25)
+              except urllib.error.HTTPError as e:r=e
+              assert r.status==expected,(path,r.status)
+              print('LIVE_ACCESS',path,r.status)
+          PY
