@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require_once dirname(__DIR__).'/common.php';
 require_once __DIR__.'/storage.php';
+require_once __DIR__.'/sound-core.php';
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: private, no-store');
 header('X-Content-Type-Options: nosniff');
@@ -21,13 +22,14 @@ try{
    }
   }
   if(!preg_match('/^[A-Za-z0-9_-]{11}$/D',$id))$id='';
-  if(!$admin&&(!$id||($availability['videos'][$id]['status']??'')!=='public'&&!(($p['mediaAvailability']['youtubeId']??'')===$id&&($p['mediaAvailability']['status']??'')==='public')))continue;
-  $audio=is_string($b['audioUrl']??null)?$b['audioUrl']:'';
-  // Only explicit first-party audio files qualify for native playback.
-  if(!preg_match('~^https://noastudio[.]ai[.]kr/data/noa-audio/[A-Za-z0-9_.-]+[.](mp3|m4a|ogg|wav|flac|aac)$~D',$audio))$audio='';
+  if(!noa_sound_visible($p,$admin))continue;
+  $publicVideo=$id&&(($availability['videos'][$id]['status']??'')==='public'||(($p['mediaAvailability']['youtubeId']??'')===$id&&($p['mediaAvailability']['status']??'')==='public'));
+  if(!$admin&&!$publicVideo)$id='';
+  $audio=noa_sound_audio($b,dirname(__DIR__));$suno=noa_sound_suno($b);
+  if(!$admin&&!$id&&!$audio&&!$suno)continue;
   $items[]=['key'=>$row['doc_key'],'kind'=>$row['kind'],'genre'=>$p['genreId']??'',
    'title'=>($b['confirmedTitle']??'')?:($p['title']??''),'ep'=>$p['ep']??'','act'=>$p['act']??'',
-   'tracklist'=>$b['tracklist']??'','lyrics'=>$b['lyricsBlock']??'','cast'=>$b['thumbCast']??'','thumbnail'=>$b['thumbUrl']??'',
+   'tracklist'=>$b['tracklist']??'','lyrics'=>$b['lyricsBlock']??'','cast'=>$b['thumbCast']??'','thumbnail'=>$id?($b['thumbUrl']??''):noa_sound_cover($b),'coverImageUrl'=>noa_sound_cover($b),'sunoUrl'=>$suno,'audioVerified'=>(bool)$audio,
    'youtubeId'=>$id,'audioUrl'=>$audio,'confirmed'=>!empty($p['confirmed'])];
  }
  echo json_encode(['brand'=>'NOA STUDIO','access'=>$admin?'administrator':'public','items'=>$items],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);

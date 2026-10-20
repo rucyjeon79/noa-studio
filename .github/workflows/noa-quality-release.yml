@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Display published recovery counts separately from preserved source extraction drafts.
+# Separate Suno source links from verified audio; transfer preserved original assets.
 on:
   push:
     branches: [main]
@@ -22,6 +22,9 @@ jobs:
           for f in deploy/noa-ui.js deploy/noa-home.js deploy/noa-browse.js deploy/noa-youtube.js; do node --check "$f"; done
           node --test scripts/qa/*.test.mjs scripts/noa_player_regression.test.mjs
           php tests/youtube/core_test.php
+          php -l bridge/sound-core.php
+          php -l bridge/catalog.php
+          php tests/catalog/sound_test.php
           python3 -m py_compile scripts/noa_quality_deploy.py
   recovery_validation:
     runs-on: ubuntu-latest

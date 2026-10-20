@@ -1,0 +1,2566 @@
+{
+  "scope": "Accessible Git source public assets and canonical 653 music JSON documents. Does not assert all remote Grok storage, damaged SQL-only data or transient /tmp caches were acquired.",
+  "local_files": 134,
+  "local_bytes": 88802341,
+  "media_migration_candidates": 123,
+  "remote_media_references": 54,
+  "suno_source_records": {
+    "song": 491
+  },
+  "suno_specific_original_square_covers_acquired": 0,
+  "verified_original_audio_files": 0,
+  "local": [
+    {
+      "source": "public/__grok/icon-180.png",
+      "id": "e1271d3741a38fe0a8723b2c429b9eedb7c2a705391673c3ac36cd575c2d6e65",
+      "bytes": 59800,
+      "format": "image/png",
+      "sha256": "e4fc9dda964bbf3b575162741356f37263b03966b266c1fd4a92a8e38c47c78b",
+      "acquired": true,
+      "production_path": null,
+      "state": "preserved_platform_or_configuration",
+      "use": "brand/icon",
+      "dimensions": [
+        180,
+        180
+      ]
+    },
+    {
+      "source": "public/__grok/install/assets/homescreen/glass-puzzle.svg",
+      "id": "19d419c62ccc7a435e3557cb17b7165376ba3915294ad3c2f66c3cbbf4721f19",
+      "bytes": 1811,
+      "format": "image/svg+xml",
+      "sha256": "a677c9356c23d1e699559ddbffac97cd135c2782cd893fb34f3738f6d11bee17",
+      "acquired": true,
+      "production_path": null,
+      "state": "preserved_platform_or_configuration",
+      "use": "brand/icon"
+    },
+    {
+      "source": "public/__grok/install/assets/homescreen/glass-share.svg",
+      "id": "073eaf3c69b25478280eacb5ccafa0ab6bf4d7e19307f7ea5d5795cb934f9c59",
+      "bytes": 2388,
+      "format": "image/svg+xml",
+      "sha256": "efad1b4b507a68c1f1af4aad2c93e8c24076224aa593da86677697f543d026d6",
+      "acquired": true,
+      "production_path": null,
+      "state": "preserved_platform_or_configuration",
+      "use": "brand/icon"
+    },
+    {
+      "source": "public/__grok/install/assets/homescreen/logo-grok.svg",
+      "id": "88f0e30feb5a18363aa61b60513a1f4e326e13cfe62fd9419eb210971df1775a",
+      "bytes": 1059,
+      "format": "image/svg+xml",
+      "sha256": "0654e3e59cce69856f38525cbfe4ab3a9ef52d4b64c8532dd0bc1a3f34fcb5b1",
+      "acquired": true,
+      "production_path": null,
+      "state": "preserved_platform_or_configuration",
+      "use": "brand/icon"
+    },
+    {
+      "source": "public/__grok/install/assets/homescreen/ob-ipad.png",
+      "id": "1ac3650e3759411a3815762221f039dace6885a321890ce223064530d9bfad2d",
+      "bytes": 101843,
+      "format": "image/png",
+      "sha256": "4c9b09a4660c662b394597d551a04124293b0e37a7a7c72271dd2948c4499a14",
+      "acquired": true,
+      "production_path": null,
+      "state": "preserved_platform_or_configuration",
+      "use": "brand/icon",
+      "dimensions": [
+        1902,
+        882
+      ]
+    },
+    {
+      "source": "public/__grok/install/assets/homescreen/ob-phone.png",
+      "id": "719bf2677717beb2c5128d9e7fc6327927a6f0c087c7e3e7ee318ad79a56342f",
+      "bytes": 103612,
+      "format": "image/png",
+      "sha256": "80e0a5ede614d9b920c67d7cb79c80a79134687b1fc9f560384e896a88e302db",
+      "acquired": true,
+      "production_path": null,
+      "state": "preserved_platform_or_configuration",
+      "use": "brand/icon",
+      "dimensions": [
+        1014,
+        882
+      ]
+    },
+    {
+      "source": "public/__grok/install/assets/homescreen/plus.svg",
+      "id": "d09b1a95af06f7d48e0d320a468cb77e9cc076353450cf8ef64f60bebbdc75a3",
+      "bytes": 2401,
+      "format": "image/svg+xml",
+      "sha256": "c2c94be46aa2c3c2fda95d7c6f2fc6d0b656d1f5847828d5d95b5a81a6f4f20d",
+      "acquired": true,
+      "production_path": null,
+      "state": "preserved_platform_or_configuration",
+      "use": "brand/icon"
+    },
+    {
+      "source": "public/__grok/install/styles.css",
+      "id": "0ee8cbdf14aceebf631f659a59f768cf1a7793569e78398c79e9ed27f709ee51",
+      "bytes": 6717,
+      "format": "text/css",
+      "sha256": "7e8e881302f58e54a9c07e7be395692d3de20fdaa27ce358531cc8dcca472cb6",
+      "acquired": true,
+      "production_path": null,
+      "state": "preserved_platform_or_configuration",
+      "use": "brand/icon"
+    },
+    {
+      "source": "public/characters/cast-pair.jpg",
+      "id": "c79fe0f1fba56d3bf9bc5b483b77fce46b860d95bd60e41fd9c4dbdc7c40cdff",
+      "bytes": 37736,
+      "format": "image/jpeg",
+      "sha256": "0c38c312ba096019c0ba0e2f03adcdd902ba7fb1e664d8afca34684a8495067d",
+      "acquired": true,
+      "production_path": "/noa-assets/characters/cast-pair.jpg",
+      "state": "deployment_candidate",
+      "use": "character",
+      "dimensions": [
+        852,
+        320
+      ]
+    },
+    {
+      "source": "public/characters/noa-face.jpg",
+      "id": "6c379e2d9dc93982ed8576df644ba59e694e340e64ddb3aa5533618192d18c94",
+      "bytes": 12809,
+      "format": "image/jpeg",
+      "sha256": "7884250a5c43a2026e0c19a3f963aab3350f60256b5a720d828ab84e5c37e060",
+      "acquired": true,
+      "production_path": "/noa-assets/characters/noa-face.jpg",
+      "state": "deployment_candidate",
+      "use": "character",
+      "dimensions": [
+        310,
+        218
+      ]
+    },
+    {
+      "source": "public/characters/noa-face.png",
+      "id": "f43d06ff23b115a989b1dc30f68f2e435a1594efd45cf3818cd9c48215dadf43",
+      "bytes": 65711,
+      "format": "image/png",
+      "sha256": "51a6e69e5dc3bd33bc6c7e318da4fa2f44f5999c0a3dbf562726ac4f6e08989a",
+      "acquired": true,
+      "production_path": "/noa-assets/characters/noa-face.png",
+      "state": "deployment_candidate",
+      "use": "character",
+      "dimensions": [
+        310,
+        218
+      ]
+    },
+    {
+      "source": "public/characters/noa-sheet.png",
+      "id": "a6a1c13a21c66c7ad86a53ccf1a96445954e75a1254557c57dfd2331a2e73a42",
+      "bytes": 653166,
+      "format": "image/png",
+      "sha256": "96bb0514b68f4cf0a71b6ec19ce87bd7fab5538a88fb2764e5a18f71390690f1",
+      "acquired": true,
+      "production_path": "/noa-assets/characters/noa-sheet.png",
+      "state": "deployment_candidate",
+      "use": "character",
+      "dimensions": [
+        1376,
+        768
+      ]
+    },
+    {
+      "source": "public/characters/noa-side.jpg",
+      "id": "6b06d8558b16f1c32161bcec9ccb8760e32f1829e069ed53bf597975761591c4",
+      "bytes": 13629,
+      "format": "image/jpeg",
+      "sha256": "2edb2171d4e735b5d2dc5a51dee2f66d1109bd5525c511d31e20b1b99b984b16",
+      "acquired": true,
+      "production_path": "/noa-assets/characters/noa-side.jpg",
+      "state": "deployment_candidate",
+      "use": "character",
+      "dimensions": [
+        300,
+        218
+      ]
+    },
+    {
+      "source": "public/characters/noel-face.jpg",
+      "id": "3576a82b1dff4cf5cb277ba7c1bce3c53340b075b52eb01b84a9ca43df7f6380",
+      "bytes": 12105,
+      "format": "image/jpeg",
+      "sha256": "5854f980d79ae0a8d399ddb6d3167f9680b498cffdc041c5945a52c98a4cefd1",
+      "acquired": true,
+      "production_path": "/noa-assets/characters/noel-face.jpg",
+      "state": "deployment_candidate",
+      "use": "character",
+      "dimensions": [
+        310,
+        260
+      ]
+    },
+    {
+      "source": "public/characters/noel-face.png",
+      "id": "f42c087a0497d684b2f1f5fc908be719c548b58e429bdaac8829a7ed9280567e",
+      "bytes": 66828,
+      "format": "image/png",
+      "sha256": "8c888f93d830372cad88e3e88d5ebf3d51cea6027dfaac0825126e86daaae393",
+      "acquired": true,
+      "production_path": "/noa-assets/characters/noel-face.png",
+      "state": "deployment_candidate",
+      "use": "character",
+      "dimensions": [
+        310,
+        260
+      ]
+    },
+    {
+      "source": "public/characters/noel-sheet.png",
+      "id": "143117a7ff53f259d1f3c2cacdc8c77df549da26877529cefb1569ef38042fa5",
+      "bytes": 597349,
+      "format": "image/png",
+      "sha256": "b3461f7366648618b952d679d77aac963ab7f2a6e0816c95f64a0daef2812aa9",
+      "acquired": true,
+      "production_path": "/noa-assets/characters/noel-sheet.png",
+      "state": "deployment_candidate",
+      "use": "character",
+      "dimensions": [
+        1376,
+        768
+      ]
+    },
+    {
+      "source": "public/characters/noel-side.jpg",
+      "id": "aeb35f7ec97925bf2ab8ac795c718155e7c58d735d3d3bcd7a16bd5a74568da0",
+      "bytes": 13283,
+      "format": "image/jpeg",
+      "sha256": "af91d772f749f18a0a6c96f532a4b0bc174dc8eccdea98eb222858ab75459b0d",
+      "acquired": true,
+      "production_path": "/noa-assets/characters/noel-side.jpg",
+      "state": "deployment_candidate",
+      "use": "character",
+      "dimensions": [
+        300,
+        260
+      ]
+    },
+    {
+      "source": "public/coming/dreamy-deep-house.jpg",
+      "id": "ecbfb88c403e219f8014aa84058c8af530563ac3129a28b55e76c567fc180b28",
+      "bytes": 292522,
+      "format": "image/jpeg",
+      "sha256": "3df8b2bee507cf14e7a8deece2e7c2be10870ee5909924a41acc221e1c1d2bb7",
+      "acquired": true,
+      "production_path": "/noa-assets/coming/dreamy-deep-house.jpg",
+      "state": "deployment_candidate",
+      "use": "genre discovery",
+      "dimensions": [
+        1792,
+        1008
+      ]
+    },
+    {
+      "source": "public/coming/echoes-of-joseon.jpg",
+      "id": "a421b88b3e33d65cb04d3a63d7c87e345c1387c1e306dda46ee6aac117b8874d",
+      "bytes": 351189,
+      "format": "image/jpeg",
+      "sha256": "9e260d43d1f0ff77e336902f2ab9d844633187775f3a448d7d903b66313a1499",
+      "acquired": true,
+      "production_path": "/noa-assets/coming/echoes-of-joseon.jpg",
+      "state": "deployment_candidate",
+      "use": "genre discovery",
+      "dimensions": [
+        1792,
+        1008
+      ]
+    },
+    {
+      "source": "public/coming/edm-kpop-club.jpg",
+      "id": "d501e06838de9f36fed55c08e3972a763a4877b08c3e4aa6ca792f7f54cfd6b4",
+      "bytes": 170974,
+      "format": "image/jpeg",
+      "sha256": "5833ac9273104186272fe5ca3b43c8518f303ca0aada1d6d4d16c290b7ec2298",
+      "acquired": true,
+      "production_path": "/noa-assets/coming/edm-kpop-club.jpg",
+      "state": "deployment_candidate",
+      "use": "genre discovery",
+      "dimensions": [
+        1792,
+        1008
+      ]
+    },
+    {
+      "source": "public/coming/fantasy-ambient-edm.jpg",
+      "id": "b789c6583f099cf91c80f8d65f4fe0ec3367e2ba3e62b5976a0f0696381fcade",
+      "bytes": 247962,
+      "format": "image/jpeg",
+      "sha256": "ad860cce22863d6af4c18783ef5679c2ec3be723a81935aa8c4857f42fe870cb",
+      "acquired": true,
+      "production_path": "/noa-assets/coming/fantasy-ambient-edm.jpg",
+      "state": "deployment_candidate",
+      "use": "genre discovery",
+      "dimensions": [
+        1792,
+        1008
+      ]
+    },
+    {
+      "source": "public/coming/groovy-airy-pop.jpg",
+      "id": "ab3d1a885d840d48c82551ca7dee05c7cbf8c4b92287fb190205548feff17af5",
+      "bytes": 289746,
+      "format": "image/jpeg",
+      "sha256": "30be2038bdac2a2f07af5cfb638d659c7e5ae5d248ea201ed8597d66119dc6b6",
+      "acquired": true,
+      "production_path": "/noa-assets/coming/groovy-airy-pop.jpg",
+      "state": "deployment_candidate",
+      "use": "genre discovery",
+      "dimensions": [
+        1792,
+        1008
+      ]
+    },
+    {
+      "source": "public/coming/joseon-ballad.jpg",
+      "id": "9171a0512b1a2d2c9493c6ab19054b03808b301d6fbec969aab06aaffcdeda3e",
+      "bytes": 363480,
+      "format": "image/jpeg",
+      "sha256": "d7288f30f1c337306d531e2e3122b9dcfc0d6b44105b729eb89f46ff25d1fb23",
+      "acquired": true,
+      "production_path": "/noa-assets/coming/joseon-ballad.jpg",
+      "state": "deployment_candidate",
+      "use": "genre discovery",
+      "dimensions": [
+        1792,
+        1008
+      ]
+    },
+    {
+      "source": "public/coming/jpop-original.jpg",
+      "id": "54987854d03e58cc269a6e8fbba001b1415e4702f49f4997fdb132c7483326a4",
+      "bytes": 388160,
+      "format": "image/jpeg",
+      "sha256": "83d28c3799d96f598eae3ad65bb97f4b31669efb2e717c97c602309159f18cb8",
+      "acquired": true,
+      "production_path": "/noa-assets/coming/jpop-original.jpg",
+      "state": "deployment_candidate",
+      "use": "genre discovery",
+      "dimensions": [
+        1792,
+        1008
+      ]
+    },
+    {
+      "source": "public/coming/kpop-original.jpg",
+      "id": "3df74fe389bcb1790a689b933f070cbb02f9f471e2948961a4756a611ef1761a",
+      "bytes": 223409,
+      "format": "image/jpeg",
+      "sha256": "d7322f9efe0b51ba12c6c10959dd2536c046b50e46efd2c8048196cb29f50316",
+      "acquired": true,
+      "production_path": "/noa-assets/coming/kpop-original.jpg",
+      "state": "deployment_candidate",
+      "use": "genre discovery",
+      "dimensions": [
+        1792,
+        1008
+      ]
+    },
+    {
+      "source": "public/coming/latin-afrobeats-edm.jpg",
+      "id": "0949d924c5791d54da37ac6e8b9650991201ee6377b9a71e2fc8b32c58077294",
+      "bytes": 293901,
+      "format": "image/jpeg",
+      "sha256": "6ab73fdea4e347a8a5872854f2e176b1be7d0b1525e3743fecdb358812413360",
+      "acquired": true,
+      "production_path": "/noa-assets/coming/latin-afrobeats-edm.jpg",
+      "state": "deployment_candidate",
+      "use": "genre discovery",
+      "dimensions": [
+        1792,
+        1008
+      ]
+    },
+    {
+      "source": "public/coming/narrative-piano-indie.jpg",
+      "id": "5e978047a4ef5e0084a6b27426998dedd8f266b8d97a1d24b8a1b4a026384280",
+      "bytes": 307462,
+      "format": "image/jpeg",
+      "sha256": "46c6a14f24f52832a190e40a4f22dd827c631080f017351930c67f1b51f5bb04",
+      "acquired": true,
+      "production_path": "/noa-assets/coming/narrative-piano-indie.jpg",
+      "state": "deployment_candidate",
+      "use": "genre discovery",
+      "dimensions": [
+        1792,
+        1008
+      ]
+    },
+    {
+      "source": "public/coming/panpop.jpg",
+      "id": "cbe1d1473730d76f5e3d8de7603535a58ddc7fa70f39b0a28412e700364cff71",
+      "bytes": 252315,
+      "format": "image/jpeg",
+      "sha256": "116449c85a6b2adab1306fc896e6900aff7fd64373089a83ed21467a39196c2b",
+      "acquired": true,
+      "production_path": "/noa-assets/coming/panpop.jpg",
+      "state": "deployment_candidate",
+      "use": "genre discovery",
+      "dimensions": [
+        1792,
+        1008
+      ]
+    },
+    {
+      "source": "public/coming/pop-original.jpg",
+      "id": "e805eb9243ca3ac28c1b16e5f6b4c3863653eb6a790b019ac5405bed3fc7574e",
+      "bytes": 233538,
+      "format": "image/jpeg",
+      "sha256": "89187c0bc63e6a1e8c6b439849cf740578002d77a9f85cafee5118156f4aea89",
+      "acquired": true,
+      "production_path": "/noa-assets/coming/pop-original.jpg",
+      "state": "deployment_candidate",
+      "use": "genre discovery",
+      "dimensions": [
+        1792,
+        1008
+      ]
+    },
+    {
+      "source": "public/coming/thai-original.jpg",
+      "id": "2c869a10363e917fcb172706ca6ed7000baac2f20251332947191c8cbe697535",
+      "bytes": 253990,
+      "format": "image/jpeg",
+      "sha256": "140bd5a2c8c67b92fa10cb42c242692b17dd75ee7cac571a8aaa51d38922b1fb",
+      "acquired": true,
+      "production_path": "/noa-assets/coming/thai-original.jpg",
+      "state": "deployment_candidate",
+      "use": "genre discovery",
+      "dimensions": [
+        1792,
+        1008
+      ]
+    },
+    {
+      "source": "public/coming/your-story.jpg",
+      "id": "d294f493bbc442644dd342859a4c06b28d1db1b834407006aa7368cc15cf6f95",
+      "bytes": 174680,
+      "format": "image/jpeg",
+      "sha256": "cb792d07e750960fb895a91838d48c8d937724a93972fbcbafae6d6d8a5ac460",
+      "acquired": true,
+      "production_path": "/noa-assets/coming/your-story.jpg",
+      "state": "deployment_candidate",
+      "use": "genre discovery",
+      "dimensions": [
+        1792,
+        1008
+      ]
+    },
+    {
+      "source": "public/favicon.png",
+      "id": "94289e11ec9379e2e354126fb6172e9a62907a7d361490b17a9543a5f12d411e",
+      "bytes": 2822,
+      "format": "image/png",
+      "sha256": "9f0397fab970737a979846b3c9c3b58b5e19ef212f8cf0096b10aa799c182746",
+      "acquired": true,
+      "production_path": "/noa-assets/favicon.png",
+      "state": "deployment_candidate",
+      "use": "brand/icon",
+      "dimensions": [
+        32,
+        32
+      ]
+    },
+    {
+      "source": "public/favicon.svg",
+      "id": "15d62bd9efadbf971701e0884fb5f82ef11ad60888d0df84e570c621c8d4e81d",
+      "bytes": 200,
+      "format": "image/svg+xml",
+      "sha256": "907f53f655644e0269de218386c5dd3a6f5d26fc215eb536c814930fa4a12a92",
+      "acquired": true,
+      "production_path": "/noa-assets/favicon.svg",
+      "state": "deployment_candidate",
+      "use": "brand/icon"
+    },
+    {
+      "source": "public/fill/sw.js",
+      "id": "fefa7721f3b16837138e8d96d44e6592536cc985daabe1ea44bd695dd5a7868b",
+      "bytes": 976,
+      "format": "text/javascript",
+      "sha256": "60863c764af21a141d2ad11d0b819c77fd6e16727d7708358319003781dbfbb1",
+      "acquired": true,
+      "production_path": null,
+      "state": "preserved_platform_or_configuration",
+      "use": "brand/icon"
+    },
+    {
+      "source": "public/icon-180.png",
+      "id": "fdfb008872aad335a05f1f04d2d51926013ef4584c0afb0cba4713876df6ec0e",
+      "bytes": 59800,
+      "format": "image/png",
+      "sha256": "e4fc9dda964bbf3b575162741356f37263b03966b266c1fd4a92a8e38c47c78b",
+      "acquired": true,
+      "production_path": "/noa-assets/icon-180.png",
+      "state": "deployment_candidate",
+      "use": "brand/icon",
+      "dimensions": [
+        180,
+        180
+      ]
+    },
+    {
+      "source": "public/icon-192.png",
+      "id": "217bd448bb427982306d894a04c92047109fd38a76b4328ba0d33ddbf76051f9",
+      "bytes": 66774,
+      "format": "image/png",
+      "sha256": "6eaa87ec7b78c4f55008af62d75c06d69bd03088d3f54d6a0fec2f03c70f75b5",
+      "acquired": true,
+      "production_path": "/noa-assets/icon-192.png",
+      "state": "deployment_candidate",
+      "use": "brand/icon",
+      "dimensions": [
+        192,
+        192
+      ]
+    },
+    {
+      "source": "public/icon-512.png",
+      "id": "a18a0b00c2b93af917bfe7c818963ba7512cad250a82f95deb350872acf0d0b9",
+      "bytes": 374901,
+      "format": "image/png",
+      "sha256": "7a6b94a09ba10b951f15b6779c7d30c74e1ee44bdd5e2a9df7e6a676dd9f02cb",
+      "acquired": true,
+      "production_path": "/noa-assets/icon-512.png",
+      "state": "deployment_candidate",
+      "use": "brand/icon",
+      "dimensions": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "public/jukebox-mark.png",
+      "id": "27e8021c1147c707b061d77e9de56d53e93df94d620b417c965961a2f79c911f",
+      "bytes": 124448,
+      "format": "image/png",
+      "sha256": "6a738b96a7e6924dc924ad06731215d980fc5d596a3f9b518d3c7705744c7b4c",
+      "acquired": true,
+      "production_path": "/noa-assets/jukebox-mark.png",
+      "state": "deployment_candidate",
+      "use": "brand/icon",
+      "dimensions": [
+        1000,
+        1000
+      ]
+    },
+    {
+      "source": "public/manifest.webmanifest",
+      "id": "aefb88926d39e9ab7389a3f3090f003aad5ead62620d917e4660b8849fc70809",
+      "bytes": 928,
+      "format": "application/manifest+json",
+      "sha256": "d49b0264892ee4b073c80b1d816da335023f2781ecf8bf2be008f3a4900c8c7a",
+      "acquired": true,
+      "production_path": null,
+      "state": "preserved_platform_or_configuration",
+      "use": "brand/icon"
+    },
+    {
+      "source": "public/og.jpg",
+      "id": "cb99e776708c5ec34b3a6140abbb5b077a87034a9f635972665ee942c6ddc55c",
+      "bytes": 326411,
+      "format": "image/jpeg",
+      "sha256": "2e5a9e521b1440965b50860a70ca712bf2894af48f9001fd06c9a0e2cddb7e7c",
+      "acquired": true,
+      "production_path": "/noa-assets/og.jpg",
+      "state": "deployment_candidate",
+      "use": "brand/icon",
+      "dimensions": [
+        1792,
+        1008
+      ]
+    },
+    {
+      "source": "public/papa-emblem.png",
+      "id": "29a80665a614245416b75f3de263a931030b058a20e3ec30ab1b1578fc990c29",
+      "bytes": 1273991,
+      "format": "image/png",
+      "sha256": "aea206c83247d6c9b714c3dbdda382e428a416370d79d2f0d7b549699cecdbab",
+      "acquired": true,
+      "production_path": "/noa-assets/papa-emblem.png",
+      "state": "deployment_candidate",
+      "use": "brand/icon",
+      "dimensions": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "source": "public/papa-logo.png",
+      "id": "d09b84e4a1e382a2ddfd39a063991c635997a03a7ed55adcee3141a1d012aac5",
+      "bytes": 1111150,
+      "format": "image/png",
+      "sha256": "458a060cf2114e95ea496819c9ea8c5d08999eaa3d3c748b5a56e90a488664ec",
+      "acquired": true,
+      "production_path": "/noa-assets/papa-logo.png",
+      "state": "deployment_candidate",
+      "use": "brand/icon",
+      "dimensions": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "source": "public/splash/bridge-g2-a.jpg",
+      "id": "4ca754e58f717a373481779ca727cdece992e504f43e656b64dbe656c90101f7",
+      "bytes": 64801,
+      "format": "image/jpeg",
+      "sha256": "62e25aa2500c478a96525c37cd12bee03d673b49071ecf5d7afc6c969ee0ac59",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/bridge-g2-a.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/bridge-g2-a.mp4",
+      "id": "ea069d78ba0090cd29e6bfdaea4ab32782a0874eb9a810158d33551311cc3c81",
+      "bytes": 1858596,
+      "format": "video/mp4",
+      "sha256": "0be60b7dbb552af33e29883d2ddcac6c93ce23bb4b588a59d00d3a5034c02fb1",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/bridge-g2-a.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/bridge-g2-b.jpg",
+      "id": "56127b02dcf1712f50393a90b2e050d92b6095891d814b723ebc680d625887bd",
+      "bytes": 66806,
+      "format": "image/jpeg",
+      "sha256": "7001d012ca9dbcd38bbdd389e72ad1007150f25040824cb517f10c9f09eba7d3",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/bridge-g2-b.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/bridge-g2-b.mp4",
+      "id": "7d6692acb8706d54e050fc5b5abf6b8f9634a5fd212a9e8b9668897598071c54",
+      "bytes": 1723904,
+      "format": "video/mp4",
+      "sha256": "477d5ca5439e3abb2ae7ebbb09798d4027a518381b0fe69780bd56fe69483c68",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/bridge-g2-b.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/bridge-g2-c.jpg",
+      "id": "d180eb47f17fcf050277167cc7dd2cd954985da521d92dab79f38c99af008901",
+      "bytes": 65156,
+      "format": "image/jpeg",
+      "sha256": "cdd6f12532d2771d2304144a8a27190c5089651d3c5ef5096c101c658af56fa5",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/bridge-g2-c.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/bridge-g2-c.mp4",
+      "id": "a54f76bd223b3410df12e59237d1a1aa98acd7e828058a45c22b7140592571d6",
+      "bytes": 1711868,
+      "format": "video/mp4",
+      "sha256": "a01e246f0bc38be56ba523de205803395e4649e1bdc762f9bc577e9959bc1ab3",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/bridge-g2-c.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/cover-reborn-g2-a.jpg",
+      "id": "c2dbd92520fd20ec8b362472507703b7b8f9e77da2820526767624374d42f502",
+      "bytes": 50020,
+      "format": "image/jpeg",
+      "sha256": "3f78333b3f389c7fd4a4a9305937dc71674826da0087f38fe1c15a5c23383702",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/cover-reborn-g2-a.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/cover-reborn-g2-a.mp4",
+      "id": "7b4841442e29ddadedef6af2c9795f396b807b80a4de928326b36be7aafe02c8",
+      "bytes": 1700924,
+      "format": "video/mp4",
+      "sha256": "476694a13c383d920e11337dca527553f7ef1538c2f28fade39494327d658efa",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/cover-reborn-g2-a.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/cover-reborn-g2-b.jpg",
+      "id": "6775f13062d13c1e98498d9c44ebb6df4b6189035da6a939ba8691230bf8ac5a",
+      "bytes": 27891,
+      "format": "image/jpeg",
+      "sha256": "581d8d15e7ab69b876f04e05b3d4b3e9925cc251e15e3cb867ea2d5b35eb661e",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/cover-reborn-g2-b.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/cover-reborn-g2-b.mp4",
+      "id": "e3096d5781a7c23c0d8725c055fcf0077046c1d7aa3a992f333bdb19225dc370",
+      "bytes": 1650629,
+      "format": "video/mp4",
+      "sha256": "ebd1ef85e3d1a953e68bb3da7ed5a100ffadf32aec2ae38c556f37c56a826939",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/cover-reborn-g2-b.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/cover-reborn-g2-c.jpg",
+      "id": "9afbdef8ace5e0f89524ec03cc99406720e0a7d3b83e152a64b6dadc03d805e8",
+      "bytes": 42147,
+      "format": "image/jpeg",
+      "sha256": "bc346b51ce0e4d529c38f0bc22e6ae157b18e8173f7023ee2c250fa8f6c104ae",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/cover-reborn-g2-c.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/cover-reborn-g2-c.mp4",
+      "id": "c39f62a6e97dd2aa037380a0b56361da4f9d665e41a2c9d4207b6e619b0c7b77",
+      "bytes": 1729921,
+      "format": "video/mp4",
+      "sha256": "fcf5ad4c27bb951ef4429dd05ef4a96f1e22001d59c3ccdad8bd0540b39c2c49",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/cover-reborn-g2-c.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/dream-g2-a.jpg",
+      "id": "ca0325f79a691cb023610f9526347ae575a748d5103a478278b0f3439c462a43",
+      "bytes": 41597,
+      "format": "image/jpeg",
+      "sha256": "11a2edec66d1782c7c0bbc7bb4afe161723cd8bfbacbc665a1fe62c5535fc323",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/dream-g2-a.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/dream-g2-a.mp4",
+      "id": "5826940e43ae190f37b295959d7e49919201d8ff38dd5bdf41ad56e208b9f166",
+      "bytes": 1702939,
+      "format": "video/mp4",
+      "sha256": "fad0dd33e2e203337690458b9578f7f5b3524df51da85f31a88a76b1ff4ffb99",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/dream-g2-a.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/dream-g2-b.jpg",
+      "id": "0667f888a9ddd19dfa7f02e69317ef27bc881680f74bc8492d2c8af6daa44dbc",
+      "bytes": 53639,
+      "format": "image/jpeg",
+      "sha256": "f4b2b7cdc59f582b82e96784982f148b7eaa072b37bfdddf4e55a91858b6e06f",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/dream-g2-b.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/dream-g2-b.mp4",
+      "id": "9a1b4fb7641e8d4758740028af69c8b2e6d9b844173eccca954da210fa224999",
+      "bytes": 1708267,
+      "format": "video/mp4",
+      "sha256": "9f443689a9b4fbad8b53ec5eb7fd9941fab088880ee6fb9e436fc16c47f87d43",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/dream-g2-b.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/dream-g2-c.jpg",
+      "id": "619284d872c8f1a9ad3891d1587b9f5730f8300d7f9f91acce39d364a996e50e",
+      "bytes": 51015,
+      "format": "image/jpeg",
+      "sha256": "0ab90c48a79482f946d10c032c8795119d4dba064398069d08b4fc67bc566d32",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/dream-g2-c.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/dream-g2-c.mp4",
+      "id": "2b9a309850da7608712c5a3df3b4c6a179b87466d4547f0326e0658b5a6f1231",
+      "bytes": 1727226,
+      "format": "video/mp4",
+      "sha256": "b5e1f301fa7d6328586954e5ad07d46acbf9ef7e2e64c9be0da6466c9bb8b61d",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/dream-g2-c.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/fantasy-g2-a.jpg",
+      "id": "a4500d9cff39f35aa03bd7285454f1822e3edbe6526aeed7d7ffb065270c8296",
+      "bytes": 70709,
+      "format": "image/jpeg",
+      "sha256": "1307d3ba7d388bbc051bc1b0524cc75f4ca98537aa8c6bd6118290e51a2f9956",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/fantasy-g2-a.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/fantasy-g2-a.mp4",
+      "id": "7eee08b8f7cc6e097b19190b94a8ba5e818bcdf627458cae2aa46b21b0d1419b",
+      "bytes": 1678519,
+      "format": "video/mp4",
+      "sha256": "9029572d06f32f388cbead379b64d9c418a234ce9921337810069814057ee72e",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/fantasy-g2-a.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/fantasy-g2-b.jpg",
+      "id": "3fc21577e7f98ff36049d6edb69dfcb3c0e1212b10ce794259a32eb35621a4c2",
+      "bytes": 50895,
+      "format": "image/jpeg",
+      "sha256": "10cb7bd2750f084458c26e8aa8bb588a8d2946a5317b03ea180ef09cf474af3c",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/fantasy-g2-b.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/fantasy-g2-b.mp4",
+      "id": "83fe197185bec0e79832bfb79c31254088f9fa622e9798f9fcf3dfa322df0419",
+      "bytes": 1673995,
+      "format": "video/mp4",
+      "sha256": "b3093d3ceafb6af18bd641ecc0dd5a43363b5434ef92f67f72f8334ca3d26f51",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/fantasy-g2-b.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/fantasy-g2-c.jpg",
+      "id": "966ff11358f6043da91f1c6574bb966f4e5b6a7435925c9179e3434db4ece0a5",
+      "bytes": 47318,
+      "format": "image/jpeg",
+      "sha256": "6dcd642327c2e706805b090d82a6bb48faec04a4d030928913fc6a4235f94c05",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/fantasy-g2-c.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/fantasy-g2-c.mp4",
+      "id": "8549e36c7709231b4884fd76e9e89b3422aed1f04bc154f1536d6bf3b70100b8",
+      "bytes": 1702050,
+      "format": "video/mp4",
+      "sha256": "79589cbf861e363be76a027905e36ac38f273c07d2553f3cc0e1d8ed43baf477",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/fantasy-g2-c.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/hall-g2-a.jpg",
+      "id": "9843f89c0bcae7a28ef8a9e45e278703f06b45f64fb3f5f20489205acc01aac8",
+      "bytes": 75374,
+      "format": "image/jpeg",
+      "sha256": "6665ccc9ae96a7bd92b38661b5c8166646b166e34d51f448f0b55af9d48a60f5",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/hall-g2-a.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/hall-g2-a.mp4",
+      "id": "f008a940cc9510ae03b42a47915dbda65a2d1bf0f7d304e9d8a7f3459db856fd",
+      "bytes": 1719987,
+      "format": "video/mp4",
+      "sha256": "d5568dc59701dd223ad35c2a12d75a7ae5f7dc4b77d8e767ce3cf74d10359e1a",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/hall-g2-a.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/hall-g2-b.jpg",
+      "id": "9e6b125337975e52717344bdd4fb095da56c2a595a370b72a8b864f57f09c105",
+      "bytes": 67376,
+      "format": "image/jpeg",
+      "sha256": "8bcd8e5519a73ca787e3c548f0ba2519390284404eb43809963ec26d1f4ed28a",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/hall-g2-b.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/hall-g2-b.mp4",
+      "id": "ab90d659d64617fa52fbd8e6501d13df6a910b039b414268a11a654667c13503",
+      "bytes": 1794254,
+      "format": "video/mp4",
+      "sha256": "74205e9256ce6bbaa9352dc07d0929cfea0de3a7ccea51e5bfe7d887776b948f",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/hall-g2-b.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/hall-g2-c.jpg",
+      "id": "5798e13275f24fde372cc05e68a4227f732bd1b2c48c192bb1e041eaae612f3b",
+      "bytes": 74162,
+      "format": "image/jpeg",
+      "sha256": "7fc693c50a58cd5c64655a5591edb6e2df14ff0e43e5af5b752310d201df9acc",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/hall-g2-c.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/hall-g2-c.mp4",
+      "id": "9cdd31853ca44420038b497d7dd565df2e255f66c9eb046bcb8ab29accf74e90",
+      "bytes": 1739509,
+      "format": "video/mp4",
+      "sha256": "891e0f089e72b3cfe3705416e6b15d2c85803f543feb0cb598ac81cf4e5b4268",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/hall-g2-c.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/joseon-g2-a.jpg",
+      "id": "3e2ea58d9447a2c527c6bf6c99ac2a9120c0726b03e99f09d69fd3bc62070103",
+      "bytes": 87813,
+      "format": "image/jpeg",
+      "sha256": "cf97d176ce0612474022dcd322fbdff4c36e17b2faba2d0379ed601757422fde",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/joseon-g2-a.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/joseon-g2-a.mp4",
+      "id": "da601d8945522debf4f4474865144f6c77cdc2215d73ccac652c309533f0efb0",
+      "bytes": 1687102,
+      "format": "video/mp4",
+      "sha256": "93ef64681859c48d3124c3163609bb6e35aa30b3be7ba38a11b116b0623e5030",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/joseon-g2-a.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/joseon-g2-b.jpg",
+      "id": "aea78cc1635c7c30a10616da5bfda221f794e9aa86490f8f5cbe445ea489505d",
+      "bytes": 72380,
+      "format": "image/jpeg",
+      "sha256": "701dd398ae755534d240231c09a5a5ae162832aafe7813ab78aab4625d2044a4",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/joseon-g2-b.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/joseon-g2-b.mp4",
+      "id": "8991d9094f0ae0ec21aee190614586f398bc1d0bf74740a2701155c78d581430",
+      "bytes": 1682100,
+      "format": "video/mp4",
+      "sha256": "f1a3eaf02813fea60b1324eb73c8cae81d18b7ad28a687ffcb17ce0f44065766",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/joseon-g2-b.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/joseon-g2-c.jpg",
+      "id": "1cc47b4436ff47a71da2cd0a4fde90c7bf811f2650ddd36359c70f599514dcc1",
+      "bytes": 84454,
+      "format": "image/jpeg",
+      "sha256": "35158abfe72e650d2491bd39e0e5509a8dc97aabbf553619681adeedf6b9a3e0",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/joseon-g2-c.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/joseon-g2-c.mp4",
+      "id": "ce17980fcb8a622584af3f68b6ba182ac67ef6576126a26de88db710d6b48c80",
+      "bytes": 1580250,
+      "format": "video/mp4",
+      "sha256": "da40e41d02b459c44b413f21d8a850148f9c14fa245f04ea5ce8d2de95d062bc",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/joseon-g2-c.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/jpop-original-g2-a.jpg",
+      "id": "9078cd27b8611a36591115065c71089695d5f79768fbe5de9cb042c34ef85ac2",
+      "bytes": 100457,
+      "format": "image/jpeg",
+      "sha256": "878e83ff24edab68ba1f20e3d96c269f41b4862662575e21353530b2a2374415",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/jpop-original-g2-a.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/jpop-original-g2-a.mp4",
+      "id": "b6b42d1c36e0b7a07874b6751b95bb9b628a3b9753298888bbe4cc4d8a25b0e5",
+      "bytes": 1689762,
+      "format": "video/mp4",
+      "sha256": "db3034454e61a1b60009b206ea23d6e40baf2318b322c0b1a22160e5b988d804",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/jpop-original-g2-a.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/jpop-original-g2-b.jpg",
+      "id": "89233803e63a5dead408480e85a06b68b632ec12a3d8eec63dcf3e36a3c0aa70",
+      "bytes": 102431,
+      "format": "image/jpeg",
+      "sha256": "219711b776ecc0fc0e6be275b9c2aa68f5680e3f6b5ca90ca8bd1069f13cab23",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/jpop-original-g2-b.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/jpop-original-g2-b.mp4",
+      "id": "2fb7e4e255f6671415a751bc04c6ba5a174f3af4ff9cce0843fbf90ee6897404",
+      "bytes": 1674970,
+      "format": "video/mp4",
+      "sha256": "3a2515a13371a5151836505a671ba72a9ee57e44064ce9cb24f084b56996d94f",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/jpop-original-g2-b.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/jpop-original-g2-c.jpg",
+      "id": "f3fb2d52cbea36c6ffea6ff0d45b90ba0e9aa982e22291da082b97b140311ebe",
+      "bytes": 95097,
+      "format": "image/jpeg",
+      "sha256": "47be328e0e7115b179afa25635293b8a65fe4ada256592f7eab3f9600ea10b60",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/jpop-original-g2-c.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/jpop-original-g2-c.mp4",
+      "id": "a1b3670aab9fbe239e9d08a9036f6ce36983fa45aeb803a3749b5ba60239253b",
+      "bytes": 1579225,
+      "format": "video/mp4",
+      "sha256": "e967b4b5949578b9ddf49dcac08b5f2c3a46bf88062c1d6ad35cb668ba5b9312",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/jpop-original-g2-c.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/kpop-original-g2-a.jpg",
+      "id": "b155c3a50c813932408f800f08925d98532f54236d7e6fd39438376946dcc174",
+      "bytes": 61900,
+      "format": "image/jpeg",
+      "sha256": "223a6ba6c0e6573fa69aa9ffeb10dd09b42d36a9a40d58fb12576b9755dbdabc",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/kpop-original-g2-a.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/kpop-original-g2-a.mp4",
+      "id": "bd68de6b1f3d8b29ed799a375c546779338a24dc4f3c1b6fd1f839dc9c0bc8e7",
+      "bytes": 1761143,
+      "format": "video/mp4",
+      "sha256": "15c824fd16841f9987ef01659f97db646ad3f928fb2d6bf008a2072d899882f8",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/kpop-original-g2-a.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/kpop-original-g2-b.jpg",
+      "id": "45103ca877b38ffac978aba4b9dabb2f20884ff41e2aa7a2d950b7bca663234d",
+      "bytes": 59464,
+      "format": "image/jpeg",
+      "sha256": "f145eca9e358233cae42c797f6c533390c3bd07d3efbdb79630a7d07e85ae49f",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/kpop-original-g2-b.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/kpop-original-g2-b.mp4",
+      "id": "bc35b633eca6d585aafbf413f1c38e677118a5bf2eae1e03826ff4be2e001731",
+      "bytes": 1700449,
+      "format": "video/mp4",
+      "sha256": "2f944d9fbb30cc58860bbeccb71cea7a98d8a8c751c45a594c07fce673d3d15d",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/kpop-original-g2-b.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/kpop-original-g2-c.jpg",
+      "id": "7eab06a9d516fa653275dd5cec495b8c4fff6f60a0dcfd100b15e2840eb96d29",
+      "bytes": 69277,
+      "format": "image/jpeg",
+      "sha256": "6f4d611962ae738ad6ee8493998b735196e2a9e2dd2e314b5db6091583d2b408",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/kpop-original-g2-c.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/kpop-original-g2-c.mp4",
+      "id": "d989adc5ae50320e466f0c907c7da0c4af45d44e3858136dbc2de61ec8bcac3c",
+      "bytes": 1624055,
+      "format": "video/mp4",
+      "sha256": "1b0efcb5ca732f6374bfc5eaf1ceed6405239185c4b234f00a28f44b3390d957",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/kpop-original-g2-c.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/latin-g2-a.jpg",
+      "id": "460f2ffd1d20f5b1f921eca02d9a9712e78e5ee6051955d0bbe883bdba2dbb67",
+      "bytes": 100266,
+      "format": "image/jpeg",
+      "sha256": "df8666fb06fdcf0942a47990796c585d7dfd17b2077972dfdb4d873c9c862c0c",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/latin-g2-a.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/latin-g2-a.mp4",
+      "id": "223858aed68961b477bc74b5a5b18b3d735ad833bab660083e17066709bcadea",
+      "bytes": 1793149,
+      "format": "video/mp4",
+      "sha256": "641a15e56d8360adc80b7e2cd27b50eb32791387083a3f298405bf74a3f0e8b1",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/latin-g2-a.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/latin-g2-b.jpg",
+      "id": "db1cca83531fbdd121af9ae3677bef146fb2ed8d1429013b969244510f5e19e5",
+      "bytes": 96636,
+      "format": "image/jpeg",
+      "sha256": "3a35e730ed9faece09ca5f88f44bba35e000729cac3b1935f596064c84f4cdef",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/latin-g2-b.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/latin-g2-b.mp4",
+      "id": "18032adc96c5210504ed322708378fb0d0d29d7bc1fb34eae42faf25e529150b",
+      "bytes": 1623009,
+      "format": "video/mp4",
+      "sha256": "5b271595b32e5ca3daf64419a91908cd167a4b7d46a7955932477fb5d9d964f0",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/latin-g2-b.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/latin-g2-c.jpg",
+      "id": "7eb10a87f9f538a1d50bb1ea18c3b13cd2b20aa6b9e6dd34200c7293f15fdf05",
+      "bytes": 98434,
+      "format": "image/jpeg",
+      "sha256": "78950976a18da696b30242cc96c2ce1a33b5a13e23cc16c791b72791b05fa7e3",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/latin-g2-c.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/latin-g2-c.mp4",
+      "id": "a3b2e4fc3481d47864c57d9763b8bcf8e376b6da8b9f65df10446aa5b2e52f9e",
+      "bytes": 1777757,
+      "format": "video/mp4",
+      "sha256": "326db3f09075428238c868a698aa04ae3f07befa22be1cfb76d38578cf1c220b",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/latin-g2-c.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/panpop-g2-a.jpg",
+      "id": "9d6f6b76f8ecd31ff21971fce7363e3847b45a1634446322837e942b5457a1ad",
+      "bytes": 78604,
+      "format": "image/jpeg",
+      "sha256": "947d2a4a4ee974d57f2a20beeac7d31b0caec86105820df5d7045921f1885647",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/panpop-g2-a.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/panpop-g2-a.mp4",
+      "id": "81d700c3214a275bce161777047795159ac7d242f3454e6fd7777e4b57315b32",
+      "bytes": 1723429,
+      "format": "video/mp4",
+      "sha256": "f462519550bfbe3a61bfe74f010f56dabb0da4ec3d6826bab1e1849441ece320",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/panpop-g2-a.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/panpop-g2-b.jpg",
+      "id": "fe4527d2b490d96bdba23f4874dd51c4565b3b090c994e656b4ad1969e3dbdbe",
+      "bytes": 84621,
+      "format": "image/jpeg",
+      "sha256": "528526d0e3701449f4cde6fdc077c395722d20e9a28093fed728eae0a3d01b9d",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/panpop-g2-b.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/panpop-g2-b.mp4",
+      "id": "375c5eea9dc3549f6d6b1048c027002cdfd90eef6e61ed2aa571b6a30d160b6e",
+      "bytes": 1739694,
+      "format": "video/mp4",
+      "sha256": "6f6706ff97adcba62c841b514a31f2d3dfe3432aa49f20440d210b2413bee597",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/panpop-g2-b.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/panpop-g2-c.jpg",
+      "id": "da42bb31e880a7f234b6895ea17d50b5864390f12ed7a55b0d5937e1145688c6",
+      "bytes": 95413,
+      "format": "image/jpeg",
+      "sha256": "afe62a111f714804cbd3d94d163a923c7b63e8261d13b82738be54f18ff42325",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/panpop-g2-c.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/panpop-g2-c.mp4",
+      "id": "5a7b7329c5c3af3570804e61f02253f90c0bb54176617e43691c8bfda7efdb5c",
+      "bytes": 1807456,
+      "format": "video/mp4",
+      "sha256": "b775fca1e26c58540fb2f4a2e7beaa0e5932b15db6c523aca811359530a59d50",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/panpop-g2-c.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/pop-original-g2-a.jpg",
+      "id": "71400c270053128129b4415d73c2c0058e52b5d15cb86070d0dd8bdc881c4a0c",
+      "bytes": 52213,
+      "format": "image/jpeg",
+      "sha256": "d6c4413ab29fa9c6c835230b5dbcca7bf89516197665c1bcdf694a0439cd0c88",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/pop-original-g2-a.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/pop-original-g2-a.mp4",
+      "id": "78c44da7a35ef8a855b429908f3d07bbd3c4d8929e7851303f126f91e8e6be38",
+      "bytes": 1640309,
+      "format": "video/mp4",
+      "sha256": "b333925fbc7465ad164d337def46941beb6fff0c696a59d1ef974295b4073750",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/pop-original-g2-a.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/pop-original-g2-b.jpg",
+      "id": "c65d7372be38caaeae7bac8886805bb61055c0e3fda5592786ce109abeae56bf",
+      "bytes": 45797,
+      "format": "image/jpeg",
+      "sha256": "3c4a1c1e67b2c70c094037987780a9a1285068a22d3ec0a79843acf53b168b60",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/pop-original-g2-b.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/pop-original-g2-b.mp4",
+      "id": "cb296f62ab15f79e57ee649fb05a68aa8592206b965e327235c5edc6f19c0118",
+      "bytes": 1545591,
+      "format": "video/mp4",
+      "sha256": "426bf8d7d12145ee0e712ac4b6de317bf3387e8ccd1e8d22f5a09913266e3a37",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/pop-original-g2-b.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/pop-original-g2-c.jpg",
+      "id": "0a421113c63fd4462fdaae41eace0362974e48be0ae540649ec87fa7b8d47592",
+      "bytes": 47233,
+      "format": "image/jpeg",
+      "sha256": "2c4147cb1d1d8fbf5dc0c578b5bf758b981d7f621cd45ff76515cfdf5af45ffb",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/pop-original-g2-c.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/pop-original-g2-c.mp4",
+      "id": "60d7ffc7d354777727da96648709925280222ccaa80d3fddd44a813178f37d20",
+      "bytes": 1630740,
+      "format": "video/mp4",
+      "sha256": "e965fafb41e5fa5a7798705e01ea9f1992dbd1499b804866f385cb553faf3083",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/pop-original-g2-c.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/rain-g2-a.jpg",
+      "id": "3ed7e65878b68946f2c1e6e56ad2cf8e9bf823596195be67172ee5c148d09a65",
+      "bytes": 90254,
+      "format": "image/jpeg",
+      "sha256": "d620d8af945bd5534292283118d9bb47271dfe0e0b4633f4dee4904cebf9da16",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/rain-g2-a.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/rain-g2-a.mp4",
+      "id": "52f1d11579f9d1b1cc07e7c6486c9365700458a911b30ba8a150b5227eb62d97",
+      "bytes": 1601441,
+      "format": "video/mp4",
+      "sha256": "9d21dc513ec67b7dc86e132ddecc6bad62f9263a6f252d739f44d1d33c692243",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/rain-g2-a.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/rain-g2-b.jpg",
+      "id": "50df2dfa5262a1288995eca0b9f63eccfed1700ab12765c04e787ad256e600aa",
+      "bytes": 98553,
+      "format": "image/jpeg",
+      "sha256": "55d4aa10a573507181186d3dde0e7d5f2f587e0eac7dda8bbb10c7d3c2c4260b",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/rain-g2-b.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/rain-g2-b.mp4",
+      "id": "fd89ae2d26700cc5f3815d34121e6694902bd3c0e88e3e3f95dd88aedb2b3c70",
+      "bytes": 1651907,
+      "format": "video/mp4",
+      "sha256": "25dbaf0493eb93e0d3d81b1a591505c0a94e57b2106d8051bc798be11aba1aeb",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/rain-g2-b.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/rain-g2-c.jpg",
+      "id": "446c3200e419b6ba5dfdeb101025df88ca7c850561ff503085c3d45addfe279b",
+      "bytes": 86957,
+      "format": "image/jpeg",
+      "sha256": "3585706c2fadfa6356dedb848a6fcfd3f1eebccb95acf333be54f12c94795f01",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/rain-g2-c.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/rain-g2-c.mp4",
+      "id": "5c355918dd46c4fcbcd583d703a127ea695d6b0f161a2a447a2957ea9aaee0da",
+      "bytes": 1559386,
+      "format": "video/mp4",
+      "sha256": "a30148bc333d5ac2971a57d7a3e4fae883d2d277fe2cc73bd1a9ed2f758ae8fd",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/rain-g2-c.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/room-g2-a.jpg",
+      "id": "4f42bd5d8cbf7533dd52318075c3bb0634f8df01cf8f1ae79f3bfbfa18f3ccb7",
+      "bytes": 67513,
+      "format": "image/jpeg",
+      "sha256": "273f4f19074653f1500ca812761b7dc2df372ff41747df8985add2b0ea779e17",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/room-g2-a.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/room-g2-a.mp4",
+      "id": "616c5af59342dfc95216e4e3f9da16a2ac5557da06171c4e4a85d35143affb2c",
+      "bytes": 1713422,
+      "format": "video/mp4",
+      "sha256": "6db6b2b0f1ed7d8fb2987605bdbb6c655be96ab2f841d12814bccdfb2cb95897",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/room-g2-a.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/room-g2-b.jpg",
+      "id": "a535c561e41eba088af5a35dc0d8fffbd686767310b44b8b05b20fbf5eee6a05",
+      "bytes": 68505,
+      "format": "image/jpeg",
+      "sha256": "bf545da5efc48fe71f8a3961719f8b6c7fd2ce93302a420bc4f06ad4da90aee3",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/room-g2-b.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/room-g2-b.mp4",
+      "id": "1e9b931808788ead3deb829e863bf3288d341bfb211d032b8201b99662a0f55f",
+      "bytes": 1659278,
+      "format": "video/mp4",
+      "sha256": "21f3405fe88fcc28fd2f9c0553ffa5481a622a9cc92969df843badd92c91c190",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/room-g2-b.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/room-g2-c.jpg",
+      "id": "f3a58cc02dbcf13c33cbf3e2524297fa17fb1c82bb37c4c78acc14d0d43f2864",
+      "bytes": 60186,
+      "format": "image/jpeg",
+      "sha256": "21359ffefb995d21f51d99ed0ad5cbdd0215864c3106ea65c32c3803ce7aab4f",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/room-g2-c.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/room-g2-c.mp4",
+      "id": "c2b59b8ffcd7c5f363b3f4b2c92c50979f7a193dda41eeeb8f7124fcba1c83f5",
+      "bytes": 1728215,
+      "format": "video/mp4",
+      "sha256": "1c794565e937a34f35f5be17fe079f901c2a2ea37dc8bd47e8662239b9ef2f9a",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/room-g2-c.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/thai-original-g2-a.jpg",
+      "id": "32c6a1e2e27989639f9a30a32e6da8937b1e69c77824086de1f6b9460e4783c0",
+      "bytes": 90298,
+      "format": "image/jpeg",
+      "sha256": "5615213dbfc33542f7d0bda83eb0e04f9c64241da8f0479d41dea71d0dc64b1c",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/thai-original-g2-a.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/thai-original-g2-a.mp4",
+      "id": "fdb0d251ad652b22eed788bd84a576cd6fc5edb44beafa189b196daafdb6d315",
+      "bytes": 1531276,
+      "format": "video/mp4",
+      "sha256": "94c3ae94baeab4a08c9d4fd4ffbe51609b4cbabe8f541181b91bfd18bd107fa1",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/thai-original-g2-a.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/thai-original-g2-b.jpg",
+      "id": "f626adec8be9832ab08a9590e7111defe296201320620721bb19eaadaafd7d02",
+      "bytes": 93563,
+      "format": "image/jpeg",
+      "sha256": "04449ac467c2445b3ea1f43da56e0a021676af4b132b31b78a0c6b3622a9284d",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/thai-original-g2-b.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/thai-original-g2-b.mp4",
+      "id": "e37f88696fd9cc1caf5778aa697c40713ab70188470d5d2c722ee95a294ac0d3",
+      "bytes": 1669350,
+      "format": "video/mp4",
+      "sha256": "4918a2f85cf863327affd7cc64998a12370bf7577806489ae57dfef486506156",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/thai-original-g2-b.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/thai-original-g2-c.jpg",
+      "id": "34a14c8c7f22cc9430f604796f6323c6a6799b7c670d889840cfa7ea9f62c14a",
+      "bytes": 87292,
+      "format": "image/jpeg",
+      "sha256": "44b8327a3f0dd75ae9ba1ed1f15a48566b54e9c28ce50c018564e83f11a37a28",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/thai-original-g2-c.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/thai-original-g2-c.mp4",
+      "id": "9ff47d72d22a63e99367e412b512fb12a2e8b80a8bd572bf770e3d8aa1a2227e",
+      "bytes": 1722960,
+      "format": "video/mp4",
+      "sha256": "b5c0843c2dd18c751fa1d29eebf7f2ad23f4d76fec74fd868e0218f483ba434b",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/thai-original-g2-c.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/your-story-g2-a.jpg",
+      "id": "795edadfb5a067cc20d06f719271308ec41ffa604e1c5c03230d6a6318c45dc9",
+      "bytes": 48411,
+      "format": "image/jpeg",
+      "sha256": "81f8552f2d274b17c0034b05459e8bc3c103afb723a54edec723baa05f745dea",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/your-story-g2-a.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/your-story-g2-a.mp4",
+      "id": "1699b0fa17baef5f4026ad809d5563a65e3d117aa8f96c9e9426b9abc3025047",
+      "bytes": 1665467,
+      "format": "video/mp4",
+      "sha256": "120f371a04129c14e93e266a50fcc023cc6a384158aa825cac6d0680704a7580",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/your-story-g2-a.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/your-story-g2-b.jpg",
+      "id": "1d9ef11ba4f9d5a5353931d80fb588f6eefde63473d6c17a3a105bbd1ffbe510",
+      "bytes": 50614,
+      "format": "image/jpeg",
+      "sha256": "16d6af12fd89edb989fc91b106204e4cd8118f641cefde12c56e0aca336abe14",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/your-story-g2-b.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/your-story-g2-b.mp4",
+      "id": "17b46a1011f065b61822847ab258a521998b303c3825e39b2019ed288f10c327",
+      "bytes": 1702891,
+      "format": "video/mp4",
+      "sha256": "ba105dfa09319e32cdff2dccf47f96593c0c3287e6e93a49c06b5a699e8d12d5",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/your-story-g2-b.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash/your-story-g2-c.jpg",
+      "id": "70a262f6438de210c2c17ea8de14be00c4e2caff97a481b4ebce9cac3bd32d19",
+      "bytes": 37135,
+      "format": "image/jpeg",
+      "sha256": "ff6a6f019e90d4fd8638f93acb7446a8d3c15fae2e682baadc5f1ef97cfb318c",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/your-story-g2-c.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        720,
+        1280
+      ]
+    },
+    {
+      "source": "public/splash/your-story-g2-c.mp4",
+      "id": "fb998619e08294916e0e696af1d391ad8ed1436e7a3a8a8e60f8f741bfe2dd95",
+      "bytes": 1739607,
+      "format": "video/mp4",
+      "sha256": "418a8f93ab581f863f750cbabade586aa5aedd2016d69b54126e8e0aa3da4771",
+      "acquired": true,
+      "production_path": "/noa-assets/splash/your-story-g2-c.mp4",
+      "state": "deployment_candidate",
+      "use": "background"
+    },
+    {
+      "source": "public/splash-portrait.jpg",
+      "id": "c802afd1c15cec76a351adf969c757c17c598d8bd9da64863d542d26c7e98519",
+      "bytes": 675416,
+      "format": "image/jpeg",
+      "sha256": "a0103781d061aa58b115a058fa0082b8c42780c244734e7776ee9a9cda951181",
+      "acquired": true,
+      "production_path": "/noa-assets/splash-portrait.jpg",
+      "state": "deployment_candidate",
+      "use": "background",
+      "dimensions": [
+        1008,
+        1792
+      ]
+    },
+    {
+      "source": "public/sw.js",
+      "id": "98fd1d4c44ad3934ee242b1f070d235cc39f11e46738f28de66c6740182c4706",
+      "bytes": 294,
+      "format": "text/javascript",
+      "sha256": "0e4fe1ad1cb57caee548c851aef923bf5e67dd305a2ba7dc9d0e11fc31a14980",
+      "acquired": true,
+      "production_path": null,
+      "state": "preserved_platform_or_configuration",
+      "use": "brand/icon"
+    }
+  ],
+  "remote": [
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-0018d891-8b41-9709-9ecf-a06352578f59-e171d968.jpeg",
+      "id": "db8099ef0edf904d141447e04b70bf73baae64f63672878c06d5f7fe715e760d",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/jpop-original/ep/02.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-0042453f-03e8-9e17-8a49-3bceeaebe137-084413de.jpeg",
+      "id": "5db56dc67cf7a4bcfcef5ae00c21bf0b0951fff189394115cfbb5cfceab9caef",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/ep/05.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-01dae4ef-38fa-9ef4-9fba-e7dac958775a-d1b31522.jpeg",
+      "id": "a883277b984df21660269939bac70be3bf03166be28522c4b6f60f1c28cec3de",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/thai-original/ep/03.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-0e836239-ab71-94ab-bda6-3031c0e02f85-d84a50fd.jpeg",
+      "id": "5c4ddba88d54ab62c60c958bd731370b2c4e842ee3f57937c63f6dded5e77a8a",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/act-3.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-17377cec-7760-9f9b-85f1-e017c9bc3103-66a9f8e1.jpeg",
+      "id": "dd2c704a737a89a5d72a77fae26085b66daa4e63b49e3443f1580dd933d61213",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/ep/06.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-1dccdd2e-24f1-9ffa-b426-3bd66cc50dab-29ff0a01.jpeg",
+      "id": "1d7a258c672459a0101fbe5b0462a5deb897d918deaad9619bc915da77f1c82b",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/ep/20.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-286a5ca5-3d4e-9629-bf9a-98d14eb900a3-6b07c0df.jpeg",
+      "id": "f7b87288f64a492ad27c7c65846be7f67f6c0a77e1871e41ccf0e323ed4ceed3",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/ep/29.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-2a457bcc-e1c3-929b-a4c4-612b710aa957-9ac6ca73.jpeg",
+      "id": "9b0234899f2db1fd80e7489e9d53217548b9cc35f88fed156b72c173a15e14ec",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/ep/23.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-30b05f5c-364c-9b72-8966-69fb89ba4094-364b7dcc.jpeg",
+      "id": "ad2ccc3a2a283e164547fc1afe4843745456bd4bf039cbab168a83f5c6ba49cd",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/jpop-original/ep/16.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-3367439f-1164-9891-bb14-14cf81ff9a6d-2f1485f4.jpeg",
+      "id": "5e0fef7e21f1bba03aff28715fcff127bff1485cb6857aa9fb2f82226bd76e72",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/ep/19.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-3f3a9411-bd7c-91cf-ba60-fd22f9c08f72-4e048a90.jpeg",
+      "id": "62c659d0b023aee7c043e451054ccad570205fb722d819219d77400e39deb1a9",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/jpop-original/ep/05.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-47d4929e-4155-9c41-ad0e-d37d8d0c378d-71951c4c.jpeg",
+      "id": "4ca2c3148da2acf1f519eeff5da5c0fa3819a22f7ab187f7fa4066e190a5c0d7",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/groovy-airy-pop/ep/40.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-4919b217-0674-9abd-b6a2-9a3fd734d0f7-2b10493b.jpeg",
+      "id": "4c10b12a3efafa1deb4e112d901542cbbb5f60a3f56bd1284732934908054d5e",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/pop-original/ep/06.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-4a4b3cbf-2bde-9095-b7aa-ae1814512e4a-eff48267.jpeg",
+      "id": "e4a96be29c9fbdd5423fcb8e28b163ba9c8034e482c0211c9a28fff37efb7ba5",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/jpop-original/ep/40.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-4c309f6f-d579-904e-ab09-e2f926bd03b8-8f96adb0.jpeg",
+      "id": "ddea7f8a65119afdc23e4bfd44ba8a0f26f35f252635a10469aa67807491507e",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/fantasy-ambient-edm/act-1.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-50648118-030c-9ece-97cc-cd4b54384278-6c2ce01f.jpeg",
+      "id": "993762a725a583fef0c9d94d801c16a059e4680a40dd88a81bf8273d71dd20e0",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/ep/15.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-50726a63-574b-935e-b591-85cedb4eb77a-f1a04b6b.jpeg",
+      "id": "ef73c3ba7ff79a0d172c6ee68e4adabfd3fdca0beea45d7eab4612708953b52d",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/panpop/act-1.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-5a2604d0-4865-9a6e-9a67-46471d2b57a6-e35d1c2b.jpeg",
+      "id": "86eafcc97c05cb4e81407713117b2c484ceb4538bd6f7bdd5f972b0d7aefa667",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/ep/09.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-5ecfd5be-fe7b-9c85-a412-83f89ae8ed73-09009579.jpeg",
+      "id": "14f541487369a4f417656c4ccb1296759caf0bcd4404b7ffc25a780f6079a894",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/joseon-ballad/ep/20.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-623b45b1-4787-9da6-8221-dc935bf9ca28-de24c75f.jpeg",
+      "id": "be3a1710ffcc2d1842c189b7ad624a566c6e43c22887e136758f10f6f5c17f4e",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/act-4.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-66dc78a9-2960-9cde-9006-fba6fabbf7be-b7aa4c44.jpeg",
+      "id": "9b15abc391d80812c63b884761eb0475623dbdbe593d0c26d88281b334c8c7ff",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/jpop-original/ep/09.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-696db5d2-64f5-96ee-9471-ac69b356167d-4feb2cf6.jpeg",
+      "id": "ffdedfae2c4812b10fa85201d80a1faa58649f4e8b809238fb8c7c8ab99bcf5d",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/pop-original/ep/05.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-6aa2223b-c218-918c-aba6-3858ee89374d-4aa40417.jpeg",
+      "id": "4ad41b0f538e87f7a7d286fb2b17c0b4ad02794d1b8021e916813172681b0b1c",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/jpop-original/ep/20.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-6b33fcee-2323-93b1-b396-369524ab0715-4e54c291.jpeg",
+      "id": "5187a88b86308aea0c5a25da966ef0e760acb47e3d1702b62b87d1b473ab1a02",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/ep/02.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-77a08bcd-3dd9-9c94-8d68-2123cd0c9a4c-851b6deb.jpeg",
+      "id": "482e0b3432a75c905d7cacc21c7c4111161995a7b81bcedd873b4b164514db67",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/ep/14.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-77de6a59-babe-9243-b3b3-382605d34cce-674815a1.jpeg",
+      "id": "a3ecfd939cf23a996312490bcccdf2dc5ae953275e9c521643adea93936aa223",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/narrative-piano-indie/ep/14.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-81040e23-0707-91c6-bfce-6119fb62e5e5-88943bfc.jpeg",
+      "id": "14d4629c3d6fd329a5b01a9087b954c012d207419351e1d6069f536a1f6534af",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/jpop-original/ep/10.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-816424c3-7d7e-9dea-bc1e-63f96afdc90b-4906f659.jpeg",
+      "id": "76ef2afc9e4e1be32c5836fade2daff4fa6508beee47a129ff778cd74e2ba71a",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/edm-kpop-club/act-1.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-81ac42b8-8b6a-9694-afeb-9e3ba64526af-4a83a170.jpeg",
+      "id": "ec6a568c21fbae3f98a6ec61b4197da3393664e185940f3197c79f000241c057",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/jpop-original/ep/01.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-848c45c4-09a5-9101-ad38-4b0cfde0b78b-8e63b215.jpeg",
+      "id": "67317b7006c2006975580e04cf0b164d8544b886103d5a51d33242d121dffbfb",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/ep/32.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-8923462c-09b8-9cb8-9928-8119161875d4-2e43721f.jpeg",
+      "id": "be6fa9e372792b9bbf83ad7c50c1fa3884eb15bf064991052f971df091fc540c",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/panpop/ep/01.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-8b381323-5202-93f1-a9b4-d6d730fd77c1-e5793028.jpeg",
+      "id": "255b3f392afa7885f2347761fae337d7765571ce9d0455196b8d6aa363f398b3",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/ep/12.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-8d4c0862-69e1-9ad7-aa2b-8b6aacd3d381-64c513a7.jpeg",
+      "id": "5ad252fba97714b9690b2f7bf68bfb43c7917d1dc65539eca4541d835eaa7dbf",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/panpop/ep/27.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-8f4794c6-afd5-9aa8-a43b-60c8441e5cde-d2150dd9.jpeg",
+      "id": "d61ac4c4b184984dd9d3b713fc44986f1e2aedbcbc2b422570c3394529ad5165",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/pop-original/ep/01.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-940f5a69-4089-988f-a7eb-f8aaf4f4ae9e-49270d5b.jpeg",
+      "id": "fc847bef52c268ab3215a79ef90a4ac1339bcb5726a236fa0b248b8a6c1b4c37",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/jpop-original/ep/12.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-99ffd875-4c8b-9a65-9b42-2339af3fbca8-84dd5bc8.jpeg",
+      "id": "c559156e613753c0824bb76ac5069e01716d6dce8832828ccb7f29effdf47e8c",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/joseon-ballad/act-1.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-9fbc23b0-9988-9485-bda7-99ea9efc2dbe-4e96b52d.jpeg",
+      "id": "fa09ebf5d13d7e48a30e029e9d31035da8a3f061ce4700504716973de1c3524c",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/act-2.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-a264212e-0cc5-95b2-aefb-e146150178fd-542a8d9d.jpeg",
+      "id": "accc3bebfb82ec74ab49d10a3e0998ca77203b50e32914ec521730586a798635",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/act-1.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-a3be1b78-59f0-996a-9bbb-024c90e01724-40ec8f0b.jpeg",
+      "id": "200c57d3ec2f5babd5906f36571661c24f0e6b3a3a25b509ac49052a96fc2328",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/jpop-original/act-1.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-aa47f28a-4bf7-9cad-b94d-1a563383f9a6-04f95625.jpeg",
+      "id": "16f8539dc99b08e43263b4c0b4942a4ef1c396c8f5c5a49c2628e287288ec24c",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/ep/01.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-b1bfd1ca-4819-919c-833b-e0e749bd129d-c358b2b9.jpeg",
+      "id": "7122f28e338aec52ff743d0423fb863de49d9e4f2c5f02cf824e8615fd4deb60",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/pop-original/ep/09.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-b2e5dd5b-4f05-9051-abc6-6a96a3b5e1ed-826002d3.jpeg",
+      "id": "0db276e066a903a50e1bb65c447d5f2b1aadcbb5581c38b6a828d5b1ba1e8d92",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/pop-original/ep/03.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-b34514a5-e9d4-9a45-b422-6901af3b0246-cfd7e100.jpeg",
+      "id": "7d9d8fd3004ce541f574b9aae63a9c4735ba3cf3b8183ecff8e86292793cac52",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/jpop-original/ep/06.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-c1867c80-b8d3-9aac-bbef-0cae65a0cb9a-284bc1de.jpeg",
+      "id": "022fb993c80539c3070ea5e8a4f0f4d5d03861e714554288a4f2d682a39aa094",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/ep/24.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-ca4f0fc3-b2f3-96bc-a5ec-8298bfa757cf-466b283a.jpeg",
+      "id": "fef7dfea7f575aa060d0cf36562b004e414403a5046f3570802a668e438f447c",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/jpop-original/ep/17.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-cc7525aa-1dd2-9fe4-8b69-9cfc768d2c3f-8266cdc4.jpeg",
+      "id": "cee9cae42d2708a252fa873c980ac5e07f3d0702e6a88f62c016e06e418912b2",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/pop-original/act-1.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-ce6e4fd4-15f6-957c-b734-f4bb06cd5692-b694893e.jpeg",
+      "id": "e924d196a9deaeb787685c5bbf23edd601df1e19250128e7bf5677527768ed1a",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/ep/03.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-d800ac83-f216-9c82-83e2-027c4c82246e-9165132a.jpeg",
+      "id": "d853ada7ba0a143511164cd2036d34a8a5e07f57ed7dc515279fb2605da6d492",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/panpop/ep/40.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-d9bc9d44-759f-973a-bdf6-d06f1bad76e0-5f49e253.jpeg",
+      "id": "b5aed9d3c36287fd820322640ed5542be11ef2dd8f7726f575b5f821c7a57c98",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/joseon-ballad/act-4.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-de8c7795-ba2e-9c2c-aef7-c102e8e28656-d74065bd.jpeg",
+      "id": "2aa70d7e9d794bf0a51aef8f9d65445bd97d8e47b602b48cf49e3e15f13e16f3",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/ep/08.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-e139f58b-4318-9b20-9db1-d38770d2c230-122e57f0.jpeg",
+      "id": "e226e98da8c5975773b295f63486535098dd7495c706289bad0a7c3480b56e73",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/pop-original/ep/04.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-e5a6674b-9eb3-9a0a-877b-59e4034fb1d4-b6c7bee9.jpeg",
+      "id": "142273c09e1e3fe29804b91398da107d7a1d53a94f18136e3f0d1e07937cf7e9",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/kpop-original/ep/36.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-f81d7bd9-b297-9579-a1b9-7d88ee09a732-2b21341c.jpeg",
+      "id": "08be648b9aa89d0ab75f571c443c8266e7bdcd76a3e0797d098dbed36ee8cfa7",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/pop-original/ep/23.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    },
+    {
+      "field": "thumbUrl",
+      "url": "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-f91e4790-2e17-9595-b261-d498d3b329cc-1bfc495a.jpeg",
+      "id": "84415935d45e8eb13e5f02d2d96eb2b60cc697b1e9d476f2c6184d99a52a934b",
+      "source_records": [
+        "deploy/noastudio/noa/data/live/곡/jpop-original/act-2.json"
+      ],
+      "acquired": false,
+      "bytes": null,
+      "sha256": null,
+      "format": null,
+      "state": "reference_only",
+      "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
+    }
+  ]
+}

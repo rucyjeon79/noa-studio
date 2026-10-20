@@ -5,7 +5,7 @@
  function selectWorking(play=false){
   if(!working?.length){status.textContent='담긴 음악이 없습니다.';return}
   activeQueue=[...working];genre.value='';type.value='';search.value='';filter();
-  const first=queue()[0];status.textContent='등록 '+working.length+'개 · 현재 재생 가능 '+queue().length+'개';
+  const first=queue()[0]||filteredQueue[0];status.textContent='등록 '+working.length+'개 · 현재 재생 가능 '+queue().length+'개';
   if(first)select(first,play);
  }
  async function refresh(){
@@ -24,13 +24,13 @@
   if(item){id=item.playlist_id;revision=item.revision;working=[...item.tracks];title.value=item.title;selectWorking()}
   else{id=crypto.randomUUID();revision=0;working=null;title.value=''}
  });
- el('my-new').onclick=()=>{id=crypto.randomUUID();revision=0;working=queue().map(b=>b.dataset.key);picker.value='';title.value='';status.textContent='현재 재생 목록 '+working.length+'개를 담았습니다. 이름을 입력하고 저장해 주세요.';title.focus()};
+ el('my-new').onclick=()=>{id=crypto.randomUUID();revision=0;working=filteredQueue.filter(b=>lookup.get(b.dataset.key)?.kind!=='playlist').map(b=>b.dataset.key);picker.value='';title.value='';status.textContent='현재 재생 목록 '+working.length+'개를 담았습니다. 이름을 입력하고 저장해 주세요.';title.focus()};
  el('my-add').onclick=()=>{if(!selected)return;working=working||[];if(!working.includes(selected.dataset.key))working.push(selected.dataset.key);status.textContent=working.length+'개 곡 · 저장하면 반영됩니다.'};
  el('my-remove').onclick=()=>{if(!selected)return;working=(working||[]).filter(k=>k!==selected.dataset.key);status.textContent=working.length+'개 곡 · 저장하면 반영됩니다.'};
- el('my-play').onclick=()=>{working=working||queue().map(b=>b.dataset.key);selectWorking(true)};
+ el('my-play').onclick=()=>{working=working||filteredQueue.filter(b=>lookup.get(b.dataset.key)?.kind!=='playlist').map(b=>b.dataset.key);selectWorking(true)};
  el('my-save').onclick=async()=>{
   if(!title.value.trim()){status.textContent='목록 이름을 입력해 주세요.';title.focus();return}
-  const tracks=working||queue().map(b=>b.dataset.key);el('my-save').disabled=true;
+  const tracks=working||filteredQueue.filter(b=>lookup.get(b.dataset.key)?.kind!=='playlist').map(b=>b.dataset.key);el('my-save').disabled=true;
   try{
    const response=await fetch('/noa-bridge/user-playlists.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-NOA-CSRF':csrf},body:JSON.stringify({id,title:title.value.trim(),tracks,expectedRevision:revision})});const result=await response.json();
    if(!response.ok){status.textContent=response.status===409?'다른 곳에서 변경됐습니다. 목록을 다시 열어 확인해 주세요.':'저장하지 못했습니다. 로그인과 연결 상태를 확인해 주세요.';return}
