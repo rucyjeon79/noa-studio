@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Restore original brand identity and rerun the previously timed-out 390px check.
+# Correct public genre art; retain original brand identity and all release checks.
 on:
   push:
     branches: [main]

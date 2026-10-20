@@ -44,3 +44,5 @@ html[data-noa-theme="noa-ivory"]{color-scheme:light}html[data-radius="sharp"]{--
 /* The original approved symbol is shared by headers and install surfaces. */
 .noa-logo{display:inline-flex;align-items:center;gap:12px;min-width:0}.noa-brand-mark{display:block;width:44px;height:44px;flex:none;object-fit:contain;border-radius:50%}.noa-brand-copy{min-width:0}.noa-sidebar>.noa-logo{flex-direction:column;align-items:flex-start;gap:10px}.noa-sidebar .noa-brand-mark{width:56px;height:56px}
 #my-recent a,#my-recent-youtube a{display:inline-block;min-height:44px;padding:8px 0;overflow-wrap:anywhere;text-decoration:none}#my-recent a:hover,#my-recent-youtube a:hover{text-decoration:underline}
+
+.noa-art img.noa-genre-art,.noa-browse-card img.noa-genre-art{object-fit:contain;background:var(--noa-surface)}
