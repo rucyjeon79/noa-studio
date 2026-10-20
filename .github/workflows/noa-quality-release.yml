@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Verify shared recovery read model, original assets and consumer isolation from Grok.
+# Retain all 52 ACTs independently of playable sound records; originals already transferred.
 on:
   push:
     branches: [main]

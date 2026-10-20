@@ -12,7 +12,7 @@ function openSound(){
  const songs=[{key:'one',title:'Share only',genre:'kpop-original',video:'',suno:'https://suno.com/song/one',audio:'',kind:'single',ep:'1',lyrics:'Original lyrics'},...['two','three'].map((key,i)=>({key,title:key,genre:'kpop-original',video:'',suno:'https://suno.com/song/'+key,audio:'https://noastudio.ai.kr/data/noa-audio/'+key+'.wav',kind:'single',ep:String(i+2),lyrics:'lyrics'}))];
  const buttons=songs.map(s=>Object.assign(element(),{dataset:{key:s.key,audio:s.audio}}));
  const storage=new Map();const context={console,URLSearchParams,location:{search:'',origin:'https://noastudio.ai.kr'},sessionStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},navigator:{},document:{getElementById:node,querySelectorAll:()=>buttons,querySelector:()=>element(),createElement:element,head:{append(){}}},window:{addEventListener:(n,f)=>events[n]=f}};
- vm.createContext(context);vm.runInContext(script.replace(/<\?=json_encode\(\$songs,[\s\S]*?\?>/,JSON.stringify(songs)),context);
+ vm.createContext(context);vm.runInContext(script.replace(/<\?=json_encode\(\$songs,[\s\S]*?\?>/,JSON.stringify(songs)).replace(/<\?=json_encode\(\$collections,[\s\S]*?\?>/,'[]'),context);
  return {php,context,node,audio,buttons,audioEvents,events,storage,run:code=>vm.runInContext(code,context)};
 }
 test('share-only record shows original lyrics and Suno link without any audio or YouTube playback',()=>{
