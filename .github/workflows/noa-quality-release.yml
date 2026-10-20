@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Verify owner thumbnail images through bounded metadata-only image retrieval.
+# Display published recovery counts separately from preserved source extraction drafts.
 on:
   push:
     branches: [main]
