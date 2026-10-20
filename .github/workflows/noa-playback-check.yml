@@ -1,4 +1,5 @@
 name: NOA official player playback diagnosis
+# Wait for the official play control to finish rendering before the single playback attempt
 on:
   push:
     branches: [main]

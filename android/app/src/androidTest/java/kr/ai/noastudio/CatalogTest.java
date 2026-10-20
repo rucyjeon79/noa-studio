@@ -14,6 +14,7 @@ public class CatalogTest {
   android.content.Context context=InstrumentationRegistry.getInstrumentation().getTargetContext();
   context.startActivity(new Intent(context,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
   boolean loaded=device.wait(Until.hasObject(By.text(java.util.regex.Pattern.compile("[1-9][0-9]*개 문서.*"))),60000);
+  if(loaded)assertTrue("Registered album artwork did not load",device.wait(Until.hasObject(By.desc("앨범 아트")),20000));
   device.dumpWindowHierarchy(new java.io.File(context.getExternalFilesDir(null),"noa-ui.xml"));
   assertTrue(device.takeScreenshot(new java.io.File(context.getExternalFilesDir(null),"noa-android.png")));
   assertTrue("Production catalog did not load; see captured screen",loaded);

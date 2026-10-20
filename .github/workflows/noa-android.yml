@@ -1,5 +1,5 @@
 name: NOA STUDIO Android
-# Keep localized native navigation on one line and verify the final installable APK
+# Load registered artwork after layout and verify decoded production thumbnails
 on:
   push:
     branches: [main]
