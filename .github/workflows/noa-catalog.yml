@@ -1,0 +1,55 @@
+name: NOA music SQL catalog validation and release
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-catalog.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: noa-dothome-production
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: noa-test-only
+          MYSQL_DATABASE: noa_catalog_test
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -h localhost -pnoa-test-only" --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Build original-preserving source bundle and validate PHP
+        run: |
+          python3 scripts/noa_catalog_seed.py
+          for f in bridge/catalog-*.php deploy/noa-catalog*.php; do php -l "$f"; done
+          php -d memory_limit=256M tests/catalog/merge_test.php
+      - name: Validate real MySQL import, order, conflict preservation and retry safety
+        env:
+          NOA_TEST_MYSQL_DSN: mysql:host=127.0.0.1;port=3306;dbname=noa_catalog_test;charset=utf8mb4
+        run: php -d memory_limit=256M tests/catalog/mysql_test.php
+  release:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Prepare music-only source bundle
+        run: python3 scripts/noa_catalog_seed.py
+      - name: Deploy reviewed additive files with pinned host and hashes
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ vars.NOA_SSH_HOST_FINGERPRINT || 'SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU' }}
+          NOA_SSH_ROOT: ${{ vars.NOA_FTP_ROOT }}
+        run: |
+          python3 -m pip install --user 'paramiko==3.5.1'
+          python3 scripts/noa_catalog_deploy.py

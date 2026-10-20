@@ -8,3 +8,6 @@ screenshots
 data/live/pglite
 data/live/pglite-broken
 *.zip
+
+# Deterministic catalog source bundle is built in the release workflow.
+/bridge/catalog-seed.php

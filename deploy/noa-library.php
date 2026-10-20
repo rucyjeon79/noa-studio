@@ -60,7 +60,7 @@ table{width:100%;border-collapse:collapse;background:#15161b;border-radius:12px;
 th{color:#d7ad62}.scroll{overflow-x:auto}.error{padding:16px;border:1px solid #785333;border-radius:8px;color:#efc69c}
 p{color:#aaa}.next{display:inline-block;margin-top:22px;padding:10px 20px;border:1px solid #d7ad62;border-radius:8px}
 </style><link rel="stylesheet" href="/noa-ui.css"><script src="/noa-ui.js" defer></script></head><body class="noa-page"><main>
-<a href="/noa2.php">← NOA STUDIO</a><h1>Music Library</h1><p><a href="/noa-ai-lab.php">NOA AI LAB · 영상 제작과 YouTube 성장</a></p><a href="/noa-bridge/setup.php">저장소 연결 상태 확인</a><p>관리자 전용 · 변경 이력 및 충돌 방지 저장</p><a href="/noa-editor.php">새 음악 등록</a>
+<a href="/noa2.php">← NOA STUDIO</a><h1>Music Library</h1><p><a href="/noa-catalog-admin.php">음악 SQL 통합 · 충돌 검토</a> · <a href="/noa-catalog.php">통합 라이브러리</a> · <a href="/noa-ai-lab.php">NOA AI LAB · 영상 제작과 YouTube 성장</a></p><a href="/noa-bridge/setup.php">저장소 연결 상태 확인</a><p>관리자 전용 · 변경 이력 및 충돌 방지 저장</p><a href="/noa-editor.php">새 음악 등록</a>
 <nav aria-label="콘텐츠 분류">
 <?php foreach (array_merge([''=>'전체'], array_combine($allowed, ['EP 싱글','ACT 플레이리스트','사연곡','메타','설정'])) as $value=>$label): ?>
 <a href="?<?=noa_escape(http_build_query(['kind'=>$value]))?>"><?=noa_escape($label)?></a>
