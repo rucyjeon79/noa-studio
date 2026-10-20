@@ -1,5 +1,5 @@
 name: NOA STUDIO Android
-# Verify all 52 native ACTs and track counts without duplicate collection documents.
+# Wait for the rebuilt native library before resolving its settings control.
 on:
   push:
     branches: [main]

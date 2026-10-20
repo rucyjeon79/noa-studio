@@ -34,8 +34,10 @@ public class CatalogTest {
   UiObject2 act=device.wait(Until.findObject(By.text("ACT 1 · EP.1–10")),5000);assertNotNull(act);act.click();
   assertTrue("ACT document was duplicated among its tracks",device.wait(Until.hasObject(By.text("10개 항목 · 24개씩 표시")),5000));
   device.findObject(By.text("음원")).click();
-
-  device.findObject(By.desc("설정")).click();
+  device.waitForIdle();
+  assertTrue(device.wait(Until.hasObject(By.text("491곡 · 52 ACT·목록")),5000));
+  UiObject settingsButton=new UiObject(new UiSelector().description("설정"));
+  assertTrue(settingsButton.waitForExists(5000));settingsButton.click();
   assertTrue(device.wait(Until.hasObject(By.text("NOA STUDIO · Ivory")),5000));
   device.findObject(By.text("NOA STUDIO · Ivory")).click();
   assertTrue(device.wait(Until.hasObject(By.text(java.util.regex.Pattern.compile("[1-9][0-9]*곡.*ACT·목록"))),30000));
