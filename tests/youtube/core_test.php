@@ -8,3 +8,6 @@ $v['id']='newvideo123';check_yt(ny_match($v,[$s])['songId']===null,'title-only c
 $r=[];check_yt(ny_page($r,'items',['nextPageToken'=>'next'])===true,'page token');try{ny_page($r,'items',['nextPageToken'=>'next']);throw new RuntimeException('loop accepted');}catch(DomainException $e){check_yt($e->getMessage()==='pagination_loop','loop detection');}
 $m=ny_rollup(['x'=>['views'=>10,'averageViewDuration'=>5,'averageViewPercentage'=>20],'y'=>['views'=>30,'averageViewDuration'=>25,'averageViewPercentage'=>80]],['x','y','y']);check_yt($m['views']===40.0&&$m['averageViewDuration']===20.0&&$m['averageViewPercentage']===65.0,'distinct videos and weighted means');
 echo "YouTube: URL identity, Suno identity, variant ambiguity, title-only review, page loops, distinct weighted metrics passed.\n";
+
+check_yt(ny_api_response('{"items":[]}',200)===['items'=>[]],'successful provider JSON');
+try{ny_api_response('{"error":{"message":"Unsupported query","errors":[{"reason":"badRequest"}]}}',400);throw new RuntimeException('provider failure accepted');}catch(DomainException $e){check_yt(str_contains($e->getMessage(),'HTTP 400 / badRequest / Unsupported query'),'safe actual provider diagnostic');}

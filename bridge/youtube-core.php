@@ -31,3 +31,14 @@ function ny_rollup(array $metrics,array $ids):array{
  foreach(array_unique($ids) as $id){if(!isset($metrics[$id]))continue;$m=$metrics[$id];$out['videos']++;foreach(['views','estimatedMinutesWatched','subscribersGained','subscribersLost'] as $key)$out[$key]+=(float)($m[$key]??0);$v=(float)($m['views']??0);$weight+=$v;$duration+=(float)($m['averageViewDuration']??0)*$v;$percentage+=(float)($m['averageViewPercentage']??0)*$v;}
  if($weight){$out['averageViewDuration']=$duration/$weight;$out['averageViewPercentage']=$percentage/$weight;}return $out;
 }
+
+/** Sanitized Google diagnostic, compatible with hosting that replaces HTTP error bodies. */
+function ny_api_response(string|false $raw,int $status):array{
+ $data=is_string($raw)?json_decode($raw,true):null;
+ if($status>=200&&$status<300&&is_array($data))return $data;
+ $reason=(string)($data['error']['errors'][0]['reason']??'');
+ if(!preg_match('/^[A-Za-z_]{1,64}$/D',$reason))$reason='request_failed';
+ $message=(string)($data['error']['message']??'');
+ $message=preg_replace('/[\x00-\x1f\x7f]/',' ',$message)??'';
+ throw new DomainException('Google API HTTP '.$status.' / '.$reason.($message!==''?' / '.mb_substr($message,0,350):''));
+}

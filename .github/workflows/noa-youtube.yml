@@ -1,5 +1,5 @@
 name: NOA YouTube channel validation and release
-# Paginate owner channel review after the verified 765-video collection.
+# Preserve actionable official API diagnostics on shared hosting.
 on:
   push:
     branches: [main]
