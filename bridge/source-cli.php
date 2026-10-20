@@ -14,7 +14,7 @@ try {
         $get->execute([$item['key']]);$raw=$get->fetchColumn();
         if($raw===false){$missing[]=$item['key'];continue;}
         $actual=json_decode($raw,true,512,JSON_THROW_ON_ERROR);
-        if($actual==$item['payload'])$match++;else $changed[]=$item['key'];
+        if($actual===$item['payload'])$match++;else $changed[]=$item['key'];
     }
     $result['music_documents']=['source'=>count($seed['items']),'matching'=>$match,'missing'=>$missing,'different_preserved'=>$changed];
     echo json_encode($result,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR).PHP_EOL;
