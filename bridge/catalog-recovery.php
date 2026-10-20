@@ -13,6 +13,16 @@ function nr_kind(array $v):string{
  if(($v['snippet']['categoryId']??'')==='10'&&preg_match('~Cover by AI.?noa|AI 작곡대회|Original Song|사연곡|학원가~iu',$t.'\n'.$d)&&$seconds>=45&&$seconds<=600)return 'song';
  return 'review';
 }
+/** Spacing/parenthetical differences are review evidence, never permission to merge. */
+function nr_title_keys(string $title):array{
+ $lead=preg_split('~\s+[|｜]\s*|\s+-\s+~u',$title)[0];
+ $variants=[$lead,preg_replace('~[（(][^）)]*[）)]~u','',$lead)??$lead];$out=[];
+ foreach($variants as $v){$key=mb_strtolower(preg_replace('~[\s\p{P}\p{S}]+~u','',$v)??'');if(mb_strlen($key)>=2)$out[$key]=true;}
+ return array_keys($out);
+}
+function nr_title_overlap(array $video,array $songs):bool{
+ $keys=nr_title_keys((string)($video['snippet']['title']??''));foreach($songs as $s)if(array_intersect($keys,nr_title_keys((string)($s['fields']['title']??''))))return true;return false;
+}
 function nr_suno_url(string $text):string{
  preg_match_all('~(?:Suno|수노)[^\r\n]{0,30}(https://(?:www[.])?suno[.]com/(?:song|s)/[A-Za-z0-9_-]+)~iu',$text,$m);
  $urls=array_values(array_unique($m[1]));return count($urls)===1?$urls[0]:'';
@@ -44,7 +54,7 @@ function nr_plan(PDO $db):array{
   if($kind==='promotion'){$class[$id]='G';$counts['nonSongVideos']++;continue;}
   if($kind==='compilation'){$class[$id]='F';$counts['compilations']++;$review[$id]='compilation_not_single_song';continue;}
   // A title candidate or a rejected/manual classification is never silently converted into a new song.
-  if(($m['candidates']??[])||in_array($m['status']??'',['rejected','conflict'],true)){$class[$id]='F';$review[$id]='existing_song_or_version_candidates';$counts['preventedDuplicate']++;continue;}
+  if(($m['candidates']??[])||nr_title_overlap($v,$songs)||in_array($m['status']??'',['rejected','conflict'],true)){$class[$id]='F';$review[$id]='existing_song_or_version_candidates';$counts['preventedDuplicate']++;continue;}
   if($kind!=='song'){$class[$id]='F';$review[$id]='music_identity_needs_review';continue;}
   $e=nr_entity($v,$run['channel_id']);
   // Same title in any candidate, including a newly recovered source, is a reason to hold, never to merge.

@@ -6,4 +6,6 @@ rcheck(nr_kind($v)==='song','explicit owner cover');$e=nr_entity($v,'owner');rch
 foreach(['Which Part Is Best? | NOA Dance Vibes','10/11 Noa Dance | AI Artist Noa'] as $t){$v['snippet']['title']=$t;rcheck(nr_kind($v)==='promotion','dance promotion not a song');}
 $v['snippet']['title']='Act.1 Playlist EP.1~10';rcheck(nr_kind($v)==='compilation','compilation not new song');$v['snippet']['title']='[세로] External Artist - Title';rcheck(nr_kind($v)==='review','unattributed excerpt held');
 rcheck(nr_suno_url('Suno: https://suno.com/s/shortid')==='https://suno.com/s/shortid','short share URL retained exactly');rcheck(nr_suno_url('promotional https://suno.com/song/other')==='','unlabelled links not assumed');
+rcheck(nr_title_overlap(['snippet'=>['title'=>'가족 사진 - Artist | Cover by AInoa']],[['fields'=>['title'=>'가족사진']]]),'spacing variant must be held rather than duplicated');
+rcheck(nr_title_overlap(['snippet'=>['title'=>'겨울 사랑(OST) - Artist | Cover by AInoa']],[['fields'=>['title'=>'겨울사랑']]]),'OST annotation must not create duplicate');
 echo "Recovery classification, private visibility, no fabricated fields, stable IDs, exact Suno share path passed.\n";

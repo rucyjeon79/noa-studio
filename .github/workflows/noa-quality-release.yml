@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Preserve exact Suno URLs and field-level recovery evidence; separate audio-only menu eligibility.
+# Hold spacing and OST title variations for review instead of duplicating existing songs.
 on:
   push:
     branches: [main]
