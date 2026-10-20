@@ -6,9 +6,10 @@ import noa_sftp_deploy as base
 import noa_catalog_deploy as catalog
 import noa_lab_deploy as lab
 import noa_youtube_deploy as youtube
+import noa_quality_deploy as quality
 
 def main():
-    files={**base.FILES,**catalog.FILES,**lab.FILES,**youtube.FILES,
+    files={**base.FILES,**catalog.FILES,**lab.FILES,**youtube.FILES,**quality.FILES,
            'bridge/lab-oauth-core.php':'noa-bridge/lab-oauth-core.php',
            'bridge/lab-oauth.php':'noa-bridge/lab-oauth.php'}
     connection=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022))
