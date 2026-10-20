@@ -11,6 +11,7 @@ import paramiko
 
 FILES = {
     'deploy/noa-ui.css':'noa-ui.css',
+    'deploy/noa-legacy-i18n.json':'noa-legacy-i18n.json',
     'deploy/noa-ui.js':'noa-ui.js',
     'deploy/noa-design.json':'noa-design.json',
     'deploy/noa-home.js':'noa-home.js',
@@ -52,6 +53,7 @@ for theme_file in sorted(Path('deploy/theme/noa_studio').rglob('*')):
     if theme_file.is_file():FILES[str(theme_file)]='theme/noa_studio/'+str(theme_file.relative_to('deploy/theme/noa_studio'))
 
 UPGRADE_FROM = {
+    'noa-ui.js':'61b91313b6f2c544ce64d31a42ff85e9be2cf0f8bed3cf3d2c5f4bdcf0491196',
     'noa-bridge/media-status.php': 'bbc22ad2bf4118c372470d17eea462002908913401ade88078327afdd65b52b2',
     'noa-bridge/catalog.php': '9afa60c7efa78f0f84f77033a978f4abfdbbf0fc764ce32ed2f2123703b83061',
     'noa-bridge/source-import.php': 'a36477eadb38d85884e85b6f88a7eccabeb18809885d8baf5bf95f7688c26098',
@@ -63,7 +65,7 @@ UPGRADE_FROM = {
     'noa-bridge/index.php': '22eaf129ab9581e179521ae3c898b3c6d9e7652a4acb7b9b6c35d78693967c36',
     'noa-bridge/library.php': '4dba2be3791a6462724aa2dec1c3fc8c58e56798d8a6791c00f6a6631a170741',
 }
-PROTECTED = ['index.php', 'common.php', 'config.php', '.htaccess', 'data/dbconfig.php']
+PROTECTED = ['index.php', 'common.php', 'config.php', '.htaccess', 'data/dbconfig.php','head.php','tail.php','head.sub.php','tail.sub.php','version.php','theme/basic/theme.config.php']
 
 def exists(sftp, path):
     try:
