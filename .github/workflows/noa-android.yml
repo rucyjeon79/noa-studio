@@ -1,5 +1,5 @@
 name: NOA STUDIO Android
-# Verify native source/video separation with original adaptive identity; keep production signing guard.
+# Verify all 52 native ACTs and track counts without duplicate collection documents.
 on:
   push:
     branches: [main]
