@@ -2,6 +2,7 @@ plugins { id 'com.android.application' }
 android {
     namespace 'kr.ai.noastudio'
     compileSdk 35
+    sourceSets.main.assets.srcDir layout.buildDirectory.dir("generated/noaDesignAssets")
     defaultConfig { applicationId 'kr.ai.noastudio'; minSdk 26; targetSdk 35; versionCode 1; versionName '1.0'; testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner' }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }
@@ -12,3 +13,9 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.3.0'
 }
+
+tasks.register('copyNoaDesign', Copy) {
+    from rootProject.file('../deploy/noa-design.json')
+    into layout.buildDirectory.dir('generated/noaDesignAssets')
+}
+tasks.named('preBuild').configure { dependsOn 'copyNoaDesign' }
