@@ -1,0 +1,810 @@
+{
+  "date": "2026-10-21",
+  "timezone": "Asia/Seoul",
+  "webCommit": "95e66681abad8fea87ae56cec46366ac00ab8c1e",
+  "androidCommit": "719901ce642815a721ea51a09d79f026af7281c9",
+  "productionRun": 39496305116,
+  "engineRun": 39496304965,
+  "runtimeFiles": {
+    "noa-brand.js": {
+      "action": "CREATED",
+      "bytes": 1239,
+      "sha256": "851490b9fa89efa64d3c845a101cfcca58e485b2442cb102e376ffb02834c36a"
+    },
+    "noa-manifest.json": {
+      "action": "UPDATED",
+      "bytes": 553,
+      "sha256": "3e3e72820dd85549548db8d108cbd816f803aaa0cfcf6651eda900d81bb79f7c"
+    },
+    "noa-recovery.php": {
+      "action": "UPDATED",
+      "bytes": 4831,
+      "sha256": "26aa6cce02a9fdbbfb88e9f30ee3de7880708a9b86a7678029aa0b18cd7fe9cc"
+    },
+    "noa-ui.css": {
+      "action": "UPDATED",
+      "bytes": 20141,
+      "sha256": "428a6bd184788bda711788e57c4fc21c0c68bda71b772c2cae95d30fcd93a41c"
+    },
+    "noa-ui.js": {
+      "action": "UPDATED",
+      "bytes": 12315,
+      "sha256": "28a758200edcff41805fe841c53987224a04ec8e0783e2ea47a29da34efa52e3"
+    },
+    "noa-ai-lab.php": {
+      "action": "UPDATED",
+      "bytes": 10053,
+      "sha256": "e110b9695c104af760159663cc2f6f51b3c5eecbe4981d1967be9097dd6cee17"
+    },
+    "noa-catalog-admin.php": {
+      "action": "UPDATED",
+      "bytes": 11013,
+      "sha256": "bbfc74fe9b9e87554befc5ff169205503e4f07b4b24d578cdf679b493ae44eea"
+    },
+    "noa-catalog.php": {
+      "action": "UPDATED",
+      "bytes": 9149,
+      "sha256": "36f157e176756eb67673d7866ef66425ac85bc25948ba445259080ef94493907"
+    },
+    "extend/noa.design.php": {
+      "action": "UPDATED",
+      "bytes": 966,
+      "sha256": "875dbbb094042a2217e9a0e08a54ee0eebd7e5b0cc9ce3b1cfe0e3bc9a650973"
+    },
+    "noa-editor.php": {
+      "action": "UPDATED",
+      "bytes": 13652,
+      "sha256": "18467b49c762b8671532681ef88b56423b79629de84f2dc0c0c4a378a822b6ae"
+    },
+    "noa-library.php": {
+      "action": "UPDATED",
+      "bytes": 6506,
+      "sha256": "b9ef3b183ec1d79e3c45cb5555e83bfb6ca2dfc558cc75b212160c21da74a46a"
+    },
+    "noa-music.php": {
+      "action": "UPDATED",
+      "bytes": 19997,
+      "sha256": "f7ba1be1e2ff596d36c166118a21eeb6e723e7227131fa6f87861813d517bc7f"
+    },
+    "noa-my.php": {
+      "action": "UPDATED",
+      "bytes": 3232,
+      "sha256": "3a0929d3cbd4436940b170cf0640fefbf09d90c71068aad24236e8a25825d732"
+    },
+    "noa-settings.php": {
+      "action": "UPDATED",
+      "bytes": 989,
+      "sha256": "9f2c8f89a6563e63d41206fc0629f3a476bc12cfb50b748d6af92152b30129ec"
+    },
+    "noa-theme-admin.php": {
+      "action": "UPDATED",
+      "bytes": 4593,
+      "sha256": "96cebb6b1e5500c378eaf5ff4ba446a06261b881b8fe3691105be00b030a46e1"
+    },
+    "noa-youtube-admin.php": {
+      "action": "UPDATED",
+      "bytes": 4143,
+      "sha256": "33565562ca6cbab47d9c0de9b1bcc553d88e366b5bac7f2b70197332329c3584"
+    },
+    "noa-youtube.php": {
+      "action": "UPDATED",
+      "bytes": 6843,
+      "sha256": "d485c538bb27d1a0169e9ca756041635df5e00fef75eef1b041cc89c3b58a844"
+    },
+    "noa2.php": {
+      "action": "UPDATED",
+      "bytes": 6137,
+      "sha256": "0aa5310092d763451d2c7c8fee287af8ce1d955a51663d7a5aa74173890299e3"
+    },
+    "theme/noa_studio/head.php": {
+      "action": "UPDATED",
+      "bytes": 562,
+      "sha256": "73b6c5bc5572715a91b111742bea41b017c80c792d3d440fe582f2102ed35b93"
+    },
+    "theme/noa_studio/mobile/head.php": {
+      "action": "UPDATED",
+      "bytes": 562,
+      "sha256": "73b6c5bc5572715a91b111742bea41b017c80c792d3d440fe582f2102ed35b93"
+    },
+    "theme/noa_studio/skin-bridge.php": {
+      "action": "UPDATED",
+      "bytes": 1099,
+      "sha256": "4f90ebf799c91537918dfaea5cc76e96904e96ab8787c2938e26eb7060bfda4c"
+    },
+    "noa-browse.js": {
+      "action": "UPDATED",
+      "bytes": 8907,
+      "sha256": "6823f578db665f6ac962bf598ca0bb2d7915278bd55d1a0abbfea5eb04a48b3d"
+    },
+    "noa-home.js": {
+      "action": "UPDATED",
+      "bytes": 3734,
+      "sha256": "6def89ddc1ab9258810896b475b2466703adf377f221e3477af89a7ced4f65e5"
+    },
+    "noa-bridge/catalog.php": {
+      "action": "UPDATED",
+      "bytes": 3277,
+      "sha256": "dfd7a780bdacdbb76c5bb1133015e3f375ae0b5252ee8bdbd6a31bf125890c93"
+    }
+  },
+  "runtimeHashComparison": {
+    "matched": 24,
+    "different": 0
+  },
+  "preservation": {
+    "productionSqlWrites": 0,
+    "protectedCoreFilesUnchanged": 10,
+    "originalFilesDeleted": 0
+  },
+  "publicReadModel": {
+    "items": 544,
+    "songs": 492,
+    "acts": 52,
+    "sunoSongs": 491,
+    "verifiedAudioFiles": 0,
+    "verifiedSongCovers": 0
+  },
+  "home": {
+    "cards": 16,
+    "comingSoonArtReferences": 0,
+    "genrePosterCards": 16
+  },
+  "checks": [
+    {
+      "job": "responsive (1280)",
+      "width": 1280,
+      "checks": 18,
+      "issues": [],
+      "statuses": [
+        {
+          "route": "/noa2.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-youtube.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-catalog.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-settings.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/login.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/register.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/password_lost.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/search.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/board.php?bo_table=free",
+          "status": 200
+        },
+        {
+          "route": "/bbs/board.php?bo_table=notice",
+          "status": 200
+        },
+        {
+          "route": "/bbs/content.php?co_id=privacy",
+          "status": 200
+        },
+        {
+          "route": "/bbs/content.php?co_id=provision",
+          "status": 200
+        },
+        {
+          "route": "/noa-download.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-youtube.php?world=1",
+          "status": 200
+        },
+        {
+          "route": "/noa-my.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php?genre=kpop-original&act=1",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php?track=single%3Akpop-original%3A01",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "job": "production_flows",
+      "ok": true,
+      "results": [
+        "original portrait, genre art and background video served byte-identically from NOA",
+        "public home cards no longer use Coming Soon artwork; original genre posters remain labeled separately from song covers",
+        "four categories; no full song wall",
+        "original PAPA logo loaded; manifest identity retained; both install icons match original bytes; favicon mapped to original",
+        "category → genre → ACT → source tracks",
+        "all 52 ACT metadata records remain accessible without inventing public video or audio URLs",
+        "491 Suno source songs, share-only buttons disabled, no YouTube fallback, original lyrics retained",
+        "56px square list cover and selected ACT/song survive orientation change",
+        "global search and ordered pagination",
+        "all 52 ACTs retained; an ACT without Suno links stays visible and honestly empty",
+        "official owner MV view shows real videos separately",
+        "direct YouTube link has a loaded official thumbnail, no preview autoplay, and opens the official player only on selection",
+        "MY remembers linked YouTube opening, routes back to its video, and never claims share selection or video opening as audio playback",
+        "ivory/Japanese preference persistence; matching PC/mobile navigation",
+        "registered YouTube-only song in shared web/Android read model, no invented Suno/audio",
+        "tested consumer flows succeed with Grok domains blocked and make zero Grok requests"
+      ]
+    },
+    {
+      "job": "responsive (768)",
+      "width": 768,
+      "checks": 18,
+      "issues": [],
+      "statuses": [
+        {
+          "route": "/noa2.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-youtube.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-catalog.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-settings.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/login.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/register.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/password_lost.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/search.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/board.php?bo_table=free",
+          "status": 200
+        },
+        {
+          "route": "/bbs/board.php?bo_table=notice",
+          "status": 200
+        },
+        {
+          "route": "/bbs/content.php?co_id=privacy",
+          "status": 200
+        },
+        {
+          "route": "/bbs/content.php?co_id=provision",
+          "status": 200
+        },
+        {
+          "route": "/noa-download.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-youtube.php?world=1",
+          "status": 200
+        },
+        {
+          "route": "/noa-my.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php?genre=kpop-original&act=1",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php?track=single%3Akpop-original%3A01",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "job": "responsive (320)",
+      "width": 320,
+      "checks": 18,
+      "issues": [],
+      "statuses": [
+        {
+          "route": "/noa2.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-youtube.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-catalog.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-settings.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/login.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/register.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/password_lost.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/search.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/board.php?bo_table=free",
+          "status": 200
+        },
+        {
+          "route": "/bbs/board.php?bo_table=notice",
+          "status": 200
+        },
+        {
+          "route": "/bbs/content.php?co_id=privacy",
+          "status": 200
+        },
+        {
+          "route": "/bbs/content.php?co_id=provision",
+          "status": 200
+        },
+        {
+          "route": "/noa-download.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-youtube.php?world=1",
+          "status": 200
+        },
+        {
+          "route": "/noa-my.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php?genre=kpop-original&act=1",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php?track=single%3Akpop-original%3A01",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "job": "responsive (1920)",
+      "width": 1920,
+      "checks": 18,
+      "issues": [],
+      "statuses": [
+        {
+          "route": "/noa2.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-youtube.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-catalog.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-settings.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/login.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/register.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/password_lost.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/search.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/board.php?bo_table=free",
+          "status": 200
+        },
+        {
+          "route": "/bbs/board.php?bo_table=notice",
+          "status": 200
+        },
+        {
+          "route": "/bbs/content.php?co_id=privacy",
+          "status": 200
+        },
+        {
+          "route": "/bbs/content.php?co_id=provision",
+          "status": 200
+        },
+        {
+          "route": "/noa-download.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-youtube.php?world=1",
+          "status": 200
+        },
+        {
+          "route": "/noa-my.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php?genre=kpop-original&act=1",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php?track=single%3Akpop-original%3A01",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "job": "responsive (360)",
+      "width": 360,
+      "checks": 18,
+      "issues": [],
+      "statuses": [
+        {
+          "route": "/noa2.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-youtube.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-catalog.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-settings.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/login.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/register.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/password_lost.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/search.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/board.php?bo_table=free",
+          "status": 200
+        },
+        {
+          "route": "/bbs/board.php?bo_table=notice",
+          "status": 200
+        },
+        {
+          "route": "/bbs/content.php?co_id=privacy",
+          "status": 200
+        },
+        {
+          "route": "/bbs/content.php?co_id=provision",
+          "status": 200
+        },
+        {
+          "route": "/noa-download.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-youtube.php?world=1",
+          "status": 200
+        },
+        {
+          "route": "/noa-my.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php?genre=kpop-original&act=1",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php?track=single%3Akpop-original%3A01",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "job": "responsive (430)",
+      "width": 430,
+      "checks": 18,
+      "issues": [],
+      "statuses": [
+        {
+          "route": "/noa2.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-youtube.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-catalog.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-settings.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/login.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/register.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/password_lost.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/search.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/board.php?bo_table=free",
+          "status": 200
+        },
+        {
+          "route": "/bbs/board.php?bo_table=notice",
+          "status": 200
+        },
+        {
+          "route": "/bbs/content.php?co_id=privacy",
+          "status": 200
+        },
+        {
+          "route": "/bbs/content.php?co_id=provision",
+          "status": 200
+        },
+        {
+          "route": "/noa-download.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-youtube.php?world=1",
+          "status": 200
+        },
+        {
+          "route": "/noa-my.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php?genre=kpop-original&act=1",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php?track=single%3Akpop-original%3A01",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "job": "responsive (390)",
+      "width": 390,
+      "checks": 18,
+      "issues": [],
+      "statuses": [
+        {
+          "route": "/noa2.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-youtube.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-catalog.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-settings.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/login.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/register.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/password_lost.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/search.php",
+          "status": 200
+        },
+        {
+          "route": "/bbs/board.php?bo_table=free",
+          "status": 200
+        },
+        {
+          "route": "/bbs/board.php?bo_table=notice",
+          "status": 200
+        },
+        {
+          "route": "/bbs/content.php?co_id=privacy",
+          "status": 200
+        },
+        {
+          "route": "/bbs/content.php?co_id=provision",
+          "status": 200
+        },
+        {
+          "route": "/noa-download.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-youtube.php?world=1",
+          "status": 200
+        },
+        {
+          "route": "/noa-my.php",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php?genre=kpop-original&act=1",
+          "status": 200
+        },
+        {
+          "route": "/noa-music.php?track=single%3Akpop-original%3A01",
+          "status": 200
+        }
+      ]
+    }
+  ],
+  "previous390Failure": {
+    "run": 39490037170,
+    "job": 118861727679,
+    "routesFailed": 18,
+    "cause": "HTTP navigation/request timeout; no evidence establishes a layout or bot-detection cause",
+    "subsequentRunsPassed": [
+      39495528759,
+      39495864141,
+      39496305116
+    ]
+  },
+  "androidPriorVerification": {
+    "run": 39496304882,
+    "tests": 2,
+    "passed": true,
+    "installedAdaptiveIcon": true,
+    "sourceSha256": "7a6b94a09ba10b951f15b6779c7d30c74e1ee44bdd5e2a9df7e6a676dd9f02cb",
+    "fixture": {
+      "type": "synthetic local PCM; not a library song",
+      "foregroundMs": 1085,
+      "backgroundMs": 4545,
+      "screenOffMs": 7094,
+      "mediaNotification": true,
+      "mediaSessionToken": true,
+      "mediaActions": true
+    },
+    "physicalDevice": false,
+    "productionApkReplaced": false
+  },
+  "androidLatestVerification": {
+    "run": 39497940988,
+    "commit": "912358c6e17053f0f15d8ea9267df47862cbae9e",
+    "status": "success",
+    "tests": 2,
+    "all52ActsReachedNative": true,
+    "act1TrackCount": 10,
+    "videoButtonRoutesToOfficialVideoPage": true,
+    "sourceSha256": "7a6b94a09ba10b951f15b6779c7d30c74e1ee44bdd5e2a9df7e6a676dd9f02cb",
+    "installedAdaptiveIcon": true,
+    "physicalDevice": false,
+    "pcm": {
+      "fixture": "synthetic local PCM; not a library song",
+      "foregroundMs": 1025,
+      "backgroundMs": 4572,
+      "screenOffMs": 7269,
+      "mediaNotification": true,
+      "mediaSessionToken": true,
+      "mediaActions": true,
+      "physicalDevice": false
+    },
+    "productionApkReplaced": false,
+    "publishJob": "skipped",
+    "artifacts": [
+      {
+        "id": 12299101200,
+        "name": "NOA-STUDIO-Android-verification",
+        "archiveBytes": 897279,
+        "archiveDigest": "sha256:d8701c74a96e9faaec940b69e3bf4c33c4fc0355cc2b498b4a20dfdfbcfe8880"
+      },
+      {
+        "id": 12298692961,
+        "name": "NOA-STUDIO-Android-APK",
+        "archiveBytes": 4782845,
+        "archiveDigest": "sha256:eb4a3f91d506fe548d91c86f7aa1f8e28f57bc1d5cd3c6fe865887bfd09267ae"
+      }
+    ]
+  },
+  "androidFailedIntermediateCheck": {
+    "run": 39497336675,
+    "status": "failure",
+    "error": "UiAutomator StaleObjectException at CatalogTest.java:38 after rebuilding native library",
+    "fix": "Wait for the rebuilt library state and resolve its settings button afresh",
+    "subsequentRun": 39497940988
+  }
+}
