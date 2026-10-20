@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Prevent source-only reimports from hiding published recovered songs and collections.
+# Verify publication retention with the complete isolated music source fixture.
 on:
   push:
     branches: [main]
