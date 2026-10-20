@@ -31,3 +31,15 @@ Official API references:
 GitHub validation run 39393206638 passed PHP lint, catalog extraction tests, real MySQL catalog migration tests, and new YouTube tests. Tests cover multi-page playlists/items, membership order, video deduplication, lost-response replay, unchanged original source guard, variant conflicts, title-only review, manual MV classification and separate playlist decisions, persisted Analytics, unique-video and weighted-average rollups. Local player and AI LAB Node/FFmpeg suite: 14 passed.
 
 Production owner authentication and real channel counts remain pending until OAuth Client ID/Secret are configured and the channel owner grants Google consent. Test fixture counts are not channel collection results. API `embeddable=true` is distinct from actual playback verification. The configured Analytics report does not synthesize thumbnail impressions or CTR when unavailable.
+
+## Production observations — 2026-10-20
+
+- Initial release run 39393206638 succeeded; 12 production files were created or updated and their SHA-256 values verified. Ten protected GnuBoard files stayed unchanged. Follow-up run 39393265291 also succeeded.
+- Authenticated administrator clicked the production table initialization control. UI returned “YouTube 전용 테이블 준비 완료. 기존 음악·회원 테이블은 보존했습니다.”
+- Existing public library YouTube view displays 282 unique video IDs. This is existing library coverage, not a newly collected channel count. Official player loaded the real EP.1 The End of the Day metadata and duration 4:12, but the cloud browser remained buffering at 0 seconds (`readyState=0`), so verified playback count is 0.
+- Anonymous HTTP: YouTube menu 200, official MV filter 200, catalog 200, original player catalog 200; YouTube administrator page and status API both 403.
+- Authenticated original audit: 731/731 archived files verified; 653/653 music documents match; no missing or changed originals.
+- Actual configuration: OAuth app unconfigured; no channel connected; Analytics not fetched. Collection, matching, missing-URL supplementation and playlist totals are **not measured** until owner authentication. UI displays em dashes instead of reporting a completed zero-result collection.
+- Production URLs: https://noastudio.ai.kr/noa-youtube.php ; https://noastudio.ai.kr/noa-youtube.php?world=1 ; https://noastudio.ai.kr/noa-youtube-admin.php .
+
+Final follow-up run 39393593118: validation and production release succeeded. Screenshot: `12-youtube-production.jpg`.
