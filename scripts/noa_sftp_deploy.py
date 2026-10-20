@@ -10,6 +10,14 @@ import re
 import paramiko
 
 FILES = {
+    'deploy/noa-ui.css':'noa-ui.css',
+    'deploy/noa-ui.js':'noa-ui.js',
+    'deploy/noa-design.json':'noa-design.json',
+    'deploy/noa-home.js':'noa-home.js',
+    'deploy/noa-settings.php':'noa-settings.php',
+    'deploy/noa-theme-admin.php':'noa-theme-admin.php',
+    'bridge/ui-preferences.php':'noa-bridge/ui-preferences.php',
+    'deploy/noa-design.extend.php':'extend/noa.design.php',
     'deploy/noa2.php': 'noa2.php',
     'deploy/noa-library.php': 'noa-library.php',
     'bridge/index.php': 'noa-bridge/index.php',
@@ -40,13 +48,16 @@ FILES = {
 for character_file in ['cast-pair.jpg','noa-face.jpg','noa-face.png','noa-sheet.png','noa-side.jpg','noel-face.jpg','noel-face.png','noel-sheet.png','noel-side.jpg']:
     FILES['public/characters/'+character_file]='noa-bridge/characters/'+character_file
 
+for theme_file in sorted(Path('deploy/theme/noa_studio').rglob('*')):
+    if theme_file.is_file():FILES[str(theme_file)]='theme/noa_studio/'+str(theme_file.relative_to('deploy/theme/noa_studio'))
+
 UPGRADE_FROM = {
     'noa-bridge/media-status.php': 'bbc22ad2bf4118c372470d17eea462002908913401ade88078327afdd65b52b2',
     'noa-bridge/catalog.php': '9afa60c7efa78f0f84f77033a978f4abfdbbf0fc764ce32ed2f2123703b83061',
     'noa-bridge/source-import.php': 'a36477eadb38d85884e85b6f88a7eccabeb18809885d8baf5bf95f7688c26098',
     'noa-bridge/source-cli.php': '46bca66a3f0267a03d3c6aa5705a18b405e05c06b18d1bcca9ebab12507c365e',
-    'noa-music.php': 'bef8216ba3814f48f332b8749a8fa0ba78cd51a0bd2bb5a0174fd389af7323d2',
-    'noa2.php': 'a8795582f9c5bee6b46c4b8ef87d63b5cb33f608f7cd9a718a80c1cdd5ab760f',
+    'noa-music.php': 'b08362b0b59240b83f700efe451a3dbeee4017d72e714f00a38821e67f007d1b',
+    'noa2.php': 'd0602671103e12af34bc6d1c1fcd8c71335f1e1061188cd6c4c3833571520f46',
     'noa-bridge/setup.php': 'ffe48650823967d7ca824b3dea988267515ebfe519a77c01113b8c9b4e5f589f',
     'noa-library.php': '25cf6ec71542615949a833fddb171f91e9007f0d223771c62d854d204ba34f66',
     'noa-bridge/index.php': '22eaf129ab9581e179521ae3c898b3c6d9e7652a4acb7b9b6c35d78693967c36',
@@ -113,6 +124,12 @@ def main():
             sftp.mkdir(root+'/noa-bridge/characters',0o755)
         elif not stat.S_ISDIR(sftp.lstat(root+'/noa-bridge/characters').st_mode):
             raise RuntimeError('Invalid character asset directory')
+        for relative in FILES.values():
+            parent=root
+            for part in relative.split('/')[:-1]:
+                parent+='/'+part
+                if not exists(sftp,parent):sftp.mkdir(parent,0o755)
+                elif not stat.S_ISDIR(sftp.lstat(parent).st_mode):raise RuntimeError('Invalid deployment directory: '+relative)
         for target, relative, data, expected in pending:
             temp = target+'.upload.php'
             with sftp.open(temp, 'wx') as output:

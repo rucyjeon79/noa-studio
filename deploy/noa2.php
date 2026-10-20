@@ -1,55 +1,16 @@
 <?php
-/**
- * NOA STUDIO progressive home shell for GnuBoard 5.
- * Install as /html/noa2.php; after verifying, use an explicit root routing decision.
- * Does not modify g5_* tables or legacy application data.
- */
 declare(strict_types=1);
-$base = __DIR__;
-if (!is_file($base . '/common.php')) {
-    http_response_code(503);
-    exit('NOA STUDIO requires the existing GnuBoard installation.');
-}
-require_once $base . '/common.php';
-header('Content-Type: text/html; charset=UTF-8');
-header('X-Content-Type-Options: nosniff');
-header('Referrer-Policy: strict-origin-when-cross-origin');
-$loggedIn = !empty($is_member);
-$displayName = $loggedIn ? (string)($member['mb_nick'] ?? $member['mb_name'] ?? '별무리') : '방문자';
-$loginUrl = defined('G5_BBS_URL') ? G5_BBS_URL . '/login.php' : '/bbs/login.php';
-$communityUrl = defined('G5_BBS_URL') ? G5_BBS_URL . '/board.php?bo_table=free' : '/bbs/board.php?bo_table=free';
-$logoutUrl = defined('G5_BBS_URL') ? G5_BBS_URL . '/logout.php' : '/bbs/logout.php';
-function e(string $s): string { return htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
-?>
-<!doctype html>
-<html lang="ko">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NOA STUDIO | AI Artist Noa</title>
-<style>
-:root{color-scheme:dark;--bg:#08090d;--panel:#14151a;--line:#303036;--gold:#d7ad62;--muted:#a6a5a8}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#f4f0e9;font:15px/1.6 system-ui,-apple-system,"Malgun Gothic",sans-serif}
-a{color:inherit;text-decoration:none}button{font:inherit;cursor:pointer}.shell{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
-aside{padding:32px 18px;border-right:1px solid var(--line);background:#0e0f13}.brand{font:700 25px Georgia,serif;letter-spacing:2px;color:var(--gold)}
-.small{color:var(--muted);font-size:12px;letter-spacing:2px}.nav{display:grid;gap:7px;margin-top:40px}.nav a{padding:12px 14px;border-radius:9px}.nav a:hover,.nav a.active{background:#272219;color:var(--gold)}
-main{padding:32px clamp(20px,5vw,80px)}header{display:flex;justify-content:space-between;align-items:center;gap:20px}
-.pill{border:1px solid #685231;border-radius:40px;padding:8px 16px;color:var(--gold)}
-.hero{margin-top:45px;padding:clamp(25px,5vw,70px);border:1px solid #4d3c23;border-radius:20px;background:radial-gradient(ellipse at 85% 20%,#4b3621 0,transparent 48%),linear-gradient(135deg,#181a20,#0e0e12)}
-.hero h1{font:normal clamp(36px,5vw,66px)/1.14 Georgia,serif;margin:16px 0;color:#f4e4c7}
-.hero p{max-width:570px;color:#c4c0bc}.btn{display:inline-block;background:var(--gold);color:#15100b;border:0;border-radius:9px;padding:12px 22px;font-weight:700;margin-top:15px}
-section{margin-top:40px}h2{font-size:19px;font-weight:600}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-.card{background:var(--panel);border:1px solid var(--line);padding:25px;border-radius:14px;min-height:170px}.card strong{display:block;font-size:19px;color:var(--gold);margin:9px 0}.card p{color:var(--muted);margin:0}
-.note{color:var(--muted);font-size:13px;margin-top:35px}
-@media(max-width:760px){.shell{display:block}aside{padding:17px;border-right:0;border-bottom:1px solid var(--line)}.nav{display:flex;overflow:auto;margin-top:12px}.nav a{white-space:nowrap}main{padding:20px}.cards{grid-template-columns:1fr}.hero{margin-top:22px}}
-</style>
-</head>
-<body><div class="shell"><aside><div class="brand">NOA STUDIO</div><div class="small">AI ARTIST NOA</div>
-<nav class="nav" aria-label="주요 메뉴"><a class="active" href="/noa2.php">홈</a><?php if(is_file(__DIR__.'/noa-android-release.json')):?><a href="/noa-download.php">Android 앱 다운로드</a><?php endif;?><a href="/noa-music.php">음악 라이브러리</a><?php if (!empty($is_admin)): ?><a href="/noa-library.php">라이브러리 관리</a><?php endif; ?><a href="https://youtube.com/@ainoa_ramjunpapa" rel="noopener noreferrer">음악 감상 ↗</a><a href="<?=e($communityUrl)?>">커뮤니티 ↗</a></nav>
-</aside><main><header><span class="small">MUSIC · STORIES · CREATION</span><span class="pill"><?=e($displayName)?> · <?= $loggedIn ? '<a href="'.e($logoutUrl).'">로그아웃</a>' : '<a href="'.e($loginUrl).'">로그인</a>' ?></span></header>
-<div class="hero"><div class="small">THE NEXT CHAPTER</div><h1>Music beyond<br>imagination.</h1><p>노아의 음악과 이야기가 이어지는 공간. 음악을 만들고, 감상하고, 별무리와 마음을 나눕니다.</p><a class="btn" href="/noa-music.php">음악 라이브러리 열기</a></div>
-<section><h2>NOA STUDIO</h2><div class="cards">
-<a class="card" href="/noa-music.php"><div class="small">01 / DISCOVER</div><strong>Music Library</strong><p>노아의 음악을 탐색하고 감상하세요.</p></a>
-<a class="card" href="/noa-music.php"><div class="small">02 / LISTEN</div><strong>NOA Music</strong><p>이관된 음악 목록에서 곡을 고르고 바로 감상합니다.</p></a>
-<a class="card" href="<?=e($communityUrl)?>"><div class="small">03 / COMMUNITY</div><strong>Starlight</strong><p>기존 그누보드 회원 및 커뮤니티를 유지합니다.</p></a>
-</div></section><p class="note">별무리와 함께 이어가는 노아의 음악 이야기.</p>
-</main></div></body></html>
+require_once __DIR__.'/common.php';
+header('Content-Type: text/html; charset=utf-8');header('Cache-Control: private, no-store');header('X-Content-Type-Options: nosniff');header('Referrer-Policy: strict-origin-when-cross-origin');
+function noa_home_e(string $text):string{return htmlspecialchars($text,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
+?><!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NOA STUDIO | AI Artist Noa</title><meta name="description" content="AI Artist Noa의 음악, EP 시리즈와 ACT 플레이리스트. 별무리와 함께하는 NOA STUDIO."><meta property="og:title" content="NOA STUDIO"><meta property="og:description" content="Music. Stories. Starlight."><meta property="og:image" content="https://noastudio.ai.kr/noa-bridge/characters/cast-pair.jpg"><meta name="theme-color" content="#17191c"><link rel="manifest" href="/noa-manifest.json"><link rel="stylesheet" href="/noa-ui.css"><script src="/noa-ui.js" defer></script><script src="/noa-home.js" defer></script></head><body><div class="noa-layout"><main class="noa-main"><header class="noa-topbar"><a class="noa-logo" href="/noa2.php">NOA STUDIO</a><div class="noa-account"><?php if(!empty($is_member)):?><span class="noa-muted"><?=noa_home_e((string)$member['mb_nick'])?></span><a href="/bbs/logout.php" data-noa-i18n="로그아웃">로그아웃</a><?php else:?><a href="/bbs/login.php" data-noa-i18n="로그인">로그인</a><?php endif;?></div></header>
+<section class="noa-hero"><div class="noa-hero-copy"><span class="noa-eyebrow">AI ARTIST NOA / STARLIGHT</span><h1>Music beyond<br>imagination.</h1><p>하나의 이야기, 서로 다른 울림.<br>노아와 노엘의 음악이 당신의 하루에 닿습니다.</p><a class="noa-button primary" href="/noa-music.php" data-noa-i18n="음악 둘러보기">음악 둘러보기</a></div><img src="/noa-bridge/characters/cast-pair.jpg" alt="AI Artist Noa와 Noel" fetchpriority="high"></section>
+<section class="noa-section" id="continue-listening" hidden><div class="noa-section-head"><h2 data-noa-i18n="최근 재생 및 이어 듣기">최근 재생 및 이어 듣기</h2></div><div id="noa-recent" class="noa-card-grid"></div></section>
+<section class="noa-section"><div class="noa-section-head"><div><p class="noa-eyebrow">CURATED FROM THE LIBRARY</p><h2 data-noa-i18n="추천 음악">추천 음악</h2></div><a href="/noa-music.php" data-noa-i18n="전체 보기">전체 보기</a></div><div class="noa-card-grid" id="noa-featured"><p class="noa-muted" role="status">공개 음악을 불러오는 중입니다.</p></div></section>
+<section class="noa-section"><div class="noa-section-head"><div><p class="noa-eyebrow">ONE STORY, FOUR ORIGINALS</p><h2 data-noa-i18n="EP 시리즈">EP 시리즈</h2></div><a href="/noa-music.php?type=single" data-noa-i18n="전체 보기">전체 보기</a></div><div class="noa-card-grid" id="noa-ep"></div></section>
+<section class="noa-section"><div class="noa-section-head"><h2 data-noa-i18n="ACT 플레이리스트">ACT 플레이리스트</h2><a href="/noa-music.php?type=playlist" data-noa-i18n="전체 보기">전체 보기</a></div><div class="noa-card-grid" id="noa-acts"></div></section>
+<section class="noa-section"><div class="noa-section-head"><div><p class="noa-eyebrow">FIND YOUR SOUND</p><h2 data-noa-i18n="15개 장르 탐색">15개 장르 탐색</h2></div></div><div class="noa-genres" id="noa-genres"></div></section>
+<section class="noa-section" id="noa-world"><div class="noa-section-head"><div><p class="noa-eyebrow">THE ARTISTS</p><h2>NOA WORLD</h2></div></div><div class="noa-world"><article class="noa-character"><img src="/noa-bridge/characters/noa-face.jpg" alt="Noa" loading="lazy"><div><span class="noa-eyebrow">AI ARTIST</span><h3>Noa</h3><p>노아 · 여성 보컬<br>별무리와 이어가는 음악 이야기.</p></div></article><article class="noa-character"><img src="/noa-bridge/characters/noel-face.jpg" alt="Noel" loading="lazy"><div><span class="noa-eyebrow">AI ARTIST</span><h3>Noel</h3><p>노엘 · 남성 보컬<br>노아와 함께하는 또 하나의 목소리.</p></div></article></div></section>
+<section class="noa-section"><div class="noa-section-head"><h2 data-noa-i18n="시청자 사연곡">시청자 사연곡</h2><a href="/noa-music.php?genre=your-story" data-noa-i18n="전체 보기">전체 보기</a></div><div class="noa-card-grid" id="noa-stories"></div></section>
+<section class="noa-section"><div class="noa-section-head"><h2 data-noa-i18n="커뮤니티 최신 소식">커뮤니티 최신 소식</h2><a href="/bbs/board.php?bo_table=free" data-noa-i18n="전체 보기">전체 보기</a></div><div class="noa-empty">별무리의 이야기는 커뮤니티에서 만나보세요. 게시글은 기존 게시판의 공개 범위와 회원 권한에 따라 표시됩니다.<p><a href="/bbs/board.php?bo_table=free" class="noa-button" data-noa-i18n="커뮤니티">커뮤니티</a></p></div></section>
+<footer class="noa-footer"><span>NOA STUDIO · Music. Stories. Starlight.</span><a href="/bbs/content.php?co_id=privacy">개인정보처리방침</a><a href="/bbs/content.php?co_id=provision">이용약관</a><a href="/noa-settings.php" data-noa-i18n="설정">설정</a></footer></main></div></body></html>

@@ -1,0 +1,9 @@
+<?php
+if(!defined('_GNUBOARD_'))exit;
+// Core head.sub remains responsible for CSRF-related scripts, sessions and plugin assets.
+include_once G5_PATH.'/head.sub.php';
+add_stylesheet('<link rel="stylesheet" href="/noa-ui.css">',99);
+add_javascript('<script src="/noa-ui.js" defer></script>',99);
+?>
+<div id="wrapper"><div id="container_wr"><main id="container">
+<?php if(!defined('_INDEX_')):?><h1 id="container_title"><?=get_text($g5['title'])?></h1><?php endif;?>
