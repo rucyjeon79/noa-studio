@@ -46,12 +46,13 @@ jobs:
           script: |
             adb install android/app/build/outputs/apk/debug/app-debug.apk
             adb shell am start -W -n kr.ai.noastudio/.MainActivity
+            python3 -c "import time,subprocess; [time.sleep(2) for _ in range(8)]"
             adb shell uiautomator dump /sdcard/noa-ui.xml
             adb pull /sdcard/noa-ui.xml android/noa-ui.xml
             adb shell screencap -p /sdcard/noa-android.png
             adb pull /sdcard/noa-android.png android/noa-android.png
-            adb logcat -d -s AndroidRuntime:E > android/noa-runtime-errors.txt
-            python3 -c "from pathlib import Path; s=Path('android/noa-ui.xml').read_text(); assert 'NOA STUDIO' in s; assert 'FATAL EXCEPTION' not in Path('android/noa-runtime-errors.txt').read_text()"
+            adb logcat -d -s AndroidRuntime:E NoaApi:E > android/noa-runtime-errors.txt
+            python3 -c "from pathlib import Path; s=Path('android/noa-ui.xml').read_text(); assert 'NOA STUDIO' in s; assert '63개 문서' in s, 'Production music catalog did not load'; assert 'FATAL EXCEPTION' not in Path('android/noa-runtime-errors.txt').read_text()"
       - name: Retain device verification
         if: always()
         uses: actions/upload-artifact@v4
