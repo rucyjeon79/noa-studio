@@ -1,5 +1,5 @@
 name: NOA recovery verification and player repair
-# Audit through the existing authenticated SSH database tunnel; hosting has no PHP CLI.
+# Verify deployed files; report the hosting DB inspection limit explicitly.
 on:
   push:
     branches: [main]
@@ -32,7 +32,7 @@ jobs:
           NOA_SSH_HOST_FINGERPRINT: ${{ vars.NOA_SSH_HOST_FINGERPRINT || 'SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU' }}
           NOA_SSH_ROOT: ${{ vars.NOA_FTP_ROOT }}
         run: |
-          python3 -m pip install --user 'paramiko==3.5.1' 'pymysql==1.1.1'
+          python3 -m pip install --user 'paramiko==3.5.1'
           PYTHONPATH=scripts python3 - <<'PY'
           import noa_sftp_deploy as deployment
           deployment.FILES={'deploy/noa-music.php':'noa-music.php'}
