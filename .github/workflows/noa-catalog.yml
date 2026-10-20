@@ -1,4 +1,5 @@
 name: NOA music SQL catalog validation and release
+# Preserve physical source paths and separate playlist labels from canonical song titles.
 on:
   push:
     branches: [main]
