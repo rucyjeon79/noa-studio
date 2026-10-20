@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Keep recovery results on a safe GET page after CSRF-protected submission.
+# Verify owner thumbnail images through bounded metadata-only image retrieval.
 on:
   push:
     branches: [main]
