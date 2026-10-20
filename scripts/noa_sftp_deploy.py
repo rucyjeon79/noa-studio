@@ -22,6 +22,7 @@ FILES = {
     'bridge/source-import.php': 'noa-bridge/source-import.php',
     'bridge/source-cli.php': 'noa-bridge/source-cli.php',
     'bridge/source-audit.php': 'noa-bridge/source-audit.php',
+    'bridge/catalog.php': 'noa-bridge/catalog.php',
     'deploy/noa-manifest.json': 'noa-manifest.json',
     'deploy/noa-sw.js': 'noa-sw.js',
     'deploy/noa-icon-192.png': 'noa-icon-192.png',
@@ -29,11 +30,15 @@ FILES = {
     'deploy/noa-music.php': 'noa-music.php',
     'deploy/noastudio/theme/noastudio/img/noa-face.jpg': 'noa-bridge/noa-face.jpg',
 }
+for character_file in ['cast-pair.jpg','noa-face.jpg','noa-face.png','noa-sheet.png','noa-side.jpg','noel-face.jpg','noel-face.png','noel-sheet.png','noel-side.jpg']:
+    FILES['public/characters/'+character_file]='noa-bridge/characters/'+character_file
+
 UPGRADE_FROM = {
+    'noa-bridge/source-import.php': 'a36477eadb38d85884e85b6f88a7eccabeb18809885d8baf5bf95f7688c26098',
     'noa-bridge/source-cli.php': '46bca66a3f0267a03d3c6aa5705a18b405e05c06b18d1bcca9ebab12507c365e',
-    'noa-music.php': 'f5fbd16b3b46a8015886113f11baaa421325dbc30e17423d3447a303a602ac3d',
+    'noa-music.php': 'd7709827760b42cedbd358c14d7516666e55c84ef17ff91113b53ed2dfa60d27',
     'noa2.php': '6516bb99bf0e25cab7cdf940b61c1850137b2780c7fc24bbeebd52d21588175a',
-    'noa-bridge/setup.php': '754fb9a77edf5a0ed836831b5e9fc0d507104ed7271c3ab2a96009c6fffb6942',
+    'noa-bridge/setup.php': '7f309c673320781965d19766dfff614a98e42cac52ae8add1093bf4cdef052e0',
     'noa-library.php': 'c052ba7d1b40ea56e216c9a09925390b0b872bbe9b233ac95d01f54af4739d55',
     'noa-bridge/index.php': '22eaf129ab9581e179521ae3c898b3c6d9e7652a4acb7b9b6c35d78693967c36',
     'noa-bridge/library.php': '4dba2be3791a6462724aa2dec1c3fc8c58e56798d8a6791c00f6a6631a170741',
@@ -49,6 +54,7 @@ def exists(sftp, path):
 
 def digest(sftp, path):
     with sftp.open(path, 'rb') as handle:
+        handle.prefetch(file_size=sftp.stat(path).st_size,max_concurrent_requests=8)
         return hashlib.sha256(handle.read()).hexdigest()
 
 def main():
@@ -135,9 +141,14 @@ def main():
             sftp.mkdir(root+'/noa-bridge', 0o755)
         elif not stat.S_ISDIR(sftp.lstat(root+'/noa-bridge').st_mode):
             raise RuntimeError('Invalid NOA bridge directory')
+        if not exists(sftp, root+'/noa-bridge/characters'):
+            sftp.mkdir(root+'/noa-bridge/characters',0o755)
+        elif not stat.S_ISDIR(sftp.lstat(root+'/noa-bridge/characters').st_mode):
+            raise RuntimeError('Invalid character asset directory')
         for target, relative, data, expected in pending:
             temp = target+'.upload.php'
             with sftp.open(temp, 'wx') as output:
+                output.set_pipelined(True)
                 output.write(data)
             sftp.chmod(temp, 0o644)
             if digest(sftp, temp) != expected:
