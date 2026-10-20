@@ -1,5 +1,5 @@
 name: NOA Dothome Deployment
-# Add authenticated music registration and conflict-safe editing
+# Deploy reviewed administrator library version and verify editing permissions
 
 on:
   push:

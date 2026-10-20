@@ -44,7 +44,7 @@ UPGRADE_FROM = {
     'noa-music.php': 'a0d9acf8cf7b662080cdc1addc5c852004ff80beea8388e826c790ad27191710',
     'noa2.php': '6516bb99bf0e25cab7cdf940b61c1850137b2780c7fc24bbeebd52d21588175a',
     'noa-bridge/setup.php': 'b449b35c4704d8230c1cdc9252b6f8962186d9cadc7c8aee2a0bf13b5ed091f7',
-    'noa-library.php': 'c052ba7d1b40ea56e216c9a09925390b0b872bbe9b233ac95d01f54af4739d55',
+    'noa-library.php': '25cf6ec71542615949a833fddb171f91e9007f0d223771c62d854d204ba34f66',
     'noa-bridge/index.php': '22eaf129ab9581e179521ae3c898b3c6d9e7652a4acb7b9b6c35d78693967c36',
     'noa-bridge/library.php': '4dba2be3791a6462724aa2dec1c3fc8c58e56798d8a6791c00f6a6631a170741',
 }
