@@ -14,7 +14,7 @@ function noa_library_reply(int $status, array $body): never {
     echo json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
-if (empty($is_member) || empty($is_admin)) {
+if (empty($is_member) || ($is_admin ?? '') !== 'super') {
     noa_library_reply(403, ['ok'=>false,'error'=>'admin_required']);
 }
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
