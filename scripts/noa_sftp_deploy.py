@@ -137,7 +137,8 @@ def main():
                 if not exists(sftp,parent):sftp.mkdir(parent,0o755)
                 elif not stat.S_ISDIR(sftp.lstat(parent).st_mode):raise RuntimeError('Invalid deployment directory: '+relative)
         for target, relative, data, expected in pending:
-            temp = target+'.upload.php'
+            # GnuBoard auto-includes every PHP file under extend/. Stage outside that directory.
+            temp = root+'/noa-bridge/.'+Path(relative).name+'.upload.php' if relative.startswith('extend/') else target+'.upload.php'
             with sftp.open(temp, 'wx') as output:
                 output.set_pipelined(True)
                 output.write(data)

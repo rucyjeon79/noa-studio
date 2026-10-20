@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Verify activated NOA theme and isolate light administrator panels from consumer themes.
+# Keep extension staging outside the auto-included GnuBoard extend directory.
 on:
   push:
     branches: [main]
