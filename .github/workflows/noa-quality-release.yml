@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Release independent world routes and original looping hero after regression checks.
+# Release listener-only lyric derivatives and refresh shared world navigation caches.
 on:
   push:
     branches: [main]

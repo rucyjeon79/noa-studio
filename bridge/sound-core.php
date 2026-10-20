@@ -39,5 +39,14 @@ function noa_sound_recovered(array $row,bool $admin): ?array {
     if(!is_array($identity)||count($identity)!==4||$identity[0]!=='song'||$identity[1]!=='youtube'||$identity[2]!=='UCwYy9xsAqDFat6AV5UKrfgA'||!preg_match('/^[A-Za-z0-9_-]{11}$/D',(string)$identity[3])||!is_array($fields))return null;
     if(!$admin&&(empty($row['public_verified'])||($fields['privacyStatus']??'private')!=='public'))return null;
     if(!preg_match('/^[a-f0-9]{64}$/D',(string)($row['song_id']??'')))return null;
-    return ['key'=>'catalog:'.$row['song_id'],'catalogId'=>$row['song_id'],'kind'=>'story','genre'=>$row['genre_id']??'unclassified','title'=>$fields['title']??'','ep'=>$row['ep']??'','act'=>'','tracklist'=>'','lyrics'=>$fields['lyricsBlock']??'','cast'=>$fields['thumbCast']??'','thumbnail'=>'https://noastudio.ai.kr/noa-bridge/youtube-thumbnail.php?id='.$identity[3],'coverImageUrl'=>'','sunoUrl'=>noa_sound_suno($fields),'audioUrl'=>'','audioVerified'=>false,'youtubeId'=>$identity[3],'confirmed'=>false,'registrationStatus'=>$fields['registrationStatus']??'needs_information'];
+    return ['key'=>'catalog:'.$row['song_id'],'catalogId'=>$row['song_id'],'kind'=>'story','genre'=>$row['genre_id']??'unclassified','title'=>$fields['title']??'','ep'=>$row['ep']??'','act'=>'','tracklist'=>'','lyrics'=>noa_sound_lyrics((string)($fields['lyricsBlock']??'')),'cast'=>$fields['thumbCast']??'','thumbnail'=>'https://noastudio.ai.kr/noa-bridge/youtube-thumbnail.php?id='.$identity[3],'coverImageUrl'=>'','sunoUrl'=>noa_sound_suno($fields),'audioUrl'=>'','audioVerified'=>false,'youtubeId'=>$identity[3],'confirmed'=>false,'registrationStatus'=>$fields['registrationStatus']??'needs_information'];
+}
+// Listener-only derivative. Original lyricsBlock remains unchanged in storage/editor.
+function noa_sound_lyrics(string $raw): string {
+    $sections='(?:intro|outro|verse(?:[ -]+[0-9]+)?|(?:pre[ -]?|post[ -]?|final[ -]+)?chorus|bridge|interlude|instrumental(?:[ -]+break)?|(?:piano|guitar|bass|drum|synth)[ -]+solo|breakdown|drop|hook|refrain|ending|후렴|벌스|브릿지|인트로|아웃트로)';
+    $display=preg_replace('~^[\\h]*\\['.$sections.'(?:\\h*:[^\\]\\r\\n]*)?\\][\\h]*(?:\\r?\\n|$)~imu','',$raw)??$raw;
+    // Only isolated, recognisable production cues; unknown bracketed lyrics survive.
+    $cue='(?:(?:soft|warm|clean|distorted|gentle|subtle|bright|slow|emotional|acoustic|electric|solo|sustained|melodic|minimal|airy|ambient|and)[ ,+-]+)*(?:piano|guitar|bass|drums|synth|strings|instrumental|female|male|duet)(?:[ ,+-]+(?:solo|and|acoustic|electric|piano|guitar|bass|drums|synth|strings|melodic|sustained|notes|vocal|vocals|whisper|singing|harmony|harmonies|ambience|only))*';
+    $display=preg_replace('~^[\\h]*\\['.$cue.'\\][\\h]*(?:\\r?\\n|$)~imu','',$display)??$display;
+    return trim(preg_replace('/(?:\\r?\\n){3,}/u',"\n\n",$display)??$display);
 }

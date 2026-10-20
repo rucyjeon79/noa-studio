@@ -28,3 +28,12 @@ check(noa_sound_recovered($private,false)===null,'private recovery never exposed
 check(noa_sound_recovered($private,true)!==null,'owner can review private recovery');
 $other=$recovered;$other['identity_json']=json_encode(['song','single','kpop-original','01']);check(noa_sound_recovered($other,true)===null,'legacy title is never used to match recovery');
 echo "Recovered web/Android read model privacy checks passed\n";
+
+$raw="[Intro]\r\n[clean electric piano solo, melodic and sustained notes]\r\n[Verse 1]\r\n낙엽이 내려\r\n[사랑해]\r\n[Chorus: Female, airy melodic lift]\r\nI love you [forever]\r\n[Maybe someday]";
+$display=noa_sound_lyrics($raw);
+check(!str_contains($display,'[Intro]')&&!str_contains($display,'[Verse 1]')&&!str_contains($display,'[Chorus:'),'known standalone production tags removed');
+check(!str_contains($display,'[clean electric piano'),'recognised isolated instrument cue removed');
+check(str_contains($display,'[사랑해]')&&str_contains($display,'I love you [forever]')&&str_contains($display,'[Maybe someday]'),'unknown and inline bracketed lyrics preserved');
+check(str_starts_with($raw,'[Intro]'),'source remains unchanged');
+check(noa_sound_lyrics('[Verse of my heart]')==='[Verse of my heart]','lyric phrase with section-like prefix retained');
+echo "Listener lyrics derivative checks passed\n";

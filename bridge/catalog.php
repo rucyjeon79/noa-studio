@@ -29,7 +29,7 @@ try{
   if(!$admin&&!$id&&!$audio&&!$suno&&$row['kind']!=='playlist')continue;
   $items[]=['key'=>$row['doc_key'],'kind'=>$row['kind'],'genre'=>$p['genreId']??'',
    'title'=>($b['confirmedTitle']??'')?:($p['title']??''),'ep'=>$p['ep']??'','act'=>$p['act']??'',
-   'tracklist'=>$b['tracklist']??'','lyrics'=>$b['lyricsBlock']??'','cast'=>$b['thumbCast']??'','thumbnail'=>$id?($b['thumbUrl']??''):noa_sound_cover($b),'coverImageUrl'=>noa_sound_cover($b),'sunoUrl'=>$suno,'audioVerified'=>(bool)$audio,
+   'tracklist'=>$b['tracklist']??'','lyrics'=>noa_sound_lyrics((string)($b['lyricsBlock']??'')),'cast'=>$b['thumbCast']??'','thumbnail'=>$id?($b['thumbUrl']??''):noa_sound_cover($b),'coverImageUrl'=>noa_sound_cover($b),'sunoUrl'=>$suno,'audioVerified'=>(bool)$audio,
    'youtubeId'=>$id,'audioUrl'=>$audio,'confirmed'=>!empty($p['confirmed'])];
  }
  // Published recovery editions are additive to the legacy web/Android keys.
