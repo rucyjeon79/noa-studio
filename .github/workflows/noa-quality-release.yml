@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Release listener-only lyric derivatives and refresh shared world navigation caches.
+# Validate world presentation, listener lyrics and shared navigation cache updates.
 on:
   push:
     branches: [main]
@@ -72,6 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix: {width: [320, 360, 390, 430, 768, 1024, 1280, 1920]}
     steps:
       - uses: actions/checkout@v4
