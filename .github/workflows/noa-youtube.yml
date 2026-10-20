@@ -28,7 +28,7 @@ jobs:
       - name: Build original-preserving source bundle and validate PHP
         run: |
           python3 scripts/noa_catalog_seed.py
-          for f in bridge/catalog-*.php bridge/youtube-*.php deploy/noa-catalog*.php deploy/noa-youtube*.php; do php -l "$f"; done
+          for f in bridge/catalog-*.php bridge/youtube-*.php bridge/lab-worker.php deploy/noa-ai-lab.php deploy/noa2.php deploy/noa-catalog*.php deploy/noa-youtube*.php; do php -l "$f"; done
           php -d memory_limit=256M tests/catalog/merge_test.php
           php tests/youtube/core_test.php
           node --check deploy/noa-youtube.js
