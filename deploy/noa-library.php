@@ -6,7 +6,7 @@
  */
 declare(strict_types=1);
 require_once __DIR__ . '/common.php';
-if (empty($is_member) || empty($is_admin)) {
+if (empty($is_member) || ($is_admin ?? '') !== 'super') {
     http_response_code(403);
     exit('관리자 로그인이 필요합니다.');
 }
