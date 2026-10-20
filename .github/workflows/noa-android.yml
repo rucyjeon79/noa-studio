@@ -1,5 +1,5 @@
 name: NOA STUDIO Android
-# Verify shared language dictionary, native palettes and bounded network retry
+# Keep localized native navigation on one line and verify the final installable APK
 on:
   push:
     branches: [main]
