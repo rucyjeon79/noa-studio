@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import stat
 import shlex
+import re
 import paramiko
 
 FILES = {
@@ -17,13 +18,16 @@ FILES = {
     'bridge/storage.php': 'noa-bridge/storage.php',
     'bridge/setup.php': 'noa-bridge/setup.php',
     'bridge/seed.php': 'noa-bridge/seed.php',
+    'bridge/source-archive.php': 'noa-bridge/source-archive.php',
+    'bridge/source-import.php': 'noa-bridge/source-import.php',
+    'bridge/source-cli.php': 'noa-bridge/source-cli.php',
     'deploy/noa-music.php': 'noa-music.php',
     'deploy/noastudio/theme/noastudio/img/noa-face.jpg': 'noa-bridge/noa-face.jpg',
 }
 UPGRADE_FROM = {
-    'noa-music.php': '86303c7163f5db30a5b8ac2e7de91b22653f4a2a10f896c7e3f9a1810e101195',
-    'noa2.php': '9e47fe5ba9d5a5a337f2302d49392f125a8d58e69aa3e25cf1424724727d92b2',
-    'noa-bridge/setup.php': 'b38a5d8cdea5b8332b37e2a95c628d7d1fe44d9e5c7360b5b47aedfb73c3c691',
+    'noa-music.php': '0e4f821e3f0f5782cc8a11cf43052d616ad2d0ca687ec34484f804bfea6f5049',
+    'noa2.php': '6516bb99bf0e25cab7cdf940b61c1850137b2780c7fc24bbeebd52d21588175a',
+    'noa-bridge/setup.php': '754fb9a77edf5a0ed836831b5e9fc0d507104ed7271c3ab2a96009c6fffb6942',
     'noa-library.php': 'c052ba7d1b40ea56e216c9a09925390b0b872bbe9b233ac95d01f54af4739d55',
     'noa-bridge/index.php': '22eaf129ab9581e179521ae3c898b3c6d9e7652a4acb7b9b6c35d78693967c36',
     'noa-bridge/library.php': '4dba2be3791a6462724aa2dec1c3fc8c58e56798d8a6791c00f6a6631a170741',
@@ -148,6 +152,42 @@ def main():
             raise RuntimeError('Protected file changed during deployment')
         print('Protected GnuBoard files unchanged:', ', '.join(before))
         print('No SQL writes executed; only known NOA versions updated; no legacy file overwritten or deleted')
+        candidates = []
+        for directory in ['/usr/bin', '/usr/local/bin', '/usr/local']:
+            try:
+                names = [n for n in sftp.listdir(directory) if 'php' in n.lower()]
+                print('PHP runtime inventory:', directory, names)
+                for name in names:
+                    full = directory+'/'+name
+                    if stat.S_ISDIR(sftp.stat(full).st_mode):
+                        for suffix in ['/bin/php', '/bin/php-cli']:
+                            if exists(sftp, full+suffix): candidates.append(full+suffix)
+                    elif re.fullmatch(r'php(?:-cli|[0-9.]*)?', name): candidates.append(full)
+            except (OSError, IOError):
+                print('PHP runtime inventory unavailable:', directory)
+        migrated = False
+        for binary in candidates:
+            if not stat.S_ISREG(sftp.stat(binary).st_mode): continue
+            check = transport.open_session(timeout=15)
+            check.settimeout(20)
+            check.exec_command(shlex.quote(binary)+' -v')
+            version=check.recv(2048).decode('utf-8',errors='replace')
+            status=check.recv_exit_status(); check.close()
+            print('Runtime candidate:', binary, 'exit', status, version[:160])
+            if status or '(cli)' not in version: continue
+            run = transport.open_session(timeout=15); run.settimeout(40)
+            run.exec_command(shlex.quote(binary)+' '+shlex.quote(root+'/noa-bridge/source-cli.php'))
+            result=run.makefile('r').read().decode('utf-8',errors='replace').strip()
+            status=run.recv_exit_status();run.close()
+            try:
+                report=json.loads(result)
+            except ValueError:
+                raise RuntimeError('Source migration did not return JSON')
+            print('Source migration report:', json.dumps(report,ensure_ascii=False))
+            if status: raise RuntimeError('Source migration verification failed')
+            migrated=True;break
+        if not migrated:
+            print('SOURCE_IMPORT_PENDING: CLI unavailable; authenticated setup required')
         sftp.close()
     finally:
         transport.close()
