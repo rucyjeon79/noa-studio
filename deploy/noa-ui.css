@@ -33,3 +33,10 @@ html[data-noa-theme="noa-ivory"]{color-scheme:light}html[data-radius="sharp"]{--
 @media(max-width:360px){.noa-transport{padding:8px 10px}.noa-transport #dock-title{font-size:11px}.noa-transport button{min-width:32px;padding:5px}.noa-browse-grid{grid-template-columns:minmax(0,1fr)}}
 
 .noa-transport .controls button{width:44px;height:44px;border-radius:50%;padding:10px;flex:none}.noa-transport .controls svg{width:20px;height:20px;flex:none}.noa-page .grid .song{align-self:start}
+
+/* Genre choices stay two columns on narrow portrait windows, four on wide ones. */
+@media(max-width:360px){.noa-browse-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.noa-browse-card>span{padding:12px}.noa-browse-card strong{font-size:14px}}
+@media(min-width:1000px){.noa-browse-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.noa-hero-art picture{display:block;width:100%;height:100%}.noa-hero-art picture img{position:static;display:block;width:100%;height:100%;max-height:none;object-fit:contain;transform:none}
+@media(max-width:760px){.noa-hero-art picture img{height:auto;aspect-ratio:1008/1792}.noa-hero-art{background:#090a0e}}
+@media(max-width:760px) and (orientation:landscape){.noa-hero-art picture img{aspect-ratio:16/9}}

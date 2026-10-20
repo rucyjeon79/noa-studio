@@ -632,7 +632,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/bridge-g2-a.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1477691,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/bridge-g2-b.jpg",
@@ -658,7 +669,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/bridge-g2-b.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1370385,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/bridge-g2-c.jpg",
@@ -684,7 +706,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/bridge-g2-c.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1360796,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/cover-reborn-g2-a.jpg",
@@ -710,7 +743,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/cover-reborn-g2-a.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1352076,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/cover-reborn-g2-b.jpg",
@@ -736,7 +780,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/cover-reborn-g2-b.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1312007,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/cover-reborn-g2-c.jpg",
@@ -762,7 +817,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/cover-reborn-g2-c.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1375178,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/dream-g2-a.jpg",
@@ -788,7 +854,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/dream-g2-a.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1353682,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/dream-g2-b.jpg",
@@ -814,7 +891,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/dream-g2-b.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1357927,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/dream-g2-c.jpg",
@@ -840,7 +928,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/dream-g2-c.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1373031,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/fantasy-g2-a.jpg",
@@ -866,7 +965,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/fantasy-g2-a.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1334227,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/fantasy-g2-b.jpg",
@@ -892,7 +1002,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/fantasy-g2-b.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1330623,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/fantasy-g2-c.jpg",
@@ -918,7 +1039,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/fantasy-g2-c.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1352974,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/hall-g2-a.jpg",
@@ -944,7 +1076,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/hall-g2-a.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1367271,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/hall-g2-b.jpg",
@@ -970,7 +1113,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/hall-g2-b.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1426431,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/hall-g2-c.jpg",
@@ -996,7 +1150,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/hall-g2-c.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1382823,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/joseon-g2-a.jpg",
@@ -1022,7 +1187,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/joseon-g2-a.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1341065,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/joseon-g2-b.jpg",
@@ -1048,7 +1224,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/joseon-g2-b.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1337080,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/joseon-g2-c.jpg",
@@ -1074,7 +1261,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/joseon-g2-c.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1255938,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/jpop-original-g2-a.jpg",
@@ -1100,7 +1298,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/jpop-original-g2-a.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1343184,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/jpop-original-g2-b.jpg",
@@ -1126,7 +1335,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/jpop-original-g2-b.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1331400,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/jpop-original-g2-c.jpg",
@@ -1152,7 +1372,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/jpop-original-g2-c.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1255122,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/kpop-original-g2-a.jpg",
@@ -1178,7 +1409,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/kpop-original-g2-a.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1400065,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/kpop-original-g2-b.jpg",
@@ -1204,7 +1446,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/kpop-original-g2-b.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1351711,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/kpop-original-g2-c.jpg",
@@ -1230,7 +1483,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/kpop-original-g2-c.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1290837,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/latin-g2-a.jpg",
@@ -1256,7 +1520,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/latin-g2-a.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1425551,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/latin-g2-b.jpg",
@@ -1282,7 +1557,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/latin-g2-b.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1290004,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/latin-g2-c.jpg",
@@ -1308,7 +1594,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/latin-g2-c.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1413288,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/panpop-g2-a.jpg",
@@ -1334,7 +1631,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/panpop-g2-a.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1370025,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/panpop-g2-b.jpg",
@@ -1360,7 +1668,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/panpop-g2-b.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1383015,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/panpop-g2-c.jpg",
@@ -1386,7 +1705,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/panpop-g2-c.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1436975,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/pop-original-g2-a.jpg",
@@ -1412,7 +1742,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/pop-original-g2-a.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1303786,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/pop-original-g2-b.jpg",
@@ -1438,7 +1779,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/pop-original-g2-b.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1228326,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/pop-original-g2-c.jpg",
@@ -1464,7 +1816,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/pop-original-g2-c.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1296163,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/rain-g2-a.jpg",
@@ -1490,7 +1853,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/rain-g2-a.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1272821,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/rain-g2-b.jpg",
@@ -1516,7 +1890,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/rain-g2-b.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1313026,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/rain-g2-c.jpg",
@@ -1542,7 +1927,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/rain-g2-c.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1239316,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/room-g2-a.jpg",
@@ -1568,7 +1964,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/room-g2-a.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1362034,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/room-g2-b.jpg",
@@ -1594,7 +2001,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/room-g2-b.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1318898,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/room-g2-c.jpg",
@@ -1620,7 +2038,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/room-g2-c.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1373819,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/thai-original-g2-a.jpg",
@@ -1646,7 +2075,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/thai-original-g2-a.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1216922,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/thai-original-g2-b.jpg",
@@ -1672,7 +2112,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/thai-original-g2-b.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1326923,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/thai-original-g2-c.jpg",
@@ -1698,7 +2149,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/thai-original-g2-c.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1369633,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/your-story-g2-a.jpg",
@@ -1724,7 +2186,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/your-story-g2-a.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1323829,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/your-story-g2-b.jpg",
@@ -1750,7 +2223,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/your-story-g2-b.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1353644,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash/your-story-g2-c.jpg",
@@ -1776,7 +2260,18 @@
       "acquired": true,
       "production_path": "/noa-assets/splash/your-story-g2-c.mp4",
       "state": "deployment_candidate",
-      "use": "background"
+      "use": "background",
+      "video": {
+        "duration": 10.041667,
+        "dimensions": [
+          720,
+          1280
+        ],
+        "fps": "24/1",
+        "codec": "h264",
+        "bitrate": 1382895,
+        "audio_tracks": 0
+      }
     },
     {
       "source": "public/splash-portrait.jpg",

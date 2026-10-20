@@ -1,7 +1,7 @@
 """Inventory acquired originals separately from remote references; never infer file acquisition."""
 from pathlib import Path
 from collections import Counter,defaultdict
-import hashlib,json,mimetypes,re
+import hashlib,json,mimetypes,re,shutil,subprocess
 from PIL import Image
 ROOT=Path(__file__).resolve().parents[1]
 MEDIA={'.jpg','.jpeg','.png','.svg','.webp','.mp4','.webm','.mp3','.wav','.flac','.m4a','.ogg'}
@@ -14,6 +14,10 @@ def main():
         row={'source':rel,'id':hashlib.sha256(rel.encode()).hexdigest(),'bytes':path.stat().st_size,'format':mimetypes.guess_type(path.name)[0] or 'application/octet-stream','sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'acquired':True,'production_path':'/noa-assets/'+path.relative_to(ROOT/'public').as_posix() if media and not platform else None,'state':'deployment_candidate' if media and not platform else 'preserved_platform_or_configuration','use':'character' if '/characters/' in rel else 'genre discovery' if '/coming/' in rel else 'background' if '/splash/' in rel or path.name=='splash-portrait.jpg' else 'brand/icon'}
         if path.suffix.lower() in {'.jpg','.png','.webp'}:
             with Image.open(path) as im:row['dimensions']=list(im.size)
+        if path.suffix.lower()=='.mp4' and shutil.which('ffprobe'):
+            probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(path)]))
+            v=next(x for x in probe['streams'] if x['codec_type']=='video')
+            row['video']={'duration':float(probe['format']['duration']),'dimensions':[v['width'],v['height']],'fps':v.get('r_frame_rate'),'codec':v.get('codec_name'),'bitrate':int(v.get('bit_rate',0)),'audio_tracks':sum(x['codec_type']=='audio' for x in probe['streams'])}
         rows.append(row)
     refs=defaultdict(list);suno=Counter();squares=0
     for path in sorted((ROOT/'deploy/noastudio/noa/data/live/곡').rglob('*.json')):

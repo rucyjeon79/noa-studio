@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Separate Suno source links from verified audio; transfer preserved original assets.
+# Reuse original portrait/landscape art and keep home links within the correct player.
 on:
   push:
     branches: [main]
