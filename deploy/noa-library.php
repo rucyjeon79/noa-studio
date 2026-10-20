@@ -68,7 +68,7 @@ p{color:#aaa}.next{display:inline-block;margin-top:22px;padding:10px 20px;border
 <?php if ($error !== null): ?><div class="error"><?=noa_escape($error)?></div>
 <?php elseif (!$items): ?><p>이 분류에는 등록된 문서가 없습니다.</p>
 <?php else: ?><div class="scroll"><table><thead><tr><th>문서 키</th><th>분류</th><th>버전</th><th>수정일</th></tr></thead><tbody>
-<?php foreach ($items as $item): ?><tr><td><a href="/noa-editor.php?key=<?=noa_escape(rawurlencode((string)$item['doc_key']))?>"><?=noa_escape((string)$item['doc_key'])?></a></td><td><?=noa_escape((string)$item['kind'])?></td><td><?=noa_escape((string)$item['revision'])?></td><td><?=noa_escape((string)$item['updated_at'])?></td></tr><?php endforeach; ?>
+<?php foreach ($items as $item): ?><tr><td><a href="<?=noa_escape(($item['doc_key']==='ui:policy'?'/noa-theme-admin.php':(in_array($item['kind'],['single','playlist','story'],true)?'/noa-editor.php?key=':'/noa-bridge/index.php?key=').rawurlencode((string)$item['doc_key'])))?>"><?=noa_escape((string)$item['doc_key'])?></a></td><td><?=noa_escape((string)$item['kind'])?></td><td><?=noa_escape((string)$item['revision'])?></td><td><?=noa_escape((string)$item['updated_at'])?></td></tr><?php endforeach; ?>
 </tbody></table></div>
 <?php if ($next !== null): ?><a class="next" href="?<?=noa_escape(http_build_query(['kind'=>$kind,'after'=>$next]))?>">다음 50개 →</a><?php endif; ?>
 <?php endif; ?>

@@ -1,0 +1,44 @@
+name: NOA administrator document navigation repair
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-admin-maintenance.yml']
+permissions:
+  contents: read
+concurrency:
+  group: noa-dothome-production
+  cancel-in-progress: false
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate and replace only the known NOA library page
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ vars.NOA_SSH_HOST_FINGERPRINT || 'SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU' }}
+          NOA_SSH_ROOT: ${{ vars.NOA_FTP_ROOT }}
+        run: |
+          php -l deploy/noa-library.php
+          python3 -m pip install --user 'paramiko==3.5.1'
+          PYTHONPATH=scripts python3 - <<'PYCODE'
+          import noa_sftp_deploy as deploy
+          deploy.FILES={'deploy/noa-library.php':'noa-library.php'}
+          deploy.UPGRADE_FROM['noa-library.php']='273ea6128a48f072828eafac9c23a6c131d9b9f65330fe7f976d46c86ac3ad99'
+          deploy.main()
+          PYCODE
+      - name: Verify administrative access remains protected
+        run: |
+          python3 - <<'PYCODE'
+          import urllib.request,urllib.error
+          try:urllib.request.urlopen('https://noastudio.ai.kr/noa-library.php',timeout=20)
+          except urllib.error.HTTPError as error:
+              assert error.code==403
+              print('Administrator library remains protected: HTTP 403')
+          else:raise SystemExit('Administrator page unexpectedly public')
+          PYCODE
