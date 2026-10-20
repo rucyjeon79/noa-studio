@@ -1,0 +1,28 @@
+name: NOA original design and GnuBoard audit
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-theme-audit.yml']
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Inspect installed GnuBoard without writes
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ vars.NOA_SSH_HOST_FINGERPRINT || 'SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU' }}
+          NOA_SSH_ROOT: ${{ vars.NOA_FTP_ROOT }}
+        run: |
+          python3 -m pip install --user 'paramiko==3.5.1'
+          python3 scripts/noa_theme_audit.py
+      - name: Find original theme identities and language keys
+        run: |
+          rg -n 'data-theme|themeId|theme_id|themeName|noa-theme|noa-view-lang' src data/live/사용자설정 --glob '*.{ts,tsx,json,css}' | cut -c1-320 || true
