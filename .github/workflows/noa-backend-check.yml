@@ -1,0 +1,26 @@
+name: NOA Existing Node API Check
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-backend-check.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  read-only:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect externally reachable existing Node routes without media or AI requests
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,json
+          for path in ['/api/card-image','/api/suno-audio','/api/yt-audio']:
+              request=urllib.request.Request('https://noa-studio.grok.me'+path,headers={'User-Agent':'NOA-STUDIO-Backend-Check'})
+              try:
+                  response=urllib.request.urlopen(request,timeout=20)
+              except urllib.error.HTTPError as error:
+                  response=error
+              body=response.read(512)
+              print(json.dumps({'route':path,'http':response.status,'content_type':response.headers.get('Content-Type'),'body_is_html':b'<html' in body.lower()}))
+          print('No song identifiers, media streams, generation requests or database writes were sent.')
+          PY
