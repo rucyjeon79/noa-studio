@@ -22,7 +22,8 @@ public class CatalogTest {
   assertTrue(device.wait(Until.hasObject(By.text(java.util.regex.Pattern.compile("[1-9][0-9]*개 문서.*"))),30000));
   assertTrue(device.takeScreenshot(new java.io.File(context.getExternalFilesDir(null),"noa-android-ivory.png")));
   device.findObject(By.text("설정")).click();
-  device.findObject(By.text("NOA STUDIO · Graphite")).click();
+  UiObject2 graphite=device.wait(Until.findObject(By.text("NOA STUDIO · Graphite")),5000);
+  assertNotNull("Theme picker did not open",graphite);graphite.click();
   assertTrue(device.wait(Until.hasObject(By.text(java.util.regex.Pattern.compile("[1-9][0-9]*개 문서.*"))),30000));
   UiObject2 search=device.findObject(By.clazz("android.widget.EditText"));
   assertNotNull(search);search.setText("하루");
