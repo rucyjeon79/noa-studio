@@ -1,5 +1,5 @@
 name: NOA YouTube channel validation and release
-# Preserve actionable official API diagnostics on shared hosting.
+# Use the documented descending metric sort for channel Analytics video reports.
 on:
   push:
     branches: [main]
