@@ -1,0 +1,77 @@
+{
+  "commit": "69bad46053362684abe29c7028b400d40c2d4fd2",
+  "releaseRun": 39490037170,
+  "qualityGatesRun": 39490042680,
+  "productionFlows": {
+    "job": "production_flows",
+    "ok": true,
+    "results": [
+      "original portrait, genre art and background video served byte-identically from NOA",
+      "four categories; no full song wall",
+      "category → genre → ACT → source tracks",
+      "491 Suno source songs, share-only buttons disabled, no YouTube fallback, original lyrics retained",
+      "56px square list cover and selected ACT/song survive orientation change",
+      "global search and ordered pagination",
+      "all 52 ACTs retained; an ACT without Suno links stays visible and honestly empty",
+      "official owner MV view shows real videos separately",
+      "direct YouTube link has a loaded official thumbnail, no preview autoplay, and opens the official player only on selection",
+      "MY remembers linked YouTube opening, routes back to its video, and never claims share selection or video opening as audio playback",
+      "ivory/Japanese preference persistence; matching PC/mobile navigation",
+      "registered YouTube-only song in shared web/Android read model, no invented Suno/audio",
+      "tested consumer flows succeed with Grok domains blocked and make zero Grok requests"
+    ]
+  },
+  "responsive": [
+    {
+      "width": 768,
+      "checks": 18,
+      "issues": []
+    },
+    {
+      "width": 1280,
+      "checks": 18,
+      "issues": []
+    },
+    {
+      "width": 430,
+      "checks": 18,
+      "issues": []
+    },
+    {
+      "width": 360,
+      "checks": 18,
+      "issues": []
+    },
+    {
+      "width": 1920,
+      "checks": 18,
+      "issues": []
+    },
+    {
+      "width": 320,
+      "checks": 18,
+      "issues": []
+    }
+  ],
+  "pending": [
+    {
+      "job": "responsive (390)",
+      "jobId": 118861727679,
+      "checks": 18,
+      "status": "in_progress_at_report"
+    }
+  ],
+  "runtimeFiles": [
+    "2026-10-20T20:15:19.0546925Z CREATED noa-history.js bytes 1802 sha256 48586196f0d61c0e7b49cfc58d6ee498a7623341338a30eff1eba71563220fe2",
+    "2026-10-20T20:15:19.0548732Z UPDATED noa-youtube.js bytes 10330 sha256 04a716cfab8140f14a054db11be346388879c31fc597d09c8d5f967061abef99",
+    "2026-10-20T20:15:19.0550045Z UPDATED noa-music.php bytes 19937 sha256 59eab44f2aa065931fb656ff8b6a8437c7e7f63dffc1b5394984a6ce74bf3aa9",
+    "2026-10-20T20:15:19.0551298Z UPDATED noa-my.php bytes 3175 sha256 bda828e402917238c55ffe7f77483568a903415836f1e12a105f81d9849e3221",
+    "2026-10-20T20:15:19.0552537Z UPDATED noa-youtube.php bytes 6785 sha256 93613d61b24133766e44ffb6964069edef43db4baf29d7e80989374779ac7d18",
+    "2026-10-20T20:15:19.0554237Z Protected GnuBoard files unchanged: index.php, common.php, config.php, data/dbconfig.php, head.php, tail.php, head.sub.php, tail.sub.php, version.php, theme/basic/theme.config.php",
+    "2026-10-20T20:15:19.0556069Z No SQL writes executed; only known NOA versions updated; no legacy file overwritten or deleted"
+  ],
+  "scopeNotes": [
+    "390px production flow tests passed, but the separate 18-page responsive job remains in progress. Do not count it as passed.",
+    "No production SQL writes; no original audio playback validation."
+  ]
+}
