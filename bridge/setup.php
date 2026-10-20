@@ -12,7 +12,7 @@ $expected = ['noa_documents'=>['doc_key','kind','payload','revision','updated_by
 'noa_document_history'=>['doc_key','revision','payload','changed_by','changed_at'],
 'noa_request_log'=>['request_id','doc_key','request_hash','revision','created_at']];
 if (empty($_SESSION['noa_setup_token'])) $_SESSION['noa_setup_token'] = bin2hex(random_bytes(32));
-$notice = ''; $state = []; $db = null;
+$notice = ''; $state = []; $db = null; $sourceReport=null;
 try {
     $db = noa_bridge_pdo();
     foreach ($expected as $name=>$columns) {
@@ -87,6 +87,7 @@ NOA_SCHEMA;
             $notice='원본 문서 '.$created.'개 추가 완료 · 기존 키 '.$skipped.'개 보존. 저장소에 있는 원본 스냅샷 기준이며 Grok 실시간 동기화는 아닙니다.';
         }
     }
+    if(!in_array(false,$state,true)&&is_file(__DIR__.'/source-import.php')){require_once __DIR__.'/source-import.php';$sourceReport=noa_source_status($db);}
 } catch (Throwable $e) {
     if ($db && $db->inTransaction()) $db->rollBack();
     error_log('[noa-setup] '.get_class($e));
@@ -97,7 +98,8 @@ function noa_setup_e(string $text): string { return htmlspecialchars($text,ENT_Q
 <style>body{background:#090a0e;color:#eee;font:16px/1.7 system-ui;margin:40px auto;max-width:800px;padding:20px}a,h1{color:#d7ad62}button{padding:14px;background:#d7ad62;border:0;border-radius:8px;font:inherit;cursor:pointer}li{margin:12px 0}</style></head><body>
 <a href="/noa-library.php">라이브러리로 돌아가기</a><h1>NOA 저장소 연결</h1>
 <p>기존 그누보드 DB 설정을 사용합니다. 회원·게시판 테이블은 변경하지 않습니다.</p>
-<p><?=noa_setup_e($notice)?></p><ul><?php foreach($state as $name=>$ready): ?><li><?=noa_setup_e($name)?>: <?=$ready?'연결됨':'전용 테이블 생성 필요'?></li><?php endforeach; ?></ul>
+<p><?=noa_setup_e($notice)?></p>
+<?php if($sourceReport):?><section aria-label="원본 검증 결과"><h2>GitHub 원본 검증 결과</h2><p>원본 파일 <?=$sourceReport['expected']?>개 · DB 보존 <?=$sourceReport['saved']?>개 · SHA-256 일치 <?=$sourceReport['verified']?>개</p><p>음악 문서 원본 일치 <?=$sourceReport['matching']?>개 · 누락 <?=$sourceReport['missing']?>개 · 변경 차이 <?=$sourceReport['different']?>개</p></section><?php endif;?><ul><?php foreach($state as $name=>$ready): ?><li><?=noa_setup_e($name)?>: <?=$ready?'연결됨':'전용 테이블 생성 필요'?></li><?php endforeach; ?></ul>
 <?php if ($db && count($state)===3 && in_array(false,$state,true)): ?>
 <form method="post"><input type="hidden" name="token" value="<?=noa_setup_e($_SESSION['noa_setup_token'])?>"><p>없는 NOA 전용 테이블 3종만 추가합니다. 기존 곡을 자동으로 가져오지는 않습니다.</p><button type="submit">NOA 전용 저장소 연결</button></form>
 <?php endif; ?>
