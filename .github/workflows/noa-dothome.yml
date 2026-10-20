@@ -1,4 +1,5 @@
 name: NOA Dothome Deployment
+# Verify production CLI for complete source migration
 
 on:
   push:
