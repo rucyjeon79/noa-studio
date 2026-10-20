@@ -1,5 +1,5 @@
 name: NOA YouTube channel validation and release
-# Preserve retention query output through UI rerenders.
+# Populate song choices on focus after full owner channel collection.
 on:
   push:
     branches: [main]
