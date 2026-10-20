@@ -1,4 +1,4 @@
-name: NOA Source Audio and Thumbnail URLs
+name: NOA Original Thumbnail Retrieval
 on:
   push:
     branches: [main]
@@ -18,14 +18,16 @@ jobs:
           import collections,concurrent.futures,json,threading,urllib.request,urllib.error
           from pathlib import Path
           files=list(Path('deploy/noastudio/noa/data/live/곡').rglob('*.json'))
-          for field in ['sunoUrl','thumbUrl']:
+          for field in ['thumbUrl']:
               urls=sorted({json.loads(p.read_text())['pkg'].get(field,'') for p in files}-{''})
               stop=threading.Event()
               def check(url):
                   if stop.is_set():return 'not_checked_provider_restriction'
                   try:
-                      request=urllib.request.Request(url,method='HEAD',headers={'User-Agent':'NOA-STUDIO-Source-Verification'})
-                      with urllib.request.urlopen(request,timeout=12) as response:return 'http_'+str(response.status)
+                      request=urllib.request.Request(url,method='GET',headers={'User-Agent':'NOA-STUDIO-Source-Verification'})
+                      with urllib.request.urlopen(request,timeout=12) as response:
+                          response.read(64)
+                          return 'http_'+str(response.status)
                   except urllib.error.HTTPError as e:
                       if e.code in [403,429]:stop.set()
                       return 'http_'+str(e.code)
