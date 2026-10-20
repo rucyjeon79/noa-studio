@@ -60,6 +60,12 @@ def main():
         if not stat.S_ISREG(sftp.lstat(root + '/common.php').st_mode):
             raise RuntimeError('GnuBoard missing')
         print('Root entries:', ', '.join(sorted(sftp.listdir(root))))
+        probe = transport.open_session(timeout=15)
+        probe.settimeout(20)
+        probe.exec_command('php -v')
+        print('PHP CLI version probe:', probe.recv(2048).decode('utf-8',errors='replace')[:500])
+        print('PHP CLI probe exit:', probe.recv_exit_status())
+        probe.close()
         php = """define('_GNUBOARD_', true);
         chdir('/hosting/noastudio/html');
         include 'data/dbconfig.php';
