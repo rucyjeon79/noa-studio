@@ -64,8 +64,26 @@ NOA_SCHEMA;
             $db->query('SELECT 1 FROM `'.$name.'` LIMIT 0'); $state[$name]=true;
         }
         $notice='NOA 전용 저장소 연결을 확인했습니다. 기존 그누보드 데이터는 변경하지 않았습니다.';
+        if (($_POST['action'] ?? '') === 'import') {
+            $seed = require __DIR__ . '/seed.php';
+            if (count($seed['items'] ?? []) !== 653) throw new RuntimeException('Invalid import source');
+            $known = array_fill_keys($db->query('SELECT doc_key FROM noa_documents')->fetchAll(PDO::FETCH_COLUMN),true);
+            $insert=$db->prepare('INSERT INTO noa_documents(doc_key,kind,payload,revision,updated_by) VALUES(?,?,?,1,?)');
+            $history=$db->prepare('INSERT INTO noa_document_history(doc_key,revision,payload,changed_by) VALUES(?,1,?,?)');
+            $created=0; $skipped=0; $db->beginTransaction();
+            foreach ($seed['items'] as $item) {
+                if (isset($known[$item['key']])) { $skipped++; continue; }
+                $json=json_encode($item['payload'],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
+                $insert->execute([$item['key'],$item['kind'],$json,(string)$member['mb_id']]);
+                $history->execute([$item['key'],$json,(string)$member['mb_id']]);
+                $known[$item['key']]=true; $created++;
+            }
+            $db->commit();
+            $notice='원본 문서 '.$created.'개 추가 완료 · 기존 키 '.$skipped.'개 보존. 저장소에 있는 원본 스냅샷 기준이며 Grok 실시간 동기화는 아닙니다.';
+        }
     }
 } catch (Throwable $e) {
+    if ($db && $db->inTransaction()) $db->rollBack();
     error_log('[noa-setup] '.get_class($e));
     $notice='저장소를 확인하지 못했습니다. 서버 로그 점검이 필요합니다.';
 }
@@ -77,4 +95,7 @@ function noa_setup_e(string $text): string { return htmlspecialchars($text,ENT_Q
 <p><?=noa_setup_e($notice)?></p><ul><?php foreach($state as $name=>$ready): ?><li><?=noa_setup_e($name)?>: <?=$ready?'연결됨':'전용 테이블 생성 필요'?></li><?php endforeach; ?></ul>
 <?php if ($db && count($state)===3 && in_array(false,$state,true)): ?>
 <form method="post"><input type="hidden" name="token" value="<?=noa_setup_e($_SESSION['noa_setup_token'])?>"><p>없는 NOA 전용 테이블 3종만 추가합니다. 기존 곡을 자동으로 가져오지는 않습니다.</p><button type="submit">NOA 전용 저장소 연결</button></form>
+<?php endif; ?>
+<?php if ($db && count($state)===3 && !in_array(false,$state,true) && is_file(__DIR__.'/seed.php')): ?>
+<form method="post"><input type="hidden" name="token" value="<?=noa_setup_e($_SESSION['noa_setup_token'])?>"><input type="hidden" name="action" value="import"><p>저장소 원본 JSON 653개를 이관합니다. 같은 키는 건너뛰며 기존 내용을 덮어쓰지 않습니다.</p><button type="submit">기존 음악 문서 이관</button></form>
 <?php endif; ?></body></html>
