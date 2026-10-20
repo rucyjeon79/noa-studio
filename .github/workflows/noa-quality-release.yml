@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Hold title variations; accept only the deployed source hash after queued-run replacement.
+# Keep recovery results on a safe GET page after CSRF-protected submission.
 on:
   push:
     branches: [main]
