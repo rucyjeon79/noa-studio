@@ -44,11 +44,11 @@ section{margin-top:40px}h2{font-size:19px;font-weight:600}.cards{display:grid;gr
 </style>
 </head>
 <body><div class="shell"><aside><div class="brand">NOA STUDIO</div><div class="small">AI ARTIST NOA</div>
-<nav class="nav" aria-label="주요 메뉴"><a class="active" href="/noa2.php">홈</a><a href="/noa-music.php">음악 라이브러리</a><a href="https://noa-studio.grok.me/" rel="noopener noreferrer">기존 음악 스튜디오 ↗</a><?php if (!empty($is_admin)): ?><a href="/noa-library.php">라이브러리 관리</a><?php endif; ?><a href="https://youtube.com/@ainoa_ramjunpapa" rel="noopener noreferrer">음악 감상 ↗</a><a href="<?=e($communityUrl)?>">커뮤니티 ↗</a></nav>
+<nav class="nav" aria-label="주요 메뉴"><a class="active" href="/noa2.php">홈</a><a href="/noa-music.php">음악 라이브러리</a><?php if (!empty($is_admin)): ?><a href="/noa-library.php">라이브러리 관리</a><?php endif; ?><a href="https://youtube.com/@ainoa_ramjunpapa" rel="noopener noreferrer">음악 감상 ↗</a><a href="<?=e($communityUrl)?>">커뮤니티 ↗</a></nav>
 </aside><main><header><span class="small">MUSIC · STORIES · CREATION</span><span class="pill"><?=e($displayName)?> · <?= $loggedIn ? '<a href="'.e($logoutUrl).'">로그아웃</a>' : '<a href="'.e($loginUrl).'">로그인</a>' ?></span></header>
-<div class="hero"><div class="small">THE NEXT CHAPTER</div><h1>Music beyond<br>imagination.</h1><p>노아의 음악과 이야기가 이어지는 공간. 음악을 만들고, 감상하고, 별무리와 마음을 나눕니다.</p><a class="btn" href="https://noa-studio.grok.me/" rel="noopener noreferrer">음악 스튜디오 열기 ↗</a></div>
+<div class="hero"><div class="small">THE NEXT CHAPTER</div><h1>Music beyond<br>imagination.</h1><p>노아의 음악과 이야기가 이어지는 공간. 음악을 만들고, 감상하고, 별무리와 마음을 나눕니다.</p><a class="btn" href="/noa-music.php">음악 라이브러리 열기</a></div>
 <section><h2>NOA STUDIO</h2><div class="cards">
-<a class="card" href="https://noa-studio.grok.me/"><div class="small">01 / CREATE</div><strong>Music Studio</strong><p>기존 음악 생성 및 EP·ACT 관리 기능으로 이동합니다.</p></a>
+<a class="card" href="/noa-music.php"><div class="small">01 / DISCOVER</div><strong>Music Library</strong><p>노아의 음악을 탐색하고 감상하세요.</p></a>
 <a class="card" href="/noa-music.php"><div class="small">02 / LISTEN</div><strong>NOA Music</strong><p>이관된 음악 목록에서 곡을 고르고 바로 감상합니다.</p></a>
 <a class="card" href="<?=e($communityUrl)?>"><div class="small">03 / COMMUNITY</div><strong>Starlight</strong><p>기존 그누보드 회원 및 커뮤니티를 유지합니다.</p></a>
 </div></section><p class="note">별무리와 함께 이어가는 노아의 음악 이야기.</p>
