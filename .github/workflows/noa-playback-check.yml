@@ -1,5 +1,5 @@
 name: NOA official player playback diagnosis
-# Wait for the official play control to finish rendering before the single playback attempt
+# Exercise NOA play and the visible official iframe control; record the attempted actions
 on:
   push:
     branches: [main]
