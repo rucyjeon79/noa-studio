@@ -13,6 +13,7 @@ $expected = ['noa_user_playlists'=>['owner_id','playlist_id','title','tracks','r
 'noa_request_log'=>['request_id','doc_key','request_hash','revision','created_at']];
 if (empty($_SESSION['noa_setup_token'])) $_SESSION['noa_setup_token'] = bin2hex(random_bytes(32));
 $notice = ''; $state = []; $db = null; $sourceReport=null;
+$urlReport=is_file(__DIR__.'/source-url-report.php')?require __DIR__.'/source-url-report.php':null;
 $mediaReport=is_file(__DIR__.'/media-status.php')?require __DIR__.'/media-status.php':null;
 try {
     $db = noa_bridge_pdo();
@@ -112,6 +113,7 @@ function noa_setup_e(string $text): string { return htmlspecialchars($text,ENT_Q
 <p>기존 그누보드 DB 설정을 사용합니다. 회원·게시판 테이블은 변경하지 않습니다.</p>
 <p><?=noa_setup_e($notice)?></p>
 <?php if($sourceReport):?><section aria-label="원본 검증 결과"><h2>GitHub 원본 검증 결과</h2><p>원본 파일 <?=$sourceReport['expected']?>개 · DB 보존 <?=$sourceReport['saved']?>개 · SHA-256 일치 <?=$sourceReport['verified']?>개</p><p>음악 문서 원본 일치 <?=$sourceReport['matching']?>개 · 누락 <?=$sourceReport['missing']?>개 · 변경 차이 <?=$sourceReport['different']?>개</p></section><?php endif;?><?php if($mediaReport): $mediaCounts=array_count_values(array_map(static fn($v)=>$v['status'],$mediaReport['videos']));?><section aria-label="재생 주소 검증 결과"><h2>재생 주소 검증 결과</h2><p>YouTube 공개 확인 <?=$mediaCounts['public']??0?>개 · 비공개·삭제·제한 등 확인 불가 <?=$mediaCounts['not_public_or_unavailable']??0?>개 · 원본 주소 형식 오류 <?=$mediaReport['malformed_source_urls']?>개</p><p>GitHub 원본 음원 파일 <?=$mediaReport['local_audio_files']?>개 · 공개 확인은 실제 음성 재생 성공과 별도로 검증합니다.</p></section><?php endif;?>
+<?php if($urlReport):?><section aria-label="원본 링크 점검"><h2>원본 링크 점검</h2><p>검증일 <?=noa_setup_e($urlReport['checked_at'])?> · Suno 곡 페이지 응답 200: <?=$urlReport['suno_pages_200']?>개 · 원본 썸네일 응답 404: <?=$urlReport['original_thumbnails_404']?>개</p><p>원본 썸네일 주소는 보존했습니다. 조회 실패 시 공식 영상 썸네일 또는 등록된 캐릭터를 표시합니다.</p></section><?php endif;?>
 <ul><?php foreach($state as $name=>$ready): ?><li><?=noa_setup_e($name)?>: <?=$ready?'연결됨':'전용 테이블 생성 필요'?></li><?php endforeach; ?></ul>
 <?php if ($db && count($state)===count($expected) && in_array(false,$state,true)): ?>
 <form method="post"><input type="hidden" name="token" value="<?=noa_setup_e($_SESSION['noa_setup_token'])?>"><p>없는 NOA 전용 테이블만 추가합니다. 기존 곡을 자동으로 가져오지는 않습니다.</p><button type="submit">NOA 전용 저장소 연결</button></form>

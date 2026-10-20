@@ -1,5 +1,5 @@
 name: NOA Dothome Deployment
-# Connect GnuBoard-owned personal playlists with isolated storage
+# Verify hosted APK and preserve failed original artwork references
 
 on:
   push:
@@ -98,6 +98,7 @@ jobs:
           php -l bridge/catalog.php
           php -l bridge/check-media.php
           php -l bridge/user-playlists.php
+          php -l bridge/source-url-report.php
           node --check deploy/noa-playlists.js
           php -l deploy/noa-editor.php
           php -l deploy/noa-download.php
@@ -120,7 +121,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import urllib.request, urllib.error
-          cases = [('/',200),('/noa2.php',200),('/noa-music.php',200),('/noa-bridge/noa-face.jpg',200),('/noa-bridge/seed.php',403),('/noa-bridge/source-archive.php',403),('/noa-bridge/source-import.php',403),('/noa-bridge/source-cli.php',403),('/noa-bridge/source-audit.php',403),('/noa-bridge/media-status.php',403),('/noa-bridge/catalog.php',200),('/noa-bridge/characters/noa-face.jpg',200),('/noa-bridge/characters/noel-face.jpg',200),('/noa-manifest.json',200),('/noa-sw.js',200),('/noa-icon-192.png',200),('/noa-icon-512.png',200),('/noa-playlists.js',200),('/noa-bridge/user-playlists.php',401),('/noa-editor.php',403),('/noa-bridge/check-media.php?video=o5NaioWtXuM',403),('/noa-library.php',403),('/noa-bridge/index.php?health=1',403),('/noa-bridge/library.php',403),('/noa-bridge/setup.php',403),('/bbs/login.php',200),('/?device=mobile',200)]
+          cases = [('/',200),('/noa2.php',200),('/noa-music.php',200),('/noa-bridge/noa-face.jpg',200),('/noa-bridge/seed.php',403),('/noa-bridge/source-archive.php',403),('/noa-bridge/source-import.php',403),('/noa-bridge/source-cli.php',403),('/noa-bridge/source-audit.php',403),('/noa-bridge/media-status.php',403),('/noa-bridge/catalog.php',200),('/noa-bridge/characters/noa-face.jpg',200),('/noa-bridge/characters/noel-face.jpg',200),('/noa-manifest.json',200),('/noa-sw.js',200),('/noa-icon-192.png',200),('/noa-icon-512.png',200),('/noa-bridge/source-url-report.php',403),('/noa-playlists.js',200),('/noa-bridge/user-playlists.php',401),('/noa-editor.php',403),('/noa-bridge/check-media.php?video=o5NaioWtXuM',403),('/noa-library.php',403),('/noa-bridge/index.php?health=1',403),('/noa-bridge/library.php',403),('/noa-bridge/setup.php',403),('/bbs/login.php',200),('/?device=mobile',200)]
           for path, expected in cases:
               req = urllib.request.Request('https://noastudio.ai.kr'+path, headers={'User-Agent':'NOA-Production-Verification'})
               try:
@@ -148,4 +149,19 @@ jobs:
                   raise SystemExit('Unwanted version branding on production page')
               if path in ('/','/noa2.php','/?device=mobile') and 'Music beyond' not in body:
                   raise SystemExit('NOA homepage content missing')
+          PY
+
+      - name: Verify tested Android download bytes
+        if: github.event_name == 'push'
+        run: |
+          python3 - <<'PY'
+          import urllib.request,json,hashlib
+          base='https://noastudio.ai.kr'
+          with urllib.request.urlopen(base+'/noa-android-release.json',timeout=25) as response:
+              release=json.load(response)
+          with urllib.request.urlopen(base+'/noa-download.php',timeout=45) as response:
+              data=response.read()
+              assert response.headers.get('Content-Type')=='application/vnd.android.package-archive'
+              assert hashlib.sha256(data).hexdigest()==release['sha256']
+              print('Android download verified:',len(data),'bytes; SHA-256 matches published tested APK')
           PY
