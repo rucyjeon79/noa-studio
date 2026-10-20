@@ -1,5 +1,5 @@
 name: NOA STUDIO Android
-# Load registered artwork after layout and verify decoded production thumbnails
+# Verify production catalog, native audio chooser and authenticated LAB downloads
 on:
   push:
     branches: [main]

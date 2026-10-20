@@ -1,0 +1,54 @@
+name: NOA AI LAB validation and production release
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-ai-lab.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: noa-dothome-production
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install analysis runtime
+        run: |
+          python3 -m pip install --user 'numpy==2.2.6' 'scipy==1.15.3'
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-noto-cjk
+      - name: Validate PHP, Javascript, DSP, mastering, upload recovery and permissions
+        run: |
+          for file in bridge/lab-*.php deploy/noa-ai-lab.php deploy/noa-editor.php bridge/catalog.php; do php -l "$file"; done
+          php -d error_reporting=32767 -d display_errors=1 tests/lab/core_test.php
+          python3 tests/lab/http_test.py
+          node --check deploy/noa-ai-lab.js
+          for file in lab/*.mjs; do node --check "$file"; done
+          node --test tests/lab/*.test.mjs scripts/noa_player_regression.test.mjs
+          python3 -m unittest discover -s tests/lab -p '*_test.py'
+  release:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ vars.NOA_SSH_HOST_FINGERPRINT || 'SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU' }}
+      NOA_SSH_ROOT: ${{ vars.NOA_FTP_ROOT }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Release verified files and preserve private storage
+        run: |
+          python3 -m pip install --user 'paramiko==3.5.1'
+          python3 scripts/noa_lab_deploy.py
+          python3 scripts/noa_lab_verify.py

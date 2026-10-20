@@ -1,0 +1,35 @@
+name: NOA AI LAB processing worker
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: noa-ai-lab-worker
+  cancel-in-progress: false
+jobs:
+  process:
+    if: github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install audio analysis and transfer runtime
+        run: |
+          python3 -m pip install --user 'numpy==2.2.6' 'scipy==1.15.3' 'paramiko==3.5.1'
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-noto-cjk
+      - name: Process authorized production jobs
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ vars.NOA_SSH_HOST_FINGERPRINT || 'SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU' }}
+        run: python3 scripts/noa_lab_worker.py

@@ -24,7 +24,7 @@ try{
   if(!$admin&&(!$id||($availability['videos'][$id]['status']??'')!=='public'&&!(($p['mediaAvailability']['youtubeId']??'')===$id&&($p['mediaAvailability']['status']??'')==='public')))continue;
   $audio=is_string($b['audioUrl']??null)?$b['audioUrl']:'';
   // Only explicit first-party audio files qualify for native playback.
-  if(!preg_match('~^https://noastudio[.]ai[.]kr/data/noa-audio/[A-Za-z0-9_./-]+[.](mp3|m4a|ogg|wav)$~D',$audio))$audio='';
+  if(!preg_match('~^https://noastudio[.]ai[.]kr/data/noa-audio/[A-Za-z0-9_.-]+[.](mp3|m4a|ogg|wav|flac|aac)$~D',$audio))$audio='';
   $items[]=['key'=>$row['doc_key'],'kind'=>$row['kind'],'genre'=>$p['genreId']??'',
    'title'=>($b['confirmedTitle']??'')?:($p['title']??''),'ep'=>$p['ep']??'','act'=>$p['act']??'',
    'tracklist'=>$b['tracklist']??'','lyrics'=>$b['lyricsBlock']??'','cast'=>$b['thumbCast']??'','thumbnail'=>$b['thumbUrl']??'',

@@ -1,0 +1,16 @@
+<?php
+declare(strict_types=1);
+$root=sys_get_temp_dir().'/noa-lab-test-'.bin2hex(random_bytes(8));mkdir($root,0700);mkdir($root.'/html',0700);mkdir($root.'/noa-ai-lab',0700);mkdir($root.'/noa-ai-lab/jobs',0700);define('_GNUBOARD_',true);define('G5_PATH',$root.'/html');file_put_contents($root.'/noa-ai-lab/master.key',random_bytes(32));file_put_contents($root.'/noa-ai-lab/worker.key',bin2hex(random_bytes(32)));require __DIR__.'/../../bridge/lab-core.php';
+function check(bool $ok,string $message):void{if(!$ok)throw new RuntimeException($message);}
+function refuses(callable $fn,string $expected):void{try{$fn();}catch(Throwable $e){check($e->getMessage()===$expected,'Wrong rejection: '.$e->getMessage());return;}throw new RuntimeException('Expected rejection: '.$expected);}
+try{
+ $sealed=lab_seal(['secret'=>'value']);check(!str_contains($sealed,'value'),'Secret leaked');check(lab_unseal($sealed)['secret']==='value','Encryption roundtrip');
+ $s=lab_defaults();$s['secrets']=lab_seal(['falKey'=>'test','openaiKey'=>'test']);$s['config']=['generationEnabled'=>true,'maxJobUsd'=>10,'dailyBudgetUsd'=>10];$j=['id'=>str_repeat('a',32),'selection'=>['start'=>10,'end'=>70],'settings'=>['mode'=>'cinematic','formats'=>['landscape'],'channelId'=>'UCtest'],'cast'=>'female','audioSha256'=>'source','sourceRevision'=>1,'state'=>'published'];
+ lab_reserve_cost($s,$j);check(abs($j['costReservedUsd']-4.45)<.001,'Cost estimate');$s['jobs'][$j['id']]=$j;lab_reserve_cost($s,$j);check($j['costReservedUsd']<5,'Own reservation counted twice');$s['config']['maxJobUsd']=1;refuses(fn()=>lab_reserve_cost($s,$j),'job_budget_exceeded');
+ refuses(fn()=>lab_validate_selection(['start'=>1,'end'=>62],100),'invalid_range');refuses(fn()=>lab_validate_selection(['start'=>-1,'end'=>10],100),'invalid_range');
+ refuses(fn()=>lab_validate_settings(['mode'=>'cinematic','formats'=>['landscape'],'posting'=>'auto','channelId'=>'none'],$s),'connect_channel_first');$s['channels']['UCtest']=['autoEnabled'=>false];refuses(fn()=>lab_validate_settings(['mode'=>'cinematic','formats'=>['landscape'],'posting'=>'auto','channelId'=>'UCtest'],$s),'channel_auto_disabled');
+ $clean=lab_public_job($j+['snapshot'=>['private'=>'lyrics'],'checkpoint'=>['session'=>'private'],'lease'=>'private']);check(!isset($clean['snapshot'])&&!isset($clean['checkpoint'])&&!isset($clean['lease']),'Private worker state exposed');
+ lab_deduplicate($s,$j);$s['jobs'][$j['id']]=$j;$copy=$j;$copy['id']=str_repeat('b',32);refuses(fn()=>lab_deduplicate($s,$copy),'duplicate_production');
+ $before=file_get_contents($root.'/noa-ai-lab/master.key');lab_lock(function(&$state){$state['config']['maxJobUsd']=8;});check(lab_read()['config']['maxJobUsd']===8,'Atomic state save');check(file_get_contents($root.'/noa-ai-lab/master.key')===$before,'Encryption key changed');
+ echo "NOA AI LAB: encryption, budgets, channel gates, range validation, deduplication and private-state tests passed.\n";
+}finally{foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::CHILD_FIRST) as $f){$f->isDir()?rmdir($f->getPathname()):unlink($f->getPathname());}rmdir($root);}

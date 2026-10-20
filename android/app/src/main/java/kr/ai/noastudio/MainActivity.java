@@ -1,6 +1,11 @@
 package kr.ai.noastudio;
 
 import android.app.Activity;
+import android.app.DownloadManager;
+import android.os.Environment;
+import android.webkit.WebChromeClient;
+import android.webkit.ValueCallback;
+import android.webkit.URLUtil;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.graphics.Color;
@@ -37,6 +42,8 @@ import java.util.concurrent.*;
 
 @android.annotation.SuppressLint({"UnsafeOptInUsageError","SetJavaScriptEnabled"})
 public class MainActivity extends Activity {
+ private ValueCallback<Uri[]> fileSelection;
+ private static final int AUDIO_PICK_REQUEST=7201;
  private static final String BASE="https://noastudio.ai.kr";
  private int GOLD=Color.rgb(213,185,121), BLACK=Color.rgb(23,25,28), FG=Color.rgb(241,238,231), MUTED=Color.rgb(182,181,179), PANEL=Color.rgb(32,35,40), LINE=Color.rgb(59,63,69);
  private JSONObject uiWords=new JSONObject();private String language="ko";private JSONArray themes;private String themeId="noa-studio";private final ExecutorService images=Executors.newFixedThreadPool(2);
@@ -119,13 +126,22 @@ public class MainActivity extends Activity {
  private void openPage(String url){
   if(controller!=null)controller.pause();
   LinearLayout frame=new LinearLayout(this);frame.setOrientation(LinearLayout.VERTICAL);frame.setBackgroundColor(BLACK);frame.addView(button("← NOA STUDIO 라이브러리",this::showLibrary));
-  browser=new WebView(this);WebSettings settings=browser.getSettings();settings.setJavaScriptEnabled(true);settings.setDomStorageEnabled(true);settings.setAllowFileAccess(false);settings.setAllowContentAccess(false);settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);settings.setMediaPlaybackRequiresUserGesture(true);
+  browser=new WebView(this);WebSettings settings=browser.getSettings();settings.setJavaScriptEnabled(true);settings.setDomStorageEnabled(true);settings.setAllowFileAccess(false);settings.setAllowContentAccess(true);settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);settings.setMediaPlaybackRequiresUserGesture(true);
+  browser.setWebChromeClient(new WebChromeClient(){@Override public boolean onShowFileChooser(WebView view,ValueCallback<Uri[]> callback,FileChooserParams params){
+   if(view.getUrl()==null||!trustedStudioUrl(view.getUrl()))return false;
+   if(fileSelection!=null)fileSelection.onReceiveValue(null);fileSelection=callback;
+   Intent pick=new Intent(Intent.ACTION_OPEN_DOCUMENT);pick.addCategory(Intent.CATEGORY_OPENABLE);pick.setType("audio/*");
+   try{startActivityForResult(pick,AUDIO_PICK_REQUEST);}catch(android.content.ActivityNotFoundException e){fileSelection.onReceiveValue(null);fileSelection=null;Toast.makeText(MainActivity.this,"음원 파일 선택기를 찾을 수 없습니다.",Toast.LENGTH_LONG).show();}return true;
+  }});
+  browser.setDownloadListener((downloadUrl,userAgent,disposition,mime,length)->{if(!trustedStudioUrl(downloadUrl))return;Uri uri=Uri.parse(downloadUrl);if(!"/noa-bridge/lab-file.php".equals(uri.getPath()))return;String name=URLUtil.guessFileName(downloadUrl,disposition,mime).replaceAll("[^\\p{L}\\p{N}._-]","_");DownloadManager.Request request=new DownloadManager.Request(uri);String cookies=CookieManager.getInstance().getCookie(BASE);if(cookies!=null)request.addRequestHeader("Cookie",cookies);request.addRequestHeader("User-Agent",userAgent);request.setMimeType(mime);request.setTitle(name);request.setDestinationInExternalFilesDir(this,Environment.DIRECTORY_DOWNLOADS,name);request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);try{((DownloadManager)getSystemService(DOWNLOAD_SERVICE)).enqueue(request);Toast.makeText(this,"다운로드를 시작했습니다.",Toast.LENGTH_SHORT).show();}catch(RuntimeException e){Toast.makeText(this,"다운로드를 시작하지 못했습니다.",Toast.LENGTH_LONG).show();}});
   CookieManager.getInstance().setAcceptCookie(true);
-  browser.setWebViewClient(new WebViewClient(){@Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest req){if(!req.isForMainFrame())return false;Uri uri=req.getUrl();if("https".equals(uri.getScheme())&&"noastudio.ai.kr".equals(uri.getHost()))return false;if("https".equals(uri.getScheme()))startActivity(new Intent(Intent.ACTION_VIEW,uri));return true;}});
+  browser.setWebViewClient(new WebViewClient(){@Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest req){if(!req.isForMainFrame())return false;Uri uri=req.getUrl();if(trustedStudioUrl(uri.toString())){if("/noa-bridge/lab-oauth.php".equals(uri.getPath())&&"start".equals(uri.getQueryParameter("action"))){startActivity(new Intent(Intent.ACTION_VIEW,uri));return true;}return false;}if("https".equals(uri.getScheme()))startActivity(new Intent(Intent.ACTION_VIEW,uri));return true;}});
   frame.addView(browser,new LinearLayout.LayoutParams(-1,0,1));setContentView(frame);browser.loadUrl(url);
  }
+ private boolean trustedStudioUrl(String value){Uri uri=Uri.parse(value);return "https".equals(uri.getScheme())&&"noastudio.ai.kr".equals(uri.getHost())&&uri.getUserInfo()==null&&(uri.getPort()==-1||uri.getPort()==443);}
+ @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){super.onActivityResult(requestCode,resultCode,data);if(requestCode==AUDIO_PICK_REQUEST&&fileSelection!=null){Uri uri=resultCode==RESULT_OK&&data!=null?data.getData():null;fileSelection.onReceiveValue(uri!=null&&"content".equals(uri.getScheme())?new Uri[]{uri}:null);fileSelection=null;}}
  @Override public void onBackPressed(){if(browser!=null&&browser.canGoBack())browser.goBack();else showLibrary();}
  @Override protected void onPause(){if(browser!=null){browser.evaluateJavascript("window.dispatchEvent(new Event('noa-background'));",null);browser.onPause();}CookieManager.getInstance().flush();super.onPause();}
  @Override protected void onResume(){super.onResume();if(browser!=null)browser.onResume();}
- @Override protected void onDestroy(){handler.removeCallbacks(tick);if(browser!=null)browser.destroy();if(controllerFuture!=null)MediaController.releaseFuture(controllerFuture);executor.shutdownNow();images.shutdownNow();super.onDestroy();}
+ @Override protected void onDestroy(){handler.removeCallbacks(tick);if(fileSelection!=null){fileSelection.onReceiveValue(null);fileSelection=null;}if(browser!=null)browser.destroy();if(controllerFuture!=null)MediaController.releaseFuture(controllerFuture);executor.shutdownNow();images.shutdownNow();super.onDestroy();}
 }
