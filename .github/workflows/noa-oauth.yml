@@ -1,5 +1,5 @@
 name: NOA OAuth callback validation and production release
-# Preserve approved tokens and show safe Google error reasons on shared hosting.
+# Persist diagnostic outcomes and submit credential-free probes through the same-origin API.
 on:
   push:
     branches: [main]
