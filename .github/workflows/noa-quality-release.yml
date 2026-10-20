@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Retain all 52 ACTs independently of playable sound records; originals already transferred.
+# Use the existing owner-verified official thumbnail cache and verify a real player click.
 on:
   push:
     branches: [main]
