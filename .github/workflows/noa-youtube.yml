@@ -1,5 +1,5 @@
 name: NOA YouTube channel validation and release
-# Add official channel collection and separate matching relations.
+# Preserve retention query output through UI rerenders.
 on:
   push:
     branches: [main]
