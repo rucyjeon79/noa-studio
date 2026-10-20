@@ -43,3 +43,13 @@ Production owner authentication and real channel counts remain pending until OAu
 - Production URLs: https://noastudio.ai.kr/noa-youtube.php ; https://noastudio.ai.kr/noa-youtube.php?world=1 ; https://noastudio.ai.kr/noa-youtube-admin.php .
 
 Final follow-up run 39393593118: validation and production release succeeded. Screenshot: `12-youtube-production.jpg`.
+
+## OAuth callback recovery — 2026-10-20 18:30 KST
+
+The owner saved Client ID/Secret, corrected the redirect URI, registered the test user and completed Google consent. The former callback returned a hosting-level 503 page and a subsequent retry returned 400. No channel had been saved. The previous implementation cleared OAuth session state before remote exchange and did not retain an intermediate token before channel lookup; therefore the original failure could not be safely resumed or diagnosed. Its underlying provider error is not assumed.
+
+Production fixes: `bridge/lab-oauth.php` and new `bridge/lab-oauth-core.php`, deployed through `scripts/noa_oauth_deploy.py` / `.github/workflows/noa-oauth.yml`. Google requests now have bounded connection/total timeouts, sanitized provider errors, protected explicit success/failure receipts compatible with shared-hosting error pages, and encrypted owner/session/expiry-bound intermediate tokens. Channel lookup can resume without repeating a successful code exchange. Secrets, authorization codes and token values are never displayed. Safe credential probes use an intentionally invalid synthetic code and do not trigger account sign-in or device notifications. Diagnostic outcomes persist across page reloads.
+
+Runs 39400506419 and 39400829444 both passed validation and production release. OAuth tests verify exact scopes, encrypted receipt recovery, actor/session/expiry boundaries, PKCE exchange parameters, server-only refresh storage and automatic publishing remaining off. Protected GnuBoard files stayed unchanged; deployments executed no SQL writes.
+
+Actual production probe returned `invalid_grant` for the deliberately invalid test code, confirming Google transport works and no Client ID/Secret error was reported. This probe is not a successful owner authorization or a channel connection. The old owner request now explicitly reports `oauth_state_invalid`; a fresh owner authorization remains necessary. Actual channel video/playlist/match counts and Analytics remain unmeasured. Screenshot: `13-oauth-diagnostic.jpg`.
