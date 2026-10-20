@@ -73,11 +73,11 @@ public class MainActivity extends Activity {
   executor.execute(()->{try{
    HttpURLConnection c=(HttpURLConnection)new URL(BASE+"/noa-bridge/catalog.php").openConnection();c.setConnectTimeout(20000);c.setReadTimeout(20000);c.setInstanceFollowRedirects(false);
    if(cookie!=null)c.setRequestProperty("Cookie",cookie);
-   if(c.getResponseCode()!=200)throw new Exception("HTTP");
+   if(c.getResponseCode()!=200)throw new Exception("Catalog HTTP "+c.getResponseCode());
    String raw;try(java.io.InputStream stream=c.getInputStream()){java.io.ByteArrayOutputStream bytes=new java.io.ByteArrayOutputStream();byte[] block=new byte[8192];int n;while((n=stream.read(block))!=-1)bytes.write(block,0,n);raw=bytes.toString(StandardCharsets.UTF_8.name());}finally{c.disconnect();}
    JSONArray items=new JSONObject(raw).getJSONArray("items");List<JSONObject> fetched=new ArrayList<>();for(int i=0;i<items.length();i++)fetched.add(items.getJSONObject(i));
    runOnUiThread(()->{songs.clear();songs.addAll(fetched);if(browser==null)render();});
-  }catch(Exception e){runOnUiThread(()->{if(browser==null)status.setText("목록을 불러오지 못했습니다. 인터넷 연결 후 새로고침해 주세요.");});}});
+  }catch(Exception e){android.util.Log.e("NoaApi","Catalog request failed",e);runOnUiThread(()->{if(browser==null)status.setText("목록을 불러오지 못했습니다. 인터넷 연결 후 새로고침해 주세요.");});}});
  }
  private void render(){
   if(list==null||browser!=null)return;list.removeAllViews();String query=search.getText().toString().trim().toLowerCase(Locale.ROOT);String genre=genres.getSelectedItemPosition()==0?"":String.valueOf(genres.getSelectedItem());int count=0;
