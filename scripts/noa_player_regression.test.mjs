@@ -11,9 +11,9 @@ function openSound(){
  const audio=Object.assign(node('sound-player'),{paused:true,played:0,currentTime:0,duration:100,play(){this.paused=false;this.played++;return Promise.resolve()},pause(){this.paused=true},load(){},addEventListener(n,f){audioEvents[n]=f}});node('volume').value='70';
  const songs=[{key:'one',title:'Share only',genre:'kpop-original',video:'',suno:'https://suno.com/song/one',audio:'',kind:'single',ep:'1',lyrics:'Original lyrics'},...['two','three'].map((key,i)=>({key,title:key,genre:'kpop-original',video:'',suno:'https://suno.com/song/'+key,audio:'https://noastudio.ai.kr/data/noa-audio/'+key+'.wav',kind:'single',ep:String(i+2),lyrics:'lyrics'}))];
  const buttons=songs.map(s=>Object.assign(element(),{dataset:{key:s.key,audio:s.audio}}));
- const storage=new Map();const context={console,URLSearchParams,location:{search:'',origin:'https://noastudio.ai.kr'},sessionStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},navigator:{},document:{getElementById:node,querySelectorAll:()=>buttons,querySelector:()=>element(),createElement:element,head:{append(){}}},window:{addEventListener:(n,f)=>events[n]=f}};
+ const activity=[];const storage=new Map();const context={console,CustomEvent:class {constructor(type,options){this.type=type;this.detail=options.detail}},URLSearchParams,location:{search:'',origin:'https://noastudio.ai.kr'},sessionStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},navigator:{},document:{getElementById:node,querySelectorAll:()=>buttons,querySelector:()=>element(),createElement:element,head:{append(){}}},window:{addEventListener:(n,f)=>events[n]=f,dispatchEvent:e=>activity.push(e)}};
  vm.createContext(context);vm.runInContext(script.replace(/<\?=json_encode\(\$songs,[\s\S]*?\?>/,JSON.stringify(songs)).replace(/<\?=json_encode\(\$collections,[\s\S]*?\?>/,'[]'),context);
- return {php,context,node,audio,buttons,audioEvents,events,storage,run:code=>vm.runInContext(code,context)};
+ return {php,context,node,audio,buttons,activity,audioEvents,events,storage,run:code=>vm.runInContext(code,context)};
 }
 test('share-only record shows original lyrics and Suno link without any audio or YouTube playback',()=>{
  const p=openSound();p.run('select(buttons[0],true)');assert.equal(p.audio.played,0);assert.equal(p.audio.src,undefined);assert.equal(p.node('lyrics').textContent,'Original lyrics');assert.equal(p.node('watch').href,'https://suno.com/song/one');assert.match(p.node('player-status').textContent,/실제 음원 파일 연결/);assert.doesNotMatch(p.php,/iframe_api|new YT[.]Player|youtube-player/);
@@ -26,4 +26,8 @@ test('seek, pause and background operate only on native audio',()=>{
 });
 test('position persistence and playback failure remain honest',()=>{
  const p=openSound();p.run('select(buttons[1],false)');p.audio.currentTime=42;p.audioEvents.timeupdate();assert.equal(JSON.parse(p.storage.get('noa-playback-position')).seconds,42);p.audioEvents.error();assert.match(p.node('player-status').textContent,/파일 형식과 접근 권한/);assert.equal(p.node('seek-clock').textContent,'0:42 / 1:40');
+});
+
+test('recent audio activity starts on actual playing, never on selection, loading or failure',()=>{
+ const p=openSound();p.run('select(buttons[0],false)');p.run('select(buttons[1],true)');assert.equal(p.activity.length,0);p.audioEvents.waiting();p.audioEvents.error();assert.equal(p.activity.length,0);p.audioEvents.playing();assert.equal(p.activity.length,1);assert.equal(p.activity[0].type,'noa-media-activity');assert.equal(p.activity[0].detail.key,'two');assert.equal(p.activity[0].detail.type,'audio');
 });
