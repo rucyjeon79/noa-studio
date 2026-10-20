@@ -21,11 +21,17 @@ FILES = {
     'bridge/source-archive.php': 'noa-bridge/source-archive.php',
     'bridge/source-import.php': 'noa-bridge/source-import.php',
     'bridge/source-cli.php': 'noa-bridge/source-cli.php',
+    'bridge/source-audit.php': 'noa-bridge/source-audit.php',
+    'deploy/noa-manifest.json': 'noa-manifest.json',
+    'deploy/noa-sw.js': 'noa-sw.js',
+    'deploy/noa-icon-192.png': 'noa-icon-192.png',
+    'deploy/noa-icon-512.png': 'noa-icon-512.png',
     'deploy/noa-music.php': 'noa-music.php',
     'deploy/noastudio/theme/noastudio/img/noa-face.jpg': 'noa-bridge/noa-face.jpg',
 }
 UPGRADE_FROM = {
-    'noa-music.php': '0e4f821e3f0f5782cc8a11cf43052d616ad2d0ca687ec34484f804bfea6f5049',
+    'noa-bridge/source-cli.php': '46bca66a3f0267a03d3c6aa5705a18b405e05c06b18d1bcca9ebab12507c365e',
+    'noa-music.php': 'f5fbd16b3b46a8015886113f11baaa421325dbc30e17423d3447a303a602ac3d',
     'noa2.php': '6516bb99bf0e25cab7cdf940b61c1850137b2780c7fc24bbeebd52d21588175a',
     'noa-bridge/setup.php': '754fb9a77edf5a0ed836831b5e9fc0d507104ed7271c3ab2a96009c6fffb6942',
     'noa-library.php': 'c052ba7d1b40ea56e216c9a09925390b0b872bbe9b233ac95d01f54af4739d55',
@@ -187,7 +193,11 @@ def main():
             if status: raise RuntimeError('Source migration verification failed')
             migrated=True;break
         if not migrated:
-            print('SOURCE_IMPORT_PENDING: CLI unavailable; authenticated setup required')
+            try:
+                from noa_source_migrate import migrate
+                migrate(transport, sftp, root)
+            except Exception as exc:
+                print('SOURCE_IMPORT_PENDING:', type(exc).__name__, '(details withheld to protect database credentials)')
         sftp.close()
     finally:
         transport.close()
