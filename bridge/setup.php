@@ -64,6 +64,11 @@ NOA_SCHEMA;
             $db->query('SELECT 1 FROM `'.$name.'` LIMIT 0'); $state[$name]=true;
         }
         $notice='NOA 전용 저장소 연결을 확인했습니다. 기존 그누보드 데이터는 변경하지 않았습니다.';
+        if (($_POST['action'] ?? '') === 'archive') {
+            require_once __DIR__.'/source-import.php';
+            $report=noa_import_source($db);
+            $notice='원본 파일 '.$report['verified'].'개 무결성 확인 · '.$report['added'].'개 추가 · 충돌 '.count($report['conflicts']).'개. 기존 음악과 설정을 덮어쓰지 않았습니다.';
+        }
         if (($_POST['action'] ?? '') === 'import') {
             $seed = require __DIR__ . '/seed.php';
             if (count($seed['items'] ?? []) !== 653) throw new RuntimeException('Invalid import source');
@@ -98,4 +103,6 @@ function noa_setup_e(string $text): string { return htmlspecialchars($text,ENT_Q
 <?php endif; ?>
 <?php if ($db && count($state)===3 && !in_array(false,$state,true) && is_file(__DIR__.'/seed.php')): ?>
 <form method="post"><input type="hidden" name="token" value="<?=noa_setup_e($_SESSION['noa_setup_token'])?>"><input type="hidden" name="action" value="import"><p>저장소 원본 JSON 653개를 이관합니다. 같은 키는 건너뛰며 기존 내용을 덮어쓰지 않습니다.</p><button type="submit">기존 음악 문서 이관</button></form>
+<?php endif; ?><?php if ($db && is_file(__DIR__.'/source-archive.php')): ?>
+<form method="post"><input type="hidden" name="token" value="<?=noa_setup_e($_SESSION['noa_setup_token'])?>"><input type="hidden" name="action" value="archive"><p>음악·설정·원곡 가사·번역 등 원본 731개 파일을 별도 보존합니다. 기존 음악과 활성 설정은 변경하지 않습니다.</p><button type="submit">전체 원본 보존 및 검증</button></form>
 <?php endif; ?></body></html>
