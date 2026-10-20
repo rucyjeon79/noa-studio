@@ -1,5 +1,5 @@
 name: NOA STUDIO Android
-# Verify production catalog, native audio chooser and authenticated LAB downloads
+# Verify existing native navigation, catalog and settings; protect release signing continuity.
 on:
   push:
     branches: [main]
@@ -55,8 +55,10 @@ jobs:
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-detail.png android/noa-android-detail.png || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-ivory.png android/noa-android-ivory.png || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-japanese.png android/noa-android-japanese.png || true
+            adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-native-playback.json android/noa-native-playback.json
+            cat android/noa-native-playback.json
             adb logcat -d -s AndroidRuntime:E NoaApi:E > android/noa-runtime-errors.txt
-            python3 -c "from pathlib import Path; s=Path('android/noa-ui.xml').read_text(); assert 'OK (1 test)' in Path('android/noa-instrumentation.txt').read_text(); assert 'NOA STUDIO' in s; assert __import__('re').search(r'[1-9][0-9]*개 문서',s), 'Production music catalog did not load'; assert 'FATAL EXCEPTION' not in Path('android/noa-runtime-errors.txt').read_text()"
+            python3 -c "from pathlib import Path; s=Path('android/noa-ui.xml').read_text(); assert 'OK (2 tests)' in Path('android/noa-instrumentation.txt').read_text(); assert 'NOA STUDIO' in s; assert __import__('re').search(r'[1-9][0-9]*곡',s), 'Production music catalog did not load'; assert 'FATAL EXCEPTION' not in Path('android/noa-runtime-errors.txt').read_text()"
       - name: Retain device verification
         if: always()
         uses: actions/upload-artifact@v4
@@ -70,11 +72,15 @@ jobs:
             android/noa-android-japanese.png
             android/noa-instrumentation.txt
             android/noa-runtime-errors.txt
+            android/noa-native-playback.json
             android/app/build/reports/lint-results-debug.html
           retention-days: 14
 
   publish:
     needs: apk
+    concurrency:
+      group: noa-dothome-production
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -85,6 +91,8 @@ jobs:
         with:
           name: NOA-STUDIO-Android-APK
           path: artifact
+      - name: Require the existing production APK signing identity
+        run: python3 scripts/noa_apk_signing_check.py
       - name: Publish tested APK with pinned SFTP
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
