@@ -23,6 +23,5 @@ jobs:
         run: |
           python3 -m pip install --user 'paramiko==3.5.1'
           python3 scripts/noa_theme_audit.py
-      - name: Find original theme identities and language keys
-        run: |
-          rg -n 'data-theme|themeId|theme_id|themeName|noa-theme|noa-view-lang' src data/live/사용자설정 --glob '*.{ts,tsx,json,css}' | cut -c1-320 || true
+      - name: Inspect all original common and genre design identities
+        run: python3 scripts/noa_design_source_audit.py
