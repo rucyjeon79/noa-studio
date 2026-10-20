@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Display explicitly labelled owner MVs; verify ACT navigation against actually public source data.
+# Exercise mobile expanded controls through the visible More button.
 on:
   push:
     branches: [main]
