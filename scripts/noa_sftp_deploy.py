@@ -22,9 +22,9 @@ FILES = {
 }
 UPGRADE_FROM = {
     'noa-music.php': '86303c7163f5db30a5b8ac2e7de91b22653f4a2a10f896c7e3f9a1810e101195',
-    'noa2.php': '2065e894a3d09e22186f1935d7a9b864ff4e6dcc5cada66e64211f9548bd489c',
+    'noa2.php': '9e47fe5ba9d5a5a337f2302d49392f125a8d58e69aa3e25cf1424724727d92b2',
     'noa-bridge/setup.php': 'b38a5d8cdea5b8332b37e2a95c628d7d1fe44d9e5c7360b5b47aedfb73c3c691',
-    'noa-library.php': 'dcea0d2ed3e1dc942e1380610bc18fec52994b00b329c75cd19212ee709d9bb5',
+    'noa-library.php': 'c052ba7d1b40ea56e216c9a09925390b0b872bbe9b233ac95d01f54af4739d55',
     'noa-bridge/index.php': '22eaf129ab9581e179521ae3c898b3c6d9e7652a4acb7b9b6c35d78693967c36',
     'noa-bridge/library.php': '4dba2be3791a6462724aa2dec1c3fc8c58e56798d8a6791c00f6a6631a170741',
 }
