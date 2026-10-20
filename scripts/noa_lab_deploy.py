@@ -10,6 +10,10 @@ FILES={
  **{'bridge/'+name:'noa-bridge/'+name for name in ['lab-core.php','lab-api.php','lab-creator.php','lab-worker.php','lab-oauth.php','lab-file.php']}}
 # Exact files verified in the preceding production recovery. No unknown server version is overwritten.
 BASELINES={
+ 'noa-bridge/lab-core.php':'e1ca424c4c8dc937735cadbc70bc403864adb94ffa1653ef60168b6c3b26a935',
+ 'noa-bridge/lab-api.php':'ead626ce0f1aac92fd8e68530a667396e5b6a51c15b86d9e458c9fe0d76567e3',
+ 'noa-ai-lab.js':'2e56a3043993e055c96f31b5b5176c1b03d786e9f82d03ea31cde55217dad235',
+
  'noa-editor.php':'dfee60d9adfd94d0d61d572d579878a8e18564916ab5b9726ecb6355cf11b47f',
  'noa-library.php':'01ddf00d42a02faf6950e6c5c58ca593768be6796cdea2104929352f975b0e27',
  'noa-ui.js':'063e4d93821e7296b8f6b349f54718404e200393c70f2b47d412a7db405f80b2',

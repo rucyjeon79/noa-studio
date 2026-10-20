@@ -24,9 +24,10 @@ with tempfile.TemporaryDirectory(prefix='noa-lab-http-') as root:
   assert request('lab-worker.php?action=health')[0]==401
   nonce=secrets.token_hex(16);assert worker('health',nonce=nonce)[0]==200;assert worker('health',nonce=nonce)[0]==409
   status,state=request('lab-api.php',headers={'X-Test-Role':'admin'});assert status==200;csrf=state['csrf'];admin={'X-Test-Role':'admin','X-NOA-CSRF':csrf,'Origin':'https://noastudio.ai.kr'}
-  assert request('lab-api.php?action=config',{'expectedRevision':state['revision']},{'X-Test-Role':'admin'})[0]==403
-  assert request('lab-api.php?action=config',{'expectedRevision':state['revision']},{**admin,'Origin':'https://evil.example'})[0]==403
-  assert request('lab-api.php?action=config',{'expectedRevision':state['revision']},admin)[0]==200
+  assert request('lab-api.php?action=config',{'expectedRevision':state['configRevision']},{'X-Test-Role':'admin'})[0]==403
+  assert request('lab-api.php?action=config',{'expectedRevision':state['configRevision']},{**admin,'Origin':'https://evil.example'})[0]==403
+  assert worker('health')[0]==200
+  assert request('lab-api.php?action=config',{'expectedRevision':state['configRevision']},admin)[0]==200
   # Exercise completion transitions to catch malformed branches before deploying.
   state=json.loads((private/'state.json').read_text());state['jobs']={};jobid='a'*32;state['jobs'][jobid]={'id':jobid,'title':'isolated fixture','state':'queued_analysis','revision':1,'attempts':0,'createdAt':'2026-10-20T00:00:00Z','settings':{'mode':'audio','formats':['landscape'],'posting':'save','autoSelect':True,'subtitles':False},'cast':'female','genre':'test','outputs':[]};(private/'state.json').write_text(json.dumps(state))
   status,claim=worker('claim',{});assert status==200 and claim['stage']=='analysis'
