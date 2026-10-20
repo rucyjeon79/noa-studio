@@ -1,5 +1,5 @@
 name: NOA STUDIO Android
-# Verify existing native navigation, catalog and settings; protect release signing continuity.
+# Parse verified signing certificates across SDK versions; preserve the existing production APK.
 on:
   push:
     branches: [main]
