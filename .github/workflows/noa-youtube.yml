@@ -1,5 +1,5 @@
 name: NOA YouTube channel validation and release
-# Populate song choices on focus after full owner channel collection.
+# Paginate owner channel review after the verified 765-video collection.
 on:
   push:
     branches: [main]
