@@ -26,7 +26,7 @@ try{
   $publicVideo=$id&&(($availability['videos'][$id]['status']??'')==='public'||(($p['mediaAvailability']['youtubeId']??'')===$id&&($p['mediaAvailability']['status']??'')==='public'));
   if(!$admin&&!$publicVideo)$id='';
   $audio=noa_sound_audio($b,dirname(__DIR__));$suno=noa_sound_suno($b);
-  if(!$admin&&!$id&&!$audio&&!$suno)continue;
+  if(!$admin&&!$id&&!$audio&&!$suno&&$row['kind']!=='playlist')continue;
   $items[]=['key'=>$row['doc_key'],'kind'=>$row['kind'],'genre'=>$p['genreId']??'',
    'title'=>($b['confirmedTitle']??'')?:($p['title']??''),'ep'=>$p['ep']??'','act'=>$p['act']??'',
    'tracklist'=>$b['tracklist']??'','lyrics'=>$b['lyricsBlock']??'','cast'=>$b['thumbCast']??'','thumbnail'=>$id?($b['thumbUrl']??''):noa_sound_cover($b),'coverImageUrl'=>noa_sound_cover($b),'sunoUrl'=>$suno,'audioVerified'=>(bool)$audio,

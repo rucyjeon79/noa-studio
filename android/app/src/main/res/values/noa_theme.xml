@@ -1,1 +1,1 @@
-<resources><color name="noa_launch_background">#17191C</color><style name="NoaTheme" parent="android:style/Theme.Material.NoActionBar"><item name="android:windowBackground">@color/noa_launch_background</item></style></resources>
+<resources><item name="noa_art_label" type="id"/><color name="noa_launch_background">#17191C</color><style name="NoaTheme" parent="android:style/Theme.Material.NoActionBar"><item name="android:windowBackground">@color/noa_launch_background</item></style></resources>

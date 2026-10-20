@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Correct public genre art; retain original brand identity and all release checks.
+# Retain complete ACT metadata and verify independent sound/video navigation.
 on:
   push:
     branches: [main]

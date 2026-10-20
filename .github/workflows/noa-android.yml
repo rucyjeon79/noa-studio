@@ -1,5 +1,5 @@
 name: NOA STUDIO Android
-# Verify original adaptive launcher identity; retain the production APK signing guard.
+# Verify native source/video separation with original adaptive identity; keep production signing guard.
 on:
   push:
     branches: [main]
@@ -58,6 +58,7 @@ jobs:
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-brand-proof.json android/noa-brand-proof.json
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-launcher-icon.png android/noa-launcher-icon.png
             cat android/noa-brand-proof.json
+            python3 -c "import base64; print('NOA_ANDROID_ICON '+base64.b64encode(open('android/noa-launcher-icon.png','rb').read()).decode())"
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-ui.xml android/noa-ui.xml || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android.png android/noa-android.png || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-detail.png android/noa-android-detail.png || true

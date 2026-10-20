@@ -24,7 +24,7 @@ public class CatalogTest {
   try(java.io.FileWriter out=new java.io.FileWriter(new java.io.File(context.getExternalFilesDir(null),"noa-brand-proof.json"))){out.write(new org.json.JSONObject().put("sourceSha256",sha.toString()).put("installedAdaptiveIcon",true).put("physicalDevice",false).toString());}
   context.startActivity(new Intent(context,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
   boolean loaded=device.wait(Until.hasObject(By.text(java.util.regex.Pattern.compile("[1-9][0-9]*곡.*ACT·목록"))),60000);
-  if(loaded)assertTrue("Registered album artwork did not load",device.wait(Until.hasObject(By.desc("앨범 아트")),20000));
+  if(loaded)assertTrue("Original genre artwork did not load",device.wait(Until.hasObject(By.desc("장르 대표 이미지")),20000));
   device.dumpWindowHierarchy(new java.io.File(context.getExternalFilesDir(null),"noa-ui.xml"));
   assertTrue(device.takeScreenshot(new java.io.File(context.getExternalFilesDir(null),"noa-android.png")));
   assertTrue("Production catalog did not load; see captured screen",loaded);
@@ -51,7 +51,7 @@ public class CatalogTest {
   device.waitForIdle();
   UiObject first=new UiObject(new UiSelector().textContains("EP.01 · 하루의 끝에"));
   assertTrue(first.waitForExists(5000));first.click();
-  assertTrue(device.wait(Until.hasObject(By.text("NOA STUDIO 플레이어")),5000));
+  assertTrue(device.wait(Until.hasObject(By.text("곡 상세·Suno 링크")),5000));
   assertTrue(device.hasObject(By.text("하루의 끝에")));
   // The production lyrics are selectable native text, not a placeholder.
   boolean lyrics=false;
@@ -60,5 +60,14 @@ public class CatalogTest {
   }
   assertTrue("Full production lyrics were not displayed",lyrics);
   assertTrue(device.takeScreenshot(new java.io.File(context.getExternalFilesDir(null),"noa-android-detail.png")));
+  UiObject2 youtube=device.findObject(By.text("YouTube 영상"));assertNotNull("Linked video action missing",youtube);youtube.click();device.waitForIdle();
+  java.util.concurrent.atomic.AtomicReference<String> webUrl=new java.util.concurrent.atomic.AtomicReference<>("");
+  InstrumentationRegistry.getInstrumentation().runOnMainSync(()->{try{
+   for(android.app.Activity activity:androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(androidx.test.runner.lifecycle.Stage.RESUMED)){
+    if(activity instanceof MainActivity){java.lang.reflect.Field field=MainActivity.class.getDeclaredField("browser");field.setAccessible(true);android.webkit.WebView web=(android.webkit.WebView)field.get(activity);if(web!=null)webUrl.set(web.getUrl());}
+   }
+  }catch(Exception e){throw new RuntimeException(e);}});
+  assertTrue("Video action routed to the sound player: "+webUrl.get(),webUrl.get().startsWith("https://noastudio.ai.kr/noa-youtube.php?track="));
+
  }
 }
