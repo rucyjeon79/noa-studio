@@ -1,0 +1,26 @@
+name: NOA official player playback diagnosis
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-playback-check.yml']
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check official iframe playback without extraction or proxying
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-player-check" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-player-check/node_modules/.bin/playwright" install --with-deps chromium
+          cp scripts/noa_playback_verify.mjs "$RUNNER_TEMP/noa-player-check/verify.mjs"
+          node "$RUNNER_TEMP/noa-player-check/verify.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-official-playback-diagnosis
+          path: screenshots/noa-playback-*
