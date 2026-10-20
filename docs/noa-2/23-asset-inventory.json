@@ -118,12 +118,15 @@
       "sha256": "0c38c312ba096019c0ba0e2f03adcdd902ba7fb1e664d8afca34684a8495067d",
       "acquired": true,
       "production_path": "/noa-assets/characters/cast-pair.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "character",
       "dimensions": [
         852,
         320
-      ]
+      ],
+      "production_sha256": "0c38c312ba096019c0ba0e2f03adcdd902ba7fb1e664d8afca34684a8495067d",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/characters/noa-face.jpg",
@@ -133,12 +136,15 @@
       "sha256": "7884250a5c43a2026e0c19a3f963aab3350f60256b5a720d828ab84e5c37e060",
       "acquired": true,
       "production_path": "/noa-assets/characters/noa-face.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "character",
       "dimensions": [
         310,
         218
-      ]
+      ],
+      "production_sha256": "7884250a5c43a2026e0c19a3f963aab3350f60256b5a720d828ab84e5c37e060",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/characters/noa-face.png",
@@ -148,12 +154,15 @@
       "sha256": "51a6e69e5dc3bd33bc6c7e318da4fa2f44f5999c0a3dbf562726ac4f6e08989a",
       "acquired": true,
       "production_path": "/noa-assets/characters/noa-face.png",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "character",
       "dimensions": [
         310,
         218
-      ]
+      ],
+      "production_sha256": "51a6e69e5dc3bd33bc6c7e318da4fa2f44f5999c0a3dbf562726ac4f6e08989a",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/characters/noa-sheet.png",
@@ -163,12 +172,15 @@
       "sha256": "96bb0514b68f4cf0a71b6ec19ce87bd7fab5538a88fb2764e5a18f71390690f1",
       "acquired": true,
       "production_path": "/noa-assets/characters/noa-sheet.png",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "character",
       "dimensions": [
         1376,
         768
-      ]
+      ],
+      "production_sha256": "96bb0514b68f4cf0a71b6ec19ce87bd7fab5538a88fb2764e5a18f71390690f1",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/characters/noa-side.jpg",
@@ -178,12 +190,15 @@
       "sha256": "2edb2171d4e735b5d2dc5a51dee2f66d1109bd5525c511d31e20b1b99b984b16",
       "acquired": true,
       "production_path": "/noa-assets/characters/noa-side.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "character",
       "dimensions": [
         300,
         218
-      ]
+      ],
+      "production_sha256": "2edb2171d4e735b5d2dc5a51dee2f66d1109bd5525c511d31e20b1b99b984b16",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/characters/noel-face.jpg",
@@ -193,12 +208,15 @@
       "sha256": "5854f980d79ae0a8d399ddb6d3167f9680b498cffdc041c5945a52c98a4cefd1",
       "acquired": true,
       "production_path": "/noa-assets/characters/noel-face.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "character",
       "dimensions": [
         310,
         260
-      ]
+      ],
+      "production_sha256": "5854f980d79ae0a8d399ddb6d3167f9680b498cffdc041c5945a52c98a4cefd1",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/characters/noel-face.png",
@@ -208,12 +226,15 @@
       "sha256": "8c888f93d830372cad88e3e88d5ebf3d51cea6027dfaac0825126e86daaae393",
       "acquired": true,
       "production_path": "/noa-assets/characters/noel-face.png",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "character",
       "dimensions": [
         310,
         260
-      ]
+      ],
+      "production_sha256": "8c888f93d830372cad88e3e88d5ebf3d51cea6027dfaac0825126e86daaae393",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/characters/noel-sheet.png",
@@ -223,12 +244,15 @@
       "sha256": "b3461f7366648618b952d679d77aac963ab7f2a6e0816c95f64a0daef2812aa9",
       "acquired": true,
       "production_path": "/noa-assets/characters/noel-sheet.png",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "character",
       "dimensions": [
         1376,
         768
-      ]
+      ],
+      "production_sha256": "b3461f7366648618b952d679d77aac963ab7f2a6e0816c95f64a0daef2812aa9",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/characters/noel-side.jpg",
@@ -238,12 +262,15 @@
       "sha256": "af91d772f749f18a0a6c96f532a4b0bc174dc8eccdea98eb222858ab75459b0d",
       "acquired": true,
       "production_path": "/noa-assets/characters/noel-side.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "character",
       "dimensions": [
         300,
         260
-      ]
+      ],
+      "production_sha256": "af91d772f749f18a0a6c96f532a4b0bc174dc8eccdea98eb222858ab75459b0d",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/coming/dreamy-deep-house.jpg",
@@ -253,12 +280,15 @@
       "sha256": "3df8b2bee507cf14e7a8deece2e7c2be10870ee5909924a41acc221e1c1d2bb7",
       "acquired": true,
       "production_path": "/noa-assets/coming/dreamy-deep-house.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "genre discovery",
       "dimensions": [
         1792,
         1008
-      ]
+      ],
+      "production_sha256": "3df8b2bee507cf14e7a8deece2e7c2be10870ee5909924a41acc221e1c1d2bb7",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/coming/echoes-of-joseon.jpg",
@@ -268,12 +298,15 @@
       "sha256": "9e260d43d1f0ff77e336902f2ab9d844633187775f3a448d7d903b66313a1499",
       "acquired": true,
       "production_path": "/noa-assets/coming/echoes-of-joseon.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "genre discovery",
       "dimensions": [
         1792,
         1008
-      ]
+      ],
+      "production_sha256": "9e260d43d1f0ff77e336902f2ab9d844633187775f3a448d7d903b66313a1499",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/coming/edm-kpop-club.jpg",
@@ -283,12 +316,15 @@
       "sha256": "5833ac9273104186272fe5ca3b43c8518f303ca0aada1d6d4d16c290b7ec2298",
       "acquired": true,
       "production_path": "/noa-assets/coming/edm-kpop-club.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "genre discovery",
       "dimensions": [
         1792,
         1008
-      ]
+      ],
+      "production_sha256": "5833ac9273104186272fe5ca3b43c8518f303ca0aada1d6d4d16c290b7ec2298",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/coming/fantasy-ambient-edm.jpg",
@@ -298,12 +334,15 @@
       "sha256": "ad860cce22863d6af4c18783ef5679c2ec3be723a81935aa8c4857f42fe870cb",
       "acquired": true,
       "production_path": "/noa-assets/coming/fantasy-ambient-edm.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "genre discovery",
       "dimensions": [
         1792,
         1008
-      ]
+      ],
+      "production_sha256": "ad860cce22863d6af4c18783ef5679c2ec3be723a81935aa8c4857f42fe870cb",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/coming/groovy-airy-pop.jpg",
@@ -313,12 +352,15 @@
       "sha256": "30be2038bdac2a2f07af5cfb638d659c7e5ae5d248ea201ed8597d66119dc6b6",
       "acquired": true,
       "production_path": "/noa-assets/coming/groovy-airy-pop.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "genre discovery",
       "dimensions": [
         1792,
         1008
-      ]
+      ],
+      "production_sha256": "30be2038bdac2a2f07af5cfb638d659c7e5ae5d248ea201ed8597d66119dc6b6",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/coming/joseon-ballad.jpg",
@@ -328,12 +370,15 @@
       "sha256": "d7288f30f1c337306d531e2e3122b9dcfc0d6b44105b729eb89f46ff25d1fb23",
       "acquired": true,
       "production_path": "/noa-assets/coming/joseon-ballad.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "genre discovery",
       "dimensions": [
         1792,
         1008
-      ]
+      ],
+      "production_sha256": "d7288f30f1c337306d531e2e3122b9dcfc0d6b44105b729eb89f46ff25d1fb23",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/coming/jpop-original.jpg",
@@ -343,12 +388,15 @@
       "sha256": "83d28c3799d96f598eae3ad65bb97f4b31669efb2e717c97c602309159f18cb8",
       "acquired": true,
       "production_path": "/noa-assets/coming/jpop-original.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "genre discovery",
       "dimensions": [
         1792,
         1008
-      ]
+      ],
+      "production_sha256": "83d28c3799d96f598eae3ad65bb97f4b31669efb2e717c97c602309159f18cb8",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/coming/kpop-original.jpg",
@@ -358,12 +406,15 @@
       "sha256": "d7322f9efe0b51ba12c6c10959dd2536c046b50e46efd2c8048196cb29f50316",
       "acquired": true,
       "production_path": "/noa-assets/coming/kpop-original.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "genre discovery",
       "dimensions": [
         1792,
         1008
-      ]
+      ],
+      "production_sha256": "d7322f9efe0b51ba12c6c10959dd2536c046b50e46efd2c8048196cb29f50316",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/coming/latin-afrobeats-edm.jpg",
@@ -373,12 +424,15 @@
       "sha256": "6ab73fdea4e347a8a5872854f2e176b1be7d0b1525e3743fecdb358812413360",
       "acquired": true,
       "production_path": "/noa-assets/coming/latin-afrobeats-edm.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "genre discovery",
       "dimensions": [
         1792,
         1008
-      ]
+      ],
+      "production_sha256": "6ab73fdea4e347a8a5872854f2e176b1be7d0b1525e3743fecdb358812413360",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/coming/narrative-piano-indie.jpg",
@@ -388,12 +442,15 @@
       "sha256": "46c6a14f24f52832a190e40a4f22dd827c631080f017351930c67f1b51f5bb04",
       "acquired": true,
       "production_path": "/noa-assets/coming/narrative-piano-indie.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "genre discovery",
       "dimensions": [
         1792,
         1008
-      ]
+      ],
+      "production_sha256": "46c6a14f24f52832a190e40a4f22dd827c631080f017351930c67f1b51f5bb04",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/coming/panpop.jpg",
@@ -403,12 +460,15 @@
       "sha256": "116449c85a6b2adab1306fc896e6900aff7fd64373089a83ed21467a39196c2b",
       "acquired": true,
       "production_path": "/noa-assets/coming/panpop.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "genre discovery",
       "dimensions": [
         1792,
         1008
-      ]
+      ],
+      "production_sha256": "116449c85a6b2adab1306fc896e6900aff7fd64373089a83ed21467a39196c2b",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/coming/pop-original.jpg",
@@ -418,12 +478,15 @@
       "sha256": "89187c0bc63e6a1e8c6b439849cf740578002d77a9f85cafee5118156f4aea89",
       "acquired": true,
       "production_path": "/noa-assets/coming/pop-original.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "genre discovery",
       "dimensions": [
         1792,
         1008
-      ]
+      ],
+      "production_sha256": "89187c0bc63e6a1e8c6b439849cf740578002d77a9f85cafee5118156f4aea89",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/coming/thai-original.jpg",
@@ -433,12 +496,15 @@
       "sha256": "140bd5a2c8c67b92fa10cb42c242692b17dd75ee7cac571a8aaa51d38922b1fb",
       "acquired": true,
       "production_path": "/noa-assets/coming/thai-original.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "genre discovery",
       "dimensions": [
         1792,
         1008
-      ]
+      ],
+      "production_sha256": "140bd5a2c8c67b92fa10cb42c242692b17dd75ee7cac571a8aaa51d38922b1fb",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/coming/your-story.jpg",
@@ -448,12 +514,15 @@
       "sha256": "cb792d07e750960fb895a91838d48c8d937724a93972fbcbafae6d6d8a5ac460",
       "acquired": true,
       "production_path": "/noa-assets/coming/your-story.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "genre discovery",
       "dimensions": [
         1792,
         1008
-      ]
+      ],
+      "production_sha256": "cb792d07e750960fb895a91838d48c8d937724a93972fbcbafae6d6d8a5ac460",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/favicon.png",
@@ -463,12 +532,15 @@
       "sha256": "9f0397fab970737a979846b3c9c3b58b5e19ef212f8cf0096b10aa799c182746",
       "acquired": true,
       "production_path": "/noa-assets/favicon.png",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "brand/icon",
       "dimensions": [
         32,
         32
-      ]
+      ],
+      "production_sha256": "9f0397fab970737a979846b3c9c3b58b5e19ef212f8cf0096b10aa799c182746",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/favicon.svg",
@@ -478,8 +550,11 @@
       "sha256": "907f53f655644e0269de218386c5dd3a6f5d26fc215eb536c814930fa4a12a92",
       "acquired": true,
       "production_path": "/noa-assets/favicon.svg",
-      "state": "deployment_candidate",
-      "use": "brand/icon"
+      "state": "deployed_verified",
+      "use": "brand/icon",
+      "production_sha256": "907f53f655644e0269de218386c5dd3a6f5d26fc215eb536c814930fa4a12a92",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/fill/sw.js",
@@ -500,12 +575,15 @@
       "sha256": "e4fc9dda964bbf3b575162741356f37263b03966b266c1fd4a92a8e38c47c78b",
       "acquired": true,
       "production_path": "/noa-assets/icon-180.png",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "brand/icon",
       "dimensions": [
         180,
         180
-      ]
+      ],
+      "production_sha256": "e4fc9dda964bbf3b575162741356f37263b03966b266c1fd4a92a8e38c47c78b",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/icon-192.png",
@@ -515,12 +593,15 @@
       "sha256": "6eaa87ec7b78c4f55008af62d75c06d69bd03088d3f54d6a0fec2f03c70f75b5",
       "acquired": true,
       "production_path": "/noa-assets/icon-192.png",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "brand/icon",
       "dimensions": [
         192,
         192
-      ]
+      ],
+      "production_sha256": "6eaa87ec7b78c4f55008af62d75c06d69bd03088d3f54d6a0fec2f03c70f75b5",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/icon-512.png",
@@ -530,12 +611,15 @@
       "sha256": "7a6b94a09ba10b951f15b6779c7d30c74e1ee44bdd5e2a9df7e6a676dd9f02cb",
       "acquired": true,
       "production_path": "/noa-assets/icon-512.png",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "brand/icon",
       "dimensions": [
         512,
         512
-      ]
+      ],
+      "production_sha256": "7a6b94a09ba10b951f15b6779c7d30c74e1ee44bdd5e2a9df7e6a676dd9f02cb",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/jukebox-mark.png",
@@ -545,12 +629,15 @@
       "sha256": "6a738b96a7e6924dc924ad06731215d980fc5d596a3f9b518d3c7705744c7b4c",
       "acquired": true,
       "production_path": "/noa-assets/jukebox-mark.png",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "brand/icon",
       "dimensions": [
         1000,
         1000
-      ]
+      ],
+      "production_sha256": "6a738b96a7e6924dc924ad06731215d980fc5d596a3f9b518d3c7705744c7b4c",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/manifest.webmanifest",
@@ -571,12 +658,15 @@
       "sha256": "2e5a9e521b1440965b50860a70ca712bf2894af48f9001fd06c9a0e2cddb7e7c",
       "acquired": true,
       "production_path": "/noa-assets/og.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "brand/icon",
       "dimensions": [
         1792,
         1008
-      ]
+      ],
+      "production_sha256": "2e5a9e521b1440965b50860a70ca712bf2894af48f9001fd06c9a0e2cddb7e7c",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/papa-emblem.png",
@@ -586,12 +676,15 @@
       "sha256": "aea206c83247d6c9b714c3dbdda382e428a416370d79d2f0d7b549699cecdbab",
       "acquired": true,
       "production_path": "/noa-assets/papa-emblem.png",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "brand/icon",
       "dimensions": [
         1024,
         1024
-      ]
+      ],
+      "production_sha256": "aea206c83247d6c9b714c3dbdda382e428a416370d79d2f0d7b549699cecdbab",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/papa-logo.png",
@@ -601,12 +694,15 @@
       "sha256": "458a060cf2114e95ea496819c9ea8c5d08999eaa3d3c748b5a56e90a488664ec",
       "acquired": true,
       "production_path": "/noa-assets/papa-logo.png",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "brand/icon",
       "dimensions": [
         1024,
         1024
-      ]
+      ],
+      "production_sha256": "458a060cf2114e95ea496819c9ea8c5d08999eaa3d3c748b5a56e90a488664ec",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/bridge-g2-a.jpg",
@@ -616,12 +712,15 @@
       "sha256": "62e25aa2500c478a96525c37cd12bee03d673b49071ecf5d7afc6c969ee0ac59",
       "acquired": true,
       "production_path": "/noa-assets/splash/bridge-g2-a.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "62e25aa2500c478a96525c37cd12bee03d673b49071ecf5d7afc6c969ee0ac59",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/bridge-g2-a.mp4",
@@ -631,7 +730,7 @@
       "sha256": "0be60b7dbb552af33e29883d2ddcac6c93ce23bb4b588a59d00d3a5034c02fb1",
       "acquired": true,
       "production_path": "/noa-assets/splash/bridge-g2-a.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -643,7 +742,10 @@
         "codec": "h264",
         "bitrate": 1477691,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "0be60b7dbb552af33e29883d2ddcac6c93ce23bb4b588a59d00d3a5034c02fb1",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/bridge-g2-b.jpg",
@@ -653,12 +755,15 @@
       "sha256": "7001d012ca9dbcd38bbdd389e72ad1007150f25040824cb517f10c9f09eba7d3",
       "acquired": true,
       "production_path": "/noa-assets/splash/bridge-g2-b.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "7001d012ca9dbcd38bbdd389e72ad1007150f25040824cb517f10c9f09eba7d3",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/bridge-g2-b.mp4",
@@ -668,7 +773,7 @@
       "sha256": "477d5ca5439e3abb2ae7ebbb09798d4027a518381b0fe69780bd56fe69483c68",
       "acquired": true,
       "production_path": "/noa-assets/splash/bridge-g2-b.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -680,7 +785,10 @@
         "codec": "h264",
         "bitrate": 1370385,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "477d5ca5439e3abb2ae7ebbb09798d4027a518381b0fe69780bd56fe69483c68",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/bridge-g2-c.jpg",
@@ -690,12 +798,15 @@
       "sha256": "cdd6f12532d2771d2304144a8a27190c5089651d3c5ef5096c101c658af56fa5",
       "acquired": true,
       "production_path": "/noa-assets/splash/bridge-g2-c.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "cdd6f12532d2771d2304144a8a27190c5089651d3c5ef5096c101c658af56fa5",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/bridge-g2-c.mp4",
@@ -705,7 +816,7 @@
       "sha256": "a01e246f0bc38be56ba523de205803395e4649e1bdc762f9bc577e9959bc1ab3",
       "acquired": true,
       "production_path": "/noa-assets/splash/bridge-g2-c.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -717,7 +828,10 @@
         "codec": "h264",
         "bitrate": 1360796,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "a01e246f0bc38be56ba523de205803395e4649e1bdc762f9bc577e9959bc1ab3",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/cover-reborn-g2-a.jpg",
@@ -727,12 +841,15 @@
       "sha256": "3f78333b3f389c7fd4a4a9305937dc71674826da0087f38fe1c15a5c23383702",
       "acquired": true,
       "production_path": "/noa-assets/splash/cover-reborn-g2-a.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "3f78333b3f389c7fd4a4a9305937dc71674826da0087f38fe1c15a5c23383702",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/cover-reborn-g2-a.mp4",
@@ -742,7 +859,7 @@
       "sha256": "476694a13c383d920e11337dca527553f7ef1538c2f28fade39494327d658efa",
       "acquired": true,
       "production_path": "/noa-assets/splash/cover-reborn-g2-a.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -754,7 +871,10 @@
         "codec": "h264",
         "bitrate": 1352076,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "476694a13c383d920e11337dca527553f7ef1538c2f28fade39494327d658efa",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/cover-reborn-g2-b.jpg",
@@ -764,12 +884,15 @@
       "sha256": "581d8d15e7ab69b876f04e05b3d4b3e9925cc251e15e3cb867ea2d5b35eb661e",
       "acquired": true,
       "production_path": "/noa-assets/splash/cover-reborn-g2-b.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "581d8d15e7ab69b876f04e05b3d4b3e9925cc251e15e3cb867ea2d5b35eb661e",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/cover-reborn-g2-b.mp4",
@@ -779,7 +902,7 @@
       "sha256": "ebd1ef85e3d1a953e68bb3da7ed5a100ffadf32aec2ae38c556f37c56a826939",
       "acquired": true,
       "production_path": "/noa-assets/splash/cover-reborn-g2-b.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -791,7 +914,10 @@
         "codec": "h264",
         "bitrate": 1312007,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "ebd1ef85e3d1a953e68bb3da7ed5a100ffadf32aec2ae38c556f37c56a826939",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/cover-reborn-g2-c.jpg",
@@ -801,12 +927,15 @@
       "sha256": "bc346b51ce0e4d529c38f0bc22e6ae157b18e8173f7023ee2c250fa8f6c104ae",
       "acquired": true,
       "production_path": "/noa-assets/splash/cover-reborn-g2-c.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "bc346b51ce0e4d529c38f0bc22e6ae157b18e8173f7023ee2c250fa8f6c104ae",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/cover-reborn-g2-c.mp4",
@@ -816,7 +945,7 @@
       "sha256": "fcf5ad4c27bb951ef4429dd05ef4a96f1e22001d59c3ccdad8bd0540b39c2c49",
       "acquired": true,
       "production_path": "/noa-assets/splash/cover-reborn-g2-c.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -828,7 +957,10 @@
         "codec": "h264",
         "bitrate": 1375178,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "fcf5ad4c27bb951ef4429dd05ef4a96f1e22001d59c3ccdad8bd0540b39c2c49",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/dream-g2-a.jpg",
@@ -838,12 +970,15 @@
       "sha256": "11a2edec66d1782c7c0bbc7bb4afe161723cd8bfbacbc665a1fe62c5535fc323",
       "acquired": true,
       "production_path": "/noa-assets/splash/dream-g2-a.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "11a2edec66d1782c7c0bbc7bb4afe161723cd8bfbacbc665a1fe62c5535fc323",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/dream-g2-a.mp4",
@@ -853,7 +988,7 @@
       "sha256": "fad0dd33e2e203337690458b9578f7f5b3524df51da85f31a88a76b1ff4ffb99",
       "acquired": true,
       "production_path": "/noa-assets/splash/dream-g2-a.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -865,7 +1000,10 @@
         "codec": "h264",
         "bitrate": 1353682,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "fad0dd33e2e203337690458b9578f7f5b3524df51da85f31a88a76b1ff4ffb99",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/dream-g2-b.jpg",
@@ -875,12 +1013,15 @@
       "sha256": "f4b2b7cdc59f582b82e96784982f148b7eaa072b37bfdddf4e55a91858b6e06f",
       "acquired": true,
       "production_path": "/noa-assets/splash/dream-g2-b.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "f4b2b7cdc59f582b82e96784982f148b7eaa072b37bfdddf4e55a91858b6e06f",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/dream-g2-b.mp4",
@@ -890,7 +1031,7 @@
       "sha256": "9f443689a9b4fbad8b53ec5eb7fd9941fab088880ee6fb9e436fc16c47f87d43",
       "acquired": true,
       "production_path": "/noa-assets/splash/dream-g2-b.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -902,7 +1043,10 @@
         "codec": "h264",
         "bitrate": 1357927,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "9f443689a9b4fbad8b53ec5eb7fd9941fab088880ee6fb9e436fc16c47f87d43",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/dream-g2-c.jpg",
@@ -912,12 +1056,15 @@
       "sha256": "0ab90c48a79482f946d10c032c8795119d4dba064398069d08b4fc67bc566d32",
       "acquired": true,
       "production_path": "/noa-assets/splash/dream-g2-c.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "0ab90c48a79482f946d10c032c8795119d4dba064398069d08b4fc67bc566d32",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/dream-g2-c.mp4",
@@ -927,7 +1074,7 @@
       "sha256": "b5e1f301fa7d6328586954e5ad07d46acbf9ef7e2e64c9be0da6466c9bb8b61d",
       "acquired": true,
       "production_path": "/noa-assets/splash/dream-g2-c.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -939,7 +1086,10 @@
         "codec": "h264",
         "bitrate": 1373031,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "b5e1f301fa7d6328586954e5ad07d46acbf9ef7e2e64c9be0da6466c9bb8b61d",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/fantasy-g2-a.jpg",
@@ -949,12 +1099,15 @@
       "sha256": "1307d3ba7d388bbc051bc1b0524cc75f4ca98537aa8c6bd6118290e51a2f9956",
       "acquired": true,
       "production_path": "/noa-assets/splash/fantasy-g2-a.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "1307d3ba7d388bbc051bc1b0524cc75f4ca98537aa8c6bd6118290e51a2f9956",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/fantasy-g2-a.mp4",
@@ -964,7 +1117,7 @@
       "sha256": "9029572d06f32f388cbead379b64d9c418a234ce9921337810069814057ee72e",
       "acquired": true,
       "production_path": "/noa-assets/splash/fantasy-g2-a.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -976,7 +1129,10 @@
         "codec": "h264",
         "bitrate": 1334227,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "9029572d06f32f388cbead379b64d9c418a234ce9921337810069814057ee72e",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/fantasy-g2-b.jpg",
@@ -986,12 +1142,15 @@
       "sha256": "10cb7bd2750f084458c26e8aa8bb588a8d2946a5317b03ea180ef09cf474af3c",
       "acquired": true,
       "production_path": "/noa-assets/splash/fantasy-g2-b.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "10cb7bd2750f084458c26e8aa8bb588a8d2946a5317b03ea180ef09cf474af3c",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/fantasy-g2-b.mp4",
@@ -1001,7 +1160,7 @@
       "sha256": "b3093d3ceafb6af18bd641ecc0dd5a43363b5434ef92f67f72f8334ca3d26f51",
       "acquired": true,
       "production_path": "/noa-assets/splash/fantasy-g2-b.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1013,7 +1172,10 @@
         "codec": "h264",
         "bitrate": 1330623,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "b3093d3ceafb6af18bd641ecc0dd5a43363b5434ef92f67f72f8334ca3d26f51",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/fantasy-g2-c.jpg",
@@ -1023,12 +1185,15 @@
       "sha256": "6dcd642327c2e706805b090d82a6bb48faec04a4d030928913fc6a4235f94c05",
       "acquired": true,
       "production_path": "/noa-assets/splash/fantasy-g2-c.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "6dcd642327c2e706805b090d82a6bb48faec04a4d030928913fc6a4235f94c05",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/fantasy-g2-c.mp4",
@@ -1038,7 +1203,7 @@
       "sha256": "79589cbf861e363be76a027905e36ac38f273c07d2553f3cc0e1d8ed43baf477",
       "acquired": true,
       "production_path": "/noa-assets/splash/fantasy-g2-c.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1050,7 +1215,10 @@
         "codec": "h264",
         "bitrate": 1352974,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "79589cbf861e363be76a027905e36ac38f273c07d2553f3cc0e1d8ed43baf477",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/hall-g2-a.jpg",
@@ -1060,12 +1228,15 @@
       "sha256": "6665ccc9ae96a7bd92b38661b5c8166646b166e34d51f448f0b55af9d48a60f5",
       "acquired": true,
       "production_path": "/noa-assets/splash/hall-g2-a.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "6665ccc9ae96a7bd92b38661b5c8166646b166e34d51f448f0b55af9d48a60f5",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/hall-g2-a.mp4",
@@ -1075,7 +1246,7 @@
       "sha256": "d5568dc59701dd223ad35c2a12d75a7ae5f7dc4b77d8e767ce3cf74d10359e1a",
       "acquired": true,
       "production_path": "/noa-assets/splash/hall-g2-a.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1087,7 +1258,10 @@
         "codec": "h264",
         "bitrate": 1367271,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "d5568dc59701dd223ad35c2a12d75a7ae5f7dc4b77d8e767ce3cf74d10359e1a",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/hall-g2-b.jpg",
@@ -1097,12 +1271,15 @@
       "sha256": "8bcd8e5519a73ca787e3c548f0ba2519390284404eb43809963ec26d1f4ed28a",
       "acquired": true,
       "production_path": "/noa-assets/splash/hall-g2-b.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "8bcd8e5519a73ca787e3c548f0ba2519390284404eb43809963ec26d1f4ed28a",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/hall-g2-b.mp4",
@@ -1112,7 +1289,7 @@
       "sha256": "74205e9256ce6bbaa9352dc07d0929cfea0de3a7ccea51e5bfe7d887776b948f",
       "acquired": true,
       "production_path": "/noa-assets/splash/hall-g2-b.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1124,7 +1301,10 @@
         "codec": "h264",
         "bitrate": 1426431,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "74205e9256ce6bbaa9352dc07d0929cfea0de3a7ccea51e5bfe7d887776b948f",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/hall-g2-c.jpg",
@@ -1134,12 +1314,15 @@
       "sha256": "7fc693c50a58cd5c64655a5591edb6e2df14ff0e43e5af5b752310d201df9acc",
       "acquired": true,
       "production_path": "/noa-assets/splash/hall-g2-c.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "7fc693c50a58cd5c64655a5591edb6e2df14ff0e43e5af5b752310d201df9acc",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/hall-g2-c.mp4",
@@ -1149,7 +1332,7 @@
       "sha256": "891e0f089e72b3cfe3705416e6b15d2c85803f543feb0cb598ac81cf4e5b4268",
       "acquired": true,
       "production_path": "/noa-assets/splash/hall-g2-c.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1161,7 +1344,10 @@
         "codec": "h264",
         "bitrate": 1382823,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "891e0f089e72b3cfe3705416e6b15d2c85803f543feb0cb598ac81cf4e5b4268",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/joseon-g2-a.jpg",
@@ -1171,12 +1357,15 @@
       "sha256": "cf97d176ce0612474022dcd322fbdff4c36e17b2faba2d0379ed601757422fde",
       "acquired": true,
       "production_path": "/noa-assets/splash/joseon-g2-a.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "cf97d176ce0612474022dcd322fbdff4c36e17b2faba2d0379ed601757422fde",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/joseon-g2-a.mp4",
@@ -1186,7 +1375,7 @@
       "sha256": "93ef64681859c48d3124c3163609bb6e35aa30b3be7ba38a11b116b0623e5030",
       "acquired": true,
       "production_path": "/noa-assets/splash/joseon-g2-a.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1198,7 +1387,10 @@
         "codec": "h264",
         "bitrate": 1341065,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "93ef64681859c48d3124c3163609bb6e35aa30b3be7ba38a11b116b0623e5030",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/joseon-g2-b.jpg",
@@ -1208,12 +1400,15 @@
       "sha256": "701dd398ae755534d240231c09a5a5ae162832aafe7813ab78aab4625d2044a4",
       "acquired": true,
       "production_path": "/noa-assets/splash/joseon-g2-b.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "701dd398ae755534d240231c09a5a5ae162832aafe7813ab78aab4625d2044a4",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/joseon-g2-b.mp4",
@@ -1223,7 +1418,7 @@
       "sha256": "f1a3eaf02813fea60b1324eb73c8cae81d18b7ad28a687ffcb17ce0f44065766",
       "acquired": true,
       "production_path": "/noa-assets/splash/joseon-g2-b.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1235,7 +1430,10 @@
         "codec": "h264",
         "bitrate": 1337080,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "f1a3eaf02813fea60b1324eb73c8cae81d18b7ad28a687ffcb17ce0f44065766",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/joseon-g2-c.jpg",
@@ -1245,12 +1443,15 @@
       "sha256": "35158abfe72e650d2491bd39e0e5509a8dc97aabbf553619681adeedf6b9a3e0",
       "acquired": true,
       "production_path": "/noa-assets/splash/joseon-g2-c.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "35158abfe72e650d2491bd39e0e5509a8dc97aabbf553619681adeedf6b9a3e0",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/joseon-g2-c.mp4",
@@ -1260,7 +1461,7 @@
       "sha256": "da40e41d02b459c44b413f21d8a850148f9c14fa245f04ea5ce8d2de95d062bc",
       "acquired": true,
       "production_path": "/noa-assets/splash/joseon-g2-c.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1272,7 +1473,10 @@
         "codec": "h264",
         "bitrate": 1255938,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "da40e41d02b459c44b413f21d8a850148f9c14fa245f04ea5ce8d2de95d062bc",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/jpop-original-g2-a.jpg",
@@ -1282,12 +1486,15 @@
       "sha256": "878e83ff24edab68ba1f20e3d96c269f41b4862662575e21353530b2a2374415",
       "acquired": true,
       "production_path": "/noa-assets/splash/jpop-original-g2-a.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "878e83ff24edab68ba1f20e3d96c269f41b4862662575e21353530b2a2374415",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/jpop-original-g2-a.mp4",
@@ -1297,7 +1504,7 @@
       "sha256": "db3034454e61a1b60009b206ea23d6e40baf2318b322c0b1a22160e5b988d804",
       "acquired": true,
       "production_path": "/noa-assets/splash/jpop-original-g2-a.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1309,7 +1516,10 @@
         "codec": "h264",
         "bitrate": 1343184,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "db3034454e61a1b60009b206ea23d6e40baf2318b322c0b1a22160e5b988d804",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/jpop-original-g2-b.jpg",
@@ -1319,12 +1529,15 @@
       "sha256": "219711b776ecc0fc0e6be275b9c2aa68f5680e3f6b5ca90ca8bd1069f13cab23",
       "acquired": true,
       "production_path": "/noa-assets/splash/jpop-original-g2-b.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "219711b776ecc0fc0e6be275b9c2aa68f5680e3f6b5ca90ca8bd1069f13cab23",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/jpop-original-g2-b.mp4",
@@ -1334,7 +1547,7 @@
       "sha256": "3a2515a13371a5151836505a671ba72a9ee57e44064ce9cb24f084b56996d94f",
       "acquired": true,
       "production_path": "/noa-assets/splash/jpop-original-g2-b.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1346,7 +1559,10 @@
         "codec": "h264",
         "bitrate": 1331400,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "3a2515a13371a5151836505a671ba72a9ee57e44064ce9cb24f084b56996d94f",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/jpop-original-g2-c.jpg",
@@ -1356,12 +1572,15 @@
       "sha256": "47be328e0e7115b179afa25635293b8a65fe4ada256592f7eab3f9600ea10b60",
       "acquired": true,
       "production_path": "/noa-assets/splash/jpop-original-g2-c.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "47be328e0e7115b179afa25635293b8a65fe4ada256592f7eab3f9600ea10b60",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/jpop-original-g2-c.mp4",
@@ -1371,7 +1590,7 @@
       "sha256": "e967b4b5949578b9ddf49dcac08b5f2c3a46bf88062c1d6ad35cb668ba5b9312",
       "acquired": true,
       "production_path": "/noa-assets/splash/jpop-original-g2-c.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1383,7 +1602,10 @@
         "codec": "h264",
         "bitrate": 1255122,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "e967b4b5949578b9ddf49dcac08b5f2c3a46bf88062c1d6ad35cb668ba5b9312",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/kpop-original-g2-a.jpg",
@@ -1393,12 +1615,15 @@
       "sha256": "223a6ba6c0e6573fa69aa9ffeb10dd09b42d36a9a40d58fb12576b9755dbdabc",
       "acquired": true,
       "production_path": "/noa-assets/splash/kpop-original-g2-a.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "223a6ba6c0e6573fa69aa9ffeb10dd09b42d36a9a40d58fb12576b9755dbdabc",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/kpop-original-g2-a.mp4",
@@ -1408,7 +1633,7 @@
       "sha256": "15c824fd16841f9987ef01659f97db646ad3f928fb2d6bf008a2072d899882f8",
       "acquired": true,
       "production_path": "/noa-assets/splash/kpop-original-g2-a.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1420,7 +1645,10 @@
         "codec": "h264",
         "bitrate": 1400065,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "15c824fd16841f9987ef01659f97db646ad3f928fb2d6bf008a2072d899882f8",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/kpop-original-g2-b.jpg",
@@ -1430,12 +1658,15 @@
       "sha256": "f145eca9e358233cae42c797f6c533390c3bd07d3efbdb79630a7d07e85ae49f",
       "acquired": true,
       "production_path": "/noa-assets/splash/kpop-original-g2-b.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "f145eca9e358233cae42c797f6c533390c3bd07d3efbdb79630a7d07e85ae49f",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/kpop-original-g2-b.mp4",
@@ -1445,7 +1676,7 @@
       "sha256": "2f944d9fbb30cc58860bbeccb71cea7a98d8a8c751c45a594c07fce673d3d15d",
       "acquired": true,
       "production_path": "/noa-assets/splash/kpop-original-g2-b.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1457,7 +1688,10 @@
         "codec": "h264",
         "bitrate": 1351711,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "2f944d9fbb30cc58860bbeccb71cea7a98d8a8c751c45a594c07fce673d3d15d",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/kpop-original-g2-c.jpg",
@@ -1467,12 +1701,15 @@
       "sha256": "6f4d611962ae738ad6ee8493998b735196e2a9e2dd2e314b5db6091583d2b408",
       "acquired": true,
       "production_path": "/noa-assets/splash/kpop-original-g2-c.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "6f4d611962ae738ad6ee8493998b735196e2a9e2dd2e314b5db6091583d2b408",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/kpop-original-g2-c.mp4",
@@ -1482,7 +1719,7 @@
       "sha256": "1b0efcb5ca732f6374bfc5eaf1ceed6405239185c4b234f00a28f44b3390d957",
       "acquired": true,
       "production_path": "/noa-assets/splash/kpop-original-g2-c.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1494,7 +1731,10 @@
         "codec": "h264",
         "bitrate": 1290837,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "1b0efcb5ca732f6374bfc5eaf1ceed6405239185c4b234f00a28f44b3390d957",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/latin-g2-a.jpg",
@@ -1504,12 +1744,15 @@
       "sha256": "df8666fb06fdcf0942a47990796c585d7dfd17b2077972dfdb4d873c9c862c0c",
       "acquired": true,
       "production_path": "/noa-assets/splash/latin-g2-a.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "df8666fb06fdcf0942a47990796c585d7dfd17b2077972dfdb4d873c9c862c0c",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/latin-g2-a.mp4",
@@ -1519,7 +1762,7 @@
       "sha256": "641a15e56d8360adc80b7e2cd27b50eb32791387083a3f298405bf74a3f0e8b1",
       "acquired": true,
       "production_path": "/noa-assets/splash/latin-g2-a.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1531,7 +1774,10 @@
         "codec": "h264",
         "bitrate": 1425551,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "641a15e56d8360adc80b7e2cd27b50eb32791387083a3f298405bf74a3f0e8b1",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/latin-g2-b.jpg",
@@ -1541,12 +1787,15 @@
       "sha256": "3a35e730ed9faece09ca5f88f44bba35e000729cac3b1935f596064c84f4cdef",
       "acquired": true,
       "production_path": "/noa-assets/splash/latin-g2-b.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "3a35e730ed9faece09ca5f88f44bba35e000729cac3b1935f596064c84f4cdef",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/latin-g2-b.mp4",
@@ -1556,7 +1805,7 @@
       "sha256": "5b271595b32e5ca3daf64419a91908cd167a4b7d46a7955932477fb5d9d964f0",
       "acquired": true,
       "production_path": "/noa-assets/splash/latin-g2-b.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1568,7 +1817,10 @@
         "codec": "h264",
         "bitrate": 1290004,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "5b271595b32e5ca3daf64419a91908cd167a4b7d46a7955932477fb5d9d964f0",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/latin-g2-c.jpg",
@@ -1578,12 +1830,15 @@
       "sha256": "78950976a18da696b30242cc96c2ce1a33b5a13e23cc16c791b72791b05fa7e3",
       "acquired": true,
       "production_path": "/noa-assets/splash/latin-g2-c.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "78950976a18da696b30242cc96c2ce1a33b5a13e23cc16c791b72791b05fa7e3",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/latin-g2-c.mp4",
@@ -1593,7 +1848,7 @@
       "sha256": "326db3f09075428238c868a698aa04ae3f07befa22be1cfb76d38578cf1c220b",
       "acquired": true,
       "production_path": "/noa-assets/splash/latin-g2-c.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1605,7 +1860,10 @@
         "codec": "h264",
         "bitrate": 1413288,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "326db3f09075428238c868a698aa04ae3f07befa22be1cfb76d38578cf1c220b",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/panpop-g2-a.jpg",
@@ -1615,12 +1873,15 @@
       "sha256": "947d2a4a4ee974d57f2a20beeac7d31b0caec86105820df5d7045921f1885647",
       "acquired": true,
       "production_path": "/noa-assets/splash/panpop-g2-a.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "947d2a4a4ee974d57f2a20beeac7d31b0caec86105820df5d7045921f1885647",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/panpop-g2-a.mp4",
@@ -1630,7 +1891,7 @@
       "sha256": "f462519550bfbe3a61bfe74f010f56dabb0da4ec3d6826bab1e1849441ece320",
       "acquired": true,
       "production_path": "/noa-assets/splash/panpop-g2-a.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1642,7 +1903,10 @@
         "codec": "h264",
         "bitrate": 1370025,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "f462519550bfbe3a61bfe74f010f56dabb0da4ec3d6826bab1e1849441ece320",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/panpop-g2-b.jpg",
@@ -1652,12 +1916,15 @@
       "sha256": "528526d0e3701449f4cde6fdc077c395722d20e9a28093fed728eae0a3d01b9d",
       "acquired": true,
       "production_path": "/noa-assets/splash/panpop-g2-b.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "528526d0e3701449f4cde6fdc077c395722d20e9a28093fed728eae0a3d01b9d",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/panpop-g2-b.mp4",
@@ -1667,7 +1934,7 @@
       "sha256": "6f6706ff97adcba62c841b514a31f2d3dfe3432aa49f20440d210b2413bee597",
       "acquired": true,
       "production_path": "/noa-assets/splash/panpop-g2-b.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1679,7 +1946,10 @@
         "codec": "h264",
         "bitrate": 1383015,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "6f6706ff97adcba62c841b514a31f2d3dfe3432aa49f20440d210b2413bee597",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/panpop-g2-c.jpg",
@@ -1689,12 +1959,15 @@
       "sha256": "afe62a111f714804cbd3d94d163a923c7b63e8261d13b82738be54f18ff42325",
       "acquired": true,
       "production_path": "/noa-assets/splash/panpop-g2-c.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "afe62a111f714804cbd3d94d163a923c7b63e8261d13b82738be54f18ff42325",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/panpop-g2-c.mp4",
@@ -1704,7 +1977,7 @@
       "sha256": "b775fca1e26c58540fb2f4a2e7beaa0e5932b15db6c523aca811359530a59d50",
       "acquired": true,
       "production_path": "/noa-assets/splash/panpop-g2-c.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1716,7 +1989,10 @@
         "codec": "h264",
         "bitrate": 1436975,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "b775fca1e26c58540fb2f4a2e7beaa0e5932b15db6c523aca811359530a59d50",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/pop-original-g2-a.jpg",
@@ -1726,12 +2002,15 @@
       "sha256": "d6c4413ab29fa9c6c835230b5dbcca7bf89516197665c1bcdf694a0439cd0c88",
       "acquired": true,
       "production_path": "/noa-assets/splash/pop-original-g2-a.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "d6c4413ab29fa9c6c835230b5dbcca7bf89516197665c1bcdf694a0439cd0c88",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/pop-original-g2-a.mp4",
@@ -1741,7 +2020,7 @@
       "sha256": "b333925fbc7465ad164d337def46941beb6fff0c696a59d1ef974295b4073750",
       "acquired": true,
       "production_path": "/noa-assets/splash/pop-original-g2-a.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1753,7 +2032,10 @@
         "codec": "h264",
         "bitrate": 1303786,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "b333925fbc7465ad164d337def46941beb6fff0c696a59d1ef974295b4073750",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/pop-original-g2-b.jpg",
@@ -1763,12 +2045,15 @@
       "sha256": "3c4a1c1e67b2c70c094037987780a9a1285068a22d3ec0a79843acf53b168b60",
       "acquired": true,
       "production_path": "/noa-assets/splash/pop-original-g2-b.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "3c4a1c1e67b2c70c094037987780a9a1285068a22d3ec0a79843acf53b168b60",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/pop-original-g2-b.mp4",
@@ -1778,7 +2063,7 @@
       "sha256": "426bf8d7d12145ee0e712ac4b6de317bf3387e8ccd1e8d22f5a09913266e3a37",
       "acquired": true,
       "production_path": "/noa-assets/splash/pop-original-g2-b.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1790,7 +2075,10 @@
         "codec": "h264",
         "bitrate": 1228326,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "426bf8d7d12145ee0e712ac4b6de317bf3387e8ccd1e8d22f5a09913266e3a37",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/pop-original-g2-c.jpg",
@@ -1800,12 +2088,15 @@
       "sha256": "2c4147cb1d1d8fbf5dc0c578b5bf758b981d7f621cd45ff76515cfdf5af45ffb",
       "acquired": true,
       "production_path": "/noa-assets/splash/pop-original-g2-c.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "2c4147cb1d1d8fbf5dc0c578b5bf758b981d7f621cd45ff76515cfdf5af45ffb",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/pop-original-g2-c.mp4",
@@ -1815,7 +2106,7 @@
       "sha256": "e965fafb41e5fa5a7798705e01ea9f1992dbd1499b804866f385cb553faf3083",
       "acquired": true,
       "production_path": "/noa-assets/splash/pop-original-g2-c.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1827,7 +2118,10 @@
         "codec": "h264",
         "bitrate": 1296163,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "e965fafb41e5fa5a7798705e01ea9f1992dbd1499b804866f385cb553faf3083",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/rain-g2-a.jpg",
@@ -1837,12 +2131,15 @@
       "sha256": "d620d8af945bd5534292283118d9bb47271dfe0e0b4633f4dee4904cebf9da16",
       "acquired": true,
       "production_path": "/noa-assets/splash/rain-g2-a.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "d620d8af945bd5534292283118d9bb47271dfe0e0b4633f4dee4904cebf9da16",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/rain-g2-a.mp4",
@@ -1852,7 +2149,7 @@
       "sha256": "9d21dc513ec67b7dc86e132ddecc6bad62f9263a6f252d739f44d1d33c692243",
       "acquired": true,
       "production_path": "/noa-assets/splash/rain-g2-a.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1864,7 +2161,10 @@
         "codec": "h264",
         "bitrate": 1272821,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "9d21dc513ec67b7dc86e132ddecc6bad62f9263a6f252d739f44d1d33c692243",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/rain-g2-b.jpg",
@@ -1874,12 +2174,15 @@
       "sha256": "55d4aa10a573507181186d3dde0e7d5f2f587e0eac7dda8bbb10c7d3c2c4260b",
       "acquired": true,
       "production_path": "/noa-assets/splash/rain-g2-b.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "55d4aa10a573507181186d3dde0e7d5f2f587e0eac7dda8bbb10c7d3c2c4260b",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/rain-g2-b.mp4",
@@ -1889,7 +2192,7 @@
       "sha256": "25dbaf0493eb93e0d3d81b1a591505c0a94e57b2106d8051bc798be11aba1aeb",
       "acquired": true,
       "production_path": "/noa-assets/splash/rain-g2-b.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1901,7 +2204,10 @@
         "codec": "h264",
         "bitrate": 1313026,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "25dbaf0493eb93e0d3d81b1a591505c0a94e57b2106d8051bc798be11aba1aeb",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/rain-g2-c.jpg",
@@ -1911,12 +2217,15 @@
       "sha256": "3585706c2fadfa6356dedb848a6fcfd3f1eebccb95acf333be54f12c94795f01",
       "acquired": true,
       "production_path": "/noa-assets/splash/rain-g2-c.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "3585706c2fadfa6356dedb848a6fcfd3f1eebccb95acf333be54f12c94795f01",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/rain-g2-c.mp4",
@@ -1926,7 +2235,7 @@
       "sha256": "a30148bc333d5ac2971a57d7a3e4fae883d2d277fe2cc73bd1a9ed2f758ae8fd",
       "acquired": true,
       "production_path": "/noa-assets/splash/rain-g2-c.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1938,7 +2247,10 @@
         "codec": "h264",
         "bitrate": 1239316,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "a30148bc333d5ac2971a57d7a3e4fae883d2d277fe2cc73bd1a9ed2f758ae8fd",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/room-g2-a.jpg",
@@ -1948,12 +2260,15 @@
       "sha256": "273f4f19074653f1500ca812761b7dc2df372ff41747df8985add2b0ea779e17",
       "acquired": true,
       "production_path": "/noa-assets/splash/room-g2-a.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "273f4f19074653f1500ca812761b7dc2df372ff41747df8985add2b0ea779e17",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/room-g2-a.mp4",
@@ -1963,7 +2278,7 @@
       "sha256": "6db6b2b0f1ed7d8fb2987605bdbb6c655be96ab2f841d12814bccdfb2cb95897",
       "acquired": true,
       "production_path": "/noa-assets/splash/room-g2-a.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -1975,7 +2290,10 @@
         "codec": "h264",
         "bitrate": 1362034,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "6db6b2b0f1ed7d8fb2987605bdbb6c655be96ab2f841d12814bccdfb2cb95897",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/room-g2-b.jpg",
@@ -1985,12 +2303,15 @@
       "sha256": "bf545da5efc48fe71f8a3961719f8b6c7fd2ce93302a420bc4f06ad4da90aee3",
       "acquired": true,
       "production_path": "/noa-assets/splash/room-g2-b.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "bf545da5efc48fe71f8a3961719f8b6c7fd2ce93302a420bc4f06ad4da90aee3",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/room-g2-b.mp4",
@@ -2000,7 +2321,7 @@
       "sha256": "21f3405fe88fcc28fd2f9c0553ffa5481a622a9cc92969df843badd92c91c190",
       "acquired": true,
       "production_path": "/noa-assets/splash/room-g2-b.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -2012,7 +2333,10 @@
         "codec": "h264",
         "bitrate": 1318898,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "21f3405fe88fcc28fd2f9c0553ffa5481a622a9cc92969df843badd92c91c190",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/room-g2-c.jpg",
@@ -2022,12 +2346,15 @@
       "sha256": "21359ffefb995d21f51d99ed0ad5cbdd0215864c3106ea65c32c3803ce7aab4f",
       "acquired": true,
       "production_path": "/noa-assets/splash/room-g2-c.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "21359ffefb995d21f51d99ed0ad5cbdd0215864c3106ea65c32c3803ce7aab4f",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/room-g2-c.mp4",
@@ -2037,7 +2364,7 @@
       "sha256": "1c794565e937a34f35f5be17fe079f901c2a2ea37dc8bd47e8662239b9ef2f9a",
       "acquired": true,
       "production_path": "/noa-assets/splash/room-g2-c.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -2049,7 +2376,10 @@
         "codec": "h264",
         "bitrate": 1373819,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "1c794565e937a34f35f5be17fe079f901c2a2ea37dc8bd47e8662239b9ef2f9a",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/thai-original-g2-a.jpg",
@@ -2059,12 +2389,15 @@
       "sha256": "5615213dbfc33542f7d0bda83eb0e04f9c64241da8f0479d41dea71d0dc64b1c",
       "acquired": true,
       "production_path": "/noa-assets/splash/thai-original-g2-a.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "5615213dbfc33542f7d0bda83eb0e04f9c64241da8f0479d41dea71d0dc64b1c",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/thai-original-g2-a.mp4",
@@ -2074,7 +2407,7 @@
       "sha256": "94c3ae94baeab4a08c9d4fd4ffbe51609b4cbabe8f541181b91bfd18bd107fa1",
       "acquired": true,
       "production_path": "/noa-assets/splash/thai-original-g2-a.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -2086,7 +2419,10 @@
         "codec": "h264",
         "bitrate": 1216922,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "94c3ae94baeab4a08c9d4fd4ffbe51609b4cbabe8f541181b91bfd18bd107fa1",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/thai-original-g2-b.jpg",
@@ -2096,12 +2432,15 @@
       "sha256": "04449ac467c2445b3ea1f43da56e0a021676af4b132b31b78a0c6b3622a9284d",
       "acquired": true,
       "production_path": "/noa-assets/splash/thai-original-g2-b.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "04449ac467c2445b3ea1f43da56e0a021676af4b132b31b78a0c6b3622a9284d",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/thai-original-g2-b.mp4",
@@ -2111,7 +2450,7 @@
       "sha256": "4918a2f85cf863327affd7cc64998a12370bf7577806489ae57dfef486506156",
       "acquired": true,
       "production_path": "/noa-assets/splash/thai-original-g2-b.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -2123,7 +2462,10 @@
         "codec": "h264",
         "bitrate": 1326923,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "4918a2f85cf863327affd7cc64998a12370bf7577806489ae57dfef486506156",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/thai-original-g2-c.jpg",
@@ -2133,12 +2475,15 @@
       "sha256": "44b8327a3f0dd75ae9ba1ed1f15a48566b54e9c28ce50c018564e83f11a37a28",
       "acquired": true,
       "production_path": "/noa-assets/splash/thai-original-g2-c.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "44b8327a3f0dd75ae9ba1ed1f15a48566b54e9c28ce50c018564e83f11a37a28",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/thai-original-g2-c.mp4",
@@ -2148,7 +2493,7 @@
       "sha256": "b5c0843c2dd18c751fa1d29eebf7f2ad23f4d76fec74fd868e0218f483ba434b",
       "acquired": true,
       "production_path": "/noa-assets/splash/thai-original-g2-c.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -2160,7 +2505,10 @@
         "codec": "h264",
         "bitrate": 1369633,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "b5c0843c2dd18c751fa1d29eebf7f2ad23f4d76fec74fd868e0218f483ba434b",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/your-story-g2-a.jpg",
@@ -2170,12 +2518,15 @@
       "sha256": "81f8552f2d274b17c0034b05459e8bc3c103afb723a54edec723baa05f745dea",
       "acquired": true,
       "production_path": "/noa-assets/splash/your-story-g2-a.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "81f8552f2d274b17c0034b05459e8bc3c103afb723a54edec723baa05f745dea",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/your-story-g2-a.mp4",
@@ -2185,7 +2536,7 @@
       "sha256": "120f371a04129c14e93e266a50fcc023cc6a384158aa825cac6d0680704a7580",
       "acquired": true,
       "production_path": "/noa-assets/splash/your-story-g2-a.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -2197,7 +2548,10 @@
         "codec": "h264",
         "bitrate": 1323829,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "120f371a04129c14e93e266a50fcc023cc6a384158aa825cac6d0680704a7580",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/your-story-g2-b.jpg",
@@ -2207,12 +2561,15 @@
       "sha256": "16d6af12fd89edb989fc91b106204e4cd8118f641cefde12c56e0aca336abe14",
       "acquired": true,
       "production_path": "/noa-assets/splash/your-story-g2-b.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "16d6af12fd89edb989fc91b106204e4cd8118f641cefde12c56e0aca336abe14",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/your-story-g2-b.mp4",
@@ -2222,7 +2579,7 @@
       "sha256": "ba105dfa09319e32cdff2dccf47f96593c0c3287e6e93a49c06b5a699e8d12d5",
       "acquired": true,
       "production_path": "/noa-assets/splash/your-story-g2-b.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -2234,7 +2591,10 @@
         "codec": "h264",
         "bitrate": 1353644,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "ba105dfa09319e32cdff2dccf47f96593c0c3287e6e93a49c06b5a699e8d12d5",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/your-story-g2-c.jpg",
@@ -2244,12 +2604,15 @@
       "sha256": "ff6a6f019e90d4fd8638f93acb7446a8d3c15fae2e682baadc5f1ef97cfb318c",
       "acquired": true,
       "production_path": "/noa-assets/splash/your-story-g2-c.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         720,
         1280
-      ]
+      ],
+      "production_sha256": "ff6a6f019e90d4fd8638f93acb7446a8d3c15fae2e682baadc5f1ef97cfb318c",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash/your-story-g2-c.mp4",
@@ -2259,7 +2622,7 @@
       "sha256": "418a8f93ab581f863f750cbabade586aa5aedd2016d69b54126e8e0aa3da4771",
       "acquired": true,
       "production_path": "/noa-assets/splash/your-story-g2-c.mp4",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "video": {
         "duration": 10.041667,
@@ -2271,7 +2634,10 @@
         "codec": "h264",
         "bitrate": 1382895,
         "audio_tracks": 0
-      }
+      },
+      "production_sha256": "418a8f93ab581f863f750cbabade586aa5aedd2016d69b54126e8e0aa3da4771",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/splash-portrait.jpg",
@@ -2281,12 +2647,15 @@
       "sha256": "a0103781d061aa58b115a058fa0082b8c42780c244734e7776ee9a9cda951181",
       "acquired": true,
       "production_path": "/noa-assets/splash-portrait.jpg",
-      "state": "deployment_candidate",
+      "state": "deployed_verified",
       "use": "background",
       "dimensions": [
         1008,
         1792
-      ]
+      ],
+      "production_sha256": "a0103781d061aa58b115a058fa0082b8c42780c244734e7776ee9a9cda951181",
+      "deployment_run": "https://github.com/rucyjeon79/noa-studio/actions/runs/39477985246",
+      "verified_at": "2026-10-20T19:01:27Z"
     },
     {
       "source": "public/sw.js",
@@ -3057,5 +3426,13 @@
       "state": "reference_only",
       "note": "Sample original image request returned HTTP 403; remaining URLs not acquired. No authentication bypass."
     }
-  ]
+  ],
+  "production_verified_media": 123,
+  "background_video_decode_validation": {
+    "files": 45,
+    "passed": 45,
+    "failed": 0,
+    "method": "FFmpeg full decode to null, original bytes unchanged",
+    "audio_tracks": 0
+  }
 }

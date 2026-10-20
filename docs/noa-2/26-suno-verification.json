@@ -1,0 +1,172 @@
+{
+  "commit": "b10c83f60cae46f43484a4f1e8114722dc6fa0b0",
+  "productionRun": "https://github.com/rucyjeon79/noa-studio/actions/runs/39483632787",
+  "qualityGate": "https://github.com/rucyjeon79/noa-studio/actions/runs/39483632783",
+  "widths": [
+    {
+      "width": 320,
+      "pages": 18,
+      "issues": 0
+    },
+    {
+      "width": 360,
+      "pages": 18,
+      "issues": 0
+    },
+    {
+      "width": 390,
+      "pages": 18,
+      "issues": 0
+    },
+    {
+      "width": 430,
+      "pages": 18,
+      "issues": 0
+    },
+    {
+      "width": 768,
+      "pages": 18,
+      "issues": 0
+    },
+    {
+      "width": 1280,
+      "pages": 18,
+      "issues": 0
+    },
+    {
+      "width": 1920,
+      "pages": 18,
+      "issues": 0
+    }
+  ],
+  "flows": {
+    "ok": true,
+    "results": [
+      "original portrait, genre art and background video served byte-identically from NOA",
+      "four categories; no full song wall",
+      "category → genre → ACT → source tracks",
+      "491 Suno source songs, share-only buttons disabled, no YouTube fallback, original lyrics retained",
+      "56px square list cover and selected ACT/song survive orientation change",
+      "global search and ordered pagination",
+      "all 52 ACTs retained; an ACT without Suno links stays visible and honestly empty",
+      "official owner MV view shows real videos separately",
+      "direct YouTube link has a loaded official thumbnail, no preview autoplay, and opens the official player only on selection",
+      "ivory/Japanese preference persistence; matching PC/mobile navigation",
+      "registered YouTube-only song in shared web/Android read model, no invented Suno/audio",
+      "tested consumer flows succeed with Grok domains blocked and make zero Grok requests"
+    ]
+  },
+  "preservation": {
+    "archiveExpected": 731,
+    "archiveVerified": 731,
+    "archiveDifferent": 0,
+    "documentsExpected": 653,
+    "documentsMissing": 0,
+    "documentsMatchingOriginal": 652,
+    "preservedEditedDocuments": 1,
+    "playlists": 57,
+    "trackRelations": 1181,
+    "unresolvedRelations": 0
+  },
+  "assets": {
+    "count": 123,
+    "bytes": 88520512,
+    "sha256Verified": 123
+  },
+  "sourceSound": {
+    "originalSunoSongs": 491,
+    "displayedSunoSongs": 491,
+    "verifiedAudio": 0,
+    "shareOnly": 491,
+    "sunoOriginalSquareCoverAcquired": 0
+  },
+  "deployedFiles": [
+    {
+      "path": "noa-bridge/sound-core.php",
+      "bytes": 3782,
+      "sha256": "c1e093beb12c700df37185ab01da3dc9977ec34d680b6faca9bc8c84d70ec655"
+    },
+    {
+      "path": "noa-browse.js",
+      "bytes": 8345,
+      "sha256": "94c713080e8c237e9691701124553feb4b9208adeb3cab050d7347db2782432c"
+    },
+    {
+      "path": "noa-music.css",
+      "bytes": 4036,
+      "sha256": "cb9e10821bcf42803c86f80180f4c4daea4b7d9af50c3c7beaf779ab1e98325b"
+    },
+    {
+      "path": "noa-music.php",
+      "bytes": 19752,
+      "sha256": "81e69165e04e53d5339a00f27390c006168c894104bd66900cf7ffb3c11e508f"
+    },
+    {
+      "path": "noa-bridge/catalog.php",
+      "bytes": 3250,
+      "sha256": "d3a17aca4125ed5026828a3eca5fa9b1096ddc47bddd0ac50cff76cc06ad754b"
+    },
+    {
+      "path": "noa-playlists.js",
+      "bytes": 3830,
+      "sha256": "86b9ec2171f857d442fb9ccc3ae9935d2ba2ce8cf17397640b6a7de6a768bd29"
+    },
+    {
+      "path": "noa-home.js",
+      "bytes": 3743,
+      "sha256": "90319af9b99fd98b40b2e04d812f500ab9bf1a97b6187bd3ff553dd71e7f8fe2"
+    },
+    {
+      "path": "noa-ui.css",
+      "bytes": 19419,
+      "sha256": "cdbac2212cae159ff06269a7380fdd2553c80a512704553d9cae38e16f3ee593"
+    },
+    {
+      "path": "noa-youtube.php",
+      "bytes": 6720,
+      "sha256": "4c4125ba672d416de6858993fc2248b71eb74230fee8480fafd68d8b10b3055f"
+    },
+    {
+      "path": "noa2.php",
+      "bytes": 6078,
+      "sha256": "812cfb0cd1ed886f280f41fb4f66451a7112afd1784443e50327d4c9b874618c"
+    },
+    {
+      "path": "noa-bridge/youtube-thumbnail.php",
+      "bytes": 2240,
+      "sha256": "2babe801c0058555856bb572702a40dfa63e5441a1dde430853c2feb3a72fd37"
+    },
+    {
+      "path": "noa-bridge/catalog-recovery.php",
+      "bytes": 15015,
+      "sha256": "6c354512208a27beb3bd28ef0532148cc2fd1c66372e3d98fc25d51021b402ba"
+    },
+    {
+      "path": "noa-bridge/catalog-store.php",
+      "bytes": 15033,
+      "sha256": "59608e901078a3589a33ffc83609d68be12322763f327769fc5691fec4672c97"
+    }
+  ],
+  "retention": {
+    "isolatedMysql": "passed",
+    "olderSourceImportBlockedAt": [
+      "start",
+      "verify"
+    ],
+    "sharedPublicationLockReleased": true,
+    "productionImportWritesExecuted": false
+  },
+  "youtubeThumbnail": {
+    "width": 480,
+    "height": 360,
+    "officialStoredMetadata": true,
+    "previewAutoplay": false
+  },
+  "youtubeStreaming": {
+    "duration": 55,
+    "currentTime": 0,
+    "readyState": 0,
+    "verified": false
+  },
+  "recordedAt": "2026-10-20T19:33:35.332020+00:00"
+}
