@@ -1,5 +1,5 @@
 name: NOA STUDIO Android
-# Preserve loaded catalog during palette changes and verify stable native search interaction
+# Verify shared language dictionary, native palettes and bounded network retry
 on:
   push:
     branches: [main]
@@ -54,6 +54,7 @@ jobs:
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android.png android/noa-android.png || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-detail.png android/noa-android-detail.png || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-ivory.png android/noa-android-ivory.png || true
+            adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-japanese.png android/noa-android-japanese.png || true
             adb logcat -d -s AndroidRuntime:E NoaApi:E > android/noa-runtime-errors.txt
             python3 -c "from pathlib import Path; s=Path('android/noa-ui.xml').read_text(); assert 'OK (1 test)' in Path('android/noa-instrumentation.txt').read_text(); assert 'NOA STUDIO' in s; assert __import__('re').search(r'[1-9][0-9]*개 문서',s), 'Production music catalog did not load'; assert 'FATAL EXCEPTION' not in Path('android/noa-runtime-errors.txt').read_text()"
       - name: Retain device verification
@@ -66,6 +67,7 @@ jobs:
             android/noa-android.png
             android/noa-android-detail.png
             android/noa-android-ivory.png
+            android/noa-android-japanese.png
             android/noa-instrumentation.txt
             android/noa-runtime-errors.txt
             android/app/build/reports/lint-results-debug.html

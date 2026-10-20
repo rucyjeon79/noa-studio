@@ -16,6 +16,7 @@ dependencies {
 
 tasks.register('copyNoaDesign', Copy) {
     from rootProject.file('../deploy/noa-design.json')
+    from rootProject.file('../deploy/noa-ui-words.json')
     into layout.buildDirectory.dir('generated/noaDesignAssets')
 }
 tasks.named('preBuild').configure { dependsOn 'copyNoaDesign' }

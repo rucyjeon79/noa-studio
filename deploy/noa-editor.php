@@ -18,8 +18,8 @@ if($key!==''){
  $payload=json_decode($row['payload'],true,512,JSON_THROW_ON_ERROR);$revision=(int)$row['revision'];$kind=$row['kind'];
 }
 $body=$payload['body']??[];
-?><!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>음악 관리 | NOA STUDIO</title>
-<style>:root{color-scheme:dark;--gold:#d7ad62;--line:#303036}*{box-sizing:border-box}body{margin:0;background:#090a0e;color:#f4f0e9;font:16px/1.7 system-ui}main{max-width:960px;margin:auto;padding:28px 20px}a,h1{color:var(--gold)}.fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}label{display:block;margin:14px 0}input,textarea,select{width:100%;padding:12px;background:#14151a;color:inherit;border:1px solid var(--line);border-radius:8px;font:inherit}textarea{min-height:190px}input[type=checkbox]{width:auto}button{min-height:48px;padding:12px 24px;background:var(--gold);border:0;border-radius:8px;font:inherit;cursor:pointer}.muted{color:#aaa}#result{white-space:pre-wrap}@media(max-width:650px){.fields{grid-template-columns:1fr}}</style>
+?><!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>음악 관리 | NOA STUDIO</title>
+<style>:root{color-scheme:dark;--gold:#d7ad62;--line:#303036}*{box-sizing:border-box}body{margin:0;background:#090a0e;color:#f4f0e9;font:16px/1.7 system-ui}main{max-width:960px;margin:auto;padding:28px 20px}a,h1{color:var(--gold)}.fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}label{display:block;margin:14px 0}input,textarea,select{width:100%;padding:12px;background:#14151a;color:inherit;border:1px solid var(--line);border-radius:8px;font:inherit}textarea{min-height:190px}input[type=checkbox]{width:auto}button{min-height:48px;padding:12px 24px;background:var(--gold);border:0;border-radius:8px;font:inherit;cursor:pointer}.muted{color:#aaa}#result{white-space:pre-wrap}@media(max-width:650px){.fields{grid-template-columns:1fr}}</style><link rel="stylesheet" href="/noa-ui.css"><script src="/noa-ui.js" defer></script></head><body class="noa-page">
 <main><a href="/noa-library.php">← 라이브러리 관리</a><h1><?=$key!==''?'음악 수정':'음악 등록'?></h1><p class="muted">NOA STUDIO · 기존 원본 보존 자료는 유지하고 변경 이력을 남깁니다.</p>
 <form id="editor">
 <div class="fields"><label>분류<select id="kind" <?=$key!==''?'disabled':''?>><?php foreach(['single'=>'EP 싱글','playlist'=>'ACT 플레이리스트','story'=>'사연·커버곡'] as $v=>$l):?><option value="<?=$v?>" <?=$kind===$v?'selected':''?>><?=$l?></option><?php endforeach;?></select></label>
@@ -60,4 +60,4 @@ field('editor').addEventListener('submit',async event=>{
  key=writeKey;revision=data.revision;original=p;lastSavedSnapshot=formSnapshot();status.textContent='저장 완료 · 버전 '+revision;history.replaceState(null,'','?key='+encodeURIComponent(key));for(const id of ['kind','genre'])field(id).disabled=true;for(const id of ['ep','act'])field(id).readOnly=true;
  }catch{status.textContent='서버 응답을 확인하지 못했습니다. 같은 내용으로 다시 저장하면 중복 요청을 방지합니다.'}finally{field('save').disabled=false}
 });
-</script></html>
+</script></body></html>

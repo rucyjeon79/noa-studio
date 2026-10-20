@@ -13,9 +13,10 @@ public class CatalogTest {
   UiDevice device=UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
   android.content.Context context=InstrumentationRegistry.getInstrumentation().getTargetContext();
   context.startActivity(new Intent(context,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-  assertTrue(device.wait(Until.hasObject(By.text(java.util.regex.Pattern.compile("[1-9][0-9]*개 문서.*"))),30000));
+  boolean loaded=device.wait(Until.hasObject(By.text(java.util.regex.Pattern.compile("[1-9][0-9]*개 문서.*"))),60000);
   device.dumpWindowHierarchy(new java.io.File(context.getExternalFilesDir(null),"noa-ui.xml"));
   assertTrue(device.takeScreenshot(new java.io.File(context.getExternalFilesDir(null),"noa-android.png")));
+  assertTrue("Production catalog did not load; see captured screen",loaded);
   device.findObject(By.text("설정")).click();
   assertTrue(device.wait(Until.hasObject(By.text("NOA STUDIO · Ivory")),5000));
   device.findObject(By.text("NOA STUDIO · Ivory")).click();
@@ -25,6 +26,15 @@ public class CatalogTest {
   UiObject2 graphite=device.wait(Until.findObject(By.text("NOA STUDIO · Graphite")),5000);
   assertNotNull("Theme picker did not open",graphite);graphite.click();
   assertTrue(device.wait(Until.hasObject(By.text(java.util.regex.Pattern.compile("[1-9][0-9]*개 문서.*"))),30000));
+  device.findObject(By.text("설정")).click();
+  UiObject2 language=device.wait(Until.findObject(By.text("언어")),5000);assertNotNull(language);language.click();
+  UiObject2 japanese=device.wait(Until.findObject(By.text("日本語")),5000);assertNotNull(japanese);japanese.click();
+  assertTrue(device.wait(Until.hasObject(By.text("設定")),5000));
+  assertTrue(device.takeScreenshot(new java.io.File(context.getExternalFilesDir(null),"noa-android-japanese.png")));
+  device.findObject(By.text("設定")).click();
+  UiObject2 languageAgain=device.wait(Until.findObject(By.text("言語")),5000);assertNotNull(languageAgain);languageAgain.click();
+  UiObject2 korean=device.wait(Until.findObject(By.text("한국어")),5000);assertNotNull(korean);korean.click();
+  assertTrue(device.wait(Until.hasObject(By.text("설정")),5000));
   UiObject2 search=device.findObject(By.clazz("android.widget.EditText"));
   assertNotNull(search);search.setText("하루");
   device.waitForIdle();

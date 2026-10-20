@@ -1,5 +1,5 @@
 name: NOA Dothome Deployment
-# Correct original portrait framing, preserve artwork ratio and verify visible filtered music
+# Share original and extended UI translations with Android; verify responsive navigation
 
 on:
   push:
@@ -128,7 +128,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import urllib.request, urllib.error
-          cases = [('/noa-ui.css',200),('/noa-ui.js',200),('/noa-design.json',200),('/noa-settings.php',200),('/noa-bridge/ui-preferences.php',200),('/noa-theme-admin.php',403),('/',200),('/noa2.php',200),('/noa-music.php',200),('/noa-bridge/noa-face.jpg',200),('/noa-bridge/seed.php',403),('/noa-bridge/source-archive.php',403),('/noa-bridge/source-import.php',403),('/noa-bridge/source-cli.php',403),('/noa-bridge/source-audit.php',403),('/noa-bridge/media-status.php',403),('/noa-bridge/catalog.php',200),('/noa-bridge/characters/noa-face.jpg',200),('/noa-bridge/characters/noel-face.jpg',200),('/noa-manifest.json',200),('/noa-sw.js',200),('/noa-icon-192.png',200),('/noa-icon-512.png',200),('/noa-bridge/source-url-report.php',403),('/noa-playlists.js',200),('/noa-bridge/user-playlists.php',401),('/noa-editor.php',403),('/noa-bridge/check-media.php?video=o5NaioWtXuM',403),('/noa-library.php',403),('/noa-bridge/index.php?health=1',403),('/noa-bridge/library.php',403),('/noa-bridge/setup.php',403),('/bbs/login.php',200),('/?device=mobile',200)]
+          cases = [('/noa-ui-words.json',200),('/noa-legacy-i18n.json',200),('/noa-ui.css',200),('/noa-ui.js',200),('/noa-design.json',200),('/noa-settings.php',200),('/noa-bridge/ui-preferences.php',200),('/noa-theme-admin.php',403),('/',200),('/noa2.php',200),('/noa-music.php',200),('/noa-bridge/noa-face.jpg',200),('/noa-bridge/seed.php',403),('/noa-bridge/source-archive.php',403),('/noa-bridge/source-import.php',403),('/noa-bridge/source-cli.php',403),('/noa-bridge/source-audit.php',403),('/noa-bridge/media-status.php',403),('/noa-bridge/catalog.php',200),('/noa-bridge/characters/noa-face.jpg',200),('/noa-bridge/characters/noel-face.jpg',200),('/noa-manifest.json',200),('/noa-sw.js',200),('/noa-icon-192.png',200),('/noa-icon-512.png',200),('/noa-bridge/source-url-report.php',403),('/noa-playlists.js',200),('/noa-bridge/user-playlists.php',401),('/noa-editor.php',403),('/noa-bridge/check-media.php?video=o5NaioWtXuM',403),('/noa-library.php',403),('/noa-bridge/index.php?health=1',403),('/noa-bridge/library.php',403),('/noa-bridge/setup.php',403),('/bbs/login.php',200),('/?device=mobile',200)]
           for path, expected in cases:
               req = urllib.request.Request('https://noastudio.ai.kr'+path, headers={'User-Agent':'NOA-Production-Verification'})
               try:
