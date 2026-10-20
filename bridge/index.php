@@ -14,7 +14,7 @@ function respond(int $status, array $body): never {
     exit;
 }
 function fail(int $status, string $code): never { respond($status, ['ok' => false, 'error' => $code]); }
-if (empty($is_member) || empty($is_admin)) {
+if (empty($is_member) || ($is_admin ?? '') !== 'super') {
     fail(403, 'admin_required');
 }
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
