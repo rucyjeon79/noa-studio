@@ -53,3 +53,22 @@ The normalized catalog UI actually loaded654 administrator-visible entities (601
 | Thai Original |10|10|10|10|
 
 The additional existing private playlist also has10 retained references, resolved through original document keys. Intact Grok SQL export remains a separate unresolved collection requirement; the failed snapshots are not counted as successfully imported.
+
+## Released server files and final access checks
+
+| Repository file | Production path |
+|---|---|
+| `deploy/noa-catalog.php` | `/noa-catalog.php` |
+| `deploy/noa-catalog-admin.php` | `/noa-catalog-admin.php` |
+| `bridge/catalog-merge.php` | `/noa-bridge/catalog-merge.php` |
+| `bridge/catalog-store.php` | `/noa-bridge/catalog-store.php` |
+| `bridge/catalog-schema.php` | `/noa-bridge/catalog-schema.php` |
+| generated `bridge/catalog-seed.php` | `/noa-bridge/catalog-seed.php` |
+| `deploy/noa-library.php` | `/noa-library.php` |
+| `deploy/noa-ai-lab.css` | `/noa-ai-lab.css` |
+
+Final catalog CI and production release succeeded (`39390383457`). Anonymous normalized and existing player catalogs both retain287 previously authorized records. A public ACT detail returns200 with10 memberships; private user playlist details and an unverified-public ACT correctly return404 anonymously, while the owner/administrator can read their complete10-song lists. The administrator route rejects unauthenticated access with403. ACT.4 detail is administrator-visible; it is not promoted to public by this migration.
+
+AI LAB's service/channel icon is now visibly accessible; unconfigured AI creation is disabled. Its authenticated catalog contains653 original documents and15 genre rules. The independent scheduled AI worker has run successfully with an empty queue (`39387980417`). Android build13 compiled, passed lint/emulator checks, and was published. Actual paid AI creation/rendering, source-audio mastering, OAuth uploads and live YouTube analytics still require API credentials, rights-cleared audio and connected channels; those are not marked verified.
+
+Production evidence: `10-sql-production.jpg`. Detailed collection limits above remain open.
