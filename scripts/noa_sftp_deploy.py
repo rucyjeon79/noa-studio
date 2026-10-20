@@ -18,13 +18,15 @@ FILES = {
     'bridge/setup.php': 'noa-bridge/setup.php',
     'bridge/seed.php': 'noa-bridge/seed.php',
     'deploy/noa-music.php': 'noa-music.php',
+    'deploy/noastudio/theme/noastudio/img/noa-face.jpg': 'noa-bridge/noa-face.jpg',
 }
 UPGRADE_FROM = {
+    'noa-music.php': '86303c7163f5db30a5b8ac2e7de91b22653f4a2a10f896c7e3f9a1810e101195',
     'noa2.php': '2065e894a3d09e22186f1935d7a9b864ff4e6dcc5cada66e64211f9548bd489c',
     'noa-bridge/setup.php': 'b38a5d8cdea5b8332b37e2a95c628d7d1fe44d9e5c7360b5b47aedfb73c3c691',
-    'noa-library.php': 'b8ce5c4d3155549dc0e7e55c82bff15a3335448f4f1b0c0306e2ca19e0d91467',
-    'noa-bridge/index.php': 'a8b42ac0b5ee8a2524ec880b1b49701de30586d893f5a83936efdf2941574a3d',
-    'noa-bridge/library.php': '7c1a4429dc4826bf30bdc73b2a6c45aede16c982c171b6d2e8c8a9083f537fe1',
+    'noa-library.php': 'dcea0d2ed3e1dc942e1380610bc18fec52994b00b329c75cd19212ee709d9bb5',
+    'noa-bridge/index.php': '22eaf129ab9581e179521ae3c898b3c6d9e7652a4acb7b9b6c35d78693967c36',
+    'noa-bridge/library.php': '4dba2be3791a6462724aa2dec1c3fc8c58e56798d8a6791c00f6a6631a170741',
 }
 PROTECTED = ['index.php', 'common.php', 'config.php', '.htaccess', 'data/dbconfig.php']
 
