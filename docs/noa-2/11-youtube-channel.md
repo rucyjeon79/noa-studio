@@ -53,3 +53,9 @@ Production fixes: `bridge/lab-oauth.php` and new `bridge/lab-oauth-core.php`, de
 Runs 39400506419 and 39400829444 both passed validation and production release. OAuth tests verify exact scopes, encrypted receipt recovery, actor/session/expiry boundaries, PKCE exchange parameters, server-only refresh storage and automatic publishing remaining off. Protected GnuBoard files stayed unchanged; deployments executed no SQL writes.
 
 Actual production probe returned `invalid_grant` for the deliberately invalid test code, confirming Google transport works and no Client ID/Secret error was reported. This probe is not a successful owner authorization or a channel connection. The old owner request now explicitly reports `oauth_state_invalid`; a fresh owner authorization remains necessary. Actual channel video/playlist/match counts and Analytics remain unmeasured. Screenshot: `13-oauth-diagnostic.jpg`.
+
+## Confirmed Google API activation blocker — 2026-10-20 18:53 KST
+
+Fresh owner authorization succeeded and the token was encrypted in the session/actor-bound private receipt. The subsequent official `channels.list(mine=true)` returned HTTP 403 / `accessNotConfigured`: YouTube Data API v3 is not enabled for the OAuth project. Reopening the callback resumed from the stored token and reproduced that precise error without a new code exchange or device notification. User API activation is the remaining external requirement; actual channel collection has not run.
+
+Release run 39403701950 passed validation and production deployment. Issued-token receipts can now survive the activation delay within the provider token lifetime (at most 55 minutes); the initial unexchanged authorization-code state still expires after 10 minutes. Existing valid old receipts migrate once, retaining the original issue time, actor and session binding. Screenshot: `14-youtube-api-disabled.jpg`.
