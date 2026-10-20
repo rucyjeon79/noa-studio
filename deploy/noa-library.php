@@ -1,6 +1,6 @@
 <?php
 /**
- * NOA STUDIO 2.0 administrator library page.
+ * NOA STUDIO administrator library page.
  * Production location: /html/noa-library.php
  * Read-only, no legacy GnuBoard table changes.
  */
@@ -51,7 +51,7 @@ require_once __DIR__ . '/noa-bridge/storage.php';
 }
 ?>
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NOA STUDIO 2.0 | 라이브러리</title>
+<title>NOA STUDIO | 라이브러리</title>
 <style>
 :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#090a0e;color:#f3eee4;font:15px/1.6 system-ui,"Malgun Gothic",sans-serif}
 main{max-width:1100px;margin:auto;padding:32px 20px}a{color:#d7ad62}h1{color:#d7ad62;font-family:Georgia,serif}
