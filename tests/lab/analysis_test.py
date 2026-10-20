@@ -11,7 +11,7 @@ class AudioAnalysisTests(unittest.TestCase):
    # Internal deterministic fixture only; never presented as the user's original music.
    signal=.2*np.sin(2*np.pi*220*t)*(np.mod(t,.5)<.08)
    with wave.open(str(path),'wb') as out:out.setnchannels(1);out.setsampwidth(2);out.setframerate(rate);out.writeframes((signal*32767).astype('<i2').tobytes())
-   result=analyze(path,'[Chorus]\n한 걸음 더\n한 걸음 더')
+   result=analyze(path,'[Chorus]\n한 걸음 더\n한 걸음 더',[{'metrics':{'summary':{'views':None,'averageViewDuration':None}}}])
    self.assertTrue(60<=result['bpm']<=200)
    self.assertGreaterEqual(len(result['candidates']),3)
    self.assertFalse(result['alignmentVerified'])

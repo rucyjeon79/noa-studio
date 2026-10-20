@@ -28,7 +28,7 @@ with tempfile.TemporaryDirectory(prefix='noa-lab-http-') as root:
   assert request('lab-api.php?action=config',{'expectedRevision':state['revision']},{**admin,'Origin':'https://evil.example'})[0]==403
   assert request('lab-api.php?action=config',{'expectedRevision':state['revision']},admin)[0]==200
   # Exercise completion transitions to catch malformed branches before deploying.
-  state=json.loads((private/'state.json').read_text());jobid='a'*32;state['jobs'][jobid]={'id':jobid,'title':'isolated fixture','state':'queued_analysis','revision':1,'attempts':0,'createdAt':'2026-10-20T00:00:00Z','settings':{'mode':'audio','formats':['landscape'],'posting':'save','autoSelect':True,'subtitles':False},'cast':'female','genre':'test','outputs':[]};(private/'state.json').write_text(json.dumps(state))
+  state=json.loads((private/'state.json').read_text());state['jobs']={};jobid='a'*32;state['jobs'][jobid]={'id':jobid,'title':'isolated fixture','state':'queued_analysis','revision':1,'attempts':0,'createdAt':'2026-10-20T00:00:00Z','settings':{'mode':'audio','formats':['landscape'],'posting':'save','autoSelect':True,'subtitles':False},'cast':'female','genre':'test','outputs':[]};(private/'state.json').write_text(json.dumps(state))
   status,claim=worker('claim',{});assert status==200 and claim['stage']=='analysis'
   auth={'id':jobid,'lease':claim['job']['lease']};assert worker('complete',{**auth,'stage':'analysis','analysis':{'duration':5,'candidates':[{'start':0,'end':5}]}})[0]==200
   status,state=request('lab-api.php',headers={'X-Test-Role':'admin'});job=state['jobs'][0];assert job['state']=='review_highlights','Audio-only mode must never auto-render'

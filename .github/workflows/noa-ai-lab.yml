@@ -1,4 +1,5 @@
 name: NOA AI LAB validation and production release
+# Verify empty-state fixtures and unavailable analytics before release.
 on:
   push:
     branches: [main]

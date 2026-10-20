@@ -35,8 +35,8 @@ def analyze(path, lyrics='', feedback=None):
     prior=[]
     for history in feedback or []:
         metrics=history.get('metrics',{}).get('summary',{})
-        if metrics.get('views',0)>=100 and metrics.get('averageViewDuration',0)>0 and history.get('selection'):
-            prior.append((history['selection']['start']/max(duration,1),metrics['averageViewDuration']))
+        if (metrics.get('views') or 0)>=100 and (metrics.get('averageViewDuration') or 0)>0 and history.get('selection'):
+            prior.append((history['selection']['start']/max(history.get('duration') or duration,1),metrics['averageViewDuration']))
     for length in lengths:
         starts=np.arange(0,max(.01,duration-length),max(2.,60/max(bpm,1)*4)).tolist()+[duration-length]
         for start in starts:
