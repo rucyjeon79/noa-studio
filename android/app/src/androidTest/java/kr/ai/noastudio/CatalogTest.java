@@ -13,7 +13,9 @@ public class CatalogTest {
   UiDevice device=UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
   android.content.Context context=InstrumentationRegistry.getInstrumentation().getTargetContext();
   context.startActivity(new Intent(context,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-  assertTrue(device.wait(Until.hasObject(By.textContains("개 문서")),30000));
+  assertTrue(device.wait(Until.hasObject(By.text(java.util.regex.Pattern.compile("[1-9][0-9]*개 문서.*"))),30000));
+  device.dumpWindowHierarchy(new java.io.File(context.getExternalFilesDir(null),"noa-ui.xml"));
+  assertTrue(device.takeScreenshot(new java.io.File(context.getExternalFilesDir(null),"noa-android.png")));
   UiObject2 search=device.findObject(By.clazz("android.widget.EditText"));
   assertNotNull(search);search.setText("하루");
   UiObject2 first=device.wait(Until.findObject(By.textContains("EP.01 · 하루의 끝에")),5000);

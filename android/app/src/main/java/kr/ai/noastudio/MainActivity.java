@@ -36,7 +36,7 @@ public class MainActivity extends Activity {
  private final ExecutorService executor=Executors.newSingleThreadExecutor();
  private final Handler handler=new Handler(Looper.getMainLooper());
  private final List<JSONObject> songs=new ArrayList<>();
- private LinearLayout root,list,nativeControls;private SeekBar seek;private boolean seeking=false;private EditText search;private Spinner genres;private TextView status,now;
+ private LinearLayout root,list,nativeControls;private SeekBar seek;private boolean seeking=false,loading=true;private EditText search;private Spinner genres;private TextView status,now;
  private WebView browser;private MediaController controller;private ListenableFuture<MediaController> controllerFuture;
  private final Runnable tick=new Runnable(){public void run(){if(controller!=null&&now!=null){MediaItem item=controller.getCurrentMediaItem();now.setText(item==null?"NOA STUDIO":String.valueOf(item.mediaMetadata.title));if(seek!=null&&!seeking&&controller.getDuration()>0)seek.setProgress((int)(1000*controller.getCurrentPosition()/controller.getDuration()));}handler.postDelayed(this,1000);}};
  @Override public void onCreate(Bundle saved){super.onCreate(saved);getWindow().setStatusBarColor(BLACK);getWindow().setNavigationBarColor(BLACK);getWindow().getDecorView().setOnApplyWindowInsetsListener((v,i)->{findViewById(android.R.id.content).setPadding(i.getSystemWindowInsetLeft(),i.getSystemWindowInsetTop(),i.getSystemWindowInsetRight(),i.getSystemWindowInsetBottom());return i;});showLibrary();connectPlayer();handler.post(tick);}
@@ -68,7 +68,7 @@ public class MainActivity extends Activity {
   render();loadCatalog();
  }
  private void loadCatalog(){
-  status.setText("음악 목록을 불러오는 중입니다.");
+  loading=true;status.setText("음악 목록을 불러오는 중입니다.");
   String cookie=CookieManager.getInstance().getCookie(BASE);
   executor.execute(()->{try{
    HttpURLConnection c=(HttpURLConnection)new URL(BASE+"/noa-bridge/catalog.php").openConnection();c.setConnectTimeout(20000);c.setReadTimeout(20000);c.setInstanceFollowRedirects(false);
@@ -76,14 +76,14 @@ public class MainActivity extends Activity {
    if(c.getResponseCode()!=200)throw new Exception("Catalog HTTP "+c.getResponseCode());
    String raw;try(java.io.InputStream stream=c.getInputStream()){java.io.ByteArrayOutputStream bytes=new java.io.ByteArrayOutputStream();byte[] block=new byte[8192];int n;while((n=stream.read(block))!=-1)bytes.write(block,0,n);raw=bytes.toString(StandardCharsets.UTF_8.name());}finally{c.disconnect();}
    JSONArray items=new JSONObject(raw).getJSONArray("items");List<JSONObject> fetched=new ArrayList<>();for(int i=0;i<items.length();i++)fetched.add(items.getJSONObject(i));
-   runOnUiThread(()->{songs.clear();songs.addAll(fetched);if(browser==null)render();});
+   runOnUiThread(()->{loading=false;songs.clear();songs.addAll(fetched);if(browser==null)render();});
   }catch(Exception e){android.util.Log.e("NoaApi","Catalog request failed",e);runOnUiThread(()->{if(browser==null)status.setText("목록을 불러오지 못했습니다. 인터넷 연결 후 새로고침해 주세요.");});}});
  }
  private void render(){
   if(list==null||browser!=null)return;boolean hasAudio=false;for(JSONObject record:songs)if(ownAudio(record.optString("audioUrl")))hasAudio=true;if(nativeControls!=null)nativeControls.setVisibility(hasAudio?View.VISIBLE:View.GONE);list.removeAllViews();String query=search.getText().toString().trim().toLowerCase(Locale.ROOT);String genre=genres.getSelectedItemPosition()==0?"":String.valueOf(genres.getSelectedItem());int count=0;
   for(JSONObject song:songs){String title=song.optString("title");String ep=song.optString("ep");if(!genre.isEmpty()&&!genre.equals(song.optString("genre")))continue;if(!(title+" EP."+ep).toLowerCase(Locale.ROOT).contains(query))continue;
    count++;Button card=button((ep.isEmpty()?"":"EP."+ep+" · ")+title+"\n"+song.optString("genre"),()->showSong(song));card.setGravity(android.view.Gravity.START);list.addView(card,new LinearLayout.LayoutParams(-1,-2));}
-  status.setText(count+"개 문서 · 웹과 동일한 음악 데이터");
+  status.setText(loading&&songs.isEmpty()?"음악 목록을 불러오는 중입니다.":count+"개 문서 · 웹과 동일한 음악 데이터");
  }
  private void showSong(JSONObject song){
   LinearLayout detail=new LinearLayout(this);detail.setOrientation(LinearLayout.VERTICAL);detail.setBackgroundColor(BLACK);detail.setPadding(12,12,12,12);
