@@ -16,7 +16,7 @@ function noa_music_video($url): string {
     }
     return preg_match('/^[A-Za-z0-9_-]{11}$/D',$id)?$id:'';
 }
-$admin=!empty($is_member)&&!empty($is_admin);$songs=[];$genres=[];$error=false;
+$admin=!empty($is_member)&&($is_admin??'')==='super';$songs=[];$genres=[];$error=false;
 try {
     $db=noa_bridge_pdo();
     $rows=$db->query("SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','playlist','story') ORDER BY doc_key");
@@ -37,7 +37,7 @@ try {
 <section class="player" aria-label="음악 플레이어"><div class="screen" id="screen"><span class="muted">감상할 음악을 선택해 주세요.</span></div><div class="playing"><span class="badge">AI ARTIST NOA</span><h2 id="now-title">나만의 속도로, 노아의 음악</h2><p class="muted" id="now-genre">공식 YouTube 플레이어로 재생합니다.</p><a id="watch" hidden target="_blank" rel="noopener noreferrer">YouTube에서 보기 ↗</a></div></section>
 <div class="filters"><input id="search" type="search" aria-label="음악 검색" placeholder="곡 제목으로 검색"><select id="genre" aria-label="장르 선택"><option value="">전체 장르</option><?php foreach($genres as $g=>$count):?><option value="<?=noa_music_e($g)?>"><?=noa_music_e(str_replace('-',' ',strtoupper($g)))?> · <?=$count?></option><?php endforeach;?></select></div><p class="muted" id="result-count"></p>
 <?php if($error):?><p class="empty">음악 목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p><?php elseif(!$songs):?><p class="empty">아직 이관된 음악이 없습니다.</p><?php endif;?>
-<div class="grid" id="songs"><?php foreach($songs as $song):?><button class="song" type="button" data-title="<?=noa_music_e($song['title'])?>" data-genre="<?=noa_music_e($song['genre'])?>" data-video="<?=noa_music_e($song['video'])?>" <?=$song['video']===''?'disabled':''?>><?php if($song['video']):?><img src="https://i.ytimg.com/vi/<?=noa_music_e($song['video'])?>/hqdefault.jpg" alt="" loading="lazy"><?php else:?><span class="cover">NOA</span><?php endif;?><div class="info"><strong><?=noa_music_e(($song['ep']?'EP.'.$song['ep'].' · ':'').$song['title'])?></strong><small><?=noa_music_e(str_replace('-',' ',strtoupper($song['genre'])))?></small><?php if($admin):?><span class="badge"><?=$song['confirmed']?'확정':'작업 중'?><?=$song['video']?'':' · 영상 링크 없음'?></span><?php endif;?></div></button><?php endforeach;?></div>
+<div class="grid" id="songs"><?php foreach($songs as $song):?><button class="song" type="button" data-title="<?=noa_music_e($song['title'])?>" data-genre="<?=noa_music_e($song['genre'])?>" data-video="<?=noa_music_e($song['video'])?>" <?=$song['video']===''?'disabled':''?>><?php if($song['video']):?><img src="https://i.ytimg.com/vi/<?=noa_music_e($song['video'])?>/hqdefault.jpg" alt="" loading="lazy" onerror="this.onerror=null;this.src='/noa-bridge/noa-face.jpg';"><?php else:?><span class="cover">NOA</span><?php endif;?><div class="info"><strong><?=noa_music_e(($song['ep']?'EP.'.$song['ep'].' · ':'').$song['title'])?></strong><small><?=noa_music_e(str_replace('-',' ',strtoupper($song['genre'])))?></small><?php if($admin):?><span class="badge"><?=$song['confirmed']?'확정':'작업 중'?><?=$song['video']?'':' · 영상 링크 없음'?></span><?php endif;?></div></button><?php endforeach;?></div>
 <p class="muted">저장소 원본 스냅샷 기준입니다. 최신 제작·생성 작업은 기존 음악 스튜디오에서 이어갈 수 있습니다.</p>
 <script>
 const buttons=[...document.querySelectorAll('.song')],search=document.getElementById('search'),genre=document.getElementById('genre');
