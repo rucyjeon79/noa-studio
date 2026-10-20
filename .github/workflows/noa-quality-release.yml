@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Hold spacing and OST title variations for review instead of duplicating existing songs.
+# Hold title variations; accept only the deployed source hash after queued-run replacement.
 on:
   push:
     branches: [main]
