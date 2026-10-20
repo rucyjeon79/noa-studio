@@ -36,9 +36,9 @@ public class MainActivity extends Activity {
  private final ExecutorService executor=Executors.newSingleThreadExecutor();
  private final Handler handler=new Handler(Looper.getMainLooper());
  private final List<JSONObject> songs=new ArrayList<>();
- private LinearLayout root,list;private EditText search;private Spinner genres;private TextView status,now;
+ private LinearLayout root,list,nativeControls;private SeekBar seek;private boolean seeking=false;private EditText search;private Spinner genres;private TextView status,now;
  private WebView browser;private MediaController controller;private ListenableFuture<MediaController> controllerFuture;
- private final Runnable tick=new Runnable(){public void run(){if(controller!=null&&now!=null){MediaItem item=controller.getCurrentMediaItem();now.setText(item==null?"NOA STUDIO":String.valueOf(item.mediaMetadata.title));}handler.postDelayed(this,1000);}};
+ private final Runnable tick=new Runnable(){public void run(){if(controller!=null&&now!=null){MediaItem item=controller.getCurrentMediaItem();now.setText(item==null?"NOA STUDIO":String.valueOf(item.mediaMetadata.title));if(seek!=null&&!seeking&&controller.getDuration()>0)seek.setProgress((int)(1000*controller.getCurrentPosition()/controller.getDuration()));}handler.postDelayed(this,1000);}};
  @Override public void onCreate(Bundle saved){super.onCreate(saved);getWindow().setStatusBarColor(BLACK);getWindow().setNavigationBarColor(BLACK);getWindow().getDecorView().setOnApplyWindowInsetsListener((v,i)->{findViewById(android.R.id.content).setPadding(i.getSystemWindowInsetLeft(),i.getSystemWindowInsetTop(),i.getSystemWindowInsetRight(),i.getSystemWindowInsetBottom());return i;});showLibrary();connectPlayer();handler.post(tick);}
  private TextView text(String value,int size){TextView v=new TextView(this);v.setText(value);v.setTextSize(size);v.setTextColor(GOLD);v.setPadding(18,14,18,14);return v;}
  private Button button(String value,Runnable action){Button b=new Button(this);b.setText(value);b.setTextColor(GOLD);b.setAllCaps(false);b.setOnClickListener(v->action.run());return b;}
@@ -56,13 +56,13 @@ public class MainActivity extends Activity {
   ArrayAdapter<String> adapter=new ArrayAdapter<>(this,android.R.layout.simple_spinner_item,labels);adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);genres.setAdapter(adapter);root.addView(genres);
   status=text("음악 목록을 불러오는 중입니다.",14);root.addView(status);
   ScrollView scroll=new ScrollView(this);list=new LinearLayout(this);list.setOrientation(LinearLayout.VERTICAL);scroll.addView(list);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-  now=text("NOA STUDIO",14);root.addView(now);
+  nativeControls=new LinearLayout(this);nativeControls.setOrientation(LinearLayout.VERTICAL);nativeControls.setVisibility(View.GONE);root.addView(nativeControls);now=text("NOA STUDIO",14);nativeControls.addView(now);seek=new SeekBar(this);seek.setMax(1000);nativeControls.addView(seek);seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int p,boolean user){}public void onStartTrackingTouch(SeekBar s){seeking=true;}public void onStopTrackingTouch(SeekBar s){if(controller!=null&&controller.getDuration()>0)controller.seekTo(controller.getDuration()*s.getProgress()/1000);seeking=false;}});
   LinearLayout controls=new LinearLayout(this);
   controls.addView(button("이전",()->{if(controller!=null)controller.seekToPreviousMediaItem();}));
   controls.addView(button("재생/일시정지",()->{if(controller!=null){if(controller.isPlaying())controller.pause();else controller.play();}}));
-  controls.addView(button("다음",()->{if(controller!=null)controller.seekToNextMediaItem();}));root.addView(controls);
+  controls.addView(button("다음",()->{if(controller!=null)controller.seekToNextMediaItem();}));nativeControls.addView(controls);
   LinearLayout modes=new LinearLayout(this);modes.addView(button("반복",()->{if(controller!=null)controller.setRepeatMode(controller.getRepeatMode()==Player.REPEAT_MODE_OFF?Player.REPEAT_MODE_ONE:Player.REPEAT_MODE_OFF);}));
-  modes.addView(button("셔플",()->{if(controller!=null)controller.setShuffleModeEnabled(!controller.getShuffleModeEnabled());}));root.addView(modes);
+  modes.addView(button("셔플",()->{if(controller!=null)controller.setShuffleModeEnabled(!controller.getShuffleModeEnabled());}));nativeControls.addView(modes);
   search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){render();}public void afterTextChanged(Editable e){}});
   genres.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){public void onItemSelected(AdapterView<?> p,View v,int pos,long id){render();}public void onNothingSelected(AdapterView<?> p){}});
   render();loadCatalog();
@@ -80,7 +80,7 @@ public class MainActivity extends Activity {
   }catch(Exception e){android.util.Log.e("NoaApi","Catalog request failed",e);runOnUiThread(()->{if(browser==null)status.setText("목록을 불러오지 못했습니다. 인터넷 연결 후 새로고침해 주세요.");});}});
  }
  private void render(){
-  if(list==null||browser!=null)return;list.removeAllViews();String query=search.getText().toString().trim().toLowerCase(Locale.ROOT);String genre=genres.getSelectedItemPosition()==0?"":String.valueOf(genres.getSelectedItem());int count=0;
+  if(list==null||browser!=null)return;boolean hasAudio=false;for(JSONObject record:songs)if(ownAudio(record.optString("audioUrl")))hasAudio=true;if(nativeControls!=null)nativeControls.setVisibility(hasAudio?View.VISIBLE:View.GONE);list.removeAllViews();String query=search.getText().toString().trim().toLowerCase(Locale.ROOT);String genre=genres.getSelectedItemPosition()==0?"":String.valueOf(genres.getSelectedItem());int count=0;
   for(JSONObject song:songs){String title=song.optString("title");String ep=song.optString("ep");if(!genre.isEmpty()&&!genre.equals(song.optString("genre")))continue;if(!(title+" EP."+ep).toLowerCase(Locale.ROOT).contains(query))continue;
    count++;Button card=button((ep.isEmpty()?"":"EP."+ep+" · ")+title+"\n"+song.optString("genre"),()->showSong(song));card.setGravity(android.view.Gravity.START);list.addView(card,new LinearLayout.LayoutParams(-1,-2));}
   status.setText(count+"개 문서 · 웹과 동일한 음악 데이터");
@@ -91,7 +91,7 @@ public class MainActivity extends Activity {
   String cast=song.optString("cast");detail.addView(text(cast.equals("duet")?"노아 & 노엘":cast.equals("male")?"노엘":cast.equals("female")?"노아":"",14));
   if(ownAudio(song.optString("audioUrl")))detail.addView(button("음원 재생",()->playAudio(song)));
   if(!song.optString("youtubeId").isEmpty())detail.addView(button("NOA STUDIO 플레이어",()->openPage(BASE+"/noa-music.php?track="+Uri.encode(song.optString("key")))));
-  ScrollView scroll=new ScrollView(this);TextView lyrics=text(song.optString("lyrics","등록된 가사가 없습니다."),16);lyrics.setTextColor(Color.WHITE);lyrics.setTextIsSelectable(true);scroll.addView(lyrics);detail.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));setContentView(detail);
+  ScrollView scroll=new ScrollView(this);TextView lyrics=text(song.optString("kind").equals("playlist")?song.optString("tracklist"):song.optString("lyrics","등록된 가사가 없습니다."),16);lyrics.setTextColor(Color.WHITE);lyrics.setTextIsSelectable(true);scroll.addView(lyrics);detail.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));setContentView(detail);
  }
  private boolean ownAudio(String value){Uri uri=Uri.parse(value);return "https".equals(uri.getScheme())&&"noastudio.ai.kr".equals(uri.getHost())&&uri.getPath()!=null&&uri.getPath().startsWith("/data/noa-audio/")&&!uri.getPath().contains("..");}
  private void playAudio(JSONObject selected){
@@ -108,7 +108,7 @@ public class MainActivity extends Activity {
   frame.addView(browser,new LinearLayout.LayoutParams(-1,0,1));setContentView(frame);browser.loadUrl(url);
  }
  @Override public void onBackPressed(){if(browser!=null&&browser.canGoBack())browser.goBack();else showLibrary();}
- @Override protected void onPause(){if(browser!=null)browser.onPause();CookieManager.getInstance().flush();super.onPause();}
+ @Override protected void onPause(){if(browser!=null){browser.evaluateJavascript("window.dispatchEvent(new Event('noa-background'));",null);browser.onPause();}CookieManager.getInstance().flush();super.onPause();}
  @Override protected void onResume(){super.onResume();if(browser!=null)browser.onResume();}
  @Override protected void onDestroy(){handler.removeCallbacks(tick);if(browser!=null)browser.destroy();if(controllerFuture!=null)MediaController.releaseFuture(controllerFuture);executor.shutdownNow();super.onDestroy();}
 }

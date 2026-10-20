@@ -23,7 +23,7 @@ jobs:
           gradle-version: '8.11.1'
       - name: Compile installable APK and lint
         working-directory: android
-        run: gradle --no-daemon :app:assembleDebug :app:lintDebug
+        run: gradle --no-daemon :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug
       - name: Retain APK
         uses: actions/upload-artifact@v4
         with:
@@ -52,8 +52,12 @@ jobs:
             adb pull /sdcard/noa-ui.xml android/noa-ui.xml
             adb shell screencap -p /sdcard/noa-android.png
             adb pull /sdcard/noa-android.png android/noa-android.png
+            adb install android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+            adb shell am instrument -w kr.ai.noastudio.test/androidx.test.runner.AndroidJUnitRunner > android/noa-instrumentation.txt
+            cat android/noa-instrumentation.txt
+            adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-detail.png android/noa-android-detail.png
             adb logcat -d -s AndroidRuntime:E NoaApi:E > android/noa-runtime-errors.txt
-            python3 -c "from pathlib import Path; s=Path('android/noa-ui.xml').read_text(); assert 'NOA STUDIO' in s; assert __import__('re').search(r'[1-9][0-9]*개 문서',s), 'Production music catalog did not load'; assert 'FATAL EXCEPTION' not in Path('android/noa-runtime-errors.txt').read_text()"
+            python3 -c "from pathlib import Path; s=Path('android/noa-ui.xml').read_text(); assert 'OK (1 test)' in Path('android/noa-instrumentation.txt').read_text(); assert 'NOA STUDIO' in s; assert __import__('re').search(r'[1-9][0-9]*개 문서',s), 'Production music catalog did not load'; assert 'FATAL EXCEPTION' not in Path('android/noa-runtime-errors.txt').read_text()"
       - name: Retain device verification
         if: always()
         uses: actions/upload-artifact@v4
@@ -62,6 +66,31 @@ jobs:
           path: |
             android/noa-ui.xml
             android/noa-android.png
+            android/noa-android-detail.png
+            android/noa-instrumentation.txt
             android/noa-runtime-errors.txt
             android/app/build/reports/lint-results-debug.html
           retention-days: 14
+
+  publish:
+    needs: apk
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: NOA-STUDIO-Android-APK
+          path: artifact
+      - name: Publish tested APK with pinned SFTP
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ vars.NOA_SSH_HOST_FINGERPRINT || 'SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU' }}
+          NOA_SSH_ROOT: ${{ vars.NOA_FTP_ROOT }}
+        run: |
+          python3 -m pip install --user 'paramiko==3.5.1'
+          python3 scripts/noa_apk_deploy.py

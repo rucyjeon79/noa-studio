@@ -25,6 +25,7 @@ FILES = {
     'bridge/catalog.php': 'noa-bridge/catalog.php',
     'bridge/check-media.php': 'noa-bridge/check-media.php',
     'deploy/noa-editor.php': 'noa-editor.php',
+    'deploy/noa-download.php': 'noa-download.php',
     'bridge/media-status.php': 'noa-bridge/media-status.php',
     'deploy/noa-manifest.json': 'noa-manifest.json',
     'deploy/noa-sw.js': 'noa-sw.js',
@@ -38,11 +39,11 @@ for character_file in ['cast-pair.jpg','noa-face.jpg','noa-face.png','noa-sheet.
 
 UPGRADE_FROM = {
     'noa-bridge/media-status.php': 'bbc22ad2bf4118c372470d17eea462002908913401ade88078327afdd65b52b2',
-    'noa-bridge/catalog.php': 'b98f8fdc97fa53adb52d94b7b34e7cad3c7dea629f623ca2cfa721d52dabf3ae',
+    'noa-bridge/catalog.php': '9afa60c7efa78f0f84f77033a978f4abfdbbf0fc764ce32ed2f2123703b83061',
     'noa-bridge/source-import.php': 'a36477eadb38d85884e85b6f88a7eccabeb18809885d8baf5bf95f7688c26098',
     'noa-bridge/source-cli.php': '46bca66a3f0267a03d3c6aa5705a18b405e05c06b18d1bcca9ebab12507c365e',
-    'noa-music.php': 'a0d9acf8cf7b662080cdc1addc5c852004ff80beea8388e826c790ad27191710',
-    'noa2.php': '6516bb99bf0e25cab7cdf940b61c1850137b2780c7fc24bbeebd52d21588175a',
+    'noa-music.php': 'cca14a6e1484453c15fc8b525da236cb9772460946820025d9f12ca4e9fcbd52',
+    'noa2.php': 'a8795582f9c5bee6b46c4b8ef87d63b5cb33f608f7cd9a718a80c1cdd5ab760f',
     'noa-bridge/setup.php': 'b449b35c4704d8230c1cdc9252b6f8962186d9cadc7c8aee2a0bf13b5ed091f7',
     'noa-library.php': '25cf6ec71542615949a833fddb171f91e9007f0d223771c62d854d204ba34f66',
     'noa-bridge/index.php': '22eaf129ab9581e179521ae3c898b3c6d9e7652a4acb7b9b6c35d78693967c36',

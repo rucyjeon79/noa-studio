@@ -1,5 +1,5 @@
 name: NOA Dothome Deployment
-# Deploy reviewed administrator library version and verify editing permissions
+# Provide source-ordered ACT playback and verified Android download
 
 on:
   push:
@@ -98,6 +98,7 @@ jobs:
           php -l bridge/catalog.php
           php -l bridge/check-media.php
           php -l deploy/noa-editor.php
+          php -l deploy/noa-download.php
           php -l bridge/source-archive.php
           php -l bridge/source-import.php
           php -l bridge/source-cli.php
