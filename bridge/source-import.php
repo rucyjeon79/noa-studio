@@ -44,3 +44,24 @@ function noa_import_source(PDO $db): array {
     } catch(Throwable $e) {if($db->inTransaction())$db->rollBack();throw $e;}
     return ['source_files'=>731,'added'=>$created,'unchanged'=>$same,'verified'=>$verified,'conflicts'=>$conflicts];
 }
+
+function noa_source_status(PDO $db): array {
+    $source=require __DIR__.'/source-archive.php';$expected=[];
+    foreach($source['files'] as $f)$expected[hash('sha256',$f['path'])]=$f['sha256'];
+    $query=$db->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=?');
+    $query->execute(['noa_source_files']);$verified=0;$saved=0;
+    if((int)$query->fetchColumn()>0){
+        foreach($db->query('SELECT path_hash,sha256,source_bytes FROM noa_source_files') as $r){
+            $saved++;
+            if(isset($expected[$r['path_hash']])&&$r['sha256']===$expected[$r['path_hash']]&&hash('sha256',$r['source_bytes'])===$r['sha256'])$verified++;
+        }
+    }
+    $seed=require __DIR__.'/seed.php';$actual=[];
+    foreach($db->query('SELECT doc_key,payload FROM noa_documents') as $r)$actual[$r['doc_key']]=json_decode($r['payload'],true);
+    $matching=0;$missing=0;$different=0;
+    foreach($seed['items'] as $item){
+        if(!isset($actual[$item['key']]))$missing++;
+        elseif($actual[$item['key']]===$item['payload'])$matching++;else $different++;
+    }
+    return ['expected'=>count($expected),'saved'=>$saved,'verified'=>$verified,'matching'=>$matching,'missing'=>$missing,'different'=>$different];
+}
