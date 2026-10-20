@@ -1,0 +1,61 @@
+name: NOA recovery verification and player repair
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-recovery.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: noa-dothome-production
+  cancel-in-progress: false
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate delayed player readiness and PHP syntax
+        run: |
+          node --test scripts/noa_player_regression.test.mjs
+          node --check scripts/noa_playback_verify.mjs
+          php -l deploy/noa-music.php
+          python3 -m py_compile scripts/noa_recovery_audit.py
+      - name: Repair only the verified existing NOA music page
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ vars.NOA_SSH_HOST_FINGERPRINT || 'SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU' }}
+          NOA_SSH_ROOT: ${{ vars.NOA_FTP_ROOT }}
+        run: |
+          python3 -m pip install --user 'paramiko==3.5.1'
+          PYTHONPATH=scripts python3 - <<'PY'
+          import noa_sftp_deploy as deployment
+          deployment.FILES={'deploy/noa-music.php':'noa-music.php'}
+          deployment.UPGRADE_FROM['noa-music.php']='cb51edb26451294079720f8ac7b216496cf60306b8a557bdf5658a37a95ff63d'
+          deployment.main()
+          PY
+          python3 scripts/noa_recovery_audit.py
+      - name: Verify public library and protected administrative access
+        run: |
+          python3 - <<'PY'
+          import json,urllib.request,urllib.error
+          base='https://noastudio.ai.kr'
+          for path,expected in [('/',200),('/noa-music.php',200),('/noa-settings.php',200),('/bbs/login.php',200),('/noa-library.php',403),('/noa-editor.php',403),('/noa-bridge/index.php?health=1',403),('/noa-bridge/user-playlists.php',401)]:
+              try: response=urllib.request.urlopen(base+path,timeout=30)
+              except urllib.error.HTTPError as error: response=error
+              body=response.read().decode('utf8',errors='replace')
+              assert response.status==expected,(path,response.status)
+              if path=='/noa-music.php':
+                  assert 'function requestPlayback()' in body
+                  assert body.count('class="song"')>0
+                  print('Public music documents:',body.count('class="song"'))
+              print(path,response.status)
+          with urllib.request.urlopen(base+'/noa-bridge/catalog.php',timeout=30) as response:
+              catalog=json.load(response)
+          assert catalog['access']=='public'
+          print('Public catalog:',len(catalog['items']))
+          PY
