@@ -1,5 +1,5 @@
 name: NOA music SQL catalog validation and release
-# Preserve physical source paths and separate playlist labels from canonical song titles.
+# Verify song and playlist record labels; keep the applied catalog batch unchanged.
 on:
   push:
     branches: [main]

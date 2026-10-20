@@ -27,3 +27,29 @@ Preparation reads and verifies all source checksums and writes a private review 
 Public `/noa-catalog.php` displays only records already verified public by the existing production catalog, and the signed-in user's private playlists. Super-administrators see all retained songs and pending fields. `/noa-catalog-admin.php` provides extraction, counts, registration and conflict evidence. Existing music playback remains available independently.
 
 CI validates actual MySQL 8 import and repeatability, member/document preservation, conflicting lyrics, partial records, genre/language separation, all 601 known songs and all 520 ordered ACT memberships. Authenticated production execution and resulting counts are recorded after deployment, never inferred from unit fixtures.
+
+## Actual production execution
+
+Authenticated extraction and MySQL registration completed on Oct 20 at 16:56:58 KST. Real production sources: 3,466 occurrences, 1,387 unique byte contents, zero unidentified sources. Known original songs601 → normalized songs601; repeated song source occurrences merged2,604; incomplete songs199; conflict-review songs7 (13 conflict fields across songs/playlists). ACT52 and private user playlist1 give playlists53, each with10 verified ordered members (530 total).
+
+A second application of the exact same snapshot returned “already registered; no duplicates.” The original production audit after registration still verifies all731 archived source files and matches all653 existing music documents, with no missing/different values. Existing `g5_*` schema is not altered by the catalog code.
+
+The normalized catalog UI actually loaded654 administrator-visible entities (601 songs +53 lists). K-POP ACT.4 displayed all ten songs in original order; opening Afterglow displayed its original lyrics, Suno and YouTube links. Public visibility is limited to existing verified public records; personal playlists remain scoped to their original owner.
+
+| Genre | ACT.1 | ACT.2 | ACT.3 | ACT.4 |
+|---|---:|---:|---:|---:|
+| Dreamy Deep House |10|10|10|10|
+| Echoes of Joseon |10|10|10|10|
+| EDM K-POP Club |10|10|10|10|
+| Fantasy Ambient EDM |10|10|10|10|
+| Groovy Airy Pop |10|10|10|10|
+| Joseon Ballad |10|10|10|10|
+| J-POP Original |10|10|10|10|
+| K-POP Original |10|10|10|10|
+| Latin Afrobeats EDM |10|10|10|10|
+| Narrative Piano Indie |10|10|10|10|
+| Panpop |10|10|10|10|
+| POP Original |10|10|10|10|
+| Thai Original |10|10|10|10|
+
+The additional existing private playlist also has10 retained references, resolved through original document keys. Intact Grok SQL export remains a separate unresolved collection requirement; the failed snapshots are not counted as successfully imported.
