@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Use the existing owner-verified official thumbnail cache and verify a real player click.
+# Prevent source-only reimports from hiding published recovered songs and collections.
 on:
   push:
     branches: [main]

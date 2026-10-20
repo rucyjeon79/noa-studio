@@ -79,6 +79,9 @@ function nr_plan(PDO $db):array{
 function nr_save(array $p):void{$file=lab_root().'/recovery-'.$p['id'].'.json';$tmp=tempnam(lab_root(),'.recovery-');chmod($tmp,0600);file_put_contents($tmp,nc_json($p),LOCK_EX);rename($tmp,$file);}
 function nr_load(string $id):array{if(!preg_match('/^[a-f0-9]{64}$/D',$id))throw new InvalidArgumentException('invalid_plan');$p=json_decode((string)file_get_contents(lab_root().'/recovery-'.$id.'.json'),true,512,JSON_THROW_ON_ERROR);$copy=$p;unset($copy['id']);if(nc_hash($copy)!==$id)throw new DomainException('plan_changed');return $p;}
 function nr_apply(PDO $db,array $p,string $actor):array{
+ return nc_publication($db,fn()=>nr_apply_locked($db,$p,$actor));
+}
+function nr_apply_locked(PDO $db,array $p,string $actor):array{
  $id=$p['id'];if(!$p['new']&&!$p['patch'])return ['replayed'=>true,'report'=>$p['counts']+['registeredAfter'=>$p['counts']['registeredBefore'],'noChangesRequired'=>true]];$q=$db->prepare('SELECT report FROM noa_catalog_batches WHERE batch_id=? AND status=?');$q->execute([$id,'applied']);if($r=$q->fetchColumn())return ['replayed'=>true,'report'=>json_decode($r,true)];
  if(ny_batch($db)!==$p['base']||ny_latest($db)['run_id']!==$p['run']||nc_guard($db)!==$p['sourceGuard'])throw new DomainException('source_changed_reanalyse');
  $db->beginTransaction();try{

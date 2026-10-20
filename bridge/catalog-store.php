@@ -26,10 +26,28 @@ function nc_schema(PDO $db):void{
 function nc_insert(PDO $db,string $table,array $row,array $keys):void{
  if(!str_starts_with($table,'noa_catalog_'))throw new RuntimeException('write_scope');$columns=array_keys($row);$q=$db->prepare('INSERT IGNORE INTO '.$table.' ('.implode(',',$columns).') VALUES ('.implode(',',array_fill(0,count($row),'?')).')');$q->execute(array_values($row));if($q->rowCount()===0){$where=[];$values=[];foreach($keys as $key){$where[]=$key.'=?';$values[]=$row[$key];}$q=$db->prepare('SELECT '.implode(',',$columns).' FROM '.$table.' WHERE '.implode(' AND ',$where));$q->execute($values);$saved=$q->fetch(PDO::FETCH_ASSOC);foreach($row as $key=>$value)if(!array_key_exists($key,$saved?:[])||($saved[$key]===null?null:(string)$saved[$key])!==($value===null?null:(string)$value))throw new RuntimeException('existing_catalog_record_differs');}
 }
+// Every application writer shares this lock; a recovery published between chunks
+// is checked again before an older import may become the latest edition.
+function nc_publication(PDO $db,callable $work):array{
+ $q=$db->query("SELECT GET_LOCK('noa_catalog_publication',10)");
+ if((int)$q->fetchColumn()!==1)throw new DomainException('catalog_publication_busy_retry');
+ try{return $work();}finally{$db->query("SELECT RELEASE_LOCK('noa_catalog_publication')");}
+}
+function nc_assert_retains_published(PDO $db,array $p):void{
+ $latest=$db->query("SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1")->fetchColumn();
+ if(!$latest)return;
+ $ids=[];foreach($p['entities'] as $e)$ids[$e['id']]=true;
+ $q=$db->prepare('SELECT entity_id FROM noa_catalog_versions WHERE batch_id=?');$q->execute([$latest]);
+ foreach($q as $row)if(!isset($ids[$row['entity_id']]))throw new DomainException('published_catalog_would_lose_records');
+}
 function nc_apply(PDO $db,array $p,string $stage,int $offset,string $actor):array{
+ return nc_publication($db,fn()=>nc_apply_locked($db,$p,$stage,$offset,$actor));
+}
+function nc_apply_locked(PDO $db,array $p,string $stage,int $offset,string $actor):array{
  $id=$p['digest'];$size=100;
  if($stage==='start'){
   if(nc_guard($db)!==$p['sourceGuard'])throw new DomainException('source_changed_reextract_required');nc_schema($db);$q=$db->prepare('SELECT status,source_guard FROM noa_catalog_batches WHERE batch_id=?');$q->execute([$id]);$old=$q->fetch(PDO::FETCH_ASSOC);if($old&&$old['status']==='applied')return ['done'=>true,'replayed'=>true,'batch'=>$id];
+  nc_assert_retains_published($db,$p);
   nc_insert($db,'noa_catalog_batches',['batch_id'=>$id,'status'=>'staging','report'=>nc_json($p['report']),'source_guard'=>$p['sourceGuard'],'created_by'=>$actor],['batch_id']);return ['stage'=>'sources','offset'=>0];
  }
  $db->beginTransaction();try{
@@ -38,6 +56,7 @@ function nc_apply(PDO $db,array $p,string $stage,int $offset,string $actor):arra
  }elseif($stage==='tracks'){$items=$p['relations'];foreach(array_slice($items,$offset,$size) as $r)nc_insert($db,'noa_catalog_tracks',['batch_id'=>$id,'playlist_id'=>$r['playlist'],'variant_id'=>$r['variant'],'position'=>$r['position'],'song_id'=>$r['song'],'raw_json'=>nc_json($r['raw']),'status'=>$r['status']],['batch_id','playlist_id','variant_id','position']);$next='conflicts';
  }elseif($stage==='conflicts'){$items=$p['conflicts'];foreach(array_slice($items,$offset,$size) as $c)nc_insert($db,'noa_catalog_conflicts',['batch_id'=>$id,'conflict_id'=>$c['id'],'entity_id'=>$c['entity'],'field_name'=>$c['field'],'alternatives'=>nc_json($c['alternatives'])],['batch_id','conflict_id']);$next='verify';
  }elseif($stage==='verify'){
+  nc_assert_retains_published($db,$p);
   if(nc_guard($db)!==$p['sourceGuard'])throw new DomainException('source_changed_reextract_required');$checks=['sources'=>['SELECT COUNT(*) FROM noa_catalog_batch_sources WHERE batch_id=?',count($p['sources'])],'songs'=>["SELECT COUNT(*) FROM noa_catalog_versions WHERE batch_id=? AND entity_type='song'",$p['report']['songs']],'playlists'=>["SELECT COUNT(*) FROM noa_catalog_versions WHERE batch_id=? AND entity_type='playlist'",$p['report']['playlists']],'tracks'=>['SELECT COUNT(*) FROM noa_catalog_tracks WHERE batch_id=?',count($p['relations'])],'conflicts'=>['SELECT COUNT(*) FROM noa_catalog_conflicts WHERE batch_id=?',count($p['conflicts'])]];foreach($checks as $name=>[$sql,$expected]){$q=$db->prepare($sql);$q->execute([$id]);if((int)$q->fetchColumn()!==$expected)throw new RuntimeException('verification_count_'.$name);}
   $q=$db->prepare('SELECT s.source_id,s.sha256,SHA2(s.raw_bytes,256) AS actual FROM noa_catalog_sources s JOIN noa_catalog_batch_sources b ON s.source_id=b.source_id WHERE b.batch_id=?');$q->execute([$id]);foreach($q as $s)if($s['sha256']!==$s['actual'])throw new RuntimeException('database_source_hash_mismatch');
   $q=$db->prepare('SELECT entity_id,fields_json,fields_sha FROM noa_catalog_versions WHERE batch_id=?');$q->execute([$id]);foreach($q as $e)if(nc_hash(json_decode($e['fields_json'],true,512,JSON_THROW_ON_ERROR))!==$e['fields_sha'])throw new RuntimeException('database_fields_hash_mismatch');
