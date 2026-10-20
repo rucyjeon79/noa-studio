@@ -1,10 +1,15 @@
 name: NOA STUDIO Android
-# Parse verified signing certificates across SDK versions; preserve the existing production APK.
+# Verify original adaptive launcher identity; retain the production APK signing guard.
 on:
   push:
     branches: [main]
     paths: ['.github/workflows/noa-android.yml']
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish only with the existing production signing identity
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -50,6 +55,9 @@ jobs:
             adb install android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
             adb shell am instrument -w kr.ai.noastudio.test/androidx.test.runner.AndroidJUnitRunner > android/noa-instrumentation.txt
             cat android/noa-instrumentation.txt
+            adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-brand-proof.json android/noa-brand-proof.json
+            adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-launcher-icon.png android/noa-launcher-icon.png
+            cat android/noa-brand-proof.json
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-ui.xml android/noa-ui.xml || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android.png android/noa-android.png || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-detail.png android/noa-android-detail.png || true
@@ -65,6 +73,8 @@ jobs:
         with:
           name: NOA-STUDIO-Android-verification
           path: |
+            android/noa-brand-proof.json
+            android/noa-launcher-icon.png
             android/noa-ui.xml
             android/noa-android.png
             android/noa-android-detail.png
@@ -77,6 +87,7 @@ jobs:
           retention-days: 14
 
   publish:
+    if: github.event_name == 'workflow_dispatch' && inputs.publish
     needs: apk
     concurrency:
       group: noa-dothome-production

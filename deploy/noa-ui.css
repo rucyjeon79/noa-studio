@@ -40,3 +40,7 @@ html[data-noa-theme="noa-ivory"]{color-scheme:light}html[data-radius="sharp"]{--
 .noa-hero-art picture{display:block;width:100%;height:100%}.noa-hero-art picture img{position:static;display:block;width:100%;height:100%;max-height:none;object-fit:contain;transform:none}
 @media(max-width:760px){.noa-hero-art picture img{height:auto;aspect-ratio:1008/1792}.noa-hero-art{background:#090a0e}}
 @media(max-width:760px) and (orientation:landscape){.noa-hero-art picture img{aspect-ratio:16/9}}
+
+/* The original approved symbol is shared by headers and install surfaces. */
+.noa-logo{display:inline-flex;align-items:center;gap:12px;min-width:0}.noa-brand-mark{display:block;width:44px;height:44px;flex:none;object-fit:contain;border-radius:50%}.noa-brand-copy{min-width:0}.noa-sidebar>.noa-logo{flex-direction:column;align-items:flex-start;gap:10px}.noa-sidebar .noa-brand-mark{width:56px;height:56px}
+#my-recent a,#my-recent-youtube a{display:inline-block;min-height:44px;padding:8px 0;overflow-wrap:anywhere;text-decoration:none}#my-recent a:hover,#my-recent-youtube a:hover{text-decoration:underline}

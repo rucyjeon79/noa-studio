@@ -12,6 +12,16 @@ public class CatalogTest {
  @Test public void productionSearchAndLyrics() throws Exception {
   UiDevice device=UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
   android.content.Context context=InstrumentationRegistry.getInstrumentation().getTargetContext();
+  java.security.MessageDigest digest=java.security.MessageDigest.getInstance("SHA-256");
+  try(java.io.InputStream input=context.getResources().openRawResource(R.drawable.noa_symbol)){byte[] block=new byte[4096];int n;while((n=input.read(block))!=-1)digest.update(block,0,n);}
+  StringBuilder sha=new StringBuilder();for(byte b:digest.digest())sha.append(String.format(java.util.Locale.ROOT,"%02x",b&255));
+  assertEquals("Original icon bytes changed", "7a6b94a09ba10b951f15b6779c7d30c74e1ee44bdd5e2a9df7e6a676dd9f02cb",sha.toString());
+  android.graphics.drawable.Drawable icon=context.getPackageManager().getApplicationIcon(context.getPackageName());
+  assertTrue("Launcher must use the original adaptive icon",icon instanceof android.graphics.drawable.AdaptiveIconDrawable);
+  android.graphics.Bitmap iconBitmap=android.graphics.Bitmap.createBitmap(256,256,android.graphics.Bitmap.Config.ARGB_8888);
+  icon.setBounds(0,0,256,256);icon.draw(new android.graphics.Canvas(iconBitmap));
+  try(java.io.FileOutputStream out=new java.io.FileOutputStream(new java.io.File(context.getExternalFilesDir(null),"noa-launcher-icon.png"))){assertTrue(iconBitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,out));}
+  try(java.io.FileWriter out=new java.io.FileWriter(new java.io.File(context.getExternalFilesDir(null),"noa-brand-proof.json"))){out.write(new org.json.JSONObject().put("sourceSha256",sha.toString()).put("installedAdaptiveIcon",true).put("physicalDevice",false).toString());}
   context.startActivity(new Intent(context,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
   boolean loaded=device.wait(Until.hasObject(By.text(java.util.regex.Pattern.compile("[1-9][0-9]*곡.*ACT·목록"))),60000);
   if(loaded)assertTrue("Registered album artwork did not load",device.wait(Until.hasObject(By.desc("앨범 아트")),20000));

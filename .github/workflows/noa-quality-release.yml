@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Repair session history routing and verify actual playback versus video opening.
+# Restore original brand identity and rerun the previously timed-out 390px check.
 on:
   push:
     branches: [main]
@@ -19,7 +19,7 @@ jobs:
       - name: Check PHP, JavaScript and existing playback invariants
         run: |
           for f in bridge/youtube-*.php deploy/noa*.php deploy/theme/noa_studio/*.php deploy/theme/noa_studio/mobile/*.php; do php -l "$f"; done
-          for f in deploy/noa-history.js deploy/noa-ui.js deploy/noa-home.js deploy/noa-browse.js deploy/noa-youtube.js; do node --check "$f"; done
+          for f in deploy/noa-brand.js deploy/noa-history.js deploy/noa-ui.js deploy/noa-home.js deploy/noa-browse.js deploy/noa-youtube.js; do node --check "$f"; done
           node --test scripts/qa/*.test.mjs scripts/noa_player_regression.test.mjs
           php tests/youtube/core_test.php
           php -l bridge/sound-core.php
@@ -64,6 +64,7 @@ jobs:
         run: python3 scripts/noa_quality_deploy.py
   responsive:
     needs: release
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

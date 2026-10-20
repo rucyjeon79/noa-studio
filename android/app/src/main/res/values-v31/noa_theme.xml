@@ -1,0 +1,1 @@
+<resources><style name="NoaTheme" parent="android:style/Theme.Material.NoActionBar"><item name="android:windowBackground">@color/noa_launch_background</item><item name="android:windowSplashScreenBackground">@color/noa_launch_background</item><item name="android:windowSplashScreenAnimatedIcon">@drawable/noa_launch_foreground</item></style></resources>

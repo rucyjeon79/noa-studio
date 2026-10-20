@@ -4,7 +4,9 @@ android {
     namespace 'kr.ai.noastudio'
     compileSdk 35
     sourceSets.main.assets.srcDir layout.buildDirectory.dir("generated/noaDesignAssets")
+    sourceSets.main.res.srcDir layout.buildDirectory.dir("generated/noaBrandResources")
     defaultConfig { applicationId 'kr.ai.noastudio'; minSdk 26; targetSdk 35; versionCode noaBuildNumber; versionName '2.0.' + noaBuildNumber; testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner' }
+    buildTypes { debug { crunchPngs false }; release { crunchPngs false } }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }
 dependencies {
@@ -21,3 +23,9 @@ tasks.register('copyNoaDesign', Copy) {
     into layout.buildDirectory.dir('generated/noaDesignAssets')
 }
 tasks.named('preBuild').configure { dependsOn 'copyNoaDesign' }
+
+tasks.register('copyNoaSymbol', Copy) {
+    from(rootProject.file('../public/icon-512.png')) { rename { 'noa_symbol.png' } }
+    into layout.buildDirectory.dir('generated/noaBrandResources/drawable-nodpi')
+}
+tasks.named('preBuild').configure { dependsOn 'copyNoaSymbol' }

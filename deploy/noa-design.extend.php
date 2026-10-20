@@ -8,10 +8,11 @@ function noa_design_assets(){
  $config['cf_title']='NOA STUDIO';
  // The core admin uses light panels; consumer theme tokens must not leak into it.
  if(str_starts_with($path,'/adm/')){
+  add_javascript('<script src="/noa-brand.js?v=20261021-brand1" defer></script>',99);
   add_stylesheet('<link rel="stylesheet" href="/noa-admin.css?v=20261020-admin1">',99);
   return;
  }
- add_stylesheet('<link rel="stylesheet" href="/noa-ui.css?v=20261020-quality1">',99);
- add_javascript('<script src="/noa-ui.js?v=20261020-quality1" defer></script>',99);
+ add_stylesheet('<link rel="stylesheet" href="/noa-ui.css?v=20261021-brand1">',99);
+ add_javascript('<script src="/noa-brand.js?v=20261021-brand1" defer></script><script src="/noa-ui.js?v=20261021-brand1" defer></script>',99);
 }
 if(function_exists('add_event'))add_event('common_header','noa_design_assets',10,0);
