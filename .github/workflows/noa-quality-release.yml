@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Exercise mobile expanded controls through the visible More button.
+# Verify activated NOA theme and isolate light administrator panels from consumer themes.
 on:
   push:
     branches: [main]

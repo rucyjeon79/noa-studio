@@ -1,0 +1,10 @@
+/* Admin presentation only. Preserve core form, permission and navigation behavior. */
+body{background:#f4f5f7;color:#222;font-family:Arial,"Noto Sans KR",sans-serif}
+#container,#container_title{color:#222}
+#container_title{background:#fff}
+.tmli_tit,.tmli_tit p{color:#20242b!important;font-weight:700}
+.tmli_tit{background:#f0f2f5;border-top:1px solid #dce0e5}
+#theme_list .tmli_if{color:#303640}
+#hd_top{background:#25282e}
+#tnb a,#hd_top a{color:#fff}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #9c742e;outline-offset:3px}

@@ -6,6 +6,11 @@ function noa_design_assets(){
  $path=parse_url($_SERVER['REQUEST_URI']??'',PHP_URL_PATH);
  if(!is_string($path)||!preg_match('~^/(?:bbs|adm)/~',$path))return;
  $config['cf_title']='NOA STUDIO';
+ // The core admin uses light panels; consumer theme tokens must not leak into it.
+ if(str_starts_with($path,'/adm/')){
+  add_stylesheet('<link rel="stylesheet" href="/noa-admin.css?v=20261020-admin1">',99);
+  return;
+ }
  add_stylesheet('<link rel="stylesheet" href="/noa-ui.css?v=20261020-quality1">',99);
  add_javascript('<script src="/noa-ui.js?v=20261020-quality1" defer></script>',99);
 }
