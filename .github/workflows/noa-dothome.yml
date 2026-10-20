@@ -1,5 +1,5 @@
 name: NOA Dothome Deployment
-# Preserve original UI translations; isolate production visual verification dependencies
+# Correct original portrait framing, preserve artwork ratio and verify visible filtered music
 
 on:
   push:

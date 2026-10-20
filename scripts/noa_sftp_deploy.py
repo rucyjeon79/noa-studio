@@ -53,13 +53,15 @@ for theme_file in sorted(Path('deploy/theme/noa_studio').rglob('*')):
     if theme_file.is_file():FILES[str(theme_file)]='theme/noa_studio/'+str(theme_file.relative_to('deploy/theme/noa_studio'))
 
 UPGRADE_FROM = {
-    'noa-ui.js':'61b91313b6f2c544ce64d31a42ff85e9be2cf0f8bed3cf3d2c5f4bdcf0491196',
+    'noa-ui.css':'913f850315791f405920e675776b14ae3e52b107908bdfa08a24ec9c3a28d03a',
+    'extend/noa.design.php':'268077455ef07ec2e471d7d31eb846049e97819f3ee7cfb4ac556122d7ff9780',
+    'noa-ui.js':'55a9e184f2287272a5730243ca2e86fbc7a6d26f8febd6a88d5e6a4c566eb12d',
     'noa-bridge/media-status.php': 'bbc22ad2bf4118c372470d17eea462002908913401ade88078327afdd65b52b2',
     'noa-bridge/catalog.php': '9afa60c7efa78f0f84f77033a978f4abfdbbf0fc764ce32ed2f2123703b83061',
     'noa-bridge/source-import.php': 'a36477eadb38d85884e85b6f88a7eccabeb18809885d8baf5bf95f7688c26098',
     'noa-bridge/source-cli.php': '46bca66a3f0267a03d3c6aa5705a18b405e05c06b18d1bcca9ebab12507c365e',
-    'noa-music.php': 'b08362b0b59240b83f700efe451a3dbeee4017d72e714f00a38821e67f007d1b',
-    'noa2.php': 'd0602671103e12af34bc6d1c1fcd8c71335f1e1061188cd6c4c3833571520f46',
+    'noa-music.php': '8398475ffe080d977f6eaee0e870c83b96cf4f559706b912f03a0c93a2208574',
+    'noa2.php': 'd9876e42c9352eef3cdde3f0167fad22272025e5bba832d38f06b651b7a94671',
     'noa-bridge/setup.php': 'ffe48650823967d7ca824b3dea988267515ebfe519a77c01113b8c9b4e5f589f',
     'noa-library.php': '25cf6ec71542615949a833fddb171f91e9007f0d223771c62d854d204ba34f66',
     'noa-bridge/index.php': '22eaf129ab9581e179521ae3c898b3c6d9e7652a4acb7b9b6c35d78693967c36',

@@ -27,8 +27,9 @@ public class CatalogTest {
   assertTrue(device.wait(Until.hasObject(By.text(java.util.regex.Pattern.compile("[1-9][0-9]*개 문서.*"))),30000));
   UiObject2 search=device.findObject(By.clazz("android.widget.EditText"));
   assertNotNull(search);search.setText("하루");
-  UiObject2 first=device.wait(Until.findObject(By.textContains("EP.01 · 하루의 끝에")),5000);
-  assertNotNull(first);first.click();
+  device.waitForIdle();
+  UiObject first=new UiObject(new UiSelector().textContains("EP.01 · 하루의 끝에"));
+  assertTrue(first.waitForExists(5000));first.click();
   assertTrue(device.wait(Until.hasObject(By.text("NOA STUDIO 플레이어")),5000));
   assertTrue(device.hasObject(By.text("하루의 끝에")));
   // The production lyrics are selectable native text, not a placeholder.

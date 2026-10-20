@@ -73,7 +73,7 @@ const clock=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');set
 window.onYouTubeIframeAPIReady=createPlayer;window.addEventListener('noa-background',()=>{if(ready)player.pauseVideo()});
 buttons.forEach(b=>b.addEventListener('click',()=>select(b,true)));document.getElementById('previous').onclick=()=>move(-1);document.getElementById('next').onclick=()=>move(1);
 for(const id of ['repeat','shuffle'])document.getElementById(id).onclick=e=>{if(id==='repeat')repeat=!repeat;else shuffle=!shuffle;e.currentTarget.setAttribute('aria-pressed',String(id==='repeat'?repeat:shuffle))};
-let saved='';try{saved=sessionStorage.getItem('noa-last-song')||''}catch{}const first=buttons.find(b=>b.dataset.key===new URLSearchParams(location.search).get('track'))||buttons.find(b=>b.dataset.key===saved)||buttons.find(b=>b.dataset.video);if(first)select(first,false);
+let saved='';try{saved=sessionStorage.getItem('noa-last-song')||''}catch{}const first=buttons.find(b=>b.dataset.key===new URLSearchParams(location.search).get('track'))||buttons.find(b=>b.dataset.key===saved&&!b.hidden)||buttons.find(b=>b.dataset.video&&!b.hidden);if(first)select(first,false);
 const api=document.createElement('script');api.src='https://www.youtube.com/iframe_api';api.onerror=()=>{status.textContent='플레이어를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.'};document.head.append(api);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/noa-sw.js').catch(()=>{});
 let installPrompt;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;document.getElementById('install').hidden=false});document.getElementById('install').onclick=async()=>{if(installPrompt){await installPrompt.prompt();installPrompt=null;document.getElementById('install').hidden=true}};

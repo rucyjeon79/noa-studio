@@ -1,5 +1,5 @@
 name: NOA STUDIO Android
-# Verify both native palettes, wait for theme picker rendering, and retain failure evidence
+# Preserve loaded catalog during palette changes and verify stable native search interaction
 on:
   push:
     branches: [main]
