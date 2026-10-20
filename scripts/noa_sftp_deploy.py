@@ -23,6 +23,8 @@ FILES = {
     'bridge/source-cli.php': 'noa-bridge/source-cli.php',
     'bridge/source-audit.php': 'noa-bridge/source-audit.php',
     'bridge/catalog.php': 'noa-bridge/catalog.php',
+    'bridge/check-media.php': 'noa-bridge/check-media.php',
+    'deploy/noa-editor.php': 'noa-editor.php',
     'bridge/media-status.php': 'noa-bridge/media-status.php',
     'deploy/noa-manifest.json': 'noa-manifest.json',
     'deploy/noa-sw.js': 'noa-sw.js',
@@ -35,12 +37,13 @@ for character_file in ['cast-pair.jpg','noa-face.jpg','noa-face.png','noa-sheet.
     FILES['public/characters/'+character_file]='noa-bridge/characters/'+character_file
 
 UPGRADE_FROM = {
-    'noa-bridge/catalog.php': '437fc6503c3160e7b178bfa6cb3a79ac2bec89c567fd552f3a677eff51f31de7',
+    'noa-bridge/media-status.php': 'bbc22ad2bf4118c372470d17eea462002908913401ade88078327afdd65b52b2',
+    'noa-bridge/catalog.php': 'b98f8fdc97fa53adb52d94b7b34e7cad3c7dea629f623ca2cfa721d52dabf3ae',
     'noa-bridge/source-import.php': 'a36477eadb38d85884e85b6f88a7eccabeb18809885d8baf5bf95f7688c26098',
     'noa-bridge/source-cli.php': '46bca66a3f0267a03d3c6aa5705a18b405e05c06b18d1bcca9ebab12507c365e',
-    'noa-music.php': '50494d8aec10c06390548885844f889936e3c0261487982ba8b1664da31ab80e',
+    'noa-music.php': 'a0d9acf8cf7b662080cdc1addc5c852004ff80beea8388e826c790ad27191710',
     'noa2.php': '6516bb99bf0e25cab7cdf940b61c1850137b2780c7fc24bbeebd52d21588175a',
-    'noa-bridge/setup.php': '7f309c673320781965d19766dfff614a98e42cac52ae8add1093bf4cdef052e0',
+    'noa-bridge/setup.php': 'b449b35c4704d8230c1cdc9252b6f8962186d9cadc7c8aee2a0bf13b5ed091f7',
     'noa-library.php': 'c052ba7d1b40ea56e216c9a09925390b0b872bbe9b233ac95d01f54af4739d55',
     'noa-bridge/index.php': '22eaf129ab9581e179521ae3c898b3c6d9e7652a4acb7b9b6c35d78693967c36',
     'noa-bridge/library.php': '4dba2be3791a6462724aa2dec1c3fc8c58e56798d8a6791c00f6a6631a170741',

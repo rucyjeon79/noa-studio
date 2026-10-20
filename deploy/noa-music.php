@@ -23,7 +23,7 @@ try {
     while($r=$rows->fetch(PDO::FETCH_ASSOC)) {
         $p=json_decode($r['payload'],true);if(!is_array($p))continue;
         $b=$p['body']??[];$thumb=$b['thumbUrl']??'';if(!is_string($thumb)||!filter_var($thumb,FILTER_VALIDATE_URL)||parse_url($thumb,PHP_URL_SCHEME)!=='https')$thumb='';$video=noa_music_video($b['youtubeUrl']??'');
-        if(!$admin && (!$video || (empty($p['confirmed'])&&($availability['videos'][$video]['status']??'')!=='public')))continue;
+        if(!$admin && (!$video || ($availability['videos'][$video]['status']??'')!=='public' && !(($p['mediaAvailability']['youtubeId']??'')===$video && ($p['mediaAvailability']['status']??'')==='public')))continue;
         $title=(string)($b['confirmedTitle']??$p['title']??'');if(trim($title)==='')$title=(string)($p['title']??$r['doc_key']);
         $genre=(string)($p['genreId']??'other');$genres[$genre]=($genres[$genre]??0)+1;
         $songs[]=['key'=>$r['doc_key'],'title'=>$title,'genre'=>$genre,'video'=>$video,'confirmed'=>!empty($p['confirmed']),'ep'=>(string)($p['ep']??''),'act'=>(string)($p['act']??''),'kind'=>$r['kind'],'lyrics'=>(string)($b['lyricsBlock']??''),'cast'=>(string)($b['thumbCast']??''),'thumb'=>$thumb];

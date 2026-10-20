@@ -21,7 +21,7 @@ try{
    }
   }
   if(!preg_match('/^[A-Za-z0-9_-]{11}$/D',$id))$id='';
-  if(!$admin&&(!$id||(empty($p['confirmed'])&&($availability['videos'][$id]['status']??'')!=='public')))continue;
+  if(!$admin&&(!$id||($availability['videos'][$id]['status']??'')!=='public'&&!(($p['mediaAvailability']['youtubeId']??'')===$id&&($p['mediaAvailability']['status']??'')==='public')))continue;
   $audio=is_string($b['audioUrl']??null)?$b['audioUrl']:'';
   // Only explicit first-party audio files qualify for native playback.
   if(!preg_match('~^https://noastudio[.]ai[.]kr/data/noa-audio/[A-Za-z0-9_./-]+[.](mp3|m4a|ogg|wav)$~D',$audio))$audio='';

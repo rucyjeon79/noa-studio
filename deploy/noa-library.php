@@ -60,15 +60,15 @@ table{width:100%;border-collapse:collapse;background:#15161b;border-radius:12px;
 th{color:#d7ad62}.scroll{overflow-x:auto}.error{padding:16px;border:1px solid #785333;border-radius:8px;color:#efc69c}
 p{color:#aaa}.next{display:inline-block;margin-top:22px;padding:10px 20px;border:1px solid #d7ad62;border-radius:8px}
 </style></head><body><main>
-<a href="/noa2.php">← NOA STUDIO</a><h1>Music Library</h1><a href="/noa-bridge/setup.php">저장소 연결 상태 확인</a><p>관리자 전용 · NOA Bridge 저장소 조회 · 읽기 전용</p>
+<a href="/noa2.php">← NOA STUDIO</a><h1>Music Library</h1><a href="/noa-bridge/setup.php">저장소 연결 상태 확인</a><p>관리자 전용 · 변경 이력 및 충돌 방지 저장</p><a href="/noa-editor.php">새 음악 등록</a>
 <nav aria-label="콘텐츠 분류">
 <?php foreach (array_merge([''=>'전체'], array_combine($allowed, ['EP 싱글','ACT 플레이리스트','사연곡','메타','설정'])) as $value=>$label): ?>
 <a href="?<?=noa_escape(http_build_query(['kind'=>$value]))?>"><?=noa_escape($label)?></a>
 <?php endforeach; ?></nav>
 <?php if ($error !== null): ?><div class="error"><?=noa_escape($error)?></div>
-<?php elseif (!$items): ?><p>현재 조회 가능한 NOA Bridge 문서가 없습니다. 기존 Grok 음악이 자동 이전된 것은 아닙니다.</p>
+<?php elseif (!$items): ?><p>이 분류에는 등록된 문서가 없습니다.</p>
 <?php else: ?><div class="scroll"><table><thead><tr><th>문서 키</th><th>분류</th><th>버전</th><th>수정일</th></tr></thead><tbody>
-<?php foreach ($items as $item): ?><tr><td><?=noa_escape((string)$item['doc_key'])?></td><td><?=noa_escape((string)$item['kind'])?></td><td><?=noa_escape((string)$item['revision'])?></td><td><?=noa_escape((string)$item['updated_at'])?></td></tr><?php endforeach; ?>
+<?php foreach ($items as $item): ?><tr><td><a href="/noa-editor.php?key=<?=noa_escape(rawurlencode((string)$item['doc_key']))?>"><?=noa_escape((string)$item['doc_key'])?></a></td><td><?=noa_escape((string)$item['kind'])?></td><td><?=noa_escape((string)$item['revision'])?></td><td><?=noa_escape((string)$item['updated_at'])?></td></tr><?php endforeach; ?>
 </tbody></table></div>
 <?php if ($next !== null): ?><a class="next" href="?<?=noa_escape(http_build_query(['kind'=>$kind,'after'=>$next]))?>">다음 50개 →</a><?php endif; ?>
 <?php endif; ?>
