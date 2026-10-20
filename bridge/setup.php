@@ -8,7 +8,7 @@ header('X-Content-Type-Options: nosniff');
 if (empty($is_member) || ($is_admin ?? '') !== 'super') {
     http_response_code(403); exit('최고관리자 로그인이 필요합니다.');
 }
-$expected = ['noa_documents'=>['doc_key','kind','payload','revision','updated_by','updated_at'],
+$expected = ['noa_user_playlists'=>['owner_id','playlist_id','title','tracks','revision','created_at','updated_at'],'noa_documents'=>['doc_key','kind','payload','revision','updated_by','updated_at'],
 'noa_document_history'=>['doc_key','revision','payload','changed_by','changed_at'],
 'noa_request_log'=>['request_id','doc_key','request_hash','revision','created_at']];
 if (empty($_SESSION['noa_setup_token'])) $_SESSION['noa_setup_token'] = bin2hex(random_bytes(32));
@@ -57,6 +57,17 @@ CREATE TABLE IF NOT EXISTS noa_request_log (
  revision BIGINT UNSIGNED NOT NULL,
  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS noa_user_playlists (
+ owner_id VARCHAR(20) NOT NULL,
+ playlist_id CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+ title VARCHAR(160) NOT NULL,
+ tracks LONGTEXT NOT NULL,
+ revision BIGINT UNSIGNED NOT NULL,
+ created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ PRIMARY KEY(owner_id,playlist_id),
+ CONSTRAINT noa_user_playlist_json CHECK (JSON_VALID(tracks))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 NOA_SCHEMA;
         foreach (explode(';',$schema) as $statement) {
             if (trim($statement) !== '') $db->exec($statement);
@@ -102,10 +113,10 @@ function noa_setup_e(string $text): string { return htmlspecialchars($text,ENT_Q
 <p><?=noa_setup_e($notice)?></p>
 <?php if($sourceReport):?><section aria-label="원본 검증 결과"><h2>GitHub 원본 검증 결과</h2><p>원본 파일 <?=$sourceReport['expected']?>개 · DB 보존 <?=$sourceReport['saved']?>개 · SHA-256 일치 <?=$sourceReport['verified']?>개</p><p>음악 문서 원본 일치 <?=$sourceReport['matching']?>개 · 누락 <?=$sourceReport['missing']?>개 · 변경 차이 <?=$sourceReport['different']?>개</p></section><?php endif;?><?php if($mediaReport): $mediaCounts=array_count_values(array_map(static fn($v)=>$v['status'],$mediaReport['videos']));?><section aria-label="재생 주소 검증 결과"><h2>재생 주소 검증 결과</h2><p>YouTube 공개 확인 <?=$mediaCounts['public']??0?>개 · 비공개·삭제·제한 등 확인 불가 <?=$mediaCounts['not_public_or_unavailable']??0?>개 · 원본 주소 형식 오류 <?=$mediaReport['malformed_source_urls']?>개</p><p>GitHub 원본 음원 파일 <?=$mediaReport['local_audio_files']?>개 · 공개 확인은 실제 음성 재생 성공과 별도로 검증합니다.</p></section><?php endif;?>
 <ul><?php foreach($state as $name=>$ready): ?><li><?=noa_setup_e($name)?>: <?=$ready?'연결됨':'전용 테이블 생성 필요'?></li><?php endforeach; ?></ul>
-<?php if ($db && count($state)===3 && in_array(false,$state,true)): ?>
-<form method="post"><input type="hidden" name="token" value="<?=noa_setup_e($_SESSION['noa_setup_token'])?>"><p>없는 NOA 전용 테이블 3종만 추가합니다. 기존 곡을 자동으로 가져오지는 않습니다.</p><button type="submit">NOA 전용 저장소 연결</button></form>
+<?php if ($db && count($state)===count($expected) && in_array(false,$state,true)): ?>
+<form method="post"><input type="hidden" name="token" value="<?=noa_setup_e($_SESSION['noa_setup_token'])?>"><p>없는 NOA 전용 테이블만 추가합니다. 기존 곡을 자동으로 가져오지는 않습니다.</p><button type="submit">NOA 전용 저장소 연결</button></form>
 <?php endif; ?>
-<?php if ($db && count($state)===3 && !in_array(false,$state,true) && is_file(__DIR__.'/seed.php')): ?>
+<?php if ($db && count($state)===count($expected) && !in_array(false,$state,true) && is_file(__DIR__.'/seed.php')): ?>
 <form method="post"><input type="hidden" name="token" value="<?=noa_setup_e($_SESSION['noa_setup_token'])?>"><input type="hidden" name="action" value="import"><p>저장소 원본 JSON 653개를 이관합니다. 같은 키는 건너뛰며 기존 내용을 덮어쓰지 않습니다.</p><button type="submit">기존 음악 문서 이관</button></form>
 <?php endif; ?><?php if ($db && is_file(__DIR__.'/source-archive.php')): ?>
 <form method="post"><input type="hidden" name="token" value="<?=noa_setup_e($_SESSION['noa_setup_token'])?>"><input type="hidden" name="action" value="archive"><p>음악·설정·원곡 가사·번역 등 원본 731개 파일을 별도 보존합니다. 기존 음악과 활성 설정은 변경하지 않습니다.</p><button type="submit">전체 원본 보존 및 검증</button></form>

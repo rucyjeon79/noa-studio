@@ -1,5 +1,5 @@
 name: NOA Dothome Deployment
-# Provide source-ordered ACT playback and verified Android download
+# Connect GnuBoard-owned personal playlists with isolated storage
 
 on:
   push:
@@ -97,6 +97,8 @@ jobs:
           php -l bridge/source-audit.php
           php -l bridge/catalog.php
           php -l bridge/check-media.php
+          php -l bridge/user-playlists.php
+          node --check deploy/noa-playlists.js
           php -l deploy/noa-editor.php
           php -l deploy/noa-download.php
           php -l bridge/source-archive.php
@@ -118,7 +120,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import urllib.request, urllib.error
-          cases = [('/',200),('/noa2.php',200),('/noa-music.php',200),('/noa-bridge/noa-face.jpg',200),('/noa-bridge/seed.php',403),('/noa-bridge/source-archive.php',403),('/noa-bridge/source-import.php',403),('/noa-bridge/source-cli.php',403),('/noa-bridge/source-audit.php',403),('/noa-bridge/media-status.php',403),('/noa-bridge/catalog.php',200),('/noa-bridge/characters/noa-face.jpg',200),('/noa-bridge/characters/noel-face.jpg',200),('/noa-manifest.json',200),('/noa-sw.js',200),('/noa-icon-192.png',200),('/noa-icon-512.png',200),('/noa-editor.php',403),('/noa-bridge/check-media.php?video=o5NaioWtXuM',403),('/noa-library.php',403),('/noa-bridge/index.php?health=1',403),('/noa-bridge/library.php',403),('/noa-bridge/setup.php',403),('/bbs/login.php',200),('/?device=mobile',200)]
+          cases = [('/',200),('/noa2.php',200),('/noa-music.php',200),('/noa-bridge/noa-face.jpg',200),('/noa-bridge/seed.php',403),('/noa-bridge/source-archive.php',403),('/noa-bridge/source-import.php',403),('/noa-bridge/source-cli.php',403),('/noa-bridge/source-audit.php',403),('/noa-bridge/media-status.php',403),('/noa-bridge/catalog.php',200),('/noa-bridge/characters/noa-face.jpg',200),('/noa-bridge/characters/noel-face.jpg',200),('/noa-manifest.json',200),('/noa-sw.js',200),('/noa-icon-192.png',200),('/noa-icon-512.png',200),('/noa-playlists.js',200),('/noa-bridge/user-playlists.php',401),('/noa-editor.php',403),('/noa-bridge/check-media.php?video=o5NaioWtXuM',403),('/noa-library.php',403),('/noa-bridge/index.php?health=1',403),('/noa-bridge/library.php',403),('/noa-bridge/setup.php',403),('/bbs/login.php',200),('/?device=mobile',200)]
           for path, expected in cases:
               req = urllib.request.Request('https://noastudio.ai.kr'+path, headers={'User-Agent':'NOA-Production-Verification'})
               try:
