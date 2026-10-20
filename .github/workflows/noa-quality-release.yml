@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Retain complete ACT metadata and verify independent sound/video navigation.
+# Publish verified YouTube home rankings, original intro and the approved menu order.
 on:
   push:
     branches: [main]
@@ -19,12 +19,14 @@ jobs:
       - name: Check PHP, JavaScript and existing playback invariants
         run: |
           for f in bridge/youtube-*.php deploy/noa*.php deploy/theme/noa_studio/*.php deploy/theme/noa_studio/mobile/*.php; do php -l "$f"; done
-          for f in deploy/noa-brand.js deploy/noa-history.js deploy/noa-ui.js deploy/noa-home.js deploy/noa-browse.js deploy/noa-youtube.js; do node --check "$f"; done
+          for f in deploy/noa-hero.js deploy/noa-brand.js deploy/noa-history.js deploy/noa-ui.js deploy/noa-home.js deploy/noa-browse.js deploy/noa-youtube.js; do node --check "$f"; done
           node --test scripts/qa/*.test.mjs scripts/noa_player_regression.test.mjs
           php tests/youtube/core_test.php
           php -l bridge/sound-core.php
           php -l bridge/catalog.php
           php tests/catalog/sound_test.php
+          php -l bridge/home.php
+          php tests/catalog/home_test.php
           python3 -m py_compile scripts/noa_quality_deploy.py
   recovery_validation:
     runs-on: ubuntu-latest

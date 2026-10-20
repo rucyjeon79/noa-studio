@@ -28,6 +28,9 @@ public class CatalogTest {
   device.dumpWindowHierarchy(new java.io.File(context.getExternalFilesDir(null),"noa-ui.xml"));
   assertTrue(device.takeScreenshot(new java.io.File(context.getExternalFilesDir(null),"noa-android.png")));
   assertTrue("Production catalog did not load; see captured screen",loaded);
+  int previousNavLeft=-1;
+  for(String label:new String[]{"홈","YouTube","세계관","음원","MY"}){UiObject2 item=device.findObject(By.text(label));assertNotNull("Missing native menu "+label,item);int left=item.getVisibleBounds().left;assertTrue("Native menu order differs from web",left>previousNavLeft);previousNavLeft=left;}
+
   assertTrue("All ACT metadata did not reach native sound browsing",device.hasObject(By.text("491곡 · 52 ACT·목록")));
   device.findObject(By.text(java.util.regex.Pattern.compile("오리지널 장르 · .*"))).click();
   UiObject2 kpop=device.wait(Until.findObject(By.text("KPOP ORIGINAL")),5000);assertNotNull(kpop);kpop.click();

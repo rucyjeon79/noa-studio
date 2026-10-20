@@ -34,6 +34,7 @@ jobs:
           for f in bridge/*.php deploy/noa*.php deploy/theme/noa_studio/*.php deploy/theme/noa_studio/mobile/*.php; do php -l "$f"; done
           php -d memory_limit=256M tests/catalog/merge_test.php
           php -d memory_limit=256M tests/catalog/mysql_test.php
+          php tests/catalog/home_test.php
           php tests/youtube/core_test.php
           php tests/youtube/mysql_test.php
           php tests/catalog/recovery_test.php

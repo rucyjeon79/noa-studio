@@ -1,5 +1,5 @@
 name: NOA STUDIO Android
-# Wait for the rebuilt native library before resolving its settings control.
+# Keep native navigation in the approved Home / YouTube / World / Sound / MY order.
 on:
   push:
     branches: [main]
