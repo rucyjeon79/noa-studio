@@ -16,8 +16,12 @@ FILES = {
     'deploy/noa-home.extend.php': 'extend/noa.home.php',
     'bridge/storage.php': 'noa-bridge/storage.php',
     'bridge/setup.php': 'noa-bridge/setup.php',
+    'bridge/seed.php': 'noa-bridge/seed.php',
+    'deploy/noa-music.php': 'noa-music.php',
 }
 UPGRADE_FROM = {
+    'noa2.php': '2065e894a3d09e22186f1935d7a9b864ff4e6dcc5cada66e64211f9548bd489c',
+    'noa-bridge/setup.php': 'b38a5d8cdea5b8332b37e2a95c628d7d1fe44d9e5c7360b5b47aedfb73c3c691',
     'noa-library.php': 'b8ce5c4d3155549dc0e7e55c82bff15a3335448f4f1b0c0306e2ca19e0d91467',
     'noa-bridge/index.php': 'a8b42ac0b5ee8a2524ec880b1b49701de30586d893f5a83936efdf2941574a3d',
     'noa-bridge/library.php': '7c1a4429dc4826bf30bdc73b2a6c45aede16c982c171b6d2e8c8a9083f537fe1',
