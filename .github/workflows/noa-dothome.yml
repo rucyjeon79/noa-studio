@@ -1,5 +1,5 @@
 name: NOA Dothome Deployment
-# Archive source into additive storage and deploy lyrics, player controls, PWA
+# Verify archived originals and deliver character assets and shared app catalog
 
 on:
   push:
@@ -93,6 +93,7 @@ jobs:
           python3 scripts/noa_build_archive.py
           python3 -c "import cairosvg; [cairosvg.svg2png(url='deploy/noa-icon.svg',write_to='deploy/noa-icon-'+str(n)+'.png',output_width=n,output_height=n) for n in (192,512)]"
           php -l bridge/source-audit.php
+          php -l bridge/catalog.php
           php -l bridge/source-archive.php
           php -l bridge/source-import.php
           php -l bridge/source-cli.php
@@ -112,7 +113,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import urllib.request, urllib.error
-          cases = [('/',200),('/noa2.php',200),('/noa-music.php',200),('/noa-bridge/noa-face.jpg',200),('/noa-bridge/seed.php',403),('/noa-bridge/source-archive.php',403),('/noa-bridge/source-import.php',403),('/noa-bridge/source-cli.php',403),('/noa-bridge/source-audit.php',403),('/noa-manifest.json',200),('/noa-sw.js',200),('/noa-icon-192.png',200),('/noa-icon-512.png',200),('/noa-library.php',403),('/noa-bridge/index.php?health=1',403),('/noa-bridge/library.php',403),('/noa-bridge/setup.php',403),('/bbs/login.php',200),('/?device=mobile',200)]
+          cases = [('/',200),('/noa2.php',200),('/noa-music.php',200),('/noa-bridge/noa-face.jpg',200),('/noa-bridge/seed.php',403),('/noa-bridge/source-archive.php',403),('/noa-bridge/source-import.php',403),('/noa-bridge/source-cli.php',403),('/noa-bridge/source-audit.php',403),('/noa-bridge/catalog.php',200),('/noa-bridge/characters/noa-face.jpg',200),('/noa-bridge/characters/noel-face.jpg',200),('/noa-manifest.json',200),('/noa-sw.js',200),('/noa-icon-192.png',200),('/noa-icon-512.png',200),('/noa-library.php',403),('/noa-bridge/index.php?health=1',403),('/noa-bridge/library.php',403),('/noa-bridge/setup.php',403),('/bbs/login.php',200),('/?device=mobile',200)]
           for path, expected in cases:
               req = urllib.request.Request('https://noastudio.ai.kr'+path, headers={'User-Agent':'NOA-Production-Verification'})
               try:
@@ -126,6 +127,11 @@ jobs:
                   raise SystemExit('Unexpected HTTP status')
               if path in ('/','/noa2.php','/noa-music.php') and 'noa-studio.grok.me' in body:
                   raise SystemExit('Legacy app link remains')
+              if path == '/noa-bridge/catalog.php':
+                  import json
+                  data=json.loads(body)
+                  if len(data.get('items',[]))!=63 or data.get('access')!='public':
+                      raise SystemExit('Shared catalog visibility mismatch')
               if path == '/noa-music.php':
                   count = body.count('class="song"')
                   print('Public music document count:', count)
