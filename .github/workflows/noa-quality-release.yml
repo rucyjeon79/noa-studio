@@ -1,0 +1,65 @@
+name: NOA quality repair and release
+# Existing UI/layout/navigation repair; preserve all source records and core files.
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-quality-release.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: noa-dothome-production
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Check PHP, JavaScript and existing playback invariants
+        run: |
+          for f in deploy/noa*.php deploy/theme/noa_studio/*.php deploy/theme/noa_studio/mobile/*.php; do php -l "$f"; done
+          for f in deploy/noa-ui.js deploy/noa-home.js deploy/noa-browse.js deploy/noa-youtube.js; do node --check "$f"; done
+          node --test scripts/qa/noa-browse.test.mjs scripts/noa_player_regression.test.mjs
+          php tests/youtube/core_test.php
+          python3 -m py_compile scripts/noa_quality_deploy.py
+  release:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python3 -m pip install --user paramiko==3.5.1
+      - name: Deploy exact reviewed UI versions
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ vars.NOA_SSH_HOST_FINGERPRINT || 'SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU' }}
+          NOA_SSH_ROOT: ${{ vars.NOA_FTP_ROOT }}
+        run: python3 scripts/noa_quality_deploy.py
+  responsive:
+    needs: release
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: {width: [320, 360, 390, 430, 768, 1280, 1920]}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Recheck production at the same widths
+        env:
+          NOA_QA_WIDTH: ${{ matrix.width }}
+          NOA_QA_PHASE: after
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-quality" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-quality/node_modules/.bin/playwright" install --with-deps chromium
+          cp scripts/qa/noa-responsive.mjs "$RUNNER_TEMP/noa-quality/check.mjs"
+          node "$RUNNER_TEMP/noa-quality/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-quality-after-${{ matrix.width }}
+          path: quality-results/
+          retention-days: 14

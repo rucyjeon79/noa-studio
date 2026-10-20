@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-function openPlayer(){
+function openPlayer({selectFirst=true}={}){
  const php=fs.readFileSync(new URL('../deploy/noa-music.php',import.meta.url),'utf8');
  const script=php.match(/<script>\s*([\s\S]*?)<\/script>/)[1];
  const nodes=new Map(),timers=new Map(),events={};let tick=0,options,instance;
@@ -14,6 +14,7 @@ function openPlayer(){
  const buttons=songs.map(s=>Object.assign(element(),{dataset:{key:s.key,title:s.title,genre:s.genre,video:s.video}}));
  const context={console,URLSearchParams,location:{search:'',origin:'https://noastudio.ai.kr'},sessionStorage:{getItem(){return null},setItem(){}},navigator:{},setInterval(){},setTimeout(fn){const id=++tick;timers.set(id,fn);return id;},clearTimeout(id){timers.delete(id)},document:{getElementById:node,querySelectorAll:()=>buttons,querySelector:()=>element(),createElement:element,head:{append(){}}},window:{addEventListener(name,fn){events[name]=fn;}}};
  vm.createContext(context);vm.runInContext(script.replace(/<\?=json_encode\(\$songs,[\s\S]*?\?>/,JSON.stringify(songs)),context);
+ if(selectFirst)vm.runInContext('select(buttons[0],false)',context);
  const player={state:5,played:0,loads:[],volume:null,playVideo(){this.played++},pauseVideo(){this.state=2},stopVideo(){},setVolume(v){this.volume=v},getPlayerState(){return this.state},loadVideoById(v){this.loads.push(v)},cueVideoById(v){this.loads.push(v)},getCurrentTime(){return 0},getDuration(){return 0}};
  const api={PlayerState:{PLAYING:1,PAUSED:2,ENDED:0,BUFFERING:3},Player:class{constructor(id,o){options=o;instance=player;return player;}}};
  return {node,timers,context,buttons,player,background(){events['noa-background']();},loadAPI(){context.YT=api;context.window.YT=api;context.window.onYouTubeIframeAPIReady();},ready(){options.events.onReady({target:instance});},state(n){player.state=n;options.events.onStateChange({data:n});},expire(){for(const[id,fn]of [...timers]){timers.delete(id);fn();}},selectSecond(){vm.runInContext('select(buttons[1],true)',context);}};
@@ -28,3 +29,5 @@ test('switching tracks replaces the timer; background cancels queued autoplay',(
  const ui=openPlayer();ui.node('pause-play').onclick();ui.selectSecond();assert.equal(ui.timers.size,1);ui.background();assert.equal(ui.timers.size,0);
  ui.loadAPI();ui.ready();assert.equal(ui.player.loads[0].videoId,'abcdefghij2');assert.equal(ui.timers.size,0);ui.state(2);assert.equal(ui.timers.size,0);
 });
+
+test('category landing waits for a real song selection',()=>{const ui=openPlayer({selectFirst:false});ui.node('pause-play').onclick();assert.equal(ui.timers.size,0);ui.selectSecond();assert.equal(ui.timers.size,1);});
