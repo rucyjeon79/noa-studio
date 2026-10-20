@@ -1,0 +1,42 @@
+name: NOA OAuth callback validation and production release
+# Preserve approved tokens and show safe Google error reasons on shared hosting.
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-oauth.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: noa-dothome-production
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate protected OAuth callback and token receipt recovery
+        run: |
+          php -l bridge/lab-oauth.php
+          php -l bridge/lab-oauth-core.php
+          php tests/lab/oauth_test.php
+  release:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ vars.NOA_SSH_HOST_FINGERPRINT || 'SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU' }}
+      NOA_SSH_ROOT: ${{ vars.NOA_FTP_ROOT }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Release verified files and preserve private storage
+        run: |
+          python3 -m pip install --user 'paramiko==3.5.1'
+          python3 scripts/noa_oauth_deploy.py

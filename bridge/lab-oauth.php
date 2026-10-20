@@ -1,20 +1,34 @@
 <?php
 declare(strict_types=1);
-require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/lab-core.php';if(empty($is_member)&&($_GET['action']??'')==='start'){header('Location: /bbs/login.php?url='.rawurlencode('/noa-bridge/lab-oauth.php?action=start'));exit;}lab_admin();
-header('Cache-Control: no-store');header('Referrer-Policy: no-referrer');
-try {
- $s=lab_read();$secrets=lab_unseal($s['secrets']??null);$client=$s['config']['oauthClientId'];if(!$client||empty($secrets['oauthClientSecret']))throw new DomainException('oauth_configuration_required');$redirect=NOA_LAB_ORIGIN.'/noa-bridge/lab-oauth.php';
- if(($_GET['action']??'')==='start'){
-  // The link is same-origin; account authorization happens on Google's consent screen.
+require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/lab-core.php';require_once __DIR__.'/lab-oauth-core.php';
+if(empty($is_member)&&($_GET['action']??'')==='start'){header('Location: /bbs/login.php?url='.rawurlencode('/noa-bridge/lab-oauth.php?action=start'));exit;}lab_admin();header('Cache-Control: no-store');header('Referrer-Policy: no-referrer');header('X-Content-Type-Options: nosniff');
+$action=(string)($_GET['action']??'');$phase='configuration';$actor=(string)$member['mb_id'];$notice='';$reason='';$remoteStatus=0;
+if(empty($_SESSION['noa_lab_csrf']))$_SESSION['noa_lab_csrf']=bin2hex(random_bytes(32));
+try{
+ $s=lab_read();$secrets=lab_unseal($s['secrets']??null);$client=(string)($s['config']['oauthClientId']??'');$redirect=NOA_LAB_ORIGIN.'/noa-bridge/lab-oauth.php';if(!$client||empty($secrets['oauthClientSecret']))throw new NoaOAuthFailure('oauth_configuration_required');
+ if($action==='start'){
   $_SESSION['noa_oauth_state']=bin2hex(random_bytes(32));$_SESSION['noa_oauth_started']=time();$_SESSION['noa_oauth_verifier']=rtrim(strtr(base64_encode(random_bytes(48)),'+/','-_'),'=');
   $query=['client_id'=>$client,'redirect_uri'=>$redirect,'response_type'=>'code','scope'=>'https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics.readonly','access_type'=>'offline','prompt'=>'consent','include_granted_scopes'=>'true','state'=>$_SESSION['noa_oauth_state'],'code_challenge_method'=>'S256','code_challenge'=>rtrim(strtr(base64_encode(hash('sha256',$_SESSION['noa_oauth_verifier'],true)),'+/','-_'),'=')];header('Location: https://accounts.google.com/o/oauth2/v2/auth?'.http_build_query($query));exit;
  }
- if(!is_string($_GET['state']??null)||!hash_equals($_SESSION['noa_oauth_state']??'invalid',$_GET['state'])||time()-($_SESSION['noa_oauth_started']??0)>600||!is_string($_GET['code']??null))throw new DomainException('oauth_state_invalid');
- $verifier=$_SESSION['noa_oauth_verifier'];unset($_SESSION['noa_oauth_state'],$_SESSION['noa_oauth_started'],$_SESSION['noa_oauth_verifier']);
- $token=lab_https('https://oauth2.googleapis.com/token',[CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>http_build_query(['code'=>$_GET['code'],'client_id'=>$client,'client_secret'=>$secrets['oauthClientSecret'],'redirect_uri'=>$redirect,'grant_type'=>'authorization_code','code_verifier'=>$verifier]),CURLOPT_HTTPHEADER=>['Content-Type: application/x-www-form-urlencoded']]);
- foreach(['youtube.upload','youtube.readonly','yt-analytics.readonly'] as $scope)if(!str_contains($token['scope']??'',$scope))throw new DomainException('required_oauth_scope_missing');
- if(empty($token['access_token'])||empty($token['refresh_token']))throw new DomainException('offline_authorization_required');
- $channels=lab_https('https://www.googleapis.com/youtube/v3/channels?part=id,snippet&mine=true',[CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$token['access_token']]]);if(empty($channels['items']))throw new DomainException('youtube_channel_missing');
- lab_lock(function(&$state)use($channels,$token){foreach($channels['items'] as $c){$id=$c['id'];if(!preg_match('/^UC[A-Za-z0-9_-]{22}$/D',$id))throw new DomainException('invalid_channel');$state['channels'][$id]=['title'=>$c['snippet']['title'],'connectedAt'=>gmdate('c'),'autoEnabled'=>false,'tokens'=>lab_seal(['refresh_token'=>$token['refresh_token'],'scope'=>$token['scope']??''])];}lab_event($state,'youtube_connected','',(string)$GLOBALS['member']['mb_id']);});
- header('Location: /noa-ai-lab.php?connected=1');exit;
-}catch(DomainException $e){http_response_code(400);echo 'YouTube 연결을 완료하지 못했습니다: '.htmlspecialchars($e->getMessage(),ENT_QUOTES,'UTF-8');}catch(Throwable $e){error_log('[noa-lab-oauth] '.get_class($e));http_response_code(503);echo 'YouTube 연결에 실패했습니다. 관리자 화면에서 설정과 Google 승인 범위를 확인해 주세요.';}
+ if($action==='diagnostics'){
+  $notice='Google 알림을 보내지 않고 저장된 OAuth 자격증명만 점검합니다. 실제 사용자 승인 코드나 토큰은 표시하지 않습니다.';
+  if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
+   if(($_SERVER['HTTP_ORIGIN']??'')!==NOA_LAB_ORIGIN||!is_string($_POST['csrf']??null)||!hash_equals($_SESSION['noa_lab_csrf'],$_POST['csrf']))throw new NoaOAuthFailure('request_verification_failed');
+   $phase='credential_probe';try{noa_oauth_exchange($client,$secrets['oauthClientSecret'],'NOA_DIAGNOSTIC_INVALID_CODE',$redirect,'diagnostic-invalid-code-verifier');$notice='예상과 다른 공급자 응답입니다. 관리자 점검이 필요합니다.';}catch(NoaOAuthFailure $e){if($e->reason==='invalid_grant'){$notice='Client ID·Secret 조합 검증 통과. Google이 의도적으로 잘못된 검사 코드만 거부했습니다. 재인증 알림은 보내지 않았습니다.';}else throw $e;}
+  }
+ }else{
+  $phase='state_validation';if(!is_string($_GET['state']??null)||!hash_equals($_SESSION['noa_oauth_state']??'invalid',$_GET['state'])||time()-($_SESSION['noa_oauth_started']??0)>600||!is_string($_GET['code']??null))throw new NoaOAuthFailure('oauth_state_invalid');
+  $receipt=hash('sha256',$_GET['state']);$phase='token_exchange';
+  if(isset($s['oauthPending'][$receipt]))$token=noa_oauth_saved($s['oauthPending'][$receipt],$actor,session_id());else{
+   $token=noa_oauth_exchange($client,$secrets['oauthClientSecret'],$_GET['code'],$redirect,$_SESSION['noa_oauth_verifier']);noa_oauth_validate($token);$sessionHash=hash('sha256',session_id());
+   lab_lock(function(&$state)use($token,$receipt,$actor,$sessionHash){$state['oauthPending']=array_filter($state['oauthPending']??[],fn($p)=>($p['expires']??0)>time());$state['oauthPending'][$receipt]=['tokens'=>lab_seal($token),'actor'=>$actor,'session'=>$sessionHash,'expires'=>time()+600];lab_event($state,'youtube_oauth_token_preserved','',$actor);});
+  }
+  $phase='channel_lookup';$channels=noa_oauth_http('https://www.googleapis.com/youtube/v3/channels?part=id,snippet&mine=true',[CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$token['access_token']]]);
+  lab_lock(function(&$state)use($channels,$token,$receipt,$actor){noa_oauth_commit($state,$channels,$token,$receipt,$actor);});unset($_SESSION['noa_oauth_state'],$_SESSION['noa_oauth_started'],$_SESSION['noa_oauth_verifier']);header('Location: /noa-youtube-admin.php?connected=1');exit;
+ }
+}catch(NoaOAuthFailure $e){$reason=$e->reason;$remoteStatus=$e->remoteStatus;}catch(Throwable $e){$reason='internal_operation_failed';error_log('[noa-lab-oauth] '.get_class($e));}
+if($reason!=='')try{lab_lock(function(&$s)use($reason,$remoteStatus,$phase,$actor){$s['oauthLastError']=['reason'=>$reason,'status'=>$remoteStatus,'phase'=>$phase,'at'=>gmdate('c'),'actor'=>$actor];});}catch(Throwable $e){}
+function noe(string $text):string{return htmlspecialchars($text,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
+// Shared hosting replaces non-2xx response bodies with generic pages. Render a protected receipt with an explicit failure label instead.
+http_response_code(200);
+?><!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>YouTube 연결 점검 | NOA STUDIO</title><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-ai-lab.css"><script src="/noa-ui.js" defer></script></head><body class="noa-page"><main><p class="noa-eyebrow">NOA STUDIO / YOUTUBE CONNECTION</p><h1>YouTube 연결 점검</h1><section class="lab-panel"><p role="status"><?=noe($reason!==''?noa_oauth_message($reason):$notice)?></p><?php if($reason!==''):?><p>처리 완료되지 않음 · 단계 <code><?=noe($phase)?></code> · Google HTTP <?=noe((string)$remoteStatus)?> · 진단 <code><?=noe($reason)?></code></p><?php endif;?><p>원본 음악·회원·재생목록과 자동 게시 설정은 보존합니다.</p><nav><a href="/noa-youtube-admin.php">채널 관리로 돌아가기</a> · <a href="/noa-ai-lab.php">서비스 설정</a> · <a href="/noa-bridge/lab-oauth.php?action=diagnostics">자격증명 점검</a></nav><?php if($action==='diagnostics'):?><form method="post" style="margin-top:24px"><input type="hidden" name="csrf" value="<?=noe($_SESSION['noa_lab_csrf'])?>"><button type="submit" aria-label="Google 알림 없이 자격증명 점검">Google 알림 없이 자격증명 점검</button></form><?php endif;?></section></main></body></html>
