@@ -31,3 +31,13 @@ function noa_sound_cover(array $body): string {
     static $map=null;if($map===null)$map=is_file(__DIR__.'/asset-covers.php')?require __DIR__.'/asset-covers.php':[];
     return is_string($source)&&is_array($map)&&isset($map[$source])?(string)$map[$source]:'';
 }
+// Add recovered channel-only songs to the web/Android read model without replacing
+// legacy keys or user-edited documents. Identity, not title, selects these records.
+function noa_sound_recovered(array $row,bool $admin): ?array {
+    $identity=json_decode((string)($row['identity_json']??''),true);
+    $fields=json_decode((string)($row['fields_json']??''),true);
+    if(!is_array($identity)||count($identity)!==4||$identity[0]!=='song'||$identity[1]!=='youtube'||$identity[2]!=='UCwYy9xsAqDFat6AV5UKrfgA'||!preg_match('/^[A-Za-z0-9_-]{11}$/D',(string)$identity[3])||!is_array($fields))return null;
+    if(!$admin&&(empty($row['public_verified'])||($fields['privacyStatus']??'private')!=='public'))return null;
+    if(!preg_match('/^[a-f0-9]{64}$/D',(string)($row['song_id']??'')))return null;
+    return ['key'=>'catalog:'.$row['song_id'],'catalogId'=>$row['song_id'],'kind'=>'story','genre'=>$row['genre_id']??'unclassified','title'=>$fields['title']??'','ep'=>$row['ep']??'','act'=>'','tracklist'=>'','lyrics'=>$fields['lyricsBlock']??'','cast'=>$fields['thumbCast']??'','thumbnail'=>'https://noastudio.ai.kr/noa-bridge/youtube-thumbnail.php?id='.$identity[3],'coverImageUrl'=>'','sunoUrl'=>noa_sound_suno($fields),'audioUrl'=>'','audioVerified'=>false,'youtubeId'=>$identity[3],'confirmed'=>false,'registrationStatus'=>$fields['registrationStatus']??'needs_information'];
+}

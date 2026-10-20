@@ -20,3 +20,11 @@ try{
 }finally{unlink($file);rmdir($root.'/data/noa-audio');rmdir($root.'/data');rmdir($root);}
 check(noa_sound_cover(['thumbUrl'=>'https://i.ytimg.com/vi/abcdefghijk/hqdefault.jpg'])==='','YT art cannot stand in for Suno original');
 echo "Sound separation, privacy, integrity and format checks passed\n";
+
+$recovered=['song_id'=>str_repeat('a',64),'identity_json'=>json_encode(['song','youtube','UCwYy9xsAqDFat6AV5UKrfgA','abcdefghijk']),'fields_json'=>json_encode(['title'=>'Recovered public song','privacyStatus'=>'public','registrationStatus'=>'needs_information']),'public_verified'=>1,'genre_id'=>'your-story','ep'=>''];
+check(noa_sound_recovered($recovered,false)['youtubeId']==='abcdefghijk','public recovered song in shared read model');
+$private=$recovered;$private['fields_json']=json_encode(['title'=>'Private','privacyStatus'=>'private']);
+check(noa_sound_recovered($private,false)===null,'private recovery never exposed even if a stale public flag exists');
+check(noa_sound_recovered($private,true)!==null,'owner can review private recovery');
+$other=$recovered;$other['identity_json']=json_encode(['song','single','kpop-original','01']);check(noa_sound_recovered($other,true)===null,'legacy title is never used to match recovery');
+echo "Recovered web/Android read model privacy checks passed\n";

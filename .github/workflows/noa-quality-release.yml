@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Reuse original portrait/landscape art and keep home links within the correct player.
+# Verify shared recovery read model, original assets and consumer isolation from Grok.
 on:
   push:
     branches: [main]

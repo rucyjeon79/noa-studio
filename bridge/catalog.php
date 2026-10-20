@@ -32,5 +32,12 @@ try{
    'tracklist'=>$b['tracklist']??'','lyrics'=>$b['lyricsBlock']??'','cast'=>$b['thumbCast']??'','thumbnail'=>$id?($b['thumbUrl']??''):noa_sound_cover($b),'coverImageUrl'=>noa_sound_cover($b),'sunoUrl'=>$suno,'audioVerified'=>(bool)$audio,
    'youtubeId'=>$id,'audioUrl'=>$audio,'confirmed'=>!empty($p['confirmed'])];
  }
+ // Published recovery editions are additive to the legacy web/Android keys.
+ // Never fall back to title matching and never overwrite an existing item.
+ try{
+  $recovered=$db->query("SELECT s.song_id,s.identity_json,s.genre_id,s.ep,v.fields_json,v.public_verified FROM noa_catalog_songs s JOIN noa_catalog_versions v ON v.entity_id=s.song_id AND v.entity_type='song' WHERE v.batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)");
+  $seen=array_fill_keys(array_column($items,'youtubeId'),true);
+  foreach($recovered as $row){$item=noa_sound_recovered($row,$admin);if($item&&!isset($seen[$item['youtubeId']])){$items[]=$item;$seen[$item['youtubeId']]=true;}}
+ }catch(PDOException $e){error_log('[noa-catalog-recovery-read] unavailable');}
  echo json_encode(['brand'=>'NOA STUDIO','access'=>$admin?'administrator':'public','items'=>$items],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
 }catch(Throwable $e){http_response_code(503);echo json_encode(['error'=>'목록을 불러오지 못했습니다.']);error_log('[noa-catalog] '.get_class($e));}
