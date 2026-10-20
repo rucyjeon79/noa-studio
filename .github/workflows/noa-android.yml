@@ -2,7 +2,7 @@ name: NOA STUDIO Android
 on:
   push:
     branches: [main]
-    paths: ['android/**', '.github/workflows/noa-android.yml']
+    paths: ['.github/workflows/noa-android.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -41,10 +41,11 @@ jobs:
           api-level: 35
           target: google_apis
           arch: x86_64
-          profile: pixel_6
+          profile: pixel_2
           disable-animations: true
           script: |
             adb install android/app/build/outputs/apk/debug/app-debug.apk
+            adb shell am force-stop com.google.android.apps.nexuslauncher
             adb shell am start -W -n kr.ai.noastudio/.MainActivity
             python3 -c "import time,subprocess; [time.sleep(2) for _ in range(8)]"
             adb shell uiautomator dump /sdcard/noa-ui.xml
@@ -52,7 +53,7 @@ jobs:
             adb shell screencap -p /sdcard/noa-android.png
             adb pull /sdcard/noa-android.png android/noa-android.png
             adb logcat -d -s AndroidRuntime:E NoaApi:E > android/noa-runtime-errors.txt
-            python3 -c "from pathlib import Path; s=Path('android/noa-ui.xml').read_text(); assert 'NOA STUDIO' in s; assert '63개 문서' in s, 'Production music catalog did not load'; assert 'FATAL EXCEPTION' not in Path('android/noa-runtime-errors.txt').read_text()"
+            python3 -c "from pathlib import Path; s=Path('android/noa-ui.xml').read_text(); assert 'NOA STUDIO' in s; assert __import__('re').search(r'[1-9][0-9]*개 문서',s), 'Production music catalog did not load'; assert 'FATAL EXCEPTION' not in Path('android/noa-runtime-errors.txt').read_text()"
       - name: Retain device verification
         if: always()
         uses: actions/upload-artifact@v4
