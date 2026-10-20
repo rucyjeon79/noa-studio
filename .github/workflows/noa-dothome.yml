@@ -1,5 +1,5 @@
 name: NOA Dothome Deployment
-# Verify archived originals and deliver character assets and shared app catalog
+# Preserve original confirmation state and verify public YouTube availability
 
 on:
   push:
@@ -75,7 +75,7 @@ jobs:
           NOA_SSH_ROOT: ${{ vars.NOA_FTP_ROOT }}
         run: |
           set -eu
-          python3 -m pip install --user 'paramiko==3.5.1' 'PyMySQL==1.1.1' 'cairosvg==2.7.1'
+          python3 -m pip install --user 'paramiko==3.5.1' 'cairosvg==2.7.1'
           python3 -m py_compile scripts/noa_ssh_check.py
           python3 scripts/noa_ssh_check.py
 
@@ -91,6 +91,8 @@ jobs:
           set -eu
           python3 scripts/noa_build_seed.py
           python3 scripts/noa_build_archive.py
+          python3 scripts/noa_check_media.py
+          php -l bridge/media-status.php
           python3 -c "import cairosvg; [cairosvg.svg2png(url='deploy/noa-icon.svg',write_to='deploy/noa-icon-'+str(n)+'.png',output_width=n,output_height=n) for n in (192,512)]"
           php -l bridge/source-audit.php
           php -l bridge/catalog.php
@@ -113,7 +115,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import urllib.request, urllib.error
-          cases = [('/',200),('/noa2.php',200),('/noa-music.php',200),('/noa-bridge/noa-face.jpg',200),('/noa-bridge/seed.php',403),('/noa-bridge/source-archive.php',403),('/noa-bridge/source-import.php',403),('/noa-bridge/source-cli.php',403),('/noa-bridge/source-audit.php',403),('/noa-bridge/catalog.php',200),('/noa-bridge/characters/noa-face.jpg',200),('/noa-bridge/characters/noel-face.jpg',200),('/noa-manifest.json',200),('/noa-sw.js',200),('/noa-icon-192.png',200),('/noa-icon-512.png',200),('/noa-library.php',403),('/noa-bridge/index.php?health=1',403),('/noa-bridge/library.php',403),('/noa-bridge/setup.php',403),('/bbs/login.php',200),('/?device=mobile',200)]
+          cases = [('/',200),('/noa2.php',200),('/noa-music.php',200),('/noa-bridge/noa-face.jpg',200),('/noa-bridge/seed.php',403),('/noa-bridge/source-archive.php',403),('/noa-bridge/source-import.php',403),('/noa-bridge/source-cli.php',403),('/noa-bridge/source-audit.php',403),('/noa-bridge/media-status.php',403),('/noa-bridge/catalog.php',200),('/noa-bridge/characters/noa-face.jpg',200),('/noa-bridge/characters/noel-face.jpg',200),('/noa-manifest.json',200),('/noa-sw.js',200),('/noa-icon-192.png',200),('/noa-icon-512.png',200),('/noa-library.php',403),('/noa-bridge/index.php?health=1',403),('/noa-bridge/library.php',403),('/noa-bridge/setup.php',403),('/bbs/login.php',200),('/?device=mobile',200)]
           for path, expected in cases:
               req = urllib.request.Request('https://noastudio.ai.kr'+path, headers={'User-Agent':'NOA-Production-Verification'})
               try:
@@ -130,12 +132,12 @@ jobs:
               if path == '/noa-bridge/catalog.php':
                   import json
                   data=json.loads(body)
-                  if len(data.get('items',[]))!=63 or data.get('access')!='public':
+                  if not 63 <= len(data.get('items',[])) <= 414 or data.get('access')!='public':
                       raise SystemExit('Shared catalog visibility mismatch')
               if path == '/noa-music.php':
                   count = body.count('class="song"')
                   print('Public music document count:', count)
-                  if count != 63 or '관리자 보기' in body:
+                  if not 63 <= count <= 414 or '관리자 보기' in body:
                       raise SystemExit('Public music visibility mismatch')
               if path in ('/','/noa2.php','/?device=mobile') and '2.0' in body:
                   raise SystemExit('Unwanted version branding on production page')

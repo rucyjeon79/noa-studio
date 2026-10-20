@@ -7,10 +7,10 @@ header('Cache-Control: private, no-store');
 header('X-Content-Type-Options: nosniff');
 try{
  $admin=!empty($is_member)&&($is_admin??'')==='super';$items=[];
- $db=noa_bridge_pdo();
+ $db=noa_bridge_pdo();$availability=is_file(__DIR__.'/media-status.php')?require __DIR__.'/media-status.php':[];
  foreach($db->query("SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','playlist','story') ORDER BY doc_key") as $row){
   $p=json_decode($row['payload'],true,512,JSON_THROW_ON_ERROR);$b=$p['body']??[];
-  if(!$admin&&empty($p['confirmed']))continue;
+  
   $url=$b['youtubeUrl']??'';$id='';
   if(is_string($url)){
    $u=parse_url($url);$host=strtolower($u['host']??'');
@@ -21,7 +21,7 @@ try{
    }
   }
   if(!preg_match('/^[A-Za-z0-9_-]{11}$/D',$id))$id='';
-  if(!$admin&&!$id)continue;
+  if(!$admin&&(!$id||(empty($p['confirmed'])&&($availability['videos'][$id]['status']??'')!=='public')))continue;
   $audio=is_string($b['audioUrl']??null)?$b['audioUrl']:'';
   // Only explicit first-party audio files qualify for native playback.
   if(!preg_match('~^https://noastudio[.]ai[.]kr/data/noa-audio/[A-Za-z0-9_./-]+[.](mp3|m4a|ogg|wav)$~D',$audio))$audio='';

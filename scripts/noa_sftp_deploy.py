@@ -23,6 +23,7 @@ FILES = {
     'bridge/source-cli.php': 'noa-bridge/source-cli.php',
     'bridge/source-audit.php': 'noa-bridge/source-audit.php',
     'bridge/catalog.php': 'noa-bridge/catalog.php',
+    'bridge/media-status.php': 'noa-bridge/media-status.php',
     'deploy/noa-manifest.json': 'noa-manifest.json',
     'deploy/noa-sw.js': 'noa-sw.js',
     'deploy/noa-icon-192.png': 'noa-icon-192.png',
@@ -34,9 +35,10 @@ for character_file in ['cast-pair.jpg','noa-face.jpg','noa-face.png','noa-sheet.
     FILES['public/characters/'+character_file]='noa-bridge/characters/'+character_file
 
 UPGRADE_FROM = {
+    'noa-bridge/catalog.php': '437fc6503c3160e7b178bfa6cb3a79ac2bec89c567fd552f3a677eff51f31de7',
     'noa-bridge/source-import.php': 'a36477eadb38d85884e85b6f88a7eccabeb18809885d8baf5bf95f7688c26098',
     'noa-bridge/source-cli.php': '46bca66a3f0267a03d3c6aa5705a18b405e05c06b18d1bcca9ebab12507c365e',
-    'noa-music.php': 'd7709827760b42cedbd358c14d7516666e55c84ef17ff91113b53ed2dfa60d27',
+    'noa-music.php': '50494d8aec10c06390548885844f889936e3c0261487982ba8b1664da31ab80e',
     'noa2.php': '6516bb99bf0e25cab7cdf940b61c1850137b2780c7fc24bbeebd52d21588175a',
     'noa-bridge/setup.php': '7f309c673320781965d19766dfff614a98e42cac52ae8add1093bf4cdef052e0',
     'noa-library.php': 'c052ba7d1b40ea56e216c9a09925390b0b872bbe9b233ac95d01f54af4739d55',
@@ -76,47 +78,6 @@ def main():
         if not stat.S_ISREG(sftp.lstat(root + '/common.php').st_mode):
             raise RuntimeError('GnuBoard missing')
         print('Root entries:', ', '.join(sorted(sftp.listdir(root))))
-        probe = transport.open_session(timeout=15)
-        probe.settimeout(20)
-        probe.exec_command('php -v')
-        print('PHP CLI version probe:', probe.recv(2048).decode('utf-8',errors='replace')[:500])
-        print('PHP CLI probe exit:', probe.recv_exit_status())
-        probe.close()
-        php = """define('_GNUBOARD_', true);
-        chdir('/hosting/noastudio/html');
-        include 'data/dbconfig.php';
-        try {
-          mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-          $db = new mysqli(G5_MYSQL_HOST,G5_MYSQL_USER,G5_MYSQL_PASSWORD,G5_MYSQL_DB);
-          $rows = $db->query('SHOW TABLES'); $out = [];
-          while ($r = $rows->fetch_row()) {
-            $name = $r[0];
-            if (preg_match('/^(g5_member|g5_board|g5_write_[a-z0-9_]+|noa_[a-z0-9_]+)$/D', $name)) {
-              $n = $db->query('SELECT COUNT(*) FROM `'.$name.'`')->fetch_row();
-              $out[$name] = (int)$n[0];
-            }
-          }
-          echo json_encode(['read_only_table_counts'=>$out]);
-        } catch (Throwable $e) { echo json_encode(['inspection_error'=>get_class($e)]); }
-        """
-        channel = transport.open_session(timeout=15)
-        channel.settimeout(20)
-        channel.exec_command('php -r '+shlex.quote(php))
-        chunks = []
-        while True:
-            block = channel.recv(4096)
-            if not block:
-                break
-            chunks.append(block)
-        diagnostic = b''.join(chunks).decode('utf-8', errors='replace').strip()
-        # Print only the intended JSON; never expose PHP diagnostics or config.
-        import json
-        try:
-            metadata = json.loads(diagnostic)
-            print('Database inspection:', json.dumps(metadata))
-        except ValueError:
-            print('Database inspection: CLI did not return metadata JSON')
-        channel.close()
         before = {p: digest(sftp, root+'/'+p) for p in PROTECTED if exists(sftp, root+'/'+p)}
         pending = []
         for local, relative in FILES.items():
@@ -169,46 +130,6 @@ def main():
             raise RuntimeError('Protected file changed during deployment')
         print('Protected GnuBoard files unchanged:', ', '.join(before))
         print('No SQL writes executed; only known NOA versions updated; no legacy file overwritten or deleted')
-        candidates = []
-        for directory in ['/usr/bin', '/usr/local/bin', '/usr/local']:
-            try:
-                names = [n for n in sftp.listdir(directory) if 'php' in n.lower()]
-                print('PHP runtime inventory:', directory, names)
-                for name in names:
-                    full = directory+'/'+name
-                    if stat.S_ISDIR(sftp.stat(full).st_mode):
-                        for suffix in ['/bin/php', '/bin/php-cli']:
-                            if exists(sftp, full+suffix): candidates.append(full+suffix)
-                    elif re.fullmatch(r'php(?:-cli|[0-9.]*)?', name): candidates.append(full)
-            except (OSError, IOError):
-                print('PHP runtime inventory unavailable:', directory)
-        migrated = False
-        for binary in candidates:
-            if not stat.S_ISREG(sftp.stat(binary).st_mode): continue
-            check = transport.open_session(timeout=15)
-            check.settimeout(20)
-            check.exec_command(shlex.quote(binary)+' -v')
-            version=check.recv(2048).decode('utf-8',errors='replace')
-            status=check.recv_exit_status(); check.close()
-            print('Runtime candidate:', binary, 'exit', status, version[:160])
-            if status or '(cli)' not in version: continue
-            run = transport.open_session(timeout=15); run.settimeout(40)
-            run.exec_command(shlex.quote(binary)+' '+shlex.quote(root+'/noa-bridge/source-cli.php'))
-            result=run.makefile('r').read().decode('utf-8',errors='replace').strip()
-            status=run.recv_exit_status();run.close()
-            try:
-                report=json.loads(result)
-            except ValueError:
-                raise RuntimeError('Source migration did not return JSON')
-            print('Source migration report:', json.dumps(report,ensure_ascii=False))
-            if status: raise RuntimeError('Source migration verification failed')
-            migrated=True;break
-        if not migrated:
-            try:
-                from noa_source_migrate import migrate
-                migrate(transport, sftp, root)
-            except Exception as exc:
-                print('SOURCE_IMPORT_PENDING:', type(exc).__name__, '(details withheld to protect database credentials)')
         sftp.close()
     finally:
         transport.close()
