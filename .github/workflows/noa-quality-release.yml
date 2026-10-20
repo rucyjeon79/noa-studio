@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Recover verified unregistered music into an immutable catalog edition.
+# Preserve exact Suno URLs and field-level recovery evidence; separate audio-only menu eligibility.
 on:
   push:
     branches: [main]
