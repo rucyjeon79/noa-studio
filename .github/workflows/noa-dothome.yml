@@ -122,6 +122,8 @@ jobs:
                   print('Public music document count:', count)
                   if count != 63 or '관리자 보기' in body:
                       raise SystemExit('Public music visibility mismatch')
+              if path in ('/','/noa2.php','/?device=mobile') and '2.0' in body:
+                  raise SystemExit('Unwanted version branding on production page')
               if path in ('/','/noa2.php','/?device=mobile') and 'Music beyond' not in body:
                   raise SystemExit('NOA homepage content missing')
           PY
