@@ -1,5 +1,5 @@
 name: NOA Dothome Deployment
-# Verify production CLI for complete source migration
+# Preserve all GitHub source data and use NOA native navigation
 
 on:
   push:
@@ -90,6 +90,10 @@ jobs:
         run: |
           set -eu
           python3 scripts/noa_build_seed.py
+          python3 scripts/noa_build_archive.py
+          php -l bridge/source-archive.php
+          php -l bridge/source-import.php
+          php -l bridge/source-cli.php
           php -l bridge/seed.php
           php -l deploy/noa-music.php
           php -l deploy/noa-home.extend.php
@@ -106,7 +110,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import urllib.request, urllib.error
-          cases = [('/',200),('/noa2.php',200),('/noa-music.php',200),('/noa-bridge/noa-face.jpg',200),('/noa-bridge/seed.php',403),('/noa-library.php',403),('/noa-bridge/index.php?health=1',403),('/noa-bridge/library.php',403),('/noa-bridge/setup.php',403),('/bbs/login.php',200),('/?device=mobile',200)]
+          cases = [('/',200),('/noa2.php',200),('/noa-music.php',200),('/noa-bridge/noa-face.jpg',200),('/noa-bridge/seed.php',403),('/noa-bridge/source-archive.php',403),('/noa-bridge/source-import.php',403),('/noa-bridge/source-cli.php',403),('/noa-library.php',403),('/noa-bridge/index.php?health=1',403),('/noa-bridge/library.php',403),('/noa-bridge/setup.php',403),('/bbs/login.php',200),('/?device=mobile',200)]
           for path, expected in cases:
               req = urllib.request.Request('https://noastudio.ai.kr'+path, headers={'User-Agent':'NOA-Production-Verification'})
               try:
@@ -118,6 +122,8 @@ jobs:
               print(path, status, 'final:', response.geturl())
               if status != expected:
                   raise SystemExit('Unexpected HTTP status')
+              if path in ('/','/noa2.php','/noa-music.php') and 'noa-studio.grok.me' in body:
+                  raise SystemExit('Legacy app link remains')
               if path == '/noa-music.php':
                   count = body.count('class="song"')
                   print('Public music document count:', count)
