@@ -1,5 +1,5 @@
 name: NOA quality repair and release
-# Existing UI/layout/navigation repair; preserve all source records and core files.
+# Repair GnuBoard descriptor warnings and distinguish songs from playlist records.
 on:
   push:
     branches: [main]
