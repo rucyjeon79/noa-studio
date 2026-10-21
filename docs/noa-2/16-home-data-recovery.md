@@ -72,3 +72,10 @@
 수집 원본과 카탈로그 대조: 사연곡 장르 등록 45곡, 커버곡 장르 등록 37곡. 홈 순위 가능 영상 중 사연곡 34개와 커버곡 37개는 영구 곡 ID가 미연결이다. 사연곡 후보 49개 중 14개, 연속듣기 후보 48개 중 16개는 공개·소유 채널·임베드 허용 조건을 충족하지 않아 제외됐다. 커버곡 후보의 합본 3개는 곡 순위 대신 연속듣기 순위로 분리했다. 이번 수집 회차의 순위 후보에는 조회수 누락으로 제외된 항목이 없었다.
 
 공개 순위 응답 `candidate.json`, 진단 `report.json`, 모바일/PC 화면 및 `render-report.json`은 위 검증 실행의 `noa-home-public-data-verification` 아티팩트에서 확인할 수 있다. 격리 화면은 각각 390px/1280px에서 세 영역 10개, 동일 제목·ID·링크·순서, 가로 넘침 없음, JS 런타임 오류 없음이 확인됐다. 운영 결과는 배포 후 재검증 전까지 기존 1/0/1이다.
+
+최종 검증 커밋: `aae00c01aa16c379327173ad86d2c5dd250089a8`.
+- 데이터·화면 검증 성공: https://github.com/rucyjeon79/noa-studio/actions/runs/39535044512
+- 기존 기능·권한·SQL 불변성 회귀 검사 성공: https://github.com/rucyjeon79/noa-studio/actions/runs/39535044604
+- 운영 5개 기존 파일의 SHA256은 수정 전 `128165c`와 모두 일치하며 수정 후보와 다름을 서버 읽기로 확인했다. 새 `home-store.php`를 포함한 6개 적용 대상과 이전 파일 해시는 아티팩트의 `deployed-source-hashes.json`에 있다.
+- 모바일·PC 모두 사연곡/커버곡/연속듣기의 30개 카드 썸네일을 스크롤 후 실제 로드(`complete && naturalWidth > 0`)했고 화면도 육안 확인했다. `render-report.json`의 `allRankedThumbnailsLoaded=true` 및 `sameDesktopMobileRows=true`를 확인했다.
+- 수집 시점 `2026-10-20T17:36:24+00:00` (= 한국시간 2026-10-21 02:36:24) 기준 결과다. 운영 배포는 수행하지 않았다.
