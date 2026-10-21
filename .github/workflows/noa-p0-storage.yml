@@ -1,0 +1,32 @@
+name: NOA P0 storage diagnosis only
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-p0-storage.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-work-deploy-storage-observation, cancel-in-progress: false}
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: |
+          python3 tests/deploy_guard_test.py
+          python3 -m py_compile scripts/noa_full_runtime_deploy.py scripts/noa_p0_storage_check.py
+          python3 -m pip install --user paramiko==3.5.1
+      - name: Observe quota and exercise backup guard without application writes
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: python3 scripts/noa_p0_storage_check.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-p0-storage
+          path: full-release-proof/
+          retention-days: 14
