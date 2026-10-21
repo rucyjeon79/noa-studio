@@ -1,6 +1,6 @@
 name: NOA JUKEBOX public cards and authorized audio
 # Continue existing cards; audit published sources and process authorized owned downloads only.
-# Administrator MP3/WAV uploads are the default audio input; never extract provider playback.
+# Upload-based audio, explicit stored-file downloads and responsive production checks.
 on:
   push:
     branches: [main, chatgpt/jukebox-20261021]

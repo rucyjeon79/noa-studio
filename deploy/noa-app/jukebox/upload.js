@@ -11,7 +11,7 @@ async function api(action,body,query='') {const r=await fetch('/noa-app/jukebox/
 function apply(d){for(const c of cards().filter(c=>c.dataset.jukeboxKey===d.key)){
  c.dataset.jukeboxStatus=d.status;c.dataset.audio=d.audio||'';let actions=c.querySelector('.jukebox-actions');if(!actions)continue;actions.replaceChildren();
  const button=(label,kind,cls)=>{const b=document.createElement('button');b.type='button';b.className=cls+' noa-icon-button';b.setAttribute('aria-label',c.dataset.title+' '+label);b.title=label;b.innerHTML=svg(kind);actions.append(b);return b;};
- if(d.ready){button('최적화 MP3 재생','play','sound-play');const a=document.createElement('a');a.className='jukebox-download noa-icon-button';a.href=d.download;a.title='최적화 MP3 다운로드';a.setAttribute('aria-label',c.dataset.title+' 최적화 MP3 다운로드');a.innerHTML=svg('download');actions.append(a);}
+ if(d.ready){button('최적화 MP3 재생','play','sound-play');const a=document.createElement('a');a.className='jukebox-download noa-icon-button';a.href=d.download;a.download='';a.title='최적화 MP3 다운로드';a.setAttribute('aria-label',c.dataset.title+' 최적화 MP3 다운로드');a.innerHTML=svg('download');actions.append(a);}
  if(['analyzing','processing'].includes(d.status)){button(labels[d.status],'busy','jukebox-busy').disabled=true;watching.add(d.key);}
  else if(!d.ready){button(labels[d.status]||'음원 업로드','upload','sound-upload');}
  const state=c.querySelector('.jukebox-state');if(state){state.textContent=labels[d.status]||d.status;if(d.error)state.textContent+=' · '+message(d.error);}

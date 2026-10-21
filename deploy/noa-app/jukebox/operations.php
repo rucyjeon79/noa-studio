@@ -24,7 +24,12 @@ function nj_operation(PDO $db,string $action,array $input=[]):array{
   $rows=nj_assets($db);$out=['assets'=>count($rows),'covers'=>0,'audio'=>0,'audio_bytes'=>0,'invalid'=>[]];
   $out['qa_assets']=0;foreach($rows as $key=>$r){if(str_starts_with($key,'jukebox:qa:')){$out['qa_assets']++;$out['assets']--;continue;}foreach(['cover','audio'] as $type){if(nj_verified($r,$type)){$out[$type==='cover'?'covers':'audio']++;if($type==='audio')$out['audio_bytes']+=(int)$r['audio_bytes'];}elseif(!empty($r[$type.'_path']))$out['invalid'][]=['key'=>$key,'type'=>$type];}}
   $out['qa_results']=[];foreach($rows as $key=>$r)if(str_starts_with($key,'jukebox:qa:'))$out['qa_results'][]=['key'=>$key,'ready'=>nj_verified($r,'audio'),'cover'=>nj_verified($r,'cover'),'audio_path'=>$r['audio_path'],'cover_path'=>$r['cover_path'],'sha256'=>$r['audio_sha256'],'bytes'=>(int)$r['audio_bytes'],'source'=>json_decode($r['source_analysis']??'null',true),'correction'=>json_decode($r['correction']??'null',true),'final'=>json_decode($r['final_analysis']??'null',true)];
-  $out['download_logs']=(int)$db->query('SELECT COUNT(*) FROM noa_jukebox_downloads')->fetchColumn();$out['temporary_inputs']=count(glob(nj_private().'/incoming/*/input.audio'));return $out;
+  $out['download_logs']=(int)$db->query('SELECT COUNT(*) FROM noa_jukebox_downloads')->fetchColumn();$out['temporary_input_states']=[];
+  foreach(glob(nj_private().'/incoming/*/input.audio') as $file){$id=basename(dirname($file));$q=$db->prepare('SELECT id,song_key,status,sha256 FROM noa_jukebox_uploads WHERE id=?');$q->execute([$id]);$u=$q->fetch(PDO::FETCH_ASSOC);
+   if($u&&$u['status']==='ready'&&$u['sha256']&&hash_equals($u['sha256'],hash_file('sha256',$file)))nu_clean($u);
+   else $out['temporary_input_states'][]=$u?['id'=>$id,'key'=>$u['song_key'],'status'=>$u['status']]:['id'=>$id,'status'=>'unregistered_temporary_input'];
+  }
+  $out['temporary_inputs']=count(glob(nj_private().'/incoming/*/input.audio'));return $out;
  }
  if($action==='integrity_snapshot'){
   $h=hash_init('sha256');$n=0;foreach($db->query("SELECT doc_key,kind,payload,revision,updated_by FROM noa_documents WHERE kind<>'jukebox_qa' ORDER BY doc_key") as $r){hash_update($h,json_encode(array_values($r),JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR));$n++;}

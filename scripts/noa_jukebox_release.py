@@ -8,7 +8,7 @@ import noa_jukebox_owned as owned
 from noa_jukebox_upload_worker import process_uploads
 ROOT='/hosting/noastudio/html'
 APP='noa-app/jukebox/'
-NEW={APP+n:'deploy/'+APP+n for n in ['core.php','cli.php','stream.php','index.php','operations.php','service.php','upload-core.php','upload.php','download.php','upload.js','upload.css']}
+NEW={APP+n:'deploy/'+APP+n for n in ['core.php','cli.php','stream.php','index.php','operations.php','service.php','upload-core.php','upload.php','download.php','upload.js','upload.css','mobile-check.php']}
 INTEGRATE={'noa-bridge/catalog.php':'bridge/catalog.php','noa-music.php':'deploy/noa-music.php'}
 BASE=json.loads(Path('scripts/noa_jukebox_baseline.json').read_text())
 
