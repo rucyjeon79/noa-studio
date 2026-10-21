@@ -50,8 +50,7 @@ def main():
    files={APP+n:'deploy/'+APP+n for n in ['recovery-core.php','queue-core.php','upload-core.php','operations.php','service.php','upload.php','upload-transport.js','upload.js','upload.css','index.php']}
    files['noa-music.php']='deploy/noa-music.php'
    protected={p:sha(read(ROOT+'/'+p)) for p in ['common.php','config.php','data/dbconfig.php','index.php','.htaccess'] if read(ROOT+'/'+p) is not None}
-   parent='/hosting/noastudio/noa-deploy-backups';mkdir(parent,0o700)
-   backup=parent+'/jukebox-interface-'+os.environ['GITHUB_RUN_ID'];mkdir(backup,0o700)
+   backup=None
    changes=[]
    for remote,local in files.items():
     current=read(ROOT+'/'+remote);new=Path(local).read_bytes()
@@ -60,6 +59,8 @@ def main():
      if remote not in [APP+'recovery-core.php',APP+'upload-transport.js']:raise RuntimeError('existing_jukebox_required')
      changes.append((remote,new,None));continue
     if sha(current) not in BASE[remote]:raise RuntimeError('unknown_interface_baseline:'+remote)
+    if backup is None:
+     parent='/hosting/noastudio/noa-deploy-backups';mkdir(parent,0o700);backup=parent+'/jukebox-interface-'+os.environ['GITHUB_RUN_ID']+'-'+os.environ.get('GITHUB_RUN_ATTEMPT','1');mkdir(backup,0o700)
     target=backup+'/'+remote.replace('/','_')
     with s.open(target,'wx') as f:f.write(current)
     s.chmod(target,0o600)
@@ -85,6 +86,8 @@ def main():
   cli=signed_service(key)
   if os.environ.get('NOA_JUKEBOX_WATCHDOG')=='1':
    if os.environ.get('GITHUB_EVENT_NAME')!='schedule':
+    print('JUKEBOX_RUNTIME_REFRESH '+json.dumps(cli('runtime_refresh')),flush=True)
+   if os.environ.get('NOA_JUKEBOX_VERIFY_RECOVERY')=='true':
     env=dict(os.environ);env['NOA_JUKEBOX_SERVICE_KEY']=key
     subprocess.run(['node','tests/jukebox/live_recovery_test.cjs'],env=env,check=True)
    result=watchdog(cli);work=Path('jukebox-proof');work.mkdir(exist_ok=True);(work/'watchdog.json').write_text(json.dumps(result));print('JUKEBOX_WATCHDOG_RESULT '+json.dumps(result),flush=True);return

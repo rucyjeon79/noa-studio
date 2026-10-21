@@ -56,7 +56,7 @@ function nu_chunk(PDO $db,string $id,int $index,string $raw):array{
  }finally{flock($lock,LOCK_UN);fclose($lock);}
 }
 function nu_finish(PDO $db,string $id):array{
- $r=nu_row($db,$id);if($r['status']!=='uploading')return nu_public($db,$r['song_key']);$dir=nu_dir($id);$lock=fopen($dir.'/.lock','c');if(!$lock||!flock($lock,LOCK_EX))throw new RuntimeException('upload_lock_failed');
+ $r=nu_row($db,$id);if($r['status']==='failed'){if(in_array($r['error'],['actual_audio_format_mismatch','mp3_wav_size_or_identity_invalid'],true))throw new InvalidArgumentException($r['error']);throw new DomainException($r['error']?:'upload_failed_reselect_source');}if($r['status']!=='uploading')return nu_public($db,$r['song_key']);$dir=nu_dir($id);$lock=fopen($dir.'/.lock','c');if(!$lock||!flock($lock,LOCK_EX))throw new RuntimeException('upload_lock_failed');
  try{
   $r=nu_row($db,$id);if($r['status']!=='uploading')return nu_public($db,$r['song_key']);
   $assembled=is_file($dir.'/input.audio')&&!is_link($dir.'/input.audio')&&(int)filesize($dir.'/input.audio')===(int)$r['file_bytes'];

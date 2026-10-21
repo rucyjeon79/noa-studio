@@ -5,6 +5,7 @@ require_once __DIR__.'/core.php';
 require_once __DIR__.'/upload-core.php';
 function nj_operation(PDO $db,string $action,array $input=[]):array{
  nr_schema($db);
+ if($action==='runtime_refresh'){$files=[];foreach(['service.php','operations.php','queue-core.php','recovery-core.php','upload-core.php','upload.php','index.php'] as $name){$file=__DIR__.'/'.$name;$files[$name]=['sha256'=>hash_file('sha256',$file),'invalidated'=>function_exists('opcache_invalidate')?@opcache_invalidate($file,true):null];}return ['files'=>$files,'validate_timestamps'=>ini_get('opcache.validate_timestamps'),'revalidate_seconds'=>ini_get('opcache.revalidate_freq'),'processes_terminated'=>0];}
  if($action==='qa_selftest')return nr_selftest($db);
  if($action==='verification_snapshot'){$files=[];foreach(nj_assets($db) as $key=>$asset)if(nj_verified($asset,'audio'))$files[$key]=['sha256'=>$asset['audio_sha256'],'bytes'=>(int)$asset['audio_bytes']];return ['files'=>$files,'integrity'=>nj_operation($db,'integrity_snapshot')];}
  if(in_array($action,['qa_probe','qa_upload'],true)){

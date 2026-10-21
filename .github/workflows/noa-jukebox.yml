@@ -7,6 +7,12 @@ on:
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
+    inputs:
+      verify_recovery:
+        description: 'Run bounded private-QA production recovery tests'
+        type: boolean
+        required: false
+        default: false
 permissions: {contents: read}
 jobs:
   storage_rescue:
@@ -95,12 +101,15 @@ jobs:
           NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
           NOA_JUKEBOX_WATCHDOG: '1'
+          NOA_JUKEBOX_VERIFY_RECOVERY: ${{ inputs.verify_recovery || (github.ref == 'refs/heads/chatgpt/jukebox-20261021') }}
         run: python3 scripts/noa_jukebox_release.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: noa-jukebox-watchdog-proof
-          path: jukebox-proof/watchdog.json
+          path: |
+            jukebox-proof/watchdog.json
+            jukebox-proof/recovery-tests.json
           retention-days: 14
   release:
     needs: [validate, interface]
