@@ -23,6 +23,10 @@ class RecoveryContract(unittest.TestCase):
    s=(ROOT/'deploy'/p).read_text()
    self.assertNotRegex(s,r'noa-ui\.(?:css|js)\?v=20261021')
    self.assertIn('noa-ui.css?v=20261022-recovery1',s)
+ def test_extension_uses_the_installed_path_and_stages_outside_extend(self):
+  s=(ROOT/'scripts/noa_uiux_release.py').read_text()
+  self.assertIn("FILES['extend/noa.design.php']='deploy/noa-design.extend.php'",s)
+  self.assertIn("tmp=ROOT+'/noa-bridge/.uiux-'",s)
  def test_no_design_changes_to_owner_processing_files(self):
   import subprocess
   paths=subprocess.check_output(['git','diff','--name-only','81641832f74621d600e227e5840e8c2c7b187a1b','HEAD'],cwd=ROOT,text=True).splitlines()
