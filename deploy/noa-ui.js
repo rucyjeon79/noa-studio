@@ -15,9 +15,15 @@ function translateFixedNodes(){document.querySelectorAll('#mb_login h2,#mb_login
 function markLabels(){decorate();translateFixedNodes();document.querySelectorAll('[data-noa-i18n]').forEach(el=>{const text=tr(el.dataset.noaI18n);if(el.textContent!==text)el.textContent=text});document.querySelectorAll('.controls button,#pause-play,#my-playlists h2,#lyrics-label,#player-status,#noa-settings-status,#act-play,#install,#genre option,#type option,#my-select option[value=""],#login_fs label,#login_info a,#login_info label,.noa-page main>p,.noa-footer a').forEach(updateLabel);document.querySelectorAll('#search,#my-title,#mb_login input[placeholder],#register_form input[placeholder]').forEach(el=>{const value=el.dataset.noaPlaceholder||el.getAttribute('placeholder');if(words[value]){el.dataset.noaPlaceholder=value;const next=tr(value);if(el.placeholder!==next)el.placeholder=next}});root.lang=language;}
 
 function icon(key){return '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="'+icons[key]+'"/></svg>'}
+function actionIcon(el){const href=el.getAttribute('href')||'',text=el.textContent.trim();return /캐릭터|회원|계정/.test(text)?'user':/설명|정보|세계관/.test(text)?'book':/커뮤니티|소식/.test(text)?'community':/youtube|영상|MV/.test(text+' '+href)?'youtube':/다운로드|관리|설정/.test(text)?'settings':/곡|suno/.test(text+' '+href)?'music':'library';}
 function decorate(){
+ // Existing nodes/URLs/listeners are retained. Exclude card links, document-body citations and native navigation.
+ for(const el of document.querySelectorAll('main a,main summary')){
+  if(el.matches('[data-noa-icon],.noa-action,.noa-logo,.brand,.noa-music-card,.noa-genre,.noa-world-act,.noa-personal-card,.noa-browse-card')||el.closest('nav,footer,.noa-world-text,[data-noa-document-link]')||el.querySelector('img,svg')||!el.textContent.trim())continue;
+  el.dataset.noaIcon=actionIcon(el);
+ }
  if(document.querySelector('.lab-tabs'))for(const a of document.querySelectorAll('.lab-tabs a')){const keys={'#lab-text':'settings','#lab-create':'music','#lab-jobs':'library','#lab-growth':'youtube'};if(keys[a.getAttribute('href')])a.dataset.noaIcon=keys[a.getAttribute('href')];}
- document.querySelectorAll('[data-noa-icon]').forEach(el=>{if(el.querySelector('svg')||!icons[el.dataset.noaIcon])return;const label=document.createElement('span');while(el.firstChild)label.append(el.firstChild);el.insertAdjacentHTML('afterbegin',icon(el.dataset.noaIcon));el.append(label);el.classList.add('noa-action');});
+ document.querySelectorAll('[data-noa-icon]').forEach(el=>{if(el.querySelector('svg')||!icons[el.dataset.noaIcon])return;const label=document.createElement('span');while(el.firstChild)label.append(el.firstChild);if(el.dataset.noaI18n){label.dataset.noaI18n=el.dataset.noaI18n;delete el.dataset.noaI18n;}el.insertAdjacentHTML('afterbegin',icon(el.dataset.noaIcon));el.append(label);el.classList.add('noa-action');});
  // Explicit section chrome only: song controls and JUKEBOX DOM are never rewritten.
  if(location.pathname==='/noa-music.php')return;
  document.querySelectorAll('main>h1,.lab-heading h1,.lab-panel>h2,.lab-section>h2,.noa-section h2,.noa-section-head h2,.noa-world-prose>h2,.noa-world-heading>h2,#youtube-playlists>h2').forEach(el=>{if(el.dataset.noaHeading)return;el.dataset.noaHeading='true';const text=el.textContent;let key=/NOA WORLD|세계관|프롤로그|에필로그|챕터/.test(text)?'book':/사연|당신의 이야기/.test(text)?'mail':/커버/.test(text)?'mic':/EP|컬렉션/.test(text)?'disc':/목록|플레이리스트|보관함/.test(text)?'playlists':/MY|최근|계정/.test(text)?'user':/관리|작업실|설정/.test(text)?'settings':'music';const label=document.createElement('span');while(el.firstChild)label.append(el.firstChild);if(el.dataset.noaI18n){label.dataset.noaI18n=el.dataset.noaI18n;delete el.dataset.noaI18n;}el.insertAdjacentHTML('afterbegin',icon(key));el.append(label);});
@@ -81,7 +87,7 @@ function prepare(card,meta){
 function plan(count,capacity,featured=true){
  const max=Math.max(1,Math.min(5,Math.floor(capacity))),n=Math.max(0,count);
  let columns=Math.min(n||1,max);
- if(n===10)columns=max>=5?5:max>=3?3:Math.min(2,max);
+ if(n===10)columns=max>=5?5:Math.min(2,max);
  else if(n===9)columns=max>=3?3:Math.min(2,max);
  else if(n===8)columns=max>=4?4:Math.min(2,max);
  else if(n===7)columns=max>=4?4:Math.min(3,max);
@@ -90,7 +96,7 @@ function plan(count,capacity,featured=true){
  else if(n===4)columns=Math.min(2,max);
  else if(n===3)columns=max>=3?3:1;
  if(!featured&&columns===2&&n>2&&n%2===1)columns=1;
- const hero=featured&&columns>1&&n>columns&&n%columns===1;
+ const hero=featured&&columns===2&&n>columns&&n%columns===1;
  const remaining=n-(hero?1:0),rows=[];
  if(remaining){
   if(!hero&&columns>1&&remaining>columns&&remaining%columns===1){
@@ -113,14 +119,14 @@ const specs=[
  ['#youtube-playlists','p',false,180,136,4]
 ];
 const hosts=new Map(),chromeObserved=new WeakSet();let pending=false;
-function chromeSpace(){const player=document.querySelector('.noa-transport');let height=0;if(player){if(!chromeObserved.has(player)){resize.observe(player);chromeObserved.add(player);}if(!player.hidden&&getComputedStyle(player).display!=='none')height=player.getBoundingClientRect().height;}style(document.documentElement,'--noa-player-space',Math.ceil(height)+'px');}
+function chromeSpace(){const nav=document.querySelector('.noa-mobile-nav');let navHeight=0;if(nav){if(!chromeObserved.has(nav)){resize.observe(nav);chromeObserved.add(nav);}if(getComputedStyle(nav).display!=='none')navHeight=nav.getBoundingClientRect().height;}style(document.documentElement,'--noa-nav-space',Math.ceil(navHeight)+'px');const player=document.querySelector('.noa-transport');let height=0;if(player){if(!chromeObserved.has(player)){resize.observe(player);chromeObserved.add(player);}if(!player.hidden&&getComputedStyle(player).display!=='none')height=player.getBoundingClientRect().height;}style(document.documentElement,'--noa-player-space',Math.ceil(height)+'px');}
 
 function style(el,key,value){if(el.style.getPropertyValue(key)!==value)el.style.setProperty(key,value);}
 function arrange(host,spec){
  const box=getComputedStyle(host),width=host.clientWidth-parseFloat(box.paddingLeft)-parseFloat(box.paddingRight);if(!width||host.hidden)return;
  const cards=[...host.children].filter(e=>e.matches(spec[1])&&!e.hidden&&getComputedStyle(e).display!=='none');
  if(!cards.length){host.classList.remove('noa-balanced');return;}
- const gap=innerWidth<=600?12:16,min=innerWidth<=600?spec[4]:spec[3];
+ const gap=width<=600?12:16,min=width<=600?spec[4]:spec[3];
  if(spec[2])cards.forEach(card=>prepare(card));
  const capacity=Math.min(spec[5],Math.max(1,Math.floor((width+gap)/(min+gap))));
  const layout=plan(cards.length,capacity,spec[2]),offset=host.id==='youtube-playlists'?1:0;
@@ -149,11 +155,10 @@ window.NoaCardLayout={plan,presentTitle,movement,prepare,setMovement,refresh:sch
 /* Semi-Gloss Sculpted Glass: preserve action nodes, handlers, labels and permissions. */
 (()=>{'use strict';
 if(window.NoaGlass||/^\/noa-app\/(?:jukebox|taxonomy|database)(?:\/|$)/.test(location.pathname))return;
-const selector='.noa-button.primary,button[type="submit"].noa-button,.btn_submit,#noa-settings-save,#lab-text-submit,.lab-actions .lab-icon-button:not([aria-label="작업 취소"]),a.noa-button[href*="lab-file.php"][href*="download=1"],.lab-editor-link[href*="download=1"],.noa-transport .controls button,.sound-play,.sound-upload,.jukebox-replace,.jukebox-download,.jukebox-busy,.jukebox-reserve,#noa-hero-toggle,#my-new,#my-add,#my-save,#my-play,#act-play,.noa-workspace>a[href="/noa-library.php"],.noa-workspace>a[href="/noa-ai-lab.php"]';
+const selector='.noa-button.primary,button[type="submit"].noa-button,.btn_submit,#noa-settings-save,#lab-text-submit,.lab-actions .lab-icon-button:not([aria-label="작업 취소"]),a.noa-button[href*="lab-file.php"][href*="download=1"],.lab-editor-link[href*="download=1"],.noa-transport .controls button,.sound-play,.sound-upload,.jukebox-replace,.jukebox-download,.jukebox-busy,.jukebox-reserve,#my-new,#my-add,#my-save,#my-play,#act-play,.noa-workspace>a[href="/noa-library.php"],.noa-workspace>a[href="/noa-ai-lab.php"]';
 const labels={previous:'이전',next:'다음',repeat:'반복',shuffle:'셔플','dock-more':'더보기'};
 function labelFor(el){
  if(el.id==='pause-play')return el.getAttribute('aria-pressed')==='true'?'일시정지':'재생';
- if(el.id==='noa-hero-toggle')return el.dataset.playing==='true'?'일시정지':'재생';
  if(labels[el.id])return labels[el.id];
  if(el.matches('.sound-play'))return '재생';if(el.matches('.jukebox-busy'))return el.disabled?'처리 중':'파일 변경';if(el.matches('.jukebox-replace'))return '교체';if(el.matches('.sound-upload'))return '업로드';
  if(el.matches('.jukebox-download'))return '다운로드';if(el.matches('.jukebox-busy'))return '처리 중';
@@ -175,4 +180,21 @@ function blockDisabled(e){if(e.type==='keydown'&&!['Enter',' '].includes(e.key))
 document.addEventListener('click',blockDisabled,true);document.addEventListener('keydown',blockDisabled,true);
 window.addEventListener('noa-theme',()=>refresh());document.documentElement.dataset.noaGlass='true';
 window.NoaGlass={refresh};refresh();
+})();
+/* Sound status is display-only. Existing upload/FIFO state and callbacks remain owned by Work_Music. */
+(()=>{'use strict';if(!document.body.classList.contains('noa-sound-page'))return;
+ const labels={audio_pending:'음원 파일 연결 필요',waiting:'전송 예약',reserved:'전송 예약',uploading:'업로드 중',queued:'최적화 대기',retrying:'최적화 대기',analyzing:'최적화 중',processing:'최적화 중',verifying:'최적화 중',ready:'재생 가능',failed:'재시도 필요'};
+ const pending=new Set();let frame=false;
+ function render(card){
+  const raw=card.dataset.reservationState||card.dataset.jukeboxStatus||'audio_pending',ready=!!card.dataset.audio,known=Object.values(labels).includes(raw)?raw:labels[raw];
+  const safe=['전송 일시정지','서버 응답 확인 중','자동 복구 중','파일 재선택 필요'].includes(raw)?raw:null;const state=raw==='ready'&&!ready?'음원 파일 연결 필요':known||safe||(ready?'재생 가능':'음원 파일 연결 필요');
+  const text=ready&&['queued','retrying','analyzing','processing','verifying'].includes(raw)?'재생 가능 · 새 음원 최적화 중':state;
+  const genre=window.NoaBrowse?.names[card.dataset.genre]||'';
+  const node=card.querySelector('.song-select .info small');if(node){const next=[genre,text].filter(Boolean).join(' · ');if(node.textContent!==next)node.textContent=next;}
+ }
+ function schedule(card){if(!card)return;pending.add(card);if(frame)return;frame=true;requestAnimationFrame(()=>{frame=false;for(const card of pending)if(card.isConnected)render(card);pending.clear();});}
+ const host=document.getElementById('songs');if(!host)return;
+ new MutationObserver(records=>{for(const r of records)schedule(r.target.closest?.('.song'));}).observe(host,{subtree:true,childList:true,attributes:true,attributeFilter:['data-jukebox-status','data-reservation-state','data-audio']});
+ for(const card of host.querySelectorAll('.song'))schedule(card);
+ window.addEventListener('noa-theme',()=>{for(const card of host.querySelectorAll('.song'))schedule(card);});
 })();

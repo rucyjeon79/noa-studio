@@ -48,7 +48,7 @@ html[data-noa-theme="noa-ivory"]{color-scheme:light}html[data-radius="sharp"]{--
 .noa-art img.noa-genre-art,.noa-browse-card img.noa-genre-art{object-fit:contain;background:var(--noa-surface)}
 
 /* Home shows ranked official videos; original intro remains a hero asset only. */
-.noa-hero-art{position:relative}.noa-hero-art video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--noa-bg)}#noa-hero-toggle{position:absolute;right:16px;bottom:16px;z-index:3;display:grid;place-items:center;width:44px;height:44px;padding:10px;border-radius:50%;border:1px solid var(--noa-line);background:var(--noa-bg);color:var(--noa-text);cursor:pointer}#noa-hero-toggle svg{width:22px;height:22px}#noa-hero-toggle[data-playing=true] svg{opacity:.5}.noa-hero-status{position:absolute;left:16px;bottom:64px;right:16px;font-size:12px;background:var(--noa-bg);color:var(--noa-text)}.noa-hero-status:empty{display:none}.noa-music-card strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.5}.noa-art[data-unavailable=true]:after{content:'썸네일을 불러오지 못했습니다';display:grid;place-items:center;min-height:100%;font-size:12px;color:var(--noa-muted)}#noa-ranking-status,#noa-playlist-basis{font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+.noa-hero-art{position:relative}.noa-hero-art video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--noa-bg)}.noa-hero-status{position:absolute;left:16px;bottom:64px;right:16px;font-size:12px;background:var(--noa-bg);color:var(--noa-text)}.noa-hero-status:empty{display:none}.noa-music-card strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.5}.noa-art[data-unavailable=true]:after{content:'썸네일을 불러오지 못했습니다';display:grid;place-items:center;min-height:100%;font-size:12px;color:var(--noa-muted)}#noa-ranking-status,#noa-playlist-basis{font-size:12px;line-height:1.6;overflow-wrap:anywhere}
 @media(orientation:portrait) and (max-width:900px){.noa-hero{display:flex;flex-direction:column;min-height:0}.noa-hero-art{order:0;height:calc(100svh - var(--noa-dock) - 116px);min-height:360px;width:100%;background:var(--noa-bg)}.noa-hero-art picture,.noa-hero-art picture img{height:100%;width:100%;aspect-ratio:auto;object-fit:contain}.noa-hero-copy{order:1;padding:20px;gap:8px}.noa-hero-copy h1{font-size:28px;margin:0;line-height:1.1}.noa-hero-copy h1 br{display:none}.noa-hero-copy p{margin:0}.noa-hero-copy .noa-eyebrow{display:none}.noa-hero-copy .noa-button{margin-top:8px}}
 
 /* Premium full-bleed library cards: preserve existing Grok imagery and responsive grid. */
@@ -180,7 +180,6 @@ html[data-noa-precision] .noa-hero-copy .noa-button{margin:0;min-height:44px;pad
 html[data-noa-precision] .noa-hero-art{grid-area:media;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);block-size:clamp(240px,28vw,336px);inline-size:100%;min-height:0;background:var(--noa-bg);position:relative}
 html[data-noa-precision] .noa-hero-art>:is(picture,video){grid-area:1/1;position:static;inset:auto;inline-size:100%;block-size:100%;min-inline-size:0;min-block-size:0;max-block-size:none;aspect-ratio:auto;object-fit:contain}
 html[data-noa-precision] .noa-hero-art picture img{position:static;inline-size:100%;block-size:100%;min-block-size:0;max-block-size:none;aspect-ratio:auto;object-fit:contain;object-position:center;transform:none}
-html[data-noa-precision] #noa-hero-toggle{grid-area:1/1;position:relative;inset:auto;justify-self:end;align-self:end;inline-size:44px;block-size:44px;min-height:44px;padding:10px;margin:var(--noa-space-3);z-index:3}
 html[data-noa-precision] .noa-hero-status{grid-area:1/1;position:relative;inset:auto;justify-self:start;align-self:end;max-inline-size:calc(100% - 80px);margin:var(--noa-space-3);font-size:11px;line-height:1.5}
 html[data-noa-precision] .noa-menu a{min-inline-size:0}
 html[data-noa-precision] .noa-menu a span{min-inline-size:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -223,10 +222,6 @@ html[data-noa-glass] .noa-glass-control:is(.primary,[aria-pressed=true],[aria-se
 html[data-noa-glass] .noa-glass-control:not(:disabled):not([aria-disabled=true]):active{transform:translateY(.5px);box-shadow:inset 0 2px 4px var(--noa-glass-floor),inset 0 -1px 1px var(--noa-glass-inset),0 0 1px var(--noa-glass-contact)}
 html[data-noa-glass] .noa-glass-control:focus-visible{outline:2px solid var(--noa-accent);outline-offset:3px}
 html[data-noa-glass] .noa-glass-control:is(:disabled,[aria-disabled=true]){opacity:.7;color:var(--noa-muted);cursor:not-allowed;transform:none}
-/* Existing icon nodes stay intact. Generated visual labels do not alter accessible names. */
-html[data-noa-glass] .noa-glass-control[data-noa-glass-label],html[data-noa-glass] :is(.noa-transport .controls,.lab-main) .noa-glass-control[data-noa-glass-label],html[data-noa-glass] #songs .noa-glass-control[data-noa-glass-label],html[data-noa-glass] #noa-hero-toggle.noa-glass-control{
- display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--noa-space-1,4px);inline-size:auto;block-size:auto;min-inline-size:44px;min-block-size:44px;padding:6px;flex:none;border-radius:var(--noa-control-radius,8px);line-height:20px;
-}
 html[data-noa-glass] .noa-glass-control[data-noa-glass-label] svg{inline-size:20px;block-size:20px;flex:none}
 html[data-noa-glass] .noa-glass-control[data-noa-glass-label]::after{content:attr(data-noa-glass-label);display:block;position:static;inset:auto;transform:none;background:none;border:0;box-shadow:none;margin:0;padding:0;font-size:10px;line-height:12px;max-inline-size:12em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--noa-glass-text);pointer-events:none;letter-spacing:0;text-decoration:none}
 html[data-noa-glass] .lab-main .noa-glass-control[data-noa-glass-label]::after{position:static;transform:none;background:none;border:0;padding:0;color:var(--noa-glass-text)}
@@ -236,7 +231,6 @@ html[data-noa-glass] .lab-editor-link.noa-glass-control{padding:8px 12px;text-de
 @media(forced-colors:active){html[data-noa-glass] .noa-glass-control{border-color:ButtonText;box-shadow:none}html[data-noa-glass] .noa-glass-control:focus-visible{outline-color:Highlight}}
 
 html[data-noa-glass]{--noa-glass-paint:radial-gradient(ellipse 95% 150% at 50% -42%,var(--noa-glass-reflection),transparent 72%),radial-gradient(ellipse 140% 170% at 8% 6%,var(--noa-glass-crown),transparent 67%),radial-gradient(ellipse 100% 160% at 100% 120%,var(--noa-glass-shade),transparent 68%),radial-gradient(ellipse 150% 160% at 46% 30%,var(--noa-glass-base),var(--noa-glass-shade))}
-html[data-noa-glass] #noa-hero-toggle.noa-glass-control,html[data-noa-glass].noa-g5 #login_fs .btn_submit.noa-glass-control{background-image:var(--noa-glass-paint);background-color:var(--noa-glass-base);color:var(--noa-glass-text);border:1px solid var(--noa-glass-edge);border-radius:var(--noa-control-radius,8px)}
 
 /* Existing upload entry/dialog palette only; processing logic and dedicated editor stay owned. */
 html[data-noa-glass] .noa-sound-page .jukebox-state{color:var(--noa-muted)}
@@ -244,5 +238,36 @@ html[data-noa-glass] .jukebox-upload-dialog{background:var(--noa-surface);color:
 html[data-noa-glass] .jukebox-upload-dialog input:not([type=file]){background:var(--noa-bg);color:var(--noa-text);border-color:var(--noa-line)}
 html[data-noa-glass] .jukebox-upload-dialog button:not(.noa-glass-control){background:var(--noa-raised);color:var(--noa-text);border-color:var(--noa-line)}
 
-html[data-noa-glass] #noa-hero-toggle.noa-glass-control[data-playing=true]{border-color:color-mix(in srgb,var(--noa-accent) 64%,var(--noa-glass-edge))}
-html[data-noa-glass] #noa-hero-toggle.noa-glass-control[data-playing=true] svg{opacity:1}
+html[data-noa-glass] .noa-glass-control[data-noa-glass-label],html[data-noa-glass] :is(.noa-transport .controls,.lab-main) .noa-glass-control[data-noa-glass-label],html[data-noa-glass] #songs .noa-glass-control[data-noa-glass-label]{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--noa-space-1);inline-size:auto;block-size:auto;min-inline-size:44px;min-block-size:44px;padding:6px;flex:none;border-radius:var(--noa-control-radius);line-height:20px}
+html[data-noa-glass].noa-g5 #login_fs .btn_submit.noa-glass-control{background-image:var(--noa-glass-paint);background-color:var(--noa-glass-base);color:var(--noa-glass-text);border:1px solid var(--noa-glass-edge);border-radius:var(--noa-control-radius)}
+
+/* Recovery 20261022: action semantics and intrinsic content containers, not underline suppression alone. */
+html[data-noa-precision] main .noa-action{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--noa-space-1);min-inline-size:44px;min-block-size:44px;max-inline-size:100%;padding:var(--noa-space-2) var(--noa-space-3);margin:0;text-decoration:none;text-align:center;line-height:1.3;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius);background-color:var(--noa-surface);color:var(--noa-text)}
+html[data-noa-precision] main .noa-action:hover,html[data-noa-precision] main .noa-action:focus-visible,html[data-noa-precision] main details[open]>.noa-action{color:var(--noa-accent);border-color:var(--noa-accent);text-decoration:none}
+html[data-noa-precision] main summary.noa-action{cursor:pointer;list-style:none;margin-block:var(--noa-space-2)}
+html[data-noa-precision] main summary.noa-action::-webkit-details-marker{display:none}
+html[data-noa-precision] main .noa-action>svg{inline-size:20px;block-size:20px;color:var(--noa-accent);flex:none}
+html[data-noa-precision] main .noa-action>span{display:grid;gap:var(--noa-space-1);font-size:11px;line-height:1.3;max-inline-size:28em;min-inline-size:0;overflow-wrap:anywhere}
+html[data-noa-precision] main .noa-action small{font-size:10px;color:var(--noa-muted)}
+html[data-noa-precision] .noa-hero{container-type:inline-size;grid-template-columns:minmax(0,1fr);grid-template-areas:'media' 'copy';align-items:stretch}
+html[data-noa-precision] .noa-hero-art{block-size:clamp(136px,32svh,300px);background:var(--noa-raised);isolation:isolate}
+html[data-noa-precision] .noa-hero-art>:is(picture,video){grid-area:1/1}
+html[data-noa-precision] .noa-hero-art video{background:transparent;object-fit:contain;z-index:1}
+html[data-noa-precision] .noa-hero-art:is([data-media-state=playing],[data-media-state=ended]) picture img{object-fit:cover;opacity:.38}
+html[data-noa-precision] .noa-hero-copy{inline-size:100%;padding:var(--noa-space-3) var(--noa-space-4);gap:var(--noa-space-2)}
+html[data-noa-precision] .noa-hero-copy h1{font-size:clamp(24px,3cqi,36px)}
+html[data-noa-precision] .noa-hero-copy h1 br{display:none}
+html[data-noa-precision] .noa-hero-copy .noa-eyebrow{display:none}
+html[data-noa-precision] .noa-hero-status{z-index:2;max-inline-size:calc(100% - 24px)}
+html[data-noa-precision] .noa-character{grid-template-columns:minmax(80px,28%) minmax(0,1fr);padding:var(--noa-space-3);gap:var(--noa-space-3);align-items:center;border:1px solid var(--noa-line)}
+html[data-noa-precision] .noa-character .noa-face-window{inline-size:100%;align-self:center}
+html[data-noa-precision] .noa-character h2,html[data-noa-precision] .noa-character h3{margin:0;font-size:20px}
+html[data-noa-precision] .noa-character p{margin-block:var(--noa-space-2)}
+html[data-noa-precision] .noa-character .noa-face-window img{border-radius:0}
+html[data-noa-precision] .noa-world-act{padding:var(--noa-space-3)}
+html[data-noa-precision] .noa-world-act h2{margin:var(--noa-space-2) 0;font-size:18px}
+html[data-noa-precision] .noa-world-act small,html[data-noa-precision] .noa-world-act>span:last-child{margin-block-start:var(--noa-space-2)}
+@container (max-width:360px){html[data-noa-precision] .noa-hero-copy h1{font-size:24px}}
+
+.noa-footer a{display:inline-flex;align-items:center;min-block-size:44px}
+.noa-audio-state{color:var(--noa-muted);font-size:10px}

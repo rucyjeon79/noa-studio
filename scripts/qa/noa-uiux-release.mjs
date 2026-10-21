@@ -27,8 +27,9 @@ try{
    const script=[...document.scripts].find(s=>s.textContent.includes('const rows='));const match=script?.textContent.match(/const rows=(\[.*?\]),search=/s);if(!match)throw Error('Public browse source missing');
    const playlists=Object.fromEntries([...document.querySelectorAll('#youtube-playlists a')].map(a=>[new URL(a.getAttribute('href'),'https://noastudio.ai.kr/noa-youtube.php').searchParams.get('playlist'),{snippet:{title:a.textContent}}]));return{videos,browseRows:JSON.parse(match[1]),playlists};
   });await yt.close();const ytPath=path.join(out,'public-youtube-source.json');await fs.writeFile(ytPath,JSON.stringify(youtube));
-  for(const [route,kind,role]of [['/','home',''],['/noa-world.php','world',''],['/noa-my.php','my',''],['/noa-youtube.php','youtube',''],['/noa-my-admin-fixture','my','admin'],['/noa-ai-lab-admin-fixture','ailab','admin']]){
-   const rendered=execFileSync('php',[path.join(root,'tests/uiux/render.php'),kind,role],{env:{...process.env,NOA_WORLD_SOURCE:sourcePath,NOA_YOUTUBE_SOURCE:ytPath},encoding:'utf8'});assert(!rendered.includes('Fatal error'));docs.set(route,rendered);
+  const mr=await context.request.get(base+'/noa-music.php');assert.equal(mr.status(),200);const mh=await mr.text(),musicSource={};for(const name of ['records','collections']){const prefix='const '+name+'=',line=mh.split('\n').find(line=>line.startsWith(prefix));assert(line,'public music source missing '+name);musicSource[name]=JSON.parse(line.slice(prefix.length).replace(/;$/,''));}const musicPath=path.join(out,'public-music-source.json');await fs.writeFile(musicPath,JSON.stringify(musicSource));
+  for(const [route,kind,role]of [['/','home',''],['/noa-world.php','world',''],['/noa-my.php','my',''],['/noa-youtube.php','youtube',''],['/noa-my-admin-fixture','my','admin'],['/noa-ai-lab-admin-fixture','ailab','admin'],['/noa-music.php','music',''],['/noa-music-member-fixture','music','member'],['/noa-music-admin-fixture','music','admin']]){
+   const rendered=execFileSync('php',[path.join(root,'tests/uiux/render.php'),kind,role],{env:{...process.env,NOA_WORLD_SOURCE:sourcePath,NOA_YOUTUBE_SOURCE:ytPath,NOA_MUSIC_SOURCE:musicPath},encoding:'utf8'});assert(!rendered.includes('Fatal error'));docs.set(route,rendered);
   }
   await context.route(base+'/**',async route=>{
    const request=route.request(),u=new URL(request.url());
@@ -41,6 +42,7 @@ try{
  // The inline iframe URL and stop behavior are checked without starting external playback.
  await context.route('https://www.youtube.com/embed/**',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>Official embed URL test</title>'}));
  const {auditPrecision,verifyPrecisionFlow}=await import('file://'+path.join(root,'scripts/qa/noa-precision.mjs'));
+ const {verifyRecovery}=await import('file://'+path.join(root,'scripts/qa/noa-recovery.mjs'));await verifyRecovery({context,phase,base,out,report,auditPrecision});
  const {verifyGlass}=await import('file://'+path.join(root,'scripts/qa/noa-glass.mjs'));await verifyGlass({context,phase,base,out,report,auditPrecision});
  const failures=[];
  const routes=['/','/noa-world.php?story=1','/noa-my.php','/noa-youtube.php','/noa-music.php','/noa-catalog.php','/noa-settings.php','/bbs/login.php'];
@@ -95,18 +97,14 @@ try{
  await verifyPrecisionFlow({context,phase,base,out,report});
  // Native media is checked on the candidate too, before any deployment.
  const mediaPage=await context.newPage();await mediaPage.emulateMedia({reducedMotion:'no-preference'});await mediaPage.goto(base+'/',{waitUntil:'domcontentloaded'});
- let manualFallback=false;
+ let posterFallback=false;
  try{
-  await mediaPage.waitForFunction(()=>{const v=document.getElementById('noa-hero-video');return v.ended||(v.readyState>=2&&!v.paused)||(v.hidden&&document.getElementById('noa-hero-status').textContent);},null,{timeout:30000});
-  if(await mediaPage.locator('video').evaluate(v=>v.hidden)){manualFallback=true;await mediaPage.getByRole('button',{name:'메인 영상 재생',exact:true}).click();await mediaPage.waitForFunction(()=>{const v=document.querySelector('video');return v.ended||v.readyState>=2&&!v.paused;},null,{timeout:30000});}
-  assert.equal(await mediaPage.locator('video').evaluate(v=>v.loop),false);
-  if(!await mediaPage.locator('video').evaluate(v=>v.ended)){await mediaPage.locator('video').evaluate(v=>{v.currentTime=Math.max(0,v.duration-.2);});await mediaPage.waitForFunction(()=>document.querySelector('video').ended,null,{timeout:10000});}
-  assert.equal(await mediaPage.locator('video').evaluate(v=>v.paused),true);
-  await mediaPage.getByRole('button',{name:'메인 영상 다시 재생',exact:true}).press('Enter');
-  await mediaPage.waitForFunction(()=>{const v=document.querySelector('video');return !v.paused&&!v.ended&&v.currentTime<v.duration-1;});
-  await mediaPage.getByRole('button',{name:'메인 영상 일시정지',exact:true}).press('Space');
-  assert.equal(await mediaPage.locator('video').evaluate(v=>v.paused),true);
-  report.push({phase,nativeHeroEndedPaused:true,manualFallback,keyboardReplayPause:true});
+  assert.equal(await mediaPage.locator('#noa-hero-toggle').count(),0);
+  await mediaPage.waitForFunction(()=>{const v=document.getElementById('noa-hero-video');return v.ended||(v.readyState>=2&&!v.paused)||v.closest('.noa-hero-art').dataset.mediaState==='poster'&&v.getAttribute('src')&&v.paused;},null,{timeout:30000});
+  const v=mediaPage.locator('#noa-hero-video');posterFallback=await v.evaluate(v=>v.hidden);
+  assert.equal(await v.evaluate(v=>v.loop),false);
+  if(!posterFallback){if(!await v.evaluate(v=>v.ended)){await v.evaluate(v=>v.currentTime=Math.max(0,v.duration-.2));await mediaPage.waitForFunction(()=>document.getElementById('noa-hero-video').ended,null,{timeout:10000});}assert.equal(await v.evaluate(v=>v.paused),true);const endedTime=await v.evaluate(v=>v.currentTime);await mediaPage.setViewportSize({width:844,height:390});await mediaPage.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));assert.equal(await v.evaluate(v=>v.currentTime),endedTime);assert.equal(await v.evaluate(v=>v.paused),true);assert.equal(await v.evaluate(v=>v.hidden),false);}
+  report.push({phase,nativeHeroEndedPaused:!posterFallback,posterFallback,heroToggleAbsent:true,automaticReplay:false});
  }catch(error){
   const diagnostics=await mediaPage.locator('video').evaluate(v=>({src:v.currentSrc||v.src,readyState:v.readyState,paused:v.paused,ended:v.ended,error:v.error?{code:v.error.code,message:v.error.message}:null,mp4Support:v.canPlayType('video/mp4; codecs="avc1.42E01E"'),status:document.getElementById('noa-hero-status').textContent,visibility:document.visibilityState}));
   await fs.writeFile(path.join(out,'native-media-failure.json'),JSON.stringify(diagnostics,null,2));await mediaPage.screenshot({path:path.join(out,'native-media-failure.jpg'),type:'jpeg'});console.log('NATIVE_MEDIA_DIAGNOSTICS '+JSON.stringify(diagnostics));throw error;
