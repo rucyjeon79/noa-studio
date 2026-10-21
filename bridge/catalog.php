@@ -3,12 +3,13 @@ declare(strict_types=1);
 require_once dirname(__DIR__).'/common.php';
 require_once __DIR__.'/storage.php';
 require_once __DIR__.'/sound-core.php';
+require_once dirname(__DIR__).'/noa-app/jukebox/core.php';
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: private, no-store');
 header('X-Content-Type-Options: nosniff');
 try{
  $admin=!empty($is_member)&&($is_admin??'')==='super';$items=[];
- $db=noa_bridge_pdo();$availability=is_file(__DIR__.'/media-status.php')?require __DIR__.'/media-status.php':[];
+ $db=noa_bridge_pdo();$jukebox=nj_assets($db);$availability=is_file(__DIR__.'/media-status.php')?require __DIR__.'/media-status.php':[];
  foreach($db->query("SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','playlist','story') ORDER BY doc_key") as $row){
   $p=json_decode($row['payload'],true,512,JSON_THROW_ON_ERROR);$b=$p['body']??[];
   
@@ -25,11 +26,11 @@ try{
   if(!noa_sound_visible($p,$admin))continue;
   $publicVideo=$id&&(($availability['videos'][$id]['status']??'')==='public'||(($p['mediaAvailability']['youtubeId']??'')===$id&&($p['mediaAvailability']['status']??'')==='public'));
   if(!$admin&&!$publicVideo)$id='';
-  $audio=noa_sound_audio($b,dirname(__DIR__));$suno=noa_sound_suno($b);
+  $suno=noa_sound_suno($b);$audio=nj_resolve($jukebox,$row['doc_key'],$suno,'audio')?:noa_sound_audio($b,dirname(__DIR__));$card=nj_resolve($jukebox,$row['doc_key'],$suno,'cover')?:noa_sound_cover($b);
   if(!$admin&&!$id&&!$audio&&!$suno&&$row['kind']!=='playlist')continue;
   $items[]=['key'=>$row['doc_key'],'kind'=>$row['kind'],'genre'=>$p['genreId']??'',
    'title'=>($b['confirmedTitle']??'')?:($p['title']??''),'ep'=>$p['ep']??'','act'=>$p['act']??'',
-   'tracklist'=>$b['tracklist']??'','lyrics'=>noa_sound_lyrics((string)($b['lyricsBlock']??'')),'cast'=>$b['thumbCast']??'','thumbnail'=>$id?($b['thumbUrl']??''):noa_sound_cover($b),'coverImageUrl'=>noa_sound_cover($b),'sunoUrl'=>$suno,'audioVerified'=>(bool)$audio,
+   'tracklist'=>$b['tracklist']??'','lyrics'=>noa_sound_lyrics((string)($b['lyricsBlock']??'')),'cast'=>$b['thumbCast']??'','thumbnail'=>$card?:($id?($b['thumbUrl']??''):''),'coverImageUrl'=>$card,'sunoUrl'=>$suno,'audioVerified'=>(bool)$audio,
    'youtubeId'=>$id,'audioUrl'=>$audio,'confirmed'=>!empty($p['confirmed'])];
  }
  // Published recovery editions are additive to the legacy web/Android keys.

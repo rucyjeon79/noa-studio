@@ -1,0 +1,39 @@
+name: NOA JUKEBOX public cards and authorized audio
+# Continue existing cards; audit published sources and process authorized owned downloads only.
+on:
+  push:
+    branches: [main, chatgpt/jukebox-20261021]
+    paths: ['.github/workflows/noa-jukebox.yml']
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-jukebox-processing, cancel-in-progress: true}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Validate fixed PHP and media pipeline
+        run: |
+          for f in deploy/noa-app/jukebox/*.php bridge/catalog.php deploy/noa-music.php; do php -l "$f"; done
+          php tests/jukebox/range_test.php
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          python3 -m pip install --user paramiko==3.5.1 Pillow==11.3.0
+          python3 -m unittest discover -s tests/jukebox -p 'test_*.py'
+      - name: Acquire cards from live DB and store verified files on Dothome
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: python3 scripts/noa_jukebox_release.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-jukebox-summary
+          path: jukebox-proof/summary.json
+          retention-days: 14
