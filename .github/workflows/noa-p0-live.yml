@@ -1,0 +1,31 @@
+name: NOA P0 production live verification
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-p0-live.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix: {width: [390,1280]}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Inspect actual production and decode existing MP3
+        env:
+          NOA_QA_WIDTH: ${{ matrix.width }}
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-p0" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-p0/node_modules/.bin/playwright" install --with-deps chromium
+          cp scripts/qa/noa-p0-live.mjs "$RUNNER_TEMP/noa-p0/check.mjs"
+          node "$RUNNER_TEMP/noa-p0/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-p0-live-${{ matrix.width }}
+          path: p0-live-proof/
+          retention-days: 14
