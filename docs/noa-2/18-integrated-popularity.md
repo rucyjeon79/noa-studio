@@ -35,7 +35,7 @@ GitHub Actions 매시간 0분 예약은 닷홈의 기존 SFTP·서명 서비스 
 
 1. 동일 origin·동일 GnuBoard 세션으로 `GET /noa-bridge/popularity-events.php`에서 CSRF 토큰을 받는다.
 2. 음원 재생 직전에 POST JSON `{action:"start",songKey:"기존 JUKEBOX 키"}`와 `X-NOA-Play-CSRF`를 보낸다. 서버는 공개곡·ready 음원·확정 canonical 곡 연결을 확인하고 일회용64hex token을 반환한다. 관리자 재생은 제외된다. 토큰은 URL/query/log에 남기지 않는다.
-3. **Work_뮤직 서버 전송 코드**가 검증된 MP3의 실제 성공 GET 전송 시작 지점에서 `popularity-plays.php`의 `np_stream_started($db,$token,$songKey,$isAdmin,time())`를 호출한다. HEAD/실패/커버 요청에서는 호출하지 않는다. token 전달은 같은 origin의 재생 요청 헤더 또는 서버 측 세션 연결로 구현하고 사용자 입력으로 공개 서버 확인 API를 만들지 않는다. 이 hook이 없으면 공개 progress 이벤트만으로는 유효 재생이 될 수 없다.
+3. **Work_뮤직 서버 전송 코드**가 검증된 MP3의 실제 성공 GET 전송 시작 지점에서 `popularity-plays.php`의 `np_stream_started($db,$token,$songKey,$isAdmin,time())`를 호출한다. HEAD/실패/커버 요청에서는 호출하지 않는다. token 전달은 같은 origin의 재생 요청 헤더 또는 서버 측 세션 연결로 구현하고 사용자 입력으로 공개 서버 확인 API를 만들지 않는다. start 응답 시 서버 세션의 `$_SESSION['noa_popularity_pending'][$songKey]`에 `{token,createdAt}`를 저장하므로 native audio는 별도 인증정보를 URL로 보내지 않고 이 값을 읽어 연결할 수 있다. 성공적인 hook 호출 후 해당 pending 항목만 소비한다. 이 hook이 없으면 공개 progress 이벤트만으로는 유효 재생이 될 수 없다.
 4. 실제 audio `playing` 이후 최소10초마다 `{action:"progress",token,position:audio.currentTime,event:"progress"}`를 보낸다. pause/ended/error 시 해당 event를 보낸다. 이벤트 경로는 실제 소리를 틀거나 플레이어 상태를 바꾸지 않는다.
 5. 인정 시간 기본30초. 서버 경과시간과 미디어 재생위치 증가를 함께 확인하고 큰 seek·20초 초과 heartbeat 공백·pause는 적립하지 않는다. 서버 확인 전·실패·짧은 종료는 제외한다. 세션 최대30분, 같은 actor/곡30분 cooldown, actor당 시간20건 인정/60회 시작 제한. 원문 IP/회원 ID/UA는 저장하지 않고 서버 비밀키로 HMAC 처리한 actor만 저장한다. 익명은 IP+UA 기준이므로 공유 네트워크에서 보수적으로 제한될 수 있다.
 6. Work_뮤직이 실제 MP3 이벤트와 서버 hook 연결을 검증한 후 최고관리자 정책에서 enabled를 켠다. 이 작업은 다른 담당의 스트림/플레이어를 임의 수정하지 않는다.
@@ -47,3 +47,10 @@ GitHub Actions 매시간 0분 예약은 닷홈의 기존 SFTP·서명 서비스 
 순수 테스트는 조회수·재생수 합계, 영상/곡 집합 중복 방지, 다중 카테고리, 상승/하락/유지/신규/비교불가, 안정 동점, 추천 중복 제외/10개 보충, MV ID 독립, 스트림 증거·seek·공백·재생 실패를 확인한다. 실제 최신 백업의 격리 SQL 테스트는 추가형·재실행·정책 보존·실제30초 이벤트1건·중복/관리자/refresh 제외·인접시간 비교·1위 대표 데이터·기존 데이터 불변을 확인한다. 이 테스트의 합성 재생은 격리 DB에만 저장한다.
 
 운영 관리자 로그인 편집은 인증 브라우저가 확보돼야 별도로 확인할 수 있다. 격리 UI 테스트 결과와 운영 인증 화면 조작 결과를 혼동하지 않는다. 배포 및 실제 검증 결과는 실행 후 아래에 추가한다.
+
+
+### 최초 격리 검증 · 운영 SQL 적용 전 차단
+
+실행 https://github.com/rucyjeon79/noa-studio/actions/runs/39610960772 에서 현재 DB76개 테이블·31,092행·140,536,759 bytes의 private 백업 `58d7b6da709352ebf7c1b81dfe3e1eafe92ab89ee26764bd52af5e94bb75c6c6`를 실제 격리 복원했고 스키마·전체 행 체크섬이 일치했다. 수집 checkpoint는 stage=done, 기존605곡 유지였고 기존 인기순위/유효 재생 테이블은 없었다. g5_popular는 그누보드 검색어 통계로 재사용 대상이 아니다.
+
+공개 heartbeat가 보낸 위치를 verified stream 시작 시 초기화하지 않으면 첫10초를 누락하는 결함을 실제 SQL 이벤트 테스트가 발견했다. 운영 SQL 적용·홈 연결 단계는 실행되지 않았고, 새 모듈만 준비된 상태로 남았다. hook에서 위치·credit 기준을0으로 초기화해 수정한다. 같은 최근 백업의 무결성/복원을 다시 검증하여 사용하며 유효기간이 지났으면 새 백업을 생성한다.

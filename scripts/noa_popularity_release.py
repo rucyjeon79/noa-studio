@@ -58,7 +58,15 @@ def main():
    if phase=='prepare':
     mkdir(ROOT+'/noa-app/popularity');deploy(NEW,backup);state=service(key,'inspect');unknown=[n for n in state['existingRelevantTables']if ('ranking' in n or 'popularity' in n)and n not in ['noa_popularity_settings','noa_ranking_rows','noa_ranking_runs','noa_ranking_errors']]
     if unknown:raise RuntimeError('existing_ranking_system_requires_reuse:'+','.join(unknown))
-    meta=taxonomy_service(key,'backup');Path('quality-popularity/backup-meta.json').write_text(json.dumps(meta));Path('quality-popularity/resume-state.json').write_text(json.dumps(state));print('NOA_POPULARITY_PREPARED '+json.dumps({'state':state,'backupSha256':meta['backup']['sha256'],'backupBytes':meta['backup']['bytes'],'tables':len(meta['backup']['tables'])}))
+    reuse=os.environ.get('NOA_POPULARITY_REUSE_BACKUP_SHA256');meta=None
+    if reuse:
+     with s.open('/hosting/noastudio/noa-ai-lab/taxonomy-backup-receipt.json','rb')as f:receipt=json.load(f)
+     if receipt.get('sha256')==reuse and time.time()-receipt['at']<7200:
+      with s.open('/hosting/noastudio/noa-db-private/'+receipt['id']+'.json','rb')as f:manifest=json.load(f)
+      if manifest['sha256']!=reuse:raise RuntimeError('backup_manifest_mismatch')
+      meta={'ok':True,'backup':{k:manifest[k]for k in ['id','sha256','bytes','tables']}}
+    if meta is None:meta=taxonomy_service(key,'backup')
+    Path('quality-popularity/backup-meta.json').write_text(json.dumps(meta));Path('quality-popularity/resume-state.json').write_text(json.dumps(state));print('NOA_POPULARITY_PREPARED '+json.dumps({'state':state,'backupSha256':meta['backup']['sha256'],'backupBytes':meta['backup']['bytes'],'tables':len(meta['backup']['tables'])}))
    else:
     proof=json.loads(Path('quality-popularity/isolated.json').read_text());meta=json.loads(Path('quality-popularity/backup-meta.json').read_text())
     if not proof['allPreexistingDataPreserved']or not proof['taxonomyAndConfirmedMatchesPreserved']or not proof['hourlyIdempotent']:raise RuntimeError('isolated_proof_required')

@@ -1,4 +1,5 @@
 name: NOA integrated popularity verified production release
+# Reset media position only after verified stream start; reuse the exact recent private backup.
 on:
   push:
     branches: [main]
@@ -35,6 +36,7 @@ jobs:
           NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
           NOA_POPULARITY_PHASE: prepare
+          NOA_POPULARITY_REUSE_BACKUP_SHA256: 58d7b6da709352ebf7c1b81dfe3e1eafe92ab89ee26764bd52af5e94bb75c6c6
         run: python3 scripts/noa_popularity_release.py
       - name: Restore the exact current backup only in disposable MySQL
         env:

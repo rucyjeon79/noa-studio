@@ -5,7 +5,7 @@ require_once __DIR__.'/popularity-store.php';
  * A public heartbeat cannot establish that an audio stream started. */
 function np_stream_started(PDO $db,string $token,string $songKey,bool $admin,int $now):bool{
  if(!preg_match('/^[a-f0-9]{64}$/D',$token))return false;
- $q=$db->prepare("UPDATE noa_play_sessions SET started_at=?,last_at=?,status='playing' WHERE token=? AND song_key=? AND status='pending' AND created_at>=?");
+ $q=$db->prepare("UPDATE noa_play_sessions SET started_at=?,last_at=?,last_position=0,credited=0,status='playing' WHERE token=? AND song_key=? AND status='pending' AND created_at>=?");
  if($admin){$q=$db->prepare("UPDATE noa_play_sessions SET status='excluded',reason='admin_test' WHERE token=? AND song_key=? AND status='pending'");$q->execute([$token,$songKey]);return false;}
  $q->execute([$now,$now,$token,$songKey,$now-120]);return $q->rowCount()===1;
 }
