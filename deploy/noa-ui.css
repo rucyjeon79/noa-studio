@@ -81,7 +81,7 @@ html[data-noa-theme="noa-ivory"]{color-scheme:light}html[data-radius="sharp"]{--
 .noa-g5 #mb_login .mb_log_cate h2,.noa-g5 #mb_login .mb_log_cate .join{display:flex;align-items:center;justify-content:center;width:50%;min-height:44px;padding:12px;margin:0;background:var(--noa-surface);color:var(--noa-text);border:0;text-decoration:none}
 .noa-g5 #mb_login .mb_log_cate h2{color:var(--noa-accent);border-bottom:2px solid var(--noa-accent)}
 .noa-g5 #mb_login .mb_log_cate .join:hover{background:var(--noa-raised);color:var(--noa-accent)}
-/* Balanced collections. Explicit placement centers partial rows without stretching the last card. */
+/* Balanced collections. Explicit placement preserves tracks without stretching the last card. */
 :root{--noa-feature-line:color-mix(in srgb,var(--noa-accent) 55%,var(--noa-line));--noa-feature-surface:color-mix(in srgb,var(--noa-surface) 92%,var(--noa-accent) 8%)}
 .noa-page .noa-balanced,.noa-balanced{display:grid;grid-template-columns:repeat(var(--noa-balance-columns),minmax(0,1fr));gap:var(--noa-balance-gap);align-items:start}
 .noa-balanced>*{min-width:0;max-width:100%;overflow-wrap:anywhere}

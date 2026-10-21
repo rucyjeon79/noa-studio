@@ -1,6 +1,6 @@
 # PRECISION GRID display contract
 
-Runtime presentation starts from the verified `a6d9c63` release and the latest `4c32463` production audit. SQL, classification, player state, media files and JUKEBOX code are not modified.
+Runtime presentation starts from the verified `a6d9c63` release and the `4c32463` production audit, preserving the later Work_데이터 `42b692e` runtime as the GitHub tree base. SQL, classification, player state, media files and JUKEBOX code are not modified.
 
 ## Layout
 

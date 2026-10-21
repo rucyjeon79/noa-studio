@@ -41,10 +41,11 @@ try{
  // The inline iframe URL and stop behavior are checked without starting external playback.
  await context.route('https://www.youtube.com/embed/**',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>Official embed URL test</title>'}));
  const {auditPrecision,verifyPrecisionFlow}=await import('file://'+path.join(root,'scripts/qa/noa-precision.mjs'));
+ const failures=[];
  const routes=['/','/noa-world.php?story=1','/noa-my.php','/noa-youtube.php','/noa-music.php','/noa-catalog.php','/noa-settings.php','/bbs/login.php'];
  if(phase==='candidate')routes.push('/noa-my-admin-fixture','/noa-ai-lab-admin-fixture');
  for(const {width,height} of [{width:320,height:568},{width:390,height:844},{width:430,height:932},{width:768,height:1024},{width:1024,height:768},{width:1280,height:900},{width:1920,height:1080}])for(const route of routes){
-  const page=await context.newPage();await page.setViewportSize({width,height});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  const page=await context.newPage();try{await page.setViewportSize({width,height});const errors=[];page.on('pageerror',e=>errors.push(e.message));
   const response=await page.goto(base+route,{waitUntil:'domcontentloaded',timeout:60000});assert.equal(response.status(),200,route);
   await page.locator('.noa-sidebar').waitFor({state:'attached'});await page.waitForFunction(()=>document.fonts.status==='loaded');
   if(route==='/')await page.waitForFunction(()=>document.body.dataset.noaHomeReady);
@@ -54,7 +55,7 @@ try{
   const layout=await page.evaluate(()=>({viewport:innerWidth,scroll:document.documentElement.scrollWidth,text:document.body.innerText.length,actions:[...document.querySelectorAll('.noa-action')].map(e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height,gap:getComputedStyle(e).gap})),broken:[...document.images].filter(i=>i.getBoundingClientRect().width&&i.getBoundingClientRect().height&&i.complete&&!i.naturalWidth).map(i=>i.getAttribute('src'))}));
   assert(layout.scroll<=width+1,'overflow '+width+' '+route+' '+layout.scroll);assert(layout.text>50,'blank '+route);assert.deepEqual(errors,[],route);
   for(const action of layout.actions)assert(action.width>=43&&action.height>=43,'small action '+route);
-  let precision;try{precision=await auditPrecision(page);}catch(error){await page.screenshot({path:path.join(out,'precision-failure-'+width+'-'+route.replace(/[^a-z0-9]/gi,'-')+'.jpg')});await fs.writeFile(path.join(out,'precision-failure.json'),JSON.stringify({route,width,height,error:String(error)},null,2));throw error;}
+  const precision=await auditPrecision(page);
   if(route==='/noa-my.php')assert.equal(await page.locator('.noa-workspace').count(),0);
   if(route==='/noa-my-admin-fixture')assert.equal(await page.locator('.noa-workspace a').count(),10);
   if(route.startsWith('/noa-world.php')){
@@ -77,8 +78,10 @@ try{
   }
   const filename=route.replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')||'home';await page.screenshot({path:path.join(out,filename+'-'+width+'.jpg'),type:'jpeg',quality:78});
   if(route==='/noa-my-admin-fixture'){await page.locator('.noa-workspace').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'workspace-'+width+'.jpg'),type:'jpeg',quality:80});}
-  report.push({phase,route,width,status:response.status(),layout,errors,precision});await page.close();
+  report.push({phase,route,width,status:response.status(),layout,errors,precision});
+  }catch(error){failures.push({route,width,height,error:String(error)});await page.screenshot({path:path.join(out,'precision-failure-'+width+'-'+route.replace(/[^a-z0-9]/gi,'-')+'.jpg')}).catch(()=>{});}finally{await page.close();}
  }
+ if(failures.length){await fs.writeFile(path.join(out,'precision-failures.json'),JSON.stringify(failures,null,2));throw Error(JSON.stringify(failures));}
  if(phase==='live'){
   const r=await context.request.get(base+'/noa-bridge/home.php');assert.equal(r.status(),200);const d=await r.json();assert(d.ok);const featured=new Set(d.featured.map(v=>v.videoId));
   for(const section of ['ep','stories','covers']){assert(d[section].length<=10);assert(d[section].every(v=>!featured.has(v.videoId)),section+' repeats featured');}
