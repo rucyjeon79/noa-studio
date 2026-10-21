@@ -1,5 +1,5 @@
 name: NOA taxonomy production protection diagnostic
-# Identify configuration column changes without disclosing stored values.
+# Read final table inventory and identify any concurrent additions without SQL writes.
 on:
   push:
     branches: [main]
