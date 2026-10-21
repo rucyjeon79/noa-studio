@@ -1,4 +1,5 @@
 name: NOA P0 production live verification
+# Final verification after the guarded asset-cache release.
 on:
   push:
     branches: [main]
@@ -21,6 +22,7 @@ jobs:
         run: |
           npm install --prefix "$RUNNER_TEMP/noa-p0" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           "$RUNNER_TEMP/noa-p0/node_modules/.bin/playwright" install --with-deps chromium
+          google-chrome --version
           cp scripts/qa/noa-p0-live.mjs "$RUNNER_TEMP/noa-p0/check.mjs"
           node "$RUNNER_TEMP/noa-p0/check.mjs"
       - uses: actions/upload-artifact@v4
