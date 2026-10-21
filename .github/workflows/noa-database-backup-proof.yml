@@ -3,7 +3,7 @@ on:
   push:
     branches: [main]
     paths: ['.github/workflows/noa-database-backup-proof.yml','scripts/noa_verify_private_backup.py']
-permissions: {contents: read, actions: write}
+permissions: {contents: read}
 jobs:
   verify-private-backup:
     runs-on: ubuntu-latest
@@ -21,7 +21,6 @@ jobs:
       - run: python3 -m pip install --user paramiko==3.5.1
       - name: Verify private production dump only in disposable MySQL
         env:
-          GITHUB_TOKEN: ${{ github.token }}
           NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}

@@ -1,7 +1,7 @@
 """Verify a known private production backup in an isolated MySQL service only.
 Never logs SQL, rows, credentials or dump bytes; removes every temporary file.
 """
-import base64,hashlib,json,os,re,subprocess,tempfile,time,urllib.request
+import base64,hashlib,json,os,re,subprocess,tempfile,time
 from pathlib import Path
 import paramiko
 EXPECTED='6dac39d8fe1b14a53a6ba198d9374edb0d8b6c6b8b785dfc3a64699fecc31a3c'
@@ -19,16 +19,13 @@ foreach($input as $table=>$columns){
 }
 echo json_encode($result,JSON_THROW_ON_ERROR);
 '''
+def canonical_schema(ddl):
+ # COLLATE fixes its associated charset. Normalize only the redundant matching
+ # CHARACTER SET immediately after a column type; preserve defaults/comments.
+ return re.sub(r'(?m)^(\s+`(?:``|[^`])+`\s+[A-Za-z]+(?:\([^\n]*?\))?) CHARACTER SET utf8mb4( COLLATE utf8mb4_[A-Za-z0-9_]+)',r'\1\2',ddl)
+
 def main():
- # Cancel only our previous stalled verification, preserving every deployment/other job.
- old='39530927135';api='https://api.github.com/repos/rucyjeon79/noa-studio/actions/runs/'+old
- headers={'Authorization':'Bearer '+os.environ['GITHUB_TOKEN'],'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
- with urllib.request.urlopen(urllib.request.Request(api,headers=headers),timeout=20) as r:prior=json.load(r)
- assert prior['head_sha']=='d36ed5e5a0c8bac0444b822f91bc398481488152' and prior['path']=='.github/workflows/noa-database-backup-proof.yml'
- if prior['status']!='completed':
-  with urllib.request.urlopen(urllib.request.Request(api+'/cancel',data=b'{}',headers=headers,method='POST'),timeout=20) as r:assert r.status==202
-  print('Previous verification only: cancellation requested',flush=True)
- t=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022))
+ t=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022));t.use_compression(True)
  with tempfile.TemporaryDirectory(prefix='noa-private-restore-') as tmp:
   os.chmod(tmp,0o700);dump=Path(tmp)/'backup.sql'
   try:
@@ -99,9 +96,10 @@ def main():
   schema_script.write_text("<?php $d=new PDO('mysql:host=127.0.0.1;dbname=noa_restore_verification;charset=utf8mb4','root','noa-isolated-only');$d->exec(\"SET SESSION sql_mode='STRICT_TRANS_TABLES,NO_BACKSLASH_ESCAPES'\");$out=[];foreach(json_decode(file_get_contents($argv[1]),true) as $t=>$c)$out[$t]=$d->query('SHOW CREATE TABLE `'.$t.'`')->fetch(PDO::FETCH_NUM)[1];echo json_encode($out,JSON_THROW_ON_ERROR);")
   r=subprocess.run(['php',str(schema_script),str(meta)],capture_output=True,timeout=60);assert r.returncode==0
   restored_schemas=json.loads(r.stdout)
-  if restored_schemas!=schemas:
+  equivalent=all(canonical_schema(schemas[name])==canonical_schema(restored_schemas.get(name,''))for name in schemas) and set(restored_schemas)==set(schemas)
+  if not equivalent:
    differences={name:{'sourceSha256':hashlib.sha256(schemas[name].encode()).hexdigest(),'restoredSha256':hashlib.sha256(restored_schemas.get(name,'').encode()).hexdigest(),'sourceLength':len(schemas[name]),'restoredLength':len(restored_schemas.get(name,''))}for name in schemas if schemas[name]!=restored_schemas.get(name)}
    print('SCHEMA_COMPARISON_DIAGNOSTIC '+json.dumps(differences),flush=True)
    raise RuntimeError('restored_schema_mismatch')
-  print('PRIVATE_PRODUCTION_RESTORE_VERIFIED '+json.dumps({'sha256':EXPECTED,'bytes':manifest['bytes'],'tables':len(expected),'rows':sum(v['rows']for v in expected.values()),'originalSchemasEqual':True,'allTableRowContentChecksumsEqual':True,'productionDatabaseModified':False,'privateDumpUploadedAsArtifact':False}))
+  print('PRIVATE_PRODUCTION_RESTORE_VERIFIED '+json.dumps({'sha256':EXPECTED,'bytes':manifest['bytes'],'tables':len(expected),'rows':sum(v['rows']for v in expected.values()),'schemasEquivalent':True,'redundantCharsetDeclarationsNormalized':True,'allTableRowContentChecksumsEqual':True,'productionDatabaseModified':False,'privateDumpUploadedAsArtifact':False}))
 if __name__=='__main__':main()
