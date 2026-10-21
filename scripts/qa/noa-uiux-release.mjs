@@ -54,12 +54,16 @@ try{
   if(route.startsWith('/noa-world.php')){
    const anchors=page.locator('[aria-label="EP 선택"] a');assert.equal(await anchors.count(),10);
    await anchors.nth(4).click();await page.waitForFunction(()=>location.hash==='#ep-5');assert.equal(await page.locator('.noa-world-chapter').count(),10);
+   page.on('console',m=>{if(m.text().startsWith('P0_WORLD_EVENT'))console.log(width,route,m.text());});
+   await page.evaluate(()=>document.addEventListener('click',e=>{const b=e.target.closest('button');console.log('P0_WORLD_EVENT '+JSON.stringify({type:'capture',target:b?.className,id:b?.dataset.video,src:document.getElementById('world-frame')?.getAttribute('src')}));queueMicrotask(()=>console.log('P0_WORLD_EVENT '+JSON.stringify({type:'after',id:b?.dataset.video,src:document.getElementById('world-frame')?.getAttribute('src')})));},true));
    const preview=page.locator('.world-chapter-mv .world-play');const ids=[...new Set(await preview.evaluateAll(bs=>bs.map(b=>b.dataset.video)))];assert(ids.length>1);
    await page.locator('.world-chapter-mv .world-play[data-video="'+ids[0]+'"]').first().click();
    await page.waitForFunction(id=>document.getElementById('world-frame').getAttribute('src')?.includes('/embed/'+id),ids[0]);
    assert.equal(await page.locator('.world-chapter-mv #world-player').count(),1);
    await page.locator('.world-chapter-mv .world-play[data-video="'+ids[1]+'"]').first().click();
-   await page.waitForFunction(id=>document.getElementById('world-frame').getAttribute('src')?.includes('/embed/'+id),ids[1]);
+   console.log('P0_WORLD_EXPECT '+JSON.stringify({width,ids}));
+   try{await page.waitForFunction(id=>document.getElementById('world-frame').getAttribute('src')?.includes('/embed/'+id),ids[1]);}
+   catch(e){await page.screenshot({path:path.join(out,'world-switch-failure-'+width+'.jpg')});await fs.writeFile(path.join(out,'world-switch-failure-'+width+'.html'),await page.content());throw e;}
    assert.equal(await page.locator('#world-frame').count(),1);
    await page.getByRole('button',{name:'영상 닫기',exact:true}).click();assert.equal(await page.locator('#world-frame').getAttribute('src'),'about:blank');
    await page.evaluate(()=>scrollTo(0,0));
