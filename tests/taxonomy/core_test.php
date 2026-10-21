@@ -13,3 +13,6 @@ $collection=['snippet'=>['title'=>'ACT.1 Playlist EP.1~10 | K-POP Original']];as
 $bad=false;try{nt_rule_valid(['kind'=>'sql','values'=>['DROP']]);}catch(InvalidArgumentException $e){$bad=true;}assert_nt($bad,'arbitrary SQL rule allowed');
 assert_nt(nt_language('EP.1 | 하루의 끝에 | J-POP Original')==='ja','translated language detection');assert_nt(nt_ep('EP.1~10')===null,'EP range treated as single EP');
 echo "PASS taxonomy priority, ambiguity, matching evidence, variants, rejection and compilation invariants\n";
+
+$mv=['snippet'=>['title'=>'EP.1 하루의 끝에 | Official MV (KR) | Original Song'],'_ownerPlaylistIds'=>['PLEPMKciKgvchOwm5hQfGAP2jDQloI2RVY']];$same=$songs;$same['collection']=$songs['a'];$same['collection']['genre_id']='joseon-ballad';$c=['status'=>'unclassified','categories'=>[]];assert_nt(nt_match($mv,$same,$c)['songId']==='a','verified original MV playlist plus explicit language must disambiguate a genre collection');unset($mv['_ownerPlaylistIds']);assert_nt(nt_match($mv,$same,$c)['status']==='review','MV title alone must not bypass duplicate genre review');
+echo "PASS official playlist + original MV language evidence separates collection titles\n";

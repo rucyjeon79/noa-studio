@@ -16,7 +16,7 @@ function nt_normalize(string $s):string{
 function nt_titles(string $s):array{
  $out=[];foreach(array_slice(preg_split('/[|｜]/u',$s),0,3)as $piece){
   if(preg_match('/^\s*(?:\[[^\]]+\]\s*)?EP[.\s]*\d+\s*$/iu',$piece))continue;
-  foreach([$piece,preg_split('/\s+-\s+/u',$piece)[0],preg_replace('/\([^)]*(?:OST|Ver[.]?)[^)]*\)/iu','',preg_split('/\s+-\s+/u',$piece)[0])]as $p){$n=nt_normalize(trim($p));if(mb_strlen($n)>=2)$out[$n]=true;}
+  foreach([$piece,preg_split('/\s+-\s+/u',$piece)[0],preg_replace('/\([^)]*(?:OST|Ver[.]?)[^)]*\)/iu','',preg_split('/\s+-\s+/u',$piece)[0]),preg_replace('/\s*\([^)]{1,100}\)\s*$/u','',preg_split('/\s+-\s+/u',$piece)[0])]as $p){$n=nt_normalize(trim($p));if(mb_strlen($n)>=2)$out[$n]=true;}
   if($out)break;
  }return array_keys($out);
 }
@@ -64,6 +64,8 @@ function nt_match(array $v,array $songs,array $classification):array{
  if(($classification['status']??'')==='review')return ['status'=>'review','songId'=>null,'reason'=>'category_conflict','candidates'=>[]];
  foreach(['your-story','cover-reborn','original']as $g)if(in_array($g,$categories,true))$genre=$g==='original'?'kpop-original':$g;
  $declared=nt_declared_genres($title);if(count($declared)>1)return ['status'=>'review','songId'=>null,'reason'=>'declared_genre_conflict','candidates'=>[]];if(count($declared)===1){if($genre!==null&&$genre!==$declared[0])return ['status'=>'review','songId'=>null,'reason'=>'category_title_genre_conflict','candidates'=>[]];$genre=$declared[0];}
+ $officialMv=in_array('PLEPMKciKgvchOwm5hQfGAP2jDQloI2RVY',$v['_ownerPlaylistIds']??[],true)&&preg_match('/Official\s*MV/iu',$title)&&preg_match('/Original\s*Song/iu',$title);
+ if($officialMv&&$language!==null){$expected=['ko'=>'kpop-original','ja'=>'jpop-original','en'=>'pop-original','th'=>'thai-original'][$language];if($genre!==null&&$genre!==$expected)return ['status'=>'review','songId'=>null,'reason'=>'official_mv_genre_conflict','candidates'=>[]];$genre=$expected;}
  $candidates=[];$evidence=[];
  foreach($songs as $id=>$s){if(!empty($s['owner_id']))continue;$fields=$s['fields']??[];$songTitle=(string)(($fields['confirmedTitle']??'')?:($fields['title']??''));if(!array_intersect($keys,nt_titles($songTitle)))continue;
   if($ep!==null&&(int)($s['ep']??0)!==$ep)continue;

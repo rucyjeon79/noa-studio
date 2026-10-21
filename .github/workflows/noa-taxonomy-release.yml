@@ -1,0 +1,82 @@
+name: NOA SQL taxonomy production release
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-taxonomy-release.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-dothome-production, cancel-in-progress: false}
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: noa-isolated-only, MYSQL_DATABASE: noa_restore_verification}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -pnoa-isolated-only" --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, fetch-depth: 0}
+      - name: Verify fixed modules and existing invariants
+        run: |
+          for f in bridge/taxonomy*.php bridge/youtube-store.php bridge/lab-creator.php bridge/home-core.php bridge/world-mv.php deploy/noa-music.php deploy/noa-app/taxonomy/index.php; do php -l "$f"; done
+          php tests/taxonomy/core_test.php
+          php tests/catalog/home_test.php
+          php tests/catalog/world_mv_test.php
+          node --check deploy/noa-app/taxonomy/ui.js
+          node --check deploy/noa-taxonomy-browse.js
+          python3 -m pip install --user paramiko==3.5.1
+      - name: Prepare new fixed-operation modules, inspect live DB and take private backup
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_TAXONOMY_PHASE: prepare
+        run: python3 scripts/noa_taxonomy_release.py
+      - name: Verify exact fresh backup in isolated MySQL, never production restoration
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: |
+          python3 - <<'PY'
+          import sys,json
+          sys.path.insert(0,'scripts')
+          import noa_verify_private_backup as v
+          v.EXPECTED=json.load(open('quality-taxonomy/backup-meta.json'))['backup']['sha256']
+          v.main()
+          PY
+      - name: Verify additive migration and source protection on current production snapshot
+        run: php tests/taxonomy/mysql_test.php
+      - name: Verify administrator rendering before activation
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-taxonomy" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-taxonomy/node_modules/.bin/playwright" install --with-deps chrome
+          cp scripts/qa/noa-taxonomy.mjs "$RUNNER_TEMP/noa-taxonomy/check.mjs"
+          node "$RUNNER_TEMP/noa-taxonomy/check.mjs"
+      - name: Activate verified additive SQL and reviewed integration files
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_TAXONOMY_PHASE: activate
+        run: python3 scripts/noa_taxonomy_release.py
+      - name: Verify actual production pages, SQL categories, privacy and ranking
+        run: |
+          cp scripts/qa/noa-taxonomy-live.mjs "$RUNNER_TEMP/noa-taxonomy/live.mjs"
+          node "$RUNNER_TEMP/noa-taxonomy/live.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-taxonomy-production-verification
+          path: |
+            quality-taxonomy/report.json
+            quality-taxonomy/production.json
+            quality-taxonomy/live-report.json
+            quality-taxonomy/ui-report.json
+            quality-taxonomy/admin-*.jpg
+            quality-taxonomy/music-*.jpg
+          retention-days: 14

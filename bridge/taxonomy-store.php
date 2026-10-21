@@ -42,7 +42,9 @@ function nt_import_rules(PDO $db,string $actor):array{
  return ['sourceFiles'=>24,'imported'=>$count,'preservedExisting'=>$skipped,'upstreamDifferentNotOverwritten'=>$different];
 }
 function nt_rules(PDO $db):array{$out=[];foreach($db->query('SELECT * FROM noa_classification_rules ORDER BY priority,rule_id')as $r){$r['condition']=json_decode($r['conditions'],true,512,JSON_THROW_ON_ERROR);unset($r['conditions']);$out[]=$r;}return $out;}
-function nt_categories(PDO $db):array{return $db->query('SELECT * FROM noa_categories ORDER BY sort_order,category_id')->fetchAll(PDO::FETCH_ASSOC);}
+function nt_categories(PDO $db):array{
+ $rows=$db->query('SELECT * FROM noa_categories ORDER BY sort_order,category_id')->fetchAll(PDO::FETCH_ASSOC);$children=[];foreach($rows as $r)$children[$r['parent_id']??''][]=$r;$out=[];$walk=function($parent)use(&$walk,&$out,$children){foreach($children[$parent]??[] as $r){$out[]=$r;$walk($r['category_id']);}};$walk('');if(count($out)!==count($rows))throw new DomainException('invalid_category_tree');return $out;
+}
 function nt_effective_rules(PDO $db,string $genre):array{
  $out=['common'=>[],'genre'=>[]];$q=$db->prepare('SELECT * FROM noa_production_rules WHERE scope=? OR genre_id=? ORDER BY (format=\'json\'),rule_id');$q->execute(['common',$genre]);
  foreach($q as $r){$scope=$r['scope']==='common'?'common':'genre';if(hash('sha256',$r['body'])!==$r['sha256'])throw new RuntimeException('production_rule_integrity');if($r['format']==='json')$out[$scope]=array_replace($out[$scope],json_decode($r['body'],true,512,JSON_THROW_ON_ERROR));elseif(str_ends_with($r['rule_id'],':suno'))$out[$scope]['sunoBase']=$r['body'];else $out[$scope]['productionGuidelines']=($out[$scope]['productionGuidelines']??'')."\n".$r['body'];}
@@ -67,9 +69,9 @@ function nt_sync(PDO $db,string $actor='automation'):array{
   foreach($songs as $id=>$song){$c=nt_classify([], $song,[],$rules);nt_write_relation($db,'song',$id,$c,$actor,$input);}
   $manualBy=[];foreach($manual as $r)if($r['active'])$manualBy[$r['content_type'].':'.$r['content_id']][]=$r['category_id'];
   $catalogLists=nt_catalog_playlists($db);foreach($catalogLists as $cid=>$catalogList)nt_write_relation($db,'playlist',$cid,nt_classify([],['genre_id'=>$catalogList['genre_id']],[],$rules),$actor,$input);
-  foreach($playlists as $id=>$p){$pm=nt_store_playlist_match($db,'playlist',$id,nt_match_playlist($p,$catalogLists));if($pm['status']==='confirmed')$counts['autoPlaylistMatched']++;if($pm['status']==='review')$counts['playlistReview']++;nt_log($db,$input,'playlist',$id,'playlist_matching',$pm,$actor);$c=nt_classify([],null,[$p],$rules);nt_write_relation($db,'playlist',$id,$c,$actor,$input);nt_log($db,$input,'playlist',$id,$c['status'],$c,$actor);}
+  foreach($playlists as $id=>$p){$pm=nt_store_playlist_match($db,'playlist',$id,nt_match_playlist($p,$catalogLists));if($pm['status']==='confirmed')$counts['autoPlaylistMatched']++;if($pm['status']==='review')$counts['playlistReview']++;nt_log($db,$input,'playlist',$id,'playlist_matching',$pm,$actor);$c=nt_classify([],null,[$p],$rules);nt_write_relation($db,'playlist',$id,$c,$actor,$input);nt_log($db,$input,'playlist',$id,($pm['status']==='review'||$c['status']==='review')?'review':$c['status'],['classification'=>$c,'playlistMatching'=>$pm],$actor);}
   foreach($videos as $id=>$v){
-   $pm=nt_store_playlist_match($db,'video',$id,nt_match_playlist($v,$catalogLists));if($pm['status']==='confirmed')$counts['autoPlaylistMatched']++;if($pm['status']==='review')$counts['playlistReview']++;
+   $v['_ownerPlaylistIds']=array_keys($membership[$id]??[]);$pm=nt_store_playlist_match($db,'video',$id,nt_match_playlist($v,$catalogLists));if($pm['status']==='confirmed')$counts['autoPlaylistMatched']++;if($pm['status']==='review')$counts['playlistReview']++;
    $sid=$v['match']['songId']??null;$c=nt_classify($v,$songs[$sid??'']??null,array_values($membership[$id]??[]),$rules);
    if($sid&&isset($manualBy['song:'.$sid]))$c=['status'=>'classified','categories'=>$manualBy['song:'.$sid],'evidence'=>[['kind'=>'administrator_song']]];
    if(isset($manualBy['video:'.$id]))$c=['status'=>'classified','categories'=>$manualBy['video:'.$id],'evidence'=>[['kind'=>'administrator']]];
@@ -93,7 +95,9 @@ function nt_overlay(PDO $db,array $videos,array $songs):array{
  foreach($videos as $id=>&$v){if(empty($v['match']['songId'])&&($v['match']['status']??'')!=='rejected'&&isset($matches[$id],$songs[$matches[$id]]))$v['match']=['status'=>'auto_confirmed','songId'=>$matches[$id],'source'=>'sql_multiple_evidence'];$v['sqlCategories']=array_column($cats[$id]??[],'category_id');$v['sqlCategorySource']=in_array('manual',array_column($cats[$id]??[],'source'),true)?'manual':'auto';}unset($v);return $videos;
 }
 function nt_counts(PDO $db):array{
- $out=[];foreach(nt_categories($db)as $c){$q=$db->prepare("SELECT COUNT(DISTINCT r.content_id) FROM noa_content_categories r WHERE r.content_type='song' AND r.active=1 AND (r.category_id=? OR r.category_id IN (SELECT category_id FROM noa_categories WHERE parent_id=?))");$q->execute([$c['category_id'],$c['category_id']]);$out[]=['id'=>$c['category_id'],'parent'=>$c['parent_id'],'name'=>$c['name'],'songs'=>(int)$q->fetchColumn()];}return $out;
+ $cats=nt_categories($db);$map=array_column($cats,null,'category_id');$members=[];
+ foreach($db->query("SELECT content_id,category_id FROM noa_content_categories WHERE content_type='song' AND active=1") as $r){$cat=$r['category_id'];while($cat!==null&&isset($map[$cat])){$members[$cat][$r['content_id']]=true;$cat=$map[$cat]['parent_id'];}}
+ return array_map(fn($c)=>['id'=>$c['category_id'],'parent'=>$c['parent_id'],'name'=>$c['name'],'songs'=>count($members[$c['category_id']]??[])],$cats);
 }
 function nt_annotate_records(PDO $db,array $rows):array{
  if(!nt_ready($db))return $rows;$batch=ny_batch($db);$q=$db->prepare('SELECT alias_key,entity_id FROM noa_catalog_aliases WHERE batch_id=?');$q->execute([$batch]);$aliases=[];foreach($q as $r)$aliases[$r['alias_key']][$r['entity_id']]=true;
@@ -101,8 +105,8 @@ function nt_annotate_records(PDO $db,array $rows):array{
  foreach($rows as &$r){$ids=array_keys($aliases[$r['key']]??[]);$sid=count($ids)===1?$ids[0]:($r['catalogId']??null);$song=$songs[$sid??'']??null;$r['catalogSongId']=$song?$sid:null;$r['categories']=$cats[($r['kind']==='playlist'?'playlist:':'song:').($sid??'')]??[];$r['language']=$song['language']??'und';$r['version']=$song['version_name']??'';}unset($r);return $rows;
 }
 function nt_public_data(PDO $db):array{
- if(!nt_ready($db))return ['ok'=>true,'installed'=>false,'categories'=>[],'videos'=>[]];$run=ny_latest($db);$songs=ny_songs($db,ny_batch($db));$videos=$run?ny_videos($db,$run):[];$out=[];
- foreach($videos as $id=>$v){if(($v['snippet']['channelId']??'')!==NT_CHANNEL||($v['status']['privacyStatus']??'')!=='public'||empty($v['status']['embeddable']))continue;$sid=$v['match']['songId']??null;$s=$songs[$sid??'']??null;$out[]=['id'=>$id,'title'=>(string)($v['snippet']['title']??''),'categories'=>$v['sqlCategories']??[],'songId'=>$s?$sid:null,'matched'=>!empty($sid),'genre'=>$s['genre_id']??'unclassified','language'=>$s['language']??nt_language((string)($v['snippet']['title']??'')),'version'=>$s['version_name']??null,'ep'=>$s['ep']??nt_ep((string)($v['snippet']['title']??'')),'act'=>!empty($s['ep'])?(int)ceil((int)$s['ep']/10):null,'thumbnail'=>'/noa-bridge/youtube-thumbnail.php?id='.$id,'href'=>'/noa-youtube.php?track='.rawurlencode($id).'&play=1'];}
+ if(!nt_ready($db))return ['ok'=>true,'installed'=>false,'categories'=>[],'videos'=>[]];$run=ny_latest($db);$songs=ny_songs($db,ny_batch($db));$videos=$run?ny_videos($db,$run):[];$out=[];$playlistMatches=[];foreach($db->query("SELECT m.content_id,a.act_number,a.genre_id FROM noa_playlist_matches m JOIN noa_catalog_acts a ON a.act_id=m.catalog_playlist_id WHERE m.content_type='video' AND m.status='confirmed'")as $p)$playlistMatches[$p['content_id']]=$p;
+ foreach($videos as $id=>$v){if(($v['snippet']['channelId']??'')!==NT_CHANNEL||($v['status']['privacyStatus']??'')!=='public'||empty($v['status']['embeddable']))continue;$sid=$v['match']['songId']??null;$s=$songs[$sid??'']??null;$out[]=['id'=>$id,'title'=>(string)($v['snippet']['title']??''),'categories'=>$v['sqlCategories']??[],'songId'=>$s?$sid:null,'matched'=>!empty($sid),'genre'=>$s['genre_id']??'unclassified','language'=>$s['language']??nt_language((string)($v['snippet']['title']??'')),'version'=>$s['version_name']??null,'ep'=>$s['ep']??nt_ep((string)($v['snippet']['title']??'')),'act'=>$playlistMatches[$id]['act_number']??(!empty($s['ep'])?(int)ceil((int)$s['ep']/10):null),'thumbnail'=>'/noa-bridge/youtube-thumbnail.php?id='.$id,'href'=>'/noa-youtube.php?track='.rawurlencode($id).'&play=1'];}
  return ['ok'=>true,'installed'=>true,'categories'=>array_values(array_filter(nt_categories($db),fn($c)=>(bool)$c['enabled'])),'videos'=>$out];
 }
 
