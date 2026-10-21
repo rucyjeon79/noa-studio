@@ -34,7 +34,7 @@ async function main(){
   currentStage='upload_'+(i+1);const song='jukebox:qa:fifo-'+String(i+1).padStart(2,'0'),data=wav(280+i*19+Number(BigInt(process.env.GITHUB_RUN_ID||'1')%37n));const hash=digest(data),filename='Recovery-'+String(i+1).padStart(2,'0')+'-'+process.env.GITHUB_RUN_ID+'.wav';let t=transport();
   if(i===2){
    currentStage='invalid_format';const bad=Buffer.alloc(1024,120),b=await get('qa_upload',{mode:'init',key:song,filename:'Invalid-fixture.wav',bytes:bad.length,fingerprint:digest(bad)});await get('qa_upload',{mode:'chunk',id:b.id,index:0,chunk:bad.toString('base64')});
-   await assert.rejects(t.run(()=>raw('qa_upload',{mode:'finish',id:b.id})),/actual_audio_format_mismatch/);assert.equal(t.open,false);const preserved=await get('verification_snapshot');assert.equal(preserved.files[song].sha256,before.files[song].sha256);formatIsolated=true;
+   await assert.rejects(t.run(()=>raw('qa_upload',{mode:'finish',id:b.id}),{recover:async()=>{const q=await get('qa_upload',{mode:'status',id:b.id});if(q.status==='failed'&&q.public?.error==='actual_audio_format_mismatch')throw new UploadError('actual_audio_format_mismatch',{stage:'reconcile',http:400,uploadId:b.id,format:'json'});return null;}}),/actual_audio_format_mismatch/);assert.equal(t.open,false);const preserved=await get('verification_snapshot');assert.equal(preserved.files[song].sha256,before.files[song].sha256);formatIsolated=true;
   }
   const init={mode:'init',key:song,filename,bytes:data.length,fingerprint:digest(filename+':'+hash)};let u;
   for(let wait=0;;wait++){

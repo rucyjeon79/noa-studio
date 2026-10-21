@@ -10,7 +10,7 @@ function decode(raw,meta){
  const status=Number(meta.http)||0,base={...meta,format,transient:status===0||status===408||status===429||status>=500};
  if(!status)throw new UploadError('network_unavailable',base);
  if(status===401||status===403)throw new UploadError('authentication_required',base);
- if(!data||typeof data!=='object'||Array.isArray(data))throw new UploadError(format==='html'?'response_html':format==='empty'?'response_empty':'response_json_invalid',{...base,transient:true});
+ if(!data||typeof data!=='object'||Array.isArray(data))throw new UploadError(format==='html'?'response_html':format==='empty'?'response_empty':'response_json_invalid',{...base,transient:base.transient||(status>=200&&status<300)});
  if(status<200||status>=300){const code=codes.has(data.error)?data.error:'http_'+status;throw new UploadError(code,base);}
  return data;
 }
@@ -24,7 +24,7 @@ class Transport{
   for(let attempt=0;;attempt++){
    try{const data=await operation();this.success(mutating);return data;}
    catch(error){const e=error instanceof UploadError?error:new UploadError('network_unavailable',{transient:true});if(e.message==='upload_paused')throw e;this.failure(e,mutating);
-    if(recover){const restored=await recover(e).catch(()=>null);if(restored!==null&&restored!==undefined)return restored;}
+    if(recover){let restored=null;try{restored=await recover(e);}catch(recoveryError){if(recoveryError instanceof UploadError&&!recoveryError.transient){this.onRecord(recoveryError.safe());throw recoveryError;}}if(restored!==null&&restored!==undefined)return restored;}
     if(this.open||!e.transient||attempt>=2)throw e;
     await this.sleep(Math.max(e.retryAfter,Math.min(30000,1000*2**attempt)));
    }

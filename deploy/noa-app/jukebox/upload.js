@@ -25,6 +25,7 @@ async function api(action,body,query='',recover=null){return transport.run(()=>r
 async function reconcile(r){if(!r.uploadId)return null;return api('status',null,'&key='+encodeURIComponent(r.key)+'&id='+r.uploadId+'&reconcile=1');}
 async function restoreCompleted(r,retryFinish=false){
  const q=await reconcile(r);if(!q)return null;
+ if(q.status==='failed'){const code=['actual_audio_format_mismatch','mp3_wav_size_or_identity_invalid'].includes(q.public?.error)?q.public.error:'upload_failed_reselect_source';throw new UploadError(code,{stage:'reconcile',http:400,uploadId:r.uploadId,format:'json'});}
  if((q.status==='ready'&&q.final_verified&&q.source_matches_final)||(q.job&&busy.includes(q.status)&&q.source_verified)){r.serverComplete=true;return q.public;}
  if(retryFinish&&q.status==='uploading'&&(q.source_exists||q.chunks.length===q.total_chunks))return requestRaw('finish',{id:r.uploadId});return null;
 }
