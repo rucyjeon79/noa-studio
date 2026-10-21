@@ -1,0 +1,78 @@
+name: NOA UIUX visual gates and scoped production release
+on:
+  pull_request:
+    branches: [main]
+    paths: ['deploy/noa-ui.*', 'deploy/noa-hero.js', 'deploy/noa-home.js', 'deploy/noa-browse.js', 'deploy/noa-my.php', 'deploy/noa-youtube*', 'deploy/noa-world*', 'deploy/noa-app/home.php', 'deploy/noa-app/world-view.php', 'bridge/home-core.php', 'tests/uiux/**', 'scripts/noa_uiux_release.py', 'scripts/qa/noa-uiux-release.mjs', '.github/workflows/noa-uiux-release.yml']
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-uiux-release.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: 'noa-uiux-validation-${{ github.ref }}', cancel-in-progress: false}
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, fetch-depth: 0}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', coverage: none}
+      - name: PHP, JavaScript and existing source invariants
+        run: |
+          for f in bridge/home-core.php deploy/noa-app/home.php deploy/noa-app/world-view.php deploy/noa-my.php deploy/noa-youtube.php; do php -l "$f"; done
+          for f in deploy/noa-ui.js deploy/noa-browse.js deploy/noa-hero.js deploy/noa-home.js deploy/noa-world.js; do node --check "$f"; done
+          php tests/catalog/home_test.php
+          php tests/catalog/home_uiux_test.php
+          php tests/catalog/world_test.php
+          php tests/catalog/world_mv_test.php
+          node --test scripts/qa/noa-browse.test.mjs scripts/noa_player_regression.test.mjs
+          python3 -m pip install --user paramiko==3.5.1
+          python3 -m py_compile scripts/noa_uiux_release.py
+          python3 tests/uiux/release_test.py
+      - name: Render candidate at four widths without a public test site
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-uiux" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-uiux/node_modules/.bin/playwright" install --with-deps chromium
+          cp scripts/qa/noa-uiux-release.mjs "$RUNNER_TEMP/noa-uiux/verify.mjs"
+          NOA_SOURCE_ROOT="$GITHUB_WORKSPACE" NOA_UIUX_PHASE=candidate node "$RUNNER_TEMP/noa-uiux/verify.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: noa-uiux-candidate, path: uiux-proof/candidate/, retention-days: 14}
+  production:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    concurrency: {group: noa-dothome-production, cancel-in-progress: false}
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, fetch-depth: 0}
+      - name: Install deployment and browser dependencies before mutation
+        run: |
+          python3 -m pip install --user paramiko==3.5.1
+          npm install --prefix "$RUNNER_TEMP/noa-uiux" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-uiux/node_modules/.bin/playwright" install --with-deps chromium
+          cp scripts/qa/noa-uiux-release.mjs "$RUNNER_TEMP/noa-uiux/verify.mjs"
+      - name: Compare, privately back up and deploy only the UI allowlist
+        id: release
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: python3 scripts/noa_uiux_release.py
+      - name: Verify production public flows at four widths
+        id: live
+        env: {NOA_UIUX_PHASE: live}
+        run: NOA_SOURCE_ROOT="$GITHUB_WORKSPACE" node "$RUNNER_TEMP/noa-uiux/verify.mjs"
+      - name: Restore only unchanged release-owned files if visual verification fails
+        if: failure() && steps.release.outcome == 'success'
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: python3 scripts/noa_uiux_release.py rollback
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: noa-uiux-production, path: uiux-proof/, retention-days: 14}
