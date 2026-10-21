@@ -187,7 +187,7 @@ def analyze(path):
             'sample_peak': max(samples), 'clipping': max(samples) >= 0 or (peak is not None and peak >= 0), 'decode_errors': False}
 
 
-def optimize(source, destination, on_analyzed=None):
+def optimize(source, destination, on_analyzed=None, on_encoded=None):
     source_hash = digest(source)
     before = analyze(source)
     before['sha256'] = source_hash
@@ -211,6 +211,7 @@ def optimize(source, destination, on_analyzed=None):
                  '-map_metadata', '0', '-af', settings['filter'], '-ac', '2', '-ar', str(sample_rate),
                  '-c:a', 'libmp3lame', '-b:a', '320k', '-f', 'mp3', '-y', str(destination)])
         encode()
+    if on_encoded: on_encoded()
     after = analyze(destination)
     # Reuse the lab master's measured-output correction principle. MP3 encoding
     # may introduce intersample peaks: retry once from the original, never from

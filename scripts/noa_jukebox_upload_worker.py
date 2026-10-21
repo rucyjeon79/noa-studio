@@ -1,13 +1,26 @@
 """Process only administrator-uploaded MP3/WAV. No provider audio requests."""
-import hashlib,json,os,stat,tempfile
+import hashlib,json,os,stat,tempfile,time,threading
 from pathlib import Path
 import noa_jukebox_worker as media
 PRIVATE='/hosting/noastudio/noa-jukebox-private'
 
 def process_uploads(sftp,call,mkdir):
-    claimed=call('upload_claim')['uploads'];results=[]
-    for job in claimed:
-        auth={'id':job['id'],'lease':job['lease']}
+    results=[];deadline=time.monotonic()+50*60
+    for _ in range(100):
+        if time.monotonic()>deadline:break
+        claimed=call('upload_claim')['uploads']
+        if not claimed:break
+        if len(claimed)!=1:raise ValueError('queue_concurrency_contract')
+        job=claimed[0];auth={'id':job['id'],'lease':job['lease'],'job_id':job['job_id']}
+        stop=threading.Event();lost=threading.Event()
+        def pulse(auth=auth,stop=stop,lost=lost):
+            while not stop.wait(30):
+                try:call('upload_heartbeat',auth)
+                except Exception:lost.set();return
+        heartbeat=threading.Thread(target=pulse,daemon=True);heartbeat.start()
+        def owned():
+            if lost.is_set():raise ValueError('upload_lease_changed')
+            call('upload_heartbeat',auth)
         try:
             with tempfile.TemporaryDirectory(prefix='noa-upload-') as temp:
                 source=Path(temp)/('input.'+job['extension']);output=Path(temp)/'final.mp3'
@@ -31,7 +44,8 @@ def process_uploads(sftp,call,mkdir):
                     if job['extension']=='mp3' and before['codec']!='mp3':raise ValueError('actual_codec_mismatch')
                     if job['extension']=='wav' and not before['codec'].startswith('pcm_'):raise ValueError('actual_codec_mismatch')
                     call('upload_state',auth|{'status':'processing','source_analysis':before})
-                before,settings,after=media.optimize(source,output,measured)
+                before,settings,after=media.optimize(source,output,measured,lambda:call('upload_state',auth|{'status':'verifying'}))
+                owned()
                 context=dict(job['context']);row={'title':context['title'],'genre':context['genre'],'ep':context.get('ep',''),'originalArtist':context.get('originalArtist','')}
                 card=None;card_errors=[]
                 if not job.get('cover_path') and job['source_url']:
@@ -81,11 +95,14 @@ def process_uploads(sftp,call,mkdir):
                         'audio_discovery':{'permission':'administrator_owned_upload','download_authorized':True,'provenance':'administrator_upload','upload_id':job['id']},
                         'catalog_context':{k:context.get(k) for k in ['originalArtist','act','catalogId','category1','category2','categoryIds']}}
                 if card:result.update(cover_path=(directory/'cover.webp').as_posix(),cover_bytes=card['cover_bytes'],cover_sha256=card['cover_sha256'])
-                committed=call('upload_commit',auth|{'result':result})
-                results.append({'key':job['key'],'ready':committed['ready'],'sha256':digest,'input_removed':committed['input_removed']})
+                owned();committed=call('upload_commit',auth|{'result':result})
+                try:removed=call('upload_cleanup',{'id':job['id']})['input_removed']
+                except Exception:removed=False # audit retries cleanup after confirmed SQL publication
+                results.append({'job_id':job['job_id'],'key':job['key'],'ready':committed['ready'],'sha256':digest,'input_removed':removed})
         except Exception as error:
             code=str(error).split(':',1)[0] if isinstance(error,ValueError) else 'upload_processing_failed'
             try:call('upload_fail',auth|{'error':code[:190]})
             except Exception:code='processing_state_changed_or_network_error'
-            results.append({'key':job['key'],'ready':False,'error':code[:190]})
+            results.append({'job_id':job['job_id'],'key':job['key'],'ready':False,'error':code[:190]})
+        finally:stop.set();heartbeat.join(timeout=2)
     return results
