@@ -224,8 +224,8 @@ html[data-noa-glass] .noa-glass-control:not(:disabled):not([aria-disabled=true])
 html[data-noa-glass] .noa-glass-control:focus-visible{outline:2px solid var(--noa-accent);outline-offset:3px}
 html[data-noa-glass] .noa-glass-control:is(:disabled,[aria-disabled=true]){opacity:.7;color:var(--noa-muted);cursor:not-allowed;transform:none}
 /* Existing icon nodes stay intact. Generated visual labels do not alter accessible names. */
-html[data-noa-glass] :is(.noa-transport .controls,.lab-main) .noa-glass-control[data-noa-glass-label],html[data-noa-glass] #songs .noa-glass-control[data-noa-glass-label],html[data-noa-glass] #noa-hero-toggle.noa-glass-control{
- display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--noa-space-1,4px);inline-size:auto;block-size:auto;min-inline-size:44px;min-block-size:44px;padding:6px;flex:none;border-radius:var(--noa-control-radius,8px);line-height:1.2;
+html[data-noa-glass] .noa-glass-control[data-noa-glass-label],html[data-noa-glass] :is(.noa-transport .controls,.lab-main) .noa-glass-control[data-noa-glass-label],html[data-noa-glass] #songs .noa-glass-control[data-noa-glass-label],html[data-noa-glass] #noa-hero-toggle.noa-glass-control{
+ display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--noa-space-1,4px);inline-size:auto;block-size:auto;min-inline-size:44px;min-block-size:44px;padding:6px;flex:none;border-radius:var(--noa-control-radius,8px);line-height:20px;
 }
 html[data-noa-glass] .noa-glass-control[data-noa-glass-label] svg{inline-size:20px;block-size:20px;flex:none}
 html[data-noa-glass] .noa-glass-control[data-noa-glass-label]::after{content:attr(data-noa-glass-label);display:block;position:static;inset:auto;transform:none;background:none;border:0;box-shadow:none;margin:0;padding:0;font-size:10px;line-height:12px;max-inline-size:12em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--noa-glass-text);pointer-events:none;letter-spacing:0;text-decoration:none}
