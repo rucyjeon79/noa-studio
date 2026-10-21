@@ -236,10 +236,13 @@ html[data-noa-glass] .lab-editor-link.noa-glass-control{padding:8px 12px;text-de
 @media(forced-colors:active){html[data-noa-glass] .noa-glass-control{border-color:ButtonText;box-shadow:none}html[data-noa-glass] .noa-glass-control:focus-visible{outline-color:Highlight}}
 
 html[data-noa-glass]{--noa-glass-paint:radial-gradient(ellipse 95% 150% at 50% -42%,var(--noa-glass-reflection),transparent 72%),radial-gradient(ellipse 140% 170% at 8% 6%,var(--noa-glass-crown),transparent 67%),radial-gradient(ellipse 100% 160% at 100% 120%,var(--noa-glass-shade),transparent 68%),radial-gradient(ellipse 150% 160% at 46% 30%,var(--noa-glass-base),var(--noa-glass-shade))}
-html[data-noa-glass].noa-g5 #login_fs .btn_submit.noa-glass-control{background-image:var(--noa-glass-paint);background-color:var(--noa-glass-base);color:var(--noa-glass-text);border:1px solid var(--noa-glass-edge);border-radius:var(--noa-control-radius,8px)}
+html[data-noa-glass] #noa-hero-toggle.noa-glass-control,html[data-noa-glass].noa-g5 #login_fs .btn_submit.noa-glass-control{background-image:var(--noa-glass-paint);background-color:var(--noa-glass-base);color:var(--noa-glass-text);border:1px solid var(--noa-glass-edge);border-radius:var(--noa-control-radius,8px)}
 
 /* Existing upload entry/dialog palette only; processing logic and dedicated editor stay owned. */
 html[data-noa-glass] .noa-sound-page .jukebox-state{color:var(--noa-muted)}
 html[data-noa-glass] .jukebox-upload-dialog{background:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line)}
 html[data-noa-glass] .jukebox-upload-dialog input:not([type=file]){background:var(--noa-bg);color:var(--noa-text);border-color:var(--noa-line)}
 html[data-noa-glass] .jukebox-upload-dialog button:not(.noa-glass-control){background:var(--noa-raised);color:var(--noa-text);border-color:var(--noa-line)}
+
+html[data-noa-glass] #noa-hero-toggle.noa-glass-control[data-playing=true]{border-color:color-mix(in srgb,var(--noa-accent) 64%,var(--noa-glass-edge))}
+html[data-noa-glass] #noa-hero-toggle.noa-glass-control[data-playing=true] svg{opacity:1}

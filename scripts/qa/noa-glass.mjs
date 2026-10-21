@@ -7,7 +7,7 @@ function luminance(hex){const rgb=hex.match(/[a-f\d]{2}/gi).map(x=>parseInt(x,16
 function contrast(a,b){const x=luminance(a),y=luminance(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05);}
 export async function verifyGlass({context,phase,base,out,report,auditPrecision}){
  const samples=[],states=[];
- const page=await context.newPage();
+ const page=await context.newPage();try{
  for(const route of ['/','/noa-music.php','/noa-settings.php','/bbs/login.php']){
   await page.goto(base+route,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.NoaGlass&&window.NoaUI?.getState()&&document.fonts.status==='loaded');
@@ -66,16 +66,16 @@ export async function verifyGlass({context,phase,base,out,report,auditPrecision}
   const normal=page.locator('#glass-state-normal');await normal.press('Tab');await normal.focus();
   const focus=await normal.evaluate(b=>({width:getComputedStyle(b).outlineWidth,style:getComputedStyle(b).outlineStyle}));assert.equal(focus.style,'solid');assert.equal(focus.width,'2px');
   const borders=await page.locator('#glass-states-fixture button').evaluateAll(bs=>bs.map(b=>({id:b.id,border:getComputedStyle(b).borderColor,opacity:getComputedStyle(b).opacity})));assert.notEqual(borders[0].border,borders[1].border);assert(Number(borders[2].opacity)<1);
-  await normal.press('Enter');assert.equal(await normal.getAttribute('data-calls'),theme===themes[0]?'1':'2');
+  const callsBefore=Number(await normal.getAttribute('data-calls')||0);await normal.press('Enter');assert.equal(await normal.getAttribute('data-calls'),String(callsBefore+1));
   await page.locator('#glass-state-aria-disabled').click();assert.equal(await page.locator('#glass-state-aria-disabled').getAttribute('data-calls'),null);
   await page.locator('#glass-state-disabled').evaluate(b=>b.click());assert.equal(await page.locator('#glass-state-disabled').getAttribute('data-calls'),null);
-  await page.emulateMedia({reducedMotion:'no-preference'});await normal.dispatchEvent('mousedown');
+  await page.emulateMedia({reducedMotion:'no-preference'});await normal.hover();await page.mouse.down();await page.waitForFunction(()=>{const t=getComputedStyle(document.getElementById('glass-state-normal')).transform;return t!=='none'&&new DOMMatrix(t).m42>0;});await page.screenshot({path:path.join(out,'glass-pressed-'+theme+'.jpg'),type:'jpeg',quality:86});await page.mouse.move(0,0);await page.mouse.up();
   await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await normal.evaluate(b=>getComputedStyle(b).transitionDuration),'0s');
-  states.push({theme,keyboardActionOnce:true,nativeDisabledInert:true,ariaDisabledInert:true,focusOutlinePx:2,reducedMotion:true});
+  await page.screenshot({path:path.join(out,'glass-states-'+theme+'.jpg'),type:'jpeg',quality:86});
+  states.push({theme,realPointerPress:true,keyboardActionOnce:true,nativeDisabledInert:true,ariaDisabledInert:true,focusOutlinePx:2,reducedMotion:true});
  }
  // No persistent animation, image layer, blur or compositing hint is introduced by the material.
  const performance=await page.evaluate(()=>{const host=document.getElementById('glass-states-fixture');const start=performance.now();for(let i=0;i<100;i++)window.NoaGlass.refresh(host);return{schedule100Ms:performance.now()-start};});assert(performance.schedule100Ms<200);
- await page.close();
  if(phase==='candidate'){
   const admin=await context.newPage();for(const route of ['/noa-my-admin-fixture','/noa-ai-lab-admin-fixture']){
    await admin.goto(base+route);await admin.waitForFunction(()=>window.NoaGlass&&window.NoaUI?.getState());
@@ -84,4 +84,5 @@ export async function verifyGlass({context,phase,base,out,report,auditPrecision}
  }
  await fs.writeFile(path.join(out,'glass-report.json'),JSON.stringify({ok:true,phase,material:'Semi-Gloss Sculpted Glass',sheenToken:.55,themeDeviceSamples:samples,states,performance,ownerOnlyActions:'isolated browser-memory shape fixtures; no upload or download requests',newImages:0,continuousAnimation:false,blur:false},null,2));
  report.push({phase,glassThemeDeviceSamples:samples.length,glassStateThemes:states.length,newImages:0,continuousAnimation:false});
+ }catch(error){await page.screenshot({path:path.join(out,'glass-failure.jpg'),type:'jpeg'}).catch(()=>{});await fs.writeFile(path.join(out,'glass-failure.json'),JSON.stringify({error:String(error),url:page.url(),viewport:page.viewportSize(),theme:await page.locator('html').getAttribute('data-noa-theme').catch(()=>null)},null,2));throw error;}finally{await page.close().catch(()=>{});}
 }
