@@ -9,6 +9,7 @@ import assert from 'node:assert/strict';
 const root=process.env.NOA_SOURCE_ROOT||process.cwd(),phase=process.env.NOA_UIUX_PHASE||'candidate',out=path.join(root,'uiux-proof',phase);
 await fs.mkdir(out,{recursive:true});
 const browser=await chromium.launch({headless:true,channel:'chrome'});const context=await browser.newContext({reducedMotion:'reduce',serviceWorkers:'block'});
+await context.tracing.start({screenshots:true,snapshots:true,sources:false});
 const base='https://noastudio.ai.kr',docs=new Map(),report=[];
 try{
  if(phase==='candidate'){
@@ -54,9 +55,9 @@ try{
   if(route.startsWith('/noa-world.php')){
    const anchors=page.locator('[aria-label="EP 선택"] a');assert.equal(await anchors.count(),10);
    await anchors.nth(4).click();await page.waitForFunction(()=>location.hash==='#ep-5');assert.equal(await page.locator('.noa-world-chapter').count(),10);
-   const preview=page.locator('.world-chapter-mv .world-play');assert(await preview.count()>1);await preview.nth(0).click();
+   const preview=page.locator('.world-chapter-mv .world-play');assert(await preview.count()>1);const firstId=await preview.nth(0).getAttribute('data-video');await preview.nth(0).click();await page.waitForFunction(id=>document.querySelector('#world-frame').getAttribute('src')?.includes('/'+id+'?'),firstId);
    assert.equal(await page.locator('.world-chapter-mv #world-player').count(),1);const first=await page.locator('#world-frame').getAttribute('src');
-   await preview.nth(1).click();assert.notEqual(await page.locator('#world-frame').getAttribute('src'),first);assert.equal(await page.locator('#world-frame').count(),1);
+   const secondId=await preview.nth(1).getAttribute('data-video');assert.notEqual(secondId,firstId);await preview.nth(1).click();await page.waitForFunction(id=>document.querySelector('#world-frame').getAttribute('src')?.includes('/'+id+'?'),secondId);assert.notEqual(await page.locator('#world-frame').getAttribute('src'),first);assert.equal(await page.locator('#world-frame').count(),1);
    await page.getByRole('button',{name:'영상 닫기',exact:true}).click();assert.equal(await page.locator('#world-frame').getAttribute('src'),'about:blank');
    await page.evaluate(()=>scrollTo(0,0));
   }
@@ -86,4 +87,4 @@ try{
  }finally{await mediaPage.close();}
  await fs.writeFile(path.join(out,'report.json'),JSON.stringify({ok:true,phase,notVerified:['authenticated member and superadmin production interactions','actual YouTube media output; iframe route was intercepted'],checks:report},null,2));
  console.log(JSON.stringify({ok:true,phase,pages:report.length,screenWidths:[320,390,768,1280]}));
-}finally{await context.close();await browser.close();}
+}finally{await context.tracing.stop({path:path.join(out,'trace.zip')});await context.close();await browser.close();}
