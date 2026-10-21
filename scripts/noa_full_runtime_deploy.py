@@ -42,6 +42,10 @@ def main():
   proof=Path('full-release-proof');proof.mkdir(exist_ok=True)
   (proof/'code-before.json').write_text(json.dumps(rows,indent=2))
   print('CODE_PLAN '+json.dumps({'counts':dict(Counter(r['state']for r in rows)),'pending':[r for r in rows if r['state']!='match']}),flush=True)
+  cache_only=os.environ.get('NOA_P0_CACHE_ONLY')=='1'
+  cache_targets={'noa-app/home.php','noa-app/world-view.php','noa-my.php','noa-youtube.php'}
+  if cache_only and (unknown or any(r not in cache_targets for r,b in pending)):
+   raise RuntimeError('cache_dependencies_not_deployed; preserve active owner release')
   protected=['common.php','config.php','data/dbconfig.php','_common.php','head.php','tail.php','bbs/login.php','bbs/login_check.php','bbs/logout.php','version.php']
   guard={p:sha(read(ROOT+'/'+p))for p in protected}
   if not pending:
@@ -86,9 +90,10 @@ def main():
     s.posix_rename(staged[remote],ROOT+'/'+remote);installed.append((remote,b));assert read(ROOT+'/'+remote)==b
     print('UPDATED '+remote+' '+sha(b),flush=True)
    for p,digest in guard.items():assert sha(read(ROOT+'/'+p))==digest,'core_changed '+p
-   for path in ['/','/index.php','/noa-bridge/home.php','/noa-world.php','/noa-youtube.php','/noa-music.php','/bbs/login.php']:
+   for path in ['/','/index.php','/noa-bridge/home.php','/noa-world.php','/noa-youtube.php','/noa-music.php','/noa-my.php','/bbs/login.php']:
     with urllib.request.urlopen(urllib.request.Request('https://noastudio.ai.kr'+path,headers={'Cache-Control':'no-cache'}),timeout=30)as r:
      body=r.read();assert r.status==200
+     if cache_only and path in ['/','/index.php','/noa-world.php','/noa-youtube.php','/noa-my.php']:assert b'20261021-p0-final' in body,'cache_url_not_updated '+path
      if path=='/noa-bridge/home.php':
       data=json.loads(body);assert data['ok'];print('LIVE_HOME_COUNTS '+json.dumps({k:len(data[k])for k in ['stories','covers','playlists']}),flush=True)
    result={'commit':os.environ['GITHUB_SHA'],'backup':backup,'changed':[r for r,b in pending],'changedCount':len(pending),'preservedUnknown':unknown,'coreUnchanged':True,'sqlMigrations':False,'deployedAtUTC':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())}
