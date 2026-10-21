@@ -198,13 +198,26 @@ def optimize(source, destination):
         # MP3 supports only these rates; report necessary conversion explicitly.
         supported = (8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000)
         if sample_rate not in supported: sample_rate = min(supported, key=lambda x: abs(x - sample_rate))
-        settings = {'mode': 'encode', 'applied_gain': gain, 'target_lufs': -14,
+        settings = {'mode': 'encode', 'planned_gain': gain, 'applied_gain': gain, 'target_lufs': -14,
                     'target_peak': -1, 'bitrate': 320000, 'sample_rate': sample_rate,
                     'filter': 'volume=' + str(gain) + 'dB'}
-        run(['ffmpeg', '-nostdin', '-v', 'error', '-i', str(source), '-map', '0:a:0',
-             '-map_metadata', '0', '-af', settings['filter'], '-ac', '2', '-ar', str(sample_rate),
-             '-c:a', 'libmp3lame', '-b:a', '320k', '-f', 'mp3', '-y', str(destination)])
+        def encode():
+            run(['ffmpeg', '-nostdin', '-v', 'error', '-i', str(source), '-map', '0:a:0',
+                 '-map_metadata', '0', '-af', settings['filter'], '-ac', '2', '-ar', str(sample_rate),
+                 '-c:a', 'libmp3lame', '-b:a', '320k', '-f', 'mp3', '-y', str(destination)])
+        encode()
     after = analyze(destination)
+    # Reuse the lab master's measured-output correction principle. MP3 encoding
+    # may introduce intersample peaks: retry once from the original, never from
+    # the lossy output, and keep the actual total gain distinct from the plan.
+    if settings['mode'] == 'encode' and after['true_peak'] is not None and after['true_peak'] > -1:
+        settings['first_encoded_true_peak'] = after['true_peak']
+        adjustment = -1.2 - after['true_peak']
+        settings['codec_headroom_adjustment'] = adjustment
+        settings['applied_gain'] += adjustment
+        settings['filter'] = 'volume=' + str(settings['applied_gain']) + 'dB'
+        encode()
+        after = analyze(destination)
     if after['codec'] != 'mp3' or after['channels'] != 2 or after['true_peak'] is None or after['true_peak'] > -1:
         destination.unlink(missing_ok=True); raise ValueError('encoded_audio_failed_peak_or_format_validation')
     if digest(source) != source_hash or abs(after['duration']-before['duration']) > .1 or before['lra']-after['lra'] > 2.1:
