@@ -3,7 +3,7 @@ name: NOA JUKEBOX public cards and authorized audio
 on:
   push:
     branches: [main, chatgpt/jukebox-20261021]
-    paths: ['.github/workflows/noa-jukebox.yml']
+    paths: ['.github/workflows/noa-jukebox.yml', 'deploy/noa-app/jukebox/**', 'deploy/noa-music.php', 'bridge/catalog.php', 'scripts/noa_jukebox*.py', 'scripts/noa_jukebox_baseline.json', 'tests/jukebox/**']
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
@@ -51,6 +51,7 @@ jobs:
           node tests/jukebox/reservations_test.cjs
           node tests/jukebox/transport_test.cjs
           node --check deploy/noa-app/jukebox/upload-transport.js
+          node --check tests/jukebox/live_recovery_test.cjs
   interface:
     needs: [validate, storage_rescue]
     if: github.event_name != 'schedule' && needs.validate.result == 'success'
