@@ -1,4 +1,5 @@
 name: NOA full production deployment inventory
+# Recheck all actual runtime bytes after the concurrent reviewed UI merge.
 on:
   push:
     branches: [main]
