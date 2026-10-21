@@ -1,0 +1,35 @@
+name: NOA P0 verified asset cache release
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-p0-cache-release.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-dothome-production, cancel-in-progress: false}
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, fetch-depth: 0}
+      - name: Validate cache views and tested backup guard
+        run: |
+          for f in deploy/noa-app/home.php deploy/noa-app/world-view.php deploy/noa-my.php deploy/noa-youtube.php; do php -l "$f"; done
+          python3 tests/deploy_guard_test.py
+          python3 -m py_compile scripts/noa_full_runtime_deploy.py scripts/noa_p0_postflight.py
+          python3 -m pip install --user paramiko==3.5.1
+      - name: Preserve owner files and publish cache references only after dependency hashes match
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_P0_CACHE_ONLY: '1'
+        run: python3 scripts/noa_full_runtime_deploy.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-p0-cache-release
+          path: full-release-proof/
+          retention-days: 14
