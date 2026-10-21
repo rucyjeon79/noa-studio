@@ -149,13 +149,13 @@ window.NoaCardLayout={plan,presentTitle,movement,prepare,setMovement,refresh:sch
 /* Semi-Gloss Sculpted Glass: preserve action nodes, handlers, labels and permissions. */
 (()=>{'use strict';
 if(window.NoaGlass||/^\/noa-app\/(?:jukebox|taxonomy|database)(?:\/|$)/.test(location.pathname))return;
-const selector='.noa-button.primary,button[type="submit"].noa-button,.btn_submit,#noa-settings-save,#lab-text-submit,.lab-actions .lab-icon-button:not([aria-label="작업 취소"]),a.noa-button[href*="lab-file.php"][href*="download=1"],.lab-editor-link[href*="download=1"],.noa-transport .controls button,.sound-play,.sound-upload,.jukebox-download,.jukebox-busy,#noa-hero-toggle,#my-new,#my-add,#my-save,#my-play,#act-play,.noa-workspace>a[href="/noa-library.php"],.noa-workspace>a[href="/noa-ai-lab.php"]';
+const selector='.noa-button.primary,button[type="submit"].noa-button,.btn_submit,#noa-settings-save,#lab-text-submit,.lab-actions .lab-icon-button:not([aria-label="작업 취소"]),a.noa-button[href*="lab-file.php"][href*="download=1"],.lab-editor-link[href*="download=1"],.noa-transport .controls button,.sound-play,.sound-upload,.jukebox-replace,.jukebox-download,.jukebox-busy,.jukebox-reserve,#noa-hero-toggle,#my-new,#my-add,#my-save,#my-play,#act-play,.noa-workspace>a[href="/noa-library.php"],.noa-workspace>a[href="/noa-ai-lab.php"]';
 const labels={previous:'이전',next:'다음',repeat:'반복',shuffle:'셔플','dock-more':'더보기'};
 function labelFor(el){
  if(el.id==='pause-play')return el.getAttribute('aria-pressed')==='true'?'일시정지':'재생';
  if(el.id==='noa-hero-toggle')return el.dataset.playing==='true'?'일시정지':'재생';
  if(labels[el.id])return labels[el.id];
- if(el.matches('.sound-play'))return '재생';if(el.matches('.sound-upload'))return '업로드';
+ if(el.matches('.sound-play'))return '재생';if(el.matches('.jukebox-busy'))return el.disabled?'처리 중':'파일 변경';if(el.matches('.jukebox-replace'))return '교체';if(el.matches('.sound-upload'))return '업로드';
  if(el.matches('.jukebox-download'))return '다운로드';if(el.matches('.jukebox-busy'))return '처리 중';
  if(el.matches('.lab-icon-button')){const text=el.getAttribute('aria-label')||'';return text.includes('재시도')?'재시도':text.includes('성과')?'성과':text.includes('연결')?'연결':text.includes('승인')||text.includes('검토')?'승인':text;}
  return null;

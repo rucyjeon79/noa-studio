@@ -18,7 +18,7 @@ export async function verifyGlass({context,phase,base,out,report,auditPrecision}
    await page.evaluate(()=>{
     const host=document.createElement('section');host.id='glass-action-fixture';host.className='jukebox-actions';host.setAttribute('aria-label','버튼 표면 검증 전용');
     const original=document.querySelector('.sound-play');if(!original)throw Error('Real source play control missing');
-    for(const type of ['sound-play','sound-upload','jukebox-download','jukebox-busy']){const b=original.cloneNode(true);b.className=type+' noa-icon-button';b.id='glass-fixture-'+type;b.type='button';b.setAttribute('aria-label',type);if(type==='jukebox-busy')b.disabled=true;host.append(b);}
+    for(const type of ['sound-play','sound-upload','jukebox-replace','jukebox-download','jukebox-busy','jukebox-busy sound-upload']){const b=original.cloneNode(true);b.className=type+' noa-icon-button';b.id='glass-fixture-'+type;b.type='button';b.setAttribute('aria-label',type);if(type==='jukebox-busy')b.disabled=true;host.append(b);}
     document.querySelector('main').prepend(host);window.NoaGlass.refresh(host);
    });
   }
