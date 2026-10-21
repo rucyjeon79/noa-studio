@@ -232,7 +232,7 @@ html[data-noa-glass] .noa-glass-control[data-noa-glass-label]::after{content:att
 html[data-noa-glass] .lab-main .noa-glass-control[data-noa-glass-label]::after{position:static;transform:none;background:none;border:0;padding:0;color:var(--noa-glass-text)}
 html[data-noa-glass] .noa-glass-control.jukebox-busy svg{animation:none}
 html[data-noa-glass] .lab-editor-link.noa-glass-control{padding:8px 12px;text-decoration:none}
-@media(prefers-reduced-motion:reduce){html[data-noa-glass] .noa-glass-control{transition:none}html[data-noa-glass] .noa-glass-control:active{transform:none}}
+@media(prefers-reduced-motion:reduce){html[data-noa-glass] .noa-glass-control{transition:none}html[data-noa-glass] .noa-glass-control:not(:disabled):not([aria-disabled=true]):active{transform:none}}
 @media(forced-colors:active){html[data-noa-glass] .noa-glass-control{border-color:ButtonText;box-shadow:none}html[data-noa-glass] .noa-glass-control:focus-visible{outline-color:Highlight}}
 
 html[data-noa-glass]{--noa-glass-paint:radial-gradient(ellipse 95% 150% at 50% -42%,var(--noa-glass-reflection),transparent 72%),radial-gradient(ellipse 140% 170% at 8% 6%,var(--noa-glass-crown),transparent 67%),radial-gradient(ellipse 100% 160% at 100% 120%,var(--noa-glass-shade),transparent 68%),radial-gradient(ellipse 150% 160% at 46% 30%,var(--noa-glass-base),var(--noa-glass-shade))}

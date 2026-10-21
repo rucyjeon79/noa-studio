@@ -70,7 +70,7 @@ export async function verifyGlass({context,phase,base,out,report,auditPrecision}
   await page.locator('#glass-state-aria-disabled').click();assert.equal(await page.locator('#glass-state-aria-disabled').getAttribute('data-calls'),null);
   await page.locator('#glass-state-disabled').evaluate(b=>b.click());assert.equal(await page.locator('#glass-state-disabled').getAttribute('data-calls'),null);
   await page.emulateMedia({reducedMotion:'no-preference'});await normal.hover();await page.mouse.down();await page.waitForFunction(()=>{const t=getComputedStyle(document.getElementById('glass-state-normal')).transform;return t!=='none'&&new DOMMatrix(t).m42>0;});await page.screenshot({path:path.join(out,'glass-pressed-'+theme+'.jpg'),type:'jpeg',quality:86});await page.mouse.move(0,0);await page.mouse.up();
-  await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await normal.evaluate(b=>getComputedStyle(b).transitionDuration),'0s');
+  await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await normal.evaluate(b=>getComputedStyle(b).transitionDuration),'0s');await normal.hover();await page.mouse.down();assert.equal(await normal.evaluate(b=>getComputedStyle(b).transform),'none');await page.mouse.move(0,0);await page.mouse.up();
   await page.screenshot({path:path.join(out,'glass-states-'+theme+'.jpg'),type:'jpeg',quality:86});
   states.push({theme,realPointerPress:true,keyboardActionOnce:true,nativeDisabledInert:true,ariaDisabledInert:true,focusOutlinePx:2,reducedMotion:true});
  }
