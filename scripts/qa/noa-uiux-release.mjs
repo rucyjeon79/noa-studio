@@ -60,6 +60,7 @@ try{
    await page.locator('.world-chapter-mv .world-play[data-video="'+ids[0]+'"]').first().click();
    await page.waitForFunction(id=>document.getElementById('world-frame').getAttribute('src')?.includes('/embed/'+id),ids[0]);
    assert.equal(await page.locator('.world-chapter-mv #world-player').count(),1);
+   await page.frameLocator('#world-frame').locator('title').waitFor({state:'attached'});
    await page.locator('.world-chapter-mv .world-play[data-video="'+ids[1]+'"]').first().click();
    console.log('P0_WORLD_EXPECT '+JSON.stringify({width,ids}));
    try{await page.waitForFunction(id=>document.getElementById('world-frame').getAttribute('src')?.includes('/embed/'+id),ids[1]);}
