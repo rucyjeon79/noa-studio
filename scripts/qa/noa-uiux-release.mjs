@@ -41,6 +41,7 @@ try{
  // The inline iframe URL and stop behavior are checked without starting external playback.
  await context.route('https://www.youtube.com/embed/**',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>Official embed URL test</title>'}));
  const {auditPrecision,verifyPrecisionFlow}=await import('file://'+path.join(root,'scripts/qa/noa-precision.mjs'));
+ const {verifyGlass}=await import('file://'+path.join(root,'scripts/qa/noa-glass.mjs'));await verifyGlass({context,phase,base,out,report,auditPrecision});
  const failures=[];
  const routes=['/','/noa-world.php?story=1','/noa-my.php','/noa-youtube.php','/noa-music.php','/noa-catalog.php','/noa-settings.php','/bbs/login.php'];
  if(phase==='candidate')routes.push('/noa-my-admin-fixture','/noa-ai-lab-admin-fixture');
@@ -92,7 +93,6 @@ try{
  const {verifyCardBalance}=await import('file://'+path.join(root,'scripts/qa/noa-card-balance.mjs'));
  await verifyCardBalance({context,phase,base,out,report});
  await verifyPrecisionFlow({context,phase,base,out,report});
- const {verifyGlass}=await import('file://'+path.join(root,'scripts/qa/noa-glass.mjs'));await verifyGlass({context,phase,base,out,report,auditPrecision});
  // Native media is checked on the candidate too, before any deployment.
  const mediaPage=await context.newPage();await mediaPage.emulateMedia({reducedMotion:'no-preference'});await mediaPage.goto(base+'/',{waitUntil:'domcontentloaded'});
  let manualFallback=false;

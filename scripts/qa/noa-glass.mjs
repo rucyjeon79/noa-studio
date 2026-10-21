@@ -6,11 +6,12 @@ const themes=['noa-studio','noa-ivory'];
 function luminance(hex){const rgb=hex.match(/[a-f\d]{2}/gi).map(x=>parseInt(x,16)/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4);return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;}
 function contrast(a,b){const x=luminance(a),y=luminance(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05);}
 export async function verifyGlass({context,phase,base,out,report,auditPrecision}){
- const samples=[],states=[];
+ const samples=[],states=[];let originalSelection;
  const page=await context.newPage();try{
  for(const route of ['/','/noa-music.php','/noa-settings.php','/bbs/login.php']){
   await page.goto(base+route,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.NoaGlass&&window.NoaUI?.getState()&&document.fonts.status==='loaded');
+  if(!originalSelection)originalSelection=await page.evaluate(()=>({...window.NoaUI.getState()}));
   if(route==='/')await page.waitForFunction(()=>document.body.dataset.noaHomeReady==='true');
   if(route==='/noa-music.php'){
    // Existing public player chrome and owner-only action shapes, isolated in browser memory.
@@ -82,6 +83,7 @@ export async function verifyGlass({context,phase,base,out,report,auditPrecision}
    for(const theme of themes){await admin.evaluate(theme=>window.NoaUI.apply({...window.NoaUI.getState(),theme}),theme);for(const size of sizes){await admin.setViewportSize(size);await admin.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));assert(await admin.locator('.noa-glass-control').count()>0);assert(await admin.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));samples.push({route,theme,...size,adminTemplate:true});if(size.width===390||size.width===1280)await admin.screenshot({path:path.join(out,'glass-admin-'+route.replace(/[^a-z0-9]/gi,'-')+'-'+theme+'-'+size.width+'.jpg'),type:'jpeg',quality:84});}}
   }await admin.close();
  }
+ await page.evaluate(selection=>window.NoaUI.apply(selection),originalSelection);
  await fs.writeFile(path.join(out,'glass-report.json'),JSON.stringify({ok:true,phase,material:'Semi-Gloss Sculpted Glass',sheenToken:.55,themeDeviceSamples:samples,states,performance,ownerOnlyActions:'isolated browser-memory shape fixtures; no upload or download requests',newImages:0,continuousAnimation:false,blur:false},null,2));
  report.push({phase,glassThemeDeviceSamples:samples.length,glassStateThemes:states.length,newImages:0,continuousAnimation:false});
  }catch(error){await page.screenshot({path:path.join(out,'glass-failure.jpg'),type:'jpeg'}).catch(()=>{});await fs.writeFile(path.join(out,'glass-failure.json'),JSON.stringify({error:String(error),url:page.url(),viewport:page.viewportSize(),theme:await page.locator('html').getAttribute('data-noa-theme').catch(()=>null)},null,2));throw error;}finally{await page.close().catch(()=>{});}
