@@ -20,6 +20,6 @@ elseif($kind==='ailab'){$is_member=true;$is_admin='super';eval('?>'.str_replace(
 elseif($kind==='my'){eval('?>'.str_replace(["declare(strict_types=1);","require_once __DIR__.'/common.php';"],'',file_get_contents($root.'/deploy/noa-my.php')));}
 else{
  require $root.'/bridge/world-core.php';require $root.'/bridge/world-mv.php';require $root.'/bridge/world-story.php';
- $src=json_decode(file_get_contents(getenv('NOA_WORLD_SOURCE')?:'/tmp/noa-world-source.json'),true,512,JSON_THROW_ON_ERROR);$world=nwm_build($src['playlist'],$src['items'],$src['videos']);$world['collectedAt']='local render of public observed source';
+ $src=json_decode(file_get_contents(getenv('NOA_WORLD_SOURCE')?:'/tmp/noa-world-source.json'),true,512,JSON_THROW_ON_ERROR);$world=nwm_build($src['playlist'],$src['items'],$src['videos']);foreach($world['videos'] as &$v){$m=$src['display'][$v['videoId']]??null;if($m){$v['songId']=$m['songId'];$v['description']=$m['description'];$v['catalogActs']=$m['catalogActs'];}}unset($v);$world['collectedAt']='local render of public observed source';
  $acts=[];$selected=null;$tracks=[];$error=false;$mvError=false;$missing=false;$genre='kpop-original';$id='';$story=$kind==='world-index'?null:(int)(substr($kind,6)?:1);$episode=null;include $root.'/deploy/noa-app/world-view.php';
 }

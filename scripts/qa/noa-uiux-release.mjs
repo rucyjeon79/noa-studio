@@ -16,10 +16,10 @@ try{
  if(phase==='candidate'){
   const response=await context.request.get(base+'/noa-world.php?story=1');assert.equal(response.status(),200);const html=await response.text();
   const extract=await context.newPage();await extract.setContent(html);
-  const observed=await extract.locator('.world-mv-card .world-thumbnail').evaluateAll(bs=>bs.map(b=>({id:b.dataset.video,title:b.dataset.title})));
+  const observed=await extract.locator('.world-mv-card .world-thumbnail').evaluateAll(bs=>bs.map(b=>{const c=b.closest('.world-mv-card'),song=c.querySelector('a[href^="/noa-catalog.php?id="]');return{id:b.dataset.video,title:b.dataset.title,songId:song?new URL(song.getAttribute('href'),'https://noastudio.ai.kr').searchParams.get('id'):null,description:c.querySelector('details p')?.textContent||'',catalogActs:[...c.querySelectorAll('a[href*="act="]')].map(a=>({id:new URL(a.getAttribute('href'),'https://noastudio.ai.kr').searchParams.get('act'),genre:a.textContent.split(' · ACT.')[0],number:Number(a.textContent.match(/ACT\.(\d+)/)?.[1])}))};}));
   await extract.close();assert(observed.length>0);
   const pid='PLEPMKciKgvchOwm5hQfGAP2jDQloI2RVY',channelId='UCwYy9xsAqDFat6AV5UKrfgA';
-  const source={playlist:{id:pid,snippet:{title:'📖 NOA’s Diary : EP Series M/V',channelId},status:{privacyStatus:'public'}},items:observed.map((v,i)=>({video_id:v.id,position:i})),videos:Object.fromEntries(observed.map(v=>[v.id,{id:v.id,snippet:{title:v.title,channelId,description:''},status:{privacyStatus:'public',embeddable:true}}]))};
+  const source={display:Object.fromEntries(observed.map(v=>[v.id,v])),playlist:{id:pid,snippet:{title:'📖 NOA’s Diary : EP Series M/V',channelId},status:{privacyStatus:'public'}},items:observed.map((v,i)=>({video_id:v.id,position:i})),videos:Object.fromEntries(observed.map(v=>[v.id,{id:v.id,snippet:{title:v.title,channelId,description:''},status:{privacyStatus:'public',embeddable:true}}]))};
   const sourcePath=path.join(out,'public-world-source.json');await fs.writeFile(sourcePath,JSON.stringify(source));
   const yr=await context.request.get(base+'/noa-youtube.php');assert.equal(yr.status(),200);const yt=await context.newPage();await yt.setContent(await yr.text());
   const youtube=await yt.evaluate(()=>{

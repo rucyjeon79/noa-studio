@@ -9,7 +9,9 @@ on:
     paths: ['.github/workflows/noa-uiux-release.yml']
   workflow_dispatch:
 permissions: {contents: read}
-concurrency: {group: 'noa-uiux-validation-${{ github.ref }}', cancel-in-progress: false}
+concurrency:
+  group: noa-uiux-validation-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   candidate:
     runs-on: ubuntu-latest
