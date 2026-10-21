@@ -1,5 +1,5 @@
 name: NOA UIUX visual gates and scoped production release
-# Release balanced card layouts with count, width, order and representative playback gates.
+# Refresh shared UI asset versions in reviewed views so existing browser caches receive balanced cards.
 on:
   pull_request:
     branches: [main]

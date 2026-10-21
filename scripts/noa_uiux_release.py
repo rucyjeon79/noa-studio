@@ -7,8 +7,8 @@ import paramiko
 from noa_deploy_guard import deployment_preflight
 ROOT='/hosting/noastudio/html'
 BASELINE='018335cb6242f0a352ac7e564bc063f018d5bb9e'
-PREVIOUS_UI='6d8507db4fbfd230e184485bd709361b4f8058cd'
-FILES={p:'deploy/'+p for p in ['noa-ui.css','noa-ui.js']}
+PREVIOUS_UI='33e484354168a9170c046d2ef4c805c5127d2944'
+FILES={p:'deploy/'+p for p in ['noa-ui.css','noa-ui.js','noa-app/home.php','noa-app/world-view.php','noa-my.php','noa-youtube.php','noa-catalog.php']}
 PROTECTED=['index.php','common.php','config.php','data/dbconfig.php','head.php','tail.php','version.php','bbs/login.php','bbs/login_check.php','noa-music.php']+['noa-app/jukebox/'+p for p in ['index.php','upload-core.php','core.php','upload.php','upload.js','upload.css']]
 PROOF=Path('uiux-proof');STATE=PROOF/'release-state.json'
 def sha(b):return hashlib.sha256(b).hexdigest()
