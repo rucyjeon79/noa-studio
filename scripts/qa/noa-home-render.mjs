@@ -18,8 +18,15 @@ try{
   }
   if(baseline)assert.deepEqual(rendered,baseline);baseline=rendered;
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'horizontal overflow');
+  // Lazy images outside the first viewport need a scroll before visual QA.
+  for(const id of ['noa-stories','noa-covers','noa-acts']){
+   await page.locator('#'+id+' .noa-music-card').first().scrollIntoViewIfNeeded();
+   await page.locator('#'+id+' .noa-music-card').last().scrollIntoViewIfNeeded();
+   await page.waitForFunction(id=>[...document.querySelectorAll('#'+id+' .noa-art img')].every(img=>img.complete&&img.naturalWidth>0),id,{timeout:30000});
+  }
+  await page.evaluate(()=>scrollTo(0,0));
   await page.screenshot({path:'quality-home/home-'+width+'.jpg',type:'jpeg',quality:75,fullPage:true});reports.push({width,counts:Object.fromEntries(Object.entries(rendered).map(([s,rs])=>[s,rs.length]))});
  }
  for(const s of ['stories','covers','playlists']){const row=source[s][0];const image=await page.request.get('https://noastudio.ai.kr'+row.thumbnail);assert.ok(image.ok());assert.match(image.headers()['content-type'],/^image\//);const link=await page.request.get('https://noastudio.ai.kr'+row.href);assert.ok(link.ok());}
- assert.deepEqual(errors,[]);await fs.writeFile('quality-home/render-report.json',JSON.stringify({ok:true,environment:'isolated candidate render, not deployed',sameDesktopMobileRows:true,topItemThumbnailAndDestinationHttpVerified:true,reports},null,2));console.log('PASS NOA HOME desktop/mobile equal rows, titles, links, metrics, responsive layout and top thumbnails');
+ assert.deepEqual(errors,[]);await fs.writeFile('quality-home/render-report.json',JSON.stringify({ok:true,environment:'isolated candidate render, not deployed',sameDesktopMobileRows:true,allRankedThumbnailsLoaded:true,topItemThumbnailAndDestinationHttpVerified:true,reports},null,2));console.log('PASS NOA HOME desktop/mobile equal rows, titles, links, metrics, responsive layout and top thumbnails');
 }finally{await browser.close();server.kill();}
