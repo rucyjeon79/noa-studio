@@ -44,6 +44,7 @@ try{
  const {auditPrecision,verifyPrecisionFlow}=await import('file://'+path.join(root,'scripts/qa/noa-precision.mjs'));
  const {verifyRecovery}=await import('file://'+path.join(root,'scripts/qa/noa-recovery.mjs'));await verifyRecovery({context,phase,base,out,report,auditPrecision});
  const {verifyGlass}=await import('file://'+path.join(root,'scripts/qa/noa-glass.mjs'));await verifyGlass({context,phase,base,out,report,auditPrecision});
+ if(phase==='live'){const alias=await context.request.get(base+'/noa2.php?view=all');assert.equal(alias.status(),200);assert.equal(new URL(alias.url()).pathname,'/');report.push({phase,legacyEntryRedirectsToRoot:true});}
  const failures=[];
  const routes=['/','/noa-world.php?story=1','/noa-my.php','/noa-youtube.php','/noa-music.php','/noa-catalog.php','/noa-settings.php','/bbs/login.php'];
  if(phase==='candidate')routes.push('/noa-my-admin-fixture','/noa-ai-lab-admin-fixture');

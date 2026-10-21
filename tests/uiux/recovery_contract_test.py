@@ -16,6 +16,8 @@ class RecoveryContract(unittest.TestCase):
   home=(ROOT/'deploy/noa-app/home.php').read_text();js=(ROOT/'deploy/noa-hero.js').read_text()
   self.assertNotIn('noa-hero-toggle',home+js)
   self.assertNotRegex(js,r'\.onclick|loop\s*=\s*true|currentTime\s*=\s*0')
+ def test_legacy_entry_cannot_render_another_home(self):
+  s=(ROOT/'deploy/noa2.php').read_text();self.assertIn("header('Location: /'",s);self.assertNotIn('<html',s);self.assertNotIn('common.php',s)
  def test_no_design_changes_to_owner_processing_files(self):
   import subprocess
   paths=subprocess.check_output(['git','diff','--name-only','54f1adb915109ae1c645d39e9a8d3f530af8cb2a','HEAD'],cwd=ROOT,text=True).splitlines()

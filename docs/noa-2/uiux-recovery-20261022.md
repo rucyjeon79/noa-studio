@@ -14,6 +14,8 @@ Read-only production inventory run `39687517312`, artifact `12387112918`, found 
 
 - Additional live computed-style evidence: `.noa-page .noa-browse-card` used a fixed portrait ratio with an absolutely positioned image. Desktop cards measured about 520×650px, with text sharing the image area. This legacy rule affected both music collections and YouTube collections; common intrinsic 16:9 media/copy rows replace it and are now measured by the DOM gate.
 
+- Repository inspection also found `deploy/noa2.php` still containing a separate old home document and stale asset revisions. It becomes a no-store 302 compatibility redirect to the root, preserving encoded query values. `index.php` and GnuBoard core remain protected; the live gate checks the final legacy-entry URL.
+
 ## Scoped implementation
 
 Shared `noa-ui.js` enhances text actions in main content using the existing SVG icon registry, retaining nodes, links, native summary semantics and handlers. Full card links, native navigation, footer legal links and marked document references are excluded. Translation attributes transfer onto the label node so language changes do not erase icons. New simple action links receive the same component.

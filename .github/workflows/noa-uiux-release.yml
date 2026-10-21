@@ -3,7 +3,7 @@ name: NOA UIUX visual gates and scoped production release
 on:
   pull_request:
     branches: [main]
-    paths: ['deploy/noa-ui.*', 'deploy/noa-design.json', 'scripts/qa/noa-glass.mjs', 'scripts/qa/noa-recovery.mjs', 'tests/uiux/**', 'deploy/noa-music.php', 'deploy/noa-youtube.css', 'deploy/noa-hero.js', 'deploy/noa-home.js', 'deploy/noa-browse.js', 'deploy/noa-my.php', 'deploy/noa-youtube*', 'deploy/noa-world*', 'deploy/noa-app/home.php', 'deploy/noa-app/world-view.php', 'bridge/home-core.php', 'tests/uiux/**', 'scripts/noa_uiux_release.py', 'scripts/qa/noa-uiux-release.mjs', 'scripts/qa/noa-card-balance.mjs', 'scripts/qa/noa-precision*', 'deploy/noa-ai-lab.php', 'deploy/noa-settings.php', '.github/workflows/noa-uiux-release.yml']
+    paths: ['deploy/noa-ui.*', 'deploy/noa-design.json', 'scripts/qa/noa-glass.mjs', 'scripts/qa/noa-recovery.mjs', 'tests/uiux/**', 'deploy/noa-music.php', 'deploy/noa2.php', 'deploy/noa-youtube.css', 'deploy/noa-hero.js', 'deploy/noa-home.js', 'deploy/noa-browse.js', 'deploy/noa-my.php', 'deploy/noa-youtube*', 'deploy/noa-world*', 'deploy/noa-app/home.php', 'deploy/noa-app/world-view.php', 'bridge/home-core.php', 'tests/uiux/**', 'scripts/noa_uiux_release.py', 'scripts/qa/noa-uiux-release.mjs', 'scripts/qa/noa-card-balance.mjs', 'scripts/qa/noa-precision*', 'deploy/noa-ai-lab.php', 'deploy/noa-settings.php', '.github/workflows/noa-uiux-release.yml']
   push:
     branches: [main]
     paths: ['.github/workflows/noa-uiux-release.yml']
@@ -23,7 +23,7 @@ jobs:
         with: {php-version: '8.2', coverage: none}
       - name: PHP, JavaScript and existing source invariants
         run: |
-          for f in bridge/home-core.php deploy/noa-app/home.php deploy/noa-app/world-view.php deploy/noa-my.php deploy/noa-youtube.php deploy/noa-catalog.php deploy/noa-ai-lab.php deploy/noa-settings.php deploy/noa-music.php tests/uiux/render.php; do php -l "$f"; done
+          for f in bridge/home-core.php deploy/noa-app/home.php deploy/noa-app/world-view.php deploy/noa-my.php deploy/noa-youtube.php deploy/noa-catalog.php deploy/noa-ai-lab.php deploy/noa-settings.php deploy/noa-music.php deploy/noa2.php tests/uiux/render.php; do php -l "$f"; done
           for f in deploy/noa-ui.js deploy/noa-browse.js deploy/noa-hero.js deploy/noa-home.js deploy/noa-world.js; do node --check "$f"; done
           php tests/catalog/home_test.php
           php tests/catalog/home_uiux_test.php
