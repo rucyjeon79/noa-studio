@@ -55,6 +55,7 @@ try{
    await page.evaluate(()=>scrollTo(0,0));
   }
   const filename=route.replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')||'home';await page.screenshot({path:path.join(out,filename+'-'+width+'.jpg'),type:'jpeg',quality:78});
+  if(route==='/noa-my-admin-fixture'){await page.locator('.noa-workspace').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'workspace-'+width+'.jpg'),type:'jpeg',quality:80});}
   report.push({phase,route,width,status:response.status(),layout,errors});await page.close();
  }
  if(phase==='live'){
