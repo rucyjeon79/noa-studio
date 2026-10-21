@@ -46,3 +46,9 @@ function np_build(array $raw,array $songs,array $lists,array $membership,array $
 
 /** Existing public genre labels; no category/genre reassignment. */
 function np_genre_titles():array{return ['kpop-original'=>'K-POP Original','jpop-original'=>'J-POP Original','pop-original'=>'POP Original','thai-original'=>'Thai Original','joseon-ballad'=>'Joseon Ballad','echoes-of-joseon'=>'Echoes of Joseon','groovy-airy-pop'=>'Groovy Airy Pop','narrative-piano-indie'=>'Narrative Piano Indie','dreamy-deep-house'=>'Dreamy Deep House','fantasy-ambient-edm'=>'Fantasy Ambient EDM','edm-kpop-club'=>'EDM K-POP Club','latin-afrobeats-edm'=>'Latin Afrobeats EDM','panpop'=>'PANPOP','your-story'=>'당신의 이야기, 우리의 음악','cover-reborn'=>'AInoa의 유명곡 커버'];}
+/** Read compatibility never changes stored points or ranks. */
+function np_read_row(array $row):array{if(($row['contentType']??'')==='video'){$row['countedVideos']??=1;$row['excludedVideos']??=0;}return $row;}
+function np_home_row(array $row,string $type):array{
+ $row=np_read_row($row);if($type==='playlists'){$row['integratedScoreKind']=$row['scoreKind']??null;$row['scoreKind']=($row['contentType']??'')==='video'?'video_view_count':'sum_public_owner_member_video_views';}
+ if($type==='stories'){$row['genre']='your-story';$row['classificationSource']='official_playlist_membership';}if($type==='covers'){$row['genre']='cover-reborn';$row['classificationSource']='official_playlist_membership_and_sql_category';}return $row;
+}

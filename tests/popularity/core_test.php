@@ -15,3 +15,6 @@ echo "PASS view/play sums, unique IDs/song sets, category overlap, movement, tie
 
 $actVideo=video('ccccccccccc',45);$actVideo['sqlGenre']='dreamy-deep-house';$actVideo['snippet']['title']='ACT.1 Playlist';$actBuild=np_build([$actVideo],$songs,[],[],[], $cats,['t'=>['collection']]);check($actBuild['groups']['collections'][0]['youtubeViews']===45,'confirmed ACT genre metric omitted');check($actBuild['groups']['playlists'][0]['songId']===null,'ACT genre inferred an individual song');
 echo "PASS confirmed ACT genre attribution without individual song invention\n";
+
+$legacy=np_home_row(['contentType'=>'video','scoreKind'=>'single_video_plus_unique_song_plays','score'=>123,'rank'=>2],'playlists');check($legacy['scoreKind']==='video_view_count'&&$legacy['countedVideos']===1&&$legacy['score']===123&&$legacy['rank']===2,'legacy home metric/rank compatibility');$storyRow=np_home_row(['contentType'=>'video','genre'=>'unclassified','score'=>123],'stories');check($storyRow['genre']==='your-story','official story card classification label');
+echo "PASS existing home single-video labels/count and official story/cover labels without score mutation\n";

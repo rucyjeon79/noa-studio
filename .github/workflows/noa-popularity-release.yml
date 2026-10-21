@@ -1,5 +1,5 @@
 name: NOA integrated popularity verified production release
-# Include existing confirmed ACT genre evidence and preserve unmeasured registered cards without fabricated scores.
+# Keep existing home playlist labels compatible; verify actual PC/mobile home cards without UI edits.
 on:
   push:
     branches: [main]
@@ -76,4 +76,5 @@ jobs:
             quality-popularity/production.json
             quality-popularity/live.json
             quality-popularity/admin-*.png
+            quality-popularity/home-*.png
           retention-days: 14

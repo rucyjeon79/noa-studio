@@ -88,3 +88,6 @@ Work_디자인: `/noa-bridge/rankings.php`의 정렬된 `cards`/`cardCount`/`fea
 2026-10-21 23:04 KST의 시간별 worker 경로 검증: 커밋 `42b692e84d90514bc3e0041121199c0e972cef12`, https://github.com/rucyjeon79/noa-studio/actions/runs/39613506732 성공(push 이벤트). 실제23시 SQL 결과의 `replayed=true`를 확인했고 스냅샷2개·948행을 중복 생성하지 않았다. 최초 schedule 이벤트 성공을 관찰한 기록과 구분한다. 현재 점수 미확인 컬렉션2개는 Joseon Ballad40곡과 PANPOP40곡이다. 곡 등록은 보존되며 확정 공개 영상 지표의 장르 연결 근거가 부족하므로 점수/순위를 만들지 않았다.
 
 다음 배포가 이미 생성된6개 테이블·과거 순위·유효 재생 원장을 만났을 때도 안전한지 전용 source/replay 검증을 추가한다. 격리 DB에서 같은 SQL 테스트를 두 번 연속 실행해 최초 생성과 기존 모델 데이터 보존을 함께 확인한다. 미래 시간 테스트 자료는 격리 DB 안에서만 사용하고 운영으로 복사하지 않는다.
+
+
+홈의 기존 `noa-home.js`와 호환되도록 읽기 adapter를 둔다. 단일 연속듣기 영상은 기존 `scoreKind=video_view_count` 및 countedVideos=1을 유지하고, 통합 지표 종류는 `integratedScoreKind`로 보존한다. 공식 사연곡·커버 카드의 장르 표시도 곡 매칭 유무와 분리해 공식 소속으로 표시한다. 저장된 스냅샷 점수/순위는 수정하지 않는다. 현재 JUKEBOX 수집이 꺼져 있는 동안 기존 ‘조회수’ UI 문구가 잘못된 재생 합계를 표시하지 않으며, 활성화 전 디자인 담당은 `score`와 통합 점수 문구를 연결해야 한다. 실제 운영 홈 PC/모바일50개 카드의 ID·제목·지표 문구 일치와 undefined/NaN 부재를 추가 검증한다.
