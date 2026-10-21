@@ -1,5 +1,5 @@
 name: NOA JUKEBOX public cards and authorized audio
-# Ignore stale upload acknowledgements after newer SQL stages; validate without stopping active mastering.
+# Reconcile lost client acknowledgements with durable SQL completion before requesting file access again.
 on:
   push:
     branches: [main, chatgpt/jukebox-20261021]

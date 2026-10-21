@@ -131,3 +131,5 @@ Live reservation check: ten separate song-card selections were accepted while th
 Cross-page metadata writes merge reservation IDs and preserve another tab's file ownership. File-provider modification time is not required to remain stable. A specifically identified interrupted upload returns hashes of received chunks; the browser hashes local chunks before skipping them, preventing mixed-file assembly without retransmitting already confirmed bytes. Closing a tab still loses its File objects, requiring explicit reselection.
 
 Upload acknowledgements and polling are ordered by queue job ID and processing stage. A delayed `queued` response cannot replace a newer `ready` card or remove its playback/download controls. New retry IDs remain eligible to advance the UI.
+
+The browser persists the upload ID before transmitting chunks. Reopening a page reconciles that ID with SQL: already registered files stop requesting file access, including when the final response was lost. Partial files still require source reselection and skip locally verified saved chunks.
