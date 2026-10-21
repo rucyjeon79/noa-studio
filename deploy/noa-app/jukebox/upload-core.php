@@ -15,7 +15,7 @@ function nu_chunks(array $r):array{$out=[];$dir=nu_dir($r['id']);for($i=0;$i<(in
 function nu_clean(array $r):void{foreach(glob(nu_dir($r['id']).'/*') as $p)if(!is_link($p)&&is_file($p)&&preg_match('~/(?:chunk-[0-9]+|input[.]audio|input[.]part)$~D',$p))unlink($p);}
 function nu_public(PDO $db,string $key):array{
  $asset=nj_find($db,$key);$ready=nj_verified($asset,'audio');$q=$db->prepare('SELECT id,status,error,filename,fingerprint,file_bytes,total_chunks,source_analysis,correction,final_analysis,updated_at FROM noa_jukebox_uploads WHERE song_key=? ORDER BY sequence DESC LIMIT 1');$q->execute([$key]);$u=$q->fetch(PDO::FETCH_ASSOC)?:null;
- return ['key'=>$key,'ready'=>$ready,'audio'=>$ready?nj_url($key,'audio'):'','download'=>$ready?'/noa-app/jukebox/download.php?key='.rawurlencode($key):'',
+ return ['key'=>$key,'ready'=>$ready,'audio_bytes'=>$ready?(int)$asset['audio_bytes']:0,'audio_sha256'=>$ready?$asset['audio_sha256']:'','audio'=>$ready?nj_url($key,'audio'):'','download'=>$ready?'/noa-app/jukebox/download.php?key='.rawurlencode($key):'',
   'status'=>!$ready&&($u['status']??'')==='ready'?'failed':($u?$u['status']:($ready?'ready':'audio_pending')),'error'=>!$ready&&($u['status']??'')==='ready'?'final_file_missing_or_mismatched':($u['error']??null),'upload'=>$u,
   'analysis'=>$asset?['source'=>json_decode($asset['source_analysis']??'null',true),'correction'=>json_decode($asset['correction']??'null',true),'final'=>json_decode($asset['final_analysis']??'null',true)]:null];
 }

@@ -1,6 +1,6 @@
 name: NOA JUKEBOX public cards and authorized audio
 # Continue existing cards; audit published sources and process authorized owned downloads only.
-# Upload-based audio, explicit stored-file downloads and responsive production checks.
+# Preserve active playback during replacement; publish status by confirmed file hash.
 on:
   push:
     branches: [main, chatgpt/jukebox-20261021]
