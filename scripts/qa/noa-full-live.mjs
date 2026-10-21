@@ -33,7 +33,7 @@ await p.locator('.world-thumbnail').first().click();await p.locator('#world-play
 report.world.embed=await p.locator('#world-frame').getAttribute('src');assert.match(report.world.embed,/^https:\/\/www.youtube.com\/embed\/[A-Za-z0-9_-]{11}/);
 await p.getByRole('button',{name:'영상 닫기',exact:true}).click();assert.equal(await p.locator('#world-frame').getAttribute('src'),'about:blank');
 report.limits.push('Official iframe opened and closed; audible YouTube streaming not asserted.');
-for(const act of [1,2,3,4]){await p.goto(origin+'/noa-world.php?story='+act,{waitUntil:'domcontentloaded'});assert((await p.locator('main').innerText()).includes('ACT '+act));}
+for(const act of [1,2,3,4]){await p.goto(origin+'/noa-world.php?story='+act,{waitUntil:'domcontentloaded'});assert((await p.locator('main').innerText()).includes('ACT.'+act));}
 for(const route of ['/noa-youtube.php','/noa-music.php','/bbs/login.php']){const r=await p.goto(origin+route,{waitUntil:'domcontentloaded'});assert.equal(r.status(),200);report.urls.push({requested:route,status:r.status()});}
 await p.locator('#login_id').waitFor();assert(await p.locator('#login_pw').isVisible());
 for(const path of ['/noa-app/database/','/noa-app/database/core.php','/noa-ai-lab.php','/noa-library.php']){assert.equal((await p.request.get(origin+path)).status(),403);report.urls.push({requested:path,anonymous:403});}
