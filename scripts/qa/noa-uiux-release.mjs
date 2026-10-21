@@ -56,6 +56,7 @@ try{
   assert(layout.scroll<=width+1,'overflow '+width+' '+route+' '+layout.scroll);assert(layout.text>50,'blank '+route);assert.deepEqual(errors,[],route);
   for(const action of layout.actions)assert(action.width>=43&&action.height>=43,'small action '+route);
   const precision=await auditPrecision(page);
+  if(route==='/')assert((await page.locator('.noa-card-context').allTextContents()).every(t=>!t.includes('unclassified')),'internal genre marker on public cards');
   if(route==='/noa-my.php')assert.equal(await page.locator('.noa-workspace').count(),0);
   if(route==='/noa-my-admin-fixture')assert.equal(await page.locator('.noa-workspace a').count(),10);
   if(route.startsWith('/noa-world.php')){
