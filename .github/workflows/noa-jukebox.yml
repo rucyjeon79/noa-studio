@@ -1,5 +1,5 @@
 name: NOA JUKEBOX public cards and authorized audio
-# Keep per-card reservations visible and replace files safely; compact current-song progress.
+# Keep EP and song reservation states visible; protect replacement and compact current-song progress.
 on:
   push:
     branches: [main, chatgpt/jukebox-20261021]
