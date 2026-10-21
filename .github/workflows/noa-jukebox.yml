@@ -1,4 +1,5 @@
 name: NOA JUKEBOX public cards and authorized audio
+# Signed fixed-operation PHP service: hosting has no PHP CLI.
 on:
   push:
     branches: [chatgpt/jukebox-20261021]

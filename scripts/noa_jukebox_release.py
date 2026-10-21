@@ -1,12 +1,12 @@
 """Pinned SSH: additive jukebox files, bounded public cover acquisition, SQL import.
 Never executes arbitrary submitted commands or updates legacy music documents.
 """
-import base64, hashlib, json, os, shlex, stat, subprocess, sys
+import base64, hashlib, hmac, json, os, secrets, time, stat, subprocess, sys, urllib.request, urllib.error
 from pathlib import Path
 import paramiko
 ROOT='/hosting/noastudio/html'
 APP='noa-app/jukebox/'
-NEW={APP+n:'deploy/'+APP+n for n in ['core.php','cli.php','stream.php','index.php']}
+NEW={APP+n:'deploy/'+APP+n for n in ['core.php','cli.php','stream.php','index.php','operations.php','service.php']}
 INTEGRATE={'noa-bridge/catalog.php':'bridge/catalog.php','noa-music.php':'deploy/noa-music.php'}
 BASE=json.loads(Path('scripts/noa_jukebox_baseline.json').read_text())
 
@@ -43,13 +43,23 @@ def main():
   atomic(ROOT+'/noa-jukebox/.htaccess',Path('deploy/'+APP+'media.htaccess').read_bytes(),None)
   # Install only new helpers; no existing application files are touched until SQL is ready.
   for remote,local in NEW.items():atomic(ROOT+'/'+remote,Path(local).read_bytes(),None)
+  with s.open('/hosting/noastudio/noa-ai-lab/worker.key','rb') as keyfile:key=keyfile.read(256).decode().strip()
+  if len(key)!=64:raise RuntimeError('invalid_private_service_key')
   def cli(action,payload=None):
-   ch=t.open_session();ch.settimeout(300)
-   ch.exec_command('cd '+shlex.quote(ROOT)+' && php '+APP+'cli.php '+shlex.quote(action))
-   if payload is not None:ch.sendall(payload)
-   ch.shutdown_write();out=ch.makefile('rb').read();err=ch.makefile_stderr('rb').read();code=ch.recv_exit_status();ch.close()
-   if code:raise RuntimeError('CLI '+action+' failed: '+err.decode()[-500:]+' '+out.decode()[-500:])
-   return json.loads(out)
+   body={'action':action,'payload':json.loads(payload) if payload else {}}
+   raw=json.dumps(body,separators=(',',':')).encode();ts=str(int(time.time()));nonce=secrets.token_hex(16)
+   msg='NOA-JUKEBOX-1\nPOST\n'+sha(raw)+'\n'+ts+'\n'+nonce
+   headers={'Content-Type':'application/json','X-NOA-Timestamp':ts,'X-NOA-Nonce':nonce,
+            'X-NOA-Signature':hmac.new(key.encode(),msg.encode(),hashlib.sha256).hexdigest()}
+   req=urllib.request.Request('https://noastudio.ai.kr/noa-app/jukebox/service.php',data=raw,headers=headers,method='POST')
+   try:
+    with urllib.request.urlopen(req,timeout=150) as response:out=json.load(response)
+   except urllib.error.HTTPError as e:
+    raise RuntimeError('signed_service_'+action+'_http_'+str(e.code)) from None
+   if not out.get('ok'):raise RuntimeError('signed_service_'+action+'_failed')
+   result=out['result']
+   if result.get('errors'):raise RuntimeError('import_validation_failed:'+json.dumps(result['errors']))
+   return result
   work=Path('jukebox-proof');work.mkdir(exist_ok=True)
   catalog=cli('export');(work/'catalog-private.json').write_text(json.dumps(catalog,ensure_ascii=False))
   print('LIVE_DB_COUNTS '+json.dumps({k:v for k,v in catalog.items() if k!='items'}),flush=True)
