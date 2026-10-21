@@ -8,7 +8,7 @@ import noa_jukebox_owned as owned
 from noa_jukebox_upload_worker import process_uploads
 ROOT='/hosting/noastudio/html'
 APP='noa-app/jukebox/'
-NEW={APP+n:'deploy/'+APP+n for n in ['core.php','cli.php','stream.php','index.php','operations.php','service.php','upload-core.php','upload.php','download.php','upload.js','upload.css','mobile-check.php']}
+NEW={APP+n:'deploy/'+APP+n for n in ['queue-core.php','core.php','cli.php','stream.php','index.php','operations.php','service.php','upload-core.php','upload.php','download.php','upload.js','upload.css','mobile-check.php']}
 INTEGRATE={'noa-bridge/catalog.php':'bridge/catalog.php','noa-music.php':'deploy/noa-music.php'}
 BASE=json.loads(Path('scripts/noa_jukebox_baseline.json').read_text())
 
@@ -17,7 +17,7 @@ def main():
  t=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022));t.get_security_options().key_types=('ssh-ed25519',);t.start_client(timeout=20)
  fp='SHA256:'+base64.b64encode(hashlib.sha256(t.get_remote_server_key().asbytes()).digest()).decode().rstrip('=')
  if fp!='SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU':raise RuntimeError('SSH host mismatch; no credentials sent')
- t.auth_password(os.environ['NOA_SSH_USER'],os.environ['NOA_SSH_PASSWORD']);s=paramiko.SFTPClient.from_transport(t)
+ t.auth_password(os.environ['NOA_SSH_USER'],os.environ['NOA_SSH_PASSWORD']);s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(90)
  try:
   if s.normalize(ROOT)!=ROOT:raise RuntimeError('unexpected production root')
   def read(path):
@@ -71,6 +71,12 @@ def main():
    if result.get('errors'):raise RuntimeError('import_validation_failed:'+json.dumps(result['errors']))
    return result
   work=Path('jukebox-proof');work.mkdir(exist_ok=True)
+  try:
+   probe=t.open_session(timeout=20);probe.settimeout(20)
+   probe.exec_command('for tool in php php8.2 php82 ffmpeg ffprobe crontab; do command -v "$tool" || true; done; crontab -l >/dev/null 2>&1; printf "cron_read_status=%s\\n" "$?"')
+   host_probe=probe.makefile('r').read(4096).decode(errors='replace');probe.close()
+  except Exception:host_probe='SSH executable probe unavailable; external worker retained'
+  print('DOTHOME_EXECUTABLE_PROBE '+json.dumps(host_probe),flush=True)
   pending=cli('jobs')
   if os.environ.get('GITHUB_EVENT_NAME')=='schedule' and not pending['queued'] and not pending['uploads']:
    (work/'summary.json').write_text(json.dumps({'idle':True,'queued':0}));print('JUKEBOX_IDLE');return
@@ -99,6 +105,7 @@ def main():
   if pending['uploads'] and not shutil.which('ffmpeg'):
    subprocess.run(['sudo','apt-get','update','-qq'],check=True)
    subprocess.run(['sudo','apt-get','install','-y','ffmpeg'],check=True)
+  print('HOST_CAPABILITIES '+json.dumps(cli('capabilities')),flush=True)
   uploads=process_uploads(s,lambda action,payload=None:cli(action,json.dumps(payload,ensure_ascii=False).encode() if payload else None),mkdir)
   print('JUKEBOX_UPLOAD_RESULT '+json.dumps(uploads),flush=True)
   results=[];saved=0;sql_saved=0
@@ -139,7 +146,7 @@ def main():
   result={'catalog_song_records':catalog.get('catalog_song_records'),'database_music_records':catalog['database_music_records'],'total_suno_urls':len(catalog['items']),
           'cover_files':audit['covers'],'audio_files':audit['audio'],'audio_bytes':audit['audio_bytes'],
           'source_audits':sum('audio_discovery' in r for r in results),'cover_pending':len(catalog['items'])-audit['covers'],'audio_pending':len(catalog['items'])-audit['audio'],'sql_saved':sql['saved'],'files_uploaded':saved,'audit':audit,'deployed':list(NEW)+list(INTEGRATE),
-          'source_commit':os.environ['GITHUB_SHA'],'uploads':uploads,'integrity_before':original_data,'integrity_after':cli('integrity_snapshot'),'existing_documents_modified':False,'audio_playback_verified':False}
+          'host_executable_probe':host_probe,'queue':cli('queue_snapshot'),'capacity':cli('capabilities'),'source_commit':os.environ['GITHUB_SHA'],'uploads':uploads,'integrity_before':original_data,'integrity_after':cli('integrity_snapshot'),'existing_documents_modified':False,'audio_playback_verified':False}
   cli('finish',json.dumps({'ids':claimed}).encode())
   (work/'summary.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print('JUKEBOX_PRODUCTION_RESULT '+json.dumps(result),flush=True)
  finally:s.close();t.close()

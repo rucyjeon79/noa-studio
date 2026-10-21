@@ -37,6 +37,10 @@ function nj_file(string $relative):?string{
  return null;
 }
 function nj_schema(PDO $db):void{
+ $db->exec("CREATE TABLE IF NOT EXISTS noa_jukebox_queue_control (id INT PRIMARY KEY) ENGINE=InnoDB");
+ $db->exec("INSERT IGNORE INTO noa_jukebox_queue_control VALUES(1)");
+ $db->exec("CREATE TABLE IF NOT EXISTS noa_jukebox_audio_jobs (id BIGINT AUTO_INCREMENT PRIMARY KEY,upload_id CHAR(32) NOT NULL,song_key VARCHAR(191) NOT NULL,status VARCHAR(32) NOT NULL,uploaded_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),started_at DATETIME(6) NULL,finished_at DATETIME(6) NULL,attempt INT NOT NULL DEFAULT 1,retry_of BIGINT NULL,error VARCHAR(191) NULL,lease CHAR(32) NULL,lease_until DATETIME NULL,heartbeat_at DATETIME NULL,available_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,KEY(upload_id,id),KEY(status,id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
  $db->exec("CREATE TABLE IF NOT EXISTS noa_jukebox_assets (song_key VARCHAR(191) PRIMARY KEY, source_url TEXT NOT NULL, suno_id VARCHAR(64) NOT NULL DEFAULT '', suno_title TEXT NULL, genre VARCHAR(128) NOT NULL DEFAULT '', ep VARCHAR(32) NOT NULL DEFAULT '', title TEXT NULL, cover_path TEXT NULL, cover_bytes BIGINT NULL, cover_sha256 CHAR(64) NULL, audio_path TEXT NULL, audio_bytes BIGINT NULL, audio_sha256 CHAR(64) NULL, source_analysis JSON NULL, correction JSON NULL, final_analysis JSON NULL, source_evidence JSON NULL, status VARCHAR(32) NOT NULL DEFAULT 'audio_pending', errors JSON NULL, verified_at DATETIME NULL, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
  if(!$db->query("SHOW COLUMNS FROM noa_jukebox_assets LIKE 'source_evidence'")->fetch())$db->exec("ALTER TABLE noa_jukebox_assets ADD COLUMN source_evidence JSON NULL");
  if(!$db->query("SHOW COLUMNS FROM noa_jukebox_assets LIKE 'catalog_context'")->fetch())$db->exec("ALTER TABLE noa_jukebox_assets ADD COLUMN catalog_context JSON NULL");
@@ -101,7 +105,7 @@ function nj_import(PDO $db,array $r,bool $replace=false,?string $expected=null):
  $new['source_evidence']=isset($r['audio_discovery'])?json_encode($r['audio_discovery'],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR):null;
  $new['catalog_context']=json_encode(($r['catalog_context']??[])+['act'=>$doc['act']??'','category1'=>$doc['category1']??'','category2'=>$doc['category2']??''],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
  $new['verified_at']=gmdate('Y-m-d H:i:s');
- $db->beginTransaction();
+ $ownsTransaction=!$db->inTransaction();if($ownsTransaction)$db->beginTransaction();
  try{
   // Never overwrite a verified edition implicitly; retain it and append new evidence.
   $q=$db->prepare('SELECT * FROM noa_jukebox_assets WHERE song_key=? FOR UPDATE');$q->execute([$key]);$old=$q->fetch(PDO::FETCH_ASSOC);
@@ -117,6 +121,6 @@ function nj_import(PDO $db,array $r,bool $replace=false,?string $expected=null):
   }
   $columns=array_keys($new);$sql='INSERT INTO noa_jukebox_assets (`'.implode('`,`',$columns).'`) VALUES ('.implode(',',array_fill(0,count($new),'?')).') ON DUPLICATE KEY UPDATE '.implode(',',array_map(fn($k)=>'`'.$k.'`=VALUES(`'.$k.'`)',$columns));
   $db->prepare($sql)->execute(array_values($new));
-  $db->prepare('INSERT INTO noa_jukebox_history(song_key,result) VALUES(?,?)')->execute([$key,json_encode($r,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)]);$db->commit();
- }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+  $db->prepare('INSERT INTO noa_jukebox_history(song_key,result) VALUES(?,?)')->execute([$key,json_encode($r,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)]);if($ownsTransaction)$db->commit();
+ }catch(Throwable $e){if($ownsTransaction&&$db->inTransaction())$db->rollBack();throw $e;}
 }
