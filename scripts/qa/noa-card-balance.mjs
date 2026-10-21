@@ -28,7 +28,7 @@ export async function verifyCardBalance({context,phase,base,out,report}){
    const href=await first.getAttribute('href'),id=await first.getAttribute('data-video');await first.click();
    await page.waitForURL(base+href);await page.waitForFunction(id=>document.getElementById('yt-frame')?.src.includes('/embed/'+id),id);
    assert.equal(await page.locator('#yt-frame').count(),1);
-   cases.push({width,count:10,forcedThreeColumns:true,linkAndPlayer:true,...result});
+   cases.push({width,count:10,constrainedContainer:true,linkAndPlayer:true,...result});
   }
   await page.close();
  }

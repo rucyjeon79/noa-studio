@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';import fs from 'node:fs/promises';import path from 'node:path';
 const sizes=[{width:320,height:568},{width:390,height:844},{width:430,height:932},{width:768,height:1024},{width:1024,height:768},{width:1280,height:900},{width:1920,height:1080},{width:844,height:390},{width:568,height:320}];
 export async function verifyRecovery({context,phase,base,out,report,auditPrecision}){
- const page=await context.newPage(),samples=[];let original;try{
+ const page=await context.newPage(),samples=[],accessChecks=[];let original;try{
  const routes=['/','/noa-world.php','/noa-world.php?story=1','/noa-world.php?story=2','/noa-world.php?story=3','/noa-world.php?story=4','/noa-youtube.php','/noa-youtube.php?group=story','/noa-youtube.php?group=cover','/noa-music.php','/noa-catalog.php','/noa-my.php','/noa-ai-lab.php','/bbs/board.php?bo_table=free'];
- if(phase==='candidate')routes.push('/noa-music-member-fixture','/noa-music-admin-fixture');
+ if(phase==='candidate')routes.push('/noa-music-member-fixture','/noa-music-admin-fixture','/noa-ai-lab-admin-fixture','/noa-my-admin-fixture');
  for(const route of routes){
-  await page.goto(base+route,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.NoaUI?.getState()&&window.NoaCardLayout&&document.fonts.status==='loaded');
+  const response=await page.goto(base+route,{waitUntil:'domcontentloaded'});if(route==='/noa-ai-lab.php'){assert.equal(response.status(),403,'admin-only AI LAB must deny anonymous access');accessChecks.push({route,anonymousDenied:true,status:403});continue;}assert.equal(response.status(),200,'route response '+route);await page.waitForFunction(()=>window.NoaUI?.getState()&&window.NoaCardLayout&&document.fonts.status==='loaded');
   if(!original)original=await page.evaluate(()=>({...window.NoaUI.getState()}));
   if(route==='/')await page.waitForFunction(()=>document.body.dataset.noaHomeReady==='true');
   for(const theme of ['noa-studio','noa-ivory']){
@@ -37,6 +37,6 @@ export async function verifyRecovery({context,phase,base,out,report,auditPrecisi
   if(route==='/noa-world.php'){const summary=page.locator('.world-mv-card summary').first();if(await summary.count()){await summary.press('Enter');assert.equal(await summary.evaluate(s=>s.parentElement.open),true);await summary.press('Enter');assert.equal(await summary.evaluate(s=>s.parentElement.open),false);}}
  }
  await page.evaluate(selection=>window.NoaUI.apply(selection),original);
- await fs.writeFile(path.join(out,'recovery-report.json'),JSON.stringify({ok:true,phase,samples,realAuthenticatedOperations:false,sourceDataChanged:false},null,2));report.push({phase,recoverySamples:samples.length,searchRemoved:true,heroControlRemoved:true,soundVideoSeparated:true});
+ await fs.writeFile(path.join(out,'recovery-report.json'),JSON.stringify({ok:true,phase,samples,accessChecks,realAuthenticatedOperations:false,sourceDataChanged:false},null,2));report.push({phase,recoverySamples:samples.length,searchRemoved:true,heroControlRemoved:true,soundVideoSeparated:true});
  }catch(error){await page.screenshot({path:path.join(out,'recovery-failure.jpg'),type:'jpeg'}).catch(()=>{});await fs.writeFile(path.join(out,'recovery-failure.json'),JSON.stringify({error:String(error),url:page.url(),size:page.viewportSize()},null,2));throw error;}finally{await page.close();}
 }
