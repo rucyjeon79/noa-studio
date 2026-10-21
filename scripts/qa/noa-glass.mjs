@@ -13,6 +13,7 @@ export async function verifyGlass({context,phase,base,out,report,auditPrecision}
   await page.waitForFunction(()=>window.NoaGlass&&window.NoaUI?.getState()&&document.fonts.status==='loaded');
   if(!originalSelection)originalSelection=await page.evaluate(()=>({...window.NoaUI.getState()}));
   if(route==='/')await page.waitForFunction(()=>document.body.dataset.noaHomeReady==='true');
+  if(route==='/noa-settings.php'){await page.waitForFunction(()=>document.getElementById('noa-settings-save')&&!document.getElementById('noa-settings-status').textContent.includes('불러오는 중'));await page.locator('#noa-settings-save.noa-glass-control').waitFor({state:'attached'});}
   if(route==='/noa-music.php'){
    // Existing public player chrome and owner-only action shapes, isolated in browser memory.
    await page.locator('.noa-transport').evaluate(p=>p.hidden=false);
