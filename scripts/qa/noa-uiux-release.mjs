@@ -10,6 +10,7 @@ const root=process.env.NOA_SOURCE_ROOT||process.cwd(),phase=process.env.NOA_UIUX
 await fs.mkdir(out,{recursive:true});
 const browser=await chromium.launch({headless:true,channel:'chrome'});const context=await browser.newContext({reducedMotion:'reduce',serviceWorkers:'block'});
 await context.tracing.start({screenshots:true,snapshots:true,sources:false});
+async function clickPreview(button){await button.scrollIntoViewIfNeeded();await button.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await button.click();}
 const base='https://noastudio.ai.kr',docs=new Map(),report=[];
 try{
  if(phase==='candidate'){
@@ -55,9 +56,9 @@ try{
   if(route.startsWith('/noa-world.php')){
    const anchors=page.locator('[aria-label="EP 선택"] a');assert.equal(await anchors.count(),10);
    await anchors.nth(4).click();await page.waitForFunction(()=>location.hash==='#ep-5');assert.equal(await page.locator('.noa-world-chapter').count(),10);
-   const preview=page.locator('.world-chapter-mv .world-play');assert(await preview.count()>1);const firstId=await preview.nth(0).getAttribute('data-video');await preview.nth(0).click();await page.waitForFunction(id=>document.querySelector('#world-frame').getAttribute('src')?.includes('/'+id+'?'),firstId);
+   const preview=page.locator('.world-chapter-mv .world-play');assert(await preview.count()>1);const firstId=await preview.nth(0).getAttribute('data-video');await clickPreview(preview.nth(0));await page.waitForFunction(id=>document.querySelector('#world-frame').getAttribute('src')?.includes('/'+id+'?'),firstId);
    assert.equal(await page.locator('.world-chapter-mv #world-player').count(),1);const first=await page.locator('#world-frame').getAttribute('src');
-   const secondId=await preview.nth(1).getAttribute('data-video');assert.notEqual(secondId,firstId);await preview.nth(1).click();await page.waitForFunction(id=>document.querySelector('#world-frame').getAttribute('src')?.includes('/'+id+'?'),secondId);assert.notEqual(await page.locator('#world-frame').getAttribute('src'),first);assert.equal(await page.locator('#world-frame').count(),1);
+   const secondId=await preview.nth(1).getAttribute('data-video');assert.notEqual(secondId,firstId);await clickPreview(preview.nth(1));await page.waitForFunction(id=>document.querySelector('#world-frame').getAttribute('src')?.includes('/'+id+'?'),secondId);assert.notEqual(await page.locator('#world-frame').getAttribute('src'),first);assert.equal(await page.locator('#world-frame').count(),1);
    await page.getByRole('button',{name:'영상 닫기',exact:true}).click();assert.equal(await page.locator('#world-frame').getAttribute('src'),'about:blank');
    await page.evaluate(()=>scrollTo(0,0));
   }

@@ -11,3 +11,6 @@
 .world-chapter-mv{margin:16px 0;max-width:780px}.world-chapter-mv figcaption{margin-top:8px;font-size:13px;color:var(--noa-muted);overflow-wrap:anywhere}
 .world-chapter-mv #world-player,.world-mv-card #world-player{margin:0}.world-chapter-mv .world-player-head h2,.world-mv-card .world-player-head h2{font-size:16px;overflow-wrap:anywhere;flex:1;min-width:0}
 .world-thumbnail[hidden]{display:none}.noa-world-prose,.noa-world-heading{margin:24px 0}.noa-world-grid,.world-mv-grid{gap:16px}.noa-world-links{gap:8px;margin:16px 0}.noa-world-act{padding:20px}
+/* Media previews own their hit area; inherited action padding must not resize lazy images. */
+.noa-page .world-thumbnail{display:block;min-height:0;padding:0;border:0}
+.noa-page .world-thumbnail>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
