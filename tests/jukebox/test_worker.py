@@ -22,4 +22,38 @@ class WorkerTests(unittest.TestCase):
   with tempfile.TemporaryDirectory() as t:
    p=Path(t)/'bad.mp3';p.write_bytes(b'not music')
    with self.assertRaises(ValueError):w.analyze(p)
+
+class PublishedAudioTests(unittest.TestCase):
+ def test_public_sources_are_inventory_not_download_authorization(self):
+  import json
+  sid='12345678-1234-1234-1234-123456789abc'
+  clip={'id':sid,'is_public':True,'handle':'artist','ownership':{'ownership_reason':'subscribed'},'audio_url':'https://studio-api.prod.suno.com/api/forbidden','video_url':'https://cdn1.suno.ai/provided.mp4','media_urls':[]}
+  flight='1:'+json.dumps({'data':clip})
+  page='<script>self.__next_f.push('+json.dumps([1,flight])+')</script>'
+  result=w.published_audio(page,sid)
+  self.assertTrue(result['metadata_found']);self.assertFalse(result['download_authorized'])
+  self.assertEqual(result['sources'][1]['url'],clip['video_url'])
+  self.assertTrue(result['sources'][0]['restricted'])
+ def test_missing_media_never_generates_cdn_addresses(self):
+  result=w.published_audio('<html></html>','12345678-1234-1234-1234-123456789abc')
+  self.assertFalse(result['metadata_found']);self.assertEqual(result['sources'],[])
+
+class OwnedInputTests(unittest.TestCase):
+ def test_missing_and_unsafe_entries_do_not_block_valid_owned_file(self):
+  import json
+  spec=importlib.util.spec_from_file_location('owned',Path(__file__).resolve().parents[2]/'scripts/noa_jukebox_owned.py')
+  owned=importlib.util.module_from_spec(spec);spec.loader.exec_module(owned)
+  with tempfile.TemporaryDirectory() as t:
+   root=Path(t);registry=root/'registry';registry.mkdir();(registry/'good.mp3').write_bytes(b'owned-file')
+   mapping={'unsafe':{'authorization':'user_owned_download','file':'../secret.mp3'},'missing':{'authorization':'user_owned_download','file':'missing.mp3'},'valid':{'authorization':'user_owned_download','file':'good.mp3','suno_id':'known-id'}}
+   (registry/'sources.json').write_text(json.dumps(mapping))
+   class SFTP:
+    def open(self,path,mode):return (registry/Path(path).name).open(mode)
+    def lstat(self,path):return (registry/Path(path).name).lstat()
+    def normalize(self,path):return path
+   out,folder=owned.stage(SFTP(),[{'key':x} for x in mapping],root/'work')
+   self.assertIn('error',out['unsafe']);self.assertIn('error',out['missing'])
+   self.assertEqual(Path(out['valid']['path']).read_bytes(),b'owned-file')
+   owned.cleanup(folder);self.assertFalse(folder.exists())
+
 if __name__=='__main__':unittest.main()

@@ -8,7 +8,8 @@ function nj_file(string $relative):?string{
  return $root&&$path&&str_starts_with($path,$root.'/')&&is_file($path)&&is_readable($path)?$path:null;
 }
 function nj_schema(PDO $db):void{
- $db->exec("CREATE TABLE IF NOT EXISTS noa_jukebox_assets (song_key VARCHAR(191) PRIMARY KEY, source_url TEXT NOT NULL, suno_id VARCHAR(64) NOT NULL DEFAULT '', suno_title TEXT NULL, genre VARCHAR(128) NOT NULL DEFAULT '', ep VARCHAR(32) NOT NULL DEFAULT '', title TEXT NULL, cover_path TEXT NULL, cover_bytes BIGINT NULL, cover_sha256 CHAR(64) NULL, audio_path TEXT NULL, audio_bytes BIGINT NULL, audio_sha256 CHAR(64) NULL, source_analysis JSON NULL, correction JSON NULL, final_analysis JSON NULL, status VARCHAR(32) NOT NULL DEFAULT 'audio_pending', errors JSON NULL, verified_at DATETIME NULL, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+ $db->exec("CREATE TABLE IF NOT EXISTS noa_jukebox_assets (song_key VARCHAR(191) PRIMARY KEY, source_url TEXT NOT NULL, suno_id VARCHAR(64) NOT NULL DEFAULT '', suno_title TEXT NULL, genre VARCHAR(128) NOT NULL DEFAULT '', ep VARCHAR(32) NOT NULL DEFAULT '', title TEXT NULL, cover_path TEXT NULL, cover_bytes BIGINT NULL, cover_sha256 CHAR(64) NULL, audio_path TEXT NULL, audio_bytes BIGINT NULL, audio_sha256 CHAR(64) NULL, source_analysis JSON NULL, correction JSON NULL, final_analysis JSON NULL, source_evidence JSON NULL, status VARCHAR(32) NOT NULL DEFAULT 'audio_pending', errors JSON NULL, verified_at DATETIME NULL, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+ if(!$db->query("SHOW COLUMNS FROM noa_jukebox_assets LIKE 'source_evidence'")->fetch())$db->exec("ALTER TABLE noa_jukebox_assets ADD COLUMN source_evidence JSON NULL");
  $db->exec("CREATE TABLE IF NOT EXISTS noa_jukebox_history (id BIGINT AUTO_INCREMENT PRIMARY KEY, song_key VARCHAR(191) NOT NULL, result JSON NOT NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, KEY(song_key)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
  $db->exec("CREATE TABLE IF NOT EXISTS noa_jukebox_jobs (id BIGINT AUTO_INCREMENT PRIMARY KEY, action VARCHAR(32) NOT NULL, requested_by VARCHAR(191) NOT NULL, status VARCHAR(32) NOT NULL DEFAULT 'queued', created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, finished_at DATETIME NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 }
@@ -59,12 +60,14 @@ function nj_import(PDO $db,array $r):void{
   foreach(['path','bytes','sha256'] as $f)$new[$type.'_'.$f]=$r[$type.'_'.$f];
  }
  foreach(['source_analysis','correction','final_analysis','errors'] as $f)if(isset($r[$f]))$new[$f]=json_encode($r[$f],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
+ $new['source_evidence']=isset($r['audio_discovery'])?json_encode($r['audio_discovery'],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR):null;
  $new['verified_at']=gmdate('Y-m-d H:i:s');
  $db->beginTransaction();
  try{
   // Never overwrite a verified edition implicitly; retain it and append new evidence.
   $q=$db->prepare('SELECT * FROM noa_jukebox_assets WHERE song_key=? FOR UPDATE');$q->execute([$key]);$old=$q->fetch(PDO::FETCH_ASSOC);
   if($old&&$old['source_url']===$source){
+   if($new['source_evidence']===null)$new['source_evidence']=$old['source_evidence']??null;
    foreach(['suno_id','suno_title'] as $field)if(empty($new[$field])&&!empty($old[$field]))$new[$field]=$old[$field];
    foreach(['cover','audio'] as $type)if(nj_verified($old,$type)){
     foreach(['path','bytes','sha256'] as $f)$new[$type.'_'.$f]=$old[$type.'_'.$f];

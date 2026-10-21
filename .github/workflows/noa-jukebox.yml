@@ -1,5 +1,5 @@
 name: NOA JUKEBOX public cards and authorized audio
-# Bounded batches, cached safe directories, server-side media verification.
+# Continue existing cards; audit published sources and process authorized owned downloads only.
 on:
   push:
     branches: [main, chatgpt/jukebox-20261021]

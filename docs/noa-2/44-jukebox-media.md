@@ -47,3 +47,14 @@ The worker runs 25-record batches, imports only after server-side file verificat
 - Live browser checks for administrator queue registration, counts, card loading and disabled missing-audio controls.
 
 Codec tests use disposable synthetic test audio. They are never counted as acquired catalogue songs or as real playback verification. Mobile rendering, real song playback, advancing playback time, sound output, track switching and Android background playback require separate live evidence; do not infer them from PHP lint or an HTTP 200.
+
+
+## Public-source audit added on 2026-10-21
+
+The legacy `suno-audio-server.ts` was inspected together with `loudness.ts`, `music-player.ts` and `lab/mastering.mjs`. The old route guesses CDN names and can request rights material to decrypt M4A. Neither behavior is used by this worker. Its old browser master also creates temporary WAV blobs and measures sample peaks; that is not evidence of a stored, true-peak-verified MP3.
+
+`--inspect-audio` reads the actual public serialized song object. It records public status, creator handle, ownership reason and exactly published audio/video/media URLs in `source_evidence` and history. It never treats an accessible playback resource or creator metadata as download authorization. The sample public video answered HTTP 206; the alternate M4A bytes were not an ordinary playable MP4 header, and the audio field pointed to `/api/forbidden`. No encrypted resource was decrypted or copied as an audio input.
+
+An official, already-owned download can be bound by a private registry at `/hosting/noastudio/noa-jukebox-owned/sources.json`. Each song-key entry requires `authorization: user_owned_download`, `suno_id` and a `file` basename; optional SHA-256 is checked. Sources stay outside the web root, must be regular files, and are limited to 160 MiB each and 512 MiB per staged batch. Invalid entries do not block subsequent songs. Staged inputs are deleted after each batch; final output remains MP3 only. Do not populate this registry with copied playback streams or resources obtained by bypassing download controls.
+
+Suno's terms effective 2026-09-03 require a permitted download channel and prohibit stream ripping (https://suno.com/terms, permitted commercial use section). An account sign-in remains a separate user-authorized action. Playback availability, ownership, download authorization, successful decoding and final stored MP3 readiness are distinct evidence states.

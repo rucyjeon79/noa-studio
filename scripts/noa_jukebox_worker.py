@@ -82,6 +82,45 @@ def fetch(url, limit, page=False):
         return data, r.geturl()
 
 
+def published_audio(page, sid):
+    """Read public serialized song data; never execute JS or derive a media URL."""
+    texts = [page]
+    for match in re.finditer(r'self\.__next_f\.push\((\[[\s\S]*?\])\)\s*</script>', page):
+        try:
+            value = json.loads(match[1])
+            texts.extend(x for x in value if isinstance(x, str))
+        except json.JSONDecodeError:
+            continue
+    clip = None
+    decoder = json.JSONDecoder()
+    for text in texts:
+        for marker in re.finditer(r'"id"\s*:\s*"' + re.escape(sid) + '"', text):
+            start = max(0, marker.start() - 16384)
+            for brace in reversed([m.start() + start for m in re.finditer(r'\{', text[start:marker.start()])]):
+                try:
+                    candidate, _ = decoder.raw_decode(text[brace:])
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(candidate, dict) and candidate.get('id') == sid and ('audio_url' in candidate or 'media_urls' in candidate):
+                    clip = candidate; break
+            if clip: break
+        if clip: break
+    if not clip:
+        return {'permission': 'official_download_required', 'metadata_found': False, 'sources': []}
+    sources = []
+    for kind, value in [('audio', clip.get('audio_url')), ('video', clip.get('video_url'))]:
+        if isinstance(value, str) and value.startswith('https://'):
+            sources.append({'kind': kind, 'url': value, 'restricted': '/api/forbidden' in value})
+    for media in clip.get('media_urls') or []:
+        if isinstance(media, dict) and isinstance(media.get('url'), str) and media['url'].startswith('https://'):
+            sources.append({'kind': 'media', **{k: media[k] for k in ['url','content_type','delivery','encoding'] if k in media}})
+    return {'permission': 'official_download_required', 'metadata_found': True,
+            'is_public': clip.get('is_public'), 'creator_handle': clip.get('handle'),
+            'ownership_reason': (clip.get('ownership') or {}).get('ownership_reason'),
+            'sources': sources, 'download_authorized': False,
+            'reason': 'Public playback and creator metadata do not establish an approved download channel.'}
+
+
 def metadata(url):
     raw, final = fetch(url, 3 * 1024 * 1024, True)
     p = Metadata(); p.feed(raw.decode('utf-8'))
@@ -91,7 +130,7 @@ def metadata(url):
     if not sid or not title: raise ValueError('public_song_metadata_missing')
     image = p.meta.get('og:image', '')
     if image: allowed(image)
-    return {'suno_id': sid[1], 'suno_title': title, 'resolved_url': final, 'image_url': image}
+    return {'suno_id': sid[1], 'suno_title': title, 'resolved_url': final, 'image_url': image, 'audio_discovery': published_audio(raw.decode('utf-8'), sid[1])}
 
 
 def cover(path, url):
@@ -145,10 +184,12 @@ def analyze(path):
 
 
 def optimize(source, destination):
+    source_hash = digest(source)
     before = analyze(source)
+    before['sha256'] = source_hash
     if before['lufs'] is None or before['true_peak'] is None: raise ValueError('silent_or_unmeasurable_audio')
     # Constant gain preserves dynamics. Peak headroom overrides loudness target.
-    gain = min(-14 - before['lufs'], -1.2 - before['true_peak'])
+    gain = min(-14 - before['lufs'], -1.2 - before['true_peak'], 6)
     if before['codec'] == 'mp3' and before['channels'] == 2 and abs(gain) <= .25 and before['true_peak'] <= -1:
         shutil.copyfile(source, destination)
         settings = {'mode': 'copy', 'applied_gain': 0, 'target_lufs': -14, 'target_peak': -1}
@@ -161,21 +202,25 @@ def optimize(source, destination):
                     'target_peak': -1, 'bitrate': 320000, 'sample_rate': sample_rate,
                     'filter': 'volume=' + str(gain) + 'dB'}
         run(['ffmpeg', '-nostdin', '-v', 'error', '-i', str(source), '-map', '0:a:0',
-             '-map_metadata', '-1', '-af', settings['filter'], '-ac', '2', '-ar', str(sample_rate),
+             '-map_metadata', '0', '-af', settings['filter'], '-ac', '2', '-ar', str(sample_rate),
              '-c:a', 'libmp3lame', '-b:a', '320k', '-f', 'mp3', '-y', str(destination)])
     after = analyze(destination)
     if after['codec'] != 'mp3' or after['channels'] != 2 or after['true_peak'] is None or after['true_peak'] > -1:
         destination.unlink(missing_ok=True); raise ValueError('encoded_audio_failed_peak_or_format_validation')
+    if digest(source) != source_hash or abs(after['duration']-before['duration']) > .1 or before['lra']-after['lra'] > 2.1:
+        destination.unlink(missing_ok=True); raise ValueError('source_or_dynamics_preservation_failed')
+    settings['source_unchanged'] = True
     return before, settings, after
 
 
-def process(row, root, ownership, sources):
+def process(row, root, ownership, sources, inspect_audio=False):
     result = {'song_key': row['key'], 'source_url': row['sunoUrl'], 'genre': row['genre'],
               'ep': row.get('ep', ''), 'title': row['title'], 'status': 'audio_pending', 'errors': []}
     try:
         cached = row.get('existing_cover')
-        meta = {'suno_id':cached['suno_id'],'suno_title':cached['suno_title'],'image_url':''} if cached else metadata(row['sunoUrl'])
+        meta = {'suno_id':cached['suno_id'],'suno_title':cached['suno_title'],'image_url':''} if cached and not inspect_audio else metadata(row['sunoUrl'])
         result.update(meta)
+        if row['key'] not in ownership: raise ValueError('cover_original_artist_required_or_invalid_path')
         directory = root / ownership[row['key']]
         try:
             if cached:
@@ -191,10 +236,12 @@ def process(row, root, ownership, sources):
         if not source:
             result['errors'].append('audio:authorized_download_or_owned_file_required')
         else:
+            if source.get('error'): raise ValueError(source['error'])
             if source.get('authorization') != 'user_owned_download': raise ValueError('audio_authorization_missing')
             local = Path(source['path']).resolve()
             if not local.is_file() or local.stat().st_size > MAX_AUDIO: raise ValueError('audio_source_missing_or_oversize')
             if source.get('suno_id') != meta['suno_id']: raise ValueError('audio_source_identity_mismatch')
+            result.setdefault('audio_discovery',{}).update(permission='authorized_owned_download',download_authorized=True,provenance='user_owned_download')
             if shutil.disk_usage(root).free < MAX_AUDIO * 3: raise ValueError('temporary_space_insufficient')
             directory.mkdir(parents=True, exist_ok=True)
             target = directory / (component(meta['suno_title']) + '.mp3')
@@ -218,7 +265,7 @@ def process(row, root, ownership, sources):
 def main():
     p = argparse.ArgumentParser(); p.add_argument('--catalog', required=True); p.add_argument('--root', required=True)
     p.add_argument('--report', required=True); p.add_argument('--sources'); p.add_argument('--limit', type=int, default=0)
-    p.add_argument('--offset', type=int, default=0); p.add_argument('--workers', type=int, default=2); args = p.parse_args()
+    p.add_argument('--inspect-audio', action='store_true'); p.add_argument('--offset', type=int, default=0); p.add_argument('--workers', type=int, default=2); args = p.parse_args()
     data = json.loads(Path(args.catalog).read_text()); rows = [r for r in data['items'] if r.get('sunoUrl')]
     root = Path(args.root); root.mkdir(parents=True, exist_ok=True)
     ownership = {}; collisions = {}
@@ -235,9 +282,7 @@ def main():
     with concurrent.futures.ThreadPoolExecutor(max_workers=min(3, max(1, args.workers))) as pool:
         futures = {}
         for row in selected:
-            if row['key'] not in ownership:
-                results.append({'song_key': row['key'], 'source_url': row['sunoUrl'], 'status': 'audio_pending', 'errors': ['cover_original_artist_required_or_invalid_path']})
-            else: futures[pool.submit(process, row, root, ownership, sources)] = row
+            futures[pool.submit(process, row, root, ownership, sources, args.inspect_audio)] = row
         for future in concurrent.futures.as_completed(futures):
             result = future.result(); results.append(result)
             with report.open('w') as out: json.dump({'total_suno_urls': len(rows), 'processed': len(results), 'results': results}, out, ensure_ascii=False, indent=2)

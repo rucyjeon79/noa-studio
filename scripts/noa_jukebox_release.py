@@ -4,6 +4,7 @@ Never executes arbitrary submitted commands or updates legacy music documents.
 import base64, hashlib, hmac, json, os, secrets, time, stat, subprocess, sys, urllib.request, urllib.error
 from pathlib import Path
 import paramiko
+import noa_jukebox_owned as owned
 ROOT='/hosting/noastudio/html'
 APP='noa-app/jukebox/'
 NEW={APP+n:'deploy/'+APP+n for n in ['core.php','cli.php','stream.php','index.php','operations.php','service.php']}
@@ -76,11 +77,30 @@ def main():
   print('LIVE_DB_COUNTS '+json.dumps({k:v for k,v in catalog.items() if k!='items'}),flush=True)
   # SSH keepalive while acquisition happens on the worker, not on shared hosting.
   t.set_keepalive(20)
+  # Exact known baseline plus private per-file backups protect simultaneous work.
+  parent='/hosting/noastudio/noa-deploy-backups';mkdir(parent,0o700)
+  backup=parent+'/jukebox-'+os.environ['GITHUB_RUN_ID'];mkdir(backup,0o700)
+  changes=[]
+  for remote,local in INTEGRATE.items():
+   current=read(ROOT+'/'+remote);new=Path(local).read_bytes()
+   if sha(current)==sha(new):continue
+   if sha(current)!=BASE[remote]:raise RuntimeError('Integration changed; data saved but deployment paused: '+remote)
+   target=backup+'/'+remote.replace('/','_')
+   with s.open(target,'wx') as f:f.write(current)
+   s.chmod(target,0o600)
+   if sha(read(target))!=sha(current):raise RuntimeError('backup_checksum')
+   changes.append((remote,new))
+  for remote,new in changes:atomic(ROOT+'/'+remote,new,BASE[remote])
   results=[];saved=0;sql_saved=0
   for offset in range(0,len(catalog['items']),25):
-   subprocess.run([sys.executable,'scripts/noa_jukebox_worker.py','--catalog',str(work/'catalog-private.json'),
-                   '--root',str(work/'noa-jukebox'),'--report',str(work/'batch-private.json'),
-                   '--offset',str(offset),'--limit','25','--workers','3'],check=True)
+   inputs,owned_folder=owned.stage(s,catalog['items'][offset:offset+25],work)
+   source_map=work/'owned-private.json';source_map.write_text(json.dumps(inputs))
+   try:
+    subprocess.run([sys.executable,'scripts/noa_jukebox_worker.py','--catalog',str(work/'catalog-private.json'),
+                    '--root',str(work/'noa-jukebox'),'--report',str(work/'batch-private.json'),
+                    '--offset',str(offset),'--limit','25','--workers','3','--inspect-audio','--sources',str(source_map)],check=True)
+   finally:
+    owned.cleanup(owned_folder);source_map.unlink(missing_ok=True)
    batch=json.loads((work/'batch-private.json').read_text());results.extend(batch['results'])
    for row in batch['results']:
     for kind in ['cover','audio']:
@@ -104,25 +124,11 @@ def main():
    (work/'summary.json').write_text(json.dumps(progress,ensure_ascii=False,indent=2))
    print('JUKEBOX_BATCH_SAVED '+json.dumps(progress),flush=True)
   report={'results':results};sql={'saved':sql_saved};audit=cli('audit')
-  # Exact known baseline plus private per-file backups protect simultaneous work.
-  parent='/hosting/noastudio/noa-deploy-backups';mkdir(parent,0o700)
-  backup=parent+'/jukebox-'+os.environ['GITHUB_RUN_ID'];mkdir(backup,0o700)
-  changes=[]
-  for remote,local in INTEGRATE.items():
-   current=read(ROOT+'/'+remote);new=Path(local).read_bytes()
-   if sha(current)==sha(new):continue
-   if sha(current)!=BASE[remote]:raise RuntimeError('Integration changed; data saved but deployment paused: '+remote)
-   target=backup+'/'+remote.replace('/','_')
-   with s.open(target,'wx') as f:f.write(current)
-   s.chmod(target,0o600)
-   if sha(read(target))!=sha(current):raise RuntimeError('backup_checksum')
-   changes.append((remote,new))
-  for remote,new in changes:atomic(ROOT+'/'+remote,new,BASE[remote])
   for p,h in protected.items():
    if sha(read(ROOT+'/'+p))!=h:raise RuntimeError('protected file changed: '+p)
-  result={'database_music_records':catalog['database_music_records'],'total_suno_urls':len(catalog['items']),
+  result={'catalog_song_records':catalog.get('catalog_song_records'),'database_music_records':catalog['database_music_records'],'total_suno_urls':len(catalog['items']),
           'cover_files':audit['covers'],'audio_files':audit['audio'],'audio_bytes':audit['audio_bytes'],
-          'sql_saved':sql['saved'],'files_uploaded':saved,'audit':audit,'deployed':list(NEW)+list(INTEGRATE),
+          'source_audits':sum('audio_discovery' in r for r in results),'cover_pending':len(catalog['items'])-audit['covers'],'audio_pending':len(catalog['items'])-audit['audio'],'sql_saved':sql['saved'],'files_uploaded':saved,'audit':audit,'deployed':list(NEW)+list(INTEGRATE),
           'source_commit':os.environ['GITHUB_SHA'],'existing_documents_modified':False,'audio_playback_verified':False}
   cli('finish',json.dumps({'ids':claimed}).encode())
   (work/'summary.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print('JUKEBOX_PRODUCTION_RESULT '+json.dumps(result),flush=True)
