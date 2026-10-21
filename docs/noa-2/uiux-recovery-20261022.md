@@ -39,3 +39,5 @@ Main advanced through deployment audit/backup documentation and Work_Music reope
 Owner follow-up `c62a27d` fixes the asynchronous picker reservation race. Preserve its complete tree and v18 loader. This is an inherited owner change, not a Work_Design modification; scoped ownership checks compare against c62a27d.
 
 Live GnuBoard inspection additionally reproduced a separated title icon/centered title and 35px toolbar controls. Shared chrome now aligns the title label next to its icon and upgrades toolbar action nodes to 44px icon/label controls, removing duplicate decorative FontAwesome glyphs while preserving callbacks and full accessible names. Native hidden attributes remain authoritative; the DOM gate explicitly checks them.
+
+Owner reservation cancellation follow-up `8164183` is inherited intact, including index/upload.js, proofs, baseline and reservation tests. Keep v19 loader; no owner implementation edits. Ownership compares against 8164183; deployment additionally accepts its exact entrypoint bytes.

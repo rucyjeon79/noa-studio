@@ -4,7 +4,7 @@ from pathlib import Path
 from noa_uiux_release import connect,read,ROOT,PROTECTED,FILES as RELEASE_FILES
 
 FILES=['noa2.php','noa-ui.css','noa-ui.js','noa-design.json','noa-app/home.php','noa-app/world-view.php','noa-world.css','noa-world.js','noa-youtube.php','noa-youtube.css','noa-youtube.js','noa-music.php','noa-music.css','noa-browse.js','noa-hero.js','noa-home.js','noa-my.php','noa-catalog.php','noa-settings.php','noa-ai-lab.php']
-BASE='c62a27db853ae967b0a9ed497c879625c9d401a8'
+BASE='81641832f74621d600e227e5840e8c2c7b187a1b'
 def sha(data):return hashlib.sha256(data).hexdigest()
 def main():
  out=Path('uiux-proof/audit');out.mkdir(parents=True,exist_ok=True)

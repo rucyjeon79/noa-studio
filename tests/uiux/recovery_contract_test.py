@@ -20,6 +20,6 @@ class RecoveryContract(unittest.TestCase):
   s=(ROOT/'deploy/noa2.php').read_text();self.assertIn("header('Location: /'",s);self.assertNotIn('<html',s);self.assertNotIn('common.php',s)
  def test_no_design_changes_to_owner_processing_files(self):
   import subprocess
-  paths=subprocess.check_output(['git','diff','--name-only','c62a27db853ae967b0a9ed497c879625c9d401a8','HEAD'],cwd=ROOT,text=True).splitlines()
+  paths=subprocess.check_output(['git','diff','--name-only','81641832f74621d600e227e5840e8c2c7b187a1b','HEAD'],cwd=ROOT,text=True).splitlines()
   self.assertFalse(any(p.startswith(('deploy/noa-app/jukebox/','bridge/','scripts/noa_jukebox'))for p in paths))
 if __name__=='__main__':unittest.main()
