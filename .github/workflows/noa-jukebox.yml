@@ -1,5 +1,5 @@
 name: NOA JUKEBOX public cards and authorized audio
-# Reconcile lost client acknowledgements with durable SQL completion before requesting file access again.
+# Verify streamed worker input with the same immutable upload SHA; preserve FIFO and SFTP fallback.
 on:
   push:
     branches: [main, chatgpt/jukebox-20261021]

@@ -4,7 +4,7 @@ from pathlib import Path
 import noa_jukebox_worker as media
 PRIVATE='/hosting/noastudio/noa-jukebox-private'
 
-def process_uploads(sftp,call,mkdir):
+def process_uploads(sftp,call,mkdir,source_reader=None):
     results=[];deadline=time.monotonic()+50*60
     for _ in range(100):
         if time.monotonic()>deadline:break
@@ -28,16 +28,20 @@ def process_uploads(sftp,call,mkdir):
                 info=sftp.lstat(remote)
                 if not stat.S_ISREG(info.st_mode) or info.st_size!=job['bytes'] or info.st_size>256*1024*1024:raise ValueError('uploaded_input_size_or_type_changed')
                 if sftp.normalize(PRIVATE+'/incoming/'+job['id'])!=PRIVATE+'/incoming/'+job['id']:raise ValueError('unsafe_input_directory')
-                with sftp.open(remote,'rb') as src,source.open('xb') as dst:
-                    # Bound parallel reads to avoid one network round trip per 32 KiB.
-                    src.prefetch(file_size=job['bytes'],max_concurrent_requests=16)
-                    size=0
-                    while True:
-                        block=src.read(1024*1024)
-                        if not block:break
-                        size+=len(block)
-                        if size>job['bytes']:raise ValueError('uploaded_input_grew')
-                        dst.write(block)
+                transfer_started=time.monotonic();transport='sftp'
+                if source_reader and source_reader(job,source):transport='ssh_stream'
+                else:
+                    with sftp.open(remote,'rb') as src,source.open('xb') as dst:
+                        # Bound parallel reads to avoid one network round trip per 32 KiB.
+                        src.prefetch(file_size=job['bytes'],max_concurrent_requests=16)
+                        size=0
+                        while True:
+                            block=src.read(1024*1024)
+                            if not block:break
+                            size+=len(block)
+                            if size>job['bytes']:raise ValueError('uploaded_input_grew')
+                            dst.write(block)
+                transfer_seconds=round(time.monotonic()-transfer_started,2)
                 if media.digest(source)!=job['sha256']:raise ValueError('uploaded_input_hash_changed')
                 def measured(before):
                     if before['duration']<.5 or before['duration']>1800 or before['channels']>8:raise ValueError('audio_duration_or_channel_limit')
@@ -98,7 +102,7 @@ def process_uploads(sftp,call,mkdir):
                 owned();committed=call('upload_commit',auth|{'result':result})
                 try:removed=call('upload_cleanup',{'id':job['id']})['input_removed']
                 except Exception:removed=False # audit retries cleanup after confirmed SQL publication
-                results.append({'job_id':job['job_id'],'key':job['key'],'ready':committed['ready'],'sha256':digest,'input_removed':removed})
+                results.append({'job_id':job['job_id'],'key':job['key'],'ready':committed['ready'],'sha256':digest,'input_removed':removed,'source_transport':transport,'source_transfer_seconds':transfer_seconds})
         except Exception as error:
             code=str(error).split(':',1)[0] if isinstance(error,ValueError) else 'upload_processing_failed'
             try:call('upload_fail',auth|{'error':code[:190]})

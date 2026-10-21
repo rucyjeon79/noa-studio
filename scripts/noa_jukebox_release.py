@@ -1,7 +1,7 @@
 """Pinned SSH: additive jukebox files, bounded public cover acquisition, SQL import.
 Never executes arbitrary submitted commands or updates legacy music documents.
 """
-import base64, hashlib, hmac, json, os, secrets, time, stat, subprocess, sys, shutil, urllib.request, urllib.error
+import base64, hashlib, hmac, json, os, re, secrets, time, stat, subprocess, sys, shutil, urllib.request, urllib.error
 from pathlib import Path
 import paramiko
 import noa_jukebox_owned as owned
@@ -106,7 +106,30 @@ def main():
    subprocess.run(['sudo','apt-get','update','-qq'],check=True)
    subprocess.run(['sudo','apt-get','install','-y','ffmpeg'],check=True)
   print('HOST_CAPABILITIES '+json.dumps(cli('capabilities')),flush=True)
-  uploads=process_uploads(s,lambda action,payload=None:cli(action,json.dumps(payload,ensure_ascii=False).encode() if payload else None),mkdir)
+  def source_reader(job,destination):
+   # One fixed read-only command, with a server-generated hex ID as its only
+   # variable. The pinned SSH identity and source SHA remain unchanged.
+   if not re.fullmatch('[a-f0-9]{32}',job['id']):raise ValueError('invalid_upload_id')
+   channel=None
+   try:
+    channel=t.open_session(window_size=16*1024*1024,timeout=20);channel.settimeout(90)
+    channel.exec_command('cat /hosting/noastudio/noa-jukebox-private/incoming/'+job['id']+'/input.audio')
+    total=0
+    with channel.makefile('rb') as src,destination.open('xb') as dst:
+     while True:
+      data=src.read(1024*1024)
+      if not data:break
+      total+=len(data)
+      if total>job['bytes']:raise ValueError('uploaded_input_grew')
+      dst.write(data)
+    if channel.recv_exit_status()!=0 or total!=job['bytes']:raise OSError('fixed_source_read_unavailable')
+    return True
+   except ValueError:raise
+   except Exception:destination.unlink(missing_ok=True);return False
+   finally:
+    if channel:channel.close()
+  uploads=process_uploads(s,lambda action,payload=None:cli(action,json.dumps(payload,ensure_ascii=False).encode() if payload else None),mkdir,source_reader)
+
   print('JUKEBOX_UPLOAD_RESULT '+json.dumps(uploads),flush=True)
   results=[];saved=0;sql_saved=0
   for offset in (range(0,len(catalog['items']),25) if claimed else []):
