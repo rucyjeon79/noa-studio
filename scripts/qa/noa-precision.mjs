@@ -57,7 +57,7 @@ export async function verifyPrecisionFlow({context,phase,base,out,report}){
    await page.screenshot({path:path.join(out,'precision-debug-rulers.jpg'),type:'jpeg',quality:85});await page.evaluate(()=>window.NoaCardLayout.debug(false));assert.equal(await page.locator('html').getAttribute('data-noa-grid-debug'),null);
    assert.equal((await auditPrecision(page)).groups,before.groups);
    // Isolated UI contract fixture: supplied comparisons only, never persisted to the server.
-   await page.evaluate(()=>{const h=document.getElementById('noa-featured'),cards=[...h.children];const data=[{rankState:'up',rank:2,previousRank:5,rankDelta:3},{rankState:'down',rank:5,previousRank:2,rankDelta:-3},{rankState:'same',rank:2,previousRank:2,rankDelta:0},{rankState:'new',rank:7,previousRank:null,rankDelta:null}];data.forEach((v,i)=>window.NoaCardLayout.setMovement(cards[i],v));});
+   await page.evaluate(()=>{const h=document.getElementById('noa-featured'),cards=[...h.children];cards.forEach(c=>window.NoaCardLayout.setMovement(c,null));const data=[{rankState:'up',rank:2,previousRank:5,rankDelta:3},{rankState:'down',rank:5,previousRank:2,rankDelta:-3},{rankState:'same',rank:2,previousRank:2,rankDelta:0},{rankState:'new',rank:7,previousRank:null,rankDelta:null}];data.forEach((v,i)=>window.NoaCardLayout.setMovement(cards[i],v));});
    assert.equal(await page.locator('#noa-featured .noa-rank-badge').count(),4);
    const icons=await page.locator('#noa-featured .noa-rank-badge').evaluateAll(bs=>bs.map(b=>({state:b.dataset.state,color:getComputedStyle(b).color,icon:b.querySelector('svg')?.getBoundingClientRect().width||null})));
    assert(icons.filter(i=>i.icon!==null).every(i=>i.icon===16));assert.notEqual(icons[0].color,icons[1].color);
