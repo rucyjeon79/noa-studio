@@ -18,6 +18,8 @@ jobs:
         run: |
           for f in deploy/noa-app/jukebox/*.php bridge/catalog.php deploy/noa-music.php; do php -l "$f"; done
           php tests/jukebox/range_test.php
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
           python3 -m pip install --user paramiko==3.5.1 Pillow==11.3.0
           python3 -m unittest discover -s tests/jukebox -p 'test_*.py'
       - name: Acquire cards from live DB and store verified files on Dothome

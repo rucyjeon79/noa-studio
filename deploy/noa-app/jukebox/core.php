@@ -15,7 +15,7 @@ function nj_schema(PDO $db):void{
 function nj_find(PDO $db,string $key):?array{
  $q=$db->prepare('SELECT * FROM noa_jukebox_assets WHERE song_key=?');$q->execute([$key]);return $q->fetch(PDO::FETCH_ASSOC)?:null;
 }
-function nj_url(string $key,string $type):string{return '/noa-app/jukebox/stream.php?key='.rawurlencode($key).'&type='.$type;}
+function nj_url(string $key,string $type):string{return 'https://noastudio.ai.kr/noa-app/jukebox/stream.php?key='.rawurlencode($key).'&type='.$type;}
 function nj_verified(?array $asset,string $type):bool{
  if(!$asset||($type==='audio'&&$asset['status']!=='ready'))return false;
  $p=nj_file((string)($asset[$type.'_path']??''));$hash=(string)($asset[$type.'_sha256']??'');
