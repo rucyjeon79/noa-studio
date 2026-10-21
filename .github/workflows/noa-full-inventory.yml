@@ -1,12 +1,12 @@
 name: NOA full production deployment inventory
-# Recheck all actual runtime bytes after the concurrent reviewed UI merge.
+# Read-only inventory after merged JUKEBOX recovery and balanced-card production releases.
 on:
   push:
     branches: [main]
     paths: ['.github/workflows/noa-full-inventory.yml', 'scripts/noa_full_inventory.py']
   workflow_dispatch:
 permissions: {contents: read}
-concurrency: {group: noa-dothome-production, cancel-in-progress: false}
+concurrency: {group: noa-production-readonly-inventory, cancel-in-progress: false}
 jobs:
   inventory:
     runs-on: ubuntu-latest
