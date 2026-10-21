@@ -134,6 +134,11 @@ class UploadPublicationTests(unittest.TestCase):
     self.assertEqual(url,'https://cdn2.suno.ai/card.jpeg');w.Image.new('RGB',(32,32),'blue').save(path,'WEBP')
     return {'cover_bytes':path.stat().st_size,'cover_sha256':w.digest(path)}
    with patch.object(upload.media,'metadata',return_value={'suno_id':'known','suno_title':'Suno 등록 제목','image_url':'https://cdn2.suno.ai/card.jpeg'}),patch.object(upload.media,'cover',side_effect=cover):
-    result=upload.process_uploads(sftp,call,lambda p,m:sftp.path(p).mkdir(exist_ok=True))
+    def source_reader(job,dest):
+     dest.write_bytes(source.read_bytes());return True
+    result=upload.process_uploads(sftp,call,lambda p,m:sftp.path(p).mkdir(exist_ok=True),source_reader if getattr(self,'stream_source',False) else None)
    self.assertFalse(result[0]['ready']);self.assertTrue(result[1]['ready']);self.assertFalse(source.exists());self.assertFalse(list((root/'media').rglob('*.wav')))
    self.assertEqual([e[0] for e in events],['upload_claim','upload_fail','upload_claim','upload_state','upload_state','upload_heartbeat','upload_heartbeat','upload_commit','upload_cleanup','upload_claim'])
+ def test_streamed_owned_source_still_requires_hash_decode_and_verified_publication(self):
+  self.stream_source=True
+  self.test_cardless_upload_fetches_only_card_and_publishes_beside_real_mp3()

@@ -133,3 +133,6 @@ Cross-page metadata writes merge reservation IDs and preserve another tab's file
 Upload acknowledgements and polling are ordered by queue job ID and processing stage. A delayed `queued` response cannot replace a newer `ready` card or remove its playback/download controls. New retry IDs remain eligible to advance the UI.
 
 The browser persists the upload ID before transmitting chunks. Reopening a page reconciles that ID with SQL: already registered files stop requesting file access, including when the final response was lost. Partial files still require source reselection and skip locally verified saved chunks.
+
+
+For large owned inputs, the same pinned SSH worker can stream one fixed `cat` command from its private incoming directory instead of issuing a separate SFTP read request per block. Only a server-issued 32-character hex upload ID is accepted; no user path or arbitrary command is interpolated. Regular-file/size/boundary checks and the full source SHA-256 remain mandatory before analysis. An unavailable SSH command falls back to SFTP. This changes transport only, not access recipients, source bytes, mastering policy or publication verification. Actual transport time is recorded per completed job.
