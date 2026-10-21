@@ -1,0 +1,26 @@
+name: NOA taxonomy production protection diagnostic
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-taxonomy-probe.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-dothome-production, cancel-in-progress: false}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, fetch-depth: 0}
+      - run: |
+          for f in bridge/taxonomy*.php; do php -l "$f"; done
+          python3 -m pip install --user paramiko==3.5.1
+      - name: Compare protected data to the backup receipt without SQL writes
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_TAXONOMY_PHASE: probe
+        run: python3 scripts/noa_taxonomy_release.py

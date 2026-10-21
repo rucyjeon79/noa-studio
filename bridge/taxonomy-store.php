@@ -85,7 +85,7 @@ function nt_sync(PDO $db,string $actor='automation'):array{
    nt_log($db,$input,'video',$id,($c['status']==='review'||$m['status']==='review')?'review':'processed',['classification'=>$c,'matching'=>$m,'playlistMatching'=>$pm],$actor);
   }
   $q=$db->prepare('INSERT INTO noa_classification_runs(input_hash,collection_id,catalog_batch,result) VALUES(?,?,?,?)');$q->execute([$input,$run['run_id'],ny_batch($db),nt_json($counts)]);$db->commit();return $counts+['replayed'=>false];
- }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}finally{$db->query("SELECT RELEASE_LOCK('noa_taxonomy_writer')");}
+ }catch(Throwable $e){if($db->inTransaction())$db->rollBack();try{nt_log($db,$input??null,'system','synchronization','error',['errorType'=>get_class($e),'code'=>(string)$e->getCode(),'retryRequired'=>true],$actor);}catch(Throwable $auditError){error_log('[noa-taxonomy-audit] '.get_class($auditError));}throw $e;}finally{$db->query("SELECT RELEASE_LOCK('noa_taxonomy_writer')");}
 }
 /** Overlay only: raw YouTube/catalog decisions remain untouched. */
 function nt_overlay(PDO $db,array $videos,array $songs):array{

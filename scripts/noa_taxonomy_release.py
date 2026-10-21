@@ -22,10 +22,14 @@ def service(key,action,**body):
  try:
   with urllib.request.urlopen(req,timeout=180)as r:out=json.load(r)
  except urllib.error.HTTPError as e:
-  try:err=json.load(e).get('error','request_failed')
-  except Exception:err='request_failed'
+  response=e.read(65536)
+  try:err=json.loads(response).get('error','request_failed')
+  except Exception:
+   import re
+   known=re.findall(rb'legacy_data_changed_take_new_backup|verified_recent_backup_required|service_auth_required|replayed_request|taxonomy_service_unavailable',response)
+   err=known[0].decode()if known else 'non_json_response_'+str(len(response))+'_bytes_'+e.headers.get('Content-Type','unknown')
   raise RuntimeError('taxonomy_service_'+str(e.code)+':'+err)from None
- if not out.get('ok'):raise RuntimeError('taxonomy_service_failed')
+ if not out.get('ok'):raise RuntimeError('taxonomy_service_failed:'+str(out.get('error','unknown'))+':'+json.dumps(out.get('changedTables',[])))
  return out
 
 def main():
@@ -50,12 +54,17 @@ def main():
   protected=['index.php','common.php','config.php','data/dbconfig.php','bbs/login.php','extend/noa.home.php']
   core={p:digest(read(ROOT+'/'+p)) for p in protected}
   backup='/hosting/noastudio/noa-ai-lab/taxonomy-release-'+os.environ['GITHUB_RUN_ID'];mkdir(backup,0o700)
-  targets=NEW if phase=='prepare' else {**NEW,**UI,**HOOKS}
+  targets=NEW if phase in ['prepare','probe'] else {**NEW,**UI,**HOOKS}
   manifest={};changed=[]
   for local,remote in targets.items():
    data=Path(local).read_bytes();old=read(ROOT+'/'+remote);expected=digest(data)
    if old is not None and digest(old)!=expected:
-    if local in HOOKS:baseline=subprocess.check_output(['git','show',BASE+':'+local])
+    if local in HOOKS:
+     baseline=None
+     for previous in [BASE,'bab3cdb440402c2587e3c921a76a90a854cdd30e']:
+      candidate=subprocess.check_output(['git','show',previous+':'+local])
+      if digest(candidate)==digest(old):baseline=candidate;break
+     if baseline is None:raise RuntimeError('concurrent_source_change:'+remote)
     elif local in NEW:
      # Only a prior reviewed taxonomy commit in this repository can be upgraded.
      baseline=None
@@ -95,7 +104,9 @@ def main():
   with s.open(backup+'/manifest.json','w')as f:f.write(json.dumps(manifest).encode())
   s.chmod(backup+'/manifest.json',0o600)
   Path('quality-taxonomy').mkdir(exist_ok=True)
-  if phase=='prepare':
+  if phase=='probe':
+   report=service(key,'inspect');print('NOA_TAXONOMY_PROBE '+json.dumps({'inventory':report['inventory'],'changedSinceBackup':report['changedSinceBackup'],'newCodeUploaded':changed,'sqlApplied':False}))
+  elif phase=='prepare':
    inventory=service(key,'inspect');report=service(key,'backup');Path('quality-taxonomy/baseline-private.json').write_text(json.dumps(inventory));Path('quality-taxonomy/backup-meta.json').write_text(json.dumps(report));print('NOA_TAXONOMY_PREPARED '+json.dumps({'inventory':report['inventory'],'backupSha256':report['backup']['sha256'],'backupBytes':report['backup']['bytes'],'backupTables':len(report['backup']['tables']),'codeUploaded':changed,'sqlApplied':False}))
   elif phase=='activate':
    proof=json.loads(Path('quality-taxonomy/report.json').read_text());backup_meta=json.loads(Path('quality-taxonomy/backup-meta.json').read_text())
