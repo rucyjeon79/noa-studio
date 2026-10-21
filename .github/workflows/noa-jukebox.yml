@@ -33,6 +33,7 @@ jobs:
           python3 tests/jukebox/make_fixture.py
           php tests/jukebox/upload_mysql_test.php
           node --check deploy/noa-app/jukebox/upload.js
+          node tests/jukebox/reservations_test.cjs
   interface:
     needs: validate
     if: github.event_name != 'schedule' && needs.validate.result == 'success'
@@ -59,8 +60,8 @@ jobs:
           path: jukebox-proof/interface.json
           retention-days: 14
   release:
-    needs: validate
-    if: always() && (needs.validate.result == 'success' || github.event_name == 'schedule')
+    needs: [validate, interface]
+    if: always() && ((needs.validate.result == 'success' && needs.interface.result == 'success') || github.event_name == 'schedule')
     runs-on: ubuntu-latest
     timeout-minutes: 120
     environment: production

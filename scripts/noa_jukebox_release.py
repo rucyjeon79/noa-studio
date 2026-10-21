@@ -36,7 +36,7 @@ def main():
    actual=read(path)
    if actual is not None and sha(actual)==sha(data):return
    if (sha(actual) if actual is not None else None)!=expected:raise RuntimeError('concurrent/unknown file: '+path)
-   tmp=path+'.jukebox-stage-'+os.environ['GITHUB_RUN_ID']
+   tmp=path+'.jukebox-stage-'+os.environ['GITHUB_RUN_ID']+'-'+os.environ.get('GITHUB_JOB','release')
    with s.open(tmp,'wx') as f:f.write(data)
    s.chmod(tmp,0o644)
    if sha(read(tmp))!=sha(data):raise RuntimeError('upload_checksum')

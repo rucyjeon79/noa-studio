@@ -9,3 +9,5 @@
 
 /* A compact current-song dock; totals, controls and errors appear only when expanded. */
 .noa-processing-dock .noa-transport{display:none!important}.noa-processing-dock{padding-bottom:130px!important}#jukebox-transfer-details[hidden]{display:none!important}.jukebox-transfer-now{flex:1;min-width:0}.jukebox-transfer-now strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.jukebox-transfer-expand{flex:0 0 44px;font-size:22px}#jukebox-transfer-dock .jukebox-transfer-current{color:#d3b77d}#jukebox-transfer-details{padding-top:12px;border-top:1px solid #51452e;margin-top:12px}@media(max-width:600px){.jukebox-transfer-head{flex-wrap:nowrap}.jukebox-transfer-now strong{width:auto}.noa-processing-dock{padding-bottom:120px!important}}
+
+.noa-processing-dock:has(#jukebox-transfer-details:not([hidden])){padding-bottom:calc(60vh + 32px)!important}
