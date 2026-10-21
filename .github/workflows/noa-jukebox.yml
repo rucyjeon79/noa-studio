@@ -1,5 +1,5 @@
 name: NOA JUKEBOX public cards and authorized audio
-# Validate independently while the single production worker drains its SQL FIFO.
+# Ignore stale upload acknowledgements after newer SQL stages; validate without stopping active mastering.
 on:
   push:
     branches: [main, chatgpt/jukebox-20261021]
