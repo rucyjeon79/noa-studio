@@ -36,3 +36,6 @@ echo "PASS recovered category provenance, missing metrics, rejected/ambiguous id
 
 $registeredOnly=nh_build([],$songs,[],[],$channel);check($registeredOnly['diagnostics']['stories']['emptyReason']==='catalog_video_mapping_missing'&&$registeredOnly['diagnostics']['stories']['catalogSongsWithoutCollectedVideo']===1,'registered song with missing video relationship must be distinct from no data');
 echo "PASS registered-but-unmapped versus absent data diagnostics\n";
+
+$sqlOverride=video('sqlgenre001','b','99');$sqlOverride['snippet']['title']='사연곡';$sqlOverride['sqlCategories']=['cover-reborn'];$sqlOverride['sqlClassificationReady']=true;$s=nh_build([$sqlOverride],$songs,[],[],$channel);check(count($s['covers'])===1&&!$s['stories'],'SQL classification must precede legacy genre and title fallback');$sqlOverride['sqlCategories']=[];$s=nh_build([$sqlOverride],$songs,[],[],$channel);check(!$s['covers']&&!$s['stories'],'completed SQL classification must not resurrect disabled legacy categories');
+echo "PASS SQL category authority over legacy genre/title after initial classification\n";

@@ -89,10 +89,10 @@ function nt_sync(PDO $db,string $actor='automation'):array{
 }
 /** Overlay only: raw YouTube/catalog decisions remain untouched. */
 function nt_overlay(PDO $db,array $videos,array $songs):array{
- if(!nt_ready($db))return $videos;
+ if(!nt_ready($db))return $videos;$classificationReady=(bool)$db->query('SELECT COUNT(*) FROM noa_classification_runs')->fetchColumn();
  $matches=[];foreach($db->query("SELECT video_id,song_id FROM noa_content_matches WHERE status IN ('confirmed','manual')")as $m)$matches[$m['video_id']]=$m['song_id'];
  $cats=[];foreach($db->query("SELECT r.content_id,r.category_id,r.source FROM noa_content_categories r JOIN noa_categories c ON c.category_id=r.category_id WHERE r.content_type='video' AND r.active=1 AND c.enabled=1")as $r)$cats[$r['content_id']][]=$r;
- foreach($videos as $id=>&$v){if(empty($v['match']['songId'])&&($v['match']['status']??'')!=='rejected'&&isset($matches[$id],$songs[$matches[$id]]))$v['match']=['status'=>'auto_confirmed','songId'=>$matches[$id],'source'=>'sql_multiple_evidence'];$v['sqlCategories']=array_column($cats[$id]??[],'category_id');$v['sqlCategorySource']=in_array('manual',array_column($cats[$id]??[],'source'),true)?'manual':'auto';}unset($v);return $videos;
+ foreach($videos as $id=>&$v){if(empty($v['match']['songId'])&&($v['match']['status']??'')!=='rejected'&&isset($matches[$id],$songs[$matches[$id]]))$v['match']=['status'=>'auto_confirmed','songId'=>$matches[$id],'source'=>'sql_multiple_evidence'];$v['sqlClassificationReady']=$classificationReady;$v['sqlCategories']=array_column($cats[$id]??[],'category_id');$v['sqlCategorySource']=in_array('manual',array_column($cats[$id]??[],'source'),true)?'manual':'auto';}unset($v);return $videos;
 }
 function nt_counts(PDO $db):array{
  $cats=nt_categories($db);$map=array_column($cats,null,'category_id');$members=[];

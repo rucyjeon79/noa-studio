@@ -33,12 +33,12 @@ function nh_build(array $videos,array $songs,array $playlists,array $members,str
  foreach($videos as $v){$id=$v['id']??'';if(!is_string($id)||!preg_match('/^[A-Za-z0-9_-]{11}$/D',$id)||isset($seen[$id]))continue;$seen[$id]=true;
   $sid=$v['match']['songId']??null;$song=$songs[$sid??'']??null;$genre=$song['genre_id']??'';$title=(string)($v['snippet']['title']??'');
   $compilation=nh_continuous($title)||(isset($continuousMembers[$id])&&preg_match('/\b(?:ACT|Vol)\s*\.?\s*\d+|[0-9]+\s*곡|몰아듣기|모음/iu',$title));
-  $evidence=$categoryMembers[$id]??[];foreach($v['sqlCategories']??[] as $sqlCategory)if(in_array($sqlCategory,['your-story','cover-reborn'],true))$evidence[$sqlCategory]=true;if(($v['sqlCategorySource']??'')==='manual'){$evidence=array_fill_keys(array_intersect($v['sqlCategories']??[],['your-story','cover-reborn']),true);}
-  if(($v['sqlCategorySource']??'')!=='manual'&&in_array($genre,['your-story','cover-reborn'],true))$evidence[$genre]=true;
+  $evidence=$categoryMembers[$id]??[];foreach($v['sqlCategories']??[] as $sqlCategory)if(in_array($sqlCategory,['your-story','cover-reborn'],true))$evidence[$sqlCategory]=true;if(!empty($v['sqlClassificationReady'])||($v['sqlCategorySource']??'')==='manual'){$evidence=array_fill_keys(array_intersect($v['sqlCategories']??[],['your-story','cover-reborn']),true);}
+  if(empty($v['sqlClassificationReady'])&&($v['sqlCategorySource']??'')!=='manual'&&in_array($genre,['your-story','cover-reborn'],true))$evidence[$genre]=true;
   // Explicit labels are fallback evidence only. Generic "Cover", ACT, or a
   // translated POP Original / J-POP version do not establish a famous-song cover.
-  if(($v['sqlCategorySource']??'')!=='manual'&&preg_match('/사연곡/u',$title))$evidence['your-story']=true;
-  if(($v['sqlCategorySource']??'')!=='manual'&&preg_match('/\bCover\s+by\s+AInoa\b/iu',$title))$evidence['cover-reborn']=true;
+  if(empty($v['sqlClassificationReady'])&&($v['sqlCategorySource']??'')!=='manual'&&preg_match('/사연곡/u',$title))$evidence['your-story']=true;
+  if(empty($v['sqlClassificationReady'])&&($v['sqlCategorySource']??'')!=='manual'&&preg_match('/\bCover\s+by\s+AInoa\b/iu',$title))$evidence['cover-reborn']=true;
   $targets=[];foreach(['stories'=>'your-story','covers'=>'cover-reborn'] as $section=>$g)if(isset($evidence[$g])){$targets[]=$section;$diagnostics[$section]['candidates']++;}
   if($compilation)$diagnostics['playlists']['candidates']++;
   $failure=!nh_public($v,$channel,true)?'not_public_owner_embeddable':(($v['match']['status']??'')==='rejected'?'rejected_match':null);
