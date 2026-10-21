@@ -1,5 +1,5 @@
 name: NOA SQL category read model activation
-# Resolve an intrinsic Reborn episode title without inventing a remaster variant.
+# Distinguish confirmed ACT metadata from individual song matching in the live music view.
 on:
   push:
     branches: [main]
