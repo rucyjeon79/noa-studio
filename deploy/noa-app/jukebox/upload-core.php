@@ -19,6 +19,11 @@ function nu_public(PDO $db,string $key):array{
   'status'=>!$ready&&($u['status']??'')==='ready'?'failed':($u?$u['status']:($ready?'ready':'audio_pending')),'error'=>!$ready&&($u['status']??'')==='ready'?'final_file_missing_or_mismatched':($u['error']??null),'upload'=>$u,
   'job'=>$u?nq_latest($db,$u['id']):null,'analysis'=>$asset?['source'=>json_decode($asset['source_analysis']??'null',true),'correction'=>json_decode($asset['correction']??'null',true),'final'=>json_decode($asset['final_analysis']??'null',true)]:null];
 }
+
+function nu_resume(array $u):array{
+ $chunks=$u['status']==='uploading'?nu_chunks($u):[];$hashes=[];foreach($chunks as $i)$hashes[(string)$i]=hash_file('sha256',nu_dir($u['id']).'/chunk-'.$i);
+ return ['id'=>$u['id'],'chunks'=>$chunks,'chunkHashes'=>(object)$hashes,'status'=>$u['status'],'chunkSize'=>NU_CHUNK];
+}
 function nu_initialize(PDO $db,array $b,string $actor):array{
  $key=(string)($b['key']??'');$doc=nj_document($db,$key);if(!$doc||!in_array($doc['_kind']??'',['single','story','jukebox_qa'],true))throw new DomainException('unknown_song');
  $name=(string)($b['filename']??'');$size=$b['bytes']??null;$fp=(string)($b['fingerprint']??'');$ext=strtolower(pathinfo($name,PATHINFO_EXTENSION));
@@ -31,7 +36,7 @@ function nu_initialize(PDO $db,array $b,string $actor):array{
  if(!$db->query("SELECT GET_LOCK('noa_jukebox_upload_quota',5)")->fetchColumn())throw new DomainException('upload_busy_retry');
  try{
   $q=$db->prepare("SELECT * FROM noa_jukebox_uploads WHERE song_key=? AND status IN ('uploading','queued','retrying','analyzing','processing','verifying') ORDER BY sequence DESC LIMIT 1");$q->execute([$key]);$active=$q->fetch(PDO::FETCH_ASSOC);
-  if($active){if($active['fingerprint']!==$fp||(int)$active['file_bytes']!==$size)throw new DomainException('another_upload_is_active');return ['id'=>$active['id'],'chunks'=>nu_chunks($active),'status'=>$active['status'],'chunkSize'=>NU_CHUNK];}
+  if($active){$resume=($b['resume_id']??'')===$active['id']&&$active['filename']===$name;if(($active['fingerprint']!==$fp&&!$resume)||(int)$active['file_bytes']!==$size)throw new DomainException('another_upload_is_active');return nu_resume($active);}
   $reserved=(int)$db->query("SELECT COALESCE(SUM(file_bytes),0) FROM noa_jukebox_uploads WHERE status<>'ready'")->fetchColumn();
   if($reserved+$size>1073741824)throw new DomainException('temporary_storage_quota_reached');
   $id=bin2hex(random_bytes(16));$dir=nu_dir($id);if(disk_free_space($dir)<$size*2+67108864)throw new DomainException('hosting_storage_insufficient');

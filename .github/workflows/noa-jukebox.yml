@@ -1,6 +1,6 @@
 name: NOA JUKEBOX public cards and authorized audio
 # Continue existing cards; audit published sources and process authorized owned downloads only.
-# Per-card continuous file reservations; sequential transfers and one durable FIFO mastering lease.
+# Preserve reservations across pages; verify saved chunk hashes before skipping resumed bytes.
 on:
   push:
     branches: [main, chatgpt/jukebox-20261021]
