@@ -62,3 +62,22 @@ html[data-noa-theme="noa-ivory"]{color-scheme:light}html[data-radius="sharp"]{--
 .noa-page .noa-browse-card:focus-visible{outline:3px solid var(--noa-accent);outline-offset:3px}
 @media(min-width:900px){.noa-page .noa-browse-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.noa-page .noa-browse-card{aspect-ratio:4/5}}
 @media(max-width:360px){.noa-page .noa-browse-grid{gap:8px}.noa-page .noa-browse-card>span{padding:10px}}
+
+/* UIUX 20261021: compact, content-sized actions; no JUKEBOX/control overrides. */
+:root{--noa-control-gap:3px;--noa-group-gap:8px;--noa-section-gap:24px;--noa-control-radius:8px;--noa-title-icon:22px}
+.noa-action{display:inline-flex!important;flex-direction:column;justify-content:center;align-items:center;gap:var(--noa-control-gap);min-width:44px;min-height:44px;width:auto;height:auto;padding:6px 10px!important;text-decoration:none;text-align:center;line-height:1.3;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius);background:var(--noa-surface);color:var(--noa-text);box-sizing:border-box}
+.noa-action>svg{width:20px;height:20px;flex:none}.noa-action>span{font-size:11px;line-height:1.3;max-width:100%;overflow-wrap:anywhere}.noa-action:hover,.noa-action[aria-current],.noa-action[aria-pressed=true]{color:var(--noa-accent);border-color:var(--noa-accent)}
+.noa-action:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(--noa-accent);outline-offset:3px}
+.noa-action:disabled,.noa-action[aria-disabled=true]{opacity:.45;cursor:not-allowed}
+[data-noa-heading]{display:flex;align-items:center;gap:8px;min-width:0}[data-noa-heading]>svg{width:var(--noa-title-icon);height:var(--noa-title-icon);color:var(--noa-accent);flex:none}[data-noa-heading]>span{min-width:0;overflow-wrap:anywhere}
+.noa-workspace{display:flex;flex-wrap:wrap;gap:var(--noa-group-gap);margin-top:12px}.noa-workspace a{flex:0 1 auto;border-bottom:1px solid var(--noa-line)}
+.noa-personal-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.noa-personal-card>span{display:grid;gap:3px}.noa-personal-card strong{font-size:13px;font-weight:550}.noa-personal-card small{font-size:11px;color:var(--noa-muted)}
+.noa-section{margin-top:var(--noa-section-gap)}.noa-section-head{gap:12px;flex-wrap:wrap}.noa-main,.noa-page main{min-width:0}.noa-hero{width:100%;box-sizing:border-box}.noa-hero-copy,.noa-hero-art{box-sizing:border-box;min-width:0}
+@media(max-width:760px){.noa-personal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.noa-main,.noa-page main{padding-left:14px;padding-right:14px}.noa-hero-copy{width:100%;padding:16px}.noa-world-text{line-height:1.75}}
+/* Personal cards keep the title and supporting copy on separate centered rows. */
+.noa-personal-card>span>span{display:grid;gap:3px}.noa-personal-card strong,.noa-personal-card small{display:block}
+/* Keep native member forms; bring their login/register tabs into the shared palette. */
+.noa-g5 #mb_login .mb_log_cate{display:flex;border-bottom:1px solid var(--noa-line)}
+.noa-g5 #mb_login .mb_log_cate h2,.noa-g5 #mb_login .mb_log_cate .join{display:flex;align-items:center;justify-content:center;width:50%;min-height:44px;padding:12px;margin:0;background:var(--noa-surface);color:var(--noa-text);border:0;text-decoration:none}
+.noa-g5 #mb_login .mb_log_cate h2{color:var(--noa-accent);border-bottom:2px solid var(--noa-accent)}
+.noa-g5 #mb_login .mb_log_cate .join:hover{background:var(--noa-raised);color:var(--noa-accent)}

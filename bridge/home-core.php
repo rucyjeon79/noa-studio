@@ -20,9 +20,9 @@ function nh_build(array $videos,array $songs,array $playlists,array $members,str
  $reason=function(string $section,string $name)use(&$diagnostics):void{$diagnostics[$section]['reasons'][$name]=($diagnostics[$section]['reasons'][$name]??0)+1;};
  // These are existing owner lists, verified against the collected catalog. Titles
  // also support a recreated list. Membership is classification, not song identity.
- $categoryMembers=[];$continuousMembers=[];
+ $categoryMembers=[];$continuousMembers=[];$officialStoryMembers=[];
  foreach($playlists as $p){if(!nh_public($p,$channel)||!empty($p['systemUploads']))continue;
-  $pid=(string)($p['id']??'');$title=(string)($p['snippet']['title']??'');$genre=null;
+  $pid=(string)($p['id']??'');if($pid==='PLEPMKciKgvch9TGMAcBdKzhVt1QeYsfKB')foreach($members[$pid]??[] as $memberId)if(is_string($memberId))$officialStoryMembers[$memberId]=true;$title=(string)($p['snippet']['title']??'');$genre=null;
   if($pid==='PLEPMKciKgvch9TGMAcBdKzhVt1QeYsfKB'||preg_match('/당신의\s*이야기\s*,\s*우리의\s*음악/u',$title))$genre='your-story';
   if($pid==='PLEPMKciKgvcjGmuO2ZcqrkHGfD5Qbb_Eb'||preg_match('/AInoa의\s*유명곡\s*커버/iu',$title))$genre='cover-reborn';
   foreach($members[$pid]??[] as $id){if(!is_string($id))continue;if($genre)$categoryMembers[$id][$genre]=true;if(nh_continuous($title))$continuousMembers[$id]=true;}
@@ -39,6 +39,8 @@ function nh_build(array $videos,array $songs,array $playlists,array $members,str
   // translated POP Original / J-POP version do not establish a famous-song cover.
   if(empty($v['sqlClassificationReady'])&&($v['sqlCategorySource']??'')!=='manual'&&preg_match('/사연곡/u',$title))$evidence['your-story']=true;
   if(empty($v['sqlClassificationReady'])&&($v['sqlCategorySource']??'')!=='manual'&&preg_match('/\bCover\s+by\s+AInoa\b/iu',$title))$evidence['cover-reborn']=true;
+  // The official story playlist is authoritative; stale genre/title/SQL evidence cannot admit outsiders.
+  if(isset($officialStoryMembers[$id]))$evidence['your-story']=true;else unset($evidence['your-story']);
   $targets=[];foreach(['stories'=>'your-story','covers'=>'cover-reborn'] as $section=>$g)if(isset($evidence[$g])){$targets[]=$section;$diagnostics[$section]['candidates']++;}
   if($compilation)$diagnostics['playlists']['candidates']++;
   $failure=!nh_public($v,$channel,true)?'not_public_owner_embeddable':(($v['match']['status']??'')==='rejected'?'rejected_match':null);
@@ -50,13 +52,13 @@ function nh_build(array $videos,array $songs,array $playlists,array $members,str
   foreach($targets as $section){
    if($compilation){$reason($section,'compilation_in_playlist_chart');continue;}
    if(count($evidence)>1){$reason($section,'classification_conflict');continue;}
-   $r=$row;$r['genre']=$section==='stories'?'your-story':'cover-reborn';$r['classificationSource']=$genre===$r['genre']?'canonical_genre':(isset($categoryMembers[$id][$r['genre']])?'owner_playlist_membership':'explicit_owner_video_title');$sections[$section][]=$r;if(!$song)$diagnostics[$section]['unlinkedRankable']++;
+   $r=$row;$r['genre']=$section==='stories'?'your-story':'cover-reborn';$r['classificationSource']=$section==='stories'?'official_playlist_membership':($genre===$r['genre']?'canonical_genre':(isset($categoryMembers[$id][$r['genre']])?'owner_playlist_membership':'explicit_owner_video_title'));$sections[$section][]=$r;if(!$song)$diagnostics[$section]['unlinkedRankable']++;
   }
   if($compilation)$lists[]=$row+['score'=>$views,'scoreKind'=>'video_view_count','countedVideos'=>1,'excludedVideos'=>0];
  }
  $sort=fn($a,$b)=>($b['views']<=>$a['views'])?:strcmp($a['videoId'],$b['videoId']);$ranked=array_values($eligible);usort($ranked,$sort);
- $ep=[];foreach($ranked as $row)if(in_array($row['genre'],$genres,true)&&(int)$row['ep']>0&&!isset($ep[$row['genre']]))$ep[$row['genre']]=$row;
- $epRows=[];foreach($genres as $genre)if(isset($ep[$genre]))$epRows[]=$ep[$genre];
+ $featured=array_slice($ranked,0,10);$excluded=array_fill_keys(array_column($featured,'videoId'),true);
+ $epRows=array_slice(array_values(array_filter($ranked,fn($row)=>(int)$row['ep']>0&&!isset($excluded[$row['videoId']]))),0,10);
  foreach($playlists as $p){$id=$p['id']??'';$title=(string)($p['snippet']['title']??'');
   if(!is_string($id)||!preg_match('/^[A-Za-z0-9_-]{10,100}$/D',$id)||!empty($p['systemUploads'])||!nh_continuous($title))continue;
   $diagnostics['playlists']['candidates']++;
@@ -67,8 +69,8 @@ function nh_build(array $videos,array $songs,array $playlists,array $members,str
   $lists[]=['contentType'=>'youtube_playlist','playlistId'=>$id,'title'=>$title,'score'=>$sum,'scoreKind'=>'sum_public_owner_member_video_views','countedVideos'=>count($known),'excludedVideos'=>count($seenMembers)-count($known),'videoId'=>$known[0]['videoId'],'thumbnail'=>$known[0]['thumbnail'],'href'=>'/noa-youtube.php?playlist='.rawurlencode($id)];
  }
  usort($lists,fn($a,$b)=>($b['score']<=>$a['score'])?:strcmp(($a['playlistId']??$a['videoId']),($b['playlistId']??$b['videoId'])));
- foreach($sections as $section=>&$rows){usort($rows,$sort);$diagnostics[$section]['rankable']=count($rows);$rows=array_slice($rows,0,10);$diagnostics[$section]['returned']=count($rows);}unset($rows);
+ foreach($sections as $section=>&$rows){usort($rows,$sort);$diagnostics[$section]['rankable']=count($rows);$rows=array_slice(array_values(array_filter($rows,fn($row)=>!isset($excluded[$row['videoId']]))),0,10);$diagnostics[$section]['returned']=count($rows);}unset($rows);
  $diagnostics['playlists']['rankable']=count($lists);$diagnostics['playlists']['returned']=min(10,count($lists));
  foreach($diagnostics as &$d)$d['emptyReason']=$d['returned']?null:($d['candidates']?'all_candidates_excluded':(!empty($d['catalogSongs'])?'catalog_video_mapping_missing':(!$videos?'no_registered_or_collected_data':'no_category_evidence')));unset($d);
- return ['featured'=>array_slice($ranked,0,10),'ep'=>$epRows,'stories'=>$sections['stories'],'covers'=>$sections['covers'],'playlists'=>array_slice($lists,0,10),'diagnostics'=>$diagnostics,'counts'=>['rankableVideos'=>count($ranked),'linkedPublicVideosWithoutViewCount'=>$missing,'epGenres'=>count($epRows),'continuousPlaylists'=>count($lists)],'basis'=>'public_embeddable_owner_videos_with_confirmed_song_link_and_recorded_view_count','categoryBasis'=>'사연곡·커버곡은 확정 장르, 채널 전용 목록 소속 또는 명시적 영상 분류로 선정합니다. 곡 ID 미연결 영상도 포함하며 제목으로 곡 ID를 추정하지 않습니다.','playlistBasis'=>'공식 목록은 확인된 공개 수록 영상 조회수 합계, 연속듣기 단일 영상은 해당 영상 조회수로 정렬합니다. 서로 다른 지표이며 공식 재생목록 조회수가 아닙니다. 중복 수록은 한 번 집계하고 미확인 조회수는 제외합니다.'];
+ return ['featured'=>$featured,'ep'=>$epRows,'stories'=>$sections['stories'],'covers'=>$sections['covers'],'playlists'=>array_slice($lists,0,10),'diagnostics'=>$diagnostics,'counts'=>['rankableVideos'=>count($ranked),'linkedPublicVideosWithoutViewCount'=>$missing,'epGenres'=>count(array_unique(array_column($epRows,'genre'))),'continuousPlaylists'=>count($lists)],'basis'=>'public_embeddable_owner_videos_with_confirmed_song_link_and_recorded_view_count','categoryBasis'=>'사연곡은 공식 사연곡 재생목록 소속 영상으로 선정합니다. 추천 음악과 겹치는 영상은 EP·사연곡·커버곡 순위에서 제외하고 다음 후보를 보충합니다.','playlistBasis'=>'공식 목록은 확인된 공개 수록 영상 조회수 합계, 연속듣기 단일 영상은 해당 영상 조회수로 정렬합니다. 서로 다른 지표이며 공식 재생목록 조회수가 아닙니다. 중복 수록은 한 번 집계하고 미확인 조회수는 제외합니다.'];
 }
