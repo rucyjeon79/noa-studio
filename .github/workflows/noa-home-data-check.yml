@@ -1,0 +1,48 @@
+name: NOA home data recovery isolated verification
+on:
+  push:
+    branches: [main]
+    paths: ['bridge/home*.php', 'deploy/noa-home.js', 'tests/home/**', 'tests/catalog/home_test.php', 'scripts/qa/noa-home-*', '.github/workflows/noa-home-data-check.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: noa-isolated-only, MYSQL_DATABASE: noa_restore_verification}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -pnoa-isolated-only" --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Read model regression checks
+        run: |
+          php tests/catalog/home_test.php
+          for f in bridge/home*.php scripts/qa/noa-home-db.php tests/home/router.php deploy/noa-app/home.php deploy/noa2.php; do php -l "$f"; done
+          node --check deploy/noa-home.js
+          node --check scripts/qa/noa-home-render.mjs
+      - run: python3 -m pip install --user paramiko==3.5.1
+      - name: Read private backup and restore only to disposable MySQL
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: python3 scripts/noa_verify_private_backup.py
+      - name: Compare same collection as live API using production read model
+        run: php scripts/qa/noa-home-db.php
+      - name: Render candidate on PC and mobile without deployment
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-home" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-home/node_modules/.bin/playwright" install --with-deps chrome
+          cp scripts/qa/noa-home-render.mjs "$RUNNER_TEMP/noa-home/check.mjs"
+          node "$RUNNER_TEMP/noa-home/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-home-public-data-verification
+          path: quality-home/
+          retention-days: 14

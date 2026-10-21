@@ -13,3 +13,23 @@ $list['status']['privacyStatus']='private';check(nh_build($videos,$songs,[$list]
 check(nh_views('9223372036854775808')===null&&nh_views('-1')===null&&nh_views('1.5')===null&&nh_views('0')===0,'invalid numeric views');
 $many=[];for($i=0;$i<20;$i++)$many[]=video(str_pad((string)$i,11,'0',STR_PAD_LEFT),'a',(string)$i);$a=nh_build($many,$songs,[],[],$channel);check(count($a['featured'])===10&&$a['featured'][0]['views']===19,'top ten limit');
 echo "PASS home privacy, identity, ranking, genre winner, missing metrics and distinct playlist aggregation\n";
+
+
+$story=video('story000001',null,'400');$story['snippet']['title']='두 개의 숟가락 | 사연곡';
+$cover=video('cover000001',null,'900');$cover['snippet']['title']='서쪽 하늘 | Cover by AInoa';
+$translation=video('trans000001',null,'9999');$translation['snippet']['title']='[Cover] EP.2 POP Original J-POP Ver.';
+$act=video('act00000001',null,'300');$act['snippet']['title']='ACT.1 Playlist | EP.1-10';
+$member=video('member00001',null,'500');$member['snippet']['title']='분류는 제목이 아니라 소속 목록에만 있음';
+$noMetric=$story;$noMetric['id']='noMetric001';$noMetric['statistics']=[];
+$rejected=$cover;$rejected['id']='reject00001';$rejected['match']['status']='rejected';
+$ownerList=['id'=>'PLEPMKciKgvch9TGMAcBdKzhVt1QeYsfKB','snippet'=>['title'=>'당신의 이야기, 우리의 음악 🎧','channelId'=>$channel],'status'=>['privacyStatus'=>'public']];
+$x=nh_build([$story,$cover,$translation,$act,$member,$noMetric,$rejected],[],[$ownerList],[$ownerList['id']=>['member00001']],$channel);
+check(array_column($x['stories'],'videoId')===['member00001','story000001'],'owner playlist membership and explicit story labels must recover unlinked records');
+check(array_column($x['covers'],'videoId')===['cover000001'],'generic Cover translation or rejected match leaked into famous covers');
+check($x['stories'][0]['songId']===null&&$x['stories'][0]['classificationSource']==='owner_playlist_membership','category recovery invented song identity');
+check($x['playlists'][0]['contentType']==='video'&&$x['playlists'][0]['scoreKind']==='video_view_count'&&!isset($x['playlists'][0]['playlistId']),'compilation confused with official playlist');
+check($x['diagnostics']['stories']['reasons']['missing_view_count']===1,'missing metrics not explained');
+check(nh_build([],[],[],[],$channel)['diagnostics']['stories']['emptyReason']==='no_classified_collected_data','empty registration not distinguished');
+$conflict=$cover;$conflict['snippet']['title'].=' 사연곡';$c=nh_build([$conflict],[],[],[],$channel);check(!$c['covers']&&!$c['stories']&&$c['diagnostics']['covers']['reasons']['classification_conflict']===1,'ambiguous category not held out');
+$dupes=nh_build([$story,$story],[],[],[],$channel);check(count($dupes['stories'])===1,'duplicate video ranked twice');
+echo "PASS recovered category provenance, missing metrics, rejected/ambiguous identity, translated originals, compilation types and deduplication\n";
