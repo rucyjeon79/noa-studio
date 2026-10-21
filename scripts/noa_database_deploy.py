@@ -5,7 +5,7 @@ import paramiko
 ROOT='/hosting/noastudio/html'
 FILES={str(p.relative_to('deploy')):str(p) for p in Path('deploy/noa-app/database').glob('*') if p.is_file()}
 FILES['extend/noa.database.php']='deploy/noa-database.extend.php'
-BASE={} # Initially all module destinations must be absent. No unknown versions overwritten.
+BASE={'noa-app/database/index.php':'9bd381a72581cf8fd3176fc3a74be259d6390301b8761c285ce8d0b583bffe96','noa-app/database/ui.js':'610b6eefaebaa223cf7b1632adae2c5a056b5a69fb901bbf11bf7477455c0118'} # Only this reviewed previous module version may be replaced.
 def sha(data):return hashlib.sha256(data).hexdigest()
 def main():
  t=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022))

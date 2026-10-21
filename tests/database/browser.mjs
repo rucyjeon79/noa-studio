@@ -9,6 +9,8 @@ for(const role of ['','member','super']){
   for(const [body,status]of [[{action:'status'},403],[{csrf:'wrong',action:'query',sql:'SELECT * FROM songs'},403],[{csrf:token,action:'query',sql:'DELETE FROM members'},400],[{csrf:token,action:'query',sql:'SELECT SLEEP(3) FROM songs'},400]]){const resp=await c.request.post(origin+'/noa-app/database/',{data:body});assert.equal(resp.status(),status);}
   const before=(await(await c.request.post(origin+'/noa-app/database/',{data:{csrf:token,action:'query',sql:'SELECT COUNT(*) AS total FROM members'}})).json()).rows;
   assert.equal(Number(before[0][0]),1);
+  const csv=await c.request.post(origin+'/noa-app/database/',{form:{csrf:token,action:'csv',sql:'SELECT COUNT(*) AS total FROM songs'}});assert.equal(csv.status(),200);assert((csv.headers()['content-type']||'').includes('text/csv'));assert((await csv.text()).includes('1100'));
+  const mutationCsv=await c.request.post(origin+'/noa-app/database/',{form:{csrf:token,action:'csv',sql:'DELETE FROM members'}});assert.equal(mutationCsv.status(),400);
   for(const width of [320,390,1280]){
    await p.setViewportSize({width,height:900});await p.reload();await p.getByText('DB 연결 상태 확인 완료',{exact:true}).waitFor();
    assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
