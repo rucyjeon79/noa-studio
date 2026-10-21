@@ -21,14 +21,14 @@ export async function verifyCardBalance({context,phase,base,out,report}){
   }
   if(width===1280){
    await page.locator('#balance-sample').evaluate(h=>{h.style.width='568px';window.NoaCardLayout.refresh();});
-   await page.waitForFunction(()=>document.getElementById('balance-sample').dataset.noaRows==='1+3+3+3');
-   const result=await measure(page);validate(result,10,originals);assert(result.featured);
+   await page.waitForFunction(()=>document.getElementById('balance-sample').dataset.noaRows==='2+2+2+2+2');
+   const result=await measure(page);validate(result,10,originals);assert.equal(result.featured,false);
    const first=page.locator('#balance-sample>a').first();await first.focus();assert.equal(await first.evaluate(e=>document.activeElement===e),true);
-   await settleImages(page,'#balance-sample');await page.screenshot({path:path.join(out,'balance-featured-1-3-3-3-1280.jpg'),type:'jpeg',quality:85});
+   await settleImages(page,'#balance-sample');await page.screenshot({path:path.join(out,'balance-compact-container-two-columns-1280.jpg'),type:'jpeg',quality:85});
    const href=await first.getAttribute('href'),id=await first.getAttribute('data-video');await first.click();
    await page.waitForURL(base+href);await page.waitForFunction(id=>document.getElementById('yt-frame')?.src.includes('/embed/'+id),id);
    assert.equal(await page.locator('#yt-frame').count(),1);
-   cases.push({width,count:10,forcedThreeColumns:true,linkAndPlayer:true,...result});
+   cases.push({width,count:10,constrainedContainer:true,linkAndPlayer:true,...result});
   }
   await page.close();
  }

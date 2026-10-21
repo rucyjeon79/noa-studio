@@ -1,12 +1,24 @@
-/* Original 15 genres × 3 intro clips; one selected file, one automatic play, explicit replay only. */
-(()=>{'use strict';const video=document.getElementById('noa-hero-video'),poster=document.getElementById('noa-hero-poster'),button=document.getElementById('noa-hero-toggle'),status=document.getElementById('noa-hero-status');if(!video||!poster||!button)return;
- const portrait=matchMedia('(orientation: portrait)'),reduced=matchMedia('(prefers-reduced-motion: reduce)'),genres=Object.keys(window.NoaBrowse.names),genre=genres[Math.floor(Math.random()*genres.length)],variant=['a','b','c'][Math.floor(Math.random()*3)],base=window.NoaBrowse.genreArt(genre).replace(/-a\.jpg$/,'-'+variant),src=base+'.mp4';poster.src=base+'.jpg';video.poster=poster.src;poster.closest?.('picture')?.querySelectorAll('source').forEach(source=>source.srcset=poster.src);video.muted=true;video.loop=false;video.removeAttribute('loop');video.autoplay=false;video.removeAttribute('autoplay');let started=false,finished=false;
- function label(text){button.setAttribute('aria-label',text);button.title=text;button.dataset.playing=String(!video.paused&&!finished);button.querySelector('path').setAttribute('d',!video.paused&&!finished?'M8 5v14M16 5v14':'m8 5 11 7-11 7V5Z');}
- async function play(manual=false){if(!video.getAttribute('src'))video.src=src;if(finished&&manual){video.currentTime=0;finished=false;}video.hidden=false;try{await video.play();}catch{video.hidden=true;label('메인 영상 재생');status.textContent='재생 버튼으로 원본 메인 영상을 열 수 있습니다.';}}
- function layout(){button.hidden=false;if(!started&&!finished&&!reduced.matches)play();label(video.paused?'메인 영상 재생':'메인 영상 일시정지');}
- button.onclick=()=>{if(!video.paused&&!finished){video.pause();label('메인 영상 재생');}else play(true);};
- video.addEventListener('playing',()=>{started=true;video.hidden=false;status.textContent='';label('메인 영상 일시정지');});
- video.addEventListener('pause',()=>label(finished?'메인 영상 다시 재생':'메인 영상 재생'));reduced.addEventListener('change',()=>{if(reduced.matches)video.pause();});
- video.addEventListener('ended',()=>{finished=true;label('메인 영상 다시 재생');});video.addEventListener('error',()=>{video.hidden=true;status.textContent='원본 영상을 불러오지 못했습니다. 포스터를 표시합니다.';label('메인 영상 재생');});
- portrait.addEventListener('change',layout);window.addEventListener('pagehide',()=>video.pause());document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();});layout();
+/* One muted inline automatic attempt. No replay control, loop, orientation or visibility restart. */
+(()=>{'use strict';
+ const video=document.getElementById('noa-hero-video'),poster=document.getElementById('noa-hero-poster'),status=document.getElementById('noa-hero-status');
+ if(!video||!poster)return;
+ const art=video.closest('.noa-hero-art'),reduced=matchMedia('(prefers-reduced-motion: reduce)'),genres=Object.keys(window.NoaBrowse?.names||{});
+ if(!genres.length)return;
+ const genre=genres[Math.floor(Math.random()*genres.length)],variant=['a','b','c'][Math.floor(Math.random()*3)],base=window.NoaBrowse.genreArt(genre).replace(/-a\.jpg$/,'-'+variant);
+ poster.src=base+'.jpg';video.poster=poster.src;if(art?.style)art.style.setProperty('--noa-hero-backdrop','url('+JSON.stringify(poster.src)+')');poster.closest?.('picture')?.querySelectorAll('source').forEach(source=>source.srcset=poster.src);
+ video.muted=true;video.playsInline=true;video.loop=false;video.autoplay=false;video.removeAttribute('loop');video.removeAttribute('autoplay');
+ let attempted=false,finished=false;
+ function state(value){if(art)art.dataset.mediaState=value;}
+ function fallback(message=''){video.hidden=true;state('poster');if(status)status.textContent=message;}
+ async function start(){
+  if(attempted||finished||reduced.matches)return;
+  attempted=true;state('loading');video.src=base+'.mp4';
+  try{await video.play();}catch{fallback();}
+ }
+ video.addEventListener('playing',()=>{video.hidden=false;state('playing');if(status)status.textContent='';});
+ video.addEventListener('ended',()=>{finished=true;video.pause();video.hidden=false;state('ended');});
+ video.addEventListener('error',()=>fallback('영상을 불러오지 못해 이미지를 표시합니다.'));
+ reduced.addEventListener('change',()=>{if(reduced.matches){video.pause();if(!finished)fallback();}});
+ window.addEventListener('pagehide',()=>video.pause());document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();});
+ state('poster');start();
 })();

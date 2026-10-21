@@ -1,19 +1,21 @@
 name: NOA UIUX visual gates and scoped production release
-# PRECISION GRID: aligned modules, compact titles, sculpted glass, two themes, 1px baselines, orientation and protected production gates.
+# Recovery: remove forbidden controls, protect music processing and run shared rendered UI acceptance.
 on:
   pull_request:
     branches: [main]
-    paths: ['deploy/noa-ui.*', 'deploy/noa-design.json', 'scripts/qa/noa-glass.mjs', 'deploy/noa-hero.js', 'deploy/noa-home.js', 'deploy/noa-browse.js', 'deploy/noa-my.php', 'deploy/noa-youtube*', 'deploy/noa-world*', 'deploy/noa-app/home.php', 'deploy/noa-app/world-view.php', 'bridge/home-core.php', 'tests/uiux/**', 'scripts/noa_uiux_release.py', 'scripts/qa/noa-uiux-release.mjs', 'scripts/qa/noa-card-balance.mjs', 'scripts/qa/noa-precision*', 'deploy/noa-ai-lab.php', 'deploy/noa-settings.php', '.github/workflows/noa-uiux-release.yml']
+    paths: ['deploy/noa-ui.*', 'deploy/noa-design.json', 'scripts/qa/noa-glass.mjs', 'scripts/qa/noa-recovery.mjs', 'tests/uiux/**', 'deploy/noa-music.php', 'deploy/noa2.php', 'deploy/noa-youtube.css', 'deploy/noa-hero.js', 'deploy/noa-home.js', 'deploy/noa-browse.js', 'deploy/noa-my.php', 'deploy/noa-youtube*', 'deploy/noa-world*', 'deploy/noa-app/home.php', 'deploy/noa-app/world-view.php', 'bridge/home-core.php', 'tests/uiux/**', 'scripts/noa_uiux_release.py', 'scripts/qa/noa-uiux-release.mjs', 'scripts/qa/noa-card-balance.mjs', 'scripts/qa/noa-precision*', 'deploy/noa-ai-lab.php', 'deploy/noa-settings.php', '.github/workflows/noa-uiux-release.yml']
   push:
     branches: [main]
     paths: ['.github/workflows/noa-uiux-release.yml']
   workflow_dispatch:
 permissions: {contents: read}
-concurrency: {group: 'noa-uiux-validation-${{ github.ref }}', cancel-in-progress: false}
+concurrency:
+  group: noa-uiux-validation-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   candidate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false, fetch-depth: 0}
@@ -21,7 +23,7 @@ jobs:
         with: {php-version: '8.2', coverage: none}
       - name: PHP, JavaScript and existing source invariants
         run: |
-          for f in bridge/home-core.php deploy/noa-app/home.php deploy/noa-app/world-view.php deploy/noa-my.php deploy/noa-youtube.php deploy/noa-catalog.php deploy/noa-ai-lab.php deploy/noa-settings.php; do php -l "$f"; done
+          for f in bridge/home-core.php deploy/noa-app/home.php deploy/noa-app/world-view.php deploy/noa-my.php deploy/noa-youtube.php deploy/noa-catalog.php deploy/noa-ai-lab.php deploy/noa-settings.php deploy/noa-music.php deploy/noa2.php tests/uiux/render.php; do php -l "$f"; done
           for f in deploy/noa-ui.js deploy/noa-browse.js deploy/noa-hero.js deploy/noa-home.js deploy/noa-world.js; do node --check "$f"; done
           php tests/catalog/home_test.php
           php tests/catalog/home_uiux_test.php
@@ -31,6 +33,7 @@ jobs:
           python3 -m pip install --user paramiko==3.5.1
           python3 -m py_compile scripts/noa_uiux_release.py
           python3 tests/uiux/release_test.py
+          python3 tests/uiux/recovery_contract_test.py
       - name: Render candidate at seven widths, landscape and both material themes without a public test site
         run: |
           npm install --prefix "$RUNNER_TEMP/noa-uiux" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
@@ -45,7 +48,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: candidate
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     concurrency: {group: noa-dothome-production, cancel-in-progress: false}
     environment: production
     steps:
@@ -69,6 +72,13 @@ jobs:
         id: live
         env: {NOA_UIUX_PHASE: live}
         run: NOA_SOURCE_ROOT="$GITHUB_WORKSPACE" node "$RUNNER_TEMP/noa-uiux/verify.mjs"
+      - name: Read back production source hashes after live acceptance
+        env:
+          NOA_UIUX_REQUIRE_MATCH: '1'
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: python3 scripts/noa_uiux_audit.py
       - name: Restore only unchanged release-owned files if visual verification fails
         if: failure() && steps.release.outcome == 'success'
         env:

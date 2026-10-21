@@ -7,11 +7,13 @@ import paramiko
 from noa_deploy_guard import deployment_preflight
 ROOT='/hosting/noastudio/html'
 BASELINE='018335cb6242f0a352ac7e564bc063f018d5bb9e'
-PREVIOUS_UI='94382d7bba8c3666119d09d65e2da28e5f2ce4a8'
-FILES={p:'deploy/'+p for p in ['noa-design.json','noa-ui.css','noa-ui.js','noa-app/home.php','noa-app/world-view.php','noa-my.php','noa-youtube.php','noa-catalog.php','noa-home.js','noa-hero.js','noa-ai-lab.php','noa-settings.php']}
-PROTECTED=['index.php','common.php','config.php','data/dbconfig.php','head.php','tail.php','version.php','bbs/login.php','bbs/login_check.php','noa-music.php']+['noa-app/jukebox/'+p for p in ['index.php','upload-core.php','core.php','upload.php','upload.js','upload.css']]
+PREVIOUS_UI='54f1adb915109ae1c645d39e9a8d3f530af8cb2a'
+INTEGRATION_BASES=['7aec9e7691eda0299979d960f688857f0b489838','c62a27db853ae967b0a9ed497c879625c9d401a8','81641832f74621d600e227e5840e8c2c7b187a1b']
+FILES={p:'deploy/'+p for p in ['noa-design.json','noa-ui.css','noa-ui.js','noa-app/home.php','noa-app/world-view.php','noa-my.php','noa-youtube.php','noa-catalog.php','noa-home.js','noa-hero.js','noa-ai-lab.php','noa-settings.php','noa-music.php','noa2.php','noa-world.css','noa-world.js','noa-youtube.css','noa-browse.js']}
+PROTECTED=['index.php','common.php','config.php','data/dbconfig.php','head.php','tail.php','version.php','bbs/login.php','bbs/login_check.php']+['noa-app/jukebox/'+p for p in ['index.php','upload-core.php','core.php','upload.php','upload.js','upload.css']]
 PROTECTED+=['noa-ai-lab.js','noa-app/taxonomy/index.php','noa-app/taxonomy/ui.js','noa-bridge/home-core.php','noa-bridge/home-store.php','noa-bridge/taxonomy-core.php','noa-bridge/taxonomy-schema.php','noa-bridge/taxonomy-store.php','noa-bridge/youtube-store.php']
 PROTECTED+=['noa-bridge/'+p for p in ['home.php','popularity-core.php','popularity-store.php','popularity-schema.php','popularity-plays.php']]
+PROTECTED+=['noa-app/jukebox/'+p for p in ['stream.php','download.php','upload-transport.js','queue-core.php','recovery-core.php','operations.php','service.php']]
 PROOF=Path('uiux-proof');STATE=PROOF/'release-state.json'
 def sha(b):return hashlib.sha256(b).hexdigest()
 def connect():
@@ -57,7 +59,8 @@ def main():
   for p,local in FILES.items():
    baseline=subprocess.check_output(['git','show',BASELINE+':'+local])
    previous_ui=subprocess.check_output(['git','show',PREVIOUS_UI+':'+local])
-   if old[p]not in [baseline,previous_ui,new[p]]:raise RuntimeError('Unknown or concurrent production version; nothing changed: '+p)
+   integrated=[subprocess.check_output(['git','show',ref+':'+local])for ref in INTEGRATION_BASES]
+   if old[p]not in [baseline,previous_ui,*integrated,new[p]]:raise RuntimeError('Unknown or concurrent production version; nothing changed: '+p)
   protected={p:sha(read(s,ROOT+'/'+p))for p in PROTECTED}
   pending=[p for p in FILES if old[p]!=new[p]];parent='/hosting/noastudio/noa-deploy-backups'
   if not pending:

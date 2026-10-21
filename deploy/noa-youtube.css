@@ -7,3 +7,11 @@
 #youtube-playlists a:focus-visible,.yt-toolbar a:focus-visible{outline:2px solid var(--noa-accent);outline-offset:3px}
 #youtube-playlists p{margin:4px 0}.yt-grid{gap:16px;margin:20px 0}.yt-card h2{margin:10px 0 4px}.yt-toolbar{gap:8px;margin:16px 0}
 @media(max-width:600px){.yt-grid{grid-template-columns:minmax(0,1fr)}.yt-toolbar{align-items:stretch}}
+.noa-page .noa-video-search{display:grid;gap:8px;margin-block:16px;max-inline-size:100%;min-inline-size:0}
+.noa-video-search input{inline-size:100%}
+.noa-page .noa-browse-card{position:static;isolation:isolate}
+.noa-page .noa-browse-card>img{position:static;display:block;inline-size:100%;aspect-ratio:16/9;object-fit:cover}
+.noa-page .noa-browse-card>span{position:static;display:grid;inset:auto;transform:none;padding:12px;gap:4px;background:var(--noa-surface);color:var(--noa-text)}
+#youtube-playlists.noa-balanced{align-items:stretch}#youtube-playlists p{display:flex;margin:0;min-inline-size:0}
+#youtube-playlists p>a.noa-action{inline-size:100%;padding:8px 12px;align-self:stretch;justify-content:center}
+#youtube-playlists p>a.noa-action:hover{text-decoration:none}
