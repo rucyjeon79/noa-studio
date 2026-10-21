@@ -13,7 +13,9 @@ await p.goto(origin+'/',{waitUntil:'domcontentloaded'});await p.locator('#noa-st
 report.home.cards=await p.locator('#noa-stories a,#noa-covers a,#noa-acts a').evaluateAll(es=>({count:es.length,uniqueLinks:new Set(es.map(e=>e.getAttribute('href'))).size}));
 report.hero=await p.locator('#noa-hero-video').evaluate(v=>({source:v.currentSrc,currentTime:v.currentTime,readyState:v.readyState,paused:v.paused}));
 await p.goto(origin+'/noa-world.php',{waitUntil:'domcontentloaded'});report.world={cards:await p.locator('.world-mv-card').count(),actLinks:await p.locator('a[href*="story="]').count(),text:(await p.locator('main').innerText()).slice(0,1500)};
-if(width===1280){
+// External playback previously requested bot verification; do not retry it by default.
+report.world.externalPlayback='not retested: previous YouTube bot verification block';
+if(width===1280&&process.env.NOA_QA_YOUTUBE_MEDIA==='1'){
  await p.locator('.world-play').first().click();report.world.embed=await p.locator('#world-frame').getAttribute('src');
  try{
   const frame=p.frameLocator('#world-frame');await frame.locator('body').waitFor({timeout:20000});await p.waitForTimeout(5000);
@@ -34,4 +36,4 @@ if(audio.length){
 }
 for(const path of ['/noa-app/database/','/noa-app/jukebox/','/noa-app/jukebox/download.php?key=single%3Akpop-original%3A01'])report.urls.push({path,anonymous:(await p.request.get(origin+path)).status()});
 await fs.writeFile(out+'/result-'+width+'.json',JSON.stringify(report,null,2));console.log('P0_LIVE '+JSON.stringify(report));await b.close();
-if(report.errors.length||report.urls.some(r=>r.status>=500))process.exitCode=1;
+if(report.errors.length||report.urls.some(r=>r.status>=500)||!report.music.playback||report.music.playback.error||report.music.playback.paused||!(report.music.playback.time>0)||!report.music.outputSignal?.nonSilent||report.music.stream?.status!==206)process.exitCode=1;
