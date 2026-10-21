@@ -60,8 +60,8 @@ jobs:
           path: jukebox-proof/interface.json
           retention-days: 14
   release:
-    needs: validate
-    if: always() && (needs.validate.result == 'success' || github.event_name == 'schedule')
+    needs: [validate, interface]
+    if: always() && ((needs.validate.result == 'success' && needs.interface.result == 'success') || github.event_name == 'schedule')
     runs-on: ubuntu-latest
     timeout-minutes: 120
     environment: production
