@@ -66,6 +66,23 @@ export async function verifyPrecisionFlow({context,phase,base,out,report}){
   }
   await page.close();
  }
- await fs.writeFile(path.join(out,'precision-report.json'),JSON.stringify({ok:true,phase,tolerancePx:1,orientationSamples:samples,rankingFixtureOnly:true},null,2));
- report.push({phase,precisionOrientationSamples:samples.length,pixelTolerance:1,rankFixtureOnly:true});
+ // Visible-player geometry fixture: reveal existing chrome only; no audio or server writes.
+ const playerPage=await context.newPage();await playerPage.goto(base+'/noa-music.php',{waitUntil:'domcontentloaded'});
+ await playerPage.waitForFunction(()=>window.NoaCardLayout&&document.fonts.status==='loaded');
+ await playerPage.locator('.noa-transport').evaluate(p=>p.hidden=false);
+ const playerSamples=[];
+ for(const size of [{width:320,height:568},{width:390,height:844},{width:430,height:932},{width:768,height:1024},{width:1024,height:768},{width:1280,height:900},{width:1920,height:1080},{width:844,height:390},{width:568,height:320}]){
+  await playerPage.setViewportSize(size);await playerPage.evaluate(()=>window.NoaCardLayout.refresh());
+  await playerPage.waitForFunction(()=>Math.abs(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--noa-player-space'))-Math.ceil(document.querySelector('.noa-transport').getBoundingClientRect().height))<1);
+  await playerPage.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+  const audit=await auditPrecision(playerPage);
+  const geometry=await playerPage.locator('.noa-transport').evaluate(p=>{const rect=e=>{const r=e.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height};};return{bar:rect(p),viewport:innerWidth,buttons:[...p.querySelectorAll('button')].filter(b=>b.getBoundingClientRect().width>0).map(rect)};});
+  assert(geometry.bar.x>=-1&&geometry.bar.right<=geometry.viewport+1,'player viewport bounds');
+  for(const b of geometry.buttons){assert(b.width>=44&&b.height>=44,'player touch target');assert(b.x>=geometry.bar.x-1&&b.right<=geometry.bar.right+1&&b.y>=geometry.bar.y-1&&b.bottom<=geometry.bar.bottom+1,'player control clipped');}
+  playerSamples.push({...size,...audit,geometry});
+  if(size.width===390||size.width===844)await playerPage.screenshot({path:path.join(out,'precision-visible-player-fixture-'+size.width+'.jpg'),type:'jpeg',quality:82});
+ }
+ await playerPage.close();
+ await fs.writeFile(path.join(out,'precision-report.json'),JSON.stringify({ok:true,phase,tolerancePx:1,orientationSamples:samples,visiblePlayerFixtures:playerSamples,rankingFixtureOnly:true},null,2));
+ report.push({phase,precisionOrientationSamples:samples.length,visiblePlayerFixtures:playerSamples.length,pixelTolerance:1,rankFixtureOnly:true});
 }
