@@ -1,5 +1,6 @@
 """Reconcile reviewed main runtime code only. No migrations, source-data imports or core edits."""
-import os,json,stat,subprocess,time,urllib.request,urllib.error
+import os,json,stat,subprocess,time,urllib.request,urllib.error,sys
+from noa_deploy_guard import deployment_preflight
 from pathlib import Path
 from collections import Counter
 from noa_full_inventory import mappings,connect,sha,ROOT
@@ -7,7 +8,9 @@ from noa_full_inventory import mappings,connect,sha,ROOT
 def main():
  allmap=mappings()
  # Large original assets are being independently hashed; deploy only runtime modules here.
- m={r:l for r,l in allmap.items()if not r.startswith('noa-assets/') and r not in ['noa-bridge/seed.php','noa-bridge/source-archive.php','noa-bridge/catalog-seed.php']}
+ protected_work={'noa-music.php','noa-bridge/catalog.php','noa-jukebox/.htaccess'}
+ m={r:l for r,l in allmap.items()if not r.startswith(('noa-assets/','noa-app/jukebox/')) and r not in protected_work and r not in ['noa-bridge/seed.php','noa-bridge/source-archive.php','noa-bridge/catalog-seed.php']}
+ preflight=None
  t=connect();s=t.open_sftp_client() if hasattr(t,'open_sftp_client')else __import__('paramiko').SFTPClient.from_transport(t)
  s.get_channel().settimeout(30)
  def read(p):
@@ -41,7 +44,21 @@ def main():
   print('CODE_PLAN '+json.dumps({'counts':dict(Counter(r['state']for r in rows)),'pending':[r for r in rows if r['state']!='match']}),flush=True)
   protected=['common.php','config.php','data/dbconfig.php','_common.php','head.php','tail.php','bbs/login.php','bbs/login_check.php','bbs/logout.php','version.php']
   guard={p:sha(read(ROOT+'/'+p))for p in protected}
-  backup='/hosting/noastudio/noa-deploy-backups/full-20261021-'+os.environ['GITHUB_RUN_ID'];mkdir(backup,0o700)
+  if not pending:
+   result={'commit':os.environ['GITHUB_SHA'],'changed':[],'changedCount':0,'preservedUnknown':unknown,'sqlMigrations':False,'protectedJukeboxExcluded':True,'backupRequired':False}
+   (proof/'release.json').write_text(json.dumps(result,indent=2));print('FULL_RUNTIME_RELEASE '+json.dumps(result),flush=True);return
+  for remote,b in pending:
+   local=m[remote]
+   if local.endswith('.php'):subprocess.run(['php','-l',local],check=True)
+   if local.endswith('.js'):subprocess.run(['node','--check',local],check=True)
+  available=None
+  try:
+   _,capacity=s._request(__import__('paramiko').sftp.CMD_EXTENDED,'statvfs@openssh.com',ROOT)
+   values=[capacity.get_int64()for _ in range(11)];available=values[1]*values[4]
+  except OSError:pass
+  required=sum(len(b)+(len(old[r])if old[r]else 0)for r,b in pending)
+  preflight=deployment_preflight(s,'/hosting/noastudio/noa-deploy-backups',os.environ['GITHUB_RUN_ID'],required,available)
+  backup=preflight.__enter__()
   for remote,b in pending:
    if old[remote]is None:continue
    target=backup+'/'+remote
@@ -84,5 +101,8 @@ def main():
      with s.open(temp,'wx')as f:f.write(old[remote])
      s.chmod(temp,0o644);s.posix_rename(temp,ROOT+'/'+remote)
    raise
- finally:t.close()
+ finally:
+  try:
+   if preflight is not None:preflight.__exit__(*sys.exc_info())
+  finally:t.close()
 if __name__=='__main__':main()
