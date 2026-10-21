@@ -19,8 +19,14 @@ try{
   const pid='PLEPMKciKgvchOwm5hQfGAP2jDQloI2RVY',channelId='UCwYy9xsAqDFat6AV5UKrfgA';
   const source={playlist:{id:pid,snippet:{title:'📖 NOA’s Diary : EP Series M/V',channelId},status:{privacyStatus:'public'}},items:observed.map((v,i)=>({video_id:v.id,position:i})),videos:Object.fromEntries(observed.map(v=>[v.id,{id:v.id,snippet:{title:v.title,channelId,description:''},status:{privacyStatus:'public',embeddable:true}}]))};
   const sourcePath=path.join(out,'public-world-source.json');await fs.writeFile(sourcePath,JSON.stringify(source));
-  for(const [route,kind,role]of [['/','home',''],['/noa-world.php','world',''],['/noa-my.php','my',''],['/noa-my-admin-fixture','my','admin']]){
-   const rendered=execFileSync('php',[path.join(root,'tests/uiux/render.php'),kind,role],{env:{...process.env,NOA_WORLD_SOURCE:sourcePath},encoding:'utf8'});assert(!rendered.includes('Fatal error'));docs.set(route,rendered);
+  const yr=await context.request.get(base+'/noa-youtube.php');assert.equal(yr.status(),200);const yt=await context.newPage();await yt.setContent(await yr.text());
+  const youtube=await yt.evaluate(()=>{
+   const videos=Object.fromEntries([...document.querySelectorAll('.yt-watch')].map(b=>[b.dataset.video,{id:b.dataset.video,snippet:{title:b.dataset.title},status:{privacyStatus:'public',embeddable:true},classification:b.closest('.yt-card').querySelector('p')?.textContent.includes('공식 MV')?'official_mv':'music'}]));
+   const script=[...document.scripts].find(s=>s.textContent.includes('const rows='));const match=script?.textContent.match(/const rows=(\[.*?\]),search=/s);if(!match)throw Error('Public browse source missing');
+   const playlists=Object.fromEntries([...document.querySelectorAll('#youtube-playlists a')].map(a=>[new URL(a.getAttribute('href'),'https://noastudio.ai.kr/noa-youtube.php').searchParams.get('playlist'),{snippet:{title:a.textContent}}]));return{videos,browseRows:JSON.parse(match[1]),playlists};
+  });await yt.close();const ytPath=path.join(out,'public-youtube-source.json');await fs.writeFile(ytPath,JSON.stringify(youtube));
+  for(const [route,kind,role]of [['/','home',''],['/noa-world.php','world',''],['/noa-my.php','my',''],['/noa-youtube.php','youtube',''],['/noa-my-admin-fixture','my','admin']]){
+   const rendered=execFileSync('php',[path.join(root,'tests/uiux/render.php'),kind,role],{env:{...process.env,NOA_WORLD_SOURCE:sourcePath,NOA_YOUTUBE_SOURCE:ytPath},encoding:'utf8'});assert(!rendered.includes('Fatal error'));docs.set(route,rendered);
   }
   await context.route(base+'/**',async route=>{
    const request=route.request(),u=new URL(request.url());
