@@ -67,15 +67,16 @@ def main():
    result={'source_commit':os.environ['GITHUB_SHA'],'deployed_hashes':{remote:sha(read(ROOT+'/'+remote)) for remote in files},'protected_files_unchanged':True,'sql_queue_mutated':False,'audio_worker_interrupted':False}
    work=Path('jukebox-proof');work.mkdir(exist_ok=True);(work/'interface.json').write_text(json.dumps(result));print('JUKEBOX_INTERFACE_RESULT '+json.dumps(result),flush=True);return
   protected={p:sha(read(ROOT+'/'+p)) for p in ['common.php','config.php','data/dbconfig.php','index.php','.htaccess'] if read(ROOT+'/'+p) is not None}
-  mkdir(ROOT+'/noa-app');mkdir(ROOT+'/'+APP.rstrip('/'));mkdir(ROOT+'/noa-jukebox')
-  atomic(ROOT+'/noa-jukebox/.htaccess',Path('deploy/'+APP+'media.htaccess').read_bytes(),None)
-  # Install only new helpers; no existing application files are touched until SQL is ready.
-  for remote,local in NEW.items():
-   expected=BASE.get(remote)
-   if isinstance(expected,list):
-    current=read(ROOT+'/'+remote);actual=sha(current) if current is not None else None
-    expected=actual if actual in expected else None
-   atomic(ROOT+'/'+remote,Path(local).read_bytes(),expected)
+  if os.environ.get('GITHUB_EVENT_NAME')!='schedule':
+   mkdir(ROOT+'/noa-app');mkdir(ROOT+'/'+APP.rstrip('/'));mkdir(ROOT+'/noa-jukebox')
+   atomic(ROOT+'/noa-jukebox/.htaccess',Path('deploy/'+APP+'media.htaccess').read_bytes(),None)
+   # Install only new helpers; no existing application files are touched until SQL is ready.
+   for remote,local in NEW.items():
+    expected=BASE.get(remote)
+    if isinstance(expected,list):
+     current=read(ROOT+'/'+remote);actual=sha(current) if current is not None else None
+     expected=actual if actual in expected else None
+    atomic(ROOT+'/'+remote,Path(local).read_bytes(),expected)
   with s.open('/hosting/noastudio/noa-ai-lab/worker.key','rb') as keyfile:key=keyfile.read(256).decode().strip()
   if len(key)!=64:raise RuntimeError('invalid_private_service_key')
   def cli(action,payload=None):
@@ -109,20 +110,21 @@ def main():
   # SSH keepalive while acquisition happens on the worker, not on shared hosting.
   t.set_keepalive(20)
   # Exact known baseline plus private per-file backups protect simultaneous work.
-  parent='/hosting/noastudio/noa-deploy-backups';mkdir(parent,0o700)
-  backup=parent+'/jukebox-'+os.environ['GITHUB_RUN_ID'];mkdir(backup,0o700)
-  changes=[]
-  for remote,local in INTEGRATE.items():
-   current=read(ROOT+'/'+remote);new=Path(local).read_bytes()
-   if sha(current)==sha(new):continue
-   allowed=BASE[remote] if isinstance(BASE[remote],list) else [BASE[remote]]
-   if sha(current) not in allowed:raise RuntimeError('Integration changed; data saved but deployment paused: '+remote)
-   target=backup+'/'+remote.replace('/','_')
-   with s.open(target,'wx') as f:f.write(current)
-   s.chmod(target,0o600)
-   if sha(read(target))!=sha(current):raise RuntimeError('backup_checksum')
-   changes.append((remote,new,sha(current)))
-  for remote,new,previous in changes:atomic(ROOT+'/'+remote,new,previous)
+  if os.environ.get('GITHUB_EVENT_NAME')!='schedule':
+   parent='/hosting/noastudio/noa-deploy-backups';mkdir(parent,0o700)
+   backup=parent+'/jukebox-'+os.environ['GITHUB_RUN_ID'];mkdir(backup,0o700)
+   changes=[]
+   for remote,local in INTEGRATE.items():
+    current=read(ROOT+'/'+remote);new=Path(local).read_bytes()
+    if sha(current)==sha(new):continue
+    allowed=BASE[remote] if isinstance(BASE[remote],list) else [BASE[remote]]
+    if sha(current) not in allowed:raise RuntimeError('Integration changed; data saved but deployment paused: '+remote)
+    target=backup+'/'+remote.replace('/','_')
+    with s.open(target,'wx') as f:f.write(current)
+    s.chmod(target,0o600)
+    if sha(read(target))!=sha(current):raise RuntimeError('backup_checksum')
+    changes.append((remote,new,sha(current)))
+   for remote,new,previous in changes:atomic(ROOT+'/'+remote,new,previous)
   original_data=cli('integrity_snapshot')
   if os.environ.get('GITHUB_EVENT_NAME')!='schedule':cli('qa_setup')
   if pending['uploads'] and not shutil.which('ffmpeg'):
