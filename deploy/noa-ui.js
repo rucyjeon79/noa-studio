@@ -30,3 +30,70 @@ function settings(){const host=document.getElementById('noa-settings-controls');
 async function init(){shell();try{const r=await fetch('/noa-design.json',{cache:'no-cache'});if(!r.ok)throw Error();config=await r.json();try{const wordsResponse=await fetch('/noa-ui-words.json');if(wordsResponse.ok)Object.assign(words,await wordsResponse.json());}catch{}let local=null;try{local=JSON.parse(safeRead('noa-ui-selection')||'null')}catch{}apply(local&&config.themes.some(t=>t.id===local.theme)?{design:'ios',radius:'soft',...local,language}:{theme:config.defaultTheme,language,design:root.dataset.design||'ios',radius:root.dataset.radius||'soft'});settings();try{const response=await fetch('/noa-bridge/ui-preferences.php',{credentials:'same-origin'});if(!response.ok)throw Error();remote=await response.json();revision=remote.revision;if(!dirty&&remote.settings)apply({...remote.settings,theme:remote.defaults.enabled.includes(remote.settings.theme)?remote.settings.theme:remote.defaults.theme});else if(!dirty&&!local)apply({...state,theme:remote.defaults.theme});document.querySelectorAll('[data-noa-login]').forEach(a=>{a.href=remote.member?'/bbs/member_confirm.php?url=register_form.php':'/bbs/login.php';a.textContent=remote.member?remote.displayName:tr('로그인')});document.querySelectorAll('[data-noa-admin],[data-noa-lab]').forEach(a=>a.hidden=!remote.admin);settings();status(remote.member?'계정에 저장하면 웹과 앱의 동일 설정 화면에서 불러옵니다.':'비로그인 설정은 이 기기에 보관합니다.');}catch{status('서버 설정을 불러오지 못했습니다. 마지막 기기 설정을 유지합니다.');}}catch{status('디자인 설정을 불러오지 못했습니다. 기본 화면을 유지합니다.');}}
 window.addEventListener('storage',e=>{if(e.key==='noa-ui-selection'&&e.newValue){try{apply(JSON.parse(e.newValue));settings()}catch{}}});let markPending=false;new MutationObserver(()=>{if(markPending)return;markPending=true;queueMicrotask(()=>{markPending=false;markLabels()});}).observe(document.body||root,{childList:true,subtree:true,characterData:true});window.addEventListener('hashchange',()=>{document.querySelectorAll('.noa-menu,.noa-mobile-nav').forEach(nav=>nav.replaceChildren(...menu.map(navItem)));});window.NoaUI={translate:tr,apply,getState:()=>state};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+/* Count-aware card layout: presentation only. Keep nodes, handlers and source order intact. */
+(()=>{'use strict';
+if(/^\/noa-app\/(?:jukebox|taxonomy|database)(?:\/|$)/.test(location.pathname))return;
+function plan(count,capacity,featured=true){
+ const max=Math.max(1,Math.min(5,Math.floor(capacity))),n=Math.max(0,count);
+ let columns=Math.min(n||1,max);
+ if(n===10)columns=max>=5?5:max>=3?3:Math.min(2,max);
+ else if(n===9)columns=max>=3?3:Math.min(2,max);
+ else if(n===8)columns=max>=4?4:Math.min(2,max);
+ else if(n===7)columns=max>=4?4:Math.min(3,max);
+ else if(n===5)columns=max>=5?5:max>=3?3:Math.min(2,max);
+ else if(n===6)columns=max>=3?3:Math.min(2,max);
+ else if(n===4)columns=Math.min(2,max);
+ else if(n===3)columns=max>=3?3:1;
+ if(!featured&&columns===2&&n>2&&n%2===1)columns=1;
+ const hero=featured&&columns>1&&n>columns&&n%columns===1;
+ const remaining=n-(hero?1:0),rows=[];
+ if(remaining){
+  if(!hero&&columns>1&&remaining>columns&&remaining%columns===1){
+   const length=Math.ceil(remaining/columns),small=Math.floor(remaining/length),extra=remaining%length;
+   for(let i=0;i<length;i++)rows.push(small+(i<extra?1:0));
+  }else for(let left=remaining;left>0;left-=columns)rows.push(Math.min(columns,left));
+ }
+ return{columns,featured:hero,rows};
+}
+const specs=[
+ ['.noa-card-grid','.noa-music-card',true,168,136,5],
+ ['.world-mv-grid','.world-mv-card',true,216,216,4],
+ ['.yt-grid','.yt-card',true,216,216,4],
+ ['.noa-browse-grid','.noa-browse-card',false,164,136,5],
+ ['.noa-genres','.noa-genre',false,164,136,5],
+ ['.noa-world-grid','.noa-world-act',false,216,216,4],
+ ['.noa-workspace','a',false,144,132,5],
+ ['.noa-personal-grid','.noa-personal-card',false,144,132,4],
+ ['.catalog-grid','.catalog-card',false,216,216,4],
+ ['#youtube-playlists','p',false,180,136,4]
+];
+const hosts=new Map();let pending=false;
+function style(el,key,value){if(el.style.getPropertyValue(key)!==value)el.style.setProperty(key,value);}
+function arrange(host,spec){
+ const box=getComputedStyle(host),width=host.clientWidth-parseFloat(box.paddingLeft)-parseFloat(box.paddingRight);if(!width||host.hidden)return;
+ const cards=[...host.children].filter(e=>e.matches(spec[1])&&!e.hidden&&getComputedStyle(e).display!=='none');
+ if(!cards.length){host.classList.remove('noa-balanced');return;}
+ const gap=innerWidth<=600?12:16,min=innerWidth<=600?spec[4]:spec[3];
+ const capacity=Math.min(spec[5],Math.max(1,Math.floor((width+gap)/(min+gap))));
+ const layout=plan(cards.length,capacity,spec[2]),offset=host.id==='youtube-playlists'?1:0;
+ host.classList.add('noa-balanced');host.dataset.noaColumns=String(layout.columns);host.dataset.noaRows=[...(layout.featured?[1]:[]),...layout.rows].join('+');
+ style(host,'--noa-balance-columns',String(layout.columns*2));style(host,'--noa-balance-gap',gap+'px');
+ style(host,'--noa-card-width',((width-gap*(layout.columns-1))/layout.columns)+'px');
+ let i=0,row=1+offset;
+ for(const card of host.children)if(!cards.includes(card)&&card.classList.contains('noa-balanced-feature'))card.classList.remove('noa-balanced-feature');
+ if(layout.featured){const card=cards[i++];card.classList.add('noa-balanced-feature');style(card,'grid-column','1 / -1');style(card,'grid-row',String(row++));}
+ for(const size of layout.rows){const start=layout.columns-size+1;for(let col=0;col<size;col++){
+  const card=cards[i++];card.classList.remove('noa-balanced-feature');style(card,'grid-column',(start+col*2)+' / span 2');style(card,'grid-row',String(row));
+ }row++;}
+}
+function scan(){pending=false;for(const spec of specs)for(const host of document.querySelectorAll(spec[0])){
+ if(!hosts.has(host)){hosts.set(host,spec);resize.observe(host);}arrange(host,spec);
+ }for(const host of hosts.keys())if(!host.isConnected){resize.unobserve(host);hosts.delete(host);}}
+function schedule(){if(!pending){pending=true;requestAnimationFrame(scan);}}
+const resize=new ResizeObserver(schedule);
+new MutationObserver(records=>{if(records.some(r=>r.type==='childList'||r.attributeName==='hidden'||r.attributeName==='style'&&r.target.style.display!==r.target.dataset.noaDisplay)){
+ for(const r of records)if(r.attributeName==='style')r.target.dataset.noaDisplay=r.target.style.display;schedule();
+}}).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','style']});
+window.addEventListener('resize',schedule,{passive:true});window.addEventListener('noa-theme',schedule);
+window.NoaCardLayout={plan,refresh:schedule};schedule();
+})();

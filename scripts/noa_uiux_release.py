@@ -7,12 +7,8 @@ import paramiko
 from noa_deploy_guard import deployment_preflight
 ROOT='/hosting/noastudio/html'
 BASELINE='018335cb6242f0a352ac7e564bc063f018d5bb9e'
-PREVIOUS_UI='1dcc4ea8fe1bf53514a00674c5a54d3e12f9506e'
-FILES={
- 'noa-bridge/home-core.php':'bridge/home-core.php',
- 'noa-app/home.php':'deploy/noa-app/home.php',
- 'noa-app/world-view.php':'deploy/noa-app/world-view.php',
- **{p:'deploy/'+p for p in ['noa-browse.js','noa-hero.js','noa-home.js','noa-my.php','noa-ui.css','noa-ui.js','noa-world.css','noa-world.js','noa-youtube.css','noa-youtube.php']}}
+PREVIOUS_UI='6d8507db4fbfd230e184485bd709361b4f8058cd'
+FILES={p:'deploy/'+p for p in ['noa-ui.css','noa-ui.js']}
 PROTECTED=['index.php','common.php','config.php','data/dbconfig.php','head.php','tail.php','version.php','bbs/login.php','bbs/login_check.php','noa-music.php']+['noa-app/jukebox/'+p for p in ['index.php','upload-core.php','core.php','upload.php','upload.js','upload.css']]
 PROOF=Path('uiux-proof');STATE=PROOF/'release-state.json'
 def sha(b):return hashlib.sha256(b).hexdigest()
