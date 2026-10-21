@@ -146,3 +146,33 @@ window.addEventListener('resize',schedule,{passive:true});window.addEventListene
 document.documentElement.dataset.noaPrecision='true';
 window.NoaCardLayout={plan,presentTitle,movement,prepare,setMovement,refresh:schedule,debug(enabled){document.documentElement.toggleAttribute('data-noa-grid-debug',Boolean(enabled));}};schedule();
 })();
+/* Semi-Gloss Sculpted Glass: preserve action nodes, handlers, labels and permissions. */
+(()=>{'use strict';
+if(window.NoaGlass||/^\/noa-app\/(?:jukebox|taxonomy|database)(?:\/|$)/.test(location.pathname))return;
+const selector='.noa-button.primary,button[type="submit"].noa-button,.btn_submit,#noa-settings-save,#lab-text-submit,.lab-actions .lab-icon-button:not([aria-label="작업 취소"]),a.noa-button[href*="lab-file.php"][href*="download=1"],.lab-editor-link[href*="download=1"],.noa-transport .controls button,.sound-play,.sound-upload,.jukebox-download,.jukebox-busy,#noa-hero-toggle,#my-new,#my-add,#my-save,#my-play,#act-play,.noa-workspace>a[href="/noa-library.php"],.noa-workspace>a[href="/noa-ai-lab.php"]';
+const labels={previous:'이전',next:'다음',repeat:'반복',shuffle:'셔플','dock-more':'더보기'};
+function labelFor(el){
+ if(el.id==='pause-play')return el.getAttribute('aria-pressed')==='true'?'일시정지':'재생';
+ if(el.id==='noa-hero-toggle')return el.dataset.playing==='true'?'일시정지':'재생';
+ if(labels[el.id])return labels[el.id];
+ if(el.matches('.sound-play'))return '재생';if(el.matches('.sound-upload'))return '업로드';
+ if(el.matches('.jukebox-download'))return '다운로드';if(el.matches('.jukebox-busy'))return '처리 중';
+ if(el.matches('.lab-icon-button')){const text=el.getAttribute('aria-label')||'';return text.includes('재시도')?'재시도':text.includes('성과')?'성과':text.includes('연결')?'연결':text.includes('승인')||text.includes('검토')?'승인':text;}
+ return null;
+}
+function enhance(scope){
+ const nodes=[...(scope.matches?.(selector)?[scope]:[]),...scope.querySelectorAll(selector)];
+ for(const el of nodes){
+  el.classList.add('noa-glass-control');
+  const label=labelFor(el);if(label){const text=window.NoaUI?.translate(label)||label;if(el.dataset.noaGlassLabel!==text)el.dataset.noaGlassLabel=text;}
+ }
+}
+let pending=false;const queued=new Set();
+function refresh(scope=document.body){queued.add(scope);if(!pending){pending=true;requestAnimationFrame(()=>{pending=false;for(const node of queued)if(node.isConnected)enhance(node);queued.clear();});}}
+new MutationObserver(records=>{for(const r of records){if(r.type==='attributes'&&r.target.matches(selector))refresh(r.target);else if(r.type==='childList')for(const node of r.addedNodes)if(node.nodeType===1)refresh(node);}}).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['aria-pressed','aria-label','aria-expanded']});
+// aria-disabled custom controls are inert without replacing their existing action callbacks.
+function blockDisabled(e){if(e.type==='keydown'&&!['Enter',' '].includes(e.key))return;const el=e.target.closest?.('.noa-glass-control[aria-disabled="true"]');if(el){e.preventDefault();e.stopImmediatePropagation();}}
+document.addEventListener('click',blockDisabled,true);document.addEventListener('keydown',blockDisabled,true);
+window.addEventListener('noa-theme',()=>refresh());document.documentElement.dataset.noaGlass='true';
+window.NoaGlass={refresh};refresh();
+})();

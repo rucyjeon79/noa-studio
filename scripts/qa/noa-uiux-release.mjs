@@ -92,6 +92,7 @@ try{
  const {verifyCardBalance}=await import('file://'+path.join(root,'scripts/qa/noa-card-balance.mjs'));
  await verifyCardBalance({context,phase,base,out,report});
  await verifyPrecisionFlow({context,phase,base,out,report});
+ const {verifyGlass}=await import('file://'+path.join(root,'scripts/qa/noa-glass.mjs'));await verifyGlass({context,phase,base,out,report,auditPrecision});
  // Native media is checked on the candidate too, before any deployment.
  const mediaPage=await context.newPage();await mediaPage.emulateMedia({reducedMotion:'no-preference'});await mediaPage.goto(base+'/',{waitUntil:'domcontentloaded'});
  let manualFallback=false;
