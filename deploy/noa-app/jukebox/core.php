@@ -22,6 +22,14 @@ function nj_catalog(PDO $db,bool $qa=false):array{
  try{foreach($db->query("SELECT s.song_id,s.identity_json,s.genre_id,s.ep,v.fields_json,v.public_verified FROM noa_catalog_songs s JOIN noa_catalog_versions v ON v.entity_id=s.song_id AND v.entity_type='song' WHERE v.batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)") as $r){$item=noa_sound_recovered($r,true);if($item){$key=$item['key'];$out[$key]=nj_document($db,$key);}}}catch(PDOException $e){error_log('[jukebox-catalog] recovery unavailable');}
  return $out;
 }
+function nj_taxonomy(PDO $db,string $key,array $doc):array{
+ $out=['catalogId'=>$doc['_catalog_id']??null,'category1'=>[],'category2'=>[],'categoryIds'=>[]];
+ $file=dirname(__DIR__,2).'/noa-bridge/taxonomy-store.php';if(!is_file($file)||($doc['_kind']??'')==='jukebox_qa')return $out;
+ try{require_once $file;$row=nt_annotate_records($db,[['key'=>$key,'kind'=>$doc['_kind'],'catalogId'=>$out['catalogId']]])[0];$out['catalogId']=$row['catalogSongId'];$out['categoryIds']=$row['categories'];$map=array_column(nt_categories($db),null,'category_id');$levels=[[],[]];
+  foreach($row['categories'] as $id){$chain=[];for($n=0;$n<16&&isset($map[$id]);$n++){$chain[]=$map[$id];$id=$map[$id]['parent_id'];if($id===null)break;}$chain=array_reverse($chain);foreach([0,1] as $i)if(isset($chain[$i]))$levels[$i][$chain[$i]['category_id']]=['id'=>$chain[$i]['category_id'],'name'=>$chain[$i]['name']];}
+  $out['category1']=array_values($levels[0]);$out['category2']=array_values($levels[1]);
+ }catch(PDOException $e){error_log('[jukebox-taxonomy] read unavailable');}return $out;
+}
 function nj_file(string $relative):?string{
  if($relative===''||str_contains($relative,"\0")||str_contains($relative,'\\')||str_starts_with($relative,'/')||preg_match('~(?:^|/)\.{1,2}(?:/|$)~',$relative))return null;
  foreach([nj_private().'/media',nj_root()] as $base){$root=realpath($base);$path=realpath($base.'/'.$relative);
@@ -70,7 +78,13 @@ function nj_import(PDO $db,array $r,bool $replace=false,?string $expected=null):
  $key=(string)($r['song_key']??'');$doc=nj_document($db,$key);
  if(!$doc)throw new DomainException('unknown_song');
  $source=noa_sound_suno($doc['body']??[]);if(!hash_equals($source,(string)$r['source_url']))throw new DomainException('source_changed');
- $old=nj_find($db,$key);$new=['song_key'=>$key,'source_url'=>$source,'suno_id'=>(string)($r['suno_id']??''),'suno_title'=>$r['suno_title']??null,'genre'=>$doc['genreId']??'','ep'=>$doc['ep']??'','title'=>$doc['title']??'', 'status'=>'audio_pending'];
+ $old=nj_find($db,$key);
+ if(!$replace&&!empty($r['cover_path'])&&$old&&$old['source_url']===$source&&nj_verified($old,'audio')){
+  $cover=nj_file((string)$r['cover_path']);$audio=nj_file($old['audio_path']);$target=dirname($audio).'/cover.webp';
+  if(!$cover)throw new DomainException('cover_source_missing');if(!is_file($target)){if(!copy($cover,$target))throw new RuntimeException('cover_copy_failed');chmod($target,0600);}
+  if(!hash_equals((string)$r['cover_sha256'],hash_file('sha256',$target)))throw new DomainException('cover_copy_conflict');$r['cover_path']=dirname($old['audio_path']).'/cover.webp';
+ }
+ $new=['song_key'=>$key,'source_url'=>$source,'suno_id'=>(string)($r['suno_id']??''),'suno_title'=>$r['suno_title']??null,'genre'=>$doc['genreId']??'','ep'=>$doc['ep']??'','title'=>(($doc['body']['confirmedTitle']??'')?:($doc['title']??'')), 'status'=>'audio_pending'];
  foreach(['cover','audio'] as $type){
   if(empty($r[$type.'_path']))continue;
   $candidate=$r;if($type==='audio')$candidate['status']='ready';

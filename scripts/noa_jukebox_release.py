@@ -86,13 +86,15 @@ def main():
   for remote,local in INTEGRATE.items():
    current=read(ROOT+'/'+remote);new=Path(local).read_bytes()
    if sha(current)==sha(new):continue
-   if sha(current)!=BASE[remote]:raise RuntimeError('Integration changed; data saved but deployment paused: '+remote)
+   allowed=BASE[remote] if isinstance(BASE[remote],list) else [BASE[remote]]
+   if sha(current) not in allowed:raise RuntimeError('Integration changed; data saved but deployment paused: '+remote)
    target=backup+'/'+remote.replace('/','_')
    with s.open(target,'wx') as f:f.write(current)
    s.chmod(target,0o600)
    if sha(read(target))!=sha(current):raise RuntimeError('backup_checksum')
-   changes.append((remote,new))
-  for remote,new in changes:atomic(ROOT+'/'+remote,new,BASE[remote])
+   changes.append((remote,new,sha(current)))
+  for remote,new,previous in changes:atomic(ROOT+'/'+remote,new,previous)
+  original_data=cli('integrity_snapshot')
   if os.environ.get('GITHUB_EVENT_NAME')!='schedule':cli('qa_setup')
   if pending['uploads'] and not shutil.which('ffmpeg'):
    subprocess.run(['sudo','apt-get','update','-qq'],check=True)
@@ -137,7 +139,7 @@ def main():
   result={'catalog_song_records':catalog.get('catalog_song_records'),'database_music_records':catalog['database_music_records'],'total_suno_urls':len(catalog['items']),
           'cover_files':audit['covers'],'audio_files':audit['audio'],'audio_bytes':audit['audio_bytes'],
           'source_audits':sum('audio_discovery' in r for r in results),'cover_pending':len(catalog['items'])-audit['covers'],'audio_pending':len(catalog['items'])-audit['audio'],'sql_saved':sql['saved'],'files_uploaded':saved,'audit':audit,'deployed':list(NEW)+list(INTEGRATE),
-          'source_commit':os.environ['GITHUB_SHA'],'uploads':uploads,'existing_documents_modified':False,'audio_playback_verified':False}
+          'source_commit':os.environ['GITHUB_SHA'],'uploads':uploads,'integrity_before':original_data,'integrity_after':cli('integrity_snapshot'),'existing_documents_modified':False,'audio_playback_verified':False}
   cli('finish',json.dumps({'ids':claimed}).encode())
   (work/'summary.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print('JUKEBOX_PRODUCTION_RESULT '+json.dumps(result),flush=True)
  finally:s.close();t.close()

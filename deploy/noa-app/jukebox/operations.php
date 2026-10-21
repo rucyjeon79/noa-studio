@@ -9,7 +9,7 @@ function nj_operation(PDO $db,string $action,array $input=[]):array{
   foreach($db->query("SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key") as $r){
    $all++;$p=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);$b=$p['body']??[];$url=noa_sound_suno($b);if(!$url)continue;
    $a=$saved[$r['doc_key']]??null;$cached=$a&&$a['source_url']===$url&&$a['suno_id']&&$a['suno_title']&&nj_verified($a,'cover')?array_intersect_key($a,array_flip(['suno_id','suno_title','cover_path','cover_bytes','cover_sha256'])):null;
-   $items[]=['existing_cover'=>$cached,'key'=>$r['doc_key'],'title'=>(($b['confirmedTitle']??'')?:($p['title']??'')),'genre'=>$p['genreId']??'unclassified','ep'=>$p['ep']??'','sunoUrl'=>$url,'originalArtist'=>$b['originalArtist']??$b['originalSinger']??''];
+   $context=json_decode($a['catalog_context']??'{}',true);$items[]=['existing_cover'=>$cached,'key'=>$r['doc_key'],'title'=>(($b['confirmedTitle']??'')?:($p['title']??'')),'genre'=>$p['genreId']??'unclassified','ep'=>$p['ep']??'','sunoUrl'=>$url,'originalArtist'=>(($b['originalArtist']??$b['originalSinger']??'')?:($context['originalArtist']??''))];
   }
   $count=null;try{$count=(int)$db->query('SELECT COUNT(*) FROM noa_catalog_songs')->fetchColumn();}catch(PDOException $e){}
   return ['catalog_song_records'=>$count,'database_music_records'=>$all,'total_suno_urls'=>count($items),'items'=>$items];
@@ -23,7 +23,12 @@ function nj_operation(PDO $db,string $action,array $input=[]):array{
  if($action==='audit'){
   $rows=nj_assets($db);$out=['assets'=>count($rows),'covers'=>0,'audio'=>0,'audio_bytes'=>0,'invalid'=>[]];
   $out['qa_assets']=0;foreach($rows as $key=>$r){if(str_starts_with($key,'jukebox:qa:')){$out['qa_assets']++;$out['assets']--;continue;}foreach(['cover','audio'] as $type){if(nj_verified($r,$type)){$out[$type==='cover'?'covers':'audio']++;if($type==='audio')$out['audio_bytes']+=(int)$r['audio_bytes'];}elseif(!empty($r[$type.'_path']))$out['invalid'][]=['key'=>$key,'type'=>$type];}}
-  return $out;
+  $out['qa_results']=[];foreach($rows as $key=>$r)if(str_starts_with($key,'jukebox:qa:'))$out['qa_results'][]=['key'=>$key,'ready'=>nj_verified($r,'audio'),'cover'=>nj_verified($r,'cover'),'audio_path'=>$r['audio_path'],'cover_path'=>$r['cover_path'],'sha256'=>$r['audio_sha256'],'bytes'=>(int)$r['audio_bytes'],'source'=>json_decode($r['source_analysis']??'null',true),'correction'=>json_decode($r['correction']??'null',true),'final'=>json_decode($r['final_analysis']??'null',true)];
+  $out['download_logs']=(int)$db->query('SELECT COUNT(*) FROM noa_jukebox_downloads')->fetchColumn();$out['temporary_inputs']=count(glob(nj_private().'/incoming/*/input.audio'));return $out;
+ }
+ if($action==='integrity_snapshot'){
+  $h=hash_init('sha256');$n=0;foreach($db->query("SELECT doc_key,kind,payload,revision,updated_by FROM noa_documents WHERE kind<>'jukebox_qa' ORDER BY doc_key") as $r){hash_update($h,json_encode(array_values($r),JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR));$n++;}
+  global $g5;$table=$g5['member_table']??'';$members=preg_match('/^[A-Za-z0-9_]+$/D',$table)?(int)$db->query('SELECT COUNT(*) FROM `'.$table.'`')->fetchColumn():null;return ['documents'=>$n,'documents_sha256'=>hash_final($h),'members'=>$members];
  }
  if($action==='jobs'){
   nj_schema($db);$db->exec("UPDATE noa_jukebox_jobs SET status='queued' WHERE status='running' AND created_at<CURRENT_TIMESTAMP()-INTERVAL 3 HOUR");

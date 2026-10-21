@@ -27,6 +27,7 @@ function nu_initialize(PDO $db,array $b,string $actor):array{
  if(strlen($artist)>500||(($doc['genreId']??'')==='cover-reborn'&&$artist===''))throw new InvalidArgumentException('cover_original_artist_required');
  $asset=nj_find($db,$key);$context=['originalArtist'=>$artist,'title'=>(($doc['body']['confirmedTitle']??'')?:($doc['title']??'')),'genre'=>$doc['genreId']??'unclassified','ep'=>$doc['ep']??'','act'=>$doc['act']??'',
   'suno_id'=>$asset['suno_id']??'','suno_title'=>$asset['suno_title']??'','catalogId'=>$doc['_catalog_id']??null,'authorization'=>'administrator_owned_upload','confirmed_by'=>$actor];
+ $context=array_merge($context,nj_taxonomy($db,$key,$doc));if(empty($context['act'])&&!empty($context['ep']))$context['act']=(string)ceil((int)$context['ep']/10);
  if(!$db->query("SELECT GET_LOCK('noa_jukebox_upload_quota',5)")->fetchColumn())throw new DomainException('upload_busy_retry');
  try{
   $q=$db->prepare("SELECT * FROM noa_jukebox_uploads WHERE song_key=? AND status IN ('uploading','analyzing','processing') ORDER BY sequence DESC LIMIT 1");$q->execute([$key]);$active=$q->fetch(PDO::FETCH_ASSOC);

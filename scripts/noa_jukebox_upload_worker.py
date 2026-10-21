@@ -59,7 +59,7 @@ def process_uploads(sftp,call,mkdir):
                         'audio_path':relative.as_posix(),'audio_bytes':output.stat().st_size,'audio_sha256':digest,
                         'source_analysis':before,'correction':settings,'final_analysis':after,'errors':[],
                         'audio_discovery':{'permission':'administrator_owned_upload','download_authorized':True,'provenance':'administrator_upload','upload_id':job['id']},
-                        'catalog_context':{'originalArtist':context.get('originalArtist',''),'act':context.get('act',''),'catalogId':context.get('catalogId')}}
+                        'catalog_context':{k:context.get(k) for k in ['originalArtist','act','catalogId','category1','category2','categoryIds']}}
                 committed=call('upload_commit',auth|{'result':result})
                 results.append({'key':job['key'],'ready':committed['ready'],'sha256':digest,'input_removed':committed['input_removed']})
         except Exception as error:
