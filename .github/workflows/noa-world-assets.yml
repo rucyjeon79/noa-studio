@@ -1,0 +1,49 @@
+name: NOA original character portrait correction
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-world-assets.yml']
+permissions:
+  contents: read
+concurrency:
+  group: noa-dothome-production
+  cancel-in-progress: false
+jobs:
+  original_portraits:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Check original-only portrait display
+        run: |
+          php -l deploy/noa-world.php
+          php tests/catalog/world_test.php
+          node --check scripts/qa/noa-world-portraits.mjs
+          python3 -m pip install --user paramiko==3.5.1
+      - name: Apply only reviewed world HTML and CSS
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ vars.NOA_SSH_HOST_FINGERPRINT || 'SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU' }}
+          NOA_SSH_ROOT: ${{ vars.NOA_FTP_ROOT }}
+        run: |
+          PYTHONPATH=scripts python3 - <<'PY'
+          import noa_sftp_deploy as d
+          d.FILES={'deploy/noa-world.php':'noa-world.php','deploy/noa-world.css':'noa-world.css'}
+          d.UPGRADE_FROM.update({'noa-world.php':'049d7f41eefcabc847822ee1f794ad8663e931fcc8a05ec60c88c0d06c4479da','noa-world.css':'49fc6e21ad21f58ef278d18537cee9c5a43e2e6172fe558fe36398c00714f6ee'})
+          d.main()
+          PY
+      - name: Verify source sheet crops and screenshots on production
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-world" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-world/node_modules/.bin/playwright" install --with-deps chromium
+          cp scripts/qa/noa-world-portraits.mjs "$RUNNER_TEMP/noa-world/check.mjs"
+          node "$RUNNER_TEMP/noa-world/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-world-original-portraits
+          path: world-results/
+          retention-days: 14
