@@ -1,5 +1,5 @@
 name: NOA UIUX visual gates and scoped production release
-# Validate H264 in Google Chrome and await the selected MV frame identity.
+# Record exact Chrome click targets before any production changes.
 on:
   pull_request:
     branches: [main]
