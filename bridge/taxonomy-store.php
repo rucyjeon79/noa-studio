@@ -63,21 +63,24 @@ function nt_sync(PDO $db,string $actor='automation'):array{
   $manual=$db->query("SELECT * FROM noa_content_categories WHERE source='manual' ORDER BY content_type,content_id,category_id")->fetchAll(PDO::FETCH_ASSOC);$matches=$db->query("SELECT * FROM noa_content_matches WHERE source='manual' ORDER BY video_id")->fetchAll(PDO::FETCH_ASSOC);
   $input=hash('sha256',nt_json([$run['run_id'],ny_batch($db),$songs,$videos,$playlists,$membership,$rules,$categories,$manual,$matches]));
   $q=$db->prepare('SELECT result FROM noa_classification_runs WHERE input_hash=?');$q->execute([$input]);if($old=$q->fetchColumn())return json_decode($old,true,512,JSON_THROW_ON_ERROR)+['replayed'=>true];
-  $db->beginTransaction();$counts=['collected'=>count($videos),'songs'=>count($songs),'playlists'=>count($playlists),'classified'=>0,'autoMatched'=>0,'preservedMatches'=>0,'review'=>0,'unclassified'=>0,'errors'=>0,'at'=>gmdate('c'),'runId'=>$run['run_id'],'inputHash'=>$input];
+  $db->beginTransaction();$counts=['autoPlaylistMatched'=>0,'playlistReview'=>0,'collected'=>count($videos),'songs'=>count($songs),'playlists'=>count($playlists),'classified'=>0,'autoMatched'=>0,'preservedMatches'=>0,'review'=>0,'unclassified'=>0,'errors'=>0,'at'=>gmdate('c'),'runId'=>$run['run_id'],'inputHash'=>$input];
   foreach($songs as $id=>$song){$c=nt_classify([], $song,[],$rules);nt_write_relation($db,'song',$id,$c,$actor,$input);}
   $manualBy=[];foreach($manual as $r)if($r['active'])$manualBy[$r['content_type'].':'.$r['content_id']][]=$r['category_id'];
-  foreach($playlists as $id=>$p){$c=nt_classify([],null,[$p],$rules);nt_write_relation($db,'playlist',$id,$c,$actor,$input);nt_log($db,$input,'playlist',$id,$c['status'],$c,$actor);}
+  $catalogLists=nt_catalog_playlists($db);foreach($catalogLists as $cid=>$catalogList)nt_write_relation($db,'playlist',$cid,nt_classify([],['genre_id'=>$catalogList['genre_id']],[],$rules),$actor,$input);
+  foreach($playlists as $id=>$p){$pm=nt_store_playlist_match($db,'playlist',$id,nt_match_playlist($p,$catalogLists));if($pm['status']==='confirmed')$counts['autoPlaylistMatched']++;if($pm['status']==='review')$counts['playlistReview']++;nt_log($db,$input,'playlist',$id,'playlist_matching',$pm,$actor);$c=nt_classify([],null,[$p],$rules);nt_write_relation($db,'playlist',$id,$c,$actor,$input);nt_log($db,$input,'playlist',$id,$c['status'],$c,$actor);}
   foreach($videos as $id=>$v){
+   $pm=nt_store_playlist_match($db,'video',$id,nt_match_playlist($v,$catalogLists));if($pm['status']==='confirmed')$counts['autoPlaylistMatched']++;if($pm['status']==='review')$counts['playlistReview']++;
    $sid=$v['match']['songId']??null;$c=nt_classify($v,$songs[$sid??'']??null,array_values($membership[$id]??[]),$rules);
+   if($sid&&isset($manualBy['song:'.$sid]))$c=['status'=>'classified','categories'=>$manualBy['song:'.$sid],'evidence'=>[['kind'=>'administrator_song']]];
    if(isset($manualBy['video:'.$id]))$c=['status'=>'classified','categories'=>$manualBy['video:'.$id],'evidence'=>[['kind'=>'administrator']]];
-   $m=nt_match($v,$songs,$c);$q=$db->prepare('SELECT * FROM noa_content_matches WHERE video_id=? FOR UPDATE');$q->execute([$id]);$previous=$q->fetch(PDO::FETCH_ASSOC);
+   $m=nt_match($v,$songs,$c);if($c['status']==='unclassified'&&!empty($pm['playlistId'])&&isset($catalogLists[$pm['playlistId']]))$c=nt_classify($v,['genre_id'=>$catalogLists[$pm['playlistId']]['genre_id']],array_values($membership[$id]??[]),$rules);$q=$db->prepare('SELECT * FROM noa_content_matches WHERE video_id=? FOR UPDATE');$q->execute([$id]);$previous=$q->fetch(PDO::FETCH_ASSOC);
    if($previous&&in_array($previous['status'],['confirmed','manual'],true)){
     if(!empty($m['songId'])&&$m['songId']!==$previous['song_id']){$m=['status'=>'review','songId'=>$previous['song_id'],'reason'=>'existing_confirmed_conflict','proposedSongId'=>$m['songId']];}else{$m=['status'=>'preserved','songId'=>$previous['song_id'],'reason'=>'existing_confirmed_link'];}
    }elseif($m['status']==='confirmed'){$q=$db->prepare("INSERT INTO noa_content_matches(video_id,song_id,status,source,evidence,updated_by) VALUES(?,?,'confirmed','auto',?,?) ON DUPLICATE KEY UPDATE song_id=VALUES(song_id),status='confirmed',source='auto',evidence=VALUES(evidence),revision=revision+1,updated_by=VALUES(updated_by)");$q->execute([$id,$m['songId'],nt_json($m),$actor]);$counts['autoMatched']++;}
    if($m['status']==='preserved')$counts['preservedMatches']++;
    if(!empty($m['songId'])&&isset($songs[$m['songId']])&&$c['status']==='unclassified')$c=nt_classify($v,$songs[$m['songId']],array_values($membership[$id]??[]),$rules);
    nt_write_relation($db,'video',$id,$c,$actor,$input);$counts[$c['status']==='classified'?'classified':($c['status']==='review'?'review':'unclassified')]++;if($m['status']==='review'&&$c['status']!=='review')$counts['review']++;
-   nt_log($db,$input,'video',$id,($c['status']==='review'||$m['status']==='review')?'review':'processed',['classification'=>$c,'matching'=>$m],$actor);
+   nt_log($db,$input,'video',$id,($c['status']==='review'||$m['status']==='review')?'review':'processed',['classification'=>$c,'matching'=>$m,'playlistMatching'=>$pm],$actor);
   }
   $q=$db->prepare('INSERT INTO noa_classification_runs(input_hash,collection_id,catalog_batch,result) VALUES(?,?,?,?)');$q->execute([$input,$run['run_id'],ny_batch($db),nt_json($counts)]);$db->commit();return $counts+['replayed'=>false];
  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}finally{$db->query("SELECT RELEASE_LOCK('noa_taxonomy_writer')");}
@@ -101,4 +104,12 @@ function nt_public_data(PDO $db):array{
  if(!nt_ready($db))return ['ok'=>true,'installed'=>false,'categories'=>[],'videos'=>[]];$run=ny_latest($db);$songs=ny_songs($db,ny_batch($db));$videos=$run?ny_videos($db,$run):[];$out=[];
  foreach($videos as $id=>$v){if(($v['snippet']['channelId']??'')!==NT_CHANNEL||($v['status']['privacyStatus']??'')!=='public'||empty($v['status']['embeddable']))continue;$sid=$v['match']['songId']??null;$s=$songs[$sid??'']??null;$out[]=['id'=>$id,'title'=>(string)($v['snippet']['title']??''),'categories'=>$v['sqlCategories']??[],'songId'=>$s?$sid:null,'matched'=>!empty($sid),'genre'=>$s['genre_id']??'unclassified','language'=>$s['language']??nt_language((string)($v['snippet']['title']??'')),'version'=>$s['version_name']??null,'ep'=>$s['ep']??nt_ep((string)($v['snippet']['title']??'')),'act'=>!empty($s['ep'])?(int)ceil((int)$s['ep']/10):null,'thumbnail'=>'/noa-bridge/youtube-thumbnail.php?id='.$id,'href'=>'/noa-youtube.php?track='.rawurlencode($id).'&play=1'];}
  return ['ok'=>true,'installed'=>true,'categories'=>array_values(array_filter(nt_categories($db),fn($c)=>(bool)$c['enabled'])),'videos'=>$out];
+}
+
+function nt_catalog_playlists(PDO $db):array{
+ $q=$db->prepare("SELECT p.*,a.genre_id,a.act_number FROM noa_catalog_playlists p JOIN noa_catalog_acts a ON a.act_id=p.playlist_id JOIN noa_catalog_versions v ON v.entity_id=p.playlist_id AND v.entity_type='playlist' WHERE v.batch_id=? AND p.owner_id IS NULL");$q->execute([ny_batch($db)]);return array_column($q->fetchAll(PDO::FETCH_ASSOC),null,'playlist_id');
+}
+function nt_store_playlist_match(PDO $db,string $type,string $id,array $match):array{
+ $q=$db->prepare('SELECT * FROM noa_playlist_matches WHERE content_type=? AND content_id=? FOR UPDATE');$q->execute([$type,$id]);$old=$q->fetch(PDO::FETCH_ASSOC);if($old){if(!empty($match['playlistId'])&&$old['catalog_playlist_id']!==$match['playlistId'])return ['status'=>'review','reason'=>'existing_playlist_conflict','playlistId'=>$old['catalog_playlist_id'],'proposed'=>$match['playlistId']];return ['status'=>'preserved','playlistId'=>$old['catalog_playlist_id']];}
+ if($match['status']==='confirmed'){$q=$db->prepare("INSERT INTO noa_playlist_matches(content_type,content_id,catalog_playlist_id,status,source,evidence) VALUES(?,?,?,'confirmed','auto',?)");$q->execute([$type,$id,$match['playlistId'],nt_json($match)]);}return $match;
 }

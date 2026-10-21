@@ -9,7 +9,7 @@ try{
  if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||strlen($raw)>16384||!ctype_digit($ts)||abs(time()-(int)$ts)>180||!preg_match('/^[a-f0-9]{32}$/D',$nonce))lab_json(401,['error'=>'service_auth_required']);
  $key=trim((string)file_get_contents(lab_root().'/worker.key'));$signed="NOA-TAXONOMY-1\nPOST\n".hash('sha256',$raw)."\n".$ts."\n".$nonce;if(strlen($key)!==64||!hash_equals(hash_hmac('sha256',$signed,$key),$sig))lab_json(401,['error'=>'service_auth_required']);
  $path=lab_root().'/taxonomy-nonce-'.$nonce;$f=@fopen($path,'x');if(!$f)lab_json(409,['error'=>'replayed_request']);chmod($path,0600);fwrite($f,$ts);fclose($f);foreach(glob(lab_root().'/taxonomy-nonce-*')as $p)if(filemtime($p)<time()-600&&!is_link($p))unlink($p);
- $b=json_decode($raw,true,512,JSON_THROW_ON_ERROR);$db=noa_bridge_pdo();$action=$b['action']??'';
+ set_time_limit(120);$b=json_decode($raw,true,512,JSON_THROW_ON_ERROR);$db=noa_bridge_pdo();$action=$b['action']??'';
  if($action==='inspect')lab_json(200,['ok'=>true,'inventory'=>nt_inventory($db),'legacyGuard'=>nt_legacy_guard($db)]);
  if($action==='backup'){
   require_once dirname(__DIR__).'/noa-app/database/core.php';$guard=nt_legacy_guard($db);$m=nd_backup(nd_db(),null);$receipt=['sha256'=>$m['sha256'],'id'=>$m['id'],'guard'=>$guard,'at'=>time()];$path=lab_root().'/taxonomy-backup-receipt.json';$tmp=tempnam(lab_root(),'.taxonomy-');chmod($tmp,0600);file_put_contents($tmp,nt_json($receipt));rename($tmp,$path);lab_json(200,['ok'=>true,'backup'=>['id'=>$m['id'],'sha256'=>$m['sha256'],'bytes'=>$m['bytes'],'tables'=>$m['tables']],'inventory'=>nt_inventory($db)]);

@@ -36,6 +36,12 @@ jobs:
         run: python3 scripts/noa_verify_private_backup.py
       - name: Validate migration against real collected data and unchanged originals
         run: php tests/taxonomy/mysql_test.php
+      - name: Verify responsive administration without production mutations
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-taxonomy" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-taxonomy/node_modules/.bin/playwright" install --with-deps chrome
+          cp scripts/qa/noa-taxonomy.mjs "$RUNNER_TEMP/noa-taxonomy/check.mjs"
+          node "$RUNNER_TEMP/noa-taxonomy/check.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -43,4 +49,6 @@ jobs:
           path: |
             quality-taxonomy/report.json
             quality-taxonomy/public.json
+            quality-taxonomy/ui-report.json
+            quality-taxonomy/admin-*.jpg
           retention-days: 14
