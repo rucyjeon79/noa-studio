@@ -1,5 +1,5 @@
 name: NOA UIUX visual gates and scoped production release
-# Record exact Chrome click targets before any production changes.
+# Verify a loaded player document before the next user MV selection.
 on:
   pull_request:
     branches: [main]
