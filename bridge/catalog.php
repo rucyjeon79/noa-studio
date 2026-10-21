@@ -38,7 +38,7 @@ try{
  try{
   $recovered=$db->query("SELECT s.song_id,s.identity_json,s.genre_id,s.ep,v.fields_json,v.public_verified FROM noa_catalog_songs s JOIN noa_catalog_versions v ON v.entity_id=s.song_id AND v.entity_type='song' WHERE v.batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)");
   $seen=array_fill_keys(array_column($items,'youtubeId'),true);
-  foreach($recovered as $row){$item=noa_sound_recovered($row,$admin);if($item&&!isset($seen[$item['youtubeId']])){$items[]=$item;$seen[$item['youtubeId']]=true;}}
+  foreach($recovered as $row){$item=noa_sound_recovered($row,$admin);if($item&&!isset($seen[$item['youtubeId']])){$local=nj_resolve($jukebox,$item['key'],$item['sunoUrl'],'audio');$cover=nj_resolve($jukebox,$item['key'],$item['sunoUrl'],'cover');if($local){$item['audioUrl']=$local;$item['audioVerified']=true;}if($cover){$item['coverImageUrl']=$cover;$item['thumbnail']=$cover;}$items[]=$item;$seen[$item['youtubeId']]=true;}}
  }catch(PDOException $e){error_log('[noa-catalog-recovery-read] unavailable');}
  echo json_encode(['brand'=>'NOA STUDIO','access'=>$admin?'administrator':'public','items'=>$items],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
 }catch(Throwable $e){http_response_code(503);echo json_encode(['error'=>'목록을 불러오지 못했습니다.']);error_log('[noa-catalog] '.get_class($e));}

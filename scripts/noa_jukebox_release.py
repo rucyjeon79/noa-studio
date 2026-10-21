@@ -1,13 +1,14 @@
 """Pinned SSH: additive jukebox files, bounded public cover acquisition, SQL import.
 Never executes arbitrary submitted commands or updates legacy music documents.
 """
-import base64, hashlib, hmac, json, os, secrets, time, stat, subprocess, sys, urllib.request, urllib.error
+import base64, hashlib, hmac, json, os, secrets, time, stat, subprocess, sys, shutil, urllib.request, urllib.error
 from pathlib import Path
 import paramiko
 import noa_jukebox_owned as owned
+from noa_jukebox_upload_worker import process_uploads
 ROOT='/hosting/noastudio/html'
 APP='noa-app/jukebox/'
-NEW={APP+n:'deploy/'+APP+n for n in ['core.php','cli.php','stream.php','index.php','operations.php','service.php']}
+NEW={APP+n:'deploy/'+APP+n for n in ['core.php','cli.php','stream.php','index.php','operations.php','service.php','upload-core.php','upload.php','download.php','upload.js','upload.css','mobile-check.php']}
 INTEGRATE={'noa-bridge/catalog.php':'bridge/catalog.php','noa-music.php':'deploy/noa-music.php'}
 BASE=json.loads(Path('scripts/noa_jukebox_baseline.json').read_text())
 
@@ -70,7 +71,8 @@ def main():
    if result.get('errors'):raise RuntimeError('import_validation_failed:'+json.dumps(result['errors']))
    return result
   work=Path('jukebox-proof');work.mkdir(exist_ok=True)
-  if os.environ.get('GITHUB_EVENT_NAME')=='schedule' and not cli('jobs')['queued']:
+  pending=cli('jobs')
+  if os.environ.get('GITHUB_EVENT_NAME')=='schedule' and not pending['queued'] and not pending['uploads']:
    (work/'summary.json').write_text(json.dumps({'idle':True,'queued':0}));print('JUKEBOX_IDLE');return
   claimed=cli('claim')['ids']
   catalog=cli('export');(work/'catalog-private.json').write_text(json.dumps(catalog,ensure_ascii=False))
@@ -84,21 +86,29 @@ def main():
   for remote,local in INTEGRATE.items():
    current=read(ROOT+'/'+remote);new=Path(local).read_bytes()
    if sha(current)==sha(new):continue
-   if sha(current)!=BASE[remote]:raise RuntimeError('Integration changed; data saved but deployment paused: '+remote)
+   allowed=BASE[remote] if isinstance(BASE[remote],list) else [BASE[remote]]
+   if sha(current) not in allowed:raise RuntimeError('Integration changed; data saved but deployment paused: '+remote)
    target=backup+'/'+remote.replace('/','_')
    with s.open(target,'wx') as f:f.write(current)
    s.chmod(target,0o600)
    if sha(read(target))!=sha(current):raise RuntimeError('backup_checksum')
-   changes.append((remote,new))
-  for remote,new in changes:atomic(ROOT+'/'+remote,new,BASE[remote])
+   changes.append((remote,new,sha(current)))
+  for remote,new,previous in changes:atomic(ROOT+'/'+remote,new,previous)
+  original_data=cli('integrity_snapshot')
+  if os.environ.get('GITHUB_EVENT_NAME')!='schedule':cli('qa_setup')
+  if pending['uploads'] and not shutil.which('ffmpeg'):
+   subprocess.run(['sudo','apt-get','update','-qq'],check=True)
+   subprocess.run(['sudo','apt-get','install','-y','ffmpeg'],check=True)
+  uploads=process_uploads(s,lambda action,payload=None:cli(action,json.dumps(payload,ensure_ascii=False).encode() if payload else None),mkdir)
+  print('JUKEBOX_UPLOAD_RESULT '+json.dumps(uploads),flush=True)
   results=[];saved=0;sql_saved=0
-  for offset in range(0,len(catalog['items']),25):
+  for offset in (range(0,len(catalog['items']),25) if claimed else []):
    inputs,owned_folder=owned.stage(s,catalog['items'][offset:offset+25],work)
    source_map=work/'owned-private.json';source_map.write_text(json.dumps(inputs))
    try:
     subprocess.run([sys.executable,'scripts/noa_jukebox_worker.py','--catalog',str(work/'catalog-private.json'),
                     '--root',str(work/'noa-jukebox'),'--report',str(work/'batch-private.json'),
-                    '--offset',str(offset),'--limit','25','--workers','3','--inspect-audio','--sources',str(source_map)],check=True)
+                    '--offset',str(offset),'--limit','25','--workers','3','--sources',str(source_map)],check=True)
    finally:
     owned.cleanup(owned_folder);source_map.unlink(missing_ok=True)
    batch=json.loads((work/'batch-private.json').read_text());results.extend(batch['results'])
@@ -129,7 +139,7 @@ def main():
   result={'catalog_song_records':catalog.get('catalog_song_records'),'database_music_records':catalog['database_music_records'],'total_suno_urls':len(catalog['items']),
           'cover_files':audit['covers'],'audio_files':audit['audio'],'audio_bytes':audit['audio_bytes'],
           'source_audits':sum('audio_discovery' in r for r in results),'cover_pending':len(catalog['items'])-audit['covers'],'audio_pending':len(catalog['items'])-audit['audio'],'sql_saved':sql['saved'],'files_uploaded':saved,'audit':audit,'deployed':list(NEW)+list(INTEGRATE),
-          'source_commit':os.environ['GITHUB_SHA'],'existing_documents_modified':False,'audio_playback_verified':False}
+          'source_commit':os.environ['GITHUB_SHA'],'uploads':uploads,'integrity_before':original_data,'integrity_after':cli('integrity_snapshot'),'existing_documents_modified':False,'audio_playback_verified':False}
   cli('finish',json.dumps({'ids':claimed}).encode())
   (work/'summary.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print('JUKEBOX_PRODUCTION_RESULT '+json.dumps(result),flush=True)
  finally:s.close();t.close()

@@ -5,8 +5,8 @@ header('X-Content-Type-Options: nosniff');header('Cache-Control: private, no-sto
 if(!in_array($_SERVER['REQUEST_METHOD']??'GET',['GET','HEAD'],true)){http_response_code(405);header('Allow: GET, HEAD');exit;}
 try{
  $key=$_GET['key']??'';$type=$_GET['type']??'audio';if(!is_string($key)||strlen($key)>191||!in_array($type,['cover','audio'],true)){http_response_code(404);exit;}
- $db=noa_bridge_pdo();$q=$db->prepare('SELECT payload FROM noa_documents WHERE doc_key=?');$q->execute([$key]);$raw=$q->fetchColumn();
- if(!$raw){http_response_code(404);exit;}$doc=json_decode($raw,true,512,JSON_THROW_ON_ERROR);
+ $db=noa_bridge_pdo();$doc=nj_document($db,$key);
+ if(!$doc){http_response_code(404);exit;}
  $admin=!empty($is_member)&&($is_admin??'')==='super';if(!noa_sound_visible($doc,$admin)){http_response_code(403);exit;}
  $asset=nj_find($db,$key);if(!$asset||!hash_equals($asset['source_url'],noa_sound_suno($doc['body']??[]))||!nj_verified($asset,$type)){http_response_code(404);exit;}
  $path=nj_file($asset[$type.'_path']);$file=fopen($path,'rb');if(!$file){http_response_code(404);exit;}$size=fstat($file)['size'];

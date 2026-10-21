@@ -176,17 +176,22 @@ def analyze(path):
     def number(k):
         n = float(loud[k]); return n if math.isfinite(n) else None
     peak = number('input_tp')
+    stats = run(['ffmpeg','-nostdin','-hide_banner','-i',str(path),'-map','0:a:0',
+                 '-af','astats=metadata=0:reset=0','-f','null','-']).stderr
+    samples = [float(n) for n in re.findall(r'Peak level dB:\s*(-?\d+(?:\.\d+)?)',stats)]
+    if not samples: raise ValueError('sample_peak_measurement_missing')
     return {'duration': float(p['format']['duration']), 'codec': a['codec_name'],
             'bitrate': int(a.get('bit_rate', p['format'].get('bit_rate', 0))),
             'sample_rate': int(a['sample_rate']), 'channels': int(a['channels']),
             'lufs': number('input_i'), 'lra': number('input_lra'), 'true_peak': peak,
-            'clipping': peak is not None and peak >= 0, 'decode_errors': False}
+            'sample_peak': max(samples), 'clipping': max(samples) >= 0 or (peak is not None and peak >= 0), 'decode_errors': False}
 
 
-def optimize(source, destination):
+def optimize(source, destination, on_analyzed=None):
     source_hash = digest(source)
     before = analyze(source)
     before['sha256'] = source_hash
+    if on_analyzed: on_analyzed(before)
     if before['lufs'] is None or before['true_peak'] is None: raise ValueError('silent_or_unmeasurable_audio')
     # Constant gain preserves dynamics. Peak headroom overrides loudness target.
     gain = min(-14 - before['lufs'], -1.2 - before['true_peak'], 6)
@@ -223,6 +228,8 @@ def optimize(source, destination):
     if digest(source) != source_hash or abs(after['duration']-before['duration']) > .1 or before['lra']-after['lra'] > 2.1:
         destination.unlink(missing_ok=True); raise ValueError('source_or_dynamics_preservation_failed')
     settings['source_unchanged'] = True
+    settings['version'] = 'noa-jukebox-upload-2'
+    settings['tool'] = run(['ffmpeg','-version']).stdout.splitlines()[0]
     return before, settings, after
 
 

@@ -1,24 +1,31 @@
 name: NOA JUKEBOX public cards and authorized audio
 # Continue existing cards; audit published sources and process authorized owned downloads only.
-# Reuse reviewed download/mastering stages; validate final MP3 peaks from original input.
+# Upload-based audio, explicit stored-file downloads and responsive production checks.
 on:
   push:
     branches: [main, chatgpt/jukebox-20261021]
     paths: ['.github/workflows/noa-jukebox.yml']
   schedule:
-    - cron: '7,22,37,52 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 permissions: {contents: read}
-concurrency: {group: noa-jukebox-processing, cancel-in-progress: true}
+concurrency: {group: noa-jukebox-upload-processing, cancel-in-progress: false}
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     environment: production
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: jukebox-test-only, MYSQL_DATABASE: jukebox_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -h localhost -pjukebox-test-only" --health-interval=5s --health-timeout=5s --health-retries=20
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
       - name: Validate fixed PHP and media pipeline
+        if: github.event_name != 'schedule'
         run: |
           for f in deploy/noa-app/jukebox/*.php bridge/catalog.php deploy/noa-music.php; do php -l "$f"; done
           php tests/jukebox/range_test.php
@@ -26,6 +33,12 @@ jobs:
           sudo apt-get install -y ffmpeg
           python3 -m pip install --user paramiko==3.5.1 Pillow==11.3.0
           python3 -m unittest discover -s tests/jukebox -p 'test_*.py'
+          python3 tests/jukebox/make_fixture.py
+          php tests/jukebox/upload_mysql_test.php
+          node --check deploy/noa-app/jukebox/upload.js
+      - name: Install worker dependencies
+        if: github.event_name == 'schedule'
+        run: python3 -m pip install --user paramiko==3.5.1 Pillow==11.3.0
       - name: Acquire cards from live DB and store verified files on Dothome
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
