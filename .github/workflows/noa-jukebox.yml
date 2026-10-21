@@ -33,6 +33,7 @@ jobs:
           python3 tests/jukebox/make_fixture.py
           php tests/jukebox/upload_mysql_test.php
           node --check deploy/noa-app/jukebox/upload.js
+          node tests/jukebox/reservations_test.cjs
   interface:
     needs: validate
     if: github.event_name != 'schedule' && needs.validate.result == 'success'

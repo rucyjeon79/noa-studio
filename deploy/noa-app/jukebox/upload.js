@@ -88,7 +88,7 @@ async function transfer(r){
    const d=await api('finish',{id:u.id});apply(d);r.state=d.status==='ready'?'ready':'uploaded';
   }else{r.state='uploaded';const d=await api('status',null,'&key='+encodeURIComponent(r.key));apply(d);}
   r.file=null;r.error=null;notice.textContent=r.title+' · 서버 등록 완료. 창을 닫아도 최적화는 계속됩니다.';
- }catch(e){if(r.serverComplete){r.state='uploaded';r.file=null;r.error=null;notice.textContent=r.title+' · SQL에서 파일 전송 완료를 확인했습니다.';return;}if(e.message==='temporary_storage_quota_reached'){r.state='waiting';capacityWaitUntil=Date.now()+15000;notice.textContent='서버 임시 공간을 사용 중입니다. 최적화가 끝나 공간이 확보되면 전송을 자동으로 이어갑니다.';}else{r.state=e.message==='upload_paused'?'paused':'failed';}r.error=e.message;notice.textContent=r.title+' · '+message(e.message);}
+ }catch(e){if(r.serverComplete){r.state='uploaded';r.file=null;r.error=null;notice.textContent=r.title+' · SQL에서 파일 전송 완료를 확인했습니다.';return;}if(e.message==='temporary_storage_quota_reached'){r.state='waiting';capacityWaitUntil=Date.now()+15000;notice.textContent='서버 임시 공간을 사용 중입니다. 최적화가 끝나 공간이 확보되면 전송을 자동으로 이어갑니다.';}else{r.state=e.message==='upload_paused'?'paused':'failed';}r.error=e.message==='upload_paused'?null:e.message;notice.textContent=r.title+' · '+(e.message==='upload_paused'?'전송을 일시정지했습니다. 전송 계속으로 이어갈 수 있습니다.':message(e.message));}
  finally{xhr=null;active=null;persist();render();refreshQueue();}
 }
 async function pump(){if(active||paused||Date.now()<capacityWaitUntil)return;const jobs=latestJobs();const next=reservations.find(r=>r.state==='waiting'&&r.file&&!r.hold&&(!r.waitForJob||!busy.includes(jobs.get(r.key)?.status))); if(!next)return;
