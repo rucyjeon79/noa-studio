@@ -54,9 +54,13 @@ try{
   if(route.startsWith('/noa-world.php')){
    const anchors=page.locator('[aria-label="EP 선택"] a');assert.equal(await anchors.count(),10);
    await anchors.nth(4).click();await page.waitForFunction(()=>location.hash==='#ep-5');assert.equal(await page.locator('.noa-world-chapter').count(),10);
-   const preview=page.locator('.world-chapter-mv .world-play');assert(await preview.count()>1);await preview.nth(0).click();
-   assert.equal(await page.locator('.world-chapter-mv #world-player').count(),1);const first=await page.locator('#world-frame').getAttribute('src');
-   await preview.nth(1).click();assert.notEqual(await page.locator('#world-frame').getAttribute('src'),first);assert.equal(await page.locator('#world-frame').count(),1);
+   const preview=page.locator('.world-chapter-mv .world-play');const ids=[...new Set(await preview.evaluateAll(bs=>bs.map(b=>b.dataset.video)))];assert(ids.length>1);
+   await page.locator('.world-chapter-mv .world-play[data-video="'+ids[0]+'"]').first().click();
+   await page.waitForFunction(id=>document.getElementById('world-frame').getAttribute('src')?.includes('/embed/'+id),ids[0]);
+   assert.equal(await page.locator('.world-chapter-mv #world-player').count(),1);
+   await page.locator('.world-chapter-mv .world-play[data-video="'+ids[1]+'"]').first().click();
+   await page.waitForFunction(id=>document.getElementById('world-frame').getAttribute('src')?.includes('/embed/'+id),ids[1]);
+   assert.equal(await page.locator('#world-frame').count(),1);
    await page.getByRole('button',{name:'영상 닫기',exact:true}).click();assert.equal(await page.locator('#world-frame').getAttribute('src'),'about:blank');
    await page.evaluate(()=>scrollTo(0,0));
   }
