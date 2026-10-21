@@ -2,7 +2,7 @@ name: NOA full production deployment inventory
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/noa-full-inventory.yml']
+    paths: ['.github/workflows/noa-full-inventory.yml', 'scripts/noa_full_inventory.py']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-dothome-production, cancel-in-progress: false}
