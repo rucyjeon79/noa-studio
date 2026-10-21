@@ -19,6 +19,9 @@ def mappings():
  for local,remote in {**base.FILES,**quality.ASSET_FILES}.items():
   if Path(local).is_file() and not local.startswith('deploy/noastudio/'):m[remote]=local
  for local,remote in [('deploy/noa-home.extend.php','extend/noa.home.php'),('deploy/noa-design.extend.php','extend/noa.design.php'),('deploy/noa-database.extend.php','extend/noa.database.php')]:m[remote]=local
+ # media.htaccess is a source template installed at the media directory.
+ m.pop('noa-app/jukebox/media.htaccess',None)
+ m['noa-jukebox/.htaccess']='deploy/noa-app/jukebox/media.htaccess'
  return dict(sorted(m.items()))
 def connect():
  t=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022));t.use_compression(True);t.get_security_options().key_types=('ssh-ed25519',);t.start_client(timeout=20)
