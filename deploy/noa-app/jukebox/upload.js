@@ -63,7 +63,7 @@ function persist(){try{const all=new Map(readSaved().map(r=>[r.id,r]));for(const
  // confirmation without taking its File ownership or overwriting a replacement.
  else if(r.serverComplete&&r.uploadId&&previous.uploadId===r.uploadId&&previous.fingerprint===r.fingerprint&&['uploaded','ready','server_failed'].includes(r.state))all.set(r.id,{...previous,serverComplete:true,state:r.state==='uploaded'&&previous.state==='ready'?'ready':r.state,error:r.error||null});
  }localStorage.setItem(storeKey,JSON.stringify([...all.values()]));}catch{notice.textContent='예약 정보를 저장하지 못했습니다. 창을 닫으면 미전송 파일을 다시 지정해야 합니다.';}}
-function syncReservations(){const own=new Map(reservations.filter(r=>r.owner===deviceOwner).map(r=>[r.id,r]));let owners={};try{owners=JSON.parse(localStorage.getItem(deviceKey)||'{}').owners||{};}catch{}
+function syncReservations(){const own=new Map(reservations.filter(r=>r.owner===deviceOwner||r.hold).map(r=>[r.id,r]));let owners={};try{owners=JSON.parse(localStorage.getItem(deviceKey)||'{}').owners||{};}catch{}
  for(const disk of readSaved()){if(own.has(disk.id))continue;const fresh=Date.now()-(owners[disk.owner]||0)<15000;own.set(disk.id,{...disk,file:null,state:['uploaded','ready','server_failed','replaced'].includes(disk.state)?disk.state:fresh?'external':'needs_file'});}reservations=[...own.values()].sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));}
 function stopMusic(){document.querySelectorAll('audio,video').forEach(e=>e.pause());window.dispatchEvent(new CustomEvent('noa-background'));}
 const channel=typeof BroadcastChannel==='function'?new BroadcastChannel('noa-jukebox-transfer'):null;

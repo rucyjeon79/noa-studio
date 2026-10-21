@@ -31,3 +31,18 @@ resumed.reservations=[{...disk[0],state:'uploaded',serverComplete:true}];resumed
 disk=[{...disk[0],state:'waiting',fingerprint:'replacement-source',uploadId:'replacement-upload'}];resumed.reservations=[{...disk[0],fingerprint:'source-a',uploadId:'upload-a',state:'ready',serverComplete:true}];resumed.persist();assert.equal(disk[0].fingerprint,'replacement-source');assert.equal(disk[0].state,'waiting');
 resumed.reservations=[{...disk[0],state:'paused',serverComplete:false}];resumed.persist();assert.equal(disk[0].state,'waiting','another tab cannot rewrite an unaccepted active reservation');
 console.log('PASS reopened-tab completion persists, storage merge stays terminal, replacement identity and active owner remain protected');
+
+// Queue polling may replace a foreign reservation object while its file is
+// fingerprinted. The confirmed selection must attach to the current row.
+(async()=>{
+ let finishFingerprint;const fingerprintGate=new Promise(resolve=>finishFingerprint=resolve);
+ const stale={id:'resume-row',key:'song-a',fingerprint:'same',state:'needs_file',owner:'closed-tab',hold:true};
+ const selectedFile={name:'resume.wav',size:2048};
+ const race={reservations:[stale],active:null,deviceOwner:'new-tab',notice:{},fingerprint(){return fingerprintGate},persist(){},releaseSelection(){},render(){},pump(){},crypto:{randomUUID(){return 'unexpected-new-row'}},message:code=>code,deviceKey:'owners',readSaved:()=>[{...stale,hold:undefined}],localStorage:{getItem(){return '{}'}}};
+ vm.createContext(race);vm.runInContext(source.slice(source.indexOf('async function reserve('),source.indexOf('picker.onchange=')),race);
+ vm.runInContext(source.slice(source.indexOf('function syncReservations(){'),source.indexOf('function stopMusic(')),race);
+ const pending=race.reserve({existing:stale,key:'song-a'},selectedFile);
+ race.syncReservations();finishFingerprint('same');await pending;
+ assert.equal(race.reservations.length,1);assert.equal(race.reservations[0].file,selectedFile);assert.equal(race.reservations[0].state,'waiting');assert.equal(race.reservations[0].owner,'new-tab');
+ console.log('PASS source reselection survives a queue refresh during fingerprinting');
+})().catch(error=>{console.error(error);process.exitCode=1});
