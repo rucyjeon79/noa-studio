@@ -46,3 +46,13 @@ console.log('PASS reopened-tab completion persists, storage merge stays terminal
  assert.equal(race.reservations.length,1);assert.equal(race.reservations[0].file,selectedFile);assert.equal(race.reservations[0].state,'waiting');assert.equal(race.reservations[0].owner,'new-tab');
  console.log('PASS source reselection survives a queue refresh during fingerprinting');
 })().catch(error=>{console.error(error);process.exitCode=1});
+
+(async()=>{
+ const row={id:'pending',state:'needs_file',owner:'closed',uploadId:'partial'};let canceled=0,applied=0;
+ const c={active:null,deviceOwner:'current',busy:['queued','processing'],notice:{},isUnsent:r=>r.state==='needs_file',reconcile:async()=>({status:'uploading'}),api:async(action)=>{assert.equal(action,'cancel');canceled++},apply(){applied++},persist(){},render(){},message:code=>code};vm.createContext(c);vm.runInContext(source.slice(source.indexOf('async function cancelReservation('),source.indexOf('function releaseSelection(')),c);
+ await c.cancelReservation(row);assert.equal(canceled,1);assert.equal(row.state,'replaced');assert.equal(row.owner,'current');assert.equal(row.hold,false);
+ const accepted={id:'accepted',state:'needs_file',uploadId:'queued'};c.reconcile=async()=>({status:'processing',job:{id:10},public:{status:'processing'}});await c.cancelReservation(accepted);assert.equal(canceled,1);assert.equal(accepted.state,'uploaded');assert.equal(accepted.serverComplete,true);assert.equal(applied,1);
+ const active={state:'needs_file',uploadId:'active'};c.active=active;await c.cancelReservation(active);assert.equal(canceled,1);assert.equal(active.state,'needs_file');
+ const failedCancel={state:'needs_file',uploadId:'partial'};c.active=null;c.reconcile=async()=>({status:'uploading'});c.api=async()=>{throw Error('network_unavailable')};await c.cancelReservation(failedCancel);assert.equal(failedCancel.state,'needs_file');assert.equal(failedCancel.hold,false);
+ console.log('PASS pending cancellation preserves accepted/active jobs and keeps a reservation on cancellation failure');
+})().catch(error=>{console.error(error);process.exitCode=1});
