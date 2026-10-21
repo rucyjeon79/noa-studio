@@ -1,4 +1,5 @@
 name: NOA SQL taxonomy production release
+# Verify durable failure logging and preserve the initial production classification.
 on:
   push:
     branches: [main]

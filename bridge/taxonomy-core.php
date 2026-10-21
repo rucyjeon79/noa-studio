@@ -48,7 +48,7 @@ function nt_classify(array $v,?array $song,array $lists,array $rules):array{
   if($matched){$tier=['playlist_id'=>10,'playlist_title'=>20,'catalog_genre'=>30,'video_title'=>40][$kind];$hits[]=['category'=>$r['category_id'],'tier'=>$tier,'priority'=>(int)$r['priority'],'rule'=>$r['rule_id'],'kind'=>$kind,'evidence'=>array_values(array_unique($matched))];}
  }
  usort($hits,fn($a,$b)=>($a['tier']<=>$b['tier'])?:($a['priority']<=>$b['priority']));
- if(!$hits)return ['status'=>'unclassified','categories'=>[],'evidence'=>[]];
+ if(!$hits)return ['status'=>'unclassified','reason'=>!empty($song['genre_id'])&&$song['genre_id']!=='unclassified'?'outside_enabled_category_policy':'no_category_evidence','categories'=>[],'evidence'=>[]];
  $top=array_values(array_filter($hits,fn($h)=>$h['tier']===$hits[0]['tier']&&$h['priority']===$hits[0]['priority']));
  $roots=[];foreach($top as $h)$roots[in_array($h['category'],['original','collection'],true)?'kpop-original':$h['category']]=true;
  if(count($roots)>1)return ['status'=>'review','reason'=>'category_conflict','categories'=>[],'evidence'=>$hits];
