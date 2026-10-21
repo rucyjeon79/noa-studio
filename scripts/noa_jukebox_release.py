@@ -42,7 +42,7 @@ def main():
   mkdir(ROOT+'/noa-app');mkdir(ROOT+'/'+APP.rstrip('/'));mkdir(ROOT+'/noa-jukebox')
   atomic(ROOT+'/noa-jukebox/.htaccess',Path('deploy/'+APP+'media.htaccess').read_bytes(),None)
   # Install only new helpers; no existing application files are touched until SQL is ready.
-  for remote,local in NEW.items():atomic(ROOT+'/'+remote,Path(local).read_bytes(),None)
+  for remote,local in NEW.items():atomic(ROOT+'/'+remote,Path(local).read_bytes(),BASE.get(remote))
   with s.open('/hosting/noastudio/noa-ai-lab/worker.key','rb') as keyfile:key=keyfile.read(256).decode().strip()
   if len(key)!=64:raise RuntimeError('invalid_private_service_key')
   def cli(action,payload=None):
@@ -74,10 +74,19 @@ def main():
    for row in batch['results']:
     for kind in ['cover','audio']:
      rel=row.get(kind+'_path')
-     if not rel:continue
+     if not rel or (row.get('cached_cover') and kind=='cover'):continue
      local=work/'noa-jukebox'/rel;target=ROOT+'/noa-jukebox/'+rel;parent=ROOT+'/noa-jukebox'
      for part in Path(rel).parts[:-1]:parent+='/'+part;mkdir(parent)
-     atomic(target,local.read_bytes(),None);saved+=1
+     existing=read(target)
+     if existing is not None:
+      if sha(existing)!=row[kind+'_sha256']:raise RuntimeError('existing_media_preserved:'+rel)
+     else:
+      # The signed PHP import hashes and decodes before SQL publication.
+      tmp=target+'.stage-'+os.environ['GITHUB_RUN_ID']
+      with s.open(tmp,'wx') as f:
+       f.set_pipelined(True);f.write(local.read_bytes())
+      s.chmod(tmp,0o644);s.rename(tmp,target)
+     saved+=1
    sql=cli('import',json.dumps(batch,ensure_ascii=False).encode());sql_saved+=sql['saved'];audit=cli('audit')
    progress={'total_suno_urls':len(catalog['items']),'processed':len(results),'cover_files':audit['covers'],
              'audio_files':audit['audio'],'audio_bytes':audit['audio_bytes'],'sql_saved':sql_saved,'complete':False}

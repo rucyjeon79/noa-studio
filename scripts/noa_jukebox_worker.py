@@ -173,11 +173,17 @@ def process(row, root, ownership, sources):
     result = {'song_key': row['key'], 'source_url': row['sunoUrl'], 'genre': row['genre'],
               'ep': row.get('ep', ''), 'title': row['title'], 'status': 'audio_pending', 'errors': []}
     try:
-        meta = metadata(row['sunoUrl']); result.update(meta)
+        cached = row.get('existing_cover')
+        meta = {'suno_id':cached['suno_id'],'suno_title':cached['suno_title'],'image_url':''} if cached else metadata(row['sunoUrl'])
+        result.update(meta)
         directory = root / ownership[row['key']]
         try:
-            info = cover(directory / 'cover.webp', meta['image_url'])
-            info['cover_path'] = (directory / 'cover.webp').relative_to(root).as_posix()
+            if cached:
+                info = {k:cached[k] for k in ['cover_path','cover_bytes','cover_sha256']}
+                result['cached_cover'] = True
+            else:
+                info = cover(directory / 'cover.webp', meta['image_url'])
+                info['cover_path'] = (directory / 'cover.webp').relative_to(root).as_posix()
             result.update(info)
         except Exception as e: result['errors'].append('cover:' + str(e))
         # Only user-owned local downloads with explicit provenance may be processed.

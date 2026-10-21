@@ -1,12 +1,12 @@
 name: NOA JUKEBOX public cards and authorized audio
-# Signed fixed-operation PHP service: hosting has no PHP CLI.
+# Signed fixed operations; media verification happens on hosting before SQL publication.
 on:
   push:
     branches: [chatgpt/jukebox-20261021]
     paths: ['.github/workflows/noa-jukebox.yml']
   workflow_dispatch:
 permissions: {contents: read}
-concurrency: {group: noa-jukebox-processing, cancel-in-progress: false}
+concurrency: {group: noa-jukebox-processing, cancel-in-progress: true}
 jobs:
   build:
     runs-on: ubuntu-latest
