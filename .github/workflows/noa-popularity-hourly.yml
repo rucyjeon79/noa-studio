@@ -1,5 +1,8 @@
 name: NOA hourly integrated popularity snapshot
 on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-popularity-hourly.yml']
   schedule:
     - cron: '0 * * * *'
   workflow_dispatch:

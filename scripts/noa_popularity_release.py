@@ -35,7 +35,7 @@ def main():
    except OSError:
     if not stat.S_ISDIR(s.lstat(path).st_mode)or s.normalize(path)!=path:raise RuntimeError('unsafe_directory')
   def deploy(targets,backup):
-   for local,remote in targets.items():
+   for local,remote in sorted(targets.items(),key=lambda item:(item[0]=='bridge/popularity-core.php',item[0])):
     path=ROOT+'/'+remote;old=read(path);data=Path(local).read_bytes()
     if old==data:continue
     if old is not None:
