@@ -1,0 +1,6155 @@
+{
+  "date": "2026-10-21",
+  "timezone": "Asia/Seoul",
+  "directive": "41-execution-directive-20261021.txt",
+  "resumedFrom": "a5e1ff234c560f5d075b8d08e5bb5c2f9d73b192",
+  "implementationCommits": [
+    "d99ae6453f00c16c22f8e31106067cbaeb819a2f",
+    "fd86908073de38b4695e1d3826a647310b02f67e",
+    "de4ee251c297c1385832bd98fc7534924e463566",
+    "a927c9968f3cdc9bf66b8e425c4f56fc6228ff0a"
+  ],
+  "runs": {
+    "world": 39517435950,
+    "lyrics": 39517734381,
+    "fullVerification": 39517951414,
+    "portraitCorrection": 39518884619
+  },
+  "fullConsumerFlows": {
+    "ok": true,
+    "results": [
+      "original portrait, genre art and background video served byte-identically from NOA",
+      "home uses recorded public linked-video views for Top10 and one winner per genre; exact nine-section order; playlist aggregate labeled honestly",
+      "original portrait intro actually advances, muted and looping; landscape pauses it and rotation retains the same clip",
+      "independent world page and ACT chapter route use public source membership without inventing novel text",
+      "home video selection opens the corresponding internal official player in one navigation",
+      "four categories; no full song wall",
+      "original PAPA logo loaded; manifest identity retained; both install icons match original bytes; favicon mapped to original",
+      "category → genre → ACT → source tracks",
+      "all 52 ACT metadata records remain accessible without inventing public video or audio URLs",
+      "491 Suno source songs; listener-only lyrics omit known production tags; share-only playback remains disabled",
+      "56px square list cover and selected ACT/song survive orientation change",
+      "global search and ordered pagination",
+      "all 52 ACTs retained; an ACT without Suno links stays visible and honestly empty",
+      "official owner MV view shows real videos separately",
+      "direct YouTube link has a loaded official thumbnail, no preview autoplay, and opens the official player only on selection",
+      "MY remembers linked YouTube opening, routes back to its video, and never claims share selection or video opening as audio playback",
+      "continuous playlist route contains only ordered public embeddable member videos",
+      "ivory/Japanese preference persistence; matching PC/mobile navigation",
+      "registered YouTube-only song in shared web/Android read model, no invented Suno/audio",
+      "tested consumer flows succeed with Grok domains blocked and make zero Grok requests"
+    ]
+  },
+  "serverFiles": [
+    {
+      "path": "noa-bridge/world-core.php",
+      "bytes": 619,
+      "sha256": "f0b24ba91918bcfc27f909fb865df29b33d73222c66ba92796a48814bdeb7a29"
+    },
+    {
+      "path": "noa-world.php",
+      "bytes": 8832,
+      "sha256": "de2b2ffcd90516cbaa9a69bc81b790e4d1137444cf44e2be5183f1b3a5c049c6"
+    },
+    {
+      "path": "noa-world.css",
+      "bytes": 2119,
+      "sha256": "9c41b1a9265141f124d1434bf6f4c0825a6911d371312fb0866ade9087b69221"
+    },
+    {
+      "path": "noa-hero.js",
+      "bytes": 2819,
+      "sha256": "27a824bb390e31b340f32e2ebec3d6cf8d5fd8f4d74311950d5fbe4f61eb733d"
+    },
+    {
+      "path": "noa-ui.js",
+      "bytes": 12511,
+      "sha256": "1159cee5838341800b35a9a5964fb372e1ff49bfba93a9160c5b4ec343f54ece"
+    },
+    {
+      "path": "noa2.php",
+      "bytes": 7386,
+      "sha256": "468023759a39be526ceb9dea5f71802a28207ff719adc71c97d438f48584e749"
+    },
+    {
+      "path": "noa-bridge/sound-core.php",
+      "bytes": 4986,
+      "sha256": "5c8b1bbe3b359983a7859359eb75f5af6229273fa4042f62e971b605d51d4600"
+    },
+    {
+      "path": "noa-recovery.php",
+      "bytes": 4830,
+      "sha256": "0029a7ab11f6a05f0ccae208c706dc46003d60bc31d3932631cc7f5fc297af03"
+    },
+    {
+      "path": "noa-ai-lab.php",
+      "bytes": 10052,
+      "sha256": "7c81e1bb09b95868951480dc33ae448d792c0597ff275b40ec14e7f9535a0456"
+    },
+    {
+      "path": "noa-catalog-admin.php",
+      "bytes": 11012,
+      "sha256": "a1177e3a647b428a16c9a229fc21df0f2b8fba0ef11fece6a3246d2b0cc2a5ce"
+    },
+    {
+      "path": "noa-catalog.php",
+      "bytes": 9224,
+      "sha256": "1d3dbcfa20da12c345e1bbca54e91ba1f9b738416f7e9dda9657a74b48138b74"
+    },
+    {
+      "path": "extend/noa.design.php",
+      "bytes": 965,
+      "sha256": "61c80d07bc0f00759458742350b4189dfb085479b29b93d570293d3be6116634"
+    },
+    {
+      "path": "noa-editor.php",
+      "bytes": 13651,
+      "sha256": "f9eac1fdc293bd227a76dcac256cddda29604f20ba1adcfdc33b431d7cf867d5"
+    },
+    {
+      "path": "noa-library.php",
+      "bytes": 6505,
+      "sha256": "e176144fbf22cc5a3e6ed2076aa567bd8979cf5a9c9b48cddca95e86bd5ff742"
+    },
+    {
+      "path": "noa-music.php",
+      "bytes": 20014,
+      "sha256": "4e669026b24e14c4b55c2c1e1aae47b425ca99a3e457b2d7d20f36e9321b5c04"
+    },
+    {
+      "path": "noa-my.php",
+      "bytes": 3231,
+      "sha256": "4d894090ab3d6ab541713422c2fc0b633d20a62b8915696b26e2b75f21b3cc76"
+    },
+    {
+      "path": "noa-settings.php",
+      "bytes": 988,
+      "sha256": "20012bb6cc022674aa22f93bdcbd395d3dce4f7b2f4cf60fe1a22b4c14e4d4e3"
+    },
+    {
+      "path": "noa-theme-admin.php",
+      "bytes": 4592,
+      "sha256": "94fc273852a053557554ffb42114c49ff37d00745ae51f8a469f0fb7f7fd7f52"
+    },
+    {
+      "path": "noa-youtube-admin.php",
+      "bytes": 4142,
+      "sha256": "208721cedc71db34eb808b12a74ae2f7f87479bf3af8efc06ed1ec0345c5d0b9"
+    },
+    {
+      "path": "noa-youtube.php",
+      "bytes": 7674,
+      "sha256": "a9acdfc1beec2f8661c9c77a6723b7eeaa2820e1d8292c318f2906c7a166f73b"
+    },
+    {
+      "path": "theme/noa_studio/head.php",
+      "bytes": 561,
+      "sha256": "3c5f72ce5bb34d92f620bb0b0f1a89b31d2a27f765732ec5ceba3e17326b0136"
+    },
+    {
+      "path": "theme/noa_studio/mobile/head.php",
+      "bytes": 561,
+      "sha256": "3c5f72ce5bb34d92f620bb0b0f1a89b31d2a27f765732ec5ceba3e17326b0136"
+    },
+    {
+      "path": "noa-bridge/catalog.php",
+      "bytes": 3305,
+      "sha256": "feec5334e459867c0f10a5928e04acb18b51fbebe0c79ffd8c0ef1c86bc4dfd4"
+    }
+  ],
+  "publicReadModel": {
+    "totalItems": 544,
+    "songs": 492,
+    "acts": 52,
+    "sunoSongReferences": 491,
+    "verifiedLocalAudioFiles": 0,
+    "acquiredSquareCovers": 0
+  },
+  "sourceCheckout": {
+    "exportDocuments": 653,
+    "songDocuments": 601,
+    "actDocuments": 52,
+    "sunoUrlDocuments": 491,
+    "audioFiles": 0
+  },
+  "sourceAcquisition": {
+    "newAssets": 0,
+    "newSongs": 0,
+    "merges": 0,
+    "masteredOriginalSongs": 0,
+    "androidBuilds": 0,
+    "paidGenerationJobs": 0,
+    "uploads": 0
+  },
+  "preservation": {
+    "sqlWrites": 0,
+    "protectedCoreFilesUnchanged": 10,
+    "grokAppRetained": true,
+    "originalLyricsRetained": true
+  },
+  "earlyPredeployFailures": [
+    {
+      "run": 39517435965,
+      "reason": "new looping assertion ran before corresponding release; old server loop=false"
+    },
+    {
+      "run": 39517734478,
+      "reason": "new lyric assertion ran before corresponding release; old server lyrics still included production cues"
+    }
+  ],
+  "limits": [
+    "Official novel text not acquired; chapter placeholders are not novel migration completion.",
+    "No original audio files or acquired square Suno covers.",
+    "Page HTTP 200 once and 403 in subsequent read is not media acquisition or playback verification.",
+    "Engine Intensity 50 equivalence and true-peak compliance unverified on original songs.",
+    "Full administrator, jukebox, notifications, Android real-device and asset-independent operation incomplete."
+  ],
+  "responsive": [
+    {
+      "phase": "after",
+      "width": 768,
+      "pages": [
+        {
+          "route": "/noa2.php",
+          "width": 768,
+          "status": 200,
+          "title": "NOA STUDIO | AI Artist Noa",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [
+            {
+              "tag": "IMG",
+              "id": "",
+              "cls": "",
+              "right": 817
+            },
+            {
+              "tag": "IMG",
+              "id": "",
+              "cls": "",
+              "right": 1088
+            }
+          ],
+          "cards": [
+            {
+              "width": 161,
+              "titleWidth": 161,
+              "imageWidth": 161,
+              "display": "block"
+            },
+            {
+              "width": 161,
+              "titleWidth": 161,
+              "imageWidth": 161,
+              "display": "block"
+            },
+            {
+              "width": 161,
+              "titleWidth": 161,
+              "imageWidth": 161,
+              "display": "block"
+            },
+            {
+              "width": 161,
+              "titleWidth": 161,
+              "imageWidth": 161,
+              "display": "block"
+            },
+            {
+              "width": 161,
+              "titleWidth": 161,
+              "imageWidth": 161,
+              "display": "block"
+            },
+            {
+              "width": 161,
+              "titleWidth": 161,
+              "imageWidth": 161,
+              "display": "block"
+            },
+            {
+              "width": 161,
+              "titleWidth": 161,
+              "imageWidth": 161,
+              "display": "block"
+            },
+            {
+              "width": 161,
+              "titleWidth": 161,
+              "imageWidth": 161,
+              "display": "block"
+            }
+          ],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-world.php",
+          "width": 768,
+          "status": 200,
+          "title": "NOA WORLD | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n홈",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php",
+          "width": 768,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n음",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [],
+          "cards": [],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-youtube.php",
+          "width": 768,
+          "status": 200,
+          "title": "YouTube | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-catalog.php",
+          "width": 768,
+          "status": 200,
+          "title": "통합 음악 라이브러리 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-settings.php",
+          "width": 768,
+          "status": 200,
+          "title": "설정 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/login.php",
+          "width": 768,
+          "status": 200,
+          "title": "로그인 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/register.php",
+          "width": 768,
+          "status": 200,
+          "title": "회원가입약관 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/password_lost.php",
+          "width": 768,
+          "status": 200,
+          "title": "회원정보 찾기 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/search.php",
+          "width": 768,
+          "status": 200,
+          "title": "전체검색 결과 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/board.php?bo_table=free",
+          "width": 768,
+          "status": 200,
+          "title": "자유게시판 페이지 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/board.php?bo_table=notice",
+          "width": 768,
+          "status": 200,
+          "title": "공지사항 페이지 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/content.php?co_id=privacy",
+          "width": 768,
+          "status": 200,
+          "title": "개인정보 처리방침 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/content.php?co_id=provision",
+          "width": 768,
+          "status": 200,
+          "title": "서비스 이용약관 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-download.php",
+          "width": 768,
+          "status": 200,
+          "kind": "apk_download",
+          "bytes": 4579329,
+          "sha256": "2d6a5131898eeaeb8eb98a58cc799cf9fb34551511d19bbd7ce1abfe6e2a2fd2",
+          "issues": []
+        },
+        {
+          "route": "/noa-youtube.php?world=1",
+          "width": 768,
+          "status": 200,
+          "title": "YouTube | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 524,
+              "titleWidth": 524,
+              "imageWidth": 524,
+              "display": "block"
+            },
+            {
+              "width": 524,
+              "titleWidth": 524,
+              "imageWidth": 524,
+              "display": "block"
+            },
+            {
+              "width": 524,
+              "titleWidth": 524,
+              "imageWidth": 524,
+              "display": "block"
+            },
+            {
+              "width": 524,
+              "titleWidth": 524,
+              "imageWidth": 524,
+              "display": "block"
+            },
+            {
+              "width": 524,
+              "titleWidth": 524,
+              "imageWidth": 524,
+              "display": "block"
+            },
+            {
+              "width": 524,
+              "titleWidth": 524,
+              "imageWidth": 524,
+              "display": "block"
+            },
+            {
+              "width": 524,
+              "titleWidth": 524,
+              "imageWidth": 524,
+              "display": "block"
+            },
+            {
+              "width": 524,
+              "titleWidth": 524,
+              "imageWidth": 524,
+              "display": "block"
+            }
+          ],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-my.php",
+          "width": 768,
+          "status": 200,
+          "title": "MY | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php?genre=kpop-original&act=1",
+          "width": 768,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n음",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 524,
+              "titleWidth": 394,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 524,
+              "titleWidth": 394,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 524,
+              "titleWidth": 394,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 524,
+              "titleWidth": 394,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 524,
+              "titleWidth": 394,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 524,
+              "titleWidth": 394,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 524,
+              "titleWidth": 394,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 524,
+              "titleWidth": 394,
+              "imageWidth": null,
+              "display": "flex"
+            }
+          ],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 10,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php?track=single%3Akpop-original%3A01",
+          "width": 768,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n음",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 524,
+              "titleWidth": 394,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 524,
+              "titleWidth": 394,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 524,
+              "titleWidth": 394,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 524,
+              "titleWidth": 394,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 524,
+              "titleWidth": 394,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 524,
+              "titleWidth": 394,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 524,
+              "titleWidth": 394,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 524,
+              "titleWidth": 394,
+              "imageWidth": null,
+              "display": "flex"
+            }
+          ],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 10,
+          "errors": [],
+          "issues": []
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 320,
+      "pages": [
+        {
+          "route": "/noa2.php",
+          "width": 320,
+          "status": 200,
+          "title": "NOA STUDIO | AI Artist Noa",
+          "bodyText": "NOA STUDIO\n로그인\nMusic beyondimagination.\n\n하나의 이야기, 서로 다른 울림.\n\n음악 영상 둘러보기\n재생 버튼으로 원본 메인 영상을 열 수 있습니다.\n",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [
+            {
+              "tag": "H1",
+              "id": "",
+              "cls": "",
+              "right": 328
+            },
+            {
+              "tag": "IMG",
+              "id": "",
+              "cls": "",
+              "right": 378
+            },
+            {
+              "tag": "IMG",
+              "id": "",
+              "cls": "",
+              "right": 378
+            }
+          ],
+          "cards": [
+            {
+              "width": 136,
+              "titleWidth": 136,
+              "imageWidth": 136,
+              "display": "block"
+            },
+            {
+              "width": 136,
+              "titleWidth": 136,
+              "imageWidth": 136,
+              "display": "block"
+            },
+            {
+              "width": 136,
+              "titleWidth": 136,
+              "imageWidth": 136,
+              "display": "block"
+            },
+            {
+              "width": 136,
+              "titleWidth": 136,
+              "imageWidth": 136,
+              "display": "block"
+            },
+            {
+              "width": 136,
+              "titleWidth": 136,
+              "imageWidth": 136,
+              "display": "block"
+            },
+            {
+              "width": 136,
+              "titleWidth": 136,
+              "imageWidth": 136,
+              "display": "block"
+            },
+            {
+              "width": 136,
+              "titleWidth": 136,
+              "imageWidth": 136,
+              "display": "block"
+            },
+            {
+              "width": 136,
+              "titleWidth": 136,
+              "imageWidth": 136,
+              "display": "block"
+            }
+          ],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-world.php",
+          "width": 320,
+          "status": 200,
+          "title": "NOA WORLD | NOA STUDIO",
+          "bodyText": "홈\nNOA WORLD\n\nMUSIC / CHARACTERS / STORIES\n\nNOA WORLD\n\n노래의 장면을 따라, 노아와 노엘의 이야기 속으로.\n\nFEMALE VOCAL\n\nNO",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php",
+          "width": 320,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "음원\n\nSuno 곡과 원본 음원을 만나보세요. · 491곡 · 52개 ACT\n\n음원\n전체 검색·목록\n오리지널 장르\n141개 곡\nEP 장르\n270개 곡\n사연곡\n44개 곡\n커버곡\n36",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [],
+          "cards": [],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-youtube.php",
+          "width": 320,
+          "status": 200,
+          "title": "YouTube | NOA STUDIO",
+          "bodyText": "NOA STUDIO / WATCH & GROW\n\nYouTube\n\n음악에 장면을 더하고, 다음 이야기를 발견하세요.\n\n음악\n통합 라이브러리\n음악 영상\nNOA WORLD · 공식 MV",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-catalog.php",
+          "width": 320,
+          "status": 200,
+          "title": "통합 음악 라이브러리 | NOA STUDIO",
+          "bodyText": "NOA STUDIO / ONE MUSIC LIBRARY\n\n통합 음악 라이브러리\n음악 감상\n통합 목록\nYouTube\n\n기존에 공개가 확인된 음악·ACT 및 내 플레이리스트 288개\n",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-settings.php",
+          "width": 320,
+          "status": 200,
+          "title": "설정 | NOA STUDIO",
+          "bodyText": "NOA STUDIO / PREFERENCES\n\n테마와 언어\n\n음악과 가사 원문을 유지하며 화면의 테마와 언어를 바꿉니다.\n\n테마\nNOA STUDIO · Graphite\nNOA ST",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/login.php",
+          "width": 320,
+          "status": 200,
+          "title": "로그인 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n로그인\n회원\n로그인\n회원가입\n회원로그인\n회원아이디\n필수\n \n비밀번호\n필수\n 로그인\n자동로그인\n아이디/비밀번호 찾기\n홈\nYouTube\n세계관\n음원\nMY\nN",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/register.php",
+          "width": 320,
+          "status": 200,
+          "title": "회원가입약관 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n회원가입약관\n\n 회원가입약관 및 개인정보 수집 및 이용의 내용에 동의하셔야 회원가입 하실 수 있습니다.\n\n회원가입약관\n회원가입약관의 내용에 동의합니다.\n",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/password_lost.php",
+          "width": 320,
+          "status": 200,
+          "title": "회원정보 찾기 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n회원정보 찾기\n\n회원가입 시 등록하신 이메일 주소를 입력해 주세요.\n해당 이메일로 아이디와 비밀번호 정보를 보내드립니다.\n\nE-mail 주소\n필수\n자동등",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/search.php",
+          "width": 320,
+          "status": 200,
+          "title": "전체검색 결과 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n전체검색 결과\n상세검색\n게시판 그룹선택\n전체 분류\n커뮤니티\n검색조건\n제목+내용\n제목\n내용\n회원아이디\n이름\n검색어\n필수\n검색\nAND\nOR\n홈\nYouTube",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/board.php?bo_table=free",
+          "width": 320,
+          "status": 200,
+          "title": "자유게시판 페이지 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n자유게시판 페이지\nTotal 0건 1 페이지\n게시판 검색\n글쓰기\n자유게시판 목록\n번호\t제목\t글쓴이\t조회\t날짜\n게시물이 없습니다.\n글쓰기\n홈\nYouTube",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/board.php?bo_table=notice",
+          "width": 320,
+          "status": 200,
+          "title": "공지사항 페이지 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n공지사항 페이지\nTotal 0건 1 페이지\n게시판 검색\n글쓰기\n공지사항 목록\n번호\t제목\t글쓴이\t조회\t날짜\n게시물이 없습니다.\n글쓰기\n홈\nYouTube\n세",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/content.php?co_id=privacy",
+          "width": 320,
+          "status": 200,
+          "title": "개인정보 처리방침 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n개인정보 처리방침\n개인정보 처리방침\n\n개인정보 처리방침에 대한 내용을 입력하십시오.\n\n홈\nYouTube\n세계관\n음원\nMY\nNOA STUDIO · Musi",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/content.php?co_id=provision",
+          "width": 320,
+          "status": 200,
+          "title": "서비스 이용약관 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n서비스 이용약관\n서비스 이용약관\n\n서비스 이용약관에 대한 내용을 입력하십시오.\n\n홈\nYouTube\n세계관\n음원\nMY\nNOA STUDIO · Music. ",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-download.php",
+          "width": 320,
+          "status": 200,
+          "kind": "apk_download",
+          "bytes": 4579329,
+          "sha256": "2d6a5131898eeaeb8eb98a58cc799cf9fb34551511d19bbd7ce1abfe6e2a2fd2",
+          "issues": []
+        },
+        {
+          "route": "/noa-youtube.php?world=1",
+          "width": 320,
+          "status": 200,
+          "title": "YouTube | NOA STUDIO",
+          "bodyText": "NOA STUDIO / WATCH & GROW\n\nYouTube\n\n음악에 장면을 더하고, 다음 이야기를 발견하세요.\n\n음악\n통합 라이브러리\n음악 영상\nNOA WORLD · 공식 MV",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 284,
+              "titleWidth": 284,
+              "imageWidth": 284,
+              "display": "block"
+            },
+            {
+              "width": 284,
+              "titleWidth": 284,
+              "imageWidth": 284,
+              "display": "block"
+            },
+            {
+              "width": 284,
+              "titleWidth": 284,
+              "imageWidth": 284,
+              "display": "block"
+            },
+            {
+              "width": 284,
+              "titleWidth": 284,
+              "imageWidth": 284,
+              "display": "block"
+            },
+            {
+              "width": 284,
+              "titleWidth": 284,
+              "imageWidth": 284,
+              "display": "block"
+            },
+            {
+              "width": 284,
+              "titleWidth": 284,
+              "imageWidth": 284,
+              "display": "block"
+            },
+            {
+              "width": 284,
+              "titleWidth": 284,
+              "imageWidth": 284,
+              "display": "block"
+            },
+            {
+              "width": 284,
+              "titleWidth": 284,
+              "imageWidth": 284,
+              "display": "block"
+            }
+          ],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-my.php",
+          "width": 320,
+          "status": 200,
+          "title": "MY | NOA STUDIO",
+          "bodyText": "YOUR MUSIC, YOUR SPACE\n\nMY\n\n나의 음악, 보관함과 취향을 한곳에서.\n\n최근 재생\n이 탭에서 실제 재생한 음원이 없습니다.\n\n이 탭의 음원 재생 이력입니다. 다",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php?genre=kpop-original&act=1",
+          "width": 320,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "음원\n\nSuno 곡과 원본 음원을 만나보세요. · 491곡 · 52개 ACT\n\n음원\n/\n오리지널 장르\n/\nK-POP Original\n/\nACT 1\n전체 검색·목록\n\n10곡\n\n모든 ",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 284,
+              "titleWidth": 154,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 284,
+              "titleWidth": 154,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 284,
+              "titleWidth": 154,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 284,
+              "titleWidth": 154,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 284,
+              "titleWidth": 154,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 284,
+              "titleWidth": 154,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 284,
+              "titleWidth": 154,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 284,
+              "titleWidth": 154,
+              "imageWidth": null,
+              "display": "flex"
+            }
+          ],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 10,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php?track=single%3Akpop-original%3A01",
+          "width": 320,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "음원\n\nSuno 곡과 원본 음원을 만나보세요. · 491곡 · 52개 ACT\n\n음원\n/\n오리지널 장르\n/\nK-POP Original\n/\nACT 1\n전체 검색·목록\n\n10곡\n\nAI ",
+          "viewport": 320,
+          "scrollWidth": 320,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 284,
+              "titleWidth": 154,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 284,
+              "titleWidth": 154,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 284,
+              "titleWidth": 154,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 284,
+              "titleWidth": 154,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 284,
+              "titleWidth": 154,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 284,
+              "titleWidth": 154,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 284,
+              "titleWidth": 154,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 284,
+              "titleWidth": 154,
+              "imageWidth": null,
+              "display": "flex"
+            }
+          ],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 10,
+          "errors": [],
+          "issues": []
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 390,
+      "pages": [
+        {
+          "route": "/noa2.php",
+          "width": 390,
+          "status": 200,
+          "title": "NOA STUDIO | AI Artist Noa",
+          "bodyText": "NOA STUDIO\n로그인\nMusic beyondimagination.\n\n하나의 이야기, 서로 다른 울림.\n\n음악 영상 둘러보기\n재생 버튼으로 원본 메인 영상을 열 수 있습니다.\n",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [
+            {
+              "tag": "IMG",
+              "id": "",
+              "cls": "",
+              "right": 472
+            },
+            {
+              "tag": "IMG",
+              "id": "",
+              "cls": "",
+              "right": 472
+            }
+          ],
+          "cards": [
+            {
+              "width": 171,
+              "titleWidth": 171,
+              "imageWidth": 171,
+              "display": "block"
+            },
+            {
+              "width": 171,
+              "titleWidth": 171,
+              "imageWidth": 171,
+              "display": "block"
+            },
+            {
+              "width": 171,
+              "titleWidth": 171,
+              "imageWidth": 171,
+              "display": "block"
+            },
+            {
+              "width": 171,
+              "titleWidth": 171,
+              "imageWidth": 171,
+              "display": "block"
+            },
+            {
+              "width": 171,
+              "titleWidth": 171,
+              "imageWidth": 171,
+              "display": "block"
+            },
+            {
+              "width": 171,
+              "titleWidth": 171,
+              "imageWidth": 171,
+              "display": "block"
+            },
+            {
+              "width": 171,
+              "titleWidth": 171,
+              "imageWidth": 171,
+              "display": "block"
+            },
+            {
+              "width": 171,
+              "titleWidth": 171,
+              "imageWidth": 171,
+              "display": "block"
+            }
+          ],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-world.php",
+          "width": 390,
+          "status": 200,
+          "title": "NOA WORLD | NOA STUDIO",
+          "bodyText": "홈\nNOA WORLD\n\nMUSIC / CHARACTERS / STORIES\n\nNOA WORLD\n\n노래의 장면을 따라, 노아와 노엘의 이야기 속으로.\n\nFEMALE VOCAL\n\nNO",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php",
+          "width": 390,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "음원\n\nSuno 곡과 원본 음원을 만나보세요. · 491곡 · 52개 ACT\n\n음원\n전체 검색·목록\n오리지널 장르\n141개 곡\nEP 장르\n270개 곡\n사연곡\n44개 곡\n커버곡\n36",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [],
+          "cards": [],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-youtube.php",
+          "width": 390,
+          "status": 200,
+          "title": "YouTube | NOA STUDIO",
+          "bodyText": "NOA STUDIO / WATCH & GROW\n\nYouTube\n\n음악에 장면을 더하고, 다음 이야기를 발견하세요.\n\n음악\n통합 라이브러리\n음악 영상\nNOA WORLD · 공식 MV",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-catalog.php",
+          "width": 390,
+          "status": 200,
+          "title": "통합 음악 라이브러리 | NOA STUDIO",
+          "bodyText": "NOA STUDIO / ONE MUSIC LIBRARY\n\n통합 음악 라이브러리\n음악 감상\n통합 목록\nYouTube\n\n기존에 공개가 확인된 음악·ACT 및 내 플레이리스트 288개\n",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-settings.php",
+          "width": 390,
+          "status": 200,
+          "title": "설정 | NOA STUDIO",
+          "bodyText": "NOA STUDIO / PREFERENCES\n\n테마와 언어\n\n음악과 가사 원문을 유지하며 화면의 테마와 언어를 바꿉니다.\n\n테마\nNOA STUDIO · Graphite\nNOA ST",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/login.php",
+          "width": 390,
+          "status": 200,
+          "title": "로그인 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n로그인\n회원\n로그인\n회원가입\n회원로그인\n회원아이디\n필수\n \n비밀번호\n필수\n 로그인\n자동로그인\n아이디/비밀번호 찾기\n홈\nYouTube\n세계관\n음원\nMY\nN",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/register.php",
+          "width": 390,
+          "status": 200,
+          "title": "회원가입약관 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n회원가입약관\n\n 회원가입약관 및 개인정보 수집 및 이용의 내용에 동의하셔야 회원가입 하실 수 있습니다.\n\n회원가입약관\n회원가입약관의 내용에 동의합니다.\n",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/password_lost.php",
+          "width": 390,
+          "status": 200,
+          "title": "회원정보 찾기 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n회원정보 찾기\n\n회원가입 시 등록하신 이메일 주소를 입력해 주세요.\n해당 이메일로 아이디와 비밀번호 정보를 보내드립니다.\n\nE-mail 주소\n필수\n자동등",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/search.php",
+          "width": 390,
+          "status": 200,
+          "title": "전체검색 결과 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n전체검색 결과\n상세검색\n게시판 그룹선택\n전체 분류\n커뮤니티\n검색조건\n제목+내용\n제목\n내용\n회원아이디\n이름\n검색어\n필수\n검색\nAND\nOR\n홈\nYouTube",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/board.php?bo_table=free",
+          "width": 390,
+          "status": 200,
+          "title": "자유게시판 페이지 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n자유게시판 페이지\nTotal 0건 1 페이지\n게시판 검색\n글쓰기\n자유게시판 목록\n번호\t제목\t글쓴이\t조회\t날짜\n게시물이 없습니다.\n글쓰기\n홈\nYouTube",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/board.php?bo_table=notice",
+          "width": 390,
+          "status": 200,
+          "title": "공지사항 페이지 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n공지사항 페이지\nTotal 0건 1 페이지\n게시판 검색\n글쓰기\n공지사항 목록\n번호\t제목\t글쓴이\t조회\t날짜\n게시물이 없습니다.\n글쓰기\n홈\nYouTube\n세",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/content.php?co_id=privacy",
+          "width": 390,
+          "status": 200,
+          "title": "개인정보 처리방침 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n개인정보 처리방침\n개인정보 처리방침\n\n개인정보 처리방침에 대한 내용을 입력하십시오.\n\n홈\nYouTube\n세계관\n음원\nMY\nNOA STUDIO · Musi",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/content.php?co_id=provision",
+          "width": 390,
+          "status": 200,
+          "title": "서비스 이용약관 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n서비스 이용약관\n서비스 이용약관\n\n서비스 이용약관에 대한 내용을 입력하십시오.\n\n홈\nYouTube\n세계관\n음원\nMY\nNOA STUDIO · Music. ",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-download.php",
+          "width": 390,
+          "status": 200,
+          "kind": "apk_download",
+          "bytes": 4579329,
+          "sha256": "2d6a5131898eeaeb8eb98a58cc799cf9fb34551511d19bbd7ce1abfe6e2a2fd2",
+          "issues": []
+        },
+        {
+          "route": "/noa-youtube.php?world=1",
+          "width": 390,
+          "status": 200,
+          "title": "YouTube | NOA STUDIO",
+          "bodyText": "NOA STUDIO / WATCH & GROW\n\nYouTube\n\n음악에 장면을 더하고, 다음 이야기를 발견하세요.\n\n음악\n통합 라이브러리\n음악 영상\nNOA WORLD · 공식 MV",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 354,
+              "titleWidth": 354,
+              "imageWidth": 354,
+              "display": "block"
+            },
+            {
+              "width": 354,
+              "titleWidth": 354,
+              "imageWidth": 354,
+              "display": "block"
+            },
+            {
+              "width": 354,
+              "titleWidth": 354,
+              "imageWidth": 354,
+              "display": "block"
+            },
+            {
+              "width": 354,
+              "titleWidth": 354,
+              "imageWidth": 354,
+              "display": "block"
+            },
+            {
+              "width": 354,
+              "titleWidth": 354,
+              "imageWidth": 354,
+              "display": "block"
+            },
+            {
+              "width": 354,
+              "titleWidth": 354,
+              "imageWidth": 354,
+              "display": "block"
+            },
+            {
+              "width": 354,
+              "titleWidth": 354,
+              "imageWidth": 354,
+              "display": "block"
+            },
+            {
+              "width": 354,
+              "titleWidth": 354,
+              "imageWidth": 354,
+              "display": "block"
+            }
+          ],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-my.php",
+          "width": 390,
+          "status": 200,
+          "title": "MY | NOA STUDIO",
+          "bodyText": "YOUR MUSIC, YOUR SPACE\n\nMY\n\n나의 음악, 보관함과 취향을 한곳에서.\n\n최근 재생\n이 탭에서 실제 재생한 음원이 없습니다.\n\n이 탭의 음원 재생 이력입니다. 다",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php?genre=kpop-original&act=1",
+          "width": 390,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "음원\n\nSuno 곡과 원본 음원을 만나보세요. · 491곡 · 52개 ACT\n\n음원\n/\n오리지널 장르\n/\nK-POP Original\n/\nACT 1\n전체 검색·목록\n\n10곡\n\n모든 ",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 354,
+              "titleWidth": 224,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 354,
+              "titleWidth": 224,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 354,
+              "titleWidth": 224,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 354,
+              "titleWidth": 224,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 354,
+              "titleWidth": 224,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 354,
+              "titleWidth": 224,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 354,
+              "titleWidth": 224,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 354,
+              "titleWidth": 224,
+              "imageWidth": null,
+              "display": "flex"
+            }
+          ],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 10,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php?track=single%3Akpop-original%3A01",
+          "width": 390,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "음원\n\nSuno 곡과 원본 음원을 만나보세요. · 491곡 · 52개 ACT\n\n음원\n/\n오리지널 장르\n/\nK-POP Original\n/\nACT 1\n전체 검색·목록\n\n10곡\n\nAI ",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 354,
+              "titleWidth": 224,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 354,
+              "titleWidth": 224,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 354,
+              "titleWidth": 224,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 354,
+              "titleWidth": 224,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 354,
+              "titleWidth": 224,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 354,
+              "titleWidth": 224,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 354,
+              "titleWidth": 224,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 354,
+              "titleWidth": 224,
+              "imageWidth": null,
+              "display": "flex"
+            }
+          ],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 10,
+          "errors": [],
+          "issues": []
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 1024,
+      "pages": [
+        {
+          "route": "/noa2.php",
+          "width": 1024,
+          "status": 200,
+          "title": "NOA STUDIO | AI Artist Noa",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [
+            {
+              "tag": "IMG",
+              "id": "",
+              "cls": "",
+              "right": 1216
+            }
+          ],
+          "cards": [
+            {
+              "width": 241,
+              "titleWidth": 241,
+              "imageWidth": 241,
+              "display": "block"
+            },
+            {
+              "width": 241,
+              "titleWidth": 241,
+              "imageWidth": 241,
+              "display": "block"
+            },
+            {
+              "width": 241,
+              "titleWidth": 241,
+              "imageWidth": 241,
+              "display": "block"
+            },
+            {
+              "width": 241,
+              "titleWidth": 241,
+              "imageWidth": 241,
+              "display": "block"
+            },
+            {
+              "width": 241,
+              "titleWidth": 241,
+              "imageWidth": 241,
+              "display": "block"
+            },
+            {
+              "width": 241,
+              "titleWidth": 241,
+              "imageWidth": 241,
+              "display": "block"
+            },
+            {
+              "width": 241,
+              "titleWidth": 241,
+              "imageWidth": 241,
+              "display": "block"
+            },
+            {
+              "width": 241,
+              "titleWidth": 241,
+              "imageWidth": 241,
+              "display": "block"
+            }
+          ],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-world.php",
+          "width": 1024,
+          "status": 200,
+          "title": "NOA WORLD | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n홈",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php",
+          "width": 1024,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n음",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [],
+          "cards": [],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-youtube.php",
+          "width": 1024,
+          "status": 200,
+          "title": "YouTube | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-catalog.php",
+          "width": 1024,
+          "status": 200,
+          "title": "통합 음악 라이브러리 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-settings.php",
+          "width": 1024,
+          "status": 200,
+          "title": "설정 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/login.php",
+          "width": 1024,
+          "status": 200,
+          "title": "로그인 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/register.php",
+          "width": 1024,
+          "status": 200,
+          "title": "회원가입약관 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/password_lost.php",
+          "width": 1024,
+          "status": 200,
+          "title": "회원정보 찾기 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/search.php",
+          "width": 1024,
+          "status": 200,
+          "title": "전체검색 결과 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/board.php?bo_table=free",
+          "width": 1024,
+          "status": 200,
+          "title": "자유게시판 페이지 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/board.php?bo_table=notice",
+          "width": 1024,
+          "status": 200,
+          "title": "공지사항 페이지 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/content.php?co_id=privacy",
+          "width": 1024,
+          "status": 200,
+          "title": "개인정보 처리방침 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/content.php?co_id=provision",
+          "width": 1024,
+          "status": 200,
+          "title": "서비스 이용약관 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-download.php",
+          "width": 1024,
+          "status": 200,
+          "kind": "apk_download",
+          "bytes": 4579329,
+          "sha256": "2d6a5131898eeaeb8eb98a58cc799cf9fb34551511d19bbd7ce1abfe6e2a2fd2",
+          "issues": []
+        },
+        {
+          "route": "/noa-youtube.php?world=1",
+          "width": 1024,
+          "status": 200,
+          "title": "YouTube | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 368,
+              "titleWidth": 368,
+              "imageWidth": 368,
+              "display": "block"
+            },
+            {
+              "width": 368,
+              "titleWidth": 368,
+              "imageWidth": 368,
+              "display": "block"
+            },
+            {
+              "width": 368,
+              "titleWidth": 368,
+              "imageWidth": 368,
+              "display": "block"
+            },
+            {
+              "width": 368,
+              "titleWidth": 368,
+              "imageWidth": 368,
+              "display": "block"
+            },
+            {
+              "width": 368,
+              "titleWidth": 368,
+              "imageWidth": 368,
+              "display": "block"
+            },
+            {
+              "width": 368,
+              "titleWidth": 368,
+              "imageWidth": 368,
+              "display": "block"
+            },
+            {
+              "width": 368,
+              "titleWidth": 368,
+              "imageWidth": 368,
+              "display": "block"
+            },
+            {
+              "width": 368,
+              "titleWidth": 368,
+              "imageWidth": 368,
+              "display": "block"
+            }
+          ],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-my.php",
+          "width": 1024,
+          "status": 200,
+          "title": "MY | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php?genre=kpop-original&act=1",
+          "width": 1024,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n음",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 762,
+              "titleWidth": 632,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 762,
+              "titleWidth": 632,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 762,
+              "titleWidth": 632,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 762,
+              "titleWidth": 632,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 762,
+              "titleWidth": 632,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 762,
+              "titleWidth": 632,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 762,
+              "titleWidth": 632,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 762,
+              "titleWidth": 632,
+              "imageWidth": null,
+              "display": "flex"
+            }
+          ],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 10,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php?track=single%3Akpop-original%3A01",
+          "width": 1024,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n음",
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 762,
+              "titleWidth": 632,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 762,
+              "titleWidth": 632,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 762,
+              "titleWidth": 632,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 762,
+              "titleWidth": 632,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 762,
+              "titleWidth": 632,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 762,
+              "titleWidth": 632,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 762,
+              "titleWidth": 632,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 762,
+              "titleWidth": 632,
+              "imageWidth": null,
+              "display": "flex"
+            }
+          ],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 10,
+          "errors": [],
+          "issues": []
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 360,
+      "pages": [
+        {
+          "route": "/noa2.php",
+          "width": 360,
+          "status": 200,
+          "title": "NOA STUDIO | AI Artist Noa",
+          "bodyText": "NOA STUDIO\n로그인\nMusic beyondimagination.\n\n하나의 이야기, 서로 다른 울림.\n\n음악 영상 둘러보기\n재생 버튼으로 원본 메인 영상을 열 수 있습니다.\n",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [
+            {
+              "tag": "IMG",
+              "id": "",
+              "cls": "",
+              "right": 431
+            },
+            {
+              "tag": "IMG",
+              "id": "",
+              "cls": "",
+              "right": 431
+            }
+          ],
+          "cards": [
+            {
+              "width": 156,
+              "titleWidth": 156,
+              "imageWidth": 156,
+              "display": "block"
+            },
+            {
+              "width": 156,
+              "titleWidth": 156,
+              "imageWidth": 156,
+              "display": "block"
+            },
+            {
+              "width": 156,
+              "titleWidth": 156,
+              "imageWidth": 156,
+              "display": "block"
+            },
+            {
+              "width": 156,
+              "titleWidth": 156,
+              "imageWidth": 156,
+              "display": "block"
+            },
+            {
+              "width": 156,
+              "titleWidth": 156,
+              "imageWidth": 156,
+              "display": "block"
+            },
+            {
+              "width": 156,
+              "titleWidth": 156,
+              "imageWidth": 156,
+              "display": "block"
+            },
+            {
+              "width": 156,
+              "titleWidth": 156,
+              "imageWidth": 156,
+              "display": "block"
+            },
+            {
+              "width": 156,
+              "titleWidth": 156,
+              "imageWidth": 156,
+              "display": "block"
+            }
+          ],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-world.php",
+          "width": 360,
+          "status": 200,
+          "title": "NOA WORLD | NOA STUDIO",
+          "bodyText": "홈\nNOA WORLD\n\nMUSIC / CHARACTERS / STORIES\n\nNOA WORLD\n\n노래의 장면을 따라, 노아와 노엘의 이야기 속으로.\n\nFEMALE VOCAL\n\nNO",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php",
+          "width": 360,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "음원\n\nSuno 곡과 원본 음원을 만나보세요. · 491곡 · 52개 ACT\n\n음원\n전체 검색·목록\n오리지널 장르\n141개 곡\nEP 장르\n270개 곡\n사연곡\n44개 곡\n커버곡\n36",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [],
+          "cards": [],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-youtube.php",
+          "width": 360,
+          "status": 200,
+          "title": "YouTube | NOA STUDIO",
+          "bodyText": "NOA STUDIO / WATCH & GROW\n\nYouTube\n\n음악에 장면을 더하고, 다음 이야기를 발견하세요.\n\n음악\n통합 라이브러리\n음악 영상\nNOA WORLD · 공식 MV",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-catalog.php",
+          "width": 360,
+          "status": 200,
+          "title": "통합 음악 라이브러리 | NOA STUDIO",
+          "bodyText": "NOA STUDIO / ONE MUSIC LIBRARY\n\n통합 음악 라이브러리\n음악 감상\n통합 목록\nYouTube\n\n기존에 공개가 확인된 음악·ACT 및 내 플레이리스트 288개\n",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-settings.php",
+          "width": 360,
+          "status": 200,
+          "title": "설정 | NOA STUDIO",
+          "bodyText": "NOA STUDIO / PREFERENCES\n\n테마와 언어\n\n음악과 가사 원문을 유지하며 화면의 테마와 언어를 바꿉니다.\n\n테마\nNOA STUDIO · Graphite\nNOA ST",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/login.php",
+          "width": 360,
+          "status": 200,
+          "title": "로그인 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n로그인\n회원\n로그인\n회원가입\n회원로그인\n회원아이디\n필수\n \n비밀번호\n필수\n 로그인\n자동로그인\n아이디/비밀번호 찾기\n홈\nYouTube\n세계관\n음원\nMY\nN",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/register.php",
+          "width": 360,
+          "status": 200,
+          "title": "회원가입약관 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n회원가입약관\n\n 회원가입약관 및 개인정보 수집 및 이용의 내용에 동의하셔야 회원가입 하실 수 있습니다.\n\n회원가입약관\n회원가입약관의 내용에 동의합니다.\n",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/password_lost.php",
+          "width": 360,
+          "status": 200,
+          "title": "회원정보 찾기 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n회원정보 찾기\n\n회원가입 시 등록하신 이메일 주소를 입력해 주세요.\n해당 이메일로 아이디와 비밀번호 정보를 보내드립니다.\n\nE-mail 주소\n필수\n자동등",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/search.php",
+          "width": 360,
+          "status": 200,
+          "title": "전체검색 결과 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n전체검색 결과\n상세검색\n게시판 그룹선택\n전체 분류\n커뮤니티\n검색조건\n제목+내용\n제목\n내용\n회원아이디\n이름\n검색어\n필수\n검색\nAND\nOR\n홈\nYouTube",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/board.php?bo_table=free",
+          "width": 360,
+          "status": 200,
+          "title": "자유게시판 페이지 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n자유게시판 페이지\nTotal 0건 1 페이지\n게시판 검색\n글쓰기\n자유게시판 목록\n번호\t제목\t글쓴이\t조회\t날짜\n게시물이 없습니다.\n글쓰기\n홈\nYouTube",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/board.php?bo_table=notice",
+          "width": 360,
+          "status": 200,
+          "title": "공지사항 페이지 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n공지사항 페이지\nTotal 0건 1 페이지\n게시판 검색\n글쓰기\n공지사항 목록\n번호\t제목\t글쓴이\t조회\t날짜\n게시물이 없습니다.\n글쓰기\n홈\nYouTube\n세",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/content.php?co_id=privacy",
+          "width": 360,
+          "status": 200,
+          "title": "개인정보 처리방침 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n개인정보 처리방침\n개인정보 처리방침\n\n개인정보 처리방침에 대한 내용을 입력하십시오.\n\n홈\nYouTube\n세계관\n음원\nMY\nNOA STUDIO · Musi",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/content.php?co_id=provision",
+          "width": 360,
+          "status": 200,
+          "title": "서비스 이용약관 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n서비스 이용약관\n서비스 이용약관\n\n서비스 이용약관에 대한 내용을 입력하십시오.\n\n홈\nYouTube\n세계관\n음원\nMY\nNOA STUDIO · Music. ",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-download.php",
+          "width": 360,
+          "status": 200,
+          "kind": "apk_download",
+          "bytes": 4579329,
+          "sha256": "2d6a5131898eeaeb8eb98a58cc799cf9fb34551511d19bbd7ce1abfe6e2a2fd2",
+          "issues": []
+        },
+        {
+          "route": "/noa-youtube.php?world=1",
+          "width": 360,
+          "status": 200,
+          "title": "YouTube | NOA STUDIO",
+          "bodyText": "NOA STUDIO / WATCH & GROW\n\nYouTube\n\n음악에 장면을 더하고, 다음 이야기를 발견하세요.\n\n음악\n통합 라이브러리\n음악 영상\nNOA WORLD · 공식 MV",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 324,
+              "titleWidth": 324,
+              "imageWidth": 324,
+              "display": "block"
+            },
+            {
+              "width": 324,
+              "titleWidth": 324,
+              "imageWidth": 324,
+              "display": "block"
+            },
+            {
+              "width": 324,
+              "titleWidth": 324,
+              "imageWidth": 324,
+              "display": "block"
+            },
+            {
+              "width": 324,
+              "titleWidth": 324,
+              "imageWidth": 324,
+              "display": "block"
+            },
+            {
+              "width": 324,
+              "titleWidth": 324,
+              "imageWidth": 324,
+              "display": "block"
+            },
+            {
+              "width": 324,
+              "titleWidth": 324,
+              "imageWidth": 324,
+              "display": "block"
+            },
+            {
+              "width": 324,
+              "titleWidth": 324,
+              "imageWidth": 324,
+              "display": "block"
+            },
+            {
+              "width": 324,
+              "titleWidth": 324,
+              "imageWidth": 324,
+              "display": "block"
+            }
+          ],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-my.php",
+          "width": 360,
+          "status": 200,
+          "title": "MY | NOA STUDIO",
+          "bodyText": "YOUR MUSIC, YOUR SPACE\n\nMY\n\n나의 음악, 보관함과 취향을 한곳에서.\n\n최근 재생\n이 탭에서 실제 재생한 음원이 없습니다.\n\n이 탭의 음원 재생 이력입니다. 다",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php?genre=kpop-original&act=1",
+          "width": 360,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "음원\n\nSuno 곡과 원본 음원을 만나보세요. · 491곡 · 52개 ACT\n\n음원\n/\n오리지널 장르\n/\nK-POP Original\n/\nACT 1\n전체 검색·목록\n\n10곡\n\n모든 ",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 324,
+              "titleWidth": 194,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 324,
+              "titleWidth": 194,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 324,
+              "titleWidth": 194,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 324,
+              "titleWidth": 194,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 324,
+              "titleWidth": 194,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 324,
+              "titleWidth": 194,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 324,
+              "titleWidth": 194,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 324,
+              "titleWidth": 194,
+              "imageWidth": null,
+              "display": "flex"
+            }
+          ],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 10,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php?track=single%3Akpop-original%3A01",
+          "width": 360,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "음원\n\nSuno 곡과 원본 음원을 만나보세요. · 491곡 · 52개 ACT\n\n음원\n/\n오리지널 장르\n/\nK-POP Original\n/\nACT 1\n전체 검색·목록\n\n10곡\n\nAI ",
+          "viewport": 360,
+          "scrollWidth": 360,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 324,
+              "titleWidth": 194,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 324,
+              "titleWidth": 194,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 324,
+              "titleWidth": 194,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 324,
+              "titleWidth": 194,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 324,
+              "titleWidth": 194,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 324,
+              "titleWidth": 194,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 324,
+              "titleWidth": 194,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 324,
+              "titleWidth": 194,
+              "imageWidth": null,
+              "display": "flex"
+            }
+          ],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 10,
+          "errors": [],
+          "issues": []
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 430,
+      "pages": [
+        {
+          "route": "/noa2.php",
+          "width": 430,
+          "status": 200,
+          "title": "NOA STUDIO | AI Artist Noa",
+          "bodyText": "NOA STUDIO\n로그인\nMusic beyondimagination.\n\n하나의 이야기, 서로 다른 울림.\n\n음악 영상 둘러보기\n재생 버튼으로 원본 메인 영상을 열 수 있습니다.\n",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [
+            {
+              "tag": "IMG",
+              "id": "",
+              "cls": "",
+              "right": 527
+            },
+            {
+              "tag": "IMG",
+              "id": "",
+              "cls": "",
+              "right": 527
+            }
+          ],
+          "cards": [
+            {
+              "width": 191,
+              "titleWidth": 191,
+              "imageWidth": 191,
+              "display": "block"
+            },
+            {
+              "width": 191,
+              "titleWidth": 191,
+              "imageWidth": 191,
+              "display": "block"
+            },
+            {
+              "width": 191,
+              "titleWidth": 191,
+              "imageWidth": 191,
+              "display": "block"
+            },
+            {
+              "width": 191,
+              "titleWidth": 191,
+              "imageWidth": 191,
+              "display": "block"
+            },
+            {
+              "width": 191,
+              "titleWidth": 191,
+              "imageWidth": 191,
+              "display": "block"
+            },
+            {
+              "width": 191,
+              "titleWidth": 191,
+              "imageWidth": 191,
+              "display": "block"
+            },
+            {
+              "width": 191,
+              "titleWidth": 191,
+              "imageWidth": 191,
+              "display": "block"
+            },
+            {
+              "width": 191,
+              "titleWidth": 191,
+              "imageWidth": 191,
+              "display": "block"
+            }
+          ],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-world.php",
+          "width": 430,
+          "status": 200,
+          "title": "NOA WORLD | NOA STUDIO",
+          "bodyText": "홈\nNOA WORLD\n\nMUSIC / CHARACTERS / STORIES\n\nNOA WORLD\n\n노래의 장면을 따라, 노아와 노엘의 이야기 속으로.\n\nFEMALE VOCAL\n\nNO",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php",
+          "width": 430,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "음원\n\nSuno 곡과 원본 음원을 만나보세요. · 491곡 · 52개 ACT\n\n음원\n전체 검색·목록\n오리지널 장르\n141개 곡\nEP 장르\n270개 곡\n사연곡\n44개 곡\n커버곡\n36",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [],
+          "cards": [],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-youtube.php",
+          "width": 430,
+          "status": 200,
+          "title": "YouTube | NOA STUDIO",
+          "bodyText": "NOA STUDIO / WATCH & GROW\n\nYouTube\n\n음악에 장면을 더하고, 다음 이야기를 발견하세요.\n\n음악\n통합 라이브러리\n음악 영상\nNOA WORLD · 공식 MV",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-catalog.php",
+          "width": 430,
+          "status": 200,
+          "title": "통합 음악 라이브러리 | NOA STUDIO",
+          "bodyText": "NOA STUDIO / ONE MUSIC LIBRARY\n\n통합 음악 라이브러리\n음악 감상\n통합 목록\nYouTube\n\n기존에 공개가 확인된 음악·ACT 및 내 플레이리스트 288개\n",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-settings.php",
+          "width": 430,
+          "status": 200,
+          "title": "설정 | NOA STUDIO",
+          "bodyText": "NOA STUDIO / PREFERENCES\n\n테마와 언어\n\n음악과 가사 원문을 유지하며 화면의 테마와 언어를 바꿉니다.\n\n설정을 불러오는 중입니다.\n\nNOA STUDIO · Mu",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/login.php",
+          "width": 430,
+          "status": 200,
+          "title": "로그인 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n로그인\n회원\n로그인\n회원가입\n회원로그인\n회원아이디\n필수\n \n비밀번호\n필수\n 로그인\n자동로그인\n아이디/비밀번호 찾기\n홈\nYouTube\n세계관\n음원\nMY\nN",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/register.php",
+          "width": 430,
+          "status": 200,
+          "title": "회원가입약관 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n회원가입약관\n\n 회원가입약관 및 개인정보 수집 및 이용의 내용에 동의하셔야 회원가입 하실 수 있습니다.\n\n회원가입약관\n회원가입약관의 내용에 동의합니다.\n",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/password_lost.php",
+          "width": 430,
+          "status": 200,
+          "title": "회원정보 찾기 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n회원정보 찾기\n\n회원가입 시 등록하신 이메일 주소를 입력해 주세요.\n해당 이메일로 아이디와 비밀번호 정보를 보내드립니다.\n\nE-mail 주소\n필수\n자동등",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/search.php",
+          "width": 430,
+          "status": 200,
+          "title": "전체검색 결과 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n전체검색 결과\n상세검색\n게시판 그룹선택\n전체 분류\n커뮤니티\n검색조건\n제목+내용\n제목\n내용\n회원아이디\n이름\n검색어\n필수\n검색\nAND\nOR\n홈\nYouTube",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/board.php?bo_table=free",
+          "width": 430,
+          "status": 200,
+          "title": "자유게시판 페이지 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n자유게시판 페이지\nTotal 0건 1 페이지\n게시판 검색\n글쓰기\n자유게시판 목록\n번호\t제목\t글쓴이\t조회\t날짜\n게시물이 없습니다.\n글쓰기\n홈\nYouTube",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/board.php?bo_table=notice",
+          "width": 430,
+          "status": 200,
+          "title": "공지사항 페이지 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n공지사항 페이지\nTotal 0건 1 페이지\n게시판 검색\n글쓰기\n공지사항 목록\n번호\t제목\t글쓴이\t조회\t날짜\n게시물이 없습니다.\n글쓰기\n홈\nYouTube\n세",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/content.php?co_id=privacy",
+          "width": 430,
+          "status": 200,
+          "title": "개인정보 처리방침 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n개인정보 처리방침\n개인정보 처리방침\n\n개인정보 처리방침에 대한 내용을 입력하십시오.\n\n홈\nYouTube\n세계관\n음원\nMY\nNOA STUDIO · Musi",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/content.php?co_id=provision",
+          "width": 430,
+          "status": 200,
+          "title": "서비스 이용약관 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\n로그인\n서비스 이용약관\n서비스 이용약관\n\n서비스 이용약관에 대한 내용을 입력하십시오.\n\n홈\nYouTube\n세계관\n음원\nMY\nNOA STUDIO · Music. ",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-download.php",
+          "width": 430,
+          "status": 200,
+          "kind": "apk_download",
+          "bytes": 4579329,
+          "sha256": "2d6a5131898eeaeb8eb98a58cc799cf9fb34551511d19bbd7ce1abfe6e2a2fd2",
+          "issues": []
+        },
+        {
+          "route": "/noa-youtube.php?world=1",
+          "width": 430,
+          "status": 200,
+          "title": "YouTube | NOA STUDIO",
+          "bodyText": "NOA STUDIO / WATCH & GROW\n\nYouTube\n\n음악에 장면을 더하고, 다음 이야기를 발견하세요.\n\n음악\n통합 라이브러리\n음악 영상\nNOA WORLD · 공식 MV",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 394,
+              "titleWidth": 394,
+              "imageWidth": 394,
+              "display": "block"
+            },
+            {
+              "width": 394,
+              "titleWidth": 394,
+              "imageWidth": 394,
+              "display": "block"
+            },
+            {
+              "width": 394,
+              "titleWidth": 394,
+              "imageWidth": 394,
+              "display": "block"
+            },
+            {
+              "width": 394,
+              "titleWidth": 394,
+              "imageWidth": 394,
+              "display": "block"
+            },
+            {
+              "width": 394,
+              "titleWidth": 394,
+              "imageWidth": 394,
+              "display": "block"
+            },
+            {
+              "width": 394,
+              "titleWidth": 394,
+              "imageWidth": 394,
+              "display": "block"
+            },
+            {
+              "width": 394,
+              "titleWidth": 394,
+              "imageWidth": 394,
+              "display": "block"
+            },
+            {
+              "width": 394,
+              "titleWidth": 394,
+              "imageWidth": 394,
+              "display": "block"
+            }
+          ],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-my.php",
+          "width": 430,
+          "status": 200,
+          "title": "MY | NOA STUDIO",
+          "bodyText": "YOUR MUSIC, YOUR SPACE\n\nMY\n\n나의 음악, 보관함과 취향을 한곳에서.\n\n최근 재생\n이 탭에서 실제 재생한 음원이 없습니다.\n\n이 탭의 음원 재생 이력입니다. 다",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php?genre=kpop-original&act=1",
+          "width": 430,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "음원\n\nSuno 곡과 원본 음원을 만나보세요. · 491곡 · 52개 ACT\n\n음원\n/\n오리지널 장르\n/\nK-POP Original\n/\nACT 1\n전체 검색·목록\n\n10곡\n\n모든 ",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 394,
+              "titleWidth": 264,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 394,
+              "titleWidth": 264,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 394,
+              "titleWidth": 264,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 394,
+              "titleWidth": 264,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 394,
+              "titleWidth": 264,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 394,
+              "titleWidth": 264,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 394,
+              "titleWidth": 264,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 394,
+              "titleWidth": 264,
+              "imageWidth": null,
+              "display": "flex"
+            }
+          ],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 10,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php?track=single%3Akpop-original%3A01",
+          "width": 430,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "음원\n\nSuno 곡과 원본 음원을 만나보세요. · 491곡 · 52개 ACT\n\n음원\n/\n오리지널 장르\n/\nK-POP Original\n/\nACT 1\n전체 검색·목록\n\n10곡\n\nAI ",
+          "viewport": 430,
+          "scrollWidth": 430,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 394,
+              "titleWidth": 264,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 394,
+              "titleWidth": 264,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 394,
+              "titleWidth": 264,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 394,
+              "titleWidth": 264,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 394,
+              "titleWidth": 264,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 394,
+              "titleWidth": 264,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 394,
+              "titleWidth": 264,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 394,
+              "titleWidth": 264,
+              "imageWidth": null,
+              "display": "flex"
+            }
+          ],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": {
+            "top": 828,
+            "labels": [
+              "홈",
+              "YouTube",
+              "세계관",
+              "음원",
+              "MY"
+            ]
+          },
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 10,
+          "errors": [],
+          "issues": []
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 1920,
+      "pages": [
+        {
+          "route": "/noa2.php",
+          "width": 1920,
+          "status": 200,
+          "title": "NOA STUDIO | AI Artist Noa",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 379,
+              "titleWidth": 379,
+              "imageWidth": 379,
+              "display": "block"
+            },
+            {
+              "width": 379,
+              "titleWidth": 379,
+              "imageWidth": 379,
+              "display": "block"
+            },
+            {
+              "width": 379,
+              "titleWidth": 379,
+              "imageWidth": 379,
+              "display": "block"
+            },
+            {
+              "width": 379,
+              "titleWidth": 379,
+              "imageWidth": 379,
+              "display": "block"
+            },
+            {
+              "width": 379,
+              "titleWidth": 379,
+              "imageWidth": 379,
+              "display": "block"
+            },
+            {
+              "width": 379,
+              "titleWidth": 379,
+              "imageWidth": 379,
+              "display": "block"
+            },
+            {
+              "width": 379,
+              "titleWidth": 379,
+              "imageWidth": 379,
+              "display": "block"
+            },
+            {
+              "width": 379,
+              "titleWidth": 379,
+              "imageWidth": 379,
+              "display": "block"
+            }
+          ],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-world.php",
+          "width": 1920,
+          "status": 200,
+          "title": "NOA WORLD | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n홈",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php",
+          "width": 1920,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n음",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-youtube.php",
+          "width": 1920,
+          "status": 200,
+          "title": "YouTube | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-catalog.php",
+          "width": 1920,
+          "status": 200,
+          "title": "통합 음악 라이브러리 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-settings.php",
+          "width": 1920,
+          "status": 200,
+          "title": "설정 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/login.php",
+          "width": 1920,
+          "status": 200,
+          "title": "로그인 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/register.php",
+          "width": 1920,
+          "status": 200,
+          "title": "회원가입약관 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/password_lost.php",
+          "width": 1920,
+          "status": 200,
+          "title": "회원정보 찾기 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/search.php",
+          "width": 1920,
+          "status": 200,
+          "title": "전체검색 결과 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/board.php?bo_table=free",
+          "width": 1920,
+          "status": 200,
+          "title": "자유게시판 페이지 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/board.php?bo_table=notice",
+          "width": 1920,
+          "status": 200,
+          "title": "공지사항 페이지 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/content.php?co_id=privacy",
+          "width": 1920,
+          "status": 200,
+          "title": "개인정보 처리방침 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/content.php?co_id=provision",
+          "width": 1920,
+          "status": 200,
+          "title": "서비스 이용약관 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-download.php",
+          "width": 1920,
+          "status": 200,
+          "kind": "apk_download",
+          "bytes": 4579329,
+          "sha256": "2d6a5131898eeaeb8eb98a58cc799cf9fb34551511d19bbd7ce1abfe6e2a2fd2",
+          "issues": []
+        },
+        {
+          "route": "/noa-youtube.php?world=1",
+          "width": 1920,
+          "status": 200,
+          "title": "YouTube | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 294,
+              "titleWidth": 294,
+              "imageWidth": 294,
+              "display": "block"
+            },
+            {
+              "width": 294,
+              "titleWidth": 294,
+              "imageWidth": 294,
+              "display": "block"
+            },
+            {
+              "width": 294,
+              "titleWidth": 294,
+              "imageWidth": 294,
+              "display": "block"
+            },
+            {
+              "width": 294,
+              "titleWidth": 294,
+              "imageWidth": 294,
+              "display": "block"
+            },
+            {
+              "width": 294,
+              "titleWidth": 294,
+              "imageWidth": 294,
+              "display": "block"
+            },
+            {
+              "width": 294,
+              "titleWidth": 294,
+              "imageWidth": 294,
+              "display": "block"
+            },
+            {
+              "width": 294,
+              "titleWidth": 294,
+              "imageWidth": 294,
+              "display": "block"
+            },
+            {
+              "width": 294,
+              "titleWidth": 294,
+              "imageWidth": 294,
+              "display": "block"
+            }
+          ],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-my.php",
+          "width": 1920,
+          "status": 200,
+          "title": "MY | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php?genre=kpop-original&act=1",
+          "width": 1920,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n음",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 509,
+              "titleWidth": 379,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 509,
+              "titleWidth": 379,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 509,
+              "titleWidth": 379,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 509,
+              "titleWidth": 379,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 509,
+              "titleWidth": 379,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 509,
+              "titleWidth": 379,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 509,
+              "titleWidth": 379,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 509,
+              "titleWidth": 379,
+              "imageWidth": null,
+              "display": "flex"
+            }
+          ],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 10,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php?track=single%3Akpop-original%3A01",
+          "width": 1920,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n음",
+          "viewport": 1920,
+          "scrollWidth": 1920,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 509,
+              "titleWidth": 379,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 509,
+              "titleWidth": 379,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 509,
+              "titleWidth": 379,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 509,
+              "titleWidth": 379,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 509,
+              "titleWidth": 379,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 509,
+              "titleWidth": 379,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 509,
+              "titleWidth": 379,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 509,
+              "titleWidth": 379,
+              "imageWidth": null,
+              "display": "flex"
+            }
+          ],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 10,
+          "errors": [],
+          "issues": []
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 1280,
+      "pages": [
+        {
+          "route": "/noa2.php",
+          "width": 1280,
+          "status": 200,
+          "title": "NOA STUDIO | AI Artist Noa",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [
+            {
+              "tag": "IMG",
+              "id": "",
+              "cls": "",
+              "right": 1361
+            }
+          ],
+          "cards": [
+            {
+              "width": 227,
+              "titleWidth": 227,
+              "imageWidth": 227,
+              "display": "block"
+            },
+            {
+              "width": 227,
+              "titleWidth": 227,
+              "imageWidth": 227,
+              "display": "block"
+            },
+            {
+              "width": 227,
+              "titleWidth": 227,
+              "imageWidth": 227,
+              "display": "block"
+            },
+            {
+              "width": 227,
+              "titleWidth": 227,
+              "imageWidth": 227,
+              "display": "block"
+            },
+            {
+              "width": 227,
+              "titleWidth": 227,
+              "imageWidth": 227,
+              "display": "block"
+            },
+            {
+              "width": 227,
+              "titleWidth": 227,
+              "imageWidth": 227,
+              "display": "block"
+            },
+            {
+              "width": 227,
+              "titleWidth": 227,
+              "imageWidth": 227,
+              "display": "block"
+            },
+            {
+              "width": 227,
+              "titleWidth": 227,
+              "imageWidth": 227,
+              "display": "block"
+            }
+          ],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-world.php",
+          "width": 1280,
+          "status": 200,
+          "title": "NOA WORLD | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n홈",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php",
+          "width": 1280,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n음",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [],
+          "cards": [],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-youtube.php",
+          "width": 1280,
+          "status": 200,
+          "title": "YouTube | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-catalog.php",
+          "width": 1280,
+          "status": 200,
+          "title": "통합 음악 라이브러리 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-settings.php",
+          "width": 1280,
+          "status": 200,
+          "title": "설정 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/login.php",
+          "width": 1280,
+          "status": 200,
+          "title": "로그인 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/register.php",
+          "width": 1280,
+          "status": 200,
+          "title": "회원가입약관 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/password_lost.php",
+          "width": 1280,
+          "status": 200,
+          "title": "회원정보 찾기 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/search.php",
+          "width": 1280,
+          "status": 200,
+          "title": "전체검색 결과 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/board.php?bo_table=free",
+          "width": 1280,
+          "status": 200,
+          "title": "자유게시판 페이지 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/board.php?bo_table=notice",
+          "width": 1280,
+          "status": 200,
+          "title": "공지사항 페이지 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/content.php?co_id=privacy",
+          "width": 1280,
+          "status": 200,
+          "title": "개인정보 처리방침 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/bbs/content.php?co_id=provision",
+          "width": 1280,
+          "status": 200,
+          "title": "서비스 이용약관 | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\nN",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-download.php",
+          "width": 1280,
+          "status": 200,
+          "kind": "apk_download",
+          "bytes": 4579329,
+          "sha256": "2d6a5131898eeaeb8eb98a58cc799cf9fb34551511d19bbd7ce1abfe6e2a2fd2",
+          "issues": []
+        },
+        {
+          "route": "/noa-youtube.php?world=1",
+          "width": 1280,
+          "status": 200,
+          "title": "YouTube | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 305,
+              "titleWidth": 305,
+              "imageWidth": 305,
+              "display": "block"
+            },
+            {
+              "width": 305,
+              "titleWidth": 305,
+              "imageWidth": 305,
+              "display": "block"
+            },
+            {
+              "width": 305,
+              "titleWidth": 305,
+              "imageWidth": 305,
+              "display": "block"
+            },
+            {
+              "width": 305,
+              "titleWidth": 305,
+              "imageWidth": 305,
+              "display": "block"
+            },
+            {
+              "width": 305,
+              "titleWidth": 305,
+              "imageWidth": 305,
+              "display": "block"
+            },
+            {
+              "width": 305,
+              "titleWidth": 305,
+              "imageWidth": 305,
+              "display": "block"
+            },
+            {
+              "width": 305,
+              "titleWidth": 305,
+              "imageWidth": 305,
+              "display": "block"
+            },
+            {
+              "width": 305,
+              "titleWidth": 305,
+              "imageWidth": 305,
+              "display": "block"
+            }
+          ],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-my.php",
+          "width": 1280,
+          "status": 200,
+          "title": "MY | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n\n",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [],
+          "cards": [],
+          "transport": null,
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 0,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php?genre=kpop-original&act=1",
+          "width": 1280,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n음",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 471,
+              "titleWidth": 341,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 471,
+              "titleWidth": 341,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 471,
+              "titleWidth": 341,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 471,
+              "titleWidth": 341,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 471,
+              "titleWidth": 341,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 471,
+              "titleWidth": 341,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 471,
+              "titleWidth": 341,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 471,
+              "titleWidth": 341,
+              "imageWidth": null,
+              "display": "flex"
+            }
+          ],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 10,
+          "errors": [],
+          "issues": []
+        },
+        {
+          "route": "/noa-music.php?track=single%3Akpop-original%3A01",
+          "width": 1280,
+          "status": 200,
+          "title": "Music Library | NOA STUDIO",
+          "bodyText": "NOA STUDIO\nAI ARTIST NOA\n홈\nYouTube\n세계관\n음원\nMY\nMusic. Stories. Starlight.\nNOA STUDIO · Android ↗\n로그인\n음",
+          "viewport": 1280,
+          "scrollWidth": 1280,
+          "overflow": [],
+          "cards": [
+            {
+              "width": 471,
+              "titleWidth": 341,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 471,
+              "titleWidth": 341,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 471,
+              "titleWidth": 341,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 471,
+              "titleWidth": 341,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 471,
+              "titleWidth": 341,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 471,
+              "titleWidth": 341,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 471,
+              "titleWidth": 341,
+              "imageWidth": null,
+              "display": "flex"
+            },
+            {
+              "width": 471,
+              "titleWidth": 341,
+              "imageWidth": null,
+              "display": "flex"
+            }
+          ],
+          "transport": {
+            "left": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0
+          },
+          "mobileNav": null,
+          "desktopNav": [
+            "홈",
+            "YouTube",
+            "세계관",
+            "음원",
+            "MY"
+          ],
+          "visibleSongs": 10,
+          "errors": [],
+          "issues": []
+        }
+      ]
+    }
+  ],
+  "portraitVerification": {
+    "ok": true,
+    "results": [
+      {
+        "width": 320,
+        "portraits": [
+          {
+            "src": "/noa-assets/characters/noa-sheet.png",
+            "imageWidth": 1376,
+            "imageHeight": 768,
+            "windowWidth": 104,
+            "windowHeight": 88.265625,
+            "clippedTopFraction": 0.5819999938221369,
+            "clippedBottomFraction": 0.962173600978521,
+            "overflow": "hidden"
+          },
+          {
+            "src": "/noa-assets/characters/noel-sheet.png",
+            "imageWidth": 1376,
+            "imageHeight": 768,
+            "windowWidth": 104,
+            "windowHeight": 88.265625,
+            "clippedTopFraction": 0.58199996635036,
+            "clippedBottomFraction": 0.9621735984924962,
+            "overflow": "hidden"
+          }
+        ],
+        "horizontalOverflow": false
+      },
+      {
+        "width": 390,
+        "portraits": [
+          {
+            "src": "/noa-assets/characters/noa-sheet.png",
+            "imageWidth": 1376,
+            "imageHeight": 768,
+            "windowWidth": 104,
+            "windowHeight": 88.265625,
+            "clippedTopFraction": 0.5819999938221369,
+            "clippedBottomFraction": 0.962173600978521,
+            "overflow": "hidden"
+          },
+          {
+            "src": "/noa-assets/characters/noel-sheet.png",
+            "imageWidth": 1376,
+            "imageHeight": 768,
+            "windowWidth": 104,
+            "windowHeight": 88.265625,
+            "clippedTopFraction": 0.58199996635036,
+            "clippedBottomFraction": 0.9621735984924962,
+            "overflow": "hidden"
+          }
+        ],
+        "horizontalOverflow": false
+      },
+      {
+        "width": 1280,
+        "portraits": [
+          {
+            "src": "/noa-assets/characters/noa-sheet.png",
+            "imageWidth": 1376,
+            "imageHeight": 768,
+            "windowWidth": 140,
+            "windowHeight": 118.828125,
+            "clippedTopFraction": 0.582000004686797,
+            "clippedBottomFraction": 0.9621929757411388,
+            "overflow": "hidden"
+          },
+          {
+            "src": "/noa-assets/characters/noel-sheet.png",
+            "imageWidth": 1376,
+            "imageHeight": 768,
+            "windowWidth": 140,
+            "windowHeight": 118.828125,
+            "clippedTopFraction": 0.582000004686797,
+            "clippedBottomFraction": 0.9621929757411388,
+            "overflow": "hidden"
+          }
+        ],
+        "horizontalOverflow": false
+      }
+    ]
+  },
+  "latestEngineJobs": [
+    {
+      "id": 118957606080,
+      "name": "engines",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "fullVerificationStatus": "success",
+  "portraitCorrectionStatus": "success"
+}

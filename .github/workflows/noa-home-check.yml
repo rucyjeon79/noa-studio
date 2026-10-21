@@ -1,8 +1,10 @@
 name: NOA home production verification
+# Source-flow changes are tested after release by noa-quality-release.yml.
+# This independent check must not race the corresponding production deployment.
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/noa-home-check.yml', 'scripts/qa/noa-production-flows.mjs']
+    paths: ['.github/workflows/noa-home-check.yml']
   workflow_dispatch:
 permissions:
   contents: read
