@@ -1,4 +1,5 @@
 name: NOA UIUX visual gates and scoped production release
+# Validate original H264 clips in codec-capable Google Chrome; retain every media gate.
 on:
   pull_request:
     branches: [main]
@@ -33,7 +34,8 @@ jobs:
       - name: Render candidate at four widths without a public test site
         run: |
           npm install --prefix "$RUNNER_TEMP/noa-uiux" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
-          "$RUNNER_TEMP/noa-uiux/node_modules/.bin/playwright" install --with-deps chrome
+          "$RUNNER_TEMP/noa-uiux/node_modules/.bin/playwright" install --with-deps chromium
+          google-chrome --version
           cp scripts/qa/noa-uiux-release.mjs "$RUNNER_TEMP/noa-uiux/verify.mjs"
           NOA_SOURCE_ROOT="$GITHUB_WORKSPACE" NOA_UIUX_PHASE=candidate node "$RUNNER_TEMP/noa-uiux/verify.mjs"
       - uses: actions/upload-artifact@v4
@@ -53,7 +55,8 @@ jobs:
         run: |
           python3 -m pip install --user paramiko==3.5.1
           npm install --prefix "$RUNNER_TEMP/noa-uiux" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
-          "$RUNNER_TEMP/noa-uiux/node_modules/.bin/playwright" install --with-deps chrome
+          "$RUNNER_TEMP/noa-uiux/node_modules/.bin/playwright" install --with-deps chromium
+          google-chrome --version
           cp scripts/qa/noa-uiux-release.mjs "$RUNNER_TEMP/noa-uiux/verify.mjs"
       - name: Compare, privately back up and deploy only the UI allowlist
         id: release

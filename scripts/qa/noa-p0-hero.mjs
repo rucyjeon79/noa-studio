@@ -1,5 +1,5 @@
 import {chromium} from 'playwright';import fs from 'node:fs/promises';
-const origin='https://noastudio.ai.kr',b=await chromium.launch(),c=await b.newContext({reducedMotion:'no-preference'}),p=await c.newPage(),events=[];
+const origin='https://noastudio.ai.kr',b=await chromium.launch({channel:'chrome'}),c=await b.newContext({reducedMotion:'no-preference'}),p=await c.newPage(),events=[];
 await c.route(origin+'/noa-hero.js*',r=>r.fulfill({path:process.cwd()+'/deploy/noa-hero.js',contentType:'application/javascript'}));
 p.on('pageerror',e=>events.push({pageError:e.message}));p.on('requestfailed',r=>events.push({failed:r.url(),error:r.failure()?.errorText}));p.on('response',r=>{if(r.url().endsWith('.mp4'))events.push({url:r.url(),status:r.status(),type:r.headers()['content-type'],range:r.headers()['content-range']});});
 await p.goto(origin+'/',{waitUntil:'domcontentloaded'});await p.waitForTimeout(10000);
