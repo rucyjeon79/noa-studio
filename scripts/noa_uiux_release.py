@@ -6,6 +6,7 @@ from pathlib import Path
 import paramiko
 ROOT='/hosting/noastudio/html'
 BASELINE='018335cb6242f0a352ac7e564bc063f018d5bb9e'
+PREVIOUS_UI='1dcc4ea8fe1bf53514a00674c5a54d3e12f9506e'
 FILES={
  'noa-bridge/home-core.php':'bridge/home-core.php',
  'noa-app/home.php':'deploy/noa-app/home.php',
@@ -56,7 +57,8 @@ def main():
   old={p:read(s,ROOT+'/'+p) for p in FILES};new={p:Path(local).read_bytes()for p,local in FILES.items()}
   for p,local in FILES.items():
    baseline=subprocess.check_output(['git','show',BASELINE+':'+local])
-   if old[p]not in [baseline,new[p]]:raise RuntimeError('Unknown or concurrent production version; nothing changed: '+p)
+   previous_ui=subprocess.check_output(['git','show',PREVIOUS_UI+':'+local])
+   if old[p]not in [baseline,previous_ui,new[p]]:raise RuntimeError('Unknown or concurrent production version; nothing changed: '+p)
   protected={p:sha(read(s,ROOT+'/'+p))for p in PROTECTED}
   pending=[p for p in FILES if old[p]!=new[p]];parent='/hosting/noastudio/noa-deploy-backups';mkdir(s,parent)
   backup=parent+'/uiux-20261021-'+os.environ['GITHUB_RUN_ID']+'-'+os.environ.get('GITHUB_RUN_ATTEMPT','1');s.mkdir(backup,0o700)

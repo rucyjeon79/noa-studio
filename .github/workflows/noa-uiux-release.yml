@@ -1,5 +1,5 @@
 name: NOA UIUX visual gates and scoped production release
-# Verify a loaded player document before the next user MV selection.
+# Verify stable preview hit areas, native candidate media and preserved Chrome click evidence.
 on:
   pull_request:
     branches: [main]
