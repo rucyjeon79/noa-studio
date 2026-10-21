@@ -1,15 +1,29 @@
 {
-  "noa-bridge/catalog.php": "feec5334e459867c0f10a5928e04acb18b51fbebe0c79ffd8c0ef1c86bc4dfd4",
-  "noa-music.php": "159714d799ea73ae5feb813693949a6bdd25441c8703eea9c4d02bfce43cd208",
+  "noa-bridge/catalog.php": "ff4d4572267599a08cc866977e6f2cb8097cea23d74824d1a9ea149a2dc1b7bb",
+  "noa-music.php": "8cd355a0e2113bb3e1c64b3c3437146a56f7146a9df735ba857a6597dd3d501a",
   "noa-app/jukebox/operations.php": [
     "931c31f2c6f3bdc0cb25449fcddf9ff63ce976f12d5b36c03001e3c8e2743da2",
     "4d64a11e716a5e57b371dd7833f490aab84ddee0f439e32c98b18b29b6c39c62",
     "d1bc683308fdf279f669958d499543699ce921fefcb88e0bebf7c7ee0b0b9b7d",
-    "f00d6aa33752d3bf8a650bc467c79817e1854d6d41f025ca0a6f022a0adac7f4"
+    "f00d6aa33752d3bf8a650bc467c79817e1854d6d41f025ca0a6f022a0adac7f4",
+    "993ae534c9f4499a0fc561d6da8b7897980f6291112b22b8ffec5fcc42cfdb2b"
   ],
   "noa-app/jukebox/index.php": [
     "41fe351f97373cc8436bd53c41a50c5d762cb872d01d534cb95dd0f611250881",
-    "74140872d0368ef95ff0d97b64a333a7cdd827c67f3124f33e5fd07c9dce4df4"
+    "74140872d0368ef95ff0d97b64a333a7cdd827c67f3124f33e5fd07c9dce4df4",
+    "64782ebf98b2d4cad1836f17eb7c89c6c1a8d295ad8bd7df96be348eec69c196"
   ],
-  "noa-app/jukebox/core.php": "8c0f84720bde09d67c6c685985f555231eb78b00e868d1910d47172698e710d4"
+  "noa-app/jukebox/core.php": [
+    "8c0f84720bde09d67c6c685985f555231eb78b00e868d1910d47172698e710d4",
+    "545ed605ec18d84e1e4c772f58b2ead7b2ebfac30d691b24d91a7922e892bf9e"
+  ],
+  "noa-app/jukebox/cli.php": [
+    "63d0cbe9a57f2ca7318929d6b5889d857104b5e479d30a9a4ce22733035782e5"
+  ],
+  "noa-app/jukebox/stream.php": [
+    "a502b46f24cc53fb795689d4074e6a1750444cd605d2c5953e999aa35a682b04"
+  ],
+  "noa-app/jukebox/service.php": [
+    "034157bdf0a6fd862a5e6e9a7aba9f458005a737675613d69dd495683af4c100"
+  ]
 }

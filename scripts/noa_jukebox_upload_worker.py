@@ -1,0 +1,70 @@
+"""Process only administrator-uploaded MP3/WAV. No provider audio requests."""
+import hashlib,json,os,stat,tempfile
+from pathlib import Path
+import noa_jukebox_worker as media
+PRIVATE='/hosting/noastudio/noa-jukebox-private'
+
+def process_uploads(sftp,call,mkdir):
+    claimed=call('upload_claim')['uploads'];results=[]
+    for job in claimed:
+        auth={'id':job['id'],'lease':job['lease']}
+        try:
+            with tempfile.TemporaryDirectory(prefix='noa-upload-') as temp:
+                source=Path(temp)/('input.'+job['extension']);output=Path(temp)/'final.mp3'
+                remote=PRIVATE+'/incoming/'+job['id']+'/input.audio'
+                info=sftp.lstat(remote)
+                if not stat.S_ISREG(info.st_mode) or info.st_size!=job['bytes'] or info.st_size>256*1024*1024:raise ValueError('uploaded_input_size_or_type_changed')
+                if sftp.normalize(PRIVATE+'/incoming/'+job['id'])!=PRIVATE+'/incoming/'+job['id']:raise ValueError('unsafe_input_directory')
+                with sftp.open(remote,'rb') as src,source.open('xb') as dst:
+                    size=0
+                    while True:
+                        block=src.read(1024*1024)
+                        if not block:break
+                        size+=len(block)
+                        if size>job['bytes']:raise ValueError('uploaded_input_grew')
+                        dst.write(block)
+                if media.digest(source)!=job['sha256']:raise ValueError('uploaded_input_hash_changed')
+                def measured(before):
+                    if before['duration']<.5 or before['duration']>1800 or before['channels']>8:raise ValueError('audio_duration_or_channel_limit')
+                    if job['extension']=='mp3' and before['codec']!='mp3':raise ValueError('actual_codec_mismatch')
+                    if job['extension']=='wav' and not before['codec'].startswith('pcm_'):raise ValueError('actual_codec_mismatch')
+                    call('upload_state',auth|{'status':'processing','source_analysis':before})
+                before,settings,after=media.optimize(source,output,measured)
+                context=job['context'];row={'title':context['title'],'genre':context['genre'],'ep':context.get('ep',''),'originalArtist':context.get('originalArtist','')}
+                if job.get('cover_path') and not job.get('previous_sha256'):
+                    directory=Path(job['cover_path']).parent
+                else:
+                    directory=media.folder(row)
+                    if job.get('previous_sha256'):directory=directory.with_name(directory.name+' [v-'+job['id'][:12]+']')
+                title=context.get('suno_title') or context['title'];relative=directory/(media.component(title)+'.mp3')
+                # Directory identity is immutable for the publication. Never overwrite
+                # unknown bytes or an existing edition, including a stale worker's file.
+                for part in relative.parts:
+                    if part in ('','..','.') or '/' in part or '\\' in part:raise ValueError('invalid_output_path')
+                parent=PRIVATE;mkdir(parent,0o700);parent+='/media';mkdir(parent,0o700)
+                for part in relative.parts[:-1]:parent+='/'+part;mkdir(parent,0o700)
+                target=PRIVATE+'/media/'+relative.as_posix();digest=media.digest(output)
+                try:
+                    existing=sftp.lstat(target)
+                except FileNotFoundError:existing=None
+                if existing:
+                    if not stat.S_ISREG(existing.st_mode):raise ValueError('unsafe_output_file')
+                    with sftp.open(target,'rb') as f:existing_hash=hashlib.sha256(f.read()).hexdigest()
+                    if existing_hash!=digest:raise ValueError('existing_media_preserved')
+                else:
+                    stage=target+'.stage-'+job['id']
+                    with sftp.open(stage,'wb') as f:f.set_pipelined(True);f.write(output.read_bytes())
+                    sftp.chmod(stage,0o600);sftp.rename(stage,target)
+                result={'song_key':job['key'],'source_url':job['source_url'],'suno_id':context.get('suno_id',''),'suno_title':title,
+                        'audio_path':relative.as_posix(),'audio_bytes':output.stat().st_size,'audio_sha256':digest,
+                        'source_analysis':before,'correction':settings,'final_analysis':after,'errors':[],
+                        'audio_discovery':{'permission':'administrator_owned_upload','download_authorized':True,'provenance':'administrator_upload','upload_id':job['id']},
+                        'catalog_context':{'originalArtist':context.get('originalArtist',''),'act':context.get('act',''),'catalogId':context.get('catalogId')}}
+                committed=call('upload_commit',auth|{'result':result})
+                results.append({'key':job['key'],'ready':committed['ready'],'sha256':digest,'input_removed':committed['input_removed']})
+        except Exception as error:
+            code=str(error).split(':',1)[0] if isinstance(error,ValueError) else 'upload_processing_failed'
+            try:call('upload_fail',auth|{'error':code[:190]})
+            except Exception:code='processing_state_changed_or_network_error'
+            results.append({'key':job['key'],'ready':False,'error':code[:190]})
+    return results
