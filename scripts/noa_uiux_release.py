@@ -8,8 +8,10 @@ from noa_deploy_guard import deployment_preflight
 ROOT='/hosting/noastudio/html'
 BASELINE='018335cb6242f0a352ac7e564bc063f018d5bb9e'
 PREVIOUS_UI='54f1adb915109ae1c645d39e9a8d3f530af8cb2a'
-INTEGRATION_BASES=['7aec9e7691eda0299979d960f688857f0b489838','c62a27db853ae967b0a9ed497c879625c9d401a8','81641832f74621d600e227e5840e8c2c7b187a1b']
+INTEGRATION_BASES=['7aec9e7691eda0299979d960f688857f0b489838','c62a27db853ae967b0a9ed497c879625c9d401a8','81641832f74621d600e227e5840e8c2c7b187a1b','bd35d0a54069f904429a2bf2aa1e452c73463306']
 FILES={p:'deploy/'+p for p in ['noa-design.json','noa-ui.css','noa-ui.js','noa-app/home.php','noa-app/world-view.php','noa-my.php','noa-youtube.php','noa-catalog.php','noa-home.js','noa-hero.js','noa-ai-lab.php','noa-settings.php','noa-music.php','noa2.php','noa-world.css','noa-world.js','noa-youtube.css','noa-browse.js']}
+FILES.update({p:'deploy/'+p for p in ['theme/noa_studio/head.php', 'theme/noa_studio/mobile/head.php', 'theme/noa_studio/skin-bridge.php', 'noa-theme-admin.php']})
+FILES['extend/noa-design.extend.php']='deploy/noa-design.extend.php'
 PROTECTED=['index.php','common.php','config.php','data/dbconfig.php','head.php','tail.php','version.php','bbs/login.php','bbs/login_check.php']+['noa-app/jukebox/'+p for p in ['index.php','upload-core.php','core.php','upload.php','upload.js','upload.css']]
 PROTECTED+=['noa-ai-lab.js','noa-app/taxonomy/index.php','noa-app/taxonomy/ui.js','noa-bridge/home-core.php','noa-bridge/home-store.php','noa-bridge/taxonomy-core.php','noa-bridge/taxonomy-schema.php','noa-bridge/taxonomy-store.php','noa-bridge/youtube-store.php']
 PROTECTED+=['noa-bridge/'+p for p in ['home.php','popularity-core.php','popularity-store.php','popularity-schema.php','popularity-plays.php']]

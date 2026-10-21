@@ -39,5 +39,5 @@ export async function verifyRecovery({context,phase,base,out,report,auditPrecisi
  }
  await page.evaluate(selection=>window.NoaUI.apply(selection),original);
  await fs.writeFile(path.join(out,'recovery-report.json'),JSON.stringify({ok:true,phase,samples,accessChecks,realAuthenticatedOperations:false,sourceDataChanged:false},null,2));report.push({phase,recoverySamples:samples.length,searchRemoved:true,heroControlRemoved:true,soundVideoSeparated:true});
- }catch(error){await page.screenshot({path:path.join(out,'recovery-failure.jpg'),type:'jpeg'}).catch(()=>{});await fs.writeFile(path.join(out,'recovery-failure.json'),JSON.stringify({error:String(error),url:page.url(),size:page.viewportSize()},null,2));throw error;}finally{await page.close();}
+ }catch(error){await page.screenshot({path:path.join(out,'recovery-failure.jpg'),type:'jpeg'}).catch(()=>{});await fs.writeFile(path.join(out,'recovery-failure.json'),JSON.stringify({error:String(error),url:page.url(),size:page.viewportSize(),overflow:await page.evaluate(()=>[...document.querySelectorAll('main *')].filter(e=>e.getBoundingClientRect().right>innerWidth+1).map(e=>({tag:e.tagName,cls:e.className,text:e.textContent.slice(0,160),right:e.getBoundingClientRect().right})))},null,2));throw error;}finally{await page.close();}
 }
