@@ -29,7 +29,7 @@ try{
   });await yt.close();const ytPath=path.join(out,'public-youtube-source.json');await fs.writeFile(ytPath,JSON.stringify(youtube));
   const mr=await context.request.get(base+'/noa-music.php');assert.equal(mr.status(),200);const mh=await mr.text(),musicSource={};for(const name of ['records','collections']){const prefix='const '+name+'=',line=mh.split('\n').find(line=>line.startsWith(prefix));assert(line,'public music source missing '+name);musicSource[name]=JSON.parse(line.slice(prefix.length).replace(/;$/,''));}const musicPath=path.join(out,'public-music-source.json');await fs.writeFile(musicPath,JSON.stringify(musicSource));
   for(const [route,kind,role]of [['/','home',''],['/noa-world.php','world',''],['/noa-my.php','my',''],['/noa-youtube.php','youtube',''],['/noa-my-admin-fixture','my','admin'],['/noa-ai-lab-admin-fixture','ailab','admin'],['/noa-music.php','music',''],['/noa-music-member-fixture','music','member'],['/noa-music-admin-fixture','music','admin']]){
-   const rendered=execFileSync('php',[path.join(root,'tests/uiux/render.php'),kind,role],{env:{...process.env,NOA_WORLD_SOURCE:sourcePath,NOA_YOUTUBE_SOURCE:ytPath,NOA_MUSIC_SOURCE:musicPath},encoding:'utf8'});assert(!rendered.includes('Fatal error'));docs.set(route,rendered);
+   const rendered=execFileSync('php',[path.join(root,'tests/uiux/render.php'),kind,role],{env:{...process.env,NOA_WORLD_SOURCE:sourcePath,NOA_YOUTUBE_SOURCE:ytPath,NOA_MUSIC_SOURCE:musicPath},encoding:'utf8',maxBuffer:16*1024*1024});assert(!rendered.includes('Fatal error'));docs.set(route,rendered);
   }
   await context.route(base+'/**',async route=>{
    const request=route.request(),u=new URL(request.url());

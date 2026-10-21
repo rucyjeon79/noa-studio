@@ -271,3 +271,11 @@ html[data-noa-precision] .noa-world-act small,html[data-noa-precision] .noa-worl
 
 .noa-footer a{display:inline-flex;align-items:center;min-block-size:44px}
 .noa-audio-state{color:var(--noa-muted);font-size:10px}
+/* Shared collection cards: old poster rules placed the image absolutely under the text.
+   Keep media and copy in separate intrinsic rows in sound and video collections. */
+html[data-noa-precision] .noa-page .noa-browse-card{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;position:static;aspect-ratio:auto;justify-content:stretch;align-content:start;padding:0;isolation:auto;background:var(--noa-surface);color:var(--noa-text)}
+html[data-noa-precision] .noa-page .noa-browse-card::after{content:none}
+html[data-noa-precision] .noa-page .noa-browse-card>img{position:static;inset:auto;inline-size:100%;block-size:auto;aspect-ratio:16/9;object-fit:cover;z-index:auto;display:block}
+html[data-noa-precision] .noa-page .noa-browse-card>span{position:static;inset:auto;display:grid;gap:var(--noa-space-1);padding:var(--noa-space-3);background:var(--noa-surface);color:var(--noa-text)}
+html[data-noa-precision] .noa-page .noa-browse-card strong{color:var(--noa-text);text-shadow:none}
+html[data-noa-precision] .noa-page .noa-browse-card small{color:var(--noa-muted)}

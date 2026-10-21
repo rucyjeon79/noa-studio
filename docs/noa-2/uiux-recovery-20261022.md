@@ -12,6 +12,8 @@ Read-only production inventory run `39687517312`, artifact `12387112918`, found 
 - The automatic plan made a three-column ten-card layout use a two-track-wide first card plus nine others, leaving one third of the first row empty. Container-based balanced two-column rows now take precedence in that case.
 - No YouTube iframe, YouTube card or thumbnail was reproduced in the observed public sound page. Sound rows already use empty video IDs. The new sound-navigation filter rejects video-shaped records defensively; preserve existing source relationships and do not claim a reproduced data corruption.
 
+- Additional live computed-style evidence: `.noa-page .noa-browse-card` used a fixed portrait ratio with an absolutely positioned image. Desktop cards measured about 520×650px, with text sharing the image area. This legacy rule affected both music collections and YouTube collections; common intrinsic 16:9 media/copy rows replace it and are now measured by the DOM gate.
+
 ## Scoped implementation
 
 Shared `noa-ui.js` enhances text actions in main content using the existing SVG icon registry, retaining nodes, links, native summary semantics and handlers. Full card links, native navigation, footer legal links and marked document references are excluded. Translation attributes transfer onto the label node so language changes do not erase icons. New simple action links receive the same component.
