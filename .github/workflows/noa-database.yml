@@ -1,0 +1,53 @@
+name: NOA database administrator module
+on:
+  push:
+    branches: [main]
+    paths: ['deploy/noa-app/database/**', 'deploy/noa-database.extend.php', 'tests/database/**', 'scripts/noa_database_deploy.py', '.github/workflows/noa-database.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: noa-test-only, MYSQL_DATABASE: noa_db_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -pnoa-test-only" --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: PHP, SQL security and isolated actual restore
+        run: |
+          find deploy/noa-app/database -name '*.php' -exec php -l {} \;
+          php -l deploy/noa-database.extend.php
+          php tests/database/grammar.php
+          php tests/database/mysql.php
+          node --check deploy/noa-app/database/ui.js
+          python3 -m py_compile scripts/noa_database_deploy.py
+      - name: Authentication, CSRF and responsive browser checks
+        run: |
+          python3 tests/database/make_fixture.py
+          php -S 127.0.0.1:8098 -t /tmp/noa-db-http/html >/tmp/noa-db-http/server.log 2>&1 &
+          npm install --prefix "$RUNNER_TEMP/noa-db-qa" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-db-qa/node_modules/.bin/playwright" install --with-deps chromium
+          cp tests/database/browser.mjs "$RUNNER_TEMP/noa-db-qa/browser.mjs"
+          node "$RUNNER_TEMP/noa-db-qa/browser.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: database-validation-proof, path: database-proof/, retention-days: 14}
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: {group: noa-dothome-production, cancel-in-progress: false}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python3 -m pip install --user paramiko==3.5.1
+      - name: Add independently verified database module only
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: python3 scripts/noa_database_deploy.py
