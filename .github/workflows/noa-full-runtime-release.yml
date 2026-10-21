@@ -1,0 +1,38 @@
+name: NOA full reviewed runtime release
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-full-runtime-release.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-dothome-production, cancel-in-progress: false}
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, fetch-depth: 0}
+      - name: Validate all active runtime sources and read-only feature tests
+        run: |
+          find bridge deploy/noa-app deploy/theme/noa_studio -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          for f in deploy/noa*.php deploy/index.php; do php -l "$f"; done
+          for f in deploy/noa*.js; do node --check "$f"; done
+          php tests/catalog/home_test.php
+          php tests/catalog/world_test.php
+          php tests/catalog/world_mv_test.php
+          php tests/database/grammar.php
+          node --test scripts/noa_player_regression.test.mjs scripts/qa/*.test.mjs
+          python3 -m pip install --user paramiko==3.5.1
+      - name: Deploy safe known-main changes only, with private backups
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: python3 scripts/noa_full_runtime_deploy.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-full-runtime-release
+          path: full-release-proof/
+          retention-days: 14
