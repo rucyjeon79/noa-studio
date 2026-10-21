@@ -5,6 +5,17 @@ require_once __DIR__.'/core.php';
 require_once __DIR__.'/upload-core.php';
 function nj_operation(PDO $db,string $action,array $input=[]):array{
  nr_schema($db);
+ if($action==='qa_selftest')return nr_selftest($db);
+ if($action==='verification_snapshot'){$files=[];foreach(nj_assets($db) as $key=>$asset)if(nj_verified($asset,'audio'))$files[$key]=['sha256'=>$asset['audio_sha256'],'bytes'=>(int)$asset['audio_bytes']];return ['files'=>$files,'integrity'=>nj_operation($db,'integrity_snapshot')];}
+ if(in_array($action,['qa_probe','qa_upload'],true)){
+  $mode=(string)($input['mode']??'');$key=(string)($input['key']??'');if($action==='qa_upload'&&$mode!=='init'&&$mode!=='latest')$key=nu_row($db,(string)($input['id']??''))['song_key'];if(!str_starts_with($key,'jukebox:qa:')||!nj_document($db,$key))throw new DomainException('qa_song_required');
+  if($action==='qa_probe'){if(!in_array($mode,['http_503','html_response','empty_response','storage_insufficient'],true))throw new InvalidArgumentException('invalid_qa_scenario');return ['qa_response'=>$mode];}
+  if($mode==='init'){if((int)($input['bytes']??0)>16777216)throw new InvalidArgumentException('qa_fixture_too_large');return nu_initialize($db,$input,'recovery-verification');}
+  if($mode==='latest'){$u=nu_public($db,$key)['upload'];return $u?nr_reconcile($db,$key,$u['id']):['missing'=>true];}
+  if($mode==='chunk'){$raw=base64_decode((string)($input['chunk']??''),true);if($raw===false||strlen($raw)>NU_CHUNK)throw new InvalidArgumentException('invalid_chunk');return nu_chunk($db,(string)$input['id'],(int)($input['index']??-1),$raw);}
+  if($mode==='finish')return nu_finish($db,(string)$input['id']);
+  if($mode==='status')return nr_reconcile($db,$key,(string)$input['id']);throw new InvalidArgumentException('invalid_qa_scenario');
+ }
  if(in_array($action,['worker_start','worker_heartbeat','worker_finish'],true))return nr_worker($db,$action,$input);
  if($action==='runtime_health')return nr_health($db);
  if($action==='maintenance')return nr_maintenance($db);
@@ -12,7 +23,7 @@ function nj_operation(PDO $db,string $action,array $input=[]):array{
  if($action==='upload_reconcile'){$u=nu_row($db,(string)($input['id']??''));return nr_reconcile($db,$u['song_key'],$u['id']);}
  if($action==='queue_snapshot')return nq_snapshot($db,true);
  if($action==='upload_cleanup'){$u=nu_row($db,(string)($input['id']??''));if($u['status']!=='ready')throw new DomainException('not_ready');nu_clean($u);return ['input_removed'=>!is_file(nu_dir($u['id']).'/input.audio')];}
- if($action==='capabilities')return ['php'=>PHP_VERSION,'sapi'=>PHP_SAPI,'execution_limit_seconds'=>(int)ini_get('max_execution_time'),'shell_exec_callable'=>is_callable('shell_exec'),'proc_open_callable'=>is_callable('proc_open'),'free_bytes'=>(int)disk_free_space(nj_private()),'private_media_bytes'=>array_sum(array_map(fn($a)=>(int)($a['audio_bytes']??0),nj_assets($db))),'spool_quota_bytes'=>1073741824,'file_limit_bytes'=>NU_MAX,'processing_environment'=>'GitHub Actions Ubuntu worker; Dothome PHP upload/SQL only'];
+ if($action==='capabilities')return ['php'=>PHP_VERSION,'sapi'=>PHP_SAPI,'execution_limit_seconds'=>(int)ini_get('max_execution_time'),'shell_exec_callable'=>is_callable('shell_exec'),'proc_open_callable'=>is_callable('proc_open'),'free_bytes'=>(int)disk_free_space(nj_private()),'private_media_bytes'=>array_sum(array_map(fn($a)=>(int)($a['audio_bytes']??0),nj_assets($db))),'spool_quota_bytes'=>NU_TEMP_LIMIT,'file_limit_bytes'=>NU_MAX,'processing_environment'=>'GitHub Actions Ubuntu worker; Dothome PHP upload/SQL only'];
  if($action==='export'){
   $items=[];$all=0;$saved=nj_assets($db);
   foreach($db->query("SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key") as $r){

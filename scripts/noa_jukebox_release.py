@@ -47,7 +47,7 @@ def main():
   if os.environ.get('NOA_JUKEBOX_INTERFACE_ONLY')=='1':
    # UI and its backwards-compatible partial-upload API can publish without
    # waiting for, claiming, canceling or restarting the ongoing audio worker.
-   files={APP+n:'deploy/'+APP+n for n in ['recovery-core.php','queue-core.php','operations.php','upload-core.php','upload.php','upload-transport.js','upload.js','upload.css','index.php']}
+   files={APP+n:'deploy/'+APP+n for n in ['recovery-core.php','queue-core.php','upload-core.php','operations.php','service.php','upload.php','upload-transport.js','upload.js','upload.css','index.php']}
    files['noa-music.php']='deploy/noa-music.php'
    protected={p:sha(read(ROOT+'/'+p)) for p in ['common.php','config.php','data/dbconfig.php','index.php','.htaccess'] if read(ROOT+'/'+p) is not None}
    parent='/hosting/noastudio/noa-deploy-backups';mkdir(parent,0o700)
@@ -84,6 +84,9 @@ def main():
   if len(key)!=64:raise RuntimeError('invalid_private_service_key')
   cli=signed_service(key)
   if os.environ.get('NOA_JUKEBOX_WATCHDOG')=='1':
+   if os.environ.get('GITHUB_EVENT_NAME')!='schedule':
+    env=dict(os.environ);env['NOA_JUKEBOX_SERVICE_KEY']=key
+    subprocess.run(['node','tests/jukebox/live_recovery_test.cjs'],env=env,check=True)
    result=watchdog(cli);work=Path('jukebox-proof');work.mkdir(exist_ok=True);(work/'watchdog.json').write_text(json.dumps(result));print('JUKEBOX_WATCHDOG_RESULT '+json.dumps(result),flush=True);return
   work=Path('jukebox-proof');work.mkdir(exist_ok=True)
   try:
@@ -93,10 +96,6 @@ def main():
   except Exception:host_probe='SSH executable probe unavailable; external worker retained'
   print('DOTHOME_EXECUTABLE_PROBE '+json.dumps(host_probe),flush=True)
   pending=cli('jobs')
-  if os.environ.get('GITHUB_EVENT_NAME')=='schedule' and not pending['queued'] and not pending['uploads']:
-   token=cli('worker_start',{'run_id':os.environ['GITHUB_RUN_ID'],'source_commit':os.environ['GITHUB_SHA'],'owner':secrets.token_hex(16)})
-   if token.get('acquired'):cli('worker_finish',{'owner':token['owner']})
-   cli('maintenance');(work/'summary.json').write_text(json.dumps({'idle':True,'queued':0}));print('JUKEBOX_IDLE');return
   claimed=cli('claim')['ids']
   catalog=cli('export');(work/'catalog-private.json').write_text(json.dumps(catalog,ensure_ascii=False))
   print('LIVE_DB_COUNTS '+json.dumps({k:v for k,v in catalog.items() if k!='items'}),flush=True)
@@ -147,7 +146,7 @@ def main():
    except Exception:destination.unlink(missing_ok=True);return False
    finally:
     if channel:channel.close()
-  uploads=process_uploads(s,lambda action,payload=None:cli(action,json.dumps(payload,ensure_ascii=False).encode() if payload else None),mkdir,source_reader,{'run_id':os.environ['GITHUB_RUN_ID'],'source_commit':os.environ['GITHUB_SHA']})
+  uploads=process_uploads(s,lambda action,payload=None:cli(action,json.dumps(payload,ensure_ascii=False).encode() if payload else None),mkdir,source_reader,{'run_id':os.environ['GITHUB_RUN_ID'],'source_commit':os.environ['GITHUB_SHA'],'keepalive_seconds':3000})
   recovery=watchdog(cli)
 
   print('JUKEBOX_UPLOAD_RESULT '+json.dumps(uploads),flush=True)

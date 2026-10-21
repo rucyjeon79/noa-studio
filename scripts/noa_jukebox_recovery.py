@@ -52,4 +52,5 @@ def watchdog(call,observe=run_state):
     for run in sorted({str(j['worker_run_id']) for j in health['active_runs'] if j.get('worker_run_id')}):
         state=observe(run);call('worker_observation',{'run_id':run,'state':state});observations.append({'run_id':run,'state':state})
     result=call('maintenance')
-    return {'observations':observations,'maintenance':result,'processes_terminated':0}
+    audit=call('audit');integrity=call('integrity_snapshot')
+    return {'observations':observations,'maintenance':result,'files':{k:audit[k] for k in ['assets','covers','audio','audio_bytes','invalid']},'integrity':integrity,'processes_terminated':0}

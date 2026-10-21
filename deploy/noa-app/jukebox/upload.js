@@ -6,7 +6,7 @@ const icons={upload:'<path d="M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6"/>',play:'<path
 const svg=name=>'<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">'+icons[name]+'</svg>';
 const cards=()=>[...document.querySelectorAll('[data-jukebox-key]')];
 const watching=new Set();
-const errors={administrator_required:'관리자 로그인이 필요합니다.',csrf_required:'페이지를 새로고침한 뒤 다시 시도해 주세요.',another_upload_is_active:'이 곡의 다른 업로드가 진행 중입니다. 기존 파일을 다시 선택하면 재개할 수 있습니다.',cover_original_artist_required:'커버곡의 원곡 가수명을 입력해 주세요.',temporary_storage_quota_reached:'임시 저장 공간이 가득 찼습니다. 진행 중인 처리가 끝난 뒤 시도해 주세요.',hosting_storage_insufficient:'서버 저장 공간이 부족합니다.',actual_audio_format_mismatch:'확장자와 실제 파일 형식이 다릅니다.',mp3_wav_size_or_identity_invalid:'256MiB 이하의 MP3 또는 WAV 파일을 선택해 주세요.',reselect_source_file:'임시 파일이 없어 원본 파일을 다시 선택해야 합니다.'};
+const errors={account_storage_quota_exceeded:'호스팅 계정 저장 용량이 가득 찼습니다.',storage_permission_denied:'서버 저장 권한을 확인해 주세요.',upload_storage_unavailable:'서버 임시 저장소에 파일을 기록하지 못했습니다.',administrator_required:'관리자 로그인이 필요합니다.',csrf_required:'페이지를 새로고침한 뒤 다시 시도해 주세요.',another_upload_is_active:'이 곡의 다른 업로드가 진행 중입니다. 기존 파일을 다시 선택하면 재개할 수 있습니다.',cover_original_artist_required:'커버곡의 원곡 가수명을 입력해 주세요.',temporary_storage_quota_reached:'임시 저장 공간이 가득 찼습니다. 진행 중인 처리가 끝난 뒤 시도해 주세요.',hosting_storage_insufficient:'서버 저장 공간이 부족합니다.',actual_audio_format_mismatch:'확장자와 실제 파일 형식이 다릅니다.',mp3_wav_size_or_identity_invalid:'256MiB 이하의 MP3 또는 WAV 파일을 선택해 주세요.',reselect_source_file:'임시 파일이 없어 원본 파일을 다시 선택해야 합니다.'};
 function message(code){return errors[code]||({authentication_required:'관리자 로그인을 확인해 주세요.',transfer_circuit_open:'전송 일시정지',response_html:'서버 응답 확인 중',response_empty:'서버 응답 확인 중',response_json_invalid:'서버 응답 확인 중',response_schema_invalid:'서버 응답 확인 중',request_timeout:'서버 응답 확인 중',network_unavailable:'서버 응답 확인 중',upload_paused:'전송 일시정지'}[code]||'처리 상태를 확인해 주세요. 상세 정보에서 원인과 재시도 방법을 확인할 수 있습니다.');}
 const {Transport,UploadError,decode}=window.NoaUploadTransport;
 const diagnosticKey='noa-jukebox-diagnostics-v1',circuitKey='noa-jukebox-circuit-v1';let diagnosticRows=[];try{diagnosticRows=JSON.parse(localStorage.getItem(diagnosticKey)||'[]').slice(-80);}catch{}
@@ -112,7 +112,7 @@ async function transfer(r){
  }catch(e){
   if(e.message!=='upload_paused'){r.state='recovering';render();try{const restored=await restoreCompleted(r,true);if(restored){apply(restored);r.serverComplete=true;r.state=restored.status==='ready'?'ready':'uploaded';r.file=null;r.error=null;notice.textContent=r.title+' · 서버 접수를 확인해 상태를 복구했습니다.';return;}}catch{}}
   if(r.serverComplete){r.state='uploaded';r.file=null;r.error=null;return;}
-  if(['temporary_storage_quota_reached','hosting_storage_insufficient'].includes(e.message)){r.state='waiting';paused=true;notice.textContent='전송 일시정지 · 서버 저장 공간 확인 후 전송 계속을 눌러 주세요.';}
+  if(['temporary_storage_quota_reached','hosting_storage_insufficient','account_storage_quota_exceeded','storage_permission_denied','upload_storage_unavailable'].includes(e.message)){r.state='waiting';paused=true;notice.textContent='전송 일시정지 · 서버 저장 공간 확인 후 전송 계속을 눌러 주세요.';}
   else if(e.transient||e.message==='transfer_circuit_open'){r.state=transport.open?'paused':'waiting';paused=transport.open;capacityWaitUntil=Date.now()+5000;notice.textContent=transport.open?'전송 일시정지 · 상세 원인을 확인하고 전송 계속을 눌러 주세요.':'자동 복구 중 · 서버 응답을 확인하고 있습니다.';}
   else{r.state=e.message==='upload_paused'?'paused':'failed';notice.textContent=r.title+' · '+message(e.message);}
   r.error=e.message==='upload_paused'?null:e.message;

@@ -29,6 +29,8 @@ class RecoveryTests(unittest.TestCase):
             events.append((action,body))
             if action=='runtime_health':return {'active_runs':[{'worker_run_id':'123'},{'worker_run_id':'456'}]}
             if action=='maintenance':return {'checked':2,'issues':[]}
+            if action=='audit':return {'assets':1,'covers':1,'audio':1,'audio_bytes':10,'invalid':[]}
+            if action=='integrity_snapshot':return {'documents':1}
             return {'recorded':True}
         result=recovery.watchdog(call,lambda run:'running' if run=='123' else 'terminal')
         self.assertEqual(result['processes_terminated'],0)
@@ -63,3 +65,14 @@ class RecoveryTests(unittest.TestCase):
         self.assertTrue(result[0]['ready']);self.assertTrue(result[0]['response_recovered']);self.assertNotIn('upload_fail',events)
 
 if __name__=='__main__':unittest.main()
+
+class IdleRecoveryTests(unittest.TestCase):
+    def test_worker_waits_for_later_upload_without_a_browser(self):
+        clock=[0];claims=[0]
+        def call(action,body=None):
+            if action=='upload_claim':claims[0]+=1;return {'uploads':[]}
+            return {}
+        def advance(seconds):clock[0]+=seconds
+        with patch.object(upload.time,'monotonic',side_effect=lambda:clock[0]),patch.object(upload.time,'sleep',side_effect=advance):
+            self.assertEqual(upload._drain_uploads(None,call,None,idle_seconds=45),[])
+        self.assertGreaterEqual(claims[0],3);self.assertEqual(clock[0],45)

@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types=1);ini_set('display_errors','0');
 require dirname(__DIR__,2).'/common.php';require dirname(__DIR__,2).'/noa-bridge/storage.php';require dirname(__DIR__,2).'/noa-bridge/sound-core.php';require __DIR__.'/upload-core.php';
 $requestId=bin2hex(random_bytes(8));header('X-NOA-Request-ID: '.$requestId);header('Content-Type: application/json; charset=utf-8');header('Cache-Control: private, no-store');header('X-Content-Type-Options: nosniff');
 function nu_json(int $code,array $out):never{global $requestId;if(isset($out['error']))$out['request_id']=$requestId;http_response_code($code);echo json_encode($out,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;}
@@ -30,4 +30,4 @@ try{
  if($action==='finish'){$u=nu_row($db,(string)($b['id']??''));$fault=nr_fault_take($db,$faultSession,$u['song_key'],$action);$out=nu_finish($db,$u['id']);if($fault==='finish_response_lost'){http_response_code(200);echo '';exit;}nu_json(200,$out);}
  if($action==='retry'){nq_retry($db,(string)($b['id']??''));nu_json(200,nu_public($db,nu_row($db,$b['id'])['song_key']));}
  throw new InvalidArgumentException('unknown_action');
-}catch(DomainException $e){nu_json(409,['error'=>$e->getMessage()]);}catch(InvalidArgumentException|JsonException $e){nu_json(400,['error'=>$e instanceof JsonException?'invalid_json':$e->getMessage()]);}catch(Throwable $e){error_log('[jukebox-upload] '.get_class($e).':'.$e->getCode());nu_json(503,['error'=>'upload_service_unavailable']);}
+}catch(DomainException $e){$code=$e->getMessage();nu_json(in_array($code,['account_storage_quota_exceeded','hosting_storage_insufficient','storage_permission_denied','upload_storage_unavailable'],true)?507:409,['error'=>$code]);}catch(InvalidArgumentException|JsonException $e){nu_json(400,['error'=>$e instanceof JsonException?'invalid_json':$e->getMessage()]);}catch(Throwable $e){error_log('[jukebox-upload] '.get_class($e).':'.$e->getCode());nu_json(503,['error'=>'upload_service_unavailable']);}

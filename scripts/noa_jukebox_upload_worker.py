@@ -19,18 +19,25 @@ def process_uploads(sftp,call,mkdir,source_reader=None,worker_identity=None):
         if action.startswith('upload_'):payload=(payload or {})|{'worker_owner':owner}
         if action=='upload_heartbeat':call('worker_heartbeat',{'owner':owner})
         return call(action,payload)
-    try:return _drain_uploads(sftp,owned_call,mkdir,source_reader)
+    try:return _drain_uploads(sftp,owned_call,mkdir,source_reader,int(worker_identity.get('keepalive_seconds',0)))
     finally:
         stop.set();thread.join(timeout=2)
         try:call('worker_finish',{'owner':owner})
         except Exception:pass
 
-def _drain_uploads(sftp,call,mkdir,source_reader=None):
-    results=[];deadline=time.monotonic()+50*60
-    for _ in range(100):
+def _drain_uploads(sftp,call,mkdir,source_reader=None,idle_seconds=0):
+    started=time.monotonic();results=[];deadline=started+50*60;idle_until=min(deadline,started+max(0,idle_seconds));processed=0;last_maintenance=started
+    while processed<100:
         if time.monotonic()>deadline:break
         claimed=call('upload_claim')['uploads']
-        if not claimed:break
+        if not claimed:
+            if time.monotonic()>=idle_until:break
+            if time.monotonic()-last_maintenance>=60:
+                try:call('maintenance')
+                except Exception:pass
+                last_maintenance=time.monotonic()
+            time.sleep(min(15,max(0,idle_until-time.monotonic())));continue
+        processed+=1
         if len(claimed)!=1:raise ValueError('queue_concurrency_contract')
         job=claimed[0];auth={'id':job['id'],'lease':job['lease'],'job_id':job['job_id']}
         stop=threading.Event();lost=threading.Event()
