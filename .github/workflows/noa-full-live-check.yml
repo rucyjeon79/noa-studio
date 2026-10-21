@@ -1,0 +1,30 @@
+name: NOA complete production live verification
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-full-live-check.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: {width: [320,390,1280]}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Inspect deployed production pages and actual ranked cards
+        env:
+          NOA_QA_WIDTH: ${{ matrix.width }}
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-full-live" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-full-live/node_modules/.bin/playwright" install --with-deps chromium
+          cp scripts/qa/noa-full-live.mjs "$RUNNER_TEMP/noa-full-live/check.mjs"
+          node "$RUNNER_TEMP/noa-full-live/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-full-live-${{ matrix.width }}
+          path: full-live-proof/
+          retention-days: 14
