@@ -282,3 +282,11 @@ html[data-noa-precision] .noa-page .noa-browse-card small{color:var(--noa-muted)
 
 html.noa-g5 .noa-action,html.noa-g5 .noa-action:hover{text-decoration:none}
 html[data-noa-precision] .noa-page .noa-browse-card{gap:0}
+/* Keep the performer uncropped; the same cached poster fills only the decorative background. */
+html[data-noa-precision] .noa-hero-art::before{content:'';position:absolute;inset:0;background-image:var(--noa-hero-backdrop);background-size:cover;background-position:center;opacity:.26;z-index:0;pointer-events:none}
+html[data-noa-precision] .noa-hero-art picture{z-index:1}
+html[data-noa-precision] .noa-hero-art video{z-index:2}
+html[data-noa-precision] .noa-hero-art:is([data-media-state=playing],[data-media-state=ended]) picture img{object-fit:contain;opacity:1}
+html[data-noa-precision][data-noa-theme=noa-ivory] .noa-hero-art::before{opacity:.18}
+html[data-noa-precision]{scroll-padding-block-end:calc(var(--noa-nav-space) + var(--noa-player-space,0px) + var(--noa-space-6))}
+html[data-noa-precision] main :is(a,button,input,select,summary){scroll-margin-block-end:calc(var(--noa-nav-space) + var(--noa-player-space,0px) + var(--noa-space-6))}

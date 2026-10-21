@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';import fs from 'node:fs/promises';import
 const sizes=[{width:320,height:568},{width:390,height:844},{width:430,height:932},{width:768,height:1024},{width:1024,height:768},{width:1280,height:900},{width:1920,height:1080},{width:844,height:390},{width:568,height:320}];
 export async function verifyRecovery({context,phase,base,out,report,auditPrecision}){
  const page=await context.newPage(),samples=[];let original;try{
- const routes=['/','/noa-world.php','/noa-world.php?story=1','/noa-youtube.php','/noa-music.php','/noa-catalog.php','/noa-my.php','/noa-ai-lab.php','/bbs/board.php?bo_table=free'];
+ const routes=['/','/noa-world.php','/noa-world.php?story=1','/noa-world.php?story=2','/noa-world.php?story=3','/noa-world.php?story=4','/noa-youtube.php','/noa-youtube.php?group=story','/noa-youtube.php?group=cover','/noa-music.php','/noa-catalog.php','/noa-my.php','/noa-ai-lab.php','/bbs/board.php?bo_table=free'];
  if(phase==='candidate')routes.push('/noa-music-member-fixture','/noa-music-admin-fixture');
  for(const route of routes){
   await page.goto(base+route,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.NoaUI?.getState()&&window.NoaCardLayout&&document.fonts.status==='loaded');
@@ -28,9 +28,9 @@ export async function verifyRecovery({context,phase,base,out,report,auditPrecisi
     const precision=await auditPrecision(page);
     const last=page.locator('main :is(a,button,input,select,summary):visible').filter({hasNot:page.locator('[hidden]')});
     const count=await last.count();let lastReachable=null;
-    if(count){const target=last.nth(count-1);await target.scrollIntoViewIfNeeded();await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));lastReachable=await target.evaluate(e=>{const r=e.getBoundingClientRect(),x=Math.min(innerWidth-1,Math.max(0,r.x+r.width/2)),y=Math.min(innerHeight-1,Math.max(0,r.y+r.height/2)),hit=document.elementFromPoint(x,y);return{reachable:hit===e||e.contains(hit),top:r.top,bottom:r.bottom,height:innerHeight};});assert(lastReachable.reachable,'last action covered '+route+' '+JSON.stringify(lastReachable));}
+    if(count){const target=last.nth(count-1);await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));await target.scrollIntoViewIfNeeded();await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));lastReachable=await target.evaluate(e=>{const r=e.getBoundingClientRect(),x=Math.min(innerWidth-1,Math.max(0,r.x+r.width/2)),y=Math.min(innerHeight-1,Math.max(0,r.y+r.height/2)),hit=document.elementFromPoint(x,y);return{reachable:hit===e||e.contains(hit),top:r.top,bottom:r.bottom,height:innerHeight};});assert(lastReachable.reachable,'last action covered '+route+' '+JSON.stringify(lastReachable));}
     samples.push({route,theme,...size,actions:d.actions.length,music:d.music,hero:d.hero,precision,lastReachable});
-    if([390,844,1280].includes(size.width)&&['/','/noa-world.php','/noa-youtube.php','/noa-music.php'].includes(route)){await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(out,'recovery-'+route.replace(/[^a-z0-9]/gi,'-')+'-'+theme+'-'+size.width+'.jpg'),type:'jpeg',quality:85});}
+    if([390,844,1280].includes(size.width)&&['/','/noa-world.php','/noa-youtube.php','/noa-youtube.php?group=story','/noa-youtube.php?group=cover','/noa-music.php'].includes(route)){await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(out,'recovery-'+route.replace(/[^a-z0-9]/gi,'-')+'-'+theme+'-'+size.width+'.jpg'),type:'jpeg',quality:85});}
    }
   }
   if(route==='/noa-world.php'){const summary=page.locator('.world-mv-card summary').first();if(await summary.count()){await summary.press('Enter');assert.equal(await summary.evaluate(s=>s.parentElement.open),true);await summary.press('Enter');assert.equal(await summary.evaluate(s=>s.parentElement.open),false);}}

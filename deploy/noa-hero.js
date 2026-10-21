@@ -5,7 +5,7 @@
  const art=video.closest('.noa-hero-art'),reduced=matchMedia('(prefers-reduced-motion: reduce)'),genres=Object.keys(window.NoaBrowse?.names||{});
  if(!genres.length)return;
  const genre=genres[Math.floor(Math.random()*genres.length)],variant=['a','b','c'][Math.floor(Math.random()*3)],base=window.NoaBrowse.genreArt(genre).replace(/-a\.jpg$/,'-'+variant);
- poster.src=base+'.jpg';video.poster=poster.src;poster.closest?.('picture')?.querySelectorAll('source').forEach(source=>source.srcset=poster.src);
+ poster.src=base+'.jpg';video.poster=poster.src;if(art?.style)art.style.setProperty('--noa-hero-backdrop','url('+JSON.stringify(poster.src)+')');poster.closest?.('picture')?.querySelectorAll('source').forEach(source=>source.srcset=poster.src);
  video.muted=true;video.playsInline=true;video.loop=false;video.autoplay=false;video.removeAttribute('loop');video.removeAttribute('autoplay');
  let attempted=false,finished=false;
  function state(value){if(art)art.dataset.mediaState=value;}

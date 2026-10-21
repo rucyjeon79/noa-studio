@@ -28,12 +28,12 @@ try{
    const playlists=Object.fromEntries([...document.querySelectorAll('#youtube-playlists a')].map(a=>[new URL(a.getAttribute('href'),'https://noastudio.ai.kr/noa-youtube.php').searchParams.get('playlist'),{snippet:{title:a.textContent}}]));return{videos,browseRows:JSON.parse(match[1]),playlists};
   });await yt.close();const ytPath=path.join(out,'public-youtube-source.json');await fs.writeFile(ytPath,JSON.stringify(youtube));
   const mr=await context.request.get(base+'/noa-music.php');assert.equal(mr.status(),200);const mh=await mr.text(),musicSource={};for(const name of ['records','collections']){const prefix='const '+name+'=',line=mh.split('\n').find(line=>line.startsWith(prefix));assert(line,'public music source missing '+name);musicSource[name]=JSON.parse(line.slice(prefix.length).replace(/;$/,''));}const musicPath=path.join(out,'public-music-source.json');await fs.writeFile(musicPath,JSON.stringify(musicSource));
-  for(const [route,kind,role]of [['/','home',''],['/noa-world.php','world',''],['/noa-my.php','my',''],['/noa-youtube.php','youtube',''],['/noa-my-admin-fixture','my','admin'],['/noa-ai-lab-admin-fixture','ailab','admin'],['/noa-music.php','music',''],['/noa-music-member-fixture','music','member'],['/noa-music-admin-fixture','music','admin']]){
+  for(const [route,kind,role]of [['/','home',''],['/noa-world.php','world-index',''],['/noa-world.php?story=1','world-1',''],['/noa-world.php?story=2','world-2',''],['/noa-world.php?story=3','world-3',''],['/noa-world.php?story=4','world-4',''],['/noa-my.php','my',''],['/noa-youtube.php','youtube',''],['/noa-my-admin-fixture','my','admin'],['/noa-ai-lab-admin-fixture','ailab','admin'],['/noa-music.php','music',''],['/noa-music-member-fixture','music','member'],['/noa-music-admin-fixture','music','admin']]){
    const rendered=execFileSync('php',[path.join(root,'tests/uiux/render.php'),kind,role],{env:{...process.env,NOA_WORLD_SOURCE:sourcePath,NOA_YOUTUBE_SOURCE:ytPath,NOA_MUSIC_SOURCE:musicPath},encoding:'utf8',maxBuffer:16*1024*1024});assert(!rendered.includes('Fatal error'));docs.set(route,rendered);
   }
   await context.route(base+'/**',async route=>{
    const request=route.request(),u=new URL(request.url());
-   if(request.isNavigationRequest()&&docs.has(u.pathname))return route.fulfill({status:200,contentType:'text/html; charset=utf-8',body:docs.get(u.pathname)});
+   const documentKey=u.pathname==='/noa-world.php'&&u.searchParams.has('story')?u.pathname+'?story='+u.searchParams.get('story'):u.pathname;if(request.isNavigationRequest()&&docs.has(documentKey))return route.fulfill({status:200,contentType:'text/html; charset=utf-8',body:docs.get(documentKey)});
    const local=path.join(root,'deploy',u.pathname.slice(1));
    if(/\.(?:css|js|json)$/.test(u.pathname)&&existsSync(local))return route.fulfill({path:local,contentType:u.pathname.endsWith('.css')?'text/css':u.pathname.endsWith('.json')?'application/json':'application/javascript'});
    return route.continue();
@@ -96,15 +96,15 @@ try{
  await verifyCardBalance({context,phase,base,out,report});
  await verifyPrecisionFlow({context,phase,base,out,report});
  // Native media is checked on the candidate too, before any deployment.
- const mediaPage=await context.newPage();await mediaPage.emulateMedia({reducedMotion:'no-preference'});await mediaPage.goto(base+'/',{waitUntil:'domcontentloaded'});
+ const mediaPage=await context.newPage();await mediaPage.emulateMedia({reducedMotion:'no-preference'});await mediaPage.setViewportSize({width:390,height:844});await mediaPage.goto(base+'/',{waitUntil:'domcontentloaded'});
  let posterFallback=false;
  try{
   assert.equal(await mediaPage.locator('#noa-hero-toggle').count(),0);
   await mediaPage.waitForFunction(()=>{const v=document.getElementById('noa-hero-video');return v.ended||(v.readyState>=2&&!v.paused)||v.closest('.noa-hero-art').dataset.mediaState==='poster'&&v.getAttribute('src')&&v.paused;},null,{timeout:30000});
   const v=mediaPage.locator('#noa-hero-video');posterFallback=await v.evaluate(v=>v.hidden);
-  assert.equal(await v.evaluate(v=>v.loop),false);
+  assert.equal(await v.evaluate(v=>v.loop),false);await mediaPage.screenshot({path:path.join(out,'hero-native-playing-or-poster-390.jpg'),type:'jpeg',quality:86});
   if(!posterFallback){if(!await v.evaluate(v=>v.ended)){await v.evaluate(v=>v.currentTime=Math.max(0,v.duration-.2));await mediaPage.waitForFunction(()=>document.getElementById('noa-hero-video').ended,null,{timeout:10000});}assert.equal(await v.evaluate(v=>v.paused),true);const endedTime=await v.evaluate(v=>v.currentTime);await mediaPage.setViewportSize({width:844,height:390});await mediaPage.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));assert.equal(await v.evaluate(v=>v.currentTime),endedTime);assert.equal(await v.evaluate(v=>v.paused),true);assert.equal(await v.evaluate(v=>v.hidden),false);}
-  report.push({phase,nativeHeroEndedPaused:!posterFallback,posterFallback,heroToggleAbsent:true,automaticReplay:false});
+  await mediaPage.screenshot({path:path.join(out,'hero-native-ended-or-poster.jpg'),type:'jpeg',quality:86});report.push({phase,nativeHeroEndedPaused:!posterFallback,posterFallback,heroToggleAbsent:true,automaticReplay:false});
  }catch(error){
   const diagnostics=await mediaPage.locator('video').evaluate(v=>({src:v.currentSrc||v.src,readyState:v.readyState,paused:v.paused,ended:v.ended,error:v.error?{code:v.error.code,message:v.error.message}:null,mp4Support:v.canPlayType('video/mp4; codecs="avc1.42E01E"'),status:document.getElementById('noa-hero-status').textContent,visibility:document.visibilityState}));
   await fs.writeFile(path.join(out,'native-media-failure.json'),JSON.stringify(diagnostics,null,2));await mediaPage.screenshot({path:path.join(out,'native-media-failure.jpg'),type:'jpeg'});console.log('NATIVE_MEDIA_DIAGNOSTICS '+JSON.stringify(diagnostics));throw error;
