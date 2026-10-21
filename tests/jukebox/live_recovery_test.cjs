@@ -51,9 +51,20 @@ async function main(){
   assert(['queued','analyzing','processing','verifying','ready'].includes(finished.status));const q=await get('qa_upload',{mode:'status',id:u.id});assert.equal(q.source_sha256,hash);uploads.push({key:song,id:u.id,job_id:q.job?.id||null,status:q.status});
  }
  currentStage='server_selftest';const selftest=await get('qa_selftest');assert.equal(selftest.transaction_rolled_back,true);assert(Object.values(selftest.tests).every(s=>s==='passed'));
+ currentStage='wait_for_server_fifo';let completed=[];const deadline=Date.now()+300000;
+ do{
+  const queue=await get('queue_snapshot');assert.equal(queue.concurrency,1);assert(queue.rows.filter(j=>['analyzing','processing','verifying'].includes(j.status)).length<=1);
+  completed=uploads.map(u=>queue.rows.find(j=>j.upload_id===u.id));assert(completed.every(Boolean),'registered_job_missing');assert(!completed.some(j=>j.status==='failed'),'server_mastering_failed');
+  if(completed.every(j=>j.status==='ready'))break;
+  await new Promise(r=>setTimeout(r,10000));
+ }while(Date.now()<deadline);
+ assert(completed.every(j=>j.status==='ready'),'server_fifo_completion_timeout');
+ for(let i=1;i<completed.length;i++){assert(completed[i-1].id<completed[i].id,'fifo_registration_order');assert(completed[i-1].finished_at<=completed[i].started_at,'fifo_processing_overlap');}
+ for(const u of uploads){const q=await get('qa_upload',{mode:'status',id:u.id});assert(q.final_verified&&q.source_matches_final,'confirmed_mp3_hash_mismatch');assert.equal(q.source_exists,false,'temporary_source_not_cleaned');}
+ checks.ten_server_mp3_ready=true;checks.fifo_without_overlap=true;checks.final_hashes_verified=true;checks.temporary_sources_removed=true;
  const after=await get('verification_snapshot');let realPreserved=0;for(const [song,file]of Object.entries(before.files)){if(song.startsWith('jukebox:qa:'))continue;assert.equal(after.files[song]?.sha256,file.sha256);realPreserved++;}assert.deepEqual(after.integrity,before.integrity);
  assert(initRecovered&&chunkRecovered&&finishRecovered&&duplicateSameId&&resumeSkipped&&formatIsolated);
- const result={checks:{...checks,init_response_recovered:initRecovered,chunk_response_recovered_without_resend:chunkRecovered,finish_response_recovered_without_reupload:finishRecovered,duplicate_same_upload_id:duplicateSameId,restarted_client_preserves_chunks:resumeSkipped,format_error_isolated:formatIsolated},uploads,registered:uploads.length,confirmed_real_mp3_preserved:realPreserved,integrity_unchanged:true,selftest,request_count:requestCount,diagnostics};
+ const result={checks:{...checks,init_response_recovered:initRecovered,chunk_response_recovered_without_resend:chunkRecovered,finish_response_recovered_without_reupload:finishRecovered,duplicate_same_upload_id:duplicateSameId,restarted_client_preserves_chunks:resumeSkipped,format_error_isolated:formatIsolated},uploads,completed_jobs:completed.map(j=>({id:j.id,upload_id:j.upload_id,status:j.status,started_at:j.started_at,finished_at:j.finished_at})),registered:uploads.length,confirmed_real_mp3_preserved:realPreserved,integrity_unchanged:true,selftest,request_count:requestCount,diagnostics};
  fs.mkdirSync('jukebox-proof',{recursive:true});fs.writeFileSync('jukebox-proof/recovery-tests.json',JSON.stringify(result));console.log('JUKEBOX_LIVE_RECOVERY_TEST '+JSON.stringify(result));
 }
 main().catch(error=>{const result={passed:false,stage:currentStage,code:error.code||error.message,request_count:requestCount,diagnostics};fs.mkdirSync('jukebox-proof',{recursive:true});fs.writeFileSync('jukebox-proof/recovery-tests.json',JSON.stringify(result));console.error('JUKEBOX_LIVE_RECOVERY_FAILED '+JSON.stringify(result));process.exitCode=1;});
