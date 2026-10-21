@@ -39,6 +39,8 @@ function plan(count,capacity,featured=true){
  if(n===10)columns=max>=5?5:max>=3?3:Math.min(2,max);
  else if(n===9)columns=max>=3?3:Math.min(2,max);
  else if(n===8)columns=max>=4?4:Math.min(2,max);
+ else if(n===7)columns=max>=4?4:Math.min(3,max);
+ else if(n===5)columns=max>=5?5:max>=3?3:Math.min(2,max);
  else if(n===6)columns=max>=3?3:Math.min(2,max);
  else if(n===4)columns=Math.min(2,max);
  else if(n===3)columns=max>=3?3:1;
