@@ -1,0 +1,116 @@
+name: NOA UI audit two-file production release
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-ui-audit-release.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: noa-dothome-production
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Validate only approved UI changes
+        run: |
+          node --check deploy/noa-browse.js
+          node --test scripts/qa/noa-browse.test.mjs
+          python3 -m pip install --user paramiko==3.5.1
+      - name: Compare and deploy only two reviewed files
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ vars.NOA_SSH_HOST_FINGERPRINT || 'SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU' }}
+          NOA_SSH_ROOT: ${{ vars.NOA_FTP_ROOT }}
+        run: |
+          PYTHONPATH=scripts python3 - <<'PY'
+          import noa_sftp_deploy as d,subprocess,hashlib
+          files=['noa-ui.css','noa-browse.js']
+          for n in files:
+              actual=open('deploy/'+n,'rb').read()
+              approved=subprocess.check_output(['git','show','HEAD:deploy/'+n])
+              assert actual==approved
+          d.FILES={'deploy/'+n:n for n in files}
+          d.UPGRADE_FROM={
+            'noa-ui.css':'6b5ee67e96b4c491a5fd80f83f98110b1830ec11343eb13eb826e5eb089134b2',
+            'noa-browse.js':'6823f578db665f6ac962bf598ca0bb2d7915278bd55d1a0abbfea5eb04a48b3d'}
+          d.main()
+          PY
+      - name: Verify public bytes and renewed HTTP validators
+        run: |
+          python3 - <<'PY'
+          import urllib.request,hashlib,json
+          old={'noa-ui.css':'"5564-65e4d43d9714b"','noa-browse.js':'"22cb-65e4be29a1930"'}
+          for n,etag in old.items():
+              request=urllib.request.Request('https://noastudio.ai.kr/'+n,headers={'Cache-Control':'no-cache','If-None-Match':etag})
+              with urllib.request.urlopen(request,timeout=30) as r:
+                  data=r.read()
+                  assert r.status==200
+                  assert data==open('deploy/'+n,'rb').read()
+                  assert r.headers.get('ETag')!=etag
+                  print(json.dumps({'file':n,'status':r.status,'sha256':hashlib.sha256(data).hexdigest(),'etag':r.headers.get('ETag'),'lastModified':r.headers.get('Last-Modified'),'previous_cache_validator_invalidated':True}))
+          PY
+  visual:
+    needs: release
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: {width: [320, 390, 1280]}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Verify production genre cards and official names
+        env:
+          NOA_QA_WIDTH: ${{ matrix.width }}
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-ui-check" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-ui-check/node_modules/.bin/playwright" install --with-deps chromium
+          cat > "$RUNNER_TEMP/noa-ui-check/check.mjs" <<'JS'
+          import {chromium} from 'playwright';
+          import fs from 'node:fs/promises';
+          import assert from 'node:assert/strict';
+          const width=Number(process.env.NOA_QA_WIDTH),browser=await chromium.launch();
+          const context=await browser.newContext({viewport:{width,height:900}});
+          await fs.mkdir('ui-audit-results',{recursive:true});
+          const results=[];
+          for(const path of ['/noa-music.php','/noa-youtube.php']){
+            const page=await context.newPage(),errors=[];
+            page.on('pageerror',e=>errors.push(e.message));
+            await page.goto('https://noastudio.ai.kr'+path,{waitUntil:'domcontentloaded'});
+            const cards=page.locator('.noa-browse-grid .noa-browse-card');
+            await cards.nth(3).waitFor({state:'visible',timeout:30000});
+            await page.waitForFunction(()=>[...document.querySelectorAll('.noa-browse-grid .noa-browse-card img')].every(i=>i.complete&&i.naturalWidth>0),null,{timeout:30000});
+            const labels=await cards.locator('strong').allTextContents();
+            assert(labels.includes('당신의 이야기, 우리의 음악 🎧'));
+            assert(labels.includes('🎤 AInoa의 유명곡 커버'));
+            const layout=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,columns:getComputedStyle(document.querySelector('.noa-browse-grid')).gridTemplateColumns.split(' ').length,cards:[...document.querySelectorAll('.noa-browse-grid .noa-browse-card')].map(e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height,src:e.querySelector('img').getAttribute('src'),imageOK:e.querySelector('img').naturalWidth>0}))}));
+            assert(layout.scroll<=width+2);
+            assert.equal(layout.columns,width>=900?3:2);
+            await page.screenshot({path:'ui-audit-results/'+path.slice(1)+'-'+width+'-groups.jpg',type:'jpeg',quality:75});
+            await cards.filter({hasText:'오리지널 장르'}).click();
+            await cards.nth(3).waitFor({state:'visible'});
+            await page.waitForFunction(()=>[...document.querySelectorAll('.noa-browse-grid img')].every(i=>i.complete&&i.naturalWidth>0));
+            const art=await cards.locator('img').evaluateAll(els=>els.map(e=>e.getAttribute('src')));
+            assert.equal(art.length,4);assert(art.every(s=>s.startsWith('/noa-assets/splash/')&&s.endsWith('-a.jpg')));
+            await page.screenshot({path:'ui-audit-results/'+path.slice(1)+'-'+width+'-genres.jpg',type:'jpeg',quality:75});
+            assert.equal(errors.length,0);
+            results.push({path,width,labels,layout,genreArtwork:art,errors});
+            await page.close();
+          }
+          await browser.close();
+          await fs.writeFile('ui-audit-results/result-'+width+'.json',JSON.stringify(results,null,2));
+          console.log(JSON.stringify(results));
+          JS
+          node "$RUNNER_TEMP/noa-ui-check/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-ui-audit-${{ matrix.width }}
+          path: ui-audit-results/
+          retention-days: 14
