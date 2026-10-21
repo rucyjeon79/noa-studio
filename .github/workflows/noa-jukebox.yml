@@ -1,6 +1,5 @@
 name: NOA JUKEBOX public cards and authorized audio
-# Continue existing cards; audit published sources and process authorized owned downloads only.
-# Preserve reservations across pages; verify saved chunk hashes before skipping resumed bytes.
+# Validate independently while the single production worker drains its SQL FIFO.
 on:
   push:
     branches: [main, chatgpt/jukebox-20261021]
@@ -9,12 +8,11 @@ on:
     - cron: '*/5 * * * *'
   workflow_dispatch:
 permissions: {contents: read}
-concurrency: {group: noa-jukebox-upload-processing, cancel-in-progress: false}
 jobs:
-  build:
+  validate:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
-    timeout-minutes: 120
-    environment: production
+    timeout-minutes: 15
     services:
       mysql:
         image: mysql:8.0
@@ -25,19 +23,27 @@ jobs:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
       - name: Validate fixed PHP and media pipeline
-        if: github.event_name != 'schedule'
         run: |
           for f in deploy/noa-app/jukebox/*.php bridge/catalog.php deploy/noa-music.php; do php -l "$f"; done
           php tests/jukebox/range_test.php
           sudo apt-get update -qq
           sudo apt-get install -y ffmpeg
-          python3 -m pip install --user paramiko==3.5.1 Pillow==11.3.0
+          python3 -m pip install --user Pillow==11.3.0
           python3 -m unittest discover -s tests/jukebox -p 'test_*.py'
           python3 tests/jukebox/make_fixture.py
           php tests/jukebox/upload_mysql_test.php
           node --check deploy/noa-app/jukebox/upload.js
+  release:
+    needs: validate
+    if: always() && (needs.validate.result == 'success' || github.event_name == 'schedule')
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment: production
+    concurrency: {group: noa-jukebox-upload-processing, cancel-in-progress: false}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
       - name: Install worker dependencies
-        if: github.event_name == 'schedule'
         run: python3 -m pip install --user paramiko==3.5.1 Pillow==11.3.0
       - name: Acquire cards from live DB and store verified files on Dothome
         env:
