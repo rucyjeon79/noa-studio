@@ -1,5 +1,5 @@
 name: NOA UIUX visual gates and scoped production release
-# Validate original H264 clips in codec-capable Google Chrome; retain every media gate.
+# Validate H264 in Google Chrome and await the selected MV frame identity.
 on:
   pull_request:
     branches: [main]
