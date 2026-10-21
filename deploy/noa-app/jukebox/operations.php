@@ -30,6 +30,8 @@ function nj_operation(PDO $db,string $action,array $input=[]):array{
  }
  if($action==='claim'){
   nj_schema($db);$db->beginTransaction();try{
+   // The dedicated worker concurrency group guarantees one live claimant.
+   $db->exec("UPDATE noa_jukebox_jobs SET status='queued' WHERE status='running'");
    $ids=$db->query("SELECT id FROM noa_jukebox_jobs WHERE status='queued' ORDER BY id LIMIT 200 FOR UPDATE")->fetchAll(PDO::FETCH_COLUMN);
    if($ids){$q=$db->prepare("UPDATE noa_jukebox_jobs SET status='running' WHERE status='queued' AND id IN (".implode(',',array_fill(0,count($ids),'?')).")");$q->execute($ids);}
    $db->commit();return ['ids'=>array_map('intval',$ids)];

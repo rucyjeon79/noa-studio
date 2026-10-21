@@ -23,10 +23,13 @@ def main():
     if not stat.S_ISREG(s.lstat(path).st_mode):raise RuntimeError('not_regular_file')
     with s.open(path,'rb') as f:return f.read()
    except FileNotFoundError:return None
+  known_directories=set()
   def mkdir(path,mode=0o755):
+   if path in known_directories:return
    try:s.mkdir(path,mode)
    except OSError:
     if not stat.S_ISDIR(s.lstat(path).st_mode) or s.normalize(path)!=path:raise RuntimeError('unsafe directory')
+   known_directories.add(path)
   def atomic(path,data,expected):
    actual=read(path)
    if actual is not None and sha(actual)==sha(data):return

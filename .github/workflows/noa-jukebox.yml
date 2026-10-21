@@ -1,5 +1,5 @@
 name: NOA JUKEBOX public cards and authorized audio
-# Signed fixed operations; media verification happens on hosting before SQL publication.
+# Bounded batches, cached safe directories, server-side media verification.
 on:
   push:
     branches: [main, chatgpt/jukebox-20261021]
