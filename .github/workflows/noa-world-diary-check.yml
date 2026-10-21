@@ -1,0 +1,33 @@
+name: NOA WORLD Diary recovery checks
+on:
+  push:
+    branches: [main]
+    paths: ['bridge/world-mv.php', 'bridge/world-story.php', 'deploy/noa-world.php', 'deploy/noa-world.js', 'deploy/noa-world.css', 'deploy/noa-app/world-view.php', 'tests/world/**', 'tests/catalog/world_mv_test.php', 'scripts/qa/noa-world-diary.mjs', '.github/workflows/noa-world-diary-check.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Verify read-only model and original story precedence
+        run: |
+          for f in bridge/world-{core,mv,story}.php deploy/noa-world.php deploy/noa-app/world-view.php tests/world/router.php; do php -l "$f"; done
+          php tests/catalog/world_test.php
+          php tests/catalog/world_mv_test.php
+          node --check deploy/noa-world.js
+      - name: Validate real public playlist and render new PHP without deploying
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-world" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-world/node_modules/.bin/playwright" install --with-deps chrome
+          cp scripts/qa/noa-world-diary.mjs "$RUNNER_TEMP/noa-world/check.mjs"
+          node "$RUNNER_TEMP/noa-world/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-world-diary-verification
+          path: quality-world/
+          retention-days: 14
