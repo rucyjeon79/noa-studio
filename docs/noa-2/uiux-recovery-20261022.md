@@ -35,3 +35,5 @@ Authenticated templates are not authenticated production transactions. Do not cl
 ## Concurrent owner integration
 
 Main advanced through deployment audit/backup documentation and Work_Music reopened-tab recovery `7aec9e7` during this change. Preserve every inherited owner file and proof by merging its tree; the only overlapping entrypoint is `deploy/noa-music.php`, where the owner upload script version changes from v16 to v17. Keep that exact version while retaining the scoped design edits. No owner upload/FIFO implementation is modified by Work_Design. Baseline-scoped ownership checks now compare against `7aec9e7`, and deployment accepts only exact verified 54f1adb/7aec9e7/baseline/candidate bytes.
+
+Owner follow-up `c62a27d` fixes the asynchronous picker reservation race. Preserve its complete tree and v18 loader. This is an inherited owner change, not a Work_Design modification; scoped ownership checks compare against c62a27d.
