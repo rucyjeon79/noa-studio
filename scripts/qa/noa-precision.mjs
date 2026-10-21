@@ -12,7 +12,7 @@ export async function auditPrecision(page){
   });
   const hero=document.querySelector('.noa-hero'),art=document.querySelector('.noa-hero-art'),copy=document.querySelector('.noa-hero-copy'),toggle=document.getElementById('noa-hero-toggle'),video=document.getElementById('noa-hero-video');
   const heroInfo=hero?{box:rect(hero),art:rect(art),copy:rect(copy),toggle:rect(toggle),portrait:innerHeight>innerWidth,fit:getComputedStyle(video).objectFit,muted:video.muted,loop:video.loop}:null;
-  const main=document.querySelector('main')||document.querySelector('.noa-g5 #wrapper'),nav=document.querySelector('.noa-mobile-nav'),player=document.querySelector('.noa-transport');
+  const main=document.querySelector('main')||document.querySelector('.noa-g5 #wrapper')||(document.body.matches('.noa-g5 body:has(>.mbskin)')?document.body:null),nav=document.querySelector('.noa-mobile-nav'),player=document.querySelector('.noa-transport');
   return{hero:heroInfo,viewport:innerWidth,height:innerHeight,scroll:document.documentElement.scrollWidth,sidebar:visible(document.querySelector('.noa-sidebar')),nav:visible(nav)?rect(nav):null,player:visible(player)?rect(player):null,paddingBottom:main?parseFloat(getComputedStyle(main).paddingBottom):0,groups,debug:document.documentElement.hasAttribute('data-noa-grid-debug')};
  });
  assert(result.scroll<=result.viewport+1,'precision overflow '+result.viewport);

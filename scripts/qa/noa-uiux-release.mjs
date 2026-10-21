@@ -97,7 +97,11 @@ try{
   assert.equal(await mediaPage.locator('video').evaluate(v=>v.loop),false);
   if(!await mediaPage.locator('video').evaluate(v=>v.ended)){await mediaPage.locator('video').evaluate(v=>{v.currentTime=Math.max(0,v.duration-.2);});await mediaPage.waitForFunction(()=>document.querySelector('video').ended,null,{timeout:10000});}
   assert.equal(await mediaPage.locator('video').evaluate(v=>v.paused),true);
-  report.push({phase,nativeHeroEndedPaused:true,manualFallback});
+  await mediaPage.getByRole('button',{name:'메인 영상 다시 재생',exact:true}).press('Enter');
+  await mediaPage.waitForFunction(()=>{const v=document.querySelector('video');return !v.paused&&!v.ended&&v.currentTime<v.duration-1;});
+  await mediaPage.getByRole('button',{name:'메인 영상 일시정지',exact:true}).press('Space');
+  assert.equal(await mediaPage.locator('video').evaluate(v=>v.paused),true);
+  report.push({phase,nativeHeroEndedPaused:true,manualFallback,keyboardReplayPause:true});
  }catch(error){
   const diagnostics=await mediaPage.locator('video').evaluate(v=>({src:v.currentSrc||v.src,readyState:v.readyState,paused:v.paused,ended:v.ended,error:v.error?{code:v.error.code,message:v.error.message}:null,mp4Support:v.canPlayType('video/mp4; codecs="avc1.42E01E"'),status:document.getElementById('noa-hero-status').textContent,visibility:document.visibilityState}));
   await fs.writeFile(path.join(out,'native-media-failure.json'),JSON.stringify(diagnostics,null,2));await mediaPage.screenshot({path:path.join(out,'native-media-failure.jpg'),type:'jpeg'});console.log('NATIVE_MEDIA_DIAGNOSTICS '+JSON.stringify(diagnostics));throw error;

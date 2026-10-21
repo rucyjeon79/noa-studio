@@ -203,3 +203,6 @@ html[data-noa-precision] .noa-menu a span{min-inline-size:0;overflow:hidden;text
  html[data-noa-precision] .noa-hero-copy .noa-eyebrow{display:none}
  html[data-noa-precision] .noa-hero-copy p{font-size:13px}
 }
+
+/* GnuBoard login/register forms may be direct body children, without #wrapper. */
+html[data-noa-precision].noa-g5 body:has(>.mbskin){padding-block-end:calc(var(--noa-nav-space) + var(--noa-player-space,0px) + var(--noa-space-6))}
