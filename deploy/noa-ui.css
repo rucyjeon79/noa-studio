@@ -81,3 +81,22 @@ html[data-noa-theme="noa-ivory"]{color-scheme:light}html[data-radius="sharp"]{--
 .noa-g5 #mb_login .mb_log_cate h2,.noa-g5 #mb_login .mb_log_cate .join{display:flex;align-items:center;justify-content:center;width:50%;min-height:44px;padding:12px;margin:0;background:var(--noa-surface);color:var(--noa-text);border:0;text-decoration:none}
 .noa-g5 #mb_login .mb_log_cate h2{color:var(--noa-accent);border-bottom:2px solid var(--noa-accent)}
 .noa-g5 #mb_login .mb_log_cate .join:hover{background:var(--noa-raised);color:var(--noa-accent)}
+/* Balanced collections. Explicit placement centers partial rows without stretching the last card. */
+:root{--noa-feature-line:color-mix(in srgb,var(--noa-accent) 55%,var(--noa-line));--noa-feature-surface:color-mix(in srgb,var(--noa-surface) 92%,var(--noa-accent) 8%)}
+.noa-page .noa-balanced,.noa-balanced{display:grid;grid-template-columns:repeat(var(--noa-balance-columns),minmax(0,1fr));gap:var(--noa-balance-gap);align-items:start}
+.noa-balanced>*{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.noa-page .noa-balanced>.noa-balanced-feature,.noa-balanced>.noa-balanced-feature{justify-self:center;display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);column-gap:12px;row-gap:4px;width:min(100%,calc(var(--noa-card-width)*1.85 + var(--noa-balance-gap)));padding:12px;border:1px solid var(--noa-feature-line);border-radius:var(--noa-radius);background:var(--noa-feature-surface);color:var(--noa-text);text-decoration:none;align-items:center;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--noa-text) 5%,transparent)}
+.noa-balanced>.noa-balanced-feature::before{content:'FEATURED';grid-column:2;grid-row:1;font-size:9px;line-height:1.4;letter-spacing:.12em;color:var(--noa-accent);font-weight:600}
+.noa-balanced>.noa-balanced-feature>.noa-art,.noa-balanced>.noa-balanced-feature>.yt-watch,.noa-balanced>.noa-balanced-feature>.world-thumbnail{grid-column:1;grid-row:1 / span 5;align-self:center;margin:0;width:100%;min-height:0;aspect-ratio:16/9;overflow:hidden}
+.noa-balanced>.noa-balanced-feature>strong,.noa-balanced>.noa-balanced-feature>h2,.noa-balanced>.noa-balanced-feature>h3{grid-column:2;grid-row:2;margin:0;font-size:clamp(13px,1.2vw,17px);line-height:1.45;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.noa-balanced>.noa-balanced-feature>small,.noa-balanced>.noa-balanced-feature>p{grid-column:2;grid-row:3;font-size:11px;line-height:1.5;margin:0;color:var(--noa-muted);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.noa-balanced>.noa-balanced-feature>a,.noa-balanced>.noa-balanced-feature>details{grid-column:2;font-size:12px;min-width:0}
+.noa-balanced>.noa-music-card.noa-balanced-feature::after{content:'▷';grid-column:2;grid-row:4;display:grid;place-items:center;justify-self:start;width:44px;height:44px;border:1px solid var(--noa-line);border-radius:50%;color:var(--noa-accent);font-size:20px}
+.noa-balanced-feature .yt-play{inset:auto 6px 6px auto;width:44px;height:44px;border-radius:50%;font-size:22px;background:var(--noa-bg)}
+.noa-balanced>.noa-balanced-feature>#world-player{grid-column:1 / -1;width:100%}
+.noa-page .noa-workspace.noa-balanced a{width:100%;min-height:64px;margin:0;padding:10px 6px;border:1px solid var(--noa-line);border-radius:10px;text-decoration:none}
+.noa-page .noa-personal-grid.noa-balanced{align-items:stretch}
+#youtube-playlists.noa-balanced>h2{grid-column:1 / -1;grid-row:1;margin:0}
+#youtube-playlists.noa-balanced>p{margin:0;width:100%;height:100%}
+#youtube-playlists.noa-balanced>p>a{display:flex;align-items:center;padding:12px;min-height:64px;height:100%;border:1px solid var(--noa-line);border-radius:10px;text-decoration:none;font-size:13px}
+@media(max-width:360px){.noa-balanced>.noa-balanced-feature{column-gap:8px;padding:8px}}

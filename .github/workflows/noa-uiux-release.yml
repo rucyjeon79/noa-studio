@@ -1,9 +1,9 @@
 name: NOA UIUX visual gates and scoped production release
-# Verify stable preview hit areas, native candidate media and preserved Chrome click evidence.
+# Release balanced card layouts with count, width, order and representative playback gates.
 on:
   pull_request:
     branches: [main]
-    paths: ['deploy/noa-ui.*', 'deploy/noa-hero.js', 'deploy/noa-home.js', 'deploy/noa-browse.js', 'deploy/noa-my.php', 'deploy/noa-youtube*', 'deploy/noa-world*', 'deploy/noa-app/home.php', 'deploy/noa-app/world-view.php', 'bridge/home-core.php', 'tests/uiux/**', 'scripts/noa_uiux_release.py', 'scripts/qa/noa-uiux-release.mjs', '.github/workflows/noa-uiux-release.yml']
+    paths: ['deploy/noa-ui.*', 'deploy/noa-hero.js', 'deploy/noa-home.js', 'deploy/noa-browse.js', 'deploy/noa-my.php', 'deploy/noa-youtube*', 'deploy/noa-world*', 'deploy/noa-app/home.php', 'deploy/noa-app/world-view.php', 'bridge/home-core.php', 'tests/uiux/**', 'scripts/noa_uiux_release.py', 'scripts/qa/noa-uiux-release.mjs', 'scripts/qa/noa-card-balance.mjs', '.github/workflows/noa-uiux-release.yml']
   push:
     branches: [main]
     paths: ['.github/workflows/noa-uiux-release.yml']
@@ -27,7 +27,7 @@ jobs:
           php tests/catalog/home_uiux_test.php
           php tests/catalog/world_test.php
           php tests/catalog/world_mv_test.php
-          node --test scripts/qa/noa-browse.test.mjs scripts/noa_player_regression.test.mjs
+          node --test scripts/qa/noa-card-balance.test.mjs scripts/qa/noa-browse.test.mjs scripts/qa/noa-hero.test.mjs scripts/noa_player_regression.test.mjs
           python3 -m pip install --user paramiko==3.5.1
           python3 -m py_compile scripts/noa_uiux_release.py
           python3 tests/uiux/release_test.py

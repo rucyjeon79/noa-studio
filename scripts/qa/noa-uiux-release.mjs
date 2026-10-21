@@ -48,6 +48,8 @@ try{
   await page.locator('.noa-sidebar').waitFor({state:'attached'});await page.waitForFunction(()=>document.fonts.status==='loaded');
   if(route==='/')await page.waitForFunction(()=>document.body.dataset.noaHomeReady);
   if(['/noa-music.php','/noa-youtube.php'].includes(route))await page.locator('.noa-browse-grid .noa-browse-card').first().waitFor();
+  await page.waitForFunction(()=>window.NoaCardLayout);
+  await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
   const layout=await page.evaluate(()=>({viewport:innerWidth,scroll:document.documentElement.scrollWidth,text:document.body.innerText.length,actions:[...document.querySelectorAll('.noa-action')].map(e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height,gap:getComputedStyle(e).gap})),broken:[...document.images].filter(i=>i.getBoundingClientRect().width&&i.getBoundingClientRect().height&&i.complete&&!i.naturalWidth).map(i=>i.getAttribute('src'))}));
   assert(layout.scroll<=width+1,'overflow '+width+' '+route+' '+layout.scroll);assert(layout.text>50,'blank '+route);assert.deepEqual(errors,[],route);
   for(const action of layout.actions)assert(action.width>=43&&action.height>=43,'small action '+route);
@@ -81,6 +83,8 @@ try{
   const response=await context.request.get(base+'/noa-youtube.php?playlist=PLEPMKciKgvch9TGMAcBdKzhVt1QeYsfKB');assert.equal(response.status(),200);const html=await response.text(),ids=new Set([...html.matchAll(/class="yt-watch" data-video="([A-Za-z0-9_-]{11})"/g)].map(x=>x[1]));assert(ids.size>0);assert(d.stories.every(v=>ids.has(v.videoId)),'story outside official playlist');
   report.push({phase,homeCounts:Object.fromEntries(['featured','ep','stories','covers'].map(k=>[k,d[k].length])),officialStoryMembership:true});
  }
+ const {verifyCardBalance}=await import('file://'+path.join(root,'scripts/qa/noa-card-balance.mjs'));
+ await verifyCardBalance({context,phase,base,out,report});
  // Native media is checked on the candidate too, before any deployment.
  const mediaPage=await context.newPage();await mediaPage.emulateMedia({reducedMotion:'no-preference'});await mediaPage.goto(base+'/',{waitUntil:'domcontentloaded'});
  let manualFallback=false;
