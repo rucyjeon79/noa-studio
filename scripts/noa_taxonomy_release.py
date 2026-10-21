@@ -105,7 +105,7 @@ def main():
   s.chmod(backup+'/manifest.json',0o600)
   Path('quality-taxonomy').mkdir(exist_ok=True)
   if phase=='probe':
-   report=service(key,'inspect');print('NOA_TAXONOMY_PROBE '+json.dumps({'inventory':report['inventory'],'changedSinceBackup':report['changedSinceBackup'],'newCodeUploaded':changed,'sqlApplied':False}))
+   report=service(key,'inspect');print('NOA_TAXONOMY_PROBE '+json.dumps({'inventory':report['inventory'],'changedSinceBackup':report['changedSinceBackup'],'configChangedColumnsFromBackup':report['configChangedColumnsFromBackup'],'newCodeUploaded':changed,'sqlApplied':False}))
   elif phase=='prepare':
    inventory=service(key,'inspect');report=service(key,'backup');Path('quality-taxonomy/baseline-private.json').write_text(json.dumps(inventory));Path('quality-taxonomy/backup-meta.json').write_text(json.dumps(report));print('NOA_TAXONOMY_PREPARED '+json.dumps({'inventory':report['inventory'],'backupSha256':report['backup']['sha256'],'backupBytes':report['backup']['bytes'],'backupTables':len(report['backup']['tables']),'codeUploaded':changed,'sqlApplied':False}))
   elif phase=='activate':

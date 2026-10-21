@@ -6,7 +6,7 @@ try{
  const taxonomy=await get('/noa-bridge/taxonomy.php');assert.ok(taxonomy.installed);assert.equal(taxonomy.categories.length,5);assert.ok(taxonomy.videos.length>0);
  assert.equal((await page.request.get(origin+'/noa-app/taxonomy/')).status(),403);
  assert.equal((await page.request.post(origin+'/noa-app/taxonomy/',{data:{action:'status'}})).status(),403);
- assert.equal((await page.request.post(origin+'/noa-bridge/taxonomy-worker.php',{data:{action:'bootstrap'}})).status(),401);
+ assert.equal((await page.request.get(origin+'/noa-bridge/taxonomy-worker.php')).status(),401);
  assert.equal((await page.request.get(origin+'/noa-bridge/taxonomy-store.php')).status(),403);
  let previous;
  for(const width of [390,1280]){await page.setViewportSize({width,height:900});await page.goto(origin+'/noa-music.php',{waitUntil:'domcontentloaded'});await page.locator('#noa-taxonomy-browse[data-ready=true]').waitFor();await page.getByLabel('1차 카테고리',{exact:true}).selectOption('kpop-original');await page.getByLabel('2차 카테고리',{exact:true}).selectOption('collection');await page.waitForFunction(()=>document.querySelectorAll('#taxonomy-video-results a').length>0);const rows=await page.locator('#taxonomy-video-results a').evaluateAll(as=>as.map(a=>({href:a.getAttribute('href'),title:a.querySelector('strong').textContent})));if(previous)assert.deepEqual(rows,previous);previous=rows;assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'music horizontal overflow');await page.screenshot({path:'quality-taxonomy/music-'+width+'.jpg',fullPage:true,type:'jpeg',quality:65});}

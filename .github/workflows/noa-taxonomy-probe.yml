@@ -1,4 +1,5 @@
 name: NOA taxonomy production protection diagnostic
+# Identify configuration column changes without disclosing stored values.
 on:
   push:
     branches: [main]
