@@ -23,8 +23,8 @@ function nh_build(array $videos,array $songs,array $playlists,array $members,str
  $categoryMembers=[];$continuousMembers=[];
  foreach($playlists as $p){if(!nh_public($p,$channel)||!empty($p['systemUploads']))continue;
   $pid=(string)($p['id']??'');$title=(string)($p['snippet']['title']??'');$genre=null;
-  if($pid==='PLEPMKciKgvch9TGMAcBdKzhVt1QeYsfKB'||preg_match('/당신의\s*이야기\s*,\s*우리의\s*음악/u',$title))$genre='your-story';
-  if($pid==='PLEPMKciKgvcjGmuO2ZcqrkHGfD5Qbb_Eb'||preg_match('/AInoa의\s*유명곡\s*커버/iu',$title))$genre='cover-reborn';
+  if($pid==='PLEPMKciKgvch9TGMAcBdKzhVt1QeYsfKB'||preg_match('/당신의\s*이야기\s*[,，·:：-]?\s*우리의\s*음악/u',$title))$genre='your-story';
+  if($pid==='PLEPMKciKgvcjGmuO2ZcqrkHGfD5Qbb_Eb'||preg_match('/(?:AI\s*noa|AInoa)의?\s*유명곡\s*커버/iu',$title))$genre='cover-reborn';
   foreach($members[$pid]??[] as $id){if(!is_string($id))continue;if($genre)$categoryMembers[$id][$genre]=true;if(nh_continuous($title))$continuousMembers[$id]=true;}
  }
  $linkedSongs=[];foreach($videos as $v)if(!empty($v['match']['songId'])&&($v['match']['status']??'')!=='rejected')$linkedSongs[$v['match']['songId']]=true;
