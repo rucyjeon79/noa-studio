@@ -1,0 +1,54 @@
+name: NOA root entrypoint production inspection
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-root-entrypoint-audit.yml']
+permissions: {contents: read}
+concurrency: {group: noa-dothome-production, cancel-in-progress: false}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python3 -m pip install --user paramiko==3.5.1
+      - name: Read real bootstrap and routing without writes
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: |
+          python3 - <<'PY'
+          import paramiko,os,hashlib,base64,json,re,stat
+          from pathlib import Path
+          t=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022))
+          try:
+              t.get_security_options().key_types=('ssh-ed25519',);t.start_client(timeout=20)
+              fp='SHA256:'+base64.b64encode(hashlib.sha256(t.get_remote_server_key().asbytes()).digest()).decode().rstrip('=')
+              assert fp=='SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU'
+              t.auth_password(os.environ['NOA_SSH_USER'],os.environ['NOA_SSH_PASSWORD'])
+              s=paramiko.SFTPClient.from_transport(t);root='/hosting/noastudio/html';assert s.normalize(root)==root
+              def read(p):
+                  with s.open(root+'/'+p,'rb') as f:return f.read()
+              def sha(b):return hashlib.sha256(b).hexdigest()
+              for p in ['index.php','common.php','_common.php','config.php','extend/noa.home.php','extend/noa.design.php','noa2.php','noa-ui.css','noa-browse.js','noa-ui.js','noa-home.js','noa-hero.js','noa-world.php','noa-music.php','noa-youtube.php']:
+                  try:b=read(p)
+                  except FileNotFoundError:print(json.dumps({'path':p,'missing':True}));continue
+                  local=Path('deploy/'+p)
+                  print(json.dumps({'path':p,'bytes':len(b),'sha256':sha(b),'matches_main':sha(local.read_bytes())==sha(b) if local.is_file() else None}))
+                  if p in ['index.php','common.php','_common.php','config.php','extend/noa.home.php']:
+                      # Only routing/bootstrap statements, never DB config or credential values.
+                      lines=b.decode('utf-8','replace').splitlines()
+                      allow=['include','require','session_start','_INDEX_','_GNUBOARD_','G5_THEME_PATH','G5_IS_MOBILE','G5_EXTEND_PATH','header(','noaRequestPath','noaScript','noa2.php']
+                      out=[{'line':i+1,'text':v[:250]} for i,v in enumerate(lines) if any(x in v for x in allow)]
+                      print('BOOTSTRAP '+p+' '+json.dumps(out,ensure_ascii=False))
+              print('EXTEND_DIRECTORY '+json.dumps(s.listdir(root+'/extend')))
+              print('THEME_DIRECTORY '+json.dumps(s.listdir(root+'/theme')))
+              for p in ['noa-app','noa-app/home.php']:
+                  try:print('APP_PATH '+p+' '+str(s.lstat(root+'/'+p).st_mode))
+                  except FileNotFoundError:print('APP_PATH '+p+' missing')
+              print('PRIVATE_PARENT '+s.normalize(root+'/..'))
+              print('READ_ONLY_COMPLETE')
+          finally:t.close()
+          PY
