@@ -25,3 +25,16 @@ file_put_contents(nd_private().'/'.$m['id'].'.sql',"tamper",FILE_APPEND);try{nd_
 check($db->query('SELECT secret FROM members')->fetchColumn()==='unchanged','production-shaped member preservation');
 $member=['mb_id'=>'test-admin'];nd_audit('test','ok',['rows'=>1100]);check(str_contains(file_get_contents(nd_private().'/audit-'.gmdate('Y-m').'.jsonl'),'test-admin'),'audit');
 echo "MySQL 8: read-only enforcement, 1000 row cap, Unicode bound search, aggregate, full/table backup, isolated actual restore (1100 rows, generated column, JSON, binary, NULL), MyISAM lock/restore, unsafe-object refusal, tamper detection, member preservation, private audit passed.\n";
+// Exercise the separately approved CLI procedure against disposable test data only.
+$base=nd_backup($ro,null);$db->exec('DELETE FROM songs WHERE id=1100');$approval=nd_restore_plan($ro,$base);
+mkdir(G5_PATH.'/noa-app');mkdir(G5_PATH.'/noa-app/database');
+foreach(['core.php','restore-cli.php'] as $file)copy(__DIR__.'/../../deploy/noa-app/database/'.$file,G5_PATH.'/noa-app/database/'.$file);
+$bootstrap="<?php define('_GNUBOARD_',true);define('G5_PATH',__DIR__);";
+foreach(['G5_MYSQL_HOST','G5_MYSQL_DB','G5_MYSQL_USER','G5_MYSQL_PASSWORD'] as $c)$bootstrap.='define('.var_export($c,true).','.var_export(constant($c),true).');';
+$bootstrap.='$config=["cf_admin"=>"test-admin"];';file_put_contents(G5_PATH.'/common.php',$bootstrap);
+$command=[PHP_BINARY,G5_PATH.'/noa-app/database/restore-cli.php','--plan='.$approval['plan']['id'],'--approve-sha256='.$approval['approvalSha256'],'--actor=test-admin','--maintenance-confirmed'];
+$proc=proc_open($command,[0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']],$pipes);fclose($pipes[0]);$stdout=stream_get_contents($pipes[1]);$stderr=stream_get_contents($pipes[2]);fclose($pipes[1]);fclose($pipes[2]);$code=proc_close($proc);check($code===0,'CLI restore failed: '.$stderr);check(str_contains($stdout,'Restore complete'),'CLI restore report');
+check((int)$db->query('SELECT COUNT(*) FROM songs')->fetchColumn()===1100,'CLI restore row preservation');
+check(!glob(nd_private().'/restore-*.cnf'),'temporary credentials remained');
+$proc=proc_open($command,[0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']],$pipes);fclose($pipes[0]);stream_get_contents($pipes[1]);stream_get_contents($pipes[2]);fclose($pipes[1]);fclose($pipes[2]);check(proc_close($proc)!==0,'CLI approved plan replay accepted');
+echo "Approved restore CLI: safety backup, isolated restore, exact table counts, credential cleanup and replay refusal passed.\n";
