@@ -1,5 +1,5 @@
 <?php
-function nws_genre_label(string $g):string{return ['kpop-original'=>'K-POP Original','jpop-original'=>'J-POP Original','pop-original'=>'POP Original','thai-original'=>'Thai Original','your-story'=>'사연곡','cover-reborn'=>'커버곡'][$g]??ucwords(str_replace('-',' ',$g));}
+function nws_genre_label(string $g):string{if(in_array($g,['unclassified','unknown','other'],true))return '음악';return ['kpop-original'=>'K-POP Original','jpop-original'=>'J-POP Original','pop-original'=>'POP Original','thai-original'=>'Thai Original','your-story'=>'사연곡','cover-reborn'=>'커버곡'][$g]??ucwords(str_replace('-',' ',$g));}
 function nwe(string $s):string{return htmlspecialchars($s,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
 function nwl(array $query):string{return '/noa-world.php'.($query?'?'.http_build_query($query):'');}
 $admin=!empty($is_member)&&($is_admin??'')==='super';$drafts=nws_drafts();$actNo=$story??null;$fields=$selected['fields']??[];$allVideos=$world['videos']??[];

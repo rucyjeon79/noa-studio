@@ -18,7 +18,7 @@ function icon(key){return '<svg aria-hidden="true" viewBox="0 0 24 24" fill="non
 function actionIcon(el){const href=el.getAttribute('href')||'',text=el.textContent.trim();return /캐릭터|회원|계정/.test(text)?'user':/설명|정보|세계관/.test(text)?'book':/커뮤니티|소식/.test(text)?'community':/youtube|영상|MV/.test(text+' '+href)?'youtube':/다운로드|관리|설정/.test(text)?'settings':/곡|suno/.test(text+' '+href)?'music':'library';}
 function decorate(){
  // Existing nodes/URLs/listeners are retained. Exclude card links, document-body citations and native navigation.
- for(const el of document.querySelectorAll('main a,main summary')){
+ for(const el of document.querySelectorAll('main a,main summary,.noa-g5 .btn_bo_user a,.noa-g5 .btn_confirm a,.noa-g5 .bo_v_nb a,.noa-g5 .bo_v_com a')){
   if(el.matches('[data-noa-icon],.noa-action,.noa-logo,.brand,.noa-music-card,.noa-genre,.noa-world-act,.noa-personal-card,.noa-browse-card')||el.closest('nav,footer,.noa-world-text,[data-noa-document-link]')||el.querySelector('img,svg')||!el.textContent.trim())continue;
   el.dataset.noaIcon=actionIcon(el);
  }

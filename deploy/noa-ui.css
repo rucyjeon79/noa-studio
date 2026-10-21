@@ -279,3 +279,6 @@ html[data-noa-precision] .noa-page .noa-browse-card>img{position:static;inset:au
 html[data-noa-precision] .noa-page .noa-browse-card>span{position:static;inset:auto;display:grid;gap:var(--noa-space-1);padding:var(--noa-space-3);background:var(--noa-surface);color:var(--noa-text)}
 html[data-noa-precision] .noa-page .noa-browse-card strong{color:var(--noa-text);text-shadow:none}
 html[data-noa-precision] .noa-page .noa-browse-card small{color:var(--noa-muted)}
+
+html.noa-g5 .noa-action,html.noa-g5 .noa-action:hover{text-decoration:none}
+html[data-noa-precision] .noa-page .noa-browse-card{gap:0}
