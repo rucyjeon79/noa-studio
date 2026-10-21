@@ -25,7 +25,7 @@ function nj_operation(PDO $db,string $action,array $input=[]):array{
   return $out;
  }
  if($action==='jobs'){
-  nj_schema($db);$db->exec("UPDATE noa_jukebox_jobs SET status='queued' WHERE status='running' AND created_at<UTC_TIMESTAMP()-INTERVAL 3 HOUR");
+  nj_schema($db);$db->exec("UPDATE noa_jukebox_jobs SET status='queued' WHERE status='running' AND created_at<CURRENT_TIMESTAMP()-INTERVAL 3 HOUR");
   return ['queued'=>(int)$db->query("SELECT COUNT(*) FROM noa_jukebox_jobs WHERE status='queued'")->fetchColumn()];
  }
  if($action==='claim'){
@@ -40,7 +40,7 @@ function nj_operation(PDO $db,string $action,array $input=[]):array{
  if($action==='finish'){
   $ids=$input['ids']??[];if(!is_array($ids)||count($ids)>200)throw new InvalidArgumentException('job_limit');
   foreach($ids as $id)if(!is_int($id)||$id<1)throw new InvalidArgumentException('job_id');
-  if($ids){$q=$db->prepare("UPDATE noa_jukebox_jobs SET status='completed',finished_at=UTC_TIMESTAMP() WHERE status='running' AND id IN (".implode(',',array_fill(0,count($ids),'?')).")");$q->execute($ids);}
+  if($ids){$q=$db->prepare("UPDATE noa_jukebox_jobs SET status='completed',finished_at=CURRENT_TIMESTAMP() WHERE status='running' AND id IN (".implode(',',array_fill(0,count($ids),'?')).")");$q->execute($ids);}
   return ['finished'=>count($ids)];
  }
  throw new InvalidArgumentException('unknown_fixed_operation');
