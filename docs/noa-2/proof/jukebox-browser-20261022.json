@@ -1,0 +1,692 @@
+{
+  "cards": [
+    {
+      "analysis": {
+        "correction": {
+          "applied_gain": 2.75,
+          "bitrate": 320000,
+          "filter": "volume=2.75dB",
+          "mode": "encode",
+          "planned_gain": 2.75,
+          "sample_rate": 48000,
+          "source_unchanged": true,
+          "target_lufs": -14,
+          "target_peak": -1,
+          "tool": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+          "version": "noa-jukebox-upload-2"
+        },
+        "final": {
+          "bitrate": 320000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "mp3",
+          "decode_errors": false,
+          "duration": 90.024,
+          "lra": 0,
+          "lufs": -14.05,
+          "sample_peak": -11.167747,
+          "sample_rate": 48000,
+          "true_peak": -11.17
+        },
+        "source": {
+          "bitrate": 1536000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "pcm_s16le",
+          "decode_errors": false,
+          "duration": 90,
+          "lra": 0,
+          "lufs": -16.75,
+          "sample_peak": -13.917855,
+          "sample_rate": 48000,
+          "sha256": "761919549c8e03c58ef3518fbd2e1551b99a446af8118a5bd9d8dcd8e9f4e73e",
+          "true_peak": -13.92
+        }
+      },
+      "bytes": 3601965,
+      "key": "jukebox:qa:fifo-01",
+      "sha256": "2fc1456a20ce04c581e0cf116fe899b764ce538ae4661215a131b0a9543334bd",
+      "status": "ready"
+    },
+    {
+      "analysis": {
+        "correction": {
+          "applied_gain": 3.0500000000000007,
+          "bitrate": 320000,
+          "filter": "volume=3.0500000000000007dB",
+          "mode": "encode",
+          "planned_gain": 3.0500000000000007,
+          "sample_rate": 48000,
+          "source_unchanged": true,
+          "target_lufs": -14,
+          "target_peak": -1,
+          "tool": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+          "version": "noa-jukebox-upload-2"
+        },
+        "final": {
+          "bitrate": 320000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "mp3",
+          "decode_errors": false,
+          "duration": 12.024,
+          "lra": 0,
+          "lufs": -13.95,
+          "sample_peak": -11.135407,
+          "sample_rate": 48000,
+          "true_peak": -11.13
+        },
+        "source": {
+          "bitrate": 192000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "mp3",
+          "decode_errors": false,
+          "duration": 12.024,
+          "lra": 0,
+          "lufs": -17.05,
+          "sample_peak": -14.185746,
+          "sample_rate": 48000,
+          "sha256": "1aa2f803e1c97aeae5af12caaced86be2ca27311e5fff5e6412c02245dd47b59",
+          "true_peak": -14.18
+        }
+      },
+      "bytes": 481965,
+      "key": "jukebox:qa:fifo-02",
+      "sha256": "63e2f032f271235d46643b34951be20852842d245644cd94dd15cfe2f7c548b9",
+      "status": "ready"
+    },
+    {
+      "analysis": {
+        "correction": {
+          "applied_gain": 2.75,
+          "bitrate": 320000,
+          "filter": "volume=2.75dB",
+          "mode": "encode",
+          "planned_gain": 2.75,
+          "sample_rate": 48000,
+          "source_unchanged": true,
+          "target_lufs": -14,
+          "target_peak": -1,
+          "tool": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+          "version": "noa-jukebox-upload-2"
+        },
+        "final": {
+          "bitrate": 320000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "mp3",
+          "decode_errors": false,
+          "duration": 12.024,
+          "lra": 0,
+          "lufs": -13.95,
+          "sample_peak": -11.167969,
+          "sample_rate": 48000,
+          "true_peak": -11.17
+        },
+        "source": {
+          "bitrate": 1536000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "pcm_s16le",
+          "decode_errors": false,
+          "duration": 12,
+          "lra": 0,
+          "lufs": -16.75,
+          "sample_peak": -13.917855,
+          "sample_rate": 48000,
+          "sha256": "8d8420c495b8ec60cacfbb194b48f6230a4391bca1603ba8aed18f3e7ef30f88",
+          "true_peak": -13.92
+        }
+      },
+      "bytes": 481965,
+      "key": "jukebox:qa:fifo-03",
+      "sha256": "25a9e1d290168b39734b04e09d7c2477961c8a94fea54044a42e57af95f96f12",
+      "status": "ready"
+    },
+    {
+      "analysis": {
+        "correction": {
+          "applied_gain": 2.75,
+          "bitrate": 320000,
+          "filter": "volume=2.75dB",
+          "mode": "encode",
+          "planned_gain": 2.75,
+          "sample_rate": 48000,
+          "source_unchanged": true,
+          "target_lufs": -14,
+          "target_peak": -1,
+          "tool": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+          "version": "noa-jukebox-upload-2"
+        },
+        "final": {
+          "bitrate": 320000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "mp3",
+          "decode_errors": false,
+          "duration": 12.024,
+          "lra": 0,
+          "lufs": -13.95,
+          "sample_peak": -11.16813,
+          "sample_rate": 48000,
+          "true_peak": -11.17
+        },
+        "source": {
+          "bitrate": 1536000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "pcm_s16le",
+          "decode_errors": false,
+          "duration": 12,
+          "lra": 0,
+          "lufs": -16.75,
+          "sample_peak": -13.919171,
+          "sample_rate": 48000,
+          "sha256": "e4508b74ec4b1533284e68c4db9ed3a237be69e136e2b7be1bfc42c6fcaedb3f",
+          "true_peak": -13.92
+        }
+      },
+      "bytes": 481965,
+      "key": "jukebox:qa:fifo-04",
+      "sha256": "326716ed6d31eab64467e5340cf973e4a7cf8680b14ab0178bc5a2921cd280ee",
+      "status": "ready"
+    },
+    {
+      "analysis": {
+        "correction": {
+          "applied_gain": 2.75,
+          "bitrate": 320000,
+          "filter": "volume=2.75dB",
+          "mode": "encode",
+          "planned_gain": 2.75,
+          "sample_rate": 48000,
+          "source_unchanged": true,
+          "target_lufs": -14,
+          "target_peak": -1,
+          "tool": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+          "version": "noa-jukebox-upload-2"
+        },
+        "final": {
+          "bitrate": 320000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "mp3",
+          "decode_errors": false,
+          "duration": 12.024,
+          "lra": 0,
+          "lufs": -13.95,
+          "sample_peak": -11.167541,
+          "sample_rate": 48000,
+          "true_peak": -11.17
+        },
+        "source": {
+          "bitrate": 1536000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "pcm_s16le",
+          "decode_errors": false,
+          "duration": 12,
+          "lra": 0,
+          "lufs": -16.75,
+          "sample_peak": -13.917855,
+          "sample_rate": 48000,
+          "sha256": "bb1d65e1950991d54b46fe26917ca4ffbb41536158ab57300763e5509b28078f",
+          "true_peak": -13.92
+        }
+      },
+      "bytes": 481965,
+      "key": "jukebox:qa:fifo-05",
+      "sha256": "a87bc2f6dc1a672be732a71684cbd667a0461f11c28e3ba7c8cb8208739ad9d9",
+      "status": "ready"
+    },
+    {
+      "analysis": {
+        "correction": {
+          "applied_gain": 2.6499999999999986,
+          "bitrate": 320000,
+          "filter": "volume=2.6499999999999986dB",
+          "mode": "encode",
+          "planned_gain": 2.6499999999999986,
+          "sample_rate": 48000,
+          "source_unchanged": true,
+          "target_lufs": -14,
+          "target_peak": -1,
+          "tool": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+          "version": "noa-jukebox-upload-2"
+        },
+        "final": {
+          "bitrate": 320000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "mp3",
+          "decode_errors": false,
+          "duration": 12.024,
+          "lra": 0,
+          "lufs": -14.05,
+          "sample_peak": -11.269598,
+          "sample_rate": 48000,
+          "true_peak": -11.27
+        },
+        "source": {
+          "bitrate": 1536000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "pcm_s16le",
+          "decode_errors": false,
+          "duration": 12,
+          "lra": 0,
+          "lufs": -16.65,
+          "sample_peak": -13.920487,
+          "sample_rate": 48000,
+          "sha256": "a072ccfbb144e488acac18612d402ed81b78866a00ad21f34d62516b025c64e7",
+          "true_peak": -13.92
+        }
+      },
+      "bytes": 481965,
+      "key": "jukebox:qa:fifo-06",
+      "sha256": "c34dd6609afbb0fa9d5dcad7ec8b66cd68362b2b1f7e327eef1e3aba1da4e8fd",
+      "status": "ready"
+    },
+    {
+      "analysis": {
+        "correction": {
+          "applied_gain": 2.6499999999999986,
+          "bitrate": 320000,
+          "filter": "volume=2.6499999999999986dB",
+          "mode": "encode",
+          "planned_gain": 2.6499999999999986,
+          "sample_rate": 48000,
+          "source_unchanged": true,
+          "target_lufs": -14,
+          "target_peak": -1,
+          "tool": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+          "version": "noa-jukebox-upload-2"
+        },
+        "final": {
+          "bitrate": 320000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "mp3",
+          "decode_errors": false,
+          "duration": 12.024,
+          "lra": 0,
+          "lufs": -14.05,
+          "sample_peak": -11.267088,
+          "sample_rate": 48000,
+          "true_peak": -11.27
+        },
+        "source": {
+          "bitrate": 1536000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "pcm_s16le",
+          "decode_errors": false,
+          "duration": 12,
+          "lra": 0,
+          "lufs": -16.65,
+          "sample_peak": -13.917855,
+          "sample_rate": 48000,
+          "sha256": "b0939a5ee5eb9bdf3c4e3a6c9c95714dcdceff23c9f4c279b85175d27e3caf31",
+          "true_peak": -13.92
+        }
+      },
+      "bytes": 481965,
+      "key": "jukebox:qa:fifo-07",
+      "sha256": "23ab434cbca3c86dd80e65d9580d584f0f89f811a9f565b7ad5e1c0ab7954bf3",
+      "status": "ready"
+    },
+    {
+      "analysis": {
+        "correction": {
+          "applied_gain": 2.6499999999999986,
+          "bitrate": 320000,
+          "filter": "volume=2.6499999999999986dB",
+          "mode": "encode",
+          "planned_gain": 2.6499999999999986,
+          "sample_rate": 48000,
+          "source_unchanged": true,
+          "target_lufs": -14,
+          "target_peak": -1,
+          "tool": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+          "version": "noa-jukebox-upload-2"
+        },
+        "final": {
+          "bitrate": 320000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "mp3",
+          "decode_errors": false,
+          "duration": 12.024,
+          "lra": 0,
+          "lufs": -14.01,
+          "sample_peak": -11.268951,
+          "sample_rate": 48000,
+          "true_peak": -11.27
+        },
+        "source": {
+          "bitrate": 1536000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "pcm_s16le",
+          "decode_errors": false,
+          "duration": 12,
+          "lra": 0,
+          "lufs": -16.65,
+          "sample_peak": -13.919171,
+          "sample_rate": 48000,
+          "sha256": "7bb00e589729fd9a5af4c2e1743ff439cde2be42e125d16823b6f3f068fd6939",
+          "true_peak": -13.92
+        }
+      },
+      "bytes": 481965,
+      "key": "jukebox:qa:fifo-08",
+      "sha256": "c0e80a6725ba14c667fad91a8b29c972aeb7d6e2d06040eda800f7ee67da7287",
+      "status": "ready"
+    },
+    {
+      "analysis": {
+        "correction": {
+          "applied_gain": 2.6499999999999986,
+          "bitrate": 320000,
+          "filter": "volume=2.6499999999999986dB",
+          "mode": "encode",
+          "planned_gain": 2.6499999999999986,
+          "sample_rate": 48000,
+          "source_unchanged": true,
+          "target_lufs": -14,
+          "target_peak": -1,
+          "tool": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+          "version": "noa-jukebox-upload-2"
+        },
+        "final": {
+          "bitrate": 320000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "mp3",
+          "decode_errors": false,
+          "duration": 12.024,
+          "lra": 0,
+          "lufs": -13.95,
+          "sample_peak": -11.269027,
+          "sample_rate": 48000,
+          "true_peak": -11.27
+        },
+        "source": {
+          "bitrate": 1536000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "pcm_s16le",
+          "decode_errors": false,
+          "duration": 12,
+          "lra": 0,
+          "lufs": -16.65,
+          "sample_peak": -13.917855,
+          "sample_rate": 48000,
+          "sha256": "c8699850f36d07d22d65de220f32a89e135f110f564ce59ad7625d8187c479b9",
+          "true_peak": -13.92
+        }
+      },
+      "bytes": 481965,
+      "key": "jukebox:qa:fifo-09",
+      "sha256": "2bef57ae91f16148b9042117d215d972263c5f20f3e591c31df31702e6f96e9d",
+      "status": "ready"
+    },
+    {
+      "analysis": {
+        "correction": {
+          "applied_gain": 2.6499999999999986,
+          "bitrate": 320000,
+          "filter": "volume=2.6499999999999986dB",
+          "mode": "encode",
+          "planned_gain": 2.6499999999999986,
+          "sample_rate": 48000,
+          "source_unchanged": true,
+          "target_lufs": -14,
+          "target_peak": -1,
+          "tool": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+          "version": "noa-jukebox-upload-2"
+        },
+        "final": {
+          "bitrate": 320000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "mp3",
+          "decode_errors": false,
+          "duration": 12.024,
+          "lra": 0,
+          "lufs": -13.95,
+          "sample_peak": -11.271096,
+          "sample_rate": 48000,
+          "true_peak": -11.27
+        },
+        "source": {
+          "bitrate": 1536000,
+          "channels": 2,
+          "clipping": false,
+          "codec": "pcm_s16le",
+          "decode_errors": false,
+          "duration": 12,
+          "lra": 0,
+          "lufs": -16.65,
+          "sample_peak": -13.921804,
+          "sample_rate": 48000,
+          "sha256": "c11b24e61c35e83fbb07d0a7e1b397f11ab3611466219e9407570ef9930d2f75",
+          "true_peak": -13.92
+        }
+      },
+      "bytes": 481965,
+      "key": "jukebox:qa:fifo-10",
+      "sha256": "dc2b5f41d5073a570a105cf9159caf0991298763a3c0fdc8ff9305acbf7a8a41",
+      "status": "ready"
+    }
+  ],
+  "catalogSummary": "전체 605곡 · 이미지 454장 · 재생 가능 20곡 · 음원 미등록 585곡 · 파일 누락·불일치 0건",
+  "checkedAt": "2026-10-21T22:55:49.385Z",
+  "healthNotice": "서버 정상",
+  "jobs": [
+    {
+      "id": 82,
+      "text": "FIFO 10 · 검증 전용 합성 음악#82 · 최적화 완료 · 시도 1등록 2026-10-22 07:45:17.772795 · 시작 2026-10-22 07:45:27.003890 · 종료 2026-10-22 07:45:38.392782"
+    },
+    {
+      "id": 81,
+      "text": "FIFO 09 · 검증 전용 합성 음악#81 · 최적화 완료 · 시도 1등록 2026-10-22 07:43:00.535272 · 시작 2026-10-22 07:43:17.167771 · 종료 2026-10-22 07:43:29.329731"
+    },
+    {
+      "id": 80,
+      "text": "FIFO 08 · 검증 전용 합성 음악#80 · 최적화 완료 · 시도 1등록 2026-10-22 07:41:04.020005 · 시작 2026-10-22 07:42:45.264317 · 종료 2026-10-22 07:42:58.776557"
+    },
+    {
+      "id": 79,
+      "text": "FIFO 07 · 검증 전용 합성 음악#79 · 최적화 완료 · 시도 1등록 2026-10-22 07:41:01.850613 · 시작 2026-10-22 07:42:31.496982 · 종료 2026-10-22 07:42:44.127702"
+    },
+    {
+      "id": 78,
+      "text": "FIFO 06 · 검증 전용 합성 음악#78 · 최적화 완료 · 시도 1등록 2026-10-22 07:40:59.884521 · 시작 2026-10-22 07:42:18.308408 · 종료 2026-10-22 07:42:30.355718"
+    },
+    {
+      "id": 77,
+      "text": "FIFO 05 · 검증 전용 합성 음악#77 · 최적화 완료 · 시도 1등록 2026-10-22 07:40:57.193949 · 시작 2026-10-22 07:42:03.052515 · 종료 2026-10-22 07:42:17.157398"
+    },
+    {
+      "id": 76,
+      "text": "FIFO 04 · 검증 전용 합성 음악#76 · 최적화 완료 · 시도 1등록 2026-10-22 07:40:54.664984 · 시작 2026-10-22 07:41:48.367035 · 종료 2026-10-22 07:42:01.909932"
+    },
+    {
+      "id": 75,
+      "text": "FIFO 03 · 검증 전용 합성 음악#75 · 최적화 완료 · 시도 1등록 2026-10-22 07:40:52.635646 · 시작 2026-10-22 07:41:35.422317 · 종료 2026-10-22 07:41:46.487394"
+    },
+    {
+      "id": 74,
+      "text": "FIFO 02 · 검증 전용 합성 음악#74 · 최적화 완료 · 시도 1등록 2026-10-22 07:40:41.647661 · 시작 2026-10-22 07:41:22.977657 · 종료 2026-10-22 07:41:33.074895"
+    },
+    {
+      "id": 73,
+      "text": "FIFO 01 · 검증 전용 합성 음악#73 · 최적화 완료 · 시도 1등록 2026-10-22 07:40:40.557498 · 시작 2026-10-22 07:40:46.332280 · 종료 2026-10-22 07:41:21.457184"
+    }
+  ],
+  "normalFiles": [
+    {
+      "bytes": 7637805,
+      "key": "single:kpop-original:01",
+      "sha256": "891e355850b88872a9b7706410d63d6044e63f98dad94a2b94c34ed65a149db6"
+    },
+    {
+      "bytes": 7794285,
+      "key": "single:kpop-original:02",
+      "sha256": "18d108d05a2e29fc435fbb2b82a7e54116d4615b51c8d5d5eb425c68f8966d81"
+    },
+    {
+      "bytes": 7541805,
+      "key": "single:kpop-original:03",
+      "sha256": "f48dc471b2138395eb24624cc9d44fd43847de3682ce7d8bacfe2c46b744d805"
+    },
+    {
+      "bytes": 8117805,
+      "key": "single:kpop-original:04",
+      "sha256": "e7b12532fa979200e993c875b16ee6af9e00394ca34579651ec65dc738e7c78a"
+    },
+    {
+      "bytes": 7952685,
+      "key": "single:kpop-original:05",
+      "sha256": "1cc84478b6e44c89ea88eba561776feafeac5a75b17dac8647f52b3b82217a47"
+    },
+    {
+      "bytes": 8569005,
+      "key": "single:kpop-original:06",
+      "sha256": "de2967e9b7e9af0ccabe8445349d0b87936a16caf5f53c27725574a07b3cd720"
+    },
+    {
+      "bytes": 10328685,
+      "key": "single:kpop-original:07",
+      "sha256": "bd94b505122fbc57634a5aefd16b19d7eb40b2d6ec416184936a9731a6841215"
+    },
+    {
+      "bytes": 10797165,
+      "key": "single:kpop-original:08",
+      "sha256": "1a5d08df67359534b1ddc71eb803aebf7ec1a5ccb8ff4e4fe43654cc925b7a2e"
+    },
+    {
+      "bytes": 8449965,
+      "key": "single:kpop-original:09",
+      "sha256": "84686bb6963bf2ea4572b640ee51b613c05c764c3022b4aa1e815926e20a9040"
+    },
+    {
+      "bytes": 10175085,
+      "key": "single:kpop-original:10",
+      "sha256": "5e23bab604e043a280e5ec52e06cf6b81ff5520c4d4e64e99ac0cf1ee5af356a"
+    },
+    {
+      "bytes": 8742765,
+      "key": "single:kpop-original:11",
+      "sha256": "370bbe743dcab9ab8c52af22f6e02e3c348234052f35ba740306a19ee4b77387"
+    },
+    {
+      "bytes": 11573805,
+      "key": "single:kpop-original:12",
+      "sha256": "ce82a0d977b9636b3be81696e1dacf2a0edc3f7d152ea635a9bb73fb1693f59f"
+    },
+    {
+      "bytes": 8386605,
+      "key": "single:kpop-original:13",
+      "sha256": "d25676a6f5fa93a1878f86a5b377ebaae7c8a9436fe8292087c04bc4b6f174d7"
+    },
+    {
+      "bytes": 8547885,
+      "key": "single:kpop-original:14",
+      "sha256": "f8cd0d0c362fc4a1c0267e2cc87e2c3eeff30a1a21c798fd84b27735158fdb49"
+    },
+    {
+      "bytes": 9533805,
+      "key": "single:kpop-original:15",
+      "sha256": "d6923f87291a40e8a2dfdfec9acbbf3f2ea6d1a90bd5b58c679ea19821b88fef"
+    },
+    {
+      "bytes": 7969965,
+      "key": "single:kpop-original:16",
+      "sha256": "6d2af0bc7470ba5f80f4d0453d6327d07ae259aa3c584274e59f9645ca38f181"
+    },
+    {
+      "bytes": 7995885,
+      "key": "single:kpop-original:17",
+      "sha256": "261ea4cecf1336674103c0284c5de041ff291cf5f3b46629d0c4897322961962"
+    },
+    {
+      "bytes": 7345965,
+      "key": "single:kpop-original:18",
+      "sha256": "b6e21689539f159817e5032af1f01b53db5c5241667976de9e69cb8e76897540"
+    },
+    {
+      "bytes": 9505965,
+      "key": "single:kpop-original:19",
+      "sha256": "05a2ac8f186b8a061f3463055954352738646272cb13714f40e1143eb5f70e5a"
+    },
+    {
+      "bytes": 10151085,
+      "key": "single:kpop-original:20",
+      "sha256": "648d7afa39dbbc78f9447971adb04e5e294625e42e425600cf7f7712dec1038f"
+    }
+  ],
+  "queueSummary": "전체 업로드 88건 · 전송 중 1 · 대기 0 · 처리 중 0 · 완료 31 · 실패 1",
+  "url": "https://noastudio.ai.kr/noa-app/jukebox/?qa=1",
+  "verification": {
+    "individual_cards_assigned": 10,
+    "multiple_file_picker": false,
+    "all_sources_sha256_match_assigned_files": true,
+    "fifo_jobs": [
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82
+    ],
+    "fifo_without_overlap": true,
+    "batch_failures": 0,
+    "closed_after_eight_registered": {
+      "at": "2026-10-21T22:42:46.786Z",
+      "complete_before": 6,
+      "complete_after_reopen": 8
+    },
+    "closed_after_all_ten_registered": {
+      "at": "2026-10-21T22:45:30.338Z",
+      "complete_before": 9,
+      "complete_after": 10,
+      "last_job_start": "2026-10-22 07:45:27.003890",
+      "last_job_finish": "2026-10-22 07:45:38.392782"
+    },
+    "lost_finish_response_recovered_without_reselect": {
+      "song": "jukebox:qa:fifo-09",
+      "job": 81
+    },
+    "reservation_keep_and_replacement_preserved_count": 10,
+    "mobile_frame_css_width": 390,
+    "mobile_document_client_width": 375,
+    "mobile_document_scroll_width": 375,
+    "mobile_seek_seconds": 6.053333,
+    "mobile_seek_duration": 12,
+    "mobile_next": "FIFO 03",
+    "mobile_previous": "FIFO 02",
+    "mobile_repeat_shuffle_toggled": true,
+    "mobile_audio_rms": 0.107839,
+    "catalogue_audio_rms": 0.121746,
+    "catalogue_playback_seconds": 65.2,
+    "guest_download_http": 403,
+    "native_download_hash_verified": false,
+    "download_failures": [
+      "QA MP3 native click",
+      "QA MP3 downloadMedia",
+      "private cover downloadMedia",
+      "public PNG downloadMedia"
+    ],
+    "entire_browser_process_shutdown_tested": false,
+    "physical_android_tested": false,
+    "download_root_cause": "unresolved; same cloud browser failed both authenticated MP3 and public PNG transfers"
+  },
+  "proof_kind": "live production browser DOM and UI actions; server-reported analysis; no downloaded-file hash proof"
+}

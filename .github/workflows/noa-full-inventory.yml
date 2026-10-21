@@ -1,5 +1,5 @@
 name: NOA full production deployment inventory
-# Read-only inventory after merged JUKEBOX recovery and balanced-card production releases.
+# Read-only verification after PRECISION GRID, popularity integration and current full DB backup.
 on:
   push:
     branches: [main]
