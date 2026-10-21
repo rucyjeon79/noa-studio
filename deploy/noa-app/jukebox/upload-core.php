@@ -75,3 +75,8 @@ function nu_housekeeping(PDO $db):void{
  $q=$db->query("SELECT * FROM noa_jukebox_uploads WHERE status IN ('uploading','failed') AND updated_at<CURRENT_TIMESTAMP()-INTERVAL 24 HOUR AND (lease_until IS NULL OR lease_until<CURRENT_TIMESTAMP()) LIMIT 100");
  foreach($q as $r){nu_clean($r);$db->prepare("UPDATE noa_jukebox_uploads SET status='failed',file_bytes=0,error='temporary_upload_expired',lease=NULL WHERE id=?")->execute([$r['id']]);}
 }
+
+function nu_cancel_pending(PDO $db,string $id):array{
+ $r=nu_row($db,$id);$lock=fopen(nu_dir($id).'/.lock','c');if(!$lock||!flock($lock,LOCK_EX))throw new RuntimeException('upload_lock_failed');
+ try{$r=nu_row($db,$id);if($r['status']!=='uploading')throw new DomainException('server_job_cannot_be_canceled');$q=$db->prepare("UPDATE noa_jukebox_uploads SET status='failed',error='upload_replaced',updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='uploading'");$q->execute([$id]);return ['replaced'=>true];}finally{flock($lock,LOCK_UN);fclose($lock);}
+}

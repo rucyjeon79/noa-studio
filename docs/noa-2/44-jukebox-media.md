@@ -136,3 +136,9 @@ The browser persists the upload ID before transmitting chunks. Reopening a page 
 
 
 For large owned inputs, the same pinned SSH worker can stream one fixed `cat` command from its private incoming directory instead of issuing a separate SFTP read request per block. Only a server-issued 32-character hex upload ID is accepted; no user path or arbitrary command is interpolated. Regular-file/size/boundary checks and the full source SHA-256 remain mandatory before analysis. An unavailable SSH command falls back to SFTP. This changes transport only, not access recipients, source bytes, mastering policy or publication verification. Actual transport time is recorded per completed job.
+
+### Per-card reservation refinement (2026-10-21)
+
+A single-file picker immediately marks a local reservation `전송 예약`; cards follow actual transfer and SQL mastering states. Duplicate selection keeps the original File and metadata until a valid replacement is committed. Picker cancellation restores the held reservation and resumes an interrupted transfer. A partial upload replacement fences further writes under the same file lock; its recoverable chunks and audit record remain subject to the 24-hour cleanup policy. Already queued or owned SQL work is never canceled by this action: replacement waits locally until that job is terminal. Other cards remain selectable.
+
+The bottom dock defaults to one title, actual phase, byte-based upload progress (indeterminate during server analysis/conversion), and an accessible expand control. Counts, the full local reservation list, errors, retry, and pause controls are visible only when expanded. The device-local playback gate is released after all file transfers, independently of the server FIFO. Server processing continues with the same scheduled worker and SQL ownership fences.

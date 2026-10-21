@@ -17,6 +17,7 @@ try{
  if($action==='chunk'){$index=filter_var($_GET['index']??'',FILTER_VALIDATE_INT);if($index===false)throw new InvalidArgumentException('invalid_chunk');$raw=file_get_contents('php://input',false,null,0,NU_CHUNK+1);nu_json(200,nu_chunk($db,(string)($_GET['id']??''),$index,$raw));}
  $raw=file_get_contents('php://input',false,null,0,16385);if(strlen($raw)>16384)throw new InvalidArgumentException('request_too_large');$b=json_decode($raw,true,32,JSON_THROW_ON_ERROR);
  if($action==='init')nu_json(200,nu_initialize($db,$b,(string)$member['mb_id']));
+ if($action==='cancel')nu_json(200,nu_cancel_pending($db,(string)($b['id']??'')));
  if($action==='finish')nu_json(200,nu_finish($db,(string)($b['id']??'')));
  if($action==='retry'){nq_retry($db,(string)($b['id']??''));nu_json(200,nu_public($db,nu_row($db,$b['id'])['song_key']));}
  throw new InvalidArgumentException('unknown_action');
