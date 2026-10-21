@@ -2,10 +2,10 @@ import {chromium} from 'playwright';
 import fs from 'node:fs/promises';
 const origin='https://noastudio.ai.kr',width=Number(process.env.NOA_QA_WIDTH||390),out='p0-live-proof';
 await fs.mkdir(out,{recursive:true});
-const b=await chromium.launch(),c=await b.newContext({viewport:{width,height:900}}),p=await c.newPage(),report={width,urls:[],errors:[],warnings:[]};
+const b=await chromium.launch({channel:'chrome'}),c=await b.newContext({viewport:{width,height:900}}),p=await c.newPage(),report={width,urls:[],errors:[],warnings:[],images:[]};
 p.on('pageerror',e=>report.errors.push(e.message));
 for(const path of ['/','/index.php','/noa-music.php','/noa-world.php','/noa-youtube.php','/noa-my.php']){
- try{const r=await p.goto(origin+path,{waitUntil:'domcontentloaded',timeout:60000});await p.locator('main').waitFor({timeout:20000});report.urls.push({path,status:r.status(),final:p.url(),text:(await p.locator('main').innerText()).slice(0,180),overflow:await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth)});await p.screenshot({path:out+'/'+path.replaceAll('/','').replaceAll('.php','')+'-'+width+'.jpg',quality:70});}
+ try{const r=await p.goto(origin+path,{waitUntil:'domcontentloaded',timeout:60000});await p.locator('main').waitFor({timeout:20000});report.urls.push({path,status:r.status(),final:p.url(),text:(await p.locator('main').innerText()).slice(0,180),overflow:await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth)});const visibleImages=await p.locator('img').evaluateAll(async es=>Promise.all(es.filter(i=>{const r=i.getBoundingClientRect();return r.width&&r.height&&r.top<innerHeight&&r.bottom>0;}).map(async i=>{try{await i.decode();return{src:i.currentSrc,ok:i.naturalWidth>0};}catch{return{src:i.currentSrc,ok:false};}})));report.images.push({path,visibleImages});await p.screenshot({path:out+'/'+path.replaceAll('/','').replaceAll('.php','')+'-'+width+'.jpg',quality:70});}
  catch(e){report.errors.push(path+':'+e.message.slice(0,250));}
 }
 const home=await(await p.request.get(origin+'/noa-bridge/home.php')).json();report.home={counts:Object.fromEntries(['stories','covers','playlists'].map(k=>[k,home[k]?.length])),runId:home.runId};
@@ -13,6 +13,15 @@ await p.goto(origin+'/',{waitUntil:'domcontentloaded'});await p.locator('#noa-st
 report.home.cards=await p.locator('#noa-stories a,#noa-covers a,#noa-acts a').evaluateAll(es=>({count:es.length,uniqueLinks:new Set(es.map(e=>e.getAttribute('href'))).size}));
 report.hero=await p.locator('#noa-hero-video').evaluate(v=>({source:v.currentSrc,currentTime:v.currentTime,readyState:v.readyState,paused:v.paused}));
 await p.goto(origin+'/noa-world.php',{waitUntil:'domcontentloaded'});report.world={cards:await p.locator('.world-mv-card').count(),actLinks:await p.locator('a[href*="story="]').count(),text:(await p.locator('main').innerText()).slice(0,1500)};
+if(width===1280){
+ await p.locator('.world-play').first().click();report.world.embed=await p.locator('#world-frame').getAttribute('src');
+ try{
+  const frame=p.frameLocator('#world-frame');await frame.locator('body').waitFor({timeout:20000});await p.waitForTimeout(5000);
+  report.world.mediaText=(await frame.locator('body').innerText()).slice(0,1800);
+  if(await frame.locator('video').count())report.world.media=await frame.locator('video').first().evaluate(v=>({time:v.currentTime,duration:v.duration,ready:v.readyState,paused:v.paused,error:v.error?.message}));
+ }catch(e){report.world.mediaUnavailable=e.message.slice(0,250);}
+ await p.getByRole('button',{name:'영상 닫기',exact:true}).click();report.world.closed=await p.locator('#world-frame').getAttribute('src');
+}
 const catalog=await(await p.request.get(origin+'/noa-bridge/catalog.php')).json(),audio=catalog.items.filter(x=>x.audioUrl);report.music={publicRecords:catalog.items.length,originalAudioFiles:audio.length,verified:audio.filter(x=>x.audioVerified).length};
 await p.goto(origin+'/noa-music.php?genre=kpop-original&act=1',{waitUntil:'domcontentloaded'});
 if(audio.length){
