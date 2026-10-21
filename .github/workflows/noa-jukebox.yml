@@ -6,7 +6,7 @@ on:
     paths: ['.github/workflows/noa-jukebox.yml']
   workflow_dispatch:
 permissions: {contents: read}
-concurrency: {group: noa-dothome-production, cancel-in-progress: false}
+concurrency: {group: noa-jukebox-processing, cancel-in-progress: false}
 jobs:
   build:
     runs-on: ubuntu-latest
