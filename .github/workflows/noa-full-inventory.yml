@@ -1,0 +1,32 @@
+name: NOA full production deployment inventory
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-full-inventory.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-dothome-production, cancel-in-progress: false}
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, fetch-depth: 0}
+      - run: |
+          python3 scripts/noa_build_seed.py
+          python3 scripts/noa_build_archive.py
+          python3 scripts/noa_catalog_seed.py
+          python3 -m pip install --user paramiko==3.5.1
+      - name: Compare actual hosting bytes and modification times
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: python3 scripts/noa_full_inventory.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-full-inventory
+          path: full-release-proof/
+          retention-days: 14
