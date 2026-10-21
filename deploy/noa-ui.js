@@ -16,10 +16,11 @@ function markLabels(){decorate();translateFixedNodes();document.querySelectorAll
 
 function icon(key){return '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="'+icons[key]+'"/></svg>'}
 function decorate(){
+ if(document.querySelector('.lab-tabs'))for(const a of document.querySelectorAll('.lab-tabs a')){const keys={'#lab-text':'settings','#lab-create':'music','#lab-jobs':'library','#lab-growth':'youtube'};if(keys[a.getAttribute('href')])a.dataset.noaIcon=keys[a.getAttribute('href')];}
  document.querySelectorAll('[data-noa-icon]').forEach(el=>{if(el.querySelector('svg')||!icons[el.dataset.noaIcon])return;const label=document.createElement('span');while(el.firstChild)label.append(el.firstChild);el.insertAdjacentHTML('afterbegin',icon(el.dataset.noaIcon));el.append(label);el.classList.add('noa-action');});
  // Explicit section chrome only: song controls and JUKEBOX DOM are never rewritten.
  if(location.pathname==='/noa-music.php')return;
- document.querySelectorAll('main>h1,.noa-section h2,.noa-section-head h2,.noa-world-prose>h2,.noa-world-heading>h2,#youtube-playlists>h2').forEach(el=>{if(el.dataset.noaHeading)return;el.dataset.noaHeading='true';const text=el.textContent;let key=/NOA WORLD|세계관|프롤로그|에필로그|챕터/.test(text)?'book':/사연|당신의 이야기/.test(text)?'mail':/커버/.test(text)?'mic':/EP|컬렉션/.test(text)?'disc':/목록|플레이리스트|보관함/.test(text)?'playlists':/MY|최근|계정/.test(text)?'user':/관리|작업실|설정/.test(text)?'settings':'music';const label=document.createElement('span');while(el.firstChild)label.append(el.firstChild);if(el.dataset.noaI18n){label.dataset.noaI18n=el.dataset.noaI18n;delete el.dataset.noaI18n;}el.insertAdjacentHTML('afterbegin',icon(key));el.append(label);});
+ document.querySelectorAll('main>h1,.lab-heading h1,.lab-panel>h2,.lab-section>h2,.noa-section h2,.noa-section-head h2,.noa-world-prose>h2,.noa-world-heading>h2,#youtube-playlists>h2').forEach(el=>{if(el.dataset.noaHeading)return;el.dataset.noaHeading='true';const text=el.textContent;let key=/NOA WORLD|세계관|프롤로그|에필로그|챕터/.test(text)?'book':/사연|당신의 이야기/.test(text)?'mail':/커버/.test(text)?'mic':/EP|컬렉션/.test(text)?'disc':/목록|플레이리스트|보관함/.test(text)?'playlists':/MY|최근|계정/.test(text)?'user':/관리|작업실|설정/.test(text)?'settings':'music';const label=document.createElement('span');while(el.firstChild)label.append(el.firstChild);if(el.dataset.noaI18n){label.dataset.noaI18n=el.dataset.noaI18n;delete el.dataset.noaI18n;}el.insertAdjacentHTML('afterbegin',icon(key));el.append(label);});
 }
 function navItem(item){const a=document.createElement('a');a.href=item[2];if(item[0]==='settings'&&location.pathname!=='/noa-settings.php')a.onclick=e=>{e.preventDefault();openSettings();};a.innerHTML=icon(item[0]);const t=document.createElement('span');t.dataset.noaI18n=item[1];t.textContent=tr(item[1]);a.append(t);const target=new URL(item[2],location.origin);const active=location.pathname==='/noa-world.php'?'world':location.pathname==='/noa2.php'&&location.hash==='#noa-world'?'world':/^\/noa-(?:music|catalog)[.]php$/.test(location.pathname)?'music':location.pathname==='/noa-youtube.php'?(location.search.includes('world=1')?'world':'youtube'):/^\/(?:noa-(?:my|settings|library|editor|ai-lab|theme-admin)|bbs\/)/.test(location.pathname)?'library':'home';if(item[0]===active)a.setAttribute('aria-current','page');return a;}
 function shell(){if(admin||document.querySelector('.noa-sidebar'))return;const side=document.createElement('aside');side.className='noa-sidebar';side.innerHTML='<a href="/" class="noa-logo">NOA STUDIO<small>AI ARTIST NOA</small></a>';const nav=document.createElement('nav');nav.className='noa-menu';nav.setAttribute('aria-label','NOA STUDIO');menu.forEach(item=>nav.append(navItem(item)));side.append(nav);const bottom=document.createElement('div');bottom.className='noa-sidebar-bottom';bottom.innerHTML='<span>Music. Stories. Starlight.</span><a href="/noa-download.php">NOA STUDIO · Android ↗</a><a data-noa-login href="/bbs/login.php">'+tr('로그인')+'</a><a data-noa-lab href="/noa-ai-lab.php" hidden>NOA AI LAB · GROWTH</a><a data-noa-admin href="/noa-library.php" hidden>'+tr('관리자')+'</a>';side.append(bottom);document.body.prepend(side);const mobile=document.createElement('nav');mobile.className='noa-mobile-nav';mobile.setAttribute('aria-label','NOA STUDIO mobile');menu.forEach(item=>mobile.append(navItem(item)));document.body.append(mobile);if(g5){const top=document.createElement('header');top.className='noa-g5-top';top.innerHTML='<a class="noa-logo" href="/">NOA STUDIO</a><a data-noa-login href="/bbs/login.php">'+tr('로그인')+'</a>';document.body.insertBefore(top,side.nextSibling);const footer=document.createElement('footer');footer.className='noa-footer';footer.innerHTML='<span>NOA STUDIO · Music. Stories. Starlight.</span><a href="/bbs/content.php?co_id=privacy" data-noa-i18n="개인정보처리방침">개인정보처리방침</a><a href="/bbs/content.php?co_id=provision" data-noa-i18n="이용약관">이용약관</a>';document.body.append(footer);}window.NoaBrand?.apply();markLabels();}
@@ -33,6 +34,50 @@ window.addEventListener('storage',e=>{if(e.key==='noa-ui-selection'&&e.newValue)
 /* Count-aware card layout: presentation only. Keep nodes, handlers and source order intact. */
 (()=>{'use strict';
 if(/^\/noa-app\/(?:jukebox|taxonomy|database)(?:\/|$)/.test(location.pathname))return;
+// Display titles are derived from explicit metadata or separated source title fields, never written back.
+function presentTitle(original,meta={}){
+ const raw=String(original||'').trim(),parts=raw.split(/\s*[|｜]\s*/).filter(Boolean);
+ const ep=Number(meta.ep)>0?Number(meta.ep):Number(raw.match(/^\s*EP[.\s]*(\d+)\b/i)?.[1])||0;
+ const supplied=typeof meta.displayTitle==='string'&&meta.displayTitle.trim()?meta.displayTitle.trim():typeof meta.songTitle==='string'?meta.songTitle.trim():'';
+ const isEpisode=p=>/^EP[.\s]*\d+\s*$/i.test(p);
+ const isCredit=p=>/^(?:AI\s*Artist\s*Noa|Cover\s+by\s+(?:AI)?Noa|Official\s+(?:MV|M\/V)|High\s+Quality\s+Audio|Original\s+Song|(?:K-POP|J-POP|POP|Thai)\s+Original\s+Song)(?:\b|\s*\()/i.test(p);
+ let title=supplied||(parts.length>1?(parts.find(p=>!isEpisode(p)&&!isCredit(p))||raw):raw);
+ title=title.replace(/^EP[.\s]*\d+\s*(?:[·:：—–-]\s*)?/i,'').trim()||raw;
+ if(ep)title='EP.'+ep+' · '+title;
+ return title||raw;
+}
+function movement(value){
+ if(!value||typeof value!=='object')return null;
+ const state=value.rankState,integer=v=>Number.isInteger(v)&&v>=1;
+ if(!['up','down','same','new'].includes(state)||!integer(value.rank))return null;
+ if(state==='new')return value.previousRank===null&&value.rankDelta===null?{state,delta:null}:null;
+ if(!integer(value.previousRank)||!Number.isInteger(value.rankDelta))return null;
+ if(value.previousRank-value.rank!==value.rankDelta)return null;
+ if((state==='up'&&value.rankDelta<=0)||(state==='down'&&value.rankDelta>=0)||(state==='same'&&value.rankDelta!==0))return null;
+ return{state,delta:state==='same'?null:Math.abs(value.rankDelta)};
+}
+const rankPaths={up:'M22 7l-8.5 8.5-5-5L2 17 M16 7h6v6',down:'M22 17l-8.5-8.5-5 5L2 7 M16 17h6v-6',same:'M5 12h14'};
+function setMovement(card,value){
+ const valid=movement(value),head=card.querySelector('.noa-card-heading');if(!head)return;
+ let badge=head.querySelector('.noa-rank-badge');if(!valid){badge?.remove();return;}
+ const key=valid.state+':'+valid.delta;if(badge?.dataset.value===key)return;
+ badge?.remove();badge=document.createElement('span');badge.className='noa-rank-badge';badge.dataset.state=valid.state;badge.dataset.value=key;
+ const labels={up:'순위 상승',down:'순위 하락',same:'순위 유지',new:'신규 진입'};
+ badge.setAttribute('aria-label',labels[valid.state]+(valid.delta!==null?' '+valid.delta+'계단':''));
+ if(valid.state==='new')badge.textContent='NEW';else{
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.7');svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');const line=document.createElementNS(svg.namespaceURI,'path');line.setAttribute('d',rankPaths[valid.state]);svg.append(line);badge.append(svg);if(valid.delta!==null)badge.append(String(valid.delta));
+ }head.append(badge);
+}
+function prepare(card,meta){
+ const title=card.querySelector(':scope>.noa-card-heading>:is(strong,h2,h3),:scope>:is(strong,h2,h3),:scope>span>strong');if(!title)return;
+ if(!title.closest('.noa-card-heading')){const heading=document.createElement('span');heading.className='noa-card-heading';title.before(heading);heading.append(title);}
+ const raw=title.dataset.noaOriginalTitle||title.textContent.trim(),display=meta?presentTitle(raw,meta):title.dataset.noaDisplayTitle||presentTitle(raw,{ep:card.dataset.ep});
+ title.dataset.noaDisplayTitle=display;
+ title.dataset.noaOriginalTitle=raw;title.title=raw;if(title.textContent!==display)title.textContent=display;
+ card.classList.add('noa-precision-card');
+ if(meta&&Object.hasOwn(meta,'rankState'))setMovement(card,meta);
+ else if(card.dataset.noaRankMovement){try{setMovement(card,JSON.parse(card.dataset.noaRankMovement));}catch{setMovement(card,null);}}
+}
 function plan(count,capacity,featured=true){
  const max=Math.max(1,Math.min(5,Math.floor(capacity))),n=Math.max(0,count);
  let columns=Math.min(n||1,max);
@@ -40,7 +85,7 @@ function plan(count,capacity,featured=true){
  else if(n===9)columns=max>=3?3:Math.min(2,max);
  else if(n===8)columns=max>=4?4:Math.min(2,max);
  else if(n===7)columns=max>=4?4:Math.min(3,max);
- else if(n===5)columns=max>=5?5:max>=3?3:Math.min(2,max);
+ else if(n===5)columns=Math.min(3,max);
  else if(n===6)columns=max>=3?3:Math.min(2,max);
  else if(n===4)columns=Math.min(2,max);
  else if(n===3)columns=max>=3?3:1;
@@ -67,26 +112,29 @@ const specs=[
  ['.catalog-grid','.catalog-card',false,216,216,4],
  ['#youtube-playlists','p',false,180,136,4]
 ];
-const hosts=new Map();let pending=false;
+const hosts=new Map(),chromeObserved=new WeakSet();let pending=false;
+function chromeSpace(){const player=document.querySelector('.noa-transport');let height=0;if(player){if(!chromeObserved.has(player)){resize.observe(player);chromeObserved.add(player);}if(!player.hidden&&getComputedStyle(player).display!=='none')height=player.getBoundingClientRect().height;}style(document.documentElement,'--noa-player-space',Math.ceil(height)+'px');}
+
 function style(el,key,value){if(el.style.getPropertyValue(key)!==value)el.style.setProperty(key,value);}
 function arrange(host,spec){
  const box=getComputedStyle(host),width=host.clientWidth-parseFloat(box.paddingLeft)-parseFloat(box.paddingRight);if(!width||host.hidden)return;
  const cards=[...host.children].filter(e=>e.matches(spec[1])&&!e.hidden&&getComputedStyle(e).display!=='none');
  if(!cards.length){host.classList.remove('noa-balanced');return;}
  const gap=innerWidth<=600?12:16,min=innerWidth<=600?spec[4]:spec[3];
+ if(spec[2])cards.forEach(card=>prepare(card));
  const capacity=Math.min(spec[5],Math.max(1,Math.floor((width+gap)/(min+gap))));
  const layout=plan(cards.length,capacity,spec[2]),offset=host.id==='youtube-playlists'?1:0;
  host.classList.add('noa-balanced');host.dataset.noaColumns=String(layout.columns);host.dataset.noaRows=[...(layout.featured?[1]:[]),...layout.rows].join('+');
- style(host,'--noa-balance-columns',String(layout.columns*2));style(host,'--noa-balance-gap',gap+'px');
+ style(host,'--noa-balance-columns',String(layout.columns*2));style(host,'--noa-grid-columns',String(layout.columns));style(host,'--noa-balance-gap',gap+'px');
  style(host,'--noa-card-width',((width-gap*(layout.columns-1))/layout.columns)+'px');
  let i=0,row=1+offset;
  for(const card of host.children)if(!cards.includes(card)&&card.classList.contains('noa-balanced-feature'))card.classList.remove('noa-balanced-feature');
- if(layout.featured){const card=cards[i++];card.classList.add('noa-balanced-feature');style(card,'grid-column','1 / -1');style(card,'grid-row',String(row++));}
- for(const size of layout.rows){const start=layout.columns-size+1;for(let col=0;col<size;col++){
+ if(layout.featured){const card=cards[i++];card.classList.add('noa-balanced-feature');style(card,'grid-column','1 / span 4');style(card,'grid-row',String(row++));}
+ for(const size of layout.rows){const start=1;for(let col=0;col<size;col++){
   const card=cards[i++];card.classList.remove('noa-balanced-feature');style(card,'grid-column',(start+col*2)+' / span 2');style(card,'grid-row',String(row));
  }row++;}
 }
-function scan(){pending=false;for(const spec of specs)for(const host of document.querySelectorAll(spec[0])){
+function scan(){pending=false;chromeSpace();for(const spec of specs)for(const host of document.querySelectorAll(spec[0])){
  if(!hosts.has(host)){hosts.set(host,spec);resize.observe(host);}arrange(host,spec);
  }for(const host of hosts.keys())if(!host.isConnected){resize.unobserve(host);hosts.delete(host);}}
 function schedule(){if(!pending){pending=true;requestAnimationFrame(scan);}}
@@ -95,5 +143,6 @@ new MutationObserver(records=>{if(records.some(r=>r.type==='childList'||r.attrib
  for(const r of records)if(r.attributeName==='style')r.target.dataset.noaDisplay=r.target.style.display;schedule();
 }}).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','style']});
 window.addEventListener('resize',schedule,{passive:true});window.addEventListener('noa-theme',schedule);
-window.NoaCardLayout={plan,refresh:schedule};schedule();
+document.documentElement.dataset.noaPrecision='true';
+window.NoaCardLayout={plan,presentTitle,movement,prepare,setMovement,refresh:schedule,debug(enabled){document.documentElement.toggleAttribute('data-noa-grid-debug',Boolean(enabled));}};schedule();
 })();
