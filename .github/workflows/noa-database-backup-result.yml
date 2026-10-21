@@ -1,0 +1,24 @@
+name: NOA record verified private backup result
+on:
+  workflow_run:
+    workflows: ['NOA private database backup isolated restore verification']
+    types: [completed]
+    branches: [main]
+permissions: {contents: read}
+jobs:
+  record:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.id == 39530927135 && github.event.workflow_run.head_sha == 'd36ed5e5a0c8bac0444b822f91bc398481488152'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: {group: noa-dothome-production, cancel-in-progress: false}
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main, persist-credentials: false}
+      - run: python3 -m pip install --user paramiko==3.5.1
+      - name: Record isolated restore evidence in the existing private backup manifest
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_VERIFIED_RUN: ${{ github.event.workflow_run.id }}
+        run: python3 scripts/noa_record_backup_verification.py
