@@ -4,6 +4,12 @@ if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
 require_once __DIR__.'/core.php';
 require_once __DIR__.'/upload-core.php';
 function nj_operation(PDO $db,string $action,array $input=[]):array{
+ nr_schema($db);
+ if(in_array($action,['worker_start','worker_heartbeat','worker_finish'],true))return nr_worker($db,$action,$input);
+ if($action==='runtime_health')return nr_health($db);
+ if($action==='maintenance')return nr_maintenance($db);
+ if($action==='worker_observation'){$run=(string)($input['run_id']??'');$state=(string)($input['state']??'');if(!preg_match('/^[0-9]{1,32}$/D',$run)||!in_array($state,['running','terminal','unknown'],true))throw new InvalidArgumentException('invalid_worker_observation');$db->prepare('INSERT INTO noa_jukebox_worker_observations(run_id,state) VALUES(?,?) ON DUPLICATE KEY UPDATE state=VALUES(state),checked_at=CURRENT_TIMESTAMP')->execute([$run,$state]);return ['recorded'=>true];}
+ if($action==='upload_reconcile'){$u=nu_row($db,(string)($input['id']??''));return nr_reconcile($db,$u['song_key'],$u['id']);}
  if($action==='queue_snapshot')return nq_snapshot($db,true);
  if($action==='upload_cleanup'){$u=nu_row($db,(string)($input['id']??''));if($u['status']!=='ready')throw new DomainException('not_ready');nu_clean($u);return ['input_removed'=>!is_file(nu_dir($u['id']).'/input.audio')];}
  if($action==='capabilities')return ['php'=>PHP_VERSION,'sapi'=>PHP_SAPI,'execution_limit_seconds'=>(int)ini_get('max_execution_time'),'shell_exec_callable'=>is_callable('shell_exec'),'proc_open_callable'=>is_callable('proc_open'),'free_bytes'=>(int)disk_free_space(nj_private()),'private_media_bytes'=>array_sum(array_map(fn($a)=>(int)($a['audio_bytes']??0),nj_assets($db))),'spool_quota_bytes'=>1073741824,'file_limit_bytes'=>NU_MAX,'processing_environment'=>'GitHub Actions Ubuntu worker; Dothome PHP upload/SQL only'];
@@ -63,13 +69,12 @@ function nj_operation(PDO $db,string $action,array $input=[]):array{
   foreach(range(1,10) as $n){$number=str_pad((string)$n,2,'0',STR_PAD_LEFT);$qkey='jukebox:qa:fifo-'.$number;$p['title']='FIFO '.$number.' · 검증 전용 합성 음악';$p['body']['confirmedTitle']=$p['title'];$db->prepare("INSERT IGNORE INTO noa_documents(doc_key,kind,payload,revision,updated_by) VALUES(?,'jukebox_qa',?,1,'jukebox-worker')")->execute([$qkey,json_encode($p,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)]);$relative='검증/FIFO '.$number.'/cover.webp';$dir=nj_private().'/media/'.dirname($relative);if(!is_dir($dir)&&!mkdir($dir,0700,true))throw new RuntimeException('qa_directory');if(!is_file($dir.'/cover.webp')){file_put_contents($dir.'/cover.webp',$bytes);chmod($dir.'/cover.webp',0600);}nj_import($db,['song_key'=>$qkey,'source_url'=>'','suno_title'=>'FIFO '.$number.' 검증용 합성 음악','cover_path'=>$relative,'cover_bytes'=>strlen($bytes),'cover_sha256'=>hash('sha256',$bytes),'errors'=>[]]);}
   return ['key'=>$key,'second_key'=>$key2,'fifo_keys'=>['jukebox:qa:fifo-01','jukebox:qa:fifo-02','jukebox:qa:fifo-03'],'separate_from_catalog'=>true];
  }
- if($action==='upload_claim')return nq_claim($db);
+ if($action==='upload_claim')return nq_claim($db,$input['worker_owner']??null);
  if(in_array($action,['upload_state','upload_fail','upload_commit','upload_heartbeat'],true))return nq_atomic($db,function()use($db,$action,$input){
   $job=nq_owned($db,$input);
   $u=nu_row($db,(string)($input['id']??''));if(!is_string($input['lease']??null)||!$u['lease']||!hash_equals($u['lease'],$input['lease'])||!in_array($u['status'],NQ_ACTIVE,true))throw new DomainException('upload_lease_changed');
   if($action==='upload_heartbeat'){
-   $db->prepare("UPDATE noa_jukebox_audio_jobs SET heartbeat_at=CURRENT_TIMESTAMP,lease_until=CURRENT_TIMESTAMP()+INTERVAL 10 MINUTE WHERE id=? AND started_at>CURRENT_TIMESTAMP()-INTERVAL 40 MINUTE")->execute([$job['id']]);
-   if(!$db->query("SELECT id FROM noa_jukebox_audio_jobs WHERE id=".(int)$job['id']." AND started_at>CURRENT_TIMESTAMP()-INTERVAL 40 MINUTE")->fetchColumn())throw new DomainException('worker_runtime_limit');
+   $db->prepare("UPDATE noa_jukebox_audio_jobs SET heartbeat_at=CURRENT_TIMESTAMP,lease_until=CURRENT_TIMESTAMP()+INTERVAL 10 MINUTE WHERE id=?")->execute([$job['id']]);
    $db->prepare("UPDATE noa_jukebox_uploads SET lease_until=CURRENT_TIMESTAMP()+INTERVAL 10 MINUTE WHERE id=?")->execute([$u['id']]);return ['alive'=>true];
   }
   if($action==='upload_fail'){
@@ -80,7 +85,7 @@ function nj_operation(PDO $db,string $action,array $input=[]):array{
    if($retryable&&(int)$job['attempt']<NQ_MAX_ATTEMPTS)nq_insert($db,$u,'retrying',(int)$job['attempt']+1,(int)$job['id']);return ['failed'=>true,'retrying'=>$retryable&&(int)$job['attempt']<NQ_MAX_ATTEMPTS];
   }
   if($action==='upload_state'){
-   $state=$input['status']??'';$expected=['processing'=>'analyzing','verifying'=>'processing'];if(!isset($expected[$state])||$job['status']!==$expected[$state])throw new InvalidArgumentException('invalid_processing_state');
+   $state=$input['status']??'';if($job['status']===$state&&in_array($state,['processing','verifying'],true)){if($state==='processing'&&($input['source_analysis']['sha256']??'')!==$u['sha256'])throw new DomainException('source_hash_mismatch');return ['status'=>$state,'response_recovered'=>true];}$expected=['processing'=>'analyzing','verifying'=>'processing'];if(!isset($expected[$state])||$job['status']!==$expected[$state])throw new InvalidArgumentException('invalid_processing_state');
    if($state==='processing'){$before=$input['source_analysis']??[];if(($before['sha256']??'')!==$u['sha256'])throw new DomainException('source_hash_mismatch');$db->prepare("UPDATE noa_jukebox_uploads SET source_analysis=? WHERE id=?")->execute([json_encode($before,JSON_THROW_ON_ERROR),$u['id']]);}
    $db->prepare('UPDATE noa_jukebox_uploads SET status=? WHERE id=?')->execute([$state,$u['id']]);$db->prepare('UPDATE noa_jukebox_audio_jobs SET status=?,heartbeat_at=CURRENT_TIMESTAMP WHERE id=?')->execute([$state,$job['id']]);return ['status'=>$state];
   }

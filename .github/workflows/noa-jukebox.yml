@@ -1,5 +1,5 @@
 name: NOA JUKEBOX public cards and authorized audio
-# Decouple scheduled audio processing from deployment folders; reclaim only owned corrupt QA inputs.
+# Circuit-break transient upload errors, reconcile lost acknowledgements and observe worker health.
 on:
   push:
     branches: [main, chatgpt/jukebox-20261021]
@@ -49,6 +49,8 @@ jobs:
           php tests/jukebox/upload_mysql_test.php
           node --check deploy/noa-app/jukebox/upload.js
           node tests/jukebox/reservations_test.cjs
+          node tests/jukebox/transport_test.cjs
+          node --check deploy/noa-app/jukebox/upload-transport.js
   interface:
     needs: [validate, storage_rescue]
     if: github.event_name != 'schedule' && needs.validate.result == 'success'
@@ -74,8 +76,33 @@ jobs:
           name: noa-jukebox-interface-proof
           path: jukebox-proof/interface.json
           retention-days: 14
+  watchdog:
+    needs: [validate, interface]
+    if: always() && ((needs.validate.result == 'success' && needs.interface.result == 'success') || github.event_name == 'schedule')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    concurrency: {group: noa-jukebox-watchdog, cancel-in-progress: false}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Install watchdog dependencies
+        run: python3 -m pip install --user paramiko==3.5.1 Pillow==11.3.0
+      - name: Observe worker execution and reconcile bounded SQL/file batches
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_JUKEBOX_WATCHDOG: '1'
+        run: python3 scripts/noa_jukebox_release.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-jukebox-watchdog-proof
+          path: jukebox-proof/watchdog.json
+          retention-days: 14
   release:
-    needs: [validate, interface, storage_rescue]
+    needs: [validate, interface]
     if: always() && ((needs.validate.result == 'success' && needs.interface.result == 'success') || github.event_name == 'schedule')
     runs-on: ubuntu-latest
     timeout-minutes: 120

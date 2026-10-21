@@ -30,8 +30,18 @@ def main():
    try:info=sftp.lstat(path)
    except FileNotFoundError:continue
    if not stat.S_ISREG(info.st_mode) or sftp.normalize(BASE+upload_id)!=BASE+upload_id:raise RuntimeError('unsafe_qa_input')
-   channel=transport.open_session(timeout=20);channel.settimeout(60);channel.exec_command('sha256sum '+path);digest=channel.makefile('rb').read(512).decode().split()[0];status=channel.recv_exit_status();channel.close()
-   if status or digest!=EXPECTED:raise RuntimeError('unknown_input_preserved')
+   channel=transport.open_session(window_size=16*1024*1024,timeout=20);channel.settimeout(90);channel.exec_command('cat '+path);digest=hashlib.sha256();total=0
+   try:
+    with channel.makefile('rb') as source:
+     while True:
+      block=source.read(1024*1024)
+      if not block:break
+      total+=len(block)
+      if total>info.st_size:raise RuntimeError('qa_input_changed')
+      digest.update(block)
+    status=channel.recv_exit_status()
+   finally:channel.close()
+   if status or total!=info.st_size or digest.hexdigest()!=EXPECTED:raise RuntimeError('unknown_input_preserved')
    sftp.remove(path);removed.append(upload_id);reclaimed+=info.st_size
   parent='/hosting/noastudio/noa-deploy-backups';probe=parent+'/recovery-probe-'+os.environ['GITHUB_RUN_ID'];writable=False
   try:sftp.mkdir(probe,0o700);sftp.rmdir(probe);writable=True

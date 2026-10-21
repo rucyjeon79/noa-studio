@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
-require_once __DIR__.'/core.php';require_once __DIR__.'/queue-core.php';
+require_once __DIR__.'/core.php';require_once __DIR__.'/queue-core.php';require_once __DIR__.'/recovery-core.php';
 const NU_CHUNK=524288;
 const NU_MAX=268435456;
 function nu_id(string $id):string{if(!preg_match('/^[a-f0-9]{32}$/D',$id))throw new InvalidArgumentException('invalid_upload_id');return $id;}
@@ -57,17 +57,19 @@ function nu_finish(PDO $db,string $id):array{
  $r=nu_row($db,$id);if($r['status']!=='uploading')return nu_public($db,$r['song_key']);$dir=nu_dir($id);$lock=fopen($dir.'/.lock','c');if(!$lock||!flock($lock,LOCK_EX))throw new RuntimeException('upload_lock_failed');
  try{
   $r=nu_row($db,$id);if($r['status']!=='uploading')return nu_public($db,$r['song_key']);
-  if(count(nu_chunks($r))!==(int)$r['total_chunks'])throw new DomainException('upload_incomplete');
+  $assembled=is_file($dir.'/input.audio')&&!is_link($dir.'/input.audio')&&(int)filesize($dir.'/input.audio')===(int)$r['file_bytes'];
+  if(!$assembled&&count(nu_chunks($r))!==(int)$r['total_chunks'])throw new DomainException('upload_incomplete');
   if(disk_free_space($dir)<(int)$r['file_bytes']+33554432)throw new DomainException('hosting_storage_insufficient');
-  $out=fopen($dir.'/input.part','wb');$bytes=0;try{for($i=0;$i<(int)$r['total_chunks'];$i++){$in=fopen($dir.'/chunk-'.$i,'rb');$bytes+=stream_copy_to_stream($in,$out);fclose($in);}}finally{fclose($out);}chmod($dir.'/input.part',0600);
-  if($bytes!==(int)$r['file_bytes'])throw new DomainException('assembled_size_mismatch');
-  $head=file_get_contents($dir.'/input.part',false,null,0,16);$wave=substr($head,0,4)==='RIFF'&&substr($head,8,4)==='WAVE';$mp3=str_starts_with($head,'ID3')||(strlen($head)>1&&ord($head[0])===255&&(ord($head[1])&224)===224);
+  if(!$assembled){$out=fopen($dir.'/input.part','wb');$bytes=0;try{for($i=0;$i<(int)$r['total_chunks'];$i++){$in=fopen($dir.'/chunk-'.$i,'rb');$bytes+=stream_copy_to_stream($in,$out);fclose($in);}}finally{fclose($out);}chmod($dir.'/input.part',0600);
+  if($bytes!==(int)$r['file_bytes'])throw new DomainException('assembled_size_mismatch');}
+  $candidate=$assembled?$dir.'/input.audio':$dir.'/input.part';
+  $head=file_get_contents($candidate,false,null,0,16);$wave=substr($head,0,4)==='RIFF'&&substr($head,8,4)==='WAVE';$mp3=str_starts_with($head,'ID3')||(strlen($head)>1&&ord($head[0])===255&&(ord($head[1])&224)===224);
   if(($r['extension']==='wav'&&!$wave)||($r['extension']==='mp3'&&!$mp3))throw new InvalidArgumentException('actual_audio_format_mismatch');
-  $mime=(new finfo(FILEINFO_MIME_TYPE))->file($dir.'/input.part');if(!in_array($mime,['audio/mpeg','audio/wav','audio/x-wav','audio/vnd.wave'],true))throw new InvalidArgumentException('actual_audio_format_mismatch');
-  $sha=hash_file('sha256',$dir.'/input.part');$old=nj_find($db,$r['song_key']);$before=json_decode($old['source_analysis']??'null',true);
+  $mime=(new finfo(FILEINFO_MIME_TYPE))->file($candidate);if(!in_array($mime,['audio/mpeg','audio/wav','audio/x-wav','audio/vnd.wave'],true))throw new InvalidArgumentException('actual_audio_format_mismatch');
+  $sha=hash_file('sha256',$candidate);$old=nj_find($db,$r['song_key']);$before=json_decode($old['source_analysis']??'null',true);
   if(nj_verified($old,'audio')&&($before['sha256']??'')===$sha){$db->prepare("UPDATE noa_jukebox_uploads SET status='ready',sha256=? WHERE id=?")->execute([$sha,$id]);nu_clean($r);return nu_public($db,$r['song_key']);}
-  rename($dir.'/input.part',$dir.'/input.audio');$db->prepare("UPDATE noa_jukebox_uploads SET sha256=?,error=NULL WHERE id=? AND status='uploading'")->execute([$sha,$id]);nq_enqueue($db,$r);
-  for($i=0;$i<(int)$r['total_chunks'];$i++)unlink($dir.'/chunk-'.$i);
+  if(!$assembled)rename($dir.'/input.part',$dir.'/input.audio');$db->prepare("UPDATE noa_jukebox_uploads SET sha256=?,error=NULL WHERE id=? AND status='uploading'")->execute([$sha,$id]);nq_enqueue($db,$r);
+  for($i=0;$i<(int)$r['total_chunks'];$i++)if(is_file($dir.'/chunk-'.$i))unlink($dir.'/chunk-'.$i);
   return nu_public($db,$r['song_key']);
  }catch(InvalidArgumentException $e){$db->prepare("UPDATE noa_jukebox_uploads SET status='failed',file_bytes=0,error=? WHERE id=?")->execute([$e->getMessage(),$id]);nu_clean($r);throw $e;}finally{if(is_file($dir.'/input.part'))unlink($dir.'/input.part');flock($lock,LOCK_UN);fclose($lock);}
 }
