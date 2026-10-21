@@ -1,0 +1,47 @@
+name: NOA current full database isolated restore proof
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-current-backup-proof.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-current-backup-isolated-proof, cancel-in-progress: false}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: noa-isolated-only, MYSQL_DATABASE: noa_restore_verification}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -pnoa-isolated-only" --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python3 -m pip install --user paramiko==3.5.1
+      - name: Restore exactly the new 82-table backup only in disposable MySQL
+        run: |
+          python3 - <<'PY'
+          import sys
+          sys.path.insert(0,'scripts')
+          import noa_verify_private_backup as verify
+          verify.EXPECTED='e0b623c9895db5a98333f3ba35d69be37198be2448e579e8e679bbeb74881715'
+          verify.main()
+          PY
+      - name: Record successful isolated proof in the same private backup manifest only
+        env:
+          NOA_VERIFIED_RUN: ${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import sys
+          sys.path.insert(0,'scripts')
+          import noa_record_backup_verification as record
+          record.EXPECTED='e0b623c9895db5a98333f3ba35d69be37198be2448e579e8e679bbeb74881715'
+          record.main()
+          PY
