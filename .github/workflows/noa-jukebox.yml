@@ -1,5 +1,6 @@
 name: NOA JUKEBOX public cards and authorized audio
 # Continue existing cards; audit published sources and process authorized owned downloads only.
+# Reuse reviewed download/mastering stages; validate final MP3 peaks from original input.
 on:
   push:
     branches: [main, chatgpt/jukebox-20261021]
