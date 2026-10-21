@@ -1,0 +1,33 @@
+name: NOA P0 protected production audit
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-p0-audit.yml', 'scripts/noa_p0_diagnostics.py']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-dothome-production, cancel-in-progress: false}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, fetch-depth: 0}
+      - run: |
+          python3 scripts/noa_build_seed.py
+          python3 scripts/noa_build_archive.py
+          python3 scripts/noa_catalog_seed.py
+          python3 -m pip install --user paramiko==3.5.1
+      - name: Inspect production without claiming jobs or replacing files
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: python3 scripts/noa_p0_diagnostics.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-p0-production-audit
+          path: full-release-proof/
+          retention-days: 14
