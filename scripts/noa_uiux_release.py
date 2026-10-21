@@ -4,6 +4,7 @@ No SQL, member, media or JUKEBOX writes. Unknown server versions abort the whole
 import base64,hashlib,json,os,stat,subprocess,sys,time,urllib.request
 from pathlib import Path
 import paramiko
+from noa_deploy_guard import deployment_preflight
 ROOT='/hosting/noastudio/html'
 BASELINE='018335cb6242f0a352ac7e564bc063f018d5bb9e'
 PREVIOUS_UI='1dcc4ea8fe1bf53514a00674c5a54d3e12f9506e'
@@ -49,7 +50,7 @@ def rollback(s,state):
   restored.append(p)
  state['rolledBack']=restored;STATE.write_text(json.dumps(state,indent=2));print('UIUX_ROLLBACK '+json.dumps({'restored':restored}),flush=True)
 def main():
- PROOF.mkdir(exist_ok=True);t,s=connect()
+ PROOF.mkdir(exist_ok=True);t,s=connect();preflight=None
  try:
   if len(sys.argv)>1 and sys.argv[1]=='rollback':
    if STATE.exists():rollback(s,json.loads(STATE.read_text()))
@@ -60,9 +61,18 @@ def main():
    previous_ui=subprocess.check_output(['git','show',PREVIOUS_UI+':'+local])
    if old[p]not in [baseline,previous_ui,new[p]]:raise RuntimeError('Unknown or concurrent production version; nothing changed: '+p)
   protected={p:sha(read(s,ROOT+'/'+p))for p in PROTECTED}
-  pending=[p for p in FILES if old[p]!=new[p]];parent='/hosting/noastudio/noa-deploy-backups';mkdir(s,parent)
-  backup=parent+'/uiux-20261021-'+os.environ['GITHUB_RUN_ID']+'-'+os.environ.get('GITHUB_RUN_ATTEMPT','1');s.mkdir(backup,0o700)
-  if s.normalize(backup)!=backup:raise RuntimeError('Unexpected backup directory')
+  pending=[p for p in FILES if old[p]!=new[p]];parent='/hosting/noastudio/noa-deploy-backups'
+  if not pending:
+   state={'sourceCommit':os.environ['GITHUB_SHA'],'backup':None,'changed':[],'files':{p:{'source':FILES[p],'before':sha(old[p]),'after':sha(new[p])}for p in FILES},'protected':protected,'sqlWrites':False,'jukeboxWrites':False}
+   STATE.write_text(json.dumps(state,indent=2));print('UIUX_NO_CHANGES',flush=True);return
+  available=None
+  try:
+   _,capacity=s._request(paramiko.sftp.CMD_EXTENDED,'statvfs@openssh.com',ROOT)
+   values=[capacity.get_int64()for _ in range(11)];available=values[1]*values[4]
+  except OSError:pass
+  required=sum(len(old[p])+len(new[p])for p in pending)
+  preflight=deployment_preflight(s,parent,os.environ['GITHUB_RUN_ID']+'-'+os.environ.get('GITHUB_RUN_ATTEMPT','1'),required,available)
+  backup=preflight.__enter__()
   for p in pending:
    folder=backup
    for part in p.split('/')[:-1]:folder+='/'+part;mkdir(s,folder)
@@ -97,5 +107,8 @@ def main():
     with urllib.request.urlopen('https://noastudio.ai.kr/'+p+'?v=20261021-uiux1',timeout=30)as r:assert r.read()==new[p]
    state['deployedAtUTC']=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime());state['httpVerified']=True;STATE.write_text(json.dumps(state,indent=2));print('UIUX_DEPLOYED '+json.dumps(state),flush=True)
   except Exception:rollback(s,state);raise
- finally:t.close()
+ finally:
+  try:
+   if preflight is not None:preflight.__exit__(*sys.exc_info())
+  finally:t.close()
 if __name__=='__main__':main()
