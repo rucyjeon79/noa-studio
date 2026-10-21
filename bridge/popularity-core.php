@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /** Pure aggregation. Canonical IDs and video IDs are independent identities. */
-const NP_VERSION='integrated-v1';
+const NP_VERSION='integrated-v2';
 const NP_CHANNEL='UCwYy9xsAqDFat6AV5UKrfgA';
 const NP_STORIES='PLEPMKciKgvch9TGMAcBdKzhVt1QeYsfKB';
 const NP_COVERS='PLEPMKciKgvcjGmuO2ZcqrkHGfD5Qbb_Eb';
@@ -23,7 +23,7 @@ function np_build(array $raw,array $songs,array $lists,array $membership,array $
  foreach($lists as $p)if(nh_public($p,NP_CHANNEL)&&empty($p['systemUploads'])){$publicLists[$p['id']]=$p;foreach(array_unique($membership[$p['id']]??[])as $id)$memberOf[$id][$p['id']]=true;}
  foreach($raw as $v){$id=$v['id']??'';if(!is_string($id)||!preg_match('/^[A-Za-z0-9_-]{11}$/D',$id)||isset($videos[$id])||!nh_public($v,NP_CHANNEL,true)||($v['match']['status']??'')==='rejected')continue;
   $views=nh_views($v['statistics']['viewCount']??null);if($views===null)continue;$sid=$v['match']['songId']??null;if(!isset($songs[$sid??'']))$sid=null;$song=$songs[$sid??'']??[];
-  $videos[$id]=['contentId'=>$id,'contentType'=>'video','videoId'=>$id,'songId'=>$sid,'title'=>(string)($v['snippet']['title']??''),'genre'=>$song['genre_id']??'unclassified','ep'=>$song['ep']??null,'categories'=>$v['sqlCategories']??[],'thumbnail'=>'/noa-bridge/youtube-thumbnail.php?id='.$id,'href'=>'/noa-youtube.php?track='.rawurlencode($id).'&play=1','youtubeViews'=>$views,'views'=>$views,'jukeboxPlays'=>$sid?(int)($plays[$sid]??0):0];$videos[$id]['score']=np_add($views,$videos[$id]['jukeboxPlays']);
+  $videos[$id]=['contentId'=>$id,'contentType'=>'video','videoId'=>$id,'songId'=>$sid,'title'=>(string)($v['snippet']['title']??''),'genre'=>$song['genre_id']??$v['sqlGenre']??'unclassified','ep'=>$song['ep']??null,'categories'=>$v['sqlCategories']??[],'thumbnail'=>'/noa-bridge/youtube-thumbnail.php?id='.$id,'href'=>'/noa-youtube.php?track='.rawurlencode($id).'&play=1','youtubeViews'=>$views,'views'=>$views,'jukeboxPlays'=>$sid?(int)($plays[$sid]??0):0];$videos[$id]['score']=np_add($views,$videos[$id]['jukeboxPlays']);
  }
  $groups=array_fill_keys(['featured','ep','stories','covers','playlists','genres','genre_totals','collections','jukebox','mv','songs'],[]);$rankable=[];
  foreach($videos as $id=>$v){if($v['songId'])$rankable[]=$v;}

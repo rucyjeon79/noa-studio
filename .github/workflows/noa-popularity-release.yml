@@ -1,5 +1,5 @@
 name: NOA integrated popularity verified production release
-# Verify privacy filtering after a new YouTube collection before updating the read module.
+# Include existing confirmed ACT genre evidence and preserve unmeasured registered cards without fabricated scores.
 on:
   push:
     branches: [main]

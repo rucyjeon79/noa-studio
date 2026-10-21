@@ -57,3 +57,8 @@ GitHub Actions 매시간 0분 예약은 닷홈의 기존 SFTP·서명 서비스 
 
 
 공개 순위의 영상 목록은 새 수집이 들어오면 최신 공개 상태를 다시 확인한다. 최신 수집에서 사라진/비공개/삭제된 영상의 행은 이전 스냅샷에 있더라도 즉시 숨긴다. 시간별 원본 순위는 변경하지 않는다. 이 경로를 별도 격리 SQL 트랜잭션에서 검증하며, 테스트용 수집 행은 rollback해 기존 수집·매칭을 보존한다.
+
+
+`integrated-v2`는 기존 `noa_playlist_matches`의 확정 ACT 영상→장르 연결도 읽는다. 개별 곡이 미매칭이어도 이 확정 장르의 영상 조회수를 장르 합계에서 누락하지 않으며, 이 관계로 곡 ID를 새로 만들지 않는다. 규칙 버전이 달라진 직전 시간과는 상승·하락을 비교하지 않고 unknown(`comparisonUnavailableReason=rule_version_changed`)으로 제공한다. 공개 완료한 v1 시간을 덮어쓰지 않는다.
+
+장르·컬렉션 API는 `items`에 실제 점수·순위가 있는 항목, `cards`에 인기순 항목과 지표 미확인 기존 등록 장르를 이어 제공한다. `cardCount`는 기존 카드 전체 수, `unrankedCount`는 점수를 만들지 않은 카드 수다. 지표가 미확인인 기존 등록 장르는 score/youtubeViews/jukeboxPlays/rank=null, rankState=unknown이다. 실제 기존 컬렉션9개를 유지하면서도 확인되지 않은 조회수를0으로 만드는 일을 피한다. 디자인 담당은 이 순서의 `cards`, `cardCount`, `featuredContent`로 카드 균형 정렬을 연결한다.
