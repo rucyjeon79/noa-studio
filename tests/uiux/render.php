@@ -7,6 +7,7 @@ elseif($kind==='youtube'){
  $data=json_decode(file_get_contents(getenv('NOA_YOUTUBE_SOURCE')),true,512,JSON_THROW_ON_ERROR);$videos=$data['videos'];$browseRows=$data['browseRows'];$playlists=$data['playlists'];$run=['run_id'=>'local-public-fixture'];$error=false;$playlistUnavailable=false;$admin=false;$_GET=[];
  $source=file_get_contents($root.'/deploy/noa-youtube.php');$offset=strpos($source,'function nye(');if($offset===false)throw new RuntimeException('YouTube view marker missing');eval(substr($source,$offset));
 }
+elseif($kind==='ailab'){$is_member=true;$is_admin='super';eval('?>'.str_replace(["declare(strict_types=1);","require_once __DIR__.'/common.php';"],'',file_get_contents($root.'/deploy/noa-ai-lab.php')));}
 elseif($kind==='my'){eval('?>'.str_replace(["declare(strict_types=1);","require_once __DIR__.'/common.php';"],'',file_get_contents($root.'/deploy/noa-my.php')));}
 else{
  require $root.'/bridge/world-core.php';require $root.'/bridge/world-mv.php';require $root.'/bridge/world-story.php';

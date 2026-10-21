@@ -27,7 +27,7 @@ try{
    const script=[...document.scripts].find(s=>s.textContent.includes('const rows='));const match=script?.textContent.match(/const rows=(\[.*?\]),search=/s);if(!match)throw Error('Public browse source missing');
    const playlists=Object.fromEntries([...document.querySelectorAll('#youtube-playlists a')].map(a=>[new URL(a.getAttribute('href'),'https://noastudio.ai.kr/noa-youtube.php').searchParams.get('playlist'),{snippet:{title:a.textContent}}]));return{videos,browseRows:JSON.parse(match[1]),playlists};
   });await yt.close();const ytPath=path.join(out,'public-youtube-source.json');await fs.writeFile(ytPath,JSON.stringify(youtube));
-  for(const [route,kind,role]of [['/','home',''],['/noa-world.php','world',''],['/noa-my.php','my',''],['/noa-youtube.php','youtube',''],['/noa-my-admin-fixture','my','admin']]){
+  for(const [route,kind,role]of [['/','home',''],['/noa-world.php','world',''],['/noa-my.php','my',''],['/noa-youtube.php','youtube',''],['/noa-my-admin-fixture','my','admin'],['/noa-ai-lab-admin-fixture','ailab','admin']]){
    const rendered=execFileSync('php',[path.join(root,'tests/uiux/render.php'),kind,role],{env:{...process.env,NOA_WORLD_SOURCE:sourcePath,NOA_YOUTUBE_SOURCE:ytPath},encoding:'utf8'});assert(!rendered.includes('Fatal error'));docs.set(route,rendered);
   }
   await context.route(base+'/**',async route=>{
@@ -40,10 +40,12 @@ try{
  }
  // The inline iframe URL and stop behavior are checked without starting external playback.
  await context.route('https://www.youtube.com/embed/**',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>Official embed URL test</title>'}));
+ const {auditPrecision,verifyPrecisionFlow}=await import('file://'+path.join(root,'scripts/qa/noa-precision.mjs'));
+ const failures=[];
  const routes=['/','/noa-world.php?story=1','/noa-my.php','/noa-youtube.php','/noa-music.php','/noa-catalog.php','/noa-settings.php','/bbs/login.php'];
- if(phase==='candidate')routes.push('/noa-my-admin-fixture');
- for(const width of [320,390,768,1280])for(const route of routes){
-  const page=await context.newPage();await page.setViewportSize({width,height:900});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ if(phase==='candidate')routes.push('/noa-my-admin-fixture','/noa-ai-lab-admin-fixture');
+ for(const {width,height} of [{width:320,height:568},{width:390,height:844},{width:430,height:932},{width:768,height:1024},{width:1024,height:768},{width:1280,height:900},{width:1920,height:1080}])for(const route of routes){
+  const page=await context.newPage();try{await page.setViewportSize({width,height});const errors=[];page.on('pageerror',e=>errors.push(e.message));
   const response=await page.goto(base+route,{waitUntil:'domcontentloaded',timeout:60000});assert.equal(response.status(),200,route);
   await page.locator('.noa-sidebar').waitFor({state:'attached'});await page.waitForFunction(()=>document.fonts.status==='loaded');
   if(route==='/')await page.waitForFunction(()=>document.body.dataset.noaHomeReady);
@@ -53,6 +55,8 @@ try{
   const layout=await page.evaluate(()=>({viewport:innerWidth,scroll:document.documentElement.scrollWidth,text:document.body.innerText.length,actions:[...document.querySelectorAll('.noa-action')].map(e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height,gap:getComputedStyle(e).gap})),broken:[...document.images].filter(i=>i.getBoundingClientRect().width&&i.getBoundingClientRect().height&&i.complete&&!i.naturalWidth).map(i=>i.getAttribute('src'))}));
   assert(layout.scroll<=width+1,'overflow '+width+' '+route+' '+layout.scroll);assert(layout.text>50,'blank '+route);assert.deepEqual(errors,[],route);
   for(const action of layout.actions)assert(action.width>=43&&action.height>=43,'small action '+route);
+  const precision=await auditPrecision(page);
+  if(route==='/')assert((await page.locator('.noa-card-context').allTextContents()).every(t=>!t.includes('unclassified')),'internal genre marker on public cards');
   if(route==='/noa-my.php')assert.equal(await page.locator('.noa-workspace').count(),0);
   if(route==='/noa-my-admin-fixture')assert.equal(await page.locator('.noa-workspace a').count(),10);
   if(route.startsWith('/noa-world.php')){
@@ -75,8 +79,10 @@ try{
   }
   const filename=route.replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')||'home';await page.screenshot({path:path.join(out,filename+'-'+width+'.jpg'),type:'jpeg',quality:78});
   if(route==='/noa-my-admin-fixture'){await page.locator('.noa-workspace').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'workspace-'+width+'.jpg'),type:'jpeg',quality:80});}
-  report.push({phase,route,width,status:response.status(),layout,errors});await page.close();
+  report.push({phase,route,width,status:response.status(),layout,errors,precision});
+  }catch(error){failures.push({route,width,height,error:String(error)});await page.screenshot({path:path.join(out,'precision-failure-'+width+'-'+route.replace(/[^a-z0-9]/gi,'-')+'.jpg')}).catch(()=>{});}finally{await page.close();}
  }
+ if(failures.length){await fs.writeFile(path.join(out,'precision-failures.json'),JSON.stringify(failures,null,2));throw Error(JSON.stringify(failures));}
  if(phase==='live'){
   const r=await context.request.get(base+'/noa-bridge/home.php');assert.equal(r.status(),200);const d=await r.json();assert(d.ok);const featured=new Set(d.featured.map(v=>v.videoId));
   for(const section of ['ep','stories','covers']){assert(d[section].length<=10);assert(d[section].every(v=>!featured.has(v.videoId)),section+' repeats featured');}
@@ -85,6 +91,7 @@ try{
  }
  const {verifyCardBalance}=await import('file://'+path.join(root,'scripts/qa/noa-card-balance.mjs'));
  await verifyCardBalance({context,phase,base,out,report});
+ await verifyPrecisionFlow({context,phase,base,out,report});
  // Native media is checked on the candidate too, before any deployment.
  const mediaPage=await context.newPage();await mediaPage.emulateMedia({reducedMotion:'no-preference'});await mediaPage.goto(base+'/',{waitUntil:'domcontentloaded'});
  let manualFallback=false;
@@ -94,11 +101,15 @@ try{
   assert.equal(await mediaPage.locator('video').evaluate(v=>v.loop),false);
   if(!await mediaPage.locator('video').evaluate(v=>v.ended)){await mediaPage.locator('video').evaluate(v=>{v.currentTime=Math.max(0,v.duration-.2);});await mediaPage.waitForFunction(()=>document.querySelector('video').ended,null,{timeout:10000});}
   assert.equal(await mediaPage.locator('video').evaluate(v=>v.paused),true);
-  report.push({phase,nativeHeroEndedPaused:true,manualFallback});
+  await mediaPage.getByRole('button',{name:'메인 영상 다시 재생',exact:true}).press('Enter');
+  await mediaPage.waitForFunction(()=>{const v=document.querySelector('video');return !v.paused&&!v.ended&&v.currentTime<v.duration-1;});
+  await mediaPage.getByRole('button',{name:'메인 영상 일시정지',exact:true}).press('Space');
+  assert.equal(await mediaPage.locator('video').evaluate(v=>v.paused),true);
+  report.push({phase,nativeHeroEndedPaused:true,manualFallback,keyboardReplayPause:true});
  }catch(error){
   const diagnostics=await mediaPage.locator('video').evaluate(v=>({src:v.currentSrc||v.src,readyState:v.readyState,paused:v.paused,ended:v.ended,error:v.error?{code:v.error.code,message:v.error.message}:null,mp4Support:v.canPlayType('video/mp4; codecs="avc1.42E01E"'),status:document.getElementById('noa-hero-status').textContent,visibility:document.visibilityState}));
   await fs.writeFile(path.join(out,'native-media-failure.json'),JSON.stringify(diagnostics,null,2));await mediaPage.screenshot({path:path.join(out,'native-media-failure.jpg'),type:'jpeg'});console.log('NATIVE_MEDIA_DIAGNOSTICS '+JSON.stringify(diagnostics));throw error;
  }finally{await mediaPage.close();}
  await fs.writeFile(path.join(out,'report.json'),JSON.stringify({ok:true,phase,notVerified:['authenticated member and superadmin production interactions','actual YouTube media output; iframe route was intercepted'],checks:report},null,2));
- console.log(JSON.stringify({ok:true,phase,pages:report.length,screenWidths:[320,390,768,1280]}));
+ console.log(JSON.stringify({ok:true,phase,pages:report.length,screenWidths:[320,390,430,768,1024,1280,1920]}));
 }finally{await context.tracing.stop({path:path.join(out,'trace.zip')});await context.close();await browser.close();}
