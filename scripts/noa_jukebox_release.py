@@ -6,9 +6,10 @@ from pathlib import Path
 import paramiko
 import noa_jukebox_owned as owned
 from noa_jukebox_upload_worker import process_uploads
+from noa_jukebox_recovery import signed_service, watchdog
 ROOT='/hosting/noastudio/html'
 APP='noa-app/jukebox/'
-NEW={APP+n:'deploy/'+APP+n for n in ['queue-core.php','core.php','cli.php','stream.php','index.php','operations.php','service.php','upload-core.php','upload.php','download.php','upload.js','upload.css','mobile-check.php']}
+NEW={APP+n:'deploy/'+APP+n for n in ['recovery-core.php','queue-core.php','core.php','cli.php','stream.php','index.php','operations.php','service.php','upload-core.php','upload.php','download.php','upload-transport.js','upload.js','upload.css','mobile-check.php']}
 INTEGRATE={'noa-bridge/catalog.php':'bridge/catalog.php','noa-music.php':'deploy/noa-music.php'}
 BASE=json.loads(Path('scripts/noa_jukebox_baseline.json').read_text())
 
@@ -46,17 +47,20 @@ def main():
   if os.environ.get('NOA_JUKEBOX_INTERFACE_ONLY')=='1':
    # UI and its backwards-compatible partial-upload API can publish without
    # waiting for, claiming, canceling or restarting the ongoing audio worker.
-   files={APP+n:'deploy/'+APP+n for n in ['upload-core.php','upload.php','upload.js','upload.css','index.php']}
+   files={APP+n:'deploy/'+APP+n for n in ['recovery-core.php','queue-core.php','upload-core.php','operations.php','service.php','upload.php','upload-transport.js','upload.js','upload.css','index.php']}
    files['noa-music.php']='deploy/noa-music.php'
    protected={p:sha(read(ROOT+'/'+p)) for p in ['common.php','config.php','data/dbconfig.php','index.php','.htaccess'] if read(ROOT+'/'+p) is not None}
-   parent='/hosting/noastudio/noa-deploy-backups';mkdir(parent,0o700)
-   backup=parent+'/jukebox-interface-'+os.environ['GITHUB_RUN_ID'];mkdir(backup,0o700)
+   backup=None
    changes=[]
    for remote,local in files.items():
     current=read(ROOT+'/'+remote);new=Path(local).read_bytes()
-    if current is None:raise RuntimeError('existing_jukebox_required')
-    if sha(current)==sha(new):continue
+    if current is not None and sha(current)==sha(new):continue
+    if current is None:
+     if remote not in [APP+'recovery-core.php',APP+'upload-transport.js']:raise RuntimeError('existing_jukebox_required')
+     changes.append((remote,new,None));continue
     if sha(current) not in BASE[remote]:raise RuntimeError('unknown_interface_baseline:'+remote)
+    if backup is None:
+     parent='/hosting/noastudio/noa-deploy-backups';mkdir(parent,0o700);backup=parent+'/jukebox-interface-'+os.environ['GITHUB_RUN_ID']+'-'+os.environ.get('GITHUB_RUN_ATTEMPT','1');mkdir(backup,0o700)
     target=backup+'/'+remote.replace('/','_')
     with s.open(target,'wx') as f:f.write(current)
     s.chmod(target,0o600)
@@ -67,32 +71,26 @@ def main():
    result={'source_commit':os.environ['GITHUB_SHA'],'deployed_hashes':{remote:sha(read(ROOT+'/'+remote)) for remote in files},'protected_files_unchanged':True,'sql_queue_mutated':False,'audio_worker_interrupted':False}
    work=Path('jukebox-proof');work.mkdir(exist_ok=True);(work/'interface.json').write_text(json.dumps(result));print('JUKEBOX_INTERFACE_RESULT '+json.dumps(result),flush=True);return
   protected={p:sha(read(ROOT+'/'+p)) for p in ['common.php','config.php','data/dbconfig.php','index.php','.htaccess'] if read(ROOT+'/'+p) is not None}
-  mkdir(ROOT+'/noa-app');mkdir(ROOT+'/'+APP.rstrip('/'));mkdir(ROOT+'/noa-jukebox')
-  atomic(ROOT+'/noa-jukebox/.htaccess',Path('deploy/'+APP+'media.htaccess').read_bytes(),None)
-  # Install only new helpers; no existing application files are touched until SQL is ready.
-  for remote,local in NEW.items():
-   expected=BASE.get(remote)
-   if isinstance(expected,list):
-    current=read(ROOT+'/'+remote);actual=sha(current) if current is not None else None
-    expected=actual if actual in expected else None
-   atomic(ROOT+'/'+remote,Path(local).read_bytes(),expected)
+  if os.environ.get('NOA_JUKEBOX_WATCHDOG')!='1' and os.environ.get('GITHUB_EVENT_NAME')!='schedule':
+   mkdir(ROOT+'/noa-app');mkdir(ROOT+'/'+APP.rstrip('/'));mkdir(ROOT+'/noa-jukebox')
+   atomic(ROOT+'/noa-jukebox/.htaccess',Path('deploy/'+APP+'media.htaccess').read_bytes(),None)
+   # Install only new helpers; no existing application files are touched until SQL is ready.
+   for remote,local in NEW.items():
+    expected=BASE.get(remote)
+    if isinstance(expected,list):
+     current=read(ROOT+'/'+remote);actual=sha(current) if current is not None else None
+     expected=actual if actual in expected else None
+    atomic(ROOT+'/'+remote,Path(local).read_bytes(),expected)
   with s.open('/hosting/noastudio/noa-ai-lab/worker.key','rb') as keyfile:key=keyfile.read(256).decode().strip()
   if len(key)!=64:raise RuntimeError('invalid_private_service_key')
-  def cli(action,payload=None):
-   body={'action':action,'payload':json.loads(payload) if payload else {}}
-   raw=json.dumps(body,separators=(',',':')).encode();ts=str(int(time.time()));nonce=secrets.token_hex(16)
-   msg='NOA-JUKEBOX-1\nPOST\n'+sha(raw)+'\n'+ts+'\n'+nonce
-   headers={'Content-Type':'application/json','X-NOA-Timestamp':ts,'X-NOA-Nonce':nonce,
-            'X-NOA-Signature':hmac.new(key.encode(),msg.encode(),hashlib.sha256).hexdigest()}
-   req=urllib.request.Request('https://noastudio.ai.kr/noa-app/jukebox/service.php',data=raw,headers=headers,method='POST')
-   try:
-    with urllib.request.urlopen(req,timeout=150) as response:out=json.load(response)
-   except urllib.error.HTTPError as e:
-    raise RuntimeError('signed_service_'+action+'_http_'+str(e.code)) from None
-   if not out.get('ok'):raise RuntimeError('signed_service_'+action+'_failed')
-   result=out['result']
-   if result.get('errors'):raise RuntimeError('import_validation_failed:'+json.dumps(result['errors']))
-   return result
+  cli=signed_service(key)
+  if os.environ.get('NOA_JUKEBOX_WATCHDOG')=='1':
+   if os.environ.get('GITHUB_EVENT_NAME')!='schedule':
+    print('JUKEBOX_RUNTIME_REFRESH '+json.dumps(cli('runtime_refresh')),flush=True)
+   if os.environ.get('NOA_JUKEBOX_VERIFY_RECOVERY')=='true':
+    env=dict(os.environ);env['NOA_JUKEBOX_SERVICE_KEY']=key
+    subprocess.run(['node','tests/jukebox/live_recovery_test.cjs'],env=env,check=True)
+   result=watchdog(cli);work=Path('jukebox-proof');work.mkdir(exist_ok=True);(work/'watchdog.json').write_text(json.dumps(result));print('JUKEBOX_WATCHDOG_RESULT '+json.dumps(result),flush=True);return
   work=Path('jukebox-proof');work.mkdir(exist_ok=True)
   try:
    probe=t.open_session(timeout=20);probe.settimeout(20)
@@ -101,31 +99,31 @@ def main():
   except Exception:host_probe='SSH executable probe unavailable; external worker retained'
   print('DOTHOME_EXECUTABLE_PROBE '+json.dumps(host_probe),flush=True)
   pending=cli('jobs')
-  if os.environ.get('GITHUB_EVENT_NAME')=='schedule' and not pending['queued'] and not pending['uploads']:
-   (work/'summary.json').write_text(json.dumps({'idle':True,'queued':0}));print('JUKEBOX_IDLE');return
   claimed=cli('claim')['ids']
   catalog=cli('export');(work/'catalog-private.json').write_text(json.dumps(catalog,ensure_ascii=False))
   print('LIVE_DB_COUNTS '+json.dumps({k:v for k,v in catalog.items() if k!='items'}),flush=True)
   # SSH keepalive while acquisition happens on the worker, not on shared hosting.
   t.set_keepalive(20)
   # Exact known baseline plus private per-file backups protect simultaneous work.
-  parent='/hosting/noastudio/noa-deploy-backups';mkdir(parent,0o700)
-  backup=parent+'/jukebox-'+os.environ['GITHUB_RUN_ID'];mkdir(backup,0o700)
-  changes=[]
-  for remote,local in INTEGRATE.items():
-   current=read(ROOT+'/'+remote);new=Path(local).read_bytes()
-   if sha(current)==sha(new):continue
-   allowed=BASE[remote] if isinstance(BASE[remote],list) else [BASE[remote]]
-   if sha(current) not in allowed:raise RuntimeError('Integration changed; data saved but deployment paused: '+remote)
-   target=backup+'/'+remote.replace('/','_')
-   with s.open(target,'wx') as f:f.write(current)
-   s.chmod(target,0o600)
-   if sha(read(target))!=sha(current):raise RuntimeError('backup_checksum')
-   changes.append((remote,new,sha(current)))
-  for remote,new,previous in changes:atomic(ROOT+'/'+remote,new,previous)
+  if os.environ.get('GITHUB_EVENT_NAME')!='schedule':
+   backup=None
+   changes=[]
+   for remote,local in INTEGRATE.items():
+    current=read(ROOT+'/'+remote);new=Path(local).read_bytes()
+    if sha(current)==sha(new):continue
+    allowed=BASE[remote] if isinstance(BASE[remote],list) else [BASE[remote]]
+    if sha(current) not in allowed:raise RuntimeError('Integration changed; data saved but deployment paused: '+remote)
+    if backup is None:
+     parent='/hosting/noastudio/noa-deploy-backups';mkdir(parent,0o700);backup=parent+'/jukebox-'+os.environ['GITHUB_RUN_ID']+'-'+os.environ.get('GITHUB_RUN_ATTEMPT','1');mkdir(backup,0o700)
+    target=backup+'/'+remote.replace('/','_')
+    with s.open(target,'wx') as f:f.write(current)
+    s.chmod(target,0o600)
+    if sha(read(target))!=sha(current):raise RuntimeError('backup_checksum')
+    changes.append((remote,new,sha(current)))
+   for remote,new,previous in changes:atomic(ROOT+'/'+remote,new,previous)
   original_data=cli('integrity_snapshot')
   if os.environ.get('GITHUB_EVENT_NAME')!='schedule':cli('qa_setup')
-  if pending['uploads'] and not shutil.which('ffmpeg'):
+  if not shutil.which('ffmpeg') or not shutil.which('ffprobe'):
    subprocess.run(['sudo','apt-get','update','-qq'],check=True)
    subprocess.run(['sudo','apt-get','install','-y','ffmpeg'],check=True)
   print('HOST_CAPABILITIES '+json.dumps(cli('capabilities')),flush=True)
@@ -151,7 +149,8 @@ def main():
    except Exception:destination.unlink(missing_ok=True);return False
    finally:
     if channel:channel.close()
-  uploads=process_uploads(s,lambda action,payload=None:cli(action,json.dumps(payload,ensure_ascii=False).encode() if payload else None),mkdir,source_reader)
+  uploads=process_uploads(s,lambda action,payload=None:cli(action,json.dumps(payload,ensure_ascii=False).encode() if payload else None),mkdir,source_reader,{'run_id':os.environ['GITHUB_RUN_ID'],'source_commit':os.environ['GITHUB_SHA'],'keepalive_seconds':3000})
+  recovery=watchdog(cli)
 
   print('JUKEBOX_UPLOAD_RESULT '+json.dumps(uploads),flush=True)
   results=[];saved=0;sql_saved=0
@@ -192,7 +191,7 @@ def main():
   result={'catalog_song_records':catalog.get('catalog_song_records'),'database_music_records':catalog['database_music_records'],'total_suno_urls':len(catalog['items']),
           'cover_files':audit['covers'],'audio_files':audit['audio'],'audio_bytes':audit['audio_bytes'],
           'source_audits':sum('audio_discovery' in r for r in results),'cover_pending':len(catalog['items'])-audit['covers'],'audio_pending':len(catalog['items'])-audit['audio'],'sql_saved':sql['saved'],'files_uploaded':saved,'audit':audit,'deployed':list(NEW)+list(INTEGRATE),
-          'host_executable_probe':host_probe,'queue':cli('queue_snapshot'),'capacity':cli('capabilities'),'source_commit':os.environ['GITHUB_SHA'],'uploads':uploads,'integrity_before':original_data,'integrity_after':cli('integrity_snapshot'),'existing_documents_modified':False,'audio_playback_verified':False}
+          'host_executable_probe':host_probe,'queue':cli('queue_snapshot'),'capacity':cli('capabilities'),'source_commit':os.environ['GITHUB_SHA'],'uploads':uploads,'recovery':recovery,'integrity_before':original_data,'integrity_after':cli('integrity_snapshot'),'existing_documents_modified':False,'audio_playback_verified':False}
   cli('finish',json.dumps({'ids':claimed}).encode())
   (work/'summary.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print('JUKEBOX_PRODUCTION_RESULT '+json.dumps(result),flush=True)
  finally:s.close();t.close()

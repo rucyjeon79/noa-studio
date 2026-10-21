@@ -138,7 +138,7 @@ class UploadPublicationTests(unittest.TestCase):
      dest.write_bytes(source.read_bytes());return True
     result=upload.process_uploads(sftp,call,lambda p,m:sftp.path(p).mkdir(exist_ok=True),source_reader if getattr(self,'stream_source',False) else None)
    self.assertFalse(result[0]['ready']);self.assertTrue(result[1]['ready']);self.assertFalse(source.exists());self.assertFalse(list((root/'media').rglob('*.wav')))
-   self.assertEqual([e[0] for e in events],['upload_claim','upload_fail','upload_claim','upload_state','upload_state','upload_heartbeat','upload_heartbeat','upload_commit','upload_cleanup','upload_claim'])
+   self.assertEqual([e[0] for e in events],['upload_claim','upload_reconcile','upload_fail','upload_claim','upload_state','upload_state','upload_heartbeat','upload_heartbeat','upload_commit','upload_cleanup','upload_claim'])
  def test_streamed_owned_source_still_requires_hash_decode_and_verified_publication(self):
   self.stream_source=True
   self.test_cardless_upload_fetches_only_card_and_publishes_beside_real_mp3()
