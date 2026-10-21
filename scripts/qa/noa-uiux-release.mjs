@@ -8,7 +8,7 @@ import {execFileSync} from 'node:child_process';
 import assert from 'node:assert/strict';
 const root=process.env.NOA_SOURCE_ROOT||process.cwd(),phase=process.env.NOA_UIUX_PHASE||'candidate',out=path.join(root,'uiux-proof',phase);
 await fs.mkdir(out,{recursive:true});
-const browser=await chromium.launch({headless:true});const context=await browser.newContext({reducedMotion:'reduce',serviceWorkers:'block'});
+const browser=await chromium.launch({channel:'chrome',headless:true});const context=await browser.newContext({reducedMotion:'reduce',serviceWorkers:'block'});
 const base='https://noastudio.ai.kr',docs=new Map(),report=[];
 try{
  if(phase==='candidate'){
