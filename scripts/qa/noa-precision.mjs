@@ -12,7 +12,7 @@ export async function auditPrecision(page){
   });
   const hero=document.querySelector('.noa-hero'),art=document.querySelector('.noa-hero-art'),copy=document.querySelector('.noa-hero-copy'),toggle=document.getElementById('noa-hero-toggle'),video=document.getElementById('noa-hero-video');
   const heroInfo=hero?{box:rect(hero),art:rect(art),copy:rect(copy),toggle:rect(toggle),portrait:innerHeight>innerWidth,fit:getComputedStyle(video).objectFit,muted:video.muted,loop:video.loop}:null;
-  const main=document.querySelector('main'),nav=document.querySelector('.noa-mobile-nav'),player=document.querySelector('.noa-transport');
+  const main=document.querySelector('main')||document.querySelector('.noa-g5 #wrapper'),nav=document.querySelector('.noa-mobile-nav'),player=document.querySelector('.noa-transport');
   return{hero:heroInfo,viewport:innerWidth,height:innerHeight,scroll:document.documentElement.scrollWidth,sidebar:visible(document.querySelector('.noa-sidebar')),nav:visible(nav)?rect(nav):null,player:visible(player)?rect(player):null,paddingBottom:main?parseFloat(getComputedStyle(main).paddingBottom):0,groups,debug:document.documentElement.hasAttribute('data-noa-grid-debug')};
  });
  assert(result.scroll<=result.viewport+1,'precision overflow '+result.viewport);
@@ -34,7 +34,7 @@ export async function auditPrecision(page){
  }
  if(result.hero){const h=result.hero;assert.equal(h.fit,'contain','hero face protection');assert.equal(h.muted,true);assert.equal(h.loop,false);assert(h.toggle.x>=h.art.x&&h.toggle.right<=h.art.right+1&&h.toggle.y>=h.art.y&&h.toggle.bottom<=h.art.bottom+1,'hero control bounds');assert(h.toggle.width>=44&&h.toggle.height>=44);if(h.portrait&&result.viewport<=1024){assert(Math.abs(h.art.x-h.copy.x)<=1&&Math.abs(h.art.width-h.copy.width)<=1,'hero media/copy edges');}if(h.portrait&&result.viewport<=760){assert(h.art.height<=result.height*.48,'oversized portrait hero');assert(h.box.bottom<=(result.nav?.y||result.height)-8,'hero copy under navigation');}}
  const reserved=(result.nav?.height||0)+(result.player?.height||0);
- assert(result.paddingBottom>=reserved+23,'bottom controls overlap content reserve');
+ assert(result.paddingBottom>=reserved+23,'bottom controls overlap content reserve '+JSON.stringify({url:page.url(),viewport:result.viewport,paddingBottom:result.paddingBottom,reserved}));
  if(result.viewport<=1024&&result.height<=500){assert.equal(result.sidebar,false,'landscape sidebar');assert(result.nav,'landscape navigation');}
  return{groups:result.groups.length,maxTolerancePx:1,paddingBottom:result.paddingBottom,reserved,sidebar:result.sidebar,hero:result.hero};
 }

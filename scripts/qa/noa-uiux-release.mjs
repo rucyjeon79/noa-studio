@@ -54,7 +54,7 @@ try{
   const layout=await page.evaluate(()=>({viewport:innerWidth,scroll:document.documentElement.scrollWidth,text:document.body.innerText.length,actions:[...document.querySelectorAll('.noa-action')].map(e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height,gap:getComputedStyle(e).gap})),broken:[...document.images].filter(i=>i.getBoundingClientRect().width&&i.getBoundingClientRect().height&&i.complete&&!i.naturalWidth).map(i=>i.getAttribute('src'))}));
   assert(layout.scroll<=width+1,'overflow '+width+' '+route+' '+layout.scroll);assert(layout.text>50,'blank '+route);assert.deepEqual(errors,[],route);
   for(const action of layout.actions)assert(action.width>=43&&action.height>=43,'small action '+route);
-  const precision=await auditPrecision(page);
+  let precision;try{precision=await auditPrecision(page);}catch(error){await page.screenshot({path:path.join(out,'precision-failure-'+width+'-'+route.replace(/[^a-z0-9]/gi,'-')+'.jpg')});await fs.writeFile(path.join(out,'precision-failure.json'),JSON.stringify({route,width,height,error:String(error)},null,2));throw error;}
   if(route==='/noa-my.php')assert.equal(await page.locator('.noa-workspace').count(),0);
   if(route==='/noa-my-admin-fixture')assert.equal(await page.locator('.noa-workspace a').count(),10);
   if(route.startsWith('/noa-world.php')){

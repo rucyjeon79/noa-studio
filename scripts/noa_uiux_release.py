@@ -11,6 +11,7 @@ PREVIOUS_UI='4c32463919aef5def76de2c3d9b3daf38f496a14'
 FILES={p:'deploy/'+p for p in ['noa-ui.css','noa-ui.js','noa-app/home.php','noa-app/world-view.php','noa-my.php','noa-youtube.php','noa-catalog.php','noa-home.js','noa-hero.js','noa-ai-lab.php','noa-settings.php']}
 PROTECTED=['index.php','common.php','config.php','data/dbconfig.php','head.php','tail.php','version.php','bbs/login.php','bbs/login_check.php','noa-music.php']+['noa-app/jukebox/'+p for p in ['index.php','upload-core.php','core.php','upload.php','upload.js','upload.css']]
 PROTECTED+=['noa-ai-lab.js','noa-app/taxonomy/index.php','noa-app/taxonomy/ui.js','noa-bridge/home-core.php','noa-bridge/home-store.php','noa-bridge/taxonomy-core.php','noa-bridge/taxonomy-schema.php','noa-bridge/taxonomy-store.php','noa-bridge/youtube-store.php']
+PROTECTED+=['noa-bridge/'+p for p in ['home.php','popularity-core.php','popularity-store.php','popularity-schema.php','popularity-plays.php']]
 PROOF=Path('uiux-proof');STATE=PROOF/'release-state.json'
 def sha(b):return hashlib.sha256(b).hexdigest()
 def connect():
