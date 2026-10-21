@@ -7,7 +7,7 @@ on:
 permissions: {contents: read}
 jobs:
   record:
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.id == 39530927135 && github.event.workflow_run.head_sha == 'd36ed5e5a0c8bac0444b822f91bc398481488152'
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
     runs-on: ubuntu-latest
     environment: production
     concurrency: {group: noa-dothome-production, cancel-in-progress: false}

@@ -4,7 +4,7 @@ import paramiko
 EXPECTED='6dac39d8fe1b14a53a6ba198d9374edb0d8b6c6b8b785dfc3a64699fecc31a3c'
 ROOT='/hosting/noastudio/noa-db-private'
 def main():
- run=os.environ['NOA_VERIFIED_RUN'];assert run=='39530927135'
+ run=os.environ['NOA_VERIFIED_RUN'];assert re.fullmatch(r'[0-9]+',run)
  t=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022))
  try:
   t.get_security_options().key_types=('ssh-ed25519',);t.start_client(timeout=20)
