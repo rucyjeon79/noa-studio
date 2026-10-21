@@ -27,6 +27,8 @@ await p.goto(origin+'/noa-music.php?genre=kpop-original&act=1',{waitUntil:'domco
 if(audio.length){
  const card=p.locator('.song[data-audio]:not([data-audio=""])').first();await card.locator('.sound-play').click();await p.waitForTimeout(3000);
  report.music.playback=await p.locator('#sound-player').evaluate(v=>({src:v.currentSrc,time:v.currentTime,duration:v.duration,paused:v.paused,ready:v.readyState,error:v.error?.message}));
+ report.music.outputSignal=await p.locator('#sound-player').evaluate(async v=>{const ctx=new AudioContext(),source=ctx.createMediaElementSource(v),analyser=ctx.createAnalyser();source.connect(analyser);analyser.connect(ctx.destination);await ctx.resume();await new Promise(r=>setTimeout(r,400));const data=new Float32Array(analyser.fftSize);analyser.getFloatTimeDomainData(data);const rms=Math.sqrt(data.reduce((a,x)=>a+x*x,0)/data.length);await ctx.close();return{rms,nonSilent:rms>0.00001};});
+ await p.screenshot({path:out+'/actual-mp3-'+width+'.jpg',quality:75});
  const stream=await p.request.get(audio[0].audioUrl,{headers:{Range:'bytes=0-4095'}});report.music.stream={status:stream.status(),type:stream.headers()['content-type'],range:stream.headers()['content-range'],bytes:(await stream.body()).length};
  await p.locator('#sound-player').evaluate(v=>v.pause());
 }
