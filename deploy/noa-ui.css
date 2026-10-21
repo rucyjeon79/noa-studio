@@ -91,7 +91,8 @@ html[data-noa-theme="noa-ivory"]{color-scheme:light}html[data-radius="sharp"]{--
 .noa-balanced>.noa-balanced-feature>strong,.noa-balanced>.noa-balanced-feature>h2,.noa-balanced>.noa-balanced-feature>h3{grid-column:2;grid-row:2;margin:0;font-size:clamp(13px,1.2vw,17px);line-height:1.45;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 .noa-balanced>.noa-balanced-feature>small,.noa-balanced>.noa-balanced-feature>p{grid-column:2;grid-row:3;font-size:11px;line-height:1.5;margin:0;color:var(--noa-muted);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 .noa-balanced>.noa-balanced-feature>a,.noa-balanced>.noa-balanced-feature>details{grid-column:2;font-size:12px;min-width:0}
-.noa-balanced>.noa-music-card.noa-balanced-feature::after{content:'▷';grid-column:2;grid-row:4;display:grid;place-items:center;justify-self:start;width:44px;height:44px;border:1px solid var(--noa-line);border-radius:50%;color:var(--noa-accent);font-size:20px}
+.noa-balanced>.noa-balanced-feature::after{content:'음악과 이야기, 잠시 머무는 순간.';grid-column:2;grid-row:4;font-size:11px;line-height:1.5;color:var(--noa-muted);align-self:start}
+.noa-balanced-feature>.noa-art::after{content:'▷';position:absolute;right:6px;bottom:6px;display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--noa-line);border-radius:50%;background:var(--noa-bg);color:var(--noa-accent);font-size:20px}
 .noa-balanced-feature .yt-play{inset:auto 6px 6px auto;width:44px;height:44px;border-radius:50%;font-size:22px;background:var(--noa-bg)}
 .noa-balanced>.noa-balanced-feature>#world-player{grid-column:1 / -1;width:100%}
 .noa-page .noa-workspace.noa-balanced a{width:100%;min-height:64px;margin:0;padding:10px 6px;border:1px solid var(--noa-line);border-radius:10px;text-decoration:none}
