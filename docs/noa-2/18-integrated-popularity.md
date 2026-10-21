@@ -83,3 +83,8 @@ Work_뮤직: 위 서버 세션 pending token + 검증된 실제 MP3 GET 전송 h
 Work_디자인: `/noa-bridge/rankings.php`의 정렬된 `cards`/`cardCount`/`featuredContent`, 각 행 `rankState`/`rankDelta`와 `movementIcons`를 카드 및 아이콘 표시로 연결한다. 세계관 인기 조회는 `type=mv`만 별도로 사용하고 기본 EP/ACT 스토리 순서를 바꾸지 않는다. 현재 데이터·API 준비와 실제 아이콘/카드 UI 반영 완료를 구분한다.
 
 최고관리자 로그인 후 실제 편집 검증, 최초 GitHub schedule 이벤트 관찰 및 같은 규칙 다음 시간의 실운영 비교 결과는 별도로 확인해야 한다. 이 세 항목과 위 타 담당 연결을 완료로 표시하지 않는다.
+
+
+2026-10-21 23:04 KST의 시간별 worker 경로 검증: 커밋 `42b692e84d90514bc3e0041121199c0e972cef12`, https://github.com/rucyjeon79/noa-studio/actions/runs/39613506732 성공(push 이벤트). 실제23시 SQL 결과의 `replayed=true`를 확인했고 스냅샷2개·948행을 중복 생성하지 않았다. 최초 schedule 이벤트 성공을 관찰한 기록과 구분한다. 현재 점수 미확인 컬렉션2개는 Joseon Ballad40곡과 PANPOP40곡이다. 곡 등록은 보존되며 확정 공개 영상 지표의 장르 연결 근거가 부족하므로 점수/순위를 만들지 않았다.
+
+다음 배포가 이미 생성된6개 테이블·과거 순위·유효 재생 원장을 만났을 때도 안전한지 전용 source/replay 검증을 추가한다. 격리 DB에서 같은 SQL 테스트를 두 번 연속 실행해 최초 생성과 기존 모델 데이터 보존을 함께 확인한다. 미래 시간 테스트 자료는 격리 DB 안에서만 사용하고 운영으로 복사하지 않는다.

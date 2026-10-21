@@ -1,0 +1,51 @@
+name: NOA popularity source and replay checks
+on:
+  push:
+    branches: [main]
+    paths: ['bridge/popularity*.php', 'bridge/rankings.php', 'tests/popularity/**', '.github/workflows/noa-popularity-check.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    environment: production
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: noa-isolated-only, MYSQL_DATABASE: noa_restore_verification}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -pnoa-isolated-only" --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Pure metric and existing source checks
+        run: |
+          php tests/popularity/core_test.php
+          php tests/catalog/home_test.php
+          php tests/catalog/home_uiux_test.php
+          php tests/catalog/world_mv_test.php
+          python3 -m pip install --user paramiko==3.5.1
+      - name: Restore verified private fixture only to disposable MySQL
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: |
+          python3 - <<'PY'
+          import sys
+          sys.path.insert(0,'scripts')
+          import noa_verify_private_backup as v
+          v.EXPECTED='58d7b6da709352ebf7c1b81dfe3e1eafe92ab89ee26764bd52af5e94bb75c6c6'
+          v.main()
+          PY
+      - name: Verify first migration and replay with existing rankings and valid plays
+        run: |
+          php tests/popularity/mysql_test.php
+          php tests/popularity/mysql_test.php
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-popularity-replay-check
+          path: quality-popularity/isolated.json
+          retention-days: 14
