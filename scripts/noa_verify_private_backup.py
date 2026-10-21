@@ -96,8 +96,12 @@ def main():
   actual=json.loads(result.stdout);assert actual==expected,'restored row content checksum mismatch'
   # Verify original SHOW CREATE definitions against the isolated restored definitions.
   schema_script=Path(tmp)/'schema.php'
-  schema_script.write_text("<?php $d=new PDO('mysql:host=127.0.0.1;dbname=noa_restore_verification;charset=utf8mb4','root','noa-isolated-only');$out=[];foreach(json_decode(file_get_contents($argv[1]),true) as $t=>$c)$out[$t]=$d->query('SHOW CREATE TABLE `'.$t.'`')->fetch(PDO::FETCH_NUM)[1];echo json_encode($out,JSON_THROW_ON_ERROR);")
+  schema_script.write_text("<?php $d=new PDO('mysql:host=127.0.0.1;dbname=noa_restore_verification;charset=utf8mb4','root','noa-isolated-only');$d->exec(\"SET SESSION sql_mode='STRICT_TRANS_TABLES,NO_BACKSLASH_ESCAPES'\");$out=[];foreach(json_decode(file_get_contents($argv[1]),true) as $t=>$c)$out[$t]=$d->query('SHOW CREATE TABLE `'.$t.'`')->fetch(PDO::FETCH_NUM)[1];echo json_encode($out,JSON_THROW_ON_ERROR);")
   r=subprocess.run(['php',str(schema_script),str(meta)],capture_output=True,timeout=60);assert r.returncode==0
-  restored_schemas=json.loads(r.stdout);assert restored_schemas==schemas,'restored schema mismatch'
+  restored_schemas=json.loads(r.stdout)
+  if restored_schemas!=schemas:
+   differences={name:{'sourceSha256':hashlib.sha256(schemas[name].encode()).hexdigest(),'restoredSha256':hashlib.sha256(restored_schemas.get(name,'').encode()).hexdigest(),'sourceLength':len(schemas[name]),'restoredLength':len(restored_schemas.get(name,''))}for name in schemas if schemas[name]!=restored_schemas.get(name)}
+   print('SCHEMA_COMPARISON_DIAGNOSTIC '+json.dumps(differences),flush=True)
+   raise RuntimeError('restored_schema_mismatch')
   print('PRIVATE_PRODUCTION_RESTORE_VERIFIED '+json.dumps({'sha256':EXPECTED,'bytes':manifest['bytes'],'tables':len(expected),'rows':sum(v['rows']for v in expected.values()),'originalSchemasEqual':True,'allTableRowContentChecksumsEqual':True,'productionDatabaseModified':False,'privateDumpUploadedAsArtifact':False}))
 if __name__=='__main__':main()
