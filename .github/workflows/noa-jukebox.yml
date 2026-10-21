@@ -1,5 +1,5 @@
 name: NOA JUKEBOX public cards and authorized audio
-# Verify streamed worker input with the same immutable upload SHA; preserve FIFO and SFTP fallback.
+# Keep per-card reservations visible and replace files safely; compact current-song progress.
 on:
   push:
     branches: [main, chatgpt/jukebox-20261021]
