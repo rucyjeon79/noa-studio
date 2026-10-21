@@ -1,5 +1,5 @@
 name: NOA P0 production live verification
-# Final verification after the guarded asset-cache release.
+# Verify merged recovery and balanced cards with required native MP3 output; no external media retry.
 on:
   push:
     branches: [main]
