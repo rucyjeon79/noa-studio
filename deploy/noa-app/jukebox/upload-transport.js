@@ -10,6 +10,7 @@ function decode(raw,meta){
  const status=Number(meta.http)||0,base={...meta,format,transient:status===0||status===408||status===429||status>=500};
  if(!status)throw new UploadError('network_unavailable',base);
  if(status===401||status===403)throw new UploadError('authentication_required',base);
+ if((status<200||status>=300)&&codes.has(meta.serverCode))throw new UploadError(meta.serverCode,base);
  if(!data||typeof data!=='object'||Array.isArray(data))throw new UploadError(format==='html'?'response_html':format==='empty'?'response_empty':'response_json_invalid',{...base,transient:base.transient||(status>=200&&status<300)});
  if(status<200||status>=300){const code=codes.has(data.error)?data.error:'http_'+status;throw new UploadError(code,base);}
  return data;

@@ -12,7 +12,7 @@ async function raw(action,payload={}){
  let response;
  try{response=await fetch('https://noastudio.ai.kr/noa-app/jukebox/service.php',{method:'POST',headers:{'Content-Type':'application/json','X-NOA-Timestamp':timestamp,'X-NOA-Nonce':nonce,'X-NOA-Signature':signature},body,signal:AbortSignal.timeout(90000)});}
  catch{throw new UploadError('network_unavailable',{stage:payload.mode||action,uploadId:payload.id,transient:true});}
- const parsed=decode(await response.text(),{http:response.status,type:response.headers.get('Content-Type'),stage:payload.mode||action,uploadId:payload.id,requestId:response.headers.get('X-NOA-Request-ID'),retryAfter:Number(response.headers.get('Retry-After'))*1000});
+ const parsed=decode(await response.text(),{http:response.status,type:response.headers.get('Content-Type'),stage:payload.mode||action,uploadId:payload.id,requestId:response.headers.get('X-NOA-Request-ID'),serverCode:response.headers.get('X-NOA-Error-Code'),retryAfter:Number(response.headers.get('Retry-After'))*1000});
  if(parsed.ok!==true||!parsed.result)throw new UploadError('response_schema_invalid',{http:response.status,stage:action,format:'json',transient:true});return parsed.result;
 }
 function transport(){return new Transport({onRecord:row=>diagnostics.push(row)});}
@@ -25,7 +25,7 @@ async function main(){
   currentStage='probe_'+scenario;const t=transport();let calls=0,failure;await assert.rejects(t.run(()=>{calls++;return raw('qa_probe',{key:qa,mode:scenario});}),e=>{failure=e;return true;});assert.equal(failure.http,scenario==='http_503'?503:scenario==='html_response'?200:507);
   // Shared hosting may replace an error body with its own HTML page while
   // preserving the HTTP status. Both dimensions must remain observable.
-  if(failure.format==='html')assert.equal(failure.message,'response_html');else assert.equal(failure.message,scenario==='http_503'?'upload_service_unavailable':'hosting_storage_insufficient');assert.equal(calls,3);assert.equal(t.open,true);probeResponses[scenario]=failure.safe();
+  assert((scenario==='html_response'?['response_html']:scenario==='http_503'?['response_html','upload_service_unavailable']:['response_html','hosting_storage_insufficient']).includes(failure.message));assert.equal(calls,3);assert.equal(t.open,true);probeResponses[scenario]=failure.safe();
   await assert.rejects(t.run(()=>{calls++;return raw('qa_probe',{key:qa,mode:scenario});}),/transfer_circuit_open/);assert.equal(calls,3);checks[label]=true;
  }
  const health=await get('runtime_health');assert(health.storage_available,'storage_not_available_after_rescue');

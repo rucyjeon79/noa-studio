@@ -17,6 +17,10 @@ async function main(){
  assert.throws(()=>decode('',{http:200,type:'application/json',stage:'finish'}),e=>e.message==='response_empty'&&e.transient);
  assert.throws(()=>decode('{broken',{http:200,type:'application/json',stage:'finish'}),/response_json_invalid/);
  assert.throws(()=>decode('{"error":"AUTH_TOKEN_must_not_be_logged"}',{http:503,type:'application/json',stage:'init'}),e=>e.message==='http_503'&&!JSON.stringify(e.safe()).includes('AUTH_TOKEN'));
+ assert.throws(()=>decode('<!doctype html>',{http:409,type:'text/html',stage:'init',serverCode:'temporary_storage_quota_reached'}),e=>e.message==='temporary_storage_quota_reached'&&!e.transient&&e.format==='html');
+ assert.throws(()=>decode('<!doctype html>',{http:507,type:'text/html',stage:'finish',serverCode:'hosting_storage_insufficient'}),e=>e.message==='hosting_storage_insufficient'&&e.transient);
+ assert.throws(()=>decode('<!doctype html>',{http:400,type:'text/html',stage:'finish',serverCode:'actual_audio_format_mismatch'}),e=>e.message==='actual_audio_format_mismatch'&&!e.transient);
+ assert.throws(()=>decode('<!doctype html>',{http:503,type:'text/html',serverCode:'AUTH_TOKEN_must_not_be_logged'}),e=>e.message==='response_html'&&!JSON.stringify(e.safe()).includes('AUTH_TOKEN'));
  console.log('PASS 503/HTML/empty/invalid response classification, sanitized logs, three-strike circuit, explicit resume, lost-ack recovery, 429 backoff and per-song format-error isolation');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

@@ -2,7 +2,7 @@
 declare(strict_types=1);ini_set('display_errors','0');
 require dirname(__DIR__,2).'/common.php';require dirname(__DIR__,2).'/noa-bridge/storage.php';require dirname(__DIR__,2).'/noa-bridge/sound-core.php';require __DIR__.'/upload-core.php';
 $requestId=bin2hex(random_bytes(8));header('X-NOA-Request-ID: '.$requestId);header('Content-Type: application/json; charset=utf-8');header('Cache-Control: private, no-store');header('X-Content-Type-Options: nosniff');
-function nu_json(int $code,array $out):never{global $requestId;if(isset($out['error']))$out['request_id']=$requestId;http_response_code($code);echo json_encode($out,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;}
+function nu_json(int $code,array $out):never{global $requestId;if(isset($out['error'])){$out['request_id']=$requestId;if(preg_match('/^[a-z][a-z0-9_:-]{0,99}$/D',(string)$out['error']))header('X-NOA-Error-Code: '.$out['error']);}http_response_code($code);echo json_encode($out,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;}
 if(empty($is_member)||($is_admin??'')!=='super')nu_json(403,['error'=>'administrator_required']);
 try{
  $db=noa_bridge_pdo();$faultSession=hash('sha256',session_id());$action=(string)($_GET['action']??'status');
