@@ -688,5 +688,77 @@
     "physical_android_tested": false,
     "download_root_cause": "unresolved; same cloud browser failed both authenticated MP3 and public PNG transfers"
   },
-  "proof_kind": "live production browser DOM and UI actions; server-reported analysis; no downloaded-file hash proof"
+  "proof_kind": "live production browser DOM and UI actions; server-reported analysis; no downloaded-file hash proof",
+  "post_deployment": {
+    "interface": {
+      "source_commit": "c62a27db853ae967b0a9ed497c879625c9d401a8",
+      "deployed_hashes": {
+        "noa-app/jukebox/recovery-core.php": "6c76a35905aaff3584a6a17b7f2354c52d3ee532a2d7d7851066ff5488853db6",
+        "noa-app/jukebox/queue-core.php": "411ba1b3f4d1d9d477eb5c91b1480f5346f1dddcc8938683cb201f9115c3d38e",
+        "noa-app/jukebox/upload-core.php": "5160d1d1a1294a737a8d7bea817dd5fd6224b7912bf15a6cdc2bd38a60849d3d",
+        "noa-app/jukebox/operations.php": "ee57ce3dcd9ca160ef5f3d300c3878d4718ceafa26c2288f7671aed46dd1090e",
+        "noa-app/jukebox/service.php": "e3936b5ffb4c49df0d12e534adfb184e8052bfb4d9e4df19694be4a95fe2bbe6",
+        "noa-app/jukebox/upload.php": "61c24392f1e368b9144f4064aef7bddb58aa79274291bf18cdc07364a91e1ca5",
+        "noa-app/jukebox/upload-transport.js": "c83b13d456cc8da4f6c5de7a9eb74ba9feef0bcc42bbe4b05b6c34efde4f8197",
+        "noa-app/jukebox/upload.js": "62b4a6bcbb44b5ac172a92eca43583e203f7fd9d46034a71ee6c6edb56716c5c",
+        "noa-app/jukebox/upload.css": "e7dbd2df2e48caea432085ab56aac8f14253c1e72e8f137668389e48968551fc",
+        "noa-app/jukebox/index.php": "e89b14b511127647419031af1a7b7d7275b360d785c67e671f659b370d28d4b8",
+        "noa-music.php": "95cd614f2777f00f8a488ad66e0116e584475f2681766bb34aa09e637614fd19"
+      },
+      "protected_files_unchanged": true,
+      "sql_queue_mutated": false,
+      "audio_worker_interrupted": false
+    },
+    "watchdog": {
+      "observations": [],
+      "maintenance": {
+        "checked": 12,
+        "issues": [],
+        "uploads_recovered": [],
+        "health": {
+          "ok": true,
+          "can_resume": true,
+          "can_upload": true,
+          "reason": null,
+          "state": "healthy",
+          "queued": 0,
+          "active": 0,
+          "oldest_wait_seconds": 0,
+          "worker": {
+            "state": "running",
+            "run_id": "39687038447",
+            "last_started": "2026-10-22 07:58:55",
+            "last_seen": "2026-10-22 08:13:25",
+            "last_success": "2026-10-22 07:57:37",
+            "last_finished": "2026-10-22 07:57:37",
+            "watchdog_seen": "2026-10-22 08:13:41",
+            "last_audit": "2026-10-22 08:13:41",
+            "heartbeat_age_seconds": 16
+          },
+          "active_runs": [],
+          "spool_bytes": 158946036,
+          "spool_limit": 536870912,
+          "storage_available": true,
+          "storage_code": null,
+          "checked_at": "2026-10-22T08:13:41+09:00"
+        }
+      },
+      "files": {
+        "assets": 491,
+        "covers": 454,
+        "audio": 20,
+        "audio_bytes": 177118020,
+        "invalid": []
+      },
+      "integrity": {
+        "documents": 654,
+        "documents_sha256": "79661fa849e474a534b69d836a46498fbc9d62c3848f3445490c375cf8beffa9",
+        "members": 2
+      },
+      "processes_terminated": 0
+    },
+    "partial_resume_after_v18_verified": false,
+    "private_qa_fault_cleared": true,
+    "additional_browser_fault_transfer_tests_completed": false
+  }
 }
