@@ -24,5 +24,22 @@ function nj_operation(PDO $db,string $action,array $input=[]):array{
   foreach($rows as $key=>$r){foreach(['cover','audio'] as $type){if(nj_verified($r,$type)){$out[$type==='cover'?'covers':'audio']++;if($type==='audio')$out['audio_bytes']+=(int)$r['audio_bytes'];}elseif(!empty($r[$type.'_path']))$out['invalid'][]=['key'=>$key,'type'=>$type];}}
   return $out;
  }
+ if($action==='jobs'){
+  nj_schema($db);$db->exec("UPDATE noa_jukebox_jobs SET status='queued' WHERE status='running' AND created_at<UTC_TIMESTAMP()-INTERVAL 3 HOUR");
+  return ['queued'=>(int)$db->query("SELECT COUNT(*) FROM noa_jukebox_jobs WHERE status='queued'")->fetchColumn()];
+ }
+ if($action==='claim'){
+  nj_schema($db);$db->beginTransaction();try{
+   $ids=$db->query("SELECT id FROM noa_jukebox_jobs WHERE status='queued' ORDER BY id LIMIT 200 FOR UPDATE")->fetchAll(PDO::FETCH_COLUMN);
+   if($ids){$q=$db->prepare("UPDATE noa_jukebox_jobs SET status='running' WHERE status='queued' AND id IN (".implode(',',array_fill(0,count($ids),'?')).")");$q->execute($ids);}
+   $db->commit();return ['ids'=>array_map('intval',$ids)];
+  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+ }
+ if($action==='finish'){
+  $ids=$input['ids']??[];if(!is_array($ids)||count($ids)>200)throw new InvalidArgumentException('job_limit');
+  foreach($ids as $id)if(!is_int($id)||$id<1)throw new InvalidArgumentException('job_id');
+  if($ids){$q=$db->prepare("UPDATE noa_jukebox_jobs SET status='completed',finished_at=UTC_TIMESTAMP() WHERE status='running' AND id IN (".implode(',',array_fill(0,count($ids),'?')).")");$q->execute($ids);}
+  return ['finished'=>count($ids)];
+ }
  throw new InvalidArgumentException('unknown_fixed_operation');
 }

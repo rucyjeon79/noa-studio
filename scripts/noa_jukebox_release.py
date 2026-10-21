@@ -42,7 +42,12 @@ def main():
   mkdir(ROOT+'/noa-app');mkdir(ROOT+'/'+APP.rstrip('/'));mkdir(ROOT+'/noa-jukebox')
   atomic(ROOT+'/noa-jukebox/.htaccess',Path('deploy/'+APP+'media.htaccess').read_bytes(),None)
   # Install only new helpers; no existing application files are touched until SQL is ready.
-  for remote,local in NEW.items():atomic(ROOT+'/'+remote,Path(local).read_bytes(),BASE.get(remote))
+  for remote,local in NEW.items():
+   expected=BASE.get(remote)
+   if isinstance(expected,list):
+    current=read(ROOT+'/'+remote);actual=sha(current) if current is not None else None
+    expected=actual if actual in expected else None
+   atomic(ROOT+'/'+remote,Path(local).read_bytes(),expected)
   with s.open('/hosting/noastudio/noa-ai-lab/worker.key','rb') as keyfile:key=keyfile.read(256).decode().strip()
   if len(key)!=64:raise RuntimeError('invalid_private_service_key')
   def cli(action,payload=None):
@@ -61,6 +66,9 @@ def main():
    if result.get('errors'):raise RuntimeError('import_validation_failed:'+json.dumps(result['errors']))
    return result
   work=Path('jukebox-proof');work.mkdir(exist_ok=True)
+  if os.environ.get('GITHUB_EVENT_NAME')=='schedule' and not cli('jobs')['queued']:
+   (work/'summary.json').write_text(json.dumps({'idle':True,'queued':0}));print('JUKEBOX_IDLE');return
+  claimed=cli('claim')['ids']
   catalog=cli('export');(work/'catalog-private.json').write_text(json.dumps(catalog,ensure_ascii=False))
   print('LIVE_DB_COUNTS '+json.dumps({k:v for k,v in catalog.items() if k!='items'}),flush=True)
   # SSH keepalive while acquisition happens on the worker, not on shared hosting.
@@ -113,6 +121,7 @@ def main():
           'cover_files':audit['covers'],'audio_files':audit['audio'],'audio_bytes':audit['audio_bytes'],
           'sql_saved':sql['saved'],'files_uploaded':saved,'audit':audit,'deployed':list(NEW)+list(INTEGRATE),
           'source_commit':os.environ['GITHUB_SHA'],'existing_documents_modified':False,'audio_playback_verified':False}
+  cli('finish',json.dumps({'ids':claimed}).encode())
   (work/'summary.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print('JUKEBOX_PRODUCTION_RESULT '+json.dumps(result),flush=True)
  finally:s.close();t.close()
 if __name__=='__main__':main()
