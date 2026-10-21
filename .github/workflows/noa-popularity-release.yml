@@ -1,5 +1,5 @@
 name: NOA integrated popularity verified production release
-# Reset media position only after verified stream start; reuse the exact recent private backup.
+# Verify privacy filtering after a new YouTube collection before updating the read module.
 on:
   push:
     branches: [main]

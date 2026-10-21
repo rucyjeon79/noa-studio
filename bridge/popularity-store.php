@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
-require_once __DIR__.'/taxonomy-store.php';require_once __DIR__.'/popularity-core.php';
+require_once __DIR__.'/taxonomy-store.php';require_once __DIR__.'/popularity-core.php';require_once __DIR__.'/home-core.php';
 function np_json(mixed $v):string{return json_encode($v,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);}
 function np_ready(PDO $db):bool{return nc_exists($db,'noa_ranking_runs')&&nc_exists($db,'noa_valid_plays');}
 function np_defaults():array{return ['minimumSeconds'=>30,'heartbeatMaxGap'=>20,'sessionMaxSeconds'=>1800,'songCooldownSeconds'=>1800,'actorHourlyLimit'=>20,'actorStartHourlyLimit'=>60,'youtubeStaleSeconds'=>172800,'playbackIntegrationEnabled'=>false];}
