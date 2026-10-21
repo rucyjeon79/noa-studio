@@ -1,0 +1,4 @@
+<?php
+declare(strict_types=1);require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/storage.php';require_once __DIR__.'/popularity-store.php';
+header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-cache');header('X-Content-Type-Options: nosniff');
+try{$db=noa_bridge_pdo();if(!np_ready($db)){echo np_json(['ok'=>true,'available'=>false,'items'=>[],'count'=>0]);exit;}$type=$_GET['type']??'featured';if(!is_string($type))throw new DomainException('unknown_rank_type');echo np_json(np_public($db,$type,(int)($_GET['limit']??10)));}catch(DomainException $e){http_response_code(400);echo np_json(['ok'=>false,'error'=>$e->getMessage(),'items'=>[]]);}catch(Throwable $e){http_response_code(503);error_log('[noa-rankings] '.get_class($e));echo np_json(['ok'=>false,'error'=>'ranking_read_unavailable','items'=>[]]);}

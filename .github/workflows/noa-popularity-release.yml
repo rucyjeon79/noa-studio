@@ -1,0 +1,77 @@
+name: NOA integrated popularity verified production release
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-popularity-release.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-dothome-production, cancel-in-progress: false}
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: production
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: noa-isolated-only, MYSQL_DATABASE: noa_restore_verification}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -pnoa-isolated-only" --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, fetch-depth: 0}
+      - name: Check source and metric invariants
+        run: |
+          for f in bridge/popularity*.php bridge/rankings.php bridge/home.php deploy/noa-app/popularity/index.php; do php -l "$f"; done
+          php tests/popularity/core_test.php
+          php tests/catalog/home_test.php
+          php tests/catalog/home_uiux_test.php
+          php tests/catalog/world_mv_test.php
+          node --check deploy/noa-app/popularity/admin.js
+          python3 -m pip install --user paramiko==3.5.1
+      - name: Inspect ongoing work, stage isolated modules, make private SQL backup
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_POPULARITY_PHASE: prepare
+        run: python3 scripts/noa_popularity_release.py
+      - name: Restore the exact current backup only in disposable MySQL
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: |
+          python3 - <<'PY'
+          import sys,json
+          sys.path.insert(0,'scripts')
+          import noa_verify_private_backup as v
+          v.EXPECTED=json.load(open('quality-popularity/backup-meta.json'))['backup']['sha256']
+          v.main()
+          PY
+      - name: Check additive SQL, current real views, guarded play events and hourly comparisons
+        run: php tests/popularity/mysql_test.php
+      - name: Apply verified additive migration, publish current hour and connect home API
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_POPULARITY_PHASE: activate
+        run: python3 scripts/noa_popularity_release.py
+      - name: Verify actual site responses and administrator rendering
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-popularity" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-popularity/node_modules/.bin/playwright" install --with-deps chrome
+          cp scripts/qa/noa-popularity.mjs "$RUNNER_TEMP/noa-popularity/check.mjs"
+          node "$RUNNER_TEMP/noa-popularity/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-popularity-verification
+          path: |
+            quality-popularity/isolated.json
+            quality-popularity/resume-state.json
+            quality-popularity/production.json
+            quality-popularity/live.json
+            quality-popularity/admin-*.png
+          retention-days: 14
