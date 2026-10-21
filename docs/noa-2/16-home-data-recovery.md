@@ -76,6 +76,6 @@
 최종 검증 커밋: `aae00c01aa16c379327173ad86d2c5dd250089a8`.
 - 데이터·화면 검증 성공: https://github.com/rucyjeon79/noa-studio/actions/runs/39535044512
 - 기존 기능·권한·SQL 불변성 회귀 검사 성공: https://github.com/rucyjeon79/noa-studio/actions/runs/39535044604
-- 운영 5개 기존 파일의 SHA256은 수정 전 `128165c`와 모두 일치하며 수정 후보와 다름을 서버 읽기로 확인했다. 새 `home-store.php`를 포함한 6개 적용 대상과 이전 파일 해시는 아티팩트의 `deployed-source-hashes.json`에 있다.
+- 운영 5개 기존 파일의 SHA256은 수정 전 `128165c`와 모두 일치하며 수정 후보와 다름을 서버 읽기로 확인했다. 새 `home-store.php`를 포함한 6개 적용 대상은 위 배포 표에 있으며, 기존 5개 파일의 이전 해시는 아티팩트의 `deployed-source-hashes.json`에 있다.
 - 모바일·PC 모두 사연곡/커버곡/연속듣기의 30개 카드 썸네일을 스크롤 후 실제 로드(`complete && naturalWidth > 0`)했고 화면도 육안 확인했다. `render-report.json`의 `allRankedThumbnailsLoaded=true` 및 `sameDesktopMobileRows=true`를 확인했다.
 - 수집 시점 `2026-10-20T17:36:24+00:00` (= 한국시간 2026-10-21 02:36:24) 기준 결과다. 운영 배포는 수행하지 않았다.
