@@ -109,9 +109,10 @@ def main():
   elif phase=='prepare':
    inventory=service(key,'inspect');report=service(key,'backup');Path('quality-taxonomy/baseline-private.json').write_text(json.dumps(inventory));Path('quality-taxonomy/backup-meta.json').write_text(json.dumps(report));print('NOA_TAXONOMY_PREPARED '+json.dumps({'inventory':report['inventory'],'backupSha256':report['backup']['sha256'],'backupBytes':report['backup']['bytes'],'backupTables':len(report['backup']['tables']),'codeUploaded':changed,'sqlApplied':False}))
   elif phase=='maintenance':
+   sync=service(key,'sync')
    report=service(key,'verify')
    if not report['inventory']['taxonomyInstalled']:raise RuntimeError('production_taxonomy_installation_required')
-   Path('quality-taxonomy/maintenance.json').write_text(json.dumps({'inventory':report['inventory'],'changed':changed,'commit':os.environ['GITHUB_SHA'],'sqlMigrationExecuted':False},ensure_ascii=False,indent=2));print('NOA_TAXONOMY_CODE_MAINTENANCE '+json.dumps({'inventory':report['inventory'],'changed':changed,'sqlMigrationExecuted':False}))
+   Path('quality-taxonomy/maintenance.json').write_text(json.dumps({'inventory':report['inventory'],'status':report['status'],'sync':sync['sync'],'changed':changed,'commit':os.environ['GITHUB_SHA'],'sqlMigrationExecuted':False,'protectedDataPreserved':sync['protectedDataPreserved']},ensure_ascii=False,indent=2));print('NOA_TAXONOMY_CODE_MAINTENANCE '+json.dumps({'inventory':report['inventory'],'status':report['status'],'sync':sync['sync'],'changed':changed,'sqlMigrationExecuted':False,'protectedDataPreserved':sync['protectedDataPreserved']}))
   elif phase=='activate':
    proof=json.loads(Path('quality-taxonomy/report.json').read_text());backup_meta=json.loads(Path('quality-taxonomy/backup-meta.json').read_text())
    if not proof['allPreexistingTablesPreserved'] or not proof['replaySafe'] or not proof['productionEditsSurviveRedeploy']:raise RuntimeError('isolated_validation_not_verified')

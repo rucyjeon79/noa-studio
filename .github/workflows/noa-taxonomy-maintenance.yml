@@ -1,4 +1,5 @@
 name: NOA SQL category read model activation
+# Resolve an intrinsic Reborn episode title without inventing a remaster variant.
 on:
   push:
     branches: [main]

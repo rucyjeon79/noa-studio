@@ -74,7 +74,7 @@ function nt_match(array $v,array $songs,array $classification):array{
   // A remaster/reborn/alternate is a separate identity. Do not silently select it.
   $variant=(string)($s['version_name']??'');$marked=(bool)preg_match('/mastered|remaster|reborn|rebirth/iu',$title);
   if($variant!==''&&!in_array(mb_strtolower($variant),['original','default','unspecified','기본','원곡'],true)&&!str_contains(mb_strtolower($title),mb_strtolower($variant)))continue;
-  if($marked&&($variant===''||in_array(mb_strtolower($variant),['original','default','unspecified','기본','원곡'],true)))continue;
+  if($marked&&($variant===''||in_array(mb_strtolower($variant),['original','default','unspecified','기본','원곡'],true))&&!preg_match('/mastered|remaster|reborn|rebirth/iu',$songTitle))continue;
   $candidates[]=$id;$evidence=['normalized_title'];if($ep!==null)$evidence[]='ep';if($language!==null)$evidence[]='language';if($genre!==null)$evidence[]='category';
  }
  $strong=$language!==null&&($ep!==null||$genre!==null);
