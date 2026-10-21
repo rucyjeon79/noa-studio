@@ -118,10 +118,10 @@ class UploadPublicationTests(unittest.TestCase):
     def open(self,p,m):return RemoteFile(self.path(p).open(m))
     def chmod(self,p,m):self.path(p).chmod(m)
     def rename(self,p,q):self.path(p).rename(self.path(q))
-   sftp=SFTP();events=[]
+   sftp=SFTP();events=[];pending=[job|{'id':'missing','job_id':0},job]
    def call(action,payload=None):
     events.append((action,payload))
-    if action=='upload_claim':return {'uploads':[job] if source.exists() else []}
+    if action=='upload_claim':return {'uploads':[pending.pop(0)] if pending else []}
     if action=='upload_cleanup':return {'input_removed':not source.exists()}
     if action=='upload_commit':
      r=payload['result'];audio=root/'media'/r['audio_path'];cover=root/'media'/r['cover_path']
@@ -135,5 +135,5 @@ class UploadPublicationTests(unittest.TestCase):
     return {'cover_bytes':path.stat().st_size,'cover_sha256':w.digest(path)}
    with patch.object(upload.media,'metadata',return_value={'suno_id':'known','suno_title':'Suno 등록 제목','image_url':'https://cdn2.suno.ai/card.jpeg'}),patch.object(upload.media,'cover',side_effect=cover):
     result=upload.process_uploads(sftp,call,lambda p,m:sftp.path(p).mkdir(exist_ok=True))
-   self.assertTrue(result[0]['ready']);self.assertFalse(source.exists());self.assertFalse(list((root/'media').rglob('*.wav')))
-   self.assertEqual([e[0] for e in events],['upload_claim','upload_state','upload_state','upload_heartbeat','upload_heartbeat','upload_commit','upload_cleanup','upload_claim'])
+   self.assertFalse(result[0]['ready']);self.assertTrue(result[1]['ready']);self.assertFalse(source.exists());self.assertFalse(list((root/'media').rglob('*.wav')))
+   self.assertEqual([e[0] for e in events],['upload_claim','upload_fail','upload_claim','upload_state','upload_state','upload_heartbeat','upload_heartbeat','upload_commit','upload_cleanup','upload_claim'])

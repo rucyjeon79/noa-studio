@@ -13,7 +13,7 @@ def process_uploads(sftp,call,mkdir):
         if len(claimed)!=1:raise ValueError('queue_concurrency_contract')
         job=claimed[0];auth={'id':job['id'],'lease':job['lease'],'job_id':job['job_id']}
         stop=threading.Event();lost=threading.Event()
-        def pulse():
+        def pulse(auth=auth,stop=stop,lost=lost):
             while not stop.wait(30):
                 try:call('upload_heartbeat',auth)
                 except Exception:lost.set();return

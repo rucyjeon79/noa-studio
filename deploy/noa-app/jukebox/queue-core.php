@@ -49,7 +49,8 @@ function nq_retry(PDO $db,string $id):void{
 }
 function nq_snapshot(PDO $db,bool $qa=false):array{
  $filter=$qa?'1=1':"u.song_key NOT LIKE 'jukebox:qa:%'";$counts=[];foreach($db->query("SELECT status,COUNT(*) n FROM noa_jukebox_uploads u WHERE $filter GROUP BY status") as $r)$counts[$r['status']]=(int)$r['n'];
- $sql="SELECT j.id,j.upload_id,j.song_key,j.status,j.uploaded_at,j.started_at,j.finished_at,j.attempt,j.retry_of,j.error,j.heartbeat_at,u.filename,u.context FROM noa_jukebox_audio_jobs j JOIN noa_jukebox_uploads u ON u.id=j.upload_id WHERE $filter ORDER BY (j.status IN ('analyzing','processing','verifying')) DESC,(j.status IN ('queued','retrying')) DESC,IF(j.status IN ('queued','retrying'),j.id,-j.id) LIMIT 100";$rows=$db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
- foreach($rows as &$r){$r['id']=(int)$r['id'];$r['position']=nq_position($db,$r);$c=json_decode($r['context'],true);$r['title']=$c['title']??$r['song_key'];unset($r['context']);}unset($r);
+ $sql="SELECT j.id,j.upload_id,j.song_key,j.status,j.uploaded_at,j.started_at,j.finished_at,j.attempt,j.retry_of,j.error,j.heartbeat_at,u.filename,u.context FROM noa_jukebox_audio_jobs j JOIN noa_jukebox_uploads u ON u.id=j.upload_id WHERE $filter ORDER BY (j.status IN ('analyzing','processing','verifying')) DESC,(j.status IN ('queued','retrying')) DESC,IF(j.status IN ('queued','retrying'),j.id,-j.id) LIMIT 600";$rows=$db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+ $positions=[];$rank=0;foreach($db->query("SELECT id FROM noa_jukebox_audio_jobs WHERE status IN ('queued','retrying') AND available_at<=CURRENT_TIMESTAMP ORDER BY id") as $wait)$positions[(int)$wait['id']]=++$rank;
+ foreach($rows as &$r){$r['id']=(int)$r['id'];$r['position']=$positions[$r['id']]??null;$c=json_decode($r['context'],true);$r['title']=$c['title']??$r['song_key'];unset($r['context']);}unset($r);
  return ['counts'=>$counts,'total_uploads'=>array_sum($counts),'rows'=>$rows,'concurrency'=>1,'automatic_attempt_limit'=>NQ_MAX_ATTEMPTS,'checked_at'=>date(DATE_ATOM)];
 }
