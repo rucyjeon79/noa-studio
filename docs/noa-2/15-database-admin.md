@@ -48,3 +48,21 @@ php /hosting/noastudio/html/noa-app/database/restore-cli.php \
 `tests/database/browser.mjs`: 일반/최고관리자 접근, CSRF 누락·오류, 쓰기·임의 함수 차단, 320/390/1280px 표시와 조회·구조·백업·복원 계획.
 
 배포는 이 모듈과 `extend/noa.database.php`만 추가하고 index.php·기존 인증 파일·DB 설정의 해시를 대조한다. 기존 버전이 알 수 없는 경우 덮어쓰지 않는다.
+
+## 2026-10-21 운영 검증 결과
+
+- 관리자 실제 로그인 후 운영 MySQL 8.0.46 연결, 읽기 전용 세션 3000ms, 기본 테이블 56개 확인.
+- 통합 음악 605개, 원본 문서 654개, 기존 회원 2명 확인.
+- 2026-10-21 11:01:36 KST 전체 SQL 백업: 125,000,300 bytes / 56개 테이블.
+- SHA-256: `6dac39d8fe1b14a53a6ba198d9374edb0d8b6c6b8b785dfc3a64699fecc31a3c`.
+- 별도 MySQL 8.0 환경에 실제 복원: 56개 테이블, 23,660행. 전 테이블의 행 수와 행 내용 체크섬 일치. 동일 COLLATE에 대응하는 중복 CHARACTER SET 선언만 정규화한 구조 비교 일치. 실제 문자셋·정렬 규칙·기본값·주석 등은 비교에서 유지한다.
+- 운영 DB에는 복원 또는 이 모듈의 SQL 데이터 변경을 실행하지 않았다. SQL 덤프를 공개 저장소나 CI 산출물로 업로드하지 않았다.
+- 검증 성공 후 기존 비공개 백업 매니페스트에 `restoreVerified=true`와 검증 실행 근거를 기록했다.
+- 권한·CSRF·SQL 차단·CSV·PC/모바일(320/390/1280px) 및 승인 복원 CLI의 별도 테스트 통과.
+- 메인 index.php·기존 인증·DB 설정 파일의 배포 전후 해시 유지 확인.
+
+배포: https://github.com/rucyjeon79/noa-studio/actions/runs/39531144107
+
+운영 백업 복원·대조: https://github.com/rucyjeon79/noa-studio/actions/runs/39533041714
+
+백업 검증 상태 기록: https://github.com/rucyjeon79/noa-studio/actions/runs/39533168115
