@@ -29,7 +29,10 @@ check(array_column($x['covers'],'videoId')===['cover000001'],'generic Cover tran
 check($x['stories'][0]['songId']===null&&$x['stories'][0]['classificationSource']==='owner_playlist_membership','category recovery invented song identity');
 check($x['playlists'][0]['contentType']==='video'&&$x['playlists'][0]['scoreKind']==='video_view_count'&&!isset($x['playlists'][0]['playlistId']),'compilation confused with official playlist');
 check($x['diagnostics']['stories']['reasons']['missing_view_count']===1,'missing metrics not explained');
-check(nh_build([],[],[],[],$channel)['diagnostics']['stories']['emptyReason']==='no_classified_collected_data','empty registration not distinguished');
+check(nh_build([],[],[],[],$channel)['diagnostics']['stories']['emptyReason']==='no_registered_or_collected_data','empty registration not distinguished');
 $conflict=$cover;$conflict['snippet']['title'].=' 사연곡';$c=nh_build([$conflict],[],[],[],$channel);check(!$c['covers']&&!$c['stories']&&$c['diagnostics']['covers']['reasons']['classification_conflict']===1,'ambiguous category not held out');
 $dupes=nh_build([$story,$story],[],[],[],$channel);check(count($dupes['stories'])===1,'duplicate video ranked twice');
 echo "PASS recovered category provenance, missing metrics, rejected/ambiguous identity, translated originals, compilation types and deduplication\n";
+
+$registeredOnly=nh_build([],$songs,[],[],$channel);check($registeredOnly['diagnostics']['stories']['emptyReason']==='catalog_video_mapping_missing'&&$registeredOnly['diagnostics']['stories']['catalogSongsWithoutCollectedVideo']===1,'registered song with missing video relationship must be distinct from no data');
+echo "PASS registered-but-unmapped versus absent data diagnostics\n";
