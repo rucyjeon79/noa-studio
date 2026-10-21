@@ -92,3 +92,47 @@ class OwnedInputTests(unittest.TestCase):
    owned.cleanup(folder);self.assertFalse(folder.exists())
 
 if __name__=='__main__':unittest.main()
+
+class UploadPublicationTests(unittest.TestCase):
+ def test_cardless_upload_fetches_only_card_and_publishes_beside_real_mp3(self):
+  import sys,hashlib
+  sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
+  import noa_jukebox_upload_worker as upload
+  with tempfile.TemporaryDirectory() as t:
+   root=Path(t);incoming=root/'incoming'/'abc';incoming.mkdir(parents=True)
+   source=incoming/'input.audio'
+   subprocess.run(['ffmpeg','-v','error','-f','lavfi','-i','sine=frequency=440:duration=2','-ac','2','-c:a','pcm_s16le','-f','wav',str(source)],check=True)
+   job={'id':'abc','key':'test:upload','lease':'lease','extension':'wav','bytes':source.stat().st_size,'sha256':w.digest(source),'context':{'title':'등록곡','genre':'kpop-original','ep':'1','suno_id':'known'},'source_url':'https://suno.com/song/known','cover_path':None,'previous_sha256':None}
+   class RemoteFile:
+    def __init__(self,f):self.f=f
+    def __enter__(self):return self
+    def __exit__(self,*args):self.f.close()
+    def prefetch(self,**args):self.prefetch_args=args
+    def read(self,*args):return self.f.read(*args)
+    def write(self,*args):return self.f.write(*args)
+    def set_pipelined(self,*args):pass
+   class SFTP:
+    def path(self,p):return root/Path(p).relative_to(upload.PRIVATE)
+    def lstat(self,p):return self.path(p).lstat()
+    def normalize(self,p):return p
+    def open(self,p,m):return RemoteFile(self.path(p).open(m))
+    def chmod(self,p,m):self.path(p).chmod(m)
+    def rename(self,p,q):self.path(p).rename(self.path(q))
+   sftp=SFTP();events=[]
+   def call(action,payload=None):
+    events.append((action,payload))
+    if action=='upload_claim':return {'uploads':[job]}
+    if action=='upload_commit':
+     r=payload['result'];audio=root/'media'/r['audio_path'];cover=root/'media'/r['cover_path']
+     self.assertEqual(audio.parent,cover.parent);self.assertEqual(audio.name,'Suno 등록 제목.mp3')
+     self.assertEqual(w.digest(audio),r['audio_sha256']);self.assertEqual(w.digest(cover),r['cover_sha256'])
+     self.assertEqual(w.analyze(audio)['codec'],'mp3');source.unlink()
+     return {'ready':True,'input_removed':True}
+    return {}
+   def cover(path,url):
+    self.assertEqual(url,'https://cdn2.suno.ai/card.jpeg');w.Image.new('RGB',(32,32),'blue').save(path,'WEBP')
+    return {'cover_bytes':path.stat().st_size,'cover_sha256':w.digest(path)}
+   with patch.object(upload.media,'metadata',return_value={'suno_id':'known','suno_title':'Suno 등록 제목','image_url':'https://cdn2.suno.ai/card.jpeg'}),patch.object(upload.media,'cover',side_effect=cover):
+    result=upload.process_uploads(sftp,call,lambda p,m:sftp.path(p).mkdir(exist_ok=True))
+   self.assertTrue(result[0]['ready']);self.assertFalse(source.exists());self.assertFalse(list((root/'media').rglob('*.wav')))
+   self.assertEqual([e[0] for e in events],['upload_claim','upload_state','upload_commit'])

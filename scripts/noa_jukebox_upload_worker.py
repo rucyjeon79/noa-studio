@@ -16,6 +16,8 @@ def process_uploads(sftp,call,mkdir):
                 if not stat.S_ISREG(info.st_mode) or info.st_size!=job['bytes'] or info.st_size>256*1024*1024:raise ValueError('uploaded_input_size_or_type_changed')
                 if sftp.normalize(PRIVATE+'/incoming/'+job['id'])!=PRIVATE+'/incoming/'+job['id']:raise ValueError('unsafe_input_directory')
                 with sftp.open(remote,'rb') as src,source.open('xb') as dst:
+                    # Bound parallel reads to avoid one network round trip per 32 KiB.
+                    src.prefetch(file_size=job['bytes'],max_concurrent_requests=16)
                     size=0
                     while True:
                         block=src.read(1024*1024)
@@ -30,7 +32,15 @@ def process_uploads(sftp,call,mkdir):
                     if job['extension']=='wav' and not before['codec'].startswith('pcm_'):raise ValueError('actual_codec_mismatch')
                     call('upload_state',auth|{'status':'processing','source_analysis':before})
                 before,settings,after=media.optimize(source,output,measured)
-                context=job['context'];row={'title':context['title'],'genre':context['genre'],'ep':context.get('ep',''),'originalArtist':context.get('originalArtist','')}
+                context=dict(job['context']);row={'title':context['title'],'genre':context['genre'],'ep':context.get('ep',''),'originalArtist':context.get('originalArtist','')}
+                card=None;card_errors=[]
+                if not job.get('cover_path') and job['source_url']:
+                    try:
+                        metadata=media.metadata(job['source_url'])
+                        if context.get('suno_id') and context['suno_id']!=metadata['suno_id']:raise ValueError('source_identity_changed')
+                        context.update(suno_id=metadata['suno_id'],suno_title=metadata['suno_title'])
+                        card=media.cover(Path(temp)/'cover.webp',metadata['image_url'])
+                    except Exception:card_errors.append('cover:public_card_unavailable')
                 if job.get('cover_path') and not job.get('previous_sha256'):
                     directory=Path(job['cover_path']).parent
                 else:
@@ -55,11 +65,22 @@ def process_uploads(sftp,call,mkdir):
                     stage=target+'.stage-'+job['id']
                     with sftp.open(stage,'wb') as f:f.set_pipelined(True);f.write(output.read_bytes())
                     sftp.chmod(stage,0o600);sftp.rename(stage,target)
+                if card:
+                    target_cover=PRIVATE+'/media/'+(directory/'cover.webp').as_posix()
+                    try:existing=sftp.lstat(target_cover)
+                    except FileNotFoundError:existing=None
+                    if existing:
+                        with sftp.open(target_cover,'rb') as f:cover_hash=hashlib.sha256(f.read()).hexdigest()
+                        if not stat.S_ISREG(existing.st_mode) or cover_hash!=card['cover_sha256']:raise ValueError('existing_cover_preserved')
+                    else:
+                        with sftp.open(target_cover+'.stage-'+job['id'],'wb') as f:f.write((Path(temp)/'cover.webp').read_bytes())
+                        sftp.chmod(target_cover+'.stage-'+job['id'],0o600);sftp.rename(target_cover+'.stage-'+job['id'],target_cover)
                 result={'song_key':job['key'],'source_url':job['source_url'],'suno_id':context.get('suno_id',''),'suno_title':title,
                         'audio_path':relative.as_posix(),'audio_bytes':output.stat().st_size,'audio_sha256':digest,
-                        'source_analysis':before,'correction':settings,'final_analysis':after,'errors':[],
+                        'source_analysis':before,'correction':settings,'final_analysis':after,'errors':card_errors,
                         'audio_discovery':{'permission':'administrator_owned_upload','download_authorized':True,'provenance':'administrator_upload','upload_id':job['id']},
                         'catalog_context':{k:context.get(k) for k in ['originalArtist','act','catalogId','category1','category2','categoryIds']}}
+                if card:result.update(cover_path=(directory/'cover.webp').as_posix(),cover_bytes=card['cover_bytes'],cover_sha256=card['cover_sha256'])
                 committed=call('upload_commit',auth|{'result':result})
                 results.append({'key':job['key'],'ready':committed['ready'],'sha256':digest,'input_removed':committed['input_removed']})
         except Exception as error:

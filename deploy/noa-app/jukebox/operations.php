@@ -61,7 +61,7 @@ function nj_operation(PDO $db,string $action,array $input=[]):array{
  if($action==='upload_claim'){
   nj_schema($db);nu_housekeeping($db);$db->beginTransaction();try{
    $rows=$db->query("SELECT * FROM noa_jukebox_uploads WHERE status IN ('analyzing','processing') AND (lease_until IS NULL OR lease_until<CURRENT_TIMESTAMP()) ORDER BY sequence LIMIT 5 FOR UPDATE")->fetchAll(PDO::FETCH_ASSOC);$out=[];
-   foreach($rows as $u){$lease=bin2hex(random_bytes(16));$db->prepare("UPDATE noa_jukebox_uploads SET lease=?,lease_until=CURRENT_TIMESTAMP()+INTERVAL 40 MINUTE,status='analyzing',error=NULL WHERE id=?")->execute([$lease,$u['id']]);$a=nj_find($db,$u['song_key']);$out[]=['id'=>$u['id'],'key'=>$u['song_key'],'lease'=>$lease,'sha256'=>$u['sha256'],'bytes'=>(int)$u['file_bytes'],'extension'=>$u['extension'],'source_url'=>$u['source_url'],'context'=>json_decode($u['context'],true),'previous_sha256'=>$u['previous_sha256'],'cover_path'=>$a['cover_path']??null];}
+   foreach($rows as $u){$lease=bin2hex(random_bytes(16));$db->prepare("UPDATE noa_jukebox_uploads SET lease=?,lease_until=CURRENT_TIMESTAMP()+INTERVAL 40 MINUTE,status='analyzing',error=NULL WHERE id=?")->execute([$lease,$u['id']]);$a=nj_find($db,$u['song_key']);$out[]=['id'=>$u['id'],'key'=>$u['song_key'],'lease'=>$lease,'sha256'=>$u['sha256'],'bytes'=>(int)$u['file_bytes'],'extension'=>$u['extension'],'source_url'=>$u['source_url'],'context'=>json_decode($u['context'],true),'previous_sha256'=>$u['previous_sha256'],'cover_path'=>nj_verified($a,'cover')?$a['cover_path']:null];}
    $db->commit();return ['uploads'=>$out];
   }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
  }
