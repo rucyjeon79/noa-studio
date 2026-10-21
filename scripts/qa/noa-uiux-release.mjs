@@ -8,7 +8,7 @@ import {execFileSync} from 'node:child_process';
 import assert from 'node:assert/strict';
 const root=process.env.NOA_SOURCE_ROOT||process.cwd(),phase=process.env.NOA_UIUX_PHASE||'candidate',out=path.join(root,'uiux-proof',phase);
 await fs.mkdir(out,{recursive:true});
-const browser=await chromium.launch({headless:true});const context=await browser.newContext({reducedMotion:'reduce',serviceWorkers:'block'});
+const browser=await chromium.launch({headless:true,channel:'chrome'});const context=await browser.newContext({reducedMotion:'reduce',serviceWorkers:'block'});
 const base='https://noastudio.ai.kr',docs=new Map(),report=[];
 try{
  if(phase==='candidate'){
@@ -68,12 +68,22 @@ try{
   const r=await context.request.get(base+'/noa-bridge/home.php');assert.equal(r.status(),200);const d=await r.json();assert(d.ok);const featured=new Set(d.featured.map(v=>v.videoId));
   for(const section of ['ep','stories','covers']){assert(d[section].length<=10);assert(d[section].every(v=>!featured.has(v.videoId)),section+' repeats featured');}
   const response=await context.request.get(base+'/noa-youtube.php?playlist=PLEPMKciKgvch9TGMAcBdKzhVt1QeYsfKB');assert.equal(response.status(),200);const html=await response.text(),ids=new Set([...html.matchAll(/class="yt-watch" data-video="([A-Za-z0-9_-]{11})"/g)].map(x=>x[1]));assert(ids.size>0);assert(d.stories.every(v=>ids.has(v.videoId)),'story outside official playlist');
-  const mediaPage=await context.newPage();await mediaPage.emulateMedia({reducedMotion:'no-preference'});await mediaPage.goto(base+'/',{waitUntil:'domcontentloaded'});
-  await mediaPage.waitForFunction(()=>{const v=document.getElementById('noa-hero-video');return v.readyState>=2&&!v.paused;},null,{timeout:30000});
-  assert.equal(await mediaPage.locator('video').evaluate(v=>v.loop),false);await mediaPage.locator('video').evaluate(v=>{v.currentTime=Math.max(0,v.duration-.2);});
-  await mediaPage.waitForFunction(()=>document.querySelector('video').ended,null,{timeout:10000});assert.equal(await mediaPage.locator('video').evaluate(v=>v.paused),true);await mediaPage.close();
-  report.push({phase,homeCounts:Object.fromEntries(['featured','ep','stories','covers'].map(k=>[k,d[k].length])),officialStoryMembership:true,nativeHeroEndedPaused:true});
+  report.push({phase,homeCounts:Object.fromEntries(['featured','ep','stories','covers'].map(k=>[k,d[k].length])),officialStoryMembership:true});
  }
+ // Native media is checked on the candidate too, before any deployment.
+ const mediaPage=await context.newPage();await mediaPage.emulateMedia({reducedMotion:'no-preference'});await mediaPage.goto(base+'/',{waitUntil:'domcontentloaded'});
+ let manualFallback=false;
+ try{
+  await mediaPage.waitForFunction(()=>{const v=document.getElementById('noa-hero-video');return v.ended||(v.readyState>=2&&!v.paused)||(v.hidden&&document.getElementById('noa-hero-status').textContent);},null,{timeout:30000});
+  if(await mediaPage.locator('video').evaluate(v=>v.hidden)){manualFallback=true;await mediaPage.getByRole('button',{name:'메인 영상 재생',exact:true}).click();await mediaPage.waitForFunction(()=>{const v=document.querySelector('video');return v.ended||v.readyState>=2&&!v.paused;},null,{timeout:30000});}
+  assert.equal(await mediaPage.locator('video').evaluate(v=>v.loop),false);
+  if(!await mediaPage.locator('video').evaluate(v=>v.ended)){await mediaPage.locator('video').evaluate(v=>{v.currentTime=Math.max(0,v.duration-.2);});await mediaPage.waitForFunction(()=>document.querySelector('video').ended,null,{timeout:10000});}
+  assert.equal(await mediaPage.locator('video').evaluate(v=>v.paused),true);
+  report.push({phase,nativeHeroEndedPaused:true,manualFallback});
+ }catch(error){
+  const diagnostics=await mediaPage.locator('video').evaluate(v=>({src:v.currentSrc||v.src,readyState:v.readyState,paused:v.paused,ended:v.ended,error:v.error?{code:v.error.code,message:v.error.message}:null,mp4Support:v.canPlayType('video/mp4; codecs="avc1.42E01E"'),status:document.getElementById('noa-hero-status').textContent,visibility:document.visibilityState}));
+  await fs.writeFile(path.join(out,'native-media-failure.json'),JSON.stringify(diagnostics,null,2));await mediaPage.screenshot({path:path.join(out,'native-media-failure.jpg'),type:'jpeg'});console.log('NATIVE_MEDIA_DIAGNOSTICS '+JSON.stringify(diagnostics));throw error;
+ }finally{await mediaPage.close();}
  await fs.writeFile(path.join(out,'report.json'),JSON.stringify({ok:true,phase,notVerified:['authenticated member and superadmin production interactions','actual YouTube media output; iframe route was intercepted'],checks:report},null,2));
  console.log(JSON.stringify({ok:true,phase,pages:report.length,screenWidths:[320,390,768,1280]}));
 }finally{await context.close();await browser.close();}
