@@ -1,0 +1,4106 @@
+{
+  "mainReferenceAtReport": "3cbf424e13092af27947ceda311cee31e4f78342",
+  "inventory": {
+    "sourceCommit": "38c6e662d84e8bd15fa5c4f162753af5a4161798",
+    "rows": [
+      {
+        "source": "deploy/noa-database.extend.php",
+        "remote": "extend/noa.database.php",
+        "state": "match",
+        "sourceSha256": "ac5cd1f73ca4218f45b909fd64b85b8494941c627eebcb42b22ee34d95d7faf3",
+        "deployed": {
+          "sha256": "ac5cd1f73ca4218f45b909fd64b85b8494941c627eebcb42b22ee34d95d7faf3",
+          "mtime": 1792547864,
+          "bytes": 1240
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-design.extend.php",
+        "remote": "extend/noa.design.php",
+        "state": "match",
+        "sourceSha256": "61c80d07bc0f00759458742350b4189dfb085479b29b93d570293d3be6116634",
+        "deployed": {
+          "sha256": "61c80d07bc0f00759458742350b4189dfb085479b29b93d570293d3be6116634",
+          "mtime": 1792540478,
+          "bytes": 965
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-home.extend.php",
+        "remote": "extend/noa.home.php",
+        "state": "match",
+        "sourceSha256": "b1387ba42603c90d6de99b5ea72eda376bc7d4b59837704251205ddd8f4acd39",
+        "deployed": {
+          "sha256": "b1387ba42603c90d6de99b5ea72eda376bc7d4b59837704251205ddd8f4acd39",
+          "mtime": 1792546713,
+          "bytes": 713
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/index.php",
+        "remote": "index.php",
+        "state": "match",
+        "sourceSha256": "d9b78823be675dbfc6e70cc2134af2ec508e47a9a900938dfa7655108585fd30",
+        "deployed": {
+          "sha256": "d9b78823be675dbfc6e70cc2134af2ec508e47a9a900938dfa7655108585fd30",
+          "mtime": 1792546709,
+          "bytes": 235
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-admin.css",
+        "remote": "noa-admin.css",
+        "state": "match",
+        "sourceSha256": "6d0e1a1eeb01bb5e9f5d92da9a8716fda93dc987cf7ab4d7e83888d6208e7d42",
+        "deployed": {
+          "sha256": "6d0e1a1eeb01bb5e9f5d92da9a8716fda93dc987cf7ab4d7e83888d6208e7d42",
+          "mtime": 1792496616,
+          "bytes": 559
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-ai-lab.css",
+        "remote": "noa-ai-lab.css",
+        "state": "match",
+        "sourceSha256": "aebafce749150513405ddef16ec53e3a6c577f17be5f327e3567de3318f1c559",
+        "deployed": {
+          "sha256": "aebafce749150513405ddef16ec53e3a6c577f17be5f327e3567de3318f1c559",
+          "mtime": 1792482719,
+          "bytes": 5820
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-ai-lab.js",
+        "remote": "noa-ai-lab.js",
+        "state": "match",
+        "sourceSha256": "c78d370a132585f2e07930213272740734faf414e71c4028933797799c54807b",
+        "deployed": {
+          "sha256": "c78d370a132585f2e07930213272740734faf414e71c4028933797799c54807b",
+          "mtime": 1792480085,
+          "bytes": 28280
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-ai-lab.php",
+        "remote": "noa-ai-lab.php",
+        "state": "match",
+        "sourceSha256": "7c81e1bb09b95868951480dc33ae448d792c0597ff275b40ec14e7f9535a0456",
+        "deployed": {
+          "sha256": "7c81e1bb09b95868951480dc33ae448d792c0597ff275b40ec14e7f9535a0456",
+          "mtime": 1792540470,
+          "bytes": 10052
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/database/admin-link.js",
+        "remote": "noa-app/database/admin-link.js",
+        "state": "match",
+        "sourceSha256": "20f07ce86bfe3ab4e252f06f64648f55d14947ff0e431df9bf29cb72f1ccac3f",
+        "deployed": {
+          "sha256": "20f07ce86bfe3ab4e252f06f64648f55d14947ff0e431df9bf29cb72f1ccac3f",
+          "mtime": 1792547853,
+          "bytes": 747
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/database/core.php",
+        "remote": "noa-app/database/core.php",
+        "state": "match",
+        "sourceSha256": "e214dd38ca9d97aa9405ce4d87f25ed846dab49f95dad3249e975d883c57beed",
+        "deployed": {
+          "sha256": "e214dd38ca9d97aa9405ce4d87f25ed846dab49f95dad3249e975d883c57beed",
+          "mtime": 1792547849,
+          "bytes": 16768
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/database/index.php",
+        "remote": "noa-app/database/index.php",
+        "state": "match",
+        "sourceSha256": "ef30f70ad06d0128ae0b906df12a2a77a79444d7f0db683a829531d2e8e27a01",
+        "deployed": {
+          "sha256": "ef30f70ad06d0128ae0b906df12a2a77a79444d7f0db683a829531d2e8e27a01",
+          "mtime": 1792548475,
+          "bytes": 12281
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/database/restore-cli.php",
+        "remote": "noa-app/database/restore-cli.php",
+        "state": "match",
+        "sourceSha256": "ebc53326725b7df785a5676d3893fedb87ad0db4992abc2e00cc0e0987499956",
+        "deployed": {
+          "sha256": "ebc53326725b7df785a5676d3893fedb87ad0db4992abc2e00cc0e0987499956",
+          "mtime": 1792547846,
+          "bytes": 5327
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/database/style.css",
+        "remote": "noa-app/database/style.css",
+        "state": "match",
+        "sourceSha256": "6a691344950885cdd62919a8908d7b15a9ccc78e859653c65869bbf5c564d34e",
+        "deployed": {
+          "sha256": "6a691344950885cdd62919a8908d7b15a9ccc78e859653c65869bbf5c564d34e",
+          "mtime": 1792547861,
+          "bytes": 3523
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/database/ui.js",
+        "remote": "noa-app/database/ui.js",
+        "state": "match",
+        "sourceSha256": "d6d2f459336956e17179ac59849a0a615b5a2ccbe57e2375a2cb9235a8432345",
+        "deployed": {
+          "sha256": "d6d2f459336956e17179ac59849a0a615b5a2ccbe57e2375a2cb9235a8432345",
+          "mtime": 1792548480,
+          "bytes": 7124
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/home.php",
+        "remote": "noa-app/home.php",
+        "state": "match",
+        "sourceSha256": "b71847337263b261b52dfc0f29bcb9d732879b729cb76a32d82c4c3d2c5f4f03",
+        "deployed": {
+          "sha256": "b71847337263b261b52dfc0f29bcb9d732879b729cb76a32d82c4c3d2c5f4f03",
+          "mtime": 1792583928,
+          "bytes": 7365
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/jukebox/cli.php",
+        "remote": "noa-app/jukebox/cli.php",
+        "state": "match",
+        "sourceSha256": "63d0cbe9a57f2ca7318929d6b5889d857104b5e479d30a9a4ce22733035782e5",
+        "deployed": {
+          "sha256": "63d0cbe9a57f2ca7318929d6b5889d857104b5e479d30a9a4ce22733035782e5",
+          "mtime": 1792556846,
+          "bytes": 2245
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/jukebox/core.php",
+        "remote": "noa-app/jukebox/core.php",
+        "state": "match",
+        "sourceSha256": "21c76f85944e9ecf615ac824a32a2d82f3dfdacdf222a7bd13433050ab31321a",
+        "deployed": {
+          "sha256": "21c76f85944e9ecf615ac824a32a2d82f3dfdacdf222a7bd13433050ab31321a",
+          "mtime": 1792570275,
+          "bytes": 13779
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/jukebox/download.php",
+        "remote": "noa-app/jukebox/download.php",
+        "state": "match",
+        "sourceSha256": "0631d9ff158545500b7e2e7b0d72431fb02ebcd442b1a7740b0a3b1fc5b8be01",
+        "deployed": {
+          "sha256": "0631d9ff158545500b7e2e7b0d72431fb02ebcd442b1a7740b0a3b1fc5b8be01",
+          "mtime": 1792563553,
+          "bytes": 2130
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/jukebox/index.php",
+        "remote": "noa-app/jukebox/index.php",
+        "state": "different",
+        "sourceSha256": "50f6510ed501db0ed2b35ba69f44b5fc4260d451258d6ff05705f8573c0496f5",
+        "deployed": {
+          "sha256": "98c1b7ba2298b9c27cfe19262ccc3c52f46686a0faf5b098042faa2b0a912d65",
+          "mtime": 1792583737,
+          "bytes": 9210
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/jukebox/mobile-check.php",
+        "remote": "noa-app/jukebox/mobile-check.php",
+        "state": "match",
+        "sourceSha256": "c675b7c7ac9c282624dfd0acb36a706d11ee98b610beb309b6f69912b9615ba6",
+        "deployed": {
+          "sha256": "c675b7c7ac9c282624dfd0acb36a706d11ee98b610beb309b6f69912b9615ba6",
+          "mtime": 1792565137,
+          "bytes": 999
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/jukebox/operations.php",
+        "remote": "noa-app/jukebox/operations.php",
+        "state": "different",
+        "sourceSha256": "a71fe4b794d69385a9533e5a910b6853f0b03184e3c53e547635a30ef2981420",
+        "deployed": {
+          "sha256": "ee57ce3dcd9ca160ef5f3d300c3878d4718ceafa26c2288f7671aed46dd1090e",
+          "mtime": 1792583724,
+          "bytes": 17811
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/jukebox/queue-core.php",
+        "remote": "noa-app/jukebox/queue-core.php",
+        "state": "different",
+        "sourceSha256": "1c697fa2e67fa261d0c18308505f1441c0bdf06cd5142cef9d1bece030778457",
+        "deployed": {
+          "sha256": "411ba1b3f4d1d9d477eb5c91b1480f5346f1dddcc8938683cb201f9115c3d38e",
+          "mtime": 1792582805,
+          "bytes": 9767
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/jukebox/service.php",
+        "remote": "noa-app/jukebox/service.php",
+        "state": "different",
+        "sourceSha256": "034157bdf0a6fd862a5e6e9a7aba9f458005a737675613d69dd495683af4c100",
+        "deployed": {
+          "sha256": "779021701ba8eb7c99effd2e03bccacd6ae0afc9396df2aa1261801e367243d8",
+          "mtime": 1792582826,
+          "bytes": 2597
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/jukebox/stream.php",
+        "remote": "noa-app/jukebox/stream.php",
+        "state": "match",
+        "sourceSha256": "10618491b7fd2bccb8dd6dcab2564066d253dede8afd5b103c168b5480b8b9ce",
+        "deployed": {
+          "sha256": "10618491b7fd2bccb8dd6dcab2564066d253dede8afd5b103c168b5480b8b9ce",
+          "mtime": 1792563526,
+          "bytes": 2015
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/jukebox/upload-core.php",
+        "remote": "noa-app/jukebox/upload-core.php",
+        "state": "different",
+        "sourceSha256": "425b05cc79fa9c26fb12be8568c00d9273a408d664e11a65d43468918f890cbb",
+        "deployed": {
+          "sha256": "5160d1d1a1294a737a8d7bea817dd5fd6224b7912bf15a6cdc2bd38a60849d3d",
+          "mtime": 1792583718,
+          "bytes": 11458
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/jukebox/upload.css",
+        "remote": "noa-app/jukebox/upload.css",
+        "state": "different",
+        "sourceSha256": "f51e035c312698192e9e9dc1e549492d0c11e8ef41a5779c53b89ada3053681a",
+        "deployed": {
+          "sha256": "e7dbd2df2e48caea432085ab56aac8f14253c1e72e8f137668389e48968551fc",
+          "mtime": 1792582852,
+          "bytes": 5912
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/jukebox/upload.js",
+        "remote": "noa-app/jukebox/upload.js",
+        "state": "different",
+        "sourceSha256": "c758dbb51cc8ca70658f87fede49ca00ea69a862d24d48ca158928e91327fe55",
+        "deployed": {
+          "sha256": "a8b85610b43612899875efb9b28047f3ddadef28bce998bb6aa8213b07a9cdfe",
+          "mtime": 1792583730,
+          "bytes": 39854
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/jukebox/upload.php",
+        "remote": "noa-app/jukebox/upload.php",
+        "state": "different",
+        "sourceSha256": "0981dc73f5807b41f167500b0ae4b2689d4c456b71e8b60d6c9d6e5524673c68",
+        "deployed": {
+          "sha256": "2f866110c043407a9045394823da2f041401132c39fb455690a084790ae02c8b",
+          "mtime": 1792582832,
+          "bytes": 5063
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/taxonomy/admin-link.js",
+        "remote": "noa-app/taxonomy/admin-link.js",
+        "state": "match",
+        "sourceSha256": "08e8f031b561f5ef846d87fab77697e44197878a78d5422327a47cda37ea92fb",
+        "deployed": {
+          "sha256": "08e8f031b561f5ef846d87fab77697e44197878a78d5422327a47cda37ea92fb",
+          "mtime": 1792556176,
+          "bytes": 440
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/taxonomy/index.php",
+        "remote": "noa-app/taxonomy/index.php",
+        "state": "match",
+        "sourceSha256": "0eaa08d612f21199694ca6459ccdb499d86e6adb097051649be2fdaffb1b2ee3",
+        "deployed": {
+          "sha256": "0eaa08d612f21199694ca6459ccdb499d86e6adb097051649be2fdaffb1b2ee3",
+          "mtime": 1792557068,
+          "bytes": 6683
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/taxonomy/style.css",
+        "remote": "noa-app/taxonomy/style.css",
+        "state": "match",
+        "sourceSha256": "ea72f592d2aa947a5078205cd7233f0a97359b00a7eaa30fbb788c75fedfd612",
+        "deployed": {
+          "sha256": "ea72f592d2aa947a5078205cd7233f0a97359b00a7eaa30fbb788c75fedfd612",
+          "mtime": 1792556181,
+          "bytes": 1996
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/taxonomy/ui.js",
+        "remote": "noa-app/taxonomy/ui.js",
+        "state": "match",
+        "sourceSha256": "f94c0dcb81c2fdf429a6d336cba2b979308d5a6555c978e99f84790e67bed6fb",
+        "deployed": {
+          "sha256": "f94c0dcb81c2fdf429a6d336cba2b979308d5a6555c978e99f84790e67bed6fb",
+          "mtime": 1792557071,
+          "bytes": 9255
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/world-view.php",
+        "remote": "noa-app/world-view.php",
+        "state": "match",
+        "sourceSha256": "5bf0ac9bddcded41a6cbf39f92993f51730e82ffbb70ccb6c7e4439063215fd8",
+        "deployed": {
+          "sha256": "5bf0ac9bddcded41a6cbf39f92993f51730e82ffbb70ccb6c7e4439063215fd8",
+          "mtime": 1792583930,
+          "bytes": 10694
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/characters/cast-pair.jpg",
+        "remote": "noa-assets/characters/cast-pair.jpg",
+        "state": "match",
+        "sourceSha256": "0c38c312ba096019c0ba0e2f03adcdd902ba7fb1e664d8afca34684a8495067d",
+        "deployed": {
+          "sha256": "0c38c312ba096019c0ba0e2f03adcdd902ba7fb1e664d8afca34684a8495067d",
+          "mtime": 1792522313,
+          "bytes": 37736
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/characters/noa-face.jpg",
+        "remote": "noa-assets/characters/noa-face.jpg",
+        "state": "match",
+        "sourceSha256": "7884250a5c43a2026e0c19a3f963aab3350f60256b5a720d828ab84e5c37e060",
+        "deployed": {
+          "sha256": "7884250a5c43a2026e0c19a3f963aab3350f60256b5a720d828ab84e5c37e060",
+          "mtime": 1792522316,
+          "bytes": 12809
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/characters/noa-face.png",
+        "remote": "noa-assets/characters/noa-face.png",
+        "state": "match",
+        "sourceSha256": "51a6e69e5dc3bd33bc6c7e318da4fa2f44f5999c0a3dbf562726ac4f6e08989a",
+        "deployed": {
+          "sha256": "51a6e69e5dc3bd33bc6c7e318da4fa2f44f5999c0a3dbf562726ac4f6e08989a",
+          "mtime": 1792522318,
+          "bytes": 65711
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/characters/noa-sheet.png",
+        "remote": "noa-assets/characters/noa-sheet.png",
+        "state": "match",
+        "sourceSha256": "96bb0514b68f4cf0a71b6ec19ce87bd7fab5538a88fb2764e5a18f71390690f1",
+        "deployed": {
+          "sha256": "96bb0514b68f4cf0a71b6ec19ce87bd7fab5538a88fb2764e5a18f71390690f1",
+          "mtime": 1792522321,
+          "bytes": 653166
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/characters/noa-side.jpg",
+        "remote": "noa-assets/characters/noa-side.jpg",
+        "state": "match",
+        "sourceSha256": "2edb2171d4e735b5d2dc5a51dee2f66d1109bd5525c511d31e20b1b99b984b16",
+        "deployed": {
+          "sha256": "2edb2171d4e735b5d2dc5a51dee2f66d1109bd5525c511d31e20b1b99b984b16",
+          "mtime": 1792522326,
+          "bytes": 13629
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/characters/noel-face.jpg",
+        "remote": "noa-assets/characters/noel-face.jpg",
+        "state": "match",
+        "sourceSha256": "5854f980d79ae0a8d399ddb6d3167f9680b498cffdc041c5945a52c98a4cefd1",
+        "deployed": {
+          "sha256": "5854f980d79ae0a8d399ddb6d3167f9680b498cffdc041c5945a52c98a4cefd1",
+          "mtime": 1792522328,
+          "bytes": 12105
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/characters/noel-face.png",
+        "remote": "noa-assets/characters/noel-face.png",
+        "state": "match",
+        "sourceSha256": "8c888f93d830372cad88e3e88d5ebf3d51cea6027dfaac0825126e86daaae393",
+        "deployed": {
+          "sha256": "8c888f93d830372cad88e3e88d5ebf3d51cea6027dfaac0825126e86daaae393",
+          "mtime": 1792522331,
+          "bytes": 66828
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/characters/noel-sheet.png",
+        "remote": "noa-assets/characters/noel-sheet.png",
+        "state": "match",
+        "sourceSha256": "b3461f7366648618b952d679d77aac963ab7f2a6e0816c95f64a0daef2812aa9",
+        "deployed": {
+          "sha256": "b3461f7366648618b952d679d77aac963ab7f2a6e0816c95f64a0daef2812aa9",
+          "mtime": 1792522333,
+          "bytes": 597349
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/characters/noel-side.jpg",
+        "remote": "noa-assets/characters/noel-side.jpg",
+        "state": "match",
+        "sourceSha256": "af91d772f749f18a0a6c96f532a4b0bc174dc8eccdea98eb222858ab75459b0d",
+        "deployed": {
+          "sha256": "af91d772f749f18a0a6c96f532a4b0bc174dc8eccdea98eb222858ab75459b0d",
+          "mtime": 1792522338,
+          "bytes": 13283
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/coming/dreamy-deep-house.jpg",
+        "remote": "noa-assets/coming/dreamy-deep-house.jpg",
+        "state": "match",
+        "sourceSha256": "3df8b2bee507cf14e7a8deece2e7c2be10870ee5909924a41acc221e1c1d2bb7",
+        "deployed": {
+          "sha256": "3df8b2bee507cf14e7a8deece2e7c2be10870ee5909924a41acc221e1c1d2bb7",
+          "mtime": 1792522340,
+          "bytes": 292522
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/coming/echoes-of-joseon.jpg",
+        "remote": "noa-assets/coming/echoes-of-joseon.jpg",
+        "state": "match",
+        "sourceSha256": "9e260d43d1f0ff77e336902f2ab9d844633187775f3a448d7d903b66313a1499",
+        "deployed": {
+          "sha256": "9e260d43d1f0ff77e336902f2ab9d844633187775f3a448d7d903b66313a1499",
+          "mtime": 1792522344,
+          "bytes": 351189
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/coming/edm-kpop-club.jpg",
+        "remote": "noa-assets/coming/edm-kpop-club.jpg",
+        "state": "match",
+        "sourceSha256": "5833ac9273104186272fe5ca3b43c8518f303ca0aada1d6d4d16c290b7ec2298",
+        "deployed": {
+          "sha256": "5833ac9273104186272fe5ca3b43c8518f303ca0aada1d6d4d16c290b7ec2298",
+          "mtime": 1792522347,
+          "bytes": 170974
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/coming/fantasy-ambient-edm.jpg",
+        "remote": "noa-assets/coming/fantasy-ambient-edm.jpg",
+        "state": "match",
+        "sourceSha256": "ad860cce22863d6af4c18783ef5679c2ec3be723a81935aa8c4857f42fe870cb",
+        "deployed": {
+          "sha256": "ad860cce22863d6af4c18783ef5679c2ec3be723a81935aa8c4857f42fe870cb",
+          "mtime": 1792522350,
+          "bytes": 247962
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/coming/groovy-airy-pop.jpg",
+        "remote": "noa-assets/coming/groovy-airy-pop.jpg",
+        "state": "match",
+        "sourceSha256": "30be2038bdac2a2f07af5cfb638d659c7e5ae5d248ea201ed8597d66119dc6b6",
+        "deployed": {
+          "sha256": "30be2038bdac2a2f07af5cfb638d659c7e5ae5d248ea201ed8597d66119dc6b6",
+          "mtime": 1792522353,
+          "bytes": 289746
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/coming/joseon-ballad.jpg",
+        "remote": "noa-assets/coming/joseon-ballad.jpg",
+        "state": "match",
+        "sourceSha256": "d7288f30f1c337306d531e2e3122b9dcfc0d6b44105b729eb89f46ff25d1fb23",
+        "deployed": {
+          "sha256": "d7288f30f1c337306d531e2e3122b9dcfc0d6b44105b729eb89f46ff25d1fb23",
+          "mtime": 1792522356,
+          "bytes": 363480
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/coming/jpop-original.jpg",
+        "remote": "noa-assets/coming/jpop-original.jpg",
+        "state": "match",
+        "sourceSha256": "83d28c3799d96f598eae3ad65bb97f4b31669efb2e717c97c602309159f18cb8",
+        "deployed": {
+          "sha256": "83d28c3799d96f598eae3ad65bb97f4b31669efb2e717c97c602309159f18cb8",
+          "mtime": 1792522359,
+          "bytes": 388160
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/coming/kpop-original.jpg",
+        "remote": "noa-assets/coming/kpop-original.jpg",
+        "state": "match",
+        "sourceSha256": "d7322f9efe0b51ba12c6c10959dd2536c046b50e46efd2c8048196cb29f50316",
+        "deployed": {
+          "sha256": "d7322f9efe0b51ba12c6c10959dd2536c046b50e46efd2c8048196cb29f50316",
+          "mtime": 1792522362,
+          "bytes": 223409
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/coming/latin-afrobeats-edm.jpg",
+        "remote": "noa-assets/coming/latin-afrobeats-edm.jpg",
+        "state": "match",
+        "sourceSha256": "6ab73fdea4e347a8a5872854f2e176b1be7d0b1525e3743fecdb358812413360",
+        "deployed": {
+          "sha256": "6ab73fdea4e347a8a5872854f2e176b1be7d0b1525e3743fecdb358812413360",
+          "mtime": 1792522365,
+          "bytes": 293901
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/coming/narrative-piano-indie.jpg",
+        "remote": "noa-assets/coming/narrative-piano-indie.jpg",
+        "state": "match",
+        "sourceSha256": "46c6a14f24f52832a190e40a4f22dd827c631080f017351930c67f1b51f5bb04",
+        "deployed": {
+          "sha256": "46c6a14f24f52832a190e40a4f22dd827c631080f017351930c67f1b51f5bb04",
+          "mtime": 1792522368,
+          "bytes": 307462
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/coming/panpop.jpg",
+        "remote": "noa-assets/coming/panpop.jpg",
+        "state": "match",
+        "sourceSha256": "116449c85a6b2adab1306fc896e6900aff7fd64373089a83ed21467a39196c2b",
+        "deployed": {
+          "sha256": "116449c85a6b2adab1306fc896e6900aff7fd64373089a83ed21467a39196c2b",
+          "mtime": 1792522371,
+          "bytes": 252315
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/coming/pop-original.jpg",
+        "remote": "noa-assets/coming/pop-original.jpg",
+        "state": "match",
+        "sourceSha256": "89187c0bc63e6a1e8c6b439849cf740578002d77a9f85cafee5118156f4aea89",
+        "deployed": {
+          "sha256": "89187c0bc63e6a1e8c6b439849cf740578002d77a9f85cafee5118156f4aea89",
+          "mtime": 1792522373,
+          "bytes": 233538
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/coming/thai-original.jpg",
+        "remote": "noa-assets/coming/thai-original.jpg",
+        "state": "match",
+        "sourceSha256": "140bd5a2c8c67b92fa10cb42c242692b17dd75ee7cac571a8aaa51d38922b1fb",
+        "deployed": {
+          "sha256": "140bd5a2c8c67b92fa10cb42c242692b17dd75ee7cac571a8aaa51d38922b1fb",
+          "mtime": 1792522376,
+          "bytes": 253990
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/coming/your-story.jpg",
+        "remote": "noa-assets/coming/your-story.jpg",
+        "state": "match",
+        "sourceSha256": "cb792d07e750960fb895a91838d48c8d937724a93972fbcbafae6d6d8a5ac460",
+        "deployed": {
+          "sha256": "cb792d07e750960fb895a91838d48c8d937724a93972fbcbafae6d6d8a5ac460",
+          "mtime": 1792522378,
+          "bytes": 174680
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/favicon.png",
+        "remote": "noa-assets/favicon.png",
+        "state": "match",
+        "sourceSha256": "9f0397fab970737a979846b3c9c3b58b5e19ef212f8cf0096b10aa799c182746",
+        "deployed": {
+          "sha256": "9f0397fab970737a979846b3c9c3b58b5e19ef212f8cf0096b10aa799c182746",
+          "mtime": 1792522381,
+          "bytes": 2822
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/favicon.svg",
+        "remote": "noa-assets/favicon.svg",
+        "state": "match",
+        "sourceSha256": "907f53f655644e0269de218386c5dd3a6f5d26fc215eb536c814930fa4a12a92",
+        "deployed": {
+          "sha256": "907f53f655644e0269de218386c5dd3a6f5d26fc215eb536c814930fa4a12a92",
+          "mtime": 1792522383,
+          "bytes": 200
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/icon-180.png",
+        "remote": "noa-assets/icon-180.png",
+        "state": "match",
+        "sourceSha256": "e4fc9dda964bbf3b575162741356f37263b03966b266c1fd4a92a8e38c47c78b",
+        "deployed": {
+          "sha256": "e4fc9dda964bbf3b575162741356f37263b03966b266c1fd4a92a8e38c47c78b",
+          "mtime": 1792522385,
+          "bytes": 59800
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/icon-192.png",
+        "remote": "noa-assets/icon-192.png",
+        "state": "match",
+        "sourceSha256": "6eaa87ec7b78c4f55008af62d75c06d69bd03088d3f54d6a0fec2f03c70f75b5",
+        "deployed": {
+          "sha256": "6eaa87ec7b78c4f55008af62d75c06d69bd03088d3f54d6a0fec2f03c70f75b5",
+          "mtime": 1792522387,
+          "bytes": 66774
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/icon-512.png",
+        "remote": "noa-assets/icon-512.png",
+        "state": "match",
+        "sourceSha256": "7a6b94a09ba10b951f15b6779c7d30c74e1ee44bdd5e2a9df7e6a676dd9f02cb",
+        "deployed": {
+          "sha256": "7a6b94a09ba10b951f15b6779c7d30c74e1ee44bdd5e2a9df7e6a676dd9f02cb",
+          "mtime": 1792522390,
+          "bytes": 374901
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/jukebox-mark.png",
+        "remote": "noa-assets/jukebox-mark.png",
+        "state": "match",
+        "sourceSha256": "6a738b96a7e6924dc924ad06731215d980fc5d596a3f9b518d3c7705744c7b4c",
+        "deployed": {
+          "sha256": "6a738b96a7e6924dc924ad06731215d980fc5d596a3f9b518d3c7705744c7b4c",
+          "mtime": 1792522392,
+          "bytes": 124448
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/og.jpg",
+        "remote": "noa-assets/og.jpg",
+        "state": "match",
+        "sourceSha256": "2e5a9e521b1440965b50860a70ca712bf2894af48f9001fd06c9a0e2cddb7e7c",
+        "deployed": {
+          "sha256": "2e5a9e521b1440965b50860a70ca712bf2894af48f9001fd06c9a0e2cddb7e7c",
+          "mtime": 1792522395,
+          "bytes": 326411
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/papa-emblem.png",
+        "remote": "noa-assets/papa-emblem.png",
+        "state": "match",
+        "sourceSha256": "aea206c83247d6c9b714c3dbdda382e428a416370d79d2f0d7b549699cecdbab",
+        "deployed": {
+          "sha256": "aea206c83247d6c9b714c3dbdda382e428a416370d79d2f0d7b549699cecdbab",
+          "mtime": 1792522398,
+          "bytes": 1273991
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/papa-logo.png",
+        "remote": "noa-assets/papa-logo.png",
+        "state": "match",
+        "sourceSha256": "458a060cf2114e95ea496819c9ea8c5d08999eaa3d3c748b5a56e90a488664ec",
+        "deployed": {
+          "sha256": "458a060cf2114e95ea496819c9ea8c5d08999eaa3d3c748b5a56e90a488664ec",
+          "mtime": 1792522404,
+          "bytes": 1111150
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash-portrait.jpg",
+        "remote": "noa-assets/splash-portrait.jpg",
+        "state": "match",
+        "sourceSha256": "a0103781d061aa58b115a058fa0082b8c42780c244734e7776ee9a9cda951181",
+        "deployed": {
+          "sha256": "a0103781d061aa58b115a058fa0082b8c42780c244734e7776ee9a9cda951181",
+          "mtime": 1792522861,
+          "bytes": 675416
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/bridge-g2-a.jpg",
+        "remote": "noa-assets/splash/bridge-g2-a.jpg",
+        "state": "match",
+        "sourceSha256": "62e25aa2500c478a96525c37cd12bee03d673b49071ecf5d7afc6c969ee0ac59",
+        "deployed": {
+          "sha256": "62e25aa2500c478a96525c37cd12bee03d673b49071ecf5d7afc6c969ee0ac59",
+          "mtime": 1792522408,
+          "bytes": 64801
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/bridge-g2-a.mp4",
+        "remote": "noa-assets/splash/bridge-g2-a.mp4",
+        "state": "match",
+        "sourceSha256": "0be60b7dbb552af33e29883d2ddcac6c93ce23bb4b588a59d00d3a5034c02fb1",
+        "deployed": {
+          "sha256": "0be60b7dbb552af33e29883d2ddcac6c93ce23bb4b588a59d00d3a5034c02fb1",
+          "mtime": 1792522411,
+          "bytes": 1858596
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/bridge-g2-b.jpg",
+        "remote": "noa-assets/splash/bridge-g2-b.jpg",
+        "state": "match",
+        "sourceSha256": "7001d012ca9dbcd38bbdd389e72ad1007150f25040824cb517f10c9f09eba7d3",
+        "deployed": {
+          "sha256": "7001d012ca9dbcd38bbdd389e72ad1007150f25040824cb517f10c9f09eba7d3",
+          "mtime": 1792522417,
+          "bytes": 66806
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/bridge-g2-b.mp4",
+        "remote": "noa-assets/splash/bridge-g2-b.mp4",
+        "state": "match",
+        "sourceSha256": "477d5ca5439e3abb2ae7ebbb09798d4027a518381b0fe69780bd56fe69483c68",
+        "deployed": {
+          "sha256": "477d5ca5439e3abb2ae7ebbb09798d4027a518381b0fe69780bd56fe69483c68",
+          "mtime": 1792522420,
+          "bytes": 1723904
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/bridge-g2-c.jpg",
+        "remote": "noa-assets/splash/bridge-g2-c.jpg",
+        "state": "match",
+        "sourceSha256": "cdd6f12532d2771d2304144a8a27190c5089651d3c5ef5096c101c658af56fa5",
+        "deployed": {
+          "sha256": "cdd6f12532d2771d2304144a8a27190c5089651d3c5ef5096c101c658af56fa5",
+          "mtime": 1792522426,
+          "bytes": 65156
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/bridge-g2-c.mp4",
+        "remote": "noa-assets/splash/bridge-g2-c.mp4",
+        "state": "match",
+        "sourceSha256": "a01e246f0bc38be56ba523de205803395e4649e1bdc762f9bc577e9959bc1ab3",
+        "deployed": {
+          "sha256": "a01e246f0bc38be56ba523de205803395e4649e1bdc762f9bc577e9959bc1ab3",
+          "mtime": 1792522429,
+          "bytes": 1711868
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/cover-reborn-g2-a.jpg",
+        "remote": "noa-assets/splash/cover-reborn-g2-a.jpg",
+        "state": "match",
+        "sourceSha256": "3f78333b3f389c7fd4a4a9305937dc71674826da0087f38fe1c15a5c23383702",
+        "deployed": {
+          "sha256": "3f78333b3f389c7fd4a4a9305937dc71674826da0087f38fe1c15a5c23383702",
+          "mtime": 1792522435,
+          "bytes": 50020
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/cover-reborn-g2-a.mp4",
+        "remote": "noa-assets/splash/cover-reborn-g2-a.mp4",
+        "state": "match",
+        "sourceSha256": "476694a13c383d920e11337dca527553f7ef1538c2f28fade39494327d658efa",
+        "deployed": {
+          "sha256": "476694a13c383d920e11337dca527553f7ef1538c2f28fade39494327d658efa",
+          "mtime": 1792522438,
+          "bytes": 1700924
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/cover-reborn-g2-b.jpg",
+        "remote": "noa-assets/splash/cover-reborn-g2-b.jpg",
+        "state": "match",
+        "sourceSha256": "581d8d15e7ab69b876f04e05b3d4b3e9925cc251e15e3cb867ea2d5b35eb661e",
+        "deployed": {
+          "sha256": "581d8d15e7ab69b876f04e05b3d4b3e9925cc251e15e3cb867ea2d5b35eb661e",
+          "mtime": 1792522444,
+          "bytes": 27891
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/cover-reborn-g2-b.mp4",
+        "remote": "noa-assets/splash/cover-reborn-g2-b.mp4",
+        "state": "match",
+        "sourceSha256": "ebd1ef85e3d1a953e68bb3da7ed5a100ffadf32aec2ae38c556f37c56a826939",
+        "deployed": {
+          "sha256": "ebd1ef85e3d1a953e68bb3da7ed5a100ffadf32aec2ae38c556f37c56a826939",
+          "mtime": 1792522447,
+          "bytes": 1650629
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/cover-reborn-g2-c.jpg",
+        "remote": "noa-assets/splash/cover-reborn-g2-c.jpg",
+        "state": "match",
+        "sourceSha256": "bc346b51ce0e4d529c38f0bc22e6ae157b18e8173f7023ee2c250fa8f6c104ae",
+        "deployed": {
+          "sha256": "bc346b51ce0e4d529c38f0bc22e6ae157b18e8173f7023ee2c250fa8f6c104ae",
+          "mtime": 1792522452,
+          "bytes": 42147
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/cover-reborn-g2-c.mp4",
+        "remote": "noa-assets/splash/cover-reborn-g2-c.mp4",
+        "state": "match",
+        "sourceSha256": "fcf5ad4c27bb951ef4429dd05ef4a96f1e22001d59c3ccdad8bd0540b39c2c49",
+        "deployed": {
+          "sha256": "fcf5ad4c27bb951ef4429dd05ef4a96f1e22001d59c3ccdad8bd0540b39c2c49",
+          "mtime": 1792522456,
+          "bytes": 1729921
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/dream-g2-a.jpg",
+        "remote": "noa-assets/splash/dream-g2-a.jpg",
+        "state": "match",
+        "sourceSha256": "11a2edec66d1782c7c0bbc7bb4afe161723cd8bfbacbc665a1fe62c5535fc323",
+        "deployed": {
+          "sha256": "11a2edec66d1782c7c0bbc7bb4afe161723cd8bfbacbc665a1fe62c5535fc323",
+          "mtime": 1792522462,
+          "bytes": 41597
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/dream-g2-a.mp4",
+        "remote": "noa-assets/splash/dream-g2-a.mp4",
+        "state": "match",
+        "sourceSha256": "fad0dd33e2e203337690458b9578f7f5b3524df51da85f31a88a76b1ff4ffb99",
+        "deployed": {
+          "sha256": "fad0dd33e2e203337690458b9578f7f5b3524df51da85f31a88a76b1ff4ffb99",
+          "mtime": 1792522466,
+          "bytes": 1702939
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/dream-g2-b.jpg",
+        "remote": "noa-assets/splash/dream-g2-b.jpg",
+        "state": "match",
+        "sourceSha256": "f4b2b7cdc59f582b82e96784982f148b7eaa072b37bfdddf4e55a91858b6e06f",
+        "deployed": {
+          "sha256": "f4b2b7cdc59f582b82e96784982f148b7eaa072b37bfdddf4e55a91858b6e06f",
+          "mtime": 1792522473,
+          "bytes": 53639
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/dream-g2-b.mp4",
+        "remote": "noa-assets/splash/dream-g2-b.mp4",
+        "state": "match",
+        "sourceSha256": "9f443689a9b4fbad8b53ec5eb7fd9941fab088880ee6fb9e436fc16c47f87d43",
+        "deployed": {
+          "sha256": "9f443689a9b4fbad8b53ec5eb7fd9941fab088880ee6fb9e436fc16c47f87d43",
+          "mtime": 1792522477,
+          "bytes": 1708267
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/dream-g2-c.jpg",
+        "remote": "noa-assets/splash/dream-g2-c.jpg",
+        "state": "match",
+        "sourceSha256": "0ab90c48a79482f946d10c032c8795119d4dba064398069d08b4fc67bc566d32",
+        "deployed": {
+          "sha256": "0ab90c48a79482f946d10c032c8795119d4dba064398069d08b4fc67bc566d32",
+          "mtime": 1792522483,
+          "bytes": 51015
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/dream-g2-c.mp4",
+        "remote": "noa-assets/splash/dream-g2-c.mp4",
+        "state": "match",
+        "sourceSha256": "b5e1f301fa7d6328586954e5ad07d46acbf9ef7e2e64c9be0da6466c9bb8b61d",
+        "deployed": {
+          "sha256": "b5e1f301fa7d6328586954e5ad07d46acbf9ef7e2e64c9be0da6466c9bb8b61d",
+          "mtime": 1792522487,
+          "bytes": 1727226
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/fantasy-g2-a.jpg",
+        "remote": "noa-assets/splash/fantasy-g2-a.jpg",
+        "state": "match",
+        "sourceSha256": "1307d3ba7d388bbc051bc1b0524cc75f4ca98537aa8c6bd6118290e51a2f9956",
+        "deployed": {
+          "sha256": "1307d3ba7d388bbc051bc1b0524cc75f4ca98537aa8c6bd6118290e51a2f9956",
+          "mtime": 1792522492,
+          "bytes": 70709
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/fantasy-g2-a.mp4",
+        "remote": "noa-assets/splash/fantasy-g2-a.mp4",
+        "state": "match",
+        "sourceSha256": "9029572d06f32f388cbead379b64d9c418a234ce9921337810069814057ee72e",
+        "deployed": {
+          "sha256": "9029572d06f32f388cbead379b64d9c418a234ce9921337810069814057ee72e",
+          "mtime": 1792522496,
+          "bytes": 1678519
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/fantasy-g2-b.jpg",
+        "remote": "noa-assets/splash/fantasy-g2-b.jpg",
+        "state": "match",
+        "sourceSha256": "10cb7bd2750f084458c26e8aa8bb588a8d2946a5317b03ea180ef09cf474af3c",
+        "deployed": {
+          "sha256": "10cb7bd2750f084458c26e8aa8bb588a8d2946a5317b03ea180ef09cf474af3c",
+          "mtime": 1792522502,
+          "bytes": 50895
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/fantasy-g2-b.mp4",
+        "remote": "noa-assets/splash/fantasy-g2-b.mp4",
+        "state": "match",
+        "sourceSha256": "b3093d3ceafb6af18bd641ecc0dd5a43363b5434ef92f67f72f8334ca3d26f51",
+        "deployed": {
+          "sha256": "b3093d3ceafb6af18bd641ecc0dd5a43363b5434ef92f67f72f8334ca3d26f51",
+          "mtime": 1792522505,
+          "bytes": 1673995
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/fantasy-g2-c.jpg",
+        "remote": "noa-assets/splash/fantasy-g2-c.jpg",
+        "state": "match",
+        "sourceSha256": "6dcd642327c2e706805b090d82a6bb48faec04a4d030928913fc6a4235f94c05",
+        "deployed": {
+          "sha256": "6dcd642327c2e706805b090d82a6bb48faec04a4d030928913fc6a4235f94c05",
+          "mtime": 1792522511,
+          "bytes": 47318
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/fantasy-g2-c.mp4",
+        "remote": "noa-assets/splash/fantasy-g2-c.mp4",
+        "state": "match",
+        "sourceSha256": "79589cbf861e363be76a027905e36ac38f273c07d2553f3cc0e1d8ed43baf477",
+        "deployed": {
+          "sha256": "79589cbf861e363be76a027905e36ac38f273c07d2553f3cc0e1d8ed43baf477",
+          "mtime": 1792522514,
+          "bytes": 1702050
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/hall-g2-a.jpg",
+        "remote": "noa-assets/splash/hall-g2-a.jpg",
+        "state": "match",
+        "sourceSha256": "6665ccc9ae96a7bd92b38661b5c8166646b166e34d51f448f0b55af9d48a60f5",
+        "deployed": {
+          "sha256": "6665ccc9ae96a7bd92b38661b5c8166646b166e34d51f448f0b55af9d48a60f5",
+          "mtime": 1792522520,
+          "bytes": 75374
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/hall-g2-a.mp4",
+        "remote": "noa-assets/splash/hall-g2-a.mp4",
+        "state": "match",
+        "sourceSha256": "d5568dc59701dd223ad35c2a12d75a7ae5f7dc4b77d8e767ce3cf74d10359e1a",
+        "deployed": {
+          "sha256": "d5568dc59701dd223ad35c2a12d75a7ae5f7dc4b77d8e767ce3cf74d10359e1a",
+          "mtime": 1792522523,
+          "bytes": 1719987
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/hall-g2-b.jpg",
+        "remote": "noa-assets/splash/hall-g2-b.jpg",
+        "state": "match",
+        "sourceSha256": "8bcd8e5519a73ca787e3c548f0ba2519390284404eb43809963ec26d1f4ed28a",
+        "deployed": {
+          "sha256": "8bcd8e5519a73ca787e3c548f0ba2519390284404eb43809963ec26d1f4ed28a",
+          "mtime": 1792522529,
+          "bytes": 67376
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/hall-g2-b.mp4",
+        "remote": "noa-assets/splash/hall-g2-b.mp4",
+        "state": "match",
+        "sourceSha256": "74205e9256ce6bbaa9352dc07d0929cfea0de3a7ccea51e5bfe7d887776b948f",
+        "deployed": {
+          "sha256": "74205e9256ce6bbaa9352dc07d0929cfea0de3a7ccea51e5bfe7d887776b948f",
+          "mtime": 1792522532,
+          "bytes": 1794254
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/hall-g2-c.jpg",
+        "remote": "noa-assets/splash/hall-g2-c.jpg",
+        "state": "match",
+        "sourceSha256": "7fc693c50a58cd5c64655a5591edb6e2df14ff0e43e5af5b752310d201df9acc",
+        "deployed": {
+          "sha256": "7fc693c50a58cd5c64655a5591edb6e2df14ff0e43e5af5b752310d201df9acc",
+          "mtime": 1792522539,
+          "bytes": 74162
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/hall-g2-c.mp4",
+        "remote": "noa-assets/splash/hall-g2-c.mp4",
+        "state": "match",
+        "sourceSha256": "891e0f089e72b3cfe3705416e6b15d2c85803f543feb0cb598ac81cf4e5b4268",
+        "deployed": {
+          "sha256": "891e0f089e72b3cfe3705416e6b15d2c85803f543feb0cb598ac81cf4e5b4268",
+          "mtime": 1792522542,
+          "bytes": 1739509
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/joseon-g2-a.jpg",
+        "remote": "noa-assets/splash/joseon-g2-a.jpg",
+        "state": "match",
+        "sourceSha256": "cf97d176ce0612474022dcd322fbdff4c36e17b2faba2d0379ed601757422fde",
+        "deployed": {
+          "sha256": "cf97d176ce0612474022dcd322fbdff4c36e17b2faba2d0379ed601757422fde",
+          "mtime": 1792522548,
+          "bytes": 87813
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/joseon-g2-a.mp4",
+        "remote": "noa-assets/splash/joseon-g2-a.mp4",
+        "state": "match",
+        "sourceSha256": "93ef64681859c48d3124c3163609bb6e35aa30b3be7ba38a11b116b0623e5030",
+        "deployed": {
+          "sha256": "93ef64681859c48d3124c3163609bb6e35aa30b3be7ba38a11b116b0623e5030",
+          "mtime": 1792522551,
+          "bytes": 1687102
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/joseon-g2-b.jpg",
+        "remote": "noa-assets/splash/joseon-g2-b.jpg",
+        "state": "match",
+        "sourceSha256": "701dd398ae755534d240231c09a5a5ae162832aafe7813ab78aab4625d2044a4",
+        "deployed": {
+          "sha256": "701dd398ae755534d240231c09a5a5ae162832aafe7813ab78aab4625d2044a4",
+          "mtime": 1792522558,
+          "bytes": 72380
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/joseon-g2-b.mp4",
+        "remote": "noa-assets/splash/joseon-g2-b.mp4",
+        "state": "match",
+        "sourceSha256": "f1a3eaf02813fea60b1324eb73c8cae81d18b7ad28a687ffcb17ce0f44065766",
+        "deployed": {
+          "sha256": "f1a3eaf02813fea60b1324eb73c8cae81d18b7ad28a687ffcb17ce0f44065766",
+          "mtime": 1792522561,
+          "bytes": 1682100
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/joseon-g2-c.jpg",
+        "remote": "noa-assets/splash/joseon-g2-c.jpg",
+        "state": "match",
+        "sourceSha256": "35158abfe72e650d2491bd39e0e5509a8dc97aabbf553619681adeedf6b9a3e0",
+        "deployed": {
+          "sha256": "35158abfe72e650d2491bd39e0e5509a8dc97aabbf553619681adeedf6b9a3e0",
+          "mtime": 1792522567,
+          "bytes": 84454
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/joseon-g2-c.mp4",
+        "remote": "noa-assets/splash/joseon-g2-c.mp4",
+        "state": "match",
+        "sourceSha256": "da40e41d02b459c44b413f21d8a850148f9c14fa245f04ea5ce8d2de95d062bc",
+        "deployed": {
+          "sha256": "da40e41d02b459c44b413f21d8a850148f9c14fa245f04ea5ce8d2de95d062bc",
+          "mtime": 1792522570,
+          "bytes": 1580250
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/jpop-original-g2-a.jpg",
+        "remote": "noa-assets/splash/jpop-original-g2-a.jpg",
+        "state": "match",
+        "sourceSha256": "878e83ff24edab68ba1f20e3d96c269f41b4862662575e21353530b2a2374415",
+        "deployed": {
+          "sha256": "878e83ff24edab68ba1f20e3d96c269f41b4862662575e21353530b2a2374415",
+          "mtime": 1792522576,
+          "bytes": 100457
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/jpop-original-g2-a.mp4",
+        "remote": "noa-assets/splash/jpop-original-g2-a.mp4",
+        "state": "match",
+        "sourceSha256": "db3034454e61a1b60009b206ea23d6e40baf2318b322c0b1a22160e5b988d804",
+        "deployed": {
+          "sha256": "db3034454e61a1b60009b206ea23d6e40baf2318b322c0b1a22160e5b988d804",
+          "mtime": 1792522580,
+          "bytes": 1689762
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/jpop-original-g2-b.jpg",
+        "remote": "noa-assets/splash/jpop-original-g2-b.jpg",
+        "state": "match",
+        "sourceSha256": "219711b776ecc0fc0e6be275b9c2aa68f5680e3f6b5ca90ca8bd1069f13cab23",
+        "deployed": {
+          "sha256": "219711b776ecc0fc0e6be275b9c2aa68f5680e3f6b5ca90ca8bd1069f13cab23",
+          "mtime": 1792522586,
+          "bytes": 102431
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/jpop-original-g2-b.mp4",
+        "remote": "noa-assets/splash/jpop-original-g2-b.mp4",
+        "state": "match",
+        "sourceSha256": "3a2515a13371a5151836505a671ba72a9ee57e44064ce9cb24f084b56996d94f",
+        "deployed": {
+          "sha256": "3a2515a13371a5151836505a671ba72a9ee57e44064ce9cb24f084b56996d94f",
+          "mtime": 1792522589,
+          "bytes": 1674970
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/jpop-original-g2-c.jpg",
+        "remote": "noa-assets/splash/jpop-original-g2-c.jpg",
+        "state": "match",
+        "sourceSha256": "47be328e0e7115b179afa25635293b8a65fe4ada256592f7eab3f9600ea10b60",
+        "deployed": {
+          "sha256": "47be328e0e7115b179afa25635293b8a65fe4ada256592f7eab3f9600ea10b60",
+          "mtime": 1792522594,
+          "bytes": 95097
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/jpop-original-g2-c.mp4",
+        "remote": "noa-assets/splash/jpop-original-g2-c.mp4",
+        "state": "match",
+        "sourceSha256": "e967b4b5949578b9ddf49dcac08b5f2c3a46bf88062c1d6ad35cb668ba5b9312",
+        "deployed": {
+          "sha256": "e967b4b5949578b9ddf49dcac08b5f2c3a46bf88062c1d6ad35cb668ba5b9312",
+          "mtime": 1792522598,
+          "bytes": 1579225
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/kpop-original-g2-a.jpg",
+        "remote": "noa-assets/splash/kpop-original-g2-a.jpg",
+        "state": "match",
+        "sourceSha256": "223a6ba6c0e6573fa69aa9ffeb10dd09b42d36a9a40d58fb12576b9755dbdabc",
+        "deployed": {
+          "sha256": "223a6ba6c0e6573fa69aa9ffeb10dd09b42d36a9a40d58fb12576b9755dbdabc",
+          "mtime": 1792522607,
+          "bytes": 61900
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/kpop-original-g2-a.mp4",
+        "remote": "noa-assets/splash/kpop-original-g2-a.mp4",
+        "state": "match",
+        "sourceSha256": "15c824fd16841f9987ef01659f97db646ad3f928fb2d6bf008a2072d899882f8",
+        "deployed": {
+          "sha256": "15c824fd16841f9987ef01659f97db646ad3f928fb2d6bf008a2072d899882f8",
+          "mtime": 1792522610,
+          "bytes": 1761143
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/kpop-original-g2-b.jpg",
+        "remote": "noa-assets/splash/kpop-original-g2-b.jpg",
+        "state": "match",
+        "sourceSha256": "f145eca9e358233cae42c797f6c533390c3bd07d3efbdb79630a7d07e85ae49f",
+        "deployed": {
+          "sha256": "f145eca9e358233cae42c797f6c533390c3bd07d3efbdb79630a7d07e85ae49f",
+          "mtime": 1792522617,
+          "bytes": 59464
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/kpop-original-g2-b.mp4",
+        "remote": "noa-assets/splash/kpop-original-g2-b.mp4",
+        "state": "match",
+        "sourceSha256": "2f944d9fbb30cc58860bbeccb71cea7a98d8a8c751c45a594c07fce673d3d15d",
+        "deployed": {
+          "sha256": "2f944d9fbb30cc58860bbeccb71cea7a98d8a8c751c45a594c07fce673d3d15d",
+          "mtime": 1792522620,
+          "bytes": 1700449
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/kpop-original-g2-c.jpg",
+        "remote": "noa-assets/splash/kpop-original-g2-c.jpg",
+        "state": "match",
+        "sourceSha256": "6f4d611962ae738ad6ee8493998b735196e2a9e2dd2e314b5db6091583d2b408",
+        "deployed": {
+          "sha256": "6f4d611962ae738ad6ee8493998b735196e2a9e2dd2e314b5db6091583d2b408",
+          "mtime": 1792522626,
+          "bytes": 69277
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/kpop-original-g2-c.mp4",
+        "remote": "noa-assets/splash/kpop-original-g2-c.mp4",
+        "state": "match",
+        "sourceSha256": "1b0efcb5ca732f6374bfc5eaf1ceed6405239185c4b234f00a28f44b3390d957",
+        "deployed": {
+          "sha256": "1b0efcb5ca732f6374bfc5eaf1ceed6405239185c4b234f00a28f44b3390d957",
+          "mtime": 1792522629,
+          "bytes": 1624055
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/latin-g2-a.jpg",
+        "remote": "noa-assets/splash/latin-g2-a.jpg",
+        "state": "match",
+        "sourceSha256": "df8666fb06fdcf0942a47990796c585d7dfd17b2077972dfdb4d873c9c862c0c",
+        "deployed": {
+          "sha256": "df8666fb06fdcf0942a47990796c585d7dfd17b2077972dfdb4d873c9c862c0c",
+          "mtime": 1792522634,
+          "bytes": 100266
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/latin-g2-a.mp4",
+        "remote": "noa-assets/splash/latin-g2-a.mp4",
+        "state": "match",
+        "sourceSha256": "641a15e56d8360adc80b7e2cd27b50eb32791387083a3f298405bf74a3f0e8b1",
+        "deployed": {
+          "sha256": "641a15e56d8360adc80b7e2cd27b50eb32791387083a3f298405bf74a3f0e8b1",
+          "mtime": 1792522637,
+          "bytes": 1793149
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/latin-g2-b.jpg",
+        "remote": "noa-assets/splash/latin-g2-b.jpg",
+        "state": "match",
+        "sourceSha256": "3a35e730ed9faece09ca5f88f44bba35e000729cac3b1935f596064c84f4cdef",
+        "deployed": {
+          "sha256": "3a35e730ed9faece09ca5f88f44bba35e000729cac3b1935f596064c84f4cdef",
+          "mtime": 1792522643,
+          "bytes": 96636
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/latin-g2-b.mp4",
+        "remote": "noa-assets/splash/latin-g2-b.mp4",
+        "state": "match",
+        "sourceSha256": "5b271595b32e5ca3daf64419a91908cd167a4b7d46a7955932477fb5d9d964f0",
+        "deployed": {
+          "sha256": "5b271595b32e5ca3daf64419a91908cd167a4b7d46a7955932477fb5d9d964f0",
+          "mtime": 1792522647,
+          "bytes": 1623009
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/latin-g2-c.jpg",
+        "remote": "noa-assets/splash/latin-g2-c.jpg",
+        "state": "match",
+        "sourceSha256": "78950976a18da696b30242cc96c2ce1a33b5a13e23cc16c791b72791b05fa7e3",
+        "deployed": {
+          "sha256": "78950976a18da696b30242cc96c2ce1a33b5a13e23cc16c791b72791b05fa7e3",
+          "mtime": 1792522653,
+          "bytes": 98434
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/latin-g2-c.mp4",
+        "remote": "noa-assets/splash/latin-g2-c.mp4",
+        "state": "match",
+        "sourceSha256": "326db3f09075428238c868a698aa04ae3f07befa22be1cfb76d38578cf1c220b",
+        "deployed": {
+          "sha256": "326db3f09075428238c868a698aa04ae3f07befa22be1cfb76d38578cf1c220b",
+          "mtime": 1792522656,
+          "bytes": 1777757
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/panpop-g2-a.jpg",
+        "remote": "noa-assets/splash/panpop-g2-a.jpg",
+        "state": "match",
+        "sourceSha256": "947d2a4a4ee974d57f2a20beeac7d31b0caec86105820df5d7045921f1885647",
+        "deployed": {
+          "sha256": "947d2a4a4ee974d57f2a20beeac7d31b0caec86105820df5d7045921f1885647",
+          "mtime": 1792522662,
+          "bytes": 78604
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/panpop-g2-a.mp4",
+        "remote": "noa-assets/splash/panpop-g2-a.mp4",
+        "state": "match",
+        "sourceSha256": "f462519550bfbe3a61bfe74f010f56dabb0da4ec3d6826bab1e1849441ece320",
+        "deployed": {
+          "sha256": "f462519550bfbe3a61bfe74f010f56dabb0da4ec3d6826bab1e1849441ece320",
+          "mtime": 1792522665,
+          "bytes": 1723429
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/panpop-g2-b.jpg",
+        "remote": "noa-assets/splash/panpop-g2-b.jpg",
+        "state": "match",
+        "sourceSha256": "528526d0e3701449f4cde6fdc077c395722d20e9a28093fed728eae0a3d01b9d",
+        "deployed": {
+          "sha256": "528526d0e3701449f4cde6fdc077c395722d20e9a28093fed728eae0a3d01b9d",
+          "mtime": 1792522670,
+          "bytes": 84621
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/panpop-g2-b.mp4",
+        "remote": "noa-assets/splash/panpop-g2-b.mp4",
+        "state": "match",
+        "sourceSha256": "6f6706ff97adcba62c841b514a31f2d3dfe3432aa49f20440d210b2413bee597",
+        "deployed": {
+          "sha256": "6f6706ff97adcba62c841b514a31f2d3dfe3432aa49f20440d210b2413bee597",
+          "mtime": 1792522673,
+          "bytes": 1739694
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/panpop-g2-c.jpg",
+        "remote": "noa-assets/splash/panpop-g2-c.jpg",
+        "state": "match",
+        "sourceSha256": "afe62a111f714804cbd3d94d163a923c7b63e8261d13b82738be54f18ff42325",
+        "deployed": {
+          "sha256": "afe62a111f714804cbd3d94d163a923c7b63e8261d13b82738be54f18ff42325",
+          "mtime": 1792522679,
+          "bytes": 95413
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/panpop-g2-c.mp4",
+        "remote": "noa-assets/splash/panpop-g2-c.mp4",
+        "state": "match",
+        "sourceSha256": "b775fca1e26c58540fb2f4a2e7beaa0e5932b15db6c523aca811359530a59d50",
+        "deployed": {
+          "sha256": "b775fca1e26c58540fb2f4a2e7beaa0e5932b15db6c523aca811359530a59d50",
+          "mtime": 1792522683,
+          "bytes": 1807456
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/pop-original-g2-a.jpg",
+        "remote": "noa-assets/splash/pop-original-g2-a.jpg",
+        "state": "match",
+        "sourceSha256": "d6c4413ab29fa9c6c835230b5dbcca7bf89516197665c1bcdf694a0439cd0c88",
+        "deployed": {
+          "sha256": "d6c4413ab29fa9c6c835230b5dbcca7bf89516197665c1bcdf694a0439cd0c88",
+          "mtime": 1792522689,
+          "bytes": 52213
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/pop-original-g2-a.mp4",
+        "remote": "noa-assets/splash/pop-original-g2-a.mp4",
+        "state": "match",
+        "sourceSha256": "b333925fbc7465ad164d337def46941beb6fff0c696a59d1ef974295b4073750",
+        "deployed": {
+          "sha256": "b333925fbc7465ad164d337def46941beb6fff0c696a59d1ef974295b4073750",
+          "mtime": 1792522691,
+          "bytes": 1640309
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/pop-original-g2-b.jpg",
+        "remote": "noa-assets/splash/pop-original-g2-b.jpg",
+        "state": "match",
+        "sourceSha256": "3c4a1c1e67b2c70c094037987780a9a1285068a22d3ec0a79843acf53b168b60",
+        "deployed": {
+          "sha256": "3c4a1c1e67b2c70c094037987780a9a1285068a22d3ec0a79843acf53b168b60",
+          "mtime": 1792522697,
+          "bytes": 45797
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/pop-original-g2-b.mp4",
+        "remote": "noa-assets/splash/pop-original-g2-b.mp4",
+        "state": "match",
+        "sourceSha256": "426bf8d7d12145ee0e712ac4b6de317bf3387e8ccd1e8d22f5a09913266e3a37",
+        "deployed": {
+          "sha256": "426bf8d7d12145ee0e712ac4b6de317bf3387e8ccd1e8d22f5a09913266e3a37",
+          "mtime": 1792522700,
+          "bytes": 1545591
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/pop-original-g2-c.jpg",
+        "remote": "noa-assets/splash/pop-original-g2-c.jpg",
+        "state": "match",
+        "sourceSha256": "2c4147cb1d1d8fbf5dc0c578b5bf758b981d7f621cd45ff76515cfdf5af45ffb",
+        "deployed": {
+          "sha256": "2c4147cb1d1d8fbf5dc0c578b5bf758b981d7f621cd45ff76515cfdf5af45ffb",
+          "mtime": 1792522705,
+          "bytes": 47233
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/pop-original-g2-c.mp4",
+        "remote": "noa-assets/splash/pop-original-g2-c.mp4",
+        "state": "match",
+        "sourceSha256": "e965fafb41e5fa5a7798705e01ea9f1992dbd1499b804866f385cb553faf3083",
+        "deployed": {
+          "sha256": "e965fafb41e5fa5a7798705e01ea9f1992dbd1499b804866f385cb553faf3083",
+          "mtime": 1792522708,
+          "bytes": 1630740
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/rain-g2-a.jpg",
+        "remote": "noa-assets/splash/rain-g2-a.jpg",
+        "state": "match",
+        "sourceSha256": "d620d8af945bd5534292283118d9bb47271dfe0e0b4633f4dee4904cebf9da16",
+        "deployed": {
+          "sha256": "d620d8af945bd5534292283118d9bb47271dfe0e0b4633f4dee4904cebf9da16",
+          "mtime": 1792522714,
+          "bytes": 90254
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/rain-g2-a.mp4",
+        "remote": "noa-assets/splash/rain-g2-a.mp4",
+        "state": "match",
+        "sourceSha256": "9d21dc513ec67b7dc86e132ddecc6bad62f9263a6f252d739f44d1d33c692243",
+        "deployed": {
+          "sha256": "9d21dc513ec67b7dc86e132ddecc6bad62f9263a6f252d739f44d1d33c692243",
+          "mtime": 1792522717,
+          "bytes": 1601441
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/rain-g2-b.jpg",
+        "remote": "noa-assets/splash/rain-g2-b.jpg",
+        "state": "match",
+        "sourceSha256": "55d4aa10a573507181186d3dde0e7d5f2f587e0eac7dda8bbb10c7d3c2c4260b",
+        "deployed": {
+          "sha256": "55d4aa10a573507181186d3dde0e7d5f2f587e0eac7dda8bbb10c7d3c2c4260b",
+          "mtime": 1792522722,
+          "bytes": 98553
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/rain-g2-b.mp4",
+        "remote": "noa-assets/splash/rain-g2-b.mp4",
+        "state": "match",
+        "sourceSha256": "25dbaf0493eb93e0d3d81b1a591505c0a94e57b2106d8051bc798be11aba1aeb",
+        "deployed": {
+          "sha256": "25dbaf0493eb93e0d3d81b1a591505c0a94e57b2106d8051bc798be11aba1aeb",
+          "mtime": 1792522725,
+          "bytes": 1651907
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/rain-g2-c.jpg",
+        "remote": "noa-assets/splash/rain-g2-c.jpg",
+        "state": "match",
+        "sourceSha256": "3585706c2fadfa6356dedb848a6fcfd3f1eebccb95acf333be54f12c94795f01",
+        "deployed": {
+          "sha256": "3585706c2fadfa6356dedb848a6fcfd3f1eebccb95acf333be54f12c94795f01",
+          "mtime": 1792522753,
+          "bytes": 86957
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/rain-g2-c.mp4",
+        "remote": "noa-assets/splash/rain-g2-c.mp4",
+        "state": "match",
+        "sourceSha256": "a30148bc333d5ac2971a57d7a3e4fae883d2d277fe2cc73bd1a9ed2f758ae8fd",
+        "deployed": {
+          "sha256": "a30148bc333d5ac2971a57d7a3e4fae883d2d277fe2cc73bd1a9ed2f758ae8fd",
+          "mtime": 1792522756,
+          "bytes": 1559386
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/room-g2-a.jpg",
+        "remote": "noa-assets/splash/room-g2-a.jpg",
+        "state": "match",
+        "sourceSha256": "273f4f19074653f1500ca812761b7dc2df372ff41747df8985add2b0ea779e17",
+        "deployed": {
+          "sha256": "273f4f19074653f1500ca812761b7dc2df372ff41747df8985add2b0ea779e17",
+          "mtime": 1792522764,
+          "bytes": 67513
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/room-g2-a.mp4",
+        "remote": "noa-assets/splash/room-g2-a.mp4",
+        "state": "match",
+        "sourceSha256": "6db6b2b0f1ed7d8fb2987605bdbb6c655be96ab2f841d12814bccdfb2cb95897",
+        "deployed": {
+          "sha256": "6db6b2b0f1ed7d8fb2987605bdbb6c655be96ab2f841d12814bccdfb2cb95897",
+          "mtime": 1792522767,
+          "bytes": 1713422
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/room-g2-b.jpg",
+        "remote": "noa-assets/splash/room-g2-b.jpg",
+        "state": "match",
+        "sourceSha256": "bf545da5efc48fe71f8a3961719f8b6c7fd2ce93302a420bc4f06ad4da90aee3",
+        "deployed": {
+          "sha256": "bf545da5efc48fe71f8a3961719f8b6c7fd2ce93302a420bc4f06ad4da90aee3",
+          "mtime": 1792522773,
+          "bytes": 68505
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/room-g2-b.mp4",
+        "remote": "noa-assets/splash/room-g2-b.mp4",
+        "state": "match",
+        "sourceSha256": "21f3405fe88fcc28fd2f9c0553ffa5481a622a9cc92969df843badd92c91c190",
+        "deployed": {
+          "sha256": "21f3405fe88fcc28fd2f9c0553ffa5481a622a9cc92969df843badd92c91c190",
+          "mtime": 1792522776,
+          "bytes": 1659278
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/room-g2-c.jpg",
+        "remote": "noa-assets/splash/room-g2-c.jpg",
+        "state": "match",
+        "sourceSha256": "21359ffefb995d21f51d99ed0ad5cbdd0215864c3106ea65c32c3803ce7aab4f",
+        "deployed": {
+          "sha256": "21359ffefb995d21f51d99ed0ad5cbdd0215864c3106ea65c32c3803ce7aab4f",
+          "mtime": 1792522791,
+          "bytes": 60186
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/room-g2-c.mp4",
+        "remote": "noa-assets/splash/room-g2-c.mp4",
+        "state": "match",
+        "sourceSha256": "1c794565e937a34f35f5be17fe079f901c2a2ea37dc8bd47e8662239b9ef2f9a",
+        "deployed": {
+          "sha256": "1c794565e937a34f35f5be17fe079f901c2a2ea37dc8bd47e8662239b9ef2f9a",
+          "mtime": 1792522794,
+          "bytes": 1728215
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/thai-original-g2-a.jpg",
+        "remote": "noa-assets/splash/thai-original-g2-a.jpg",
+        "state": "match",
+        "sourceSha256": "5615213dbfc33542f7d0bda83eb0e04f9c64241da8f0479d41dea71d0dc64b1c",
+        "deployed": {
+          "sha256": "5615213dbfc33542f7d0bda83eb0e04f9c64241da8f0479d41dea71d0dc64b1c",
+          "mtime": 1792522800,
+          "bytes": 90298
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/thai-original-g2-a.mp4",
+        "remote": "noa-assets/splash/thai-original-g2-a.mp4",
+        "state": "match",
+        "sourceSha256": "94c3ae94baeab4a08c9d4fd4ffbe51609b4cbabe8f541181b91bfd18bd107fa1",
+        "deployed": {
+          "sha256": "94c3ae94baeab4a08c9d4fd4ffbe51609b4cbabe8f541181b91bfd18bd107fa1",
+          "mtime": 1792522803,
+          "bytes": 1531276
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/thai-original-g2-b.jpg",
+        "remote": "noa-assets/splash/thai-original-g2-b.jpg",
+        "state": "match",
+        "sourceSha256": "04449ac467c2445b3ea1f43da56e0a021676af4b132b31b78a0c6b3622a9284d",
+        "deployed": {
+          "sha256": "04449ac467c2445b3ea1f43da56e0a021676af4b132b31b78a0c6b3622a9284d",
+          "mtime": 1792522809,
+          "bytes": 93563
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/thai-original-g2-b.mp4",
+        "remote": "noa-assets/splash/thai-original-g2-b.mp4",
+        "state": "match",
+        "sourceSha256": "4918a2f85cf863327affd7cc64998a12370bf7577806489ae57dfef486506156",
+        "deployed": {
+          "sha256": "4918a2f85cf863327affd7cc64998a12370bf7577806489ae57dfef486506156",
+          "mtime": 1792522812,
+          "bytes": 1669350
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/thai-original-g2-c.jpg",
+        "remote": "noa-assets/splash/thai-original-g2-c.jpg",
+        "state": "match",
+        "sourceSha256": "44b8327a3f0dd75ae9ba1ed1f15a48566b54e9c28ce50c018564e83f11a37a28",
+        "deployed": {
+          "sha256": "44b8327a3f0dd75ae9ba1ed1f15a48566b54e9c28ce50c018564e83f11a37a28",
+          "mtime": 1792522818,
+          "bytes": 87292
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/thai-original-g2-c.mp4",
+        "remote": "noa-assets/splash/thai-original-g2-c.mp4",
+        "state": "match",
+        "sourceSha256": "b5c0843c2dd18c751fa1d29eebf7f2ad23f4d76fec74fd868e0218f483ba434b",
+        "deployed": {
+          "sha256": "b5c0843c2dd18c751fa1d29eebf7f2ad23f4d76fec74fd868e0218f483ba434b",
+          "mtime": 1792522821,
+          "bytes": 1722960
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/your-story-g2-a.jpg",
+        "remote": "noa-assets/splash/your-story-g2-a.jpg",
+        "state": "match",
+        "sourceSha256": "81f8552f2d274b17c0034b05459e8bc3c103afb723a54edec723baa05f745dea",
+        "deployed": {
+          "sha256": "81f8552f2d274b17c0034b05459e8bc3c103afb723a54edec723baa05f745dea",
+          "mtime": 1792522827,
+          "bytes": 48411
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/your-story-g2-a.mp4",
+        "remote": "noa-assets/splash/your-story-g2-a.mp4",
+        "state": "match",
+        "sourceSha256": "120f371a04129c14e93e266a50fcc023cc6a384158aa825cac6d0680704a7580",
+        "deployed": {
+          "sha256": "120f371a04129c14e93e266a50fcc023cc6a384158aa825cac6d0680704a7580",
+          "mtime": 1792522830,
+          "bytes": 1665467
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/your-story-g2-b.jpg",
+        "remote": "noa-assets/splash/your-story-g2-b.jpg",
+        "state": "match",
+        "sourceSha256": "16d6af12fd89edb989fc91b106204e4cd8118f641cefde12c56e0aca336abe14",
+        "deployed": {
+          "sha256": "16d6af12fd89edb989fc91b106204e4cd8118f641cefde12c56e0aca336abe14",
+          "mtime": 1792522840,
+          "bytes": 50614
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/your-story-g2-b.mp4",
+        "remote": "noa-assets/splash/your-story-g2-b.mp4",
+        "state": "match",
+        "sourceSha256": "ba105dfa09319e32cdff2dccf47f96593c0c3287e6e93a49c06b5a699e8d12d5",
+        "deployed": {
+          "sha256": "ba105dfa09319e32cdff2dccf47f96593c0c3287e6e93a49c06b5a699e8d12d5",
+          "mtime": 1792522843,
+          "bytes": 1702891
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/your-story-g2-c.jpg",
+        "remote": "noa-assets/splash/your-story-g2-c.jpg",
+        "state": "match",
+        "sourceSha256": "ff6a6f019e90d4fd8638f93acb7446a8d3c15fae2e682baadc5f1ef97cfb318c",
+        "deployed": {
+          "sha256": "ff6a6f019e90d4fd8638f93acb7446a8d3c15fae2e682baadc5f1ef97cfb318c",
+          "mtime": 1792522851,
+          "bytes": 37135
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "public/splash/your-story-g2-c.mp4",
+        "remote": "noa-assets/splash/your-story-g2-c.mp4",
+        "state": "match",
+        "sourceSha256": "418a8f93ab581f863f750cbabade586aa5aedd2016d69b54126e8e0aa3da4771",
+        "deployed": {
+          "sha256": "418a8f93ab581f863f750cbabade586aa5aedd2016d69b54126e8e0aa3da4771",
+          "mtime": 1792522854,
+          "bytes": 1739607
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-brand.js",
+        "remote": "noa-brand.js",
+        "state": "match",
+        "sourceSha256": "851490b9fa89efa64d3c845a101cfcca58e485b2442cb102e376ffb02834c36a",
+        "deployed": {
+          "sha256": "851490b9fa89efa64d3c845a101cfcca58e485b2442cb102e376ffb02834c36a",
+          "mtime": 1792529600,
+          "bytes": 1239
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/catalog-merge.php",
+        "remote": "noa-bridge/catalog-merge.php",
+        "state": "match",
+        "sourceSha256": "d3097ebbfabaf47ddb8a1580caa8fc8bfab39148aa56ecbdfb9774894cb3e731",
+        "deployed": {
+          "sha256": "d3097ebbfabaf47ddb8a1580caa8fc8bfab39148aa56ecbdfb9774894cb3e731",
+          "mtime": 1792482884,
+          "bytes": 10036
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/catalog-recovery.php",
+        "remote": "noa-bridge/catalog-recovery.php",
+        "state": "match",
+        "sourceSha256": "6c354512208a27beb3bd28ef0532148cc2fd1c66372e3d98fc25d51021b402ba",
+        "deployed": {
+          "sha256": "6c354512208a27beb3bd28ef0532148cc2fd1c66372e3d98fc25d51021b402ba",
+          "mtime": 1792524574,
+          "bytes": 15015
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/catalog-schema.php",
+        "remote": "noa-bridge/catalog-schema.php",
+        "state": "match",
+        "sourceSha256": "f07eaa26ebb0eeccf2628b62ed638949e7bcf3eb12ddbd54d3e83d56ed83f4d7",
+        "deployed": {
+          "sha256": "f07eaa26ebb0eeccf2628b62ed638949e7bcf3eb12ddbd54d3e83d56ed83f4d7",
+          "mtime": 1792482710,
+          "bytes": 4064
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/catalog-seed.php",
+        "remote": "noa-bridge/catalog-seed.php",
+        "state": "match",
+        "sourceSha256": "862563ae640fd1af801ea990e01d4052b08e90ed02a7eb0e606059d1c89263db",
+        "deployed": {
+          "sha256": "862563ae640fd1af801ea990e01d4052b08e90ed02a7eb0e606059d1c89263db",
+          "mtime": 1792482889,
+          "bytes": 1591458
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/catalog-store.php",
+        "remote": "noa-bridge/catalog-store.php",
+        "state": "match",
+        "sourceSha256": "59608e901078a3589a33ffc83609d68be12322763f327769fc5691fec4672c97",
+        "deployed": {
+          "sha256": "59608e901078a3589a33ffc83609d68be12322763f327769fc5691fec4672c97",
+          "mtime": 1792524578,
+          "bytes": 15033
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/catalog.php",
+        "remote": "noa-bridge/catalog.php",
+        "state": "match",
+        "sourceSha256": "460baca6f664a18d07dfac5d372095f176862d7dc1fa60fe715ce9b02e04ea26",
+        "deployed": {
+          "sha256": "460baca6f664a18d07dfac5d372095f176862d7dc1fa60fe715ce9b02e04ea26",
+          "mtime": 1792563578,
+          "bytes": 3761
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/check-media.php",
+        "remote": "noa-bridge/check-media.php",
+        "state": "match",
+        "sourceSha256": "f1bbb4bf13dfc466257d365714b0c21414e62d4921de6ab4485969ec8a876d84",
+        "deployed": {
+          "sha256": "f1bbb4bf13dfc466257d365714b0c21414e62d4921de6ab4485969ec8a876d84",
+          "mtime": 1792459462,
+          "bytes": 1258
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/home-core.php",
+        "remote": "noa-bridge/home-core.php",
+        "state": "match",
+        "sourceSha256": "fedfd0d9a51076f336900bd3a8fc8691d2bfb9a89eaf408c9684cda0088947e7",
+        "deployed": {
+          "sha256": "fedfd0d9a51076f336900bd3a8fc8691d2bfb9a89eaf408c9684cda0088947e7",
+          "mtime": 1792583635,
+          "bytes": 9890
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/home-store.php",
+        "remote": "noa-bridge/home-store.php",
+        "state": "match",
+        "sourceSha256": "735700835846bde58c4dd4dc017f086eed7bd16048bd2d53601c3c7807b68dee",
+        "deployed": {
+          "sha256": "735700835846bde58c4dd4dc017f086eed7bd16048bd2d53601c3c7807b68dee",
+          "mtime": 1792553576,
+          "bytes": 868
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/home.php",
+        "remote": "noa-bridge/home.php",
+        "state": "match",
+        "sourceSha256": "a68e156f93a2b6decba5602ccd5d673842ef3b798691f2209ca73c27b4f34c97",
+        "deployed": {
+          "sha256": "a68e156f93a2b6decba5602ccd5d673842ef3b798691f2209ca73c27b4f34c97",
+          "mtime": 1792553592,
+          "bytes": 1121
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/index.php",
+        "remote": "noa-bridge/index.php",
+        "state": "match",
+        "sourceSha256": "6b30e40fd5fcbe84c091e6980195405146e99f0050de878cf5a86a09b9d39e3a",
+        "deployed": {
+          "sha256": "6b30e40fd5fcbe84c091e6980195405146e99f0050de878cf5a86a09b9d39e3a",
+          "mtime": 1792454798,
+          "bytes": 6565
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/lab-api.php",
+        "remote": "noa-bridge/lab-api.php",
+        "state": "match",
+        "sourceSha256": "e525e05c801552e7e92a0fb4bd79d848b3009c028a64c33430cc5fa96e55e3af",
+        "deployed": {
+          "sha256": "e525e05c801552e7e92a0fb4bd79d848b3009c028a64c33430cc5fa96e55e3af",
+          "mtime": 1792480092,
+          "bytes": 14360
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/lab-core.php",
+        "remote": "noa-bridge/lab-core.php",
+        "state": "match",
+        "sourceSha256": "166895896e1215bb0f8cdbcea745bb4da2528a0b1979ae46593836cd3615d0c2",
+        "deployed": {
+          "sha256": "166895896e1215bb0f8cdbcea745bb4da2528a0b1979ae46593836cd3615d0c2",
+          "mtime": 1792480089,
+          "bytes": 9757
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/lab-creator.php",
+        "remote": "noa-bridge/lab-creator.php",
+        "state": "match",
+        "sourceSha256": "7b755ef9f67a3294778570e7f88c18bd262b255f89e1a63fa1f3f9775519285a",
+        "deployed": {
+          "sha256": "7b755ef9f67a3294778570e7f88c18bd262b255f89e1a63fa1f3f9775519285a",
+          "mtime": 1792556192,
+          "bytes": 5424
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/lab-file.php",
+        "remote": "noa-bridge/lab-file.php",
+        "state": "match",
+        "sourceSha256": "e4f32385c286baddf59c6bebf79e5b8877bb143bc9c9b6ba30fe9567e8af5ddb",
+        "deployed": {
+          "sha256": "e4f32385c286baddf59c6bebf79e5b8877bb143bc9c9b6ba30fe9567e8af5ddb",
+          "mtime": 1792479964,
+          "bytes": 1872
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/lab-oauth-core.php",
+        "remote": "noa-bridge/lab-oauth-core.php",
+        "state": "match",
+        "sourceSha256": "46b32ea5532975861a30ebb1d14f8217412a08d5e2a49d96b9564af068d5527e",
+        "deployed": {
+          "sha256": "46b32ea5532975861a30ebb1d14f8217412a08d5e2a49d96b9564af068d5527e",
+          "mtime": 1792488349,
+          "bytes": 4590
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/lab-oauth.php",
+        "remote": "noa-bridge/lab-oauth.php",
+        "state": "match",
+        "sourceSha256": "2143cfc48c38f17dd57dcbd9a68acb333137b4b83bdb616cb8699947b47fc77a",
+        "deployed": {
+          "sha256": "2143cfc48c38f17dd57dcbd9a68acb333137b4b83bdb616cb8699947b47fc77a",
+          "mtime": 1792489914,
+          "bytes": 8630
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/lab-worker.php",
+        "remote": "noa-bridge/lab-worker.php",
+        "state": "match",
+        "sourceSha256": "1a7b6896bfc1bbbaa94001270de9ba2d27f47c3d4a9f451cc281b691badd0c8a",
+        "deployed": {
+          "sha256": "1a7b6896bfc1bbbaa94001270de9ba2d27f47c3d4a9f451cc281b691badd0c8a",
+          "mtime": 1792484806,
+          "bytes": 11161
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/library.php",
+        "remote": "noa-bridge/library.php",
+        "state": "match",
+        "sourceSha256": "10b92b22f7a5498bd9d3d470985b02fadecf3a5084370609cb25962982283cac",
+        "deployed": {
+          "sha256": "10b92b22f7a5498bd9d3d470985b02fadecf3a5084370609cb25962982283cac",
+          "mtime": 1792454801,
+          "bytes": 2338
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/seed.php",
+        "remote": "noa-bridge/seed.php",
+        "state": "match",
+        "sourceSha256": "42c8c2da5df1fb457f8daf8c9f3ed26ca360aadeaf35b94b398a1981f8091bd4",
+        "deployed": {
+          "sha256": "42c8c2da5df1fb457f8daf8c9f3ed26ca360aadeaf35b94b398a1981f8091bd4",
+          "mtime": 1792454509,
+          "bytes": 701107
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/setup.php",
+        "remote": "noa-bridge/setup.php",
+        "state": "match",
+        "sourceSha256": "1caf6cb7b02bdec19a95925dbd2d3a36a048f3318295bf6325376523dd5dc4a6",
+        "deployed": {
+          "sha256": "1caf6cb7b02bdec19a95925dbd2d3a36a048f3318295bf6325376523dd5dc4a6",
+          "mtime": 1792461190,
+          "bytes": 10414
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/sound-core.php",
+        "remote": "noa-bridge/sound-core.php",
+        "state": "match",
+        "sourceSha256": "5c8b1bbe3b359983a7859359eb75f5af6229273fa4042f62e971b605d51d4600",
+        "deployed": {
+          "sha256": "5c8b1bbe3b359983a7859359eb75f5af6229273fa4042f62e971b605d51d4600",
+          "mtime": 1792540464,
+          "bytes": 4986
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/source-archive.php",
+        "remote": "noa-bridge/source-archive.php",
+        "state": "match",
+        "sourceSha256": "354a8d092897fef724351d18df14d5b47ab9182235b8702bdcf9a07646679e74",
+        "deployed": {
+          "sha256": "354a8d092897fef724351d18df14d5b47ab9182235b8702bdcf9a07646679e74",
+          "mtime": 1792456618,
+          "bytes": 2115439
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/source-audit.php",
+        "remote": "noa-bridge/source-audit.php",
+        "state": "match",
+        "sourceSha256": "61ff10c2ca9ddf691da1e6318bc9a0f59e30ed77743b35dae5c2074163a76f90",
+        "deployed": {
+          "sha256": "61ff10c2ca9ddf691da1e6318bc9a0f59e30ed77743b35dae5c2074163a76f90",
+          "mtime": 1792457069,
+          "bytes": 2099
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/source-cli.php",
+        "remote": "noa-bridge/source-cli.php",
+        "state": "match",
+        "sourceSha256": "2e75e12512b78c4df0abf32399724c529b37603655686fc9563f9f1267f388d7",
+        "deployed": {
+          "sha256": "2e75e12512b78c4df0abf32399724c529b37603655686fc9563f9f1267f388d7",
+          "mtime": 1792457067,
+          "bytes": 1113
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/source-import.php",
+        "remote": "noa-bridge/source-import.php",
+        "state": "match",
+        "sourceSha256": "75d449443b715d054f8cd722e6c90b194230e1287ac5d5de4d012a739d9b6904",
+        "deployed": {
+          "sha256": "75d449443b715d054f8cd722e6c90b194230e1287ac5d5de4d012a739d9b6904",
+          "mtime": 1792457382,
+          "bytes": 3934
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/source-url-report.php",
+        "remote": "noa-bridge/source-url-report.php",
+        "state": "match",
+        "sourceSha256": "b5df016bf6d13ac2a1f8d00ca0f01405c0d016615ed252019e9c226cf71b1bcf",
+        "deployed": {
+          "sha256": "b5df016bf6d13ac2a1f8d00ca0f01405c0d016615ed252019e9c226cf71b1bcf",
+          "mtime": 1792461193,
+          "bytes": 411
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/storage.php",
+        "remote": "noa-bridge/storage.php",
+        "state": "match",
+        "sourceSha256": "e8da47a904310d8d27c1083b0851c7ae7905358a3feeaa987f1c3acc0b3ef641",
+        "deployed": {
+          "sha256": "e8da47a904310d8d27c1083b0851c7ae7905358a3feeaa987f1c3acc0b3ef641",
+          "mtime": 1792453667,
+          "bytes": 742
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/taxonomy-admin.php",
+        "remote": "noa-bridge/taxonomy-admin.php",
+        "state": "match",
+        "sourceSha256": "a43cb1cca94f9e2b066d1407ec37e3cc1c4cbcd5da3284e872191739249ada9d",
+        "deployed": {
+          "sha256": "a43cb1cca94f9e2b066d1407ec37e3cc1c4cbcd5da3284e872191739249ada9d",
+          "mtime": 1792556028,
+          "bytes": 8551
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/taxonomy-core.php",
+        "remote": "noa-bridge/taxonomy-core.php",
+        "state": "match",
+        "sourceSha256": "d4894c5a2ce6024e53cd5735143ae2f26d05ee8c8d949b5231345abded4a1e19",
+        "deployed": {
+          "sha256": "d4894c5a2ce6024e53cd5735143ae2f26d05ee8c8d949b5231345abded4a1e19",
+          "mtime": 1792557328,
+          "bytes": 10798
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/taxonomy-guard.php",
+        "remote": "noa-bridge/taxonomy-guard.php",
+        "state": "match",
+        "sourceSha256": "ad07876ff8c81c77309a3b3da4149a3660013d60a980410543c08ef03d47d93f",
+        "deployed": {
+          "sha256": "ad07876ff8c81c77309a3b3da4149a3660013d60a980410543c08ef03d47d93f",
+          "mtime": 1792556910,
+          "bytes": 5410
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/taxonomy-rule-seed.php",
+        "remote": "noa-bridge/taxonomy-rule-seed.php",
+        "state": "match",
+        "sourceSha256": "f0decce08976329e73b9e8b529d586e39a39944e3863138cf92aebdea7b28cca",
+        "deployed": {
+          "sha256": "f0decce08976329e73b9e8b529d586e39a39944e3863138cf92aebdea7b28cca",
+          "mtime": 1792556024,
+          "bytes": 89476
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/taxonomy-schema.php",
+        "remote": "noa-bridge/taxonomy-schema.php",
+        "state": "match",
+        "sourceSha256": "5905f8a8210f7697424a075994f80c92c05de38e3130e7c99ae91e7b653a39c4",
+        "deployed": {
+          "sha256": "5905f8a8210f7697424a075994f80c92c05de38e3130e7c99ae91e7b653a39c4",
+          "mtime": 1792556021,
+          "bytes": 3442
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/taxonomy-store.php",
+        "remote": "noa-bridge/taxonomy-store.php",
+        "state": "match",
+        "sourceSha256": "716f3183ab4b0467d267cc1ad32d53c42fc86b12951e8c5fb104f7a83521ae9d",
+        "deployed": {
+          "sha256": "716f3183ab4b0467d267cc1ad32d53c42fc86b12951e8c5fb104f7a83521ae9d",
+          "mtime": 1792557518,
+          "bytes": 22066
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/taxonomy-worker.php",
+        "remote": "noa-bridge/taxonomy-worker.php",
+        "state": "match",
+        "sourceSha256": "205e853905ad3e7963580b27bcae124d86954ace6c6c65daf8952ccf3a568f8a",
+        "deployed": {
+          "sha256": "205e853905ad3e7963580b27bcae124d86954ace6c6c65daf8952ccf3a568f8a",
+          "mtime": 1792557325,
+          "bytes": 5557
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/taxonomy.php",
+        "remote": "noa-bridge/taxonomy.php",
+        "state": "match",
+        "sourceSha256": "4778bde70af761a99385502aa69c5007f7de40ceeee65fccf25e2af2967b388c",
+        "deployed": {
+          "sha256": "4778bde70af761a99385502aa69c5007f7de40ceeee65fccf25e2af2967b388c",
+          "mtime": 1792556020,
+          "bytes": 560
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/ui-preferences.php",
+        "remote": "noa-bridge/ui-preferences.php",
+        "state": "match",
+        "sourceSha256": "03ea8ed2192670ff7ea32e8cfc95d1acb4a646b37b21b27f043fec7ff8a58087",
+        "deployed": {
+          "sha256": "03ea8ed2192670ff7ea32e8cfc95d1acb4a646b37b21b27f043fec7ff8a58087",
+          "mtime": 1792463477,
+          "bytes": 5401
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/user-playlists.php",
+        "remote": "noa-bridge/user-playlists.php",
+        "state": "match",
+        "sourceSha256": "d71be360bc12d50bceba61e2ab52eab12da31afa90e68e2352cac62c2140d9f9",
+        "deployed": {
+          "sha256": "d71be360bc12d50bceba61e2ab52eab12da31afa90e68e2352cac62c2140d9f9",
+          "mtime": 1792460177,
+          "bytes": 4119
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/world-core.php",
+        "remote": "noa-bridge/world-core.php",
+        "state": "match",
+        "sourceSha256": "f0b24ba91918bcfc27f909fb865df29b33d73222c66ba92796a48814bdeb7a29",
+        "deployed": {
+          "sha256": "f0b24ba91918bcfc27f909fb865df29b33d73222c66ba92796a48814bdeb7a29",
+          "mtime": 1792540258,
+          "bytes": 619
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/world-mv.php",
+        "remote": "noa-bridge/world-mv.php",
+        "state": "match",
+        "sourceSha256": "d3f36cd328055b5ac92826805c8a3e5f6991e0b22ad2a24dcacfa27f2eeba9d1",
+        "deployed": {
+          "sha256": "d3f36cd328055b5ac92826805c8a3e5f6991e0b22ad2a24dcacfa27f2eeba9d1",
+          "mtime": 1792556199,
+          "bytes": 4567
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/world-story.php",
+        "remote": "noa-bridge/world-story.php",
+        "state": "match",
+        "sourceSha256": "ab5b38cef929b7df4017dd874aafe71435caede96e04e569a5397dd53787472e",
+        "deployed": {
+          "sha256": "ab5b38cef929b7df4017dd874aafe71435caede96e04e569a5397dd53787472e",
+          "mtime": 1792553581,
+          "bytes": 2177
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/youtube-api.php",
+        "remote": "noa-bridge/youtube-api.php",
+        "state": "match",
+        "sourceSha256": "f80361437a2b59c96d8764925867c33ec81f16ac9d4861dbbdf038dbc7294409",
+        "deployed": {
+          "sha256": "f80361437a2b59c96d8764925867c33ec81f16ac9d4861dbbdf038dbc7294409",
+          "mtime": 1792491027,
+          "bytes": 5335
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/youtube-core.php",
+        "remote": "noa-bridge/youtube-core.php",
+        "state": "match",
+        "sourceSha256": "96b493b545a6550f5799fc1b69cb91f710aca3bf329a23faad7813d5eac440ff",
+        "deployed": {
+          "sha256": "96b493b545a6550f5799fc1b69cb91f710aca3bf329a23faad7813d5eac440ff",
+          "mtime": 1792494497,
+          "bytes": 4538
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/youtube-store.php",
+        "remote": "noa-bridge/youtube-store.php",
+        "state": "match",
+        "sourceSha256": "5af3b9a5dcbdfab1ecd6113c3b08faadeed28d26460dcd196bd21840478f6e67",
+        "deployed": {
+          "sha256": "5af3b9a5dcbdfab1ecd6113c3b08faadeed28d26460dcd196bd21840478f6e67",
+          "mtime": 1792557077,
+          "bytes": 15277
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "bridge/youtube-thumbnail.php",
+        "remote": "noa-bridge/youtube-thumbnail.php",
+        "state": "match",
+        "sourceSha256": "2babe801c0058555856bb572702a40dfa63e5441a1dde430853c2feb3a72fd37",
+        "deployed": {
+          "sha256": "2babe801c0058555856bb572702a40dfa63e5441a1dde430853c2feb3a72fd37",
+          "mtime": 1792524162,
+          "bytes": 2240
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-browse.js",
+        "remote": "noa-browse.js",
+        "state": "match",
+        "sourceSha256": "a6e46dd34937dd630a0c0d372166a6e1783e158ffcac29d56eca7968271ead41",
+        "deployed": {
+          "sha256": "a6e46dd34937dd630a0c0d372166a6e1783e158ffcac29d56eca7968271ead41",
+          "mtime": 1792583639,
+          "bytes": 9230
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-catalog-admin.php",
+        "remote": "noa-catalog-admin.php",
+        "state": "match",
+        "sourceSha256": "a1177e3a647b428a16c9a229fc21df0f2b8fba0ef11fece6a3246d2b0cc2a5ce",
+        "deployed": {
+          "sha256": "a1177e3a647b428a16c9a229fc21df0f2b8fba0ef11fece6a3246d2b0cc2a5ce",
+          "mtime": 1792540472,
+          "bytes": 11012
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-catalog.php",
+        "remote": "noa-catalog.php",
+        "state": "match",
+        "sourceSha256": "1d3dbcfa20da12c345e1bbca54e91ba1f9b738416f7e9dda9657a74b48138b74",
+        "deployed": {
+          "sha256": "1d3dbcfa20da12c345e1bbca54e91ba1f9b738416f7e9dda9657a74b48138b74",
+          "mtime": 1792540475,
+          "bytes": 9224
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-design.json",
+        "remote": "noa-design.json",
+        "state": "match",
+        "sourceSha256": "7a9753b3efefd879f5b3e508afd592c7083146f6a906b018ff8cdcdfa9c1b177",
+        "deployed": {
+          "sha256": "7a9753b3efefd879f5b3e508afd592c7083146f6a906b018ff8cdcdfa9c1b177",
+          "mtime": 1792463465,
+          "bytes": 726
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-download.php",
+        "remote": "noa-download.php",
+        "state": "match",
+        "sourceSha256": "f0498d0af0c78ae0694097f5ffb0b6cd03d0c3d6ffea88cf35b176688bfbd849",
+        "deployed": {
+          "sha256": "f0498d0af0c78ae0694097f5ffb0b6cd03d0c3d6ffea88cf35b176688bfbd849",
+          "mtime": 1792459824,
+          "bytes": 920
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-editor.php",
+        "remote": "noa-editor.php",
+        "state": "match",
+        "sourceSha256": "f9eac1fdc293bd227a76dcac256cddda29604f20ba1adcfdc33b431d7cf867d5",
+        "deployed": {
+          "sha256": "f9eac1fdc293bd227a76dcac256cddda29604f20ba1adcfdc33b431d7cf867d5",
+          "mtime": 1792540481,
+          "bytes": 13651
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-hero.js",
+        "remote": "noa-hero.js",
+        "state": "match",
+        "sourceSha256": "91adf9deb8863361e05f82d16394f425e10e3e01af655ed9a149fa4bfb881688",
+        "deployed": {
+          "sha256": "91adf9deb8863361e05f82d16394f425e10e3e01af655ed9a149fa4bfb881688",
+          "mtime": 1792583640,
+          "bytes": 2543
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-history.js",
+        "remote": "noa-history.js",
+        "state": "match",
+        "sourceSha256": "48586196f0d61c0e7b49cfc58d6ee498a7623341338a30eff1eba71563220fe2",
+        "deployed": {
+          "sha256": "48586196f0d61c0e7b49cfc58d6ee498a7623341338a30eff1eba71563220fe2",
+          "mtime": 1792527292,
+          "bytes": 1802
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-home.js",
+        "remote": "noa-home.js",
+        "state": "match",
+        "sourceSha256": "c13249041a1c92f0082d3f32bb1a8da4001035e4ccd2bd94f265992e38685bf8",
+        "deployed": {
+          "sha256": "c13249041a1c92f0082d3f32bb1a8da4001035e4ccd2bd94f265992e38685bf8",
+          "mtime": 1792583642,
+          "bytes": 3297
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-icon.svg",
+        "remote": "noa-icon.svg",
+        "state": "match",
+        "sourceSha256": "1706a8e989eed842d84489d13c8277df7d2481018777d0996e1511a49ecbd221",
+        "deployed": {
+          "sha256": "1706a8e989eed842d84489d13c8277df7d2481018777d0996e1511a49ecbd221",
+          "mtime": 1792553594,
+          "bytes": 485
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-app/jukebox/media.htaccess",
+        "remote": "noa-jukebox/.htaccess",
+        "state": "match",
+        "sourceSha256": "fa28d421a28ed9b6f4b997d5119c2b8adbacff6e2dd119a179b71230f9664934",
+        "deployed": {
+          "sha256": "fa28d421a28ed9b6f4b997d5119c2b8adbacff6e2dd119a179b71230f9664934",
+          "mtime": 1792556840,
+          "bytes": 19
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-legacy-i18n.json",
+        "remote": "noa-legacy-i18n.json",
+        "state": "match",
+        "sourceSha256": "d1a0a1dee79e73aef16134b4ed54ecbaffc9e29d471cf9429888d642805ed2a3",
+        "deployed": {
+          "sha256": "d1a0a1dee79e73aef16134b4ed54ecbaffc9e29d471cf9429888d642805ed2a3",
+          "mtime": 1792463768,
+          "bytes": 25604
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-library.php",
+        "remote": "noa-library.php",
+        "state": "match",
+        "sourceSha256": "e176144fbf22cc5a3e6ed2076aa567bd8979cf5a9c9b48cddca95e86bd5ff742",
+        "deployed": {
+          "sha256": "e176144fbf22cc5a3e6ed2076aa567bd8979cf5a9c9b48cddca95e86bd5ff742",
+          "mtime": 1792540483,
+          "bytes": 6505
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-manifest.json",
+        "remote": "noa-manifest.json",
+        "state": "match",
+        "sourceSha256": "3e3e72820dd85549548db8d108cbd816f803aaa0cfcf6651eda900d81bb79f7c",
+        "deployed": {
+          "sha256": "3e3e72820dd85549548db8d108cbd816f803aaa0cfcf6651eda900d81bb79f7c",
+          "mtime": 1792529602,
+          "bytes": 553
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-music.css",
+        "remote": "noa-music.css",
+        "state": "match",
+        "sourceSha256": "cb9e10821bcf42803c86f80180f4c4daea4b7d9af50c3c7beaf779ab1e98325b",
+        "deployed": {
+          "sha256": "cb9e10821bcf42803c86f80180f4c4daea4b7d9af50c3c7beaf779ab1e98325b",
+          "mtime": 1792522869,
+          "bytes": 4036
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-music.php",
+        "remote": "noa-music.php",
+        "state": "different",
+        "sourceSha256": "91de9fcdc8efdb7d4200b103d9504a6e6e9980e91464fb12250c4c1d3c20c4a3",
+        "deployed": {
+          "sha256": "2593ee05ceb1d6492cfc5d36faafa97d4445aada07febb3f4d03123f3b55f921",
+          "mtime": 1792583743,
+          "bytes": 25264
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-my.php",
+        "remote": "noa-my.php",
+        "state": "match",
+        "sourceSha256": "76dcd7690455a1dcf831eda7337b8cceb9572a8e691dbf233bf4cc0200423806",
+        "deployed": {
+          "sha256": "76dcd7690455a1dcf831eda7337b8cceb9572a8e691dbf233bf4cc0200423806",
+          "mtime": 1792583931,
+          "bytes": 3938
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-playlists.js",
+        "remote": "noa-playlists.js",
+        "state": "match",
+        "sourceSha256": "86b9ec2171f857d442fb9ccc3ae9935d2ba2ce8cf17397640b6a7de6a768bd29",
+        "deployed": {
+          "sha256": "86b9ec2171f857d442fb9ccc3ae9935d2ba2ce8cf17397640b6a7de6a768bd29",
+          "mtime": 1792522877,
+          "bytes": 3830
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-recovery.php",
+        "remote": "noa-recovery.php",
+        "state": "match",
+        "sourceSha256": "0029a7ab11f6a05f0ccae208c706dc46003d60bc31d3932631cc7f5fc297af03",
+        "deployed": {
+          "sha256": "0029a7ab11f6a05f0ccae208c706dc46003d60bc31d3932631cc7f5fc297af03",
+          "mtime": 1792540467,
+          "bytes": 4830
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-settings.php",
+        "remote": "noa-settings.php",
+        "state": "match",
+        "sourceSha256": "20012bb6cc022674aa22f93bdcbd395d3dce4f7b2f4cf60fe1a22b4c14e4d4e3",
+        "deployed": {
+          "sha256": "20012bb6cc022674aa22f93bdcbd395d3dce4f7b2f4cf60fe1a22b4c14e4d4e3",
+          "mtime": 1792540492,
+          "bytes": 988
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-sw.js",
+        "remote": "noa-sw.js",
+        "state": "match",
+        "sourceSha256": "c659a7a289dcc783be7fb01c5d9ed734f4ee34b2643590b8c9b01b4b7ce9a6a3",
+        "deployed": {
+          "sha256": "c659a7a289dcc783be7fb01c5d9ed734f4ee34b2643590b8c9b01b4b7ce9a6a3",
+          "mtime": 1792457073,
+          "bytes": 903
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-taxonomy-browse.js",
+        "remote": "noa-taxonomy-browse.js",
+        "state": "match",
+        "sourceSha256": "9ea898d5b2cbcdae7972f3e5d9ac940c64fdc0f8cc6a474dc679fe433be87998",
+        "deployed": {
+          "sha256": "9ea898d5b2cbcdae7972f3e5d9ac940c64fdc0f8cc6a474dc679fe433be87998",
+          "mtime": 1792557527,
+          "bytes": 3524
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-theme-admin.php",
+        "remote": "noa-theme-admin.php",
+        "state": "match",
+        "sourceSha256": "94fc273852a053557554ffb42114c49ff37d00745ae51f8a469f0fb7f7fd7f52",
+        "deployed": {
+          "sha256": "94fc273852a053557554ffb42114c49ff37d00745ae51f8a469f0fb7f7fd7f52",
+          "mtime": 1792540494,
+          "bytes": 4592
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-ui-words.json",
+        "remote": "noa-ui-words.json",
+        "state": "match",
+        "sourceSha256": "e9f88ed5c5d0326f1b2a8462d2171594b17390a8abe2ead9f49ef643813c192e",
+        "deployed": {
+          "sha256": "e9f88ed5c5d0326f1b2a8462d2171594b17390a8abe2ead9f49ef643813c192e",
+          "mtime": 1792492692,
+          "bytes": 39208
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-ui.css",
+        "remote": "noa-ui.css",
+        "state": "match",
+        "sourceSha256": "88b34df5e475d8ad9c368c9e6d3790565cf86f5973b70590f15ae6f6ca1f2de7",
+        "deployed": {
+          "sha256": "88b34df5e475d8ad9c368c9e6d3790565cf86f5973b70590f15ae6f6ca1f2de7",
+          "mtime": 1792583644,
+          "bytes": 26307
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-ui.js",
+        "remote": "noa-ui.js",
+        "state": "match",
+        "sourceSha256": "3197d8bc053619393dc709fbdad3e680f2f0f9964a8c0c0bf24bb97b95bbc336",
+        "deployed": {
+          "sha256": "3197d8bc053619393dc709fbdad3e680f2f0f9964a8c0c0bf24bb97b95bbc336",
+          "mtime": 1792583646,
+          "bytes": 14186
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-world.css",
+        "remote": "noa-world.css",
+        "state": "match",
+        "sourceSha256": "8af747a5ed369fce9c58f9c8f52fba68d3656270b50b1fc5a6d2e90a4da7dcf8",
+        "deployed": {
+          "sha256": "8af747a5ed369fce9c58f9c8f52fba68d3656270b50b1fc5a6d2e90a4da7dcf8",
+          "mtime": 1792583648,
+          "bytes": 5387
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-world.js",
+        "remote": "noa-world.js",
+        "state": "match",
+        "sourceSha256": "7faa60a323c9798ccc0c37ef7d6c10fa4947e43c7a661f1625e4fa39d21aee60",
+        "deployed": {
+          "sha256": "7faa60a323c9798ccc0c37ef7d6c10fa4947e43c7a661f1625e4fa39d21aee60",
+          "mtime": 1792583649,
+          "bytes": 2704
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-world.php",
+        "remote": "noa-world.php",
+        "state": "match",
+        "sourceSha256": "24f40f7cb1b9c5a03813be160b0b8e5d0922461eb4dd7d85c114018f2a5edb24",
+        "deployed": {
+          "sha256": "24f40f7cb1b9c5a03813be160b0b8e5d0922461eb4dd7d85c114018f2a5edb24",
+          "mtime": 1792553596,
+          "bytes": 2580
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-youtube-admin.php",
+        "remote": "noa-youtube-admin.php",
+        "state": "match",
+        "sourceSha256": "208721cedc71db34eb808b12a74ae2f7f87479bf3af8efc06ed1ec0345c5d0b9",
+        "deployed": {
+          "sha256": "208721cedc71db34eb808b12a74ae2f7f87479bf3af8efc06ed1ec0345c5d0b9",
+          "mtime": 1792540497,
+          "bytes": 4142
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-youtube.css",
+        "remote": "noa-youtube.css",
+        "state": "match",
+        "sourceSha256": "20656ecb779cd03c8b75c43de6db8358e505742ca5fd6c6de017e4d4ceb908b3",
+        "deployed": {
+          "sha256": "20656ecb779cd03c8b75c43de6db8358e505742ca5fd6c6de017e4d4ceb908b3",
+          "mtime": 1792583650,
+          "bytes": 2389
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-youtube.js",
+        "remote": "noa-youtube.js",
+        "state": "match",
+        "sourceSha256": "04a716cfab8140f14a054db11be346388879c31fc597d09c8d5f967061abef99",
+        "deployed": {
+          "sha256": "04a716cfab8140f14a054db11be346388879c31fc597d09c8d5f967061abef99",
+          "mtime": 1792527294,
+          "bytes": 10330
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa-youtube.php",
+        "remote": "noa-youtube.php",
+        "state": "match",
+        "sourceSha256": "7be27a56650c402c1ab334077f202723df43f91617c9441c634fefce0615d365",
+        "deployed": {
+          "sha256": "7be27a56650c402c1ab334077f202723df43f91617c9441c634fefce0615d365",
+          "mtime": 1792583933,
+          "bytes": 7815
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/noa2.php",
+        "remote": "noa2.php",
+        "state": "match",
+        "sourceSha256": "5bd92117087c56b66287d1c2dcdc39d2aa91021e3cde1bd98636e245ebf1221c",
+        "deployed": {
+          "sha256": "5bd92117087c56b66287d1c2dcdc39d2aa91021e3cde1bd98636e245ebf1221c",
+          "mtime": 1792553597,
+          "bytes": 7468
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/head.php",
+        "remote": "theme/noa_studio/head.php",
+        "state": "match",
+        "sourceSha256": "3c5f72ce5bb34d92f620bb0b0f1a89b31d2a27f765732ec5ceba3e17326b0136",
+        "deployed": {
+          "sha256": "3c5f72ce5bb34d92f620bb0b0f1a89b31d2a27f765732ec5ceba3e17326b0136",
+          "mtime": 1792540505,
+          "bytes": 561
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/index.php",
+        "remote": "theme/noa_studio/index.php",
+        "state": "match",
+        "sourceSha256": "3eddbe83c8e45e15ee9866fe52814e228f91f32a990f2668c1d425aacee86387",
+        "deployed": {
+          "sha256": "3eddbe83c8e45e15ee9866fe52814e228f91f32a990f2668c1d425aacee86387",
+          "mtime": 1792463494,
+          "bytes": 83
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/mobile/head.php",
+        "remote": "theme/noa_studio/mobile/head.php",
+        "state": "match",
+        "sourceSha256": "3c5f72ce5bb34d92f620bb0b0f1a89b31d2a27f765732ec5ceba3e17326b0136",
+        "deployed": {
+          "sha256": "3c5f72ce5bb34d92f620bb0b0f1a89b31d2a27f765732ec5ceba3e17326b0136",
+          "mtime": 1792540508,
+          "bytes": 561
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/mobile/index.php",
+        "remote": "theme/noa_studio/mobile/index.php",
+        "state": "match",
+        "sourceSha256": "3eddbe83c8e45e15ee9866fe52814e228f91f32a990f2668c1d425aacee86387",
+        "deployed": {
+          "sha256": "3eddbe83c8e45e15ee9866fe52814e228f91f32a990f2668c1d425aacee86387",
+          "mtime": 1792463500,
+          "bytes": 83
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/mobile/tail.php",
+        "remote": "theme/noa_studio/mobile/tail.php",
+        "state": "match",
+        "sourceSha256": "3499298de928ba968f7a0bb3021f889725642a01edbdbf63479caaf0e035305b",
+        "deployed": {
+          "sha256": "3499298de928ba968f7a0bb3021f889725642a01edbdbf63479caaf0e035305b",
+          "mtime": 1792463503,
+          "bytes": 106
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/readme.txt",
+        "remote": "theme/noa_studio/readme.txt",
+        "state": "match",
+        "sourceSha256": "46d84319de81bb8c91679d8bfb4aef1357d044088b16af52ae12150f54e8040e",
+        "deployed": {
+          "sha256": "46d84319de81bb8c91679d8bfb4aef1357d044088b16af52ae12150f54e8040e",
+          "mtime": 1792493065,
+          "bytes": 372
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/skin-bridge.php",
+        "remote": "theme/noa_studio/skin-bridge.php",
+        "state": "match",
+        "sourceSha256": "4f90ebf799c91537918dfaea5cc76e96904e96ab8787c2938e26eb7060bfda4c",
+        "deployed": {
+          "sha256": "4f90ebf799c91537918dfaea5cc76e96904e96ab8787c2938e26eb7060bfda4c",
+          "mtime": 1792529667,
+          "bytes": 1099
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/skin/board/basic/list.skin.php",
+        "remote": "theme/noa_studio/skin/board/basic/list.skin.php",
+        "state": "match",
+        "sourceSha256": "9dd380d3115b56307c2d41668efc3d397eeca00ca612f1e0c07532e7e439b671",
+        "deployed": {
+          "sha256": "9dd380d3115b56307c2d41668efc3d397eeca00ca612f1e0c07532e7e439b671",
+          "mtime": 1792464288,
+          "bytes": 142
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/skin/board/basic/view.skin.php",
+        "remote": "theme/noa_studio/skin/board/basic/view.skin.php",
+        "state": "match",
+        "sourceSha256": "4fa2407f53beb3f7cfdf98ac80db8e7d2f6604a3e6cfedd74d0805fd0b107b3d",
+        "deployed": {
+          "sha256": "4fa2407f53beb3f7cfdf98ac80db8e7d2f6604a3e6cfedd74d0805fd0b107b3d",
+          "mtime": 1792464290,
+          "bytes": 142
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/skin/board/basic/write.skin.php",
+        "remote": "theme/noa_studio/skin/board/basic/write.skin.php",
+        "state": "match",
+        "sourceSha256": "fbc2160c8a90240982db74d95d8b07732ecead5aedd88f0f4a95280cab1f665f",
+        "deployed": {
+          "sha256": "fbc2160c8a90240982db74d95d8b07732ecead5aedd88f0f4a95280cab1f665f",
+          "mtime": 1792464292,
+          "bytes": 143
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/skin/latest/basic/latest.skin.php",
+        "remote": "theme/noa_studio/skin/latest/basic/latest.skin.php",
+        "state": "match",
+        "sourceSha256": "0cea92b2cbd543ac2fa06bc65fc87fb708f3c038d122a7c6dfb4d8c75c2a9176",
+        "deployed": {
+          "sha256": "0cea92b2cbd543ac2fa06bc65fc87fb708f3c038d122a7c6dfb4d8c75c2a9176",
+          "mtime": 1792464295,
+          "bytes": 145
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/skin/member/basic/login.skin.php",
+        "remote": "theme/noa_studio/skin/member/basic/login.skin.php",
+        "state": "match",
+        "sourceSha256": "45355c3e812ad8c0eb0b2534cd08a472a62a104977e0288c494513658002350c",
+        "deployed": {
+          "sha256": "45355c3e812ad8c0eb0b2534cd08a472a62a104977e0288c494513658002350c",
+          "mtime": 1792464297,
+          "bytes": 144
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/skin/member/basic/member_confirm.skin.php",
+        "remote": "theme/noa_studio/skin/member/basic/member_confirm.skin.php",
+        "state": "match",
+        "sourceSha256": "9fc2e2746ebbbedbd42e420f90033e734fe7acdfbaacb237a6ce552209735e04",
+        "deployed": {
+          "sha256": "9fc2e2746ebbbedbd42e420f90033e734fe7acdfbaacb237a6ce552209735e04",
+          "mtime": 1792464299,
+          "bytes": 153
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/skin/member/basic/password_lost.skin.php",
+        "remote": "theme/noa_studio/skin/member/basic/password_lost.skin.php",
+        "state": "match",
+        "sourceSha256": "7277b8dd58f0a5c6e13905d89971756cf236aeffae42704c3df8ea7cf84ef228",
+        "deployed": {
+          "sha256": "7277b8dd58f0a5c6e13905d89971756cf236aeffae42704c3df8ea7cf84ef228",
+          "mtime": 1792464301,
+          "bytes": 152
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/skin/member/basic/profile.skin.php",
+        "remote": "theme/noa_studio/skin/member/basic/profile.skin.php",
+        "state": "match",
+        "sourceSha256": "e9f811c9f6517a74457227bdf237e68207d9dfbcc914103a9b3d067ea500de80",
+        "deployed": {
+          "sha256": "e9f811c9f6517a74457227bdf237e68207d9dfbcc914103a9b3d067ea500de80",
+          "mtime": 1792464303,
+          "bytes": 146
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/skin/member/basic/register.skin.php",
+        "remote": "theme/noa_studio/skin/member/basic/register.skin.php",
+        "state": "match",
+        "sourceSha256": "451b4294126a3b61d01192a797bfc95658ab3a521d53f542b735459cc753294f",
+        "deployed": {
+          "sha256": "451b4294126a3b61d01192a797bfc95658ab3a521d53f542b735459cc753294f",
+          "mtime": 1792464305,
+          "bytes": 147
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/skin/member/basic/register_form.skin.php",
+        "remote": "theme/noa_studio/skin/member/basic/register_form.skin.php",
+        "state": "match",
+        "sourceSha256": "2deee05d1ad3ad84c2c47cf69febc3c3596ab2732129aa80760ddbd187ca031b",
+        "deployed": {
+          "sha256": "2deee05d1ad3ad84c2c47cf69febc3c3596ab2732129aa80760ddbd187ca031b",
+          "mtime": 1792464307,
+          "bytes": 152
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/skin/member/basic/register_result.skin.php",
+        "remote": "theme/noa_studio/skin/member/basic/register_result.skin.php",
+        "state": "match",
+        "sourceSha256": "4cf8984316e689fed8f9876593b7e419a865115f936787b7ff930ad6bd44848e",
+        "deployed": {
+          "sha256": "4cf8984316e689fed8f9876593b7e419a865115f936787b7ff930ad6bd44848e",
+          "mtime": 1792464309,
+          "bytes": 154
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/skin/search/basic/search.skin.php",
+        "remote": "theme/noa_studio/skin/search/basic/search.skin.php",
+        "state": "match",
+        "sourceSha256": "a8a5ce858971884e29519434945af9d9c67ada129e27d4efea4e293fa94dfe23",
+        "deployed": {
+          "sha256": "a8a5ce858971884e29519434945af9d9c67ada129e27d4efea4e293fa94dfe23",
+          "mtime": 1792464312,
+          "bytes": 145
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/tail.php",
+        "remote": "theme/noa_studio/tail.php",
+        "state": "match",
+        "sourceSha256": "3499298de928ba968f7a0bb3021f889725642a01edbdbf63479caaf0e035305b",
+        "deployed": {
+          "sha256": "3499298de928ba968f7a0bb3021f889725642a01edbdbf63479caaf0e035305b",
+          "mtime": 1792463506,
+          "bytes": 106
+        },
+        "knownPreviousCommit": null
+      },
+      {
+        "source": "deploy/theme/noa_studio/theme.config.php",
+        "remote": "theme/noa_studio/theme.config.php",
+        "state": "match",
+        "sourceSha256": "5a123b024abf763bc219bdb38c0a0a15fceab506871c4a43bac4a315dc5f5fb5",
+        "deployed": {
+          "sha256": "5a123b024abf763bc219bdb38c0a0a15fceab506871c4a43bac4a315dc5f5fb5",
+          "mtime": 1792463509,
+          "bytes": 358
+        },
+        "knownPreviousCommit": null
+      }
+    ],
+    "counts": {
+      "match": 248,
+      "different": 9
+    },
+    "archivedLegacyFilesNotRuntimeTargets": 1739
+  },
+  "uiRelease": {
+    "sourceCommit": "7305901f00616399c4a1f725bb0015edac3d39c0",
+    "backup": "/hosting/noastudio/noa-deploy-backups/uiux-20261021-39594832143-1",
+    "changed": [
+      "noa-bridge/home-core.php",
+      "noa-browse.js",
+      "noa-hero.js",
+      "noa-home.js",
+      "noa-ui.css",
+      "noa-ui.js",
+      "noa-world.css",
+      "noa-world.js",
+      "noa-youtube.css",
+      "noa-app/home.php",
+      "noa-app/world-view.php",
+      "noa-my.php",
+      "noa-youtube.php"
+    ],
+    "files": {
+      "noa-bridge/home-core.php": {
+        "source": "bridge/home-core.php",
+        "before": "b20e7ed34b480b1ae3f338e895bc31ce9b82f919b5cf1629f6dc7f714c811a45",
+        "after": "fedfd0d9a51076f336900bd3a8fc8691d2bfb9a89eaf408c9684cda0088947e7"
+      },
+      "noa-app/home.php": {
+        "source": "deploy/noa-app/home.php",
+        "before": "556f3f8c9b643f3525b443bb602eaca0316f3d10a7a4a43a376108fa40ed56c5",
+        "after": "e2b9198f296563923d0918dd1e540e98cb861314a13602fe020984737f6f9079"
+      },
+      "noa-app/world-view.php": {
+        "source": "deploy/noa-app/world-view.php",
+        "before": "24f1841f932b9773d63a40f57ea02ac7ccedd3e59311803d5692621fcf758bee",
+        "after": "b63621aad9d74a36b48ec188513154de19c75132dc05f8de1280c2e2520efab0"
+      },
+      "noa-browse.js": {
+        "source": "deploy/noa-browse.js",
+        "before": "0d97e47ff616a99485e4293e270fd51fd5b8feed07ef8012eca40085eb53cf58",
+        "after": "a6e46dd34937dd630a0c0d372166a6e1783e158ffcac29d56eca7968271ead41"
+      },
+      "noa-hero.js": {
+        "source": "deploy/noa-hero.js",
+        "before": "27a824bb390e31b340f32e2ebec3d6cf8d5fd8f4d74311950d5fbe4f61eb733d",
+        "after": "91adf9deb8863361e05f82d16394f425e10e3e01af655ed9a149fa4bfb881688"
+      },
+      "noa-home.js": {
+        "source": "deploy/noa-home.js",
+        "before": "3702ba8d6894aa3dd6518033637755ca7f7b8db582a3725b1babe1b7544f3512",
+        "after": "c13249041a1c92f0082d3f32bb1a8da4001035e4ccd2bd94f265992e38685bf8"
+      },
+      "noa-my.php": {
+        "source": "deploy/noa-my.php",
+        "before": "4d894090ab3d6ab541713422c2fc0b633d20a62b8915696b26e2b75f21b3cc76",
+        "after": "d5379fae48553891db0aefb10e3003ce38631760c9576177e096b4fadee891e7"
+      },
+      "noa-ui.css": {
+        "source": "deploy/noa-ui.css",
+        "before": "f582d9868b71659ce5b87d6aae943778d4e4f14d8317fe7f2ac1f4d26572db4d",
+        "after": "88b34df5e475d8ad9c368c9e6d3790565cf86f5973b70590f15ae6f6ca1f2de7"
+      },
+      "noa-ui.js": {
+        "source": "deploy/noa-ui.js",
+        "before": "1159cee5838341800b35a9a5964fb372e1ff49bfba93a9160c5b4ec343f54ece",
+        "after": "3197d8bc053619393dc709fbdad3e680f2f0f9964a8c0c0bf24bb97b95bbc336"
+      },
+      "noa-world.css": {
+        "source": "deploy/noa-world.css",
+        "before": "cfbd141a702323ced6975d96567a25b4ac88dde9daed43b2d60ec80fefba2c7f",
+        "after": "8af747a5ed369fce9c58f9c8f52fba68d3656270b50b1fc5a6d2e90a4da7dcf8"
+      },
+      "noa-world.js": {
+        "source": "deploy/noa-world.js",
+        "before": "d8d5eaed1e8b7ffc493129dec8f97977dd3c424f055ab325b7b68832ac342fa0",
+        "after": "7faa60a323c9798ccc0c37ef7d6c10fa4947e43c7a661f1625e4fa39d21aee60"
+      },
+      "noa-youtube.css": {
+        "source": "deploy/noa-youtube.css",
+        "before": "72a3b785fd55fc5772cd2bc4a4afb2f3829e71088e1506978421638ed343fba6",
+        "after": "20656ecb779cd03c8b75c43de6db8358e505742ca5fd6c6de017e4d4ceb908b3"
+      },
+      "noa-youtube.php": {
+        "source": "deploy/noa-youtube.php",
+        "before": "a9acdfc1beec2f8661c9c77a6723b7eeaa2820e1d8292c318f2906c7a166f73b",
+        "after": "431f4296227466de2754fa1cfdbf7fc592ecffe18b5ecf4856255f54aff9c22a"
+      }
+    },
+    "protected": {
+      "index.php": "d9b78823be675dbfc6e70cc2134af2ec508e47a9a900938dfa7655108585fd30",
+      "common.php": "1c7aec0d6dee688077a4ac30fa703bdf93cbd49b77f922d6a8e963c97dacdf62",
+      "config.php": "362c2e733828342d635de2823ec4ca0d359df9b55c2d12a9780387a12f857c2c",
+      "data/dbconfig.php": "f6a9c21e208f51d5dfea43d1123d43cfbda97434770d1047d442ca153f411adf",
+      "head.php": "a2173d9667b4df66ea43996102f3623f2b5c40ae7527896d70ef70494a7af5dd",
+      "tail.php": "58de166b5f6047aab4757df1a9d935a367b4139216db7cf09382e0111d11415a",
+      "version.php": "c2c43c3a20578afe254a5143397ef13cdbaf2b5bf3560c064ed6fff617436c87",
+      "bbs/login.php": "36272335afb1e951556a7163c6d250d41f0313badeabee44675082bd4f0219b3",
+      "bbs/login_check.php": "80ef8ce19c0afc8f52ed7e21d3c9a99c4dc3699aef7d185bed8e74a9fdcc480c",
+      "noa-music.php": "ee0d8dba6d8cd3cb7f299c61249e3cc04b50ac8bbcffb0fb80af531ddfc1ac7c",
+      "noa-app/jukebox/index.php": "8417bc1661478c9e8bfa27505229dbaf336e8066ebc9c6c2951c0a096f68bd37",
+      "noa-app/jukebox/upload-core.php": "ffa7d23232889a371c68819571977154182210f4a455f611328a51c4b1a949e3",
+      "noa-app/jukebox/core.php": "21c76f85944e9ecf615ac824a32a2d82f3dfdacdf222a7bd13433050ab31321a",
+      "noa-app/jukebox/upload.php": "2f866110c043407a9045394823da2f041401132c39fb455690a084790ae02c8b",
+      "noa-app/jukebox/upload.js": "faa3ac0858d253652f7e32af0a9768e954b9add8b8d3fef65e2ffa044b8c32b9",
+      "noa-app/jukebox/upload.css": "e7dbd2df2e48caea432085ab56aac8f14253c1e72e8f137668389e48968551fc"
+    },
+    "sqlWrites": false,
+    "jukeboxWrites": false,
+    "deployedAtUTC": "2026-10-21T11:55:20Z",
+    "httpVerified": true
+  },
+  "cacheRelease": {
+    "commit": "a3ae861de42468fed3ed3cb068958d194e6ff8eb",
+    "backup": "/hosting/noastudio/noa-deploy-backups/p0-39595679021",
+    "changed": [
+      "noa-app/home.php",
+      "noa-app/world-view.php",
+      "noa-my.php",
+      "noa-youtube.php"
+    ],
+    "changedCount": 4,
+    "preservedUnknown": [],
+    "coreUnchanged": true,
+    "sqlMigrations": false,
+    "deployedAtUTC": "2026-10-21T11:59:20Z"
+  },
+  "protectedOwnerVersions": [
+    {
+      "remote": "noa-app/jukebox/index.php",
+      "ownerBranchCommit": "51d377acda9bc7ac9f6230093853bab2105744f1",
+      "sha256": "98c1b7ba2298b9c27cfe19262ccc3c52f46686a0faf5b098042faa2b0a912d65"
+    },
+    {
+      "remote": "noa-app/jukebox/operations.php",
+      "ownerBranchCommit": "51d377acda9bc7ac9f6230093853bab2105744f1",
+      "sha256": "ee57ce3dcd9ca160ef5f3d300c3878d4718ceafa26c2288f7671aed46dd1090e"
+    },
+    {
+      "remote": "noa-app/jukebox/queue-core.php",
+      "ownerBranchCommit": "f839c7d7b150c3bc928f3411904ca1f5d7c41bb3",
+      "sha256": "411ba1b3f4d1d9d477eb5c91b1480f5346f1dddcc8938683cb201f9115c3d38e"
+    },
+    {
+      "remote": "noa-app/jukebox/service.php",
+      "ownerBranchCommit": "5a90c6a6b7abe5cf2e3686cb1961272ed4c4166f",
+      "sha256": "779021701ba8eb7c99effd2e03bccacd6ae0afc9396df2aa1261801e367243d8"
+    },
+    {
+      "remote": "noa-app/jukebox/upload-core.php",
+      "ownerBranchCommit": "51d377acda9bc7ac9f6230093853bab2105744f1",
+      "sha256": "5160d1d1a1294a737a8d7bea817dd5fd6224b7912bf15a6cdc2bd38a60849d3d"
+    },
+    {
+      "remote": "noa-app/jukebox/upload.css",
+      "ownerBranchCommit": "f839c7d7b150c3bc928f3411904ca1f5d7c41bb3",
+      "sha256": "e7dbd2df2e48caea432085ab56aac8f14253c1e72e8f137668389e48968551fc"
+    },
+    {
+      "remote": "noa-app/jukebox/upload.js",
+      "ownerBranchCommit": "51d377acda9bc7ac9f6230093853bab2105744f1",
+      "sha256": "a8b85610b43612899875efb9b28047f3ddadef28bce998bb6aa8213b07a9cdfe"
+    },
+    {
+      "remote": "noa-app/jukebox/upload.php",
+      "ownerBranchCommit": "5a90c6a6b7abe5cf2e3686cb1961272ed4c4166f",
+      "sha256": "2f866110c043407a9045394823da2f041401132c39fb455690a084790ae02c8b"
+    },
+    {
+      "remote": "noa-music.php",
+      "ownerBranchCommit": "51d377acda9bc7ac9f6230093853bab2105744f1",
+      "sha256": "2593ee05ceb1d6492cfc5d36faafa97d4445aada07febb3f4d03123f3b55f921"
+    }
+  ],
+  "postflight": {
+    "commit": "38c6e662d84e8bd15fa5c4f162753af5a4161798",
+    "sqlWrites": false,
+    "workersStopped": false,
+    "integrity_snapshot": {
+      "documents": 654,
+      "documents_sha256": "79661fa849e474a534b69d836a46498fbc9d62c3848f3445490c375cf8beffa9",
+      "members": 2
+    },
+    "queue_snapshot": {
+      "counts": {
+        "failed": 7,
+        "ready": 48,
+        "uploading": 1
+      },
+      "current_counts": {
+        "failed": 2,
+        "ready": 30,
+        "uploading": 1
+      },
+      "total_uploads": 56,
+      "concurrency": 1,
+      "automatic_attempt_limit": 3,
+      "checked_at": "2026-10-21T21:04:24+09:00"
+    },
+    "capabilities": {
+      "php": "8.2.33",
+      "sapi": "fpm-fcgi",
+      "execution_limit_seconds": 120,
+      "shell_exec_callable": true,
+      "proc_open_callable": false,
+      "free_bytes": 556980178944,
+      "private_media_bytes": 184349806,
+      "spool_quota_bytes": 536870912,
+      "file_limit_bytes": 268435456,
+      "processing_environment": "GitHub Actions Ubuntu worker; Dothome PHP upload/SQL only"
+    },
+    "backups": [
+      {
+        "id": "d54c43955754a84d1fca3778345f37a0",
+        "createdAt": "2026-10-21T04:29:07+00:00",
+        "scope": "전체 DB",
+        "bytes": 125043833,
+        "sha256": "91759bcd8bb5b8bdc5ac43653646587b3b0b253ed05c05eebcff81fe8e3fdc01",
+        "restoreVerified": false,
+        "tableCount": 56
+      },
+      {
+        "id": "ce1beb1a0ad64e9dc4b50654625c6618",
+        "createdAt": "2026-10-21T04:14:06+00:00",
+        "scope": "전체 DB",
+        "bytes": 125039669,
+        "sha256": "6acdef4c922301f20365cf6f00f02fe433e1303f2f025a0c2f8489919f769d53",
+        "restoreVerified": false,
+        "tableCount": 56
+      },
+      {
+        "id": "362dfee5ef4c3df496fdbc83cb482a5a",
+        "createdAt": "2026-10-21T02:01:36+00:00",
+        "scope": "전체 DB",
+        "bytes": 125000300,
+        "sha256": "6dac39d8fe1b14a53a6ba198d9374edb0d8b6c6b8b785dfc3a64699fecc31a3c",
+        "restoreVerified": true,
+        "tableCount": 56
+      }
+    ],
+    "latestBackupVerified": true,
+    "originalDocumentsMatchBefore": true,
+    "checkedAtUTC": "2026-10-21T12:05:40Z"
+  },
+  "publicProof": [
+    {
+      "width": 390,
+      "urls": [
+        {
+          "path": "/",
+          "status": 200,
+          "final": "https://noastudio.ai.kr/",
+          "text": "NOA STUDIO\n로그인\nMusic beyondimagination.\n\n하나의 이야기, 서로 다른 울림.\n\n음악 영상 둘러보기\n\n공개·곡 연결 확인 영상의 YouTube 조회수 기준입니다.\n\n추천 음악 · YouTube TOP 10\n전체 보기\n\n별무리가 많이 찾은 음악을 만나보세요.\n\n공개 영상 순위를 불러오는 중입니다",
+          "overflow": false
+        },
+        {
+          "path": "/index.php",
+          "status": 200,
+          "final": "https://noastudio.ai.kr/index.php",
+          "text": "NOA STUDIO\n로그인\nMusic beyondimagination.\n\n하나의 이야기, 서로 다른 울림.\n\n음악 영상 둘러보기\n\n공개·곡 연결 확인 영상의 YouTube 조회수 기준입니다.\n\n추천 음악 · YouTube TOP 10\n전체 보기\n\n별무리가 많이 찾은 음악을 만나보세요.\n\n공개 영상 순위를 불러오는 중입니다",
+          "overflow": false
+        },
+        {
+          "path": "/noa-music.php",
+          "status": 200,
+          "final": "https://noastudio.ai.kr/noa-music.php",
+          "text": "음원\n\nSuno 곡과 저장된 음원을 만나보세요. · 602곡 · 52개 ACT\n\n1차 카테고리\n전체\n2차 카테고리\n전체\n언어\n전체\nEP 번호\nACT 번호\n\n음원\n전체 검색·목록\n오리지널 장르\n160개 곡\nEP 장르\n360개 곡\n당신의 이야기, 우리의 음악 🎧\n45개 곡\n🎤 AInoa의 유명곡 커버\n37개 곡\n\n장르와 ",
+          "overflow": false
+        },
+        {
+          "path": "/noa-world.php",
+          "status": 200,
+          "final": "https://noastudio.ai.kr/noa-world.php",
+          "text": "홈\nNOA WORLD\n\nMUSIC / CHARACTERS / STORIES\n\nNOA WORLD\n\n노래의 장면을 따라, 노아와 노엘의 이야기 속으로.\n\nFEMALE VOCAL\n\nNOA · 노아\n\n상처를 지나 자신의 빛을 찾아가는 목소리. 쉽게 마음을 열지 못하지만, 조금씩 다가오는 온기를 마주합니다.\n\n공식 캐릭터시트 보기",
+          "overflow": false
+        },
+        {
+          "path": "/noa-youtube.php",
+          "status": 200,
+          "final": "https://noastudio.ai.kr/noa-youtube.php",
+          "text": "NOA STUDIO / WATCH & GROW\n\nYouTube\n\n음악에 장면을 더하고, 다음 이야기를 발견하세요.\n\n음악\n통합 라이브러리\n음악 영상\nNOA WORLD · 공식 MV\nYouTube\n전체 검색·목록\n오리지널 장르\n111개 영상\nEP 장르\n204개 영상\n당신의 이야기, 우리의 음악 🎧\n33개 영상\n🎤 AIn",
+          "overflow": false
+        },
+        {
+          "path": "/noa-my.php",
+          "status": 200,
+          "final": "https://noastudio.ai.kr/noa-my.php",
+          "text": "YOUR MUSIC, YOUR SPACE\n\nMY\n\n나의 음악, 보관함과 취향을 한곳에서.\n\n최근 재생\n이 탭에서 실제 재생한 음원이 없습니다.\n\n이 탭의 음원 재생 이력입니다. 다른 기기와 동기화되지 않습니다.\n\nYouTube 최근 열람\n이 탭에서 연 음악 영상이 없습니다.\n\n라이브러리에 연결된 영상의 열람 이력입니다. ",
+          "overflow": false
+        },
+        {
+          "path": "/noa-app/database/",
+          "anonymous": 403
+        },
+        {
+          "path": "/noa-app/jukebox/",
+          "anonymous": 403
+        },
+        {
+          "path": "/noa-app/jukebox/download.php?key=single%3Akpop-original%3A01",
+          "anonymous": 403
+        }
+      ],
+      "errors": [],
+      "warnings": [],
+      "images": [
+        {
+          "path": "/",
+          "visibleImages": [
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/papa-logo.png",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/splash/hall-g2-c.jpg",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "path": "/index.php",
+          "visibleImages": [
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/papa-logo.png",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/splash/bridge-g2-a.jpg",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "path": "/noa-music.php",
+          "visibleImages": [
+            {
+              "src": "https://noastudio.ai.kr/noa-app/jukebox/stream.php?key=single%3Ajpop-original%3A01&type=cover",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-app/jukebox/stream.php?key=single%3Adreamy-deep-house%3A01&type=cover",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-app/jukebox/stream.php?key=story%3Ayour-story%3A098c449a7969c1dc1ad04c8e&type=cover",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/splash/cover-reborn-g2-a.jpg",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "path": "/noa-world.php",
+          "visibleImages": [
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/characters/noa-sheet.png",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/characters/noel-sheet.png",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "path": "/noa-youtube.php",
+          "visibleImages": [
+            {
+              "src": "https://noastudio.ai.kr/noa-bridge/youtube-thumbnail.php?id=-VpewlPAMNA",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-bridge/youtube-thumbnail.php?id=-d-lVG1bXaM",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-bridge/youtube-thumbnail.php?id=0_V7sxOJ5Xw",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-bridge/youtube-thumbnail.php?id=-5Gyp_xkGvY",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "path": "/noa-my.php",
+          "visibleImages": []
+        }
+      ],
+      "home": {
+        "counts": {
+          "stories": 10,
+          "covers": 10,
+          "playlists": 10
+        },
+        "runId": "919a87072ef27926264d1d7e1f2dc68c",
+        "cards": {
+          "count": 30,
+          "uniqueLinks": 30
+        }
+      },
+      "hero": {
+        "source": "https://noastudio.ai.kr/noa-assets/splash/jpop-original-g2-a.mp4",
+        "currentTime": 0.408401,
+        "readyState": 4,
+        "paused": false
+      },
+      "world": {
+        "cards": 30,
+        "actLinks": 8,
+        "text": "홈\nNOA WORLD\n\nMUSIC / CHARACTERS / STORIES\n\nNOA WORLD\n\n노래의 장면을 따라, 노아와 노엘의 이야기 속으로.\n\nFEMALE VOCAL\n\nNOA · 노아\n\n상처를 지나 자신의 빛을 찾아가는 목소리. 쉽게 마음을 열지 못하지만, 조금씩 다가오는 온기를 마주합니다.\n\n공식 캐릭터시트 보기\n\nMALE VOCAL\n\nNOEL · 노엘\n\n노아의 노래에 또 하나의 시선과 목소리를 더합니다. 서로 다른 마음이 솔로와 듀엣의 장면으로 이어집니다.\n\n공식 캐릭터시트 보기\n전체\nACT.1\nACT.2\nACT.3\nACT.4\nACT.1 / EP.1–10\n사랑의 시작과 상처\n\n처음 사랑을 알게 된 순간부터, 익숙했던 세계가 무너지는 순간까지.\n\n세계관 소개 초안\n이야기와 공식 MV 보기 →\nACT.2 / EP.11–20\n엇갈린 마음\n\n같은 시간을 지나왔지만 서로 다르게 기억하는 두 사람의 이야기.\n\n세계관 소개 초안\n이야기와 공식 MV 보기 →\nACT.3 / EP.21–30\n이별 너머의 빛\n\n상처를 마주하고 스스로의 빛을 되찾는 과정.\n\n세계관 소개 초안\n이야기와 공식 MV 보기 →\nACT.4 / EP.31–40\n다시 사랑이 스며들 때\n\n새로운 만남, 조심스러운 구애, 닫힌 마음과 느린 회복.\n\n세계관 소개 초안\n이야기와 공식 MV 보기 →\n공식 MV · EP 순서\n공식 YouTube 재생목록 ↗\n\n수집 시점 2026-10-20T17:36:24+00:00 · 전체 공개 MV 30개 · 현재 30개 표시. 다음 정상 수집 완료 후 새 MV가 자동 반영됩니다.\n\n▷\nEP.1 하루의 끝에 | Official MV (KR) | Original Song | 하루가 저문 자리에 남은 온기\n\nEP.1 · ACT.1\n\n연결된 곡 정보kpop-original · ACT.1\n공식 MV 설명 펼치기\n▷\nEP.2 난 다시 살아가 | Official MV (KR) | Original Song | 끝이라고 생각한 자리에서 다시 숨이 열린다\n\nEP.2 · ACT.1\n\n연결된 곡 정보kpop-original · ACT.1\n공식 MV 설명 펼치기\n▷\nEP.3 빛으로 널 | Official MV (KR) | Original Song | 너를 향해 켠 빛만 고요히 남아 있다\n\nEP.3 · ACT.1\n\n연결된 곡 정보kpop-original · ACT.1\n공식 MV 설명 펼치기\n▷\nEP.4 세상 끝에서도 | Official MV (KR) | Original Song | 세상 끝에서도 그 약속만은 남았다\n\nEP.4 · ACT.1\n\n연결된 곡 정보kpop-original · ACT.1\n공식 MV 설명 펼치기\n▷\nEP.5 너와의 모든 순간 | Official MV (KR) | Original Song | 너와 보낸 모든 순간이 지금의 숨이 되었다\n\nEP.5 · ACT.1\n\n연결된 곡 정보kpop-original · ACT.1\n공식 MV 설명 펼치기\n▷\nEP.6 Remember | Official MV (KR) | Original Song | 잊히지 말라는 그 빛만 고"
+      },
+      "music": {
+        "publicRecords": 544,
+        "originalAudioFiles": 20,
+        "verified": 20,
+        "playback": {
+          "src": "https://noastudio.ai.kr/noa-app/jukebox/stream.php?key=single%3Akpop-original%3A01&type=audio",
+          "time": 2.404734,
+          "duration": 190.88,
+          "paused": false,
+          "ready": 4
+        },
+        "outputSignal": {
+          "rms": 0.04641720756476207,
+          "nonSilent": true
+        },
+        "stream": {
+          "status": 206,
+          "type": "audio/mpeg",
+          "range": "bytes 0-4095/7637805",
+          "bytes": 4096
+        }
+      }
+    },
+    {
+      "width": 1280,
+      "urls": [
+        {
+          "path": "/",
+          "status": 200,
+          "final": "https://noastudio.ai.kr/",
+          "text": "NOA STUDIO\n로그인\nAI ARTIST NOA / STARLIGHT\nMusic beyond\nimagination.\n\n하나의 이야기, 서로 다른 울림.\n\n음악 영상 둘러보기\n\n공개·곡 연결 확인 영상의 YouTube 조회수 기준입니다.\n\n추천 음악 · YouTube TOP 10\n전체 보기\n\n별무리가 많이 찾은 음악을 ",
+          "overflow": false
+        },
+        {
+          "path": "/index.php",
+          "status": 200,
+          "final": "https://noastudio.ai.kr/index.php",
+          "text": "NOA STUDIO\n로그인\nAI ARTIST NOA / STARLIGHT\nMusic beyond\nimagination.\n\n하나의 이야기, 서로 다른 울림.\n\n음악 영상 둘러보기\n\n공개·곡 연결 확인 영상의 YouTube 조회수 기준입니다.\n\n추천 음악 · YouTube TOP 10\n전체 보기\n\n별무리가 많이 찾은 음악을 ",
+          "overflow": false
+        },
+        {
+          "path": "/noa-music.php",
+          "status": 200,
+          "final": "https://noastudio.ai.kr/noa-music.php",
+          "text": "음원\n\nSuno 곡과 저장된 음원을 만나보세요. · 602곡 · 52개 ACT\n\n1차 카테고리\n전체\n2차 카테고리\n전체\n언어\n전체\nEP 번호\nACT 번호\n\n음원\n전체 검색·목록\n오리지널 장르\n160개 곡\nEP 장르\n360개 곡\n당신의 이야기, 우리의 음악 🎧\n45개 곡\n🎤 AInoa의 유명곡 커버\n37개 곡\n\n장르와 ",
+          "overflow": false
+        },
+        {
+          "path": "/noa-world.php",
+          "status": 200,
+          "final": "https://noastudio.ai.kr/noa-world.php",
+          "text": "홈\nNOA WORLD\n\nMUSIC / CHARACTERS / STORIES\n\nNOA WORLD\n\n노래의 장면을 따라, 노아와 노엘의 이야기 속으로.\n\nFEMALE VOCAL\n\nNOA · 노아\n\n상처를 지나 자신의 빛을 찾아가는 목소리. 쉽게 마음을 열지 못하지만, 조금씩 다가오는 온기를 마주합니다.\n\n공식 캐릭터시트 보기",
+          "overflow": false
+        },
+        {
+          "path": "/noa-youtube.php",
+          "status": 200,
+          "final": "https://noastudio.ai.kr/noa-youtube.php",
+          "text": "NOA STUDIO / WATCH & GROW\n\nYouTube\n\n음악에 장면을 더하고, 다음 이야기를 발견하세요.\n\n음악\n통합 라이브러리\n음악 영상\nNOA WORLD · 공식 MV\nYouTube\n전체 검색·목록\n오리지널 장르\n111개 영상\nEP 장르\n204개 영상\n당신의 이야기, 우리의 음악 🎧\n33개 영상\n🎤 AIn",
+          "overflow": false
+        },
+        {
+          "path": "/noa-my.php",
+          "status": 200,
+          "final": "https://noastudio.ai.kr/noa-my.php",
+          "text": "YOUR MUSIC, YOUR SPACE\n\nMY\n\n나의 음악, 보관함과 취향을 한곳에서.\n\n최근 재생\n이 탭에서 실제 재생한 음원이 없습니다.\n\n이 탭의 음원 재생 이력입니다. 다른 기기와 동기화되지 않습니다.\n\nYouTube 최근 열람\n이 탭에서 연 음악 영상이 없습니다.\n\n라이브러리에 연결된 영상의 열람 이력입니다. ",
+          "overflow": false
+        },
+        {
+          "path": "/noa-app/database/",
+          "anonymous": 403
+        },
+        {
+          "path": "/noa-app/jukebox/",
+          "anonymous": 403
+        },
+        {
+          "path": "/noa-app/jukebox/download.php?key=single%3Akpop-original%3A01",
+          "anonymous": 403
+        }
+      ],
+      "errors": [],
+      "warnings": [],
+      "images": [
+        {
+          "path": "/",
+          "visibleImages": [
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/papa-logo.png",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/papa-logo.png",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/og.jpg",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "path": "/index.php",
+          "visibleImages": [
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/papa-logo.png",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/papa-logo.png",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/og.jpg",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "path": "/noa-music.php",
+          "visibleImages": [
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/papa-logo.png",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-app/jukebox/stream.php?key=single%3Ajpop-original%3A01&type=cover",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-app/jukebox/stream.php?key=single%3Adreamy-deep-house%3A01&type=cover",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-app/jukebox/stream.php?key=story%3Ayour-story%3A098c449a7969c1dc1ad04c8e&type=cover",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/splash/cover-reborn-g2-a.jpg",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "path": "/noa-world.php",
+          "visibleImages": [
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/papa-logo.png",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/characters/noa-sheet.png",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/characters/noel-sheet.png",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "path": "/noa-youtube.php",
+          "visibleImages": [
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/papa-logo.png",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-bridge/youtube-thumbnail.php?id=-VpewlPAMNA",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-bridge/youtube-thumbnail.php?id=-d-lVG1bXaM",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-bridge/youtube-thumbnail.php?id=0_V7sxOJ5Xw",
+              "ok": true
+            },
+            {
+              "src": "https://noastudio.ai.kr/noa-bridge/youtube-thumbnail.php?id=-5Gyp_xkGvY",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "path": "/noa-my.php",
+          "visibleImages": [
+            {
+              "src": "https://noastudio.ai.kr/noa-assets/papa-logo.png",
+              "ok": true
+            }
+          ]
+        }
+      ],
+      "home": {
+        "counts": {
+          "stories": 10,
+          "covers": 10,
+          "playlists": 10
+        },
+        "runId": "919a87072ef27926264d1d7e1f2dc68c",
+        "cards": {
+          "count": 30,
+          "uniqueLinks": 30
+        }
+      },
+      "hero": {
+        "source": "https://noastudio.ai.kr/noa-assets/splash/jpop-original-g2-b.mp4",
+        "currentTime": 0.311716,
+        "readyState": 4,
+        "paused": false
+      },
+      "world": {
+        "cards": 30,
+        "actLinks": 8,
+        "text": "홈\nNOA WORLD\n\nMUSIC / CHARACTERS / STORIES\n\nNOA WORLD\n\n노래의 장면을 따라, 노아와 노엘의 이야기 속으로.\n\nFEMALE VOCAL\n\nNOA · 노아\n\n상처를 지나 자신의 빛을 찾아가는 목소리. 쉽게 마음을 열지 못하지만, 조금씩 다가오는 온기를 마주합니다.\n\n공식 캐릭터시트 보기\n\nMALE VOCAL\n\nNOEL · 노엘\n\n노아의 노래에 또 하나의 시선과 목소리를 더합니다. 서로 다른 마음이 솔로와 듀엣의 장면으로 이어집니다.\n\n공식 캐릭터시트 보기\n전체\nACT.1\nACT.2\nACT.3\nACT.4\nACT.1 / EP.1–10\n사랑의 시작과 상처\n\n처음 사랑을 알게 된 순간부터, 익숙했던 세계가 무너지는 순간까지.\n\n세계관 소개 초안\n이야기와 공식 MV 보기 →\nACT.2 / EP.11–20\n엇갈린 마음\n\n같은 시간을 지나왔지만 서로 다르게 기억하는 두 사람의 이야기.\n\n세계관 소개 초안\n이야기와 공식 MV 보기 →\nACT.3 / EP.21–30\n이별 너머의 빛\n\n상처를 마주하고 스스로의 빛을 되찾는 과정.\n\n세계관 소개 초안\n이야기와 공식 MV 보기 →\nACT.4 / EP.31–40\n다시 사랑이 스며들 때\n\n새로운 만남, 조심스러운 구애, 닫힌 마음과 느린 회복.\n\n세계관 소개 초안\n이야기와 공식 MV 보기 →\n공식 MV · EP 순서\n공식 YouTube 재생목록 ↗\n\n수집 시점 2026-10-20T17:36:24+00:00 · 전체 공개 MV 30개 · 현재 30개 표시. 다음 정상 수집 완료 후 새 MV가 자동 반영됩니다.\n\n▷\nEP.1 하루의 끝에 | Official MV (KR) | Original Song | 하루가 저문 자리에 남은 온기\n\nEP.1 · ACT.1\n\n연결된 곡 정보kpop-original · ACT.1\n공식 MV 설명 펼치기\n▷\nEP.2 난 다시 살아가 | Official MV (KR) | Original Song | 끝이라고 생각한 자리에서 다시 숨이 열린다\n\nEP.2 · ACT.1\n\n연결된 곡 정보kpop-original · ACT.1\n공식 MV 설명 펼치기\n▷\nEP.3 빛으로 널 | Official MV (KR) | Original Song | 너를 향해 켠 빛만 고요히 남아 있다\n\nEP.3 · ACT.1\n\n연결된 곡 정보kpop-original · ACT.1\n공식 MV 설명 펼치기\n▷\nEP.4 세상 끝에서도 | Official MV (KR) | Original Song | 세상 끝에서도 그 약속만은 남았다\n\nEP.4 · ACT.1\n\n연결된 곡 정보kpop-original · ACT.1\n공식 MV 설명 펼치기\n▷\nEP.5 너와의 모든 순간 | Official MV (KR) | Original Song | 너와 보낸 모든 순간이 지금의 숨이 되었다\n\nEP.5 · ACT.1\n\n연결된 곡 정보kpop-original · ACT.1\n공식 MV 설명 펼치기\n▷\nEP.6 Remember | Official MV (KR) | Original Song | 잊히지 말라는 그 빛만 고",
+        "embed": "https://www.youtube.com/embed/JEzRGwTJBro?autoplay=1&playsinline=1&rel=0",
+        "mediaText": "Sign in to confirm you’re not a bot\nSign in to confirm you’re not a bot\nThis helps protect our community\nSign in\nLearn more",
+        "media": {
+          "time": 0,
+          "duration": null,
+          "ready": 0,
+          "paused": true
+        },
+        "closed": "about:blank"
+      },
+      "music": {
+        "publicRecords": 544,
+        "originalAudioFiles": 20,
+        "verified": 20,
+        "playback": {
+          "src": "https://noastudio.ai.kr/noa-app/jukebox/stream.php?key=single%3Akpop-original%3A01&type=audio",
+          "time": 2.279394,
+          "duration": 190.88,
+          "paused": false,
+          "ready": 4
+        },
+        "outputSignal": {
+          "rms": 0.06090657346668381,
+          "nonSilent": true
+        },
+        "stream": {
+          "status": 206,
+          "type": "audio/mpeg",
+          "range": "bytes 0-4095/7637805",
+          "bytes": 4096
+        }
+      }
+    }
+  ],
+  "top10Thumbnails": [
+    {
+      "section": "stories",
+      "rank": 1,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "stories",
+      "rank": 2,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "stories",
+      "rank": 3,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "stories",
+      "rank": 4,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "stories",
+      "rank": 5,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "stories",
+      "rank": 6,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "stories",
+      "rank": 7,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "stories",
+      "rank": 8,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "stories",
+      "rank": 9,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "stories",
+      "rank": 10,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "covers",
+      "rank": 1,
+      "ok": true,
+      "error": "HTTP Error 503: Service Unavailable",
+      "status": 200,
+      "dimensions": [
+        480,
+        360
+      ],
+      "initialError": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "section": "covers",
+      "rank": 2,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "covers",
+      "rank": 3,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "covers",
+      "rank": 4,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "covers",
+      "rank": 5,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "covers",
+      "rank": 6,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "covers",
+      "rank": 7,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "covers",
+      "rank": 8,
+      "ok": true,
+      "error": "HTTP Error 503: Service Unavailable",
+      "status": 200,
+      "dimensions": [
+        480,
+        360
+      ],
+      "initialError": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "section": "covers",
+      "rank": 9,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "covers",
+      "rank": 10,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "playlists",
+      "rank": 1,
+      "ok": true,
+      "error": "HTTP Error 503: Service Unavailable",
+      "status": 200,
+      "dimensions": [
+        480,
+        360
+      ],
+      "initialError": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "section": "playlists",
+      "rank": 2,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "playlists",
+      "rank": 3,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "playlists",
+      "rank": 4,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "playlists",
+      "rank": 5,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "playlists",
+      "rank": 6,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "playlists",
+      "rank": 7,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "playlists",
+      "rank": 8,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "playlists",
+      "rank": 9,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    },
+    {
+      "section": "playlists",
+      "rank": 10,
+      "status": 200,
+      "type": "image/jpeg",
+      "dimensions": [
+        480,
+        360
+      ],
+      "ok": true
+    }
+  ],
+  "limits": [
+    "Work_music current branch preserved; no merge or deployment by Work_deploy",
+    "Authenticated administrator download and post-release workspace not verified due browser credential recovery restriction",
+    "YouTube actual media blocked this test browser with bot-confirmation sign-in",
+    "Latest existing SQL backup covers 56 tables; current later-added tables and latest backup restore not verified",
+    "Original server-internal cause of temporary SFTP mkdir refusal not established"
+  ],
+  "automationChecks": {
+    "backupGuardTests": 4,
+    "conditionalRollbackTests": 5,
+    "passed": true
+  }
+}
