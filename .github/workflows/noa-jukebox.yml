@@ -33,6 +33,31 @@ jobs:
           python3 tests/jukebox/make_fixture.py
           php tests/jukebox/upload_mysql_test.php
           node --check deploy/noa-app/jukebox/upload.js
+  interface:
+    needs: validate
+    if: github.event_name != 'schedule' && needs.validate.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    concurrency: {group: noa-jukebox-interface-deployment, cancel-in-progress: false}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Install deployment dependencies
+        run: python3 -m pip install --user paramiko==3.5.1 Pillow==11.3.0
+      - name: Publish interface without interrupting audio processing
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_JUKEBOX_INTERFACE_ONLY: '1'
+        run: python3 scripts/noa_jukebox_release.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-jukebox-interface-proof
+          path: jukebox-proof/interface.json
+          retention-days: 14
   release:
     needs: validate
     if: always() && (needs.validate.result == 'success' || github.event_name == 'schedule')

@@ -43,6 +43,29 @@ def main():
    if (sha(read(path)) if read(path) is not None else None)!=expected:raise RuntimeError('concurrent write')
    s.posix_rename(tmp,path)
    if sha(read(path))!=sha(data):raise RuntimeError('installed_checksum')
+  if os.environ.get('NOA_JUKEBOX_INTERFACE_ONLY')=='1':
+   # UI and its backwards-compatible partial-upload API can publish without
+   # waiting for, claiming, canceling or restarting the ongoing audio worker.
+   files={APP+n:'deploy/'+APP+n for n in ['upload-core.php','upload.php','upload.js','upload.css','index.php']}
+   files['noa-music.php']='deploy/noa-music.php'
+   protected={p:sha(read(ROOT+'/'+p)) for p in ['common.php','config.php','data/dbconfig.php','index.php','.htaccess'] if read(ROOT+'/'+p) is not None}
+   parent='/hosting/noastudio/noa-deploy-backups';mkdir(parent,0o700)
+   backup=parent+'/jukebox-interface-'+os.environ['GITHUB_RUN_ID'];mkdir(backup,0o700)
+   changes=[]
+   for remote,local in files.items():
+    current=read(ROOT+'/'+remote);new=Path(local).read_bytes()
+    if current is None:raise RuntimeError('existing_jukebox_required')
+    if sha(current)==sha(new):continue
+    if sha(current) not in BASE[remote]:raise RuntimeError('unknown_interface_baseline:'+remote)
+    target=backup+'/'+remote.replace('/','_')
+    with s.open(target,'wx') as f:f.write(current)
+    s.chmod(target,0o600)
+    if sha(read(target))!=sha(current):raise RuntimeError('backup_checksum')
+    changes.append((remote,new,sha(current)))
+   for remote,new,previous in changes:atomic(ROOT+'/'+remote,new,previous)
+   if any(sha(read(ROOT+'/'+p))!=h for p,h in protected.items()):raise RuntimeError('protected_file_changed')
+   result={'source_commit':os.environ['GITHUB_SHA'],'deployed_hashes':{remote:sha(read(ROOT+'/'+remote)) for remote in files},'protected_files_unchanged':True,'sql_queue_mutated':False,'audio_worker_interrupted':False}
+   work=Path('jukebox-proof');work.mkdir(exist_ok=True);(work/'interface.json').write_text(json.dumps(result));print('JUKEBOX_INTERFACE_RESULT '+json.dumps(result),flush=True);return
   protected={p:sha(read(ROOT+'/'+p)) for p in ['common.php','config.php','data/dbconfig.php','index.php','.htaccess'] if read(ROOT+'/'+p) is not None}
   mkdir(ROOT+'/noa-app');mkdir(ROOT+'/'+APP.rstrip('/'));mkdir(ROOT+'/noa-jukebox')
   atomic(ROOT+'/noa-jukebox/.htaccess',Path('deploy/'+APP+'media.htaccess').read_bytes(),None)
