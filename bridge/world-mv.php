@@ -15,12 +15,12 @@ function nwm_build(array $playlist,array $items,array $videos,array $songs=[],ar
   if(!is_string($id)||!preg_match('/^[A-Za-z0-9_-]{11}$/D',$id)){$excluded++;continue;}
   if(isset($seen[$id])){$duplicate++;continue;}$seen[$id]=true;$v=$videos[$id]??null;
   if(!$v||($v['id']??'')!==$id||($v['snippet']['channelId']??'')!==NWM_CHANNEL||($v['status']['privacyStatus']??'')!=='public'||empty($v['status']['embeddable'])){$excluded++;continue;}
-  $title=(string)($v['snippet']['title']??'');$ep=nwm_episode($title);$sid=$v['match']['songId']??null;$song=$songs[$sid??'']??null;$linked=$song&&!empty($song['public_verified'])&&empty($song['owner_id'])&&($v['match']['status']??'')!=='rejected';
+  $title=(string)($v['snippet']['title']??'');$ep=nwm_episode($title);$sid=$v['match']['songId']??null;$song=$songs[$sid??'']??null;$linked=$song&&(!empty($song['public_verified'])||($v['match']['status']??'')==='auto_confirmed')&&empty($song['owner_id'])&&($v['match']['status']??'')!=='rejected';
   $conflict=$linked&&$ep!==null&&!empty($song['ep'])&&(int)$song['ep']!==$ep;
   if($conflict){$conflicts++;$linked=false;}
   if($ep===null&&$linked&&!empty($song['ep']))$ep=(int)$song['ep'];
   if($ep!==null)$epMatched++;if($linked)$catalogMatched++;
-  $rows[]=['videoId'=>$id,'title'=>$title,'description'=>(string)($v['snippet']['description']??''),'ep'=>$ep,'storyAct'=>$ep!==null?(int)ceil($ep/10):null,'songId'=>$linked?$sid:null,'catalogActs'=>$linked?($songActs[$sid]??[]):[],'conflict'=>$conflict,'position'=>(int)($item['position']??$item['snippet']['position']??0),'thumbnail'=>'/noa-bridge/youtube-thumbnail.php?id='.$id];
+  $rows[]=['videoId'=>$id,'title'=>$title,'description'=>(string)($v['snippet']['description']??''),'ep'=>$ep,'storyAct'=>$ep!==null?(int)ceil($ep/10):null,'songId'=>$linked?$sid:null,'categories'=>$v['sqlCategories']??[],'catalogActs'=>$linked?($songActs[$sid]??[]):[],'conflict'=>$conflict,'position'=>(int)($item['position']??$item['snippet']['position']??0),'thumbnail'=>'/noa-bridge/youtube-thumbnail.php?id='.$id];
  }
  usort($rows,fn($a,$b)=>(($a['ep']??PHP_INT_MAX)<=>($b['ep']??PHP_INT_MAX))?:($a['position']<=>$b['position'])?:strcmp($a['videoId'],$b['videoId']));
  return ['playlistId'=>NWM_PLAYLIST,'playlistTitle'=>(string)($playlist['snippet']['title']??''),'playlistUrl'=>'https://www.youtube.com/playlist?list='.NWM_PLAYLIST,'reportedItemCount'=>isset($playlist['contentDetails']['itemCount'])?(int)$playlist['contentDetails']['itemCount']:null,'counts'=>['collectedEntries'=>count($items),'distinctVideoIds'=>count($seen),'duplicatesExcluded'=>$duplicate,'unavailableExcluded'=>$excluded,'displayed'=>count($rows),'epMatched'=>$epMatched,'epMissing'=>count($rows)-$epMatched,'catalogMatched'=>$catalogMatched,'catalogUnmatched'=>count($rows)-$catalogMatched,'conflictReview'=>$conflicts],'videos'=>$rows];

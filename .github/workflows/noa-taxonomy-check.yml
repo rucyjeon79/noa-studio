@@ -1,0 +1,46 @@
+name: NOA SQL taxonomy isolated validation
+on:
+  push:
+    branches: [main]
+    paths: ['bridge/taxonomy*.php','tests/taxonomy/**','scripts/noa_taxonomy_seed.py','.github/workflows/noa-taxonomy-check.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: noa-isolated-only, MYSQL_DATABASE: noa_restore_verification}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -pnoa-isolated-only" --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Validate classifier and PHP
+        run: |
+          for f in bridge/taxonomy*.php bridge/youtube-store.php bridge/lab-creator.php bridge/home-core.php bridge/world-mv.php deploy/noa-music.php deploy/noa-app/taxonomy/index.php; do php -l "$f"; done
+          node --check deploy/noa-app/taxonomy/ui.js
+          node --check deploy/noa-taxonomy-browse.js
+          php tests/taxonomy/core_test.php
+          php tests/catalog/home_test.php
+          php tests/catalog/world_mv_test.php
+      - run: python3 -m pip install --user paramiko==3.5.1
+      - name: Restore known private backup only to disposable MySQL
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: python3 scripts/noa_verify_private_backup.py
+      - name: Validate migration against real collected data and unchanged originals
+        run: php tests/taxonomy/mysql_test.php
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-taxonomy-public-verification
+          path: |
+            quality-taxonomy/report.json
+            quality-taxonomy/public.json
+          retention-days: 14

@@ -11,3 +11,5 @@ data/live/pglite-broken
 
 # Deterministic catalog source bundle is built in the release workflow.
 /bridge/catalog-seed.php
+
+quality-taxonomy/
