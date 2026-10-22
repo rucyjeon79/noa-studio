@@ -1,0 +1,55 @@
+name: Busan native account and avatar integration review
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/busan-account-review.yml']
+permissions: {contents: read}
+concurrency: {group: busan-readonly-sftp, cancel-in-progress: false}
+jobs:
+  review:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python3 -m pip install paramiko==3.5.1
+      - name: Read native account validation and avatar rules without member data
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: |
+          cd scripts
+          python3 - <<'PY'
+          import socket,hmac,zipfile,io,os,stat
+          import paramiko
+          from pathlib import Path
+          from busan_readonly_check import configuration,fingerprint,PORT,ROOT
+          host,user,password,pin=configuration(os.environ)
+          out=Path('busan-account-review');out.mkdir(exist_ok=True)
+          with socket.create_connection((host,PORT),timeout=15) as sock:
+              with paramiko.Transport(sock) as t:
+                  t.banner_timeout=15;t.auth_timeout=15
+                  t.get_security_options().key_types=('ssh-ed25519',)
+                  t.start_client(timeout=20)
+                  if not hmac.compare_digest(fingerprint(t.get_remote_server_key()),pin):raise RuntimeError('host_key_mismatch')
+                  t.auth_password(user,password,fallback=False)
+                  with paramiko.SFTPClient.from_transport(t) as s,zipfile.ZipFile(out/'native-account-sources.zip','w',zipfile.ZIP_DEFLATED) as z:
+                      s.get_channel().settimeout(20)
+                      for name in ['adm/member_form_update.php','adm/member_form.php','lib/common.lib.php','manifest.json']:
+                          path=ROOT+'/'+name
+                          attrs=s.lstat(path)
+                          if s.normalize(path)!=path or not stat.S_ISREG(attrs.st_mode) or attrs.st_size>1048576:raise RuntimeError('unexpected_file')
+                          with s.open(path,'rb') as f:b=f.read(1048577)
+                          if len(b)>1048576:raise RuntimeError('size_limit')
+                          z.writestr(name,b)
+          print('native_account_source_review_ready')
+          
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: busan-native-account-review
+          path: scripts/busan-account-review/native-account-sources.zip
+          retention-days: 3
