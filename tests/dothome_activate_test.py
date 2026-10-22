@@ -24,6 +24,19 @@ class ActivationTest(unittest.TestCase):
   with self.assertRaisesRegex(RuntimeError,'backup_and_rollback_transaction_required'):
    activate_release(self.hosts,'noa-studio',self.plan,self.stage,fs,lock_held=True)
   self.assertEqual(fs.files[fs.live],b'old')
+ def test_verified_backup_required_before_atomic_swap(self):
+  fs=Fake()
+  backup=fs.stage.replace('/staging/','/backups/').replace('/file.stage','/file.bak')
+  fs.files[backup]=b'old'
+  records={'host_id':'noa-studio','release':'a'*40,'verified':True,'backups':[{'path':'noa-app/home.php','backup':backup,'sha256':hashlib.sha256(b'old').hexdigest()}]}
+  self.plan['release']='a'*40
+  with self.assertRaisesRegex(RuntimeError,'atomic_swap_and_rollback_not_enabled'):
+   activate_release(self.hosts,'noa-studio',self.plan,self.stage,fs,lock_held=True,backups=records)
+  self.assertEqual(fs.files[fs.live],b'old')
+ def test_incomplete_backup_rejected(self):
+  self.plan['release']='a'*40
+  with self.assertRaisesRegex(RuntimeError,'backup_coverage_incomplete'):
+   activate_release(self.hosts,'noa-studio',self.plan,self.stage,Fake(),lock_held=True,backups={'host_id':'noa-studio','release':'a'*40,'verified':True,'backups':[]})
  def test_wrong_host_rejected(self):
   with self.assertRaises(ValueError):activate_release(self.hosts,'other-host',self.plan,self.stage,Fake(),lock_held=True)
 if __name__=='__main__':unittest.main()
