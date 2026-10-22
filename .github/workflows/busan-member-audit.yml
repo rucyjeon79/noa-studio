@@ -23,7 +23,7 @@ jobs:
         run: |
           cd scripts
           python3 - <<'PY'
-          import os,socket,hmac,json,urllib.request,secrets,re
+          import os,socket,hmac,json,urllib.request,secrets,re,stat
           import paramiko
           from busan_readonly_check import configuration,fingerprint,PORT,ROOT
           host,user,password,pin=configuration(os.environ)
@@ -34,15 +34,27 @@ jobs:
             t.auth_password(user,password,fallback=False)
             with paramiko.SFTPClient.from_transport(t) as s:
              private='/hosting/rucyjeon79/busan-assistant-private'
-             for relative in ['bbs/register_form_update.php','bbs/register_form.php','extend/busan-on.extend.php']:
-              with s.open(ROOT+'/'+relative,'rb') as f:source=f.read(400000).decode('utf-8')
-              print('SOURCE '+relative)
-              if relative.endswith('register_form_update.php'):print(source[:23000])
-              elif relative.endswith('register_form.php'):print(source[:8000])
-              else:print(source[:12000])
+             roots=[ROOT+'/theme',ROOT+'/eyoom/theme',ROOT+'/extend']
+             pending=list(roots);seen=0;matches=0
+             while pending:
+              directory=pending.pop()
+              try:entries=s.listdir_attr(directory)
+              except OSError:continue
+              for entry in entries:
+               path=directory+'/'+entry.filename
+               if stat.S_ISDIR(entry.st_mode):
+                if entry.filename not in ['data','cache','node_modules','.git']:pending.append(path)
+               elif entry.filename.endswith(('.php','.html','.js')) and entry.st_size<500000:
+                seen+=1
+                with s.open(path,'rb') as f:code=f.read(500000).decode('utf-8','replace')
+                for match in re.finditer(r'kakaoOpenChat|open[.]kakao[.]com',code):
+                 matches+=1;excerpt=code[max(0,match.start()-1000):min(len(code),match.end()+1300)]
+                 excerpt=re.sub(r'https?://open[.]kakao[.]com[^\\s\\\"<>]+','KAKAO_PRIVATE_LINK',excerpt)
+                 print(json.dumps({'path':path,'excerpt':excerpt},ensure_ascii=False))
+             print(json.dumps({'scanned':seen,'matches':matches}))
              with s.open(private+'/activity-account.json','rb') as f:identity=json.loads(f.read(8192))
              name='member-audit-'+secrets.token_hex(12)+'.php';target=ROOT+'/busan-assistant/'+name
-             code="<?php\nheader('Content-Type: application/json');header('Cache-Control: no-store');\n$p='/hosting/rucyjeon79/busan-assistant-private';$a=json_decode(file_get_contents($p.'/activity-account.json'),true);\nif(time()-filemtime(__FILE__)>600||!hash_equals($a['agent_token'],$_SERVER['HTTP_X_BUSAN_AGENT_TOKEN']??'')){http_response_code(403);exit;}\n$removed=0;foreach(['member-cleanup-audit-20261023.json','member-cleanup-20261023-backup.json'] as $name){$f=$p.'/'.$name;if(is_file($f)){if(!unlink($f))throw new RuntimeException('backup_removal_failed');$removed++;}if(file_exists($f))throw new RuntimeException('backup_remains');}\necho json_encode(['personal_backup_files_removed'=>$removed,'personal_backup_files_remaining'=>0]);\n"
+             code="<?php header('Content-Type: application/json'); echo json_encode(['read_only'=>true]);"
              try:
               with s.open(target,'wx') as f:f.write(code.encode())
               s.chmod(target,0o644)
