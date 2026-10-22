@@ -11,7 +11,8 @@
  async function refresh(){
   try{
    const response=await fetch('/noa-bridge/user-playlists.php',{credentials:'same-origin'});
-   if(response.status===401||response.status===403){status.textContent='로그인하면 내 플레이리스트를 저장할 수 있습니다.';el('my-login').hidden=false;el('my-controls').hidden=true;return}
+   if(response.status===401){status.textContent='로그인하면 내 플레이리스트를 저장할 수 있습니다.';el('my-login').hidden=false;el('my-controls').hidden=true;return}
+   if(response.status===403){status.textContent='목록 접근 권한을 확인할 수 없습니다.';el('my-controls').hidden=true;return}
    if(!response.ok)throw Error('load');
    const data=await response.json();
    csrf=data.csrf;items=data.items;picker.replaceChildren(new Option('새 플레이리스트',''));
