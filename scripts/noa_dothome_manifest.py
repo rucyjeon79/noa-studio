@@ -8,8 +8,10 @@ def allowed(remote):
     p=pathlib.PurePosixPath(remote)
     return bool(remote) and not p.is_absolute() and '..' not in p.parts and not any(remote.startswith(x) for x in EXCLUDED_PREFIXES) and remote not in EXCLUDED_EXACT and bool(re.fullmatch(r'[a-zA-Z0-9_./-]+',remote))
 
-def build(commit, mapping):
+def build(commit, mapping, host_id):
     if not re.fullmatch('[a-f0-9]{40}',commit): raise ValueError('invalid commit')
+    from noa_deploy_hosts import HOST_ID
+    if not HOST_ID.fullmatch(host_id): raise ValueError('invalid host id')
     files=[]
     for remote, local in sorted(mapping.items()):
         if not allowed(remote): continue
@@ -17,17 +19,18 @@ def build(commit, mapping):
         if not path.is_file() or path.is_symlink(): raise ValueError('missing or symlink '+local)
         content=path.read_bytes()
         files.append({'path':remote,'sha256':hashlib.sha256(content).hexdigest(),'bytes':len(content)})
-    return {'schema':1,'release':commit,'files':files,'requires_server_preflight':True,'activate':False}
+    return {'schema':1,'release':commit,'host_id':host_id,'files':files,'requires_server_preflight':True,'activate':False}
 
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--output',required=True)
+    parser.add_argument('--host-id',required=True)
     args=parser.parse_args()
     import sys
     sys.path.insert(0,str(ROOT/'scripts'))
     from noa_full_inventory import mappings
     commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
-    manifest=build(commit,mappings())
+    manifest=build(commit,mappings(),args.host_id)
     target=pathlib.Path(args.output)
     target.parent.mkdir(parents=True,exist_ok=True)
     target.write_text(json.dumps(manifest,indent=2)+'\n')
