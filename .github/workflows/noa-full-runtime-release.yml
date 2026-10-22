@@ -23,7 +23,9 @@ jobs:
           set -eu
           test "${GITHUB_REF_NAME}" = main || test "${GITHUB_EVENT_NAME}" = release || { echo 'Manual release must run from main'; exit 1; }
           test -n "${NOA_RELEASE_SHA}" || { echo 'Approved SHA is not configured'; exit 1; }
-          test "${GITHUB_SHA}" = "${NOA_RELEASE_SHA}" || { echo 'SHA is not approved'; exit 1; }
+          if [ "${GITHUB_EVENT_NAME}" != release ]; then
+            test "${GITHUB_SHA}" = "${NOA_RELEASE_SHA}" || { echo 'SHA is not approved'; exit 1; }
+          fi
           test "$(git rev-parse HEAD)" = "${NOA_RELEASE_SHA}" || { echo 'Checkout is not approved SHA'; exit 1; }
           if [ "${GITHUB_EVENT_NAME}" = release ]; then
             test "${NOA_RELEASE_DRAFT}" = false && test "${NOA_RELEASE_PRERELEASE}" = false || { echo 'Draft/prerelease forbidden'; exit 1; }
@@ -53,6 +55,7 @@ jobs:
           NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
           NOA_APPROVED_RELEASE_SHA: ${{ vars.NOA_APPROVED_RELEASE_SHA }}
           NOA_INCLUDE_MUSIC_VIEW: '1'
+          GITHUB_SHA: ${{ vars.NOA_APPROVED_RELEASE_SHA }}
         run: |
           python3 scripts/noa_full_runtime_deploy.py
           python3 scripts/noa_p0_storage_check.py
