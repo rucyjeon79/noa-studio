@@ -29,6 +29,10 @@ def activate_release(profiles,host_id,plan,staged,sftp,lock_held=False,backups=N
         raise ValueError('invalid_plan')
     if staged.get('activated') is not False:
         raise ValueError('invalid_staged_state')
+    if staged.get('release')!=plan.get('release') or not isinstance(plan.get('release'),str) or len(plan['release'])!=40 or any(c not in '0123456789abcdef' for c in plan['release']):
+        raise ValueError('release_identity_mismatch')
+    if not isinstance(staged.get('staged'),list):
+        raise ValueError('invalid_staged_manifest')
     staged_by_path={entry['path']:entry for entry in staged.get('staged',[])}
     if len(staged_by_path)!=len(staged.get('staged',[])):
         raise ValueError('duplicate_staged_file')
@@ -36,6 +40,9 @@ def activate_release(profiles,host_id,plan,staged,sftp,lock_held=False,backups=N
         path=item['path']
         if not allowed(path) or path not in staged_by_path:
             raise ValueError('unsafe_activation_path')
+        expected_stage=posixpath.join(host.private_root,'staging',plan['release'],hashlib.sha256(path.encode()).hexdigest()+'.stage')
+        if staged_by_path[path].get('staged')!=expected_stage:
+            raise ValueError('cross_host_staging_path')
         if staged_by_path[path]['sha256']!=item['after_sha256']:
             raise ValueError('staged_digest_mismatch')
         remote=host.remote_root+'/'+path
