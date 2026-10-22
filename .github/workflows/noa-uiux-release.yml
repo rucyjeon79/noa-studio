@@ -1,5 +1,5 @@
 name: NOA UIUX visual gates and scoped production release
-# P0 2026-10-22: validate reviewed main and publish missing WORLD EP navigation with protected owner files.
+# P0 2026-10-22: accept exact audited WORLD previous bytes; retain all candidate and production guards.
 on:
   pull_request:
     branches: [main]
