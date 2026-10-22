@@ -23,6 +23,7 @@ jobs:
           if [ "${GITHUB_EVENT_NAME}" = release ]; then
             test "${{ github.event.release.prerelease }}" = 'false' || { echo 'Prerelease is not deployable'; exit 1; }
             test "${{ github.event.release.draft }}" = 'false' || { echo 'Draft is not deployable'; exit 1; }
+            test "$(git rev-list -n 1 \"${{ github.event.release.tag_name }}\")" = "${GITHUB_SHA}" || { echo 'Release tag does not match checkout SHA'; exit 1; }
             test "${GITHUB_SHA}" = "$(git rev-parse origin/main)" || { echo 'Release must match current main'; exit 1; }
           else
             test "${GITHUB_REF}" = 'refs/heads/main' || { echo 'Release must use main'; exit 1; }
