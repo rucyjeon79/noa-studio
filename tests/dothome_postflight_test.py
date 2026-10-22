@@ -14,6 +14,12 @@ class PostflightTest(unittest.TestCase):
   self.assertEqual(len(result['routes']),2)
  def test_cross_host_redirect_blocked(self):
   with self.assertRaises(RuntimeError):verify_public_routes('https://noastudio.ai.kr',['/'],lambda req,timeout:Response('https://other.example/'))
+ def test_https_downgrade_blocked(self):
+  with self.assertRaises(RuntimeError):
+   verify_public_routes('https://noastudio.ai.kr',['/'],lambda req,timeout:Response('http://noastudio.ai.kr/'))
+ def test_ip_literal_origin_blocked(self):
+  with self.assertRaises(ValueError):
+   verify_public_routes('https://127.0.0.1',['/'],lambda req,timeout:Response(req.full_url))
  def test_unsafe_path_blocked(self):
   with self.assertRaises(ValueError):verify_public_routes('https://noastudio.ai.kr',['/../data/config.php'])
 if __name__=='__main__':unittest.main()
