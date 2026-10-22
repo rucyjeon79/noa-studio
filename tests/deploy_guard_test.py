@@ -36,12 +36,14 @@ class TestDirectReleaseContract(unittest.TestCase):
   triggers=wf.get('on',wf.get(True))
   self.assertIn('release',triggers)
   self.assertIn('workflow_dispatch',triggers)
-  self.assertNotIn('push',triggers)
+  self.assertIn('push',triggers)
+  self.assertEqual(triggers['push']['branches'],['main'])
   self.assertFalse(wf['concurrency']['cancel-in-progress'])
   steps=wf['jobs']['runtime']['steps']
   names=[x.get('name')for x in steps]
-  self.assertLess(names.index('Require reviewed main and explicit release authorization'),names.index('Deploy safe known-main changes only, with private backups'))
+  self.assertLess(names.index('Verify merged PR provenance or explicit release approval'),names.index('Deploy safe known-main changes only, with private backups'))
   self.assertIn('NOA_APPROVED_RELEASE_SHA',str(steps))
+  self.assertIn('noa_release_identity.py',str(steps))
  def test_music_requires_explicit_approval_and_filewise_guard(self):
   source=(Path(__file__).resolve().parents[1]/'scripts/noa_full_runtime_deploy.py').read_text()
   self.assertIn("NOA_INCLUDE_MUSIC_VIEW",source)
