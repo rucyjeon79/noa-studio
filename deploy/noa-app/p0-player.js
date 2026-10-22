@@ -13,7 +13,7 @@ const extras=['repeat','shuffle','sequential','dock-list'].map(id=>document.getE
 const originalControls=document.querySelector('.noa-two-line .controls');
 const popup=document.createElement('div');popup.id='noa-dock-popover';popup.hidden=true;popup.setAttribute('role','group');popup.setAttribute('aria-label','추가 재생 조작');document.body.append(popup);
 function closePopup(){popup.hidden=true;dock.dataset.expanded='false';moreControl?.setAttribute('aria-expanded','false');}
-function syncPopup(){if(narrowScreen.matches){extras.forEach(b=>popup.append(b));}else{closePopup();extras.forEach(b=>originalControls?.insertBefore(b,moreControl));}updateMoreControl();}
+function syncPopup(){closePopup();if(narrowScreen.matches){extras.forEach(b=>popup.append(b));}else{extras.forEach(b=>originalControls?.insertBefore(b,moreControl));}updateMoreControl();}
 narrowScreen.addEventListener('change',syncPopup);syncPopup();
 function positionPopup(){if(popup.hidden||!moreControl)return;const rect=moreControl.getBoundingClientRect();const width=popup.offsetWidth||240;const height=popup.offsetHeight||64;const left=Math.max(8,Math.min(innerWidth-width-8,rect.right-width));const top=Math.max(8,Math.min(innerHeight-height-8,rect.top-height-8));popup.style.left=left+'px';popup.style.top=top+'px';popup.style.right='auto';popup.style.bottom='auto';}
 window.addEventListener('resize',positionPopup,{passive:true});
