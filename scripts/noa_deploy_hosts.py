@@ -21,6 +21,12 @@ class HostProfile:
             raise ValueError("invalid_web_root")
         if not self.private_root.startswith("/hosting/") or "/../" in self.private_root or self.private_root.startswith(self.remote_root + "/"):
             raise ValueError("invalid_private_root")
+        web_account=self.remote_root.split("/")[2]
+        private_account=self.private_root.split("/")[2]
+        if web_account != private_account:
+            raise ValueError("cross_account_private_root")
+        if self.private_root == self.remote_root or self.private_root.startswith(self.remote_root + "/"):
+            raise ValueError("web_accessible_private_root")
         if self.environment not in ("production", "staging"):
             raise ValueError("invalid_environment")
 
