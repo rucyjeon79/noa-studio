@@ -52,7 +52,7 @@ def main():
   protected=['common.php','config.php','data/dbconfig.php','_common.php','head.php','tail.php','bbs/login.php','bbs/login_check.php','bbs/logout.php','version.php']
   guard={p:sha(read(ROOT+'/'+p))for p in protected}
   if not pending:
-   result={'commit':os.environ['GITHUB_SHA'],'changed':[],'changedCount':0,'preservedUnknown':unknown,'sqlMigrations':False,'protectedJukeboxExcluded':True,'backupRequired':False}
+   result={'commit':os.environ['NOA_RELEASE_COMMIT'],'changed':[],'changedCount':0,'preservedUnknown':unknown,'sqlMigrations':False,'protectedJukeboxExcluded':True,'backupRequired':False}
    (proof/'release.json').write_text(json.dumps(result,indent=2));print('FULL_RUNTIME_RELEASE '+json.dumps(result),flush=True);return
   for remote,b in pending:
    local=m[remote]
@@ -73,7 +73,7 @@ def main():
    for part in remote.split('/')[:-1]:parent+='/'+part;mkdir(parent,0o700)
    with s.open(target,'wx')as f:f.write(old[remote])
    s.chmod(target,0o600);assert read(target)==old[remote]
-  manifest={'commit':os.environ['GITHUB_SHA'],'backup':backup,'files':rows,'protectedHashes':guard}
+  manifest={'commit':os.environ['NOA_RELEASE_COMMIT'],'backup':backup,'files':rows,'protectedHashes':guard}
   with s.open(backup+'/manifest.json','wx')as f:f.write(json.dumps(manifest).encode())
   s.chmod(backup+'/manifest.json',0o600)
   # Prepare all versions first; dependency files activate before endpoints/views.
@@ -100,7 +100,7 @@ def main():
      if cache_only and path in ['/','/index.php','/noa-world.php','/noa-youtube.php','/noa-my.php']:assert b'20261021-p0-final' in body,'cache_url_not_updated '+path
      if path=='/noa-bridge/home.php':
       data=json.loads(body);assert data['ok'];print('LIVE_HOME_COUNTS '+json.dumps({k:len(data[k])for k in ['stories','covers','playlists']}),flush=True)
-   result={'commit':os.environ['GITHUB_SHA'],'backup':backup,'changed':[r for r,b in pending],'changedCount':len(pending),'preservedUnknown':unknown,'coreUnchanged':True,'sqlMigrations':False,'deployedAtUTC':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())}
+   result={'commit':os.environ['NOA_RELEASE_COMMIT'],'backup':backup,'changed':[r for r,b in pending],'changedCount':len(pending),'preservedUnknown':unknown,'coreUnchanged':True,'sqlMigrations':False,'deployedAtUTC':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())}
    (proof/'release.json').write_text(json.dumps(result,indent=2));print('FULL_RUNTIME_RELEASE '+json.dumps(result),flush=True)
   except Exception:
    for remote,b in reversed(installed):
