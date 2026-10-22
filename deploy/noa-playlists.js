@@ -22,11 +22,12 @@
  }
  picker.addEventListener('change',()=>{
   const item=items.find(p=>p.playlist_id===picker.value);
-  if(item){id=item.playlist_id;revision=item.revision;working=[...item.tracks];title.value=item.title;selectWorking()}
-  else{id=crypto.randomUUID();revision=0;working=null;title.value=''}
+  if(item){id=item.playlist_id;revision=item.revision;working=[...item.tracks];title.value=item.title;renderOrder();selectWorking()}
+  else{id=crypto.randomUUID();revision=0;working=null;title.value='';renderOrder()}
  });
- el('my-new').onclick=()=>{id=crypto.randomUUID();revision=0;working=filteredQueue.filter(b=>lookup.get(b.dataset.key)?.kind!=='playlist').map(b=>b.dataset.key);picker.value='';title.value='';status.textContent='현재 재생 목록 '+working.length+'개를 담았습니다. 이름을 입력하고 저장해 주세요.';title.focus()};
- el('my-add').onclick=()=>{if(!selected)return;working=working||[];if(!working.includes(selected.dataset.key))working.push(selected.dataset.key);status.textContent=working.length+'개 곡 · 저장하면 반영됩니다.'};
+ function renderOrder(){let host=el('my-order');if(!host){host=document.createElement('div');host.id='my-order';host.setAttribute('aria-label','플레이리스트 곡 순서');el('my-controls').append(host);}host.replaceChildren();(working||[]).forEach((key,index)=>{const row=document.createElement('div');row.className='noa-playlist-order-row';const name=document.createElement('span');name.textContent=(index+1)+'. '+(lookup.get(key)?.title||key);const up=document.createElement('button'),down=document.createElement('button');up.type=down.type='button';up.textContent='↑';down.textContent='↓';up.setAttribute('aria-label',name.textContent+' 위로');down.setAttribute('aria-label',name.textContent+' 아래로');up.disabled=index===0;down.disabled=index===(working.length-1);const move=offset=>{const next=index+offset;[working[index],working[next]]=[working[next],working[index]];renderOrder();status.textContent='순서가 변경되었습니다. 저장하면 반영됩니다.';};up.onclick=()=>move(-1);down.onclick=()=>move(1);row.append(name,up,down);host.append(row);});}
+ el('my-new').onclick=()=>{id=crypto.randomUUID();revision=0;working=filteredQueue.filter(b=>lookup.get(b.dataset.key)?.kind!=='playlist').map(b=>b.dataset.key);picker.value='';title.value='';status.textContent='현재 재생 목록 '+working.length+'개를 담았습니다. 이름을 입력하고 저장해 주세요.';title.focus();renderOrder()};
+ el('my-add').onclick=()=>{if(!selected)return;working=working||[];if(!working.includes(selected.dataset.key))working.push(selected.dataset.key);status.textContent=working.length+'개 곡 · 저장하면 반영됩니다.';renderOrder()};
  el('my-remove').onclick=()=>{if(!selected)return;working=(working||[]).filter(k=>k!==selected.dataset.key);status.textContent=working.length+'개 곡 · 저장하면 반영됩니다.'};
  el('my-play').onclick=()=>{working=working||filteredQueue.filter(b=>lookup.get(b.dataset.key)?.kind!=='playlist').map(b=>b.dataset.key);selectWorking(true)};
  el('my-save').onclick=async()=>{
