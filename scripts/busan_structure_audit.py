@@ -3,7 +3,7 @@ import json, os, socket, stat
 from pathlib import Path
 import paramiko
 from busan_readonly_check import configuration, fingerprint, HOST, USER, PORT, ROOT
-import hmac, hashlib
+import hmac, hashlib, zipfile, io
 
 def main():
     host,user,password,trusted=configuration(os.environ)
@@ -37,6 +37,21 @@ def main():
                     code=raw.decode('utf-8',errors='replace')
                     tokens=['G5_THEME_PATH','common.php','_uxcamp','Custom','run_event','mb_level','mb_intercept_date','mb_leave_date','extend']
                     report['bootstrap_files'][name]={'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest(),'markers':{v:v in code for v in tokens}}
+                review=io.BytesIO()
+                with zipfile.ZipFile(review,'w',zipfile.ZIP_DEFLATED) as z:
+                    for name in ['Custom/access_check.php','theme/UXC_Flarumix/head.php','theme/UXC_Flarumix/head.sub.php']:
+                        path=ROOT+'/'+name
+                        try:
+                            attrs=sftp.lstat(path)
+                        except FileNotFoundError:
+                            continue
+                        if sftp.normalize(path)!=path or not stat.S_ISREG(attrs.st_mode) or attrs.st_size>131072:
+                            raise RuntimeError('unexpected_review_file')
+                        with sftp.open(path,'rb') as f: raw=f.read(131073)
+                        if len(raw)>131072: raise RuntimeError('review_file_limit')
+                        z.writestr(name,raw)
+                Path('busan-check-result').mkdir(exist_ok=True)
+                Path('busan-check-result/access-review.zip').write_bytes(review.getvalue())
                 try:
                     sftp.lstat(ROOT+'/busan-assistant')
                     report['candidate_path_exists']=True
