@@ -55,6 +55,7 @@ jobs:
           NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
           NOA_APPROVED_RELEASE_SHA: ${{ vars.NOA_APPROVED_RELEASE_SHA }}
+          NOA_RELEASE_COMMIT: ${{ vars.NOA_APPROVED_RELEASE_SHA }}
           NOA_INCLUDE_MUSIC_VIEW: '1'
         run: |
           python3 scripts/noa_full_runtime_deploy.py
