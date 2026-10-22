@@ -1,4 +1,4 @@
-"""Acceptance rules and immutable Work_Music integration regions, without a database."""
+"""Acceptance rules and approved media integration regions, without a database. P0 recovery explicitly revises the UI/engine view contract; worker/SQL files remain protected."""
 import hashlib,json,re,unittest
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
