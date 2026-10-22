@@ -10,9 +10,10 @@
  }
  async function refresh(){
   try{
-   const response=await fetch('/noa-bridge/user-playlists.php',{credentials:'same-origin'});const data=await response.json();
-   if(response.status===401){status.textContent='로그인하면 내 플레이리스트를 저장할 수 있습니다.';el('my-login').hidden=false;return}
+   const response=await fetch('/noa-bridge/user-playlists.php',{credentials:'same-origin'});
+   if(response.status===401||response.status===403){status.textContent='로그인하면 내 플레이리스트를 저장할 수 있습니다.';el('my-login').hidden=false;el('my-controls').hidden=true;return}
    if(!response.ok)throw Error('load');
+   const data=await response.json();
    csrf=data.csrf;items=data.items;picker.replaceChildren(new Option('새 플레이리스트',''));
    items.forEach(p=>picker.add(new Option(p.title,p.playlist_id)));
    picker.value=items.some(p=>p.playlist_id===id)?id:'';
