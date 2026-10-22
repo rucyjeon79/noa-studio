@@ -1,0 +1,47 @@
+name: Busan approved existing DB credential correction
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/busan-db-repair.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: busan-readonly-sftp, cancel-in-progress: false}
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python3 -m pip install paramiko==3.5.1
+      - name: Validate provided password before correcting one existing definition
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+          BUSAN_DB_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_APPROVE_DB_REPAIR: repair-only-existing-busan-db-password
+        run: python3 scripts/busan_db_repair.py
+      - name: Verify homepage and Busan ON login protection
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,json
+          with urllib.request.urlopen('https://skhnslu-busan.com/',timeout=20) as r:
+              body=r.read(1048576).decode('utf-8',errors='replace')
+              assert r.status==200 and 'MySQL Host, User, Password' not in body and '</html>' in body.lower()
+          print('homepage_rendered_without_database_error')
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self,*args,**kwargs):return None
+          op=urllib.request.build_opener(NoRedirect())
+          for path in ['', 'admin.php','api.php']:
+              try:r=op.open('https://skhnslu-busan.com/busan-assistant/'+path,timeout=20)
+              except urllib.error.HTTPError as e:r=e
+              body=r.read(16384).decode('utf-8',errors='replace')
+              if path=='api.php':
+                  assert r.code==403 and json.loads(body)['error']=='member_required'
+              else:
+                  assert r.code==302 and '/bbs/login.php?' in r.headers.get('Location','')
+              print(json.dumps({'path':path,'http':r.code,'verified':True}))
+          PY
