@@ -1,0 +1,65 @@
+name: Busan hosting error response compatibility
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/busan-response-compat.yml']
+permissions: {contents: read}
+concurrency: {group: busan-readonly-sftp, cancel-in-progress: false}
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python3 -m pip install paramiko==3.5.1
+      - name: Update only owned client and validate hosting-provided 403
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: |
+          cd scripts
+          python3 - <<'PY'
+          import os,base64,hashlib,socket,hmac,secrets,urllib.request,urllib.error
+          from pathlib import Path
+          import paramiko
+          from busan_readonly_check import configuration,fingerprint,PORT,ROOT
+          data=base64.b64decode('J3VzZSBzdHJpY3QnOwpjb25zdCBmb3JtID0gZG9jdW1lbnQucXVlcnlTZWxlY3RvcignI2Fzc2lzdGFudCcpOwpjb25zdCBtb2RlID0gZG9jdW1lbnQucXVlcnlTZWxlY3RvcignI21vZGUnKTsKY29uc3QgY29uc2VudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoJyNjb25zZW50Jyk7CmNvbnN0IHJlc3VsdCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoJyNyZXN1bHQnKTsKY29uc3Qgc3RhdHVzTGluZSA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoJyNzdGF0dXMnKTsKbW9kZS5hZGRFdmVudExpc3RlbmVyKCdjaGFuZ2UnLCAoKSA9PiB7CiAgZG9jdW1lbnQucXVlcnlTZWxlY3RvcignI2NvbnNlbnQtcm93JykuaGlkZGVuID0gbW9kZS52YWx1ZSA9PT0gJ3NlYXJjaCc7CiAgY29uc2VudC5jaGVja2VkID0gZmFsc2U7Cn0pOwpmb3JtLmFkZEV2ZW50TGlzdGVuZXIoJ3N1Ym1pdCcsIGFzeW5jIChldmVudCkgPT4gewogIGV2ZW50LnByZXZlbnREZWZhdWx0KCk7CiAgaWYgKG1vZGUudmFsdWUgIT09ICdzZWFyY2gnICYmICFjb25zZW50LmNoZWNrZWQpIHsKICAgIHN0YXR1c0xpbmUudGV4dENvbnRlbnQgPSAnQUkg7KCE7IahIOyViOuCtOyXkCDrj5nsnZjtlZjqsbDrgpgg7J6Q66OMIOqygOyDieydhCDshKDtg53tlbQg7KO87IS47JqULic7CiAgICByZXR1cm47CiAgfQogIGNvbnN0IGJ1dHRvbiA9IGZvcm0ucXVlcnlTZWxlY3RvcignYnV0dG9uJyk7CiAgYnV0dG9uLmRpc2FibGVkID0gdHJ1ZTsKICByZXN1bHQucmVwbGFjZUNoaWxkcmVuKCk7CiAgc3RhdHVzTGluZS50ZXh0Q29udGVudCA9ICfsnpDro4zrpbwg7ZmV7J247ZWY6rOgIOyeiOyKteuLiOuLpOKApic7CiAgdHJ5IHsKICAgIGNvbnN0IHJlc3BvbnNlID0gYXdhaXQgZmV0Y2goJ2FwaS5waHAnLCB7CiAgICAgIG1ldGhvZDogJ1BPU1QnLCBjcmVkZW50aWFsczogJ3NhbWUtb3JpZ2luJywKICAgICAgaGVhZGVyczogeydDb250ZW50LVR5cGUnOiAnYXBwbGljYXRpb24vanNvbicsICdYLUJ1c2FuLUNTUkYnOiBmb3JtLmRhdGFzZXQudG9rZW59LAogICAgICBib2R5OiBKU09OLnN0cmluZ2lmeSh7YWN0aW9uOiBtb2RlLnZhbHVlLCBxdWVyeTogZG9jdW1lbnQucXVlcnlTZWxlY3RvcignI3F1ZXJ5JykudmFsdWUsIGNvbnNlbnQ6IGNvbnNlbnQuY2hlY2tlZH0pLAogICAgICBzaWduYWw6IEFib3J0U2lnbmFsLnRpbWVvdXQoNTUwMDApCiAgICB9KTsKICAgIGlmICghKHJlc3BvbnNlLmhlYWRlcnMuZ2V0KCdDb250ZW50LVR5cGUnKSB8fCAnJykuaW5jbHVkZXMoJ2FwcGxpY2F0aW9uL2pzb24nKSkgewogICAgICBjb25zdCBtZXNzYWdlID0gcmVzcG9uc2Uuc3RhdHVzID09PSA0MDMKICAgICAgICA/ICfroZzqt7jsnbgg7IOB7YOc7JmAIOydtOyaqSDqtoztlZzsnYQg7ZmV7J247ZWcIOuSpCDri6Tsi5wg7Iuc64+E7ZW0IOyjvOyEuOyalC4nCiAgICAgICAgOiAn7ISc67KEIOydkeuLteydhCDtmZXsnbjtlZjsp4Ag66q77ZaI7Iq164uI64ukLiDsnqDsi5wg7ZuEIOuLpOyLnCDsnbTsmqntlbQg7KO87IS47JqULic7CiAgICAgIHRocm93IG5ldyBFcnJvcihtZXNzYWdlKTsKICAgIH0KICAgIGNvbnN0IGRhdGEgPSBhd2FpdCByZXNwb25zZS5qc29uKCk7CiAgICBpZiAoIXJlc3BvbnNlLm9rKSB0aHJvdyBuZXcgRXJyb3IoZGF0YS5tZXNzYWdlIHx8ICfsmpTssq3snYQg7LKY66as7ZWY7KeAIOuqu+2WiOyKteuLiOuLpC4nKTsKICAgIGlmIChkYXRhLmFuc3dlcikgewogICAgICBjb25zdCBhbnN3ZXIgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdwJyk7CiAgICAgIGFuc3dlci5jbGFzc05hbWUgPSAnYW5zd2VyJzsgYW5zd2VyLnRleHRDb250ZW50ID0gZGF0YS5hbnN3ZXI7IHJlc3VsdC5hcHBlbmQoYW5zd2VyKTsKICAgIH0KICAgIGZvciAoY29uc3Qgc291cmNlIG9mIGRhdGEuc291cmNlcyB8fCBbXSkgewogICAgICBjb25zdCB1cmwgPSBuZXcgVVJMKHNvdXJjZS51cmwsIGxvY2F0aW9uLmhyZWYpOwogICAgICBpZiAodXJsLm9yaWdpbiAhPT0gbG9jYXRpb24ub3JpZ2luIHx8ICFbJ2h0dHBzOicsICdodHRwOiddLmluY2x1ZGVzKHVybC5wcm90b2NvbCkpIGNvbnRpbnVlOwogICAgICBjb25zdCBhcnRpY2xlID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnYXJ0aWNsZScpOwogICAgICBjb25zdCBsaW5rID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnYScpOyBsaW5rLmhyZWYgPSB1cmwuaHJlZjsgbGluay50ZXh0Q29udGVudCA9IHNvdXJjZS50aXRsZTsKICAgICAgY29uc3QgbWV0YSA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ3AnKTsgbWV0YS5jbGFzc05hbWUgPSAnbm90ZSc7IG1ldGEudGV4dENvbnRlbnQgPSBzb3VyY2UuYm9hcmRfdGl0bGUgKyAnIMK3ICcgKyBzb3VyY2UuZGF0ZTsKICAgICAgY29uc3QgdGV4dCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ3AnKTsgdGV4dC50ZXh0Q29udGVudCA9IHNvdXJjZS5leGNlcnB0OwogICAgICBhcnRpY2xlLmFwcGVuZChsaW5rLCBtZXRhLCB0ZXh0KTsgcmVzdWx0LmFwcGVuZChhcnRpY2xlKTsKICAgIH0KICAgIHN0YXR1c0xpbmUudGV4dENvbnRlbnQgPSBkYXRhLmRyYWZ0ID8gJ+qzteyngCDstIjslYjsnoXri4jri6QuIOybkOusuOqzvCDsgqzsi6TqtIDqs4Trpbwg7ZmV7J247ZWcIOuSpCDquLDsobQg6rKM7Iuc7YyQ7JeQ7IScIOuTseuhne2VtCDso7zshLjsmpQuJyA6IChkYXRhLnNvdXJjZXMgfHwgW10pLmxlbmd0aCArICfqsJzsnZgg7LC46rOgIOyekOujjOulvCDssL7slZjsirXri4jri6QuJzsKICB9IGNhdGNoIChlcnJvcikgewogICAgc3RhdHVzTGluZS50ZXh0Q29udGVudCA9IGVycm9yLm5hbWUgPT09ICdUaW1lb3V0RXJyb3InID8gJ+ydkeuLtSDsi5zqsITsnbQg7LSI6rO865CQ7Iq164uI64ukLiDsnqDsi5wg7ZuEIOuLpOyLnCDsnbTsmqntlbQg7KO87IS47JqULicgOiBlcnJvci5tZXNzYWdlOwogIH0gZmluYWxseSB7IGJ1dHRvbi5kaXNhYmxlZCA9IGZhbHNlOyB9Cn0pOwo=')
+          assert hashlib.sha256(data).hexdigest()=='75abe82eccc4e1d733c39555e67388c5d8b54b7f4284f698a3d621d98526a9ca'
+          Path('/tmp/busan-app.js').write_bytes(data)
+          import subprocess
+          subprocess.run(['node','--check','/tmp/busan-app.js'],check=True)
+          host,user,password,pin=configuration(os.environ)
+          with socket.create_connection((host,PORT),timeout=15) as sock:
+              with paramiko.Transport(sock) as t:
+                  t.banner_timeout=15;t.auth_timeout=15
+                  t.get_security_options().key_types=('ssh-ed25519',)
+                  t.start_client(timeout=20)
+                  if not hmac.compare_digest(fingerprint(t.get_remote_server_key()),pin):raise RuntimeError('host_key_mismatch')
+                  t.auth_password(user,password,fallback=False)
+                  with paramiko.SFTPClient.from_transport(t) as s:
+                      path=ROOT+'/busan-assistant/app.js'
+                      if s.normalize(path)!=path:raise RuntimeError('unexpected_path')
+                      with s.open(path,'rb') as f:old=f.read(16384)
+                      if hashlib.sha256(old).hexdigest()!='aaaa79b024346850a530cfda3890f2e120ad298d16667a20f8a0cd43fc9799e2':raise RuntimeError('old_bytes_changed_abort')
+                      temp='/hosting/rucyjeon79/busan-assistant-private/app-'+secrets.token_hex(12)+'.js'
+                      with s.open(temp,'wx') as f:f.write(data)
+                      s.chmod(temp,0o644)
+                      with s.open(temp,'rb') as f:assert f.read(16384)==data
+                      s.posix_rename(temp,path)
+          with urllib.request.urlopen('https://skhnslu-busan.com/busan-assistant/app.js',timeout=20) as r:assert r.read(16384)==data
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self,*a,**kw):return None
+          op=urllib.request.build_opener(NoRedirect())
+          for path in ['', 'admin.php','api.php']:
+              try:r=op.open('https://skhnslu-busan.com/busan-assistant/'+path,timeout=20)
+              except urllib.error.HTTPError as e:r=e
+              if path=='api.php':assert r.code==403
+              else:assert r.code==302 and '/bbs/login.php?' in r.headers.get('Location','')
+              print('verified_guest_protection',path,r.code)
+          print('owned_client_update_verified')
+          
+          PY
