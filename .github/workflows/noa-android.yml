@@ -122,6 +122,13 @@ jobs:
         with:
           name: NOA-STUDIO-Android-APK
           path: artifact
+      - name: Sign tested APK with the original installation identity
+        env:
+          NOA_ANDROID_KEYSTORE_BASE64: ${{ secrets.NOA_ANDROID_KEYSTORE_BASE64 }}
+          NOA_ANDROID_KEY_ALIAS: ${{ secrets.NOA_ANDROID_KEY_ALIAS }}
+          NOA_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.NOA_ANDROID_KEYSTORE_PASSWORD }}
+          NOA_ANDROID_KEY_PASSWORD: ${{ secrets.NOA_ANDROID_KEY_PASSWORD }}
+        run: python3 scripts/noa_android_sign_candidate.py
       - name: Require the existing production APK signing identity
         run: python3 scripts/noa_apk_signing_check.py
       - name: Publish tested APK with pinned SFTP

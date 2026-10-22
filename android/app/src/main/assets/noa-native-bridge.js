@@ -1,7 +1,7 @@
 (()=>{'use strict';if(window.__noaNativeBridge||!window.NoaAndroid)return;window.__noaNativeBridge=true;
  const send=o=>{try{NoaAndroid.postMessage(JSON.stringify(o));}catch{}};
  const ownAudio=url=>{try{const u=new URL(url,location.href);return u.origin==='https://noastudio.ai.kr'&&(u.pathname==='/noa-app/jukebox/stream.php'&&u.searchParams.get('type')==='audio'||u.pathname.startsWith('/data/noa-audio/'));}catch{return false;}};
- const original=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){if(this.tagName==='AUDIO'&&ownAudio(this.currentSrc||this.src)){send({type:'play',url:this.currentSrc||this.src});return Promise.resolve();}if(!this.muted)send({type:'video'});return original.call(this);};
+ const original=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){if(this.tagName==='AUDIO'&&ownAudio(this.currentSrc||this.src)){send({type:'play',url:this.currentSrc||this.src,key:new URL(this.currentSrc||this.src,location.href).searchParams.get('key')||''});return Promise.resolve();}if(!this.muted)send({type:'video'});return original.call(this);};
  document.addEventListener('click',e=>{const play=e.target.closest?.('.sound-play'),card=play?.closest('[data-key],[data-jukebox-key]');if(play&&card&&!play.disabled){e.preventDefault();e.stopImmediatePropagation();send({type:'play',key:card.dataset.key||card.dataset.jukeboxKey});}if(e.target.closest?.('[data-video]'))send({type:'video'});},true);
  window.addEventListener('noa-media-activity',e=>{if(e.detail?.type==='youtube')send({type:'video'});});
  const style=document.createElement('style');style.textContent='.noa-mobile-nav,.noa-transport,#player-status{display:none!important}';document.head.append(style);
