@@ -6,6 +6,14 @@ from collections import Counter
 from noa_full_inventory import mappings,connect,sha,ROOT
 
 def main():
+ # Verify the release identity inside the deploy process, not only in Actions.
+ approved=os.environ.get('NOA_APPROVED_RELEASE_SHA','')
+ release=os.environ.get('NOA_RELEASE_COMMIT','')
+ if os.environ.get('NOA_RELEASE_SHA_VALIDATED')!='1' or len(approved)!=40 or any(c not in '0123456789abcdef' for c in approved) or release!=approved:
+  raise RuntimeError('unapproved_release_identity')
+ checkout=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+ if checkout!=approved:
+  raise RuntimeError('release_checkout_mismatch')
  allmap=mappings()
  # Large original assets are being independently hashed; deploy only runtime modules here.
  protected_work={'noa-music.php','noa-bridge/catalog.php','noa-jukebox/.htaccess'}
