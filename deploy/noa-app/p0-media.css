@@ -35,3 +35,10 @@ html body.noa-shell-open>main{display:none!important}
 /* Keep the existing action icons while using a compact disclosure row. */
 html[data-noa-precision] body.noa-page main .noa-media-details summary.noa-action{display:flex;flex-direction:row;justify-content:flex-start;width:100%;inline-size:100%;min-height:44px;block-size:44px;margin:0;padding:8px 12px;border:0;border-radius:0;text-align:left;gap:8px}
 html[data-noa-precision] body.noa-page main .noa-media-details summary.noa-action>span{font-size:13px;line-height:1.4}
+
+/* Compact two-line dock: primary transport remains visible, secondary actions scroll only when necessary. */
+html body.noa-page .noa-two-line .noa-dock-top{min-width:0;max-width:100%;}
+html body.noa-page .noa-two-line .noa-title-window{flex:1 1 0;min-width:0;}
+html body.noa-page .noa-two-line .controls{flex:0 1 auto;max-width:min(65%,360px);overscroll-behavior-inline:contain;}
+html body.noa-page .noa-two-line .controls button:focus-visible{outline:2px solid var(--noa-accent);outline-offset:-3px;}
+@media(max-width:480px){html body.noa-page .noa-two-line .noa-dock-top{gap:5px;}html body.noa-page .noa-two-line #dock-cover,html body.noa-page .noa-two-line #dock-cover-empty{width:32px;height:32px;min-width:32px;}html body.noa-page .noa-two-line .controls{max-width:calc(100% - 88px);gap:0;}html body.noa-page .noa-two-line .controls button{width:40px!important;min-width:40px!important;inline-size:40px!important;height:40px!important;min-height:40px!important;block-size:40px!important;max-height:40px!important;padding:7px;}html body.noa-page .noa-two-line #dock-title{font-size:11px;}html body.noa-page .noa-two-line .noa-dock-bottom{grid-template-columns:34px minmax(0,1fr) 34px;gap:5px;}}
