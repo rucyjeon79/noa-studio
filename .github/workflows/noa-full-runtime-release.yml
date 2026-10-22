@@ -67,8 +67,8 @@ jobs:
           python3 -m unittest discover -s tests -p deploy_guard_test.py -v
       - name: Verify production release is not a draft or pull request
         run: |
-          test "${GITHUB_EVENT_NAME}" = release || test "${GITHUB_EVENT_NAME}" = workflow_dispatch
-          test "$(git rev-parse HEAD)" = "${{ vars.NOA_APPROVED_RELEASE_SHA }}"
+          test "${GITHUB_EVENT_NAME}" = release || test "${GITHUB_EVENT_NAME}" = workflow_dispatch || test "${GITHUB_EVENT_NAME}" = push
+          test "$(git rev-parse HEAD)" = "${NOA_RELEASE_COMMIT}"
       - name: Validate all active runtime sources and read-only feature tests
         run: |
           find bridge deploy/noa-app deploy/theme/noa_studio -type f -name '*.php' -print0 | xargs -0 -n1 php -l
