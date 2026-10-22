@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/noa-full-runtime-release.yml'
       - 'scripts/noa_full_runtime_deploy.py'
+      - 'scripts/noa_release_identity.py'
       - 'tests/deploy_guard_test.py'
   workflow_dispatch:
   release:
@@ -23,7 +24,7 @@ jobs:
       - name: Verify deploy safety without production credentials
         run: |
           python3 -m pip install PyYAML==6.0.2
-          python3 -m py_compile scripts/noa_full_runtime_deploy.py scripts/noa_full_inventory.py scripts/noa_deploy_guard.py
+          python3 -m py_compile scripts/noa_full_runtime_deploy.py scripts/noa_full_inventory.py scripts/noa_deploy_guard.py scripts/noa_release_identity.py
           python3 -m unittest discover -s tests -p deploy_guard_test.py -v
   runtime:
     if: github.event_name != 'pull_request'
