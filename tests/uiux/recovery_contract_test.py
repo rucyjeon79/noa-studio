@@ -22,7 +22,7 @@ class RecoveryContract(unittest.TestCase):
   for p in ['theme/noa_studio/head.php','theme/noa_studio/mobile/head.php','theme/noa_studio/skin-bridge.php','noa-theme-admin.php','noa-design.extend.php']:
    s=(ROOT/'deploy'/p).read_text()
    self.assertNotRegex(s,r'noa-ui\.(?:css|js)\?v=20261021')
-   self.assertIn('noa-ui.css?v=20261022-recovery1',s)
+   self.assertIn('noa-ui.css?v=20261022-recovery2',s)
  def test_extension_uses_the_installed_path_and_stages_outside_extend(self):
   s=(ROOT/'scripts/noa_uiux_release.py').read_text()
   self.assertIn("FILES['extend/noa.design.php']='deploy/noa-design.extend.php'",s)
