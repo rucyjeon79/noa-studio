@@ -103,3 +103,15 @@ Android는 네이버 nmap/카카오 kakaomap의 명시적 패키지 intent와 HT
 공식 참고: https://guide.ncloud-docs.com/docs/maps-url-scheme , https://apis.map.kakao.com/android_v2/docs/api-guide/urlscheme/ , https://developers.google.com/maps/documentation/urls/get-started . 실제 Android/iOS 앱 실행은 원격 데스크톱 환경으로 검증할 수 없어 별도 실기기 확인이 필요하다.
 
 v14 run39785069537 성공: 지도 선택/선호 저장, Android 고정 패키지 intent와 웹 fallback, iOS scheme, 데스크톱 검색 URL, 사이트 GPS/Overpass 호출 제거 및 기존 회귀 검사 통과. 실제 홈페이지 지도 선택이 카카오맵으로 유지되는 것, 장소별 링크 변경, 카카오 웹 지도에 '맛집' 검색어가 전달되어 검색 결과가 표시되는 것을 확인했다. 지도 안내를 열면 입력 포커스를 해제하고 안내 상단으로 이동하도록 보정했다. 실제 Android/iOS 설치 앱 실행과 사용자 현재 위치는 미검증이다.
+
+## 직접 AI 대화 연결 준비 (v20261022-16)
+
+사용자의 '챗비서 니가 직접 대답하자' 지시로 단순 표현 추가 대신 실제 OpenAI Responses API 호출 경로를 구현했다. ai-runtime.php에서 고정 HTTPS api.openai.com/v1/responses로 질문과 최근8개 user/assistant 대화(각600자)를 보낸다. system/developer 역할 입력은 제외하며 역할 지침은 서버에서 지정한다. store=false, 응답 상한900토큰, TLS 검증·redirect 금지·40초 timeout·262KB 응답 제한. 세션당 분6회와 사이트 전체 UTC일100회 요청 상한을 적용한다. 실패 시 고정 답변을 AI 답변인 것처럼 내보내지 않고 연결 오류를 표시한다.
+
+widget-api.php는 AI 설정이 활성화되면 이용자의 ai_consent=true를 확인한 뒤 실제 생성 답변을 표시한다. 브라우저는 첫 AI 전송 전에 질문/최근 대화의 OpenAI 처리 동의를 확인하고 계정 history bucket이 바뀌면 동의를 초기화한다. 현재 위젯 상단에 AI 연결 대기/AI 대화 상태를 표시한다. 서버 세션에 원문 대화를 별도 보관하지 않는다. 승인 회원의 자료 검색 카드는 기존 native 권한 검색으로 제공하며 게시글 본문·비밀글·회원 명단·원문 검색 결과를 AI에 자동 전송하지 않는다. AI에는 구체적 지부 규정을 추측하지 말도록 지시한다. 게시/수정/민원 처리와 최고관리자 실행 권한을 모델에 새로 부여하지 않는다.
+
+최고관리자 전용 /busan-assistant/ai-settings.php에서 API 키·모델 ID·활성 상태를 설정한다. 비회원은 native 로그인으로, 일반회원은403으로 처리한다. 별도 CSRF를 검증하고 키는 웹루트 밖 ai-chat.json mode0600에 atomic rename으로 저장하며 기존 키를 화면에 다시 출력하지 않는다. 키 입력을 비우면 기존 키를 유지한다. API 사용 요금과 요청 제한을 설정 화면에 안내한다.
+
+run39786669943: 기존 역할/음성/테마/지도/자료 권한 검사와 AI payload 역할 제한·키 비포함·완성 응답 추출, 동의 없는 요청의 외부 호출 차단, 최고관리자 설정 접근/CSRF/키 비노출/빈 키 보존/파일0600 검사를 통과했다. 운영 페이지 배포 및 비회원 설정 접근의 native 로그인 이동 확인.
+
+현재 운영 API 키와 모델이 등록되지 않아 AI는 비활성이다. 실제 생성 답변, 모델 사용 권한, 과금 잔액, 운영 서버에서 OpenAI까지의 성공 응답은 아직 검증하지 못했다. 이 채팅의 세션이나 ChatGPT 개인 대화 기록을 홈페이지로 연결한 것이 아니며, 운영자 인증 설정 후 별도 API 모델이 부산지부ON 지침과 해당 이용자 대화 문맥으로 답하는 구조다. 사용자 API 키는 채팅으로 받지 않는다.
