@@ -1,5 +1,7 @@
 # NOA STUDIO 2.0 — Android·백그라운드 재생 결과
 
+최신 후속 결과: **PR #41 main 통합 · Android 8개/연결 계약 4개 통과 · 원본 서명키 미설정으로 정식 APK 게시 실패 · 운영 build 13 보존**.
+
 기준일: 2026-10-22. 이 Work의 담당 범위는 사용자가 지정한 **Android·백그라운드 재생**이다. 전체 웹 개편의 완료 보고와 구분한다.
 
 ## 이어받은 상태와 보호 범위
@@ -17,7 +19,7 @@
 | HOME·내비게이션 | 운영 HOME을 앱 내부에서 열고 공통 하단 메뉴와 홈 아이콘을 유지한다. 페이지 로딩 완료 시 메뉴를 재생성하지 않고 활성 상태만 바꾼다. |
 | YOUTUBE·NOA WORLD | 기존 운영 화면을 WebView로 열고, 실제 영상 재생 요청 메시지를 받으면 네이티브 음악을 일시정지한다. 메뉴에 들어가는 것만으로 음악을 중지하지 않는다. |
 | MUSIC | 검증된 MP3를 먼저 표시한다. MP3 미등록 곡에는 정상 재생 아이콘을 노출하지 않는다. 한 곡 선택 시 재생 가능한 MUSIC 곡들을 목록 순서대로 큐에 넣는다. 검색·카테고리 선택 UI는 제거했다. |
-| MY PLAYLIST | 기존 회원 API·WebView 로그인 쿠키·CSRF·revision 계약을 재사용해 조회·담기·재생한다. 비회원은 기기 내 기본 목록을 사용하며 중복 담기를 막고 저장 실패를 알린다. 기존 웹 계정 관리로 이동할 수 있다. |
+| MY PLAYLIST | 기존 회원 API·WebView 로그인 쿠키·CSRF·revision 계약을 재사용해 조회·담기·재생한다. 회원·비회원 목록 생성·이름 변경·곡 제거·순서 변경과 MUSIC에서 대상 목록 선택을 제공한다. 비회원은 기기 내 여러 목록과 삭제를 지원하고 기존 목록을 보존한다. 저장 실패 재시도·revision 충돌 방지와 기존 웹 계정 관리 진입을 유지한다. |
 | JUKEBOX | 앱 공통 셸 안에서 정확히 2줄을 유지한다. 첫 줄은 이미지·제목·이전/재생/다음/추가 조작, 둘째 줄은 현재 시간·탐색바·총길이다. 좁은 화면의 이전 곡은 추가 메뉴로 이동한다. |
 | 재생 방식 | 순차·셔플·한 곡 반복 상태, 큐 열기와 곡 선택, 닫기를 제공한다. 셔플은 ExoPlayer의 섞인 순서를 사용한다. |
 | 긴 제목·색상 | 실제 표시 폭을 넘는 제목만 네이티브 marquee로 흐르게 하고 동작 줄이기 설정에서는 말줄임한다. 전체 제목은 접근성 설명으로 제공한다. 카드색 추출은 비동기·캐시 방식이며 진행바 대비를 보정하고 실패 시 골드를 사용한다. |
@@ -36,17 +38,17 @@
 - `android/app/build.gradle`, `android/app/src/main/AndroidManifest.xml`
 - `android/app/src/main/java/kr/ai/noastudio/MainActivity.java`
 - `android/app/src/main/java/kr/ai/noastudio/PlaybackService.java`
-- 같은 패키지의 신규 `JukeboxView.java`, `PlaybackStateStore.java`, `NoaMediaPolicy.java`, `NativePlaylistRepository.java`
+- 같은 패키지의 신규 `JukeboxView.java`, `PlaybackStateStore.java`, `NoaMediaPolicy.java`, `NativePlaylistRepository.java`, `PlaylistPanel.java`
 - `android/app/src/main/assets/noa-native-bridge.js`
 - `android/app/src/main/res/values/noa_theme.xml`, `android/app/src/main/res/drawable/noa_home.xml`
-- `androidTest`의 `CatalogTest.java`, `NativePlaybackTest.java`, `MediaPolicyTest.java`, `PlaybackRestoreTest.java`
+- `androidTest`의 `CatalogTest.java`, `NativePlaybackTest.java`, `MediaPolicyTest.java`, `PlaybackRestoreTest.java`, `PlaylistEditingTest.java`
 - `scripts/noa_android_sign_candidate.py`, `tests/android/native_bridge_test.mjs`
 
 ## 검증
 
-[PR #39](https://github.com/rucyjeon79/noa-studio/pull/39)는 최신 main에 통합했다. 최초 통합 커밋은 `aef2b183ed99027a867f19ac9d0de7293f91aa53`, 최종 Android 코드 커밋은 `57e26f4c214aa99099594383a7ec78d2a36dc966`다. Media3의 NETWORK wake 모드는 재생·버퍼링 중 CPU·Wi-Fi를 유지하고 정지·일시정지 시 해제한다.
+[PR #39](https://github.com/rucyjeon79/noa-studio/pull/39)는 최신 main에 통합했다. 최초 통합 커밋은 `aef2b183ed99027a867f19ac9d0de7293f91aa53`, 1차 Android 코드 커밋은 `57e26f4c214aa99099594383a7ec78d2a36dc966`다. Media3의 NETWORK wake 모드는 재생·버퍼링 중 CPU·Wi-Fi를 유지하고 정지·일시정지 시 해제한다.
 
-[최종 main 검사 run 34](https://github.com/rucyjeon79/noa-studio/actions/runs/39704421282)의 **APK·검증 APK 생성, lint, 연결 계약 검사 4개, 기능 검사 3개, 별도 프로세스 재시작 검사 1개가 모두 통과했다.** Android API 35 에뮬레이터 결과이며 물리 기기 검사와 구분한다. 수집한 `AndroidRuntime:E`·`NoaApi:E` 로그는 비어 있다.
+[1차 main 검사 run 34](https://github.com/rucyjeon79/noa-studio/actions/runs/39704421282)의 **APK·검증 APK 생성, lint, 연결 계약 검사 4개, 기능 검사 3개, 별도 프로세스 재시작 검사 1개가 모두 통과했다.** Android API 35 에뮬레이터 결과이며 물리 기기 검사와 구분한다. 수집한 `AndroidRuntime:E`·`NoaApi:E` 로그는 비어 있다.
 
 [같은 커밋의 기존 기능 회귀 검사](https://github.com/rucyjeon79/noa-studio/actions/runs/39704421361)도 성공했다. 격리된 fixture로 기존 엔진·접근 제어·SQL 무결성을 검사했고, 운영 공개/보호 경로를 데이터 수정 없이 확인했다.
 
@@ -87,7 +89,37 @@
 
 - 실제 Android 휴대폰의 장시간 절전·전화 수신·페어링된 블루투스/이어폰 환경이 없어 **물리 기기 검증은 미완료**다. 에뮬레이터의 포커스·미디어 키 성공을 실기기 성공으로 계산하지 않는다.
 - 폭 검사는 dp 기준의 네이티브 측정이다. 운영 웹의 CSS px별 스마트폰·태블릿·PC 검증을 대신하지 않는다.
-- 회원 API 어댑터는 구현했으나 실제 회원 로그인·서로 다른 기기 간 MySQL 동기화 종단 검증은 미완료다. 네이티브 목록의 순서 변경·이름 변경·여러 목록 생성·삭제 UI는 이 변경에 포함되지 않는다. 기존 웹 관리와 해당 Work의 후속 구현·검증이 필요하다.
+- 회원 목록 생성·이름 변경·곡 제거·순서 변경과 비회원 여러 목록·삭제 UI는 후속 구현했다. 실제 회원 로그인·서로 다른 기기 간 MySQL 동기화 종단 검증은 미완료다. 운영 회원 API는 GET/POST 저장만 제공하므로 **회원 목록 삭제는 미구현**이며 서버 계약 확장이 필요하다. 비회원 삭제와 구분한다.
 - YouTube 실제 영상 시청·설명/가사 연결·자동 동기화, HOME의 전체 섹션, NOA WORLD·AI LAB 웹 개편은 담당 웹 Work의 범위다. 이 Work는 기존 화면과 네이티브 오디오의 연결을 구현했다.
 - 웹과 네이티브의 테마 설정을 자동 동기화하는 기능은 이 변경에 포함하지 않았다. 각 영역의 DARK·IVORY와 네이티브 플레이어 대비를 검증했다.
 - 원본 설치 서명키가 없으면 build 13의 호환 업데이트를 정식 배포할 수 없다. APK 생성/Actions 성공만으로 운영 배포 완료 처리하지 않는다.
+
+
+## 2026-10-22 후속 작업 — 네이티브 MY 편집
+
+사용자의 이어하기 지시로 최신 main `d17a8eed279f1295b381d3a7d1276eb096d4e53a`를 fast-forward로 받아 기존 운영 조사·다른 Work 변경을 보존했다. [PR #41](https://github.com/rucyjeon79/noa-studio/pull/41)에서 Android만 보완했다. SQL·PHP·FIFO·기존 MP3 파일 변경은 0건이다.
+
+- 기존 비회원 `tracks` 값을 삭제하지 않고 `items-v2` 저장으로 확장한다. 계정 목록과 분리된 기기 기본 목록·여러 목록·이름 변경·곡 순서·곡 제거·목록 삭제를 제공한다. 마지막 목록 삭제 후 빈 기본 목록을 남긴다.
+- 회원 생성·이름 변경·순서 변경·곡 제거는 기존 CSRF와 사용자가 연 화면의 revision으로 저장한다. 로그인 만료·연결 실패를 비회원 저장 성공으로 바꾸지 않는다. 다른 기기의 최신 저장을 오래된 편집으로 덮어쓰지 않는다.
+- 새 목록 ID와 편집 내용을 저장 재시도까지 유지한다. 동일 요청의 재시도가 중복 목록을 만들지 않으며, 실패 시 원래 표시 목록을 보존하고 재시도·다시 불러오기를 제공한다.
+- MUSIC의 담기 버튼은 여러 목록이 있으면 대상을 선택한다. 기존 계정 관리 진입을 유지한다. DARK·IVORY 배경에 맞는 편집창 테마를 사용한다.
+- MUSIC에서 재생 중인 같은 곡을 MY 목록으로 열 때 해당 소스를 유지하고 주변 큐만 교체한다. 기존 방식은 MP3 연결을 다시 열어 버퍼링할 수 있었으며, 후속 방식은 재생 위치·버퍼를 유지한다.
+
+최종 소스 `3c12936bb763cce6a185fab54b41f50f81eb9eb1`의 [run 39](https://github.com/rucyjeon79/noa-studio/actions/runs/39713498860)에서 빌드·린트, Android 검사 8개(본 검사 7 + 프로세스 재시작 1), 연결 계약 4개가 통과했다. 실제 MY 화면에서 순서 변경·이름 변경·여러 목록 생성·곡 제거·목록 삭제 후에도 MP3 재생을 유지했고, MUSIC 대상 목록 선택과 같은 곡 큐 변경 시 위치 보존도 통과했다. DARK 목록 화면과 여백을 줄인 IVORY 편집창을 직접 확인했다. 회원 저장 검사는 모의 전송 계약 검사이며 실제 회원 간 동기화 검사와 구분한다.
+
+main 통합 커밋은 `625c628342547d7fb4114545a0f6109c111b7186`이며, 통합 전후 Android·연결 검사 파일이 동일함을 Git diff로 확인했다. 후속 정식 배포 실행은 [run 40](https://github.com/rucyjeon79/noa-studio/actions/runs/39714066299)이다.
+
+후속 운영 파일 확인에서도 build 13, 4,579,329 bytes와 SHA-256 `2d6a5131898eeaeb8eb98a58cc799cf9fb34551511d19bbd7ce1abfe6e2a2fd2`가 일치했다. 추적 중인 Git 파일과 프로젝트·표준 Android 키 경로에서 원본 keystore는 확인되지 않았다. 저장 파일에서도 keystore·JKS·NOA 서명 백업과 Android/APK 제목을 검색했으나 원본 키 대상을 찾지 못했다. 다른 장소의 원본 백업 존재 여부까지 없다고 단정하지 않는다. 기존 서명키 설정 부재는 해결되지 않았으므로 호환되지 않는 APK를 운영 다운로드에 게시하지 않았다.
+
+
+### 후속 정식 배포 최종 결과
+
+[main run 40](https://github.com/rucyjeon79/noa-studio/actions/runs/39714066299)의 APK 생성·린트·Android 8개·연결 계약 4개가 통과했다. 실제 MP3 재생 위치는 전면 2117ms → 백그라운드 48236ms → 화면 꺼짐 51286ms로 진행했다. 저장된 큐 2곡·7000ms와 셔플 상태는 프로세스 재시작 후 일시정지 상태로 복원됐다. 수집한 런타임 오류 로그는 비어 있다. 화면 꺼짐 관측은 약 3초이며 물리 기기의 장시간 절전 검증으로 계산하지 않는다.
+
+[기존 기능 회귀 run 113](https://github.com/rucyjeon79/noa-studio/actions/runs/39714066323)도 성공했다. Node 31개·Python 2개와 PHP/격리 MySQL 카탈로그·YouTube·복구·AI LAB·회원/문서 보존 검사, 운영 공개/보호 경로의 읽기 검사가 통과했다. 격리 DB 검사를 운영 회원의 실기기 동기화 검사로 계산하지 않는다.
+
+게시 job 119613526277은 `Original Android signing key is not configured. Production APK preserved.`로 실패했다. 원본 키 서명 단계에서 중단됐고 인증서 연속성 검사·SFTP 업로드는 skipped다. 운영 배포 완료로 처리하지 않는다.
+
+검증 APK build 40은 5,056,433 bytes, SHA-256 `f7514f5500011de0cdc746f9d4707866b1d0903d1fbdab72ba168b858fbd3a89`다. [APK 자료](https://github.com/rucyjeon79/noa-studio/actions/runs/39714066299/artifacts/12398411604)와 [검사·화면 자료](https://github.com/rucyjeon79/noa-studio/actions/runs/39714066299/artifacts/12398316626)를 남겼다. 후보의 임시 인증서는 `145c252d12e75538d646a29a8e85cd2f7fd023f3aa04131f0da627fc30b42a55`로 운영 인증서와 다르므로 기존 설치 업데이트용으로 게시하지 않았다.
+
+게시 실패 후 **2026-10-22 12:02:58 KST**에 운영 manifest와 APK를 캐시를 우회해 다시 내려받았다. build 13, 4,579,329 bytes, SHA-256 `2d6a5131898eeaeb8eb98a58cc799cf9fb34551511d19bbd7ce1abfe6e2a2fd2`로 기존 파일과 일치한다. 기존 설치·회원·목록·음악·업로드 상태를 보존했다.
