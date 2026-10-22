@@ -15,11 +15,11 @@ jobs:
           python3 - <<'PY'
           import urllib.request, urllib.parse, json
           query='[out:json][timeout:20];nwr(around:3000,35.1796,129.0756)[amenity=cafe];out center 3;'
-          req=urllib.request.Request('https://overpass.private.coffee/api/interpreter',data=urllib.parse.urlencode({'data':query}).encode(),headers={'Origin':'https://skhnslu-busan.com','User-Agent':'BusanON-provider-check/1.0'})
+          req=urllib.request.Request('https://overpass-api.de/api/interpreter?'+urllib.parse.urlencode({'data':query}),headers={'Origin':'https://skhnslu-busan.com','User-Agent':'BusanON-provider-check/1.0'})
           with urllib.request.urlopen(req,timeout=35) as r:
            assert r.status==200
            assert r.headers.get('Access-Control-Allow-Origin') in ('*','https://skhnslu-busan.com')
            data=json.load(r)
           assert not data.get('remark') and isinstance(data.get('elements'),list)
-          print('PASS public provider POST, browser CORS and valid cafe response; count='+str(len(data['elements'])))
+          print('PASS public provider GET, browser CORS and valid cafe response; count='+str(len(data['elements'])))
           PY
