@@ -60,6 +60,18 @@ jobs:
           node --test scripts/noa_player_regression.test.mjs scripts/qa/*.test.mjs
           python3 tests/deploy_guard_test.py
           python3 -m pip install --user paramiko==3.5.1
+      - name: Validate integrated mobile tablet desktop visual experience
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-uiux" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-uiux/node_modules/.bin/playwright" install --with-deps chromium
+          cp scripts/qa/noa-uiux-release.mjs "$RUNNER_TEMP/noa-uiux/verify.mjs"
+          NOA_SOURCE_ROOT="$GITHUB_WORKSPACE" NOA_UIUX_PHASE=candidate node "$RUNNER_TEMP/noa-uiux/verify.mjs"
+      - name: Validate integrated MUSIC and YOUTUBE playback
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-media" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-media/node_modules/.bin/playwright" install --with-deps chromium
+          cp scripts/qa/noa-p0-media.mjs "$RUNNER_TEMP/noa-media/verify.mjs"
+          NOA_SOURCE_ROOT="$GITHUB_WORKSPACE" node "$RUNNER_TEMP/noa-media/verify.mjs"
       - name: Deploy safe known-main changes only, with private backups
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
