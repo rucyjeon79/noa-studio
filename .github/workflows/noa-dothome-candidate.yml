@@ -16,6 +16,8 @@ on:
       - 'scripts/noa_dothome_postflight.py'
       - 'scripts/noa_dothome_receipt.py'
       - 'scripts/noa_dothome_status_store.py'
+      - 'deploy/noa-deploy-center.php'
+      - 'deploy/noa-deploy-status.php'
       - 'tests/dothome_hosts_test.py'
       - 'tests/dothome_manifest_test.py'
       - '.github/workflows/noa-dothome-candidate.yml'
@@ -26,6 +28,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Lint admin deployment pages
+        run: |
+          php -l deploy/noa-deploy-center.php
+          php -l deploy/noa-deploy-status.php
       - name: Check host isolation and immutable release manifest
         run: |
           python3 -m unittest discover -s tests -p 'dothome_*_test.py' -v
