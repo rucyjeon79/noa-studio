@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-22",
+  "playlistId": "PLEPMKciKgvchOwm5hQfGAP2jDQloI2RVY",
+  "snapshotAt": "2026-10-20T17:36:24+00:00",
+  "production": {
+    "url": "https://noastudio.ai.kr/noa-world.php#official-mvs",
+    "collected": 30,
+    "displayed": 30,
+    "epMatched": 30,
+    "epMissing": 0,
+    "catalogMatched": 30,
+    "catalogMissing": 0,
+    "actCounts": [
+      10,
+      10,
+      10,
+      0
+    ],
+    "duplicateExcluded": 0,
+    "unavailableExcluded": 0
+  },
+  "newNavigationDeployment": "pending verification; two-file handoff",
+  "streamPlayback": "not verified",
+  "ci": {
+    "ok": true,
+    "environment": "isolated PHP render with real public production playlist IDs/titles; not a production deployment",
+    "playlistId": "PLEPMKciKgvchOwm5hQfGAP2jDQloI2RVY",
+    "publicVideosObserved": 30,
+    "epMatched": 30,
+    "epMissing": 0,
+    "allOwnerPrivateOrDeletedCount": "not exposed by public source; production DB read model reports after deployment",
+    "catalogMatchCount": "production DB read model required; not inferred from titles",
+    "results": [
+      "rendered official public-source MV list and four draft ACTs at 320px",
+      "rendered official public-source MV list and four draft ACTs at 360px",
+      "rendered official public-source MV list and four draft ACTs at 390px",
+      "rendered official public-source MV list and four draft ACTs at 430px",
+      "rendered official public-source MV list and four draft ACTs at 768px",
+      "rendered official public-source MV list and four draft ACTs at 1280px",
+      "rendered official public-source MV list and four draft ACTs at 1920px",
+      "ordinary ACT entry → hash EP selection updates previous/next; navigation traverses ACT boundary without inventing catalog IDs",
+      "selection opens official iframe; close stops it; not a streaming completion assertion",
+      "ACT4 user introduction and epilogue labeled draft; no synthetic song records"
+    ]
+  },
+  "workflowRuns": [
+    {
+      "id": 39703347097,
+      "conclusion": "success"
+    },
+    {
+      "id": 39703347112,
+      "conclusion": "success"
+    }
+  ]
+}
