@@ -24,9 +24,11 @@ dl{display:grid;grid-template-columns:140px 1fr;gap:12px}dt{color:#b4b4b4}dd{mar
 <p>닷홈 운영 서버의 실제 배포 상태를 조회합니다. 이 화면은 파일을 변경하지 않습니다.</p>
 <section class="panel" aria-label="배포 현황"><dl>
 <dt>운영 기준</dt><dd>닷홈 (DotHome)</dd>
+<dt>호스트</dt><dd id="host">조회 중</dd>
 <dt>배포 릴리스</dt><dd id="release">조회 중</dd>
 <dt>검증 상태</dt><dd id="status">조회 중</dd>
 <dt>적용 시각</dt><dd id="applied">조회 중</dd>
+<dt>검증 파일 수</dt><dd id="files">조회 중</dd>
 <dt>배포 실행기</dt><dd id="agent">확인 중</dd>
 </dl><p id="message" class="notice" role="status" aria-live="polite"></p>
 <button type="button" id="refresh">상태 새로고침</button></section>
@@ -40,14 +42,16 @@ async function refresh(){
   const data=await response.json();
   if(data.ok!==true)throw new Error('invalid status');
   const release=data.server_release;
+  field('host',release?.host_id||'미등록');
   field('release',release?.release||'적용 기록 없음');
   field('status',release?.status||'미확인');
   field('applied',release?.applied_at||'기록 없음');
+  field('files',release?.file_count??'기록 없음');
   field('agent',data.deployment_available?'활성':'미설치 / 검증 전');
   field('message',data.deployment_available?'배포 상태를 조회했습니다.':'배포 실행기가 아직 활성화되지 않았습니다. 기존 운영 파일은 변경되지 않습니다.');
  }catch(error){
   field('message','상태 조회 실패: '+error.message);
-  field('release','확인 불가');field('status','확인 불가');field('applied','확인 불가');field('agent','확인 불가');
+  field('host','확인 불가');field('files','확인 불가');field('release','확인 불가');field('status','확인 불가');field('applied','확인 불가');field('agent','확인 불가');
  }
 }
 document.getElementById('refresh').addEventListener('click',refresh);
