@@ -3,7 +3,7 @@ name: NOA STUDIO Android
 on:
   push:
     branches: [main, work/android-background-20261022]
-    paths: ['.github/workflows/noa-android.yml', 'android/**', 'scripts/noa_android_*.py', 'scripts/noa_apk_*.py']
+    paths: ['.github/workflows/noa-android.yml', 'android/**', 'scripts/noa_android_*.py', 'scripts/noa_apk_*.py', 'tests/android/**']
   workflow_dispatch:
     inputs:
       publish:
@@ -27,6 +27,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
+      - name: Verify native bridge and administrator preview fallback
+        run: node --test tests/android/native_bridge_test.mjs
       - name: Check APK signing and deployment scripts
         run: python3 -m py_compile scripts/noa_android_sign_candidate.py scripts/noa_apk_signing_check.py scripts/noa_apk_deploy.py
       - name: Compile installable APK and lint
