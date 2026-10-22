@@ -85,7 +85,7 @@ jobs:
           for key in ['profile_url','icon_url']:
               with urllib.request.urlopen(result[key],timeout=15) as r:
                   avatar=r.read(1048576)
-                  assert r.status==200 and avatar.startswith(b'\\x89PNG\\r\\n\\x1a\\n')
+                  assert r.status==200 and avatar.startswith(bytes.fromhex('89504e470d0a1a0a'))
           print('main_symbol_profile_and_icon_served; unauthorized_bridge_denied')
           
           PY
