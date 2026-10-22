@@ -80,6 +80,10 @@ jobs:
           python3 -m pip install --user PyYAML==6.0.2
           python3 -m py_compile scripts/noa_full_runtime_deploy.py scripts/noa_full_inventory.py scripts/noa_deploy_guard.py
           python3 -m unittest discover -s tests -p deploy_guard_test.py -v
+      - name: Verify production release is not a draft or pull request
+        run: |
+          test "${GITHUB_EVENT_NAME}" = release || test "${GITHUB_EVENT_NAME}" = workflow_dispatch
+          test "$(git rev-parse HEAD)" = "${{ vars.NOA_APPROVED_RELEASE_SHA }}"
       - name: Validate all active runtime sources and read-only feature tests
         run: |
           find bridge deploy/noa-app deploy/theme/noa_studio -type f -name '*.php' -print0 | xargs -0 -n1 php -l
