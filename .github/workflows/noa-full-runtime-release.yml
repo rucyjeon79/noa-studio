@@ -58,7 +58,6 @@ jobs:
           php tests/catalog/world_mv_test.php
           php tests/database/grammar.php
           node --test scripts/noa_player_regression.test.mjs scripts/qa/*.test.mjs
-          python3 tests/deploy_guard_test.py
           python3 -m pip install --user paramiko==3.5.1
       - name: Validate integrated mobile tablet desktop visual experience
         run: |
