@@ -21,7 +21,11 @@ window.addEventListener('scroll',positionPopup,{passive:true,capture:true});
 if(moreControl){moreControl.addEventListener('click',e=>{e.stopImmediatePropagation();if(!popup.hidden){closePopup();return;}popup.hidden=false;positionPopup();dock.dataset.expanded='true';moreControl.setAttribute('aria-expanded','true');},true);}
 document.addEventListener('pointerdown',e=>{if(!popup.hidden&&!popup.contains(e.target)&&!moreControl?.contains(e.target))closePopup();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!popup.hidden){closePopup();moreControl?.focus();}});
-popup.addEventListener('click',e=>{if(e.target.closest('button'))closePopup();});
+popup.addEventListener('click',e=>{if(e.target.closest('button')){closePopup();moreControl?.focus({preventScroll:true});}});
+// If playback controls are hidden or the page loses visibility, never leave a floating menu behind.
+const dockVisibilityObserver=new MutationObserver(()=>{if(dock.hidden)closePopup();});
+dockVisibilityObserver.observe(dock,{attributes:true,attributeFilter:['hidden']});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)closePopup();});
 
 function marquee(){const width=title.parentElement.clientWidth,extra=title.scrollWidth-width;title.classList.toggle('noa-title-scroll',extra>2);title.style.setProperty('--title-shift',-Math.max(0,extra)+'px');}
 new ResizeObserver(marquee).observe(title.parentElement);document.fonts?.ready.then(marquee);
