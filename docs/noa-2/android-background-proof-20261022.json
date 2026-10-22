@@ -1,0 +1,86 @@
+{
+  "verifiedAtUtc": "2026-10-22T01:21:43.945607+00:00",
+  "scope": "Android and background MP3 playback",
+  "baseCommit": "f37b46266b2a585d255cc9a3e719cc262a4811f9",
+  "integrationCommit": "aef2b183ed99027a867f19ac9d0de7293f91aa53",
+  "codeCommit": "57e26f4c214aa99099594383a7ec78d2a36dc966",
+  "pullRequest": 39,
+  "androidRun": 39704421282,
+  "androidApi": 35,
+  "instrumentationTestsPassed": 4,
+  "bridgeContractTestsPassed": 4,
+  "existingQualityRun": 39704421361,
+  "existingQualityStatus": "success",
+  "apkJob": "success",
+  "publishJob": "failure",
+  "publishReason": "Original Android signing key is not configured. Production APK preserved.",
+  "sftpPublishExecuted": false,
+  "sqlChanges": 0,
+  "physicalDevice": false,
+  "nativePlayback": {
+    "fixture": "actual public production MP3",
+    "firstKey": "single:kpop-original:01",
+    "physicalDevice": false,
+    "musicPlayControl": true,
+    "guestAddDeduplicated": true,
+    "nativeMyPlaylistPlay": true,
+    "nativeLayoutWidthsDp": [
+      320,
+      390,
+      430,
+      768,
+      1024,
+      1280,
+      1920
+    ],
+    "twoRows": true,
+    "darkIvoryProgressContrast": true,
+    "navigationRetainsPlayback": true,
+    "rotationRetainsPlayback": true,
+    "hiddenWebFocusIgnored": true,
+    "videoFocusMessagePausesMusic": true,
+    "transientFocusLossPausesMusic": true,
+    "foregroundMs": 2006,
+    "backgroundMs": 46162,
+    "screenOffMs": 49223,
+    "mediaNotification": true,
+    "mediaSessionToken": true,
+    "mediaKeyPauseResume": true,
+    "deviceUploadGate": true,
+    "persistedQueueCount": 2,
+    "persistedPositionMs": 7000,
+    "completed": true
+  },
+  "processRestore": {
+    "processRestartPaused": true,
+    "queueCount": 2,
+    "positionMs": 7000,
+    "closedPreservesQueue": true
+  },
+  "candidateApk": {
+    "sha256": "dc8638297dbfca7ca84de2ad34de4f072795be25b122298f0cf5c42fc972c880",
+    "bytes": 5045429,
+    "artifactId": 12393639776,
+    "certificateSha256": "fbbf33b888c669332e26db0bc92243a5a9882c1c790bbcfb5d420f5bc1c972ff",
+    "productionCompatible": false
+  },
+  "productionAfter": {
+    "metadata": {
+      "app": "NOA STUDIO",
+      "file": "noa-studio-android-build-13.apk",
+      "sha256": "2d6a5131898eeaeb8eb98a58cc799cf9fb34551511d19bbd7ce1abfe6e2a2fd2",
+      "build": "13",
+      "type": "verification-apk"
+    },
+    "observedSha256": "2d6a5131898eeaeb8eb98a58cc799cf9fb34551511d19bbd7ce1abfe6e2a2fd2",
+    "bytes": 4579329
+  },
+  "productionCertificateSha256": "b2265d6925fc4eeb9e014ba3a985c040e92d26c8e20ead5e6d4e505bafda81f2",
+  "remaining": [
+    "Original APK signing key configuration and compatible production update",
+    "Physical phone, long standby, real call, Bluetooth and earphone verification",
+    "Authenticated member cross-device playlist end-to-end verification",
+    "Native advanced playlist editing UI",
+    "Automatic web/native theme preference synchronization"
+  ]
+}
