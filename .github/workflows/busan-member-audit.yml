@@ -35,7 +35,7 @@ jobs:
             with paramiko.SFTPClient.from_transport(t) as s:
              private='/hosting/rucyjeon79/busan-assistant-private'
              with s.open(ROOT+'/lib/common.lib.php','rb') as f:native=f.read(900000).decode('utf-8')
-             m=re.search(r'^function member_delete\\s*\\(',native,re.M)
+             m=re.search('^function member_delete',native,re.M)
              if m:
               end=re.search(r'^function ',native[m.end():],re.M)
               print(native[m.start():m.end()+end.start() if end else m.end()+16000][:18000])
