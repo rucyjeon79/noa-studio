@@ -38,6 +38,21 @@ public class NativePlaybackTest {
    d.findObject(By.res(c.getPackageName(),"noa_nav_music")).click();assertTrue(d.wait(Until.hasObject(By.text(java.util.regex.Pattern.compile("[1-9][0-9]*곡 · MP3 [1-9][0-9]*곡"))),60000));UiObject2 play=d.findObject(By.clazz("android.widget.ImageButton").desc(java.util.regex.Pattern.compile(".+ 재생")));assertNotNull("MUSIC has no actual MP3 play control",play);play.click();waitPlaying(p,true);main(()->assertTrue("MUSIC next/previous need a playable queue",p.getMediaItemCount()>=2));proof.put("musicPlayControl",true);
    NativePlaylistRepository my=new NativePlaylistRepository(c);my.add(items.get(0).mediaId,"");my.add(items.get(1).mediaId,"");my.add(items.get(0).mediaId,"");JSONObject guest=my.lists("");assertTrue(guest.optBoolean("guest"));assertEquals(2,guest.getJSONArray("items").getJSONObject(0).getJSONArray("tracks").length());proof.put("guestAddDeduplicated",true);
    d.findObject(By.res(c.getPackageName(),"noa_nav_my")).click();UiObject2 listPlay=d.wait(Until.findObject(By.desc("My Playlist · 이 기기")),20000);assertNotNull(listPlay);listPlay.click();waitPlaying(p,true);main(()->assertEquals(2,p.getMediaItemCount()));proof.put("nativeMyPlaylistPlay",true);
+   // Exercise the actual native editor while its persistent player is running.
+   d.wait(Until.findObject(By.desc("My Playlist · 이 기기 편집")),10000).click();
+   d.wait(Until.findObject(By.desc(java.util.regex.Pattern.compile("1 · .+"))),5000).click();
+   d.wait(Until.findObject(By.text("아래로 이동")),5000).click();
+   d.findObject(By.text("곡 변경 저장")).click();
+   for(int i=0;i<80&&!items.get(1).mediaId.equals(my.lists("").getJSONArray("items").getJSONObject(0).getJSONArray("tracks").optString(0));i++)SystemClock.sleep(100);
+   assertEquals(items.get(1).mediaId,my.lists("").getJSONArray("items").getJSONObject(0).getJSONArray("tracks").getString(0));
+   d.wait(Until.findObject(By.desc("My Playlist · 이 기기 편집")),10000).click();d.wait(Until.findObject(By.text("이름 변경")),5000).click();d.wait(Until.findObject(By.clazz("android.widget.EditText")),5000).setText("밤에 듣기");d.findObject(By.text("저장")).click();
+   assertNotNull(d.wait(Until.findObject(By.desc("밤에 듣기 편집")),10000));
+   d.findObject(By.desc("새 재생목록")).click();d.wait(Until.findObject(By.clazz("android.widget.EditText")),5000).setText("출근길");d.findObject(By.text("저장")).click();assertNotNull(d.wait(Until.findObject(By.desc("출근길 편집")),10000));
+   d.takeScreenshot(new File(c.getExternalFilesDir(null),"noa-android-my-playlists.png"));
+   d.findObject(By.desc("출근길 편집")).click();d.wait(Until.findObject(By.text("재생목록 삭제")),5000).click();d.wait(Until.findObject(By.text("삭제")),5000).click();assertTrue(d.wait(Until.gone(By.desc("출근길 편집")),10000));
+   for(int i=0;i<80&&my.lists("").getJSONArray("items").length()!=1;i++)SystemClock.sleep(100);assertEquals(1,my.lists("").getJSONArray("items").length());
+   d.wait(Until.findObject(By.desc("밤에 듣기 편집")),10000).click();d.wait(Until.findObject(By.desc(java.util.regex.Pattern.compile("1 · .+"))),5000).click();d.wait(Until.findObject(By.text("곡 제거")),5000).click();d.findObject(By.text("곡 변경 저장")).click();
+   for(int i=0;i<80&&my.lists("").getJSONArray("items").getJSONObject(0).getJSONArray("tracks").length()!=1;i++)SystemClock.sleep(100);assertEquals(1,my.lists("").getJSONArray("items").getJSONObject(0).getJSONArray("tracks").length());my.add(items.get(1).mediaId,"");assertEquals(2,my.lists("").getJSONArray("items").getJSONObject(0).getJSONArray("tracks").length());assertTrue("Playlist editing interrupted playback",playing(p));proof.put("guestPlaylistEditingUi",true);
    main(()->{store.upload(false);store.setClosed(false);p.setMediaItems(items,0,0);p.prepare();p.play();});waitPlaying(p,true);SystemClock.sleep(2000);long foreground=pos(p);assertTrue(foreground>500);
    d.findObject(By.res(c.getPackageName(),"noa_nav_music")).click();SystemClock.sleep(700);
    main(()->{JukeboxView dock=activity().findViewById(R.id.noa_dock);assertEquals(View.VISIBLE,dock.getVisibility());assertEquals(2,dock.getChildCount());View nav=activity().findViewById(R.id.noa_nav_music);assertTrue(dock.getBottom()<=((View)nav.getParent()).getTop());});
