@@ -1,0 +1,48 @@
+name: Busan pending member read-only audit
+on:
+  push:
+    paths: ['.github/workflows/busan-member-audit.yml']
+permissions:
+  contents: read
+concurrency:
+  group: busan-readonly-sftp
+  cancel-in-progress: false
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: busan-readonly
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install paramiko==3.5.1
+      - env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: |
+          cd scripts
+          python3 - <<'PY'
+          import os,socket,hmac,json,urllib.request,secrets
+          import paramiko
+          from busan_readonly_check import configuration,fingerprint,PORT,ROOT
+          host,user,password,pin=configuration(os.environ)
+          with socket.create_connection((host,PORT),timeout=15) as sock:
+           with paramiko.Transport(sock) as t:
+            t.start_client(timeout=20)
+            assert hmac.compare_digest(fingerprint(t.get_remote_server_key()),pin)
+            t.auth_password(user,password,fallback=False)
+            with paramiko.SFTPClient.from_transport(t) as s:
+             private='/hosting/rucyjeon79/busan-assistant-private'
+             with s.open(private+'/activity-account.json','rb') as f:identity=json.loads(f.read(8192))
+             name='member-audit-'+secrets.token_hex(12)+'.php';target=ROOT+'/busan-assistant/'+name
+             code="<?php\ndeclare(strict_types=1);\nheader('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');\n$private='/hosting/rucyjeon79/busan-assistant-private';\n$identity=json_decode(file_get_contents($private.'/activity-account.json'),true);\nif(time()-filemtime(__FILE__)>600||!hash_equals((string)$identity['agent_token'],$_SERVER['HTTP_X_BUSAN_AGENT_TOKEN']??'')){http_response_code(403);exit;}\nrequire_once __DIR__.'/../common.php';\n$table=$g5['member_table'];if(!preg_match('/^[a-zA-Z0-9_]+$/D',$table))exit;\n$stats=['pending'=>0,'numeric'=>0,'user_digits'=>0,'other'=>0,'empty'=>0,'approved_numeric'=>0,'approved_other'=>0];\n$rows=[];$res=sql_query(\"SELECT * FROM `$table` WHERE mb_level=2\",true);\nwhile($r=sql_fetch_array($res)){\n $stats['pending']++;$nick=trim((string)$r['mb_nick']);\n $kind=$nick===''?'empty':(preg_match('/^[0-9]+$/D',$nick)?'numeric':(preg_match('/^유저[0-9]+$/uD',$nick)?'user_digits':'other'));$stats[$kind]++;\n if($kind!=='numeric'&&($r['mb_id']??'')!==($config['cf_admin']??'')&&($r['mb_id']??'')!==($identity['mb_id']??'')&&($r['mb_id']??'')!=='busanjibuon')$rows[]=$r;\n}\n$res=sql_query(\"SELECT mb_nick FROM `$table` WHERE mb_level>=3\",true);while($r=sql_fetch_array($res))$stats[preg_match('/^[0-9]+$/D',trim((string)$r['mb_nick']))?'approved_numeric':'approved_other']++;\n$plan=['created_at'=>time(),'table'=>$table,'candidate_count'=>count($rows),'rows'=>$rows];\n$file=$private.'/member-cleanup-audit-20261023.json';\n$encoded=json_encode($plan,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);if(file_put_contents($file,$encoded,LOCK_EX)===false)throw new RuntimeException('private_audit_write_failed');chmod($file,0600);\necho json_encode(['stats'=>$stats,'candidates'=>count($rows),'snapshot_sha256'=>hash('sha256',$encoded),'changes'=>0],JSON_UNESCAPED_UNICODE);\n"
+             try:
+              with s.open(target,'wx') as f:f.write(code.encode())
+              s.chmod(target,0o644)
+              req=urllib.request.Request('https://skhnslu-busan.com/busan-assistant/'+name,headers={'X-Busan-Agent-Token':identity['agent_token']})
+              with urllib.request.urlopen(req,timeout=35) as r:result=json.loads(r.read(8192))
+              print(json.dumps(result,ensure_ascii=False))
+             finally:s.remove(target)
+          
+          PY
