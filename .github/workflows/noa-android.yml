@@ -76,6 +76,7 @@ jobs:
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-restore-proof.json android/noa-restore-proof.json || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-playing-ivory.png android/noa-android-playing-ivory.png || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-landscape.png android/noa-android-landscape.png || true
+            adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-my-ivory.png android/noa-android-my-ivory.png || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-my-playlists.png android/noa-android-my-playlists.png || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-playing.png android/noa-android-playing.png || true
             cat android/noa-instrumentation.txt
@@ -112,6 +113,7 @@ jobs:
             android/noa-native-playback.json
             android/noa-restore-proof.json
             android/noa-restore-instrumentation.txt
+            android/noa-android-my-ivory.png
             android/noa-android-my-playlists.png
             android/noa-android-playing.png
             android/noa-android-landscape.png

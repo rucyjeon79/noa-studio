@@ -29,7 +29,7 @@ public class PlaylistEditingTest {
   repo.deleteGuest(after,original);assertEquals("출근길",first(repo.lists("")).getString("title"));repo.deleteGuest(repo.lists(""),edited);JSONObject empty=repo.lists("");assertEquals(1,empty.getJSONArray("items").length());assertEquals(0,first(empty).getJSONArray("tracks").length());assertNotEquals(edited.getString("playlist_id"),first(empty).getString("playlist_id"));
  }
  @Test public void staleGuestWritesAndInvalidEditsDoNotOverwriteSavedState()throws Exception{
-  JSONObject snapshot=repo.lists(""),before=first(snapshot);repo.save(snapshot,before,"먼저 저장",new JSONArray().put(A),"");
+  JSONObject snapshot=repo.lists(""),before=first(snapshot);JSONObject accepted=repo.save(snapshot,before,"먼저 저장",new JSONArray().put(A),"");assertEquals(accepted.getInt("revision"),repo.save(snapshot,before,"먼저 저장",new JSONArray().put(A),"").getInt("revision"));
   try{repo.save(snapshot,before,"오래된 화면",new JSONArray().put(B),"");fail("Expected revision conflict");}catch(IOException expected){}
   JSONObject current=repo.lists("");try{repo.save(current,first(current)," ",new JSONArray(),"");fail("Empty name");}catch(IOException expected){}
   try{repo.save(current,first(current),"중복",new JSONArray().put(A).put(A),"");fail("Duplicate references");}catch(IOException expected){}

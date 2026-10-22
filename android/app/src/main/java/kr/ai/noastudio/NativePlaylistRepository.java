@@ -45,6 +45,7 @@ public final class NativePlaylistRepository {
  public JSONObject save(JSONObject session,JSONObject previous,String title,JSONArray tracks,String cookie)throws Exception{
   validate(title,tracks);String id=previous.getString("playlist_id");int revision=previous.getInt("revision");
   if(session.optBoolean("guest")){synchronized(GUEST_LOCK){JSONArray items=guestItems();int at=-1;for(int i=0;i<items.length();i++)if(id.equals(items.getJSONObject(i).getString("playlist_id")))at=i;
+   if(at>=0){JSONObject existing=items.getJSONObject(at);if(existing.getInt("revision")==revision+1&&title.equals(existing.getString("title"))&&tracks.toString().equals(existing.getJSONArray("tracks").toString())){persist(items);return existing;}}
    if(at<0&&revision!=0||at>=0&&items.getJSONObject(at).getInt("revision")!=revision)throw new IOException("목록이 변경됐습니다. 다시 열어 주세요.");
    if(at<0&&items.length()>=50)throw new IOException("재생목록은 50개까지 만들 수 있습니다.");
    JSONObject updated=item(id,title,new JSONArray(tracks.toString()),revision+1);items.put(at<0?items.length():at,updated);persist(items);return updated;
@@ -52,7 +53,8 @@ public final class NativePlaylistRepository {
   JSONObject result=transport.call(cookie,new JSONObject().put("id",id).put("title",title).put("tracks",tracks).put("expectedRevision",revision),session.getString("csrf"));
   return item(id,title,new JSONArray(tracks.toString()),result.getInt("revision"));
  }
- public JSONObject create(JSONObject session,String title,String cookie)throws Exception{return save(session,item(UUID.randomUUID().toString(),title,new JSONArray(),0),title,new JSONArray(),cookie);}
+ public JSONObject draft(String title)throws JSONException{return item(UUID.randomUUID().toString(),title,new JSONArray(),0);}
+ public JSONObject create(JSONObject session,String title,String cookie)throws Exception{return save(session,draft(title),title,new JSONArray(),cookie);}
  public void deleteGuest(JSONObject session,JSONObject previous)throws Exception{
   if(!session.optBoolean("guest"))throw new IOException("계정 재생목록 삭제는 현재 지원되지 않습니다.");
   synchronized(GUEST_LOCK){JSONArray current=guestItems(),kept=new JSONArray();boolean found=false;for(int i=0;i<current.length();i++){JSONObject row=current.getJSONObject(i);if(row.getString("playlist_id").equals(previous.getString("playlist_id"))){if(row.getInt("revision")!=previous.getInt("revision"))throw new IOException("목록이 변경됐습니다. 다시 열어 주세요.");found=true;}else kept.put(row);}if(!found)throw new IOException("목록이 변경됐습니다. 다시 열어 주세요.");if(kept.length()==0)kept.put(item(UUID.randomUUID().toString(),"My Playlist · 이 기기",new JSONArray(),1));persist(kept);}
