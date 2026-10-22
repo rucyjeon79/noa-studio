@@ -1,13 +1,30 @@
 name: NOA full reviewed runtime release
 # P0: preserve active music work; fail closed before any unbacked replacement.
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/noa-full-runtime-release.yml'
+      - 'scripts/noa_full_runtime_deploy.py'
+      - 'tests/deploy_guard_test.py'
   workflow_dispatch:
   release:
     types: [published]
 permissions: {contents: read}
 concurrency: {group: noa-dothome-production, cancel-in-progress: false}
 jobs:
+  candidate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Verify deploy safety without production credentials
+        run: |
+          python3 -m pip install PyYAML==6.0.2
+          python3 -m py_compile scripts/noa_full_runtime_deploy.py scripts/noa_full_inventory.py scripts/noa_deploy_guard.py
+          python3 -m unittest discover -s tests -p deploy_guard_test.py -v
   runtime:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment: production
     steps:
