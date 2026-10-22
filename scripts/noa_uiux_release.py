@@ -9,6 +9,13 @@ ROOT='/hosting/noastudio/html'
 BASELINE='018335cb6242f0a352ac7e564bc063f018d5bb9e'
 PREVIOUS_UI='54f1adb915109ae1c645d39e9a8d3f530af8cb2a'
 INTEGRATION_BASES=['7aec9e7691eda0299979d960f688857f0b489838','c62a27db853ae967b0a9ed497c879625c9d401a8','81641832f74621d600e227e5840e8c2c7b187a1b','bd35d0a54069f904429a2bf2aa1e452c73463306','f37b46266b2a585d255cc9a3e719cc262a4811f9']
+# Exact prior bytes observed by full SFTP audit 39707253585 and linked to main history.
+REVIEWED_WORLD_PREVIOUS={
+ 'noa-app/world-view.php':'858e454e4833efd7a68b085db2370f121c8b2eef26e01dfe28ee3421af20dd9d',
+ 'noa-world.js':'9b35ef711920ec777f3cd15cfaa458340ae5778f4856da7ab60a25a5b74bde99',
+}
+def reviewed_world_previous(path,data):
+ return path in REVIEWED_WORLD_PREVIOUS and hashlib.sha256(data).hexdigest()==REVIEWED_WORLD_PREVIOUS[path]
 FILES={p:'deploy/'+p for p in ['noa-design.json','noa-ui.css','noa-ui.js','noa-app/home.php','noa-app/world-view.php','noa-my.php','noa-youtube.php','noa-catalog.php','noa-home.js','noa-hero.js','noa-ai-lab.php','noa-settings.php','noa-music.php','noa2.php','noa-world.css','noa-world.js','noa-youtube.css','noa-browse.js']}
 FILES.update({p:'deploy/'+p for p in ['theme/noa_studio/head.php', 'theme/noa_studio/mobile/head.php', 'theme/noa_studio/skin-bridge.php', 'noa-theme-admin.php']})
 FILES['extend/noa.design.php']='deploy/noa-design.extend.php'
@@ -62,7 +69,7 @@ def main():
    baseline=subprocess.check_output(['git','show',BASELINE+':'+local])
    previous_ui=subprocess.check_output(['git','show',PREVIOUS_UI+':'+local])
    integrated=[subprocess.check_output(['git','show',ref+':'+local])for ref in INTEGRATION_BASES]
-   if old[p]not in [baseline,previous_ui,*integrated,new[p]]:raise RuntimeError('Unknown or concurrent production version; nothing changed: '+p)
+   if old[p]not in [baseline,previous_ui,*integrated,new[p]]and not reviewed_world_previous(p,old[p]):raise RuntimeError('Unknown or concurrent production version; nothing changed: '+p)
   protected={p:sha(read(s,ROOT+'/'+p))for p in PROTECTED}
   pending=[p for p in FILES if old[p]!=new[p]];parent='/hosting/noastudio/noa-deploy-backups'
   if not pending:
