@@ -46,6 +46,7 @@ jobs:
           python3 -c 'import yaml; d=yaml.safe_load(open(".github/workflows/noa-full-runtime-release.yml")); assert "jobs" in d and "runtime" in d["jobs"]; t=d.get("on",d.get(True)); assert "release" in t and "workflow_dispatch" in t and "push" not in t'
       - name: Validate deployment script syntax
         run: |
+          python3 -m pip install --user PyYAML==6.0.2
           python3 -m py_compile scripts/noa_full_runtime_deploy.py scripts/noa_full_inventory.py scripts/noa_deploy_guard.py
           python3 -m unittest discover -s tests -p deploy_guard_test.py -v
       - name: Validate all active runtime sources and read-only feature tests
