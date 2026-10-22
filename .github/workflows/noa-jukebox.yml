@@ -1,10 +1,10 @@
 name: NOA JUKEBOX public cards and authorized audio
-# P0 media-view releases use their own guarded publisher; scheduled workers remain unchanged.
+# View-only changes belong to the single integrated release; scheduled workers remain unchanged.
 # Circuit-break transient upload errors, reconcile lost acknowledgements and observe worker health.
 on:
   push:
     branches: [main, chatgpt/jukebox-20261021]
-    paths: ['.github/workflows/noa-jukebox.yml', 'deploy/noa-app/jukebox/**', 'deploy/noa-music.php', 'bridge/catalog.php', 'scripts/noa_jukebox*.py', 'scripts/noa_jukebox_baseline.json', 'tests/jukebox/**']
+    paths: ['.github/workflows/noa-jukebox.yml', 'deploy/noa-app/jukebox/**', 'bridge/catalog.php', 'scripts/noa_jukebox*.py', 'scripts/noa_jukebox_baseline.json', 'tests/jukebox/**']
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
@@ -17,7 +17,7 @@ on:
 permissions: {contents: read}
 jobs:
   storage_rescue:
-    if: github.event_name != 'schedule' && !contains(github.event.head_commit.message, '[p0-media]')
+    if: github.event_name != 'schedule' && !contains(github.event.head_commit.message, '[p0-media]') && !contains(github.event.head_commit.message, '[deploy-control]')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: production
@@ -32,7 +32,7 @@ jobs:
           NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
         run: python3 scripts/noa_jukebox_storage_rescue.py
   validate:
-    if: github.event_name != 'schedule' && !contains(github.event.head_commit.message, '[p0-media]')
+    if: github.event_name != 'schedule' && !contains(github.event.head_commit.message, '[p0-media]') && !contains(github.event.head_commit.message, '[deploy-control]')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -61,7 +61,7 @@ jobs:
           node --check tests/jukebox/live_recovery_test.cjs
   interface:
     needs: [validate, storage_rescue]
-    if: github.event_name != 'schedule' && !contains(github.event.head_commit.message, '[p0-media]') && needs.validate.result == 'success'
+    if: github.event_name != 'schedule' && !contains(github.event.head_commit.message, '[p0-media]') && !contains(github.event.head_commit.message, '[deploy-control]') && needs.validate.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: production

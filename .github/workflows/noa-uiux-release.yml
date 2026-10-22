@@ -46,7 +46,9 @@ jobs:
         if: always()
         with: {name: noa-uiux-candidate, path: uiux-proof/candidate/, retention-days: 14}
   production:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Standalone view publishing is retired: #48 requires one fully verified integrated release.
+    # Candidate validation above remains enabled for pull requests and manual runs.
+    if: ${{ false }}
     needs: candidate
     runs-on: ubuntu-latest
     timeout-minutes: 40
