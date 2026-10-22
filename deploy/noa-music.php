@@ -80,7 +80,7 @@ function restorePosition(key){try{const p=JSON.parse(sessionStorage.getItem('noa
 document.getElementById('sequential').onclick=()=>{repeat=false;shuffle=false;for(const id of ['repeat','shuffle'])document.getElementById(id).setAttribute('aria-pressed','false');document.getElementById('sequential').setAttribute('aria-pressed','true');};
 document.getElementById('dock-close').onclick=()=>{pendingAutoplay=false;player.pause();document.querySelector('.noa-transport').hidden=true;};
 document.getElementById('dock-list').onclick=()=>{const host=document.getElementById('dock-queue-items');host.replaceChildren();for(const b of queue()){const item=document.createElement('button');item.type='button';item.textContent=lookup.get(b.dataset.key).title;item.onclick=()=>{select(b,true);document.getElementById('dock-queue').close();};host.append(item);}document.getElementById('dock-queue').showModal();};
-window.addEventListener('noa-shell-track',e=>{const b=buttons.find(b=>b.dataset.key===e.detail.key);if(b)select(b,!!e.detail.play);});
+window.addEventListener('noa-shell-track',e=>{const b=buttons.find(b=>b.dataset.key===e.detail.key);if(b){if(browse)browse.reveal(lookup.get(b.dataset.key));select(b,!!e.detail.play);}});
 document.getElementById('dock-more').onclick=e=>{const bar=document.querySelector('.noa-transport');const expanded=bar.dataset.expanded!=='true';bar.dataset.expanded=String(expanded);e.currentTarget.setAttribute('aria-expanded',String(expanded));};
 document.getElementById('pause-play').onclick=()=>{if(!player.paused){pendingAutoplay=false;player.pause();}else requestPlayback();};
 document.getElementById('seek').oninput=e=>{if(Number.isFinite(player.duration)&&player.duration>0)player.currentTime=player.duration*Number(e.target.value)/1000;};
