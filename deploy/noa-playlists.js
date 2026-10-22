@@ -4,7 +4,7 @@
  let csrf='',items=[],id=crypto.randomUUID(),revision=0,working=null;
  function selectWorking(play=false){
   if(!working?.length){status.textContent='담긴 음악이 없습니다.';return}
-  activeQueue=[...working];genre.value='';type.value='';search.value='';filter();
+  activeQueue=[...working];filter();
   const first=queue()[0]||filteredQueue[0];status.textContent='등록 '+working.length+'개 · 현재 재생 가능 '+queue().length+'개';
   if(first)select(first,play);
  }
