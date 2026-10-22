@@ -68,6 +68,7 @@ jobs:
           NOA_APPROVED_RELEASE_SHA: ${{ vars.NOA_APPROVED_RELEASE_SHA }}
           NOA_RELEASE_COMMIT: ${{ vars.NOA_APPROVED_RELEASE_SHA }}
           NOA_INCLUDE_MUSIC_VIEW: '1'
+          NOA_RELEASE_SHA_VALIDATED: '1'
         run: |
           python3 scripts/noa_full_runtime_deploy.py
           python3 scripts/noa_p0_storage_check.py
