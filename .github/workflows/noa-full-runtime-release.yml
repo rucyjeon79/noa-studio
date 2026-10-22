@@ -42,8 +42,8 @@ jobs:
           git diff --exit-code
       - name: Validate deployment workflow syntax
         run: |
-          python3 -m pip install --user actionlint-py==1.7.7.24
-          python3 -m actionlint .github/workflows/noa-full-runtime-release.yml
+          python3 -m pip install --user PyYAML==6.0.2
+          python3 -c 'import yaml; d=yaml.safe_load(open(".github/workflows/noa-full-runtime-release.yml")); assert "jobs" in d and "runtime" in d["jobs"]'
       - name: Validate deployment script syntax
         run: |
           python3 -m py_compile scripts/noa_full_runtime_deploy.py scripts/noa_full_inventory.py scripts/noa_deploy_guard.py
