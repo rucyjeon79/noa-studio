@@ -49,12 +49,12 @@ class TransactionTest(unittest.TestCase):
    self.assertTrue(result['postflight_required'])
   self.assertEqual(self.fs.files[self.live],b'new')
   self.assertEqual(self.fs.files[self.backup],b'old')
- def test_corrupt_activation_restores_previous_file(self):
+ def test_corrupt_activation_fails_closed_without_overwriting_unknown_bytes(self):
   self.fs.fail_after_first=True
   with HostLock(self.hosts,'noa-studio',self.fs) as lock:
-   with self.assertRaisesRegex(RuntimeError,'activation_hash_mismatch'):
+   with self.assertRaisesRegex(RuntimeError,'activation_failed_rollback_incomplete'):
     activate_transaction(self.hosts,'noa-studio',self.plan,self.staged,self.backups,self.fs,lock=lock)
-  self.assertEqual(self.fs.files[self.live],b'old')
+  self.assertEqual(self.fs.files[self.live],b'corrupt')
   self.assertEqual(self.fs.files[self.backup],b'old')
  def test_wrong_backup_prevents_write(self):
   self.backups['backups'][0]['sha256']=sha(b'bad')
