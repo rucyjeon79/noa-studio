@@ -104,11 +104,13 @@ def main():
    (proof/'release.json').write_text(json.dumps(result,indent=2));print('FULL_RUNTIME_RELEASE '+json.dumps(result),flush=True)
   except Exception:
    for remote,b in reversed(installed):
-    if old[remote]is not None:
-     if read(ROOT+'/'+remote)!=b:raise RuntimeError('rollback_concurrent_change '+remote)
-     temp=ROOT+'/noa-bridge/.rollback-'+os.environ['GITHUB_RUN_ID']+'-'+remote.replace('/','_')+'.php'
-     with s.open(temp,'wx')as f:f.write(old[remote])
-     s.chmod(temp,0o644);s.posix_rename(temp,ROOT+'/'+remote)
+    if read(ROOT+'/'+remote)!=b:raise RuntimeError('rollback_concurrent_change '+remote)
+    if old[remote] is None:
+     s.remove(ROOT+'/'+remote)
+     continue
+    temp=ROOT+'/noa-bridge/.rollback-'+os.environ['GITHUB_RUN_ID']+'-'+remote.replace('/','_')+'.php'
+    with s.open(temp,'wx')as f:f.write(old[remote])
+    s.chmod(temp,0o644);s.posix_rename(temp,ROOT+'/'+remote)
    raise
  finally:
   try:
