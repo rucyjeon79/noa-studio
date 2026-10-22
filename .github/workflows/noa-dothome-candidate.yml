@@ -17,6 +17,7 @@ on:
       - 'scripts/noa_dothome_receipt.py'
       - 'scripts/noa_dothome_status_store.py'
       - 'scripts/noa_dothome_finalize.py'
+      - 'scripts/noa_dothome_registry.py'
       - 'deploy/noa-deploy-center.php'
       - 'deploy/noa-deploy-status.php'
       - 'tests/dothome_hosts_test.py'
@@ -36,4 +37,4 @@ jobs:
       - name: Check host isolation and immutable release manifest
         run: |
           python3 -m unittest discover -s tests -p 'dothome_*_test.py' -v
-          python3 -m py_compile scripts/noa_deploy_hosts.py scripts/noa_dothome_manifest.py scripts/noa_deploy_plan.py scripts/noa_dothome_inventory.py scripts/noa_dothome_preflight.py scripts/noa_dothome_stage.py scripts/noa_dothome_activate.py scripts/noa_dothome_backup.py scripts/noa_dothome_rollback.py scripts/noa_dothome_lock.py scripts/noa_dothome_prepare.py scripts/noa_dothome_postflight.py scripts/noa_dothome_receipt.py scripts/noa_dothome_status_store.py scripts/noa_dothome_finalize.py
+          python3 -m py_compile scripts/noa_deploy_hosts.py scripts/noa_dothome_manifest.py scripts/noa_deploy_plan.py scripts/noa_dothome_inventory.py scripts/noa_dothome_preflight.py scripts/noa_dothome_stage.py scripts/noa_dothome_activate.py scripts/noa_dothome_backup.py scripts/noa_dothome_rollback.py scripts/noa_dothome_lock.py scripts/noa_dothome_prepare.py scripts/noa_dothome_postflight.py scripts/noa_dothome_receipt.py scripts/noa_dothome_status_store.py scripts/noa_dothome_finalize.py scripts/noa_dothome_registry.py
