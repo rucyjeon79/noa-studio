@@ -19,3 +19,6 @@
 .world-thumbnail{background-image:var(--world-preview);background-position:center;background-size:cover}
 .noa-page .world-thumbnail>img{object-fit:contain;background:color-mix(in srgb,var(--noa-surface) 78%,transparent)}
 .world-mv-card>details{margin-block:8px}.world-mv-card>a.noa-action{margin-block:4px}
+
+/* Saved English chapter titles can have no break opportunities at 320px. */
+.noa-world-chapter h3{min-inline-size:0;max-inline-size:100%;overflow-wrap:anywhere}

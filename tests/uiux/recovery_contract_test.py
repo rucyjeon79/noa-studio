@@ -18,6 +18,15 @@ class RecoveryContract(unittest.TestCase):
   self.assertNotRegex(js,r'\.onclick|loop\s*=\s*true|currentTime\s*=\s*0')
  def test_legacy_entry_cannot_render_another_home(self):
   s=(ROOT/'deploy/noa2.php').read_text();self.assertIn("header('Location: /'",s);self.assertNotIn('<html',s);self.assertNotIn('common.php',s)
+ def test_shared_theme_loaders_use_the_same_current_revision(self):
+  for p in ['theme/noa_studio/head.php','theme/noa_studio/mobile/head.php','theme/noa_studio/skin-bridge.php','noa-theme-admin.php','noa-design.extend.php']:
+   s=(ROOT/'deploy'/p).read_text()
+   self.assertNotRegex(s,r'noa-ui\.(?:css|js)\?v=20261021')
+   self.assertIn('noa-ui.css?v=20261022-recovery1',s)
+ def test_extension_uses_the_installed_path_and_stages_outside_extend(self):
+  s=(ROOT/'scripts/noa_uiux_release.py').read_text()
+  self.assertIn("FILES['extend/noa.design.php']='deploy/noa-design.extend.php'",s)
+  self.assertIn("tmp=ROOT+'/noa-bridge/.uiux-'",s)
  def test_no_design_changes_to_owner_processing_files(self):
   import subprocess
   paths=subprocess.check_output(['git','diff','--name-only','81641832f74621d600e227e5840e8c2c7b187a1b','HEAD'],cwd=ROOT,text=True).splitlines()
