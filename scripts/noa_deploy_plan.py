@@ -5,6 +5,7 @@ No network, file writes or deployment operations.
 """
 import re
 from noa_deploy_hosts import resolve_host
+from noa_dothome_manifest import allowed
 
 DIGEST=re.compile(r'^[a-f0-9]{64}$')
 
@@ -14,19 +15,21 @@ def plan_release(profiles,selected_id,manifest,observed):
         raise ValueError('invalid_manifest_contract')
     if manifest.get('host_id')!=host.host_id:
         raise ValueError('release_host_mismatch')
-    if not isinstance(manifest.get('files'),list):
+    if not isinstance(manifest.get('files'),list) or not isinstance(observed,dict):
         raise ValueError('invalid_file_list')
     changes=[]
     seen=set()
     for item in manifest['files']:
         name=item.get('path')
         digest=item.get('sha256')
-        if not isinstance(name,str) or not isinstance(digest,str) or not DIGEST.fullmatch(digest):
+        if not isinstance(name,str) or not allowed(name) or not isinstance(digest,str) or not DIGEST.fullmatch(digest):
             raise ValueError('invalid_file_entry')
         if name in seen:
             raise ValueError('duplicate_target')
         seen.add(name)
-        old=observed.get(name)
+        if name not in observed:
+            raise ValueError('server_inventory_incomplete')
+        old=observed[name]
         if old is not None and (not isinstance(old,str) or not DIGEST.fullmatch(old)):
             raise ValueError('invalid_server_hash')
         if old!=digest:
