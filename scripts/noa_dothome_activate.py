@@ -72,15 +72,12 @@ def activate_release(profiles,host_id,plan,staged,sftp,lock_held=False,backups=N
     # Do not treat a caller-supplied lock_held boolean as sufficient authorization.
     raise RuntimeError('host_lock_and_atomic_transaction_required')
 
-def activate_transaction(profiles,host_id,plan,staged,backups,sftp,*,lock_proof=None,authorization=None):
-    """Atomic per-file activation with conditional rollback; disabled without host lock proof."""
-    # No production activation until a host-owned installer provides a verified lock protocol.
-    # Caller-provided callbacks or strings cannot establish ownership of a remote lock.
-    raise RuntimeError('host_installer_lock_protocol_not_provisioned')
-    if not callable(lock_proof) or authorization!='host-installer-verified':
-        raise ValueError('host_installer_authorization_required')
-    if lock_proof() is not True:
-        raise RuntimeError('host_lock_not_held')
+def activate_transaction(profiles,host_id,plan,staged,backups,sftp,*,lock=None):
+    """Apply a prepared release only while owning its exclusive SFTP lock."""
+    from noa_dothome_lock import HostLock
+    if not isinstance(lock,HostLock) or lock.sftp is not sftp or lock.host.host_id!=host_id or not lock.owned or not lock.verify():
+        raise RuntimeError('host_lock_not_verified')
+    lock_proof=lock.verify
     try:
         activate_release(profiles,host_id,plan,staged,sftp,lock_held=True,backups=backups)
     except RuntimeError as error:
