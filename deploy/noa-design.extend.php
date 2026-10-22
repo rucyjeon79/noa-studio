@@ -12,7 +12,7 @@ function noa_design_assets(){
   add_stylesheet('<link rel="stylesheet" href="/noa-admin.css?v=20261020-admin1">',99);
   return;
  }
- add_stylesheet('<link rel="stylesheet" href="/noa-ui.css?v=20261022-recovery1">',99);
+ add_stylesheet('<link rel="stylesheet" href="/noa-ui.css?v=20261022-recovery2">',99);
  add_javascript('<script src="/noa-brand.js?v=20261021-brand1" defer></script><script src="/noa-ui.js?v=20261022-recovery1" defer></script>',99);
 }
 if(function_exists('add_event'))add_event('common_header','noa_design_assets',10,0);

@@ -8,6 +8,6 @@ if(G5_IS_MOBILE&&is_file(G5_MOBILE_PATH.'/skin/'.$noa_skin_family.'/basic/'.$noa
 }
 if(!is_file($noa_core_skin.'/'.$noa_skin_file)){echo '<p class="noa-empty">설치된 기본 스킨에서 이 화면을 지원하지 않습니다.</p>';return;}
 ${$noa_skin_family.'_skin_path'}=$noa_core_skin;${$noa_skin_family.'_skin_url'}=$noa_core_url;
-add_stylesheet('<link rel="stylesheet" href="/noa-ui.css?v=20261022-recovery1">',99);
+add_stylesheet('<link rel="stylesheet" href="/noa-ui.css?v=20261022-recovery2">',99);
 include $noa_core_skin.'/'.$noa_skin_file;
 unset($noa_skin_family,$noa_skin_file,$noa_core_skin,$noa_core_url);
