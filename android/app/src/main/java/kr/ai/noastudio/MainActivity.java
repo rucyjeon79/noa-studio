@@ -95,6 +95,7 @@ public class MainActivity extends Activity {
    if(c.getResponseCode()!=200)throw new Exception("Catalog HTTP "+c.getResponseCode());
    String raw;try(java.io.InputStream stream=c.getInputStream()){java.io.ByteArrayOutputStream bytes=new java.io.ByteArrayOutputStream();byte[] block=new byte[8192];int n;while((n=stream.read(block))!=-1)bytes.write(block,0,n);raw=bytes.toString(StandardCharsets.UTF_8.name());}finally{c.disconnect();}
    JSONArray items=new JSONObject(raw).getJSONArray("items");List<JSONObject> fetched=new ArrayList<>();for(int i=0;i<items.length();i++){JSONObject item=items.getJSONObject(i);if("playlist".equals(item.optString("kind"))||!item.optString("sunoUrl").isEmpty()||ownAudio(item.optString("audioUrl")))fetched.add(item);};
+   fetched.sort((a,b)->Boolean.compare(playable(b),playable(a)));
    runOnUiThread(()->{loading=false;songs.clear();songs.addAll(fetched);if(libraryVisible)render();});
   }catch(Exception e){android.util.Log.e("NoaApi","Catalog request failed: "+e.getClass().getSimpleName()+": "+e.getMessage(),e);runOnUiThread(()->{if(attempt<2&&!isDestroyed()&&!String.valueOf(e.getMessage()).matches(".*HTTP (400|401|403|404|429).*")){handler.postDelayed(()->loadCatalog(attempt+1),1500);return;}loading=false;catalogRequested=false;if(libraryVisible)status.setText(t("목록을 불러오지 못했습니다. 인터넷 연결 후 새로고침해 주세요."));});}});
  }

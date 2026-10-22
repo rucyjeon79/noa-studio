@@ -3,7 +3,7 @@ name: NOA STUDIO Android
 on:
   push:
     branches: [main, work/android-background-20261022]
-    paths: ['.github/workflows/noa-android.yml', 'android/**']
+    paths: ['.github/workflows/noa-android.yml', 'android/**', 'scripts/noa_android_*.py', 'scripts/noa_apk_*.py']
   workflow_dispatch:
     inputs:
       publish:
@@ -27,6 +27,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
+      - name: Check APK signing and deployment scripts
+        run: python3 -m py_compile scripts/noa_android_sign_candidate.py scripts/noa_apk_signing_check.py scripts/noa_apk_deploy.py
       - name: Compile installable APK and lint
         working-directory: android
         run: gradle --no-daemon :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug
@@ -69,6 +71,7 @@ jobs:
             adb shell am instrument -w -e class kr.ai.noastudio.PlaybackRestoreTest kr.ai.noastudio.test/androidx.test.runner.AndroidJUnitRunner > android/noa-restore-instrumentation.txt
             cat android/noa-restore-instrumentation.txt
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-restore-proof.json android/noa-restore-proof.json || true
+            adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-landscape.png android/noa-android-landscape.png || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-playing.png android/noa-android-playing.png || true
             cat android/noa-instrumentation.txt
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-brand-proof.json android/noa-brand-proof.json || true
@@ -104,6 +107,7 @@ jobs:
             android/noa-restore-proof.json
             android/noa-restore-instrumentation.txt
             android/noa-android-playing.png
+            android/noa-android-landscape.png
             android/app/build/reports/lint-results-debug.html
           retention-days: 14
 
