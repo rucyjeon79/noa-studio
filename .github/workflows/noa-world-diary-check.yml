@@ -2,7 +2,7 @@ name: NOA WORLD Diary recovery checks
 on:
   push:
     branches: [main]
-    paths: ['bridge/world-mv.php', 'bridge/world-story.php', 'deploy/noa-world.php', 'deploy/noa-world.js', 'deploy/noa-world.css', 'deploy/noa-app/world-view.php', 'tests/world/**', 'tests/catalog/world_mv_test.php', 'scripts/qa/noa-world-diary.mjs', '.github/workflows/noa-world-diary-check.yml']
+    paths: ['bridge/world-mv.php', 'bridge/world-story.php', 'deploy/noa-world.php', 'deploy/noa-world.js', 'deploy/noa-world.css', 'deploy/noa-app/world-view.php', 'tests/world/**', 'tests/catalog/world_mv*.php', 'scripts/qa/noa-world-diary.mjs', '.github/workflows/noa-world-diary-check.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -10,6 +10,12 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: noa-test-only, MYSQL_DATABASE: noa_catalog_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -h localhost -pnoa-test-only" --health-interval=10s --health-timeout=5s --health-retries=10
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
@@ -19,6 +25,13 @@ jobs:
           php tests/catalog/world_test.php
           php tests/catalog/world_mv_test.php
           node --check deploy/noa-world.js
+      - name: Verify actual catalog SQL read path in isolated MySQL
+        env:
+          NOA_TEST_MYSQL_DSN: mysql:host=127.0.0.1;port=3306;dbname=noa_catalog_test;charset=utf8mb4
+        run: |
+          python3 scripts/noa_catalog_seed.py
+          php -d memory_limit=256M tests/catalog/mysql_test.php
+          php tests/catalog/world_mv_mysql_test.php
       - name: Validate real public playlist and render new PHP without deploying
         run: |
           npm install --prefix "$RUNNER_TEMP/noa-world" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
