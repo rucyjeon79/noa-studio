@@ -87,6 +87,7 @@ def main():
    for remote,b in pending:
     if read(ROOT+'/'+remote)!=old[remote]:raise RuntimeError('concurrent_change '+remote)
    for remote,b in pending:
+    if read(ROOT+'/'+remote)!=old[remote]:raise RuntimeError('concurrent_change_before_activation '+remote)
     s.posix_rename(staged[remote],ROOT+'/'+remote);installed.append((remote,b));assert read(ROOT+'/'+remote)==b
     print('UPDATED '+remote+' '+sha(b),flush=True)
    for p,digest in guard.items():assert sha(read(ROOT+'/'+p))==digest,'core_changed '+p
