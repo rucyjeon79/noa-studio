@@ -1,0 +1,41 @@
+name: Busan point native read-only audit
+on:
+  push:
+    paths: ['.github/workflows/busan-point-audit.yml']
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    environment: busan-readonly
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install paramiko==3.5.1
+      - env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: |
+          cd scripts
+          python3 - <<'PY'
+          import os,socket,hmac,re
+          import paramiko
+          from busan_readonly_check import configuration,fingerprint,PORT,ROOT
+          host,user,password,pin=configuration(os.environ)
+          with socket.create_connection((host,PORT),timeout=15) as sock:
+           with paramiko.Transport(sock) as t:
+            t.start_client(timeout=20)
+            assert hmac.compare_digest(fingerprint(t.get_remote_server_key()),pin)
+            t.auth_password(user,password,fallback=False)
+            with paramiko.SFTPClient.from_transport(t) as s:
+             path=ROOT+'/lib/common.lib.php'
+             assert s.normalize(path)==path
+             with s.open(path,'rb') as f:code=f.read(700000).decode('utf-8')
+             for fn in ['insert_point','insert_use_point','get_point_sum']:
+              m=re.search(r'^function '+fn+r'\s*\(',code,re.M)
+              if m:
+               end=re.search(r'^function ',code[m.end():],re.M)
+               print('NATIVE_FUNCTION '+fn)
+               print(code[m.start():m.end()+end.start() if end else m.end()+12000][:16000])
+          PY
