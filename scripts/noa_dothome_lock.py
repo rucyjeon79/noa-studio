@@ -16,6 +16,11 @@ class HostLock:
             self.sftp.mkdir(self.path,0o700)
         except OSError as error:
             raise RuntimeError('host_deploy_lock_unavailable') from error
+        try:
+            with self.sftp.open(self.path+'/owner','xb') as f:f.write(self.token.encode())
+        except Exception:
+            self.sftp.rmdir(self.path)
+            raise
         self.owned=True
         return self
 
@@ -23,13 +28,16 @@ class HostLock:
         if not self.owned:return False
         try:
             st=self.sftp.lstat(self.path)
-            return stat.S_ISDIR(st.st_mode)
+            if not stat.S_ISDIR(st.st_mode):return False
+            with self.sftp.open(self.path+'/owner','rb') as f:
+                return f.read(128).decode()==self.token
         except OSError:
             return False
 
     def release(self):
         if not self.owned:return
         if not self.verify():raise RuntimeError('host_deploy_lock_lost')
+        self.sftp.remove(self.path+'/owner')
         self.sftp.rmdir(self.path)
         self.owned=False
 
