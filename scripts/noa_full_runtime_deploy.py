@@ -10,7 +10,7 @@ def main():
  # Large original assets are being independently hashed; deploy only runtime modules here.
  protected_work={'noa-music.php','noa-bridge/catalog.php','noa-jukebox/.htaccess'}
  # The protected MUSIC view may join an explicitly approved single release, never a generic runtime sync.
- approved_music=os.environ.get('NOA_INCLUDE_MUSIC_VIEW')=='1' and os.environ.get('NOA_APPROVED_RELEASE_SHA')==os.environ.get('GITHUB_SHA') and bool(os.environ.get('GITHUB_SHA'))
+ approved_music=os.environ.get('NOA_INCLUDE_MUSIC_VIEW')=='1' and bool(os.environ.get('NOA_APPROVED_RELEASE_SHA')) and os.environ.get('NOA_APPROVED_RELEASE_SHA')==os.environ.get('NOA_RELEASE_COMMIT')
  if approved_music:protected_work.remove('noa-music.php')
  m={r:l for r,l in allmap.items()if not r.startswith(('noa-assets/','noa-app/jukebox/')) and r not in protected_work and r not in ['noa-bridge/seed.php','noa-bridge/source-archive.php','noa-bridge/catalog-seed.php']}
  preflight=None
