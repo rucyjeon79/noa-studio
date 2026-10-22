@@ -51,7 +51,7 @@ public class NativePlaybackTest {
    d.executeShellCommand("input keyevent 127");waitPlaying(p,false);d.executeShellCommand("input keyevent 126");waitPlaying(p,true);proof.put("mediaKeyPauseResume",true);
    main(()->{store.upload(true);p.pause();p.play();});SystemClock.sleep(500);assertFalse("Upload device gate bypassed",playing(p));main(()->{store.upload(false);p.play();});waitPlaying(p,true);proof.put("deviceUploadGate",true);
    main(()->{p.setShuffleModeEnabled(true);p.setRepeatMode(Player.REPEAT_MODE_OFF);p.seekTo(0,7000);p.pause();store.save(p);});for(int i=0;i<50&&store.position()<6900;i++)SystemClock.sleep(100);assertEquals(2,store.items().size());assertTrue(store.position()>=6900);assertTrue(store.shuffle());proof.put("persistedQueueCount",store.items().size()).put("persistedPositionMs",store.position());
-   try(FileWriter out=new FileWriter(new File(c.getExternalFilesDir(null),"noa-native-playback.json"))){out.write(proof.toString());}
-  }finally{d.wakeUp();main(()->{p.pause();p.release();});}
+   proof.put("completed",true);
+  }finally{d.wakeUp();d.takeScreenshot(new File(c.getExternalFilesDir(null),"noa-android-playing.png"));try(FileWriter out=new FileWriter(new File(c.getExternalFilesDir(null),"noa-native-playback.json"))){out.write(proof.toString());}main(()->{p.pause();p.release();});}
  }
 }
