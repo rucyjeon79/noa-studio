@@ -14,6 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false, fetch-depth: 0}
+      - name: Require reviewed main and explicit release authorization
+        env:
+          NOA_RELEASE_SHA: ${{ vars.NOA_APPROVED_RELEASE_SHA }}
+        run: |
+          test "${GITHUB_REF}" = 'refs/heads/main' || { echo 'Release must use main'; exit 1; }
+          test -n "${NOA_RELEASE_SHA}" || { echo 'Approved SHA is not configured'; exit 1; }
+          test "${GITHUB_SHA}" = "${NOA_RELEASE_SHA}" || { echo 'SHA is not approved'; exit 1; }
       - name: Validate all active runtime sources and read-only feature tests
         run: |
           find bridge deploy/noa-app deploy/theme/noa_studio -type f -name '*.php' -print0 | xargs -0 -n1 php -l
@@ -26,13 +33,6 @@ jobs:
           node --test scripts/noa_player_regression.test.mjs scripts/qa/*.test.mjs
           python3 tests/deploy_guard_test.py
           python3 -m pip install --user paramiko==3.5.1
-      - name: Require reviewed main and explicit release authorization
-        env:
-          NOA_RELEASE_SHA: ${{ vars.NOA_APPROVED_RELEASE_SHA }}
-        run: |
-          test "${GITHUB_REF}" = 'refs/heads/main' || { echo 'Release must use main'; exit 1; }
-          test -n "${NOA_RELEASE_SHA}" || { echo 'Approved SHA is not configured'; exit 1; }
-          test "${GITHUB_SHA}" = "${NOA_RELEASE_SHA}" || { echo 'SHA is not approved'; exit 1; }
       - name: Deploy safe known-main changes only, with private backups
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
