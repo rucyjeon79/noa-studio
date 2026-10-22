@@ -1,0 +1,48 @@
+name: Busan existing database read-only diagnosis
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/busan-db-diagnose.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: busan-readonly-sftp, cancel-in-progress: false}
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python3 -m pip install paramiko==3.5.1
+      - name: Check existing credentials on the server without displaying them
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: |
+          cd scripts
+          python3 - <<'PYCODE'
+          import os,shlex,socket,hmac,json
+          import paramiko
+          from busan_readonly_check import configuration,fingerprint,PORT
+          host,user,password,pin=configuration(os.environ)
+          with socket.create_connection((host,PORT),timeout=15) as sock:
+              with paramiko.Transport(sock) as t:
+                  t.banner_timeout=15;t.auth_timeout=15
+                  t.get_security_options().key_types=('ssh-ed25519',)
+                  t.start_client(timeout=20)
+                  if not hmac.compare_digest(fingerprint(t.get_remote_server_key()),pin):raise RuntimeError('host_key_mismatch')
+                  t.auth_password(user,password,fallback=False)
+                  with t.open_session(timeout=20) as ch:
+                      ch.settimeout(25)
+                      ch.exec_command('php -r '+shlex.quote("ini_set('display_errors','0'); error_reporting(0);\ndefine('_GNUBOARD_',true);\n$p='/hosting/rucyjeon79/html/data/dbconfig.php';\nif(!is_file($p)){echo json_encode(['config_exists'=>false]);exit;}\ninclude $p;\n$r=['config_exists'=>true,'config_sha256'=>hash_file('sha256',$p),'config_mtime'=>filemtime($p),'host_expected'=>defined('G5_MYSQL_HOST')&&G5_MYSQL_HOST==='localhost','user_expected'=>defined('G5_MYSQL_USER')&&G5_MYSQL_USER==='rucyjeon79','database_expected'=>defined('G5_MYSQL_DB')&&G5_MYSQL_DB==='rucyjeon79'];\nif(!extension_loaded('mysqli')){$r['mysqli_available']=false;echo json_encode($r);exit;}\nmysqli_report(MYSQLI_REPORT_OFF);\n$c=@mysqli_connect(G5_MYSQL_HOST,G5_MYSQL_USER,G5_MYSQL_PASSWORD,G5_MYSQL_DB);\n$r['connection_ok']=(bool)$c;$r['errno']=$c?0:mysqli_connect_errno();\nif($c)mysqli_close($c);\necho json_encode($r);"))
+                      with ch.makefile('rb') as f:raw=f.read(8192)
+                      exit_code=ch.recv_exit_status()
+                      try:data=json.loads(raw)
+                      except (ValueError,UnicodeDecodeError):data={'remote_php_diagnostic_available':False,'exit_code':exit_code}
+                      allowed={'config_exists','config_sha256','config_mtime','host_expected','user_expected','database_expected','mysqli_available','connection_ok','errno','remote_php_diagnostic_available','exit_code'}
+                      print(json.dumps({k:v for k,v in data.items() if k in allowed}))
+          
+          PYCODE
