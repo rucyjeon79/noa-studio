@@ -30,7 +30,7 @@ class ActivationTest(unittest.TestCase):
   fs.files[backup]=b'old'
   records={'host_id':'noa-studio','release':'a'*40,'verified':True,'backups':[{'path':'noa-app/home.php','backup':backup,'sha256':hashlib.sha256(b'old').hexdigest()}]}
   self.plan['release']='a'*40
-  with self.assertRaisesRegex(RuntimeError,'atomic_swap_and_rollback_not_enabled'):
+  with self.assertRaisesRegex(RuntimeError,'host_lock_and_atomic_transaction_required'):
    activate_release(self.hosts,'noa-studio',self.plan,self.stage,fs,lock_held=True,backups=records)
   self.assertEqual(fs.files[fs.live],b'old')
  def test_incomplete_backup_rejected(self):
