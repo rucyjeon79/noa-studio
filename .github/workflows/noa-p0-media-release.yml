@@ -1,0 +1,57 @@
+name: NOA P0 media repair and guarded release
+on:
+  pull_request:
+    branches: [main]
+    paths: ['deploy/noa-app/p0-*','deploy/noa-music.php','deploy/noa-youtube.php','deploy/noa-youtube.js','scripts/qa/noa-p0-media.mjs','scripts/noa_p0_media_release.py','tests/p0/**','.github/workflows/noa-p0-media-release.yml']
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-p0-media-release.yml','deploy/noa-app/p0-*']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, fetch-depth: 0}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', coverage: none}
+      - name: Check PHP, JavaScript and existing regressions
+        run: |
+          php -l deploy/noa-music.php
+          php -l deploy/noa-youtube.php
+          php -l tests/p0/router.php
+          node --check deploy/noa-youtube.js
+          node --check deploy/noa-app/p0-player.js
+          node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs scripts/qa/noa-history.test.mjs scripts/qa/noa-hero.test.mjs
+          python3 -m py_compile scripts/noa_p0_media_release.py
+      - name: Isolated real DOM, independent details and persistent engine tests
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-p0-media" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-p0-media/node_modules/.bin/playwright" install --with-deps chromium
+          cp scripts/qa/noa-p0-media.mjs "$RUNNER_TEMP/noa-p0-media/verify.mjs"
+          NOA_SOURCE_ROOT="$GITHUB_WORKSPACE" node "$RUNNER_TEMP/noa-p0-media/verify.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: p0-media-candidate, path: p0-proof/, retention-days: 14}
+  production:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency: {group: noa-dothome-production, cancel-in-progress: false}
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, fetch-depth: 0}
+      - run: python3 -m pip install --user paramiko==3.5.1
+      - name: Verify current bytes, backup and deploy only five media view files
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: python3 scripts/noa_p0_media_release.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: p0-media-production, path: p0-proof/, retention-days: 14}
