@@ -61,5 +61,47 @@ def activate_release(profiles,host_id,plan,staged,sftp,lock_held=False,backups=N
             if backup is not None:raise RuntimeError('unexpected_backup')
         elif not isinstance(backup,str) or not backup.startswith(host.private_root+'/backups/'+plan['release']+'/') or digest_remote(sftp,backup)!=item['before_sha256']:
             raise RuntimeError('backup_verification_failed')
-    # No mutation until atomic swap, rollback and verified lock ownership are implemented.
-    raise RuntimeError('atomic_swap_and_rollback_not_enabled')
+    # The host installer must explicitly authorize activation after owning a real lock.
+    # Do not treat a caller-supplied lock_held boolean as sufficient authorization.
+    raise RuntimeError('host_lock_and_atomic_transaction_required')
+
+def activate_transaction(profiles,host_id,plan,staged,backups,sftp,*,lock_proof=None,authorization=None):
+    """Atomic per-file activation with conditional rollback; disabled without host lock proof."""
+    if not callable(lock_proof) or authorization!='host-installer-verified':
+        raise ValueError('host_installer_authorization_required')
+    if lock_proof() is not True:
+        raise RuntimeError('host_lock_not_held')
+    try:
+        activate_release(profiles,host_id,plan,staged,sftp,lock_held=True,backups=backups)
+    except RuntimeError as error:
+        if str(error)!='host_lock_and_atomic_transaction_required':
+            raise
+    from noa_dothome_rollback import rollback_release
+    host=resolve_host(profiles,host_id)
+    stage_map={x['path']:x for x in staged['staged']}
+    installed=[]
+    try:
+        for entry in plan['changes']:
+            if lock_proof() is not True:
+                raise RuntimeError('host_lock_lost')
+            name=entry['path']
+            live=host.remote_root+'/'+name
+            stage=stage_map[name]['staged']
+            if digest_remote(sftp,live)!=entry['before_sha256']:
+                raise RuntimeError('concurrent_change_before_activation')
+            if digest_remote(sftp,stage)!=entry['after_sha256']:
+                raise RuntimeError('stage_changed')
+            # Atomic rename requires staged and target paths on the same filesystem.
+            sftp.posix_rename(stage,live)
+            installed.append(name)
+            if digest_remote(sftp,live)!=entry['after_sha256']:
+                raise RuntimeError('activation_hash_mismatch')
+    except Exception as error:
+        if installed:
+            try:
+                rollback_release(profiles,host_id,plan,backups,sftp,installed,lock_held=lock_proof() is True)
+            except Exception as rollback_error:
+                raise RuntimeError('activation_failed_rollback_incomplete') from rollback_error
+        raise
+    return {'host_id':host_id,'release':plan['release'],'installed':installed,'activated':True,'postflight_required':True}
+
