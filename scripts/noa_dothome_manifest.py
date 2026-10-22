@@ -1,8 +1,8 @@
 """Build an immutable, allowlisted DotHome release manifest without touching production."""
 import argparse, hashlib, json, pathlib, re, subprocess
 ROOT=pathlib.Path(__file__).resolve().parents[1]
-EXCLUDED_PREFIXES=('noa-assets/','noa-app/jukebox/','data/','bbs/','adm/','plugin/')
-EXCLUDED_EXACT={'noa-bridge/catalog.php','noa-jukebox/.htaccess','noa-bridge/seed.php','noa-bridge/source-archive.php','noa-bridge/catalog-seed.php'}
+EXCLUDED_PREFIXES=('noa-assets/','noa-app/jukebox/','data/','bbs/','adm/','plugin/','theme/','extend/','install/','vendor/')
+EXCLUDED_EXACT={'common.php','config.php','_common.php','head.php','tail.php','version.php','noa-bridge/catalog.php','noa-jukebox/.htaccess','noa-bridge/seed.php','noa-bridge/source-archive.php','noa-bridge/catalog-seed.php'}
 
 def allowed(remote):
     p=pathlib.PurePosixPath(remote)
