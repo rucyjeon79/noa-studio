@@ -2,7 +2,7 @@ import hashlib,io,pathlib,stat,sys,unittest
 from types import SimpleNamespace
 sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[1]/'scripts'))
 from noa_deploy_hosts import HostProfile
-from noa_dothome_activate import activate_release
+from noa_dothome_activate import activate_release,activate_transaction
 class Fake:
  def __init__(self):
   self.live='/hosting/noastudio/html/noa-app/home.php'
@@ -17,6 +17,10 @@ class ActivationTest(unittest.TestCase):
   self.hosts={'noa-studio':HostProfile('noa-studio','/hosting/noastudio/html','/hosting/noastudio/private')}
   self.plan={'host_id':'noa-studio','activation_allowed':False,'release':'a'*40,'change_count':1,'changes':[{'path':'noa-app/home.php','before_sha256':hashlib.sha256(b'old').hexdigest(),'after_sha256':hashlib.sha256(b'new').hexdigest()}]}
   self.stage={'host_id':'noa-studio','release':'a'*40,'activated':False,'staged':[{'path':'noa-app/home.php','sha256':hashlib.sha256(b'new').hexdigest(),'staged':Fake().stage}]}
+ def test_transaction_rejects_unowned_lock(self):
+  fs=Fake()
+  with self.assertRaisesRegex(RuntimeError,'host_lock_not_verified'):
+   activate_transaction(self.hosts,'noa-studio',self.plan,self.stage,{},fs)
  def test_no_lock_rejected(self):
   with self.assertRaises(ValueError):activate_release(self.hosts,'noa-studio',self.plan,self.stage,Fake())
  def test_no_backup_never_activates(self):
