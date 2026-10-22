@@ -1,0 +1,67 @@
+name: Busan SFTP read-only verification
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/busan-readonly-check.yml']
+permissions:
+  contents: read
+concurrency:
+  group: busan-readonly-sftp
+  cancel-in-progress: false
+jobs:
+  busan-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    environment: busan-readonly
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install reference transport dependency
+        run: python -m pip install paramiko==3.5.1
+      - name: Verify isolation and host-key rejection
+        run: python -m unittest discover -s scripts/busan_tests -p test_busan_readonly_check.py -v
+      - name: Observe Busan SSH public host key without authentication
+        run: |
+          python - <<'PYCODE'
+          import base64, hashlib, json, socket
+          from pathlib import Path
+          import paramiko
+          report = {'host': '112.175.184.79', 'port': 2022, 'authenticated': False, 'trusted': False}
+          sock = transport = None
+          try:
+              sock = socket.create_connection(('112.175.184.79', 2022), timeout=15)
+              transport = paramiko.Transport(sock)
+              transport.banner_timeout = 15
+              transport.get_security_options().key_types = ('ssh-ed25519',)
+              transport.start_client(timeout=20)
+              key = transport.get_remote_server_key()
+              report.update(connected=True, algorithm=key.get_name(), observed_fingerprint='SHA256:' + base64.b64encode(hashlib.sha256(key.asbytes()).digest()).decode().rstrip('='))
+          except Exception as exc:
+              report.update(connected=False, error=type(exc).__name__)
+          finally:
+              for item in (transport, sock):
+                  if item is not None:
+                      item.close()
+          Path('busan-check-result').mkdir(exist_ok=True)
+          Path('busan-check-result/hostkey-observation.json').write_text(json.dumps(report, indent=2))
+          print(json.dumps(report))
+          PYCODE
+      - name: Check Busan server only
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: python scripts/busan_readonly_check.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: busan-readonly-check-result
+          path: busan-check-result/*.json
+          if-no-files-found: ignore
+          retention-days: 3
