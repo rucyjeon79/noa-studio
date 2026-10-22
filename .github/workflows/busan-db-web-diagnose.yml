@@ -1,0 +1,55 @@
+name: Busan fixed database web-runtime diagnosis
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/busan-db-web-diagnose.yml']
+permissions: {contents: read}
+concurrency: {group: busan-readonly-sftp, cancel-in-progress: false}
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python3 -m pip install paramiko==3.5.1
+      - name: Fixed one-time probe without credentials in response and remove it
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: |
+          cd scripts
+          python3 - <<'PYCODE'
+          import socket,secrets,hmac,hashlib,json,urllib.request
+          import paramiko
+          from busan_readonly_check import configuration,fingerprint,PORT,ROOT
+          host,user,password,pin=configuration(__import__('os').environ)
+          token=secrets.token_hex(32)
+          filename='diag-'+secrets.token_hex(16)+'.php'
+          payload="<?php\nini_set('display_errors','0'); error_reporting(0);\nif (!hash_equals('__TOKEN_HASH__', hash('sha256',$_SERVER['HTTP_X_BUSAN_DIAG'] ?? ''))) {http_response_code(404);exit;}\nheader('Content-Type: application/json');header('Cache-Control: no-store');\ndefine('_GNUBOARD_',true);\n$p='/hosting/rucyjeon79/html/data/dbconfig.php';\nif(!is_file($p)){echo json_encode(['config_exists'=>false]);exit;}\ninclude $p;\n$r=['config_exists'=>true,'config_sha256'=>hash_file('sha256',$p),'config_mtime'=>filemtime($p),'host_expected'=>defined('G5_MYSQL_HOST')&&G5_MYSQL_HOST==='localhost','user_expected'=>defined('G5_MYSQL_USER')&&G5_MYSQL_USER==='rucyjeon79','database_expected'=>defined('G5_MYSQL_DB')&&G5_MYSQL_DB==='rucyjeon79'];\nmysqli_report(MYSQLI_REPORT_OFF);\n$c=mysqli_init();mysqli_options($c,MYSQLI_OPT_CONNECT_TIMEOUT,5);\n$ok=@mysqli_real_connect($c,G5_MYSQL_HOST,G5_MYSQL_USER,G5_MYSQL_PASSWORD,G5_MYSQL_DB);\n$r['connection_ok']=$ok;$r['errno']=$ok?0:mysqli_connect_errno();\nif($ok)mysqli_close($c);\necho json_encode($r);\n".replace('__TOKEN_HASH__',hashlib.sha256(token.encode()).hexdigest()).encode()
+          with socket.create_connection((host,PORT),timeout=15) as sock:
+              with paramiko.Transport(sock) as t:
+                  t.banner_timeout=15;t.auth_timeout=15
+                  t.get_security_options().key_types=('ssh-ed25519',)
+                  t.start_client(timeout=20)
+                  if not hmac.compare_digest(fingerprint(t.get_remote_server_key()),pin):raise RuntimeError('host_key_mismatch')
+                  t.auth_password(user,password,fallback=False)
+                  with paramiko.SFTPClient.from_transport(t) as s:
+                      s.get_channel().settimeout(20)
+                      target=ROOT+'/busan-assistant'
+                      if s.normalize(target)!=target:raise RuntimeError('unexpected_root')
+                      path=target+'/'+filename
+                      try:
+                          with s.open(path,'wx') as f:f.write(payload)
+                          s.chmod(path,0o644)
+                          req=urllib.request.Request('https://skhnslu-busan.com/busan-assistant/'+filename,headers={'X-Busan-Diag':token})
+                          with urllib.request.urlopen(req,timeout=15) as r:data=json.loads(r.read(4096))
+                          print(json.dumps(data))
+                      finally:
+                          s.remove(path)
+                          print('temporary_diagnostic_removed')
+          
+          PYCODE
