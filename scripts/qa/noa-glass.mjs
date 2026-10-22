@@ -33,8 +33,9 @@ export async function verifyGlass({context,phase,base,out,report,auditPrecision}
      const visible=e=>e.getBoundingClientRect().width>0&&getComputedStyle(e).display!=='none';
      const rect=e=>{const r=e.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height};};
      const nodes=[...document.querySelectorAll('.noa-glass-control')].filter(visible).map(b=>{
+      const scrollHost=b.closest('.noa-two-line .controls');if(scrollHost)b.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});
       const s=getComputedStyle(b),after=getComputedStyle(b,'::after'),box=rect(b),svg=b.querySelector('svg');
-      return{id:b.id||b.className,box,background:s.backgroundImage,shadow:s.boxShadow,color:s.color,filter:s.filter,backdrop:s.backdropFilter,animation:s.animationName,willChange:s.willChange,label:b.dataset.noaGlassLabel,after:after.content,align:s.alignItems,justify:s.justifyContent,direction:s.flexDirection,textAlign:s.textAlign,scrollWidth:b.scrollWidth,clientWidth:b.clientWidth,scrollHeight:b.scrollHeight,clientHeight:b.clientHeight,icon:svg?rect(svg):null};
+      return{scrollHost:scrollHost?rect(scrollHost):null,iconOnly:!!scrollHost,afterDisplay:after.display,id:b.id||b.className,box,background:s.backgroundImage,shadow:s.boxShadow,color:s.color,filter:s.filter,backdrop:s.backdropFilter,animation:s.animationName,willChange:s.willChange,label:b.dataset.noaGlassLabel,after:after.content,align:s.alignItems,justify:s.justifyContent,direction:s.flexDirection,textAlign:s.textAlign,scrollWidth:b.scrollWidth,clientWidth:b.clientWidth,scrollHeight:b.scrollHeight,clientHeight:b.clientHeight,icon:svg?rect(svg):null};
      });
      const root=getComputedStyle(document.documentElement);return{viewport:innerWidth,scroll:document.documentElement.scrollWidth,theme:document.documentElement.dataset.noaTheme,base:root.getPropertyValue('--noa-glass-base').trim(),crown:root.getPropertyValue('--noa-glass-crown').trim(),shade:root.getPropertyValue('--noa-glass-shade').trim(),text:root.getPropertyValue('--noa-text').trim(),accent:root.getPropertyValue('--noa-glass-icon').trim(),nodes};
     });
@@ -44,7 +45,9 @@ export async function verifyGlass({context,phase,base,out,report,auditPrecision}
      assert.equal(b.filter,'none');assert.equal(b.backdrop,'none');assert.equal(b.animation,'none');assert.equal(b.willChange,'auto');
      assert(b.box.width>=44&&b.box.height>=44,'small glass touch area '+b.id);
      assert(b.box.x>=-1&&b.box.right<=result.viewport+1,'glass control clipped '+b.id);
-     if(b.label){assert.equal(b.direction,'column');assert.equal(b.align,'center');assert.equal(b.justify,'center');assert.equal(b.textAlign,'center');assert.equal(b.after,JSON.stringify(b.label));assert(b.scrollWidth<=b.clientWidth+1&&b.scrollHeight<=b.clientHeight+1,'glass label clipped '+b.id);if(b.icon)assert(Math.abs((b.icon.x+b.icon.width/2)-(b.box.x+b.box.width/2))<=1,'glass icon center '+b.id);}
+     if(b.scrollHost)assert(b.box.x>=b.scrollHost.x-1&&b.box.right<=b.scrollHost.right+1,'dock button cannot be reached by horizontal scrolling '+b.id);
+     if(b.iconOnly){assert.equal(b.afterDisplay,'none');if(b.icon)assert(Math.abs(b.icon.x+b.icon.width/2-b.box.x-b.box.width/2)<=1,'compact dock icon center '+b.id);}
+     if(b.label&&!b.iconOnly){assert.equal(b.direction,'column');assert.equal(b.align,'center');assert.equal(b.justify,'center');assert.equal(b.textAlign,'center');assert.equal(b.after,JSON.stringify(b.label));assert(b.scrollWidth<=b.clientWidth+1&&b.scrollHeight<=b.clientHeight+1,'glass label clipped '+b.id);if(b.icon)assert(Math.abs((b.icon.x+b.icon.width/2)-(b.box.x+b.box.width/2))<=1,'glass icon center '+b.id);}
     }
     const textContrast=Math.min(...[result.base,result.crown,result.shade].map(c=>contrast(result.text,c)));
     const iconContrast=Math.min(...[result.base,result.crown,result.shade].map(c=>contrast(result.accent,c)));

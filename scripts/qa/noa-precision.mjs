@@ -76,7 +76,7 @@ export async function verifyPrecisionFlow({context,phase,base,out,report}){
   await playerPage.waitForFunction(()=>Math.abs(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--noa-player-space'))-Math.ceil(document.querySelector('.noa-transport').getBoundingClientRect().height))<1);
   await playerPage.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
   const audit=await auditPrecision(playerPage);
-  const geometry=await playerPage.locator('.noa-transport').evaluate(p=>{const rect=e=>{const r=e.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height};};return{bar:rect(p),viewport:innerWidth,buttons:[...p.querySelectorAll('button')].filter(b=>b.getBoundingClientRect().width>0).map(rect)};});
+  const geometry=await playerPage.locator('.noa-transport').evaluate(p=>{const rect=e=>{const r=e.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height};};return{bar:rect(p),viewport:innerWidth,buttons:[...p.querySelectorAll('button')].filter(b=>b.getBoundingClientRect().width>0).map(b=>{if(b.closest('.noa-two-line .controls'))b.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});return rect(b);})};});
   assert(geometry.bar.x>=-1&&geometry.bar.right<=geometry.viewport+1,'player viewport bounds');
   for(const b of geometry.buttons){assert(b.width>=44&&b.height>=44,'player touch target');assert(b.x>=geometry.bar.x-1&&b.right<=geometry.bar.right+1&&b.y>=geometry.bar.y-1&&b.bottom<=geometry.bar.bottom+1,'player control clipped');}
   playerSamples.push({...size,...audit,geometry});
