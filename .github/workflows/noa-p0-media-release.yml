@@ -22,6 +22,7 @@ jobs:
           php -l deploy/noa-music.php
           php -l deploy/noa-youtube.php
           php -l tests/p0/router.php
+          php tests/p0/youtube-map-test.php
           node --check deploy/noa-youtube.js
           node --check deploy/noa-app/p0-player.js
           node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs scripts/qa/noa-history.test.mjs scripts/qa/noa-hero.test.mjs
