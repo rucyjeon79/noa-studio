@@ -13,7 +13,14 @@ class PlanIsolationTest(unittest.TestCase):
   self.assertFalse(p['activation_allowed'])
  def test_host_mismatch(self):
   self.manifest['host_id']='busan-union'
-  with self.assertRaises(ValueError):plan_release(self.profiles,'noa-studio',self.manifest,{})
+  with self.assertRaises(ValueError):plan_release(self.profiles,'noa-studio',self.manifest,{'noa-app/home.php':None})
+ def test_incomplete_inventory_fails_closed(self):
+  with self.assertRaisesRegex(ValueError,'server_inventory_incomplete'):
+   plan_release(self.profiles,'noa-studio',self.manifest,{})
+ def test_reject_protected_path(self):
+  self.manifest['files'][0]['path']='data/dbconfig.php'
+  with self.assertRaisesRegex(ValueError,'invalid_file_entry'):
+   plan_release(self.profiles,'noa-studio',self.manifest,{'data/dbconfig.php':None})
  def test_duplicate_file(self):
   self.manifest['files']*=2
   with self.assertRaises(ValueError):plan_release(self.profiles,'noa-studio',self.manifest,{})
