@@ -21,7 +21,7 @@ def digest_remote(sftp,path):
             h.update(chunk)
     return h.hexdigest()
 
-def activate_release(profiles,host_id,plan,staged,sftp,lock_held=False):
+def activate_release(profiles,host_id,plan,staged,sftp,lock_held=False,backups=None):
     host=resolve_host(profiles,host_id)
     if not lock_held or plan.get('host_id')!=host_id or plan.get('activation_allowed') is not False or staged.get('host_id')!=host_id:
         raise ValueError('activation_not_authorized')
@@ -43,6 +43,23 @@ def activate_release(profiles,host_id,plan,staged,sftp,lock_held=False):
             raise RuntimeError('concurrent_change_before_activation')
         if digest_remote(sftp,staged_by_path[path]['staged'])!=item['after_sha256']:
             raise RuntimeError('stage_changed')
-    # Activation is intentionally blocked until verified private backup
-    # and rollback transaction are wired to this exact host lock.
-    raise RuntimeError('backup_and_rollback_transaction_required')
+    # Require an independently verified, host-bound backup for every changed file.
+    if not isinstance(backups,dict) or backups.get('verified') is not True or backups.get('host_id')!=host_id or backups.get('release')!=plan.get('release'):
+        raise RuntimeError('backup_and_rollback_transaction_required')
+    records=backups.get('backups')
+    if not isinstance(records,list) or len(records)!=len(plan['changes']):
+        raise RuntimeError('backup_coverage_incomplete')
+    by_path={entry['path']:entry for entry in records}
+    if len(by_path)!=len(records) or set(by_path)!={item['path'] for item in plan['changes']}:
+        raise RuntimeError('backup_coverage_incomplete')
+    for item in plan['changes']:
+        record=by_path[item['path']]
+        if record.get('sha256')!=item['before_sha256']:
+            raise RuntimeError('backup_digest_mismatch')
+        backup=record.get('backup')
+        if item['before_sha256'] is None:
+            if backup is not None:raise RuntimeError('unexpected_backup')
+        elif not isinstance(backup,str) or not backup.startswith(host.private_root+'/backups/'+plan['release']+'/') or digest_remote(sftp,backup)!=item['before_sha256']:
+            raise RuntimeError('backup_verification_failed')
+    # No mutation until atomic swap, rollback and verified lock ownership are implemented.
+    raise RuntimeError('atomic_swap_and_rollback_not_enabled')
