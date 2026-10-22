@@ -34,7 +34,7 @@
   if(!title.value.trim()){status.textContent='목록 이름을 입력해 주세요.';title.focus();return}
   const tracks=working||filteredQueue.filter(b=>lookup.get(b.dataset.key)?.kind!=='playlist').map(b=>b.dataset.key);el('my-save').disabled=true;
   try{
-   const response=await fetch('/noa-bridge/user-playlists.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-NOA-CSRF':csrf},body:JSON.stringify({id,title:title.value.trim(),tracks,expectedRevision:revision})});if(response.status===401||response.status===403){status.textContent='로그인 후 다시 저장해 주세요.';el('my-login').hidden=false;return}const result=await response.json();
+   const response=await fetch('/noa-bridge/user-playlists.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-NOA-CSRF':csrf},body:JSON.stringify({id,title:title.value.trim(),tracks,expectedRevision:revision})});if(response.status===401){status.textContent='로그인 후 다시 저장해 주세요.';el('my-login').hidden=false;return}if(response.status===403){status.textContent='보안 확인이 만료됐습니다. 목록을 다시 불러온 후 저장해 주세요.';await refresh();return}const result=await response.json();
    if(!response.ok){status.textContent=response.status===409?'다른 곳에서 변경됐습니다. 목록을 다시 열어 확인해 주세요.':'저장하지 못했습니다. 로그인과 연결 상태를 확인해 주세요.';return}
    revision=result.revision;working=[...tracks];await refresh();const saved=items.find(p=>p.playlist_id===id);if(saved){revision=saved.revision;working=[...saved.tracks];picker.value=id;title.value=saved.title;renderOrder();}status.textContent='내 플레이리스트 저장 완료 · '+working.length+'개 곡';
   }catch{status.textContent='응답을 확인하지 못했습니다. 같은 내용으로 다시 저장하면 중복 등록을 방지합니다.'}
