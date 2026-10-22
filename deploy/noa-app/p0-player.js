@@ -15,7 +15,7 @@ const popup=document.createElement('div');popup.id='noa-dock-popover';popup.hidd
 function closePopup(){popup.hidden=true;dock.dataset.expanded='false';moreControl?.setAttribute('aria-expanded','false');}
 function syncPopup(){if(narrowScreen.matches){extras.forEach(b=>popup.append(b));}else{closePopup();extras.forEach(b=>originalControls?.insertBefore(b,moreControl));}updateMoreControl();}
 narrowScreen.addEventListener('change',syncPopup);syncPopup();
-if(moreControl){moreControl.addEventListener('click',()=>{if(!popup.hidden){closePopup();return;}const rect=moreControl.getBoundingClientRect();popup.style.right=Math.max(8,innerWidth-rect.right)+'px';popup.style.bottom=Math.max(8,innerHeight-rect.top+8)+'px';popup.hidden=false;dock.dataset.expanded='true';moreControl.setAttribute('aria-expanded','true');});}
+if(moreControl){moreControl.addEventListener('click',e=>{e.stopImmediatePropagation();if(!popup.hidden){closePopup();return;}const rect=moreControl.getBoundingClientRect();popup.style.right=Math.max(8,innerWidth-rect.right)+'px';popup.style.bottom=Math.max(8,innerHeight-rect.top+8)+'px';popup.hidden=false;dock.dataset.expanded='true';moreControl.setAttribute('aria-expanded','true');},true);}
 document.addEventListener('pointerdown',e=>{if(!popup.hidden&&!popup.contains(e.target)&&!moreControl?.contains(e.target))closePopup();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!popup.hidden){closePopup();moreControl?.focus();}});
 popup.addEventListener('click',e=>{if(e.target.closest('button'))closePopup();});
