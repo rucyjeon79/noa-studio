@@ -57,6 +57,20 @@ jobs:
         run: |
           test "$(git rev-parse HEAD)" = "${NOA_RELEASE_SHA}"
           git diff --exit-code
+      - name: Verify release gate rejects unapproved candidates
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          workflow=pathlib.Path('.github/workflows/noa-full-runtime-release.yml').read_text()
+          deploy=pathlib.Path('scripts/noa_full_runtime_deploy.py').read_text()
+          required=['NOA_APPROVED_RELEASE_SHA','release_checkout_mismatch','unapproved_release_identity']
+          for term in required:
+              assert term in workflow+deploy, term
+          assert 'NOA_RELEASE_SHA_VALIDATED' in deploy
+          assert 'concurrent_change_before_activation' in deploy
+          assert 'rollback_concurrent_change' in deploy
+          print('DIRECT_RELEASE_GUARD_CONTRACT_OK')
+          PY
       - name: Validate deployment workflow syntax
         run: |
           python3 -m pip install --user PyYAML==6.0.2
