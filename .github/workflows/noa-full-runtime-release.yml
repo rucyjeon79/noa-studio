@@ -34,6 +34,12 @@ jobs:
             git fetch --no-tags origin "refs/tags/${NOA_RELEASE_TAG}:refs/tags/${NOA_RELEASE_TAG}"
             test "$(git rev-list -n 1 "${NOA_RELEASE_TAG}")" = "${NOA_RELEASE_SHA}" || { echo 'Tag is not approved SHA'; exit 1; }
           fi
+      - name: Verify approved commit and release manifest
+        env:
+          NOA_RELEASE_SHA: ${{ vars.NOA_APPROVED_RELEASE_SHA }}
+        run: |
+          test "$(git rev-parse HEAD)" = "${NOA_RELEASE_SHA}"
+          git diff --exit-code
       - name: Validate deployment script syntax
         run: |
           python3 -m py_compile scripts/noa_full_runtime_deploy.py scripts/noa_full_inventory.py scripts/noa_deploy_guard.py
