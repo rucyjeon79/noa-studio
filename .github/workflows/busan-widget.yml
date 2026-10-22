@@ -61,6 +61,12 @@ jobs:
              assert s.normalize(ROOT)==ROOT and s.normalize(private)==private
              with s.open(private+'/activity-account.json','rb') as f:identity=json.loads(f.read(8192))
              if mode=='push' or mode=='workflow_dispatch':
+              ai_path=private+'/ai-chat.json'
+              try:
+               with s.open(ai_path,'rb') as f:ai_status=json.loads(f.read(8192))
+               print(json.dumps({'ai_config_present':True,'ai_enabled':ai_status.get('enabled') is True,'ai_key_present':bool(ai_status.get('api_key')),'ai_model':ai_status.get('model','')},ensure_ascii=False))
+              except FileNotFoundError:print('AI_CONFIG_NOT_SAVED')
+
               z=zipfile.ZipFile('/tmp/busan-widget.zip')
               files={n:z.read(n) for n in z.namelist() if n.startswith(('busan-assistant/','extend/')) and not n.endswith('/')}
               expected={'busan-assistant/persona.php','busan-assistant/widget-api.php','busan-assistant/widget.js','busan-assistant/widget.css','busan-assistant/comment-worker.php','busan-assistant/ai-runtime.php','busan-assistant/ai-settings.php','extend/busan-on.extend.php'}
