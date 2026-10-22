@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths: ['.github/workflows/noa-full-runtime-release.yml']
   workflow_dispatch:
+  release:
+    types: [published]
 permissions: {contents: read}
 concurrency: {group: noa-dothome-production, cancel-in-progress: false}
 jobs:
@@ -18,7 +20,13 @@ jobs:
         env:
           NOA_RELEASE_SHA: ${{ vars.NOA_APPROVED_RELEASE_SHA }}
         run: |
-          test "${GITHUB_REF}" = 'refs/heads/main' || { echo 'Release must use main'; exit 1; }
+          if [ "${GITHUB_EVENT_NAME}" = release ]; then
+            test "${{ github.event.release.prerelease }}" = 'false' || { echo 'Prerelease is not deployable'; exit 1; }
+            test "${{ github.event.release.draft }}" = 'false' || { echo 'Draft is not deployable'; exit 1; }
+            test "${GITHUB_SHA}" = "$(git rev-parse origin/main)" || { echo 'Release must match current main'; exit 1; }
+          else
+            test "${GITHUB_REF}" = 'refs/heads/main' || { echo 'Release must use main'; exit 1; }
+          fi
           test -n "${NOA_RELEASE_SHA}" || { echo 'Approved SHA is not configured'; exit 1; }
           test "${GITHUB_SHA}" = "${NOA_RELEASE_SHA}" || { echo 'SHA is not approved'; exit 1; }
       - name: Validate all active runtime sources and read-only feature tests
