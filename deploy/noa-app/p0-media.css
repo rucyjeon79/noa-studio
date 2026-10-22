@@ -53,3 +53,11 @@ html body.noa-page .noa-two-line[data-expanded="true"] .controls{position:relati
 html body.noa-page .noa-two-line[data-expanded="true"] .controls button:is(#repeat,#shuffle,#sequential,#dock-list){display:inline-flex!important;}
 html body.noa-page .noa-two-line[data-expanded="true"] .noa-dock-top{overflow-x:auto;scrollbar-width:none;}
 }
+
+/* Standalone secondary-controls popover; never increases JUKEBOX's two-row height. */
+#noa-dock-popover:not([hidden]){position:fixed;z-index:9999;display:grid;grid-template-columns:repeat(4,minmax(40px,1fr));gap:5px;padding:8px;max-width:min(94vw,250px);border:1px solid var(--noa-line);border-radius:12px;background:var(--noa-surface);color:var(--noa-text);box-shadow:0 8px 22px #0005;}
+#noa-dock-popover[hidden]{display:none!important;}
+#noa-dock-popover button{display:inline-flex!important;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:8px;border-radius:8px;color:inherit;background:var(--noa-raised);border:1px solid var(--noa-line);}
+#noa-dock-popover button svg{width:19px;height:19px;}
+#noa-dock-popover button[aria-pressed="true"]{color:var(--noa-accent);border-color:var(--noa-accent);}
+#noa-dock-popover button:focus-visible{outline:2px solid var(--noa-accent);outline-offset:2px;}
