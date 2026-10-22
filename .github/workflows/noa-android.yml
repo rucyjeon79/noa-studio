@@ -46,6 +46,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: NOA-STUDIO-Android-APK
+          overwrite: true
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
       - name: Enable emulator acceleration
@@ -93,6 +94,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: NOA-STUDIO-Android-verification
+          overwrite: true
           path: |
             android/noa-signer-proof.txt
             android/noa-brand-proof.json
@@ -130,6 +132,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: NOA-STUDIO-Android-APK
+          overwrite: true
           path: artifact
       - name: Sign tested APK with the original installation identity
         env:
