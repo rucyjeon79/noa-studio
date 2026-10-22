@@ -1,5 +1,5 @@
 name: NOA P0 production live verification
-# Verify merged recovery and balanced cards with required native MP3 output; no external media retry.
+# P0 2026-10-22: confirm actual MP3 output and live public routes; do not retry blocked YouTube media.
 on:
   push:
     branches: [main]
