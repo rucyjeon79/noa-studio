@@ -1,9 +1,6 @@
 name: NOA full reviewed runtime release
 # P0: preserve active music work; fail closed before any unbacked replacement.
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-full-runtime-release.yml']
   workflow_dispatch:
   release:
     types: [published]
@@ -15,21 +12,25 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v4
-        with: {persist-credentials: false, fetch-depth: 0}
+        with: {persist-credentials: false, fetch-depth: 0, ref: main}
       - name: Require reviewed main and explicit release authorization
         env:
           NOA_RELEASE_SHA: ${{ vars.NOA_APPROVED_RELEASE_SHA }}
+          NOA_RELEASE_TAG: ${{ github.event.release.tag_name }}
+          NOA_RELEASE_DRAFT: ${{ github.event.release.draft }}
+          NOA_RELEASE_PRERELEASE: ${{ github.event.release.prerelease }}
         run: |
-          if [ "${GITHUB_EVENT_NAME}" = release ]; then
-            test "${{ github.event.release.prerelease }}" = 'false' || { echo 'Prerelease is not deployable'; exit 1; }
-            test "${{ github.event.release.draft }}" = 'false' || { echo 'Draft is not deployable'; exit 1; }
-            test "$(git rev-list -n 1 \"${{ github.event.release.tag_name }}\")" = "${GITHUB_SHA}" || { echo 'Release tag does not match checkout SHA'; exit 1; }
-            test "${GITHUB_SHA}" = "$(git rev-parse origin/main)" || { echo 'Release must match current main'; exit 1; }
-          else
-            test "${GITHUB_REF}" = 'refs/heads/main' || { echo 'Release must use main'; exit 1; }
-          fi
+          set -eu
+          test "${GITHUB_REF_NAME}" = main || test "${GITHUB_EVENT_NAME}" = release || { echo 'Manual release must run from main'; exit 1; }
           test -n "${NOA_RELEASE_SHA}" || { echo 'Approved SHA is not configured'; exit 1; }
           test "${GITHUB_SHA}" = "${NOA_RELEASE_SHA}" || { echo 'SHA is not approved'; exit 1; }
+          test "$(git rev-parse HEAD)" = "${NOA_RELEASE_SHA}" || { echo 'Checkout is not approved SHA'; exit 1; }
+          if [ "${GITHUB_EVENT_NAME}" = release ]; then
+            test "${NOA_RELEASE_DRAFT}" = false && test "${NOA_RELEASE_PRERELEASE}" = false || { echo 'Draft/prerelease forbidden'; exit 1; }
+            test -n "${NOA_RELEASE_TAG}" || exit 1
+            git fetch --no-tags origin "refs/tags/${NOA_RELEASE_TAG}:refs/tags/${NOA_RELEASE_TAG}"
+            test "$(git rev-list -n 1 "${NOA_RELEASE_TAG}")" = "${NOA_RELEASE_SHA}" || { echo 'Tag is not approved SHA'; exit 1; }
+          fi
       - name: Validate all active runtime sources and read-only feature tests
         run: |
           find bridge deploy/noa-app deploy/theme/noa_studio -type f -name '*.php' -print0 | xargs -0 -n1 php -l
