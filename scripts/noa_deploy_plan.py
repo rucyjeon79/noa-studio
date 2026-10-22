@@ -34,4 +34,4 @@ def plan_release(profiles,selected_id,manifest,observed):
             raise ValueError('invalid_server_hash')
         if old!=digest:
             changes.append({'path':name,'before_sha256':old,'after_sha256':digest})
-    return {'host_id':host.host_id,'environment':host.environment,'changes':changes,'change_count':len(changes),'requires_backup':bool(changes),'activation_allowed':False}
+    return {'host_id':host.host_id,'release':manifest.get('release'),'environment':host.environment,'changes':changes,'change_count':len(changes),'requires_backup':bool(changes),'activation_allowed':False}
