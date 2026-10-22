@@ -4,6 +4,7 @@ from pathlib import Path
 from noa_uiux_release import connect,read,sha,atomic,mkdir,ROOT,PROTECTED
 from noa_deploy_guard import deployment_preflight,verified_backup
 BASE='e6435bf9b45c7dece6f114a6c39c483c2de76145'
+PREVIOUS_MEDIA='e4fcd5effa140b974f62129eacc2f1acd5e0546f'
 FILES=['noa-app/p0-media.css','noa-app/p0-player.js','noa-youtube.js','noa-youtube.php','noa-music.php']
 NEW=set(FILES[:2]);out=Path('p0-proof');out.mkdir(exist_ok=True)
 def maybe(s,p):
@@ -19,7 +20,8 @@ def main():
     if b is not None and b!=after[p]:raise RuntimeError('Unknown new asset: '+p)
    else:
     baseline=subprocess.check_output(['git','show',BASE+':deploy/'+p])
-    if b not in [baseline,after[p]]:raise RuntimeError('Concurrent production change preserved: '+p)
+    previous=subprocess.check_output(['git','show',PREVIOUS_MEDIA+':deploy/'+p])
+    if b not in [baseline,previous,after[p]]:raise RuntimeError('Concurrent production change preserved: '+p)
   protected={p:sha(read(s,ROOT+'/'+p)) for p in PROTECTED}
   pending=[p for p in FILES if before[p]!=after[p]]
   with deployment_preflight(s,'/hosting/noastudio/noa-deploy-backups',os.environ['GITHUB_RUN_ID']+'-media-'+os.environ.get('GITHUB_RUN_ATTEMPT','1'),sum(len(after[p])+len(before[p] or b'') for p in pending),None) as backup:
