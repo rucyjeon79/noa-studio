@@ -19,7 +19,7 @@ public class PlaybackService extends MediaSessionService {
  @Override public void onCreate(){
   super.onCreate();store=new PlaybackStateStore(this);engine=new ExoPlayer.Builder(this).build();
   engine.setAudioAttributes(new AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(),true);
-  engine.setHandleAudioBecomingNoisy(true);engine.setWakeMode(C.WAKE_MODE_LOCAL);
+  engine.setHandleAudioBecomingNoisy(true);engine.setWakeMode(C.WAKE_MODE_NETWORK);
   Player player=new ForwardingPlayer(engine){
    @Override public void play(){if(!store.uploadBlocked()){store.setClosed(false);super.play();}}
    @Override public void setPlayWhenReady(boolean ready){if(ready&&!store.uploadBlocked())store.setClosed(false);super.setPlayWhenReady(ready&&!store.uploadBlocked());}
