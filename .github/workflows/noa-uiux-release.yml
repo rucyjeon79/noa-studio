@@ -1,5 +1,5 @@
 name: NOA UIUX visual gates and scoped production release
-# Recovery: preserve intrinsic native toolbar captions and shared asset revision.
+# P0 2026-10-22: validate reviewed main and publish missing WORLD EP navigation with protected owner files.
 on:
   pull_request:
     branches: [main]
