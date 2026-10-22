@@ -67,6 +67,9 @@ def activate_release(profiles,host_id,plan,staged,sftp,lock_held=False,backups=N
 
 def activate_transaction(profiles,host_id,plan,staged,backups,sftp,*,lock_proof=None,authorization=None):
     """Atomic per-file activation with conditional rollback; disabled without host lock proof."""
+    # No production activation until a host-owned installer provides a verified lock protocol.
+    # Caller-provided callbacks or strings cannot establish ownership of a remote lock.
+    raise RuntimeError('host_installer_lock_protocol_not_provisioned')
     if not callable(lock_proof) or authorization!='host-installer-verified':
         raise ValueError('host_installer_authorization_required')
     if lock_proof() is not True:
