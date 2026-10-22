@@ -36,4 +36,13 @@ class ReleaseTests(unittest.TestCase):
  def test_symlink_read_is_refused(self):
   s=FakeSFTP({self.remote:b'new'});s.modes[self.remote]=stat.S_IFLNK|0o777
   with self.assertRaisesRegex(RuntimeError,'Nonregular'):release.read(s,self.remote)
+ def test_only_audited_world_history_is_accepted(self):
+  import subprocess
+  examples=[('noa-app/world-view.php','deploy/noa-app/world-view.php','e8053579e9f74b37362816355c70115e35968f81'),('noa-world.js','deploy/noa-world.js','2e543c62af90a2716f94a29a067e253c8f7462e9')]
+  self.assertEqual(set(release.REVIEWED_WORLD_PREVIOUS),{x[0]for x in examples})
+  for remote,source,commit in examples:
+   observed=subprocess.check_output(['git','show',commit+':'+source])
+   self.assertTrue(release.reviewed_world_previous(remote,observed))
+   self.assertFalse(release.reviewed_world_previous(remote,observed+b'concurrent change'))
+   self.assertFalse(release.reviewed_world_previous('noa-music.php',observed))
 if __name__=='__main__':unittest.main()
