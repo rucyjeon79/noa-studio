@@ -8,6 +8,18 @@ const moreControl=document.getElementById('dock-more');
 const narrowScreen=window.matchMedia('(max-width:600px)');
 function updateMoreControl(){if(!moreControl)return;moreControl.hidden=!narrowScreen.matches;if(!narrowScreen.matches){dock.dataset.expanded='false';moreControl.setAttribute('aria-expanded','false');}}
 narrowScreen.addEventListener('change',updateMoreControl);updateMoreControl();
+// Move secondary controls into a true overlay instead of creating a third player row.
+const extras=['repeat','shuffle','sequential','dock-list'].map(id=>document.getElementById(id)).filter(Boolean);
+const originalControls=document.querySelector('.noa-two-line .controls');
+const popup=document.createElement('div');popup.id='noa-dock-popover';popup.hidden=true;popup.setAttribute('role','group');popup.setAttribute('aria-label','추가 재생 조작');document.body.append(popup);
+function closePopup(){popup.hidden=true;dock.dataset.expanded='false';moreControl?.setAttribute('aria-expanded','false');}
+function syncPopup(){if(narrowScreen.matches){extras.forEach(b=>popup.append(b));}else{closePopup();extras.forEach(b=>originalControls?.insertBefore(b,moreControl));}updateMoreControl();}
+narrowScreen.addEventListener('change',syncPopup);syncPopup();
+if(moreControl){moreControl.addEventListener('click',()=>{if(!popup.hidden){closePopup();return;}const rect=moreControl.getBoundingClientRect();popup.style.right=Math.max(8,innerWidth-rect.right)+'px';popup.style.bottom=Math.max(8,innerHeight-rect.top+8)+'px';popup.hidden=false;dock.dataset.expanded='true';moreControl.setAttribute('aria-expanded','true');});}
+document.addEventListener('pointerdown',e=>{if(!popup.hidden&&!popup.contains(e.target)&&!moreControl?.contains(e.target))closePopup();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!popup.hidden){closePopup();moreControl?.focus();}});
+popup.addEventListener('click',e=>{if(e.target.closest('button'))closePopup();});
+
 function marquee(){const width=title.parentElement.clientWidth,extra=title.scrollWidth-width;title.classList.toggle('noa-title-scroll',extra>2);title.style.setProperty('--title-shift',-Math.max(0,extra)+'px');}
 new ResizeObserver(marquee).observe(title.parentElement);document.fonts?.ready.then(marquee);
 let imageRevision=0;
