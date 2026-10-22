@@ -4,6 +4,10 @@ const audio=document.getElementById('sound-player'),dock=document.querySelector(
 // Dock is a sibling of main, so hiding the MUSIC view never destroys its controls.
 document.body.append(dock);const dialog=document.getElementById('dock-queue');document.body.append(dialog);
 const title=document.getElementById('dock-title'),image=document.getElementById('dock-cover'),empty=document.getElementById('dock-cover-empty');
+const moreControl=document.getElementById('dock-more');
+const narrowScreen=window.matchMedia('(max-width:600px)');
+function updateMoreControl(){if(!moreControl)return;moreControl.hidden=!narrowScreen.matches;if(!narrowScreen.matches){dock.dataset.expanded='false';moreControl.setAttribute('aria-expanded','false');}}
+narrowScreen.addEventListener('change',updateMoreControl);updateMoreControl();
 function marquee(){const width=title.parentElement.clientWidth,extra=title.scrollWidth-width;title.classList.toggle('noa-title-scroll',extra>2);title.style.setProperty('--title-shift',-Math.max(0,extra)+'px');}
 new ResizeObserver(marquee).observe(title.parentElement);document.fonts?.ready.then(marquee);
 let imageRevision=0;
