@@ -1,4 +1,5 @@
 name: NOA JUKEBOX public cards and authorized audio
+# P0 media-view releases use their own guarded publisher; scheduled workers remain unchanged.
 # Circuit-break transient upload errors, reconcile lost acknowledgements and observe worker health.
 on:
   push:
@@ -16,7 +17,7 @@ on:
 permissions: {contents: read}
 jobs:
   storage_rescue:
-    if: github.event_name != 'schedule'
+    if: github.event_name != 'schedule' && !contains(github.event.head_commit.message, '[p0-media]')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: production
@@ -31,7 +32,7 @@ jobs:
           NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
         run: python3 scripts/noa_jukebox_storage_rescue.py
   validate:
-    if: github.event_name != 'schedule'
+    if: github.event_name != 'schedule' && !contains(github.event.head_commit.message, '[p0-media]')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -60,7 +61,7 @@ jobs:
           node --check tests/jukebox/live_recovery_test.cjs
   interface:
     needs: [validate, storage_rescue]
-    if: github.event_name != 'schedule' && needs.validate.result == 'success'
+    if: github.event_name != 'schedule' && !contains(github.event.head_commit.message, '[p0-media]') && needs.validate.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: production

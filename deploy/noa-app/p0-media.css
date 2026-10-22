@@ -32,3 +32,6 @@ html body.noa-shell-open>main{display:none!important}
 #noa-shell-view{display:block;position:fixed;left:var(--noa-rail,220px);top:0;width:calc(100% - var(--noa-rail,220px));height:calc(100dvh - 96px - var(--noa-nav-space,0px));border:0;background:var(--noa-bg);z-index:5}
 @media(max-width:760px){html body.noa-page .noa-transport.noa-two-line{left:0;bottom:calc(var(--noa-dock,64px) + env(safe-area-inset-bottom));padding:6px 8px;min-height:84px;grid-template-rows:44px 24px}#noa-shell-view{left:0;width:100%;height:calc(100dvh - 86px - var(--noa-dock,64px) - env(safe-area-inset-bottom))}}
 @media(prefers-reduced-motion:reduce){html body .noa-two-line #dock-title.noa-title-scroll{animation:none}}
+/* Keep the existing action icons while using a compact disclosure row. */
+html[data-noa-precision] body.noa-page main .noa-media-details summary.noa-action{display:flex;flex-direction:row;justify-content:flex-start;width:100%;inline-size:100%;min-height:44px;block-size:44px;margin:0;padding:8px 12px;border:0;border-radius:0;text-align:left;gap:8px}
+html[data-noa-precision] body.noa-page main .noa-media-details summary.noa-action>span{font-size:13px;line-height:1.4}
