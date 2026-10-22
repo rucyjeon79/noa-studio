@@ -101,3 +101,5 @@ Android는 네이버 nmap/카카오 kakaomap의 명시적 패키지 intent와 HT
 지도 앱의 내 위치 기능을 이용하고, 3km 이내 여부는 지도 표시 거리를 확인하도록 안내한다. 지도 링크에는 강제3km 필터가 없으므로 반경 제한이나 개방/영업/주차 빈자리를 검증했다고 말하지 않는다. 앱이 안 열리는 브라우저에서는 각 검색 옆 웹 지도 링크를 제공한다.
 
 공식 참고: https://guide.ncloud-docs.com/docs/maps-url-scheme , https://apis.map.kakao.com/android_v2/docs/api-guide/urlscheme/ , https://developers.google.com/maps/documentation/urls/get-started . 실제 Android/iOS 앱 실행은 원격 데스크톱 환경으로 검증할 수 없어 별도 실기기 확인이 필요하다.
+
+v14 run39785069537 성공: 지도 선택/선호 저장, Android 고정 패키지 intent와 웹 fallback, iOS scheme, 데스크톱 검색 URL, 사이트 GPS/Overpass 호출 제거 및 기존 회귀 검사 통과. 실제 홈페이지 지도 선택이 카카오맵으로 유지되는 것, 장소별 링크 변경, 카카오 웹 지도에 '맛집' 검색어가 전달되어 검색 결과가 표시되는 것을 확인했다. 지도 안내를 열면 입력 포커스를 해제하고 안내 상단으로 이동하도록 보정했다. 실제 Android/iOS 설치 앱 실행과 사용자 현재 위치는 미검증이다.
