@@ -6,9 +6,20 @@ from collections import Counter
 from noa_full_inventory import mappings,connect,sha,ROOT
 
 def main():
+ # Verify the release identity inside the deploy process, not only in Actions.
+ approved=os.environ.get('NOA_APPROVED_RELEASE_SHA','')
+ release=os.environ.get('NOA_RELEASE_COMMIT','')
+ if os.environ.get('NOA_RELEASE_SHA_VALIDATED')!='1' or len(approved)!=40 or any(c not in '0123456789abcdef' for c in approved) or release!=approved:
+  raise RuntimeError('unapproved_release_identity')
+ checkout=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+ if checkout!=approved:
+  raise RuntimeError('release_checkout_mismatch')
  allmap=mappings()
  # Large original assets are being independently hashed; deploy only runtime modules here.
  protected_work={'noa-music.php','noa-bridge/catalog.php','noa-jukebox/.htaccess'}
+ # The protected MUSIC view may join an explicitly approved single release, never a generic runtime sync.
+ approved_music=os.environ.get('NOA_INCLUDE_MUSIC_VIEW')=='1' and bool(os.environ.get('NOA_APPROVED_RELEASE_SHA')) and os.environ.get('NOA_APPROVED_RELEASE_SHA')==os.environ.get('NOA_RELEASE_COMMIT')
+ if approved_music:protected_work.remove('noa-music.php')
  m={r:l for r,l in allmap.items()if not r.startswith(('noa-assets/','noa-app/jukebox/')) and r not in protected_work and r not in ['noa-bridge/seed.php','noa-bridge/source-archive.php','noa-bridge/catalog-seed.php']}
  preflight=None
  t=connect();s=t.open_sftp_client() if hasattr(t,'open_sftp_client')else __import__('paramiko').SFTPClient.from_transport(t)
@@ -49,7 +60,7 @@ def main():
   protected=['common.php','config.php','data/dbconfig.php','_common.php','head.php','tail.php','bbs/login.php','bbs/login_check.php','bbs/logout.php','version.php']
   guard={p:sha(read(ROOT+'/'+p))for p in protected}
   if not pending:
-   result={'commit':os.environ['GITHUB_SHA'],'changed':[],'changedCount':0,'preservedUnknown':unknown,'sqlMigrations':False,'protectedJukeboxExcluded':True,'backupRequired':False}
+   result={'commit':os.environ['NOA_RELEASE_COMMIT'],'changed':[],'changedCount':0,'preservedUnknown':unknown,'sqlMigrations':False,'protectedJukeboxExcluded':True,'backupRequired':False}
    (proof/'release.json').write_text(json.dumps(result,indent=2));print('FULL_RUNTIME_RELEASE '+json.dumps(result),flush=True);return
   for remote,b in pending:
    local=m[remote]
@@ -70,7 +81,7 @@ def main():
    for part in remote.split('/')[:-1]:parent+='/'+part;mkdir(parent,0o700)
    with s.open(target,'wx')as f:f.write(old[remote])
    s.chmod(target,0o600);assert read(target)==old[remote]
-  manifest={'commit':os.environ['GITHUB_SHA'],'backup':backup,'files':rows,'protectedHashes':guard}
+  manifest={'commit':os.environ['NOA_RELEASE_COMMIT'],'backup':backup,'files':rows,'protectedHashes':guard}
   with s.open(backup+'/manifest.json','wx')as f:f.write(json.dumps(manifest).encode())
   s.chmod(backup+'/manifest.json',0o600)
   # Prepare all versions first; dependency files activate before endpoints/views.
@@ -87,6 +98,7 @@ def main():
    for remote,b in pending:
     if read(ROOT+'/'+remote)!=old[remote]:raise RuntimeError('concurrent_change '+remote)
    for remote,b in pending:
+    if read(ROOT+'/'+remote)!=old[remote]:raise RuntimeError('concurrent_change_before_activation '+remote)
     s.posix_rename(staged[remote],ROOT+'/'+remote);installed.append((remote,b));assert read(ROOT+'/'+remote)==b
     print('UPDATED '+remote+' '+sha(b),flush=True)
    for p,digest in guard.items():assert sha(read(ROOT+'/'+p))==digest,'core_changed '+p
@@ -96,15 +108,17 @@ def main():
      if cache_only and path in ['/','/index.php','/noa-world.php','/noa-youtube.php','/noa-my.php']:assert b'20261021-p0-final' in body,'cache_url_not_updated '+path
      if path=='/noa-bridge/home.php':
       data=json.loads(body);assert data['ok'];print('LIVE_HOME_COUNTS '+json.dumps({k:len(data[k])for k in ['stories','covers','playlists']}),flush=True)
-   result={'commit':os.environ['GITHUB_SHA'],'backup':backup,'changed':[r for r,b in pending],'changedCount':len(pending),'preservedUnknown':unknown,'coreUnchanged':True,'sqlMigrations':False,'deployedAtUTC':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())}
+   result={'commit':os.environ['NOA_RELEASE_COMMIT'],'backup':backup,'changed':[r for r,b in pending],'changedCount':len(pending),'preservedUnknown':unknown,'coreUnchanged':True,'sqlMigrations':False,'deployedAtUTC':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())}
    (proof/'release.json').write_text(json.dumps(result,indent=2));print('FULL_RUNTIME_RELEASE '+json.dumps(result),flush=True)
   except Exception:
    for remote,b in reversed(installed):
-    if old[remote]is not None:
-     if read(ROOT+'/'+remote)!=b:raise RuntimeError('rollback_concurrent_change '+remote)
-     temp=ROOT+'/noa-bridge/.rollback-'+os.environ['GITHUB_RUN_ID']+'-'+remote.replace('/','_')+'.php'
-     with s.open(temp,'wx')as f:f.write(old[remote])
-     s.chmod(temp,0o644);s.posix_rename(temp,ROOT+'/'+remote)
+    if read(ROOT+'/'+remote)!=b:raise RuntimeError('rollback_concurrent_change '+remote)
+    if old[remote] is None:
+     s.remove(ROOT+'/'+remote)
+     continue
+    temp=ROOT+'/noa-bridge/.rollback-'+os.environ['GITHUB_RUN_ID']+'-'+remote.replace('/','_')+'.php'
+    with s.open(temp,'wx')as f:f.write(old[remote])
+    s.chmod(temp,0o644);s.posix_rename(temp,ROOT+'/'+remote)
    raise
  finally:
   try:

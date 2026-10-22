@@ -4,10 +4,33 @@ const audio=document.getElementById('sound-player'),dock=document.querySelector(
 // Dock is a sibling of main, so hiding the MUSIC view never destroys its controls.
 document.body.append(dock);const dialog=document.getElementById('dock-queue');document.body.append(dialog);
 const title=document.getElementById('dock-title'),image=document.getElementById('dock-cover'),empty=document.getElementById('dock-cover-empty');
+const moreControl=document.getElementById('dock-more');
+const narrowScreen=window.matchMedia('(max-width:600px)');
+function updateMoreControl(){if(!moreControl)return;moreControl.hidden=!narrowScreen.matches;if(!narrowScreen.matches){dock.dataset.expanded='false';moreControl.setAttribute('aria-expanded','false');}}
+narrowScreen.addEventListener('change',updateMoreControl);updateMoreControl();
+// Move secondary controls into a true overlay instead of creating a third player row.
+const extras=['repeat','shuffle','sequential','dock-list'].map(id=>document.getElementById(id)).filter(Boolean);
+const originalControls=document.querySelector('.noa-two-line .controls');
+const popup=document.createElement('div');popup.id='noa-dock-popover';popup.hidden=true;popup.setAttribute('role','group');popup.setAttribute('aria-label','추가 재생 조작');document.body.append(popup);
+function closePopup(){popup.hidden=true;dock.dataset.expanded='false';moreControl?.setAttribute('aria-expanded','false');}
+function syncPopup(){closePopup();if(narrowScreen.matches){extras.forEach(b=>popup.append(b));}else{extras.forEach(b=>originalControls?.insertBefore(b,moreControl));}updateMoreControl();}
+narrowScreen.addEventListener('change',syncPopup);syncPopup();
+function positionPopup(){if(popup.hidden||!moreControl)return;const rect=moreControl.getBoundingClientRect();const width=popup.offsetWidth||240;const height=popup.offsetHeight||64;const left=Math.max(8,Math.min(innerWidth-width-8,rect.right-width));const top=Math.max(8,Math.min(innerHeight-height-8,rect.top-height-8));popup.style.left=left+'px';popup.style.top=top+'px';popup.style.right='auto';popup.style.bottom='auto';}
+window.addEventListener('resize',positionPopup,{passive:true});
+window.addEventListener('scroll',positionPopup,{passive:true,capture:true});
+if(moreControl){moreControl.setAttribute('aria-controls','noa-dock-popover');moreControl.addEventListener('click',e=>{e.stopImmediatePropagation();if(!popup.hidden){closePopup();return;}popup.hidden=false;positionPopup();dock.dataset.expanded='true';moreControl.setAttribute('aria-expanded','true');},true);}
+document.addEventListener('pointerdown',e=>{if(!popup.hidden&&!popup.contains(e.target)&&!moreControl?.contains(e.target))closePopup();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!popup.hidden){closePopup();moreControl?.focus();}});
+popup.addEventListener('click',e=>{if(e.target.closest('button')){closePopup();moreControl?.focus({preventScroll:true});}});
+// If playback controls are hidden or the page loses visibility, never leave a floating menu behind.
+const dockVisibilityObserver=new MutationObserver(()=>{if(dock.hidden)closePopup();});
+dockVisibilityObserver.observe(dock,{attributes:true,attributeFilter:['hidden']});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)closePopup();});
+
 function marquee(){const width=title.parentElement.clientWidth,extra=title.scrollWidth-width;title.classList.toggle('noa-title-scroll',extra>2);title.style.setProperty('--title-shift',-Math.max(0,extra)+'px');}
 new ResizeObserver(marquee).observe(title.parentElement);document.fonts?.ready.then(marquee);
 let imageRevision=0;
-window.addEventListener('noa-track-selected',e=>{const r=e.detail.record;const revision=++imageRevision;title.textContent=r.title;title.title=r.title;image.hidden=!r.thumb;empty.hidden=!!r.thumb;image.onload=()=>{if(revision!==imageRevision)return;try{const canvas=document.createElement('canvas');canvas.width=canvas.height=1;const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0,1,1);const [red,green,blue]=ctx.getImageData(0,0,1,1).data;dock.style.setProperty('--noa-cover-accent',`rgb(${Math.max(80,red)} ${Math.max(80,green)} ${Math.max(80,blue)})`);}catch{dock.style.removeProperty('--noa-cover-accent');}};image.onerror=()=>{if(revision===imageRevision){image.hidden=true;empty.hidden=false;dock.style.removeProperty('--noa-cover-accent');}};if(r.thumb)image.src=r.thumb;else{image.removeAttribute('src');dock.style.removeProperty('--noa-cover-accent');}document.getElementById('dock-current').textContent='0:00';document.getElementById('dock-duration').textContent='0:00';marquee();});
+window.addEventListener('noa-track-selected',e=>{const r=e.detail.record;const revision=++imageRevision;title.textContent=r.title;title.title=r.title;image.hidden=!r.thumb;empty.hidden=!!r.thumb;image.onload=()=>{if(revision!==imageRevision)return;try{const canvas=document.createElement('canvas');canvas.width=canvas.height=1;const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0,1,1);const [red,green,blue]=ctx.getImageData(0,0,1,1).data;const luminance=(.2126*red+.7152*green+.0722*blue)/255;const usable=luminance>.28&&luminance<.76&&Math.max(red,green,blue)-Math.min(red,green,blue)>25;dock.style.setProperty('--noa-cover-accent',usable?`rgb(${red} ${green} ${blue})`:'var(--noa-accent)');}catch{dock.style.removeProperty('--noa-cover-accent');}};image.onerror=()=>{if(revision===imageRevision){image.hidden=true;empty.hidden=false;dock.style.removeProperty('--noa-cover-accent');}};if(r.thumb)image.src=r.thumb;else{image.removeAttribute('src');dock.style.removeProperty('--noa-cover-accent');}document.getElementById('dock-current').textContent='0:00';document.getElementById('dock-duration').textContent='0:00';marquee();});
 // The initial selected track may precede this deferred script.
 const initial=document.querySelector('.song.selected');if(initial)window.dispatchEvent(new CustomEvent('noa-track-selected',{detail:{record:{title:initial.dataset.title,thumb:initial.querySelector('img')?.getAttribute('src')||''}}}));
 const routes=new Set(['/','/index.php','/noa2.php','/noa-music.php','/noa-youtube.php','/noa-world.php','/noa-my.php','/noa-settings.php']);
