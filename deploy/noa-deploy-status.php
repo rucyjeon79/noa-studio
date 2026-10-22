@@ -22,8 +22,12 @@ if (is_file($stateFile) && is_readable($stateFile)) {
     if (is_array($decoded)) {
         $state = [
             'release' => is_string($decoded['release'] ?? null) ? substr($decoded['release'], 0, 80) : null,
+            'host_id' => is_string($decoded['host_id'] ?? null) ? substr($decoded['host_id'], 0, 40) : null,
+            'environment' => is_string($decoded['environment'] ?? null) ? substr($decoded['environment'], 0, 20) : null,
             'applied_at' => is_string($decoded['applied_at'] ?? null) ? substr($decoded['applied_at'], 0, 40) : null,
             'status' => in_array($decoded['status'] ?? '', ['verified','rollback','pending'], true) ? $decoded['status'] : 'unknown',
+            'file_count' => is_array($decoded['files'] ?? null) ? count($decoded['files']) : null,
+            'checked_routes' => is_array($decoded['checked_routes'] ?? null) ? array_slice(array_values(array_filter($decoded['checked_routes'], 'is_string')), 0, 20) : [],
         ];
     }
 }
