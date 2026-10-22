@@ -112,7 +112,9 @@ jobs:
           retention-days: 14
 
   publish:
-    if: github.event_name == 'workflow_dispatch' && inputs.publish
+    # Explicit main release commits are authorized deployment requests; ordinary
+    # Android pushes still build/test without replacing the production download.
+    if: (github.event_name == 'workflow_dispatch' && inputs.publish) || (github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[android-publish]'))
     needs: apk
     concurrency:
       group: noa-dothome-production
