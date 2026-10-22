@@ -1,0 +1,43 @@
+name: NOA DotHome multi-host candidate validation
+on:
+  pull_request:
+    paths:
+      - 'scripts/noa_deploy_hosts.py'
+      - 'scripts/noa_dothome_manifest.py'
+      - 'scripts/noa_deploy_plan.py'
+      - 'scripts/noa_dothome_inventory.py'
+      - 'scripts/noa_dothome_preflight.py'
+      - 'scripts/noa_dothome_stage.py'
+      - 'scripts/noa_dothome_activate.py'
+      - 'scripts/noa_dothome_backup.py'
+      - 'scripts/noa_dothome_rollback.py'
+      - 'scripts/noa_dothome_lock.py'
+      - 'scripts/noa_dothome_prepare.py'
+      - 'scripts/noa_dothome_postflight.py'
+      - 'scripts/noa_dothome_receipt.py'
+      - 'scripts/noa_dothome_status_store.py'
+      - 'scripts/noa_dothome_finalize.py'
+      - 'scripts/noa_dothome_registry.py'
+      - 'scripts/noa_dothome_connection.py'
+      - 'deploy/noa-deploy-center.php'
+      - 'deploy/noa-deploy-status.php'
+      - 'tests/dothome_hosts_test.py'
+      - 'tests/dothome_manifest_test.py'
+      - '.github/workflows/noa-dothome-candidate.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint admin deployment pages
+        run: |
+          php -l deploy/noa-deploy-center.php
+          php -l deploy/noa-deploy-status.php
+      - name: Install existing SFTP transport dependency
+        run: python3 -m pip install paramiko==3.5.1
+      - name: Check host isolation and immutable release manifest
+        run: |
+          python3 -m unittest discover -s tests -p 'dothome_*_test.py' -v
+          python3 -m py_compile scripts/noa_deploy_hosts.py scripts/noa_dothome_manifest.py scripts/noa_deploy_plan.py scripts/noa_dothome_inventory.py scripts/noa_dothome_preflight.py scripts/noa_dothome_stage.py scripts/noa_dothome_activate.py scripts/noa_dothome_backup.py scripts/noa_dothome_rollback.py scripts/noa_dothome_lock.py scripts/noa_dothome_prepare.py scripts/noa_dothome_postflight.py scripts/noa_dothome_receipt.py scripts/noa_dothome_status_store.py scripts/noa_dothome_finalize.py scripts/noa_dothome_registry.py scripts/noa_dothome_connection.py
