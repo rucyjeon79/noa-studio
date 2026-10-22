@@ -16,6 +16,8 @@ class MultiHostIsolationTest(unittest.TestCase):
   self.assertNotEqual(self.a.lock_key,self.b.lock_key)
  def test_reject_web_accessible_private_state(self):
   with self.assertRaises(ValueError):HostProfile('bad-host','/hosting/noastudio/html','/hosting/noastudio/html/data')
+ def test_reject_cross_account_backup(self):
+  with self.assertRaises(ValueError):HostProfile('wrong-host','/hosting/noastudio/html','/hosting/other-account/private')
  def test_reject_traversal(self):
   with self.assertRaises(ValueError):HostProfile('bad-host','/hosting/../html','/hosting/noastudio/private')
 if __name__=='__main__':unittest.main()
