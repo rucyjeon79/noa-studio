@@ -1,0 +1,91 @@
+name: Busan ON authorized level-10 activity account
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/busan-activity-account.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: busan-readonly-sftp, cancel-in-progress: false}
+jobs:
+  create-activity-account:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - name: Validate fixed account and status handlers
+        run: |
+          php -l scripts/busan_activity_account.php
+          php -l scripts/busan_activity_status.php
+      - run: python3 -m pip install paramiko==3.5.1
+      - name: Create dedicated member with native password hashing and main-symbol profile
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: |
+          cd scripts
+          python3 - <<'PY'
+          import os,socket,secrets,hmac,hashlib,json,urllib.request,urllib.error,stat
+          from pathlib import Path
+          import paramiko
+          from busan_readonly_check import configuration,fingerprint,PORT,ROOT
+          host,user,password,pin=configuration(os.environ)
+          token=secrets.token_hex(32)
+          source=Path('busan_activity_account.php').read_text().replace('__BOOTSTRAP_HASH__',hashlib.sha256(token.encode()).hexdigest()).replace("http_response_code(409);echo json_encode", "http_response_code(200);echo json_encode")
+          probe=ROOT+'/busan-assistant/provision-'+secrets.token_hex(16)+'.php'
+          with socket.create_connection((host,PORT),timeout=15) as sock:
+              with paramiko.Transport(sock) as t:
+                  t.banner_timeout=15;t.auth_timeout=15;t.get_security_options().key_types=('ssh-ed25519',)
+                  t.start_client(timeout=20)
+                  if not hmac.compare_digest(fingerprint(t.get_remote_server_key()),pin):raise RuntimeError('host_key_mismatch')
+                  t.auth_password(user,password,fallback=False)
+                  with paramiko.SFTPClient.from_transport(t) as s:
+                      s.get_channel().settimeout(25)
+                      root=ROOT+'/busan-assistant'
+                      if s.normalize(root)!=root or not stat.S_ISDIR(s.lstat(root).st_mode):raise RuntimeError('unexpected_module_path')
+                      try:
+                          with s.open(probe,'wx') as f:f.write(source.encode())
+                          s.chmod(probe,0o644)
+                          req=urllib.request.Request('https://skhnslu-busan.com/busan-assistant/'+probe.rsplit('/',1)[1],data=b'',headers={'X-Busan-Provision':token})
+                          with urllib.request.urlopen(req,timeout=40) as r:result=json.loads(r.read(16384))
+                          print(json.dumps(result,ensure_ascii=False))
+                          if result.get('status')!='verified':raise RuntimeError('account_provision_not_verified')
+                      finally:
+                          s.remove(probe)
+                          print('account_provisioner_removed')
+                      bridge=Path('busan_activity_status.php').read_bytes()
+                      target=root+'/activity.php'
+                      try:
+                          attrs=s.lstat(target)
+                          if not stat.S_ISREG(attrs.st_mode) or s.normalize(target)!=target:raise RuntimeError('unexpected_activity_file')
+                          with s.open(target,'rb') as f:old=f.read(32768)
+                          if old!=bridge:raise RuntimeError('existing_activity_bridge_differs')
+                      except FileNotFoundError:
+                          with s.open(target,'wx') as f:f.write(bridge)
+                          s.chmod(target,0o644)
+                      private='/hosting/rucyjeon79/busan-assistant-private/activity-account.json'
+                      if s.normalize(private)!=private or stat.S_IMODE(s.lstat(private).st_mode)!=0o600:raise RuntimeError('unverified_activity_credential')
+                      with s.open(private,'rb') as f:credentials=json.loads(f.read(4096))
+                      assert credentials['id']=='busanjibuon'
+                      with s.open(target,'rb') as f:assert f.read(32768)==bridge
+          req=urllib.request.Request('https://skhnslu-busan.com/busan-assistant/activity.php',headers={'X-Busan-Agent-Token':credentials['agent_token']})
+          with urllib.request.urlopen(req,timeout=20) as r:status=json.loads(r.read(16384))
+          assert status['activity_member']['id']=='busanjibuon' and status['activity_member']['level']==10
+          print(json.dumps({'activity_connection':'verified','actor':status['activity_member'],'scopes':status['scopes'],'profile_url':status['profile_url']},ensure_ascii=False))
+          try:
+              urllib.request.urlopen('https://skhnslu-busan.com/busan-assistant/activity.php',timeout=15)
+              raise RuntimeError('unauthorized_bridge_allowed')
+          except urllib.error.HTTPError as e:assert e.code==403
+          for key in ['profile_url','icon_url']:
+              with urllib.request.urlopen(result[key],timeout=15) as r:
+                  avatar=r.read(1048576)
+                  assert r.status==200 and avatar.startswith(b'\\x89PNG\\r\\n\\x1a\\n')
+          print('main_symbol_profile_and_icon_served; unauthorized_bridge_denied')
+          
+          PY
