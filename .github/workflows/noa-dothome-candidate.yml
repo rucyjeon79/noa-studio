@@ -5,6 +5,7 @@ on:
       - 'scripts/noa_deploy_hosts.py'
       - 'scripts/noa_dothome_manifest.py'
       - 'scripts/noa_deploy_plan.py'
+      - 'scripts/noa_dothome_inventory.py'
       - 'tests/dothome_hosts_test.py'
       - 'tests/dothome_manifest_test.py'
       - '.github/workflows/noa-dothome-candidate.yml'
@@ -18,4 +19,4 @@ jobs:
       - name: Check host isolation and immutable release manifest
         run: |
           python3 -m unittest discover -s tests -p 'dothome_*_test.py' -v
-          python3 -m py_compile scripts/noa_deploy_hosts.py scripts/noa_dothome_manifest.py scripts/noa_deploy_plan.py
+          python3 -m py_compile scripts/noa_deploy_hosts.py scripts/noa_dothome_manifest.py scripts/noa_deploy_plan.py scripts/noa_dothome_inventory.py
