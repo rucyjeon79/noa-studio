@@ -71,6 +71,7 @@ jobs:
             adb shell am instrument -w -e class kr.ai.noastudio.PlaybackRestoreTest kr.ai.noastudio.test/androidx.test.runner.AndroidJUnitRunner > android/noa-restore-instrumentation.txt
             cat android/noa-restore-instrumentation.txt
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-restore-proof.json android/noa-restore-proof.json || true
+            adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-playing-ivory.png android/noa-android-playing-ivory.png || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-landscape.png android/noa-android-landscape.png || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-playing.png android/noa-android-playing.png || true
             cat android/noa-instrumentation.txt
@@ -108,6 +109,7 @@ jobs:
             android/noa-restore-instrumentation.txt
             android/noa-android-playing.png
             android/noa-android-landscape.png
+            android/noa-android-playing-ivory.png
             android/app/build/reports/lint-results-debug.html
           retention-days: 14
 
