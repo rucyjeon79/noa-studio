@@ -1,5 +1,5 @@
 name: NOA full production deployment inventory
-# Read-only verification after PRECISION GRID, popularity integration and current full DB backup.
+# P0 2026-10-22: compare WORLD recovery, Android web player and latest production bytes.
 on:
   push:
     branches: [main]
