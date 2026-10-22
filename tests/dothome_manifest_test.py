@@ -8,9 +8,10 @@ class ManifestSafetyTest(unittest.TestCase):
             self.assertFalse(allowed(path),path)
         self.assertTrue(allowed('noa-app/home.php'))
     def test_commit_validation(self):
-        with self.assertRaises(ValueError): build('invalid',{})
+        with self.assertRaises(ValueError): build('invalid',{},'noa-studio')
     def test_dry_run_default(self):
-        manifest=build('a'*40,{})
+        manifest=build('a'*40,{},'noa-studio')
+        self.assertEqual(manifest['host_id'],'noa-studio')
         self.assertFalse(manifest['activate'])
         self.assertTrue(manifest['requires_server_preflight'])
         self.assertEqual(manifest['files'],[])
