@@ -1,0 +1,42 @@
+name: NOA P0 deployment data postflight
+on:
+  workflow_run:
+    workflows: ['NOA UIUX visual gates and scoped production release']
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-p0-data-postflight-readonly, cancel-in-progress: false}
+jobs:
+  inspect:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main, persist-credentials: false}
+      - run: python3 -m pip install --user paramiko==3.5.1
+      - name: Read original documents, queue and verified backup without claiming work
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+        run: |
+          python3 scripts/noa_p0_postflight.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('full-release-proof/postflight.json')
+          d=json.loads(p.read_text())
+          d['thisReleaseBaselineSha256']='f569f393a4d4ee8610d060fe336d7ea4d912f5aa62fc2d9571608deb04815ee8'
+          d['matchesThisReleaseBefore']=d['integrity_snapshot']['documents_sha256']==d['thisReleaseBaselineSha256']
+          p.write_text(json.dumps(d,indent=2))
+          print('CURRENT_RELEASE_DATA_COMPARISON '+json.dumps({'matchesBefore':d['matchesThisReleaseBefore'],'documents':d['integrity_snapshot']['documents'],'members':d['integrity_snapshot']['members'],'sqlWrites':False,'workersStopped':False}))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-p0-deployment-data-postflight
+          path: full-release-proof/postflight.json
+          retention-days: 14
