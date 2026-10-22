@@ -15,8 +15,8 @@ final class PlaylistPanel extends LinearLayout {
  private final Activity activity;private final NativePlaylistRepository repo;private final Executor executor;private final List<JSONObject> songs;private final Consumer<JSONArray> play;
  private final int fg,panel,line;private final TextView message;private final LinearLayout rows;private final Button create;private JSONObject session;private String cookie;private boolean busy;private int generation;
  interface Task {void run()throws Exception;}
- PlaylistPanel(Activity a,NativePlaylistRepository r,Executor e,List<JSONObject> catalog,Consumer<JSONArray> p,int foreground,int surface,int border){
-  super(a);activity=a;repo=r;executor=e;songs=catalog;play=p;fg=foreground;panel=surface;line=border;setOrientation(VERTICAL);setPadding(dp(16),dp(12),dp(16),dp(8));addView(label("MY PLAYLIST",24));message=label("재생목록을 불러오는 중입니다.",13);addView(message);
+ PlaylistPanel(Activity a,NativePlaylistRepository r,Executor e,List<JSONObject> catalog,Consumer<JSONArray> p,Runnable account,int foreground,int surface,int border){
+  super(a);activity=a;repo=r;executor=e;songs=catalog;play=p;fg=foreground;panel=surface;line=border;setOrientation(VERTICAL);setPadding(dp(16),dp(12),dp(16),dp(8));addView(label("MY PLAYLIST",24));message=label("재생목록을 불러오는 중입니다.",13);addView(message);Button accountButton=button("계정 재생목록 관리",account);accountButton.setOnClickListener(v->account.run());addView(accountButton);
   create=button("새 재생목록",()->name(null));create.setEnabled(false);addView(create);ScrollView scroll=new ScrollView(a);rows=new LinearLayout(a);rows.setOrientation(VERTICAL);scroll.addView(rows);addView(scroll,new LayoutParams(-1,0,1));reload();
  }
  private int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
