@@ -4,6 +4,7 @@ from pathlib import Path
 from noa_uiux_release import connect,read,sha,atomic,mkdir,ROOT,PROTECTED
 from noa_deploy_guard import deployment_preflight,verified_backup
 BASE='e6435bf9b45c7dece6f114a6c39c483c2de76145'
+REVIEWED_ASSET_BASE='4bb39443c44179e4fb9d459e78cd5fd984033bc3'
 PREVIOUS_MEDIA='e4fcd5effa140b974f62129eacc2f1acd5e0546f'
 FILES=['noa-app/p0-media.css','noa-app/p0-player.js','noa-youtube.js','noa-youtube.php','noa-music.php']
 NEW=set(FILES[:2]);out=Path('p0-proof');out.mkdir(exist_ok=True)
@@ -17,7 +18,8 @@ def main():
   before={p:maybe(s,ROOT+'/'+p) for p in FILES};after={p:Path('deploy/'+p).read_bytes() for p in FILES}
   for p,b in before.items():
    if p in NEW:
-    if b is not None and b!=after[p]:raise RuntimeError('Unknown new asset: '+p)
+    reviewed=subprocess.check_output(['git','show',REVIEWED_ASSET_BASE+':deploy/'+p])
+    if b not in [None,reviewed,after[p]]:raise RuntimeError('Unknown new asset: '+p)
    else:
     baseline=subprocess.check_output(['git','show',BASE+':deploy/'+p])
     previous=subprocess.check_output(['git','show',PREVIOUS_MEDIA+':deploy/'+p])
@@ -37,6 +39,7 @@ def main():
     for p in pending:
      if maybe(s,ROOT+'/'+p)!=before[p]:raise RuntimeError('Concurrent change: '+p)
     for p in pending:
+     if maybe(s,ROOT+'/'+p)!=before[p]:raise RuntimeError('Concurrent activation change: '+p)
      s.posix_rename(staged[p],ROOT+'/'+p);changed.append(p)
      if read(s,ROOT+'/'+p)!=after[p]:raise RuntimeError('Readback mismatch: '+p)
     for p,h in protected.items():

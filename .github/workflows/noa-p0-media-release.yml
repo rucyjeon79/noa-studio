@@ -2,7 +2,7 @@ name: NOA P0 media repair and guarded release
 on:
   pull_request:
     branches: [main]
-    paths: ['deploy/noa-app/p0-*','deploy/noa-music.php','deploy/noa-youtube.php','deploy/noa-youtube.js','scripts/qa/noa-p0-media.mjs','scripts/noa_p0_media_release.py','tests/p0/**','.github/workflows/noa-p0-media-release.yml']
+    paths: ['deploy/noa-app/p0-*','deploy/noa-music.php','deploy/noa-youtube.php','deploy/noa-youtube.js','scripts/qa/noa-p0-media.mjs','scripts/noa_p0_media_release.py','tests/p0/**','tests/media_deploy_guard_test.py','.github/workflows/noa-p0-media-release.yml']
   push:
     branches: [main]
     paths: ['.github/workflows/noa-p0-media-release.yml','deploy/noa-app/p0-*']
@@ -27,6 +27,7 @@ jobs:
           node --check deploy/noa-app/p0-player.js
           node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs scripts/qa/noa-history.test.mjs scripts/qa/noa-hero.test.mjs
           python3 -m py_compile scripts/noa_p0_media_release.py
+          python3 tests/media_deploy_guard_test.py
       - name: Isolated real DOM, independent details and persistent engine tests
         run: |
           npm install --prefix "$RUNNER_TEMP/noa-p0-media" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
@@ -37,7 +38,9 @@ jobs:
         if: always()
         with: {name: p0-media-candidate, path: p0-proof/, retention-days: 14}
   production:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Standalone view publishing is retired: #48 requires one fully verified integrated release.
+    # Candidate validation above remains enabled for pull requests and manual runs.
+    if: ${{ false }}
     needs: verify
     runs-on: ubuntu-latest
     timeout-minutes: 15
