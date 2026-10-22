@@ -12,7 +12,7 @@ class Writer(io.BytesIO):
  def close(self):self.fs.files[self.path]=self.getvalue();super().close()
 class SFTP:
  def __init__(self):
-  self.files={};self.dirs=set();self.fail_after_first=False
+  self.files={};self.dirs=set();self.fail_after_first=False;self.renames=0
  def mkdir(self,path,mode):
   if path in self.dirs:raise FileExistsError(path)
   self.dirs.add(path)
@@ -29,7 +29,8 @@ class SFTP:
   return io.BytesIO(self.files[path])
  def posix_rename(self,source,target):
   self.files[target]=self.files.pop(source)
-  if self.fail_after_first:
+  self.renames+=1
+  if self.fail_after_first and self.renames==1:
    self.files[target]=b'corrupt'
 class TransactionTest(unittest.TestCase):
  def setUp(self):
@@ -47,6 +48,13 @@ class TransactionTest(unittest.TestCase):
    result=activate_transaction(self.hosts,'noa-studio',self.plan,self.staged,self.backups,self.fs,lock=lock)
    self.assertTrue(result['postflight_required'])
   self.assertEqual(self.fs.files[self.live],b'new')
+  self.assertEqual(self.fs.files[self.backup],b'old')
+ def test_corrupt_activation_restores_previous_file(self):
+  self.fs.fail_after_first=True
+  with HostLock(self.hosts,'noa-studio',self.fs) as lock:
+   with self.assertRaisesRegex(RuntimeError,'activation_hash_mismatch'):
+    activate_transaction(self.hosts,'noa-studio',self.plan,self.staged,self.backups,self.fs,lock=lock)
+  self.assertEqual(self.fs.files[self.live],b'old')
   self.assertEqual(self.fs.files[self.backup],b'old')
  def test_wrong_backup_prevents_write(self):
   self.backups['backups'][0]['sha256']=sha(b'bad')
