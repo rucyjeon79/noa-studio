@@ -17,9 +17,9 @@ class HostProfile:
     def __post_init__(self):
         if not HOST_ID.fullmatch(self.host_id):
             raise ValueError("invalid_host_id")
-        if not self.remote_root.startswith("/hosting/") or "/../" in self.remote_root or not self.remote_root.endswith("/html"):
+        if not self.remote_root.startswith("/hosting/") or "/../" in self.remote_root or not self.remote_root.endswith("/html") or "//" in self.remote_root or "/./" in self.remote_root:
             raise ValueError("invalid_web_root")
-        if not self.private_root.startswith("/hosting/") or "/../" in self.private_root or self.private_root.startswith(self.remote_root + "/"):
+        if not self.private_root.startswith("/hosting/") or "/../" in self.private_root or "//" in self.private_root or "/./" in self.private_root or self.private_root.startswith(self.remote_root + "/"):
             raise ValueError("invalid_private_root")
         web_account=self.remote_root.split("/")[2]
         private_account=self.private_root.split("/")[2]
