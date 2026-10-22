@@ -1,7 +1,8 @@
 package kr.ai.noastudio;
 import android.app.*;
 import android.content.*;
-import android.media.*;
+import android.media.AudioManager;
+import android.media.AudioFocusRequest;
 import android.os.*;
 import android.view.*;
 import androidx.media3.common.*;

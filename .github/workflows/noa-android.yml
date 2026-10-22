@@ -30,6 +30,16 @@ jobs:
       - name: Compile installable APK and lint
         working-directory: android
         run: gradle --no-daemon :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug
+      - name: Inspect production signing continuity without changing release
+        run: |
+          mkdir -p artifact
+          cp android/app/build/outputs/apk/debug/app-debug.apk artifact/app-debug.apk
+          if python3 scripts/noa_apk_signing_check.py > android/noa-signer-proof.txt 2>&1; then
+            echo "signer-compatible=true" >> android/noa-signer-proof.txt
+          else
+            echo "Production APK preserved; signing continuity must be resolved before replacement." >> android/noa-signer-proof.txt
+          fi
+          cat android/noa-signer-proof.txt
       - name: Retain APK
         uses: actions/upload-artifact@v4
         with:
@@ -79,6 +89,7 @@ jobs:
         with:
           name: NOA-STUDIO-Android-verification
           path: |
+            android/noa-signer-proof.txt
             android/noa-brand-proof.json
             android/noa-launcher-icon.png
             android/noa-ui.xml
