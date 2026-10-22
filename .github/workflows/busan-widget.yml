@@ -64,7 +64,7 @@ jobs:
               ai_path=private+'/ai-chat.json'
               try:
                with s.open(ai_path,'rb') as f:ai_status=json.loads(f.read(8192))
-               print(json.dumps({'ai_config_present':True,'ai_enabled':ai_status.get('enabled') is True,'ai_key_present':bool(ai_status.get('api_key')),'ai_model':ai_status.get('model','')},ensure_ascii=False))
+               print(json.dumps({'ai_config_present':True,'ai_enabled':ai_status.get('enabled') is True,'ai_key_present':bool(ai_status.get('api_key')),'ai_model_present':bool(ai_status.get('model')),'ai_model_expected':ai_status.get('model')=='gpt-6-sol'},ensure_ascii=False))
               except FileNotFoundError:print('AI_CONFIG_NOT_SAVED')
 
               z=zipfile.ZipFile('/tmp/busan-widget.zip')
