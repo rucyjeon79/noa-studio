@@ -1,0 +1,59 @@
+name: NOA Deployment Backup Encrypted Courier
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-host-backup-courier.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: noa-production-sftp
+  cancel-in-progress: false
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Check script and credentials
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: |
+          python -m py_compile scripts/noa_host_backup_courier.py scripts/noa_encrypted_backup_courier.py
+          python - <<'PY'
+          import os,sys
+          names=['NOA_SSH_HOST','NOA_SSH_USER','NOA_SSH_PASSWORD','NOA_SSH_HOST_FINGERPRINT']
+          missing=[name for name in names if not os.environ.get(name)]
+          if missing:
+              print('::error::Missing required secret names: '+', '.join(missing))
+              sys.exit(1)
+          PY
+      - name: Install SFTP and Drive clients
+        run: |
+          python -m pip install 'paramiko>=3,<5' cryptography
+      - name: Collect deployment backups and read-only host evidence
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_host_backup_courier.py
+      - name: Encrypt temporary transfer for connected Drive upload
+        run: python scripts/noa_encrypted_backup_courier.py
+      - name: Upload ciphertext only
+        uses: actions/upload-artifact@v4
+        with:
+          name: noa-encrypted-courier
+          path: ${{ runner.temp }}/noa-encrypted-courier/
+          retention-days: 1
+          compression-level: 0
+      - name: Remove temporary plaintext and ciphertext
+        if: always()
+        run: |
+          rm -rf "$RUNNER_TEMP/noa-db-backups" "$RUNNER_TEMP/noa-encrypted-courier"
+          rm -f "$RUNNER_TEMP/noa-private-courier.tar.gz"
