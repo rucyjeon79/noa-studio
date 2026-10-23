@@ -19,6 +19,11 @@ try {
  $db->exec("INSERT INTO noa_jukebox_audio_jobs VALUES(1,'upload-1','processing')");
  if(n80_verified_ready_pipeline($db,$dir,$event,$context)['error']!=='source_not_ready')exit(10);
  $db->exec("UPDATE noa_jukebox_audio_jobs SET status='ready' WHERE id=1");
+ $db->exec("INSERT INTO noa_jukebox_uploads VALUES('upload-2','song-1','processing')");
+ $db->exec("INSERT INTO noa_jukebox_audio_jobs VALUES(2,'upload-2','processing')");
+ if(n80_verified_ready_pipeline($db,$dir,$event,$context)['error']!=='source_not_ready')exit(12);
+ $db->exec("UPDATE noa_jukebox_uploads SET status='ready' WHERE id='upload-2'");
+ $db->exec("UPDATE noa_jukebox_audio_jobs SET status='ready' WHERE id=2");
  $verified=n80_verified_ready_pipeline($db,$dir,$event,$context);
  if(!$verified['ok']||$verified['ackEligible']!==false||$verified['storageStatus']!=='stored')exit(11);
  $first=n80_readonly_pipeline($db,$dir,$event,$context);
