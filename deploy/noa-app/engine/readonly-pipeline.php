@@ -45,12 +45,15 @@ function n80_verified_ready_pipeline(PDO $db,string $privateEventDir,array $even
     if(!$validation['ok'])return ['ok'=>false,'error'=>$validation['error']];
     if($event['source']!=='jukebox'||$event['type']!=='audio.ready')
         return ['ok'=>false,'error'=>'unsupported_event_source'];
-    $q=$db->prepare("SELECT u.id FROM noa_jukebox_uploads u
-        JOIN noa_jukebox_audio_jobs j ON j.upload_id=u.id
-        WHERE u.song_key=? AND u.status='ready' AND j.status='ready'
-        ORDER BY j.id DESC LIMIT 1");
+    // Check the latest job, not any historical ready job for this song.
+    // A newer in-progress replacement must not inherit an old ready receipt.
+    $q=$db->prepare("SELECT u.status AS upload_status,j.status AS job_status
+        FROM noa_jukebox_audio_jobs j
+        JOIN noa_jukebox_uploads u ON u.id=j.upload_id
+        WHERE u.song_key=? ORDER BY j.id DESC LIMIT 1");
     $q->execute([$event['subjectId']]);
-    if($q->fetchColumn()===false)
+    $latest=$q->fetch(PDO::FETCH_ASSOC);
+    if(!$latest||$latest['upload_status']!=='ready'||$latest['job_status']!=='ready')
         return ['ok'=>false,'error'=>'source_not_ready','ackEligible'=>false];
     return n80_readonly_pipeline($db,$privateEventDir,$event,$serverContext);
 }
