@@ -1,0 +1,22 @@
+name: NOA Playlist PR Check
+on:
+  pull_request:
+    paths:
+      - 'deploy/noa-playlists.js'
+      - 'scripts/qa/noa-playlist-refresh.test.mjs'
+      - '.github/workflows/noa-playlist-pr-check.yml'
+  workflow_dispatch:
+jobs:
+  playlist-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax validation
+        run: node --check deploy/noa-playlists.js
+      - name: Playlist regression tests
+        run: node --test scripts/qa/noa-playlist-refresh.test.mjs
