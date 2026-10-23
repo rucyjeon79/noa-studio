@@ -36,13 +36,12 @@ jobs:
             t.auth_password(user,password,fallback=False)
             with paramiko.SFTPClient.from_transport(t) as s:
              private='/hosting/rucyjeon79/busan-assistant-private'
-             paths=['/theme/UXC_Flarumix/index.php','/theme/UXC_Flarumix/head.php','/theme/UXC_Flarumix/skin/board/uxc_list/list.skin.php','/theme/UXC_Flarumix/skin/board/uxc_list/view.skin.php','/_uxcamp/manager/uxc_theme_slider.php']
+             paths=['/bbs/board_head.php','/theme/UXC_Flarumix/ui_module/ui_mainSlider/ui_mainSlider.php']
              for path in paths:
               try:
-               with s.open(ROOT+path,'rb') as f:code=f.read(160000).decode('utf-8','replace')
-               lines=code.splitlines();selected=set()
-               for i,line in enumerate(lines):
-                if re.search('banner|mainkv|bo_image|bo_[0-9]|slideItem|slideContent|include|skin|kvWrap',line,re.I):selected.update(range(max(0,i-4),min(len(lines),i+7)))
-               print(json.dumps({'path':path,'sha256':hashlib.sha256(code.encode()).hexdigest(),'lines':[[i+1,lines[i]] for i in sorted(selected)]},ensure_ascii=False))
+               with s.open(ROOT+path,'rb') as f:code=f.read(180000).decode('utf-8','replace')
+               print(json.dumps({'path':path,'sha256':hashlib.sha256(code.encode()).hexdigest(),'source':code},ensure_ascii=False))
               except OSError:print(json.dumps({'missing':path}))
+             with s.open(ROOT+'/theme/UXC_Flarumix/head.php','rb') as f:lines=f.read(180000).decode('utf-8','replace').splitlines()
+             print(json.dumps({'head_end':lines[280:]},ensure_ascii=False))
           PY
