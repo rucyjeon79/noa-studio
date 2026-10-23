@@ -32,7 +32,13 @@ def main():
             if before not in expected: raise RuntimeError('remote_changed_unexpectedly')
             if before != digest(data):
                 temp = ROOT + '/.noa-playlists.js.' + os.environ['GITHUB_SHA'][:12] + '.tmp'
-                with sftp.open(temp,'x') as stream: stream.write(data)
+                try:
+                    sftp.lstat(temp)
+                except FileNotFoundError:
+                    pass
+                else:
+                    raise RuntimeError('temporary_target_already_exists')
+                with sftp.open(temp,'wb') as stream: stream.write(data)
                 with sftp.open(temp,'rb') as stream:
                     if digest(stream.read()) != digest(data): raise RuntimeError('upload_hash_mismatch')
                 with sftp.open(REMOTE,'rb') as stream:
