@@ -13,7 +13,9 @@ FILES=[
 'noa-app/engine/executor.php','noa-app/engine/inbox.php',
 'noa-app/engine/outbox.php','noa-app/engine/durable-store.php',
 'noa-app/engine/lease-inbox.php','noa-app/engine/integration-audit.php',
-'noa-app/engine/event-contract.php']
+'noa-app/engine/event-contract.php',
+'noa-app/engine/lease-state.php','noa-app/engine/music-adapter.php',
+'noa-app/engine/authenticated-probe.php']
 def digest(b):return hashlib.sha256(b).hexdigest()
 def main():
     keys=['NOA_SSH_HOST','NOA_SSH_USER','NOA_SSH_PASSWORD','NOA_SSH_HOST_FINGERPRINT']
