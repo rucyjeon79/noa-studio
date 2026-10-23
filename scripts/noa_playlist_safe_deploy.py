@@ -11,7 +11,8 @@ def digest(data): return hashlib.sha256(data).hexdigest()
 
 def main():
     data = SOURCE.read_bytes()
-    prior = subprocess.check_output(['git','show','HEAD^:deploy/noa-playlists.js'])
+    base = subprocess.check_output(['git','merge-base','HEAD','origin/main'],text=True).strip()
+    prior = subprocess.check_output(['git','show',base+':deploy/noa-playlists.js'])
     expected = {digest(prior), digest(data)}
     transport = paramiko.Transport((os.environ['NOA_SSH_HOST'], 2022))
     try:
