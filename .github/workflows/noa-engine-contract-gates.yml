@@ -32,6 +32,10 @@ jobs:
       - name: Record in-process latency baseline
         run: |
           php -r 'require "deploy/noa-app/engine/performance.php"; $e=["id"=>"perf","type"=>"audio.ready","source"=>"jukebox","subjectId"=>"track","occurredAt"=>"2026-10-23T00:00:00Z","schemaVersion"=>1,"correlationId"=>"perf"]; echo json_encode(n80_benchmark_event($e,1000),JSON_PRETTY_PRINT),"\\n";'
+      - name: Enforce Guardian policy and authority contracts
+        run: |
+          php tests/engine/guardian_test.php
+          php -r 'require "deploy/noa-app/engine/guardian.php"; $a=n80_guardian_audit("deploy"); if(!$a["policyCompliant"] || $a["engineOperationalReady"] || $a["decisionAuthority"]!=="user")exit(1); echo "N80_GUARDIAN_POLICY_ENFORCED\\n";'
       - name: Assert execution remains disabled
         run: |
           php -r 'require "deploy/noa-app/engine/adapter-contract.php"; foreach(noa_engine_adapter_manifest() as $a){if($a["enabled"])exit(1);} echo "ENGINE_ADAPTERS_DISABLED\n";'
