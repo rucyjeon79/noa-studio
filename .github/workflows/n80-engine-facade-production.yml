@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'deploy/noa-app/engine/n80.php'
+      - 'scripts/n80_single_session_deploy.py'
       - 'deploy/noa-app/engine/readonly-pipeline.php'
       - 'scripts/n80_readonly_pipeline_safe_deploy.py'
       - 'deploy/noa-app/engine/authenticated-probe.php'
@@ -37,30 +38,6 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-      - name: Detect changed N80 components
-        id: changed
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo 'facade=true' >> "$GITHUB_OUTPUT"
-            echo 'bridge=true' >> "$GITHUB_OUTPUT"
-            echo 'policy=true' >> "$GITHUB_OUTPUT"
-            echo 'guardian=true' >> "$GITHUB_OUTPUT"
-            echo 'lease=true' >> "$GITHUB_OUTPUT"
-            echo 'music=true' >> "$GITHUB_OUTPUT"
-            echo 'probe=true' >> "$GITHUB_OUTPUT"
-            echo 'pipeline=true' >> "$GITHUB_OUTPUT"
-          else
-            if git diff --name-only HEAD^ HEAD | grep -Eq '^(deploy/noa-app/engine/n80.php|scripts/n80_engine_facade_safe_deploy.py)$'; then echo 'facade=true' >> "$GITHUB_OUTPUT"; else echo 'facade=false' >> "$GITHUB_OUTPUT"; fi
-            if git diff --name-only HEAD^ HEAD | grep -Eq '^(deploy/noa-app/engine/bridge.php|scripts/n80_bridge_safe_deploy.py)$'; then echo 'bridge=true' >> "$GITHUB_OUTPUT"; else echo 'bridge=false' >> "$GITHUB_OUTPUT"; fi
-            if git diff --name-only HEAD^ HEAD | grep -Eq '^(deploy/noa-app/engine/policy.php|scripts/n80_policy_safe_deploy.py)$'; then echo 'policy=true' >> "$GITHUB_OUTPUT"; else echo 'policy=false' >> "$GITHUB_OUTPUT"; fi
-            if git diff --name-only HEAD^ HEAD | grep -Eq '^(deploy/noa-app/engine/guardian.php|scripts/n80_guardian_safe_deploy.py)$'; then echo 'guardian=true' >> "$GITHUB_OUTPUT"; else echo 'guardian=false' >> "$GITHUB_OUTPUT"; fi
-            if git diff --name-only HEAD^ HEAD | grep -Eq '^(deploy/noa-app/engine/lease-state.php|scripts/n80_lease_state_safe_deploy.py)$'; then echo 'lease=true' >> "$GITHUB_OUTPUT"; else echo 'lease=false' >> "$GITHUB_OUTPUT"; fi
-            if git diff --name-only HEAD^ HEAD | grep -Eq '^(deploy/noa-app/engine/music-adapter.php|scripts/n80_music_adapter_safe_deploy.py)$'; then echo 'music=true' >> "$GITHUB_OUTPUT"; else echo 'music=false' >> "$GITHUB_OUTPUT"; fi
-            if git diff --name-only HEAD^ HEAD | grep -Eq '^(deploy/noa-app/engine/authenticated-probe.php|scripts/n80_authenticated_probe_safe_deploy.py)$'; then echo 'probe=true' >> "$GITHUB_OUTPUT"; else echo 'probe=false' >> "$GITHUB_OUTPUT"; fi
-            if git diff --name-only HEAD^ HEAD | grep -Eq '^(deploy/noa-app/engine/readonly-pipeline.php|scripts/n80_readonly_pipeline_safe_deploy.py)$'; then echo 'pipeline=true' >> "$GITHUB_OUTPUT"; else echo 'pipeline=false' >> "$GITHUB_OUTPUT"; fi
-          fi
       - name: Validate unified facade and existing contracts
         run: |
           php -l deploy/noa-app/engine/n80.php
@@ -78,75 +55,12 @@ jobs:
           php tests/engine/guardian_test.php
           php -l deploy/noa-app/engine/bridge.php
           php tests/engine/bridge_test.php
-          python -m py_compile scripts/n80_readonly_pipeline_safe_deploy.py scripts/n80_engine_facade_safe_deploy.py scripts/n80_authenticated_probe_safe_deploy.py scripts/n80_music_adapter_safe_deploy.py scripts/n80_lease_state_safe_deploy.py scripts/n80_policy_safe_deploy.py scripts/n80_guardian_safe_deploy.py scripts/n80_bridge_safe_deploy.py
+          python -m py_compile scripts/n80_single_session_deploy.py scripts/n80_readonly_pipeline_safe_deploy.py scripts/n80_engine_facade_safe_deploy.py scripts/n80_authenticated_probe_safe_deploy.py scripts/n80_music_adapter_safe_deploy.py scripts/n80_lease_state_safe_deploy.py scripts/n80_policy_safe_deploy.py scripts/n80_guardian_safe_deploy.py scripts/n80_bridge_safe_deploy.py
       - run: python -m pip install 'paramiko>=3,<5'
-      - name: Deploy additive unified facade
-        if: steps.changed.outputs.facade == 'true'
+      - name: Verify and install N80 modules in one SSH session
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
-        run: python scripts/n80_engine_facade_safe_deploy.py
-
-      - name: Deploy additive N80 Bridge contract
-        if: steps.changed.outputs.bridge == 'true'
-        env:
-          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
-          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
-        run: python scripts/n80_bridge_safe_deploy.py
-
-      - name: Deploy N80 policy
-        if: steps.changed.outputs.policy == 'true'
-        env:
-          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
-          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
-        run: python scripts/n80_policy_safe_deploy.py
-      - name: Deploy N80 Guardian
-        if: steps.changed.outputs.guardian == 'true'
-        env:
-          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
-          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
-        run: python scripts/n80_guardian_safe_deploy.py
-
-      - name: Deploy additive durable lease adapter
-        if: steps.changed.outputs.lease == 'true'
-        env:
-          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
-          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
-        run: python scripts/n80_lease_state_safe_deploy.py
-
-      - name: Deploy additive read-only MUSIC adapter
-        if: steps.changed.outputs.music == 'true'
-        env:
-          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
-          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
-        run: python scripts/n80_music_adapter_safe_deploy.py
-
-      - name: Deploy additive authenticated probe library
-        if: steps.changed.outputs.probe == 'true'
-        env:
-          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
-          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
-        run: python scripts/n80_authenticated_probe_safe_deploy.py
-
-      - name: Deploy read-only pipeline
-        if: steps.changed.outputs.pipeline == 'true'
-        env:
-          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
-          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
-        run: python scripts/n80_readonly_pipeline_safe_deploy.py
+        run: python scripts/n80_single_session_deploy.py
