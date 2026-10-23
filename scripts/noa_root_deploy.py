@@ -1,3 +1,4 @@
+from noa_drive_snapshot import snapshot_sftp as _snapshot_sftp
 """Deploy authorized root entrypoint only; private verified backups and automatic rollback."""
 import os,stat,json,base64,hashlib,urllib.request
 from pathlib import Path
@@ -14,7 +15,7 @@ def main():
   fp='SHA256:'+base64.b64encode(hashlib.sha256(t.get_remote_server_key().asbytes()).digest()).decode().rstrip('=')
   if fp!='SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU':raise RuntimeError('Host key mismatch')
   t.auth_password(os.environ['NOA_SSH_USER'],os.environ['NOA_SSH_PASSWORD'])
-  s=paramiko.SFTPClient.from_transport(t)
+  s=paramiko.SFTPClient.from_transport(t);s=_snapshot_sftp(s)
   assert s.normalize(ROOT)==ROOT
   def read(path):
    try:

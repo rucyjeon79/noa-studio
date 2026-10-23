@@ -1,3 +1,4 @@
+from noa_drive_snapshot import snapshot_sftp as _snapshot_sftp
 """Deploy the reviewed UI file allowlist with pinned SSH, private backup and conditional rollback.
 No SQL, member, media or JUKEBOX writes. Unknown server versions abort the whole release.
 """
@@ -29,7 +30,7 @@ def connect():
  t=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022));t.get_security_options().key_types=('ssh-ed25519',);t.start_client(timeout=20)
  fp='SHA256:'+base64.b64encode(hashlib.sha256(t.get_remote_server_key().asbytes()).digest()).decode().rstrip('=')
  if fp!='SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU':t.close();raise RuntimeError('SSH host key mismatch; credentials not sent')
- t.auth_password(os.environ['NOA_SSH_USER'],os.environ['NOA_SSH_PASSWORD']);s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(30)
+ t.auth_password(os.environ['NOA_SSH_USER'],os.environ['NOA_SSH_PASSWORD']);s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(30);s=_snapshot_sftp(s)
  if s.normalize(ROOT)!=ROOT:t.close();raise RuntimeError('Unexpected production root')
  return t,s
 def read(s,p):

@@ -1,3 +1,5 @@
+env:
+  NOA_DRIVE_RCLONE_CONFIG_B64: ${{ secrets.NOA_DRIVE_RCLONE_CONFIG_B64 }}
 name: NOA P0 media repair and guarded release
 on:
   pull_request:

@@ -1,3 +1,5 @@
+env:
+  NOA_DRIVE_RCLONE_CONFIG_B64: ${{ secrets.NOA_DRIVE_RCLONE_CONFIG_B64 }}
 name: NOA UIUX visual gates and scoped production release
 # P0 2026-10-22: accept exact audited WORLD previous bytes; retain all candidate and production guards.
 on:

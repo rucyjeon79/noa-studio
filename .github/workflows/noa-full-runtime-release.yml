@@ -1,3 +1,5 @@
+env:
+  NOA_DRIVE_RCLONE_CONFIG_B64: ${{ secrets.NOA_DRIVE_RCLONE_CONFIG_B64 }}
 name: NOA full reviewed runtime release
 # P0: preserve active music work; fail closed before any unbacked replacement.
 on:

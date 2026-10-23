@@ -1,3 +1,5 @@
+env:
+  NOA_DRIVE_RCLONE_CONFIG_B64: ${{ secrets.NOA_DRIVE_RCLONE_CONFIG_B64 }}
 name: NOA integrated popularity verified production release
 # Keep existing home playlist labels compatible; verify actual PC/mobile home cards without UI edits.
 on:

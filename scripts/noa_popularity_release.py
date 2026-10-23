@@ -1,3 +1,4 @@
+from noa_drive_snapshot import snapshot_sftp as _snapshot_sftp
 """Scoped popularity release; no player/design/core/queue mutations."""
 import os,json,stat,hashlib,hmac,secrets,time,urllib.request,subprocess
 from pathlib import Path
@@ -19,7 +20,7 @@ def service(key,action,**body):
  return out
 
 def main():
- phase=os.environ.get('NOA_POPULARITY_PHASE','prepare');Path('quality-popularity').mkdir(exist_ok=True);t=connect();s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(45)
+ phase=os.environ.get('NOA_POPULARITY_PHASE','prepare');Path('quality-popularity').mkdir(exist_ok=True);t=connect();s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(45);s=_snapshot_sftp(s)
  try:
   with s.open('/hosting/noastudio/noa-ai-lab/worker.key','rb')as f:key=f.read(256).decode().strip()
   if len(key)!=64:raise RuntimeError('invalid_service_key')
