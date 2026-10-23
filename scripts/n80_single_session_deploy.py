@@ -20,7 +20,9 @@ def main():
     for name in MODULES:
         rel='deploy/noa-app/engine/'+name
         try:
-            previous[name]=subprocess.check_output(['git','show','HEAD^:'+rel],stderr=subprocess.DEVNULL)
+            history=subprocess.check_output(['git','log','--format=%H','--',rel],text=True).splitlines()
+            if len(history)<2:raise subprocess.CalledProcessError(1,'git log')
+            previous[name]=subprocess.check_output(['git','show',history[1]+':'+rel],stderr=subprocess.DEVNULL)
         except subprocess.CalledProcessError:
             previous[name]=None
     transport=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022))
