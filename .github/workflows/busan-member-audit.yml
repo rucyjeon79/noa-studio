@@ -1,4 +1,4 @@
-name: Busan PWA and notification hooks inspection
+name: Busan banner template inspection
 on:
   push:
     paths: ['.github/workflows/busan-member-audit.yml']
@@ -36,14 +36,13 @@ jobs:
             t.auth_password(user,password,fallback=False)
             with paramiko.SFTPClient.from_transport(t) as s:
              private='/hosting/rucyjeon79/busan-assistant-private'
-             for directory in [ROOT,ROOT+'/Custom',ROOT+'/theme/UXC_Flarumix']:
-              for entry in s.listdir_attr(directory):
-               if stat.S_ISREG(entry.st_mode) and re.search('manifest|service|sw[.]|pwa|head',entry.filename,re.I) and entry.st_size<150000:
-                with s.open(directory+'/'+entry.filename,'rb') as f:code=f.read(150000).decode('utf-8','replace')
-                print(json.dumps({'path':directory+'/'+entry.filename,'source':code},ensure_ascii=False))
-             for path in [ROOT+'/bbs/comment_update.php',ROOT+'/bbs/write_update.php']:
+             paths=['/theme/UXC_Flarumix/index.php','/theme/UXC_Flarumix/head.php','/theme/UXC_Flarumix/skin/board/uxc_list/list.skin.php','/theme/UXC_Flarumix/skin/board/uxc_list/view.skin.php','/_uxcamp/manager/uxc_theme_slider.php']
+             for path in paths:
               try:
-               with s.open(path,'rb') as f:code=f.read(150000).decode('utf-8','replace')
-               print(json.dumps({'path':path,'hooks':[line for line in code.splitlines() if 'run_event(' in line]},ensure_ascii=False))
-              except OSError:pass
+               with s.open(ROOT+path,'rb') as f:code=f.read(160000).decode('utf-8','replace')
+               lines=code.splitlines();selected=set()
+               for i,line in enumerate(lines):
+                if re.search('banner|mainkv|bo_image|bo_[0-9]|slideItem|slideContent|include|skin|kvWrap',line,re.I):selected.update(range(max(0,i-4),min(len(lines),i+7)))
+               print(json.dumps({'path':path,'sha256':hashlib.sha256(code.encode()).hexdigest(),'lines':[[i+1,lines[i]] for i in sorted(selected)]},ensure_ascii=False))
+              except OSError:print(json.dumps({'missing':path}))
           PY
