@@ -15,6 +15,35 @@ try{
   foreach($input['results']??[] as $r){try{nj_import($db,$r);$success++;}catch(Throwable $e){$errors[]=['key'=>$r['song_key']??'','error'=>$e->getMessage()];}}
   echo json_encode(['saved'=>$success,'errors'=>$errors],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit($errors?2:0);
  }
+ if($action==='n80_emit_ready_batch'){
+  // Bounded, opt-in CLI sweep. Existing ready records only; no FIFO mutation.
+  require_once dirname(__DIR__).'/engine/readonly-pipeline.php';
+  if(getenv('N80_CLI_EMIT_ENABLED')!=='1')throw new DomainException('n80_emit_disabled');
+  $directory=getenv('N80_PRIVATE_EVENT_DIR')?:'';
+  if($directory==='')throw new InvalidArgumentException('n80_private_directory_required');
+  $limit=filter_var($argv[2]??'25',FILTER_VALIDATE_INT,['options'=>['min_range'=>1,'max_range'=>100]]);
+  if(!$limit)throw new InvalidArgumentException('invalid_batch_limit');
+  $q=$db->prepare("SELECT j.id FROM noa_jukebox_audio_jobs j
+    JOIN noa_jukebox_uploads u ON u.id=j.upload_id
+    WHERE j.status='ready' AND u.status='ready'
+      AND j.id=(SELECT MAX(j2.id) FROM noa_jukebox_audio_jobs j2
+        JOIN noa_jukebox_uploads u2 ON u2.id=j2.upload_id WHERE u2.song_key=u.song_key)
+    ORDER BY j.id DESC LIMIT ".(int)$limit);
+  $q->execute();
+  $ctx=['authenticatedByServer'=>true,'principal'=>'jukebox_worker','permission'=>'catalog:read'];
+  $summary=['examined'=>0,'recorded'=>0,'already_stored'=>0,'rejected'=>0];
+  foreach($q->fetchAll(PDO::FETCH_COLUMN) as $jobId){
+    $summary['examined']++;
+    $ready=n80_ready_event_from_job($db,(int)$jobId);
+    if(!$ready['ok']){$summary['rejected']++;continue;}
+    $result=n80_verified_ready_pipeline($db,$directory,$ready['event'],$ctx);
+    if(!$result['ok']){$summary['rejected']++;continue;}
+    if($result['storageStatus']==='stored')$summary['recorded']++;
+    else $summary['already_stored']++;
+  }
+  echo json_encode($summary,JSON_THROW_ON_ERROR|JSON_UNESCAPED_SLASHES).PHP_EOL;
+  exit($summary['rejected']?2:0);
+ }
  if($action==='n80_emit_ready'){
   // CLI-only trusted process; opt-in, no new public route or FIFO changes.
   require_once dirname(__DIR__).'/engine/readonly-pipeline.php';
