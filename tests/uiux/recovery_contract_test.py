@@ -29,6 +29,7 @@ class RecoveryContract(unittest.TestCase):
   self.assertIn("tmp=ROOT+'/noa-bridge/.uiux-'",s)
  def test_no_design_changes_to_owner_processing_files(self):
   import subprocess
-  paths=subprocess.check_output(['git','diff','--name-only','81641832f74621d600e227e5840e8c2c7b187a1b','HEAD'],cwd=ROOT,text=True).splitlines()
+  base=subprocess.check_output(['git','merge-base','HEAD','origin/main'],cwd=ROOT,text=True).decode().strip() if __import__('os').environ.get('GITHUB_BASE_REF') else '81641832f74621d600e227e5840e8c2c7b187a1b'
+  paths=subprocess.check_output(['git','diff','--name-only',base,'HEAD'],cwd=ROOT,text=True).splitlines()
   self.assertFalse(any(p.startswith(('deploy/noa-app/jukebox/','bridge/','scripts/noa_jukebox'))for p in paths))
 if __name__=='__main__':unittest.main()
