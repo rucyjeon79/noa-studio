@@ -34,7 +34,9 @@ def main():
                 with s.open(target,'rb') as f:old=f.read()
             except FileNotFoundError:old=None
             if old is not None and old!=data:
-                previous=subprocess.check_output(['git','show','HEAD^:deploy/'+REL],stderr=subprocess.DEVNULL)
+                history=subprocess.check_output(['git','log','--format=%H','--','deploy/'+REL],text=True).splitlines()
+                if len(history)<2:raise RuntimeError('missing_previous_source_version')
+                previous=subprocess.check_output(['git','show',history[1]+':deploy/'+REL],stderr=subprocess.DEVNULL)
                 if sha(old)!=sha(previous):raise RuntimeError('unknown_remote_version_refuse_overwrite')
                 temp=target+'.'+os.environ['GITHUB_SHA'][:12]+'.tmp'
                 try:s.lstat(temp)
