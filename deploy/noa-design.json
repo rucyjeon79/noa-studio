@@ -1,1 +1,71 @@
-{"brand":"NOA STUDIO","defaultTheme":"noa-studio","themes":[{"id":"noa-studio","name":"NOA STUDIO · Graphite","tokens":{"bg":"#121418","surface":"#1d2229","raised":"#2c333d","text":"#f4f1ea","muted":"#bbc0c7","line":"#3c434e","accent":"#d6bc83","accentText":"#211e17","confirmed":"#e0c16f","ribbon":"#c4453c","source":"#72bce3"}},{"id":"noa-ivory","name":"NOA STUDIO · Ivory","tokens":{"bg":"#f7f8fa","surface":"#ffffff","raised":"#edf0f4","text":"#24282f","muted":"#60666f","line":"#d1d6de","accent":"#805f2a","accentText":"#fffdf8","confirmed":"#80651e","ribbon":"#a53d36","source":"#216a92"}}],"legacy":{"design":["ios","plain"],"radius":["soft","sharp"],"languageKey":"noa-view-lang"},"languages":["ko","ja","en","th"]}
+{
+  "brand": "NOA STUDIO",
+  "defaultTheme": "noa-studio",
+  "themes": [
+    {
+      "id": "noa-studio",
+      "name": "NOA STUDIO · Graphite",
+      "tokens": {
+        "bg": "#121418",
+        "surface": "#1d2229",
+        "raised": "#2c333d",
+        "text": "#F5F6F8",
+        "muted": "#bbc0c7",
+        "line": "#3c434e",
+        "accent": "#d6bc83",
+        "accentText": "#211e17",
+        "confirmed": "#34C785",
+        "ribbon": "#F16B72",
+        "source": "#64A9F5",
+        "success": "#34C785",
+        "inactive": "#89919D",
+        "danger": "#F16B72",
+        "info": "#64A9F5",
+        "warning": "#F0B35B",
+        "creative": "#AD91EB",
+        "control": "#F5F6F8"
+      }
+    },
+    {
+      "id": "noa-ivory",
+      "name": "NOA STUDIO · Ivory",
+      "tokens": {
+        "bg": "#f7f8fa",
+        "surface": "#ffffff",
+        "raised": "#edf0f4",
+        "text": "#24282f",
+        "muted": "#60666f",
+        "line": "#d1d6de",
+        "accent": "#805f2a",
+        "accentText": "#fffdf8",
+        "confirmed": "#168458",
+        "ribbon": "#C83D49",
+        "source": "#216FBA",
+        "success": "#168458",
+        "inactive": "#737B86",
+        "danger": "#C83D49",
+        "info": "#216FBA",
+        "warning": "#A96516",
+        "creative": "#7553B5",
+        "control": "#24282F"
+      }
+    }
+  ],
+  "legacy": {
+    "design": [
+      "ios",
+      "plain"
+    ],
+    "radius": [
+      "soft",
+      "sharp"
+    ],
+    "languageKey": "noa-view-lang"
+  },
+  "languages": [
+    "ko",
+    "ja",
+    "en",
+    "th"
+  ]
+}
