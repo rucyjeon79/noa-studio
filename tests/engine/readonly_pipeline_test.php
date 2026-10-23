@@ -10,6 +10,8 @@ $event=['id'=>'evt-1','type'=>'audio.ready','source'=>'jukebox','subjectId'=>'so
 $context=['authenticatedByServer'=>true,'principal'=>'jukebox_worker','permission'=>'catalog:read'];
 try {
  if(n80_readonly_pipeline($db,$dir,$event,[])['error']!=='unauthorized')exit(1);
+ $unsafe=n80_readonly_pipeline($db,dirname(__DIR__,2).'/deploy/noa-app/engine',$event,$context);
+ if($unsafe['error']!=='unsafe_event_storage')exit(8);
  $first=n80_readonly_pipeline($db,$dir,$event,$context);
  if(!$first['ok']||$first['storageStatus']!=='stored'||$first['ackEligible']!==false||$first['workerExecuted']!==false)exit(3);
  $second=n80_readonly_pipeline($db,$dir,$event,$context);
