@@ -14,11 +14,15 @@ function noa_engine_store_event(string $directory,array $event): array {
     $dir=rtrim($directory,'/');
     $target=$dir.'/'.hash('sha256',$id).'.json';
     $payload=json_encode(['event'=>$event,'plan'=>$plan],JSON_THROW_ON_ERROR|JSON_UNESCAPED_SLASHES);
+    if(is_link($target))return ['ok'=>false,'error'=>'unsafe_target'];
+    if(is_link($dir.'/.engine.lock'))return ['ok'=>false,'error'=>'unsafe_lock'];
     $lock=@fopen($dir.'/.engine.lock','c');
     if(!$lock)return ['ok'=>false,'error'=>'lock_unavailable'];
     $temp=null;
     try {
         if(!flock($lock,LOCK_EX))return ['ok'=>false,'error'=>'lock_failed'];
+        if(is_link($target))return ['ok'=>false,'error'=>'unsafe_target'];
+        if(file_exists($target)&&!is_file($target))return ['ok'=>false,'error'=>'invalid_target'];
         if(is_file($target)){
             $existing=@file_get_contents($target);
             if($existing===false)return ['ok'=>false,'error'=>'existing_unreadable'];
@@ -42,6 +46,8 @@ function noa_engine_store_event(string $directory,array $event): array {
             if(!fflush($h))return ['ok'=>false,'error'=>'flush_failed'];
             if(function_exists('fsync')&&!fsync($h))return ['ok'=>false,'error'=>'fsync_failed'];
         }finally{fclose($h);}
+        // Refuse an unexpected target created while staging.
+        if(file_exists($target)||is_link($target))return ['ok'=>false,'error'=>'concurrent_target_creation'];
         if(!rename($temp,$target))return ['ok'=>false,'error'=>'rename_failed'];
         $temp=null;
         return ['ok'=>true,'status'=>'stored','id'=>$id];
