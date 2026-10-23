@@ -18,6 +18,7 @@ try{
  if($action==='n80_emit_ready'){
   // CLI-only trusted process; opt-in, no new public route or FIFO changes.
   require_once dirname(__DIR__).'/engine/readonly-pipeline.php';
+  if(getenv('N80_CLI_EMIT_ENABLED')!=='1')throw new DomainException('n80_emit_disabled');
   $jobId=filter_var($argv[2]??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
   $directory=getenv('N80_PRIVATE_EVENT_DIR')?:'';
   if(!$jobId||$directory==='')throw new InvalidArgumentException('n80_job_and_private_directory_required');
