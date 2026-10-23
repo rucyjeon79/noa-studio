@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - 'deploy/noa-app/engine/registry.php'
+      - 'deploy/noa-app/engine/identity.php'
+      - 'scripts/n80_engine_identity_safe_deploy.py'
       - 'scripts/noa_engine_registry_safe_deploy.py'
       - '.github/workflows/noa-engine-registry-production.yml'
   workflow_dispatch:
@@ -25,7 +27,9 @@ jobs:
         run: |
           php -l deploy/noa-app/engine/registry.php
           php tests/engine/registry_test.php
-          python -m py_compile scripts/noa_engine_registry_safe_deploy.py
+          php -l deploy/noa-app/engine/identity.php
+          php tests/engine/identity_test.php
+          python -m py_compile scripts/noa_engine_registry_safe_deploy.py scripts/n80_engine_identity_safe_deploy.py
       - run: python -m pip install 'paramiko>=3,<5'
       - name: Deploy additive read-only registry
         env:
@@ -34,3 +38,11 @@ jobs:
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
         run: python scripts/noa_engine_registry_safe_deploy.py
+
+      - name: Deploy additive N80 identity
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/n80_engine_identity_safe_deploy.py
