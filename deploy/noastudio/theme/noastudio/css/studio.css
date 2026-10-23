@@ -1,10 +1,10 @@
 :root {
   color-scheme: dark;
   --bg: #070708;
-  --gold: #d7c08a;
+  --gold: var(--noa-accent,#d6bc83);
   --line: rgba(215, 192, 138, 0.35);
-  --ink: #f6f1e7;
-  --muted: #b7ab96;
+  --ink: var(--noa-text,#f5f6f8);
+  --muted: var(--noa-muted,#bbc0c7);
 }
 body {
   margin: 0;
