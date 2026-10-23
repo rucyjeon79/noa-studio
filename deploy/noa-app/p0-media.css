@@ -163,3 +163,11 @@ html body.noa-page .noa-two-line .controls button:is(#repeat,#shuffle,#sequentia
  html body.noa-page .noa-two-line .controls #pause-play{flex-basis:38px!important;width:38px!important;min-width:38px!important;max-width:38px!important;height:38px!important;min-height:38px!important;max-height:38px!important}
  html body.noa-page .noa-two-line .controls #dock-more{flex-basis:31px!important;width:31px!important;min-width:31px!important;max-width:31px!important}
 }
+
+/* Semantic player controls: white by default, gold only for primary play emphasis. */
+html body.noa-page .noa-two-line .controls button{color:var(--noa-control,var(--noa-text))!important}
+html body.noa-page .noa-two-line .controls button:disabled{color:var(--noa-inactive,#89919D)!important}
+html body.noa-page .noa-two-line .controls #pause-play{color:var(--noa-control,var(--noa-text))!important;border-color:var(--noa-accent)!important}
+#noa-dock-popover button{color:var(--noa-control,var(--noa-text))!important}
+#noa-dock-popover button[aria-pressed="true"]{color:var(--noa-success,#34C785)!important;background:color-mix(in srgb,var(--noa-success,#34C785) 12%,transparent)!important}
+#noa-dock-popover button:disabled{color:var(--noa-inactive,#89919D)!important}

@@ -356,3 +356,26 @@ body{letter-spacing:-.012em;text-rendering:optimizeLegibility}
 .noa-page :is(button,a,input,select,textarea,summary):focus-visible{outline:2px solid var(--noa-accent);outline-offset:3px}
 @media(max-width:600px){.noa-site-map-grid{gap:10px}.noa-site-map-link{min-height:100px;padding:14px 10px}.noa-playlist-order-row{gap:8px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.noa-site-map-link{transition:none}}
+
+/* Semantic Color System proposal — brand gold is accent, not default UI ink. */
+:root{
+ --noa-success:#34C785;--noa-inactive:#89919D;--noa-danger:#F16B72;
+ --noa-info:#64A9F5;--noa-warning:#F0B35B;--noa-creative:#AD91EB;
+ --noa-control:#F5F6F8;--noa-confirmed:var(--noa-success);
+ --noa-ribbon:var(--noa-danger);--noa-source:var(--noa-info)
+}
+html[data-noa-theme="noa-ivory"]{
+ --noa-success:#168458;--noa-inactive:#737B86;--noa-danger:#C83D49;
+ --noa-info:#216FBA;--noa-warning:#A96516;--noa-creative:#7553B5;
+ --noa-control:#24282F;--noa-confirmed:var(--noa-success);
+ --noa-ribbon:var(--noa-danger);--noa-source:var(--noa-info)
+}
+.noa-page :is(button,a,input,select,textarea,summary):focus-visible{outline-color:var(--noa-info)}
+.noa-page :is(button,input,select):disabled{color:var(--noa-inactive)}
+.noa-page :is([aria-invalid="true"],.noa-error,.is-error){--noa-status-color:var(--noa-danger)}
+.noa-page :is(.noa-success,.is-success){--noa-status-color:var(--noa-success)}
+.noa-page :is(.noa-warning,.is-warning){--noa-status-color:var(--noa-warning)}
+.noa-page :is(.noa-info,.is-info){--noa-status-color:var(--noa-info)}
+.noa-page :is(.noa-error,.noa-success,.noa-warning,.noa-info){color:var(--noa-status-color)}
+.noa-site-map-link>span{color:var(--noa-control)}
+.noa-site-map-link:hover>span,.noa-site-map-link[aria-current="page"]>span{color:var(--noa-accent)}
