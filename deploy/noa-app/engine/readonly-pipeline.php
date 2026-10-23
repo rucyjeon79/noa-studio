@@ -30,3 +30,27 @@ function n80_readonly_pipeline(PDO $db,string $privateEventDir,array $event,arra
       'correlationId'=>$event['correlationId'],'ackEligible'=>false,
       'workerExecuted'=>false];
 }
+
+/**
+ * Opt-in source-of-truth check before accepting an audio.ready event.
+ * The trusted caller supplies the DB handle; no public endpoint or job trigger.
+ * A ready upload and its ready audio job must agree on song key and upload id.
+ */
+function n80_verified_ready_pipeline(PDO $db,string $privateEventDir,array $event,array $serverContext): array {
+    if(($serverContext['authenticatedByServer']??false)!==true
+       ||($serverContext['principal']??'')!=='jukebox_worker'
+       ||($serverContext['permission']??'')!=='catalog:read')
+        return ['ok'=>false,'error'=>'unauthorized'];
+    $validation=noa_engine_validate_event($event);
+    if(!$validation['ok'])return ['ok'=>false,'error'=>$validation['error']];
+    if($event['source']!=='jukebox'||$event['type']!=='audio.ready')
+        return ['ok'=>false,'error'=>'unsupported_event_source'];
+    $q=$db->prepare("SELECT u.id FROM noa_jukebox_uploads u
+        JOIN noa_jukebox_audio_jobs j ON j.upload_id=u.id
+        WHERE u.song_key=? AND u.status='ready' AND j.status='ready'
+        ORDER BY j.id DESC LIMIT 1");
+    $q->execute([$event['subjectId']]);
+    if($q->fetchColumn()===false)
+        return ['ok'=>false,'error'=>'source_not_ready','ackEligible'=>false];
+    return n80_readonly_pipeline($db,$privateEventDir,$event,$serverContext);
+}
