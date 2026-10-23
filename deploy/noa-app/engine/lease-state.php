@@ -23,7 +23,8 @@ function n80_lease_state_transition(string $directory,string $eventId,string $co
             if(!is_array($state)||($state['eventId']??null)!==$eventId||($state['consumer']??null)!==$consumer)return ['ok'=>false,'error'=>'corrupt_state'];
         }else{$state=noa_engine_lease_new($eventId,$consumer);}
         $result=n80_lease_apply_fenced($state,$action,$now,$generation,$ttl,$maxAttempts);
-        if(!$result['ok'])return $result;
+        // Exhausted retries transition to dead_letter and must be durable.
+        if(!$result['ok']&&($result['error']??'')!=='retry_exhausted')return $result;
         $payload=json_encode($result['state'],JSON_THROW_ON_ERROR|JSON_UNESCAPED_SLASHES);
         $temp=tempnam($dir,'.lease-');
         if($temp===false)return ['ok'=>false,'error'=>'staging_failed'];
