@@ -1,11 +1,5 @@
 name: N80 Readonly Pipeline Recovery Deploy
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/n80-readonly-pipeline-recovery.yml'
-      - 'deploy/noa-app/engine/readonly-pipeline.php'
-      - 'scripts/n80_readonly_pipeline_safe_deploy.py'
   workflow_dispatch:
 permissions:
   contents: read
