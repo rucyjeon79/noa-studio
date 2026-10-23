@@ -29,9 +29,19 @@ def main():
       if not chunk:break
       out.write(chunk);h.update(chunk);total+=len(chunk)
     if total!=attr.st_size:raise RuntimeError('size_mismatch:'+name)
-    manifest.append({'file':name,'bytes':total,'sha256':h.hexdigest()})
+    after=s.lstat(remote)
+    if (after.st_size,after.st_mtime)!=(attr.st_size,attr.st_mtime):raise RuntimeError('source_changed:'+name)
+    meta_name=name[:-4]+'.json'
+    with s.open(REMOTE+'/'+meta_name,'rb') as f:meta_raw=f.read(1048577)
+    if len(meta_raw)>1048576:raise RuntimeError('metadata_too_large')
+    meta=json.loads(meta_raw)
+    if meta.get('id')!=name[:-4] or meta.get('bytes')!=total or meta.get('sha256')!=h.hexdigest():raise RuntimeError('metadata_mismatch:'+name)
+    if not isinstance(meta.get('tables'),dict) or not meta['tables']:raise RuntimeError('missing_table_manifest:'+name)
+    (dest/meta_name).write_bytes(meta_raw)
+    manifest.append({'file':name,'bytes':total,'sha256':h.hexdigest(),'source_mtime':attr.st_mtime,'metadata_file':meta_name,'metadata_sha256':hashlib.sha256(meta_raw).hexdigest()})
    (dest/'manifest.json').write_text(json.dumps(manifest,indent=2))
    print('SFTP_TRANSFER_VERIFIED',len(manifest),'files',sum(x['bytes'] for x in manifest),'bytes')
   finally:s.close()
  finally:t.close()
 if __name__=='__main__':main()
+

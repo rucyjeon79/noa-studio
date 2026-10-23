@@ -49,6 +49,9 @@ def main():
    print('Private transfer finished',flush=True)
    if dump.stat().st_size!=manifest['bytes'] or hashlib.file_digest(dump.open('rb'),'sha256').hexdigest()!=EXPECTED:raise RuntimeError('integrity_mismatch')
   finally:t.close()
+  verify_dump(dump,manifest,tmp)
+
+def verify_dump(dump,manifest,tmp):
   expected={name:{'rows':0,'sum':[0]*8} for name in manifest['tables']};columns={name:[] for name in expected};schemas={}
   pattern=re.compile(rb"^INSERT INTO `([A-Za-z_][A-Za-z0-9_]*)` \((.*?)\) VALUES \((.*)\);\n$")
   value=re.compile(rb"CONVERT\(X'([0-9a-f]*)' USING utf8mb4\)|X'([0-9a-f]*)'|(NULL)")
@@ -83,7 +86,7 @@ def main():
    out.write(b'\nCOMMIT;\n')
   os.chmod(restore_input,0o600)
   with restore_input.open('rb') as f:
-   r=subprocess.run(['mysql','--host=127.0.0.1','--user=root','--database=noa_restore_verification','--binary-mode','--default-character-set=utf8mb4'],stdin=f,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE,env=env,timeout=240)
+   r=subprocess.run(['mysql','--no-defaults','--local-infile=0','--host=127.0.0.1','--user=root','--database=noa_restore_verification','--binary-mode','--default-character-set=utf8mb4'],stdin=f,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE,env=env,timeout=240)
    if r.returncode:raise RuntimeError('isolated_restore_failed_code_'+str(r.returncode))
   print('Isolated restore finished; verifying all row content',flush=True)
   meta=Path(tmp)/'columns.json';meta.write_text(json.dumps(columns));os.chmod(meta,0o600)
@@ -101,5 +104,6 @@ def main():
    differences={name:{'sourceSha256':hashlib.sha256(schemas[name].encode()).hexdigest(),'restoredSha256':hashlib.sha256(restored_schemas.get(name,'').encode()).hexdigest(),'sourceLength':len(schemas[name]),'restoredLength':len(restored_schemas.get(name,''))}for name in schemas if schemas[name]!=restored_schemas.get(name)}
    print('SCHEMA_COMPARISON_DIAGNOSTIC '+json.dumps(differences),flush=True)
    raise RuntimeError('restored_schema_mismatch')
-  print('PRIVATE_PRODUCTION_RESTORE_VERIFIED '+json.dumps({'sha256':EXPECTED,'bytes':manifest['bytes'],'tables':len(expected),'rows':sum(v['rows']for v in expected.values()),'schemasEquivalent':True,'redundantCharsetDeclarationsNormalized':True,'allTableRowContentChecksumsEqual':True,'productionDatabaseModified':False,'privateDumpUploadedAsArtifact':False}))
+  print('PRIVATE_PRODUCTION_RESTORE_VERIFIED '+json.dumps({'sha256':manifest['sha256'],'bytes':manifest['bytes'],'tables':len(expected),'rows':sum(v['rows']for v in expected.values()),'schemasEquivalent':True,'redundantCharsetDeclarationsNormalized':True,'allTableRowContentChecksumsEqual':True,'productionDatabaseModified':False,'privateDumpUploadedAsArtifact':False}))
 if __name__=='__main__':main()
+
