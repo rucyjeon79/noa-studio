@@ -5,7 +5,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: busan-readonly-sftp
+  group: busan-openchat-inspection
   cancel-in-progress: false
 jobs:
   audit:
@@ -23,7 +23,7 @@ jobs:
         run: |
           cd scripts
           python3 - <<'PY'
-          import os,socket,hmac,json,urllib.request,secrets,re,stat
+          import os,socket,hmac,json,urllib.request,secrets,re,stat,time
           import paramiko
           from busan_readonly_check import configuration,fingerprint,PORT,ROOT
           host,user,password,pin=configuration(os.environ)
@@ -35,8 +35,8 @@ jobs:
             with paramiko.SFTPClient.from_transport(t) as s:
              private='/hosting/rucyjeon79/busan-assistant-private'
              roots=[ROOT+'/theme',ROOT+'/eyoom/theme',ROOT+'/extend']
-             pending=list(roots);seen=0;matches=0
-             while pending:
+             pending=list(roots);seen=0;matches=0;deadline=time.time()+90
+             while pending and time.time()<deadline:
               directory=pending.pop()
               try:entries=s.listdir_attr(directory)
               except OSError:continue
@@ -44,7 +44,7 @@ jobs:
                path=directory+'/'+entry.filename
                if stat.S_ISDIR(entry.st_mode):
                 if entry.filename not in ['data','cache','node_modules','.git']:pending.append(path)
-               elif entry.filename.endswith(('.php','.html','.js')) and entry.st_size<500000:
+               elif entry.filename.endswith(('.php','.html','.js')) and entry.st_size<500000 and re.search('tail|footer|head|kakao',entry.filename,re.I):
                 seen+=1
                 with s.open(path,'rb') as f:code=f.read(500000).decode('utf-8','replace')
                 for match in re.finditer(r'kakaoOpenChat|open[.]kakao[.]com',code):
