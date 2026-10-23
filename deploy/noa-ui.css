@@ -314,3 +314,18 @@ html.noa-g5 #bo_list .btn_bo_user .noa-action:hover,html.noa-g5 #bo_list .btn_bo
 @media(max-width:480px){.noa-site-map-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.noa-site-map-link{min-height:98px;padding:12px 8px}}
 .noa-playlist-order-row{display:grid;grid-template-columns:minmax(0,1fr) 44px 44px;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--noa-line,#7774)}
 .noa-playlist-order-row>span{overflow-wrap:anywhere;font-size:12px}.noa-playlist-order-row button{min-width:44px;min-height:44px}
+
+/* 2026-10-23: unified premium interaction polish; non-destructive visual layer. */
+:root{--noa-touch-target:44px;--noa-glass-highlight:rgba(255,255,255,.10);--noa-focus-ring:var(--noa-accent,#d6bc83)}
+html[data-noa-theme="noa-ivory"]{--noa-glass-highlight:rgba(255,255,255,.70)}
+.noa-site-map-link{position:relative;overflow:hidden;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;background-image:linear-gradient(145deg,var(--noa-glass-highlight),transparent 58%);background-blend-mode:screen}
+.noa-site-map-link:hover{transform:translateY(-2px);box-shadow:inset 0 1px 0 var(--noa-glass-highlight),0 8px 22px rgba(0,0,0,.16)}
+.noa-site-map-link:active{transform:translateY(0)}
+.noa-site-map-link:focus-visible,.noa-playlist-order-row button:focus-visible{outline:2px solid var(--noa-focus-ring);outline-offset:3px}
+.noa-playlist-order-row{min-width:0}
+.noa-playlist-order-row>span{min-width:0;overflow-wrap:anywhere;line-height:1.5}
+.noa-playlist-order-row button{display:inline-grid;place-items:center;min-inline-size:var(--noa-touch-target);min-block-size:var(--noa-touch-target);border:1px solid var(--noa-line);border-radius:12px;background:var(--noa-surface);color:var(--noa-text);box-shadow:inset 0 1px 0 var(--noa-glass-highlight)}
+.noa-playlist-order-row button:not(:disabled):hover{border-color:var(--noa-accent);color:var(--noa-accent)}
+.noa-playlist-order-row button:disabled{opacity:.38}
+@media(max-width:480px){.noa-site-map-link{min-width:0}.noa-site-map-link strong,.noa-site-map-link small{overflow-wrap:anywhere}.noa-playlist-order-row{grid-template-columns:minmax(0,1fr) 44px 44px}}
+@media(prefers-reduced-motion:reduce){.noa-site-map-link{transition:none}.noa-site-map-link:hover,.noa-site-map-link:active{transform:none}}
