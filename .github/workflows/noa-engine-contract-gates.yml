@@ -1,0 +1,35 @@
+name: NOA ENGINE Unified Contract Gates
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'deploy/noa-app/engine/**'
+      - 'tests/engine/**'
+      - '.github/workflows/noa-engine-contract-gates.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/noa-app/engine/**'
+      - 'tests/engine/**'
+      - '.github/workflows/noa-engine-contract-gates.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - name: Validate all engine libraries
+        run: find deploy/noa-app/engine -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Run all engine contract tests
+        run: |
+          set -eu
+          for test in tests/engine/*_test.php; do php "$test"; done
+      - name: Assert execution remains disabled
+        run: |
+          php -r 'require "deploy/noa-app/engine/adapter-contract.php"; foreach(noa_engine_adapter_manifest() as $a){if($a["enabled"])exit(1);} echo "ENGINE_ADAPTERS_DISABLED\n";'
+          php -r 'require "deploy/noa-app/engine/dispatch-gate.php"; $e=["id"=>"test","type"=>"audio.ready","source"=>"jukebox","subjectId"=>"test","occurredAt"=>"2026-10-23T00:00:00Z","schemaVersion"=>1,"correlationId"=>"test"]; if(noa_engine_dispatch_gate($e,["enabled"=>true,"durableStoreReady"=>true,"authenticatedActor"=>true])["ok"])exit(1); echo "ENGINE_DISPATCH_FAIL_CLOSED\n";'
