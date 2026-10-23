@@ -28,7 +28,7 @@ try{
     WHERE j.status='ready' AND u.status='ready'
       AND j.id=(SELECT MAX(j2.id) FROM noa_jukebox_audio_jobs j2
         JOIN noa_jukebox_uploads u2 ON u2.id=j2.upload_id WHERE u2.song_key=u.song_key)
-    ORDER BY j.id DESC LIMIT ".(int)$limit);
+    ORDER BY j.id ASC LIMIT ".(int)$limit);
   $q->execute();
   $ctx=['authenticatedByServer'=>true,'principal'=>'jukebox_worker','permission'=>'catalog:read'];
   $summary=['examined'=>0,'recorded'=>0,'already_stored'=>0,'rejected'=>0];
