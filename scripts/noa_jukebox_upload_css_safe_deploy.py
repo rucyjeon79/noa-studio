@@ -37,7 +37,7 @@ def main():
                 try: sftp.lstat(temp)
                 except FileNotFoundError: pass
                 else: raise RuntimeError('temporary_file_exists')
-                with sftp.open(temp,'xb') as stream: stream.write(data)
+                with sftp.open(temp,'wx') as stream: stream.write(data)
                 with sftp.open(temp,'rb') as stream:
                     if digest(stream.read()) != expected: raise RuntimeError('staging_hash_mismatch')
                 with sftp.open(target,'rb') as stream:
