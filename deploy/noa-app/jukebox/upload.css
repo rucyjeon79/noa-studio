@@ -13,3 +13,21 @@
 .noa-processing-dock:has(#jukebox-transfer-details:not([hidden])){padding-bottom:calc(60vh + 32px)!important}
 
 .jukebox-recovery-tests{margin:24px 0;padding:16px;border:1px solid var(--jukebox-dock-line);border-radius:10px;background:var(--jukebox-dock-bg);color:var(--jukebox-dock-text)}.jukebox-recovery-tests label{display:block;margin:12px 0}.jukebox-recovery-tests select,.jukebox-recovery-tests button{box-sizing:border-box;min-height:44px;max-width:100%;padding:8px;background:var(--jukebox-dock-bg);color:var(--jukebox-dock-text);border:1px solid var(--jukebox-dock-line);border-radius:8px}.jukebox-recovery-tests button{cursor:pointer;margin:4px}.jukebox-transfer-errors{max-height:180px;overflow:auto}
+
+/* Semantic JUKEBOX controls: retain the approved structure, remove gold overuse. */
+.jukebox-actions .noa-icon-button,.jukebox-upload-dialog button,.jukebox-recovery-tests button,#jukebox-transfer-dock button{box-sizing:border-box;flex:0 0 auto;min-width:44px;min-height:44px;aspect-ratio:auto;background:var(--noa-raised,#2c333d);color:var(--noa-text,#f5f6f8);border:1px solid var(--noa-line,#3c434e);border-radius:10px;box-shadow:none}
+.jukebox-actions .noa-icon-button{width:44px;padding:0}
+.jukebox-actions .noa-icon-button svg{flex-shrink:0}
+.jukebox-actions .noa-icon-button:disabled,.jukebox-upload-dialog button:disabled{color:var(--noa-muted,#bbc0c7);opacity:.55}
+.jukebox-actions .noa-icon-button:focus-visible,.jukebox-upload-dialog button:focus-visible{outline:2px solid var(--noa-source,#64a9f5);outline-offset:2px}
+.jukebox-state,.jukebox-queue-row small{color:var(--noa-muted,#bbc0c7)}
+.jukebox-upload-dialog{background:var(--noa-surface,#1d2229);color:var(--noa-text,#f5f6f8);border-color:var(--noa-line,#3c434e)}
+.jukebox-upload-dialog input:not([type=file]){box-sizing:border-box;width:100%;background:var(--noa-raised,#2c333d);border-color:var(--noa-line,#3c434e)}
+.jukebox-upload-dialog progress,#jukebox-transfer-dock progress{accent-color:var(--noa-confirmed,#34c785)}
+.jukebox-card,.jukebox-summary span,.jukebox-queue-row,.jukebox-transfer-status,.jukebox-recovery-tests{border-color:var(--noa-line,#3c434e)}
+.jukebox-card{min-width:0;grid-template-columns:72px minmax(0,1fr)}
+.jukebox-card .jukebox-card-body{overflow-wrap:anywhere}
+.jukebox-summary span{background:var(--noa-surface,#1d2229)}
+:root{--jukebox-dock-bg:var(--noa-surface,#1d2229);--jukebox-dock-text:var(--noa-text,#f5f6f8);--jukebox-dock-line:var(--noa-line,#3c434e);--jukebox-dock-accent:var(--noa-confirmed,#34c785)}
+#jukebox-transfer-dock .jukebox-transfer-current{color:var(--noa-confirmed,#34c785)}
+@media(max-width:600px){.jukebox-card{grid-template-columns:56px minmax(0,1fr)}.jukebox-actions{min-width:0}.song .jukebox-actions{flex-wrap:wrap;justify-content:flex-end}}
