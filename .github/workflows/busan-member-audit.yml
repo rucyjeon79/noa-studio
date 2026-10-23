@@ -1,4 +1,4 @@
-name: Busan officer open-chat visibility
+name: Busan PWA and notification hooks inspection
 on:
   push:
     paths: ['.github/workflows/busan-member-audit.yml']
@@ -36,39 +36,14 @@ jobs:
             t.auth_password(user,password,fallback=False)
             with paramiko.SFTPClient.from_transport(t) as s:
              private='/hosting/rucyjeon79/busan-assistant-private'
-             relative='theme/UXC_Flarumix/tail.php';target=ROOT+'/'+relative
-             assert s.normalize(target)==target and stat.S_ISREG(s.lstat(target).st_mode)
-             with s.open(target,'rb') as f:before=f.read(300000)
-             old='<?php if($config[\'cf_6\']) { ?>\\n<div class="kakaoOpenChat">'.replace('\\n','\n')
-             new='<?php if (!empty($config[\'cf_6\']) && !empty($member[\'mb_id\']) && (int)($member[\'mb_level\'] ?? 0) >= 4 && empty($member[\'mb_leave_date\']) && empty($member[\'mb_intercept_date\'])) { ?>\\n<div class="kakaoOpenChat">'.replace('\\n','\n')
-             source=before.decode('utf-8')
-             assert source.count(old)==1,'unexpected_openchat_template'
-             candidate=source.replace(old,new,1)
-             begin=candidate.index(new);finish=candidate.index('<?php } ?>',begin)+len('<?php } ?>');snippet=candidate[begin:finish]
-             for level in [0,2,3,4,5,10]:
-              member={} if level==0 else {'mb_id':'synthetic','mb_level':level}
-              php='$member=json_decode('+json.dumps(json.dumps(member))+',true);$config=["cf_6"=>"https://example.invalid/officer-chat"];?>'+snippet
-              check=subprocess.run(['php','-r',php],capture_output=True,text=True)
-              assert check.returncode==0,'php_render_failed'
-              assert ('class="kakaoOpenChat"' in check.stdout)==(level>=4),'visibility_tier_failed'
-              if level<4:assert 'example.invalid/officer-chat' not in check.stdout,'link_exposed'
-             for member in [{'mb_level':10},{'mb_id':'synthetic','mb_level':4,'mb_intercept_date':'20261023'},{'mb_id':'synthetic','mb_level':4,'mb_leave_date':'20261023'}]:
-              php='$member=json_decode('+json.dumps(json.dumps(member))+',true);$config=["cf_6"=>"https://example.invalid/officer-chat"];?>'+snippet
-              check=subprocess.run(['php','-r',php],capture_output=True,text=True)
-              assert check.returncode==0 and 'kakaoOpenChat' not in check.stdout,'inactive_visibility_failed'
-             with open('/tmp/busan-officer-tail.php','w') as f:f.write(candidate)
-             check=subprocess.run(['php','-l','/tmp/busan-officer-tail.php'],capture_output=True,text=True);assert check.returncode==0,'template_syntax_failed'
-             print('PASS native template rendering: guest/level2/level3 hidden; active level4/5/10 shown; inactive and forged level hidden; links absent for lower tiers')
-             backup=private+'/before-openchat-level4-tail.php'
-             with s.open(backup,'wx') as f:f.write(before)
-             s.chmod(backup,0o600)
-             with s.open(target,'rb') as f:assert f.read(300000)==before,'template_changed_before_write'
-             temp=private+'/openchat-tail-'+secrets.token_hex(8)+'.php'
-             with s.open(temp,'wx') as f:f.write(candidate.encode())
-             s.chmod(temp,0o644);s.posix_rename(temp,target)
-             with s.open(target,'rb') as f:assert f.read(300000)==candidate.encode(),'remote_verification_failed'
-             with urllib.request.urlopen('https://skhnslu-busan.com/',timeout=30) as response:page=response.read(2000000).decode('utf-8')
-             assert 'class="kakaoOpenChat"' not in page and 'open.kakao.com' not in page,'live_guest_link_exposed'
-             assert 'busan-assistant/widget.js' in page,'widget_missing'
-             print(json.dumps({'updated':relative,'guest_button_absent':True,'guest_link_absent':True,'sha256':hashlib.sha256(candidate.encode()).hexdigest()}))
+             for directory in [ROOT,ROOT+'/Custom',ROOT+'/theme/UXC_Flarumix']:
+              for entry in s.listdir_attr(directory):
+               if stat.S_ISREG(entry.st_mode) and re.search('manifest|service|sw[.]|pwa|head',entry.filename,re.I) and entry.st_size<150000:
+                with s.open(directory+'/'+entry.filename,'rb') as f:code=f.read(150000).decode('utf-8','replace')
+                print(json.dumps({'path':directory+'/'+entry.filename,'source':code},ensure_ascii=False))
+             for path in [ROOT+'/bbs/comment_update.php',ROOT+'/bbs/write_update.php']:
+              try:
+               with s.open(path,'rb') as f:code=f.read(150000).decode('utf-8','replace')
+               print(json.dumps({'path':path,'hooks':[line for line in code.splitlines() if 'run_event(' in line]},ensure_ascii=False))
+              except OSError:pass
           PY
