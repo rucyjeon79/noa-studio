@@ -26,3 +26,12 @@ jobs:
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
         run: python scripts/noa_storage_readonly_inventory.py
+
+      - name: Retain audit manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: noa-storage-inventory
+          path: storage-audit/inventory.json
+          if-no-files-found: warn
+          retention-days: 7
