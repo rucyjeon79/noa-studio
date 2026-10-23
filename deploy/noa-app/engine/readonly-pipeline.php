@@ -12,6 +12,13 @@ function n80_readonly_pipeline(PDO $db,string $privateEventDir,array $event,arra
        ||($serverContext['principal']??'')!=='jukebox_worker'
        ||($serverContext['permission']??'')!=='catalog:read')
         return ['ok'=>false,'error'=>'unauthorized'];
+    // Never persist event payloads in the publicly served application tree.
+    $storage=realpath($privateEventDir);
+    $webRoot=realpath(dirname(__DIR__,2));
+    if($storage===false||$webRoot===false||!is_dir($storage)||is_link($privateEventDir)
+       ||($storage===$webRoot||str_starts_with($storage,$webRoot.DIRECTORY_SEPARATOR))
+       ||((fileperms($storage)&0007)!==0))
+        return ['ok'=>false,'error'=>'unsafe_event_storage','ackEligible'=>false];
     $probe=n80_music_probe_authorized($db,$event,$serverContext);
     if(!$probe['ok'])return $probe;
     if($probe['status']!=='catalog_present')
