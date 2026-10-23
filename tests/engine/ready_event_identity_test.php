@@ -1,0 +1,20 @@
+<?php
+declare(strict_types=1);
+require_once dirname(__DIR__,2).'/deploy/noa-app/engine/readonly-pipeline.php';
+if(!in_array('sqlite',PDO::getAvailableDrivers(),true))exit(2);
+$db=new PDO('sqlite::memory:');$db->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+$db->exec("CREATE TABLE noa_jukebox_uploads(id TEXT,song_key TEXT,status TEXT)");
+$db->exec("CREATE TABLE noa_jukebox_audio_jobs(id INTEGER,upload_id TEXT,status TEXT,finished_at TEXT)");
+$db->exec("INSERT INTO noa_jukebox_uploads VALUES('up-1','song-1','ready')");
+$db->exec("INSERT INTO noa_jukebox_audio_jobs VALUES(1,'up-1','ready','2026-10-23 10:00:00')");
+$a=n80_ready_event_from_job($db,1);$b=n80_ready_event_from_job($db,1);
+if(!$a['ok']||$a['event']!==$b['event'])exit(1);
+$db->exec("INSERT INTO noa_jukebox_uploads VALUES('up-2','song-1','processing')");
+$db->exec("INSERT INTO noa_jukebox_audio_jobs VALUES(2,'up-2','processing',NULL)");
+if(n80_ready_event_from_job($db,1)['error']!=='superseded_job')exit(3);
+if(n80_ready_event_from_job($db,2)['error']!=='source_not_ready')exit(4);
+$db->exec("UPDATE noa_jukebox_uploads SET status='ready' WHERE id='up-2'");
+$db->exec("UPDATE noa_jukebox_audio_jobs SET status='ready',finished_at='2026-10-23 11:00:00' WHERE id=2");
+$c=n80_ready_event_from_job($db,2);
+if(!$c['ok']||$c['event']['id']===$a['event']['id'])exit(5);
+echo "N80_READY_EVENT_IDENTITY_OK\n";
