@@ -45,6 +45,7 @@ jobs:
           import base64,os,pathlib
           cfg=base64.b64decode(os.environ['DRIVE_CONFIG_B64'],validate=True)
           if b'[noa-backup]' not in cfg:raise RuntimeError('expected_noa_backup_remote_missing')
+          if b'root_folder_id = 1N4ddmFbGpMEMGLB3zg4XJYBzLk3mHds2' not in cfg:raise RuntimeError('drive_folder_not_pinned')
           path=pathlib.Path(os.environ['RUNNER_TEMP'])/'rclone.conf'
           path.write_bytes(cfg);path.chmod(0o600)
           with open(os.environ['GITHUB_ENV'],'a') as f:f.write('RCLONE_CONFIG='+str(path)+'\n')
