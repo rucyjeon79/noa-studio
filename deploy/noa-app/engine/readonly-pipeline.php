@@ -57,3 +57,34 @@ function n80_verified_ready_pipeline(PDO $db,string $privateEventDir,array $even
         return ['ok'=>false,'error'=>'source_not_ready','ackEligible'=>false];
     return n80_readonly_pipeline($db,$privateEventDir,$event,$serverContext);
 }
+
+/**
+ * Derive a stable audio.ready envelope from an actual committed JUKEBOX job.
+ * A retry uses the same event ID; a replacement job gets a distinct ID.
+ * No side effects, no public endpoint, no claims of worker authentication.
+ */
+function n80_ready_event_from_job(PDO $db,int $jobId): array {
+    if($jobId<1)return ['ok'=>false,'error'=>'invalid_job_id'];
+    $q=$db->prepare("SELECT j.id AS job_id,j.status AS job_status,
+        u.id AS upload_id,u.song_key,u.status AS upload_status,j.finished_at AS finished_at
+        FROM noa_jukebox_audio_jobs j
+        JOIN noa_jukebox_uploads u ON u.id=j.upload_id
+        WHERE j.id=? LIMIT 1");
+    $q->execute([$jobId]);
+    $row=$q->fetch(PDO::FETCH_ASSOC);
+    if(!$row||$row['job_status']!=='ready'||$row['upload_status']!=='ready')
+        return ['ok'=>false,'error'=>'source_not_ready'];
+    $latest=$db->prepare("SELECT MAX(j.id) FROM noa_jukebox_audio_jobs j
+        JOIN noa_jukebox_uploads u ON u.id=j.upload_id WHERE u.song_key=?");
+    $latest->execute([$row['song_key']]);
+    if((int)$latest->fetchColumn()!==$jobId)
+        return ['ok'=>false,'error'=>'superseded_job'];
+    if(empty($row['finished_at'])||strtotime((string)$row['finished_at'])===false)
+        return ['ok'=>false,'error'=>'missing_commit_timestamp'];
+    $id='n80-jukebox-'.hash('sha256',(string)$row['upload_id'].'|'.$jobId);
+    $event=['id'=>$id,'type'=>'audio.ready','source'=>'jukebox',
+        'subjectId'=>(string)$row['song_key'],'occurredAt'=>gmdate('c',strtotime((string)$row['finished_at'])),
+        'schemaVersion'=>1,'correlationId'=>$id];
+    $validation=noa_engine_validate_event($event);
+    return $validation['ok']?['ok'=>true,'event'=>$event]:$validation;
+}

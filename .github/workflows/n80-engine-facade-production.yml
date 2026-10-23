@@ -44,6 +44,7 @@ jobs:
           php tests/engine/n80_facade_test.php
           php -l deploy/noa-app/engine/readonly-pipeline.php
           php tests/engine/readonly_pipeline_test.php
+          php tests/engine/ready_event_identity_test.php
           php -l deploy/noa-app/engine/authenticated-probe.php
           php tests/engine/authenticated_probe_test.php
           php -l deploy/noa-app/engine/music-adapter.php
