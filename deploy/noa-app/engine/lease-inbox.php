@@ -26,3 +26,31 @@ function noa_engine_lease_apply(array $state,string $action,int $now,int $ttl=60
     }
     return ['ok'=>false,'error'=>'invalid_transition','state'=>$state];
 }
+
+/**
+ * Fenced lease transition for new adapters. Each claim advances a monotonic
+ * generation; stale workers cannot ACK/FAIL a reclaimed lease.
+ * The legacy pure transition function remains available for compatibility.
+ * Persistence must atomically compare-and-swap the entire returned state.
+ */
+function n80_lease_apply_fenced(
+    array $state,
+    string $action,
+    int $now,
+    ?int $expectedGeneration=null,
+    int $ttl=60,
+    int $maxAttempts=3
+): array {
+    $generation=(int)($state['generation']??0);
+    if($action==='ack'||$action==='fail'){
+        if($expectedGeneration===null||$expectedGeneration!==$generation)
+            return ['ok'=>false,'error'=>'stale_lease_generation','state'=>$state];
+        if(($state['leaseUntil']??0)<=$now)
+            return ['ok'=>false,'error'=>'lease_expired','state'=>$state];
+    }
+    $result=noa_engine_lease_apply($state,$action,$now,$ttl,$maxAttempts);
+    if($result['ok']&&$action==='claim'){
+        $result['state']['generation']=$generation+1;
+    }
+    return $result;
+}

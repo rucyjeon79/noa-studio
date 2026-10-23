@@ -1,5 +1,5 @@
 """Safely install the additive NOA ENGINE registry without changing existing modules."""
-import base64,hashlib,os,stat,urllib.request
+import base64,hashlib,os,stat,subprocess
 from pathlib import Path
 import paramiko
 ROOT='/hosting/noastudio/html'
@@ -33,7 +33,19 @@ def main():
                 if not stat.S_ISREG(st.st_mode):raise RuntimeError('nonregular_target')
                 with s.open(target,'rb') as f:old=f.read()
             except FileNotFoundError:old=None
-            if old is not None and old!=data:raise RuntimeError('unknown_existing_registry_refuse_overwrite')
+            if old is not None and old!=data:
+                previous=subprocess.check_output(['git','show','HEAD^:deploy/'+REL],stderr=subprocess.DEVNULL)
+                if sha(old)!=sha(previous):raise RuntimeError('unknown_remote_version_refuse_overwrite')
+                temp=target+'.'+os.environ['GITHUB_SHA'][:12]+'.tmp'
+                try:s.lstat(temp)
+                except FileNotFoundError:pass
+                else:raise RuntimeError('temporary_file_exists')
+                with s.open(temp,'wx') as f:f.write(data)
+                with s.open(temp,'rb') as f:
+                    if sha(f.read())!=expected:raise RuntimeError('staging_hash_mismatch')
+                with s.open(target,'rb') as f:
+                    if sha(f.read())!=sha(old):raise RuntimeError('concurrent_remote_change')
+                s.posix_rename(temp,target)
             if old is None:
                 temp=target+'.'+os.environ['GITHUB_SHA'][:12]+'.tmp'
                 try:s.lstat(temp)

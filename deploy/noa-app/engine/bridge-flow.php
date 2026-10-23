@@ -13,11 +13,11 @@ function n80_bridge_simulate(array $event,array $consumerResults): array {
     foreach($plan['links'] as $link){
         $consumer=$link['to'];
         $state=noa_engine_lease_new($event['id'],$consumer);
-        $claim=noa_engine_lease_apply($state,'claim',100,30);
+        $claim=n80_lease_apply_fenced($state,'claim',100,null,30);
         if(!$claim['ok'])return ['ok'=>false,'error'=>'claim_failed','results'=>$results];
         $state=$claim['state'];
         $action=($consumerResults[$consumer]??false)===true?'ack':'fail';
-        $outcome=noa_engine_lease_apply($state,$action,101);
+        $outcome=n80_lease_apply_fenced($state,$action,101,$state['generation']);
         $results[$consumer]=$outcome['state']['status'];
     }
     return ['ok'=>true,'mode'=>'simulation_only','results'=>$results,'correlationId'=>$event['correlationId']];
