@@ -1,5 +1,10 @@
 name: N80 Guardian Production Drift Audit
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/n80-guardian-production-audit.yml'
+      - 'scripts/n80_guardian_remote_audit.py'
   workflow_dispatch:
   schedule:
     - cron: '41 3 * * *'
