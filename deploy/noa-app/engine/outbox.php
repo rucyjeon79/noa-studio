@@ -17,7 +17,7 @@ function noa_engine_outbox_put(string $directory,array $event): array {
     try {
         if(!flock($handle,LOCK_EX))return ['ok'=>false,'error'=>'lock_failed'];
         $written=fwrite($handle,$data);
-        if($written===false||$written!==strlen($data))return ['ok'=>false,'error'=>'write_failed'];
+        if($written===false||$written!==strlen($data)){ftruncate($handle,0);return ['ok'=>false,'error'=>'write_failed'];}
         fflush($handle);
         if(function_exists('fsync'))fsync($handle);
         return ['ok'=>true,'status'=>'stored','id'=>$id];
