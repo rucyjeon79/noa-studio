@@ -1,7 +1,7 @@
 """N80 additive deployment: one verified SFTP session, no destructive overwrites.
 Only missing files are installed. Existing files must match source exactly.
 """
-import os, stat, base64, hashlib
+import os, stat, base64, hashlib, subprocess
 from pathlib import Path
 import paramiko
 
@@ -14,6 +14,15 @@ def sha(data): return hashlib.sha256(data).hexdigest()
 def main():
     required=('NOA_SSH_HOST','NOA_SSH_USER','NOA_SSH_PASSWORD','NOA_SSH_HOST_FINGERPRINT','GITHUB_SHA')
     if any(not os.getenv(x) for x in required): raise RuntimeError('missing_deploy_config')
+    # A changed deployed file may be replaced only if it exactly matches the
+    # previous Git revision. Never overwrite unknown remote changes.
+    previous={}
+    for name in MODULES:
+        rel='deploy/noa-app/engine/'+name
+        try:
+            previous[name]=subprocess.check_output(['git','show','HEAD^:'+rel],stderr=subprocess.DEVNULL)
+        except subprocess.CalledProcessError:
+            previous[name]=None
     transport=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022))
     try:
         transport.get_security_options().key_types=('ssh-ed25519',)
@@ -35,8 +44,25 @@ def main():
                     st=sftp.lstat(target)
                     if not stat.S_ISREG(st.st_mode):raise RuntimeError('nonregular_target:'+name)
                     with sftp.open(target,'rb') as handle: current=sha(handle.read())
-                    if current!=expected:raise RuntimeError('remote_version_conflict:'+name)
-                    print('N80_UNCHANGED_VERIFIED',name,expected)
+                    if current==expected:
+                        print('N80_UNCHANGED_VERIFIED',name,expected)
+                        continue
+                    baseline=previous[name]
+                    if baseline is None or sha(baseline)!=current:
+                        raise RuntimeError('remote_version_conflict:'+name)
+                    temp=target+'.'+os.environ['GITHUB_SHA'][:12]+'.tmp'
+                    try:sftp.lstat(temp)
+                    except FileNotFoundError:pass
+                    else:raise RuntimeError('staging_exists:'+name)
+                    with sftp.open(temp,'wx') as handle:handle.write(data)
+                    with sftp.open(temp,'rb') as handle:
+                        if sha(handle.read())!=expected:raise RuntimeError('staging_hash_mismatch:'+name)
+                    with sftp.open(target,'rb') as handle:
+                        if sha(handle.read())!=current:raise RuntimeError('concurrent_remote_change:'+name)
+                    sftp.posix_rename(temp,target)
+                    with sftp.open(target,'rb') as handle:
+                        if sha(handle.read())!=expected:raise RuntimeError('remote_hash_mismatch:'+name)
+                    print('N80_UPGRADED_VERIFIED',name,expected)
                     continue
                 except FileNotFoundError:pass
                 temp=target+'.'+os.environ['GITHUB_SHA'][:12]+'.tmp'
