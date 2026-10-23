@@ -1,0 +1,48 @@
+name: NOA Approved JUKEBOX Two Row Production
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/noa-app/p0-media.css'
+      - 'deploy/noa-app/p0-player.js'
+      - 'scripts/noa_player_js_safe_deploy.py'
+      - '.github/workflows/noa-approved-jukebox.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: noa-production-sftp
+  cancel-in-progress: false
+jobs:
+  verify-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check syntax and player regression
+        run: |
+          node --check deploy/noa-app/p0-player.js
+          python -m py_compile scripts/noa_player_js_safe_deploy.py scripts/noa_player_css_safe_deploy.py
+          test -s deploy/noa-app/p0-media.css
+          grep -q 'Approved JUKEBOX A/B reference' deploy/noa-app/p0-media.css
+          node --test scripts/noa_player_regression.test.mjs
+      - run: python -m pip install 'paramiko>=3,<5'
+      - name: Deploy verified player CSS first
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_player_css_safe_deploy.py
+      - name: Activate verified player JS last
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_player_js_safe_deploy.py
