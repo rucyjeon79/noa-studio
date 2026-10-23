@@ -17,7 +17,11 @@
    const data=await response.json();
    csrf=data.csrf;items=data.items;picker.replaceChildren(new Option('새 플레이리스트',''));
    items.forEach(p=>picker.add(new Option(p.title,p.playlist_id)));
-   picker.value=items.some(p=>p.playlist_id===id)?id:'';
+   const current=items.find(p=>p.playlist_id===id);
+   picker.value=current?id:'';
+   if(current){revision=current.revision;working=[...current.tracks];title.value=current.title;}
+   else if(working===null){revision=0;}
+
    el('my-login').hidden=true;el('my-controls').hidden=false;renderOrder();status.textContent='내 계정에 저장된 목록 '+items.length+'개';
   }catch{status.textContent='내 플레이리스트를 불러오지 못했습니다. 잠시 후 다시 열어 주세요.'}
  }
