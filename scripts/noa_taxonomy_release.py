@@ -1,3 +1,4 @@
+from noa_drive_snapshot import snapshot_sftp as _snapshot_sftp
 """Pinned SFTP + HMAC service operations. Never prints credentials or raw DB rows.
 prepare deploys ONLY new fixed-operation modules, creates a private fresh backup.
 activate requires isolated restoration tests to have passed before additive SQL.
@@ -38,7 +39,7 @@ def main():
   t.get_security_options().key_types=('ssh-ed25519',);t.start_client(timeout=20)
   fp='SHA256:'+base64.b64encode(hashlib.sha256(t.get_remote_server_key().asbytes()).digest()).decode().rstrip('=')
   if fp!=FINGERPRINT:raise RuntimeError('host_key_mismatch')
-  t.auth_password(os.environ['NOA_SSH_USER'],os.environ['NOA_SSH_PASSWORD']);s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(30)
+  t.auth_password(os.environ['NOA_SSH_USER'],os.environ['NOA_SSH_PASSWORD']);s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(30);s=_snapshot_sftp(s)
   with s.open('/hosting/noastudio/noa-ai-lab/worker.key','rb')as f:key=f.read(256).decode().strip()
   if len(key)!=64:raise RuntimeError('invalid_service_key')
   def read(path):

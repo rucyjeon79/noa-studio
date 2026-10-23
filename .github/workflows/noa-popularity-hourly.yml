@@ -1,3 +1,5 @@
+env:
+  NOA_DRIVE_RCLONE_CONFIG_B64: ${{ secrets.NOA_DRIVE_RCLONE_CONFIG_B64 }}
 name: NOA hourly integrated popularity snapshot
 on:
   push:

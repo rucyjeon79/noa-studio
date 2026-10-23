@@ -1,3 +1,4 @@
+from noa_drive_snapshot import snapshot_sftp as _snapshot_sftp
 """Pinned SSH: additive jukebox files, bounded public cover acquisition, SQL import.
 Never executes arbitrary submitted commands or updates legacy music documents.
 """
@@ -18,7 +19,7 @@ def main():
  t=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022));t.get_security_options().key_types=('ssh-ed25519',);t.start_client(timeout=20)
  fp='SHA256:'+base64.b64encode(hashlib.sha256(t.get_remote_server_key().asbytes()).digest()).decode().rstrip('=')
  if fp!='SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU':raise RuntimeError('SSH host mismatch; no credentials sent')
- t.auth_password(os.environ['NOA_SSH_USER'],os.environ['NOA_SSH_PASSWORD']);s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(90)
+ t.auth_password(os.environ['NOA_SSH_USER'],os.environ['NOA_SSH_PASSWORD']);s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(90);s=_snapshot_sftp(s)
  try:
   if s.normalize(ROOT)!=ROOT:raise RuntimeError('unexpected production root')
   def read(path):

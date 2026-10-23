@@ -1,3 +1,5 @@
+env:
+  NOA_DRIVE_RCLONE_CONFIG_B64: ${{ secrets.NOA_DRIVE_RCLONE_CONFIG_B64 }}
 name: NOA JUKEBOX public cards and authorized audio
 # View-only changes belong to the single integrated release; scheduled workers remain unchanged.
 # Circuit-break transient upload errors, reconcile lost acknowledgements and observe worker health.

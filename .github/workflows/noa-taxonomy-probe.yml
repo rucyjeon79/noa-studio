@@ -1,3 +1,5 @@
+env:
+  NOA_DRIVE_RCLONE_CONFIG_B64: ${{ secrets.NOA_DRIVE_RCLONE_CONFIG_B64 }}
 name: NOA taxonomy production protection diagnostic
 # Read final table inventory and identify any concurrent additions without SQL writes.
 on:

@@ -1,3 +1,4 @@
+from noa_drive_snapshot import snapshot_sftp as _snapshot_sftp
 """Reconcile reviewed main runtime code only. No migrations, source-data imports or core edits."""
 import os,json,stat,subprocess,time,urllib.request,urllib.error,sys
 from noa_deploy_guard import deployment_preflight
@@ -22,7 +23,7 @@ def main():
  if approved_music:protected_work.remove('noa-music.php')
  m={r:l for r,l in allmap.items()if not r.startswith(('noa-assets/','noa-app/jukebox/')) and r not in protected_work and r not in ['noa-bridge/seed.php','noa-bridge/source-archive.php','noa-bridge/catalog-seed.php']}
  preflight=None
- t=connect();s=t.open_sftp_client() if hasattr(t,'open_sftp_client')else __import__('paramiko').SFTPClient.from_transport(t)
+ t=connect();s=t.open_sftp_client() if hasattr(t,'open_sftp_client')else __import__('paramiko').SFTPClient.from_transport(t);s=_snapshot_sftp(s)
  s.get_channel().settimeout(30)
  def read(p):
   try:
