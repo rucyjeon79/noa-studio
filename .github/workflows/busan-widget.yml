@@ -116,12 +116,12 @@ jobs:
                 with s.open(target,'rb') as f:
                  if f.read(200000)==data:continue
                except FileNotFoundError:pass
-               temp=private+'/upload-'+n.rsplit('/',1)[1]
+               temp=private+'/upload-'+n.rsplit('/',1)[-1]
                with s.open(temp,'w') as f:f.write(data)
                s.chmod(temp,0o644)
                try:
                 with s.open(target,'rb') as f:backup=f.read(200000)
-                backup_path=private+'/before-mobile-voice-'+n.rsplit('/',1)[1]
+                backup_path=private+'/before-mobile-voice-'+n.rsplit('/',1)[-1]
                 try:
                  with s.open(backup_path,'wx') as f:f.write(backup)
                  s.chmod(backup_path,0o600)
