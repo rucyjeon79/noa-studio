@@ -20,9 +20,9 @@ try {
  if(n80_verified_ready_pipeline($db,$dir,$event,$context)['error']!=='source_not_ready')exit(10);
  $db->exec("UPDATE noa_jukebox_audio_jobs SET status='ready' WHERE id=1");
  $verified=n80_verified_ready_pipeline($db,$dir,$event,$context);
- if(!$verified['ok']||$verified['ackEligible']!==false)exit(11);
+ if(!$verified['ok']||$verified['ackEligible']!==false||$verified['storageStatus']!=='stored')exit(11);
  $first=n80_readonly_pipeline($db,$dir,$event,$context);
- if(!$first['ok']||$first['storageStatus']!=='stored'||$first['ackEligible']!==false||$first['workerExecuted']!==false)exit(3);
+ if(!$first['ok']||$first['storageStatus']!=='already_stored'||$first['ackEligible']!==false||$first['workerExecuted']!==false)exit(3);
  $second=n80_readonly_pipeline($db,$dir,$event,$context);
  if(!$second['ok']||$second['storageStatus']!=='already_stored')exit(4);
  $bad=$event;$bad['subjectId']='missing';$bad['id']='evt-2';
