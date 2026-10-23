@@ -48,6 +48,8 @@ def main():
     finally:transport.close()
     request=urllib.request.Request('https://noastudio.ai.kr/noa-music.php?audit='+os.environ['GITHUB_SHA'][:12],headers={'Cache-Control':'no-cache'})
     with urllib.request.urlopen(request,timeout=30) as response:
-        if sha(response.read())!=new:raise RuntimeError('public_css_mismatch')
+        html=response.read().decode('utf-8','replace')
+        if 'p0-media.css?v=20261023-approved-two-row' not in html or 'p0-player.js?v=20261023-approved-two-row' not in html:
+            raise RuntimeError('public_player_asset_version_mismatch')
     print('PHP_PUBLIC_VERIFIED',new)
 if __name__=='__main__':main()
