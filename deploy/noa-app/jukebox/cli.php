@@ -15,6 +15,19 @@ try{
   foreach($input['results']??[] as $r){try{nj_import($db,$r);$success++;}catch(Throwable $e){$errors[]=['key'=>$r['song_key']??'','error'=>$e->getMessage()];}}
   echo json_encode(['saved'=>$success,'errors'=>$errors],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit($errors?2:0);
  }
+ if($action==='n80_emit_ready'){
+  // CLI-only trusted process; opt-in, no new public route or FIFO changes.
+  require_once dirname(__DIR__).'/engine/readonly-pipeline.php';
+  $jobId=filter_var($argv[2]??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
+  $directory=getenv('N80_PRIVATE_EVENT_DIR')?:'';
+  if(!$jobId||$directory==='')throw new InvalidArgumentException('n80_job_and_private_directory_required');
+  $ready=n80_ready_event_from_job($db,(int)$jobId);
+  if(!$ready['ok'])throw new DomainException($ready['error']);
+  $context=['authenticatedByServer'=>true,'principal'=>'jukebox_worker','permission'=>'catalog:read'];
+  $result=n80_verified_ready_pipeline($db,$directory,$ready['event'],$context);
+  echo json_encode($result,JSON_THROW_ON_ERROR|JSON_UNESCAPED_SLASHES).PHP_EOL;
+  exit($result['ok']?0:2);
+ }
  if($action==='audit'){
   $rows=nj_assets($db);$out=['assets'=>count($rows),'covers'=>0,'audio'=>0,'audio_bytes'=>0,'invalid'=>[]];
   foreach($rows as $key=>$r){foreach(['cover','audio'] as $type){if(nj_verified($r,$type)){$out[$type==='cover'?'covers':'audio']++;if($type==='audio')$out['audio_bytes']+=(int)$r['audio_bytes'];}elseif(!empty($r[$type.'_path']))$out['invalid'][]=['key'=>$key,'type'=>$type];}}
