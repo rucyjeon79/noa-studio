@@ -29,6 +29,9 @@ jobs:
         run: |
           set -eu
           for test in tests/engine/*_test.php; do php "$test"; done
+      - name: Record in-process latency baseline
+        run: |
+          php -r 'require "deploy/noa-app/engine/performance.php"; $e=["id"=>"perf","type"=>"audio.ready","source"=>"jukebox","subjectId"=>"track","occurredAt"=>"2026-10-23T00:00:00Z","schemaVersion"=>1,"correlationId"=>"perf"]; echo json_encode(n80_benchmark_event($e,1000),JSON_PRETTY_PRINT),"\\n";'
       - name: Assert execution remains disabled
         run: |
           php -r 'require "deploy/noa-app/engine/adapter-contract.php"; foreach(noa_engine_adapter_manifest() as $a){if($a["enabled"])exit(1);} echo "ENGINE_ADAPTERS_DISABLED\n";'
