@@ -1,11 +1,11 @@
-name: Busan pending member read-only audit
+name: Busan officer open-chat visibility
 on:
   push:
     paths: ['.github/workflows/busan-member-audit.yml']
 permissions:
   contents: read
 concurrency:
-  group: busan-openchat-inspection
+  group: busan-openchat-edit
   cancel-in-progress: false
 jobs:
   audit:
@@ -14,6 +14,8 @@ jobs:
     environment: busan-readonly
     steps:
       - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
       - run: python3 -m pip install paramiko==3.5.1
       - env:
           BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
@@ -23,7 +25,7 @@ jobs:
         run: |
           cd scripts
           python3 - <<'PY'
-          import os,socket,hmac,json,urllib.request,secrets,re,stat,time
+          import os,socket,hmac,json,urllib.request,secrets,re,stat,time,subprocess,hashlib
           import paramiko
           from busan_readonly_check import configuration,fingerprint,PORT,ROOT
           host,user,password,pin=configuration(os.environ)
@@ -34,33 +36,39 @@ jobs:
             t.auth_password(user,password,fallback=False)
             with paramiko.SFTPClient.from_transport(t) as s:
              private='/hosting/rucyjeon79/busan-assistant-private'
-             roots=[ROOT+'/theme',ROOT+'/eyoom/theme',ROOT+'/extend']
-             pending=list(roots);seen=0;matches=0;deadline=time.time()+90
-             while pending and time.time()<deadline:
-              directory=pending.pop()
-              try:entries=s.listdir_attr(directory)
-              except OSError:continue
-              for entry in entries:
-               path=directory+'/'+entry.filename
-               if stat.S_ISDIR(entry.st_mode):
-                if entry.filename not in ['data','cache','node_modules','.git']:pending.append(path)
-               elif entry.filename.endswith(('.php','.html','.js')) and entry.st_size<500000 and re.search('tail|footer|head|kakao',entry.filename,re.I):
-                seen+=1
-                with s.open(path,'rb') as f:code=f.read(500000).decode('utf-8','replace')
-                for match in re.finditer(r'kakaoOpenChat|open[.]kakao[.]com',code):
-                 matches+=1;excerpt=code[max(0,match.start()-1000):min(len(code),match.end()+1300)]
-                 excerpt=re.sub(r'https?://open[.]kakao[.]com[^\\s\\\"<>]+','KAKAO_PRIVATE_LINK',excerpt)
-                 print(json.dumps({'path':path,'excerpt':excerpt},ensure_ascii=False))
-             print(json.dumps({'scanned':seen,'matches':matches}))
-             with s.open(private+'/activity-account.json','rb') as f:identity=json.loads(f.read(8192))
-             name='member-audit-'+secrets.token_hex(12)+'.php';target=ROOT+'/busan-assistant/'+name
-             code="<?php header('Content-Type: application/json'); echo json_encode(['read_only'=>true]);"
-             try:
-              with s.open(target,'wx') as f:f.write(code.encode())
-              s.chmod(target,0o644)
-              req=urllib.request.Request('https://skhnslu-busan.com/busan-assistant/'+name,headers={'X-Busan-Agent-Token':identity['agent_token']})
-              with urllib.request.urlopen(req,timeout=35) as r:result=json.loads(r.read(8192))
-              print(json.dumps(result,ensure_ascii=False))
-             finally:s.remove(target)
-          
+             relative='theme/UXC_Flarumix/tail.php';target=ROOT+'/'+relative
+             assert s.normalize(target)==target and stat.S_ISREG(s.lstat(target).st_mode)
+             with s.open(target,'rb') as f:before=f.read(300000)
+             old='<?php if($config[\'cf_6\']) { ?>\\n<div class="kakaoOpenChat">'.replace('\\n','\n')
+             new='<?php if (!empty($config[\'cf_6\']) && !empty($member[\'mb_id\']) && (int)($member[\'mb_level\'] ?? 0) >= 4 && empty($member[\'mb_leave_date\']) && empty($member[\'mb_intercept_date\'])) { ?>\\n<div class="kakaoOpenChat">'.replace('\\n','\n')
+             source=before.decode('utf-8')
+             assert source.count(old)==1,'unexpected_openchat_template'
+             candidate=source.replace(old,new,1)
+             begin=candidate.index(new);finish=candidate.index('<?php } ?>',begin)+len('<?php } ?>');snippet=candidate[begin:finish]
+             for level in [0,2,3,4,5,10]:
+              member={} if level==0 else {'mb_id':'synthetic','mb_level':level}
+              php='$member=json_decode('+json.dumps(json.dumps(member))+',true);$config=["cf_6"=>"https://example.invalid/officer-chat"];?>'+snippet
+              check=subprocess.run(['php','-r',php],capture_output=True,text=True)
+              assert check.returncode==0,'php_render_failed'
+              assert ('class="kakaoOpenChat"' in check.stdout)==(level>=4),'visibility_tier_failed'
+              if level<4:assert 'example.invalid/officer-chat' not in check.stdout,'link_exposed'
+             for member in [{'mb_level':10},{'mb_id':'synthetic','mb_level':4,'mb_intercept_date':'20261023'},{'mb_id':'synthetic','mb_level':4,'mb_leave_date':'20261023'}]:
+              php='$member=json_decode('+json.dumps(json.dumps(member))+',true);$config=["cf_6"=>"https://example.invalid/officer-chat"];?>'+snippet
+              check=subprocess.run(['php','-r',php],capture_output=True,text=True)
+              assert check.returncode==0 and 'kakaoOpenChat' not in check.stdout,'inactive_visibility_failed'
+             with open('/tmp/busan-officer-tail.php','w') as f:f.write(candidate)
+             check=subprocess.run(['php','-l','/tmp/busan-officer-tail.php'],capture_output=True,text=True);assert check.returncode==0,'template_syntax_failed'
+             print('PASS native template rendering: guest/level2/level3 hidden; active level4/5/10 shown; inactive and forged level hidden; links absent for lower tiers')
+             backup=private+'/before-openchat-level4-tail.php'
+             with s.open(backup,'wx') as f:f.write(before)
+             s.chmod(backup,0o600)
+             with s.open(target,'rb') as f:assert f.read(300000)==before,'template_changed_before_write'
+             temp=private+'/openchat-tail-'+secrets.token_hex(8)+'.php'
+             with s.open(temp,'wx') as f:f.write(candidate.encode())
+             s.chmod(temp,0o644);s.posix_rename(temp,target)
+             with s.open(target,'rb') as f:assert f.read(300000)==candidate.encode(),'remote_verification_failed'
+             with urllib.request.urlopen('https://skhnslu-busan.com/',timeout=30) as response:page=response.read(2000000).decode('utf-8')
+             assert 'class="kakaoOpenChat"' not in page and 'open.kakao.com' not in page,'live_guest_link_exposed'
+             assert 'busan-assistant/widget.js' in page,'widget_missing'
+             print(json.dumps({'updated':relative,'guest_button_absent':True,'guest_link_absent':True,'sha256':hashlib.sha256(candidate.encode()).hexdigest()}))
           PY
