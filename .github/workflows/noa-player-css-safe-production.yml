@@ -1,0 +1,35 @@
+name: NOA Player CSS Safe Production
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/noa-app/p0-media.css'
+      - 'scripts/noa_player_css_safe_deploy.py'
+      - '.github/workflows/noa-player-css-safe-production.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: noa-production-sftp
+  cancel-in-progress: false
+jobs:
+  verify-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate player CSS and deploy script
+        run: |
+          python -m py_compile scripts/noa_player_css_safe_deploy.py
+          test -s deploy/noa-app/p0-media.css
+          grep -q 'Player-first polish' deploy/noa-app/p0-media.css
+      - run: python -m pip install 'paramiko>=3,<5'
+      - name: Verify remote baseline and deploy player CSS
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_player_css_safe_deploy.py
