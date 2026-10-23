@@ -329,3 +329,11 @@ html[data-noa-theme="noa-ivory"]{--noa-glass-highlight:rgba(255,255,255,.70)}
 .noa-playlist-order-row button:disabled{opacity:.38}
 @media(max-width:480px){.noa-site-map-link{min-width:0}.noa-site-map-link strong,.noa-site-map-link small{overflow-wrap:anywhere}.noa-playlist-order-row{grid-template-columns:minmax(0,1fr) 44px 44px}}
 @media(prefers-reduced-motion:reduce){.noa-site-map-link{transition:none}.noa-site-map-link:hover,.noa-site-map-link:active{transform:none}}
+
+/* NOA DESIGN LAW: One Surface, One Decoration.
+   Decorative parent cards own the surface; nested content remains flat.
+   Interactive buttons and form fields retain essential affordances. */
+.noa-site-map-link>span,.noa-site-map-link>strong,.noa-site-map-link>small{background:transparent;border:0;box-shadow:none;backdrop-filter:none}
+.noa-playlist-order-row>span{background:transparent;border:0;box-shadow:none}
+.noa-media-details details>pre,.noa-media-details details>div:not(.noa-action){background:transparent;border:0;box-shadow:none;backdrop-filter:none}
+html[data-noa-precision] .noa-character :is(h2,h3,p,small){background:transparent;border:0;box-shadow:none}
