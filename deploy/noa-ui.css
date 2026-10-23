@@ -337,3 +337,22 @@ html[data-noa-theme="noa-ivory"]{--noa-glass-highlight:rgba(255,255,255,.70)}
 .noa-playlist-order-row>span{background:transparent;border:0;box-shadow:none}
 .noa-media-details details>pre,.noa-media-details details>div:not(.noa-action){background:transparent;border:0;box-shadow:none;backdrop-filter:none}
 html[data-noa-precision] .noa-character :is(h2,h3,p,small){background:transparent;border:0;box-shadow:none}
+
+/* Design Constitution v0 — iOS-level visual discipline, 2026-10-23.
+   Purely presentational. Preserve native interactive behavior. */
+:root{--noa-ui-space-xs:4px;--noa-ui-space-sm:8px;--noa-ui-space-md:16px;--noa-ui-space-lg:24px;--noa-ui-space-xl:32px;--noa-ui-touch:44px}
+html{scroll-behavior:smooth}
+body{letter-spacing:-.012em;text-rendering:optimizeLegibility}
+.noa-main{min-width:0}
+.noa-topbar,.noa-account{min-width:0}
+.noa-site-map-grid{align-items:stretch}
+.noa-site-map-link{border-radius:16px;min-width:0;gap:8px;box-shadow:0 2px 10px rgba(0,0,0,.09),inset 0 1px 0 var(--noa-glass-highlight)}
+.noa-site-map-link>span{background:none!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important}
+.noa-site-map-link>strong{line-height:1.35;font-weight:650;letter-spacing:-.015em}
+.noa-site-map-link>small{line-height:1.4;opacity:.76}
+.noa-playlist-order-row{border-radius:0;background:transparent;box-shadow:none}
+.noa-playlist-order-row>span{font-size:13px;line-height:1.5}
+.noa-playlist-order-row button{min-width:var(--noa-ui-touch);min-height:var(--noa-ui-touch)}
+.noa-page :is(button,a,input,select,textarea,summary):focus-visible{outline:2px solid var(--noa-accent);outline-offset:3px}
+@media(max-width:600px){.noa-site-map-grid{gap:10px}.noa-site-map-link{min-height:100px;padding:14px 10px}.noa-playlist-order-row{gap:8px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.noa-site-map-link{transition:none}}
