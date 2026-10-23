@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'deploy/noa-app/engine/n80.php'
+      - 'deploy/noa-app/jukebox/cli.php'
       - 'scripts/n80_single_session_deploy.py'
       - 'deploy/noa-app/engine/readonly-pipeline.php'
       - 'scripts/n80_readonly_pipeline_safe_deploy.py'
@@ -42,6 +43,8 @@ jobs:
         run: |
           php -l deploy/noa-app/engine/n80.php
           php tests/engine/n80_facade_test.php
+          php -l deploy/noa-app/jukebox/cli.php
+          php tests/engine/cli_producer_static_test.php
           php -l deploy/noa-app/engine/readonly-pipeline.php
           php tests/engine/readonly_pipeline_test.php
           php tests/engine/ready_event_identity_test.php
@@ -60,6 +63,7 @@ jobs:
       - run: python -m pip install 'paramiko>=3,<5'
       - name: Verify and install N80 modules in one SSH session
         env:
+          N80_DEPLOY_JUKEBOX_CLI: '1'
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
