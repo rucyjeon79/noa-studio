@@ -12,7 +12,7 @@ def digest(data): return hashlib.sha256(data).hexdigest()
 def main():
     data = SOURCE.read_bytes()
     prior = subprocess.check_output(['git','show','HEAD^:deploy/noa-playlists.js'])
-    expected = {digest(prior), digest(data)}
+    expected = {digest(prior), digest(data), '86b9ec2171f857d442fb9ccc3ae9935d2ba2ce8cf17397640b6a7de6a768bd29'}
     transport = paramiko.Transport((os.environ['NOA_SSH_HOST'], 2022))
     try:
         transport.get_security_options().key_types = ('ssh-ed25519',)
