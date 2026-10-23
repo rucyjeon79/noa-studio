@@ -8,7 +8,8 @@ import paramiko
 ROOT='/hosting/noastudio/html'
 MODULES=(
 'n80.php','bridge.php','policy.php','guardian.php','lease-state.php',
-'music-adapter.php','authenticated-probe.php','readonly-pipeline.php'
+'music-adapter.php','authenticated-probe.php','readonly-pipeline.php',
+'receipt-contract.php'
 )
 def sha(data): return hashlib.sha256(data).hexdigest()
 def main():
