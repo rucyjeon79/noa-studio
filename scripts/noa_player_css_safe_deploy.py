@@ -31,7 +31,7 @@ def main():
             print('REMOTE_SHA256',old,'CANDIDATE_SHA256',new)
             if old not in known:raise RuntimeError('unknown_remote_version_refuse_overwrite')
             if old!=new:
-                temp=ROOT+'/.noa-app/p0-media.css.'+os.environ['GITHUB_SHA'][:12]+'.tmp'
+                temp=ROOT+'/noa-app/.p0-media.css.'+os.environ['GITHUB_SHA'][:12]+'.tmp'
                 try:sftp.lstat(temp)
                 except FileNotFoundError:pass
                 else:raise RuntimeError('temporary_file_exists')
