@@ -31,3 +31,15 @@
 :root{--jukebox-dock-bg:var(--noa-surface,#1d2229);--jukebox-dock-text:var(--noa-text,#f5f6f8);--jukebox-dock-line:var(--noa-line,#3c434e);--jukebox-dock-accent:var(--noa-confirmed,#34c785)}
 #jukebox-transfer-dock .jukebox-transfer-current{color:var(--noa-confirmed,#34c785)}
 @media(max-width:600px){.jukebox-card{grid-template-columns:56px minmax(0,1fr)}.jukebox-actions{min-width:0}.song .jukebox-actions{flex-wrap:wrap;justify-content:flex-end}}
+
+/* P0 final cascade guard: music and common stylesheets load after upload.css. */
+html body.noa-page.noa-sound-page #songs .song .jukebox-actions .noa-icon-button,
+html body.noa-page.noa-sound-page #songs .song .jukebox-actions .sound-play{
+ color:var(--noa-text,#f5f6f8)!important;background:var(--noa-raised,#2c333d)!important;
+ border:1px solid var(--noa-line,#3c434e)!important;box-shadow:none!important;
+ width:44px!important;min-width:44px!important;height:44px!important;
+ padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+}
+html body.noa-page.noa-sound-page #songs .song .jukebox-actions .noa-icon-button:disabled{color:var(--noa-inactive,#89919d)!important}
+html body.noa-page.noa-sound-page #songs .song .jukebox-actions .noa-icon-button:focus-visible{outline:2px solid var(--noa-source,#64a9f5)!important;outline-offset:2px}
+html body.noa-page.noa-sound-page #songs .song .jukebox-actions .noa-icon-button[aria-pressed="true"]{color:var(--noa-success,#34c785)!important}
