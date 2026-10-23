@@ -16,9 +16,11 @@ def main():
     if any(not os.getenv(x) for x in required): raise RuntimeError('missing_deploy_config')
     # A changed deployed file may be replaced only if it exactly matches the
     # previous Git revision. Never overwrite unknown remote changes.
+    modules=list(MODULES)
+    if os.environ.get('N80_DEPLOY_JUKEBOX_CLI')=='1':modules.append('jukebox/cli.php')
     previous={}
-    for name in MODULES:
-        rel='deploy/noa-app/engine/'+name
+    for name in modules:
+        rel='deploy/noa-app/'+name if name.startswith('jukebox/') else 'deploy/noa-app/engine/'+name
         try:
             history=subprocess.check_output(['git','log','--format=%H','--',rel],text=True).splitlines()
             if len(history)<2:raise subprocess.CalledProcessError(1,'git log')
@@ -38,8 +40,8 @@ def main():
             if sftp.normalize(ROOT)!=ROOT:raise RuntimeError('root_mismatch')
             directory=ROOT+'/noa-app/engine'
             if not stat.S_ISDIR(sftp.lstat(directory).st_mode):raise RuntimeError('invalid_engine_directory')
-            for name in MODULES:
-                rel='noa-app/engine/'+name
+            for name in modules:
+                rel='noa-app/'+name if name.startswith('jukebox/') else 'noa-app/engine/'+name
                 source=Path('deploy')/rel
                 data=source.read_bytes();expected=sha(data);target=ROOT+'/'+rel
                 try:
