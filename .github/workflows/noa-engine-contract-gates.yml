@@ -13,6 +13,8 @@ on:
       - 'tests/engine/**'
       - '.github/workflows/noa-engine-contract-gates.yml'
   workflow_dispatch:
+  schedule:
+    - cron: '23 2 * * *'
 permissions:
   contents: read
 jobs:
@@ -36,6 +38,10 @@ jobs:
         run: |
           php tests/engine/guardian_test.php
           php -r 'require "deploy/noa-app/engine/guardian.php"; $a=n80_guardian_audit("deploy"); if(!$a["policyCompliant"] || $a["engineOperationalReady"] || $a["decisionAuthority"]!=="user")exit(1); echo "N80_GUARDIAN_POLICY_ENFORCED\\n";'
+      - name: Verify bridge stays single and non-executing
+        run: |
+          php tests/engine/bridge_test.php
+          php -r 'require "deploy/noa-app/engine/bridge.php"; $e=["id"=>"audit","type"=>"audio.ready","source"=>"jukebox","subjectId"=>"audit","occurredAt"=>"2026-10-23T00:00:00Z","schemaVersion"=>1,"correlationId"=>"audit"]; $p=n80_bridge_plan($e); if(!$p["ok"] || count($p["links"])!==2)exit(1); foreach($p["links"] as $l){if($l["executionEnabled"])exit(2);} echo "N80_BRIDGE_NON_EXECUTING_OK\\n";'
       - name: Assert execution remains disabled
         run: |
           php -r 'require "deploy/noa-app/engine/adapter-contract.php"; foreach(noa_engine_adapter_manifest() as $a){if($a["enabled"])exit(1);} echo "ENGINE_ADAPTERS_DISABLED\n";'
