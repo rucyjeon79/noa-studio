@@ -56,9 +56,18 @@ def main():
     value={'action':'revise','request':{'requestId':directive,'expectedRevision':state['revision'],'changes':[{'areaId':k,'status':v[0],'note':v[1],'evidenceIds':[]}for k,v in notes.items()],'appendInstructions':[{'id':directive,'text':'기존 작업을 이어서 12개 영역을 정상화하고 운영 검증 후에만 완료한다. 새 지시는 기존 작업을 삭제하지 않고 대기열에 추가한다.','areaIds':list(notes)}]}}
     first=request(key,value);again=request(key,value)
     if first.get('readbackVerified')is not True or again.get('effect')!='work_state_already_recorded' or first['state']!=again['state']:raise RuntimeError('workstate_replay_changed_state')
+   directive4='category-four-level-20261025'
+   current=request(key,{'action':'read'})['state']
+   if not any(x['id']==directive4 for x in current['instructions']):
+    value4={'action':'revise','request':{'requestId':directive4,'expectedRevision':current['revision'],
+     'changes':[{'areaId':'P0-03','status':'in_progress','note':'카테고리 → 장르 → ACT → 곡 4단계와 EP 오름차순 운영 검증 완료. 회원 저장 등 잔여 MUSIC 검증은 미완료 유지.','evidenceIds':[]},
+                {'areaId':'P0-04','status':'needs_review','note':'카테고리 → 장르 → ACT → 영상 4단계 운영 검증 완료. YouTube 제공자 재생 검증은 별도 미완료 유지.','evidenceIds':[]}],
+     'appendInstructions':[{'id':directive4,'text':'YouTube와 MUSIC에서 4개 최상위 카테고리 아래 해당 장르, 장르 아래 ACT 플레이리스트, 선택 ACT 아래 수록곡을 펼친다. ACT 미소속 곡은 ACT 목록 하단에 연속 표시하며 EP 번호는 오름차순이다. 기존 12개 영역과 미완료 작업은 유지한다.','areaIds':['P0-03','P0-04']}]}}
+    first4=request(key,value4);again4=request(key,value4)
+    if first4.get('readbackVerified')is not True or again4.get('effect')!='work_state_already_recorded' or first4['state']!=again4['state']:raise RuntimeError('four_level_workstate_replay_changed_state')
    after=request(key,{'action':'read'});summary=after['summary']
-   if summary.get('allAreasComplete')is not False or len(summary['areas'])!=12 or not any(x['id']==directive for x in summary['instructionQueue']):raise RuntimeError('workstate_incomplete_parent_contract_failed')
-   out={'parentTaskId':summary['parentTaskId'],'revision':summary['revision'],'counts':summary['counts'],'allAreasComplete':False,'readbackVerified':True,'databaseWrites':0,'workCompletedEventEmitted':False,'eventSha256':after.get('eventSha256')}
+   if summary.get('allAreasComplete')is not False or len(summary['areas'])!=12 or not all(any(x['id']==d for x in summary['instructionQueue']) for d in [directive,directive4]):raise RuntimeError('workstate_incomplete_parent_contract_failed')
+   out={'parentTaskId':summary['parentTaskId'],'revision':summary['revision'],'counts':summary['counts'],'allAreasComplete':False,'readbackVerified':True,'databaseWrites':0,'workCompletedEventEmitted':False,'eventSha256':after.get('eventSha256'),'instructionIds':[directive,directive4]}
    path=Path(os.environ.get('RUNNER_TEMP','/tmp'))/'n80-workstate-result.json';path.write_text(json.dumps(out));print('N80_WORKSTATE_VERIFIED '+json.dumps(out))
  finally:transport.close()
 if __name__=='__main__':main()

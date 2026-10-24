@@ -26,8 +26,8 @@ COMPLETION_STORE = '/hosting/noastudio/noa-ai-lab/n80-completion'
 RECEIPT = Path('scripts/noa_finish_drive_receipt.json')
 STATE = Path(os.environ.get('RUNNER_TEMP', '/tmp')) / 'noa-category-release.json'
 # Helpers precede consumers; entry pages and HOME are activated last.
-ORDER = ['noa-app/engine/music-availability.php', 'noa-app/engine/consume-music.php']
-FILES = {p: ('bridge/' + p[len('noa-bridge/'):] if p.startswith('noa-bridge/') else 'deploy/' + p)
+ORDER = ['noa-app/engine/completion-receipt.php', 'noa-ui.css', 'noa-browse.js', 'extend/noa.design.php']
+FILES = {p: ('bridge/' + p[len('noa-bridge/'):] if p.startswith('noa-bridge/') else ('deploy/noa-design.extend.php' if p == 'extend/noa.design.php' else 'deploy/' + p))
          for p in ORDER}
 
 
@@ -39,8 +39,8 @@ def load_preimages(receipt, archive):
     """Read bytes without extracting paths, symlinks or unexpected members."""
     if (receipt.get('readbackVerified') is not True
             or receipt.get('restoreExtractionVerified') is not True
-            or receipt.get('checkpointRun') != 40096706561
-            or receipt.get('artifactId') != 12560554889
+            or receipt.get('checkpointRun') != 40136629252
+            or receipt.get('artifactId') != 12578065014
             or not set(FILES).issubset(receipt.get('files', {}))
             or not re.fullmatch(r'[A-Za-z0-9_-]+', receipt.get('driveId', ''))):
         raise RuntimeError('drive_recovery_receipt_invalid')

@@ -3,6 +3,8 @@ declare(strict_types=1);
 require_once __DIR__.'/../../deploy/noa-app/engine/completion-receipt.php';
 $count=0;
 function check(bool $value,string $label):void {global $count;$count++;if(!$value)throw new RuntimeException($label);}
+check(n80_completion_path('extend/noa.design.php'),'exact cache loader permitted');
+foreach(['extend/other.php','extend/../config.php','extend/noa.design.php/extra','extend/noa.design.php?x'] as $path)check(!n80_completion_path($path),'other extension paths denied');
 $now=1792836000;$when=gmdate('Y-m-d\TH:i:s\Z',$now);
 $run=static fn(string $id):array=>['runId'=>$id,'headSha'=>str_repeat('a',40),'status'=>'completed','conclusion'=>'success',
     'url'=>'https://github.com/rucyjeon79/noa-studio/actions/runs/'.$id,'updatedAt'=>$when];

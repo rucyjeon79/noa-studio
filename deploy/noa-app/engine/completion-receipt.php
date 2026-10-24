@@ -9,6 +9,7 @@ function n80_completion_hex($value,int $length): bool {
     return is_string($value)&&preg_match('/^[a-f0-9]{'.$length.'}$/D',$value)===1;
 }
 function n80_completion_path($value): bool {
+    if($value==='extend/noa.design.php')return true;
     if(!is_string($value)||strlen($value)>240||str_contains($value,'..')||str_contains($value,'//'))return false;
     return preg_match('~^noa-[a-z0-9-]+[.](?:php|js|css|json)$|^noa-(?:app|bridge)/[A-Za-z0-9_/-]+[.](?:php|js|css|json)$~D',$value)===1;
 }

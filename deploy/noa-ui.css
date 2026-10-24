@@ -419,3 +419,9 @@ html[data-noa-precision] .noa-page .noa-inline-song{display:flex;align-items:cen
 html[data-noa-precision] .noa-page .noa-browse-grid:has(>.noa-inline-act){grid-template-columns:minmax(0,1fr)}
 
 .noa-menu a[aria-current=page]{color:var(--noa-success)}
+
+/* Four-level discovery retains parent choices on one undecorated surface. */
+.noa-browse-children{grid-column:1/-1;min-width:0;padding-top:8px}
+.noa-browse-children>h2,.noa-browse-acts>h3{margin:16px 0;font-size:inherit;font-weight:600;color:var(--noa-text)}
+.noa-browse-acts{display:grid;grid-template-columns:minmax(0,1fr);margin-top:16px;min-width:0}
+.noa-page .noa-browse-card[data-browse-group][aria-expanded="true"],.noa-page .noa-browse-card[data-browse-genre][aria-expanded="true"]{border-color:var(--noa-success);color:var(--noa-success)}
