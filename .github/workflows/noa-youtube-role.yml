@@ -28,6 +28,7 @@ jobs:
           php -l deploy/noa-app/jukebox/stream-popularity.php
           php -l bridge/popularity-events.php
           php tests/popularity/stream_tracking_test.php
+          python tests/popularity/stream_source_contract.py
           node --check deploy/noa-playcount.js
           node --test tests/popularity/player_tracker_test.cjs
           php tests/youtube/core_test.php

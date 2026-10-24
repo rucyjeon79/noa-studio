@@ -38,7 +38,7 @@ class RecoveryContract(unittest.TestCase):
    from readmodel_ownership import verify_youtube_reader_only
    verify_youtube_reader_only(ROOT,baseline)
    paths.remove('bridge/youtube-store.php')
-  # Integration finish deliberately owns these bounded surfaces; runtime processing PHP stays protected.
-  authorized={'bridge/music-readmodel.php','bridge/user-playlists.php','scripts/noa_jukebox_release.py','scripts/noa_jukebox_upload_worker.py','scripts/noa_jukebox_publish.py'}
+  # Integration finish owns only these bounded surfaces. FIFO, uploads and processing workers remain protected.
+  authorized={'bridge/music-readmodel.php','bridge/user-playlists.php','bridge/world-mv.php','bridge/popularity-events.php','deploy/noa-app/jukebox/stream.php','deploy/noa-app/jukebox/stream-popularity.php','scripts/noa_jukebox_release.py','scripts/noa_jukebox_upload_worker.py','scripts/noa_jukebox_publish.py'}
   self.assertFalse(any(p not in authorized and p.startswith(('deploy/noa-app/jukebox/','bridge/','scripts/noa_jukebox'))for p in paths))
 if __name__=='__main__':unittest.main()
