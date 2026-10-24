@@ -17,7 +17,7 @@ if(isset($_GET['playlist'])){
 if($run){try{$videos=array_diff_key($videos,ny_official_members($db,$run));unset($playlists[NWM_PLAYLIST]);}
  catch(Throwable $e){$videos=[];$error=true;error_log('[noa-youtube-official-membership] '.get_class($e));}}
 $browseRows=[];
-foreach($videos as $id=>$v){if(($v['status']['privacyStatus']??'')!=='public'||empty($v['status']['embeddable'])||isset($_GET['world'])&&($v['classification']??'')!=='official_mv')continue;$song=$songIndex[$v['match']['songId']??'']??null;$browseRows[]=['key'=>$id,'title'=>$v['snippet']['title']??'NOA Music','genre'=>$song['genre_id']??'unclassified','ep'=>$song['ep']??'','act'=>'','kind'=>'video','video'=>$id];}
+foreach($videos as $id=>$v){if(($v['status']['privacyStatus']??'')!=='public'||empty($v['status']['embeddable'])||isset($_GET['world'])&&($v['classification']??'')!=='official_mv')continue;$song=$songIndex[$v['match']['songId']??'']??null;$browseRows[]=['key'=>$id,'orderKey'=>$v['match']['songId']??'','title'=>$v['snippet']['title']??'NOA Music','genre'=>$song['genre_id']??'unclassified','ep'=>$song['ep']??'','act'=>'','kind'=>'video','video'=>$id];}
 // Explicit legacy document URLs are authoritative even when an older catalog
 // availability snapshot has not marked that imported version public_verified.
 function noa_video_legacy_lyrics(iterable $documents,bool $admin):array{
