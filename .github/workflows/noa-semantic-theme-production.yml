@@ -14,6 +14,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   verify-and-deploy:
+    # Replaced by noa-approved-ui-release: Drive recovery, no host temporary files.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     environment: production
     steps:
