@@ -19,6 +19,7 @@ function noa_design_assets(){
   }
   ob_start(static function($html)use($assets){
    if(http_response_code()>=300||stripos($html,'</head>')===false)return $html;
+   $html=preg_replace("~(<script\\b[^>]*\\bsrc=[\"'])/noa-ui[.]js(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.js?v=20261024-policy1$2',$html);
    return str_ireplace('</head>',$assets.'</head>',$html);
   });
   return;
@@ -33,6 +34,6 @@ function noa_design_assets(){
   return;
  }
  add_stylesheet('<link rel="stylesheet" href="/noa-ui.css?v=20261022-recovery2">',99);
- add_javascript('<script src="/noa-brand.js?v=20261021-brand1" defer></script><script src="/noa-ui.js?v=20261022-recovery1" defer></script>',99);
+ add_javascript('<script src="/noa-brand.js?v=20261021-brand1" defer></script><script src="/noa-ui.js?v=20261024-policy1" defer></script>',99);
 }
 if(function_exists('add_event'))add_event('common_header','noa_design_assets',10,0);
