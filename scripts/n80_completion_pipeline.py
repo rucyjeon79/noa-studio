@@ -154,7 +154,7 @@ def report():
     sources = release_sources()
     evidence.require(set(sources).issubset(receipt["files"]), "release_recovery_scope_mismatch")
     evidence.require(bool(sources), "release_sources_missing")
-    cmd = [sys.executable, "scripts/n80_report_evidence.py", "--repository", ".", "--commit", commit,
+    cmd = [sys.executable, "scripts/n80_report_evidence.py", "--type", "deploy.verified", "--repository", ".", "--commit", commit,
            "--deployment-run", str(dep["id"]), "--verification-run", str(run["id"]),
            "--artifact-id", str(metadata["id"]), "--artifact-zip", str(archive_path), "--report-member", "verified.json",
            "--module", "admin", "--task", "integration-finish-20261024", "--owner", "Work_integration",
