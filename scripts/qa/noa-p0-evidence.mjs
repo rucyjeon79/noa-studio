@@ -2,12 +2,13 @@ import {chromium} from 'playwright';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 const root=process.env.NOA_SOURCE_ROOT||process.cwd(),out=path.join(root,'p0-evidence'),base='https://noastudio.ai.kr';
 await fs.mkdir(out,{recursive:true});
 const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/google-chrome',args:['--no-sandbox']});
 const report={commit:process.env.GITHUB_SHA,run:process.env.GITHUB_RUN_ID,scope:'read-only lab and in-memory unshipped proposals',physicalDeviceTested:false,fieldINPMeasured:false,metrics:[],visuals:[],issues:[],errors:[]};
 report.apiMeasurements=[];report.interactions=[];
-if(process.env.NOA_P0_REUSE_METRICS){const baseline=JSON.parse(await fs.readFile(process.env.NOA_P0_REUSE_METRICS,'utf8'));report.metrics=baseline.metrics;report.measurementRun=baseline.run;report.measurementCommit=baseline.commit;}
+if(process.env.NOA_P0_REUSE_METRICS){const baseline=JSON.parse(await fs.readFile(process.env.NOA_P0_REUSE_METRICS,'utf8'));report.metrics=baseline.metrics;report.measurementRun=baseline.measurementRun||baseline.run;report.measurementCommit=baseline.measurementCommit||baseline.commit;if(process.env.NOA_P0_VISUAL_REVIEW==='1'){for(const key of ['lcpAudit','interactions','realAudio'])report[key]=baseline[key];report.previousVisualRun=baseline.run;}}
 const requestContext=await browser.newContext();
 const publicGet=async p=>{const start=performance.now();const r=await requestContext.request.get(base+p,{maxRetries:2,timeout:90000});assert.equal(r.status(),200,p);report.apiMeasurements.push({path:p,totalMs:performance.now()-start,bytes:(await r.body()).length,status:r.status(),scope:'runner HTTP, not device TTFB'});return r;};
 async function ids(html,selector){const p=await requestContext.newPage();await p.setContent(html);const v=await p.locator(selector).evaluateAll(ns=>[...new Set(ns.map(n=>n.dataset.video).filter(Boolean))]);await p.close();return v;}
@@ -50,8 +51,8 @@ try{
   await context.close();
  }
  // Collect settled load metrics separately. The earlier 1.2s observations are not final/field LCP.
- report.lcpAudit=[];
- for(const profile of ['desktop','mobile-lab']){
+ if(!report.lcpAudit)report.lcpAudit=[];
+ for(const profile of (process.env.NOA_P0_VISUAL_REVIEW==='1'?[]:['desktop','mobile-lab'])){
   const context=await browser.newContext({viewport:profile==='desktop'?{width:1440,height:1000}:{width:390,height:844},reducedMotion:'reduce',serviceWorkers:'block'});
   await context.addInitScript(()=>{window.__settled={lcp:0,cls:0};for(const type of ['largest-contentful-paint','layout-shift'])try{new PerformanceObserver(list=>{for(const e of list.getEntries()){if(type==='largest-contentful-paint')window.__settled.lcp=e.startTime;else if(!e.hadRecentInput)window.__settled.cls+=e.value;}}).observe({type,buffered:true});}catch{}});
   const page=await context.newPage(),cdp=await context.newCDPSession(page);await cdp.send('Network.enable');
@@ -61,7 +62,7 @@ try{
   }await context.close();
  }
  // Real public controls, no uploads, membership or playlist writes. Modes/history stay in this isolated context.
- for(const profile of ['desktop','mobile-lab']){
+ for(const profile of (process.env.NOA_P0_VISUAL_REVIEW==='1'?[]:['desktop','mobile-lab'])){
   const context=await browser.newContext({viewport:profile==='desktop'?{width:1440,height:1000}:{width:390,height:844},reducedMotion:'reduce',serviceWorkers:'block'});
   await context.route('**/*',route=>['GET','HEAD'].includes(route.request().method())?route.continue():route.abort());
   const page=await context.newPage();
@@ -77,7 +78,7 @@ try{
   }
   await context.close();
  }
- if(sampleAudio.length){
+ if(sampleAudio.length&&process.env.NOA_P0_VISUAL_REVIEW!=='1'){
   const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'});
   await context.route('**/*',route=>['GET','HEAD'].includes(route.request().method())?route.continue():route.abort());
   const page=await context.newPage();const media={sampleKey:sampleAudio[0].key,actualSource:true,productionWrites:0,uploadQueueActions:0,physicalDevice:false};
@@ -100,6 +101,8 @@ try{
  // Visual design proposals use a distinct fresh context; all changes exist only in browser memory.
  const prototypeCss=await fs.readFile(path.join(root,'tests/uiux/proposals/20261024/review.css'),'utf8');
  const visualRoutes=['/noa-my.php','/noa-youtube.php','/noa-music.php','/','/noa-world.php'];
+ const visualDocs=new Map(),visualAssets=new Map();report.visualFixtureAssets=[];
+ for(const route of visualRoutes)visualDocs.set(route,route==='/noa-youtube.php'?youtubeHtml:await(await publicGet(route)).text());
  for(const variant of ['before','proposal'])for(const theme of ['noa-studio','noa-ivory'])for(const width of [320,360,390,430,768,1024,1440]){
   const context=await browser.newContext({viewport:{width,height:width===390?844:1000},reducedMotion:'reduce',serviceWorkers:'block'});
   await context.addInitScript(({theme,seed})=>{localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',radius:'soft',design:'ios'}));sessionStorage.setItem('noa-media-history-v1',JSON.stringify(seed));},{theme,seed});
@@ -107,15 +110,21 @@ try{
    const req=route.request(),u=new URL(req.url());
    if(!['GET','HEAD'].includes(req.method()))return route.abort();
    if(variant==='proposal'&&u.origin===base&&u.pathname==='/p0-review-only.css')return route.fulfill({contentType:'text/css',body:prototypeCss});
-   if(variant==='proposal'&&u.origin===base&&req.isNavigationRequest()){
-    try{const r=await route.fetch({maxRetries:2});let html=(await r.text()).replace('</head>','<link rel="stylesheet" href="/p0-review-only.css"></head>');if(u.pathname==='/noa-youtube.php')html=html.replace(/const rows=(\[.*?\]),search=/s,(whole,json)=>'const rows='+JSON.stringify(JSON.parse(json).filter(r=>!officialIds.includes(r.key)))+',search=');return route.fulfill({response:r,body:html});}catch{return route.abort();}
+   if(u.origin===base&&req.isNavigationRequest()&&visualDocs.has(u.pathname)){
+    let html=visualDocs.get(u.pathname);if(variant==='proposal'){html=html.replace('</head>','<link rel="stylesheet" href="/p0-review-only.css"></head>');if(u.pathname==='/noa-youtube.php')html=html.replace(/const rows=(\[.*?\]),search=/s,(whole,json)=>'const rows='+JSON.stringify(JSON.parse(json).filter(r=>!officialIds.includes(r.key)))+',search=');}
+    return route.fulfill({status:200,contentType:'text/html; charset=utf-8',body:html});
+   }
+   if(u.origin===base&&!req.isNavigationRequest()){
+    try{let saved=visualAssets.get(req.url());if(!saved){saved=(async()=>{const response=await route.fetch({maxRetries:2});const body=await response.body(),headers=response.headers();for(const key of ['content-encoding','content-length','transfer-encoding','set-cookie'])delete headers[key];report.visualFixtureAssets.push({path:u.pathname,status:response.status(),bytes:body.length,sha256:createHash('sha256').update(body).digest('hex')});return{status:response.status(),headers,body};})();visualAssets.set(req.url(),saved);}return route.fulfill(await saved);}catch{return route.abort();}
    }
    return route.continue();
   });
   const page=await context.newPage();
   for(const route of visualRoutes){
-   await page.goto(base+route+(route==='/noa-youtube.php'?'?view=all':''),{waitUntil:'domcontentloaded',timeout:90000});await page.waitForFunction(theme=>document.documentElement.dataset.noaTheme===theme,theme,{timeout:45000});await page.evaluate(()=>document.fonts.ready);
+   const query=route==='/noa-youtube.php'?'?view=all':route==='/noa-music.php'&&sampleAudio[0]?'?track='+encodeURIComponent(sampleAudio[0].key):'';
+   await page.goto(base+route+query,{waitUntil:'domcontentloaded',timeout:90000});await page.waitForFunction(theme=>document.documentElement.dataset.noaTheme===theme,theme,{timeout:45000});await page.evaluate(()=>document.fonts.ready);
    if(route==='/noa-my.php'&&seed.length)await page.waitForFunction(()=>document.querySelector('#my-recent ol,#my-recent-youtube ol'));
+   if(variant==='proposal'&&route==='/noa-my.php')await page.evaluate(()=>{for(const svg of document.querySelectorAll('#my-recent a>svg')){const p=svg.querySelector('path');if(p)p.setAttribute('d','m8 5 11 7-11 7V5Z');}});
    if(variant==='proposal'&&route==='/noa-youtube.php')await page.evaluate(officialIds=>{
     const set=new Set(officialIds);for(const c of document.querySelectorAll('.yt-card'))if(set.has(c.dataset.browseKey))c.remove();
     for(const a of document.querySelectorAll('.yt-toolbar a'))if(a.textContent.includes('NOA WORLD'))a.href='/noa-world.php';
@@ -126,7 +135,7 @@ try{
     const wrap=document.createElement('section');wrap.id='p0-player-preview';wrap.setAttribute('aria-label','미배포 2줄 플레이어 시안');
     const top=document.createElement('div');top.className='p0-player-top';
     const img=document.createElement('img');img.src=sample?.thumbnail||sample?.thumb||'/noa-bridge/characters/cast-pair.jpg';img.alt='검토용 곡 카드';
-    const label=document.createElement('div');label.className='p0-player-title';const strong=document.createElement('strong');strong.textContent=sample?.title||'곡을 선택하세요';const small=document.createElement('small');small.textContent='NOA · 표시 시안';label.append(strong,small);
+    const label=document.createElement('div');label.className='p0-player-title';const strong=document.createElement('strong');strong.textContent=sample?.title||'곡을 선택하세요';const small=document.createElement('small');small.textContent=document.querySelector('.song.selected')?.dataset.originalArtist||document.getElementById('detail-cast')?.textContent||'아티스트 정보 미등록';label.append(strong,small);
     const controls=document.createElement('div');controls.className='p0-player-controls';
     const add=document.createElement('button');add.className='p0-add';add.setAttribute('aria-label','담기 시안');add.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';controls.append(add);
     for(const id of ['previous','pause-play','next','dock-more','dock-close']){const src=document.getElementById(id);if(!src)continue;const b=src.cloneNode(true);b.removeAttribute('id');b.className=id==='pause-play'?'p0-play':'';b.hidden=false;controls.append(b);}

@@ -1,6 +1,8 @@
 /* REVIEW ONLY. No deploy/ entry, no production loader, no owner handlers replaced. */
 html{--p0-gap:16px;--p0-radius:16px;--p0-content:1280px}
 html[data-noa-theme=noa-studio]{--noa-accent:#D6B56E!important}
+html body main .noa-action>svg{color:var(--noa-control)!important}
+html body main .noa-action[aria-pressed=true]>svg{color:var(--noa-success)!important}
 body.noa-page main,.noa-main{max-width:var(--p0-content)!important;padding-inline:24px!important}
 .noa-section{margin-block:32px!important}
 .noa-section>h2{margin-bottom:16px!important}
@@ -20,6 +22,13 @@ body.noa-page main,.noa-main{max-width:var(--p0-content)!important;padding-inlin
 .noa-media-details details{background:transparent!important;border:0!important;border-bottom:1px solid var(--noa-line)!important;border-radius:0!important;box-shadow:none!important}
 .noa-media-details summary{padding-inline:0!important}
 .noa-media-details pre{padding-inline:0!important}
+.noa-page .player{grid-template-columns:1fr!important;min-height:0!important}
+.noa-page .playing{padding:16px 20px!important}
+.noa-page .playing h2{font-size:22px!important;margin-block:6px!important}
+.noa-page .detail{padding:20px!important;margin-block:24px!important}
+#cast-portraits{display:flex;gap:12px;margin-block:12px}
+#cast-portraits img{width:96px!important;height:120px!important;object-fit:cover;border-radius:12px}
+@media(min-width:1024px){#cast-portraits img{width:120px!important;height:150px!important}}
 .noa-browse-grid{gap:var(--p0-gap)!important}
 .noa-card-context{color:var(--noa-muted)!important}
 #p0-player-preview{position:fixed;z-index:9000;bottom:var(--noa-nav-space,0px);left:var(--noa-rail,0px);right:0;background:var(--noa-surface);color:var(--noa-text);border-top:1px solid var(--noa-line);padding:8px 12px;display:grid;grid-template-rows:44px 24px;gap:4px}
