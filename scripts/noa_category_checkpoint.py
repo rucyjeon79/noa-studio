@@ -27,19 +27,21 @@ def main():
   manifest['archiveSha256']=sha((out/'preimages.tar.gz').read_bytes())
   manifest['hostTemporaryFiles']=[x.filename for x in s.listdir_attr(ROOT) if x.filename.startswith('.noa-') and x.filename.endswith('.tmp')]
   (out/'manifest.json').write_text(json.dumps(manifest,indent=2));print(json.dumps(manifest))
-  for name in ['common.php','lib/common.lib.php','config.php']:
+  for name in ['common.php','lib/common.lib.php','config.php','bbs/login_check.php']:
    try:
     with s.open(ROOT+'/'+name,'rb') as f:source=f.read().decode('utf-8','replace')
    except FileNotFoundError:continue
    import re
    if name=='lib/common.lib.php':
-    starts=[source.find('function '+f+'(') for f in ['ss_mb_key','get_client_key','check_session_token','get_cookie','set_cookie']]
+    starts=[source.find('function '+f+'(') for f in ['ss_mb_key','check_auth_session_token','generate_auth_session_token','get_cookie','set_cookie']]
     snippets=[]
     for start in starts:
      if start<0:continue
      end=source.find('\nfunction ',start+10)
      snippets.append(source[start:end if end>start else start+1800])
     print('SESSION_FUNCTION_SOURCE',json.dumps(snippets))
+   elif name=='bbs/login_check.php':
+    print('LOGIN_TOKEN_SOURCE',json.dumps([line for line in source.splitlines() if 'auth_session_token' in line or 'ss_mb_key' in line or 'ss_mb_id' in line]))
    elif name=='config.php':
     print('SESSION_CONFIG_SOURCE',json.dumps([line for line in source.splitlines() if 'G5_COOKIE_DOMAIN' in line or 'G5_SESSION_PATH' in line or 'G5_SESSION_NAME' in line]))
    else:
