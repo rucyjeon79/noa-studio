@@ -26,7 +26,7 @@ COMPLETION_STORE = '/hosting/noastudio/noa-ai-lab/n80-completion'
 RECEIPT = Path('scripts/noa_finish_drive_receipt.json')
 STATE = Path(os.environ.get('RUNNER_TEMP', '/tmp')) / 'noa-category-release.json'
 # Helpers precede consumers; entry pages and HOME are activated last.
-ORDER = ['noa-app/engine/lease-state.php', 'noa-app/engine/music-availability.php', 'noa-app/engine/music-consumer.php', 'noa-app/engine/consume-music.php', 'noa-app/jukebox/stream-popularity.php', 'noa-bridge/world-mv.php', 'noa-bridge/popularity-events.php', 'noa-playcount.js', 'noa-app/jukebox/stream.php', 'noa-app/world-view.php', 'noa-youtube.php', 'noa-music.php']
+ORDER = ['noa-app/engine/lease-state.php', 'noa-app/engine/music-availability.php', 'noa-app/engine/music-consumer.php', 'noa-app/engine/consume-music.php', 'noa-app/jukebox/stream-popularity.php', 'noa-bridge/world-mv.php', 'noa-bridge/playcount-policy.php', 'noa-bridge/popularity-events.php', 'noa-playcount.js', 'noa-app/jukebox/stream.php', 'noa-app/world-view.php', 'noa-youtube.php', 'noa-music.php']
 FILES = {p: ('bridge/' + p[len('noa-bridge/'):] if p.startswith('noa-bridge/') else 'deploy/' + p)
          for p in ORDER}
 
@@ -99,7 +99,7 @@ def verify(before):
             raise RuntimeError('legacy_world_route_failed')
     checks = []
     for path, expected in [('/noa-sitemap.php', 200), ('/noa-category-order-admin.php', 403),
-                           ('/noa-library.php', 403), ('/noa-app/engine/completion-report.php', 401), ('/noa-app/engine/consume-music.php', 401)]:
+                           ('/noa-library.php', 403), ('/noa-app/engine/completion-report.php', 401), ('/noa-app/engine/consume-music.php', 401), ('/noa-bridge/playcount-policy.php', 401)]:
         try:
             with urllib.request.urlopen('https://noastudio.ai.kr' + path, timeout=45) as response:
                 actual = response.status

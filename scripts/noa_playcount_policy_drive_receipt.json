@@ -1,0 +1,12 @@
+{
+  "driveId": "143jg05FQjzHryeJwM3ovYLpRomRm_tCF",
+  "bytes": 610,
+  "backupSha256": "34fcff78ce9aee66461bd89fe9bcb63ddf75365a26ba3f6169ec897b58cdb73b",
+  "readbackVerified": true,
+  "revision": 1,
+  "policySha256": "bd0d6771a98c7757e4363a3b603da52378375fb926a5dc6119af3d1bbea6e998",
+  "sourceRun": 40085464057,
+  "sourceArtifact": 12556464389,
+  "restoreTest": "tests/popularity/policy_mysql_test.php",
+  "restoreScope": "policy values only, revisions remain monotonic"
+}

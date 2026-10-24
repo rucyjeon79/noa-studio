@@ -31,8 +31,8 @@ def main():
     if os.environ.get('NOA_PLAYCOUNT_TEST_HOST', '127.0.0.1') != '127.0.0.1':
         raise RuntimeError('only loopback MySQL accepted')
     package = Path(os.environ['NOA_PLAYWRIGHT_PACKAGE']).resolve()
-    if not package.is_file():
-        raise RuntimeError('existing Playwright package.json required')
+    if not (package.parent/'node_modules/playwright/package.json').is_file():
+        raise RuntimeError('existing installed Playwright module required')
     port = int(os.environ.get('NOA_PLAYCOUNT_TEST_PORT', '3306'))
     if not 1 <= port <= 65535:
         raise RuntimeError('invalid isolated MySQL port')

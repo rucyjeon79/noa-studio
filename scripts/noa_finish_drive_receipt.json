@@ -162,7 +162,8 @@
     },
     "noa-app/engine/music-availability.php": null,
     "noa-app/engine/music-consumer.php": null,
-    "noa-app/engine/consume-music.php": null
+    "noa-app/engine/consume-music.php": null,
+    "noa-bridge/playcount-policy.php": null
   },
   "protected": {
     "common.php": {
