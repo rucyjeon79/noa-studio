@@ -1,0 +1,41 @@
+name: NOA P0 UI Performance Evidence
+on:
+  push:
+    branches: [codex/p0-ux-performance-evidence-20261024]
+    paths: ['scripts/qa/noa-p0-evidence.mjs', 'scripts/noa_p0_readonly.py', 'tests/uiux/proposals/20261024/**', '.github/workflows/noa-p0-evidence.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - name: Runner-only dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y fonts-noto-cjk
+          python -m pip install 'paramiko>=3,<5'
+          npm install --prefix "$RUNNER_TEMP/noa-p0" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-p0-evidence.mjs "$RUNNER_TEMP/noa-p0/evidence.mjs"
+      - name: Read-only production source and data baseline
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_p0_readonly.py
+      - name: Browser timings, content separation and unshipped visual proposals
+        env: {NOA_SOURCE_ROOT: '${{ github.workspace }}'}
+        run: node "$RUNNER_TEMP/noa-p0/evidence.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-p0-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: p0-evidence/
+          retention-days: 1
