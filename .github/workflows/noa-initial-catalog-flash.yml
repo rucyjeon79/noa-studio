@@ -2,51 +2,91 @@ name: NOA Initial Catalog Flash Production
 on:
   push:
     branches: [main]
-    paths:
+    paths: &paths
       - 'deploy/noa-music.php'
       - 'deploy/noa-youtube.php'
+      - 'deploy/noa-browse.js'
       - '.github/workflows/noa-initial-catalog-flash.yml'
       - 'scripts/noa_browse_music_page_deploy.py'
       - 'scripts/noa_browse_youtube_page_deploy.py'
+      - 'scripts/noa_initial_catalog_preflight.py'
+      - 'scripts/qa/noa-initial-flash.mjs'
+  pull_request:
+    paths: *paths
   workflow_dispatch:
-permissions:
-  contents: read
-concurrency:
-  group: noa-production-sftp
-  cancel-in-progress: false
+permissions: {contents: read}
+concurrency: {group: noa-production-sftp, cancel-in-progress: false}
 jobs:
-  deploy:
+  candidate:
     runs-on: ubuntu-latest
-    environment: production
-    timeout-minutes: 25
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Validate PHP and initial hidden state
+        with: {fetch-depth: 0}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - name: Validate syntax and existing hierarchy
         run: |
           php -l deploy/noa-music.php
           php -l deploy/noa-youtube.php
-          grep -q 'id="songs" hidden' deploy/noa-music.php
-          grep -q 'id="yt-videos" hidden' deploy/noa-youtube.php
-          python -m py_compile scripts/noa_browse_music_page_deploy.py scripts/noa_browse_youtube_page_deploy.py
-      - run: python -m pip install 'paramiko>=3,<5'
-      - name: Deploy and verify production entry pages
-        env:
+          node --check deploy/noa-browse.js
+          node --check scripts/qa/noa-initial-flash.mjs
+          node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs
+          python -m py_compile scripts/noa_browse_music_page_deploy.py scripts/noa_browse_youtube_page_deploy.py scripts/noa_initial_catalog_preflight.py
+      - name: Prepare browser validation
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          npm install --prefix "$RUNNER_TEMP/noa-flash" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-initial-flash.mjs "$RUNNER_TEMP/noa-flash/check.mjs"
+      - name: Observe first frames, delayed and failed initialization, reload and playback
+        env: {NOA_FLASH_PHASE: candidate}
+        run: node "$RUNNER_TEMP/noa-flash/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-initial-flash-candidate-${{ github.run_id }}', path: initial-flash-proof/, retention-days: 2}
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: candidate
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Prepare existing NOA deployment and browser tools
+        run: |
+          python -m pip install 'paramiko>=3,<5'
+          npm install --prefix "$RUNNER_TEMP/noa-flash" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-initial-flash.mjs "$RUNNER_TEMP/noa-flash/check.mjs"
+      - name: Compare all three operating sources and read N80 state without writes
+        env: &noa_env
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_initial_catalog_preflight.py
+      - name: Deploy only changed allowlisted sources, dependency first, with atomic replacement
+        env: *noa_env
         run: |
+          python scripts/noa_browse_safe_deploy.py
           python scripts/noa_browse_music_page_deploy.py
           python scripts/noa_browse_youtube_page_deploy.py
-      - name: Verify first response hides full lists
+          python scripts/noa_initial_catalog_preflight.py --post
+      - name: Verify first response hides full lists and requests the actual script revision
         run: |
           python - <<'PY'
-          import urllib.request
+          import urllib.request,hashlib,re
+          from pathlib import Path
+          expected=hashlib.sha256(Path('deploy/noa-browse.js').read_bytes()).hexdigest()
           for page,marker in [('noa-music.php','id="songs" hidden'),('noa-youtube.php','id="yt-videos" hidden')]:
-           with urllib.request.urlopen('https://noastudio.ai.kr/'+page,timeout=25) as response:
-            html=response.read().decode('utf-8','replace')
-           if marker not in html:raise RuntimeError('initial_list_not_hidden:'+page)
-           print('INITIAL_LIST_HIDDEN_VERIFIED',page)
+           with urllib.request.urlopen('https://noastudio.ai.kr/'+page,timeout=30) as response:html=response.read().decode('utf-8','replace')
+           assert marker in html, 'initial_list_not_hidden:'+page
+           assert re.findall(r'/noa-browse[.]js[?]v=([^\"\'<> ]+)',html)==[expected], 'cache_revision_mismatch:'+page
+           print('INITIAL_RESPONSE_VERIFIED',page,expected)
           PY
+      - name: Observe actual production first frames and mobile playback
+        env: {NOA_FLASH_PHASE: live}
+        run: node "$RUNNER_TEMP/noa-flash/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-initial-flash-live-${{ github.run_id }}', path: initial-flash-proof/, retention-days: 2}
