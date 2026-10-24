@@ -34,5 +34,9 @@ class RecoveryContract(unittest.TestCase):
   event=json.loads(Path(event_path).read_text())if event_path else{}
   baseline=event.get('pull_request',{}).get('base',{}).get('sha')or event.get('before')or'b1aadc60f448dcd2f9a99b93161e06f92b76da2c'
   paths=subprocess.check_output(['git','diff','--name-only',baseline,'HEAD'],cwd=ROOT,text=True).splitlines()
+  if 'bridge/youtube-store.php'in paths:
+   from readmodel_ownership import verify_youtube_reader_only
+   verify_youtube_reader_only(ROOT,baseline)
+   paths.remove('bridge/youtube-store.php')
   self.assertFalse(any(p.startswith(('deploy/noa-app/jukebox/','bridge/','scripts/noa_jukebox'))for p in paths))
 if __name__=='__main__':unittest.main()

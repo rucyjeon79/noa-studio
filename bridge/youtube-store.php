@@ -58,7 +58,7 @@ function ny_commit(PDO $db,array &$run):void{
 function ny_classify_committed(PDO $db):void{if(is_file(__DIR__.'/taxonomy-store.php')){require_once __DIR__.'/taxonomy-store.php';if(nt_ready($db))try{nt_sync($db,'youtube-collection');}catch(Throwable $e){error_log('[noa-taxonomy-sync] '.get_class($e));throw new DomainException('collection_saved_classification_retry_required');}}}
 function ny_latest(PDO $db):?array{if(!nc_exists($db,'noa_youtube_runs'))return null;$r=$db->query('SELECT * FROM noa_youtube_runs ORDER BY created_at DESC,run_id DESC LIMIT 1')->fetch(PDO::FETCH_ASSOC);return $r?:null;}
 function ny_decisions(PDO $db,string $channel):array{if(!nc_exists($db,'noa_youtube_decisions'))return [];$q=$db->prepare('SELECT * FROM noa_youtube_decisions WHERE channel_id=? ORDER BY decision_id');$q->execute([$channel]);$out=[];foreach($q as $d)$out[$d['object_type'].':'.$d['object_id']]=$d;return $out;}
-function ny_videos(PDO $db,array $run,bool $taxonomy=true):array{$q=$db->prepare('SELECT * FROM noa_youtube_videos WHERE run_id=? ORDER BY video_id');$q->execute([$run['run_id']]);$decisions=ny_decisions($db,$run['channel_id']);$byVideo=[];foreach(ny_songs($db,ny_batch($db)) as $song){foreach(['youtubeUrl','mvUrl'] as $field){$vid=ny_video_id((string)($song['fields'][$field]??''));if($vid)$byVideo[$vid][$song['song_id']]=true;}}$out=[];foreach($q as $r){$v=json_decode($r['payload'],true);$v['match']=json_decode($r['match_json'],true);$d=$decisions['video:'.$r['video_id']]??null;if(!$d&&count($byVideo[$r['video_id']]??[])===1){$v['match']['songId']=array_key_first($byVideo[$r['video_id']]);$v['match']['status']='matched';}if($d){$v['match']['songId']=$d['entity_id'];$v['match']['status']=$d['entity_id']?'approved':'rejected';}$v['classification']=$d['classification']??ny_video_classification($v,$run['channel_id']);$v['classificationSource']=$d?'administrator':($v['classification']==='official_mv'?'explicit_owner_title':'default');$out[$v['id']]=$v;}if($taxonomy&&is_file(__DIR__.'/taxonomy-store.php')){require_once __DIR__.'/taxonomy-store.php';$out=nt_overlay($db,$out,ny_songs($db,ny_batch($db)));}return $out;}
+function ny_videos(PDO $db,array $run,bool $taxonomy=true,?array $songs=null):array{$q=$db->prepare('SELECT * FROM noa_youtube_videos WHERE run_id=? ORDER BY video_id');$q->execute([$run['run_id']]);$decisions=ny_decisions($db,$run['channel_id']);$catalogSongs=$songs??ny_songs($db,ny_batch($db));$byVideo=[];foreach($catalogSongs as $song){foreach(['youtubeUrl','mvUrl'] as $field){$vid=ny_video_id((string)($song['fields'][$field]??''));if($vid)$byVideo[$vid][$song['song_id']]=true;}}$out=[];foreach($q as $r){$v=json_decode($r['payload'],true);$v['match']=json_decode($r['match_json'],true);$d=$decisions['video:'.$r['video_id']]??null;if(!$d&&count($byVideo[$r['video_id']]??[])===1){$v['match']['songId']=array_key_first($byVideo[$r['video_id']]);$v['match']['status']='matched';}if($d){$v['match']['songId']=$d['entity_id'];$v['match']['status']=$d['entity_id']?'approved':'rejected';}$v['classification']=$d['classification']??ny_video_classification($v,$run['channel_id']);$v['classificationSource']=$d?'administrator':($v['classification']==='official_mv'?'explicit_owner_title':'default');$out[$v['id']]=$v;}if($taxonomy&&is_file(__DIR__.'/taxonomy-store.php')){require_once __DIR__.'/taxonomy-store.php';$out=nt_overlay($db,$out,$catalogSongs);}return $out;}
 function ny_review(PDO $db,array $body,string $actor):void{
  $run=ny_latest($db);if(!$run)throw new DomainException('sync_required');$type=$body['type']??'';$id=(string)($body['objectId']??'');$entity=$body['entityId']??null;$classification=$body['classification']??'music';$reason=trim((string)($body['reason']??''));if(!in_array($type,['video','playlist'],true)||!in_array($classification,['music','official_mv'],true)||$reason===''||strlen($reason)>2000)throw new InvalidArgumentException('review_reason_required');
  $table=$type==='video'?'videos':'playlists';$column=$type==='video'?'video_id':'playlist_id';$q=$db->prepare('SELECT COUNT(*) FROM noa_youtube_'.$table.' WHERE run_id=? AND '.$column.'=?');$q->execute([$run['run_id'],$id]);if(!$q->fetchColumn())throw new DomainException('unknown_object');
@@ -75,4 +75,23 @@ function ny_analytics(PDO $db,array $run,string $token,?callable $getter=null):a
 }
 function ny_song_links(PDO $db,string $song,bool $admin=false):array{
  $run=ny_latest($db);if(!$run)return [];$out=[];foreach(ny_videos($db,$run) as $v)if(($v['match']['songId']??'')===$song&&($admin||($v['status']['privacyStatus']??'')==='public'))$out[]=['id'=>$v['id'],'classification'=>$v['classification']];return $out;
+}
+
+/** Read model only: official identity is the collected owner playlist, never an EP/title guess. */
+function ny_verified_official_members(array $run,array $playlist,array $items):array{
+ require_once __DIR__.'/world-mv.php';
+ if(($run['channel_id']??'')!==NWM_CHANNEL||($playlist['id']??'')!==NWM_PLAYLIST
+   ||($playlist['snippet']['channelId']??'')!==NWM_CHANNEL
+   ||($playlist['status']['privacyStatus']??'')!=='public')throw new DomainException('official_playlist_not_verified');
+ $ids=[];foreach($items as $item){$id=$item['video_id']??null;if(is_string($id)&&preg_match('/^[A-Za-z0-9_-]{11}$/D',$id))$ids[$id]=true;}return $ids;
+}
+function ny_official_members(PDO $db,array $run):array{
+ require_once __DIR__.'/world-mv.php';
+ $q=$db->prepare('SELECT payload FROM noa_youtube_playlists WHERE run_id=? AND playlist_id=?');
+ $q->execute([$run['run_id'],NWM_PLAYLIST]);$raw=$q->fetchColumn();
+ if(!is_string($raw))throw new DomainException('official_playlist_not_collected');
+ $playlist=json_decode($raw,true,512,JSON_THROW_ON_ERROR);
+ $q=$db->prepare('SELECT video_id FROM noa_youtube_items WHERE run_id=? AND playlist_id=? ORDER BY position,item_id');
+ $q->execute([$run['run_id'],NWM_PLAYLIST]);
+ return ny_verified_official_members($run,$playlist,$q->fetchAll(PDO::FETCH_ASSOC));
 }

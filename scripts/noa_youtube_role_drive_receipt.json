@@ -1,0 +1,18 @@
+{
+  "baseCommit": "c9c0706e5924bd0da10f1001eec24335708f83aa",
+  "files": {
+    "noa-youtube.php": {
+      "bytes": 10339,
+      "sha256": "03121dd713652f70f79968fedc09818ee2e359da0a91515ab0dc926595a1c5eb"
+    },
+    "noa-bridge/youtube-store.php": {
+      "bytes": 15277,
+      "sha256": "5af3b9a5dcbdfab1ecd6113c3b08faadeed28d26460dcd196bd21840478f6e67"
+    }
+  },
+  "archiveSha256": "010feab7bab9529cb48c22e8cccc238f09fdeea17bff51a48d4447ddeef3b7a9",
+  "archiveBytes": 8867,
+  "driveId": "1I9O_f71h9qIDMFEhsqu5tdGpPBR4e18W",
+  "readbackVerified": true,
+  "restoreExtractionVerified": true
+}
