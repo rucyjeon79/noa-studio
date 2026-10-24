@@ -26,13 +26,13 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: noa-production-sftp
-  cancel-in-progress: false
 jobs:
   deploy:
+    concurrency:
+      group: noa-production-sftp
+      cancel-in-progress: false
     # Integrated data repairs own installation and forbid legacy host staging.
-    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[n80-data]')
+    if: github.event_name != 'push' || (!contains(github.event.head_commit.message, '[n80-data]') && !contains(github.event.head_commit.message, '[category-final]'))
     runs-on: ubuntu-latest
     environment: production
     steps:

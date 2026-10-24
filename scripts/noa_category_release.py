@@ -1,6 +1,6 @@
 """Guarded integration release using exact Drive-verified operating preimages.
 
-Only this task's twelve reviewed runtime files may change. Rollback uses the
+Only this task's explicitly reviewed runtime files may change. Rollback uses the
 checkpoint archive, including the operating HOME bytes absent from git history.
 """
 import base64
@@ -26,7 +26,7 @@ COMPLETION_STORE = '/hosting/noastudio/noa-ai-lab/n80-completion'
 RECEIPT = Path('scripts/noa_finish_drive_receipt.json')
 STATE = Path(os.environ.get('RUNNER_TEMP', '/tmp')) / 'noa-category-release.json'
 # Helpers precede consumers; entry pages and HOME are activated last.
-ORDER = ['noa-app/engine/lease-state.php', 'noa-app/engine/music-availability.php', 'noa-app/engine/music-consumer.php', 'noa-app/engine/consume-music.php', 'noa-app/jukebox/stream-popularity.php', 'noa-bridge/world-mv.php', 'noa-bridge/playcount-policy.php', 'noa-bridge/popularity-events.php', 'noa-playcount.js', 'noa-app/jukebox/stream.php', 'noa-app/world-view.php', 'noa-youtube.php', 'noa-music.php']
+ORDER = ['noa-app/engine/work-state.php', 'noa-app/engine/event-contract.php', 'noa-app/engine/lease-state.php', 'noa-app/engine/music-availability.php', 'noa-app/engine/music-consumer.php', 'noa-app/engine/consume-music.php', 'noa-app/jukebox/stream-popularity.php', 'noa-bridge/world-mv.php', 'noa-bridge/playcount-policy.php', 'noa-bridge/popularity-events.php', 'noa-playcount.js', 'noa-app/jukebox/stream.php', 'noa-app/world-view.php', 'noa-youtube.php', 'noa-music.php', 'noa-home.js', 'noa-app/home.php', 'noa-playlists.js', 'noa-youtube.js', 'noa-sitemap.php', 'noa-app/engine/app-observe.php', 'noa-app/engine/work-state-report.php']
 FILES = {p: ('bridge/' + p[len('noa-bridge/'):] if p.startswith('noa-bridge/') else 'deploy/' + p)
          for p in ORDER}
 
@@ -39,8 +39,8 @@ def load_preimages(receipt, archive):
     """Read bytes without extracting paths, symlinks or unexpected members."""
     if (receipt.get('readbackVerified') is not True
             or receipt.get('restoreExtractionVerified') is not True
-            or receipt.get('checkpointRun') != 40087720872
-            or receipt.get('artifactId') != 12557617927
+            or receipt.get('checkpointRun') != 40092788783
+            or receipt.get('artifactId') != 12559692279
             or not set(FILES).issubset(receipt.get('files', {}))
             or not re.fullmatch(r'[A-Za-z0-9_-]+', receipt.get('driveId', ''))):
         raise RuntimeError('drive_recovery_receipt_invalid')

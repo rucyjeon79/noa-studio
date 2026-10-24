@@ -48,6 +48,7 @@ function noa_sitemap_registry():array{
             ['aiLab','AI LAB','영상 제작과 채널 성장','/noa-ai-lab.php','mic','admin'],
             ['themeAdmin','테마 정책','디자인 설정과 변경 이력','/noa-theme-admin.php','settings','admin'],
             ['database','데이터베이스 관리','운영 데이터 현황','/noa-app/database/','library','admin'],
+            ['popularity','인기순위 관리','집계 상태와 유효 재생 정책','/noa-app/popularity/','playlists','admin'],
             ['taxonomy','카테고리·제작 규칙','분류 체계 관리','/noa-app/taxonomy/','playlists','admin'],
             ['members','회원 관리','그누보드 회원 서비스','/adm/member_list.php','user','admin'],
             ['boards','게시판 관리','그누보드 게시판 서비스','/adm/board_list.php','community','admin'],
@@ -192,3 +193,4 @@ function noa_sitemap_escape(string $value):string{return htmlspecialchars($value
 ?><!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>사이트맵 | NOA STUDIO</title><link rel="stylesheet" href="/noa-ui.css?v=20261024-category-complete"><link rel="stylesheet" href="/noa-policy-20261024.css?v=20261024-approved-ui"><script src="/noa-brand.js?v=20261021-brand1" defer></script><script src="/noa-ui.js?v=20261024-approved-ui" defer></script></head><body class="noa-page"><main><h1>사이트맵</h1><p class="noa-muted">NOA STUDIO의 음악, 영상과 서비스를 한곳에서 만나보세요.</p>
 <?php foreach($groups as $name=>$group):?><section class="noa-section noa-site-map" aria-labelledby="map-<?=noa_sitemap_escape($name)?>"><div class="noa-section-head"><h2 id="map-<?=noa_sitemap_escape($name)?>"><?=noa_sitemap_escape($group['title'])?></h2></div><nav class="noa-site-map-grid" aria-label="<?=noa_sitemap_escape($group['title'])?> 바로가기"><?php foreach($group['routes'] as $route):?><a class="noa-site-map-link" data-noa-route="<?=noa_sitemap_escape($route[0])?>" href="<?=noa_sitemap_escape($route[3])?>"><span aria-hidden="true"><?=noa_sitemap_icon($route[4])?></span><strong><?=noa_sitemap_escape($route[1])?></strong><small><?=noa_sitemap_escape($route[2])?></small></a><?php endforeach;?></nav></section><?php endforeach;?>
 </main></body></html>
+

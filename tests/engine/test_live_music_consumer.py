@@ -9,6 +9,7 @@ import stat
 import sys
 from types import SimpleNamespace
 import unittest
+import urllib.error
 from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 import n80_live_observer as runtime
@@ -57,10 +58,10 @@ class MusicRunnerTest(unittest.TestCase):
         self.state = {'eventId': event_id, 'consumer': 'music', 'status': 'succeeded', 'generation': 1, 'leaseUntil': None, 'receipt': self.receipt}
         self.host.files[self.state_path] = runtime.compact(self.state)
 
-    def opener(self, results, bad_signature=False):
+    def opener(self, results, bad_signature=False, action='verify_availability'):
         def open_request(request, timeout):
             self.assertEqual(request.full_url, runtime.MUSIC_URL)
-            self.assertEqual(json.loads(request.data), {'action': 'verify_availability', 'jobId': 42})
+            self.assertEqual(json.loads(request.data), {'action': action, 'jobId': 42})
             self.assertEqual(request.method, 'POST')
             nonce = request.get_header('X-n80-nonce')
             body = runtime.compact({'ok': True, 'nonce': nonce, 'result': results.pop(0)})
@@ -121,6 +122,26 @@ class MusicRunnerTest(unittest.TestCase):
             with patch.object(runtime.urllib.request, 'build_opener', return_value=self.opener([result])):
                 with self.assertRaisesRegex(RuntimeError, 'contract_failed'):
                     runtime.request_music_consumer(self.key, self.row)
+
+    def test_http_error_is_reported_without_raw_body_or_sensitive_values(self):
+        body=b'{"error":"music_consumer_unavailable","message":"DO_NOT_LOG_SECRET","diagnostic":{"phase":"db_connect","raw":"DO_NOT_LOG_SECRET"}}'
+        error=urllib.error.HTTPError(runtime.MUSIC_URL,503,'private reason',{},io.BytesIO(body))
+        opener=SimpleNamespace(open=lambda *args,**kwargs: (_ for _ in ()).throw(error))
+        with patch.object(runtime.urllib.request,'build_opener',return_value=opener):
+            with self.assertRaises(RuntimeError) as caught:runtime.request_music_consumer(self.key,self.row)
+        self.assertIn('503',str(caught.exception));self.assertIn('music_consumer_unavailable',str(caught.exception))
+        self.assertNotIn('DO_NOT_LOG_SECRET',str(caught.exception));self.assertNotIn('db_connect',str(caught.exception))
+
+    def test_signed_diagnostic_does_not_require_policy_or_claim_work(self):
+        out={'ok':True,'effect':'music_availability_diagnostic_only','jobId':42,'available':False,
+             'urlFopenEnabled':False,'reason':'public_url_access_disabled','phase':'public_catalog','httpStatus':0,
+             'businessAck':False,'automaticDispatch':False,'queueMutation':False,'databaseWrites':0,'raw':'DO_NOT_LOG_SECRET'}
+        with patch.dict(runtime.os.environ,{'N80_MUSIC_CONSUMER_DIAGNOSE_ONLY':'1'}), \
+             patch.object(runtime.urllib.request,'build_opener',return_value=self.opener([out],action='diagnose_availability')):
+            result=runtime.run_music_consumer(self.host,self.key,{'receipts':[self.row]},{'enabled':False,'reason':'policy_missing'})
+        self.assertEqual(result['status'],'diagnostic_only');self.assertEqual(result['acknowledged'],0)
+        self.assertEqual(result['diagnostics'][0]['reason'],'public_url_access_disabled')
+        self.assertNotIn('DO_NOT_LOG_SECRET',json.dumps(result));self.assertEqual(self.host.writes,[])
 
 
 if __name__ == '__main__':

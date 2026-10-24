@@ -70,8 +70,8 @@
       "sha256": "9af7a7356f786faf86f6e20f319d3d474a647b472f72009d65c9704d54a33d0d"
     },
     "noa-app/engine/lease-state.php": {
-      "bytes": 2794,
-      "sha256": "a0ff98ab3d8c07907b1a47006d5cd0d822286d8d775e29dc4b741698849fa73f"
+      "bytes": 3960,
+      "sha256": "7587459ae31c585b6f4fa6e42bdb913985bbafdb6035f771b885556d89fe35aa"
     },
     "noa-app/engine/live-observer.php": {
       "bytes": 1844,
@@ -123,34 +123,40 @@
       "sha256": "30a2590ff6b391d6e35788e8e9a2c00b9383dbe34678c33d1f08b0f789b38734"
     },
     "noa-youtube.php": {
-      "bytes": 10890,
-      "sha256": "a1f336ebd14b7aabc221d44d3c5b757d483b911bb83dcc4041ebc47df3307a37"
+      "bytes": 11066,
+      "sha256": "a517fd1c735694b5913eda46066c37fddede2aa4c6828f3ccb090b002e0d242b"
     },
     "noa-world.php": {
       "bytes": 2580,
       "sha256": "24f40f7cb1b9c5a03813be160b0b8e5d0922461eb4dd7d85c114018f2a5edb24"
     },
     "noa-app/world-view.php": {
-      "bytes": 11283,
-      "sha256": "4f481ebf9ba5d82065ac87c7a71ed526b38a39b79b92c48b294a648d18969a7a"
+      "bytes": 12346,
+      "sha256": "621f446ba3b3ccfd31a5adf836ed2de9c30165916b4b627b6ec069c7437ce42e"
     },
     "noa-bridge/world-mv.php": {
-      "bytes": 4567,
-      "sha256": "d3f36cd328055b5ac92826805c8a3e5f6991e0b22ad2a24dcacfa27f2eeba9d1"
+      "bytes": 7196,
+      "sha256": "2ac4cc452404b57414308d867b682ec0cd3a8e16ebb719c76daf6350cfeb493c"
     },
     "noa-music.php": {
-      "bytes": 30905,
-      "sha256": "eea804b00ff5e26e806d3b254875fafa4bc4d99d9fefeceac63a8a36c6ea1cc9"
+      "bytes": 30980,
+      "sha256": "00a168b2de24f4cab197e13ae618db7a723dd24a221b3fb230519259c5edd7a5"
     },
     "noa-app/jukebox/stream.php": {
-      "bytes": 2015,
-      "sha256": "10618491b7fd2bccb8dd6dcab2564066d253dede8afd5b103c168b5480b8b9ce"
+      "bytes": 2504,
+      "sha256": "530771a0fae8e8a7825c8967c19d360d5ac051633964d2cc97baaf2f3df7071b"
     },
-    "noa-app/jukebox/stream-popularity.php": null,
-    "noa-playcount.js": null,
+    "noa-app/jukebox/stream-popularity.php": {
+      "bytes": 2459,
+      "sha256": "f7ff81e03f0d163f93230ddf3fc9f77a405f7cb12d5f8ff54c7e732724bbbea7"
+    },
+    "noa-playcount.js": {
+      "bytes": 2871,
+      "sha256": "cc5797d8d1fb16b4d79e4b8fb729c7d44bc156eed54121eca62d6e699592a92c"
+    },
     "noa-bridge/popularity-events.php": {
-      "bytes": 3369,
-      "sha256": "503f6aba1f6fa8d8242db4d06e00974c004eeb527240ca20233a4d5daa880246"
+      "bytes": 4116,
+      "sha256": "e2538b56b3c80c383d289035b353e0fffb0c6169d517026a1fc16e9e53a8bf74"
     },
     "noa-bridge/popularity-plays.php": {
       "bytes": 5668,
@@ -160,10 +166,44 @@
       "bytes": 13604,
       "sha256": "96a400cb5a1e4860bbc9f218ad93eb26eaad159cca9ed96a22d0f15a2cee8b35"
     },
-    "noa-app/engine/music-availability.php": null,
-    "noa-app/engine/music-consumer.php": null,
-    "noa-app/engine/consume-music.php": null,
-    "noa-bridge/playcount-policy.php": null
+    "noa-home.js": {
+      "bytes": 3941,
+      "sha256": "0071296f4946bd60e396ea8f22607ba73adb948a10dbdbcfebc7ea6cf7700f52"
+    },
+    "noa-app/home.php": {
+      "bytes": 7584,
+      "sha256": "bf9d575e6683de78854caff5afc2b08e8944b19fb10cba3d4125aa6f10e713cd"
+    },
+    "noa-sitemap.php": {
+      "bytes": 14204,
+      "sha256": "5184bb13d9a7b1aa82a212df2755b968bc96f0f60caf3f86413e68cca53cf71c"
+    },
+    "noa-playlists.js": {
+      "bytes": 9279,
+      "sha256": "3a340dc29dffb954d7493a56e5fe889cd31cbb7f63d41e69b627847787a24bc0"
+    },
+    "noa-youtube.js": {
+      "bytes": 10760,
+      "sha256": "371cf824369420065856bd14ec5b0a8423627fc534df57d1236e19c1e9ccd2fd"
+    },
+    "noa-app/engine/work-state.php": null,
+    "noa-app/engine/work-state-report.php": null,
+    "noa-app/engine/music-availability.php": {
+      "bytes": 5034,
+      "sha256": "63657fdb049920b01b574670ac8e9f1165304f9fed2faa4b8796b0add29b9c13"
+    },
+    "noa-app/engine/music-consumer.php": {
+      "bytes": 4769,
+      "sha256": "6d628bf56e7f49893fa3a17279881a668cc789ff1bf802265517272a62381cfd"
+    },
+    "noa-app/engine/consume-music.php": {
+      "bytes": 2863,
+      "sha256": "525477b57ceb2c116d191e41b4f2659f615f4a0c9ac3d3d565feed4f6d93752a"
+    },
+    "noa-bridge/playcount-policy.php": {
+      "bytes": 6170,
+      "sha256": "31ba148a3bf892dbb182789f39a27ed28e4d528ab3a24581d3e9aad941efbd10"
+    }
   },
   "protected": {
     "common.php": {
@@ -207,11 +247,12 @@
       "sha256": "1cbc81763e2aa0c46d95a5efd8895b020bb4223d8ad1b5cfca0bdd1ca1850931"
     }
   },
-  "sourceCommit": "7e82f6102e90a06f1cec740eed2a2b736f3e2712",
-  "archiveSha256": "b67575389efe3225582c0267df95b53ddea3f386e3776da1179425719005d1af",
-  "driveId": "1hMOMWuLNTBfgtFQ9SwGyWIxc3s7QJ2gn",
+  "sourceCommit": "05ee851a5f7917d27fbe10f9f4fce07bb5ab0381",
+  "archiveSha256": "0cfc6664c6ff6c2dae23bdec4095c6a5da7d214b8964e483afceb089bc7d786a",
+  "driveId": "1jRzmUHUx2MDYWwbMAz1EBR0snsZPkaef",
+  "checkpointRun": 40092788783,
+  "artifactId": 12559692279,
+  "artifactZipSha256": "da2b3e07b6a434ad674fb49de35c37418fd8ea3fe15a9e9e8ba6eafdd0a06996",
   "readbackVerified": true,
-  "restoreExtractionVerified": true,
-  "checkpointRun": 40087720872,
-  "artifactId": 12557617927
+  "restoreExtractionVerified": true
 }

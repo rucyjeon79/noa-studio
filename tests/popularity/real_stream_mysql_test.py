@@ -8,6 +8,7 @@ import hashlib
 import http.cookiejar
 import json
 import os
+import signal
 from pathlib import Path
 import secrets
 import shutil
@@ -128,13 +129,44 @@ def main():
             js.write_text(r'''
 const {createRequire}=require('node:module');
 const {chromium}=createRequire(process.env.NOA_PLAYWRIGHT_PACKAGE)('playwright');
-(async()=>{const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||'/usr/bin/google-chrome',args:['--no-sandbox','--autoplay-policy=no-user-gesture-required']});try{const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(process.env.NOA_PLAYCOUNT_LOOPBACK);await page.click('#play');await page.waitForFunction(()=>document.getElementById('sound-player').ended,null,{timeout:45000});await page.waitForTimeout(1000);const result=await page.evaluate(()=>({position:document.getElementById('sound-player').currentTime,duration:document.getElementById('sound-player').duration,rms:window.fixtureRms}));if(errors.length||result.position<34||!(result.rms>.001))throw Error('real audio failed '+JSON.stringify({errors,result}));console.log(JSON.stringify(result));}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
+let phase='launch',page=null;
+const errors=[],network=[];
+function stage(value){phase=value;console.error('MP3_PHASE '+value);}
+async function state(){if(!page)return null;return page.evaluate(()=>{const a=document.getElementById('sound-player');return a?{position:a.currentTime,duration:Number.isFinite(a.duration)?a.duration:null,paused:a.paused,ended:a.ended,readyState:a.readyState,networkState:a.networkState,mediaError:a.error?.code||null,rms:window.fixtureRms}:null;}).catch(()=>null);}
+async function close(browser){let timer;try{await Promise.race([browser.close(),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('browser_close_timeout')),5000);})]);}finally{clearTimeout(timer);}}
+const watchdog=setTimeout(()=>{console.error('MP3_WATCHDOG '+JSON.stringify({phase,errors,network}));process.exit(1);},70000);
+async function main(){const browser=await chromium.launch({headless:true,timeout:15000,args:['--autoplay-policy=no-user-gesture-required']});try{
+ page=await browser.newPage();page.on('pageerror',e=>errors.push(e.message));
+ page.on('requestfailed',r=>network.push({path:new URL(r.url()).pathname,error:r.failure()?.errorText}));
+ page.on('response',r=>{if(r.status()>=400&&network.length<20)network.push({path:new URL(r.url()).pathname,status:r.status()});});
+ stage('navigate');await page.goto(process.env.NOA_PLAYCOUNT_LOOPBACK,{timeout:15000});
+ stage('click');await page.click('#play',{timeout:5000});
+ stage('real_media_35_seconds');await page.waitForFunction(()=>document.getElementById('sound-player').ended,null,{timeout:45000});
+ stage('final_heartbeat');await page.waitForTimeout(1000);const result=await state();
+ if(errors.length||result.position<34||!(result.rms>.001))throw Error('real_audio_failed '+JSON.stringify({errors,result}));
+ console.log(JSON.stringify(result));
+ }catch(error){console.error('MP3_FAILURE '+JSON.stringify({phase,error:error.message,media:await state(),errors,network}));throw error;
+ }finally{stage('close_browser');await close(browser);}}
+main().then(()=>{clearTimeout(watchdog);process.exit(0);},error=>{clearTimeout(watchdog);console.error(error);process.exit(1);});
 ''')
             env=os.environ | {'NOA_PLAYWRIGHT_PACKAGE':str(package),'NOA_PLAYCOUNT_LOOPBACK':base+'/index.html'}
-            browser=subprocess.run(['node',str(js)],env=env,text=True,capture_output=True,timeout=65)
+            process=subprocess.Popen(['node',str(js)],env=env,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,start_new_session=True)
+            try:
+                stdout,stderr=process.communicate(timeout=80)
+            except subprocess.TimeoutExpired:
+                os.killpg(process.pid,signal.SIGKILL)
+                stdout,stderr=process.communicate()
+                logs.flush()
+                raise RuntimeError('real MP3 harness deadline exceeded; browser: '+stderr[-4000:]+'; PHP: '+(top/'php.log').read_text()[-2500:])
+            finally:
+                # This new process group contains only this invocation's Node/Chromium.
+                # Clean up its children if browser.close failed; never touch other work.
+                try: os.killpg(process.pid,signal.SIGKILL)
+                except ProcessLookupError: pass
+            browser=subprocess.CompletedProcess(process.args,process.returncode,stdout,stderr)
             if browser.returncode:
                 logs.flush()
-                raise RuntimeError('real browser playback failed: '+browser.stderr[-1500:]+'; PHP: '+(top/'php.log').read_text()[-2500:])
+                raise RuntimeError('real browser playback failed: '+browser.stderr[-4000:]+'; PHP: '+(top/'php.log').read_text()[-2500:])
             plays=int(php('echo $db->query("SELECT COUNT(*) FROM noa_valid_plays")->fetchColumn();'))
             assert plays == 1, f'expected one real valid play, got {plays}'
             # Replaying identical progress cannot insert a second ledger row.
@@ -152,3 +184,4 @@ const {chromium}=createRequire(process.env.NOA_PLAYWRIGHT_PACKAGE)('playwright')
 
 if __name__ == '__main__':
     main()
+

@@ -1,10 +1,10 @@
 name: NOA Integrated Production Finish
 on:
   pull_request:
-    paths: ['bridge/world-mv.php','bridge/playcount-policy.php','bridge/popularity-events.php','deploy/noa-youtube.php','deploy/noa-app/world-view.php','deploy/noa-app/jukebox/stream.php','deploy/noa-app/jukebox/stream-popularity.php','deploy/noa-playcount.js','deploy/noa-app/engine/music-*.php','deploy/noa-app/engine/consume-music.php','deploy/noa-app/engine/lease-state.php','scripts/noa_playcount*','tests/popularity/**','tests/p0/world_act*','deploy/noa-music.php','deploy/noa-music-detail.php','deploy/noa-sitemap.php','deploy/noa-playlists.js','deploy/noa-app/p0-player.js','deploy/noa-app/home.php','deploy/noa-app/engine/completion*','deploy/noa-app/engine/event-contract.php','deploy/noa-app/engine/registry.php','bridge/music-readmodel.php','bridge/user-playlists.php','scripts/noa_category_release.py','scripts/noa_finish_drive_receipt.json','scripts/qa/noa-finish*','tests/deployment/test_finish_release.py','.github/workflows/noa-category-order-final.yml']
+    paths: ['bridge/world-mv.php','bridge/playcount-policy.php','bridge/popularity-events.php','deploy/noa-youtube.php','deploy/noa-youtube.js','deploy/noa-home.js','deploy/noa-app/engine/work-state*.php','deploy/noa-app/engine/app-observe.php','deploy/noa-app/world-view.php','deploy/noa-app/jukebox/stream.php','deploy/noa-app/jukebox/stream-popularity.php','deploy/noa-playcount.js','deploy/noa-app/engine/music-*.php','deploy/noa-app/engine/consume-music.php','deploy/noa-app/engine/lease-state.php','scripts/noa_playcount*','tests/popularity/**','tests/p0/world_act*','deploy/noa-music.php','deploy/noa-music-detail.php','deploy/noa-sitemap.php','deploy/noa-playlists.js','deploy/noa-app/p0-player.js','deploy/noa-app/home.php','deploy/noa-app/engine/completion*','deploy/noa-app/engine/event-contract.php','deploy/noa-app/engine/registry.php','bridge/music-readmodel.php','bridge/user-playlists.php','scripts/noa_category_release.py','scripts/noa_finish_drive_receipt.json','scripts/qa/noa-finish*','tests/deployment/test_finish_release.py','.github/workflows/noa-category-order-final.yml']
   push:
     branches: [main]
-    paths: ['bridge/world-mv.php','bridge/playcount-policy.php','bridge/popularity-events.php','deploy/noa-youtube.php','deploy/noa-app/world-view.php','deploy/noa-app/jukebox/stream.php','deploy/noa-app/jukebox/stream-popularity.php','deploy/noa-playcount.js','deploy/noa-app/engine/music-*.php','deploy/noa-app/engine/consume-music.php','deploy/noa-app/engine/lease-state.php','scripts/noa_playcount*','tests/popularity/**','tests/p0/world_act*','deploy/noa-music.php','deploy/noa-music-detail.php','deploy/noa-sitemap.php','deploy/noa-playlists.js','deploy/noa-app/p0-player.js','deploy/noa-app/home.php','deploy/noa-app/engine/completion*','deploy/noa-app/engine/event-contract.php','deploy/noa-app/engine/registry.php','bridge/music-readmodel.php','bridge/user-playlists.php','scripts/noa_category_release.py','scripts/noa_finish_drive_receipt.json','scripts/qa/noa-finish*','scripts/qa/noa-sitemap-live.mjs','.github/workflows/noa-category-order-final.yml']
+    paths: ['bridge/world-mv.php','bridge/playcount-policy.php','bridge/popularity-events.php','deploy/noa-youtube.php','deploy/noa-youtube.js','deploy/noa-home.js','deploy/noa-app/engine/work-state*.php','deploy/noa-app/engine/app-observe.php','deploy/noa-app/world-view.php','deploy/noa-app/jukebox/stream.php','deploy/noa-app/jukebox/stream-popularity.php','deploy/noa-playcount.js','deploy/noa-app/engine/music-*.php','deploy/noa-app/engine/consume-music.php','deploy/noa-app/engine/lease-state.php','scripts/noa_playcount*','deploy/noa-music.php','deploy/noa-music-detail.php','deploy/noa-sitemap.php','deploy/noa-playlists.js','deploy/noa-app/p0-player.js','deploy/noa-app/home.php','deploy/noa-app/engine/completion*','deploy/noa-app/engine/event-contract.php','deploy/noa-app/engine/registry.php','bridge/music-readmodel.php','bridge/user-playlists.php','scripts/noa_category_release.py','scripts/noa_finish_drive_receipt.json','scripts/qa/noa-finish*','scripts/qa/noa-sitemap-live.mjs','.github/workflows/noa-category-order-final.yml']
   workflow_dispatch:
 permissions: {contents: read, actions: read}
 jobs:
@@ -52,7 +52,12 @@ jobs:
           php tests/popularity/stream_tracking_test.php
           node --test tests/popularity/player_tracker_test.cjs
           python tests/popularity/stream_source_contract.py
+          python -m unittest discover -s tests/popularity -p test_playcount_activate.py -v
           python -m unittest discover -s tests/engine -p 'test_live_music_consumer.py' -v
+          node --test tests/home/metadata_test.cjs tests/playlists/drag_order_test.cjs tests/youtube/lazy_details_test.cjs
+          php tests/sitemap/popularity_route_test.php
+          python tests/youtube/detail_endpoint_test.py
+          python -m py_compile scripts/n80_workstate_sync.py
           python tests/deployment/test_finish_release.py
           python -m py_compile scripts/noa_category_release.py
       - name: Read exact previous policy metadata for isolated restore
@@ -107,8 +112,8 @@ jobs:
       - name: Download exact Drive-verified operating preimages, including HOME
         uses: actions/download-artifact@v4
         with:
-          artifact-ids: '12557617927'
-          run-id: '40087720872'
+          artifact-ids: '12559692279'
+          run-id: '40092788783'
           github-token: ${{ github.token }}
           repository: rucyjeon79/noa-studio
           path: ${{ runner.temp }}/noa-finish-preimages
@@ -139,6 +144,32 @@ jobs:
           NOA_REPOSITORY: ${{ github.workspace }}
           NOA_FINISH_QA_OUTPUT: qa/finish-live/verified.json
         run: node scripts/qa/noa-finish-live.mjs --production
+      - name: Verify actual YouTube detail preservation and measure the same mobile and desktop conditions
+        env:
+          NOA_PLAYWRIGHT_PACKAGE: ${{ runner.temp }}/noa-category/package.json
+        run: node scripts/qa/noa-youtube-lazy-live.mjs
+      - name: Register the existing twelve-area work journal without completing the parent
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/n80_workstate_sync.py
+      - name: Diagnose actual MUSIC availability without policy, claim or ACK
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+          N80_MUSIC_CONSUMER_DIAGNOSE_ONLY: '1'
+        run: |
+          python scripts/n80_live_observer.py
+          python - <<'PY_DIAG'
+          import json,os
+          from pathlib import Path
+          result=json.loads((Path(os.environ['RUNNER_TEMP'])/'n80-live-observer-result.json').read_text())
+          assert result['musicAvailabilityConsumer']['diagnostics'][0]['available'] is True, 'actual_music_availability_diagnostic_failed'
+          PY_DIAG
       - name: Enable only the deployed MUSIC availability verifier
         id: n80_enable
         env:
@@ -195,6 +226,7 @@ jobs:
           name: noa-finish-live-${{ github.run_id }}
           path: |
             ${{ runner.temp }}/n80-live-observer-result.json
+            ${{ runner.temp }}/n80-workstate-result.json
             ${{ runner.temp }}/n80-music-activation.json
             ${{ runner.temp }}/noa-playcount-activation.json
             category-deploy-proof.json
