@@ -1,0 +1,47 @@
+name: NOA Category Ordering Final Production
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/noa-category-order.php'
+      - 'deploy/noa-category-order-admin.php'
+      - 'deploy/noa-browse.js'
+      - 'deploy/noa-library.php'
+      - 'scripts/noa_category_order_endpoints_deploy.py'
+      - '.github/workflows/noa-category-order-final.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: noa-production-sftp
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate all category components
+        run: |
+          node --check deploy/noa-browse.js
+          php -l deploy/noa-category-order.php
+          php -l deploy/noa-category-order-admin.php
+          php -l deploy/noa-library.php
+          python -m py_compile scripts/noa_category_order_endpoints_deploy.py scripts/noa_browse_safe_deploy.py scripts/noa_category_library_deploy.py
+      - run: python -m pip install 'paramiko>=3,<5'
+      - name: Deploy endpoints then browse then admin entry
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: |
+          python scripts/noa_category_order_endpoints_deploy.py
+          python scripts/noa_browse_safe_deploy.py
+          python scripts/noa_category_library_deploy.py
