@@ -4,7 +4,10 @@ const audio=document.getElementById('sound-player'),dock=document.querySelector(
 // Dock is a sibling of main, so hiding the MUSIC view never destroys its controls.
 document.body.append(dock);const dialog=document.getElementById('dock-queue');document.body.append(dialog);
 const title=document.getElementById('dock-title'),image=document.getElementById('dock-cover'),empty=document.getElementById('dock-cover-empty');
-const moreControl=document.getElementById('dock-more');
+const moreControl=document.getElementById('dock-more'),addControl=document.getElementById('dock-add'),artist=document.getElementById('dock-artist');
+const compactScreen=window.matchMedia('(max-width:360px)');
+const watch=document.getElementById('watch'),detail=document.querySelector('section[aria-label="곡 상세"]');if(watch&&detail)detail.insertBefore(watch,detail.querySelector('.noa-media-details'));
+if(addControl)addControl.addEventListener('click',()=>{location.hash='my-playlists';const controls=document.getElementById('my-controls');if(controls&&!controls.hidden)document.getElementById('my-add')?.click();document.getElementById('my-playlists')?.scrollIntoView({block:'start'});});
 const narrowScreen=window.matchMedia('(max-width:600px)');
 function updateMoreControl(){if(!moreControl)return;moreControl.hidden=false;if(!narrowScreen.matches){dock.dataset.expanded='false';moreControl.setAttribute('aria-expanded','false');}}
 narrowScreen.addEventListener('change',updateMoreControl);updateMoreControl();
@@ -13,8 +16,8 @@ const extras=['repeat','shuffle','sequential','dock-list'].map(id=>document.getE
 const originalControls=document.querySelector('.noa-two-line .controls');
 const popup=document.createElement('div');popup.id='noa-dock-popover';popup.hidden=true;popup.setAttribute('role','group');popup.setAttribute('aria-label','추가 재생 조작');document.body.append(popup);
 function closePopup(){popup.hidden=true;dock.dataset.expanded='false';moreControl?.setAttribute('aria-expanded','false');}
-function syncPopup(){closePopup();extras.forEach(b=>popup.append(b));updateMoreControl();}
-narrowScreen.addEventListener('change',syncPopup);syncPopup();
+function syncPopup(){closePopup();extras.forEach(b=>popup.append(b));if(addControl){if(compactScreen.matches)popup.prepend(addControl);else{originalControls.prepend(addControl);addControl.querySelector('.noa-mode-label')?.remove();}}for(const b of popup.querySelectorAll('button'))if(!b.querySelector('.noa-mode-label')){const label=document.createElement('span');label.className='noa-mode-label';label.textContent=({repeat:'반복',shuffle:'셔플',sequential:'순차',"dock-list":'재생목록',"dock-add":'담기'})[b.id]||'';b.append(label);}updateMoreControl();}
+narrowScreen.addEventListener('change',syncPopup);compactScreen.addEventListener('change',syncPopup);syncPopup();
 function positionPopup(){if(popup.hidden||!moreControl)return;const rect=moreControl.getBoundingClientRect();const width=popup.offsetWidth||240;const height=popup.offsetHeight||64;const left=Math.max(8,Math.min(innerWidth-width-8,rect.right-width));const top=Math.max(8,Math.min(innerHeight-height-8,rect.top-height-8));popup.style.left=left+'px';popup.style.top=top+'px';popup.style.right='auto';popup.style.bottom='auto';}
 window.addEventListener('resize',positionPopup,{passive:true});
 window.addEventListener('scroll',positionPopup,{passive:true,capture:true});
@@ -26,11 +29,13 @@ popup.addEventListener('click',e=>{if(e.target.closest('button')){closePopup();m
 const dockVisibilityObserver=new MutationObserver(()=>{if(dock.hidden)closePopup();});
 dockVisibilityObserver.observe(dock,{attributes:true,attributeFilter:['hidden']});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)closePopup();});
+// Selecting the current song reopens its closed display without restarting audio.
+document.addEventListener('click',e=>{const button=e.target.closest('.song-select'),card=button?.closest('.song');if(card?.classList.contains('selected')&&card.dataset.audio)dock.hidden=false;});
 
 function marquee(){const width=title.parentElement.clientWidth,extra=title.scrollWidth-width;title.classList.toggle('noa-title-scroll',extra>2);title.style.setProperty('--title-shift',-Math.max(0,extra)+'px');}
 new ResizeObserver(marquee).observe(title.parentElement);document.fonts?.ready.then(marquee);
 let imageRevision=0;
-window.addEventListener('noa-track-selected',e=>{const r=e.detail.record;const revision=++imageRevision;title.textContent=r.title;title.title=r.title;image.hidden=!r.thumb;empty.hidden=!!r.thumb;image.onload=()=>{if(revision!==imageRevision)return;try{const canvas=document.createElement('canvas');canvas.width=canvas.height=1;const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0,1,1);const [red,green,blue]=ctx.getImageData(0,0,1,1).data;const luminance=(.2126*red+.7152*green+.0722*blue)/255;const usable=luminance>.28&&luminance<.76&&Math.max(red,green,blue)-Math.min(red,green,blue)>25;dock.style.setProperty('--noa-cover-accent',usable?`rgb(${red} ${green} ${blue})`:'var(--noa-accent)');}catch{dock.style.removeProperty('--noa-cover-accent');}};image.onerror=()=>{if(revision===imageRevision){image.hidden=true;empty.hidden=false;dock.style.removeProperty('--noa-cover-accent');}};if(r.thumb)image.src=r.thumb;else{image.removeAttribute('src');dock.style.removeProperty('--noa-cover-accent');}document.getElementById('dock-current').textContent='0:00';document.getElementById('dock-duration').textContent='0:00';marquee();});
+window.addEventListener('noa-track-selected',e=>{const r=e.detail.record;const revision=++imageRevision;title.textContent=r.title;title.title=r.title;if(artist)artist.textContent=document.getElementById('detail-cast')?.textContent||'';image.hidden=!r.thumb;empty.hidden=!!r.thumb;image.onload=()=>{if(revision!==imageRevision)return;try{const canvas=document.createElement('canvas');canvas.width=canvas.height=1;const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0,1,1);const [red,green,blue]=ctx.getImageData(0,0,1,1).data;const luminance=(.2126*red+.7152*green+.0722*blue)/255;const usable=luminance>.28&&luminance<.76&&Math.max(red,green,blue)-Math.min(red,green,blue)>25;dock.style.setProperty('--noa-cover-accent',usable?`rgb(${red} ${green} ${blue})`:'var(--noa-accent)');}catch{dock.style.removeProperty('--noa-cover-accent');}};image.onerror=()=>{if(revision===imageRevision){image.hidden=true;empty.hidden=false;dock.style.removeProperty('--noa-cover-accent');}};if(r.thumb)image.src=r.thumb;else{image.removeAttribute('src');dock.style.removeProperty('--noa-cover-accent');}document.getElementById('dock-current').textContent='0:00';document.getElementById('dock-duration').textContent='0:00';marquee();});
 // The initial selected track may precede this deferred script.
 const initial=document.querySelector('.song.selected');if(initial)window.dispatchEvent(new CustomEvent('noa-track-selected',{detail:{record:{title:initial.dataset.title,thumb:initial.querySelector('img')?.getAttribute('src')||''}}}));
 const routes=new Set(['/','/index.php','/noa-music.php','/noa-youtube.php','/noa-world.php','/noa-my.php','/noa-settings.php']);

@@ -2,7 +2,9 @@
 /** Additive common styles: preserve active theme, skins, forms and all GnuBoard core files. */
 if(!defined('_GNUBOARD_'))exit;
 function noa_policy_script_revision($html){
- return preg_replace("~(<script\\b[^>]*\\bsrc=[\"'])/noa-ui[.]js(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.js?v=20261024-policy1$2',$html);
+ $html=preg_replace("~(/noa-app/p0-media[.]css)(?:[?][^\"']*)?~i",'$1?v=20261024-approved-ui',$html);
+ $html=preg_replace("~(<link\\b[^>]*\\bhref=[\"'])/noa-ui[.]css(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.css?v=20261024-approved-ui$2',$html);
+ return preg_replace("~(<script\\b[^>]*\\bsrc=[\"'])/noa-ui[.]js(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.js?v=20261024-approved-ui$2',$html);
 }
 function noa_design_assets(){
  global $config;
@@ -15,10 +17,10 @@ function noa_design_assets(){
  if(!$native&&($_SERVER['REQUEST_METHOD']??'GET')!=='GET')return;
  // Standalone views do not call GnuBoard html_end(); inject only completed HTML.
  if(!$native){
-  $assets='<link rel="stylesheet" href="/noa-policy-20261024.css">';
+  $assets='<link rel="stylesheet" href="/noa-policy-20261024.css?v=20261024-approved-ui">';
   if($workspace){
    if(!str_starts_with($path,'/noa-app/jukebox/'))$assets='<link rel="stylesheet" href="/noa-ui.css?v=20261022-recovery2">'.$assets;
-   $assets.='<script src="/noa-ui.js?v=20261024-policy1" data-noa-theme-only defer></script>';
+   $assets.='<script src="/noa-ui.js?v=20261024-approved-ui" data-noa-theme-only defer></script>';
   }
   ob_start(static function($html)use($assets){
    if(http_response_code()>=300||stripos($html,'</head>')===false)return $html;
@@ -28,7 +30,7 @@ function noa_design_assets(){
   return;
  }
  // Native skins use GnuBoard's ordered asset registration.
- if(!str_starts_with($path,'/adm/'))add_stylesheet('<link rel="stylesheet" href="/noa-policy-20261024.css">',999);
+ if(!str_starts_with($path,'/adm/'))add_stylesheet('<link rel="stylesheet" href="/noa-policy-20261024.css?v=20261024-approved-ui">',999);
  $config['cf_title']='NOA STUDIO';
  // The core admin uses light panels; consumer theme tokens must not leak into it.
  if(str_starts_with($path,'/adm/')){

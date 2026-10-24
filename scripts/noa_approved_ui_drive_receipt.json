@@ -1,0 +1,42 @@
+{
+  "baseCommit": "c80493df1437908687e9e131dd86e26aeb2b1925",
+  "files": {
+    "extend/noa.design.php": {
+      "bytes": 2730,
+      "sha256": "8873ee40a5145cf48ef1cef9bee2bb674bec21abd2d44f53d36ad62819a49985"
+    },
+    "noa-app/p0-media.css": {
+      "bytes": 15936,
+      "sha256": "ee6ea4e05abede8d96cd286eebb1cff248a3b8ebc60884f93a0aa4ee488ec967"
+    },
+    "noa-app/p0-player.js": {
+      "bytes": 7843,
+      "sha256": "b00c6171d454cc7e9150597f2ab3c671dbef0e80aa7af4cd0210258f773c3eb3"
+    },
+    "noa-design.json": {
+      "bytes": 1550,
+      "sha256": "6f12474fe0ab0fd6132db1a5d4cbc1b55e94c4750795abf04298d474c98fb32f"
+    },
+    "noa-music.php": {
+      "bytes": 27514,
+      "sha256": "5bd116ea28ad4a1d79c44de284fc6483a027fba1ac64d1178683e48bb1a735bb"
+    },
+    "noa-policy-20261024.css": {
+      "bytes": 5438,
+      "sha256": "d041dfbbd03de5a76c8e013d854cdb5ac2aba9ecdad54f6a9eb658e0574abec7"
+    },
+    "noa-ui.css": {
+      "bytes": 62428,
+      "sha256": "9adf1a45106098c013bf3fc3c14425a15366c4ccdb9ed36a3fad506ebf019133"
+    },
+    "noa-ui.js": {
+      "bytes": 32079,
+      "sha256": "8b79592428b5b6458069e142de67b39f07a22ab593c4f81c2120ff867440bda3"
+    }
+  },
+  "archiveBytes": 41649,
+  "archiveSha256": "19c576dcfaebd9df1658222d967409b445d3ea790156b961be8f1bca798fcf4e",
+  "readbackVerified": true,
+  "restoreExtractionVerified": true,
+  "driveId": "1aCUEqU7mKddAYmwdJfzWMYsDl5A9tcaQ"
+}

@@ -1,0 +1,88 @@
+name: NOA Approved UI Unified Release
+on:
+  pull_request:
+    paths: ['deploy/noa-ui.*','deploy/noa-design.json','deploy/noa-design.extend.php','deploy/noa-policy-20261024.css','deploy/noa-app/p0-*','deploy/noa-music.php','scripts/noa_approved_ui*','scripts/qa/noa-approved-ui.mjs','.github/workflows/noa-approved-ui-release.yml']
+  push:
+    branches: [main]
+    paths: ['deploy/noa-ui.*','deploy/noa-design.json','deploy/noa-design.extend.php','deploy/noa-policy-20261024.css','deploy/noa-app/p0-*','deploy/noa-music.php','scripts/noa_approved_ui*','scripts/qa/noa-approved-ui.mjs','.github/workflows/noa-approved-ui-release.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: mbstring}
+      - name: Source ownership, native authentication isolation and existing behavior
+        run: |
+          php -l deploy/noa-music.php
+          php -l deploy/noa-design.extend.php
+          php tests/uiux/policy_assets.php
+          python tests/uiux/recovery_contract_test.py
+          python -m py_compile scripts/noa_approved_ui_deploy.py
+          node --check deploy/noa-ui.js
+          node --check deploy/noa-app/p0-player.js
+          node --check scripts/qa/noa-approved-ui.mjs
+          node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-history.test.mjs scripts/qa/noa-playlist-refresh.test.mjs
+      - name: Prepare isolated browser
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y fonts-noto-cjk
+          npm install --prefix "$RUNNER_TEMP/noa-approved" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-approved-ui.mjs "$RUNNER_TEMP/noa-approved/check.mjs"
+      - name: Verify candidate at seven widths and both themes using public data only
+        env: {NOA_SOURCE_ROOT: '${{ github.workspace }}', NOA_UI_PHASE: candidate}
+        run: node "$RUNNER_TEMP/noa-approved/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-approved-ui-candidate-${{ github.run_id }}', path: approved-ui-proof/candidate/, retention-days: 1}
+  production:
+    if: github.event_name != 'pull_request'
+    needs: candidate
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - name: Install dependencies before changing runtime files
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y fonts-noto-cjk
+          python -m pip install 'paramiko>=3,<5'
+          npm install --prefix "$RUNNER_TEMP/noa-approved" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-approved-ui.mjs "$RUNNER_TEMP/noa-approved/check.mjs"
+      - name: Apply eight Drive-verified final files and preserve seventeen protected sources
+        id: activate
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_approved_ui_deploy.py
+      - name: Verify actual runtime UI, playback continuity and thirty network measurements
+        id: live
+        env: {NOA_SOURCE_ROOT: '${{ github.workspace }}', NOA_UI_PHASE: live}
+        run: node "$RUNNER_TEMP/noa-approved/check.mjs"
+      - name: Restore only unchanged release-owned bytes if live acceptance fails
+        if: failure() && steps.live.outcome == 'failure'
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_approved_ui_deploy.py rollback
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-approved-ui-live-${{ github.run_id }}
+          path: |
+            approved-ui-deploy-proof.json
+            approved-ui-proof/live/
+          retention-days: 1

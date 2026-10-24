@@ -5,6 +5,7 @@ const icons={home:'M3 10l9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z M9 21v-8h6v8'
 icons.user='M20 21v-2a6 6 0 0 0-12 0v2 M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0';icons.book='M12 5C8 2 4 3 2 4v16c4-2 7-1 10 1 3-2 6-3 10-1V4c-2-1-6-2-10 1z M12 5v16';icons.disc='M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0 M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0';icons.mail='M3 5h18v14H3z M3 5l9 8 9-8';icons.mic='M9 5a3 3 0 0 1 6 0v6a3 3 0 0 1-6 0z M5 10v1a7 7 0 0 0 14 0v-1 M12 18v4 M8 22h8';
 icons.search='M21 21l-4.35-4.35 M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0';icons.edit='M16 3l5 5 M4 20l4-1L21 6l-4-4L4 15z';icons.trash='M3 6h18 M8 6V4h8v2 M5 6l1 15h12l1-15 M10 10v7 M14 10v7';icons.more='M5 12h.01 M12 12h.01 M19 12h.01';
 icons.download='M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4';
+icons.play='m8 5 11 7-11 7V5Z';
 icons.youtube='M3 5h18v14H3z M10 9l6 3-6 3z';
 const menu=[['home','홈','/'],['youtube','YouTube','/noa-youtube.php'],['world','세계관','/noa-world.php'],['music','음원','/noa-music.php'],['library','MY','/noa-my.php']];
 const words={}
@@ -20,6 +21,7 @@ function markLabels(){if(themeOnly)return;decorate();markMetadata();translateFix
 function icon(key){return '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="'+icons[key]+'"/></svg>'}
 function actionIcon(el){const href=el.getAttribute('href')||'',text=el.textContent.trim();return /삭제/.test(text)?'trash':/검색/.test(text)?'search':/글쓰기|작성|수정/.test(text)?'edit':/옵션/.test(text)?'more':/다운로드|설치 파일|받기/.test(text)?'download':/캐릭터|회원|계정|로그인|로그아웃/.test(text)?'user':/설명|정보|세계관/.test(text)?'book':/커뮤니티|소식/.test(text)?'community':/youtube|영상|MV/.test(text+' '+href)?'youtube':/관리|설정/.test(text)?'settings':/곡|suno|재생|제작|생성/.test(text+' '+href)?'music':'library';}
 function decorate(){
+ for(const el of document.querySelectorAll('#my-recent a,#my-recent-youtube a'))if(!el.querySelector('svg'))el.dataset.noaIcon=el.closest('#my-recent-youtube')?'youtube':'play';
  // Existing nodes/URLs/listeners are retained. Exclude card links, document-body citations and native navigation.
  for(const el of document.querySelectorAll('main a,main summary,main button:is(.noa-button.primary,#my-new,#my-add,#my-save,#my-play,#act-play,#lab-text-submit,#noa-settings-save),.noa-g5 .btn_bo_user a,.noa-g5 .btn_bo_user button,.noa-g5 .btn_confirm a,.noa-g5 .btn_confirm button,.noa-g5 .bo_v_nb a,.noa-g5 .bo_v_com a')){
   if(el.matches('[data-noa-icon],.noa-action,.noa-logo,.brand,.noa-music-card,.noa-genre,.noa-world-act,.noa-personal-card,.noa-browse-card,.catalog-card')||el.closest('nav,footer,.noa-world-text,[data-noa-document-link]')||el.querySelector('img,svg')||!el.textContent.trim())continue;
