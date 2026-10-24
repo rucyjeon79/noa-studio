@@ -12,6 +12,9 @@ class PublicationTest(unittest.TestCase):
         self.assertEqual(result['jobsModified'], 0)
         self.assertFalse(result['processingEnabled'])
 
+    def test_php_empty_array_is_idle(self):
+        self.assertEqual(publication_preflight({'jobs': []})['state'], 'idle')
+
     def test_pending_and_active_work_are_preserved(self):
         jobs = {'one': {'state': 'queued_render'}, 'two': {'state': 'uploading'}}
         original = repr(jobs)
