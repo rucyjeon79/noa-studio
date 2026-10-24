@@ -1,40 +1,65 @@
-"""Read-only final service snapshots; no job claim, import, schema or queue maintenance."""
-import os,json,time,hmac,secrets,hashlib,urllib.request,re,stat
+"""Read-only source fingerprints and the existing signed N80 audit; never install anything."""
+import base64
+import hashlib
+import json
+import os
 from pathlib import Path
+import stat
+import sys
+import time
 import paramiko
-from noa_full_inventory import connect
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from n80_app_integration import call
+
+ROOT='/hosting/noastudio/html'
+FILES=['noa-browse.js','noa-ui.js','noa-ui.css','noa-policy-20261024.css','noa-design.json',
+       'noa-my.php','noa-history.js','noa-youtube.php','noa-youtube.js','noa-music.php',
+       'noa-app/p0-player.js','noa-app/p0-media.css','noa-app/home.php',
+       'noa-app/jukebox/core.php','noa-app/jukebox/upload-core.php','noa-app/jukebox/upload.js',
+       'noa-app/jukebox/upload-transport.js','noa-app/jukebox/service.php',
+       'noa-world.php','noa-app/world-view.php']
+BRIDGE=['youtube-store.php','youtube-core.php','taxonomy-store.php','world-mv.php','home-core.php']
+sha=lambda b:hashlib.sha256(b).hexdigest()
 def main():
- t=connect();s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(30)
- try:
-  with s.open('/hosting/noastudio/noa-ai-lab/worker.key','rb')as f:key=f.read(256).decode().strip()
-  result={'commit':os.environ['GITHUB_SHA'],'sqlWrites':False,'workersStopped':False}
-  for action in ['integrity_snapshot','queue_snapshot','capabilities']:
-   raw=json.dumps({'action':action,'payload':{}},separators=(',',':')).encode();ts=str(int(time.time()));nonce=secrets.token_hex(16)
-   msg='NOA-JUKEBOX-1\nPOST\n'+hashlib.sha256(raw).hexdigest()+'\n'+ts+'\n'+nonce
-   req=urllib.request.Request('https://noastudio.ai.kr/noa-app/jukebox/service.php',data=raw,headers={'Content-Type':'application/json','X-NOA-Timestamp':ts,'X-NOA-Nonce':nonce,'X-NOA-Signature':hmac.new(key.encode(),msg.encode(),hashlib.sha256).hexdigest()})
-   with urllib.request.urlopen(req,timeout=90)as r:body=json.load(r)['result']
-   if action=='queue_snapshot':body={k:v for k,v in body.items()if k!='rows'}
-   result[action]=body
-  backups=[];folder='/hosting/noastudio/noa-db-private'
-  for name in s.listdir(folder):
-   if not re.fullmatch('[a-f0-9]{32}\\.json',name):continue
-   with s.open(folder+'/'+name,'rb')as f:meta=json.loads(f.read(1048576))
-   backups.append({k:meta.get(k)for k in ['id','createdAt','scope','bytes','sha256','restoreVerified']}|{'tableCount':len(meta.get('tables',{}))})
-  backups.sort(key=lambda x:x['createdAt'],reverse=True);result['backups']=backups
-  if backups:
-   latest=backups[0];path=folder+'/'+latest['id']+'.sql';info=s.lstat(path)
-   if not stat.S_ISREG(info.st_mode)or info.st_size!=latest['bytes']:raise RuntimeError('backup_size_or_type_mismatch')
-   digest=hashlib.sha256()
-   with s.open(path,'rb')as f:
-    f.prefetch(file_size=info.st_size,max_concurrent_requests=16)
-    while True:
-     chunk=f.read(1048576)
-     if not chunk:break
-     digest.update(chunk)
-   result['latestBackupVerified']=digest.hexdigest()==latest['sha256']
-   if not result['latestBackupVerified']:raise RuntimeError('backup_hash_mismatch')
-  result['originalDocumentsMatchBefore']=result['integrity_snapshot']['documents_sha256']=='79661fa849e474a534b69d836a46498fbc9d62c3848f3445490c375cf8beffa9'
-  result['checkedAtUTC']=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())
-  Path('full-release-proof').mkdir(exist_ok=True);Path('full-release-proof/postflight.json').write_text(json.dumps(result,indent=2));print('P0_POSTFLIGHT '+json.dumps(result),flush=True)
- finally:s.close();t.close()
+    out=Path('p0-evidence');out.mkdir(exist_ok=True)
+    report={'commit':os.environ['GITHUB_SHA'],'run':os.environ['GITHUB_RUN_ID'],
+            'serverWrites':0,'sqlMutations':0,'stoppedJobs':0,'rows':[]}
+    t=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022))
+    try:
+        t.get_security_options().key_types=('ssh-ed25519',);t.start_client(timeout=30)
+        fp='SHA256:'+base64.b64encode(hashlib.sha256(t.get_remote_server_key().asbytes()).digest()).decode().rstrip('=')
+        if fp!=os.environ['NOA_SSH_HOST_FINGERPRINT']:raise RuntimeError('host_key_mismatch')
+        t.auth_password(os.environ['NOA_SSH_USER'],os.environ['NOA_SSH_PASSWORD'])
+        with paramiko.SFTPClient.from_transport(t)as s:
+            s.get_channel().settimeout(45)
+            if s.normalize(ROOT)!=ROOT:raise RuntimeError('unexpected_root')
+            def read(p):
+                if not stat.S_ISREG(s.lstat(p).st_mode):raise RuntimeError('nonregular_source')
+                with s.open(p,'rb')as f:return f.read()
+            for rel in FILES+['noa-bridge/'+p for p in BRIDGE]+['extend/noa.design.php']:
+                source='deploy/'+rel
+                if rel.startswith('noa-bridge/'):source='bridge/'+rel.split('/',1)[1]
+                if rel=='extend/noa.design.php':source='deploy/noa-design.extend.php'
+                b=read(ROOT+'/'+rel);expected=Path(source).read_bytes()
+                report['rows'].append({'path':rel,'bytes':len(b),'sha256':sha(b),'matchesGitHub':b==expected})
+            report['uiTemporaryFilesAtRoot']=[x.filename for x in s.listdir_attr(ROOT) if x.filename.startswith('.noa-')and any(tag in x.filename for tag in ['.tmp','.stage','-stage-'])]
+            report['folderUsage']={}
+            for entry in s.listdir_attr('/hosting/noastudio'):
+                if not stat.S_ISDIR(entry.st_mode):continue
+                total=0;count=0;stack=['/hosting/noastudio/'+entry.filename]
+                while stack:
+                    path=stack.pop()
+                    for item in s.listdir_attr(path):
+                        if stat.S_ISDIR(item.st_mode):stack.append(path+'/'+item.filename)
+                        elif stat.S_ISREG(item.st_mode):total+=item.st_size;count+=1
+                report['folderUsage'][entry.filename]={'bytes':total,'files':count}
+            key=read('/hosting/noastudio/noa-ai-lab/worker.key').strip()
+            if len(key)!=64:raise RuntimeError('invalid_service_key')
+        started=time.perf_counter();data=call(key);del key
+        report['dataAuditMs']=round((time.perf_counter()-started)*1000,1)
+        report['dataAudit']=data
+        report['sourceMatches']=all(r['matchesGitHub']for r in report['rows'])
+        (out/'postflight.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+        print('NOA_P0_POSTFLIGHT',json.dumps({'sourceFiles':len(report['rows']),'sourceMatches':report['sourceMatches'],'dataIntegrityOk':data.get('integrityOk'),'serverWrites':0}))
+    finally:t.close()
 if __name__=='__main__':main()

@@ -1,0 +1,30 @@
+name: NOA P0 Readonly Postflight
+on:
+  push:
+    branches: [codex/p0-postflight-20261024]
+    paths: ['scripts/noa_p0_postflight.py','.github/workflows/noa-p0-postflight-evidence.yml']
+permissions: {contents: read}
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: cceba6d8e535541b6340f572f2d8e2618af19303, persist-credentials: false}
+      - name: Load reviewed read-only probe from this audit commit
+        env: {AUDIT_COMMIT: '${{ github.sha }}'}
+        run: |
+          git fetch origin "$AUDIT_COMMIT" --depth=1
+          git show "$AUDIT_COMMIT:scripts/noa_p0_postflight.py" > scripts/noa_p0_postflight.py
+          python -m pip install 'paramiko>=3,<5'
+      - name: Observe source hashes, root temporary files, usage and existing N80 read-only audit
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_p0_postflight.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-p0-postflight-${{ github.run_id }}', path: p0-evidence/postflight.json, retention-days: 1}
