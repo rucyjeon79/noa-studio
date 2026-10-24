@@ -1,10 +1,10 @@
 name: NOA Category Readonly Checkpoint
 on:
   push:
-    branches: ['codex/category-final-20261024']
+    branches: ['codex/remaining-finish-20261024']
     paths: ['scripts/noa_category_checkpoint.py', '.github/workflows/noa-category-checkpoint.yml']
-permissions:
-  contents: read
+permissions: {contents: read}
+concurrency: {group: noa-production-sftp, cancel-in-progress: false}
 jobs:
   checkpoint:
     runs-on: ubuntu-latest
@@ -12,6 +12,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with: {persist-credentials: false}
       - run: python -m pip install 'paramiko>=3,<5'
       - name: Readonly source hashes and recoverable preimages
         env:
@@ -22,6 +23,6 @@ jobs:
         run: python scripts/noa_category_checkpoint.py
       - uses: actions/upload-artifact@v4
         with:
-          name: noa-category-checkpoint
+          name: noa-remaining-checkpoint
           path: category-checkpoint/
-          retention-days: 1
+          retention-days: 2
