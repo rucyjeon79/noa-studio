@@ -18,9 +18,9 @@ async function routes(context,held){
    // Reuse public records and overlay only the modified HTML/inline regions.
    const music=u.pathname.includes('music'),id=music?'songs':'yt-videos',host=music?'music-browse':'youtube-browse';
    body=body.replace(new RegExp('id="'+id+'"(?! hidden)'), 'id="'+id+'" hidden');
-   body=body.replace('function filter(){','function filter(){\n if(!browse)return;');body=body.replace('||buttons.find(b=>b.dataset.key===saved&&!b.hidden);',"||(new URLSearchParams(location.search).get('view')==='all'?buttons.find(b=>b.dataset.key===saved&&!b.hidden):null);");
+   body=body.replace(":{visible:rows,queue:rows,stage:'songs'}",":{visible:[],queue:rows,stage:'groups'}");body=body.replace('||buttons.find(b=>b.dataset.key===saved&&!b.hidden);',"||(new URLSearchParams(location.search).get('view')==='all'?buttons.find(b=>b.dataset.key===saved&&!b.hidden):null);");
    const local=await import('node:fs').then(fs=>fs.readFileSync('deploy'+u.pathname,'utf8'));
-   const boot=local.match(/<script>\(function\(\)\{window[.]setTimeout[\s\S]*?<\/script>/)?.[0];assert(boot);
+   const boot=local.match(/<script data-noa-browse-watchdog>\(function\(\)\{window[.]setTimeout[\s\S]*?<\/script>/)?.[0];assert(boot);
    body=body.replace('</head>',boot+'</head>').replace('id="'+host+'" class="noa-browse"','id="'+host+'" class="noa-browse" data-noa-browse-boot');
    body=body.replace(new RegExp('(id="'+host+'"[^>]*>)(</section>)'),'$1<p role="status">카테고리를 불러오는 중입니다.</p>$2');
    return route.fulfill({response,body});
@@ -43,7 +43,7 @@ try{
    await page.locator('#songs,#yt-videos').waitFor({state:'attached'});
    await page.waitForTimeout(350);
    assert(await page.locator('#songs,#yt-videos').evaluate(e=>e.hidden&&getComputedStyle(e).display==='none'));
-   await page.screenshot({path:out+'/'+width+'-'+path.slice(1,-4)+'-before-js.png'});
+   const captureSession=await context.newCDPSession(page);const capture=await captureSession.send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});writeFileSync(out+'/'+width+'-'+path.slice(1,-4)+'-before-js.png',Buffer.from(capture.data,'base64'));await captureSession.detach();
    release();held.current=null;
    await page.waitForFunction(()=>document.querySelector('[data-noa-browse-boot]')?.dataset.browseReady==='true');
    assert.equal(await page.locator('[data-browse-level="1"] .noa-browse-card').count(),4);
@@ -55,7 +55,10 @@ try{
    const eps=(await page.locator('[data-browse-level="4"] .noa-inline-song').allTextContents()).map(t=>Number(t.match(/^EP[.]([0-9]+)/)?.[1]||0)).filter(Boolean);assert.deepEqual(eps,[...eps].sort((a,b)=>a-b));
    await page.locator('[data-browse-level="4"] .noa-inline-song').first().click();
    if(path.includes('music')){await page.waitForFunction(()=>{const a=document.querySelector('audio');return a&&!a.paused&&a.currentTime>0;});await page.locator('#pause-play').click();}
-   else {assert(await page.locator('#yt-player').isVisible());assert.match(await page.locator('#yt-frame').getAttribute('src'),/youtube/);}
+   else {assert(await page.locator('#yt-player').isVisible());assert.match(await page.locator('#yt-frame').getAttribute('src'),/youtube/);
+    if(width===390){let provider={playing:false};try{await page.waitForTimeout(1500);const frame=page.frames().find(f=>f.url().includes('youtube.com/embed/'));assert(frame);await frame.waitForFunction(()=>{const v=document.querySelector('video');return v&&!v.paused&&v.currentTime>0;},null,{timeout:8000});provider={playing:true};}catch{const frame=page.frames().find(f=>f.url().includes('youtube.com/embed/'));provider.reason=frame?await frame.evaluate(()=>document.body.innerText.slice(0,300)).catch(()=> 'provider_frame_unavailable'):'provider_frame_unavailable';}report.videoProvider=provider;}
+    const title=await page.locator('.yt-card h2').first().textContent();await page.locator('#youtube-search').fill(title);assert(await page.locator('#yt-videos').isVisible());assert(await page.locator('.yt-card:visible').count()>0);await page.locator('#youtube-search').fill('');
+   }
    assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1));await page.screenshot({path:out+'/'+width+'-'+path.slice(1,-4)+'-ready.png'});
    report.cases.push({width,path,firstFramesHidden:true,delayedScript:true,reloads:2,actCollapse:true,epAscending:true,selection:true,audioPlayback:path.includes('music'),videoEmbed:path.includes('youtube'),overflow:false});
   }

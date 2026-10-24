@@ -20,9 +20,9 @@ def main():
      if actual!=expected:raise RuntimeError('deployed_source_mismatch:'+remote)
     else:
      commits=subprocess.check_output(['git','log','--format=%H','--',local],text=True).splitlines()
-     known={sha(subprocess.check_output(['git','show',c+':'+local])) for c in commits}
+     known={sha(subprocess.check_output(['git','show',c+':'+local])):c for c in commits}
      if actual not in known:raise RuntimeError('unknown_remote_source_preserved:'+remote)
-    result['files'][remote]={'actual':actual,'expected':expected,'match':actual==expected}
+    result['files'][remote]={'actual':actual,'expected':expected,'match':actual==expected,'restoreCommit':None if post else known[actual]}
    if not post:
     with s.open('/hosting/noastudio/noa-ai-lab/worker.key','rb') as f:key=f.read(129).strip()
     if len(key)!=64:raise RuntimeError('invalid_worker_key')

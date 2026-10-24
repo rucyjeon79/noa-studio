@@ -31,7 +31,7 @@ jobs:
           php -l deploy/noa-youtube.php
           node --check deploy/noa-browse.js
           node --check scripts/qa/noa-initial-flash.mjs
-          node --test scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs
+          node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs
           python -m py_compile scripts/noa_browse_music_page_deploy.py scripts/noa_browse_youtube_page_deploy.py scripts/noa_initial_catalog_preflight.py
       - name: Prepare browser validation
         run: |
