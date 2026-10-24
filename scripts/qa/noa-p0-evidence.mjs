@@ -8,7 +8,7 @@ await fs.mkdir(out,{recursive:true});
 const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/google-chrome',args:['--no-sandbox']});
 const report={commit:process.env.GITHUB_SHA,run:process.env.GITHUB_RUN_ID,scope:'read-only lab and in-memory unshipped proposals',physicalDeviceTested:false,fieldINPMeasured:false,metrics:[],visuals:[],issues:[],errors:[]};
 report.apiMeasurements=[];report.interactions=[];
-if(process.env.NOA_P0_REUSE_METRICS){const baseline=JSON.parse(await fs.readFile(process.env.NOA_P0_REUSE_METRICS,'utf8'));report.metrics=baseline.metrics;report.measurementRun=baseline.measurementRun||baseline.run;report.measurementCommit=baseline.measurementCommit||baseline.commit;if(process.env.NOA_P0_VISUAL_REVIEW==='1'){for(const key of ['lcpAudit','interactions','realAudio'])report[key]=baseline[key];report.previousVisualRun=baseline.run;}}
+if(process.env.NOA_P0_REUSE_METRICS){const baseline=JSON.parse(await fs.readFile(process.env.NOA_P0_REUSE_METRICS,'utf8'));report.metrics=baseline.metrics;report.measurementRun=baseline.measurementRun||baseline.run;report.measurementCommit=baseline.measurementCommit||baseline.commit;if(process.env.NOA_P0_VISUAL_REVIEW==='1'){for(const key of ['lcpAudit','interactions','realAudio'])report[key]=baseline[key];report.previousVisualRun=baseline.run;if(process.env.NOA_P0_ONLY_MUSIC==='1')report.visuals=baseline.visuals.filter(v=>v.route!=='/noa-music.php');}}
 const requestContext=await browser.newContext();
 const publicGet=async p=>{const start=performance.now();const r=await requestContext.request.get(base+p,{maxRetries:2,timeout:90000});assert.equal(r.status(),200,p);report.apiMeasurements.push({path:p,totalMs:performance.now()-start,bytes:(await r.body()).length,status:r.status(),scope:'runner HTTP, not device TTFB'});return r;};
 async function ids(html,selector){const p=await requestContext.newPage();await p.setContent(html);const v=await p.locator(selector).evaluateAll(ns=>[...new Set(ns.map(n=>n.dataset.video).filter(Boolean))]);await p.close();return v;}
@@ -100,7 +100,7 @@ try{
  }
  // Visual design proposals use a distinct fresh context; all changes exist only in browser memory.
  const prototypeCss=await fs.readFile(path.join(root,'tests/uiux/proposals/20261024/review.css'),'utf8');
- const visualRoutes=['/noa-my.php','/noa-youtube.php','/noa-music.php','/','/noa-world.php'];
+ const visualRoutes=process.env.NOA_P0_ONLY_MUSIC==='1'?['/noa-music.php']:['/noa-my.php','/noa-youtube.php','/noa-music.php','/','/noa-world.php'];
  const visualDocs=new Map(),visualAssets=new Map();report.visualFixtureAssets=[];
  for(const route of visualRoutes)visualDocs.set(route,route==='/noa-youtube.php'?youtubeHtml:await(await publicGet(route)).text());
  for(const variant of ['before','proposal'])for(const theme of ['noa-studio','noa-ivory'])for(const width of [320,360,390,430,768,1024,1440]){
@@ -109,6 +109,7 @@ try{
   await context.route('**/*',async route=>{
    const req=route.request(),u=new URL(req.url());
    if(!['GET','HEAD'].includes(req.method()))return route.abort();
+   if(req.resourceType()==='media')return route.continue();
    if(variant==='proposal'&&u.origin===base&&u.pathname==='/p0-review-only.css')return route.fulfill({contentType:'text/css',body:prototypeCss});
    if(u.origin===base&&req.isNavigationRequest()&&visualDocs.has(u.pathname)){
     let html=visualDocs.get(u.pathname);if(variant==='proposal'){html=html.replace('</head>','<link rel="stylesheet" href="/p0-review-only.css"></head>');if(u.pathname==='/noa-youtube.php')html=html.replace(/const rows=(\[.*?\]),search=/s,(whole,json)=>'const rows='+JSON.stringify(JSON.parse(json).filter(r=>!officialIds.includes(r.key)))+',search=');}
@@ -130,6 +131,7 @@ try{
     for(const a of document.querySelectorAll('.yt-toolbar a'))if(a.textContent.includes('NOA WORLD'))a.href='/noa-world.php';
    },officialIds);
    if(route==='/noa-music.php')await page.evaluate(sample=>{const dock=document.querySelector('.noa-two-line');if(dock)dock.hidden=false;const title=document.getElementById('dock-title');if(title)title.textContent=sample?.title||'곡을 선택하세요';const image=document.getElementById('dock-cover');if(image&&sample?.thumbnail){image.src=sample.thumbnail;image.hidden=false;const empty=document.getElementById('dock-cover-empty');if(empty)empty.hidden=true;}},sampleAudio[0]||sampleVideo[0]);
+   if(variant==='proposal'&&route==='/noa-music.php')await page.evaluate(()=>{const watch=document.getElementById('watch'),details=document.querySelector('section[aria-label="곡 상세"] .noa-media-details');if(watch&&details)details.before(watch);});
    if(variant==='proposal'&&route==='/noa-music.php')await page.evaluate(sample=>{
     const old=document.querySelector('.noa-two-line');if(!old)return;
     const wrap=document.createElement('section');wrap.id='p0-player-preview';wrap.setAttribute('aria-label','미배포 2줄 플레이어 시안');

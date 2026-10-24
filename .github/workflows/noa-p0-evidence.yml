@@ -26,14 +26,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh run download 40059204530 --name noa-p0-evidence-40059204530-1 --dir "$RUNNER_TEMP/p0-baseline"
+          gh run download 40060278279 --name noa-p0-evidence-40060278279-1 --dir "$RUNNER_TEMP/p0-baseline"
           mkdir -p p0-evidence
-          cp "$RUNNER_TEMP/p0-baseline/protected-baseline.json" p0-evidence/protected-baseline.json
+          cp -r "$RUNNER_TEMP/p0-baseline/." p0-evidence/
       - name: Browser timings, content separation and unshipped visual proposals
         env:
           NOA_SOURCE_ROOT: ${{ github.workspace }}
           NOA_P0_REUSE_METRICS: ${{ runner.temp }}/p0-baseline/evidence.json
           NOA_P0_VISUAL_REVIEW: '1'
+          NOA_P0_ONLY_MUSIC: '1'
         run: node "$RUNNER_TEMP/noa-p0/evidence.mjs"
       - uses: actions/upload-artifact@v4
         if: always()

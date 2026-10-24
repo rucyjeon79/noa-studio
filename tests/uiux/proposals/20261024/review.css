@@ -23,6 +23,7 @@ body.noa-page main,.noa-main{max-width:var(--p0-content)!important;padding-inlin
 .noa-media-details summary{padding-inline:0!important}
 .noa-media-details pre{padding-inline:0!important}
 .noa-page .player{grid-template-columns:1fr!important;min-height:0!important}
+.noa-page section.player{display:none!important}
 .noa-page .playing{padding:16px 20px!important}
 .noa-page .playing h2{font-size:22px!important;margin-block:6px!important}
 .noa-page .detail{padding:20px!important;margin-block:24px!important}
