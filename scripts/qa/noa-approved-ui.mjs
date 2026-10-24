@@ -33,6 +33,7 @@ try{
   });
   const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));
   for(const path of routes){
+   const check={path,theme,width};
    await page.goto(base+path+(path==='/noa-music.php'?'?track='+encodeURIComponent(musicKey):''),{waitUntil:'domcontentloaded',timeout:90000});await page.waitForFunction(theme=>document.documentElement.dataset.noaTheme===theme,theme);
    await page.locator('.noa-sidebar').waitFor({state:'attached'});
    if(path==='/noa-my.php'){
@@ -41,13 +42,13 @@ try{
     await page.evaluate(()=>{const host=document.getElementById('my-recent');host.innerHTML='<ol><li><a href="/noa-music.php?track=single%3Akpop-original%3A01">하루의 끝에</a></li><li><a href="/noa-music.php?track=single%3Akpop-original%3A02">난 다시 살아가</a></li></ol>';});
     await page.waitForFunction(()=>document.querySelector('#my-recent a>svg'));
     const row=await page.locator('#my-recent a').first().evaluate(a=>{const b=a.getBoundingClientRect(),s=a.querySelector('svg').getBoundingClientRect(),t=a.querySelector('span').getBoundingClientRect();return{height:b.height,iconRight:s.right,textLeft:t.left,direction:getComputedStyle(a).flexDirection,border:getComputedStyle(a.parentElement.parentElement.parentElement).borderTopWidth};});
-    assert.equal(row.direction,'row');assert(row.height>=44&&row.iconRight<=row.textLeft);report.rows.push({path,theme,width,history:row});
+    assert.equal(row.direction,'row');assert(row.height>=44&&row.iconRight<=row.textLeft);Object.assign(check,{history:row});
    }
    if(path==='/noa-music.php'){
     await page.locator('.song').filter({has:page.locator('.sound-play')}).first().locator('.song-select').click();
     await page.waitForFunction(()=>document.getElementById('dock-artist')?.textContent.trim());
-    const geometry=await page.evaluate(()=>{const d=document.querySelector('.noa-two-line'),top=d.querySelector('.noa-dock-top').getBoundingClientRect(),bottom=d.querySelector('.noa-dock-bottom').getBoundingClientRect();return{two:bottom.top>=top.bottom,artist:document.getElementById('dock-artist').textContent,controls:[...d.querySelectorAll('.controls button')].filter(b=>getComputedStyle(b).display!=='none'&&!b.hidden).map(b=>({id:b.id,w:b.getBoundingClientRect().width,h:b.getBoundingClientRect().height})),detail:!document.querySelector('section[aria-label="곡 상세"]').hidden,singleDetail:getComputedStyle(document.querySelector('section.player')).display==='none',playShadow:getComputedStyle(document.getElementById('pause-play')).boxShadow,playLabel:getComputedStyle(document.getElementById('pause-play'),'::after').display,overflow:document.documentElement.scrollWidth>innerWidth};});
-    assert(geometry.two&&geometry.detail&&geometry.singleDetail&&!geometry.overflow);assert.equal(geometry.playShadow,'none');assert.equal(geometry.playLabel,'none');assert.equal(geometry.controls.length,width<=360?5:6);assert(geometry.controls.every(b=>b.w>=44&&b.h>=44));
+    const geometry=await page.evaluate(()=>{const d=document.querySelector('.noa-two-line'),top=d.querySelector('.noa-dock-top').getBoundingClientRect(),bottom=d.querySelector('.noa-dock-bottom').getBoundingClientRect();return{two:bottom.top>=top.bottom,artist:document.getElementById('dock-artist').textContent,controls:[...d.querySelectorAll('.controls button')].filter(b=>getComputedStyle(b).display!=='none'&&!b.hidden).map(b=>({id:b.id,w:b.getBoundingClientRect().width,h:b.getBoundingClientRect().height})),detail:!document.querySelector('section[aria-label="곡 상세"]').hidden,singleDetail:getComputedStyle(document.querySelector('section.player')).display==='none',iconInk:getComputedStyle(document.querySelector('#pause-play svg')).color,controlInk:getComputedStyle(document.getElementById('pause-play')).color,playShadow:getComputedStyle(document.getElementById('pause-play')).boxShadow,playLabel:getComputedStyle(document.getElementById('pause-play'),'::after').display,overflow:document.documentElement.scrollWidth>innerWidth};});
+    assert(geometry.two&&geometry.detail&&geometry.singleDetail&&!geometry.overflow);assert.equal(geometry.iconInk,geometry.controlInk);assert.equal(geometry.playShadow,'none');assert.equal(geometry.playLabel,'none');assert.equal(geometry.controls.length,width<=360?5:6);assert(geometry.controls.every(b=>b.w>=44&&b.h>=44));
     await page.locator('#dock-more').click();assert(await page.locator('#noa-dock-popover').isVisible());assert.equal(await page.locator('#noa-dock-popover button').count(),width<=360?5:4);await page.keyboard.press('Escape');
     if(width===390&&theme==='noa-studio'){
      const start=Date.now();await page.locator('#pause-play').click();await page.waitForFunction(()=>!document.querySelector('audio').paused&&document.querySelector('audio').currentTime>0.1);
@@ -56,11 +57,11 @@ try{
      const during=await page.locator('audio').evaluate(a=>({time:a.currentTime,paused:a.paused,src:a.currentSrc}));assert(!during.paused&&during.src===before.src);await page.goBack();await page.waitForFunction(()=>!document.querySelector('#noa-shell-view'));assert(await page.locator('audio').evaluate(a=>!a.paused));await page.locator('#pause-play').click();report.audio={actualPublicMp3:true,continuity:true,srcPreserved:true,observedMs:Date.now()-start};
     }
     if(width<=360)await page.locator('#dock-more').click();await page.locator('#dock-add').click();await page.waitForFunction(()=>location.hash==='#my-playlists');assert(await page.locator('#my-playlists').isVisible());
-    await page.locator('#dock-close').click();await page.locator('.noa-two-line').waitFor({state:'hidden'});assert(await page.locator('audio').evaluate(a=>a.paused));report.rows.push({path,theme,width,geometry,guestAdd:'opens existing playlist/login section without a write',closeHidden:true});
+    await page.locator('#dock-close').click();await page.locator('.noa-two-line').waitFor({state:'hidden'});assert(await page.locator('audio').evaluate(a=>a.paused));Object.assign(check,{geometry,guestAdd:'opens existing playlist/login section without a write',closeHidden:true});
     // Keep the selected two-row dock visible in the recorded screen.
     await page.locator('.song').filter({has:page.locator('.sound-play')}).first().locator('.song-select').click();await page.locator('section[aria-label="곡 상세"]').scrollIntoViewIfNeeded();
    }
-   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);assert(!overflow,'overflow '+path+' '+width);
+   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);assert(!overflow,'overflow '+path+' '+width);Object.assign(check,{overflow});report.rows.push(check);
    if([390,1440].includes(width)){await page.screenshot({path:out+'/'+theme+'-'+width+'-'+(path==='/'?'home':path.slice(1,-4))+'.png'});}
   }
   await context.close();
