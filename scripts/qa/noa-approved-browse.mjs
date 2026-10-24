@@ -6,7 +6,7 @@ const legacyBrowse=execFileSync('git',['show','5793796928a65249ddb6650b6f610768a
 let staleRequests=0;
 const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/google-chrome',args:['--no-sandbox']});
 try{for(const theme of ['noa-studio','noa-ivory'])for(const width of[390,1440]){
- const context=await browser.newContext({viewport:{width,height:900},reducedMotion:'reduce'});await context.addInitScript(theme=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',design:'ios',radius:'soft'})),theme);
+ const context=await browser.newContext({serviceWorkers:phase==='candidate'?'block':'allow',viewport:{width,height:900},reducedMotion:'reduce'});await context.addInitScript(theme=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',design:'ios',radius:'soft'})),theme);
  await context.route('**/*',async route=>{const r=route.request(),u=new URL(r.url());if(u.origin===base&&u.pathname==='/noa-browse.js'&&u.searchParams.get('v')==='20261024-category-complete'){staleRequests++;return route.fulfill({body:legacyBrowse,contentType:'application/javascript',headers:{'Cache-Control':'public, max-age=86400'}});}
  if(!['GET','HEAD'].includes(r.method())){report.errors.push('unexpected mutation '+u.pathname);return route.abort();}if(phase==='candidate'&&u.origin===base&&r.isNavigationRequest()&&['/noa-music.php','/noa-youtube.php'].includes(u.pathname)){
  const response=await route.fetch();let body=await response.text();body=body.replace(/noa-browse[.]js[?]v=[^"']+/g,'noa-browse.js?v='+expectedRevision);
