@@ -37,6 +37,20 @@ def read(sftp, path):
         return None
 
 
+def runtime_baseline(relative, current):
+    proof = json.loads(Path('scripts/n80_app_runtime_drive_receipt.json').read_text())
+    entry = proof.get('files', {}).get(relative, {})
+    if (not proof.get('readbackVerified') or not proof.get('restoreExtractionVerified')
+            or not proof.get('driveId') or current is None
+            or sha(current) != entry.get('sha256') or len(current) != entry.get('bytes')):
+        raise RuntimeError('verified_runtime_recovery_copy_required')
+    baseline = subprocess.check_output(['git', 'show', proof['baseCommit'] + ':deploy/' + relative])
+    if baseline != current:
+        raise RuntimeError('runtime_recovery_source_mismatch')
+    subprocess.run(['php', '-l'], input=baseline, capture_output=True, check=True)
+    return baseline
+
+
 def install(sftp):
     proof = json.loads(Path('scripts/n80_music_adapter_drive_receipt.json').read_text())
     if (proof.get('sha256') != OLD_SHA or proof.get('readbackVerified') is not True
@@ -52,6 +66,9 @@ def install(sftp):
             continue
         if row['module'] in NEW_FILES and row['state'] == 'missing':
             continue
+        if row['module'] in NEW_FILES and row['state'] == 'different':
+            runtime_baseline(row['module'], read(sftp, ROOT + '/' + row['module']))
+            continue
         if row['module'] == ADAPTER and row['actualSha256'] == OLD_SHA:
             continue
         raise RuntimeError('unrecognized_production_change:' + row['module'])
@@ -64,8 +81,23 @@ def install(sftp):
         data = (Path('deploy') / relative).read_bytes()
         current = read(sftp, target)
         if current is not None:
-            if current != data:
-                raise RuntimeError('unknown_integration_runtime_version')
+            if current == data:
+                continue
+            baseline_runtime = runtime_baseline(relative, current)
+            try:
+                with sftp.open(target, 'wb') as handle:
+                    handle.write(data)
+                if read(sftp, target) != data:
+                    raise RuntimeError('runtime_update_readback_failed')
+            except Exception:
+                actual = read(sftp, target)
+                if actual is not None and len(actual) <= len(data) and data.startswith(actual):
+                    with sftp.open(target, 'wb') as handle:
+                        handle.write(baseline_runtime)
+                    if read(sftp, target) != baseline_runtime:
+                        raise RuntimeError('runtime_restore_failed') from None
+                raise
+            installed.append(relative)
             continue
         with sftp.open(target, 'wx') as handle:
             handle.write(data)
@@ -113,6 +145,12 @@ def call(key):
         with urllib.request.build_opener(NoRedirect()).open(req, timeout=150) as response:
             body = response.read(2 * 1024 * 1024 + 1)
             signature = response.headers.get('X-N80-Signature', '')
+    except urllib.error.HTTPError as error:
+        import re
+        code = error.headers.get('X-N80-Error-Code', 'unknown')
+        if not re.fullmatch(r'[A-Za-z0-9_:.-]{1,160}', code):
+            code = 'invalid_error_code'
+        raise RuntimeError('app_data_endpoint_' + str(error.code) + ':' + code) from None
     except (OSError, TimeoutError):
         raise RuntimeError('app_data_endpoint_unavailable') from None
     if len(body) > 2 * 1024 * 1024:
