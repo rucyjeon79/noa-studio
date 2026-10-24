@@ -2,7 +2,7 @@ import base64,hashlib,io,json,os,stat,tarfile
 from pathlib import Path
 import paramiko
 ROOT='/hosting/noastudio/html'
-FILES=['noa-music.php','noa-app/p0-player.js','noa-app/home.php','noa-playlists.js','noa-bridge/user-playlists.php','noa-sitemap.php']
+FILES=['noa-music.php','noa-app/p0-player.js','noa-app/home.php','noa-playlists.js','noa-bridge/user-playlists.php','noa-sitemap.php','noa-music-detail.php','noa-bridge/music-readmodel.php','noa-app/engine/event-contract.php','noa-app/engine/registry.php','noa-app/engine/completion-receipt.php','noa-app/engine/completion-report.php']
 def sha(b):return hashlib.sha256(b).hexdigest()
 def main():
  t=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022));s=None
