@@ -3,7 +3,7 @@ import base64, hashlib, io, json, os, stat, tarfile
 from pathlib import Path
 import paramiko
 ROOT='/hosting/noastudio/html'
-FILES=['noa-browse.js','noa-ui.css','extend/noa.design.php']
+FILES=['noa-browse.js','noa-ui.css','extend/noa.design.php','noa-app/engine/completion-receipt.php']
 PROTECTED=['common.php','config.php','data/dbconfig.php','index.php','noa-app/jukebox/upload.js','noa-app/jukebox/upload-core.php','noa-app/jukebox/queue-core.php','noa-app/jukebox/core.php','noa-music.php','noa-youtube.php','noa-app/p0-player.js']
 def sha(b):return hashlib.sha256(b).hexdigest()
 def main():

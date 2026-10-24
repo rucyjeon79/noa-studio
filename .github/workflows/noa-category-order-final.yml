@@ -122,8 +122,8 @@ jobs:
       - name: Download exact Drive-verified operating preimages, including HOME
         uses: actions/download-artifact@v4
         with:
-          artifact-ids: '12577035338'
-          run-id: '40136261690'
+          artifact-ids: '12578065014'
+          run-id: '40136629252'
           github-token: ${{ github.token }}
           repository: rucyjeon79/noa-studio
           path: ${{ runner.temp }}/noa-finish-preimages

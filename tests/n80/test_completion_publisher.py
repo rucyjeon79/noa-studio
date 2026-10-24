@@ -96,6 +96,20 @@ class CompletionPublisherTests(unittest.TestCase):
             with self.assertRaisesRegex(p.EvidenceError, "signature"):
                 p.publish(event, key)
 
+    def test_exact_design_loader_mapping_and_other_extensions_denied(self):
+        self.assertTrue(p.safe_path("extend/noa.design.php"))
+        for path in ("extend/other.php", "extend/../config.php", "extend/noa.design.php/extra"):
+            self.assertFalse(p.safe_path(path))
+        class SFTP:
+            def normalize(self, path): return path
+            def lstat(self, path): return type("Stat", (), {"st_mode": stat.S_IFREG, "st_size": 4})()
+            def open(self, path, mode): return io.BytesIO(b"live")
+        with patch.object(p.subprocess, "run", return_value=type("Result", (), {"stdout": b"live"})()) as git:
+            result = p.source_readback(SFTP(), ".", COMMIT, ["extend/noa.design.php"])
+            self.assertIn(COMMIT + ":deploy/noa-design.extend.php", git.call_args.args[0])
+            self.assertEqual(result[0]["path"], "extend/noa.design.php")
+            self.assertTrue(result[0]["readbackVerified"])
+
     def test_identity_is_deterministic(self):
         dep, ver = {"runId": "1"}, {"runId": "2", "artifactSha256": "a" * 64, "updatedAt": "2026-10-24T10:00:00Z"}
         args = ("work.completed", "admin", "task", "Work", COMMIT, dep, ver, [], [])

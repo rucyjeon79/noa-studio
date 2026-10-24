@@ -113,6 +113,8 @@ def verified_artifact(metadata, run_id, commit, archive, member):
 
 
 def safe_path(path):
+    if path == "extend/noa.design.php":
+        return True
     return isinstance(path, str) and len(path) <= 240 and ".." not in path and "//" not in path and bool(re.fullmatch(
         r"(?:noa-[a-z0-9-]+\.(?:php|js|css|json)|noa-(?:app|bridge)/[A-Za-z0-9_/-]+\.(?:php|js|css|json))", path))
 
@@ -123,7 +125,7 @@ def source_readback(sftp, repository, commit, paths):
     for path in sorted(paths):
         require(safe_path(path), "unsafe_source_path")
         try:
-            source = "bridge/" + path[len("noa-bridge/"):] if path.startswith("noa-bridge/") else "deploy/" + path
+            source = "bridge/" + path[len("noa-bridge/"):] if path.startswith("noa-bridge/") else ("deploy/noa-design.extend.php" if path == "extend/noa.design.php" else "deploy/" + path)
             local = subprocess.run(["git", "-C", str(repository), "show", commit + ":" + source],
                                    check=True, capture_output=True).stdout
         except subprocess.CalledProcessError:

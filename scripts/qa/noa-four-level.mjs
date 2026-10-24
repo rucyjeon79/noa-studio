@@ -18,6 +18,7 @@ try{
   for(const path of ['/noa-music.php','/noa-youtube.php']){
    await page.goto(origin+path,{waitUntil:'domcontentloaded',timeout:90000});await page.waitForFunction(()=>window.NoaBrowse&&document.querySelector('[data-browse-group]'));
    const host=page.locator('.noa-browse');assert.deepEqual(await host.locator('[data-browse-group] strong').allTextContents(),['오리지널송','EP 컬렉션','당신의 이야기, 우리의 음악','AInoa의 유명곡 커버']);assert.equal(await host.locator('[data-browse-level="2"]').count(),0);
+   if([390,1440].includes(width))await page.screenshot({path:out+'/'+theme+'-'+width+'-'+path.slice(1,-4)+'-categories.png'});
    let genreCount=0,actLists=0,looseLists=0;
    for(const group of ['original','ep','story','cover']){
     await host.locator('[data-browse-group="'+group+'"]').click();assert.equal(await host.locator('[data-browse-group]').count(),4);assert.equal(await host.locator('[data-browse-group][aria-expanded="true"]').count(),1);assert.equal(await host.locator('[data-browse-level="3"]').count(),0,'group cannot skip genres');
@@ -38,7 +39,7 @@ try{
    await host.locator('[data-browse-group="original"]').click();await host.locator('[data-browse-genre="kpop-original"]').click();const act=host.locator('[data-browse-act]').first();await act.click();const first=host.locator('[data-browse-level="4"] .noa-inline-song').first();
    const image=first.locator('img');assert.equal(await image.count(),1);await image.evaluate(n=>n.loading='eager');await page.waitForFunction(()=>{const i=document.querySelector('[data-browse-level="4"] img');return i?.complete&&i.naturalWidth>0;});
    assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1));
-   if([390,1440].includes(width))await page.screenshot({path:out+'/'+theme+'-'+width+'-'+path.slice(1,-4)+'.png'});
+   if([390,1440].includes(width)){await act.scrollIntoViewIfNeeded();await page.screenshot({path:out+'/'+theme+'-'+width+'-'+path.slice(1,-4)+'-tracks.png'});}
    await first.click();if(path.includes('music'))assert(await page.locator('[aria-label="곡 상세"]').isVisible());else{assert(await page.locator('#yt-player').isVisible());assert.match(await page.locator('#yt-frame').getAttribute('src'),/youtube/);}
    await host.locator('.noa-browse-all').click();assert.equal(await host.locator('.noa-browse-pager button').count(),2);
    report.cases.push({path,theme,width,genreCount,actLists,looseLists,parentChoicesPreserved:true,folding:true,epAscending:true,realArtwork:true,itemSelection:true,pagination:true,overflow:false});

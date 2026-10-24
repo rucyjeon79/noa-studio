@@ -11,6 +11,10 @@
     "extend/noa.design.php": {
       "bytes": 3131,
       "sha256": "a37eadc71d1031a7e3ac5b7b9bc8a943f94ce7cc3c1155a5d621cce4054e3321"
+    },
+    "noa-app/engine/completion-receipt.php": {
+      "bytes": 8095,
+      "sha256": "519a105ac9c3fa78924f9c6a01d3c88a85cb418babcd89a98bdbd97e366b837b"
     }
   },
   "protected": {
@@ -59,12 +63,12 @@
       "sha256": "1cbc81763e2aa0c46d95a5efd8895b020bb4223d8ad1b5cfca0bdd1ca1850931"
     }
   },
-  "sourceCommit": "7cf766b032325b45eeb961ad099998ca5f94b933",
-  "archiveSha256": "29bbab819ea3972501992fbc581b4f3360bde8ce44aa143e1276ddb5a57cb4ae",
-  "driveId": "1l0Wb5I53Mi5gv6BzEk5aF9dvlaStCJkM",
-  "checkpointRun": 40136261690,
-  "artifactId": 12577035338,
-  "artifactZipSha256": "87e3cd829bd20dd379fba7f26eeec593f9e29dc00f5d6eabec4482ea479ddcf2",
+  "sourceCommit": "07f2ab0243d5360c2013882eb2ed802ca922701b",
+  "archiveSha256": "c39b401fa66fdb04d7740b565fd4c88bb4c409e6065a40ff802c3a353c67cf7e",
+  "driveId": "1m92dYRvkKfFa8Djl98OSi9mqPV_cTyJ9",
+  "checkpointRun": 40136629252,
+  "artifactId": 12578065014,
+  "artifactZipSha256": "c7d65b94824a3169200099cacf135f1fe6eaf78ae7d492804066d52528b9b51c",
   "readbackVerified": true,
   "restoreExtractionVerified": true
 }
