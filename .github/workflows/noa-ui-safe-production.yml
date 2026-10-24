@@ -10,7 +10,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: noa-production-sftp
+  group: noa-retired-noa-ui-safe-production
   cancel-in-progress: false
 jobs:
   verify-and-deploy:

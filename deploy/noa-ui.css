@@ -394,3 +394,12 @@ html[data-noa-theme="noa-ivory"]{
 .noa-site-map-link:hover>span,.noa-site-map-link[aria-current="page"]>span{color:var(--noa-accent)}
 
 @media(max-width:760px){html[data-noa-precision]{--noa-content-gutter:16px;--noa-section-gap:24px}}
+
+/* Approved 3-tier browse: inline ACT song rows, no nested card decoration. */
+.noa-inline-act{min-width:0;border-bottom:1px solid var(--noa-line)}
+.noa-inline-act>.noa-browse-card{width:100%;text-align:left}
+.noa-inline-act>.noa-browse-card[aria-expanded="true"]{outline:1px solid var(--noa-success,#34C785);outline-offset:-1px}
+.noa-inline-songs{display:grid;gap:0;padding:4px 10px 10px 16px}
+.noa-inline-song{display:block;width:100%;min-height:44px;text-align:left;border:0;border-bottom:1px solid var(--noa-line);background:transparent;color:var(--noa-text);padding:10px 8px;overflow-wrap:anywhere}
+.noa-inline-song:focus-visible{outline:2px solid var(--noa-info,#64A9F5);outline-offset:-2px}
+.noa-inline-song:hover{color:var(--noa-success,#34C785)}

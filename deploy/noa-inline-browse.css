@@ -1,0 +1,8 @@
+/* Approved category -> ACT -> inline song hierarchy. One surface, no nested decorated cards. */
+.noa-inline-act{min-width:0;border-bottom:1px solid var(--noa-line)}
+.noa-inline-act>.noa-browse-card{width:100%;text-align:left}
+.noa-inline-act>.noa-browse-card[aria-expanded="true"]{outline:1px solid var(--noa-success,#34C785);outline-offset:-1px}
+.noa-inline-songs{display:grid;gap:0;padding:4px 10px 10px 16px}
+.noa-inline-song{display:block;width:100%;min-height:44px;text-align:left;border:0;border-bottom:1px solid var(--noa-line);background:transparent;color:var(--noa-text);padding:10px 8px;overflow-wrap:anywhere}
+.noa-inline-song:focus-visible{outline:2px solid var(--noa-info,#64A9F5);outline-offset:-2px}
+.noa-inline-song:hover{color:var(--noa-success,#34C785)}

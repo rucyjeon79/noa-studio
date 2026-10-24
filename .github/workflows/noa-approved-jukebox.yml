@@ -11,7 +11,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: noa-production-sftp
+  group: noa-retired-noa-approved-jukebox
   cancel-in-progress: false
 jobs:
   verify-and-deploy:

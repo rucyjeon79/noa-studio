@@ -16,13 +16,13 @@ import urllib.parse
 import paramiko
 
 ROOT = '/hosting/noastudio/html'
-FILES = {'noa-browse.js':'deploy/noa-browse.js','noa-music.php':'deploy/noa-music.php','noa-youtube.php':'deploy/noa-youtube.php','extend/noa.design.php':'deploy/noa-design.extend.php'}
+FILES = {'noa-ui.css':'deploy/noa-ui.css','noa-browse.js':'deploy/noa-browse.js','noa-music.php':'deploy/noa-music.php','noa-youtube.php':'deploy/noa-youtube.php','extend/noa.design.php':'deploy/noa-design.extend.php'}
 PROTECTED = ['index.php', 'common.php', 'config.php', 'data/dbconfig.php',
              'bbs/login.php', 'bbs/login_check.php', 'noa-app/jukebox/core.php',
              'noa-app/jukebox/upload-core.php', 'noa-app/jukebox/upload.js',
              'noa-app/jukebox/upload-transport.js', 'noa-app/jukebox/service.php',
              'noa-app/database/core.php', 'noa-app/taxonomy/index.php',
-             'noa-app/home.php','noa-bridge/world-mv.php','noa-bridge/youtube-store.php','noa-ui.css','noa-ui.js','noa-design.json','noa-app/p0-media.css','noa-app/p0-player.js','noa-policy-20261024.css']
+             'noa-app/home.php','noa-bridge/world-mv.php','noa-bridge/youtube-store.php','noa-ui.js','noa-design.json','noa-app/p0-media.css','noa-app/p0-player.js','noa-policy-20261024.css']
 STATE = Path(os.environ.get('RUNNER_TEMP', '/tmp')) / 'noa-approved-browse-release.json'
 
 

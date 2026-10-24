@@ -1,0 +1,40 @@
+name: NOA Browse Production
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/noa-browse.js'
+      - 'scripts/noa_browse_safe_deploy.py'
+      - '.github/workflows/noa-browse-production.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: noa-retired-noa-browse-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    # Runtime publication is owned by the Drive-protected guarded browse release.
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate browse script
+        run: |
+          node --check deploy/noa-browse.js
+          python -m py_compile scripts/noa_browse_safe_deploy.py
+          grep -q 'ACT 미소속 곡' deploy/noa-browse.js
+      - run: python -m pip install 'paramiko>=3,<5'
+      - name: Verify and deploy browse JavaScript
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_browse_safe_deploy.py
