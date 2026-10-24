@@ -6,7 +6,10 @@
       "sha256": "a37eadc71d1031a7e3ac5b7b9bc8a943f94ce7cc3c1155a5d621cce4054e3321"
     }
   },
-  "readbackVerified": false,
-  "restoreExtractionVerified": false,
-  "status": "additional_loader_backup_upload_requires_explicit_approval"
+  "readbackVerified": true,
+  "restoreExtractionVerified": true,
+  "status": "verified",
+  "archiveBytes": 1386,
+  "archiveSha256": "b9be765b83e41dcf7565abf7355f1461d0d33b014054bc890f020dceccbdbcc5",
+  "driveId": "1qtbkiYTdi_dMN2S5AIXOdgrGlMlGA-0o"
 }
