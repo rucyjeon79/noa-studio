@@ -23,9 +23,9 @@ for(const path of routes){const response=await request.request.get(base+path,{ti
 await request.close();
 try{
  for(const theme of ['noa-studio','noa-ivory'])for(const width of [320,360,390,430,768,1024,1440]){
-  const context=await browser.newContext({viewport:{width,height:900},reducedMotion:'reduce'});
+  const context=await browser.newContext({viewport:{width,height:900},reducedMotion:'reduce',extraHTTPHeaders:{'X-N80-Availability-Check':'1'}});
   await context.addInitScript(theme=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',design:'ios',radius:'soft'})),theme);
-  await context.route('**/*',async route=>{const req=route.request(),u=new URL(req.url());if(!['GET','HEAD'].includes(req.method())){report.errors.push('unexpected mutation '+u.pathname);return route.abort();}
+  await context.route('**/*',async route=>{const req=route.request(),u=new URL(req.url());if(u.origin===base&&u.pathname==='/noa-bridge/popularity-events.php'){if(req.method()==='GET')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,csrf:'visual-only'})});if(req.method()==='POST'){let body;try{body=req.postDataJSON();}catch{}if(body?.action==='attach'&&typeof body.songKey==='string'&&Object.keys(body).sort().join(',')==='action,songKey'){report.visualTrackingRequestsSuppressed=(report.visualTrackingRequestsSuppressed||0)+1;return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:false,error:'visual_tracking_disabled'})});}}}if(!['GET','HEAD'].includes(req.method())){report.errors.push('unexpected mutation '+u.pathname);return route.abort();}
    if(u.origin===base){
     if(req.isNavigationRequest()&&pages.has(u.pathname))return route.fulfill({status:200,contentType:'text/html; charset=utf-8',body:pages.get(u.pathname)});
     if(phase==='candidate'&&['/noa-ui.css','/noa-ui.js','/noa-design.json','/noa-policy-20261024.css','/noa-app/p0-media.css','/noa-app/p0-player.js'].includes(u.pathname))return route.fulfill({path:root+'/deploy'+u.pathname,contentType:u.pathname.endsWith('.js')?'application/javascript':u.pathname.endsWith('.json')?'application/json':'text/css'});
@@ -80,3 +80,4 @@ try{
  assert.deepEqual(report.errors,[]);report.ok=true;
 }finally{writeFileSync(out+'/result.json',JSON.stringify(report,null,2));await browser.close();}
 console.log('NOA_APPROVED_UI_OK '+JSON.stringify({phase,rows:report.rows.length,errors:report.errors.length}));
+

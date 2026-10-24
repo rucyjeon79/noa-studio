@@ -14,7 +14,8 @@ try{
  $ids=static function(array $groups):array{return array_merge(...array_map(static fn($g)=>array_column($g['routes'],0),array_values($groups)));};
  $guest=noa_sitemap_visible_groups($root,'guest');$member=noa_sitemap_visible_groups($root,'member');$admin=noa_sitemap_visible_groups($root,'admin');
  check(!isset($guest['admin'])&&!isset($member['admin']),'administrator routes must be hidden from guest/member');
- check(isset($admin['admin'])&&count($admin['admin']['routes'])===15,'administrator services included');
+ check(in_array('popularity',$ids($admin),true)&&!in_array('popularity',$ids($guest),true)&&!in_array('popularity',$ids($member),true),'actual popularity service is administrator-only');
+ check(isset($admin['admin'])&&count($admin['admin']['routes'])===16,'administrator services included');
  check(in_array('login',$ids($guest),true)&&!in_array('playlists',$ids($guest),true),'guest account destinations');
  check(in_array('playlists',$ids($member),true)&&!in_array('login',$ids($member),true),'member playlist destination');
  $adminLinks=array_merge(...array_map(static fn($g)=>array_column($g['routes'],3),array_values($admin)));
@@ -44,3 +45,4 @@ try{
  $iterator=new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::CHILD_FIRST);
  foreach($iterator as $file){if($file->isDir())rmdir($file->getPathname());else unlink($file->getPathname());}rmdir($root);
 }
+
