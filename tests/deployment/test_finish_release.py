@@ -40,8 +40,8 @@ def receipt_for(old, raw):
                       for p, data in old.items()},
             'protected': {}, 'archiveSha256': release.sha(raw),
             'driveId': 'verified_unit_drive', 'readbackVerified': True,
-            'restoreExtractionVerified': True, 'checkpointRun': 40096706561,
-            'artifactId': 12560554889}
+            'restoreExtractionVerified': True, 'checkpointRun': 40136261690,
+            'artifactId': 12577035338}
 
 
 class PreimageTests(unittest.TestCase):
