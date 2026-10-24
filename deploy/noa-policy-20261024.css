@@ -1,0 +1,48 @@
+/* Common constitution corrections. Palette and control tokens remain shared. */
+.noa-sidebar-bottom a{min-block-size:44px}
+.noa-g5-top>[data-noa-login],.noa-footer a{min-inline-size:44px}
+
+/* One login surface; preserve the native form, labels and authentication handlers. */
+html.noa-g5 #mb_login{background:var(--noa-surface);color:var(--noa-text)}
+html.noa-g5 #mb_login>.mbskin_box{border:0;background:transparent;box-shadow:none;padding:0;min-width:0}
+html.noa-g5 #mb_login #login_fs{padding:16px 0 0;min-inline-size:0}
+html.noa-g5 #login_info{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;height:auto;min-block-size:44px}
+html.noa-g5 #login_info .login_if_auto{float:none;min-block-size:44px;display:flex;align-items:center}
+html.noa-g5 #login_info label,html.noa-g5 #login_info a{display:inline-flex;align-items:center;min-block-size:44px;max-inline-size:100%;float:none;white-space:normal;overflow-wrap:anywhere}
+html.noa-g5 #login_info label{gap:6px;padding-inline-end:8px;cursor:pointer}
+html.noa-g5 #login_info a{padding-inline:4px}
+
+/* Checkbox appearance stays distinct from mutually exclusive radio controls. */
+.lab-check{min-block-size:44px}
+.lab-check{align-items:center}
+.lab-check input[type=checkbox]{border-radius:4px;flex-shrink:0}
+.noa-page .lab-error{color:var(--noa-danger);border-left-color:var(--noa-danger)}
+.lab-health .connected{color:var(--noa-success)}
+.jukebox-transfer-errors:not(:empty){color:var(--noa-danger)}
+#jukebox-transfer-details{border-top-color:var(--noa-line)}
+.jukebox-close{min-inline-size:44px;min-block-size:44px}
+.jukebox-upload-dialog input[type=file]{min-block-size:44px;inline-size:100%}
+.jukebox-upload-dialog input[type=file]::file-selector-button{min-block-size:44px;padding:8px 12px;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,8px);background:var(--noa-raised);color:var(--noa-text);font:inherit;cursor:pointer}
+
+/* The upload result dock stays above navigation; reserve its measured height. */
+#jukebox-transfer-dock{left:var(--noa-rail,0px);bottom:var(--noa-nav-space,0px);max-block-size:min(60dvh,calc(100dvh - var(--noa-nav-space,0px) - 24px))}
+html[data-noa-precision] body.noa-page.noa-processing-dock:has(#jukebox-transfer-dock),
+html[data-noa-precision] body.noa-page.noa-upload-active:has(#jukebox-transfer-dock){padding-bottom:calc(var(--noa-nav-space,0px) + var(--noa-transfer-space,144px) + 24px)!important}
+html[data-noa-precision] body.noa-page.noa-processing-dock:has(#jukebox-transfer-details:not([hidden])){padding-bottom:calc(var(--noa-nav-space,0px) + var(--noa-transfer-space,60dvh) + 24px)!important}
+
+/* Standalone app workspaces reuse the same palette without a second app shell. */
+html[data-noa-theme-only]{--noa-rail:0px;--bg:var(--noa-bg);--surface:var(--noa-surface);--panel:var(--noa-surface);--text:var(--noa-text);--muted:var(--noa-muted);--gold:var(--noa-accent);--line:var(--noa-line);--border:var(--noa-line);--radius:var(--noa-radius);color-scheme:dark}
+html[data-noa-theme-only][data-noa-theme=noa-ivory]{color-scheme:light}
+html[data-noa-theme-only] body{background:var(--noa-bg);color:var(--noa-text);font-family:var(--noa-font)}
+html[data-noa-theme-only] :is(button,input,select,textarea){font:inherit;max-inline-size:100%}
+html[data-noa-theme-only] button{min-inline-size:44px;min-block-size:44px;background:var(--noa-raised);color:var(--noa-text);border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,8px)}
+html[data-noa-theme-only] :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea){min-block-size:44px;background:var(--noa-bg);color:var(--noa-text);border-color:var(--noa-line)}
+html[data-noa-theme-only] :is(a,button,input,select,textarea,summary):focus-visible{outline:2px solid var(--noa-info);outline-offset:3px}
+html[data-noa-theme-only] :is(nav a,header>a,.check,summary){min-block-size:44px}
+html[data-noa-theme-only] :is(nav a,header>a){display:inline-flex;align-items:center}
+html[data-noa-theme-only] .check{display:flex;align-items:center;gap:8px;cursor:pointer}
+html[data-noa-theme-only] .check input{flex:0 0 20px;min-height:20px;accent-color:var(--noa-accent)}
+html[data-noa-theme-only] section .cards>:is(.card,.metric){border:0;border-radius:0;box-shadow:none;background:transparent;min-width:0}
+html[data-noa-theme-only] section pre{border:0;box-shadow:none;background:transparent;padding-inline:0}
+html[data-noa-theme-only] :is(section,main,.fields,.cards,.toolbar){min-width:0}
+@media(prefers-reduced-motion:reduce){.jukebox-busy svg{animation:none}}
