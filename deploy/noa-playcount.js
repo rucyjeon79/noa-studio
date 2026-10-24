@@ -1,0 +1,15 @@
+/* Observe MUSIC's existing audio. Never call play/pause/load or replace its source. */
+(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory;else{root.NoaPlaycount=factory;const audio=root.document.getElementById('sound-player');if(audio)factory({audio,key:()=>root.document.querySelector('.song.selected')?.dataset.key,fetch:root.fetch.bind(root),now:()=>Date.now()});}})(typeof window==='undefined'?globalThis:window,function({audio,key,fetch,now}){
+ let csrf=null,state=null,lastAttempt=0,failures=new Map(),chain=Promise.resolve();
+ const endpoint='/noa-bridge/popularity-events.php';
+ async function post(body){if(!csrf){const response=await fetch(endpoint,{credentials:'same-origin',cache:'no-store'});if(!response.ok)throw Error('unavailable');const data=await response.json();if(!data.ok||typeof data.csrf!=='string')throw Error('unavailable');csrf=data.csrf;}const response=await fetch(endpoint,{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json','X-NOA-Play-CSRF':csrf},body:JSON.stringify(body)});if(!response.ok){if(response.status===403)csrf=null;throw Error('unavailable');}const data=await response.json();if(!data.ok)throw Error('unavailable');return data;}
+ function serial(task){chain=chain.then(task).catch(()=>{});return chain;}
+ function attach(){const songKey=key();if(!songKey||audio.paused||audio.ended||state?.key===songKey||(failures.get(songKey)||0)>=3||now()-lastAttempt<5000)return chain;lastAttempt=now();const current={key:songKey,token:null,last:now(),interval:10000};state=current;return serial(async()=>{try{const data=await post({action:'attach',songKey});if(!/^[a-f0-9]{64}$/.test(data.token))throw Error('invalid');if(state!==current)return;current.token=data.token;current.interval=Math.max(1000,Math.min(10000,Number(data.heartbeatSeconds)*1000||10000));current.last=now();}catch{failures.set(songKey,(failures.get(songKey)||0)+1);if(state===current)state=null;}});}
+ function progress(event){if(state?.key!==key())state=null;const current=state;const position=audio.currentTime;if(!current?.token||!Number.isFinite(position)||position<0)return chain;current.last=now();if(event==='ended'||event==='error'){state=null;lastAttempt=0;}return serial(()=>post({action:'progress',token:current.token,position,event}));}
+ audio.addEventListener('playing',()=>{attach();});
+ audio.addEventListener('timeupdate',()=>{if(audio.paused||audio.ended)return;if(state?.key!==key())state=null;if(!state){attach();return;}if(state.token&&now()-state.last>=state.interval)progress('progress');});
+ for(const event of ['pause','ended','error'])audio.addEventListener(event,()=>progress(event),true);
+ // A resumed page or delayed stream confirmation is retried only on real media events.
+ if(!audio.paused&&!audio.ended)attach();
+ return {settled:()=>chain};
+});

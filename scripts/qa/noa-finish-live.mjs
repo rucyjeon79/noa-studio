@@ -25,6 +25,16 @@ try{
  const missing=await api.get(origin+'/noa-music-detail.php?key=single:missing:999');check('detail_missing_key_hidden',missing.status()===404,{status:missing.status()});
  const denial=await api.delete(origin+'/noa-bridge/user-playlists.php',{data:{id:'nonexistent'}});check('anonymous_playlist_delete_denied',[401,403,405,501].includes(denial.status()),{status:denial.status(),mutation:false});
  const protectedReport=await api.get(origin+'/noa-app/engine/completion-report.php');check('unsigned_completion_evidence_rejected',[401,403,405].includes(protectedReport.status()),{status:protectedReport.status()});
+ const worldResponse=await api.get(origin+'/noa-world.php'),worldBody=await worldResponse.text();
+ const ordinaryResponse=await api.get(origin+'/noa-youtube.php'),ordinaryBody=await ordinaryResponse.text();
+ const ids=body=>new Set([...body.matchAll(/data-video="([A-Za-z0-9_-]{11})"/g)].map(m=>m[1]));
+ const worldIds=ids(worldBody),ordinaryIds=ids(ordinaryBody);
+ const actRows=[...worldBody.matchAll(/data-world-act-video="([1-4])"[^>]*><button[^>]*data-video="([A-Za-z0-9_-]{11})"/g)].map(m=>[m[1],m[2]]);
+ const expectedActs=new Map([['1','QEQ_XYFJduk'],['2','NdSuzwrbQPs'],['3','07Ibxrg3lSc']]);
+ check('official_act_movies_rendered_in_world',worldResponse.ok()&&[...expectedActs].every(([act,id])=>actRows.some(row=>row[0]===act&&row[1]===id)),{actVideos:actRows});
+ check('ordinary_world_video_sets_disjoint',ordinaryResponse.ok()&&![...worldIds].some(id=>ordinaryIds.has(id)),{worldVideos:worldIds.size,ordinaryVideos:ordinaryIds.size});
+ const tracking=await api.get(origin+'/noa-playcount.js');check('play_tracking_script_deployed',tracking.ok()&&(await tracking.text()).includes("action:'attach'"));
+ const policyDenied=await api.get(origin+'/noa-bridge/playcount-policy.php');check('unsigned_playcount_policy_rejected',[401,403].includes(policyDenied.status()),{status:policyDenied.status()});
  await ctx.close();
  const song=baseline.find(r=>r.audio&&r.kind!=='playlist');check('real_playable_record_present',!!song);
  for(const mobile of[false,true]){

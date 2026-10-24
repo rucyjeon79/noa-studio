@@ -17,6 +17,14 @@ import n80_report_evidence as evidence
 
 
 class CompletionPipelineTests(unittest.TestCase):
+    def test_completion_uses_only_actual_deploy_allowlist(self):
+        paths = pipeline.release_sources("ORDER = ['noa-music.php','noa-app/engine/consume-music.php']\n")
+        self.assertEqual(paths, ['noa-app/engine/consume-music.php', 'noa-music.php'])
+        self.assertNotIn('noa-app/engine/bridge-flow.php', paths)
+        for source in ["ORDER = ['../private.key']", "ORDER = ['noa-music.php','noa-music.php']", "ORDER = []"]:
+            with self.assertRaises(evidence.EvidenceError):
+                pipeline.release_sources(source)
+
     def test_scope_uses_actual_release_push_paths(self):
         workflow = (SCRIPTS.parent / pipeline.DEPLOY_PATH).read_text()
         patterns = pipeline.release_patterns(workflow)
