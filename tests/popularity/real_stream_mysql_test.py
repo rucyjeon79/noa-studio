@@ -135,7 +135,7 @@ function stage(value){phase=value;console.error('MP3_PHASE '+value);}
 async function state(){if(!page)return null;return page.evaluate(()=>{const a=document.getElementById('sound-player');return a?{position:a.currentTime,duration:Number.isFinite(a.duration)?a.duration:null,paused:a.paused,ended:a.ended,readyState:a.readyState,networkState:a.networkState,mediaError:a.error?.code||null,rms:window.fixtureRms}:null;}).catch(()=>null);}
 async function close(browser){let timer;try{await Promise.race([browser.close(),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('browser_close_timeout')),5000);})]);}finally{clearTimeout(timer);}}
 const watchdog=setTimeout(()=>{console.error('MP3_WATCHDOG '+JSON.stringify({phase,errors,network}));process.exit(1);},70000);
-async function main(){const browser=await chromium.launch({headless:true,timeout:15000,args:['--autoplay-policy=no-user-gesture-required']});try{
+async function main(){const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||'/usr/bin/google-chrome',timeout:15000,args:['--no-sandbox','--autoplay-policy=no-user-gesture-required']});try{
  page=await browser.newPage();page.on('pageerror',e=>errors.push(e.message));
  page.on('requestfailed',r=>network.push({path:new URL(r.url()).pathname,error:r.failure()?.errorText}));
  page.on('response',r=>{if(r.status()>=400&&network.length<20)network.push({path:new URL(r.url()).pathname,status:r.status()});});

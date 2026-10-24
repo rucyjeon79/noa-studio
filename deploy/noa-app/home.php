@@ -19,4 +19,3 @@ function noa_home_e(string $text):string{return htmlspecialchars($text,ENT_QUOTE
 <section class="noa-section noa-site-map" data-home-section="sitemap" aria-labelledby="noa-full-site-map-heading"><div class="noa-section-head"><h2 id="noa-full-site-map-heading">사이트맵</h2></div><p class="noa-muted">음악, 영상과 이용 가능한 NOA STUDIO 서비스를 한곳에서 확인하세요.</p><a class="noa-button" data-noa-icon="library" href="/noa-sitemap.php">전체 서비스 보기</a></section>
 <?php endif;?>
 <footer class="noa-footer"><span>NOA STUDIO · Music. Stories. Starlight.</span><a href="/bbs/content.php?co_id=privacy">개인정보처리방침</a><a href="/bbs/content.php?co_id=provision">이용약관</a><a href="/noa-settings.php" data-noa-i18n="설정">설정</a></footer></main></div></body></html>
-

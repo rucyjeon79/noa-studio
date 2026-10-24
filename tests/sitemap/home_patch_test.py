@@ -1,4 +1,4 @@
-"""Verify that sitemap access is the only change to the preserved operating HOME."""
+"""Preserve operating HOME except the guarded sitemap and exact metrics cache revision."""
 import argparse
 import hashlib
 from pathlib import Path
@@ -15,9 +15,13 @@ candidate=(ROOT/'deploy/noa-app/home.php').read_bytes()
 addition=re.findall(rb"<\?php if\(is_file\(dirname\(__DIR__\)\.'/noa-sitemap[.]php'\)\):\?>\n<section[^\n]*data-home-section=\"sitemap\"[^\n]*</section>\n<\?php endif;\?>\n",candidate)
 if len(addition)!=1:
     raise AssertionError('Exactly one guarded sitemap navigation section is required')
-restored=candidate.replace(addition[0],b'',1)
+cache_before=b'noa-home.js?v=20261022-recovery1'
+cache_after=b'noa-home.js?v=20261024-popularity-metrics'
+if candidate.count(cache_after)!=1 or cache_before in candidate:
+    raise AssertionError('Exactly one reviewed HOME metrics script cache revision is required')
+restored=candidate.replace(addition[0],b'',1).replace(cache_after,cache_before,1)
 if hashlib.sha256(restored).hexdigest()!=BASE_SHA:
-    raise AssertionError('Existing operating HOME bytes changed outside the sitemap addition')
+    raise AssertionError('Existing operating HOME bytes changed outside the sitemap addition and exact metrics cache revision')
 if args.host_source:
     baseline=args.host_source.read_bytes()
 else:
@@ -31,4 +35,5 @@ if restored!=baseline:
 for marker in [b'id="noa-hero-video"',b'id="noa-featured"',b'id="noa-ep"',b'id="noa-stories"',b'id="noa-covers"',b'id="noa-acts"',b'data-home-section="community"']:
     if candidate.count(marker)!=1:
         raise AssertionError('Existing HOME section missing or duplicated: '+marker.decode())
-print('NOA_HOME_ORIGINAL_VIDEO_RANKING_COMMUNITY_BYTES_PRESERVED_SITEMAP_ONLY')
+print('NOA_HOME_ORIGINAL_VIDEO_RANKING_COMMUNITY_BYTES_PRESERVED_SITEMAP_AND_METRICS_CACHE_ONLY')
+
