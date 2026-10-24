@@ -2,6 +2,7 @@
 /** Additive common styles: preserve active theme, skins, forms and all GnuBoard core files. */
 if(!defined('_GNUBOARD_'))exit;
 function noa_policy_script_revision($html){
+ $html=preg_replace("~(/noa-browse[.]js)(?:[?][^\"']*)?~i",'$1?v=20261024-browse-approved',$html);
  $html=preg_replace("~(/noa-app/p0-media[.]css)(?:[?][^\"']*)?~i",'$1?v=20261024-approved-ui',$html);
  $html=preg_replace("~(<link\\b[^>]*\\bhref=[\"'])/noa-ui[.]css(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.css?v=20261024-approved-ui$2',$html);
  return preg_replace("~(<script\\b[^>]*\\bsrc=[\"'])/noa-ui[.]js(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.js?v=20261024-approved-ui$2',$html);

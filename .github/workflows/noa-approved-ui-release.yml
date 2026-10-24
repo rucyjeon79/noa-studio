@@ -9,6 +9,7 @@ on:
 permissions: {contents: read}
 jobs:
   candidate:
+    if: github.event_name == 'pull_request' || !contains(github.event.head_commit.message, '[browse-approved]')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -40,7 +41,7 @@ jobs:
         if: always()
         with: {name: 'noa-approved-ui-candidate-${{ github.run_id }}', path: approved-ui-proof/candidate/, retention-days: 1}
   production:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && !contains(github.event.head_commit.message, '[browse-approved]')
     needs: candidate
     runs-on: ubuntu-latest
     environment: production

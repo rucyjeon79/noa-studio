@@ -54,6 +54,7 @@ function filter(){
  const view=browse?browse.apply(rows,!!activeQueue):{visible:rows,queue:rows,stage:'songs'},visible=new Set(view.visible.map(r=>r.key));
  filteredQueue=view.queue.map(r=>buttons.find(b=>b.dataset.key===r.key)).filter(Boolean);
  buttons.forEach(b=>{b.hidden=!visible.has(b.dataset.key);b.style.order=activeQueue?String(activeQueue.indexOf(b.dataset.key)):'';});
+ document.getElementById('songs').append(...view.visible.map(r=>buttons.find(b=>b.dataset.key===r.key)).filter(Boolean));
  document.getElementById('songs').hidden=view.stage!=='songs';document.getElementById('result-count').textContent=view.stage==='songs'?view.queue.length+'개 항목 · 재생 대기열 '+queue().length+'개':'';
 }
 filter();
