@@ -2,32 +2,49 @@ name: NOA Storage Read Only Inventory
 on:
   push:
     branches: [main]
-    paths:
-      - 'scripts/noa_storage_readonly_inventory.py'
-      - '.github/workflows/noa-storage-inventory.yml'
+    paths: ['scripts/noa_storage_readonly_inventory.py','tests/test_storage_readonly_inventory.py','.github/workflows/noa-storage-inventory.yml']
+  pull_request:
+    paths: ['scripts/noa_storage_readonly_inventory.py','tests/test_storage_readonly_inventory.py','.github/workflows/noa-storage-inventory.yml']
   workflow_dispatch:
+    inputs:
+      sftp_channels:
+        description: 'Maximum independent channels on one pinned SSH transport; rejected channels are reported'
+        type: choice
+        options: ['4','2','1','3']
+        default: '4'
 permissions:
   contents: read
-concurrency:
-  group: noa-production-sftp
-  cancel-in-progress: false
 jobs:
-  audit:
+  unit:
     runs-on: ubuntu-latest
-    environment: production
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python -m unittest discover -s tests -p 'test_storage_readonly_inventory.py' -v
       - run: python -m py_compile scripts/noa_storage_readonly_inventory.py
+  audit:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: unit
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    concurrency:
+      group: noa-production-sftp
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
       - run: python -m pip install 'paramiko>=3,<5'
-      - name: Measure storage without changing files
+      - name: Measure metadata using bounded independent SFTP channels
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+          NOA_STORAGE_SFTP_CHANNELS: ${{ inputs.sftp_channels || '4' }}
         run: python scripts/noa_storage_readonly_inventory.py
-
-      - name: Retain audit manifest
+      - name: Retain complete or explicitly partial audit manifest
         if: always()
         uses: actions/upload-artifact@v4
         with:
