@@ -152,6 +152,13 @@ def main():
             for p, expected in guard.items():
                 if sha(read(p)) != expected:
                     raise RuntimeError('protected_source_changed: ' + p)
+            for p in FILES:
+                tmp=ROOT+'/'+p+'.noa-'+os.environ['GITHUB_SHA'][:12]+'.tmp'
+                try:sftp.lstat(tmp)
+                except FileNotFoundError:pass
+                else:raise RuntimeError('release_temporary_residue: '+p)
+            state['atomicReplacement']=True
+            state['preimages']={p:receipt['files'][p] for p in FILES}
             state['publicVerification']=verify(public_before)
             for endpoint in ['/noa-category-order-admin.php','/noa-library.php']:
                 try:urllib.request.urlopen('https://noastudio.ai.kr'+endpoint,timeout=30)
