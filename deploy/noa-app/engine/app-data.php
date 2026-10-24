@@ -78,7 +78,7 @@ function n80_app_audit(PDO $db,string $root,string $memberTable): array {
     foreach($relations as [$id,$child,$fk,$parent,$pk]){
         n80_app_phase('relation:'.$id);
         if(!n80_app_has($schema,$child,[$fk])||!n80_app_has($schema,$parent,[$pk])){$checks[$id]=['state'=>'not_checked','reason'=>'missing_schema'];continue;}
-        $sql='SELECT COUNT(*) FROM `'.$child.'` c LEFT JOIN `'.$parent.'` p ON p.`'.$pk.'`=c.`'.$fk.'` WHERE c.`'.$fk.'` IS NOT NULL AND c.`'.$fk.'`<>\'\' AND p.`'.$pk.'` IS NULL';
+        $sql='SELECT COUNT(*) FROM `'.$child.'` c LEFT JOIN `'.$parent.'` p ON p.`'.$pk.'`=c.`'.$fk.'` WHERE c.`'.$fk.'` IS NOT NULL AND p.`'.$pk.'` IS NULL';
         $n=(int)$db->query($sql)->fetchColumn();$checks[$id]=['state'=>'verified','orphanRows'=>$n];
         if($n)$issues[]=['code'=>'orphan_reference','severity'=>$id==='user_playlist_owner'?'warning':'error','relation'=>$id,'count'=>$n];
     }
