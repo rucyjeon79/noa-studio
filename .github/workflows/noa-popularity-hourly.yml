@@ -21,9 +21,9 @@ jobs:
       - run: python3 -m pip install --user paramiko==3.5.1
       - name: Calculate current UTC hour once and verify durable MySQL result
         env:
-          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_POPULARITY_PHASE: hourly
         run: python3 scripts/noa_popularity_release.py
       - uses: actions/upload-artifact@v4
