@@ -26,6 +26,8 @@ jobs:
           python tests/uiux/recovery_contract_test.py
           php tests/uiux/policy_assets.php
           python -m py_compile scripts/noa_approved_browse_deploy.py
+      - name: Install Korean fonts for faithful screenshots
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
       - name: Browser candidate using actual public records
         env: {NOA_SOURCE_ROOT: '${{ github.workspace }}', NOA_BROWSE_PHASE: candidate}
         run: |
