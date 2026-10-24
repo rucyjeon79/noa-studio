@@ -19,13 +19,15 @@ jobs:
       - name: Validate unchanged owner source and HTML-only cache revision
         run: |
           node --check deploy/noa-browse.js
-          node --test scripts/qa/noa-browse.test.mjs
+          node --test scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs
           php -l deploy/noa-design.extend.php
           php -l deploy/noa-music.php
           php -l deploy/noa-youtube.php
           python tests/uiux/recovery_contract_test.py
           php tests/uiux/policy_assets.php
           python -m py_compile scripts/noa_approved_browse_deploy.py
+      - name: Install Korean fonts for faithful screenshots
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
       - name: Browser candidate using actual public records
         env: {NOA_SOURCE_ROOT: '${{ github.workspace }}', NOA_BROWSE_PHASE: candidate}
         run: |
@@ -50,7 +52,7 @@ jobs:
           python -m pip install 'paramiko>=3,<5'
           npm install --prefix "$RUNNER_TEMP/noa-browse-approved" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-approved-browse.mjs "$RUNNER_TEMP/noa-browse-approved/check.mjs"
-      - name: Deploy owner-approved JS and cache loader only, no host staging
+      - name: Deploy approved four-level JS and cache loaders atomically
         id: activate
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}

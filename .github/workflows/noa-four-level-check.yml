@@ -1,0 +1,14 @@
+name: NOA Four Level Browse Checks
+on:
+  pull_request:
+    paths: ['deploy/noa-browse.js', 'scripts/qa/noa-four-level.test.mjs', '.github/workflows/noa-four-level-check.yml']
+permissions: {contents: read}
+jobs:
+  hierarchy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: node --check deploy/noa-browse.js
+      - run: node --test scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs
