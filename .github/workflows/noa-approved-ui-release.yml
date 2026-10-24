@@ -4,7 +4,7 @@ on:
     paths: ['deploy/noa-ui.*','deploy/noa-design.json','deploy/noa-design.extend.php','deploy/noa-policy-20261024.css','deploy/noa-app/p0-*','deploy/noa-music.php','scripts/noa_approved_ui*','scripts/qa/noa-approved-ui.mjs','.github/workflows/noa-approved-ui-release.yml']
   push:
     branches: [main]
-    paths: ['deploy/noa-ui.*','deploy/noa-design.json','deploy/noa-design.extend.php','deploy/noa-policy-20261024.css','deploy/noa-app/p0-*','deploy/noa-music.php','scripts/noa_approved_ui*','scripts/qa/noa-approved-ui.mjs','.github/workflows/noa-approved-ui-release.yml']
+    paths: ['deploy/noa-ui.*','deploy/noa-design.json','deploy/noa-design.extend.php','deploy/noa-policy-20261024.css','deploy/noa-app/p0-*','deploy/noa-music.php','scripts/noa_approved_ui*','.github/workflows/noa-approved-ui-release.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
