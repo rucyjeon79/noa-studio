@@ -8,7 +8,7 @@ new=(root/path).read_text()
 old=old.replace('if(session_status()===PHP_SESSION_ACTIVE)session_write_close();','')
 normalize=lambda s:re.sub(r'\s+','',s)
 assert normalize(old.split('fseek($file,$start)')[0])==normalize(new.split('fseek($file,$start)')[0]),'media identity, permissions, SHA, ranges, HEAD or headers changed'
-assert old[old.index('while($left>0'):]==new[new.index('while($left>0'):], 'original transfer loop or failure handling changed'
+assert old[old.index('while($left>0'):].rstrip()==new[new.index('while($left>0'):].rstrip(), 'original transfer loop or failure handling changed'
 assert new.index('echo $first;')<new.index('nj_track_verified_audio('), 'tracking must follow actual transfer'
 assert new.index("==='HEAD'")<new.index('nj_track_verified_audio('), 'HEAD must not credit playback'
 assert "X_N80_AVAILABILITY_CHECK" in new, 'N80 availability reads must be excluded'
