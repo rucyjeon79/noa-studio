@@ -1,6 +1,8 @@
 <?php
 // Local rendering only. No database, auth or production writes; never deploy this harness.
 declare(strict_types=1);define('_GNUBOARD_',true);$root=dirname(__DIR__,2);$kind=$argv[1]??'home';
+// Match the HTML-only production extension without loading SQL/auth/owner scripts.
+ob_start(static fn($html)=>str_replace('</head>','<link rel="stylesheet" href="/noa-policy-20261024.css"></head>',$html));
 $is_member=in_array($argv[2]??'',['admin','member'],true);$is_admin=($argv[2]??'')==='admin'?'super':'';$member=['mb_nick'=>'Local UI verification'];
 if($kind==='home'){include $root.'/deploy/noa-app/home.php';}
 elseif($kind==='youtube'){

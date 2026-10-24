@@ -41,7 +41,9 @@ export async function verifyGlass({context,phase,base,out,report,auditPrecision}
     });
     assert(result.nodes.length>0,'no selected glass actions '+route);assert(result.scroll<=result.viewport+1,'glass overflow '+route);
     for(const b of result.nodes){
-     assert(b.background.includes('radial-gradient'),'flat action '+b.id);assert(b.shadow.includes('inset'),'missing sculpted depth '+b.id);
+     // Approved two-row transport uses flat secondary controls in one decorated dock.
+     if(b.iconOnly)assert.equal(b.background,'none','nested decoration in compact transport '+b.id);
+     else{assert(b.background.includes('radial-gradient'),'flat action '+b.id);assert(b.shadow.includes('inset'),'missing sculpted depth '+b.id);}
      assert.equal(b.filter,'none');assert.equal(b.backdrop,'none');assert.equal(b.animation,'none');assert.equal(b.willChange,'auto');
      assert(b.box.width>=44&&b.box.height>=44,'small glass touch area '+b.id);
      assert(b.box.x>=-1&&b.box.right<=result.viewport+1,'glass control clipped '+b.id);

@@ -2,6 +2,8 @@
 .noa-sidebar-bottom a{min-block-size:44px}
 .noa-g5-top>[data-noa-login],.noa-footer a{min-inline-size:44px}
 @media(max-width:760px){.noa-footer{align-items:center;gap:4px 16px}.noa-footer>span{flex-basis:100%}}
+/* Preserve the approved two rows and flat controls; enlarge only their hit boxes. */
+html body.noa-page .noa-transport.noa-two-line .controls :is(button,#pause-play,#dock-more){flex:0 0 44px!important;width:44px!important;min-width:44px!important;max-width:44px!important;inline-size:44px!important;height:44px!important;min-height:44px!important;max-height:44px!important;block-size:44px!important}
 
 /* One login surface; preserve the native form, labels and authentication handlers. */
 html.noa-g5 #mb_login{background:var(--noa-surface);color:var(--noa-text)}
