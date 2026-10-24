@@ -39,6 +39,7 @@ html[data-noa-theme-only] .brand{font-family:var(--noa-font);font-weight:750;let
 html[data-noa-theme-only] :is(main>a,main>p>a){display:inline-flex;align-items:center;min-block-size:44px}
 html[data-noa-theme-only] :is(button,input,select,textarea){font:inherit;max-inline-size:100%}
 html[data-noa-theme-only] button{min-inline-size:44px;min-block-size:44px;background:var(--noa-raised);color:var(--noa-text);border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,8px)}
+html[data-noa-theme-only] button[aria-pressed=true]{background:var(--noa-bg);color:var(--noa-accent);border-color:var(--noa-accent)}
 html[data-noa-theme-only] :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea){min-block-size:44px;background:var(--noa-bg);color:var(--noa-text);border-color:var(--noa-line)}
 html[data-noa-theme-only] :is(a,button,input,select,textarea,summary):focus-visible{outline:2px solid var(--noa-info);outline-offset:3px}
 html[data-noa-theme-only] :is(nav a,header>a,.check,summary){min-block-size:44px}

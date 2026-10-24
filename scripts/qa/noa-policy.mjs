@@ -68,6 +68,7 @@ try{
     const token=JSON.parse(readFileSync(path.join(root,'deploy/noa-design.json'),'utf8')).themes.find(t=>t.id===theme).tokens.bg;
     const rgb='rgb('+[1,3,5].map(i=>parseInt(token.slice(i,i+2),16)).join(', ')+')';assert.equal(measured.body.bg,rgb,'Workspace palette differs from shared theme');
     for(const s of measured.metrics){assert.equal(s.border,'0px');assert.equal(s.shadow,'none');}
+    if(pathname==='/noa-app/database/'){const borders=await page.locator('.tabs button').evaluateAll(nodes=>nodes.map(n=>getComputedStyle(n).borderTopColor));assert.notEqual(borders[0],borders[1],'Selected admin tab has no visible state');}
    }
    if(pathname==='/noa-policy-dock-fixture'){
     for(const expanded of [false,true]){
