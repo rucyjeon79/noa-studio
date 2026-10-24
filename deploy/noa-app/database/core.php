@@ -138,47 +138,12 @@ function nd_manifest(string $id,bool $verify=true): array {
     if($verify&&(!is_file($base.'.sql')||filesize($base.'.sql')!==$m['bytes']||!hash_equals($m['sha256'],hash_file('sha256',$base.'.sql'))))throw new RuntimeException('백업 무결성 검사 실패');return $m;
 }
 function nd_backup(PDO $db,?string $table): array {
-    $lock=nd_lock();$id=bin2hex(random_bytes(16));$dir=nd_private();$tmp=$dir.'/'.$id.'.partial';
-    try {
-        $tables=nd_tables($db);$names=array_column($tables,'TABLE_NAME');
-        if($table!==null&&!in_array($table,$names,true))throw new InvalidArgumentException('백업 테이블 오류입니다.');
-        // PHP logical snapshot: refuse engines and DB objects we cannot preserve faithfully.
-        $selected=array_values(array_filter($tables,fn($t)=>$table===null||$t['TABLE_NAME']===$table));
-        $needsLock=false;foreach($selected as $t){if(!in_array($t['ENGINE'],['InnoDB','MyISAM'],true))throw new DomainException('지원하지 않는 테이블 엔진입니다.');if($t['ENGINE']!=='InnoDB')$needsLock=true;}
-        if(!$selected)throw new InvalidArgumentException('백업할 테이블이 없습니다.');
-        $extras=[];
-        foreach(['VIEWS'=>'TABLE_SCHEMA','TRIGGERS'=>'TRIGGER_SCHEMA','ROUTINES'=>'ROUTINE_SCHEMA','EVENTS'=>'EVENT_SCHEMA'] as $object=>$schema){
-            $r=nd_rows($db,'SELECT COUNT(*) AS n FROM information_schema.'.$object.' WHERE '.$schema.'=DATABASE()');$extras[$object]=(int)$r[0]['n'];
-        }
-        if(array_sum($extras)>0)throw new DomainException('뷰·트리거·루틴·이벤트가 있어 전문 전체 덤프 절차가 필요합니다. 불완전한 백업은 생성하지 않습니다.');
-        $f=fopen($tmp,'xb');if(!$f)throw new RuntimeException('backup_open_failed');chmod($tmp,0600);$bytes=0;$started=microtime(true);$counts=[];
-        $write=function(string $s)use($f,&$bytes,$started){$bytes+=strlen($s);if($bytes>268435456||microtime(true)-$started>40)throw new DomainException('백업 안전 상한(256MB/40초)을 초과했습니다.');if(fwrite($f,$s)!==strlen($s))throw new RuntimeException('backup_write_failed');};
-        if($needsLock){$locks=implode(',',array_map(fn($t)=>'`'.str_replace('`','``',$t['TABLE_NAME']).'` READ',$selected));$db->exec('LOCK TABLES '.$locks);}
-        else{$db->exec('SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ');$db->exec('START TRANSACTION WITH CONSISTENT SNAPSHOT, READ ONLY');}
-        try {
-            $write("-- NOA STUDIO verified logical backup v1\nSET NAMES utf8mb4;\nSET time_zone='+00:00';\nSET SESSION sql_mode='NO_BACKSLASH_ESCAPES';\nSET FOREIGN_KEY_CHECKS=0;\n");
-            foreach($selected as $t){
-                $name=$t['TABLE_NAME'];if(!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/D',$name))throw new RuntimeException('unsupported_identifier');
-                // Hold a metadata lock before reading DDL to avoid a schema/data race.
-                nd_rows($db,'SELECT * FROM `'.$name.'` LIMIT 0');
-                $ddl=nd_rows($db,'SHOW CREATE TABLE `'.$name.'`')[0]['Create Table'];
-                $cols=nd_rows($db,'SELECT COLUMN_NAME,DATA_TYPE,EXTRA FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=? ORDER BY ORDINAL_POSITION',[$name]);
-                $cols=array_values(array_filter($cols,fn($c)=>!str_contains($c['EXTRA'],'VIRTUAL GENERATED')&&!str_contains($c['EXTRA'],'STORED GENERATED')));
-                $types=array_column($cols,'DATA_TYPE');$cols=array_column($cols,'COLUMN_NAME');
-                $ident=implode(',',array_map(fn($c)=>'`'.str_replace('`','``',$c).'`',$cols));
-                $write('DROP TABLE IF EXISTS `'.$name."`;\n".$ddl.";\n");
-                $q=$db->query('SELECT '.$ident.' FROM `'.$name.'`');$count=0;
-                while($row=$q->fetch(PDO::FETCH_NUM)){$values=[];foreach($row as $i=>$v){if($v===null)$values[]='NULL';else{$hex="X'".bin2hex((string)$v)."'";$values[]=in_array($types[$i],['binary','varbinary','tinyblob','blob','mediumblob','longblob','bit'],true)?$hex:'CONVERT('.$hex.' USING utf8mb4)';}}$write('INSERT INTO `'.$name.'` ('.$ident.') VALUES ('.implode(',',$values).");\n");$count++;}
-                $q->closeCursor();$counts[$name]=$count;
-            }
-            $write("SET FOREIGN_KEY_CHECKS=1;\n-- NOA BACKUP COMPLETE\n");
-            if($table===null&&nd_names($db)!==$names)throw new RuntimeException('백업 도중 테이블 구성이 변경되었습니다. 다시 실행하세요.');
-        }finally{if($needsLock)$db->exec('UNLOCK TABLES');else $db->rollBack();fclose($f);}
-        $m=['id'=>$id,'createdAt'=>gmdate('c'),'scope'=>$table??'전체 DB','tables'=>$counts,'bytes'=>filesize($tmp),'sha256'=>hash_file('sha256',$tmp),'consistency'=>$needsLock?'READ LOCK':'REPEATABLE READ SNAPSHOT','format'=>'noa-logical-v1','objects'=>$extras,'restoreVerified'=>false];
-        if(!rename($tmp,$dir.'/'.$id.'.sql'))throw new RuntimeException('backup_publish_failed');
-        if(file_put_contents($dir.'/'.$id.'.json',json_encode($m,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),LOCK_EX)===false)throw new RuntimeException('manifest_write_failed');chmod($dir.'/'.$id.'.json',0600);
-        return nd_manifest($id);
-    }finally{if(isset($f)&&is_resource($f))fclose($f);if(is_file($tmp))unlink($tmp);flock($lock,LOCK_UN);fclose($lock);}
+    // Host-resident logical dumps are forbidden by the offsite-only policy.
+    // A configured provider must persist and verify the Drive copy itself.
+    if(!function_exists('noa_drive_backup_create'))throw new DomainException('Google Drive 백업 연결을 확인해 주세요. 서버에는 SQL 백업을 저장하지 않습니다.');
+    $m=noa_drive_backup_create($db,$table);
+    if(!is_array($m)||($m['driveFolderId']??'')!=='1N4ddmFbGpMEMGLB3zg4XJYBzLk3mHds2'||empty($m['driveFileId'])||($m['driveReadbackVerified']??false)!==true||($m['restoreVerified']??false)!==true||!preg_match('/^[a-f0-9]{64}$/D',$m['sha256']??'')||!is_int($m['bytes']??null)||$m['bytes']<1)throw new RuntimeException('Google Drive 백업 검증이 완료되지 않았습니다.');
+    return $m;
 }
 function nd_restore_plan(PDO $db,array $backup): array {
     $current=[];$names=nd_names($db);

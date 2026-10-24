@@ -72,7 +72,12 @@ def main():
         mode = os.environ.get('NOA_BACKUP_MIGRATION_MODE', 'inspect')
         payload = {'mode': mode}
         if mode == 'cleanup':
-            payload['receipts'] = json.loads(Path('scripts/noa_backup_cleanup_receipts.json').read_text())['receipts']
+            receipt_path=os.environ.get('NOA_BACKUP_RECEIPTS_PATH','scripts/noa_backup_cleanup_receipts.json')
+            if receipt_path not in ['scripts/noa_backup_cleanup_receipts.json','scripts/noa_staging_cleanup_receipts.json']:raise RuntimeError('unexpected_receipt_path')
+            payload['receipts'] = json.loads(Path(receipt_path).read_text())['receipts']
+            if receipt_path.endswith('noa_staging_cleanup_receipts.json'):
+                catalog=json.dumps(cli('export'),ensure_ascii=False)
+                if any(Path(row['path']).name in catalog for row in payload['receipts']):raise RuntimeError('staging_catalog_reference_preserved')
         body = json.dumps(payload, separators=(',', ':')).encode()
         ts, nonce = str(int(time.time())), secrets.token_hex(16)
         message = 'NOA-BACKUP-MIGRATION-1\n' + ts + '\n' + nonce + '\n' + hashlib.sha256(body).hexdigest()

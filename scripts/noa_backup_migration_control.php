@@ -31,7 +31,7 @@ function protectedHashes(string $root): array {
  $out=[];foreach(['html/index.php','html/common.php','html/config.php','html/data/dbconfig.php','html/noa-app/database/core.php','html/noa-app/jukebox/core.php','html/noa-app/jukebox/service.php'] as $rel){$h=@hash_file('sha256',$root.'/'.$rel);if($h===false)throw new RuntimeException('protected_file_unreadable');$out[$rel]=$h;}return $out;
 }
 function sqlReferences(string $root): array {
- $needles=['15133165eb1e1d6529158ed051d94e9a','fda4138b6ba4d525f337e4a86038218f','d54c43955754a84d1fca3778345f37a0','ce1beb1a0ad64e9dc4b50654625c6618','362dfee5ef4c3df496fdbc83cb482a5a'];
+ $needles=['15133165eb1e1d6529158ed051d94e9a','fda4138b6ba4d525f337e4a86038218f','d54c43955754a84d1fca3778345f37a0','ce1beb1a0ad64e9dc4b50654625c6618','362dfee5ef4c3df496fdbc83cb482a5a','.noa-playlists.js.d9b07e91918b.tmp','cover.webp.stage-39545023474','upload.css.b2fddd64b01f.tmp'];
  $found=[];$errors=0;$checked=0;$stack=[$root.'/html'];
  while($stack){$dir=array_pop($stack);$entries=@scandir($dir);if($entries===false){$errors++;continue;}
   foreach($entries as $name){if($name==='.'||$name==='..')continue;$p=$dir.'/'.$name;if(is_link($p))continue;if(is_dir($p)){$stack[]=$p;continue;}
@@ -62,7 +62,8 @@ try {
    $rel=$row['path']??'';
    $sql=preg_match('/^noa-db-private\/([a-f0-9]{32})\.(sql|json)$/D',$rel,$m)&&in_array($m[1],$known,true);
    $deploy=(bool)preg_match('/^(?:noa-deploy-backups\/(?:p0-|jukebox-|jukebox-interface-|uiux-|full-|root-)[A-Za-z0-9_-]+|noa-ai-lab\/taxonomy-release-[0-9]+)\/[A-Za-z0-9_.\/-]+$/D',$rel);
-   if((!$sql&&!$deploy)||str_contains($rel,'..')||str_contains($rel,'//'))throw new RuntimeException('path_not_allowlisted');
+   $stage=in_array($rel,['html/.noa-playlists.js.d9b07e91918b.tmp','html/noa-jukebox/컬렉션/fantasy-ambient-edm/EP.22 하루의 끝에 - Reborn/cover.webp.stage-39545023474','html/noa-app/jukebox/upload.css.b2fddd64b01f.tmp'],true);
+   if((!$sql&&!$deploy&&!$stage)||str_contains($rel,'..')||str_contains($rel,'//'))throw new RuntimeException('path_not_allowlisted');
    if(empty($row['drive_file_id'])||($row['drive_readback_verified']??false)!==true||($row['isolated_restore_verified']??false)!==true)throw new RuntimeException('proof_missing');
    if(!preg_match('/^[a-f0-9]{64}$/D',$row['sha256']??'')||!is_int($row['bytes'])||$row['bytes']<0)throw new RuntimeException('invalid_proof');
    $path=$root.'/'.$rel;if(realpath(dirname($path))!==realpath($root).'/'.dirname($rel))throw new RuntimeException('parent_symlink_preserved');$s=@lstat($path);if(!$s){$skipped[]=['path'=>$rel,'reason'=>'already_absent'];continue;}
