@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {spawn} from 'node:child_process';
 const source=JSON.parse(await fs.readFile('quality-home/candidate.json','utf8'));
+const provenance=JSON.parse(await fs.readFile('quality-home/fixture-provenance.json','utf8'));
+const publicObservation=JSON.parse(await fs.readFile('quality-home/public-observation.json','utf8'));
+assert.equal(provenance.productionSqlUsed,false);assert.equal(publicObservation.productionDatabaseAccess,false);assert.equal(publicObservation.checks.length,3);for(const row of publicObservation.checks){assert.equal(row.thumbnailHttp,200);assert.equal(row.destinationHttp,200);}
 const server=spawn('php',['-S','127.0.0.1:8097','-t','deploy','tests/home/router.php'],{stdio:'ignore'});
 const browser=await chromium.launch({headless:true,channel:'chrome'});
 const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -27,6 +30,7 @@ try{
   await page.evaluate(()=>scrollTo(0,0));
   await page.screenshot({path:'quality-home/home-'+width+'.jpg',type:'jpeg',quality:75,fullPage:true});reports.push({width,counts:Object.fromEntries(Object.entries(rendered).map(([s,rs])=>[s,rs.length]))});
  }
- for(const s of ['stories','covers','playlists']){const row=source[s][0];const image=await page.request.get('https://noastudio.ai.kr'+row.thumbnail);assert.ok(image.ok());assert.match(image.headers()['content-type'],/^image\//);const link=await page.request.get('https://noastudio.ai.kr'+row.href);assert.ok(link.ok());}
- assert.deepEqual(errors,[]);await fs.writeFile('quality-home/render-report.json',JSON.stringify({ok:true,environment:'isolated candidate render, not deployed',sameDesktopMobileRows:true,fullOriginalTitlesPreserved:true,compactDisplayTitlesVerified:true,allRankedThumbnailsLoaded:true,topItemThumbnailAndDestinationHttpVerified:true,reports},null,2));console.log('PASS NOA HOME desktop/mobile equal rows, titles, links, metrics, responsive layout and top thumbnails');
+ for(const s of ['stories','covers','playlists']){const row=source[s][0];const image=await page.request.get('http://127.0.0.1:8097'+row.thumbnail);assert.ok(image.ok());assert.match(image.headers()['content-type'],/^image\//);const link=await page.request.get('http://127.0.0.1:8097'+row.href);assert.ok(link.ok());}
+ assert.deepEqual(errors,[]);await fs.writeFile('quality-home/render-report.json',JSON.stringify({ok:true,environment:'isolated repository-source fixture render with synthetic metrics, not deployed',sameDesktopMobileRows:true,fullOriginalTitlesPreserved:true,compactDisplayTitlesVerified:true,allRankedFixtureThumbnailsLoaded:true,topItemFixtureThumbnailAndDestinationHttpVerified:true,separatePublicTopItemThumbnailAndDestinationHttpVerified:true,sameCollectionAsLive:false,reports},null,2));console.log('PASS NOA HOME source-fixture desktop/mobile identities, titles, links, metrics, layout; separate real public top images/destinations');
 }finally{await browser.close();server.kill();}
+

@@ -1,15 +1,16 @@
-name: NOA home data recovery isolated verification
+name: NOA home source and public data verification
 on:
   push:
     branches: [main]
-    paths: ['bridge/home*.php', 'deploy/noa-home.js', 'tests/home/**', 'tests/catalog/home_test.php', 'scripts/qa/noa-home-*', '.github/workflows/noa-home-data-check.yml']
+    paths: ['bridge/home*.php', 'bridge/catalog*.php', 'bridge/taxonomy*.php', 'src/data/**', 'deploy/noa-home.js', 'tests/home/**', 'tests/popularity/source_fixture.php', 'scripts/noa_catalog_seed.py', 'tests/catalog/home_test.php', 'scripts/qa/noa-home-*', '.github/workflows/noa-home-data-check.yml']
+  pull_request:
+    paths: ['bridge/home*.php','deploy/noa-home.js','tests/home/**','tests/popularity/source_fixture.php','scripts/qa/noa-home-*','.github/workflows/noa-home-data-check.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    environment: production
     services:
       mysql:
         image: mysql:8.0
@@ -19,23 +20,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false, fetch-depth: 0}
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: pdo_mysql
+          coverage: none
       - name: Read model regression checks
         run: |
           php tests/catalog/home_test.php
-          for f in bridge/home*.php scripts/qa/noa-home-db.php tests/home/router.php deploy/noa-app/home.php deploy/noa2.php; do php -l "$f"; done
+          for f in bridge/home*.php scripts/qa/noa-home-db.php tests/home/router.php tests/home/source-fixture.php deploy/noa-app/home.php deploy/noa2.php; do php -l "$f"; done
           node --check deploy/noa-home.js
           node --check scripts/qa/noa-home-render.mjs
-      - run: python3 -m pip install --user paramiko==3.5.1
-      - name: Read private backup and restore only to disposable MySQL
+      - name: Build source-only disposable MySQL fixture
         env:
-          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_POPULARITY_SOURCE_FIXTURE: '1'
         run: |
-          python3 scripts/qa/noa-home-deployed.py
-          python3 scripts/noa_verify_private_backup.py
-      - name: Compare same collection as live API using production read model
+          python3 scripts/noa_catalog_seed.py
+          php tests/home/source-fixture.php
+      - name: Verify deterministic candidate read model and original source guards
         run: php scripts/qa/noa-home-db.php
+      - name: Observe public API and real top-item images and destinations separately
+        run: python3 scripts/qa/noa-home-deployed.py
       - name: Render candidate on PC and mobile without deployment
         run: |
           npm install --prefix "$RUNNER_TEMP/noa-home" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
@@ -48,3 +53,4 @@ jobs:
           name: noa-home-public-data-verification
           path: quality-home/
           retention-days: 14
+
