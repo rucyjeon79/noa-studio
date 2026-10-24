@@ -4,7 +4,7 @@ on:
     paths: ['bridge/youtube-store.php','deploy/noa-youtube.php','deploy/noa-music.php','deploy/noa-app/p0-media.css','tests/p0/youtube_official_separation.php','scripts/noa_youtube_role_deploy.py','scripts/noa_youtube_role_drive_receipt.json','.github/workflows/noa-youtube-role.yml']
   push:
     branches: [main]
-    paths: ['bridge/youtube-store.php','deploy/noa-youtube.php','deploy/noa-music.php','deploy/noa-app/p0-media.css','scripts/noa_youtube_role_deploy.py','.github/workflows/noa-youtube-role.yml']
+    paths: ['bridge/youtube-store.php','deploy/noa-youtube.php','scripts/noa_youtube_role_deploy.py','.github/workflows/noa-youtube-role.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
@@ -27,7 +27,7 @@ jobs:
           python tests/uiux/recovery_contract_test.py
           python -m py_compile scripts/noa_youtube_role_deploy.py
   production:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && !contains(github.event.head_commit.message, '[approved-ui]')
     needs: candidate
     runs-on: ubuntu-latest
     environment: production
