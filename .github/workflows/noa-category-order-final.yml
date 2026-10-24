@@ -1,55 +1,85 @@
-name: NOA Category Ordering Final Production
+name: NOA Integrated Production Finish
 on:
   pull_request:
-    paths: ['deploy/noa-category-order*','deploy/noa-browse.js','deploy/noa-ui.css','deploy/noa-library.php','deploy/noa-music.php','deploy/noa-youtube.php','deploy/noa-design.extend.php','scripts/noa_category_*','scripts/qa/noa-category-final.mjs','scripts/qa/category-storage-fixture.py','.github/workflows/noa-category-order-final.yml']
+    paths: ['deploy/noa-music.php','deploy/noa-music-detail.php','deploy/noa-sitemap.php','deploy/noa-playlists.js','deploy/noa-app/p0-player.js','deploy/noa-app/home.php','deploy/noa-app/engine/completion*','deploy/noa-app/engine/event-contract.php','deploy/noa-app/engine/registry.php','bridge/music-readmodel.php','bridge/user-playlists.php','scripts/noa_category_release.py','scripts/noa_finish_drive_receipt.json','scripts/qa/noa-finish*','tests/deployment/test_finish_release.py','.github/workflows/noa-category-order-final.yml']
   push:
     branches: [main]
-    paths: ['deploy/noa-category-order*','deploy/noa-browse.js','deploy/noa-ui.css','deploy/noa-library.php','deploy/noa-music.php','deploy/noa-youtube.php','deploy/noa-design.extend.php','scripts/noa_category_release.py','scripts/noa_category_drive_receipt.json','.github/workflows/noa-category-order-final.yml']
+    paths: ['deploy/noa-music.php','deploy/noa-music-detail.php','deploy/noa-sitemap.php','deploy/noa-playlists.js','deploy/noa-app/p0-player.js','deploy/noa-app/home.php','deploy/noa-app/engine/completion*','deploy/noa-app/engine/event-contract.php','deploy/noa-app/engine/registry.php','bridge/music-readmodel.php','bridge/user-playlists.php','scripts/noa_category_release.py','scripts/noa_finish_drive_receipt.json','.github/workflows/noa-category-order-final.yml']
   workflow_dispatch:
-permissions: {contents: read}
+permissions: {contents: read, actions: read}
 jobs:
   candidate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
       - uses: shivammathur/setup-php@v2
-        with: {php-version: '8.2'}
-      - name: Validate all category components
+        with: {php-version: '8.2', extensions: 'pdo_sqlite,sqlite3'}
+      - name: Prepare isolated validation dependencies
         run: |
-          node --check deploy/noa-browse.js
-          php -l deploy/noa-category-order.php
-          php -l deploy/noa-category-order-admin.php
-          php -l deploy/noa-library.php
-          php -l deploy/noa-music.php
-          php -l deploy/noa-youtube.php
-          php -l deploy/noa-design.extend.php
-          node --test scripts/qa/noa-browse.test.mjs
-          python -m py_compile scripts/noa_category_release.py
-      - name: Candidate UI and isolated authenticated storage tests
-        env: {NOA_CATEGORY_PHASE: candidate}
-        run: |
+          python -m pip install 'paramiko>=3,<5'
           npm install --prefix "$RUNNER_TEMP/noa-category" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-category-final.mjs "$RUNNER_TEMP/noa-category/check.mjs"
+      - name: Validate reviewed runtime files, recovery and source contracts
+        run: |
+          php -l deploy/noa-music.php
+          php -l deploy/noa-music-detail.php
+          php -l deploy/noa-sitemap.php
+          php -l deploy/noa-app/home.php
+          php -l bridge/music-readmodel.php
+          php -l bridge/user-playlists.php
+          php -l deploy/noa-app/engine/event-contract.php
+          php -l deploy/noa-app/engine/registry.php
+          php -l deploy/noa-app/engine/completion-receipt.php
+          php -l deploy/noa-app/engine/completion-report.php
+          node --check deploy/noa-app/p0-player.js
+          node --check deploy/noa-playlists.js
+          node --test scripts/qa/noa-browse.test.mjs
+          php tests/catalog/music_readmodel_test.php
+          php tests/sitemap/registry_test.php
+          php tests/n80/completion_receipt_test.php
+          python tests/deployment/test_finish_release.py
+          python -m py_compile scripts/noa_category_release.py
+      - name: Retain category and isolated native authorization regression checks
+        env: {NOA_CATEGORY_PHASE: candidate}
+        run: |
           python scripts/qa/category-storage-fixture.py
           php -S 127.0.0.1:8099 -t "$RUNNER_TEMP/noa-category-fixture" > "$RUNNER_TEMP/category-php.log" 2>&1 &
           node "$RUNNER_TEMP/noa-category/check.mjs"
+      - name: Verify integrated candidate behavior without a public test site
+        env:
+          NOA_PLAYWRIGHT_PACKAGE: ${{ runner.temp }}/noa-category/package.json
+        run: node scripts/qa/noa-finish-candidate.mjs
       - uses: actions/upload-artifact@v4
         if: always()
-        with: {name: 'noa-category-candidate-${{ github.run_id }}', path: category-proof/candidate/, retention-days: 2}
+        with:
+          name: noa-finish-candidate-${{ github.run_id }}
+          path: |
+            category-proof/candidate/
+            qa/candidate/
+          retention-days: 2
   production:
     if: github.event_name != 'pull_request'
     needs: candidate
     runs-on: ubuntu-latest
     environment: production
-    timeout-minutes: 20
+    timeout-minutes: 25
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
       - uses: shivammathur/setup-php@v2
-        with: {php-version: '8.2'}
+        with: {php-version: '8.2', extensions: 'pdo_sqlite,sqlite3'}
+      - name: Download exact Drive-verified operating preimages, including HOME
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: '12554153399'
+          run-id: '40078930378'
+          github-token: ${{ github.token }}
+          repository: rucyjeon79/noa-studio
+          path: ${{ runner.temp }}/noa-finish-preimages
+          merge-multiple: true
       - name: Prepare before runtime changes
         run: |
           python -m pip install 'paramiko>=3,<5'
@@ -57,30 +87,40 @@ jobs:
           cp scripts/qa/noa-category-final.mjs "$RUNNER_TEMP/noa-category/check.mjs"
           python scripts/qa/category-storage-fixture.py
           php -S 127.0.0.1:8099 -t "$RUNNER_TEMP/noa-category-fixture" > "$RUNNER_TEMP/category-php.log" 2>&1 &
-      - name: Activate only Drive-verified sources atomically
+      - name: Activate twelve reviewed files from exact operating baselines
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+          NOA_FINISH_PREIMAGE_ARCHIVE: ${{ runner.temp }}/noa-finish-preimages/preimages.tar.gz
         run: python scripts/noa_category_release.py
-      - name: Verify actual production category navigation and playback
-        id: live
+      - name: Verify actual production categories and playback
+        id: live_category
         env: {NOA_CATEGORY_PHASE: live}
         run: node "$RUNNER_TEMP/noa-category/check.mjs"
-      - name: Restore release-owned bytes if live acceptance fails
-        if: failure() && steps.live.outcome == 'failure'
+      - name: Verify integrated production behavior and performance
+        id: live
+        env:
+          NOA_PLAYWRIGHT_PACKAGE: ${{ runner.temp }}/noa-category/package.json
+          NOA_REPOSITORY: ${{ github.workspace }}
+          NOA_FINISH_QA_OUTPUT: qa/finish-live/verified.json
+        run: node scripts/qa/noa-finish-live.mjs --production
+      - name: Restore only release-owned bytes if live acceptance fails
+        if: failure() && (steps.live_category.outcome == 'failure' || steps.live.outcome == 'failure')
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+          NOA_FINISH_PREIMAGE_ARCHIVE: ${{ runner.temp }}/noa-finish-preimages/preimages.tar.gz
         run: python scripts/noa_category_release.py rollback
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: noa-category-live-${{ github.run_id }}
+          name: noa-finish-live-${{ github.run_id }}
           path: |
             category-deploy-proof.json
             category-proof/live/
+            qa/finish-live/
           retention-days: 2

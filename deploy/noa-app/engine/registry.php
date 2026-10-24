@@ -12,7 +12,7 @@ function noa_engine_modules(): array {
         'world' => ['label'=>'NOA WORLD','owner'=>'world','entry'=>'/noa-world.php','events'=>['youtube.synced','world.updated']],
         'playlist' => ['label'=>'MY PLAYLIST','owner'=>'playlist','entry'=>'/noa-music.php#my-playlists','events'=>['audio.ready','playlist.updated']],
         'ai_lab' => ['label'=>'AI LAB','owner'=>'ai_lab','entry'=>'/noa-ai-lab.php','events'=>['ai.requested','ai.completed','ai.failed']],
-        'admin' => ['label'=>'ADMIN','owner'=>'admin','entry'=>'/noa-settings.php','events'=>['operation.requested','operation.approved']],
+        'admin' => ['label'=>'ADMIN','owner'=>'admin','entry'=>'/noa-settings.php','events'=>['operation.requested','operation.approved','deploy.verified','work.completed']],
         'community' => ['label'=>'COMMUNITY','owner'=>'gnuboard','entry'=>'/bbs/board.php?bo_table=free','events'=>[]],
         'database' => ['label'=>'DATABASE','owner'=>'database','entry'=>'/noa-app/database/','events'=>[]],
     ];

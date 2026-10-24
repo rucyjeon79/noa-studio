@@ -1,94 +1,35 @@
-env:
-  NOA_DRIVE_RCLONE_CONFIG_B64: ${{ secrets.NOA_DRIVE_RCLONE_CONFIG_B64 }}
 name: NOA JUKEBOX public cards and authorized audio
-# View-only changes belong to the single integrated release; scheduled workers remain unchanged.
-# Circuit-break transient upload errors, reconcile lost acknowledgements and observe worker health.
+# Runtime workers consume existing signed APIs. They never deploy interface files.
 on:
   push:
-    branches: [main, chatgpt/jukebox-20261021]
-    paths: ['.github/workflows/noa-jukebox.yml', 'deploy/noa-app/jukebox/**', 'bridge/catalog.php', 'scripts/noa_jukebox*.py', 'scripts/noa_jukebox_baseline.json', 'tests/jukebox/**']
+    branches: [main]
+    paths: ['.github/workflows/noa-jukebox.yml', 'scripts/noa_jukebox_release.py', 'scripts/noa_jukebox_upload_worker.py', 'scripts/noa_jukebox_publish.py', 'scripts/noa_jukebox_worker.py', 'scripts/noa_jukebox_recovery.py', 'tests/jukebox/**']
+  pull_request:
+    paths: ['.github/workflows/noa-jukebox.yml', 'scripts/noa_jukebox*.py', 'tests/jukebox/**']
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
-    inputs:
-      verify_recovery:
-        description: 'Run bounded private-QA production recovery tests'
-        type: boolean
-        required: false
-        default: false
 permissions: {contents: read}
 jobs:
-  storage_rescue:
-    if: github.event_name != 'schedule' && !contains(github.event.head_commit.message, '[p0-media]') && !contains(github.event.head_commit.message, '[deploy-control]')
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    environment: production
-    steps:
-      - uses: actions/checkout@v4
-        with: {persist-credentials: false}
-      - run: python3 -m pip install --user paramiko==3.5.1
-      - name: Reclaim checksum-identified corrupt synthetic QA inputs only
-        env:
-          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
-        run: python3 scripts/noa_jukebox_storage_rescue.py
   validate:
-    if: github.event_name != 'schedule' && !contains(github.event.head_commit.message, '[p0-media]') && !contains(github.event.head_commit.message, '[deploy-control]')
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    services:
-      mysql:
-        image: mysql:8.0
-        env: {MYSQL_ROOT_PASSWORD: jukebox-test-only, MYSQL_DATABASE: jukebox_test}
-        ports: ['3306:3306']
-        options: --health-cmd="mysqladmin ping -h localhost -pjukebox-test-only" --health-interval=5s --health-timeout=5s --health-retries=20
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
-      - name: Validate fixed PHP and media pipeline
+      - name: Validate existing optimization, recovery and immutable publication
         run: |
-          for f in deploy/noa-app/jukebox/*.php bridge/catalog.php deploy/noa-music.php; do php -l "$f"; done
-          php tests/jukebox/range_test.php
-          sudo apt-get update -qq
-          sudo apt-get install -y ffmpeg
-          python3 -m pip install --user Pillow==11.3.0
+          python3 -m pip install --user paramiko==3.5.1 Pillow==11.3.0
+          if ! command -v ffmpeg || ! command -v ffprobe; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+          python3 -m py_compile scripts/noa_jukebox_release.py scripts/noa_jukebox_upload_worker.py scripts/noa_jukebox_publish.py
           python3 -m unittest discover -s tests/jukebox -p 'test_*.py'
-          python3 tests/jukebox/make_fixture.py
-          php tests/jukebox/upload_mysql_test.php
-          node --check deploy/noa-app/jukebox/upload.js
-          node tests/jukebox/reservations_test.cjs
-          node tests/jukebox/transport_test.cjs
-          node --check deploy/noa-app/jukebox/upload-transport.js
-          node --check tests/jukebox/live_recovery_test.cjs
-  interface:
-    needs: [validate, storage_rescue]
-    if: github.event_name != 'schedule' && !contains(github.event.head_commit.message, '[p0-media]') && !contains(github.event.head_commit.message, '[deploy-control]') && needs.validate.result == 'success'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    environment: production
-    concurrency: {group: noa-jukebox-interface-deployment, cancel-in-progress: false}
-    steps:
-      - uses: actions/checkout@v4
-        with: {persist-credentials: false}
-      - name: Install deployment dependencies
-        run: python3 -m pip install --user paramiko==3.5.1 Pillow==11.3.0
-      - name: Publish interface without interrupting audio processing
-        env:
-          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
-          NOA_JUKEBOX_INTERFACE_ONLY: '1'
-        run: python3 scripts/noa_jukebox_release.py
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: noa-jukebox-interface-proof
-          path: jukebox-proof/interface.json
-          retention-days: 14
   watchdog:
-    needs: [validate, interface]
-    if: always() && ((needs.validate.result == 'success' && needs.interface.result == 'success') || github.event_name == 'schedule')
+    needs: validate
+    if: always() && github.event_name != 'pull_request' && (github.event_name == 'schedule' || needs.validate.result == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: production
@@ -96,27 +37,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
-      - name: Install watchdog dependencies
-        run: python3 -m pip install --user paramiko==3.5.1 Pillow==11.3.0
-      - name: Observe worker execution and reconcile bounded SQL/file batches
+      - run: python3 -m pip install --user paramiko==3.5.1 Pillow==11.3.0
+      - name: Observe and reconcile without terminating active workers
         env:
-          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+          NOA_JUKEBOX_RUNTIME_ONLY: '1'
           NOA_JUKEBOX_WATCHDOG: '1'
-          NOA_JUKEBOX_VERIFY_RECOVERY: ${{ inputs.verify_recovery || (github.ref == 'refs/heads/chatgpt/jukebox-20261021') }}
         run: python3 scripts/noa_jukebox_release.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: noa-jukebox-watchdog-proof
-          path: |
-            jukebox-proof/watchdog.json
-            jukebox-proof/recovery-tests.json
+          name: noa-jukebox-watchdog-${{ github.run_id }}
+          path: jukebox-proof/watchdog.json
           retention-days: 14
   release:
-    needs: [validate, interface]
-    if: always() && ((needs.validate.result == 'success' && needs.interface.result == 'success') || github.event_name == 'schedule')
+    needs: validate
+    if: always() && github.event_name != 'pull_request' && (github.event_name == 'schedule' || needs.validate.result == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 120
     environment: production
@@ -124,17 +63,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
-      - name: Install worker dependencies
-        run: python3 -m pip install --user paramiko==3.5.1 Pillow==11.3.0
-      - name: Acquire cards from live DB and store verified files on Dothome
+      - run: python3 -m pip install --user paramiko==3.5.1 Pillow==11.3.0
+      - name: Process FIFO uploads and publish verified completed media only
         env:
-          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+          NOA_JUKEBOX_RUNTIME_ONLY: '1'
+          NOA_JUKEBOX_KEEPALIVE_SECONDS: '120'
         run: python3 scripts/noa_jukebox_release.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: noa-jukebox-summary
+          name: noa-jukebox-summary-${{ github.run_id }}
           path: jukebox-proof/summary.json
           retention-days: 14

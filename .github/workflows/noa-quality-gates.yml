@@ -1,11 +1,14 @@
 name: NOA existing feature quality gates
 on:
+  pull_request:
+    paths: ['deploy/**','bridge/**','lab/**','tests/**','android/**','scripts/qa/**','scripts/n80_*','.github/workflows/noa-quality-gates.yml','.github/workflows/n80-completion-report.yml']
   push:
     branches: [main]
-    paths: ['deploy/**','bridge/**','lab/**','tests/**','android/**','scripts/qa/**','.github/workflows/noa-quality-gates.yml']
+    paths: ['deploy/**','bridge/**','lab/**','tests/**','android/**','scripts/qa/**','scripts/n80_*','.github/workflows/noa-quality-gates.yml','.github/workflows/n80-completion-report.yml']
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 jobs:
   engines:
     runs-on: ubuntu-latest
@@ -17,9 +20,11 @@ jobs:
         options: --health-cmd="mysqladmin ping -h localhost -pnoa-test-only" --health-interval=10s --health-timeout=5s --health-retries=10
     steps:
       - uses: actions/checkout@v4
-        with: {persist-credentials: false}
+        with: {persist-credentials: false, fetch-depth: 0}
       - uses: actions/setup-node@v4
         with: {node-version: '22'}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'mbstring, pdo_mysql, pdo_sqlite'}
       - name: Prepare isolated fixtures and verified processing tools
         run: |
           python3 scripts/noa_build_seed.py
@@ -41,6 +46,15 @@ jobs:
           php tests/catalog/recovery_mysql_test.php
           php tests/lab/core_test.php
           php tests/lab/oauth_test.php
+          php tests/n80/completion_receipt_test.php
+          php -l deploy/noa-app/engine/completion-report.php
+          php -l deploy/noa-app/engine/completion-receipt.php
+          php tests/catalog/music_readmodel_test.php
+          php tests/sitemap/registry_test.php
+          python3 tests/sitemap/home_patch_test.py
+          python3 -m unittest discover -s tests/n80 -p 'test_completion*.py'
+          php -l bridge/user-playlists.php
+          NOA_PLAYLIST_TEST_MYSQL=1 NOA_PLAYLIST_TEST_PASSWORD=noa-test-only python3 tests/playlists/native_mysql_test.py
           python3 tests/lab/http_test.py
           node --test tests/lab/*.test.mjs scripts/noa_player_regression.test.mjs scripts/qa/*.test.mjs
           python3 -m unittest discover -s tests/lab -p '*_test.py'
@@ -56,3 +70,28 @@ jobs:
               assert r.status==expected,(path,r.status)
               print('LIVE_ACCESS',path,r.status)
           PY
+  finish-live:
+    if: github.ref == 'refs/heads/main'
+    needs: engines
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Wait for existing category release at this exact SHA
+        env: {GH_TOKEN: '${{ github.token }}'}
+        run: python scripts/n80_completion_pipeline.py wait --commit "$GITHUB_SHA"
+      - name: Verify actual deployed behavior without changing production data
+        env: {NOA_FINISH_QA_OUTPUT: '${{ runner.temp }}/noa-finish-proof/verified.json'}
+        run: |
+          mkdir -p "$RUNNER_TEMP/noa-finish-proof"
+          npm install --prefix "$RUNNER_TEMP/noa-finish-live" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          NOA_PLAYWRIGHT_PACKAGE="$RUNNER_TEMP/noa-finish-live/package.json" node scripts/qa/noa-finish-live.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: noa-finish-live-${{ github.run_id }}
+          path: '${{ runner.temp }}/noa-finish-proof/verified.json'
+          if-no-files-found: error
+          retention-days: 2
