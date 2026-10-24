@@ -1,10 +1,10 @@
 name: NOA Integrated Production Finish
 on:
   pull_request:
-    paths: ['deploy/noa-music.php','deploy/noa-music-detail.php','deploy/noa-sitemap.php','deploy/noa-playlists.js','deploy/noa-app/p0-player.js','deploy/noa-app/home.php','deploy/noa-app/engine/completion*','deploy/noa-app/engine/event-contract.php','deploy/noa-app/engine/registry.php','bridge/music-readmodel.php','bridge/user-playlists.php','scripts/noa_category_release.py','scripts/noa_finish_drive_receipt.json','scripts/qa/noa-finish*','tests/deployment/test_finish_release.py','.github/workflows/noa-category-order-final.yml']
+    paths: ['bridge/world-mv.php','bridge/popularity-events.php','deploy/noa-youtube.php','deploy/noa-app/world-view.php','deploy/noa-app/jukebox/stream.php','deploy/noa-app/jukebox/stream-popularity.php','deploy/noa-playcount.js','deploy/noa-app/engine/music-*.php','deploy/noa-app/engine/consume-music.php','deploy/noa-app/engine/lease-state.php','tests/popularity/**','tests/p0/world_act*','deploy/noa-music.php','deploy/noa-music-detail.php','deploy/noa-sitemap.php','deploy/noa-playlists.js','deploy/noa-app/p0-player.js','deploy/noa-app/home.php','deploy/noa-app/engine/completion*','deploy/noa-app/engine/event-contract.php','deploy/noa-app/engine/registry.php','bridge/music-readmodel.php','bridge/user-playlists.php','scripts/noa_category_release.py','scripts/noa_finish_drive_receipt.json','scripts/qa/noa-finish*','tests/deployment/test_finish_release.py','.github/workflows/noa-category-order-final.yml']
   push:
     branches: [main]
-    paths: ['deploy/noa-music.php','deploy/noa-music-detail.php','deploy/noa-sitemap.php','deploy/noa-playlists.js','deploy/noa-app/p0-player.js','deploy/noa-app/home.php','deploy/noa-app/engine/completion*','deploy/noa-app/engine/event-contract.php','deploy/noa-app/engine/registry.php','bridge/music-readmodel.php','bridge/user-playlists.php','scripts/noa_category_release.py','scripts/noa_finish_drive_receipt.json','scripts/qa/noa-finish*','scripts/qa/noa-sitemap-live.mjs','.github/workflows/noa-category-order-final.yml']
+    paths: ['bridge/world-mv.php','bridge/popularity-events.php','deploy/noa-youtube.php','deploy/noa-app/world-view.php','deploy/noa-app/jukebox/stream.php','deploy/noa-app/jukebox/stream-popularity.php','deploy/noa-playcount.js','deploy/noa-app/engine/music-*.php','deploy/noa-app/engine/consume-music.php','deploy/noa-app/engine/lease-state.php','tests/popularity/**','tests/p0/world_act*','deploy/noa-music.php','deploy/noa-music-detail.php','deploy/noa-sitemap.php','deploy/noa-playlists.js','deploy/noa-app/p0-player.js','deploy/noa-app/home.php','deploy/noa-app/engine/completion*','deploy/noa-app/engine/event-contract.php','deploy/noa-app/engine/registry.php','bridge/music-readmodel.php','bridge/user-playlists.php','scripts/noa_category_release.py','scripts/noa_finish_drive_receipt.json','scripts/qa/noa-finish*','scripts/qa/noa-sitemap-live.mjs','.github/workflows/noa-category-order-final.yml']
   workflow_dispatch:
 permissions: {contents: read, actions: read}
 jobs:
@@ -15,12 +15,14 @@ jobs:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
       - uses: shivammathur/setup-php@v2
-        with: {php-version: '8.2', extensions: 'pdo_sqlite,sqlite3'}
+        with: {php-version: '8.2', extensions: 'pdo_sqlite,sqlite3,fileinfo'}
       - name: Prepare isolated validation dependencies
         run: |
           python -m pip install 'paramiko>=3,<5'
           npm install --prefix "$RUNNER_TEMP/noa-category" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-category-final.mjs "$RUNNER_TEMP/noa-category/check.mjs"
+      - name: Ensure actual audio verification tools
+        run: command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
       - name: Validate reviewed runtime files, recovery and source contracts
         run: |
           php -l deploy/noa-music.php
@@ -39,6 +41,11 @@ jobs:
           php tests/catalog/music_readmodel_test.php
           php tests/sitemap/registry_test.php
           php tests/n80/completion_receipt_test.php
+          for test in tests/engine/*_test.php; do php "$test"; done
+          php tests/p0/world_act_membership.php
+          php tests/popularity/stream_tracking_test.php
+          node --test tests/popularity/player_tracker_test.cjs
+          python tests/popularity/stream_source_contract.py
           python tests/deployment/test_finish_release.py
           python -m py_compile scripts/noa_category_release.py
       - name: Retain category and isolated native authorization regression checks
@@ -70,12 +77,12 @@ jobs:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
       - uses: shivammathur/setup-php@v2
-        with: {php-version: '8.2', extensions: 'pdo_sqlite,sqlite3'}
+        with: {php-version: '8.2', extensions: 'pdo_sqlite,sqlite3,fileinfo'}
       - name: Download exact Drive-verified operating preimages, including HOME
         uses: actions/download-artifact@v4
         with:
-          artifact-ids: '12554153399'
-          run-id: '40078930378'
+          artifact-ids: '12557617927'
+          run-id: '40087720872'
           github-token: ${{ github.token }}
           repository: rucyjeon79/noa-studio
           path: ${{ runner.temp }}/noa-finish-preimages
@@ -87,7 +94,7 @@ jobs:
           cp scripts/qa/noa-category-final.mjs "$RUNNER_TEMP/noa-category/check.mjs"
           python scripts/qa/category-storage-fixture.py
           php -S 127.0.0.1:8099 -t "$RUNNER_TEMP/noa-category-fixture" > "$RUNNER_TEMP/category-php.log" 2>&1 &
-      - name: Activate twelve reviewed files from exact operating baselines
+      - name: Activate reviewed ACT, stream and N80 consumer files from exact operating baselines
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}

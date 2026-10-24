@@ -40,21 +40,21 @@ def receipt_for(old, raw):
                       for p, data in old.items()},
             'protected': {}, 'archiveSha256': release.sha(raw),
             'driveId': 'verified_unit_drive', 'readbackVerified': True,
-            'restoreExtractionVerified': True, 'checkpointRun': 40078930378,
-            'artifactId': 12554153399}
+            'restoreExtractionVerified': True, 'checkpointRun': 40087720872,
+            'artifactId': 12557617927}
 
 
 class PreimageTests(unittest.TestCase):
-    def test_home_is_restored_from_archive_without_git_history(self):
+    def test_operating_view_is_restored_from_archive_without_git_history(self):
         old = {p: None for p in release.FILES}
-        old['noa-app/home.php'] = b'<?php // Exact operating HOME absent from git\n'
+        old['noa-app/world-view.php'] = b'<?php // Exact operating HOME absent from git\n'
         raw = archive_bytes(old)
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp)/'preimages.tar.gz'
             path.write_bytes(raw)
             with patch('subprocess.check_output', side_effect=AssertionError('git cannot provide HOME')):
                 self.assertEqual(release.load_preimages(receipt_for(old, raw), path),
-                                 {'noa-app/home.php': old['noa-app/home.php']})
+                                 {'noa-app/world-view.php': old['noa-app/world-view.php']})
 
     def test_archive_hash_must_equal_drive_receipt(self):
         old = {p: None for p in release.FILES}

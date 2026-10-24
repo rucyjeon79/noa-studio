@@ -26,11 +26,7 @@ COMPLETION_STORE = '/hosting/noastudio/noa-ai-lab/n80-completion'
 RECEIPT = Path('scripts/noa_finish_drive_receipt.json')
 STATE = Path(os.environ.get('RUNNER_TEMP', '/tmp')) / 'noa-category-release.json'
 # Helpers precede consumers; entry pages and HOME are activated last.
-ORDER = ['noa-bridge/music-readmodel.php', 'noa-bridge/user-playlists.php',
-         'noa-app/engine/event-contract.php', 'noa-app/engine/registry.php',
-         'noa-app/engine/completion-receipt.php', 'noa-app/engine/completion-report.php',
-         'noa-music-detail.php', 'noa-sitemap.php', 'noa-playlists.js',
-         'noa-app/p0-player.js', 'noa-music.php', 'noa-app/home.php']
+ORDER = ['noa-app/engine/lease-state.php', 'noa-app/engine/music-availability.php', 'noa-app/engine/music-consumer.php', 'noa-app/engine/consume-music.php', 'noa-app/jukebox/stream-popularity.php', 'noa-bridge/world-mv.php', 'noa-bridge/popularity-events.php', 'noa-playcount.js', 'noa-app/jukebox/stream.php', 'noa-app/world-view.php', 'noa-youtube.php', 'noa-music.php']
 FILES = {p: ('bridge/' + p[len('noa-bridge/'):] if p.startswith('noa-bridge/') else 'deploy/' + p)
          for p in ORDER}
 
@@ -43,9 +39,9 @@ def load_preimages(receipt, archive):
     """Read bytes without extracting paths, symlinks or unexpected members."""
     if (receipt.get('readbackVerified') is not True
             or receipt.get('restoreExtractionVerified') is not True
-            or receipt.get('checkpointRun') != 40078930378
-            or receipt.get('artifactId') != 12554153399
-            or set(receipt.get('files', {})) != set(FILES)
+            or receipt.get('checkpointRun') != 40087720872
+            or receipt.get('artifactId') != 12557617927
+            or not set(FILES).issubset(receipt.get('files', {}))
             or not re.fullmatch(r'[A-Za-z0-9_-]+', receipt.get('driveId', ''))):
         raise RuntimeError('drive_recovery_receipt_invalid')
     raw = Path(archive).read_bytes()
@@ -65,7 +61,7 @@ def load_preimages(receipt, archive):
             old[member.name] = data
     if set(old) != expected:
         raise RuntimeError('incomplete_recovery_archive')
-    return old
+    return {p: data for p, data in old.items() if p in FILES}
 
 
 def snapshot(path):
@@ -75,6 +71,7 @@ def snapshot(path):
     with urllib.request.urlopen(request, timeout=60) as response:
         body, url = response.read(), response.url
     return {'ids': set(re.findall(rb'data-video="([A-Za-z0-9_-]{11})"', body)),
+            'actIds': dict(re.findall(rb'data-world-act-video="([1-4])"[^>]*><button[^>]*data-video="([A-Za-z0-9_-]{11})"', body)),
             'keys': re.findall(rb'<article class="song" data-key="([^"]+)"', body),
             'bytes': len(body), 'total_ms': round((time.perf_counter()-started)*1000, 1),
             'url': url}
@@ -83,19 +80,26 @@ def snapshot(path):
 def verify(before):
     world = snapshot('/noa-world.php')
     ordinary = snapshot('/noa-youtube.php')
+    moved = {b'QEQ_XYFJduk', b'NdSuzwrbQPs', b'07Ibxrg3lSc'}
+    expected_act = {b'1': b'QEQ_XYFJduk', b'2': b'NdSuzwrbQPs', b'3': b'07Ibxrg3lSc'}
     if (not world['ids'] or ordinary['ids'] & world['ids']
-            or ordinary['ids'] != before['ordinary']['ids']
-            or world['ids'] != before['world']['ids']):
+            or ordinary['ids'] != before['ordinary']['ids'] - moved
+            or world['ids'] != before['world']['ids'] | moved
+            or world['actIds'] != expected_act):
         raise RuntimeError('public_video_identity_preservation_failed')
+    for act, video in expected_act.items():
+        chapter = snapshot('/noa-world.php?story=' + act.decode())
+        if chapter['actIds'] != {act: video}:
+            raise RuntimeError('act_story_video_mapping_failed')
     music = snapshot('/noa-music.php')
     if not music['keys'] or music['keys'] != before['music']['keys']:
         raise RuntimeError('music_ordered_key_preservation_failed')
-    for path in ['/noa-youtube.php?world=1', '/noa-youtube.php?playlist=PLEPMKciKgvchOwm5hQfGAP2jDQloI2RVY']:
+    for path in ['/noa-youtube.php?world=1', '/noa-youtube.php?playlist=PLEPMKciKgvchOwm5hQfGAP2jDQloI2RVY', '/noa-youtube.php?playlist=PLEPMKciKgvcjkGC0rrzYE-NI8P-f-6tjN']:
         if urllib.parse.urlparse(snapshot(path)['url']).path != '/noa-world.php':
             raise RuntimeError('legacy_world_route_failed')
     checks = []
     for path, expected in [('/noa-sitemap.php', 200), ('/noa-category-order-admin.php', 403),
-                           ('/noa-library.php', 403), ('/noa-app/engine/completion-report.php', 401)]:
+                           ('/noa-library.php', 403), ('/noa-app/engine/completion-report.php', 401), ('/noa-app/engine/consume-music.php', 401)]:
         try:
             with urllib.request.urlopen('https://noastudio.ai.kr' + path, timeout=45) as response:
                 actual = response.status
@@ -113,7 +117,7 @@ def verify(before):
             'musicBytesBefore': before['music']['bytes'], 'musicBytesAfter': music['bytes'],
             'musicHttpMsBefore': before['music']['total_ms'], 'musicHttpMsAfter': music['total_ms'],
             'ordinaryBefore': len(before['ordinary']['ids']), 'ordinaryAfter': len(ordinary['ids']),
-            'officialWorldCount': len(world['ids']), 'overlapAfter': 0,
+            'officialWorldCount': len(world['ids']), 'officialActCount': len(world['actIds']), 'overlapAfter': 0,
             'nonOfficialSetPreserved': True, 'worldSetPreserved': True,
             'legacyLinksRedirectToWorld': True, 'http': checks}
 

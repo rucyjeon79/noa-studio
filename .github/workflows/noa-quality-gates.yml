@@ -52,6 +52,11 @@ jobs:
           php tests/lab/core_test.php
           php tests/lab/oauth_test.php
           php tests/n80/completion_receipt_test.php
+          for test in tests/engine/*_test.php; do php "$test"; done
+          php tests/p0/world_act_membership.php
+          php tests/popularity/stream_tracking_test.php
+          node --test tests/popularity/player_tracker_test.cjs
+          python tests/popularity/stream_source_contract.py
           php -l deploy/noa-app/engine/completion-report.php
           php -l deploy/noa-app/engine/completion-receipt.php
           php tests/catalog/music_readmodel_test.php
