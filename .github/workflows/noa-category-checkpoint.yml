@@ -1,7 +1,7 @@
 name: NOA Category Readonly Checkpoint
 on:
   push:
-    branches: ['codex/music-curl-20261024']
+    branches: ['codex/four-level-browse-20261025']
     paths: ['scripts/noa_category_checkpoint.py', '.github/workflows/noa-category-checkpoint.yml']
 permissions: {contents: read}
 concurrency: {group: noa-production-sftp, cancel-in-progress: false}
