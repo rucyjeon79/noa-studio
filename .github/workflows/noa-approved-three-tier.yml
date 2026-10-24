@@ -14,10 +14,12 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: noa-production-sftp
+  group: noa-retired-noa-approved-three-tier
   cancel-in-progress: false
 jobs:
   deploy:
+    # Runtime publication is owned by the Drive-protected guarded browse release.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 25
