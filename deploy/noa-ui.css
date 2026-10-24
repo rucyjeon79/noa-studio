@@ -413,7 +413,7 @@ html[data-noa-precision] .noa-page .noa-inline-act>.noa-browse-card>span{padding
 html[data-noa-precision] .noa-page .noa-inline-act>.noa-browse-card[aria-expanded="true"]{outline:0;color:var(--noa-success)}
 html[data-noa-precision] .noa-page .noa-inline-act>.noa-browse-card[aria-expanded="true"] strong{color:var(--noa-success)}
 .noa-inline-songs{padding:0 0 8px 8px}
-html[data-noa-precision] .noa-page .noa-inline-song{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;border:0;border-bottom:1px solid var(--noa-line);background:transparent;border-radius:0;box-shadow:none;padding:8px 0;line-height:1.4;text-align:left;color:var(--noa-text);overflow-wrap:anywhere}
+html[data-noa-precision] .noa-page .noa-inline-song{display:flex;align-items:center;justify-content:flex-start;gap:12px;width:100%;min-height:56px;border:0;border-bottom:1px solid var(--noa-line);background:transparent;border-radius:0;box-shadow:none;padding:8px 0;line-height:1.4;text-align:left;color:var(--noa-text);overflow-wrap:anywhere}
 .noa-inline-cover{display:block;flex:0 0 42px;width:42px;height:42px;object-fit:cover;border-radius:6px}
 
 html[data-noa-precision] .noa-page .noa-browse-grid:has(>.noa-inline-act){grid-template-columns:minmax(0,1fr)}
