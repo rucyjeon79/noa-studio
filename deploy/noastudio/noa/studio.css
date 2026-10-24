@@ -1,4 +1,4 @@
-:root { color-scheme: dark; --bg:#000; --card:#1c1c1e; --line:rgba(255,255,255,.12); --gold:#e8c547; --fg:#f5f5f7; --muted:#98989d; }
+:root { color-scheme: dark; --bg:#000; --card:#1c1c1e; --line:rgba(255,255,255,.12); --gold:var(--noa-accent,#d6bc83); --fg:#f5f5f7; --muted:var(--noa-muted,#bbc0c7); }
 * { box-sizing: border-box; }
 body { margin:0; background:var(--bg); color:var(--fg); font-family:-apple-system,"Noto Sans KR",sans-serif; }
 a { color:var(--gold); text-decoration:none; }
@@ -26,4 +26,4 @@ button.go, button.stop { background:var(--gold); color:#1a1408; border:0; border
 button.stop { background:#2c2c2e; color:var(--fg); }
 #box { position:fixed; left:0; right:0; bottom:0; display:flex; gap:10px; align-items:center; padding:10px 14px; background:#111; border-top:1px solid var(--line); z-index:30; }
 #now { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.note { color:#ffb4b4; }
+.note { color:var(--noa-danger,#f16b72); }

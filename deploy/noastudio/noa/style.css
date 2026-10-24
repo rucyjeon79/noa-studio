@@ -3,9 +3,9 @@
   --bg: #090909;
   --card: #141414;
   --line: rgba(212, 180, 131, 0.35);
-  --gold: #e6d2a8;
-  --fg: #f6f1e7;
-  --muted: #b7ab9a;
+  --gold: var(--noa-accent,#d6bc83);
+  --fg: var(--noa-text,#f5f6f8);
+  --muted: var(--noa-muted,#bbc0c7);
 }
 * { box-sizing: border-box; }
 body {
@@ -53,5 +53,5 @@ button {
   padding: 12px 18px;
   font-weight: 700;
 }
-.note { color: #ffb4b4; }
+.note { color: var(--noa-danger,#f16b72); }
 nav.sub { display: flex; gap: 14px; margin: 8px 0 16px; color: var(--muted); }
