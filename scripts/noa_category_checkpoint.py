@@ -27,14 +27,26 @@ def main():
   manifest['archiveSha256']=sha((out/'preimages.tar.gz').read_bytes())
   manifest['hostTemporaryFiles']=[x.filename for x in s.listdir_attr(ROOT) if x.filename.startswith('.noa-') and x.filename.endswith('.tmp')]
   (out/'manifest.json').write_text(json.dumps(manifest,indent=2));print(json.dumps(manifest))
-  for name in ['common.php','lib/common.lib.php','.htaccess']:
+  for name in ['common.php','lib/common.lib.php','config.php']:
    try:
     with s.open(ROOT+'/'+name,'rb') as f:source=f.read().decode('utf-8','replace')
    except FileNotFoundError:continue
    import re
-   patterns=r'ss_mb_key|ss_mb_id|function get_session_key|HTTP_USER_AGENT|REMOTE_ADDR|session_(start|name|save_path|set_cookie_params)|ini_set.*session|G5_SESSION|session_destroy|session_unset|is_admin =|is_member =' 
-   lines=[line for line in source.splitlines() if re.search(patterns,line)]
-   print('AUTH_SOURCE_RULES',name,json.dumps(lines))
+   if name=='lib/common.lib.php':
+    starts=[source.find('function '+f+'(') for f in ['ss_mb_key','get_client_key','check_session_token','get_cookie','set_cookie']]
+    snippets=[]
+    for start in starts:
+     if start<0:continue
+     end=source.find('\nfunction ',start+10)
+     snippets.append(source[start:end if end>start else start+1800])
+    print('SESSION_FUNCTION_SOURCE',json.dumps(snippets))
+   elif name=='config.php':
+    print('SESSION_CONFIG_SOURCE',json.dumps([line for line in source.splitlines() if 'G5_COOKIE_DOMAIN' in line or 'G5_SESSION_PATH' in line or 'G5_SESSION_NAME' in line]))
+   else:
+    start=source.find("if (isset($_SESSION['ss_mb_id'])")
+    print('MEMBER_VALIDATION_SOURCE',json.dumps(source[start:start+1800]))
+  directory=s.lstat(ROOT+'/data/session')
+  print('SESSION_DIRECTORY_METADATA',json.dumps({'mode':oct(stat.S_IMODE(directory.st_mode)),'uid':directory.st_uid}))
 
  finally:
   if s:s.close()
