@@ -8,7 +8,7 @@ const groupFor=g=>groups.find(x=>x[2].includes(g))?.[0]||null;
 const actFor=r=>Number(r.act)>0?Number(r.act):Number(r.ep)>0?Math.ceil(Number(r.ep)/10):null;
 const epOrder=(a,b)=>{const ea=Number(a.ep),eb=Number(b.ep);return (ea>0?ea:Number.MAX_SAFE_INTEGER)-(eb>0?eb:Number.MAX_SAFE_INTEGER);};
 let manualOrder={story:[],cover:[]};
-const orderFor=(a,b)=>{const ga=groupFor(a.genre),gb=groupFor(b.genre);if(ga===gb&&(ga==='story'||ga==='cover')){const keys=manualOrder[ga]||[],ia=keys.indexOf(String(a.orderKey||a.key).replace(/^catalog:/,'')),ib=keys.indexOf(String(b.orderKey||b.key).replace(/^catalog:/,''));return (ia<0?Number.MAX_SAFE_INTEGER:ia)-(ib<0?Number.MAX_SAFE_INTEGER:ib);}return epOrder(a,b);};
+const orderFor=(a,b)=>{const ga=groupFor(a.genre),gb=groupFor(b.genre);if(ga===gb&&(ga==='story'||ga==='cover')){if(Number(a.ep)>0||Number(b.ep)>0)return epOrder(a,b);const keys=manualOrder[ga]||[],ia=keys.indexOf(String(a.orderKey||a.key).replace(/^catalog:/,'')),ib=keys.indexOf(String(b.orderKey||b.key).replace(/^catalog:/,''));return (ia<0?Number.MAX_SAFE_INTEGER:ia)-(ib<0?Number.MAX_SAFE_INTEGER:ib);}return epOrder(a,b);};
 
 const slicePage=(rows,page,size=24)=>rows.slice(Math.max(0,page)*size,(Math.max(0,page)+1)*size);
 function mount({host,rows,onChange,search=null,genre=null,type=null,kind='곡'}){
