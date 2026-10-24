@@ -19,7 +19,7 @@ try{
  check('initial_payload_omits_detail_fields',rows.every(r=>!('rawLyrics'in r)&&!('lyrics'in r)&&!('description'in r)),{decodedBytes:Buffer.byteLength(html),beforeDecodedBytes:3372824});
  check('initial_payload_reduced',Buffer.byteLength(html)<3372824*.8);
  let next=0,verified=0;const mismatch=[];
- await Promise.all(Array.from({length:4},async()=>{while(next<baseline.length){const old=baseline[next++];const response=await api.get(origin+'/noa-music-detail.php?key='+encodeURIComponent(old.key));if(!response.ok()){mismatch.push({key:old.key,status:response.status()});continue;}const data=await response.json();if(data.key!==old.key||sha(data.rawLyrics)!==old.rawLyricsSha256||sha(data.description)!==old.descriptionSha256)mismatch.push({key:old.key,reason:'hash_mismatch'});else verified++;}}));
+ await Promise.all(Array.from({length:2},async()=>{while(next<baseline.length){const old=baseline[next++];const response=await api.get(origin+'/noa-music-detail.php?key='+encodeURIComponent(old.key),{maxRetries:1,timeout:45000});if(!response.ok()){mismatch.push({key:old.key,status:response.status()});continue;}const data=await response.json();if(data.key!==old.key||sha(data.rawLyrics)!==old.rawLyricsSha256||sha(data.description)!==old.descriptionSha256)mismatch.push({key:old.key,reason:'hash_mismatch'});else verified++;}}));
  check('all_original_public_details_match_sha256',!mismatch.length,{verified,mismatch});
  const invalid=await api.get(origin+'/noa-music-detail.php?key=../config.php');check('detail_key_traversal_rejected',invalid.status()===400,{status:invalid.status()});
  const missing=await api.get(origin+'/noa-music-detail.php?key=single:missing:999');check('detail_missing_key_hidden',missing.status()===404,{status:missing.status()});
@@ -30,9 +30,10 @@ try{
  for(const mobile of[false,true]){
   for(let i=0;i<3;i++){
    const c=await browser.newContext({viewport:{width:mobile?390:1440,height:900}}),p=await c.newPage();
+   await p.addInitScript(()=>{window.__noaLongTasks=[];try{new PerformanceObserver(list=>{for(const e of list.getEntries())window.__noaLongTasks.push({start:e.startTime,duration:e.duration});}).observe({type:'longtask',buffered:true});}catch{}});
    if(mobile){const d=await c.newCDPSession(p);await d.send('Network.enable');await d.send('Network.emulateNetworkConditions',{offline:false,latency:80,downloadThroughput:200000,uploadThroughput:90000});await d.send('Emulation.setCPUThrottlingRate',{rate:4});}
    const r=await p.goto(origin+'/noa-music.php',{waitUntil:'domcontentloaded',timeout:120000});
-   const body=await r.body();const navigation=await p.evaluate(()=>{const n=performance.getEntriesByType('navigation')[0];return{ttfb:n.responseStart-n.requestStart,dcl:n.domContentLoadedEventEnd-n.startTime,dom:document.querySelectorAll('*').length,encodedBodySize:n.encodedBodySize,decodedBodySize:n.decodedBodySize};});
+   const body=await r.body();const navigation=await p.evaluate(()=>{const n=performance.getEntriesByType('navigation')[0];return{ttfb:n.responseStart-n.requestStart,dcl:n.domContentLoadedEventEnd-n.startTime,dom:document.querySelectorAll('*').length,encodedBodySize:n.encodedBodySize,decodedBodySize:n.decodedBodySize,slowResources:performance.getEntriesByType('resource').filter(r=>r.duration>500).sort((a,b)=>b.duration-a.duration).slice(0,12).map(r=>({path:new URL(r.name).origin+new URL(r.name).pathname,duration:r.duration,start:r.startTime,transferSize:r.transferSize,initiator:r.initiatorType})),longTasks:window.__noaLongTasks||[]};});
    performanceRows.push({mobile,sample:i,bytes:body.length,contentEncoding:r.headers()['content-encoding']||null,...navigation});await c.close();
   }
   const c=await browser.newContext({viewport:{width:mobile?390:1440,height:900}}),p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
@@ -52,5 +53,5 @@ try{
   await p.screenshot({path:resolve(dirname(output),'music-'+(mobile?'mobile':'desktop')+'.png'),fullPage:false});await p.locator('#pause-play').click();await c.close();
  }
  const sitemapOutput=resolve(dirname(output),'sitemap.json');const sitemap=spawnSync(process.execPath,['scripts/qa/noa-sitemap-live.mjs'],{env:{...process.env,NOA_SITEMAP_QA_OUTPUT:sitemapOutput},encoding:'utf8'});check('sitemap_live_suite',sitemap.status===0,{report:'sitemap.json',output:sitemap.stdout.slice(-1200),error:sitemap.stderr.slice(-1000)});
-}catch(e){cases.push({name:'unhandled_failure',ok:false,error:e.message});process.exitCode=1;}
+}catch(e){cases.push({name:'unhandled_failure',ok:false,error:e.message.split('\n')[0]});process.exitCode=1;}
 finally{if(browser)await browser.close();const report={ok:cases.length>0&&cases.every(c=>c.ok),origin,createdAt:new Date().toISOString(),cases,performance:performanceRows,limitations:['Physical iOS/Android screen-off not tested','Provider YouTube bot challenge remains external','No production playlist deletion executed']};writeFileSync(output,JSON.stringify(report,null,2));console.log(JSON.stringify({ok:report.ok,cases:cases.length,failed:cases.filter(c=>!c.ok),output}));}

@@ -32,4 +32,4 @@ try{
  await p.evaluate(key=>window.dispatchEvent(new CustomEvent('noa-shell-track',{detail:{key,play:false}})),b.key);
  await new Promise(r=>setTimeout(r,1000));check('slow_previous_detail_cannot_overwrite_latest_selection',await p.locator('#lyrics').textContent()===(b.rawLyrics||b.lyrics||'등록된 가사가 없습니다.'));
  await p.screenshot({path:resolve('category-proof/candidate/music-finish.png')});await c.close();
-}catch(e){cases.push({name:'candidate_error',ok:false,error:e.message});process.exitCode=1;}finally{await browser.close();writeFileSync(out,JSON.stringify({ok:cases.every(c=>c.ok),cases,scope:'candidate HTML and real existing audio; isolated detail route',productionMutation:false},null,2));console.log(JSON.stringify({cases,report:out}));}
+}catch(e){cases.push({name:'candidate_error',ok:false,error:e.message.split('\n')[0]});process.exitCode=1;}finally{await browser.close();writeFileSync(out,JSON.stringify({ok:cases.every(c=>c.ok),cases,scope:'candidate HTML and real existing audio; isolated detail route',productionMutation:false},null,2));console.log(JSON.stringify({cases,report:out}));}
