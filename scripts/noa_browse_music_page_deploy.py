@@ -49,7 +49,7 @@ def main():
     request=urllib.request.Request('https://noastudio.ai.kr/noa-music.php?audit='+os.environ['GITHUB_SHA'][:12],headers={'Cache-Control':'no-cache'})
     with urllib.request.urlopen(request,timeout=30) as response:
         html=response.read().decode('utf-8','replace')
-        if 'noa-browse.js?v=20261024-approved-three-tier' not in html:
+        if 'noa-browse.js?v=20261024-approved-three-tier-polish' not in html:
             raise RuntimeError('public_player_asset_version_mismatch')
     print('PHP_PUBLIC_VERIFIED',new)
 if __name__=='__main__':main()
