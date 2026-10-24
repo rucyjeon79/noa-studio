@@ -1,0 +1,61 @@
+name: N80 Whole App Data Integration
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/noa-app/engine/app-data.php'
+      - 'deploy/noa-app/engine/app-observe.php'
+      - 'deploy/noa-app/engine/music-adapter.php'
+      - 'scripts/n80_app_integration.py'
+      - 'scripts/n80_music_adapter_drive_receipt.json'
+      - 'tests/engine/app_data_test.php'
+      - 'tests/engine/music_catalog_reference_test.php'
+      - '.github/workflows/n80-app-integration.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '19 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: noa-production-sftp
+  cancel-in-progress: false
+jobs:
+  integrate:
+    if: vars.N80_OBSERVER_ENABLED != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_sqlite
+      - name: Validate data contracts and existing engine before installation
+        run: |
+          set -eu
+          for file in deploy/noa-app/engine/*.php; do php -l "$file"; done
+          for test in tests/engine/*_test.php; do php "$test"; done
+          python -m py_compile scripts/n80_app_integration.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tests/engine -p 'test_app_integration.py' -v
+      - run: python -m pip install 'paramiko>=3,<5'
+      - name: Verify Drive-protected adapter repair and whole-app data relations
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/n80_app_integration.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: n80-app-integration-${{ github.run_id }}
+          path: ${{ runner.temp }}/n80-app-integration.json
+          retention-days: 1
+          if-no-files-found: ignore
