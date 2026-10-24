@@ -24,10 +24,42 @@ function n80_music_public_get(string $kind,string $key):array {
     if(!isset($paths[$kind]))throw new InvalidArgumentException('unsupported_public_read');
     $GLOBALS['n80_music_phase']='public_'.$kind;
     $GLOBALS['n80_music_http_status']=0;
-    if(!filter_var(ini_get('allow_url_fopen'),FILTER_VALIDATE_BOOLEAN))throw new RuntimeException('public_url_access_disabled');
     $limit=$kind==='audio'?4096:4194304;
     $headers="X-N80-Availability-Check: 1\r\nAccept: ".($kind==='detail'?'application/json':'*/*')."\r\n";
     if($kind==='audio')$headers.="Range: bytes=0-4095\r\n";
+    // Shared hosting may disable URL fopen while its existing API collectors use
+    // cURL. Keep the same fixed origin, trust checks, byte caps and no redirects.
+    if(function_exists('curl_init')){
+        $GLOBALS['n80_music_http_client']='curl';
+        $curl=curl_init('https://noastudio.ai.kr'.$paths[$kind]);
+        if($curl===false)throw new RuntimeException('public_network_failed');
+        $body='';$tooLarge=false;
+        try{
+            $options=[CURLOPT_HTTPGET=>true,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_MAXREDIRS=>0,
+                CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_REDIR_PROTOCOLS=>CURLPROTO_HTTPS,
+                CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_CONNECTTIMEOUT=>8,CURLOPT_TIMEOUT=>25,
+                CURLOPT_NOSIGNAL=>true,CURLOPT_HEADER=>false,CURLOPT_RETURNTRANSFER=>false,
+                CURLOPT_USERAGENT=>'NOA-N80-Availability/1.0',
+                CURLOPT_HTTPHEADER=>array_values(array_filter(explode("\r\n",trim($headers))))];
+            $options[CURLOPT_WRITEFUNCTION]=static function($handle,string $chunk)use(&$body,&$tooLarge,$limit):int{
+                if(strlen($body)+strlen($chunk)>$limit){$tooLarge=true;return 0;}
+                $body.=$chunk;return strlen($chunk);
+            };
+            if(!curl_setopt_array($curl,$options))throw new RuntimeException('public_network_failed');
+            $ok=curl_exec($curl);$errno=curl_errno($curl);$status=(int)curl_getinfo($curl,CURLINFO_RESPONSE_CODE);
+            $GLOBALS['n80_music_http_status']=$status;
+            if($tooLarge)throw new RuntimeException('public_read_too_large');
+            if($ok===false){
+                if($errno===28)throw new RuntimeException('public_read_timeout');
+                if(in_array($errno,[35,51,58,59,60,77,83,90],true))throw new RuntimeException('public_tls_failed');
+                throw new RuntimeException('public_network_failed');
+            }
+            if(!in_array($status,[200,206],true))throw new RuntimeException('public_http_non_success');
+            return ['status'=>$status,'body'=>$body];
+        }finally{curl_close($curl);}
+    }
+    $GLOBALS['n80_music_http_client']='stream';
+    if(!filter_var(ini_get('allow_url_fopen'),FILTER_VALIDATE_BOOLEAN))throw new RuntimeException('public_url_access_disabled');
     $ctx=stream_context_create(['http'=>['method'=>'GET','header'=>$headers,'timeout'=>25,'follow_location'=>0,'ignore_errors'=>true],
         'ssl'=>['verify_peer'=>true,'verify_peer_name'=>true]]);
     error_clear_last();$started=microtime(true);
@@ -94,7 +126,8 @@ function n80_music_availability(PDO $db,int $jobId,callable $read):array {
 function n80_music_diagnose(PDO $db,int $jobId,?callable $read=null):array {
     $result=['ok'=>true,'effect'=>'music_availability_diagnostic_only','jobId'=>$jobId,'available'=>false,
         'businessAck'=>false,'automaticDispatch'=>false,'queueMutation'=>false,'databaseWrites'=>0,
-        'urlFopenEnabled'=>filter_var(ini_get('allow_url_fopen'),FILTER_VALIDATE_BOOLEAN)];
+        'urlFopenEnabled'=>filter_var(ini_get('allow_url_fopen'),FILTER_VALIDATE_BOOLEAN),
+        'curlAvailable'=>function_exists('curl_init')];
     try{
         $verified=n80_music_availability($db,$jobId,$read??'n80_music_public_get');
         $result['available']=$verified['ok'];$result['reason']=$verified['ok']?'verified':n80_music_safe_reason($verified['error']??'verification_error');
@@ -103,5 +136,6 @@ function n80_music_diagnose(PDO $db,int $jobId,?callable $read=null):array {
         $result['exceptionClass']=in_array(get_class($e),['PDOException','RuntimeException','TypeError','Error'],true)?get_class($e):'other';
         if($e instanceof PDOException&&preg_match('/^[A-Z0-9]{5}$/D',(string)$e->getCode()))$result['sqlState']=(string)$e->getCode();
     }
-    $result['phase']=n80_music_safe_phase();$result['httpStatus']=(int)($GLOBALS['n80_music_http_status']??0);return $result;
+    $result['phase']=n80_music_safe_phase();$result['httpStatus']=(int)($GLOBALS['n80_music_http_status']??0);
+    $result['httpClient']=in_array($GLOBALS['n80_music_http_client']??'', ['curl','stream'],true)?$GLOBALS['n80_music_http_client']:'none';return $result;
 }
