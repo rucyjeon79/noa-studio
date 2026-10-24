@@ -42,4 +42,8 @@ try {
     $response=json_encode(['ok'=>true,'nonce'=>$nonce,'result'=>$result],JSON_THROW_ON_ERROR);
     header('X-N80-Signature: '.hash_hmac('sha256',"N80-APP-DATA-RESPONSE-1\n".$nonce."\n".hash('sha256',$response),$key));
     echo $response;
-}catch(Throwable $e){n80_app_error(503,'observer_unavailable');}
+}catch(Throwable $e){
+    $code=get_class($e).':'.(string)$e->getCode().':'.($GLOBALS['n80_app_phase']??'bootstrap');
+    header('X-N80-Error-Code: '.substr(preg_replace('/[^A-Za-z0-9_:.-]/','_',$code),0,160));
+    n80_app_error(503,'observer_unavailable');
+}

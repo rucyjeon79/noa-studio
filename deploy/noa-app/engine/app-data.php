@@ -1,7 +1,9 @@
 <?php
 declare(strict_types=1);
 /** Single SELECT-only data contract across existing app stores; no schema helpers. */
+function n80_app_phase(string $phase): void {$GLOBALS['n80_app_phase']=$phase;}
 function n80_app_schema(PDO $db): array {
+    n80_app_phase('schema');
     $out=[];
     if($db->getAttribute(PDO::ATTR_DRIVER_NAME)==='sqlite'){
         foreach($db->query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'") as $r){
@@ -36,6 +38,7 @@ function n80_app_references(PDO $db,array $schema): array {
 function n80_app_audit(PDO $db,string $root,string $memberTable): array {
     $schema=n80_app_schema($db);$tables=[];$issues=[];$checks=[];
     foreach($schema as $name=>$columns){
+        n80_app_phase('table_count:'.$name);
         try{$tables[$name]=['rows'=>(int)$db->query('SELECT COUNT(*) FROM `'.$name.'`')->fetchColumn(),'columns'=>count($columns),'state'=>'verified'];}
         catch(PDOException $e){$tables[$name]=['state'=>'unreadable'];$issues[]=['code'=>'table_unreadable','severity'=>'error','table'=>$name];}
     }
@@ -52,6 +55,7 @@ function n80_app_audit(PDO $db,string $root,string $memberTable): array {
       'community'=>[substr($memberTable,0,-6).'board',substr($memberTable,0,-6).'board_file'],
     ];$modules=[];
     foreach($groups as $id=>$required){$missing=array_values(array_diff($required,array_keys($schema)));$modules[$id]=['state'=>$missing?'missing_schema':'connected','tables'=>$required,'missingTables'=>$missing];if($missing)$issues[]=['code'=>'module_schema_missing','severity'=>'error','module'=>$id];}
+    n80_app_phase('catalog_references');
     $refs=n80_app_references($db,$schema);$keys=$refs['keys'];
     foreach(['noa_jukebox_assets'=>'song_key','noa_jukebox_uploads'=>'song_key'] as $table=>$column){
         if(!n80_app_has($schema,$table,[$column]))continue;$missing=0;$recovered=0;$qa=0;
@@ -72,22 +76,26 @@ function n80_app_audit(PDO $db,string $root,string $memberTable): array {
       ['user_playlist_owner','noa_user_playlists','owner_id',$memberTable,'mb_id'],
     ];
     foreach($relations as [$id,$child,$fk,$parent,$pk]){
+        n80_app_phase('relation:'.$id);
         if(!n80_app_has($schema,$child,[$fk])||!n80_app_has($schema,$parent,[$pk])){$checks[$id]=['state'=>'not_checked','reason'=>'missing_schema'];continue;}
         $sql='SELECT COUNT(*) FROM `'.$child.'` c LEFT JOIN `'.$parent.'` p ON p.`'.$pk.'`=c.`'.$fk.'` WHERE c.`'.$fk.'` IS NOT NULL AND c.`'.$fk.'`<>\'\' AND p.`'.$pk.'` IS NULL';
         $n=(int)$db->query($sql)->fetchColumn();$checks[$id]=['state'=>'verified','orphanRows'=>$n];
         if($n)$issues[]=['code'=>'orphan_reference','severity'=>$id==='user_playlist_owner'?'warning':'error','relation'=>$id,'count'=>$n];
     }
+    n80_app_phase('playlist_tracks');
     if(n80_app_has($schema,'noa_user_playlists',['tracks'])){
         $missing=0;$invalid=0;$total=0;
         foreach($db->query('SELECT tracks FROM noa_user_playlists') as $r){$tracks=json_decode($r['tracks'],true);if(!is_array($tracks)||!array_is_list($tracks)){$invalid++;continue;}foreach($tracks as $key){$total++;if(!is_string($key)||!isset($keys[$key]))$missing++;}}
         $checks['playlist_tracks']=['references'=>$total,'unresolved'=>$missing,'invalidJson'=>$invalid];if($missing||$invalid)$issues[]=['code'=>'playlist_track_integrity','severity'=>'error','count'=>$missing+$invalid];
     }
     foreach(['noa_documents'=>['payload'],'noa_catalog_versions'=>['fields_json'],'noa_youtube_videos'=>['payload','match_json'],'noa_youtube_playlists'=>['payload']] as $table=>$columns){
+        n80_app_phase('json:'.$table);
         foreach($columns as $column)if(n80_app_has($schema,$table,[$column])){
             $n=(int)$db->query('SELECT COUNT(*) FROM `'.$table.'` WHERE `'.$column.'` IS NULL OR JSON_VALID(`'.$column.'`)=0')->fetchColumn();
             $checks[$table.'.'.$column]=['invalidJson'=>$n];if($n)$issues[]=['code'=>'invalid_json','severity'=>'error','table'=>$table,'column'=>$column,'count'=>$n];
         }
     }
+    n80_app_phase('module_summaries');
     if(n80_app_has($schema,'noa_jukebox_audio_jobs',['status'])){$counts=[];foreach($db->query('SELECT status,COUNT(*) n FROM noa_jukebox_audio_jobs GROUP BY status') as $r)$counts[$r['status']]=(int)$r['n'];$modules['jukebox']['jobStates']=$counts;}
     if(n80_app_has($schema,'noa_youtube_runs',['created_at','run_id'])){
         $latest=$db->query('SELECT run_id,created_at FROM noa_youtube_runs ORDER BY created_at DESC,run_id DESC LIMIT 1')->fetch(PDO::FETCH_ASSOC);$modules['youtube']['latestCollection']=$latest?:null;
@@ -110,6 +118,7 @@ function n80_app_ai_summary(string $path): array {
 }
 /** Verify every registered file in bounded, canonical service directories. */
 function n80_app_media(PDO $db,array $schema,string $root): array {
+    n80_app_phase('media');
     if(!n80_app_has($schema,'noa_jukebox_assets',['song_key','audio_path','audio_bytes','audio_sha256','cover_path','cover_bytes','cover_sha256']))return ['state'=>'missing_schema'];
     $bases=[realpath(dirname($root).'/noa-jukebox-private/media'),realpath($root.'/noa-jukebox')];
     $out=['state'=>'verified','audio'=>0,'covers'=>0,'audioBytes'=>0,'invalidAudio'=>0,'invalidCovers'=>0,'syntheticQaPreserved'=>0];
