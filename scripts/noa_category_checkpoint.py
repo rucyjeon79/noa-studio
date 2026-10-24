@@ -27,12 +27,12 @@ def main():
   manifest['archiveSha256']=sha((out/'preimages.tar.gz').read_bytes())
   manifest['hostTemporaryFiles']=[x.filename for x in s.listdir_attr(ROOT) if x.filename.startswith('.noa-') and x.filename.endswith('.tmp')]
   (out/'manifest.json').write_text(json.dumps(manifest,indent=2));print(json.dumps(manifest))
-  for name in ['common.php','.htaccess']:
+  for name in ['common.php','lib/common.lib.php','.htaccess']:
    try:
     with s.open(ROOT+'/'+name,'rb') as f:source=f.read().decode('utf-8','replace')
    except FileNotFoundError:continue
    import re
-   patterns=r'(^|\s)(\$is_admin\s*=|\$is_member\s*=|session_name\(|session_start\(|<Files|Require all|Deny from|Allow from)'
+   patterns=r'ss_mb_key|ss_mb_id|function get_session_key|HTTP_USER_AGENT|REMOTE_ADDR|session_(start|name|save_path|set_cookie_params)|ini_set.*session|G5_SESSION|session_destroy|session_unset|is_admin =|is_member =' 
    lines=[line for line in source.splitlines() if re.search(patterns,line)]
    print('AUTH_SOURCE_RULES',name,json.dumps(lines))
 
