@@ -1,10 +1,10 @@
 name: NOA existing feature quality gates
 on:
   pull_request:
-    paths: ['deploy/**','bridge/**','lab/**','tests/**','android/**','scripts/qa/**','scripts/n80_*','.github/workflows/noa-quality-gates.yml','.github/workflows/n80-completion-report.yml']
+    paths: ['deploy/**','bridge/**','lab/**','tests/**','android/**','scripts/qa/**','scripts/n80_*','scripts/noa_category_release.py','scripts/noa_finish_drive_receipt.json','.github/workflows/noa-category-order-final.yml','.github/workflows/noa-quality-gates.yml','.github/workflows/n80-completion-report.yml']
   push:
     branches: [main]
-    paths: ['deploy/**','bridge/**','lab/**','tests/**','android/**','scripts/qa/**','scripts/n80_*','.github/workflows/noa-quality-gates.yml','.github/workflows/n80-completion-report.yml']
+    paths: ['deploy/**','bridge/**','lab/**','tests/**','android/**','scripts/qa/**','scripts/n80_*','scripts/noa_category_release.py','scripts/noa_finish_drive_receipt.json','.github/workflows/noa-category-order-final.yml','.github/workflows/noa-quality-gates.yml','.github/workflows/n80-completion-report.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -12,6 +12,8 @@ permissions:
 jobs:
   engines:
     runs-on: ubuntu-latest
+    outputs:
+      release_scope: ${{ steps.release-scope.outputs.release_scope }}
     services:
       mysql:
         image: mysql:8.0
@@ -21,6 +23,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false, fetch-depth: 0}
+      - name: Match changes against the existing integrated release push filter
+        id: release-scope
+        run: python scripts/n80_completion_pipeline.py scope
       - uses: actions/setup-node@v4
         with: {node-version: '22'}
       - uses: shivammathur/setup-php@v2
@@ -71,7 +76,7 @@ jobs:
               print('LIVE_ACCESS',path,r.status)
           PY
   finish-live:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && needs.engines.outputs.release_scope == 'true'
     needs: engines
     runs-on: ubuntu-latest
     timeout-minutes: 30

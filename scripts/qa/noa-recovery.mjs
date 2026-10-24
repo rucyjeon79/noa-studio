@@ -1,5 +1,22 @@
 import assert from 'node:assert/strict';import fs from 'node:fs/promises';import path from 'node:path';
 const sizes=[{width:320,height:568},{width:390,height:844},{width:430,height:932},{width:768,height:1024},{width:1024,height:768},{width:1280,height:900},{width:1920,height:1080},{width:844,height:390},{width:568,height:320}];
+async function stableLastAction(page,route){
+ const controls=page.locator('main :is(a,button,input,select,summary):visible').filter({hasNot:page.locator('[hidden]')});
+ if(!await controls.count())return null;
+ for(let attempt=0;attempt<15;attempt++){
+  try{
+   const target=controls.last();await target.scrollIntoViewIfNeeded();
+   await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+   const result=await controls.last().evaluate(e=>{const r=e.getBoundingClientRect(),x=Math.min(innerWidth-1,Math.max(0,r.x+r.width/2)),y=Math.min(innerHeight-1,Math.max(0,r.y+r.height/2)),hit=document.elementFromPoint(x,y);return{reachable:hit===e||e.contains(hit),top:r.top,bottom:r.bottom,width:r.width,height:innerHeight};});
+   // A responsive replacement can hide the just-resolved node. Reacquire it;
+   // a real, positive-size covered control must still fail immediately.
+   if(result.width<=0||result.bottom<=result.top)continue;
+   assert(result.reachable,'last action covered '+route+' '+JSON.stringify(result));
+   return result;
+  }catch(error){if(!String(error.message).includes('not attached'))throw error;}
+ }
+ throw Error('last visible action did not stabilize '+route);
+}
 export async function verifyRecovery({context,phase,base,out,report,auditPrecision}){
  const page=await context.newPage(),samples=[],accessChecks=[];let original;try{
  const routes=['/','/noa-world.php','/noa-world.php?story=1','/noa-world.php?story=2','/noa-world.php?story=3','/noa-world.php?story=4','/noa-youtube.php','/noa-youtube.php?group=story','/noa-youtube.php?group=cover','/noa-music.php','/noa-catalog.php','/noa-my.php','/noa-ai-lab.php','/bbs/board.php?bo_table=free'];
@@ -34,9 +51,7 @@ export async function verifyRecovery({context,phase,base,out,report,auditPrecisi
     if(d.music){assert.equal(d.forbidden,0,'removed category/search DOM');assert.equal(d.musicSearchActions,0,'obsolete search action label');assert.equal(d.taxonomyScripts,0,'orphan category listener');assert.equal(d.videoNodes,0,'YouTube mixed into sound');assert.equal(d.videoThumbs,0,'video art in sound');assert.equal(d.missingPlay,0,'play icon without registered file');if(!route.includes('admin-fixture'))assert.equal(d.adminUploads,0,'owner action leaked');}
     if(d.hero){assert.equal(d.heroToggle,0);assert(Math.abs(d.hero.art.x-d.hero.copy.x)<=1&&Math.abs(d.hero.art.width-d.hero.copy.width)<=1,'hero media/copy edge mismatch');}
     const precision=await auditPrecision(page);
-    const last=page.locator('main :is(a,button,input,select,summary):visible').filter({hasNot:page.locator('[hidden]')});
-    const count=await last.count();let lastReachable=null;
-    if(count){await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));const target=last.last();for(let attempt=0;;attempt++){try{await target.scrollIntoViewIfNeeded();break;}catch(error){if(attempt>=2||!String(error.message).includes('not attached'))throw error;await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));}}await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));lastReachable=await target.evaluate(e=>{const r=e.getBoundingClientRect(),x=Math.min(innerWidth-1,Math.max(0,r.x+r.width/2)),y=Math.min(innerHeight-1,Math.max(0,r.y+r.height/2)),hit=document.elementFromPoint(x,y);return{reachable:hit===e||e.contains(hit),top:r.top,bottom:r.bottom,height:innerHeight};});assert(lastReachable.reachable,'last action covered '+route+' '+JSON.stringify(lastReachable));}
+    const lastReachable=await stableLastAction(page,route);
     samples.push({route,theme,...size,actions:d.actions.length,music:d.music,hero:d.hero,precision,lastReachable});
     if([390,844,1280].includes(size.width)&&['/','/noa-world.php','/noa-youtube.php','/noa-youtube.php?group=story','/noa-youtube.php?group=cover','/noa-music.php'].includes(route)){await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(out,'recovery-'+route.replace(/[^a-z0-9]/gi,'-')+'-'+theme+'-'+size.width+'.jpg'),type:'jpeg',quality:85});}
    }
@@ -47,4 +62,3 @@ export async function verifyRecovery({context,phase,base,out,report,auditPrecisi
  await fs.writeFile(path.join(out,'recovery-report.json'),JSON.stringify({ok:true,phase,samples,accessChecks,realAuthenticatedOperations:false,sourceDataChanged:false},null,2));report.push({phase,recoverySamples:samples.length,searchRemoved:true,heroControlRemoved:true,soundVideoSeparated:true});
  }catch(error){await page.screenshot({path:path.join(out,'recovery-failure.jpg'),type:'jpeg'}).catch(()=>{});await fs.writeFile(path.join(out,'recovery-failure.json'),JSON.stringify({error:String(error),url:page.url(),size:page.viewportSize(),overflow:await page.evaluate(()=>[...document.querySelectorAll('main *')].filter(e=>e.getBoundingClientRect().right>innerWidth+1).map(e=>({tag:e.tagName,cls:e.className,text:e.textContent.slice(0,160),right:e.getBoundingClientRect().right})))},null,2));throw error;}finally{await page.close();}
 }
-
