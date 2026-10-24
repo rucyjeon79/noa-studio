@@ -26,7 +26,7 @@ COMPLETION_STORE = '/hosting/noastudio/noa-ai-lab/n80-completion'
 RECEIPT = Path('scripts/noa_finish_drive_receipt.json')
 STATE = Path(os.environ.get('RUNNER_TEMP', '/tmp')) / 'noa-category-release.json'
 # Helpers precede consumers; entry pages and HOME are activated last.
-ORDER = ['noa-app/engine/work-state.php', 'noa-app/engine/event-contract.php', 'noa-app/engine/lease-state.php', 'noa-app/engine/music-availability.php', 'noa-app/engine/music-consumer.php', 'noa-app/engine/consume-music.php', 'noa-app/jukebox/stream-popularity.php', 'noa-bridge/world-mv.php', 'noa-bridge/playcount-policy.php', 'noa-bridge/popularity-events.php', 'noa-playcount.js', 'noa-app/jukebox/stream.php', 'noa-app/world-view.php', 'noa-youtube.php', 'noa-music.php', 'noa-home.js', 'noa-app/home.php', 'noa-playlists.js', 'noa-youtube.js', 'noa-sitemap.php', 'noa-app/engine/app-observe.php', 'noa-app/engine/work-state-report.php']
+ORDER = ['noa-app/engine/lease-state.php', 'noa-app/engine/music-availability.php', 'noa-app/engine/music-consumer.php', 'noa-app/engine/work-state.php', 'noa-app/engine/event-contract.php', 'noa-app/jukebox/stream-popularity.php', 'noa-bridge/world-mv.php', 'noa-bridge/playcount-policy.php', 'noa-bridge/popularity-events.php', 'noa-playcount.js', 'noa-home.js', 'noa-playlists.js', 'noa-youtube.js', 'noa-app/engine/consume-music.php', 'noa-app/engine/work-state-report.php', 'noa-app/engine/app-observe.php', 'noa-app/jukebox/stream.php', 'noa-app/world-view.php', 'noa-youtube.php', 'noa-music.php', 'noa-sitemap.php', 'noa-app/home.php']
 FILES = {p: ('bridge/' + p[len('noa-bridge/'):] if p.startswith('noa-bridge/') else 'deploy/' + p)
          for p in ORDER}
 
