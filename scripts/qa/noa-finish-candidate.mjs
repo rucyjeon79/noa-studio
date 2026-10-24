@@ -12,7 +12,7 @@ try{
  const collectionStart=arrayEnd+2,collectionEnd=original.indexOf(';\nconst buttons=',collectionStart);const collections=JSON.parse(original.slice(collectionStart+18,collectionEnd));
  const php=readFileSync(resolve(root,'deploy/noa-music.php'),'utf8');let script=php.slice(php.indexOf('const records='),php.indexOf('</script>',php.indexOf('const records=')));
  const slim=records.map(({rawLyrics,lyrics,description,...rest})=>rest);script=script.replace(/^const records=.*;$/m,'const records='+JSON.stringify(slim)+';').replace(/^const collections=.*;$/m,'const collections='+JSON.stringify(collections)+';');check('candidate_inline_php_resolved',!script.includes('<?'));
- let html=original.slice(0,start)+script+original.slice(end);html=html.replace('id="my-save"','id="my-delete" type="button" disabled>목록 삭제</button><button id="my-save"');
+ let html=original.slice(0,start)+script+original.slice(end);if(!html.includes('id="my-delete"'))html=html.replace('id="my-save"','id="my-delete" type="button" disabled>목록 삭제</button><button id="my-save"');
  const playable=records.find(r=>r.audio&&r.kind!=='playlist'),a=records.find(r=>r.key!==playable?.key&&r.kind!=='playlist'),b=records.find(r=>r.key!==a?.key&&r.key!==playable?.key&&r.kind!=='playlist');check('actual_audio_fixture_available',!!playable&&!!a&&!!b);
  for(const r of [playable,a,b])if(!('rawLyrics'in r)){const response=await c.request.get(origin+'/noa-music-detail.php?key='+encodeURIComponent(r.key));check('existing_detail_endpoint_for_reentrant_fixture',response.ok());Object.assign(r,await response.json());}
  let releaseDetail;const detailGate=new Promise(resolve=>releaseDetail=resolve);
