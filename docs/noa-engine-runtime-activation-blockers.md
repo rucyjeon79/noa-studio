@@ -1,20 +1,38 @@
-# NOA ENGINE — Runtime activation blockers
+# N80 ENGINE — current automation and activation status
 
-The eight installed libraries are **not an active orchestration engine**. Do not enable dispatch until these issues are resolved and verified:
+Updated: 2026-10-24. This supersedes the original eight-library assessment.
 
-1. `outbox.php` uses `fopen(..., 'x')` with one `fwrite`; a partial write can leave a truncated event file that permanently blocks retries. Implement atomic temp + rename with directory permissions, crash recovery, durable fsync, and same-event idempotency semantics.
-2. `inbox.php` marks a message as claimed before consumer work; a crash after claim can permanently suppress processing. Add leased claims, expiry, acknowledged completion, retry, dead-letter and replay policy.
-3. `dispatch-gate.php` intentionally rejects every request even when its policy flags are true. There are no installed consumer adapters; it must remain fail-closed.
-4. No production-safe engine event storage path, worker identity, ACL, bounded executor, observability, or operational rollback is provisioned.
-5. Module `health.php` reports source presence, not service health. Do not present it as uptime.
-6. Existing JUKEBOX FIFO and other workers remain independent and must not be replaced or replayed by a new engine.
-7. Validate source contracts against existing catalog and playlist schemas before enabling any real audio.ready consumers.
+## Implemented and tested
 
-## Activation acceptance
-- No missing, duplicated or stuck events under crash/restart and concurrency tests.
-- Verified authenticated producer and consumer identities; allowlisted event types.
-- Isolated writable storage outside public web root; explicit file permissions.
-- Operational kill switch, dead-letter queue, correlation IDs, rate limits and audit logs.
-- Existing music/member/queue data remain unchanged, with production rollback proof.
+| Capability | Evidence | Meaning |
+|---|---|---|
+| Unified facade and single Bridge | `n80.php`, `bridge.php`, facade/bridge tests | Plans routes; does not execute a worker |
+| Durable event persistence | durable-store and security tests | Isolated persistence contract; not a transactional outbox with production SQL |
+| Lease fencing, retries and dead letter | lease-state, fencing, replay and persistence tests | Isolated recovery behavior; production cutover is still unverified |
+| Ready-event identity and read-only catalog probe | readonly-pipeline, authenticated-probe and ready-event tests | Stable event identity; catalog observation is not a business-effect ACK |
+| Receipt validation | receipt-contract test | Validates a read-only observation only |
+| Production integrity audit | `n80_guardian_remote_audit.py` | Discovers engine PHP files and verifies SHA-256 plus JUKEBOX CLI without writing to host |
+| Automated regression | Unified Contract Gates, PHP 8.2/8.3 with PDO SQLite | Runs all engine contracts and audit failure tests on pull requests, main changes and daily schedule |
 
-**Decision:** do not activate automatic event dispatch from the current foundation code.
+The production audit treats only `bridge-flow.php` and `performance.php` as optional isolated diagnostics. An absent diagnostic is reported; a changed deployed diagnostic fails. Every other discovered engine library and JUKEBOX CLI is required. Hash equality proves deployed source integrity, not runtime execution or service uptime. Reports explicitly retain `runtimeExecutionVerified=false` and `operationalReady=false`.
+
+## Still required before autonomous execution
+
+1. Derive producer identity from an authenticated server process. A caller-supplied context flag alone is not authentication.
+2. Provision restricted private operational event storage and verify its retention and recovery. Runtime event/lease data are service state, not expendable temporary files.
+3. Couple committed audio-ready changes with transactional event delivery; the existing separate event file write does not establish atomicity with MySQL.
+4. Install idempotent consumers and acknowledge only a defined completed effect. Catalog observation remains read-only.
+5. Exercise concurrent claims, crashes, lease expiry, stale ACK, retry exhaustion and replay against the actual production backend.
+6. Connect runtime Guardian telemetry, kill switch and a monitored canary while preserving existing FIFO/FFmpeg work and data.
+
+`dispatch-gate.php` intentionally blocks execution; adapters remain disabled. Successful contract tests and hash audits do not authorize or prove live autonomous orchestration. No production event emission or replay is part of the verification workflow.
+
+## Fixed storage policy
+
+- All permanent backups and recovery copies: the existing Google Drive backup folders.
+- Work files and intermediate outputs: GitHub Actions runner temporary storage; hash-only audit artifacts expire after one day.
+- Hosting: completed runtime outputs and necessary operational state only. Verification creates zero hosting files.
+- Do not run a legacy installer that creates hosting `.tmp` staging files under this policy. A replacement deployment mechanism must satisfy this rule and verify Drive recovery evidence before replacing live files.
+- Drive backup authentication and the database offsite provider were not configured by this N80 verification. Backup-dependent changes must remain blocked until verified.
+
+Daily checks remain separate and non-destructive: engine contracts at 02:23 UTC and production source integrity at 03:41 UTC. Neither check terminates uploads, writes production database rows or activates dispatch.
