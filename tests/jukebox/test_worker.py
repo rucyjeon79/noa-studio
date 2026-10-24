@@ -111,13 +111,17 @@ class UploadPublicationTests(unittest.TestCase):
     def read(self,*args):return self.f.read(*args)
     def write(self,*args):return self.f.write(*args)
     def set_pipelined(self,*args):pass
+    def flush(self):self.f.flush()
    class SFTP:
     def path(self,p):return root/Path(p).relative_to(upload.PRIVATE)
     def lstat(self,p):return self.path(p).lstat()
     def normalize(self,p):return p
-    def open(self,p,m):return RemoteFile(self.path(p).open(m))
+    def open(self,p,m):return RemoteFile(self.path(p).open('xb' if m=='wx' else m))
     def chmod(self,p,m):self.path(p).chmod(m)
-    def rename(self,p,q):self.path(p).rename(self.path(q))
+    def rename(self,p,q):
+     if self.path(q).exists():raise FileExistsError(q)
+     self.path(p).rename(self.path(q))
+    def remove(self,p):self.path(p).unlink()
    sftp=SFTP();events=[];pending=[job|{'id':'missing','job_id':0},job]
    def call(action,payload=None):
     events.append((action,payload))
@@ -142,3 +146,4 @@ class UploadPublicationTests(unittest.TestCase):
  def test_streamed_owned_source_still_requires_hash_decode_and_verified_publication(self):
   self.stream_source=True
   self.test_cardless_upload_fetches_only_card_and_publishes_beside_real_mp3()
+

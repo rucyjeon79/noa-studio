@@ -1,0 +1,85 @@
+{
+  "files": {
+    "noa-music.php": {
+      "bytes": 28553,
+      "sha256": "9dffe097ffb73657787f85831d516b09155785b4390800d204c77457510d04c6"
+    },
+    "noa-app/p0-player.js": {
+      "bytes": 9375,
+      "sha256": "ab62b99b13da6ef4189b43e18826f45667fecc4fc3c3583d520fdfabfedbab6f"
+    },
+    "noa-app/home.php": {
+      "bytes": 7088,
+      "sha256": "bab8c6f43a1bfdefb203be5f363f65102cff0860b515cbbe8201e43701d995d2"
+    },
+    "noa-playlists.js": {
+      "bytes": 5766,
+      "sha256": "9c9266d32a0049870af1609bdd2f960b32d1de70f409e783ef2a7ae3f05b28c4"
+    },
+    "noa-bridge/user-playlists.php": {
+      "bytes": 4119,
+      "sha256": "d71be360bc12d50bceba61e2ab52eab12da31afa90e68e2352cac62c2140d9f9"
+    },
+    "noa-sitemap.php": null,
+    "noa-music-detail.php": null,
+    "noa-bridge/music-readmodel.php": null,
+    "noa-app/engine/event-contract.php": {
+      "bytes": 1230,
+      "sha256": "4402f64071143555fda699b4da9ff6b46cf36eb1e8e7060d214e167bc0b035c5"
+    },
+    "noa-app/engine/registry.php": {
+      "bytes": 1838,
+      "sha256": "a6943b78d8c6bc734029e677fd8942751d59270071dd746dcc6a904b7593c378"
+    },
+    "noa-app/engine/completion-receipt.php": null,
+    "noa-app/engine/completion-report.php": null
+  },
+  "protected": {
+    "common.php": {
+      "bytes": 35895,
+      "sha256": "1c7aec0d6dee688077a4ac30fa703bdf93cbd49b77f922d6a8e963c97dacdf62"
+    },
+    "config.php": {
+      "bytes": 9549,
+      "sha256": "362c2e733828342d635de2823ec4ca0d359df9b55c2d12a9780387a12f857c2c"
+    },
+    "data/dbconfig.php": {
+      "bytes": 3049,
+      "sha256": "f6a9c21e208f51d5dfea43d1123d43cfbda97434770d1047d442ca153f411adf"
+    },
+    "index.php": {
+      "bytes": 235,
+      "sha256": "d9b78823be675dbfc6e70cc2134af2ec508e47a9a900938dfa7655108585fd30"
+    },
+    "noa-bridge/youtube-store.php": {
+      "bytes": 16609,
+      "sha256": "b675cb1268ec779914f4494ede11c88a70a01a53ba8622e8a453c7442e755490"
+    },
+    "noa-youtube.php": {
+      "bytes": 10890,
+      "sha256": "a1f336ebd14b7aabc221d44d3c5b757d483b911bb83dcc4041ebc47df3307a37"
+    },
+    "noa-browse.js": {
+      "bytes": 11946,
+      "sha256": "9388972fa5a1d7ee11aa0ffa83aaaa3f3bede2bdce5ceff6281460351ff738e6"
+    },
+    "noa-app/p0-media.css": {
+      "bytes": 7778,
+      "sha256": "2c8ac0cf6aab92075db62def7f21f1cee553fe05003dce5fae112ed7a9abc022"
+    },
+    "noa-app/jukebox/upload-core.php": {
+      "bytes": 11458,
+      "sha256": "5160d1d1a1294a737a8d7bea817dd5fd6224b7912bf15a6cdc2bd38a60849d3d"
+    },
+    "noa-app/jukebox/upload.js": {
+      "bytes": 41859,
+      "sha256": "7df41bdffcaace2b11d8a717d88d052b454e5c25a7bbe3c60f3297e761dd08e4"
+    }
+  },
+  "archiveSha256": "a01d5ce610ccfb5ddd3192dc48ad30a6f6b89b8e3339080fcf51aad8cd68fa36",
+  "driveId": "1PC4N1ORZhewgxJMJhXAlovS2dIy8TxUq",
+  "readbackVerified": true,
+  "restoreExtractionVerified": true,
+  "checkpointRun": 40078930378,
+  "artifactId": 12554153399
+}

@@ -8,6 +8,7 @@ import paramiko
 import noa_jukebox_owned as owned
 from noa_jukebox_upload_worker import process_uploads
 from noa_jukebox_recovery import signed_service, watchdog
+from noa_jukebox_publish import publish_final
 ROOT='/hosting/noastudio/html'
 APP='noa-app/jukebox/'
 NEW={APP+n:'deploy/'+APP+n for n in ['recovery-core.php','queue-core.php','core.php','cli.php','stream.php','index.php','operations.php','service.php','upload-core.php','upload.php','download.php','upload-transport.js','upload.js','upload.css','mobile-check.php']}
@@ -16,9 +17,14 @@ BASE=json.loads(Path('scripts/noa_jukebox_baseline.json').read_text())
 
 def sha(b):return hashlib.sha256(b).hexdigest()
 def main():
+ required=('NOA_SSH_HOST','NOA_SSH_USER','NOA_SSH_PASSWORD','NOA_SSH_HOST_FINGERPRINT')
+ if any(not os.environ.get(name) for name in required):raise RuntimeError('required_noa_ssh_secret_missing')
+ runtime_only=os.environ.get('NOA_JUKEBOX_RUNTIME_ONLY')=='1' or os.environ.get('GITHUB_EVENT_NAME')=='schedule'
+ idle_seconds=int(os.environ.get('NOA_JUKEBOX_KEEPALIVE_SECONDS','120'))
+ if not 0<=idle_seconds<=3000:raise RuntimeError('invalid_worker_idle_period')
  t=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022));t.get_security_options().key_types=('ssh-ed25519',);t.start_client(timeout=20)
  fp='SHA256:'+base64.b64encode(hashlib.sha256(t.get_remote_server_key().asbytes()).digest()).decode().rstrip('=')
- if fp!='SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU':raise RuntimeError('SSH host mismatch; no credentials sent')
+ if fp!=os.environ['NOA_SSH_HOST_FINGERPRINT']:raise RuntimeError('SSH host mismatch; no credentials sent')
  t.auth_password(os.environ['NOA_SSH_USER'],os.environ['NOA_SSH_PASSWORD']);s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(90);s=_snapshot_sftp(s)
  try:
   if s.normalize(ROOT)!=ROOT:raise RuntimeError('unexpected production root')
@@ -45,6 +51,7 @@ def main():
    if (sha(read(path)) if read(path) is not None else None)!=expected:raise RuntimeError('concurrent write')
    s.posix_rename(tmp,path)
    if sha(read(path))!=sha(data):raise RuntimeError('installed_checksum')
+  if runtime_only and os.environ.get('NOA_JUKEBOX_INTERFACE_ONLY')=='1':raise RuntimeError('runtime_worker_cannot_deploy_interface')
   if os.environ.get('NOA_JUKEBOX_INTERFACE_ONLY')=='1':
    # UI and its backwards-compatible partial-upload API can publish without
    # waiting for, claiming, canceling or restarting the ongoing audio worker.
@@ -72,7 +79,7 @@ def main():
    result={'source_commit':os.environ['GITHUB_SHA'],'deployed_hashes':{remote:sha(read(ROOT+'/'+remote)) for remote in files},'protected_files_unchanged':True,'sql_queue_mutated':False,'audio_worker_interrupted':False}
    work=Path('jukebox-proof');work.mkdir(exist_ok=True);(work/'interface.json').write_text(json.dumps(result));print('JUKEBOX_INTERFACE_RESULT '+json.dumps(result),flush=True);return
   protected={p:sha(read(ROOT+'/'+p)) for p in ['common.php','config.php','data/dbconfig.php','index.php','.htaccess'] if read(ROOT+'/'+p) is not None}
-  if os.environ.get('NOA_JUKEBOX_WATCHDOG')!='1' and os.environ.get('GITHUB_EVENT_NAME')!='schedule':
+  if os.environ.get('NOA_JUKEBOX_WATCHDOG')!='1' and not runtime_only:
    mkdir(ROOT+'/noa-app');mkdir(ROOT+'/'+APP.rstrip('/'));mkdir(ROOT+'/noa-jukebox')
    atomic(ROOT+'/noa-jukebox/.htaccess',Path('deploy/'+APP+'media.htaccess').read_bytes(),None)
    # Install only new helpers; no existing application files are touched until SQL is ready.
@@ -86,7 +93,7 @@ def main():
   if len(key)!=64:raise RuntimeError('invalid_private_service_key')
   cli=signed_service(key)
   if os.environ.get('NOA_JUKEBOX_WATCHDOG')=='1':
-   if os.environ.get('GITHUB_EVENT_NAME')!='schedule':
+   if not runtime_only:
     print('JUKEBOX_RUNTIME_REFRESH '+json.dumps(cli('runtime_refresh')),flush=True)
    if os.environ.get('NOA_JUKEBOX_VERIFY_RECOVERY')=='true':
     env=dict(os.environ);env['NOA_JUKEBOX_SERVICE_KEY']=key
@@ -106,7 +113,7 @@ def main():
   # SSH keepalive while acquisition happens on the worker, not on shared hosting.
   t.set_keepalive(20)
   # Exact known baseline plus private per-file backups protect simultaneous work.
-  if os.environ.get('GITHUB_EVENT_NAME')!='schedule':
+  if not runtime_only:
    backup=None
    changes=[]
    for remote,local in INTEGRATE.items():
@@ -123,7 +130,7 @@ def main():
     changes.append((remote,new,sha(current)))
    for remote,new,previous in changes:atomic(ROOT+'/'+remote,new,previous)
   original_data=cli('integrity_snapshot')
-  if os.environ.get('GITHUB_EVENT_NAME')!='schedule':cli('qa_setup')
+  if not runtime_only:cli('qa_setup')
   if not shutil.which('ffmpeg') or not shutil.which('ffprobe'):
    subprocess.run(['sudo','apt-get','update','-qq'],check=True)
    subprocess.run(['sudo','apt-get','install','-y','ffmpeg'],check=True)
@@ -150,7 +157,7 @@ def main():
    except Exception:destination.unlink(missing_ok=True);return False
    finally:
     if channel:channel.close()
-  uploads=process_uploads(s,lambda action,payload=None:cli(action,json.dumps(payload,ensure_ascii=False).encode() if payload else None),mkdir,source_reader,{'run_id':os.environ['GITHUB_RUN_ID'],'source_commit':os.environ['GITHUB_SHA'],'keepalive_seconds':3000})
+  uploads=process_uploads(s,lambda action,payload=None:cli(action,json.dumps(payload,ensure_ascii=False).encode() if payload else None),mkdir,source_reader,{'run_id':os.environ['GITHUB_RUN_ID'],'source_commit':os.environ['GITHUB_SHA'],'keepalive_seconds':idle_seconds})
   recovery=watchdog(cli)
 
   print('JUKEBOX_UPLOAD_RESULT '+json.dumps(uploads),flush=True)
@@ -171,15 +178,7 @@ def main():
      if not rel or (row.get('cached_cover') and kind=='cover'):continue
      local=work/'noa-jukebox'/rel;target=ROOT+'/noa-jukebox/'+rel;parent=ROOT+'/noa-jukebox'
      for part in Path(rel).parts[:-1]:parent+='/'+part;mkdir(parent)
-     existing=read(target)
-     if existing is not None:
-      if sha(existing)!=row[kind+'_sha256']:raise RuntimeError('existing_media_preserved:'+rel)
-     else:
-      # The signed PHP import hashes and decodes before SQL publication.
-      tmp=target+'.stage-'+os.environ['GITHUB_RUN_ID']
-      with s.open(tmp,'wx') as f:
-       f.set_pipelined(True);f.write(local.read_bytes())
-      s.chmod(tmp,0o644);s.rename(tmp,target)
+     publish_final(s,local,target,row[kind+'_sha256'],mode=0o644,owner=os.environ['GITHUB_RUN_ID'])
      saved+=1
    sql=cli('import',json.dumps(batch,ensure_ascii=False).encode());sql_saved+=sql['saved'];audit=cli('audit')
    progress={'total_suno_urls':len(catalog['items']),'processed':len(results),'cover_files':audit['covers'],
@@ -197,3 +196,4 @@ def main():
   (work/'summary.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print('JUKEBOX_PRODUCTION_RESULT '+json.dumps(result),flush=True)
  finally:s.close();t.close()
 if __name__=='__main__':main()
+

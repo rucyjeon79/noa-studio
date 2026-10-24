@@ -2,6 +2,7 @@
 import hashlib,json,os,secrets,stat,tempfile,time,threading
 from pathlib import Path
 import noa_jukebox_worker as media
+from noa_jukebox_publish import publish_final
 PRIVATE='/hosting/noastudio/noa-jukebox-private'
 
 def process_uploads(sftp,call,mkdir,source_reader=None,worker_identity=None):
@@ -103,27 +104,10 @@ def _drain_uploads(sftp,call,mkdir,source_reader=None,idle_seconds=0):
                 parent=PRIVATE;mkdir(parent,0o700);parent+='/media';mkdir(parent,0o700)
                 for part in relative.parts[:-1]:parent+='/'+part;mkdir(parent,0o700)
                 target=PRIVATE+'/media/'+relative.as_posix();digest=media.digest(output)
-                try:
-                    existing=sftp.lstat(target)
-                except FileNotFoundError:existing=None
-                if existing:
-                    if not stat.S_ISREG(existing.st_mode):raise ValueError('unsafe_output_file')
-                    with sftp.open(target,'rb') as f:existing_hash=hashlib.sha256(f.read()).hexdigest()
-                    if existing_hash!=digest:raise ValueError('existing_media_preserved')
-                else:
-                    stage=target+'.stage-'+job['id']
-                    with sftp.open(stage,'wb') as f:f.set_pipelined(True);f.write(output.read_bytes())
-                    sftp.chmod(stage,0o600);sftp.rename(stage,target)
+                publish_final(sftp,output,target,digest,mode=0o600,owner=job['id'])
                 if card:
                     target_cover=PRIVATE+'/media/'+(directory/'cover.webp').as_posix()
-                    try:existing=sftp.lstat(target_cover)
-                    except FileNotFoundError:existing=None
-                    if existing:
-                        with sftp.open(target_cover,'rb') as f:cover_hash=hashlib.sha256(f.read()).hexdigest()
-                        if not stat.S_ISREG(existing.st_mode) or cover_hash!=card['cover_sha256']:raise ValueError('existing_cover_preserved')
-                    else:
-                        with sftp.open(target_cover+'.stage-'+job['id'],'wb') as f:f.write((Path(temp)/'cover.webp').read_bytes())
-                        sftp.chmod(target_cover+'.stage-'+job['id'],0o600);sftp.rename(target_cover+'.stage-'+job['id'],target_cover)
+                    publish_final(sftp,Path(temp)/'cover.webp',target_cover,card['cover_sha256'],mode=0o600,owner=job['id'])
                 result={'song_key':job['key'],'source_url':job['source_url'],'suno_id':context.get('suno_id',''),'suno_title':title,
                         'audio_path':relative.as_posix(),'audio_bytes':output.stat().st_size,'audio_sha256':digest,
                         'source_analysis':before,'correction':settings,'final_analysis':after,'errors':card_errors,
@@ -150,3 +134,4 @@ def _drain_uploads(sftp,call,mkdir,source_reader=None,idle_seconds=0):
             results.append({'job_id':job['job_id'],'key':job['key'],'ready':False,'error':code[:190]})
         finally:stop.set();heartbeat.join(timeout=2)
     return results
+
