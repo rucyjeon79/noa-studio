@@ -13,42 +13,14 @@ def main():
   if fp!=os.environ['NOA_SSH_HOST_FINGERPRINT']:raise RuntimeError('host_key_mismatch')
   t.auth_password(os.environ['NOA_SSH_USER'],os.environ['NOA_SSH_PASSWORD']);s=paramiko.SFTPClient.from_transport(t)
   if s.normalize(ROOT)!=ROOT:raise RuntimeError('unexpected_root')
-  out=Path('category-checkpoint');out.mkdir(exist_ok=True);manifest={'files':{},'protected':{}}
-  with tarfile.open(out/'preimages.tar.gz','w:gz') as tar:
-   for p in FILES+PROTECTED:
-    try:info=s.lstat(ROOT+'/'+p)
-    except FileNotFoundError:
-     manifest['files' if p in FILES else 'protected'][p]=None;continue
-    if not stat.S_ISREG(info.st_mode):raise RuntimeError('nonregular:'+p)
-    with s.open(ROOT+'/'+p,'rb') as f:b=f.read()
-    manifest['files' if p in FILES else 'protected'][p]={'bytes':len(b),'sha256':sha(b)}
-    if p in FILES:
-     member=tarfile.TarInfo(p);member.size=len(b);member.mode=stat.S_IMODE(info.st_mode);tar.addfile(member,io.BytesIO(b))
-  manifest['archiveSha256']=sha((out/'preimages.tar.gz').read_bytes())
-  manifest['hostTemporaryFiles']=[x.filename for x in s.listdir_attr(ROOT) if x.filename.startswith('.noa-') and x.filename.endswith('.tmp')]
-  (out/'manifest.json').write_text(json.dumps(manifest,indent=2));print(json.dumps(manifest))
-  for name in ['common.php','lib/common.lib.php','config.php','bbs/login_check.php']:
-   try:
-    with s.open(ROOT+'/'+name,'rb') as f:source=f.read().decode('utf-8','replace')
-   except FileNotFoundError:continue
-   import re
-   if name=='lib/common.lib.php':
-    starts=[source.find('function '+f+'(') for f in ['ss_mb_key','check_auth_session_token','generate_auth_session_token','get_cookie','set_cookie']]
-    snippets=[]
-    for start in starts:
-     if start<0:continue
-     end=source.find('\nfunction ',start+10)
-     snippets.append(source[start:end if end>start else start+1800])
-    print('SESSION_FUNCTION_SOURCE',json.dumps(snippets))
-   elif name=='bbs/login_check.php':
-    print('LOGIN_TOKEN_SOURCE',json.dumps([line for line in source.splitlines() if 'auth_session_token' in line or 'ss_mb_key' in line or 'ss_mb_id' in line]))
-   elif name=='config.php':
-    print('SESSION_CONFIG_SOURCE',json.dumps([line for line in source.splitlines() if 'G5_COOKIE_DOMAIN' in line or 'G5_SESSION_PATH' in line or 'G5_SESSION_NAME' in line]))
-   else:
-    start=source.find("if (isset($_SESSION['ss_mb_id'])")
-    print('MEMBER_VALIDATION_SOURCE',json.dumps(source[start:start+1800]))
-  directory=s.lstat(ROOT+'/data/session')
-  print('SESSION_DIRECTORY_METADATA',json.dumps({'mode':oct(stat.S_IMODE(directory.st_mode)),'uid':directory.st_uid}))
+  out=Path('category-checkpoint');out.mkdir(exist_ok=True)
+  with s.open('/hosting/noastudio/noa-ai-lab/category-order.json','rb') as f:raw=f.read()
+  order=json.loads(raw)
+  expected='b22e29d53094e6052b027996301f013e2ff77755703adfa97730cc1b0bc5b9e6'
+  if sha(raw)!=expected:raise RuntimeError('order_changed_since_native_admin_validation')
+  (out/'category-order.json').write_bytes(raw)
+  report={'ok':True,'sha256':sha(raw),'bytes':len(raw),'counts':{g:len(order[g])for g in ['story','cover']},'runtimeWrites':0,'databaseWrites':0}
+  (out/'host-order-proof.json').write_text(json.dumps(report,indent=2));print(json.dumps(report))
 
  finally:
   if s:s.close()

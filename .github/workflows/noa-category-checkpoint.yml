@@ -1,4 +1,4 @@
-name: NOA Category Readonly Checkpoint
+name: NOA Saved Category Public Order Proof
 on:
   push:
     branches: ['codex/category-final-20261024']
@@ -20,6 +20,11 @@ jobs:
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
         run: python scripts/noa_category_checkpoint.py
+      - name: Verify actual public DOM matches the saved administrator order
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-order-proof" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-saved-category-order.mjs "$RUNNER_TEMP/noa-order-proof/check.mjs"
+          node "$RUNNER_TEMP/noa-order-proof/check.mjs"
       - uses: actions/upload-artifact@v4
         with:
           name: noa-category-checkpoint
