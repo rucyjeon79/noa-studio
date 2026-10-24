@@ -1,5 +1,5 @@
 """Safely deploy NOA player entrypoint; never overwrite unknown production changes."""
-import base64,hashlib,os,stat,subprocess,urllib.request
+import base64,hashlib,os,stat,subprocess,urllib.request,re
 from pathlib import Path
 import paramiko
 ROOT='/hosting/noastudio/html'
@@ -49,7 +49,9 @@ def main():
     request=urllib.request.Request('https://noastudio.ai.kr/noa-youtube.php?audit='+os.environ['GITHUB_SHA'][:12],headers={'Cache-Control':'no-cache'})
     with urllib.request.urlopen(request,timeout=30) as response:
         html=response.read().decode('utf-8','replace')
-        if 'noa-browse.js?v=20261025-four-level' not in html:
+        expected=sha(Path('deploy/noa-browse.js').read_bytes())
+        revisions=re.findall(r'/noa-browse[.]js[?]v=([^\"\'<> ]+)',html)
+        if revisions!=[expected]:
             raise RuntimeError('public_player_asset_version_mismatch')
     print('PHP_PUBLIC_VERIFIED',new)
 if __name__=='__main__':main()
