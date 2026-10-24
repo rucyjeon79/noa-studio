@@ -36,7 +36,8 @@ try{
     if(req.isNavigationRequest()&&fixtures.has(u.pathname))return route.fulfill({status:200,contentType:'text/html; charset=utf-8',body:fixtures.get(u.pathname)});
     if(phase==='candidate'&&['/noa-ui.js','/noa-policy-20261024.css'].includes(u.pathname))return route.fulfill({path:path.join(root,'deploy',u.pathname),contentType:u.pathname.endsWith('.js')?'application/javascript':'text/css'});
     if(phase==='candidate'&&req.isNavigationRequest()&&['/','/bbs/login.php','/noa-settings.php','/noa-music.php'].includes(u.pathname)){
-     const response=await route.fetch();let html=await response.text();html=html.replace('</head>',policy+'</head>');return route.fulfill({response,body:html});
+     try{const response=await route.fetch({maxRetries:2});let html=await response.text();html=html.replace('</head>',policy+'</head>');return route.fulfill({response,body:html});}
+     catch(e){report.errors.push('Candidate HTML transport failed: '+u.pathname);await route.abort();return;}
     }
    }
    return route.continue();
