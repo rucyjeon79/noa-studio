@@ -1,6 +1,7 @@
 """Offline contracts for the report-only pipeline and credential isolation."""
 import importlib.util
 import io
+import json
 import os
 from pathlib import Path
 import sys
@@ -16,6 +17,52 @@ import n80_report_evidence as evidence
 
 
 class CompletionPipelineTests(unittest.TestCase):
+    def test_scope_uses_actual_release_push_paths(self):
+        workflow = (SCRIPTS.parent / pipeline.DEPLOY_PATH).read_text()
+        patterns = pipeline.release_patterns(workflow)
+        self.assertIn('scripts/qa/noa-sitemap-live.mjs', patterns)
+        self.assertNotIn('tests/deployment/test_finish_release.py', patterns)  # PR-only path.
+        sha, before = 'a' * 40, 'b' * 40
+        for path, expected in [('deploy/noa-music.php', True), ('bridge/user-playlists.php', True),
+                               ('deploy/noa-app/engine/completion-report.php', True), ('scripts/qa/noa-finish-live.mjs', True),
+                               ('scripts/qa/unrelated.mjs', False), ('tests/n80/test_completion_pipeline.py', False),
+                               ('scripts/n80_completion_pipeline.py', False), ('bridge/other-work.php', False)]:
+            with self.subTest(path=path), patch.object(pipeline.subprocess, 'run', return_value=type('Diff', (), {'stdout': (path + '\0').encode()})()) as git:
+                self.assertEqual(pipeline.release_scope('push', {'before': before}, 'refs/heads/main', sha, patterns), expected)
+                self.assertEqual(git.call_args.args[0][-4:], ['-z', before, sha, '--'])
+                self.assertIn('--no-renames', git.call_args.args[0])
+
+    def test_scope_pr_false_and_manual_main_true_without_diff(self):
+        with patch.object(pipeline.subprocess, 'run') as git:
+            self.assertFalse(pipeline.release_scope('pull_request', {}, 'refs/pull/183/merge', 'a' * 40, ['deploy/**']))
+            self.assertTrue(pipeline.release_scope('workflow_dispatch', {}, 'refs/heads/main', 'a' * 40, ['deploy/**']))
+            self.assertFalse(pipeline.release_scope('workflow_dispatch', {}, 'refs/heads/other', 'a' * 40, ['deploy/**']))
+            git.assert_not_called()
+
+    def test_scope_unknown_filter_format_rejected(self):
+        with self.assertRaises(evidence.EvidenceError):
+            pipeline.release_patterns('on:\n  push:\n    paths:\n      - deploy/**\n')
+
+    def test_no_live_artifact_records_noop_without_deployment_or_host(self):
+        sha = 'a' * 40
+        run = {'id': 2, 'repository': {'full_name': evidence.REPO}, 'head_sha': sha, 'head_branch': 'main',
+               'event': 'push', 'path': pipeline.VERIFY_PATH, 'status': 'completed', 'conclusion': 'success',
+               'html_url': f'https://github.com/{evidence.REPO}/actions/runs/2', 'updated_at': '2026-10-24T10:00:00Z'}
+        with tempfile.TemporaryDirectory() as directory:
+            event_path = Path(directory) / 'event.json'
+            event_path.write_text(json.dumps({'repository': {'full_name': evidence.REPO}, 'workflow_run': run}))
+            with patch.dict(os.environ, {'GITHUB_EVENT_PATH': str(event_path), 'RUNNER_TEMP': directory}), \
+                 patch.object(pipeline, 'api', side_effect=[run, {'artifacts': [{'name': 'unrelated', 'expired': False}]}]) as api, \
+                 patch.object(pipeline, 'deployment') as deploy, patch.object(pipeline, 'download_artifact') as download, \
+                 patch.object(pipeline.subprocess, 'run') as host:
+                pipeline.report()
+                result = json.loads((Path(directory) / 'noa-n80-report/receipt.json').read_text())
+                self.assertEqual(result, {'ok': True, 'recorded': False, 'effect': 'no_integrated_release_evidence'})
+                self.assertEqual(api.call_count, 2)
+                deploy.assert_not_called()
+                download.assert_not_called()
+                host.assert_not_called()
+
     def test_only_same_sha_main_deployment_success(self):
         sha = "a" * 40
         row = {"id": 1, "head_sha": sha, "head_branch": "main", "event": "push", "path": pipeline.DEPLOY_PATH,

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Reuse the category release and quality gate; only collect/report evidence."""
 import argparse
+import ast
+import fnmatch
 import json
 import os
 from pathlib import Path
@@ -16,6 +18,37 @@ import n80_report_evidence as evidence
 DEPLOY_PATH = ".github/workflows/noa-category-order-final.yml"
 VERIFY_PATH = ".github/workflows/noa-quality-gates.yml"
 ARTIFACT_NAME = "noa-finish-live-"
+
+
+def release_patterns(workflow):
+    # Read the existing release's actual push filter instead of maintaining a
+    # second list which can drift. Fail closed if its reviewed flow-list changes.
+    match = re.search(r"^  push:\n(?:(?:    [^\n]*\n))*?    paths: (\[[^\n]*\])$", workflow, re.MULTILINE)
+    evidence.require(match is not None, "release_push_filter_unrecognized")
+    patterns = ast.literal_eval(match.group(1))
+    evidence.require(isinstance(patterns, list) and patterns and all(isinstance(p, str) and p and not p.startswith("!") for p in patterns), "release_push_filter_invalid")
+    return patterns
+
+
+def release_scope(event_name, event, ref, commit, patterns, repository="."):
+    if ref != "refs/heads/main" or event_name == "pull_request":
+        return False
+    if event_name == "workflow_dispatch":
+        return True  # Explicit main dispatch retains the existing manual check.
+    if event_name != "push":
+        return False
+    before = event.get("before", "")
+    evidence.require(re.fullmatch(r"[a-f0-9]{40}", before) and re.fullmatch(r"[a-f0-9]{40}", commit or ""), "invalid_push_range")
+    args = (["git", "-C", repository, "ls-tree", "-r", "--name-only", "-z", commit] if before == "0" * 40 else
+            ["git", "-C", repository, "diff", "--no-renames", "--name-only", "-z", before, commit, "--"])
+    changed = subprocess.run(args, check=True, capture_output=True).stdout.decode().split("\0")
+    return any(fnmatch.fnmatchcase(path, pattern) for path in changed if path for pattern in patterns)
+
+
+def output_directory():
+    out = Path(os.environ.get("RUNNER_TEMP", "/tmp")) / "noa-n80-report"
+    out.mkdir(mode=0o700, exist_ok=True)
+    return out
 
 
 def api(path):
@@ -81,14 +114,19 @@ def report():
     run = api("/actions/runs/" + str(triggered["id"]))
     evidence.require(run.get("path") == VERIFY_PATH and run.get("head_branch") == "main", "wrong_verification_workflow")
     evidence.verified_run(run, triggered["id"], commit)
-    dep = deployment(commit, 0)
     artifacts = api("/actions/runs/" + str(run["id"]) + "/artifacts").get("artifacts", [])
-    matches = [a for a in artifacts if a.get("name") == ARTIFACT_NAME + str(run["id"]) and a.get("expired") is False]
+    matches = [a for a in artifacts if a.get("name") == ARTIFACT_NAME + str(run["id"])]
+    out = output_directory()
+    if not matches:
+        result = {"ok": True, "recorded": False, "effect": "no_integrated_release_evidence"}
+        (out / "receipt.json").write_bytes(evidence.compact(result) + b"\n")
+        print(json.dumps(result))
+        return
     evidence.require(len(matches) == 1, "verification_artifact_missing_or_duplicate")
+    evidence.require(matches[0].get("expired") is False, "artifact_expired")
+    dep = deployment(commit, 0)
     metadata = api("/actions/artifacts/" + str(matches[0]["id"]))
     evidence.require(metadata.get("id") == matches[0]["id"], "artifact_identity_mismatch")
-    out = Path(os.environ.get("RUNNER_TEMP", "/tmp")) / "noa-n80-report"
-    out.mkdir(mode=0o700, exist_ok=True)
     archive_path = out / "verified.zip"
     archive = download_artifact(metadata["id"], archive_path)
     evidence.verified_artifact(metadata, run["id"], commit, archive, "verified.json")
@@ -113,11 +151,18 @@ def report():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("action", choices=("wait", "report"))
+    parser.add_argument("action", choices=("wait", "report", "scope"))
     parser.add_argument("--commit")
     args = parser.parse_args()
     try:
-        if args.action == "wait":
+        if args.action == "scope":
+            event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
+            patterns = release_patterns(Path(DEPLOY_PATH).read_text())
+            scope = release_scope(os.environ["GITHUB_EVENT_NAME"], event, os.environ["GITHUB_REF"], os.environ["GITHUB_SHA"], patterns)
+            with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+                output.write("release_scope=" + str(scope).lower() + "\n")
+            print(json.dumps({"ok": True, "releaseScope": scope}))
+        elif args.action == "wait":
             evidence.require(bool(re.fullmatch(r"[a-f0-9]{40}", args.commit or "")), "invalid_commit")
             result = deployment(args.commit, 1200)
             print(json.dumps({"ok": True, "deploymentRun": str(result["id"]), "commit": args.commit}))
