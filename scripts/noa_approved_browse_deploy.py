@@ -16,13 +16,13 @@ import urllib.parse
 import paramiko
 
 ROOT = '/hosting/noastudio/html'
-FILES = {p:'deploy/'+p for p in ['noa-browse.js','noa-music.php','noa-youtube.php']}
+FILES = {'extend/noa.design.php':'deploy/noa-design.extend.php'}
 PROTECTED = ['index.php', 'common.php', 'config.php', 'data/dbconfig.php',
              'bbs/login.php', 'bbs/login_check.php', 'noa-app/jukebox/core.php',
              'noa-app/jukebox/upload-core.php', 'noa-app/jukebox/upload.js',
              'noa-app/jukebox/upload-transport.js', 'noa-app/jukebox/service.php',
              'noa-app/database/core.php', 'noa-app/taxonomy/index.php',
-             'noa-app/home.php','noa-bridge/world-mv.php','noa-bridge/youtube-store.php','noa-ui.js','noa-ui.css','extend/noa.design.php','noa-design.json','noa-app/p0-media.css','noa-app/p0-player.js','noa-policy-20261024.css']
+             'noa-app/home.php','noa-bridge/world-mv.php','noa-bridge/youtube-store.php','noa-ui.js','noa-ui.css','noa-browse.js','noa-music.php','noa-youtube.php','noa-design.json','noa-app/p0-media.css','noa-app/p0-player.js','noa-policy-20261024.css']
 STATE = Path(os.environ.get('RUNNER_TEMP', '/tmp')) / 'noa-approved-browse-release.json'
 
 
@@ -61,7 +61,7 @@ def verify(before):
 
 def main():
     rollback = sys.argv[1:] == ['rollback']
-    receipt = json.loads(Path('scripts/noa_browse_drive_receipt.json').read_text())
+    receipt = json.loads(Path('scripts/noa_cache_loader_drive_receipt.json').read_text())
     if not (receipt['readbackVerified'] and receipt['restoreExtractionVerified']):
         raise RuntimeError('drive_recovery_not_verified')
     new = {p: Path(f).read_bytes() for p, f in FILES.items()}

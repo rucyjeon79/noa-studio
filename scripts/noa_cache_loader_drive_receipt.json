@@ -1,0 +1,12 @@
+{
+  "baseCommit": "7389c9e1c7781f549c39a1acc36588f684780e9e",
+  "files": {
+    "extend/noa.design.php": {
+      "bytes": 3131,
+      "sha256": "a37eadc71d1031a7e3ac5b7b9bc8a943f94ce7cc3c1155a5d621cce4054e3321"
+    }
+  },
+  "readbackVerified": false,
+  "restoreExtractionVerified": false,
+  "status": "additional_loader_backup_upload_requires_explicit_approval"
+}
