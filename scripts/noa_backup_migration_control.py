@@ -65,6 +65,7 @@ def main():
                 if action == 'queue_snapshot':
                     rows = result.get('rows', [])
                     result = {'row_count': len(rows), 'states': {state: sum(r.get('status') == state for r in rows) for state in sorted({str(r.get('status')) for r in rows})}}
+                if action == 'audit':result={k:result.get(k) for k in ['assets','covers','audio','audio_bytes','qa_assets','temporary_inputs']}
                 before[action] = result
             except Exception:
                 before[action] = {'unavailable': True}
@@ -95,7 +96,9 @@ def main():
         after = {}
         for action in ['integrity_snapshot', 'audit']:
             try:
-                after[action] = cli(action)
+                result=cli(action)
+                if action == 'audit':result={k:result.get(k) for k in ['assets','covers','audio','audio_bytes','qa_assets','temporary_inputs']}
+                after[action] = result
             except Exception:
                 after[action] = {'unavailable': True}
         report['jukebox_before'] = before

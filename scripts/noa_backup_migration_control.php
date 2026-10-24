@@ -4,6 +4,7 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 ini_set('display_errors','0');
+@set_time_limit(180);ignore_user_abort(true);
 $root='/hosting/noastudio';
 $raw=file_get_contents('php://input');
 $ts=$_SERVER['HTTP_X_NOA_TIMESTAMP']??'';
@@ -50,29 +51,34 @@ try {
  $locked=flock($lock,LOCK_EX|LOCK_NB);$active=[];
  foreach(glob($root.'/noa-db-private/*.partial')?:[] as $p)$active[]=basename($p);
  foreach(glob($root.'/noa-db-private/restore-plan-*.json')?:[] as $p){$plan=json_decode((string)file_get_contents($p),true);if(($plan['expiresAt']??PHP_INT_MAX)>time())$active[]=basename($p);}
- $removed=[];$skipped=[];$reclaimed=0;
+ $removed=[];$skipped=[];$reclaimed=0;$deployLock=false;
  if($mode==='cleanup'){
   if(!$locked||$active||$refs['unreadable']||$refs['literal_references'])throw new RuntimeException('database_operation_or_reference_not_clear');
   $receipts=$request['receipts']??[];if(!$receipts||count($receipts)>500)throw new RuntimeException('invalid_receipts');
   $known=['15133165eb1e1d6529158ed051d94e9a','fda4138b6ba4d525f337e4a86038218f','d54c43955754a84d1fca3778345f37a0','ce1beb1a0ad64e9dc4b50654625c6618','362dfee5ef4c3df496fdbc83cb482a5a'];
   $ready=[];
+  foreach($receipts as $r){if(str_starts_with($r['path']??'','noa-deploy-backups/')||str_starts_with($r['path']??'','noa-ai-lab/taxonomy-release-')){$deployLock=@mkdir($root.'/noa-deploy-backups/.work-deploy-lock',0700);if(!$deployLock)throw new RuntimeException('deployment_busy_preserved');break;}}
   foreach($receipts as $row){
    $rel=$row['path']??'';
-   if(!preg_match('/^noa-db-private\/([a-f0-9]{32})\.(sql|json)$/D',$rel,$m)||!in_array($m[1],$known,true))throw new RuntimeException('path_not_allowlisted');
+   $sql=preg_match('/^noa-db-private\/([a-f0-9]{32})\.(sql|json)$/D',$rel,$m)&&in_array($m[1],$known,true);
+   $deploy=(bool)preg_match('/^(?:noa-deploy-backups\/(?:p0-|jukebox-|jukebox-interface-|uiux-|full-|root-)[A-Za-z0-9_-]+|noa-ai-lab\/taxonomy-release-[0-9]+)\/[A-Za-z0-9_.\/-]+$/D',$rel);
+   if((!$sql&&!$deploy)||str_contains($rel,'..')||str_contains($rel,'//'))throw new RuntimeException('path_not_allowlisted');
    if(empty($row['drive_file_id'])||($row['drive_readback_verified']??false)!==true||($row['isolated_restore_verified']??false)!==true)throw new RuntimeException('proof_missing');
    if(!preg_match('/^[a-f0-9]{64}$/D',$row['sha256']??'')||!is_int($row['bytes'])||$row['bytes']<0)throw new RuntimeException('invalid_proof');
-   $path=$root.'/'.$rel;$s=@lstat($path);if(!$s){$skipped[]=['path'=>$rel,'reason'=>'already_absent'];continue;}
-   if(($s['mode']&0170000)!==0100000||$s['size']!==$row['bytes']||!hash_equals($row['sha256'],hash_file('sha256',$path)))throw new RuntimeException('source_changed_preserved');
+   $path=$root.'/'.$rel;if(realpath(dirname($path))!==realpath($root).'/'.dirname($rel))throw new RuntimeException('parent_symlink_preserved');$s=@lstat($path);if(!$s){$skipped[]=['path'=>$rel,'reason'=>'already_absent'];continue;}
+   if(($s['mode']&0170000)!==0100000||$s['size']!==$row['bytes']||!hash_equals($row['sha256'],hash_file('sha256',$path))){$skipped[]=['path'=>$rel,'reason'=>'source_changed_preserved'];continue;}
    $ready[]=$row;
   }
   if(protectedHashes($root)!==$protected)throw new RuntimeException('protected_changed');
   foreach($ready as $row){$path=$root.'/'.$row['path'];clearstatcache(true,$path);
-   if(filesize($path)!==$row['bytes']||!hash_equals($row['sha256'],hash_file('sha256',$path)))throw new RuntimeException('source_changed_before_delete');
+   if(filesize($path)!==$row['bytes']||!hash_equals($row['sha256'],hash_file('sha256',$path))){$skipped[]=['path'=>$row['path'],'reason'=>'source_changed_before_delete'];continue;}
    if(!unlink($path)){$skipped[]=['path'=>$row['path'],'reason'=>'unlink_failed'];continue;}
    clearstatcache(true,$path);if(file_exists($path))throw new RuntimeException('delete_not_confirmed');$removed[]=$row;$reclaimed+=$row['bytes'];
   }
  }
+ if($mode==='cleanup'){$dirs=[];foreach($removed as $row){$p=dirname($root.'/'.$row['path']);while(str_starts_with($p,$root.'/noa-deploy-backups/')||preg_match('#^'.preg_quote($root,'#').'/noa-ai-lab/taxonomy-release-[0-9]+(?:/|$)#',$p)){$dirs[$p]=true;$p=dirname($p);}}$paths=array_keys($dirs);usort($paths,fn($a,$b)=>strlen($b)<=>strlen($a));foreach($paths as $p)if(!is_link($p))@rmdir($p);}
  $after=inventory($root);$unchanged=protectedHashes($root)===$protected;
+ if($deployLock)rmdir($root.'/noa-deploy-backups/.work-deploy-lock');
  if($locked)flock($lock,LOCK_UN);fclose($lock);
  echo json_encode(['ok'=>true,'mode'=>$mode,'before'=>$before,'after'=>$after,'sql_reference_check'=>$refs,'database_lock_acquired'=>$locked,'active_database_operations'=>$active,'removed'=>$removed,'skipped'=>$skipped,'reclaimed_bytes'=>$reclaimed,'protected_hashes'=>$protected,'protected_files_unchanged'=>$unchanged,'production_mysql_modified'=>false],JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
-} catch(Throwable $e){http_response_code(409);echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);}
+} catch(Throwable $e){if(!empty($deployLock))@rmdir($root.'/noa-deploy-backups/.work-deploy-lock');http_response_code(409);echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);}
