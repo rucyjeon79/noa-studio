@@ -68,3 +68,24 @@ jobs:
         run: python -m unittest discover -s tests/engine -p 'test_live_observer.py' -v
       - name: Verify Drive proof and concurrent-edit protection
         run: python -m unittest discover -s tests/engine -p 'test_app_integration.py' -v
+  mysql_readonly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: noa-test-only
+          MYSQL_DATABASE: noa_catalog_test
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -h localhost -pnoa-test-only" --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql
+      - name: Verify DATETIME relations under strict MySQL in a read-only transaction
+        env:
+          NOA_TEST_MYSQL_DSN: mysql:host=127.0.0.1;port=3306;dbname=noa_catalog_test;charset=utf8mb4
+        run: php tests/engine/app_data_mysql.php
