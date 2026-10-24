@@ -2,7 +2,7 @@ name: NOA Database Drive Only Backup Policy
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/noa-db-drive-only-policy.yml']
+    paths: ['.github/workflows/noa-db-drive-only-policy.yml', 'scripts/noa_db_drive_policy_deploy.py']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-backup-migration-control, cancel-in-progress: false}

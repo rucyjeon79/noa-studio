@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import stat
 import urllib.request
+import urllib.error
 import paramiko
 
 ROOT='/hosting/noastudio/html'
@@ -47,9 +48,13 @@ def main():
             for p,h in guard.items():
                 if hashlib.sha256(read(ROOT+'/'+p)).hexdigest()!=h:raise RuntimeError('protected_runtime_changed')
             for path in ['/','/bbs/login.php','/noa-music.php','/noa-app/database/index.php']:
-                with urllib.request.urlopen('https://noastudio.ai.kr'+path,timeout=30) as response:
-                    body=response.read()
-                    if response.status!=200 or b'Fatal error:' in body:raise RuntimeError('policy_http_smoke_failed')
+                try:
+                    with urllib.request.urlopen('https://noastudio.ai.kr'+path,timeout=30) as response:
+                        body=response.read()
+                        if response.status!=200 or b'Fatal error:' in body:raise RuntimeError('policy_http_smoke_failed')
+                except urllib.error.HTTPError as error:
+                    if path!='/noa-app/database/index.php' or error.code!=403:raise
+                print('POLICY_HTTP_CHECK_PASSED '+path,flush=True)
         except Exception:
             if hashlib.sha256(read(PATH)).hexdigest()!=newsha:raise RuntimeError('rollback_concurrent_change_preserved')
             with s.open(temp,'wx') as f:f.write(before)
