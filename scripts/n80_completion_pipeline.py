@@ -104,6 +104,20 @@ def download_artifact(artifact_id, destination):
     return archive
 
 
+def release_sources(source=None):
+    # Read only the fixed deployment allowlist; recovery archives may also hold
+    # unchanged or absent diagnostic sources that must not become completion claims.
+    tree = ast.parse(source if source is not None else Path("scripts/noa_category_release.py").read_text())
+    assignments = [node for node in tree.body if isinstance(node, ast.Assign)
+                   and any(isinstance(target, ast.Name) and target.id == "ORDER" for target in node.targets)]
+    evidence.require(len(assignments) == 1, "release_allowlist_missing")
+    paths = ast.literal_eval(assignments[0].value)
+    evidence.require(isinstance(paths, list) and 1 <= len(paths) <= 100
+                     and all(evidence.safe_path(path) for path in paths)
+                     and len(set(paths)) == len(paths), "release_allowlist_invalid")
+    return sorted(paths)
+
+
 def report():
     event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
     triggered = event.get("workflow_run", {})
@@ -137,7 +151,8 @@ def report():
     checks_path.write_text(json.dumps(checks))
     # The parent-owned, Drive-verified release manifest defines the affected set.
     receipt = json.loads(Path("scripts/noa_finish_drive_receipt.json").read_text())
-    sources = sorted(p for p in receipt["files"] if evidence.safe_path(p))
+    sources = release_sources()
+    evidence.require(set(sources).issubset(receipt["files"]), "release_recovery_scope_mismatch")
     evidence.require(bool(sources), "release_sources_missing")
     cmd = [sys.executable, "scripts/n80_report_evidence.py", "--repository", ".", "--commit", commit,
            "--deployment-run", str(dep["id"]), "--verification-run", str(run["id"]),
