@@ -1,0 +1,29 @@
+name: NOA Integration Finish Readonly Checkpoint
+on:
+  push:
+    branches: ['codex/integration-finish-20261024']
+    paths: ['scripts/noa_finish_checkpoint.py','.github/workflows/noa-finish-checkpoint.yml']
+permissions: {contents: read}
+jobs:
+  checkpoint:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: python -m pip install 'paramiko>=3,<5'
+      - name: Preserve exact current runtime preimages without host writes
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_finish_checkpoint.py
+      - name: Measure current public MUSIC and MY before modifications
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-finish" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-finish-baseline.mjs "$RUNNER_TEMP/noa-finish/check.mjs"
+          node "$RUNNER_TEMP/noa-finish/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: noa-integration-finish-checkpoint, path: finish-checkpoint/, retention-days: 1}
