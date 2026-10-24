@@ -1,0 +1,31 @@
+name: NOA Korean glyph visual proof
+on:
+  push:
+    branches: [codex/visual-font-proof-20261024]
+    paths: ['.github/workflows/noa-visual-font-proof.yml','scripts/qa/noa-font-proof.mjs']
+permissions: {contents: read}
+jobs:
+  read-only-visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install Korean glyphs for faithful screenshots
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+          fc-match ':lang=ko'
+          npm install --prefix "$RUNNER_TEMP/noa-font-proof" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+      - name: Verify public sitemap and music without changing data
+        env:
+          NOA_PLAYWRIGHT_PACKAGE: ${{ runner.temp }}/noa-font-proof/package.json
+          NOA_SITEMAP_QA_OUTPUT: qa/font-proof/sitemap.json
+        run: |
+          node scripts/qa/noa-sitemap-live.mjs
+          node scripts/qa/noa-font-proof.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-korean-visual-${{ github.run_id }}', path: qa/font-proof/, retention-days: 2}
