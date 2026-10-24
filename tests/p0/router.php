@@ -3,6 +3,7 @@
 $root=dirname(__DIR__,2);$path=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);
 if($path==='/noa-bridge/ui-preferences.php'){header('Content-Type: application/json');echo json_encode(['revision'=>0,'member'=>false,'admin'=>false,'settings'=>null,'defaults'=>['enabled'=>['noa-studio','noa-ivory'],'theme'=>'noa-studio']]);return;}
 if($path==='/noa-bridge/user-playlists.php'){http_response_code(401);header('Content-Type: application/json');echo '{}';return;}
+if($path==='/noa-music-detail.php'){header('Content-Type: application/json');$key=$_GET['key']??'';if(!in_array($key,['one','two'],true)){http_response_code(404);echo '{}';return;}echo json_encode(['key'=>$key,'rawLyrics'=>"[Verse 1]\n원문 줄\n\n[Chorus]\n후렴",'description'=>$key==='one'?"곡 이야기\n둘째 줄":''],JSON_UNESCAPED_UNICODE);return;}
 if($path==='/noa-sw.js'){http_response_code(404);return;}
 if($path==='/fixture.wav'){header('Content-Type: audio/wav');$data='';for($i=0;$i<16000*90;$i++)$data.=pack('v',(int)(sin($i*440*2*pi()/16000)*8000)&65535);echo 'RIFF'.pack('V',36+strlen($data)).'WAVEfmt '.pack('VvvVVvv',16,1,1,16000,32000,2,16).'data'.pack('V',strlen($data)).$data;return;}
 if(in_array($path,['/noa-music.php','/noa-youtube.php'])){

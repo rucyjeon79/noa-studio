@@ -12,7 +12,7 @@ elseif($kind==='youtube'){
 elseif($kind==='music'){
  $data=json_decode(file_get_contents(getenv('NOA_MUSIC_SOURCE')),true,512,JSON_THROW_ON_ERROR);$songs=$data['records'];$collections=$data['collections'];$genres=[];$error=false;$admin=$is_admin==='super';$_SESSION=['noa_jukebox_csrf'=>'isolated-ui-fixture'];
  function noa_music_e(string $v):string{return htmlspecialchars($v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
- function nj_resolve($assets,$key,$url,$type){global $songs;foreach($songs as $song)if($song['key']===$key)return $type==='audio'?$song['audio']:$song['thumb'];return '';}
+ function noa_music_asset_url($assets,$key,$url,$type){global $songs;foreach($songs as $song)if($song['key']===$key)return $type==='audio'?$song['audio']:$song['thumb'];return '';}
  $jukebox=[];foreach($songs as $song)$genres[$song['genre']]=($genres[$song['genre']]??0)+1;
  $source=file_get_contents($root.'/deploy/noa-music.php');$offset=strpos($source,'?><!doctype html>');if($offset===false)throw new RuntimeException('Music view marker missing');
  // Role presentation only: owner processing scripts must never issue requests from this fixture.
