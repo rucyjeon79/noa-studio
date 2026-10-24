@@ -404,13 +404,14 @@ html[data-noa-theme="noa-ivory"]{
 .noa-inline-song:focus-visible{outline:2px solid var(--noa-info,#64A9F5);outline-offset:-2px}
 .noa-inline-song:hover{color:var(--noa-success,#34C785)}
 
-/* Approved browse mobile alignment and flat inline rows. */
-.noa-browse{min-width:0;scroll-margin-top:16px}
-.noa-browse-grid{min-width:0}
-.noa-inline-act{background:transparent!important;border:0!important;border-bottom:1px solid var(--noa-line)!important;border-radius:0!important;box-shadow:none!important;margin:0!important;padding:0!important}
-.noa-inline-act>.noa-browse-card{border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;min-height:64px!important;padding:12px 4px!important}
-.noa-inline-act>.noa-browse-card[aria-expanded="true"]{outline:0!important;color:var(--noa-control,#F5F6F8)!important}
-.noa-inline-songs{padding:0 0 10px 12px!important}
-.noa-inline-song{display:flex!important;align-items:center;gap:12px;min-height:56px!important;border:0!important;border-bottom:1px solid var(--noa-line)!important;background:transparent!important;border-radius:0!important;box-shadow:none!important;padding:8px 4px!important;line-height:1.4;text-align:left}
+/* Shared flat ACT rows; original category artwork and transport remain intact. */
+.noa-browse,.noa-browse-grid{min-width:0}
+html[data-noa-precision] .noa-page .noa-inline-act{background:transparent;border:0;border-bottom:1px solid var(--noa-line);border-radius:0;box-shadow:none;margin:0;padding:0}
+html[data-noa-precision] .noa-page .noa-inline-act>.noa-browse-card{width:100%;display:grid;grid-template-columns:56px minmax(0,1fr);grid-template-rows:auto;align-items:center;gap:12px;min-height:72px;padding:8px 0;border:0;border-radius:0;background:transparent;box-shadow:none;text-align:left}
+html[data-noa-precision] .noa-page .noa-inline-act>.noa-browse-card>img{width:56px;height:56px;aspect-ratio:1;object-fit:cover;border-radius:6px}
+html[data-noa-precision] .noa-page .noa-inline-act>.noa-browse-card>span{padding:0;background:transparent;min-width:0}
+html[data-noa-precision] .noa-page .noa-inline-act>.noa-browse-card[aria-expanded="true"]{outline:0;color:var(--noa-success)}
+html[data-noa-precision] .noa-page .noa-inline-act>.noa-browse-card[aria-expanded="true"] strong{color:var(--noa-success)}
+.noa-inline-songs{padding:0 0 8px 8px}
+html[data-noa-precision] .noa-page .noa-inline-song{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;border:0;border-bottom:1px solid var(--noa-line);background:transparent;border-radius:0;box-shadow:none;padding:8px 0;line-height:1.4;text-align:left;color:var(--noa-text);overflow-wrap:anywhere}
 .noa-inline-cover{display:block;flex:0 0 42px;width:42px;height:42px;object-fit:cover;border-radius:6px}
-@media(max-width:430px){.noa-browse-card strong{overflow-wrap:anywhere}.noa-inline-act>.noa-browse-card img{max-width:64px}.noa-browse{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px)}}

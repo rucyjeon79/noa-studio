@@ -8,8 +8,15 @@ header('X-Content-Type-Options: nosniff');
 $path='/hosting/noastudio/noa-ai-lab/category-order.json';
 $allowed=['story','cover'];
 function respond(int $status,array $value):void{http_response_code($status);echo json_encode($value,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;}
+function load_order(string $path):array{
+ if(!is_file($path))return [];
+ try{$data=json_decode((string)file_get_contents($path),true,512,JSON_THROW_ON_ERROR);}catch(Throwable $e){respond(503,['error'=>'order_storage_invalid']);}
+ if(!is_array($data))respond(503,['error'=>'order_storage_invalid']);
+ foreach(['story','cover'] as $group)if(isset($data[$group])&&(!is_array($data[$group])||!array_is_list($data[$group])))respond(503,['error'=>'order_storage_invalid']);
+ return $data;
+}
 if($_SERVER['REQUEST_METHOD']==='GET'){
- $data=is_file($path)?json_decode((string)file_get_contents($path),true):[];
+ $data=load_order($path);
  respond(200,['story'=>is_array($data['story']??null)?$data['story']:[],'cover'=>is_array($data['cover']??null)?$data['cover']:[]]);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')respond(405,['error'=>'method_not_allowed']);
@@ -25,8 +32,7 @@ $dir=dirname($path);
 if(!is_dir($dir)||!is_writable($dir))respond(503,['error'=>'private_storage_unavailable']);
 $lock=fopen($dir.'/.category-order.lock','c');if(!$lock||!flock($lock,LOCK_EX))respond(503,['error'=>'lock_failed']);
 try{
- $current=is_file($path)?json_decode((string)file_get_contents($path),true):[];
- if(!is_array($current))$current=[];
+ $current=load_order($path);
  $current[$group]=array_values($keys);
  $temp=tempnam($dir,'.category-order-');
  if(!$temp)respond(503,['error'=>'temp_failed']);
