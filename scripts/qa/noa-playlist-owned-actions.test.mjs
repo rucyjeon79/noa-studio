@@ -7,7 +7,7 @@ const savedId='12345678-1234-4234-8234-123456789abc';
 const catalog='catalog:'+'a'.repeat(64),single='single:kpop-original:01';
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 class Element{
- constructor(){this.children=[];this.hidden=false;this.disabled=false;this.value='';this.textContent='';this.events={};}
+ constructor(){this.dataset={};this.children=[];this.hidden=false;this.disabled=false;this.value='';this.textContent='';this.events={};}
  append(...nodes){this.children.push(...nodes);}replaceChildren(...nodes){this.children=[...nodes];}
  add(node){this.children.push(node);}setAttribute(key,value){this[key]=value;}
  addEventListener(name,fn){this.events[name]=fn;}focus(){}

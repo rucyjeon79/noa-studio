@@ -58,6 +58,8 @@ function n80_music_consume(PDO $db,array $directories,int $jobId,array $context,
         return ['ok'=>true,'status'=>'acknowledged','receipt'=>$ack['state']['receipt'],'replayed'=>false];
     }catch(Throwable $error){
         $fail=n80_lease_state_transition($directories['leases'],$event['id'],'music','fail',time(),$generation,120,3);
-        return ['ok'=>false,'error'=>'music_availability_not_verified','retryStatus'=>$fail['state']['status']??'lease_changed'];
+        return ['ok'=>false,'error'=>'music_availability_not_verified','retryStatus'=>$fail['state']['status']??'lease_changed',
+            'diagnostic'=>['reason'=>n80_music_safe_reason($error->getMessage()),'phase'=>n80_music_safe_phase(),
+                'httpStatus'=>(int)($GLOBALS['n80_music_http_status']??0)]];
     }
 }

@@ -2,6 +2,8 @@
 (() => {
  const el=id=>document.getElementById(id),status=el('my-status'),picker=el('my-select'),title=el('my-title');
  let csrf='',items=[],id=crypto.randomUUID(),revision=0,working=null,busy=false;
+ let drag=null,orderVersion=0;const dragType='application/x-noa-playlist-order';
+ const desktopDrag=window.matchMedia?.('(hover: hover) and (pointer: fine)').matches===true;
  const deleteButton=el('my-delete');if(deleteButton)deleteButton.style.color='var(--noa-danger)';
  function syncDelete(){if(deleteButton)deleteButton.disabled=busy||!items.some(p=>p.playlist_id===id);}
  function setBusy(value){busy=value;for(const name of ['my-new','my-add','my-remove','my-save','my-play'])el(name).disabled=value;picker.disabled=value;title.disabled=value;renderOrder();}
@@ -34,7 +36,35 @@
   if(item){id=item.playlist_id;revision=item.revision;working=[...item.tracks];title.value=item.title;renderOrder();selectWorking()}
   else{id=crypto.randomUUID();revision=0;working=null;title.value='';renderOrder()}
  });
- function renderOrder(){let host=el('my-order');if(!host){host=document.createElement('div');host.id='my-order';host.setAttribute('aria-label','플레이리스트 곡 순서');el('my-controls').append(host);}host.replaceChildren();(working||[]).forEach((key,index)=>{const row=document.createElement('div');row.className='noa-playlist-order-row';const name=document.createElement('span');name.textContent=(index+1)+'. '+(lookup.get(key)?.title||'연결 상태 확인이 필요한 곡');const up=document.createElement('button'),down=document.createElement('button');up.type=down.type='button';up.textContent='↑';down.textContent='↓';up.setAttribute('aria-label',name.textContent+' 위로');down.setAttribute('aria-label',name.textContent+' 아래로');up.disabled=busy||index===0;down.disabled=busy||index===(working.length-1);const move=offset=>{const next=index+offset;[working[index],working[next]]=[working[next],working[index]];renderOrder();status.textContent='순서가 변경되었습니다. 저장하면 반영됩니다.';};up.onclick=()=>move(-1);down.onclick=()=>move(1);row.append(name,up,down);host.append(row);});syncDelete();}
+ function renderOrder(){
+  drag=null;const version=++orderVersion;
+  let host=el('my-order');if(!host){host=document.createElement('div');host.id='my-order';host.setAttribute('aria-label','플레이리스트 곡 순서');el('my-controls').append(host);}
+  host.dataset.dirty=String(JSON.stringify(working||[])!==JSON.stringify(items.find(p=>p.playlist_id===id)?.tracks||[]));
+  host.replaceChildren();
+  const changed=()=>{renderOrder();status.textContent='순서가 변경되었습니다. 저장하면 반영됩니다.';};
+  const valid=()=>!busy&&drag&&drag.playlistId===id&&drag.version===version&&version===orderVersion&&JSON.stringify(working)===drag.snapshot&&working[drag.index]===drag.key;
+  (working||[]).forEach((key,index)=>{
+   const row=document.createElement('div');row.className='noa-playlist-order-row';
+   const name=document.createElement('span');name.textContent=(index+1)+'. '+(lookup.get(key)?.title||'연결 상태 확인이 필요한 곡');
+   const up=document.createElement('button'),down=document.createElement('button');up.type=down.type='button';up.textContent='↑';down.textContent='↓';up.setAttribute('aria-label',name.textContent+' 위로');down.setAttribute('aria-label',name.textContent+' 아래로');up.disabled=busy||index===0;down.disabled=busy||index===(working.length-1);
+   const move=offset=>{if(busy||version!==orderVersion)return;const next=index+offset;if(next<0||next>=working.length)return;[working[index],working[next]]=[working[next],working[index]];changed();};up.onclick=()=>move(-1);down.onclick=()=>move(1);
+   row.draggable=desktopDrag&&!busy;
+   row.addEventListener('dragstart',event=>{
+    if(!row.draggable||busy||version!==orderVersion||!event.dataTransfer){event.preventDefault();return;}
+    drag={playlistId:id,index,key,version,snapshot:JSON.stringify(working),token:crypto.randomUUID()};
+    event.dataTransfer.effectAllowed='move';event.dataTransfer.setData(dragType,drag.token);
+   });
+   row.addEventListener('dragover',event=>{if(valid()&&Array.from(event.dataTransfer?.types||[]).includes(dragType)){event.preventDefault();event.dataTransfer.dropEffect='move';}});
+   row.addEventListener('drop',event=>{
+    if(!valid()||!event.dataTransfer||event.dataTransfer.getData(dragType)!==drag.token)return;
+    event.preventDefault();const from=drag.index;drag=null;if(from===index)return;
+    const [moved]=working.splice(from,1);working.splice(index,0,moved);changed();
+   });
+   row.addEventListener('dragend',()=>{drag=null;});
+   row.append(name,up,down);host.append(row);
+  });syncDelete();
+ }
+
  el('my-new').onclick=()=>{id=crypto.randomUUID();revision=0;working=filteredQueue.filter(b=>lookup.get(b.dataset.key)?.kind!=='playlist').map(b=>b.dataset.key);picker.value='';title.value='';status.textContent='현재 재생 목록 '+working.length+'개를 담았습니다. 이름을 입력하고 저장해 주세요.';title.focus();renderOrder()};
  el('my-add').onclick=()=>{if(!selected)return;working=working||[];if(!working.includes(selected.dataset.key))working.push(selected.dataset.key);status.textContent=working.length+'개 곡 · 저장하면 반영됩니다.';renderOrder()};
  el('my-remove').onclick=()=>{if(!selected)return;working=(working||[]).filter(k=>k!==selected.dataset.key);status.textContent=working.length+'개 곡 · 저장하면 반영됩니다.';renderOrder()};
@@ -79,4 +109,5 @@
 
  refresh();
 })();
+
 

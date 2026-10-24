@@ -14,12 +14,12 @@ on:
     - cron: '7,17,27,37,47,57 * * * *'
 permissions:
   contents: read
-concurrency:
-  group: noa-production-sftp
-  cancel-in-progress: false
 jobs:
   observe:
-    if: vars.N80_OBSERVER_ENABLED != 'false'
+    concurrency:
+      group: noa-production-sftp
+      cancel-in-progress: false
+    if: vars.N80_OBSERVER_ENABLED != 'false' && (github.event_name != 'push' || !contains(github.event.head_commit.message, '[category-final]'))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: production

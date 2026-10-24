@@ -1,0 +1,62 @@
+[
+  {
+    "mobile": false,
+    "sample": 0,
+    "decodedBytes": 2546217,
+    "ttfb": 484.29999999998836,
+    "dcl": 3287,
+    "dom": 3818,
+    "wireBytes": 2546217,
+    "transferBytes": 2546517
+  },
+  {
+    "mobile": false,
+    "sample": 1,
+    "decodedBytes": 2546217,
+    "ttfb": 405,
+    "dcl": 2031.800000000003,
+    "dom": 3818,
+    "wireBytes": 2546217,
+    "transferBytes": 2546517
+  },
+  {
+    "mobile": false,
+    "sample": 2,
+    "decodedBytes": 2546217,
+    "ttfb": 434.09999999999127,
+    "dcl": 2039,
+    "dom": 3818,
+    "wireBytes": 2546217,
+    "transferBytes": 2546517
+  },
+  {
+    "mobile": true,
+    "sample": 0,
+    "decodedBytes": 2546217,
+    "ttfb": 410.40000000000873,
+    "dcl": 15302.199999999997,
+    "dom": 3818,
+    "wireBytes": 2546217,
+    "transferBytes": 2546517
+  },
+  {
+    "mobile": true,
+    "sample": 1,
+    "decodedBytes": 2546217,
+    "ttfb": 413.1000000000058,
+    "dcl": 16358.799999999988,
+    "dom": 4404,
+    "wireBytes": 2546217,
+    "transferBytes": 2546517
+  },
+  {
+    "mobile": true,
+    "sample": 2,
+    "decodedBytes": 2546217,
+    "ttfb": 403.29999999998836,
+    "dcl": 15290.300000000017,
+    "dom": 3818,
+    "wireBytes": 2546217,
+    "transferBytes": 2546517
+  }
+]

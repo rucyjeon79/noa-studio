@@ -34,7 +34,7 @@ jobs:
         run: |
           python3 scripts/noa_build_seed.py
           python3 scripts/noa_catalog_seed.py
-          python3 -m pip install --user numpy==2.2.6 scipy==1.15.3
+          python3 -m pip install --user numpy==2.2.6 scipy==1.15.3 'paramiko>=3,<5'
           sudo apt-get update -qq
           sudo apt-get install -y -qq ffmpeg fonts-noto-cjk
       - name: Verify existing engines, access checks and SQL invariants
@@ -57,11 +57,16 @@ jobs:
           php tests/popularity/stream_tracking_test.php
           node --test tests/popularity/player_tracker_test.cjs
           python tests/popularity/stream_source_contract.py
+          python -m unittest discover -s tests/popularity -p test_playcount_activate.py -v
           python -m unittest discover -s tests/engine -p 'test_live_music_consumer.py' -v
           php -l deploy/noa-app/engine/completion-report.php
           php -l deploy/noa-app/engine/completion-receipt.php
           php tests/catalog/music_readmodel_test.php
           php tests/sitemap/registry_test.php
+          node --test tests/home/metadata_test.cjs tests/playlists/drag_order_test.cjs tests/youtube/lazy_details_test.cjs
+          php tests/sitemap/popularity_route_test.php
+          python tests/youtube/detail_endpoint_test.py
+          python -m py_compile scripts/n80_workstate_sync.py
           python3 tests/sitemap/home_patch_test.py
           python3 -m unittest discover -s tests/n80 -p 'test_completion*.py'
           php -l bridge/user-playlists.php

@@ -42,6 +42,14 @@ try{
     };
     $ctx=['enabled'=>true,'authenticatedByServer'=>true,'principal'=>'n80_music_consumer','permission'=>'music:verify'];
     $dirs=['events'=>$root.'/events','leases'=>$root.'/leases'];
+    $diagnostic=n80_music_diagnose($db,1,$read);
+    n80_test_check($diagnostic['available']&&$diagnostic['effect']==='music_availability_diagnostic_only'
+        &&!$diagnostic['businessAck']&&!$diagnostic['queueMutation']&&$diagnostic['databaseWrites']===0,'diagnose_available_without_ack');
+    n80_test_check(glob($root.'/events/*')===[]&&glob($root.'/leases/*')===[],'diagnose_does_not_claim_or_store');
+    $broken=static function(){throw new RuntimeException('arbitrary_secret_message');};
+    $diagnostic=n80_music_diagnose($db,1,$broken);
+    n80_test_check(!$diagnostic['available']&&$diagnostic['reason']==='verification_error'
+       &&!str_contains(json_encode($diagnostic),'arbitrary_secret_message'),'diagnose_redacts_unknown_exception');
     n80_test_check(!n80_music_consume($db,$dirs,1,[],$read)['ok'],'disabled_default');
     n80_test_check(!n80_music_consume($db,$dirs,1,['enabled'=>true],$read)['ok'],'server_auth_required');
     $result=n80_music_consume($db,$dirs,1,$ctx,$read);

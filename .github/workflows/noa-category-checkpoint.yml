@@ -1,12 +1,12 @@
 name: NOA Category Readonly Checkpoint
 on:
   push:
-    branches: ['codex/remaining-finish-20261024']
+    branches: ['codex/remaining-ui-workstate-20261024']
     paths: ['scripts/noa_category_checkpoint.py', '.github/workflows/noa-category-checkpoint.yml']
 permissions: {contents: read}
-concurrency: {group: noa-production-sftp, cancel-in-progress: false}
 jobs:
   checkpoint:
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 10
@@ -25,4 +25,23 @@ jobs:
         with:
           name: noa-remaining-checkpoint
           path: category-checkpoint/
+          retention-days: 2
+  performance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: npm install --prefix "$RUNNER_TEMP/noa-baseline" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+      - name: Measure existing public YouTube before lazy details
+        env:
+          NOA_PLAYWRIGHT_PACKAGE: ${{ runner.temp }}/noa-baseline/package.json
+        run: node scripts/qa/noa-youtube-performance-baseline.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-youtube-performance-before
+          path: youtube-performance-before/
           retention-days: 2

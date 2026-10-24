@@ -21,6 +21,14 @@ MUSIC_URL = 'https://noastudio.ai.kr/noa-app/engine/consume-music.php'
 MUSIC_BASE = '/hosting/noastudio/noa-ai-lab/n80-music-consumer'
 MUSIC_POLICY = '/hosting/noastudio/noa-ai-lab/n80-music-consumer-policy.json'
 MUSIC_EFFECT = 'music_catalog_availability_verified'
+MUSIC_PHASES = {'bootstrap','load_runtime','policy','db_config','db_connect','db_readonly','consumer','ready_identity',
+                'local_media','public_catalog','public_detail','public_audio','public_readmodel','final_source','unknown'}
+MUSIC_REASONS = {'verified','verification_error','unsupported_public_read','public_read_failed','public_url_access_disabled',
+                 'public_http_non_success','public_read_too_large','public_tls_failed','public_read_timeout','public_network_failed',
+                 'invalid_job_id','source_not_ready','superseded_job','missing_commit_timestamp','job_upload_identity_mismatch',
+                 'public_catalog_missing','ready_audio_integrity_failed','public_audio_reference_mismatch','public_route_failed',
+                 'public_readmodel_invalid','public_asset_reference_mismatch','public_detail_mismatch','public_audio_bytes_mismatch',
+                 'source_changed_during_verification','event_changed'}
 
 
 def sha(data):
@@ -29,6 +37,34 @@ def sha(data):
 
 def compact(value):
     return json.dumps(value, ensure_ascii=False, separators=(',', ':')).encode()
+
+
+def music_http_error(error, key, nonce):
+    """Log fixed enums only. Never include response bodies, URLs or headers."""
+    code, detail, authenticated = 'http_error', {}, False
+    try:
+        raw = error.read(4097)
+        if len(raw) <= 4096:
+            body = json.loads(raw)
+            signature = error.headers.get('X-N80-Signature', '')
+            expected = hmac.new(key, ('N80-MUSIC-CONSUME-RESPONSE-1\n' + nonce + '\n' + sha(raw)).encode(), hashlib.sha256).hexdigest()
+            authenticated = bool(signature) and hmac.compare_digest(signature, expected) and body.get('nonce') == nonce
+            allowed = {'authentication_required','invalid_request','music_consumer_disabled','observer_disabled','music_consumer_unavailable',
+                       'music_availability_not_verified','unsafe_private_store','source_not_ready','superseded_job','lease_active',
+                       'terminal','retry_exhausted','id_conflict','stale_lease_generation','lease_expired','ack_readback_failed'}
+            if body.get('error') in allowed: code = body['error']
+            if authenticated:
+                candidate = body.get('diagnostic', {})
+                if candidate.get('phase') in MUSIC_PHASES: detail['phase'] = candidate['phase']
+                if candidate.get('reason') in MUSIC_REASONS: detail['reason'] = candidate['reason']
+                if candidate.get('exceptionClass') in {'PDOException','RuntimeException','TypeError','Error','JsonException','other'}: detail['exceptionClass'] = candidate['exceptionClass']
+                if type(candidate.get('httpStatus')) is int and 0 <= candidate['httpStatus'] <= 599: detail['httpStatus'] = candidate['httpStatus']
+                import re
+                if isinstance(candidate.get('sqlState'), str) and re.fullmatch('[A-Z0-9]{5}', candidate['sqlState']): detail['sqlState'] = candidate['sqlState']
+    except (ValueError, UnicodeError, AttributeError):
+        pass
+    return RuntimeError('music_consumer_http_error:' + json.dumps({'status': int(error.code), 'error': code,
+                        'authenticated': authenticated, **detail}, separators=(',', ':')))
 
 
 def private_read(sftp, path, maximum):
@@ -80,6 +116,8 @@ def request_music_consumer(key, observed):
             signature = response.headers.get('X-N80-Signature', '')
             content_type = response.headers.get('Content-Type', '')
             status = response.status
+    except urllib.error.HTTPError as error:
+        raise music_http_error(error, key, nonce) from None
     except (OSError, TimeoutError):
         raise RuntimeError('music_consumer_transport_failed') from None
     if status != 200 or len(body) > 65536 or 'application/json' not in content_type:
@@ -111,6 +149,47 @@ def request_music_consumer(key, observed):
     return result
 
 
+def request_music_diagnostic(key, observed):
+    if (type(observed.get('jobId')) is not int or observed['jobId'] < 1
+            or observed.get('effect') != 'catalog_observation_only' or observed.get('ackEligible') is not False
+            or not isinstance(observed.get('eventId'), str) or observed.get('correlationId') != observed['eventId']):
+        raise RuntimeError('untrusted_observed_music_job')
+    raw = compact({'action': 'diagnose_availability', 'jobId': observed['jobId']})
+    timestamp, nonce = str(int(time.time())), secrets.token_hex(16)
+    signature = hmac.new(key, ('N80-MUSIC-CONSUME-1\n' + sha(raw) + '\n' + timestamp + '\n' + nonce).encode(), hashlib.sha256).hexdigest()
+    req = urllib.request.Request(MUSIC_URL, data=raw, headers={'Content-Type': 'application/json',
+        'X-N80-Timestamp': timestamp, 'X-N80-Nonce': nonce, 'X-N80-Signature': signature}, method='POST')
+    try:
+        with urllib.request.build_opener(NoRedirect()).open(req, timeout=125) as response:
+            body = response.read(65537); actual = response.headers.get('X-N80-Signature', '')
+            content_type = response.headers.get('Content-Type', ''); status = response.status
+    except urllib.error.HTTPError as error:
+        raise music_http_error(error, key, nonce) from None
+    except (OSError, TimeoutError):
+        raise RuntimeError('music_diagnostic_transport_failed') from None
+    expected = hmac.new(key, ('N80-MUSIC-CONSUME-RESPONSE-1\n' + nonce + '\n' + sha(body)).encode(), hashlib.sha256).hexdigest()
+    if status != 200 or len(body) > 65536 or 'application/json' not in content_type or not hmac.compare_digest(actual, expected):
+        raise RuntimeError('music_diagnostic_response_authentication_failed')
+    result = json.loads(body)
+    if result.get('ok') is not True or result.get('nonce') != nonce: raise RuntimeError('music_diagnostic_binding_failed')
+    out = result.get('result', {})
+    if (out.get('ok') is not True or out.get('effect') != 'music_availability_diagnostic_only'
+            or type(out.get('jobId')) is not int or out['jobId'] != observed['jobId']
+            or type(out.get('available')) is not bool or type(out.get('urlFopenEnabled')) is not bool
+            or out.get('reason') not in MUSIC_REASONS or out.get('phase') not in MUSIC_PHASES
+            or out['available'] != (out['reason'] == 'verified')
+            or type(out.get('httpStatus')) is not int or not 0 <= out['httpStatus'] <= 599
+            or any(out.get(k) is not False for k in ('businessAck','automaticDispatch','queueMutation'))
+            or type(out.get('databaseWrites')) is not int or out['databaseWrites'] != 0):
+        raise RuntimeError('music_diagnostic_scope_failed')
+    safe = {k: out[k] for k in ('ok','effect','jobId','available','urlFopenEnabled','reason','phase','httpStatus',
+                                'businessAck','automaticDispatch','queueMutation','databaseWrites')}
+    if out.get('exceptionClass') in {'PDOException','RuntimeException','TypeError','Error','other'}: safe['exceptionClass'] = out['exceptionClass']
+    import re
+    if isinstance(out.get('sqlState'), str) and re.fullmatch('[A-Z0-9]{5}', out['sqlState']): safe['sqlState'] = out['sqlState']
+    return safe
+
+
 def music_consumer_readback(sftp, result, observed):
     receipt = result['receipt']
     event_record = json.loads(private_read(sftp, MUSIC_BASE + '/events/' + sha(observed['eventId'].encode()) + '.json', 65536))
@@ -131,6 +210,13 @@ def music_consumer_readback(sftp, result, observed):
 
 
 def run_music_consumer(sftp, key, observation, policy):
+    if os.getenv('N80_MUSIC_CONSUMER_DIAGNOSE_ONLY') == '1':
+        rows = observation.get('receipts', [])
+        if not isinstance(rows, list) or not 0 < len(rows) <= 25: raise RuntimeError('music_consumer_sample_invalid')
+        diagnostic = request_music_diagnostic(key, rows[0])
+        return {'enabled': False, 'status': 'diagnostic_only', 'acknowledged': 0,
+                'businessAck': False, 'queueMutation': False, 'automaticDispatch': False,
+                'productionDatabaseWrites': 0, 'diagnostics': [diagnostic]}
     if policy.get('enabled') is not True:
         return {'enabled': False, 'status': 'disabled', 'reason': policy['reason'], 'acknowledged': 0}
     # Recheck the fixed policy after observation, before any consumer call.
