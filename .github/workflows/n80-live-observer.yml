@@ -1,0 +1,59 @@
+name: N80 Live Production Observer
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/noa-app/engine/live-observer.php'
+      - 'deploy/noa-app/engine/observe.php'
+      - 'scripts/n80_live_observer.py'
+      - 'tests/engine/live_observer_test.php'
+      - 'tests/engine/test_live_observer.py'
+      - '.github/workflows/n80-live-observer.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '7,17,27,37,47,57 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: noa-production-sftp
+  cancel-in-progress: false
+jobs:
+  observe:
+    if: vars.N80_OBSERVER_ENABLED != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_sqlite
+      - name: Validate finished runtime before production access
+        run: |
+          set -eu
+          for file in deploy/noa-app/engine/*.php; do php -l "$file"; done
+          for test in tests/engine/*_test.php; do php "$test"; done
+          python -m py_compile scripts/n80_live_observer.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tests/engine -p 'test_live_observer.py' -v
+      - run: python -m pip install 'paramiko>=3,<5'
+      - name: Install only missing finished files and observe actual ready jobs
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/n80_live_observer.py
+      - name: Publish temporary observation receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: n80-live-observer-${{ github.run_id }}
+          path: ${{ runner.temp }}/n80-live-observer-result.json
+          retention-days: 1
+          if-no-files-found: ignore

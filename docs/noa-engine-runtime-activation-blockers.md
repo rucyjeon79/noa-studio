@@ -16,6 +16,10 @@ Updated: 2026-10-24. This supersedes the original eight-library assessment.
 
 The production audit treats only `bridge-flow.php` and `performance.php` as optional isolated diagnostics. An absent diagnostic is reported; a changed deployed diagnostic fails. Every other discovered engine library and JUKEBOX CLI is required. Hash equality proves deployed source integrity, not runtime execution or service uptime. Reports explicitly retain `runtimeExecutionVerified=false` and `operationalReady=false`.
 
+## First production observation runtime
+
+The bounded authenticated production observer is documented in `n80-live-observer.md`. It invokes actual ready-event and MUSIC observation contracts using a READ ONLY transaction. Its activation does not enable business dispatch or business ACKs.
+
 ## Still required before autonomous execution
 
 1. Derive producer identity from an authenticated server process. A caller-supplied context flag alone is not authentication.
