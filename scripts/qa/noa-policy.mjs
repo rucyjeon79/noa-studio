@@ -24,6 +24,7 @@ for(const[name,file]of definitions){
 fixtures.set('/noa-policy-dock-fixture','<!doctype html><html lang="ko"><head><meta name="viewport" content="width=device-width,initial-scale=1">'+common+'<link rel="stylesheet" href="/noa-app/jukebox/upload.css">'+policy+shared+'</head><body class="noa-page noa-sound-page noa-processing-dock"><main><h1>표시 전용 검증</h1><div style="min-height:900px"></div><button id="last-action">마지막 조작</button></main><section id="jukebox-transfer-dock"><div class="jukebox-transfer-head"><strong>업로드 진행 상태</strong><button type="button" id="details-toggle" onclick="document.getElementById(\'jukebox-transfer-details\').hidden=!document.getElementById(\'jukebox-transfer-details\').hidden">자세히</button></div><div id="jukebox-transfer-details" hidden><p>완료된 파일만 게시합니다.</p><p>현재 작업과 대기 목록을 보존합니다.</p></div></section></body></html>');
 const browser=await chromium.launch({headless:true,executablePath:process.env.NOAC_CHROME||'/usr/bin/google-chrome',args:['--no-sandbox']});
 const report={phase,rows:[],runtimeWrites:0,privateViews:'in-memory source fixtures; not authenticated production',errors:[]};
+let activePage;
 try{
  for(const theme of ['noa-studio','noa-ivory'])for(const[w,h]of [[320,740],[390,844],[760,1024],[1024,768],[1440,900],[844,390]]){
   const context=await browser.newContext({viewport:{width:w,height:h},reducedMotion:'reduce'});
@@ -40,7 +41,7 @@ try{
    }
    return route.continue();
   });
-  const page=await context.newPage();page.on('pageerror',e=>report.errors.push(String(e)));
+  const page=await context.newPage();activePage=page;page.on('pageerror',e=>report.errors.push(String(e)));
   for(const pathname of ['/bbs/login.php','/noa-settings.php',...definitions.map(([name])=>'/noa-app/'+name+'/'),'/noa-policy-dock-fixture']){
    await page.goto(base+pathname,{waitUntil:'networkidle'});
    await page.waitForFunction(theme=>document.documentElement.dataset.noaTheme===theme,theme);
@@ -83,4 +84,5 @@ try{
  }
  assert.deepEqual(report.errors,[]);
  console.log('NOA_COMMON_POLICY_VISUAL_OK',JSON.stringify({phase,cases:report.rows.length,errors:report.errors}));
+}catch(e){report.errors.push(String(e));if(activePage&&!activePage.isClosed())await activePage.screenshot({path:path.join(out,'failure.png'),fullPage:false}).catch(()=>{});throw e;
 }finally{writeFileSync(path.join(out,'result.json'),JSON.stringify(report,null,2));await browser.close();}

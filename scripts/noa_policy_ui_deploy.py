@@ -22,7 +22,7 @@ PROTECTED = ['index.php', 'common.php', 'config.php', 'data/dbconfig.php',
              'bbs/login.php', 'bbs/login_check.php', 'noa-app/jukebox/core.php',
              'noa-app/jukebox/upload-core.php', 'noa-app/jukebox/upload.js',
              'noa-app/jukebox/upload-transport.js', 'noa-app/jukebox/service.php',
-             'noa-app/database/core.php', 'noa-app/taxonomy/core.php']
+             'noa-app/database/core.php', 'noa-app/taxonomy/index.php']
 STATE = Path(os.environ.get('RUNNER_TEMP', '/tmp')) / 'noa-policy-release.json'
 
 
