@@ -16,7 +16,7 @@ async function routes(context,held){
   if(phase==='candidate'&&req.isNavigationRequest()&&['/noa-music.php','/noa-youtube.php'].includes(u.pathname)){
    const response=await route.fetch({maxRetries:2});let body=await response.text();
    // Reuse public records and overlay only the modified HTML/inline regions.
-   const music=u.pathname.includes('music'),id=music?'songs':'yt-videos',host=music?'music-browse':'youtube-browse';
+   const music=u.pathname.includes('music'),id=music?'songs':'yt-videos',host=music?'music-browse':'youtube-browse';if(music)body=body.replace('id="my-playlists" aria-label','id="my-playlists" hidden aria-label');
    body=body.replace(new RegExp('id="'+id+'"(?! hidden)'), 'id="'+id+'" hidden');
    body=body.replace(":{visible:rows,queue:rows,stage:'songs'}",":{visible:[],queue:rows,stage:'groups'}");body=body.replace('||buttons.find(b=>b.dataset.key===saved&&!b.hidden);',"||(new URLSearchParams(location.search).get('view')==='all'?buttons.find(b=>b.dataset.key===saved&&!b.hidden):null);");
    const local=await import('node:fs').then(fs=>fs.readFileSync('deploy'+u.pathname,'utf8'));
@@ -29,7 +29,7 @@ async function routes(context,held){
  });
  await context.addInitScript(()=>{
   window.__initialFrames=[];
-  function sample(){const list=document.querySelector('#songs,#yt-videos'),host=document.querySelector('[data-noa-browse-boot]');if(list){const style=getComputedStyle(list);window.__initialFrames.push({visible:!list.hidden&&style.display!=='none'&&style.visibility!=='hidden',ready:host?.dataset.browseReady==='true'});}if(!host||host.dataset.browseReady!=='true')requestAnimationFrame(sample);}
+  function sample(){const list=document.querySelector('#songs,#yt-videos'),host=document.querySelector('[data-noa-browse-boot]');if(list){const personal=document.querySelector('#my-playlists'),personalVisible=personal&&!personal.hidden&&getComputedStyle(personal).display!=='none';const style=getComputedStyle(list);window.__initialFrames.push({personalVisible,visible:!list.hidden&&style.display!=='none'&&style.visibility!=='hidden',ready:host?.dataset.browseReady==='true'});}if(!host||host.dataset.browseReady!=='true')requestAnimationFrame(sample);}
   requestAnimationFrame(sample);
  });
 }
@@ -47,9 +47,9 @@ try{
    release();held.current=null;
    await page.waitForFunction(()=>document.querySelector('[data-noa-browse-boot]')?.dataset.browseReady==='true');
    assert.equal(await page.locator('[data-browse-level="1"] .noa-browse-card').count(),4);
-   assert((await page.evaluate(()=>window.__initialFrames)).every(f=>!f.visible),'full list visible during initial frames');
+   assert((await page.evaluate(()=>window.__initialFrames)).every(f=>!f.visible&&!f.personalVisible),'full list visible during initial frames');
    for(const mode of ['ordinary','cache-bypass']){
-    const session=await context.newCDPSession(page);await session.send('Network.setCacheDisabled',{cacheDisabled:mode==='cache-bypass'});await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.querySelector('[data-noa-browse-boot]')?.dataset.browseReady==='true');assert((await page.evaluate(()=>window.__initialFrames)).every(f=>!f.visible));await session.detach();
+    const session=await context.newCDPSession(page);await session.send('Network.setCacheDisabled',{cacheDisabled:mode==='cache-bypass'});await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.querySelector('[data-noa-browse-boot]')?.dataset.browseReady==='true');assert((await page.evaluate(()=>window.__initialFrames)).every(f=>!f.visible&&!f.personalVisible));await session.detach();
    }
    await page.locator('[data-browse-level="1"] .noa-browse-card').first().click();await page.locator('[data-browse-level="2"] .noa-browse-card').first().click();const acts=page.locator('.noa-inline-act>.noa-browse-card');await acts.first().click();assert.equal(await acts.first().getAttribute('aria-expanded'),'true');await acts.first().click();assert.equal(await acts.first().getAttribute('aria-expanded'),'false');await acts.first().click();
    const eps=(await page.locator('[data-browse-level="4"] .noa-inline-song').allTextContents()).map(t=>Number(t.match(/^EP[.]([0-9]+)/)?.[1]||0)).filter(Boolean);assert.deepEqual(eps,[...eps].sort((a,b)=>a-b));
@@ -63,7 +63,7 @@ try{
    report.cases.push({width,path,firstFramesHidden:true,delayedScript:true,reloads:2,actCollapse:true,epAscending:true,selection:true,audioPlayback:path.includes('music'),videoEmbed:path.includes('youtube'),overflow:false});
   }
   // Exercise the actual fixed bottom navigation, not only direct navigation.
-  const musicLink=page.locator('.noa-mobile-nav a[href*="noa-music.php"]');assert.equal(await musicLink.count(),1);{await musicLink.first().click();await page.waitForFunction(()=>document.querySelector('#music-browse')?.dataset.browseReady==='true');assert((await page.evaluate(()=>window.__initialFrames)).every(f=>!f.visible));report.cases.push({width,bottomNavigation:true});}
+  const musicLink=page.locator('.noa-mobile-nav a[href*="noa-music.php"]');assert.equal(await musicLink.count(),1);{await musicLink.first().click();await page.waitForFunction(()=>document.querySelector('#music-browse')?.dataset.browseReady==='true');assert((await page.evaluate(()=>window.__initialFrames)).every(f=>!f.visible&&!f.personalVisible));report.cases.push({width,bottomNavigation:true});}
   await context.close();
  }
  for(const path of ['/noa-music.php','/noa-youtube.php']){
