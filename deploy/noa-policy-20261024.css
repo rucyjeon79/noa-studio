@@ -1,6 +1,7 @@
 /* Common constitution corrections. Palette and control tokens remain shared. */
 .noa-sidebar-bottom a{min-block-size:44px}
 .noa-g5-top>[data-noa-login],.noa-footer a{min-inline-size:44px}
+@media(max-width:760px){.noa-footer{align-items:center;gap:4px 16px}.noa-footer>span{flex-basis:100%}}
 
 /* One login surface; preserve the native form, labels and authentication handlers. */
 html.noa-g5 #mb_login{background:var(--noa-surface);color:var(--noa-text)}

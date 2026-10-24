@@ -61,6 +61,7 @@ try{
     assert(measured.login);assert.equal(measured.login.inner.border,'0px');assert.equal(measured.login.inner.shadow,'none');
     assert(measured.login.find.h>=44&&measured.login.auto.h>=44,'Login touch targets below 44px');
     for(const r of measured.smallLinks)assert(r.h>=44,'Sidebar touch target below 44px');
+    if(w<=760){const legal=await page.locator('.noa-footer a').evaluateAll(nodes=>nodes.map(n=>n.getBoundingClientRect().top));assert(Math.max(...legal)-Math.min(...legal)<1,'Mobile legal actions split across rows');}
    }
    if(definitions.some(([name])=>pathname==='/noa-app/'+name+'/')){
     assert.equal(measured.themeOnly,'true');assert.equal(measured.sidebars,0,'Workspace shell duplicated');
