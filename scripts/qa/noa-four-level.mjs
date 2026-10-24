@@ -7,7 +7,7 @@ const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/goog
 try{
  for(const theme of ['noa-studio','noa-ivory'])for(const width of [320,360,390,430,768,1024,1440]){
   const context=await browser.newContext({viewport:{width,height:900},reducedMotion:'reduce'});
-  await context.addInitScript(theme=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',design:'ios',radius:'soft'})),theme);
+  await context.addInitScript(({theme,origin})=>{if(location.origin===origin)localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',design:'ios',radius:'soft'}));},{theme,origin});
   await context.route('**/*',route=>{const request=route.request(),url=new URL(request.url());
    if(!['GET','HEAD'].includes(request.method())){report.productionWrites++;return route.abort();}
    if(url.hostname==='www.youtube.com'||url.hostname==='www.youtube-nocookie.com')return route.abort();
