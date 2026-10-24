@@ -6,6 +6,8 @@ on:
       - 'deploy/noa-music.php'
       - 'deploy/noa-youtube.php'
       - '.github/workflows/noa-initial-catalog-flash.yml'
+      - 'scripts/noa_browse_music_page_deploy.py'
+      - 'scripts/noa_browse_youtube_page_deploy.py'
   workflow_dispatch:
 permissions:
   contents: read
