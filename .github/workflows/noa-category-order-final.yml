@@ -27,8 +27,13 @@ jobs:
           python -m pip install 'paramiko>=3,<5'
           npm install --prefix "$RUNNER_TEMP/noa-category" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-category-final.mjs "$RUNNER_TEMP/noa-category/check.mjs"
-      - name: Ensure actual audio verification tools
-        run: command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
+      - name: Ensure actual audio tools and readable Korean browser evidence
+        run: |
+          command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
+          if [ -z "$(fc-list :lang=ko)" ]; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq fonts-noto-cjk
+          fi
       - name: Validate reviewed runtime files, recovery and source contracts
         run: |
           php -l deploy/noa-music.php
@@ -130,6 +135,10 @@ jobs:
           merge-multiple: true
       - name: Prepare before runtime changes
         run: |
+          if [ -z "$(fc-list :lang=ko)" ]; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq fonts-noto-cjk
+          fi
           python -m pip install 'paramiko>=3,<5'
           npm install --prefix "$RUNNER_TEMP/noa-category" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-category-final.mjs "$RUNNER_TEMP/noa-category/check.mjs"
