@@ -7,9 +7,14 @@ import stat
 
 
 def publication_preflight(state):
-    if not isinstance(state, dict) or not isinstance(state.get('jobs', {}), dict):
+    if not isinstance(state, dict):
         raise RuntimeError('invalid_ai_runtime_state')
     jobs = state.get('jobs', {})
+    # PHP json_encode emits [] for its empty associative jobs store.
+    if jobs == []:
+        jobs = {}
+    if not isinstance(jobs, dict):
+        raise RuntimeError('invalid_ai_runtime_state')
     pending = sum(str(job.get('state', '')).startswith('queued_') for job in jobs.values())
     active_states = {'analyzing', 'rendering', 'uploading', 'collecting_metrics',
                      'creating_text', 'mastering_audio'}
