@@ -38,13 +38,13 @@ try{
  const requests=[...new Set(exposed.map(a=>{const u=new URL(a.href,origin);u.hash='';return u.href;}))];
  let index=0;const results=[];
  await Promise.all(Array.from({length:2},async()=>{while(index<requests.length){const url=requests[index++];try{
-  const r=await context.request.get(url,{timeout:90000}),body=await r.text(),final=new URL(r.url()),expected=new URL(url);
+  const r=await context.request.get(url,{timeout:90000,maxRetries:1}),body=await r.text(),final=new URL(r.url()),expected=new URL(url);
   const native=/\/bbs\/(?:board|content)\.php$/.test(expected.pathname);
   const queryKey=expected.pathname.endsWith('/board.php')?'bo_table':'co_id';
   const nativeValid=!native||(final.pathname===expected.pathname&&final.searchParams.get(queryKey)===expected.searchParams.get(queryKey)&&nativeErrors(body).length===0);
   const ok=r.status()===200&&final.origin===origin&&nativeValid;
   results.push({url,status:r.status(),finalUrl:r.url(),ok,...(native?{nativeErrors:nativeErrors(body)}:{})});
- }catch(e){results.push({url,ok:false,error:e.message});}}}));
+ }catch(e){results.push({url,ok:false,error:e.message.split('\n')[0]});}}}));
  results.sort((a,b)=>a.url.localeCompare(b.url));
  check('all_exposed_destinations_http_and_native_content_valid',results.every(r=>r.ok),{checked:results.length,results});
  check('guest_runtime_clean',errors.length===0,{errors});
@@ -75,10 +75,10 @@ try{
    const reachable=await last.evaluate(a=>{const b=a.getBoundingClientRect(),x=Math.max(0,Math.min(innerWidth-1,b.x+b.width/2)),y=Math.max(0,Math.min(innerHeight-1,b.y+b.height/2));return b.bottom>0&&b.top<innerHeight&&a.contains(document.elementFromPoint(x,y));});
    check('approved_theme_layout_'+theme+'_'+width+'x'+height,r?.status()===200&&geometry.overflow<=1&&!geometry.small.length&&!geometry.rowMismatch.length&&reachable&&runtimeErrors.length===0,{...geometry,lastCardReachable:reachable,errors:runtimeErrors});
    await p.evaluate(()=>scrollTo(0,0));const path=resolve(dirname(output),'sitemap-'+theme+'-'+width+'x'+height+'.png');await p.screenshot({path,fullPage:false});screenshots.push(path);
-  }catch(e){check('approved_theme_layout_'+theme+'_'+width+'x'+height,false,{error:e.message});}
+  }catch(e){check('approved_theme_layout_'+theme+'_'+width+'x'+height,false,{error:e.message.split('\n')[0]});}
   finally{await c.close();}
  }
-}catch(e){check('suite_failure',false,{error:e.message});}
+}catch(e){check('suite_failure',false,{error:e.message.split('\n')[0]});}
 finally{
  if(browser)await browser.close();
  const report={ok:cases.length>0&&cases.every(c=>c.ok),origin,createdAt:new Date().toISOString(),cases,exposedLinks:links,screenshots,limitations:['Guest-only browser verification; member and superadmin route filtering requires PHP fixture tests.','No form submission, upload, playback, logout or production data mutation executed.']};
