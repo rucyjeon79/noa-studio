@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);require_once __DIR__.'/common.php';require_once __DIR__.'/noa-bridge/storage.php';require_once __DIR__.'/noa-bridge/youtube-store.php';require_once __DIR__.'/noa-bridge/sound-core.php';require_once __DIR__.'/noa-bridge/world-mv.php';
 $admin=!empty($is_member)&&($is_admin??'')==='super';header('Cache-Control: private, no-store');header('X-Content-Type-Options: nosniff');$videos=[];$playlists=[];$run=null;$error=false;$songIndex=[];
-if(isset($_GET['world'])||($_GET['playlist']??null)===NWM_PLAYLIST){header('Location: /noa-world.php',true,302);exit;}
+if(isset($_GET['world'])||in_array($_GET['playlist']??null,[NWM_PLAYLIST,NWM_ACT_PLAYLIST],true)){header('Location: /noa-world.php',true,302);exit;}
 try{$db=noa_bridge_pdo();$run=ny_latest($db);if($run){$songIndex=ny_songs($db,ny_batch($db));$videos=ny_videos($db,$run,true,$songIndex);$q=$db->prepare('SELECT playlist_id,payload FROM noa_youtube_playlists WHERE run_id=?');$q->execute([$run['run_id']]);foreach($q as $p){$value=json_decode($p['payload'],true);if(($value['status']['privacyStatus']??'')==='public')$playlists[$p['playlist_id']]=$value;}}else{
  // Until owner authorization, show existing public music URLs without claiming channel collection.
  $batch=ny_batch($db);foreach(ny_songs($db,$batch) as $s){if(!$s['public_verified'])continue;$id=ny_video_id((string)($s['fields']['youtubeUrl']??''));if(!$id)continue;$videos[$id]=['id'=>$id,'snippet'=>['title'=>$s['fields']['title']??'NOA Music'],'status'=>['privacyStatus'=>'public','embeddable'=>true],'classification'=>'music','legacy'=>true];}
@@ -14,7 +14,7 @@ if(isset($_GET['playlist'])){
 }
 
 // Keep source rows and administrator decisions intact; filter only this public read model.
-if($run){try{$videos=array_diff_key($videos,ny_official_members($db,$run));unset($playlists[NWM_PLAYLIST]);}
+if($run){try{$actCollection=nwm_act_load($db,$run,$videos);$videos=array_diff_key($videos,ny_official_members($db,$run),array_fill_keys(array_column($actCollection['videos'],'videoId'),true));unset($playlists[NWM_PLAYLIST],$playlists[NWM_ACT_PLAYLIST]);}
  catch(Throwable $e){$videos=[];$error=true;error_log('[noa-youtube-official-membership] '.get_class($e));}}
 $browseRows=[];
 foreach($videos as $id=>$v){if(($v['status']['privacyStatus']??'')!=='public'||empty($v['status']['embeddable'])||isset($_GET['world'])&&($v['classification']??'')!=='official_mv')continue;$song=$songIndex[$v['match']['songId']??'']??null;$browseRows[]=['key'=>$id,'orderKey'=>$v['match']['songId']??'','title'=>$v['snippet']['title']??'NOA Music','genre'=>$song['genre_id']??'unclassified','ep'=>$song['ep']??'','act'=>'','kind'=>'video','video'=>$id];}
