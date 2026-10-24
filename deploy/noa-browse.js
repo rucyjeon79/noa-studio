@@ -37,3 +37,4 @@ function mount({host,rows,onChange,search=null,genre=null,type=null,kind='곡'})
 }
 window.NoaBrowse={groups,names,genreArt,groupFor,actFor,slicePage,mount};
 })();
+
