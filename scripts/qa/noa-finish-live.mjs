@@ -42,6 +42,7 @@ try{
   await p.locator('#pause-play').click();await p.waitForFunction(()=>{const a=document.getElementById('sound-player');return !a.paused&&a.currentTime>.3;},{timeout:45000});
   const initial=await p.evaluate(()=>({src:document.getElementById('sound-player').currentSrc,time:document.getElementById('sound-player').currentTime,title:navigator.mediaSession?.metadata?.title,state:navigator.mediaSession?.playbackState}));
   await p.locator('#music-lyrics summary').click();await p.locator('#music-description summary').click();
+  await p.waitForFunction(()=>{const a=document.getElementById('sound-player');for(let i=0;i<a.buffered.length;i++)if(a.buffered.start(i)<=a.currentTime&&a.buffered.end(i)>a.currentTime+4)return true;return false;},null,{timeout:45000});
   const other=await c.newPage();await other.goto('about:blank');await other.bringToFront();await new Promise(r=>setTimeout(r,2000));await p.bringToFront();
   const final=await p.evaluate(()=>({src:document.getElementById('sound-player').currentSrc,time:document.getElementById('sound-player').currentTime,paused:document.getElementById('sound-player').paused,state:navigator.mediaSession?.playbackState}));
   check('browser_background_audio_continues_'+mobile,!final.paused&&final.src===initial.src&&final.time>initial.time+1,{elapsed:final.time-initial.time,physicalScreenOffTested:false});
