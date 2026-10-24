@@ -21,7 +21,7 @@ async function routes(context,held){
    body=body.replace(":{visible:rows,queue:rows,stage:'songs'}",":{visible:[],queue:rows,stage:'groups'}");body=body.replace('||buttons.find(b=>b.dataset.key===saved&&!b.hidden);',"||(new URLSearchParams(location.search).get('view')==='all'?buttons.find(b=>b.dataset.key===saved&&!b.hidden):null);");
    const local=await import('node:fs').then(fs=>fs.readFileSync('deploy'+u.pathname,'utf8'));
    const boot=local.match(/<script data-noa-browse-watchdog>\(function\(\)\{window[.]setTimeout[\s\S]*?<\/script>/)?.[0];assert(boot);
-   body=body.replace('</head>',boot+'</head>').replace('id="'+host+'" class="noa-browse"','id="'+host+'" class="noa-browse" data-noa-browse-boot');
+   body=body.replace(/<script data-noa-browse-watchdog>[\s\S]*?<\/script>/g,'').replace('</head>',boot+'</head>').replace('id="'+host+'" class="noa-browse"','id="'+host+'" class="noa-browse" data-noa-browse-boot');body=body.replace(/data-noa-browse-boot data-noa-browse-boot/g,'data-noa-browse-boot');
    body=body.replace(new RegExp('(id="'+host+'"[^>]*>)(</section>)'),'$1<p role="status">카테고리를 불러오는 중입니다.</p>$2');
    return route.fulfill({response,body});
   }
