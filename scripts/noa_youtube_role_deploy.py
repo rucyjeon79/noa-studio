@@ -18,7 +18,9 @@ import paramiko
 ROOT = '/hosting/noastudio/html'
 FILES = {
     'noa-bridge/youtube-store.php': 'bridge/youtube-store.php',
+    'noa-app/p0-media.css': 'deploy/noa-app/p0-media.css',
     'noa-youtube.php': 'deploy/noa-youtube.php',
+    'noa-music.php': 'deploy/noa-music.php',
 }
 PROTECTED = ['index.php', 'common.php', 'config.php', 'data/dbconfig.php',
              'bbs/login.php', 'bbs/login_check.php', 'noa-app/jukebox/core.php',
