@@ -1,4 +1,4 @@
-"""Deploy the approved shared UI allowlist; preserve operating data and sources; no host staging."""
+"""Deploy the approved shared UI allowlist; preserve operating data and sources; atomic source replacement."""
 import base64
 import hashlib
 import json
@@ -16,13 +16,13 @@ import urllib.parse
 import paramiko
 
 ROOT = '/hosting/noastudio/html'
-FILES = {'noa-ui.css':'deploy/noa-ui.css','noa-browse.js':'deploy/noa-browse.js','noa-music.php':'deploy/noa-music.php','noa-youtube.php':'deploy/noa-youtube.php','extend/noa.design.php':'deploy/noa-design.extend.php'}
+FILES = {p:'deploy/'+p for p in ['noa-browse.js','noa-music.php','noa-youtube.php']}
 PROTECTED = ['index.php', 'common.php', 'config.php', 'data/dbconfig.php',
              'bbs/login.php', 'bbs/login_check.php', 'noa-app/jukebox/core.php',
              'noa-app/jukebox/upload-core.php', 'noa-app/jukebox/upload.js',
              'noa-app/jukebox/upload-transport.js', 'noa-app/jukebox/service.php',
              'noa-app/database/core.php', 'noa-app/taxonomy/index.php',
-             'noa-app/home.php','noa-bridge/world-mv.php','noa-bridge/youtube-store.php','noa-ui.js','noa-design.json','noa-app/p0-media.css','noa-app/p0-player.js','noa-policy-20261024.css']
+             'noa-app/home.php','noa-bridge/world-mv.php','noa-bridge/youtube-store.php','noa-ui.js','noa-ui.css','extend/noa.design.php','noa-design.json','noa-app/p0-media.css','noa-app/p0-player.js','noa-policy-20261024.css']
 STATE = Path(os.environ.get('RUNNER_TEMP', '/tmp')) / 'noa-approved-browse-release.json'
 
 
@@ -99,17 +99,37 @@ def main():
 
         def write(p, data, exclusive=False):
             full = ROOT + '/' + p
-            mode = 0o644 if exclusive else stat.S_IMODE(sftp.lstat(full).st_mode)
-            with sftp.open(full, 'wx' if exclusive else 'wb') as f:
-                f.write(data)
-                f.flush()
-            sftp.chmod(full, mode)
-            if read(p) != data:
-                raise RuntimeError('source_readback_mismatch: ' + p)
+            before = read(p)
+            if exclusive and before is not None:
+                raise RuntimeError('exclusive_target_exists: ' + p)
+            mode = 0o644 if before is None else stat.S_IMODE(sftp.lstat(full).st_mode)
+            import secrets
+            temporary = full + '.four-level-' + secrets.token_hex(8) + '.tmp'
+            created = False
+            try:
+                with sftp.open(temporary, 'wx') as f:
+                    created = True
+                    f.write(data)
+                    f.flush()
+                sftp.chmod(temporary, mode)
+                with sftp.open(temporary, 'rb') as f:
+                    if f.read() != data:
+                        raise RuntimeError('temporary_readback_mismatch: ' + p)
+                if read(p) != before:
+                    raise RuntimeError('concurrent_change_preserved: ' + p)
+                sftp.posix_rename(temporary, full)
+                created = False
+                if read(p) != data:
+                    raise RuntimeError('source_readback_mismatch: ' + p)
+            finally:
+                if created:
+                    sftp.remove(temporary)
 
         def restore(allow_partial=False):
             for p in reversed(state['changed']):
                 current = read(p)
+                if current == old.get(p):
+                    continue
                 owned = current == new[p] or (allow_partial and current is not None and new[p].startswith(current))
                 if not owned:
                     raise RuntimeError('rollback_concurrent_source_preserved: ' + p)
