@@ -7,6 +7,7 @@ on:
       - 'tests/engine/**'
       - 'scripts/n80_guardian_remote_audit.py'
       - 'scripts/n80_live_observer.py'
+      - 'scripts/n80_app_integration.py'
       - '.github/workflows/noa-engine-contract-gates.yml'
   push:
     branches: [main]
@@ -15,6 +16,7 @@ on:
       - 'tests/engine/**'
       - 'scripts/n80_guardian_remote_audit.py'
       - 'scripts/n80_live_observer.py'
+      - 'scripts/n80_app_integration.py'
       - '.github/workflows/noa-engine-contract-gates.yml'
   workflow_dispatch:
   schedule:
@@ -64,3 +66,5 @@ jobs:
         run: python -m unittest discover -s tests/engine -p 'test_remote_audit.py' -v
       - name: Verify observer never stages or overwrites production files
         run: python -m unittest discover -s tests/engine -p 'test_live_observer.py' -v
+      - name: Verify Drive proof and concurrent-edit protection
+        run: python -m unittest discover -s tests/engine -p 'test_app_integration.py' -v

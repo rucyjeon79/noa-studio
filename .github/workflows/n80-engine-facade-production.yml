@@ -31,6 +31,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
+    # Integrated data repairs own installation and forbid legacy host staging.
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[n80-data]')
     runs-on: ubuntu-latest
     environment: production
     steps:
