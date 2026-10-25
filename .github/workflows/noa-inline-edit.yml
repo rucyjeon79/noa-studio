@@ -8,6 +8,7 @@ on:
       - 'deploy/noa-youtube.php'
       - 'deploy/noa-youtube.js'
       - 'deploy/noa-music-detail.php'
+      - 'tests/catalog/inline_edit_projection_test.php'
       - 'bridge/inline-edit.php'
       - 'deploy/noa-inline-edit.php'
       - 'deploy/noa-browse-edit.js'
@@ -42,6 +43,7 @@ jobs:
       - name: Validate metadata reader and existing playback, source and permission contracts
         run: |
           php -l bridge/inline-edit.php
+          php tests/catalog/inline_edit_projection_test.php
           php -l deploy/noa-inline-edit.php
           php -l deploy/noa-music.php
           php -l deploy/noa-youtube.php
