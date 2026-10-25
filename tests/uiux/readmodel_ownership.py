@@ -30,3 +30,21 @@ def verify_youtube_reader_only(root, baseline):
     for name in allowed&set(after):
         if re.search(r'\b(?:INSERT|UPDATE|DELETE|REPLACE|CREATE|ALTER|DROP|TRUNCATE|CALL)\b',after[name],re.I):
             raise AssertionError('Read-model exception contains a mutation: '+name)
+
+
+def verify_shared_catalog_readers_only(root, baseline):
+    """Shared-song approval permits readers only; all upload/processing writers stay exact."""
+    scopes={'bridge/sound-core.php':{'noa_sound_catalog_document'},
+            'deploy/noa-app/jukebox/core.php':{'nj_document','nj_catalog'}}
+    for path,allowed in scopes.items():
+        old=subprocess.check_output(['git','show',baseline+':'+path],cwd=root,text=True)
+        new=(root/path).read_text()
+        functions=lambda source:json.loads(subprocess.check_output(['php','-r',TOKENIZE],input=source,text=True))
+        before,after=functions(old),functions(new)
+        for name,value in before.items():
+            if name not in allowed and after.get(name)!=value:
+                raise AssertionError('Upload/processing function changed: '+name)
+        if set(after)-set(before)-allowed:raise AssertionError('Unexpected catalog function added')
+        for name in allowed&set(after):
+            if re.search(r'\b(?:INSERT|UPDATE|DELETE|REPLACE|CREATE|ALTER|DROP|TRUNCATE|CALL)\b',after[name],re.I):
+                raise AssertionError('Shared catalog reader contains a mutation: '+name)

@@ -50,6 +50,7 @@ jobs:
           php -l deploy/noa-youtube.php
           php -l deploy/noa-app/home.php
           php -l deploy/noa-app/world-view.php
+          python tests/uiux/recovery_contract_test.py
           python tests/youtube/detail_endpoint_test.py
           python tests/sitemap/home_patch_test.py
           node --check deploy/noa-browse.js
