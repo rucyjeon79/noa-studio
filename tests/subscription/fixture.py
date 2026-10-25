@@ -17,6 +17,6 @@ require __DIR__.'/extend/noa.access.php';
 code="require 'tests/subscription/native_fixture.php';"
 for theme in ['noa-studio','noa-ivory']:
  for width in [360,390,430]:
-  name=f'ui_{width}_{theme}';code+=f"ns_q('INSERT INTO g5_member VALUES('+ns_e('{name}')+',3,0)');insert_point('{name}',100,'fixture','fixture','{name}','seed');"
+  name=f'ui_{width}_{theme}';code+=f"ns_q('INSERT INTO g5_member VALUES('.ns_e('{name}').',3,0)');insert_point('{name}',100,'fixture','fixture','{name}','seed');"
 code+="echo 'SUBSCRIPTION_BROWSER_FIXTURE_READY';"
 subprocess.run(['php','-r',code],check=True)
