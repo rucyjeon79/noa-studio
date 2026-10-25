@@ -22,21 +22,22 @@ function youtube_test_function(string $source,string $name):string{
  throw new RuntimeException('missing_runtime_function:'.$name);
 }
 $source=file_get_contents($root.'/deploy/noa-youtube.php');
-foreach(['noa_video_legacy_lyrics','noa_video_detail']as $name)eval(youtube_test_function($source,$name));
+foreach(['noa_video_legacy_lyrics','noa_video_display_lyrics','noa_video_detail']as $name)eval(youtube_test_function($source,$name));
 function row(string $key,string $id,string $lyrics,array $extra=[]):array{return ['doc_key'=>$key,'payload'=>json_encode($extra+['body'=>['youtubeUrl'=>'https://www.youtube.com/watch?v='.$id,'lyricsBlock'=>$lyrics]])];}
 $raw="[Verse]\n원문\n\n[Chorus]\n후렴";$rows=[row('one','AAAAAAAAAAA',$raw),row('two','BBBBBBBBBBB','different'),row('private','CCCCCCCCCCC','private',['visibility'=>'private']),row('dup1','DDDDDDDDDDD','one'),row('dup2','DDDDDDDDDDD','two')];
 $map=noa_video_legacy_lyrics($rows,false);if($map['AAAAAAAAAAA']['one']!==$raw||isset($map['CCCCCCCCCCC'])||count($map['DDDDDDDDDDD'])!==2)throw new RuntimeException('legacy mapping/visibility/original preservation failed');
 $videos=[];foreach(['AAAAAAAAAAA'=>'review','BBBBBBBBBBB'=>'rejected','DDDDDDDDDDD'=>'review','EEEEEEEEEEE'=>'conflict'] as $id=>$status)$videos[$id]=['status'=>['privacyStatus'=>'public','embeddable'=>true],'match'=>['status'=>$status]];
 $mediaDetails=[];foreach($videos as $id=>$video)$mediaDetails[$id]=noa_video_detail($id,$video,[],$map,false);
-if($mediaDetails['AAAAAAAAAAA']['lyrics']!==$raw||$mediaDetails['BBBBBBBBBBB']['lyrics']!==''||$mediaDetails['DDDDDDDDDDD']['lyrics']!==''||$mediaDetails['EEEEEEEEEEE']['lyrics']!=='')throw new RuntimeException('exact ID/rejection/ambiguity mapping failed');
+$clean="원문\n\n후렴";
+if($mediaDetails['AAAAAAAAAAA']['lyrics']!==$clean||$mediaDetails['BBBBBBBBBBB']['lyrics']!==''||$mediaDetails['DDDDDDDDDDD']['lyrics']!==''||$mediaDetails['EEEEEEEEEEE']['lyrics']!=='')throw new RuntimeException('exact ID/rejection/ambiguity mapping failed');
 // Exercise canonical precedence, matched/approved authorization and original bytes.
-$canonical=$raw."\ncanonical";$video=['snippet'=>['description'=>'Exact description'],'status'=>['privacyStatus'=>'public','embeddable'=>true],'match'=>['status'=>'matched','songId'=>'song1']];$songs=['song1'=>['public_verified'=>true,'fields'=>['lyricsBlock'=>$canonical]]];
+$canonical=$raw."\ncanonical";$canonicalClean=$clean."\ncanonical";$video=['snippet'=>['description'=>'Exact description'],'status'=>['privacyStatus'=>'public','embeddable'=>true],'match'=>['status'=>'matched','songId'=>'song1']];$songs=['song1'=>['public_verified'=>true,'fields'=>['lyricsBlock'=>$canonical]]];
 $detail=noa_video_detail('AAAAAAAAAAA',$video,$songs,$map,false);
-if($detail!==['videoId'=>'AAAAAAAAAAA','description'=>'Exact description','lyrics'=>$canonical])throw new RuntimeException('canonical original-text precedence failed');
-$video['match']['status']='approved';if(noa_video_detail('AAAAAAAAAAA',$video,$songs,$map,false)['lyrics']!==$canonical)throw new RuntimeException('approved mapping lost');
+if($detail!==['videoId'=>'AAAAAAAAAAA','description'=>'Exact description','lyrics'=>$canonicalClean])throw new RuntimeException('canonical original-text precedence failed');
+$video['match']['status']='approved';if(noa_video_detail('AAAAAAAAAAA',$video,$songs,$map,false)['lyrics']!==$canonicalClean)throw new RuntimeException('approved mapping lost');
 foreach(['rejected','conflict']as $status){$video['match']['status']=$status;if(noa_video_detail('AAAAAAAAAAA',$video,$songs,$map,false)['lyrics']!=='')throw new RuntimeException('explicit decision overridden');}
 $video['match']['status']='matched';$songs['song1']['public_verified']=false;
-if(noa_video_detail('FFFFFFFFFFF',$video,$songs,[],false)['lyrics']!==''||noa_video_detail('FFFFFFFFFFF',$video,$songs,[],true)['lyrics']!==$canonical)throw new RuntimeException('canonical publication/admin guard failed');
+if(noa_video_detail('FFFFFFFFFFF',$video,$songs,[],false)['lyrics']!==''||noa_video_detail('FFFFFFFFFFF',$video,$songs,[],true)['lyrics']!==$canonicalClean)throw new RuntimeException('canonical publication/admin guard failed');
 $songs['song1']['public_verified']=true;$songs['song1']['fields']['visibility']='private';
 if(noa_video_detail('FFFFFFFFFFF',$video,$songs,[],false)['lyrics']!=='')throw new RuntimeException('private canonical lyrics leaked');
 $video['status']['privacyStatus']='private';if(noa_video_detail('AAAAAAAAAAA',$video,$songs,$map,false)!==null)throw new RuntimeException('private video detail exposed');
