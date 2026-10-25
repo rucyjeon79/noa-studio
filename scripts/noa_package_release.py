@@ -29,17 +29,14 @@ def main():
    before=workstate(key,{'action':'read'});plan=service(key,{'action':'inspect'})
    applied=service(key,{'action':'apply','sourceHash':plan['sourceHash']});after=service(key,{'action':'inspect'})
    if after['changed']!=0:raise RuntimeError('record_consolidation_not_idempotent')
-   manifest=[]
-   for name in sftp.listdir(ROOT+'/packages/records'):
-    if not name.endswith('.json'):continue
-    path=ROOT+'/packages/records/'+name;info=sftp.lstat(path)
-    if not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode)!=0o600:raise RuntimeError('unsafe_record_file')
-    with sftp.open(path,'rb') as f:raw=f.read()
-    v=json.loads(raw)
-    if name!=hashlib.sha256(v['key'].encode()).hexdigest()+'.json' or v['record'].get('packageSchema')!=1:raise RuntimeError('record_file_invalid')
-    manifest.append({'name':name,'sha256':hashlib.sha256(raw).hexdigest(),'revision':v['revision'],'bytes':len(raw)})
-   if len(manifest)!=applied['files']:raise RuntimeError('record_file_count_mismatch')
-   receipt={'plan':plan,'applied':applied,'postflight':after,'privateFileReadback':{'files':len(manifest),'manifestSha256':hashlib.sha256(json.dumps(sorted(manifest,key=lambda x:x['name']),separators=(',',':')).encode()).hexdigest(),'allMode0600':True},'n80':{'readOnly':True,'revisionBefore':before.get('state',{}).get('revision'),'summaryBefore':before.get('summary')}}
+   path=ROOT+'/packages/manifest.json';info=sftp.lstat(path)
+   if not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode)!=0o600:raise RuntimeError('unsafe_record_manifest')
+   with sftp.open(path,'rb') as f:raw=f.read(info.st_size)
+   if hashlib.sha256(raw).hexdigest()!=applied['manifestSha256']:raise RuntimeError('record_manifest_hash_mismatch')
+   manifest=json.loads(raw)
+   if len(manifest)!=applied['files'] or len({v['key'] for v in manifest})!=len(manifest):raise RuntimeError('record_file_count_mismatch')
+   if applied.get('fileReadbackVerified')is not True or applied.get('allMode0600')is not True:raise RuntimeError('host_file_readback_missing')
+   receipt={'plan':plan,'applied':applied,'postflight':after,'privateFileReadback':{'files':len(manifest),'manifestSha256':hashlib.sha256(raw).hexdigest(),'allMode0600':True},'n80':{'readOnly':True,'revisionBefore':before.get('state',{}).get('revision'),'summaryBefore':before.get('summary')}}
  finally:transport.close()
  out=Path('inline-edit-proof/live');out.mkdir(parents=True,exist_ok=True);(out/'unified-records.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+'\n')
  print('NOA_UNIFIED_RECORDS_VERIFIED',json.dumps(receipt,ensure_ascii=False))

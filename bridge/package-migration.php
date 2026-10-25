@@ -50,6 +50,11 @@ function nup_apply(PDO $db,array $plan,string $orderPath,string $root):array{
   else nup_store($db,'meta:package-record-policy','meta',['schema'=>1,'installed'=>true,'principleZero'=>nup_policy()],0,'unified-migration');
   foreach($plan['changes'] as $key=>$r)nup_store($db,$key,$r['kind'],$r['record'],$r['revision'],'unified-migration');
   $db->commit();$files=[];foreach($db->query("SELECT doc_key FROM noa_documents WHERE kind IN ('single','story','playlist') ORDER BY doc_key") as $r)$files[]=nup_snapshot($db,$r['doc_key'],$root.'/records');
-  return ['ok'=>true,'changed'=>count($plan['changes']),'counts'=>$plan['counts'],'review'=>$plan['review'],'backupSha256'=>hash('sha256',$backup),'files'=>count($files),'manifestSha256'=>hash('sha256',nup_json($files)),'oldMediaAndSourceArchivesPreserved'=>true];
+  // Verify every activated file on the host, then transfer one checked manifest
+  // instead of hundreds of sequential SFTP round trips across regions.
+  if(count(glob($root.'/records/*.json'))!==count($files))throw new RuntimeException('unexpected_record_file_count');
+  foreach($files as $file){$path=$root.'/records/'.hash('sha256',$file['key']).'.json';if(is_link($path)||(fileperms($path)&0777)!==0600||filesize($path)!==$file['bytes']||hash_file('sha256',$path)!==$file['sha256'])throw new RuntimeException('record_file_readback_failed');$saved=json_decode((string)file_get_contents($path),true,512,JSON_THROW_ON_ERROR);if(($saved['key']??null)!==$file['key']||($saved['revision']??null)!==$file['revision']||($saved['record']['packageSchema']??null)!==1)throw new RuntimeException('record_file_content_mismatch');}
+  $manifest=nup_json($files);$temporary=tempnam($root,'.manifest-');if(!$temporary)throw new RuntimeException('manifest_temp');chmod($temporary,0600);if(file_put_contents($temporary,$manifest)!==strlen($manifest)||!rename($temporary,$root.'/manifest.json')||hash_file('sha256',$root.'/manifest.json')!==hash('sha256',$manifest))throw new RuntimeException('manifest_readback_failed');
+  return ['ok'=>true,'changed'=>count($plan['changes']),'counts'=>$plan['counts'],'review'=>$plan['review'],'backupSha256'=>hash('sha256',$backup),'files'=>count($files),'fileReadbackVerified'=>true,'allMode0600'=>true,'manifestSha256'=>hash_file('sha256',$root.'/manifest.json'),'oldMediaAndSourceArchivesPreserved'=>true];
  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}finally{$db->query("SELECT RELEASE_LOCK('noa_catalog_publication')");}
 }
