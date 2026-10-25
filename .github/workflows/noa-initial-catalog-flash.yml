@@ -6,6 +6,8 @@ on:
       - 'deploy/noa-music.php'
       - 'deploy/noa-youtube.php'
       - 'deploy/noa-browse.js'
+      - 'deploy/noa-playlists.js'
+      - 'scripts/noa_playlists_controls_deploy.py'
       - 'deploy/noa-app/home.php'
       - 'deploy/noa-app/world-view.php'
       - 'scripts/noa_world_view_deploy.py'
@@ -38,9 +40,10 @@ jobs:
           python tests/youtube/detail_endpoint_test.py
           python tests/sitemap/home_patch_test.py
           node --check deploy/noa-browse.js
+          node --check deploy/noa-playlists.js
           node --check scripts/qa/noa-initial-flash.mjs
-          node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs
-          python -m py_compile scripts/noa_browse_music_page_deploy.py scripts/noa_browse_youtube_page_deploy.py scripts/noa_initial_catalog_preflight.py scripts/noa_home_label_deploy.py scripts/noa_world_view_deploy.py
+          node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs tests/playlists/drag_order_test.cjs
+          python -m py_compile scripts/noa_browse_music_page_deploy.py scripts/noa_browse_youtube_page_deploy.py scripts/noa_initial_catalog_preflight.py scripts/noa_home_label_deploy.py scripts/noa_world_view_deploy.py scripts/noa_playlists_controls_deploy.py
       - name: Prepare browser validation
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
@@ -77,6 +80,7 @@ jobs:
       - name: Deploy only changed allowlisted sources, dependency first, with atomic replacement
         env: *noa_env
         run: |
+          python scripts/noa_playlists_controls_deploy.py
           python scripts/noa_browse_safe_deploy.py
           python scripts/noa_home_label_deploy.py
           python scripts/noa_world_view_deploy.py
