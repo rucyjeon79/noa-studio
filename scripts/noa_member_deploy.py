@@ -47,23 +47,25 @@ def main():
    # Verify the installed GnuBoard resolves the member before loading additive extensions.
    common=read('common.php').decode('utf-8','replace');member_pos=common.find("$member = array");extend_pos=common.find("G5_EXTEND_PATH")
    if extend_pos<0 or common.rfind('$member',0,extend_pos)<0:raise RuntimeError('GnuBoard_extension_order_requires_review')
-   media=[]
+   media=[];previous_media_audit=before['extend/noa.access.php'] is not None;media_stats={}
+   if previous_media_audit:
+    for directory in ['noa-assets/splash','noa-assets/coming','noa-assets']:
+     for info in s.listdir_attr(ROOT+'/'+directory):media_stats[directory+'/'+info.filename]=info
    for p in sorted([*Path('public/splash').glob('*.jpg'),*Path('public/splash').glob('*.mp4'),*Path('public/coming').glob('*.jpg'),Path('public/splash-portrait.jpg')]):
     remote='noa-assets/'+str(p.relative_to('public'));expected=sha(p.read_bytes())
     # An active, known ACL was installed only after the preceding complete media audit.
-    # Re-check unchanged video sizes on follow-up source releases rather than transfer all 76 MB again.
-    if p.suffix=='.mp4' and before['extend/noa.access.php'] is not None:
-     try:info=s.lstat(ROOT+'/'+remote)
-     except FileNotFoundError:info=None
+    # Re-check unchanged media sizes from directory metadata; prior full hashes remain in that release receipt.
+    if previous_media_audit:
+     info=media_stats.get(remote)
      row={'path':remote,'bytes':info.st_size if info else 0,'sha256':None,'verification':'size_after_preceding_release_full_SHA256_audit','match':info is not None and stat.S_ISREG(info.st_mode) and info.st_size==p.stat().st_size}
     else:
      actual=read(remote);row={'path':remote,'bytes':len(actual)if actual else 0,'sha256':sha(actual)if actual else None,'verification':'SHA256','match':actual is not None and sha(actual)==expected}
     media.append(row)
     if len(media)%15==0:print('OPERATING_MEDIA_AUDIT_PROGRESS',len(media),flush=True)
-   (out/'hero-media.json').write_text(json.dumps({'images':sum(r['path'].endswith('.jpg')for r in media),'videos':sum(r['path'].endswith('.mp4')for r in media),'rows':media},indent=2))
+   (out/'hero-media.json').write_text(json.dumps({'fullShaAuditReusedFromKnownActiveRelease':previous_media_audit,'images':sum(r['path'].endswith('.jpg')for r in media),'videos':sum(r['path'].endswith('.mp4')for r in media),'rows':media},indent=2))
    bad=[r['path']for r in media if not r['match']]
    if bad:raise RuntimeError('hero_asset_inventory_mismatch:'+','.join(bad))
-   print('OPERATING_HERO_ASSETS_VERIFIED',len(media),'60_IMAGES 45_VIDEOS')
+   print('OPERATING_HERO_ASSETS_CHECKED',len(media),'60_IMAGES 45_VIDEOS','PRECEDING_FULL_SHA_AUDIT_REUSED' if previous_media_audit else 'FULL_SHA256')
    BACKUP.write_text(json.dumps({p:base64.b64encode(v).decode()if v is not None else None for p,v in before.items()}));BACKUP.chmod(0o600)
    for directory in ['data/noa-audio']:
     try:info=s.lstat(ROOT+'/'+directory)
@@ -85,7 +87,7 @@ def main():
     if actual!=data:raise RuntimeError('final_hash_mismatch:'+p)
     final[p]=sha(actual)
    if any(sha(read(p))!=v for p,v in protected.items()):raise RuntimeError('protected_source_changed')
-   receipt={'commit':os.environ['GITHUB_SHA'],'changed':changed,'sha256':final,'protectedUnchanged':len(PROTECTED),'memberRowsChanged':0,'existingDataChanged':0,'GnuBoardMemberBeforeExtensions':True,'heroAssetsVerified':len(media)}
+   receipt={'commit':os.environ['GITHUB_SHA'],'changed':changed,'sha256':final,'protectedUnchanged':len(PROTECTED),'memberRowsChanged':0,'existingDataChanged':0,'GnuBoardMemberBeforeExtensions':True,'heroAssetsChecked':len(media),'fullMediaSHA256AuditReused':previous_media_audit}
    (out/'deployment.json').write_text(json.dumps(receipt,indent=2));print('NOA_MEMBER_SCOPED_DEPLOYED',json.dumps(receipt))
  finally:t.close()
  for p in FILES:
