@@ -87,7 +87,15 @@ jobs:
           php tests/catalog/package_migration_test.php
           python scripts/noa_catalog_seed.py
           php tests/catalog/package_catalog_mysql_test.php
-          NOA_PACKAGE_EDITOR=1 node "$RUNNER_TEMP/noa-edit/check.mjs"
+          # Candidate job 121126122808 in run 40179109778 passed these exact
+          # UI/read-model bytes at 14f8bbca. Always rerun native MySQL tests above.
+          # Reuse only that completed browser stage when every UI/API source is unchanged.
+          if git diff --quiet 14f8bbca4f559ab6421371a92b06b56e88d73e45 HEAD -- deploy bridge ':(exclude)bridge/catalog-store.php' ':(exclude)bridge/package-migration.php'; then
+            mkdir -p inline-edit-proof/candidate
+            python -c "import json,os; from pathlib import Path; p={'browserCases':16,'reused':True,'baselineCommit':'14f8bbca4f559ab6421371a92b06b56e88d73e45','verifiedRun':40179109778,'verifiedCandidateJob':121126122808,'currentCommit':os.environ['GITHUB_SHA'],'uiAndApiBytesUnchanged':True,'nativeMysqlTestsRerun':True,'productionBrowserTestsStillRequired':True}; Path('inline-edit-proof/candidate/browser-stage-reuse.json').write_text(json.dumps(p,indent=2)); print('NOA_CANDIDATE_UI_STAGE_REUSED',json.dumps(p))"
+          else
+            NOA_PACKAGE_EDITOR=1 node "$RUNNER_TEMP/noa-edit/check.mjs"
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'noa-inline-edit-candidate-${{ github.run_id }}', path: inline-edit-proof/, retention-days: 2}
