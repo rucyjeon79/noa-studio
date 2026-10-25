@@ -4,7 +4,7 @@ from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
 from n80_workstate_sync import request
-FILES={'noa-app/home.php':'deploy/noa-app/home.php','noa-browse.js':'deploy/noa-browse.js','noa-music.php':'deploy/noa-music.php','noa-youtube.php':'deploy/noa-youtube.php'}
+FILES={'noa-app/world-view.php':'deploy/noa-app/world-view.php','noa-app/home.php':'deploy/noa-app/home.php','noa-browse.js':'deploy/noa-browse.js','noa-music.php':'deploy/noa-music.php','noa-youtube.php':'deploy/noa-youtube.php'}
 def sha(b):return hashlib.sha256(b).hexdigest()
 def main():
  post='--post' in sys.argv

@@ -5,6 +5,11 @@ ROOT=Path(__file__).resolve().parents[2]
 class RecoveryContract(unittest.TestCase):
  def test_music_processing_and_permission_regions_preserved(self):
   s=(ROOT/'deploy/noa-music.php').read_text()
+  # Only the two approved presentation flags change; retain byte guards for all engine code.
+  for selector in ['.player','[aria-label="곡 상세"]']:
+   current="document.querySelector('"+selector+"').hidden=true;"
+   self.assertEqual(s.count(current),1)
+   s=s.replace(current,current.replace('hidden=true','hidden=false'),1)
   blocks={'databaseAndPermissionPrefix':s[:s.index('?><!doctype html>')],'requestPlaybackAndQueue':s[s.index('function requestPlayback()'):s.index('function filter()')],'playbackAndUploadIntegration':s[s.index('function select('):s.index("// Detail hydration") if "// Detail hydration" in s else s.index("let saved=''")]}
   actual={k:hashlib.sha256(v.encode()).hexdigest()for k,v in blocks.items()}
   self.assertEqual(actual,json.loads((ROOT/'tests/uiux/music-processing-contract.json').read_text()))

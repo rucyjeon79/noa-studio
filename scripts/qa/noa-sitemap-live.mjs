@@ -51,7 +51,9 @@ try{
  const home=await context.request.get(origin+'/',{timeout:90000}),homeBody=await home.text();
  check('home_http_200',home.status()===200,{status:home.status()});
  for(const [name,expected] of Object.entries(originalSections)){
-  const section=homeBody.match(new RegExp('<section\\b[^>]*data-home-section="'+name+'"[^>]*>[\\s\\S]*?<\\/section>'))?.[0];
+  let section=homeBody.match(new RegExp('<section\\b[^>]*data-home-section="'+name+'"[^>]*>[\\s\\S]*?<\\/section>'))?.[0];
+  // Normalize only approved label removals and the sitemap's move inside the hero.
+  if(section){section=section.replace(/<nav[^>]*data-home-section="sitemap"[\s\S]*?<\/nav>/,'');for(const title of ['추천 음악','당신의 이야기, 우리의 음악 🎧','🎤 AInoa의 유명곡 커버'])section=section.replace('<h2>'+title+'</h2>','<h2>'+title+' · TOP 10</h2>');section=section.replace('추천 음악과 겹치지 않는 EP 시리즈.','추천 음악과 겹치지 않는 EP 시리즈 TOP 10.');}
   check('original_home_'+name+'_sha256_preserved',!!section&&sha(section)===expected,{expected,actual:section?sha(section):null});
  }
  check('home_links_to_sitemap',/data-home-section="sitemap"[\s\S]*?href="\/noa-sitemap\.php"/.test(homeBody));
