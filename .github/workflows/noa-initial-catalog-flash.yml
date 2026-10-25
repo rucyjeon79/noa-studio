@@ -94,6 +94,7 @@ jobs:
       - name: Deploy only changed allowlisted sources, dependency first, with atomic replacement
         env: *noa_env
         run: |
+          python scripts/noa_inline_edit_deploy.py
           python scripts/noa_shared_catalog_deploy.py
           python scripts/noa_playlists_controls_deploy.py
           python scripts/noa_inline_order_deploy.py
