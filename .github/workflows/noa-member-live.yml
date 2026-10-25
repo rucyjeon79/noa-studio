@@ -1,0 +1,32 @@
+name: NOA Actual Member Login and Creator Verification
+on:
+  push:
+    branches: [main]
+    paths: ['scripts/noa_member_live_check.py','scripts/noa_member_qa_control.php','scripts/qa/noa-member-auth.mjs','.github/workflows/noa-member-live.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-member-authenticated-qa, cancel-in-progress: false}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare isolated verification tools
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk ffmpeg
+          python -m pip install 'paramiko>=3,<5'
+          npm install --prefix "$RUNNER_TEMP/noa-member-auth" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-member-auth.mjs "$RUNNER_TEMP/noa-member-auth/check.mjs"
+      - name: Verify actual GnuBoard login, roles and owner media; clean only generated QA records
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+          NOA_MEMBER_AUTH_BROWSER: '${{ runner.temp }}/noa-member-auth/check.mjs'
+        run: python scripts/noa_member_live_check.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-actual-member-${{ github.run_id }}', path: 'member-proof/authenticated/', retention-days: 2}
