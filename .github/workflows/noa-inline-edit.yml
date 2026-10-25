@@ -44,6 +44,7 @@ jobs:
         run: |
           php -l bridge/inline-edit.php
           php tests/catalog/inline_edit_projection_test.php
+          python tests/catalog/inline_edit_music_page_test.py
           php -l deploy/noa-inline-edit.php
           php -l deploy/noa-music.php
           php -l deploy/noa-youtube.php
