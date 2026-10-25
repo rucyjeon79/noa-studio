@@ -61,7 +61,11 @@ def main():
     try:urllib.request.urlopen('https://noastudio.ai.kr/noa-inline-edit.php?type=act&genre=kpop-original&act=1',timeout=30)
     except urllib.error.HTTPError as error:
         assert error.code==403,'guest_metadata_status'
-        assert json.loads(error.read())['error']=='admin_required','guest_metadata_leaked'
+        body=error.read()
+        try:denied=json.loads(body)
+        except (ValueError,UnicodeError):
+            assert b'/errorpage/' in body and b'writeKey' not in body and b'inlineEdit' not in body,'unexpected_guest_error_body'
+        else:assert denied.get('error')=='admin_required','guest_metadata_leaked'
     else:raise RuntimeError('guest_metadata_accessible')
     Path('inline-edit-proof/live').mkdir(parents=True,exist_ok=True)
     Path('inline-edit-proof/live/deployment.json').write_text(json.dumps(receipt,indent=2))

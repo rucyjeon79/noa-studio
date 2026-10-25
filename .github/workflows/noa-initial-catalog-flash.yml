@@ -46,6 +46,12 @@ jobs:
           php -l deploy/noa-app/jukebox/core.php
           php tests/catalog/music_readmodel_test.php
           php tests/catalog/sound_test.php
+          php -l bridge/inline-edit.php
+          php -l deploy/noa-inline-edit.php
+          php -l deploy/noa-music-detail.php
+          php tests/catalog/inline_edit_projection_test.php
+          node --check deploy/noa-browse-edit.js
+          node --check deploy/noa-youtube.js
           php -l deploy/noa-music.php
           php -l deploy/noa-youtube.php
           php -l deploy/noa-app/home.php
