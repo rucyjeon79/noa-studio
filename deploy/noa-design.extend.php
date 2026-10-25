@@ -9,7 +9,8 @@ function noa_policy_script_revision($html){
  $html=preg_replace("~(/noa-browse[.]js)(?:[?][^\"']*)?~i",'$1?v='.$revision,$html);
  $html=preg_replace("~(/noa-app/p0-media[.]css)(?:[?][^\"']*)?~i",'$1?v=20261024-approved-ui',$html);
  $html=preg_replace("~(<link\\b[^>]*\\bhref=[\"'])/noa-ui[.]css(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.css?v=20261024-category-complete$2',$html);
- return preg_replace("~(<script\\b[^>]*\\bsrc=[\"'])/noa-ui[.]js(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.js?v=20261025-member-access$2',$html);
+ $ui=dirname(__DIR__).'/noa-ui.js';$ui_revision=is_file($ui)?hash_file('sha256',$ui):'20261025-member-access';
+ return preg_replace("~(<script\\b[^>]*\\bsrc=[\"'])/noa-ui[.]js(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.js?v='.$ui_revision.'$2',$html);
 }
 function noa_design_assets(){
  global $config;

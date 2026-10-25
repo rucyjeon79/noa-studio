@@ -7,6 +7,7 @@ on:
       - 'bridge/creator*.php'
       - 'bridge/legacy-audio.php'
       - 'deploy/noa-access.extend.php'
+      - 'deploy/noa-design.extend.php'
       - 'deploy/noa-creator*'
       - 'deploy/noa-channel.php'
       - 'tests/member/**'
