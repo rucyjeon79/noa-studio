@@ -30,7 +30,7 @@ class DetailEndpoint(unittest.TestCase):
         (cls.web/'common.php').write_text("<?php define('_GNUBOARD_',true);$is_member=false;$is_admin='';")
         cls.database=cls.web/'fixture.sqlite'
         (cls.web/'noa-bridge/storage.php').write_text("<?php function noa_bridge_pdo():PDO{return new PDO('sqlite:"+str(cls.database)+"',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);}")
-        songs={'song1':{'genre_id':'kpop-original','ep':'1','public_verified':True,'fields':{'lyricsBlock':MARKER+' canonical'}}}
+        songs={'song1':{'genre_id':'kpop-original','ep':'1','public_verified':True,'fields':{'lyricsBlock':'[Verse 1: Female, soft piano]\n'+MARKER+' canonical\n[Outro: instrumental fade]' }}}
         videos={}
         for name,id in IDS.items():
             videos[id]={'id':id,'snippet':{'title':name,'description':MARKER+' description '+name},'status':{'privacyStatus':'private' if name=='private' else 'public','embeddable':name!='blocked'},'match':{'status':'matched' if name=='matched' else 'rejected' if name=='rejected' else 'unmatched','songId':'song1' if name=='matched' else None}}

@@ -36,6 +36,12 @@ function noa_video_legacy_lyrics(iterable $documents,bool $admin):array{
  }
  return $byVideo;
 }
+/** Listener display only: Suno bracket directives are not sung lyrics. Stored source stays intact. */
+function noa_video_display_lyrics(string $raw):string{
+ $text=preg_replace('/\[[^\]]*\]/u','',$raw)??$raw;
+ $text=preg_replace('/^\h*```[^\r\n]*\h*$/mu','',$text)??$text;
+ return trim(preg_replace('/(?:\r?\n){3,}/u',"\n\n",$text)??$text);
+}
 /** Pure projection shared by the endpoint and mapping regression tests. */
 function noa_video_detail(string $id,array $video,array $songIndex,array $legacyLyrics,bool $admin):?array{
  if(($video['status']['privacyStatus']??'')!=='public'||empty($video['status']['embeddable']))return null;
@@ -44,7 +50,7 @@ function noa_video_detail(string $id,array $video,array $songIndex,array $legacy
  $lyrics=$allowed?(string)($song['fields']['lyricsBlock']??''):'';
  // Never override an explicit rejection/conflict, or choose among duplicate URLs.
  if($lyrics===''&&!in_array($match['status']??'',['rejected','conflict'],true)&&count($legacyLyrics[$id]??[])===1)$lyrics=array_values($legacyLyrics[$id])[0];
- return ['videoId'=>$id,'description'=>(string)($video['snippet']['description']??''),'lyrics'=>$lyrics];
+ return ['videoId'=>$id,'description'=>(string)($video['snippet']['description']??''),'lyrics'=>noa_video_display_lyrics($lyrics)];
 }
 // Full text is read only for an exact selected public, embeddable, non-world video.
 if($detailRequested){

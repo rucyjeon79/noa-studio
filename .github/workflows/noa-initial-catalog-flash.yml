@@ -7,6 +7,8 @@ on:
       - 'deploy/noa-youtube.php'
       - 'deploy/noa-browse.js'
       - 'deploy/noa-app/home.php'
+      - 'deploy/noa-app/world-view.php'
+      - 'scripts/noa_world_view_deploy.py'
       - 'scripts/noa_home_label_deploy.py'
       - '.github/workflows/noa-initial-catalog-flash.yml'
       - 'scripts/noa_browse_music_page_deploy.py'
@@ -32,10 +34,13 @@ jobs:
           php -l deploy/noa-music.php
           php -l deploy/noa-youtube.php
           php -l deploy/noa-app/home.php
+          php -l deploy/noa-app/world-view.php
+          python tests/youtube/detail_endpoint_test.py
+          python tests/sitemap/home_patch_test.py
           node --check deploy/noa-browse.js
           node --check scripts/qa/noa-initial-flash.mjs
           node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs
-          python -m py_compile scripts/noa_browse_music_page_deploy.py scripts/noa_browse_youtube_page_deploy.py scripts/noa_initial_catalog_preflight.py scripts/noa_home_label_deploy.py
+          python -m py_compile scripts/noa_browse_music_page_deploy.py scripts/noa_browse_youtube_page_deploy.py scripts/noa_initial_catalog_preflight.py scripts/noa_home_label_deploy.py scripts/noa_world_view_deploy.py
       - name: Prepare browser validation
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
@@ -62,7 +67,7 @@ jobs:
           python -m pip install 'paramiko>=3,<5'
           npm install --prefix "$RUNNER_TEMP/noa-flash" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-initial-flash.mjs "$RUNNER_TEMP/noa-flash/check.mjs"
-      - name: Compare all three operating sources and read N80 state without writes
+      - name: Compare allowlisted operating sources and read N80 state without writes
         env: &noa_env
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
@@ -74,6 +79,7 @@ jobs:
         run: |
           python scripts/noa_browse_safe_deploy.py
           python scripts/noa_home_label_deploy.py
+          python scripts/noa_world_view_deploy.py
           python scripts/noa_browse_music_page_deploy.py
           python scripts/noa_browse_youtube_page_deploy.py
           python scripts/noa_initial_catalog_preflight.py --post

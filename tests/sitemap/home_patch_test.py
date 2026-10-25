@@ -12,14 +12,22 @@ parser=argparse.ArgumentParser()
 parser.add_argument('--host-source',type=Path)
 args=parser.parse_args()
 candidate=(ROOT/'deploy/noa-app/home.php').read_bytes()
-addition=re.findall(rb"<\?php if\(is_file\(dirname\(__DIR__\)\.'/noa-sitemap[.]php'\)\):\?>\n<section[^\n]*data-home-section=\"sitemap\"[^\n]*</section>\n<\?php endif;\?>\n",candidate)
+addition=re.findall(rb"<\?php if\(is_file\(dirname\(__DIR__\)\.'/noa-sitemap[.]php'\)\):\?><nav[^\n]*data-home-section=\"sitemap\"[^\n]*</nav><\?php endif;\?>",candidate)
 if len(addition)!=1:
-    raise AssertionError('Exactly one guarded sitemap navigation section is required')
+    raise AssertionError('Exactly one guarded sitemap link inside the hero is required')
+hero_start=candidate.index(b'<section class="noa-hero"')
+hero_end=candidate.index(b'</section>',hero_start)
+if not hero_start<candidate.index(addition[0])<hero_end:
+    raise AssertionError('Sitemap must be inside the hero')
+community=re.findall(rb'<section class="noa-section" data-home-section="community">[^\n]*</section>\n',candidate)
+if len(community)!=1 or not candidate[hero_end+len(b'</section>'):].startswith(b'\n'+community[0]):
+    raise AssertionError('Community must immediately follow the hero')
 cache_before=b'noa-home.js?v=20261022-recovery1'
 cache_after=b'noa-home.js?v=20261024-popularity-metrics'
 if candidate.count(cache_after)!=1 or cache_before in candidate:
     raise AssertionError('Exactly one reviewed HOME metrics script cache revision is required')
-restored=candidate.replace(addition[0],b'',1).replace(cache_after,cache_before,1)
+restored=candidate.replace(addition[0],b'',1).replace(cache_after,cache_before,1).replace(community[0],b'',1)
+restored=restored.replace(b'<footer class="noa-footer">',community[0]+b'<footer class="noa-footer">',1)
 # Normalize only the four literal labels approved in PR #202; preserve the baseline hash guard.
 if re.search(rb'TOP\s*10',candidate,re.I):
     raise AssertionError('Removed HOME TOP 10 labels must not return')
