@@ -1,7 +1,7 @@
 """Reuse the existing NOA identity to run a fixed, audited record consolidation.
 No credentials, private lyrics, prompts or arbitrary SQL appear in reports.
 """
-import hashlib,hmac,json,secrets,stat,time,urllib.request
+import hashlib,hmac,json,secrets,stat,time,urllib.request,urllib.error
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect
@@ -11,7 +11,12 @@ def service(key,body):
  raw=json.dumps(body,separators=(',',':')).encode();ts=str(int(time.time()));nonce=secrets.token_hex(16)
  signed='NOA-PACKAGE-1\nPOST\n'+hashlib.sha256(raw).hexdigest()+'\n'+ts+'\n'+nonce
  req=urllib.request.Request('https://noastudio.ai.kr/noa-bridge/package-worker.php',data=raw,method='POST',headers={'Content-Type':'application/json','X-NOA-Timestamp':ts,'X-NOA-Nonce':nonce,'X-NOA-Signature':hmac.new(key,signed.encode(),hashlib.sha256).hexdigest()})
- with urllib.request.urlopen(req,timeout=150) as r:value=json.load(r)
+ try:
+  with urllib.request.urlopen(req,timeout=150) as r:value=json.load(r)
+ except urllib.error.HTTPError as error:
+  try:code=json.loads(error.read(65536)).get('error','operation_failed')
+  except Exception:code='hosting_http_'+str(error.code)
+  raise RuntimeError('package_service_'+str(error.code)+':'+str(code)) from None
  if value.get('ok') is not True:raise RuntimeError('package_operation_failed:'+str(value.get('error')))
  return value
 def main():

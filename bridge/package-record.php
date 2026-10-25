@@ -55,7 +55,7 @@ function nup_patch(array $d,string $kind,array $patch):array{
 }
 function nup_original(PDO $db,array $d):array{
  $ep=(int)($d['ep']??0);if(!$ep)return ['status'=>'not_applicable'];
- $q=$db->query("SELECT doc_key,payload,revision FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key");$matches=[];
+ $q=$db->query("SELECT doc_key,payload,revision FROM noa_documents WHERE kind IN ('single','story') AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.genreId'))='kpop-original' ORDER BY doc_key");$matches=[];
  foreach($q as $r){$p=json_decode($r['payload'],true);if(($p['genreId']??'')==='kpop-original'&&(!empty($d['sourceRef'])?$r['doc_key']===$d['sourceRef']:(int)($p['ep']??0)===$ep))$matches[]=$r;}
  if(count($matches)!==1)return ['status'=>count($matches)>1?'ambiguous':'missing','ep'=>str_pad((string)$ep,2,'0',STR_PAD_LEFT)];
  $r=$matches[0];$p=json_decode($r['payload'],true);$f=array_replace(nup_fields($p),$p['body']['originalInfo']??[]);return ['status'=>'linked','key'=>$r['doc_key'],'revision'=>(int)$r['revision'],'ep'=>(string)$p['ep'],'title'=>$f['title'],'lyrics'=>$f['lyrics'],'vocal'=>$f['vocal']];

@@ -10,6 +10,7 @@ on:
       - 'deploy/noa-music-detail.php'
       - 'tests/catalog/inline_edit_projection_test.php'
       - 'bridge/package-*.php'
+      - 'bridge/lab-api.php'
       - 'bridge/index.php'
       - 'bridge/catalog-store.php'
       - 'bridge/taxonomy-store.php'
@@ -55,7 +56,7 @@ jobs:
         with: {php-version: '8.2', extensions: pdo_mysql}
       - name: Validate metadata reader and existing playback, source and permission contracts
         run: |
-          for file in bridge/package-*.php bridge/index.php bridge/catalog-store.php bridge/taxonomy-store.php bridge/lab-creator.php deploy/noa-category-order.php deploy/noa-app/jukebox/core.php deploy/noa-app/taxonomy/index.php; do php -l "$file"; done
+          for file in bridge/package-*.php bridge/index.php bridge/lab-api.php bridge/catalog-store.php bridge/taxonomy-store.php bridge/lab-creator.php deploy/noa-category-order.php deploy/noa-app/jukebox/core.php deploy/noa-app/taxonomy/index.php; do php -l "$file"; done
           php tests/catalog/package_record_test.php
           node --check deploy/noa-app/taxonomy/ui.js
           php -l bridge/inline-edit.php
