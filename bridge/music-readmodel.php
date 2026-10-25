@@ -17,9 +17,9 @@ function noa_music_recovered_catalog(PDO $db):array{
   $d=json_decode($r['payload'],true);if(!is_array($d))continue;$d['_kind']=$r['kind'];$overrides[$r['doc_key']]=$d;
   if(in_array($r['kind'],['single','story'],true))$out[$r['doc_key']]=$d;
  }
- try{foreach($db->query("SELECT s.song_id,s.identity_json,s.genre_id,s.ep,v.fields_json,v.public_verified FROM noa_catalog_songs s JOIN noa_catalog_versions v ON v.entity_id=s.song_id AND v.entity_type='song' WHERE v.batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)") as $r){
-  $item=noa_sound_recovered($r,true);if(!$item)continue;$key=$item['key'];$body=json_decode($r['fields_json'],true);
-  $out[$key]=$overrides[$key]??['_kind'=>'story','_catalog_id'=>$r['song_id'],'title'=>$item['title'],'genreId'=>$item['genre'],'ep'=>$item['ep'],'act'=>'','visibility'=>$r['public_verified']?'public':'private','body'=>$body+['sunoUrl'=>$item['sunoUrl']]];
+ try{foreach($db->query("SELECT s.song_id,s.identity_json,s.genre_id,s.ep,v.fields_json,v.public_verified FROM noa_catalog_songs s JOIN noa_catalog_versions v ON v.entity_id=s.song_id AND v.entity_type='song' WHERE NOT EXISTS (SELECT 1 FROM noa_catalog_aliases a JOIN noa_documents d ON d.doc_key=a.alias_key WHERE a.entity_id=s.song_id AND a.batch_id=v.batch_id AND d.kind IN ('single','story')) AND v.batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)") as $r){
+  $document=noa_sound_catalog_document($r);if(!$document)continue;$key='catalog:'.$r['song_id'];
+  $out[$key]=$overrides[$key]??$document;
  }}catch(PDOException $e){error_log('[music-catalog] recovery unavailable');}
  return $out;
 }

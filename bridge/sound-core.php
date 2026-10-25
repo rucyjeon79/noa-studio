@@ -31,6 +31,18 @@ function noa_sound_cover(array $body): string {
     static $map=null;if($map===null)$map=is_file(__DIR__.'/asset-covers.php')?require __DIR__.'/asset-covers.php':[];
     return is_string($source)&&is_array($map)&&isset($map[$source])?(string)$map[$source]:'';
 }
+/** A registered catalog song exists independently of either playback source.
+ * Read-only projection: explicit editorial privacy and document overrides stay authoritative.
+ */
+function noa_sound_catalog_document(array $row):?array{
+ $id=(string)($row['song_id']??'');$fields=json_decode((string)($row['fields_json']??''),true);
+ if(!preg_match('/^[a-f0-9]{64}$/D',$id)||!is_array($fields))return null;
+ $public=!empty($row['public_verified'])&&noa_sound_visible($fields,false)
+  &&!in_array($fields['privacyStatus']??'public',['private','unlisted','hidden','draft'],true);
+ return ['_kind'=>'story','_catalog_id'=>$id,'title'=>(string)($fields['confirmedTitle']??$fields['title']??''),
+  'genreId'=>(string)($row['genre_id']??'unclassified'),'ep'=>(string)($row['ep']??''),
+  'act'=>(string)($fields['act']??''),'visibility'=>$public?'public':'private','body'=>$fields];
+}
 // Add recovered channel-only songs to the web/Android read model without replacing
 // legacy keys or user-edited documents. Identity, not title, selects these records.
 function noa_sound_recovered(array $row,bool $admin): ?array {

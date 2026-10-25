@@ -5,7 +5,7 @@ ROOT=Path(__file__).resolve().parents[2]
 class RecoveryContract(unittest.TestCase):
  def test_music_processing_and_permission_regions_preserved(self):
   s=(ROOT/'deploy/noa-music.php').read_text()
-  # Only the two approved presentation flags change; retain byte guards for all engine code.
+  # Approved inline playback and shared-song projection are the current byte baseline.
   for selector in ['.player','[aria-label="곡 상세"]']:
    current="document.querySelector('"+selector+"').hidden=true;"
    self.assertEqual(s.count(current),1)
@@ -43,6 +43,11 @@ class RecoveryContract(unittest.TestCase):
    from readmodel_ownership import verify_youtube_reader_only
    verify_youtube_reader_only(ROOT,baseline)
    paths.remove('bridge/youtube-store.php')
+  shared={'bridge/sound-core.php','deploy/noa-app/jukebox/core.php'}
+  if shared.intersection(paths):
+   from readmodel_ownership import verify_shared_catalog_readers_only
+   verify_shared_catalog_readers_only(ROOT,baseline)
+   paths=[p for p in paths if p not in shared]
   # Integration finish owns only these bounded surfaces. FIFO, uploads and processing workers remain protected.
   authorized={'bridge/music-readmodel.php','bridge/user-playlists.php','bridge/world-mv.php','bridge/popularity-events.php','bridge/playcount-policy.php','deploy/noa-app/jukebox/stream.php','deploy/noa-app/jukebox/stream-popularity.php','scripts/noa_jukebox_release.py','scripts/noa_jukebox_upload_worker.py','scripts/noa_jukebox_publish.py'}
   self.assertFalse(any(p not in authorized and p.startswith(('deploy/noa-app/jukebox/','bridge/','scripts/noa_jukebox'))for p in paths))
