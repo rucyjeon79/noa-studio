@@ -12,11 +12,11 @@ class Element {
 }
 const all=(node,predicate)=>[...node.children.flatMap(c=>typeof c==='object'?[c,...all(c,predicate)]:[])].filter(predicate);
 const text=node=>node.textContent+node.children.map(text).join('');
-function fixture(kind='곡',query=''){
+function fixture(kind='곡',query='',providedRows=null){
  const host=new Element('section'),location={href:'https://noastudio.ai.kr/noa-music.php'+query,search:query};
  const sandbox={window:{addEventListener(){}},document:{createElement:tag=>new Element(tag),querySelectorAll:()=>[]},location,history:{replaceState(_a,_b,url){location.href=String(url);}},URL,URLSearchParams,fetch:()=>Promise.resolve({ok:false})};
  vm.runInNewContext(fs.readFileSync(new URL('../../deploy/noa-browse.js',import.meta.url),'utf8'),sandbox);
- const rows=[{key:'ten',genre:'kpop-original',title:'Ten',ep:10},{key:'two',genre:'kpop-original',title:'Two',ep:2},{key:'eleven',genre:'kpop-original',title:'Eleven',ep:11},{key:'loose',genre:'kpop-original',title:'Loose'},{key:'foreign',genre:'jpop-original',title:'Foreign',ep:1},{key:'story',genre:'your-story',title:'Story'},{key:'cover',genre:'cover-reborn',title:'Cover'}];
+ const rows=providedRows||[{key:'ten',genre:'kpop-original',title:'Ten',ep:10},{key:'two',genre:'kpop-original',title:'Two',ep:2},{key:'eleven',genre:'kpop-original',title:'Eleven',ep:11},{key:'loose',genre:'kpop-original',title:'Loose'},{key:'foreign',genre:'jpop-original',title:'Foreign',ep:1},{key:'story',genre:'your-story',title:'Story'},{key:'cover',genre:'cover-reborn',title:'Cover'}];
  if(kind==='영상')rows.forEach(r=>{r.kind='video';r.video=r.key;});
  let model;model=sandbox.window.NoaBrowse.mount({host,rows,kind,onChange:()=>model.apply(rows)});model.apply(rows);
  const level=n=>all(host,x=>x.dataset.browseLevel===String(n))[0];
@@ -35,3 +35,5 @@ for(const kind of ['곡','영상'])test(kind+': four persistent levels, genre is
  for(const i of [2,3]){f.cards(1)[i].click();assert.equal(f.cards(2).length,1);assert.equal(f.level(3),undefined);f.cards(2)[0].click();assert.match(text(f.level(3)),i===2?/Story/:/Cover/);}
 });
 test('deep links expand ACT while custom queue ordering is preserved',()=>{const f=fixture('곡','?genre=kpop-original&act=1');assert(f.level(4));const ordered=[f.rows[0],f.rows[1]];assert.deepEqual(Array.from(f.model.apply(ordered,true).queue,r=>r.key),['ten','two']);});
+
+test('shared ACT has one row per canonical song, prefers its declared video, and keeps Shorts in All',()=>{const rows=[{key:'short',orderKey:'same-song',genre:'kpop-original',title:'Shorts',ep:1},{key:'main',orderKey:'same-song',genre:'kpop-original',title:'Full version',ep:1,preferredVideo:true},{key:'two',orderKey:'second-song',genre:'kpop-original',title:'Second song',ep:2}];const f=fixture('영상','?genre=kpop-original&act=1',rows);assert.deepEqual(all(f.level(4),x=>x.className==='noa-inline-song').map(text),['EP.1 · Full version','EP.2 · Second song']);assert.deepEqual(Array.from(f.model.apply(rows).queue,r=>r.key),['main','two']);assert.deepEqual(Array.from(f.model.apply(rows,true).queue,r=>r.key),['short','main','two']);assert.equal(rows.length,3,'source videos are never deleted');});
