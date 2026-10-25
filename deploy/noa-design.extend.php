@@ -43,6 +43,9 @@ function noa_design_assets(){
   add_stylesheet('<link rel="stylesheet" href="/noa-admin.css?v=20261020-admin1">',99);
   return;
  }
+ // Native skin colors follow the selected palette; version the actual deployed CSS.
+ $skin_css=dirname(__DIR__).'/noa-gnuboard.css';
+ if(is_file($skin_css))add_stylesheet('<link rel="stylesheet" href="/noa-gnuboard.css?v='.hash_file('sha256',$skin_css).'">',1000);
  add_stylesheet('<link rel="stylesheet" href="/noa-ui.css?v=20261022-recovery2">',99);
  // Keep registration identical to theme/head.php for GnuBoard asset deduplication.
  add_javascript('<script src="/noa-brand.js?v=20261021-brand1" defer></script><script src="/noa-ui.js?v=20261022-recovery1" defer></script>',99);
