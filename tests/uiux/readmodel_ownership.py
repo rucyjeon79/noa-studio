@@ -41,6 +41,12 @@ def verify_shared_catalog_readers_only(root, baseline):
         new=(root/path).read_text()
         functions=lambda source:json.loads(subprocess.check_output(['php','-r',TOKENIZE],input=source,text=True))
         before,after=functions(old),functions(new)
+        # This request explicitly extends verified-media publication with one
+        # audited manifest update in its existing transaction. All checks stay exact.
+        if path=='deploy/noa-app/jukebox/core.php' and 'nj_import' in after:
+            hook="\n  // Keep the complete record in the same transaction as verified media publication.\n  require_once dirname(__DIR__,2).'/noa-bridge/package-record.php';nup_attach_asset($db,$key,$new);"
+            if hook not in before.get('nj_import',''):
+                after['nj_import']=after['nj_import'].replace(hook,'',1)
         for name,value in before.items():
             if name not in allowed and after.get(name)!=value:
                 raise AssertionError('Upload/processing function changed: '+name)

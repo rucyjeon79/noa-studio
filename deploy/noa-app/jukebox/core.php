@@ -120,6 +120,8 @@ function nj_import(PDO $db,array $r,bool $replace=false,?string $expected=null):
   }
   $columns=array_keys($new);$sql='INSERT INTO noa_jukebox_assets (`'.implode('`,`',$columns).'`) VALUES ('.implode(',',array_fill(0,count($new),'?')).') ON DUPLICATE KEY UPDATE '.implode(',',array_map(fn($k)=>'`'.$k.'`=VALUES(`'.$k.'`)',$columns));
   $db->prepare($sql)->execute(array_values($new));
+  // Keep the complete record in the same transaction as verified media publication.
+  require_once dirname(__DIR__,2).'/noa-bridge/package-record.php';nup_attach_asset($db,$key,$new);
   $db->prepare('INSERT INTO noa_jukebox_history(song_key,result) VALUES(?,?)')->execute([$key,json_encode($r,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)]);if($ownsTransaction)$db->commit();
  }catch(Throwable $e){if($ownsTransaction&&$db->inTransaction())$db->rollBack();throw $e;}
 }
