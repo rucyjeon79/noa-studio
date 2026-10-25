@@ -103,6 +103,7 @@ function nup_validate_members(PDO $db,array $d):void{
 }
 /** Publication may add new songs; never replace an existing edited record. */
 function nup_register_catalog(PDO $db,string $batch):int{
+ $installed=$db->query("SELECT payload FROM noa_documents WHERE doc_key='meta:package-record-policy' AND kind='meta'")->fetchColumn();$policy=$installed?json_decode($installed,true):null;if(($policy['schema']??null)!==1||($policy['installed']??false)!==true)return 0;
  require_once __DIR__.'/sound-core.php';$q=$db->prepare("SELECT s.song_id,s.genre_id,s.ep,v.fields_json,v.public_verified FROM noa_catalog_songs s JOIN noa_catalog_versions v ON v.entity_id=s.song_id AND v.entity_type='song' WHERE v.batch_id=? AND NOT EXISTS (SELECT 1 FROM noa_documents d WHERE d.doc_key=CONCAT('catalog:',s.song_id)) AND NOT EXISTS (SELECT 1 FROM noa_catalog_aliases a JOIN noa_documents d ON d.doc_key=a.alias_key AND d.kind IN ('single','story') WHERE a.batch_id=v.batch_id AND a.entity_id=s.song_id) ORDER BY s.song_id");$q->execute([$batch]);$rows=$q->fetchAll(PDO::FETCH_ASSOC);$n=0;
  foreach($rows as $r){$d=noa_sound_catalog_document($r);if(!$d)throw new DomainException('invalid_catalog_song');unset($d['_kind'],$d['_catalog_id']);$d=nup_normalize($d,'story');if($d['packageType']==='ep'){$original=nup_original($db,$d);if(($original['status']??'')==='linked')$d['sourceRef']=$original['key'];}nup_store($db,'catalog:'.$r['song_id'],'story',$d,0,'catalog-register');$n++;}return $n;
 }
