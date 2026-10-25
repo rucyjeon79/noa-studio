@@ -49,7 +49,17 @@ def main():
    if extend_pos<0 or common.rfind('$member',0,extend_pos)<0:raise RuntimeError('GnuBoard_extension_order_requires_review')
    media=[]
    for p in sorted([*Path('public/splash').glob('*.jpg'),*Path('public/splash').glob('*.mp4'),*Path('public/coming').glob('*.jpg'),Path('public/splash-portrait.jpg')]):
-    remote='noa-assets/'+str(p.relative_to('public'));actual=read(remote);expected=sha(p.read_bytes());row={'path':remote,'bytes':len(actual)if actual else 0,'sha256':sha(actual)if actual else None,'match':actual is not None and sha(actual)==expected};media.append(row)
+    remote='noa-assets/'+str(p.relative_to('public'));expected=sha(p.read_bytes())
+    # An active, known ACL was installed only after the preceding complete media audit.
+    # Re-check unchanged video sizes on follow-up source releases rather than transfer all 76 MB again.
+    if p.suffix=='.mp4' and before['extend/noa.access.php'] is not None:
+     try:info=s.lstat(ROOT+'/'+remote)
+     except FileNotFoundError:info=None
+     row={'path':remote,'bytes':info.st_size if info else 0,'sha256':None,'verification':'size_after_preceding_release_full_SHA256_audit','match':info is not None and stat.S_ISREG(info.st_mode) and info.st_size==p.stat().st_size}
+    else:
+     actual=read(remote);row={'path':remote,'bytes':len(actual)if actual else 0,'sha256':sha(actual)if actual else None,'verification':'SHA256','match':actual is not None and sha(actual)==expected}
+    media.append(row)
+    if len(media)%15==0:print('OPERATING_MEDIA_AUDIT_PROGRESS',len(media),flush=True)
    (out/'hero-media.json').write_text(json.dumps({'images':sum(r['path'].endswith('.jpg')for r in media),'videos':sum(r['path'].endswith('.mp4')for r in media),'rows':media},indent=2))
    bad=[r['path']for r in media if not r['match']]
    if bad:raise RuntimeError('hero_asset_inventory_mismatch:'+','.join(bad))
