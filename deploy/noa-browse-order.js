@@ -39,7 +39,7 @@ function mount({host,rows,kind,access,getOrder,getGroup,onSaved}){
    }catch(error){status.textContent=error.message;}finally{state.busy=false;save.disabled=false;cancel.disabled=false;for(const n of list.querySelectorAll('.noa-order-move'))n.disabled=false;}
   };
  }
- return{refresh};
+ return{refresh,isEditing:()=>!!current?.editing};
 }
 window.NoaBrowseOrder={mount};
 })();
