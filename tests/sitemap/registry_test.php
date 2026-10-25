@@ -15,7 +15,8 @@ try{
  $guest=noa_sitemap_visible_groups($root,'guest');$member=noa_sitemap_visible_groups($root,'member');$admin=noa_sitemap_visible_groups($root,'admin');
  check(!isset($guest['admin'])&&!isset($member['admin']),'administrator routes must be hidden from guest/member');
  check(in_array('popularity',$ids($admin),true)&&!in_array('popularity',$ids($guest),true)&&!in_array('popularity',$ids($member),true),'actual popularity service is administrator-only');
- check(isset($admin['admin'])&&count($admin['admin']['routes'])===16,'administrator services included');
+ check(isset($admin['admin'])&&count($admin['admin']['routes'])===17,'administrator services included');
+ check(in_array('subscriptions',$ids($admin),true)&&!in_array('subscriptions',$ids($member),true)&&!in_array('subscriptions',$ids($guest),true),'subscription configuration highest-admin-only');
  check(in_array('login',$ids($guest),true)&&!in_array('playlists',$ids($guest),true),'guest account destinations');
  check(in_array('playlists',$ids($member),true)&&!in_array('login',$ids($member),true),'member playlist destination');
  $adminLinks=array_merge(...array_map(static fn($g)=>array_column($g['routes'],3),array_values($admin)));
