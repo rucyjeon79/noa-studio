@@ -6,11 +6,12 @@
   'kpop-original':'한국어로 전하는 노아의 오리지널 음악 이야기.','jpop-original':'일본어의 울림으로 만나는 노아의 오리지널 음악.','pop-original':'영어로 이어지는 노아의 오리지널 팝 이야기.','thai-original':'태국어로 새롭게 만나는 노아의 오리지널 음악.',
   'joseon-ballad':'전통의 정서와 발라드가 만나는 음악 이야기.','echoes-of-joseon':'조선의 여운을 오늘의 소리로 이어가는 음악.','groovy-airy-pop':'가벼운 보컬과 그루브로 흐르는 팝 사운드.','narrative-piano-indie':'피아노 선율 위로 차분하게 펼쳐지는 이야기.','dreamy-deep-house':'몽환적인 분위기와 깊은 리듬으로 흐르는 음악.','fantasy-ambient-edm':'환상적인 공간과 전자음이 그리는 음악 풍경.','edm-kpop-club':'K-POP의 선율과 전자 리듬이 만나는 음악.','latin-afrobeats-edm':'라틴과 아프로비트의 리듬으로 전하는 음악.','panpop':'다양한 색과 리듬으로 확장되는 팝 이야기.','your-story':'당신의 사연을 담아 함께 만들어가는 음악.','cover-reborn':'익숙한 명곡을 노아의 목소리로 새롭게 만나세요.'};
  let finished=false,blocked=false,fallbackUsed=false,pending=false,generation=0;
+ const displayName=value=>String(value).replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu,'').trim();
  const state=value=>{if(art)art.dataset.mediaState=value;};
  function choose(genre,variant='a'){
   generation++;const base=(browse?.genreArt?.(genre)||'/noa-assets/splash/kpop-original-g2-a.jpg').replace(/-a\.jpg$/,'-'+variant);
   poster.src=base+'.jpg';video.poster=poster.src;poster.closest?.('picture')?.querySelectorAll('source').forEach(s=>s.srcset=poster.src);
-  if(art)art.dataset.genre=genre;if(label)label.textContent=names[genre]||'K-POP Original';if(description)description.textContent=descriptions[genre]||'노아의 음악과 이야기를 만나는 장르 소개 영상입니다.';
+  if(art)art.dataset.genre=genre;if(label)label.textContent=displayName(names[genre]||'K-POP Original');if(description)description.textContent=descriptions[genre]||'노아의 음악과 이야기를 만나는 장르 소개 영상입니다.';
   video.src=base+'.mp4';
  }
  function fallback(message){video.hidden=true;state('poster');if(status)status.textContent=message;if(button)button.hidden=false;}

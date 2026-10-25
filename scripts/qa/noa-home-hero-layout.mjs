@@ -7,9 +7,9 @@ mkdirSync(out,{recursive:true});
 const candidate=phase==='candidate'?execFileSync('php',['-r',"define('_GNUBOARD_',true);$is_member=false;include 'deploy/noa-app/home.php';"],{encoding:'utf8'}):null;
 const runtime=readFileSync('deploy/noa-hero.js','utf8'),browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']}),report=[];
 const near=(a,b,label)=>assert(Math.abs(a-b)<2,label+': '+a+' vs '+b);
-async function context(options={}){
+async function context(options={},genreRoll=0){
  const c=await browser.newContext({serviceWorkers:'block',...options});
- await c.addInitScript(()=>{Math.random=()=>0;});
+ await c.addInitScript(roll=>{let call=0;Math.random=()=>call++?0:roll;},genreRoll);
  if(candidate){await c.route(base+'/',r=>r.fulfill({contentType:'text/html; charset=utf-8',body:candidate}));await c.route('**/noa-hero.js*',r=>r.fulfill({contentType:'application/javascript',body:runtime}));}
  return c;
 }
@@ -44,5 +44,6 @@ try{
  await p.waitForFunction(()=>document.getElementById('noa-hero-video').ended,null,{timeout:25000});const end=await p.locator('#noa-hero-video').evaluate(v=>({time:v.currentTime,duration:v.duration,loop:v.loop}));assert(end.time>=end.duration-.1);assert(!end.loop);assert.equal(await p.locator('#noa-hero-video').getAttribute('src'),src);await c.close();
  // Actual browser fallback: reject only the first automatic attempt, then click to play.
  const blocked=await context({viewport:{width:390,height:844}});await blocked.addInitScript(()=>{const play=HTMLMediaElement.prototype.play;let first=true;HTMLMediaElement.prototype.play=function(){if(first){first=false;return Promise.reject(new DOMException('fixture autoplay blocked','NotAllowedError'));}return play.call(this);};});const retry=await blocked.newPage();await retry.goto(base+'/',{waitUntil:'domcontentloaded'});await retry.locator('#noa-hero-play').waitFor({state:'visible'});await retry.screenshot({path:out+'/autoplay-retry.jpg',type:'jpeg',quality:84});await retry.locator('#noa-hero-play').click();await retry.waitForFunction(()=>document.getElementById('noa-hero-video').currentTime>0&&!document.getElementById('noa-hero-video').hidden);assert(await retry.locator('#noa-hero-play').isHidden());await blocked.close();
- writeFileSync(out+'/report.json',JSON.stringify({ok:true,phase,cases:report.length,noMediaGaps:true,genreIdentified:true,completePlayback:true,blockedAutoplayRetry:true,physicalAndroid:false,report},null,2));console.log('NOA_HERO_LAYOUT_OK',report.length,'NO_GAPS GENRE COMPLETE_PLAYBACK RETRY_OK');
+ const cover=await context({viewport:{width:390,height:844},reducedMotion:'reduce'},.999);const coverPage=await cover.newPage();await coverPage.goto(base+'/',{waitUntil:'domcontentloaded'});await coverPage.waitForFunction(()=>document.querySelector('.noa-hero-art').dataset.genre==='cover-reborn'&&document.getElementById('noa-hero-video').currentTime>0);assert.equal(await coverPage.locator('#noa-hero-genre').textContent(),'AInoa의 유명곡 커버');assert((await coverPage.evaluate(()=>window.NoaBrowse.names['cover-reborn'])).includes('🎤'),'canonical genre name must remain intact');await coverPage.screenshot({path:out+'/cover-clean-390.jpg',type:'jpeg',quality:84});await cover.close();
+ writeFileSync(out+'/report.json',JSON.stringify({ok:true,phase,cases:report.length,noMediaGaps:true,genreIdentified:true,completePlayback:true,blockedAutoplayRetry:true,cleanCoverGenre:true,physicalAndroid:false,report},null,2));console.log('NOA_HERO_LAYOUT_OK',report.length,'NO_GAPS GENRE COMPLETE_PLAYBACK RETRY_OK');
 }catch(error){for(const c of browser.contexts())for(const p of c.pages())try{await p.screenshot({path:out+'/failure.jpg'});writeFileSync(out+'/failure.html',await p.content());}catch{}throw error;}finally{await browser.close();}
