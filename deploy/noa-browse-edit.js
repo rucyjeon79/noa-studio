@@ -22,7 +22,7 @@ function mount({host,rows,kind,isOrdering,onSaved}){
  async function open(node,button,selector){
   if(isOrdering?.())return;if(active){if(active.busy||active.dirty){message('먼저 수정 중인 내용을 저장하거나 취소해 주세요.');return;}if(active.button===button){close();return;}close();}
   const form=document.createElement('form');form.className='noa-edit-form';form.setAttribute('aria-label',selector.type==='act'?'ACT 플레이리스트 세부정보 수정':'곡 세부정보 수정');const status=document.createElement('p');status.className='noa-edit-status';status.setAttribute('role','status');status.textContent='세부정보를 불러오는 중입니다.';form.append(status);
-  const titlebar=node.querySelector(':scope>.noa-inline-titlebar')||(selector.type==='act'?node.querySelector(':scope>.noa-browse-card'):null);if(titlebar)titlebar.after(form);else node.append(form);button.setAttribute('aria-expanded','true');
+  const titlebar=node.querySelector(':scope>.noa-inline-titlebar')||(selector.type==='act'?node.querySelector(':scope>.noa-act-edit'):null);if(titlebar)titlebar.after(form);else node.append(form);button.setAttribute('aria-expanded','true');
   const state={node,button,form,status,selector,busy:false,dirty:false,requestId:null,signature:null};active=state;
   const cancel=control('cancel','취소','정보 수정 취소');cancel.onclick=close;form.append(cancel);
   try{const response=await fetch('/noa-inline-edit.php?'+new URLSearchParams(selector),{credentials:'same-origin',cache:'no-store'});let data=null;try{data=await response.json();}catch{}if(!response.ok||!data?.ok||!data.writeKey)throw Error('세부정보를 불러오지 못했습니다. 로그인 상태와 곡 연결을 확인해 주세요.');if(active!==state)return;state.data=data;form.replaceChildren();
