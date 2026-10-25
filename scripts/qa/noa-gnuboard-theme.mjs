@@ -33,7 +33,15 @@ try{
    }
   }
   // Empty board search remains usable without creating or editing content.
-  await page.goto(base+'/bbs/board.php?bo_table=free&device='+(mobile?'mobile':'pc'));await page.locator('select[name=sfl]').selectOption('wr_subject||wr_content');assert.equal(await page.locator('select[name=sfl]').inputValue(),'wr_subject||wr_content');
+  await page.goto(base+'/bbs/board.php?bo_table=free&device='+(mobile?'mobile':'pc'));if(!await page.locator('select[name=sfl]').isVisible())await page.locator('.btn_bo_sch').click();await page.locator('select[name=sfl]').selectOption('wr_subject||wr_content');assert.equal(await page.locator('select[name=sfl]').inputValue(),'wr_subject||wr_content');
+  await page.waitForFunction(()=>window.NoaUI?.getState());
+  for(const theme of ['noa-studio','noa-ivory']){
+   await page.evaluate(theme=>window.NoaUI.apply({...window.NoaUI.getState(),theme}),theme);
+   const colors=await page.locator('#bo_sch,.bo_sch').evaluateAll(nodes=>nodes.filter(n=>n.getBoundingClientRect().width>0).map(n=>({bg:getComputedStyle(n).backgroundColor,text:getComputedStyle(n).color})));
+   assert(colors.length);for(const c of colors)assert(contrast(c.text,c.bg)>=4.5,'search popup contrast');
+   if(width===390||width===1280)await page.screenshot({path:out+'/search-open-'+theme+'-'+width+'.jpg',type:'jpeg',quality:86});
+   report.push({route:'/bbs/board.php?bo_table=free#search-open',width,theme,searchSelection:true,colors});
+  }
   await context.close();
  }
  writeFileSync(out+'/report.json',JSON.stringify({ok:true,phase,cases:report,physicalAndroid:false,databaseWrites:0},null,2));console.log('NOA_GNUBOARD_THEMES_OK',report.length);

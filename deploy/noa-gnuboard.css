@@ -37,3 +37,4 @@ html.noa-g5 #bo_sch .sch_btn{min-inline-size:44px;color:var(--noa-text)}
 /* Content, search, FAQ and member utility popups use the same native skin palette. */
 html.noa-g5 :is(#ctt,#ctt header,#ctt_con,#faq_wrap li,#faq_wrap h3,#faq_con,#sch_result .sch_res_list,#sch_result .search_cnt,#point,#point .point_all,#scrap .scrap_cate,#profile .profile_info,.new_win .win_title,.new_win h1,.new_win h2){background-color:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line);box-shadow:none}
 html.noa-g5 :is(#ctt_con,#faq_con,#sch_result .sch_res_list,.new_win .win_desc){background-color:transparent}
+html.noa-g5 :is(.bo_sch h3,.bo_sch .sch_bar,.bo_sch .bo_sch_cls){background-color:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line)}
