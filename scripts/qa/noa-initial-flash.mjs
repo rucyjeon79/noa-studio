@@ -12,12 +12,13 @@ async function routes(context,held){
   if(!['GET','HEAD'].includes(req.method()))return route.fulfill({status:204,body:''});
   if(u.origin!==base)return route.continue();
   if(u.pathname==='/noa-browse.js'&&held.current)await held.current;
-  if(phase==='candidate'&&['/noa-browse.js'].includes(u.pathname))return route.fulfill({path:process.cwd()+'/deploy'+u.pathname,contentType:'application/javascript'});
+  if(phase==='candidate'&&['/noa-browse.js','/noa-playlists.js'].includes(u.pathname))return route.fulfill({path:process.cwd()+'/deploy'+u.pathname,contentType:'application/javascript'});
   if(phase==='candidate'&&u.pathname==='/noa-youtube.php'&&u.searchParams.has('detail')){const response=await route.fetch();const data=await response.json();if(data.lyrics)data.lyrics=data.lyrics.replace(/\[[^\]]*\]/g,'').replace(/^\s*```[^\r\n]*$/gm,'').replace(/(?:\r?\n){3,}/g,'\n\n').trim();return route.fulfill({response,json:data});}
   if(phase==='candidate'&&req.isNavigationRequest()&&['/','/noa-world.php','/noa-music.php','/noa-youtube.php'].includes(u.pathname)){
    const response=await route.fetch({maxRetries:2});let body=await response.text();
    if(u.pathname==='/'){
     const local=readFileSync('deploy/noa-app/home.php','utf8'),hero=local.match(/<section class="noa-hero"[\s\S]*?<\/section>/)[0].replace(/<\?php[\s\S]*?\?>/g,''),community=local.match(/<section class="noa-section" data-home-section="community">[\s\S]*?<\/section>/)[0];
+    body=body.replace(/<style id="noa-home-action-layout">[^<]*<\/style>/g,'').replace('</head>',(local.match(/<style id="noa-home-action-layout">[^<]*<\/style>/)?.[0]||'')+'</head>');
     body=body.replace(/<section[^>]*data-home-section="sitemap"[\s\S]*?<\/section>/g,'').replace(/<nav[^>]*data-home-section="sitemap"[\s\S]*?<\/nav>/g,'').replace(/<section class="noa-section" data-home-section="community">[\s\S]*?<\/section>/g,'').replace(/<section class="noa-hero"[\s\S]*?<\/section>/,hero+'\n'+community).replace(/ · TOP 10/g,'').replace('추천 음악과 겹치지 않는 EP 시리즈 TOP 10.','추천 음악과 겹치지 않는 EP 시리즈.');return route.fulfill({response,body});
    }
    if(u.pathname==='/noa-world.php'){if(!u.searchParams.has('story')&&!u.searchParams.has('act')&&!u.searchParams.has('ep'))body=body.replace(/<section aria-label="ACT 공식 뮤직비디오">[\s\S]*?<\/section>/,'').replace(/<section class="noa-world-prose" id="official-mvs">[\s\S]*?<\/section>/,'');return route.fulfill({response,body});}
@@ -63,7 +64,7 @@ try{
    await page.locator('[data-browse-level="4"] .noa-inline-song').first().click();
    const panel=page.locator('.noa-inline-playback');
    if(path.includes('music')){
-    assert.equal(await panel.count(),0);assert(!await page.locator('[aria-label="곡 상세"]').isVisible());
+    assert.equal(await panel.count(),0);assert(!await page.locator('[aria-label="곡 상세"]').isVisible());assert.deepEqual(await page.locator('.noa-inline-song-row .noa-song-actions').first().locator('button').allTextContents(),['재생','담기']);
     await page.waitForFunction(()=>{const a=document.querySelector('audio');return a&&!a.paused&&a.currentTime>0;});
     await page.locator('[data-browse-level="4"] .noa-inline-song').nth(1).click();await page.locator('#next').click();assert.equal(await panel.count(),0);await page.locator('#pause-play').click();
     await page.getByRole('button',{name:'전체 음원',exact:true}).click();await page.locator('#songs .sound-play:visible').first().click();assert.equal(await panel.count(),0);assert(!await page.locator('[aria-label="곡 상세"]').isVisible());await page.locator('#pause-play').click();
@@ -84,9 +85,22 @@ try{
   }
   // Exercise the actual fixed bottom navigation, not only direct navigation.
   const musicLink=page.locator('.noa-mobile-nav a[href*="noa-music.php"]');assert.equal(await musicLink.count(),1);{await musicLink.first().click();await page.waitForFunction(()=>document.querySelector('#music-browse')?.dataset.browseReady==='true');assert((await page.evaluate(()=>window.__initialFrames)).every(f=>!f.visible&&!f.personalVisible));report.cases.push({width,bottomNavigation:true});}
-  await page.goto(base+'/',{waitUntil:'domcontentloaded'});assert(!/TOP\s*10/i.test(await page.locator('main').innerText()));assert(await page.getByRole('heading',{name:'추천 음악',exact:true}).isVisible());assert.equal(await page.locator('.noa-hero [data-home-section="sitemap"] a[href="/noa-sitemap.php"]').count(),1);assert(await page.locator('.noa-hero').evaluate(e=>e.nextElementSibling?.dataset.homeSection==='community'));report.cases.push({width,homeTop10Removed:true,homePositions:true});
+  await page.goto(base+'/',{waitUntil:'domcontentloaded'});assert(!/TOP\s*10/i.test(await page.locator('main').innerText()));assert(await page.getByRole('heading',{name:'추천 음악',exact:true}).isVisible());assert.equal(await page.locator('.noa-hero [data-home-section="sitemap"] a[href="/noa-sitemap.php"]').count(),1);assert(await page.locator('.noa-hero').evaluate(e=>e.nextElementSibling?.dataset.homeSection==='community'));assert(await page.locator('.noa-hero-actions').evaluate(e=>{const a=e.querySelector('a').getBoundingClientRect(),b=e.querySelector('nav a').getBoundingClientRect();return Math.abs(a.top-b.top)<1&&b.left>=a.right&&b.right<=innerWidth;}));report.cases.push({width,homeTop10Removed:true,homePositions:true});
   if(width===390){await page.goto(base+'/noa-world.php',{waitUntil:'domcontentloaded'});assert.equal(await page.locator('.world-play,#official-mvs').count(),0);assert.equal(await page.locator('[aria-label="ACT 이야기 목록"] a').count(),4);await page.locator('[aria-label="ACT 이야기 목록"] a').first().click();assert(await page.locator('.world-play').count()>0);report.cases.push({worldInitialListsRemoved:true,worldActVideosPreserved:true});}
   await context.close();
+ }
+ // Isolated member draft + administrator control proxies. No save, upload or download is sent.
+ {
+  const context=await browser.newContext(contextOptions(390));await routes(context,{current:null});let writes=0;
+  await context.route('**/noa-bridge/user-playlists.php*',route=>{if(route.request().method()!=='GET'){writes++;return route.abort();}return route.fulfill({json:{csrf:'isolated-member-fixture',items:[]}});});
+  const page=await context.newPage();await page.goto(base+'/noa-music.php?genre=kpop-original&act=1',{waitUntil:'domcontentloaded'});await page.locator('.noa-inline-song-row').first().waitFor();await page.waitForFunction(()=>!document.getElementById('my-controls').hidden);
+  const rows=page.locator('.noa-inline-song-row'),first=rows.first(),second=rows.nth(1),key=await second.getAttribute('data-inline-key');
+  await first.getByRole('button',{name:/ 재생$/}).click();await page.waitForFunction(()=>document.querySelector('audio').currentTime>0.1);const before=await page.locator('audio').evaluate(a=>({src:a.currentSrc,time:a.currentTime}));
+  await second.getByRole('button',{name:/ 담기$/}).click();assert.equal(await page.locator('#my-order>div').count(),1);assert(await page.locator('#my-order').evaluate((e,key)=>e.textContent.includes(key),await second.locator('.noa-inline-song').innerText().then(t=>t.replace(/^EP[.]\d+ · /,''))));
+  assert(await page.locator('audio').evaluate((a,b)=>!a.paused&&a.currentSrc===b.src&&a.currentTime>=b.time,before));assert.equal(writes,0);
+  const firstKey=await first.getAttribute('data-inline-key');await page.evaluate(key=>{const raw=[...document.querySelectorAll('.song[data-key]')].find(n=>n.dataset.key===key),box=raw.querySelector('.jukebox-actions');window.__adminProxy={download:0,replace:0};const a=document.createElement('a');a.className='jukebox-download';a.href='#isolated-download';a.onclick=e=>{e.preventDefault();window.__adminProxy.download++;};const b=document.createElement('button');b.className='jukebox-replace';b.onclick=()=>window.__adminProxy.replace++;box.append(a,b);},firstKey);
+  await page.waitForFunction(()=>document.querySelector('.noa-inline-song-row .noa-song-actions')?.children.length===4);assert.deepEqual(await first.locator('.noa-song-actions button').allTextContents(),['재생','담기','다운로드','교체']);await first.getByRole('button',{name:/ 다운로드$/}).click();await first.getByRole('button',{name:/ 교체$/}).click();assert.deepEqual(await page.evaluate(()=>window.__adminProxy),{download:1,replace:1});assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1));
+  report.cases.push({memberDraftByExactKey:key,addDoesNotInterruptAudio:true,playlistWrites:0,adminProxyFixture:true,downloadAndReplaceOriginalHandlers:true});await context.close();
  }
  for(const path of ['/noa-music.php','/noa-youtube.php']){
   const context=await browser.newContext(contextOptions(390)),held={current:null};await routes(context,held);await context.route('**/noa-browse.js*',r=>r.abort());const page=await context.newPage();await page.goto(base+path,{waitUntil:'domcontentloaded'});await page.getByRole('button',{name:'다시 불러오기',exact:true}).waitFor({timeout:12000});assert(await page.locator('#songs,#yt-videos').evaluate(e=>e.hidden&&getComputedStyle(e).display==='none'));report.cases.push({path,scriptFailureRecovery:true,fullListHidden:true});await context.close();

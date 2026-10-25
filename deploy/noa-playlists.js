@@ -66,6 +66,13 @@
  }
 
  el('my-new').onclick=()=>{id=crypto.randomUUID();revision=0;working=filteredQueue.filter(b=>lookup.get(b.dataset.key)?.kind!=='playlist').map(b=>b.dataset.key);picker.value='';title.value='';status.textContent='현재 재생 목록 '+working.length+'개를 담았습니다. 이름을 입력하고 저장해 주세요.';title.focus();renderOrder()};
+ // Add the requested key to the current draft without selecting or pausing another track.
+ window.addEventListener?.('noa-playlist-add',async event=>{
+  const key=event.detail?.key;if(busy||typeof key!=='string'||!lookup.has(key))return;
+  const section=el('my-playlists');section.hidden=false;location.hash='my-playlists';
+  if(!csrf&&!await refresh(true)){section.scrollIntoView?.({block:'start',behavior:'auto'});return;}
+  working=working||[];if(!working.includes(key))working.push(key);renderOrder();status.textContent=(lookup.get(key).title||key)+' · '+working.length+'개 곡 · 저장하면 반영됩니다.';section.scrollIntoView?.({block:'start',behavior:'auto'});
+ });
  el('my-add').onclick=()=>{if(!selected)return;working=working||[];if(!working.includes(selected.dataset.key))working.push(selected.dataset.key);status.textContent=working.length+'개 곡 · 저장하면 반영됩니다.';renderOrder()};
  el('my-remove').onclick=()=>{if(!selected)return;working=(working||[]).filter(k=>k!==selected.dataset.key);status.textContent=working.length+'개 곡 · 저장하면 반영됩니다.';renderOrder()};
  el('my-play').onclick=()=>{working=working||filteredQueue.filter(b=>lookup.get(b.dataset.key)?.kind!=='playlist').map(b=>b.dataset.key);selectWorking(true)};
