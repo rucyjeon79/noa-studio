@@ -14,7 +14,7 @@ html .noa-hero[data-home-section=hero]>.noa-hero-copy{grid-area:copy;display:fle
 html .noa-hero[data-home-section=hero] h1{font-size:clamp(20px,2.7cqi,32px);font-weight:600;letter-spacing:-.02em;line-height:1.2;margin:0;overflow-wrap:anywhere}
 html .noa-hero[data-home-section=hero] h1 br{display:none}
 html .noa-hero[data-home-section=hero] .noa-hero-copy p{margin:0;line-height:1.5}
-html .noa-hero[data-home-section=hero] .noa-hero-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:var(--noa-hero-gap);width:100%;max-width:100%;margin-top:0}
+html .noa-hero[data-home-section=hero] .noa-hero-actions{container-type:inline-size;container-name:noa-hero-actions;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:var(--noa-hero-gap);width:100%;max-width:100%;margin-top:0}
 html .noa-hero[data-home-section=hero] .noa-hero-services{display:flex;min-width:0;margin:0}
 html .noa-hero[data-home-section=hero] .noa-hero-actions .noa-button{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;width:100%;min-height:48px;margin:0;white-space:normal;text-align:center}
 @media(orientation:landscape){
@@ -63,6 +63,11 @@ html .noa-hero[data-home-section=hero] #noa-hero-status:not(:empty){position:abs
 @media(orientation:landscape){
  html .noa-hero[data-home-section=hero] .noa-hero-pick+.noa-hero-pick{border-top:1px solid var(--noa-line)}
  html .noa-hero[data-home-section=hero] .noa-hero-pick small{display:none}
+}
+/* Reflow the icon and label only when each action has enough actual space. */
+@container noa-hero-actions (min-width:360px){
+ html .noa-hero[data-home-section=hero] .noa-hero-actions .noa-button{flex-direction:row;gap:8px;min-height:44px;padding:8px 12px;font-size:12px;line-height:1.3;white-space:nowrap}
+ html .noa-hero[data-home-section=hero] .noa-hero-actions .noa-button svg{width:18px;height:18px;flex:none}
 }
 @media(prefers-reduced-motion:reduce){html .noa-hero[data-home-section=hero] .noa-hero-art video{animation:none;transform:none;will-change:auto}}
 </style></head><body><div class="noa-layout"><main class="noa-main"><header class="noa-topbar"><a class="noa-logo" href="/">NOA STUDIO</a><div class="noa-account"><?php if(!empty($is_member)):?><span class="noa-muted"><?=noa_home_e((string)$member['mb_nick'])?></span><a href="/bbs/logout.php" data-noa-i18n="로그아웃">로그아웃</a><?php else:?><a href="/bbs/login.php" data-noa-i18n="로그인">로그인</a><?php endif;?></div></header>
