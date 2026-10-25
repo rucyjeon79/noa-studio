@@ -100,9 +100,14 @@ try {
         $old=json_decode($current['payload'],true)?:[];$incoming=$data['payload'];
         if(nup_type($old,$kind)==='ep'&&!empty($old['packageSchema'])){
             foreach(['genreId','ep','sourceRef'] as $locked)if(array_key_exists($locked,$incoming)&&($incoming[$locked]??null)!==($old[$locked]??null)){ $pdo->rollBack();fail(400,'original_information_read_only'); }
-            foreach(['originalTitle','originalLyrics','sourceTitle','sourceLyrics'] as $locked)if(array_key_exists($locked,$incoming['body']??[])&&$incoming['body'][$locked]!==($old['body'][$locked]??null)){ $pdo->rollBack();fail(400,'original_information_read_only'); }
+            foreach(['originalInfo','originalTitle','originalLyrics','sourceTitle','sourceLyrics'] as $locked)if(array_key_exists($locked,$incoming['body']??[])&&$incoming['body'][$locked]!==($old['body'][$locked]??null)){ $pdo->rollBack();fail(400,'original_information_read_only'); }
         }
+        if(!empty($old['packageSchema'])&&array_key_exists('genreId',$incoming)&&($incoming['genreId']??null)!==($old['genreId']??null)){ $pdo->rollBack();fail(400,'classification_editor_required'); }
+        if(nup_type($old,$kind)==='original'&&!empty($old['packageSchema'])&&isset($incoming['ep'])&&(int)$incoming['ep']!==(int)($old['ep']??0)){ $pdo->rollBack();fail(400,'complete_record_editor_required'); }
         $full=array_replace($old,$incoming);$full['body']=array_replace($old['body']??[],$incoming['body']??[]);$full=nup_normalize($full,$kind);
+        if($full['packageType']==='original'&&!isset($incoming['body']['originalInfo']))foreach(['confirmedTitle'=>'title','lyricsBlock'=>'lyrics','vocalInfo'=>'vocal'] as $from=>$to)if(array_key_exists($from,$incoming['body']??[]))$full['body']['originalInfo'][$to]=$incoming['body'][$from];
+        if($full['packageType']==='ep'&&empty($full['sourceRef'])){$original=nup_original($pdo,$full);if(($original['status']??'')==='linked')$full['sourceRef']=$original['key'];}
+
         $payload=json_encode($full,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
     }
     $next = $expected + 1;
