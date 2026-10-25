@@ -28,4 +28,4 @@ try{
   }
  }else throw new RuntimeException('invalid_action');
  echo json_encode(['ok'=>true]+$result,JSON_THROW_ON_ERROR);
-}catch(Throwable $e){if(isset($db)&&$db->inTransaction())$db->rollBack();http_response_code(409);echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);}
+}catch(Throwable $e){if(isset($db)&&$db->inTransaction())$db->rollBack();http_response_code(200);echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);}
