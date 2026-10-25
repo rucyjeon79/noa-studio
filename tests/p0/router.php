@@ -23,13 +23,13 @@ if(in_array($path,['/noa-music.php','/noa-youtube.php'])){
   for($i=0;$i<count($tokens);$i++){
    if(!is_array($tokens[$i])||$tokens[$i][0]!==T_FUNCTION)continue;
    $j=$i+1;while(isset($tokens[$j])&&is_array($tokens[$j])&&in_array($tokens[$j][0],[T_WHITESPACE,T_COMMENT,T_DOC_COMMENT],true))$j++;
-   if(!isset($tokens[$j])||!is_array($tokens[$j])||$tokens[$j][0]!==T_STRING||$tokens[$j][1]!=='noa_video_detail')continue;
+   if(!isset($tokens[$j])||!is_array($tokens[$j])||$tokens[$j][0]!==T_STRING||!in_array($tokens[$j][1],['noa_video_display_lyrics','noa_video_detail'],true))continue;
    $text='';$depth=0;$body=false;
    for($k=$i;$k<count($tokens);$k++){
     $token=$tokens[$k];$text.=is_array($token)?$token[1]:$token;
     if($token==='{'){$depth++;$body=true;}
     elseif(is_array($token)&&in_array($token[0],[T_CURLY_OPEN,T_DOLLAR_OPEN_CURLY_BRACES],true))$depth++;
-    elseif($token==='}'&&$body&&--$depth===0){$code=$text;break 2;}
+    elseif($token==='}'&&$body&&--$depth===0){$code=($code??'').$text;break;}
    }
   }
   if($code===null)throw new RuntimeException('missing_fixture_projection');eval($code);
