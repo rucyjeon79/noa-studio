@@ -19,7 +19,15 @@ function mount({host,rows,onChange,search=null,genre=null,type=null,kind='곡'})
  const crumbs=e('nav'),grid=e('div'),pager=e('nav'),note=e('p'),all=e('button',kind==='영상'?'전체 영상':'전체 음원');crumbs.className='noa-browse-crumbs';crumbs.setAttribute('aria-label','라이브러리 경로');grid.className='noa-browse-levels';pager.className='noa-browse-pager';pager.setAttribute('aria-label','음악 목록 페이지');note.className='noa-muted';all.className='noa-browse-all';all.type='button';all.onclick=()=>navigate('songs','','',0);host.replaceChildren(crumbs,grid,note,pager);
  function translate(text){return window.NoaUI?.translate(text)||text;}
  function sync(){if(genre)genre.value=selectedGenre;if(type)type.value='';}
- function navigate(next,group='',g='',act=0){expandedAct=act||null;stage=next;selectedGroup=group;selectedGenre=g;selectedAct=act;page=0;if(search)search.value='';sync();const u=new URL(location.href);for(const key of ['group','genre','act','view','page','track','type','playlist'])u.searchParams.delete(key);if(group)u.searchParams.set('group',group);if(g)u.searchParams.set('genre',g);if(act)u.searchParams.set('act',String(act));if(next==='songs'&&!group&&!g)u.searchParams.set('view','all');history.replaceState(null,'',u);onChange();}
+ function showLevel(level){
+  if(typeof window.requestAnimationFrame!=='function')return;
+  window.requestAnimationFrame(()=>{
+   const target=host.querySelector('[data-browse-level="'+level+'"]');
+   const visibleTarget=level===4?target?.closest('.noa-inline-act'):target;
+   visibleTarget?.scrollIntoView({block:'start',behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  });
+ }
+ function navigate(next,group='',g='',act=0){expandedAct=act||null;stage=next;selectedGroup=group;selectedGenre=g;selectedAct=act;page=0;if(search)search.value='';sync();const u=new URL(location.href);for(const key of ['group','genre','act','view','page','track','type','playlist'])u.searchParams.delete(key);if(group)u.searchParams.set('group',group);if(g)u.searchParams.set('genre',g);if(act)u.searchParams.set('act',String(act));if(next==='songs'&&!group&&!g)u.searchParams.set('view','all');history.replaceState(null,'',u);onChange();if(next==='genres')showLevel(2);else if(next==='acts')showLevel(3);else if(next==='groups')showLevel(1);}
  function button(text,action){const b=e('button',text);b.type='button';b.onclick=action;return b;}
  function idsForGenreTitle(title){return Object.values(names).includes(title);}
  function card(title,subtitle,items,action){const b=button('',action);b.className='noa-browse-card';const r=items.find(r=>r.video||r.thumb),g=items.find(r=>names[r.genre]);const matchedGenre=Object.keys(names).find(id=>names[id]===title)||g?.genre;const img=e('img');img.alt='';img.loading='lazy';img.src=matchedGenre&&idsForGenreTitle(title)?genreArt(matchedGenre):(r?(r.video?('/noa-bridge/youtube-thumbnail.php?id='+encodeURIComponent(r.video)):r.thumb):genreArt(matchedGenre||''));if(!r)img.className='noa-genre-art';img.onerror=()=>{img.onerror=null;img.src='/noa-assets/papa-logo.png';};b.append(img);const copy=e('span');copy.append(e('strong',translate(title)),e('small',subtitle));b.append(copy);return b;}
@@ -47,7 +55,7 @@ function mount({host,rows,onChange,search=null,genre=null,type=null,kind='곡'})
     const body=level(3,'ACT 플레이리스트'),items=rows.filter(r=>r.genre===selectedGenre&&r.kind!=='playlist'),acts=[...new Set(items.map(actFor).filter(Boolean))].sort((a,b)=>a-b);
     for(const act of acts){
      const members=items.filter(r=>actFor(r)===act).sort(epOrder),a=(act-1)*10+1,b=act*10,section=e('div');section.className='noa-inline-act';
-     const toggle=card('ACT '+act,'EP.'+a+'–'+b+' · '+members.length+'개 '+kind,members,()=>{expandedAct=expandedAct===act?null:act;onChange();});toggle.setAttribute('aria-expanded',String(expandedAct===act));section.append(toggle);
+     const toggle=card('ACT '+act,'EP.'+a+'–'+b+' · '+members.length+'개 '+kind,members,()=>{expandedAct=expandedAct===act?null:act;onChange();if(expandedAct!==null)showLevel(4);});toggle.setAttribute('aria-expanded',String(expandedAct===act));section.append(toggle);
      if(expandedAct===act){const detail=e('div');detail.dataset.browseLevel='4';detail.setAttribute('aria-label','ACT '+act+' '+kind+' 목록');renderInlineSongs(detail,members);section.append(detail);}body.append(section);
     }
     const loose=items.filter(r=>!actFor(r));
