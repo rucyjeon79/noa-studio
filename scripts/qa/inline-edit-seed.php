@@ -1,0 +1,21 @@
+<?php
+declare(strict_types=1);define('_GNUBOARD_',true);
+$dsn=getenv('NOA_MYSQL_DSN');if(!str_contains((string)$dsn,'dbname=noa_inline_edit_test;'))throw new RuntimeException('isolated_database_required');
+require __DIR__.'/../../bridge/youtube-store.php';
+$db=new PDO($dsn,'root','noa-test-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+foreach(require __DIR__.'/../../bridge/catalog-schema.php' as $sql)$db->exec($sql);ny_schema($db);
+$db->exec("CREATE TABLE noa_documents(doc_key VARCHAR(191) CHARACTER SET ascii PRIMARY KEY,kind VARCHAR(32),payload LONGTEXT,revision BIGINT UNSIGNED,updated_by VARCHAR(20),updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE noa_document_history(doc_key VARCHAR(191) CHARACTER SET ascii,revision BIGINT UNSIGNED,payload LONGTEXT,changed_by VARCHAR(20),PRIMARY KEY(doc_key,revision)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE noa_request_log(request_id CHAR(36) CHARACTER SET ascii PRIMARY KEY,doc_key VARCHAR(191) CHARACTER SET ascii,request_hash CHAR(64),revision BIGINT UNSIGNED) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+$id=str_repeat('a',64);$batch=str_repeat('b',64);$channel='UCwYy9xsAqDFat6AV5UKrfgA';$video='abcdefghijk';
+$db->prepare('INSERT INTO noa_catalog_batches(batch_id,status,report,source_guard,created_by,applied_at) VALUES(?,?,?,?,?,CURRENT_TIMESTAMP)')->execute([$batch,'applied','{}','guard','fixture']);
+$db->prepare('INSERT INTO noa_catalog_songs VALUES(?,?,?,?,?,?)')->execute([$id,'[]','kpop-original','ko','original','01']);
+$fields=['title'=>'원래 곡','youtubeUrl'=>'https://www.youtube.com/watch?v='.$video,'lyricsBlock'=>"[Verse]\n원래 가사"];
+$db->prepare('INSERT INTO noa_catalog_versions VALUES(?,?,?,?,?,?,?)')->execute([$batch,$id,'song',json_encode($fields),str_repeat('c',64),'[]',1]);
+$db->prepare('INSERT INTO noa_catalog_aliases VALUES(?,?,?)')->execute([$batch,'single:kpop-original:01',$id]);
+$doc=['title'=>'원래 곡','genreId'=>'kpop-original','ep'=>'01','body'=>$fields];
+$db->prepare('INSERT INTO noa_documents(doc_key,kind,payload,revision,updated_by) VALUES(?,?,?,?,?)')->execute(['single:kpop-original:01','single',json_encode($doc),1,'fixture']);
+$db->prepare('INSERT INTO noa_youtube_runs(run_id,channel_id,catalog_batch,report) VALUES(?,?,?,?)')->execute([str_repeat('d',32),$channel,$batch,'{}']);
+$v=['id'=>$video,'snippet'=>['title'=>'YouTube 원래 제목','description'=>'YouTube 원문 설명','channelId'=>$channel],'status'=>['privacyStatus'=>'public','embeddable'=>true]];
+$db->prepare('INSERT INTO noa_youtube_videos VALUES(?,?,?,?)')->execute([str_repeat('d',32),$video,json_encode($v),json_encode(['status'=>'matched','songId'=>$id])]);
+echo "ISOLATED_INLINE_EDIT_SEEDED\n";

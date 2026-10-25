@@ -15,5 +15,6 @@ if(!is_string($key)||!preg_match('/^[a-zA-Z0-9:_-]{1,190}$/D',$key))noa_detail_r
 try{
  $admin=!empty($is_member)&&($is_admin??'')==='super';$d=nj_document(noa_bridge_pdo(),$key);
  if(!$d||!in_array($d['_kind']??'', ['single','story','playlist'],true)||!noa_sound_visible($d,$admin))noa_detail_reply(404,['error'=>'not_found']);
- noa_detail_reply(200,['key'=>$key]+noa_music_detail_fields($d));
+ $fields=noa_music_detail_fields($d);if(is_file(__DIR__.'/noa-bridge/inline-edit.php')){require_once __DIR__.'/noa-bridge/inline-edit.php';$db=noa_bridge_pdo();$edits=nie_overrides($db);$f=($d['_kind']??'')==='playlist'&&(int)($d['act']??0)>0?($edits[nie_meta_key('act',$d['genreId'].':'.(int)$d['act'])]['fields']??[]):nie_fields($edits,['key'=>$key,'orderKey'=>nie_identity($db,$key)]);if(array_key_exists('lyrics',$f))$fields['rawLyrics']=$f['lyrics'];if(array_key_exists('description',$f))$fields['description']=$f['description'];}
+ noa_detail_reply(200,['key'=>$key]+$fields);
 }catch(Throwable $e){error_log('[music-detail] '.get_class($e));noa_detail_reply(503,['error'=>'detail_unavailable']);}

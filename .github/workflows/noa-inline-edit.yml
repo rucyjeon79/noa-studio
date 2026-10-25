@@ -1,0 +1,99 @@
+name: NOA Inline Metadata Editor Production
+on:
+  push:
+    branches: [main]
+    paths: &paths
+      - 'deploy/noa-browse.js'
+      - 'deploy/noa-music.php'
+      - 'deploy/noa-youtube.php'
+      - 'deploy/noa-youtube.js'
+      - 'deploy/noa-music-detail.php'
+      - 'tests/catalog/inline_edit_projection_test.php'
+      - 'bridge/inline-edit.php'
+      - 'deploy/noa-inline-edit.php'
+      - 'deploy/noa-browse-edit.js'
+      - 'scripts/noa_inline_edit_deploy.py'
+      - 'scripts/qa/inline-edit-*'
+      - 'scripts/qa/noa-inline-edit.mjs'
+      - '.github/workflows/noa-inline-edit.yml'
+  pull_request:
+    paths: *paths
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-inline-metadata-editor, cancel-in-progress: false}
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: noa-test-only, MYSQL_DATABASE: noa_inline_edit_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -h localhost -pnoa-test-only" --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      NOA_MYSQL_DSN: mysql:host=127.0.0.1;port=3306;dbname=noa_inline_edit_test;charset=utf8mb4
+      NOA_MYSQL_USER: root
+      NOA_MYSQL_PASSWORD: noa-test-only
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: pdo_mysql}
+      - name: Validate metadata reader and existing playback, source and permission contracts
+        run: |
+          php -l bridge/inline-edit.php
+          php tests/catalog/inline_edit_projection_test.php
+          php -l deploy/noa-inline-edit.php
+          php -l deploy/noa-music.php
+          php -l deploy/noa-youtube.php
+          php -l deploy/noa-music-detail.php
+          node --check deploy/noa-browse-edit.js
+          node --check deploy/noa-browse.js
+          node --check deploy/noa-youtube.js
+          node --check scripts/qa/noa-inline-edit.mjs
+          python tests/uiux/recovery_contract_test.py
+          python tests/youtube/detail_endpoint_test.py
+          node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs tests/playlists/drag_order_test.cjs tests/youtube/lazy_details_test.cjs
+      - name: Prepare isolated MySQL/session fixture and mobile browser
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          npm install --prefix "$RUNNER_TEMP/noa-edit" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-inline-edit.mjs "$RUNNER_TEMP/noa-edit/check.mjs"
+          python scripts/qa/inline-edit-fixture.py
+          php scripts/qa/inline-edit-seed.php
+          php -S 127.0.0.1:8101 -t "$RUNNER_TEMP/noa-inline-edit-fixture" > "$RUNNER_TEMP/inline-edit-php.log" 2>&1 &
+      - name: Verify native audited save, shared identity, conflict, retry and inline mobile edits
+        run: node "$RUNNER_TEMP/noa-edit/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-inline-edit-candidate-${{ github.run_id }}', path: inline-edit-proof/, retention-days: 2}
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: candidate
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Prepare existing NOA transport and mobile browser
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          python -m pip install 'paramiko>=3,<5'
+          npm install --prefix "$RUNNER_TEMP/noa-edit" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-inline-edit.mjs "$RUNNER_TEMP/noa-edit/check.mjs"
+      - name: Compare all operating sources and activate dependencies before page entry
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_inline_edit_deploy.py
+      - name: Verify production sources and isolated administrator UI without operating data writes
+        env: {NOA_EDIT_PHASE: live}
+        run: node "$RUNNER_TEMP/noa-edit/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-inline-edit-live-${{ github.run_id }}', path: inline-edit-proof/, retention-days: 2}
