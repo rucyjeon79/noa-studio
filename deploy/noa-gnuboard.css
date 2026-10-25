@@ -1,0 +1,39 @@
+/* Native desktop/mobile GnuBoard skins share NOA's dark/ivory palette.
+   Presentation only: preserve forms, editor content, core skins and authorization. */
+html.noa-g5 body{background:var(--noa-bg);color:var(--noa-text)}
+html.noa-g5 :is(#wrapper,#container_wr,#container,#container_title){background:transparent;color:var(--noa-text);border-color:var(--noa-line);box-shadow:none}
+html.noa-g5 :is(#container_title,#bo_v_title,.mbskin h1,.new_win h1){color:var(--noa-text);text-shadow:none;box-shadow:none}
+/* A parent surface owns the decoration; nested form wrappers remain transparent. */
+html.noa-g5 :is(.mbskin,.new_win,#bo_v,#bo_w,#bo_list,#sch_result,#faq_wrap,#poll_result,#memo_list,#memo_view,#scrap,#profile){background:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line)}
+html.noa-g5 :is(#flogin,#login_frm,#login_fs,#login_info,.mb_login_join,.mbskin_box,.mb_log_cate,#fregister,#fregisterform,#fregister section,#fregister_chkall,#member_cert_refresh section,#member_cert_refresh_chkall,.new_win_con,.new_win .win_desc,.new_win .win_btn,.form_01,.form_01 ul,.form_01 li,#info_fs,#reg_result .reg_result_wr,#reg_result #result_email,#bo_v>header,#bo_v_info,#bo_v_con,.bo_v_nb,.view_is_list){background:transparent;color:var(--noa-text);border-color:var(--noa-line);box-shadow:none}
+html.noa-g5 :is(#mb_login h2,#mb_login .mb_login_join a,.mbskin label,.new_win label,.frm_label,.chk_box label,.fregister_agree label,.member_cert_refresh_agree label,#fregisterform .frm_label){color:var(--noa-text);border-color:var(--noa-line)}
+html.noa-g5 :is(.mbskin p,.new_win p,.frm_info,.bo_info,#bo_v_info,.bo_vc_hdinfo,.view_is_list,#bo_list_total,#bo_list .td_datetime,#bo_list .td_num,#bo_list .td_name,.memo_datetime,.scrap_datetime){color:var(--noa-muted);border-color:var(--noa-line)}
+/* Lists, empty states, tables and search use theme surfaces in both native skins. */
+html.noa-g5 :is(.tbl_head01,.tbl_head02,.tbl_frm01,.tbl_wrap table,.tbl_wrap th,.tbl_wrap td,#bo_list .bo_tit,.bo_list,.bo_list li,.empty_table,.empty_list,.empty_li,#bo_sch,.bo_sch,#bo_cate,#bo_vc,#bo_vc article .comment_inner,.bo_vc_w,#bo_v_share,.bo_vc_act,.memo_list li,.memo_from,#memo_view_ul,#memo_view p,#mb_login_notmb,#mb_login_od_wr,#mb_login_odinfo,#guest_privacy,#sch_res_detail,.sch_res_list,.faq_list,.faq_con){background-color:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line)}
+html.noa-g5 :is(.tbl_head01 th,.tbl_head02 th,.tbl_frm01 th,#bo_list_total,.view_is_list,#bo_vc,.bo_vc_w,.memo_list li.read,#memo_view_ul){background-color:var(--noa-bg);color:var(--noa-muted)}
+html.noa-g5 :is(.bo_tit a,.bo_subject a,.sv_member,#bo_v_file a,#bo_v_link a,.bo_v_nb li a,.sch_res_title a){color:var(--noa-text)}
+html.noa-g5 :is(.bo_cate_link,.bo_v_cate,.bo_cmt,.scrap_cate){background:var(--noa-bg);color:var(--noa-accent)!important;border-color:var(--noa-line)}
+/* Keep authored article text untouched; only skin controls and metadata are themed. */
+html.noa-g5 :is(input.frm_input,input.sch_input,.sch_input,select,textarea,.fileName,#captcha_key,#wr_content){background-color:var(--noa-bg);color:var(--noa-text);border-color:var(--noa-line)}
+html.noa-g5 :is(input,textarea)::placeholder{color:var(--noa-muted);opacity:1}
+html.noa-g5 :is(input,select,textarea):disabled{background-color:var(--noa-surface);color:var(--noa-muted);opacity:.65}
+html.noa-g5 :is(input,select,textarea):focus-visible{outline:2px solid var(--noa-info,var(--noa-accent));outline-offset:2px}
+html.noa-g5 :is(input[type=checkbox],input[type=radio]){accent-color:var(--noa-success,var(--noa-accent))}
+html.noa-g5 :is(.chk_box,.fregister_agree,.member_cert_refresh_agree) input[type=checkbox]+label span{background-color:var(--noa-bg);border-color:var(--noa-muted)}
+html.noa-g5 :is(.chk_box,.fregister_agree,.member_cert_refresh_agree) input[type=checkbox]:checked+label{color:var(--noa-text)}
+html.noa-g5 :is(.chk_box,.fregister_agree,.member_cert_refresh_agree) input[type=checkbox]:checked+label span{background-color:var(--noa-success,var(--noa-accent));border-color:var(--noa-success,var(--noa-accent))}
+html.noa-g5 :is(.btn_cancel,.btn_b01,.btn_b02,.btn_frmline,.pg_page,#bo_sch .sch_btn,.bo_sch .sch_btn):not(.noa-glass-control){background-color:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line)}
+html.noa-g5 :is(.btn_submit,.btn_submit:hover,.pg_current):not(.noa-glass-control){background:var(--noa-accent);color:var(--noa-accentText);border-color:var(--noa-accent)}
+html.noa-g5 :is(.mbskin a,.new_win a,.bo_tit a,.bo_subject a,.pg_page):hover{color:var(--noa-accent)}
+html.noa-g5 :is(#fregister p,#member_cert_refresh p){background:var(--noa-bg);color:var(--noa-danger);border-color:var(--noa-danger)}
+html.noa-g5 :is(#fregister p,#member_cert_refresh p)::before{background:var(--noa-danger)}
+html.noa-g5 :is(#msg_certify,#find_info #info_fs p){background:transparent;color:var(--noa-info);border-color:var(--noa-info)}
+html.noa-g5 :is(.bo_vc_act,#bo_v_share)::after{border-bottom-color:var(--noa-surface)}
+html.noa-g5 :is(.bo_vc_act,#bo_v_share)::before{border-bottom-color:var(--noa-line)}
+/* Search controls keep their native layout and a readable touch target. */
+html.noa-g5 :is(#bo_sch,.bo_sch) :is(input,select,button){min-block-size:44px}
+html.noa-g5 #bo_sch{min-block-size:46px}
+html.noa-g5 #bo_sch .sch_btn{min-inline-size:44px;color:var(--noa-text)}
+/* Content, search, FAQ and member utility popups use the same native skin palette. */
+html.noa-g5 :is(#ctt,#ctt header,#ctt_con,#faq_wrap li,#faq_wrap h3,#faq_con,#sch_result .sch_res_list,#sch_result .search_cnt,#point,#point .point_all,#scrap .scrap_cate,#profile .profile_info,.new_win .win_title,.new_win h1,.new_win h2){background-color:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line);box-shadow:none}
+html.noa-g5 :is(#ctt_con,#faq_con,#sch_result .sch_res_list,.new_win .win_desc){background-color:transparent}
