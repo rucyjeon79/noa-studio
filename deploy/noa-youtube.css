@@ -15,3 +15,6 @@
 #youtube-playlists.noa-balanced{align-items:stretch}#youtube-playlists p{display:flex;margin:0;min-inline-size:0}
 #youtube-playlists p>a.noa-action{inline-size:100%;padding:8px 12px;align-self:stretch;justify-content:center}
 #youtube-playlists p>a.noa-action:hover{text-decoration:none}
+
+/* A private provider video is a catalog preview, never a playable iframe. */
+.yt-coming{position:relative}.yt-coming-card .yt-play{display:none}.yt-coming-label,#yt-coming-preview[data-overlay=true]::after{position:absolute;inset:0;display:grid;place-items:center;content:'Coming Soon';font-family:Georgia,serif;font-size:clamp(24px,5vw,64px);font-weight:700;color:var(--noa-confirmed);text-shadow:0 2px 8px var(--noa-bg)}.yt-coming[data-coming-overlay=true] img,#yt-coming-preview[data-overlay=true] img{filter:grayscale(1)}#yt-coming-preview{position:relative}#yt-coming-art{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}#yt-coming-preview::after{pointer-events:none;aspect-ratio:16/9;bottom:auto}.noa-inline-song[data-coming-soon=true]>small{margin-left:auto;color:var(--noa-muted);font-size:11px;white-space:nowrap}

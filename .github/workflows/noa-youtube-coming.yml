@@ -1,0 +1,99 @@
+name: NOA YouTube Coming Soon Production
+on:
+  push:
+    branches: [main]
+    paths: &paths
+      - 'bridge/youtube-catalog.php'
+      - 'deploy/noa-youtube.php'
+      - 'deploy/noa-youtube.js'
+      - 'deploy/noa-youtube.css'
+      - 'deploy/noa-browse.js'
+      - 'deploy/noa-browse-edit.js'
+      - 'public/coming/**'
+      - 'tests/youtube/coming*'
+      - 'scripts/qa/noa-youtube-coming.mjs'
+      - 'scripts/noa_youtube_coming_deploy.py'
+      - '.github/workflows/noa-youtube-coming.yml'
+  pull_request:
+    paths: *paths
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-youtube-coming, cancel-in-progress: false}
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: pdo_sqlite}
+      - name: Validate metadata parity, privacy boundaries and existing playback
+        run: |
+          php -l bridge/youtube-catalog.php
+          php -l deploy/noa-youtube.php
+          php -l deploy/noa-music.php
+          php tests/youtube/coming_catalog_test.php
+          php tests/catalog/music_readmodel_test.php
+          python tests/youtube/detail_endpoint_test.py
+          python tests/youtube/coming_fixture.py
+          node --check deploy/noa-browse.js
+          node --check deploy/noa-browse-edit.js
+          node --check deploy/noa-youtube.js
+          node --check scripts/qa/noa-youtube-coming.mjs
+          node --test scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs tests/youtube/lazy_details_test.cjs
+          python -m py_compile scripts/noa_youtube_coming_deploy.py
+      - name: Prepare existing browser validation
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          npm install --prefix "$RUNNER_TEMP/noa-coming" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-youtube-coming.mjs "$RUNNER_TEMP/noa-coming/check.mjs"
+      - name: Verify inline preview, search, public playback selection and Music in both themes
+        run: node "$RUNNER_TEMP/noa-coming/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-coming-candidate-${{ github.run_id }}', path: youtube-coming-proof/candidate/, retention-days: 2}
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: candidate
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Prepare existing NOA SFTP and browser tools
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          python -m pip install 'paramiko>=3,<5'
+          npm install --prefix "$RUNNER_TEMP/noa-coming" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-youtube-coming.mjs "$RUNNER_TEMP/noa-coming/check.mjs"
+      - name: Compare operating source SHAs and deploy only Coming soon dependencies
+        id: upload
+        env: &noa_env
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_youtube_coming_deploy.py
+      - name: Verify actual Music parity, all previous public videos and Coming soon previews
+        id: live
+        env: {NOA_COMING_PHASE: live}
+        run: node "$RUNNER_TEMP/noa-coming/check.mjs"
+      - name: Restore release-owned source bytes if acceptance fails
+        if: failure() && (steps.live.outcome == 'failure' || steps.upload.outcome == 'failure')
+        env: *noa_env
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-coming-release-before.json" ]; then
+            python scripts/noa_youtube_coming_deploy.py rollback
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: 'noa-coming-live-${{ github.run_id }}'
+          path: |
+            youtube-coming-proof/live/
+            youtube-coming-proof/deployment.json
+            youtube-coming-proof/before.json
+          retention-days: 2
