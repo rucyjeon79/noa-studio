@@ -14,6 +14,8 @@ function nam_owner(array $document,array $member):bool{
 function nam_requirement(string $path,string $method='GET',array $query=[]):?string{
  if($path==='/'||$path==='/index.php'||$path==='/noa-app/home.php'||$path==='/noa2.php')return 'home';
  if(str_starts_with($path,'/adm/'))return 'admin';
+ if($path==='/noa-subscription-admin.php')return 'admin';
+ if(in_array($path,['/noa-subscription.php','/noa-bridge/subscription.php'],true))return 'member';
  if($path==='/noa-creator.php'||$path==='/noa-bridge/creator.php')return 'creator';
  if($path==='/noa-bridge/legacy-audio.php')return null;
  if($path==='/noa-app/jukebox/stream.php'||$path==='/noa-app/jukebox/download.php')return null; // asset ownership checked after loading the record

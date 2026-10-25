@@ -18,7 +18,7 @@ function noa_design_assets(){
  if(!is_string($path))return;
  $native=preg_match('~^/(?:bbs|adm)/~',$path);
  $workspace=preg_match('~^/noa-app/(?:database|taxonomy|jukebox)/(?:index[.]php)?$~',$path);
- $public=in_array($path,['/','/index.php'],true)||preg_match('~^/noa-(?:music|youtube|world|my|settings|catalog|ai-lab|library|editor|download|theme-admin|creator|channel)(?:-admin)?[.]php$~',$path);
+ $public=in_array($path,['/','/index.php'],true)||preg_match('~^/noa-(?:music|youtube|world|my|settings|catalog|ai-lab|library|editor|download|theme-admin|creator|channel|subscription)(?:-admin)?[.]php$~',$path);
  if(!$native&&!$workspace&&!$public)return;
  if(!$native&&($_SERVER['REQUEST_METHOD']??'GET')!=='GET')return;
  // Standalone views do not call GnuBoard html_end(); inject only completed HTML.

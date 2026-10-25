@@ -1,0 +1,120 @@
+name: NOA Configurable Monthly Subscription Production
+on:
+  push:
+    branches: [main]
+    paths: &paths
+      - 'bridge/subscription*.php'
+      - 'deploy/noa-subscription*'
+      - 'tests/subscription/**'
+      - 'scripts/noa_subscription*.py'
+      - 'scripts/qa/noa-subscription.mjs'
+      - '.github/workflows/noa-subscription.yml'
+  pull_request:
+    paths: *paths
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-subscription-release, cancel-in-progress: false}
+jobs:
+  native-preflight:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - run: python -m pip install 'paramiko>=3,<5'
+      - name: Read existing point engine compatibility without changing member or point data
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_subscription_preflight.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-subscription-preflight-${{ github.run_id }}', path: 'subscription-proof/preflight.json', retention-days: 2}
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: isolated-noa-ci, MYSQL_DATABASE: noa_subscription_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -pisolated-noa-ci" --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      NOA_MYSQL_DSN: 'mysql:host=127.0.0.1;port=3306;dbname=noa_subscription_test;charset=utf8mb4'
+      NOA_MYSQL_USER: root
+      NOA_MYSQL_PASSWORD: isolated-noa-ci
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'mysqli,pdo_mysql,pdo_sqlite,mbstring,fileinfo'}
+      - name: Validate prices, exact expiry, native point transactions and concurrent purchases
+        run: |
+          python -m pip install 'paramiko>=3,<5'
+          python - <<'PY'
+          import subprocess,sys
+          sys.path.insert(0,'scripts')
+          from noa_subscription_deploy import FILES
+          for p in FILES.values():
+              if p.endswith('.php'):subprocess.run(['php','-l',p],check=True)
+              if p.endswith('.js'):subprocess.run(['node','--check',p],check=True)
+          PY
+          php tests/subscription/core_test.php
+          php tests/subscription/mysql_test.php
+          python tests/subscription/concurrent_test.py
+          php tests/member/access_test.php
+          php tests/sitemap/registry_test.php
+          python -m py_compile scripts/noa_subscription_deploy.py scripts/noa_subscription_preflight.py tests/subscription/fixture.py
+      - name: Prepare established mobile browser validation and disposable GnuBoard SQL fixture
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          npm install --prefix "$RUNNER_TEMP/noa-subscription" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-subscription.mjs "$RUNNER_TEMP/noa-subscription/check.mjs"
+          python tests/subscription/fixture.py
+          php -S 127.0.0.1:18081 -t /tmp/noa-subscription-site > "$RUNNER_TEMP/subscription-fixture.log" 2>&1 &
+      - name: Verify actual point purchase, role refresh and highest-admin settings in both palettes
+        run: node "$RUNNER_TEMP/noa-subscription/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-subscription-candidate-${{ github.run_id }}', path: 'subscription-proof/candidate/', retention-days: 2}
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: [candidate, native-preflight]
+    environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Prepare pinned NOA SFTP and operating browser checks
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          python -m pip install 'paramiko>=3,<5'
+          npm install --prefix "$RUNNER_TEMP/noa-subscription" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-subscription.mjs "$RUNNER_TEMP/noa-subscription/check.mjs"
+      - name: Match preimage SHAs and activate only subscription sources
+        id: upload
+        env: &noa_env
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_subscription_deploy.py
+      - name: Verify operating page login gates and protect unconfigured purchases
+        id: live
+        env: {NOA_SUBSCRIPTION_PHASE: live}
+        run: node "$RUNNER_TEMP/noa-subscription/check.mjs"
+      - name: Restore only release-owned sources on acceptance failure
+        if: failure() && (steps.upload.outcome == 'failure' || steps.live.outcome == 'failure')
+        env: *noa_env
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-subscription-before.json" ]; then
+            python scripts/noa_subscription_deploy.py rollback
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-subscription-live-${{ github.run_id }}', path: 'subscription-proof/', retention-days: 2}
