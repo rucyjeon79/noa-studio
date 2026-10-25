@@ -7,7 +7,8 @@ icons.search='M21 21l-4.35-4.35 M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0';icons.edit
 icons.download='M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4';
 icons.play='m8 5 11 7-11 7V5Z';
 icons.youtube='M3 5h18v14H3z M10 9l6 3-6 3z';
-const menu=[['home','홈','/'],['youtube','YouTube','/noa-youtube.php'],['world','세계관','/noa-world.php'],['music','음원','/noa-music.php'],['library','MY','/noa-my.php']];
+let access={home:true,member:false,music:false,admin:false};try{access=JSON.parse(document.getElementById('noa-access')?.textContent||'null')||access;}catch{}
+const menu=[['home','홈','/'],['youtube','YouTube','/noa-youtube.php'],['world','세계관','/noa-world.php'],['music','음원','/noa-music.php'],['library','MY','/noa-my.php']].filter(item=>item[0]==='home'||(item[0]==='music'?access.music:access.member));
 const words={}
 const langIndex={en:0,ja:1,th:2};let config=null,state=null,revision=0,remote=null,dirty=false;
 const safeRead=k=>{try{return localStorage.getItem(k)}catch{return null}};const safeWrite=(k,v)=>{try{localStorage.setItem(k,v)}catch{}};

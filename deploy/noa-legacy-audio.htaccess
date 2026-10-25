@@ -1,0 +1,3 @@
+# Keep legacy file URLs compatible while enforcing the same listener/owner policy.
+RewriteEngine On
+RewriteRule ^([A-Za-z0-9_-][A-Za-z0-9_.-]*\.(?:mp3|m4a|ogg|wav|flac|aac))$ /noa-bridge/legacy-audio.php?file=$1 [END]

@@ -11,8 +11,8 @@ def main():
     if any(not os.getenv(k) for k in required):raise RuntimeError('missing_noa_ssh_secret')
     entries=[]
     # Dependency first: the new hero runtime also supports the previous HOME markup.
-    for path in ('noa-hero.js','noa-app/home.php'):
-        source=Path('deploy')/path;data=source.read_bytes()
+    for path in ('noa-bridge/home-core.php','noa-bridge/home.php','noa-hero.js','noa-app/home.php'):
+        source=Path('bridge')/path.split('/')[-1] if path.startswith('noa-bridge/') else Path('deploy')/path;data=source.read_bytes()
         commits=subprocess.check_output(['git','log','--format=%H','--',str(source)],text=True).splitlines()
         known={sha(subprocess.check_output(['git','show',commit+':'+str(source)])) for commit in commits}
         entries.append({'path':path,'remote':ROOT+'/'+path,'data':data,'new':sha(data),'known':known})
@@ -64,7 +64,7 @@ def main():
         if 'id="noa-hero-genre"' not in html or 'id="noa-hero-play"' not in html:raise RuntimeError('hero_introduction_markup_missing')
     asset=urllib.request.Request('https://noastudio.ai.kr/noa-hero.js?audit='+os.environ['GITHUB_SHA'][:12],headers={'Cache-Control':'no-cache'})
     with urllib.request.urlopen(asset,timeout=30) as response:
-        if sha(response.read())!=entries[0]['new']:raise RuntimeError('hero_public_hash_mismatch')
-    print('HERO_PUBLIC_VERIFIED',entries[0]['new'])
+        if sha(response.read())!=entries[2]['new']:raise RuntimeError('hero_public_hash_mismatch')
+    print('HERO_PUBLIC_VERIFIED',entries[2]['new'])
     print('PHP_PUBLIC_VERIFIED',new)
 if __name__=='__main__':main()

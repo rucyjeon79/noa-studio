@@ -111,7 +111,7 @@ def _drain_uploads(sftp,call,mkdir,source_reader=None,idle_seconds=0):
                 result={'song_key':job['key'],'source_url':job['source_url'],'suno_id':context.get('suno_id',''),'suno_title':title,
                         'audio_path':relative.as_posix(),'audio_bytes':output.stat().st_size,'audio_sha256':digest,
                         'source_analysis':before,'correction':settings,'final_analysis':after,'errors':card_errors,
-                        'audio_discovery':{'permission':'administrator_owned_upload','download_authorized':True,'provenance':'administrator_upload','upload_id':job['id']},
+                        'audio_discovery':{'permission':('creator_owned_upload' if context.get('authorization')=='creator_owned_upload' else 'administrator_owned_upload'),'download_authorized':True,'provenance':('creator_upload' if context.get('authorization')=='creator_owned_upload' else 'administrator_upload'),'upload_id':job['id']},
                         'catalog_context':{k:context.get(k) for k in ['originalArtist','act','catalogId','category1','category2','categoryIds']}}
                 if card:result.update(cover_path=(directory/'cover.webp').as_posix(),cover_bytes=card['cover_bytes'],cover_sha256=card['cover_sha256'])
                 owned();committed=call('upload_commit',auth|{'result':result})

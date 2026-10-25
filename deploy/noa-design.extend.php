@@ -9,7 +9,7 @@ function noa_policy_script_revision($html){
  $html=preg_replace("~(/noa-browse[.]js)(?:[?][^\"']*)?~i",'$1?v='.$revision,$html);
  $html=preg_replace("~(/noa-app/p0-media[.]css)(?:[?][^\"']*)?~i",'$1?v=20261024-approved-ui',$html);
  $html=preg_replace("~(<link\\b[^>]*\\bhref=[\"'])/noa-ui[.]css(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.css?v=20261024-category-complete$2',$html);
- return preg_replace("~(<script\\b[^>]*\\bsrc=[\"'])/noa-ui[.]js(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.js?v=20261024-approved-ui$2',$html);
+ return preg_replace("~(<script\\b[^>]*\\bsrc=[\"'])/noa-ui[.]js(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.js?v=20261025-member-access$2',$html);
 }
 function noa_design_assets(){
  global $config;
@@ -17,7 +17,7 @@ function noa_design_assets(){
  if(!is_string($path))return;
  $native=preg_match('~^/(?:bbs|adm)/~',$path);
  $workspace=preg_match('~^/noa-app/(?:database|taxonomy|jukebox)/(?:index[.]php)?$~',$path);
- $public=in_array($path,['/','/index.php'],true)||preg_match('~^/noa-(?:music|youtube|world|my|settings|catalog|ai-lab|library|editor|download|theme-admin)(?:-admin)?[.]php$~',$path);
+ $public=in_array($path,['/','/index.php'],true)||preg_match('~^/noa-(?:music|youtube|world|my|settings|catalog|ai-lab|library|editor|download|theme-admin|creator|channel)(?:-admin)?[.]php$~',$path);
  if(!$native&&!$workspace&&!$public)return;
  if(!$native&&($_SERVER['REQUEST_METHOD']??'GET')!=='GET')return;
  // Standalone views do not call GnuBoard html_end(); inject only completed HTML.

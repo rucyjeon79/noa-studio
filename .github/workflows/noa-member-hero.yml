@@ -1,0 +1,116 @@
+name: NOA Membership Creator and Genre Hero Production
+on:
+  push:
+    branches: [main]
+    paths: &paths
+      - 'bridge/member-access.php'
+      - 'bridge/creator*.php'
+      - 'bridge/legacy-audio.php'
+      - 'deploy/noa-access.extend.php'
+      - 'deploy/noa-creator*'
+      - 'deploy/noa-channel.php'
+      - 'tests/member/**'
+      - 'scripts/noa_member_deploy.py'
+      - 'scripts/qa/noa-member.mjs'
+      - '.github/workflows/noa-member-hero.yml'
+  pull_request:
+    paths: *paths
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-member-hero, cancel-in-progress: false}
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: isolated-noa-ci, MYSQL_DATABASE: noa_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -pisolated-noa-ci" --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      NOA_MYSQL_DSN: 'mysql:host=127.0.0.1;port=3306;dbname=noa_test;charset=utf8mb4'
+      NOA_MYSQL_USER: root
+      NOA_MYSQL_PASSWORD: isolated-noa-ci
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'pdo_mysql,pdo_sqlite,mbstring,fileinfo'}
+      - name: Check role boundaries, canonical records, isolated upload and queue
+        run: |
+          python -m pip install 'paramiko>=3,<5'
+          python - <<'PY'
+          import subprocess,sys
+          sys.path.insert(0,'scripts')
+          from noa_member_deploy import FILES
+          for p in FILES.values():
+              if p.endswith('.php'):subprocess.run(['php','-l',p],check=True)
+              if p.endswith('.js'):subprocess.run(['node','--check',p],check=True)
+          PY
+          php tests/member/access_test.php
+          php tests/member/mysql_test.php
+          php tests/youtube/coming_catalog_test.php
+          node --test scripts/qa/noa-hero.test.mjs scripts/qa/noa-browse.test.mjs tests/youtube/lazy_details_test.cjs
+          python -m py_compile scripts/noa_member_deploy.py tests/member/fixture.py
+      - name: Prepare established browser checks and disposable PHP fixture
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          npm install --prefix "$RUNNER_TEMP/noa-member" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-member.mjs "$RUNNER_TEMP/noa-member/check.mjs"
+          cp scripts/qa/noa-home-hero-layout.mjs "$RUNNER_TEMP/noa-member/hero.mjs"
+          python tests/member/fixture.py
+          php -S 127.0.0.1:18080 -t /tmp/noa-member-site > "$RUNNER_TEMP/member-fixture.log" 2>&1 &
+      - name: Verify creator saves, navigation, both palettes and hero playback
+        run: |
+          node "$RUNNER_TEMP/noa-member/check.mjs"
+          node "$RUNNER_TEMP/noa-member/hero.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-member-candidate-${{ github.run_id }}', path: 'member-proof/candidate/', retention-days: 2}
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: candidate
+    environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Prepare pinned NOA transport and browser checks
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          python -m pip install 'paramiko>=3,<5'
+          npm install --prefix "$RUNNER_TEMP/noa-member" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-member.mjs "$RUNNER_TEMP/noa-member/check.mjs"
+          cp scripts/qa/noa-home-hero-layout.mjs "$RUNNER_TEMP/noa-member/hero.mjs"
+      - name: Audit actual media and GnuBoard; atomically activate only release-owned files
+        id: upload
+        env: &noa_env
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_member_deploy.py
+      - name: Verify operating guest boundaries, actual genre recommendations and playback
+        id: live
+        env: {NOA_MEMBER_PHASE: live, NOA_HERO_PHASE: live}
+        run: |
+          node "$RUNNER_TEMP/noa-member/check.mjs"
+          node "$RUNNER_TEMP/noa-member/hero.mjs"
+      - name: Restore release-owned source bytes on acceptance failure
+        if: failure() && (steps.upload.outcome == 'failure' || steps.live.outcome == 'failure')
+        env: *noa_env
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-member-before.json" ]; then
+            python scripts/noa_member_deploy.py rollback
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: 'noa-member-live-${{ github.run_id }}'
+          path: |
+            member-proof/
+            hero-layout-proof/live/
+          retention-days: 2

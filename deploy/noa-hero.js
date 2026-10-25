@@ -8,11 +8,20 @@
  let finished=false,blocked=false,fallbackUsed=false,pending=false,generation=0;
  const displayName=value=>String(value).replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu,'').trim();
  const state=value=>{if(art)art.dataset.mediaState=value;};
+
+ let recommendations;
+ function recommend(genre){
+  const picks=document.getElementById('noa-hero-picks');if(!picks)return;
+  const heading=picks.parentElement.querySelector('h2');if(heading)heading.textContent=displayName(names[genre]||genre)+' 추천 음악';
+  const render=rows=>{if(art?.dataset.genre!==genre)return;const items=rows.length?rows:[{title:displayName(names[genre]||genre)+' 음악 만나기',href:'/noa-youtube.php?genre='+encodeURIComponent(genre),thumbnail:browse?.genreArt?.(genre),comingSoon:true}];
+   picks.replaceChildren(...items.slice(0,4).map(row=>{const a=document.createElement('a');a.className='noa-hero-pick';a.href=row.href;a.dataset.genre=genre;const img=document.createElement('img');img.src=row.thumbnail;img.alt='';img.loading='lazy';const span=document.createElement('span'),title=document.createElement('strong'),note=document.createElement('small');title.textContent=String(row.title).replace(/^[\s▪︎•]+/u,'').split('「')[0].trim();a.setAttribute('aria-label',row.title);note.textContent=row.comingSoon?'공개 준비 중':'추천 음악';span.append(note,title);a.append(img,span);return a;}));window.dispatchEvent(new Event('noa-hero-picks'));};
+  render([]);recommendations??=fetch('/noa-bridge/home.php',{credentials:'same-origin',cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).catch(()=>({}));recommendations.then(data=>render(data.genreFeatured?.[genre]||[]));
+ }
  function choose(genre,variant='a'){
   generation++;const base=(browse?.genreArt?.(genre)||'/noa-assets/splash/kpop-original-g2-a.jpg').replace(/-a\.jpg$/,'-'+variant);
   poster.src=base+'.jpg';video.poster=poster.src;poster.closest?.('picture')?.querySelectorAll('source').forEach(s=>s.srcset=poster.src);
   if(art)art.dataset.genre=genre;if(label)label.textContent=displayName(names[genre]||'K-POP Original');if(description)description.textContent=descriptions[genre]||'노아의 음악과 이야기를 만나는 장르 소개 영상입니다.';
-  video.src=base+'.mp4';
+  video.src=base+'.mp4';recommend(genre);
  }
  function fallback(message){video.hidden=true;state('poster');if(status)status.textContent=message;if(button)button.hidden=false;}
  async function play(){if(finished||pending)return;pending=true;const attempt=generation;state('loading');try{await video.play();if(attempt===generation)blocked=false;}catch{if(attempt!==generation)return;blocked=true;fallback('영상 재생을 눌러 장르 소개 영상을 만나보세요.');}finally{if(attempt===generation)pending=false;}}
@@ -22,5 +31,9 @@
  video.addEventListener('error',()=>{if(!fallbackUsed){fallbackUsed=true;pending=false;choose('kpop-original');play();}else fallback('영상을 불러오지 못했습니다. 영상 재생을 눌러 다시 시도해 주세요.');});
  button?.addEventListener('click',()=>{if(video.error)video.load();play();});
  window.addEventListener('pagehide',()=>video.pause());document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();else if(!finished&&!blocked&&video.paused)play();});
- const genre=genres[Math.floor(Math.random()*genres.length)]||'kpop-original',variant=['a','b','c'][Math.floor(Math.random()*3)];choose(genre,variant);state('poster');play();
+ // A persisted deck visits every existing genre/variant before starting another cycle.
+ const deckKey='noa-hero-deck-v1',all=genres.flatMap(g=>['a','b','c'].map(v=>g+':'+v));let deck=[];
+ try{deck=JSON.parse(localStorage.getItem(deckKey)||'[]');if(!Array.isArray(deck)||deck.some(x=>!all.includes(x))||new Set(deck).size!==deck.length)deck=[];}catch{}
+ if(!deck.length)deck=[...all];const index=Math.floor(Math.random()*deck.length),selected=deck.splice(index,1)[0];try{localStorage.setItem(deckKey,JSON.stringify(deck));}catch{}
+ const [genre,variant]=selected.split(':');choose(genre,variant);state('poster');play();
 })();

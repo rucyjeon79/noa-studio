@@ -118,7 +118,7 @@ function noa_sitemap_visible_groups(string $root,string $role,array $boards=[],a
     }
     foreach($groups as $name=>&$group){
         $group['routes']=array_values(array_filter($group['routes'],static function($route)use($root,$role){
-            $audience=$route[5];
+            $audience=$route[5];if(function_exists('nam_requirement')&&!nam_allowed($GLOBALS['noa_access']??nam_access(),nam_requirement(parse_url($route[3],PHP_URL_PATH)?:'/','GET',[])))return false;
             if($audience==='admin'&&$role!=='admin')return false;
             if($audience==='member'&&!in_array($role,['member','admin'],true))return false;
             if($audience==='guest'&&$role!=='guest')return false;

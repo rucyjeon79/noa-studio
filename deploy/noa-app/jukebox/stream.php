@@ -1,13 +1,14 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__,2).'/common.php';require dirname(__DIR__,2).'/noa-bridge/storage.php';require dirname(__DIR__,2).'/noa-bridge/sound-core.php';require __DIR__.'/core.php';
+require_once dirname(__DIR__,2).'/noa-bridge/member-access.php';
 header('X-Content-Type-Options: nosniff');header('Cache-Control: private, no-store');
 if(!in_array($_SERVER['REQUEST_METHOD']??'GET',['GET','HEAD'],true)){http_response_code(405);header('Allow: GET, HEAD');exit;}
 try{
  $key=$_GET['key']??'';$type=$_GET['type']??'audio';if(!is_string($key)||strlen($key)>191||!in_array($type,['cover','audio'],true)){http_response_code(404);exit;}
  $db=noa_bridge_pdo();$doc=nj_document($db,$key);
  if(!$doc){http_response_code(404);exit;}
- $admin=!empty($is_member)&&($is_admin??'')==='super';if(!noa_sound_visible($doc,$admin)){http_response_code(403);exit;}
+ $access=nam_access((array)($member??[]),(string)($is_admin??''));$admin=$access['admin'];$owner=$access['creator']&&nam_owner($doc,(array)($member??[]));if(($type==='audio'&&!$access['music']&&!$owner)||(!noa_sound_visible($doc,$admin)&&!$owner)){http_response_code(403);exit;}
  $asset=nj_find($db,$key);if(!$asset||!hash_equals($asset['source_url'],noa_sound_suno($doc['body']??[]))||!nj_verified($asset,$type)){http_response_code(404);exit;}
  $path=nj_file($asset[$type.'_path']);$file=fopen($path,'rb');if(!$file){http_response_code(404);exit;}$size=fstat($file)['size'];
  try{[$start,$end,$code]=nj_range($_SERVER['HTTP_RANGE']??null,$size);}catch(InvalidArgumentException $e){fclose($file);http_response_code(416);header('Content-Range: bytes */'.$size);exit;}
