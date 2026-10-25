@@ -60,6 +60,7 @@ try{
     const title=await page.locator('.yt-card h2').first().textContent();await page.locator('#youtube-search').fill(title);assert(await page.locator('#yt-videos').isVisible());assert(await page.locator('.yt-card:visible').count()>0);await page.locator('#youtube-search').fill('');
    }
    assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1));await page.screenshot({path:out+'/'+width+'-'+path.slice(1,-4)+'-ready.png'});
+   if(width===390){await page.goto(base+path+'?group=original',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>{const r=document.querySelector('[data-browse-level="2"]')?.getBoundingClientRect();return r&&r.top>=-2&&r.top<innerHeight/2;});await page.goto(base+path+'?genre=kpop-original&act=1',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>{const r=document.querySelector('[data-browse-level="4"]')?.closest('.noa-inline-act').getBoundingClientRect();return r&&r.top>=-2&&r.top<innerHeight/2;});}
    report.cases.push({width,path,firstFramesHidden:true,delayedScript:true,reloads:2,actCollapse:true,epAscending:true,selection:true,audioPlayback:path.includes('music'),videoEmbed:path.includes('youtube'),overflow:false});
   }
   // Exercise the actual fixed bottom navigation, not only direct navigation.
