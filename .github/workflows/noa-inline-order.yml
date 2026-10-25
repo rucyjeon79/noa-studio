@@ -1,0 +1,77 @@
+name: NOA Inline Playlist Order Production
+on:
+  push:
+    branches: [main]
+    paths: &paths
+      - 'deploy/noa-browse.js'
+      - 'deploy/noa-browse-order.js'
+      - 'deploy/noa-category-order.php'
+      - 'scripts/noa_inline_order_deploy.py'
+      - 'scripts/qa/noa-inline-order.mjs'
+      - '.github/workflows/noa-inline-order.yml'
+  pull_request:
+    paths: *paths
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-inline-playlist-order, cancel-in-progress: false}
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - name: Validate native order endpoint and existing playback and browse contracts
+        run: |
+          php -l deploy/noa-category-order.php
+          node --check deploy/noa-browse.js
+          node --check deploy/noa-browse-order.js
+          node --check scripts/qa/noa-inline-order.mjs
+          python -m py_compile scripts/noa_inline_order_deploy.py
+          node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs tests/playlists/drag_order_test.cjs
+      - name: Prepare established browser tools and isolated native storage
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          npm install --prefix "$RUNNER_TEMP/noa-order" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-inline-order.mjs "$RUNNER_TEMP/noa-order/check.mjs"
+          python scripts/qa/category-storage-fixture.py
+          php -S 127.0.0.1:8099 -t "$RUNNER_TEMP/noa-category-fixture" > "$RUNNER_TEMP/order-php.log" 2>&1 &
+      - name: Verify mobile pointer moves, explicit save, cancel, errors, authorization and persistence
+        run: node "$RUNNER_TEMP/noa-order/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-inline-order-candidate-${{ github.run_id }}', path: inline-order-proof/, retention-days: 2}
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: candidate
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - name: Prepare established NOA transport, browser and isolated native storage
+        run: |
+          python -m pip install 'paramiko>=3,<5'
+          npm install --prefix "$RUNNER_TEMP/noa-order" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-inline-order.mjs "$RUNNER_TEMP/noa-order/check.mjs"
+          python scripts/qa/category-storage-fixture.py
+          php -S 127.0.0.1:8099 -t "$RUNNER_TEMP/noa-category-fixture" > "$RUNNER_TEMP/order-php.log" 2>&1 &
+      - name: Compare operating SHA and atomically activate order dependencies before browser entry
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_inline_order_deploy.py
+      - name: Verify real production sources, guest authorization and isolated administrator UI without operating order writes
+        env: {NOA_ORDER_PHASE: live}
+        run: node "$RUNNER_TEMP/noa-order/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-inline-order-live-${{ github.run_id }}', path: inline-order-proof/, retention-days: 2}

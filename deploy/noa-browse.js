@@ -1,4 +1,4 @@
-/* One hierarchy for existing song/video records. No storage writes or metadata inference. */
+/* One hierarchy for existing song/video records; administrator order edits are delegated. */
 (()=>{'use strict';
 const groups=[['original','오리지널송',['kpop-original','jpop-original','pop-original','thai-original']],['ep','EP 컬렉션',['joseon-ballad','echoes-of-joseon','groovy-airy-pop','narrative-piano-indie','dreamy-deep-house','fantasy-ambient-edm','edm-kpop-club','latin-afrobeats-edm','panpop']],['story','당신의 이야기, 우리의 음악',['your-story']],['cover','AInoa의 유명곡 커버',['cover-reborn']]];
 const names={'kpop-original':'K-POP Original','jpop-original':'J-POP Original','pop-original':'POP Original','thai-original':'Thai Original','joseon-ballad':'Joseon Ballad','echoes-of-joseon':'Echoes of Joseon','groovy-airy-pop':'Groovy Airy Pop','narrative-piano-indie':'Narrative Piano Indie','dreamy-deep-house':'Dreamy Deep House','fantasy-ambient-edm':'Fantasy Ambient EDM','edm-kpop-club':'EDM K-POP Club','latin-afrobeats-edm':'Latin Afrobeats EDM',panpop:'PANPOP','your-story':'당신의 이야기, 우리의 음악 🎧','cover-reborn':'🎤 AInoa의 유명곡 커버'};
@@ -33,7 +33,8 @@ function mount({host,rows,onChange,search=null,genre=null,type=null,kind='곡'})
  function card(title,subtitle,items,action){const b=button('',action);b.className='noa-browse-card';const r=items.find(r=>r.video||r.thumb),g=items.find(r=>names[r.genre]);const matchedGenre=Object.keys(names).find(id=>names[id]===title)||g?.genre;const img=e('img');img.alt='';img.loading='lazy';img.src=matchedGenre&&idsForGenreTitle(title)?genreArt(matchedGenre):(r?(r.video?('/noa-bridge/youtube-thumbnail.php?id='+encodeURIComponent(r.video)):r.thumb):genreArt(matchedGenre||''));if(!r)img.className='noa-genre-art';img.onerror=()=>{img.onerror=null;img.src='/noa-assets/papa-logo.png';};b.append(img);const copy=e('span');copy.append(e('strong',translate(title)),e('small',subtitle));b.append(copy);return b;}
  function matches(r){if(search?.value.trim())return true;if(stage!=='songs'&&stage!=='acts')return false;if(stage==='acts'&&expandedAct===null)return false;if(selectedGroup&&groupFor(r.genre)!==selectedGroup)return false;if(selectedGenre&&r.genre!==selectedGenre)return false;if((stage==='acts'?expandedAct:selectedAct)===-1&&actFor(r))return false;if((stage==='acts'?expandedAct:selectedAct)>0&&actFor(r)!==(stage==='acts'?expandedAct:selectedAct))return false;return true;}
  // Keep a single real player. Expand it beside the selected row, without moving the audio engine.
- let playbackKey='',playbackPanel=null,treeRevision='';
+ let playbackKey='',playbackPanel=null,treeRevision='',orderEditor=null;
+ function refreshOrderEditor(){orderEditor?.refresh();}
  function placePlayback(anchor,record){
   if(kind!=='영상'||!anchor)return;
   if(!playbackPanel){
@@ -129,14 +130,14 @@ function mount({host,rows,onChange,search=null,genre=null,type=null,kind='곡'})
     if(!items.length)body.append(e('p','등록된 콘텐츠가 없습니다.'));
    }
   }
-  grid.hidden=stage==='songs';restoreInlinePlayback();syncMusicActions();
+  grid.hidden=stage==='songs';restoreInlinePlayback();syncMusicActions();refreshOrderEditor();
  }
  function apply(candidates,force=false){if(force)stage='songs';renderTree();const filtered=(force?candidates:candidates.filter(matches)).slice();if(!force)filtered.sort(orderFor);const pages=Math.max(1,Math.ceil(filtered.length/24));page=Math.min(page,pages-1);pager.replaceChildren();if(filtered.length>24&&stage==='songs'){const prev=button('‹',()=>{page--;onChange();}),next=button('›',()=>{page++;onChange();});for(const[b,label]of[[prev,'이전 음악 페이지'],[next,'다음 음악 페이지']]){b.className='noa-icon-button';b.setAttribute('aria-label',label);}prev.disabled=page<=0;next.disabled=page>=pages-1;pager.append(prev,e('span',(page+1)+' / '+pages),next);}const counts=kind==='영상'?filtered.length+'개 영상':filtered.filter(r=>r.kind!=='playlist').length+'곡'+(filtered.some(r=>r.kind==='playlist')?' · ACT·목록 '+filtered.filter(r=>r.kind==='playlist').length+'개':'');note.textContent=stage==='songs'&&!filtered.length?'음악을 준비하고 있습니다.':stage==='songs'?counts+(filtered.length>24?' · 24개씩 표시':''):'장르와 ACT를 선택해 음악을 탐색하세요.';host.dataset.browseReady='true';if(initialLevel){const level=initialLevel;initialLevel=0;if(stage!=='songs')showLevel(level);}return{visible:slicePage(filtered,page),queue:filtered,stage};}
  if(search)search.addEventListener('input',()=>{page=0;if(search.value.trim()){stage='songs';selectedGroup='';selectedGenre='';selectedAct=0;sync();}onChange();});
  if(genre)genre.addEventListener('change',()=>{page=0;selectedGenre=genre.value;selectedGroup=groupFor(selectedGenre)||'';selectedAct=0;stage=selectedGenre?'acts':'groups';onChange();});
  if(type)type.addEventListener('change',()=>{page=0;stage=type.value==='playlist'?'collections':'songs';onChange();});
  window.addEventListener('noa-theme',()=>{treeRevision='';onChange();});
- fetch('/noa-category-order.php',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(data=>{if(data){manualOrder=data;onChange();}}).catch(()=>{});
+ fetch('/noa-category-order.php',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(data=>{if(data){manualOrder={story:data.story||[],cover:data.cover||[]};onChange();if(kind!=='영상'&&data.admin===true&&data.csrf){const start=()=>{orderEditor=window.NoaBrowseOrder.mount({host,rows,access:data,getOrder:()=>manualOrder,getGroup:()=>selectedGroup,onSaved:confirmed=>{manualOrder={story:confirmed.story||[],cover:confirmed.cover||[]};treeRevision='';onChange();}});refreshOrderEditor();};if(window.NoaBrowseOrder)start();else{const script=e('script');script.src='/noa-browse-order.js?v=20261025-inline-order-1';script.onload=start;script.onerror=()=>{note.textContent='순서 편집을 불러오지 못했습니다. 새로고침해 주세요.';};document.head.append(script);}}}}).catch(()=>{});
  return {apply,matches,reveal(r){stage='songs';selectedGenre=r.genre;selectedGroup=groupFor(r.genre)||'';selectedAct=actFor(r)||0;page=0;sync();},reset(){page=0;},getStage:()=>stage};
 }
 window.NoaBrowse={groups,names,genreArt,groupFor,actFor,slicePage,mount};

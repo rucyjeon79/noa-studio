@@ -17,7 +17,12 @@ function load_order(string $path):array{
 }
 if($_SERVER['REQUEST_METHOD']==='GET'){
  $data=load_order($path);
- respond(200,['story'=>is_array($data['story']??null)?$data['story']:[],'cover'=>is_array($data['cover']??null)?$data['cover']:[]]);
+ $result=['story'=>is_array($data['story']??null)?$data['story']:[],'cover'=>is_array($data['cover']??null)?$data['cover']:[]];
+ if(!empty($is_member)&&($is_admin??'')==='super'){
+  if(empty($_SESSION['noa_category_order_csrf']))$_SESSION['noa_category_order_csrf']=bin2hex(random_bytes(32));
+  $result['admin']=true;$result['csrf']=$_SESSION['noa_category_order_csrf'];
+ }
+ respond(200,$result);
 }
 if($_SERVER['REQUEST_METHOD']!=='POST')respond(405,['error'=>'method_not_allowed']);
 if(empty($is_member)||($is_admin??'')!=='super')respond(403,['error'=>'admin_required']);
@@ -33,6 +38,7 @@ if(!is_dir($dir)||!is_writable($dir))respond(503,['error'=>'private_storage_unav
 $lock=fopen($dir.'/.category-order.lock','c');if(!$lock||!flock($lock,LOCK_EX))respond(503,['error'=>'lock_failed']);
 try{
  $current=load_order($path);
+ if(array_key_exists('expected',$request)&&(!is_array($request['expected'])||!array_is_list($request['expected'])||$request['expected']!==($current[$group]??[])))respond(409,['error'=>'order_conflict']);
  $current[$group]=array_values($keys);
  $temp=tempnam($dir,'.category-order-');
  if(!$temp)respond(503,['error'=>'temp_failed']);
