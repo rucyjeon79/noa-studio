@@ -21,7 +21,7 @@ html .noa-hero[data-home-section=hero] .noa-hero-actions .noa-button{display:inl
  html .noa-hero[data-home-section=hero]{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);grid-template-rows:minmax(0,1fr);grid-template-areas:'media copy';aspect-ratio:2/1}
 }
 /* Only the video changes framing; the card, copy and actions stay fixed. */
-html .noa-hero[data-home-section=hero] .noa-hero-art video{transform-origin:center;animation:noa-hero-framing 12s ease-in-out infinite;animation-play-state:paused}
+html .noa-hero[data-home-section=hero] .noa-hero-art video{transform-origin:center 20%;animation:noa-hero-framing 12s ease-in-out infinite;animation-play-state:paused}
 html .noa-hero[data-home-section=hero] .noa-hero-art:is([data-media-state=playing],[data-media-state=ended]) video{animation-play-state:running;will-change:transform}
 @keyframes noa-hero-framing{0%,10%,100%{transform:scale(var(--noa-hero-width-scale,1))}45%,60%{transform:scale(var(--noa-hero-height-scale,1))}}
 @media(prefers-reduced-motion:reduce){html .noa-hero[data-home-section=hero] .noa-hero-art video{animation:none;transform:none;will-change:auto}}
