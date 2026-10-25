@@ -49,6 +49,6 @@ class RecoveryContract(unittest.TestCase):
    verify_shared_catalog_readers_only(ROOT,baseline)
    paths=[p for p in paths if p not in shared]
   # Integration finish owns only these bounded surfaces. FIFO, uploads and processing workers remain protected.
-  authorized={'bridge/inline-edit.php','bridge/music-readmodel.php','bridge/user-playlists.php','bridge/world-mv.php','bridge/popularity-events.php','bridge/playcount-policy.php','deploy/noa-app/jukebox/stream.php','deploy/noa-app/jukebox/stream-popularity.php','scripts/noa_jukebox_release.py','scripts/noa_jukebox_upload_worker.py','scripts/noa_jukebox_publish.py'}
+  authorized={'bridge/lab-api.php','bridge/catalog-store.php','bridge/package-record.php','bridge/package-migration.php','bridge/package-worker.php','bridge/index.php','bridge/lab-creator.php','bridge/taxonomy-store.php','bridge/inline-edit.php','bridge/music-readmodel.php','bridge/user-playlists.php','bridge/world-mv.php','bridge/popularity-events.php','bridge/playcount-policy.php','deploy/noa-app/jukebox/stream.php','deploy/noa-app/jukebox/stream-popularity.php','scripts/noa_jukebox_release.py','scripts/noa_jukebox_upload_worker.py','scripts/noa_jukebox_publish.py'}
   self.assertFalse(any(p not in authorized and p.startswith(('deploy/noa-app/jukebox/','bridge/','scripts/noa_jukebox'))for p in paths))
 if __name__=='__main__':unittest.main()

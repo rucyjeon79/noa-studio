@@ -36,6 +36,7 @@ $key = (string) ($_GET['key'] ?? '');
 if (!$healthCheck && !preg_match('/^[a-z0-9][a-z0-9:_-]{0,190}$/', $key)) fail(400, 'invalid_key');
 // Configure via environment or an untracked server-only config, never browser JS.
 require_once __DIR__ . '/storage.php';
+require_once __DIR__.'/package-record.php';
 try {
     $pdo = noa_bridge_pdo();
     if ($healthCheck) {
@@ -73,6 +74,7 @@ try {
         || !is_int($expected) || $expected < 0
         || !is_string($requestId) || !preg_match('/^[a-f0-9-]{36}$/i', $requestId)
         || !array_key_exists('payload', $data) || !is_array($data['payload']) || array_is_list($data['payload'])) fail(400, 'invalid_write');
+    if(str_starts_with($key,'meta:inline-'))fail(409,'complete_record_required');
     $payload = json_encode($data['payload'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
     $hash = hash('sha256', $key . "\n" . $kind . "\n" . $expected . "\n" . $payload);
     $pdo->beginTransaction();
@@ -87,12 +89,26 @@ try {
     // Create a lockable row for first writes. Rollback removes it on conflicts.
     $q = $pdo->prepare("INSERT IGNORE INTO noa_documents(doc_key,kind,payload,revision,updated_by) VALUES(?,?,'{}',0,?)");
     $q->execute([$key,$kind,(string)$member['mb_id']]);
-    $q = $pdo->prepare('SELECT kind,revision FROM noa_documents WHERE doc_key=? FOR UPDATE');
+    $q = $pdo->prepare('SELECT kind,payload,revision FROM noa_documents WHERE doc_key=? FOR UPDATE');
     $q->execute([$key]);
     $current = $q->fetch(PDO::FETCH_ASSOC);
     if (!$current || (int)$current['revision'] !== $expected || $current['kind'] !== $kind) {
         $pdo->rollBack();
         fail(409, 'revision_conflict');
+    }
+    if(in_array($kind,['single','story','playlist'],true)){
+        $old=json_decode($current['payload'],true)?:[];$incoming=$data['payload'];
+        if(nup_type($old,$kind)==='ep'&&!empty($old['packageSchema'])){
+            foreach(['genreId','ep','sourceRef'] as $locked)if(array_key_exists($locked,$incoming)&&($incoming[$locked]??null)!==($old[$locked]??null)){ $pdo->rollBack();fail(400,'original_information_read_only'); }
+            foreach(['originalInfo','originalTitle','originalLyrics','sourceTitle','sourceLyrics'] as $locked)if(array_key_exists($locked,$incoming['body']??[])&&$incoming['body'][$locked]!==($old['body'][$locked]??null)){ $pdo->rollBack();fail(400,'original_information_read_only'); }
+        }
+        if(!empty($old['packageSchema'])&&array_key_exists('genreId',$incoming)&&($incoming['genreId']??null)!==($old['genreId']??null)){ $pdo->rollBack();fail(400,'classification_editor_required'); }
+        if(nup_type($old,$kind)==='original'&&!empty($old['packageSchema'])&&isset($incoming['ep'])&&(int)$incoming['ep']!==(int)($old['ep']??0)){ $pdo->rollBack();fail(400,'complete_record_editor_required'); }
+        $full=array_replace($old,$incoming);$full['body']=array_replace($old['body']??[],$incoming['body']??[]);$full=nup_normalize($full,$kind);
+        if($full['packageType']==='original'&&!isset($incoming['body']['originalInfo']))foreach(['confirmedTitle'=>'title','lyricsBlock'=>'lyrics','vocalInfo'=>'vocal'] as $from=>$to)if(array_key_exists($from,$incoming['body']??[]))$full['body']['originalInfo'][$to]=$incoming['body'][$from];
+        if($full['packageType']==='ep'&&empty($full['sourceRef'])){$original=nup_original($pdo,$full);if(($original['status']??'')==='linked')$full['sourceRef']=$original['key'];}
+
+        $payload=json_encode($full,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
     }
     $next = $expected + 1;
     $q = $pdo->prepare('UPDATE noa_documents SET payload=?,revision=?,updated_by=? WHERE doc_key=?');

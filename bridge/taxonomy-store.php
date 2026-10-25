@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
-require_once __DIR__.'/taxonomy-core.php';require_once __DIR__.'/youtube-store.php';
+require_once __DIR__.'/package-record.php';require_once __DIR__.'/taxonomy-core.php';require_once __DIR__.'/youtube-store.php';
 function nt_ready(PDO $db):bool{return nc_exists($db,'noa_classification_runs')&&nc_exists($db,'noa_content_matches');}
 function nt_log(PDO $db,?string $run,string $type,string $id,string $event,array $result,string $actor):void{
  $json=nt_json($result);$hash=hash('sha256',nt_json([$run,$type,$id,$event,$result,$actor]));$q=$db->prepare('INSERT IGNORE INTO noa_classification_logs(run_id,content_type,content_id,event,result,actor,event_hash) VALUES(?,?,?,?,?,?,?)');$q->execute([$run,$type,$id,$event,$json,$actor,$hash]);
@@ -48,7 +48,7 @@ function nt_categories(PDO $db):array{
 function nt_effective_rules(PDO $db,string $genre):array{
  $out=['common'=>[],'genre'=>[]];$q=$db->prepare('SELECT * FROM noa_production_rules WHERE scope=? OR genre_id=? ORDER BY (format=\'json\'),rule_id');$q->execute(['common',$genre]);
  foreach($q as $r){$scope=$r['scope']==='common'?'common':'genre';if(hash('sha256',$r['body'])!==$r['sha256'])throw new RuntimeException('production_rule_integrity');if($r['format']==='json')$out[$scope]=array_replace($out[$scope],json_decode($r['body'],true,512,JSON_THROW_ON_ERROR));elseif(str_ends_with($r['rule_id'],':suno'))$out[$scope]['sunoBase']=$r['body'];else $out[$scope]['productionGuidelines']=($out[$scope]['productionGuidelines']??'')."\n".$r['body'];}
- return $out;
+ $out['principleZero']=nup_policy();return $out;
 }
 function nt_write_relation(PDO $db,string $type,string $id,array $result,string $actor,string $run):void{
  $q=$db->prepare("SELECT * FROM noa_content_categories WHERE content_type=? AND content_id=? AND source='manual' AND active=1");$q->execute([$type,$id]);if($q->fetch())return;

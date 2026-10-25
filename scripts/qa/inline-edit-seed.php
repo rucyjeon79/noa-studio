@@ -19,3 +19,7 @@ $db->prepare('INSERT INTO noa_youtube_runs(run_id,channel_id,catalog_batch,repor
 $v=['id'=>$video,'snippet'=>['title'=>'YouTube 원래 제목','description'=>'YouTube 원문 설명','channelId'=>$channel],'status'=>['privacyStatus'=>'public','embeddable'=>true]];
 $db->prepare('INSERT INTO noa_youtube_videos VALUES(?,?,?,?)')->execute([str_repeat('d',32),$video,json_encode($v),json_encode(['status'=>'matched','songId'=>$id])]);
 echo "ISOLATED_INLINE_EDIT_SEEDED\n";
+$db->exec("CREATE TABLE noa_jukebox_assets(song_key VARCHAR(191) PRIMARY KEY,source_url TEXT);CREATE TABLE noa_source_files(path_hash CHAR(64) PRIMARY KEY,source_path VARCHAR(255),sha256 CHAR(64),source_bytes LONGTEXT);");
+$add=$db->prepare('INSERT INTO noa_documents(doc_key,kind,payload,revision,updated_by) VALUES(?,?,?,?,?)');
+foreach(range(2,10) as $n)$add->execute(['single:kpop-original:'.str_pad((string)$n,2,'0',STR_PAD_LEFT),'single',json_encode(['genreId'=>'kpop-original','ep'=>str_pad((string)$n,2,'0',STR_PAD_LEFT),'title'=>'원곡 '.$n,'body'=>['lyricsBlock'=>'가사 '.$n]]),1,'fixture']);
+$add->execute(['single:joseon-ballad:01','single',json_encode(['genreId'=>'joseon-ballad','ep'=>'01','title'=>'개사곡','body'=>['lyricsBlock'=>'옛 장르 가사']]),1,'fixture']);

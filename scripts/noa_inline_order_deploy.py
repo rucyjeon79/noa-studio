@@ -3,7 +3,7 @@ import base64, hashlib, json, os, stat, subprocess, urllib.request
 from pathlib import Path
 import paramiko
 ROOT='/hosting/noastudio/html'
-FILES={'noa-browse-order.js':'deploy/noa-browse-order.js','noa-category-order.php':'deploy/noa-category-order.php','noa-browse.js':'deploy/noa-browse.js'}
+FILES={'noa-bridge/package-record.php':'bridge/package-record.php','noa-browse-order.js':'deploy/noa-browse-order.js','noa-category-order.php':'deploy/noa-category-order.php','noa-browse.js':'deploy/noa-browse.js'}
 PROTECTED=['bbs/login.php','bbs/login_check.php','bbs/board.php','bbs/register.php','common.php','noa-music.php','noa-app/jukebox/upload.js']
 def sha(data):return hashlib.sha256(data).hexdigest()
 def main():
@@ -34,7 +34,7 @@ def main():
             before={path:read(path) for path in FILES}
             for path,data in before.items():
                 if data is None:
-                    if path!='noa-browse-order.js':raise RuntimeError('missing_existing_target:'+path)
+                    if path not in {'noa-browse-order.js','noa-bridge/package-record.php'}:raise RuntimeError('missing_existing_target:'+path)
                 elif sha(data) not in known[path]:raise RuntimeError('unknown_remote_version:'+path)
             protected={path:sha(read(path)) for path in PROTECTED}
             for path,data in desired.items():
