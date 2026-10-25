@@ -3,6 +3,11 @@ on:
   push:
     branches: [main]
     paths: &paths
+      - 'bridge/sound-core.php'
+      - 'bridge/music-readmodel.php'
+      - 'deploy/noa-app/jukebox/core.php'
+      - 'tests/catalog/music_readmodel_test.php'
+      - 'scripts/noa_shared_catalog_deploy.py'
       - 'deploy/noa-music.php'
       - 'deploy/noa-youtube.php'
       - 'deploy/noa-browse.js'
@@ -36,6 +41,11 @@ jobs:
         with: {php-version: '8.2'}
       - name: Validate syntax and existing hierarchy
         run: |
+          php -l bridge/sound-core.php
+          php -l bridge/music-readmodel.php
+          php -l deploy/noa-app/jukebox/core.php
+          php tests/catalog/music_readmodel_test.php
+          php tests/catalog/sound_test.php
           php -l deploy/noa-music.php
           php -l deploy/noa-youtube.php
           php -l deploy/noa-app/home.php
@@ -46,7 +56,7 @@ jobs:
           node --check deploy/noa-playlists.js
           node --check scripts/qa/noa-initial-flash.mjs
           node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs tests/playlists/drag_order_test.cjs
-          python -m py_compile scripts/noa_browse_music_page_deploy.py scripts/noa_browse_youtube_page_deploy.py scripts/noa_initial_catalog_preflight.py scripts/noa_home_label_deploy.py scripts/noa_world_view_deploy.py scripts/noa_playlists_controls_deploy.py
+          python -m py_compile scripts/noa_shared_catalog_deploy.py scripts/noa_browse_music_page_deploy.py scripts/noa_browse_youtube_page_deploy.py scripts/noa_initial_catalog_preflight.py scripts/noa_home_label_deploy.py scripts/noa_world_view_deploy.py scripts/noa_playlists_controls_deploy.py
       - name: Prepare browser validation
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
@@ -83,6 +93,7 @@ jobs:
       - name: Deploy only changed allowlisted sources, dependency first, with atomic replacement
         env: *noa_env
         run: |
+          python scripts/noa_shared_catalog_deploy.py
           python scripts/noa_playlists_controls_deploy.py
           python scripts/noa_inline_order_deploy.py
           python scripts/noa_home_label_deploy.py

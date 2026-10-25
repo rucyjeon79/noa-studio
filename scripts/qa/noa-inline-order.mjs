@@ -51,6 +51,17 @@ try{
   await collection.locator('.noa-inline-song').first().click();if(video){assert(await page.locator('.noa-inline-playback').evaluate(n=>!!n.closest('.noa-user-playlist')));await rows.nth(2).locator('.noa-inline-song').click();assert(await page.locator('.noa-inline-playback').evaluate(n=>!n.closest('.noa-user-playlist')));}else{assert.deepEqual(await page.evaluate(()=>browse.apply(records).queue.map(r=>r.key)),[sourceKeys[2],sourceKeys[1],sourceKeys[0]]);await page.locator('#sound-player').evaluate(a=>a.pause());}
   await page.reload();await order.waitFor();assert.equal(await page.locator('.noa-user-playlist').count(),1);await page.locator('.noa-user-playlist .noa-browse-card').click();assert.deepEqual(await page.locator('.noa-user-playlist .noa-inline-song').evaluateAll(ns=>ns.map(n=>n.dataset.inlineKey)),[sourceKeys[2],sourceKeys[1],sourceKeys[0]]);
   await order.click();await page.screenshot({path:out+'/'+(video?'youtube-':'music-')+theme+'-'+width+'.jpg',type:'jpeg',quality:86});report.push({pagePath,width,theme,videoIframePreserved:video,adminUIFixture:true,pointerDrag:true,keyboardMove:true,cancelNoWrite:true,explicitSave:true,reloadPersistence:true,saveFailureRetainsDraft:true,createSelectionNumbers:true,createCancel:true,createFailureRetainsSelection:true,createOrderedPlaylist:true,createReloadPersistence:true,selectionDoesNotPlay:true});
+  if(video&&width===390){
+   const target=await context.newPage();await target.goto(base+'/noa-music.php?genre=cover-reborn');
+   const shared=target.locator('.noa-user-playlist[data-playlist-id="'+saved.playlists[0].id+'"]');await shared.waitFor();await shared.locator('.noa-browse-card').click();
+   const identities=await shared.locator('.noa-inline-song').evaluateAll(ns=>ns.map(n=>{const key=n.dataset.inlineKey;const raw=document.querySelector('.song[data-key="'+key+'"]');return {key,audio:raw?.dataset.audio};}));
+   assert.equal(identities.length,3,'every YouTube playlist member must exist in Music');
+   const canonical=await target.evaluate(keys=>keys.map(key=>{const r=records.find(r=>r.key===key);return String(r.orderKey||r.key).replace(/^catalog:/,'');}),identities.map(x=>x.key));
+   assert.deepEqual(canonical,saved.playlists[0].keys,'same playlist and selected order across media');
+   assert(identities.every(x=>typeof x.audio==='string'&&!/youtube[.]com/.test(x.audio)),'Music uses only uploaded audio');
+   assert.equal(await target.locator('#yt-frame').count(),0);await target.screenshot({path:out+'/youtube-created-music-'+theme+'-390.jpg',type:'jpeg',quality:86});
+   report.push({crossPagePlaylist:true,theme,youtubeCreateMusicVisible:true,sameCanonicalMembersAndOrder:true,productionOrderWrites:0});await target.close();
+  }
   await page.goto(base+pagePath+'?genre=kpop-original&act=1');await page.waitForFunction(()=>document.querySelector('[data-browse-ready="true"]'));assert.equal(await order.count(),0,'EP order stays automatic');await context.close();
  }
  const guest=await browser.newContext();const guestPage=await guest.newPage();if(phase==='candidate')await guestPage.route('**/noa-browse.js*',route=>route.fulfill({path:process.cwd()+'/deploy/noa-browse.js',contentType:'application/javascript'}));for(const pagePath of ['/noa-music.php','/noa-youtube.php']){await guestPage.goto(base+pagePath+'?genre=cover-reborn');await guestPage.waitForFunction(()=>document.querySelector('[data-browse-ready="true"]'));assert.equal(await guestPage.locator('.noa-order-controls').count(),0);}await guest.close();

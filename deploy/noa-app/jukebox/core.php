@@ -12,14 +12,13 @@ function nj_document(PDO $db,string $key):?array{
  $q=$db->prepare('SELECT payload,kind FROM noa_documents WHERE doc_key=?');$q->execute([$key]);$r=$q->fetch(PDO::FETCH_ASSOC);
  if($r){$d=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);$d['_kind']=$r['kind'];return $d;}
  if(!preg_match('/^catalog:([a-f0-9]{64})$/D',$key,$m))return null;
- $q=$db->prepare("SELECT s.song_id,s.identity_json,s.genre_id,s.ep,v.fields_json,v.public_verified FROM noa_catalog_songs s JOIN noa_catalog_versions v ON v.entity_id=s.song_id AND v.entity_type='song' WHERE s.song_id=? AND v.batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)");$q->execute([$m[1]]);$r=$q->fetch(PDO::FETCH_ASSOC);if(!$r)return null;
- $item=noa_sound_recovered($r,true);if(!$item)return null;$b=json_decode($r['fields_json'],true,512,JSON_THROW_ON_ERROR);
- return ['_kind'=>'story','_catalog_id'=>$m[1],'title'=>$item['title'],'genreId'=>$item['genre'],'ep'=>$item['ep'],'act'=>'','visibility'=>$r['public_verified']?'public':'private','body'=>$b+['sunoUrl'=>$item['sunoUrl']]];
+ $q=$db->prepare("SELECT s.song_id,s.identity_json,s.genre_id,s.ep,v.fields_json,v.public_verified FROM noa_catalog_songs s JOIN noa_catalog_versions v ON v.entity_id=s.song_id AND v.entity_type='song' WHERE s.song_id=? AND NOT EXISTS (SELECT 1 FROM noa_catalog_aliases a JOIN noa_documents d ON d.doc_key=a.alias_key WHERE a.entity_id=s.song_id AND a.batch_id=v.batch_id AND d.kind IN ('single','story')) AND v.batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)");$q->execute([$m[1]]);$r=$q->fetch(PDO::FETCH_ASSOC);if(!$r)return null;
+ return noa_sound_catalog_document($r);
 }
 function nj_catalog(PDO $db,bool $qa=false):array{
  $out=[];$sql="SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','story'".($qa?",'jukebox_qa'":"").") ORDER BY doc_key";
  foreach($db->query($sql) as $r){$d=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);$d['_kind']=$r['kind'];$out[$r['doc_key']]=$d;}
- try{foreach($db->query("SELECT s.song_id,s.identity_json,s.genre_id,s.ep,v.fields_json,v.public_verified FROM noa_catalog_songs s JOIN noa_catalog_versions v ON v.entity_id=s.song_id AND v.entity_type='song' WHERE v.batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)") as $r){$item=noa_sound_recovered($r,true);if($item){$key=$item['key'];$out[$key]=nj_document($db,$key);}}}catch(PDOException $e){error_log('[jukebox-catalog] recovery unavailable');}
+ try{foreach($db->query("SELECT s.song_id,s.identity_json,s.genre_id,s.ep,v.fields_json,v.public_verified FROM noa_catalog_songs s JOIN noa_catalog_versions v ON v.entity_id=s.song_id AND v.entity_type='song' WHERE NOT EXISTS (SELECT 1 FROM noa_catalog_aliases a JOIN noa_documents d ON d.doc_key=a.alias_key WHERE a.entity_id=s.song_id AND a.batch_id=v.batch_id AND d.kind IN ('single','story')) AND v.batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)") as $r){$doc=noa_sound_catalog_document($r);if($doc){$key='catalog:'.$r['song_id'];$out[$key]=nj_document($db,$key);}}}catch(PDOException $e){error_log('[jukebox-catalog] recovery unavailable');}
  return $out;
 }
 function nj_taxonomy(PDO $db,string $key,array $doc):array{

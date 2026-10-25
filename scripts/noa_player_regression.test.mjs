@@ -16,7 +16,7 @@ function openSound(){
  return {php,context,node,audio,buttons,activity,audioEvents,events,storage,run:code=>vm.runInContext(code,context)};
 }
 test('share-only record shows original lyrics and Suno link without any audio or YouTube playback',()=>{
- const p=openSound();p.run('select(buttons[0],true)');assert.equal(p.audio.played,0);assert.equal(p.audio.src,undefined);assert.equal(p.node('lyrics').textContent,'Original lyrics');assert.equal(p.node('watch').href,'https://suno.com/song/one');assert.match(p.node('player-status').textContent,/실제 음원 파일 연결/);assert.doesNotMatch(p.php,/iframe_api|new YT[.]Player|youtube-player/);
+ const p=openSound();p.run('select(buttons[0],true)');assert.equal(p.audio.played,0);assert.equal(p.audio.src,undefined);assert.equal(p.node('lyrics').textContent,'Original lyrics');assert.equal(p.node('watch').href,'https://suno.com/song/one');assert.match(p.node('player-status').textContent,/음원 업로드 대기/);assert.doesNotMatch(p.php,/iframe_api|new YT[.]Player|youtube-player/);
 });
 test('native audio queue excludes share-only references; next/previous keep ordered files',()=>{
  const p=openSound();p.run('select(buttons[1],true)');assert.equal(p.audio.played,1);assert.match(p.audio.src,/two.wav$/);assert.equal(p.audio.volume,.7);p.run('move(1)');assert.match(p.audio.src,/three.wav$/);p.run('move(-1)');assert.match(p.audio.src,/two.wav$/);assert.equal(p.run('queue().length'),2);
