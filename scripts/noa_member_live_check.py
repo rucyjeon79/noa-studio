@@ -21,7 +21,10 @@ def main():
  def control(action,owner=0,**values):
   code,body,_=request(urllib.request.build_opener(),helper_url,json.dumps({'action':action,'owner':owner,**values}).encode(),{'Content-Type':'application/json','X-NOA-QA':token})
   try:j=json.loads(body)
-  except json.JSONDecodeError:raise RuntimeError('qa_control_non_json:'+str(code)+':bytes='+str(len(body)))
+  except json.JSONDecodeError:
+   sample=body.decode('utf-8','replace').replace(token,'[redacted]').replace(password,'[redacted]')
+   for account in ids:sample=sample.replace(account,'[QA account]')
+   raise RuntimeError('qa_control_non_json:'+str(code)+':bytes='+str(len(body))+':sample='+repr(sample[:800]))
   if code!=200 or not j.get('ok'):raise RuntimeError('qa_control_'+action+':'+str(j.get('error'))+':'+str(j.get('file',''))+':'+str(j.get('line','')))
   return j
  def write(path,data):
