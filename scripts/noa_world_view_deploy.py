@@ -49,7 +49,7 @@ def main():
     request=urllib.request.Request('https://noastudio.ai.kr/noa-world.php?audit='+os.environ['GITHUB_SHA'][:12],headers={'Cache-Control':'no-cache'})
     with urllib.request.urlopen(request,timeout=30) as response:
         html=response.read().decode('utf-8','replace')
-        if 'class="world-play' in html or 'id="official-mvs"' in html:
+        if re.search(r'<button\b[^>]*class="[^"]*\bworld-play(?:\s|")',html) or 'id="official-mvs"' in html:
             raise RuntimeError('world_initial_video_lists_still_present')
         if 'ACT 이야기 목록' not in html:
             raise RuntimeError('world_story_navigation_missing')
