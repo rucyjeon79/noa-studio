@@ -68,7 +68,7 @@ def main():
             subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-f','lavfi','-i','sine=frequency=440:duration=35','-c:a','libmp3lame','-b:a','128k',str(audio)], check=True)
             assert audio.stat().st_size > 10000
             audio_hash = hashlib.sha256(audio.read_bytes()).hexdigest()
-            for name in ['popularity-events.php','popularity-plays.php','popularity-store.php','popularity-core.php','popularity-schema.php','sound-core.php']:
+            for name in ['popularity-events.php','popularity-plays.php','popularity-store.php','popularity-core.php','popularity-schema.php','sound-core.php','member-access.php']:
                 shutil.copyfile(ROOT/'bridge'/name, web/'noa-bridge'/name)
             for name in ['stream.php','stream-popularity.php','core.php']:
                 shutil.copyfile(ROOT/'deploy/noa-app/jukebox'/name,web/'noa-app/jukebox'/name)
@@ -79,7 +79,7 @@ def main():
             (web/'noa-bridge/home-core.php').write_text('<?php // Unused ranking-home fixture boundary.')
             config = connection | {'dsn': connection['dsn']+';dbname='+database}
             (web/'noa-bridge/storage.php').write_text("<?php function noa_bridge_pdo():PDO{$c=json_decode(base64_decode('"+b64(config)+"'),true);return new PDO($c['dsn'],$c['user'],$c['password'],[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_EMULATE_PREPARES=>false]);}")
-            (web/'common.php').write_text("<?php define('_GNUBOARD_',true);define('G5_PATH',__DIR__);session_save_path(__DIR__.'/sessions');session_start();$member=[];$is_member=false;$is_admin='';")
+            (web/'common.php').write_text("<?php define('_GNUBOARD_',true);define('G5_PATH',__DIR__);session_save_path(__DIR__.'/sessions');session_start();$member=['mb_id'=>'fixture-listener','mb_level'=>4];$is_member=true;$is_admin='';if(isset($_GET['qa_guest'])){$member=[];$is_member=false;}")
             includes = "define('_GNUBOARD_',true);require '"+str(web/'noa-bridge/popularity-store.php')+"';require '"+str(web/'noa-app/jukebox/core.php')+"';"
             setup = includes + "np_migrate($db,'isolated-stream-fixture');nj_schema($db);$db->exec('CREATE TABLE noa_documents(doc_key VARCHAR(191) PRIMARY KEY,kind VARCHAR(32),payload JSON)');$policy=np_defaults();$policy['playbackIntegrationEnabled']=true;$q=$db->prepare('UPDATE noa_popularity_settings SET policy=? WHERE id=1');$q->execute([np_json($policy)]);"
             php(setup)
@@ -111,6 +111,7 @@ def main():
                 except urllib.error.HTTPError as error:
                     return error.code,error.read()
             route='/noa-app/jukebox/stream.php?key=fixture%3Apublic'
+            assert request(route+'&qa_guest=1')[0] == 403
             assert request(route,'HEAD')[0] == 200
             assert request(route,headers={'Range':'bytes=999999999-'})[0] == 416
             assert request('/noa-app/jukebox/stream.php?key=fixture%3Aprivate')[0] == 403

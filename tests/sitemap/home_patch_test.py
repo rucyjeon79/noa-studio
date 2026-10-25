@@ -1,63 +1,27 @@
-"""Preserve operating HOME except the guarded sitemap and exact metrics cache revision and approved TOP 10 label removal."""
-import argparse
-import hashlib
+"""Preserve all non-hero HOME bytes while allowing the approved genre/video card.
+The existing 18-layout real browser check owns geometry and full playback.
+"""
+import argparse,re,subprocess
 from pathlib import Path
-import re
-import subprocess
-
 ROOT=Path(__file__).resolve().parents[2]
-BASE_SHA='bab8c6f43a1bfdefb203be5f363f65102cff0860b515cbbe8201e43701d995d2'
-BASE_COMMIT='a7e34a84fae13241e157378d61c18547ae41809e'
-parser=argparse.ArgumentParser()
-parser.add_argument('--host-source',type=Path)
-args=parser.parse_args()
+BASE_COMMIT='56e588694be288e127aded0ea42179e37d50d12c'
+parser=argparse.ArgumentParser();parser.add_argument('--host-source',type=Path);args=parser.parse_args()
 candidate=(ROOT/'deploy/noa-app/home.php').read_bytes()
-layout=re.findall(rb'<style id="noa-home-action-layout">[^<]*</style>',candidate)
-if len(layout)!=1:raise AssertionError('Expected one scoped hero action layout rule')
-candidate=candidate.replace(layout[0],b'',1).replace(b'<div class="noa-hero-actions">',b'',1).replace(b'</nav><?php endif;?></div>',b'</nav><?php endif;?>',1)
+baseline=args.host_source.read_bytes()if args.host_source else subprocess.check_output(['git','show',BASE_COMMIT+':deploy/noa-app/home.php'],cwd=ROOT)
+def outside_approved_hero(source):
+ for pattern in [rb'<style id="noa-home-action-layout">.*?</style>',rb'<section class="noa-hero".*?</section>',rb'<script id="noa-home-hero-size">.*?</script>']:
+  source,count=re.subn(pattern,b'',source,flags=re.S)
+  assert count==1,'one approved hero scope required'
+ source=re.sub(rb'/noa-hero[.]js[?]v=[^"\s]+',b'/noa-hero.js?v=APPROVED_RUNTIME',source)
+ return source
+assert outside_approved_hero(candidate)==outside_approved_hero(baseline),'non-hero HOME source changed'
+hero_start=candidate.index(b'<section class="noa-hero"');hero_end=candidate.index(b'</section>',hero_start)
 addition=re.findall(rb"<\?php if\(is_file\(dirname\(__DIR__\)\.'/noa-sitemap[.]php'\)\):\?><nav[^\n]*data-home-section=\"sitemap\"[^\n]*</nav><\?php endif;\?>",candidate)
-if len(addition)!=1:
-    raise AssertionError('Exactly one guarded sitemap link inside the hero is required')
-hero_start=candidate.index(b'<section class="noa-hero"')
-hero_end=candidate.index(b'</section>',hero_start)
-if not hero_start<candidate.index(addition[0])<hero_end:
-    raise AssertionError('Sitemap must be inside the hero')
+assert len(addition)==1 and hero_start<candidate.index(addition[0])<hero_end,'guarded sitemap must remain inside hero'
 community=re.findall(rb'<section class="noa-section" data-home-section="community">[^\n]*</section>\n',candidate)
-if len(community)!=1 or not candidate[hero_end+len(b'</section>'):].startswith(b'\n'+community[0]):
-    raise AssertionError('Community must immediately follow the hero')
-cache_before=b'noa-home.js?v=20261022-recovery1'
-cache_after=b'noa-home.js?v=20261024-popularity-metrics'
-if candidate.count(cache_after)!=1 or cache_before in candidate:
-    raise AssertionError('Exactly one reviewed HOME metrics script cache revision is required')
-restored=candidate.replace(addition[0],b'',1).replace(cache_after,cache_before,1).replace(community[0],b'',1)
-restored=restored.replace(b'<footer class="noa-footer">',community[0]+b'<footer class="noa-footer">',1)
-# Normalize only the four literal labels approved in PR #202; preserve the baseline hash guard.
-if re.search(rb'TOP\s*10',candidate,re.I):
-    raise AssertionError('Removed HOME TOP 10 labels must not return')
-for current,previous in [
-    ('<h2>추천 음악</h2>','<h2>추천 음악 · TOP 10</h2>'),
-    ('<h2>당신의 이야기, 우리의 음악 🎧</h2>','<h2>당신의 이야기, 우리의 음악 🎧 · TOP 10</h2>'),
-    ('<h2>🎤 AInoa의 유명곡 커버</h2>','<h2>🎤 AInoa의 유명곡 커버 · TOP 10</h2>'),
-    ('추천 음악과 겹치지 않는 EP 시리즈.','추천 음악과 겹치지 않는 EP 시리즈 TOP 10.'),
-]:
-    current,previous=current.encode(),previous.encode()
-    if restored.count(current)!=1:
-        raise AssertionError('Expected exactly one approved HOME label')
-    restored=restored.replace(current,previous,1)
-if hashlib.sha256(restored).hexdigest()!=BASE_SHA:
-    raise AssertionError('Existing operating HOME bytes changed outside the sitemap, metrics cache revision and approved label removal')
-if args.host_source:
-    baseline=args.host_source.read_bytes()
-else:
-    merged=subprocess.check_output(['git','show',BASE_COMMIT+':deploy/noa-app/home.php'],cwd=ROOT)
-    old_section=re.findall(rb'<section class="noa-section noa-site-map" aria-labelledby="noa-site-map-heading">[^\n]*</nav></section>\n',merged)
-    if len(old_section)!=1:
-        raise AssertionError('Previously unshipped six-card section must be accounted for')
-    baseline=merged.replace(old_section[0],b'',1)
-if restored!=baseline:
-    raise AssertionError('Hero, ranking, community, account or source script markup changed')
-for marker in [b'id="noa-hero-video"',b'id="noa-featured"',b'id="noa-ep"',b'id="noa-stories"',b'id="noa-covers"',b'id="noa-acts"',b'data-home-section="community"']:
-    if candidate.count(marker)!=1:
-        raise AssertionError('Existing HOME section missing or duplicated: '+marker.decode())
-print('NOA_HOME_ORIGINAL_VIDEO_RANKING_COMMUNITY_BYTES_PRESERVED_SITEMAP_METRICS_CACHE_AND_APPROVED_LABELS_ONLY')
-
+assert len(community)==1 and candidate[hero_end+len(b'</section>'):].startswith(b'\n'+community[0]),'community must immediately follow hero'
+assert not re.search(rb'TOP\s*10',candidate,re.I),'removed TOP 10 labels returned'
+assert candidate.count(b'noa-home.js?v=20261024-popularity-metrics')==1,'reviewed metrics cache revision changed'
+for marker in [b'id="noa-hero-video"',b'id="noa-hero-genre"',b'id="noa-hero-play"',b'id="noa-featured"',b'id="noa-ep"',b'id="noa-stories"',b'id="noa-covers"',b'id="noa-acts"']:
+ assert candidate.count(marker)==1,'missing/duplicate HOME section '+marker.decode()
+print('NOA_HOME_NON_HERO_BYTES_PRESERVED_GENRE_VIDEO_SITEMAP_AND_COMMUNITY_CONTRACT_OK')
