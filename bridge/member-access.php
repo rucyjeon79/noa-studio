@@ -18,7 +18,7 @@ function nam_requirement(string $path,string $method='GET',array $query=[]):?str
  if($path==='/noa-bridge/legacy-audio.php')return null;
  if($path==='/noa-app/jukebox/stream.php'||$path==='/noa-app/jukebox/download.php')return null; // asset ownership checked after loading the record
  if($path==='/noa-music.php'||$path==='/noa-catalog.php'||$path==='/noa-bridge/user-playlists.php'||$path==='/noa-bridge/music-detail.php')return 'music';
- if(in_array($path,['/noa-channel.php','/noa-youtube.php','/noa-world.php','/noa-my.php','/noa-settings.php','/noa-sitemap.php','/noa-download.php','/noa-bridge/world-story.php','/noa-bridge/world-mv.php'],true))return 'member';
+ if(in_array($path,['/noa-bridge/catalog.php','/noa-channel.php','/noa-youtube.php','/noa-world.php','/noa-my.php','/noa-settings.php','/noa-sitemap.php','/noa-download.php','/noa-bridge/world-story.php','/noa-bridge/world-mv.php'],true))return 'member';
  if(preg_match('~^/noa-(?:library|editor|ai-lab|recovery|theme-admin|catalog-admin|youtube-admin|category-order-admin)[.]php$~D',$path)||preg_match('~^/noa-app/(?:database|taxonomy|popularity|jukebox)/(?:index[.]php)?$~D',$path))return 'admin';
  if(str_starts_with($path,'/bbs/')){
   $file=basename($path);

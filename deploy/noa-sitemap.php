@@ -31,6 +31,7 @@ function noa_sitemap_registry():array{
             ['register','회원가입','NOA STUDIO와 함께하기','/bbs/register.php','user','guest'],
             ['password','아이디·비밀번호 찾기','계정 접근 복구','/bbs/password_lost.php','settings','guest'],
             ['playlists','내 재생목록','나만의 목록 만들기와 편집','/noa-music.php#my-playlists','playlists','member'],
+            ['creator','내 채널 · 음원','내 채널과 업로드한 음악 관리','/noa-creator.php','music','member'],
             ['profile','회원정보','내 계정 정보 확인과 수정','/bbs/member_confirm.php?url=register_form.php','user','member'],
         ]],
         'community'=>['title'=>'커뮤니티','routes'=>[
@@ -79,7 +80,7 @@ function noa_sitemap_role(bool $member,string $admin):string{
 /** Audit-only coverage check: new screen files need an explicit audience decision. */
 function noa_sitemap_unlisted_pages(string $root):array{
     // The deploy center has no verified production release yet and stays undiscoverable.
-    $known=['/noa-sitemap.php'=>true,'/noa-deploy-center.php'=>true];
+    $known=['/noa-sitemap.php'=>true,'/noa-deploy-center.php'=>true,'/noa-channel.php'=>true]; // Channel URLs require an owner ID and are linked from MY.
     foreach(noa_sitemap_registry() as $group)foreach($group['routes'] as $route)$known[(string)parse_url($route[3],PHP_URL_PATH)]=true;
     $missing=[];
     foreach(glob(rtrim($root,'/').'/noa-*.php')?:[] as $file){
