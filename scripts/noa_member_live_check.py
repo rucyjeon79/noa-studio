@@ -19,8 +19,10 @@ def main():
    with opener.open(req,timeout=45)as r:return r.status,r.read(),dict(r.headers)
   except urllib.error.HTTPError as e:return e.code,e.read(),dict(e.headers)
  def control(action,owner=0,**values):
-  code,body,_=request(urllib.request.build_opener(),helper_url,json.dumps({'action':action,'owner':owner,**values}).encode(),{'Content-Type':'application/json','X-NOA-QA':token});j=json.loads(body)
-  if code!=200 or not j.get('ok'):raise RuntimeError('qa_control_'+action+':'+str(j.get('error')))
+  code,body,_=request(urllib.request.build_opener(),helper_url,json.dumps({'action':action,'owner':owner,**values}).encode(),{'Content-Type':'application/json','X-NOA-QA':token})
+  try:j=json.loads(body)
+  except json.JSONDecodeError:raise RuntimeError('qa_control_non_json:'+str(code)+':bytes='+str(len(body)))
+  if code!=200 or not j.get('ok'):raise RuntimeError('qa_control_'+action+':'+str(j.get('error'))+':'+str(j.get('file',''))+':'+str(j.get('line','')))
   return j
  def write(path,data):
   try:s.lstat(path)

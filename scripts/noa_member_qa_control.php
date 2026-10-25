@@ -2,7 +2,8 @@
 /** Runner-owned, expiring QA helper. Installed temporarily, then removed via SFTP. */
 declare(strict_types=1);ini_set('display_errors','0');
 if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||time()>__QA_EXPIRY__||!hash_equals('__QA_TOKEN_HASH__',hash('sha256',(string)($_SERVER['HTTP_X_NOA_QA']??'')))){http_response_code(404);exit;}
-require dirname(__DIR__).'/common.php';require __DIR__.'/storage.php';require __DIR__.'/creator-core.php';require __DIR__.'/sound-core.php';require dirname(__DIR__).'/noa-app/jukebox/core.php';
+register_shutdown_function(static function(){ $e=error_get_last();if($e&&in_array($e['type'],[E_ERROR,E_PARSE,E_COMPILE_ERROR,E_CORE_ERROR],true)){http_response_code(500);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>'qa_runtime_failure','file'=>basename($e['file']),'line'=>$e['line']]);}});
+require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/storage.php';require_once __DIR__.'/creator-core.php';require_once __DIR__.'/sound-core.php';require_once dirname(__DIR__).'/noa-app/jukebox/core.php';
 header('Content-Type: application/json');header('Cache-Control: no-store');
 try{
  $b=json_decode(file_get_contents('php://input',false,null,0,4097),true,16,JSON_THROW_ON_ERROR);$db=noa_bridge_pdo();$ids=['__QA_ID_A__','__QA_ID_B__'];$id=$ids[(int)($b['owner']??0)]??'';if($id==='')throw new RuntimeException('invalid_owner');$table=$g5['member_table'];if(!preg_match('/^[A-Za-z0-9_]+$/D',$table))throw new RuntimeException('table_invalid');$marker='NOA release QA __QA_NONCE__';
