@@ -83,12 +83,12 @@ function mount({host,rows,onChange,search=null,genre=null,type=null,kind='곡'})
  }
  function syncMusicActions(){
   if(kind==='영상'||!host.querySelectorAll)return;
-  for(const [key,raw] of rawSongs){const actions=raw.querySelector('.jukebox-actions');if(actions&&!actions.querySelector('.noa-track-add')){const add=button('담기',()=>addTrack(key));add.className='noa-track-add';labelMusicAction(add,'담기');add.setAttribute('aria-label',(raw.dataset.title||key)+' 담기');actions.append(add);}}
+  for(const [key,raw] of rawSongs){const actions=raw.querySelector('.jukebox-actions');if(actions&&!actions.querySelector('.noa-track-add')){const add=button('담기',()=>addTrack(key));add.className='noa-track-add noa-action';labelMusicAction(add,'담기');add.setAttribute('aria-label',(raw.dataset.title||key)+' 담기');actions.append(add);}}
   for(const wrapper of host.querySelectorAll('.noa-inline-song-row')){
    const raw=rawSongs.get(wrapper.dataset.inlineKey),tools=wrapper.querySelector('.noa-song-actions');if(!raw||!tools)continue;
    const definitions=[['.sound-play','재생'],['.noa-track-add','담기'],['.jukebox-download','다운로드'],['.jukebox-replace','교체'],['.sound-upload','업로드']];
    const signature=definitions.map(([selector])=>{const n=raw.querySelector(selector);return n?[selector,n.disabled,n.getAttribute('href'),n.getAttribute('aria-disabled')]:null;});const revision=JSON.stringify(signature);if(tools.dataset.revision===revision)continue;tools.dataset.revision=revision;tools.replaceChildren();
-   for(const [selector,label] of definitions){const source=raw.querySelector(selector);if(!source&&label!=='재생')continue;const action=button(label,()=>raw.querySelector(selector)?.click());action.className='noa-song-action';labelMusicAction(action,label);action.disabled=!source||!!source.disabled||source.getAttribute('aria-disabled')==='true';action.setAttribute('aria-label',(raw.dataset.title||wrapper.dataset.inlineKey)+' '+label);tools.append(action);}
+   for(const [selector,label] of definitions){const source=raw.querySelector(selector);if(!source&&label!=='재생')continue;const action=button(label,()=>raw.querySelector(selector)?.click());action.className='noa-song-action noa-action';labelMusicAction(action,label);action.disabled=!source||!!source.disabled||source.getAttribute('aria-disabled')==='true';action.setAttribute('aria-label',(raw.dataset.title||wrapper.dataset.inlineKey)+' '+label);tools.append(action);}
    tools.dataset.adminControls=String(tools.children.length>2);
   }
  }
