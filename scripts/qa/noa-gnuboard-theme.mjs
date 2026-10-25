@@ -9,7 +9,7 @@ try{
  for(const width of [360,390,430,1280]){
   const mobile=width<700,context=await browser.newContext({viewport:{width,height:844},isMobile:mobile,hasTouch:mobile,serviceWorkers:'block',reducedMotion:'reduce'});
   await context.route('**/*',async route=>{
-   if(!['GET','HEAD'].includes(route.request().method()))throw Error('unexpected_write_request');
+   if(!['GET','HEAD'].includes(route.request().method()))return route.abort('blockedbyclient'); // Native CAPTCHA initialization is also blocked; never submit forms.
    const u=new URL(route.request().url());
    if(phase==='candidate'&&u.origin===base&&u.pathname==='/noa-gnuboard.css')return route.fulfill({path:process.cwd()+'/deploy/noa-gnuboard.css',contentType:'text/css'});
    if(phase==='candidate'&&u.origin===base&&route.request().isNavigationRequest()&&u.pathname.startsWith('/bbs/')){const response=await route.fetch();const body=(await response.text()).replace('</head>','<link rel="stylesheet" href="/noa-gnuboard.css?candidate"></head>');return route.fulfill({response,body});}
