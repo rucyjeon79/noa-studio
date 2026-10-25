@@ -6,6 +6,9 @@ on:
       - 'deploy/noa-music.php'
       - 'deploy/noa-youtube.php'
       - 'deploy/noa-browse.js'
+      - 'deploy/noa-browse-order.js'
+      - 'deploy/noa-category-order.php'
+      - 'scripts/noa_inline_order_deploy.py'
       - 'deploy/noa-playlists.js'
       - 'scripts/noa_playlists_controls_deploy.py'
       - 'deploy/noa-app/home.php'
@@ -81,7 +84,7 @@ jobs:
         env: *noa_env
         run: |
           python scripts/noa_playlists_controls_deploy.py
-          python scripts/noa_browse_safe_deploy.py
+          python scripts/noa_inline_order_deploy.py
           python scripts/noa_home_label_deploy.py
           python scripts/noa_world_view_deploy.py
           python scripts/noa_browse_music_page_deploy.py
