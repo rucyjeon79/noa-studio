@@ -1,0 +1,129 @@
+{
+  "environment": "production anonymous read-only",
+  "launch": [
+    {
+      "role": "guest",
+      "path": "/noa-music.php",
+      "home": true,
+      "staleSession": true
+    },
+    {
+      "role": "guest",
+      "path": "/bbs/login.php?url=%2Fnoa-music.php",
+      "home": true,
+      "staleSession": true
+    },
+    {
+      "role": "guest",
+      "path": "/noa-login.php?url=%2Fnoa-music.php",
+      "home": true,
+      "staleSession": true
+    },
+    {
+      "path": "/",
+      "home": true
+    },
+    {
+      "path": "/index.php",
+      "home": true
+    },
+    {
+      "path": "/?device=mobile",
+      "home": true
+    },
+    {
+      "path": "/noa2.php",
+      "home": true
+    },
+    {
+      "role": "guest",
+      "deliberateMusicPreserved": true,
+      "deepLinkPreserved": true
+    }
+  ],
+  "layouts": [
+    {
+      "engine": "chromium",
+      "profile": "ios",
+      "theme": "noa-studio",
+      "installVisible": true,
+      "cleanHomeUrl": true,
+      "guideCloses": true,
+      "noOverflow": true,
+      "pageErrors": []
+    },
+    {
+      "engine": "chromium",
+      "profile": "ios",
+      "theme": "noa-ivory",
+      "installVisible": true,
+      "cleanHomeUrl": true,
+      "guideCloses": true,
+      "noOverflow": true,
+      "pageErrors": []
+    },
+    {
+      "engine": "chromium",
+      "profile": "ipad",
+      "theme": "noa-studio",
+      "installVisible": true,
+      "cleanHomeUrl": true,
+      "guideCloses": true,
+      "noOverflow": true,
+      "pageErrors": []
+    },
+    {
+      "engine": "chromium",
+      "profile": "ipad",
+      "theme": "noa-ivory",
+      "installVisible": true,
+      "cleanHomeUrl": true,
+      "guideCloses": true,
+      "noOverflow": true,
+      "pageErrors": []
+    },
+    {
+      "engine": "chromium",
+      "profile": "android",
+      "theme": "noa-studio",
+      "installVisible": true,
+      "cleanHomeUrl": true,
+      "guideCloses": true,
+      "noOverflow": true,
+      "pageErrors": []
+    },
+    {
+      "engine": "chromium",
+      "profile": "android",
+      "theme": "noa-ivory",
+      "installVisible": true,
+      "cleanHomeUrl": true,
+      "guideCloses": true,
+      "noOverflow": true,
+      "pageErrors": []
+    },
+    {
+      "engine": "chromium",
+      "profile": "mac",
+      "theme": "noa-studio",
+      "installVisible": true,
+      "cleanHomeUrl": true,
+      "guideCloses": true,
+      "noOverflow": true,
+      "pageErrors": []
+    },
+    {
+      "engine": "chromium",
+      "profile": "mac",
+      "theme": "noa-ivory",
+      "installVisible": true,
+      "cleanHomeUrl": true,
+      "guideCloses": true,
+      "noOverflow": true,
+      "pageErrors": []
+    }
+  ],
+  "physicalAppleInstallation": false,
+  "publicInstallationPage": true,
+  "appleNeverDownloadsApk": true
+}

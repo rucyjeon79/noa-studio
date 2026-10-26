@@ -1,0 +1,37 @@
+{
+  "sourceCommit": "519509528ccdab3fc4cd49434325ee702f44c914",
+  "testCommit": "dc0722c12bbf29b03dc3f076b616d17ee12bf541",
+  "sourceReleaseRun": 40340536673,
+  "sourceCandidate": "success",
+  "sourceDeploy": "success",
+  "regressionRuns": [
+    {
+      "id": 40390297392,
+      "jobs": [
+        {
+          "name": "engines",
+          "conclusion": "success"
+        },
+        {
+          "name": "finish-live",
+          "conclusion": "skipped"
+        }
+      ]
+    },
+    {
+      "id": 40390297301,
+      "jobs": [
+        {
+          "name": "candidate",
+          "conclusion": "success"
+        },
+        {
+          "name": "deploy",
+          "conclusion": "skipped"
+        }
+      ]
+    }
+  ],
+  "databaseWrites": 0,
+  "physicalAppleInstallation": false
+}
