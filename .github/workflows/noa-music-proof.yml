@@ -6,7 +6,38 @@ on:
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
+  clear-obsolete-setup:
+    runs-on: ubuntu-latest
+    permissions: {contents: read, actions: write}
+    timeout-minutes: 3
+    steps:
+      - name: Stop only superseded runs stuck before any deployment operation
+        env: {GH_TOKEN: '${{ github.token }}'}
+        run: |
+          python - <<'PYCODE'
+          import json,os,urllib.request,datetime
+          root='https://api.github.com/repos/rucyjeon79/noa-studio'
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
+          def api(path,method='GET'):
+              req=urllib.request.Request(root+path,headers=headers,method=method,data=b'' if method=='POST' else None)
+              with urllib.request.urlopen(req,timeout=25) as r:
+                  raw=r.read();return json.loads(raw) if raw else None
+          head=api('/git/ref/heads/main')['object']['sha']
+          pins=[(40293385963,'6e526e134bea57052029f3e813a17576c2278849','.github/workflows/noa-quality-gates.yml','Prepare isolated fixtures and verified processing tools'),(40295126747,'308cde6143ed17ea1814fb3512b0b46f840734f0','.github/workflows/noa-subscription.yml','Prepare pinned NOA SFTP and operating browser checks')]
+          for ident,sha,path,stage in pins:
+              run=api('/actions/runs/'+str(ident))
+              if run['status']!='in_progress' or run['head_sha']!=sha or head==sha or run['path']!=path:continue
+              jobs=api('/actions/runs/'+str(ident)+'/jobs')['jobs']
+              running=[j for j in jobs if j['status']=='in_progress']
+              if len(running)!=1:continue
+              steps=running[0]['steps'];active=[s for s in steps if s['status']=='in_progress']
+              if len(active)!=1 or active[0]['name']!=stage:continue
+              elapsed=(datetime.datetime.now(datetime.timezone.utc)-datetime.datetime.fromisoformat(active[0]['started_at'].replace('Z','+00:00'))).total_seconds()
+              if elapsed<600 or any(s['number']>active[0]['number'] and s.get('conclusion')=='success' for s in steps):continue
+              api('/actions/runs/'+str(ident)+'/cancel','POST');print('CANCELLED_OBSOLETE_DEPENDENCY_SETUP',ident)
+          PYCODE
   repair:
+    needs: clear-obsolete-setup
     runs-on: ubuntu-latest
     environment: production
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
