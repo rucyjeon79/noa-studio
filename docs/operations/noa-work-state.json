@@ -16,20 +16,24 @@
     "최종 보고에서 완료, 미완료, 코드/운영 커밋, 배포, 검증 URL, 남은 오류를 구분한다."
   ],
   "runtimeRelease": {
-    "commit": "99c39e6ceadd93fbdfd11ca5faffcf18c5505269",
-    "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40256812700",
+    "commit": "6b99913f2404fa21851e2a840096e0536d6e65c1",
+    "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40262045714",
     "status": "success",
     "filesSha256": {
+      "noa-assets/ainoa-symbol.png": "3f13853373b8a09af66eff9a4f7030500442763ca41fd9ecc13159cb352cabfe",
+      "noa-launch.js": "2bc9a43ced7507f164eaa56c7d24d9b2c7590115a97a0d960080163adef7a26a",
+      "noa-manifest.json": "2b7c76a56dee198f71e9ca1cc236b7154c533df6835c162c4c5f63080ae16685",
+      "noa-sw.js": "66e15f28dba6bbc21f53333246897927ece61ed8310b6982e96987e06b82e9a1",
       "noa-bridge/subscription-access.php": "b3c86c2dfe06e980ea705afb9ec7bc9266f60cc3e6fd69cd3e7b527dd211bd95",
       "extend/noa.access.php": "8940ebcad48d39d621f792e7df2a94ca2d09ad717a5e35c2abb746f907c6a733",
       "noa-bridge/ainoa-core.php": "9630a961f04458ebef76cb1c00ec1d1eea25e14f06e5b042173a29306cf800c1",
       "noa-ainoa.php": "be9a2c3487625a24944c655f35985b16b2c2d83f5628b250364506fd02e615b7",
-      "noa-ainoa.css": "1884b02a8b89ddf275bf23f7b2421916727fae7802729c8b83bc499edc46aaa5",
-      "noa-ainoa.js": "b773a4759ac1d0521b072e502ef70f5221af7e69756d71d99edcc67de52e2f19",
+      "noa-ainoa.css": "fcd48adbfadabc66f44be04adb697fbebb3fc12a264ece8920436bc0565370f8",
+      "noa-ainoa.js": "30d6a798d1be661f455ad3318b6ba4e61bdcf958bbb8ff0f57ea1024f3386474",
       "noa-bridge/package-record.php": "8d5426a1d8c8914853b16a7acfb7d11ba5fa4d912a8a0887eb52783ca2dee020",
       "noa-browse-edit.js": "d903ced1f74fb6162d044c77b1add2a7759d0e8a0dd96d3f69707ec78d48dc4e",
       "noa-browse.js": "1b03b7b60d55ea00b7b040b71e6a670b1bea5f686874e0cdd4b889563bdd4145",
-      "extend/noa.design.php": "6557693e358297209e45afb5f584a59e0fb7f009b576386682a4b2dd345d1235"
+      "extend/noa.design.php": "9965bacf09bcef86e866b005a067429659572c62180dffaefaeb092baf8c6f54"
     },
     "protectedUnchanged": 12,
     "databaseWrites": 0,
@@ -41,7 +45,10 @@
       "AI 생성/수정 입력 UI와 서버 권한·예산 검사",
       "AInoa 이동·길게 누르기 스크롤·제목/가사 검색",
       "회원 레벨별 안내",
-      "공통 레코드 및 음원 스트리밍 회귀 수정"
+      "공통 레코드 및 음원 스트리밍 회귀 수정",
+      "첫 실행 홈 진입",
+      "첨부 원본 AInoa 이미지와 외부 화살표 제거",
+      "다크/아이보리 말풍선 및 스크롤 중 안내·닫기 버튼 표시"
     ],
     "verified": {
       "productionBrowserCases": 10,
@@ -170,8 +177,146 @@
   ],
   "resumeSequence": [
     "이 파일의 커밋을 현재 main과 비교하고 진행 중인 Actions 및 운영 파일 SHA를 다시 확인한다.",
-    "완료된 AInoa 배포와 5개 검사 복구를 처음부터 재실행하지 않는다.",
+    "완료된 홈 진입·AInoa 원본 이미지/말풍선 배포와 기존 검사 복구는 중복 수행하지 않는다.",
     "AI LAB 구성 및 민감 백업 업로드 승인 등 남은 선행 조건의 실제 상태를 확인한다.",
     "선행 조건이 해결된 단위만 수행하고 실제 운영 증거를 이 기록에 추가한다."
-  ]
+  ],
+  "releaseHistory": [
+    {
+      "commit": "99c39e6ceadd93fbdfd11ca5faffcf18c5505269",
+      "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40256812700",
+      "status": "success",
+      "completed": [
+        "EP 수노 프롬프트 필드",
+        "보컬 선택 및 기존 남성/듀엣 보존",
+        "AI 생성/수정 입력 UI와 서버 권한·예산 검사",
+        "AInoa 이동·길게 누르기 스크롤·제목/가사 검색",
+        "회원 레벨별 안내",
+        "공통 레코드 및 음원 스트리밍 회귀 수정"
+      ]
+    }
+  ],
+  "latestWorkUnit": {
+    "id": "home-entry-portrait-speech-bubble",
+    "sourceFiles": [
+      "deploy/noa-ainoa.js",
+      "deploy/noa-ainoa.css",
+      "deploy/noa-launch.js",
+      "deploy/noa-manifest.json",
+      "deploy/noa-sw.js",
+      "deploy/noa-design.extend.php",
+      "scripts/noa_ainoa_deploy.py",
+      "scripts/qa/noa-ainoa.mjs",
+      "tests/pwa/launch_test.cjs",
+      ".github/workflows/noa-ainoa.yml",
+      ".github/workflows/noa-gnuboard-theme.yml",
+      ".github/workflows/noa-member-hero.yml",
+      "public/ainoa/ainoa-symbol.png"
+    ],
+    "mainChangeCommit": "2e63f142af2b4c2a8302d32f3a4950cdcec990db",
+    "mainDeployment": "https://github.com/rucyjeon79/noa-studio/actions/runs/40260214948",
+    "finalCommit": "6b99913f2404fa21851e2a840096e0536d6e65c1",
+    "finalDeployment": "https://github.com/rucyjeon79/noa-studio/actions/runs/40262045714",
+    "request": "첫 접속은 홈으로, 첨부 원형 이미지로 AInoa 버튼 교체, 외부 위/뒤 화살표 제거, 입력·안내는 말풍선으로 표시",
+    "implementation": [
+      "PWA start_url을 /로 변경하고 기존 설치 앱 id는 보존했다.",
+      "최초 standalone 실행의 오래된 기본 음원 주소만 홈으로 이동한다. 일반 브라우저, 곡/장르 링크, 내부 이동은 보존한다.",
+      "사용자가 첨부한 원본 PNG의 바이트를 그대로 배포했다.",
+      "두 외부 화살표를 제거하고 길게 누른 뒤 움직이는 스크롤은 유지했다.",
+      "다크/아이보리 토큰을 이용한 말풍선, 고정 닫기 버튼, 새 안내가 보이는 내부 스크롤을 적용했다."
+    ],
+    "originalImageSha256": "3f13853373b8a09af66eff9a4f7030500442763ca41fd9ecc13159cb352cabfe",
+    "operatingFilesChanged": [
+      "noa-assets/ainoa-symbol.png",
+      "noa-launch.js",
+      "noa-manifest.json",
+      "noa-sw.js",
+      "noa-ainoa.css",
+      "noa-ainoa.js",
+      "extend/noa.design.php"
+    ],
+    "protectedCoreAndData": "12개 보호 파일 동일. 데이터베이스·회원·포인트 변경 없음.",
+    "verification": {
+      "launchUnitTests": 5,
+      "existingNodeRegressionTests": 33,
+      "nativePhpMysqlTests": true,
+      "candidateBrowserCases": 10,
+      "productionBrowserCases": 10,
+      "viewports": [
+        [
+          360,
+          844
+        ],
+        [
+          390,
+          844
+        ],
+        [
+          430,
+          844
+        ],
+        [
+          844,
+          390
+        ],
+        [
+          1280,
+          844
+        ]
+      ],
+      "themes": [
+        "noa-studio",
+        "noa-ivory"
+      ],
+      "homeEntry": "실제 운영 페이지/스크립트에서 standalone 표시 모드만 모의하여 구형 시작 주소가 홈으로 이동함을 확인",
+      "portraitOriginal": true,
+      "externalArrowsAbsent": true,
+      "speechBubbleTail": true,
+      "longResultNoticeVisible": true,
+      "fixedCloseControlVisible": true,
+      "holdScrollPreserved": true,
+      "horizontalOverflow": false,
+      "javascriptErrors": 0,
+      "physicalAndroid": false,
+      "liveAiProviderCall": false,
+      "browserArtifact": "https://github.com/rucyjeon79/noa-studio/actions/runs/40262045714/artifacts/12624836954"
+    },
+    "scope": "이번 단위는 공개 화면과 실행 주소 수정이다. 기존 AI 제공자 구성과 포인트 백업 승인 보류는 해결한 것으로 처리하지 않는다.",
+    "cancelledAttempt": {
+      "runId": 40260946831,
+      "candidate": "success",
+      "deploy": "cancelled_before_steps",
+      "serverChanges": false,
+      "forcedCancellationByThisWork": false
+    },
+    "status": "completed"
+  },
+  "relatedCheckFailures": [
+    {
+      "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40260214925",
+      "name": "NOA Common UI Policy Correction",
+      "issue": "320px /noa-settings.php 수평 넘침 후보 검사 실패",
+      "productionDeployment": "skipped",
+      "resolvedInThisUnit": false
+    },
+    {
+      "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40260214931",
+      "name": "NOA GnuBoard Theme Production",
+      "issue": "게스트 보드의 .btn_bo_sch 대기 시간 초과",
+      "productionDeployment": "skipped",
+      "resolvedInThisUnit": false
+    },
+    {
+      "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40260214932",
+      "name": "NOA Membership Creator and Genre Hero Production",
+      "issue": "후보 메뉴 항목 수 5개 예상 / 실제 4개",
+      "productionDeployment": "skipped",
+      "resolvedInThisUnit": false
+    }
+  ],
+  "activeWork": {
+    "status": "in_progress",
+    "request": "커버곡 원곡가수, 생성 플레이리스트 내부 순서/기본 목록 중복 제외, ACT 영상 즉시 재생과 별도 목록 펼치기, AInoa 검색 기본/음원 짧은 안내/유료 자격 조건 AI 대화/실시간 포인트 차감",
+    "runtimeChangesStarted": false
+  }
 }
