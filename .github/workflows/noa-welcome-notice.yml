@@ -1,0 +1,40 @@
+name: NOA first welcome notice publication
+on:
+  push:
+    branches: [main]
+    paths: ['docs/notices/NOA_20261026_WELCOME.*','scripts/noa_notice_publish.*','scripts/qa/noa-notice-published.mjs','.github/workflows/noa-welcome-notice.yml']
+permissions: {contents: read}
+jobs:
+  publish:
+    if: contains(github.event.head_commit.message, '[publish-welcome-notice]')
+    environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - name: Validate the reviewed notice and expiring publisher
+        run: |
+          php -l scripts/noa_notice_publish.php
+          python -m py_compile scripts/noa_notice_publish.py
+          node --check scripts/qa/noa-notice-published.mjs
+          python -m pip install 'paramiko>=3,<5'
+          python scripts/qa/noa-qa-font.py
+          npm install --prefix "$RUNNER_TEMP/noa-notice" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+      - name: Publish one native notice, verify replay, and remove the temporary helper
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_notice_publish.py
+      - name: Verify the published home card and readable mobile expansion
+        run: |
+          cp scripts/qa/noa-notice-published.mjs "$RUNNER_TEMP/noa-notice/check.mjs"
+          node "$RUNNER_TEMP/noa-notice/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-welcome-notice-${{ github.run_id }}', path: notice-proof/, retention-days: 30}
