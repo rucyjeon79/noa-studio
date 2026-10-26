@@ -1,0 +1,16 @@
+.noa-community{margin-top:48px;padding-top:28px;border-top:1px solid var(--noa-line);min-width:0;scroll-margin-top:calc(var(--noa-account-offset,96px) + 16px)}
+.noa-community-actions,.noa-community-pager{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.noa-community-actions a{display:inline-flex;align-items:center;min-height:44px;padding:8px 12px;text-decoration:none;border:1px solid var(--noa-line);border-radius:8px}
+.noa-community-list{display:grid;gap:0}.noa-community-post{border-bottom:1px solid var(--noa-line);border-radius:0;background:transparent}
+.noa-community-post>summary{padding:16px 4px;min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:14px;list-style:none;cursor:pointer}
+.noa-community-post>summary::-webkit-details-marker{display:none}.noa-community-post>summary>strong{font-size:15px;font-weight:550;min-width:0;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.noa-community-post>summary>span{font-size:22px;flex:none}.noa-community-post[open]>summary>span{transform:rotate(180deg)}
+.noa-community-body{padding:16px 4px 24px;border-top:1px solid var(--noa-line);overflow-wrap:anywhere}
+.noa-community-text{white-space:pre-wrap;line-height:1.85;font-size:15px;overflow-wrap:anywhere;margin-bottom:20px}
+.noa-community-replies{padding-top:18px;border-top:1px solid var(--noa-line);margin:24px 0}.noa-community-replies h3{font-size:15px;margin:0 0 14px}
+.noa-community-form{display:grid;gap:16px;max-width:760px;min-width:0}.noa-community-form label{display:grid;gap:7px;font-size:14px;min-width:0}
+.noa-community-form input,.noa-community-form textarea{width:100%;box-sizing:border-box}.noa-community-form textarea{resize:vertical;min-height:160px}
+.noa-community-form button{justify-self:start}.noa-community-form [role=status]:empty{display:none}.noa-community-compose{margin:20px 0;padding:20px 0;border-block:1px solid var(--noa-line)}
+.noa-community-unlock{max-width:420px}.noa-community-unlock [role=status]{font-size:13px;color:var(--noa-muted)}
+.noa-community-pager{margin-top:20px}.noa-community [hidden]{display:none!important}
+@media(max-width:760px){.noa-community{margin-top:32px;padding-top:22px}.noa-community .noa-section-head{align-items:center}.noa-community .noa-section-head h2{font-size:23px}.noa-community-form button{min-height:44px}}

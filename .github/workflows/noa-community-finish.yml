@@ -2,13 +2,44 @@ name: NOA Home and Community Completion
 on:
   push:
     branches: [main]
-    paths: ['scripts/noa_community_*','.github/workflows/noa-community-finish.yml','scripts/qa/noa-community*','tests/community/**']
+    paths: ['scripts/noa_community_*','.github/workflows/noa-community-finish.yml','scripts/qa/noa-community*','tests/community/**','bridge/community*.php','deploy/noa-community*']
 permissions: {contents: read}
 jobs:
-  inventory:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: fixture-only}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -h localhost -pfixture-only" --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: mysqli, mbstring}
+      - name: Validate private native-board code and legacy home launches
+        run: |
+          for file in bridge/community*.php deploy/noa-community.extend.php deploy/noa-design.extend.php deploy/noa-app/home.php scripts/noa_community_control.php tests/community/fixture.php; do php -l "$file"; done
+          node --check deploy/noa-community.js
+          node --check scripts/qa/noa-community.mjs
+          node --test tests/pwa/launch_test.cjs
+          python -m py_compile scripts/noa_community_release.py scripts/noa_community_control.py scripts/noa_community_postflight.py
+          php tests/community/fixture.php
+          python scripts/qa/noa-qa-font.py
+          npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-community" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-community.mjs "$RUNNER_TEMP/noa-community/check.mjs"
+      - name: Check owner passwords, admin replies, direct-route privacy and twelve browser layouts
+        run: node "$RUNNER_TEMP/noa-community/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-community-candidate-${{ github.run_id }}', path: community-proof/, retention-days: 7}
+  deploy:
+    needs: candidate
     runs-on: ubuntu-latest
     environment: production
-    timeout-minutes: 8
+    timeout-minutes: 15
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     env:
       GH_TOKEN: ${{ github.token }}
@@ -21,10 +52,28 @@ jobs:
         with: {fetch-depth: 0, persist-credentials: false}
       - uses: shivammathur/setup-php@v2
         with: {php-version: '8.2'}
-      - run: |
-          php -l scripts/noa_community_inventory.php
+      - name: Prepare pinned transport and browser verification
+        run: |
           python -m pip install 'paramiko>=3,<5'
-          python scripts/noa_community_inventory.py
+          python scripts/qa/noa-qa-font.py
+          npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-community" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-home-hero-layout.mjs "$RUNNER_TEMP/noa-community/hero.mjs"
+      - name: Apply reviewed additive source with known preimages
+        id: upload
+        run: python scripts/noa_community_release.py
+      - name: Activate only the new protected native board and verify safe replay
+        id: activate
+        run: python scripts/noa_community_control.py
+      - name: Verify actual public home, API denial and full transparency
+        env: {NOA_HERO_PHASE: live}
+        run: |
+          python scripts/noa_community_postflight.py
+          node "$RUNNER_TEMP/noa-community/hero.mjs"
+          cp -r hero-layout-proof community-proof/
+      - name: Restore only source bytes if upload failed before board activation
+        if: failure() && steps.upload.outcome == 'failure'
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then python scripts/noa_community_release.py rollback; fi
       - uses: actions/upload-artifact@v4
         if: always()
-        with: {name: 'noa-community-${{ github.run_id }}', path: community-proof/, retention-days: 7}
+        with: {name: 'noa-community-live-${{ github.run_id }}', path: community-proof/, retention-days: 7}

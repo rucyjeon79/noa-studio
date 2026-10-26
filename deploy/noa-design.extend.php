@@ -34,9 +34,15 @@ function noa_design_assets(){
    if(!str_starts_with($path,'/noa-app/jukebox/'))$assets=$ainoa.'<link rel="stylesheet" href="/noa-ui.css?v=20261022-recovery2">'.$assets;
    $assets.='<script src="/noa-ui.js?v=20261024-approved-ui" data-noa-theme-only defer></script>';
   }
-  ob_start(static function($html)use($assets){
+  ob_start(static function($html)use($assets,$path){
    if(http_response_code()>=300||stripos($html,'</head>')===false)return $html;
    $html=noa_policy_script_revision($html);
+   if(in_array($path,['/noa-youtube.php','/noa-music.php'],true)&&!str_contains($html,'data-noa-community=')){
+    $board=$path==='/noa-music.php'?'song_request':'free';$id=$board==='song_request'?'noa-song-requests':'noa-free-board';$title=$board==='song_request'?'사연곡 신청':'자유게시판';
+    $widget='<section id="'.$id.'" class="noa-section noa-community" data-noa-community="'.$board.'" aria-label="'.$title.'"><h2>'.$title.'</h2><p role="status">게시글을 불러오는 중입니다.</p></section>';
+    $html=str_ireplace('</main>',$widget.'</main>',$html);
+    foreach(['css','js']as $kind){$file=dirname(__DIR__).'/noa-community.'.$kind;if(is_file($file)){$url='/noa-community.'.$kind.'?v='.hash_file('sha256',$file);$assets.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'" defer></script>';}}
+   }
    return str_ireplace('</head>',$assets.'</head>',$html);
   });
   return;

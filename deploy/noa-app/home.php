@@ -72,11 +72,11 @@ html .noa-hero[data-home-section=hero] #noa-hero-status:not(:empty){position:abs
  html .noa-hero[data-home-section=hero] .noa-hero-actions .noa-button svg{width:18px;height:18px;flex:none}
 }
 @media(prefers-reduced-motion:reduce){html .noa-hero[data-home-section=hero] .noa-hero-art video{animation:none;transform:none;will-change:auto}}
-/* Portrait media extends behind the translucent lower copy, preserving the full frame. */
+/* Portrait media stays fully visible behind text-only copy; no tinted panel. */
 @media(orientation:portrait){
  html .noa-hero[data-home-section=hero]{grid-template-rows:minmax(0,1fr);grid-template-areas:'stage';position:relative}
  html .noa-hero[data-home-section=hero]>.noa-hero-art{grid-area:stage;z-index:0}
- html .noa-hero[data-home-section=hero]>.noa-hero-copy{grid-area:stage;align-self:end;z-index:1;block-size:48%;min-block-size:170px;background:rgba(24,28,34,.10);background:color-mix(in srgb,var(--noa-surface) 10%,transparent);backdrop-filter:none;border-top:1px solid color-mix(in srgb,var(--noa-line) 20%,transparent);padding:12px 14px;gap:8px}
+ html .noa-hero[data-home-section=hero]>.noa-hero-copy{grid-area:stage;align-self:end;z-index:1;block-size:48%;min-block-size:170px;background:transparent;background-image:none;backdrop-filter:none;border-top:0;box-shadow:none;padding:12px 14px;gap:8px}
  html .noa-hero[data-home-section=hero] .noa-hero-play{inset:12px 12px auto auto}
  html .noa-hero[data-home-section=hero] :is(.noa-hero-intro,.noa-hero-pick,.noa-hero-copy p,.noa-hero-pick small){color:#fff;text-shadow:0 1px 3px #000,0 0 10px #0009}
 }
