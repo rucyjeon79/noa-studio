@@ -3,6 +3,7 @@ import collections, hashlib, hmac, json, os, secrets, time, urllib.request
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect
+from noa_p0_progress import initial_changes
 from n80_live_observer import NoRedirect
 from n80_workstate_sync import request as work_request, compact
 from noa_jukebox_recovery import signed_service
@@ -73,11 +74,14 @@ def main():
  ('06','needs_review' if not result['aiSettings']['keyConfigured'] else 'in_progress','AI 서비스 준비 상태 확인','서버 설정을 비밀값 없이 조회','OpenAI API 키·사용 한도 미설정' if not result['aiSettings']['keyConfigured'] else ''),
  ('07','in_progress','작업별 단계·활동·오류·증거 기록 검증','기존 12개 영역과 추가 지시 원문 보존 확인','')]
  snapshot=work_request(key,{'action':'read'})['state'];rid='NOA-20261026-P0-STAGES-'+os.environ['GITHUB_SHA'][:12]
- if rid not in snapshot['requestReceipts']:
-  req={'action':'revise','request':{'requestId':rid,'expectedRevision':snapshot['revision'],'changes':[],'appendInstructions':[],'taskChanges':[{'id':'NOA-20261026-P0-'+n,'status':status,'currentStage':stage,'lastSuccessfulStage':success,'error':error,'evidenceIds':[]}for n,status,stage,success,error in stages]}}
+ changes=initial_changes(snapshot,stages)
+ if changes and rid not in snapshot['requestReceipts']:
+  req={'action':'revise','request':{'requestId':rid,'expectedRevision':snapshot['revision'],'changes':[],'appendInstructions':[],'taskChanges':changes}}
   first=work_request(key,req);again=work_request(key,req)
   if first.get('readbackVerified')is not True or again.get('effect')!='work_state_already_recorded':raise RuntimeError('task_stage_readback_failed')
- final=work_request(key,{'action':'read'});tasks=[x for x in final['summary']['instructionQueue']if x['id']in receipt['addedTasks']]
+ final=work_request(key,{'action':'read'});unchanged={x['id']:x for x in snapshot['instructions'] if x['id']not in {c['id']for c in changes}};latest={x['id']:x for x in final['state']['instructions']}
+ if any(latest.get(k)!=v for k,v in unchanged.items()):raise RuntimeError('existing_task_progress_changed')
+ tasks=[x for x in final['summary']['instructionQueue']if x['id']in receipt['addedTasks']]
  if len(tasks)!=7 or any('lastActivityAt'not in x for x in tasks):raise RuntimeError('task_stage_missing')
  (out/'n80-tasks.json').write_text(json.dumps({'revision':final['state']['revision'],'tasks':tasks,'executionControl':final['summary']['executionControl']},ensure_ascii=False,indent=2));print('N80_P0_TASK_STAGES',json.dumps({'revision':final['state']['revision'],'tasks':tasks,'executionControl':final['summary']['executionControl']},ensure_ascii=False),flush=True)
  (out/'queue.json').write_text(json.dumps(q,ensure_ascii=False,indent=2));print('NOA_P0_QUEUE',json.dumps({k:v for k,v in q.items()if k!='jobs'},ensure_ascii=False),flush=True)

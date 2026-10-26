@@ -2,7 +2,7 @@ name: NOA P0 Read-only Inventory and Additive Journal
 on:
   push:
     branches: [main]
-    paths: ['deploy/noa-sitemap.php','tests/sitemap/registry_test.php','deploy/noa-work-status.php','deploy/noa-app/engine/work-state.php','tests/engine/work_state_test.php','bridge/p0-audit.php','bridge/p0-inventory.php','scripts/noa_p0_audit_deploy.py','scripts/noa_p0_inventory.py','docs/operations/requests/NOA_20261026_P0_ADDITIONS.md','.github/workflows/noa-p0-audit.yml']
+    paths: ['deploy/noa-sitemap.php','tests/sitemap/registry_test.php','deploy/noa-work-status.php','deploy/noa-app/engine/work-state.php','tests/engine/work_state_test.php','bridge/p0-audit.php','bridge/p0-inventory.php','scripts/noa_p0_audit_deploy.py','scripts/noa_p0_inventory.py','scripts/noa_p0_progress.py','tests/engine/p0_inventory_progress_test.py','docs/operations/requests/NOA_20261026_P0_ADDITIONS.md','.github/workflows/noa-p0-audit.yml']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-p0-audit, cancel-in-progress: false}
@@ -25,7 +25,8 @@ jobs:
           php tests/engine/work_state_test.php
           php -l bridge/p0-audit.php
           php -l bridge/p0-inventory.php
-          python -m py_compile scripts/noa_p0_audit_deploy.py scripts/noa_p0_inventory.py
+          python -m py_compile scripts/noa_p0_audit_deploy.py scripts/noa_p0_inventory.py scripts/noa_p0_progress.py
+          python tests/engine/p0_inventory_progress_test.py
           python -m pip install 'paramiko>=3,<5'
       - name: Install only authenticated inventory sources
         id: deploy
@@ -38,7 +39,9 @@ jobs:
         run: python scripts/noa_p0_audit_deploy.py
       - name: Register exact added instructions and inspect operating data
         env: *production
-        run: python scripts/noa_p0_inventory.py
+        run: |
+          python scripts/noa_p0_progress.py
+          python scripts/noa_p0_inventory.py
       - name: Restore owned sources if activation failed
         if: failure() && steps.deploy.outcome == 'failure'
         env: *production
