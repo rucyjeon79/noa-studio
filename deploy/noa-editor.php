@@ -35,7 +35,7 @@ $body=$payload['body']??[];
 <label>Suno 공유 주소 · 오디오 파일과 별도 보관<input id="suno-share" type="url" value="<?=noa_ed_e((string)($body['sunoShareUrl']??$body['sunoUrl']??''))?>"></label>
 <label>실제 오디오 파일 주소 · NOA STUDIO 업로드 파일<input id="audio-url" type="url" value="<?=noa_ed_e((string)($body['audioUrl']??''))?>"></label>
 <p class="muted">Suno의 공식 API 연동 조건이 확인되지 않아 자동 음원 생성을 제공하지 않습니다. 아래 가사·스타일을 복사해 제작하고 공유 주소를 등록하세요. 실제 음원 업로드·분석은 <a href="/noa-ai-lab.php">AI LAB</a>에서 진행합니다.</p>
-<label>Suno 스타일 프롬프트<textarea id="suno-style"><?=noa_ed_e((string)($body['sunoStyle']??''))?></textarea></label>
+<label>Suno 스타일 프롬프트<textarea id="suno-style"><?=noa_ed_e((string)(($body['sunoPrompt']??'')?:($body['sunoStyle']??'')))?></textarea></label>
 <button type="button" id="copy-lyrics" aria-label="가사 복사" title="가사 복사">♫ ⧉</button> <button type="button" id="copy-suno" aria-label="Suno 프롬프트 복사" title="Suno 프롬프트 복사">✧ ⧉</button>
 <details><summary>추가 제작 필드 · 검토 및 수정</summary><label>소개·콘텐츠·번역·후크·이미지 프롬프트 JSON<textarea id="creative-fields"></textarea></label></details>
 <label>썸네일 주소<input id="thumbnail" type="url" value="<?=noa_ed_e((string)($body['thumbUrl']??''))?>"></label>
@@ -49,8 +49,8 @@ let original=<?=json_encode($payload,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSO
 const draftBody=<?=json_encode($draft['creation']['body']??null,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR)?>;
 let lastRequest=null,requestSignature=null,checkedUrl='',checkedMedia=null;const field=id=>document.getElementById(id),newStoryId=crypto.randomUUID().replaceAll('-','').slice(0,24);
 field('genre').addEventListener('change',()=>{field('original-artist-field').hidden=field('genre').value!=='cover-reborn';});
-const creativeKeys=['summary','storyPlan','chorusHook','englishHook','geminiPrompt','youtubeTitle','youtubeDescription','communityPost','fanLetter','hashtags','localizations','genreRecommendation'];
-const editable={...original.body,...(draftBody||{})};for(const [id,key] of [['title','confirmedTitle'],['lyrics','lyricsBlock'],['cast','thumbCast'],['suno-style','sunoStyle']])if(typeof editable[key]==='string')field(id).value=editable[key];field('creative-fields').value=JSON.stringify(Object.fromEntries(creativeKeys.filter(k=>editable[k]!==undefined).map(k=>[k,editable[k]])),null,2);
+const creativeKeys=['songDescription','lyricsTranslation','productionPrompt','characterPrompt','summary','storyPlan','chorusHook','englishHook','geminiPrompt','youtubeTitle','youtubeDescription','communityPost','fanLetter','hashtags','localizations','genreRecommendation'];
+const editable={...original.body,...(draftBody||{})};for(const [id,key] of [['title','confirmedTitle'],['lyrics','lyricsBlock'],['cast','thumbCast'],['suno-style','sunoStyle']])if(typeof editable[key]==='string')field(id).value=editable[key];if(typeof editable.sunoPrompt==='string'&&editable.sunoPrompt.trim()!=='')field('suno-style').value=editable.sunoPrompt;field('creative-fields').value=JSON.stringify(Object.fromEntries(creativeKeys.filter(k=>editable[k]!==undefined).map(k=>[k,editable[k]])),null,2);
 for(const [id,source] of [['copy-lyrics','lyrics'],['copy-suno','suno-style']])field(id).onclick=()=>navigator.clipboard.writeText(field(source).value).then(()=>{field('result').textContent='복사했습니다.';}).catch(()=>{field(source).focus();field(source).select();field('result').textContent='텍스트를 선택했습니다. 기기의 복사 기능을 사용하세요.';});
 const formSnapshot=()=>JSON.stringify([...document.querySelectorAll('#editor input,#editor select,#editor textarea')].map(e=>e.type==='checkbox'?e.checked:e.value));let lastSavedSnapshot=formSnapshot();
 field('editor').addEventListener('submit',async event=>{

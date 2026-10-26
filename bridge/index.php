@@ -105,7 +105,7 @@ try {
         }
         if(!empty($old['packageSchema'])&&array_key_exists('genreId',$incoming)&&($incoming['genreId']??null)!==($old['genreId']??null)){ $pdo->rollBack();fail(400,'classification_editor_required'); }
         if(nup_type($old,$kind)==='original'&&!empty($old['packageSchema'])&&isset($incoming['ep'])&&(int)$incoming['ep']!==(int)($old['ep']??0)){ $pdo->rollBack();fail(400,'complete_record_editor_required'); }
-        $full=array_replace($old,$incoming);$full['body']=array_replace($old['body']??[],$incoming['body']??[]);$full=nup_normalize($full,$kind);
+        $full=array_replace($old,$incoming);$full['body']=nup_merge_body($old['body']??[],$incoming['body']??[]);$full=nup_normalize($full,$kind);
         if($full['packageType']==='original'&&!isset($incoming['body']['originalInfo']))foreach(['confirmedTitle'=>'title','lyricsBlock'=>'lyrics','vocalInfo'=>'vocal'] as $from=>$to)if(array_key_exists($from,$incoming['body']??[]))$full['body']['originalInfo'][$to]=$incoming['body'][$from];
         if($full['packageType']==='ep'&&empty($full['sourceRef'])){$original=nup_original($pdo,$full);if(($original['status']??'')==='linked')$full['sourceRef']=$original['key'];}
 
@@ -120,6 +120,9 @@ try {
     $q->execute([$requestId,$key,$hash,$next]);
     $pdo->commit();
     respond(200, ['ok'=>true,'revision'=>$next,'replayed'=>false]);
+} catch (DomainException $e) {
+    if(isset($pdo)&&$pdo->inTransaction())$pdo->rollBack();
+    fail(409,$e->getMessage()==='metadata_alias_conflict'?'metadata_alias_conflict':'revision_conflict');
 } catch (Throwable $e) {
     if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack();
     error_log('[noa-bridge] request failed: ' . get_class($e));

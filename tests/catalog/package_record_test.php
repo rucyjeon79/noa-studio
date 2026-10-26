@@ -19,3 +19,14 @@ check(nup_patch($ep,'single',['vocal'=>'남녀듀엣'])['body']['thumbCast']==='
 $legacy=$ep;$legacy['body']['sunoStyle']='existing production style';$updated=nup_patch($legacy,'single',['sunoPrompt'=>'updated production style']);check(nup_fields($updated)['sunoPrompt']===$updated['body']['sunoStyle'],'legacy producer reads the same edited Suno prompt');
 
 $cover=nup_patch(["genreId"=>"cover-reborn","title"=>"커버곡","body"=>[]],"story",["originalArtist"=>"원곡 가수"]);check(nup_fields($cover)["originalArtist"]==="원곡 가수","cover artist persists in same record");denied(fn()=>nup_patch($ep,"single",["originalArtist"=>"wrong genre"]),"artist field belongs to covers");
+
+$masked=['genreId'=>'joseon-ballad','title'=>'보존','body'=>['sunoPrompt'=>'','sunoStyle'=>'검증된 원본 스타일','summary'=>'기존 곡 소개','youtubeDescription'=>'영상 설명']];
+check(nup_fields($masked)['sunoPrompt']==='검증된 원본 스타일','empty migrated field must not hide source style');
+check(nup_fields($masked)['songDescription']==='기존 곡 소개','existing summary is visible as song introduction');
+$separated=nup_patch($masked,'single',['description'=>'새 영상 설명','lyricsTranslation'=>'번역','productionPrompt'=>'제작','characterPrompt'=>'캐릭터']);
+check(nup_fields($separated)['songDescription']==='기존 곡 소개'&&$separated['body']['summary']==='기존 곡 소개','YouTube edit preserves song introduction');
+check(nup_fields($separated)['lyricsTranslation']==='번역'&&nup_fields($separated)['characterPrompt']==='캐릭터','production fields roundtrip');
+$cleared=nup_patch($masked,'single',['sunoPrompt'=>'']);check(nup_fields($cleared)['sunoPrompt']==='','explicit clear is not restored');
+$body=nup_merge_body(['sunoPrompt'=>'old','sunoStyle'=>'old'],['sunoPrompt'=>'old','sunoStyle'=>'new']);check($body['sunoPrompt']==='new'&&$body['sunoStyle']==='new','full editor updates canonical alias');
+denied(fn()=>nup_merge_body(['sunoPrompt'=>'old','sunoStyle'=>'old'],['sunoPrompt'=>'one','sunoStyle'=>'two']),'different concurrent alias edits rejected');
+echo "PRODUCTION_FIELDS_SOURCE_VISIBILITY_DESCRIPTION_SEPARATION_ALIAS_CONFLICT_OK\n";

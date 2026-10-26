@@ -3,16 +3,17 @@ declare(strict_types=1);
 /** One complete, versioned JSON record per song/playlist. No metadata sidecar writes.
  * noa_documents.payload is authoritative; history and JSON downloads are snapshots.
  */
-const NUP_FIELDS=['originalArtist','title','description','lyrics','cast','vocal','sunoPrompt','geminiPrompt','youtubeTitle','communityPost','sunoUrl','cardImageLocation','audioFileLocation','youtubeUrl','mvUrl','members'];
+const NUP_FIELDS=['originalArtist','title','description','lyrics','cast','vocal','sunoPrompt','geminiPrompt','youtubeTitle','communityPost','sunoUrl','cardImageLocation','audioFileLocation','youtubeUrl','mvUrl','members','songDescription','lyricsTranslation','productionPrompt','characterPrompt'];
 function nup_type(array $d,string $kind):string{
  $g=$d['genreId']??'';
  if($kind==='playlist')return in_array($g,['your-story','cover-reborn'],true)||(int)($d['act']??0)<1?'playlist':'act';
  if(!in_array($g,['kpop-original','your-story','cover-reborn'],true)&&(int)($d['ep']??0)<1)return 'song';
  return $g==='kpop-original'?'original':($g==='your-story'?'story':($g==='cover-reborn'?'cover':'ep'));
 }
+function nup_text(array $body,array $keys):string{foreach($keys as $key)if(is_string($body[$key]??null)&&trim($body[$key])!=='')return $body[$key];return '';}
 function nup_fields(array $d):array{
  $b=$d['body']??[];$p=$d['packageType']??nup_type($d,(int)($d['act']??0)>0?'playlist':'single');
- return ['originalArtist'=>(string)($b['originalArtist']??$b['originalSinger']??$b['coverArtist']??''),'title'=>(string)($b['displayTitle']??$b['confirmedTitle']??$d['title']??''),'description'=>(string)($b['youtubeDescription']??$b['songDescription']??$b['descriptionBlock']??$b['description']??''),'lyrics'=>(string)($b['lyricsBlock']??''),'cast'=>(string)($b['thumbCast']??''),'vocal'=>(string)($b['vocalInfo']??$b['vocal']??$b['sourceVocal']??''),'sunoPrompt'=>(string)($b['sunoPrompt']??$b['sunoStyle']??''),'geminiPrompt'=>(string)($b['geminiPrompt']??''),'youtubeTitle'=>(string)($b['youtubeTitle']??''),'communityPost'=>(string)($b['communityPost']??$b['fanLetter']??''),'sunoUrl'=>(string)($b['sunoShareUrl']??$b['sunoUrl']??''),'cardImageLocation'=>(string)($b['cardImageLocation']??$b['coverImageUrl']??$b['thumbUrl']??''),'audioFileLocation'=>(string)($b['audioFileLocation']??$b['audioUrl']??''),'youtubeUrl'=>(string)($b['youtubeUrl']??''),'mvUrl'=>(string)($b['mvUrl']??$b['musicVideoUrl']??''),'members'=>$b['members']??[]];
+ return ['originalArtist'=>(string)($b['originalArtist']??$b['originalSinger']??$b['coverArtist']??''),'title'=>(string)($b['displayTitle']??$b['confirmedTitle']??$d['title']??''),'description'=>(string)($b['youtubeDescription']??$b['songDescription']??$b['descriptionBlock']??$b['description']??''),'lyrics'=>(string)($b['lyricsBlock']??''),'cast'=>(string)($b['thumbCast']??''),'vocal'=>(string)($b['vocalInfo']??$b['vocal']??$b['sourceVocal']??''),'sunoPrompt'=>nup_text($b,['sunoPrompt','sunoStyle']),'geminiPrompt'=>(string)($b['geminiPrompt']??''),'youtubeTitle'=>(string)($b['youtubeTitle']??''),'communityPost'=>(string)($b['communityPost']??$b['fanLetter']??''),'sunoUrl'=>(string)($b['sunoShareUrl']??$b['sunoUrl']??''),'cardImageLocation'=>(string)($b['cardImageLocation']??$b['coverImageUrl']??$b['thumbUrl']??''),'audioFileLocation'=>(string)($b['audioFileLocation']??$b['audioUrl']??''),'youtubeUrl'=>(string)($b['youtubeUrl']??''),'mvUrl'=>(string)($b['mvUrl']??$b['musicVideoUrl']??''),'members'=>$b['members']??[],'songDescription'=>(string)($b['songDescription']??$b['descriptionBlock']??$b['summary']??$b['description']??''),'lyricsTranslation'=>(string)($b['lyricsTranslation']??$b['translatedLyrics']??$b['translationBlock']??''),'productionPrompt'=>(string)($b['productionPrompt']??$b['creationPrompt']??''),'characterPrompt'=>(string)($b['characterPrompt']??$b['characterFixedPrompt']??$b['characterPromptBlock']??'')];
 }
 function nup_normalize(array $d,string $kind):array{
  $d['packageSchema']=1;$d['packageType']=nup_type($d,$kind);$d['body']??=[];$b=&$d['body'];$f=nup_fields($d);
@@ -25,7 +26,7 @@ function nup_normalize(array $d,string $kind):array{
 }
 function nup_patch(array $d,string $kind,array $patch):array{
  $d=nup_normalize($d,$kind);$type=$d['packageType'];$playlist=in_array($type,['act','playlist'],true);
- $allowed=$playlist?['title','description','cast','vocal','geminiPrompt','youtubeTitle','communityPost','youtubeUrl','mvUrl','members']:array_diff(NUP_FIELDS,['members']);
+ $allowed=$playlist?['title','description','cast','vocal','geminiPrompt','youtubeTitle','communityPost','youtubeUrl','mvUrl','members','songDescription','characterPrompt']:array_diff(NUP_FIELDS,['members']);
  if($type!=='cover')$allowed=array_diff($allowed,['originalArtist']);
  if($type==='original')$allowed=array_merge($allowed,['ep']);
  foreach($patch as $key=>$value){
@@ -45,13 +46,13 @@ function nup_patch(array $d,string $kind,array $patch):array{
   }
   if(in_array($key,['audioFileLocation','cardImageLocation'],true)&&$value!==''&&(!preg_match('~^(?:https://[^\s]+|/[A-Za-z0-9/_?.=&:%+-]+)$~D',$value)||str_contains($value,'..')))throw new InvalidArgumentException('invalid_file_location');
   if($key==='ep'){if(!preg_match('/^[1-9][0-9]{0,3}$/D',ltrim($value,'0')))throw new InvalidArgumentException('invalid_ep');$d['ep']=str_pad((string)(int)$value,2,'0',STR_PAD_LEFT);$d['body']['originalInfo']['ep']=$d['ep'];continue;}
-  $map=['originalArtist'=>'originalArtist','title'=>'confirmedTitle','description'=>'youtubeDescription','lyrics'=>'lyricsBlock','cast'=>'thumbCast','vocal'=>'vocalInfo','sunoPrompt'=>'sunoPrompt','geminiPrompt'=>'geminiPrompt','youtubeTitle'=>'youtubeTitle','communityPost'=>'communityPost','sunoUrl'=>'sunoUrl','cardImageLocation'=>'cardImageLocation','audioFileLocation'=>'audioFileLocation','youtubeUrl'=>'youtubeUrl','mvUrl'=>'mvUrl'];
+  $map=['songDescription'=>'songDescription','lyricsTranslation'=>'lyricsTranslation','productionPrompt'=>'productionPrompt','characterPrompt'=>'characterPrompt','originalArtist'=>'originalArtist','title'=>'confirmedTitle','description'=>'youtubeDescription','lyrics'=>'lyricsBlock','cast'=>'thumbCast','vocal'=>'vocalInfo','sunoPrompt'=>'sunoPrompt','geminiPrompt'=>'geminiPrompt','youtubeTitle'=>'youtubeTitle','communityPost'=>'communityPost','sunoUrl'=>'sunoUrl','cardImageLocation'=>'cardImageLocation','audioFileLocation'=>'audioFileLocation','youtubeUrl'=>'youtubeUrl','mvUrl'=>'mvUrl'];
   $d['body'][$map[$key]]=$value;
   if($key==='vocal'&&isset(['여자솔로'=>'female','남자솔로'=>'male','남녀듀엣'=>'duet'][$value]))$d['body']['thumbCast']=['여자솔로'=>'female','남자솔로'=>'male','남녀듀엣'=>'duet'][$value];
   if($type==='original'&&in_array($key,['title','lyrics','vocal'],true))$d['body']['originalInfo'][$key]=$value;
   if($key==='title'){$d['title']=$value;if($playlist)$d['body']['displayTitle']=$value;}
   // Compatibility aliases are in this same record, not independently editable stores.
-  if($key==='description'){$d['body']['songDescription']=$value;$d['body']['descriptionBlock']=$value;}
+  // YouTube description and song introduction are distinct; never overwrite one with the other.
   if($key==='sunoPrompt'&&array_key_exists('sunoStyle',$d['body']))$d['body']['sunoStyle']=$value;
   if($key==='sunoUrl'&&isset($d['body']['sunoShareUrl']))$d['body']['sunoShareUrl']=$value;
  }
@@ -81,13 +82,23 @@ function nup_complete(PDO $db,array $resolved):array{
  if($d['packageType']==='original')$resolved['fields']=array_replace($resolved['fields'],$d['body']['originalInfo']??[],['ep'=>(string)($d['ep']??'')]);
  return $resolved;
 }
+/** Shared full-editor write boundary. Canonical and legacy aliases cannot diverge silently. */
+function nup_merge_body(array $old,array $incoming):array{
+ $merged=array_replace($old,$incoming);
+ foreach([['sunoPrompt','sunoStyle'],['sunoUrl','sunoShareUrl'],['communityPost','fanLetter']]as $aliases){
+  $changes=[];foreach($aliases as $alias)if(array_key_exists($alias,$incoming)&&(!array_key_exists($alias,$old)||$incoming[$alias]!==$old[$alias]))$changes[$alias]=$incoming[$alias];
+  if(!$changes)continue;$values=array_values($changes);foreach($values as $v)if(!is_string($v)||$v!==$values[0])throw new DomainException('metadata_alias_conflict');
+  foreach($aliases as $alias)$merged[$alias]=$values[0];
+ }
+ return $merged;
+}
 function nup_store(PDO $db,string $key,string $kind,array $payload,int $expected,string $actor):int{
  $encoded=json_encode($payload,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
  if($expected===0){$q=$db->prepare("INSERT IGNORE INTO noa_documents(doc_key,kind,payload,revision,updated_by) VALUES(?,?,'{}',0,?)");$q->execute([$key,$kind,$actor]);}
  $q=$db->prepare('UPDATE noa_documents SET payload=?,revision=revision+1,updated_by=? WHERE doc_key=? AND kind=? AND revision=?');$q->execute([$encoded,$actor,$key,$kind,$expected]);if($q->rowCount()!==1)throw new DomainException('revision_conflict');
  $q=$db->prepare('INSERT INTO noa_document_history(doc_key,revision,payload,changed_by) VALUES(?,?,?,?)');$q->execute([$key,$expected+1,$encoded,$actor]);return $expected+1;
 }
-function nup_policy():array{return ['version'=>1,'priority'=>0,'storage'=>'one-complete-json-record-per-song-or-playlist','original'=>'K-POP 원곡의 EP 번호·제목·가사가 모든 EP 장르의 원본이다.','ep'=>'원곡 정보는 읽기 전용이며 장르 규칙에 따라 확정 제목과 장르 가사를 작성한다.','act'=>'ACT n은 EP (n−1)×10+1부터 n×10까지 10곡, EP 번호 오름차순이다.','playlist'=>'사연곡·커버곡 플레이리스트는 수록곡 수 제한 없이 지정 순서를 따른다.','rules'=>'0원칙 → 공통 제작 규칙 → 장르별 제작 규칙. 장르별 규칙도 저장·원곡 잠금·ACT 범위 규칙을 바꿀 수 없다.'];}
+function nup_policy():array{return ['version'=>1,'priority'=>0,'storage'=>'mysql:noa_documents.payload; catalog versions are immutable source snapshots; JSON files are exports only','original'=>'K-POP 원곡의 EP 번호·제목·가사가 모든 EP 장르의 원본이다.','ep'=>'원곡 정보는 읽기 전용이며 장르 규칙에 따라 확정 제목과 장르 가사를 작성한다.','act'=>'ACT n은 EP (n−1)×10+1부터 n×10까지 10곡, EP 번호 오름차순이다.','playlist'=>'사연곡·커버곡 플레이리스트는 수록곡 수 제한 없이 지정 순서를 따른다.','rules'=>'0원칙 → 공통 제작 규칙 → 장르별 제작 규칙. 장르별 규칙도 저장·원곡 잠금·ACT 범위 규칙을 바꿀 수 없다.'];}
 function nup_snapshot(PDO $db,string $key,string $root):array{
  $q=$db->prepare('SELECT kind,payload,revision FROM noa_documents WHERE doc_key=?');$q->execute([$key]);$r=$q->fetch(PDO::FETCH_ASSOC);if(!$r)throw new DomainException('not_found');$d=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);
  $snapshot=['key'=>$key,'kind'=>$r['kind'],'revision'=>(int)$r['revision'],'record'=>$d];if(($d['packageType']??'')==='ep')$snapshot['original']=nup_original($db,$d);
