@@ -69,7 +69,7 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
       - uses: shivammathur/setup-php@v2
-        with: {php-version: '8.2', extensions: pdo_mysql,pdo_sqlite}
+        with: {php-version: '8.2', extensions: 'pdo_mysql,pdo_sqlite'}
       - name: Validate metadata reader and existing playback, source and permission contracts
         run: |
           for file in bridge/package-*.php bridge/index.php bridge/lab-api.php bridge/catalog-store.php bridge/taxonomy-store.php bridge/lab-creator.php deploy/noa-category-order.php deploy/noa-app/jukebox/core.php deploy/noa-app/taxonomy/index.php; do php -l "$file"; done
