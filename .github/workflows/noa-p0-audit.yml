@@ -1,33 +1,45 @@
-name: NOA P0 protected production audit
+name: NOA P0 Read-only Inventory and Additive Journal
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/noa-p0-audit.yml', 'scripts/noa_p0_diagnostics.py']
+    paths: ['bridge/p0-audit.php','bridge/p0-inventory.php','scripts/noa_p0_audit_deploy.py','scripts/noa_p0_inventory.py','docs/operations/requests/NOA_20261026_P0_ADDITIONS.md','.github/workflows/noa-p0-audit.yml']
   workflow_dispatch:
 permissions: {contents: read}
-concurrency: {group: noa-dothome-production, cancel-in-progress: false}
+concurrency: {group: noa-p0-audit, cancel-in-progress: false}
 jobs:
   audit:
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
     environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-        with: {persist-credentials: false, fetch-depth: 0}
-      - run: |
-          python3 scripts/noa_build_seed.py
-          python3 scripts/noa_build_archive.py
-          python3 scripts/noa_catalog_seed.py
-          python3 -m pip install --user paramiko==3.5.1
-      - name: Inspect production without claiming jobs or replacing files
-        env:
-          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
-        run: python3 scripts/noa_p0_diagnostics.py
+        with: {fetch-depth: 0}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - name: Validate fixed read-only inventory
+        run: |
+          php -l bridge/p0-audit.php
+          php -l bridge/p0-inventory.php
+          python -m py_compile scripts/noa_p0_audit_deploy.py scripts/noa_p0_inventory.py
+          python -m pip install 'paramiko>=3,<5'
+      - name: Install only authenticated inventory sources
+        id: deploy
+        env: &production
+          GH_TOKEN: ${{ github.token }}
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_p0_audit_deploy.py
+      - name: Register exact added instructions and inspect operating data
+        env: *production
+        run: python scripts/noa_p0_inventory.py
+      - name: Restore owned sources if activation failed
+        if: failure() && steps.deploy.outcome == 'failure'
+        env: *production
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-p0-audit-before.json" ]; then python scripts/noa_p0_audit_deploy.py rollback; fi
       - uses: actions/upload-artifact@v4
         if: always()
-        with:
-          name: noa-p0-production-audit
-          path: full-release-proof/
-          retention-days: 14
+        with: {name: 'noa-p0-audit-${{ github.run_id }}', path: p0-audit-proof/, retention-days: 14}
