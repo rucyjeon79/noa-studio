@@ -25,10 +25,12 @@ def main():
                 body=json.dumps({'mode':mode,'approvedPolicy':'NOA-20261026-MEMBERSHIP-REWARDS'}).encode()
                 req=urllib.request.Request('https://noastudio.ai.kr/noa-bridge/'+name,data=body,headers={'Content-Type':'application/json','X-NOA-Control':token})
                 try:
-                    with urllib.request.urlopen(req,timeout=120) as r:data=json.load(r)
-                except urllib.error.HTTPError as e:data=json.load(e)
+                    with urllib.request.urlopen(req,timeout=120) as r:raw=r.read();status=r.status
+                except urllib.error.HTTPError as e:raw=e.read();status=e.code
+                try:data=json.loads(raw)
+                except ValueError:raise RuntimeError('control_non_json_http_'+str(status)+'_bytes_'+str(len(raw))) from None
                 out=Path('membership-proof');out.mkdir(exist_ok=True);(out/(mode+'.json')).write_text(json.dumps(data,ensure_ascii=False,indent=2))
-                if not data.get('ok'):raise RuntimeError('membership_control_failed:'+str(data.get('error')))
+                if not data.get('ok'):raise RuntimeError('membership_control_failed:'+str(data.get('error'))+':'+str(data.get('file',''))+':'+str(data.get('line','')))
                 print('MEMBERSHIP_'+mode.upper()+'_VERIFIED',json.dumps(data,ensure_ascii=False))
             finally:
                 if installed:

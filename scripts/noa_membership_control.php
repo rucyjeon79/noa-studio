@@ -3,6 +3,7 @@ declare(strict_types=1);
 /** Temporary, expiring control. All member data and backup rows remain in the same hosting database. */
 ini_set('display_errors','0');header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');
 if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||time()>NOA_CONTROL_EXPIRY||!hash_equals('NOA_CONTROL_TOKEN_SHA',hash('sha256',(string)($_SERVER['HTTP_X_NOA_CONTROL']??'')))){http_response_code(404);exit;}
+register_shutdown_function(static function(){ $e=error_get_last();if($e&&in_array($e['type'],[E_ERROR,E_PARSE,E_COMPILE_ERROR,E_CORE_ERROR],true)){http_response_code(500);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>'control_runtime_failure','file'=>basename($e['file']),'line'=>$e['line']]);}});
 require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/subscription-core.php';
 /*NOA_STORAGE_FUNCTIONS*/
 /*NOA_VERIFY_FUNCTIONS*/
