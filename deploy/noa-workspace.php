@@ -22,7 +22,7 @@ function noa_workspace_groups():array{return [
   ['social','Google·Kakao 가입 연결','신규 회원 가입용 인증 설정','/adm/config_form.php#anc_cf_sns','user'],
   ['aiSettings','AI·YouTube 연결 설정','제작 API·비용 한도·채널 소유자 인증','/noa-ai-lab.php#settings','settings'],
  ]],
- 'advanced'=>['title'=>'고급 점검·데이터 복구','자료 연결에 문제가 있을 때 사용합니다. 일상적인 곡 수정은 콘텐츠 관리에서 합니다.','routes'=>[
+ 'advanced'=>['title'=>'고급 점검·데이터 복구','intro'=>'자료 연결에 문제가 있을 때 사용합니다. 일상적인 곡 수정은 콘텐츠 관리에서 합니다.','routes'=>[
   ['workStatus','N80 작업 현황','지시·단계·검증 결과 확인','/noa-work-status.php','settings'],
   ['catalogAdmin','통합 자료·충돌 검토','여러 원본이 연결된 곡의 자료 검토','/noa-catalog-admin.php','library'],
   ['documents','문서·변경 이력','문서 키와 저장 버전 확인','/noa-library.php?view=documents','book'],
