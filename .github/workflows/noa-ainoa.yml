@@ -2,7 +2,7 @@ name: NOA AInoa and Song Editor Production
 on:
   push:
     branches: [main]
-    paths: ['bridge/package-record.php','bridge/subscription-access.php','deploy/noa-access.extend.php','deploy/noa-design.extend.php','deploy/noa-browse.js','deploy/noa-browse-edit.js','tests/catalog/package_record_test.php','bridge/ainoa-*.php','deploy/noa-ainoa.*','scripts/noa_ainoa_deploy.py','scripts/qa/noa-ainoa*','tests/catalog/ainoa_test.php','.github/workflows/noa-ainoa.yml']
+    paths: ['bridge/package-record.php','bridge/subscription-access.php','deploy/noa-access.extend.php','deploy/noa-design.extend.php','deploy/noa-browse.js','deploy/noa-browse-edit.js','tests/catalog/package_record_test.php','bridge/ainoa-*.php','deploy/noa-ainoa.*','scripts/noa_ainoa_deploy.py','scripts/qa/noa-ainoa*','scripts/qa/noa-qa-font.py','tests/catalog/ainoa_test.php','.github/workflows/noa-ainoa.yml']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: 'noa-ainoa-${{ github.sha }}', cancel-in-progress: false}
@@ -33,6 +33,7 @@ jobs:
           node --check deploy/noa-ainoa.js
           node --check deploy/noa-browse-edit.js
           node --check deploy/noa-browse.js
+          node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs tests/playlists/drag_order_test.cjs tests/youtube/lazy_details_test.cjs
           python -m py_compile scripts/noa_ainoa_deploy.py scripts/noa_member_live_check.py
           python scripts/qa/inline-edit-fixture.py
           cp deploy/noa-ainoa.php "$RUNNER_TEMP/noa-inline-edit-fixture/noa-ainoa.php"
@@ -41,7 +42,7 @@ jobs:
           node scripts/qa/noa-ainoa-native.mjs
       - name: Prepare mobile browser checks
         run: |
-          timeout 120s sudo apt-get install -y -qq fonts-noto-cjk
+          python scripts/qa/noa-qa-font.py
           npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-ainoa" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-ainoa.mjs "$RUNNER_TEMP/noa-ainoa/check.mjs"
       - name: Verify editor, floating controls and guest search in both themes
@@ -61,7 +62,7 @@ jobs:
       - name: Prepare existing pinned NOA transport and browser
         run: |
           python -m pip install 'paramiko>=3,<5'
-          timeout 120s sudo apt-get install -y -qq fonts-noto-cjk
+          python scripts/qa/noa-qa-font.py
           npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-ainoa" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-ainoa.mjs "$RUNNER_TEMP/noa-ainoa/check.mjs"
       - name: Activate only reviewed files with SHA preimage guards
