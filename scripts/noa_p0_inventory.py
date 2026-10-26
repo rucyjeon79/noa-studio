@@ -36,7 +36,7 @@ def inventory(key):
  if value.get('ok')is not True or value.get('nonce')!=nonce or value.get('databaseWrites')!=0:raise RuntimeError('invalid_inventory')
  return value['result']
 def main():
- out=Path('p0-audit-proof');out.mkdir(exist_ok=True);t=connect()
+ out=Path(os.environ.get('NOA_P0_AUDIT_OUTPUT','p0-audit-proof'));out.mkdir(parents=True,exist_ok=True);t=connect()
  try:
   with paramiko.SFTPClient.from_transport(t)as s:
    s.get_channel().settimeout(30)
