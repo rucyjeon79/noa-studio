@@ -26,7 +26,7 @@ function render(){
   if(t.result){const text=el('textarea');text.value=t.result;text.readOnly=true;text.rows=5;text.setAttribute('aria-label','N80 생성 결과');item.append(text,button('초안 복사',async()=>{try{await navigator.clipboard.writeText(t.result);notice('초안을 복사했습니다. 곡 편집 화면에서 검토 후 저장하세요.');}catch{notice('복사 권한이 없습니다. 결과 입력칸에서 텍스트를 선택해 복사하세요.');}}));}
   if(t.state==='queued')item.append(button('대기 취소',async()=>{try{await client.api({action:'admin_cancel',taskId:t.id,expectedRevision:t.revision});await refresh();notice('대기 요청을 취소했습니다.');}catch(e){notice(e.message);}}));list.append(item);
  }
- if(!tasks.length)list.append(el('p','등록된 AI 작업이 없습니다.'));$('.ainoa-admin-job-count').textContent='N80 작업 기록 · '+tasks.length;
+ if(!tasks.length)list.append(el('p','등록된 AI 작업이 없습니다.'));$('.ainoa-admin-job-count').textContent='최근 N80 작업 · '+tasks.length;
 }
 async function refresh(){state=await workspace();render();}
 async function run(task){if(task.state!=='queued'||!state.generation.ready)return;notice('N80이 요청을 처리하고 있습니다.');const result=await client.api({action:'admin_run',taskId:task.id});state.generation=result.generation;notice(result.task.result?'응답을 보관했습니다.':errors[result.task.error]||states[result.task.state]);}

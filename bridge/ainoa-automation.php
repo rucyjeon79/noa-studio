@@ -32,12 +32,13 @@ function n80_ai_enqueue(PDO $db,string $owner,string $request,string $type,array
  $lock='noa-ai-'.substr(hash('sha256',$owner),0,40);$q=$db->prepare('SELECT GET_LOCK(?,0)');$q->execute([$lock]);if((int)$q->fetchColumn()!==1)throw new DomainException('ai_task_busy');
  try{
   $existing=n80_ai_read($db,$id,$owner);if($existing){if(!hash_equals($existing['fingerprint'],$fingerprint))throw new DomainException('ai_request_conflict');return $existing;}
-  $tasks=n80_ai_tasks($db,$owner,200);if(count(array_filter($tasks,fn($t)=>in_array($t['state'],['queued','running'],true)))>=20)throw new DomainException('ai_queue_full');
+  $q=$db->prepare("SELECT COUNT(*) FROM noa_documents WHERE kind='n80_ai_task' AND updated_by=? AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.state')) IN ('queued','running')");$q->execute([$owner]);if((int)$q->fetchColumn()>=20)throw new DomainException('ai_queue_full');
   $task=['id'=>$id,'requestId'=>$request,'ownerId'=>$owner,'fingerprint'=>$fingerprint,'type'=>$type,'input'=>$input,'state'=>'queued','revision'=>1,'createdAt'=>gmdate('c'),'updatedAt'=>gmdate('c'),'createdOrder'=>microtime(true),'stage'=>'실행 대기','lastSuccessfulStage'=>'요청 SQL 저장','history'=>[['stage'=>'queued','at'=>gmdate('c')]]];
   if($type==='chat'){
    $question=$input['question']??null;$thread=$input['conversationId']??null;$key=$input['trackKey']??'';
    if(!is_string($question)||trim($question)===''||mb_strlen($question)>4000||!is_string($thread)||!preg_match('/^[A-Za-z0-9_-]{16,128}$/D',$thread)||!is_string($key)||strlen($key)>190)throw new InvalidArgumentException('invalid_chat');
-   $history=[];$turns=0;foreach(array_reverse($tasks)as $prior){if(($prior['conversationId']??'')!==$thread)continue;$turns++;
+   $q=$db->prepare("SELECT payload FROM noa_documents WHERE kind='n80_ai_task' AND updated_by=? AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.conversationId'))=? ORDER BY CAST(JSON_EXTRACT(payload,'$.createdOrder') AS DECIMAL(20,6)) LIMIT 21");$q->execute([$owner,$thread]);$priorTasks=array_map(fn($raw)=>json_decode($raw,true,512,JSON_THROW_ON_ERROR),$q->fetchAll(PDO::FETCH_COLUMN));
+   $history=[];$turns=0;foreach($priorTasks as $prior){if(($prior['conversationId']??'')!==$thread)continue;$turns++;
     if($prior['state']==='queued'||($prior['state']==='running'&&time()-($prior['startedAt']??0)<=120))throw new DomainException('ai_conversation_pending');
     if($prior['state']==='succeeded'){$history[]=['role'=>'user','content'=>$prior['question']];$history[]=['role'=>'assistant','content'=>$prior['result']];}
    }
@@ -82,6 +83,6 @@ function n80_ai_cancel(PDO $db,string $owner,string $id,int $revision):array {
 function n80_ai_tick(PDO $db,string $superAdmin):array {
  if($superAdmin==='')return ['processed'=>0,'state'=>'admin_unavailable'];
  if(!na_generation_status()['ready'])return ['processed'=>0,'state'=>'connection_required'];
- $q=$db->prepare("SELECT doc_key FROM noa_documents WHERE kind='n80_ai_task' AND updated_by=? AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.state'))='queued' ORDER BY updated_at,doc_key LIMIT 1");$q->execute([$superAdmin]);$id=$q->fetchColumn();if(!$id)return ['processed'=>0,'state'=>'idle'];
+ $q=$db->prepare("SELECT doc_key FROM noa_documents WHERE kind='n80_ai_task' AND updated_by=? AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.state'))='queued' ORDER BY CAST(JSON_EXTRACT(payload,'$.createdOrder') AS DECIMAL(20,6)),doc_key LIMIT 1");$q->execute([$superAdmin]);$id=$q->fetchColumn();if(!$id)return ['processed'=>0,'state'=>'idle'];
  try{$task=n80_ai_run($db,$superAdmin,$id);return ['processed'=>$task['state']==='queued'?0:1,'state'=>$task['state'],'taskId'=>$id];}catch(DomainException $e){if($e->getMessage()==='ai_task_conflict')return ['processed'=>0,'state'=>'claimed_elsewhere'];throw $e;}
 }
