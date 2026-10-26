@@ -1,68 +1,22 @@
 {
   "ok": true,
-  "created": true,
+  "created": false,
+  "updated": true,
   "id": 1,
   "title": "[이용안내] 새로워진 NOA STUDIO, 이렇게 이용해 보세요",
-  "bodySha256": "d47df1687caa8abe90903620d86915b024854b598379b96a3f32a6ceb9fd25f0",
+  "bodySha256": "74d6d4018ee7246d5c23af6cbef255135b7387c20d7ea273f59b503a2e46f557",
   "publishedAt": "2026-10-26 20:06:56",
   "pinned": true,
   "noticeCount": 1,
   "url": "https://noastudio.ai.kr/bbs/board.php?bo_table=notice&wr_id=1",
   "publicHomeUrl": "https://noastudio.ai.kr/#noa-notice-1",
-  "existingPostsModified": 0,
+  "existingPostsModified": 1,
+  "otherPostsModified": 0,
   "memberRowsChanged": 0,
   "pointsChanged": 0,
   "boardPermissionsChanged": false,
   "emailSent": false,
-  "sourceCommit": "360e19835ab52d1bbd885fc62394ca1c5ae92a97",
+  "sourceCommit": "4bb7d2e7170667b6c1d980128435cfd94692d879",
   "samePostReplayVerified": true,
-  "temporaryHelperRemoved": true,
-  "browserVerification": {
-    "ok": true,
-    "results": [
-      {
-        "theme": "noa-studio",
-        "width": 390,
-        "postId": 1,
-        "featured": true,
-        "readableExpansion": true,
-        "followingClose": true,
-        "noOverflow": true
-      },
-      {
-        "theme": "noa-studio",
-        "width": 1280,
-        "postId": 1,
-        "featured": true,
-        "readableExpansion": true,
-        "followingClose": true,
-        "noOverflow": true
-      },
-      {
-        "theme": "noa-ivory",
-        "width": 390,
-        "postId": 1,
-        "featured": true,
-        "readableExpansion": true,
-        "followingClose": true,
-        "noOverflow": true
-      },
-      {
-        "theme": "noa-ivory",
-        "width": 1280,
-        "postId": 1,
-        "featured": true,
-        "readableExpansion": true,
-        "followingClose": true,
-        "noOverflow": true
-      }
-    ]
-  },
-  "workflowRun": "https://github.com/rucyjeon79/noa-studio/actions/runs/40312558213",
-  "artifactId": 12645147962,
-  "artifactSha256": "0b669a6467e8f4f5bd734772f3db49cb9db66f44f2779b994aafc2e61b8ce9b4",
-  "screenshot": "docs/notices/NOA_20261026_WELCOME_PUBLISHED.png",
-  "screenshotSha256": "1e6bc93e299491c685d3892d94089cbdfbba9594eb82c66e55715022ec6b4105",
-  "verifiedPublicUrl": "https://noastudio.ai.kr/#noa-notice-1",
-  "visibleBrowserVerification": "Published notice expanded on production home; all 12 sections visible in accessibility tree."
+  "temporaryHelperRemoved": true
 }

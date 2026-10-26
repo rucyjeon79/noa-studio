@@ -1,0 +1,22 @@
+{
+  "ok": true,
+  "created": false,
+  "updated": true,
+  "id": 1,
+  "title": "[이용안내] 새로워진 NOA STUDIO, 이렇게 이용해 보세요",
+  "bodySha256": "74d6d4018ee7246d5c23af6cbef255135b7387c20d7ea273f59b503a2e46f557",
+  "publishedAt": "2026-10-26 20:06:56",
+  "pinned": true,
+  "noticeCount": 1,
+  "url": "https://noastudio.ai.kr/bbs/board.php?bo_table=notice&wr_id=1",
+  "publicHomeUrl": "https://noastudio.ai.kr/#noa-notice-1",
+  "existingPostsModified": 1,
+  "otherPostsModified": 0,
+  "memberRowsChanged": 0,
+  "pointsChanged": 0,
+  "boardPermissionsChanged": false,
+  "emailSent": false,
+  "sourceCommit": "4bb7d2e7170667b6c1d980128435cfd94692d879",
+  "samePostReplayVerified": true,
+  "temporaryHelperRemoved": true
+}

@@ -1,0 +1,24 @@
+{
+  "commit": "3887f0ebfc1d81f734a7ff37bd9723de180f682f",
+  "changed": [
+    "noa-account.css",
+    "noa-account.js",
+    "noa-ui.js",
+    "noa-my.php",
+    "noa-browse-order.js",
+    "noa-browse.js"
+  ],
+  "sha256": {
+    "noa-account.css": "d911e5a3ace18fd5775f50b21a0c96fb104a0a49f0bbd4500bc281cb2279ff50",
+    "noa-account.js": "a84e857b4b6c1015ad4ab6f476bbccdeb5590001cdaec6fd3c9e15ced0404049",
+    "noa-ui.js": "d13b76dbbce1b84b454923d979e2c517ba1f4e41ff2c50bba5df56a1eeb1f385",
+    "noa-my.php": "050e198f178a7594f88ba882760303887fe2c00ab952dec12c0fea9c1ba7476f",
+    "noa-browse-order.js": "348eb361d7b915685e84df5395034c8e9599403f0d7b8bfd04ac1c58a4931c35",
+    "noa-browse.js": "2e176ecea8befee2b4a1b525d25a3746ae7623d9a52f4a2cf3a83ea6b2f6afe3"
+  },
+  "protectedUnchanged": 24,
+  "databaseWrites": 0,
+  "memberRowsChanged": 0,
+  "pointDebits": 0,
+  "pricesSeeded": false
+}
