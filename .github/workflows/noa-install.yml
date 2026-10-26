@@ -19,6 +19,7 @@ jobs:
           for file in deploy/noa-launch.js deploy/noa-brand.js deploy/noa-ui.js deploy/noa-account.js deploy/noa-install.js scripts/qa/noa-install.mjs; do node --check "$file"; done
           node --test tests/pwa/launch_test.cjs
           php tests/member/access_test.php
+          php tests/sitemap/registry_test.php
           python -m py_compile scripts/noa_install_release.py
           php tests/pwa/fixture.php
           python scripts/qa/noa-qa-font.py

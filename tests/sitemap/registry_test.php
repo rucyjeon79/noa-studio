@@ -26,7 +26,7 @@ try{
  check(noa_sitemap_role(false,'super')==='guest'&&noa_sitemap_role(true,'group')==='member','server member state required for super role');
  check(!in_array('aiLab',$ids($guest),true)&&in_array('aiLab',$ids($admin),true),'AI LAB remains administrator-only');
  foreach($admin as $g)foreach($g['routes'] as $r)check(!str_contains($r[3],'logout.php')&&!str_contains($r[3],'noa2.php')&&!str_contains($r[3],'deploy-center'),'no actions, legacy home or unverified deploy center');
- unlink($root.'/noa-download.php');check(!in_array('download',$ids(noa_sitemap_visible_groups($root,'guest')),true),'missing runtime page hidden');
+ unlink($root.'/noa-install.php');check(!in_array('download',$ids(noa_sitemap_visible_groups($root,'guest')),true),'missing runtime page hidden');
  check(!noa_sitemap_available('/../outside.php',$root)&&!noa_sitemap_available('https://example.com/page.php',$root),'only fixed local service paths');
  $outside=$root.'-outside.php';file_put_contents($outside,'<?php ');symlink($outside,$root.'/outside.php');check(!noa_sitemap_available('/outside.php',$root),'outside-root symlink hidden');unlink($root.'/outside.php');unlink($outside);
  $board=['bo_table'=>'free','bo_subject'=>'<b>자유게시판</b>','bo_read_level'=>1,'bo_list_level'=>1,'gr_use_access'=>0,'bo_use_cert'=>''];

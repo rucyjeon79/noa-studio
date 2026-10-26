@@ -8,6 +8,8 @@ permissions: {contents: read}
 concurrency: {group: noa-p0-audit, cancel-in-progress: false}
 jobs:
   audit:
+    # Installation-only changes run the registry gate in the focused release.
+    if: ${{ !contains(github.event.head_commit.message, '[install-release]') }}
     environment: production
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     runs-on: ubuntu-latest

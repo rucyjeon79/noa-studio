@@ -33,7 +33,13 @@ try{
    }
   }
   // Empty board search remains usable without creating or editing content.
-  await page.goto(base+'/bbs/board.php?bo_table=free&device='+(mobile?'mobile':'pc'));if(!await page.locator('select[name=sfl]').isVisible())await page.locator('.btn_bo_sch').click();await page.locator('select[name=sfl]').selectOption('wr_subject||wr_content');assert.equal(await page.locator('select[name=sfl]').inputValue(),'wr_subject||wr_content');
+  await page.goto(base+'/bbs/board.php?bo_table=free&device='+(mobile?'mobile':'pc'));
+  if(['/bbs/login.php','/noa-login.php'].includes(new URL(page.url()).pathname)){
+   // Current member-only policy returns the login form, never a public search form.
+   assert(await page.locator('input[name=mb_id]').isVisible());assert(await page.locator('input[name=mb_password]').isVisible());
+   report.push({route:'/bbs/board.php?bo_table=free#search',width,guestLoginRequired:true,nativeSearchNotExercised:true});await context.close();continue;
+  }
+  if(!await page.locator('select[name=sfl]').isVisible())await page.locator('.btn_bo_sch').click();await page.locator('select[name=sfl]').selectOption('wr_subject||wr_content');assert.equal(await page.locator('select[name=sfl]').inputValue(),'wr_subject||wr_content');
   await page.waitForFunction(()=>window.NoaUI?.getState());
   for(const theme of ['noa-studio','noa-ivory']){
    await page.evaluate(theme=>window.NoaUI.apply({...window.NoaUI.getState(),theme}),theme);
