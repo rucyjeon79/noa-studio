@@ -25,6 +25,8 @@ jobs:
           php -l deploy/noa-app/jukebox/upload-core.php
           php -l deploy/noa-app/jukebox/operations.php
           python -m pip install 'Pillow>=11,<12'
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
           python tests/jukebox/make_fixture.py
           php tests/jukebox/upload_mysql_test.php
           php -l deploy/noa-app/jukebox/upload.php
