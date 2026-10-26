@@ -1,0 +1,20 @@
+{
+  "commit": "e20e1b45075785419dc2bf4782ee8f7785c51722",
+  "changed": [
+    "noa-bridge/youtube-catalog.php",
+    "noa-browse.js",
+    "noa-browse-edit.js"
+  ],
+  "sha256": {
+    "noa-bridge/youtube-catalog.php": "c68a598b53e368de97c6d69d4f77fe2d926e02451f68b589e90abd0d4b9a37b6",
+    "noa-browse.js": "45e6d596e3e512ed9b36dfbe055ba9a2aabd743983fcc29eda3d99f88f2a111a",
+    "noa-account.js": "e8ce46c1f32d910de266dd9c1d4dd7ef5b976d111af24f4fc0868e5c7bf37393",
+    "noa-account.css": "d38ac7564ec85b1a3f87a3ff81c797b91aaadebbb2dd5d15b9be21b743131b41",
+    "noa-browse-edit.js": "cdf4db66584f275299ecf288c8073a27bf5db17a4782c26aa815f0eedf721195"
+  },
+  "protectedUnchanged": 17,
+  "databaseWrites": 0,
+  "memberRowsChanged": 0,
+  "pointDebits": 0,
+  "pricesSeeded": false
+}

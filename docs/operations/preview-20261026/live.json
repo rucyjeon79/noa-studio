@@ -1,0 +1,584 @@
+[
+  {
+    "phase": "live",
+    "width": 320,
+    "theme": "noa-studio",
+    "genre": "your-story",
+    "collections": [
+      {
+        "id": "ffffffffffffffffffffffff",
+        "title": "미리보기 검증 모음",
+        "video": "0_V7sxOJ5Xw",
+        "pending": false,
+        "synthetic": true
+      }
+    ],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/0_V7sxOJ5Xw?autoplay=1&playsinline=1&rel=0",
+      "width": 280,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  },
+  {
+    "phase": "live",
+    "width": 320,
+    "theme": "noa-studio",
+    "genre": "cover-reborn",
+    "collections": [
+      {
+        "id": "5af1df61537baf7ab5837b59",
+        "title": "시간이 지나도 남는 노래 Vol.3",
+        "video": "vzmjSEIlUdo",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "6da70d5e7001bdc1e1392291",
+        "title": "시간이 지나도 남는 노래 Vol.2",
+        "video": "7TrkLw4MNYk",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "c64bf0624ab80b50f2bf0a93",
+        "title": "시간이 지나도 남는 노래 Vol.1",
+        "video": "fBjEe-Lnw_Y",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "ffffffffffffffffffffffff",
+        "title": "미리보기 검증 모음",
+        "video": "-5Gyp_xkGvY",
+        "pending": false,
+        "synthetic": true
+      }
+    ],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/-5Gyp_xkGvY?autoplay=1&playsinline=1&rel=0",
+      "width": 280,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  },
+  {
+    "phase": "live",
+    "width": 320,
+    "theme": "noa-studio",
+    "genre": "kpop-original",
+    "collections": [],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/1_yfqm42Qwk?autoplay=1&playsinline=1&rel=0",
+      "width": 280,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  },
+  {
+    "phase": "live",
+    "width": 320,
+    "theme": "noa-ivory",
+    "genre": "your-story",
+    "collections": [
+      {
+        "id": "ffffffffffffffffffffffff",
+        "title": "미리보기 검증 모음",
+        "video": "0_V7sxOJ5Xw",
+        "pending": false,
+        "synthetic": true
+      }
+    ],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/0_V7sxOJ5Xw?autoplay=1&playsinline=1&rel=0",
+      "width": 280,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  },
+  {
+    "phase": "live",
+    "width": 320,
+    "theme": "noa-ivory",
+    "genre": "cover-reborn",
+    "collections": [
+      {
+        "id": "5af1df61537baf7ab5837b59",
+        "title": "시간이 지나도 남는 노래 Vol.3",
+        "video": "vzmjSEIlUdo",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "6da70d5e7001bdc1e1392291",
+        "title": "시간이 지나도 남는 노래 Vol.2",
+        "video": "7TrkLw4MNYk",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "c64bf0624ab80b50f2bf0a93",
+        "title": "시간이 지나도 남는 노래 Vol.1",
+        "video": "fBjEe-Lnw_Y",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "ffffffffffffffffffffffff",
+        "title": "미리보기 검증 모음",
+        "video": "-5Gyp_xkGvY",
+        "pending": false,
+        "synthetic": true
+      }
+    ],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/-5Gyp_xkGvY?autoplay=1&playsinline=1&rel=0",
+      "width": 280,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  },
+  {
+    "phase": "live",
+    "width": 320,
+    "theme": "noa-ivory",
+    "genre": "kpop-original",
+    "collections": [],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/1_yfqm42Qwk?autoplay=1&playsinline=1&rel=0",
+      "width": 280,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  },
+  {
+    "phase": "live",
+    "width": 390,
+    "theme": "noa-studio",
+    "genre": "your-story",
+    "collections": [
+      {
+        "id": "ffffffffffffffffffffffff",
+        "title": "미리보기 검증 모음",
+        "video": "0_V7sxOJ5Xw",
+        "pending": false,
+        "synthetic": true
+      }
+    ],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/0_V7sxOJ5Xw?autoplay=1&playsinline=1&rel=0",
+      "width": 350,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  },
+  {
+    "phase": "live",
+    "width": 390,
+    "theme": "noa-studio",
+    "genre": "cover-reborn",
+    "collections": [
+      {
+        "id": "5af1df61537baf7ab5837b59",
+        "title": "시간이 지나도 남는 노래 Vol.3",
+        "video": "vzmjSEIlUdo",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "6da70d5e7001bdc1e1392291",
+        "title": "시간이 지나도 남는 노래 Vol.2",
+        "video": "7TrkLw4MNYk",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "c64bf0624ab80b50f2bf0a93",
+        "title": "시간이 지나도 남는 노래 Vol.1",
+        "video": "fBjEe-Lnw_Y",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "ffffffffffffffffffffffff",
+        "title": "미리보기 검증 모음",
+        "video": "-5Gyp_xkGvY",
+        "pending": false,
+        "synthetic": true
+      }
+    ],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/-5Gyp_xkGvY?autoplay=1&playsinline=1&rel=0",
+      "width": 350,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  },
+  {
+    "phase": "live",
+    "width": 390,
+    "theme": "noa-studio",
+    "genre": "kpop-original",
+    "collections": [],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/1_yfqm42Qwk?autoplay=1&playsinline=1&rel=0",
+      "width": 350,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  },
+  {
+    "phase": "live",
+    "width": 390,
+    "theme": "noa-ivory",
+    "genre": "your-story",
+    "collections": [
+      {
+        "id": "ffffffffffffffffffffffff",
+        "title": "미리보기 검증 모음",
+        "video": "0_V7sxOJ5Xw",
+        "pending": false,
+        "synthetic": true
+      }
+    ],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/0_V7sxOJ5Xw?autoplay=1&playsinline=1&rel=0",
+      "width": 350,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  },
+  {
+    "phase": "live",
+    "width": 390,
+    "theme": "noa-ivory",
+    "genre": "cover-reborn",
+    "collections": [
+      {
+        "id": "5af1df61537baf7ab5837b59",
+        "title": "시간이 지나도 남는 노래 Vol.3",
+        "video": "vzmjSEIlUdo",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "6da70d5e7001bdc1e1392291",
+        "title": "시간이 지나도 남는 노래 Vol.2",
+        "video": "7TrkLw4MNYk",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "c64bf0624ab80b50f2bf0a93",
+        "title": "시간이 지나도 남는 노래 Vol.1",
+        "video": "fBjEe-Lnw_Y",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "ffffffffffffffffffffffff",
+        "title": "미리보기 검증 모음",
+        "video": "-5Gyp_xkGvY",
+        "pending": false,
+        "synthetic": true
+      }
+    ],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/-5Gyp_xkGvY?autoplay=1&playsinline=1&rel=0",
+      "width": 350,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  },
+  {
+    "phase": "live",
+    "width": 390,
+    "theme": "noa-ivory",
+    "genre": "kpop-original",
+    "collections": [],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/1_yfqm42Qwk?autoplay=1&playsinline=1&rel=0",
+      "width": 350,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  },
+  {
+    "phase": "live",
+    "width": 1280,
+    "theme": "noa-studio",
+    "genre": "your-story",
+    "collections": [
+      {
+        "id": "ffffffffffffffffffffffff",
+        "title": "미리보기 검증 모음",
+        "video": "0_V7sxOJ5Xw",
+        "pending": false,
+        "synthetic": true
+      }
+    ],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/0_V7sxOJ5Xw?autoplay=1&playsinline=1&rel=0",
+      "width": 1000,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  },
+  {
+    "phase": "live",
+    "width": 1280,
+    "theme": "noa-studio",
+    "genre": "cover-reborn",
+    "collections": [
+      {
+        "id": "5af1df61537baf7ab5837b59",
+        "title": "시간이 지나도 남는 노래 Vol.3",
+        "video": "vzmjSEIlUdo",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "6da70d5e7001bdc1e1392291",
+        "title": "시간이 지나도 남는 노래 Vol.2",
+        "video": "7TrkLw4MNYk",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "c64bf0624ab80b50f2bf0a93",
+        "title": "시간이 지나도 남는 노래 Vol.1",
+        "video": "fBjEe-Lnw_Y",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "ffffffffffffffffffffffff",
+        "title": "미리보기 검증 모음",
+        "video": "-5Gyp_xkGvY",
+        "pending": false,
+        "synthetic": true
+      }
+    ],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/-5Gyp_xkGvY?autoplay=1&playsinline=1&rel=0",
+      "width": 1000,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  },
+  {
+    "phase": "live",
+    "width": 1280,
+    "theme": "noa-studio",
+    "genre": "kpop-original",
+    "collections": [],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/1_yfqm42Qwk?autoplay=1&playsinline=1&rel=0",
+      "width": 1000,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  },
+  {
+    "phase": "live",
+    "width": 1280,
+    "theme": "noa-ivory",
+    "genre": "your-story",
+    "collections": [
+      {
+        "id": "ffffffffffffffffffffffff",
+        "title": "미리보기 검증 모음",
+        "video": "0_V7sxOJ5Xw",
+        "pending": false,
+        "synthetic": true
+      }
+    ],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/0_V7sxOJ5Xw?autoplay=1&playsinline=1&rel=0",
+      "width": 1000,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  },
+  {
+    "phase": "live",
+    "width": 1280,
+    "theme": "noa-ivory",
+    "genre": "cover-reborn",
+    "collections": [
+      {
+        "id": "5af1df61537baf7ab5837b59",
+        "title": "시간이 지나도 남는 노래 Vol.3",
+        "video": "vzmjSEIlUdo",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "6da70d5e7001bdc1e1392291",
+        "title": "시간이 지나도 남는 노래 Vol.2",
+        "video": "7TrkLw4MNYk",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "c64bf0624ab80b50f2bf0a93",
+        "title": "시간이 지나도 남는 노래 Vol.1",
+        "video": "fBjEe-Lnw_Y",
+        "pending": false,
+        "synthetic": false
+      },
+      {
+        "id": "ffffffffffffffffffffffff",
+        "title": "미리보기 검증 모음",
+        "video": "-5Gyp_xkGvY",
+        "pending": false,
+        "synthetic": true
+      }
+    ],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/-5Gyp_xkGvY?autoplay=1&playsinline=1&rel=0",
+      "width": 1000,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  },
+  {
+    "phase": "live",
+    "width": 1280,
+    "theme": "noa-ivory",
+    "genre": "kpop-original",
+    "collections": [],
+    "individualSelection": {
+      "src": "https://www.youtube.com/embed/1_yfqm42Qwk?autoplay=1&playsinline=1&rel=0",
+      "width": 1000,
+      "visible": true
+    },
+    "logoutVisible": true,
+    "logoutUsesNativeRoute": true,
+    "guestHidesLogout": true,
+    "noOverflow": true,
+    "errors": [],
+    "providerTransport": "fixture",
+    "accountData": "fixture",
+    "catalogData": "operating public SQL projection"
+  }
+]
