@@ -5,6 +5,9 @@ import paramiko
 from noa_full_inventory import connect,ROOT
 FILES={'noa-bridge/'+p:'bridge/'+p for p in ['p0-audit.php','p0-inventory.php']}
 NEW=set(FILES)
+FILES['noa-app/engine/work-state.php']='deploy/noa-app/engine/work-state.php'
+FILES['noa-work-status.php']='deploy/noa-work-status.php'
+NEW.add('noa-work-status.php')
 PROTECTED=['common.php','data/dbconfig.php','bbs/login.php','bbs/login_check.php','noa-app/jukebox/core.php','noa-app/jukebox/upload-core.php','noa-app/jukebox/queue-core.php','noa-app/jukebox/recovery-core.php','noa-app/jukebox/stream.php','noa-app/jukebox/download.php','noa-ainoa.js']
 BACKUP=Path(os.environ.get('RUNNER_TEMP','/tmp'))/'noa-p0-audit-before.json'
 def sha(v):return hashlib.sha256(v).hexdigest()

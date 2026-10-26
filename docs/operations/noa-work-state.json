@@ -378,6 +378,13 @@
           "issue": "Legacy MV release rejected unknown preimage before mutation. Subsequent scoped-release tag disables this duplicate deployment."
         }
       ]
+    },
+    {
+      "type": "source_retention",
+      "commit": "b4e5e4910db00c6b2a8635e053ce7764dd58b121",
+      "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40271382876",
+      "status": "success",
+      "scope": "Preserve incoming original after optimization/reuse/rejection; retain interrupted chunks; protected MP3 regression. No data cleanup."
     }
   ],
   "latestWorkUnit": {
@@ -525,10 +532,62 @@
     }
   ],
   "activeWork": {
-    "status": "completed",
-    "request": "업로드 최적화 대기에서 멈춤: 상태·대기열 network_unavailable/request_timeout 복구",
-    "runtimeChangesStarted": true,
-    "completedRuntimeCommit": "1d00a07f1c335faf569311c8e79286135126bd7c",
-    "pendingPriorConfiguration": "AI provider and point-store activation remain tracked separately under outstanding."
+    "id": "NOA-20261026-P0-ADDITIONS",
+    "status": "in_progress",
+    "directive": "docs/operations/requests/NOA_20261026_P0_ADDITIONS.md",
+    "parentTaskId": "integration-finish-20261024",
+    "existingTwelveAreasPreserved": true,
+    "tasks": [
+      {
+        "id": "NOA-20261026-P0-01",
+        "status": "in_progress"
+      },
+      {
+        "id": "NOA-20261026-P0-02",
+        "status": "in_progress"
+      },
+      {
+        "id": "NOA-20261026-P0-03",
+        "status": "in_progress"
+      },
+      {
+        "id": "NOA-20261026-P0-04",
+        "status": "in_progress"
+      },
+      {
+        "id": "NOA-20261026-P0-05",
+        "status": "in_progress"
+      },
+      {
+        "id": "NOA-20261026-P0-06",
+        "status": "needs_review"
+      },
+      {
+        "id": "NOA-20261026-P0-07",
+        "status": "in_progress"
+      }
+    ],
+    "lastSuccessfulStage": {
+      "retentionCommit": "b4e5e4910db00c6b2a8635e053ce7764dd58b121",
+      "retentionAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40271382876",
+      "inventoryAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40270375555",
+      "documents": 660,
+      "verifiedArchivedSources": 731,
+      "driveArchiveHashesMatched": 731,
+      "queued": 0,
+      "active": 0
+    },
+    "candidate": {
+      "commit": "63d12bc92508726b7510757be05bb26262d10207",
+      "status": "not_deployed",
+      "failure": "Mobile generation fixture appended under bottom navigation; corrected isolated fixture spacing before rerun.",
+      "serverChecksPassed": true
+    },
+    "remaining": [
+      "AI provider key, enable flags, budgets and paid chat price are not configured; no real provider invocation or paid debit validated.",
+      "Review newly expanded archive field differences and historical original retention without bulk overwrites.",
+      "Candidate/editor/design gate and N80 lifecycle production verification pending.",
+      "All original twelve areas remain open where completion evidence is absent."
+    ]
   }
 }

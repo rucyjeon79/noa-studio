@@ -52,5 +52,14 @@ try{
  ws_check(!$summary['allAreasComplete']&&$summary['counts']['complete']===0,'missing_proof_visible_as_review');
  ws_check(n80_work_read($directory)['state']['areas']['P0-03']['status']==='complete','readonly_preserves_historical_state');
  ws_check(glob($directory.'/.work-head-*')===[]&&glob($directory.'/.engine-*')===[],'no_staging_residue');
+ $prior=n80_work_read($directory)['state'];$task=['id'=>'instruction-a','status'=>'in_progress','currentStage'=>'운영 점검','lastSuccessfulStage'=>'회귀 검사 통과','error'=>'','evidenceIds'=>[]];
+ $taskRequest=ws_request('task-stage',5)+['taskChanges'=>[$task]];$staged=n80_work_revise($directory,$proof,$taskRequest,$now+100);
+ ws_check($staged['ok']&&$staged['state']['instructions'][0]['currentStage']==='운영 점검','task_stage_persisted');
+ ws_check($staged['state']['instructions'][0]['lastActivityAt']===gmdate('c',$now+100),'task_activity_time');
+ ws_check($staged['state']['instructions'][0]['text']===$a['text']&&$staged['state']['areas']===$prior['areas'],'instructions_and_areas_preserved');
+ ws_check(n80_work_revise($directory,$proof,$taskRequest,$now+110)['effect']==='work_state_already_recorded','task_replay');
+ $task['status']='complete';ws_check(n80_work_revise($directory,$proof,ws_request('task-false-complete',6)+['taskChanges'=>[$task]],$now)['error']==='completion_requires_operating_evidence','task_completion_needs_proof');
+ unlink($directory.'/head.json');ws_check(n80_work_read($directory)['state']['instructions'][0]['lastSuccessfulStage']==='회귀 검사 통과','task_stage_survives_restart');
+ ws_check(n80_work_summary($directory,$proof)['executionControl']==='project_journal_only','no_ChatGPT_process_control');
  echo json_encode(['ok'=>true,'assertions'=>$assertions,'databaseWrites'=>0,'automaticDispatch'=>false,'workCompletedEventEmitted'=>false]).PHP_EOL;
 }finally{ws_remove($base);}

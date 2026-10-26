@@ -1,0 +1,58 @@
+{
+  "backupSongsAndPlaylists": 653,
+  "archivedSources": 731,
+  "currentArchiveExactMatch": 731,
+  "currentArchiveTotal": 731,
+  "backupBodyFields": {
+    "summary": 479,
+    "confirmedTitle": 653,
+    "tracklist": 52,
+    "geminiPrompt": 565,
+    "youtubeTitle": 571,
+    "youtubeDescription": 571,
+    "thumbCast": 571,
+    "tracklistEdited": 52,
+    "descEdited": 52,
+    "thumbUrl": 54,
+    "communityPost": 12,
+    "youtubeUrl": 415,
+    "lyricsBlock": 601,
+    "sunoStyle": 479,
+    "sunoUrl": 491,
+    "audioAnalysis": 2,
+    "audioLevel": 3,
+    "fieldSavedAt": 1,
+    "fanLetter": 159,
+    "sourceLyrics": 81,
+    "sourceGenre": 37,
+    "sourceVocal": 5
+  },
+  "translationArchives": [
+    {
+      "path": "번역/화면.json",
+      "type": "dict",
+      "keys": [
+        "설명란을 보려면 누르세요",
+        "결과창을 보려면 누르세요",
+        "설명 닫기",
+        "결과 닫기",
+        "원곡과 동일",
+        "변환",
+        "원곡",
+        "Grok 작동 중",
+        "조선 발라드",
+        "당신의 이야기, 우리의 음악",
+        "재탄생, 유명곡 커버",
+        "내가 아는 유명곡의 재탄생",
+        "저장한 커버곡이 없습니다. 커버곡 입력에서 만든 곡이 여기에 모입니다.",
+        "저장한 사연곡이 없습니다. 사연곡 입력에서 만든 곡이 여기에 모입니다.",
+        "커버곡 여는 중",
+        "사연곡 여는 중",
+        "설명란이 비어 있습니다.",
+        "FINALE : 별이 되다",
+        "Light It Up(빛으로 널-II)",
+        "Touch You(난 다시 살아가-II)"
+      ]
+    }
+  ]
+}

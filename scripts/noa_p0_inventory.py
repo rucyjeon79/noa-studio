@@ -59,9 +59,26 @@ def main():
  if ''.join(recorded[x['id']]['text']for x in entries if '-ORIGINAL-'in x['id'])!=source:raise RuntimeError('directive_original_mismatch')
  receipt={'commit':os.environ['GITHUB_SHA'],'parentTaskId':new['parentTaskId'],'revision':new['revision'],'addedTasks':[x['id']for x in entries[:7]],'originalSha256':sha,'originalBytes':len(source.encode()),'previousAreasPreserved':True,'previousInstructionsPreserved':True,'allAreasComplete':after['summary']['allAreasComplete']}
  (out/'n80-additions.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2));print('N80_P0_ADDITIONS',json.dumps(receipt,ensure_ascii=False),flush=True)
- result=inventory(key);(out/'inventory.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print('NOA_P0_INVENTORY',json.dumps({k:v for k,v in result.items()if k not in ['rows','archivedSources']},ensure_ascii=False),flush=True)
+ result=inventory(key);(out/'inventory.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print('NOA_P0_INVENTORY',json.dumps({k:v for k,v in result.items()if k not in ['rows','archivedSources','archiveComparison','sourceRetention']},ensure_ascii=False),flush=True)
+ print('NOA_P0_SOURCE_AUDIT',json.dumps({'archiveMatchedDocuments':result['archiveComparison']['matchedDocuments'],'missingFields':len(result['archiveComparison']['sourceFieldMissing']),'differentFields':len(result['archiveComparison']['sourceFieldDifferent']),'sourceRetention':{k:v for k,v in result['sourceRetention'].items()if k!='rows'}},ensure_ascii=False),flush=True)
  # Existing fixed signed recovery read operations, with no audio or queue mutation.
  call=signed_service(key.decode());queue=call('queue_snapshot');health=call('runtime_health');integrity=call('integrity_snapshot')
  q={'checkedAt':health['checked_at'],'statuses':dict(collections.Counter(r['status']for r in queue['rows'])),'queued':health['queued'],'active':health['active'],'worker':health['worker'],'integrity':integrity,'jobs':queue['rows']}
+ stages=[
+ ('01','in_progress','원본 보존 및 상태 복원 운영 검증','FIFO 전수 조회: 대기 '+str(health['queued'])+'건, 처리 중 '+str(health['active'])+'건',''),
+ ('02','in_progress','버튼 진행·오류·검토·중복 방지 회귀 검증','기존 생성 엔드포인트와 UI 오류 경로 확인',''),
+ ('03','in_progress','원본·화면·Drive 대조 및 누락 분류','SQL 곡·플레이리스트 '+str(result['documents'])+'개 읽기 전용 감사',''),
+ ('04','in_progress','편집 경로별 별칭 충돌·revision 검증','운영 문서·카탈로그·보관 원본 테이블 InnoDB 확인',''),
+ ('05','in_progress','모바일 디자인과 배포 전 차단 검사','기존 공통 토큰 및 2줄 JUKEBOX 구조 확인',''),
+ ('06','needs_review' if not result['aiSettings']['keyConfigured'] else 'in_progress','AI 서비스 준비 상태 확인','서버 설정을 비밀값 없이 조회','OpenAI API 키·사용 한도 미설정' if not result['aiSettings']['keyConfigured'] else ''),
+ ('07','in_progress','작업별 단계·활동·오류·증거 기록 검증','기존 12개 영역과 추가 지시 원문 보존 확인','')]
+ snapshot=work_request(key,{'action':'read'})['state'];rid='NOA-20261026-P0-STAGES-'+os.environ['GITHUB_SHA'][:12]
+ if rid not in snapshot['requestReceipts']:
+  req={'action':'revise','request':{'requestId':rid,'expectedRevision':snapshot['revision'],'changes':[],'appendInstructions':[],'taskChanges':[{'id':'NOA-20261026-P0-'+n,'status':status,'currentStage':stage,'lastSuccessfulStage':success,'error':error,'evidenceIds':[]}for n,status,stage,success,error in stages]}}
+  first=work_request(key,req);again=work_request(key,req)
+  if first.get('readbackVerified')is not True or again.get('effect')!='work_state_already_recorded':raise RuntimeError('task_stage_readback_failed')
+ final=work_request(key,{'action':'read'});tasks=[x for x in final['summary']['instructionQueue']if x['id']in receipt['addedTasks']]
+ if len(tasks)!=7 or any('lastActivityAt'not in x for x in tasks):raise RuntimeError('task_stage_missing')
+ (out/'n80-tasks.json').write_text(json.dumps({'revision':final['state']['revision'],'tasks':tasks,'executionControl':final['summary']['executionControl']},ensure_ascii=False,indent=2));print('N80_P0_TASK_STAGES',json.dumps({'revision':final['state']['revision'],'tasks':tasks,'executionControl':final['summary']['executionControl']},ensure_ascii=False),flush=True)
  (out/'queue.json').write_text(json.dumps(q,ensure_ascii=False,indent=2));print('NOA_P0_QUEUE',json.dumps({k:v for k,v in q.items()if k!='jobs'},ensure_ascii=False),flush=True)
 if __name__=='__main__':main()

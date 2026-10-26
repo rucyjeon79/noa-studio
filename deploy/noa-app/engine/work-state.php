@@ -71,7 +71,7 @@ function n80_work_head_write(string $directory,int $revision,string $hash):bool{
 }
 /** Revision CAS and stable request identity; no record is overwritten. */
 function n80_work_revise(string $directory,string $completionDirectory,array $request,int $now):array{
- if(!n80_completion_keys($request,['requestId','expectedRevision','changes','appendInstructions'])
+ if(!(n80_completion_keys($request,['requestId','expectedRevision','changes','appendInstructions'])||n80_completion_keys($request,['requestId','expectedRevision','changes','appendInstructions','taskChanges']))
    ||!is_string($request['requestId'])||!preg_match('/^[A-Za-z0-9_-]{1,128}$/D',$request['requestId'])
    ||!is_int($request['expectedRevision'])||$request['expectedRevision']<0
    ||!is_array($request['changes'])||!array_is_list($request['changes'])||count($request['changes'])>12
@@ -113,6 +113,21 @@ function n80_work_revise(string $directory,string $completionDirectory,array $re
    if(count($instructions)>=256)return ['ok'=>false,'error'=>'instruction_queue_limit'];
    $instructions[$entry['id']]=$entry+['status'=>'pending','sequence'=>count($instructions)+1];
   }
+  // Optional task lifecycle is additive to historical instructions and twelve fixed areas.
+  $taskChanges=$request['taskChanges']??[];
+  if(!is_array($taskChanges)||!array_is_list($taskChanges)||count($taskChanges)>32)return ['ok'=>false,'error'=>'invalid_task_changes'];
+  $taskSeen=[];
+  foreach($taskChanges as $change){
+   if(!is_array($change)||!n80_completion_keys($change,['id','status','currentStage','lastSuccessfulStage','error','evidenceIds'])||!is_string($change['id'])||!isset($instructions[$change['id']])||isset($taskSeen[$change['id']])||!in_array($change['status'],['pending','in_progress','needs_review','error','complete'],true))return ['ok'=>false,'error'=>'invalid_task_change'];
+   foreach(['currentStage','lastSuccessfulStage','error']as $field)if(!is_string($change[$field])||strlen($change[$field])>2000)return ['ok'=>false,'error'=>'invalid_task_change'];
+   if(!is_array($change['evidenceIds'])||!array_is_list($change['evidenceIds'])||count($change['evidenceIds'])>32)return ['ok'=>false,'error'=>'invalid_task_change'];
+   $entry=$instructions[$change['id']];$links=[];foreach($entry['evidence']??[]as $link)$links[$link['eventId']]=$link;
+   foreach($change['evidenceIds']as $evidenceId){if(!is_string($evidenceId))return ['ok'=>false,'error'=>'invalid_evidence_id'];$links[$evidenceId]=n80_work_evidence($completionDirectory,$evidenceId);}
+   if($change['status']==='complete'&&(!$links||trim($change['currentStage'])===''))return ['ok'=>false,'error'=>'completion_requires_operating_evidence'];
+   if($change['status']==='complete')foreach($links as $link)if(n80_work_evidence($completionDirectory,$link['eventId'])!==$link)return ['ok'=>false,'error'=>'operating_evidence_changed'];
+   foreach(['status','currentStage','lastSuccessfulStage','error']as $field)$entry[$field]=$change[$field];
+   $entry['lastActivityAt']=gmdate('c',$now);$entry['evidence']=array_values($links);$instructions[$change['id']]=$entry;$taskSeen[$change['id']]=true;
+  }
   $state['instructions']=array_values($instructions);$state['revision']++;
   $state['requestReceipts'][$id]=['requestSha256'=>$requestHash,'revision'=>$state['revision']];
   $eventId=n80_work_event_id($state['revision']);$event=['id'=>$eventId,'type'=>'work.state.revised','source'=>'work_control',
@@ -138,9 +153,14 @@ function n80_work_summary(string $directory,string $completionDirectory='/hostin
    }
    $counts[$area['status']]++;$areas[]=$area;
   }
+  $instructions=$state['instructions'];foreach($instructions as &$entry){
+   if(($entry['status']??'')!=='complete')continue;
+   try{if(empty($entry['evidence']))throw new RuntimeException('missing_evidence');foreach($entry['evidence']as $link)if(n80_work_evidence($completionDirectory,$link['eventId'])!==$link)throw new RuntimeException('changed_evidence');$entry['evidenceStatus']='verified';}
+   catch(Throwable $e){$entry['recordedStatus']='complete';$entry['status']='needs_review';$entry['evidenceStatus']='missing_or_changed';}
+  }unset($entry);
   return ['ok'=>true,'parentTaskId'=>N80_WORK_PARENT,'registered'=>$result['registered'],'revision'=>$state['revision'],
    'allAreasComplete'=>$counts['complete']===12,'counts'=>$counts,'areas'=>$areas,
-   'instructionQueue'=>$state['instructions'],'workCompletedEventEmitted'=>false,'automaticDispatch'=>false,'databaseWrites'=>0];
+   'instructionQueue'=>$instructions,'lastActivityAt'=>$result['registered']?($result['event']['occurredAt']??(n80_work_record($directory,$state['revision'])['event']['occurredAt']??null)):null,'executionControl'=>'project_journal_only','workCompletedEventEmitted'=>false,'automaticDispatch'=>false,'databaseWrites'=>0];
  }catch(Throwable $e){return ['ok'=>false,'parentTaskId'=>N80_WORK_PARENT,'status'=>'needs_review','error'=>'workstate_unavailable',
   'allAreasComplete'=>false,'workCompletedEventEmitted'=>false,'automaticDispatch'=>false,'databaseWrites'=>0];}
 }
