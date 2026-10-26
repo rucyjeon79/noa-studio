@@ -18,6 +18,7 @@ try{
  check(isset($admin['admin'])&&count($admin['admin']['routes'])===18,'administrator services included');
  check(in_array('workStatus',$ids($admin),true)&&!in_array('workStatus',$ids($member),true)&&!in_array('workStatus',$ids($guest),true),'work journal highest-admin-only');
  check(in_array('subscriptions',$ids($admin),true)&&!in_array('subscriptions',$ids($member),true)&&!in_array('subscriptions',$ids($guest),true),'subscription configuration highest-admin-only');
+ check(!in_array('register',$ids($guest),true),'no duplicate signup button; social enrollment stays in the login screen');
  check(in_array('login',$ids($guest),true)&&!in_array('playlists',$ids($guest),true),'guest account destinations');
  check(in_array('playlists',$ids($member),true)&&!in_array('login',$ids($member),true),'member playlist destination');
  $adminLinks=array_merge(...array_map(static fn($g)=>array_column($g['routes'],3),array_values($admin)));

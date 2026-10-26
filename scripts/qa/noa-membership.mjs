@@ -32,11 +32,12 @@ try{
    const heights=await page.evaluate(()=>['#membership-buy','#noa-account-bar .noa-account-status a:first-child'].map(s=>document.querySelector(s).getBoundingClientRect().height));assert(heights.every(h=>h>=44));
    await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:out+'/membership-'+theme+'-'+width+'.png',fullPage:true});
   }else{
-   const api=await context.request.get('https://noastudio.ai.kr/noa-bridge/membership.php');assert.equal(api.status(),200);assert.equal((await api.json()).member,false);
-   for(const p of ['/bbs/register.php','/bbs/register_form.php']){const res=await context.request.get('https://noastudio.ai.kr'+p,{maxRedirects:0});assert.equal(res.status(),302);assert(res.headers().location.startsWith('/noa-login.php'));}
+   const api=await context.request.get('https://noastudio.ai.kr/noa-bridge/membership.php',{maxRetries:2});assert.equal(api.status(),200);assert.equal((await api.json()).member,false);
+   for(const p of ['/bbs/register.php','/bbs/register_form.php']){const res=await context.request.get('https://noastudio.ai.kr'+p,{maxRedirects:0,maxRetries:2});assert.equal(res.status(),302);assert(res.headers().location.startsWith('/noa-login.php'));}
    const direct=await context.request.post('https://noastudio.ai.kr/bbs/register_form_update.php',{form:{w:'',provider:'Google'},maxRedirects:0});assert.equal(direct.status(),403);
    const fakeSocial=await context.request.post('https://noastudio.ai.kr/plugin/social/register_member_update.php',{form:{provider:'Google'},maxRedirects:0});assert.equal(fakeSocial.status(),403);
-   const legacy=await context.request.get('https://noastudio.ai.kr/bbs/login.php?legacy=1');assert.equal(legacy.status(),200);assert((await legacy.text()).includes('login_fs'));
+   const legacy=await context.request.get('https://noastudio.ai.kr/bbs/login.php?legacy=1',{maxRetries:2});assert.equal(legacy.status(),200);assert((await legacy.text()).includes('login_fs'));
+   if(width===390&&theme==='noa-studio'){await page.goto('https://noastudio.ai.kr/bbs/login.php?legacy=1',{waitUntil:'domcontentloaded'});await page.locator('#noa-account-bar').waitFor();assert.equal(await page.locator('#noa-account-bar .noa-account-shortcuts a').count(),3);assert.equal(await page.locator('.noa-g5-top').count(),0);assert(await page.locator('#login_fs').isVisible());assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:out+'/legacy-login-header-390.png',fullPage:true});}
   }
   assert.deepEqual(errors,[]);report.push({width,theme,phase,noOverflow:true,legacyLoginPreserved:true,socialOnlyServerGuards:phase==='live',unconfiguredProvidersVisible:true,accountBarVisible:true,simulatedVipFlow:phase==='candidate'});await context.close();
  }

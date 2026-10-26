@@ -27,8 +27,7 @@ function noa_sitemap_registry():array{
             ['act4','ACT 4','새로운 시작 · EP.31–40','/noa-world.php?story=4','book','public'],
         ]],
         'account'=>['title'=>'회원 서비스','routes'=>[
-            ['login','로그인','구글·카카오 계정으로 로그인','/noa-login.php','user','guest'],
-            ['register','회원가입','구글·카카오 인증 후 가입','/noa-login.php','user','guest'],
+            ['login','로그인','기존 계정 또는 구글·카카오로 로그인','/noa-login.php','user','guest'],
             ['password','아이디·비밀번호 찾기','계정 접근 복구','/bbs/password_lost.php','settings','guest'],
             ['playlists','내 재생목록','나만의 목록 만들기와 편집','/noa-music.php#my-playlists','playlists','member'],
             ['subscription','월 구독 · 포인트','이용 기간과 구독 구매 내역','/noa-subscription.php','user','member'],
