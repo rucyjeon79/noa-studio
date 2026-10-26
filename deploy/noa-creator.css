@@ -2,3 +2,8 @@
 
 /* Keep row actions outside the floating search control on narrow screens. */
 @media(max-width:700px){.creator-row{align-items:flex-start;flex-direction:column;gap:12px}.creator-row .noa-button{align-self:flex-start}}
+
+/* Native file inputs and long genre labels must not set a grid's minimum width. */
+.creator-form,.creator-form label,.creator-form details,#creator-upload{min-width:0;grid-template-columns:minmax(0,1fr)}
+#creator-upload>label{min-width:0;overflow-wrap:anywhere}
+#creator-file{display:block;box-sizing:border-box;width:100%;min-width:0;max-width:100%}
