@@ -9,7 +9,7 @@ class Element {
  replaceChildren(...nodes){this.children=nodes;}
  setAttribute(k,v){this.attrs[k]=v;}
  querySelectorAll(selector){
-  if(selector==='.noa-inline-act[data-act-number]')return all(this,n=>n.className==='noa-inline-act'&&n.dataset.actNumber);
+  if(selector==='.noa-inline-act[data-act-number],.noa-inline-act[data-unclassified]')return all(this,n=>n.className==='noa-inline-act'&&(n.dataset.actNumber||n.dataset.unclassified));
   if(selector===':scope>.noa-browse-card,:scope>.noa-collection-tools>.noa-list-toggle')return [...this.children.filter(n=>n.className==='noa-browse-card'),...this.children.filter(n=>n.className==='noa-collection-tools').flatMap(n=>n.children.filter(c=>c.className.includes('noa-list-toggle')))];
   return [];
  }
@@ -32,14 +32,17 @@ function fixture(kind='곡',query='',providedRows=null){
 for(const kind of ['곡','영상'])test(kind+': four persistent levels, genre isolation, numeric EP order, loose songs and collapse',()=>{
  const f=fixture(kind);assert.equal(f.cards(1).length,4);assert.equal(f.level(2),undefined);
  f.cards(1)[0].click();assert.equal(f.cards(1).length,4);assert.equal(f.cards(2).length,4);assert.equal(f.level(3),undefined);
- f.cards(2)[0].click();assert.equal(f.cards(1).length,4);assert.equal(f.cards(2).length,4);assert.deepEqual(f.cards(3).map(c=>text(c.children[1].children[0])),['ACT 1','ACT 2']);
+ f.cards(2)[0].click();assert.equal(f.cards(1).length,4);assert.equal(f.cards(2).length,4);assert.deepEqual(f.cards(3).map(c=>text(c.children[1].children[0])),['ACT 1','ACT 2','미분류']);
  assert.match(text(f.level(3)),/Loose/);assert.doesNotMatch(text(f.level(3)),/Foreign/);assert.equal(f.level(4),undefined);
  f.cards(3)[0].click();assert.deepEqual(all(f.level(4),x=>x.className==='noa-inline-song').map(text),['EP.2 · Two','EP.10 · Ten']);
  f.cards(3)[1].click();assert.match(text(f.level(4)),/Eleven/);assert.doesNotMatch(text(f.level(4)),/Two/);
  f.cards(3)[1].click();assert.equal(f.level(4),undefined);
- f.cards(2)[1].click();assert.equal(f.level(4),undefined);assert.equal(f.cards(3).length,1);f.cards(3)[0].click();assert.match(text(f.level(4)),/Foreign/);
+ f.cards(3)[2].click();assert.match(text(f.level(4)),/Loose/);f.cards(3)[2].click();assert.equal(f.level(4),undefined);
+ f.cards(2)[1].click();assert.equal(f.level(4),undefined);assert.equal(f.cards(3).length,2);f.cards(3)[0].click();assert.match(text(f.level(4)),/Foreign/);
  for(const i of [2,3]){f.cards(1)[i].click();assert.equal(f.cards(2).length,1);assert.equal(f.level(3),undefined);f.cards(2)[0].click();assert.match(text(f.level(3)),i===2?/Story/:/Cover/);}
 });
 test('deep links expand ACT while custom queue ordering is preserved',()=>{const f=fixture('곡','?genre=kpop-original&act=1');assert(f.level(4));const ordered=[f.rows[0],f.rows[1]];assert.deepEqual(Array.from(f.model.apply(ordered,true).queue,r=>r.key),['ten','two']);});
 
 test('shared ACT has one row per canonical song, prefers its declared video, and keeps Shorts in All',()=>{const rows=[{key:'short',orderKey:'same-song',genre:'kpop-original',title:'Shorts',ep:1},{key:'main',orderKey:'same-song',genre:'kpop-original',title:'Full version',ep:1,preferredVideo:true},{key:'two',orderKey:'second-song',genre:'kpop-original',title:'Second song',ep:2}];const f=fixture('영상','?genre=kpop-original&act=1',rows);assert.deepEqual(all(f.level(4),x=>x.className==='noa-inline-song').map(text),['EP.1 · Full version','EP.2 · Second song']);assert.deepEqual(Array.from(f.model.apply(rows).queue,r=>r.key),['main','two']);assert.deepEqual(Array.from(f.model.apply(rows,true).queue,r=>r.key),['short','main','two']);assert.equal(rows.length,3,'source videos are never deleted');});
+
+for(const kind of ['곡','영상'])test(kind+': ACT shortcut retains categories and every unclassified pool opens at level four',()=>{const f=fixture(kind,'?type=playlist');assert.equal(f.cards(1).length,4);assert.equal(f.level(3),undefined);for(const i of [2,3]){f.cards(1)[i].click();f.cards(2)[0].click();assert.equal(f.level(3).attrs['aria-label'],'곡 묶음');assert.equal(f.level(4),undefined);const card=f.cards(3).at(-1);assert.equal(text(card.children[1].children[0]),'미분류');card.click();assert.match(text(f.level(4)),i===2?/Story/:/Cover/);card.click();assert.equal(f.level(4),undefined);}});

@@ -1,0 +1,67 @@
+name: NOA Account Navigation and Four-Level Collections
+on:
+  push:
+    branches: [main]
+    paths: ['scripts/noa_navigation_release.py','scripts/qa/noa-navigation.mjs','tests/navigation/**','.github/workflows/noa-navigation.yml']
+permissions: {contents: read}
+jobs:
+  verify-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 25
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - name: Validate permissions, shared ordering, playback details and legacy home entry
+        run: |
+          php -l deploy/noa-my.php
+          php -l tests/navigation/fixture.php
+          php tests/member/access_test.php
+          php tests/uiux/browse_cache_revision.php
+          for file in deploy/noa-account.js deploy/noa-ui.js deploy/noa-browse.js deploy/noa-browse-order.js scripts/qa/noa-navigation.mjs; do node --check "$file"; done
+          node --test scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs tests/pwa/launch_test.cjs tests/playlists/drag_order_test.cjs tests/youtube/lazy_details_test.cjs
+          python -m py_compile scripts/noa_navigation_release.py
+          python -m pip install 'paramiko>=3,<5'
+          php tests/navigation/fixture.php
+          python scripts/qa/noa-qa-font.py
+          npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-navigation" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-navigation/node_modules/.bin/playwright" install --with-deps webkit
+          cp scripts/qa/noa-navigation.mjs "$RUNNER_TEMP/noa-navigation/check.mjs"
+          cp scripts/qa/noa-recommendation-position.mjs "$RUNNER_TEMP/noa-navigation/position.mjs"
+      - name: Verify four account states and four-level browsing in Chrome and WebKit
+        run: node "$RUNNER_TEMP/noa-navigation/check.mjs"
+      - name: Verify recommendation positioning with current catalog without data writes
+        env: {NOA_PREVIEW_PHASE: candidate}
+        run: |
+          python scripts/noa_preview_audit.py
+          node "$RUNNER_TEMP/noa-navigation/position.mjs"
+      - name: Atomically deploy only the six reviewed presentation files
+        id: upload
+        run: python scripts/noa_navigation_release.py
+      - name: Verify public home and deployed assets in isolated account sessions
+        id: live
+        env: {NOA_NAV_PHASE: live, NOA_PREVIEW_PHASE: live}
+        run: |
+          node "$RUNNER_TEMP/noa-navigation/check.mjs"
+          node "$RUNNER_TEMP/noa-navigation/position.mjs"
+      - name: Restore owned source if release acceptance fails
+        if: failure() && (steps.upload.outcome == 'failure' || steps.live.outcome == 'failure')
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then python scripts/noa_navigation_release.py rollback; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-navigation-${{ github.run_id }}
+          path: |
+            navigation-proof/
+            preview-proof/
+          retention-days: 7

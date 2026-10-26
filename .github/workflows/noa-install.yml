@@ -32,6 +32,7 @@ jobs:
         if: always()
         with: {name: 'noa-install-candidate-${{ github.run_id }}', path: install-proof/, retention-days: 7}
   deploy:
+    if: ${{ !contains(github.event.head_commit.message, '[nav-release]') }}
     needs: candidate
     runs-on: ubuntu-latest
     environment: production
