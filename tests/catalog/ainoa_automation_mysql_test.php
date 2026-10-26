@@ -2,7 +2,7 @@
 /** Isolated SQL and explicit provider fixtures. No billable generation. */
 declare(strict_types=1);define('_GNUBOARD_',true);
 if(!str_contains((string)getenv('NOA_MYSQL_DSN'),'dbname=noa_inline_edit_test;'))throw new RuntimeException('isolated_database_required');
-require_once __DIR__.'/../../bridge/sound-core.php';require_once __DIR__.'/../../bridge/storage.php';require_once __DIR__.'/../../bridge/ainoa-core.php';require_once __DIR__.'/../../bridge/ainoa-automation.php';
+require_once __DIR__.'/../../bridge/storage.php';require_once __DIR__.'/../../bridge/ainoa-automation.php';
 $db=noa_bridge_pdo();$other=noa_bridge_pdo();$owner='n80-test-admin';$calls=0;
 function nt_assert(bool $v,string $m):void{if(!$v)throw new RuntimeException($m);}
 function nt_deny(callable $fn,string $code):void{try{$fn();}catch(DomainException $e){nt_assert($e->getMessage()===$code,'wrong_error:'.$e->getMessage());return;}throw new RuntimeException('not_denied:'.$code);}

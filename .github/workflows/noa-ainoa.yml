@@ -143,7 +143,11 @@ jobs:
       - name: Preserve exact legacy order in SQL and verify public readback
         env: *noa_env
         run: python scripts/noa_category_order_migrate.py
-          python scripts/noa_n80_ai_worker.py
+      - name: Verify signed N80 text worker on production
+        env:
+          <<: *noa_env
+          NOA_N80_AI_PROOF: ainoa-proof/n80-ai-worker.json
+        run: python scripts/noa_n80_ai_worker.py
       - name: Recheck operating SQL projection and queue after activation
         env:
           GH_TOKEN: ${{ github.token }}

@@ -23,6 +23,9 @@ def build():
     cases.append({'name':'operating_sql_source_field_preservation','ok':True})
     queue=json.loads((root/'postdeploy-audit/queue.json').read_text())
     cases.append({'name':'operating_queue_snapshot_read','ok':isinstance(queue['queued'],int) and isinstance(queue['active'],int)})
+    worker=json.loads((root/'n80-ai-worker.json').read_text())
+    assert worker['ok'] and worker['signedHttpReadback'] and worker['releaseVersion']==1 and worker['results']
+    cases.append({'name':'operating_signed_n80_text_worker','ok':True})
     tasks=json.loads((root/'postdeploy-audit/n80-tasks.json').read_text())
     assert len(tasks['tasks'])==7 and tasks['executionControl']=='project_journal_only'
     cases.append({'name':'additive_n80_task_readback','ok':True})

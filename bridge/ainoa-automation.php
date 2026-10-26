@@ -2,6 +2,8 @@
 declare(strict_types=1);
 /** N80's text-only executor. SQL is authoritative; this never publishes or executes code. */
 require_once __DIR__.'/ainoa-generation.php';
+require_once __DIR__.'/ainoa-core.php';
+require_once __DIR__.'/sound-core.php';
 function n80_ai_id(string $owner,string $request):string {
  if($owner===''||!preg_match('/^[A-Za-z0-9_-]{16,128}$/D',$request))throw new InvalidArgumentException('invalid_generation_request');
  return 'n80:ai:'.hash('sha256',$owner.'|'.$request);

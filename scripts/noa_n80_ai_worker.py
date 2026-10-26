@@ -1,5 +1,6 @@
 """Run at most three N80 text tasks. No provider credentials or conversation bodies leave the host."""
 import hashlib,hmac,json,os,secrets,stat,time,urllib.request
+from pathlib import Path
 import paramiko
 from noa_full_inventory import connect
 ORIGIN='https://noastudio.ai.kr'
@@ -7,6 +8,7 @@ def main():
     with urllib.request.urlopen(ORIGIN+'/noa-ainoa.php?action=status',timeout=20) as r:
         status=json.load(r)
     if status.get('n80AutomationVersion')!=1:
+        if os.getenv('NOA_N80_AI_PROOF'):raise RuntimeError('n80_text_release_missing')
         print('N80_AI_TEXT_WAITING_FOR_RELEASE');return
     t=connect()
     try:
@@ -27,5 +29,8 @@ def main():
         if not result.get('ok'):raise RuntimeError('n80_text_tick_unavailable')
         output.append({k:result[k]for k in ['processed','state','taskId']if k in result})
         if not result.get('processed'):break
+    if os.getenv('NOA_N80_AI_PROOF'):
+        target=Path(os.environ['NOA_N80_AI_PROOF']);target.parent.mkdir(parents=True,exist_ok=True)
+        target.write_text(json.dumps({'ok':True,'releaseVersion':1,'signedHttpReadback':True,'checkedAt':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'results':output},indent=2))
     print('N80_AI_TEXT_TICK',json.dumps(output))
 if __name__=='__main__':main()
