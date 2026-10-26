@@ -28,7 +28,8 @@ try{
    await page.locator('#membership-confirm').check();await page.locator('#membership-buy').click();assert(await page.locator('#membership-buy').isDisabled());await page.getByText('VIP 30일 이용권을 적용했습니다.',{exact:true}).waitFor();await page.locator('#noa-account-bar').getByText('3,200P · 내역',{exact:true}).waitFor();assert.equal(purchases,1);
    await page.locator('#membership-auto').check();await page.getByText('자동연장을 켰습니다.',{exact:false}).waitFor();assert.equal(autos,1);await page.locator('#noa-account-bar').getByText('구독 중 · 30일 남음',{exact:true}).waitFor();
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.evaluate(()=>scrollTo(0,500));assert(Math.abs((await page.locator('#noa-account-bar').boundingBox()).y)<2);
-   for(const control of ['#membership-buy','#noa-account-bar a:first-child']){await page.locator(control).scrollIntoViewIfNeeded();const b=await page.locator(control).boundingBox();assert(b.height>=44);}
+   await page.waitForFunction(()=>!document.querySelector('#membership-auto').disabled);
+   const heights=await page.evaluate(()=>['#membership-buy','#noa-account-bar a:first-child'].map(s=>document.querySelector(s).getBoundingClientRect().height));assert(heights.every(h=>h>=44));
    await page.screenshot({path:out+'/membership-'+theme+'-'+width+'.png',fullPage:true});
   }else{
    const api=await context.request.get('https://noastudio.ai.kr/noa-bridge/membership.php');assert.equal(api.status(),200);assert.equal((await api.json()).member,false);
