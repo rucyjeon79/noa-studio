@@ -12,7 +12,7 @@ try{
    if(!['GET','HEAD'].includes(route.request().method()))return route.abort('blockedbyclient'); // Native CAPTCHA initialization is also blocked; never submit forms.
    const u=new URL(route.request().url());
    if(phase==='candidate'&&u.origin===base&&u.pathname==='/noa-gnuboard.css')return route.fulfill({path:process.cwd()+'/deploy/noa-gnuboard.css',contentType:'text/css'});
-   if(phase==='candidate'&&u.origin===base&&route.request().isNavigationRequest()&&u.pathname.startsWith('/bbs/')){const response=await route.fetch();const body=(await response.text()).replace('</head>','<link rel="stylesheet" href="/noa-gnuboard.css?candidate"></head>');return route.fulfill({response,body});}
+   if(phase==='candidate'&&u.origin===base&&route.request().isNavigationRequest()&&u.pathname.startsWith('/bbs/')){const response=await route.fetch({maxRedirects:0});if(response.status()>=300&&response.status()<400)return route.fulfill({response});const body=(await response.text()).replace('</head>','<link rel="stylesheet" href="/noa-gnuboard.css?candidate"></head>');return route.fulfill({response,body});}
    return route.continue();
   });
   const page=await context.newPage();
