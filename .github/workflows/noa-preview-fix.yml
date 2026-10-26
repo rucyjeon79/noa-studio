@@ -1,0 +1,30 @@
+name: NOA Preview and Logout Repair
+on:
+  push:
+    branches: [main]
+    paths: ['scripts/noa_preview_audit.*','scripts/noa_preview_release.py','scripts/qa/noa-preview-regression.mjs','.github/workflows/noa-preview-fix.yml']
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - run: |
+          php -l scripts/noa_preview_audit.php
+          python -m pip install 'paramiko>=3,<5'
+      - name: Inspect actual public song and video mappings without writes
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_preview_audit.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-preview-${{ github.run_id }}', path: 'preview-proof/', retention-days: 7}
