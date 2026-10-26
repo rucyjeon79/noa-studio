@@ -11,9 +11,15 @@ def main():
     verify=Path('scripts/noa_membership_verify.php').read_text().replace('<?php','',1).replace('declare(strict_types=1);','',1)
     code=Path('scripts/noa_membership_control.php').read_text().replace('/*NOA_STORAGE_FUNCTIONS*/',storage).replace('/*NOA_VERIFY_FUNCTIONS*/',verify).replace('NOA_CONTROL_EXPIRY',str(int(time.time())+600)).replace('NOA_CONTROL_TOKEN_SHA',hashlib.sha256(token.encode()).hexdigest()).encode()
     transport=connect();installed=False
+    runtime_matches=True
     try:
         with paramiko.SFTPClient.from_transport(transport) as s:
             s.get_channel().settimeout(45)
+            if mode=='audit':
+                for local,target in [('bridge/subscription-core.php','noa-bridge/subscription-core.php'),('bridge/membership-core.php','noa-bridge/membership-core.php')]:
+                    try:
+                        with s.open(ROOT+'/'+target,'rb') as f:runtime_matches=runtime_matches and f.read()==Path(local).read_bytes()
+                    except FileNotFoundError:runtime_matches=False
             try:s.lstat(remote)
             except FileNotFoundError:pass
             else:raise RuntimeError('helper_collision')
@@ -38,6 +44,8 @@ def main():
                     if current==code:s.remove(remote)
                     else:raise RuntimeError('changed_helper_preserved')
     finally:transport.close()
-    if mode=='audit' and '--verify-if-active' in sys.argv and data.get('membershipActive'):
+    if mode=='audit' and '--verify-if-active' in sys.argv and data.get('membershipActive') and runtime_matches:
         subprocess.run([sys.executable,__file__,'verify'],check=True)
+    elif mode=='audit' and not runtime_matches:
+        print('NATIVE_VERIFICATION_REQUIRES_REVIEWED_DEPENDENCY_DEPLOYMENT; mandatory post-deployment verification remains enabled')
 if __name__=='__main__':main()

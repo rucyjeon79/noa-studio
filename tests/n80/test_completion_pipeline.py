@@ -28,11 +28,13 @@ class CompletionPipelineTests(unittest.TestCase):
     def test_scope_uses_actual_release_push_paths(self):
         workflow = (SCRIPTS.parent / pipeline.DEPLOY_PATH).read_text()
         patterns = pipeline.release_patterns(workflow)
-        self.assertIn('scripts/qa/noa-sitemap-live.mjs', patterns)
+        self.assertIn('deploy/noa-app/engine/consume-music.php', patterns)
+        self.assertNotIn('deploy/noa-sitemap.php', patterns)  # Owned by the scoped membership release.
         self.assertNotIn('tests/deployment/test_finish_release.py', patterns)  # PR-only path.
         sha, before = 'a' * 40, 'b' * 40
-        for path, expected in [('deploy/noa-music.php', True), ('bridge/user-playlists.php', True),
-                               ('deploy/noa-app/engine/completion-report.php', True), ('scripts/qa/noa-finish-live.mjs', True),
+        for path, expected in [('deploy/noa-app/engine/music-availability.php', True), ('deploy/noa-app/engine/consume-music.php', True),
+                               ('deploy/noa-music.php', False), ('bridge/user-playlists.php', False),
+                               ('deploy/noa-app/engine/completion-report.php', False), ('scripts/qa/noa-finish-live.mjs', False),
                                ('scripts/qa/unrelated.mjs', False), ('tests/n80/test_completion_pipeline.py', False),
                                ('scripts/n80_completion_pipeline.py', False), ('bridge/other-work.php', False)]:
             with self.subTest(path=path), patch.object(pipeline.subprocess, 'run', return_value=type('Diff', (), {'stdout': (path + '\0').encode()})()) as git:

@@ -30,7 +30,7 @@ def record():
     try:
         with paramiko.SFTPClient.from_transport(t)as s:
             s.get_channel().settimeout(30)
-            files=ev.source_readback(s,'.',commit,['noa-login.php','noa-membership.php','noa-membership.js','noa-account.js','noa-account.css','noa-sitemap.php','noa-bridge/membership-core.php','noa-bridge/membership.php','noa-bridge/social-policy.php'])
+            files=ev.source_readback(s,'.',commit,['noa-login.php','noa-membership.php','noa-membership.js','noa-account.js','noa-account.css','noa-sitemap.php','noa-bridge/subscription-core.php','noa-bridge/membership-core.php','noa-bridge/membership.php','noa-bridge/social-policy.php'])
             for remote,local in [('extend/noa.00-membership.php','deploy/noa-membership.extend.php'),('extend/zz.noa-social.php','deploy/noa-social.extend.php')]:
                 with s.open(ev.HOST_ROOT+'/'+remote,'rb')as f:assert f.read()==Path(local).read_bytes()
             http=ev.http_evidence([{'url':ev.ORIGIN+p,'expectedStatus':status}for p,status in [('/',200),('/noa-login.php',200),('/noa-work-status.php',403)]])

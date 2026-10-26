@@ -1,6 +1,7 @@
 """Use the existing guarded transport; activate the early policy hook last."""
 import noa_ainoa_deploy as release
 release.FILES={
+ 'noa-bridge/subscription-core.php':'bridge/subscription-core.php',
  'noa-bridge/membership-core.php':'bridge/membership-core.php',
  'noa-bridge/social-policy.php':'bridge/social-policy.php',
  'noa-bridge/membership.php':'bridge/membership.php',
@@ -10,7 +11,7 @@ release.FILES={
  'extend/zz.noa-social.php':'deploy/noa-social.extend.php',
  'extend/noa.00-membership.php':'deploy/noa-membership.extend.php',
 }
-release.NEW=set(release.FILES)-{'noa-sitemap.php'}
+release.NEW=set(release.FILES)-{'noa-sitemap.php','noa-bridge/subscription-core.php'}
 if __name__=='__main__':
     release.main()
     if 'rollback' not in release.sys.argv:

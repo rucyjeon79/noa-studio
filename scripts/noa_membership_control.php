@@ -31,7 +31,12 @@ try{
   require_once __DIR__.'/membership-core.php';
   foreach($hooks as $h)if(!$h['expectedHookPresent'])throw new RuntimeException('native_hook_contract_mismatch');
   if(empty($body['approvedPolicy'])||$body['approvedPolicy']!=='NOA-20261026-MEMBERSHIP-REWARDS')throw new RuntimeException('policy_identity_required');
-  $installed=ns_doc(NR_POLICY);if($installed&&!empty($installed['data']['enabled'])){nr_reply_control($result+['alreadyActive'=>true,'revision'=>$installed['revision']]);}
+  $installed=ns_doc(NR_POLICY);if($installed&&!empty($installed['data']['enabled'])){
+   $p=ns_policy();$desired=['enabled'=>true,'priceWon'=>3000,'points'=>3000,'durationDays'=>30];$changed=$p['values']['plans']['vip']!==$desired||!$p['values']['enabled']||!$p['values']['pointsEnabled'];
+   if($changed){$next=$p['values'];$next['enabled']=true;$next['pointsEnabled']=true;$next['plans']['vip']=$desired;ns_atomic('membership-policy',false,fn()=>ns_put(NS_POLICY,'prefs',ns_policy_validate($next),$p['revision'],'membership-policy'));}
+   $verified=ns_policy();if(($verified['values']['plans']['vip']['durationDays']??0)!==30)throw new RuntimeException('approved_30day_policy_not_preserved');
+   nr_reply_control($result+['alreadyActive'=>true,'revision'=>$installed['revision'],'subscriptionPolicyRevision'=>$verified['revision'],'approvedDurationDays'=>30,'policyRepaired'=>$changed]);
+  }
   $lock=ns_one("SELECT GET_LOCK('noa-membership-install',0) AS acquired");if((int)$lock['acquired']!==1)throw new RuntimeException('membership_install_busy');
   try{
    $backups=nrm_backup_convert($tables);
@@ -39,6 +44,7 @@ try{
    $policy=ns_policy();$next=$policy['values'];$next['enabled']=true;$next['pointsEnabled']=true;$next['plans']['vip']=['enabled'=>true,'priceWon'=>3000,'points'=>3000,'durationDays'=>30];
    $rules=['version'=>1,'enabled'=>true,'regularThreshold'=>1000,'loginPending'=>100,'writePoints'=>50,'commentPoints'=>30,'loginFrequency'=>'KST_calendar_day','youtubeRewardEnabled'=>false,'youtubeRewardStatus'=>'provider_policy_review','wonPerPoint'=>1,'approvedInstruction'=>'NOA-20261026-MEMBERSHIP-REWARDS','activatedAt'=>time(),'backupProof'=>$backups];
    ns_atomic('membership-policy',false,function()use($policy,$next,$rules,$installed){ns_put(NS_POLICY,'prefs',ns_policy_validate($next),$policy['revision'],'membership-policy');ns_put(NR_POLICY,'prefs',$rules,$installed['revision']??0,'membership-policy');});
+   if((ns_policy()['values']['plans']['vip']['durationDays']??0)!==30)throw new RuntimeException('approved_30day_policy_not_preserved');
    $count=0;$rows=ns_q('SELECT mb_id FROM '.ns_table('member_table').' WHERE mb_level BETWEEN 2 AND 4');$owners=[];while($row=sql_fetch_array($rows))$owners[]=$row['mb_id'];foreach($owners as $owner){nr_refresh($owner,time());$count++;}
    $result+=['activated'=>true,'backups'=>$backups,'sameDatabaseBackup'=>true,'isolatedRestoreVerified'=>true,'normalMembersReconciled'=>$count,'policy'=>array_diff_key($rules,['backupProof'=>true]),'subscriptionPolicyRevision'=>ns_policy()['revision']];$result['databaseWrites']='approved_policy_and_transactional_engine_migration';
   }finally{ns_q("SELECT RELEASE_LOCK('noa-membership-install')");}
