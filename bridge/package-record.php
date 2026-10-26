@@ -45,6 +45,7 @@ function nup_patch(array $d,string $kind,array $patch):array{
   if($key==='ep'){if(!preg_match('/^[1-9][0-9]{0,3}$/D',ltrim($value,'0')))throw new InvalidArgumentException('invalid_ep');$d['ep']=str_pad((string)(int)$value,2,'0',STR_PAD_LEFT);$d['body']['originalInfo']['ep']=$d['ep'];continue;}
   $map=['title'=>'confirmedTitle','description'=>'youtubeDescription','lyrics'=>'lyricsBlock','cast'=>'thumbCast','vocal'=>'vocalInfo','sunoPrompt'=>'sunoPrompt','geminiPrompt'=>'geminiPrompt','youtubeTitle'=>'youtubeTitle','communityPost'=>'communityPost','sunoUrl'=>'sunoUrl','cardImageLocation'=>'cardImageLocation','audioFileLocation'=>'audioFileLocation','youtubeUrl'=>'youtubeUrl','mvUrl'=>'mvUrl'];
   $d['body'][$map[$key]]=$value;
+  if($key==='vocal'&&isset(['여자솔로'=>'female','남자솔로'=>'male','남녀듀엣'=>'duet'][$value]))$d['body']['thumbCast']=['여자솔로'=>'female','남자솔로'=>'male','남녀듀엣'=>'duet'][$value];
   if($type==='original'&&in_array($key,['title','lyrics','vocal'],true))$d['body']['originalInfo'][$key]=$value;
   if($key==='title'){$d['title']=$value;if($playlist)$d['body']['displayTitle']=$value;}
   // Compatibility aliases are in this same record, not independently editable stores.

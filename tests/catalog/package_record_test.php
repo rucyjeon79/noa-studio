@@ -13,3 +13,5 @@ denied(fn()=>nup_patch($o,'single',['youtubeUrl'=>'javascript:alert(1)']),'URL s
 check(nup_policy()['priority']===0,'principle zero precedence');echo "UNIFIED_PACKAGE_TYPES_FIELDS_ORIGINAL_LOCKS_ACT_RANGES_URLS_PRESERVATION_OK\n";
 
 $e=nup_patch($ep,'single',['sunoPrompt'=>'genre-specific Suno production prompt']);check(nup_fields($e)['sunoPrompt']==='genre-specific Suno production prompt','Suno prompt round trip in same record');
+
+check(nup_patch($ep,'single',['vocal'=>'남녀듀엣'])['body']['thumbCast']==='duet','vocal selection and character projection share one record');

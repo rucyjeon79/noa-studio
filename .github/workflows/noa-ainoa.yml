@@ -2,7 +2,7 @@ name: NOA AInoa and Song Editor Production
 on:
   push:
     branches: [main]
-    paths: ['bridge/ainoa-*.php','deploy/noa-ainoa.*','scripts/noa_ainoa_deploy.py','scripts/qa/noa-ainoa*','tests/catalog/ainoa_test.php','.github/workflows/noa-ainoa.yml']
+    paths: ['bridge/package-record.php','bridge/subscription-access.php','deploy/noa-access.extend.php','deploy/noa-design.extend.php','deploy/noa-browse.js','deploy/noa-browse-edit.js','tests/catalog/package_record_test.php','bridge/ainoa-*.php','deploy/noa-ainoa.*','scripts/noa_ainoa_deploy.py','scripts/qa/noa-ainoa*','tests/catalog/ainoa_test.php','.github/workflows/noa-ainoa.yml']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-ainoa-release, cancel-in-progress: false}
