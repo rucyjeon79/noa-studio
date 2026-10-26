@@ -2,7 +2,7 @@ name: NOA AInoa and Song Editor Production
 on:
   push:
     branches: [main]
-    paths: ['deploy/noa-launch.js','deploy/noa-manifest.json','deploy/noa-sw.js','public/ainoa/**','tests/pwa/**','bridge/package-record.php','bridge/subscription-access.php','deploy/noa-access.extend.php','deploy/noa-design.extend.php','deploy/noa-browse.js','deploy/noa-browse-edit.js','tests/catalog/package_record_test.php','bridge/ainoa-*.php','deploy/noa-ainoa.*','scripts/noa_ainoa_deploy.py','scripts/qa/noa-ainoa*','scripts/qa/noa-qa-font.py','tests/catalog/ainoa_test.php','.github/workflows/noa-ainoa.yml']
+    paths: ['bridge/youtube-catalog.php','deploy/noa-browse-order.js','bridge/lab-api.php','deploy/noa-ai-lab.php','deploy/noa-ai-lab.js','tests/catalog/ainoa_points_mysql_test.php','tests/catalog/collections_seed.php','scripts/qa/noa-collections.mjs','scripts/qa/noa-chat.mjs','deploy/noa-launch.js','deploy/noa-manifest.json','deploy/noa-sw.js','public/ainoa/**','tests/pwa/**','bridge/package-record.php','bridge/subscription-access.php','deploy/noa-access.extend.php','deploy/noa-design.extend.php','deploy/noa-browse.js','deploy/noa-browse-edit.js','tests/catalog/package_record_test.php','bridge/ainoa-*.php','deploy/noa-ainoa.*','scripts/noa_ainoa_deploy.py','scripts/qa/noa-ainoa*','scripts/qa/noa-qa-font.py','tests/catalog/ainoa_test.php','.github/workflows/noa-ainoa.yml']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: 'noa-ainoa-${{ github.sha }}', cancel-in-progress: false}
@@ -24,12 +24,15 @@ jobs:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
       - uses: shivammathur/setup-php@v2
-        with: {php-version: '8.2', extensions: 'pdo_mysql,mbstring,curl'}
+        with: {php-version: '8.2', extensions: 'pdo_mysql,pdo_sqlite,mysqli,mbstring,curl'}
       - name: Validate complete record, privacy projection and native SQL round trip
         run: |
-          for file in bridge/ainoa-core.php bridge/subscription-access.php deploy/noa-access.extend.php bridge/package-record.php deploy/noa-ainoa.php deploy/noa-design.extend.php scripts/noa_member_qa_control.php; do php -l "$file"; done
+          for file in bridge/ainoa-core.php bridge/ainoa-points.php bridge/subscription-core.php bridge/youtube-catalog.php bridge/lab-api.php deploy/noa-ai-lab.php bridge/subscription-access.php deploy/noa-access.extend.php bridge/package-record.php deploy/noa-ainoa.php deploy/noa-design.extend.php scripts/noa_member_qa_control.php; do php -l "$file"; done
           php tests/catalog/package_record_test.php
           php tests/catalog/ainoa_test.php
+          php tests/youtube/coming_catalog_test.php
+          node --check deploy/noa-ai-lab.js
+          node --check deploy/noa-browse-order.js
           node --check deploy/noa-launch.js
           node --check deploy/noa-sw.js
           node --test tests/pwa/launch_test.cjs
@@ -41,6 +44,8 @@ jobs:
           python scripts/qa/inline-edit-fixture.py
           cp deploy/noa-ainoa.php "$RUNNER_TEMP/noa-inline-edit-fixture/noa-ainoa.php"
           php scripts/qa/inline-edit-seed.php
+          php tests/catalog/collections_seed.php
+          php tests/catalog/ainoa_points_mysql_test.php
           php -S 127.0.0.1:8101 -t "$RUNNER_TEMP/noa-inline-edit-fixture" > "$RUNNER_TEMP/ainoa-native.log" 2>&1 &
           node scripts/qa/noa-ainoa-native.mjs
       - name: Prepare mobile browser checks
@@ -48,8 +53,13 @@ jobs:
           python scripts/qa/noa-qa-font.py
           npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-ainoa" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-ainoa.mjs "$RUNNER_TEMP/noa-ainoa/check.mjs"
+          cp scripts/qa/noa-collections.mjs "$RUNNER_TEMP/noa-ainoa/collections.mjs"
+          cp scripts/qa/noa-chat.mjs "$RUNNER_TEMP/noa-ainoa/chat.mjs"
       - name: Verify editor, floating controls and guest search in both themes
-        run: node "$RUNNER_TEMP/noa-ainoa/check.mjs"
+        run: |
+          node "$RUNNER_TEMP/noa-ainoa/check.mjs"
+          node "$RUNNER_TEMP/noa-ainoa/collections.mjs"
+          node "$RUNNER_TEMP/noa-ainoa/chat.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'noa-ainoa-candidate-${{ github.run_id }}', path: ainoa-proof/, retention-days: 2}
@@ -68,6 +78,8 @@ jobs:
           python scripts/qa/noa-qa-font.py
           npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-ainoa" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-ainoa.mjs "$RUNNER_TEMP/noa-ainoa/check.mjs"
+          cp scripts/qa/noa-collections.mjs "$RUNNER_TEMP/noa-ainoa/collections.mjs"
+          cp scripts/qa/noa-chat.mjs "$RUNNER_TEMP/noa-ainoa/chat.mjs"
       - name: Activate only reviewed files with SHA preimage guards
         id: upload
         env: &noa_env
@@ -80,7 +92,10 @@ jobs:
       - name: Verify real guest search, level gate and floating controls on production
         id: live
         env: {NOA_AINOA_PHASE: live}
-        run: node "$RUNNER_TEMP/noa-ainoa/check.mjs"
+        run: |
+          node "$RUNNER_TEMP/noa-ainoa/check.mjs"
+          node "$RUNNER_TEMP/noa-ainoa/collections.mjs"
+          node "$RUNNER_TEMP/noa-ainoa/chat.mjs"
       - name: Restore only release-owned source bytes on failed acceptance
         if: failure() && (steps.upload.outcome == 'failure' || steps.live.outcome == 'failure')
         env: *noa_env

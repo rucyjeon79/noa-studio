@@ -25,3 +25,11 @@ function na_search_hit(array $song,string $query):?array{
  if(!$title&&$line==='')return null;
  return ['score'=>mb_strtolower(trim($song['title']))===mb_strtolower($query)?0:($title?1:2),'snippet'=>$line];
 }
+
+/** Registered public description only; playback never calls the AI provider or debits points. */
+function na_guide(array $song):string{
+ $description=trim(preg_replace('/\s+/u',' ',strip_tags((string)($song['description']??''))));
+ $description=trim(preg_replace('~https?://\S+|#[^\s]+~u','',$description));
+ if($description!=='')return mb_substr($description,0,140).(mb_strlen($description)>140?'…':'');
+ return '지금 듣는 곡은 “'.mb_substr((string)$song['title'],0,80).'”이에요. 편안히 감상해 주세요.';
+}

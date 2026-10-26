@@ -17,3 +17,5 @@ $e=nup_patch($ep,'single',['sunoPrompt'=>'genre-specific Suno production prompt'
 check(nup_patch($ep,'single',['vocal'=>'남녀듀엣'])['body']['thumbCast']==='duet','vocal selection and character projection share one record');
 
 $legacy=$ep;$legacy['body']['sunoStyle']='existing production style';$updated=nup_patch($legacy,'single',['sunoPrompt'=>'updated production style']);check(nup_fields($updated)['sunoPrompt']===$updated['body']['sunoStyle'],'legacy producer reads the same edited Suno prompt');
+
+$cover=nup_patch(["genreId"=>"cover-reborn","title"=>"커버곡","body"=>[]],"story",["originalArtist"=>"원곡 가수"]);check(nup_fields($cover)["originalArtist"]==="원곡 가수","cover artist persists in same record");denied(fn()=>nup_patch($ep,"single",["originalArtist"=>"wrong genre"]),"artist field belongs to covers");

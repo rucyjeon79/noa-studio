@@ -23,3 +23,7 @@
 #noa-ainoa :focus-visible{outline:2px solid var(--noa-accent,currentColor);outline-offset:3px}
 #noa-ainoa .ainoa-search button{min-width:76px;white-space:nowrap;flex-shrink:0}
 @media(prefers-reduced-motion:reduce){#noa-ainoa .ainoa-symbol{transition:none}}
+
+#noa-ainoa .ainoa-tip{position:absolute;right:0;bottom:calc(var(--ainoa-size) + 12px);width:min(290px,calc(100vw - 32px));padding:14px 16px;border:1px solid var(--noa-line);border-radius:18px;background:var(--noa-raised);color:var(--noa-text);box-shadow:0 8px 30px #0003;font-size:14px;line-height:1.55;overflow-wrap:anywhere}
+#noa-ainoa .ainoa-tip::after{content:"";position:absolute;right:24px;top:100%;border:8px solid transparent;border-top-color:var(--noa-raised)}
+#noa-ainoa [hidden]{display:none!important}

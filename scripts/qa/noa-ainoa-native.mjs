@@ -11,3 +11,14 @@ r=await req('/noa-inline-edit.php?type=song&source=music&key=single:joseon-balla
 const patch={sunoPrompt:'Joseon ballad, female solo, acoustic Korean instruments',vocal:'여자솔로'},body={selector:{type:'song',source:'music',key:'single:joseon-ballad:01'},expectedRevision:before.revision,requestId:crypto.randomUUID(),patch};
 r=await req('/noa-inline-edit.php',body,{'X-NOA-Bridge-Request':'1'});assert.equal(r.status,200);r=await req('/noa-inline-edit.php?type=song&source=music&key=single:joseon-ballad:01');assert.equal(r.data.fields.sunoPrompt,patch.sunoPrompt);assert.equal(r.data.fields.vocal,'여자솔로');assert.deepEqual(r.data.original,before.original);assert.equal(r.data.revision,before.revision+1);
 console.log('AINOA_NATIVE_SEARCH_CSRF_ROLE_GATES_EP_SUNO_VOCAL_ROUNDTRIP_ORIGINAL_LOCK_OK');
+const cover={type:'song',source:'music',key:'story:cover:a'};
+r=await req('/noa-inline-edit.php?'+new URLSearchParams(cover));assert.equal(r.data.packageType,'cover');
+r=await req('/noa-inline-edit.php',{selector:cover,expectedRevision:r.data.revision,requestId:crypto.randomUUID(),patch:{originalArtist:'원곡 가수 테스트'}},{'X-NOA-Bridge-Request':'1'});assert.equal(r.status,200);
+r=await req('/noa-inline-edit.php?'+new URLSearchParams(cover));assert.equal(r.data.fields.originalArtist,'원곡 가수 테스트');
+const playlist={type:'playlist',id:'aaaaaaaaaaaaaaaaaaaaaaaa'};
+r=await req('/noa-inline-edit.php?'+new URLSearchParams(playlist));const members=[...r.data.fields.members].reverse(),reorder={selector:playlist,expectedRevision:r.data.revision,requestId:crypto.randomUUID(),patch:{members}};
+r=await req('/noa-inline-edit.php',reorder,{'X-NOA-Bridge-Request':'1'});assert.equal(r.status,200);
+r=await req('/noa-inline-edit.php',reorder,{'X-NOA-Bridge-Request':'1'});assert.equal(r.data.replayed,true);
+r=await req('/noa-inline-edit.php?'+new URLSearchParams(playlist));assert.deepEqual(r.data.fields.members,members);
+assert.equal((await req('/noa-inline-edit.php',{...reorder,requestId:crypto.randomUUID()},{'X-NOA-Bridge-Request':'1'})).status,409);
+console.log('COVER_ORIGINAL_ARTIST_AND_PLAYLIST_ORDER_SQL_ROUNDTRIP_RETRY_CONFLICT_OK');
