@@ -32,6 +32,7 @@ function noa_sitemap_registry():array{
             ['password','아이디·비밀번호 찾기','계정 접근 복구','/bbs/password_lost.php','settings','guest'],
             ['playlists','내 재생목록','나만의 목록 만들기와 편집','/noa-music.php#my-playlists','playlists','member'],
             ['subscription','월 구독 · 포인트','이용 기간과 구독 구매 내역','/noa-subscription.php','user','member'],
+            ['membership','포인트 · VIP 30일 이용권','잔액·적립·3,000P 이용권·자동연장','/noa-membership.php','user','member'],
             ['creator','내 채널 · 음원','내 채널과 업로드한 음악 관리','/noa-creator.php','music','member'],
             ['profile','회원정보','내 계정 정보 확인과 수정','/bbs/member_confirm.php?url=register_form.php','user','member'],
         ]],
