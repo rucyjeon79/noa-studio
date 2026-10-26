@@ -14,3 +14,14 @@ function na_text(string $system,array $context,int $tokens=2200):string{
  $r=lab_https('https://api.openai.com/v1/chat/completions',[CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>$body,CURLOPT_HTTPHEADER=>['Content-Type: application/json','Authorization: Bearer '.$secret]]);
  if(($r['choices'][0]['finish_reason']??'')!=='stop')throw new RuntimeException('incomplete_ai_result');$text=$r['choices'][0]['message']['content']??'';if(!is_string($text)||trim($text)===''||mb_strlen($text)>20000)throw new RuntimeException('empty_ai_result');return trim($text);
 }
+/** Search only listener text; neighbouring production cues never become result snippets. */
+function na_search_hit(array $song,string $query):?array{
+ $title=mb_stripos($song['title'],$query)!==false;$line='';
+ foreach(preg_split('/\R/u',$song['lyrics'])as $candidate){$candidate=trim($candidate);if($candidate===''||mb_stripos($candidate,$query)===false)continue;
+  if(preg_match('/^\[[^\]\r\n]*\]$/u',$candidate))continue;
+  if(preg_match('/^\([^\r\n]*\)$/u',$candidate)&&preg_match('/\b(?:vocal|piano|synth|reverb|fade|gayageum|ajaeng|sogeum|kkwaenggwari|percussion|arpeggio|glissando|bass|groove|pad|guitar|drums?|instrumental|harmony)\b/i',$candidate))continue;
+  $at=mb_stripos($candidate,$query);$line=mb_substr($candidate,max(0,$at-35),160);break;
+ }
+ if(!$title&&$line==='')return null;
+ return ['score'=>mb_strtolower(trim($song['title']))===mb_strtolower($query)?0:($title?1:2),'snippet'=>$line];
+}
