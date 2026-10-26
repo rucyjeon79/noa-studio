@@ -73,17 +73,12 @@ namespace {
   // Explicit candidate check: caller cannot configure an alternative host/URL.
   http_check(\function_exists('curl_init'),'native_curl_extension_required');
   http_check(!filter_var(\ini_get('allow_url_fopen'),FILTER_VALIDATE_BOOLEAN),'invoke_php_with_url_fopen_zero');
-  eval($function);$catalog=n80_music_public_get('catalog','');
-  http_check($catalog['status']===200&&($GLOBALS['n80_music_http_client']??null)==='curl','native_fixed_public_catalog');
-  http_check(preg_match('/const records=(.*?);\s*const collections=/s',$catalog['body'],$m)===1,'live_catalog_contract');
-  $rows=json_decode($m[1],true);$key=null;foreach($rows as $row)if(isset($row['key'])
-    &&($row['audio']??null)==='https://noastudio.ai.kr/noa-app/jukebox/stream.php?key='.rawurlencode($row['key']).'&type=audio'){$key=$row['key'];break;}
-  http_check(is_string($key),'public_audio_record_available');
-  $detail=n80_music_public_get('detail',$key);$decoded=json_decode($detail['body'],true);
-  http_check($detail['status']===200&&($decoded['key']??null)===$key,'native_fixed_public_detail');
-  $audio=n80_music_public_get('audio',$key);
-  http_check(in_array($audio['status'],[200,206],true)&&strlen($audio['body'])>0&&strlen($audio['body'])<=4096,'native_fixed_public_audio');
+  eval($function);
+  // MUSIC is now membership protected. Native cURL must reach the fixed origin,
+  // reject the login redirect, and never follow it or weaken the access policy.
+  expect_error('public_http_non_success',fn()=>n80_music_public_get('catalog',''));
+  http_check(($GLOBALS['n80_music_http_client']??null)==='curl','native_fixed_origin_curl');
   $live=true;
  }
- echo json_encode(['ok'=>true,'assertions'=>$checks,'liveFixedOriginVerified'=>$live,'databaseWrites'=>0,'businessAck'=>false]).PHP_EOL;
+ echo json_encode(['ok'=>true,'assertions'=>$checks,'liveFixedOriginVerified'=>$live,'liveGuestMusicProtected'=>$live,'databaseWrites'=>0,'businessAck'=>false]).PHP_EOL;
 }

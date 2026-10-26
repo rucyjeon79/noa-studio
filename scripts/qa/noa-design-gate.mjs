@@ -31,5 +31,9 @@ try{
   assert(pixels.dimensionsMatch&&pixels.largeDeltas===0&&pixels.changedPixels<=pixels.pixelCount*.001,`approved player screenshot changed: ${width} ${theme}: ${JSON.stringify(pixels)}`);
   report.push({width,theme,screenshotComparison:pixels});
  }
+ for(const width of [360,390,430,1280])for(const theme of ['noa-studio','noa-ivory']){
+  const c=await browser.newContext({viewport:{width,height:844},reducedMotion:'reduce',serviceWorkers:'block'}),p=await c.newPage();await p.goto('http://127.0.0.1:8093/noa-work-status.php');await p.waitForFunction(()=>window.NoaUI?.getState()?.theme);await p.evaluate(theme=>window.NoaUI.apply({...window.NoaUI.getState(),theme}),theme);
+  assert.equal(await p.locator('article[data-task-id]').count(),7);assert(await p.getByText('ChatGPT Work 내부 실행 상태를 제어하거나 표시하는 화면은 아닙니다.',{exact:false}).isVisible());await p.getByText('2026.10.26 추가 지시 원문',{exact:true}).click();assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.screenshot({path:`${out}/n80-${theme}-${width}.png`});report.push({page:'N80 task journal',width,theme,tasks:7,originalDirectiveVisible:true,noOverflow:true});await c.close();
+ }
  writeFileSync(out+'/report.json',JSON.stringify({cases:report,approvedPlayerScreenshotComparison:true,content:'isolated fixture; real PHP template and deployed/candidate assets'},null,2));console.log('NOA_DESIGN_GATE_OK',report.length);
 }finally{await browser?.close();server.kill();}

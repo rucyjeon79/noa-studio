@@ -1,0 +1,226 @@
+{
+  "checkedAt": "2026-10-26T05:15:21+00:00",
+  "operatingDocuments": 660,
+  "documentFingerprint": "e2ebacecb73f9440a5b90a5a45afae84dc05dfd21fce88d48381e9898db7396d",
+  "catalogBatch": "dde17abd2e44e22d5253d1a0b44573f6b14053f936d48310ae1ec014033358c2",
+  "catalogRecords": 662,
+  "archivedSources": 731,
+  "archiveComparison": {
+    "matchedDocuments": 653,
+    "sourceFieldMissing": [],
+    "sourceFieldDifferent": [
+      {
+        "key": "playlist:jpop-original:act-1",
+        "field": "thumbCast",
+        "revision": 3,
+        "sourcePath": "곡/jpop-original/act-1.json",
+        "sourceSha256": "4ff42a41ef212e3bcfbeca80c290b0d19110b452b85c7d675421b9fff35da72d",
+        "sourceValueSha256": "cc897022078deba1549fd03d3e09580e8b66f49a8304ed896f8190dfc1258b81",
+        "currentValueSha256": "207cc98255efb80cc87b87621a31eb1b588e63438e7bddfc7f25818a5089aa88"
+      }
+    ],
+    "unmatchedDocuments": [
+      "catalog:018b05bd1c562c1b12b188d06dbd12dbb4a8ff6b13680ec88c4b9204ccc37e17",
+      "catalog:987bab092d893e41b2f2c72b24a98319d1c1831302c486b5ade8e1c6a61f0d86",
+      "catalog:a785dbc3e646c64b54cd1536048100e5ee66f55ec9be69d39e6b5251c91f4bba",
+      "catalog:adce81e5bf08c3d6052ced33aa3083c533350e63908f054802166b836178024e",
+      "playlist:custom:5af1df61537baf7ab5837b59",
+      "playlist:custom:6da70d5e7001bdc1e1392291",
+      "playlist:custom:c64bf0624ab80b50f2bf0a93"
+    ]
+  },
+  "originalAudioInputAudit": {
+    "source": "Existing incoming upload folders only; not a complete off-host backup inventory",
+    "actualUploadRowsAbsent": 23,
+    "actualSongKeysAbsent": 21,
+    "historicalRestoration": "not_verified",
+    "newDeletionProtection": "https://github.com/rucyjeon79/noa-studio/actions/runs/40271382876"
+  },
+  "fieldStats": {
+    "title": {
+      "present": 660,
+      "missing": 0,
+      "blankPrimary": 0,
+      "alternatePresent": 660,
+      "catalogDifferent": 0,
+      "notApplicable": 0
+    },
+    "ep": {
+      "present": 520,
+      "missing": 140,
+      "blankPrimary": 4,
+      "alternatePresent": 0,
+      "catalogDifferent": 0,
+      "notApplicable": 0
+    },
+    "act": {
+      "present": 52,
+      "missing": 608,
+      "blankPrimary": 4,
+      "alternatePresent": 0,
+      "catalogDifferent": 0,
+      "notApplicable": 0
+    },
+    "genre": {
+      "present": 660,
+      "missing": 0,
+      "blankPrimary": 0,
+      "alternatePresent": 0,
+      "catalogDifferent": 0,
+      "notApplicable": 0
+    },
+    "vocal": {
+      "present": 528,
+      "missing": 77,
+      "blankPrimary": 596,
+      "alternatePresent": 519,
+      "catalogDifferent": 0,
+      "notApplicable": 55
+    },
+    "originalArtist": {
+      "present": 4,
+      "missing": 36,
+      "blankPrimary": 0,
+      "alternatePresent": 0,
+      "catalogDifferent": 0,
+      "notApplicable": 620
+    },
+    "lyrics": {
+      "present": 601,
+      "missing": 4,
+      "blankPrimary": 0,
+      "alternatePresent": 0,
+      "catalogDifferent": 1,
+      "notApplicable": 55
+    },
+    "lyricsTranslation": {
+      "present": 0,
+      "missing": 605,
+      "blankPrimary": 0,
+      "alternatePresent": 0,
+      "catalogDifferent": 0,
+      "notApplicable": 55
+    },
+    "songDescription": {
+      "present": 486,
+      "missing": 174,
+      "blankPrimary": 0,
+      "alternatePresent": 483,
+      "catalogDifferent": 0,
+      "notApplicable": 0
+    },
+    "sunoStyle": {
+      "present": 479,
+      "missing": 126,
+      "blankPrimary": 40,
+      "alternatePresent": 0,
+      "catalogDifferent": 0,
+      "notApplicable": 55
+    },
+    "productionPrompt": {
+      "present": 0,
+      "missing": 605,
+      "blankPrimary": 0,
+      "alternatePresent": 0,
+      "catalogDifferent": 0,
+      "notApplicable": 55
+    },
+    "imagePrompt": {
+      "present": 565,
+      "missing": 95,
+      "blankPrimary": 95,
+      "alternatePresent": 0,
+      "catalogDifferent": 0,
+      "notApplicable": 0
+    },
+    "characterPrompt": {
+      "present": 0,
+      "missing": 660,
+      "blankPrimary": 0,
+      "alternatePresent": 0,
+      "catalogDifferent": 0,
+      "notApplicable": 0
+    },
+    "sunoUrl": {
+      "present": 491,
+      "missing": 169,
+      "blankPrimary": 1,
+      "alternatePresent": 491,
+      "catalogDifferent": 0,
+      "notApplicable": 0
+    },
+    "youtubeUrl": {
+      "present": 422,
+      "missing": 238,
+      "blankPrimary": 238,
+      "alternatePresent": 0,
+      "catalogDifferent": 0,
+      "notApplicable": 0
+    },
+    "youtubeTitle": {
+      "present": 642,
+      "missing": 18,
+      "blankPrimary": 18,
+      "alternatePresent": 0,
+      "catalogDifferent": 0,
+      "notApplicable": 0
+    },
+    "youtubeDescription": {
+      "present": 645,
+      "missing": 15,
+      "blankPrimary": 15,
+      "alternatePresent": 0,
+      "catalogDifferent": 381,
+      "notApplicable": 0
+    },
+    "communityPost": {
+      "present": 171,
+      "missing": 489,
+      "blankPrimary": 489,
+      "alternatePresent": 0,
+      "catalogDifferent": 0,
+      "notApplicable": 0
+    },
+    "cardImage": {
+      "present": 472,
+      "missing": 188,
+      "blankPrimary": 188,
+      "alternatePresent": 0,
+      "catalogDifferent": 367,
+      "notApplicable": 0
+    },
+    "mp3": {
+      "present": 20,
+      "missing": 640,
+      "blankPrimary": 640,
+      "alternatePresent": 0,
+      "catalogDifferent": 0,
+      "notApplicable": 0
+    },
+    "playlistMembership": {
+      "present": 579,
+      "missing": 81,
+      "blankPrimary": 0,
+      "alternatePresent": 0,
+      "catalogDifferent": 0,
+      "notApplicable": 0
+    },
+    "sortOrder": {
+      "present": 0,
+      "missing": 660,
+      "blankPrimary": 0,
+      "alternatePresent": 0,
+      "catalogDifferent": 0,
+      "notApplicable": 0
+    }
+  },
+  "databaseWrites": 0,
+  "bulkRestoredFields": 0,
+  "interpretation": [
+    "653 legacy source documents matched; no original nonempty body fields missing. One thumbCast difference in J-POP ACT 1 is retained for review.",
+    "Four previously recovered catalogue-only songs and three custom playlists have no legacy sourcePath; this does not imply data loss.",
+    "731 source hashes match the verified Drive SQL backup.",
+    "Editor visibility/alias changes do not replace preserved source content or invent missing translations/prompts."
+  ],
+  "evidence": "https://github.com/rucyjeon79/noa-studio/actions/runs/40273140251"
+}

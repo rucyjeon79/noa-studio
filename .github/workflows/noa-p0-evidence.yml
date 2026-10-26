@@ -1,0 +1,29 @@
+name: NOA P0 Operating Evidence and Task Links
+on:
+  workflow_run:
+    workflows: ['NOA AInoa and Song Editor Production']
+    types: [completed]
+    branches: [main]
+permissions: {contents: read, actions: read}
+jobs:
+  record:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: '${{ github.event.workflow_run.head_sha }}', fetch-depth: 0}
+      - run: python -m pip install 'paramiko>=3,<5'
+      - name: Verify successful release, artifact digest and operating source before linking
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_p0_release_evidence.py record
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-p0-evidence-${{ github.run_id }}', path: p0-evidence-proof/receipt.json, retention-days: 14}
