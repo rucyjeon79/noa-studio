@@ -13,6 +13,7 @@ if($nr_enabled){
   catch(Throwable $e){if(($is_admin??'')!=='super'&&in_array((int)($member['mb_level']??0),[2,3,4],true))$member['mb_level']=2;error_log('[noa-membership-refresh] '.get_class($e));}
  }
  if(function_exists('add_event')){
+  add_event('write_update_before',static function(){global $board;$board['bo_write_point']=0;$board['bo_comment_point']=0;},1,0);
   add_event('write_update_after',static function($board,$id,$mode){try{nr_activity('write',(array)$board,(int)$id,(string)$mode,time());}catch(Throwable $e){error_log('[noa-write-reward] '.get_class($e));}},10,3);
   add_event('comment_update_after',static function($board,$id,$mode,$query,$url,$comment){try{nr_activity('comment',(array)$board,(int)$comment,(string)$mode,time());}catch(Throwable $e){error_log('[noa-comment-reward] '.get_class($e));}},10,6);
  }

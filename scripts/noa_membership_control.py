@@ -5,10 +5,11 @@ import paramiko
 from noa_full_inventory import connect,ROOT
 def main():
     mode=sys.argv[1] if len(sys.argv)>1 else 'audit'
-    if mode not in ['audit','activate']:raise RuntimeError('invalid_mode')
+    if mode not in ['audit','activate','verify','maintain']:raise RuntimeError('invalid_mode')
     token=secrets.token_hex(32);nonce=secrets.token_hex(8);name='membership-control-'+nonce+'.php';remote=ROOT+'/noa-bridge/'+name
     storage=Path('scripts/noa_membership_storage.php').read_text().replace('<?php','',1).replace('declare(strict_types=1);','',1)
-    code=Path('scripts/noa_membership_control.php').read_text().replace('/*NOA_STORAGE_FUNCTIONS*/',storage).replace('NOA_CONTROL_EXPIRY',str(int(time.time())+600)).replace('NOA_CONTROL_TOKEN_SHA',hashlib.sha256(token.encode()).hexdigest()).encode()
+    verify=Path('scripts/noa_membership_verify.php').read_text().replace('<?php','',1).replace('declare(strict_types=1);','',1)
+    code=Path('scripts/noa_membership_control.php').read_text().replace('/*NOA_STORAGE_FUNCTIONS*/',storage).replace('/*NOA_VERIFY_FUNCTIONS*/',verify).replace('NOA_CONTROL_EXPIRY',str(int(time.time())+600)).replace('NOA_CONTROL_TOKEN_SHA',hashlib.sha256(token.encode()).hexdigest()).encode()
     transport=connect();installed=False
     try:
         with paramiko.SFTPClient.from_transport(transport) as s:

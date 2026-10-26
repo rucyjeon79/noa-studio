@@ -5,13 +5,25 @@ ini_set('display_errors','0');header('Content-Type: application/json; charset=ut
 if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||time()>NOA_CONTROL_EXPIRY||!hash_equals('NOA_CONTROL_TOKEN_SHA',hash('sha256',(string)($_SERVER['HTTP_X_NOA_CONTROL']??'')))){http_response_code(404);exit;}
 require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/subscription-core.php';
 /*NOA_STORAGE_FUNCTIONS*/
+/*NOA_VERIFY_FUNCTIONS*/
 try{
- $body=json_decode(file_get_contents('php://input'),true,32,JSON_THROW_ON_ERROR);$mode=$body['mode']??'';if(!in_array($mode,['audit','activate'],true))throw new RuntimeException('invalid_mode');
+ $body=json_decode(file_get_contents('php://input'),true,32,JSON_THROW_ON_ERROR);$mode=$body['mode']??'';if(!in_array($mode,['audit','activate','verify','maintain'],true))throw new RuntimeException('invalid_mode');
  $tables=[];foreach(['member_table','point_table','config_table']as $key){$name=trim(ns_table($key),'`');$tables[$key]=['name'=>$name,'engine'=>nrm_engine($name),'rows'=>(int)ns_one('SELECT COUNT(*) AS n FROM `'.$name.'`')['n']];}
  $root=dirname(__DIR__);$hooks=[];foreach(['bbs/write_update.php'=>'write_update_after','bbs/write_comment_update.php'=>'comment_update_after','adm/config_form_update.php'=>'cf_login_point']as $path=>$hook){$source=(string)file_get_contents($root.'/'.$path);$hooks[$path]=['sha256'=>hash('sha256',$source),'expectedHookPresent'=>str_contains($source,$hook)];}
  $result=['ok'=>true,'mode'=>$mode,'checkedAt'=>gmdate('c'),'tables'=>$tables,'nativePointsEnabled'=>!empty($config['cf_use_point']),'nativeLoginPoints'=>(int)$config['cf_login_point'],'hooks'=>$hooks,'databaseWrites'=>0,'sensitiveDataExported'=>false];
  $result['social']=['enabled'=>!empty($config['cf_social_login_use']),'services'=>(string)($config['cf_social_servicelist']??''),'googleClientPresent'=>!empty($config['cf_google_clientid']),'googleSecretPresent'=>!empty($config['cf_google_secret']),'kakaoClientPresent'=>!empty($config['cf_kakao_rest_key']),'kakaoSecretPresent'=>!empty($config['cf_kakao_client_secret']),'nativeSessionVerifier'=>function_exists('social_session_exists_check')];
  $result['nativeContracts']=[];foreach(['extend/social_login.extend.php','bbs/register_form.php','bbs/register_form_update.php','bbs/write_update.php','bbs/write_comment_update.php']as $file){$code=(string)file_get_contents($root.'/'.$file);$lines=[];foreach(explode("\n",$code)as $line)if(preg_match('/run_event\(|social_session_exists_check|social_login\.php|includes\/functions|bo_write_point|bo_comment_point/',$line))$lines[]=trim($line);$result['nativeContracts'][$file]=['sha256'=>hash('sha256',$code),'calls'=>$lines];}
+ if($mode==='verify'){
+  require_once __DIR__.'/membership-core.php';if(empty(nr_policy()['enabled']))throw new RuntimeException('membership_not_active');
+  $result['nativeVerification']=nrm_verify_live();$result['databaseWrites']='temporary_owned_QA_records_cleaned';
+ }
+ if($mode==='maintain'){
+  require_once __DIR__.'/membership-core.php';if(empty(nr_policy()['enabled']))throw new RuntimeException('membership_not_active');
+  $rows=ns_q('SELECT mb_id FROM '.ns_table('member_table').' WHERE mb_level BETWEEN 2 AND 4 ORDER BY mb_id');$owners=[];while($row=sql_fetch_array($rows)){$owners[]=$row['mb_id'];if(count($owners)>10000)throw new RuntimeException('maintenance_batch_limit');}
+  $counts=[];foreach($owners as $owner){$r=nr_renew($owner,time());nr_refresh($owner,time());$counts[$r['state']]=($counts[$r['state']]??0)+1;}
+  $result['maintenance']=['membersChecked'=>count($owners),'results'=>$counts];$result['databaseWrites']='consented_renewal_and_member_level_reconciliation';
+  ns_atomic('membership-maintenance',false,function()use($result){$key='membership:maintenance';$old=ns_doc($key,true);ns_put($key,'membership_maintenance',['checkedAt'=>time()]+$result['maintenance'],$old['revision']??0,'n80-membership-worker');});
+ }
  if($mode==='activate'){
   require_once __DIR__.'/membership-core.php';
   foreach($hooks as $h)if(!$h['expectedHookPresent'])throw new RuntimeException('native_hook_contract_mismatch');

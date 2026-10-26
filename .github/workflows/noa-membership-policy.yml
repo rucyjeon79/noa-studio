@@ -2,7 +2,7 @@ name: NOA membership rewards and account bar
 on:
   push:
     branches: [main]
-    paths: ['bridge/membership*.php','deploy/noa-membership*','deploy/noa-account.*','tests/membership/**','scripts/noa_membership*.py','scripts/noa_membership*.php','scripts/qa/noa-membership.mjs','.github/workflows/noa-membership-policy.yml']
+    paths: ['bridge/membership*.php','bridge/social-policy.php','deploy/noa-social.extend.php','deploy/noa-login.php','deploy/noa-membership*','deploy/noa-account.*','tests/membership/**','scripts/noa_membership*.py','scripts/noa_membership*.php','scripts/qa/noa-membership.mjs','.github/workflows/noa-membership-policy.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
@@ -50,6 +50,11 @@ jobs:
           php -l deploy/noa-membership.php
           php -l scripts/noa_membership_control.php
           php -l scripts/noa_membership_storage.php
+          php -l bridge/social-policy.php
+          php -l deploy/noa-social.extend.php
+          php -l deploy/noa-login.php
+          php -l scripts/noa_membership_verify.php
+          php tests/membership/social.php
           node --check deploy/noa-account.js
           node --check deploy/noa-membership.js
           php tests/subscription/core_test.php
@@ -59,3 +64,58 @@ jobs:
           grep -F MEMBERSHIP_LOGIN_PENDING_130 "$RUNNER_TEMP/membership.log"
           php tests/membership/storage.php | tee "$RUNNER_TEMP/storage.log"
           grep -F MEMBERSHIP_SAME_HOST_BACKUP_RESTORE_ENGINE_CONVERSION_OK "$RUNNER_TEMP/storage.log"
+      - name: Verify mobile account, purchase controls and social signup states
+        run: |
+          php tests/membership/render.php
+          python scripts/qa/noa-qa-font.py
+          npm install --prefix "$RUNNER_TEMP/noa-membership" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-membership.mjs "$RUNNER_TEMP/noa-membership/check.mjs"
+          node "$RUNNER_TEMP/noa-membership/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-membership-candidate-${{ github.run_id }}', path: membership-proof/, retention-days: 14}
+  deploy:
+    needs: [native, preflight]
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Prepare existing transport and browser
+        run: |
+          python -m pip install 'paramiko>=3,<5'
+          python scripts/qa/noa-qa-font.py
+          npm install --prefix "$RUNNER_TEMP/noa-membership" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-membership.mjs "$RUNNER_TEMP/noa-membership/check.mjs"
+      - name: Install reviewed membership and social source with preimage checks
+        id: upload
+        env: &membership_env
+          GH_TOKEN: ${{ github.token }}
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_membership_deploy.py
+      - name: Verify live guest, direct signup rejection and existing administrator login
+        id: live
+        env: {NOA_MEMBERSHIP_PHASE: live}
+        run: node "$RUNNER_TEMP/noa-membership/check.mjs"
+      - name: Back up and verify native tables on the same host before activating approved policy
+        env: *membership_env
+        run: python scripts/noa_membership_control.py activate
+      - name: Verify real native point operations using only a disposable private account
+        env: *membership_env
+        run: python scripts/noa_membership_control.py verify
+      - name: Reconcile expired VIP passes and levels
+        env: *membership_env
+        run: python scripts/noa_membership_control.py maintain
+      - name: Restore source only if pre-activation public verification failed
+        if: failure() && (steps.upload.outcome == 'failure' || steps.live.outcome == 'failure')
+        env: *membership_env
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then python scripts/noa_membership_deploy.py rollback; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-membership-live-${{ github.run_id }}', path: membership-proof/, retention-days: 14}
