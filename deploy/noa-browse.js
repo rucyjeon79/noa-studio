@@ -35,7 +35,7 @@ function refreshPaths(){for(const host of document.querySelectorAll?.('.noa-clas
 // URL in the shared hierarchy; keep every source video in All/Search.
 function canonicalBrowseRows(rows){const selected=[],positions=new Map();for(const row of rows){const identity=String(row.orderKey||row.key).replace(/^catalog:/,'');if(!positions.has(identity)){positions.set(identity,selected.length);selected.push(row);}else{const i=positions.get(identity);if(row.preferredVideo===true&&selected[i].preferredVideo!==true)selected[i]=row;}}return selected;}
 const slicePage=(rows,page,size=24)=>rows.slice(Math.max(0,page)*size,(Math.max(0,page)+1)*size);
-function mount({host,rows,onChange,onSelect=null,search=null,genre=null,type=null,kind='곡'}){
+function mount({host,rows,onChange,onSelect=null,adminControls=true,search=null,genre=null,type=null,kind='곡'}){
  if(kind!=='영상')rows=rows.filter(r=>r.kind!=='video'&&!r.video);
  const treeRows=kind==='영상'?canonicalBrowseRows(rows):rows,treeKeys=new Set(treeRows.map(r=>String(r.key)));
  let actLabels={};try{actLabels=JSON.parse(document.getElementById?.('noa-act-labels')?.textContent||'{}');}catch{}
@@ -215,7 +215,7 @@ function mount({host,rows,onChange,onSelect=null,search=null,genre=null,type=nul
  // Only translated labels require a structural refresh, including when preferences arrive late.
  let renderedLanguage=document.documentElement?.lang||'ko';
  window.addEventListener('noa-theme',()=>{const language=window.NoaUI?.getState?.()?.language||document.documentElement?.lang||'ko';if(language===renderedLanguage||orderEditor?.isEditing?.()||editEditor?.isEditing?.())return;renderedLanguage=language;treeRevision='';onChange();});
- loadClassification().then(data=>{if(data){manualOrder={revision:data.revision,story:data.story||[],cover:data.cover||[],playlists:data.playlists||[]};refreshPaths();onChange();if(data.admin===true&&data.csrf){
+ loadClassification().then(data=>{if(data){manualOrder={revision:data.revision,story:data.story||[],cover:data.cover||[],playlists:data.playlists||[]};refreshPaths();onChange();if(adminControls&&data.admin===true&&data.csrf){
  const startEdit=()=>{editEditor=window.NoaBrowseEdit.mount({host,rows,kind,onClose:()=>{if(refreshCollections){refreshCollections=false;treeRevision='';onChange();}},isOrdering:()=>orderEditor?.isEditing?.(),onSaved:({selector,record,data:saved})=>{
   const fields=saved.fields||{};
   if(selector.type==='playlist'){refreshCollections=true;const p=manualOrder.playlists.find(p=>p.id===selector.id);if(p){p.title=fields.title;p.keys=(fields.members||[]).map(m=>m.key);for(const section of host.querySelectorAll('.noa-user-playlist'))if(section.dataset.playlistId===selector.id){const strong=section.querySelector('.noa-browse-card strong');if(strong)strong.textContent=fields.title;}}}
