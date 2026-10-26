@@ -1,7 +1,7 @@
 <?php
 if(!defined('_GNUBOARD_')||empty($is_member)||($is_admin??'')!=='super'){http_response_code(403);exit;}
 ?>
-<section id="lab-muvy" class="lab-panel mu-desk" aria-labelledby="mu-heading">
+<section id="lab-muvy" class="lab-panel mu-desk" data-noa-document-link aria-labelledby="mu-heading">
 <div class="mu-heading"><div><p class="noa-eyebrow">EP CINEMA / GROK</p><h2 id="mu-heading">뮤비 생성기</h2><p class="noa-muted">가사에서 30개의 장면으로. 대본, 이미지·영상 프롬프트, 게시 문구를 한 작업실에서 이어 만듭니다.</p></div><span class="mu-private">최고관리자 작업실</span></div>
 <p id="mu-status" role="status" aria-live="polite">뮤비 작업실을 불러오는 중입니다.</p>
 <div class="mu-toolbar"><label>저장된 작업<select id="mu-project"><option value="">새 작업</option></select></label><button id="mu-new" type="button">새 작업</button><button id="mu-import" type="button">기존 작업 가져오기</button><input id="mu-import-file" type="file" accept="application/json,.json" hidden><button id="mu-export" type="button" disabled>JSON 내보내기</button><button id="mu-text-export" type="button" disabled>제작 문서 받기</button></div>
