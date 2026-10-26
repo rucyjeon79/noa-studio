@@ -10,14 +10,14 @@ $rows=['story'=>[],'cover'=>[]];
 try{
  $db=noa_bridge_pdo();$aliases=[];foreach($db->query("SELECT alias_key,entity_id FROM noa_catalog_aliases WHERE batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)") as $a)$aliases[$a['alias_key']][]=$a['entity_id'];
  foreach($db->query("SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','story')") as $r){
-  $p=json_decode($r['payload'],true);if(!is_array($p))continue;
+  $p=json_decode($r['payload'],true);if(!is_array($p)||!noa_sound_visible($p,true))continue;
   $genre=$p['genreId']??'';$group=$genre==='your-story'?'story':($genre==='cover-reborn'?'cover':null);
   if(!$group||(int)($p['ep']??0)>0)continue;
   $title=$p['body']['confirmedTitle']??$p['title']??$r['doc_key'];
   $ids=array_unique($aliases[$r['doc_key']]??[]);$key=count($ids)===1?array_values($ids)[0]:(string)$r['doc_key'];
   $rows[$group][$key]=['key'=>$key,'title'=>(string)$title];
  }
- foreach(nj_catalog($db) as $key=>$p){$genre=$p['genreId']??'';$group=$genre==='your-story'?'story':($genre==='cover-reborn'?'cover':null);if(!$group||(int)($p['ep']??0)>0)continue;$id=str_starts_with($key,'catalog:')?substr($key,8):$key;$rows[$group][$id]??=['key'=>$id,'title'=>(string)($p['body']['confirmedTitle']??$p['title']??$key)];}
+ foreach(nj_catalog($db) as $key=>$p){if(!noa_sound_visible($p,true))continue;$genre=$p['genreId']??'';$group=$genre==='your-story'?'story':($genre==='cover-reborn'?'cover':null);if(!$group||(int)($p['ep']??0)>0)continue;$id=str_starts_with($key,'catalog:')?substr($key,8):$key;$rows[$group][$id]??=['key'=>$id,'title'=>(string)($p['body']['confirmedTitle']??$p['title']??$key)];}
 }catch(Throwable $e){error_log('[category-order-admin] '.get_class($e));http_response_code(503);exit('목록을 불러오지 못했습니다.');}
 function esc(string $s):string{return htmlspecialchars($s,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
 ?><!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>카테고리 순서 관리 | NOA</title><link rel="stylesheet" href="/noa-ui.css?v=20261024-category-complete"><script src="/noa-ui.js?v=20261024-approved-ui" data-noa-theme-only defer></script><style>

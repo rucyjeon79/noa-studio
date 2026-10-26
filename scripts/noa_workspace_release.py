@@ -5,6 +5,8 @@ release.FILES={
  'noa-bridge/library-records.php':'bridge/library-records.php',
  'noa-bridge/record-trash.php':'bridge/record-trash.php',
  'noa-workspace.php':'deploy/noa-workspace.php',
+ 'noa-category-order-admin.php':'deploy/noa-category-order-admin.php',
+ 'noa-app/jukebox/core.php':'deploy/noa-app/jukebox/core.php',
  'noa-bridge/catalog.php':'bridge/catalog.php',
  'noa-bridge/index.php':'bridge/index.php',
  'noa-bridge/youtube-store.php':'bridge/youtube-store.php',
