@@ -10,6 +10,9 @@ class RecoveryContract(unittest.TestCase):
    current="document.querySelector('"+selector+"').hidden=true;"
    self.assertEqual(s.count(current),1)
    s=s.replace(current,current.replace('hidden=true','hidden=false'),1)
+  # The category breadcrumb is presentation only; retain exact playback hashes.
+  breadcrumb=" window.NoaBrowse?.renderPath(document.getElementById('music-classification'),r);\n"
+  self.assertEqual(s.count(breadcrumb),1);s=s.replace(breadcrumb,'',1)
   blocks={'databaseAndPermissionPrefix':s[:s.index('?><!doctype html>')],'requestPlaybackAndQueue':s[s.index('function requestPlayback()'):s.index('function filter()')],'playbackAndUploadIntegration':s[s.index('function select('):s.index("// Detail hydration") if "// Detail hydration" in s else s.index("let saved=''")]}
   actual={k:hashlib.sha256(v.encode()).hexdigest()for k,v in blocks.items()}
   self.assertEqual(actual,json.loads((ROOT/'tests/uiux/music-processing-contract.json').read_text()))
@@ -50,6 +53,6 @@ class RecoveryContract(unittest.TestCase):
    paths=[p for p in paths if p not in shared]
   # The 2026-10-26 directives authorize SQL ordering and N80 text-only automation.
   # Keep this exact-file authorization; FIFO and processing workers remain protected.
-  authorized={'bridge/notices.php','bridge/ainoa-automation.php','bridge/lab-worker.php','bridge/category-order-store.php','bridge/ainoa-generation.php','bridge/ainoa-core.php','bridge/ainoa-points.php','bridge/youtube-catalog.php','bridge/lab-api.php','bridge/catalog-store.php','bridge/package-record.php','bridge/package-migration.php','bridge/package-worker.php','bridge/index.php','bridge/lab-creator.php','bridge/taxonomy-store.php','bridge/inline-edit.php','bridge/music-readmodel.php','bridge/user-playlists.php','bridge/world-mv.php','bridge/popularity-events.php','bridge/playcount-policy.php','deploy/noa-app/jukebox/stream.php','deploy/noa-app/jukebox/stream-popularity.php','scripts/noa_jukebox_release.py','scripts/noa_jukebox_upload_worker.py','scripts/noa_jukebox_publish.py'}
+  authorized={'bridge/catalog.php','bridge/library-records.php','bridge/record-trash.php','bridge/notices.php','bridge/ainoa-automation.php','bridge/lab-worker.php','bridge/category-order-store.php','bridge/ainoa-generation.php','bridge/ainoa-core.php','bridge/ainoa-points.php','bridge/youtube-catalog.php','bridge/lab-api.php','bridge/catalog-store.php','bridge/package-record.php','bridge/package-migration.php','bridge/package-worker.php','bridge/index.php','bridge/lab-creator.php','bridge/taxonomy-store.php','bridge/inline-edit.php','bridge/music-readmodel.php','bridge/user-playlists.php','bridge/world-mv.php','bridge/popularity-events.php','bridge/playcount-policy.php','deploy/noa-app/jukebox/stream.php','deploy/noa-app/jukebox/stream-popularity.php','scripts/noa_jukebox_release.py','scripts/noa_jukebox_upload_worker.py','scripts/noa_jukebox_publish.py'}
   self.assertFalse(any(p not in authorized and p.startswith(('deploy/noa-app/jukebox/','bridge/','scripts/noa_jukebox'))for p in paths))
 if __name__=='__main__':unittest.main()

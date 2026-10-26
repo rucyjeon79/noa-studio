@@ -5,11 +5,9 @@ on:
     paths: ['scripts/noa_workspace_release.py','scripts/qa/noa-workspace*.mjs','tests/workspace/**','.github/workflows/noa-workspace.yml']
 permissions: {contents: read}
 jobs:
-  verify-and-release:
+  candidate:
     runs-on: ubuntu-latest
-    environment: production
     timeout-minutes: 30
-    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     services:
       mysql:
         image: mysql:8.0
@@ -58,6 +56,28 @@ jobs:
         run: |
           node "$RUNNER_TEMP/noa-workspace/check.mjs"
           node "$RUNNER_TEMP/noa-workspace/navigation.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: noa-workspace-candidate-${{ github.run_id }}
+          path: |
+            workspace-proof/
+            navigation-proof/
+          retention-days: 14
+  production:
+    needs: candidate
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - name: Prepare verified deployment and read-only browser tools
+        run: |
+          python -m pip install 'paramiko>=3,<5'
+          npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-workspace" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-workspace-live.mjs "$RUNNER_TEMP/noa-workspace/live.mjs"
       - name: Deploy only verified workspace sources with preimage and unchanged-file guards
         id: upload
         env: &production
@@ -78,7 +98,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: noa-workspace-${{ github.run_id }}
+          name: noa-workspace-live-${{ github.run_id }}
           path: |
             workspace-proof/
             navigation-proof/

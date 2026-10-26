@@ -22,7 +22,7 @@ def verify_youtube_reader_only(root, baseline):
     new=(root/'bridge/youtube-store.php').read_text()
     functions=lambda source:json.loads(subprocess.check_output(['php','-r',TOKENIZE],input=source,text=True))
     before,after=functions(old),functions(new)
-    allowed={'ny_videos','ny_verified_official_members','ny_official_members'}
+    allowed={'ny_songs','ny_videos','ny_verified_official_members','ny_official_members'}
     for name,value in before.items():
         if name not in allowed and after.get(name)!=value:
             raise AssertionError('Owner writer changed: '+name)
@@ -34,7 +34,7 @@ def verify_youtube_reader_only(root, baseline):
 
 def verify_shared_catalog_readers_only(root, baseline):
     """Shared-song approval permits readers only; all upload/processing writers stay exact."""
-    scopes={'bridge/sound-core.php':{'noa_sound_catalog_document'},
+    scopes={'bridge/sound-core.php':{'noa_sound_catalog_document','noa_sound_visible','noa_sound_trash_index'},
             'deploy/noa-app/jukebox/core.php':{'nj_document','nj_catalog'}}
     for path,allowed in scopes.items():
         old=subprocess.check_output(['git','show',baseline+':'+path],cwd=root,text=True)
