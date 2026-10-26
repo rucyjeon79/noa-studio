@@ -121,7 +121,11 @@ jobs:
           node "$RUNNER_TEMP/noa-ainoa/generation.mjs"
       - name: Recheck operating SQL projection and queue after activation
         env:
-          <<: *noa_env
+          GH_TOKEN: ${{ github.token }}
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
           NOA_P0_AUDIT_OUTPUT: ainoa-proof/postdeploy-audit
         run: python scripts/noa_p0_inventory.py
       - name: Restore only release-owned source bytes on failed acceptance

@@ -47,6 +47,7 @@ function noa_sitemap_registry():array{
             ['catalogAdmin','음악 통합·충돌 검토','카탈로그 데이터 검토','/noa-catalog-admin.php','library','admin'],
             ['recovery','원본 복구','보존된 원본과 복구 상태','/noa-recovery.php','book','admin'],
             ['youtubeAdmin','YouTube 관리','채널 수집과 분류 검토','/noa-youtube-admin.php','youtube','admin'],
+            ['workStatus','N80 작업 현황','지시·단계·운영 검증 기록','/noa-work-status.php','settings','admin'],
             ['aiLab','AI LAB','영상 제작과 채널 성장','/noa-ai-lab.php','mic','admin'],
             ['themeAdmin','테마 정책','디자인 설정과 변경 이력','/noa-theme-admin.php','settings','admin'],
             ['database','데이터베이스 관리','운영 데이터 현황','/noa-app/database/','library','admin'],
