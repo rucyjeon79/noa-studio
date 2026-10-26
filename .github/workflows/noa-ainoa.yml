@@ -26,6 +26,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with: {php-version: '8.2', extensions: 'pdo_mysql,pdo_sqlite,mysqli,mbstring,curl'}
       - name: Validate complete record, privacy projection and native SQL round trip
+        shell: bash
         run: |
           for file in deploy/noa-work-status.php deploy/noa-app/engine/ai-automation.php bridge/ainoa-automation.php bridge/lab-worker.php deploy/noa-youtube.php deploy/noa-editor.php deploy/noa-creator.php bridge/ainoa-generation.php bridge/ainoa-core.php bridge/ainoa-points.php bridge/subscription-core.php bridge/youtube-catalog.php bridge/lab-api.php deploy/noa-ai-lab.php bridge/subscription-access.php deploy/noa-access.extend.php bridge/package-record.php deploy/noa-ainoa.php deploy/noa-design.extend.php scripts/noa_member_qa_control.php; do php -l "$file"; done
           php tests/catalog/package_record_test.php
@@ -48,14 +49,14 @@ jobs:
           php scripts/qa/inline-edit-seed.php
           php tests/catalog/collections_seed.php
           php tests/catalog/category_order_mysql_test.php | tee "$RUNNER_TEMP/category_order_mysql_test.php.log"
-          rg "CATEGORY_SQL_MYSQL_OK" "$RUNNER_TEMP/category_order_mysql_test.php.log"
+          grep -F "CATEGORY_SQL_MYSQL_OK" "$RUNNER_TEMP/category_order_mysql_test.php.log"
           php -l deploy/noa-category-order.php
           php -l deploy/noa-category-order-admin.php
           php -l scripts/noa_category_order_migrate.php
           php tests/catalog/ainoa_generation_mysql_test.php | tee "$RUNNER_TEMP/ainoa_generation_mysql_test.php.log"
-          rg "AINOA_GENERATION_SQL" "$RUNNER_TEMP/ainoa_generation_mysql_test.php.log"
+          grep -F "AINOA_GENERATION_SQL" "$RUNNER_TEMP/ainoa_generation_mysql_test.php.log"
           php tests/catalog/ainoa_automation_mysql_test.php | tee "$RUNNER_TEMP/ainoa_automation_mysql_test.php.log"
-          rg "N80_AI_SQL" "$RUNNER_TEMP/ainoa_automation_mysql_test.php.log"
+          grep -F "N80_AI_SQL" "$RUNNER_TEMP/ainoa_automation_mysql_test.php.log"
           php tests/catalog/ainoa_points_mysql_test.php
           php -S 127.0.0.1:8101 -t "$RUNNER_TEMP/noa-inline-edit-fixture" > "$RUNNER_TEMP/ainoa-native.log" 2>&1 &
           node scripts/qa/noa-ainoa-native.mjs
