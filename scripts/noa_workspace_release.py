@@ -8,7 +8,7 @@ release.FILES={
  'noa-bridge/catalog.php':'bridge/catalog.php',
  'noa-bridge/index.php':'bridge/index.php',
  'noa-bridge/youtube-store.php':'bridge/youtube-store.php',
- **{p:'deploy/'+p for p in ['noa-record-action.php','noa-catalog.js','noa-workspace.js','noa-browse.js','noa-browse-edit.js','noa-ui.css','noa-inline-edit.php','noa-catalog.php','noa-editor.php','noa-library.php','noa-ai-lab.php','noa-my.php','noa-sitemap.php','noa-music.php','noa-world.php','noa-youtube.php']},
+ **{p:'deploy/'+p for p in ['noa-record-action.php','noa-catalog.js','noa-workspace.js','noa-browse.js','noa-browse-edit.js','noa-ui.css','noa-inline-edit.php','noa-catalog.php','noa-editor.php','noa-library.php','noa-ai-lab.php','noa-ai-lab.js','noa-my.php','noa-sitemap.php','noa-music.php','noa-world.php','noa-youtube.php']},
  'extend/noa.design.php':'deploy/noa-design.extend.php',
 }
 release.NEW={'noa-bridge/library-records.php','noa-bridge/record-trash.php','noa-workspace.php','noa-workspace.js','noa-catalog.js','noa-record-action.php'}
