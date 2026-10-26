@@ -29,7 +29,7 @@ function render(){
  if(!tasks.length)list.append(el('p','등록된 AI 작업이 없습니다.'));$('.ainoa-admin-job-count').textContent='최근 N80 작업 · '+tasks.length;
 }
 async function refresh(){state=await workspace();render();}
-async function run(task){if(task.state!=='queued'||!state.generation.ready)return;notice('N80이 요청을 처리하고 있습니다.');const result=await client.api({action:'admin_run',taskId:task.id});state.generation=result.generation;notice(result.task.result?'응답을 보관했습니다.':errors[result.task.error]||states[result.task.state]);}
+async function run(task){if(task.state!=='queued')return;if(!state.generation.ready){notice('요청을 보관했습니다. AI 연결 설정 후 자동으로 처리합니다.');return;}notice('N80이 요청을 처리하고 있습니다.');const result=await client.api({action:'admin_run',taskId:task.id});state.generation=result.generation;notice(result.task.result?'응답을 보관했습니다.':errors[result.task.error]||states[result.task.state]);}
 async function send(e){e.preventDefault();if(busy)return;const text=$('.ainoa-admin-input').value.trim();if(!text)return;busy=true;render();
  try{
   if(!retry)retry={action:'admin_chat',requestId:crypto.randomUUID(),conversationId:thread||(thread=crypto.randomUUID()),question:text,trackKey:$('.ainoa-admin-song').checked&&activeTrack?activeTrack.key:''};

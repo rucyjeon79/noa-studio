@@ -2,7 +2,7 @@
 import {chromium} from 'playwright';import assert from 'node:assert/strict';import {mkdirSync,writeFileSync} from 'node:fs';
 const phase=process.env.NOA_AINOA_PHASE||'candidate',out='ainoa-proof/'+phase;mkdirSync(out,{recursive:true});const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});const report=[];
 try{for(const width of [360,390,430])for(const theme of ['noa-studio','noa-ivory']){
- const context=await browser.newContext({viewport:{width,height:844},serviceWorkers:'block'}),page=await context.newPage();let admin=false,ready=true,pending=null,runs=0,creates=0,posts=[],tasks=[],loseNext=false,saves=0;const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const context=await browser.newContext({viewport:{width,height:844},locale:'ko-KR',timezoneId:'Asia/Seoul',serviceWorkers:'block'}),page=await context.newPage();let admin=false,ready=true,pending=null,runs=0,creates=0,posts=[],tasks=[],loseNext=false,saves=0;const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await context.addInitScript(theme=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',radius:'soft',design:'ios'})),theme);
  if(phase==='candidate')await context.route(/\/noa-ainoa(?:-admin)?\.(js|css)(\?.*)?$/,r=>r.fulfill({path:'deploy/'+new URL(r.request().url()).pathname.slice(1),contentType:r.request().url().includes('.css')?'text/css':'text/javascript'}));
  await context.route('**/noa-ainoa.php*',async route=>{
@@ -30,7 +30,7 @@ try{for(const width of [360,390,430])for(const theme of ['noa-studio','noa-ivory
  await modal.getByText('선택한 곡 AI 생성 자동화',{exact:true}).click();await modal.getByRole('button',{name:'초안 자동 생성',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('.ainoa-admin-generate')?.disabled);assert.equal(tasks.find(t=>t.type==='generate').state,'review');assert.equal(saves,0);
  // Missing credentials preserve a pending instruction and expose cancellation without paid calls.
  ready=false;await modal.getByRole('button',{name:'새 대화',exact:true}).click();await modal.getByRole('button',{name:'새로고침',exact:true}).click();await modal.getByText('연결 설정 필요 · API 키',{exact:true}).waitFor();const beforeRuns=runs;
- await modal.getByRole('textbox',{name:'관리자 ChatGPT 질문'}).fill('연결 후 처리할 제작 요청');await modal.getByRole('button',{name:'보내기',exact:true}).click();await modal.getByText('요청은 저장됐습니다. AI 연결 설정 후 처리합니다.',{exact:true}).waitFor();assert.equal(runs,beforeRuns);
+ await modal.getByRole('textbox',{name:'관리자 ChatGPT 질문'}).fill('연결 후 처리할 제작 요청');await modal.getByRole('button',{name:'보내기',exact:true}).click();await modal.getByText('요청은 저장됐습니다. AI 연결 설정 후 처리합니다.',{exact:true}).waitFor();assert.equal(runs,beforeRuns);await modal.getByText('요청을 보관했습니다. AI 연결 설정 후 자동으로 처리합니다.',{exact:true}).waitFor();
  await modal.getByText('ChatGPT 구독 한도 연결',{exact:true}).click();assert(await modal.getByText(/현재 연결되지 않았습니다/).isVisible());
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));const box=await modal.boundingBox();assert(box.x>=0&&box.x+box.width<=width+1&&box.y>=0&&box.height<=844);
  for(const b of await modal.getByRole('button').all()){if(!await b.isVisible())continue;const rect=await b.boundingBox();assert(rect.width>=44&&rect.height>=44);}
