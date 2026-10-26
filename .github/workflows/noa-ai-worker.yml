@@ -2,7 +2,7 @@ name: NOA AI LAB worker readiness and publication guard
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/noa-ai-worker.yml', 'scripts/noa_lab_worker.py']
+    paths: ['.github/workflows/noa-ai-worker.yml', 'scripts/noa_lab_worker.py', 'scripts/noa_n80_ai_worker.py']
   schedule:
     - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
@@ -28,6 +28,13 @@ jobs:
         run: |
           python -m unittest discover -s tests/engine -p 'test_ai_publication_guard.py' -v
           python -m pip install paramiko==3.5.1
+      - name: Process N80 SQL text drafts without publishing media
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python3 scripts/noa_n80_ai_worker.py
       - name: Verify idle state and preserve work until runner-only publication
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}

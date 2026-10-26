@@ -27,3 +27,23 @@
 #noa-ainoa .ainoa-tip{position:absolute;right:0;bottom:calc(var(--ainoa-size) + 12px);width:min(290px,calc(100vw - 32px));padding:14px 16px;border:1px solid var(--noa-line);border-radius:18px;background:var(--noa-raised);color:var(--noa-text);box-shadow:0 8px 30px #0003;font-size:14px;line-height:1.55;overflow-wrap:anywhere}
 #noa-ainoa .ainoa-tip::after{content:"";position:absolute;right:24px;top:100%;border:8px solid transparent;border-top-color:var(--noa-raised)}
 #noa-ainoa [hidden]{display:none!important}
+
+/* A single modal surface uses the existing NOA palette in both themes. */
+.ainoa-admin-dialog{box-sizing:border-box;width:min(720px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:20px;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,16px);background:var(--noa-bg);color:var(--noa-text);font:inherit;line-height:1.55;overflow:auto;overscroll-behavior:contain}
+.ainoa-admin-dialog::backdrop{background:#0009}
+.ainoa-admin-dialog *{box-sizing:border-box;min-width:0}
+.ainoa-admin-dialog header,.ainoa-admin-toolbar{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.ainoa-admin-dialog h2{font-size:20px;margin:0;color:var(--noa-creative,var(--noa-accent))}
+.ainoa-admin-dialog p{white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0}
+.ainoa-admin-dialog button,.ainoa-admin-dialog select,.ainoa-admin-dialog textarea{font:inherit;min-height:44px;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,12px);background:var(--noa-surface);color:var(--noa-text);padding:8px 12px}
+.ainoa-admin-dialog button{cursor:pointer;flex-shrink:0}.ainoa-admin-dialog button:disabled{opacity:.5;cursor:default}
+.ainoa-admin-dialog a{color:var(--noa-creative,var(--noa-accent));display:inline-flex;align-items:center;min-height:44px;overflow-wrap:anywhere}
+.ainoa-admin-dialog textarea{width:100%;resize:vertical}.ainoa-admin-toolbar select{flex:1;width:100%}
+.ainoa-admin-dialog details{border-top:1px solid var(--noa-line);padding:8px 0}.ainoa-admin-dialog summary{min-height:44px;cursor:pointer;display:list-item;padding:10px 0;overflow-wrap:anywhere}
+.ainoa-admin-dialog .ainoa-admin-toolbar{margin:12px 0;flex-wrap:wrap}.ainoa-admin-dialog .ainoa-admin-toolbar select{flex-basis:160px}
+.ainoa-admin-log{max-height:35dvh;overflow:auto;overscroll-behavior:contain}.ainoa-admin-turn{padding:12px 0;border-top:1px solid var(--noa-line)}
+.ainoa-admin-turn strong{color:var(--noa-creative,var(--noa-accent))}.ainoa-admin-dialog small,.ainoa-admin-connection{color:var(--noa-muted)}
+.ainoa-admin-context{display:flex;align-items:center;gap:8px;min-height:44px}.ainoa-admin-context input{width:24px;height:24px;flex-shrink:0}
+.ainoa-admin-dialog .ainoa-admin-send{width:100%;margin:8px 0;color:var(--noa-creative,var(--noa-accent))}.ainoa-admin-error{color:var(--noa-danger)}
+#noa-ainoa .ainoa-admin-toggle{width:100%;margin:8px 0;color:var(--noa-creative,var(--noa-accent))}
+.ainoa-admin-dialog :focus-visible{outline:2px solid var(--noa-accent);outline-offset:2px}

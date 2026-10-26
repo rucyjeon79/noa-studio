@@ -9,6 +9,10 @@ def build():
     for row in generation:
         assert all(row[k] is True for k in ['unconfiguredVisible','doubleClickOneRequest','previewBeforeApply','noAutomaticSave','typingPreserved','stableRetryIdentity','htmlErrorVisible','explicitSave','touchTargets']) and row['overflow'] is False
         cases.append({'name':'deployed_editor_isolated_api_'+str(row['width']),'ok':True})
+    admin=json.loads((root/'live/admin-report.json').read_text());assert len(admin)==6
+    for row in admin:
+        assert all(row[k] is True for k in ['guestHidden','highestAdminDialog','storedConversation','selectedSongContext','networkRetrySameIdentity','noDuplicateTask','draftNotSaved','unconfiguredQueuePreserved','subscriptionNotFalselyConnected','safeTextRendering','touchTargets','noOverflow'])
+        cases.append({'name':'deployed_admin_dialog_isolated_api_'+str(row['width'])+'_'+row['theme'],'ok':True})
     guests=json.loads((root/'live/report.json').read_text());assert len(guests)==10
     for row in guests:
         assert row['search'] and row['roleGate'] and not row['overflow'] and not row['consoleErrors']
@@ -45,7 +49,7 @@ def record():
     out=Path('p0-evidence-proof');out.mkdir(exist_ok=True)
     archive=download_artifact(matches[0]['id'],out/'release.zip')
     ver=verified|ev.verified_artifact(matches[0],run['id'],commit,archive,'verified.json')
-    source=['noa-browse-edit.js','noa-ainoa.php','noa-bridge/ainoa-generation.php','noa-bridge/package-record.php','noa-app/engine/work-state.php','noa-work-status.php','noa-category-order.php','noa-bridge/category-order-store.php']
+    source=['noa-ainoa-admin.js','noa-bridge/ainoa-automation.php','noa-app/engine/ai-automation.php','noa-bridge/lab-worker.php','noa-browse-edit.js','noa-ainoa.php','noa-bridge/ainoa-generation.php','noa-bridge/package-record.php','noa-app/engine/work-state.php','noa-work-status.php','noa-category-order.php','noa-bridge/category-order-store.php']
     t=connect()
     try:
         with paramiko.SFTPClient.from_transport(t)as s:
@@ -67,7 +71,8 @@ def record():
           '06':('needs_review','설정 상태·연결 확인·사용량 기록 반영','권한·중복 과금·공유 사용 한도 회귀 통과','API 키·사용 한도·유료 대화 단가 미설정; 실제 과금 검증 안 됨'),
           '07':('in_progress','작업별 증거 연결 및 운영 읽기 검증','지시 원문·12개 영역·단계·활동·오류·재시작 복원 검증','상위 전체 작업 완료로 처리하지 않음')}
         changes=[{'id':'NOA-20261026-P0-'+n,'status':status,'currentStage':current,'lastSuccessfulStage':success,'error':error,'evidenceIds':[receipt['eventId']]}for n,(status,current,success,error)in notes.items()]
-        value={'action':'revise','request':{'requestId':rid,'expectedRevision':snapshot['revision'],'changes':[],'appendInstructions':[],'taskChanges':changes}}
+        changes.append({'id':'NOA-20261026-AI-AUTOMATION','status':'needs_review','currentStage':'최고관리자 대화창·N80 SQL 초안 자동화 운영 반영','lastSuccessfulStage':'네이티브 SQL·권한·모바일 UI·서명된 실행기 연결 검증','error':'실제 모델 응답은 API 설정 필요. ChatGPT 구독 연동은 원격 앱 접근 승인과 별도 연동 필요.','evidenceIds':[receipt['eventId']]})
+        value={'action':'revise','request':{'requestId':rid,'expectedRevision':snapshot['revision'],'changes':[],'appendInstructions':[{'id':'NOA-20261026-AI-AUTOMATION','text':'n80 엔진에 자동화 구현하고. 사이트 떠다니는 AInoa에 최고관리자가 버튼 누르면 챗지피티와 연결된 대화창 연결. AI생성 기능구현 시작','areaIds':['P0-10','P0-03','P0-04','P0-08']}],'taskChanges':changes}}
         result=request(key,value);assert result['readbackVerified'];assert request(key,value)['effect']=='work_state_already_recorded'
     final=request(key,{'action':'read'});assert not final['summary']['allAreasComplete']
     assert all(any(e['eventId']==receipt['eventId']for e in x.get('evidence',[]))for x in final['state']['instructions']if x['id'] in ['NOA-20261026-P0-0'+str(i)for i in range(1,8)])

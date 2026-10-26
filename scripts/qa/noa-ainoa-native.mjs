@@ -22,3 +22,16 @@ r=await req('/noa-inline-edit.php',reorder,{'X-NOA-Bridge-Request':'1'});assert.
 r=await req('/noa-inline-edit.php?'+new URLSearchParams(playlist));assert.deepEqual(r.data.fields.members,members);
 assert.equal((await req('/noa-inline-edit.php',{...reorder,requestId:crypto.randomUUID()},{'X-NOA-Bridge-Request':'1'})).status,409);
 console.log('COVER_ORIGINAL_ARTIST_AND_PLAYLIST_ORDER_SQL_ROUNDTRIP_RETRY_CONFLICT_OK');
+// Native highest-admin workspace: persist a pending instruction with unconfigured AI, reload and cancel.
+r=await req('/noa-ainoa.php?action=status');assert.equal(r.data.adminAssistant,true);const adminCsrf=r.data.csrf;
+r=await req('/noa-ainoa.php?action=admin_workspace');assert.equal(r.status,200);assert.equal(r.data.subscriptionConnection.available,false);
+const adminRequest={action:'admin_chat',requestId:crypto.randomUUID(),conversationId:crypto.randomUUID(),question:'격리된 N80 작업 보존 확인',trackKey:''};
+r=await req('/noa-ainoa.php',adminRequest,{'X-NOA-CSRF':adminCsrf});assert.equal(r.status,200);assert.equal(r.data.task.state,'queued');const adminTask=r.data.task;
+r=await req('/noa-ainoa.php',adminRequest,{'X-NOA-CSRF':adminCsrf});assert.equal(r.data.task.id,adminTask.id);
+r=await req('/noa-ainoa.php?action=admin_workspace');assert(r.data.tasks.some(t=>t.id===adminTask.id));
+r=await req('/noa-ainoa.php',{action:'admin_run',taskId:adminTask.id},{'X-NOA-CSRF':adminCsrf});assert.equal(r.data.task.state,'queued');
+r=await req('/noa-ainoa.php',{action:'admin_cancel',taskId:adminTask.id,expectedRevision:1},{'X-NOA-CSRF':adminCsrf});assert.equal(r.data.task.state,'cancelled');
+cookie='';r=await req('/noa-ainoa.php?action=admin_workspace');assert.equal(r.status,403);
+r=await req('/noa-ainoa.php?action=status');assert.equal(r.data.adminAssistant,false);
+assert.equal((await req('/noa-ainoa.php',{action:'admin_run',taskId:adminTask.id},{'X-NOA-CSRF':r.data.csrf})).status,403);
+console.log('N80_NATIVE_ADMIN_QUEUE_RELOAD_IDEMPOTENCY_UNCONFIGURED_CANCEL_GUEST_DENIAL_OK');

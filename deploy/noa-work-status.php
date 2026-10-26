@@ -6,6 +6,7 @@ if(empty($is_member)||($is_admin??'')!=='super'){http_response_code(403);exit('�
 require_once __DIR__.'/noa-app/engine/work-state.php';
 $summary=n80_work_summary(dirname(__DIR__).'/noa-ai-lab/n80-workstate');
 function nws_e(mixed $v):string{return htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
+$ai=null;try{require_once __DIR__.'/noa-bridge/storage.php';require_once __DIR__.'/noa-app/engine/ai-automation.php';$ai=n80_ai_snapshot(noa_bridge_pdo(),(string)$member['mb_id']);}catch(Throwable $e){error_log('[n80-ai-read] unavailable');}
 $labels=['pending'=>'대기','in_progress'=>'진행 중','needs_review'=>'확인 필요','error'=>'오류','complete'=>'완료'];
 $tasks=array_values(array_filter($summary['instructionQueue']??[],fn($x)=>preg_match('/^NOA-20261026-P0-0[1-7]$/D',$x['id'])));
 $original='';foreach($summary['instructionQueue']??[]as $entry)if(str_starts_with($entry['id'],'NOA-20261026-P0-ORIGINAL-'))$original.=$entry['text'];
@@ -20,4 +21,9 @@ $original='';foreach($summary['instructionQueue']??[]as $entry)if(str_starts_wit
 <?php foreach($task['evidence']??[]as $e):?><p><a href="https://github.com/rucyjeon79/noa-studio/actions/runs/<?=nws_e($e['verificationRun'])?>">운영 검증 증거</a> · <?=nws_e(substr($e['commit'],0,12))?></p><?php endforeach;?></article><?php endforeach;?>
 <details><summary>기존 12개 영역</summary><?php foreach($summary['areas']as $area):?><p><strong><?=nws_e($area['label'])?></strong> · <?=nws_e($labels[$area['status']]??'확인 필요')?><br><span class="noa-muted"><?=nws_e($area['note'])?></span></p><?php endforeach;?></details>
 <details><summary>2026.10.26 추가 지시 원문</summary><pre><?=nws_e($original)?></pre></details>
-<?php endif;?></main></body></html>
+<?php endif;?>
+<section id="ai-automation"><h2>N80 AI 자동화</h2><p>관리자 대화·곡별 생성 요청을 SQL에 보관하고, 텍스트 초안을 순서대로 처리합니다. 초안은 검토 후 저장합니다.</p>
+<?php if(isset($ai)&&is_array($ai)):?><p><?=!empty($ai['generation']['ready'])?'OpenAI API 요청 가능':'AI 연결 설정 필요 · 대기 요청 보존 중'?></p>
+<?php foreach($ai['tasks']as $job):?><details><summary><?=nws_e($job['title'])?> · <?=nws_e($job['stage'])?></summary><p>작업 <?=nws_e(substr($job['id'],-12))?> · <?=nws_e($job['updatedAt'])?></p><p><?=nws_e($job['lastSuccessfulStage'])?></p><?php if(!empty($job['result'])):?><pre><?=nws_e($job['result'])?></pre><?php endif;?><?php if(!empty($job['error'])):?><p><?=nws_e($job['error'])?></p><?php endif;?></details><?php endforeach;?>
+<?php else:?><p>AI 작업 기록 연결을 확인하고 있습니다.</p><?php endif;?><a href="/noa-ai-lab.php">AI 서비스 설정</a></section>
+</main></body></html>

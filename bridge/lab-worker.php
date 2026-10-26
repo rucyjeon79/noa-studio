@@ -8,6 +8,7 @@ try {
  $key=trim((string)file_get_contents(lab_root().'/worker.key'));if(strlen($key)!==64)throw new RuntimeException('worker_key');$signed=($_SERVER['REQUEST_METHOD']??'GET')."\n".($_SERVER['QUERY_STRING']??'')."\n".hash('sha256',$raw)."\n".$ts."\n".$nonce;if(!hash_equals(hash_hmac('sha256',$signed,$key),$signature))lab_json(401,['error'=>'worker_auth_required']);
  lab_lock(function(&$s)use($nonce){if(isset($s['nonces'][$nonce]))throw new DomainException('replayed_request');$s['nonces']=array_filter($s['nonces'],fn($at)=>$at>time()-360);$s['nonces'][$nonce]=time();});
  $b=$raw!==''?json_decode($raw,true,512,JSON_THROW_ON_ERROR):[];
+ if($action==='n80_tick'){require_once __DIR__.'/ainoa-core.php';require_once __DIR__.'/ainoa-automation.php';if(empty(lab_read()['config']['workerEnabled']))lab_json(200,['ok'=>true,'processed'=>0,'state'=>'paused']);lab_json(200,['ok'=>true]+n80_ai_tick(noa_bridge_pdo(),(string)($config['cf_admin']??'')));}
  if($action==='health')lab_json(200,['ok'=>true,'privateStorage'=>is_writable(lab_root()),'curl'=>function_exists('curl_init'),'encryption'=>function_exists('openssl_encrypt'),'queued'=>count(array_filter(lab_read()['jobs'],fn($j)=>str_starts_with($j['state'],'queued_')))]);
  if($action==='claim'){
   $r=lab_lock(function(&$s){$s['worker']=['at'=>gmdate('c'),'version'=>'1'];if(empty($s['config']['workerEnabled']))return ['job'=>null];
