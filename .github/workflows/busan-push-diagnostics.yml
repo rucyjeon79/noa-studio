@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
-      - run: python3 -m pip install paramiko==3.5.1
+      - run: python3 -m pip install paramiko==3.5.1 pywebpush==2.4.0
       - env:
           BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
           BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
@@ -21,7 +21,12 @@ jobs:
         run: |
           cd scripts
           python3 - <<'PY'
-          import os,socket,hmac,json,urllib.request,datetime
+          import os,socket,hmac,json,urllib.request,datetime,inspect,tempfile
+          from pathlib import Path
+          import requests
+          from pywebpush import webpush
+          from cryptography.hazmat.primitives import serialization
+          from cryptography.hazmat.primitives.asymmetric import ec
           import paramiko
           from busan_readonly_check import configuration,fingerprint,PORT,ROOT
           host,user,password,pin=configuration(os.environ)
@@ -39,6 +44,7 @@ jobs:
                with s.open(private+'/push-subscriptions/'+name,'rb') as f:record=json.loads(f.read(16384))
                records.append(record)
              own=[r for r in records if r.get('member')==user]
+             with s.open(private+'/push-vapid.json','rb') as f:keys=json.loads(f.read(8192))
              print(json.dumps({'subscriptions':len(records),'owner_devices':len(own),'owner_device_summary':[{'created_utc':datetime.datetime.fromtimestamp(r.get('created',0),datetime.timezone.utc).isoformat(),'acknowledged_slots':r.get('slots',[])[-9:],'has_keys':bool(r.get('subscription',{}).get('keys',{}).get('p256dh') and r.get('subscription',{}).get('keys',{}).get('auth'))} for r in own]},ensure_ascii=False))
             for command in ['command -v php','command -v python3','crontab -l']:
              try:
@@ -47,7 +53,14 @@ jobs:
               print(json.dumps({'capability':command,'exit':code,'available':code==0,'output_bytes':len(out)}))
               channel.close()
              except Exception as e:print(json.dumps({'capability':command,'error_type':type(e).__name__}))
-          req=urllib.request.Request('https://skhnslu-busan.com/busan-assistant/notification-api.php',data=b'{"action":"health"}',headers={'Content-Type':'application/json','X-Busan-Agent-Token':identity['agent_token']})
-          with urllib.request.urlopen(req,timeout=25) as r:health=json.loads(r.read(8192))
-          print(json.dumps({'push_health':health}))
+          print(json.dumps({'webpush_parameters':list(inspect.signature(webpush).parameters)}))
+          with tempfile.TemporaryDirectory() as folder:
+           keyfile=Path(folder)/'vapid.pem';keyfile.write_text(keys['private_pem']);keyfile.chmod(0o600)
+           class NoRedirectSession(requests.Session):
+            def request(self,*args,**kwargs):kwargs['allow_redirects']=False;return super().request(*args,**kwargs)
+           for record in own:
+            try:
+             result=webpush(subscription_info=record['subscription'],data='{"title":"isolated encoding check"}',vapid_private_key=str(keyfile),vapid_claims={'sub':'https://skhnslu-busan.com/'},ttl=900,timeout=15,requests_session=NoRedirectSession(),curl=True)
+             print(json.dumps({'dry_run_encoding':True,'network_send':False}))
+            except Exception as e:print(json.dumps({'dry_run_encoding':False,'network_send':False,'error_type':type(e).__name__,'unsupported_session_parameter':'requests_session' in str(e),'private_key_error':'private key' in str(e).lower()}))
           PY
