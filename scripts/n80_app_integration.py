@@ -171,7 +171,7 @@ def public_checks():
     native authenticated member workflow, not by a guest request.
     """
     checks = []
-    pages = {'/': 200, '/bbs/login.php': 200, '/noa-music.php': 302,
+    pages = {'/': 200, '/noa-login.php': 200, '/bbs/login.php': 302, '/bbs/login.php?legacy=1': 200, '/bbs/register.php': 302, '/noa-music.php': 302,
              '/noa-youtube.php': 302, '/noa-world.php': 302,
              '/noa-ai-lab.php': 302, '/noa-app/jukebox/': 302,
              '/noa-app/database/': 302, '/noa-bridge/user-playlists.php': 401,
@@ -191,8 +191,10 @@ def public_checks():
         ok = status == expected
         if expected == 302:
             location = urllib.parse.urlsplit(headers.get('Location', ''))
-            ok = ok and location.path == '/bbs/login.php' and location.netloc in ('', 'noastudio.ai.kr')
-            ok = ok and urllib.parse.parse_qs(location.query).get('url') == [path]
+            social_entry = path in ('/bbs/login.php', '/bbs/register.php')
+            target = '/noa-login.php' if social_entry else '/bbs/login.php'
+            ok = ok and location.path == target and location.netloc in ('', 'noastudio.ai.kr')
+            ok = ok and urllib.parse.parse_qs(location.query).get('url') == ['/' if social_entry else path]
         elif expected == 401:
             # DotHome may substitute its HTML error body. The access extension's
             # response header must still prove this is the intended denial.

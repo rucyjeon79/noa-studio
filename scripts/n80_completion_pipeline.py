@@ -145,8 +145,9 @@ def report():
     archive = download_artifact(metadata["id"], archive_path)
     evidence.verified_artifact(metadata, run["id"], commit, archive, "verified.json")
     checks = [{"url": evidence.ORIGIN + p, "expectedStatus": s} for p, s in
-              [("/", 200), ("/noa-music.php", 200), ("/noa-my.php", 200), ("/noa-sitemap.php", 200),
-               ("/bbs/login.php", 200), ("/noa-app/jukebox/", 403)]]
+              [("/", 200), ("/noa-sitemap.php", 200), ("/noa-login.php", 200),
+               ("/bbs/login.php?legacy=1", 200), ("/noa-app/engine/consume-music.php", 401),
+               ("/noa-work-status.php", 403)]]
     checks_path = out / "checks.json"
     checks_path.write_text(json.dumps(checks))
     # The parent-owned, Drive-verified release manifest defines the affected set.

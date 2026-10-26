@@ -75,7 +75,7 @@ class GuestAccessProbeTest(unittest.TestCase):
         class Opener:
             def open(self, url, timeout):
                 path = urllib.parse.urlsplit(url).path
-                if path in ('/', '/bbs/login.php'):
+                if path in ('/', '/noa-login.php') or (path == '/bbs/login.php' and urllib.parse.urlsplit(url).query == 'legacy=1'):
                     return Response(200)
                 headers = Message()
                 if path.startswith('/noa-bridge/'):
@@ -83,7 +83,8 @@ class GuestAccessProbeTest(unittest.TestCase):
                         return Response(200, b'{"items":[]}')
                     headers['X-NOA-Access'] = 'music' if 'playlists' in path else 'member'
                     raise urllib.error.HTTPError(url, 401, 'Unauthorized', headers, io.BytesIO(b'denied'))
-                headers['Location'] = ('https://other.invalid' if wrong_login else '') + '/bbs/login.php?url=' + urllib.parse.quote(path, safe='')
+                social = path in ('/bbs/login.php', '/bbs/register.php')
+                headers['Location'] = ('https://other.invalid' if wrong_login else '') + ('/noa-login.php' if social else '/bbs/login.php') + '?url=' + urllib.parse.quote('/' if social else path, safe='')
                 raise urllib.error.HTTPError(url, 302, 'Found', headers, io.BytesIO())
         return Opener()
 

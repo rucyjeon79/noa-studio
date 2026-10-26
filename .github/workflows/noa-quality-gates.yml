@@ -35,8 +35,8 @@ jobs:
           python3 scripts/noa_build_seed.py
           python3 scripts/noa_catalog_seed.py
           python3 -m pip install --user numpy==2.2.6 scipy==1.15.3 'paramiko>=3,<5'
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg fonts-noto-cjk
+          python scripts/qa/noa-qa-font.py
+          command -v ffmpeg || (timeout 180 sudo apt-get update -qq && timeout 180 sudo apt-get install -y -qq ffmpeg)
       - name: Verify existing engines, access checks and SQL invariants
         env:
           NOA_TEST_MYSQL_DSN: mysql:host=127.0.0.1;port=3306;dbname=noa_catalog_test;charset=utf8mb4
