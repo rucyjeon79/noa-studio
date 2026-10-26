@@ -9,6 +9,7 @@ on:
       - 'deploy/noa-youtube.js'
       - 'deploy/noa-music-detail.php'
       - 'tests/catalog/inline_edit_projection_test.php'
+      - 'tests/catalog/inline_edit_music_page_test.py'
       - 'bridge/package-*.php'
       - 'bridge/lab-api.php'
       - 'bridge/index.php'
