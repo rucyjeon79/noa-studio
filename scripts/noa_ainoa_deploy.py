@@ -3,7 +3,7 @@ import base64,hashlib,json,os,stat,subprocess,sys,urllib.request
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
-FILES={'noa-bridge/ainoa-core.php':'bridge/ainoa-core.php','noa-ainoa.php':'deploy/noa-ainoa.php','noa-ainoa.css':'deploy/noa-ainoa.css','noa-ainoa.js':'deploy/noa-ainoa.js','noa-bridge/package-record.php':'bridge/package-record.php','noa-browse-edit.js':'deploy/noa-browse-edit.js','noa-browse.js':'deploy/noa-browse.js','extend/noa.design.php':'deploy/noa-design.extend.php'}
+FILES={'noa-bridge/subscription-access.php':'bridge/subscription-access.php','extend/noa.access.php':'deploy/noa-access.extend.php','noa-bridge/ainoa-core.php':'bridge/ainoa-core.php','noa-ainoa.php':'deploy/noa-ainoa.php','noa-ainoa.css':'deploy/noa-ainoa.css','noa-ainoa.js':'deploy/noa-ainoa.js','noa-bridge/package-record.php':'bridge/package-record.php','noa-browse-edit.js':'deploy/noa-browse-edit.js','noa-browse.js':'deploy/noa-browse.js','extend/noa.design.php':'deploy/noa-design.extend.php'}
 NEW={'noa-bridge/ainoa-core.php','noa-ainoa.php','noa-ainoa.css','noa-ainoa.js'}
 PROTECTED=['common.php','data/dbconfig.php','bbs/login.php','bbs/login_check.php','bbs/board.php','noa-music.php','noa-youtube.php','noa-world.php','noa-hero.js','noa-app/engine/n80.php','noa-app/jukebox/stream.php','noa-app/jukebox/download.php']
 BACKUP=Path(os.environ.get('RUNNER_TEMP','/tmp'))/'noa-ainoa-before.json'

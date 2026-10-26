@@ -1,12 +1,13 @@
 <?php
 /** Additive application ACL. GnuBoard authentication and core files are preserved. */
 if(!defined('_GNUBOARD_'))exit;
+header('X-NOA-Access-Revision: native-subscription-read-1');
 require_once dirname(__DIR__).'/noa-bridge/member-access.php';
 // Managed subscriptions expire on every authenticated request, including direct media requests.
 if(!empty($member['mb_id'])&&($is_admin??'')!=='super'&&is_file(dirname(__DIR__).'/noa-bridge/subscription-access.php')){
  require_once dirname(__DIR__).'/noa-bridge/subscription-access.php';
  if(ns_family((int)($member['mb_level']??1))!==null){
-  try{require_once dirname(__DIR__).'/noa-bridge/storage.php';$member=ns_apply_member(noa_bridge_pdo(),$member,time());}
+  try{$member=ns_apply_native_member($member,time());}
   catch(Throwable $e){$raw=(int)$member['mb_level'];$member['noa_raw_level']=$raw;$member['mb_level']=ns_family($raw)??$raw;error_log('[noa-subscription-access] '.get_class($e));}
  }
 }

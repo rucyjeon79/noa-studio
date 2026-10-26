@@ -18,3 +18,12 @@ function ns_apply_member(PDO $db,array $member,int $now):array{
 function ns_month_end(int $start,?int $anchor=null):int{
  $d=(new DateTimeImmutable('@'.$start))->setTimezone(new DateTimeZone('Asia/Seoul'));$day=$anchor??(int)$d->format('j');$next=$d->modify('first day of next month');return $next->setDate((int)$next->format('Y'),(int)$next->format('n'),min(max(1,$day),(int)$next->format('t')))->setTime((int)$d->format('H'),(int)$d->format('i'),(int)$d->format('s'))->getTimestamp();
 }
+
+/** GnuBoard already owns its native connection. Do not preload storage.php from common.php:
+ * legacy media entry points still require that module themselves. */
+function ns_apply_native_member(array $member,int $now):array{
+ if(empty($member['mb_id'])||ns_family((int)($member['mb_level']??1))===null)return $member;
+ $owner=(string)$member['mb_id'];$key=ns_member_key($owner);$result=sql_query("SELECT payload FROM noa_documents WHERE doc_key='".$key."' AND kind='prefs'",false);if($result===false)throw new RuntimeException('subscription_read_unavailable');$row=sql_fetch_array($result);$grant=$row?json_decode($row['payload'],true,32,JSON_THROW_ON_ERROR):null;
+ if($grant!==null&&(!is_array($grant)||!hash_equals($owner,(string)($grant['ownerId']??''))))throw new RuntimeException('subscription_owner_mismatch');
+ $raw=(int)$member['mb_level'];$member['noa_raw_level']=$raw;$member['mb_level']=ns_effective_level($raw,$grant,$now);return $member;
+}

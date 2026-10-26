@@ -16,3 +16,5 @@ ns_q("CREATE TRIGGER qa_grant_failure BEFORE INSERT ON noa_documents FOR EACH RO
 failwith(fn()=>ns_create_order('rollback',$rollback,'vip','points',$now,0),'policy_changed');check(get_point_sum('rollback')===20,'price_change_no_debit');
 ns_q('ALTER TABLE g5_point ENGINE=MyISAM');check(!ns_storage(true)['ready'],'nontransactional_detected');failwith(fn()=>ns_create_order('rollback',$rollback,'vip','points',$now,1),'points_storage_not_ready');ns_q('ALTER TABLE g5_point ENGINE=InnoDB');check(get_point_sum('rollback')===20,'no_charge_unsafe_storage');
 echo "SUBSCRIPTION_MYSQL_TRANSACTION_IDEMPOTENCY_RECEIPT_OWNERSHIP_EXPIRY_TESTS_OK\n";
+
+$native=ns_apply_native_member(['mb_id'=>'native-absent-grant','mb_level'=>4],time());if($native['mb_level']!==4)throw new RuntimeException('native_legacy_vip_preserved');

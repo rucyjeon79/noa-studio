@@ -27,7 +27,7 @@ jobs:
         with: {php-version: '8.2', extensions: 'pdo_mysql,mbstring,curl'}
       - name: Validate complete record, privacy projection and native SQL round trip
         run: |
-          for file in bridge/ainoa-core.php bridge/package-record.php deploy/noa-ainoa.php deploy/noa-design.extend.php scripts/noa_member_qa_control.php; do php -l "$file"; done
+          for file in bridge/ainoa-core.php bridge/subscription-access.php deploy/noa-access.extend.php bridge/package-record.php deploy/noa-ainoa.php deploy/noa-design.extend.php scripts/noa_member_qa_control.php; do php -l "$file"; done
           php tests/catalog/package_record_test.php
           php tests/catalog/ainoa_test.php
           node --check deploy/noa-ainoa.js
@@ -64,7 +64,7 @@ jobs:
           sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
           npm install --prefix "$RUNNER_TEMP/noa-ainoa" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-ainoa.mjs "$RUNNER_TEMP/noa-ainoa/check.mjs"
-      - name: Activate only eight reviewed files with SHA preimage guards
+      - name: Activate only reviewed files with SHA preimage guards
         id: upload
         env: &noa_env
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}

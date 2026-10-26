@@ -39,8 +39,8 @@ def main():
  try:
   # Wait for the independently gated source release; never interfere with an active upload.
   for attempt in range(30):
-   status,body,_=request(urllib.request.build_opener(),'/')
-   if status==200 and b'id="noa-access"'in body:
+   status,body,ready_headers=request(urllib.request.build_opener(),'/')
+   if status==200 and b'id="noa-access"'in body and any(k.lower()=='x-noa-access-revision'and v=='native-subscription-read-1'for k,v in ready_headers.items()):
     sub_status,_,_=request(urllib.request.build_opener(),'/noa-bridge/subscription.php')
     if sub_status==401:break
    print('Waiting for gated NOA access release',attempt+1,flush=True);time.sleep(20)
