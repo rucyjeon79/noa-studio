@@ -1,0 +1,67 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "path": "/",
+      "status": 200,
+      "homeAndNoticePresent": true
+    },
+    {
+      "path": "/noa-bridge/community.php?action=home",
+      "status": 200,
+      "boards": [
+        {
+          "board": "free",
+          "title": "자유게시판",
+          "titleCount": 0
+        },
+        {
+          "board": "gallery",
+          "title": "갤러리",
+          "titleCount": 0
+        },
+        {
+          "board": "qa",
+          "title": "질문답변",
+          "titleCount": 0
+        },
+        {
+          "board": "song_request",
+          "title": "사연곡 신청",
+          "titleCount": 0
+        }
+      ],
+      "titlesOnly": true,
+      "noticeExcluded": true
+    },
+    {
+      "path": "/noa-bridge/community.php?board=song_request",
+      "status": 401,
+      "guestDenied": true,
+      "hostErrorDocument": true
+    },
+    {
+      "path": "/noa-bridge/community.php?board=free",
+      "status": 401,
+      "guestDenied": true,
+      "hostErrorDocument": true
+    },
+    {
+      "path": "/bbs/board.php?bo_table=song_request",
+      "status": 403,
+      "nativePrivateRouteDenied": true
+    },
+    {
+      "path": "/bbs/download.php?bo_table=song_request&wr_id=1",
+      "status": 403,
+      "nativePrivateRouteDenied": true
+    },
+    {
+      "path": "/bbs/rss.php?bo_table=song_request",
+      "status": 403,
+      "nativePrivateRouteDenied": true
+    }
+  ],
+  "productionTestPostsCreated": 0,
+  "productionAuthImpersonation": false
+}

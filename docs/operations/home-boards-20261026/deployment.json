@@ -1,0 +1,26 @@
+{
+  "commit": "e92536b4ec3f20f6cb32e1ece0b1a6cd9584505e",
+  "changed": [
+    "noa-bridge/community-core.php",
+    "noa-bridge/community.php",
+    "noa-community.css",
+    "noa-community.js",
+    "noa-app/home.php"
+  ],
+  "sha256": {
+    "noa-bridge/community-core.php": "5cb8f329b80f32c497d1fd356ba5f91dd9b8ad43773f279445c3f76c304e5c46",
+    "noa-bridge/community.php": "ffbe563c755f8b0575a358a4ec3c3b131e4b7a5bc7918f51076380fec79a68ab",
+    "noa-bridge/community-install.php": "fa1855528489aa138ecd3369f772bcaa39ebb51fe86d2d9d5544bf57277b2a73",
+    "extend/noa.01-community.php": "885a34547a27520daea5a3e6939b62c17e225d97f20eac3549b9e90f27036189",
+    "noa-community.css": "6807d8ffd7c62f50818aa97f38e0e0dd457dbb639ce9e8ad560dcd3f387dbe89",
+    "noa-community.js": "eb683efa1bde80d3f0ec481b3d18e58aedc2aa0e36e0eb8db5fcf11fb75a0f89",
+    "noa-app/home.php": "20158a3f8a71d118b88ec9719679c2321bb57c0002370f85d37d872e208cf29c",
+    "noa-launch.js": "9d23f2c094c536319e573008b68f230b1f5da9aa706f8f0cbe75277e8e858f7d",
+    "extend/noa.design.php": "80973259751eb236b01acf183b90eda9e094a90fb080c84f009027f89044fab3"
+  },
+  "protectedUnchanged": 18,
+  "databaseWrites": 0,
+  "memberRowsChanged": 0,
+  "pointDebits": 0,
+  "pricesSeeded": false
+}
