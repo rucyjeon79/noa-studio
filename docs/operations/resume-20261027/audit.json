@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 1,
+  "auditDate": "2026-10-27",
+  "baseCommit": "9eb4f54a0325cd90631d9e1b78255d5f809b3e58",
+  "kind": "read_only_evidence_reconciliation",
+  "runtimeFilesChanged": 0,
+  "productionDatabaseWrites": 0,
+  "newProviderCalls": 0,
+  "newDeviceTesting": false,
+  "latestScheduledChecks": [
+    {
+      "id": 40409513666,
+      "name": "NOA AI LAB worker readiness and publication guard",
+      "conclusion": "success",
+      "url": "https://github.com/rucyjeon79/noa-studio/actions/runs/40409513666",
+      "head": "9eb4f54a0325cd90631d9e1b78255d5f809b3e58"
+    },
+    {
+      "id": 40408613094,
+      "name": "N80 Live Production Observer",
+      "conclusion": "success",
+      "url": "https://github.com/rucyjeon79/noa-studio/actions/runs/40408613094",
+      "head": "9eb4f54a0325cd90631d9e1b78255d5f809b3e58"
+    },
+    {
+      "id": 40407544785,
+      "name": "N80 Whole App Data Integration",
+      "conclusion": "success",
+      "url": "https://github.com/rucyjeon79/noa-studio/actions/runs/40407544785",
+      "head": "9eb4f54a0325cd90631d9e1b78255d5f809b3e58"
+    },
+    {
+      "id": 40407503483,
+      "name": "NOA membership expiry and consented renewal",
+      "conclusion": "success",
+      "url": "https://github.com/rucyjeon79/noa-studio/actions/runs/40407503483",
+      "head": "9eb4f54a0325cd90631d9e1b78255d5f809b3e58"
+    },
+    {
+      "id": 40406063120,
+      "name": "NOA JUKEBOX public cards and authorized audio",
+      "conclusion": "success",
+      "url": "https://github.com/rucyjeon79/noa-studio/actions/runs/40406063120",
+      "head": "9eb4f54a0325cd90631d9e1b78255d5f809b3e58"
+    },
+    {
+      "id": 40404084444,
+      "name": "NOA hourly integrated popularity snapshot",
+      "conclusion": "success",
+      "url": "https://github.com/rucyjeon79/noa-studio/actions/runs/40404084444",
+      "head": "9eb4f54a0325cd90631d9e1b78255d5f809b3e58"
+    }
+  ],
+  "integration": {
+    "run": "https://github.com/rucyjeon79/noa-studio/actions/runs/40407544785",
+    "checkedAt": "2026-10-26T21:50:40+00:00",
+    "verifiedRuntimeFiles": 37,
+    "changedFiles": [],
+    "integrityOk": true,
+    "issues": [],
+    "publicRoutesChecked": 13,
+    "publicRoutesPassed": 13,
+    "productionDatabaseWrites": 0
+  },
+  "musicObservation": {
+    "run": "https://github.com/rucyjeon79/noa-studio/actions/runs/40408613094",
+    "checkedAt": "2026-10-26T21:58:39+00:00",
+    "verifiedRuntimeFiles": 37,
+    "sampledJobs": 10,
+    "observed": 10,
+    "availabilityAcknowledged": 10,
+    "repeatObservationVerified": true,
+    "unauthorizedRequestsRejected": true,
+    "productionDatabaseWrites": 0,
+    "automaticDispatch": false
+  },
+  "aiWorker": {
+    "run": "https://github.com/rucyjeon79/noa-studio/actions/runs/40409513666",
+    "processingEnabled": false,
+    "queued": 0,
+    "active": 0,
+    "state": "idle",
+    "reason": "no_queued_work",
+    "providerCallVerified": false
+  },
+  "n80Journal": {
+    "revision": 24,
+    "allAreasComplete": false,
+    "counts": {
+      "pending": 0,
+      "in_progress": 7,
+      "needs_review": 5,
+      "error": 0,
+      "complete": 0
+    },
+    "modified": false
+  },
+  "evidenceReport": {
+    "run": "https://github.com/rucyjeon79/noa-studio/actions/runs/40396811427",
+    "recorded": false,
+    "effect": "no_integrated_release_evidence",
+    "note": "A successful workflow does not imply that the latest scoped UI work was registered in the older integrated journal."
+  },
+  "correctedRecords": [
+    "member/point storage transition already verified",
+    "latest account navigation and four-level release",
+    "home and Apple installer, preview, community, notice and muvy scoped results",
+    "resolved settings overflow and board guest-login candidate checks"
+  ],
+  "outstanding": [
+    {
+      "id": "social-oauth",
+      "status": "requires_admin_configuration",
+      "evidence": "docs/operations/NOA_20261026_MEMBERSHIP_SOCIAL_EVIDENCE.json",
+      "lastObservedDate": "2026-10-26",
+      "observedInThisAudit": false,
+      "next": "관리자 소셜 설정에서 Google Client ID/Secret과 Kakao REST API Key/Client Secret·콜백을 등록한 뒤 실제 가입/재로그인을 검증한다. 비밀값을 채팅이나 저장소에 넣지 않는다.",
+      "settingsUrl": "https://noastudio.ai.kr/adm/config_form.php#anc_cf_sns"
+    },
+    {
+      "id": "ainoa-provider",
+      "status": "requires_admin_configuration",
+      "lastReadinessEvidence": "https://github.com/rucyjeon79/noa-studio/actions/runs/40409513666",
+      "lastObserved": {
+        "processingEnabled": false,
+        "queued": 0,
+        "active": 0,
+        "state": "idle"
+      },
+      "lastKnownProviderConfiguration": {
+        "evidence": "docs/operations/NOA_20261026_AI_AUTOMATION_RESULT.md",
+        "observedDate": "2026-10-26",
+        "textEnabled": false,
+        "keyConfigured": false,
+        "budgetConfigured": false
+      },
+      "next": "기존 AI LAB 보안 설정에서 OpenAI 키·모델·활성화·사용 한도와 대화 포인트 단가를 설정한 뒤 실제 응답 및 중복 없는 과금을 검증한다. 회원/포인트 InnoDB 이전은 이미 완료됐으므로 재수행하지 않는다. idle 결과를 공급자 호출 성공으로 해석하지 않는다."
+    },
+    {
+      "id": "muvy-provider",
+      "status": "requires_admin_configuration",
+      "evidence": "docs/operations/NOA_20261026_HOME_COMMUNITY_MUVY_RESULT.md",
+      "next": "최고관리자 AI LAB 뮤비 설정에서 xAI 키와 사용 한도를 설정하고 활성화한 뒤 실제 생성 검증. 현재 구현 범위는 대본·이미지/영상 프롬프트 패키지이며 MP4 렌더링·YouTube 게시 완료가 아니다."
+    },
+    {
+      "id": "cash-payment",
+      "status": "requires_provider_configuration",
+      "evidence": "docs/operations/NOA_20261026_MEMBERSHIP_SOCIAL_RESULT.md",
+      "next": "결제 제공자·인증정보와 영수증 검증을 연결한 뒤 실제 충전 검증. 3,000P/30일 VIP 구매·차감과 별개이며 미설정 충전을 활성화하지 않는다."
+    },
+    {
+      "id": "source-originals",
+      "status": "requires_source_recovery",
+      "evidence": "docs/operations/NOA_20261026_P0_RESULT.md",
+      "next": "이전 실업로드 23행/21곡의 incoming 원본 부재는 과거 관측이다. 별도 보관본의 존재·해시를 확인한 뒤 복원한다. 현재 정상 최적화 MP3를 원본 복구로 표시하지 않는다. 원본 없는 필드를 임의 생성하지 않는다."
+    },
+    {
+      "id": "jpop-act1-thumbcast",
+      "status": "requires_source_owner_review",
+      "evidence": "docs/operations/NOA_20261026_SOURCE_COMPARISON.json",
+      "next": "J-POP ACT 1 thumbCast 차이 1건은 수정 이력을 보존하고 원본 소유자의 의도 확인 후 처리한다."
+    },
+    {
+      "id": "physical-device-and-native-package",
+      "status": "not_verified",
+      "evidence": "docs/operations/NOA_20261027_HOME_ENTRY_APP_INSTALL_RESULT.md",
+      "next": "Apple 웹앱 안내와 Chromium/WebKit 검사는 완료. 실물 iPhone 설치·Android 잠금 재생·전체 기기 검수는 미완료. 기존 Android 앱 재서명에는 원래 서명키가 필요하다."
+    },
+    {
+      "id": "legacy-twelve-area-acceptance",
+      "status": "partially_verified",
+      "evidence": "docs/operations/NOA_20261027_CONTINUATION_AUDIT.md",
+      "next": "N80 운영 저널의 기존 12개 영역별 남은 승인·자료·검증을 개별 증거로 확인한다. 최신 데이터 관계 검사 성공과 현재 UI 배포를 전체 완료로 확대하지 않는다. 구형 배포기는 그대로 재실행하지 말고 현재 인증·배포 보호를 먼저 대조한다."
+    }
+  ],
+  "limitations": [
+    "This turn reviews existing CI logs and persisted receipts, without a new browser session.",
+    "OAuth provider settings were last observed on 2026-10-26; no secret configuration was read or changed in this audit.",
+    "The N80 twelve-area journal is preserved, not marked complete."
+  ]
+}
