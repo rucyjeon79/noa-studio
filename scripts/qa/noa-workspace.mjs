@@ -4,7 +4,9 @@ async function visiblePath(page,selector,values){
  const path=page.locator(selector);await path.locator('[data-category-level="4"]').waitFor();
  assert.equal(await path.locator('[data-category-level]:visible').count(),4,selector+' has four visible levels');
  assert.deepEqual(await path.locator('[data-category-level]>a,[data-category-level]>strong').allTextContents(),values);
- assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+ const layout=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,overflow:[...document.querySelectorAll('body *')].filter(e=>e.getBoundingClientRect().right>innerWidth+1).map(e=>({tag:e.tagName,id:e.id,className:e.className,right:e.getBoundingClientRect().right})).slice(0,20)}));
+ if(layout.scroll>layout.width+1){await page.screenshot({path:out+'/classification-overflow.png',fullPage:true});writeFileSync(out+'/classification-overflow.json',JSON.stringify({selector,layout},null,2));}
+ assert(layout.scroll<=layout.width+1,selector+' fits the viewport: '+JSON.stringify(layout));
 }
 try{
  const probe=await browser.newContext();for(let i=0;i<50;i++){try{if((await probe.request.get(base+'/')).ok())break;}catch{}await new Promise(r=>setTimeout(r,100));}await probe.close();
