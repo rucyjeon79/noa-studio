@@ -16,6 +16,7 @@ function noa_design_assets(){
  global $config;
  $path=parse_url($_SERVER['REQUEST_URI']??'',PHP_URL_PATH);
  if(!is_string($path))return;
+ $ainoa='';foreach(['css','js'] as $kind){$asset=dirname(__DIR__).'/noa-ainoa.'.$kind;if(is_file($asset)){$url='/noa-ainoa.'.$kind.'?v='.hash_file('sha256',$asset);$ainoa.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'" defer></script>';}}
  $native=preg_match('~^/(?:bbs|adm)/~',$path);
  $workspace=preg_match('~^/noa-app/(?:database|taxonomy|jukebox)/(?:index[.]php)?$~',$path);
  $public=in_array($path,['/','/index.php'],true)||preg_match('~^/noa-(?:music|youtube|world|my|settings|catalog|ai-lab|library|editor|download|theme-admin|creator|channel|subscription)(?:-admin)?[.]php$~',$path);
@@ -23,9 +24,9 @@ function noa_design_assets(){
  if(!$native&&($_SERVER['REQUEST_METHOD']??'GET')!=='GET')return;
  // Standalone views do not call GnuBoard html_end(); inject only completed HTML.
  if(!$native){
-  $assets='<link rel="stylesheet" href="/noa-policy-20261024.css?v=20261024-approved-ui">';
+  $assets=$ainoa.'<link rel="stylesheet" href="/noa-policy-20261024.css?v=20261024-approved-ui">';
   if($workspace){
-   if(!str_starts_with($path,'/noa-app/jukebox/'))$assets='<link rel="stylesheet" href="/noa-ui.css?v=20261022-recovery2">'.$assets;
+   if(!str_starts_with($path,'/noa-app/jukebox/'))$assets=$ainoa.'<link rel="stylesheet" href="/noa-ui.css?v=20261022-recovery2">'.$assets;
    $assets.='<script src="/noa-ui.js?v=20261024-approved-ui" data-noa-theme-only defer></script>';
   }
   ob_start(static function($html)use($assets){
@@ -35,6 +36,7 @@ function noa_design_assets(){
   });
   return;
  }
+ if(!str_starts_with($path,'/adm/'))add_javascript($ainoa,1001);
  // Native skins use GnuBoard's ordered asset registration.
  if(!str_starts_with($path,'/adm/'))add_stylesheet('<link rel="stylesheet" href="/noa-policy-20261024.css?v=20261024-approved-ui">',999);
  $config['cf_title']='NOA STUDIO';

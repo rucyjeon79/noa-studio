@@ -1,0 +1,86 @@
+name: NOA AInoa and Song Editor Production
+on:
+  push:
+    branches: [main]
+    paths: ['bridge/ainoa-*.php','deploy/noa-ainoa.*','scripts/noa_ainoa_deploy.py','scripts/qa/noa-ainoa*','tests/catalog/ainoa_test.php','.github/workflows/noa-ainoa.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: noa-ainoa-release, cancel-in-progress: false}
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: noa-test-only, MYSQL_DATABASE: noa_inline_edit_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -h localhost -pnoa-test-only" --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      NOA_MYSQL_DSN: mysql:host=127.0.0.1;port=3306;dbname=noa_inline_edit_test;charset=utf8mb4
+      NOA_MYSQL_USER: root
+      NOA_MYSQL_PASSWORD: noa-test-only
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'pdo_mysql,mbstring,curl'}
+      - name: Validate complete record, privacy projection and native SQL round trip
+        run: |
+          for file in bridge/ainoa-core.php bridge/package-record.php deploy/noa-ainoa.php deploy/noa-design.extend.php scripts/noa_member_qa_control.php; do php -l "$file"; done
+          php tests/catalog/package_record_test.php
+          php tests/catalog/ainoa_test.php
+          node --check deploy/noa-ainoa.js
+          node --check deploy/noa-browse-edit.js
+          node --check deploy/noa-browse.js
+          python -m py_compile scripts/noa_ainoa_deploy.py scripts/noa_member_live_check.py
+          python scripts/qa/inline-edit-fixture.py
+          cp deploy/noa-ainoa.php "$RUNNER_TEMP/noa-inline-edit-fixture/noa-ainoa.php"
+          php scripts/qa/inline-edit-seed.php
+          php -S 127.0.0.1:8101 -t "$RUNNER_TEMP/noa-inline-edit-fixture" > "$RUNNER_TEMP/ainoa-native.log" 2>&1 &
+          node scripts/qa/noa-ainoa-native.mjs
+      - name: Prepare mobile browser checks
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          npm install --prefix "$RUNNER_TEMP/noa-ainoa" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-ainoa.mjs "$RUNNER_TEMP/noa-ainoa/check.mjs"
+      - name: Verify editor, floating controls and guest search in both themes
+        run: node "$RUNNER_TEMP/noa-ainoa/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-ainoa-candidate-${{ github.run_id }}', path: ainoa-proof/, retention-days: 2}
+  deploy:
+    needs: candidate
+    environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Prepare existing pinned NOA transport and browser
+        run: |
+          python -m pip install 'paramiko>=3,<5'
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          npm install --prefix "$RUNNER_TEMP/noa-ainoa" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-ainoa.mjs "$RUNNER_TEMP/noa-ainoa/check.mjs"
+      - name: Activate only eight reviewed files with SHA preimage guards
+        id: upload
+        env: &noa_env
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_ainoa_deploy.py
+      - name: Verify real guest search, level gate and floating controls on production
+        id: live
+        env: {NOA_AINOA_PHASE: live}
+        run: node "$RUNNER_TEMP/noa-ainoa/check.mjs"
+      - name: Restore only release-owned source bytes on failed acceptance
+        if: failure() && (steps.upload.outcome == 'failure' || steps.live.outcome == 'failure')
+        env: *noa_env
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then python scripts/noa_ainoa_deploy.py rollback; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-ainoa-live-${{ github.run_id }}', path: ainoa-proof/, retention-days: 2}

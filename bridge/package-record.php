@@ -3,7 +3,7 @@ declare(strict_types=1);
 /** One complete, versioned JSON record per song/playlist. No metadata sidecar writes.
  * noa_documents.payload is authoritative; history and JSON downloads are snapshots.
  */
-const NUP_FIELDS=['title','description','lyrics','cast','vocal','geminiPrompt','youtubeTitle','communityPost','sunoUrl','cardImageLocation','audioFileLocation','youtubeUrl','mvUrl','members'];
+const NUP_FIELDS=['title','description','lyrics','cast','vocal','sunoPrompt','geminiPrompt','youtubeTitle','communityPost','sunoUrl','cardImageLocation','audioFileLocation','youtubeUrl','mvUrl','members'];
 function nup_type(array $d,string $kind):string{
  $g=$d['genreId']??'';
  if($kind==='playlist')return in_array($g,['your-story','cover-reborn'],true)||(int)($d['act']??0)<1?'playlist':'act';
@@ -12,12 +12,12 @@ function nup_type(array $d,string $kind):string{
 }
 function nup_fields(array $d):array{
  $b=$d['body']??[];$p=$d['packageType']??nup_type($d,(int)($d['act']??0)>0?'playlist':'single');
- return ['title'=>(string)($b['displayTitle']??$b['confirmedTitle']??$d['title']??''),'description'=>(string)($b['youtubeDescription']??$b['songDescription']??$b['descriptionBlock']??$b['description']??''),'lyrics'=>(string)($b['lyricsBlock']??''),'cast'=>(string)($b['thumbCast']??''),'vocal'=>(string)($b['vocalInfo']??$b['vocal']??$b['sourceVocal']??''),'geminiPrompt'=>(string)($b['geminiPrompt']??''),'youtubeTitle'=>(string)($b['youtubeTitle']??''),'communityPost'=>(string)($b['communityPost']??$b['fanLetter']??''),'sunoUrl'=>(string)($b['sunoShareUrl']??$b['sunoUrl']??''),'cardImageLocation'=>(string)($b['cardImageLocation']??$b['coverImageUrl']??$b['thumbUrl']??''),'audioFileLocation'=>(string)($b['audioFileLocation']??$b['audioUrl']??''),'youtubeUrl'=>(string)($b['youtubeUrl']??''),'mvUrl'=>(string)($b['mvUrl']??$b['musicVideoUrl']??''),'members'=>$b['members']??[]];
+ return ['title'=>(string)($b['displayTitle']??$b['confirmedTitle']??$d['title']??''),'description'=>(string)($b['youtubeDescription']??$b['songDescription']??$b['descriptionBlock']??$b['description']??''),'lyrics'=>(string)($b['lyricsBlock']??''),'cast'=>(string)($b['thumbCast']??''),'vocal'=>(string)($b['vocalInfo']??$b['vocal']??$b['sourceVocal']??''),'sunoPrompt'=>(string)($b['sunoPrompt']??$b['sunoStyle']??''),'geminiPrompt'=>(string)($b['geminiPrompt']??''),'youtubeTitle'=>(string)($b['youtubeTitle']??''),'communityPost'=>(string)($b['communityPost']??$b['fanLetter']??''),'sunoUrl'=>(string)($b['sunoShareUrl']??$b['sunoUrl']??''),'cardImageLocation'=>(string)($b['cardImageLocation']??$b['coverImageUrl']??$b['thumbUrl']??''),'audioFileLocation'=>(string)($b['audioFileLocation']??$b['audioUrl']??''),'youtubeUrl'=>(string)($b['youtubeUrl']??''),'mvUrl'=>(string)($b['mvUrl']??$b['musicVideoUrl']??''),'members'=>$b['members']??[]];
 }
 function nup_normalize(array $d,string $kind):array{
  $d['packageSchema']=1;$d['packageType']=nup_type($d,$kind);$d['body']??=[];$b=&$d['body'];$f=nup_fields($d);
  // Keep unrecognised production fields and acquisition evidence byte-for-byte as values.
- foreach(['vocalInfo'=>'vocal','geminiPrompt'=>'geminiPrompt','youtubeTitle'=>'youtubeTitle','youtubeDescription'=>'description','communityPost'=>'communityPost','sunoUrl'=>'sunoUrl','cardImageLocation'=>'cardImageLocation','audioFileLocation'=>'audioFileLocation','youtubeUrl'=>'youtubeUrl','mvUrl'=>'mvUrl'] as $dst=>$src)if(!array_key_exists($dst,$b))$b[$dst]=$f[$src];
+ foreach(['vocalInfo'=>'vocal','sunoPrompt'=>'sunoPrompt','geminiPrompt'=>'geminiPrompt','youtubeTitle'=>'youtubeTitle','youtubeDescription'=>'description','communityPost'=>'communityPost','sunoUrl'=>'sunoUrl','cardImageLocation'=>'cardImageLocation','audioFileLocation'=>'audioFileLocation','youtubeUrl'=>'youtubeUrl','mvUrl'=>'mvUrl'] as $dst=>$src)if(!array_key_exists($dst,$b))$b[$dst]=$f[$src];
  if($d['packageType']==='original')$b['originalInfo']??=['ep'=>(string)($d['ep']??''),'title'=>$f['title'],'lyrics'=>$f['lyrics'],'vocal'=>$f['vocal']];
  if(in_array($d['packageType'],['act','playlist'],true))$b['members']??=[];
  if($d['packageType']==='act'){$a=(int)($d['act']??0);if($a<1)throw new DomainException('act_number_required');$d['epRange']=['from'=>($a-1)*10+1,'to'=>$a*10];}
@@ -36,6 +36,7 @@ function nup_patch(array $d,string $kind,array $patch):array{
    $d['body']['members']=$value;continue;
   }
   if(!is_string($value)||strlen($value)>200000||str_contains($value,"\0"))throw new InvalidArgumentException('invalid_field:'.$key);
+  if($key==='vocal'&&!in_array($value,['여자솔로','남자솔로','남녀듀엣'],true))throw new InvalidArgumentException('invalid_vocal');
   if($key==='title'&&(trim($value)===''||mb_strlen($value)>500))throw new InvalidArgumentException('title_required');
   if(in_array($key,['sunoUrl','youtubeUrl','mvUrl'],true)&&$value!==''){
    $u=parse_url($value);if(($u['scheme']??'')!=='https'||empty($u['host'])||isset($u['user'])||isset($u['pass'])||isset($u['port']))throw new InvalidArgumentException('invalid_url');
@@ -43,7 +44,7 @@ function nup_patch(array $d,string $kind,array $patch):array{
   }
   if(in_array($key,['audioFileLocation','cardImageLocation'],true)&&$value!==''&&(!preg_match('~^(?:https://[^\s]+|/[A-Za-z0-9/_?.=&:%+-]+)$~D',$value)||str_contains($value,'..')))throw new InvalidArgumentException('invalid_file_location');
   if($key==='ep'){if(!preg_match('/^[1-9][0-9]{0,3}$/D',ltrim($value,'0')))throw new InvalidArgumentException('invalid_ep');$d['ep']=str_pad((string)(int)$value,2,'0',STR_PAD_LEFT);$d['body']['originalInfo']['ep']=$d['ep'];continue;}
-  $map=['title'=>'confirmedTitle','description'=>'youtubeDescription','lyrics'=>'lyricsBlock','cast'=>'thumbCast','vocal'=>'vocalInfo','geminiPrompt'=>'geminiPrompt','youtubeTitle'=>'youtubeTitle','communityPost'=>'communityPost','sunoUrl'=>'sunoUrl','cardImageLocation'=>'cardImageLocation','audioFileLocation'=>'audioFileLocation','youtubeUrl'=>'youtubeUrl','mvUrl'=>'mvUrl'];
+  $map=['title'=>'confirmedTitle','description'=>'youtubeDescription','lyrics'=>'lyricsBlock','cast'=>'thumbCast','vocal'=>'vocalInfo','sunoPrompt'=>'sunoPrompt','geminiPrompt'=>'geminiPrompt','youtubeTitle'=>'youtubeTitle','communityPost'=>'communityPost','sunoUrl'=>'sunoUrl','cardImageLocation'=>'cardImageLocation','audioFileLocation'=>'audioFileLocation','youtubeUrl'=>'youtubeUrl','mvUrl'=>'mvUrl'];
   $d['body'][$map[$key]]=$value;
   if($type==='original'&&in_array($key,['title','lyrics','vocal'],true))$d['body']['originalInfo'][$key]=$value;
   if($key==='title'){$d['title']=$value;if($playlist)$d['body']['displayTitle']=$value;}

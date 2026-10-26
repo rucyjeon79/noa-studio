@@ -1,0 +1,4 @@
+<?php
+declare(strict_types=1);require_once __DIR__.'/../../bridge/sound-core.php';require_once __DIR__.'/../../bridge/ainoa-core.php';
+foreach(['private','draft','unlisted','hidden']as $v)if(na_public(['visibility'=>$v]))throw new RuntimeException('private_projection');if(na_public(['ownerId'=>'creator']))throw new RuntimeException('creator_projection');
+$r=na_summary(['doc_key'=>'one','payload'=>json_encode(['title'=>'노래','body'=>['lyricsBlock'=>"[Verse]\n노래 가사",'sunoPrompt'=>'SECRET PROMPT','geminiPrompt'=>'PRIVATE INSTRUCTIONS','audioFileLocation'=>'secret.mp3']])]);if(str_contains(json_encode($r),'SECRET')||str_contains($r['lyrics'],'[Verse]'))throw new RuntimeException('production_fields_leaked');echo "AINOA_PUBLIC_PROJECTION_PRIVATE_RECORDS_AND_PRODUCTION_FIELDS_PROTECTED\n";
