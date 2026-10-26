@@ -20,10 +20,13 @@ if(isset($_GET['playlist'])){
 }
 
 // Keep source rows and administrator decisions intact; filter only this public read model.
+$sourceVideos=$videos;
 if($run){try{$actCollection=nwm_act_load($db,$run,$videos);$videos=array_diff_key($videos,ny_official_members($db,$run),array_fill_keys(array_column($actCollection['videos'],'videoId'),true));unset($playlists[NWM_PLAYLIST],$playlists[NWM_ACT_PLAYLIST]);}
  catch(Throwable $e){$videos=[];$error=true;error_log('[noa-youtube-official-membership] '.get_class($e));}}
 $inlineEdits=[];$inlineActLabels=[];
 if(!$error&&isset($db)&&is_file(__DIR__.'/noa-bridge/inline-edit.php')){require_once __DIR__.'/noa-bridge/inline-edit.php';$inlineEdits=nie_overrides($db);foreach($videos as $id=>&$v){$f=nie_fields($inlineEdits,['key'=>$id,'video'=>$id,'orderKey'=>$v['match']['songId']??'']);if(isset($f['title']))$v['snippet']['title']=$f['title'];}unset($v);}
+// A visible ACT with an explicit video URL also plays directly from its playlist title.
+if(!$error&&!$playlistUnavailable&&isset($db)&&is_file(__DIR__.'/noa-bridge/youtube-catalog.php')){require_once __DIR__.'/noa-bridge/youtube-catalog.php';$listenerCatalog=ny_listener_catalog($db,$admin,$inlineEdits);if($run&&!isset($_GET['playlist']))$videos+=ny_act_public_sources($sourceVideos,$listenerCatalog);}
 $browseRows=[];
 foreach($videos as $id=>$v){if(($v['status']['privacyStatus']??'')!=='public'||empty($v['status']['embeddable'])||isset($_GET['world'])&&($v['classification']??'')!=='official_mv')continue;$song=$songIndex[$v['match']['songId']??'']??null;$canonicalUrl=(string)($song['fields']['youtubeUrl']??'');if(function_exists('nie_fields')){$canonical=nie_fields($inlineEdits,['key'=>$id,'video'=>$id,'orderKey'=>$v['match']['songId']??'']);$canonicalUrl=(string)($canonical['youtubeUrl']??$canonicalUrl);}$browseRows[]=['key'=>$id,'orderKey'=>$v['match']['songId']??'','title'=>$v['snippet']['title']??'NOA Music','genre'=>$song['genre_id']??'unclassified','ep'=>$song['ep']??'','act'=>'','kind'=>'video','video'=>$id,'preferredVideo'=>ny_video_id($canonicalUrl)===$id];}
 if($inlineEdits)$inlineActLabels=nie_act_labels($inlineEdits,$browseRows);
@@ -69,7 +72,7 @@ $detail=noa_video_detail($detailId,$detailVideo,$songIndex,$legacyLyrics,$admin,
 // Private YouTube availability never removes an otherwise visible MUSIC song.
 if(!$error&&!$playlistUnavailable&&isset($db)&&is_file(__DIR__.'/noa-bridge/youtube-catalog.php')){
  require_once __DIR__.'/noa-bridge/youtube-catalog.php';
- $listenerCatalog=ny_listener_catalog($db,$admin,$inlineEdits);
+ $listenerCatalog=$listenerCatalog??ny_listener_catalog($db,$admin,$inlineEdits);
  if(isset($_GET['playlist'])){$ids=array_fill_keys(array_keys($videos),true);$members=array_fill_keys(array_filter(array_map(fn($v)=>$v['match']['songId']??null,$videos)),true);$listenerCatalog=array_filter($listenerCatalog,fn($r)=>isset($members[$r['orderKey']])||isset($ids[$r['canonicalVideo']??'']));}
  $browseRows=ny_complete_catalog_rows($browseRows,$videos,$listenerCatalog);
  if($inlineEdits)$inlineActLabels=nie_act_labels($inlineEdits,$browseRows);

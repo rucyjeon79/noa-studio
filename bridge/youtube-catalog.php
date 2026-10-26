@@ -16,6 +16,10 @@ function ny_listener_catalog(PDO $db,bool $admin,array $edits=[]):array{
  }
  return $out;
 }
+/** Only explicitly linked, verified public ACT videos may reappear beside their playlist. */
+function ny_act_public_sources(array $videos,array $catalog):array{
+ $out=[];foreach($catalog as $r){if(($r['kind']??'')!=='playlist')continue;$id=$r['canonicalVideo']??'';$v=$videos[$id]??null;if($v&&($v['status']['privacyStatus']??'')==='public'&&!empty($v['status']['embeddable'])&&!in_array($v['match']['status']??'',['rejected','conflict'],true))$out[$id]=$v;}return $out;
+}
 function ny_coming_art(string $genre):array{
  $genres=['kpop-original','jpop-original','pop-original','thai-original','joseon-ballad','echoes-of-joseon','groovy-airy-pop','narrative-piano-indie','dreamy-deep-house','fantasy-ambient-edm','edm-kpop-club','latin-afrobeats-edm','panpop','your-story'];
  if($genre==='cover-reborn')return ['thumb'=>'/noa-assets/splash/cover-reborn-g2-a.jpg','comingOverlay'=>true];
@@ -33,6 +37,6 @@ function ny_complete_catalog_rows(array $publicRows,array $videos,array $catalog
   // Private provider titles, descriptions, URLs and video IDs are not serialized.
   $rows[]=array_merge($r,ny_coming_art($r['genre']),['key'=>'coming:'.hash('sha256','video:'.$id),'musicKey'=>$r['key'],'video'=>'','comingSoon'=>true,'preferredVideo'=>$r['canonicalVideo']===$id,'availability'=>'coming-soon']);
  }
- foreach($catalog as $identity=>$r){if(isset($represented[$identity]))continue;$rows[]=array_merge($r,ny_coming_art($r['genre']),['key'=>'coming:'.hash('sha256','song:'.$identity),'musicKey'=>$r['key'],'video'=>'','comingSoon'=>true,'preferredVideo'=>true,'availability'=>'coming-soon']);}
+ foreach($catalog as $identity=>$r){if(isset($represented[$identity]))continue;$playable=ny_act_public_sources($videos,[$r]);if($playable){$id=array_key_first($playable);$rows[]=array_merge($r,['key'=>$id,'musicKey'=>$r['key'],'video'=>$id,'preferredVideo'=>true]);continue;}$rows[]=array_merge($r,ny_coming_art($r['genre']),['key'=>'coming:'.hash('sha256','song:'.$identity),'musicKey'=>$r['key'],'video'=>'','comingSoon'=>true,'preferredVideo'=>true,'availability'=>'coming-soon']);}
  foreach($rows as &$r)unset($r['canonicalVideo']);unset($r);return $rows;
 }

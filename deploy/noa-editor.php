@@ -27,6 +27,7 @@ $body=$payload['body']??[];
 <div class="fields"><label>분류<select id="kind" <?=$key!==''?'disabled':''?>><?php foreach(['single'=>'EP 싱글','playlist'=>'ACT 플레이리스트','story'=>'사연·커버곡'] as $v=>$l):?><option value="<?=$v?>" <?=$kind===$v?'selected':''?>><?=$l?></option><?php endforeach;?></select></label>
 <label>장르<select id="genre" <?=$key!==''?'disabled':''?>><?php foreach($genres as $g):?><option value="<?=$g?>" <?=($payload['genreId']??'')===$g?'selected':''?>><?=$g?></option><?php endforeach;?></select></label>
 <label>EP 번호<input id="ep" type="number" min="1" max="999" value="<?=noa_ed_e((string)($payload['ep']??''))?>" <?=$key!==''?'readonly':''?>></label><label>ACT 번호<input id="act" type="number" min="1" max="999" value="<?=noa_ed_e((string)($payload['act']??''))?>" <?=$key!==''?'readonly':''?>></label></div>
+<label id="original-artist-field" <?=($payload['genreId']??'')==='cover-reborn'?'':'hidden'?>>원곡 가수<input id="original-artist" maxlength="200" value="<?=noa_ed_e((string)($body['originalArtist']??$body['originalSinger']??$body['coverArtist']??''))?>"></label>
 <label>곡 제목<input id="title" maxlength="500" required value="<?=noa_ed_e((string)($body['confirmedTitle']??$payload['title']??''))?>"></label>
 <label>가사 전문<textarea id="lyrics"><?=noa_ed_e((string)($body['lyricsBlock']??''))?></textarea></label>
 <label>ACT 곡 구성 및 순서<textarea id="tracklist"><?=noa_ed_e((string)($body['tracklist']??''))?></textarea></label>
@@ -47,13 +48,14 @@ let key=<?=json_encode($key,JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT)?>,kind=<?=
 let original=<?=json_encode($payload,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR)?>;
 const draftBody=<?=json_encode($draft['creation']['body']??null,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR)?>;
 let lastRequest=null,requestSignature=null,checkedUrl='',checkedMedia=null;const field=id=>document.getElementById(id),newStoryId=crypto.randomUUID().replaceAll('-','').slice(0,24);
+field('genre').addEventListener('change',()=>{field('original-artist-field').hidden=field('genre').value!=='cover-reborn';});
 const creativeKeys=['summary','storyPlan','chorusHook','englishHook','geminiPrompt','youtubeTitle','youtubeDescription','communityPost','fanLetter','hashtags','localizations','genreRecommendation'];
 const editable={...original.body,...(draftBody||{})};for(const [id,key] of [['title','confirmedTitle'],['lyrics','lyricsBlock'],['cast','thumbCast'],['suno-style','sunoStyle']])if(typeof editable[key]==='string')field(id).value=editable[key];field('creative-fields').value=JSON.stringify(Object.fromEntries(creativeKeys.filter(k=>editable[k]!==undefined).map(k=>[k,editable[k]])),null,2);
 for(const [id,source] of [['copy-lyrics','lyrics'],['copy-suno','suno-style']])field(id).onclick=()=>navigator.clipboard.writeText(field(source).value).then(()=>{field('result').textContent='복사했습니다.';}).catch(()=>{field(source).focus();field(source).select();field('result').textContent='텍스트를 선택했습니다. 기기의 복사 기능을 사용하세요.';});
 const formSnapshot=()=>JSON.stringify([...document.querySelectorAll('#editor input,#editor select,#editor textarea')].map(e=>e.type==='checkbox'?e.checked:e.value));let lastSavedSnapshot=formSnapshot();
 field('editor').addEventListener('submit',async event=>{
  event.preventDefault();const status=field('result');if(key&&!draftBody&&formSnapshot()===lastSavedSnapshot){status.textContent='변경 사항이 없습니다.';return}
- const p=structuredClone(original);p.body={...(p.body||{})};p.title=field('title').value;p.genreId=field('genre').value;p.confirmed=field('confirmed').checked;
+ const p=structuredClone(original);p.body={...(p.body||{})};p.title=field('title').value;p.genreId=field('genre').value;p.confirmed=field('confirmed').checked;if(p.genreId==='cover-reborn')p.body.originalArtist=field('original-artist').value.trim();
  kind=field('kind').value;
  let writeKey=key;if(!key){const n=kind==='single'?Number(field('ep').value):Number(field('act').value);if(kind!=='story'&&(!Number.isInteger(n)||n<1||n>999)){status.textContent='EP 또는 ACT 번호를 확인해 주세요.';return}
   writeKey=kind+':'+p.genreId+':'+(kind==='single'?String(n).padStart(2,'0'):kind==='playlist'?'act-'+n:newStoryId);p.ep=kind==='single'?String(n).padStart(2,'0'):null;p.act=kind==='playlist'?n:null;

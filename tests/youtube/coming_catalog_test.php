@@ -25,3 +25,12 @@ check((int)$db->query('SELECT COUNT(*) FROM noa_documents')->fetchColumn()===2,'
 $act=['key'=>'playlist:kpop:1','orderKey'=>'playlist:kpop:1','title'=>'ACT 1','genre'=>'kpop-original','ep'=>'','act'=>'1','kind'=>'playlist','canonicalVideo'=>'actvideo001'];
 $actRows=ny_complete_catalog_rows([['key'=>'actvideo001','orderKey'=>'youtube:actvideo001','video'=>'actvideo001','kind'=>'video','title'=>'업로드 제목']],['actvideo001'=>['status'=>['privacyStatus'=>'public','embeddable'=>true]]],['playlist:kpop:1'=>$act]);
 check(count($actRows)===1&&$actRows[0]['kind']==='playlist'&&$actRows[0]['act']==='1'&&$actRows[0]['musicKey']==='playlist:kpop:1','ACT URL links its playable public video');
+
+$sharedSong=['key'=>'song:shared','orderKey'=>'song:shared','title'=>'곡','genre'=>'kpop-original','ep'=>'1','act'=>'1','kind'=>'video','canonicalVideo'=>'actvideo001'];
+$source=['actvideo001'=>['status'=>['privacyStatus'=>'public','embeddable'=>true],'match'=>['songId'=>'song:shared','status'=>'approved']]];
+$shared=ny_complete_catalog_rows([['key'=>'actvideo001','orderKey'=>'song:shared','video'=>'actvideo001','kind'=>'video','title'=>'곡']],$source,['song:shared'=>$sharedSong,'playlist:kpop:1'=>$act]);
+check(count($shared)===2&&$shared[1]['kind']==='playlist'&&$shared[1]['video']==='actvideo001'&&empty($shared[1]['comingSoon']),'ACT remains playable when the same video also has a song mapping');
+check(array_keys(ny_act_public_sources($source,[$act]))===['actvideo001'],'linked public ACT source retained');
+$source['actvideo001']['status']['privacyStatus']='private';check(ny_act_public_sources($source,[$act])===[],'private ACT never restored');
+$source['actvideo001']['status']['privacyStatus']='public';$source['actvideo001']['match']['status']='rejected';check(ny_act_public_sources($source,[$act])===[],'explicit rejection remains authoritative');
+echo "ACT_PUBLIC_URL_SONG_ALIAS_AND_PRIVATE_BOUNDARIES_OK\n";
