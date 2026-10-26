@@ -622,11 +622,12 @@
     }
   ],
   "latestWorkUnit": {
-    "id": "NOA-20261027-ACCOUNT-NAVIGATION-HIERARCHY",
+    "id": "NOA-20261027-CATEGORIES-ADMIN-WORKSPACE",
     "status": "deployed_and_verified",
-    "runtimeCommit": "3887f0ebfc1d81f734a7ff37bd9723de180f682f",
-    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40393264141",
-    "result": "docs/operations/NOA_20261027_ACCOUNT_NAVIGATION_HIERARCHY_RESULT.md",
+    "runtimeCommit": "afa0951041518c1074bcdafab411482f4959f017",
+    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40419127337",
+    "result": "docs/operations/NOA_20261027_WORKSPACE_RESULT.md",
+    "evidence": "docs/operations/workspace-20261027/evidence.json",
     "allOriginalAreasComplete": false
   },
   "relatedCheckFailures": [
@@ -659,28 +660,22 @@
     }
   ],
   "activeWork": {
-    "id": "NOA-20261027-CONTINUATION-AUDIT",
-    "status": "evidence_reconciled",
-    "directive": "이어서 진행",
-    "parentTaskId": "integration-finish-20261024",
-    "existingTwelveAreasPreserved": true,
-    "currentStage": "완료 기능과 재개 기록 대조 완료. 외부 설정·원본·실기기 검증 대기 항목은 유지.",
-    "runtimeChanged": false,
+    "id": "NOA-20261027-CATEGORIES-ADMIN-WORKSPACE",
+    "status": "deployed_and_verified",
+    "runtimeCommit": "afa0951041518c1074bcdafab411482f4959f017",
+    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40419127337",
+    "result": "docs/operations/NOA_20261027_WORKSPACE_RESULT.md",
+    "evidence": "docs/operations/workspace-20261027/evidence.json",
+    "allOriginalAreasComplete": false,
+    "directive": "미분류 빈 항목 숨김·모두 펼침, 곡정보와 앱 전체 4단 분류 통일, 검색곡 관리자 수정·삭제, 최고관리자 기능 재분류 미반영 마무리",
+    "completedAt": "2026-10-27T08:26:17+09:00",
+    "currentStage": "정식 배포 및 운영 검증 성공. 27개 파일 해시 일치, 24개 보호 파일 불변.",
+    "runtimeChanged": true,
     "productionDatabaseWrites": 0,
-    "result": "docs/operations/NOA_20261027_CONTINUATION_AUDIT.md",
-    "lastObservedAt": "2026-10-26T21:50:40+00:00",
+    "existingTwelveAreasPreserved": true,
     "n80Journal": {
-      "revision": 24,
-      "allAreasComplete": false,
-      "counts": {
-        "pending": 0,
-        "in_progress": 7,
-        "needs_review": 5,
-        "error": 0,
-        "complete": 0
-      },
-      "changedByThisAudit": false,
-      "note": "운영 N80 저널은 별도 기록이다. 이번 저장소 재개 기록 수정으로 저널 작업 완료를 선언하지 않는다."
+      "changedByThisWork": false,
+      "note": "이 완료는 요청한 네 항목에 한정한다. 기존 12개 영역과 운영 N80 저널의 미완료 항목을 전체 완료로 바꾸지 않는다."
     }
   },
   "workUnitHistory": [
@@ -978,6 +973,48 @@
         "포인트 저장소 준비 후 실제 유료 자격·단가·잔액으로 AI 응답과 정확히 한 번의 차감을 검증하고 활성화 완료를 기록한다."
       ],
       "reason": "후속 운영 증거를 기준으로 재개 상태 갱신. 이전 거절 이력과 원문 작업 상태는 이 항목에 보존한다."
+    },
+    {
+      "id": "NOA-20261027-ACCOUNT-NAVIGATION-HIERARCHY",
+      "status": "deployed_and_verified",
+      "runtimeCommit": "3887f0ebfc1d81f734a7ff37bd9723de180f682f",
+      "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40393264141",
+      "result": "docs/operations/NOA_20261027_ACCOUNT_NAVIGATION_HIERARCHY_RESULT.md",
+      "allOriginalAreasComplete": false
+    },
+    {
+      "id": "NOA-20261027-CONTINUATION-AUDIT",
+      "status": "evidence_reconciled",
+      "directive": "이어서 진행",
+      "parentTaskId": "integration-finish-20261024",
+      "existingTwelveAreasPreserved": true,
+      "currentStage": "완료 기능과 재개 기록 대조 완료. 외부 설정·원본·실기기 검증 대기 항목은 유지.",
+      "runtimeChanged": false,
+      "productionDatabaseWrites": 0,
+      "result": "docs/operations/NOA_20261027_CONTINUATION_AUDIT.md",
+      "lastObservedAt": "2026-10-26T21:50:40+00:00",
+      "n80Journal": {
+        "revision": 24,
+        "allAreasComplete": false,
+        "counts": {
+          "pending": 0,
+          "in_progress": 7,
+          "needs_review": 5,
+          "error": 0,
+          "complete": 0
+        },
+        "changedByThisAudit": false,
+        "note": "운영 N80 저널은 별도 기록이다. 이번 저장소 재개 기록 수정으로 저널 작업 완료를 선언하지 않는다."
+      }
+    },
+    {
+      "id": "NOA-20261027-CATEGORIES-ADMIN-WORKSPACE",
+      "status": "deployed_and_verified",
+      "runtimeCommit": "afa0951041518c1074bcdafab411482f4959f017",
+      "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40419127337",
+      "result": "docs/operations/NOA_20261027_WORKSPACE_RESULT.md",
+      "evidence": "docs/operations/workspace-20261027/evidence.json",
+      "allOriginalAreasComplete": false
     }
   ],
   "resolvedOutstanding": [
