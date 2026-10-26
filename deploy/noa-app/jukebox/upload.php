@@ -4,8 +4,12 @@ require dirname(__DIR__,2).'/common.php';require dirname(__DIR__,2).'/noa-bridge
 $requestId=bin2hex(random_bytes(8));header('X-NOA-Request-ID: '.$requestId);header('Content-Type: application/json; charset=utf-8');header('Cache-Control: private, no-store');header('X-Content-Type-Options: nosniff');
 function nu_json(int $code,array $out):never{global $requestId;if(isset($out['error'])){$out['request_id']=$requestId;if(preg_match('/^[a-z][a-z0-9_:-]{0,99}$/D',(string)$out['error']))header('X-NOA-Error-Code: '.$out['error']);}http_response_code($code);echo json_encode($out,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;}
 if(empty($is_member)||($is_admin??'')!=='super')nu_json(403,['error'=>'administrator_required']);
+// Authentication and CSRF use the session; status reads and file verification
+// must not hold its lock while other requests from this browser are running.
+$faultSession=hash('sha256',session_id());$csrf=$_SESSION['noa_jukebox_csrf']??'';
+if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 try{
- $db=noa_bridge_pdo();$faultSession=hash('sha256',session_id());$action=(string)($_GET['action']??'status');
+ $db=noa_bridge_pdo();$action=(string)($_GET['action']??'status');
  if(($_SERVER['REQUEST_METHOD']??'GET')==='GET'&&$action==='health')nu_json(200,nr_health($db));
  if(($_SERVER['REQUEST_METHOD']??'GET')==='GET'&&$action==='queue'){nr_schema($db);nu_json(200,nq_snapshot($db,isset($_GET['qa']))+['health'=>nr_health($db),'incidents'=>$db->query('SELECT code,stage,http_status,upload_id,job_id,response_format,request_id,occurrences,last_seen,resolved_at FROM noa_jukebox_incidents ORDER BY last_seen DESC LIMIT 20')->fetchAll(PDO::FETCH_ASSOC)]);}
  if(($_SERVER['REQUEST_METHOD']??'GET')==='GET'&&$action==='status'){
@@ -14,8 +18,7 @@ try{
   $out=nu_public($db,$key);if(isset($_GET['id'])){$u=nu_row($db,(string)$_GET['id']);if($u['song_key']!==$key)throw new DomainException('upload_song_mismatch');$out['chunks']=nu_chunks($u);}nu_json(200,$out);
  }
  if(($_SERVER['REQUEST_METHOD']??'')!=='POST')nu_json(405,['error'=>'method_not_allowed']);
- $token=$_SERVER['HTTP_X_NOA_CSRF']??'';if(empty($_SESSION['noa_jukebox_csrf'])||!is_string($token)||!hash_equals($_SESSION['noa_jukebox_csrf'],$token))nu_json(403,['error'=>'csrf_required']);
- session_write_close();
+ $token=$_SERVER['HTTP_X_NOA_CSRF']??'';if(!is_string($csrf)||$csrf===''||!is_string($token)||!hash_equals($csrf,$token))nu_json(403,['error'=>'csrf_required']);
  if($action==='chunk'){$index=filter_var($_GET['index']??'',FILTER_VALIDATE_INT);if($index===false)throw new InvalidArgumentException('invalid_chunk');$id=(string)($_GET['id']??'');$u=nu_row($db,$id);$fault=nr_fault_take($db,$faultSession,$u['song_key'],$action);
   if($fault==='http_503'){header('Retry-After: 1');nu_json(503,['error'=>'upload_service_unavailable']);}
   if($fault==='html_response'){http_response_code(200);header('Content-Type: text/html; charset=utf-8');echo '<!doctype html><title>QA temporary response</title>';exit;}
