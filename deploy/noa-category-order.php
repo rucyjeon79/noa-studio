@@ -1,21 +1,17 @@
 <?php
-/** Shared playlist records in the audited JSON store; manual order stays outside webroot. */
+/** SQL canonical playlist records and revision-protected category order. */
 declare(strict_types=1);
 require_once __DIR__.'/common.php';
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
-require_once __DIR__.'/noa-bridge/storage.php';require_once __DIR__.'/noa-bridge/package-record.php';
+require_once __DIR__.'/noa-bridge/storage.php';require_once __DIR__.'/noa-bridge/package-record.php';require_once __DIR__.'/noa-bridge/category-order-store.php';
 $path='/hosting/noastudio/noa-ai-lab/category-order.json';
 $allowed=['story','cover'];
 function respond(int $status,array $value):void{http_response_code($status);echo json_encode($value,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;}
 function noa_order_visible(array $p):bool{return !in_array($p['visibility']??'public',['private','draft','hidden','unlisted'],true);}
 function load_order(string $path,bool $includeCanonical=true):array{
- if(!is_file($path))$data=[];else{
- try{$data=json_decode((string)file_get_contents($path),true,512,JSON_THROW_ON_ERROR);}catch(Throwable $e){respond(503,['error'=>'order_storage_invalid']);}
- }
- if(!is_array($data))respond(503,['error'=>'order_storage_invalid']);
- foreach(['story','cover'] as $group)if(isset($data[$group])&&(!is_array($data[$group])||!array_is_list($data[$group])))respond(503,['error'=>'order_storage_invalid']);
+ try{$state=nco_read(noa_bridge_pdo(),$path);$data=$state['data'];$data['_orderRevision']=$state['revision'];}catch(Throwable $e){respond(503,['error'=>'order_storage_invalid']);}
  if(isset($data['playlists'])&&(!is_array($data['playlists'])||!array_is_list($data['playlists'])))respond(503,['error'=>'playlist_storage_invalid']);
  foreach($data['playlists']??[] as $playlist)if(!is_array($playlist)||!is_string($playlist['id']??null)||!is_string($playlist['title']??null)||!in_array($playlist['group']??null,['story','cover'],true)||!is_array($playlist['keys']??null)||!array_is_list($playlist['keys']))respond(503,['error'=>'playlist_storage_invalid']);
  if(!$includeCanonical)return $data;
@@ -25,7 +21,7 @@ function load_order(string $path,bool $includeCanonical=true):array{
 }
 if($_SERVER['REQUEST_METHOD']==='GET'){
  $data=load_order($path);
- $result=['story'=>is_array($data['story']??null)?$data['story']:[],'cover'=>is_array($data['cover']??null)?$data['cover']:[]];
+ $result=['revision'=>$data['_orderRevision'],'story'=>is_array($data['story']??null)?$data['story']:[],'cover'=>is_array($data['cover']??null)?$data['cover']:[]];
  $result['playlists']=array_map(static fn($p)=>array_intersect_key($p,array_flip(['id','title','group','keys'])), $data['playlists']??[]);
  if(!empty($is_member)&&($is_admin??'')==='super'){
   if(empty($_SESSION['noa_category_order_csrf']))$_SESSION['noa_category_order_csrf']=bin2hex(random_bytes(32));
@@ -54,6 +50,8 @@ if(!is_dir($dir)||!is_writable($dir))respond(503,['error'=>'private_storage_unav
 $lock=fopen($dir.'/.category-order.lock','c');if(!$lock||!flock($lock,LOCK_EX))respond(503,['error'=>'lock_failed']);
 try{
  $current=load_order($path);
+ if(!$creating&&(!is_int($request['expectedRevision']??null)||$request['expectedRevision']!==$current['_orderRevision']))respond(409,['error'=>'order_conflict']);
+ if(!$creating&&(!array_key_exists('expected',$request)))respond(409,['error'=>'order_conflict']);
  if(!$creating&&array_key_exists('expected',$request)&&(!is_array($request['expected'])||!array_is_list($request['expected'])||$request['expected']!==($current[$group]??[])))respond(409,['error'=>'order_conflict']);
  if($creating){
   $current['playlists']??=[];
@@ -67,14 +65,7 @@ try{
   $db->beginTransaction();try{nup_store($db,'playlist:custom:'.$playlist['id'],'playlist',$record,0,(string)$member['mb_id']);$db->commit();}catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
   nup_snapshot($db,'playlist:custom:'.$playlist['id'],$dir.'/packages/records');
   respond(200,['ok'=>true,'playlist'=>array_intersect_key($playlist,array_flip(['id','title','group','keys']))]);
- }else $current[$group]=array_values($keys);
- if(!$creating){$stored=load_order($path,false);$stored[$group]=array_values($keys);$current=$stored;}
- $temp=tempnam($dir,'.category-order-');
- if(!$temp)respond(503,['error'=>'temp_failed']);
- $bytes=json_encode($current,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
- if(file_put_contents($temp,$bytes,LOCK_EX)!==strlen($bytes)){@unlink($temp);respond(503,['error'=>'write_failed']);}
- chmod($temp,0600);
- if(!rename($temp,$path)){@unlink($temp);respond(503,['error'=>'activate_failed']);}
- if($creating)respond(200,['ok'=>true,'playlist'=>array_intersect_key($playlist,array_flip(['id','title','group','keys']))]);
- respond(200,['ok'=>true,'group'=>$group,'count'=>count($keys)]);
+ }
+ try{$saved=nco_save(noa_bridge_pdo(),$path,$group,array_values($keys),$request['expectedRevision'],$request['expected'],(string)$member['mb_id']);}catch(DomainException $e){respond(409,['error'=>'order_conflict']);}
+ respond(200,['ok'=>true,'group'=>$group,'count'=>count($keys),'revision'=>$saved['revision']]);
 }finally{flock($lock,LOCK_UN);fclose($lock);}

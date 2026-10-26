@@ -22,6 +22,10 @@ def build():
     tasks=json.loads((root/'postdeploy-audit/n80-tasks.json').read_text())
     assert len(tasks['tasks'])==7 and tasks['executionControl']=='project_journal_only'
     cases.append({'name':'additive_n80_task_readback','ok':True})
+    order=root/'category-order-migration.json'
+    if order.is_file():
+        migrated=json.loads(order.read_text());assert migrated['source']=='mysql' and migrated['legacyUnchanged'] and migrated['publicReadbackUnchanged'] and migrated['unrelatedDocumentsUnchanged']
+        cases.append({'name':'category_order_SQL_migration_preserves_original','ok':True})
     report={'ok':True,'cases':cases,'scope':'Deployed assets and operating read-only data; generation responses are isolated fixtures. No real AI provider call, production song edit or point debit.', 'providerConfigured':audit['aiSettings']['keyConfigured'],'allOriginalAreasComplete':False,'historicalInputRestorationVerified':False}
     (root/'verified.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
     print('NOA_P0_RELEASE_EVIDENCE_READY',len(cases))
@@ -41,13 +45,13 @@ def record():
     out=Path('p0-evidence-proof');out.mkdir(exist_ok=True)
     archive=download_artifact(matches[0]['id'],out/'release.zip')
     ver=verified|ev.verified_artifact(matches[0],run['id'],commit,archive,'verified.json')
-    source=['noa-browse-edit.js','noa-ainoa.php','noa-bridge/ainoa-generation.php','noa-bridge/package-record.php','noa-app/engine/work-state.php','noa-work-status.php']
+    source=['noa-browse-edit.js','noa-ainoa.php','noa-bridge/ainoa-generation.php','noa-bridge/package-record.php','noa-app/engine/work-state.php','noa-work-status.php','noa-category-order.php','noa-bridge/category-order-store.php']
     t=connect()
     try:
         with paramiko.SFTPClient.from_transport(t)as s:
             s.get_channel().settimeout(30)
             files=ev.source_readback(s,'.',commit,source)
-            http=ev.http_evidence([{'url':ev.ORIGIN+p,'expectedStatus':status}for p,status in [('/',200),('/noa-ai-lab.php',403),('/noa-work-status.php',403)]])
+            http=ev.http_evidence([{'url':ev.ORIGIN+p,'expectedStatus':status}for p,status in [('/',200),('/noa-category-order.php',200),('/noa-work-status.php',403)]])
             proof=ev.build_event('deploy.verified','admin','integration-finish-20261024:p0-additions','Work_P0_20261026',commit,verified,ver,files,http)
             with s.open(ev.KEY_PATH,'rb')as f:key=f.read(129).strip()
             receipt=ev.publish(proof,key)
@@ -58,7 +62,7 @@ def record():
           '01':('needs_review','신고 곡 MP3 정상 · 원본 자동 정리 차단','운영 대기열·완료 파일 해시 및 복원 회귀 확인','과거 업로드 원본의 별도 백업 복원은 미검증'),
           '02':('needs_review','운영 버튼 수정 반영 · 실제 AI 호출 설정 대기','진행·오류·초안 검토·중복 방지 검사 통과','API 키·활성화·사용 한도 설정 필요'),
           '03':('needs_review','653개 원본 연결 문서 대조 · 누락 필드 0건','Drive SQL과 보관 원본 731개 해시 일치','J-POP ACT 1 보컬 차이 1건 검토; 원본 없는 번역·프롬프트는 생성하지 않음'),
-          '04':('in_progress','MySQL 기준·별칭 충돌 방지 운영 반영','동시 수정·원본 보존·SQL 요청 영수증 회귀 통과','기존 12개 영역 전체 저장 경로의 최종 검수는 별도 유지'),
+          '04':('in_progress','곡 정보와 카테고리 정렬 SQL 기준 운영 반영','원본 정렬 보존·revision 충돌 차단·SQL 영수증 회귀 통과','기존 12개 영역 전체 저장 경로의 최종 검수는 별도 유지'),
           '05':('in_progress','모바일 디자인 필수 검사 통과 후 배포','360·390·430·1280px 2줄·터치·겹침·화면 비교 통과','전체 페이지 디자인 검수 및 실제 기기 검증은 별도 유지'),
           '06':('needs_review','설정 상태·연결 확인·사용량 기록 반영','권한·중복 과금·공유 사용 한도 회귀 통과','API 키·사용 한도·유료 대화 단가 미설정; 실제 과금 검증 안 됨'),
           '07':('in_progress','작업별 증거 연결 및 운영 읽기 검증','지시 원문·12개 영역·단계·활동·오류·재시작 복원 검증','상위 전체 작업 완료로 처리하지 않음')}

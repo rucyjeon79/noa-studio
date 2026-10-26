@@ -2,7 +2,7 @@ name: NOA AInoa and Song Editor Production
 on:
   push:
     branches: [main]
-    paths: ['deploy/noa-youtube.php','tests/youtube/coming_catalog_test.php','deploy/noa-creator.php','deploy/noa-creator.css','deploy/noa-editor.php','bridge/youtube-catalog.php','deploy/noa-browse-order.js','bridge/lab-core.php','tests/lab/core_test.php','bridge/lab-api.php','deploy/noa-ai-lab.php','deploy/noa-ai-lab.js','tests/catalog/ainoa_points_mysql_test.php','tests/catalog/collections_seed.php','scripts/qa/noa-collections.mjs','scripts/qa/noa-chat.mjs','deploy/noa-launch.js','deploy/noa-manifest.json','deploy/noa-sw.js','public/ainoa/**','tests/pwa/**','bridge/package-record.php','bridge/subscription-access.php','deploy/noa-access.extend.php','deploy/noa-design.extend.php','deploy/noa-browse.js','deploy/noa-browse-edit.js','tests/catalog/package_record_test.php','bridge/ainoa-*.php','deploy/noa-ainoa.*','scripts/noa_ainoa_deploy.py','scripts/qa/noa-design-gate.mjs','scripts/qa/noa-p0-generation.mjs','scripts/qa/noa-ainoa*','scripts/qa/noa-qa-font.py','tests/catalog/ainoa_test.php','.github/workflows/noa-ainoa.yml']
+    paths: ['bridge/category-order-store.php','deploy/noa-category-order.php','deploy/noa-category-order-admin.php','tests/catalog/category_order_mysql_test.php','scripts/noa_category_order_migrate.*','deploy/noa-youtube.php','tests/youtube/coming_catalog_test.php','deploy/noa-creator.php','deploy/noa-creator.css','deploy/noa-editor.php','bridge/youtube-catalog.php','deploy/noa-browse-order.js','bridge/lab-core.php','tests/lab/core_test.php','bridge/lab-api.php','deploy/noa-ai-lab.php','deploy/noa-ai-lab.js','tests/catalog/ainoa_points_mysql_test.php','tests/catalog/collections_seed.php','scripts/qa/noa-collections.mjs','scripts/qa/noa-chat.mjs','deploy/noa-launch.js','deploy/noa-manifest.json','deploy/noa-sw.js','public/ainoa/**','tests/pwa/**','bridge/package-record.php','bridge/subscription-access.php','deploy/noa-access.extend.php','deploy/noa-design.extend.php','deploy/noa-browse.js','deploy/noa-browse-edit.js','tests/catalog/package_record_test.php','bridge/ainoa-*.php','deploy/noa-ainoa.*','scripts/noa_ainoa_deploy.py','scripts/qa/noa-design-gate.mjs','scripts/qa/noa-p0-generation.mjs','scripts/qa/noa-ainoa*','scripts/qa/noa-qa-font.py','tests/catalog/ainoa_test.php','.github/workflows/noa-ainoa.yml']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: 'noa-ainoa-${{ github.sha }}', cancel-in-progress: false}
@@ -46,6 +46,10 @@ jobs:
           cp deploy/noa-ainoa.php "$RUNNER_TEMP/noa-inline-edit-fixture/noa-ainoa.php"
           php scripts/qa/inline-edit-seed.php
           php tests/catalog/collections_seed.php
+          php tests/catalog/category_order_mysql_test.php
+          php -l deploy/noa-category-order.php
+          php -l deploy/noa-category-order-admin.php
+          php -l scripts/noa_category_order_migrate.php
           php tests/catalog/ainoa_generation_mysql_test.php
           php tests/catalog/ainoa_points_mysql_test.php
           php -S 127.0.0.1:8101 -t "$RUNNER_TEMP/noa-inline-edit-fixture" > "$RUNNER_TEMP/ainoa-native.log" 2>&1 &
@@ -58,12 +62,19 @@ jobs:
           cp scripts/qa/noa-collections.mjs "$RUNNER_TEMP/noa-ainoa/collections.mjs"
           cp scripts/qa/noa-chat.mjs "$RUNNER_TEMP/noa-ainoa/chat.mjs"
           cp scripts/qa/noa-p0-generation.mjs "$RUNNER_TEMP/noa-ainoa/generation.mjs"
+          cp scripts/qa/noa-category-final.mjs "$RUNNER_TEMP/noa-ainoa/category.mjs"
       - name: Verify editor, floating controls and guest search in both themes
         run: |
           node "$RUNNER_TEMP/noa-ainoa/check.mjs"
           node "$RUNNER_TEMP/noa-ainoa/collections.mjs"
           node "$RUNNER_TEMP/noa-ainoa/chat.mjs"
           node "$RUNNER_TEMP/noa-ainoa/generation.mjs"
+      - name: Verify SQL category order through the native administrator endpoint
+        env: {NOA_CATEGORY_SCOPE: native}
+        run: |
+          python scripts/qa/category-storage-fixture.py
+          php -S 127.0.0.1:8099 -t "$RUNNER_TEMP/noa-category-fixture" > "$RUNNER_TEMP/category-php.log" 2>&1 &
+          node "$RUNNER_TEMP/noa-ainoa/category.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'noa-ainoa-candidate-${{ github.run_id }}', path: ainoa-proof/, retention-days: 2}
@@ -119,6 +130,9 @@ jobs:
           node "$RUNNER_TEMP/noa-ainoa/collections.mjs"
           node "$RUNNER_TEMP/noa-ainoa/chat.mjs"
           node "$RUNNER_TEMP/noa-ainoa/generation.mjs"
+      - name: Preserve exact legacy order in SQL and verify public readback
+        env: *noa_env
+        run: python scripts/noa_category_order_migrate.py
       - name: Recheck operating SQL projection and queue after activation
         env:
           GH_TOKEN: ${{ github.token }}
