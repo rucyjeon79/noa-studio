@@ -1,0 +1,51 @@
+name: NOA administrator confirmation button hotfix
+on:
+  push:
+    branches: [main]
+    paths: ['deploy/noa-app/database/admin-link.js','deploy/noa-database.extend.php','scripts/noa_admin_link_deploy.py','scripts/qa/noa-admin-link.mjs','.github/workflows/noa-admin-link.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  verify-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - name: Prepare and test confirmation accessibility
+        run: |
+          php -l deploy/noa-database.extend.php
+          node --check deploy/noa-app/database/admin-link.js
+          python -m pip install 'paramiko>=3,<5'
+          npm install --prefix "$RUNNER_TEMP/noa-admin-link" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-admin-link.mjs "$RUNNER_TEMP/noa-admin-link/check.mjs"
+          node "$RUNNER_TEMP/noa-admin-link/check.mjs"
+      - name: Activate only the two navigation assets
+        id: upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_admin_link_deploy.py
+      - name: Recheck deployed script and confirmation button
+        id: live
+        env: {NOA_ADMIN_LINK_PHASE: live}
+        run: node "$RUNNER_TEMP/noa-admin-link/check.mjs"
+      - name: Restore only release-owned navigation on failed acceptance
+        if: failure() && (steps.upload.outcome == 'failure' || steps.live.outcome == 'failure')
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then python scripts/noa_admin_link_deploy.py rollback; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-admin-link-${{ github.run_id }}', path: ainoa-proof/, retention-days: 14}

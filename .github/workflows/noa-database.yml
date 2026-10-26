@@ -2,7 +2,7 @@ name: NOA database administrator module
 on:
   push:
     branches: [main]
-    paths: ['deploy/noa-app/database/**', 'deploy/noa-database.extend.php', 'tests/database/**', 'scripts/noa_database_deploy.py', '.github/workflows/noa-database.yml']
+    paths: ['deploy/noa-app/database/**', '!deploy/noa-app/database/admin-link.js', 'tests/database/**', 'scripts/noa_database_deploy.py']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

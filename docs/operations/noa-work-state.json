@@ -16,14 +16,19 @@
     "최종 보고에서 완료, 미완료, 코드/운영 커밋, 배포, 검증 URL, 남은 오류를 구분한다."
   ],
   "runtimeRelease": {
-    "commit": "0aad60e1d82f89aa8d3eacf60cfc1386e44d72f1",
-    "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40275787762",
+    "commit": "8eea5e4d3569776db73ca40ba6c826b3061b2fe1",
+    "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40284387345",
     "status": "success",
     "filesSha256": {
+      "noa-bridge/ainoa-automation.php": "25c616c0d41e41a5c4dd770241a605a8f686a5c17ea5ccf66fb59159242b98b3",
+      "noa-app/engine/ai-automation.php": "c5698f8a234b278f96abd51aa6c9a11ed3e1c824ec2c463c80fa45cf808a87a9",
+      "noa-ainoa-admin.js": "ae5569ceeca5345276fa52675ae4cfb598eaa4a3838e5228a6e60b30bfede64f",
       "noa-bridge/category-order-store.php": "3da8a20d79c5616bd6d57818ab66cab0da6b659ed15cf552e193d55d7ee32159",
       "noa-bridge/package-record.php": "36cfb47980b5bfb2d6e9b1902e1383616940a7e520a9430dd629453ab634f9e5",
-      "noa-bridge/ainoa-generation.php": "d821dde2de0b048d33e0faec95889b751322db73ed4f694e2bb2f8babd5c9f6f",
+      "noa-bridge/ainoa-generation.php": "09ba74027f61debcc0ddb0f0b5cf9b3ca69662799240f5ed5355ee271341486e",
       "noa-bridge/ainoa-core.php": "208d1ccac39598f950bb4a40f6af4f45a516640207f541e50683ad78ee420430",
+      "noa-work-status.php": "fc11d4fc0ef4bd34f83258adb2501aea99d4b3b341265fd8185ce0bf0104d53d",
+      "noa-bridge/lab-worker.php": "3324c7a04df62a802fc1121d15bdfbf4776bce5e1605ca7e052a7ade6004582f",
       "noa-category-order.php": "ef7ff49f2cdf85fcd1029633bc80acb9b2cfb66902b1c61570b13f9a66ec0cb6",
       "noa-category-order-admin.php": "72d4e6075da8e9a227ffbcffc576367291af6de21337a3837580e0989bae79b3",
       "noa-creator.css": "537da59510654e855b50b053f5385263a7dc12f54f62526d94084be898ac1aad",
@@ -45,27 +50,22 @@
       "noa-sw.js": "66e15f28dba6bbc21f53333246897927ece61ed8310b6982e96987e06b82e9a1",
       "noa-bridge/subscription-access.php": "b3c86c2dfe06e980ea705afb9ec7bc9266f60cc3e6fd69cd3e7b527dd211bd95",
       "extend/noa.access.php": "8940ebcad48d39d621f792e7df2a94ca2d09ad717a5e35c2abb746f907c6a733",
-      "noa-ainoa.php": "897b68a03dd87f8546dc7d733de698a730bc0ab12465b38470966c732f8dbd98",
-      "noa-ainoa.css": "e2382479a85930c13b8fb34f7b823ca5fe6362089c14bd7fa2793c03c8160422",
-      "noa-ainoa.js": "e8c808bcecce66380dae6f41ae00a7c0a78218319ffaaf9916a0e233c378d6fb",
+      "noa-ainoa.php": "6edf7228e5328e19893cc90272d1b66b37e1b8f751b11eaee0282730439e9957",
+      "noa-ainoa.css": "d0c2b30237704d9cd2671a7cec0e658248b0ddb257b1d4f0023fe440e10b858a",
+      "noa-ainoa.js": "0707c801a48870819f4fb6f2722e84ddb5d5422d13de5da530945b17fd4263f9",
       "noa-browse-edit.js": "c21ce95cfb3ea55fa8e254a9bc6d5146770627701f369172a4fe7d48010c0d8f",
       "noa-browse.js": "c1ad4d0a2a8661319748cee5d4b2d0026df0654195ca1e4b98a4244859ed6358",
       "extend/noa.design.php": "9965bacf09bcef86e866b005a067429659572c62180dffaefaeb092baf8c6f54"
     },
     "changedFiles": [
-      "noa-bridge/category-order-store.php",
-      "noa-category-order.php",
-      "noa-category-order-admin.php",
-      "noa-browse-order.js",
-      "noa-browse.js"
+      "noa-bridge/ainoa-automation.php"
     ],
     "protectedUnchanged": 11,
     "songWrites": 0,
     "audioWrites": 0,
     "memberRowsChanged": 0,
     "pointDebits": 0,
-    "categoryOrderMetadataRevision": 1,
-    "evidence": "docs/operations/NOA_20261026_RELEASE_EVIDENCE.json"
+    "evidence": "docs/operations/NOA_20261026_AI_AUTOMATION_EVIDENCE.json"
   },
   "verificationRecovery": {
     "commit": "95eed26bb9befee5cb7ec297d390dea92c75cd1a",
@@ -489,15 +489,69 @@
         "scope": "AI editor source and metadata projection release only. Provider activation and overall P0 task remain incomplete."
       },
       "supersededBy": "0aad60e1d82f89aa8d3eacf60cfc1386e44d72f1"
+    },
+    {
+      "runtimeRelease": {
+        "commit": "0aad60e1d82f89aa8d3eacf60cfc1386e44d72f1",
+        "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40275787762",
+        "status": "success",
+        "filesSha256": {
+          "noa-bridge/category-order-store.php": "3da8a20d79c5616bd6d57818ab66cab0da6b659ed15cf552e193d55d7ee32159",
+          "noa-bridge/package-record.php": "36cfb47980b5bfb2d6e9b1902e1383616940a7e520a9430dd629453ab634f9e5",
+          "noa-bridge/ainoa-generation.php": "d821dde2de0b048d33e0faec95889b751322db73ed4f694e2bb2f8babd5c9f6f",
+          "noa-bridge/ainoa-core.php": "208d1ccac39598f950bb4a40f6af4f45a516640207f541e50683ad78ee420430",
+          "noa-category-order.php": "ef7ff49f2cdf85fcd1029633bc80acb9b2cfb66902b1c61570b13f9a66ec0cb6",
+          "noa-category-order-admin.php": "72d4e6075da8e9a227ffbcffc576367291af6de21337a3837580e0989bae79b3",
+          "noa-creator.css": "537da59510654e855b50b053f5385263a7dc12f54f62526d94084be898ac1aad",
+          "noa-bridge/lab-core.php": "c92aae436974da4fd51ea4a2708b1ac1a5d4d31711301108b5d9319e53e0a2f8",
+          "noa-bridge/index.php": "0846bdc93ef21b823911649a26cbb28a9bdfd343df29d1571db4c949a9540416",
+          "noa-youtube.php": "dd88323890f2cd0cde22ed5e0c35d9cade10fe45b54b11c07017b8211bfa8eb9",
+          "noa-creator.php": "1dc57b9f0511da2a00ac22cdd1994c7e1bc62dc50e72b038f116b16a3227bdd1",
+          "noa-editor.php": "0ed76b090cff098671ee0d262bb23f361212adc75630a242b589e5f84ae23a5f",
+          "noa-bridge/ainoa-points.php": "b0bd8ac0af3c681464f2ec022de4b64963e3b7d691596068abd0891b49352f9d",
+          "noa-bridge/subscription-core.php": "09cf103673780511c0780f7f32f767e0695eb29b1aa9e5e2ac36bec40a45988e",
+          "noa-bridge/youtube-catalog.php": "9418e65db52048932c9472ca203c9077d4239671bb7f1c516046a6c0a2bca360",
+          "noa-browse-order.js": "8bcfc786a74a7b4e9857683ed8bbdeef3fc34ae48ea2027e2da8d500e4b3588a",
+          "noa-bridge/lab-api.php": "5ca04c5bc291b03d99ca436e782c1795a3d9dc5dc1fd2b03b330011ba6b3a85b",
+          "noa-ai-lab.php": "b3e773383dfc19c1ec19181d74130b8d03a0e4ed60799760a8acba2affd4ab0c",
+          "noa-ai-lab.js": "1aa5dfc95fcafffbf9f43e7a8433baab594084b31665e33da070c53e1d99ec58",
+          "noa-assets/ainoa-symbol.png": "3f13853373b8a09af66eff9a4f7030500442763ca41fd9ecc13159cb352cabfe",
+          "noa-launch.js": "2bc9a43ced7507f164eaa56c7d24d9b2c7590115a97a0d960080163adef7a26a",
+          "noa-manifest.json": "2b7c76a56dee198f71e9ca1cc236b7154c533df6835c162c4c5f63080ae16685",
+          "noa-sw.js": "66e15f28dba6bbc21f53333246897927ece61ed8310b6982e96987e06b82e9a1",
+          "noa-bridge/subscription-access.php": "b3c86c2dfe06e980ea705afb9ec7bc9266f60cc3e6fd69cd3e7b527dd211bd95",
+          "extend/noa.access.php": "8940ebcad48d39d621f792e7df2a94ca2d09ad717a5e35c2abb746f907c6a733",
+          "noa-ainoa.php": "897b68a03dd87f8546dc7d733de698a730bc0ab12465b38470966c732f8dbd98",
+          "noa-ainoa.css": "e2382479a85930c13b8fb34f7b823ca5fe6362089c14bd7fa2793c03c8160422",
+          "noa-ainoa.js": "e8c808bcecce66380dae6f41ae00a7c0a78218319ffaaf9916a0e233c378d6fb",
+          "noa-browse-edit.js": "c21ce95cfb3ea55fa8e254a9bc6d5146770627701f369172a4fe7d48010c0d8f",
+          "noa-browse.js": "c1ad4d0a2a8661319748cee5d4b2d0026df0654195ca1e4b98a4244859ed6358",
+          "extend/noa.design.php": "9965bacf09bcef86e866b005a067429659572c62180dffaefaeb092baf8c6f54"
+        },
+        "changedFiles": [
+          "noa-bridge/category-order-store.php",
+          "noa-category-order.php",
+          "noa-category-order-admin.php",
+          "noa-browse-order.js",
+          "noa-browse.js"
+        ],
+        "protectedUnchanged": 11,
+        "songWrites": 0,
+        "audioWrites": 0,
+        "memberRowsChanged": 0,
+        "pointDebits": 0,
+        "categoryOrderMetadataRevision": 1,
+        "evidence": "docs/operations/NOA_20261026_RELEASE_EVIDENCE.json"
+      },
+      "supersededBy": "8eea5e4d3569776db73ca40ba6c826b3061b2fe1"
     }
   ],
   "latestWorkUnit": {
-    "id": "NOA-20261026-P0-ADDITIONS",
-    "status": "partially_deployed_and_verified",
-    "runtimeCommit": "0aad60e1d82f89aa8d3eacf60cfc1386e44d72f1",
-    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40275787762",
-    "result": "docs/operations/NOA_20261026_P0_RESULT.md",
-    "evidence": "docs/operations/NOA_20261026_RELEASE_EVIDENCE.json",
+    "id": "NOA-20261026-AI-AUTOMATION",
+    "status": "deployed_connection_required",
+    "runtimeCommit": "8eea5e4d3569776db73ca40ba6c826b3061b2fe1",
+    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40284387345",
+    "result": "docs/operations/NOA_20261026_AI_AUTOMATION_RESULT.md",
     "allOriginalAreasComplete": false
   },
   "relatedCheckFailures": [
@@ -580,6 +634,20 @@
         "evidenceIds": [
           "n80-completion-09acbfdb17b4545c0c08403d78a51504b1f09df49aff79edd83ef6f50c59da92"
         ]
+      },
+      {
+        "id": "NOA-20261026-AI-AUTOMATION",
+        "status": "needs_review",
+        "currentStage": "운영 반영·서명 실행기 검증 완료, AI 연결 설정 대기",
+        "evidenceIds": [
+          "n80-completion-b24c04fd19d6420604cd167f04e18058b45293f3449cb7cbb9e73066e42b4928"
+        ]
+      },
+      {
+        "id": "NOA-20261026-MEMBERSHIP-REWARDS",
+        "status": "in_progress",
+        "currentStage": "관리자 버튼·상단 계정 표시·포인트 정책 구현",
+        "directive": "docs/operations/requests/NOA_20261026_MEMBERSHIP_REWARDS.md"
       }
     ],
     "lastSuccessfulStage": {
@@ -630,7 +698,7 @@
       "Existing member/point backup and storage-engine verification remain blocked as previously recorded; no repeated key/backup upload attempted.",
       "All previous twelve areas lacking full evidence remain open. Physical Android and complete all-page design acceptance are not claimed."
     ],
-    "lastActivityAt": "2026-10-26T05:51:55Z"
+    "lastActivityAt": "2026-10-26T07:28:57.899049+00:00"
   },
   "workUnitHistory": [
     {
@@ -753,6 +821,15 @@
           "issue": "Existing integrated guest public-MUSIC HTTP assumption fails behind the member gate; no integrated deployment."
         }
       ]
+    },
+    {
+      "workId": "NOA-20261026-AI-AUTOMATION",
+      "status": "deployed_connection_required",
+      "runtimeCommit": "8eea5e4d3569776db73ca40ba6c826b3061b2fe1",
+      "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40284387345",
+      "evidenceActionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40285198491",
+      "result": "docs/operations/NOA_20261026_AI_AUTOMATION_RESULT.md",
+      "providerCall": false
     }
   ]
 }
