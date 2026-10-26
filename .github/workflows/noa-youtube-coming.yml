@@ -23,9 +23,24 @@ jobs:
   candidate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      runtime_changed: ${{ steps.runtime.outputs.changed }}
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
+      - name: Detect runtime changes before any repeat deployment
+        id: runtime
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          elif [ "$EVENT_NAME" = "push" ] && git cat-file -e "$BEFORE_SHA^{commit}" && git diff --quiet "$BEFORE_SHA" "$GITHUB_SHA" -- deploy bridge public; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
       - uses: shivammathur/setup-php@v2
         with: {php-version: '8.2', extensions: pdo_sqlite}
       - name: Validate metadata parity, privacy boundaries and existing playback
@@ -45,7 +60,7 @@ jobs:
           python -m py_compile scripts/noa_youtube_coming_deploy.py
       - name: Prepare existing browser validation
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/noa-coming" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-youtube-coming.mjs "$RUNNER_TEMP/noa-coming/check.mjs"
       - name: Verify inline preview, search, public playback selection and Music in both themes
@@ -54,7 +69,7 @@ jobs:
         if: always()
         with: {name: 'noa-coming-candidate-${{ github.run_id }}', path: youtube-coming-proof/candidate/, retention-days: 2}
   deploy:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && needs.candidate.outputs.runtime_changed == 'true'
     needs: candidate
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     environment: production
@@ -65,7 +80,7 @@ jobs:
         with: {fetch-depth: 0}
       - name: Prepare existing NOA SFTP and browser tools
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          python scripts/qa/noa-qa-font.py
           python -m pip install 'paramiko>=3,<5'
           npm install --prefix "$RUNNER_TEMP/noa-coming" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-youtube-coming.mjs "$RUNNER_TEMP/noa-coming/check.mjs"

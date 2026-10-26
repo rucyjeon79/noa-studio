@@ -1,5 +1,9 @@
 """Guard the only existing-file replacement with Drive proof and exact version."""
 import json
+import io
+import urllib.error
+import urllib.parse
+from email.message import Message
 from pathlib import Path
 import sys
 import unittest
@@ -59,6 +63,45 @@ class IntegrationDeploymentTest(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'verified_drive_preimage_required'):
                 runtime.install(self.host)
         self.assertEqual(self.host.writes, [])
+
+
+class GuestAccessProbeTest(unittest.TestCase):
+    def opener(self, *, exposed=False, wrong_login=False):
+        class Response(io.BytesIO):
+            def __init__(self, code, body=b'<!doctype html>home', headers=None):
+                super().__init__(body)
+                self.code, self.headers = code, headers or Message()
+
+        class Opener:
+            def open(self, url, timeout):
+                path = urllib.parse.urlsplit(url).path
+                if path in ('/', '/bbs/login.php'):
+                    return Response(200)
+                headers = Message()
+                if path.startswith('/noa-bridge/'):
+                    if exposed:
+                        return Response(200, b'{"items":[]}')
+                    headers['X-NOA-Access'] = 'music' if 'playlists' in path else 'member'
+                    raise urllib.error.HTTPError(url, 401, 'Unauthorized', headers, io.BytesIO(b'denied'))
+                headers['Location'] = ('https://other.invalid' if wrong_login else '') + '/bbs/login.php?url=' + urllib.parse.quote(path, safe='')
+                raise urllib.error.HTTPError(url, 302, 'Found', headers, io.BytesIO())
+        return Opener()
+
+    def test_guest_login_redirects_and_catalog_denial_are_success(self):
+        with patch.object(runtime.urllib.request, 'build_opener', return_value=self.opener()):
+            proof = runtime.public_checks()
+        self.assertTrue(all(row['ok'] for row in proof['pages']))
+        self.assertFalse(proof['media']['checked'])
+
+    def test_unexpected_public_catalog_is_not_accepted(self):
+        with patch.object(runtime.urllib.request, 'build_opener', return_value=self.opener(exposed=True)):
+            proof = runtime.public_checks()
+        self.assertFalse(next(row['ok'] for row in proof['pages'] if row['path'] == '/noa-bridge/catalog.php'))
+
+    def test_redirect_to_another_host_is_not_accepted(self):
+        with patch.object(runtime.urllib.request, 'build_opener', return_value=self.opener(wrong_login=True)):
+            proof = runtime.public_checks()
+        self.assertFalse(next(row['ok'] for row in proof['pages'] if row['path'] == '/noa-music.php'))
 
 
 if __name__ == '__main__':

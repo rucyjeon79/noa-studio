@@ -39,6 +39,8 @@ jobs:
   candidate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      runtime_changed: ${{ steps.runtime.outputs.changed }}
     services:
       mysql:
         image: mysql:8.0
@@ -52,8 +54,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
+      - name: Detect runtime changes before any repeat deployment
+        id: runtime
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          elif [ "$EVENT_NAME" = "push" ] && git cat-file -e "$BEFORE_SHA^{commit}" && git diff --quiet "$BEFORE_SHA" "$GITHUB_SHA" -- deploy bridge public; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
       - uses: shivammathur/setup-php@v2
-        with: {php-version: '8.2', extensions: pdo_mysql}
+        with: {php-version: '8.2', extensions: pdo_mysql,pdo_sqlite}
       - name: Validate metadata reader and existing playback, source and permission contracts
         run: |
           for file in bridge/package-*.php bridge/index.php bridge/lab-api.php bridge/catalog-store.php bridge/taxonomy-store.php bridge/lab-creator.php deploy/noa-category-order.php deploy/noa-app/jukebox/core.php deploy/noa-app/taxonomy/index.php; do php -l "$file"; done
@@ -62,6 +77,7 @@ jobs:
           php -l bridge/inline-edit.php
           php tests/catalog/inline_edit_projection_test.php
           python tests/catalog/inline_edit_music_page_test.py
+          python tests/youtube/coming_fixture.py
           php -l deploy/noa-inline-edit.php
           php -l deploy/noa-music.php
           php -l deploy/noa-youtube.php
@@ -75,7 +91,7 @@ jobs:
           node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs tests/playlists/drag_order_test.cjs tests/youtube/lazy_details_test.cjs
       - name: Prepare isolated MySQL/session fixture and mobile browser
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/noa-edit" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-inline-edit.mjs "$RUNNER_TEMP/noa-edit/check.mjs"
           python scripts/qa/inline-edit-fixture.py
@@ -100,7 +116,7 @@ jobs:
         if: always()
         with: {name: 'noa-inline-edit-candidate-${{ github.run_id }}', path: inline-edit-proof/, retention-days: 2}
   deploy:
-    if: github.event_name != 'pull_request' && !contains(github.event.head_commit.message, '[ainoa-release]')
+    if: github.event_name != 'pull_request' && needs.candidate.outputs.runtime_changed == 'true' && !contains(github.event.head_commit.message, '[ainoa-release]')
     needs: candidate
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     runs-on: ubuntu-latest
@@ -111,7 +127,7 @@ jobs:
         with: {fetch-depth: 0}
       - name: Prepare existing NOA transport and mobile browser
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          python scripts/qa/noa-qa-font.py
           python -m pip install 'paramiko>=3,<5'
           npm install --prefix "$RUNNER_TEMP/noa-edit" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-inline-edit.mjs "$RUNNER_TEMP/noa-edit/check.mjs"

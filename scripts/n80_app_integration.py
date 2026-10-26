@@ -165,39 +165,43 @@ def call(key):
 
 
 def public_checks():
+    """Verify the current guest policy without treating login HTML as a catalog.
+
+    Catalog/media content is inspected by the signed app-data result and the
+    native authenticated member workflow, not by a guest request.
+    """
     checks = []
-    pages = {'/': [200], '/bbs/login.php': [200], '/noa-music.php': [200],
-             '/noa-youtube.php': [200], '/noa-world.php': [200], '/noa-ai-lab.php': [200, 302, 403],
-             '/noa-app/jukebox/': [200, 302, 403], '/noa-app/database/': [302, 403],
-             '/noa-bridge/user-playlists.php': [401]}
+    pages = {'/': 200, '/bbs/login.php': 200, '/noa-music.php': 302,
+             '/noa-youtube.php': 302, '/noa-world.php': 302,
+             '/noa-ai-lab.php': 302, '/noa-app/jukebox/': 302,
+             '/noa-app/database/': 302, '/noa-bridge/user-playlists.php': 401,
+             '/noa-bridge/catalog.php': 401}
     opener = urllib.request.build_opener(NoRedirect())
-    for path, allowed in pages.items():
+    for path, expected in pages.items():
         try:
-            with opener.open('https://noastudio.ai.kr' + path, timeout=25) as response:
-                status = response.status
-                content = response.read(128 * 1024)
-                nonempty = bool(content.strip())
+            response = opener.open('https://noastudio.ai.kr' + path, timeout=25)
         except urllib.error.HTTPError as error:
-            status, nonempty = error.code, True
+            response = error
         except OSError:
-            status, nonempty = 0, False
-        checks.append({'path': path, 'status': status, 'ok': status in allowed and nonempty})
-    with opener.open('https://noastudio.ai.kr/noa-bridge/catalog.php', timeout=60) as response:
-        data = json.load(response)
-    items = data['items']
-    media = {'publicCatalogItems': len(items), 'audioVerifiedItems': sum(bool(r.get('audioVerified')) for r in items)}
-    for field, label in [('audioUrl', 'audio'), ('coverImageUrl', 'cover')]:
-        candidate = next((row.get(field) for row in items if row.get(field) and urllib.parse.urlsplit(row[field]).hostname == 'noastudio.ai.kr'), None)
-        if not candidate:
-            media[label] = {'ok': False, 'reason': 'no_public_sample'}
+            checks.append({'path': path, 'status': 0, 'ok': False})
             continue
-        req = urllib.request.Request(candidate, headers={'Range': 'bytes=0-4095'})
-        with opener.open(req, timeout=30) as response:
-            prefix = response.read(4096)
-            content_type = response.headers.get('Content-Type', '')
-            media[label] = {'ok': bool(prefix) and ('audio/' in content_type if label == 'audio' else 'image/' in content_type),
-                            'status': response.status, 'contentType': content_type, 'sampleBytes': len(prefix)}
-    return {'pages': checks, 'media': media}
+        with response:
+            status, headers = response.code, response.headers
+            content = response.read(128 * 1024)
+        ok = status == expected
+        if expected == 302:
+            location = urllib.parse.urlsplit(headers.get('Location', ''))
+            ok = ok and location.path == '/bbs/login.php' and location.netloc in ('', 'noastudio.ai.kr')
+            ok = ok and urllib.parse.parse_qs(location.query).get('url') == [path]
+        elif expected == 401:
+            # DotHome may substitute its HTML error body. The access extension's
+            # response header must still prove this is the intended denial.
+            ok = ok and headers.get('X-NOA-Access') in ('member', 'music')
+        else:
+            ok = ok and bool(content.strip())
+        checks.append({'path': path, 'status': status, 'expectedStatus': expected, 'ok': bool(ok)})
+    return {'pages': checks, 'media': {'checked': False,
+            'reason': 'guest_catalog_is_member_only; use authenticated native member verification'}}
 
 
 def main():
