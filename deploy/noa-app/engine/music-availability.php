@@ -4,6 +4,7 @@ require_once __DIR__.'/readonly-pipeline.php';
 require_once dirname(__DIR__).'/jukebox/core.php';
 require_once dirname(__DIR__,2).'/noa-bridge/sound-core.php';
 require_once dirname(__DIR__,2).'/noa-bridge/music-readmodel.php';
+require_once dirname(__DIR__,2).'/noa-bridge/music-proof-auth.php';
 function n80_music_safe_reason(string $reason):string {
     $known=['unsupported_public_read','public_read_failed','public_url_access_disabled','public_http_non_success','public_read_too_large',
         'public_tls_failed','public_read_timeout','public_network_failed','invalid_job_id','source_not_ready','superseded_job','missing_commit_timestamp',
@@ -17,7 +18,7 @@ function n80_music_safe_phase():string {
     return in_array($phase,['bootstrap','load_runtime','policy','db_config','db_connect','db_readonly','consumer','ready_identity',
         'local_media','public_catalog','public_detail','public_audio','public_readmodel','final_source'],true)?$phase:'unknown';
 }
-/** Fixed-origin, unauthenticated GET only; never accept a caller URL. */
+/** Fixed-origin GET with a path/range-bound service signature; never accept a caller URL. */
 function n80_music_public_get(string $kind,string $key):array {
     $paths=['catalog'=>'/noa-music.php','detail'=>'/noa-music-detail.php?key='.rawurlencode($key),
         'audio'=>'/noa-app/jukebox/stream.php?key='.rawurlencode($key).'&type=audio'];
@@ -27,6 +28,7 @@ function n80_music_public_get(string $kind,string $key):array {
     $limit=$kind==='audio'?4096:4194304;
     $headers="X-N80-Availability-Check: 1\r\nAccept: ".($kind==='detail'?'application/json':'*/*')."\r\n";
     if($kind==='audio')$headers.="Range: bytes=0-4095\r\n";
+    $headers.=nmr_request_headers($paths[$kind],$kind==='audio'?'bytes=0-4095':'');
     // Shared hosting may disable URL fopen while its existing API collectors use
     // cURL. Keep the same fixed origin, trust checks, byte caps and no redirects.
     if(function_exists('curl_init')){

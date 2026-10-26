@@ -16,6 +16,7 @@ namespace N80MusicHttpMock {
  function curl_close($handle):void{$GLOBALS['curl_mock_closed']=true;}
 }
 namespace {
+ require_once dirname(__DIR__,2).'/bridge/music-proof-auth.php';
  $source=file_get_contents(dirname(__DIR__,2).'/deploy/noa-app/engine/music-availability.php');
  // token_get_all keeps braces in quoted strings/comments out of the brace count.
  $tokens=token_get_all($source);$function='';$collect=false;$depth=0;$entered=false;

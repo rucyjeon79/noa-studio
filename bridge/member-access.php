@@ -1,11 +1,12 @@
 <?php
 declare(strict_types=1);
+if(is_file(__DIR__.'/music-proof-auth.php'))require_once __DIR__.'/music-proof-auth.php';
 /** Explicit roles. A numeric staff level never implies highest-administrator access. */
 function nam_access(array $member=[],string $admin=''):array{
  $logged=!empty($member['mb_id']);$level=$logged?max(1,min(10,(int)($member['mb_level']??2))):1;$super=$logged&&$admin==='super';
  $base=$logged&&$level>=2;$write=$logged&&$level>=3;$vip=$logged&&in_array($level,[4,6],true);$creator=$logged&&in_array($level,[5,6],true);
  $names=[1=>'비회원',2=>'임시회원',3=>'정회원',4=>'VIP회원',5=>'창작자',6=>'VIP 크리에이터'];
- return ['level'=>$level,'name'=>$super?'최고관리자':($names[$level]??'앱 관리자 · 권한 지정 대기'),'home'=>true,'member'=>$base||$super,'write'=>$write||$super,'music'=>$vip||$super,'creator'=>$creator||$super,'ownDownload'=>$level===6||$super,'admin'=>$super];
+ return ['level'=>$level,'name'=>$super?'최고관리자':($names[$level]??'앱 관리자 · 권한 지정 대기'),'home'=>true,'member'=>$base||$super,'write'=>$write||$super,'music'=>$vip||$super||(function_exists('nmr_current')&&nmr_current()),'creator'=>$creator||$super,'ownDownload'=>$level===6||$super,'admin'=>$super];
 }
 function nam_owner(array $document,array $member):bool{
  return !empty($member['mb_id'])&&is_string($document['ownerId']??null)&&hash_equals($document['ownerId'],(string)$member['mb_id']);
