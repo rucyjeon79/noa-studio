@@ -16,6 +16,8 @@ try{
  check(!isset($guest['admin'])&&!isset($member['admin']),'administrator routes must be hidden from guest/member');
  check(in_array('popularity',$ids($admin),true)&&!in_array('popularity',$ids($guest),true)&&!in_array('popularity',$ids($member),true),'actual popularity service is administrator-only');
  check(isset($admin['admin-content'],$admin['admin-creation'],$admin['admin-operation'],$admin['admin-advanced'])&&count($admin['admin']['routes'])===1,'administrator task groups and single workspace entry included');
+ foreach(noa_workspace_groups() as $g)check(is_string($g['intro']??null)&&count($g['routes'])>0,'task group description and destinations required');
+ ob_start();noa_workspace_render();$workspace=ob_get_clean();check(substr_count($workspace,'class="noa-workspace-grid"')===4,'all administrator sections render');
  check(!isset($guest['admin-content'])&&!isset($member['admin-content']),'task groups are administrator-only');
  check(in_array('workStatus',$ids($admin),true)&&!in_array('workStatus',$ids($member),true)&&!in_array('workStatus',$ids($guest),true),'work journal highest-admin-only');
  check(in_array('subscriptions',$ids($admin),true)&&!in_array('subscriptions',$ids($member),true)&&!in_array('subscriptions',$ids($guest),true),'subscription configuration highest-admin-only');

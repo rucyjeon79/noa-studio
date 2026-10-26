@@ -9,12 +9,12 @@ function noa_workspace_groups():array{return [
   ['order','곡 묶음·순서 관리','사연곡·커버곡을 선택 → 묶음 생성 또는 순서 저장','/noa-category-order-admin.php','playlists'],
   ['trash','곡 휴지통','삭제한 곡을 확인 → 복원','/noa-catalog.php?view=trash','library'],
  ]],
- 'creation'=>['title'=>'제작 작업실','가사·영상 제작과 완성 음원 업로드를 구분합니다.','routes'=>[
+ 'creation'=>['title'=>'제작 작업실','intro'=>'가사·영상 제작과 완성 음원 업로드를 구분합니다.','routes'=>[
   ['jukebox','완성 음원 업로드','곡 선택 → MP3 업로드 → 최적화 완료 확인','/noa-app/jukebox/','music'],
   ['aiLab','AI 가사·뮤비 제작','제작 종류 선택 → 초안 검토 → 곡정보에 저장','/noa-ai-lab.php','mic'],
   ['youtubeAdmin','YouTube 채널 관리','채널 수집 → 원곡 연결 검토 → 성과 확인','/noa-youtube-admin.php','youtube'],
  ]],
- 'operation'=>['title'=>'운영 설정','회원·게시판·화면·연결 정보를 관리합니다.','routes'=>[
+ 'operation'=>['title'=>'운영 설정','intro'=>'회원·게시판·화면·연결 정보를 관리합니다.','routes'=>[
   ['members','회원 관리','회원 상태와 권한 확인','/adm/member_list.php','user'],
   ['boards','게시판 관리','공지·커뮤니티 게시판 설정','/adm/board_list.php','community'],
   ['subscriptions','구독·포인트 설정','이용 정책과 결제 내역 확인','/noa-subscription-admin.php','user'],
