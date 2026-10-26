@@ -1,0 +1,39 @@
+name: NOA membership rewards and account bar
+on:
+  push:
+    branches: [main]
+    paths: ['bridge/membership*.php','deploy/noa-membership*','deploy/noa-account.*','tests/membership/**','scripts/noa_membership*.py','scripts/noa_membership*.php','scripts/qa/noa-membership.mjs','.github/workflows/noa-membership-policy.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: isolated-noa-ci, MYSQL_DATABASE: noa_subscription_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -pisolated-noa-ci" --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      NOA_MYSQL_DSN: mysql:host=127.0.0.1;port=3306;dbname=noa_subscription_test;charset=utf8mb4
+      NOA_MYSQL_USER: root
+      NOA_MYSQL_PASSWORD: isolated-noa-ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'mysqli,pdo_mysql,mbstring'}
+      - name: Validate native rewards and payments without external billing
+        shell: bash
+        run: |
+          php -l bridge/membership-core.php
+          php -l bridge/membership.php
+          php -l deploy/noa-membership.extend.php
+          php -l deploy/noa-membership.php
+          node --check deploy/noa-account.js
+          node --check deploy/noa-membership.js
+          php tests/subscription/core_test.php
+          php tests/subscription/mysql_test.php | tee "$RUNNER_TEMP/subscription.log"
+          grep -F SUBSCRIPTION_MYSQL_TRANSACTION "$RUNNER_TEMP/subscription.log"
+          php tests/membership/mysql.php | tee "$RUNNER_TEMP/membership.log"
+          grep -F MEMBERSHIP_LOGIN_PENDING_130 "$RUNNER_TEMP/membership.log"

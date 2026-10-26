@@ -7,6 +7,7 @@ function ns_policy_validate(array $p):array{
  $out=ns_defaults();foreach(['enabled','pointsEnabled','paymentApprovalEnabled']as $k){if(!is_bool($p[$k]??null))throw new InvalidArgumentException('invalid_policy');$out[$k]=$p[$k];}
  foreach(['provider'=>80,'paymentInstructions'=>2000]as $k=>$limit){if(!is_string($p[$k]??null)||mb_strlen($p[$k])>$limit||str_contains($p[$k],"\0"))throw new InvalidArgumentException('invalid_policy');$out[$k]=trim($p[$k]);}
  foreach(['vip','creator']as $id){$v=$p['plans'][$id]??null;if(!is_array($v)||!is_bool($v['enabled']??null))throw new InvalidArgumentException('invalid_plan');$out['plans'][$id]['enabled']=$v['enabled'];foreach(['priceWon'=>100000000,'points'=>1000000000]as $k=>$max){$value=$v[$k]??null;if($value!==null&&(!is_int($value)||$value<1||$value>$max))throw new InvalidArgumentException('positive_price_required');$out['plans'][$id][$k]=$value;}}
+ foreach(['vip','creator']as $id)if(array_key_exists('durationDays',$p['plans'][$id])){if(!is_int($p['plans'][$id]['durationDays'])||$p['plans'][$id]['durationDays']<1||$p['plans'][$id]['durationDays']>365)throw new InvalidArgumentException('invalid_duration');$out['plans'][$id]['durationDays']=$p['plans'][$id]['durationDays'];}
  if($out['enabled']){foreach($out['plans']as $v)if($v['enabled']){if($out['pointsEnabled']&&$v['points']===null)throw new InvalidArgumentException('points_price_required');if($out['paymentApprovalEnabled']&&($v['priceWon']===null||$out['provider']===''||$out['paymentInstructions']===''))throw new InvalidArgumentException('payment_settings_required');}}
  return $out;
 }
@@ -16,7 +17,7 @@ function ns_quote(array $policy,string $plan,string $method,int $rawLevel):array
  $p=$policy['plans'][$plan];if(!$policy['enabled']||!$p['enabled'])throw new DomainException('subscription_not_configured');
  if($method==='points'&&(!$policy['pointsEnabled']||!is_int($p['points'])||$p['points']<1))throw new DomainException('points_purchase_disabled');
  if($method==='payment'&&(!$policy['paymentApprovalEnabled']||!is_int($p['priceWon'])||$p['priceWon']<1||$policy['provider']===''||$policy['paymentInstructions']===''))throw new DomainException('payment_purchase_disabled');
- return ['plan'=>$plan,'method'=>$method,'points'=>$method==='points'?$p['points']:0,'priceWon'=>$method==='payment'?$p['priceWon']:0,'provider'=>$method==='payment'?$policy['provider']:'GnuBoard points','period'=>'calendar-month','timezone'=>'Asia/Seoul'];
+ return ['plan'=>$plan,'method'=>$method,'points'=>$method==='points'?$p['points']:0,'priceWon'=>$method==='payment'?$p['priceWon']:0,'provider'=>$method==='payment'?$policy['provider']:'GnuBoard points','period'=>isset($p['durationDays'])?'days':'calendar-month','timezone'=>'Asia/Seoul']+(isset($p['durationDays'])?['durationDays'=>$p['durationDays']]:[]);
 }
 function ns_q(string $sql){$r=sql_query($sql,false);if($r===false)throw new RuntimeException('subscription_database_unavailable');return $r;}
 function ns_e(string $s):string{global $g5;$link=$g5['connect_db']??null;if(!$link instanceof mysqli)throw new RuntimeException('native_database_connection_required');return "'".mysqli_real_escape_string($link,$s)."'";}
@@ -47,7 +48,7 @@ function ns_grant(array $order,string $actor,int $now):array{
  $key=ns_member_key($order['ownerId']);$r=ns_doc($key,true);$g=$r['data']??null;$base=$order['plan']==='creator'?5:3;
  if($g&&($g['ownerId']??'')!==$order['ownerId'])throw new DomainException('subscription_owner_mismatch');
  $continuing=$g&&($g['baseLevel']??0)===$base&&($g['status']??'')==='active'&&($g['until']??0)>$now;$start=$continuing?$g['until']:$now;$anchor=$continuing?($g['anchorDay']??null):null;$anchor??=(int)(new DateTimeImmutable('@'.$start))->setTimezone(new DateTimeZone('Asia/Seoul'))->format('j');
- $next=['ownerId'=>$order['ownerId'],'baseLevel'=>$base,'paidLevel'=>$base===5?6:4,'status'=>'active','until'=>ns_month_end($start,$anchor),'anchorDay'=>$anchor,'lastOrderId'=>$order['id'],'source'=>$order['method'],'updatedAt'=>$now];ns_put($key,'prefs',$next,$r['revision']??0,$actor);return $next;
+ $next=['ownerId'=>$order['ownerId'],'baseLevel'=>$base,'paidLevel'=>$base===5?6:4,'status'=>'active','until'=>isset($order['durationDays'])?$start+(int)$order['durationDays']*86400:ns_month_end($start,$anchor),'anchorDay'=>$anchor,'lastOrderId'=>$order['id'],'source'=>$order['method'],'updatedAt'=>$now];ns_put($key,'prefs',$next,$r['revision']??0,$actor);return $next;
 }
 function ns_points_debit(string $owner,int $points,string $id):void{
  if($points<1||$points>1000000000)throw new InvalidArgumentException('positive_price_required');
@@ -57,9 +58,10 @@ function ns_points_debit(string $owner,int $points,string $id):void{
  if($ok!==1||trim($unexpected)!=='')throw new RuntimeException('points_debit_failed');
  $verified=ns_one('SELECT po_point FROM '.ns_table('point_table').' WHERE mb_id='.ns_e($owner)." AND po_rel_table='noa_subscription' AND po_rel_id=".ns_e($id)." AND po_rel_action='purchase'");if(!$verified||(int)$verified['po_point']!==-$points)throw new RuntimeException('points_debit_failed');
 }
-function ns_create_order(string $owner,string $id,string $plan,string $method,int $now,?int $expectedPolicyRevision=null):array{
- ns_order_key($id);return ns_atomic($owner,$method==='points',function()use($owner,$id,$plan,$method,$now,$expectedPolicyRevision){
+function ns_create_order(string $owner,string $id,string $plan,string $method,int $now,?int $expectedPolicyRevision=null,?callable $authorize=null):array{
+ ns_order_key($id);return ns_atomic($owner,$method==='points',function()use($owner,$id,$plan,$method,$now,$expectedPolicyRevision,$authorize){
   $old=ns_doc(ns_order_key($id),true);if($old){$d=$old['data'];if(($d['ownerId']??'')!==$owner||($d['plan']??'')!==$plan||($d['method']??'')!==$method)throw new DomainException('purchase_conflict');return $d;}
+  if($authorize!==null)$authorize();
   $member=ns_native_member($owner);$policyRow=ns_doc(NS_POLICY,true);if($expectedPolicyRevision!==null&&$expectedPolicyRevision!==($policyRow['revision']??0))throw new DomainException('policy_changed');$policy=$policyRow?ns_policy_validate($policyRow['data']):ns_defaults();$quote=ns_quote($policy,$plan,$method,(int)$member['mb_level']);
   $d=['id'=>$id,'ownerId'=>$owner]+$quote+['status'=>$method==='points'?'processing':'awaiting_payment','createdAt'=>$now,'paidAt'=>null,'until'=>null];ns_put(ns_order_key($id),'subscription_order',$d,0,$owner);
   if($method==='points'){
