@@ -27,7 +27,7 @@ const report={phase,rows:[],runtimeWrites:0,privateViews:'in-memory source fixtu
 let activePage;
 try{
  for(const theme of ['noa-studio','noa-ivory'])for(const[w,h]of [[320,740],[390,844],[760,1024],[1024,768],[1440,900],[844,390]]){
-  const context=await browser.newContext({viewport:{width:w,height:h},reducedMotion:'reduce'});
+  const context=await browser.newContext({viewport:{width:w,height:h},reducedMotion:'reduce',serviceWorkers:'block'});
   await context.addInitScript(({theme})=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',design:'ios',radius:'soft'})),{theme});
   await context.route('**/*',async route=>{
    const req=route.request(),u=new URL(req.url());
