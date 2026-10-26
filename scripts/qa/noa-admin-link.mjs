@@ -1,6 +1,6 @@
 import {chromium} from 'playwright';
 import fs from 'node:fs/promises';
-const live=process.env.NOA_ADMIN_LINK_PHASE==='live', browser=await chromium.launch({headless:true}), reports=[];
+const live=process.env.NOA_ADMIN_LINK_PHASE==='live', browser=await chromium.launch({headless:true,channel:'chrome'}), reports=[];
 const script=live?await (await fetch('https://noastudio.ai.kr/noa-app/database/admin-link.js?verified='+Date.now())).text():await fs.readFile('deploy/noa-app/database/admin-link.js','utf8');
 try{for(const width of [320,390,1280]){
  const page=await browser.newPage({viewport:{width,height:844}});
