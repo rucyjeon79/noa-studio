@@ -10,6 +10,11 @@ BACKUP=Path(os.environ.get('RUNNER_TEMP','/tmp'))/'noa-ainoa-before.json'
 def sha(v):return hashlib.sha256(v).hexdigest()
 def main():
  out=Path('ainoa-proof');out.mkdir(exist_ok=True);desired={p:Path(v).read_bytes()for p,v in FILES.items()};rollback='rollback'in sys.argv
+ if not rollback:
+  headers={'User-Agent':'NOA-scoped-release','Accept':'application/vnd.github+json'}
+  if os.getenv('GH_TOKEN'):headers['Authorization']='Bearer '+os.environ['GH_TOKEN']
+  with urllib.request.urlopen(urllib.request.Request('https://api.github.com/repos/rucyjeon79/noa-studio/git/ref/heads/main',headers=headers),timeout=20)as response:head=json.load(response)['object']['sha']
+  if head!=os.environ['GITHUB_SHA']:raise RuntimeError('obsolete_candidate_no_operating_files_changed')
  known={p:{sha(subprocess.check_output(['git','show',c+':'+v]))for c in subprocess.check_output(['git','log','--format=%H','--',v],text=True).splitlines()}for p,v in FILES.items()};t=connect()
  try:
   with paramiko.SFTPClient.from_transport(t,window_size=8388608)as s:
