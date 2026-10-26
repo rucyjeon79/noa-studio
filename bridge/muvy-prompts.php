@@ -1,0 +1,29 @@
+<?php
+declare(strict_types=1);
+if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
+function mu_text(mixed $v,int $max,bool $empty=false):string{if(!is_string($v)||!mb_check_encoding($v,'UTF-8')||str_contains($v,"\0"))throw new InvalidArgumentException('invalid_pack');$v=trim($v);if((!$empty&&$v==='')||mb_strlen($v)>$max)throw new InvalidArgumentException('invalid_pack');return $v;}
+function mu_meta(array $m):array{if(!in_array($m['songType']??'', ['A','B','C','mixed'],true))throw new InvalidArgumentException('invalid_pack');$r=['songType'=>$m['songType']];foreach(['emotionalLine','edition','genre']as $k)$r[$k]=mu_text($m[$k]??null,600);foreach([1,2,3]as $c)foreach(['woman','man']as $sex)$r['outfits'][$c][$sex]=mu_text($m['outfits'][$c][$sex]??null,1000);return $r;}
+function mu_cut(array $c,int $n,bool $extra=false):array{if(!$extra&&($c['n']??0)!==$n)throw new InvalidArgumentException('cut_sequence');$r=['n'=>$n,'lyric'=>mu_text($c['lyric']??'',600,true),'script'=>mu_text($c['script']??null,1800),'gemini'=>mu_text($c['gemini']??'',6000,true),'grok'=>mu_text($c['grok']??'',6000,true)];if($extra)$r['label']=mu_text($c['label']??'보충 '.$n,80);return $r;}
+function mu_pack(array $p):array{
+ $r=['ep'=>mu_text($p['ep']??null,40),'title'=>mu_text($p['title']??null,120),'lyrics'=>mu_text($p['lyrics']??null,12000),'meta'=>null,'cuts'=>[],'extras'=>[1=>[],2=>[],3=>[]],'publish'=>null];
+ if(mb_strlen($r['lyrics'])<10)throw new InvalidArgumentException('lyrics_too_short');
+ if(!empty($p['cuts'])){if(!is_array($p['cuts'])||count($p['cuts'])!==30||!array_is_list($p['cuts']))throw new InvalidArgumentException('thirty_cuts_required');$r['meta']=mu_meta($p['meta']??[]);foreach($p['cuts']as $i=>$c)$r['cuts'][]=mu_cut($c,$i+1);foreach([1,2,3]as $ch){$extra=$p['extras'][$ch]??[];if(!is_array($extra)||count($extra)>8)throw new InvalidArgumentException('extra_limit');foreach(array_values($extra)as $i=>$c)$r['extras'][$ch][]=mu_cut($c,($ch-1)*10+$i+1,true);}if(!empty($p['publish']))$r['publish']=mu_publish($p['publish'],$r['ep'],$r['title']);}
+ return $r;
+}
+function mu_publish(array $p,string $ep,string $title):array{$r=[];foreach(['youtubeTitle'=>100,'description'=>6000,'community'=>2000,'thumbnailPrompt'=>6000]as $k=>$max)$r[$k]=mu_text($p[$k]??null,$max);if(!str_contains($r['youtubeTitle'],$title)||!str_contains($r['youtubeTitle'],$ep))throw new InvalidArgumentException('publish_title_mismatch');return $r;}
+function mu_prompt(array $p,string $stage,int $batch,string $note):array{
+ $rules=require __DIR__.'/muvy-rules.php';$intro="EP: {$p['ep']}\n제목: {$p['title']}\n";
+ if($stage==='script')return [$rules,$intro."가사:\n{$p['lyrics']}\n30컷 대본만 만들어라. Gemini·Grok 프롬프트는 쓰지 마라. JSON 형식: {\"songType\":\"A|B|C|mixed\",\"emotionalLine\":\"한국어 감성 한줄\",\"edition\":\"에디션\",\"genre\":\"장르\",\"outfits\":{\"1\":{\"woman\":\"영어 의상\",\"man\":\"영어 의상\"},\"2\":{\"woman\":\"\",\"man\":\"\"},\"3\":{\"woman\":\"\",\"man\":\"\"}},\"cuts\":[{\"n\":1,\"lyric\":\"가사 구간\",\"script\":\"한국어 2문장 이상. 장면·감정·장소·카메라\"}]} cuts는 1부터 30까지 정확히 순서대로.",9000];
+ if(count($p['cuts'])!==30)throw new DomainException('script_required');
+ if(preg_match('/^(c|extra)([123])$/D',$stage,$m)){$ch=(int)$m[2];$count=$p['meta']['songType']==='B'||($p['meta']['songType']==='mixed'&&$ch<3)?3:5;$context=$intro.'곡 정보: '.json_encode($p['meta'],JSON_UNESCAPED_UNICODE)."\n챕터 $ch. 10초 영상 내부 $count cuts. 의상은 이 챕터의 outfits를 그대로 유지. ";$cuts=array_slice($p['cuts'],($ch-1)*10,10);
+  if($m[1]==='c'){if(!in_array($batch,[0,1],true))throw new InvalidArgumentException('invalid_batch');$cuts=array_slice($cuts,$batch*5,5);return [$rules,$context.'잠긴 대본은 바꾸지 말고 다음 5컷의 이미지·영상 프롬프트만 써라. 대본: '.json_encode(array_map(fn($c)=>array_intersect_key($c,array_flip(['n','lyric','script'])),$cuts),JSON_UNESCAPED_UNICODE).' JSON: {"cuts":[{"n":1,"gemini":"영어 이미지 프롬프트","grok":"영어 영상 프롬프트"}]} n은 입력과 같은 순서로 정확히 5개.',6500];}
+  if(count($p['extras'][$ch])>=8)throw new DomainException('extra_limit');return [$rules,$context.'기존 컷을 바꾸지 말고 보충컷 2개만 써라. 요청: '.$note.' 기존 장면: '.json_encode(['cuts'=>$cuts,'extras'=>$p['extras'][$ch]],JSON_UNESCAPED_UNICODE).' JSON: {"cuts":[{"label":"보충 1","lyric":"","script":"한국어 2문장 이상","gemini":"영어 이미지 프롬프트","grok":"영어 영상 프롬프트"}]} 정확히 2개.',5500];
+ }
+ if($stage==='publish')return [$rules."\n공개 패키지: 유튜브 제목은 100자 이내이며 원래 제목과 EP 번호, 장르를 포함. 설명란 한국어 600~1100자, 첫 줄에 제목·EP. 커뮤니티 한국어 200~400자. 광고·가짜 아티스트·구독 강요 금지. 썸네일은 상징적인 장면 하나의 영어 프롬프트. NOA·NOEL의 얼굴 고정. 16:9. 텍스트는 좌상단 EP, 중앙 큰 원제목, 아래 에디션 | 장르, 아래 감성 한줄 원문. 얼굴과 글자 겹침 금지. 로고·워터마크 금지.",$intro.'곡 정보: '.json_encode($p['meta'],JSON_UNESCAPED_UNICODE).' 후반 대본: '.json_encode(array_slice($p['cuts'],20),JSON_UNESCAPED_UNICODE).' JSON: {"youtubeTitle":"","description":"","community":"","thumbnailPrompt":""}',5000];
+ throw new InvalidArgumentException('invalid_stage');
+}
+function mu_apply(array $p,string $stage,int $batch,array $out):array{
+ if($stage==='script'){$p['meta']=mu_meta($out);$p['cuts']=$out['cuts']??[];$p['extras']=[1=>[],2=>[],3=>[]];$p['publish']=null;return mu_pack($p);}
+ if(preg_match('/^(c|extra)([123])$/D',$stage,$m)){$ch=(int)$m[2];$rows=$out['cuts']??[];if(!is_array($rows)||!array_is_list($rows)||count($rows)!==($m[1]==='c'?5:2))throw new InvalidArgumentException('provider_cut_count');if($m[1]==='c'){foreach($rows as $i=>$c){$n=($ch-1)*10+$batch*5+$i+1;if(($c['n']??null)!==$n)throw new InvalidArgumentException('cut_sequence');foreach(['gemini','grok']as $key)$p['cuts'][$n-1][$key]=mu_text($c[$key]??null,6000);}}else{foreach($rows as $c){$n=($ch-1)*10+count($p['extras'][$ch])+1;$r=mu_cut($c,$n,true);if(!$r['gemini']||!$r['grok'])throw new InvalidArgumentException('invalid_pack');$p['extras'][$ch][]=$r;}}return mu_pack($p);}
+ if($stage==='publish'){$p['publish']=mu_publish($out,$p['ep'],$p['title']);return mu_pack($p);}throw new InvalidArgumentException('invalid_stage');
+}

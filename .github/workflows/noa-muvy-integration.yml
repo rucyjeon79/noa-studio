@@ -1,0 +1,59 @@
+name: NOA Grok Movie Workroom Integration
+on:
+  push:
+    branches: [main]
+    paths: ['bridge/muvy*.php','deploy/noa-muvy*','scripts/noa_muvy*','scripts/qa/noa-muvy.mjs','tests/muvy/**','.github/workflows/noa-muvy-integration.yml']
+permissions: {contents: read}
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: mbstring, openssl, curl}
+      - name: Validate private storage, revisions, provider deduplication and strict packs
+        run: |
+          for file in bridge/muvy*.php deploy/noa-muvy-panel.php deploy/noa-ai-lab.php tests/muvy/fixture.php; do php -l "$file"; done
+          node --check deploy/noa-muvy.js
+          node --check scripts/qa/noa-muvy.mjs
+          python -m py_compile scripts/noa_muvy_release.py scripts/noa_muvy_postflight.py
+          php tests/muvy/fixture.php
+          python scripts/qa/noa-qa-font.py
+          npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-muvy" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-muvy.mjs "$RUNNER_TEMP/noa-muvy/check.mjs"
+      - name: Verify complete thirty-cut workflow, saved imports and six layouts with an isolated provider
+        run: node "$RUNNER_TEMP/noa-muvy/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-muvy-candidate-${{ github.run_id }}', path: muvy-proof/, retention-days: 7}
+  deploy:
+    needs: candidate
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - run: python -m pip install 'paramiko>=3,<5'
+      - name: Atomically add private Grok workroom without touching existing runtime or keys
+        id: upload
+        run: python scripts/noa_muvy_release.py
+      - name: Verify actual native access denial and integration state
+        id: live
+        run: python scripts/noa_muvy_postflight.py
+      - name: Restore only owned source bytes if verification fails
+        if: failure() && (steps.upload.outcome == 'failure' || steps.live.outcome == 'failure')
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then python scripts/noa_muvy_release.py rollback; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-muvy-live-${{ github.run_id }}', path: muvy-proof/, retention-days: 7}
