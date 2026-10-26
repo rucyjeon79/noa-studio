@@ -11,7 +11,7 @@ class RecoveryContract(unittest.TestCase):
    self.assertEqual(s.count(current),1)
    s=s.replace(current,current.replace('hidden=true','hidden=false'),1)
   # The category breadcrumb is presentation only; retain exact playback hashes.
-  breadcrumb=" window.NoaBrowse?.renderPath(document.getElementById('music-classification'),r);\n"
+  breadcrumb=" renderMusicInfo(r);\n"
   self.assertEqual(s.count(breadcrumb),1);s=s.replace(breadcrumb,'',1)
   blocks={'databaseAndPermissionPrefix':s[:s.index('?><!doctype html>')],'requestPlaybackAndQueue':s[s.index('function requestPlayback()'):s.index('function filter()')],'playbackAndUploadIntegration':s[s.index('function select('):s.index("// Detail hydration") if "// Detail hydration" in s else s.index("let saved=''")]}
   actual={k:hashlib.sha256(v.encode()).hexdigest()for k,v in blocks.items()}
