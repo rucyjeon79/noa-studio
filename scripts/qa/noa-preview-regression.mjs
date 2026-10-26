@@ -63,17 +63,14 @@ try{
   await selectedRow.click();await page.waitForFunction(id=>document.getElementById('yt-frame').src.includes('/embed/'+id),item.video);
   const detail=await page.evaluate(()=>{const f=document.getElementById('yt-frame');return{src:f.getAttribute('src'),width:f.getBoundingClientRect().width,visible:!!f.getBoundingClientRect().height&&!f.closest('[hidden]')};});
   assert(detail.visible);assert(detail.width>=width*(width<800?.65:.3));
-  const logout=page.locator('#noa-account-bar a[href="/bbs/logout.php?url=%2F"]');await logout.waitFor();
+  await page.locator('#noa-account-bar').waitFor();assert.equal(await page.locator('#noa-account-bar a[href*=logout]').count(),0,'logout lives in MY');assert.equal(await page.locator('#noa-account-bar .noa-account-brand span').textContent(),'NOA STUDIO');
   const boxes=await page.locator('#noa-account-bar a').evaluateAll(ns=>ns.map(n=>{const b=n.getBoundingClientRect();return{x:b.x,y:b.y,right:b.right,bottom:b.bottom,height:b.height};}));
   assert(boxes.every(b=>b.x>=0&&b.right<=width+1&&b.height>=44),'header fit and touch targets');
   for(let i=0;i<boxes.length;i++)for(let j=i+1;j<boxes.length;j++){const a=boxes[i],b=boxes[j];assert(!(a.x<b.right-1&&a.right>b.x+1&&a.y<b.bottom-1&&a.bottom>b.y+1),'header links overlap');}
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);
   await page.screenshot({path:out+'/'+phase+'-'+genre+'-'+theme+'-'+width+'.png'});
-  // A native logout route is used, and the header removes logout after a guest response.
-  await logout.click();await page.waitForURL('**/noa-preview-fixture?genre=*');
-  const accountCode=phase==='candidate'?readFileSync('deploy/noa-account.js','utf8'):await(await context.request.get(base+'/noa-account.js?qa='+Date.now())).text();await page.addScriptTag({content:accountCode});
-  await page.locator('#noa-account-bar .noa-account-status a[href*="login"]').waitFor();assert.equal(await page.locator('#noa-account-bar a[href*="logout"]').count(),0);
-  results.push({phase,width,theme,genre,collections:tested,individualSelection:detail,logoutVisible:true,logoutUsesNativeRoute:true,guestHidesLogout:true,noOverflow:true,errors,providerTransport:'fixture',accountData:'fixture',catalogData:'operating public SQL projection'});
+  // Native logout and MY account-state transitions are exercised in noa-navigation.mjs.
+  results.push({phase,width,theme,genre,collections:tested,individualSelection:detail,accountInformationInMy:true,noOverflow:true,errors,providerTransport:'fixture',accountData:'fixture',catalogData:'operating public SQL projection'});
   await context.close();
  }
  assert(results.length===18);
