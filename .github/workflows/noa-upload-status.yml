@@ -28,6 +28,8 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq ffmpeg
           python tests/jukebox/make_fixture.py
+          mkdir -p deploy/noa-bridge
+          cp bridge/package-record.php deploy/noa-bridge/package-record.php
           php tests/jukebox/upload_mysql_test.php
           php -l deploy/noa-app/jukebox/upload.php
           php -l deploy/noa-app/jukebox/index.php
