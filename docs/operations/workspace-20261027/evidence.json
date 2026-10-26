@@ -1,0 +1,603 @@
+{
+  "workId": "NOA-20261027-CATEGORIES-ADMIN-WORKSPACE",
+  "completedAt": "2026-10-27T08:26:17+09:00",
+  "status": "deployed_and_verified",
+  "sourceCommit": "afa0951041518c1074bcdafab411482f4959f017",
+  "pullRequest": "https://github.com/rucyjeon79/noa-studio/pull/223",
+  "release": "https://github.com/rucyjeon79/noa-studio/actions/runs/40419127337",
+  "existingFeatureRegression": "https://github.com/rucyjeon79/noa-studio/actions/runs/40419127307",
+  "previousBlockedRelease": "https://github.com/rucyjeon79/noa-studio/actions/runs/40416426184",
+  "deployment": {
+    "commit": "afa0951041518c1074bcdafab411482f4959f017",
+    "changed": [
+      "noa-bridge/sound-core.php",
+      "noa-bridge/library-records.php",
+      "noa-bridge/record-trash.php",
+      "noa-workspace.php",
+      "noa-category-order-admin.php",
+      "noa-app/jukebox/core.php",
+      "noa-bridge/catalog.php",
+      "noa-bridge/index.php",
+      "noa-bridge/youtube-store.php",
+      "noa-record-action.php",
+      "noa-catalog.js",
+      "noa-workspace.js",
+      "noa-browse.js",
+      "noa-browse-edit.js",
+      "noa-ui.css",
+      "noa-inline-edit.php",
+      "noa-catalog.php",
+      "noa-editor.php",
+      "noa-library.php",
+      "noa-ai-lab.php",
+      "noa-ai-lab.js",
+      "noa-my.php",
+      "noa-sitemap.php",
+      "noa-music.php",
+      "noa-world.php",
+      "noa-youtube.php",
+      "extend/noa.design.php"
+    ],
+    "sha256": {
+      "noa-bridge/sound-core.php": "2a090552eebb998ddfee6d4df7bcd6676f1000057dcb8858808306c0d031ee18",
+      "noa-bridge/library-records.php": "7dc073812a44a797bceac77186add921746843dbc5a1b7d99e5c128233d849ec",
+      "noa-bridge/record-trash.php": "c5108929030192083848a424bc312ad4ee5b6be5beb5ba56b6e1c7fe4e52a524",
+      "noa-workspace.php": "4319f295076bf15e49b6cd9d0270e5a57b5a6f8ca37787349c58cd30e0f2bb3f",
+      "noa-category-order-admin.php": "49c3bb4f93f9991ddc50b80a956ecb48c16b371b65d76e93550d942f1afaddf0",
+      "noa-app/jukebox/core.php": "9f3f83edd02dc16953300eb540c8ef00f9a9edd0f42acf40b717e39418d2127b",
+      "noa-bridge/catalog.php": "b557a3717e9962ef44a82e3da716ca1efbac8db9bf42e248b7eaa957afc4319b",
+      "noa-bridge/index.php": "4688bfc9a8270881d7d05d92f77d6928f13d671080c8ef89ce571c32126322bf",
+      "noa-bridge/youtube-store.php": "74f580f86fc483330f61f22b1f6f800b4dfcbe7006241aae0c376b46ab0d04bf",
+      "noa-record-action.php": "dd16b72128f3aff985f78a4f1cce0396f5badacd72ab747a02296644c247286a",
+      "noa-catalog.js": "7e644e990df82b9dd76691a6c5d32cd4f286c9c3226cae89c7832bf92403edef",
+      "noa-workspace.js": "b7c774ba3a0ebad80b26a3314b1808c0c9e220987cbe8e91693cf069abe48ea8",
+      "noa-browse.js": "73a924f66ca6a65f7d95c39a26193295668a85e798ae61c3d5f1b29101d90284",
+      "noa-browse-edit.js": "884cc61b143c5ca20a0e5a8c898e96a0205107b1f6b8b0e79d5c0cf5b57afabe",
+      "noa-ui.css": "d5819689133e229d9bddbe1d67fb2c3157dc5a3b4e3b1199294063ecff738f8f",
+      "noa-inline-edit.php": "9863d108e3a43c9bf0c0acd914b3cc70d11d0fddfd74082fe7ebafb6a28e51a3",
+      "noa-catalog.php": "7b0b5bfa3b193fc059f4187b2d31c6e19b237a34fe077adc9ad286c941f653ea",
+      "noa-editor.php": "c3c954d645e133527ddae112fd8ee36733726c0c13b70eb3d02c9436630fe664",
+      "noa-library.php": "25ac168f1ee0e39aa48b555e016cae0aa7981008e2101a7583f062c3dee51012",
+      "noa-ai-lab.php": "44c1d16d2e13e00c09ab84181f1a43cd21e33ffa326c8eb480b2a8968b3629bd",
+      "noa-ai-lab.js": "d66568f6fbc1f050ebea18890704c6118e995fc19f603f47bf60cb98afdcad2b",
+      "noa-my.php": "90da67f123ce5ff1ca91408dd56c26ec6a394462e5d19a8016e8c365fc7711ec",
+      "noa-sitemap.php": "6b877f3aeb4009fcb0c990bd152b4db3bd75f45386944e641e944222fae49c3d",
+      "noa-music.php": "6bebb5ddec57d1cbac29dfe1191853e2aaf28f106c819f9506ecc9b1128ba669",
+      "noa-world.php": "c463c291d9a26f05767b034bfdabb6ceee42d783aa6c42a76ad00ca0f35b6ef2",
+      "noa-youtube.php": "a600f9055f1edce3bae77a3a79c11a03fe3d292782a2074edc2891a958661559",
+      "extend/noa.design.php": "f07e5968a96cffe671f117a41518592f067394116f8866794e00dbe4978639a7"
+    },
+    "protectedUnchanged": 24,
+    "databaseWrites": 0,
+    "memberRowsChanged": 0,
+    "pointDebits": 0,
+    "pricesSeeded": false
+  },
+  "candidate": {
+    "screens": [
+      {
+        "width": 320,
+        "theme": "noa-studio",
+        "search": true,
+        "inlineEditor": true,
+        "pathLevels": 4,
+        "noOverflow": true
+      },
+      {
+        "width": 320,
+        "theme": "noa-ivory",
+        "search": true,
+        "inlineEditor": true,
+        "pathLevels": 4,
+        "noOverflow": true
+      },
+      {
+        "width": 390,
+        "theme": "noa-studio",
+        "search": true,
+        "inlineEditor": true,
+        "pathLevels": 4,
+        "noOverflow": true
+      },
+      {
+        "width": 390,
+        "theme": "noa-ivory",
+        "search": true,
+        "inlineEditor": true,
+        "pathLevels": 4,
+        "noOverflow": true
+      },
+      {
+        "width": 1280,
+        "theme": "noa-studio",
+        "search": true,
+        "inlineEditor": true,
+        "pathLevels": 4,
+        "noOverflow": true
+      },
+      {
+        "width": 1280,
+        "theme": "noa-ivory",
+        "search": true,
+        "inlineEditor": true,
+        "pathLevels": 4,
+        "noOverflow": true
+      }
+    ],
+    "permissions": [
+      "guest",
+      "member",
+      "vip",
+      "admin"
+    ],
+    "mutations": [
+      "inline-save-visible",
+      "confirmed-trash",
+      "confirmed-restore"
+    ],
+    "productionWrites": 0,
+    "taskPanels": true,
+    "settingsShortcut": true
+  },
+  "navigation": {
+    "phase": "isolated native-auth fixture",
+    "accounts": [
+      {
+        "engine": "chromium",
+        "width": 320,
+        "theme": "noa-studio",
+        "role": "guest",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": false,
+        "logout": false,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 320,
+        "theme": "noa-studio",
+        "role": "member",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 320,
+        "theme": "noa-studio",
+        "role": "vip",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 320,
+        "theme": "noa-studio",
+        "role": "admin",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 320,
+        "theme": "noa-ivory",
+        "role": "guest",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": false,
+        "logout": false,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 320,
+        "theme": "noa-ivory",
+        "role": "member",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 320,
+        "theme": "noa-ivory",
+        "role": "vip",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 320,
+        "theme": "noa-ivory",
+        "role": "admin",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 390,
+        "theme": "noa-studio",
+        "role": "guest",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": false,
+        "logout": false,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 390,
+        "theme": "noa-studio",
+        "role": "member",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 390,
+        "theme": "noa-studio",
+        "role": "vip",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 390,
+        "theme": "noa-studio",
+        "role": "admin",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 390,
+        "theme": "noa-ivory",
+        "role": "guest",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": false,
+        "logout": false,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 390,
+        "theme": "noa-ivory",
+        "role": "member",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 390,
+        "theme": "noa-ivory",
+        "role": "vip",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 390,
+        "theme": "noa-ivory",
+        "role": "admin",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 1280,
+        "theme": "noa-studio",
+        "role": "guest",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": false,
+        "logout": false,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 1280,
+        "theme": "noa-studio",
+        "role": "member",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 1280,
+        "theme": "noa-studio",
+        "role": "vip",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 1280,
+        "theme": "noa-studio",
+        "role": "admin",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 1280,
+        "theme": "noa-ivory",
+        "role": "guest",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": false,
+        "logout": false,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 1280,
+        "theme": "noa-ivory",
+        "role": "member",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 1280,
+        "theme": "noa-ivory",
+        "role": "vip",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "chromium",
+        "width": 1280,
+        "theme": "noa-ivory",
+        "role": "admin",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "webkit",
+        "width": 390,
+        "theme": "noa-studio",
+        "role": "guest",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": false,
+        "logout": false,
+        "noOverflow": true
+      },
+      {
+        "engine": "webkit",
+        "width": 390,
+        "theme": "noa-studio",
+        "role": "member",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "webkit",
+        "width": 390,
+        "theme": "noa-studio",
+        "role": "vip",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "webkit",
+        "width": 390,
+        "theme": "noa-studio",
+        "role": "admin",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "webkit",
+        "width": 390,
+        "theme": "noa-ivory",
+        "role": "guest",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": false,
+        "logout": false,
+        "noOverflow": true
+      },
+      {
+        "engine": "webkit",
+        "width": 390,
+        "theme": "noa-ivory",
+        "role": "member",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "webkit",
+        "width": 390,
+        "theme": "noa-ivory",
+        "role": "vip",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      },
+      {
+        "engine": "webkit",
+        "width": 390,
+        "theme": "noa-ivory",
+        "role": "admin",
+        "brandAndRightShortcuts": true,
+        "bottomAccount": true,
+        "mySummary": true,
+        "logout": true,
+        "noOverflow": true
+      }
+    ],
+    "hierarchy": [
+      {
+        "engine": "chromium",
+        "kind": "곡",
+        "fourLevels": true,
+        "actShortcut": true,
+        "actOrder": true,
+        "savedOrder": true,
+        "unclassifiedAlwaysVisible": true,
+        "administratorPoolUsable": true,
+        "deepLinkVisible": true
+      },
+      {
+        "engine": "chromium",
+        "kind": "영상",
+        "fourLevels": true,
+        "actShortcut": true,
+        "actOrder": true,
+        "savedOrder": true,
+        "unclassifiedAlwaysVisible": true,
+        "administratorPoolUsable": true,
+        "deepLinkVisible": true
+      },
+      {
+        "engine": "webkit",
+        "kind": "곡",
+        "fourLevels": true,
+        "actShortcut": true,
+        "actOrder": true,
+        "savedOrder": true,
+        "unclassifiedAlwaysVisible": true,
+        "administratorPoolUsable": true,
+        "deepLinkVisible": true
+      },
+      {
+        "engine": "webkit",
+        "kind": "영상",
+        "fourLevels": true,
+        "actShortcut": true,
+        "actOrder": true,
+        "savedOrder": true,
+        "unclassifiedAlwaysVisible": true,
+        "administratorPoolUsable": true,
+        "deepLinkVisible": true
+      }
+    ],
+    "productionWrites": 0,
+    "errorState": true
+  },
+  "publicProduction": {
+    "productionWrites": 0,
+    "pages": [
+      {
+        "path": "/",
+        "success": true,
+        "noOverflow": true
+      }
+    ],
+    "adminProtected": true
+  },
+  "localSourceHashesMatchProductionReceipt": true,
+  "releaseFreshnessTests": 7,
+  "browseAndPlaybackTests": 34,
+  "productionAdminMutationsExecuted": false,
+  "physicalDeviceTestsExecuted": false,
+  "artifacts": [
+    {
+      "id": 12697761093,
+      "name": "noa-workspace-candidate-40419127337",
+      "size_in_bytes": 3269295,
+      "url": "https://api.github.com/repos/rucyjeon79/noa-studio/actions/artifacts/12697761093",
+      "archive_download_url": "https://api.github.com/repos/rucyjeon79/noa-studio/actions/artifacts/12697761093/zip",
+      "expired": false,
+      "created_at": "2026-10-26T23:22:43Z",
+      "expires_at": "2026-11-09T23:22:42Z",
+      "updated_at": "2026-10-26T23:22:43Z",
+      "digest": "sha256:cec73ba1332ed00c4b0cef9da798f268c1ca85c0cf0a4bf5bfc92c45a9443c19",
+      "workflow_run": {
+        "id": 40419127337,
+        "repository_id": 1424109467,
+        "head_repository_id": 1424109467,
+        "head_branch": "main",
+        "head_sha": "afa0951041518c1074bcdafab411482f4959f017"
+      }
+    },
+    {
+      "id": 12696832032,
+      "name": "noa-workspace-live-40419127337",
+      "size_in_bytes": 179304,
+      "url": "https://api.github.com/repos/rucyjeon79/noa-studio/actions/artifacts/12696832032",
+      "archive_download_url": "https://api.github.com/repos/rucyjeon79/noa-studio/actions/artifacts/12696832032/zip",
+      "expired": false,
+      "created_at": "2026-10-26T23:26:17Z",
+      "expires_at": "2026-11-09T23:26:17Z",
+      "updated_at": "2026-10-26T23:26:17Z",
+      "digest": "sha256:535fafe1b1f4dde70129d63bafd3e58022109f970fa7e70ff40081cf1b214627",
+      "workflow_run": {
+        "id": 40419127337,
+        "repository_id": 1424109467,
+        "head_repository_id": 1424109467,
+        "head_branch": "main",
+        "head_sha": "afa0951041518c1074bcdafab411482f4959f017"
+      }
+    }
+  ]
+}
