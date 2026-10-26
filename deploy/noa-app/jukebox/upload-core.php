@@ -14,7 +14,13 @@ function nu_dir(string $id):string{
 }
 function nu_row(PDO $db,string $id):array{$q=$db->prepare('SELECT * FROM noa_jukebox_uploads WHERE id=?');$q->execute([nu_id($id)]);$r=$q->fetch(PDO::FETCH_ASSOC);if(!$r)throw new DomainException('upload_not_found');return $r;}
 function nu_chunks(array $r):array{$out=[];$dir=nu_dir($r['id']);for($i=0;$i<(int)$r['total_chunks'];$i++)if(is_file($dir.'/chunk-'.$i))$out[]=$i;return $out;}
-function nu_clean(array $r):void{foreach(glob(nu_dir($r['id']).'/*') as $p)if(!is_link($p)&&is_file($p)&&preg_match('~/(?:chunk-[0-9]+|input[.]audio|input[.]part)$~D',$p))unlink($p);}
+/** Completed source bytes are retained. Only redundant chunks may be reclaimed. */
+function nu_clean(array $r):void{
+ $dir=nu_dir($r['id']);$source=$dir.'/input.audio';
+ if(is_link($source)||!is_file($source)||(int)filesize($source)!==(int)($r['file_bytes']??0))return;
+ if(!empty($r['sha256'])&&!hash_equals($r['sha256'],hash_file('sha256',$source)))return;
+ foreach(glob($dir.'/chunk-*') as $p)if(!is_link($p)&&is_file($p)&&preg_match('~/chunk-[0-9]+$~D',$p))unlink($p);
+}
 function nu_public(PDO $db,string $key):array{
  $asset=nj_find($db,$key);$ready=nj_verified($asset,'audio');$q=$db->prepare('SELECT id,status,error,filename,fingerprint,file_bytes,total_chunks,source_analysis,correction,final_analysis,updated_at FROM noa_jukebox_uploads WHERE song_key=? ORDER BY sequence DESC LIMIT 1');$q->execute([$key]);$u=$q->fetch(PDO::FETCH_ASSOC)?:null;
  return ['key'=>$key,'ready'=>$ready,'audio_bytes'=>$ready?(int)$asset['audio_bytes']:0,'audio_sha256'=>$ready?$asset['audio_sha256']:'','audio'=>$ready?nj_url($key,'audio'):'','download'=>$ready?'/noa-app/jukebox/download.php?key='.rawurlencode($key):'',
@@ -64,7 +70,8 @@ function nu_finish(PDO $db,string $id):array{
   if(disk_free_space($dir)<(int)$r['file_bytes']+33554432)throw new DomainException('hosting_storage_insufficient');
   if(!$assembled){error_clear_last();$out=@fopen($dir.'/input.part','wb');if(!$out)throw nu_storage_error();$bytes=0;try{for($i=0;$i<(int)$r['total_chunks'];$i++){$in=fopen($dir.'/chunk-'.$i,'rb');error_clear_last();$copied=@stream_copy_to_stream($in,$out);$expected=filesize($dir.'/chunk-'.$i);fclose($in);if($copied!==$expected)throw nu_storage_error();$bytes+=$copied;}}finally{fclose($out);}chmod($dir.'/input.part',0600);
   if($bytes!==(int)$r['file_bytes'])throw new DomainException('assembled_size_mismatch');}
-  $candidate=$assembled?$dir.'/input.audio':$dir.'/input.part';
+  if(!$assembled){error_clear_last();if(!@rename($dir.'/input.part',$dir.'/input.audio'))throw nu_storage_error();$assembled=true;}
+  $candidate=$dir.'/input.audio';
   $head=file_get_contents($candidate,false,null,0,16);$wave=substr($head,0,4)==='RIFF'&&substr($head,8,4)==='WAVE';$mp3=str_starts_with($head,'ID3')||(strlen($head)>1&&ord($head[0])===255&&(ord($head[1])&224)===224);
   if(($r['extension']==='wav'&&!$wave)||($r['extension']==='mp3'&&!$mp3))throw new InvalidArgumentException('actual_audio_format_mismatch');
   $mime=(new finfo(FILEINFO_MIME_TYPE))->file($candidate);if(!in_array($mime,['audio/mpeg','audio/wav','audio/x-wav','audio/vnd.wave'],true))throw new InvalidArgumentException('actual_audio_format_mismatch');
@@ -73,11 +80,11 @@ function nu_finish(PDO $db,string $id):array{
   if(!$assembled){error_clear_last();if(!@rename($dir.'/input.part',$dir.'/input.audio'))throw nu_storage_error();}$db->prepare("UPDATE noa_jukebox_uploads SET sha256=?,error=NULL WHERE id=? AND status='uploading'")->execute([$sha,$id]);nq_enqueue($db,$r);
   for($i=0;$i<(int)$r['total_chunks'];$i++)if(is_file($dir.'/chunk-'.$i))unlink($dir.'/chunk-'.$i);
   return nu_public($db,$r['song_key']);
- }catch(InvalidArgumentException $e){$db->prepare("UPDATE noa_jukebox_uploads SET status='failed',file_bytes=0,error=? WHERE id=?")->execute([$e->getMessage(),$id]);nu_clean($r);throw $e;}finally{if(is_file($dir.'/input.part'))unlink($dir.'/input.part');flock($lock,LOCK_UN);fclose($lock);}
+ }catch(InvalidArgumentException $e){$db->prepare("UPDATE noa_jukebox_uploads SET status='failed',error=? WHERE id=?")->execute([$e->getMessage(),$id]);nu_clean($r);throw $e;}finally{if(is_file($dir.'/input.part'))unlink($dir.'/input.part');flock($lock,LOCK_UN);fclose($lock);}
 }
 function nu_housekeeping(PDO $db):void{
- $q=$db->query("SELECT * FROM noa_jukebox_uploads WHERE status IN ('uploading','failed') AND updated_at<CURRENT_TIMESTAMP()-INTERVAL 24 HOUR AND (lease_until IS NULL OR lease_until<CURRENT_TIMESTAMP()) LIMIT 100");
- foreach($q as $r){nu_clean($r);$db->prepare("UPDATE noa_jukebox_uploads SET status='failed',file_bytes=0,error='temporary_upload_expired',lease=NULL WHERE id=?")->execute([$r['id']]);}
+ // No time-based deletion or expiry: interrupted transfers remain resumable.
+ // Capacity limits reject new reservations rather than deleting existing source files.
 }
 
 function nu_cancel_pending(PDO $db,string $id):array{

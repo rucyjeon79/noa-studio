@@ -3,9 +3,9 @@ import base64,hashlib,json,os,stat,subprocess,sys,urllib.request
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
-FILES={p:'deploy/'+p for p in ['noa-app/jukebox/upload.php','noa-app/jukebox/upload.js','noa-app/jukebox/index.php','noa-music.php']}
+FILES={p:'deploy/'+p for p in ['noa-app/jukebox/upload.php','noa-app/jukebox/upload.js','noa-app/jukebox/index.php','noa-music.php','noa-app/jukebox/upload-core.php','noa-app/jukebox/operations.php']}
 NEW=set()
-PROTECTED=['common.php','data/dbconfig.php','bbs/login.php','bbs/login_check.php','noa-app/jukebox/core.php','noa-app/jukebox/upload-core.php','noa-app/jukebox/queue-core.php','noa-app/jukebox/recovery-core.php','noa-app/jukebox/stream.php','noa-app/jukebox/download.php','noa-ainoa.js']
+PROTECTED=['common.php','data/dbconfig.php','bbs/login.php','bbs/login_check.php','noa-app/jukebox/core.php','noa-app/jukebox/queue-core.php','noa-app/jukebox/recovery-core.php','noa-app/jukebox/stream.php','noa-app/jukebox/download.php','noa-ainoa.js']
 BACKUP=Path(os.environ.get('RUNNER_TEMP','/tmp'))/'noa-upload-status-before.json'
 def sha(v):return hashlib.sha256(v).hexdigest()
 def main():

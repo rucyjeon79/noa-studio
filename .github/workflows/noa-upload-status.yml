@@ -2,7 +2,7 @@ name: NOA Upload Status Recovery Production
 on:
   push:
     branches: [main]
-    paths: ['deploy/noa-app/jukebox/upload.js','deploy/noa-app/jukebox/upload.php','scripts/noa_upload_status_deploy.py','scripts/qa/noa-upload-status.mjs','tests/jukebox/status_session_test.py','.github/workflows/noa-upload-status.yml']
+    paths: ['deploy/noa-app/jukebox/upload-core.php','deploy/noa-app/jukebox/operations.php','tests/jukebox/upload_mysql_test.php','deploy/noa-app/jukebox/upload.js','deploy/noa-app/jukebox/upload.php','scripts/noa_upload_status_deploy.py','scripts/qa/noa-upload-status.mjs','tests/jukebox/status_session_test.py','.github/workflows/noa-upload-status.yml']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: 'noa-upload-status-${{ github.sha }}', cancel-in-progress: false}
@@ -10,12 +10,23 @@ jobs:
   candidate:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: jukebox-test-only, MYSQL_DATABASE: jukebox_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -h localhost -pjukebox-test-only" --health-interval=10s --health-timeout=5s --health-retries=10
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
-        with: {php-version: '8.2', extensions: 'pdo_sqlite'}
+        with: {php-version: '8.2', extensions: 'pdo_sqlite,pdo_mysql,mbstring'}
       - name: Check status recovery and existing upload controls
         run: |
+          php -l deploy/noa-app/jukebox/upload-core.php
+          php -l deploy/noa-app/jukebox/operations.php
+          python -m pip install 'Pillow>=11,<12'
+          python tests/jukebox/make_fixture.py
+          php tests/jukebox/upload_mysql_test.php
           php -l deploy/noa-app/jukebox/upload.php
           php -l deploy/noa-app/jukebox/index.php
           php -l deploy/noa-music.php
