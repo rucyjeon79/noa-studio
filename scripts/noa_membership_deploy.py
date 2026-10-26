@@ -11,8 +11,8 @@ release.FILES={
  'extend/zz.noa-social.php':'deploy/noa-social.extend.php',
  'extend/noa.00-membership.php':'deploy/noa-membership.extend.php',
 }
-release.FILES.update({'noa-bridge/notices.php':'bridge/notices.php','noa-ui.css':'deploy/noa-ui.css','noa-ui.js':'deploy/noa-ui.js','noa-app/home.php':'deploy/noa-app/home.php'})
-release.NEW=set(release.FILES)-{'noa-sitemap.php','noa-bridge/subscription-core.php','noa-ui.css','noa-ui.js','noa-app/home.php'}
+release.FILES.update({'extend/noa.design.php':'deploy/noa-design.extend.php','noa-bridge/notices.php':'bridge/notices.php','noa-ui.css':'deploy/noa-ui.css','noa-ui.js':'deploy/noa-ui.js','noa-app/home.php':'deploy/noa-app/home.php'})
+release.NEW=set(release.FILES)-{'noa-sitemap.php','noa-bridge/subscription-core.php','noa-ui.css','noa-ui.js','noa-app/home.php','extend/noa.design.php'}
 if __name__=='__main__':
     release.main()
     if 'rollback' not in release.sys.argv:

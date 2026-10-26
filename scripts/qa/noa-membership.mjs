@@ -7,7 +7,7 @@ try{
  for(const width of [360,390,430])for(const theme of ['noa-studio','noa-ivory']){
   const context=await browser.newContext({viewport:{width,height:844},locale:'ko-KR',timezoneId:'Asia/Seoul',serviceWorkers:'block'}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await context.addInitScript(theme=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',radius:'soft',design:'ios'})),theme);
-  if(phase==='candidate')for(const path of ['noa-account.js','noa-account.css','noa-membership.js'])await context.route('**/'+path+'*',r=>r.fulfill({path:'deploy/'+path,contentType:path.endsWith('.css')?'text/css':'text/javascript'}));
+  if(phase==='candidate')for(const path of ['noa-ui.js','noa-ui.css','noa-account.js','noa-account.css','noa-membership.js'])await context.route('**/'+path+'*',r=>r.fulfill({path:'deploy/'+path,contentType:path.endsWith('.css')?'text/css':'text/javascript'}));
   let data={ok:true,member:false};let purchases=0,autos=0;
   if(phase==='candidate'){
    for(const path of ['noa-membership.php','noa-login.php'])await context.route('**/'+path+'*',r=>r.fulfill({path:'membership-proof/'+path+'.html',contentType:'text/html; charset=utf-8'}));

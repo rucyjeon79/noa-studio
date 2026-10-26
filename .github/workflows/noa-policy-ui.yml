@@ -41,8 +41,7 @@ jobs:
           python -m py_compile scripts/noa_policy_ui_deploy.py
       - name: Render mobile, landscape, desktop and both themes
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y fonts-noto-cjk
+          python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/noa-policy" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-policy.mjs "$RUNNER_TEMP/noa-policy/check.mjs"
           NOA_SOURCE_ROOT="$GITHUB_WORKSPACE" NOA_POLICY_PHASE=candidate node "$RUNNER_TEMP/noa-policy/check.mjs"
@@ -53,7 +52,7 @@ jobs:
           path: policy-proof/candidate/
           retention-days: 1
   production:
-    if: github.event_name != 'pull_request' && !contains(github.event.head_commit.message, '[approved-ui]')
+    if: github.event_name != 'pull_request' && !contains(github.event.head_commit.message, '[approved-ui]') && !contains(github.event.head_commit.message, '[ainoa-release]')
     needs: candidate
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -66,8 +65,7 @@ jobs:
         with: {php-version: '8.2'}
       - name: Install runner dependencies
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y fonts-noto-cjk
+          python scripts/qa/noa-qa-font.py
           python -m pip install 'paramiko>=3,<5'
           npm install --prefix "$RUNNER_TEMP/noa-policy" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-policy.mjs "$RUNNER_TEMP/noa-policy/check.mjs"

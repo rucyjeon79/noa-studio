@@ -2,7 +2,7 @@ name: NOA membership rewards and account bar
 on:
   push:
     branches: [main]
-    paths: ['bridge/notices.php','deploy/noa-app/home.php','deploy/noa-ui.css','deploy/noa-ui.js','scripts/qa/noa-home-notices.mjs','bridge/subscription-core.php','tests/subscription/**','bridge/membership*.php','bridge/social-policy.php','deploy/noa-sitemap.php','scripts/noa_membership_evidence.py','deploy/noa-social.extend.php','deploy/noa-login.php','deploy/noa-membership*','deploy/noa-account.*','tests/membership/**','scripts/noa_membership*.py','scripts/noa_membership*.php','scripts/qa/noa-membership.mjs','.github/workflows/noa-membership-policy.yml']
+    paths: ['bridge/notices.php','deploy/noa-design.extend.php','deploy/noa-app/home.php','deploy/noa-ui.css','deploy/noa-ui.js','scripts/qa/noa-home-notices.mjs','bridge/subscription-core.php','tests/subscription/**','bridge/membership*.php','bridge/social-policy.php','deploy/noa-sitemap.php','scripts/noa_membership_evidence.py','deploy/noa-social.extend.php','deploy/noa-login.php','deploy/noa-membership*','deploy/noa-account.*','tests/membership/**','scripts/noa_membership*.py','scripts/noa_membership*.php','scripts/qa/noa-membership.mjs','.github/workflows/noa-membership-policy.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
@@ -58,6 +58,7 @@ jobs:
           php -l deploy/noa-app/home.php
           php -l bridge/notices.php
           php tests/membership/notices.php
+          php tests/uiux/policy_assets.php
           php tests/sitemap/registry_test.php
           node --check deploy/noa-account.js
           node --check deploy/noa-membership.js

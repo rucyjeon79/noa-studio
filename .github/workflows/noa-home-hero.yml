@@ -32,7 +32,7 @@ jobs:
           node --test scripts/qa/noa-hero.test.mjs
       - name: Prepare established browser verification
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/noa-hero" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-home-hero-layout.mjs "$RUNNER_TEMP/noa-hero/check.mjs"
       - name: Check fixed layouts, genre content, one playback and blocked autoplay
@@ -41,7 +41,7 @@ jobs:
         if: always()
         with: {name: 'noa-hero-candidate-${{ github.run_id }}', path: hero-layout-proof/, retention-days: 2}
   deploy:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && !contains(github.event.head_commit.message, '[ainoa-release]')
     needs: candidate
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     environment: production
@@ -52,7 +52,7 @@ jobs:
         with: {fetch-depth: 0}
       - name: Prepare existing NOA SFTP and browser tools
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          python scripts/qa/noa-qa-font.py
           python -m pip install 'paramiko>=3,<5'
           npm install --prefix "$RUNNER_TEMP/noa-hero" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-home-hero-layout.mjs "$RUNNER_TEMP/noa-hero/check.mjs"

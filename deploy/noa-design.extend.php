@@ -8,7 +8,8 @@ function noa_policy_script_revision($html){
  if(!$revision)$revision='20261025-four-level';
  $html=preg_replace("~(/noa-browse[.]js)(?:[?][^\"']*)?~i",'$1?v='.$revision,$html);
  $html=preg_replace("~(/noa-app/p0-media[.]css)(?:[?][^\"']*)?~i",'$1?v=20261024-approved-ui',$html);
- $html=preg_replace("~(<link\\b[^>]*\\bhref=[\"'])/noa-ui[.]css(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.css?v=20261024-category-complete$2',$html);
+ $css=dirname(__DIR__).'/noa-ui.css';$css_revision=is_file($css)?hash_file('sha256',$css):'20261026-home-notices';
+ $html=preg_replace("~(<link\\b[^>]*\\bhref=[\"'])/noa-ui[.]css(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.css?v='.$css_revision.'$2',$html);
  $ui=dirname(__DIR__).'/noa-ui.js';$ui_revision=is_file($ui)?hash_file('sha256',$ui):'20261025-member-access';
  $html=preg_replace("~(<script\\b[^>]*\\bsrc=[\"'])/noa-ui[.]js(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.js?v='.$ui_revision.'$2',$html);
  $manifest=dirname(__DIR__).'/noa-manifest.json';
@@ -23,7 +24,7 @@ function noa_design_assets(){
  foreach(['css','js'] as $kind){$asset=dirname(__DIR__).'/noa-ainoa.'.$kind;if(is_file($asset)){$url='/noa-ainoa.'.$kind.'?v='.hash_file('sha256',$asset);$ainoa.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'" defer></script>';}}
  $native=preg_match('~^/(?:bbs|adm)/~',$path);
  $workspace=preg_match('~^/noa-app/(?:database|taxonomy|jukebox)/(?:index[.]php)?$~',$path);
- $public=in_array($path,['/','/index.php'],true)||preg_match('~^/noa-(?:music|youtube|world|my|settings|catalog|ai-lab|library|editor|download|theme-admin|creator|channel|subscription)(?:-admin)?[.]php$~',$path);
+ $public=in_array($path,['/','/index.php'],true)||preg_match('~^/noa-(?:music|youtube|world|my|settings|catalog|ai-lab|library|editor|download|theme-admin|creator|channel|subscription|login|membership)(?:-admin)?[.]php$~',$path);
  if(!$native&&!$workspace&&!$public)return;
  if(!$native&&($_SERVER['REQUEST_METHOD']??'GET')!=='GET')return;
  // Standalone views do not call GnuBoard html_end(); inject only completed HTML.

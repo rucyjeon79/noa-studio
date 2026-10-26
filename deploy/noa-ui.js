@@ -219,6 +219,6 @@ window.NoaGlass={refresh};refresh();
  function collapse(el){if(!el)return;const summary=el.querySelector(':scope>summary');el.open=false;summary?.focus({preventScroll:true});summary?.scrollIntoView({block:'nearest',behavior:'auto'});select([...document.querySelectorAll('main details[open]')].filter(eligible).at(-1)||null);}
  document.addEventListener('toggle',event=>{const el=event.target;if(!eligible(el))return;el.querySelector(':scope>summary')?.setAttribute('aria-expanded',String(el.open));if(el.open){if(el.matches('[data-noa-disclosure]'))document.querySelectorAll('[data-noa-disclosure][open]').forEach(other=>{if(other!==el)other.open=false;});select(el);}else if(active===el)select([...document.querySelectorAll('main details[open]')].filter(eligible).at(-1)||null);},true);
  close.addEventListener('click',()=>collapse(active));document.addEventListener('click',e=>{const button=e.target.closest('[data-noa-collapse]');if(button)collapse(button.closest('details'));});
- document.addEventListener('keydown',e=>{if(e.key==='Escape'&&active&&!document.querySelector('dialog[open]'))collapse(active);});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.querySelector('dialog[open]'))collapse(active?.open?active:[...document.querySelectorAll('main details[open]')].filter(eligible).at(-1));});
  select([...document.querySelectorAll('main details[open]')].filter(eligible).at(-1)||null);
 })();
