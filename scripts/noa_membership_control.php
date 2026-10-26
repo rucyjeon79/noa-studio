@@ -4,7 +4,7 @@ declare(strict_types=1);
 ini_set('display_errors','0');header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');
 $noa_control_base=ob_get_level();ob_start();
 if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||time()>NOA_CONTROL_EXPIRY||!hash_equals('NOA_CONTROL_TOKEN_SHA',hash('sha256',(string)($_SERVER['HTTP_X_NOA_CONTROL']??'')))){http_response_code(404);exit;}
-register_shutdown_function(static function(){global $noa_control_base;$e=error_get_last();if($e&&in_array($e['type'],[E_ERROR,E_PARSE,E_COMPILE_ERROR,E_CORE_ERROR],true)){while(ob_get_level()>$noa_control_base)ob_end_clean();http_response_code(500);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>'control_runtime_failure','file'=>basename($e['file']),'line'=>$e['line']]);}});
+register_shutdown_function(static function(){global $noa_control_base;$e=error_get_last();if($e&&in_array($e['type'],[E_ERROR,E_PARSE,E_COMPILE_ERROR,E_CORE_ERROR],true)){while(ob_get_level()>$noa_control_base)ob_end_clean();http_response_code(200);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>'control_runtime_failure','file'=>basename($e['file']),'line'=>$e['line']]);}});
 require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/subscription-core.php';
 /*NOA_STORAGE_FUNCTIONS*/
 /*NOA_VERIFY_FUNCTIONS*/
@@ -44,5 +44,5 @@ try{
   }finally{ns_q("SELECT RELEASE_LOCK('noa-membership-install')");}
  }
  nr_reply_control($result);
-}catch(Throwable $e){http_response_code(409);nr_reply_control(['ok'=>false,'error'=>($e instanceof mysqli_sql_exception?'database_operation_failed':$e->getMessage()),'type'=>get_class($e)]);}
+}catch(Throwable $e){http_response_code(200);nr_reply_control(['ok'=>false,'error'=>($e instanceof mysqli_sql_exception?'database_operation_failed':$e->getMessage()),'type'=>get_class($e)]);}
 function nr_reply_control(array $result):never{global $noa_control_base;while(ob_get_level()>$noa_control_base)ob_end_clean();echo json_encode($result,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;}
