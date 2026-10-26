@@ -94,5 +94,10 @@ try{
     $children=[];foreach([1,2] as $_){$p=proc_open([PHP_BINARY,$child],[['pipe','r'],['pipe','w'],['pipe','w']],$ps);fclose($ps[0]);$children[]=[$p,$ps];}
     $winners=0;foreach($children as [$p,$ps]){$value=json_decode(stream_get_contents($ps[1]),true);fclose($ps[1]);stream_get_contents($ps[2]);fclose($ps[2]);n80_test_check(proc_close($p)===0,'race_process');if($value['ok'])$winners++;}
     n80_test_check($winners===1,'single_concurrent_owner');
+    // Detail proof follows saved edits without rewriting the canonical source row.
+    file_put_contents($root.'/web/noa-bridge/inline-edit.php','<?php function nie_overrides($db){return [];}function nie_identity($db,$key){return $key;}function nie_fields($edits,$record){return ["lyrics"=>"Edited lyrics","description"=>"Edited description"];}');
+    $edited=static function($kind,$subject)use($read){$r=$read($kind,$subject);if($kind==='detail'){$d=json_decode($r['body'],true);$d['rawLyrics']='Edited lyrics';$d['description']='Edited description';$r['body']=json_encode($d);}return $r;};
+    n80_test_check(n80_music_diagnose($db,4,$edited)['available'],'saved_detail_projection_verified');
+    n80_test_check(!n80_music_diagnose($db,4,$read)['available'],'stale_unedited_detail_rejected');
     echo json_encode(['ok'=>true,'assertions'=>$assertions,'productionDatabaseWrites'=>0,'syntheticAudioOnly'=>true]).PHP_EOL;
 }finally{if(is_dir($root))n80_test_tree_remove($root);}

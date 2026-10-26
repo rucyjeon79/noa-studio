@@ -107,7 +107,16 @@ function n80_music_availability(PDO $db,int $jobId,callable $read):array {
     if(count($matched)!==1||($matched[0]['audio']??null)!==$audio
         ||($matched[0]['audioSha']??null)!==$asset['audio_sha256']||(int)($matched[0]['audioBytes']??0)!==(int)$asset['audio_bytes'])
         return ['ok'=>false,'error'=>'public_asset_reference_mismatch'];
-    $fields=['key'=>$key]+noa_music_detail_fields($document);$actual=json_decode($detail['body']??'',true);
+    $fields=noa_music_detail_fields($document);
+    // Match the same persisted inline edits rendered by the operating detail endpoint.
+    $inline=dirname(__DIR__,2).'/noa-bridge/inline-edit.php';
+    if(is_file($inline)){
+        require_once $inline;$edits=nie_overrides($db);
+        $overrides=nie_fields($edits,['key'=>$key,'orderKey'=>nie_identity($db,$key)]);
+        if(array_key_exists('lyrics',$overrides))$fields['rawLyrics']=$overrides['lyrics'];
+        if(array_key_exists('description',$overrides))$fields['description']=$overrides['description'];
+    }
+    $fields=['key'=>$key]+$fields;$actual=json_decode($detail['body']??'',true);
     if($actual!==$fields)return ['ok'=>false,'error'=>'public_detail_mismatch'];
     $path=nj_file((string)$asset['audio_path']);$prefix=file_get_contents($path,false,null,0,4096);
     if($prefix===false||$prefix===''||!hash_equals(hash('sha256',$prefix),hash('sha256',$stream['body']??'')))

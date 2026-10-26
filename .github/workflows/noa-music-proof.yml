@@ -2,7 +2,7 @@ name: NOA signed MUSIC verification repair
 on:
   push:
     branches: [main]
-    paths: ['tests/engine/music_consumer_test.php','tests/engine/music_proof_auth_test.php','bridge/music-proof-auth.php','scripts/noa_music_proof_deploy.py','.github/workflows/noa-music-proof.yml']
+    paths: ['deploy/noa-app/engine/music-availability.php','tests/engine/music_consumer_test.php','tests/engine/music_proof_auth_test.php','bridge/music-proof-auth.php','scripts/noa_music_proof_deploy.py','.github/workflows/noa-music-proof.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
