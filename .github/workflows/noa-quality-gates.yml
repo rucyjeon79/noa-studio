@@ -90,11 +90,12 @@ jobs:
           class NoRedirect(urllib.request.HTTPRedirectHandler):
               def redirect_request(self, req, fp, code, msg, headers, newurl): return None
           opener=urllib.request.build_opener(NoRedirect())
-          cases={'/':200,'/noa-music.php':302,'/noa-youtube.php':302,'/noa-catalog.php':302,'/noa-my.php':302,'/bbs/login.php':200,'/bbs/register.php':200,'/bbs/search.php':302,'/noa-library.php':302,'/noa-editor.php':302,'/noa-catalog-admin.php':302,'/noa-youtube-admin.php':302,'/noa-bridge/lab-api.php':403,'/noa-bridge/source-audit.php':403,'/noa-bridge/user-playlists.php':401}
+          cases={'/':200,'/noa-music.php':302,'/noa-youtube.php':302,'/noa-catalog.php':302,'/noa-my.php':302,'/noa-login.php':200,'/bbs/login.php':302,'/bbs/login.php?legacy=1':200,'/bbs/register.php':302,'/bbs/search.php':302,'/noa-library.php':302,'/noa-editor.php':302,'/noa-catalog-admin.php':302,'/noa-youtube-admin.php':302,'/noa-bridge/lab-api.php':403,'/noa-bridge/source-audit.php':403,'/noa-bridge/user-playlists.php':401}
           for path,expected in cases.items():
               try:r=opener.open('https://noastudio.ai.kr'+path,timeout=25)
               except urllib.error.HTTPError as e:r=e
               assert r.status==expected,(path,r.status)
+              if path in ['/bbs/login.php','/bbs/register.php']: assert '/noa-login.php' in r.headers.get('Location',''),(path,'wrong_social_destination')
               print('LIVE_ACCESS',path,r.status)
           PY
   finish-live:

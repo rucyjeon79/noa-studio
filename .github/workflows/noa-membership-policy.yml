@@ -2,7 +2,7 @@ name: NOA membership rewards and account bar
 on:
   push:
     branches: [main]
-    paths: ['bridge/membership*.php','bridge/social-policy.php','deploy/noa-sitemap.php','scripts/noa_membership_evidence.py','deploy/noa-social.extend.php','deploy/noa-login.php','deploy/noa-membership*','deploy/noa-account.*','tests/membership/**','scripts/noa_membership*.py','scripts/noa_membership*.php','scripts/qa/noa-membership.mjs','.github/workflows/noa-membership-policy.yml']
+    paths: ['bridge/subscription-core.php','tests/subscription/**','bridge/membership*.php','bridge/social-policy.php','deploy/noa-sitemap.php','scripts/noa_membership_evidence.py','deploy/noa-social.extend.php','deploy/noa-login.php','deploy/noa-membership*','deploy/noa-account.*','tests/membership/**','scripts/noa_membership*.py','scripts/noa_membership*.php','scripts/qa/noa-membership.mjs','.github/workflows/noa-membership-policy.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
