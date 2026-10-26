@@ -145,7 +145,10 @@ jobs:
         run: python scripts/noa_category_order_migrate.py
       - name: Verify signed N80 text worker on production
         env:
-          <<: *noa_env
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
           NOA_N80_AI_PROOF: ainoa-proof/n80-ai-worker.json
         run: python scripts/noa_n80_ai_worker.py
       - name: Recheck operating SQL projection and queue after activation
