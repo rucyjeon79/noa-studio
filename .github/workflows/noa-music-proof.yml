@@ -2,7 +2,7 @@ name: NOA signed MUSIC verification repair
 on:
   push:
     branches: [main]
-    paths: ['bridge/music-proof-auth.php','scripts/noa_music_proof_deploy.py','.github/workflows/noa-music-proof.yml']
+    paths: ['tests/engine/music_consumer_test.php','tests/engine/music_proof_auth_test.php','bridge/music-proof-auth.php','scripts/noa_music_proof_deploy.py','.github/workflows/noa-music-proof.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
@@ -27,6 +27,7 @@ jobs:
           python -m py_compile scripts/noa_music_proof_deploy.py
       - run: python -m pip install 'paramiko>=3,<5'
       - name: Install only reviewed verification sources
+        id: upload
         env: &proof_env
           GH_TOKEN: ${{ github.token }}
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
@@ -55,9 +56,10 @@ jobs:
         env: *proof_env
         run: python scripts/n80_live_observer.py
       - name: Restore owned sources if authenticated or guest verification failed
-        if: failure() && steps.live.outcome == 'failure'
+        if: failure() && (steps.upload.outcome == 'failure' || steps.live.outcome == 'failure')
         env: *proof_env
-        run: python scripts/noa_music_proof_deploy.py rollback
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then python scripts/noa_music_proof_deploy.py rollback; fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:

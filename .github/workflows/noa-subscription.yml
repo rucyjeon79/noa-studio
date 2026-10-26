@@ -70,7 +70,7 @@ jobs:
           python -m py_compile scripts/noa_subscription_deploy.py scripts/noa_subscription_preflight.py tests/subscription/fixture.py
       - name: Prepare established mobile browser validation and disposable GnuBoard SQL fixture
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/noa-subscription" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-subscription.mjs "$RUNNER_TEMP/noa-subscription/check.mjs"
           python tests/subscription/fixture.py
@@ -92,7 +92,7 @@ jobs:
         with: {fetch-depth: 0}
       - name: Prepare pinned NOA SFTP and operating browser checks
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          python scripts/qa/noa-qa-font.py
           python -m pip install 'paramiko>=3,<5'
           npm install --prefix "$RUNNER_TEMP/noa-subscription" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-subscription.mjs "$RUNNER_TEMP/noa-subscription/check.mjs"

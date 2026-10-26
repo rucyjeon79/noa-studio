@@ -9,7 +9,7 @@ try{
     foreach(['web/noa-app/engine','web/noa-app/jukebox','web/noa-bridge','noa-jukebox-private/media','events','leases','race'] as $dir)mkdir($root.'/'.$dir,0700,true);
     foreach(glob($source.'/deploy/noa-app/engine/*.php') as $file)copy($file,$root.'/web/noa-app/engine/'.basename($file));
     copy($source.'/deploy/noa-app/jukebox/core.php',$root.'/web/noa-app/jukebox/core.php');
-    foreach(['sound-core.php','music-readmodel.php'] as $file)copy($source.'/bridge/'.$file,$root.'/web/noa-bridge/'.$file);
+    foreach(['sound-core.php','music-readmodel.php','music-proof-auth.php'] as $file)copy($source.'/bridge/'.$file,$root.'/web/noa-bridge/'.$file);
     define('_GNUBOARD_',true);require $root.'/web/noa-app/engine/music-consumer.php';
     $policy=$root.'/policy.json';n80_test_check(!n80_music_policy_enabled($policy),'missing_policy_disabled');
     $policyValue=['version'=>1,'enabled'=>true,'exactConsumer'=>'music_catalog_availability_verified'];
