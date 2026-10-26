@@ -3,7 +3,7 @@ declare(strict_types=1);
 require_once __DIR__.'/common.php';require_once __DIR__.'/noa-bridge/storage.php';require_once __DIR__.'/noa-bridge/sound-core.php';require_once __DIR__.'/noa-bridge/member-access.php';require_once __DIR__.'/noa-bridge/ainoa-core.php';
 header('Content-Type: application/json; charset=utf-8');header('Cache-Control: private, no-store');header('X-Content-Type-Options: nosniff');
 function na_reply(int $code,array $body):never{http_response_code($code);echo json_encode($body,JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR);exit;}
-$a=nam_access((array)($member??[]),(string)($is_admin??''));$_SESSION['noa_ainoa_csrf']??=bin2hex(random_bytes(32));$method=$_SERVER['REQUEST_METHOD']??'GET';
+$a=nam_access(!empty($is_member)?(array)($member??[]):[],(string)($is_admin??''));$_SESSION['noa_ainoa_csrf']??=bin2hex(random_bytes(32));$method=$_SERVER['REQUEST_METHOD']??'GET';
 try{
  if($method==='GET'&&($_GET['action']??'')==='status')na_reply(200,['ok'=>true,'csrf'=>$_SESSION['noa_ainoa_csrf'],'level'=>$a['level'],'conversation'=>$a['level']>=4||$a['admin'],'music'=>$a['music'],'member'=>$a['member']]);
  if($method!=='POST')na_reply(405,['ok'=>false,'error'=>'method_not_allowed']);
@@ -14,8 +14,8 @@ try{
  $bucket=$action==='search'?'search':'ai';$now=time();$rate=$_SESSION['noa_ainoa_rate'][$bucket]??['start'=>$now,'count'=>0];if($now-$rate['start']>=60)$rate=['start'=>$now,'count'=>0];if(++$rate['count']>($bucket==='search'?20:6))na_reply(429,['ok'=>false,'message'=>'잠시 후 다시 이용해 주세요.']);$_SESSION['noa_ainoa_rate'][$bucket]=$rate;
  $db=noa_bridge_pdo();
  if($action==='search'){
-  $query=$b['query']??'';if(!is_string($query)||mb_strlen(trim($query))<2||mb_strlen($query)>120)throw new InvalidArgumentException('invalid_query');$query=trim($query);$items=[];
-  foreach($db->query("SELECT doc_key,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key")as $row){$r=na_summary($row);if(!$r)continue;$title=mb_stripos($r['title'],$query);$at=mb_stripos($r['lyrics'],$query);if($title===false&&$at===false)continue;$snippet=$at===false?'':mb_substr($r['lyrics'],max(0,$at-35),110);unset($r['lyrics'],$r['description']);$r['snippet']=$snippet;$r['url']='/noa-youtube.php?noa-find='.rawurlencode($r['key']);$items[]=$r;if(count($items)>=20)break;}
+  $query=$b['query']??'';if(!is_string($query)||mb_strlen(trim($query))<2||mb_strlen($query)>120)throw new InvalidArgumentException('invalid_query');$query=trim($query);$items=[];$aliases=[];foreach($db->query("SELECT alias_key,entity_id FROM noa_catalog_aliases WHERE batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)")as $alias)$aliases[$alias['alias_key']]=$alias['entity_id'];
+  foreach($db->query("SELECT doc_key,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key")as $row){$r=na_summary($row);if(!$r)continue;$title=mb_stripos($r['title'],$query);$at=mb_stripos($r['lyrics'],$query);if($title===false&&$at===false)continue;$snippet=$at===false?'':mb_substr($r['lyrics'],max(0,$at-35),110);unset($r['lyrics'],$r['description']);$r['snippet']=$snippet;$r['identity']=$aliases[$r['key']]??$r['key'];$r['url']='/noa-youtube.php?noa-find='.rawurlencode($r['identity']);$items[]=$r;if(count($items)>=20)break;}
   na_reply(200,['ok'=>true,'items'=>$items,'loginRequired'=>!$a['member']]);
  }
  if($action==='generate'){

@@ -6,7 +6,7 @@ class MusicInlineMetadata(unittest.TestCase):
  def test_regular_guest_and_admin_receive_act_labels_and_current_helper_revision(self):
   with tempfile.TemporaryDirectory(prefix='noa-inline-page-') as directory:
    web=Path(directory);(web/'noa-bridge').mkdir();(web/'noa-app/jukebox').mkdir(parents=True)
-   for source,target in [('deploy/noa-music.php','noa-music.php'),('deploy/noa-browse-edit.js','noa-browse-edit.js'),('bridge/sound-core.php','noa-bridge/sound-core.php'),('bridge/inline-edit.php','noa-bridge/inline-edit.php'),('bridge/package-record.php','noa-bridge/package-record.php')]:shutil.copyfile(ROOT/source,web/target)
+   for source,target in [('deploy/noa-browse.js','noa-browse.js'),('deploy/noa-music.php','noa-music.php'),('deploy/noa-browse-edit.js','noa-browse-edit.js'),('bridge/sound-core.php','noa-bridge/sound-core.php'),('bridge/inline-edit.php','noa-bridge/inline-edit.php'),('bridge/package-record.php','noa-bridge/package-record.php')]:shutil.copyfile(ROOT/source,web/target)
    (web/'common.php').write_text("<?php define('_GNUBOARD_',true);$_SESSION=[];$is_member=($_GET['auth']??'')==='admin';$is_admin=$is_member?'super':'';")
    (web/'noa-app/jukebox/core.php').write_text('<?php function nj_assets(PDO $db):array{return [];}')
    (web/'noa-bridge/music-readmodel.php').write_text('<?php function noa_music_recovered_catalog(PDO $db):array{return [];}function noa_music_asset_url(array $a,string $k,string $s,string $t):string{return "";}')
