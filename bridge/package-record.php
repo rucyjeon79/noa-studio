@@ -36,7 +36,6 @@ function nup_patch(array $d,string $kind,array $patch):array{
    $d['body']['members']=$value;continue;
   }
   if(!is_string($value)||strlen($value)>200000||str_contains($value,"\0"))throw new InvalidArgumentException('invalid_field:'.$key);
-  if($key==='vocal'&&!in_array($value,['여자솔로','남자솔로','남녀듀엣'],true))throw new InvalidArgumentException('invalid_vocal');
   if($key==='title'&&(trim($value)===''||mb_strlen($value)>500))throw new InvalidArgumentException('title_required');
   if(in_array($key,['sunoUrl','youtubeUrl','mvUrl'],true)&&$value!==''){
    $u=parse_url($value);if(($u['scheme']??'')!=='https'||empty($u['host'])||isset($u['user'])||isset($u['pass'])||isset($u['port']))throw new InvalidArgumentException('invalid_url');

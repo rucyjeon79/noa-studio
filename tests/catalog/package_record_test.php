@@ -12,4 +12,4 @@ foreach(['your-story','cover-reborn'] as $genre){$p=nup_patch(['genreId'=>$genre
 denied(fn()=>nup_patch($o,'single',['youtubeUrl'=>'javascript:alert(1)']),'URL scheme');denied(fn()=>nup_patch($o,'single',['sunoUrl'=>'https://evil.invalid/']),'URL source');denied(fn()=>nup_patch($o,'single',['audioFileLocation'=>'../../common.php']),'path traversal');
 check(nup_policy()['priority']===0,'principle zero precedence');echo "UNIFIED_PACKAGE_TYPES_FIELDS_ORIGINAL_LOCKS_ACT_RANGES_URLS_PRESERVATION_OK\n";
 
-$e=nup_patch($ep,'single',['sunoPrompt'=>'genre-specific Suno production prompt']);check(nup_fields($e)['sunoPrompt']==='genre-specific Suno production prompt','Suno prompt round trip in same record');denied(fn()=>nup_patch($ep,'single',['vocal'=>'invalid']),'vocal enum');
+$e=nup_patch($ep,'single',['sunoPrompt'=>'genre-specific Suno production prompt']);check(nup_fields($e)['sunoPrompt']==='genre-specific Suno production prompt','Suno prompt round trip in same record');
