@@ -28,6 +28,7 @@ jobs:
           php tests/youtube/coming_catalog_test.php
           node --check deploy/noa-account.js
           node --check deploy/noa-browse.js
+          node --check deploy/noa-browse-edit.js
           node --test scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs tests/youtube/lazy_details_test.cjs
           python -m py_compile scripts/noa_preview_audit.py scripts/noa_preview_release.py
           python -m pip install 'paramiko>=3,<5'

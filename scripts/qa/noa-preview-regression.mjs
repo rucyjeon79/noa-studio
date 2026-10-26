@@ -57,7 +57,7 @@ try{
   }
   const row=page.locator('.noa-inline-song[data-inline-key="'+item.key+'"]');
   const selectedRow=await row.count()>1?row.first():row;
-  if(!await selectedRow.isVisible())await page.locator('.noa-inline-act').filter({has:selectedRow}).locator('.noa-list-toggle').click();
+  if(!await selectedRow.isVisible())await page.locator('.noa-inline-act').filter({has:row}).first().locator(':scope>.noa-collection-tools>.noa-list-toggle').click();
   await selectedRow.click();await page.waitForFunction(id=>document.getElementById('yt-frame').src.includes('/embed/'+id),item.video);
   const detail=await page.evaluate(()=>{const f=document.getElementById('yt-frame');return{src:f.getAttribute('src'),width:f.getBoundingClientRect().width,visible:!!f.getBoundingClientRect().height&&!f.closest('[hidden]')};});
   assert(detail.visible);assert(detail.width>=width*(width<800?.65:.3));
