@@ -98,7 +98,7 @@ jobs:
               print('LIVE_ACCESS',path,r.status)
           PY
   finish-live:
-    if: github.ref == 'refs/heads/main' && needs.engines.outputs.release_scope == 'true'
+    if: github.ref == 'refs/heads/main' && needs.engines.outputs.release_scope == 'true' && !contains(github.event.head_commit.message, '[ainoa-release]')
     needs: engines
     runs-on: ubuntu-latest
     timeout-minutes: 30

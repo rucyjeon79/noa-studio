@@ -16,57 +16,89 @@
     "최종 보고에서 완료, 미완료, 코드/운영 커밋, 배포, 검증 URL, 남은 오류를 구분한다."
   ],
   "runtimeRelease": {
-    "commit": "6b99913f2404fa21851e2a840096e0536d6e65c1",
-    "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40262045714",
+    "commit": "2f7983ecd975d5c1a3104b0de6fc808bfd0224ef",
+    "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40265797752",
     "status": "success",
     "filesSha256": {
+      "noa-youtube.php": "dd88323890f2cd0cde22ed5e0c35d9cade10fe45b54b11c07017b8211bfa8eb9",
+      "noa-creator.php": "0e9f6845c459ec96cbd947187e151398212cb9e9dcfa9a9139a0e113a9a5ca92",
+      "noa-editor.php": "71019ffff8a9a659c03a9f885b0408a4f825d98aee6b0e759b301db9270c3e40",
+      "noa-bridge/ainoa-points.php": "b0bd8ac0af3c681464f2ec022de4b64963e3b7d691596068abd0891b49352f9d",
+      "noa-bridge/subscription-core.php": "09cf103673780511c0780f7f32f767e0695eb29b1aa9e5e2ac36bec40a45988e",
+      "noa-bridge/youtube-catalog.php": "9418e65db52048932c9472ca203c9077d4239671bb7f1c516046a6c0a2bca360",
+      "noa-browse-order.js": "8911842b0f498fa4859b0d78834408a63512f6d5c756ddb6bc86ca6f16017c66",
+      "noa-bridge/lab-api.php": "77b025bec973f60a6a5387c0dc30b7c5c2e197c4ba23103228ff37037a6c27a6",
+      "noa-ai-lab.php": "4c6a1fba839bd81d4377d6f9cebbc1da71f041b365522268d1af3291b2907b66",
+      "noa-ai-lab.js": "f297316400452974b21fbb5e6284b4365292edc33cdd3886f513ee0c7a8e82a9",
       "noa-assets/ainoa-symbol.png": "3f13853373b8a09af66eff9a4f7030500442763ca41fd9ecc13159cb352cabfe",
       "noa-launch.js": "2bc9a43ced7507f164eaa56c7d24d9b2c7590115a97a0d960080163adef7a26a",
       "noa-manifest.json": "2b7c76a56dee198f71e9ca1cc236b7154c533df6835c162c4c5f63080ae16685",
       "noa-sw.js": "66e15f28dba6bbc21f53333246897927ece61ed8310b6982e96987e06b82e9a1",
       "noa-bridge/subscription-access.php": "b3c86c2dfe06e980ea705afb9ec7bc9266f60cc3e6fd69cd3e7b527dd211bd95",
       "extend/noa.access.php": "8940ebcad48d39d621f792e7df2a94ca2d09ad717a5e35c2abb746f907c6a733",
-      "noa-bridge/ainoa-core.php": "9630a961f04458ebef76cb1c00ec1d1eea25e14f06e5b042173a29306cf800c1",
-      "noa-ainoa.php": "be9a2c3487625a24944c655f35985b16b2c2d83f5628b250364506fd02e615b7",
-      "noa-ainoa.css": "fcd48adbfadabc66f44be04adb697fbebb3fc12a264ece8920436bc0565370f8",
-      "noa-ainoa.js": "30d6a798d1be661f455ad3318b6ba4e61bdcf958bbb8ff0f57ea1024f3386474",
-      "noa-bridge/package-record.php": "8d5426a1d8c8914853b16a7acfb7d11ba5fa4d912a8a0887eb52783ca2dee020",
-      "noa-browse-edit.js": "d903ced1f74fb6162d044c77b1add2a7759d0e8a0dd96d3f69707ec78d48dc4e",
-      "noa-browse.js": "1b03b7b60d55ea00b7b040b71e6a670b1bea5f686874e0cdd4b889563bdd4145",
+      "noa-bridge/ainoa-core.php": "d8fe9ae4aeb68d7aae4b1653d146a70090e1aa04e82653306b45b5ae5ca95a93",
+      "noa-ainoa.php": "34052f53e172d092490f31a83b7a3518782f237ce040acc7905c0073de3f7609",
+      "noa-ainoa.css": "e2382479a85930c13b8fb34f7b823ca5fe6362089c14bd7fa2793c03c8160422",
+      "noa-ainoa.js": "e8c808bcecce66380dae6f41ae00a7c0a78218319ffaaf9916a0e233c378d6fb",
+      "noa-bridge/package-record.php": "83b4a0f4a5627b9177c50871e49a842405b7cb23bf3fdce47d875cd5a18e5fb9",
+      "noa-browse-edit.js": "a3548dbc9aa8cf5c9fa4669b06837e6a29997d2a3ee48ea6f3220c2232e54bfe",
+      "noa-browse.js": "3132639c21ddc871dd4f03598867ab52d07e018910c04ed9bcdfab22f63db701",
       "extend/noa.design.php": "9965bacf09bcef86e866b005a067429659572c62180dffaefaeb092baf8c6f54"
     },
-    "protectedUnchanged": 12,
+    "protectedUnchanged": 11,
     "databaseWrites": 0,
     "memberRowsChanged": 0,
     "pointDebits": 0,
+    "pricesSeeded": false,
     "completed": [
-      "EP 수노 프롬프트 필드",
-      "보컬 선택 및 기존 남성/듀엣 보존",
-      "AI 생성/수정 입력 UI와 서버 권한·예산 검사",
-      "AInoa 이동·길게 누르기 스크롤·제목/가사 검색",
-      "회원 레벨별 안내",
-      "공통 레코드 및 음원 스트리밍 회귀 수정",
-      "첫 실행 홈 진입",
-      "첨부 원본 AInoa 이미지와 외부 화살표 제거",
-      "다크/아이보리 말풍선 및 스크롤 중 안내·닫기 버튼 표시"
+      "커버 원곡 가수 필드: 인라인·관리자 편집·내 채널에서 곡 제목 위에 배치",
+      "생성된 플레이리스트의 드래그·키보드 순서 변경과 명시적 저장·취소",
+      "생성된 플레이리스트에 들어간 곡을 기본 미분류 목록에서 제외",
+      "공개 확인된 ACT YouTube URL을 제목 클릭 시 바로 아래에서 재생",
+      "제목 오른쪽 목록 펼침 아이콘과 영상 재시작 없는 목록 토글",
+      "비회원·일반회원의 떠있는 노아 메뉴는 제목·가사 검색만 표시",
+      "음원 실제 재생 시 짧은 무료 곡 안내 말풍선",
+      "4·6레벨 유료 자격·만료·잔액·AI 준비 상태를 서버와 UI에서 검사",
+      "응답 성공 시 원자적 즉시 포인트 차감, 실패 취소, 중복 요청 방지 및 응답 유실 복구"
     ],
     "verified": {
-      "productionBrowserCases": 10,
+      "phpLint": true,
+      "existingNodeRegressionTests": 33,
+      "launchTests": 5,
+      "nativeMysqlOriginalArtistAndPlaylistRoundtrip": true,
+      "nativePointTransactions": true,
+      "pointCases": [
+        "success",
+        "retry",
+        "conflict",
+        "priceChanged",
+        "insufficient",
+        "providerFailure",
+        "receiptFailureRollback",
+        "expiredGrant",
+        "freeCreatorDenied",
+        "nonTransactionalStorageDenied"
+      ],
+      "candidateBrowserCases": 10,
+      "productionGuestBrowserCases": 10,
+      "collectionBrowserCasesPerPhase": 6,
       "themes": [
         "noa-studio",
         "noa-ivory"
       ],
-      "widths": [
+      "collectionWidths": [
         360,
         390,
-        430,
-        844,
         1280
       ],
+      "collectionAndChatData": "Isolated fixtures using candidate source, then fetched deployed JS/CSS. These are not real paid transactions or writes to operating playlists.",
+      "nativeInlineEditorRegression": "https://github.com/rucyjeon79/noa-studio/actions/runs/40265797968",
+      "actualGuestSearch": "Cloud browser verified 사랑 search returns 20 public records and no chat button",
       "physicalAndroid": false,
-      "liveAiProviderCall": false
-    },
-    "authenticatedMemberProof": "https://github.com/rucyjeon79/noa-studio/actions/runs/40253538748"
+      "liveAiProviderCall": false,
+      "livePointDebits": 0,
+      "browserArtifact": "https://github.com/rucyjeon79/noa-studio/actions/runs/40265797752/artifacts/12626780321"
+    }
   },
   "verificationRecovery": {
     "commit": "95eed26bb9befee5cb7ec297d390dea92c75cd1a",
@@ -161,7 +193,7 @@
         "keyConfigured": false,
         "budgetConfigured": false
       },
-      "next": "최고관리자가 기존 AI LAB 보안 입력창에서 OpenAI 키, 텍스트 AI 활성화, 1회/일 사용 한도를 설정한 뒤 실제 생성과 곡 대화를 검증한다. 채팅에 키를 요청하거나 모의 결과를 운영 결과로 보고하지 않는다."
+      "next": "최고관리자가 기존 AI LAB 보안 입력창에서 OpenAI 키, 텍스트 AI 활성화, 1회/일 사용 한도와 유료 AI 대화 활성화·응답당 포인트 단가를 설정한다. 포인트 저장소도 준비된 후 실제 유료 응답을 검증한다. 키를 채팅으로 요청하지 않는다."
     },
     {
       "id": "point-engine-backup",
@@ -176,10 +208,10 @@
     }
   ],
   "resumeSequence": [
-    "이 파일의 커밋을 현재 main과 비교하고 진행 중인 Actions 및 운영 파일 SHA를 다시 확인한다.",
-    "완료된 홈 진입·AInoa 원본 이미지/말풍선 배포와 기존 검사 복구는 중복 수행하지 않는다.",
-    "AI LAB 구성 및 민감 백업 업로드 승인 등 남은 선행 조건의 실제 상태를 확인한다.",
-    "선행 조건이 해결된 단위만 수행하고 실제 운영 증거를 이 기록에 추가한다."
+    "현재 main과 운영 파일 SHA를 위 최종 성공 배포에 대조한다. 이미 반영된 화면·정렬·검색·안내 수정은 반복 배포하지 않는다.",
+    "AI LAB의 키·사용한도·chatEnabled·chatPoints 설정 상태를 최고관리자 권한으로 확인한다. 단가를 임의로 정하지 않는다.",
+    "민감한 회원·포인트 백업 업로드와 복호화 키 전송의 이전 승인 거절을 우회하지 않는다. 명시적 승인 또는 승인된 다른 백업 방법이 있어야 DB 전환을 진행한다.",
+    "포인트 저장소 준비 후 실제 유료 자격·단가·잔액으로 AI 응답과 정확히 한 번의 차감을 검증하고 활성화 완료를 기록한다."
   ],
   "releaseHistory": [
     {
@@ -194,102 +226,194 @@
         "회원 레벨별 안내",
         "공통 레코드 및 음원 스트리밍 회귀 수정"
       ]
+    },
+    {
+      "runtimeRelease": {
+        "commit": "6b99913f2404fa21851e2a840096e0536d6e65c1",
+        "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40262045714",
+        "status": "success",
+        "filesSha256": {
+          "noa-assets/ainoa-symbol.png": "3f13853373b8a09af66eff9a4f7030500442763ca41fd9ecc13159cb352cabfe",
+          "noa-launch.js": "2bc9a43ced7507f164eaa56c7d24d9b2c7590115a97a0d960080163adef7a26a",
+          "noa-manifest.json": "2b7c76a56dee198f71e9ca1cc236b7154c533df6835c162c4c5f63080ae16685",
+          "noa-sw.js": "66e15f28dba6bbc21f53333246897927ece61ed8310b6982e96987e06b82e9a1",
+          "noa-bridge/subscription-access.php": "b3c86c2dfe06e980ea705afb9ec7bc9266f60cc3e6fd69cd3e7b527dd211bd95",
+          "extend/noa.access.php": "8940ebcad48d39d621f792e7df2a94ca2d09ad717a5e35c2abb746f907c6a733",
+          "noa-bridge/ainoa-core.php": "9630a961f04458ebef76cb1c00ec1d1eea25e14f06e5b042173a29306cf800c1",
+          "noa-ainoa.php": "be9a2c3487625a24944c655f35985b16b2c2d83f5628b250364506fd02e615b7",
+          "noa-ainoa.css": "fcd48adbfadabc66f44be04adb697fbebb3fc12a264ece8920436bc0565370f8",
+          "noa-ainoa.js": "30d6a798d1be661f455ad3318b6ba4e61bdcf958bbb8ff0f57ea1024f3386474",
+          "noa-bridge/package-record.php": "8d5426a1d8c8914853b16a7acfb7d11ba5fa4d912a8a0887eb52783ca2dee020",
+          "noa-browse-edit.js": "d903ced1f74fb6162d044c77b1add2a7759d0e8a0dd96d3f69707ec78d48dc4e",
+          "noa-browse.js": "1b03b7b60d55ea00b7b040b71e6a670b1bea5f686874e0cdd4b889563bdd4145",
+          "extend/noa.design.php": "9965bacf09bcef86e866b005a067429659572c62180dffaefaeb092baf8c6f54"
+        },
+        "protectedUnchanged": 12,
+        "databaseWrites": 0,
+        "memberRowsChanged": 0,
+        "pointDebits": 0,
+        "completed": [
+          "EP 수노 프롬프트 필드",
+          "보컬 선택 및 기존 남성/듀엣 보존",
+          "AI 생성/수정 입력 UI와 서버 권한·예산 검사",
+          "AInoa 이동·길게 누르기 스크롤·제목/가사 검색",
+          "회원 레벨별 안내",
+          "공통 레코드 및 음원 스트리밍 회귀 수정",
+          "첫 실행 홈 진입",
+          "첨부 원본 AInoa 이미지와 외부 화살표 제거",
+          "다크/아이보리 말풍선 및 스크롤 중 안내·닫기 버튼 표시"
+        ],
+        "verified": {
+          "productionBrowserCases": 10,
+          "themes": [
+            "noa-studio",
+            "noa-ivory"
+          ],
+          "widths": [
+            360,
+            390,
+            430,
+            844,
+            1280
+          ],
+          "physicalAndroid": false,
+          "liveAiProviderCall": false
+        },
+        "authenticatedMemberProof": "https://github.com/rucyjeon79/noa-studio/actions/runs/40253538748"
+      },
+      "supersededBy": "2f7983ecd975d5c1a3104b0de6fc808bfd0224ef"
     }
   ],
   "latestWorkUnit": {
-    "id": "home-entry-portrait-speech-bubble",
+    "id": "cover-playlist-act-guide-paid-chat",
+    "request": "커버 원곡가수, 기존 생성 플레이리스트 순서 및 기본 목록 제외, ACT 직접 영상·목록 아이콘, 검색 중심 노아와 짧은 곡 안내, 4레벨 이상 유료회원 실시간 포인트 AI 대화",
+    "status": "implemented_and_deployed_activation_pending",
+    "finalCommit": "2f7983ecd975d5c1a3104b0de6fc808bfd0224ef",
+    "finalDeployment": "https://github.com/rucyjeon79/noa-studio/actions/runs/40265797752",
     "sourceFiles": [
-      "deploy/noa-ainoa.js",
-      "deploy/noa-ainoa.css",
-      "deploy/noa-launch.js",
-      "deploy/noa-manifest.json",
-      "deploy/noa-sw.js",
-      "deploy/noa-design.extend.php",
-      "scripts/noa_ainoa_deploy.py",
-      "scripts/qa/noa-ainoa.mjs",
-      "tests/pwa/launch_test.cjs",
       ".github/workflows/noa-ainoa.yml",
-      ".github/workflows/noa-gnuboard-theme.yml",
-      ".github/workflows/noa-member-hero.yml",
-      "public/ainoa/ainoa-symbol.png"
+      ".github/workflows/noa-category-order-final.yml",
+      ".github/workflows/noa-initial-catalog-flash.yml",
+      ".github/workflows/noa-inline-order.yml",
+      ".github/workflows/noa-quality-gates.yml",
+      ".github/workflows/noa-youtube-coming.yml",
+      ".github/workflows/noa-youtube-role.yml",
+      "bridge/ainoa-core.php",
+      "bridge/lab-api.php",
+      "bridge/package-record.php",
+      "bridge/youtube-catalog.php",
+      "deploy/noa-ai-lab.js",
+      "deploy/noa-ai-lab.php",
+      "deploy/noa-ainoa.css",
+      "deploy/noa-ainoa.js",
+      "deploy/noa-ainoa.php",
+      "deploy/noa-browse-edit.js",
+      "deploy/noa-browse-order.js",
+      "deploy/noa-browse.js",
+      "deploy/noa-creator.php",
+      "deploy/noa-editor.php",
+      "deploy/noa-youtube.php",
+      "scripts/noa_ainoa_deploy.py",
+      "scripts/qa/noa-ainoa-native.mjs",
+      "scripts/qa/noa-ainoa.mjs",
+      "scripts/qa/noa-four-level.test.mjs",
+      "tests/catalog/ainoa_test.php",
+      "tests/catalog/package_record_test.php",
+      "tests/uiux/recovery_contract_test.py",
+      "tests/youtube/coming_catalog_test.php",
+      "bridge/ainoa-points.php",
+      "tests/catalog/ainoa_points_mysql_test.php",
+      "tests/catalog/collections_seed.php",
+      "scripts/qa/noa-collections.mjs",
+      "scripts/qa/noa-chat.mjs"
     ],
-    "mainChangeCommit": "2e63f142af2b4c2a8302d32f3a4950cdcec990db",
-    "mainDeployment": "https://github.com/rucyjeon79/noa-studio/actions/runs/40260214948",
-    "finalCommit": "6b99913f2404fa21851e2a840096e0536d6e65c1",
-    "finalDeployment": "https://github.com/rucyjeon79/noa-studio/actions/runs/40262045714",
-    "request": "첫 접속은 홈으로, 첨부 원형 이미지로 AInoa 버튼 교체, 외부 위/뒤 화살표 제거, 입력·안내는 말풍선으로 표시",
     "implementation": [
-      "PWA start_url을 /로 변경하고 기존 설치 앱 id는 보존했다.",
-      "최초 standalone 실행의 오래된 기본 음원 주소만 홈으로 이동한다. 일반 브라우저, 곡/장르 링크, 내부 이동은 보존한다.",
-      "사용자가 첨부한 원본 PNG의 바이트를 그대로 배포했다.",
-      "두 외부 화살표를 제거하고 길게 누른 뒤 움직이는 스크롤은 유지했다.",
-      "다크/아이보리 토큰을 이용한 말풍선, 고정 닫기 버튼, 새 안내가 보이는 내부 스크롤을 적용했다."
+      "커버 원곡 가수 필드: 인라인·관리자 편집·내 채널에서 곡 제목 위에 배치",
+      "생성된 플레이리스트의 드래그·키보드 순서 변경과 명시적 저장·취소",
+      "생성된 플레이리스트에 들어간 곡을 기본 미분류 목록에서 제외",
+      "공개 확인된 ACT YouTube URL을 제목 클릭 시 바로 아래에서 재생",
+      "제목 오른쪽 목록 펼침 아이콘과 영상 재시작 없는 목록 토글",
+      "비회원·일반회원의 떠있는 노아 메뉴는 제목·가사 검색만 표시",
+      "음원 실제 재생 시 짧은 무료 곡 안내 말풍선",
+      "4·6레벨 유료 자격·만료·잔액·AI 준비 상태를 서버와 UI에서 검사",
+      "응답 성공 시 원자적 즉시 포인트 차감, 실패 취소, 중복 요청 방지 및 응답 유실 복구"
     ],
-    "originalImageSha256": "3f13853373b8a09af66eff9a4f7030500442763ca41fd9ecc13159cb352cabfe",
-    "operatingFilesChanged": [
-      "noa-assets/ainoa-symbol.png",
-      "noa-launch.js",
-      "noa-manifest.json",
-      "noa-sw.js",
-      "noa-ainoa.css",
-      "noa-ainoa.js",
-      "extend/noa.design.php"
-    ],
-    "protectedCoreAndData": "12개 보호 파일 동일. 데이터베이스·회원·포인트 변경 없음.",
     "verification": {
-      "launchUnitTests": 5,
+      "phpLint": true,
       "existingNodeRegressionTests": 33,
-      "nativePhpMysqlTests": true,
-      "candidateBrowserCases": 10,
-      "productionBrowserCases": 10,
-      "viewports": [
-        [
-          360,
-          844
-        ],
-        [
-          390,
-          844
-        ],
-        [
-          430,
-          844
-        ],
-        [
-          844,
-          390
-        ],
-        [
-          1280,
-          844
-        ]
+      "launchTests": 5,
+      "nativeMysqlOriginalArtistAndPlaylistRoundtrip": true,
+      "nativePointTransactions": true,
+      "pointCases": [
+        "success",
+        "retry",
+        "conflict",
+        "priceChanged",
+        "insufficient",
+        "providerFailure",
+        "receiptFailureRollback",
+        "expiredGrant",
+        "freeCreatorDenied",
+        "nonTransactionalStorageDenied"
       ],
+      "candidateBrowserCases": 10,
+      "productionGuestBrowserCases": 10,
+      "collectionBrowserCasesPerPhase": 6,
       "themes": [
         "noa-studio",
         "noa-ivory"
       ],
-      "homeEntry": "실제 운영 페이지/스크립트에서 standalone 표시 모드만 모의하여 구형 시작 주소가 홈으로 이동함을 확인",
-      "portraitOriginal": true,
-      "externalArrowsAbsent": true,
-      "speechBubbleTail": true,
-      "longResultNoticeVisible": true,
-      "fixedCloseControlVisible": true,
-      "holdScrollPreserved": true,
-      "horizontalOverflow": false,
-      "javascriptErrors": 0,
+      "collectionWidths": [
+        360,
+        390,
+        1280
+      ],
+      "collectionAndChatData": "Isolated fixtures using candidate source, then fetched deployed JS/CSS. These are not real paid transactions or writes to operating playlists.",
+      "nativeInlineEditorRegression": "https://github.com/rucyjeon79/noa-studio/actions/runs/40265797968",
+      "actualGuestSearch": "Cloud browser verified 사랑 search returns 20 public records and no chat button",
       "physicalAndroid": false,
       "liveAiProviderCall": false,
-      "browserArtifact": "https://github.com/rucyjeon79/noa-studio/actions/runs/40262045714/artifacts/12624836954"
+      "livePointDebits": 0,
+      "browserArtifact": "https://github.com/rucyjeon79/noa-studio/actions/runs/40265797752/artifacts/12626780321"
     },
-    "scope": "이번 단위는 공개 화면과 실행 주소 수정이다. 기존 AI 제공자 구성과 포인트 백업 승인 보류는 해결한 것으로 처리하지 않는다.",
-    "cancelledAttempt": {
-      "runId": 40260946831,
-      "candidate": "success",
-      "deploy": "cancelled_before_steps",
-      "serverChanges": false,
-      "forcedCancellationByThisWork": false
+    "protectedCoreAndData": "11개 보호 파일 동일. DB·회원·포인트 쓰기 없음. YouTube 페이지는 ACT 직접 연결에 필요한 읽기 투영만 수정.",
+    "operatingFilesChanged": [
+      "noa-youtube.php",
+      "noa-creator.php",
+      "noa-editor.php",
+      "noa-bridge/youtube-catalog.php",
+      "noa-browse.js"
+    ],
+    "firstRuntimeDeployment": {
+      "commit": "b032538ee5d19c8a6f7a69653b9ff9b650f66c80",
+      "url": "https://github.com/rucyjeon79/noa-studio/actions/runs/40265371308",
+      "status": "success"
     },
-    "status": "completed"
+    "activationPending": [
+      "AI LAB OpenAI 연결·텍스트 AI·사용한도",
+      "AI LAB 유료 대화 활성화 및 응답당 포인트 단가",
+      "포인트 테이블의 트랜잭션 준비: 기존 민감 백업 업로드 승인 거절은 해소되지 않음"
+    ],
+    "scope": "정책 단가나 키를 임의로 넣지 않았으며 실제 AI 호출·포인트 차감을 완료한 것으로 보고하지 않는다. 조건이 준비되지 않으면 대화 버튼과 새 결제를 막는다.",
+    "relatedChecks": [
+      {
+        "url": "https://github.com/rucyjeon79/noa-studio/actions/runs/40265797792",
+        "engineTests": "success",
+        "integratedFinish": "legacy category-deployment dependency is unrelated to the scoped release; future ainoa-release commits skip that duplicate finish job"
+      },
+      {
+        "url": "https://github.com/rucyjeon79/noa-studio/actions/runs/40265797767",
+        "issue": "Legacy integrated candidate assumes anonymous public MUSIC HTTP success; current membership gate rejects this assumption. No integrated deployment."
+      },
+      {
+        "url": "https://github.com/rucyjeon79/noa-studio/actions/runs/40265678018",
+        "issue": "Creator native tests passed; old browser harness failed with socket hang up on unchanged /noa-world.php guest request."
+      },
+      {
+        "url": "https://github.com/rucyjeon79/noa-studio/actions/runs/40265678016",
+        "issue": "Legacy MV release rejected unknown preimage before mutation. Subsequent scoped-release tag disables this duplicate deployment."
+      }
+    ]
   },
   "relatedCheckFailures": [
     {
