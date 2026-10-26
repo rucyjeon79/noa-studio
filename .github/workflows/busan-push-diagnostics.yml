@@ -21,7 +21,7 @@ jobs:
         run: |
           cd scripts
           python3 - <<'PY'
-          import os,socket,hmac,json,tempfile,zipfile,base64,io,re,sys,hashlib
+          import os,socket,hmac,json,tempfile,zipfile,base64,io,re,sys,hashlib,urllib.request
           from pathlib import Path
           import paramiko
           from busan_readonly_check import configuration,fingerprint,PORT,ROOT
@@ -49,17 +49,22 @@ jobs:
                if not re.fullmatch('[a-f0-9]{64}[.]json',name):continue
                with s.open(private+'/push-subscriptions/'+name,'rb') as f:record=json.loads(f.read(16384))
                if record.get('member')==user:own.append((name[:-5],record))
-              accepted=0;failed=0;skipped=0;codes={}
+              with s.open(private+'/activity-account.json','rb') as f:identity=json.loads(f.read(8192))
+              accepted=0;failed=0;expired=0;skipped=0;codes={};expired_results=[]
               for device,record in own:
                if device in sent:skipped+=1;continue
                job={'id':device,'generation':record['generation'],'subscription':record['subscription'],'payload':{'title':'부산지부ON · 알림 연결 확인','body':'알림 발송 오류를 수정했습니다. 이 알림이 보이면 휴대폰 수신이 정상입니다.','url':'/','tag':'busan-push-repair-20261027'}}
                result=deliver(job,keyfile)
                code=str(result.get('http') or result.get('error','unknown'));codes[code]=codes.get(code,0)+1
                if result.get('ok'):sent.append(device);accepted+=1
+               elif result.get('expired'):expired+=1;expired_results.append(result)
                else:failed+=1
+              if expired_results:
+               req=urllib.request.Request('https://skhnslu-busan.com/busan-assistant/notification-api.php',data=json.dumps({'action':'ack','results':expired_results}).encode(),headers={'Content-Type':'application/json','X-Busan-Agent-Token':identity['agent_token']})
+               with urllib.request.urlopen(req,timeout=30) as response:assert json.load(response).get('acknowledged') is True
               data=json.dumps({'sent':sent}).encode();temp=receipt+'.upload'
               with s.open(temp,'wb') as f:f.write(data)
               s.chmod(temp,0o600);s.posix_rename(temp,receipt)
-              print(json.dumps({'owner_devices':len(own),'confirmation_accepted':accepted,'confirmation_failed':failed,'already_confirmed':skipped,'http_or_error_counts':codes,'other_members_not_targeted':True}))
+              print(json.dumps({'owner_devices':len(own),'confirmation_accepted':accepted,'confirmation_failed':failed,'expired_registrations_removed':expired,'already_confirmed':skipped,'http_or_error_counts':codes,'other_members_not_targeted':True}))
               if failed:raise SystemExit('owner_confirmation_not_accepted')
           PY
