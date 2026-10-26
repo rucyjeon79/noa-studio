@@ -435,3 +435,8 @@ html main .noa-action[data-noa-wide]>span{display:block;min-width:0}
 .catalog-thumb{display:block;max-width:640px;width:100%;height:auto;margin-block:16px}
 
 html[data-noa-precision] main .noa-workspace-grid>.noa-action{justify-content:flex-start!important;text-align:left!important;padding:16px 12px;min-block-size:84px;border-radius:0;border:0;border-bottom:1px solid var(--noa-line);background:transparent}html[data-noa-precision] main .noa-workspace-grid>.noa-action>span{font-size:15px;max-inline-size:none}html[data-noa-precision] main .noa-workspace-grid>.noa-action small{font-size:13px}
+
+/* The selected song has a visible information header outside the audio engine. */
+.noa-page .noa-song-info{margin:16px 0 24px;padding:16px;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,8px);background:var(--noa-surface)}
+.noa-page .noa-song-info h2{font-size:18px;margin:12px 0 0;overflow-wrap:anywhere}
+.noa-page .noa-song-info .noa-classification{margin:0}
