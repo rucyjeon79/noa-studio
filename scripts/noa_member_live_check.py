@@ -93,7 +93,7 @@ def main():
   status,body,_=request(client,'/noa-music.php');assert status==200 and key.encode()not in body,'private_creator_song_not_in_public_music'
   music=json.JSONDecoder().raw_decode(body.decode().split('const records=',1)[1])[0];status,yt_body,_=request(client,'/noa-youtube.php');assert status==200;youtube=json.JSONDecoder().raw_decode(yt_body.decode().split('const rows=',1)[1])[0];music_keys={r.get('orderKey')or r['key']for r in music if r['kind']!='playlist'};youtube_keys={r.get('orderKey')or r['key']for r in youtube};assert music_keys<=youtube_keys,'music_youtube_parity'
   # New module: prove disabled sales, managed upgrades and exact expiry on native GnuBoard.
-  control('level',level=3);before_sub=control('subscription_state');status,body,_=request(client,'/noa-bridge/subscription.php');assert status==200;sub=json.loads(body);assert not sub['policy']['values']['enabled'],'unconfigured_policy_expected'
+  control('level',level=3);before_sub=control('subscription_state');ainoa_state=control('ainoa_state');print('AINOA_TEXT_READINESS',json.dumps({k:v for k,v in ainoa_state.items()if k!='ok'}));status,body,_=request(client,'/noa-bridge/subscription.php');assert status==200;sub=json.loads(body);assert not sub['policy']['values']['enabled'],'unconfigured_policy_expected'
   status,_,_=request(client,'/noa-subscription-admin.php');assert status==403
   status,_,_=request(client,'/noa-bridge/subscription.php?action=admin_status');assert status==403
   status,_,_=request(client,'/noa-bridge/subscription.php?action=points',json.dumps({'plan':'vip','requestId':'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','policyRevision':sub['policy']['revision']}).encode(),{'Content-Type':'application/json','Origin':BASE,'X-NOA-CSRF':sub['csrf']});assert status==409
