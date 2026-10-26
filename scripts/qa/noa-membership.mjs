@@ -18,7 +18,7 @@ try{
   }
   await page.goto('https://noastudio.ai.kr/noa-login.php',{waitUntil:'domcontentloaded'});await page.getByRole('heading',{name:'음악으로 이어지는 순간'}).waitFor();await page.locator('#noa-account-bar').waitFor();
   assert.equal(await page.locator('.noa-social-options button:disabled').count(),2);assert.equal(await page.locator('.noa-social-options').getByText('로그인 연결 준비 중',{exact:false}).count(),2);
-  assert(await page.locator('#login_id').isVisible());assert(await page.locator('#login_pw').isVisible());assert.equal(await page.locator('form[name=flogin]').getAttribute('action'),'/bbs/login_check.php');
+  assert.equal(await page.locator('#noa-account-bar .noa-account-shortcuts a').count(),3);assert(await page.locator('#noa-account-bar .noa-account-brand img').isVisible());assert(await page.locator('#login_id').isVisible());assert(await page.locator('#login_pw').isVisible());assert.equal(await page.locator('form[name=flogin]').getAttribute('action'),'/bbs/login_check.php');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await page.screenshot({path:out+'/login-'+theme+'-'+width+'.png',fullPage:true});
   if(phase==='candidate'){
@@ -29,7 +29,7 @@ try{
    await page.locator('#membership-auto').check();await page.getByText('자동연장을 켰습니다.',{exact:false}).waitFor();assert.equal(autos,1);await page.locator('#noa-account-bar').getByText('구독 중 · 30일 남음',{exact:true}).waitFor();
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.evaluate(()=>scrollTo(0,500));assert(Math.abs((await page.locator('#noa-account-bar').boundingBox()).y)<2);
    await page.waitForFunction(()=>!document.querySelector('#membership-auto').disabled);
-   const heights=await page.evaluate(()=>['#membership-buy','#noa-account-bar a:first-child'].map(s=>document.querySelector(s).getBoundingClientRect().height));assert(heights.every(h=>h>=44));
+   const heights=await page.evaluate(()=>['#membership-buy','#noa-account-bar .noa-account-status a:first-child'].map(s=>document.querySelector(s).getBoundingClientRect().height));assert(heights.every(h=>h>=44));
    await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:out+'/membership-'+theme+'-'+width+'.png',fullPage:true});
   }else{
    const api=await context.request.get('https://noastudio.ai.kr/noa-bridge/membership.php');assert.equal(api.status(),200);assert.equal((await api.json()).member,false);
