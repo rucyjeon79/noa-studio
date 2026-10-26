@@ -13,9 +13,9 @@ const diagnosticKey='noa-jukebox-diagnostics-v1',circuitKey='noa-jukebox-circuit
 function recordDiagnostic(row){diagnosticRows.push({...row,at:new Date().toISOString()});diagnosticRows=diagnosticRows.slice(-80);try{localStorage.setItem(diagnosticKey,JSON.stringify(diagnosticRows));}catch{}const out=document.querySelector('.jukebox-transfer-errors');if(out)out.textContent=JSON.stringify(diagnosticRows.slice(-12),null,2);}
 function tripTransfer(error){paused=true;notice.textContent='전송 일시정지 · 서버 응답을 확인한 뒤 전송 계속을 눌러 주세요.';try{localStorage.setItem(circuitKey,JSON.stringify({open:true,detail:error.safe(),at:Date.now()}));}catch{}render();}
 const transport=new Transport({onTrip:tripTransfer,onRecord:recordDiagnostic});try{transport.open=!!JSON.parse(localStorage.getItem(circuitKey)||'null')?.open;}catch{}
-async function requestRaw(action,body,query=''){
+async function requestRaw(action,body,query='',timeoutMs=30000){
  const requestUploadId=body?.id||new URLSearchParams(query).get('id'),stage=action==='status'&&query.includes('reconcile=1')?'reconcile':action;
- const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),body?30000:12000);let response;
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);let response;
  try{response=await fetch('/noa-app/jukebox/upload.php?action='+action+query,{method:body?'POST':'GET',credentials:'same-origin',cache:'no-store',signal:controller.signal,headers:body?{'Content-Type':'application/json','X-NOA-CSRF':token}:{},body:body?JSON.stringify(body):undefined});const raw=await response.text();const d=decode(raw,{stage,http:response.status,type:response.headers.get('Content-Type'),uploadId:requestUploadId,requestId:response.headers.get('X-NOA-Request-ID'),serverCode:response.headers.get('X-NOA-Error-Code'),retryAfter:Number(response.headers.get('Retry-After'))*1000});
   const valid=action==='init'?/^[a-f0-9]{32}$/.test(d.id)&&Array.isArray(d.chunks):action==='queue'?Array.isArray(d.rows)&&!!d.counts:action==='health'?typeof d.can_upload==='boolean':action==='status'&&query.includes('reconcile=1')?!!d.public&&Array.isArray(d.chunks):['status','finish','retry'].includes(action)?typeof d.key==='string'&&typeof d.status==='string':true;
   if(!valid)throw new UploadError('response_schema_invalid',{stage,http:response.status,format:'json',uploadId:requestUploadId,transient:true});return d;
@@ -24,7 +24,7 @@ async function requestRaw(action,body,query=''){
 async function api(action,body,query='',recover=null){return transport.run(()=>requestRaw(action,body,query),{mutating:!!body&&!['client_incident','qa_fault'].includes(action),recover});}
 // A background poll is itself a retry. Never let three serial timeouts block
 // other songs or turn a status-read failure into a paused file transfer.
-async function pollApi(action,query=''){try{return await requestRaw(action,null,query);}catch(e){recordDiagnostic(e.safe());throw e;}}
+async function pollApi(action,query=''){try{return await requestRaw(action,null,query,12000);}catch(e){recordDiagnostic(e.safe());throw e;}}
 async function reconcile(r){if(!r.uploadId)return null;return api('status',null,'&key='+encodeURIComponent(r.key)+'&id='+r.uploadId+'&reconcile=1');}
 async function restoreCompleted(r,retryFinish=false){
  const q=await reconcile(r);if(!q)return null;
