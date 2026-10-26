@@ -1,5 +1,8 @@
 """Scoped classification, library and administrator workspace release; no data migration."""
 import noa_ainoa_deploy as release
+# Only this release opts into unrelated-project tolerance. Every NOA file,
+# shared dependency, test and workflow remains protected by the freshness gate.
+release.UNRELATED_PATH_PREFIXES=('scripts/busan_', '.github/workflows/busan-', 'docs/busan/')
 release.FILES={
  'noa-bridge/sound-core.php':'bridge/sound-core.php',
  'noa-bridge/library-records.php':'bridge/library-records.php',
