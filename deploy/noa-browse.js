@@ -21,7 +21,7 @@ function mount({host,rows,onChange,search=null,genre=null,type=null,kind='곡'})
  const e=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
  const collectionStyle=e('style');collectionStyle.textContent='html[data-noa-precision] .noa-page .noa-inline-act:has(>.noa-collection-tools){display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:8px}html[data-noa-precision] .noa-page .noa-inline-act:has(>.noa-collection-tools)>.noa-browse-card{min-width:0;width:auto;padding-inline-end:0;grid-column:1;grid-row:1}.noa-collection-tools{grid-column:2;grid-row:1;display:flex;align-items:center;gap:4px}.noa-page .noa-collection-tools>.noa-action{position:static;min-width:44px;min-height:52px;padding:4px}.noa-collection-tools svg{width:20px;height:20px}.noa-inline-act>:is([data-browse-level],.noa-edit-form,.noa-inline-playback,.noa-order-status){grid-column:1/-1;min-width:0}.noa-page .noa-collection-tools>.noa-action{display:flex;flex-direction:column;justify-content:center;gap:4px}.noa-collection-tools>.noa-list-toggle[aria-expanded=true] svg{transform:rotate(180deg)}.noa-inline-act>[data-browse-level][hidden]{display:none!important}';document.head?.append(collectionStyle);
  const params=new URLSearchParams(location.search);let selectedGenre=genre?.value||params.get('genre')||'',selectedGroup=groupFor(selectedGenre)||(groups.some(g=>g[0]===params.get('group'))?params.get('group'):''),selectedAct=Number(params.get('act'))||0,page=0;
- let expandedPlaylist='',activeSavedPlaylist='';let expandedAct=null;let stage=selectedGenre?'acts':selectedGroup?'genres':'groups';if(params.get('view')==='all'||params.has('world')||params.get('type')||params.get('track')||params.get('playlist'))stage='songs';if(params.get('type')==='playlist')stage='collections';if(selectedAct&&selectedGenre&&!params.get('track'))stage='acts';expandedAct=selectedAct||null;let initialLevel=stage==='acts'?(expandedAct?4:3):stage==='genres'?2:0;
+ let expandedPlaylist='',activeSavedPlaylist='',orderReady=false,pendingFocus=null;let expandedAct=null;let stage=selectedGenre?'acts':selectedGroup?'genres':'groups';if(params.get('view')==='all'||params.has('world')||params.get('type')||params.get('playlist'))stage='songs';if(params.get('type')==='playlist')stage='collections';if(selectedAct&&selectedGenre&&!params.get('track'))stage='acts';expandedAct=selectedAct||null;let initialLevel=stage==='acts'?(expandedAct?4:3):stage==='genres'?2:0;
  const crumbs=e('nav'),grid=e('div'),pager=e('nav'),note=e('p'),all=e('button',kind==='영상'?'전체 영상':'전체 음원');crumbs.className='noa-browse-crumbs';crumbs.setAttribute('aria-label','라이브러리 경로');grid.className='noa-browse-levels';pager.className='noa-browse-pager';pager.setAttribute('aria-label','음악 목록 페이지');note.className='noa-muted';all.className='noa-browse-all';all.type='button';all.onclick=()=>navigate('songs','','',0);host.replaceChildren(crumbs,grid,note,pager);
  function translate(text){return window.NoaUI?.translate(text)||text;}
  function sync(){if(genre)genre.value=selectedGenre;if(type)type.value='';}
@@ -55,9 +55,9 @@ function mount({host,rows,onChange,search=null,genre=null,type=null,kind='곡'})
   const nodes=[document.getElementById('yt-player')];
   for(const node of nodes)if(node&&node.parentElement!==playbackPanel)playbackPanel.append(node);
  }
- function showPlayback(){
+ function showPlayback(block='start'){
   if(!playbackPanel)return;
-  window.requestAnimationFrame?.(()=>{if(playbackPanel?.isConnected){const anchor=playbackPanel.previousElementSibling;anchor?.scrollIntoView({block:'start',behavior:'instant'});}});
+  window.requestAnimationFrame?.(()=>{if(playbackPanel?.isConnected){const anchor=playbackPanel.previousElementSibling;anchor?.scrollIntoView({block,behavior:'instant'});}});
  }
  function restoreInlinePlayback(){
   if(!playbackPanel)return;
@@ -103,11 +103,11 @@ function mount({host,rows,onChange,search=null,genre=null,type=null,kind='곡'})
   const style=e('style');style.textContent='html[data-noa-precision] .noa-inline-song-row{display:flex;align-items:center;gap:8px;min-width:0;border-bottom:1px solid var(--noa-line)}html[data-noa-precision] .noa-inline-song-row>.noa-inline-song{flex:1;min-width:0;width:auto;border-bottom:0}.noa-song-actions{display:flex;align-items:center;gap:4px;flex:none}.noa-page .noa-song-action,.noa-page .noa-track-add{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:52px;padding:4px;font-size:12px;line-height:1.3;white-space:nowrap;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,8px);background:var(--noa-raised);color:var(--noa-text);cursor:pointer}.noa-page .noa-song-action>svg,.noa-page .noa-track-add>svg{width:20px;height:20px;flex:none}.noa-song-action:disabled{opacity:.5;cursor:default}@media(max-width:600px){.noa-song-actions[data-admin-controls="true"]{display:grid;grid-template-columns:repeat(2,minmax(52px,auto))}}';document.head.append(style);
   syncMusicActions();const source=document.getElementById('songs');if(source&&window.MutationObserver){let pending=false;new MutationObserver(()=>{if(pending)return;pending=true;queueMicrotask(()=>{pending=false;syncMusicActions();});}).observe(source,{subtree:true,childList:true,attributes:true,attributeFilter:['disabled','aria-disabled','href','data-audio','data-jukebox-status']});}
  }
- function playInline(anchor,record){
+ function playInline(anchor,record,scrollBlock='start'){
   activeSavedPlaylist=anchor.closest?.('.noa-user-playlist')?.dataset.playlistId||'';if(record.kind!=='playlist')expandedAct=actFor(record)||-1;
   const target=[...document.querySelectorAll('[data-browse-key],.song[data-key]')].find(n=>(n.dataset.browseKey||n.dataset.key)===String(record.key));
   const action=target?.matches('button')?target:target?.querySelector('.sound-play')||target?.querySelector('button');
-  if(!action)return false;placePlayback(anchor,record);action.click();restoreInlinePlayback();showPlayback();return true;
+  if(!action)return false;placePlayback(anchor,record);action.click();restoreInlinePlayback();showPlayback(scrollBlock);return true;
  }
  function collectionControls(section,title,expanded,toggle){
   const tools=e('div');tools.className='noa-collection-tools';const list=button('',toggle);list.className='noa-action noa-list-toggle';list.setAttribute('aria-label',title+' 수록곡 목록 펼치기');list.setAttribute('aria-expanded',String(expanded));list.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m5 9 7 7 7-7"/></svg>';list.append(e('span','목록'));tools.append(list);section.append(tools);
@@ -174,7 +174,22 @@ function mount({host,rows,onChange,search=null,genre=null,type=null,kind='곡'})
  if(search)search.addEventListener('input',()=>{page=0;if(search.value.trim()){stage='songs';selectedGroup='';selectedGenre='';selectedAct=0;sync();}onChange();});
  if(genre)genre.addEventListener('change',()=>{page=0;selectedGenre=genre.value;selectedGroup=groupFor(selectedGenre)||'';selectedAct=0;stage=selectedGenre?'acts':'groups';onChange();});
  if(type)type.addEventListener('change',()=>{page=0;stage=type.value==='playlist'?'collections':'songs';onChange();});
- function findSong(key){const canonical=String(key).replace(/^catalog:/,'');const r=rows.find(r=>String(r.key)===key||String(r.orderKey||r.musicKey||r.key).replace(/^catalog:/,'')===canonical);if(!r)return;activeSavedPlaylist='';stage='songs';selectedGenre=r.genre;selectedGroup=groupFor(r.genre)||'';selectedAct=actFor(r)||0;expandedAct=selectedAct;page=0;if(search)search.value='';if(type)type.value='';sync();page=Math.max(0,Math.floor(rows.filter(matches).sort(orderFor).findIndex(x=>String(x.key)===String(r.key))/24));onChange();requestAnimationFrame(()=>{const target=[...host.querySelectorAll('[data-inline-key],.yt-card[data-browse-key],.song[data-key]'),...document.querySelectorAll('.yt-card[data-browse-key],.song[data-key]')].find(n=>(n.dataset.inlineKey||n.dataset.browseKey||n.dataset.key)===String(r.key));target?.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth'});});}
+ function findSong(key,options={}){
+  if(!orderReady){pendingFocus={key,options};return;}
+  const canonical=String(key||'').replace(/^catalog:/,''),source=rows.find(r=>String(r.key)===String(key)&&!r.customPlaylistId)||rows.find(r=>String(r.key)===String(key)||String(r.orderKey||r.musicKey||r.key).replace(/^catalog:/,'')===canonical);if(!source)return;
+  const identity=String(source.orderKey||source.key).replace(/^catalog:/,''),r=treeRows.find(r=>String(r.key)===String(source.key)&&String(r.orderKey||r.key).replace(/^catalog:/,'')===identity)||treeRows.find(r=>String(r.orderKey||r.key).replace(/^catalog:/,'')===identity)||source;
+  selectedGenre=r.genre;selectedGroup=groupFor(r.genre)||'';selectedAct=actFor(r)||0;expandedAct=selectedAct||-1;stage='acts';page=0;initialLevel=0;
+  const playlist=(manualOrder.playlists||[]).find(p=>p.group===selectedGroup&&(r.customPlaylistId===p.id||(!selectedAct&&p.keys.includes(identity))));
+  expandedPlaylist=playlist?.id||'';activeSavedPlaylist=playlist?.id||'';if(search)search.value='';if(type)type.value='';sync();
+  const url=new URL(location.href);for(const name of ['view','page','type','noa-find','act'])url.searchParams.delete(name);url.searchParams.set('genre',selectedGenre);if(selectedGroup)url.searchParams.set('group',selectedGroup);if(selectedAct)url.searchParams.set('act',String(selectedAct));url.searchParams.set('track',String(r.key));if(options.play)url.searchParams.set('play','1');else url.searchParams.delete('play');history.replaceState(null,'',url);
+  onChange();window.requestAnimationFrame?.(()=>{
+   const candidates=[...host.querySelectorAll('.noa-inline-song,[data-act-video-key]')].filter(n=>n.dataset.inlineKey===String(r.key));
+   const target=candidates.find(n=>!n.closest('[hidden]')&&(n.closest('.noa-user-playlist')?.dataset.playlistId||'')===(playlist?.id||''))||candidates.find(n=>!n.closest('[hidden]'));if(!target)return;
+   for(const row of host.querySelectorAll('[data-noa-focus]')){delete row.dataset.noaFocus;row.removeAttribute('aria-current');}target.dataset.noaFocus='true';target.setAttribute('aria-current','true');target.focus?.({preventScroll:true});
+   if(kind==='영상'&&options.play)playInline(target,r,'center');else target.scrollIntoView({block:'center',behavior:'instant'});
+  });
+ }
+
  window.addEventListener('noa-find-song',event=>findSong(event.detail?.key));const findKey=new URLSearchParams(location.search).get('noa-find');if(findKey)setTimeout(()=>findSong(findKey),300);
  window.addEventListener('noa-theme',()=>{if(orderEditor?.isEditing?.()||editEditor?.isEditing?.())return;treeRevision='';onChange();});
  fetch('/noa-category-order.php',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(data=>{if(data){manualOrder={revision:data.revision,story:data.story||[],cover:data.cover||[],playlists:data.playlists||[]};onChange();if(data.admin===true&&data.csrf){
@@ -190,8 +205,8 @@ function mount({host,rows,onChange,search=null,genre=null,type=null,kind='곡'})
   }}
  }});};
  if(window.NoaBrowseEdit)startEdit();else{const helper=e('script');helper.src='/noa-browse-edit.js?v='+encodeURIComponent(document.getElementById?.('noa-act-labels')?.dataset?.editRevision||'20261025-inline-edit-2');helper.onload=startEdit;helper.onerror=()=>{note.textContent='수정 기능을 불러오지 못했습니다. 새로고침해 주세요.';};document.head.append(helper);}
- const start=()=>{orderEditor=window.NoaBrowseOrder.mount({host,rows,kind,access:data,onExpandPlaylist:id=>{expandedPlaylist=id;},isEditing:()=>editEditor?.isEditing?.(),getOrder:()=>manualOrder,getGroup:()=>selectedGroup,onSaved:(confirmed,options={})=>{manualOrder={revision:confirmed.revision,story:confirmed.story||[],cover:confirmed.cover||[],playlists:confirmed.playlists||[]};treeRevision=kind==='영상'&&!options.render?JSON.stringify([stage,selectedGroup,selectedGenre,selectedAct,expandedAct,manualOrder,expandedPlaylist]):'';onChange();}});refreshOrderEditor();};if(window.NoaBrowseOrder)start();else{const script=e('script');script.src='/noa-browse-order.js?v=20261026-sql-order-2';script.onload=start;script.onerror=()=>{note.textContent='순서 편집을 불러오지 못했습니다. 새로고침해 주세요.';};document.head.append(script);}}}}).catch(()=>{});
- return {apply,matches,reveal(r){activeSavedPlaylist='';stage='songs';selectedGenre=r.genre;selectedGroup=groupFor(r.genre)||'';selectedAct=actFor(r)||0;page=0;sync();},reset(){page=0;},getStage:()=>stage};
+ const start=()=>{orderEditor=window.NoaBrowseOrder.mount({host,rows,kind,access:data,onExpandPlaylist:id=>{expandedPlaylist=id;},isEditing:()=>editEditor?.isEditing?.(),getOrder:()=>manualOrder,getGroup:()=>selectedGroup,onSaved:(confirmed,options={})=>{manualOrder={revision:confirmed.revision,story:confirmed.story||[],cover:confirmed.cover||[],playlists:confirmed.playlists||[]};treeRevision=kind==='영상'&&!options.render?JSON.stringify([stage,selectedGroup,selectedGenre,selectedAct,expandedAct,manualOrder,expandedPlaylist]):'';onChange();}});refreshOrderEditor();};if(window.NoaBrowseOrder)start();else{const script=e('script');script.src='/noa-browse-order.js?v=20261026-sql-order-2';script.onload=start;script.onerror=()=>{note.textContent='순서 편집을 불러오지 못했습니다. 새로고침해 주세요.';};document.head.append(script);}}}}).catch(()=>{}).finally(()=>{orderReady=true;const focus=pendingFocus;pendingFocus=null;if(focus)findSong(focus.key,focus.options);});
+ return {apply,matches,focusTrack:findSong,reveal(r){activeSavedPlaylist='';stage='songs';selectedGenre=r.genre;selectedGroup=groupFor(r.genre)||'';selectedAct=actFor(r)||0;page=0;sync();},reset(){page=0;},getStage:()=>stage};
 }
 window.NoaBrowse={groups,names,genreArt,groupFor,actFor,slicePage,canonicalBrowseRows,mount};
 })();

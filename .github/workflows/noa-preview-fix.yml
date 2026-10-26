@@ -2,7 +2,7 @@ name: NOA Preview and Logout Repair
 on:
   push:
     branches: [main]
-    paths: ['scripts/noa_preview_audit.*','scripts/noa_preview_release.py','scripts/qa/noa-preview-regression.mjs','.github/workflows/noa-preview-fix.yml']
+    paths: ['scripts/noa_preview_audit.*','scripts/noa_preview_release.py','scripts/qa/noa-preview-regression.mjs','scripts/qa/noa-recommendation-position.mjs','.github/workflows/noa-preview-fix.yml']
 permissions: {contents: read}
 jobs:
   verify:
@@ -25,6 +25,7 @@ jobs:
         run: |
           php -l scripts/noa_preview_audit.php
           php -l bridge/youtube-catalog.php
+          php -l deploy/noa-youtube.php
           php tests/youtube/coming_catalog_test.php
           node --check deploy/noa-account.js
           node --check deploy/noa-browse.js
@@ -35,13 +36,15 @@ jobs:
           python scripts/qa/noa-qa-font.py
           npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-preview" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-preview-regression.mjs "$RUNNER_TEMP/noa-preview/check.mjs"
+          cp scripts/qa/noa-recommendation-position.mjs "$RUNNER_TEMP/noa-preview/position.mjs"
       - name: Verify candidate against actual public SQL records without changing data
         env: {NOA_PREVIEW_PHASE: candidate}
         run: |
           python scripts/noa_preview_audit.py
           cp preview-proof/catalog.json preview-proof/candidate-catalog.json
           node "$RUNNER_TEMP/noa-preview/check.mjs"
-      - name: Atomically apply only collection preview and account bar sources
+          node "$RUNNER_TEMP/noa-preview/position.mjs"
+      - name: Atomically apply reviewed preview, account bar and recommendation navigation
         id: upload
         run: python scripts/noa_preview_release.py
       - name: Verify deployed read model, public assets, collection playback and logout controls
@@ -50,6 +53,7 @@ jobs:
         run: |
           python scripts/noa_preview_audit.py
           node "$RUNNER_TEMP/noa-preview/check.mjs"
+          node "$RUNNER_TEMP/noa-preview/position.mjs"
       - name: Restore only this release's source bytes if acceptance fails
         if: failure() && (steps.upload.outcome == 'failure' || steps.live.outcome == 'failure')
         run: |

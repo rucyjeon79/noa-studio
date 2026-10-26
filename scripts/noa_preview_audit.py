@@ -23,7 +23,16 @@ def main():
     assert data['ok']
     with urllib.request.urlopen('https://noastudio.ai.kr/noa-category-order.php',timeout=30)as r:data['order']=json.load(r)
     data['sourcePhase']=os.getenv('NOA_PREVIEW_PHASE','live')
-    out=Path('preview-proof');out.mkdir(exist_ok=True);(out/'catalog.json').write_text(json.dumps(data,ensure_ascii=False,indent=2))
+    out=Path('preview-proof');out.mkdir(exist_ok=True)
+    page=Path('deploy/noa-youtube.php').read_bytes()
+    if data['sourcePhase']=='live':
+     with s.open(ROOT+'/noa-youtube.php','rb')as f:deployed=f.read()
+     assert deployed==page,'deployed YouTube page source differs from reviewed source'
+     page=deployed
+    data['youtubePageSha256']=hashlib.sha256(page).hexdigest()
+    bootstrap=page.decode().split('<script>\nwindow.NoaVideoDetails=',1)[1].split('</script>',1)[0]
+    (out/'youtube-bootstrap.js').write_text('window.NoaVideoDetails='+bootstrap)
+    (out/'catalog.json').write_text(json.dumps(data,ensure_ascii=False,indent=2))
     print('PREVIEW_CATALOG_READ',json.dumps(data['sourceCounts']))
     for group in ['your-story','cover-reborn']:
      items=[r for r in data['rows']if r['genre']==group];checks=[r for r in data['checks']if r['genre']==group]
