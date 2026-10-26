@@ -25,7 +25,21 @@ def main():
         finally:t.close()
         observed=request_observation(key);proof['observed']=observed['observed']
         if not observed.get('receipts'):raise RuntimeError('no_observed_job')
-        proof['diagnostic']=request_music_diagnostic(key,observed['receipts'][0]);proof['ok']=True
+        proof['diagnostic']=request_music_diagnostic(key,observed['receipts'][0])
+        # Inspect only the observed MUSIC leases; no retry reset, mutation or secret output.
+        t=connect()
+        try:
+            with paramiko.SFTPClient.from_transport(t)as s:
+                s.get_channel().settimeout(30);states=[]
+                for row in observed['receipts'][:10]:
+                    path='/hosting/noastudio/noa-ai-lab/n80-music-consumer/leases/'+hashlib.sha256((row['eventId']+'|music').encode()).hexdigest()+'.json'
+                    try:
+                        with s.open(path,'rb')as f:state=json.loads(f.read(65536))
+                    except FileNotFoundError:state={}
+                    states.append({'jobId':row['jobId'],'status':state.get('status'),'attempts':state.get('attempts'),'generation':state.get('generation'),'leaseUntil':state.get('leaseUntil'),'hasReceipt':bool(state.get('receipt'))})
+                proof['musicLeaseStates']=states
+        finally:t.close()
+        proof['ok']=True
     finally:
         (out/'diagnostic.json').write_text(json.dumps(proof,ensure_ascii=False,indent=2)+'\n')
     print('N80_MUSIC_READ_ONLY_DIAGNOSTIC',json.dumps(proof,ensure_ascii=False))

@@ -18,7 +18,7 @@ try{
   }
   await page.goto('https://noastudio.ai.kr/noa-login.php',{waitUntil:'domcontentloaded'});await page.getByRole('heading',{name:'음악으로 이어지는 순간'}).waitFor();await page.locator('#noa-account-bar').waitFor();
   assert.equal(await page.locator('.noa-social-options button:disabled').count(),2);assert.equal(await page.locator('.noa-social-options').getByText('로그인 연결 준비 중',{exact:false}).count(),2);
-  await page.getByText('기존 계정 · 관리자 로그인',{exact:true}).click();assert(await page.getByRole('link',{name:'기존 아이디로 로그인'}).isVisible());
+  assert(await page.locator('#login_id').isVisible());assert(await page.locator('#login_pw').isVisible());assert.equal(await page.locator('form[name=flogin]').getAttribute('action'),'/bbs/login_check.php');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await page.screenshot({path:out+'/login-'+theme+'-'+width+'.png',fullPage:true});
   if(phase==='candidate'){

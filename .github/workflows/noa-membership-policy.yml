@@ -2,7 +2,7 @@ name: NOA membership rewards and account bar
 on:
   push:
     branches: [main]
-    paths: ['bridge/subscription-core.php','tests/subscription/**','bridge/membership*.php','bridge/social-policy.php','deploy/noa-sitemap.php','scripts/noa_membership_evidence.py','deploy/noa-social.extend.php','deploy/noa-login.php','deploy/noa-membership*','deploy/noa-account.*','tests/membership/**','scripts/noa_membership*.py','scripts/noa_membership*.php','scripts/qa/noa-membership.mjs','.github/workflows/noa-membership-policy.yml']
+    paths: ['bridge/notices.php','deploy/noa-app/home.php','deploy/noa-ui.css','deploy/noa-ui.js','scripts/qa/noa-home-notices.mjs','bridge/subscription-core.php','tests/subscription/**','bridge/membership*.php','bridge/social-policy.php','deploy/noa-sitemap.php','scripts/noa_membership_evidence.py','deploy/noa-social.extend.php','deploy/noa-login.php','deploy/noa-membership*','deploy/noa-account.*','tests/membership/**','scripts/noa_membership*.py','scripts/noa_membership*.php','scripts/qa/noa-membership.mjs','.github/workflows/noa-membership-policy.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
@@ -55,6 +55,9 @@ jobs:
           php -l deploy/noa-login.php
           php -l scripts/noa_membership_verify.php
           php tests/membership/social.php
+          php -l deploy/noa-app/home.php
+          php -l bridge/notices.php
+          php tests/membership/notices.php
           php tests/sitemap/registry_test.php
           node --check deploy/noa-account.js
           node --check deploy/noa-membership.js
@@ -68,10 +71,13 @@ jobs:
       - name: Verify mobile account, purchase controls and social signup states
         run: |
           php tests/membership/render.php
+          php tests/membership/home-render.php
           python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/noa-membership" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-membership.mjs "$RUNNER_TEMP/noa-membership/check.mjs"
           node "$RUNNER_TEMP/noa-membership/check.mjs"
+          cp scripts/qa/noa-home-notices.mjs "$RUNNER_TEMP/noa-membership/home.mjs"
+          node "$RUNNER_TEMP/noa-membership/home.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'noa-membership-candidate-${{ github.run_id }}', path: membership-proof/, retention-days: 14}
@@ -102,7 +108,10 @@ jobs:
       - name: Verify live guest, direct signup rejection and existing administrator login
         id: live
         env: {NOA_MEMBERSHIP_PHASE: live}
-        run: node "$RUNNER_TEMP/noa-membership/check.mjs"
+        run: |
+          node "$RUNNER_TEMP/noa-membership/check.mjs"
+          cp scripts/qa/noa-home-notices.mjs "$RUNNER_TEMP/noa-membership/home.mjs"
+          node "$RUNNER_TEMP/noa-membership/home.mjs"
       - name: Back up and verify native tables on the same host before activating approved policy
         env: *membership_env
         run: python scripts/noa_membership_control.py activate

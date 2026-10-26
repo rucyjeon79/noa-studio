@@ -22,4 +22,11 @@ if(in_array($nsp_decision,['signup','login'],true)){header('Cache-Control: no-st
 // Defense in depth for callers that include the native update script under another URL.
 if(function_exists('add_event'))add_event('register_form_update_before',static function($id,$mode){global $member;if($mode!=='u'||empty($member['mb_id'])||!hash_equals((string)$member['mb_id'],(string)$id))nsp_reject_registration();},1,2);
 // The legacy login form remains available to existing accounts; remove its obsolete signup link.
-if(basename($nsp_script)==='login.php'&&$nsp_method==='GET')ob_start(static function($html){return preg_replace('~href=(["\'])[^"\']*/bbs/register[.]php\1~i','href="/noa-login.php"',$html);});
+if(basename($nsp_script)==='login.php'&&$nsp_method==='GET')ob_start(static function($html){return preg_replace('~<a\b[^>]*href=(["\'])[^"\']*/bbs/register[.]php(?:[?][^"\']*)?\1[^>]*>.*?</a>~is','',$html);});
+// A unique existing NOA email is an alias only; native password verification remains unchanged.
+if(basename($nsp_script)==='login_check.php'&&$nsp_method==='POST'&&isset($_POST['mb_id'])&&is_string($_POST['mb_id'])&&filter_var(trim($_POST['mb_id']),FILTER_VALIDATE_EMAIL)){
+ $nsp_email=sql_escape_string(trim($_POST['mb_id']));$nsp_result=sql_query("SELECT mb_id FROM {$g5['member_table']} WHERE mb_email = '{$nsp_email}' LIMIT 2",false);$nsp_ids=[];
+ if($nsp_result)while($nsp_row=sql_fetch_array($nsp_result))$nsp_ids[]=(string)$nsp_row['mb_id'];
+ if(count($nsp_ids)===1)$_POST['mb_id']=$nsp_ids[0];
+}
+

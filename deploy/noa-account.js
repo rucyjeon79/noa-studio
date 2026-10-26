@@ -3,7 +3,7 @@
  const bar=document.createElement('header');bar.id='noa-account-bar';bar.setAttribute('aria-label','로그인 · 포인트 · 구독');const content=document.createElement('nav');bar.append(content);
  const link=(text,href)=>{const a=document.createElement('a');a.textContent=text;a.href=href;return a;};
  let signature='';
- const login=()=>{signature='';delete bar.dataset.member;content.replaceChildren(link('로그인','/bbs/login.php?url='+encodeURIComponent(location.pathname+location.search)));};login();document.body.prepend(bar);
+ const login=()=>{signature='';delete bar.dataset.member;content.replaceChildren(link('로그인','/bbs/login.php?url='+encodeURIComponent(location.pathname+location.search)));};login();const slot=document.querySelector('.noa-topbar .noa-account');if(slot){bar.dataset.embedded='true';slot.replaceChildren(bar);slot.closest('.noa-topbar').classList.add('noa-account-topbar');}else document.body.prepend(bar);
  let pending=false;
  async function update(){if(pending)return;pending=true;const abort=new AbortController(),timeout=setTimeout(()=>abort.abort(),10000);try{
   const r=await fetch('/noa-bridge/membership.php',{credentials:'same-origin',cache:'no-store',signal:abort.signal}),d=await r.json();if(!r.ok||!d.ok)throw Error('account_unavailable');
