@@ -82,7 +82,7 @@ def main():
   control('asset',key=key)
   status,body,_=api('status',params='&key='+urllib.parse.quote(key));assert status==200;state=json.loads(body);assert state['ready']and not state['download']
   audio_url=state['audio'];download_url='/noa-app/jukebox/download.php?key='+urllib.parse.quote(key)
-  status,body,headers=request(client,audio_url,headers={'Range':'bytes=0-31','X-N80-Availability-Check':'1'});assert status==206 and body==audio_bytes[:32]
+  status,body,headers=request(client,audio_url,headers={'Range':'bytes=0-31','X-N80-Availability-Check':'1'});assert status==206 and body==audio_bytes[:32],('private_stream',status,len(body),sha(body),headers.get('Content-Type',''))
   status,_,_=request(client,download_url);assert status==403
   control('level',level=6);status,body,_=request(client,download_url);assert status==200 and sha(body)==audio_sha
   other,other_jar=login(1);control('level',owner=1,level=6)
