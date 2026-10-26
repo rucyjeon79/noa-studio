@@ -16,6 +16,8 @@ permissions: {contents: read}
 concurrency: {group: noa-inline-playlist-order, cancel-in-progress: false}
 jobs:
   candidate:
+    # The scoped AInoa workflow runs native storage and updated collection/browser gates.
+    if: "!contains(github.event.head_commit.message, '[ainoa-release]')"
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:

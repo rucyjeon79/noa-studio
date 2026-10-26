@@ -32,6 +32,8 @@ permissions: {contents: read}
 concurrency: {group: noa-initial-catalog-flash, cancel-in-progress: false}
 jobs:
   candidate:
+    # The scoped AInoa workflow runs native storage and updated collection/browser gates.
+    if: "!contains(github.event.head_commit.message, '[ainoa-release]')"
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

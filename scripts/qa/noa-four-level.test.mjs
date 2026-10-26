@@ -8,6 +8,12 @@ class Element {
  prepend(...nodes){this.children.unshift(...nodes);}
  replaceChildren(...nodes){this.children=nodes;}
  setAttribute(k,v){this.attrs[k]=v;}
+ querySelectorAll(selector){
+  if(selector==='.noa-inline-act[data-act-number]')return all(this,n=>n.className==='noa-inline-act'&&n.dataset.actNumber);
+  if(selector===':scope>.noa-browse-card,:scope>.noa-collection-tools>.noa-list-toggle')return [...this.children.filter(n=>n.className==='noa-browse-card'),...this.children.filter(n=>n.className==='noa-collection-tools').flatMap(n=>n.children.filter(c=>c.className.includes('noa-list-toggle')))];
+  return [];
+ }
+ querySelector(selector){if(selector===':scope>[data-browse-level="4"]')return this.children.find(n=>n.dataset.browseLevel==='4')||null;return this.querySelectorAll(selector)[0]||null;}
  click(){this.onclick?.();}
 }
 const all=(node,predicate)=>[...node.children.flatMap(c=>typeof c==='object'?[c,...all(c,predicate)]:[])].filter(predicate);
@@ -19,7 +25,7 @@ function fixture(kind='곡',query='',providedRows=null){
  const rows=providedRows||[{key:'ten',genre:'kpop-original',title:'Ten',ep:10},{key:'two',genre:'kpop-original',title:'Two',ep:2},{key:'eleven',genre:'kpop-original',title:'Eleven',ep:11},{key:'loose',genre:'kpop-original',title:'Loose'},{key:'foreign',genre:'jpop-original',title:'Foreign',ep:1},{key:'story',genre:'your-story',title:'Story'},{key:'cover',genre:'cover-reborn',title:'Cover'}];
  if(kind==='영상')rows.forEach(r=>{r.kind='video';r.video=r.key;});
  let model;model=sandbox.window.NoaBrowse.mount({host,rows,kind,onChange:()=>model.apply(rows)});model.apply(rows);
- const level=n=>all(host,x=>x.dataset.browseLevel===String(n))[0];
+ const level=n=>all(host,x=>x.dataset.browseLevel===String(n)&&!x.hidden)[0];
  const cards=n=>all(level(n),x=>x.className==='noa-browse-card');
  return{host,rows,model,level,cards};
 }
