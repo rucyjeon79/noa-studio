@@ -46,6 +46,11 @@ function noa_design_assets(){
     $html=str_ireplace('</main>',$widget.'</main>',$html);
     foreach(['css','js']as $kind){$file=dirname(__DIR__).'/noa-community.'.$kind;if(is_file($file)){$url='/noa-community.'.$kind.'?v='.hash_file('sha256',$file);$assets.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'" defer></script>';}}
    }
+   
+   if(!empty($GLOBALS['is_member'])&&($GLOBALS['is_admin']??'')==='super'&&is_file(dirname(__DIR__).'/noa-workspace.php')){
+    require_once dirname(__DIR__).'/noa-workspace.php';$help=null;foreach(noa_workspace_groups() as $group)foreach($group['routes'] as $route)if(parse_url($route[3],PHP_URL_PATH)===$path&&!str_contains($route[3],'#')&&!str_contains($route[3],'?'))$help=$route;
+    if($help&&$path!=='/noa-library.php'){$guide='<aside class="noa-workspace-guide"><a href="/noa-library.php">← 최고관리자 작업실</a><p>'.htmlspecialchars($help[2],ENT_QUOTES,'UTF-8').'</p></aside>';$html=preg_replace('~(<main\b[^>]*>)~i','$1'.$guide,$html,1);}
+   }
    return str_ireplace('</head>',$assets.'</head>',$html);
   });
   return;

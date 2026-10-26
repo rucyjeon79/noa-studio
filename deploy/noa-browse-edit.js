@@ -26,7 +26,7 @@ function mount({host,rows,kind,isOrdering,onSaved,onClose}){
   const state={node,button,form,status,selector,busy:false,dirty:false,requestId:null,signature:null};active=state;
   const cancel=control('cancel','취소','정보 수정 취소');cancel.onclick=close;form.append(cancel);
   try{const response=await fetch('/noa-inline-edit.php?'+new URLSearchParams(selector),{credentials:'same-origin',cache:'no-store'});let data=null;try{data=await response.json();}catch{}if(!response.ok||!data?.ok||!data.writeKey)throw Error('세부정보를 불러오지 못했습니다. 로그인 상태와 곡 연결을 확인해 주세요.');if(active!==state)return;state.data=data;form.replaceChildren();
-   const context=document.createElement('p');context.className='noa-edit-readonly';context.textContent=[window.NoaBrowse?.names[data.context.genre]||data.context.genre,data.context.ep?'EP.'+Number(data.context.ep):'',data.context.act?'ACT '+data.context.act:'',data.context.range||''].filter(Boolean).join(' · ');form.append(context);
+   const context=document.createElement('p');context.className='noa-edit-readonly';form.append(context);window.NoaBrowse.renderPath(context,{...data.context,key:data.writeKey,orderKey:byKey.get(selector.key)?.orderKey,title:data.fields.title},{base:kind==='영상'?'/noa-youtube.php':'/noa-music.php'});
    const inputs={};const aiFields=new Set(['title','lyrics','sunoPrompt','geminiPrompt','youtubeTitle','description','communityPost']);
    function field(key,label,tag='input'){
     const wrap=document.createElement('div'),heading=document.createElement('div'),caption=document.createElement('label');heading.className='noa-edit-field-heading';caption.textContent=label;const input=document.createElement(key==='vocal'?'select':tag);input.id='noa-edit-'+key;caption.htmlFor=input.id;heading.append(caption);

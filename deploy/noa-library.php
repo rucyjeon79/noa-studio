@@ -10,6 +10,11 @@ if (empty($is_member) || ($is_admin ?? '') !== 'super') {
     http_response_code(403);
     exit('관리자 로그인이 필요합니다.');
 }
+
+if(($_GET['view']??'')!=='documents'){
+ require_once __DIR__.'/noa-workspace.php';header('Cache-Control: private, no-store');
+ ?><!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>최고관리자 작업실 | NOA STUDIO</title><link rel="stylesheet" href="/noa-ui.css"><script src="/noa-brand.js" defer></script><script src="/noa-ui.js" defer></script></head><body class="noa-page"><main><p class="noa-eyebrow">NOA STUDIO / ADMIN</p><h1>최고관리자 작업실</h1><p class="noa-muted">할 일을 먼저 선택하세요. 곡 수정은 라이브러리, 음원 업로드는 JUKEBOX, 가사·뮤비 제작은 AI LAB에서 진행합니다.</p><form class="noa-workspace-search" action="/noa-catalog.php"><label for="workspace-query">곡 찾기</label><div><input id="workspace-query" name="q" type="search" placeholder="제목·장르·EP 번호"><button type="submit">곡 검색</button></div></form><?php noa_workspace_render();?></main></body></html><?php return;
+}
 header('Content-Type: text/html; charset=UTF-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
@@ -73,13 +78,13 @@ p{color:var(--noa-muted)}.next{display:inline-block;margin-top:22px;padding:10px
 <?php if($dataReview):?><section class="noa-section"><h2>원본 메타데이터 검토 · <?=count($dataReview)?>건</h2><p>원본과 사용자 수정 값은 그대로 보존했습니다. 영상 ID와 제목의 장르 라벨을 확인해 주세요.</p><?php foreach($dataReview as $review):?><p><a href="/noa-editor.php?key=<?=noa_escape(rawurlencode($review['key']))?>"><?=noa_escape($review['key'])?></a> · <?=noa_escape($review['issue'])?></p><?php endforeach;?></section><?php endif;?>
 <nav aria-label="콘텐츠 분류">
 <?php foreach (array_merge([''=>'전체'], array_combine($allowed, ['EP 싱글','ACT 플레이리스트','사연곡','메타','설정'])) as $value=>$label): ?>
-<a href="?<?=noa_escape(http_build_query(['kind'=>$value]))?>"><?=noa_escape($label)?></a>
+<a href="?<?=noa_escape(http_build_query(['view'=>'documents','kind'=>$value]))?>"><?=noa_escape($label)?></a>
 <?php endforeach; ?></nav>
 <?php if ($error !== null): ?><div class="error"><?=noa_escape($error)?></div>
 <?php elseif (!$items): ?><p>이 분류에는 등록된 문서가 없습니다.</p>
 <?php else: ?><div class="scroll"><table><thead><tr><th>문서 키</th><th>분류</th><th>버전</th><th>수정일</th></tr></thead><tbody>
 <?php foreach ($items as $item): ?><tr><td><a href="<?=noa_escape(($item['doc_key']==='ui:policy'?'/noa-theme-admin.php':(in_array($item['kind'],['single','playlist','story'],true)?'/noa-editor.php?key=':'/noa-bridge/index.php?key=').rawurlencode((string)$item['doc_key'])))?>"><?=noa_escape((string)$item['doc_key'])?></a></td><td><?=noa_escape((string)$item['kind'])?></td><td><?=noa_escape((string)$item['revision'])?></td><td><?=noa_escape((string)$item['updated_at'])?></td></tr><?php endforeach; ?>
 </tbody></table></div>
-<?php if ($next !== null): ?><a class="next" href="?<?=noa_escape(http_build_query(['kind'=>$kind,'after'=>$next]))?>">다음 50개 →</a><?php endif; ?>
+<?php if ($next !== null): ?><a class="next" href="?<?=noa_escape(http_build_query(['view'=>'documents','kind'=>$kind,'after'=>$next]))?>">다음 50개 →</a><?php endif; ?>
 <?php endif; ?>
 </main></body></html>

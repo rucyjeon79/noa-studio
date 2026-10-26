@@ -110,6 +110,7 @@ function noa_sitemap_board_allowed(array $board,int $level,bool $member,bool $su
 
 function noa_sitemap_visible_groups(string $root,string $role,array $boards=[],array $contents=[]):array{
     $groups=noa_sitemap_registry();
+    if($role==='admin'&&is_file(__DIR__.'/noa-workspace.php')){require_once __DIR__.'/noa-workspace.php';$groups['admin']=['title'=>'최고관리자 작업실','routes'=>[['libraryAdmin','최고관리자 작업실','콘텐츠·제작·운영 작업 시작','/noa-library.php','settings','admin']]];foreach(noa_workspace_groups() as $id=>$group){$groups['admin-'.$id]=['title'=>$group['title'],'routes'=>array_map(fn($r)=>array_merge($r,['admin']),$group['routes'])];}}
     foreach($boards as $board){
         $id=(string)($board['bo_table']??'');
         if(!preg_match('/^[A-Za-z0-9_]{1,20}$/D',$id))continue;

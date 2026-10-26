@@ -26,6 +26,7 @@ try{
  if($retry){if(!hash_equals($retry['request_hash'],$hash))throw new DomainException('idempotency_reuse');$db->commit();nup_snapshot($db,$retry['doc_key'],dirname(__DIR__).'/noa-ai-lab/packages/records');nie_reply(200,['ok'=>true,'revision'=>(int)$retry['revision'],'replayed'=>true]);}
  $resolved=nie_resolve($db,$selector);$key=$resolved['writeKey'];$kind=$resolved['kind'];
  $q=$db->prepare('SELECT revision FROM noa_documents WHERE doc_key=? FOR UPDATE');$q->execute([$key]);$actual=$q->fetchColumn();if(($actual===false?0:(int)$actual)!==$expected||$resolved['revision']!==$expected)throw new DomainException('revision_conflict');
+ if(!empty($resolved['payload']['_noaTrash']))throw new DomainException('restore_required');
  $payload=nup_patch($resolved['payload'],$kind,$patch);if(array_key_exists('members',$patch))nup_validate_members($db,$payload);
  if($payload['packageType']==='ep'&&($resolved['original']['status']??'')==='linked')$payload['sourceRef']=$resolved['original']['key'];
  if($payload['packageType']==='original'&&isset($patch['ep'])){

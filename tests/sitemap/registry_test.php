@@ -15,7 +15,8 @@ try{
  $guest=noa_sitemap_visible_groups($root,'guest');$member=noa_sitemap_visible_groups($root,'member');$admin=noa_sitemap_visible_groups($root,'admin');
  check(!isset($guest['admin'])&&!isset($member['admin']),'administrator routes must be hidden from guest/member');
  check(in_array('popularity',$ids($admin),true)&&!in_array('popularity',$ids($guest),true)&&!in_array('popularity',$ids($member),true),'actual popularity service is administrator-only');
- check(isset($admin['admin'])&&count($admin['admin']['routes'])===18,'administrator services included');
+ check(isset($admin['admin-content'],$admin['admin-creation'],$admin['admin-operation'],$admin['admin-advanced'])&&count($admin['admin']['routes'])===1,'administrator task groups and single workspace entry included');
+ check(!isset($guest['admin-content'])&&!isset($member['admin-content']),'task groups are administrator-only');
  check(in_array('workStatus',$ids($admin),true)&&!in_array('workStatus',$ids($member),true)&&!in_array('workStatus',$ids($guest),true),'work journal highest-admin-only');
  check(in_array('subscriptions',$ids($admin),true)&&!in_array('subscriptions',$ids($member),true)&&!in_array('subscriptions',$ids($guest),true),'subscription configuration highest-admin-only');
  check(!in_array('register',$ids($guest),true),'no duplicate signup button; social enrollment stays in the login screen');

@@ -6,6 +6,7 @@ on:
 permissions: {contents: read}
 jobs:
   verify-and-deploy:
+    if: ${{ !contains(github.event.head_commit.message, '[workspace-release]') }}
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 25

@@ -99,6 +99,7 @@ try {
     }
     if(in_array($kind,['single','story','playlist'],true)){
         $old=json_decode($current['payload'],true)?:[];$incoming=$data['payload'];
+        if(!empty($old['_noaTrash'])||array_key_exists('_noaTrash',$incoming)){ $pdo->rollBack();fail(409,'restore_required'); }
         if(nup_type($old,$kind)==='ep'&&!empty($old['packageSchema'])){
             foreach(['genreId','ep','sourceRef'] as $locked)if(array_key_exists($locked,$incoming)&&($incoming[$locked]??null)!==($old[$locked]??null)){ $pdo->rollBack();fail(400,'original_information_read_only'); }
             foreach(['originalInfo','originalTitle','originalLyrics','sourceTitle','sourceLyrics'] as $locked)if(array_key_exists($locked,$incoming['body']??[])&&$incoming['body'][$locked]!==($old['body'][$locked]??null)){ $pdo->rollBack();fail(400,'original_information_read_only'); }
