@@ -7,10 +7,11 @@ while(ob_get_level()>$nc_output_level)ob_end_clean();
 require_once __DIR__.'/community-core.php';
 header('Content-Type: application/json; charset=utf-8');header('Cache-Control: private, no-store, max-age=0');header('Vary: Cookie');header('X-Content-Type-Options: nosniff');
 function nc_reply(array $data,int $status=200):never{http_response_code($status);echo json_encode($data,JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR);exit;}
-if(empty($member['mb_id'])||(int)($member['mb_level']??1)<2)nc_reply(['ok'=>false,'error'=>'login_required'],401);
 $_SESSION['noa_community_csrf']??=bin2hex(random_bytes(32));
 try{
  $method=$_SERVER['REQUEST_METHOD']??'GET';
+ if($method==='GET'&&($_GET['action']??'')==='home')nc_reply(['ok'=>true]+nc_home());
+ if(empty($member['mb_id'])||(int)($member['mb_level']??1)<2)nc_reply(['ok'=>false,'error'=>'login_required'],401);
  if($method==='GET'){
   $action=(string)($_GET['action']??'list');$board=(string)($_GET['board']??'free');
   if($action==='list')$data=nc_list($board,max(0,(int)($_GET['before']??0)))+['csrf'=>$_SESSION['noa_community_csrf']];

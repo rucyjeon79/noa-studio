@@ -30,7 +30,7 @@ jobs:
           python scripts/qa/noa-qa-font.py
           npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-community" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-community.mjs "$RUNNER_TEMP/noa-community/check.mjs"
-      - name: Check owner passwords, admin replies, direct-route privacy and twelve browser layouts
+      - name: Check private access, twelve page layouts and six home-board layouts
         run: node "$RUNNER_TEMP/noa-community/check.mjs"
       - uses: actions/upload-artifact@v4
         if: always()

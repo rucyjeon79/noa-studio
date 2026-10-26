@@ -10,6 +10,14 @@ def get(path):
  with r:return r.status,r.headers,r.read().decode('utf-8')
 status,headers,body=get('/');assert status==200 and 'data-home-section="hero"' in body and 'data-home-section="notices"' in body
 checks.append({'path':'/','status':status,'homeAndNoticePresent':True})
+assert 'data-noa-community-home' in body
+status,headers,body=get('/noa-bridge/community.php?action=home');assert status==200
+home=json.loads(body);assert home['ok'] and home['member'] is False and home['csrf']==''
+boards=home['boards'];assert {b['board'] for b in boards}=={'free','gallery','qa','song_request'}
+for b in boards:
+ assert len(b['items'])<=5
+ for item in b['items']:assert set(item)=={'id','title'}
+checks.append({'path':'/noa-bridge/community.php?action=home','status':status,'boards':[{'board':b['board'],'title':b['title'],'titleCount':len(b['items'])}for b in boards],'titlesOnly':True,'noticeExcluded':True})
 for path in ['/noa-bridge/community.php?board=song_request','/noa-bridge/community.php?board=free']:
  status,headers,body=get(path)
  assert status==401

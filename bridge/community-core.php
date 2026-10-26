@@ -13,11 +13,24 @@ function nc_admin():bool{global $member,$is_admin;return !empty($member['mb_id']
 function nc_private_policy(array $b):bool{return ($b['bo_10']??'')===NC_REQUEST_MARKER&&(int)($b['bo_read_level']??0)===10&&(int)($b['bo_comment_level']??0)===10&&(int)($b['bo_use_secret']??0)===2&&empty($b['bo_use_search'])&&empty($b['bo_use_rss_view']);}
 function nc_board(string $id):array{
  global $g5,$member;
- if(!in_array($id,['free',NC_REQUEST_BOARD],true))throw new DomainException('board_not_available');
+ if($id==='notice'||!preg_match('/^[A-Za-z0-9_]{1,20}$/D',$id))throw new DomainException('board_not_available');
  $b=nc_one('SELECT b.*,g.gr_use_access FROM '.nc_table($g5['board_table']).' b LEFT JOIN '.nc_table($g5['group_table']).' g ON g.gr_id=b.gr_id WHERE b.bo_table='.nc_q($id));
  if(!$b||(!nc_admin()&&((int)($member['mb_level']??1)<(int)$b['bo_list_level']||!empty($b['gr_use_access'])||!empty($b['bo_use_cert']))))throw new DomainException('board_not_available');
  if($id===NC_REQUEST_BOARD&&!nc_private_policy($b))throw new RuntimeException('private_board_unavailable');
  return $b;
+}
+/** Home publishes titles only. Private request bodies still use the existing owner/password gate. */
+function nc_home():array{
+ global $g5,$member;$logged=!empty($member['mb_id'])&&(int)($member['mb_level']??1)>=2;$level=$logged?(int)$member['mb_level']:1;
+ $boards=nc_rows('SELECT b.*,g.gr_use_access FROM '.nc_table($g5['board_table']).' b INNER JOIN '.nc_table($g5['group_table'])." g ON g.gr_id=b.gr_id WHERE b.bo_table<>'notice' ORDER BY b.bo_order,b.bo_table");$out=[];
+ foreach($boards as $b){$id=(string)$b['bo_table'];if(!preg_match('/^[A-Za-z0-9_]{1,20}$/D',$id))continue;$private=$id===NC_REQUEST_BOARD;
+  if($private&&!nc_private_policy($b))continue;
+  // Only the explicitly title-public song request board has a public title projection at level 2.
+  if(!nc_admin()&&(!empty($b['gr_use_access'])||!empty($b['bo_use_cert'])||((int)$b['bo_list_level']>$level&&!($private&&(int)$b['bo_list_level']===2))))continue;
+  $rows=nc_rows('SELECT wr_id,wr_subject FROM '.nc_write_table($id)." WHERE wr_is_comment=0".($private?'':" AND FIND_IN_SET('secret',wr_option)=0").' ORDER BY wr_id DESC LIMIT 5');
+  $out[]=['board'=>$id,'title'=>nc_plain((string)$b['bo_subject']),'items'=>array_map(fn($r)=>['id'=>(int)$r['wr_id'],'title'=>nc_plain($r['wr_subject'])],$rows),'private'=>$private,'member'=>$logged,'admin'=>nc_admin(),'canWrite'=>false,'more'=>false,'next'=>null];
+ }
+ return ['boards'=>$out,'member'=>$logged,'csrf'=>$logged?($_SESSION['noa_community_csrf']??''):''];
 }
 function nc_text(string $value,int $max,bool $multiline=false):string{
  $value=trim($value);if($value===''||!mb_check_encoding($value,'UTF-8')||mb_strlen($value,'UTF-8')>$max||str_contains($value,"\0")||(!$multiline&&preg_match('/[\r\n]/',$value)))throw new DomainException('invalid_input');return $value;
