@@ -37,10 +37,17 @@ jobs:
           python3 -m pip install --user numpy==2.2.6 scipy==1.15.3 'paramiko>=3,<5'
           python scripts/qa/noa-qa-font.py
           if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
-            if ! timeout 120 sudo apt-get -o Acquire::Retries=1 -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 install -y -qq ffmpeg; then
-              timeout 90 sudo apt-get -o Dir::Etc::sourcelist=/etc/apt/sources.list.d/ubuntu.sources -o Dir::Etc::sourceparts=- -o APT::Get::List-Cleanup=0 -o Acquire::Retries=1 -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 update -qq
-              timeout 120 sudo apt-get -o Acquire::Retries=1 -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 install -y -qq ffmpeg
-            fi
+            # CI-only: refresh signed Ubuntu metadata over HTTPS before installing media tools.
+            # Restrict this operation to the existing Ubuntu sources and retain their Signed-By keys.
+            python - <<'PYTHON'
+          from pathlib import Path
+          import os
+          source=Path('/etc/apt/sources.list.d/ubuntu.sources').read_text()
+          source=source.replace('http://','https://').replace('azure.archive.ubuntu.com','archive.ubuntu.com')
+          Path(os.environ['RUNNER_TEMP'],'noa-ubuntu.sources').write_text(source)
+          PYTHON
+            timeout 120 sudo apt-get -o Dir::Etc::sourcelist="$RUNNER_TEMP/noa-ubuntu.sources" -o Dir::Etc::sourceparts=- -o Acquire::ForceIPv4=true -o Acquire::Retries=1 -o Acquire::https::Timeout=15 -o Dpkg::Lock::Timeout=15 update
+            timeout 180 sudo apt-get -o Dir::Etc::sourcelist="$RUNNER_TEMP/noa-ubuntu.sources" -o Dir::Etc::sourceparts=- -o Acquire::ForceIPv4=true -o Acquire::Retries=1 -o Acquire::https::Timeout=15 -o Dpkg::Lock::Timeout=15 install -y ffmpeg
           fi
           ffmpeg -version | head -1
           ffprobe -version | head -1
