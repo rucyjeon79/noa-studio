@@ -1,6 +1,7 @@
 <?php
 /** Isolated CI SQL. Provider callbacks are fixtures, never billable API calls. */
-declare(strict_types=1);
+declare(strict_types=1);define('_GNUBOARD_',true);
+if(!str_contains((string)getenv('NOA_MYSQL_DSN'),'dbname=noa_inline_edit_test;'))throw new RuntimeException('isolated_database_required');
 require_once __DIR__.'/../../bridge/storage.php';require_once __DIR__.'/../../bridge/ainoa-generation.php';
 $db=noa_bridge_pdo();$other=noa_bridge_pdo();$calls=0;$id='11111111-2222-4333-8444-555555555555';$hash=na_generation_fingerprint(['field'=>'youtubeTitle','fields'=>['title'=>'곡'],'expectedRevision'=>1]);
 function ng_check(bool $v,string $message):void{if(!$v)throw new RuntimeException($message);}

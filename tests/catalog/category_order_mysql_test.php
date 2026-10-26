@@ -1,5 +1,6 @@
 <?php
-declare(strict_types=1);
+declare(strict_types=1);define('_GNUBOARD_',true);
+if(!str_contains((string)getenv('NOA_MYSQL_DSN'),'dbname=noa_inline_edit_test;'))throw new RuntimeException('isolated_database_required');
 require __DIR__.'/../../bridge/storage.php';require __DIR__.'/../../bridge/package-record.php';require __DIR__.'/../../bridge/category-order-store.php';
 function ncot_check(bool $v,string $name):void{if(!$v)throw new RuntimeException($name);}
 $db=noa_bridge_pdo();$db->prepare('DELETE FROM noa_document_history WHERE doc_key=?')->execute([NCO_KEY]);$db->prepare('DELETE FROM noa_documents WHERE doc_key=?')->execute([NCO_KEY]);

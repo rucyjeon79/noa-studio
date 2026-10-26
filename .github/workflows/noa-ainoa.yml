@@ -47,12 +47,15 @@ jobs:
           cp deploy/noa-ainoa.php "$RUNNER_TEMP/noa-inline-edit-fixture/noa-ainoa.php"
           php scripts/qa/inline-edit-seed.php
           php tests/catalog/collections_seed.php
-          php tests/catalog/category_order_mysql_test.php
+          php tests/catalog/category_order_mysql_test.php | tee "$RUNNER_TEMP/category_order_mysql_test.php.log"
+          rg "CATEGORY_SQL_MYSQL_OK" "$RUNNER_TEMP/category_order_mysql_test.php.log"
           php -l deploy/noa-category-order.php
           php -l deploy/noa-category-order-admin.php
           php -l scripts/noa_category_order_migrate.php
-          php tests/catalog/ainoa_generation_mysql_test.php
-          php tests/catalog/ainoa_automation_mysql_test.php
+          php tests/catalog/ainoa_generation_mysql_test.php | tee "$RUNNER_TEMP/ainoa_generation_mysql_test.php.log"
+          rg "AINOA_GENERATION_SQL" "$RUNNER_TEMP/ainoa_generation_mysql_test.php.log"
+          php tests/catalog/ainoa_automation_mysql_test.php | tee "$RUNNER_TEMP/ainoa_automation_mysql_test.php.log"
+          rg "N80_AI_SQL" "$RUNNER_TEMP/ainoa_automation_mysql_test.php.log"
           php tests/catalog/ainoa_points_mysql_test.php
           php -S 127.0.0.1:8101 -t "$RUNNER_TEMP/noa-inline-edit-fixture" > "$RUNNER_TEMP/ainoa-native.log" 2>&1 &
           node scripts/qa/noa-ainoa-native.mjs
