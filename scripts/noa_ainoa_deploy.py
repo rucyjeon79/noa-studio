@@ -3,6 +3,8 @@ import base64,hashlib,json,os,stat,subprocess,sys,urllib.request
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
+from noa_release_freshness import require_current_candidate
+UNRELATED_PATH_PREFIXES=()
 FILES={'noa-app/engine/ai-automation.php':'deploy/noa-app/engine/ai-automation.php','noa-work-status.php':'deploy/noa-work-status.php','noa-bridge/lab-worker.php':'bridge/lab-worker.php','noa-bridge/ainoa-automation.php':'bridge/ainoa-automation.php','noa-ainoa-admin.js':'deploy/noa-ainoa-admin.js','noa-bridge/category-order-store.php':'bridge/category-order-store.php','noa-category-order.php':'deploy/noa-category-order.php','noa-category-order-admin.php':'deploy/noa-category-order-admin.php','noa-creator.css':'deploy/noa-creator.css','noa-bridge/lab-core.php':'bridge/lab-core.php','noa-bridge/index.php':'bridge/index.php','noa-bridge/ainoa-generation.php':'bridge/ainoa-generation.php','noa-youtube.php':'deploy/noa-youtube.php','noa-creator.php':'deploy/noa-creator.php','noa-editor.php':'deploy/noa-editor.php','noa-bridge/ainoa-points.php':'bridge/ainoa-points.php','noa-bridge/subscription-core.php':'bridge/subscription-core.php','noa-bridge/youtube-catalog.php':'bridge/youtube-catalog.php','noa-browse-order.js':'deploy/noa-browse-order.js','noa-bridge/lab-api.php':'bridge/lab-api.php','noa-ai-lab.php':'deploy/noa-ai-lab.php','noa-ai-lab.js':'deploy/noa-ai-lab.js','noa-assets/ainoa-symbol.png':'public/ainoa/ainoa-symbol.png','noa-launch.js':'deploy/noa-launch.js','noa-manifest.json':'deploy/noa-manifest.json','noa-sw.js':'deploy/noa-sw.js','noa-bridge/subscription-access.php':'bridge/subscription-access.php','extend/noa.access.php':'deploy/noa-access.extend.php','noa-bridge/ainoa-core.php':'bridge/ainoa-core.php','noa-ainoa.php':'deploy/noa-ainoa.php','noa-ainoa.css':'deploy/noa-ainoa.css','noa-ainoa.js':'deploy/noa-ainoa.js','noa-bridge/package-record.php':'bridge/package-record.php','noa-browse-edit.js':'deploy/noa-browse-edit.js','noa-browse.js':'deploy/noa-browse.js','extend/noa.design.php':'deploy/noa-design.extend.php'}
 # Install shared dependencies before callers; every activation keeps preimage guards.
 _priorities=['noa-bridge/ainoa-automation.php','noa-app/engine/ai-automation.php','noa-ainoa-admin.js','noa-bridge/category-order-store.php','noa-bridge/package-record.php','noa-bridge/ainoa-generation.php','noa-bridge/ainoa-core.php']
@@ -11,13 +13,15 @@ NEW={'noa-app/engine/ai-automation.php','noa-bridge/ainoa-automation.php','noa-a
 PROTECTED=['common.php','data/dbconfig.php','bbs/login.php','bbs/login_check.php','bbs/board.php','noa-music.php','noa-world.php','noa-hero.js','noa-app/engine/n80.php','noa-app/jukebox/stream.php','noa-app/jukebox/download.php']
 BACKUP=Path(os.environ.get('RUNNER_TEMP','/tmp'))/'noa-ainoa-before.json'
 def sha(v):return hashlib.sha256(v).hexdigest()
+def check_current_candidate():
+ headers={'User-Agent':'NOA-scoped-release','Accept':'application/vnd.github+json'}
+ if os.getenv('GH_TOKEN'):headers['Authorization']='Bearer '+os.environ['GH_TOKEN']
+ with urllib.request.urlopen(urllib.request.Request('https://api.github.com/repos/rucyjeon79/noa-studio/git/ref/heads/main',headers=headers),timeout=20)as response:head=json.load(response)['object']['sha']
+ require_current_candidate(head,os.environ['GITHUB_SHA'],UNRELATED_PATH_PREFIXES)
 def main():
  out=Path('ainoa-proof');out.mkdir(exist_ok=True);desired={p:Path(v).read_bytes()for p,v in FILES.items()};rollback='rollback'in sys.argv
  if not rollback:
-  headers={'User-Agent':'NOA-scoped-release','Accept':'application/vnd.github+json'}
-  if os.getenv('GH_TOKEN'):headers['Authorization']='Bearer '+os.environ['GH_TOKEN']
-  with urllib.request.urlopen(urllib.request.Request('https://api.github.com/repos/rucyjeon79/noa-studio/git/ref/heads/main',headers=headers),timeout=20)as response:head=json.load(response)['object']['sha']
-  if head!=os.environ['GITHUB_SHA']:raise RuntimeError('obsolete_candidate_no_operating_files_changed')
+  check_current_candidate()
  known={p:{sha(subprocess.check_output(['git','show',c+':'+v]))for c in subprocess.check_output(['git','log','--format=%H','--',v],text=True).splitlines()}for p,v in FILES.items()};t=connect()
  try:
   with paramiko.SFTPClient.from_transport(t,window_size=8388608)as s:
@@ -52,6 +56,7 @@ def main():
    for p,data in desired.items():
     if before[p]==data:continue
     folder,name=p.rsplit('/',1)if '/'in p else ('',p);temp=(folder+'/'if folder else '')+'.'+name+'.'+os.environ['GITHUB_SHA'][:12]+'.tmp';put(temp,data);temps[p]=temp
+   check_current_candidate()
    if any(read(p)!=v for p,v in before.items()):raise RuntimeError('concurrent_operating_change')
    for p in FILES:
     if p in temps:s.posix_rename(ROOT+'/'+temps[p],ROOT+'/'+p)
