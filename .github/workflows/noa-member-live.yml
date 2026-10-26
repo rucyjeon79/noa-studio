@@ -2,7 +2,7 @@ name: NOA Actual Member Login and Creator Verification
 on:
   push:
     branches: [main]
-    paths: ['scripts/noa_member_live_check.py','scripts/noa_member_qa_control.php','scripts/qa/noa-member-auth.mjs','.github/workflows/noa-member-live.yml']
+    paths: ['deploy/noa-creator.css','deploy/noa-creator.php','scripts/noa_member_live_check.py','scripts/noa_member_qa_control.php','scripts/qa/noa-member-auth.mjs','.github/workflows/noa-member-live.yml']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-member-authenticated-qa, cancel-in-progress: false}

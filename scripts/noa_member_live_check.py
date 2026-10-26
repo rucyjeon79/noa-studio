@@ -45,6 +45,12 @@ def main():
     if sub_status==401:break
    print('Waiting for gated NOA access release',attempt+1,flush=True);time.sleep(20)
   else:raise RuntimeError('operating_access_release_not_ready')
+  expected_css=sha(Path('deploy/noa-creator.css').read_bytes())
+  for attempt in range(40):
+   status,body,_=request(urllib.request.build_opener(),'/noa-creator.css?qa='+expected_css[:12])
+   if status==200 and sha(body)==expected_css:break
+   print('Waiting for verified creator layout deployment',attempt+1,flush=True);time.sleep(15)
+  else:raise RuntimeError('operating_creator_layout_not_deployed')
   s.mkdir(private,0o700);write(private+'/audio.mp3',audio_bytes);write(ROOT+'/'+helper,helper_code)
   def login(owner):
    jar=http.cookiejar.CookieJar();client=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))

@@ -2,7 +2,7 @@ name: NOA AInoa and Song Editor Production
 on:
   push:
     branches: [main]
-    paths: ['deploy/noa-youtube.php','tests/youtube/coming_catalog_test.php','deploy/noa-creator.php','deploy/noa-editor.php','bridge/youtube-catalog.php','deploy/noa-browse-order.js','bridge/lab-core.php','tests/lab/core_test.php','bridge/lab-api.php','deploy/noa-ai-lab.php','deploy/noa-ai-lab.js','tests/catalog/ainoa_points_mysql_test.php','tests/catalog/collections_seed.php','scripts/qa/noa-collections.mjs','scripts/qa/noa-chat.mjs','deploy/noa-launch.js','deploy/noa-manifest.json','deploy/noa-sw.js','public/ainoa/**','tests/pwa/**','bridge/package-record.php','bridge/subscription-access.php','deploy/noa-access.extend.php','deploy/noa-design.extend.php','deploy/noa-browse.js','deploy/noa-browse-edit.js','tests/catalog/package_record_test.php','bridge/ainoa-*.php','deploy/noa-ainoa.*','scripts/noa_ainoa_deploy.py','scripts/qa/noa-design-gate.mjs','scripts/qa/noa-p0-generation.mjs','scripts/qa/noa-ainoa*','scripts/qa/noa-qa-font.py','tests/catalog/ainoa_test.php','.github/workflows/noa-ainoa.yml']
+    paths: ['deploy/noa-youtube.php','tests/youtube/coming_catalog_test.php','deploy/noa-creator.php','deploy/noa-creator.css','deploy/noa-editor.php','bridge/youtube-catalog.php','deploy/noa-browse-order.js','bridge/lab-core.php','tests/lab/core_test.php','bridge/lab-api.php','deploy/noa-ai-lab.php','deploy/noa-ai-lab.js','tests/catalog/ainoa_points_mysql_test.php','tests/catalog/collections_seed.php','scripts/qa/noa-collections.mjs','scripts/qa/noa-chat.mjs','deploy/noa-launch.js','deploy/noa-manifest.json','deploy/noa-sw.js','public/ainoa/**','tests/pwa/**','bridge/package-record.php','bridge/subscription-access.php','deploy/noa-access.extend.php','deploy/noa-design.extend.php','deploy/noa-browse.js','deploy/noa-browse-edit.js','tests/catalog/package_record_test.php','bridge/ainoa-*.php','deploy/noa-ainoa.*','scripts/noa_ainoa_deploy.py','scripts/qa/noa-design-gate.mjs','scripts/qa/noa-p0-generation.mjs','scripts/qa/noa-ainoa*','scripts/qa/noa-qa-font.py','tests/catalog/ainoa_test.php','.github/workflows/noa-ainoa.yml']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: 'noa-ainoa-${{ github.sha }}', cancel-in-progress: false}
@@ -77,7 +77,7 @@ jobs:
       - name: Prepare approved-design comparison
         run: |
           python scripts/qa/noa-qa-font.py
-          npm install --prefix "$RUNNER_TEMP/noa-design" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          npm install --prefix "$RUNNER_TEMP/noa-design" --no-save --ignore-scripts --package-lock=false playwright@1.56.1 pixelmatch@7.1.0 pngjs@7.0.0
           cp scripts/qa/noa-design-gate.mjs "$RUNNER_TEMP/noa-design/check.mjs"
       - name: Require mobile geometry, touch targets, two rows and screenshot comparison
         run: node "$RUNNER_TEMP/noa-design/check.mjs"

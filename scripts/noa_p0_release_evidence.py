@@ -47,7 +47,7 @@ def record():
         with paramiko.SFTPClient.from_transport(t)as s:
             s.get_channel().settimeout(30)
             files=ev.source_readback(s,'.',commit,source)
-            http=ev.http_evidence([{'url':ev.ORIGIN+p,'expectedStatus':status}for p,status in [('/',200),('/noa-ainoa.php',200),('/noa-work-status.php',403)]])
+            http=ev.http_evidence([{'url':ev.ORIGIN+p,'expectedStatus':status}for p,status in [('/',200),('/noa-ai-lab.php',403),('/noa-work-status.php',403)]])
             proof=ev.build_event('deploy.verified','admin','integration-finish-20261024:p0-additions','Work_P0_20261026',commit,verified,ver,files,http)
             with s.open(ev.KEY_PATH,'rb')as f:key=f.read(129).strip()
             receipt=ev.publish(proof,key)

@@ -85,7 +85,7 @@ jobs:
           php tests/popularity/policy_mysql_test.php
           python tests/popularity/real_stream_mysql_test.py
       - name: Retain category and isolated native authorization regression checks
-        env: {NOA_CATEGORY_PHASE: candidate}
+        env: {NOA_CATEGORY_PHASE: candidate, NOA_CATEGORY_SCOPE: native}
         run: |
           python scripts/qa/category-storage-fixture.py
           php -S 127.0.0.1:8099 -t "$RUNNER_TEMP/noa-category-fixture" > "$RUNNER_TEMP/category-php.log" 2>&1 &

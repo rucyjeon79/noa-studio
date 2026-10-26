@@ -1,6 +1,7 @@
 // Approved player and browse geometry, using real PHP templates with synthetic catalogue data.
 // Compare deployed assets to the candidate on the identical isolated content.
-import {chromium} from 'playwright';import {spawn} from 'node:child_process';import assert from 'node:assert/strict';import {mkdirSync,writeFileSync} from 'node:fs';
+import {chromium} from 'playwright';import pixelmatch from 'pixelmatch';import {PNG} from 'pngjs';import {spawn} from 'node:child_process';import assert from 'node:assert/strict';import {mkdirSync,writeFileSync} from 'node:fs';
+const black=Buffer.alloc(16*16*4,255),changed=Buffer.from(black);for(let y=4;y<12;y++)for(let x=4;x<12;x++)for(let c=0;c<3;c++)changed[(y*16+x)*4+c]=0;assert(pixelmatch(black,changed,null,16,16,{threshold:.1,includeAA:false})>0,'visual comparator must reject real changes');
 const out='design-proof';mkdirSync(out,{recursive:true});const server=spawn('php',['-S','127.0.0.1:8093','tests/p0/router.php'],{stdio:'ignore'});let browser;
 try{
  for(let i=0;i<50;i++){try{if((await fetch('http://127.0.0.1:8093/')).ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
@@ -19,21 +20,30 @@ try{
    const file=`${out}/${theme}-${width}-${phase}.png`;shots[phase]=await dock.screenshot({path:file});await page.screenshot({path:`${out}/music-${theme}-${width}-${phase}.png`});
    assert.deepEqual(errors,[]);report.push({width,theme,phase,...metrics,screenshot:file});await context.close();
   }
-  // Chromium antialiasing may vary a few channel levels at identical subpixel edges.
-  // Permit at most 0.1% low-delta pixels; any delta >12 or geometry change still fails.
-  const compare=await browser.newPage();const pixels=await compare.evaluate(async ([a,b])=>{
-   const read=async data=>{const image=await createImageBitmap(await (await fetch('data:image/png;base64,'+data)).blob());const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;const c=canvas.getContext('2d');c.drawImage(image,0,0);return {width:image.width,height:image.height,pixels:c.getImageData(0,0,image.width,image.height).data};};
-   const x=await read(a),y=await read(b);if(x.width!==y.width||x.height!==y.height)return {dimensionsMatch:false};let changed=0,largeDeltas=0,maxDelta=0;
-   for(let i=0;i<x.pixels.length;i+=4){const delta=Math.max(...[0,1,2,3].map(n=>Math.abs(x.pixels[i+n]-y.pixels[i+n])));if(delta)changed++;if(delta>12)largeDeltas++;maxDelta=Math.max(maxDelta,delta);}
-   return {dimensionsMatch:true,changedPixels:changed,pixelCount:x.width*x.height,largeDeltas,maxDelta};
-  },[shots['operating-assets'].toString('base64'),shots.candidate.toString('base64')]);await compare.close();
+  // Standard perceptual comparison excludes antialiasing only; no changed UI pixels allowed.
+  const a=PNG.sync.read(shots['operating-assets']),b=PNG.sync.read(shots.candidate);
+  assert.equal(a.width,b.width);assert.equal(a.height,b.height);
+  const diff=new PNG({width:a.width,height:a.height}),changed=pixelmatch(a.data,b.data,diff.data,a.width,a.height,{threshold:0.1,includeAA:false});
+  writeFileSync(`${out}/diff-${theme}-${width}.png`,PNG.sync.write(diff));
+  const pixels={dimensionsMatch:true,changedPixels:changed,pixelCount:a.width*a.height,comparison:'pixelmatch 7.1 threshold 0.1, antialias exclusion, zero changed pixels'};
   writeFileSync(`${out}/comparison-${theme}-${width}.json`,JSON.stringify(pixels,null,2));
-  assert(pixels.dimensionsMatch&&pixels.largeDeltas===0&&pixels.changedPixels<=pixels.pixelCount*.001,`approved player screenshot changed: ${width} ${theme}: ${JSON.stringify(pixels)}`);
+  assert.equal(changed,0,`approved player screenshot changed: ${width} ${theme}`);
   report.push({width,theme,screenshotComparison:pixels});
  }
  for(const width of [360,390,430,1280])for(const theme of ['noa-studio','noa-ivory']){
   const c=await browser.newContext({viewport:{width,height:844},reducedMotion:'reduce',serviceWorkers:'block'}),p=await c.newPage();await p.goto('http://127.0.0.1:8093/noa-work-status.php');await p.waitForFunction(()=>window.NoaUI?.getState()?.theme);await p.evaluate(theme=>window.NoaUI.apply({...window.NoaUI.getState(),theme}),theme);
   assert.equal(await p.locator('article[data-task-id]').count(),7);assert(await p.getByText('ChatGPT Work 내부 실행 상태를 제어하거나 표시하는 화면은 아닙니다.',{exact:false}).isVisible());await p.getByText('2026.10.26 추가 지시 원문',{exact:true}).click();assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.screenshot({path:`${out}/n80-${theme}-${width}.png`});report.push({page:'N80 task journal',width,theme,tasks:7,originalDirectiveVisible:true,noOverflow:true});await c.close();
+ }
+ for(const width of [360,390,430])for(const theme of ['noa-studio','noa-ivory']){
+  const c=await browser.newContext({viewport:{width,height:844},serviceWorkers:'block'}),p=await c.newPage();
+  await c.route('**/noa-bridge/creator.php*',r=>r.fulfill({json:{channel:null,songs:[{key:'fixture',title:'모바일 수정 버튼 확인',genre:'your-story',visibility:'private',fields:{title:'모바일 수정 버튼 확인'},state:{ready:false,status:'draft'}}]}}));
+  await p.goto('http://127.0.0.1:8093/noa-creator.php');await p.waitForFunction(()=>document.querySelector('.creator-row button'));
+  await p.waitForFunction(()=>window.NoaUI?.getState()?.theme);await p.evaluate(theme=>window.NoaUI.apply({...window.NoaUI.getState(),theme}),theme);
+  await p.addStyleTag({url:'http://127.0.0.1:8093/noa-ainoa.css'});await p.addScriptTag({url:'http://127.0.0.1:8093/noa-ainoa.js'});
+  const edit=p.getByRole('button',{name:'수정',exact:true});await edit.scrollIntoViewIfNeeded();
+  assert(await edit.evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return el===hit||el.contains(hit);}),'creator action obscured by floating search');
+  await edit.click();assert(await p.locator('#creator-editor').isVisible());assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.screenshot({path:`${out}/creator-${theme}-${width}.png`});
+  report.push({page:'creator',width,theme,editClickable:true,noOverflow:true});await c.close();
  }
  writeFileSync(out+'/report.json',JSON.stringify({cases:report,approvedPlayerScreenshotComparison:true,content:'isolated fixture; real PHP template and deployed/candidate assets'},null,2));console.log('NOA_DESIGN_GATE_OK',report.length);
 }finally{await browser?.close();server.kill();}
