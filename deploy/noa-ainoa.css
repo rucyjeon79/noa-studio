@@ -9,7 +9,7 @@
 #noa-ainoa .ainoa-panel::after{content:"";position:absolute;right:calc(var(--ainoa-size)/2 - 8px);bottom:-8px;width:14px;height:14px;transform:rotate(45deg);background:var(--noa-surface,var(--noa-bg));border-right:1px solid var(--noa-line);border-bottom:1px solid var(--noa-line);pointer-events:none}
 #noa-ainoa .ainoa-panel-body{position:relative;max-height:min(56dvh,460px,calc(100dvh - var(--ainoa-bottom) - var(--ainoa-size) - var(--ainoa-gap) - 20px));overflow:auto;overscroll-behavior:contain;border-radius:inherit;padding:16px;box-sizing:border-box}
 #noa-ainoa [hidden]{display:none!important}
-#noa-ainoa header{position:sticky;top:0;z-index:1;display:flex;justify-content:space-between;align-items:center;gap:8px;margin:-16px -16px 12px;padding:8px 16px;background:var(--noa-surface,var(--noa-bg))}
+#noa-ainoa header{position:sticky;top:-16px;z-index:1;display:flex;justify-content:space-between;align-items:center;gap:8px;margin:-16px -16px 12px;padding:8px 16px;background:var(--noa-surface,var(--noa-bg))}
 #noa-ainoa header strong{color:var(--noa-accent,var(--noa-text))}
 #noa-ainoa header .ainoa-close{border:0;background:transparent}
 #noa-ainoa form{display:flex;gap:8px;margin:8px 0}
