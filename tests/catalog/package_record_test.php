@@ -15,3 +15,5 @@ check(nup_policy()['priority']===0,'principle zero precedence');echo "UNIFIED_PA
 $e=nup_patch($ep,'single',['sunoPrompt'=>'genre-specific Suno production prompt']);check(nup_fields($e)['sunoPrompt']==='genre-specific Suno production prompt','Suno prompt round trip in same record');
 
 check(nup_patch($ep,'single',['vocal'=>'남녀듀엣'])['body']['thumbCast']==='duet','vocal selection and character projection share one record');
+
+$legacy=$ep;$legacy['body']['sunoStyle']='existing production style';$updated=nup_patch($legacy,'single',['sunoPrompt'=>'updated production style']);check(nup_fields($updated)['sunoPrompt']===$updated['body']['sunoStyle'],'legacy producer reads the same edited Suno prompt');

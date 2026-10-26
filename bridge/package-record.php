@@ -50,6 +50,7 @@ function nup_patch(array $d,string $kind,array $patch):array{
   if($key==='title'){$d['title']=$value;if($playlist)$d['body']['displayTitle']=$value;}
   // Compatibility aliases are in this same record, not independently editable stores.
   if($key==='description'){$d['body']['songDescription']=$value;$d['body']['descriptionBlock']=$value;}
+  if($key==='sunoPrompt'&&array_key_exists('sunoStyle',$d['body']))$d['body']['sunoStyle']=$value;
   if($key==='sunoUrl'&&isset($d['body']['sunoShareUrl']))$d['body']['sunoShareUrl']=$value;
  }
  return $d;
