@@ -24,7 +24,9 @@ jobs:
           php tests/pwa/fixture.php
           python scripts/qa/noa-qa-font.py
           npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-install" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
-          "$RUNNER_TEMP/noa-install/node_modules/.bin/playwright" install --with-deps webkit
+          # Preserve Ubuntu signing keys; avoid the slow HTTP Azure package mirror in CI.
+          sudo sed -i -e 's|http://|https://|g' -e 's|azure.archive.ubuntu.com|archive.ubuntu.com|g' /etc/apt/sources.list.d/ubuntu.sources
+          timeout 300 "$RUNNER_TEMP/noa-install/node_modules/.bin/playwright" install --with-deps webkit
           cp scripts/qa/noa-install.mjs "$RUNNER_TEMP/noa-install/check.mjs"
       - name: Test browser entrances, three member roles, WebKit and Chrome installation UI
         run: node "$RUNNER_TEMP/noa-install/check.mjs"
