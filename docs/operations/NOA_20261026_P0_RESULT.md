@@ -1,5 +1,7 @@
 # NOA STUDIO — 2026-10-26 P0 운영 검증 기록
 
+> 후속 갱신: 2026-10-26 홈·로그인 보정, 회원 저장소 및 N80 MUSIC 오류 복구는 [최신 운영 결과](NOA_20261026_MEMBERSHIP_SOCIAL_RESULT.md)를 참조한다. 아래 원래 시점의 기록은 보존한다.
+
 상위 작업 `integration-finish-20261024`와 기존 12개 영역을 유지했다. 추가 7개 항목은 `NOA-20261026-P0-01`부터 `07`까지 별도 ID로 누적했다. 이 기록은 부분 배포·검증 증거이며 전체 정상화 완료 선언이 아니다. 지시 원문은 [추가 지시 원문](requests/NOA_20261026_P0_ADDITIONS.md)에 보존했다.
 
 ## 배포와 검증 증거
@@ -81,6 +83,8 @@ AI·정보: `bridge/ainoa-generation.php`, `ainoa-core.php`, `lab-core.php`, `la
 감사·증거·검증: `bridge/p0-audit.php`, `bridge/p0-inventory.php`, `scripts/noa_p0_*`, `scripts/noa_ainoa_deploy.py`, `scripts/qa/noa-design-gate.mjs`, `scripts/qa/noa-p0-generation.mjs`, 회원·카테고리 회귀 검사와 관련 GitHub Actions. 각 커밋의 정확한 변경 목록을 기준으로 하며 서버 전체 덮어쓰기를 하지 않았다.
 
 ## 남은 항목
+
+2026-10-26 후속 갱신: 회원·포인트의 동일 서버 백업/복원 검증과 InnoDB 전환, 실제 적립·VIP 차감 검증은 [회원·소셜 후속 결과](NOA_20261026_MEMBERSHIP_SOCIAL_RESULT.md)에서 완료했다. 아래는 당시 상태이며 후속 완료 항목은 새 결과를 기준으로 한다.
 
 - AI 운영 키·활성화·비용 한도·대화 단가 설정 후 실제 생성과 과금 검증. 회원·포인트 저장소의 안전한 백업·엔진 전환 검증도 기존 미완료 항목으로 유지한다. 이전 자동 승인 검토에서 암호화 회원/포인트 백업과 복호화 키의 Drive 동시 전송이 민감정보·자격정보 전송 사유로 거절됐으며 재시도하지 않았다.
 - 과거 원본 음원의 별도 백업 확인·복원, J-POP ACT 1 보컬 차이 검토, 원본이 없는 필드 자료 확보.

@@ -1,0 +1,326 @@
+{
+  "ok": true,
+  "cases": [
+    {
+      "name": "login_only_zero",
+      "ok": true
+    },
+    {
+      "name": "first_comment_130",
+      "ok": true
+    },
+    {
+      "name": "duplicate_reward_once",
+      "ok": true
+    },
+    {
+      "name": "next_write_50",
+      "ok": true
+    },
+    {
+      "name": "1000_promotion",
+      "ok": true
+    },
+    {
+      "name": "vip_3000_exact_30_days",
+      "ok": true
+    },
+    {
+      "name": "duplicate_purchase_once",
+      "ok": true
+    },
+    {
+      "name": "opt_in_renewal_once",
+      "ok": true
+    },
+    {
+      "name": "insufficient_renewal_no_debit_demotion",
+      "ok": true
+    },
+    {
+      "name": "live_guest_noa-studio_360",
+      "ok": true
+    },
+    {
+      "name": "live_guest_noa-ivory_360",
+      "ok": true
+    },
+    {
+      "name": "live_guest_noa-studio_390",
+      "ok": true
+    },
+    {
+      "name": "live_guest_noa-ivory_390",
+      "ok": true
+    },
+    {
+      "name": "live_guest_noa-studio_430",
+      "ok": true
+    },
+    {
+      "name": "live_guest_noa-ivory_430",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-studio_360",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-ivory_360",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-studio_390",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-ivory_390",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-studio_430",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-ivory_430",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-studio_844",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-ivory_844",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-studio_1280",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-ivory_1280",
+      "ok": true
+    }
+  ],
+  "sourceCommit": "12c023fb207c7829609a9d4a564fb59fe417772a",
+  "socialSettings": {
+    "enabled": true,
+    "services": "google,kakao",
+    "googleClientPresent": false,
+    "googleSecretPresent": false,
+    "kakaoClientPresent": false,
+    "kakaoSecretPresent": false,
+    "nativeSessionVerifier": true
+  },
+  "externalOAuthCompleted": false,
+  "realAIGenerationCompleted": false,
+  "cashPaymentConfigured": false,
+  "allAreasComplete": false,
+  "runId": 40301370787,
+  "runUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40301370787",
+  "artifact": {
+    "id": 12641066508,
+    "sha256": "0f55d446821bc80a23d0f3e59693f1d10013383bb20416b07763adb47ac0999a"
+  },
+  "deployment": {
+    "commit": "12c023fb207c7829609a9d4a564fb59fe417772a",
+    "changed": [
+      "noa-ui.js"
+    ],
+    "sha256": {
+      "noa-bridge/subscription-core.php": "66ae2dbe879d3c692312446a1c58fd1ac988c1a900124c456367fb9e0fe9ca28",
+      "noa-bridge/membership-core.php": "f5f972f793a5b3dcba38195664ff52aa9bdf35fd0e8705bb365981062827c131",
+      "noa-bridge/social-policy.php": "adad2d4dbe09db30e0801f2feae4a4b0a02c5b7740cdf8bef4de0d0091a91fc5",
+      "noa-bridge/membership.php": "f80bfd00c65804f37cdaac2f5903da90deb9434891d9c5d1922113f4d41cbfff",
+      "noa-account.css": "182724109d80148584e384607062554fe5e7436bd33f2e042bced5916ace2c61",
+      "noa-account.js": "567cfeaf350217544e8e2dd016b46d1e5b875772237dd0626273e93241c46ffe",
+      "noa-membership.js": "309ae4562408699379674e8bd813afe4dd75964b3e99bf73f738684e97b0152c",
+      "noa-membership.php": "131662991a268440b2a982fb6f1cf7f9abaed3f2d095f8052625fc0812b6e163",
+      "noa-login.php": "c270a3bd22c77bdb1aa8055ef59dcf04eb9a24d6127e49809483d3ec77a7d006",
+      "noa-sitemap.php": "d648cd88f2cc0c4443e5d900ab4d8c0fec9b67fd1670a46e89a0b0f7b0e0febc",
+      "extend/zz.noa-social.php": "da285f45bf026e9691303c94c3a411f08537bfd45f08e7ebf8247211778073b0",
+      "extend/noa.00-membership.php": "c4c67516e70ad5cd80bf13fc9cb585d33fa946f42b2275c8bff1d8faf0e7c62d",
+      "extend/noa.design.php": "d7e1d5790b74a9240ef65d0f1222b0eb10aaa2edc4ca964736a5aacce6a59323",
+      "noa-bridge/notices.php": "08372ee974711defda234faff1997272c6aa2ef6696e9cb5ab582d9bee2e3c4b",
+      "noa-ui.css": "75989bfe1e3f306a3f905567c9891b1cd150883d33a7a5e347d332ee63a9fcb1",
+      "noa-ui.js": "8740fd01fce6b6fd1b348e83f0a258ca3f5dca4d23b679f354f7ca63f5cd7dbe",
+      "noa-app/home.php": "2262da121129c43b03c6863bee4c33fa90c98c34e17a0ee7969e407852e80ff0"
+    },
+    "protectedUnchanged": 11,
+    "databaseWrites": 0,
+    "memberRowsChanged": 0,
+    "pointDebits": 0,
+    "pricesSeeded": false
+  },
+  "nativeVerification": {
+    "passed": [
+      "login_only_zero",
+      "first_comment_130",
+      "duplicate_reward_once",
+      "next_write_50",
+      "1000_promotion",
+      "vip_3000_exact_30_days",
+      "duplicate_purchase_once",
+      "opt_in_renewal_once",
+      "insufficient_renewal_no_debit_demotion"
+    ],
+    "temporaryAccountRemoved": true,
+    "publicPostsCreated": 0,
+    "externalPayments": 0,
+    "realMemberPointsChanged": 0
+  },
+  "storage": {
+    "checkedAt": "2026-10-26T08:39:17+00:00",
+    "tables": {
+      "member_table": {
+        "name": "g5_member",
+        "engine": "InnoDB",
+        "rows": 1
+      },
+      "point_table": {
+        "name": "g5_point",
+        "engine": "InnoDB",
+        "rows": 6
+      },
+      "config_table": {
+        "name": "g5_config",
+        "engine": "MyISAM",
+        "rows": 1
+      }
+    },
+    "nativePointsEnabled": true,
+    "nativeLoginPoints": 0
+  },
+  "maintenance": {
+    "membersChecked": 0,
+    "results": []
+  },
+  "homeLiveCases": [
+    {
+      "phase": "live",
+      "width": 360,
+      "height": 844,
+      "theme": "noa-studio",
+      "headerIntegrated": true,
+      "portraitFullMedia": true,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 360,
+      "height": 844,
+      "theme": "noa-ivory",
+      "headerIntegrated": true,
+      "portraitFullMedia": true,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 390,
+      "height": 844,
+      "theme": "noa-studio",
+      "headerIntegrated": true,
+      "portraitFullMedia": true,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 390,
+      "height": 844,
+      "theme": "noa-ivory",
+      "headerIntegrated": true,
+      "portraitFullMedia": true,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 430,
+      "height": 844,
+      "theme": "noa-studio",
+      "headerIntegrated": true,
+      "portraitFullMedia": true,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 430,
+      "height": 844,
+      "theme": "noa-ivory",
+      "headerIntegrated": true,
+      "portraitFullMedia": true,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 844,
+      "height": 390,
+      "theme": "noa-studio",
+      "headerIntegrated": true,
+      "portraitFullMedia": false,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 844,
+      "height": 390,
+      "theme": "noa-ivory",
+      "headerIntegrated": true,
+      "portraitFullMedia": false,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 1280,
+      "height": 900,
+      "theme": "noa-studio",
+      "headerIntegrated": true,
+      "portraitFullMedia": false,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 1280,
+      "height": 900,
+      "theme": "noa-ivory",
+      "headerIntegrated": true,
+      "portraitFullMedia": false,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    }
+  ],
+  "homeFivePostFixtureVerified": true,
+  "heroVerificationRun": 40300610977,
+  "heroVerifiedLayouts": 18,
+  "n80": {
+    "runId": 40302312997,
+    "eventId": "n80-completion-a950e8454a392502ca8b6b7fb145eace2a403ab148df20f12e2a0e28798832ed",
+    "revision": 20,
+    "allAreasComplete": false
+  },
+  "musicRepairEvidence": "NOA_20261026_MUSIC_REPAIR_EVIDENCE.json",
+  "regressionVerification": {
+    "runId": 40302508354,
+    "commit": "883e9e0281ae2165059e8674cd7be38cb011dc3c",
+    "engines": "success",
+    "broadProductionDeploy": "skipped",
+    "productSourceCommit": "12c023fb207c7829609a9d4a564fb59fe417772a"
+  },
+  "commonDisplayVerification": {
+    "runId": 40302508353,
+    "commit": "883e9e0281ae2165059e8674cd7be38cb011dc3c",
+    "phase": "candidate",
+    "cases": 72,
+    "errors": [],
+    "privateViews": "isolated source fixtures",
+    "productionDeploy": "skipped"
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "runId": 40301370931,
+  "sourceCommit": "12c023fb207c7829609a9d4a564fb59fe417772a",
+  "runUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40301370931",
+  "artifactId": 12641165552,
+  "artifactSha256": "1dbe261c5fa3aa0be5a992e87e6840b47bc4835e8e552c2d7d8583710aebbf24",
+  "verifiedRuntimeFiles": 37,
+  "productionDatabaseWrites": 0,
+  "automaticDispatch": false,
+  "observed": 10,
+  "acknowledged": 10,
+  "receipts": [
+    {
+      "jobId": 83,
+      "eventId": "n80-jukebox-a05ee5de15f93c7088c480014cfd0e53703184a506606c498c7d26713e211be3",
+      "generation": 4,
+      "verifiedAt": "2026-10-26T09:42:50+00:00",
+      "readbackVerified": true,
+      "replayVerified": true,
+      "durableStateSha256": "bfdd76ec462d63b177a3fa99f5809786ae8c64256f04ed944cc7e130e7df2d91"
+    },
+    {
+      "jobId": 44,
+      "eventId": "n80-jukebox-af7adac02e587f515c15fa948ea907e16e601d87b077b74822ce042cf5022e0e",
+      "generation": 2,
+      "verifiedAt": "2026-10-24T13:29:47+00:00",
+      "readbackVerified": true,
+      "replayVerified": true,
+      "durableStateSha256": "41fc80bfed9227607fec748c1b6fd9033865eecb118e8c5d8068f1ad8f605b80"
+    },
+    {
+      "jobId": 43,
+      "eventId": "n80-jukebox-3d799970c944fcf4d157507689f24395c0b8b2482126d2dfb95fcff482158894",
+      "generation": 1,
+      "verifiedAt": "2026-10-24T13:34:42+00:00",
+      "readbackVerified": true,
+      "replayVerified": true,
+      "durableStateSha256": "1ebacb9f70106772d6934e7c0536b1be6b0ca4174a34cf84e82e45a78404ab19"
+    },
+    {
+      "jobId": 42,
+      "eventId": "n80-jukebox-c1989668ba088fbe7e0d0bc20a42b0b38b96ca29434d2ab6b484e84084968ff0",
+      "generation": 1,
+      "verifiedAt": "2026-10-24T13:34:48+00:00",
+      "readbackVerified": true,
+      "replayVerified": true,
+      "durableStateSha256": "6fd4d957c0fe79a4a82b9e651962b2e56d96b4ea6d50975f807a20b8cb70e021"
+    },
+    {
+      "jobId": 41,
+      "eventId": "n80-jukebox-65cba881bf348e8b8ef044374efd4377e4bd2e8f193ed7e36a2f8f4f0ec37d44",
+      "generation": 1,
+      "verifiedAt": "2026-10-24T13:34:56+00:00",
+      "readbackVerified": true,
+      "replayVerified": true,
+      "durableStateSha256": "9eb8b0d4078e5cf32042d6ec64068f4958ab5328f70bef1412e9ee50f24e4937"
+    },
+    {
+      "jobId": 40,
+      "eventId": "n80-jukebox-145e3783d4052557dd4fd93d0208742a959f28bd6b48469aeeb92c01389f360a",
+      "generation": 1,
+      "verifiedAt": "2026-10-24T13:35:03+00:00",
+      "readbackVerified": true,
+      "replayVerified": true,
+      "durableStateSha256": "304597c444c77e46489d330610ea84c0a81f285741bb156cc74a45301ba71a48"
+    },
+    {
+      "jobId": 39,
+      "eventId": "n80-jukebox-482b97d7f49b9c3bdb2cc6db34a02ac5fd0d1c4634126b3096aa20598b0a1bf5",
+      "generation": 1,
+      "verifiedAt": "2026-10-24T13:35:10+00:00",
+      "readbackVerified": true,
+      "replayVerified": true,
+      "durableStateSha256": "80df903dabd067357db9dce08cb9bbebe3d7bf8a9bb0e9be60d25844d59fdda4"
+    },
+    {
+      "jobId": 38,
+      "eventId": "n80-jukebox-8b297c6cb0687692f3e0ce558865587f104b2de179b304e7085a87af99950a09",
+      "generation": 1,
+      "verifiedAt": "2026-10-24T13:35:17+00:00",
+      "readbackVerified": true,
+      "replayVerified": true,
+      "durableStateSha256": "13d5b5287c0d58fbb36a3477fb6c5a306143138448fb560f48448b625603630c"
+    },
+    {
+      "jobId": 37,
+      "eventId": "n80-jukebox-a6172cbb758fa25600668ac0c824cd348e6615ef2fd6281dc9ffd766c1b37ffd",
+      "generation": 1,
+      "verifiedAt": "2026-10-24T13:35:23+00:00",
+      "readbackVerified": true,
+      "replayVerified": true,
+      "durableStateSha256": "3591f4f7ad82c2ffe9eb7d23ab7815cb9d67c4ae499bc148e723b9e4c264ad98"
+    },
+    {
+      "jobId": 36,
+      "eventId": "n80-jukebox-5d952de87d743690bd45d296700842547b18dfc1ceaaac87ef172434362c8358",
+      "generation": 1,
+      "verifiedAt": "2026-10-24T13:35:30+00:00",
+      "readbackVerified": true,
+      "replayVerified": true,
+      "durableStateSha256": "5ce2e8d4af2e7bd40b47b89035feb4747468b4ce29e072752e29ade50f251042"
+    }
+  ],
+  "allAreasComplete": false
+}
