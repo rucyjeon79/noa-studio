@@ -38,7 +38,7 @@ jobs:
         if: always()
         with: {name: 'noa-gnuboard-candidate-${{ github.run_id }}', path: gnuboard-proof/, retention-days: 2}
   deploy:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && !contains(github.event.head_commit.message, '[ainoa-release]')
     needs: candidate
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     environment: production

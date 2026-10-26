@@ -1,10 +1,10 @@
-"""NOA-only additive subscription release. No prices, member levels or balances are seeded."""
+"""Scoped AInoa and launch release. Existing music, members and core remain untouched."""
 import base64,hashlib,json,os,stat,subprocess,sys,urllib.request
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
-FILES={'noa-bridge/subscription-access.php':'bridge/subscription-access.php','extend/noa.access.php':'deploy/noa-access.extend.php','noa-bridge/ainoa-core.php':'bridge/ainoa-core.php','noa-ainoa.php':'deploy/noa-ainoa.php','noa-ainoa.css':'deploy/noa-ainoa.css','noa-ainoa.js':'deploy/noa-ainoa.js','noa-bridge/package-record.php':'bridge/package-record.php','noa-browse-edit.js':'deploy/noa-browse-edit.js','noa-browse.js':'deploy/noa-browse.js','extend/noa.design.php':'deploy/noa-design.extend.php'}
-NEW={'noa-bridge/ainoa-core.php','noa-ainoa.php','noa-ainoa.css','noa-ainoa.js'}
+FILES={'noa-assets/ainoa-symbol.png':'public/ainoa/ainoa-symbol.png','noa-launch.js':'deploy/noa-launch.js','noa-manifest.json':'deploy/noa-manifest.json','noa-sw.js':'deploy/noa-sw.js','noa-bridge/subscription-access.php':'bridge/subscription-access.php','extend/noa.access.php':'deploy/noa-access.extend.php','noa-bridge/ainoa-core.php':'bridge/ainoa-core.php','noa-ainoa.php':'deploy/noa-ainoa.php','noa-ainoa.css':'deploy/noa-ainoa.css','noa-ainoa.js':'deploy/noa-ainoa.js','noa-bridge/package-record.php':'bridge/package-record.php','noa-browse-edit.js':'deploy/noa-browse-edit.js','noa-browse.js':'deploy/noa-browse.js','extend/noa.design.php':'deploy/noa-design.extend.php'}
+NEW={'noa-assets/ainoa-symbol.png','noa-launch.js','noa-bridge/ainoa-core.php','noa-ainoa.php','noa-ainoa.css','noa-ainoa.js'}
 PROTECTED=['common.php','data/dbconfig.php','bbs/login.php','bbs/login_check.php','bbs/board.php','noa-music.php','noa-youtube.php','noa-world.php','noa-hero.js','noa-app/engine/n80.php','noa-app/jukebox/stream.php','noa-app/jukebox/download.php']
 BACKUP=Path(os.environ.get('RUNNER_TEMP','/tmp'))/'noa-ainoa-before.json'
 def sha(v):return hashlib.sha256(v).hexdigest()
@@ -57,7 +57,7 @@ def main():
    receipt={'commit':os.environ['GITHUB_SHA'],'changed':list(temps),'sha256':{p:sha(desired[p])for p in FILES},'protectedUnchanged':len(PROTECTED),'databaseWrites':0,'memberRowsChanged':0,'pointDebits':0,'pricesSeeded':False};(out/'deployment.json').write_text(json.dumps(receipt,indent=2));print('NOA_AINOA_SCOPED_DEPLOYED',json.dumps(receipt))
  finally:t.close()
  for p in FILES:
-  if p.endswith(('.js','.css')):
+  if p.endswith(('.js','.css','.png','.json')):
    with urllib.request.urlopen(urllib.request.Request('https://noastudio.ai.kr/'+p+'?audit='+os.environ['GITHUB_SHA'][:12],headers={'Cache-Control':'no-cache'}),timeout=30)as r:
     if sha(r.read())!=sha(desired[p]):raise RuntimeError('public_asset_hash_mismatch:'+p)
 if __name__=='__main__':main()

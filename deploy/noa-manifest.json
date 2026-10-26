@@ -2,7 +2,7 @@
   "id": "/noa-music.php",
   "name": "NOA STUDIO",
   "short_name": "NOA STUDIO",
-  "start_url": "/noa-music.php",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#090a0e",
