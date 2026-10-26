@@ -622,12 +622,12 @@
     }
   ],
   "latestWorkUnit": {
-    "id": "NOA-20261027-CATEGORIES-ADMIN-WORKSPACE",
+    "id": "NOA-20261027-SONG-INFO-CLASSIFICATION",
     "status": "deployed_and_verified",
-    "runtimeCommit": "afa0951041518c1074bcdafab411482f4959f017",
-    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40419127337",
+    "runtimeCommit": "285b50925e2be74440fa43c4c727209b09404f72",
+    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40422318567",
     "result": "docs/operations/NOA_20261027_WORKSPACE_RESULT.md",
-    "evidence": "docs/operations/workspace-20261027/evidence.json",
+    "evidence": "docs/operations/workspace-20261027/song-info-followup.json",
     "allOriginalAreasComplete": false
   },
   "relatedCheckFailures": [
@@ -660,22 +660,22 @@
     }
   ],
   "activeWork": {
-    "id": "NOA-20261027-CATEGORIES-ADMIN-WORKSPACE",
+    "id": "NOA-20261027-SONG-INFO-CLASSIFICATION",
     "status": "deployed_and_verified",
-    "runtimeCommit": "afa0951041518c1074bcdafab411482f4959f017",
-    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40419127337",
+    "runtimeCommit": "285b50925e2be74440fa43c4c727209b09404f72",
+    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40422318567",
     "result": "docs/operations/NOA_20261027_WORKSPACE_RESULT.md",
-    "evidence": "docs/operations/workspace-20261027/evidence.json",
+    "evidence": "docs/operations/workspace-20261027/song-info-followup.json",
     "allOriginalAreasComplete": false,
-    "directive": "미분류 빈 항목 숨김·모두 펼침, 곡정보와 앱 전체 4단 분류 통일, 검색곡 관리자 수정·삭제, 최고관리자 기능 재분류 미반영 마무리",
-    "completedAt": "2026-10-27T08:26:17+09:00",
-    "currentStage": "정식 배포 및 운영 검증 성공. 27개 파일 해시 일치, 24개 보호 파일 불변.",
+    "directive": "곡정보상단에 카테고리4단 안붙어있는데?",
+    "completedAt": "2026-10-27T08:53:55+09:00",
+    "currentStage": "곡정보 실제 표시 누락 수정. 분리 환경 실제 PHP에서 6개 화면 조합 검증, 운영 5개 파일 반영·30개 해시 대조·24개 보호 파일 불변.",
     "runtimeChanged": true,
     "productionDatabaseWrites": 0,
     "existingTwelveAreasPreserved": true,
+    "correctionOfPriorCompletion": "초기 검사는 실제 음원 페이지의 숨겨진 표시 영역과 직접 링크 로딩 순서를 확인하지 못했다. 해당 누락과 내 채널 분류 누락을 보완했다.",
     "n80Journal": {
-      "changedByThisWork": false,
-      "note": "이 완료는 요청한 네 항목에 한정한다. 기존 12개 영역과 운영 N80 저널의 미완료 항목을 전체 완료로 바꾸지 않는다."
+      "changedByThisWork": false
     }
   },
   "workUnitHistory": [
@@ -1014,6 +1014,15 @@
       "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40419127337",
       "result": "docs/operations/NOA_20261027_WORKSPACE_RESULT.md",
       "evidence": "docs/operations/workspace-20261027/evidence.json",
+      "allOriginalAreasComplete": false
+    },
+    {
+      "id": "NOA-20261027-SONG-INFO-CLASSIFICATION",
+      "status": "deployed_and_verified",
+      "runtimeCommit": "285b50925e2be74440fa43c4c727209b09404f72",
+      "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40422318567",
+      "result": "docs/operations/NOA_20261027_WORKSPACE_RESULT.md",
+      "evidence": "docs/operations/workspace-20261027/song-info-followup.json",
       "allOriginalAreasComplete": false
     }
   ],
