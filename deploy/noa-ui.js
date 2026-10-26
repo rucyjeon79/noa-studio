@@ -206,7 +206,7 @@ window.NoaGlass={refresh};refresh();
  window.addEventListener('noa-theme',()=>{for(const card of host.querySelectorAll('.song'))schedule(card);});
 })();
 /* Responsive action flow and a reachable close control for expanded document panels. */
-(()=>{'use strict';if(document.currentScript?.hasAttribute('data-noa-theme-only'))return;
+(()=>{'use strict';if(document.currentScript?.hasAttribute('data-noa-theme-only')||document.getElementById('noa-disclosure-close'))return;
  const observed=new WeakSet();const player=el=>el.closest('.noa-transport,.controls,#noa-jukebox,.noa-jukebox,.noa-player,[data-noa-player]');
  const fit=el=>{if(player(el)||location.pathname==='/noa-music.php')return;el.toggleAttribute('data-noa-wide',el.getBoundingClientRect().width>=140);};
  const ro=window.ResizeObserver?new ResizeObserver(entries=>entries.forEach(e=>fit(e.target))):null;

@@ -1,0 +1,42 @@
+name: N80 verified MUSIC retry recovery
+on:
+  push:
+    branches: [main]
+    paths: ['scripts/n80_music_retry*','tests/engine/music_retry_repair_test.php','.github/workflows/n80-music-retry.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - name: Verify exact retry, archive, compare-and-swap and stale worker exclusion
+        run: |
+          php -l scripts/n80_music_retry_control.php
+          php tests/engine/music_retry_repair_test.php
+          python -m py_compile scripts/n80_music_retry.py
+          python -m pip install 'paramiko>=3,<5'
+      - name: Reverify availability and recover only reviewed failed MUSIC job 83
+        env: &retry_env
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/n80_music_retry.py
+      - name: Verify actual acknowledgement and identical replay of all ten observations
+        env: *retry_env
+        run: python scripts/n80_live_observer.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: n80-music-retry-${{ github.run_id }}
+          path: |
+            music-retry-proof/
+            ${{ runner.temp }}/n80-live-observer-result.json
+          retention-days: 14

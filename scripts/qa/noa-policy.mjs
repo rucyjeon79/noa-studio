@@ -43,7 +43,7 @@ try{
    return route.continue();
   });
   const page=await context.newPage();activePage=page;page.on('pageerror',e=>report.errors.push(String(e)));
-  for(const pathname of ['/bbs/login.php','/noa-settings.php',...definitions.map(([name])=>'/noa-app/'+name+'/'),'/noa-policy-dock-fixture']){
+  for(const pathname of ['/bbs/login.php?legacy=1','/noa-settings.php',...definitions.map(([name])=>'/noa-app/'+name+'/'),'/noa-policy-dock-fixture']){
    await page.goto(base+pathname,{waitUntil:'networkidle'});
    await page.waitForFunction(theme=>document.documentElement.dataset.noaTheme===theme,theme);
    const measured=await page.evaluate(()=>{
@@ -57,7 +57,7 @@ try{
      metrics:[...document.querySelectorAll('section .cards>.card,section .cards>.metric')].map(style)};
    });
    assert(!measured.overflow,`${theme} ${w} ${pathname}: horizontal overflow`);
-   if(pathname==='/bbs/login.php'){
+   if(pathname==='/bbs/login.php?legacy=1'){
     assert(measured.login);assert.equal(measured.login.inner.border,'0px');assert.equal(measured.login.inner.shadow,'none');
     assert(measured.login.find.h>=44&&measured.login.auto.h>=44,'Login touch targets below 44px');
     for(const r of measured.smallLinks)assert(r.h>=44,'Sidebar touch target below 44px');

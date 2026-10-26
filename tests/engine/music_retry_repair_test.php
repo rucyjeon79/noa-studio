@@ -1,0 +1,10 @@
+<?php
+declare(strict_types=1);require __DIR__.'/../../scripts/n80_music_retry_core.php';require __DIR__.'/../../deploy/noa-app/engine/lease-inbox.php';
+$dir=sys_get_temp_dir().'/noa-retry-'.bin2hex(random_bytes(6));mkdir($dir,0700);$id='fixture-ready-83';$path=$dir.'/'.hash('sha256',$id.'|music').'.json';$state=['eventId'=>$id,'consumer'=>'music','status'=>'dead_letter','attempts'=>3,'generation'=>3,'leaseUntil'=>null,'lastError'=>null];$raw=json_encode($state);file_put_contents($path,$raw);chmod($path,0600);$sha=hash('sha256',$raw);$verified=['ok'=>true,'event'=>['id'=>$id],'proof'=>['effect'=>'music_catalog_availability_verified','mediaIntegrityVerified'=>true,'catalogReferenceVerified'=>true,'publicDetailVerified'=>true,'mutation'=>false,'businessDispatch'=>false]];
+function retry_check($ok,$why){if(!$ok)throw new RuntimeException($why);}
+try{
+ foreach([['missing_proof',[],$sha],['wrong_cas',$verified,str_repeat('0',64)]]as [$name,$proof,$hash]){try{n80_music_repair_retry($dir,$id,$hash,$proof,time());throw new LogicException('accepted_'.$name);}catch(RuntimeException $e){retry_check(file_get_contents($path)===$raw,'rejection_preserves_state');}}
+ $r=n80_music_repair_retry($dir,$id,$sha,$verified,time());retry_check($r['ok']&&!$r['businessAck'],'no_synthetic_ack');retry_check(file_get_contents($dir.'/.pre-repair-'.$sha)===$raw,'exact_prior_state_archived');$next=json_decode(file_get_contents($path),true);retry_check($next['generation']===3&&$next['attempts']===0&&$next['status']==='pending','bounded_retry_fence_preserved');$claim=n80_lease_apply_fenced($next,'claim',time());retry_check($claim['state']['generation']===4,'next_claim_advances_generation');retry_check(!n80_lease_apply_fenced($claim['state'],'ack',time(),3)['ok'],'stale_worker_rejected');
+ try{n80_music_repair_retry($dir,$id,hash_file('sha256',$path),$verified,time());throw new LogicException('repeated_reset');}catch(RuntimeException $e){}
+ echo "MUSIC_EXACT_RETRY_ARCHIVE_CAS_NO_ACK_FENCING_OK\n";
+}finally{foreach(scandir($dir)as $f)if(!in_array($f,['.','..'],true))unlink($dir.'/'.$f);rmdir($dir);}
