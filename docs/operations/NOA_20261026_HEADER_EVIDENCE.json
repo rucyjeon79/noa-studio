@@ -1,0 +1,448 @@
+{
+  "ok": true,
+  "cases": [
+    {
+      "name": "login_only_zero",
+      "ok": true
+    },
+    {
+      "name": "first_comment_130",
+      "ok": true
+    },
+    {
+      "name": "duplicate_reward_once",
+      "ok": true
+    },
+    {
+      "name": "next_write_50",
+      "ok": true
+    },
+    {
+      "name": "1000_promotion",
+      "ok": true
+    },
+    {
+      "name": "vip_3000_exact_30_days",
+      "ok": true
+    },
+    {
+      "name": "duplicate_purchase_once",
+      "ok": true
+    },
+    {
+      "name": "opt_in_renewal_once",
+      "ok": true
+    },
+    {
+      "name": "insufficient_renewal_no_debit_demotion",
+      "ok": true
+    },
+    {
+      "name": "live_guest_noa-studio_360",
+      "ok": true
+    },
+    {
+      "name": "live_guest_noa-ivory_360",
+      "ok": true
+    },
+    {
+      "name": "live_guest_noa-studio_390",
+      "ok": true
+    },
+    {
+      "name": "live_guest_noa-ivory_390",
+      "ok": true
+    },
+    {
+      "name": "live_guest_noa-studio_430",
+      "ok": true
+    },
+    {
+      "name": "live_guest_noa-ivory_430",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-studio_360",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-ivory_360",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-studio_390",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-ivory_390",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-studio_430",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-ivory_430",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-studio_844",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-ivory_844",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-studio_1280",
+      "ok": true
+    },
+    {
+      "name": "live_home_noa-ivory_1280",
+      "ok": true
+    }
+  ],
+  "sourceCommit": "50df78cecbc86619d3416699038ae56a83a6e567",
+  "socialSettings": {
+    "enabled": true,
+    "services": "google,kakao",
+    "googleClientPresent": false,
+    "googleSecretPresent": false,
+    "kakaoClientPresent": false,
+    "kakaoSecretPresent": false,
+    "nativeSessionVerifier": true
+  },
+  "externalOAuthCompleted": false,
+  "realAIGenerationCompleted": false,
+  "cashPaymentConfigured": false,
+  "allAreasComplete": false,
+  "releaseType": "shared_header_and_portrait_transparency",
+  "header": {
+    "left": [
+      "PAPA symbol",
+      "home",
+      "sitemap"
+    ],
+    "right": [
+      "login_or_points",
+      "subscription",
+      "MY"
+    ],
+    "minimumTouchHeight": 44,
+    "guestSitemapLoginGatePreserved": true,
+    "nativeLegacyHeaderVerified": true
+  },
+  "hero": {
+    "portraitTransparencyPercent": 90,
+    "portraitOpacityPercent": 10,
+    "backdropBlur": false,
+    "landscapeUnchanged": true
+  },
+  "membershipRun": 40306523299,
+  "n80": {
+    "ok": true,
+    "commit": "50df78cecbc86619d3416699038ae56a83a6e567",
+    "runId": 40306523299,
+    "eventId": "n80-completion-bd8701b2f7fbfea5960d10b5f93f46423c15bd762919ae9cb1725da7339eceba",
+    "revision": 22,
+    "originalAreasPreserved": true,
+    "allAreasComplete": false
+  },
+  "currentJournalRevision": 23,
+  "deployment": {
+    "commit": "50df78cecbc86619d3416699038ae56a83a6e567",
+    "changed": [
+      "noa-account.css",
+      "noa-account.js",
+      "noa-app/home.php"
+    ],
+    "sha256": {
+      "noa-bridge/subscription-core.php": "66ae2dbe879d3c692312446a1c58fd1ac988c1a900124c456367fb9e0fe9ca28",
+      "noa-bridge/membership-core.php": "f5f972f793a5b3dcba38195664ff52aa9bdf35fd0e8705bb365981062827c131",
+      "noa-bridge/social-policy.php": "adad2d4dbe09db30e0801f2feae4a4b0a02c5b7740cdf8bef4de0d0091a91fc5",
+      "noa-bridge/membership.php": "f80bfd00c65804f37cdaac2f5903da90deb9434891d9c5d1922113f4d41cbfff",
+      "noa-account.css": "fe12c91058ceb2092b8a8b0d51793ed019fce14aa26cd18b798404439b733c4b",
+      "noa-account.js": "36e820fbf06ddd38bdd2acc515e16c677fcc39af91f133d77706db606e81d867",
+      "noa-membership.js": "309ae4562408699379674e8bd813afe4dd75964b3e99bf73f738684e97b0152c",
+      "noa-membership.php": "131662991a268440b2a982fb6f1cf7f9abaed3f2d095f8052625fc0812b6e163",
+      "noa-login.php": "c270a3bd22c77bdb1aa8055ef59dcf04eb9a24d6127e49809483d3ec77a7d006",
+      "noa-sitemap.php": "d694727c31b07588443bbe6f296195dba0f6a0883291f480faa1a0a21ca6be4a",
+      "extend/zz.noa-social.php": "da285f45bf026e9691303c94c3a411f08537bfd45f08e7ebf8247211778073b0",
+      "extend/noa.00-membership.php": "c4c67516e70ad5cd80bf13fc9cb585d33fa946f42b2275c8bff1d8faf0e7c62d",
+      "extend/noa.design.php": "d7e1d5790b74a9240ef65d0f1222b0eb10aaa2edc4ca964736a5aacce6a59323",
+      "noa-bridge/notices.php": "08372ee974711defda234faff1997272c6aa2ef6696e9cb5ab582d9bee2e3c4b",
+      "noa-ui.css": "75989bfe1e3f306a3f905567c9891b1cd150883d33a7a5e347d332ee63a9fcb1",
+      "noa-ui.js": "8740fd01fce6b6fd1b348e83f0a258ca3f5dca4d23b679f354f7ca63f5cd7dbe",
+      "noa-app/home.php": "35f83729d54d1c0ecb1b3b2de44de023146fd7586f65df0dd974e7711e48e0cf"
+    },
+    "protectedUnchanged": 11,
+    "databaseWrites": 0,
+    "memberRowsChanged": 0,
+    "pointDebits": 0,
+    "pricesSeeded": false
+  },
+  "nativeVerification": {
+    "passed": [
+      "login_only_zero",
+      "first_comment_130",
+      "duplicate_reward_once",
+      "next_write_50",
+      "1000_promotion",
+      "vip_3000_exact_30_days",
+      "duplicate_purchase_once",
+      "opt_in_renewal_once",
+      "insufficient_renewal_no_debit_demotion"
+    ],
+    "temporaryAccountRemoved": true,
+    "publicPostsCreated": 0,
+    "externalPayments": 0,
+    "realMemberPointsChanged": 0
+  },
+  "homeLiveCases": [
+    {
+      "phase": "live",
+      "width": 360,
+      "height": 844,
+      "theme": "noa-studio",
+      "headerIntegrated": true,
+      "headerNavigationVerified": true,
+      "memberHeaderFixture": false,
+      "portraitTransparency": 90,
+      "portraitFullMedia": true,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 360,
+      "height": 844,
+      "theme": "noa-ivory",
+      "headerIntegrated": true,
+      "headerNavigationVerified": true,
+      "memberHeaderFixture": false,
+      "portraitTransparency": 90,
+      "portraitFullMedia": true,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 390,
+      "height": 844,
+      "theme": "noa-studio",
+      "headerIntegrated": true,
+      "headerNavigationVerified": true,
+      "memberHeaderFixture": false,
+      "portraitTransparency": 90,
+      "portraitFullMedia": true,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 390,
+      "height": 844,
+      "theme": "noa-ivory",
+      "headerIntegrated": true,
+      "headerNavigationVerified": true,
+      "memberHeaderFixture": false,
+      "portraitTransparency": 90,
+      "portraitFullMedia": true,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 430,
+      "height": 844,
+      "theme": "noa-studio",
+      "headerIntegrated": true,
+      "headerNavigationVerified": true,
+      "memberHeaderFixture": false,
+      "portraitTransparency": 90,
+      "portraitFullMedia": true,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 430,
+      "height": 844,
+      "theme": "noa-ivory",
+      "headerIntegrated": true,
+      "headerNavigationVerified": true,
+      "memberHeaderFixture": false,
+      "portraitTransparency": 90,
+      "portraitFullMedia": true,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 844,
+      "height": 390,
+      "theme": "noa-studio",
+      "headerIntegrated": true,
+      "headerNavigationVerified": true,
+      "memberHeaderFixture": false,
+      "portraitTransparency": null,
+      "portraitFullMedia": false,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 844,
+      "height": 390,
+      "theme": "noa-ivory",
+      "headerIntegrated": true,
+      "headerNavigationVerified": true,
+      "memberHeaderFixture": false,
+      "portraitTransparency": null,
+      "portraitFullMedia": false,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 1280,
+      "height": 900,
+      "theme": "noa-studio",
+      "headerIntegrated": true,
+      "headerNavigationVerified": true,
+      "memberHeaderFixture": false,
+      "portraitTransparency": null,
+      "portraitFullMedia": false,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    },
+    {
+      "phase": "live",
+      "width": 1280,
+      "height": 900,
+      "theme": "noa-ivory",
+      "headerIntegrated": true,
+      "headerNavigationVerified": true,
+      "memberHeaderFixture": false,
+      "portraitTransparency": null,
+      "portraitFullMedia": false,
+      "noticeCount": 0,
+      "fixtureDisclosureVerified": false
+    }
+  ],
+  "homeFiveNoticeFixtureVerified": true,
+  "memberHeaderFixture": {
+    "widths": [
+      360,
+      390,
+      430,
+      844,
+      1280
+    ],
+    "themes": [
+      "noa-studio",
+      "noa-ivory"
+    ],
+    "highestAdminBalance": 600,
+    "longAccountWidth": 320,
+    "actualOAuth": false
+  },
+  "artifacts": [
+    {
+      "id": 12642783316,
+      "name": "noa-membership-live-40306523299",
+      "digest": "sha256:e93c20e74ed1772b84afd9c4c047b4e0690aae3aed2a7a5a4e20f7e9c370ea06"
+    },
+    {
+      "id": 12642687679,
+      "name": "noa-membership-candidate-40306523299",
+      "digest": "sha256:434a80fd9f4f5bf327fdae8b988c77bffc5a8d06613ff70d84cdc5b419845dab"
+    },
+    {
+      "id": 12642084158,
+      "name": "noa-membership-audit-40306523299",
+      "digest": "sha256:56d19abd6c4fdb35178f546fa31845f08d93e0bf4a22184c4cbce8724ac43386"
+    }
+  ],
+  "heroVerification": {
+    "runId": 40305655341,
+    "sourceCommit": "7b3616c983086c13108ac5e9c14646ddb37c3213",
+    "layouts": 18,
+    "productHeroSourceUnchangedInFinalRelease": true,
+    "completePlayback": true,
+    "blockedAutoplayRetry": true,
+    "artifact": 12641754938,
+    "sha256": "sha256:3ee472e70a1fa196fe3624fd8c086ec047188a5c1e8de8d4bef4cb17d624912f"
+  },
+  "regressionVerification": {
+    "runId": 40307403643,
+    "commit": "7abf72c0d901dd895e5bb9a0bf4a0f7e3c30b6ce",
+    "result": "success",
+    "broadProductionDeploy": "skipped"
+  },
+  "engineVerification": {
+    "runId": 40307403622,
+    "php": [
+      "8.2",
+      "8.3"
+    ],
+    "mysqlReadOnly": "success"
+  },
+  "progressPreservation": {
+    "commit": "7abf72c0d901dd895e5bb9a0bf4a0f7e3c30b6ce",
+    "runId": 40307403557,
+    "artifact": 12642034660,
+    "sha256": "sha256:1f08864b3d03a564a7b8d6508f47b198b7bf812c680ca32bd4e52d42dbfae348",
+    "receipt": {
+      "ok": true,
+      "auditRequest": "NOA-20261026-P0-STAGES-50df78cecbc8",
+      "restoredTasks": [
+        "NOA-20261026-P0-01",
+        "NOA-20261026-P0-02",
+        "NOA-20261026-P0-03",
+        "NOA-20261026-P0-04",
+        "NOA-20261026-P0-05",
+        "NOA-20261026-P0-06",
+        "NOA-20261026-P0-07"
+      ],
+      "revision": 23,
+      "historyPreserved": true,
+      "evidencePreserved": true,
+      "unrelatedInstructionsPreserved": true,
+      "allAreasComplete": false
+    },
+    "futureInventoryPreservesExistingProgress": true
+  },
+  "remainingAudit": {
+    "checkedAt": "2026-10-26T19:27:38+09:00",
+    "documents": 660,
+    "sourceMatchedDocuments": 653,
+    "missingNonemptyOriginalFields": 0,
+    "sourceFieldDifferences": 1,
+    "unmatchedDocuments": 7,
+    "originalUploadRowsWithoutSource": 23,
+    "originalUploadDistinctKeys": 21,
+    "aiSettings": {
+      "textEnabled": false,
+      "keyConfigured": false,
+      "model": "gpt-5-mini",
+      "maxJobUsd": 0,
+      "dailyBudgetUsd": 0,
+      "chatEnabled": false,
+      "chatPoints": null,
+      "videoEnabled": false,
+      "videoKeyConfigured": false
+    },
+    "queue": {
+      "queued": 0,
+      "active": 0,
+      "statuses": {
+        "ready": 76,
+        "failed": 3
+      }
+    },
+    "failedJobsArePriorQa": true
+  },
+  "physicalAndroidVerified": false,
+  "previousEvidence": "NOA_20261026_MEMBERSHIP_SOCIAL_EVIDENCE.json"
+}
