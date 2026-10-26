@@ -191,7 +191,10 @@ function mount({host,rows,onChange,search=null,genre=null,type=null,kind='곡'})
  }
 
  window.addEventListener('noa-find-song',event=>findSong(event.detail?.key));const findKey=new URLSearchParams(location.search).get('noa-find');if(findKey)setTimeout(()=>findSong(findKey),300);
- window.addEventListener('noa-theme',()=>{if(orderEditor?.isEditing?.()||editEditor?.isEditing?.())return;treeRevision='';onChange();});
+ // Theme colours are CSS tokens; redrawing the hierarchy would detach/reload its iframe.
+ // Only translated labels require a structural refresh, including when preferences arrive late.
+ let renderedLanguage=document.documentElement?.lang||'ko';
+ window.addEventListener('noa-theme',()=>{const language=window.NoaUI?.getState?.()?.language||document.documentElement?.lang||'ko';if(language===renderedLanguage||orderEditor?.isEditing?.()||editEditor?.isEditing?.())return;renderedLanguage=language;treeRevision='';onChange();});
  fetch('/noa-category-order.php',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(data=>{if(data){manualOrder={revision:data.revision,story:data.story||[],cover:data.cover||[],playlists:data.playlists||[]};onChange();if(data.admin===true&&data.csrf){
  const startEdit=()=>{editEditor=window.NoaBrowseEdit.mount({host,rows,kind,onClose:()=>{if(refreshCollections){refreshCollections=false;treeRevision='';onChange();}},isOrdering:()=>orderEditor?.isEditing?.(),onSaved:({selector,record,data:saved})=>{
   const fields=saved.fields||{};
