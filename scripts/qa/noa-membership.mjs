@@ -30,7 +30,7 @@ try{
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.evaluate(()=>scrollTo(0,500));assert(Math.abs((await page.locator('#noa-account-bar').boundingBox()).y)<2);
    await page.waitForFunction(()=>!document.querySelector('#membership-auto').disabled);
    const heights=await page.evaluate(()=>['#membership-buy','#noa-account-bar a:first-child'].map(s=>document.querySelector(s).getBoundingClientRect().height));assert(heights.every(h=>h>=44));
-   await page.screenshot({path:out+'/membership-'+theme+'-'+width+'.png',fullPage:true});
+   await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:out+'/membership-'+theme+'-'+width+'.png',fullPage:true});
   }else{
    const api=await context.request.get('https://noastudio.ai.kr/noa-bridge/membership.php');assert.equal(api.status(),200);assert.equal((await api.json()).member,false);
    for(const p of ['/bbs/register.php','/bbs/register_form.php']){const res=await context.request.get('https://noastudio.ai.kr'+p,{maxRedirects:0});assert.equal(res.status(),302);assert(res.headers().location.startsWith('/noa-login.php'));}

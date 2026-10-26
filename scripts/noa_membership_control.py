@@ -1,5 +1,5 @@
 """Expiring same-host control; outputs only hashes/counts, never member rows or keys."""
-import hashlib,json,secrets,sys,time,urllib.request,urllib.error
+import hashlib,json,secrets,sys,time,urllib.request,urllib.error,subprocess
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
@@ -38,4 +38,6 @@ def main():
                     if current==code:s.remove(remote)
                     else:raise RuntimeError('changed_helper_preserved')
     finally:transport.close()
+    if mode=='audit' and '--verify-if-active' in sys.argv and data.get('membershipActive'):
+        subprocess.run([sys.executable,__file__,'verify'],check=True)
 if __name__=='__main__':main()

@@ -2,8 +2,9 @@
 declare(strict_types=1);
 /** Temporary, expiring control. All member data and backup rows remain in the same hosting database. */
 ini_set('display_errors','0');header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');
+$noa_control_base=ob_get_level();ob_start();
 if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||time()>NOA_CONTROL_EXPIRY||!hash_equals('NOA_CONTROL_TOKEN_SHA',hash('sha256',(string)($_SERVER['HTTP_X_NOA_CONTROL']??'')))){http_response_code(404);exit;}
-register_shutdown_function(static function(){ $e=error_get_last();if($e&&in_array($e['type'],[E_ERROR,E_PARSE,E_COMPILE_ERROR,E_CORE_ERROR],true)){http_response_code(500);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>'control_runtime_failure','file'=>basename($e['file']),'line'=>$e['line']]);}});
+register_shutdown_function(static function(){global $noa_control_base;$e=error_get_last();if($e&&in_array($e['type'],[E_ERROR,E_PARSE,E_COMPILE_ERROR,E_CORE_ERROR],true)){while(ob_get_level()>$noa_control_base)ob_end_clean();http_response_code(500);header('Content-Type: application/json');echo json_encode(['ok'=>false,'error'=>'control_runtime_failure','file'=>basename($e['file']),'line'=>$e['line']]);}});
 require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/subscription-core.php';
 /*NOA_STORAGE_FUNCTIONS*/
 /*NOA_VERIFY_FUNCTIONS*/
@@ -13,6 +14,7 @@ try{
  $root=dirname(__DIR__);$hooks=[];foreach(['bbs/write_update.php'=>'write_update_after','bbs/write_comment_update.php'=>'comment_update_after','adm/config_form_update.php'=>'cf_login_point']as $path=>$hook){$source=(string)file_get_contents($root.'/'.$path);$hooks[$path]=['sha256'=>hash('sha256',$source),'expectedHookPresent'=>str_contains($source,$hook)];}
  $result=['ok'=>true,'mode'=>$mode,'checkedAt'=>gmdate('c'),'tables'=>$tables,'nativePointsEnabled'=>!empty($config['cf_use_point']),'nativeLoginPoints'=>(int)$config['cf_login_point'],'hooks'=>$hooks,'databaseWrites'=>0,'sensitiveDataExported'=>false];
  $result['social']=['enabled'=>!empty($config['cf_social_login_use']),'services'=>(string)($config['cf_social_servicelist']??''),'googleClientPresent'=>!empty($config['cf_google_clientid']),'googleSecretPresent'=>!empty($config['cf_google_secret']),'kakaoClientPresent'=>!empty($config['cf_kakao_rest_key']),'kakaoSecretPresent'=>!empty($config['cf_kakao_client_secret']),'nativeSessionVerifier'=>function_exists('social_session_exists_check')];
+ $result['membershipActive']=function_exists('nr_policy')&&!empty(nr_policy()['enabled']);
  $result['nativeContracts']=[];foreach(['extend/social_login.extend.php','bbs/register_form.php','bbs/register_form_update.php','bbs/write_update.php','bbs/write_comment_update.php']as $file){$code=(string)file_get_contents($root.'/'.$file);$lines=[];foreach(explode("\n",$code)as $line)if(preg_match('/run_event\(|social_session_exists_check|social_login\.php|includes\/functions|bo_write_point|bo_comment_point/',$line))$lines[]=trim($line);$result['nativeContracts'][$file]=['sha256'=>hash('sha256',$code),'calls'=>$lines];}
  if($mode==='verify'){
   require_once __DIR__.'/membership-core.php';if(empty(nr_policy()['enabled']))throw new RuntimeException('membership_not_active');
@@ -42,5 +44,5 @@ try{
   }finally{ns_q("SELECT RELEASE_LOCK('noa-membership-install')");}
  }
  nr_reply_control($result);
-}catch(Throwable $e){http_response_code(409);echo json_encode(['ok'=>false,'error'=>($e instanceof mysqli_sql_exception?'database_operation_failed':$e->getMessage()),'type'=>get_class($e)],JSON_THROW_ON_ERROR);}
-function nr_reply_control(array $result):never{echo json_encode($result,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;}
+}catch(Throwable $e){http_response_code(409);nr_reply_control(['ok'=>false,'error'=>($e instanceof mysqli_sql_exception?'database_operation_failed':$e->getMessage()),'type'=>get_class($e)]);}
+function nr_reply_control(array $result):never{global $noa_control_base;while(ob_get_level()>$noa_control_base)ob_end_clean();echo json_encode($result,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;}

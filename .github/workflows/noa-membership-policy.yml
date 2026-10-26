@@ -2,7 +2,7 @@ name: NOA membership rewards and account bar
 on:
   push:
     branches: [main]
-    paths: ['bridge/membership*.php','bridge/social-policy.php','deploy/noa-social.extend.php','deploy/noa-login.php','deploy/noa-membership*','deploy/noa-account.*','tests/membership/**','scripts/noa_membership*.py','scripts/noa_membership*.php','scripts/qa/noa-membership.mjs','.github/workflows/noa-membership-policy.yml']
+    paths: ['bridge/membership*.php','bridge/social-policy.php','deploy/noa-sitemap.php','scripts/noa_membership_evidence.py','deploy/noa-social.extend.php','deploy/noa-login.php','deploy/noa-membership*','deploy/noa-account.*','tests/membership/**','scripts/noa_membership*.py','scripts/noa_membership*.php','scripts/qa/noa-membership.mjs','.github/workflows/noa-membership-policy.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
@@ -20,7 +20,7 @@ jobs:
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
-        run: python scripts/noa_membership_control.py audit
+        run: python scripts/noa_membership_control.py audit --verify-if-active
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'noa-membership-audit-${{ github.run_id }}', path: membership-proof/, retention-days: 14}
@@ -55,6 +55,7 @@ jobs:
           php -l deploy/noa-login.php
           php -l scripts/noa_membership_verify.php
           php tests/membership/social.php
+          php tests/sitemap/registry_test.php
           node --check deploy/noa-account.js
           node --check deploy/noa-membership.js
           php tests/subscription/core_test.php
@@ -111,6 +112,8 @@ jobs:
       - name: Reconcile expired VIP passes and levels
         env: *membership_env
         run: python scripts/noa_membership_control.py maintain
+      - name: Build verified membership receipt
+        run: python scripts/noa_membership_evidence.py build
       - name: Restore source only if pre-activation public verification failed
         if: failure() && (steps.upload.outcome == 'failure' || steps.live.outcome == 'failure')
         env: *membership_env
