@@ -2,7 +2,7 @@ name: NOA Unified Categories and Administrator Workspace
 on:
   push:
     branches: [main]
-    paths: ['scripts/noa_workspace_release.py','scripts/qa/noa-workspace*.mjs','tests/workspace/**','.github/workflows/noa-workspace.yml']
+    paths: ['scripts/noa_workspace_release.py','scripts/noa_release_freshness.py','scripts/noa_ainoa_deploy.py','scripts/qa/noa-workspace*.mjs','tests/workspace/**','.github/workflows/noa-workspace.yml']
 permissions: {contents: read}
 jobs:
   candidate:
@@ -26,6 +26,7 @@ jobs:
       - name: Validate changed sources and existing category, permission and record contracts
         run: |
           python -m pip install 'paramiko>=3,<5'
+          python tests/workspace/release_freshness_test.py
           python - <<'PY'
           import sys,subprocess
           sys.path.insert(0,'scripts')
