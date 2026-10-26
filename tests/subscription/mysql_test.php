@@ -18,3 +18,5 @@ ns_q('ALTER TABLE g5_point ENGINE=MyISAM');check(!ns_storage(true)['ready'],'non
 echo "SUBSCRIPTION_MYSQL_TRANSACTION_IDEMPOTENCY_RECEIPT_OWNERSHIP_EXPIRY_TESTS_OK\n";
 
 $native=ns_apply_native_member(['mb_id'=>'native-absent-grant','mb_level'=>4],time());if($native['mb_level']!==4)throw new RuntimeException('native_legacy_vip_preserved');
+
+$g=ns_doc(ns_member_key('regular'))['data'];check(ns_apply_native_member(['mb_id'=>'regular','mb_level'=>3],$now)['mb_level']===4,'native_overlay_active');check(ns_apply_native_member(['mb_id'=>'regular','mb_level'=>3],$g['until'])['mb_level']===3,'native_overlay_expired');

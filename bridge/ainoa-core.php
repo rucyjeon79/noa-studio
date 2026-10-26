@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 /** Public projection is deliberately separate from administrator production records. */
-function na_public(array $d):bool{return !in_array($d['visibility']??$d['publicStatus']??'public',['private','draft','unlisted','hidden'],true)&&empty($d['ownerId']);}
-function na_summary(array $r):?array{
- $d=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);if(!na_public($d))return null;$b=$d['body']??[];
- return ['key'=>$r['doc_key'],'title'=>(string)($b['confirmedTitle']??$d['title']??''),'genre'=>(string)($d['genreId']??''),'ep'=>(string)($d['ep']??''),'lyrics'=>noa_sound_lyrics((string)($b['lyricsBlock']??'')),'description'=>(string)($b['youtubeDescription']??$b['songDescription']??$b['descriptionBlock']??'')];
+function na_public(array $d):bool{return !in_array($d['visibility']??$d['publicStatus']??'public',['private','draft','unlisted','hidden'],true)&&(empty($d['ownerId'])||($d['visibility']??'')==='public');}
+function na_summary(array $r,bool $allowPrivate=false):?array{
+ $d=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);if(!na_public($d)&&!$allowPrivate)return null;$b=$d['body']??[];
+ return ['key'=>$r['doc_key'],'title'=>(string)($b['confirmedTitle']??$d['title']??''),'genre'=>(string)($d['genreId']??''),'ep'=>(string)($d['ep']??''),'lyrics'=>noa_sound_lyrics((string)($b['lyricsBlock']??'')),'description'=>(($d['mediaAvailability']['status']??'')==='public'?(string)($b['youtubeDescription']??$b['songDescription']??$b['descriptionBlock']??''):'')];
 }
 function na_text(string $system,array $context,int $tokens=2200):string{
  require_once __DIR__.'/lab-core.php';
