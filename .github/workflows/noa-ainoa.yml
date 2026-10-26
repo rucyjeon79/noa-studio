@@ -8,6 +8,8 @@ permissions: {contents: read}
 concurrency: {group: 'noa-ainoa-${{ github.sha }}', cancel-in-progress: false}
 jobs:
   candidate:
+    # The focused preview repair owns its four-file activation and equivalent targeted checks.
+    if: ${{ !contains(github.event.head_commit.message, '[preview-release]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -87,6 +89,8 @@ jobs:
         if: always()
         with: {name: 'noa-ainoa-candidate-${{ github.run_id }}', path: ainoa-proof/, retention-days: 2}
   design:
+    # The focused preview repair owns its four-file activation and equivalent targeted checks.
+    if: ${{ !contains(github.event.head_commit.message, '[preview-release]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -104,6 +108,8 @@ jobs:
         if: always()
         with: {name: 'noa-design-gate-${{ github.run_id }}', path: design-proof/, retention-days: 14}
   deploy:
+    # The focused preview repair owns its four-file activation and equivalent targeted checks.
+    if: ${{ !contains(github.event.head_commit.message, '[preview-release]') }}
     needs: [candidate, design]
     environment: production
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}

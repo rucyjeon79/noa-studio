@@ -8,29 +8,51 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     environment: production
-    timeout-minutes: 10
+    timeout-minutes: 15
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env: &noa_env
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
       - uses: shivammathur/setup-php@v2
-        with: {php-version: '8.2'}
-      - run: |
-          php -l scripts/noa_preview_audit.php
-          python -m pip install 'paramiko>=3,<5'
-      - name: Inspect actual public song and video mappings without writes
-        env:
-          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
-          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
-        run: python scripts/noa_preview_audit.py
-      - name: Reproduce published player selection with actual public catalog rows
+        with: {php-version: '8.2', extensions: pdo_sqlite}
+      - name: Validate canonical custom collection and private-video boundaries
         run: |
+          php -l scripts/noa_preview_audit.php
+          php -l bridge/youtube-catalog.php
+          php tests/youtube/coming_catalog_test.php
+          node --check deploy/noa-account.js
+          node --check deploy/noa-browse.js
+          node --test scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs tests/youtube/lazy_details_test.cjs
+          python -m py_compile scripts/noa_preview_audit.py scripts/noa_preview_release.py
+          python -m pip install 'paramiko>=3,<5'
           python scripts/qa/noa-qa-font.py
           npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-preview" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-preview-regression.mjs "$RUNNER_TEMP/noa-preview/check.mjs"
+      - name: Verify candidate against actual public SQL records without changing data
+        env: {NOA_PREVIEW_PHASE: candidate}
+        run: |
+          python scripts/noa_preview_audit.py
+          cp preview-proof/catalog.json preview-proof/candidate-catalog.json
           node "$RUNNER_TEMP/noa-preview/check.mjs"
+      - name: Atomically apply only collection preview and account bar sources
+        id: upload
+        run: python scripts/noa_preview_release.py
+      - name: Verify deployed read model, public assets, collection playback and logout controls
+        id: live
+        env: {NOA_PREVIEW_PHASE: live}
+        run: |
+          python scripts/noa_preview_audit.py
+          node "$RUNNER_TEMP/noa-preview/check.mjs"
+      - name: Restore only this release's source bytes if acceptance fails
+        if: failure() && (steps.upload.outcome == 'failure' || steps.live.outcome == 'failure')
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then python scripts/noa_preview_release.py rollback; fi
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'noa-preview-${{ github.run_id }}', path: 'preview-proof/', retention-days: 7}

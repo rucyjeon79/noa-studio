@@ -16,3 +16,5 @@
 
 html .noa-page main.noa-social-layout{max-width:560px;padding:28px 24px 120px;margin-inline:auto}.noa-login-form{display:grid;gap:10px;margin:24px 0 28px}.noa-login-form label{font-size:14px}.noa-login-form input{width:100%;min-height:48px}.noa-login-form button{width:100%;margin-top:8px}.noa-login-recovery{justify-self:end;font-size:13px}.noa-login-form .noa-muted{font-size:12px;line-height:1.6;margin:4px 0}.noa-social-intro{font-size:14px;border-top:1px solid var(--noa-line);padding-top:24px}.noa-social-layout .noa-social-options{margin:16px 0;gap:16px}
 @media(min-width:761px){html .noa-page main.noa-social-layout{margin-left:calc(var(--noa-rail) + (100% - var(--noa-rail) - min(560px,100% - var(--noa-rail)))/2)}}
+
+#noa-account-bar .noa-account-status a[href^="/bbs/logout.php"]{white-space:nowrap;gap:6px}

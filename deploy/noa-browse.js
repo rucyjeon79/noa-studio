@@ -155,8 +155,11 @@ function mount({host,rows,onChange,search=null,genre=null,type=null,kind='곡'})
      const byKey=new Map(items.map(r=>[String(r.orderKey||r.key).replace(/^catalog:/,''),r]));
      for(const playlist of (manualOrder.playlists||[]).filter(p=>p.group===selectedGroup)){
       const members=playlist.keys.map(key=>byKey.get(key)).filter(Boolean),section=e('div');section.className='noa-inline-act noa-user-playlist';section.dataset.playlistId=playlist.id;
-      const toggle=card(playlist.title,members.length+'개 '+kind,members,()=>{expandedPlaylist=expandedPlaylist===playlist.id?'':playlist.id;activeSavedPlaylist='';onChange();});toggle.setAttribute('aria-expanded',String(expandedPlaylist===playlist.id));section.append(toggle);
-      collectionControls(section,playlist.title,expandedPlaylist===playlist.id,()=>toggle.click());const detail=e('div');detail.dataset.browseLevel='4';detail.hidden=expandedPlaylist!==playlist.id;detail.setAttribute('aria-label',playlist.title+' 목록');renderInlineSongs(detail,members,true);section.append(detail);body.append(section);
+      const collection=collections.find(r=>r.customPlaylistId===playlist.id||String(r.musicKey||r.orderKey||'')==='playlist:custom:'+playlist.id);
+      const expand=()=>{expandedPlaylist=expandedPlaylist===playlist.id?'':playlist.id;activeSavedPlaylist='';for(const item of grid.querySelectorAll('.noa-user-playlist')){const open=item.dataset.playlistId===expandedPlaylist;const list=item.querySelector(':scope>[data-browse-level="4"]');if(list)list.hidden=!open;for(const control of item.querySelectorAll(':scope>.noa-browse-card,:scope>.noa-collection-tools>.noa-list-toggle'))control.setAttribute('aria-expanded',String(open));}treeRevision=treeState();onChange();};
+      const toggle=card(playlist.title,members.length+'개 '+kind,collection?[collection,...members]:members,()=>{if(kind==='영상'&&collection&&playInline(toggle,collection))return;expand();});toggle.setAttribute('aria-expanded',String(expandedPlaylist===playlist.id));
+      if(kind==='영상'&&collection){toggle.dataset.actVideoKey=String(collection.key);toggle.dataset.inlineKey=String(collection.key);toggle.setAttribute('aria-label',playlist.title+' '+(collection.comingSoon?'공개 준비 미리보기':'영상 재생'));}section.append(toggle);
+      collectionControls(section,playlist.title,expandedPlaylist===playlist.id,expand);const detail=e('div');detail.dataset.browseLevel='4';detail.hidden=expandedPlaylist!==playlist.id;detail.setAttribute('aria-label',playlist.title+' 목록');renderInlineSongs(detail,members,true);section.append(detail);body.append(section);
      }
     }
     const assigned=new Set((manualOrder.playlists||[]).filter(p=>p.group===selectedGroup).flatMap(p=>p.keys));

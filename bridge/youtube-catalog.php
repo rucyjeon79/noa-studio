@@ -5,18 +5,18 @@ require_once __DIR__.'/sound-core.php';
 require_once __DIR__.'/music-readmodel.php';
 function ny_listener_catalog(PDO $db,bool $admin,array $edits=[]):array{
  $documents=[];
- foreach($db->query("SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','story','playlist') ORDER BY doc_key") as $r){$d=json_decode($r['payload'],true);if(is_array($d)&&empty($d['customPlaylistId'])){$d['_listenerKind']=$r['kind'];$documents[$r['doc_key']]=$d;}}
+ foreach($db->query("SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','story','playlist') ORDER BY doc_key") as $r){$d=json_decode($r['payload'],true);if(is_array($d)){$d['_listenerKind']=$r['kind'];$documents[$r['doc_key']]=$d;}}
  foreach(noa_music_recovered_catalog($db) as $key=>$d)if(!isset($documents[$key]))$documents[$key]=$d;
  $aliases=[];foreach($db->query("SELECT alias_key,entity_id FROM noa_catalog_aliases WHERE batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)") as $r)$aliases[$r['alias_key']][]=$r['entity_id'];
  $out=[];
  foreach($documents as $key=>$d){
   if(!noa_sound_visible($d,$admin))continue;$b=$d['body']??[];$ids=array_unique($aliases[$key]??[]);$identity=str_starts_with($key,'catalog:')?substr($key,8):(count($ids)===1?array_values($ids)[0]:$key);
   $r=['key'=>$key,'orderKey'=>$identity,'title'=>(string)(($b['confirmedTitle']??'')?:($d['title']??$key)),'genre'=>(string)($d['genreId']??'other'),'ep'=>(string)($d['ep']??''),'act'=>(string)($d['act']??''),'kind'=>($d['_listenerKind']??'')==='playlist'?'playlist':'video'];
-  $fields=function_exists('nie_fields')?nie_fields($edits,$r):[];if(isset($fields['title']))$r['title']=$fields['title'];$r['canonicalVideo']=ny_video_id((string)($fields['youtubeUrl']??$b['youtubeUrl']??''));$out[$identity]=$r;
+  $fields=function_exists('nie_fields')?nie_fields($edits,$r):[];if(isset($fields['title']))$r['title']=$fields['title'];$r['canonicalVideo']=ny_video_id((string)($fields['youtubeUrl']??$b['youtubeUrl']??''));if(!empty($d['customPlaylistId'])){if(!$r['canonicalVideo'])continue;$r['customPlaylistId']=(string)$d['customPlaylistId'];}$out[$identity]=$r;
  }
  return $out;
 }
-/** Only explicitly linked, verified public ACT videos may reappear beside their playlist. */
+/** Only explicitly linked, verified public collection videos may reappear beside their playlist. */
 function ny_act_public_sources(array $videos,array $catalog):array{
  $out=[];foreach($catalog as $r){if(($r['kind']??'')!=='playlist')continue;$id=$r['canonicalVideo']??'';$v=$videos[$id]??null;if($v&&($v['status']['privacyStatus']??'')==='public'&&!empty($v['status']['embeddable'])&&!in_array($v['match']['status']??'',['rejected','conflict'],true))$out[$id]=$v;}return $out;
 }
@@ -29,7 +29,7 @@ function ny_coming_art(string $genre):array{
 function ny_complete_catalog_rows(array $publicRows,array $videos,array $catalog):array{
  $rows=$publicRows;$byVideo=[];$represented=[];
  foreach($catalog as $identity=>$r)if($r['canonicalVideo'])$byVideo[$r['canonicalVideo']]=$identity;
- foreach($rows as &$r){$identity=(string)(isset($catalog[$r['orderKey']??''])?$r['orderKey']:($byVideo[$r['video']??'']??$r['orderKey']??''));if(isset($catalog[$identity])&&!in_array($videos[$r['video']??'']['match']['status']??'',['rejected','conflict'],true)){$represented[$identity]=true;$r['orderKey']=$identity;if(($catalog[$identity]['kind']??'')==='playlist'){foreach(['title','genre','ep','act','kind'] as $field)$r[$field]=$catalog[$identity][$field];$r['musicKey']=$catalog[$identity]['key'];$r['preferredVideo']=$catalog[$identity]['canonicalVideo']===($r['video']??'');}}}unset($r);
+ foreach($rows as &$r){$identity=(string)(isset($catalog[$r['orderKey']??''])?$r['orderKey']:($byVideo[$r['video']??'']??$r['orderKey']??''));if(isset($catalog[$identity])&&!in_array($videos[$r['video']??'']['match']['status']??'',['rejected','conflict'],true)){$represented[$identity]=true;$r['orderKey']=$identity;if(($catalog[$identity]['kind']??'')==='playlist'){foreach(['title','genre','ep','act','kind'] as $field)$r[$field]=$catalog[$identity][$field];$r['musicKey']=$catalog[$identity]['key'];if(isset($catalog[$identity]['customPlaylistId']))$r['customPlaylistId']=$catalog[$identity]['customPlaylistId'];$r['preferredVideo']=$catalog[$identity]['canonicalVideo']===($r['video']??'');}}}unset($r);
  foreach($videos as $id=>$v){
   if(($v['status']['privacyStatus']??'')==='public'&&!empty($v['status']['embeddable']))continue;
   if(in_array($v['match']['status']??'',['rejected','conflict'],true))continue;
