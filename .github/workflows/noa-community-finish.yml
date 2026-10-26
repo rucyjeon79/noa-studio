@@ -36,6 +36,7 @@ jobs:
         if: always()
         with: {name: 'noa-community-candidate-${{ github.run_id }}', path: community-proof/, retention-days: 7}
   deploy:
+    if: ${{ !contains(github.event.head_commit.message, '[install-release]') }}
     needs: candidate
     runs-on: ubuntu-latest
     environment: production

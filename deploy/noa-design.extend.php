@@ -12,6 +12,7 @@ function noa_policy_script_revision($html){
  $html=preg_replace("~(<link\\b[^>]*\\bhref=[\"'])/noa-ui[.]css(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.css?v='.$css_revision.'$2',$html);
  $ui=dirname(__DIR__).'/noa-ui.js';$ui_revision=is_file($ui)?hash_file('sha256',$ui):'20261025-member-access';
  $html=preg_replace("~(<script\\b[^>]*\\bsrc=[\"'])/noa-ui[.]js(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.js?v='.$ui_revision.'$2',$html);
+ $brand=dirname(__DIR__).'/noa-brand.js';if(is_file($brand))$html=preg_replace("~(/noa-brand[.]js)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$brand),$html);
  $manifest=dirname(__DIR__).'/noa-manifest.json';
  if(is_file($manifest))$html=preg_replace("~(/noa-manifest[.]json)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$manifest),$html);
  return $html;
@@ -22,9 +23,11 @@ function noa_design_assets(){
  if(!is_string($path))return;
  $launch=dirname(__DIR__).'/noa-launch.js';$ainoa=is_file($launch)?'<script src="/noa-launch.js?v='.hash_file('sha256',$launch).'"></script>':'';
  foreach(['css','js'] as $kind){$asset=dirname(__DIR__).'/noa-ainoa.'.$kind;if(is_file($asset)){$url='/noa-ainoa.'.$kind.'?v='.hash_file('sha256',$asset);$ainoa.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'" defer></script>';}}
+ foreach(['css','js']as $kind){$file=dirname(__DIR__).'/noa-install.'.$kind;if(is_file($file)){$url='/noa-install.'.$kind.'?v='.hash_file('sha256',$file);$ainoa.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'"></script>';}}
+ $ainoa.='<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="NOA STUDIO"><link rel="apple-touch-icon" href="/noa-assets/icon-180.png?v=original-symbol-1">';
  $native=preg_match('~^/(?:bbs|adm)/~',$path);
  $workspace=preg_match('~^/noa-app/(?:database|taxonomy|jukebox)/(?:index[.]php)?$~',$path);
- $public=in_array($path,['/','/index.php'],true)||preg_match('~^/noa-(?:music|youtube|world|my|settings|catalog|ai-lab|library|editor|download|theme-admin|creator|channel|subscription|login|membership)(?:-admin)?[.]php$~',$path);
+ $public=in_array($path,['/','/index.php'],true)||preg_match('~^/noa-(?:music|youtube|world|my|settings|catalog|ai-lab|library|editor|download|install|theme-admin|creator|channel|subscription|login|membership)(?:-admin)?[.]php$~',$path);
  if(!$native&&!$workspace&&!$public)return;
  if(!$native&&($_SERVER['REQUEST_METHOD']??'GET')!=='GET')return;
  // Standalone views do not call GnuBoard html_end(); inject only completed HTML.

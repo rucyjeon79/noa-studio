@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+// Historical installation links on Apple devices must never download an APK.
+if(preg_match('/iPhone|iPad|iPod|Macintosh/i',$_SERVER['HTTP_USER_AGENT']??'')){header('Cache-Control: no-store');header('Location: /noa-install.php',true,302);exit;}
 $meta=__DIR__.'/noa-android-release.json';
 if(!is_file($meta)){http_response_code(404);exit('안드로이드 앱을 준비하고 있습니다.');}
 $release=json_decode((string)file_get_contents($meta),true);

@@ -12,7 +12,7 @@ function noa_sitemap_registry():array{
             ['my','MY','최근 재생과 나의 음악','/noa-my.php','user','public'],
             ['catalog','통합 라이브러리','곡과 영상의 연결 정보','/noa-catalog.php','library','public'],
             ['settings','설정','테마와 언어','/noa-settings.php','settings','public'],
-            ['download','앱 다운로드','NOA STUDIO 앱 안내','/noa-download.php','download','public'],
+            ['download','앱 설치','iPhone · iPad · Android · PC','/noa-install.php','download','public'],
         ]],
         'collections'=>['title'=>'음악 탐색','routes'=>[
             ['original','오리지널송','K-POP · J-POP · POP · Thai','/noa-music.php?group=original','disc','public'],

@@ -1,0 +1,37 @@
+import {chromium,webkit} from 'playwright';
+import {spawn} from 'node:child_process';
+import {mkdirSync,writeFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const live=process.env.NOA_INSTALL_PHASE==='live',base=live?'https://noastudio.ai.kr':'http://127.0.0.1:8078',out='install-proof/'+(live?'live':'candidate');mkdirSync(out,{recursive:true});
+const report={environment:live?'production anonymous read-only':'isolated native-auth interface fixture',launch:[],layouts:[],physicalAppleInstallation:false};
+const server=live?null:spawn('php',['-S','127.0.0.1:8078','-t','/tmp/noa-pwa-fixture','/tmp/noa-pwa-fixture/router.php'],{stdio:'ignore'});
+const profiles={ios:{userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1',viewport:{width:390,height:844},isMobile:true,hasTouch:true},ipad:{userAgent:'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1',viewport:{width:768,height:1024},isMobile:true,hasTouch:true},android:{userAgent:'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/130.0.0.0 Mobile Safari/537.36',viewport:{width:320,height:800},isMobile:true,hasTouch:true},mac:{userAgent:'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 Version/17.0 Safari/605.1.15',viewport:{width:1280,height:900}}};
+try{
+ const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
+ try{
+  const probe=await browser.newContext();let ready=false;for(let i=0;i<50&&!ready;i++){try{ready=(await probe.request.get(base+'/')).ok();}catch{}if(!ready)await new Promise(r=>setTimeout(r,100));}assert(ready);await probe.close();
+  for(const role of live?['guest']:['guest','member','vip'])for(const path of ['/noa-music.php','/bbs/login.php?url=%2Fnoa-music.php','/noa-login.php?url=%2Fnoa-music.php']){
+   const c=await browser.newContext({serviceWorkers:'block'});if(!live)await c.addCookies([{name:'qa_role',value:role,url:base}]);await c.addInitScript(()=>sessionStorage.setItem('noa-home-launch-v2','1'));const p=await c.newPage();await p.goto(base+path);await p.waitForURL(base+'/',{timeout:15000});await p.locator('[data-home-section=hero]').waitFor();report.launch.push({role,path,home:true,staleSession:true});await c.close();
+  }
+  for(const path of ['/','/index.php','/?device=mobile','/noa2.php']){const c=await browser.newContext({serviceWorkers:'block'}),p=await c.newPage();await p.goto(base+path);await p.locator('[data-home-section=hero]').waitFor();assert(!p.url().includes('noa-music.php'));report.launch.push({path,home:true});await c.close();}
+  for(const role of live?['guest']:['guest','member','vip']){
+   const c=await browser.newContext({serviceWorkers:'block'});if(!live)await c.addCookies([{name:'qa_role',value:role,url:base}]);const p=await c.newPage();await p.goto(base+'/noa-music.php',{referer:base+'/'});await p.waitForLoadState('domcontentloaded');assert.notEqual(new URL(p.url()).pathname,'/');
+   await p.goto(base+'/noa-music.php?track=known-deep-link');await p.waitForLoadState('domcontentloaded');assert.notEqual(new URL(p.url()).pathname,'/');report.launch.push({role,deliberateMusicPreserved:true,deepLinkPreserved:true});await c.close();
+  }
+  const r=await browser.newContext();const manifest=await(await r.request.get(base+'/noa-manifest.json')).json();assert.equal(manifest.start_url,'/');assert.equal(manifest.id,'/noa-music.php');
+  const apple=await r.request.get(base+'/noa-download.php',{headers:{'User-Agent':profiles.ios.userAgent},maxRedirects:0});assert.equal(apple.status(),302);assert(apple.headers().location.startsWith('/noa-install.php'));const install=await r.request.get(base+'/noa-install.php');assert.equal(install.status(),200);assert((await install.text()).includes('iPhone · iPad'));report.publicInstallationPage=true;report.appleNeverDownloadsApk=true;await r.close();
+  if(!live){
+   const c=await browser.newContext(),p=await c.newPage();await p.goto(base+'/noa-install.php');await p.evaluate(()=>{const e=new Event('beforeinstallprompt',{cancelable:true});e.prompt=async()=>{window.promptCalls=(window.promptCalls||0)+1;};e.userChoice=Promise.resolve({outcome:'dismissed'});window.dispatchEvent(e);});const button=p.locator('[data-noa-install-prompt]');await button.waitFor({state:'visible'});await button.click();await p.getByText('설치를 취소했습니다. 브라우저 메뉴에서 다시 설치할 수 있습니다.',{exact:true}).waitFor();assert.equal(await p.evaluate(()=>window.promptCalls),1);assert(await button.isHidden());report.installPromptCancellation=true;await c.close();
+   const app=await browser.newContext();await app.addInitScript(()=>Object.defineProperty(navigator,'standalone',{value:true}));const ap=await app.newPage();await ap.goto(base+'/noa-install.php');await ap.getByText('이미 NOA STUDIO 앱으로 실행 중입니다.',{exact:true}).waitFor();report.alreadyInstalledState=true;await app.close();
+  }
+ }finally{await browser.close();}
+ for(const engine of live?['chromium']:['chromium','webkit']){
+  const browser=engine==='webkit'?await webkit.launch():await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
+  try{for(const profile of ['ios','ipad','android','mac'])for(const theme of ['noa-studio','noa-ivory']){
+   const c=await browser.newContext({...profiles[profile],serviceWorkers:'block',reducedMotion:'reduce'});await c.addInitScript(({theme,ipad})=>{localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',radius:'soft',design:'ios'}));if(ipad)Object.defineProperty(navigator,'maxTouchPoints',{value:5});},{theme,ipad:profile==='ipad'});
+   const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto(base+'/noa-install.php');const platform=profile==='ipad'?'ios':profile;await p.locator('[data-install-platform='+platform+'][data-current]').waitFor();assert.equal(await p.locator('.noa-install-platform').first().getAttribute('data-install-platform'),platform);assert.equal(await p.locator('#noa-account-bar a[href="/noa-install.php"]').count(),1);assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+   const name=engine+'-'+profile+'-'+theme;await p.screenshot({path:out+'/'+name+'-install.png'});await p.locator('[data-install-platform='+platform+']').getByRole('link',{name:'홈에서 설치 안내 보기',exact:true}).click();const dialog=p.getByRole('dialog');await dialog.waitFor();assert.equal(new URL(p.url()).pathname,'/');assert.equal(new URL(p.url()).search,'');assert.equal(await p.locator('link[rel=manifest]').count(),1);assert.equal(await p.locator('meta[name=apple-mobile-web-app-capable]').first().getAttribute('content'),'yes');assert.equal(await p.locator('link[rel=apple-touch-icon]').count(),1);assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.screenshot({path:out+'/'+name+'-guide.png'});await p.getByRole('button',{name:'안내 닫기',exact:true}).click();await dialog.waitFor({state:'hidden'});assert(await p.locator('[data-home-section=hero]').isVisible());assert.deepEqual(errors,[]);report.layouts.push({engine,profile,theme,installVisible:true,cleanHomeUrl:true,guideCloses:true,noOverflow:true,pageErrors:errors});await c.close();
+  }}finally{await browser.close();}
+ }
+}finally{writeFileSync(out+'/report.json',JSON.stringify(report,null,2));server?.kill();}
+console.log('HOME_ENTRY_AND_INSTALL_OK',JSON.stringify({launch:report.launch.length,layouts:report.layouts.length,live}));

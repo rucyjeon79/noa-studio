@@ -13,6 +13,7 @@ function nam_owner(array $document,array $member):bool{
 }
 /** Null means leave the endpoint's existing authentication contract intact. */
 function nam_requirement(string $path,string $method='GET',array $query=[]):?string{
+ if($path==='/noa-install.php')return 'home';
  if($path==='/'||$path==='/index.php'||$path==='/noa-app/home.php'||$path==='/noa2.php')return 'home';
  if(str_starts_with($path,'/adm/'))return 'admin';
  if($path==='/noa-subscription-admin.php')return 'admin';

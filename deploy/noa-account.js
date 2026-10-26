@@ -6,7 +6,7 @@
  const link=(text,href)=>{const a=document.createElement('a');a.textContent=text;a.href=href;return a;};
  const brand=link('','/');brand.className='noa-account-brand';brand.setAttribute('aria-label','NOA STUDIO 홈');
  const mark=document.createElement('img');mark.src='/noa-assets/papa-logo.png';mark.alt='';mark.width=36;mark.height=36;mark.decoding='async';brand.append(mark);shortcuts.append(brand);
- for(const [label,href,path]of [['홈으로','/','M3 10l9-7 9 7v10H3z M9 21v-8h6v8'],['사이트맵','/noa-sitemap.php','M9 3h6v5H9z M3 16h6v5H3z M15 16h6v5h-6z M12 8v4 M6 16v-4h12v4']]){
+ for(const [label,href,path]of [['홈으로','/','M3 10l9-7 9 7v10H3z M9 21v-8h6v8'],['사이트맵','/noa-sitemap.php','M9 3h6v5H9z M3 16h6v5H3z M15 16h6v5h-6z M12 8v4 M6 16v-4h12v4'],['앱 설치','/noa-install.php','M12 3v12 M7 10l5 5 5-5 M5 16v5h14v-5']]){
   const a=link('',href),svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),shape=document.createElementNS(svg.namespaceURI,'path');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.5');svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');svg.setAttribute('aria-hidden','true');shape.setAttribute('d',path);svg.append(shape);const text=document.createElement('span');text.textContent=label;a.append(svg,text);a.className='noa-account-shortcut';if(location.pathname===href||(href==='/'&&location.pathname==='/index.php'))a.setAttribute('aria-current','page');shortcuts.append(a);
  }
  let signature='';
