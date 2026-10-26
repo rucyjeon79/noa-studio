@@ -44,7 +44,7 @@ jobs:
         if: always()
         with: {name: 'noa-inline-order-candidate-${{ github.run_id }}', path: inline-order-proof/, retention-days: 2}
   deploy:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && !contains(github.event.head_commit.message, '[ainoa-release]')
     needs: candidate
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     environment: production
