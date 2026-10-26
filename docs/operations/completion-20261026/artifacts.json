@@ -1,0 +1,103 @@
+{
+  "community": [
+    {
+      "id": 12654406418,
+      "name": "noa-community-candidate-40329865590",
+      "size_in_bytes": 590824,
+      "url": "https://api.github.com/repos/rucyjeon79/noa-studio/actions/artifacts/12654406418",
+      "archive_download_url": "https://api.github.com/repos/rucyjeon79/noa-studio/actions/artifacts/12654406418/zip",
+      "expired": false,
+      "created_at": "2026-10-26T13:22:26Z",
+      "expires_at": "2026-11-02T13:22:25Z",
+      "updated_at": "2026-10-26T13:22:26Z",
+      "digest": "sha256:cd65605afe0814267e254620b935e743f03d15104442b69b50d80ce3bbd27083",
+      "workflow_run": {
+        "id": 40329865590,
+        "repository_id": 1424109467,
+        "head_repository_id": 1424109467,
+        "head_branch": "main",
+        "head_sha": "1a89519ce9dec5dc3a7f40919c54c04f84b7432d"
+      }
+    },
+    {
+      "id": 12653867327,
+      "name": "noa-community-live-40329865590",
+      "size_in_bytes": 1435298,
+      "url": "https://api.github.com/repos/rucyjeon79/noa-studio/actions/artifacts/12653867327",
+      "archive_download_url": "https://api.github.com/repos/rucyjeon79/noa-studio/actions/artifacts/12653867327/zip",
+      "expired": false,
+      "created_at": "2026-10-26T13:25:53Z",
+      "expires_at": "2026-11-02T13:25:52Z",
+      "updated_at": "2026-10-26T13:25:53Z",
+      "digest": "sha256:0f0b478314f14a19b803e70c6c20efa56a7b59483ef72ef179edc041e056f48f",
+      "workflow_run": {
+        "id": 40329865590,
+        "repository_id": 1424109467,
+        "head_repository_id": 1424109467,
+        "head_branch": "main",
+        "head_sha": "1a89519ce9dec5dc3a7f40919c54c04f84b7432d"
+      }
+    }
+  ],
+  "muvy": [
+    {
+      "id": 12654614234,
+      "name": "noa-muvy-live-40332228096",
+      "size_in_bytes": 1059,
+      "url": "https://api.github.com/repos/rucyjeon79/noa-studio/actions/artifacts/12654614234",
+      "archive_download_url": "https://api.github.com/repos/rucyjeon79/noa-studio/actions/artifacts/12654614234/zip",
+      "expired": false,
+      "created_at": "2026-10-26T13:39:35Z",
+      "expires_at": "2026-11-02T13:39:35Z",
+      "updated_at": "2026-10-26T13:39:35Z",
+      "digest": "sha256:0c5b738d27bb7ba4fa34ddbf2254be3ab11315a55b4d270fdc4e85e0181e6d06",
+      "workflow_run": {
+        "id": 40332228096,
+        "repository_id": 1424109467,
+        "head_repository_id": 1424109467,
+        "head_branch": "main",
+        "head_sha": "2b649f1e8b5e3bdc9ce7c5c0887e6df00127fc59"
+      }
+    },
+    {
+      "id": 12654418720,
+      "name": "noa-muvy-candidate-40332228096",
+      "size_in_bytes": 457881,
+      "url": "https://api.github.com/repos/rucyjeon79/noa-studio/actions/artifacts/12654418720",
+      "archive_download_url": "https://api.github.com/repos/rucyjeon79/noa-studio/actions/artifacts/12654418720/zip",
+      "expired": false,
+      "created_at": "2026-10-26T13:38:00Z",
+      "expires_at": "2026-11-02T13:37:59Z",
+      "updated_at": "2026-10-26T13:38:00Z",
+      "digest": "sha256:e92805f120343c664e7191301e22bf5c0a1cf1c005298872ce845353e064ddac",
+      "workflow_run": {
+        "id": 40332228096,
+        "repository_id": 1424109467,
+        "head_repository_id": 1424109467,
+        "head_branch": "main",
+        "head_sha": "2b649f1e8b5e3bdc9ce7c5c0887e6df00127fc59"
+      }
+    }
+  ],
+  "notice": [
+    {
+      "id": 12653094314,
+      "name": "noa-welcome-notice-40331338679",
+      "size_in_bytes": 2823445,
+      "url": "https://api.github.com/repos/rucyjeon79/noa-studio/actions/artifacts/12653094314",
+      "archive_download_url": "https://api.github.com/repos/rucyjeon79/noa-studio/actions/artifacts/12653094314/zip",
+      "expired": false,
+      "created_at": "2026-10-26T13:32:32Z",
+      "expires_at": "2026-11-25T13:32:31Z",
+      "updated_at": "2026-10-26T13:32:32Z",
+      "digest": "sha256:dd547e77863e7a51b429ace4d112686fc7ce042518f68baa97716327c242ddcb",
+      "workflow_run": {
+        "id": 40331338679,
+        "repository_id": 1424109467,
+        "head_repository_id": 1424109467,
+        "head_branch": "main",
+        "head_sha": "179101f00bf103c84464e3bca5621b7bcc3033b6"
+      }
+    }
+  ]
+}

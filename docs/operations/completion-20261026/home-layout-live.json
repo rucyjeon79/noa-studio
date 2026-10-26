@@ -1,0 +1,1563 @@
+{
+  "ok": true,
+  "phase": "live",
+  "cases": 18,
+  "noMediaGaps": true,
+  "genreIdentified": true,
+  "completePlayback": true,
+  "blockedAutoplayRetry": true,
+  "cleanCoverGenre": true,
+  "physicalAndroid": false,
+  "report": [
+    {
+      "theme": "noa-studio",
+      "width": 360,
+      "height": 800,
+      "hero": {
+        "x": 16,
+        "y": 80,
+        "width": 328,
+        "height": 328,
+        "right": 344,
+        "bottom": 408
+      },
+      "media": {
+        "x": 17,
+        "y": 81,
+        "width": 326,
+        "height": 326,
+        "right": 343,
+        "bottom": 407
+      },
+      "copy": {
+        "x": 17,
+        "y": 237,
+        "width": 326,
+        "height": 170,
+        "right": 343,
+        "bottom": 407
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 298,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 31,
+          "y": 351,
+          "width": 145,
+          "height": 44,
+          "right": 176,
+          "bottom": 395
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 184,
+          "y": 351,
+          "width": 145,
+          "height": 44,
+          "right": 329,
+          "bottom": 395
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [],
+      "discover": {
+        "x": 31,
+        "y": 301.796875,
+        "width": 298,
+        "height": 41.203125,
+        "right": 329,
+        "bottom": 343
+      }
+    },
+    {
+      "theme": "noa-studio",
+      "width": 390,
+      "height": 844,
+      "hero": {
+        "x": 16,
+        "y": 80,
+        "width": 358,
+        "height": 358,
+        "right": 374,
+        "bottom": 438
+      },
+      "media": {
+        "x": 17,
+        "y": 81,
+        "width": 356,
+        "height": 356,
+        "right": 373,
+        "bottom": 437
+      },
+      "copy": {
+        "x": 17,
+        "y": 266.125,
+        "width": 356,
+        "height": 170.875,
+        "right": 373,
+        "bottom": 437
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 328,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 31,
+          "y": 381,
+          "width": 160,
+          "height": 44,
+          "right": 191,
+          "bottom": 425
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 199,
+          "y": 381,
+          "width": 160,
+          "height": 44,
+          "right": 359,
+          "bottom": 425
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [],
+      "discover": {
+        "x": 31,
+        "y": 330.921875,
+        "width": 328,
+        "height": 42.078125,
+        "right": 359,
+        "bottom": 373
+      }
+    },
+    {
+      "theme": "noa-studio",
+      "width": 430,
+      "height": 932,
+      "hero": {
+        "x": 16,
+        "y": 80,
+        "width": 398,
+        "height": 398,
+        "right": 414,
+        "bottom": 478
+      },
+      "media": {
+        "x": 17,
+        "y": 81,
+        "width": 396,
+        "height": 396,
+        "right": 413,
+        "bottom": 477
+      },
+      "copy": {
+        "x": 17,
+        "y": 286.921875,
+        "width": 396,
+        "height": 190.078125,
+        "right": 413,
+        "bottom": 477
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 368,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 31,
+          "y": 421,
+          "width": 180,
+          "height": 44,
+          "right": 211,
+          "bottom": 465
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 219,
+          "y": 421,
+          "width": 180,
+          "height": 44,
+          "right": 399,
+          "bottom": 465
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [
+        {
+          "href": "/noa-youtube.php?genre=kpop-original",
+          "title": "K-POP Original 음악 만나기",
+          "x": 31,
+          "y": 351.71875,
+          "width": 368,
+          "height": 61.28125,
+          "right": 399,
+          "bottom": 413
+        }
+      ],
+      "discover": {
+        "x": 31,
+        "y": 351.71875,
+        "width": 368,
+        "height": 61.28125,
+        "right": 399,
+        "bottom": 413
+      }
+    },
+    {
+      "theme": "noa-studio",
+      "width": 768,
+      "height": 1024,
+      "hero": {
+        "x": 200,
+        "y": 80,
+        "width": 544,
+        "height": 544,
+        "right": 744,
+        "bottom": 624
+      },
+      "media": {
+        "x": 201,
+        "y": 81,
+        "width": 542,
+        "height": 542,
+        "right": 743,
+        "bottom": 623
+      },
+      "copy": {
+        "x": 201,
+        "y": 362.84375,
+        "width": 542,
+        "height": 260.15625,
+        "right": 743,
+        "bottom": 623
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 514,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 215,
+          "y": 567,
+          "width": 253,
+          "height": 44,
+          "right": 468,
+          "bottom": 611
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 476,
+          "y": 567,
+          "width": 253,
+          "height": 44,
+          "right": 729,
+          "bottom": 611
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [
+        {
+          "href": "/noa-youtube.php?track=TqpwFQQGxFs&play=1",
+          "title": "EP.7 아직 그 자리에 | Official MV (KR) | Original Song | 시간은 갔어도 나는 아직 그 자리에 있다",
+          "x": 215,
+          "y": 427.640625,
+          "width": 514,
+          "height": 63.671875,
+          "right": 729,
+          "bottom": 491.3125
+        },
+        {
+          "href": "/noa-youtube.php?track=hjqHoqr67l4&play=1",
+          "title": "EP.8 무너진 날들 | Official MV (KR) | Original Song | 무너진 날들 위에 숨만 남아 있다",
+          "x": 215,
+          "y": 495.3125,
+          "width": 514,
+          "height": 63.6875,
+          "right": 729,
+          "bottom": 559
+        }
+      ],
+      "discover": {
+        "x": 215,
+        "y": 427.640625,
+        "width": 514,
+        "height": 131.359375,
+        "right": 729,
+        "bottom": 559
+      }
+    },
+    {
+      "theme": "noa-studio",
+      "width": 1024,
+      "height": 1366,
+      "hero": {
+        "x": 200,
+        "y": 80,
+        "width": 800,
+        "height": 800,
+        "right": 1000,
+        "bottom": 880
+      },
+      "media": {
+        "x": 201,
+        "y": 81,
+        "width": 798,
+        "height": 798,
+        "right": 999,
+        "bottom": 879
+      },
+      "copy": {
+        "x": 201,
+        "y": 495.96875,
+        "width": 798,
+        "height": 383.03125,
+        "right": 999,
+        "bottom": 879
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 770,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 215,
+          "y": 823,
+          "width": 381,
+          "height": 44,
+          "right": 596,
+          "bottom": 867
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 604,
+          "y": 823,
+          "width": 381,
+          "height": 44,
+          "right": 985,
+          "bottom": 867
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [
+        {
+          "href": "/noa-youtube.php?genre=kpop-original",
+          "title": "K-POP Original 음악 만나기",
+          "x": 215,
+          "y": 562.609375,
+          "width": 770,
+          "height": 252.390625,
+          "right": 985,
+          "bottom": 815
+        }
+      ],
+      "discover": {
+        "x": 215,
+        "y": 562.609375,
+        "width": 770,
+        "height": 252.390625,
+        "right": 985,
+        "bottom": 815
+      }
+    },
+    {
+      "theme": "noa-studio",
+      "width": 568,
+      "height": 320,
+      "hero": {
+        "x": 16,
+        "y": 72,
+        "width": 536,
+        "height": 268,
+        "right": 552,
+        "bottom": 340
+      },
+      "media": {
+        "x": 17,
+        "y": 73,
+        "width": 280.34375,
+        "height": 266,
+        "right": 297.34375,
+        "bottom": 339
+      },
+      "copy": {
+        "x": 297.34375,
+        "y": 73,
+        "width": 253.640625,
+        "height": 266,
+        "right": 550.984375,
+        "bottom": 339
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 229.640625,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "column",
+          "overflow": false,
+          "x": 309.34375,
+          "y": 137.796875,
+          "width": 110.8125,
+          "height": 52,
+          "right": 420.15625,
+          "bottom": 189.796875
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "column",
+          "overflow": false,
+          "x": 428.15625,
+          "y": 137.796875,
+          "width": 110.828125,
+          "height": 52,
+          "right": 538.984375,
+          "bottom": 189.796875
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [
+        {
+          "href": "/noa-youtube.php?genre=kpop-original",
+          "title": "K-POP Original 음악 만나기",
+          "x": 309.34375,
+          "y": 219.390625,
+          "width": 229.640625,
+          "height": 107.609375,
+          "right": 538.984375,
+          "bottom": 327
+        }
+      ],
+      "discover": {
+        "x": 309.34375,
+        "y": 197.796875,
+        "width": 229.640625,
+        "height": 129.203125,
+        "right": 538.984375,
+        "bottom": 327
+      }
+    },
+    {
+      "theme": "noa-studio",
+      "width": 844,
+      "height": 390,
+      "hero": {
+        "x": 24,
+        "y": 72,
+        "width": 796,
+        "height": 398,
+        "right": 820,
+        "bottom": 470
+      },
+      "media": {
+        "x": 25,
+        "y": 73,
+        "width": 416.84375,
+        "height": 396,
+        "right": 441.84375,
+        "bottom": 469
+      },
+      "copy": {
+        "x": 441.84375,
+        "y": 73,
+        "width": 377.140625,
+        "height": 396,
+        "right": 818.984375,
+        "bottom": 469
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 345.390625,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 457.71875,
+          "y": 143.390625,
+          "width": 168.6875,
+          "height": 44,
+          "right": 626.40625,
+          "bottom": 187.390625
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 634.40625,
+          "y": 143.390625,
+          "width": 168.703125,
+          "height": 44,
+          "right": 803.109375,
+          "bottom": 187.390625
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [
+        {
+          "href": "/noa-youtube.php?genre=kpop-original",
+          "title": "K-POP Original 음악 만나기",
+          "x": 457.71875,
+          "y": 216.984375,
+          "width": 345.390625,
+          "height": 236.140625,
+          "right": 803.109375,
+          "bottom": 453.125
+        }
+      ],
+      "discover": {
+        "x": 457.71875,
+        "y": 195.390625,
+        "width": 345.390625,
+        "height": 257.734375,
+        "right": 803.109375,
+        "bottom": 453.125
+      }
+    },
+    {
+      "theme": "noa-studio",
+      "width": 1280,
+      "height": 800,
+      "hero": {
+        "x": 248,
+        "y": 80,
+        "width": 1008,
+        "height": 504,
+        "right": 1256,
+        "bottom": 584
+      },
+      "media": {
+        "x": 249,
+        "y": 81,
+        "width": 528.140625,
+        "height": 502,
+        "right": 777.140625,
+        "bottom": 583
+      },
+      "copy": {
+        "x": 777.140625,
+        "y": 81,
+        "width": 477.84375,
+        "height": 502,
+        "right": 1254.984375,
+        "bottom": 583
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 437.625,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 797.25,
+          "y": 163.984375,
+          "width": 214.8125,
+          "height": 44,
+          "right": 1012.0625,
+          "bottom": 207.984375
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 1020.0625,
+          "y": 163.984375,
+          "width": 214.8125,
+          "height": 44,
+          "right": 1234.875,
+          "bottom": 207.984375
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [
+        {
+          "href": "/noa-youtube.php?genre=kpop-original",
+          "title": "K-POP Original 음악 만나기",
+          "x": 797.25,
+          "y": 237.578125,
+          "width": 437.625,
+          "height": 325.3125,
+          "right": 1234.875,
+          "bottom": 562.890625
+        }
+      ],
+      "discover": {
+        "x": 797.25,
+        "y": 215.984375,
+        "width": 437.625,
+        "height": 346.90625,
+        "right": 1234.875,
+        "bottom": 562.890625
+      }
+    },
+    {
+      "theme": "noa-studio",
+      "width": 1920,
+      "height": 1080,
+      "hero": {
+        "x": 248,
+        "y": 80,
+        "width": 1232,
+        "height": 616,
+        "right": 1480,
+        "bottom": 696
+      },
+      "media": {
+        "x": 249,
+        "y": 81,
+        "width": 645.75,
+        "height": 614,
+        "right": 894.75,
+        "bottom": 695
+      },
+      "copy": {
+        "x": 894.75,
+        "y": 81,
+        "width": 584.25,
+        "height": 614,
+        "right": 1479,
+        "bottom": 695
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 535.0625,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 919.34375,
+          "y": 176.984375,
+          "width": 263.53125,
+          "height": 44,
+          "right": 1182.875,
+          "bottom": 220.984375
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 1190.875,
+          "y": 176.984375,
+          "width": 263.53125,
+          "height": 44,
+          "right": 1454.40625,
+          "bottom": 220.984375
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [
+        {
+          "href": "/noa-youtube.php?genre=kpop-original",
+          "title": "K-POP Original 음악 만나기",
+          "x": 919.34375,
+          "y": 250.578125,
+          "width": 535.0625,
+          "height": 419.828125,
+          "right": 1454.40625,
+          "bottom": 670.40625
+        }
+      ],
+      "discover": {
+        "x": 919.34375,
+        "y": 228.984375,
+        "width": 535.0625,
+        "height": 441.421875,
+        "right": 1454.40625,
+        "bottom": 670.40625
+      }
+    },
+    {
+      "theme": "noa-ivory",
+      "width": 360,
+      "height": 800,
+      "hero": {
+        "x": 16,
+        "y": 80,
+        "width": 328,
+        "height": 328,
+        "right": 344,
+        "bottom": 408
+      },
+      "media": {
+        "x": 17,
+        "y": 81,
+        "width": 326,
+        "height": 326,
+        "right": 343,
+        "bottom": 407
+      },
+      "copy": {
+        "x": 17,
+        "y": 237,
+        "width": 326,
+        "height": 170,
+        "right": 343,
+        "bottom": 407
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 298,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 31,
+          "y": 351,
+          "width": 145,
+          "height": 44,
+          "right": 176,
+          "bottom": 395
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 184,
+          "y": 351,
+          "width": 145,
+          "height": 44,
+          "right": 329,
+          "bottom": 395
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [],
+      "discover": {
+        "x": 31,
+        "y": 301.796875,
+        "width": 298,
+        "height": 41.203125,
+        "right": 329,
+        "bottom": 343
+      }
+    },
+    {
+      "theme": "noa-ivory",
+      "width": 390,
+      "height": 844,
+      "hero": {
+        "x": 16,
+        "y": 80,
+        "width": 358,
+        "height": 358,
+        "right": 374,
+        "bottom": 438
+      },
+      "media": {
+        "x": 17,
+        "y": 81,
+        "width": 356,
+        "height": 356,
+        "right": 373,
+        "bottom": 437
+      },
+      "copy": {
+        "x": 17,
+        "y": 266.125,
+        "width": 356,
+        "height": 170.875,
+        "right": 373,
+        "bottom": 437
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 328,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 31,
+          "y": 381,
+          "width": 160,
+          "height": 44,
+          "right": 191,
+          "bottom": 425
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 199,
+          "y": 381,
+          "width": 160,
+          "height": 44,
+          "right": 359,
+          "bottom": 425
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [],
+      "discover": {
+        "x": 31,
+        "y": 330.921875,
+        "width": 328,
+        "height": 42.078125,
+        "right": 359,
+        "bottom": 373
+      }
+    },
+    {
+      "theme": "noa-ivory",
+      "width": 430,
+      "height": 932,
+      "hero": {
+        "x": 16,
+        "y": 80,
+        "width": 398,
+        "height": 398,
+        "right": 414,
+        "bottom": 478
+      },
+      "media": {
+        "x": 17,
+        "y": 81,
+        "width": 396,
+        "height": 396,
+        "right": 413,
+        "bottom": 477
+      },
+      "copy": {
+        "x": 17,
+        "y": 286.921875,
+        "width": 396,
+        "height": 190.078125,
+        "right": 413,
+        "bottom": 477
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 368,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 31,
+          "y": 421,
+          "width": 180,
+          "height": 44,
+          "right": 211,
+          "bottom": 465
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 219,
+          "y": 421,
+          "width": 180,
+          "height": 44,
+          "right": 399,
+          "bottom": 465
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [
+        {
+          "href": "/noa-youtube.php?genre=kpop-original",
+          "title": "K-POP Original 음악 만나기",
+          "x": 31,
+          "y": 351.71875,
+          "width": 368,
+          "height": 61.28125,
+          "right": 399,
+          "bottom": 413
+        }
+      ],
+      "discover": {
+        "x": 31,
+        "y": 351.71875,
+        "width": 368,
+        "height": 61.28125,
+        "right": 399,
+        "bottom": 413
+      }
+    },
+    {
+      "theme": "noa-ivory",
+      "width": 768,
+      "height": 1024,
+      "hero": {
+        "x": 200,
+        "y": 80,
+        "width": 544,
+        "height": 544,
+        "right": 744,
+        "bottom": 624
+      },
+      "media": {
+        "x": 201,
+        "y": 81,
+        "width": 542,
+        "height": 542,
+        "right": 743,
+        "bottom": 623
+      },
+      "copy": {
+        "x": 201,
+        "y": 362.84375,
+        "width": 542,
+        "height": 260.15625,
+        "right": 743,
+        "bottom": 623
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 514,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 215,
+          "y": 567,
+          "width": 253,
+          "height": 44,
+          "right": 468,
+          "bottom": 611
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 476,
+          "y": 567,
+          "width": 253,
+          "height": 44,
+          "right": 729,
+          "bottom": 611
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [
+        {
+          "href": "/noa-youtube.php?genre=kpop-original",
+          "title": "K-POP Original 음악 만나기",
+          "x": 215,
+          "y": 427.640625,
+          "width": 514,
+          "height": 131.359375,
+          "right": 729,
+          "bottom": 559
+        }
+      ],
+      "discover": {
+        "x": 215,
+        "y": 427.640625,
+        "width": 514,
+        "height": 131.359375,
+        "right": 729,
+        "bottom": 559
+      }
+    },
+    {
+      "theme": "noa-ivory",
+      "width": 1024,
+      "height": 1366,
+      "hero": {
+        "x": 200,
+        "y": 80,
+        "width": 800,
+        "height": 800,
+        "right": 1000,
+        "bottom": 880
+      },
+      "media": {
+        "x": 201,
+        "y": 81,
+        "width": 798,
+        "height": 798,
+        "right": 999,
+        "bottom": 879
+      },
+      "copy": {
+        "x": 201,
+        "y": 495.96875,
+        "width": 798,
+        "height": 383.03125,
+        "right": 999,
+        "bottom": 879
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 770,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 215,
+          "y": 823,
+          "width": 381,
+          "height": 44,
+          "right": 596,
+          "bottom": 867
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 604,
+          "y": 823,
+          "width": 381,
+          "height": 44,
+          "right": 985,
+          "bottom": 867
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [
+        {
+          "href": "/noa-youtube.php?genre=kpop-original",
+          "title": "K-POP Original 음악 만나기",
+          "x": 215,
+          "y": 562.609375,
+          "width": 770,
+          "height": 252.390625,
+          "right": 985,
+          "bottom": 815
+        }
+      ],
+      "discover": {
+        "x": 215,
+        "y": 562.609375,
+        "width": 770,
+        "height": 252.390625,
+        "right": 985,
+        "bottom": 815
+      }
+    },
+    {
+      "theme": "noa-ivory",
+      "width": 568,
+      "height": 320,
+      "hero": {
+        "x": 16,
+        "y": 72,
+        "width": 536,
+        "height": 268,
+        "right": 552,
+        "bottom": 340
+      },
+      "media": {
+        "x": 17,
+        "y": 73,
+        "width": 280.34375,
+        "height": 266,
+        "right": 297.34375,
+        "bottom": 339
+      },
+      "copy": {
+        "x": 297.34375,
+        "y": 73,
+        "width": 253.640625,
+        "height": 266,
+        "right": 550.984375,
+        "bottom": 339
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 229.640625,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "column",
+          "overflow": false,
+          "x": 309.34375,
+          "y": 137.796875,
+          "width": 110.8125,
+          "height": 52,
+          "right": 420.15625,
+          "bottom": 189.796875
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "column",
+          "overflow": false,
+          "x": 428.15625,
+          "y": 137.796875,
+          "width": 110.828125,
+          "height": 52,
+          "right": 538.984375,
+          "bottom": 189.796875
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [
+        {
+          "href": "/noa-youtube.php?genre=kpop-original",
+          "title": "K-POP Original 음악 만나기",
+          "x": 309.34375,
+          "y": 219.390625,
+          "width": 229.640625,
+          "height": 107.609375,
+          "right": 538.984375,
+          "bottom": 327
+        }
+      ],
+      "discover": {
+        "x": 309.34375,
+        "y": 197.796875,
+        "width": 229.640625,
+        "height": 129.203125,
+        "right": 538.984375,
+        "bottom": 327
+      }
+    },
+    {
+      "theme": "noa-ivory",
+      "width": 844,
+      "height": 390,
+      "hero": {
+        "x": 24,
+        "y": 72,
+        "width": 796,
+        "height": 398,
+        "right": 820,
+        "bottom": 470
+      },
+      "media": {
+        "x": 25,
+        "y": 73,
+        "width": 416.84375,
+        "height": 396,
+        "right": 441.84375,
+        "bottom": 469
+      },
+      "copy": {
+        "x": 441.84375,
+        "y": 73,
+        "width": 377.140625,
+        "height": 396,
+        "right": 818.984375,
+        "bottom": 469
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 345.390625,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 457.71875,
+          "y": 143.390625,
+          "width": 168.6875,
+          "height": 44,
+          "right": 626.40625,
+          "bottom": 187.390625
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 634.40625,
+          "y": 143.390625,
+          "width": 168.703125,
+          "height": 44,
+          "right": 803.109375,
+          "bottom": 187.390625
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [
+        {
+          "href": "/noa-youtube.php?genre=kpop-original",
+          "title": "K-POP Original 음악 만나기",
+          "x": 457.71875,
+          "y": 216.984375,
+          "width": 345.390625,
+          "height": 236.140625,
+          "right": 803.109375,
+          "bottom": 453.125
+        }
+      ],
+      "discover": {
+        "x": 457.71875,
+        "y": 195.390625,
+        "width": 345.390625,
+        "height": 257.734375,
+        "right": 803.109375,
+        "bottom": 453.125
+      }
+    },
+    {
+      "theme": "noa-ivory",
+      "width": 1280,
+      "height": 800,
+      "hero": {
+        "x": 248,
+        "y": 80,
+        "width": 1008,
+        "height": 504,
+        "right": 1256,
+        "bottom": 584
+      },
+      "media": {
+        "x": 249,
+        "y": 81,
+        "width": 528.140625,
+        "height": 502,
+        "right": 777.140625,
+        "bottom": 583
+      },
+      "copy": {
+        "x": 777.140625,
+        "y": 81,
+        "width": 477.84375,
+        "height": 502,
+        "right": 1254.984375,
+        "bottom": 583
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 437.625,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 797.25,
+          "y": 163.984375,
+          "width": 214.8125,
+          "height": 44,
+          "right": 1012.0625,
+          "bottom": 207.984375
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 1020.0625,
+          "y": 163.984375,
+          "width": 214.8125,
+          "height": 44,
+          "right": 1234.875,
+          "bottom": 207.984375
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [
+        {
+          "href": "/noa-youtube.php?genre=kpop-original",
+          "title": "K-POP Original 음악 만나기",
+          "x": 797.25,
+          "y": 237.578125,
+          "width": 437.625,
+          "height": 325.3125,
+          "right": 1234.875,
+          "bottom": 562.890625
+        }
+      ],
+      "discover": {
+        "x": 797.25,
+        "y": 215.984375,
+        "width": 437.625,
+        "height": 346.90625,
+        "right": 1234.875,
+        "bottom": 562.890625
+      }
+    },
+    {
+      "theme": "noa-ivory",
+      "width": 1920,
+      "height": 1080,
+      "hero": {
+        "x": 248,
+        "y": 80,
+        "width": 1232,
+        "height": 616,
+        "right": 1480,
+        "bottom": 696
+      },
+      "media": {
+        "x": 249,
+        "y": 81,
+        "width": 645.75,
+        "height": 614,
+        "right": 894.75,
+        "bottom": 695
+      },
+      "copy": {
+        "x": 894.75,
+        "y": 81,
+        "width": 584.25,
+        "height": 614,
+        "right": 1479,
+        "bottom": 695
+      },
+      "copyBackground": "rgba(0, 0, 0, 0)",
+      "copyBackdrop": "none",
+      "copyBackgroundImage": "none",
+      "actionWidth": 535.0625,
+      "buttons": [
+        {
+          "href": "/noa-youtube.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 919.34375,
+          "y": 176.984375,
+          "width": 263.53125,
+          "height": 44,
+          "right": 1182.875,
+          "bottom": 220.984375
+        },
+        {
+          "href": "/noa-sitemap.php",
+          "direction": "row",
+          "overflow": false,
+          "x": 1190.875,
+          "y": 176.984375,
+          "width": 263.53125,
+          "height": 44,
+          "right": 1454.40625,
+          "bottom": 220.984375
+        }
+      ],
+      "overflow": false,
+      "copyOverflow": false,
+      "noticesFollow": true,
+      "fit": "cover",
+      "clip": "hidden",
+      "backdrop": "none",
+      "genre": "kpop-original",
+      "label": "K-POP Original",
+      "description": "한국어로 전하는 노아의 오리지널 음악 이야기.",
+      "retryHidden": true,
+      "animation": "none",
+      "picks": [
+        {
+          "href": "/noa-youtube.php?genre=kpop-original",
+          "title": "K-POP Original 음악 만나기",
+          "x": 919.34375,
+          "y": 250.578125,
+          "width": 535.0625,
+          "height": 419.828125,
+          "right": 1454.40625,
+          "bottom": 670.40625
+        }
+      ],
+      "discover": {
+        "x": 919.34375,
+        "y": 228.984375,
+        "width": 535.0625,
+        "height": 441.421875,
+        "right": 1454.40625,
+        "bottom": 670.40625
+      }
+    }
+  ]
+}

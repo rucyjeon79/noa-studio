@@ -1,0 +1,55 @@
+{
+  "environment": "isolated native session fixture; provider responses deterministic; no paid calls",
+  "browser": [
+    {
+      "width": 360,
+      "theme": "noa-studio",
+      "orderedCuts": true,
+      "storedProjectResumed": true,
+      "noOverflow": true
+    },
+    {
+      "width": 360,
+      "theme": "noa-ivory",
+      "orderedCuts": true,
+      "storedProjectResumed": true,
+      "noOverflow": true
+    },
+    {
+      "width": 768,
+      "theme": "noa-studio",
+      "orderedCuts": true,
+      "storedProjectResumed": true,
+      "noOverflow": true
+    },
+    {
+      "width": 768,
+      "theme": "noa-ivory",
+      "orderedCuts": true,
+      "storedProjectResumed": true,
+      "noOverflow": true
+    },
+    {
+      "width": 1440,
+      "theme": "noa-studio",
+      "orderedCuts": true,
+      "storedProjectResumed": true,
+      "noOverflow": true
+    },
+    {
+      "width": 1440,
+      "theme": "noa-ivory",
+      "orderedCuts": true,
+      "storedProjectResumed": true,
+      "noOverflow": true
+    }
+  ],
+  "highestAdminOnly": true,
+  "csrfAndOriginEnforced": true,
+  "durableReload": true,
+  "originalPackImport": true,
+  "fullThirtyCutFlow": true,
+  "encryptedKeysNotReturned": true,
+  "dailyQuotaBeforeProvider": true,
+  "providerFixtureCalls": 9
+}

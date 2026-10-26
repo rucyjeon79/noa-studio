@@ -1,0 +1,41 @@
+{
+  "ok": true,
+  "results": [
+    {
+      "theme": "noa-studio",
+      "width": 390,
+      "postId": 1,
+      "featured": true,
+      "readableExpansion": true,
+      "followingClose": true,
+      "noOverflow": true
+    },
+    {
+      "theme": "noa-studio",
+      "width": 1280,
+      "postId": 1,
+      "featured": true,
+      "readableExpansion": true,
+      "followingClose": true,
+      "noOverflow": true
+    },
+    {
+      "theme": "noa-ivory",
+      "width": 390,
+      "postId": 1,
+      "featured": true,
+      "readableExpansion": true,
+      "followingClose": true,
+      "noOverflow": true
+    },
+    {
+      "theme": "noa-ivory",
+      "width": 1280,
+      "postId": 1,
+      "featured": true,
+      "readableExpansion": true,
+      "followingClose": true,
+      "noOverflow": true
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+    "ok": true,
+    "authEnvironment": "isolated native interface fixture",
+    "provider": "deterministic fixture, zero external calls",
+    "encryptedKey": true,
+    "optimisticRevision": true,
+    "idempotentRequests": true,
+    "quotaReservedBeforeCall": true,
+    "concurrentWritesBlocked": true,
+    "thirtyOrderedCuts": true,
+    "malformedOutputsRejected": true
+}

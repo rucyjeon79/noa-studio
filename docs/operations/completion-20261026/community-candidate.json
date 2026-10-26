@@ -1,0 +1,138 @@
+{
+  "environment": "isolated MySQL and native-auth interface fixture; no production identities",
+  "api": [
+    {
+      "ownerNeedsPassword": true,
+      "otherAccountWithCorrectPasswordDenied": true,
+      "staffLevelTenIsNotAdmin": true,
+      "adminOnlyComments": true,
+      "csrfAndOriginEnforced": true,
+      "passwordRateLimit": true,
+      "nativeAndPrettyRoutesDenied": true,
+      "noBodyInLists": true,
+      "replayCreatesOnePostAndOneComment": true
+    }
+  ],
+  "browser": [
+    {
+      "width": 320,
+      "theme": "noa-studio",
+      "page": "youtube",
+      "fiveTitles": true,
+      "inlineExpansion": true,
+      "floatingClose": true,
+      "noOverflow": true,
+      "errors": []
+    },
+    {
+      "width": 320,
+      "theme": "noa-studio",
+      "page": "music",
+      "fiveTitles": true,
+      "inlineExpansion": true,
+      "floatingClose": true,
+      "noOverflow": true,
+      "errors": []
+    },
+    {
+      "width": 320,
+      "theme": "noa-ivory",
+      "page": "youtube",
+      "fiveTitles": true,
+      "inlineExpansion": true,
+      "floatingClose": true,
+      "noOverflow": true,
+      "errors": []
+    },
+    {
+      "width": 320,
+      "theme": "noa-ivory",
+      "page": "music",
+      "fiveTitles": true,
+      "inlineExpansion": true,
+      "floatingClose": true,
+      "noOverflow": true,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "theme": "noa-studio",
+      "page": "youtube",
+      "fiveTitles": true,
+      "inlineExpansion": true,
+      "floatingClose": true,
+      "noOverflow": true,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "theme": "noa-studio",
+      "page": "music",
+      "fiveTitles": true,
+      "inlineExpansion": true,
+      "floatingClose": true,
+      "noOverflow": true,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "theme": "noa-ivory",
+      "page": "youtube",
+      "fiveTitles": true,
+      "inlineExpansion": true,
+      "floatingClose": true,
+      "noOverflow": true,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "theme": "noa-ivory",
+      "page": "music",
+      "fiveTitles": true,
+      "inlineExpansion": true,
+      "floatingClose": true,
+      "noOverflow": true,
+      "errors": []
+    },
+    {
+      "width": 1280,
+      "theme": "noa-studio",
+      "page": "youtube",
+      "fiveTitles": true,
+      "inlineExpansion": true,
+      "floatingClose": true,
+      "noOverflow": true,
+      "errors": []
+    },
+    {
+      "width": 1280,
+      "theme": "noa-studio",
+      "page": "music",
+      "fiveTitles": true,
+      "inlineExpansion": true,
+      "floatingClose": true,
+      "noOverflow": true,
+      "errors": []
+    },
+    {
+      "width": 1280,
+      "theme": "noa-ivory",
+      "page": "youtube",
+      "fiveTitles": true,
+      "inlineExpansion": true,
+      "floatingClose": true,
+      "noOverflow": true,
+      "errors": []
+    },
+    {
+      "width": 1280,
+      "theme": "noa-ivory",
+      "page": "music",
+      "fiveTitles": true,
+      "inlineExpansion": true,
+      "floatingClose": true,
+      "noOverflow": true,
+      "errors": []
+    }
+  ]
+}

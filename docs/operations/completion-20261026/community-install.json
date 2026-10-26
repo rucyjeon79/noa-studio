@@ -1,0 +1,32 @@
+[
+  {
+    "ok": true,
+    "board": "song_request",
+    "created": false,
+    "readLevel": 10,
+    "commentLevel": 10,
+    "secretRequired": true,
+    "searchEnabled": false,
+    "rssEnabled": false,
+    "postCount": 0,
+    "existingBoardsModified": 0,
+    "existingPostsModified": 0,
+    "memberRowsChanged": 0,
+    "pointsChanged": 0
+  },
+  {
+    "ok": true,
+    "board": "song_request",
+    "created": false,
+    "readLevel": 10,
+    "commentLevel": 10,
+    "secretRequired": true,
+    "searchEnabled": false,
+    "rssEnabled": false,
+    "postCount": 0,
+    "existingBoardsModified": 0,
+    "existingPostsModified": 0,
+    "memberRowsChanged": 0,
+    "pointsChanged": 0
+  }
+]

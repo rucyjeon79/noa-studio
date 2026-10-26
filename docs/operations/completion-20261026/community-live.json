@@ -1,0 +1,39 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "path": "/",
+      "status": 200,
+      "homeAndNoticePresent": true
+    },
+    {
+      "path": "/noa-bridge/community.php?board=song_request",
+      "status": 401,
+      "guestDenied": true,
+      "hostErrorDocument": true
+    },
+    {
+      "path": "/noa-bridge/community.php?board=free",
+      "status": 401,
+      "guestDenied": true,
+      "hostErrorDocument": true
+    },
+    {
+      "path": "/bbs/board.php?bo_table=song_request",
+      "status": 403,
+      "nativePrivateRouteDenied": true
+    },
+    {
+      "path": "/bbs/download.php?bo_table=song_request&wr_id=1",
+      "status": 403,
+      "nativePrivateRouteDenied": true
+    },
+    {
+      "path": "/bbs/rss.php?bo_table=song_request",
+      "status": 403,
+      "nativePrivateRouteDenied": true
+    }
+  ],
+  "productionTestPostsCreated": 0,
+  "productionAuthImpersonation": false
+}

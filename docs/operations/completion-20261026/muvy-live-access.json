@@ -1,0 +1,28 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "path": "/noa-ai-lab.php",
+      "status": 302,
+      "guestDenied": true
+    },
+    {
+      "path": "/noa-bridge/muvy.php",
+      "status": 403,
+      "guestDenied": true
+    },
+    {
+      "path": "/noa-muvy-panel.php",
+      "status": 403,
+      "guestDenied": true
+    }
+  ],
+  "settings": {
+    "enabled": false,
+    "model": "grok-4.5",
+    "dailyCalls": 20
+  },
+  "paidProviderCalls": 0,
+  "memberRowsModified": 0,
+  "authenticatedLiveSessionTest": false
+}
