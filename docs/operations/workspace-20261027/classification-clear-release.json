@@ -1,0 +1,75 @@
+{
+  "date": "2026-10-27",
+  "status": "deployed_tested_operating_admin_save_pending",
+  "pr": "https://github.com/rucyjeon79/noa-studio/pull/229",
+  "head": "a320f1c2cabe12fef95b4448c1b68b5ead35a280",
+  "runtimeCommit": "85f6e911b9a2c512c67aed4749a0113338ac533e",
+  "workflow": "https://github.com/rucyjeon79/noa-studio/actions/runs/40440535019",
+  "candidateJob": 121979555057,
+  "productionJob": 121980415953,
+  "reportedRecord": {
+    "key": "catalog:987bab092d893e41b2f2c72b24a98319d1c1831302c486b5ade8e1c6a61f0d86",
+    "title": "[세로] AInoa with 람준파파 - 난 새하늘이야 | 새하늘용인대태권도 학원가",
+    "productionRowEdited": false
+  },
+  "changes": [
+    "Explicit unclassified saves retain manual provenance and remove custom memberships atomically; song body is preserved.",
+    "Inherited recovered story/cover classification uses exact complete owner playlist membership, never title words. Earlier manual choices are preserved; incomplete source evidence causes no automatic correction.",
+    "Published YouTube rows, Coming Soon, Music and library use the common classification projection.",
+    "Selected YouTube playlists never append absent alternate versions or unrelated catalog placeholders.",
+    "Intentional clears are excluded from classification error reports; existing duplicate review/trash/restore remains available."
+  ],
+  "validation": {
+    "localHierarchyTests": 11,
+    "sourceMembershipManualClearRefreshAndProjection": true,
+    "realNativeIsolatedSaveReloadAndCollectionRemoval": true,
+    "nativeYoutubePublicProjectionAndEmptyPlaylist": true,
+    "screenCases": 6,
+    "roles": [
+      "guest",
+      "member",
+      "vip",
+      "admin"
+    ],
+    "chromiumWebkitNavigation": true,
+    "productionHashCount": 42,
+    "productionChangedFiles": 13,
+    "protectedUnchanged": 23,
+    "publicHomeAndProtectedRoutes": true,
+    "authenticatedOperatingAdminSave": false
+  },
+  "scope": {
+    "deploymentDatabaseWrites": 0,
+    "userSongRowsEdited": 0,
+    "bulkMigration": false,
+    "sourceTitleEvidencePreserved": true
+  },
+  "limitations": [
+    "Operating administrator browser cannot safely resume native credential state; no authenticated save was made on the reported song or BLOOM.",
+    "BLOOM membership in the existing AMT 2026 collection remains pending from PR 228.",
+    "Complete-source fallback is a read projection for inherited imported genres; no bulk rewrite of historical source snapshots or existing song rows.",
+    "Separate pre-existing production member QA failed a level expectation before this deployment; both generated QA accounts and own test records were cleaned. Existing account permissions were not changed by this fix."
+  ],
+  "otherChecks": {
+    "legacyOverlayFailures": [
+      40440184572,
+      40440184567,
+      40440184610
+    ],
+    "integratedFixtureFollowup": {
+      "run": 40440184564,
+      "statusAtReport": "waiting_on_runner_audio_dependency_install",
+      "fix": "Load actual sound-core visibility rules in the disposable category-order fixture."
+    },
+    "separateProductionMemberQa": {
+      "run": 40440535035,
+      "result": "failed_level_expectation",
+      "cleanup": "QA_ACCOUNTS_AND_OWN_TEST_RECORDS_REMOVED 2"
+    }
+  },
+  "artifacts": {
+    "candidate": "classification-clear-candidate.json",
+    "deployment": "classification-clear-deployment.json",
+    "productionPublic": "classification-clear-public-report.json"
+  }
+}

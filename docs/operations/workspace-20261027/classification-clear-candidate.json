@@ -1,0 +1,79 @@
+{
+  "commit": "85f6e911b9a2c512c67aed4749a0113338ac533e",
+  "run": 40440535019,
+  "job": 121979555057,
+  "permissions": [
+    "guest",
+    "member",
+    "vip",
+    "admin"
+  ],
+  "screens": [
+    {
+      "width": 320,
+      "theme": "noa-studio",
+      "commonFields": true,
+      "categoryLevels": 4,
+      "customVocalPreserved": true,
+      "quality": true,
+      "noOverflow": true
+    },
+    {
+      "width": 320,
+      "theme": "noa-ivory",
+      "commonFields": true,
+      "categoryLevels": 4,
+      "customVocalPreserved": true,
+      "quality": true,
+      "noOverflow": true
+    },
+    {
+      "width": 390,
+      "theme": "noa-studio",
+      "commonFields": true,
+      "categoryLevels": 4,
+      "customVocalPreserved": true,
+      "quality": true,
+      "noOverflow": true
+    },
+    {
+      "width": 390,
+      "theme": "noa-ivory",
+      "commonFields": true,
+      "categoryLevels": 4,
+      "customVocalPreserved": true,
+      "quality": true,
+      "noOverflow": true
+    },
+    {
+      "width": 1280,
+      "theme": "noa-studio",
+      "commonFields": true,
+      "categoryLevels": 4,
+      "customVocalPreserved": true,
+      "quality": true,
+      "noOverflow": true
+    },
+    {
+      "width": 1280,
+      "theme": "noa-ivory",
+      "commonFields": true,
+      "categoryLevels": 4,
+      "customVocalPreserved": true,
+      "quality": true,
+      "noOverflow": true
+    }
+  ],
+  "checks": [
+    "new-common-form-real-save-with-idempotent-confirmation-retry",
+    "duplicate-original-ep-and-incomplete-act-rejected",
+    "classification-real-save-reload-library-projection-invalid-and-stale-write-rejection",
+    "collection-form-add-multiple-confirmation-retry-list-order-body-preservation-library-music-projection",
+    "collection-stale-write-rolls-back-song-and-remove-preserves-others",
+    "category-clear-real-save-reload-removes-collections-preserves-body-and-library",
+    "native-youtube-published-video-clear-projection-and-empty-playlist-no-phantom-songs",
+    "reviewed-value-apply-and-auto-rescan",
+    "duplicate-trash-and-restore-real-http"
+  ],
+  "productionWrites": 0
+}

@@ -1,0 +1,17 @@
+{
+  "productionWrites": 0,
+  "pages": [
+    {
+      "path": "/",
+      "success": true,
+      "noOverflow": true
+    }
+  ],
+  "adminProtected": true,
+  "sharedAssets": [
+    "noa-record-form.js",
+    "noa-record-form.css",
+    "noa-quality.js",
+    "noa-quality.css"
+  ]
+}

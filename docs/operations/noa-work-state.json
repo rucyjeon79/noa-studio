@@ -192,6 +192,7 @@
     }
   ],
   "resumeSequence": [
+    "분류 해제/원본 재생목록 소속 수정은 PR 229, 운영 85f6e911 및 Actions 40440535019 성공. 재배포하지 말고 관리자 브라우저 연결 복구 후 난 새하늘이야의 분류와 실제 해제 저장·재조회, 앞서 남은 BLOOM AMT 묶음 배정을 확인한다. 운영 곡 데이터를 이미 수정했다고 가정하지 않는다.",
     "최신 main·열린 PR·진행 중인 Actions를 조회하고 이 결과와 새 변경을 대조한다. 이미 성공한 화면·자료·공지·저장소 작업을 중복 배포하거나 재이전하지 않는다.",
     "현재 계정 메뉴·4단계 탐색은 3887f0e 배포, 홈 진입/Apple 설치·게시판·미리보기·뮤비 작업실은 연결된 각 범위별 결과를 기준으로 한다. 단일 커밋이 사이트 전체를 배포했다고 가정하지 않는다.",
     "공지 ID 1을 유지한다. 최근 본문 SHA는 docs/notices/NOA_20261026_WELCOME_PUBLISHED.json에서 확인하고 실제 사용자 변경과 충돌하면 덮어쓰지 않는다.",
@@ -619,18 +620,27 @@
       },
       "supersededBy": "3887f0ebfc1d81f734a7ff37bd9723de180f682f",
       "scope": "이전 AI 자동화 배포 이력. 현재 사이트 전체 해시로 해석하지 않는다."
+    },
+    {
+      "id": "NOA-20261027-CLASSIFICATION-CLEAR",
+      "status": "deployed_tested_operating_admin_save_pending",
+      "runtimeCommit": "85f6e911b9a2c512c67aed4749a0113338ac533e",
+      "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40440535019",
+      "evidence": "docs/operations/workspace-20261027/classification-clear-release.json",
+      "allOriginalAreasComplete": false,
+      "authenticatedAdminSaveVerified": false,
+      "scope": "Song category clear and exact YouTube playlist membership; 13 changed files, 42 hashes, 23 protected files",
+      "databaseWrites": 0
     }
   ],
   "latestWorkUnit": {
-    "id": "NOA-20261027-UNIFIED-SONG-FORMS-QUALITY",
-    "status": "deployed_and_verified",
-    "runtimeCommit": "f53342dce4c4a170d919ceb9c0c472fe41b93dae",
-    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40427973397",
-    "result": "docs/operations/NOA_20261027_UNIFIED_FORMS_QUALITY_RESULT.md",
-    "evidence": "docs/operations/workspace-20261027/unified-forms-quality.json",
+    "id": "NOA-20261027-CLASSIFICATION-CLEAR",
+    "status": "deployed_tested_operating_admin_save_pending",
+    "runtimeCommit": "85f6e911b9a2c512c67aed4749a0113338ac533e",
+    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40440535019",
+    "evidence": "docs/operations/workspace-20261027/classification-clear-release.json",
     "allOriginalAreasComplete": false,
-    "authenticatedAdminReadOnlyVerified": true,
-    "unresolvedReviewItems": 427
+    "authenticatedAdminSaveVerified": false
   },
   "relatedCheckFailures": [
     {
@@ -671,7 +681,7 @@
     "allOriginalAreasComplete": false,
     "directive": "곡정보 폼 전체 검수·일원화 및 최고관리자 오류검증의 중복·충돌 조치 연결",
     "completedAt": "2026-10-27T00:48:17.512800+00:00",
-    "currentStage": "공통 폼·검사·조치 기능 운영 반영 완료. 최고관리자 실제 로그인 후 666개 전체 검사·재검사와 독립/목록/내 채널 폼·4단 분류 확인. 기존 자료 427개 검토 항목은 미조치이며 저장·삭제를 임의 실행하지 않음.",
+    "currentStage": "Classification clear and exact playlist membership deployed. Authenticated operating-song verification remains pending; retain prior BLOOM collection assignment task.",
     "runtimeChanged": true,
     "productionDatabaseWrites": 0,
     "existingTwelveAreasPreserved": true,
@@ -724,6 +734,15 @@
       "evidence": "docs/operations/workspace-20261027/collection-editor-release.json",
       "productionSongEdits": 0,
       "remaining": "BLOOM actual membership save pending: browser runtime could not safely resume native credential state. Restore authenticated browser, select existing AMT 2026 second-competition playlist, save and verify without overwriting concurrent edits."
+    },
+    "classificationClearCorrection": {
+      "id": "NOA-20261027-CLASSIFICATION-CLEAR",
+      "status": "deployed_tested_operating_admin_save_pending",
+      "runtimeCommit": "85f6e911b9a2c512c67aed4749a0113338ac533e",
+      "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40440535019",
+      "evidence": "docs/operations/workspace-20261027/classification-clear-release.json",
+      "allOriginalAreasComplete": false,
+      "authenticatedAdminSaveVerified": false
     }
   },
   "workUnitHistory": [
