@@ -20,11 +20,11 @@ release.FILES={
  'noa-bridge/catalog.php':'bridge/catalog.php',
  'noa-bridge/index.php':'bridge/index.php',
  'noa-bridge/youtube-store.php':'bridge/youtube-store.php',
- **{p:'deploy/'+p for p in ['noa-record-action.php','noa-catalog.js','noa-workspace.js','noa-browse.js','noa-browse-edit.js','noa-ui.css','noa-inline-edit.php','noa-catalog.php','noa-editor.php','noa-creator.php','noa-creator.js','noa-creator.css','noa-library.php','noa-ai-lab.php','noa-ai-lab.js','noa-my.php','noa-sitemap.php','noa-music.php','noa-world.php','noa-youtube.php']},
+ **{p:'deploy/'+p for p in ['noa-record-action.php','noa-catalog.js','noa-workspace.js','noa-browse.js','noa-browse-order.js','noa-browse-edit.js','noa-ui.css','noa-inline-edit.php','noa-catalog.php','noa-editor.php','noa-creator.php','noa-creator.js','noa-creator.css','noa-library.php','noa-ai-lab.php','noa-ai-lab.js','noa-my.php','noa-sitemap.php','noa-music.php','noa-world.php','noa-youtube.php']},
  'extend/noa.design.php':'deploy/noa-design.extend.php',
 }
 release.NEW={'noa-bridge/record-quality.php','noa-record-form.js','noa-record-form.css','noa-quality.php','noa-quality.js','noa-quality.css','noa-bridge/library-records.php','noa-bridge/record-trash.php','noa-workspace.php','noa-workspace.js','noa-catalog.js','noa-record-action.php'}
-release.PROTECTED=[p for p in release.PROTECTED if p not in release.FILES]+['index.php','noa-app/home.php','noa-youtube.js','noa-community.js','noa-bridge/community-core.php','noa-manifest.json','noa-sw.js','noa-android-release.json','noa-launch.js','noa-install.php','noa-bridge/member-access.php','extend/noa.access.php','noa-category-order.php','noa-browse-order.js']
+release.PROTECTED=[p for p in release.PROTECTED if p not in release.FILES]+['index.php','noa-app/home.php','noa-youtube.js','noa-community.js','noa-bridge/community-core.php','noa-manifest.json','noa-sw.js','noa-android-release.json','noa-launch.js','noa-install.php','noa-bridge/member-access.php','extend/noa.access.php','noa-category-order.php']
 if __name__=='__main__':
  release.main()
  if 'rollback' not in release.sys.argv:

@@ -50,6 +50,14 @@ $db->beginTransaction();try{
  foreach([$other,$trashed]as $invalid)try{nup_apply_collections($db,$key,$moved,[$invalid],[$invalid=>1],'fixture');throw new RuntimeException('invalid_collection_accepted');}catch(InvalidArgumentException $e){must($e->getMessage()==='collection_unavailable','genre_and_trash_guard');}
 }finally{$db->rollBack();}
 must(nup_collections($db)[$a]['revision']===1,'all_membership_changes_roll_back_together');
+$db->beginTransaction();try{
+ $duplicate=nup_collections($db)[$b]['payload'];$duplicate['body']['members']=[['key'=>$id,'note'=>'keep first'],['key'=>$alias]];nup_store($db,$b,'playlist',$duplicate,1,'fixture');
+ $changed=nup_apply_collections($db,$key,$moved,[$b],[$b=>2],'fixture');$clean=nup_collections($db)[$b];must($changed===[$b]&&$clean['revision']===3,'alias_cleanup_is_one_versioned_collection_write');must($clean['payload']['body']['members']===[['key'=>$id,'note'=>'keep first']],'canonical_member_retains_first_position_and_metadata');
+ must(nup_apply_collections($db,$key,$moved,[$b],[$b=>3],'fixture')===[],'second_cleanup_does_not_write_again');
+ try{nup_apply_collections($db,$key,$moved,[$b],[$b=>2],'fixture');throw new RuntimeException('stale_cleanup_accepted');}catch(DomainException $e){must($e->getMessage()==='collection_revision_conflict','alias_cleanup_cas');}
+}finally{$db->rollBack();}
+must(nup_collections($db)[$b]['revision']===1,'duplicate_cleanup_rolls_back_with_transaction');
+echo "DUPLICATE_ALIAS_CLEANUP_CANONICAL_METADATA_HISTORY_CAS_AND_ROLLBACK_OK\n";
 $db->beginTransaction();try{nc_insert($db,'noa_catalog_aliases',['batch_id'=>$batch,'alias_key'=>'story:quality-one','entity_id'=>$alias],['batch_id','alias_key','entity_id']);must(nup_member_owner(nup_song_pool($db),$alias)===null,'ambiguous_import_alias_never_guessed');}finally{$db->rollBack();}
 echo "COLLECTION_CATALOG_ALIAS_APPEND_REMOVE_MULTIPLE_CAS_ATOMICITY_AND_GENRE_GUARDS_OK\n";
 
