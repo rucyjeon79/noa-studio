@@ -20,6 +20,8 @@ try{
   await page.addInitScript(theme=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',radius:'soft',design:'ios'})),theme);
   await page.goto(base+'/'+(width<700?'mobile':'pc')+'.html');await page.waitForFunction(()=>window.NoaUI?.getState());
   await page.evaluate(theme=>window.NoaUI.apply({...window.NoaUI.getState(),theme}),theme);
+  // Compare final theme colors after the real palette transition settles.
+  await page.evaluate(async()=>{getComputedStyle(document.body).color;await Promise.all(document.getAnimations().filter(a=>a instanceof CSSTransition).map(a=>a.finished.catch(()=>{})));});
   const form=page.locator('#fregisterform'),before=await form.evaluate(f=>({action:f.getAttribute('action'),method:f.method,inputs:[...f.querySelectorAll('input')].map(i=>[i.name,i.type,i.value,i.required,i.readOnly])}));
   assert.equal(before.action,'/plugin/social/register_member_update.php');assert.equal(before.method,'post');
   assert.equal(await page.evaluate(()=>typeof reg_mb_nick_check),'function');assert.equal(await page.evaluate(()=>typeof reg_mb_email_check),'function');
