@@ -15,7 +15,7 @@ function nup_type(array $d,string $kind):string{
 function nup_text(array $body,array $keys):string{foreach($keys as $key)if(is_string($body[$key]??null)&&trim($body[$key])!=='')return $body[$key];return '';}
 function nup_fields(array $d):array{
  $b=$d['body']??[];$p=$d['packageType']??nup_type($d,(int)($d['act']??0)>0?'playlist':'single');
- return ['tracklist'=>(string)($b['tracklist']??''),'creativeFields'=>array_intersect_key($b,array_flip(NUP_EXTRA_FIELDS)),'confirmed'=>!empty($d['confirmed']),'originalArtist'=>(string)($b['originalArtist']??$b['originalSinger']??$b['coverArtist']??''),'title'=>(string)($b['displayTitle']??$b['confirmedTitle']??$d['title']??''),'description'=>(string)($b['youtubeDescription']??$b['songDescription']??$b['descriptionBlock']??$b['description']??''),'lyrics'=>(string)($b['lyricsBlock']??''),'cast'=>(string)($b['thumbCast']??''),'vocal'=>(string)($b['vocalInfo']??$b['vocal']??$b['sourceVocal']??''),'sunoPrompt'=>nup_text($b,['sunoPrompt','sunoStyle']),'geminiPrompt'=>(string)($b['geminiPrompt']??''),'youtubeTitle'=>(string)($b['youtubeTitle']??''),'communityPost'=>(string)($b['communityPost']??$b['fanLetter']??''),'sunoUrl'=>(string)($b['sunoShareUrl']??$b['sunoUrl']??''),'cardImageLocation'=>(string)($b['cardImageLocation']??$b['coverImageUrl']??$b['thumbUrl']??''),'audioFileLocation'=>(string)($b['audioFileLocation']??$b['audioUrl']??''),'youtubeUrl'=>(string)($b['youtubeUrl']??''),'mvUrl'=>(string)($b['mvUrl']??$b['musicVideoUrl']??''),'members'=>$b['members']??[],'songDescription'=>(string)($b['songDescription']??$b['descriptionBlock']??$b['summary']??$b['description']??''),'lyricsTranslation'=>(string)($b['lyricsTranslation']??$b['translatedLyrics']??$b['translationBlock']??''),'productionPrompt'=>(string)($b['productionPrompt']??$b['creationPrompt']??''),'characterPrompt'=>(string)($b['characterPrompt']??$b['characterFixedPrompt']??$b['characterPromptBlock']??'')];
+ return ['genre'=>(string)($d['genreId']??'unclassified'),'tracklist'=>(string)($b['tracklist']??''),'creativeFields'=>array_intersect_key($b,array_flip(NUP_EXTRA_FIELDS)),'confirmed'=>!empty($d['confirmed']),'originalArtist'=>(string)($b['originalArtist']??$b['originalSinger']??$b['coverArtist']??''),'title'=>(string)($b['displayTitle']??$b['confirmedTitle']??$d['title']??''),'description'=>(string)($b['youtubeDescription']??$b['songDescription']??$b['descriptionBlock']??$b['description']??''),'lyrics'=>(string)($b['lyricsBlock']??''),'cast'=>(string)($b['thumbCast']??''),'vocal'=>(string)($b['vocalInfo']??$b['vocal']??$b['sourceVocal']??''),'sunoPrompt'=>nup_text($b,['sunoPrompt','sunoStyle']),'geminiPrompt'=>(string)($b['geminiPrompt']??''),'youtubeTitle'=>(string)($b['youtubeTitle']??''),'communityPost'=>(string)($b['communityPost']??$b['fanLetter']??''),'sunoUrl'=>(string)($b['sunoShareUrl']??$b['sunoUrl']??''),'cardImageLocation'=>(string)($b['cardImageLocation']??$b['coverImageUrl']??$b['thumbUrl']??''),'audioFileLocation'=>(string)($b['audioFileLocation']??$b['audioUrl']??''),'youtubeUrl'=>(string)($b['youtubeUrl']??''),'mvUrl'=>(string)($b['mvUrl']??$b['musicVideoUrl']??''),'members'=>$b['members']??[],'songDescription'=>(string)($b['songDescription']??$b['descriptionBlock']??$b['summary']??$b['description']??''),'lyricsTranslation'=>(string)($b['lyricsTranslation']??$b['translatedLyrics']??$b['translationBlock']??''),'productionPrompt'=>(string)($b['productionPrompt']??$b['creationPrompt']??''),'characterPrompt'=>(string)($b['characterPrompt']??$b['characterFixedPrompt']??$b['characterPromptBlock']??'')];
 }
 function nup_normalize(array $d,string $kind):array{
  $d['packageSchema']=1;$d['packageType']=nup_type($d,$kind);$d['body']??=[];$b=&$d['body'];$f=nup_fields($d);
@@ -27,7 +27,14 @@ function nup_normalize(array $d,string $kind):array{
  return $d;
 }
 function nup_patch(array $d,string $kind,array $patch):array{
- $d=nup_normalize($d,$kind);$type=$d['packageType'];$playlist=in_array($type,['act','playlist'],true);
+ $previousGenre=$d['genreId']??'';
+ if(array_key_exists('genre',$patch)){
+  if(!is_string($patch['genre'])||!in_array($patch['genre'],NUP_GENRES,true))throw new InvalidArgumentException('invalid_genre');
+  if($kind==='playlist'&&$patch['genre']!==($d['genreId']??''))throw new InvalidArgumentException('playlist_genre_locked');
+  $d['genreId']=$patch['genre'];unset($patch['genre']);
+  if($d['genreId']==='kpop-original'&&(int)($patch['ep']??$d['ep']??0)<1)throw new InvalidArgumentException('classification_ep_required');
+ }
+ $d=nup_normalize($d,$kind);$type=$d['packageType'];if($type==='original'&&$previousGenre!==$d['genreId']){$current=nup_fields($d);$d['body']['originalInfo']=['ep'=>(string)($d['ep']??''),'title'=>$current['title'],'lyrics'=>$current['lyrics'],'vocal'=>$current['vocal']];}$playlist=in_array($type,['act','playlist'],true);
  $allowed=$playlist?['tracklist','creativeFields','confirmed','title','description','cast','vocal','geminiPrompt','youtubeTitle','communityPost','youtubeUrl','mvUrl','members','songDescription','characterPrompt']:array_diff(NUP_FIELDS,['members']);
  if($type!=='cover')$allowed=array_diff($allowed,['originalArtist']);
  if($type==='original')$allowed=array_merge($allowed,['ep']);
@@ -62,6 +69,23 @@ function nup_patch(array $d,string $kind,array $patch):array{
   foreach(['cardImageLocation'=>['coverImageUrl','thumbUrl'],'audioFileLocation'=>['audioUrl'],'mvUrl'=>['musicVideoUrl'],'vocal'=>['vocal'],'communityPost'=>['fanLetter'],'lyricsTranslation'=>['translatedLyrics','translationBlock']] as $canonical=>$aliases)if($key===$canonical)foreach($aliases as $alias)if(array_key_exists($alias,$d['body']))$d['body'][$alias]=$value;
  }
  return $d;
+}
+/** Keep identities and immutable imports stable; reject a move that breaks existing links. */
+function nup_validate_classification(PDO $db,string $key,array $before,array $after):void{
+ if(($before['genreId']??'')===($after['genreId']??''))return;
+ $identity=nie_identity($db,$key);$ep=(int)($after['ep']??0);$previousEp=(int)($before['ep']??0);$identities=[$key,$identity];
+ $q=$db->prepare("SELECT entity_id FROM noa_catalog_aliases WHERE alias_key=? AND batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)");$q->execute([$key]);$identities=array_merge($identities,$q->fetchAll(PDO::FETCH_COLUMN));
+ if(!empty($before['sourceRef']))throw new DomainException('classification_source_linked');
+ $q=$db->query("SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','story','playlist') OR doc_key='meta:category-order' ORDER BY doc_key FOR UPDATE");
+ foreach($q as $r){if($r['doc_key']===$key)continue;$d=json_decode($r['payload'],true);if(!empty($d['_noaTrash']))continue;
+  if(($d['sourceRef']??'')===$key||(($before['genreId']??'')==='kpop-original'&&$previousEp>0&&$r['kind']!=='playlist'&&nup_type($d,$r['kind'])==='ep'&&(int)($d['ep']??0)===$previousEp))throw new DomainException('classification_source_linked');
+  if($ep>0&&in_array($r['kind'],['single','story'],true)&&($d['genreId']??'')===$after['genreId']&&(int)($d['ep']??0)===$ep)throw new DomainException('classification_ep_conflict');
+  if($r['kind']==='playlist'){
+   foreach($d['body']['members']??[] as $m)if(in_array($m['key']??'',$identities,true))throw new DomainException('classification_playlist_linked');
+   if($previousEp>0&&($d['genreId']??'')===($before['genreId']??'')&&(int)($d['act']??0)===(int)ceil($previousEp/10))throw new DomainException('classification_playlist_linked');
+  }
+  if($r['doc_key']==='meta:category-order')foreach($d['playlists']??[] as $list)if(array_intersect($list['keys']??[],$identities))throw new DomainException('classification_playlist_linked');
+ }
 }
 function nup_original(PDO $db,array $d):array{
  $ep=(int)($d['ep']??0);if(!$ep)return ['status'=>'not_applicable'];

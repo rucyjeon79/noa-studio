@@ -27,9 +27,9 @@ try{
  $resolved=nie_resolve($db,$selector);$key=$resolved['writeKey'];$kind=$resolved['kind'];
  $q=$db->prepare('SELECT revision FROM noa_documents WHERE doc_key=? FOR UPDATE');$q->execute([$key]);$actual=$q->fetchColumn();if(($actual===false?0:(int)$actual)!==$expected||$resolved['revision']!==$expected)throw new DomainException('revision_conflict');
  if(!empty($resolved['payload']['_noaTrash']))throw new DomainException('restore_required');
- $payload=nup_patch($resolved['payload'],$kind,$patch);if(($selector['type']??'')==='new'){if(trim(nup_fields($payload)['title'])==='')throw new InvalidArgumentException('title_required');if(in_array($payload['packageType'],['act','playlist'],true))$payload=nup_patch($payload,$kind,['members'=>$payload['body']['members']??[]]);}if(array_key_exists('members',$patch)||(($selector['type']??'')==='new'&&$kind==='playlist'))nup_validate_members($db,$payload);
+ $payload=nup_patch($resolved['payload'],$kind,$patch);nup_validate_classification($db,$key,$resolved['payload'],$payload);if(($selector['type']??'')==='new'){if(trim(nup_fields($payload)['title'])==='')throw new InvalidArgumentException('title_required');if(in_array($payload['packageType'],['act','playlist'],true))$payload=nup_patch($payload,$kind,['members'=>$payload['body']['members']??[]]);}if(array_key_exists('members',$patch)||(($selector['type']??'')==='new'&&$kind==='playlist'))nup_validate_members($db,$payload);
  if($payload['packageType']==='ep'&&($resolved['original']['status']??'')==='linked')$payload['sourceRef']=$resolved['original']['key'];
- if($payload['packageType']==='original'&&(isset($patch['ep'])||($selector['type']??'')==='new')){
+ if($payload['packageType']==='original'&&(isset($patch['ep'])||isset($patch['genre'])||($selector['type']??'')==='new')){
   $q=$db->query("SELECT doc_key,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key FOR UPDATE");
   foreach($q as $r){$d=json_decode($r['payload'],true);if($r['doc_key']!==$key&&($d['genreId']??'')==='kpop-original'&&(int)($d['ep']??0)===(int)$payload['ep'])throw new DomainException('original_ep_conflict');}
  }

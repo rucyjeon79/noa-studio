@@ -1,10 +1,12 @@
 .noa-page .noa-record-form{display:block;max-width:100%;min-width:0;text-align:start}
-.noa-page .noa-record-section{display:block;min-width:0;margin:20px 0;padding:16px;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,8px);background:var(--noa-surface);color:var(--noa-text)}
-.noa-page .noa-record-section>legend{padding:0 8px;font-size:16px;font-weight:600;color:var(--noa-text)}
+.noa-page :is(.noa-record-section,.noa-record-classification){display:block;min-width:0;margin:20px 0;padding:16px;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,8px);background:var(--noa-surface);color:var(--noa-text)}
+.noa-page :is(.noa-record-section,.noa-record-classification)>legend{padding:0 8px;font-size:16px;font-weight:600;color:var(--noa-text)}
 .noa-page .noa-record-field{min-width:0;margin:12px 0}.noa-page .noa-record-field label{display:block;margin:0;font-size:14px}
 .noa-page .noa-record-field :is(input:not([type=checkbox]),select,textarea){display:block;box-sizing:border-box;width:100%;min-width:0;margin-top:6px;padding:10px 12px;min-height:44px;background:var(--noa-bg);color:var(--noa-text);border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,8px)}
 .noa-page .noa-record-field textarea{min-height:120px;resize:vertical}.noa-page .noa-record-field input[type=checkbox]{width:auto;min-height:24px;margin-inline-end:8px}
 .noa-page .noa-record-field [readonly]{color:var(--noa-muted)}.noa-record-setup{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:20px 0}.noa-record-setup label{display:grid;gap:8px;min-width:0}.noa-record-setup :is(select,input){width:100%;min-width:0}.noa-record-setup button{align-self:end}.noa-record-note{color:var(--noa-muted);overflow-wrap:anywhere}.noa-record-editor{min-width:0;max-width:1000px}.noa-record-editor>.noa-edit-form{border-top:0}
-@media(max-width:600px){.noa-page .noa-record-section{padding:12px}.noa-record-setup{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.noa-page :is(.noa-record-section,.noa-record-classification){padding:12px}.noa-record-setup{grid-template-columns:minmax(0,1fr)}}
 
 .noa-page .noa-record-section[hidden],.noa-record-field[hidden],.noa-record-setup[hidden]{display:none}.noa-page .noa-record-field input[type=checkbox]{display:inline-block;vertical-align:middle}
+
+.noa-record-classification :is(select,input){min-width:0;max-width:100%}.noa-record-classification [hidden]{display:none!important}
