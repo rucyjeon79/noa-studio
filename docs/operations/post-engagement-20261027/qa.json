@@ -1,0 +1,43 @@
+{
+  "api": [
+    "guest denied",
+    "CSRF and origin denied",
+    "idempotent likes/comments",
+    "unlike decrements",
+    "owner-only deletion",
+    "private/restricted denied",
+    "native likes preserved",
+    "music/video resolved",
+    "host HTML 401 gives login guidance"
+  ],
+  "layouts": [
+    {
+      "width": 390,
+      "theme": "dark",
+      "overflow": false,
+      "dialogOverflow": false,
+      "targets": true
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "overflow": false,
+      "dialogOverflow": false,
+      "targets": true
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "overflow": false,
+      "dialogOverflow": false,
+      "targets": true
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "overflow": false,
+      "dialogOverflow": false,
+      "targets": true
+    }
+  ]
+}

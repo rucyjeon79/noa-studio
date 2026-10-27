@@ -1515,5 +1515,44 @@
       "signupReleaseWorkflow": "success",
       "unrelatedProductionDeployment": "skipped"
     }
+  },
+  "postEngagementRelease": {
+    "status": "success",
+    "commit": "f926cf9e7ef464ba7348664b4c4256983cba4756",
+    "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40498113546",
+    "pullRequests": [
+      237,
+      238
+    ],
+    "score": "existing views and valid music plays + likes + active comments",
+    "weight": {
+      "like": 1,
+      "comment": 1
+    },
+    "rankRefresh": "hourly; existing published hours preserved",
+    "existingTablesRetained": true,
+    "nativeTablesWritten": 0,
+    "productionSyntheticReactions": 0,
+    "protectedUnchanged": 16,
+    "filesSha256": {
+      "noa-bridge/engagement-core.php": "6a502cec421067759dcffc1b54a3b752d0abe43f399a3b0990f983aac2557ca1",
+      "noa-bridge/engagement-targets.php": "b2eaee0e3ca13b16e48450a5c9459f778de531addb5fae3ab29a735f8b4bcf4d",
+      "noa-bridge/engagement.php": "7efaeb7deb78f7ec5c98bfd47eba97df78b7212eca95d0af88af102411f37321",
+      "noa-engagement.css": "a0e1cb2dc6ecd41a5aa5be782b0eef1cc0a59912513a3811ac78b993db3665b1",
+      "noa-engagement.js": "39609a0f35db8202420131dd53c1e2dcc799eebd51fe04537566ced0198770fe",
+      "noa-bridge/popularity-core.php": "9bd7527a8c82b419920a2ba3298b09415eb41b5539828986ed6cf93efbc6dd99",
+      "noa-bridge/popularity-store.php": "edad5bd410e0540a0b8610d308653e4b92a455046c3ba02e71cab2f041d475c6",
+      "extend/zz.noa-engagement.php": "b3c4fc938d0882dffdead474c606047cd2843c2d59931be0dfc33f8b48e55a2b"
+    },
+    "publicUi": {
+      "url": "https://noastudio.ai.kr/",
+      "reactionEntryCards": 50,
+      "viewport": 1363,
+      "scrollWidth": 1348,
+      "interactiveControlsNestedInCardLinks": 0
+    },
+    "authenticatedMutationsVerified": "isolated MySQL and HTTP browser fixture; no synthetic production member or post",
+    "evidence": "docs/operations/post-engagement-20261027.md",
+    "knownUnrelatedCheckFailure": "legacy standalone UIUX reads member-only WORLD as guest; recorded without disabling test"
   }
 }

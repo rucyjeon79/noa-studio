@@ -1,0 +1,28 @@
+[
+  {
+    "ok": true,
+    "created": [],
+    "ready": true,
+    "counts": {
+      "noa_post_likes": 0,
+      "noa_post_like_events": 0,
+      "noa_post_comments": 0
+    },
+    "existingTablesRetained": true,
+    "nativeTablesWritten": 0,
+    "syntheticReactionsCreated": 0
+  },
+  {
+    "ok": true,
+    "created": [],
+    "ready": true,
+    "counts": {
+      "noa_post_likes": 0,
+      "noa_post_like_events": 0,
+      "noa_post_comments": 0
+    },
+    "existingTablesRetained": true,
+    "nativeTablesWritten": 0,
+    "syntheticReactionsCreated": 0
+  }
+]
