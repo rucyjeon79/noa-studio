@@ -30,3 +30,11 @@ $cleared=nup_patch($masked,'single',['sunoPrompt'=>'']);check(nup_fields($cleare
 $body=nup_merge_body(['sunoPrompt'=>'old','sunoStyle'=>'old'],['sunoPrompt'=>'old','sunoStyle'=>'new']);check($body['sunoPrompt']==='new'&&$body['sunoStyle']==='new','full editor updates canonical alias');
 denied(fn()=>nup_merge_body(['sunoPrompt'=>'old','sunoStyle'=>'old'],['sunoPrompt'=>'one','sunoStyle'=>'two']),'different concurrent alias edits rejected');
 echo "PRODUCTION_FIELDS_SOURCE_VISIBILITY_DESCRIPTION_SEPARATION_ALIAS_CONFLICT_OK\n";
+
+$legacy=nup_normalize(['genreId'=>'your-story','title'=>'보존','confirmed'=>false,'body'=>['sunoStyle'=>'old','fanLetter'=>'old','vocal'=>'합창','thumbUrl'=>'/old.webp','audioUrl'=>'/old.mp3','musicVideoUrl'=>'https://youtu.be/abcdefghijk','translatedLyrics'=>'old','unknownProductionEvidence'=>['keep'=>true]]],'story');
+$unified=nup_patch($legacy,'story',['vocal'=>'합창','communityPost'=>'new','cardImageLocation'=>'/data/card.webp','audioFileLocation'=>'/data/song.mp3','mvUrl'=>'https://youtu.be/lmnopqrstuv','lyricsTranslation'=>'new translation','confirmed'=>true,'creativeFields'=>['storyPlan'=>['scene'=>'해변'],'hashtags'=>['음악']]]);
+check(nup_fields($unified)['vocal']==='합창'&&$unified['body']['vocal']==='합창','custom vocal survives');
+check($unified['body']['fanLetter']==='new'&&$unified['body']['thumbUrl']==='/data/card.webp'&&$unified['body']['audioUrl']==='/data/song.mp3'&&$unified['body']['musicVideoUrl']==='https://youtu.be/lmnopqrstuv'&&$unified['body']['translatedLyrics']==='new translation','all aliases agree');
+check(nup_fields($unified)['confirmed']===true&&nup_fields($unified)['creativeFields']['storyPlan']===['scene'=>'해변']&&$unified['body']['unknownProductionEvidence']===['keep'=>true],'production structure and unrelated data preserved');
+denied(fn()=>nup_patch($legacy,'story',['creativeFields'=>['ownerId'=>'other']]),'extra fields cannot replace ownership');denied(fn()=>nup_patch($legacy,'story',['confirmed'=>'true']),'boolean confirmation required');
+echo "UNIFIED_CUSTOM_VOCAL_ALIASES_EXTRA_DATA_AND_TYPED_CONFIRMATION_OK\n";

@@ -5,6 +5,7 @@ if(!defined('_GNUBOARD_')&&!defined('NOA_SITEMAP_REGISTRY_ONLY')){http_response_
 function noa_workspace_groups():array{return [
  'content'=>['title'=>'콘텐츠 관리','intro'=>'등록한 곡을 찾고 고치거나, 감상 순서를 정리합니다.','routes'=>[
   ['catalog','곡 검색·수정·삭제','곡을 검색 → 수정 또는 휴지통으로 이동','/noa-catalog.php','library'],
+  ['quality','곡정보 검사·정리','전체 검사 → 값 비교·확정 → 재검사','/noa-quality.php','settings'],
   ['editor','새 곡 등록','카테고리·장르를 선택 → 곡정보 입력 → 저장','/noa-editor.php','edit'],
   ['order','곡 묶음·순서 관리','음원에서 카테고리·장르 선택 → 묶음 생성 또는 순서 저장','/noa-music.php','playlists'],
   ['trash','곡 휴지통','삭제한 곡을 확인 → 복원','/noa-catalog.php?view=trash','library'],
@@ -24,7 +25,7 @@ function noa_workspace_groups():array{return [
  ]],
  'advanced'=>['title'=>'고급 점검·데이터 복구','intro'=>'자료 연결에 문제가 있을 때 사용합니다. 일상적인 곡 수정은 콘텐츠 관리에서 합니다.','routes'=>[
   ['workStatus','N80 작업 현황','지시·단계·검증 결과 확인','/noa-work-status.php','settings'],
-  ['catalogAdmin','통합 자료·충돌 검토','여러 원본이 연결된 곡의 자료 검토','/noa-catalog-admin.php','library'],
+  ['catalogAdmin','원본 가져오기·통합 등록','이전 원본을 추가로 가져올 때 사용','/noa-catalog-admin.php','library'],
   ['documents','문서·변경 이력','문서 키와 저장 버전 확인','/noa-library.php?view=documents','book'],
   ['recovery','원본 복구','보존 자료와 복구 상태 확인','/noa-recovery.php','book'],
   ['database','데이터베이스 점검','운영 자료 관계와 저장 상태 확인','/noa-app/database/','library'],

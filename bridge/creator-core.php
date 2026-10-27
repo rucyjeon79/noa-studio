@@ -13,8 +13,8 @@ function nc_channel(array $body):array{
  $title=trim((string)($body['title']??''));$description=trim((string)($body['description']??''));if($title===''||mb_strlen($title)>80||mb_strlen($description)>2000)throw new InvalidArgumentException('invalid_channel');return ['title'=>$title,'description'=>$description];
 }
 function nc_patch(array $document,array $body):array{
- $fields=$body['fields']??[];if(!is_array($fields)||array_diff(array_keys($fields),['title','lyrics','vocal','cast','description','geminiPrompt','communityPost','youtubeUrl','mvUrl']))throw new InvalidArgumentException('invalid_song_fields');
- $d=nup_patch($document,'story',$fields);$genre=$body['genre']??($d['genreId']??'your-story');if(!is_string($genre)||!in_array($genre,NC_GENRES,true))throw new InvalidArgumentException('invalid_genre');$d['genreId']=$genre;
+ $fields=$body['fields']??[];if(!is_array($fields)||array_diff(array_keys($fields),['title','lyrics','vocal','cast','description','geminiPrompt','communityPost','youtubeUrl','mvUrl','songDescription','lyricsTranslation','sunoPrompt','productionPrompt','characterPrompt','youtubeTitle','sunoUrl','creativeFields']))throw new InvalidArgumentException('invalid_song_fields');
+ $genre=$body['genre']??($document['genreId']??'your-story');if(!is_string($genre)||!in_array($genre,NC_GENRES,true))throw new InvalidArgumentException('invalid_genre');$document['genreId']=$genre;$d=nup_patch($document,'story',$fields);
  if(mb_strlen($d['title']??'')<1)throw new InvalidArgumentException('title_required');
  $artist=$body['originalArtist']??($d['body']['originalArtist']??'');if(!is_string($artist)||mb_strlen($artist)>200||($genre==='cover-reborn'&&trim($artist)===''))throw new InvalidArgumentException('cover_original_artist_required');$d['body']['originalArtist']=$artist;
  $visibility=$body['visibility']??($d['visibility']??'private');if(!in_array($visibility,['private','public'],true))throw new InvalidArgumentException('invalid_visibility');$d['visibility']=$visibility;

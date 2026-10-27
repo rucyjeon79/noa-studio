@@ -1,5 +1,7 @@
 name: NOA Unified Categories and Administrator Workspace
 on:
+  pull_request:
+    paths: ['bridge/**','deploy/**','scripts/noa_workspace_release.py','scripts/qa/noa-quality.mjs','tests/workspace/**','.github/workflows/noa-workspace.yml']
   push:
     branches: [main]
     paths: ['scripts/noa_workspace_release.py','scripts/noa_release_freshness.py','scripts/noa_ainoa_deploy.py','scripts/qa/noa-workspace*.mjs','tests/workspace/**','.github/workflows/noa-workspace.yml']
@@ -50,12 +52,15 @@ jobs:
           php tests/workspace/fixture.php
           python scripts/qa/noa-qa-font.py
           npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-workspace" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-quality.mjs "$RUNNER_TEMP/noa-workspace/quality.mjs"
           cp scripts/qa/noa-workspace.mjs "$RUNNER_TEMP/noa-workspace/check.mjs"
           cp scripts/qa/noa-workspace-live.mjs "$RUNNER_TEMP/noa-workspace/live.mjs"
           cp scripts/qa/noa-navigation.mjs "$RUNNER_TEMP/noa-workspace/navigation.mjs"
       - name: Verify mobile, desktop, native permissions and actual isolated mutations
         run: |
           node "$RUNNER_TEMP/noa-workspace/check.mjs"
+          php tests/workspace/quality_test.php
+          node "$RUNNER_TEMP/noa-workspace/quality.mjs"
           "$RUNNER_TEMP/noa-workspace/node_modules/.bin/playwright" install --with-deps webkit
           node "$RUNNER_TEMP/noa-workspace/navigation.mjs"
       - uses: actions/upload-artifact@v4
@@ -67,6 +72,7 @@ jobs:
             navigation-proof/
           retention-days: 14
   production:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: candidate
     runs-on: ubuntu-latest
     environment: production

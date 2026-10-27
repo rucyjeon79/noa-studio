@@ -68,9 +68,10 @@ function noa_sound_lyrics(string $raw): string {
 function noa_sound_trash_index(PDO $db,bool $refresh=false):array{
  static $cache=[];$connection=spl_object_id($db);if(!$refresh&&isset($cache[$connection]))return $cache[$connection];
  $out=['keys'=>[],'ids'=>[],'videos'=>[]];if(function_exists('nc_exists')&&!nc_exists($db,'noa_documents'))return $out;
- foreach($db->query("SELECT doc_key,payload FROM noa_documents WHERE kind IN ('single','story') AND payload LIKE '%_noaTrash%'") as $r){$d=json_decode($r['payload'],true);if(empty($d['_noaTrash']))continue;$out['keys'][$r['doc_key']]=true;if(str_starts_with($r['doc_key'],'catalog:'))$out['ids'][substr($r['doc_key'],8)]=true;
+ $liveVideos=[];foreach($db->query("SELECT doc_key,payload FROM noa_documents WHERE kind IN ('single','story')") as $r){$d=json_decode($r['payload'],true);if(empty($d['_noaTrash'])){foreach(['youtubeUrl','mvUrl'] as $field)if(function_exists('ny_video_id')){$video=ny_video_id((string)($d['body'][$field]??''));if($video)$liveVideos[$video]=true;}continue;}$out['keys'][$r['doc_key']]=true;if(str_starts_with($r['doc_key'],'catalog:'))$out['ids'][substr($r['doc_key'],8)]=true;
   foreach(['youtubeUrl','mvUrl'] as $field){$url=$d['body'][$field]??'';if(function_exists('ny_video_id')){$id=ny_video_id((string)$url);if($id)$out['videos'][$id]=true;}}
  }
  if($out['keys'])foreach($db->query("SELECT alias_key,entity_id FROM noa_catalog_aliases WHERE batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)") as $a)if(isset($out['keys'][$a['alias_key']]))$out['ids'][$a['entity_id']]=true;
- return $cache[$connection]=$out;
+ // Removing one independent duplicate must not hide media still used by another record.
+ $out['videos']=array_diff_key($out['videos'],$liveVideos);return $cache[$connection]=$out;
 }

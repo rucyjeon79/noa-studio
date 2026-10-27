@@ -10,3 +10,8 @@ check(nam_owner(['ownerId'=>'a'],['mb_id'=>'a']),'own');check(!nam_owner(['owner
 $d=['ownerId'=>'a','title'=>'my song','genreId'=>'your-story','visibility'=>'private','ep'=>'','body'=>[]];$patched=nc_patch($d,['fields'=>['title'=>'changed','lyrics'=>'actual lyrics'],'genre'=>'your-story','visibility'=>'private']);check($patched['ownerId']==='a'&&$patched['body']['lyricsBlock']==='actual lyrics','single_record_owner_preserved');
 foreach([['fields'=>['ownerId'=>'b']],['fields'=>['audioFileLocation'=>'/etc/passwd']],['fields'=>['youtubeUrl'=>'https://evil.invalid/watch']]]as $b){try{nc_patch($d,$b);throw new RuntimeException('unsafe_patch_accepted');}catch(InvalidArgumentException $e){}}
 echo "MEMBER_ACCESS_MATRIX_OK levels1-10 super onboarding direct_routes ownership immutable_media\n";
+
+$d['body']['customSource']=['keep'=>true];$p=nc_patch($d,['fields'=>['title'=>'공통 폼','songDescription'=>'곡 소개','description'=>'영상 설명','lyricsTranslation'=>'번역','sunoPrompt'=>'스타일','productionPrompt'=>'제작','characterPrompt'=>'캐릭터','youtubeTitle'=>'영상 제목','sunoUrl'=>'https://suno.com/s/example','creativeFields'=>['storyPlan'=>'이야기']],'genre'=>'cover-reborn','originalArtist'=>'원가수']);
+check($p['packageType']==='cover'&&$p['ownerId']==='a'&&$p['body']['originalArtist']==='원가수'&&$p['body']['customSource']===['keep'=>true],'owner common form preserves ownership and source');check(nup_fields($p)['songDescription']==='곡 소개'&&nup_fields($p)['description']==='영상 설명','owner descriptions independent');
+try{nc_patch($d,['fields'=>['confirmed'=>true]]);throw new RuntimeException('owner_confirmation_escalation');}catch(InvalidArgumentException $e){}
+echo "OWNER_COMMON_FIELDS_WITHOUT_ADMIN_ESCALATION_OK\n";
