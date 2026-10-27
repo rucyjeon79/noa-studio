@@ -68,7 +68,7 @@ def main():
             subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-f','lavfi','-i','sine=frequency=440:duration=35','-c:a','libmp3lame','-b:a','128k',str(audio)], check=True)
             assert audio.stat().st_size > 10000
             audio_hash = hashlib.sha256(audio.read_bytes()).hexdigest()
-            for name in ['popularity-events.php','popularity-plays.php','popularity-store.php','popularity-core.php','popularity-schema.php','sound-core.php','member-access.php']:
+            for name in ['popularity-events.php','popularity-plays.php','popularity-store.php','popularity-core.php','popularity-schema.php','engagement-core.php','sound-core.php','member-access.php']:
                 shutil.copyfile(ROOT/'bridge'/name, web/'noa-bridge'/name)
             for name in ['stream.php','stream-popularity.php','core.php']:
                 shutil.copyfile(ROOT/'deploy/noa-app/jukebox'/name,web/'noa-app/jukebox'/name)
