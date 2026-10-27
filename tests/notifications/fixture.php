@@ -13,18 +13,18 @@ copy('deploy/noa-notifications.extend.php',$root.'/extend/zz.noa-notifications.p
 foreach(['noa-notifications.php','noa-notifications.js','noa-notifications.css','noa-sw.js','noa-ainoa.js','noa-ainoa.css','noa-brand.js','noa-policy-20261024.css']as $file)copy('deploy/'.$file,$root.'/'.$file);
 @mkdir($root.'/noa-assets',0700,true);copy('public/ainoa/ainoa-symbol.png',$root.'/noa-assets/ainoa-symbol.png');
 foreach(['papa-logo.png','icon-180.png']as $asset)copy('public/'.$asset,$root.'/noa-assets/'.$asset);
-foreach(['notifications-core.php','notifications-sources.php','notifications.php','notification-worker.php']as $file)copy('bridge/'.$file,$root.'/noa-bridge/'.$file);
+foreach(['notifications-inline.php','notifications-core.php','notifications-sources.php','notifications.php','notification-worker.php']as $file)copy('bridge/'.$file,$root.'/noa-bridge/'.$file);
 require $root.'/common.php';require 'bridge/notifications-sources.php';
 $db=new PDO('mysql:host=127.0.0.1;dbname=noa_community;charset=utf8mb4','root','fixture-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_EMULATE_PREPARES=>false]);
 $db->exec("SET SESSION sql_mode=''");
 $db->exec("ALTER TABLE g5_member ADD mb_level INT DEFAULT 4,ADD mb_leave_date VARCHAR(8) DEFAULT '',ADD mb_intercept_date VARCHAR(8) DEFAULT ''");$db->exec("UPDATE g5_member SET mb_level=10 WHERE mb_id='qa_admin'");$db->exec('ALTER TABLE g5_board_good ADD bg_id INT PRIMARY KEY AUTO_INCREMENT');
 $db->exec("UPDATE g5_write_free SET mb_id='qa_a'");
 $db->exec("UPDATE noa_documents SET payload=JSON_SET(payload,'$.ownerId','qa_a') WHERE doc_key='fixture-song'");
-@mkdir('/tmp/noa-notifications-private',0700,true);$key=openssl_pkey_new(['private_key_type'=>OPENSSL_KEYTYPE_EC,'curve_name'=>'prime256v1']);openssl_pkey_export($key,$pem);$details=openssl_pkey_get_details($key);$pub="\x04".$details['ec']['x'].$details['ec']['y'];
-$cfg=['version'=>1,'workerToken'=>str_repeat('f',64),'privateKey'=>$pem,'publicKey'=>rtrim(strtr(base64_encode($pub),'+/','-_'),'=')];file_put_contents('/tmp/noa-notifications-private/config.json',json_encode($cfg));chmod('/tmp/noa-notifications-private/config.json',0600);
+@mkdir('/tmp/noa-notifications-private',0700,true);$key=openssl_pkey_new(['private_key_type'=>OPENSSL_KEYTYPE_EC,'curve_name'=>'prime256v1']);openssl_pkey_export($key,$pem);$details=openssl_pkey_get_details($key);$pub="\x04".str_pad($details['ec']['x'],32,"\0",STR_PAD_LEFT).str_pad($details['ec']['y'],32,"\0",STR_PAD_LEFT);
+$cfg=['inlineDispatch'=>false,'version'=>1,'workerToken'=>str_repeat('f',64),'privateKey'=>$pem,'publicKey'=>rtrim(strtr(base64_encode($pub),'+/','-_'),'=')];file_put_contents('/tmp/noa-notifications-private/config.json',json_encode($cfg));chmod('/tmp/noa-notifications-private/config.json',0600);
 function check($v,$label){if(!$v)throw new RuntimeException($label);}
 function count_notices(PDO $db):int{return (int)$db->query('SELECT COUNT(*) FROM noa_notifications')->fetchColumn();}
-function fixture_subscription(string $name):array{$key=openssl_pkey_new(['private_key_type'=>OPENSSL_KEYTYPE_EC,'curve_name'=>'prime256v1']);$d=openssl_pkey_get_details($key);return ['endpoint'=>'https://fcm.googleapis.com/fcm/send/'.$name,'keys'=>['p256dh'=>rtrim(strtr(base64_encode("\x04".$d['ec']['x'].$d['ec']['y']),'+/','-_'),'='),'auth'=>rtrim(strtr(base64_encode(str_repeat('a',16)),'+/','-_'),'=')]];}
+function fixture_subscription(string $name):array{$key=openssl_pkey_new(['private_key_type'=>OPENSSL_KEYTYPE_EC,'curve_name'=>'prime256v1']);$d=openssl_pkey_get_details($key);return ['endpoint'=>'https://fcm.googleapis.com/fcm/send/'.$name,'keys'=>['p256dh'=>rtrim(strtr(base64_encode("\x04".str_pad($d['ec']['x'],32,"\0",STR_PAD_LEFT).str_pad($d['ec']['y'],32,"\0",STR_PAD_LEFT)),'+/','-_'),'='),'auth'=>rtrim(strtr(base64_encode(str_repeat('a',16)),'+/','-_'),'=')]];}
 $entity='song:'.str_repeat('a',64);$now=time();
 check(nnt_target($db,'video:abcdefghijk','qa_a')['url']==='/noa-youtube.php?track=abcdefghijk','video activity opens the exact track');
 ne_like($db,$entity,'qa_b',true,false,$now-50);
@@ -61,6 +61,21 @@ nnt_subscribe($db,'qa_b',$sub,$now+45);nnt_unsubscribe($db,'qa_a',$device);check
 nnt_subscribe($db,'qa_a',$sub,$now+46);nnt_enqueue($db,'qa_a','test-expiry','test','test','qa_a','test',0,'/noa-notifications.php',$now+46);$last=nnt_claim($db,$now+47);check(count($last)===1,'test queue');nnt_ack($db,[['id'=>$last[0]['id'],'device'=>$device,'lease'=>$last[0]['lease'],'http'=>410]],$now+48);check(!nnt_one($db,'SELECT active FROM noa_push_subscriptions WHERE endpoint_hash=?',[$device])['active'],'expired endpoint disabled');
 check((int)$db->query('SELECT COUNT(*) FROM g5_write_free')->fetchColumn()===(int)$nativeBefore+2,'only explicit fixture native rows changed');
 @mkdir('notifications-proof',0700,true);file_put_contents('notifications-proof/mysql.json',json_encode(['additiveSchema'=>true,'noHistoricalBackfill'=>true,'ownerAndParticipants'=>true,'privateRequestOwnerOnly'=>true,'selfExcluded'=>true,'cursorReplay'=>true,'genericPayload'=>true,'leaseAndAck'=>true,'sourceDeletion'=>true,'preferenceEnforcement'=>true,'deviceTransferAndRevocation'=>true,'endpointAllowlist'=>true,'crossAccountReadsDenied'=>true,'nativeDataPreserved'=>true],JSON_PRETTY_PRINT));
+// Direct delivery uses the same consent checks, leases, receipt payload and retry queue.
+require 'bridge/notifications-inline.php';
+$db->exec('DELETE FROM noa_notification_delivery');$db->exec('DELETE FROM noa_push_subscriptions');
+$direct=nnt_subscribe($db,'qa_a',fixture_subscription('direct'),time());
+nnt_enqueue($db,'qa_a','direct-success','test','test','qa_a','test',0,'/noa-notifications.php',time());
+$directCfg=$cfg;$directCfg['inlineDispatch']=true;$calls=0;
+$result=nnt_inline_drain($db,$directCfg,static function($job)use(&$calls){$calls++;check(strlen($job['payload']['receipt'])===64,'direct receipt token');return 201;});
+check($calls===1&&$result['accepted']===1,'direct send without scheduled runner');
+check(nnt_inline_drain($db,$directCfg,static fn()=>201)['claimed']===0,'direct no duplicate');
+nnt_enqueue($db,'qa_a','direct-retry','test','test','qa_a','test',0,'/noa-notifications.php',time());
+check(nnt_inline_drain($db,$directCfg,static fn()=>503)['retry']===1,'direct transient retry');
+check(nnt_inline_drain($db,$directCfg,static fn()=>201)['claimed']===0,'retry backoff respected');
+nnt_unsubscribe($db,'qa_a',$direct);
+check(nnt_inline_drain($db,$directCfg,static fn()=>201)['claimed']===0,'revoked direct delivery cancelled');
+echo "NOTIFICATIONS_INLINE_PASS\n";
 // Leave useful owned inbox items for UI/API tests, no active external subscriptions.
 $db->exec('DELETE FROM noa_notification_delivery');$db->exec('DELETE FROM noa_push_subscriptions');
 file_put_contents($root.'/notification-shell.php',"<?php require __DIR__.'/common.php';?><!doctype html><html lang=ko><head><meta charset=utf-8><link rel=stylesheet href=/noa-ui.css><link rel=stylesheet href=/noa-ainoa.css><script src=/noa-ainoa.js defer></script></head><body class=noa-page><main><h1>NOA STUDIO</h1></main></body></html>");

@@ -61,5 +61,7 @@ class RecoveryContract(unittest.TestCase):
   authorized.update({'bridge/engagement-core.php','bridge/engagement-targets.php','bridge/engagement.php','bridge/popularity-core.php','bridge/popularity-store.php'})
   # The personal activity notification request authorizes this additive service only.
   authorized.update({'bridge/notifications-core.php','bridge/notifications-sources.php','bridge/notifications.php','bridge/notification-worker.php'})
+  # 2026-10-28: user authorized direct push delivery to prevent scheduler delays.
+  authorized.add('bridge/notifications-inline.php')
   self.assertFalse(any(p not in authorized and p.startswith(('deploy/noa-app/jukebox/','bridge/','scripts/noa_jukebox'))for p in paths))
 if __name__=='__main__':unittest.main()

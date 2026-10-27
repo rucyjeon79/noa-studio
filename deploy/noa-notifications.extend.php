@@ -1,5 +1,19 @@
 <?php
 if(!defined('_GNUBOARD_'))exit;
+// No native member/board writer is modified. Dispatch only after the request finishes.
+register_shutdown_function(static function(){
+ $path=parse_url($_SERVER['REQUEST_URI']??'',PHP_URL_PATH)??'';
+ if(empty($GLOBALS['member']['mb_id'])||str_starts_with($path,'/adm/')||$path==='/noa-bridge/notification-worker.php')return;
+ if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST'&&$path!=='/noa-bridge/notifications.php')return;
+ $root=dirname(__DIR__);if(!is_file($root.'/noa-bridge/notifications-inline.php'))return;
+ try{
+  require_once $root.'/noa-bridge/storage.php';require_once $root.'/noa-bridge/notifications-sources.php';require_once $root.'/noa-bridge/notifications-inline.php';
+  $cfg=nnt_config();if(($cfg['inlineDispatch']??true)!==true||!nnt_inline_capable())return;
+  if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
+  if(function_exists('fastcgi_finish_request'))fastcgi_finish_request();
+  $db=noa_bridge_pdo();if(nnt_ready($db))nnt_inline_drain($db,$cfg);
+ }catch(Throwable $e){error_log('[noa-inline-push] '.get_class($e));}
+});
 (static function(){
  $path=parse_url($_SERVER['REQUEST_URI']??'',PHP_URL_PATH)??'';
  if(($_SERVER['REQUEST_METHOD']??'GET')!=='GET'||str_starts_with($path,'/adm/')||str_starts_with($path,'/noa-bridge/'))return;

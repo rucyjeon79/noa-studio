@@ -92,7 +92,7 @@ def main():
     if 'init' in sys.argv:
         print('NOA_NOTIFICATION_PRIVATE_CONFIG_READY');return
     if 'health' in sys.argv:
-        print('NOA_NOTIFICATION_HEALTH',json.dumps(worker(config,'health')));return
+        health=worker(config,'health');assert health.get('inlineCapable'), 'inline_push_runtime_unavailable';print('NOA_NOTIFICATION_HEALTH',json.dumps(health));return
     summary={'batches':0,'claimed':0,'accepted':0,'expired':0,'retryOrFailed':0,'acknowledged':0}
     started=time.monotonic()
     with tempfile.TemporaryDirectory(prefix='noa-push-') as temp:
@@ -105,6 +105,9 @@ def main():
                 # Acknowledge immediately: a later crash cannot replay already accepted jobs.
                 ack=worker(config,'ack',results=[{'id':job['id'],'device':job['device'],'lease':job['lease'],'http':code}]);summary['acknowledged']+=ack['acknowledged']
             if not jobs and not any(count>=100 for count in batch['scanned'].values()):break
+    health=worker(config,'health')
+    if health.get('oldestDueAge',0)>600:print('::warning::Personal push queue has overdue deliveries; inspect retry health.')
+    print('NOA_NOTIFICATION_HEALTH',json.dumps(health))
     print('NOA_PERSONAL_PUSH_DISPATCH',json.dumps(summary))
     out=Path('notifications-proof');out.mkdir(exist_ok=True);(out/'dispatch.json').write_text(json.dumps(summary,indent=2))
 if __name__=='__main__':main()
