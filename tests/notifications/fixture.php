@@ -20,11 +20,11 @@ $db->exec("SET SESSION sql_mode=''");
 $db->exec("ALTER TABLE g5_member ADD mb_level INT DEFAULT 4,ADD mb_leave_date VARCHAR(8) DEFAULT '',ADD mb_intercept_date VARCHAR(8) DEFAULT ''");$db->exec("UPDATE g5_member SET mb_level=10 WHERE mb_id='qa_admin'");$db->exec('ALTER TABLE g5_board_good ADD bg_id INT PRIMARY KEY AUTO_INCREMENT');
 $db->exec("UPDATE g5_write_free SET mb_id='qa_a'");
 $db->exec("UPDATE noa_documents SET payload=JSON_SET(payload,'$.ownerId','qa_a') WHERE doc_key='fixture-song'");
-@mkdir('/tmp/noa-notifications-private',0700,true);$key=openssl_pkey_new(['private_key_type'=>OPENSSL_KEYTYPE_EC,'curve_name'=>'prime256v1']);openssl_pkey_export($key,$pem);$details=openssl_pkey_get_details($key);$pub="\x04".$details['ec']['x'].$details['ec']['y'];
+@mkdir('/tmp/noa-notifications-private',0700,true);$key=openssl_pkey_new(['private_key_type'=>OPENSSL_KEYTYPE_EC,'curve_name'=>'prime256v1']);openssl_pkey_export($key,$pem);$details=openssl_pkey_get_details($key);$pub="\x04".str_pad($details['ec']['x'],32,"\0",STR_PAD_LEFT).str_pad($details['ec']['y'],32,"\0",STR_PAD_LEFT);
 $cfg=['inlineDispatch'=>false,'version'=>1,'workerToken'=>str_repeat('f',64),'privateKey'=>$pem,'publicKey'=>rtrim(strtr(base64_encode($pub),'+/','-_'),'=')];file_put_contents('/tmp/noa-notifications-private/config.json',json_encode($cfg));chmod('/tmp/noa-notifications-private/config.json',0600);
 function check($v,$label){if(!$v)throw new RuntimeException($label);}
 function count_notices(PDO $db):int{return (int)$db->query('SELECT COUNT(*) FROM noa_notifications')->fetchColumn();}
-function fixture_subscription(string $name):array{$key=openssl_pkey_new(['private_key_type'=>OPENSSL_KEYTYPE_EC,'curve_name'=>'prime256v1']);$d=openssl_pkey_get_details($key);return ['endpoint'=>'https://fcm.googleapis.com/fcm/send/'.$name,'keys'=>['p256dh'=>rtrim(strtr(base64_encode("\x04".$d['ec']['x'].$d['ec']['y']),'+/','-_'),'='),'auth'=>rtrim(strtr(base64_encode(str_repeat('a',16)),'+/','-_'),'=')]];}
+function fixture_subscription(string $name):array{$key=openssl_pkey_new(['private_key_type'=>OPENSSL_KEYTYPE_EC,'curve_name'=>'prime256v1']);$d=openssl_pkey_get_details($key);return ['endpoint'=>'https://fcm.googleapis.com/fcm/send/'.$name,'keys'=>['p256dh'=>rtrim(strtr(base64_encode("\x04".str_pad($d['ec']['x'],32,"\0",STR_PAD_LEFT).str_pad($d['ec']['y'],32,"\0",STR_PAD_LEFT)),'+/','-_'),'='),'auth'=>rtrim(strtr(base64_encode(str_repeat('a',16)),'+/','-_'),'=')]];}
 $entity='song:'.str_repeat('a',64);$now=time();
 check(nnt_target($db,'video:abcdefghijk','qa_a')['url']==='/noa-youtube.php?track=abcdefghijk','video activity opens the exact track');
 ne_like($db,$entity,'qa_b',true,false,$now-50);
