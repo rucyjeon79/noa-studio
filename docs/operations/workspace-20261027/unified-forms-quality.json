@@ -674,9 +674,40 @@
   "existingFeatureQualityAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40427973232",
   "existingFeatureEngines": "success",
   "limitations": [
-    "Production acceptance verified public access guards and exact deployed hashes; authenticated edits and repairs used disposable MySQL/native-session fixtures. No operating song values were automatically selected or deleted.",
+    "Production acceptance includes authenticated administrator navigation, a 666-record live scan, actual comparison/action controls and common form inspection. Writes/repairs/trash/restore were tested in disposable MySQL/native-session fixtures; no operating song values were selected for saving or deleted.",
     "Duplicate candidates use equivalent YouTube video IDs, identical Suno URLs or identical audio locations. A shared title alone is not a duplicate. Ambiguous source identities remain a manual linkage review.",
     "The historical guest-page visual harnesses still contain obsolete assumptions. The separate live-member probe failed a level-capability assertion before this deployment (40427973209); this release does not claim a new live member-permission acceptance.",
     "The original twelve-area work plan and N80 statuses are preserved; this scoped completion does not complete all original areas."
-  ]
+  ],
+  "authenticatedProduction": {
+    "date": "2026-10-27",
+    "role": "super",
+    "verification": "authenticated production browser; read-only except transient UI selection",
+    "qualityUrl": "https://noastudio.ai.kr/noa-quality.php",
+    "scan": {
+      "scannedRecords": 666,
+      "issues": 427,
+      "alias": 409,
+      "catalogConflict": 13,
+      "duplicateCandidates": 2,
+      "missingTitle": 0,
+      "classification": 3
+    },
+    "checks": [
+      "MY → 최고관리자 작업실 → 콘텐츠 관리 → 곡정보 검사·정리 navigation",
+      "automatic full scan and manual rescan return the same totals",
+      "duplicate filter shows record comparison and trash controls",
+      "alias comparison shows source choices; apply is disabled until a value is selected",
+      "standalone editor and catalog inline editor have identical sections, field labels and four-level classification",
+      "owner new-song form uses the same common field vocabulary and section order",
+      "no horizontal overflow in observed standalone and catalog inline forms"
+    ],
+    "productionSongEdits": 0,
+    "productionTrashActions": 0,
+    "transientSelectionClearedByRescan": true,
+    "limitations": [
+      "Actual production apply/trash/restore were not executed on the user's songs; mutation behavior was verified in the disposable MySQL/PHP/browser candidate.",
+      "427 review items remain unresolved; they are not 427 proven incorrect songs. An observed image alias differed between a non-empty current path and an empty legacy thumbnail."
+    ]
+  }
 }
