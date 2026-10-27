@@ -21,6 +21,8 @@ import static org.junit.Assert.*;
 @RunWith(AndroidJUnit4.class)
 public class StartupTest {
  @Test public void coldStartLoadsProductionHomeAndNativeBridge() throws Exception {
+  long networkEnd=SystemClock.elapsedRealtime()+90000;boolean network=false;
+  while(SystemClock.elapsedRealtime()<networkEnd&&!network){java.net.HttpURLConnection probe=null;try{probe=(java.net.HttpURLConnection)new java.net.URL("https://noastudio.ai.kr/").openConnection();probe.setConnectTimeout(5000);probe.setReadTimeout(5000);network=probe.getResponseCode()==200;}catch(java.io.IOException ignored){}finally{if(probe!=null)probe.disconnect();}if(!network)SystemClock.sleep(500);}assertTrue("Emulator network unavailable",network);
   Context c=InstrumentationRegistry.getInstrumentation().getTargetContext();
   UiDevice d=UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
   c.startActivity(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
@@ -53,5 +55,11 @@ public class StartupTest {
   assertEquals("/",observed.optString("path"));
   assertTrue("Production home did not render: "+observed,observed.optBoolean("home")&&observed.optInt("text")>50);
   assertTrue("Native media bridge was not installed",observed.optBoolean("bridge"));
+  d.findObject(By.res(c.getPackageName(),"noa_nav_music")).click();
+  assertNotNull("Guest catalog needs a visible sign-in action",d.wait(Until.findObject(By.text("로그인하면 곡 목록을 불러옵니다.")),30000));
+  assertNotNull(d.findObject(By.desc("로그인")));
+  observed.put("guestCatalogLoginAction",true);
+  d.takeScreenshot(new File(c.getExternalFilesDir(null),"noa-guest-login.png"));
+  try(FileWriter out=new FileWriter(new File(c.getExternalFilesDir(null),"noa-startup-proof.json"))){out.write(observed.toString());}
  }
 }
