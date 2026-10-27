@@ -5,3 +5,5 @@ test('54 varied greetings keep exact facts with time, season and emotion',()=>{
  }assert.equal(values.size,54);
 });
 test('Korea time, four seasons, safe literal song context',()=>{for(const [month,season] of [[1,'겨울'],[4,'봄'],[7,'여름'],[10,'가을']]){const text=compose('저장했어요.',{date:new Date(`2026-${String(month).padStart(2,'0')}-01T23:00:00Z`),title:'<img src=x onerror=alert(1)>',index:0});assert(text.includes(season));assert.match(text,/아침/);assert(text.includes('<img'));assert.match(text,/저장했어요/);}});
+
+test('empty boards are not operational alerts',()=>{const {emptyStatus}=sandbox.module.exports;for(const text of ['등록된 글이 없습니다.','아직 등록된 공지사항이 없어요.','표시할 게시판이 없습니다.'])assert(emptyStatus(text));for(const text of ['댓글을 등록하지 못했습니다.','저장을 완료했습니다.','구독 기간이 남아 있지 않아요.'])assert(!emptyStatus(text));});

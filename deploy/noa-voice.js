@@ -10,7 +10,8 @@ function compose(text,{date=new Date(),title='',index=0,name=''}={}){
  const feeling=title?['지금 만난 「'+title+'」의 여운 곁에서 전할게요.','「'+title+'」와 함께하는 순간에 제 소식도 놓아둘게요.','「'+title+'」를 만난 이 페이지에서 잠깐 이야기 나눠요.'][index%3]:moods[Math.floor(index/9)%moods.length];
  return (name?name+'님, ':'')+opening+' '+feeling+'\n'+String(text);
 }
-if(typeof module==='object'&&module.exports)module.exports={compose};
+function emptyStatus(text){return /(?:등록된|표시할|검색된|일치하는).*(?:없습니다|없어요)/.test(text);}
+if(typeof module==='object'&&module.exports)module.exports={compose,emptyStatus};
 if(!scope.document||scope.NoaVoice)return;
 const parentVoice=(()=>{try{return scope.parent!==scope?scope.parent.NoaVoice:null;}catch{return null;}})();
 const doc=scope.document,read=k=>{try{return sessionStorage.getItem(k);}catch{return null;}},write=(k,v)=>{try{sessionStorage.setItem(k,v);}catch{}};
@@ -22,7 +23,7 @@ function say(text,options={}){
  text=readable(text);if(!text)return;
  const key=options.key||text,now=Date.now();if(!options.force&&now-(recent.get(key)||0)<4000)return;recent.set(key,now);if(recent.size>200)recent.delete(recent.keys().next().value);
  const item={text,options};if(options.key){const i=queue.findIndex(x=>x.options.key===options.key);if(i>=0)queue.splice(i,1);}
- if(options.priority&&active){queue.unshift(item);close(false);}else{queue.push(item);render();const b=doc.querySelector('.ainoa-message-actions button');if(b&&queue.length)b.textContent='다음 소식 · '+queue.length;}
+ if(options.priority&&active){if(active.options.key!==options.key)queue.unshift(active);queue.unshift(item);close(false);}else{queue.push(item);render();const b=doc.querySelector('.ainoa-message-actions button');if(b&&queue.length)b.textContent='다음 소식 · '+queue.length;}
 }
 function close(next=true,ack=false){if(ack)try{sessionStorage.removeItem('noa-voice-redirect');}catch{}clearTimeout(timer);active=null;const tip=doc.querySelector('#noa-ainoa .ainoa-tip');if(tip)tip.hidden=true;if(next||queue.length)render();}
 function place(){const root=doc.getElementById('noa-ainoa'),modal=[...doc.querySelectorAll('dialog[open]')].at(-1);if(root&&root.parentElement!==(modal||doc.body))(modal||doc.body).append(root);}
@@ -55,7 +56,7 @@ function markAccess(){
 }
 function scan(){scheduled=false;markAccess();render();for(const node of doc.querySelectorAll(statusSelector)){
  if(node.closest('.ainoa-tip,.ainoa-admin-dialog')||node.matches('.ainoa-answer')||node.closest('[hidden]'))continue;
- const text=node.textContent.trim();if(!text||text===seen.get(node)||!node.getClientRects().length)continue;seen.set(node,text);
+ const text=node.textContent.trim();if(!text||emptyStatus(text)||text===seen.get(node)||!node.getClientRects().length)continue;seen.set(node,text);
  // Dynamic operational notices only; progress numbers and empty-state copy are not repeated as alerts.
  if(node.matches('[role="alert"],.noa-toast,.toast,.alert-danger,.alert-success,.alert-warning')||/저장|실패|못했|오류|확인해|완료|차감|켜|껐|연결|전달|등록|삭제|필요|부족|지연/.test(text))say(text,{key:node.id||text,sticky:node.getAttribute('role')==='alert'});
 }}
