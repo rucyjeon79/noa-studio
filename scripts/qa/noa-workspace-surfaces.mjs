@@ -16,12 +16,12 @@ async function forms(p){return p.locator('form').evaluateAll(fs=>fs.map(f=>({act
 try{
  const probe=await browser.newContext();for(let i=0;i<50;i++){try{if((await probe.request.get(base+'/')).ok())break;}catch{}await new Promise(r=>setTimeout(r,100));}await probe.close();
  for(const width of [320,390,1280])for(const theme of ['noa-studio','noa-ivory']){
-  const c=await browser.newContext({viewport:{width,height:900},serviceWorkers:'block'});await c.addCookies([{name:'qa_role',value:'admin',url:base}]);await c.addInitScript(theme=>localStorage.setItem('noa-theme',theme),theme);
+  const c=await browser.newContext({viewport:{width,height:900},serviceWorkers:'block'});await c.addCookies([{name:'qa_role',value:'admin',url:base}]);await c.addInitScript(theme=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',design:'ios',radius:'soft'})),theme);
   // Never issue writes from this rendering regression.
   await c.route('**/*',r=>r.request().method()==='POST'?r.abort():r.continue());
   const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
   for(const path of ['/noa-music.php','/noa-youtube.php','/noa-catalog.php']){
-   const response=await p.goto(base+path+'?genre=your-story');assert(response.ok(),path+' responds');
+   const response=await p.goto(base+path+'?genre=your-story');assert(response.ok(),path+' responds');await p.waitForFunction(theme=>document.documentElement.dataset.noaTheme===theme,theme);
    const list=p.locator('.noa-user-playlist[data-playlist-id="'+data.playlist+'"]');await list.waitFor();
    assert.match(await list.locator('.noa-browse-card small').textContent(),/3(?:개)?\s*(?:영상|곡|라이브러리)/,path+' count is three');
    await list.locator('.noa-list-toggle').click();assert.deepEqual(await list.locator('.noa-inline-title').allTextContents(),data.expectedTitles,path+' uses the original short titles');assert.equal(await list.locator('.noa-inline-song').count(),3);

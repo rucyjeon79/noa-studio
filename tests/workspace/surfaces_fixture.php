@@ -11,4 +11,5 @@ $db->prepare('INSERT INTO noa_catalog_aliases(batch_id,alias_key,entity_id) VALU
 $id=str_repeat('e',24);$members=array_map(fn($key)=>['key'=>$key],array_merge([$alias],$keys));$d=nup_normalize(['genreId'=>'your-story','title'=>'2026년 제2회 AMT AI 작곡대회 | K-POP','visibility'=>'public','customPlaylistId'=>$id,'body'=>['members'=>$members]],'playlist');$db->beginTransaction();nup_store($db,'playlist:custom:'.$id,'playlist',$d,0,'fixture');$db->commit();
 file_put_contents('workspace-proof/candidate/surfaces-data.json',json_encode(['playlist'=>$id,'sourceKeys'=>$keys,'sourceDocuments'=>5,'savedMembers'=>6,'expectedTitles'=>['미전송(Unread)','BLOOM','NO LIMITS'],'productionWrites'=>0],JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
 $root='/tmp/noa-pwa-fixture';copy('deploy/noa-gnuboard.css',$root.'/noa-gnuboard.css');copy('tests/workspace/board_fixture.php',$root.'/bbs/board.php');
+$router=file_get_contents($root.'/router.php');file_put_contents($root.'/router.php',str_replace("if(\$path==='/noa-category-order.php')","if(false&&\$path==='/noa-category-order.php')",$router));
 echo "ACTUAL_MUSIC_YOUTUBE_LIBRARY_AND_NATIVE_MARKUP_FIXTURE_READY\n";
