@@ -26,6 +26,7 @@ function check($v,$label){if(!$v)throw new RuntimeException($label);}
 function count_notices(PDO $db):int{return (int)$db->query('SELECT COUNT(*) FROM noa_notifications')->fetchColumn();}
 function fixture_subscription(string $name):array{$key=openssl_pkey_new(['private_key_type'=>OPENSSL_KEYTYPE_EC,'curve_name'=>'prime256v1']);$d=openssl_pkey_get_details($key);return ['endpoint'=>'https://fcm.googleapis.com/fcm/send/'.$name,'keys'=>['p256dh'=>rtrim(strtr(base64_encode("\x04".$d['ec']['x'].$d['ec']['y']),'+/','-_'),'='),'auth'=>rtrim(strtr(base64_encode(str_repeat('a',16)),'+/','-_'),'=')]];}
 $entity='song:'.str_repeat('a',64);$now=time();
+check(nnt_target($db,'video:abcdefghijk','qa_a')['url']==='/noa-youtube.php?track=abcdefghijk','video activity opens the exact track');
 ne_like($db,$entity,'qa_b',true,false,$now-50);
 $nativeBefore=$db->query('SELECT COUNT(*) FROM g5_write_free')->fetchColumn();
 check(count(nnt_install($db))===5&&nnt_install($db)===[],'additive idempotent schema');nnt_collect($db,$now);check(count_notices($db)===0,'no historical backfill');

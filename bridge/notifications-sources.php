@@ -21,7 +21,7 @@ function nnt_target(PDO $db,string $entity,string $viewer=''):?array{
   }elseif($kind==='document'){
    if(!preg_match('/^[a-f0-9]{64}$/D',$id))return null;$d=nnt_one($db,"SELECT doc_key,payload FROM noa_documents WHERE SHA2(doc_key,256)=? AND kind IN ('single','story','playlist')",[$id]);if(!$d)return null;$p=json_decode($d['payload'],true);$key=$d['doc_key'];$owner=(string)($p['ownerId']??$config['cf_admin']??'');$target=ne_target($db,'music',$key);
   }elseif(in_array($kind,['video','playlist'],true)){
-   $target=ne_target($db,$kind,$id);$owner=(string)($config['cf_admin']??'');return ['owner'=>$owner,'url'=>'/noa-youtube.php?'.($kind==='video'?'video':'playlist').'='.rawurlencode($id),'target'=>$target];
+   $target=ne_target($db,$kind,$id);$owner=(string)($config['cf_admin']??'');return ['owner'=>$owner,'url'=>'/noa-youtube.php?'.($kind==='video'?'track':'playlist').'='.rawurlencode($id),'target'=>$target];
   }else return null;
   if($target['entity']!==$entity)return null;
   return ['owner'=>$owner,'url'=>'/noa-music.php?track='.rawurlencode($key),'target'=>$target];
