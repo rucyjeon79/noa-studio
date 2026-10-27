@@ -46,3 +46,5 @@ $numbered=nup_patch($unknown,'story',['genre'=>'kpop-original','ep'=>'08']);chec
 echo "CLASSIFICATION_PATCH_AND_SOURCE_PRESERVATION_OK\n";
 
 $roundtrip=nup_patch($original,'single',['genre'=>'cover-reborn']);$roundtrip=nup_patch($roundtrip,'single',['title'=>'변경된 제목','lyrics'=>'변경된 가사']);$roundtrip=nup_patch($roundtrip,'single',['genre'=>'kpop-original']);check($roundtrip['body']['originalInfo']['title']==='변경된 제목'&&$roundtrip['body']['originalInfo']['lyrics']==='변경된 가사','returning to original never resurrects stale originalInfo');
+
+$cleared=nup_patch($moved,'story',['genre'=>'unclassified']);check($cleared['genreId']==='unclassified'&&$cleared['packageType']==='song'&&$cleared['classificationOverride']===['source'=>'manual','genre'=>'unclassified'],'explicit category clear is valid and remembered');check($cleared['body']===$moved['body'],'clear preserves complete production body');$cleared=nup_patch($numbered,'story',['genre'=>'unclassified']);check($cleared['packageType']==='song'&&$cleared['ep']==='08','cleared numbered song retains evidence without becoming a linked EP');

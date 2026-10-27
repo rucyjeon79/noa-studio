@@ -2,6 +2,7 @@
 declare(strict_types=1);
 if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
 require_once __DIR__.'/youtube-store.php';
+require_once __DIR__.'/package-record.php';
 /** Recovery is a new immutable catalog edition, never an UPDATE of source/user documents. */
 function nr_seconds(string $iso):int{try{$d=new DateInterval($iso);return $d->d*86400+$d->h*3600+$d->i*60+$d->s;}catch(Throwable){return 0;}}
 function nr_kind(array $v):string{
@@ -27,14 +28,14 @@ function nr_suno_url(string $text):string{
  preg_match_all('~(?:Suno|수노)[^\r\n]{0,30}(https://(?:www[.])?suno[.]com/(?:song|s)/[A-Za-z0-9_-]+)~iu',$text,$m);
  $urls=array_values(array_unique($m[1]));return count($urls)===1?$urls[0]:'';
 }
-function nr_entity(array $v,string $channel):array{
+function nr_entity(array $v,string $channel,array $memberships=[]):array{
  $s=$v['snippet'];$t=nc_text($s['title']??'');$text=$t.'\n'.($s['description']??'');
  $cover=(bool)preg_match('~Cover by AI.?noa~iu',$t);
- $genre=$cover?'cover-reborn':(preg_match('~사연곡|학원가~u',$t)?'your-story':'unclassified');
+ $genre=$channel===NSC_CHANNEL?($memberships[$v['id']]??'unclassified'):'unclassified';
  $language='und';if(preg_match('~\((KR|JP|US|EN|TH)\)~i',$t,$m))$language=['KR'=>'ko','JP'=>'ja','US'=>'en','EN'=>'en','TH'=>'th'][strtoupper($m[1])];
  $ep=preg_match('~\bEP[.\s]*(\d{1,3})(?!\d)~i',$t,$m)?str_pad((string)(int)$m[1],2,'0',STR_PAD_LEFT):'';
  $id=nc_hash(['youtube-song',$channel,$v['id']]);$thumb=$s['thumbnails']['maxres']['url']??$s['thumbnails']['high']['url']??$s['thumbnails']['medium']['url']??$s['thumbnails']['default']['url']??'';
- $fields=['title'=>$t,'youtubeUrl'=>'https://www.youtube.com/watch?v='.$v['id'],'thumbUrl'=>$thumb,'description'=>$s['description']??'','publishedAt'=>$s['publishedAt']??'','privacyStatus'=>$v['status']['privacyStatus']??'private','registrationStatus'=>'needs_information','source'=>['platform'=>'youtube','channel'=>$channel,'videoId'=>$v['id']],'collection'=>$cover?'cover':($genre==='your-story'?'story':'unclassified')];
+ $fields=['title'=>$t,'youtubeUrl'=>'https://www.youtube.com/watch?v='.$v['id'],'thumbUrl'=>$thumb,'description'=>$s['description']??'','publishedAt'=>$s['publishedAt']??'','privacyStatus'=>$v['status']['privacyStatus']??'private','registrationStatus'=>'needs_information','source'=>['platform'=>'youtube','channel'=>$channel,'videoId'=>$v['id']],'collection'=>$genre==='cover-reborn'?'cover':($genre==='your-story'?'story':'unclassified')];
  $suno=nr_suno_url($s['description']??'');if($suno!=='')$fields['sunoShareUrl']=$suno;
  return ['id'=>$id,'identity'=>['song','youtube',$channel,$v['id']],'type'=>'song','genre'=>$genre,'language'=>$language,'version'=>$cover?'cover':'unspecified','ep'=>$ep,'act'=>0,'fields'=>$fields,'reviewFields'=>['information_incomplete'],'publicVerified'=>($v['status']['privacyStatus']??'')==='public','aliases'=>['youtube:'.$v['id']=>true]];
 }
@@ -44,7 +45,7 @@ function nr_plan(PDO $db):array{
  $source=nc_prepare($db);$songs=ny_songs($db,$batch);$known=[];$q=$db->prepare('SELECT entity_id FROM noa_catalog_versions WHERE batch_id=?');$q->execute([$batch]);foreach($q as $r)$known[$r['entity_id']]=true;
  $new=[];$patch=[];$blocked=[];$patchEvidence=[];$links=[];$review=[];$class=[];$counts=['grokSourceOccurrences'=>$source['report']['sourceOccurrences']??count($source['sources']),'identifiedSourceSongs'=>$source['report']['songs'],'registeredBefore'=>count($songs),'sourceMissing'=>0,'youtubeVideos'=>0,'youtubeUnregisteredSongs'=>0,'alreadyLinked'=>0,'preventedDuplicate'=>0,'nonSongVideos'=>0,'compilations'=>0,'reviewVideos'=>0];
  foreach($source['entities'] as $e)if($e['type']==='song'&&!isset($known[$e['id']])){$new[$e['id']]=$e;$counts['sourceMissing']++;}
- $videos=ny_videos($db,$run);$counts['youtubeVideos']=count($videos);
+ $memberships=nsc_playlist_genres($db)??[];$videos=ny_videos($db,$run);$counts['youtubeVideos']=count($videos);
  foreach($videos as $id=>$v){$m=$v['match'];$kind=nr_kind($v);$sid=$m['songId']??null;
   if($sid&&isset($songs[$sid])){$class[$id]='A';$counts['alreadyLinked']++;$counts['preventedDuplicate']++;$fields=$songs[$sid]['fields'];$add=[];
    foreach(['youtubeUrl'=>'https://www.youtube.com/watch?v='.$id,'thumbUrl'=>$v['snippet']['thumbnails']['high']['url']??''] as $field=>$value)if(empty($fields[$field])&&!in_array($field,json_decode($songs[$sid]['review_fields'],true),true)&&$value!=='')$add[$field]=$value;
@@ -56,7 +57,7 @@ function nr_plan(PDO $db):array{
   // A title candidate or a rejected/manual classification is never silently converted into a new song.
   if(($m['candidates']??[])||nr_title_overlap($v,$songs)||in_array($m['status']??'',['rejected','conflict'],true)){$class[$id]='F';$review[$id]='existing_song_or_version_candidates';$counts['preventedDuplicate']++;continue;}
   if($kind!=='song'){$class[$id]='F';$review[$id]='music_identity_needs_review';continue;}
-  $e=nr_entity($v,$run['channel_id']);
+  $e=nr_entity($v,$run['channel_id'],$memberships);
   // Same title in any candidate, including a newly recovered source, is a reason to hold, never to merge.
   $duplicate=false;foreach($new as $n)if(ny_normal($n['fields']['title']??'')===ny_normal($e['fields']['title'])){$duplicate=true;break;}
   if($duplicate){$class[$id]='F';$review[$id]='new_candidate_identity_overlap';$counts['preventedDuplicate']++;continue;}

@@ -13,10 +13,10 @@ const orderFor=(a,b)=>{const ga=groupFor(a.genre),gb=groupFor(b.genre);if(ga===g
 
 const canonicalKey=r=>String(r.orderKey||r.musicKey||r.key||'').replace(/^catalog:/,'');
 function classification(row,playlists=manualOrder.playlists||[]){
- const genre=row.genre||row.genreId||'',group=groupFor(genre),act=actFor(row),key=canonicalKey(row);
+ const genre=row.genre||row.genreId||'',group=groupFor(genre),act=group?actFor(row):null,key=canonicalKey(row);
  const saved=!act?playlists.filter(p=>p.group===group&&(p.id===row.customPlaylistId||(row.collectionIds||[]).includes(p.id)||(p.keys||[]).includes(key))):[];
- return [{level:1,label:'카테고리',value:groups.find(g=>g[0]===group)?.[1]||'분류 확인 필요',group},
- {level:2,label:'세부 장르',value:names[genre]||genre||'장르 미지정',genre},
+ return [{level:1,label:'카테고리',value:groups.find(g=>g[0]===group)?.[1]||(genre==='unclassified'?'미분류':'분류 확인 필요'),group},
+ {level:2,label:'세부 장르',value:genre==='unclassified'?'미지정':names[genre]||genre||'장르 미지정',genre},
  {level:3,label:'곡 묶음',value:act?'ACT '+act:saved.length?saved.map(p=>p.title).join(' · '):'미분류',act,playlist:saved[0]?.id||''},
  {level:4,label:'세부 목록',value:(Number(row.ep)>0?'EP.'+Number(row.ep)+' · ':'')+(row.title||'곡 정보'),key:row.key||''}];
 }

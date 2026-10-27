@@ -9,6 +9,7 @@ const NUP_FIELDS=['tracklist','creativeFields','confirmed','originalArtist','tit
 function nup_type(array $d,string $kind):string{
  $g=$d['genreId']??'';
  if($kind==='playlist')return in_array($g,['your-story','cover-reborn'],true)||(int)($d['act']??0)<1?'playlist':'act';
+ if($g==='unclassified'||$g==='')return 'song';
  if(!in_array($g,['kpop-original','your-story','cover-reborn'],true)&&(int)($d['ep']??0)<1)return 'song';
  return $g==='kpop-original'?'original':($g==='your-story'?'story':($g==='cover-reborn'?'cover':'ep'));
 }
@@ -29,9 +30,9 @@ function nup_normalize(array $d,string $kind):array{
 function nup_patch(array $d,string $kind,array $patch):array{
  $previousGenre=$d['genreId']??'';
  if(array_key_exists('genre',$patch)){
-  if(!is_string($patch['genre'])||!in_array($patch['genre'],NUP_GENRES,true))throw new InvalidArgumentException('invalid_genre');
+  if(!is_string($patch['genre'])||!in_array($patch['genre'],array_merge(NUP_GENRES,['unclassified']),true))throw new InvalidArgumentException('invalid_genre');
   if($kind==='playlist'&&$patch['genre']!==($d['genreId']??''))throw new InvalidArgumentException('playlist_genre_locked');
-  $d['genreId']=$patch['genre'];unset($patch['genre']);
+  $d['genreId']=$patch['genre'];$d['classificationOverride']=['source'=>'manual','genre'=>$patch['genre']];unset($patch['genre']);
   if($d['genreId']==='kpop-original'&&(int)($patch['ep']??$d['ep']??0)<1)throw new InvalidArgumentException('classification_ep_required');
  }
  $d=nup_normalize($d,$kind);$type=$d['packageType'];if($type==='original'&&$previousGenre!==$d['genreId']){$current=nup_fields($d);$d['body']['originalInfo']=['ep'=>(string)($d['ep']??''),'title'=>$current['title'],'lyrics'=>$current['lyrics'],'vocal'=>$current['vocal']];}$playlist=in_array($type,['act','playlist'],true);
@@ -79,7 +80,7 @@ function nup_validate_classification(PDO $db,string $key,array $before,array $af
  $q=$db->query("SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','story','playlist') OR doc_key='meta:category-order' ORDER BY doc_key FOR UPDATE");
  foreach($q as $r){if($r['doc_key']===$key)continue;$d=json_decode($r['payload'],true);if(!empty($d['_noaTrash']))continue;
   if(($d['sourceRef']??'')===$key||(($before['genreId']??'')==='kpop-original'&&$previousEp>0&&$r['kind']!=='playlist'&&nup_type($d,$r['kind'])==='ep'&&(int)($d['ep']??0)===$previousEp))throw new DomainException('classification_source_linked');
-  if($ep>0&&in_array($r['kind'],['single','story'],true)&&($d['genreId']??'')===$after['genreId']&&(int)($d['ep']??0)===$ep)throw new DomainException('classification_ep_conflict');
+  if(($after['genreId']??'')!=='unclassified'&&$ep>0&&in_array($r['kind'],['single','story'],true)&&($d['genreId']??'')===$after['genreId']&&(int)($d['ep']??0)===$ep)throw new DomainException('classification_ep_conflict');
   if($r['kind']==='playlist'){
    foreach($d['body']['members']??[] as $m)if(in_array($m['key']??'',$identities,true)&&!(str_starts_with($r['doc_key'],'playlist:custom:')&&($d['genreId']??'')===($after['genreId']??'')))throw new DomainException('classification_playlist_linked');
    if($previousEp>0&&($d['genreId']??'')===($before['genreId']??'')&&(int)($d['act']??0)===(int)ceil($previousEp/10))throw new DomainException('classification_playlist_linked');
@@ -95,7 +96,7 @@ function nup_original(PDO $db,array $d):array{
  $r=$matches[0];$p=json_decode($r['payload'],true);$f=array_replace(nup_fields($p),$p['body']['originalInfo']??[]);return ['status'=>'linked','key'=>$r['doc_key'],'revision'=>(int)$r['revision'],'ep'=>(string)$p['ep'],'title'=>$f['title'],'lyrics'=>$f['lyrics'],'vocal'=>$f['vocal']];
 }
 function nup_complete(PDO $db,array $resolved):array{
- $d=$resolved['document'];$kind=$resolved['documentKind'];$d=nup_normalize($d,$kind);
+ $d=nsc_document($resolved['document'],nsc_context($db));$kind=$resolved['documentKind'];$d=nup_normalize($d,$kind);
  if($d['packageType']==='act'&&empty($d['body']['members'])){
   $q=$db->query("SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key");$members=[];
   foreach($q as $r){$m=json_decode($r['payload'],true);if(!empty($m['_noaTrash']))continue;$ep=(int)($m['ep']??0);if(($m['genreId']??'')===$d['genreId']&&$ep>=$d['epRange']['from']&&$ep<=$d['epRange']['to'])$members[]=['key'=>nie_identity($db,$r['doc_key']),'ep'=>$ep,'title'=>nup_fields($m)['title']];}usort($members,fn($a,$b)=>$a['ep']<=>$b['ep']);$d['body']['members']=$members;
@@ -103,7 +104,7 @@ function nup_complete(PDO $db,array $resolved):array{
  $fields=nup_fields($d);
  // The legacy editor's committed values are promoted when this complete record is saved.
  if(empty($resolved['document']['packageSchema']))foreach($resolved['fields'] as $name=>$value)if(in_array($name,NUP_FIELDS,true))$fields[$name]=$value;
- $original=nup_original($db,$d);$resolved['fields']=$fields;$resolved['writeKey']=$resolved['documentKey'];$resolved['revision']=$resolved['documentRevision'];$resolved['kind']=$kind;$resolved['payload']=$d;$resolved['packageType']=$d['packageType'];$resolved['original']=$original;
+ $original=($d['genreId']??'')==='unclassified'?['status'=>'not_applicable']:nup_original($db,$d);$resolved['fields']=$fields;$resolved['writeKey']=$resolved['documentKey'];$resolved['revision']=$resolved['documentRevision'];$resolved['kind']=$kind;$resolved['payload']=$d;$resolved['packageType']=$d['packageType'];$resolved['original']=$original;
  if(in_array($d['packageType'],['act','playlist'],true)){
   $candidates=[];$q=$db->query("SELECT doc_key,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key");foreach($q as $r){$p=json_decode($r['payload'],true);if(!empty($p['_noaTrash'])||($p['genreId']??'')!==($d['genreId']??''))continue;$ep=(int)($p['ep']??0);if($d['packageType']==='act'&&($ep<$d['epRange']['from']||$ep>$d['epRange']['to']))continue;$candidates[]=['key'=>nie_identity($db,$r['doc_key']),'ep'=>$ep,'title'=>nup_fields($p)['title']];}usort($candidates,fn($a,$b)=>$a['ep']<=>$b['ep']);$resolved['candidates']=$candidates;
  }
@@ -175,7 +176,7 @@ function nup_apply_collections(PDO $db,string $key,array $song,$wanted,$expected
   if($contains===$selected)continue;
   if($selected)$members[]=['key'=>preg_replace('/^catalog:/','',$key)];
   else $members=array_values(array_filter($members,fn($m)=>nup_member_owner($pool,(string)($m['key']??''))!==$key));
-  $d=nup_patch($list['payload'],'playlist',['members'=>$members]);nup_validate_members($db,$d,[$key=>$song]);nup_store($db,$id,'playlist',$d,$list['revision'],$actor);$changed[]=$id;
+  $d=nup_patch($list['payload'],'playlist',['members'=>$members]);if($selected)nup_validate_members($db,$d,[$key=>$song]);nup_store($db,$id,'playlist',$d,$list['revision'],$actor);$changed[]=$id;
  }
  return $changed;
 }
@@ -184,4 +185,38 @@ function nup_register_catalog(PDO $db,string $batch):int{
  $installed=$db->query("SELECT payload FROM noa_documents WHERE doc_key='meta:package-record-policy' AND kind='meta'")->fetchColumn();$policy=$installed?json_decode($installed,true):null;if(($policy['schema']??null)!==1||($policy['installed']??false)!==true)return 0;
  require_once __DIR__.'/sound-core.php';$q=$db->prepare("SELECT s.song_id,s.genre_id,s.ep,v.fields_json,v.public_verified FROM noa_catalog_songs s JOIN noa_catalog_versions v ON v.entity_id=s.song_id AND v.entity_type='song' WHERE v.batch_id=? AND NOT EXISTS (SELECT 1 FROM noa_documents d WHERE d.doc_key=CONCAT('catalog:',s.song_id)) AND NOT EXISTS (SELECT 1 FROM noa_catalog_aliases a JOIN noa_documents d ON d.doc_key=a.alias_key AND d.kind IN ('single','story') WHERE a.batch_id=v.batch_id AND a.entity_id=s.song_id) ORDER BY s.song_id");$q->execute([$batch]);$rows=$q->fetchAll(PDO::FETCH_ASSOC);$n=0;
  foreach($rows as $r){$d=noa_sound_catalog_document($r);if(!$d)throw new DomainException('invalid_catalog_song');unset($d['_kind'],$d['_catalog_id']);$d=nup_normalize($d,'story');if($d['packageType']==='ep'){$original=nup_original($db,$d);if(($original['status']??'')==='linked')$d['sourceRef']=$original['key'];}nup_store($db,'catalog:'.$r['song_id'],'story',$d,0,'catalog-register');$n++;}return $n;
+}
+
+/** Read-only source evidence. A title is never evidence of playlist membership. */
+const NSC_CHANNEL='UCwYy9xsAqDFat6AV5UKrfgA';
+const NSC_PLAYLISTS=['PLEPMKciKgvch9TGMAcBdKzhVt1QeYsfKB'=>'your-story','PLEPMKciKgvcjGmuO2ZcqrkHGfD5Qbb_Eb'=>'cover-reborn'];
+function nsc_playlist_genres(PDO $db):?array{
+ try{
+  $q=$db->prepare('SELECT run_id,report FROM noa_youtube_runs WHERE channel_id=? ORDER BY created_at DESC,run_id DESC LIMIT 1');$q->execute([NSC_CHANNEL]);$run=$q->fetch(PDO::FETCH_ASSOC);if(!$run)return null;
+  $report=json_decode($run['report'],true);$out=[];
+  foreach(NSC_PLAYLISTS as $pid=>$genre){
+   if(in_array('playlist_count_changed_or_inaccessible:'.$pid,$report['warnings']??[],true))return null;
+   $q=$db->prepare('SELECT payload FROM noa_youtube_playlists WHERE run_id=? AND playlist_id=?');$q->execute([$run['run_id'],$pid]);$raw=$q->fetchColumn();if(!$raw)return null;$p=json_decode($raw,true);
+   if(isset($p['snippet']['channelId'])&&$p['snippet']['channelId']!==NSC_CHANNEL)return null;
+   $q=$db->prepare('SELECT video_id FROM noa_youtube_items WHERE run_id=? AND playlist_id=?');$q->execute([$run['run_id'],$pid]);$ids=$q->fetchAll(PDO::FETCH_COLUMN);
+   if(isset($p['contentDetails']['itemCount'])&&(int)$p['contentDetails']['itemCount']!==count($ids))return null;
+   foreach($ids as $id)if(is_string($id)&&$id!=='')$out[$id][$genre]=true;
+  }
+  return array_map(fn($genres)=>count($genres)===1?array_key_first($genres):'unclassified',$out);
+ }catch(PDOException $e){if(in_array($e->getCode(),['42S02','42P01'],true)||str_contains($e->getMessage(),'no such table'))return null;throw $e;}
+}
+function nsc_context(PDO $db):?array{
+ $members=nsc_playlist_genres($db);if($members===null)return null;$imported=[];
+ foreach($db->query('SELECT identity_json,genre_id FROM noa_catalog_songs') as $r){$id=json_decode($r['identity_json'],true);if(($id[0]??'')==='song'&&($id[1]??'')==='youtube'&&($id[2]??'')===NSC_CHANNEL&&isset($id[3]))$imported[$id[3]][$r['genre_id']]=true;}
+ return ['members'=>$members,'imported'=>$imported];
+}
+function nsc_document(array $d,?array $context):array{
+ // Explicit choices, including clearing a category, always win over future imports.
+ if(isset($d['classificationOverride'])||$context===null)return $d;
+ $source=$d['body']['source']??[];$video=$source['videoId']??'';
+ if(($source['platform']??'')!=='youtube'||($source['channel']??'')!==NSC_CHANNEL||($d['body']['registrationStatus']??'')!=='needs_information')return $d;
+ $imported=$context['imported'][$video]??[];
+ // Preserve manual changes made before classification provenance was introduced.
+ if(count($imported)!==1||!isset($imported[$d['genreId']??'']))return $d;
+ $d['genreId']=$context['members'][$video]??'unclassified';return $d;
 }

@@ -25,7 +25,7 @@ echo "QUALITY_READ_ONLY_SCAN_REVIEW_CAS_IDEMPOTENCE_ALIASES_DUPLICATE_TRASH_SURV
 $id=str_repeat('1',64);$key='catalog:'.$id;
 nc_insert($db,'noa_catalog_songs',['song_id'=>$id,'identity_json'=>'[]','genre_id'=>'unclassified','language'=>'ko','version_name'=>'original','ep'=>''],['song_id']);
 nc_insert($db,'noa_catalog_versions',['batch_id'=>$batch,'entity_id'=>$id,'entity_type'=>'song','fields_json'=>'{"title":"분류 검증곡"}','fields_sha'=>str_repeat('0',64),'review_fields'=>'[]','public_verified'=>1],['batch_id','entity_id']);
-$d=nup_normalize(['genreId'=>'unclassified','title'=>'분류 검증곡','visibility'=>'public','body'=>['confirmedTitle'=>'분류 검증곡','songDescription'=>'사연곡 원문','unknownEvidence'=>['keep'=>true]]],'story');
+$d=nup_normalize(['genreId'=>'unclassified','title'=>'분류 검증곡','visibility'=>'public','body'=>['confirmedTitle'=>'분류 검증곡','songDescription'=>'사연곡 원문','youtubeUrl'=>'https://www.youtube.com/watch?v=classify001','unknownEvidence'=>['keep'=>true]]],'story');
 $db->beginTransaction();nup_store($db,$key,'story',$d,0,'fixture');nup_validate_classification($db,$key,$d,nup_patch($d,'story',['genre'=>'your-story']));$db->commit();
 $issue=issue(nrq_scan($db),'classification','genre');must($issue['actionUrl']==='/noa-editor.php?key='.rawurlencode($key),'classification_report_opens_real_editor');
 $db->beginTransaction();try{nup_validate_classification($db,$key,['genreId'=>'your-story','sourceRef'=>'single:test'],['genreId'=>'cover-reborn']);throw new RuntimeException('linked_reclassification_accepted');}catch(DomainException $e){must($e->getMessage()==='classification_source_linked','linked_source_protected');}finally{$db->rollBack();}
@@ -55,3 +55,10 @@ echo "COLLECTION_CATALOG_ALIAS_APPEND_REMOVE_MULTIPLE_CAS_ATOMICITY_AND_GENRE_GU
 
 copy(__DIR__.'/../../deploy/noa-category-order.php','/tmp/noa-pwa-fixture/noa-category-order.php');
 $router=file_get_contents('/tmp/noa-pwa-fixture/router.php');file_put_contents('/tmp/noa-pwa-fixture/quality-router-before.php',$router);$router=str_replace("if(\$path==='/noa-category-order.php')", "if(false&&\$path==='/noa-category-order.php')",$router);file_put_contents('/tmp/noa-pwa-fixture/router.php',$router);
+
+// Render the actual YouTube PHP path against the same isolated records used by the editor.
+require_once __DIR__.'/../../bridge/world-mv.php';
+$run=str_repeat('9',32);nc_insert($db,'noa_youtube_runs',['run_id'=>$run,'channel_id'=>NSC_CHANNEL,'catalog_batch'=>$batch,'report'=>'{"warnings":[]}'],['run_id']);
+foreach(array_merge(array_keys(NSC_PLAYLISTS),[NWM_PLAYLIST,NWM_ACT_PLAYLIST,'fixture-only'])as $pid){$raw=['id'=>$pid,'snippet'=>['channelId'=>NSC_CHANNEL,'title'=>'검증 재생목록'],'status'=>['privacyStatus'=>'public'],'contentDetails'=>['itemCount'=>0]];nc_insert($db,'noa_youtube_playlists',['run_id'=>$run,'playlist_id'=>$pid,'payload'=>json_encode($raw)],['run_id','playlist_id']);}
+$raw=['id'=>'classify001','snippet'=>['channelId'=>NSC_CHANNEL,'title'=>'분류 검증곡'],'status'=>['privacyStatus'=>'public','embeddable'=>true]];nc_insert($db,'noa_youtube_videos',['run_id'=>$run,'video_id'=>'classify001','payload'=>json_encode($raw),'match_json'=>json_encode(['songId'=>str_repeat('1',64),'status'=>'matched'])],['run_id','video_id']);
+foreach(['noa-youtube.php','noa-youtube.js','noa-youtube.css']as $file)copy('deploy/'.$file,'/tmp/noa-pwa-fixture/'.$file);
