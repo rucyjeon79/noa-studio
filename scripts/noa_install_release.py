@@ -1,12 +1,16 @@
 """Scoped launch and installation UI release; no member, media or APK writes."""
 import noa_ainoa_deploy as release
 release.FILES={
+ 'noa-assets/icon-maskable-192.png':'public/icon-maskable-192.png',
+ 'noa-assets/icon-maskable-512.png':'public/icon-maskable-512.png',
+ 'noa-assets/icon-touch-180.png':'public/icon-touch-180.png',
+ 'noa-manifest.json':'deploy/noa-manifest.json',
  'noa-install.css':'deploy/noa-install.css','noa-install.js':'deploy/noa-install.js','noa-install.php':'deploy/noa-install.php',
  'noa-launch.js':'deploy/noa-launch.js','noa-brand.js':'deploy/noa-brand.js',
  'noa-bridge/member-access.php':'bridge/member-access.php','extend/noa.access.php':'deploy/noa-access.extend.php','extend/noa.design.php':'deploy/noa-design.extend.php',
  'noa-ui.js':'deploy/noa-ui.js','noa-my.php':'deploy/noa-my.php','noa-sitemap.php':'deploy/noa-sitemap.php','noa-account.js':'deploy/noa-account.js','noa-account.css':'deploy/noa-account.css','noa-download.php':'deploy/noa-download.php'}
-release.NEW={'noa-install.css','noa-install.js','noa-install.php'}
-release.PROTECTED+=['index.php','noa-app/home.php','noa-youtube.php','noa-browse.js','noa-community.js','noa-bridge/community-core.php','noa-manifest.json','noa-sw.js','noa-android-release.json']
+release.NEW={'noa-install.css','noa-install.js','noa-install.php','noa-assets/icon-maskable-192.png','noa-assets/icon-maskable-512.png','noa-assets/icon-touch-180.png'}
+release.PROTECTED+=['index.php','noa-app/home.php','noa-youtube.php','noa-browse.js','noa-community.js','noa-bridge/community-core.php','noa-sw.js','noa-android-release.json','noa-assets/icon-192.png','noa-assets/icon-512.png','noa-assets/papa-logo.png']
 if __name__=='__main__':
  release.main()
  if 'rollback'not in release.sys.argv:
