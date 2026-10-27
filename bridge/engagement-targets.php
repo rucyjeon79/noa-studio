@@ -45,7 +45,7 @@ function ne_stats(PDO $db,array $target): array {
  $comments=(int)ne_one($db,'SELECT COUNT(*) n FROM noa_post_comments WHERE entity=? AND deleted_at IS NULL',[$target['entity']])['n'];
  if($target['native'])$comments+=(int)ne_one($db,'SELECT COUNT(*) n FROM '.$target['table']." WHERE wr_parent=? AND wr_is_comment=1 AND FIND_IN_SET('secret',wr_option)=0",[$target['id']])['n'];
  $base=$target['views']??null;
- if(!$target['native']&&nc_exists($db,'noa_ranking_rows')){[$kind,$id]=explode(':',$target['entity'],2);$rank=['song'=>'songs','video'=>'featured','playlist'=>'playlists'][$kind]??null;if($rank){$r=ne_one($db,'SELECT youtube_views,jukebox_plays FROM noa_ranking_rows WHERE content_id=? ORDER BY hour_utc DESC LIMIT 1',[$id]);if($r)$base=(int)$r['youtube_views']+(int)$r['jukebox_plays'];}}
+
  return ['entity'=>$target['entity'],'title'=>$target['title'],'likes'=>count($likes),'comments'=>$comments,'liked'=>isset($likes[$member['mb_id']??'']),'canLike'=>$target['canLike'],'canComment'=>$target['canComment'],'reactionScore'=>count($likes)+$comments,'score'=>$base===null?null:$base+count($likes)+$comments,'rankingNote'=>'좋아요 1점 · 댓글 1점 · 음악 순위는 시간별 반영'];
 }
 function ne_comments(PDO $db,array $target,int $page): array {
