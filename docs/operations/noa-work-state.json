@@ -1636,6 +1636,27 @@
         "noa-notifications.css": "1da887f583a7bab62a421a4a0758de077502e79aee730121f6f0d7f4e582358b",
         "noa-notifications.js": "1351b92889c299d46b90f94ee9354fd812f9d831ba4b3edb86ad62776f84ed19"
       }
+    },
+    "deliveryDelayFix": {
+      "status": "deployed",
+      "commit": "0dd0d848e26035dfab638d3a76c87d02a087c79c",
+      "pullRequest": 241,
+      "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40598135714",
+      "mode": "bounded event-driven delivery with scheduled retry fallback",
+      "protectedUnchanged": 17,
+      "nativeTablesWritten": 0,
+      "health": {
+        "inlineCapable": true,
+        "subscriptions": 1,
+        "pending": 0,
+        "oldestDueAge": 0,
+        "accepted": 1,
+        "received": 1
+      },
+      "manualPhoneTestConfirmedByUser": true,
+      "inlinePhysicalPhoneDeliveryVerified": false,
+      "limitations": "At most two inline deliveries per request; scheduled overflow/retries and device/network delays remain possible.",
+      "evidence": "docs/operations/push-delay-20261028.md"
     }
   }
 }
