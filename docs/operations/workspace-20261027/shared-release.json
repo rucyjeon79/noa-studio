@@ -1,0 +1,66 @@
+{
+  "id": "NOA-20261027-SHARED-DUPLICATES-BOARD-LINKS",
+  "status": "deployed_tested_authenticated_screen_verification_pending",
+  "completedAt": "2026-10-27T13:52:54.319861+09:00",
+  "pullRequest": "https://github.com/rucyjeon79/noa-studio/pull/231",
+  "runtimeCommit": "64ebd5a11bb426e2ed868e3692c4f43bbe36c351",
+  "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40451418910",
+  "candidateAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40450990444",
+  "productionChangedFiles": [
+    "noa-bridge/music-readmodel.php",
+    "noa-gnuboard.css",
+    "noa-ui.js",
+    "noa-youtube.css",
+    "noa-bridge/youtube-catalog.php",
+    "noa-bridge/library-records.php",
+    "noa-browse.js",
+    "noa-ui.css",
+    "noa-music.php"
+  ],
+  "productionVerifiedFileHashes": 47,
+  "protectedUnchanged": 22,
+  "productionDatabaseWrites": 0,
+  "sourceRecordsDeleted": 0,
+  "changes": [
+    "Apply explicit-video browse identity to real MUSIC and library readers as well as YouTube; retain all records, media and direct details.",
+    "Display one row per identity in custom collections and non-video searches; preserve distinct recordings/classifications and prefer playable audio.",
+    "Remove link underlines in all shared states, including nested link markup; preserve keyboard focus and non-link authored underlines.",
+    "Align native board list/view/write/comments/search/pagination with login/account theme tokens, type, spacing and controls. Native post titles/body links remain text links."
+  ],
+  "checks": {
+    "php": "8.2",
+    "database": "MySQL8",
+    "actualMusicYoutubeLibraryThemeWidths": 18,
+    "nativeMarkupBoardThemeWidths": 18,
+    "duplicateFixture": {
+      "storedMembers": 6,
+      "sourceDocuments": 5,
+      "displayedSongs": 3,
+      "titles": [
+        "미전송(Unread)",
+        "BLOOM",
+        "NO LIMITS"
+      ],
+      "productionCollection": false
+    },
+    "originalDetailRetained": true,
+    "formsCategoryClearCollectionsAndQualityActions": true,
+    "chromiumAndWebKitNavigation": true,
+    "nativeFormActionsTokensFieldsPreserved": true,
+    "liveGuestProtectionAndAssetHashes": true
+  },
+  "limitations": [
+    "Authenticated operating MUSIC collection and native board screens could not be observed because browser credential observation cannot safely resume. SQL-backed candidate pages and native-markup visual fixtures are not production authentication evidence.",
+    "The database is intentionally unchanged. Confirmed duplicates share one browse row; separate source documents remain available for reviewed administrator cleanup.",
+    "Legacy auxiliary public-data UI checks still expect protected Music/World data. Legacy inline-order and initial-flash checks fail at the same assertions as PR230. These checks were not disabled; all scoped workspace, native-theme, UI-policy, media, record and existing-feature gates passed."
+  ],
+  "evidence": [
+    "shared-candidate-report.json",
+    "shared-quality-report.json",
+    "shared-surfaces-report.json",
+    "shared-deployment.json",
+    "shared-public-report.json",
+    "board-list-mobile.png",
+    "board-write-mobile.png"
+  ]
+}

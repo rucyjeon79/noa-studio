@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedDate": "2026-10-27",
+  "updatedDate": "2026-10-27T13:52:54.319861+09:00",
   "purpose": "NOA STUDIO Work 실행·중단 복구 기준. 다음 실행은 최신 GitHub와 운영 상태를 대조하고 마지막 확인된 성공 단계부터 이어간다.",
   "executionRules": [
     "완료는 필요한 코드 수정, GitHub 반영, 자동배포 성공, 실제 운영 검증을 모두 충족한 경우에만 보고한다.",
@@ -16,31 +16,75 @@
     "최종 보고에서 완료, 미완료, 코드/운영 커밋, 배포, 검증 URL, 남은 오류를 구분한다."
   ],
   "runtimeRelease": {
-    "commit": "3887f0ebfc1d81f734a7ff37bd9723de180f682f",
-    "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40393264141",
+    "commit": "64ebd5a11bb426e2ed868e3692c4f43bbe36c351",
+    "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40451418910",
     "status": "success",
-    "scope": "최근 계정 메뉴·4단계 탐색 UI 6개 파일. 사이트 전체 파일 목록이 아님.",
+    "scope": "Shared browse identity, link styles and native board appearance; no database writes.",
     "filesSha256": {
-      "noa-account.css": "d911e5a3ace18fd5775f50b21a0c96fb104a0a49f0bbd4500bc281cb2279ff50",
-      "noa-account.js": "a84e857b4b6c1015ad4ab6f476bbccdeb5590001cdaec6fd3c9e15ced0404049",
-      "noa-ui.js": "d13b76dbbce1b84b454923d979e2c517ba1f4e41ff2c50bba5df56a1eeb1f385",
-      "noa-my.php": "050e198f178a7594f88ba882760303887fe2c00ab952dec12c0fea9c1ba7476f",
-      "noa-browse-order.js": "348eb361d7b915685e84df5395034c8e9599403f0d7b8bfd04ac1c58a4931c35",
-      "noa-browse.js": "2e176ecea8befee2b4a1b525d25a3746ae7623d9a52f4a2cf3a83ea6b2f6afe3"
+      "noa-bridge/music-readmodel.php": "690e7c4b12cf95802ede4b96b6791edd78bfb430c34d02695012cbd9c22186e1",
+      "noa-gnuboard.css": "72fbf98a732f846c7d0969fb772e1d0669614eb837af8a4b4b9e437e06262ef6",
+      "noa-ui.js": "351873b68782df2e46b0aab8cc39263e0d0e37ee8658227e016c7c0b3c3e97e9",
+      "noa-youtube.css": "22b362c7025478f0ac727b95c123d8387a779243fa0c4c420d5802aed736263a",
+      "noa-bridge/package-record.php": "41de4aabc220d4878f1e310893629033c01a3d05cea8a7354d07c01831029e89",
+      "noa-bridge/catalog-recovery.php": "83e9819d501ac3a57ae9c703a3bede230d755f10968129db9177a3d255bab45a",
+      "noa-bridge/youtube-catalog.php": "919617399f5c1df7516376517257ddfdcb694296a6ead7ea91e7587e8a9a2b14",
+      "noa-bridge/inline-edit.php": "cbc08cef9f6513f743d696d970c1dc2acc7be8fd6755753946fd351bbce50d89",
+      "noa-bridge/creator-core.php": "a9db85d1e3cd17e1368502d5fe2c7591c9824e748ced2ba819a34cb6379dce94",
+      "noa-bridge/record-quality.php": "d0b5a3790c967176e83138fee5c3c5dd12d65c16e25e5cba4de92720aadf9925",
+      "noa-record-form.js": "7470fd0e6cd5047d33cc24c6a5fb74cd6c5d210f086f848a4fa76875951615e2",
+      "noa-record-form.css": "7d16644ea188d2e990e8f125c61a953ccdba912900260cc1677dc27eda66f207",
+      "noa-quality.php": "b9c4fe8416703c24699b45738c8011af63bd173ad2925caf66e24d236dacf3ed",
+      "noa-quality.js": "bf73b0120c40b11d408b9dfc169b5ae9b917d6445f8ef6b1036a394d81f52a2a",
+      "noa-quality.css": "40c7a9680595269747deed6f7805ac8e58d125cf134e4621827ec236c9407bfd",
+      "noa-catalog-admin.php": "bc2b126963ddf4b745c1d88e6ad3e85923c387b4d1364725f159477e8a7f8fc0",
+      "noa-bridge/sound-core.php": "3dfeaf18d5b7d9eb3769c1385adb34f953622de5e3b32a25f9dd96fad3aaa3a9",
+      "noa-bridge/library-records.php": "63bc6e16916f6b8db49e897a82ed7cee85ebf0cabee5b575d30798c680b2d26e",
+      "noa-bridge/record-trash.php": "c5108929030192083848a424bc312ad4ee5b6be5beb5ba56b6e1c7fe4e52a524",
+      "noa-workspace.php": "9bdcc7a5d9b8fdff095c15562987d54cd0bd022c6234a691b901d6cb0b58d3f0",
+      "noa-category-order-admin.php": "49c3bb4f93f9991ddc50b80a956ecb48c16b371b65d76e93550d942f1afaddf0",
+      "noa-app/jukebox/core.php": "9f3f83edd02dc16953300eb540c8ef00f9a9edd0f42acf40b717e39418d2127b",
+      "noa-bridge/catalog.php": "b557a3717e9962ef44a82e3da716ca1efbac8db9bf42e248b7eaa957afc4319b",
+      "noa-bridge/index.php": "4688bfc9a8270881d7d05d92f77d6928f13d671080c8ef89ce571c32126322bf",
+      "noa-bridge/youtube-store.php": "74f580f86fc483330f61f22b1f6f800b4dfcbe7006241aae0c376b46ab0d04bf",
+      "noa-record-action.php": "dd16b72128f3aff985f78a4f1cce0396f5badacd72ab747a02296644c247286a",
+      "noa-catalog.js": "7e644e990df82b9dd76691a6c5d32cd4f286c9c3226cae89c7832bf92403edef",
+      "noa-workspace.js": "b7c774ba3a0ebad80b26a3314b1808c0c9e220987cbe8e91693cf069abe48ea8",
+      "noa-browse.js": "6556fccc9cc5afdf999d851fbf997e3efecb6a9975cbb0676a4450ddd0e31f73",
+      "noa-browse-order.js": "ad8c23ab36f7a099641eed976f27b96f401de9a42ff337a34571d3efee40ca08",
+      "noa-browse-edit.js": "fa5ecab0b0f814f817db3a7669e6dde8baf85f5264a25d27a5266b729b3b8665",
+      "noa-ui.css": "f388079bba423167d5ee35001d35988a2bb56cc40238379aeb261dd10dc511dd",
+      "noa-inline-edit.php": "21160aab960118a5a625f9687e97205b10bc1407402893127252bd3c401c74fe",
+      "noa-catalog.php": "da774511fa6e3ded7460ea15a139c951a9e6b587a52bee6f653c9bd4eb16fa08",
+      "noa-editor.php": "44ade034c3c4d3133c12baf86aed876e6eb894748a2a4c4aae2e8b72db5f2657",
+      "noa-creator.php": "58e24dec9a9f9e949a206afb15085706b62664971a7549e6ab4704ddd90fab38",
+      "noa-creator.js": "402f7bd31b00b95f30d447db8ade9c06a4c8941e503dcc1699b30d6a8259b2d0",
+      "noa-creator.css": "eb506a52d7be8fcc51c722cf79e87476e4a3d5e551eee9bb240cdcd0afdbb096",
+      "noa-library.php": "25ac168f1ee0e39aa48b555e016cae0aa7981008e2101a7583f062c3dee51012",
+      "noa-ai-lab.php": "44c1d16d2e13e00c09ab84181f1a43cd21e33ffa326c8eb480b2a8968b3629bd",
+      "noa-ai-lab.js": "d66568f6fbc1f050ebea18890704c6118e995fc19f603f47bf60cb98afdcad2b",
+      "noa-my.php": "90da67f123ce5ff1ca91408dd56c26ec6a394462e5d19a8016e8c365fc7711ec",
+      "noa-sitemap.php": "463221828295e9779d4fad0a0fbc4c2281e1cdcffea44a04ced48fbec75286be",
+      "noa-music.php": "ba3cf47ea7f19229eae874abb6d26db4c38fb8071402d294b84c8734c26d1a85",
+      "noa-world.php": "c463c291d9a26f05767b034bfdabb6ceee42d783aa6c42a76ad00ca0f35b6ef2",
+      "noa-youtube.php": "841d4d392cf6e92e82e72e804019406764ba5a81ed1d3208bca2b47d1fc1c2d4",
+      "extend/noa.design.php": "a2c9cc14c136cabc2209242eba58473545fb54a4073b2b81c22a1e2c19bfc453"
     },
     "changedFiles": [
-      "noa-account.css",
-      "noa-account.js",
+      "noa-bridge/music-readmodel.php",
+      "noa-gnuboard.css",
       "noa-ui.js",
-      "noa-my.php",
-      "noa-browse-order.js",
-      "noa-browse.js"
+      "noa-youtube.css",
+      "noa-bridge/youtube-catalog.php",
+      "noa-bridge/library-records.php",
+      "noa-browse.js",
+      "noa-ui.css",
+      "noa-music.php"
     ],
-    "protectedUnchanged": 24,
+    "protectedUnchanged": 22,
     "databaseWrites": 0,
     "memberRowsChanged": 0,
     "pointDebits": 0,
-    "evidence": "docs/operations/navigation-20261027/deployment.json"
+    "evidence": "docs/operations/workspace-20261027/shared-deployment.json"
   },
   "verificationRecovery": {
     "commit": "95eed26bb9befee5cb7ec297d390dea92c75cd1a",
@@ -631,16 +675,44 @@
       "authenticatedAdminSaveVerified": false,
       "scope": "Song category clear and exact YouTube playlist membership; 13 changed files, 42 hashes, 23 protected files",
       "databaseWrites": 0
+    },
+    {
+      "commit": "3887f0ebfc1d81f734a7ff37bd9723de180f682f",
+      "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40393264141",
+      "status": "success",
+      "scope": "최근 계정 메뉴·4단계 탐색 UI 6개 파일. 사이트 전체 파일 목록이 아님.",
+      "filesSha256": {
+        "noa-account.css": "d911e5a3ace18fd5775f50b21a0c96fb104a0a49f0bbd4500bc281cb2279ff50",
+        "noa-account.js": "a84e857b4b6c1015ad4ab6f476bbccdeb5590001cdaec6fd3c9e15ced0404049",
+        "noa-ui.js": "d13b76dbbce1b84b454923d979e2c517ba1f4e41ff2c50bba5df56a1eeb1f385",
+        "noa-my.php": "050e198f178a7594f88ba882760303887fe2c00ab952dec12c0fea9c1ba7476f",
+        "noa-browse-order.js": "348eb361d7b915685e84df5395034c8e9599403f0d7b8bfd04ac1c58a4931c35",
+        "noa-browse.js": "2e176ecea8befee2b4a1b525d25a3746ae7623d9a52f4a2cf3a83ea6b2f6afe3"
+      },
+      "changedFiles": [
+        "noa-account.css",
+        "noa-account.js",
+        "noa-ui.js",
+        "noa-my.php",
+        "noa-browse-order.js",
+        "noa-browse.js"
+      ],
+      "protectedUnchanged": 24,
+      "databaseWrites": 0,
+      "memberRowsChanged": 0,
+      "pointDebits": 0,
+      "evidence": "docs/operations/navigation-20261027/deployment.json"
     }
   ],
   "latestWorkUnit": {
-    "id": "NOA-20261027-COLLECTION-DUPLICATES",
-    "status": "deployed_tested_operating_collection_verification_pending",
-    "runtimeCommit": "4d36f8549859dbd409637b1d5b23796e70b1caad",
-    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40444707527",
-    "evidence": "docs/operations/workspace-20261027/duplicates-release.json",
+    "id": "NOA-20261027-SHARED-DUPLICATES-BOARD-LINKS",
+    "status": "deployed_tested_authenticated_screen_verification_pending",
+    "runtimeCommit": "64ebd5a11bb426e2ed868e3692c4f43bbe36c351",
+    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40451418910",
+    "evidence": "docs/operations/workspace-20261027/shared-release.json",
     "allOriginalAreasComplete": false,
-    "authenticatedProductionCollectionVerified": false
+    "authenticatedProductionCollectionVerified": false,
+    "authenticatedProductionBoardVerified": false
   },
   "relatedCheckFailures": [
     {
@@ -681,7 +753,7 @@
     "allOriginalAreasComplete": false,
     "directive": "곡정보 폼 전체 검수·일원화 및 최고관리자 오류검증의 중복·충돌 조치 연결",
     "completedAt": "2026-10-27T00:48:17.512800+00:00",
-    "currentStage": "Collection duplicate display fix deployed; authenticated operating collection verification pending.",
+    "currentStage": "MUSIC/library duplicate projection, global link underline removal and native board styling deployed in PR231. 47 operating file hashes verified; authenticated collection/board observation remains pending. Do not repeat the superseded BLOOM add action.",
     "runtimeChanged": true,
     "productionDatabaseWrites": 0,
     "existingTwelveAreasPreserved": true,
@@ -785,6 +857,16 @@
       },
       "remaining": "Authenticated production collection read/save verification is unavailable: browser observation cannot safely resume native credential state. Do not claim the user collection was live-verified or that operating records were deleted. Do not re-add BLOOM: the user screenshot now shows it in the collection.",
       "evidence": "docs/operations/workspace-20261027/duplicates-release.json"
+    },
+    "sharedSurfacesCorrection": {
+      "id": "NOA-20261027-SHARED-DUPLICATES-BOARD-LINKS",
+      "status": "deployed_tested_authenticated_screen_verification_pending",
+      "runtimeCommit": "64ebd5a11bb426e2ed868e3692c4f43bbe36c351",
+      "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40451418910",
+      "evidence": "docs/operations/workspace-20261027/shared-release.json",
+      "allOriginalAreasComplete": false,
+      "authenticatedProductionCollectionVerified": false,
+      "authenticatedProductionBoardVerified": false
     }
   },
   "workUnitHistory": [
@@ -1144,6 +1226,15 @@
       "allOriginalAreasComplete": false,
       "authenticatedAdminReadOnlyVerified": true,
       "unresolvedReviewItems": 427
+    },
+    {
+      "id": "NOA-20261027-COLLECTION-DUPLICATES",
+      "status": "deployed_tested_operating_collection_verification_pending",
+      "runtimeCommit": "4d36f8549859dbd409637b1d5b23796e70b1caad",
+      "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40444707527",
+      "evidence": "docs/operations/workspace-20261027/duplicates-release.json",
+      "allOriginalAreasComplete": false,
+      "authenticatedProductionCollectionVerified": false
     }
   ],
   "resolvedOutstanding": [

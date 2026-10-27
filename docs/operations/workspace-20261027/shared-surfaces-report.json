@@ -1,0 +1,279 @@
+{
+  "productionWrites": 0,
+  "actualReadProjections": [
+    {
+      "path": "/noa-music.php",
+      "width": 320,
+      "theme": "noa-studio",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    },
+    {
+      "path": "/noa-youtube.php",
+      "width": 320,
+      "theme": "noa-studio",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    },
+    {
+      "path": "/noa-catalog.php",
+      "width": 320,
+      "theme": "noa-studio",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    },
+    {
+      "path": "/noa-music.php",
+      "width": 320,
+      "theme": "noa-ivory",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    },
+    {
+      "path": "/noa-youtube.php",
+      "width": 320,
+      "theme": "noa-ivory",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    },
+    {
+      "path": "/noa-catalog.php",
+      "width": 320,
+      "theme": "noa-ivory",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    },
+    {
+      "path": "/noa-music.php",
+      "width": 390,
+      "theme": "noa-studio",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    },
+    {
+      "path": "/noa-youtube.php",
+      "width": 390,
+      "theme": "noa-studio",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    },
+    {
+      "path": "/noa-catalog.php",
+      "width": 390,
+      "theme": "noa-studio",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    },
+    {
+      "path": "/noa-music.php",
+      "width": 390,
+      "theme": "noa-ivory",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    },
+    {
+      "path": "/noa-youtube.php",
+      "width": 390,
+      "theme": "noa-ivory",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    },
+    {
+      "path": "/noa-catalog.php",
+      "width": 390,
+      "theme": "noa-ivory",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    },
+    {
+      "path": "/noa-music.php",
+      "width": 1280,
+      "theme": "noa-studio",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    },
+    {
+      "path": "/noa-youtube.php",
+      "width": 1280,
+      "theme": "noa-studio",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    },
+    {
+      "path": "/noa-catalog.php",
+      "width": 1280,
+      "theme": "noa-studio",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    },
+    {
+      "path": "/noa-music.php",
+      "width": 1280,
+      "theme": "noa-ivory",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    },
+    {
+      "path": "/noa-youtube.php",
+      "width": 1280,
+      "theme": "noa-ivory",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    },
+    {
+      "path": "/noa-catalog.php",
+      "width": 1280,
+      "theme": "noa-ivory",
+      "visibleSongs": 3,
+      "sourceDocuments": 5,
+      "savedMembers": 6
+    }
+  ],
+  "nativeMarkupFixtures": [
+    {
+      "view": "list",
+      "width": 320,
+      "theme": "noa-studio",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    },
+    {
+      "view": "read",
+      "width": 320,
+      "theme": "noa-studio",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    },
+    {
+      "view": "write",
+      "width": 320,
+      "theme": "noa-studio",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    },
+    {
+      "view": "list",
+      "width": 320,
+      "theme": "noa-ivory",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    },
+    {
+      "view": "read",
+      "width": 320,
+      "theme": "noa-ivory",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    },
+    {
+      "view": "write",
+      "width": 320,
+      "theme": "noa-ivory",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    },
+    {
+      "view": "list",
+      "width": 390,
+      "theme": "noa-studio",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    },
+    {
+      "view": "read",
+      "width": 390,
+      "theme": "noa-studio",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    },
+    {
+      "view": "write",
+      "width": 390,
+      "theme": "noa-studio",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    },
+    {
+      "view": "list",
+      "width": 390,
+      "theme": "noa-ivory",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    },
+    {
+      "view": "read",
+      "width": 390,
+      "theme": "noa-ivory",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    },
+    {
+      "view": "write",
+      "width": 390,
+      "theme": "noa-ivory",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    },
+    {
+      "view": "list",
+      "width": 1280,
+      "theme": "noa-studio",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    },
+    {
+      "view": "read",
+      "width": 1280,
+      "theme": "noa-studio",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    },
+    {
+      "view": "write",
+      "width": 1280,
+      "theme": "noa-studio",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    },
+    {
+      "view": "list",
+      "width": 1280,
+      "theme": "noa-ivory",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    },
+    {
+      "view": "read",
+      "width": 1280,
+      "theme": "noa-ivory",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    },
+    {
+      "view": "write",
+      "width": 1280,
+      "theme": "noa-ivory",
+      "linksWithoutUnderline": true,
+      "formContractPreserved": true
+    }
+  ],
+  "authenticatedProductionBoardVerified": false,
+  "originalDetailRetained": true
+}
