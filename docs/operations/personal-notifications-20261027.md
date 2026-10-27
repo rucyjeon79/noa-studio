@@ -49,3 +49,9 @@ Production verification created no fixture members or synthetic comments/notific
 - Separate legacy failures remain recorded without weakened checks: UIUX and Approved UI scrape member-only pages as guests; membership-hero assumes one guest menu entry although the approved login entry makes two. The new notification workflow and relevant regressions pass.
 
 Evidence: [deployment](personal-notifications-20261027/deployment.json), [activation](personal-notifications-20261027/activation.json), [isolated database](personal-notifications-20261027/mysql.json), [API and layouts](personal-notifications-20261027/qa.json), [live controls](personal-notifications-20261027/live.json), [dispatch](personal-notifications-20261027/dispatch.json), [health](personal-notifications-20261027/health.json), [live browser](personal-notifications-20261027/browser-live.json).
+
+## Icon and description follow-up
+
+PR [240](https://github.com/rucyjeon79/noa-studio/pull/240), merged as `fabae60d84640975df93582faefa66b2cd3cf494`, adds the shared NOA mail icon and a two-line label/description to the AInoa inbox entry and Settings entry. Unread badges remain visible beside the label.
+
+Candidate notification, existing-feature and workspace checks passed. Browser screenshots were inspected at 390px dark and 1280px light; all four viewport/theme combinations passed overflow, icon visibility and touch-target checks. Production [40509308449](https://github.com/rucyjeon79/noa-studio/actions/runs/40509308449) passed, changing only `noa-notifications.css` and `noa-notifications.js` with 17 protected files unchanged. The live browser confirmed a 24px icon, a 69px menu row, readable description, no overflow and the correct inbox destination.

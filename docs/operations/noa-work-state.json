@@ -1607,6 +1607,35 @@
       "received": 0,
       "observedAt": "2026-10-27T12:39:47Z"
     },
-    "evidence": "docs/operations/personal-notifications-20261027.md"
+    "evidence": "docs/operations/personal-notifications-20261027.md",
+    "presentationUpdate": {
+      "status": "success",
+      "commit": "fabae60d84640975df93582faefa66b2cd3cf494",
+      "pullRequest": 240,
+      "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40509308449",
+      "changed": [
+        "noa-notifications.css",
+        "noa-notifications.js"
+      ],
+      "description": "Shared NOA mail icon, activity label and concise description in AInoa and Settings. Unread badges preserved.",
+      "verifiedLayouts": [
+        "390 dark",
+        "390 light",
+        "1280 dark",
+        "1280 light"
+      ],
+      "liveBrowser": {
+        "url": "https://noastudio.ai.kr/noa-notifications.php",
+        "iconWidth": 24,
+        "entryHeight": 69,
+        "overflow": false,
+        "navigationVerified": true
+      },
+      "protectedUnchanged": 17,
+      "filesSha256": {
+        "noa-notifications.css": "1da887f583a7bab62a421a4a0758de077502e79aee730121f6f0d7f4e582358b",
+        "noa-notifications.js": "1351b92889c299d46b90f94ee9354fd812f9d831ba4b3edb86ad62776f84ed19"
+      }
+    }
   }
 }
