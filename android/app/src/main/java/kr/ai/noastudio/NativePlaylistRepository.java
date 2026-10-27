@@ -17,11 +17,11 @@ public final class NativePlaylistRepository {
  private static final String DEFAULT_ID="00000000-0000-4000-8000-000000000001";
  private final SharedPreferences local;
  private final Transport transport;
- public NativePlaylistRepository(Context c){this(c,null);}
+ public NativePlaylistRepository(Context c){this(c,null);NoaSession.initialize(c);}
  NativePlaylistRepository(Context c,Transport t){local=c.getSharedPreferences("noa-native-my",Context.MODE_PRIVATE);transport=t==null?this::request:t;}
- public String cookie(){String c=CookieManager.getInstance().getCookie("https://noastudio.ai.kr");return c==null?"":c;}
+ public String cookie(){return NoaSession.cookie("https://noastudio.ai.kr/noa-bridge/user-playlists.php");}
  private JSONObject request(String cookie,JSONObject body,String token)throws Exception{
-  HttpURLConnection c=(HttpURLConnection)new URL("https://noastudio.ai.kr/noa-bridge/user-playlists.php").openConnection();c.setConnectTimeout(15000);c.setReadTimeout(15000);c.setInstanceFollowRedirects(false);if(!cookie.isEmpty())c.setRequestProperty("Cookie",cookie);
+  HttpURLConnection c=(HttpURLConnection)new URL("https://noastudio.ai.kr/noa-bridge/user-playlists.php").openConnection();c.setConnectTimeout(15000);c.setReadTimeout(15000);c.setInstanceFollowRedirects(false);NoaSession.attach(c);if(!cookie.isEmpty())c.setRequestProperty("Cookie",cookie);
   try{if(body!=null){c.setRequestMethod("POST");c.setDoOutput(true);c.setRequestProperty("Origin","https://noastudio.ai.kr");c.setRequestProperty("Content-Type","application/json");c.setRequestProperty("X-NOA-CSRF",token);try(OutputStream out=c.getOutputStream()){out.write(body.toString().getBytes(StandardCharsets.UTF_8));}}int status=c.getResponseCode();if(status==401&&body==null)return new JSONObject().put("guest",true);if(status!=200)throw new PlaylistException(status==409?"다른 기기에서 목록이 변경됐습니다. 다시 열어 주세요.":"재생목록을 저장하지 못했습니다. 연결과 로그인을 확인해 주세요.");try(InputStream input=c.getInputStream();ByteArrayOutputStream bytes=new ByteArrayOutputStream()){byte[] b=new byte[4096];int n;while((n=input.read(b))!=-1){bytes.write(b,0,n);if(bytes.size()>512*1024)throw new PlaylistException("재생목록이 너무 큽니다.");}return new JSONObject(bytes.toString(StandardCharsets.UTF_8.name()));}}finally{c.disconnect();}
  }
  private JSONObject item(String id,String title,JSONArray tracks,int revision)throws JSONException{return new JSONObject().put("playlist_id",id).put("title",title).put("tracks",tracks).put("revision",revision);}

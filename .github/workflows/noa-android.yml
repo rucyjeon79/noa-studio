@@ -1,6 +1,8 @@
 name: NOA STUDIO Android
 # Keep native navigation in the approved Home / YouTube / World / Sound / MY order.
 on:
+  pull_request:
+    paths: ['.github/workflows/noa-android.yml', 'android/**', 'public/icon-maskable-512.png', 'scripts/noa_android_*.py', 'scripts/noa_apk_*.py', 'tests/android/**']
   push:
     branches: [main, work/android-background-20261022]
     paths: ['.github/workflows/noa-android.yml', 'android/**', 'scripts/noa_android_*.py', 'scripts/noa_apk_*.py', 'tests/android/**']
@@ -13,8 +15,34 @@ on:
 permissions:
   contents: read
 jobs:
+  signing-readiness:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Record original signing key availability without exposing credentials
+        env:
+          NOA_ANDROID_KEYSTORE_BASE64: ${{ secrets.NOA_ANDROID_KEYSTORE_BASE64 }}
+          NOA_ANDROID_KEY_ALIAS: ${{ secrets.NOA_ANDROID_KEY_ALIAS }}
+          NOA_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.NOA_ANDROID_KEYSTORE_PASSWORD }}
+          NOA_ANDROID_KEY_PASSWORD: ${{ secrets.NOA_ANDROID_KEY_PASSWORD }}
+        run: |
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          names=('NOA_ANDROID_KEYSTORE_BASE64','NOA_ANDROID_KEY_ALIAS','NOA_ANDROID_KEYSTORE_PASSWORD','NOA_ANDROID_KEY_PASSWORD')
+          proof={'originalSigningKeyConfigured':all(bool(os.environ.get(n)) for n in names),'valuesExposed':False}
+          Path('noa-signing-readiness.json').write_text(json.dumps(proof))
+          print(json.dumps(proof))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NOA-STUDIO-Android-signing-readiness
+          path: noa-signing-readiness.json
+          retention-days: 14
+
   apk:
     runs-on: ubuntu-latest
+    environment: production
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -30,7 +58,7 @@ jobs:
       - name: Verify native bridge and administrator preview fallback
         run: node --test tests/android/native_bridge_test.mjs
       - name: Check APK signing and deployment scripts
-        run: python3 -m py_compile scripts/noa_android_sign_candidate.py scripts/noa_apk_signing_check.py scripts/noa_apk_deploy.py
+        run: python3 -m py_compile scripts/noa_android_sign_candidate.py scripts/noa_android_production_probe.py scripts/noa_apk_signing_check.py scripts/noa_apk_deploy.py
       - name: Compile installable APK and lint
         working-directory: android
         run: gradle --no-daemon :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug
@@ -51,6 +79,21 @@ jobs:
           overwrite: true
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
+      - name: Retain Android instrumentation package
+        uses: actions/upload-artifact@v4
+        with:
+          name: NOA-STUDIO-Android-test-APK
+          path: android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+          retention-days: 14
+      - name: Prepare isolated native member verification
+        env: &native_qa_env
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: |
+          python3 -m pip install 'paramiko>=3,<5'
+          python3 scripts/noa_android_member_qa.py prepare
       - name: Enable emulator acceleration
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -66,9 +109,10 @@ jobs:
           disable-animations: true
           script: |
             adb install android/app/build/outputs/apk/debug/app-debug.apk
+            python3 scripts/noa_android_member_qa.py install
             adb shell am force-stop com.google.android.apps.nexuslauncher
             adb install android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-            adb shell am instrument -w -e class kr.ai.noastudio.CatalogTest,kr.ai.noastudio.MediaPolicyTest,kr.ai.noastudio.PlaylistEditingTest,kr.ai.noastudio.NativePlaybackTest kr.ai.noastudio.test/androidx.test.runner.AndroidJUnitRunner > android/noa-instrumentation.txt
+            adb shell am instrument -w -e class kr.ai.noastudio.StartupTest,kr.ai.noastudio.SessionTest,kr.ai.noastudio.CatalogTest,kr.ai.noastudio.MediaPolicyTest,kr.ai.noastudio.PlaylistEditingTest,kr.ai.noastudio.NativePlaybackTest kr.ai.noastudio.test/androidx.test.runner.AndroidJUnitRunner > android/noa-instrumentation.txt
             cat android/noa-instrumentation.txt
             adb shell am force-stop kr.ai.noastudio
             adb shell am instrument -w -e class kr.ai.noastudio.PlaybackRestoreTest kr.ai.noastudio.test/androidx.test.runner.AndroidJUnitRunner > android/noa-restore-instrumentation.txt
@@ -81,7 +125,12 @@ jobs:
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-android-playing.png android/noa-android-playing.png || true
             cat android/noa-instrumentation.txt
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-brand-proof.json android/noa-brand-proof.json || true
+            adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-guest-login.png android/noa-guest-login.png || true
+            adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-startup-proof.json android/noa-startup-proof.json || true
+            adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-startup-home.png android/noa-startup-home.png || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-launcher-icon.png android/noa-launcher-icon.png || true
+            cat android/noa-startup-proof.json
+            cat android/noa-restore-proof.json
             cat android/noa-brand-proof.json
             python3 -c "import base64; print('NOA_ANDROID_ICON '+base64.b64encode(open('android/noa-launcher-icon.png','rb').read()).decode())"
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-ui.xml android/noa-ui.xml || true
@@ -92,7 +141,15 @@ jobs:
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-native-playback.json android/noa-native-playback.json || true
             cat android/noa-native-playback.json
             adb logcat -d -s AndroidRuntime:E NoaApi:E > android/noa-runtime-errors.txt
-            python3 -c "from pathlib import Path; s=Path('android/noa-ui.xml').read_text(); assert 'OK (7 tests)' in Path('android/noa-instrumentation.txt').read_text(); assert 'OK (1 test)' in Path('android/noa-restore-instrumentation.txt').read_text(); assert __import__('re').search(r'[1-9][0-9]*곡',s), 'Production music catalog did not load'; assert 'FATAL EXCEPTION' not in Path('android/noa-runtime-errors.txt').read_text()"
+            python3 scripts/noa_android_production_probe.py
+            python3 -c "import base64; from pathlib import Path; [(print('NOA_IMAGE_'+p.stem+' '+base64.b64encode(p.read_bytes()).decode())) for p in [Path('android/noa-startup-home.png'),Path('android/noa-guest-login.png'),Path('android/noa-production-screen.png')] if p.exists()]"
+            python3 -c "from pathlib import Path; s=Path('android/noa-ui.xml').read_text(); assert 'OK (9 tests)' in Path('android/noa-instrumentation.txt').read_text(); assert 'OK (1 test)' in Path('android/noa-restore-instrumentation.txt').read_text(); assert __import__('re').search(r'[1-9][0-9]*곡',s), 'Production music catalog did not load'; assert 'FATAL EXCEPTION' not in Path('android/noa-runtime-errors.txt').read_text()"
+      - name: Remove only the generated native QA account
+        if: always()
+        env: *native_qa_env
+        run: |
+          python3 scripts/noa_android_member_qa.py cleanup
+          cat android/noa-member-cleanup.json
       - name: Retain device verification
         if: always()
         uses: actions/upload-artifact@v4
@@ -100,6 +157,14 @@ jobs:
           name: NOA-STUDIO-Android-verification
           overwrite: true
           path: |
+            android/noa-member-cleanup.json
+            android/noa-guest-login.png
+            android/noa-startup-proof.json
+            android/noa-startup-home.png
+            android/noa-production-probe.json
+            android/noa-production-ui.xml
+            android/noa-production-screen.png
+            android/noa-production-errors.txt
             android/noa-signer-proof.txt
             android/noa-brand-proof.json
             android/noa-launcher-icon.png
@@ -121,11 +186,75 @@ jobs:
             android/app/build/reports/lint-results-debug.html
           retention-days: 14
 
+  android17:
+    needs: apk
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/download-artifact@v4
+        with: {name: NOA-STUDIO-Android-APK, path: artifact}
+      - uses: actions/download-artifact@v4
+        with: {name: NOA-STUDIO-Android-test-APK, path: artifact}
+      - name: Prepare isolated native member verification
+        env: *native_qa_env
+        run: |
+          python3 -m pip install 'paramiko>=3,<5'
+          python3 scripts/noa_android_member_qa.py prepare
+      - name: Enable emulator acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Verify Android 17 launch, catalog and installed icon
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: '37.0'
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: |
+            adb install artifact/app-debug.apk
+            adb install artifact/app-debug-androidTest.apk
+            python3 scripts/noa_android_member_qa.py install
+            adb logcat -c
+            adb shell am instrument -w -e class kr.ai.noastudio.StartupTest,kr.ai.noastudio.SessionTest,kr.ai.noastudio.CatalogTest kr.ai.noastudio.test/androidx.test.runner.AndroidJUnitRunner > android/noa-api37-tests.txt
+            cat android/noa-api37-tests.txt
+            adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-startup-proof.json android/noa-api37-startup.json || true
+            adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-startup-home.png android/noa-api37-home.png || true
+            adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-launcher-icon.png android/noa-api37-icon.png || true
+            cat android/noa-api37-startup.json
+            python3 -c "import base64; print('NOA_API37_HOME '+base64.b64encode(open('android/noa-api37-home.png','rb').read()).decode())"
+            adb logcat -d -s AndroidRuntime:E > android/noa-api37-errors.txt
+            python3 scripts/noa_android_production_probe.py
+            python3 -c "from pathlib import Path; assert 'OK (3 tests)' in Path('android/noa-api37-tests.txt').read_text(); assert 'FATAL EXCEPTION' not in Path('android/noa-api37-errors.txt').read_text()"
+      - name: Remove only the generated native QA account
+        if: always()
+        env: *native_qa_env
+        run: |
+          python3 scripts/noa_android_member_qa.py cleanup
+          cat android/noa-member-cleanup.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: NOA-STUDIO-Android-17-verification
+          path: |
+            android/noa-member-cleanup.json
+            android/noa-api37-*
+            android/noa-production-*.json
+            android/noa-production-*.xml
+            android/noa-production-*.png
+            android/noa-production-*.txt
+          retention-days: 14
+
   publish:
     # Explicit main release commits are authorized deployment requests; ordinary
     # Android pushes still build/test without replacing the production download.
     if: (github.event_name == 'workflow_dispatch' && inputs.publish) || (github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[android-publish]'))
-    needs: apk
+    needs: [apk, android17]
     concurrency:
       group: noa-dothome-production
       cancel-in-progress: false

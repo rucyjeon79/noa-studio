@@ -12,12 +12,14 @@ import java.util.*;
 
 @android.annotation.SuppressLint("UnsafeOptInUsageError")
 public class PlaybackService extends MediaSessionService {
- public static final String CLOSE="noa.close";
+ public static final String CLOSE="noa.close",CHECKPOINT="noa.checkpoint";
  private MediaSession session;private ExoPlayer engine;private PlaybackStateStore store;
  private final Handler handler=new Handler(Looper.getMainLooper());
  private final Runnable checkpoint=new Runnable(){public void run(){if(session!=null&&!store.closed())store.save(session.getPlayer());handler.postDelayed(this,3000);}};
  @Override public void onCreate(){
-  super.onCreate();store=new PlaybackStateStore(this);engine=new ExoPlayer.Builder(this).build();
+  super.onCreate();NoaSession.initialize(this);store=new PlaybackStateStore(this);
+  androidx.media3.datasource.okhttp.OkHttpDataSource.Factory http=new androidx.media3.datasource.okhttp.OkHttpDataSource.Factory(NoaSession.mediaClient());
+  engine=new ExoPlayer.Builder(this).setMediaSourceFactory(new androidx.media3.exoplayer.source.DefaultMediaSourceFactory(new androidx.media3.datasource.DefaultDataSource.Factory(this,http))).build();
   engine.setAudioAttributes(new AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(),true);
   engine.setHandleAudioBecomingNoisy(true);engine.setWakeMode(C.WAKE_MODE_NETWORK);
   Player player=new ForwardingPlayer(engine){
@@ -28,8 +30,8 @@ public class PlaybackService extends MediaSessionService {
   player.addListener(new Player.Listener(){@Override public void onEvents(Player p,Player.Events events){if(!store.closed())store.save(p);}});
   PendingIntent activity=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP),PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
   session=new MediaSession.Builder(this,player).setSessionActivity(activity).setCallback(new MediaSession.Callback(){
-   @Override public MediaSession.ConnectionResult onConnect(MediaSession s,MediaSession.ControllerInfo c){return new MediaSession.ConnectionResult.AcceptedResultBuilder(s).setAvailableSessionCommands(MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon().add(new SessionCommand(CLOSE,Bundle.EMPTY)).build()).build();}
-   @Override public ListenableFuture<SessionResult> onCustomCommand(MediaSession s,MediaSession.ControllerInfo c,SessionCommand command,Bundle args){if(CLOSE.equals(command.customAction)&&c.getUid()==android.os.Process.myUid()){store.save(s.getPlayer());store.setClosed(true);s.getPlayer().pause();s.getPlayer().stop();s.getPlayer().clearMediaItems();return Futures.immediateFuture(new SessionResult(SessionResult.RESULT_SUCCESS));}return Futures.immediateFuture(new SessionResult(SessionError.ERROR_NOT_SUPPORTED));}
+   @Override public MediaSession.ConnectionResult onConnect(MediaSession s,MediaSession.ControllerInfo c){return new MediaSession.ConnectionResult.AcceptedResultBuilder(s).setAvailableSessionCommands(MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon().add(new SessionCommand(CLOSE,Bundle.EMPTY)).add(new SessionCommand(CHECKPOINT,Bundle.EMPTY)).build()).build();}
+   @Override public ListenableFuture<SessionResult> onCustomCommand(MediaSession s,MediaSession.ControllerInfo c,SessionCommand command,Bundle args){if(CHECKPOINT.equals(command.customAction)&&c.getUid()==android.os.Process.myUid()){store.save(s.getPlayer());boolean flushed=store.flush();Bundle proof=new Bundle();proof.putBoolean("shuffle",s.getPlayer().getShuffleModeEnabled());proof.putLong("position",s.getPlayer().getCurrentPosition());return Futures.immediateFuture(new SessionResult(flushed?SessionResult.RESULT_SUCCESS:SessionError.ERROR_UNKNOWN,proof));}if(CLOSE.equals(command.customAction)&&c.getUid()==android.os.Process.myUid()){store.save(s.getPlayer());store.setClosed(true);store.flush();s.getPlayer().pause();s.getPlayer().stop();s.getPlayer().clearMediaItems();return Futures.immediateFuture(new SessionResult(SessionResult.RESULT_SUCCESS));}return Futures.immediateFuture(new SessionResult(SessionError.ERROR_NOT_SUPPORTED));}
    @Override public ListenableFuture<MediaSession.MediaItemsWithStartPosition> onPlaybackResumption(MediaSession s,MediaSession.ControllerInfo c){List<MediaItem> rows=store.items();if(store.closed()||store.uploadBlocked()||rows.isEmpty())return Futures.immediateFailedFuture(new IllegalStateException("Playback not activated"));s.getPlayer().setRepeatMode(store.repeat());s.getPlayer().setShuffleModeEnabled(store.shuffle());return Futures.immediateFuture(new MediaSession.MediaItemsWithStartPosition(rows,Math.min(store.index(),rows.size()-1),store.position()));}
   }).build();handler.post(checkpoint);
  }
