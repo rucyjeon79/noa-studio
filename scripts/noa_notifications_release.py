@@ -4,6 +4,7 @@ from pathlib import Path
 import noa_ainoa_deploy as release
 
 release.FILES={
+ 'noa-bridge/notifications-inline.php':'bridge/notifications-inline.php',
  'noa-bridge/notifications-core.php':'bridge/notifications-core.php',
  'noa-bridge/notifications-sources.php':'bridge/notifications-sources.php',
  'noa-bridge/notifications.php':'bridge/notifications.php',

@@ -1,5 +1,5 @@
 """Actual VAPID signing and RFC8291 encryption, with an in-memory HTTP transport."""
-import base64,json,sys,tempfile,unittest
+import base64,json,sys,tempfile,unittest,subprocess
 from pathlib import Path
 from unittest.mock import patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
@@ -30,6 +30,20 @@ class PushTransport(unittest.TestCase):
   self.assertEqual(json.loads(http_ece.decrypt(kw['data'],private_key=receiver,auth_secret=auth,version='aes128gcm')),job['payload'])
   header={k.lower():v for k,v in kw['headers'].items()}['authorization'];jwt=header.split('t=',1)[1].split(',',1)[0];parts=jwt.split('.');claims=json.loads(un64(parts[1]));self.assertEqual(claims['aud'],'https://fcm.googleapis.com');self.assertEqual(claims['sub'],dispatch.ORIGIN)
   sig=un64(parts[2]);der=utils.encode_dss_signature(int.from_bytes(sig[:32],'big'),int.from_bytes(sig[32:],'big'));application.public_key().verify(der,(parts[0]+'.'+parts[1]).encode(),ec.ECDSA(hashes.SHA256()))
+ def test_php_inline_crypto_interoperability(self):
+  for _ in range(12):
+   application=ec.generate_private_key(ec.SECP256R1());receiver=ec.generate_private_key(ec.SECP256R1());auth=b'a'*16
+   public=application.public_key().public_bytes(serialization.Encoding.X962,serialization.PublicFormat.UncompressedPoint)
+   cfg={'privateKey':application.private_bytes(serialization.Encoding.PEM,serialization.PrivateFormat.PKCS8,serialization.NoEncryption()).decode(),'publicKey':b64(public)}
+   job={'subscription':{'endpoint':'https://fcm.googleapis.com/fcm/send/isolated-test','keys':{'p256dh':b64(receiver.public_key().public_bytes(serialization.Encoding.X962,serialization.PublicFormat.UncompressedPoint)),'auth':b64(auth)}},'payload':{'id':42,'body':'내 활동 소식','receipt':'a'*64}}
+   proc=subprocess.run(['php','tests/notifications/php_crypto.php'],input=json.dumps({'job':job,'config':cfg}),text=True,capture_output=True,check=True)
+   result=json.loads(proc.stdout);body=base64.b64decode(result['body'])
+   self.assertEqual(json.loads(http_ece.decrypt(body,private_key=receiver,auth_secret=auth,version='aes128gcm')),job['payload'])
+   authorization=next(h for h in result['headers'] if h.startswith('Authorization:'))
+   jwt=authorization.split('t=',1)[1].split(',',1)[0];parts=jwt.split('.');claims=json.loads(un64(parts[1]));self.assertEqual(claims['aud'],'https://fcm.googleapis.com')
+   signature=un64(parts[2]);self.assertEqual(len(signature),64)
+   der=utils.encode_dss_signature(int.from_bytes(signature[:32],'big'),int.from_bytes(signature[32:],'big'))
+   application.public_key().verify(der,(parts[0]+'.'+parts[1]).encode(),ec.ECDSA(hashes.SHA256()))
  def test_expired_status_and_endpoint_boundary(self):
   for url in ['https://127.0.0.1/push','https://evil.example/push','https://fcm.googleapis.com.evil.example/push','https://fcm.googleapis.com@evil.example/push','http://fcm.googleapis.com/push','https://fcm.googleapis.com:444/push']:
    self.assertFalse(dispatch.safe_endpoint(url))

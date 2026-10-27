@@ -64,7 +64,7 @@
  }
  async function refresh({quiet=false,append=false}={}){
   if(refreshing||(!page&&!context.member))return;refreshing=true;
-  try{const data=await request(null,append&&before?'?before='+before:'');state=data;context.member=true;updateBadges(data.unread);if(page){if(!quiet||!loadedMore)render(data,append);await deviceState();if(!quiet)message('내 소식은 나에게만 보여요.');const test=data.testStatus;$('nnt-delivery').textContent=!device||test.device!==device?'':test.received?'테스트 알림 표시를 확인했어요.':test.accepted?'기기의 알림 서비스에 전달했어요. 기기에서 표시를 확인하고 있어요.':['pending','leased'].includes(test.state)?'테스트 알림을 발송하고 있어요. 몇 분 걸릴 수 있어요.':test.state==='failed'?'테스트 알림을 보내지 못했어요. 알림을 다시 연결해 주세요.':'';}}
+  try{const data=await request(null,append&&before?'?before='+before:'');state=data;context.member=true;updateBadges(data.unread);if(page){if(!quiet||!loadedMore)render(data,append);await deviceState();if(!quiet)message('내 소식은 나에게만 보여요.');const test=data.testStatus;$('nnt-delivery').textContent=!device||test.device!==device?'':test.received?'테스트 알림 표시를 확인했어요.':test.accepted?'기기의 알림 서비스에 전달했어요. 기기에서 표시를 확인하고 있어요.':['pending','leased'].includes(test.state)?'테스트 알림을 발송하고 있어요. 연결이 지연되면 자동으로 재시도합니다.':test.state==='failed'?'테스트 알림을 보내지 못했어요. 알림을 다시 연결해 주세요.':'';}}
   catch(error){if(!quiet||error.message==='login_required')failure(error);}finally{refreshing=false;}
  }
  function keyBytes(value){return Uint8Array.from(atob(value.replace(/-/g,'+').replace(/_/g,'/').padEnd(Math.ceil(value.length/4)*4,'=')),c=>c.charCodeAt(0));}
@@ -81,7 +81,7 @@
   });
   $('nnt-disable').addEventListener('click',()=>action(async()=>{await request({action:'unsubscribe',device});const sub=await subscription();if(sub)await sub.unsubscribe();await refresh();message('이 기기 알림을 껐어요. 알림함에서는 계속 확인할 수 있어요.');}));
   $('nnt-disable-all').addEventListener('click',()=>action(async()=>{await request({action:'unsubscribe',all:true});if(!support()){const sub=await subscription();if(sub)await sub.unsubscribe();}await refresh();message('모든 기기의 휴대폰 알림을 껐어요.');}));
-  $('nnt-test').addEventListener('click',()=>action(async()=>{const result=await request({action:'test',device});if(result.queued)$('nnt-delivery').textContent='테스트 알림을 예약했어요. 다음 발송 때 전달되며 몇 분 걸릴 수 있어요.';else await refresh();message('테스트 알림은 이 기기에만 보냅니다.');}));
+  $('nnt-test').addEventListener('click',()=>action(async()=>{const result=await request({action:'test',device});if(result.queued)$('nnt-delivery').textContent='테스트 알림 발송을 요청했어요. 잠시 후 전달 상태를 확인합니다.';else await refresh();message('테스트 알림은 이 기기에만 보냅니다.');}));
   $('nnt-preferences').addEventListener('submit',e=>{e.preventDefault();action(async()=>{const preferences=Object.fromEntries(['likes','comments','replies'].map(k=>[k,e.target.elements[k].checked]));await request({action:'preferences',preferences});state.preferences=preferences;message('받을 알림 종류를 저장했어요.');});});
   $('nnt-read-all').addEventListener('click',()=>action(async()=>{const ids=[...$('nnt-list').querySelectorAll('.nnt-item')].map(a=>Number(a.id.replace('nnt-item-','')));if(ids.length)await request({action:'read',id:Math.max(...ids),all:true});loadedMore=false;await refresh();message('도착한 알림을 모두 읽음으로 표시했어요.');}));
   $('nnt-more').addEventListener('click',()=>{loadedMore=true;refresh({append:true});});
