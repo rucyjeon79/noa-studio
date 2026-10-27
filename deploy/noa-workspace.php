@@ -6,7 +6,7 @@ function noa_workspace_groups():array{return [
  'content'=>['title'=>'콘텐츠 관리','intro'=>'등록한 곡을 찾고 고치거나, 감상 순서를 정리합니다.','routes'=>[
   ['catalog','곡 검색·수정·삭제','곡을 검색 → 수정 또는 휴지통으로 이동','/noa-catalog.php','library'],
   ['quality','곡정보 검사·정리','전체 검사 → 값 비교·확정 → 재검사','/noa-quality.php','settings'],
-  ['editor','새 곡 등록','카테고리·장르를 선택 → 곡정보 입력 → 저장','/noa-editor.php','edit'],
+  ['editor','새 곡 등록','곡정보 항목 입력 → 저장 → 목록에서 확인','/noa-editor.php','edit'],
   ['order','곡 묶음·순서 관리','음원에서 카테고리·장르 선택 → 묶음 생성 또는 순서 저장','/noa-music.php','playlists'],
   ['trash','곡 휴지통','삭제한 곡을 확인 → 복원','/noa-catalog.php?view=trash','library'],
  ]],
