@@ -70,7 +70,11 @@ jobs:
             urllib.request.urlopen(urllib.request.Request(root+'/noa-bridge/engagement.php',data=b'{}',headers={'Content-Type':'application/json','Origin':root}),timeout=30)
             raise AssertionError('guest write accepted')
           except urllib.error.HTTPError as e:
-            assert e.code==401 and json.load(e)['error']=='login_required'
+            # The production host replaces PHP 401 JSON with its own HTML error page.
+            # Denial is the HTTP contract; JSON details remain covered in isolated API tests.
+            assert e.code==401, ('guest write denial', e.code)
+            if 'application/json' in e.headers.get('Content-Type',''):
+              assert json.load(e)['error']=='login_required'
           Path('engagement-proof/live.json').write_text(json.dumps({'homeAssets':True,'guestWriteDenied':True,'productionSyntheticWrites':0}))
           PY
       - name: Restore owned files on failure
