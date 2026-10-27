@@ -1,0 +1,179 @@
+{
+  "environment": "production anonymous read-only",
+  "launch": [
+    {
+      "role": "guest",
+      "path": "/noa-music.php",
+      "home": true,
+      "staleSession": true
+    },
+    {
+      "role": "guest",
+      "path": "/bbs/login.php?url=%2Fnoa-music.php",
+      "home": true,
+      "staleSession": true
+    },
+    {
+      "role": "guest",
+      "path": "/noa-login.php?url=%2Fnoa-music.php",
+      "home": true,
+      "staleSession": true
+    },
+    {
+      "path": "/",
+      "home": true
+    },
+    {
+      "path": "/index.php",
+      "home": true
+    },
+    {
+      "path": "/?device=mobile",
+      "home": true
+    },
+    {
+      "path": "/noa2.php",
+      "home": true
+    },
+    {
+      "role": "guest",
+      "deliberateMusicPreserved": true,
+      "deepLinkPreserved": true
+    }
+  ],
+  "layouts": [
+    {
+      "engine": "chromium",
+      "profile": "ios",
+      "theme": "noa-studio",
+      "installVisible": true,
+      "cleanHomeUrl": true,
+      "guideCloses": true,
+      "noOverflow": true,
+      "pageErrors": []
+    },
+    {
+      "engine": "chromium",
+      "profile": "ios",
+      "theme": "noa-ivory",
+      "installVisible": true,
+      "cleanHomeUrl": true,
+      "guideCloses": true,
+      "noOverflow": true,
+      "pageErrors": []
+    },
+    {
+      "engine": "chromium",
+      "profile": "ipad",
+      "theme": "noa-studio",
+      "installVisible": true,
+      "cleanHomeUrl": true,
+      "guideCloses": true,
+      "noOverflow": true,
+      "pageErrors": []
+    },
+    {
+      "engine": "chromium",
+      "profile": "ipad",
+      "theme": "noa-ivory",
+      "installVisible": true,
+      "cleanHomeUrl": true,
+      "guideCloses": true,
+      "noOverflow": true,
+      "pageErrors": []
+    },
+    {
+      "engine": "chromium",
+      "profile": "android",
+      "theme": "noa-studio",
+      "installVisible": true,
+      "cleanHomeUrl": true,
+      "guideCloses": true,
+      "noOverflow": true,
+      "pageErrors": []
+    },
+    {
+      "engine": "chromium",
+      "profile": "android",
+      "theme": "noa-ivory",
+      "installVisible": true,
+      "cleanHomeUrl": true,
+      "guideCloses": true,
+      "noOverflow": true,
+      "pageErrors": []
+    },
+    {
+      "engine": "chromium",
+      "profile": "mac",
+      "theme": "noa-studio",
+      "installVisible": true,
+      "cleanHomeUrl": true,
+      "guideCloses": true,
+      "noOverflow": true,
+      "pageErrors": []
+    },
+    {
+      "engine": "chromium",
+      "profile": "mac",
+      "theme": "noa-ivory",
+      "installVisible": true,
+      "cleanHomeUrl": true,
+      "guideCloses": true,
+      "noOverflow": true,
+      "pageErrors": []
+    }
+  ],
+  "physicalAppleInstallation": false,
+  "icons": [
+    {
+      "src": "/noa-assets/icon-maskable-192.png?v=fullbleed-20261027",
+      "width": 192,
+      "height": 192,
+      "expected": 192,
+      "opaque": true
+    },
+    {
+      "src": "/noa-assets/icon-maskable-512.png?v=fullbleed-20261027",
+      "width": 512,
+      "height": 512,
+      "expected": 512,
+      "opaque": true
+    },
+    {
+      "src": "/noa-assets/icon-touch-180.png",
+      "width": 180,
+      "height": 180,
+      "expected": 180,
+      "opaque": true
+    }
+  ],
+  "publicInstallationPage": true,
+  "appleNeverDownloadsApk": true,
+  "independentPublicAssets": [
+    {
+      "path": "noa-assets/icon-maskable-192.png",
+      "sha256": "2ec94351168fe2179a8b8663923e9e824d408728a7ce5c9d69183d07f69ceeaf",
+      "matches": true
+    },
+    {
+      "path": "noa-assets/icon-maskable-512.png",
+      "sha256": "6b55274068bf32d26eb5a65ee7707325ff39d7fb067bf3e6f41663f4fd5ae85d",
+      "matches": true
+    },
+    {
+      "path": "noa-assets/icon-touch-180.png",
+      "sha256": "136b5bf1c1c7bef4922e660de77b13c8da612b6ecc1f5bf7db2bb540d12d8249",
+      "matches": true
+    },
+    {
+      "path": "noa-manifest.json",
+      "sha256": "32f9adfc617b54e5eba732cfdee2b863ca0988aec91f6082e693b01edcc5513f",
+      "matches": true
+    },
+    {
+      "path": "noa-brand.js",
+      "sha256": "d8cd95bde02b7a8e8b9deba7905c55e7839d9078d989db564040007193f5095a",
+      "matches": true
+    }
+  ]
+}

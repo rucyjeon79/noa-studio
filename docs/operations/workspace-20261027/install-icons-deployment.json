@@ -1,0 +1,36 @@
+{
+  "commit": "cd7e72ea3e364761d3f320bb2f6290e849326a69",
+  "changed": [
+    "noa-assets/icon-maskable-192.png",
+    "noa-assets/icon-maskable-512.png",
+    "noa-assets/icon-touch-180.png",
+    "noa-manifest.json",
+    "noa-install.php",
+    "noa-brand.js"
+  ],
+  "sha256": {
+    "noa-assets/icon-maskable-192.png": "2ec94351168fe2179a8b8663923e9e824d408728a7ce5c9d69183d07f69ceeaf",
+    "noa-assets/icon-maskable-512.png": "6b55274068bf32d26eb5a65ee7707325ff39d7fb067bf3e6f41663f4fd5ae85d",
+    "noa-assets/icon-touch-180.png": "136b5bf1c1c7bef4922e660de77b13c8da612b6ecc1f5bf7db2bb540d12d8249",
+    "noa-manifest.json": "32f9adfc617b54e5eba732cfdee2b863ca0988aec91f6082e693b01edcc5513f",
+    "noa-install.css": "46a56307df629d902def63c092316947573baff598211be56b908255762cbc2c",
+    "noa-install.js": "aefa7c9623269fa9c958a20e850508ede6ab824a8285619312d35b7e58a35f97",
+    "noa-install.php": "a9b06c5dc0f48a687807a1ae978c1bc43ec6b4fb8536ae55507d79f49f975b94",
+    "noa-launch.js": "e9b9c5b75b089363091f8e7161069f09029542d13d3d98eb39542b240eba8454",
+    "noa-brand.js": "d8cd95bde02b7a8e8b9deba7905c55e7839d9078d989db564040007193f5095a",
+    "noa-bridge/member-access.php": "36ea88809fab122f3c6043d50a3189916e3af3aec6b3fff4400e3948d807e79e",
+    "extend/noa.access.php": "002c66230ad99a61329a61dac805149530b8ca57d3b3994edee7c49b73b3570e",
+    "extend/noa.design.php": "a2c9cc14c136cabc2209242eba58473545fb54a4073b2b81c22a1e2c19bfc453",
+    "noa-ui.js": "351873b68782df2e46b0aab8cc39263e0d0e37ee8658227e016c7c0b3c3e97e9",
+    "noa-my.php": "90da67f123ce5ff1ca91408dd56c26ec6a394462e5d19a8016e8c365fc7711ec",
+    "noa-sitemap.php": "463221828295e9779d4fad0a0fbc4c2281e1cdcffea44a04ced48fbec75286be",
+    "noa-account.js": "a84e857b4b6c1015ad4ab6f476bbccdeb5590001cdaec6fd3c9e15ced0404049",
+    "noa-account.css": "d911e5a3ace18fd5775f50b21a0c96fb104a0a49f0bbd4500bc281cb2279ff50",
+    "noa-download.php": "931c416e50914abb9e609b20a4f99da5eed56656909d60ff18031be20d79e38a"
+  },
+  "protectedUnchanged": 22,
+  "databaseWrites": 0,
+  "memberRowsChanged": 0,
+  "pointDebits": 0,
+  "pricesSeeded": false
+}

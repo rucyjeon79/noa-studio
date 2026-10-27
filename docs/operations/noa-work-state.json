@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedDate": "2026-10-27T07:56:26.347Z",
+  "updatedDate": "2026-10-27",
   "purpose": "NOA STUDIO Work 실행·중단 복구 기준. 다음 실행은 최신 GitHub와 운영 상태를 대조하고 마지막 확인된 성공 단계부터 이어간다.",
   "executionRules": [
     "완료는 필요한 코드 수정, GitHub 반영, 자동배포 성공, 실제 운영 검증을 모두 충족한 경우에만 보고한다.",
@@ -16,10 +16,10 @@
     "최종 보고에서 완료, 미완료, 코드/운영 커밋, 배포, 검증 URL, 남은 오류를 구분한다."
   ],
   "runtimeRelease": {
-    "commit": "64ebd5a11bb426e2ed868e3692c4f43bbe36c351",
-    "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40451418910",
+    "commit": "cd7e72ea3e364761d3f320bb2f6290e849326a69",
+    "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40476598032",
     "status": "success",
-    "scope": "Shared browse identity, link styles and native board appearance; no database writes.",
+    "scope": "Opaque Android PWA maskable icons, opaque Apple touch icon and versioned install references. Original general-purpose branding and native APK unchanged.",
     "filesSha256": {
       "noa-bridge/music-readmodel.php": "690e7c4b12cf95802ede4b96b6791edd78bfb430c34d02695012cbd9c22186e1",
       "noa-gnuboard.css": "72fbf98a732f846c7d0969fb772e1d0669614eb837af8a4b4b9e437e06262ef6",
@@ -67,24 +67,56 @@
       "noa-music.php": "ba3cf47ea7f19229eae874abb6d26db4c38fb8071402d294b84c8734c26d1a85",
       "noa-world.php": "c463c291d9a26f05767b034bfdabb6ceee42d783aa6c42a76ad00ca0f35b6ef2",
       "noa-youtube.php": "841d4d392cf6e92e82e72e804019406764ba5a81ed1d3208bca2b47d1fc1c2d4",
-      "extend/noa.design.php": "a2c9cc14c136cabc2209242eba58473545fb54a4073b2b81c22a1e2c19bfc453"
+      "extend/noa.design.php": "a2c9cc14c136cabc2209242eba58473545fb54a4073b2b81c22a1e2c19bfc453",
+      "noa-assets/icon-maskable-192.png": "2ec94351168fe2179a8b8663923e9e824d408728a7ce5c9d69183d07f69ceeaf",
+      "noa-assets/icon-maskable-512.png": "6b55274068bf32d26eb5a65ee7707325ff39d7fb067bf3e6f41663f4fd5ae85d",
+      "noa-assets/icon-touch-180.png": "136b5bf1c1c7bef4922e660de77b13c8da612b6ecc1f5bf7db2bb540d12d8249",
+      "noa-manifest.json": "32f9adfc617b54e5eba732cfdee2b863ca0988aec91f6082e693b01edcc5513f",
+      "noa-install.css": "46a56307df629d902def63c092316947573baff598211be56b908255762cbc2c",
+      "noa-install.js": "aefa7c9623269fa9c958a20e850508ede6ab824a8285619312d35b7e58a35f97",
+      "noa-install.php": "a9b06c5dc0f48a687807a1ae978c1bc43ec6b4fb8536ae55507d79f49f975b94",
+      "noa-launch.js": "e9b9c5b75b089363091f8e7161069f09029542d13d3d98eb39542b240eba8454",
+      "noa-brand.js": "d8cd95bde02b7a8e8b9deba7905c55e7839d9078d989db564040007193f5095a",
+      "noa-bridge/member-access.php": "36ea88809fab122f3c6043d50a3189916e3af3aec6b3fff4400e3948d807e79e",
+      "extend/noa.access.php": "002c66230ad99a61329a61dac805149530b8ca57d3b3994edee7c49b73b3570e",
+      "noa-account.js": "a84e857b4b6c1015ad4ab6f476bbccdeb5590001cdaec6fd3c9e15ced0404049",
+      "noa-account.css": "d911e5a3ace18fd5775f50b21a0c96fb104a0a49f0bbd4500bc281cb2279ff50",
+      "noa-download.php": "931c416e50914abb9e609b20a4f99da5eed56656909d60ff18031be20d79e38a"
     },
     "changedFiles": [
-      "noa-bridge/music-readmodel.php",
-      "noa-gnuboard.css",
-      "noa-ui.js",
-      "noa-youtube.css",
-      "noa-bridge/youtube-catalog.php",
-      "noa-bridge/library-records.php",
-      "noa-browse.js",
-      "noa-ui.css",
-      "noa-music.php"
+      "noa-assets/icon-maskable-192.png",
+      "noa-assets/icon-maskable-512.png",
+      "noa-assets/icon-touch-180.png",
+      "noa-manifest.json",
+      "noa-install.php",
+      "noa-brand.js"
     ],
+    "verifiedByThisRelease": [
+      "noa-assets/icon-maskable-192.png",
+      "noa-assets/icon-maskable-512.png",
+      "noa-assets/icon-touch-180.png",
+      "noa-manifest.json",
+      "noa-install.css",
+      "noa-install.js",
+      "noa-install.php",
+      "noa-launch.js",
+      "noa-brand.js",
+      "noa-bridge/member-access.php",
+      "extend/noa.access.php",
+      "extend/noa.design.php",
+      "noa-ui.js",
+      "noa-my.php",
+      "noa-sitemap.php",
+      "noa-account.js",
+      "noa-account.css",
+      "noa-download.php"
+    ],
+    "priorFileHashesRetained": true,
     "protectedUnchanged": 22,
     "databaseWrites": 0,
     "memberRowsChanged": 0,
     "pointDebits": 0,
-    "evidence": "docs/operations/workspace-20261027/shared-deployment.json"
+    "evidence": "docs/operations/workspace-20261027/install-icons-deployment.json"
   },
   "verificationRecovery": {
     "commit": "95eed26bb9befee5cb7ec297d390dea92c75cd1a",
@@ -703,17 +735,23 @@
       "memberRowsChanged": 0,
       "pointDebits": 0,
       "evidence": "docs/operations/navigation-20261027/deployment.json"
+    },
+    {
+      "commit": "64ebd5a11bb426e2ed868e3692c4f43bbe36c351",
+      "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40451418910",
+      "status": "success",
+      "scope": "Shared browse identity, link styles and native board appearance; no database writes.",
+      "evidence": "docs/operations/workspace-20261027/shared-deployment.json"
     }
   ],
   "latestWorkUnit": {
-    "id": "NOA-20261027-SHARED-DUPLICATES-BOARD-LINKS",
-    "status": "deployed_tested_authenticated_screen_verification_pending",
-    "runtimeCommit": "64ebd5a11bb426e2ed868e3692c4f43bbe36c351",
-    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40451418910",
-    "evidence": "docs/operations/workspace-20261027/shared-release.json",
+    "id": "NOA-20261027-FULLBLEED-INSTALL-ICONS",
+    "status": "deployed_and_public_browser_verified",
+    "runtimeCommit": "cd7e72ea3e364761d3f320bb2f6290e849326a69",
+    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40476598032",
+    "evidence": "docs/operations/workspace-20261027/install-icons-release.json",
     "allOriginalAreasComplete": false,
-    "authenticatedProductionCollectionVerified": false,
-    "authenticatedProductionBoardVerified": false
+    "physicalDeviceInstallationVerified": false
   },
   "relatedCheckFailures": [
     {
@@ -742,6 +780,15 @@
       "resolvedInThisUnit": true,
       "resolution": "Complete native SQL interface in isolated member fixture; production authorization unchanged.",
       "verificationAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40275787709"
+    },
+    {
+      "action": "https://github.com/rucyjeon79/noa-studio/actions/runs/40475762799",
+      "name": "NOA AInoa and Song Editor Production",
+      "issue": "Unmodified editor browser check expected 여자솔로 but read an empty value at scripts/qa/noa-ainoa.mjs:18",
+      "deployment": "skipped",
+      "resolvedInThisUnit": false,
+      "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40475762799",
+      "productionDeployment": "skipped"
     }
   ],
   "activeWork": {
@@ -1236,6 +1283,16 @@
       "evidence": "docs/operations/workspace-20261027/duplicates-release.json",
       "allOriginalAreasComplete": false,
       "authenticatedProductionCollectionVerified": false
+    },
+    {
+      "id": "NOA-20261027-SHARED-DUPLICATES-BOARD-LINKS",
+      "status": "deployed_tested_authenticated_screen_verification_pending",
+      "runtimeCommit": "64ebd5a11bb426e2ed868e3692c4f43bbe36c351",
+      "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40451418910",
+      "evidence": "docs/operations/workspace-20261027/shared-release.json",
+      "allOriginalAreasComplete": false,
+      "authenticatedProductionCollectionVerified": false,
+      "authenticatedProductionBoardVerified": false
     }
   ],
   "resolvedOutstanding": [
@@ -1303,5 +1360,70 @@
       "recordedAt": "2026-10-27T07:56:26.347Z",
       "confirmationIndependentlyVerified": false
     }
+  },
+  "installIconRelease": {
+    "id": "NOA-20261027-FULLBLEED-INSTALL-ICONS",
+    "request": "앱 설치 아이콘이 꽉찬 이미지로 안되남?",
+    "pullRequest": "https://github.com/rucyjeon79/noa-studio/pull/232",
+    "sourceCommit": "3b15d345467e08d979badca2854b3688b9ea10d7",
+    "mergeCommit": "6b13f9cfa898b0a00ee8cbf44ec9cd51b5f3c05d",
+    "runtimeCommit": "cd7e72ea3e364761d3f320bb2f6290e849326a69",
+    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40476598032",
+    "candidateAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40475119407",
+    "scope": "Opaque Android PWA maskable icons, opaque Apple touch icon and versioned install references. Original general-purpose branding and native APK unchanged.",
+    "checks": [
+      "Six launch unit tests passed locally",
+      "Three PR workflows passed",
+      "Chromium/WebKit installation layouts passed in PR candidate",
+      "192/512 maskable and 180 touch images are opaque and correctly sized",
+      "Browser previews preserve visible mark in circle and rounded-square masks",
+      "Recovered candidate and scoped production deployment passed",
+      "Production Chrome: eight theme/platform layouts and eight launch checks passed",
+      "Five independently downloaded production assets matched exact expected SHA-256 hashes",
+      "Production browser mask preview and Android installation page visually inspected"
+    ],
+    "physicalAndroidInstallationVerified": false,
+    "physicalAppleInstallationVerified": false,
+    "nativeApkChanged": false,
+    "browserPreviewIsPhysicalDeviceEvidence": false,
+    "recovery": {
+      "failedAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40475763006",
+      "cause": "WebKit apt dependencies timed out while mirror+file resolved HTTP Azure package downloads",
+      "fix": "Normalize Ubuntu mirror-list files as well as ubuntu.sources to HTTPS archive.ubuntu.com, retaining package signing and all checks",
+      "commit": "cd7e72ea3e364761d3f320bb2f6290e849326a69"
+    },
+    "separateCheckFailure": {
+      "action": "https://github.com/rucyjeon79/noa-studio/actions/runs/40475762799",
+      "name": "NOA AInoa and Song Editor Production",
+      "issue": "Unmodified editor browser check expected 여자솔로 but read an empty value at scripts/qa/noa-ainoa.mjs:18",
+      "deployment": "skipped",
+      "resolvedInThisUnit": false
+    },
+    "deviceRefresh": "Existing installed icon refresh is device-controlled; uninstall/reinstall the web app to refresh if the old artwork remains.",
+    "status": "deployed_and_public_browser_verified",
+    "completedAt": "2026-10-27T09:01:05.863Z",
+    "productionChangedFiles": [
+      "noa-assets/icon-maskable-192.png",
+      "noa-assets/icon-maskable-512.png",
+      "noa-assets/icon-touch-180.png",
+      "noa-manifest.json",
+      "noa-install.php",
+      "noa-brand.js"
+    ],
+    "productionVerifiedFileHashes": 18,
+    "protectedUnchanged": 22,
+    "productionDatabaseWrites": 0,
+    "memberRowsChanged": 0,
+    "pointDebits": 0,
+    "liveLayouts": 8,
+    "liveLaunchChecks": 8,
+    "publicAssetsExactHashVerified": true,
+    "evidence": {
+      "deployment": "docs/operations/workspace-20261027/install-icons-deployment.json",
+      "candidate": "docs/operations/workspace-20261027/install-icons-candidate.json",
+      "live": "docs/operations/workspace-20261027/install-icons-live.json",
+      "preview": "docs/operations/workspace-20261027/install-icons-preview.png"
+    },
+    "previewVisuallyInspected": true
   }
 }
