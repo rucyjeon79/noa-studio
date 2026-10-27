@@ -14,14 +14,20 @@
  }
  function failure(error){message(errors[error.message]||'알림을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.');if(error.message==='login_required'){context.member=false;state=null;updateBadges(0);if(page){$('nnt-content').hidden=true;$('nnt-login').hidden=false;}}}
  function updateBadges(count){document.querySelectorAll('[data-nnt-count]').forEach(el=>{el.textContent=count>99?'99+':String(count);el.hidden=count===0;el.setAttribute('aria-label',`읽지 않은 알림 ${count}개`);});if(page){$('nnt-unread').textContent=count;$('nnt-read-all').disabled=!count;}}
+ function entry(description){
+  const link=document.createElement('a');link.href='/noa-notifications.php';link.className='nnt-entry';
+  // Reuse the shared NOA mail icon for the personal activity inbox.
+  link.innerHTML='<svg class="nnt-entry-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18v14H3z M3 5l9 8 9-8"/></svg><span class="nnt-entry-copy"><span class="nnt-entry-title">내 활동 알림</span><span class="nnt-entry-description"></span></span>';
+  link.querySelector('.nnt-entry-description').textContent=description;return link;
+ }
  function mount(){
   const ainoa=document.getElementById('noa-ainoa'),body=ainoa?.querySelector('.ainoa-panel-body');
   if(body&&!body.querySelector('.nnt-entry')){
-   const link=document.createElement('a');link.href='/noa-notifications.php';link.className='nnt-entry';link.textContent='내 활동 알림';const badge=document.createElement('span');badge.className='nnt-badge';badge.dataset.nntCount='';badge.hidden=true;link.append(badge);const header=body.querySelector('header');if(header)header.after(link);else body.prepend(link);
+   const link=entry('좋아요·댓글·답글 소식을 확인하세요.');const badge=document.createElement('span');badge.className='nnt-badge';badge.dataset.nntCount='';badge.hidden=true;link.append(badge);const header=body.querySelector('header');if(header)header.after(link);else body.prepend(link);
    if(!ainoa.querySelector(':scope > .nnt-badge')){const outer=badge.cloneNode(true);ainoa.append(outer);}
    updateBadges(state?.unread||0);
   }
-  const settings=$('noa-settings-controls');if(settings&&!$('nnt-settings-link')){const link=document.createElement('a');link.id='nnt-settings-link';link.className='nnt-entry nnt-settings-link';link.href='/noa-notifications.php';link.textContent='AInoa · 내 활동 알림 설정';settings.after(link);}
+  const settings=$('noa-settings-controls');if(settings&&!$('nnt-settings-link')){const link=entry('알림함 확인 및 휴대폰 알림 설정');link.id='nnt-settings-link';link.classList.add('nnt-settings-link');settings.after(link);}
  }
  mount();new MutationObserver(mount).observe(document.body,{childList:true,subtree:true});
  function support(){
