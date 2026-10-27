@@ -4,9 +4,9 @@ import noa_ainoa_deploy as release
 # shared dependency, test and workflow remains protected by the freshness gate.
 release.UNRELATED_PATH_PREFIXES=('scripts/busan_', '.github/workflows/busan-', 'docs/busan/')
 release.FILES={
+ 'noa-bridge/package-record.php':'bridge/package-record.php',
  'noa-bridge/catalog-recovery.php':'bridge/catalog-recovery.php',
  'noa-bridge/youtube-catalog.php':'bridge/youtube-catalog.php',
- 'noa-bridge/package-record.php':'bridge/package-record.php',
  'noa-bridge/inline-edit.php':'bridge/inline-edit.php',
  'noa-bridge/creator-core.php':'bridge/creator-core.php',
  'noa-bridge/record-quality.php':'bridge/record-quality.php',
