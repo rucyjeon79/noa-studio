@@ -12,6 +12,7 @@ file_put_contents($root.'/common.php',$extra,FILE_APPEND);
 copy('deploy/noa-notifications.extend.php',$root.'/extend/zz.noa-notifications.php');
 foreach(['noa-notifications.php','noa-notifications.js','noa-notifications.css','noa-sw.js','noa-ainoa.js','noa-ainoa.css','noa-brand.js','noa-policy-20261024.css']as $file)copy('deploy/'.$file,$root.'/'.$file);
 @mkdir($root.'/noa-assets',0700,true);copy('public/ainoa/ainoa-symbol.png',$root.'/noa-assets/ainoa-symbol.png');
+foreach(['papa-logo.png','icon-180.png']as $asset)copy('public/'.$asset,$root.'/noa-assets/'.$asset);
 foreach(['notifications-core.php','notifications-sources.php','notifications.php','notification-worker.php']as $file)copy('bridge/'.$file,$root.'/noa-bridge/'.$file);
 require $root.'/common.php';require 'bridge/notifications-sources.php';
 $db=new PDO('mysql:host=127.0.0.1;dbname=noa_community;charset=utf8mb4','root','fixture-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_EMULATE_PREPARES=>false]);
