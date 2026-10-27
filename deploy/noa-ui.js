@@ -29,7 +29,7 @@ function decorate(){
  for(const el of document.querySelectorAll('#my-recent a,#my-recent-youtube a'))if(!el.querySelector('svg'))el.dataset.noaIcon=el.closest('#my-recent-youtube')?'youtube':'play';
  // Existing nodes/URLs/listeners are retained. Exclude card links, document-body citations and native navigation.
  for(const el of document.querySelectorAll('main a,main summary,main button:is(.noa-button.primary,#my-new,#my-add,#my-save,#my-play,#act-play,#lab-text-submit,#noa-settings-save),.noa-g5 .btn_bo_user a,.noa-g5 .btn_bo_user button,.noa-g5 .btn_confirm a,.noa-g5 .btn_confirm button,.noa-g5 .bo_v_nb a,.noa-g5 .bo_v_com a')){
-  if(el.matches('[data-noa-icon],.noa-action,.noa-logo,.brand,.noa-music-card,.noa-genre,.noa-world-act,.noa-personal-card,.noa-browse-card,.catalog-card')||el.closest('nav,footer,.noa-world-text,[data-noa-document-link]')||el.querySelector('img,svg')||!el.textContent.trim())continue;
+  if(el.matches('[data-noa-icon],.noa-action,.noa-logo,.brand,.noa-music-card,.noa-genre,.noa-world-act,.noa-personal-card,.noa-browse-card,.catalog-card')||el.closest('nav,footer,.noa-world-text,[data-noa-document-link],#bo_list .bo_tit,#bo_list .td_subject,#bo_v_con,#bo_vc article')||el.querySelector('img,svg')||!el.textContent.trim())continue;
   el.dataset.noaIcon=actionIcon(el);
  }
  if(document.querySelector('.lab-tabs'))for(const a of document.querySelectorAll('.lab-tabs a')){const keys={'#lab-text':'settings','#lab-create':'music','#lab-jobs':'library','#lab-growth':'youtube'};if(keys[a.getAttribute('href')])a.dataset.noaIcon=keys[a.getAttribute('href')];}
