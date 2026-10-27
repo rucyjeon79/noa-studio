@@ -27,6 +27,7 @@ tasks.named('preBuild').configure { dependsOn 'copyNoaDesign' }
 
 tasks.register('copyNoaSymbol', Copy) {
     from(rootProject.file('../public/icon-512.png')) { rename { 'noa_symbol.png' } }
+    from(rootProject.file('../public/icon-maskable-512.png')) { rename { 'noa_install_symbol.png' } }
     into layout.buildDirectory.dir('generated/noaBrandResources/drawable-nodpi')
 }
 tasks.named('preBuild').configure { dependsOn 'copyNoaSymbol' }

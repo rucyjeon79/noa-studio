@@ -1,1 +1,1 @@
-<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="18dp"><bitmap android:src="@drawable/noa_symbol" android:gravity="fill"/></inset>
+<inset xmlns:android="http://schemas.android.com/apk/res/android" android:insetLeft="16.666667%" android:insetTop="16.666667%" android:insetRight="16.666667%" android:insetBottom="16.666667%"><bitmap android:src="@drawable/noa_install_symbol" android:gravity="fill"/></inset>
