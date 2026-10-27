@@ -38,3 +38,9 @@ check($unified['body']['fanLetter']==='new'&&$unified['body']['thumbUrl']==='/da
 check(nup_fields($unified)['confirmed']===true&&nup_fields($unified)['creativeFields']['storyPlan']===['scene'=>'해변']&&$unified['body']['unknownProductionEvidence']===['keep'=>true],'production structure and unrelated data preserved');
 denied(fn()=>nup_patch($legacy,'story',['creativeFields'=>['ownerId'=>'other']]),'extra fields cannot replace ownership');denied(fn()=>nup_patch($legacy,'story',['confirmed'=>'true']),'boolean confirmation required');
 echo "UNIFIED_CUSTOM_VOCAL_ALIASES_EXTRA_DATA_AND_TYPED_CONFIRMATION_OK\n";
+
+$unknown=['genreId'=>'unclassified','title'=>'BLOOM','body'=>['source'=>['platform'=>'youtube'],'lyricsBlock'=>'원문','unknownEvidence'=>['keep'=>true]]];
+$moved=nup_patch($unknown,'story',['genre'=>'your-story']);check(nup_fields($moved)['genre']==='your-story'&&$moved['packageType']==='story'&&$moved['body']['source']===$unknown['body']['source']&&$moved['body']['lyricsBlock']==='원문','classification changes with full source preservation');
+denied(fn()=>nup_patch($unknown,'story',['genre'=>'made-up']),'invalid genre rejected');denied(fn()=>nup_patch($unknown,'story',['genre'=>'kpop-original']),'original requires number');
+$numbered=nup_patch($unknown,'story',['genre'=>'kpop-original','ep'=>'08']);check($numbered['ep']==='08'&&$numbered['packageType']==='original','unclassified can become numbered original');
+echo "CLASSIFICATION_PATCH_AND_SOURCE_PRESERVATION_OK\n";

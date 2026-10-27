@@ -13,5 +13,16 @@ function createField(key,{type='song',value='',prefix='noa-edit-',readOnly=false
 function value(input){if(input.type==='checkbox')return input.checked;if(['creativeFields','members'].includes(input.name))return JSON.parse(input.value||'{}');return input.value;}
 function set(input,v){if(input.type==='checkbox')input.checked=v===true;else input.value=['creativeFields','members'].includes(input.name)?JSON.stringify(v||{},null,2):String(v??'');}
 function render(form,{type='song',fields={},keys:chosen=keys(type),prefix}={}){const sectionsView=sections(form),inputs={};for(const key of chosen){const f=createField(key,{type,value:fields[key],prefix});sectionsView.add(key,f.wrap);inputs[key]=f.input;}return {inputs,sections:sectionsView};}
-const link=document.createElement('link');link.rel='stylesheet';link.href='/noa-record-form.css?v=20261027-unified1';document.head.append(link);
-window.NoaRecordForm={schema,groups,ownerKeys,describe,keys,sections,createField,value,set,render};})();
+function classificationEditor(form,{genre='unclassified',ep='',inputs}){
+ const browse=window.NoaBrowse,section=document.createElement('fieldset'),legend=document.createElement('legend');legend.textContent='분류 변경';section.className='noa-record-classification';section.append(legend);
+ function select(name,label){const wrap=document.createElement('label'),control=document.createElement('select');control.name=name;control.id='noa-edit-'+name;wrap.htmlFor=control.id;wrap.append(document.createTextNode(label),control);section.append(wrap);return control;}
+ const category=select('category','카테고리'),detail=select('genre','세부 장르');category.add(new Option('분류를 선택해 주세요',''));for(const[id,label]of browse.groups)category.add(new Option(label,id));category.value=browse.groupFor(genre)||'';
+ function options(value){detail.replaceChildren();const group=browse.groups.find(g=>g[0]===category.value);if(!group)detail.add(new Option('미분류',value||'unclassified'));else for(const id of group[2])detail.add(new Option(browse.names[id],id));if([...detail.options].some(o=>o.value===value))detail.value=value;}
+ options(genre);inputs.genre=detail;
+ const number=document.createElement('label'),numberInput=document.createElement('input');number.textContent='EP 번호';numberInput.id='noa-edit-classification-ep';numberInput.name='ep';numberInput.type='text';numberInput.inputMode='numeric';numberInput.pattern='0*[1-9][0-9]{0,3}';number.append(numberInput);section.append(number);
+ function numberState(){const needed=!Number(ep)&&detail.value==='kpop-original';number.hidden=!needed;numberInput.required=needed;if(needed)inputs.ep=numberInput;else if(inputs.ep===numberInput)delete inputs.ep;}
+ category.onchange=()=>{options('');numberState();};detail.onchange=numberState;numberState();
+ const note=document.createElement('p');note.className='noa-edit-readonly';note.textContent='저장하면 음원·YouTube·라이브러리의 분류가 함께 바뀝니다. 수록곡이나 원곡 연결이 있는 곡은 연결을 먼저 확인해 주세요.';section.append(note);form.append(section);return {category,detail};
+}
+const link=document.createElement('link');link.rel='stylesheet';link.href='/noa-record-form.css?v=20261027-category2';document.head.append(link);
+window.NoaRecordForm={schema,groups,ownerKeys,describe,keys,sections,createField,value,set,render,classificationEditor};})();

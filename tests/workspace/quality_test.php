@@ -20,3 +20,13 @@ $trash=['action'=>'trash','selector'=>['type'=>'song','source'=>'music','key'=>'
 $count=(int)$db->query('SELECT COUNT(*) FROM noa_documents')->fetchColumn();$new=nie_resolve($db,['type'=>'new','kind'=>'single','genre'=>'kpop-original','number'=>'29','id'=>str_repeat('9',24)]);must($new['revision']===0&&$new['writeKey']==='single:kpop-original:29'&&(int)$db->query('SELECT COUNT(*) FROM noa_documents')->fetchColumn()===$count,'new_record_get_read_only');
 $history=(int)$db->query("SELECT COUNT(*) FROM noa_document_history WHERE doc_key='story:quality-one'")->fetchColumn();must($history===3,'exactly_one_history_per_repair');
 echo "QUALITY_READ_ONLY_SCAN_REVIEW_CAS_IDEMPOTENCE_ALIASES_DUPLICATE_TRASH_SURVIVOR_RESTORE_AND_SOURCE_PRESERVATION_OK\n";
+
+// A catalog-only unclassified song: editing classification must preserve its identity and source.
+$id=str_repeat('1',64);$key='catalog:'.$id;
+nc_insert($db,'noa_catalog_songs',['song_id'=>$id,'identity_json'=>'[]','genre_id'=>'unclassified','language'=>'ko','version_name'=>'original','ep'=>''],['song_id']);
+nc_insert($db,'noa_catalog_versions',['batch_id'=>$batch,'entity_id'=>$id,'entity_type'=>'song','fields_json'=>'{"title":"분류 검증곡"}','fields_sha'=>str_repeat('0',64),'review_fields'=>'[]','public_verified'=>1],['batch_id','entity_id']);
+$d=nup_normalize(['genreId'=>'unclassified','title'=>'분류 검증곡','visibility'=>'public','body'=>['confirmedTitle'=>'분류 검증곡','songDescription'=>'사연곡 원문','unknownEvidence'=>['keep'=>true]]],'story');
+$db->beginTransaction();nup_store($db,$key,'story',$d,0,'fixture');nup_validate_classification($db,$key,$d,nup_patch($d,'story',['genre'=>'your-story']));$db->commit();
+$issue=issue(nrq_scan($db),'classification','genre');must($issue['actionUrl']==='/noa-editor.php?key='.rawurlencode($key),'classification_report_opens_real_editor');
+$db->beginTransaction();try{nup_validate_classification($db,$key,['genreId'=>'your-story','sourceRef'=>'single:test'],['genreId'=>'cover-reborn']);throw new RuntimeException('linked_reclassification_accepted');}catch(DomainException $e){must($e->getMessage()==='classification_source_linked','linked_source_protected');}finally{$db->rollBack();}
+echo "CLASSIFICATION_FIXTURE_LINK_GUARD_AND_REPAIR_ENTRY_OK\n";
