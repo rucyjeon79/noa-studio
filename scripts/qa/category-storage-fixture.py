@@ -8,7 +8,7 @@ class FixtureDB extends PDO{function prepare(string $query,array $options=[]):PD
 function noa_bridge_pdo():PDO{return new FixtureDB('sqlite:''' + str(root/'fixture.sqlite') + "',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);}\n")
 shutil.copyfile('bridge/package-record.php',root/'noa-bridge/package-record.php')
 shutil.copyfile('bridge/category-order-store.php',root/'noa-bridge/category-order-store.php')
-(root/'noa-bridge/sound-core.php').write_text('<?php ')
+shutil.copyfile('bridge/sound-core.php',root/'noa-bridge/sound-core.php')
 (root/'noa-app/jukebox/core.php').write_text("<?php function nj_catalog($db){return ['catalog:'.str_repeat('c',64)=>['genreId'=>'cover-reborn','title'=>'커버 곡']];}")
 with sqlite3.connect(root/'fixture.sqlite') as db:
  db.executescript('CREATE TABLE IF NOT EXISTS noa_documents(doc_key TEXT PRIMARY KEY,kind TEXT,payload TEXT,revision INTEGER,updated_by TEXT);CREATE TABLE IF NOT EXISTS noa_document_history(doc_key TEXT,revision INTEGER,payload TEXT,changed_by TEXT,PRIMARY KEY(doc_key,revision));CREATE TABLE IF NOT EXISTS noa_catalog_batches(batch_id TEXT,status TEXT,applied_at TEXT);CREATE TABLE IF NOT EXISTS noa_catalog_aliases(batch_id TEXT,alias_key TEXT,entity_id TEXT);')
