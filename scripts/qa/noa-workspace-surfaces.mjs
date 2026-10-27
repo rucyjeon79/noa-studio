@@ -44,5 +44,5 @@ try{
   }
   assert.deepEqual(errors,[]);await c.close();
  }
-}finally{await browser.close();server.kill();writeFileSync(out+'/surfaces-report.json',JSON.stringify(report,null,2));}
+}finally{await browser.close();server.kill();writeFileSync('/tmp/noa-pwa-fixture/router.php',readFileSync('/tmp/noa-pwa-fixture/surfaces-router-before.php'));writeFileSync(out+'/surfaces-report.json',JSON.stringify(report,null,2));}
 console.log('ACTUAL_THREE_SURFACE_DUPLICATES_AND_NATIVE_BOARD_STYLE_OK');
