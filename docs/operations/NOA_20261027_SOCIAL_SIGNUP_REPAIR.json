@@ -1,0 +1,90 @@
+{
+  "request": "구글, 카카오 회원가입 정상화",
+  "date": "2026-10-27",
+  "pullRequest": "https://github.com/rucyjeon79/noa-studio/pull/235",
+  "sourceCommit": "3a6effde81ecba449273bc5f241ec4858dee0488",
+  "candidateAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40488455427",
+  "status": "presentation_deployed_google_console_configuration_pending",
+  "changedTargets": [
+    "noa-social-signup.css",
+    "extend/zz.noa-social-signup.php"
+  ],
+  "fixes": [
+    "Apply the existing NOA dark/ivory palette to the native /plugin/social/register_member.php route.",
+    "Readable terms/privacy table/input fields, one consent control per choice, visible agreement labels, responsive submit controls.",
+    "Load the real native nickname/email validation script; remove the installed mobile skin unexpanded PHP script URL."
+  ],
+  "validation": {
+    "nativeSkinsDownloadedReadOnly": true,
+    "renderedNativeFixtureCases": 6,
+    "widths": [
+      320,
+      390,
+      1280
+    ],
+    "themes": [
+      "noa-studio",
+      "noa-ivory"
+    ],
+    "visuallyInspected": true,
+    "nativeFormPreserved": true,
+    "consentToggleWorks": true,
+    "nativeValidatorsAvailable": true,
+    "minimumContrast": 5.45,
+    "minimumTouchHeight": 48,
+    "externalAccountSignupTested": false,
+    "existingFeatureGates": "https://github.com/rucyjeon79/noa-studio/actions/runs/40488454486 (success)"
+  },
+  "google": {
+    "status": "redirect_uri_mismatch_reproduced",
+    "requiredAuthorizedRedirectUri": "https://noastudio.ai.kr/plugin/social/?hauth.done=google",
+    "clientId": "450107543730-qpl95id25vkj5nhg5ruaiu3ie2vgdqnf.apps.googleusercontent.com",
+    "consoleUrl": "https://console.cloud.google.com/apis/credentials",
+    "consoleAccess": "Site Unavailable in current cloud browser",
+    "configurationChanged": false
+  },
+  "kakao": {
+    "authorizationEntry": "provider_login_form_reached",
+    "requiredRedirectUri": "https://noastudio.ai.kr/plugin/social/?hauth.done=kakao",
+    "authenticatedRegistrationEndToEndVerified": false
+  },
+  "contentRemaining": {
+    "terms": "Published provision content and signup stipulation retain installation placeholders.",
+    "privacy": "Published privacy content retains an installation placeholder.",
+    "legalTextChanged": false
+  },
+  "databaseWrites": 0,
+  "memberRowsChanged": 0,
+  "runtimeCommit": "24fc8f9d9e31865277be79030fe450438c85c725",
+  "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40489092123",
+  "deployment": {
+    "commit": "24fc8f9d9e31865277be79030fe450438c85c725",
+    "changed": [
+      "noa-social-signup.css",
+      "extend/zz.noa-social-signup.php"
+    ],
+    "sha256": {
+      "noa-social-signup.css": "64299693c57327c764751899354103d3c16a75f5806d253bd54ec20225402d6f",
+      "extend/zz.noa-social-signup.php": "6f5bd218c8912676ddd44681228b9afc5623736ddf53bea9bb3954f706b5f2c0"
+    },
+    "protectedUnchanged": 15,
+    "databaseWrites": 0,
+    "memberRowsChanged": 0,
+    "pointDebits": 0,
+    "pricesSeeded": false
+  },
+  "postflight": {
+    "cssExactHashVerified": true,
+    "loginPageStatus": 200,
+    "unauthenticatedSocialRegistrationStatus": 403,
+    "loginUrl": "https://noastudio.ai.kr/noa-login.php"
+  },
+  "separateCheckLimitation": {
+    "action": "https://github.com/rucyjeon79/noa-studio/actions/runs/40488454540",
+    "stage": "WebKit dependency installation",
+    "result": "exit 124 after 300 seconds while downloading Ubuntu HTTP mirror packages",
+    "workspaceFormsAndSurfacesChecks": "success",
+    "signupReleaseWorkflow": "success",
+    "unrelatedProductionDeployment": "skipped"
+  }
+}

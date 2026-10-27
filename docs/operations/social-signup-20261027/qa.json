@@ -1,0 +1,709 @@
+{
+  "ok": true,
+  "cases": [
+    {
+      "width": 320,
+      "theme": "noa-studio",
+      "overflow": false,
+      "colors": [
+        {
+          "selector": "container_title",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "P",
+          "color": "rgb(187, 192, 199)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "TEXTAREA",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "reg_mb_nick",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "reg_mb_email",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        }
+      ],
+      "targets": [
+        48,
+        48,
+        62,
+        52,
+        52
+      ],
+      "nativeFormPreserved": true,
+      "nativeValidatorsAvailable": true,
+      "consentToggleWorks": true
+    },
+    {
+      "width": 320,
+      "theme": "noa-ivory",
+      "overflow": false,
+      "colors": [
+        {
+          "selector": "container_title",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "P",
+          "color": "rgb(96, 102, 111)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "TEXTAREA",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "reg_mb_nick",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "reg_mb_email",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        }
+      ],
+      "targets": [
+        48,
+        48,
+        62,
+        52,
+        52
+      ],
+      "nativeFormPreserved": true,
+      "nativeValidatorsAvailable": true,
+      "consentToggleWorks": true
+    },
+    {
+      "width": 390,
+      "theme": "noa-studio",
+      "overflow": false,
+      "colors": [
+        {
+          "selector": "container_title",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "P",
+          "color": "rgb(187, 192, 199)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "TEXTAREA",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "reg_mb_nick",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "reg_mb_email",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        }
+      ],
+      "targets": [
+        48,
+        48,
+        48,
+        52,
+        52
+      ],
+      "nativeFormPreserved": true,
+      "nativeValidatorsAvailable": true,
+      "consentToggleWorks": true
+    },
+    {
+      "width": 390,
+      "theme": "noa-ivory",
+      "overflow": false,
+      "colors": [
+        {
+          "selector": "container_title",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "P",
+          "color": "rgb(96, 102, 111)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "TEXTAREA",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "reg_mb_nick",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "reg_mb_email",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        }
+      ],
+      "targets": [
+        48,
+        48,
+        48,
+        52,
+        52
+      ],
+      "nativeFormPreserved": true,
+      "nativeValidatorsAvailable": true,
+      "consentToggleWorks": true
+    },
+    {
+      "width": 1280,
+      "theme": "noa-studio",
+      "overflow": false,
+      "colors": [
+        {
+          "selector": "container_title",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "P",
+          "color": "rgb(187, 192, 199)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "TEXTAREA",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(18, 20, 24)"
+        },
+        {
+          "selector": "reg_mb_nick",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        },
+        {
+          "selector": "reg_mb_email",
+          "color": "rgb(245, 246, 248)",
+          "bg": "rgb(29, 34, 41)"
+        }
+      ],
+      "targets": [
+        48,
+        48,
+        48,
+        52,
+        52
+      ],
+      "nativeFormPreserved": true,
+      "nativeValidatorsAvailable": true,
+      "consentToggleWorks": true
+    },
+    {
+      "width": 1280,
+      "theme": "noa-ivory",
+      "overflow": false,
+      "colors": [
+        {
+          "selector": "container_title",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "P",
+          "color": "rgb(96, 102, 111)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "TEXTAREA",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "TH",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "TD",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "LABEL",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "H2",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(247, 248, 250)"
+        },
+        {
+          "selector": "reg_mb_nick",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "reg_mb_email",
+          "color": "rgb(36, 40, 47)",
+          "bg": "rgb(255, 255, 255)"
+        }
+      ],
+      "targets": [
+        48,
+        48,
+        48,
+        52,
+        52
+      ],
+      "nativeFormPreserved": true,
+      "nativeValidatorsAvailable": true,
+      "consentToggleWorks": true
+    }
+  ],
+  "fixtureOnly": true,
+  "externalAccountSignupTested": false
+}
