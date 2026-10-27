@@ -1,0 +1,106 @@
+{
+  "screens": [
+    {
+      "width": 320,
+      "theme": "noa-studio",
+      "search": true,
+      "inlineEditor": true,
+      "pathLevels": 4,
+      "noOverflow": true,
+      "actualMusicPage": true,
+      "directSongLink": true,
+      "selectionChanged": true,
+      "standaloneEditor": true,
+      "creatorInfo": true
+    },
+    {
+      "width": 320,
+      "theme": "noa-ivory",
+      "search": true,
+      "inlineEditor": true,
+      "pathLevels": 4,
+      "noOverflow": true,
+      "actualMusicPage": true,
+      "directSongLink": true,
+      "selectionChanged": true,
+      "standaloneEditor": true,
+      "creatorInfo": true
+    },
+    {
+      "width": 390,
+      "theme": "noa-studio",
+      "search": true,
+      "inlineEditor": true,
+      "pathLevels": 4,
+      "noOverflow": true,
+      "actualMusicPage": true,
+      "directSongLink": true,
+      "selectionChanged": true,
+      "standaloneEditor": true,
+      "creatorInfo": true
+    },
+    {
+      "width": 390,
+      "theme": "noa-ivory",
+      "search": true,
+      "inlineEditor": true,
+      "pathLevels": 4,
+      "noOverflow": true,
+      "actualMusicPage": true,
+      "directSongLink": true,
+      "selectionChanged": true,
+      "standaloneEditor": true,
+      "creatorInfo": true
+    },
+    {
+      "width": 1280,
+      "theme": "noa-studio",
+      "search": true,
+      "inlineEditor": true,
+      "pathLevels": 4,
+      "noOverflow": true,
+      "actualMusicPage": true,
+      "directSongLink": true,
+      "selectionChanged": true,
+      "standaloneEditor": true,
+      "creatorInfo": true
+    },
+    {
+      "width": 1280,
+      "theme": "noa-ivory",
+      "search": true,
+      "inlineEditor": true,
+      "pathLevels": 4,
+      "noOverflow": true,
+      "actualMusicPage": true,
+      "directSongLink": true,
+      "selectionChanged": true,
+      "standaloneEditor": true,
+      "creatorInfo": true
+    }
+  ],
+  "permissions": [
+    "guest",
+    "member",
+    "vip",
+    "admin"
+  ],
+  "mutations": [
+    "inline-save-visible",
+    "confirmed-trash",
+    "confirmed-restore"
+  ],
+  "productionWrites": 0,
+  "taskPanels": true,
+  "settingsShortcut": true,
+  "collectionDuplicates": {
+    "sourceRows": 6,
+    "visibleSongs": 3,
+    "titles": [
+      "미전송(Unread)",
+      "BLOOM",
+      "NO LIMITS"
+    ],
+    "sourceRecordsPreserved": true
+  }
+}

@@ -634,13 +634,13 @@
     }
   ],
   "latestWorkUnit": {
-    "id": "NOA-20261027-CLASSIFICATION-CLEAR",
-    "status": "deployed_tested_operating_admin_save_pending",
-    "runtimeCommit": "85f6e911b9a2c512c67aed4749a0113338ac533e",
-    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40440535019",
-    "evidence": "docs/operations/workspace-20261027/classification-clear-release.json",
+    "id": "NOA-20261027-COLLECTION-DUPLICATES",
+    "status": "deployed_tested_operating_collection_verification_pending",
+    "runtimeCommit": "4d36f8549859dbd409637b1d5b23796e70b1caad",
+    "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40444707527",
+    "evidence": "docs/operations/workspace-20261027/duplicates-release.json",
     "allOriginalAreasComplete": false,
-    "authenticatedAdminSaveVerified": false
+    "authenticatedProductionCollectionVerified": false
   },
   "relatedCheckFailures": [
     {
@@ -681,7 +681,7 @@
     "allOriginalAreasComplete": false,
     "directive": "곡정보 폼 전체 검수·일원화 및 최고관리자 오류검증의 중복·충돌 조치 연결",
     "completedAt": "2026-10-27T00:48:17.512800+00:00",
-    "currentStage": "Classification clear and exact playlist membership deployed. Authenticated operating-song verification remains pending; retain prior BLOOM collection assignment task.",
+    "currentStage": "Collection duplicate display fix deployed; authenticated operating collection verification pending.",
     "runtimeChanged": true,
     "productionDatabaseWrites": 0,
     "existingTwelveAreasPreserved": true,
@@ -733,7 +733,8 @@
       "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40437186442",
       "evidence": "docs/operations/workspace-20261027/collection-editor-release.json",
       "productionSongEdits": 0,
-      "remaining": "BLOOM actual membership save pending: browser runtime could not safely resume native credential state. Restore authenticated browser, select existing AMT 2026 second-competition playlist, save and verify without overwriting concurrent edits."
+      "remaining": "Verify current operating collection identities and final duplicate-free display after PR230 when authenticated browser is available. Screenshot inclusion is not an agent-authenticated membership save.",
+      "subsequentUserEvidence": "2026-10-27 screenshot shows BLOOM in the six-entry AMT K-POP collection; do not repeat earlier pending add action."
     },
     "classificationClearCorrection": {
       "id": "NOA-20261027-CLASSIFICATION-CLEAR",
@@ -743,6 +744,47 @@
       "evidence": "docs/operations/workspace-20261027/classification-clear-release.json",
       "allOriginalAreasComplete": false,
       "authenticatedAdminSaveVerified": false
+    },
+    "duplicateCorrection": {
+      "id": "NOA-20261027-COLLECTION-DUPLICATES",
+      "status": "deployed_tested_operating_collection_verification_pending",
+      "completedAt": "2026-10-27T03:40:02.759568+00:00",
+      "pullRequest": "https://github.com/rucyjeon79/noa-studio/pull/230",
+      "runtimeCommit": "4d36f8549859dbd409637b1d5b23796e70b1caad",
+      "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40444707527",
+      "candidateAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40444072089",
+      "productionChangedFiles": [
+        "noa-bridge/package-record.php",
+        "noa-bridge/youtube-catalog.php",
+        "noa-browse.js",
+        "noa-browse-order.js"
+      ],
+      "productionVerifiedFileHashes": 43,
+      "protectedUnchanged": 22,
+      "productionDatabaseWrites": 0,
+      "sourceRecordsDeleted": 0,
+      "checks": [
+        "22 local Node checks passed",
+        "PHP/SQLite six-source-row fixture resolves to three canonical browse identities",
+        "mobile fixture renders Unread, BLOOM and NO LIMITS once each",
+        "private-video metadata stays hidden; rejected links and distinct versions are not grouped",
+        "MySQL alias normalization preserves first member metadata, versions once, rejects stale revisions and rolls back atomically",
+        "native category change/clear, collection add/remove, retry and common forms passed",
+        "Chromium and WebKit navigation passed",
+        "production deployment and public guest/asset checks passed"
+      ],
+      "fixtureResult": {
+        "sourceRows": 6,
+        "displayedSongs": 3,
+        "titles": [
+          "미전송(Unread)",
+          "BLOOM",
+          "NO LIMITS"
+        ],
+        "actualProductionCollection": false
+      },
+      "remaining": "Authenticated production collection read/save verification is unavailable: browser observation cannot safely resume native credential state. Do not claim the user collection was live-verified or that operating records were deleted. Do not re-add BLOOM: the user screenshot now shows it in the collection.",
+      "evidence": "docs/operations/workspace-20261027/duplicates-release.json"
     }
   },
   "workUnitHistory": [
