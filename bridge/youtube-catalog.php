@@ -20,8 +20,8 @@ function ny_listener_catalog(PDO $db,bool $admin,array $edits=[]):array{
  * Keep documents, imports, edit keys and distinct versions intact. Titles are not evidence.
  * Collection videos are separate records even when they share a song's video URL.
  */
-function ny_browse_catalog(array $catalog):array{
- $groups=[];foreach($catalog as $id=>$r){if(($r['kind']??'')==='playlist'||empty($r['canonicalVideo']))continue;$scope=json_encode([$r['genre']??'',(int)($r['ep']??0),(int)($r['act']??0),$r['canonicalVideo']]);$groups[$scope][]=$id;}
+function ny_browse_catalog(array $catalog,array $videos=[]):array{
+ $groups=[];foreach($catalog as $id=>$r){if(($r['kind']??'')==='playlist'||empty($r['canonicalVideo'])||in_array($videos[$r['canonicalVideo']]['match']['status']??'',['rejected','conflict'],true))continue;$scope=json_encode([$r['genre']??'',(int)($r['ep']??0),(int)($r['act']??0),$r['canonicalVideo']]);$groups[$scope][]=$id;}
  foreach($groups as $ids){if(count($ids)<2)continue;$identity='record:'.hash('sha256',json_encode($ids));$keys=[];foreach($ids as $id)foreach(['key','orderKey','canonicalRecordKey'] as $field)if(!empty($catalog[$id][$field]))$keys[]=$catalog[$id][$field];foreach($ids as $id){$catalog[$id]['browseIdentity']=$identity;$catalog[$id]['browseKeys']=array_values(array_unique($keys));}}
  return $catalog;
 }
@@ -36,7 +36,7 @@ function ny_coming_art(string $genre):array{
 }
 /** Preserve playable rows; add explicit non-playable previews for private/missing videos. */
 function ny_complete_catalog_rows(array $publicRows,array $videos,array $catalog,bool $playlistScoped=false):array{
- $rows=$publicRows;$byVideo=[];$represented=[];$catalog=ny_browse_catalog($catalog);$videoOwners=[];
+ $rows=$publicRows;$byVideo=[];$represented=[];$catalog=ny_browse_catalog($catalog,$videos);$videoOwners=[];
  foreach($catalog as $identity=>$r)if($r['canonicalVideo'])$videoOwners[$r['canonicalVideo']][]=$identity;
  foreach($videoOwners as $video=>$ids){$groups=[];foreach($ids as $id)$groups[$catalog[$id]['browseIdentity']??$id]=true;if(count($groups)===1)$byVideo[$video]=$ids[0];}
  foreach($rows as &$r){$identity=(string)(isset($catalog[$r['orderKey']??''])?$r['orderKey']:($byVideo[$r['video']??'']??$r['orderKey']??''));if(isset($catalog[$identity])&&!in_array($videos[$r['video']??'']['match']['status']??'',['rejected','conflict'],true)){$represented[$identity]=true;$r['orderKey']=$identity;if(($catalog[$identity]['kind']??'')==='playlist'){foreach(['title','genre','ep','act','kind'] as $field)$r[$field]=$catalog[$identity][$field];$r['musicKey']=$catalog[$identity]['key'];if(isset($catalog[$identity]['customPlaylistId']))$r['customPlaylistId']=$catalog[$identity]['customPlaylistId'];$r['preferredVideo']=$catalog[$identity]['canonicalVideo']===($r['video']??'');}}}unset($r);
