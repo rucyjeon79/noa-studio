@@ -59,5 +59,7 @@ class RecoveryContract(unittest.TestCase):
   # Limit this authorization to the new reaction service and score calculation;
   # native member/board writers and music processing remain protected.
   authorized.update({'bridge/engagement-core.php','bridge/engagement-targets.php','bridge/engagement.php','bridge/popularity-core.php','bridge/popularity-store.php'})
+  # The personal activity notification request authorizes this additive service only.
+  authorized.update({'bridge/notifications-core.php','bridge/notifications-sources.php','bridge/notifications.php','bridge/notification-worker.php'})
   self.assertFalse(any(p not in authorized and p.startswith(('deploy/noa-app/jukebox/','bridge/','scripts/noa_jukebox'))for p in paths))
 if __name__=='__main__':unittest.main()
