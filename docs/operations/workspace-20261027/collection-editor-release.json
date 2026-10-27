@@ -1,0 +1,101 @@
+{
+  "work": "NOA-20261027-SONG-COLLECTION-PICKER",
+  "status": "deployed_and_tested_operating_membership_pending",
+  "runtimeCommit": "ed19493a10300084bc6cd154950f4d83a66051b1",
+  "pullRequest": "https://github.com/rucyjeon79/noa-studio/pull/228",
+  "productionRun": "https://github.com/rucyjeon79/noa-studio/actions/runs/40437186442",
+  "candidateRun": "https://github.com/rucyjeon79/noa-studio/actions/runs/40436793248",
+  "candidateChecks": [
+    "disposable MySQL membership add/remove/multiple and optimistic concurrency",
+    "catalog document and divergent import aliases resolve uniquely; ambiguous aliases rejected",
+    "song body and existing playlist order preserved",
+    "lost-confirmation retry writes once",
+    "library/music membership readback",
+    "mobile dark and ivory at 320/390/1280",
+    "Chromium and WebKit navigation",
+    "duplicate repair/trash/restore regression"
+  ],
+  "productionSongEdits": 0,
+  "operatingMembershipAssignment": {
+    "status": "pending_browser_connection_recovery",
+    "songKey": "catalog:a785dbc3e646c64b54cd1536048100e5ee66f55ec9be69d39e6b5251c91f4bba",
+    "title": "BLOOM",
+    "requestedCollection": "2026 제2회 AMT AI 작곡대회 | K-POP",
+    "lastObservedCollectionMembers": [
+      "미전송(Unread)",
+      "NO LIMITS"
+    ],
+    "blocker": "Browser runtime cannot safely resume native credential state after download timeout; reset and rebinding could not recover it. No operating membership write attempted.",
+    "resume": "Reopen authenticated common song editor, select the existing same-genre collection, save, then verify song path, list order and source-body preservation. Do not assume the current revision or overwrite concurrent edits."
+  },
+  "legacyOverlayCheckFailures": [
+    "Initial Flash obsolete homepage section extraction",
+    "UIUX anonymous World request no longer returns protected chapter content",
+    "Inline Order anonymous music request no longer exposes administrator controls"
+  ],
+  "evidence": [
+    "collection-candidate-report.json",
+    "collection-form-mobile.png"
+  ],
+  "deployment": {
+    "commit": "ed19493a10300084bc6cd154950f4d83a66051b1",
+    "changed": [
+      "noa-bridge/package-record.php",
+      "noa-bridge/inline-edit.php",
+      "noa-record-form.js",
+      "noa-record-form.css",
+      "noa-bridge/library-records.php",
+      "noa-browse.js",
+      "noa-browse-edit.js",
+      "noa-inline-edit.php"
+    ],
+    "sha256": {
+      "noa-bridge/package-record.php": "91a8247ac1781cc2f84d168b4e8a2199f674fe516c4fe2d888b3ce1d522d99e4",
+      "noa-bridge/inline-edit.php": "6e2afaae87d72bde53be019a3bf9a508b59d9118ae730a5d19a978d9c0c70cbb",
+      "noa-bridge/creator-core.php": "a9db85d1e3cd17e1368502d5fe2c7591c9824e748ced2ba819a34cb6379dce94",
+      "noa-bridge/record-quality.php": "8ad2261a5da0cbe2b24eb2136d12ec70d49f0b4ea140246182aab72b46259bf2",
+      "noa-record-form.js": "7c4dd129fe5f63e171878dbdce8d0d915e559eec63f6a7bc34a8e94388f3aa91",
+      "noa-record-form.css": "7d16644ea188d2e990e8f125c61a953ccdba912900260cc1677dc27eda66f207",
+      "noa-quality.php": "b9c4fe8416703c24699b45738c8011af63bd173ad2925caf66e24d236dacf3ed",
+      "noa-quality.js": "bf73b0120c40b11d408b9dfc169b5ae9b917d6445f8ef6b1036a394d81f52a2a",
+      "noa-quality.css": "40c7a9680595269747deed6f7805ac8e58d125cf134e4621827ec236c9407bfd",
+      "noa-catalog-admin.php": "bc2b126963ddf4b745c1d88e6ad3e85923c387b4d1364725f159477e8a7f8fc0",
+      "noa-bridge/sound-core.php": "3dfeaf18d5b7d9eb3769c1385adb34f953622de5e3b32a25f9dd96fad3aaa3a9",
+      "noa-bridge/library-records.php": "8f2de83af924aea052b7d63d8bbc36b75d50c5b06c7dd45e49dff43014b551a1",
+      "noa-bridge/record-trash.php": "c5108929030192083848a424bc312ad4ee5b6be5beb5ba56b6e1c7fe4e52a524",
+      "noa-workspace.php": "9bdcc7a5d9b8fdff095c15562987d54cd0bd022c6234a691b901d6cb0b58d3f0",
+      "noa-category-order-admin.php": "49c3bb4f93f9991ddc50b80a956ecb48c16b371b65d76e93550d942f1afaddf0",
+      "noa-app/jukebox/core.php": "9f3f83edd02dc16953300eb540c8ef00f9a9edd0f42acf40b717e39418d2127b",
+      "noa-bridge/catalog.php": "b557a3717e9962ef44a82e3da716ca1efbac8db9bf42e248b7eaa957afc4319b",
+      "noa-bridge/index.php": "4688bfc9a8270881d7d05d92f77d6928f13d671080c8ef89ce571c32126322bf",
+      "noa-bridge/youtube-store.php": "74f580f86fc483330f61f22b1f6f800b4dfcbe7006241aae0c376b46ab0d04bf",
+      "noa-record-action.php": "dd16b72128f3aff985f78a4f1cce0396f5badacd72ab747a02296644c247286a",
+      "noa-catalog.js": "7e644e990df82b9dd76691a6c5d32cd4f286c9c3226cae89c7832bf92403edef",
+      "noa-workspace.js": "b7c774ba3a0ebad80b26a3314b1808c0c9e220987cbe8e91693cf069abe48ea8",
+      "noa-browse.js": "50c88faaf82d900bdcded8fd038ded3a9297315e01f1eb2760af23709ffcb006",
+      "noa-browse-edit.js": "0c54868f1956523b9cc54246b149adbc528e2605aee8df14ceaebbdcc4f3813a",
+      "noa-ui.css": "02e08c069b20033f1b1ba475e2c0f7d43b93fa2cbfed51b9a237714eee4f7d34",
+      "noa-inline-edit.php": "21160aab960118a5a625f9687e97205b10bc1407402893127252bd3c401c74fe",
+      "noa-catalog.php": "7b0b5bfa3b193fc059f4187b2d31c6e19b237a34fe077adc9ad286c941f653ea",
+      "noa-editor.php": "3ac48f97051f86cd2f5bb172682424a9ec7576cc766936d655a49cc04e3e5758",
+      "noa-creator.php": "d65db9dd6b0a99d079e61e6726f54facfed1c5d3b19cd4341761e6b8e0cba288",
+      "noa-creator.js": "402f7bd31b00b95f30d447db8ade9c06a4c8941e503dcc1699b30d6a8259b2d0",
+      "noa-creator.css": "eb506a52d7be8fcc51c722cf79e87476e4a3d5e551eee9bb240cdcd0afdbb096",
+      "noa-library.php": "25ac168f1ee0e39aa48b555e016cae0aa7981008e2101a7583f062c3dee51012",
+      "noa-ai-lab.php": "44c1d16d2e13e00c09ab84181f1a43cd21e33ffa326c8eb480b2a8968b3629bd",
+      "noa-ai-lab.js": "d66568f6fbc1f050ebea18890704c6118e995fc19f603f47bf60cb98afdcad2b",
+      "noa-my.php": "90da67f123ce5ff1ca91408dd56c26ec6a394462e5d19a8016e8c365fc7711ec",
+      "noa-sitemap.php": "463221828295e9779d4fad0a0fbc4c2281e1cdcffea44a04ced48fbec75286be",
+      "noa-music.php": "9f08ac60f0aeea90ad06b3dc5f0375bedd920c698a4a04e21798882af070f314",
+      "noa-world.php": "c463c291d9a26f05767b034bfdabb6ceee42d783aa6c42a76ad00ca0f35b6ef2",
+      "noa-youtube.php": "a600f9055f1edce3bae77a3a79c11a03fe3d292782a2074edc2891a958661559",
+      "extend/noa.design.php": "a2c9cc14c136cabc2209242eba58473545fb54a4073b2b81c22a1e2c19bfc453"
+    },
+    "protectedUnchanged": 23,
+    "databaseWrites": 0,
+    "memberRowsChanged": 0,
+    "pointDebits": 0,
+    "pricesSeeded": false
+  },
+  "productionChecks": "candidate and scoped production jobs succeeded; deployed asset hashes and public routes verified"
+}

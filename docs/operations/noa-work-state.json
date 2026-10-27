@@ -716,6 +716,14 @@
       "evidence": "docs/operations/workspace-20261027/category-correction.json",
       "bloomRevision": 4,
       "bodyUnchanged": true
+    },
+    "collectionCorrection": {
+      "status": "deployed_and_tested_operating_membership_pending",
+      "runtimeCommit": "ed19493a10300084bc6cd154950f4d83a66051b1",
+      "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40437186442",
+      "evidence": "docs/operations/workspace-20261027/collection-editor-release.json",
+      "productionSongEdits": 0,
+      "remaining": "BLOOM actual membership save pending: browser runtime could not safely resume native credential state. Restore authenticated browser, select existing AMT 2026 second-competition playlist, save and verify without overwriting concurrent edits."
     }
   },
   "workUnitHistory": [
