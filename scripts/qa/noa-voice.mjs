@@ -20,6 +20,7 @@ try{for(const engine of ['chromium','webkit']){
  // Notices emitted from a modal must be readable above that modal and survive closing it.
  await p.evaluate(()=>{const d=document.createElement('dialog');d.id='voice-modal';d.innerHTML='<p>댓글</p>';document.body.append(d);d.showModal();window.NoaVoice.say('댓글 저장에 실패했어요.',{priority:true,sticky:true,force:true});});
  assert(await p.locator('#voice-modal .ainoa-message').isVisible());await p.locator('#voice-modal .ainoa-message button').click();await p.evaluate(()=>{document.getElementById('voice-modal').close();});await p.waitForFunction(()=>document.getElementById('noa-ainoa').parentElement===document.body);
+ await p.evaluate(()=>alert('이동 전 안내를 보관해요.'));await p.goto(base+'/');await p.waitForFunction(()=>document.querySelector('.ainoa-message p')?.textContent.includes('이동 전 안내'));
  assert.deepEqual(errors,[]);report.push({engine,width,theme,role,fiveMenus:true,conditions:true,welcomeFacts:true,escape:true});await c.close();
  }
  await browser.close();browser=null;
