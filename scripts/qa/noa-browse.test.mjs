@@ -14,3 +14,7 @@ test('verified duplicate video copies use complete native metadata and retain ev
  const rows=[{key:'imported',orderKey:'source',browseIdentity:'verified-video',browseKeys:['native','source'],title:'미전송 | 긴 업로드 제목',preferredVideo:true,comingSoon:true},{key:'native-row',orderKey:'native',browseIdentity:'verified-video',browseKeys:['native','source'],title:'미전송',preferredVideo:true,comingSoon:true,browsePriority:3}];
  assert.equal(m.collectionRows(rows,['source'])[0].key,'native-row');assert.equal(m.collectionRows(rows,['source','native']).length,1);assert.equal(rows.length,2);
 });
+test('MUSIC keeps the playable file when an imported duplicate has the audio',()=>{
+ const rows=[{key:'native',browseIdentity:'same',browsePriority:3},{key:'import',browseIdentity:'same',audio:'/verified/audio'}];
+ assert.equal(m.canonicalBrowseRows(rows)[0].key,'import');assert.equal(rows.length,2);
+});

@@ -3,7 +3,7 @@
 /* Playlist links remain recognizable without permanent underlines. */
 #youtube-playlists a,.yt-toolbar a{text-decoration:none;overflow-wrap:anywhere;line-height:1.5}
 #youtube-playlists a{display:inline-flex;align-items:center;min-height:44px;padding:6px 0;color:var(--noa-text)}
-#youtube-playlists a:hover,.yt-toolbar a:hover{color:var(--noa-accent);text-decoration:underline;text-underline-offset:4px}
+#youtube-playlists a:hover,.yt-toolbar a:hover{color:var(--noa-accent);text-decoration:none}
 #youtube-playlists a:focus-visible,.yt-toolbar a:focus-visible{outline:2px solid var(--noa-accent);outline-offset:3px}
 #youtube-playlists p{margin:4px 0}.yt-grid{gap:16px;margin:20px 0}.yt-card h2{margin:10px 0 4px}.yt-toolbar{gap:8px;margin:16px 0}
 @media(max-width:600px){.yt-grid{grid-template-columns:minmax(0,1fr)}.yt-toolbar{align-items:stretch}}

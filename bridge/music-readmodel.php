@@ -27,3 +27,24 @@ function noa_music_detail_fields(array $document):array{
  $b=$document['body']??[];if(!is_array($b))$b=[];
  return ['rawLyrics'=>(string)($b['lyricsBlock']??''),'description'=>(string)($b['songDescription']??$b['descriptionBlock']??((($b['source']['platform']??'')==='youtube')?'':($b['description']??'')))];
 }
+/** Shared browse identity is presentation metadata, never permission to merge stored records. */
+function noa_music_video_id(string $url):?string{
+ $p=parse_url(trim($url));if(!$p||strtolower($p['scheme']??'')!=='https')return null;$host=strtolower($p['host']??'');$id=null;
+ if(in_array($host,['youtu.be','www.youtu.be'],true))$id=trim($p['path']??'','/');
+ elseif(in_array($host,['youtube.com','www.youtube.com','m.youtube.com','music.youtube.com'],true)){parse_str($p['query']??'',$q);$id=$q['v']??null;if(!$id&&preg_match('~^/(?:shorts|embed|live)/([A-Za-z0-9_-]{11})(?:/|$)~',$p['path']??'',$m))$id=$m[1];}
+ return is_string($id)&&preg_match('/^[A-Za-z0-9_-]{11}$/D',$id)?$id:null;
+}
+function noa_music_browse_catalog(array $catalog,array $videos=[]):array{
+ $groups=[];foreach($catalog as $id=>$r){if(($r['kind']??'')==='playlist'||empty($r['canonicalVideo'])||in_array($videos[$r['canonicalVideo']]['match']['status']??'',['rejected','conflict'],true))continue;$scope=json_encode([$r['genre']??'',(int)($r['ep']??0),(int)($r['act']??0),$r['canonicalVideo']]);$groups[$scope][]=$id;}
+ foreach($groups as $ids){if(count($ids)<2)continue;
+  // Different verified recordings remain separate even if an editor reused a video URL.
+  $audio=[];$suno=[];foreach($ids as $id){$r=$catalog[$id];if(!empty($r['audioSha']))$audio[$r['audioSha']]=true;$source=$r['_browseSuno']??$r['suno']??'';if($source!=='')$suno[rtrim($source,'/')]=true;}if(count($audio)>1||count($suno)>1)continue;
+  $keys=[];foreach($ids as $id)foreach(['key','musicKey','orderKey','canonicalRecordKey'] as $field)if(!empty($catalog[$id][$field]))$keys[]=$catalog[$id][$field];$keys=array_values(array_unique($keys));$stable=$keys;sort($stable);$identity='record:'.hash('sha256',json_encode($stable));foreach($ids as $id){$catalog[$id]['browseIdentity']=$identity;$catalog[$id]['browseKeys']=$keys;}
+ }
+ return $catalog;
+}
+/** MUSIC and library use the same explicit-link evidence as YouTube, after current edits. */
+function noa_music_browse_project(array $rows,array $sources=[],array $edits=[]):array{
+ foreach($rows as &$row){$key=(string)($row['musicKey']??$row['key']??'');$d=$sources[$key]??[];$b=$d['body']??$row['fields']??[];$f=function_exists('nie_fields')?nie_fields($edits,$row):[];$row['canonicalVideo']=noa_music_video_id((string)($f['youtubeUrl']??$b['youtubeUrl']??''));$row['_browseSuno']=(string)($f['sunoUrl']??($row['suno']??(($b['sunoUrl']??'')?:($b['sunoShareUrl']??''))));$row['browsePriority']??=(str_starts_with($key,'catalog:')?0:2)+(!empty($d['packageSchema'])?1:0);}unset($row);
+ $rows=noa_music_browse_catalog($rows);foreach($rows as &$row)unset($row['canonicalVideo'],$row['_browseSuno']);unset($row);return $rows;
+}
