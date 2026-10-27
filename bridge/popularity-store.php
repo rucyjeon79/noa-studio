@@ -45,7 +45,7 @@ function np_public(PDO $db,string $type='featured',int $limit=10,?string $hour=n
 function np_home(PDO $db,array $legacy):array{
  if(!np_ready($db))return $legacy;$first=np_public($db);if(!$first['available'])return $legacy;
  foreach(['featured','ep','stories','covers','playlists']as $type){$rows=$type==='featured'?$first['items']:np_public($db,$type,10,str_replace(['T','+00:00'],[' ',''],$first['aggregatedAt']))['items'];$legacy[$type]=array_map(fn($r)=>np_home_row($r,$type),$rows);}
- $legacy['popularity']=array_intersect_key($first,array_flip(['aggregatedAt','computedAt','youtubeSyncedAt','youtubeStale','rankingStale','rulesVersion','jukeboxCollectionStatus','totals']));$legacy['basis']='youtube_public_views_plus_verified_jukebox_plays_plus_site_likes_comments';$legacy['playlistBasis']='공식 목록은 중복 없는 공개 수록 영상 조회수와 중복 없는 곡별 유효 재생수 합계, 연속듣기 영상은 해당 영상과 연결된 곡의 점수입니다. 목록 자체 조회수를 더하지 않습니다.';return $legacy;
+ $legacy['popularity']=array_intersect_key($first,array_flip(['aggregatedAt','computedAt','youtubeSyncedAt','youtubeStale','rankingStale','rulesVersion','jukeboxCollectionStatus','totals']));$legacy['basis']='youtube_public_views_plus_verified_jukebox_plays_plus_site_likes_comments';$legacy['playlistBasis']='공식 목록은 중복 없는 공개 수록 영상 조회수와 곡별 유효 재생수에 사이트 좋아요·댓글을 각 1점씩 합산합니다. 연속듣기 영상은 해당 영상과 연결된 곡의 점수입니다. 같은 대상의 반응은 한 번만 집계하고 목록 자체 조회수를 더하지 않습니다.';return $legacy;
 }
 
 /** Hide newly private/deleted source rows immediately, retaining immutable ranks. */
