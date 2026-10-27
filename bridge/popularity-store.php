@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
-require_once __DIR__.'/taxonomy-store.php';require_once __DIR__.'/popularity-core.php';require_once __DIR__.'/home-core.php';
+require_once __DIR__.'/taxonomy-store.php';require_once __DIR__.'/popularity-core.php';require_once __DIR__.'/home-core.php';require_once __DIR__.'/engagement-core.php';
 function np_json(mixed $v):string{return json_encode($v,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);}
 function np_ready(PDO $db):bool{return nc_exists($db,'noa_ranking_runs')&&nc_exists($db,'noa_valid_plays');}
 function np_defaults():array{return ['minimumSeconds'=>30,'heartbeatMaxGap'=>20,'sessionMaxSeconds'=>1800,'songCooldownSeconds'=>1800,'actorHourlyLimit'=>20,'actorStartHourlyLimit'=>60,'youtubeStaleSeconds'=>172800,'playbackIntegrationEnabled'=>false];}
@@ -26,7 +26,7 @@ function np_calculate(PDO $db,?int $now=null):array{
  if(!(int)$db->query("SELECT GET_LOCK('noa_popularity_writer',0)")->fetchColumn())throw new DomainException('ranking_busy');
  try{
   $q=$db->prepare("SELECT summary FROM noa_ranking_runs WHERE hour_utc=? AND status='published'");$q->execute([$hour]);if($old=$q->fetchColumn())return json_decode($old,true,512,JSON_THROW_ON_ERROR)+['replayed'=>true];
-  $db->exec('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');$db->beginTransaction();$policy=np_policy($db);$in=np_inputs($db,$cutoff);$built=np_build($in['raw'],$in['songs'],$in['lists'],$in['membership'],$in['plays'],$in['categories'],$in['songCats']);
+  $db->exec('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');$db->beginTransaction();$policy=np_policy($db);$in=np_inputs($db,$cutoff);$engagement=ne_metrics($db,$cutoff);foreach($in['songs']as $sid=>$song){$f=$song['fields']??[];if(empty($song['public_verified'])||!noa_sound_visible($f,false)||in_array($f['privacyStatus']??'public',['private','unlisted','hidden','draft'],true))unset($engagement['song:'.$sid]);}$built=np_build($in['raw'],$in['songs'],$in['lists'],$in['membership'],$in['plays'],$in['categories'],$in['songCats'],$engagement);
   if(count($in['songs'])===0||count($built['groups']['songs'])===0||$built['totals']['countedVideos']===0)throw new DomainException('empty_or_invalid_ranking');
   $q=$db->prepare("SELECT rules_version FROM noa_ranking_runs WHERE hour_utc=? AND status='published'");$q->execute([$previous]);$priorVersion=$q->fetchColumn();$hasPrevious=$priorVersion===NP_VERSION;$q=$db->prepare('SELECT rank_type,content_id,current_rank FROM noa_ranking_rows WHERE hour_utc=?');$q->execute([$previous]);$old=[];foreach($q as $r)$old[$r['rank_type']][$r['content_id']]=(int)$r['current_rank'];
   $q=$db->prepare('INSERT INTO noa_ranking_rows(hour_utc,rank_type,group_id,content_id,youtube_views,jukebox_plays,score,current_rank,previous_rank,rank_delta,rank_state,payload) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)');$counts=[];
@@ -45,7 +45,7 @@ function np_public(PDO $db,string $type='featured',int $limit=10,?string $hour=n
 function np_home(PDO $db,array $legacy):array{
  if(!np_ready($db))return $legacy;$first=np_public($db);if(!$first['available'])return $legacy;
  foreach(['featured','ep','stories','covers','playlists']as $type){$rows=$type==='featured'?$first['items']:np_public($db,$type,10,str_replace(['T','+00:00'],[' ',''],$first['aggregatedAt']))['items'];$legacy[$type]=array_map(fn($r)=>np_home_row($r,$type),$rows);}
- $legacy['popularity']=array_intersect_key($first,array_flip(['aggregatedAt','computedAt','youtubeSyncedAt','youtubeStale','rankingStale','rulesVersion','jukeboxCollectionStatus','totals']));$legacy['basis']='youtube_public_views_plus_verified_jukebox_plays';$legacy['playlistBasis']='공식 목록은 중복 없는 공개 수록 영상 조회수와 중복 없는 곡별 유효 재생수 합계, 연속듣기 영상은 해당 영상과 연결된 곡의 점수입니다. 목록 자체 조회수를 더하지 않습니다.';return $legacy;
+ $legacy['popularity']=array_intersect_key($first,array_flip(['aggregatedAt','computedAt','youtubeSyncedAt','youtubeStale','rankingStale','rulesVersion','jukeboxCollectionStatus','totals']));$legacy['basis']='youtube_public_views_plus_verified_jukebox_plays_plus_site_likes_comments';$legacy['playlistBasis']='공식 목록은 중복 없는 공개 수록 영상 조회수와 중복 없는 곡별 유효 재생수 합계, 연속듣기 영상은 해당 영상과 연결된 곡의 점수입니다. 목록 자체 조회수를 더하지 않습니다.';return $legacy;
 }
 
 /** Hide newly private/deleted source rows immediately, retaining immutable ranks. */
