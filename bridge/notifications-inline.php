@@ -33,7 +33,7 @@ function nnt_inline_send(array $job,array $cfg):int{
  try{curl_exec($curl);return (int)curl_getinfo($curl,CURLINFO_RESPONSE_CODE);}finally{curl_close($curl);}
 }
 function nnt_inline_drain(PDO $db,array $cfg,?callable $send=null):array{
- $result=['claimed'=>0,'accepted'=>0,'retry'=>0];if(($cfg['inlineDispatch']??true)!==true)return $result;
+ $result=['claimed'=>0,'accepted'=>0,'retry'=>0];if(($cfg['inlineDispatch']??true)!==true||$db->inTransaction())return $result;
  // Cross-request lock bounds load; SQL leases also exclude the scheduled worker.
  if(!(int)nnt_one($db,"SELECT GET_LOCK('noa_notification_inline',0) acquired")['acquired'])return $result;
  try{
