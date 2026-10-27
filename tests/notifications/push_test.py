@@ -31,12 +31,19 @@ class PushTransport(unittest.TestCase):
   header={k.lower():v for k,v in kw['headers'].items()}['authorization'];jwt=header.split('t=',1)[1].split(',',1)[0];parts=jwt.split('.');claims=json.loads(un64(parts[1]));self.assertEqual(claims['aud'],'https://fcm.googleapis.com');self.assertEqual(claims['sub'],dispatch.ORIGIN)
   sig=un64(parts[2]);der=utils.encode_dss_signature(int.from_bytes(sig[:32],'big'),int.from_bytes(sig[32:],'big'));application.public_key().verify(der,(parts[0]+'.'+parts[1]).encode(),ec.ECDSA(hashes.SHA256()))
  def test_php_inline_crypto_interoperability(self):
-  for _ in range(12):
+  # Deterministically exercise OpenSSL coordinates with a leading zero byte.
+  scalar=1
+  while True:
+   ephemeral=ec.derive_private_key(scalar,ec.SECP256R1());point=ephemeral.public_key().public_bytes(serialization.Encoding.X962,serialization.PublicFormat.UncompressedPoint)
+   if point[1]==0 or point[33]==0:break
+   scalar+=1
+  ephemeral_pem=ephemeral.private_bytes(serialization.Encoding.PEM,serialization.PrivateFormat.PKCS8,serialization.NoEncryption()).decode()
+  for index in range(12):
    application=ec.generate_private_key(ec.SECP256R1());receiver=ec.generate_private_key(ec.SECP256R1());auth=b'a'*16
    public=application.public_key().public_bytes(serialization.Encoding.X962,serialization.PublicFormat.UncompressedPoint)
    cfg={'privateKey':application.private_bytes(serialization.Encoding.PEM,serialization.PrivateFormat.PKCS8,serialization.NoEncryption()).decode(),'publicKey':b64(public)}
    job={'subscription':{'endpoint':'https://fcm.googleapis.com/fcm/send/isolated-test','keys':{'p256dh':b64(receiver.public_key().public_bytes(serialization.Encoding.X962,serialization.PublicFormat.UncompressedPoint)),'auth':b64(auth)}},'payload':{'id':42,'body':'내 활동 소식','receipt':'a'*64}}
-   proc=subprocess.run(['php','tests/notifications/php_crypto.php'],input=json.dumps({'job':job,'config':cfg}),text=True,capture_output=True,check=True)
+   proc=subprocess.run(['php','tests/notifications/php_crypto.php'],input=json.dumps({'job':job,'config':cfg,**({'ephemeralKey':ephemeral_pem} if index==0 else {})}),text=True,capture_output=True,check=True)
    result=json.loads(proc.stdout);body=base64.b64decode(result['body'])
    self.assertEqual(json.loads(http_ece.decrypt(body,private_key=receiver,auth_secret=auth,version='aes128gcm')),job['payload'])
    authorization=next(h for h in result['headers'] if h.startswith('Authorization:'))

@@ -5,10 +5,10 @@ if(!defined('_GNUBOARD_'))exit;
 function nnt_b64(string $s):string{return rtrim(strtr(base64_encode($s),'+/','-_'),'=');}
 function nnt_un64(string $s):string{$v=base64_decode(strtr($s,'-_','+/'),true);if($v===false)throw new RuntimeException('push_encoding');return $v;}
 function nnt_inline_capable():bool{return function_exists('curl_init')&&function_exists('openssl_pkey_derive')&&function_exists('hash_hkdf');}
-function nnt_push_request(array $job,array $cfg,int $now):array{
+function nnt_push_request(array $job,array $cfg,int $now,?OpenSSLAsymmetricKey $ephemeral=null):array{
  $sub=nnt_subscription($job['subscription']);$peer=nnt_un64($sub['p256dh']);$auth=nnt_un64($sub['auth']);
- $key=openssl_pkey_new(['private_key_type'=>OPENSSL_KEYTYPE_EC,'curve_name'=>'prime256v1']);if(!$key)throw new RuntimeException('push_key');
- $details=openssl_pkey_get_details($key);$pub="\x04".$details['ec']['x'].$details['ec']['y'];
+ $key=$ephemeral??openssl_pkey_new(['private_key_type'=>OPENSSL_KEYTYPE_EC,'curve_name'=>'prime256v1']);if(!$key)throw new RuntimeException('push_key');
+ $details=openssl_pkey_get_details($key);$pub="\x04".str_pad($details['ec']['x'],32,"\0",STR_PAD_LEFT).str_pad($details['ec']['y'],32,"\0",STR_PAD_LEFT);
  $pem="-----BEGIN PUBLIC KEY-----\n".chunk_split(base64_encode(hex2bin('3059301306072a8648ce3d020106082a8648ce3d030107034200').$peer),64,"\n")."-----END PUBLIC KEY-----\n";
  $shared=openssl_pkey_derive($pem,$key,32);if($shared===false)throw new RuntimeException('push_peer');
  // RFC 8291 / RFC 8188: one final aes128gcm record, with an ephemeral P-256 key.
