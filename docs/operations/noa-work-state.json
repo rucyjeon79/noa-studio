@@ -708,6 +708,14 @@
         "Actual production apply/trash/restore were not executed on the user's songs; mutation behavior was verified in the disposable MySQL/PHP/browser candidate.",
         "427 review items remain unresolved; they are not 427 proven incorrect songs. An observed image alias differed between a non-empty current path and an empty legacy thumbnail."
       ]
+    },
+    "categoryCorrection": {
+      "status": "deployed_and_authenticated_save_verified",
+      "runtimeCommit": "79a1fee684c8ac9b6645114d809f1b3851e75991",
+      "runtimeAction": "https://github.com/rucyjeon79/noa-studio/actions/runs/40433395563",
+      "evidence": "docs/operations/workspace-20261027/category-correction.json",
+      "bloomRevision": 4,
+      "bodyUnchanged": true
     }
   },
   "workUnitHistory": [
