@@ -37,11 +37,11 @@ try{
   for(const view of ['list','read','write']){
    const response=await p.goto(base+'/bbs/board.php?bo_table=free&view='+view);assert(response.ok());await p.locator('html.noa-g5').waitFor();
    await noUnderlines(p);await fits(p,'board '+view);
-   const before=await forms(p);await p.evaluate(()=>{document.querySelectorAll('link[href*="noa-gnuboard.css"]').forEach(e=>e.disabled=true);});const without=await forms(p);assert.deepEqual(before,without,'skin preserves native fields, tokens and destinations');await p.evaluate(()=>{document.querySelectorAll('link[href*="noa-gnuboard.css"]').forEach(e=>e.disabled=false);});
    if(view==='list')assert.equal(await p.locator('#bo_list .bo_tit a.noa-action').count(),0,'post titles remain text links');
    if(view==='read'){assert.equal(await p.locator('#nested-link').getAttribute('data-noa-icon'),null,'authored links are not decorated as action buttons');assert.equal(await p.locator('#authored-underline').evaluate(e=>getComputedStyle(e).textDecorationLine),'underline');assert.equal(await p.locator('#nested-link u').evaluate(e=>getComputedStyle(e).textDecorationLine),'none');await p.locator('#nested-link').focus();assert.equal(await p.locator('#nested-link').evaluate(e=>getComputedStyle(e).textDecorationLine),'none');}
    if(view==='write'){assert(await p.locator('#wr_content').evaluate(e=>e.getBoundingClientRect().height>=240));assert(await p.locator('#wr_subject').evaluate(e=>e.getBoundingClientRect().height>=48));await p.locator('#wr_subject').focus();assert.notEqual(await p.locator('#wr_subject').evaluate(e=>getComputedStyle(e).outlineStyle),'none','keyboard focus remains visible');}
    if(width===390||width===1280)await p.screenshot({path:out+'/board-'+view+'-'+theme+'-'+width+'.png',fullPage:true});report.nativeMarkupFixtures.push({view,width,theme,linksWithoutUnderline:true,formContractPreserved:true});
+   const before=await forms(p);await p.evaluate(()=>{document.querySelectorAll('link[href*="noa-gnuboard.css"]').forEach(e=>e.disabled=true);});const without=await forms(p);assert.deepEqual(before,without,'skin preserves native fields, tokens and destinations');await p.evaluate(()=>{document.querySelectorAll('link[href*="noa-gnuboard.css"]').forEach(e=>e.disabled=false);});
   }
   assert.deepEqual(errors,[]);await c.close();
  }
