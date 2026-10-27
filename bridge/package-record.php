@@ -81,10 +81,10 @@ function nup_validate_classification(PDO $db,string $key,array $before,array $af
   if(($d['sourceRef']??'')===$key||(($before['genreId']??'')==='kpop-original'&&$previousEp>0&&$r['kind']!=='playlist'&&nup_type($d,$r['kind'])==='ep'&&(int)($d['ep']??0)===$previousEp))throw new DomainException('classification_source_linked');
   if($ep>0&&in_array($r['kind'],['single','story'],true)&&($d['genreId']??'')===$after['genreId']&&(int)($d['ep']??0)===$ep)throw new DomainException('classification_ep_conflict');
   if($r['kind']==='playlist'){
-   foreach($d['body']['members']??[] as $m)if(in_array($m['key']??'',$identities,true))throw new DomainException('classification_playlist_linked');
+   foreach($d['body']['members']??[] as $m)if(in_array($m['key']??'',$identities,true)&&!(str_starts_with($r['doc_key'],'playlist:custom:')&&($d['genreId']??'')===($after['genreId']??'')))throw new DomainException('classification_playlist_linked');
    if($previousEp>0&&($d['genreId']??'')===($before['genreId']??'')&&(int)($d['act']??0)===(int)ceil($previousEp/10))throw new DomainException('classification_playlist_linked');
   }
-  if($r['doc_key']==='meta:category-order')foreach($d['playlists']??[] as $list)if(array_intersect($list['keys']??[],$identities))throw new DomainException('classification_playlist_linked');
+  if($r['doc_key']==='meta:category-order')foreach($d['playlists']??[] as $list)if(array_intersect($list['keys']??[],$identities)){ $exists=$db->prepare("SELECT 1 FROM noa_documents WHERE doc_key=? AND kind='playlist'");$exists->execute(['playlist:custom:'.($list['id']??'')]);if(!$exists->fetchColumn())throw new DomainException('classification_playlist_linked'); }
  }
 }
 function nup_original(PDO $db,array $d):array{
@@ -110,6 +110,11 @@ function nup_complete(PDO $db,array $resolved):array{
  $resolved['context']['act']=(string)($d['act']??'');if($d['packageType']==='act')$resolved['context']['range']='EP.'.$d['epRange']['from'].'–'.$d['epRange']['to'];
  $resolved['context']['ep']=(string)($d['ep']??'');$resolved['context']['genre']=$d['genreId']??'';
  if($d['packageType']==='original')$resolved['fields']=array_replace($resolved['fields'],$d['body']['originalInfo']??[],['ep'=>(string)($d['ep']??'')]);
+ if($kind!=='playlist'){
+  $lists=nup_collections($db);$memberships=nup_collection_memberships(nup_song_pool($db),$lists)[$resolved['documentKey']]??[];
+  $resolved['fields']['collections']=array_keys($memberships);sort($resolved['fields']['collections']);$resolved['context']['collectionIds']=array_values($memberships);$resolved['collections']=[];$resolved['collectionRevisions']=new stdClass();
+  foreach($lists as $list)if($list['available']){$resolved['collections'][]=array_intersect_key($list,array_flip(['key','id','title','genre','revision']));$resolved['collectionRevisions']->{$list['key']}=$list['revision'];}
+ }
  return $resolved;
 }
 /** Shared full-editor write boundary. Canonical and legacy aliases cannot diverge silently. */
@@ -141,10 +146,38 @@ function nup_attach_asset(PDO $db,string $key,array $asset):void{
  $q=$db->prepare('SELECT kind,payload,revision FROM noa_documents WHERE doc_key=? FOR UPDATE');$q->execute([$key]);$r=$q->fetch(PDO::FETCH_ASSOC);if(!$r)return;$d=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);if(empty($d['packageSchema']))return;
  $before=$d;$d['body']['uploadedAsset']=$asset;foreach(['audio'=>'audioFileLocation','cover'=>'cardImageLocation'] as $prefix=>$field)if(!empty($asset[$prefix.'_path']))$d['body'][$field]=$asset[$prefix.'_path'];if($before!==$d)nup_store($db,$key,$r['kind'],$d,(int)$r['revision'],'media-publisher');
 }
-function nup_validate_members(PDO $db,array $d):void{
- $pool=[];$aliases=[];foreach($db->query("SELECT alias_key,entity_id FROM noa_catalog_aliases WHERE batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)") as $a)$aliases[$a['alias_key']]=$a['entity_id'];
- foreach($db->query("SELECT doc_key,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key") as $r){$p=json_decode($r['payload'],true);if(!empty($p['_noaTrash']))continue;$id=$aliases[$r['doc_key']]??preg_replace('/^catalog:/','',$r['doc_key']);$pool[$id][]=$p;if($id!==$r['doc_key'])$pool[$r['doc_key']][]=$p;}
- foreach($d['body']['members']??[] as $m){$candidates=$pool[$m['key']]??[];if(count($candidates)!==1)throw new InvalidArgumentException('member_missing_or_ambiguous');$p=$candidates[0];if(($p['genreId']??'')!==($d['genreId']??'')||(($d['packageType']??'')==='act'&&(int)($p['ep']??0)!==(int)($m['ep']??0)))throw new InvalidArgumentException('member_genre_or_ep_mismatch');}
+/** All unambiguous source identities point to the same canonical document. */
+function nup_song_pool(PDO $db,array $overrides=[]):array{
+ $aliases=[];foreach($db->query("SELECT alias_key,entity_id FROM noa_catalog_aliases WHERE batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)") as $a)$aliases[$a['alias_key']][]=$a['entity_id'];
+ $pool=[];foreach($db->query("SELECT doc_key,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key") as $r){$key=$r['doc_key'];$p=$overrides[$key]??json_decode($r['payload'],true);if(!empty($p['_noaTrash']))continue;foreach(array_unique(array_merge([$key,preg_replace('/^catalog:/','',$key)],$aliases[$key]??[])) as $id)$pool[$id][$key]=$p;}return $pool;
+}
+function nup_member_owner(array $pool,string $id):?string{$matches=$pool[$id]??[];return count($matches)===1?(string)array_key_first($matches):null;}
+function nup_validate_members(PDO $db,array $d,array $overrides=[]):void{
+ $pool=nup_song_pool($db,$overrides);
+ foreach($d['body']['members']??[] as $m){$candidates=$pool[$m['key']]??[];if(count($candidates)!==1)throw new InvalidArgumentException('member_missing_or_ambiguous');$p=reset($candidates);if(($p['genreId']??'')!==($d['genreId']??'')||(($d['packageType']??'')==='act'&&(int)($p['ep']??0)!==(int)($m['ep']??0)))throw new InvalidArgumentException('member_genre_or_ep_mismatch');}
+}
+function nup_collections(PDO $db,bool $lock=false):array{
+ $out=[];foreach($db->query("SELECT doc_key,payload,revision FROM noa_documents WHERE kind='playlist' AND doc_key LIKE 'playlist:custom:%' ORDER BY doc_key".($lock?' FOR UPDATE':'')) as $r){$d=json_decode($r['payload'],true);if(!preg_match('/^playlist:custom:([a-f0-9]{24})$/D',$r['doc_key'],$m)||($d['customPlaylistId']??'')!==$m[1])continue;$out[$r['doc_key']]=['key'=>$r['doc_key'],'id'=>$m[1],'title'=>nup_fields($d)['title'],'genre'=>$d['genreId']??'','revision'=>(int)$r['revision'],'available'=>empty($d['_noaTrash'])&&in_array($d['genreId']??'',['your-story','cover-reborn'],true)&&!in_array($d['visibility']??'public',['private','draft','hidden','unlisted'],true),'payload'=>$d];}return $out;
+}
+function nup_collection_memberships(array $pool,array $lists):array{
+ $out=[];foreach($lists as $list){if(!$list['available'])continue;foreach($list['payload']['body']['members']??[] as $m){$owner=nup_member_owner($pool,(string)($m['key']??''));if($owner!==null)$out[$owner][$list['key']]=$list['id'];}}return $out;
+}
+/** Change only this song's membership, within the song writer's transaction. */
+function nup_apply_collections(PDO $db,string $key,array $song,$wanted,$expected,string $actor):array{
+ if(!is_array($wanted)||!array_is_list($wanted)||count($wanted)>200||!is_array($expected))throw new InvalidArgumentException('invalid_collections');
+ $seen=[];foreach($wanted as $id){if(!is_string($id)||!preg_match('/^playlist:custom:[a-f0-9]{24}$/D',$id)||isset($seen[$id]))throw new InvalidArgumentException('invalid_collections');$seen[$id]=true;}
+ $lists=nup_collections($db,true);$pool=nup_song_pool($db,[$key=>$song]);$changed=[];
+ foreach($wanted as $id)if(!isset($lists[$id])||!$lists[$id]['available']||$lists[$id]['genre']!==($song['genreId']??''))throw new InvalidArgumentException('collection_unavailable');
+ foreach($lists as $id=>$list){$members=$list['payload']['body']['members']??[];$contains=false;foreach($members as $m)if(nup_member_owner($pool,(string)($m['key']??''))===$key)$contains=true;$selected=isset($seen[$id]);
+  // Unavailable collections are not editable from the song picker.
+  if(!$list['available']||(!$contains&&!$selected))continue;
+  if(($expected[$id]??null)!==$list['revision'])throw new DomainException('collection_revision_conflict');
+  if($contains===$selected)continue;
+  if($selected)$members[]=['key'=>preg_replace('/^catalog:/','',$key)];
+  else $members=array_values(array_filter($members,fn($m)=>nup_member_owner($pool,(string)($m['key']??''))!==$key));
+  $d=nup_patch($list['payload'],'playlist',['members'=>$members]);nup_validate_members($db,$d,[$key=>$song]);nup_store($db,$id,'playlist',$d,$list['revision'],$actor);$changed[]=$id;
+ }
+ return $changed;
 }
 /** Publication may add new songs; never replace an existing edited record. */
 function nup_register_catalog(PDO $db,string $batch):int{

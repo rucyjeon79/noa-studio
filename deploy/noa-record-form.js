@@ -10,10 +10,10 @@ function createField(key,{type='song',value='',prefix='noa-edit-',readOnly=false
  if(key==='vocal'){const values=[['','미지정'],['여자솔로','여자솔로'],['남자솔로','남자솔로'],['남녀듀엣','남녀듀엣']];if(value&&!values.some(v=>v[0]===value))values.push([value,value]);for(const [v,label]of values){const o=document.createElement('option');o.value=v;o.textContent=label;input.append(o);}}
  if(d.tag==='checkbox'){input.type='checkbox';input.checked=value===true;caption.prepend(input);wrap.append(heading);}else{input.value=key==='creativeFields'?JSON.stringify(value||{},null,2):String(value??'');if(d.tag==='input')input.type='text';input.maxLength=key==='title'?500:key==='originalArtist'?200:200000;input.required=key==='title';wrap.append(heading,input);}
  return {wrap,heading,caption,input};}
-function value(input){if(input.type==='checkbox')return input.checked;if(['creativeFields','members'].includes(input.name))return JSON.parse(input.value||'{}');return input.value;}
-function set(input,v){if(input.type==='checkbox')input.checked=v===true;else input.value=['creativeFields','members'].includes(input.name)?JSON.stringify(v||{},null,2):String(v??'');}
+function value(input){if(input.type==='checkbox')return input.checked;if(['creativeFields','members','collections'].includes(input.name))return JSON.parse(input.value||'{}');return input.value;}
+function set(input,v){if(input.type==='checkbox')input.checked=v===true;else input.value=['creativeFields','members','collections'].includes(input.name)?JSON.stringify(v||{},null,2):String(v??'');}
 function render(form,{type='song',fields={},keys:chosen=keys(type),prefix}={}){const sectionsView=sections(form),inputs={};for(const key of chosen){const f=createField(key,{type,value:fields[key],prefix});sectionsView.add(key,f.wrap);inputs[key]=f.input;}return {inputs,sections:sectionsView};}
-function classificationEditor(form,{genre='unclassified',ep='',inputs}){
+function classificationEditor(form,{genre='unclassified',ep='',inputs,collections,selected=[]}){
  const browse=window.NoaBrowse,section=document.createElement('fieldset'),legend=document.createElement('legend');legend.textContent='분류 변경';section.className='noa-record-classification';section.append(legend);
  function select(name,label){const wrap=document.createElement('label'),control=document.createElement('select');control.name=name;control.id='noa-edit-'+name;wrap.htmlFor=control.id;wrap.append(document.createTextNode(label),control);section.append(wrap);return control;}
  const category=select('category','카테고리'),detail=select('genre','세부 장르');category.add(new Option('분류를 선택해 주세요',''));for(const[id,label]of browse.groups)category.add(new Option(label,id));category.value=browse.groupFor(genre)||'';
@@ -21,8 +21,16 @@ function classificationEditor(form,{genre='unclassified',ep='',inputs}){
  options(genre);inputs.genre=detail;
  const number=document.createElement('label'),numberInput=document.createElement('input');number.textContent='EP 번호';numberInput.id='noa-edit-classification-ep';numberInput.name='ep';numberInput.type='text';numberInput.inputMode='numeric';numberInput.pattern='0*[1-9][0-9]{0,3}';number.append(numberInput);section.append(number);
  function numberState(){const needed=!Number(ep)&&detail.value==='kpop-original';number.hidden=!needed;numberInput.required=needed;if(needed)inputs.ep=numberInput;else if(inputs.ep===numberInput)delete inputs.ep;}
- category.onchange=()=>{options('');numberState();};detail.onchange=numberState;numberState();
- const note=document.createElement('p');note.className='noa-edit-readonly';note.textContent='저장하면 음원·YouTube·라이브러리의 분류가 함께 바뀝니다. 수록곡이나 원곡 연결이 있는 곡은 연결을 먼저 확인해 주세요.';section.append(note);form.append(section);return {category,detail};
+ const choices=document.createElement('div'),hidden=document.createElement('input');let chosen=new Set(selected);
+ if(Array.isArray(collections)){
+  choices.className='noa-collection-picker';choices.setAttribute('role','group');choices.setAttribute('aria-label','곡 묶음');hidden.type='hidden';hidden.name='collections';inputs.collections=hidden;section.append(choices,hidden);
+ }
+ function drawCollections(){if(!Array.isArray(collections))return;const available=collections.filter(c=>c.genre===detail.value);chosen=new Set([...chosen].filter(key=>available.some(c=>c.key===key)));hidden.value=JSON.stringify([...chosen].sort());choices.replaceChildren();const title=document.createElement('p');title.className='noa-collection-heading';title.textContent='곡 묶음 · '+chosen.size+'개 선택';choices.append(title);
+  for(const c of available){const label=document.createElement('label'),input=document.createElement('input'),text=document.createElement('span');input.type='checkbox';input.value=c.key;input.checked=chosen.has(c.key);text.textContent=c.title;label.className='noa-collection-option';label.append(input,text);input.onchange=()=>{if(input.checked)chosen.add(c.key);else chosen.delete(c.key);drawCollections();hidden.dispatchEvent(new Event('input',{bubbles:true}));};choices.append(label);}
+  const help=document.createElement('p');help.className='noa-edit-readonly';help.textContent=available.length?'넣을 묶음을 선택한 뒤 저장해 주세요. 여러 묶음에 넣을 수 있고, 체크를 해제하면 해당 묶음에서 빠집니다.':['your-story','cover-reborn'].includes(detail.value)?'이 장르에 만든 묶음이 없습니다. 음원의 곡 묶음에서 목록을 먼저 만들어 주세요.':'이 장르는 EP 번호에 따라 ACT 묶음이 정해집니다.';choices.append(help);
+ }
+ category.onchange=()=>{options('');numberState();drawCollections();};detail.onchange=()=>{numberState();drawCollections();};numberState();drawCollections();
+ const note=document.createElement('p');note.className='noa-edit-readonly';note.textContent='저장하면 음원·YouTube·라이브러리의 분류가 함께 바뀝니다. 장르를 바꾸면 이전 장르의 묶음 선택이 해제됩니다.';section.append(note);form.append(section);return {category,detail,setBusy(busy){for(const control of section.querySelectorAll('input,select'))control.disabled=busy;}};
 }
-const link=document.createElement('link');link.rel='stylesheet';link.href='/noa-record-form.css?v=20261027-category2';document.head.append(link);
+const link=document.createElement('link');link.rel='stylesheet';link.href='/noa-record-form.css?v=20261027-collections1';document.head.append(link);
 window.NoaRecordForm={schema,groups,ownerKeys,describe,keys,sections,createField,value,set,render,classificationEditor};})();
