@@ -33,7 +33,7 @@ html body .noa-inline-video-row>.noa-edit-edit{display:none!important}
 html body .noa-inline-song-row>.noa-song-actions>.noa-song-action{display:none!important}
 html body .noa-inline-song-row>.noa-song-actions>.noa-song-action[aria-label$=" 재생"]{display:inline-flex!important;min-width:44px;min-height:44px;width:44px;height:44px;padding:0;border:0;background:transparent;color:var(--noa-text)}
 html body .noa-inline-song-row>.noa-song-actions>.noa-song-action[aria-label$=" 재생"]>span{display:none}
-html body .noa-page .noa-song-more{grid-column:3;grid-row:1;min-width:44px;min-height:44px;width:44px;height:44px;padding:0;border:0;background:transparent;color:var(--noa-muted);font-size:24px;line-height:1}
+html body .noa-song-more{grid-column:3;grid-row:1;min-width:44px;min-height:44px;width:44px;height:44px;padding:0;border:0;background:transparent;color:var(--noa-muted);font-size:24px;line-height:1}
 html body :is(.noa-inline-song-row,.noa-inline-video-row)>.noa-engagement{grid-column:1/-1;grid-row:2;padding-left:46px}
 html body :is(.noa-inline-song-row,.noa-inline-video-row)>:is(.noa-edit-form,.noa-inline-playback){grid-column:1/-1}
 html body .noa-song-menu>button{display:flex;width:100%;justify-content:flex-start;background:transparent;border:0;border-top:1px solid var(--noa-line);border-radius:0;padding:14px 8px;min-height:48px}

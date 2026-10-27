@@ -33,6 +33,7 @@ function notice(message){if(lastNotice===message)return;lastNotice=message;
 }
 function compactRows(){for(const row of document.querySelectorAll('.noa-inline-song-row,.noa-inline-video-row')){
  if(row.querySelector(':scope>.noa-song-more'))continue;
+ if(!row.querySelector(':scope>.noa-edit-edit,.noa-song-actions>.noa-song-action:not([aria-label$=" 재생"])'))continue;
  const more=button('⋯',()=>{
   const sources=[...row.querySelectorAll(':scope>.noa-edit-edit,.noa-song-actions>.noa-song-action')].filter(b=>!b.getAttribute('aria-label')?.endsWith(' 재생'));
   const dialog=el('dialog');dialog.className='noa-comments noa-song-menu';
