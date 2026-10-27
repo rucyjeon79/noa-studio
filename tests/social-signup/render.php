@@ -3,6 +3,8 @@
 define('_GNUBOARD_', true);
 define('G5_URL', '');
 define('G5_JS_URL', '/js');
+define('G5_CSS_VER', 'fixture');
+define('G5_JS_VER', 'fixture');
 function get_text($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 function get_social_skin_url() { global $device; return $device === 'mobile' ? '/mobile/skin/social' : '/skin/social'; }
 function add_stylesheet($s, $order) { global $styles; $styles[$order][] = $s; }

@@ -54,4 +54,6 @@ jobs:
             social-signup-proof/native-hashes.json
             social-signup-proof/deployment.json
             social-signup-proof/screenshots/
+            social-signup-proof/native/skin/social/
+            social-signup-proof/native/mobile/skin/social/
           retention-days: 7
