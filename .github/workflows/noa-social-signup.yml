@@ -1,5 +1,7 @@
 name: NOA social signup presentation repair
 on:
+  pull_request:
+    paths: ['deploy/noa-social-signup.*','scripts/noa_social_signup_release.py','scripts/qa/noa-social-signup.mjs','tests/social-signup/**','.github/workflows/noa-social-signup.yml']
   push:
     branches: [main]
     paths: ['deploy/noa-social-signup.*','scripts/noa_social_signup_release.py','scripts/qa/noa-social-signup.mjs','tests/social-signup/**','.github/workflows/noa-social-signup.yml']
@@ -36,6 +38,7 @@ jobs:
           php tests/social-signup/render.php
           node "$RUNNER_TEMP/noa-social/check.mjs"
       - name: Activate only reviewed presentation files
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         id: activate
         run: python scripts/noa_social_signup_release.py
       - name: Restore owned source on activation failure
