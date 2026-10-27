@@ -44,3 +44,5 @@ $moved=nup_patch($unknown,'story',['genre'=>'your-story']);check(nup_fields($mov
 denied(fn()=>nup_patch($unknown,'story',['genre'=>'made-up']),'invalid genre rejected');denied(fn()=>nup_patch($unknown,'story',['genre'=>'kpop-original']),'original requires number');
 $numbered=nup_patch($unknown,'story',['genre'=>'kpop-original','ep'=>'08']);check($numbered['ep']==='08'&&$numbered['packageType']==='original','unclassified can become numbered original');
 echo "CLASSIFICATION_PATCH_AND_SOURCE_PRESERVATION_OK\n";
+
+$roundtrip=nup_patch($original,'single',['genre'=>'cover-reborn']);$roundtrip=nup_patch($roundtrip,'single',['title'=>'변경된 제목','lyrics'=>'변경된 가사']);$roundtrip=nup_patch($roundtrip,'single',['genre'=>'kpop-original']);check($roundtrip['body']['originalInfo']['title']==='변경된 제목'&&$roundtrip['body']['originalInfo']['lyrics']==='변경된 가사','returning to original never resurrects stale originalInfo');

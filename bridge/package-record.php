@@ -27,13 +27,14 @@ function nup_normalize(array $d,string $kind):array{
  return $d;
 }
 function nup_patch(array $d,string $kind,array $patch):array{
+ $previousGenre=$d['genreId']??'';
  if(array_key_exists('genre',$patch)){
   if(!is_string($patch['genre'])||!in_array($patch['genre'],NUP_GENRES,true))throw new InvalidArgumentException('invalid_genre');
   if($kind==='playlist'&&$patch['genre']!==($d['genreId']??''))throw new InvalidArgumentException('playlist_genre_locked');
   $d['genreId']=$patch['genre'];unset($patch['genre']);
   if($d['genreId']==='kpop-original'&&(int)($patch['ep']??$d['ep']??0)<1)throw new InvalidArgumentException('classification_ep_required');
  }
- $d=nup_normalize($d,$kind);$type=$d['packageType'];$playlist=in_array($type,['act','playlist'],true);
+ $d=nup_normalize($d,$kind);$type=$d['packageType'];if($type==='original'&&$previousGenre!==$d['genreId']){$current=nup_fields($d);$d['body']['originalInfo']=['ep'=>(string)($d['ep']??''),'title'=>$current['title'],'lyrics'=>$current['lyrics'],'vocal'=>$current['vocal']];}$playlist=in_array($type,['act','playlist'],true);
  $allowed=$playlist?['tracklist','creativeFields','confirmed','title','description','cast','vocal','geminiPrompt','youtubeTitle','communityPost','youtubeUrl','mvUrl','members','songDescription','characterPrompt']:array_diff(NUP_FIELDS,['members']);
  if($type!=='cover')$allowed=array_diff($allowed,['originalArtist']);
  if($type==='original')$allowed=array_merge($allowed,['ep']);
