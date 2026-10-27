@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedDate": "2026-10-27T06:02:57.710Z",
+  "updatedDate": "2026-10-27T07:56:26.347Z",
   "purpose": "NOA STUDIO Work 실행·중단 복구 기준. 다음 실행은 최신 GitHub와 운영 상태를 대조하고 마지막 확인된 성공 단계부터 이어간다.",
   "executionRules": [
     "완료는 필요한 코드 수정, GitHub 반영, 자동배포 성공, 실제 운영 검증을 모두 충족한 경우에만 보고한다.",
@@ -181,7 +181,7 @@
     },
     {
       "id": "ainoa-provider",
-      "status": "requires_chatgpt_plan_access_approval",
+      "status": "awaiting_chatgpt_plan_access_review",
       "lastReadinessEvidence": "https://github.com/rucyjeon79/noa-studio/actions/runs/40409513666",
       "lastObserved": {
         "processingEnabled": false,
@@ -196,7 +196,7 @@
         "keyConfigured": false,
         "budgetConfigured": false
       },
-      "next": "공식 Sign in with ChatGPT 신청서에서 'Sign in and ChatGPT plan use for AI requests'를 선택하고 외부 호스팅·최고관리자 개인 사용을 명시하여 접근을 요청한다. 승인 후 등록된 OAuth 클라이언트·콜백·권한 계약을 확인하고 구독 전용 실행 및 추가 과금 방지 동작을 구현·검증한다.",
+      "next": "사용자가 신청 제출을 보고했다. OpenAI의 승인 안내에서 NOA STUDIO 외부 호스팅과 ChatGPT 구독 한도 사용 권한이 승인됐는지 확인한다. 승인된 OAuth 등록 정보·콜백·사용량 제한 계약을 확인한 뒤 구독 전용 연동을 구현하고 실제 응답을 검증한다. API 키 발급·유료 대체 호출·추가 크레딧 구매는 진행하지 않는다.",
       "billingPolicy": "chatgpt_subscription_only; no API key creation, paid fallback, or additional credits"
     },
     {
@@ -1265,8 +1265,8 @@
     "paidCreditsPurchaseAuthorized": false,
     "scope": "최고관리자 개인 사용. 이 계정의 한도를 일반 회원에게 공유하거나 재판매하는 구조로 확대하지 않는다.",
     "hosting": "Remote PHP application at https://noastudio.ai.kr",
-    "state": "access_request_required",
-    "applicationSubmitted": false,
+    "state": "awaiting_access_review",
+    "applicationSubmitted": true,
     "remoteHostingApprovalVerified": false,
     "oauthConnected": false,
     "liveInferenceVerified": false,
@@ -1278,7 +1278,7 @@
       "포함 사용량 한도 도달",
       "추가 비용 없이 실행할 수 있는지 확인 불가"
     ],
-    "nextAction": "공식 Sign in with ChatGPT 신청서에서 'Sign in and ChatGPT plan use for AI requests'를 선택하고 외부 호스팅·최고관리자 개인 사용을 명시하여 접근을 요청한다. 승인 후 등록된 OAuth 클라이언트·콜백·권한 계약을 확인하고 구독 전용 실행 및 추가 과금 방지 동작을 구현·검증한다.",
+    "nextAction": "사용자가 신청 제출을 보고했다. OpenAI의 승인 안내에서 NOA STUDIO 외부 호스팅과 ChatGPT 구독 한도 사용 권한이 승인됐는지 확인한다. 승인된 OAuth 등록 정보·콜백·사용량 제한 계약을 확인한 뒤 구독 전용 연동을 구현하고 실제 응답을 검증한다. API 키 발급·유료 대체 호출·추가 크레딧 구매는 진행하지 않는다.",
     "requestUrl": "https://openai.com/form/sign-in-with-chatgpt-interest/",
     "sources": [
       "https://developers.openai.com/siwc/request-client-id",
@@ -1296,6 +1296,12 @@
         "직책(선택)"
       ],
       "status": "draft_not_submitted"
+    },
+    "applicationSubmission": {
+      "source": "user_report",
+      "reportedDate": "2026-10-27",
+      "recordedAt": "2026-10-27T07:56:26.347Z",
+      "confirmationIndependentlyVerified": false
     }
   }
 }
