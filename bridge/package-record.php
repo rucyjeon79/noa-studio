@@ -3,7 +3,9 @@ declare(strict_types=1);
 /** One complete, versioned JSON record per song/playlist. No metadata sidecar writes.
  * noa_documents.payload is authoritative; history and JSON downloads are snapshots.
  */
-const NUP_FIELDS=['originalArtist','title','description','lyrics','cast','vocal','sunoPrompt','geminiPrompt','youtubeTitle','communityPost','sunoUrl','cardImageLocation','audioFileLocation','youtubeUrl','mvUrl','members','songDescription','lyricsTranslation','productionPrompt','characterPrompt'];
+const NUP_GENRES=['kpop-original','jpop-original','pop-original','thai-original','joseon-ballad','echoes-of-joseon','groovy-airy-pop','narrative-piano-indie','dreamy-deep-house','fantasy-ambient-edm','edm-kpop-club','latin-afrobeats-edm','panpop','your-story','cover-reborn'];
+const NUP_EXTRA_FIELDS=['storyPlan','chorusHook','englishHook','hashtags','localizations','genreRecommendation'];
+const NUP_FIELDS=['tracklist','creativeFields','confirmed','originalArtist','title','description','lyrics','cast','vocal','sunoPrompt','geminiPrompt','youtubeTitle','communityPost','sunoUrl','cardImageLocation','audioFileLocation','youtubeUrl','mvUrl','members','songDescription','lyricsTranslation','productionPrompt','characterPrompt'];
 function nup_type(array $d,string $kind):string{
  $g=$d['genreId']??'';
  if($kind==='playlist')return in_array($g,['your-story','cover-reborn'],true)||(int)($d['act']??0)<1?'playlist':'act';
@@ -13,7 +15,7 @@ function nup_type(array $d,string $kind):string{
 function nup_text(array $body,array $keys):string{foreach($keys as $key)if(is_string($body[$key]??null)&&trim($body[$key])!=='')return $body[$key];return '';}
 function nup_fields(array $d):array{
  $b=$d['body']??[];$p=$d['packageType']??nup_type($d,(int)($d['act']??0)>0?'playlist':'single');
- return ['originalArtist'=>(string)($b['originalArtist']??$b['originalSinger']??$b['coverArtist']??''),'title'=>(string)($b['displayTitle']??$b['confirmedTitle']??$d['title']??''),'description'=>(string)($b['youtubeDescription']??$b['songDescription']??$b['descriptionBlock']??$b['description']??''),'lyrics'=>(string)($b['lyricsBlock']??''),'cast'=>(string)($b['thumbCast']??''),'vocal'=>(string)($b['vocalInfo']??$b['vocal']??$b['sourceVocal']??''),'sunoPrompt'=>nup_text($b,['sunoPrompt','sunoStyle']),'geminiPrompt'=>(string)($b['geminiPrompt']??''),'youtubeTitle'=>(string)($b['youtubeTitle']??''),'communityPost'=>(string)($b['communityPost']??$b['fanLetter']??''),'sunoUrl'=>(string)($b['sunoShareUrl']??$b['sunoUrl']??''),'cardImageLocation'=>(string)($b['cardImageLocation']??$b['coverImageUrl']??$b['thumbUrl']??''),'audioFileLocation'=>(string)($b['audioFileLocation']??$b['audioUrl']??''),'youtubeUrl'=>(string)($b['youtubeUrl']??''),'mvUrl'=>(string)($b['mvUrl']??$b['musicVideoUrl']??''),'members'=>$b['members']??[],'songDescription'=>(string)($b['songDescription']??$b['descriptionBlock']??$b['summary']??$b['description']??''),'lyricsTranslation'=>(string)($b['lyricsTranslation']??$b['translatedLyrics']??$b['translationBlock']??''),'productionPrompt'=>(string)($b['productionPrompt']??$b['creationPrompt']??''),'characterPrompt'=>(string)($b['characterPrompt']??$b['characterFixedPrompt']??$b['characterPromptBlock']??'')];
+ return ['tracklist'=>(string)($b['tracklist']??''),'creativeFields'=>array_intersect_key($b,array_flip(NUP_EXTRA_FIELDS)),'confirmed'=>!empty($d['confirmed']),'originalArtist'=>(string)($b['originalArtist']??$b['originalSinger']??$b['coverArtist']??''),'title'=>(string)($b['displayTitle']??$b['confirmedTitle']??$d['title']??''),'description'=>(string)($b['youtubeDescription']??$b['songDescription']??$b['descriptionBlock']??$b['description']??''),'lyrics'=>(string)($b['lyricsBlock']??''),'cast'=>(string)($b['thumbCast']??''),'vocal'=>(string)($b['vocalInfo']??$b['vocal']??$b['sourceVocal']??''),'sunoPrompt'=>nup_text($b,['sunoPrompt','sunoStyle']),'geminiPrompt'=>(string)($b['geminiPrompt']??''),'youtubeTitle'=>(string)($b['youtubeTitle']??''),'communityPost'=>(string)($b['communityPost']??$b['fanLetter']??''),'sunoUrl'=>(string)($b['sunoShareUrl']??$b['sunoUrl']??''),'cardImageLocation'=>(string)($b['cardImageLocation']??$b['coverImageUrl']??$b['thumbUrl']??''),'audioFileLocation'=>(string)($b['audioFileLocation']??$b['audioUrl']??''),'youtubeUrl'=>(string)($b['youtubeUrl']??''),'mvUrl'=>(string)($b['mvUrl']??$b['musicVideoUrl']??''),'members'=>$b['members']??[],'songDescription'=>(string)($b['songDescription']??$b['descriptionBlock']??$b['summary']??$b['description']??''),'lyricsTranslation'=>(string)($b['lyricsTranslation']??$b['translatedLyrics']??$b['translationBlock']??''),'productionPrompt'=>(string)($b['productionPrompt']??$b['creationPrompt']??''),'characterPrompt'=>(string)($b['characterPrompt']??$b['characterFixedPrompt']??$b['characterPromptBlock']??'')];
 }
 function nup_normalize(array $d,string $kind):array{
  $d['packageSchema']=1;$d['packageType']=nup_type($d,$kind);$d['body']??=[];$b=&$d['body'];$f=nup_fields($d);
@@ -26,11 +28,13 @@ function nup_normalize(array $d,string $kind):array{
 }
 function nup_patch(array $d,string $kind,array $patch):array{
  $d=nup_normalize($d,$kind);$type=$d['packageType'];$playlist=in_array($type,['act','playlist'],true);
- $allowed=$playlist?['title','description','cast','vocal','geminiPrompt','youtubeTitle','communityPost','youtubeUrl','mvUrl','members','songDescription','characterPrompt']:array_diff(NUP_FIELDS,['members']);
+ $allowed=$playlist?['tracklist','creativeFields','confirmed','title','description','cast','vocal','geminiPrompt','youtubeTitle','communityPost','youtubeUrl','mvUrl','members','songDescription','characterPrompt']:array_diff(NUP_FIELDS,['members']);
  if($type!=='cover')$allowed=array_diff($allowed,['originalArtist']);
  if($type==='original')$allowed=array_merge($allowed,['ep']);
  foreach($patch as $key=>$value){
   if(!in_array($key,$allowed,true))throw new InvalidArgumentException('field_read_only:'.$key);
+  if($key==='confirmed'){if(!is_bool($value))throw new InvalidArgumentException('invalid_confirmed');$d['confirmed']=$value;continue;}
+  if($key==='creativeFields'){if(!is_array($value)||($value&&array_is_list($value))||array_diff(array_keys($value),NUP_EXTRA_FIELDS)||strlen(json_encode($value,JSON_THROW_ON_ERROR))>200000)throw new InvalidArgumentException('invalid_creative_fields');foreach(NUP_EXTRA_FIELDS as $extra){if(array_key_exists($extra,$value))$d['body'][$extra]=$value[$extra];else unset($d['body'][$extra]);}continue;}
   if($key==='members'){
    if(!is_array($value)||!array_is_list($value)||count($value)>2000||($type==='act'&&count($value)!==10))throw new InvalidArgumentException('invalid_members');
    $seen=[];$eps=[];foreach($value as $m){if(!is_array($m)||!is_string($m['key']??null)||!preg_match('/^[a-zA-Z0-9:_-]{1,190}$/D',$m['key'])||isset($seen[$m['key']]))throw new InvalidArgumentException('invalid_member');$seen[$m['key']]=true;if($type==='act')$eps[]=(int)($m['ep']??0);}
@@ -46,7 +50,7 @@ function nup_patch(array $d,string $kind,array $patch):array{
   }
   if(in_array($key,['audioFileLocation','cardImageLocation'],true)&&$value!==''&&(!preg_match('~^(?:https://[^\s]+|/[A-Za-z0-9/_?.=&:%+-]+)$~D',$value)||str_contains($value,'..')))throw new InvalidArgumentException('invalid_file_location');
   if($key==='ep'){if(!preg_match('/^[1-9][0-9]{0,3}$/D',ltrim($value,'0')))throw new InvalidArgumentException('invalid_ep');$d['ep']=str_pad((string)(int)$value,2,'0',STR_PAD_LEFT);$d['body']['originalInfo']['ep']=$d['ep'];continue;}
-  $map=['songDescription'=>'songDescription','lyricsTranslation'=>'lyricsTranslation','productionPrompt'=>'productionPrompt','characterPrompt'=>'characterPrompt','originalArtist'=>'originalArtist','title'=>'confirmedTitle','description'=>'youtubeDescription','lyrics'=>'lyricsBlock','cast'=>'thumbCast','vocal'=>'vocalInfo','sunoPrompt'=>'sunoPrompt','geminiPrompt'=>'geminiPrompt','youtubeTitle'=>'youtubeTitle','communityPost'=>'communityPost','sunoUrl'=>'sunoUrl','cardImageLocation'=>'cardImageLocation','audioFileLocation'=>'audioFileLocation','youtubeUrl'=>'youtubeUrl','mvUrl'=>'mvUrl'];
+  $map=['tracklist'=>'tracklist','songDescription'=>'songDescription','lyricsTranslation'=>'lyricsTranslation','productionPrompt'=>'productionPrompt','characterPrompt'=>'characterPrompt','originalArtist'=>'originalArtist','title'=>'confirmedTitle','description'=>'youtubeDescription','lyrics'=>'lyricsBlock','cast'=>'thumbCast','vocal'=>'vocalInfo','sunoPrompt'=>'sunoPrompt','geminiPrompt'=>'geminiPrompt','youtubeTitle'=>'youtubeTitle','communityPost'=>'communityPost','sunoUrl'=>'sunoUrl','cardImageLocation'=>'cardImageLocation','audioFileLocation'=>'audioFileLocation','youtubeUrl'=>'youtubeUrl','mvUrl'=>'mvUrl'];
   $d['body'][$map[$key]]=$value;
   if($key==='vocal'&&isset(['여자솔로'=>'female','남자솔로'=>'male','남녀듀엣'=>'duet'][$value]))$d['body']['thumbCast']=['여자솔로'=>'female','남자솔로'=>'male','남녀듀엣'=>'duet'][$value];
   if($type==='original'&&in_array($key,['title','lyrics','vocal'],true))$d['body']['originalInfo'][$key]=$value;
@@ -55,6 +59,7 @@ function nup_patch(array $d,string $kind,array $patch):array{
   // YouTube description and song introduction are distinct; never overwrite one with the other.
   if($key==='sunoPrompt'&&array_key_exists('sunoStyle',$d['body']))$d['body']['sunoStyle']=$value;
   if($key==='sunoUrl'&&isset($d['body']['sunoShareUrl']))$d['body']['sunoShareUrl']=$value;
+  foreach(['cardImageLocation'=>['coverImageUrl','thumbUrl'],'audioFileLocation'=>['audioUrl'],'mvUrl'=>['musicVideoUrl'],'vocal'=>['vocal'],'communityPost'=>['fanLetter'],'lyricsTranslation'=>['translatedLyrics','translationBlock']] as $canonical=>$aliases)if($key===$canonical)foreach($aliases as $alias)if(array_key_exists($alias,$d['body']))$d['body'][$alias]=$value;
  }
  return $d;
 }
@@ -69,15 +74,16 @@ function nup_complete(PDO $db,array $resolved):array{
  $d=$resolved['document'];$kind=$resolved['documentKind'];$d=nup_normalize($d,$kind);
  if($d['packageType']==='act'&&empty($d['body']['members'])){
   $q=$db->query("SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key");$members=[];
-  foreach($q as $r){$m=json_decode($r['payload'],true);$ep=(int)($m['ep']??0);if(($m['genreId']??'')===$d['genreId']&&$ep>=$d['epRange']['from']&&$ep<=$d['epRange']['to'])$members[]=['key'=>nie_identity($db,$r['doc_key']),'ep'=>$ep,'title'=>nup_fields($m)['title']];}usort($members,fn($a,$b)=>$a['ep']<=>$b['ep']);$d['body']['members']=$members;
+  foreach($q as $r){$m=json_decode($r['payload'],true);if(!empty($m['_noaTrash']))continue;$ep=(int)($m['ep']??0);if(($m['genreId']??'')===$d['genreId']&&$ep>=$d['epRange']['from']&&$ep<=$d['epRange']['to'])$members[]=['key'=>nie_identity($db,$r['doc_key']),'ep'=>$ep,'title'=>nup_fields($m)['title']];}usort($members,fn($a,$b)=>$a['ep']<=>$b['ep']);$d['body']['members']=$members;
  }
  $fields=nup_fields($d);
  // The legacy editor's committed values are promoted when this complete record is saved.
  if(empty($resolved['document']['packageSchema']))foreach($resolved['fields'] as $name=>$value)if(in_array($name,NUP_FIELDS,true))$fields[$name]=$value;
  $original=nup_original($db,$d);$resolved['fields']=$fields;$resolved['writeKey']=$resolved['documentKey'];$resolved['revision']=$resolved['documentRevision'];$resolved['kind']=$kind;$resolved['payload']=$d;$resolved['packageType']=$d['packageType'];$resolved['original']=$original;
  if(in_array($d['packageType'],['act','playlist'],true)){
-  $candidates=[];$q=$db->query("SELECT doc_key,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key");foreach($q as $r){$p=json_decode($r['payload'],true);if(($p['genreId']??'')!==($d['genreId']??''))continue;$ep=(int)($p['ep']??0);if($d['packageType']==='act'&&($ep<$d['epRange']['from']||$ep>$d['epRange']['to']))continue;$candidates[]=['key'=>nie_identity($db,$r['doc_key']),'ep'=>$ep,'title'=>nup_fields($p)['title']];}usort($candidates,fn($a,$b)=>$a['ep']<=>$b['ep']);$resolved['candidates']=$candidates;
+  $candidates=[];$q=$db->query("SELECT doc_key,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key");foreach($q as $r){$p=json_decode($r['payload'],true);if(!empty($p['_noaTrash'])||($p['genreId']??'')!==($d['genreId']??''))continue;$ep=(int)($p['ep']??0);if($d['packageType']==='act'&&($ep<$d['epRange']['from']||$ep>$d['epRange']['to']))continue;$candidates[]=['key'=>nie_identity($db,$r['doc_key']),'ep'=>$ep,'title'=>nup_fields($p)['title']];}usort($candidates,fn($a,$b)=>$a['ep']<=>$b['ep']);$resolved['candidates']=$candidates;
  }
+ $resolved['context']['act']=(string)($d['act']??'');if($d['packageType']==='act')$resolved['context']['range']='EP.'.$d['epRange']['from'].'–'.$d['epRange']['to'];
  $resolved['context']['ep']=(string)($d['ep']??'');$resolved['context']['genre']=$d['genreId']??'';
  if($d['packageType']==='original')$resolved['fields']=array_replace($resolved['fields'],$d['body']['originalInfo']??[],['ep'=>(string)($d['ep']??'')]);
  return $resolved;
@@ -113,7 +119,7 @@ function nup_attach_asset(PDO $db,string $key,array $asset):void{
 }
 function nup_validate_members(PDO $db,array $d):void{
  $pool=[];$aliases=[];foreach($db->query("SELECT alias_key,entity_id FROM noa_catalog_aliases WHERE batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)") as $a)$aliases[$a['alias_key']]=$a['entity_id'];
- foreach($db->query("SELECT doc_key,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key") as $r){$p=json_decode($r['payload'],true);$id=$aliases[$r['doc_key']]??preg_replace('/^catalog:/','',$r['doc_key']);$pool[$id][]=$p;if($id!==$r['doc_key'])$pool[$r['doc_key']][]=$p;}
+ foreach($db->query("SELECT doc_key,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key") as $r){$p=json_decode($r['payload'],true);if(!empty($p['_noaTrash']))continue;$id=$aliases[$r['doc_key']]??preg_replace('/^catalog:/','',$r['doc_key']);$pool[$id][]=$p;if($id!==$r['doc_key'])$pool[$r['doc_key']][]=$p;}
  foreach($d['body']['members']??[] as $m){$candidates=$pool[$m['key']]??[];if(count($candidates)!==1)throw new InvalidArgumentException('member_missing_or_ambiguous');$p=$candidates[0];if(($p['genreId']??'')!==($d['genreId']??'')||(($d['packageType']??'')==='act'&&(int)($p['ep']??0)!==(int)($m['ep']??0)))throw new InvalidArgumentException('member_genre_or_ep_mismatch');}
 }
 /** Publication may add new songs; never replace an existing edited record. */

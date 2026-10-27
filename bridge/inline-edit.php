@@ -34,7 +34,16 @@ function nie_act_labels(array $edits,array $rows):array{
 }
 function nie_resolve(PDO $db,array $input):array{
  $type=$input['type']??'';$source=$input['source']??'';$key=$input['key']??'';$genre='';$ep='';$act='';$fields=['title'=>'','description'=>'','lyrics'=>'','cast'=>''];$context=[];$document=null;$documentKey='';$documentKind='single';$documentRevision=0;
- if($type==='act'){
+ if($type==='new'){
+  $genre=$input['genre']??'';$kind=$input['kind']??'single';$number=$input['number']??'';$nonce=$input['id']??'';
+  if(!in_array($genre,NUP_GENRES,true)||!in_array($kind,['single','story','playlist'],true)||!is_string($number)||!is_string($nonce)||!preg_match('/^[a-f0-9]{24}$/D',$nonce))throw new InvalidArgumentException('invalid_new_record');
+  $numbered=$kind==='single'||($kind==='playlist'&&!in_array($genre,['your-story','cover-reborn'],true));
+  if($numbered&&!preg_match('/^[1-9][0-9]{0,2}$/D',ltrim($number,'0')))throw new InvalidArgumentException('number_required');
+  $documentKind=$kind;$ep=$kind==='single'?str_pad((string)(int)$number,2,'0',STR_PAD_LEFT):'';$act=$kind==='playlist'&&$numbered?(string)(int)$number:'';
+  $documentKey=$kind.':'.$genre.':'.($ep!==''?$ep:($act!==''?'act-'.$act:$nonce));
+  $q=$db->prepare('SELECT revision FROM noa_documents WHERE doc_key=?');$q->execute([$documentKey]);if($q->fetchColumn()!==false)throw new DomainException('record_already_exists');
+  $document=['genreId'=>$genre,'ep'=>$ep,'act'=>$act,'title'=>'','confirmed'=>false,'body'=>[]];$context=['genre'=>$genre,'ep'=>$ep,'act'=>$act];$id=$documentKey;
+ }elseif($type==='act'){
   $genre=$input['genre']??'';$act=$input['act']??'';
   $genres=['kpop-original','jpop-original','pop-original','thai-original','joseon-ballad','echoes-of-joseon','groovy-airy-pop','narrative-piano-indie','dreamy-deep-house','fantasy-ambient-edm','edm-kpop-club','latin-afrobeats-edm','panpop','your-story','cover-reborn'];
   if(!in_array($genre,$genres,true)||!is_scalar($act)||!preg_match('/^[1-9][0-9]{0,2}$/D',(string)$act))throw new InvalidArgumentException('invalid_act');
