@@ -58,7 +58,7 @@ $router=file_get_contents('/tmp/noa-pwa-fixture/router.php');file_put_contents('
 
 // Render the actual YouTube PHP path against the same isolated records used by the editor.
 require_once __DIR__.'/../../bridge/world-mv.php';
-$run=str_repeat('9',32);nc_insert($db,'noa_youtube_runs',['run_id'=>$run,'channel_id'=>NSC_CHANNEL,'catalog_batch'=>$batch,'report'=>'{"warnings":[]}'],['run_id']);
-foreach(array_merge(array_keys(NSC_PLAYLISTS),[NWM_PLAYLIST,NWM_ACT_PLAYLIST,'fixture-only'])as $pid){$raw=['id'=>$pid,'snippet'=>['channelId'=>NSC_CHANNEL,'title'=>'검증 재생목록'],'status'=>['privacyStatus'=>'public'],'contentDetails'=>['itemCount'=>0]];nc_insert($db,'noa_youtube_playlists',['run_id'=>$run,'playlist_id'=>$pid,'payload'=>json_encode($raw)],['run_id','playlist_id']);}
-$raw=['id'=>'classify001','snippet'=>['channelId'=>NSC_CHANNEL,'title'=>'분류 검증곡'],'status'=>['privacyStatus'=>'public','embeddable'=>true]];nc_insert($db,'noa_youtube_videos',['run_id'=>$run,'video_id'=>'classify001','payload'=>json_encode($raw),'match_json'=>json_encode(['songId'=>str_repeat('1',64),'status'=>'matched'])],['run_id','video_id']);
+$run=str_repeat('9',32);$db->prepare('INSERT INTO noa_youtube_runs(run_id,channel_id,catalog_batch,report) VALUES(?,?,?,?)')->execute([$run,NSC_CHANNEL,$batch,'{"warnings":[]}']);
+foreach(array_merge(array_keys(NSC_PLAYLISTS),[NWM_PLAYLIST,NWM_ACT_PLAYLIST,'fixture-only'])as $pid){$raw=['id'=>$pid,'snippet'=>['channelId'=>NSC_CHANNEL,'title'=>'검증 재생목록'],'status'=>['privacyStatus'=>'public'],'contentDetails'=>['itemCount'=>0]];$db->prepare('INSERT INTO noa_youtube_playlists(run_id,playlist_id,payload) VALUES(?,?,?)')->execute([$run,$pid,json_encode($raw)]);}
+$raw=['id'=>'classify001','snippet'=>['channelId'=>NSC_CHANNEL,'title'=>'분류 검증곡'],'status'=>['privacyStatus'=>'public','embeddable'=>true]];$db->prepare('INSERT INTO noa_youtube_videos(run_id,video_id,payload,match_json) VALUES(?,?,?,?)')->execute([$run,'classify001',json_encode($raw),json_encode(['songId'=>str_repeat('1',64),'status'=>'matched'])]);
 foreach(['noa-youtube.php','noa-youtube.js','noa-youtube.css']as $file)copy('deploy/'.$file,'/tmp/noa-pwa-fixture/'.$file);
