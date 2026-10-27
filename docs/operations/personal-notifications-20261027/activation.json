@@ -1,0 +1,38 @@
+[
+  {
+    "ok": true,
+    "created": [
+      "noa_notifications",
+      "noa_notification_settings",
+      "noa_push_subscriptions",
+      "noa_notification_delivery",
+      "noa_notification_cursor"
+    ],
+    "ready": true,
+    "counts": {
+      "noa_notifications": 0,
+      "noa_notification_settings": 0,
+      "noa_push_subscriptions": 0,
+      "noa_notification_delivery": 0,
+      "noa_notification_cursor": 9
+    },
+    "existingTablesRetained": true,
+    "nativeTablesWritten": 0,
+    "syntheticNotificationsCreated": 0
+  },
+  {
+    "ok": true,
+    "created": [],
+    "ready": true,
+    "counts": {
+      "noa_notifications": 0,
+      "noa_notification_settings": 0,
+      "noa_push_subscriptions": 0,
+      "noa_notification_delivery": 0,
+      "noa_notification_cursor": 9
+    },
+    "existingTablesRetained": true,
+    "nativeTablesWritten": 0,
+    "syntheticNotificationsCreated": 0
+  }
+]

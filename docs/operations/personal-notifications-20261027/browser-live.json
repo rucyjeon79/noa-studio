@@ -1,0 +1,11 @@
+{
+  "url": "https://noastudio.ai.kr/noa-notifications.php",
+  "title": "내 활동 알림 | NOA STUDIO",
+  "heading": "내 활동 알림",
+  "viewport": 1363,
+  "scrollWidth": 1363,
+  "ainoaMenu": "/noa-notifications.php",
+  "guestLogin": "/bbs/login.php?url=%2Fnoa-notifications.php",
+  "guestUiVerified": true,
+  "physicalPhoneDeliveryVerified": false
+}

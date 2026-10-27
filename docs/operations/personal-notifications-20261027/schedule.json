@@ -1,0 +1,8 @@
+{
+  "name": "NOA personal push dispatch",
+  "path": ".github/workflows/noa-push-dispatch.yml",
+  "state": "active",
+  "cron": "2-59/5 * * * *",
+  "initialProductionDispatchSucceeded": true,
+  "scheduledRunObservedAtRelease": false
+}

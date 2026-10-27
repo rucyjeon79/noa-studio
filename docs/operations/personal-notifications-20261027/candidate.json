@@ -1,0 +1,15 @@
+{
+  "pullRequest": 239,
+  "candidateCommit": "3c9b2c126b58fa2280e0f3c57280aa141bd480be",
+  "candidateRun": 40504769125,
+  "candidateResult": "success",
+  "mergeCommit": "37f58bec3881e69d93cb7969e10d877059f9ecc4",
+  "regressions": {
+    "workspace": 40504769295,
+    "engines": 40504769164,
+    "integrated": 40504769305,
+    "records": 40504769149,
+    "commonUi": 40504769116
+  },
+  "physicalPhoneVerified": false
+}

@@ -1,0 +1,33 @@
+{
+  "commit": "37f58bec3881e69d93cb7969e10d877059f9ecc4",
+  "changed": [
+    "noa-bridge/notifications-core.php",
+    "noa-bridge/notifications-sources.php",
+    "noa-bridge/notifications.php",
+    "noa-bridge/notification-worker.php",
+    "noa-notifications.css",
+    "noa-notifications.js",
+    "noa-notifications.php",
+    "noa-sw.js",
+    "extend/noa.design.php",
+    "extend/zz.noa-notifications.php"
+  ],
+  "sha256": {
+    "noa-bridge/notifications-core.php": "4cafa0b50246425facc74d3e8d709b66036543aadff0b08d02a7d3c425531ab6",
+    "noa-bridge/notifications-sources.php": "d016768611d119dfa83af1441f4a12ba121c0f76a7668fa9763d124f91848e7f",
+    "noa-bridge/notifications.php": "6f0b0fd6ae6456930955841dfd3e32455b6fdf1667e427db6cdf325029c40ff9",
+    "noa-bridge/notification-worker.php": "5e79c0939aa3b3f075160239cf26fb6056f6f64a6afb448768e56d843a6efde3",
+    "noa-notifications.css": "0227382284d578e8b7e6ea0d6cfc6b10880d3f8f1e136c00ba7f53cde207cb2b",
+    "noa-notifications.js": "e69ea272220fe01ebb3eca61ac205257f5fbee55dc330663eaf45a722fbe9599",
+    "noa-notifications.php": "1f1ca1ceab17a42352fcdce866af4bcc14d2209c0c780d28509f62b3ea693f0a",
+    "noa-sw.js": "e8d3924213260fd170927e8aaf72db0a9905d457f8818f76d4d5b769952f7f5b",
+    "noa-sitemap.php": "c52fac6dd4d3f6a9f6a60af8757541f0d9867f7caa4bd97daf4f2c47f07770d6",
+    "extend/noa.design.php": "ebecfa179761cef4ae29e67823a0ff635d81045fa6f7d8fa30446c195b577f75",
+    "extend/zz.noa-notifications.php": "4fc07157fe2fd82ed625a936483fd874bb56c24a1fb98ad2a01e44610984852e"
+  },
+  "protectedUnchanged": 17,
+  "databaseWrites": 0,
+  "memberRowsChanged": 0,
+  "pointDebits": 0,
+  "pricesSeeded": false
+}

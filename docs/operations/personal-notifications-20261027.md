@@ -36,4 +36,16 @@ Android Chrome and supported installed web apps use the existing root service wo
 - Service worker: notification display, receipt payload, safe same-origin click target and malformed payload fallback.
 - Browser: explicit-permission gesture, registration/revocation UI, preference persistence, AInoa navigation, mobile/desktop screenshots and host HTML 401 recovery. Browser capability adapters are explicitly test fixtures, not proof of physical phone delivery.
 
-Deployment/run identifiers and final evidence are appended after verification. Production verification creates no fixture members or synthetic comments/notifications.
+Production verification created no fixture members or synthetic comments/notifications.
+
+## Completed release
+
+- PR [239](https://github.com/rucyjeon79/noa-studio/pull/239), final candidate `3c9b2c126b58fa2280e0f3c57280aa141bd480be`; merged as `37f58bec3881e69d93cb7969e10d877059f9ecc4`.
+- Candidate [40504769125](https://github.com/rucyjeon79/noa-studio/actions/runs/40504769125): MySQL/API/crypto/SW/mobile/desktop tests passed.
+- Production [40505094040](https://github.com/rucyjeon79/noa-studio/actions/runs/40505094040): both verification and deployment succeeded. Eleven source hashes verified; 17 protected files unchanged. New schema installation and replay succeeded, with zero native/member writes and no synthetic alerts.
+- Post-deployment signed health: ready, zero subscribed devices, zero pending/accepted/received deliveries. The first dispatch completed successfully with no opted-in recipients. This is not a claim of phone delivery; the member must opt in on their device.
+- Live public browser: AInoa notification entry, correct login return, visible title and no horizontal overflow at 1363px. Authenticated mutation tests used the isolated site.
+- Final-head regression success: engines 40504769164, workspace/Chromium/WebKit 40504769295, integrated 40504769305, unified records 40504769149, common UI 40504769116.
+- Separate legacy failures remain recorded without weakened checks: UIUX and Approved UI scrape member-only pages as guests; membership-hero assumes one guest menu entry although the approved login entry makes two. The new notification workflow and relevant regressions pass.
+
+Evidence: [deployment](personal-notifications-20261027/deployment.json), [activation](personal-notifications-20261027/activation.json), [isolated database](personal-notifications-20261027/mysql.json), [API and layouts](personal-notifications-20261027/qa.json), [live controls](personal-notifications-20261027/live.json), [dispatch](personal-notifications-20261027/dispatch.json), [health](personal-notifications-20261027/health.json), [live browser](personal-notifications-20261027/browser-live.json).

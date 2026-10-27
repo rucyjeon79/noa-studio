@@ -1,0 +1,16 @@
+{
+    "additiveSchema": true,
+    "noHistoricalBackfill": true,
+    "ownerAndParticipants": true,
+    "privateRequestOwnerOnly": true,
+    "selfExcluded": true,
+    "cursorReplay": true,
+    "genericPayload": true,
+    "leaseAndAck": true,
+    "sourceDeletion": true,
+    "preferenceEnforcement": true,
+    "deviceTransferAndRevocation": true,
+    "endpointAllowlist": true,
+    "crossAccountReadsDenied": true,
+    "nativeDataPreserved": true
+}

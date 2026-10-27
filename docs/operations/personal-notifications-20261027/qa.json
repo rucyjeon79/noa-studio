@@ -1,0 +1,44 @@
+{
+  "api": [
+    "guest denied",
+    "CSRF and origin denied",
+    "own inbox only",
+    "device endpoint allowlist",
+    "owner-only test and read",
+    "worker HMAC and replay protection",
+    "exclusive queue lease",
+    "provider acceptance separated from browser receipt",
+    "explicit user gesture permission only",
+    "subscribe and revoke UI",
+    "preferences persisted",
+    "AInoa notification navigation",
+    "host HTML 401 login recovery"
+  ],
+  "layouts": [
+    {
+      "width": 390,
+      "theme": "dark",
+      "overflow": false,
+      "targets": true
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "overflow": false,
+      "targets": true
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "overflow": false,
+      "targets": true
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "overflow": false,
+      "targets": true
+    }
+  ],
+  "phoneDelivery": "not claimed; physical device opt-in required"
+}
