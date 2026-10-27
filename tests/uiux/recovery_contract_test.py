@@ -63,5 +63,7 @@ class RecoveryContract(unittest.TestCase):
   authorized.update({'bridge/notifications-core.php','bridge/notifications-sources.php','bridge/notifications.php','bridge/notification-worker.php'})
   # 2026-10-28: user authorized direct push delivery to prevent scheduler delays.
   authorized.add('bridge/notifications-inline.php')
+  # 2026-10-28: public sitemap discovery; individual destination ACLs remain unchanged.
+  authorized.add('bridge/member-access.php')
   self.assertFalse(any(p not in authorized and p.startswith(('deploy/noa-app/jukebox/','bridge/','scripts/noa_jukebox'))for p in paths))
 if __name__=='__main__':unittest.main()

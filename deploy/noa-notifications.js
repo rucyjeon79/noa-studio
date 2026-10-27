@@ -62,9 +62,18 @@
   if(!preferencesLoaded){for(const [key,value] of Object.entries(data.preferences))$('nnt-preferences').elements[key].checked=value;preferencesLoaded=true;}
   const notice=new URLSearchParams(location.search).get('notice');if(notice){const el=$('nnt-item-'+notice);if(el)el.setAttribute('aria-current','true');}
  }
+ function speakActivity(data){
+  const account=window.NoaVoice?.getAccount();if(!account?.member||!data.items)return;
+  const key='noa-notice-seen:'+account.accountKey;let previous=0;try{previous=Number(sessionStorage.getItem(key)||0);}catch{}
+  const fresh=data.items.filter(item=>!item.read&&item.id>previous).sort((a,b)=>a.id-b.id);
+  if(previous){for(const item of fresh)window.NoaVoice.say(item.text,{key:'activity-'+item.id,href:item.url});}
+  else if(data.unread)window.NoaVoice.say('아직 읽지 않은 내 활동 소식이 '+data.unread+'개 있어요. 함께 확인해 볼까요?',{key:'activity-summary',href:'/noa-notifications.php'});
+  const latest=Math.max(previous,...data.items.map(item=>item.id));try{sessionStorage.setItem(key,String(latest));}catch{}
+ }
+ window.addEventListener('noa-voice-ready',()=>{if(state)speakActivity(state);});
  async function refresh({quiet=false,append=false}={}){
   if(refreshing||(!page&&!context.member))return;refreshing=true;
-  try{const data=await request(null,append&&before?'?before='+before:'');state=data;context.member=true;updateBadges(data.unread);if(page){if(!quiet||!loadedMore)render(data,append);await deviceState();if(!quiet)message('내 소식은 나에게만 보여요.');const test=data.testStatus;$('nnt-delivery').textContent=!device||test.device!==device?'':test.received?'테스트 알림 표시를 확인했어요.':test.accepted?'기기의 알림 서비스에 전달했어요. 기기에서 표시를 확인하고 있어요.':['pending','leased'].includes(test.state)?(test.age>60?'발송이 지연되어 자동 재시도 중입니다. 알림을 껐다 켤 필요는 없어요.':'테스트 알림을 발송하고 있어요. 연결이 지연되면 자동으로 재시도합니다.'):test.state==='failed'?'테스트 알림을 보내지 못했어요. 알림을 다시 연결해 주세요.':'';}}
+  try{const data=await request(null,append&&before?'?before='+before:'');state=data;context.member=true;if(!append)speakActivity(data);updateBadges(data.unread);if(page){if(!quiet||!loadedMore)render(data,append);await deviceState();if(!quiet)message('내 소식은 나에게만 보여요.');const test=data.testStatus;$('nnt-delivery').textContent=!device||test.device!==device?'':test.received?'테스트 알림 표시를 확인했어요.':test.accepted?'기기의 알림 서비스에 전달했어요. 기기에서 표시를 확인하고 있어요.':['pending','leased'].includes(test.state)?(test.age>60?'발송이 지연되어 자동 재시도 중입니다. 알림을 껐다 켤 필요는 없어요.':'테스트 알림을 발송하고 있어요. 연결이 지연되면 자동으로 재시도합니다.'):test.state==='failed'?'테스트 알림을 보내지 못했어요. 알림을 다시 연결해 주세요.':'';}}
   catch(error){if(!quiet||error.message==='login_required')failure(error);}finally{refreshing=false;}
  }
  function keyBytes(value){return Uint8Array.from(atob(value.replace(/-/g,'+').replace(/_/g,'/').padEnd(Math.ceil(value.length/4)*4,'=')),c=>c.charCodeAt(0));}
