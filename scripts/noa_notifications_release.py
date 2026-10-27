@@ -12,9 +12,11 @@ release.FILES={
  'noa-notifications.js':'deploy/noa-notifications.js',
  'noa-notifications.php':'deploy/noa-notifications.php',
  'noa-sw.js':'deploy/noa-sw.js',
+ 'noa-sitemap.php':'deploy/noa-sitemap.php',
+ 'extend/noa.design.php':'deploy/noa-design.extend.php',
  'extend/zz.noa-notifications.php':'deploy/noa-notifications.extend.php',
 }
-release.NEW=set(release.FILES)-{'noa-sw.js'}
+release.NEW=set(release.FILES)-{'noa-sw.js','noa-sitemap.php','extend/noa.design.php'}
 release.PROTECTED+=['bbs/write_comment_update.php','bbs/delete_comment.php','bbs/good.php','noa-bridge/community-core.php','noa-bridge/engagement-core.php','noa-bridge/popularity-core.php']
 if __name__=='__main__':
  release.main()

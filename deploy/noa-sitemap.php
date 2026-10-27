@@ -34,6 +34,7 @@ function noa_sitemap_registry():array{
             ['membership','포인트 · VIP 30일 이용권','잔액·적립·3,000P 이용권·자동연장','/noa-membership.php','user','member'],
             ['creator','내 채널 · 음원','내 채널과 업로드한 음악 관리','/noa-creator.php','music','member'],
             ['profile','회원정보','내 계정 정보 확인과 수정','/bbs/member_confirm.php?url=register_form.php','user','member'],
+            ['notifications','내 활동 알림','AInoa의 소식과 휴대폰 알림 설정','/noa-notifications.php','mail','member'],
         ]],
         'community'=>['title'=>'커뮤니티','routes'=>[
             ['search','게시판 검색','공개된 게시글 찾기','/bbs/search.php','search','public'],
