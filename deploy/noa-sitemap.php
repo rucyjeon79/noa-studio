@@ -117,7 +117,7 @@ function noa_sitemap_visible_groups(string $root,string $role,array $boards=[],a
         $id=(string)($board['bo_table']??'');
         if(!preg_match('/^[A-Za-z0-9_]{1,20}$/D',$id))continue;
         $label=trim(strip_tags((string)($board['bo_subject']??'')))?:$id;
-        $groups['community']['routes'][]=['board-'.$id,$label,'게시판 읽기','/bbs/board.php?bo_table='.rawurlencode($id),'community','public'];
+        $groups['community']['routes'][]=['board-'.$id,$label,'게시판 읽기','/bbs/board.php?bo_table='.rawurlencode($id),'community','public',(string)($board['noa_condition']??'')];
     }
     foreach(['privacy'=>'개인정보처리방침','provision'=>'이용약관'] as $id=>$label){
         if(!in_array($id,$contents,true))continue;
@@ -125,7 +125,7 @@ function noa_sitemap_visible_groups(string $root,string $role,array $boards=[],a
     }
     foreach($groups as $name=>&$group){
         foreach($group['routes'] as &$route){
-            $reason='';$audience=$route[5];
+            $reason=(string)($route[6]??'');$audience=$route[5];
             if($audience==='admin'&&$role!=='admin')$reason='최고관리자 전용 작업실이에요. 관리자 계정으로 로그인해 주세요.';
             elseif($audience==='member'&&$role==='guest')$reason='로그인한 회원이 이용할 수 있어요. 먼저 로그인해 주세요.';
             elseif($audience==='guest'&&$role!=='guest')$reason='이미 로그인되어 있어요. 계정을 바꾸려면 MY에서 로그아웃해 주세요.';
@@ -157,7 +157,12 @@ function noa_sitemap_native_content(array $g5,array $account,bool $member,bool $
                     $access=sql_query("SELECT gr_id FROM {$g5['group_member_table']} WHERE gr_id='{$group}' AND mb_id='{$id}' LIMIT 1",false);
                     $board['group_allowed']=$access&&(bool)sql_fetch_array($access);
                 }
-                if(noa_sitemap_board_allowed($board,$member?(int)($account['mb_level']??1):1,$member,$super,$account))$boards[]=$board;
+                $allowed=noa_sitemap_board_allowed($board,$member?(int)($account['mb_level']??1):1,$member,$super,$account);
+                if(!$allowed){
+                    $level=max((int)$board['bo_read_level'],(int)$board['bo_list_level']);
+                    $board['noa_condition']=!$member?'로그인 후 게시판 이용 자격을 확인해 주세요.':($level>(int)($account['mb_level']??1)?'이 게시판은 회원 '.$level.'레벨부터 이용할 수 있어요.':(!empty($board['gr_use_access'])&&empty($board['group_allowed'])?'이 게시판은 이용 그룹 승인이 필요해요. 관리자에게 이용 자격을 확인해 주세요.':(str_contains((string)$board['bo_use_cert'],'adult')?'본인 인증과 성인 확인을 마친 회원이 이용할 수 있어요.':'게시판에서 요구하는 본인 인증을 마친 뒤 이용해 주세요.')));
+                }
+                $boards[]=$board;
             }
         }
         if(!empty($g5['content_table'])){
