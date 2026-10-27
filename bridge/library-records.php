@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__.'/sound-core.php';
 require_once __DIR__.'/inline-edit.php';
+require_once __DIR__.'/music-readmodel.php';
 /** One current document per catalog identity; immutable import snapshots remain intact. */
 function ncl_records(PDO $db,bool $admin,string $memberId='',bool $trash=false):array{
  $batch=$db->query("SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1")->fetchColumn();
@@ -28,7 +29,7 @@ function ncl_records(PDO $db,bool $admin,string $memberId='',bool $trash=false):
   $id=hash('sha256','document:'.$key);$rows[$id]=ncl_record($id,$key,$source['kind'],$d,(int)$source['revision'],false);$rows[$id]['orderKey']=$key;
  }
  $edits=nie_overrides($db);foreach($rows as &$row){$projected=nie_project($edits,[$row])[0];$row['title']=$projected['title'];$row['genre']=$projected['genre'];$row['collectionIds']=$projected['collectionIds']??[];$row['canonicalRecordKey']=$projected['canonicalRecordKey']??$row['key'];$fields=nie_fields($edits,$row);if(!array_key_exists('songDescription',$fields)&&array_key_exists('description',$fields))$row['fields']['songDescription']=$fields['description'];foreach(['songDescription'=>'songDescription','lyrics'=>'lyricsBlock','cast'=>'thumbCast'] as $from=>$to)if(array_key_exists($from,$fields))$row['fields'][$to]=$fields[$from];}unset($row);
- return $rows;
+ return $trash?$rows:noa_music_browse_project($rows,[],$edits);
 }
 function ncl_record(string $id,string $key,string $kind,array $d,int $revision,bool $ambiguous):array{
  $b=$d['body']??[];$genre=(string)($d['genreId']??'unclassified');$act=(int)($d['act']??0);$title=(string)(($b['confirmedTitle']??'')?:($d['title']??$key));

@@ -318,6 +318,9 @@ html.noa-g5 .btn_bo_user .noa-action>span{white-space:nowrap;overflow-wrap:norma
 html.noa-g5 #bo_list .btn_bo_user .noa-action{border:1px solid var(--noa-line);box-shadow:none;color:var(--noa-text)}
 html.noa-g5 #bo_list .btn_bo_user .noa-action:hover,html.noa-g5 #bo_list .btn_bo_user .noa-action:focus-visible{border-color:var(--noa-accent);color:var(--noa-accent)}
 
+/* App-wide link policy includes native skins, classification paths and hover/focus states.
+   Keep focus outlines and authored underlines outside links. */
+html[data-noa-theme] a,html[data-noa-theme] a *,html[data-noa-theme] a:is(:visited,:hover,:active,:focus,:focus-visible){text-decoration-line:none!important}
 /* HOME service map: aligned compact premium cards, no underlined action links. */
 .noa-site-map-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px;align-items:stretch}
 .noa-site-map-link{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;min-height:108px;padding:16px 12px;border:1px solid var(--noa-line,#80745b55);border-radius:14px;background:var(--noa-surface,#202025);color:var(--noa-text,inherit);text-decoration:none!important;text-align:center;box-shadow:inset 0 1px 0 #ffffff16,0 3px 12px #00000012}
