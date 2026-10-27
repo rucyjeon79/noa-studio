@@ -50,7 +50,7 @@ try{
  await page.getByRole('button',{name:'이 기기 알림 끄기',exact:true}).click();await page.getByText('이 기기 알림을 껐어요. 알림함에서는 계속 확인할 수 있어요.',{exact:true}).waitFor();assert(!(await get('a')).data.devices.includes(await page.evaluate(async endpoint=>{const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(endpoint));return [...new Uint8Array(bytes)].map(n=>n.toString(16).padStart(2,'0')).join('');},subscription.endpoint+'-ui')));
  await page.goto(base+'/notification-shell.php');await page.locator('.ainoa-symbol').click();await page.getByRole('link',{name:/내 활동 알림/}).waitFor();await page.getByRole('link',{name:/내 활동 알림/}).click();await page.getByRole('heading',{name:'내 활동 알림',exact:true}).waitFor();
  assert.equal(errors.length,0,errors.join('\n'));
- await page.route('**/noa-bridge/notifications.php',route=>route.fulfill({status:401,contentType:'text/html',body:'<!doctype html><title>Unauthorized</title>'}));await page.reload();await page.getByRole('link',{name:'로그인',exact:true}).waitFor();
+ await page.route('**/noa-bridge/notifications.php',route=>route.fulfill({status:401,contentType:'text/html',body:'<!doctype html><title>Unauthorized</title>'}));await page.reload();await page.locator('#nnt-login').getByRole('link',{name:'로그인',exact:true}).waitFor();
  report.api.push('explicit user gesture permission only','subscribe and revoke UI','preferences persisted','AInoa notification navigation','host HTML 401 login recovery');
  writeFileSync(out+'/qa.json',JSON.stringify(report,null,2));console.log('NOTIFICATION_API_UI_PASS',JSON.stringify(report));
 }finally{await browser.close();server.kill();}
