@@ -59,9 +59,13 @@ jobs:
       - name: Verify mobile, desktop, native permissions and actual isolated mutations
         run: |
           node "$RUNNER_TEMP/noa-workspace/check.mjs"
+      - name: Verify reviewed repairs and all common form entry points
+        run: |
           php tests/workspace/quality_test.php
           node "$RUNNER_TEMP/noa-workspace/quality.mjs"
-          "$RUNNER_TEMP/noa-workspace/node_modules/.bin/playwright" install --with-deps webkit
+      - name: Verify existing Chromium and WebKit navigation
+        run: |
+          timeout 300s "$RUNNER_TEMP/noa-workspace/node_modules/.bin/playwright" install --with-deps webkit
           node "$RUNNER_TEMP/noa-workspace/navigation.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
