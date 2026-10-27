@@ -30,3 +30,10 @@ $db->beginTransaction();nup_store($db,$key,'story',$d,0,'fixture');nup_validate_
 $issue=issue(nrq_scan($db),'classification','genre');must($issue['actionUrl']==='/noa-editor.php?key='.rawurlencode($key),'classification_report_opens_real_editor');
 $db->beginTransaction();try{nup_validate_classification($db,$key,['genreId'=>'your-story','sourceRef'=>'single:test'],['genreId'=>'cover-reborn']);throw new RuntimeException('linked_reclassification_accepted');}catch(DomainException $e){must($e->getMessage()==='classification_source_linked','linked_source_protected');}finally{$db->rollBack();}
 echo "CLASSIFICATION_FIXTURE_LINK_GUARD_AND_REPAIR_ENTRY_OK\n";
+
+$db->beginTransaction();try{
+ $p=nup_normalize(['genreId'=>'your-story','title'=>'연결 검증 목록','body'=>['members'=>[['key'=>$key]]]],'playlist');nup_store($db,'playlist:classification-check','playlist',$p,0,'fixture');
+ try{nup_validate_classification($db,$key,$d,nup_patch($d,'story',['genre'=>'your-story']));throw new RuntimeException('playlist_move_accepted');}catch(DomainException $e){must($e->getMessage()==='classification_playlist_linked','playlist_membership_protected');}
+}finally{$db->rollBack();}
+$db->beginTransaction();try{try{nup_validate_classification($db,$key,$d,nup_patch($d,'story',['genre'=>'kpop-original','ep'=>'02']));throw new RuntimeException('ep_collision_accepted');}catch(DomainException $e){must($e->getMessage()==='classification_ep_conflict','existing_ep_protected');}}finally{$db->rollBack();}
+echo "CLASSIFICATION_MEMBERSHIP_AND_EP_COLLISION_GUARDS_OK\n";

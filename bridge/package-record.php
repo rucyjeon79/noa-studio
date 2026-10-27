@@ -72,17 +72,18 @@ function nup_patch(array $d,string $kind,array $patch):array{
 /** Keep identities and immutable imports stable; reject a move that breaks existing links. */
 function nup_validate_classification(PDO $db,string $key,array $before,array $after):void{
  if(($before['genreId']??'')===($after['genreId']??''))return;
- $identity=nie_identity($db,$key);$ep=(int)($after['ep']??0);
+ $identity=nie_identity($db,$key);$ep=(int)($after['ep']??0);$previousEp=(int)($before['ep']??0);$identities=[$key,$identity];
+ $q=$db->prepare("SELECT entity_id FROM noa_catalog_aliases WHERE alias_key=? AND batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)");$q->execute([$key]);$identities=array_merge($identities,$q->fetchAll(PDO::FETCH_COLUMN));
  if(!empty($before['sourceRef']))throw new DomainException('classification_source_linked');
  $q=$db->query("SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','story','playlist') OR doc_key='meta:category-order' ORDER BY doc_key FOR UPDATE");
  foreach($q as $r){if($r['doc_key']===$key)continue;$d=json_decode($r['payload'],true);if(!empty($d['_noaTrash']))continue;
-  if(($d['sourceRef']??'')===$key||(($before['genreId']??'')==='kpop-original'&&$ep>0&&$r['kind']!=='playlist'&&nup_type($d,$r['kind'])==='ep'&&(int)($d['ep']??0)===$ep))throw new DomainException('classification_source_linked');
+  if(($d['sourceRef']??'')===$key||(($before['genreId']??'')==='kpop-original'&&$previousEp>0&&$r['kind']!=='playlist'&&nup_type($d,$r['kind'])==='ep'&&(int)($d['ep']??0)===$previousEp))throw new DomainException('classification_source_linked');
   if($ep>0&&in_array($r['kind'],['single','story'],true)&&($d['genreId']??'')===$after['genreId']&&(int)($d['ep']??0)===$ep)throw new DomainException('classification_ep_conflict');
   if($r['kind']==='playlist'){
-   foreach($d['body']['members']??[] as $m)if(in_array($m['key']??'',[$key,$identity],true))throw new DomainException('classification_playlist_linked');
-   if($ep>0&&($d['genreId']??'')===($before['genreId']??'')&&(int)($d['act']??0)===(int)ceil($ep/10))throw new DomainException('classification_playlist_linked');
+   foreach($d['body']['members']??[] as $m)if(in_array($m['key']??'',$identities,true))throw new DomainException('classification_playlist_linked');
+   if($previousEp>0&&($d['genreId']??'')===($before['genreId']??'')&&(int)($d['act']??0)===(int)ceil($previousEp/10))throw new DomainException('classification_playlist_linked');
   }
-  if($r['doc_key']==='meta:category-order')foreach($d['playlists']??[] as $list)if(array_intersect($list['keys']??[],[$key,$identity]))throw new DomainException('classification_playlist_linked');
+  if($r['doc_key']==='meta:category-order')foreach($d['playlists']??[] as $list)if(array_intersect($list['keys']??[],$identities))throw new DomainException('classification_playlist_linked');
  }
 }
 function nup_original(PDO $db,array $d):array{
