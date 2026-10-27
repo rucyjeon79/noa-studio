@@ -19,7 +19,10 @@ if($nr_enabled){
  }
  if($path==='/noa-subscription.php'&&($_SERVER['REQUEST_METHOD']??'GET')==='GET'&&in_array((int)($member['mb_level']??0),[2,3,4],true)){header('Location: /noa-membership.php',true,302);exit;}
 }
+// GnuBoard includes extensions in its request scope; keep asset variables local.
+(static function(){
 if(($_SERVER['REQUEST_METHOD']??'GET')==='GET'&&!str_starts_with($_SERVER['REQUEST_URI']??'','/adm/')){
  $assetRoot=dirname(__DIR__);$assets='';foreach(['css','js']as $kind){$file=$assetRoot.'/noa-account.'.$kind;if(is_file($file)){$url='/noa-account.'.$kind.'?v='.hash_file('sha256',$file);$assets.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'" defer></script>';}}
  ob_start(static function($html)use($assets){return stripos($html,'</head>')!==false&&!str_contains($html,'/noa-account.js')?str_ireplace('</head>',$assets.'</head>',$html):$html;});
 }
+})();

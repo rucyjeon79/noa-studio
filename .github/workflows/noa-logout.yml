@@ -1,0 +1,60 @@
+name: NOA Logout Return and Session Verification
+on:
+  pull_request:
+    paths: ['deploy/noa-membership.extend.php','tests/membership/extension_scope.php','scripts/noa_logout_*.py','scripts/qa/noa-logout.mjs','.github/workflows/noa-logout.yml']
+  push:
+    branches: [main]
+    paths: ['deploy/noa-membership.extend.php','tests/membership/extension_scope.php','scripts/noa_logout_*.py','scripts/qa/noa-logout.mjs','.github/workflows/noa-logout.yml']
+permissions: {contents: read}
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - run: |
+          php -l deploy/noa-membership.extend.php
+          php -l tests/membership/extension_scope.php
+          php tests/membership/extension_scope.php
+          node --check scripts/qa/noa-logout.mjs
+          python3 -m py_compile scripts/noa_logout_release.py scripts/noa_logout_live.py
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: candidate
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 12
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - name: Prepare pinned transport and browser
+        run: |
+          python3 -m pip install 'paramiko>=3,<5'
+          npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-logout" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-logout.mjs "$RUNNER_TEMP/noa-logout/check.mjs"
+      - name: Deploy the isolated account asset injection
+        id: upload
+        run: python3 scripts/noa_logout_release.py
+      - name: Verify actual member login, logout, revoked session and home on mobile and desktop
+        id: live
+        run: |
+          export NOA_LOGOUT_BROWSER="$RUNNER_TEMP/noa-logout/check.mjs"
+          python3 scripts/noa_logout_live.py
+          python3 -c "import base64; from pathlib import Path; [print('NOA_LOGOUT_IMAGE_'+p.stem+' '+base64.b64encode(p.read_bytes()).decode()) for p in Path('logout-proof').glob('home-*.png')]"
+      - name: Restore only this release if deployment or live verification fails
+        if: failure() && (steps.upload.outcome == 'failure' || steps.live.outcome == 'failure')
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then python3 scripts/noa_logout_release.py rollback; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-logout-proof-${{ github.run_id }}', path: logout-proof/, retention-days: 14}
