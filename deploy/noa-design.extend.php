@@ -29,6 +29,8 @@ function noa_design_assets(){
  $native=preg_match('~^/(?:bbs|adm)/~',$path);
  $workspace=preg_match('~^/noa-app/(?:database|taxonomy|jukebox)/(?:index[.]php)?$~',$path);
  $public=in_array($path,['/','/index.php'],true)||preg_match('~^/noa-(?:music|youtube|world|my|settings|sitemap|notifications|catalog|ai-lab|library|editor|download|install|theme-admin|creator|channel|subscription|login|membership|quality)(?:-admin)?[.]php$~',$path);
+ // All application HTML pages share the same voice; JSON responses are untouched.
+ $public=$public||(bool)preg_match('~^/noa-[a-z0-9-]+[.]php$~D',$path);
  if(!$native&&!$workspace&&!$public)return;
  if(!$native&&($_SERVER['REQUEST_METHOD']??'GET')!=='GET')return;
  // Standalone views do not call GnuBoard html_end(); inject only completed HTML.

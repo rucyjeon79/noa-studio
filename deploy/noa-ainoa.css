@@ -61,3 +61,5 @@
 .noa-site-map-link[aria-disabled="true"]{border-style:dashed;background:var(--noa-surface)}
 .noa-site-map-link[aria-disabled="true"] strong::after{content:' · 이용 조건';font-size:12px;font-weight:400}
 [data-noa-condition]:focus-visible{outline:2px solid var(--noa-accent);outline-offset:3px}
+
+html[data-noa-voice-embedded] #noa-ainoa{display:none!important}

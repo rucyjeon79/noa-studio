@@ -17,6 +17,9 @@ try{for(const engine of ['chromium','webkit']){
  await p.goto(base+'/noa-sitemap.php');await p.locator('.noa-site-map-link').first().waitFor();const locked=p.locator('[data-noa-route="music"]');if(['guest','member'].includes(role)){assert.equal(await locked.getAttribute('href'),null);await locked.focus();await p.keyboard.press('Enter');await p.waitForFunction(()=>document.querySelector('.ainoa-message p')?.textContent.includes('VIP회원'));assert(new URL(p.url()).pathname==='/noa-sitemap.php');}else assert.equal(await locked.getAttribute('href'),'/noa-music.php');
  await p.evaluate(()=>window.NoaVoice.say('저장했습니다. <img src=x onerror=alert(1)>',{priority:true,sticky:true,force:true}));await p.waitForFunction(()=>document.querySelector('.ainoa-message p').textContent.includes('저장했어요'));assert.equal(await bubble.locator('img').count(),0);
  await p.evaluate(()=>{let el=document.createElement('p');el.setAttribute('role','alert');el.textContent='입력 내용을 확인해 주세요.';document.querySelector('main').append(el);});await bubble.locator('button').click();await p.waitForFunction(()=>document.querySelector('.ainoa-message p')?.textContent.includes('입력 내용'));
+ // Notices emitted from a modal must be readable above that modal and survive closing it.
+ await p.evaluate(()=>{const d=document.createElement('dialog');d.id='voice-modal';d.innerHTML='<p>댓글</p>';document.body.append(d);d.showModal();window.NoaVoice.say('댓글 저장에 실패했어요.',{priority:true,sticky:true,force:true});});
+ assert(await p.locator('#voice-modal .ainoa-message').isVisible());await p.locator('#voice-modal .ainoa-message button').click();await p.evaluate(()=>{document.getElementById('voice-modal').close();});await p.waitForFunction(()=>document.getElementById('noa-ainoa').parentElement===document.body);
  assert.deepEqual(errors,[]);report.push({engine,width,theme,role,fiveMenus:true,conditions:true,welcomeFacts:true,escape:true});await c.close();
  }
  await browser.close();browser=null;

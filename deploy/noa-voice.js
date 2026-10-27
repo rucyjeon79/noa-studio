@@ -7,24 +7,27 @@ function compose(text,{date=new Date(),title='',index=0,name=''}={}){
  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',month:'numeric',hour:'numeric',hourCycle:'h23'}).formatToParts(date),part=k=>Number(parts.find(p=>p.type===k).value),month=part('month'),hour=part('hour');
  const season=seasons[Math.floor(month%12/3)],time=times[hour<6?'dawn':hour<12?'morning':hour<18?'day':hour<21?'evening':'night'];
  const opening=[`${season[1]} ${time[index%3]}, 작은 소식이 있어요.`,`${time[index%3]}, ${season[0]}의 감성을 살짝 담아 인사할게요.`,`${season[2]} ${time[index%3]}, 함께해 줘서 반가워요.`][Math.floor(index/3)%3];
- const feeling=title?['지금 만난 「'+title+'」의 여운 곁에서 전할게요.','「'+title+'」와 함께하는 순간에 제 소식도 놓아둘게요.','「'+title+'」가 흐르는 이 페이지에서 잠깐 이야기 나눠요.'][index%3]:moods[Math.floor(index/9)%moods.length];
+ const feeling=title?['지금 만난 「'+title+'」의 여운 곁에서 전할게요.','「'+title+'」와 함께하는 순간에 제 소식도 놓아둘게요.','「'+title+'」를 만난 이 페이지에서 잠깐 이야기 나눠요.'][index%3]:moods[Math.floor(index/9)%moods.length];
  return (name?name+'님, ':'')+opening+' '+feeling+'\n'+String(text);
 }
 if(typeof module==='object'&&module.exports)module.exports={compose};
 if(!scope.document||scope.NoaVoice)return;
+const parentVoice=(()=>{try{return scope.parent!==scope?scope.parent.NoaVoice:null;}catch{return null;}})();
 const doc=scope.document,read=k=>{try{return sessionStorage.getItem(k);}catch{return null;}},write=(k,v)=>{try{sessionStorage.setItem(k,v);}catch{}};
 let counter=Number(read('noa-voice-sequence')||0),account=null,currentTrack=null,active=null,queue=[],timer=null,mounted=false,ownChange=false;
 const recent=new Map();
 function readable(text){return String(text||'').trim().replace(/했습니다\./g,'했어요.').replace(/되었습니다\./g,'됐어요.').replace(/합니다\./g,'해요.').replace(/됩니다\./g,'돼요.').replace(/있습니다\./g,'있어요.').replace(/없습니다\./g,'없어요.');}
 function say(text,options={}){
+ if(parentVoice)return parentVoice.say(text,options);
  text=readable(text);if(!text)return;
  const key=options.key||text,now=Date.now();if(!options.force&&now-(recent.get(key)||0)<4000)return;recent.set(key,now);if(recent.size>200)recent.delete(recent.keys().next().value);
  const item={text,options};if(options.key){const i=queue.findIndex(x=>x.options.key===options.key);if(i>=0)queue.splice(i,1);}
  if(options.priority&&active){queue.unshift(item);close(false);}else{queue.push(item);render();const b=doc.querySelector('.ainoa-message-actions button');if(b&&queue.length)b.textContent='다음 소식 · '+queue.length;}
 }
 function close(next=true){try{sessionStorage.removeItem('noa-voice-redirect');}catch{}clearTimeout(timer);active=null;const tip=doc.querySelector('#noa-ainoa .ainoa-tip');if(tip)tip.hidden=true;if(next||queue.length)render();}
+function place(){const root=doc.getElementById('noa-ainoa'),modal=[...doc.querySelectorAll('dialog[open]')].at(-1);if(root&&root.parentElement!==(modal||doc.body))(modal||doc.body).append(root);}
 function render(){
- if(active||!queue.length||doc.hidden)return;const tip=doc.querySelector('#noa-ainoa .ainoa-tip');if(!tip)return;
+ place();if(active||!queue.length||doc.hidden)return;const tip=doc.querySelector('#noa-ainoa .ainoa-tip');if(!tip)return;
  active=queue.shift();ownChange=true;tip.replaceChildren();tip.classList.add('ainoa-message');tip.setAttribute('aria-live','polite');tip.setAttribute('aria-atomic','true');
  const label=doc.createElement('strong');label.textContent='AInoa';const text=doc.createElement('p');
  text.textContent=compose(active.text,{index:counter++,name:active.options.name||'',title:currentTrack?.title||''});write('noa-voice-sequence',String(counter));
@@ -67,13 +70,14 @@ async function welcome(){
  scope.dispatchEvent(new CustomEvent('noa-voice-ready',{detail:{member:d.member,accountKey:d.accountKey}}));
  }catch{if(!read('noa-welcome-failed')){write('noa-welcome-failed','1');say('계정 정보를 잠시 불러오지 못했어요. 구독 상태·잔여일·포인트는 MY에서 다시 확인해 주세요.',{name:'방문자',sticky:true,key:'welcome-error'});}}
 }
-function boot(){if(mounted)return;mounted=true;
+function boot(){if(mounted)return;mounted=true;if(parentVoice)doc.documentElement.dataset.noaVoiceEmbedded='true';
  new MutationObserver(records=>{if(ownChange)return;if(records.some(r=>!r.target.closest?.('.ainoa-tip')))schedule();}).observe(doc.body,{subtree:true,childList:true,characterData:true});
  try{const carried=JSON.parse(read('noa-voice-redirect')||'null');sessionStorage.removeItem('noa-voice-redirect');if(carried&&Date.now()-carried.at<30000)say(carried.text,{sticky:true,priority:true});}catch{}
- schedule();if(!location.pathname.startsWith('/adm/'))void welcome();
+ schedule();if(!parentVoice&&!location.pathname.startsWith('/adm/'))void welcome();
 }
+doc.addEventListener('close',e=>{if(e.target.matches?.('dialog')&&e.target.contains(doc.getElementById('noa-ainoa')))doc.body.append(doc.getElementById('noa-ainoa'));},true);
 doc.addEventListener('invalid',e=>{if(e.target.validationMessage){e.preventDefault();say(e.target.validationMessage,{priority:true,sticky:true,key:'form-validation'});}},true);
 scope.addEventListener('pageshow',e=>{if(e.persisted){close(false);void welcome();}});
-scope.NoaVoice={say,compose,getAccount:()=>account};if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+scope.NoaVoice={say,compose,getAccount:()=>parentVoice?parentVoice.getAccount():account};if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 doc.addEventListener('visibilitychange',()=>{if(!doc.hidden)render();});
 })(typeof window==='undefined'?globalThis:window);
