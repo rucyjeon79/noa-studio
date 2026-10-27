@@ -58,7 +58,7 @@ function noa_design_assets(){
   });
   return;
  }
- if(!str_starts_with($path,'/adm/'))add_javascript($ainoa,1001);
+ add_javascript($ainoa,1001);
  // Native skins use GnuBoard's ordered asset registration.
  if(!str_starts_with($path,'/adm/'))add_stylesheet('<link rel="stylesheet" href="/noa-policy-20261024.css?v=20261024-approved-ui">',999);
  $config['cf_title']='NOA STUDIO';

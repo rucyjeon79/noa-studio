@@ -21,6 +21,7 @@ try{for(const engine of ['chromium','webkit']){
  await p.evaluate(()=>{const d=document.createElement('dialog');d.id='voice-modal';d.innerHTML='<p>댓글</p>';document.body.append(d);d.showModal();window.NoaVoice.say('댓글 저장에 실패했어요.',{priority:true,sticky:true,force:true});});
  assert(await p.locator('#voice-modal .ainoa-message').isVisible());await p.locator('#voice-modal .ainoa-message button').click();await p.evaluate(()=>{document.getElementById('voice-modal').close();});await p.waitForFunction(()=>document.getElementById('noa-ainoa').parentElement===document.body);
  await p.evaluate(()=>alert('이동 전 안내를 보관해요.'));await p.goto(base+'/');await p.waitForFunction(()=>document.querySelector('.ainoa-message p')?.textContent.includes('이동 전 안내'));
+ if(role==='admin'){await p.goto(base+'/adm/index.php');await p.getByRole('button',{name:'확인',exact:true}).click();await p.waitForFunction(()=>document.querySelector('.ainoa-message p')?.textContent.includes('설정을 확인해'));assert(await p.locator('#noa-ainoa').isVisible());}
  assert.deepEqual(errors,[]);report.push({engine,width,theme,role,fiveMenus:true,conditions:true,welcomeFacts:true,escape:true});await c.close();
  }
  await browser.close();browser=null;

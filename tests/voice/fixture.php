@@ -8,3 +8,8 @@ if($path==='/noa-ainoa.php'){
 }
 if($path==='/noa2.php')
 CODE,$router);file_put_contents($root.'/router.php',$router);
+
+@mkdir($root.'/adm',0700,true);
+file_put_contents($root.'/adm/index.php', <<<'HTML'
+<?php require dirname(__DIR__).'/common.php'; ?><!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>회원 관리</title></head><body><h1>회원 관리</h1><button onclick="alert('설정을 확인해 주세요.')">확인</button></body></html>
+HTML);

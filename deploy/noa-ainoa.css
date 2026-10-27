@@ -63,3 +63,6 @@
 [data-noa-condition]:focus-visible{outline:2px solid var(--noa-accent);outline-offset:3px}
 
 html[data-noa-voice-embedded] #noa-ainoa{display:none!important}
+
+/* Local widget colors do not change the native administrator theme. */
+html[data-noa-voice-admin] #noa-ainoa{--noa-bg:#fff;--noa-surface:#fff;--noa-raised:#f4f5f8;--noa-text:#182333;--noa-muted:#526175;--noa-accent:#886417;--noa-line:#d1d7df}

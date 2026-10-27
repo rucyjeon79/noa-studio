@@ -43,7 +43,7 @@ doc.addEventListener('keydown',e=>{if(!['Enter',' '].includes(e.key))return;cons
 scope.addEventListener('noa-track-selected',e=>{currentTrack=e.detail?.record||null;});
 scope.addEventListener('noa-notice',e=>say(e.detail?.text,e.detail||{}));
 // Preserve native confirmation/prompt behavior. Nonblocking alerts survive redirects via one-shot storage.
-const nativeAlert=scope.alert.bind(scope);scope.alert=text=>{if(location.pathname.startsWith('/adm/'))return nativeAlert(text);write('noa-voice-redirect',JSON.stringify({text:String(text),at:Date.now()}));say(text,{priority:true,sticky:true,key:'pending-alert'});};
+scope.alert=text=>{write('noa-voice-redirect',JSON.stringify({text:String(text),at:Date.now()}));say(text,{priority:true,sticky:true,key:'pending-alert'});};
 const statusSelector='[role="status"],[role="alert"],.noa-toast,.toast,.alert-danger,.alert-success,.alert-warning';
 const seen=new WeakMap();let scheduled=false;
 function markAccess(){
@@ -70,10 +70,10 @@ async function welcome(){
  scope.dispatchEvent(new CustomEvent('noa-voice-ready',{detail:{member:d.member,accountKey:d.accountKey}}));
  }catch{if(!read('noa-welcome-failed')){write('noa-welcome-failed','1');say('계정 정보를 잠시 불러오지 못했어요. 구독 상태·잔여일·포인트는 MY에서 다시 확인해 주세요.',{name:'방문자',sticky:true,key:'welcome-error'});}}
 }
-function boot(){if(mounted)return;mounted=true;if(parentVoice)doc.documentElement.dataset.noaVoiceEmbedded='true';
+function boot(){if(mounted)return;mounted=true;if(location.pathname.startsWith('/adm/'))doc.documentElement.dataset.noaVoiceAdmin='true';if(parentVoice)doc.documentElement.dataset.noaVoiceEmbedded='true';
  new MutationObserver(records=>{if(ownChange)return;if(records.some(r=>!r.target.closest?.('.ainoa-tip')))schedule();}).observe(doc.body,{subtree:true,childList:true,characterData:true});
  try{const carried=JSON.parse(read('noa-voice-redirect')||'null');sessionStorage.removeItem('noa-voice-redirect');if(carried&&Date.now()-carried.at<30000)say(carried.text,{sticky:true,priority:true,key:'pending-alert'});}catch{}
- schedule();if(!parentVoice&&!location.pathname.startsWith('/adm/'))void welcome();
+ schedule();if(!parentVoice)void welcome();
 }
 doc.addEventListener('close',e=>{if(e.target.matches?.('dialog')&&e.target.contains(doc.getElementById('noa-ainoa')))doc.body.append(doc.getElementById('noa-ainoa'));},true);
 doc.addEventListener('invalid',e=>{if(e.target.validationMessage){e.preventDefault();say(e.target.validationMessage,{priority:true,sticky:true,key:'form-validation'});}},true);
