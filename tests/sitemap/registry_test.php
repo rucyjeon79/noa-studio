@@ -11,9 +11,9 @@ try{
   $full=$root.'/'.$relative;if(!is_dir(dirname($full)))mkdir(dirname($full),0700,true);file_put_contents($full,'<?php ');$created[]=$full;
  }
  foreach(['bbs/board.php','bbs/content.php'] as $relative){$full=$root.'/'.$relative;file_put_contents($full,'<?php ');$created[]=$full;}
- $ids=static function(array $groups):array{return array_merge(...array_map(static fn($g)=>array_column($g['routes'],0),array_values($groups)));};
+ $ids=static function(array $groups):array{return array_merge(...array_map(static fn($g)=>array_column(array_filter($g['routes'],static fn($r)=>empty($r[6])),0),array_values($groups)));};
  $guest=noa_sitemap_visible_groups($root,'guest');$member=noa_sitemap_visible_groups($root,'member');$admin=noa_sitemap_visible_groups($root,'admin');
- check(!isset($guest['admin'])&&!isset($member['admin']),'administrator routes must be hidden from guest/member');
+ check(isset($guest['admin'],$member['admin'])&&$guest['admin']['routes'][0][6]!==''&&$member['admin']['routes'][0][6]!=='','administrator routes visible but disabled with conditions');
  check(in_array('popularity',$ids($admin),true)&&!in_array('popularity',$ids($guest),true)&&!in_array('popularity',$ids($member),true),'actual popularity service is administrator-only');
  check(isset($admin['admin-content'],$admin['admin-creation'],$admin['admin-operation'],$admin['admin-advanced'])&&count($admin['admin']['routes'])===1,'administrator task groups and single workspace entry included');
  foreach(noa_workspace_groups() as $g)check(is_string($g['intro']??null)&&count($g['routes'])>0,'task group description and destinations required');

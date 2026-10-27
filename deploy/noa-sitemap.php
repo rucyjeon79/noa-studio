@@ -124,13 +124,20 @@ function noa_sitemap_visible_groups(string $root,string $role,array $boards=[],a
         $groups['legal']['routes'][]=['legal-'.$id,$label,'서비스 운영 안내','/bbs/content.php?co_id='.$id,'book','public'];
     }
     foreach($groups as $name=>&$group){
-        $group['routes']=array_values(array_filter($group['routes'],static function($route)use($root,$role){
-            $audience=$route[5];if(function_exists('nam_requirement')&&!nam_allowed($GLOBALS['noa_access']??nam_access(),nam_requirement(parse_url($route[3],PHP_URL_PATH)?:'/','GET',[])))return false;
-            if($audience==='admin'&&$role!=='admin')return false;
-            if($audience==='member'&&!in_array($role,['member','admin'],true))return false;
-            if($audience==='guest'&&$role!=='guest')return false;
-            return noa_sitemap_available($route[3],$root);
-        }));
+        foreach($group['routes'] as &$route){
+            $reason='';$audience=$route[5];
+            if($audience==='admin'&&$role!=='admin')$reason='최고관리자 전용 작업실이에요. 관리자 계정으로 로그인해 주세요.';
+            elseif($audience==='member'&&$role==='guest')$reason='로그인한 회원이 이용할 수 있어요. 먼저 로그인해 주세요.';
+            elseif($audience==='guest'&&$role!=='guest')$reason='이미 로그인되어 있어요. 계정을 바꾸려면 MY에서 로그아웃해 주세요.';
+            elseif(function_exists('nam_requirement')){
+                parse_str((string)parse_url($route[3],PHP_URL_QUERY),$query);
+                $need=nam_requirement(parse_url($route[3],PHP_URL_PATH)?:'/','GET',$query);
+                if(!nam_allowed($GLOBALS['noa_access']??nam_access(),$need))$reason=match($need){'music'=>'음원은 이용 기간이 남은 VIP회원·VIP 크리에이터가 들을 수 있어요. MY에서 이용권을 확인해 주세요.','creator'=>'창작자·VIP 크리에이터에게 열리는 메뉴예요. 계정의 창작자 자격을 확인해 주세요.','admin'=>'최고관리자 계정으로 로그인해 주세요.',default=>'로그인한 회원이 이용할 수 있어요. 먼저 로그인해 주세요.'};
+            }
+            if(!noa_sitemap_available($route[3],$root))$reason='아직 준비 중인 메뉴예요. 준비가 끝나면 이곳에서 열어드릴게요.';
+            $route[6]=$reason;
+        }
+        unset($route);
         if(!$group['routes'])unset($groups[$name]);
     }
     unset($group);
@@ -198,6 +205,6 @@ $super=$logged&&($is_admin??'')==='super';
 $groups=noa_sitemap_visible_groups(__DIR__,noa_sitemap_role($logged,(string)($is_admin??'')),$boards,$contents);
 function noa_sitemap_escape(string $value):string{return htmlspecialchars($value,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
 ?><!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>사이트맵 | NOA STUDIO</title><link rel="stylesheet" href="/noa-ui.css?v=20261024-category-complete"><link rel="stylesheet" href="/noa-policy-20261024.css?v=20261024-approved-ui"><script src="/noa-brand.js?v=20261021-brand1" defer></script><script src="/noa-ui.js?v=20261024-approved-ui" defer></script></head><body class="noa-page"><main><h1>사이트맵</h1><p class="noa-muted">NOA STUDIO의 음악, 영상과 서비스를 한곳에서 만나보세요.</p>
-<?php foreach($groups as $name=>$group):?><section class="noa-section noa-site-map" aria-labelledby="map-<?=noa_sitemap_escape($name)?>"><div class="noa-section-head"><h2 id="map-<?=noa_sitemap_escape($name)?>"><?=noa_sitemap_escape($group['title'])?></h2></div><nav class="noa-site-map-grid" aria-label="<?=noa_sitemap_escape($group['title'])?> 바로가기"><?php foreach($group['routes'] as $route):?><a class="noa-site-map-link" data-noa-route="<?=noa_sitemap_escape($route[0])?>" href="<?=noa_sitemap_escape($route[3])?>"><span aria-hidden="true"><?=noa_sitemap_icon($route[4])?></span><strong><?=noa_sitemap_escape($route[1])?></strong><small><?=noa_sitemap_escape($route[2])?></small></a><?php endforeach;?></nav></section><?php endforeach;?>
+<?php foreach($groups as $name=>$group):?><section class="noa-section noa-site-map" aria-labelledby="map-<?=noa_sitemap_escape($name)?>"><div class="noa-section-head"><h2 id="map-<?=noa_sitemap_escape($name)?>"><?=noa_sitemap_escape($group['title'])?></h2></div><nav class="noa-site-map-grid" aria-label="<?=noa_sitemap_escape($group['title'])?> 바로가기"><?php foreach($group['routes'] as $route):?><a class="noa-site-map-link" data-noa-route="<?=noa_sitemap_escape($route[0])?>" <?php if($route[6]):?>role="button" tabindex="0" aria-disabled="true" data-noa-condition="<?=noa_sitemap_escape($route[6])?>"<?php else:?>href="<?=noa_sitemap_escape($route[3])?>"<?php endif;?>><span aria-hidden="true"><?=noa_sitemap_icon($route[4])?></span><strong><?=noa_sitemap_escape($route[1])?></strong><small><?=noa_sitemap_escape($route[6]?:$route[2])?></small></a><?php endforeach;?></nav></section><?php endforeach;?>
 </main></body></html>
 

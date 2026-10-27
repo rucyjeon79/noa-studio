@@ -5,6 +5,7 @@ header('Content-Type: application/json; charset=utf-8');header('Cache-Control: p
 function na_reply(int $code,array $body):never{http_response_code($code);if(isset($body['error'])&&is_string($body['error'])&&preg_match('/^[a-z_]{1,60}$/D',$body['error']))header('X-NOA-Error-Code: '.$body['error']);echo json_encode($body,JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR);exit;}
 $a=nam_access(!empty($is_member)?(array)($member??[]):[],(string)($is_admin??''));$_SESSION['noa_ainoa_csrf']??=bin2hex(random_bytes(32));$method=$_SERVER['REQUEST_METHOD']??'GET';
 try{
+ if($method==='GET'&&($_GET['action']??'')==='welcome'){require_once __DIR__.'/noa-voice-state.php';na_reply(200,noa_voice_state(!empty($is_member)?(array)$member:[],$a));}
  if($method==='GET'&&($_GET['action']??'')==='status')na_reply(200,['ok'=>true,'csrf'=>$_SESSION['noa_ainoa_csrf'],'level'=>$a['level'],'admin'=>$a['admin'],'music'=>$a['music'],'member'=>$a['member'],'n80AutomationVersion'=>1,'adminAssistant'=>$a['admin'],'adminAssistantVersion'=>$a['admin']?substr((is_file(__DIR__.'/noa-ainoa-admin.js')?hash_file('sha256',__DIR__.'/noa-ainoa-admin.js'):'pending'),0,16):null]+na_chat_status(!empty($is_member)?(array)$member:[])+($a['admin']?['generation'=>na_generation_status()]:[]));
  if($method==='GET'&&($_GET['action']??'')==='admin_workspace'){
   if(!$a['admin'])na_reply(403,['ok'=>false,'error'=>'admin_required']);require_once __DIR__.'/noa-bridge/ainoa-automation.php';
