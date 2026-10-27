@@ -1,8 +1,10 @@
 name: NOA Home Entry and Apple Installation
 on:
+  pull_request:
+    paths: ['deploy/noa-install.*','deploy/noa-brand.js','deploy/noa-manifest.json','public/icon-maskable-*.png','public/icon-touch-180.png','scripts/noa_install_*','scripts/qa/noa-install.mjs','tests/pwa/**','.github/workflows/noa-install.yml']
   push:
     branches: [main]
-    paths: ['deploy/noa-install.*','scripts/noa_install_*','scripts/qa/noa-install.mjs','tests/pwa/**','.github/workflows/noa-install.yml']
+    paths: ['deploy/noa-install.*','deploy/noa-brand.js','deploy/noa-manifest.json','public/icon-maskable-*.png','public/icon-touch-180.png','scripts/noa_install_*','scripts/qa/noa-install.mjs','tests/pwa/**','.github/workflows/noa-install.yml']
 permissions: {contents: read}
 jobs:
   candidate:
@@ -34,7 +36,7 @@ jobs:
         if: always()
         with: {name: 'noa-install-candidate-${{ github.run_id }}', path: install-proof/, retention-days: 7}
   deploy:
-    if: ${{ !contains(github.event.head_commit.message, '[nav-release]') }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[nav-release]') }}
     needs: candidate
     runs-on: ubuntu-latest
     environment: production

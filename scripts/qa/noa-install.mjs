@@ -19,6 +19,28 @@ try{
    await p.goto(base+'/noa-music.php?track=known-deep-link');await p.waitForLoadState('domcontentloaded');assert.notEqual(new URL(p.url()).pathname,'/');report.launch.push({role,deliberateMusicPreserved:true,deepLinkPreserved:true});await c.close();
   }
   const r=await browser.newContext();const manifest=await(await r.request.get(base+'/noa-manifest.json')).json();assert.equal(manifest.start_url,'/');assert.equal(manifest.id,'/noa-music.php');
+  const maskable=manifest.icons.filter(i=>i.purpose==='maskable');
+  assert(maskable.some(i=>i.sizes==='192x192'));assert(maskable.some(i=>i.sizes==='512x512'));
+  const iconPage=await r.newPage();await iconPage.goto(base+'/noa-install.php');
+  await iconPage.waitForFunction(()=>document.querySelector('link[rel="apple-touch-icon"]')?.href.includes('icon-touch-180.png'));
+  assert.equal(await iconPage.locator('link[rel=manifest]').count(),1);
+  const iconSources=[...maskable.map(i=>({src:i.src,size:Number(i.sizes.split('x')[0])})),{src:'/noa-assets/icon-touch-180.png',size:180}];
+  report.icons=await iconPage.evaluate(async sources=>{
+   const results=[];
+   for(const source of sources){
+    const img=new Image();img.src=source.src;await img.decode();
+    const canvas=document.createElement('canvas');canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+    const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0);const pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+    let opaque=true;for(let i=3;i<pixels.length;i+=4)if(pixels[i]!==255){opaque=false;break;}
+    results.push({src:source.src,width:img.naturalWidth,height:img.naturalHeight,expected:source.size,opaque});
+   }
+   return results;
+  },iconSources);
+  for(const icon of report.icons){assert.equal(icon.width,icon.expected);assert.equal(icon.height,icon.expected);assert(icon.opaque,'installation artwork must cover transparent corners');}
+  await iconPage.setViewportSize({width:760,height:420});
+  await iconPage.setContent('<html><head><meta charset="utf-8"><style>body{margin:24px;background:#14161b;color:#eee;font:15px sans-serif}h1{font-size:22px}main{display:flex;gap:30px;padding-top:22px}figure{margin:0;text-align:center}.icon{width:140px;height:140px;background:white;overflow:hidden}.icon img{width:100%;height:100%;display:block}.circle{border-radius:50%}.rounded{border-radius:26%}.square{border-radius:16%}.old img{width:70%;height:70%;margin:15%}figcaption{margin-top:14px}p{color:#aaa;font-size:13px}</style></head><body><h1>NOA STUDIO · Installation icons</h1><main><figure><div class="icon circle old"><img src="'+base+'/noa-assets/icon-512.png"></div><figcaption>Previous padding</figcaption></figure>'+['circle','rounded','square'].map(shape=>'<figure><div class="icon '+shape+'"><img src="'+base+'/noa-assets/icon-maskable-512.png"></div><figcaption>'+shape+'</figcaption></figure>').join('')+'</main><p>Browser mask preview; physical device installation is not simulated.</p></body></html>');
+  await iconPage.locator('img').evaluateAll(imgs=>Promise.all(imgs.map(img=>img.decode())));
+  await iconPage.screenshot({path:out+'/installation-icons.png'});await iconPage.close();
   const apple=await r.request.get(base+'/noa-download.php',{headers:{'User-Agent':profiles.ios.userAgent},maxRedirects:0});assert.equal(apple.status(),302);assert(apple.headers().location.startsWith('/noa-install.php'));const install=await r.request.get(base+'/noa-install.php');assert.equal(install.status(),200);assert((await install.text()).includes('iPhone · iPad'));report.publicInstallationPage=true;report.appleNeverDownloadsApk=true;await r.close();
   if(!live){
    report.memberHeader=[];
