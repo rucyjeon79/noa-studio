@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedDate": "2026-10-27",
+  "updatedDate": "2026-10-28",
   "purpose": "NOA STUDIO Work 실행·중단 복구 기준. 다음 실행은 최신 GitHub와 운영 상태를 대조하고 마지막 확인된 성공 단계부터 이어간다.",
   "executionRules": [
     "완료는 필요한 코드 수정, GitHub 반영, 자동배포 성공, 실제 운영 검증을 모두 충족한 경우에만 보고한다.",
@@ -1658,5 +1658,24 @@
       "limitations": "At most two inline deliveries per request; scheduled overflow/retries and device/network delays remain possible.",
       "evidence": "docs/operations/push-delay-20261028.md"
     }
+  },
+  "ainoaVoiceRelease": {
+    "status": "deployed",
+    "pullRequests": [
+      242,
+      243
+    ],
+    "commit": "afeba62ef721d9608726787323131c6d88a4c2fd",
+    "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40603423224",
+    "deployedAt": "2026-10-28T08:40:37+09:00",
+    "verifiedUiCases": 32,
+    "defaultVoiceCombinations": 54,
+    "protectedUnchanged": 17,
+    "databaseWrites": 0,
+    "pointDebits": 0,
+    "liveGuestWelcomeVerified": true,
+    "liveLockedNavigationVerified": true,
+    "authenticatedFactsVerification": "isolated fixtures; no production account login",
+    "evidence": "docs/operations/ainoa-voice-20261028.md"
   }
 }
