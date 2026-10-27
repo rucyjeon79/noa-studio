@@ -10,3 +10,5 @@
 .noa-page .noa-record-section[hidden],.noa-record-field[hidden],.noa-record-setup[hidden]{display:none}.noa-page .noa-record-field input[type=checkbox]{display:inline-block;vertical-align:middle}
 
 .noa-record-classification :is(select,input){min-width:0;max-width:100%}.noa-record-classification [hidden]{display:none!important}
+
+.noa-page .noa-collection-picker{margin-top:20px;min-width:0}.noa-page .noa-collection-heading{font-weight:600;margin:0 0 8px}.noa-page .noa-collection-picker .noa-collection-option{display:flex;align-items:center;gap:12px;min-height:48px;padding:8px 12px;margin:8px 0;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,8px);background:var(--noa-bg);color:var(--noa-text);cursor:pointer}.noa-page .noa-collection-option span{min-width:0;overflow-wrap:anywhere}.noa-page .noa-collection-option input[type=checkbox]{display:block;flex:0 0 20px;width:20px;height:20px;min-height:20px;margin:0;padding:0;accent-color:var(--noa-accent)}.noa-page .noa-collection-option:has(:checked){border-color:var(--noa-accent)}

@@ -37,3 +37,21 @@ $db->beginTransaction();try{
 }finally{$db->rollBack();}
 $db->beginTransaction();try{try{nup_validate_classification($db,$key,$d,nup_patch($d,'story',['genre'=>'kpop-original','ep'=>'02']));throw new RuntimeException('ep_collision_accepted');}catch(DomainException $e){must($e->getMessage()==='classification_ep_conflict','existing_ep_protected');}}finally{$db->rollBack();}
 echo "CLASSIFICATION_MEMBERSHIP_AND_EP_COLLISION_GUARDS_OK\n";
+
+// Reproduce a catalog document whose imported alias has a different catalog ID.
+$alias=str_repeat('2',64);nc_insert($db,'noa_catalog_songs',['song_id'=>$alias,'identity_json'=>'[]','genre_id'=>'unclassified','language'=>'ko','version_name'=>'original','ep'=>''],['song_id']);nc_insert($db,'noa_catalog_aliases',['batch_id'=>$batch,'alias_key'=>$key,'entity_id'=>$alias],['batch_id','alias_key','entity_id']);
+$pool=nup_song_pool($db);must(nup_member_owner($pool,$id)===$key&&nup_member_owner($pool,$alias)===$key&&nup_member_owner($pool,$key)===$key,'catalog_and_import_alias_have_one_canonical_owner');
+foreach(['a'=>'your-story','b'=>'your-story','c'=>'cover-reborn','d'=>'your-story']as $letter=>$genre){$pid=str_repeat($letter,24);$list=nup_normalize(['genreId'=>$genre,'title'=>'묶음 검증 '.$letter,'visibility'=>'public','customPlaylistId'=>$pid,'body'=>['members'=>$letter==='a'?[['key'=>'story:test','title'=>'기존 첫 곡']]:[]]],'playlist');if($letter==='d')$list['_noaTrash']=['fixture'=>true];$db->beginTransaction();nup_store($db,'playlist:custom:'.$pid,'playlist',$list,0,'fixture');$db->commit();}
+$a='playlist:custom:'.str_repeat('a',24);$b='playlist:custom:'.str_repeat('b',24);$other='playlist:custom:'.str_repeat('c',24);$trashed='playlist:custom:'.str_repeat('d',24);$moved=nup_patch($d,'story',['genre'=>'your-story']);
+$db->beginTransaction();try{
+ $beforeBody=$moved['body'];nup_apply_collections($db,$key,$moved,[$a,$b],[$a=>1,$b=>1],'fixture');nup_validate_classification($db,$key,$d,$moved);$lists=nup_collections($db);must(array_column($lists[$a]['payload']['body']['members'],'key')===['story:test',$id],'append_preserves_existing_order');must($moved['body']===$beforeBody,'membership_does_not_edit_song_body');must($lists[$a]['revision']===2&&$lists[$b]['revision']===2,'both_collections_versioned');
+ nup_apply_collections($db,$key,$moved,[$b],[$a=>2,$b=>2],'fixture');must(array_column(nup_collections($db)[$a]['payload']['body']['members'],'key')===['story:test'],'remove_preserves_other_songs');
+ try{nup_apply_collections($db,$key,$moved,[$a],[$a=>1,$b=>2],'fixture');throw new RuntimeException('stale_collection_accepted');}catch(DomainException $e){must($e->getMessage()==='collection_revision_conflict','collection_cas');}
+ foreach([$other,$trashed]as $invalid)try{nup_apply_collections($db,$key,$moved,[$invalid],[$invalid=>1],'fixture');throw new RuntimeException('invalid_collection_accepted');}catch(InvalidArgumentException $e){must($e->getMessage()==='collection_unavailable','genre_and_trash_guard');}
+}finally{$db->rollBack();}
+must(nup_collections($db)[$a]['revision']===1,'all_membership_changes_roll_back_together');
+$db->beginTransaction();try{nc_insert($db,'noa_catalog_aliases',['batch_id'=>$batch,'alias_key'=>'story:quality-one','entity_id'=>$alias],['batch_id','alias_key','entity_id']);must(nup_member_owner(nup_song_pool($db),$alias)===null,'ambiguous_import_alias_never_guessed');}finally{$db->rollBack();}
+echo "COLLECTION_CATALOG_ALIAS_APPEND_REMOVE_MULTIPLE_CAS_ATOMICITY_AND_GENRE_GUARDS_OK\n";
+
+copy(__DIR__.'/../../deploy/noa-category-order.php','/tmp/noa-pwa-fixture/noa-category-order.php');
+$router=file_get_contents('/tmp/noa-pwa-fixture/router.php');file_put_contents('/tmp/noa-pwa-fixture/quality-router-before.php',$router);$router=str_replace("if(\$path==='/noa-category-order.php')", "if(false&&\$path==='/noa-category-order.php')",$router);file_put_contents('/tmp/noa-pwa-fixture/router.php',$router);

@@ -17,8 +17,12 @@ function nie_overrides(PDO $db):array{
   $valid=[];foreach(['title','description','lyrics','cast'] as $field)if(isset($p['fields'][$field])&&is_string($p['fields'][$field]))$valid[$field]=$p['fields'][$field];
   $out[$r['doc_key']]=['key'=>$r['doc_key'],'revision'=>(int)$r['revision'],'payload'=>$p,'fields'=>$valid];
  }
- $aliases=[];foreach($db->query("SELECT alias_key,entity_id FROM noa_catalog_aliases WHERE batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)") as $a)$aliases[$a['alias_key']]=$a['entity_id'];
- foreach($db->query("SELECT doc_key,kind,payload,revision FROM noa_documents WHERE kind IN ('single','story','playlist') ORDER BY doc_key") as $r){$d=json_decode($r['payload'],true);if(empty($d['packageSchema']))continue;$fields=nup_fields($d);if($r['kind']==='playlist'){if(!isset($d['body']['displayTitle']))unset($fields['title']);$id=($d['genreId']??'').':'.(int)($d['act']??0);$type='act';}else{$id=nie_song_id($aliases[$r['doc_key']]??preg_replace('/^catalog:/','',$r['doc_key']));$type='song';}$out[nie_meta_key($type,$id)]=['key'=>$r['doc_key'],'revision'=>(int)$r['revision'],'payload'=>$d,'fields'=>$fields];}
+ $pool=nup_song_pool($db);$memberships=nup_collection_memberships($pool,nup_collections($db));$ids=[];foreach($pool as $id=>$matches)if(count($matches)===1)$ids[array_key_first($matches)][]=$id;
+ foreach($db->query("SELECT doc_key,kind,payload,revision FROM noa_documents WHERE kind IN ('single','story','playlist') ORDER BY doc_key") as $r){$d=json_decode($r['payload'],true);if(empty($d['packageSchema'])||!empty($d['_noaTrash']))continue;$fields=nup_fields($d);
+  if($r['kind']==='playlist'){if(!isset($d['body']['displayTitle']))unset($fields['title']);$targets=[nie_meta_key('act',($d['genreId']??'').':'.(int)($d['act']??0))];}
+  else{$fields['canonicalRecordKey']=$r['doc_key'];$fields['collectionIds']=array_values($memberships[$r['doc_key']]??[]);$targets=array_map(fn($id)=>nie_meta_key('song',nie_song_id($id)),$ids[$r['doc_key']]??[]);}
+  foreach($targets as $target)$out[$target]=['key'=>$r['doc_key'],'revision'=>(int)$r['revision'],'payload'=>$d,'fields'=>$fields];
+ }
  return $out;
 }
 function nie_fields(array $edits,array $record):array{
@@ -27,7 +31,7 @@ function nie_fields(array $edits,array $record):array{
  foreach($keys as $key)if(isset($edits[$key]))return $edits[$key]['fields'];return [];
 }
 function nie_project(array $edits,array $rows):array{
- foreach($rows as &$r){$f=($r['kind']??'')==='playlist'&&((int)($r['act']??0)>0)?($edits[nie_meta_key('act',$r['genre'].':'.(int)$r['act'])]['fields']??[]):nie_fields($edits,$r);foreach(['title','description','cast','genre'] as $name)if(array_key_exists($name,$f))$r[$name]=$f[$name];if(array_key_exists('lyrics',$f)){$r['rawLyrics']=$f['lyrics'];$r['lyrics']=noa_sound_lyrics($f['lyrics']);}}unset($r);return $rows;
+ foreach($rows as &$r){$f=($r['kind']??'')==='playlist'&&((int)($r['act']??0)>0)?($edits[nie_meta_key('act',$r['genre'].':'.(int)$r['act'])]['fields']??[]):nie_fields($edits,$r);foreach(['title','description','cast','genre','collectionIds','canonicalRecordKey'] as $name)if(array_key_exists($name,$f))$r[$name]=$f[$name];if(array_key_exists('lyrics',$f)){$r['rawLyrics']=$f['lyrics'];$r['lyrics']=noa_sound_lyrics($f['lyrics']);}}unset($r);return $rows;
 }
 function nie_act_labels(array $edits,array $rows):array{
  $out=[];foreach($rows as $r){$act=(int)($r['act']??0);if(!$act&&is_numeric($r['ep']??null))$act=(int)ceil((int)$r['ep']/10);if(!$act)continue;$id=$r['genre'].':'.$act;$f=$edits[nie_meta_key('act',$id)]['fields']??[];if(isset($f['title']))$out[$id]=$f['title'];}return $out;

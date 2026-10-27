@@ -27,7 +27,7 @@ function ncl_records(PDO $db,bool $admin,string $memberId='',bool $trash=false):
   $owner=$d['ownerId']??$d['owner_id']??null;if($owner!==null&&!$admin&&$owner!==$memberId)continue;
   $id=hash('sha256','document:'.$key);$rows[$id]=ncl_record($id,$key,$source['kind'],$d,(int)$source['revision'],false);$rows[$id]['orderKey']=$key;
  }
- $edits=nie_overrides($db);foreach($rows as &$row){$projected=nie_project($edits,[$row])[0];$row['title']=$projected['title'];$fields=nie_fields($edits,$row);if(!array_key_exists('songDescription',$fields)&&array_key_exists('description',$fields))$row['fields']['songDescription']=$fields['description'];foreach(['songDescription'=>'songDescription','lyrics'=>'lyricsBlock','cast'=>'thumbCast'] as $from=>$to)if(array_key_exists($from,$fields))$row['fields'][$to]=$fields[$from];}unset($row);
+ $edits=nie_overrides($db);foreach($rows as &$row){$projected=nie_project($edits,[$row])[0];$row['title']=$projected['title'];$row['collectionIds']=$projected['collectionIds']??[];$row['canonicalRecordKey']=$projected['canonicalRecordKey']??$row['key'];$fields=nie_fields($edits,$row);if(!array_key_exists('songDescription',$fields)&&array_key_exists('description',$fields))$row['fields']['songDescription']=$fields['description'];foreach(['songDescription'=>'songDescription','lyrics'=>'lyricsBlock','cast'=>'thumbCast'] as $from=>$to)if(array_key_exists($from,$fields))$row['fields'][$to]=$fields[$from];}unset($row);
  return $rows;
 }
 function ncl_record(string $id,string $key,string $kind,array $d,int $revision,bool $ambiguous):array{
