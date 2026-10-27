@@ -44,6 +44,8 @@ jobs:
           php tests/catalog/sound_test.php
           php tests/catalog/music_readmodel_test.php
           php tests/catalog/package_record_test.php
+          php tests/catalog/recovery_test.php
+          php tests/workspace/classification_test.php
           php tests/catalog/inline_edit_projection_test.php
           php tests/youtube/coming_catalog_test.php
           node --test scripts/qa/noa-browse.test.mjs scripts/qa/noa-four-level.test.mjs tests/pwa/launch_test.cjs tests/playlists/drag_order_test.cjs tests/youtube/lazy_details_test.cjs

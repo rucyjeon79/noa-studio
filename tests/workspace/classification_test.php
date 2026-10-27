@@ -1,0 +1,29 @@
+<?php
+declare(strict_types=1);define('_GNUBOARD_',true);
+require __DIR__.'/../../bridge/library-records.php';require __DIR__.'/../../bridge/youtube-catalog.php';
+function ny_video_id(string $url):?string{parse_str((string)parse_url($url,PHP_URL_QUERY),$q);return $q['v']??null;}
+function verify(bool $ok,string $message):void{if(!$ok)throw new RuntimeException($message);}
+$db=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+$db->exec("CREATE TABLE noa_documents(doc_key TEXT,kind TEXT,payload TEXT,revision INT);CREATE TABLE noa_catalog_aliases(batch_id TEXT,alias_key TEXT,entity_id TEXT);CREATE TABLE noa_catalog_batches(batch_id TEXT,status TEXT,applied_at TEXT);CREATE TABLE noa_catalog_songs(song_id TEXT,identity_json TEXT,genre_id TEXT,ep TEXT,language TEXT,version_name TEXT);CREATE TABLE noa_catalog_versions(batch_id TEXT,entity_id TEXT,entity_type TEXT,fields_json TEXT,public_verified INT);CREATE TABLE noa_catalog_playlists(playlist_id TEXT,owner_id TEXT,act_id TEXT);CREATE TABLE noa_catalog_acts(act_id TEXT,genre_id TEXT,act_number INT);CREATE TABLE noa_youtube_runs(run_id TEXT,channel_id TEXT,report TEXT,created_at TEXT);CREATE TABLE noa_youtube_playlists(run_id TEXT,playlist_id TEXT,payload TEXT);CREATE TABLE noa_youtube_items(run_id TEXT,playlist_id TEXT,video_id TEXT);INSERT INTO noa_catalog_batches VALUES('b','applied','2026-10-27');");
+$db->prepare('INSERT INTO noa_youtube_runs VALUES(?,?,?,?)')->execute(['r',NSC_CHANNEL,'{"warnings":[]}','2026-10-27']);
+foreach(NSC_PLAYLISTS as $pid=>$genre){$db->prepare('INSERT INTO noa_youtube_playlists VALUES(?,?,?)')->execute(['r',$pid,json_encode(['snippet'=>['channelId'=>NSC_CHANNEL],'contentDetails'=>['itemCount'=>1]])]);$db->prepare('INSERT INTO noa_youtube_items VALUES(?,?,?)')->execute(['r',$pid,$genre==='your-story'?'member00001':'cover000001']);}
+$source=['platform'=>'youtube','channel'=>NSC_CHANNEL,'videoId'=>'absent00001'];
+$doc=nup_normalize(['title'=>'[세로] AInoa with 람준파파 - 난 새하늘이야 | 새하늘용인대태권도 학원가','genreId'=>'your-story','visibility'=>'public','body'=>['registrationStatus'=>'needs_information','source'=>$source,'youtubeUrl'=>'https://www.youtube.com/watch?v=absent00001','lyricsBlock'=>'보존 원문','unknownEvidence'=>['keep'=>true]]],'story');
+$id=str_repeat('a',64);$key='catalog:'.$id;
+$db->prepare('INSERT INTO noa_catalog_songs VALUES(?,?,?,?,?,?)')->execute([$id,json_encode(['song','youtube',NSC_CHANNEL,'absent00001']),'your-story','','ko','unspecified']);
+$db->prepare('INSERT INTO noa_catalog_versions VALUES(?,?,?,?,?)')->execute(['b',$id,'song',json_encode($doc['body']+['title'=>$doc['title']]),1]);
+$db->prepare('INSERT INTO noa_documents VALUES(?,?,?,?)')->execute([$key,'story',json_encode($doc),1]);
+$before=$db->query('SELECT payload FROM noa_documents')->fetchColumn();$ctx=nsc_context($db);
+verify(nsc_document($doc,$ctx)['genreId']==='unclassified','academy title outside actual owner playlist is unclassified');
+$member=$doc;$member['body']['source']['videoId']='member00001';$memberCtx=$ctx;$memberCtx['imported']['member00001']=['your-story'=>true];verify(nsc_document($member,$memberCtx)['genreId']==='your-story','actual membership retained');
+$bloom=$doc;$bloom['genreId']='your-story';$legacyCtx=$ctx;$legacyCtx['imported']['absent00001']=['unclassified'=>true];verify(nsc_document($bloom,$legacyCtx)['genreId']==='your-story','earlier explicit change from imported classification preserved');
+verify(nsc_document($doc,null)===$doc,'unavailable evidence never clears a record');$other=$doc;$other['body']['source']['channel']='different-channel';verify(nsc_document($other,$ctx)===$other,'other owner never inferred');
+$resolved=nie_resolve($db,['type'=>'song','source'=>'music','key'=>$key]);verify($resolved['fields']['genre']==='unclassified'&&$resolved['payload']['packageType']==='song','editor uses same effective classification');
+$edits=nie_overrides($db);$video=['key'=>'absent00001','video'=>'absent00001','orderKey'=>$id,'genre'=>'your-story','kind'=>'video'];verify(nie_project($edits,[$video])[0]['genre']==='unclassified','public video projection uses current classification');
+verify(ny_listener_catalog($db,true,$edits)[$id]['genre']==='unclassified','coming soon registry agrees');verify(ncl_records($db,true)[$id]['genre']==='unclassified','library agrees');verify($db->query('SELECT payload FROM noa_documents')->fetchColumn()===$before,'source correction read path makes no database writes');
+// Persist an explicit clear, then change the source membership. The next read must not undo it.
+$cleared=nup_patch($doc,'story',['genre'=>'unclassified']);$db->prepare('UPDATE noa_documents SET payload=?,revision=2 WHERE doc_key=?')->execute([json_encode($cleared),$key]);
+$storyPid=array_search('your-story',NSC_PLAYLISTS,true);$db->prepare('UPDATE noa_youtube_items SET video_id=? WHERE playlist_id=?')->execute(['absent00001',$storyPid]);
+verify(nsc_playlist_genres($db)['absent00001']==='your-story','source sync now includes video');$again=nie_resolve($db,['type'=>'song','source'=>'music','key'=>$key]);verify($again['fields']['genre']==='unclassified'&&$again['payload']['body']===$doc['body'],'manual clear survives source refresh with body intact');$edits=nie_overrides($db);verify(nie_project($edits,[$video])[0]['genre']==='unclassified'&&ny_listener_catalog($db,true,$edits)[$id]['genre']==='unclassified'&&ncl_records($db,true)[$id]['genre']==='unclassified','manual clear is shared by public video, coming soon and library');
+$db->prepare('UPDATE noa_youtube_runs SET report=?')->execute([json_encode(['warnings'=>['playlist_count_changed_or_inaccessible:'.$storyPid]])]);verify(nsc_context($db)===null,'partial collection never treated as proof of absence');
+echo "SOURCE_PLAYLIST_MEMBERSHIP_MANUAL_CLEAR_REFRESH_SHARED_PROJECTION_AND_PRESERVATION_OK\n";

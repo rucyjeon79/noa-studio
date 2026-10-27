@@ -74,7 +74,8 @@ if(!$error&&!$playlistUnavailable&&isset($db)&&is_file(__DIR__.'/noa-bridge/yout
  require_once __DIR__.'/noa-bridge/youtube-catalog.php';
  $listenerCatalog=$listenerCatalog??ny_listener_catalog($db,$admin,$inlineEdits);
  if(isset($_GET['playlist'])){$ids=array_fill_keys(array_keys($videos),true);$members=array_fill_keys(array_filter(array_map(fn($v)=>$v['match']['songId']??null,$videos)),true);$listenerCatalog=array_filter($listenerCatalog,fn($r)=>isset($members[$r['orderKey']])||isset($ids[$r['canonicalVideo']??'']));}
- $browseRows=ny_complete_catalog_rows($browseRows,$videos,$listenerCatalog);
+ $browseRows=ny_complete_catalog_rows($browseRows,$videos,$listenerCatalog,isset($_GET['playlist']));
+ if($inlineEdits)$browseRows=nie_project($inlineEdits,$browseRows);
  if($inlineEdits)$inlineActLabels=nie_act_labels($inlineEdits,$browseRows);
 }
 $comingRows=array_values(array_filter($browseRows,fn($r)=>!empty($r['comingSoon'])));
