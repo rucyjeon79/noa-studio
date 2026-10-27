@@ -26,6 +26,8 @@ public final class PlaybackStateStore {
    pref.edit().putString("queue",queue.toString()).putInt("index",Math.min(mapped,queue.length()-1)).putLong("position",Math.max(0,p.getCurrentPosition())).putBoolean("shuffle",p.getShuffleModeEnabled()).putInt("repeat",p.getRepeatMode()).apply();
   }catch(JSONException ignored){}
  }
+ /** Drain pending preference writes at an explicit lifecycle checkpoint. */
+ public boolean flush(){return pref.edit().commit();}
  public List<MediaItem> items(){List<MediaItem> out=new ArrayList<>();try{JSONArray rows=new JSONArray(pref.getString("queue","[]"));for(int i=0;i<Math.min(rows.length(),500);i++){JSONObject r=rows.getJSONObject(i);if(!NoaMediaPolicy.audio(r.optString("url")))continue;MediaMetadata.Builder md=new MediaMetadata.Builder().setTitle(r.optString("title")).setArtist("AI Artist Noa");if(NoaMediaPolicy.artwork(r.optString("art")))md.setArtworkUri(Uri.parse(r.optString("art")));out.add(new MediaItem.Builder().setMediaId(r.optString("id")).setUri(r.getString("url")).setMediaMetadata(md.build()).build());}}catch(JSONException ignored){}return out;}
  public int index(){return Math.max(0,pref.getInt("index",0));}
  public long position(){return Math.max(0,pref.getLong("position",0));}

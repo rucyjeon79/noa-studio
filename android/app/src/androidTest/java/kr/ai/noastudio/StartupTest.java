@@ -37,7 +37,7 @@ public class StartupTest {
      try{
       java.lang.reflect.Field field=MainActivity.class.getDeclaredField("browser");field.setAccessible(true);
       WebView w=(WebView)field.get(a);
-      if(w!=null)w.evaluateJavascript("JSON.stringify({origin:location.origin,path:location.pathname,home:!!document.querySelector('[data-home-section=hero]'),bridge:!!window.__noaNativeBridge,text:document.body?document.body.innerText.length:0})",state::set);
+      if(w!=null)w.evaluateJavascript("JSON.stringify({origin:location.origin,path:location.pathname,ready:document.readyState,home:!!document.querySelector('[data-home-section=hero]'),bridge:!!window.__noaNativeBridge,text:document.body?document.body.innerText.length:0})",state::set);
      }catch(ReflectiveOperationException e){throw new AssertionError(e);}
     }
    });
@@ -45,10 +45,18 @@ public class StartupTest {
    String value=state.get();
    if(value!=null&&!value.equals("null")){
     observed=new JSONObject(new org.json.JSONTokener(value).nextValue().toString());
-    if(observed.optBoolean("home")&&observed.optBoolean("bridge")&&observed.optInt("text")>50)break;
+    if("complete".equals(observed.optString("ready"))&&observed.optBoolean("home")&&observed.optBoolean("bridge")&&observed.optInt("text")>50)break;
    }
   }
   observed.put("api",android.os.Build.VERSION.SDK_INT).put("physicalDevice",false);
+  java.util.concurrent.CountDownLatch frame=new java.util.concurrent.CountDownLatch(1);
+  InstrumentationRegistry.getInstrumentation().runOnMainSync(()->{
+   for(Activity a:ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED))if(a instanceof MainActivity)try{
+    java.lang.reflect.Field field=MainActivity.class.getDeclaredField("browser");field.setAccessible(true);WebView w=(WebView)field.get(a);
+    w.evaluateJavascript("window.scrollTo(0,0)",ignored->w.postVisualStateCallback(1,new WebView.VisualStateCallback(){@Override public void onComplete(long id){frame.countDown();}}));
+   }catch(ReflectiveOperationException e){throw new AssertionError(e);}
+  });
+  assertTrue("Home compositor did not finish",frame.await(15,java.util.concurrent.TimeUnit.SECONDS));d.waitForIdle();
   d.takeScreenshot(new File(c.getExternalFilesDir(null),"noa-startup-home.png"));
   try(FileWriter out=new FileWriter(new File(c.getExternalFilesDir(null),"noa-startup-proof.json"))){out.write(observed.toString());}
   assertEquals("https://noastudio.ai.kr",observed.optString("origin"));

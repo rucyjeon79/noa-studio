@@ -129,6 +129,8 @@ jobs:
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-startup-proof.json android/noa-startup-proof.json || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-startup-home.png android/noa-startup-home.png || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-launcher-icon.png android/noa-launcher-icon.png || true
+            cat android/noa-startup-proof.json
+            cat android/noa-restore-proof.json
             cat android/noa-brand-proof.json
             python3 -c "import base64; print('NOA_ANDROID_ICON '+base64.b64encode(open('android/noa-launcher-icon.png','rb').read()).decode())"
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-ui.xml android/noa-ui.xml || true
@@ -145,7 +147,9 @@ jobs:
       - name: Remove only the generated native QA account
         if: always()
         env: *native_qa_env
-        run: python3 scripts/noa_android_member_qa.py cleanup
+        run: |
+          python3 scripts/noa_android_member_qa.py cleanup
+          cat android/noa-member-cleanup.json
       - name: Retain device verification
         if: always()
         uses: actions/upload-artifact@v4
@@ -222,13 +226,17 @@ jobs:
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-startup-proof.json android/noa-api37-startup.json || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-startup-home.png android/noa-api37-home.png || true
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/noa-launcher-icon.png android/noa-api37-icon.png || true
+            cat android/noa-api37-startup.json
+            python3 -c "import base64; print('NOA_API37_HOME '+base64.b64encode(open('android/noa-api37-home.png','rb').read()).decode())"
             adb logcat -d -s AndroidRuntime:E > android/noa-api37-errors.txt
             python3 scripts/noa_android_production_probe.py
             python3 -c "from pathlib import Path; assert 'OK (3 tests)' in Path('android/noa-api37-tests.txt').read_text(); assert 'FATAL EXCEPTION' not in Path('android/noa-api37-errors.txt').read_text()"
       - name: Remove only the generated native QA account
         if: always()
         env: *native_qa_env
-        run: python3 scripts/noa_android_member_qa.py cleanup
+        run: |
+          python3 scripts/noa_android_member_qa.py cleanup
+          cat android/noa-member-cleanup.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
