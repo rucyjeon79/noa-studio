@@ -27,6 +27,7 @@ try{
   // Isolated form fixture: clicks never accept real terms or create an account.
   await page.locator('label[for=chk_all]').click();assert(await page.locator('[name=agree]').isChecked());assert(await page.locator('[name=agree2]').isChecked());
   await page.locator('label[for=chk_all]').click();assert.equal(await page.locator('[name=agree]').isChecked(),false);
+  assert(await page.locator('.fregister_agree input[type=checkbox]').evaluateAll(nodes=>nodes.every(n=>n.getBoundingClientRect().width<=1)),'duplicate native checkbox visible');
   const audit=await page.evaluate(()=>{
    const vis=n=>n.getBoundingClientRect().width>0&&n.getBoundingClientRect().height>0;
    const bg=n=>{for(let e=n;e;e=e.parentElement){const c=getComputedStyle(e).backgroundColor;if(c!=='rgba(0, 0, 0, 0)'&&c!=='transparent')return c;}return getComputedStyle(document.body).backgroundColor;};

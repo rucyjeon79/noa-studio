@@ -8,6 +8,7 @@ html.noa-social-signup #fregisterform section{position:relative;background:trans
 html.noa-social-signup #fregisterform h2{font-size:18px;line-height:1.5;margin:0 0 16px;padding:0;color:var(--noa-text);background:transparent;border:0}
 html.noa-social-signup #fregister_chkall{position:static;display:block;line-height:1.5;margin:0 0 8px;padding:0;background:transparent;color:var(--noa-text);border:0;text-align:left}
 html.noa-social-signup #fregisterform .fregister_agree{position:static;display:block;width:100%;margin:12px 0 0;padding:0;border:0}
+html.noa-social-signup #fregisterform .fregister_agree input[type=checkbox]{position:absolute;width:1px;height:1px;min-height:0;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap;border:0}
 html.noa-social-signup #fregisterform .fregister_agree label{position:relative;display:flex;align-items:center;min-height:48px;padding:10px 8px 10px 36px;color:var(--noa-text);line-height:1.5;cursor:pointer}
 html.noa-social-signup #fregisterform .fregister_agree label span{position:absolute;inset:50% auto auto 4px;transform:translateY(-50%);width:22px;height:22px;border-radius:5px;background-color:var(--noa-surface);border:1px solid var(--noa-muted)}
 html.noa-social-signup #fregisterform .fregister_agree label b.sound_only{position:static!important;width:auto!important;height:auto!important;overflow:visible!important;font-size:14px!important;line-height:1.5!important;clip:auto!important;clip-path:none!important;font-weight:400}
@@ -19,6 +20,7 @@ html.noa-social-signup #fregisterform table{width:100%;min-width:0;table-layout:
 html.noa-social-signup #fregisterform :is(th,td){padding:12px 10px;background:var(--noa-surface);color:var(--noa-text);border:1px solid var(--noa-line);overflow-wrap:anywhere;word-break:normal}
 html.noa-social-signup #fregisterform th{font-weight:600;background:var(--noa-bg)}
 html.noa-social-signup #register_form{padding:24px 0 0;border-top:1px solid var(--noa-line)}
+html.noa-social-signup #fregisterform :is(#register_form,.register_form_inner,.form_01,.form_01>div,.fregister_terms>div){background:transparent;color:var(--noa-text);border-color:var(--noa-line);box-shadow:none}
 html.noa-social-signup #fregisterform :is(.form_01 ul,.register_form_inner ul){padding:0;list-style:none}
 html.noa-social-signup #fregisterform :is(.form_01 li,.register_form_inner li){padding:0;margin:0 0 20px}
 html.noa-social-signup #fregisterform .frm_info{display:block;color:var(--noa-muted);font-size:13px;line-height:1.65;margin:0 0 10px}
@@ -30,6 +32,7 @@ html.noa-social-signup #fregisterform .btn_cancel{background:var(--noa-surface);
 html.noa-social-signup #fregisterform .btn_submit{background:var(--noa-accent);color:var(--noa-accentText);border:1px solid var(--noa-accent)}
 html.noa-social-signup :is(.member_connect,#sns-link-pnl,.connect-fg){background:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line);box-shadow:none}
 html.noa-social-signup .member_connect{margin:24px 0 0;padding:20px 0 0;background:transparent;border:0;border-top:1px solid var(--noa-line)}
+html.noa-social-signup #container .member_connect{background:transparent;color:var(--noa-text);box-shadow:none;border-radius:0}
 html.noa-social-signup .member_connect button{min-height:44px;background:transparent;color:var(--noa-text);border:1px solid var(--noa-line);border-radius:10px;padding:10px 16px}
 html.noa-social-signup #sns-link-pnl :is(.connect-desc,label,.connect-title,.connect-close){background:transparent;color:var(--noa-text);border-color:var(--noa-line)}
 html.noa-social-signup #sns-link-pnl .connect-fg{height:auto}
