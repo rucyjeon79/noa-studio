@@ -443,3 +443,24 @@ html[data-noa-precision] main .noa-workspace-grid>.noa-action{justify-content:fl
 .noa-page .noa-song-info{margin:16px 0 24px;padding:16px;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,8px);background:var(--noa-surface)}
 .noa-page .noa-song-info h2{font-size:18px;margin:12px 0 0;overflow-wrap:anywhere}
 .noa-page .noa-song-info .noa-classification{margin:0}
+
+/* Shared action rhythm: ordinary controls are one horizontal row across pages. */
+html[data-noa-precision]{--noa-action-gap:6px;--noa-action-icon:18px;--noa-action-text:13px}
+html[data-noa-precision] body main .noa-action.noa-action:not(.noa-personal-card):not(.noa-engagement *,.noa-song-actions *,.noa-workspace-grid *,.noa-hero *){flex-direction:row;align-items:center;justify-content:center;gap:var(--noa-action-gap);min-block-size:44px;padding:8px 12px;line-height:1.35;vertical-align:middle;text-align:center}
+html[data-noa-precision] body main .noa-action.noa-action:not(.noa-personal-card):not(.noa-engagement *,.noa-song-actions *,.noa-workspace-grid *,.noa-hero *)>svg{inline-size:var(--noa-action-icon);block-size:var(--noa-action-icon);flex:none}
+html[data-noa-precision] body main .noa-action.noa-action:not(.noa-personal-card):not(.noa-engagement *,.noa-song-actions *,.noa-workspace-grid *,.noa-hero *)>span{font-size:var(--noa-action-text);line-height:1.35;max-inline-size:none;min-width:0}
+html[data-noa-precision] body main .noa-section-head{align-items:center;gap:12px;margin-bottom:12px}
+html[data-noa-precision] body main .noa-section-head>h2{margin:0;min-width:0;flex:1}
+html[data-noa-precision] body main .noa-section-head>.noa-action{flex:none;border:0;background:transparent;padding-inline:4px}
+.noa-action-group{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:12px 0}
+html[data-noa-precision] body main .noa-action-group>.noa-action{margin:0}
+html[data-noa-precision] body main .noa-empty{padding:16px;font-size:14px;line-height:1.6;border-radius:10px}
+html[data-noa-precision] body main .noa-section>h2{margin:0 0 12px}
+.noa-discovery-tabs{display:flex;gap:4px;flex-wrap:wrap;margin:12px 0 16px}
+.noa-discovery-tabs button{min-width:44px;min-height:44px;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:var(--noa-muted);padding:8px 12px;font:inherit;font-size:13px;cursor:pointer}
+.noa-discovery-tabs button[aria-pressed=true]{color:var(--noa-accent);border-bottom-color:currentColor}
+.noa-discovery-reason{display:block;color:var(--noa-accent);font-size:11px;line-height:1.5;margin:6px 0 0}
+/* Native board actions follow the same horizontal controls. */
+html[data-noa-precision].noa-g5 :is(.btn_bo_user,.btn_confirm,.bo_v_nb,.bo_v_com) .noa-action{flex-direction:row;gap:6px;min-height:44px;padding:8px 12px}
+html[data-noa-precision].noa-g5 :is(.btn_bo_user,.btn_confirm,.bo_v_nb,.bo_v_com) .noa-action>svg{width:18px;height:18px}
+html[data-noa-precision].noa-g5 :is(.btn_bo_user,.btn_confirm,.bo_v_nb,.bo_v_com) .noa-action>span{font-size:13px;line-height:1.35}

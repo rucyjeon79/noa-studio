@@ -52,3 +52,13 @@ html[data-noa-precision] body .noa-engagement.noa-engagement{justify-content:fle
 html[data-noa-precision] body .noa-engagement.noa-engagement>button{flex:0 0 auto;min-width:44px;min-inline-size:44px;padding:6px 4px;gap:4px}
 html[data-noa-precision] body .noa-engagement.noa-engagement>a{font-size:11px;white-space:normal;max-width:100%;padding-inline:4px}
 html[data-noa-precision] body .noa-engagement-card>.noa-music-card{flex:0 0 auto}
+
+/* Adjacent hit targets; visible counters meet at their shared edge. */
+html[data-noa-precision] body .noa-engagement.noa-engagement>button{min-inline-size:44px;min-width:44px;gap:3px;padding:0 2px;margin:0;box-sizing:border-box}
+html[data-noa-precision] body .noa-engagement.noa-engagement>button:first-child{justify-content:flex-end}
+html[data-noa-precision] body .noa-engagement.noa-engagement>button:nth-child(2){justify-content:flex-start}
+html[data-noa-precision] body .noa-engagement.noa-engagement>button>svg{width:17px;height:17px}
+html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-video-row):has(>.noa-song-more){padding:4px 0;row-gap:0;align-content:start}
+html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-video-row)>.noa-inline-song{min-height:44px;padding:0;gap:8px}
+html[data-noa-precision] body :is(.noa-inline-song-row,.noa-inline-video-row)>.noa-engagement{margin:0;padding:0 0 0 44px;min-height:44px}
+html[data-noa-precision] body .noa-inline-song>.noa-inline-cover{width:40px;height:40px;flex-basis:40px}

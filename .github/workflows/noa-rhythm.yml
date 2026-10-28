@@ -1,0 +1,87 @@
+name: NOA Site rhythm and home discovery
+on:
+  pull_request:
+    paths: ['bridge/home*.php','deploy/noa-home.js','deploy/noa-ui.css','deploy/noa-my.php','scripts/noa_rhythm_release.py','scripts/qa/noa-rhythm.mjs','tests/rhythm/**','.github/workflows/noa-rhythm.yml']
+  push:
+    branches: [main]
+    paths: ['bridge/home*.php','deploy/noa-home.js','deploy/noa-ui.css','deploy/noa-my.php','scripts/noa_rhythm_release.py','scripts/qa/noa-rhythm.mjs','tests/rhythm/**','.github/workflows/noa-rhythm.yml']
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - run: |
+          for f in deploy/noa-voice-state.php deploy/noa-ainoa.php deploy/noa-design.extend.php deploy/noa-sitemap.php deploy/noa-app/world-view.php bridge/member-access.php; do php -l "$f"; done
+          for f in deploy/noa-voice.js deploy/noa-ui.js deploy/noa-ainoa.js deploy/noa-notifications.js deploy/noa-account.js; do node --check "$f"; done
+          node --test tests/voice/composer_test.cjs
+          php tests/voice/state_test.php
+          php tests/member/access_test.php
+          php tests/sitemap/registry_test.php
+          php tests/sitemap/popularity_route_test.php
+          php tests/catalog/home_test.php
+          php tests/rhythm/discovery.php
+          for f in bridge/home*.php deploy/noa-my.php tests/rhythm/*.php; do php -l "$f"; done
+          node --check deploy/noa-home.js
+          php tests/rhythm/fixture.php
+          python scripts/qa/noa-qa-font.py
+          npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-voice" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-voice/node_modules/.bin/playwright" install --with-deps webkit
+          cp scripts/qa/noa-voice.mjs "$RUNNER_TEMP/noa-voice/check.mjs"
+          cp scripts/qa/noa-rhythm.mjs "$RUNNER_TEMP/noa-voice/rhythm.mjs"
+          node "$RUNNER_TEMP/noa-voice/rhythm.mjs"
+          node "$RUNNER_TEMP/noa-voice/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: 'noa-rhythm-candidate-${{ github.run_id }}'
+          path: |
+            rhythm-proof/
+            voice-proof/
+          retention-days: 7
+  deploy:
+    if: github.event_name == 'push'
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 12
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - run: python -m pip install 'paramiko>=3,<5'
+      - id: upload
+        run: python scripts/noa_rhythm_release.py
+      - name: Verify public sitemap, welcome privacy and current assets
+        run: |
+          python - <<'PY'
+          import urllib.request,json
+          root='https://noastudio.ai.kr'
+          with urllib.request.urlopen(root+'/noa-sitemap.php') as r:
+            html=r.read().decode();assert r.status==200 and 'data-noa-condition' in html and '/noa-voice.js?v=' in html
+          with urllib.request.urlopen(root+'/noa-ainoa.php?action=welcome') as r:
+            d=json.load(r);assert not d['member'] and d['balance'] is None and d['remainingDays'] is None
+            assert 'no-store' in r.headers['Cache-Control']
+          with urllib.request.urlopen(root+'/noa-bridge/home.php') as r:
+            d=json.load(r);assert d['ok'] and 'discoveryCandidates' not in d
+            discovery=d['discovery'];ids=[x['videoId'] for x in discovery['mixed']];assert ids and len(ids)==len(set(ids))
+            assert all(x['viewGain']>0 for x in discovery['rising'])
+            assert all(x['publishedAt'] for x in discovery['new'])
+          print('RHYTHM_PRODUCTION_DISCOVERY_AND_PRIVACY_OK',json.dumps({k:len(discovery[k]) for k in ['mixed','popular','rising','new']}))
+          PY
+      - if: failure() && steps.upload.outcome != 'skipped'
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then python scripts/noa_rhythm_release.py rollback; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-rhythm-live-${{ github.run_id }}', path: ainoa-proof/, retention-days: 7}

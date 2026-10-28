@@ -31,3 +31,10 @@ html .noa-page main.noa-social-layout{max-width:560px;padding:28px 24px 120px;ma
 #noa-share-dialog :is(label,.noa-share-help,.noa-share-status){font-size:12px;color:var(--noa-muted)}#noa-share-dialog input{box-sizing:border-box;width:100%;min-height:44px;padding:10px 8px;border:1px solid var(--noa-line);border-radius:8px;background:var(--noa-bg);color:var(--noa-text);font-size:12px;margin-top:6px}#noa-share-dialog .noa-share-status:empty{display:none}
 @media(max-width:760px){#noa-account-bar button.noa-account-shortcut{flex-direction:column;gap:2px;font-size:10px}#noa-account-bar .noa-account-shortcuts{gap:2px}}
 @media(max-width:360px){#noa-account-bar .noa-account-brand{font-size:10px;gap:4px}#noa-account-bar .noa-account-shortcuts{gap:0}}
+
+/* MY uses two balanced facts and a single aligned action row. */
+#noa-my-account{padding:16px;margin-top:20px;border-radius:12px}
+.noa-my-account-grid{gap:16px;margin-bottom:12px}.noa-my-account-grid dt{font-size:12px;margin-bottom:4px}.noa-my-account-grid dd{font-size:20px;margin-bottom:4px}
+html[data-noa-precision] body #noa-my-account .noa-action{border:0;background:transparent;padding:4px 0;justify-content:flex-start}
+.noa-my-account-actions{padding-top:8px;font-size:13px}
+.noa-my-level{font-size:13px;color:var(--noa-muted);margin:0 0 8px}
