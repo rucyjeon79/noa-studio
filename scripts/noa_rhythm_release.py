@@ -1,6 +1,7 @@
 """Read-only home discovery and shared UI layout, with existing source preimage guards."""
 import noa_ainoa_deploy as release
 release.FILES={
+ 'noa-app/home.php':'deploy/noa-app/home.php',
  'noa-bridge/home-discovery.php':'bridge/home-discovery.php',
  'noa-bridge/home-core.php':'bridge/home-core.php',
  'noa-bridge/home.php':'bridge/home.php',

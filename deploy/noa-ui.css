@@ -464,3 +464,17 @@ html[data-noa-precision] body main .noa-section>h2{margin:0 0 12px}
 html[data-noa-precision].noa-g5 :is(.btn_bo_user,.btn_confirm,.bo_v_nb,.bo_v_com) .noa-action{flex-direction:row;gap:6px;min-height:44px;padding:8px 12px}
 html[data-noa-precision].noa-g5 :is(.btn_bo_user,.btn_confirm,.bo_v_nb,.bo_v_com) .noa-action>svg{width:18px;height:18px}
 html[data-noa-precision].noa-g5 :is(.btn_bo_user,.btn_confirm,.bo_v_nb,.bo_v_com) .noa-action>span{font-size:13px;line-height:1.35}
+
+/* Home partner banners share typography, gutters and one clear destination. */
+html body .noa-home-banner{display:grid;grid-template-columns:48px minmax(0,1fr);align-items:center;gap:20px;box-sizing:border-box;width:100%;min-height:160px;margin:24px 0;padding:24px;border:1px solid var(--noa-line);border-left:3px solid var(--noa-accent);border-radius:var(--noa-card-radius,12px);background:var(--noa-surface);color:var(--noa-text);text-decoration:none;transition:border-color .2s}
+html body .noa-home-banner:hover{border-color:var(--noa-accent)}
+html body .noa-home-banner:focus-visible{outline:2px solid var(--noa-accent);outline-offset:4px}
+html body .noa-home-banner-icon{display:flex;align-items:center;justify-content:center;width:48px;height:48px;color:var(--noa-accent)}
+html body .noa-home-banner-icon>svg{width:36px;height:36px;flex:none}
+html body .noa-home-banner-copy{display:grid;gap:4px;min-width:0;text-align:left}
+html body .noa-home-banner-copy>small{font-size:11px;line-height:16px;letter-spacing:.03em;color:var(--noa-muted)}
+html body .noa-home-banner-copy>strong{display:block;font-size:20px;line-height:28px;letter-spacing:-.02em;word-break:keep-all;overflow-wrap:anywhere}
+html body .noa-home-banner-copy>span{min-height:40px;font-size:13px;line-height:20px;word-break:keep-all;color:var(--noa-muted)}
+html body .noa-home-banner-copy>b{display:flex;align-items:center;gap:8px;padding-top:4px;font-size:13px;font-weight:600;line-height:20px;color:var(--noa-accent)}
+@media(max-width:600px){html body .noa-home-banner{grid-template-columns:36px minmax(0,1fr);gap:12px;margin:20px 0;padding:16px;min-height:164px}html body .noa-home-banner-icon{width:36px;height:36px}html body .noa-home-banner-copy>strong{font-size:18px;line-height:24px}}
+@media(prefers-reduced-motion:reduce){html body .noa-home-banner{transition:none}}

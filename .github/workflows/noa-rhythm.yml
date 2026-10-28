@@ -1,10 +1,10 @@
 name: NOA Site rhythm and home discovery
 on:
   pull_request:
-    paths: ['bridge/home*.php','deploy/noa-home.js','deploy/noa-browse.js','deploy/noa-engagement.js','deploy/noa-ui.css','deploy/noa-engagement.css','deploy/noa-world.css','deploy/noa-my.php','scripts/noa_rhythm_release.py','scripts/qa/noa-rhythm.mjs','scripts/qa/noa-alignment.mjs','tests/rhythm/**','.github/workflows/noa-rhythm.yml']
+    paths: ['deploy/noa-app/home.php','bridge/home*.php','deploy/noa-home.js','deploy/noa-browse.js','deploy/noa-engagement.js','deploy/noa-ui.css','deploy/noa-engagement.css','deploy/noa-world.css','deploy/noa-my.php','scripts/noa_rhythm_release.py','scripts/qa/noa-rhythm.mjs','scripts/qa/noa-alignment.mjs','tests/rhythm/**','.github/workflows/noa-rhythm.yml']
   push:
     branches: [main]
-    paths: ['bridge/home*.php','deploy/noa-home.js','deploy/noa-browse.js','deploy/noa-engagement.js','deploy/noa-ui.css','deploy/noa-engagement.css','deploy/noa-world.css','deploy/noa-my.php','scripts/noa_rhythm_release.py','scripts/qa/noa-rhythm.mjs','scripts/qa/noa-alignment.mjs','tests/rhythm/**','.github/workflows/noa-rhythm.yml']
+    paths: ['deploy/noa-app/home.php','bridge/home*.php','deploy/noa-home.js','deploy/noa-browse.js','deploy/noa-engagement.js','deploy/noa-ui.css','deploy/noa-engagement.css','deploy/noa-world.css','deploy/noa-my.php','scripts/noa_rhythm_release.py','scripts/qa/noa-rhythm.mjs','scripts/qa/noa-alignment.mjs','tests/rhythm/**','.github/workflows/noa-rhythm.yml']
 permissions: {contents: read}
 jobs:
   verify:
@@ -16,7 +16,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with: {php-version: '8.2'}
       - run: |
-          for f in deploy/noa-voice-state.php deploy/noa-ainoa.php deploy/noa-design.extend.php deploy/noa-sitemap.php deploy/noa-app/world-view.php bridge/member-access.php; do php -l "$f"; done
+          for f in deploy/noa-app/home.php deploy/noa-voice-state.php deploy/noa-ainoa.php deploy/noa-design.extend.php deploy/noa-sitemap.php deploy/noa-app/world-view.php bridge/member-access.php; do php -l "$f"; done
           for f in deploy/noa-voice.js deploy/noa-ui.js deploy/noa-ainoa.js deploy/noa-notifications.js deploy/noa-account.js; do node --check "$f"; done
           node --test tests/voice/composer_test.cjs
           php tests/voice/state_test.php
