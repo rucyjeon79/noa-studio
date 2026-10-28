@@ -1,9 +1,11 @@
+env:
+  NOA_DRIVE_RCLONE_CONFIG_B64: ${{ secrets.NOA_DRIVE_RCLONE_CONFIG_B64 }}
 name: NOA JUKEBOX public cards and authorized audio
 # Runtime workers consume existing signed APIs. They never deploy interface files.
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/noa-jukebox.yml', 'scripts/noa_jukebox_release.py', 'scripts/noa_jukebox_upload_worker.py', 'scripts/noa_jukebox_publish.py', 'scripts/noa_jukebox_worker.py', 'scripts/noa_jukebox_recovery.py', 'tests/jukebox/**']
+    paths: ['.github/workflows/noa-jukebox.yml', 'scripts/noa_jukebox_release.py', 'scripts/noa_jukebox_upload_worker.py', 'scripts/noa_upload_drive.py', 'scripts/noa_jukebox_publish.py', 'scripts/noa_jukebox_worker.py', 'scripts/noa_jukebox_recovery.py', 'tests/jukebox/**']
   pull_request:
     paths: ['.github/workflows/noa-jukebox.yml', 'scripts/noa_jukebox*.py', 'tests/jukebox/**']
   schedule:
@@ -71,7 +73,7 @@ jobs:
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
           NOA_JUKEBOX_RUNTIME_ONLY: '1'
-          NOA_JUKEBOX_KEEPALIVE_SECONDS: '120'
+          NOA_JUKEBOX_KEEPALIVE_SECONDS: '900'
         run: python3 scripts/noa_jukebox_release.py
       - uses: actions/upload-artifact@v4
         if: always()

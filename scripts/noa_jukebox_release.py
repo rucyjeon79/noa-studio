@@ -9,6 +9,7 @@ import noa_jukebox_owned as owned
 from noa_jukebox_upload_worker import process_uploads
 from noa_jukebox_recovery import signed_service, watchdog
 from noa_jukebox_publish import publish_final
+from noa_upload_drive import UploadDrive
 ROOT='/hosting/noastudio/html'
 APP='noa-app/jukebox/'
 NEW={APP+n:'deploy/'+APP+n for n in ['recovery-core.php','queue-core.php','core.php','cli.php','stream.php','index.php','operations.php','service.php','upload-core.php','upload.php','download.php','upload-transport.js','upload.js','upload.css','mobile-check.php']}
@@ -92,6 +93,10 @@ def main():
   with s.open('/hosting/noastudio/noa-ai-lab/worker.key','rb') as keyfile:key=keyfile.read(256).decode().strip()
   if len(key)!=64:raise RuntimeError('invalid_private_service_key')
   cli=signed_service(key)
+  drive=UploadDrive() if os.environ.get('NOA_DRIVE_RCLONE_CONFIG_B64') else None
+  if drive:
+   try: print('UPLOAD_DRIVE_CONNECTION '+json.dumps(drive.provision(s)),flush=True)
+   except Exception: print('UPLOAD_DRIVE_CONNECTION_UNAVAILABLE',flush=True)
   if os.environ.get('NOA_JUKEBOX_WATCHDOG')=='1':
    if not runtime_only:
     print('JUKEBOX_RUNTIME_REFRESH '+json.dumps(cli('runtime_refresh')),flush=True)
@@ -136,6 +141,9 @@ def main():
    subprocess.run(['sudo','apt-get','install','-y','ffmpeg'],check=True)
   print('HOST_CAPABILITIES '+json.dumps(cli('capabilities')),flush=True)
   def source_reader(job,destination):
+   if job.get('drive_source'):
+    if not drive:raise ValueError('drive_source_unavailable')
+    return drive.read(job,destination)
    # One fixed read-only command, with a server-generated hex ID as its only
    # variable. The pinned SSH identity and source SHA remain unchanged.
    if not re.fullmatch('[a-f0-9]{32}',job['id']):raise ValueError('invalid_upload_id')

@@ -1,8 +1,12 @@
+env:
+  NOA_DRIVE_RCLONE_CONFIG_B64: ${{ secrets.NOA_DRIVE_RCLONE_CONFIG_B64 }}
 name: NOA Upload Status Recovery Production
 on:
   push:
     branches: [main]
-    paths: ['deploy/noa-app/jukebox/upload-core.php','deploy/noa-app/jukebox/operations.php','tests/jukebox/upload_mysql_test.php','deploy/noa-app/jukebox/upload.js','deploy/noa-app/jukebox/upload.php','scripts/noa_upload_status_deploy.py','scripts/qa/noa-upload-status.mjs','tests/jukebox/status_session_test.py','.github/workflows/noa-upload-status.yml']
+    paths: ['deploy/noa-music.php','deploy/noa-app/p0-media.css','deploy/noa-app/jukebox/**','scripts/noa_upload_drive.py','scripts/noa_upload_status_deploy.py','tests/jukebox/**','scripts/qa/noa-upload-status.mjs','.github/workflows/noa-upload-status.yml']
+  pull_request:
+    paths: ['deploy/noa-music.php','deploy/noa-app/p0-media.css','deploy/noa-app/jukebox/**','scripts/noa_upload_drive.py','scripts/noa_upload_status_deploy.py','tests/jukebox/**','scripts/qa/noa-upload-status.mjs','.github/workflows/noa-upload-status.yml']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: 'noa-upload-status-${{ github.sha }}', cancel-in-progress: false}
@@ -22,8 +26,12 @@ jobs:
         with: {php-version: '8.2', extensions: 'pdo_sqlite,pdo_mysql,mbstring'}
       - name: Check status recovery and existing upload controls
         run: |
+          php -l deploy/noa-app/jukebox/drive-core.php
+          php -l deploy/noa-app/jukebox/queue-core.php
+          php -l deploy/noa-app/jukebox/recovery-core.php
           php -l deploy/noa-app/jukebox/upload-core.php
           php -l deploy/noa-app/jukebox/operations.php
+          php tests/jukebox/drive_transport_test.php
           python -m pip install 'Pillow>=11,<12'
           sudo apt-get update -qq
           sudo apt-get install -y -qq ffmpeg
@@ -51,6 +59,7 @@ jobs:
         if: always()
         with: {name: 'noa-upload-status-candidate-${{ github.run_id }}', path: upload-status-proof/, retention-days: 2}
   deploy:
+    if: github.event_name != 'pull_request'
     needs: candidate
     environment: production
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}

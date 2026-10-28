@@ -3,9 +3,11 @@ import base64,hashlib,json,os,stat,subprocess,sys,urllib.request
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
-FILES={p:'deploy/'+p for p in ['noa-app/jukebox/upload.php','noa-app/jukebox/upload.js','noa-app/jukebox/index.php','noa-music.php','noa-app/jukebox/upload-core.php','noa-app/jukebox/operations.php']}
-NEW=set()
-PROTECTED=['common.php','data/dbconfig.php','bbs/login.php','bbs/login_check.php','noa-app/jukebox/core.php','noa-app/jukebox/queue-core.php','noa-app/jukebox/recovery-core.php','noa-app/jukebox/stream.php','noa-app/jukebox/download.php','noa-ainoa.js']
+from noa_drive_snapshot import DriveStore
+from noa_upload_drive import UploadDrive
+FILES={p:'deploy/'+p for p in ['noa-app/jukebox/drive-core.php','noa-app/jukebox/upload-core.php','noa-app/jukebox/queue-core.php','noa-app/jukebox/recovery-core.php','noa-app/jukebox/operations.php','noa-app/jukebox/upload.php','noa-app/jukebox/upload-transport.js','noa-app/jukebox/upload.js','noa-music.php','noa-app/p0-media.css']}
+NEW={'noa-app/jukebox/drive-core.php'}
+PROTECTED=['common.php','data/dbconfig.php','bbs/login.php','bbs/login_check.php','noa-app/jukebox/core.php','noa-app/jukebox/stream.php','noa-app/jukebox/download.php','noa-ainoa.js','noa-app/jukebox/index.php']
 BACKUP=Path(os.environ.get('RUNNER_TEMP','/tmp'))/'noa-upload-status-before.json'
 def sha(v):return hashlib.sha256(v).hexdigest()
 def main():
@@ -46,6 +48,7 @@ def main():
     if v is None and p not in NEW:raise RuntimeError('missing_existing_target:'+p)
     if v is not None and sha(v)not in known[p]:raise RuntimeError('unknown_operating_version_preserved:'+p)
    BACKUP.write_text(json.dumps({p:base64.b64encode(v).decode()if v is not None else None for p,v in before.items()}));BACKUP.chmod(0o600);temps={}
+   store=DriveStore();store.publish('/hosting/noastudio/noa-deploy-backups/upload-drive-'+os.environ['GITHUB_SHA']+'/sources.json',BACKUP)
    for p,data in desired.items():
     if before[p]==data:continue
     folder,name=p.rsplit('/',1)if '/'in p else ('',p);temp=(folder+'/'if folder else '')+'.'+name+'.'+os.environ['GITHUB_SHA'][:12]+'.tmp';put(temp,data);temps[p]=temp
@@ -54,7 +57,8 @@ def main():
     if p in temps:s.posix_rename(ROOT+'/'+temps[p],ROOT+'/'+p)
     if read(p)!=desired[p]:raise RuntimeError('activation_hash_mismatch:'+p)
    if any(sha(read(p))!=digest for p,digest in protected.items()):raise RuntimeError('protected_source_changed')
-   receipt={'commit':os.environ['GITHUB_SHA'],'changed':list(temps),'sha256':{p:sha(desired[p])for p in FILES},'protectedUnchanged':len(PROTECTED),'databaseWrites':0,'memberRowsChanged':0,'pointDebits':0,'pricesSeeded':False};(out/'deployment.json').write_text(json.dumps(receipt,indent=2));print('NOA_UPLOAD_STATUS_DEPLOYED',json.dumps(receipt))
+   drive=UploadDrive().provision(s)
+   receipt={'drive':drive,'commit':os.environ['GITHUB_SHA'],'changed':list(temps),'sha256':{p:sha(desired[p])for p in FILES},'protectedUnchanged':len(PROTECTED),'databaseWrites':0,'memberRowsChanged':0,'pointDebits':0,'pricesSeeded':False};(out/'deployment.json').write_text(json.dumps(receipt,indent=2));print('NOA_UPLOAD_STATUS_DEPLOYED',json.dumps(receipt))
  finally:t.close()
  for p in FILES:
   if p.endswith(('.js','.css','.png','.json')):
@@ -68,7 +72,9 @@ def verify_live():
    s.get_channel().settimeout(30)
    with s.open('/hosting/noastudio/noa-ai-lab/worker.key','r')as f:key=f.read().decode().strip()
  finally:t.close()
- call=signed_service(key);refresh=call('runtime_refresh');queue=call('queue_snapshot');health=call('runtime_health')
+ call=signed_service(key);refresh=call('runtime_refresh');audit=call('audit');queue=call('queue_snapshot');health=call('runtime_health')
+ if audit.get('temporary_inputs')!=0:raise RuntimeError('temporary_input_cleanup_incomplete')
+ if health.get('temporary_storage')!='google_drive' or health.get('spool_limit') is not None:raise RuntimeError('drive_spool_not_active')
  target='single:kpop-original:05';rows=[r for r in queue['rows']if r['song_key']==target]
  if not rows:raise RuntimeError('target_upload_not_found')
  latest=max(rows,key=lambda r:int(r['id']));state=call('upload_reconcile',{'id':latest['upload_id']})

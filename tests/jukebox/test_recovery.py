@@ -67,6 +67,27 @@ class RecoveryTests(unittest.TestCase):
 if __name__=='__main__':unittest.main()
 
 class IdleRecoveryTests(unittest.TestCase):
+    def test_upload_arriving_after_a_long_song_is_not_left_without_a_worker(self):
+        clock=[0];claimed=[];job={'id':'a'*32,'job_id':7,'key':'jukebox:qa:long','lease':'b'*32,'extension':'wav'}
+        class LostPublicationResponse:
+            def lstat(self,path):
+                clock[0]+=130
+                raise TimeoutError('publication response lost')
+        def call(action,body=None):
+            if action=='upload_claim':
+                if not claimed or (len(claimed)==1 and clock[0]>=135):
+                    item=job|{'job_id':7+len(claimed)};claimed.append(item['job_id']);return {'uploads':[item]}
+                return {'uploads':[]}
+            if action=='upload_reconcile':return {'status':'ready','final_verified':True,'source_matches_final':True}
+            if action=='upload_cleanup':return {'input_removed':True}
+            if action=='maintenance':return {}
+            raise AssertionError('unexpected action '+action)
+        def advance(seconds):clock[0]+=seconds
+        with patch.object(upload.time,'monotonic',side_effect=lambda:clock[0]),patch.object(upload.time,'sleep',side_effect=advance):
+            result=upload._drain_uploads(LostPublicationResponse(),call,None,idle_seconds=45)
+        self.assertEqual([r['job_id'] for r in result],[7,8])
+        self.assertTrue(all(r['ready'] for r in result))
+
     def test_worker_waits_for_later_upload_without_a_browser(self):
         clock=[0];claims=[0]
         def call(action,body=None):
