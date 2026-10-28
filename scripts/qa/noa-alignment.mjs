@@ -58,6 +58,7 @@ try{
    assert.deepEqual(banners.map(b=>[b.kind,b.after]),[['goods','notices'],['youtube','world'],['amt','collections']]);
    assert.equal(banners[0].url,'https://marpple.shop/kr/jr_lifestyle');assert.equal(banners[1].url,'https://youtube.com/@ainoa_ramjunpapa?sub_confirmation=1');assert.equal(banners[2].url,'https://www.aimusictown.com/creators/ainoa');
    for(const b of banners){assert(b.icon&&!b.overflow&&b.target==='_blank'&&b.rel.includes('noopener'));assert(Math.abs(b.x-banners[0].x)<1&&Math.abs(b.width-banners[0].width)<1&&Math.abs(b.height-banners[0].height)<1,JSON.stringify(banners));}
+   if(await page.locator('.ainoa-message').isVisible())await page.locator('.ainoa-message').waitFor({state:'hidden',timeout:16000});
    if(width===390)for(const b of banners)await page.locator('[data-home-banner='+b.kind+']').screenshot({path:`${out}/banner-${b.kind}-${engine}-${theme}.png`});
    await page.getByRole('heading',{name:'추천 음악',exact:true}).click();await page.screenshot({path:`${out}/home-${engine}-${width}-${theme}.png`});
    assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth));assert.deepEqual(errors,[]);
