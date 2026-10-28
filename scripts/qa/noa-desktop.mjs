@@ -1,14 +1,18 @@
 import {chromium} from 'playwright';
 import {spawn} from 'node:child_process';
-import {mkdirSync,writeFileSync} from 'node:fs';
+import {mkdirSync,writeFileSync,readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 const live=process.env.NOA_DESKTOP_PHASE==='live',base='http://127.0.0.1:8077',out='desktop-proof/'+(live?'live':'candidate');mkdirSync(out,{recursive:true});
 const server=spawn('php',['-S','127.0.0.1:8077','-t','/tmp/noa-pwa-fixture','/tmp/noa-pwa-fixture/router.php'],{stdio:'ignore'}),browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']}),report=[];
 try{
+ // Fetch each deployed asset once, verify its exact bytes, then replay those bytes in every isolated account.
+ // Bounded retries cover transient connection resets without retrying any AI or application mutation.
+ const deployed=new Map();if(live){const probe=await browser.newContext();try{for(const file of ['noa-voice.js','noa-ainoa.css','noa-account.js','noa-notifications.js','noa-ainoa.js','noa-ainoa-admin.js','noa-desktop.js','noa-desktop.css']){const r=await probe.request.get('https://noastudio.ai.kr/'+file+'?desktop-live='+process.env.GITHUB_SHA,{maxRetries:2,timeout:20000});assert(r.ok());const body=await r.body(),sha=b=>createHash('sha256').update(b).digest('hex');assert.equal(sha(body),sha(readFileSync('deploy/'+file)),'deployed asset matches reviewed source: '+file);deployed.set(file,body);}}finally{await probe.close();}}
  for(let i=0;i<50;i++){try{if((await fetch(base+'/')).ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
  for(const theme of ['noa-studio','noa-ivory'])for(const [role,width,height]of [['admin',1920,1032],['five',1440,900],['six',2560,1440],['vip',1440,640],['guest',1920,900],['member',1280,900],['admin',390,844]]){
   const c=await browser.newContext({viewport:{width,height},serviceWorkers:'block',reducedMotion:'reduce'});await c.addCookies([{name:'qa_role',value:role,url:base}]);await c.addInitScript(theme=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',design:'ios',radius:'soft'})),theme);
-  if(live)for(const file of ['noa-voice.js','noa-ainoa.css','noa-account.js','noa-notifications.js','noa-ainoa.js','noa-ainoa-admin.js','noa-desktop.js','noa-desktop.css']){const r=await c.request.get('https://noastudio.ai.kr/'+file+'?desktop-live=1');assert(r.ok());const body=await r.body();await c.route(base+'/'+file+'*',route=>route.fulfill({body,contentType:file.endsWith('.css')?'text/css':'text/javascript'}));}
+  for(const [file,body]of deployed)await c.route(base+'/'+file+'*',route=>route.fulfill({body,contentType:file.endsWith('.css')?'text/css':'text/javascript'}));
   let posts=[],tasks=[],points=12345;const generation={ready:true,model:'isolated-test',missing:[]};
   await c.route('**/noa-bridge/notifications.php*',r=>r.fulfill({json:{ok:true,unread:7}}));
   await c.route('**/noa-bridge/membership.php',r=>r.fulfill({json:{ok:true,member:role!=='guest',balance:points,remainingDays:role==='vip'?14:0,grant:role==='vip'?{status:'active'}:null}}));
