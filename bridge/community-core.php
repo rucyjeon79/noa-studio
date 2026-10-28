@@ -27,8 +27,8 @@ function nc_home():array{
   if($private&&!nc_private_policy($b))continue;
   // Only the explicitly title-public song request board has a public title projection at level 2.
   if(!nc_admin()&&(!empty($b['gr_use_access'])||!empty($b['bo_use_cert'])||((int)$b['bo_list_level']>$level&&!($private&&(int)$b['bo_list_level']===2))))continue;
-  $rows=nc_rows('SELECT wr_id,wr_subject FROM '.nc_write_table($id)." WHERE wr_is_comment=0".($private?'':" AND FIND_IN_SET('secret',wr_option)=0").' ORDER BY wr_id DESC LIMIT 5');
-  $out[]=['board'=>$id,'title'=>nc_plain((string)$b['bo_subject']),'items'=>array_map(fn($r)=>['id'=>(int)$r['wr_id'],'title'=>nc_plain($r['wr_subject'])],$rows),'private'=>$private,'member'=>$logged,'admin'=>nc_admin(),'canWrite'=>false,'more'=>false,'next'=>null];
+  $rows=nc_rows('SELECT wr_id,wr_subject,wr_name FROM '.nc_write_table($id)." WHERE wr_is_comment=0".($private?'':" AND FIND_IN_SET('secret',wr_option)=0").' ORDER BY wr_id DESC LIMIT 5');
+  $out[]=['board'=>$id,'title'=>nc_plain((string)$b['bo_subject']),'items'=>array_map(fn($r)=>['id'=>(int)$r['wr_id'],'title'=>nc_plain($r['wr_subject']),...($private?[]:['author'=>nc_plain($r['wr_name'])])],$rows),'private'=>$private,'member'=>$logged,'admin'=>nc_admin(),'canWrite'=>false,'more'=>false,'next'=>null];
  }
  return ['boards'=>$out,'member'=>$logged,'csrf'=>$logged?($_SESSION['noa_community_csrf']??''):''];
 }
@@ -49,8 +49,8 @@ function nc_list(string $id,int $before=0):array{
  global $member;$b=nc_board($id);$t=nc_write_table($id);$private=$id===NC_REQUEST_BOARD;
  if(!$private&&!nc_admin()&&(int)($member['mb_level']??1)<(int)$b['bo_read_level'])throw new DomainException('board_not_available');
  $where='wr_is_comment=0'.($before>0?' AND wr_id<'.$before:'').($private?'':" AND FIND_IN_SET('secret',wr_option)=0");
- $rows=nc_rows("SELECT wr_id,wr_subject FROM $t WHERE $where ORDER BY wr_id DESC LIMIT 6");$more=count($rows)>5;$rows=array_slice($rows,0,5);
- return ['items'=>array_map(fn($r)=>['id'=>(int)$r['wr_id'],'title'=>nc_plain($r['wr_subject'])],$rows),'more'=>$more,'next'=>$more?(int)end($rows)['wr_id']:null,'admin'=>nc_admin(),'canWrite'=>nc_admin()||(int)($member['mb_level']??1)>=max(3,$private?3:(int)$b['bo_write_level']),'displayName'=>(string)($member['mb_nick']??''),'private'=>$private];
+ $rows=nc_rows("SELECT wr_id,wr_subject,wr_name FROM $t WHERE $where ORDER BY wr_id DESC LIMIT 6");$more=count($rows)>5;$rows=array_slice($rows,0,5);
+ return ['items'=>array_map(fn($r)=>['id'=>(int)$r['wr_id'],'title'=>nc_plain($r['wr_subject']),...($private?[]:['author'=>nc_plain($r['wr_name'])])],$rows),'more'=>$more,'next'=>$more?(int)end($rows)['wr_id']:null,'admin'=>nc_admin(),'canWrite'=>nc_admin()||(int)($member['mb_level']??1)>=max(3,$private?3:(int)$b['bo_write_level']),'displayName'=>(string)($member['mb_nick']??''),'private'=>$private];
 }
 function nc_content(string $board,int $id,?array $verified=null):array{
  $where=$board===NC_REQUEST_BOARD?'':" AND FIND_IN_SET('secret',wr_option)=0";
@@ -58,10 +58,10 @@ function nc_content(string $board,int $id,?array $verified=null):array{
   if(!$verified||empty($verified['mb_id'])||empty($verified['wr_password']))throw new DomainException('password_not_verified');
   $where.=' AND mb_id='.nc_q($verified['mb_id']).' AND wr_password='.nc_q($verified['wr_password']);
  }
- $t=nc_write_table($board);$r=nc_one("SELECT wr_id,wr_subject,wr_content,wr_option,wr_datetime FROM $t WHERE wr_id=$id AND wr_is_comment=0$where");if(!$r)throw new DomainException('post_not_available');
- $comments=nc_rows("SELECT wr_id,wr_content,wr_option,wr_datetime FROM $t WHERE wr_parent=$id AND wr_is_comment=1".($board===NC_REQUEST_BOARD?'':" AND FIND_IN_SET('secret',wr_option)=0").' ORDER BY wr_comment,wr_id');
+ $t=nc_write_table($board);$r=nc_one("SELECT wr_id,wr_subject,wr_content,wr_option,wr_datetime,wr_name FROM $t WHERE wr_id=$id AND wr_is_comment=0$where");if(!$r)throw new DomainException('post_not_available');
+ $comments=nc_rows("SELECT wr_id,wr_content,wr_option,wr_datetime,wr_name FROM $t WHERE wr_parent=$id AND wr_is_comment=1".($board===NC_REQUEST_BOARD?'':" AND FIND_IN_SET('secret',wr_option)=0").' ORDER BY wr_comment,wr_id');
  $plain=static fn($r)=>str_contains($r['wr_option'],'html')?nc_plain($r['wr_content']):$r['wr_content'];
- return ['id'=>(int)$r['wr_id'],'title'=>nc_plain($r['wr_subject']),'body'=>$plain($r),'date'=>substr($r['wr_datetime'],0,10),'comments'=>array_map(fn($c)=>['id'=>(int)$c['wr_id'],'body'=>$plain($c),'date'=>substr($c['wr_datetime'],0,10)],$comments),'canComment'=>$board===NC_REQUEST_BOARD&&nc_admin()];
+ return ['id'=>(int)$r['wr_id'],'title'=>nc_plain($r['wr_subject']),'body'=>$plain($r),'author'=>nc_plain($r['wr_name']),'date'=>substr($r['wr_datetime'],0,10),'comments'=>array_map(fn($c)=>['id'=>(int)$c['wr_id'],'body'=>$plain($c),'author'=>nc_plain($c['wr_name']),'date'=>substr($c['wr_datetime'],0,10)],$comments),'canComment'=>$board===NC_REQUEST_BOARD&&nc_admin()];
 }
 function nc_read(string $board,int $id):array{
  global $member;if($id<1)throw new DomainException('post_not_available');$b=nc_board($board);

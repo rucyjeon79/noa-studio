@@ -40,6 +40,10 @@ function nnt_app_event(PDO $db,array $r,bool $like,int $now):void{
  if($like&&!$r['active'])return;if(!$like&&$r['deleted_at']!==null)return;
  $event=$like?'like:'.$r['entity'].':'.$r['owner']:'comment:'.$r['id'];$source=$like?'app_like':'app_comment';
  nnt_emit($db,$target['owner'],$event,$like?'like':'comment',$r['entity'],$r['owner'],$source,(int)$r['id'],$target['url'],$now);
+ if(!$like&&nnt_exists($db,'noa_comment_replies')){
+  $link=nnt_one($db,'SELECT parent_kind,parent_id FROM noa_comment_replies WHERE comment_id=?',[$r['id']]);
+  if($link){try{$parent=ne_reply_parent($db,$r['entity'],$link['parent_kind'],(int)$link['parent_id']);if($parent['owner']!==$target['owner'])nnt_emit($db,$parent['owner'],$event,'reply',$r['entity'],$r['owner'],$source,(int)$r['id'],$target['url'],$now);}catch(DomainException $e){}return;}
+ }
  // Flat comments notify existing participants as thread activity, not as direct mentions.
  if(!$like)foreach(nnt_rows($db,'SELECT DISTINCT owner FROM noa_post_comments WHERE entity=? AND id<? AND deleted_at IS NULL',[$r['entity'],$r['id']])as $p){if($p['owner']===$target['owner'])continue;nnt_emit($db,$p['owner'],$event,'reply',$r['entity'],$r['owner'],$source,(int)$r['id'],$target['url'],$now);}
 }
@@ -100,4 +104,17 @@ function nnt_prune(PDO $db,int $now):void{
  nnt_exec($db,'DELETE FROM noa_notifications WHERE created_at<?',[$now-90*86400]);
  nnt_exec($db,'DELETE FROM noa_push_subscriptions WHERE active=0 AND updated_at<?',[$now-30*86400]);
  nnt_exec($db,"DELETE FROM noa_notification_cursor WHERE source LIKE 'nonce:%' AND position<?",[$now-600]);
+}
+
+/** An inbox id never grants access: check recipient, source and current target gates again. */
+function nnt_thread(PDO $db,string $owner,int $id):array {
+ $row=nnt_one($db,'SELECT * FROM noa_notifications WHERE id=? AND recipient=? AND cancelled_at IS NULL',[$id,$owner]);
+ if(!$row||!nnt_source_alive($db,$row))throw new DomainException('post_not_available');
+ if($row['kind']==='test')return ['test'=>true];
+ if($row['kind']==='request_reply'&&preg_match('/^board:song_request:([1-9][0-9]*)$/D',$row['entity'],$m))return ['private'=>true,'id'=>(int)$m[1]];
+ $resolved=nnt_target($db,$row['entity'],$owner);if(!$resolved)throw new DomainException('post_not_available');$target=$resolved['target'];$focus=null;
+ if(in_array($row['source'],['app_comment','native_comment'],true)){
+  $focus=ne_reply_parent($db,$row['entity'],$row['source']==='app_comment'?'app':'native',(int)$row['source_id']);unset($focus['owner']);
+ }
+ return ['target'=>['type'=>$target['type'],'key'=>$target['key']],'replyTo'=>$focus];
 }

@@ -3,3 +3,5 @@
 #noa-notification-page .nnt-back{background:transparent;color:var(--noa-muted);border:0}#noa-notification-page .nnt-item{width:100%;background:transparent;border:0;box-shadow:none}#noa-notification-page .nnt-settings input{min-height:20px;padding:0}#noa-notification-page .nnt-settings summary{background:transparent;color:var(--noa-text)}
 
 #noa-notification-page .nnt-jump{display:inline-flex;align-items:center;min-height:44px;color:var(--noa-accent);font-size:14px;text-decoration:underline;margin:0 0 16px}#nnt-phone-title{scroll-margin-top:96px}
+
+.nnt-page .nnt-item{cursor:pointer}.noa-comments section>p{white-space:pre-wrap;overflow-wrap:anywhere}

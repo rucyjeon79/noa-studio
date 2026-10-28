@@ -7,6 +7,7 @@ function ne_schema(): array {
  return [
   'noa_post_likes'=>"(entity VARCHAR(191) NOT NULL,owner VARCHAR(191) NOT NULL,active TINYINT NOT NULL,updated_at BIGINT NOT NULL,PRIMARY KEY(entity,owner))",
   'noa_post_like_events'=>"(id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,entity VARCHAR(191) NOT NULL,owner VARCHAR(191) NOT NULL,active TINYINT NOT NULL,created_at BIGINT NOT NULL,KEY(entity,owner,id),KEY(created_at),KEY(owner,created_at))",
+  'noa_comment_replies'=>"(comment_id BIGINT UNSIGNED PRIMARY KEY,parent_kind VARCHAR(10) NOT NULL,parent_id BIGINT UNSIGNED NOT NULL,KEY(parent_kind,parent_id))",
   'noa_post_comments'=>"(id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,entity VARCHAR(191) NOT NULL,owner VARCHAR(191) NOT NULL,request_id CHAR(36) NOT NULL,body TEXT NOT NULL,created_at BIGINT NOT NULL,deleted_at BIGINT NULL,UNIQUE KEY(owner,request_id),KEY(entity,created_at,id),KEY(owner,created_at))"
  ];
 }
@@ -38,14 +39,26 @@ function ne_like(PDO $db,string $entity,string $owner,bool $active,bool $legacyL
   $q=$db->prepare('INSERT INTO noa_post_like_events(entity,owner,active,created_at) VALUES(?,?,?,?)');$q->execute([$entity,$owner,(int)$active,$now]);
  });
 }
-function ne_comment(PDO $db,string $entity,string $owner,string $request,string $body,?int $now=null): int {
- $now??=time();$body=trim($body);if(!preg_match('/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/D',$request)||!mb_check_encoding($body,'UTF-8')||$body===''||mb_strlen($body)>2000||str_contains($body,"\0"))throw new DomainException('invalid_comment');
- return ne_lock($db,$owner,function()use($db,$entity,$owner,$request,$body,$now){
+function ne_comment(PDO $db,string $entity,string $owner,string $request,string $body,?int $now=null,array $reply=[]): int {
+ $now??=time();if($reply&&(!in_array($reply['kind']??null,['app','native'],true)||!is_int($reply['id']??null)||$reply['id']<1))throw new DomainException('reply_not_available');$body=trim($body);if(!preg_match('/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/D',$request)||!mb_check_encoding($body,'UTF-8')||$body===''||mb_strlen($body)>2000||str_contains($body,"\0"))throw new DomainException('invalid_comment');
+ return ne_lock($db,$owner,function()use($db,$entity,$owner,$request,$body,$now,$reply){
   $old=ne_one($db,'SELECT * FROM noa_post_comments WHERE owner=? AND request_id=?',[$owner,$request]);
-  if($old){if($old['entity']!==$entity||$old['body']!==$body||$old['deleted_at']!==null)throw new DomainException('request_conflict');return (int)$old['id'];}
+  if($old){$saved=ne_one($db,'SELECT parent_kind,parent_id FROM noa_comment_replies WHERE comment_id=?',[$old['id']]);if(($saved?[$saved['parent_kind'],(int)$saved['parent_id']]:[])!==($reply?[$reply['kind'],(int)$reply['id']]:[])||$old['entity']!==$entity||$old['body']!==$body||$old['deleted_at']!==null)throw new DomainException('request_conflict');return (int)$old['id'];}
   $count=ne_one($db,'SELECT COUNT(*) n FROM noa_post_comments WHERE owner=? AND created_at>?',[$owner,$now-60]);if((int)$count['n']>=5)throw new DomainException('try_later');
-  $q=$db->prepare('INSERT INTO noa_post_comments(entity,owner,request_id,body,created_at) VALUES(?,?,?,?,?)');$q->execute([$entity,$owner,$request,$body,$now]);return (int)$db->lastInsertId();
+  $q=$db->prepare('INSERT INTO noa_post_comments(entity,owner,request_id,body,created_at) VALUES(?,?,?,?,?)');$q->execute([$entity,$owner,$request,$body,$now]);$id=(int)$db->lastInsertId();if($reply){ne_reply_parent($db,$entity,(string)($reply['kind']??''),(int)($reply['id']??0),true);$q=$db->prepare('INSERT INTO noa_comment_replies VALUES(?,?,?)');$q->execute([$id,$reply['kind'],$reply['id']]);}return $id;
  });
+}
+/** Resolve reply ownership only from a visible comment in this exact entity. */
+function ne_reply_parent(PDO $db,string $entity,string $kind,int $id,bool $lock=false):array {
+ global $g5;if($id<1||!in_array($kind,['app','native'],true))throw new DomainException('reply_not_available');
+ if($kind==='app')$r=ne_one($db,'SELECT owner,body FROM noa_post_comments WHERE id=? AND entity=? AND deleted_at IS NULL'.($lock?' FOR UPDATE':''),[$id,$entity]);
+ else {
+  if(!preg_match('/^board:([A-Za-z0-9_]{1,20}):([1-9][0-9]*)$/D',$entity,$m)||$m[1]==='song_request')throw new DomainException('reply_not_available');
+  $r=ne_one($db,'SELECT mb_id owner,wr_content body,wr_name name FROM '.ne_table($g5['write_prefix'].$m[1])." WHERE wr_id=? AND wr_parent=? AND wr_is_comment=1 AND FIND_IN_SET('secret',wr_option)=0".($lock?' FOR UPDATE':''),[$id,(int)$m[2]]);
+ }
+ if(!$r)throw new DomainException('reply_not_available');
+ $account=ne_one($db,'SELECT mb_nick FROM '.ne_table($g5['member_table']).' WHERE mb_id=?',[$r['owner']]);
+ return ['id'=>$id,'kind'=>$kind,'owner'=>$r['owner'],'name'=>html_entity_decode(strip_tags(($account['mb_nick']??'')?:($r['name']??'탈퇴 회원')),ENT_QUOTES,'UTF-8'),'body'=>mb_substr(html_entity_decode(strip_tags(preg_replace('~<(script|style)\b[^>]*>.*?</\1>~is','',$r['body'])),ENT_QUOTES,'UTF-8'),0,240)];
 }
 function ne_delete(PDO $db,int $id,string $owner,bool $admin,?int $now=null): array {
  $now??=time();return ne_lock($db,$owner,function()use($db,$id,$owner,$admin,$now){

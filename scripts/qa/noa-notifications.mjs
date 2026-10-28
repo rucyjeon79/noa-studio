@@ -41,6 +41,18 @@ try{
   Object.defineProperty(navigator,'serviceWorker',{value:{getRegistration:async()=>registration,register:async()=>registration,ready:Promise.resolve(registration)}});
  },{subscription:{...subscription,endpoint:subscription.endpoint+'-ui'}});
  const page=await ui.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'/noa-notifications.php');await page.getByText('내 소식은 나에게만 보여요.',{exact:true}).waitFor();await page.getByRole('heading',{name:'내 활동 알림',exact:true}).waitFor();assert.equal(await page.evaluate(()=>qaPermissionPrompts),0);
+ const inbox=(await get('a')).data;let inlineNotice=null;
+ for(const item of inbox.items){const r=await contexts.a.request.get(api+'?thread='+item.id);if(r.ok()){const d=await r.json();if(d.thread.replyTo?.body==='알림에서 답할 원래 댓글'){inlineNotice=item;break;}}}
+ assert(inlineNotice,'real comment notification exists');
+ const denied=await contexts.b.request.get(api+'?thread='+inlineNotice.id);assert.equal(denied.status(),400);
+ const locationBefore=page.url();await page.locator('#nnt-item-'+inlineNotice.id).click();
+ const dialog=page.locator('dialog.noa-comments');await dialog.getByLabel('별무리 B님에게 답댓글',{exact:true}).waitFor();await dialog.locator('.noa-comment-post').getByText('별무리 A',{exact:true}).waitFor();assert.equal(page.url(),locationBefore);
+ await dialog.getByLabel('별무리 B님에게 답댓글',{exact:true}).fill('알림함 안에서 작성한 답댓글');await dialog.getByRole('button',{name:'답댓글 등록',exact:true}).click();
+ const replyRow=dialog.locator('.noa-comment').filter({has:page.locator('p',{hasText:'알림함 안에서 작성한 답댓글'})});await replyRow.waitFor();await replyRow.getByText('별무리 B님에게 답댓글',{exact:true}).waitFor();await replyRow.getByRole('button',{name:'답댓글',exact:true}).click();await dialog.getByLabel('별무리 A님에게 답댓글',{exact:true}).waitFor();assert.equal(page.url(),locationBefore);
+ for(const width of [390,1280]){await page.setViewportSize({width,height:900});assert(await dialog.evaluate(e=>e.scrollWidth<=e.clientWidth));await page.screenshot({path:out+`/inline-reply-${width}.png`});}
+ await dialog.getByRole('button',{name:'닫기',exact:true}).click();await page.reload();await page.locator('#nnt-item-'+inlineNotice.id).click();await page.locator('dialog .noa-comment>p').filter({hasText:'알림함 안에서 작성한 답댓글'}).waitFor();
+ await page.locator('dialog').getByRole('button',{name:'답댓글 취소',exact:true}).click();await page.getByLabel('댓글 남기기',{exact:true}).fill('알림함 안에서 작성한 일반 댓글');await page.locator('dialog').getByRole('button',{name:'댓글 등록',exact:true}).click();await page.locator('dialog .noa-comment>p').filter({hasText:'알림함 안에서 작성한 일반 댓글'}).waitFor();await page.locator('dialog').getByRole('button',{name:'닫기',exact:true}).click();assert.equal(page.url(),locationBefore);
+ report.api.push('owned thread only','inline preview author','reply persisted after reload','inline top-level comment','no navigation from inbox');
  await page.getByRole('button',{name:'휴대폰 알림 켜기',exact:true}).click();await page.getByText('이 기기로 AInoa의 알림을 받을 수 있어요.',{exact:true}).waitFor();assert.equal(await page.evaluate(()=>qaPermissionPrompts),1);
  await page.getByRole('button',{name:'테스트 알림 받기',exact:true}).click();await page.getByText('테스트 알림은 이 기기에만 보냅니다.',{exact:true}).waitFor();const secondTest=(await get('a')).data.testStatus;assert.notEqual(secondTest.id,testId);assert.equal(secondTest.received,0);assert.equal(secondTest.state,'pending');
  await page.getByLabel('내 게시물의 좋아요',{exact:true}).uncheck();await page.getByRole('button',{name:'알림 종류 저장'}).click();await page.getByText('받을 알림 종류를 저장했어요.',{exact:true}).waitFor();assert.equal((await get('a')).data.preferences.likes,false);

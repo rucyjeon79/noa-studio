@@ -15,6 +15,7 @@ try{
  $owner=(string)($member['mb_id']??'');if(!nnt_member($db,$owner))nnt_reply(['ok'=>false,'error'=>'login_required'],401);
  $_SESSION['noa_notification_csrf']??=bin2hex(random_bytes(32));$csrf=$_SESSION['noa_notification_csrf'];
  if($method==='GET'){
+  if(isset($_GET['thread']))nnt_reply(['ok'=>true,'thread'=>nnt_thread($db,$owner,(int)$_GET['thread'])]);
   // A bounded, serialised collector also keeps the open inbox fresh between push runs.
   nnt_exec($db,"INSERT IGNORE INTO noa_notification_cursor VALUES ('last_collect',0)");
   if(nnt_exec($db,"UPDATE noa_notification_cursor SET position=? WHERE source='last_collect' AND position<?",[time(),time()-15]))nnt_collect($db,time());
