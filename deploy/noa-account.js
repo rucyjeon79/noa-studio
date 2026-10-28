@@ -39,7 +39,7 @@
    write('noa-my-subscription',active?'구독 중 · '+Number(d.remainingDays)+'일 남음':'구독 없음');
    write('noa-my-points',Number(d.balance).toLocaleString('ko-KR')+'P');summary.dataset.state='ready';if(status)status.textContent='';
   }
- }catch{if(summary){summary.dataset.state='error';if(status)status.textContent='현재 계정 정보를 불러오지 못했습니다. 구독·포인트 내역에서 다시 확인해 주세요.';}}
+ }catch{window.dispatchEvent(new Event('noa-membership-error'));if(summary){summary.dataset.state='error';if(status)status.textContent='현재 계정 정보를 불러오지 못했습니다. 구독·포인트 내역에서 다시 확인해 주세요.';}}
  finally{clearTimeout(timeout);pending=false;}}
  update();window.addEventListener('pageshow',update);window.addEventListener('noa-membership-change',update);document.addEventListener('visibilitychange',()=>{if(!document.hidden)update();});
 })();

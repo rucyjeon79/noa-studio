@@ -1,0 +1,36 @@
+/* Wide desktop uses the former right gutter; small screens retain the floating assistant. */
+#noa-desktop{display:none}
+@media(min-width:1440px) and (min-height:640px){
+ html[data-noa-desktop]{--noa-companion-width:clamp(328px,20vw,384px);--noa-companion-space:calc(var(--noa-companion-width) + 32px)}
+ html[data-noa-desktop] body{padding-right:var(--noa-companion-space)}
+ html[data-noa-desktop] #noa-account-bar{margin-right:calc(-1 * var(--noa-companion-space))}
+ html[data-noa-desktop] :is(.noa-main,.noa-page main,.noa-g5 #wrapper){max-width:none}
+ html[data-noa-desktop] #noa-shell-view{width:calc(100% - var(--noa-rail,224px) - var(--noa-companion-space))}
+ html[data-noa-desktop] #noa-disclosure-close{left:calc(50% + (var(--noa-rail,224px) - var(--noa-companion-space))/2)}
+ #noa-desktop:not([hidden]){position:fixed;display:flex;flex-direction:column;gap:16px;top:calc(var(--noa-desktop-top,56px) + 16px);right:16px;bottom:calc(var(--noa-player-space,0px) + var(--noa-transfer-space,0px) + 16px);width:var(--noa-companion-width);min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;z-index:34;color:var(--noa-text);font:14px/1.5 var(--noa-font);padding:0 2px 2px}
+ #noa-desktop :is(a,button,input,textarea,select){font:inherit;max-width:100%;box-sizing:border-box}
+ #noa-desktop a{color:inherit;text-decoration:none;min-height:44px;display:flex;align-items:center}
+ #noa-desktop :is(h2,p){margin:0}#noa-desktop h2{font-size:17px;font-weight:650;letter-spacing:.02em}
+ .noa-desktop-my{border:1px solid var(--noa-line);border-radius:16px;padding:12px 16px;background:var(--noa-surface);flex:none}
+ #noa-desktop header{display:flex;align-items:center;gap:12px;min-height:44px}
+ .noa-desktop-my>header{justify-content:space-between}.noa-desktop-my>header>a{font-size:12px;color:var(--noa-muted)!important}
+ #noa-desktop .noa-desktop-identity{gap:12px;padding:12px 0}.noa-desktop-identity>span:last-child{display:grid;gap:4px;min-width:0}.noa-desktop-identity strong{font-size:18px;overflow-wrap:anywhere}.noa-desktop-identity small{font-size:12px;color:var(--noa-muted)}
+ #noa-desktop .noa-desktop-wallet{justify-content:space-between;gap:8px;border-top:1px solid var(--noa-line);padding-top:8px}.noa-desktop-wallet>span{font-size:12px;color:var(--noa-muted)}.noa-desktop-wallet>strong{font-size:20px;color:var(--noa-accent);overflow-wrap:anywhere}
+ #noa-desktop .noa-desktop-subscription{font-size:12px;color:var(--noa-muted);min-height:32px;margin-bottom:8px}
+ .noa-desktop-menu{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;border-top:1px solid var(--noa-line);padding-top:8px}.noa-desktop-menu>a{font-size:13px;gap:8px}.noa-desktop-menu>a:hover,.noa-desktop-my>header>a:hover{color:var(--noa-accent)!important}
+ .noa-desktop-menu .nnt-count{background:var(--noa-accent);color:var(--noa-accentText);border-radius:20px;min-width:22px;text-align:center;font-size:11px;padding:2px 6px}
+ #noa-desktop .noa-desktop-status{font-size:12px;color:var(--noa-muted);margin-top:8px}.noa-desktop-status:empty{display:none}.noa-desktop-guest p{color:var(--noa-muted);padding:12px 0}#noa-desktop .noa-desktop-login{justify-content:center;border:1px solid var(--noa-line);border-radius:8px}
+ .noa-desktop-ai{display:flex;flex-direction:column;flex:1 0 280px;min-height:280px;border:1px solid var(--noa-line);border-radius:16px;background:var(--noa-surface);overflow:hidden}
+ .noa-desktop-ai>header{padding:16px;border-bottom:1px solid var(--noa-line);flex:none}.noa-desktop-ai>header img{border-radius:50%;object-fit:cover;flex:none}.noa-desktop-ai>header span{font-size:12px;color:var(--noa-muted)}
+ #noa-desktop-ainoa{flex:1;min-height:0}#noa-desktop #noa-ainoa{position:static;width:auto;height:auto;pointer-events:auto;--ainoa-size:48px;--ainoa-panel-bg:var(--noa-surface)}
+ #noa-desktop :is(.ainoa-symbol,.ainoa-tip,.ainoa-close,.ainoa-panel-body>header){display:none!important}
+ #noa-desktop .ainoa-panel{position:static;width:auto;max-width:none;border:0;border-radius:0;box-shadow:none;background:transparent}
+ #noa-desktop .ainoa-panel::after{display:none}#noa-desktop .ainoa-panel-body{max-height:none;overflow:visible;padding:16px}
+ #noa-desktop .ainoa-panel :is(button,input){min-height:44px}#noa-desktop .ainoa-note{margin:12px 0;font-size:12px;color:var(--noa-muted)}#noa-desktop .ainoa-admin-toggle{width:100%;margin-top:12px}
+ #noa-desktop .ainoa-results{max-height:240px;overflow:auto}#noa-desktop .ainoa-answer{overflow-wrap:anywhere}
+ #noa-desktop .ainoa-admin-dialog{position:static;width:100%;max-height:none;margin:0;padding:16px;border:0;border-radius:0;box-shadow:none;background:transparent;color:var(--noa-text);overflow:visible}
+ #noa-desktop .ainoa-admin-dialog>header{position:static;margin:0;padding:0;align-items:center;gap:8px;background:transparent;z-index:auto}#noa-desktop .ainoa-admin-dialog h2{font-size:15px}#noa-desktop .ainoa-admin-dialog :is(button,select){min-height:44px}
+ #noa-desktop .ainoa-admin-dialog :is(p,details){font-size:12px;margin-block:12px}#noa-desktop .ainoa-admin-dialog textarea{font-size:14px;resize:vertical;border:1px solid var(--noa-line);border-radius:8px;background:var(--noa-bg);color:var(--noa-text);padding:10px}
+ #noa-desktop .ainoa-admin-toolbar{flex-wrap:wrap;gap:6px}#noa-desktop .ainoa-admin-threads{flex:1;min-width:120px}#noa-desktop .ainoa-admin-log{max-height:300px;min-height:80px;overflow:auto;overscroll-behavior:contain}#noa-desktop .ainoa-admin-log p{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+ #noa-desktop .ainoa-admin-subscription{display:none}#noa-desktop .ainoa-admin-dialog .ainoa-admin-send{width:100%;margin-top:8px}#noa-desktop .ainoa-admin-connection{color:var(--noa-muted)}#noa-desktop .ainoa-admin-context{font-size:12px}
+}
