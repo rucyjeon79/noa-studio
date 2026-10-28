@@ -13,6 +13,12 @@ class RecoveryContract(unittest.TestCase):
   # The category breadcrumb is presentation only; retain exact playback hashes.
   breadcrumb=" renderMusicInfo(r);\n"
   self.assertEqual(s.count(breadcrumb),1);s=s.replace(breadcrumb,'',1)
+  # Authorized channel artwork projection: keep every permission, SQL and playback
+  # byte outside these two exact read-only call replacements unchanged.
+  for current,previous in [
+   ("$card=noa_music_cover($jukebox,$r['doc_key'],$suno,$b,(string)($p['ownerId']??''));", "$card=noa_music_asset_url($jukebox,$r['doc_key'],$suno,'cover')?:noa_sound_cover($b);"),
+   ("$card=noa_music_cover($jukebox,$key,$suno,$b,(string)($d['ownerId']??''));", "$card=noa_music_asset_url($jukebox,$key,$suno,'cover')?:noa_sound_cover($b);")]:
+   self.assertEqual(s.count(current),1);s=s.replace(current,previous,1)
   blocks={'databaseAndPermissionPrefix':s[:s.index('?><!doctype html>')],'requestPlaybackAndQueue':s[s.index('function requestPlayback()'):s.index('function filter()')],'playbackAndUploadIntegration':s[s.index('function select('):s.index("// Detail hydration") if "// Detail hydration" in s else s.index("let saved=''")]}
   actual={k:hashlib.sha256(v.encode()).hexdigest()for k,v in blocks.items()}
   self.assertEqual(actual,json.loads((ROOT/'tests/uiux/music-processing-contract.json').read_text()))

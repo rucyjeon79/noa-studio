@@ -59,7 +59,7 @@ jobs:
         if: always()
         with: {name: 'noa-upload-status-candidate-${{ github.run_id }}', path: upload-status-proof/, retention-days: 2}
   deploy:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && !contains(github.event.head_commit.message, '[channel-explorer-release]')
     needs: candidate
     environment: production
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}

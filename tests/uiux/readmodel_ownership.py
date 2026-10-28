@@ -34,7 +34,7 @@ def verify_youtube_reader_only(root, baseline):
 
 def verify_shared_catalog_readers_only(root, baseline):
     """Shared-song approval permits readers only; all upload/processing writers stay exact."""
-    scopes={'bridge/sound-core.php':{'noa_sound_catalog_document','noa_sound_visible','noa_sound_trash_index'},
+    scopes={'bridge/sound-core.php':{'noa_sound_catalog_document','noa_sound_visible','noa_sound_trash_index','noa_sound_cover'},
             'deploy/noa-app/jukebox/core.php':{'nj_document','nj_catalog'}}
     for path,allowed in scopes.items():
         old=subprocess.check_output(['git','show',baseline+':'+path],cwd=root,text=True)

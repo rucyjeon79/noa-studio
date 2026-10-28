@@ -29,7 +29,7 @@ try{
  await visiblePath(p,'#editor-classification',['오리지널송','K-POP Original','ACT 1','EP.2 · EP 검증곡']);
  await c.route('**/noa-bridge/creator.php?action=list',r=>r.fulfill({json:{channel:null,songs:[{key:'creator:fixture',title:'내 검증곡',genre:'your-story',visibility:'private',fields:{title:'내 검증곡'},state:{ready:false,status:'draft'}}]}}));
  await c.route('**/noa-bridge/creator.php?action=status*',r=>r.fulfill({json:{ready:false,status:'draft'}}));
- await p.goto(base+'/noa-creator.php');await p.locator('.creator-row button').click();
+ await p.goto(base+'/noa-creator.php');await p.getByRole('button',{name:'모두 펼치기',exact:true}).click();await p.locator('.creator-row button').click();
  await visiblePath(p,'#creator-classification',['당신의 이야기, 우리의 음악','당신의 이야기, 우리의 음악 🎧','미분류','내 검증곡']);
  assert(await p.locator('#creator-classification').evaluate(e=>e.getBoundingClientRect().bottom<=document.getElementById('creator-editor-title').getBoundingClientRect().top));
  await p.locator('#creator-song [name=genre]').selectOption('cover-reborn');await p.locator('#creator-song [name=title]').fill('수정 중인 커버곡');
@@ -40,7 +40,7 @@ try{
  let r=await c.request.post(base+'/noa-record-action.php',{data:{},headers:{Origin:'https://evil.example','X-NOA-CSRF':csrf}});assert.equal(r.status(),403);
  r=await c.request.post(base+'/noa-record-action.php',{data:{},headers:{Origin:'https://noastudio.ai.kr'}});assert.equal(r.status(),403);
  const get=async()=>(await (await c.request.get(base+'/noa-inline-edit.php?'+new URLSearchParams(selector))).json());let current=await get();
- await p.locator('.catalog-record:visible .noa-edit-edit').click();await p.locator('#noa-edit-title').fill('수정된 검색 검증곡');await p.getByRole('button',{name:'정보 수정 저장',exact:true}).click();await p.waitForFunction(()=>document.getElementById('catalog-status').textContent.includes('저장했습니다'));assert.equal((await get()).fields.title,'수정된 검색 검증곡');await p.locator('.noa-edit-form [data-category-level="4"]').getByText('수정된 검색 검증곡',{exact:true}).waitFor();
+ await p.locator('.catalog-record:visible .noa-edit-edit').click();await p.locator('#noa-edit-title').fill('수정된 검색 검증곡');await p.getByRole('button',{name:'정보 수정 저장',exact:true}).click();await p.waitForFunction(()=>document.getElementById('catalog-status').textContent.includes('저장했습니다'));assert.equal((await get()).fields.title,'수정된 검색 검증곡');await p.locator('.noa-edit-form').waitFor({state:'detached'});await p.locator('.catalog-record:visible [data-category-level="4"]').getByText('수정된 검색 검증곡',{exact:true}).waitFor();
  await p.reload();assert.match(await p.locator('.catalog-record:visible h2').textContent(),/수정된 검색/);report.mutations.push('inline-save-visible');
  p.on('dialog',d=>d.accept());await Promise.all([p.waitForNavigation({waitUntil:'load'}),p.locator('.catalog-record:visible [data-record-action=trash]').click()]);assert.equal(new URL(p.url()).searchParams.get('q'),'검색');assert.equal(await p.locator('.catalog-record:visible').count(),0);report.mutations.push('confirmed-trash');
  current=await get();r=await c.request.post(base+'/noa-inline-edit.php',{headers:{Origin:'https://noastudio.ai.kr','X-NOA-Bridge-Request':'1'},data:{selector,patch:{title:'삭제 중 변경'},expectedRevision:current.revision,requestId:crypto.randomUUID()}});assert.equal(r.status(),409);

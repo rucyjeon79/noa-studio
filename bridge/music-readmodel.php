@@ -48,3 +48,7 @@ function noa_music_browse_project(array $rows,array $sources=[],array $edits=[])
  foreach($rows as &$row){$key=(string)($row['musicKey']??$row['key']??'');$d=$sources[$key]??[];$b=$d['body']??$row['fields']??[];$f=function_exists('nie_fields')?nie_fields($edits,$row):[];$row['canonicalVideo']=noa_music_video_id((string)($f['youtubeUrl']??$b['youtubeUrl']??''));$row['_browseSuno']=(string)($f['sunoUrl']??($row['suno']??(($b['sunoUrl']??'')?:($b['sunoShareUrl']??''))));$row['browsePriority']??=(str_starts_with($key,'catalog:')?0:2)+(!empty($d['packageSchema'])?1:0);}unset($row);
  $rows=noa_music_browse_catalog($rows);foreach($rows as &$row)unset($row['canonicalVideo'],$row['_browseSuno']);unset($row);return $rows;
 }
+
+function noa_music_cover(array $assets,string $key,string $source,array $body,string $owner=''):string{
+ return noa_music_asset_url($assets,$key,$source,'cover')?:noa_sound_cover($body)?:('/noa-creator-symbol.php'.($owner!==''?'?channel='.hash('sha256',$owner):''));
+}

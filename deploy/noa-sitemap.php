@@ -30,6 +30,7 @@ function noa_sitemap_registry():array{
             ['login','로그인','기존 계정 또는 구글·카카오로 로그인','/noa-login.php','user','guest'],
             ['creatorApply','크리에이터 가입·전환','본인인증과 승인 후 5레벨·채널 개설','/noa-creator-apply.php','user','public'],
             ['channelWorkspace','내 채널 작업실','소유한 콘텐츠·게시판·제작 관리','/noa-channel-workspace.php','music','member'],
+            ['channelRules','카테고리·제작 규칙','내 채널 장르별 제작 원칙','/noa-channel-rules.php','playlists','member'],
             ['creatorAI','채널 AI 제작실','6레벨 크리에이터 · 이용 포인트 확인','/noa-creator-ai.php','mic','member'],
             ['password','아이디·비밀번호 찾기','계정 접근 복구','/bbs/password_lost.php','settings','guest'],
             ['playlists','내 재생목록','나만의 목록 만들기와 편집','/noa-music.php#my-playlists','playlists','member'],
@@ -43,6 +44,7 @@ function noa_sitemap_registry():array{
         'community'=>['title'=>'커뮤니티','routes'=>[
             ['search','게시판 검색','공개된 게시글 찾기','/bbs/search.php','search','public'],
         ]],
+        'creatorTools'=>['title'=>'내 채널 · 전문 제작 도구','routes'=>[['taxonomy','공통 카테고리·제작 규칙','최고관리자의 공통 분류 기준','/noa-app/taxonomy/','playlists','admin']]],
         'legal'=>['title'=>'서비스 안내','routes'=>[]],
         'admin'=>['title'=>'홈페이지 관리','routes'=>[
             ['libraryAdmin','라이브러리 관리','음악 문서와 변경 이력','/noa-library.php','library','admin'],
@@ -58,7 +60,6 @@ function noa_sitemap_registry():array{
             ['themeAdmin','테마 정책','디자인 설정과 변경 이력','/noa-theme-admin.php','settings','admin'],
             ['database','데이터베이스 관리','운영 데이터 현황','/noa-app/database/','library','admin'],
             ['popularity','인기순위 관리','집계 상태와 유효 재생 정책','/noa-app/popularity/','playlists','admin'],
-            ['taxonomy','카테고리·제작 규칙','분류 체계 관리','/noa-app/taxonomy/','playlists','admin'],
             ['payments','토스 결제 연결','카드·카카오페이 연결과 테스트·운영 설정','/noa-payment-settings.php','settings','admin'],
             ['subscriptions','월 구독 설정','요금·포인트·결제 내역 확인','/noa-subscription-admin.php','settings','admin'],
             ['creatorReview','크리에이터 가입 심사','본인인증·신청 검토와 승인','/noa-creator-review.php','user','admin'],

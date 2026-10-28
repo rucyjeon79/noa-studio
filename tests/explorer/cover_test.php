@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+$dir=sys_get_temp_dir().'/noa-cover-'.bin2hex(random_bytes(8));mkdir($dir);copy(__DIR__.'/../../bridge/sound-core.php',$dir.'/sound-core.php');file_put_contents($dir.'/asset-covers.php',"<?php return ['https://source.example/art.jpg'=>'/noa-assets/covers/acquired.jpg'];");require $dir.'/sound-core.php';require __DIR__.'/../../bridge/music-readmodel.php';
+function check_cover($a,$b){if($a!==$b)throw new RuntimeException('cover_projection_mismatch');}
+check_cover(noa_sound_cover(['cardImageLocation'=>'https://source.example/art.jpg']),'/noa-assets/covers/acquired.jpg');check_cover(noa_sound_cover(['cardImageLocation'=>'/noa-assets/covers/acquired.jpg']),'/noa-assets/covers/acquired.jpg');check_cover(noa_sound_cover(['cardImageLocation'=>'missing','thumbUrl'=>'https://source.example/art.jpg']),'/noa-assets/covers/acquired.jpg');check_cover(noa_sound_cover(['cardImageLocation'=>'/data/dbconfig.php']),'');check_cover(noa_music_cover([],'song','',[],'owner'),'/noa-creator-symbol.php?channel='.hash('sha256','owner'));unlink($dir.'/sound-core.php');unlink($dir.'/asset-covers.php');rmdir($dir);echo "MUSIC_CARD_PROJECTION_OK\n";

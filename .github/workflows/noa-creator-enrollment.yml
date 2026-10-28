@@ -64,7 +64,7 @@ jobs:
         with: {name: 'noa-creator-candidate-${{ github.run_id }}', path: 'creator-proof/candidate/', retention-days: 7}
 
   deploy:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[channel-explorer-release]')
     needs: verify
     environment: production
     runs-on: ubuntu-latest
