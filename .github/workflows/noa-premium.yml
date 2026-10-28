@@ -33,7 +33,7 @@ jobs:
           php tests/subscription/mysql_test.php
           python tests/subscription/concurrent_test.py
           php tests/premium/mysql.php
-          python tests/premium/concurrent.py
+          python tests/premium/race_test.py
           php tests/member/access_test.php
           node tests/jukebox/transport_test.cjs
           node tests/jukebox/reservations_test.cjs
