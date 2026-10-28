@@ -1,5 +1,13 @@
 # Monthly benefits and completed master cards — 2026-10-28
 
+## Banner visual refinement — PR #250
+
+Replaced the decorative `10×` with a filled gold badge reading “매월 첫 활동 / 포인트 10배”. At widths up to 600px the badge occupies a compact row below the heading; desktop keeps it beside the heading. Badge text contrast is at least 5.96:1 across the gold gradient. Reward amounts and eligibility are unchanged.
+
+Runtime merge: `aa0e56b2b85b73f3220bb45a4a50ffd77a735361`. Candidate workflow [40628770778](https://github.com/rucyjeon79/noa-studio/actions/runs/40628770778) and production workflow [40629423726](https://github.com/rucyjeon79/noa-studio/actions/runs/40629423726) passed all existing monthly/native and 96 browser checks. The 320px dark and desktop light candidate captures were reviewed; a fresh public production browser reload and screenshot confirmed the visible gold badge, all four amounts and placement below the hero.
+
+Deployment job `122623578127` changed only `noa-app/monthly-banner.php` (SHA-256 `d9e40d5a0038aa4b1f437d26b4a488d899419f5359dc4888977ba37789a91e46`). All 18 protected files were unchanged. Policy revision stayed 2 (`policyChanged: false`); no member rows changed and no points were granted. The public banner and protected direct include checks passed.
+
 PR #249 addresses the user's screenshots: reserved title/metadata heights made ACT rows look separated, and completed masters retained a large processing table with pending measurement labels.
 
 ## Result
