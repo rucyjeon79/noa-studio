@@ -17,6 +17,7 @@
  }
  function failure(error){message(errors[error.message]||'알림을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.');if(error.message==='login_required'){context.member=false;state=null;updateBadges(0);if(page){$('nnt-content').hidden=true;$('nnt-login').hidden=false;}}}
  function updateBadges(count){document.querySelectorAll('[data-nnt-count]').forEach(el=>{el.textContent=count>99?'99+':String(count);el.hidden=count===0;el.setAttribute('aria-label',`읽지 않은 알림 ${count}개`);});if(page){$('nnt-unread').textContent=count;$('nnt-read-all').disabled=!count||!state?.snapshot;}}
+ window.addEventListener('noa-notifications-present',()=>{if(state)updateBadges(state.unread);});
  function entry(description){
   const link=document.createElement('a');link.href='/noa-notifications.php';link.className='nnt-entry';
   // Reuse the shared NOA mail icon for the personal activity inbox.

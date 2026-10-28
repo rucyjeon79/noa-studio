@@ -25,7 +25,7 @@ function build(){
  guestBox=el('div',undefined,'noa-desktop-guest');guestBox.hidden=!!context.access?.member;guestBox.append(el('p','나의 음악과 도착한 소식을 한곳에서.'),link('로그인','/bbs/login.php?url=%2Fnoa-my.php','noa-desktop-login'));
  notice=el('p','','noa-desktop-status');notice.setAttribute('role','status');my.append(memberBox,guestBox,notice);
  const ai=el('section',undefined,'noa-desktop-ai'),aiHead=el('header'),portrait=el('img');portrait.src='/noa-assets/ainoa-symbol.png?v=20261026-portrait-1';portrait.alt='';portrait.width=48;portrait.height=48;
- const caption=el('div');caption.append(el('h2','AInoa'),el('span','음악과 이야기, 곁에 둘게요.'));aiHead.append(portrait,caption);host=el('div');host.id='noa-desktop-ainoa';ai.append(aiHead,host);rail.append(my,ai);document.body.append(rail);
+ const caption=el('div');caption.append(el('h2','AInoa'),el('span','음악과 이야기, 곁에 둘게요.'));aiHead.append(portrait,caption);host=el('div');host.id='noa-desktop-ainoa';ai.append(aiHead,host);rail.append(my,ai);document.body.append(rail);window.dispatchEvent(new Event('noa-notifications-present'));
  if(latest)account(latest);
 }
 function sync(){

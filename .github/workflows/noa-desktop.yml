@@ -1,7 +1,7 @@
 name: NOA desktop MY and AInoa companion
 on:
   pull_request:
-    paths: ['deploy/noa-desktop.*','deploy/noa-account.js','deploy/noa-ainoa*.js','deploy/noa-design.extend.php','tests/desktop/**','scripts/noa_desktop*','scripts/qa/noa-desktop.mjs','.github/workflows/noa-desktop.yml']
+    paths: ['deploy/noa-desktop.*','deploy/noa-account.js','deploy/noa-notifications.js','deploy/noa-ainoa*.js','deploy/noa-design.extend.php','tests/desktop/**','scripts/noa_desktop*','scripts/qa/noa-desktop.mjs','.github/workflows/noa-desktop.yml']
   push:
     branches: [main]
     paths: ['deploy/noa-desktop.*','tests/desktop/**','scripts/noa_desktop*','scripts/qa/noa-desktop.mjs','.github/workflows/noa-desktop.yml']
@@ -18,6 +18,7 @@ jobs:
         run: |
           php -l deploy/noa-design.extend.php
           for f in deploy/noa-desktop.js deploy/noa-account.js deploy/noa-ainoa.js deploy/noa-ainoa-admin.js; do node --check "$f"; done
+          node --check deploy/noa-notifications.js
           php tests/desktop/fixture.php
           python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/desktop" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
