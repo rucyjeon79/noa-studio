@@ -14,7 +14,7 @@ try{for(const engine of ['chromium','webkit']){
    await page.goto(base+path);await page.locator('#noa-account-bar').waitFor();
    if(name==='home'){
     await page.locator('.noa-discovery-tabs').waitFor();assert.equal(await page.locator('#noa-featured .noa-music-card').count(),8);
-    assert.equal(new Set(await page.locator('#noa-featured .noa-discovery-reason').allTextContents()).size,3);
+    assert.equal(new Set(await page.locator('#noa-featured .noa-discovery-reason').allTextContents()).size,3);assert(await page.evaluate(()=>{const ids=new Set([...document.querySelectorAll('#noa-featured [data-video]')].map(x=>x.dataset.video));return [...document.querySelectorAll('#noa-ep [data-video]')].every(x=>!ids.has(x.dataset.video));}));
     await page.getByRole('button',{name:'상승세',exact:true}).click();assert.equal(await page.locator('#noa-featured .noa-music-card').count(),2);assert((await page.locator('[data-home-section="recommendations"]>p').innerText()).includes('24시간'));
     await page.getByRole('button',{name:'새 영상',exact:true}).click();assert((await page.locator('#noa-featured .noa-music-card').first().getAttribute('href')).includes('video000011'));
     await page.getByRole('button',{name:'골고루',exact:true}).click();await page.getByRole('heading',{name:'추천 음악',exact:true}).click();

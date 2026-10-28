@@ -3,7 +3,7 @@ require __DIR__.'/../voice/fixture.php';
 foreach(['noa-home.js','noa-browse.js','noa-history.js','noa-engagement.js','noa-engagement.css','noa-world.css']as $file)copy('deploy/'.$file,$root.'/'.$file);
 define('_GNUBOARD_',true);require_once 'bridge/home-discovery.php';
 $candidates=[];for($i=0;$i<12;$i++)$candidates[]=['videoId'=>sprintf('video%06d',$i),'title'=>'EP.'.($i+1).' · '.(['하루의 끝에','난 다시 살아가','빛으로 널'][$i%3]),'views'=>100-$i,'score'=>100-$i,'publishedAt'=>gmdate('c',time()-86400*(12-$i)),'thumbnail'=>'/noa-assets/papa-logo.png','href'=>'/noa-youtube.php?track='.sprintf('video%06d',$i),'genre'=>'kpop-original'];
-$data=['ok'=>true,'featured'=>array_slice($candidates,0,8),'ep'=>[],'stories'=>[],'covers'=>[],'playlists'=>[],'collectedAt'=>gmdate('c'),'discovery'=>nh_discovery_build($candidates,[],['video000005'=>1,'video000007'=>2],86400)];file_put_contents($root.'/discovery-fixture.json',json_encode($data));
+$data=['ok'=>true,'featured'=>array_slice($candidates,0,8),'ep'=>array_slice($candidates,5,5),'stories'=>[],'covers'=>[],'playlists'=>[],'collectedAt'=>gmdate('c'),'discovery'=>nh_discovery_build($candidates,[],['video000005'=>1,'video000007'=>2],86400)];file_put_contents($root.'/discovery-fixture.json',json_encode($data));
 $router=file_get_contents($root.'/router.php');$router=str_replace("if(\$path==='/noa2.php')", <<<'CODE'
 if($path==='/noa-bridge/home.php'){header('Content-Type: application/json');readfile(__DIR__.'/discovery-fixture.json');return true;}
 if($path==='/noa2.php')
