@@ -79,12 +79,21 @@ function nnt_preferences(PDO $db,string $owner,array $values):void{
  foreach(['likes','comments','replies']as $key)if(!is_bool($values[$key]??null))throw new DomainException('invalid_preferences');
  nnt_exec($db,'INSERT INTO noa_notification_settings VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE likes=VALUES(likes),comments=VALUES(comments),replies=VALUES(replies),updated_at=VALUES(updated_at)',[$owner,(int)$values['likes'],(int)$values['comments'],(int)$values['replies'],time()]);
 }
-function nnt_inbox(PDO $db,string $owner,int $before=0):array{
+/** Filter before pagination so older comments are not hidden behind newer reactions. */
+function nnt_filter(string $filter):string{return match($filter){'all'=>'','unread'=>' AND read_at IS NULL','comments'=>" AND kind IN ('comment','reply','request_reply')",'reactions'=>" AND kind='like'",'system'=>" AND kind NOT IN ('comment','reply','request_reply','like')",default=>throw new DomainException('invalid_filter')};}
+function nnt_inbox(PDO $db,string $owner,int $before=0,string $filter='all'):array{
+ $scope=nnt_filter($filter);
  foreach(nnt_rows($db,'SELECT * FROM noa_notifications WHERE recipient=? AND cancelled_at IS NULL ORDER BY id DESC LIMIT 200',[$owner])as $r)if(!nnt_source_alive($db,$r))nnt_exec($db,'UPDATE noa_notifications SET cancelled_at=? WHERE id=? AND recipient=?',[time(),$r['id'],$owner]);
- $rows=nnt_rows($db,'SELECT id,kind,url,created_at,read_at FROM noa_notifications WHERE recipient=? AND cancelled_at IS NULL'.($before>0?' AND id<?':'').' ORDER BY id DESC LIMIT 31',$before>0?[$owner,$before]:[$owner]);$more=count($rows)>30;$rows=array_slice($rows,0,30);
- return ['items'=>array_map(static fn($r)=>['id'=>(int)$r['id'],'text'=>nnt_copy($r['kind']),'url'=>$r['url'],'at'=>gmdate('c',(int)$r['created_at']),'read'=>$r['read_at']!==null],$rows),'more'=>$more,'before'=>$more?(int)end($rows)['id']:null,'unread'=>(int)nnt_one($db,'SELECT COUNT(*) n FROM noa_notifications WHERE recipient=? AND read_at IS NULL AND cancelled_at IS NULL',[$owner])['n']];
+ $rows=nnt_rows($db,'SELECT id,kind,url,created_at,read_at FROM noa_notifications WHERE recipient=? AND cancelled_at IS NULL'.$scope.($before>0?' AND id<?':'').' ORDER BY id DESC LIMIT 31',$before>0?[$owner,$before]:[$owner]);$more=count($rows)>30;$rows=array_slice($rows,0,30);
+ $counts=['all'=>0,'unread'=>0,'comments'=>0,'reactions'=>0,'system'=>0];
+ foreach(nnt_rows($db,'SELECT kind,COUNT(*) n,SUM(read_at IS NULL) unread FROM noa_notifications WHERE recipient=? AND cancelled_at IS NULL GROUP BY kind',[$owner])as $group){$n=(int)$group['n'];$counts['all']+=$n;$counts['unread']+=(int)$group['unread'];$counts[in_array($group['kind'],['comment','reply','request_reply'],true)?'comments':($group['kind']==='like'?'reactions':'system')]+=$n;}
+ $snapshot=(int)nnt_one($db,'SELECT COALESCE(MAX(id),0) id FROM noa_notifications WHERE recipient=? AND cancelled_at IS NULL'.$scope,[$owner])['id'];
+ return ['items'=>array_map(static fn($r)=>['id'=>(int)$r['id'],'kind'=>$r['kind'],'text'=>nnt_copy($r['kind']),'url'=>$r['url'],'at'=>gmdate('c',(int)$r['created_at']),'read'=>$r['read_at']!==null],$rows),'filter'=>$filter,'counts'=>$counts,'snapshot'=>$snapshot,'more'=>$more,'before'=>$more?(int)end($rows)['id']:null,'unread'=>$counts['unread']];
 }
-function nnt_mark(PDO $db,string $owner,int $id,bool $all=false):void{if($id<1)return;nnt_exec($db,'UPDATE noa_notifications SET read_at=COALESCE(read_at,?) WHERE recipient=? AND id'.($all?'<=?':'=?'),[time(),$owner,$id]);}
+function nnt_mark(PDO $db,string $owner,int $id,bool $all=false,string $filter='all',bool $read=true):void{
+ $scope=nnt_filter($filter);if($id<1)return;if($all&&!$read)throw new DomainException('invalid_input');
+ nnt_exec($db,'UPDATE noa_notifications SET read_at='.($read?'COALESCE(read_at,?)':'NULL').' WHERE recipient=? AND cancelled_at IS NULL AND id'.($all?'<=?':'=?').($all?$scope:''),$read?[time(),$owner,$id]:[$owner,$id]);
+}
 function nnt_claim(PDO $db,int $now,int $limit=20):array{
  $limit=max(1,min(20,$limit));
  $db->beginTransaction();try{

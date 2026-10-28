@@ -88,6 +88,17 @@ $notice=nnt_one($db,"SELECT id FROM noa_notifications WHERE recipient='qa_a' AND
 check(nnt_thread($db,'qa_a',(int)$notice['id'])['replyTo']['id']===$inline,'owned inline thread');
 try{nnt_thread($db,'qa_b',(int)$notice['id']);throw new RuntimeException('cross account thread');}catch(DomainException $expected){}
 check(nnt_thread($db,'qa_a',(int)$private[0]['id'])===['private'=>true,'id'=>1],'private thread remains gated');
+// Counts and category filtering cover the entire inbox, not just the latest page.
+$baseInbox=nnt_inbox($db,'qa_a');$commentCount=$baseInbox['counts']['comments'];check($commentCount>0,'comment category exists');
+$temporary=[];for($i=0;$i<35;$i++)$temporary[]=nnt_enqueue($db,'qa_a','filter-fixture-'.$i,'test','test','qa_a','test',0,'/noa-notifications.php',time());
+$all=nnt_inbox($db,'qa_a');check(count($all['items'])===30&&$all['more'],'real inbox pagination');$filtered=nnt_inbox($db,'qa_a',0,'comments');check($filtered['counts']['comments']===$commentCount&&count($filtered['items'])>0,'older comments survive new unrelated notices');
+foreach($filtered['items']as $item)check(in_array($item['kind'],['comment','reply','request_reply'],true),'comment filter exact');
+$second=nnt_inbox($db,'qa_a',$all['before']);check(!array_intersect(array_column($all['items'],'id'),array_column($second['items'],'id')),'cursor pages do not duplicate');
+$firstId=$filtered['items'][0]['id'];nnt_mark($db,'qa_a',$firstId,false,'all',false);nnt_mark($db,'qa_b',$firstId);check(nnt_one($db,'SELECT read_at FROM noa_notifications WHERE id=?',[$firstId])['read_at']===null,'cross-account confirmation denied');
+$systemUnread=nnt_inbox($db,'qa_a',0,'system')['unread'];nnt_mark($db,'qa_a',$filtered['snapshot'],true,'comments');check(nnt_one($db,'SELECT read_at FROM noa_notifications WHERE id=?',[$firstId])['read_at']!==null,'category bulk confirmation');check(nnt_one($db,'SELECT read_at FROM noa_notifications WHERE id=?',[$temporary[0]])['read_at']===null,'category bulk preserves other categories');
+nnt_mark($db,'qa_a',$firstId,false,'all',false);check(in_array($firstId,array_column(nnt_inbox($db,'qa_a',0,'comments')['items'],'id'),true),'reversible confirmation');
+try{nnt_inbox($db,'qa_a',0,'unknown');throw new RuntimeException('invalid filter accepted');}catch(DomainException $expected){}
+foreach($temporary as $id){nnt_exec($db,'DELETE FROM noa_notification_delivery WHERE notification_id=?',[$id]);nnt_exec($db,'DELETE FROM noa_notifications WHERE id=?',[$id]);}
 // Leave useful owned inbox items for UI/API tests, no active external subscriptions.
 $db->exec('DELETE FROM noa_notification_delivery');$db->exec('DELETE FROM noa_push_subscriptions');
 file_put_contents($root.'/notification-shell.php',"<?php require __DIR__.'/common.php';?><!doctype html><html lang=ko><head><meta charset=utf-8><link rel=stylesheet href=/noa-ui.css><link rel=stylesheet href=/noa-ainoa.css><script src=/noa-ainoa.js defer></script></head><body class=noa-page><main><h1>NOA STUDIO</h1></main></body></html>");

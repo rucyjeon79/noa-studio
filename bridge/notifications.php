@@ -21,7 +21,7 @@ try{
   if(nnt_exec($db,"UPDATE noa_notification_cursor SET position=? WHERE source='last_collect' AND position<?",[time(),time()-15]))nnt_collect($db,time());
   $cfg=nnt_config();$devices=nnt_rows($db,'SELECT endpoint_hash FROM noa_push_subscriptions WHERE owner=? AND active=1',[$owner]);
   $status=nnt_one($db,'SELECT d.notification_id,d.endpoint_hash,d.state,d.sent_at,d.received_at,n.created_at FROM noa_notification_delivery d JOIN noa_notifications n ON n.id=d.notification_id WHERE n.recipient=? AND n.kind=? ORDER BY n.id DESC LIMIT 1',[$owner,'test']);
-  nnt_reply(['ok'=>true,'csrf'=>$csrf,'owner'=>$owner,'publicKey'=>$cfg['publicKey'],'preferences'=>nnt_settings($db,$owner),'devices'=>array_column($devices,'endpoint_hash'),'testStatus'=>['id'=>(int)($status['notification_id']??0),'device'=>$status['endpoint_hash']??'','state'=>$status['state']??'','accepted'=>(int)isset($status['sent_at']),'received'=>(int)isset($status['received_at']),'age'=>isset($status['created_at'])?max(0,time()-(int)$status['created_at']):0]]+nnt_inbox($db,$owner,max(0,(int)($_GET['before']??0))));
+  nnt_reply(['ok'=>true,'csrf'=>$csrf,'owner'=>$owner,'publicKey'=>$cfg['publicKey'],'preferences'=>nnt_settings($db,$owner),'devices'=>array_column($devices,'endpoint_hash'),'testStatus'=>['id'=>(int)($status['notification_id']??0),'device'=>$status['endpoint_hash']??'','state'=>$status['state']??'','accepted'=>(int)isset($status['sent_at']),'received'=>(int)isset($status['received_at']),'age'=>isset($status['created_at'])?max(0,time()-(int)$status['created_at']):0]]+nnt_inbox($db,$owner,max(0,(int)($_GET['before']??0)),(string)($_GET['filter']??'all')));
  }
  if($method!=='POST'){header('Allow: GET, POST');nnt_reply(['ok'=>false,'error'=>'method_not_allowed'],405);}
  if(($_SERVER['HTTP_ORIGIN']??'')!=='https://noastudio.ai.kr'||!hash_equals($csrf,(string)($_SERVER['HTTP_X_NOA_CSRF']??'')))nnt_reply(['ok'=>false,'error'=>'csrf_required'],403);
@@ -31,7 +31,7 @@ try{
   case 'subscribe':$hash=nnt_subscribe($db,$owner,(array)($b['subscription']??[]),time());nnt_reply(['ok'=>true,'device'=>$hash]);
   case 'unsubscribe':$hash=(string)($b['device']??'');$all=($b['all']??false)===true;if(!$all&&!preg_match('/^[a-f0-9]{64}$/D',$hash))throw new DomainException('invalid_input');nnt_unsubscribe($db,$owner,$hash,$all);break;
   case 'preferences':nnt_preferences($db,$owner,(array)($b['preferences']??[]));break;
-  case 'read':nnt_mark($db,$owner,max(0,(int)($b['id']??0)),($b['all']??false)===true);break;
+  case 'read':if(isset($b['read'])&&!is_bool($b['read']))throw new DomainException('invalid_input');nnt_mark($db,$owner,max(0,(int)($b['id']??0)),($b['all']??false)===true,(string)($b['filter']??'all'),$b['read']??true);break;
   case 'test':
    $hash=(string)($b['device']??'');if(!nnt_one($db,'SELECT 1 FROM noa_push_subscriptions WHERE owner=? AND endpoint_hash=? AND active=1',[$owner,$hash]))throw new DomainException('device_not_registered');
    // One test per owned device per five minutes; only this requesting device gets it.

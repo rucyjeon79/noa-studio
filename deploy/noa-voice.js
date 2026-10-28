@@ -1,14 +1,17 @@
 /* Shared AInoa voice: local composition, verified facts, no paid AI calls. */
 (function(scope){'use strict';
 const seasons=[['겨울','겨울의 여백을 닮은','겨울 노래가 생각나는'],['봄','봄의 설렘을 담은','봄 노래가 생각나는'],['여름','여름의 리듬을 닮은','여름 노래가 생각나는'],['가을','가을의 여운을 담은','가을 노래가 생각나는']];
-const moods=['오늘의 작은 순간도 함께 나누고 싶어요.','잠깐 쉬어 가듯 제 이야기도 들어줄래요?','우리의 하루에 좋은 리듬이 이어지면 좋겠어요.','이 순간에 작은 다정함을 보태고 싶어요.','노래 사이의 짧은 편지처럼 전할게요.','마음에 여유 한 박자 남겨두면 좋겠어요.'];
+const moods=['테이크 유어 타임. 쉼표도 음악의 일부니까요.','오늘은 마음의 볼륨을 한 칸만 낮춰볼까요? 어 리틀 피스.','낫 배드. 완벽하지 않은 하루에도 좋은 한 소절은 있죠.','저라면 걱정은 잠깐 사이드 비로 넘겨둘래요.','스몰 스텝. 작은 리듬도 모이면 한 곡이 되니까요.','가끔은 계획에 없는 쉼표가 제일 멋져요. 저스트 라이크 재즈.'];
+const sayings=['천 리 길도 한 걸음부터. 오늘은 딱 한 박자만 가봐요.','시작이 반이라는 말, 오늘의 첫 소절에 붙여둘까요?','급할수록 돌아가라는 말처럼, 잠깐 숨을 고르는 것도 방법이에요.'];
 const times={dawn:['고요한 새벽','하루가 시작되기 전 새벽','잠시 숨을 고르는 새벽'],morning:['새로운 아침','하루를 여는 아침','천천히 기지개를 켜는 아침'],day:['하루 한가운데','잠깐 쉬어 갈 오후','하루의 리듬을 이어 가는 시간'],evening:['하루를 마무리하는 저녁','여운을 나누기 좋은 저녁','잠시 돌아보는 저녁'],night:['차분한 밤','오늘을 접어 두는 밤','한 곡 더 생각나는 밤']};
-function compose(text,{date=new Date(),title='',index=0,name=''}={}){
+function compose(text,{date=new Date(),title='',index=0,name='',practical=false}={}){
+ if(practical)return String(text);
  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',month:'numeric',hour:'numeric',hourCycle:'h23'}).formatToParts(date),part=k=>Number(parts.find(p=>p.type===k).value),month=part('month'),hour=part('hour');
  const season=seasons[Math.floor(month%12/3)],time=times[hour<6?'dawn':hour<12?'morning':hour<18?'day':hour<21?'evening':'night'];
- const opening=[`${season[1]} ${time[index%3]}, 작은 소식이 있어요.`,`${time[index%3]}, ${season[0]}의 감성을 살짝 담아 인사할게요.`,`${season[2]} ${time[index%3]}, 함께해 줘서 반가워요.`][Math.floor(index/3)%3];
- const feeling=title?['지금 만난 「'+title+'」의 여운 곁에서 전할게요.','「'+title+'」와 함께하는 순간에 제 소식도 놓아둘게요.','「'+title+'」를 만난 이 페이지에서 잠깐 이야기 나눠요.'][index%3]:moods[Math.floor(index/9)%moods.length];
- return (name?name+'님, ':'')+opening+' '+feeling+'\n'+String(text);
+ const opening=[`${season[1]} ${time[index%3]}, 작은 소식이 있어요.`,`${time[index%3]}, ${season[0]}의 여백에 헬로, 하고 인사를 놓아둘게요.`,`${season[2]} ${time[index%3]}, 함께해 줘서 반가워요.`][Math.floor(index/3)%3];
+ const feeling=title?['「'+title+'」를 만났네요. 테이크 유어 타임. 각자의 속도로 들어요.','「'+title+'」와 함께하는 순간에 제 소식도 놓아둘게요.','「'+title+'」를 만난 이 페이지에서 잠깐 이야기 나눠요.'][index%3]:moods[Math.floor(index/9)%moods.length];
+ const saying=index%3===1?' '+sayings[Math.floor(index/3)%sayings.length]:'';
+ return (name?name+'님, ':'')+opening+' '+feeling+saying+'\n'+String(text);
 }
 function emptyStatus(text){return /(?:등록된|표시할|검색된|일치하는).*(?:없습니다|없어요)/.test(text);}
 if(typeof module==='object'&&module.exports)module.exports={compose,emptyStatus};
@@ -32,7 +35,7 @@ function render(){
  place();if(active||!queue.length||doc.hidden)return;const tip=doc.querySelector('#noa-ainoa .ainoa-tip');if(!tip)return;
  active=queue.shift();ownChange=true;tip.replaceChildren();tip.classList.add('ainoa-message');tip.setAttribute('aria-live','polite');tip.setAttribute('aria-atomic','true');
  const label=doc.createElement('strong');label.textContent='AInoa';const text=doc.createElement('p');
- text.textContent=compose(active.text,{index:counter++,name:active.options.name||'',title:currentTrack?.title||''});write('noa-voice-sequence',String(counter));
+ text.textContent=compose(active.text,{index:counter++,name:active.options.name||'',title:currentTrack?.title||'',practical:active.options.key!=='welcome'});write('noa-voice-sequence',String(counter));
  const actions=doc.createElement('div');actions.className='ainoa-message-actions';
  if(active.options.href){try{const url=new URL(active.options.href,location.origin);if(url.origin===location.origin){const a=doc.createElement('a');a.href=url.pathname+url.search+url.hash;a.textContent=active.options.linkLabel||'소식 보기';actions.append(a);}}catch{}}
  const button=doc.createElement('button');button.type='button';button.setAttribute('aria-label','AInoa 말풍선 닫기');button.onclick=()=>close(true,true);

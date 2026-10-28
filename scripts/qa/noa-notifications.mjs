@@ -53,6 +53,17 @@ try{
  await dialog.getByRole('button',{name:'닫기',exact:true}).click();await page.reload();await page.locator('#nnt-item-'+inlineNotice.id).click();await page.locator('dialog .noa-comment>p').filter({hasText:'알림함 안에서 작성한 답댓글'}).waitFor();
  await page.locator('dialog').getByRole('button',{name:'답댓글 취소',exact:true}).click();await page.getByLabel('댓글 남기기',{exact:true}).fill('알림함 안에서 작성한 일반 댓글');await page.locator('dialog').getByRole('button',{name:'댓글 등록',exact:true}).click();await page.locator('dialog .noa-comment>p').filter({hasText:'알림함 안에서 작성한 일반 댓글'}).waitFor();await page.locator('dialog').getByRole('button',{name:'닫기',exact:true}).click();assert.equal(page.url(),locationBefore);
  report.api.push('owned thread only','inline preview author','reply persisted after reload','inline top-level comment','no navigation from inbox');
+ // Category filtering is server-side and confirmation is reversible without opening a post.
+ const filters=page.locator('#nnt-filters');await filters.getByRole('button',{name:/댓글·답글/}).click();await page.locator('#nnt-filter-status').getByText(/댓글·답글 소식/).waitFor();
+ assert((await page.locator('#nnt-list li').evaluateAll(rows=>rows.map(x=>x.dataset.kind))).every(k=>['comment','reply','request_reply'].includes(k)));
+ const first=page.locator('#nnt-list li').first(),itemId=Number((await first.locator('.nnt-item').getAttribute('id')).replace('nnt-item-',''));
+ if(await first.getByRole('button',{name:/확인 처리/}).count()){await first.getByRole('button',{name:/확인 처리/}).click();await page.locator('#nnt-item-'+itemId).locator('..').getByRole('button',{name:/미확인으로/}).waitFor();}
+ await page.locator('#nnt-item-'+itemId).locator('..').getByRole('button',{name:/미확인으로/}).click();await page.locator('#nnt-item-'+itemId).locator('..').getByRole('button',{name:/확인 처리/}).waitFor();
+ await filters.getByRole('button',{name:/미확인/}).click();await page.locator('#nnt-filter-status').getByText(/미확인 소식/).waitFor();assert((await page.locator('#nnt-list .nnt-item').evaluateAll(rows=>rows.map(x=>x.dataset.read))).every(x=>x==='false'));
+ await filters.getByRole('button',{name:/반응/}).click();await page.locator('#nnt-filter-status').getByText(/반응 소식/).waitFor();assert((await page.locator('#nnt-list li').evaluateAll(rows=>rows.map(x=>x.dataset.kind))).every(k=>k==='like'));
+ await filters.getByRole('button',{name:/전체/}).click();await page.locator('#nnt-filter-status').getByText(/전체 소식/).waitFor();
+ report.api.push('server category filters','reversible individual read state','unread filter','category navigation without post navigation');
+
  await page.getByRole('button',{name:'휴대폰 알림 켜기',exact:true}).click();await page.getByText('이 기기로 AInoa의 알림을 받을 수 있어요.',{exact:true}).waitFor();assert.equal(await page.evaluate(()=>qaPermissionPrompts),1);
  await page.getByRole('button',{name:'테스트 알림 받기',exact:true}).click();await page.getByText('테스트 알림은 이 기기에만 보냅니다.',{exact:true}).waitFor();const secondTest=(await get('a')).data.testStatus;assert.notEqual(secondTest.id,testId);assert.equal(secondTest.received,0);assert.equal(secondTest.state,'pending');
  await page.getByLabel('내 게시물의 좋아요',{exact:true}).uncheck();await page.getByRole('button',{name:'알림 종류 저장'}).click();await page.getByText('받을 알림 종류를 저장했어요.',{exact:true}).waitFor();assert.equal((await get('a')).data.preferences.likes,false);
@@ -71,7 +82,7 @@ try{
  }
  await page.getByRole('link',{name:/내 활동 알림/}).click();await page.getByRole('heading',{name:'내 활동 알림',exact:true}).waitFor();
  assert.equal(errors.length,0,errors.join('\n'));
- await page.route('**/noa-bridge/notifications.php',route=>route.fulfill({status:401,contentType:'text/html',body:'<!doctype html><title>Unauthorized</title>'}));await page.reload();await page.locator('#nnt-login').getByRole('link',{name:'로그인',exact:true}).waitFor();
+ await page.route('**/noa-bridge/notifications.php?*',route=>route.fulfill({status:401,contentType:'text/html',body:'<!doctype html><title>Unauthorized</title>'}));await page.reload();await page.locator('#nnt-login').getByRole('link',{name:'로그인',exact:true}).waitFor();
  report.api.push('explicit user gesture permission only','subscribe and revoke UI','preferences persisted','AInoa notification navigation','host HTML 401 login recovery');
  writeFileSync(out+'/qa.json',JSON.stringify(report,null,2));console.log('NOTIFICATION_API_UI_PASS',JSON.stringify(report));
 }finally{await browser.close();server.kill();}

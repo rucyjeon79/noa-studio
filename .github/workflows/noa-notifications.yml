@@ -26,6 +26,11 @@ jobs:
         run: |
           for file in bridge/notification*.php deploy/noa-notifications*.php scripts/noa_notifications_control.php; do php -l "$file"; done
           node --check deploy/noa-notifications.js
+          node --test tests/voice/composer_test.cjs
+          php -l bridge/ainoa-core.php
+          php -l bridge/ainoa-automation.php
+          php -l deploy/noa-ainoa.php
+          php tests/catalog/ainoa_test.php
           node tests/notifications/sw_test.cjs
           python tests/notifications/push_test.py
           php tests/notifications/fixture.php

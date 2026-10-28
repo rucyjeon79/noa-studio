@@ -109,7 +109,7 @@ jobs:
         with: {name: 'noa-design-gate-${{ github.run_id }}', path: design-proof/, retention-days: 14}
   deploy:
     # The focused preview repair owns its four-file activation and equivalent targeted checks.
-    if: ${{ !contains(github.event.head_commit.message, '[preview-release]') }}
+    if: ${{ !contains(github.event.head_commit.message, '[preview-release]') && !contains(github.event.head_commit.message, '[inbox-voice-release]') }}
     needs: [candidate, design]
     environment: production
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}

@@ -33,7 +33,7 @@ jobs:
         if: always()
         with: {name: 'noa-voice-candidate-${{ github.run_id }}', path: voice-proof/, retention-days: 7}
   deploy:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[inbox-voice-release]')
     needs: verify
     runs-on: ubuntu-latest
     environment: production
