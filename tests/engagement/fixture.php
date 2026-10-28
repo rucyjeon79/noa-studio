@@ -46,7 +46,7 @@ foreach([[$native['entity'],$reply],[$a['entity'],['kind'=>'app','id'=>$id]],[$a
  $before=(int)$db->query('SELECT COUNT(*) FROM noa_post_comments')->fetchColumn();try{ne_comment($db,$entity,'qa_b','99999999-9999-4999-8999-999999999999','must rollback',303,$bad);throw new RuntimeException('invalid parent accepted');}catch(DomainException $e){ne_check($e->getMessage()==='reply_not_available','exact rejection');}ne_check($before===(int)$db->query('SELECT COUNT(*) FROM noa_post_comments')->fetchColumn(),'atomic invalid parent rollback');
 }
 try{ne_comment($db,$a['entity'],'qa_b','88888888-8888-4888-8888-888888888888','reply',304,[]);throw new RuntimeException('retry changed parent');}catch(DomainException $e){ne_check($e->getMessage()==='request_conflict','retry parent conflict');}
-$db->exec("INSERT INTO g5_write_free (wr_id,wr_parent,wr_is_comment,mb_id,wr_name,wr_content,wr_option,wr_datetime) VALUES (50,1,1,'qa_a','별무리 A','native parent','',NOW()),(51,1,1,'qa_a','별무리 A','secret parent','secret',NOW())");
+nc_query("INSERT INTO g5_write_free (wr_id,wr_parent,wr_is_comment,mb_id,wr_name,wr_content,wr_option,wr_datetime) VALUES (50,1,1,'qa_a','별무리 A','native parent','',NOW()),(51,1,1,'qa_a','별무리 A','secret parent','secret',NOW())");
 $nr=ne_comment($db,$native['entity'],'qa_b','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','native reply',305,['kind'=>'native','id'=>50]);
 ne_check(ne_reply_parent($db,$native['entity'],'native',50)['name']==='별무리 A','native author');
 try{ne_comment($db,$native['entity'],'qa_b','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','denied',306,['kind'=>'native','id'=>51]);throw new RuntimeException('secret reply accepted');}catch(DomainException $expected){}
