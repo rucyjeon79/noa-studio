@@ -16,7 +16,7 @@ try{
    const c=await context({viewport:{width,height:900}});await c.addCookies([{name:'qa_role',value:role,url:base}]);await c.addInitScript(theme=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',design:'ios',radius:'soft'})),theme);
    const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto(base+'/');const bar=p.locator('#noa-account-bar');await bar.waitFor();await p.waitForFunction(()=>document.getElementById('noa-account-bar').dataset.member!==undefined);
    assert.equal(await bar.locator('a[href*=login],a[href*=logout],.noa-account-status').count(),0);
-   assert.equal(await bar.locator('.noa-account-brand span').textContent(),'NOA STUDIO');assert.equal(await bar.locator('.noa-account-shortcut').count(),3);
+   assert.equal(await bar.locator('.noa-account-brand span').textContent(),'NOA STUDIO');assert.equal(await bar.locator('.noa-account-shortcut').count(),4);
    const brand=await bar.locator('.noa-account-brand').boundingBox(),shortcuts=await bar.locator('.noa-account-shortcuts').boundingBox();assert(shortcuts.x>=brand.x+brand.width,'shortcuts are right of full brand');assert((await bar.boundingBox()).height<=64);
    const nav=p.locator(width<=760?'.noa-mobile-nav':'.noa-menu');const account=nav.locator('[data-noa-account-nav]');assert.equal(await account.textContent(),role==='guest'?'로그인':'MY');assert.equal(await account.locator('svg').count(),1);
    assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));

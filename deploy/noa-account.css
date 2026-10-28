@@ -20,3 +20,14 @@
 html .noa-page main.noa-social-layout{max-width:560px;padding:28px 24px 120px;margin-inline:auto}.noa-login-form{display:grid;gap:10px;margin:24px 0 28px}.noa-login-form label{font-size:14px}.noa-login-form input{width:100%;min-height:48px}.noa-login-form button{width:100%;margin-top:8px}.noa-login-recovery{justify-self:end;font-size:13px}.noa-login-form .noa-muted{font-size:12px;line-height:1.6;margin:4px 0}.noa-social-intro{font-size:14px;border-top:1px solid var(--noa-line);padding-top:24px}.noa-social-layout .noa-social-options{margin:16px 0;gap:16px}
 @media(min-width:761px){html .noa-page main.noa-social-layout{margin-left:calc(var(--noa-rail) + (100% - var(--noa-rail) - min(560px,100% - var(--noa-rail)))/2)}}
 
+
+/* Four stable shortcuts, with sharing immediately after installation. */
+#noa-account-bar button.noa-account-shortcut{display:inline-flex;align-items:center;justify-content:center;min-height:44px;margin:0;padding:0;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;cursor:pointer;box-shadow:none}
+#noa-share-dialog{box-sizing:border-box;width:min(420px,calc(100vw - 24px));max-height:calc(100dvh - 32px);overflow:auto;padding:20px;border:1px solid var(--noa-line);border-radius:20px;background:var(--noa-bg);color:var(--noa-text)}
+#noa-share-dialog::backdrop{background:rgb(0 0 0/.55)}
+#noa-share-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}#noa-share-dialog h2{font-size:19px;margin:0}#noa-share-dialog header button{width:44px;height:44px;border:0;background:transparent;color:inherit;font-size:24px;cursor:pointer}
+#noa-share-dialog p{font-size:14px;line-height:1.6}#noa-share-dialog .noa-share-actions{display:grid;gap:8px;margin:20px 0 12px}
+#noa-share-dialog .noa-share-actions>*{display:flex;align-items:center;justify-content:center;min-height:48px;box-sizing:border-box;padding:10px 14px;border:1px solid var(--noa-line);border-radius:10px;background:var(--noa-surface);color:var(--noa-text);font:inherit;font-size:14px;text-decoration:none;cursor:pointer}
+#noa-share-dialog :is(label,.noa-share-help,.noa-share-status){font-size:12px;color:var(--noa-muted)}#noa-share-dialog input{box-sizing:border-box;width:100%;min-height:44px;padding:10px 8px;border:1px solid var(--noa-line);border-radius:8px;background:var(--noa-bg);color:var(--noa-text);font-size:12px;margin-top:6px}#noa-share-dialog .noa-share-status:empty{display:none}
+@media(max-width:760px){#noa-account-bar button.noa-account-shortcut{flex-direction:column;gap:2px;font-size:10px}#noa-account-bar .noa-account-shortcuts{gap:2px}}
+@media(max-width:360px){#noa-account-bar .noa-account-brand{font-size:10px;gap:4px}#noa-account-bar .noa-account-shortcuts{gap:0}}
