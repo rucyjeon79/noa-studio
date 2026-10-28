@@ -39,7 +39,7 @@ jobs:
         if: always()
         with: {name: 'noa-notifications-candidate-${{ github.run_id }}', path: notifications-proof/, retention-days: 7}
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[conversation-release]')
     needs: verify
     runs-on: ubuntu-latest
     environment: production

@@ -50,5 +50,6 @@ foreach(['gallery'=>'갤러리','qa'=>'질문답변','notice'=>'공지사항','s
  nc_query('CREATE TABLE '.nc_write_table($board).' LIKE g5_write_free');
  for($i=1;$i<=7;$i++)nc_query('INSERT INTO '.nc_write_table($board)." (wr_id,wr_subject,wr_content,wr_option,wr_datetime,wr_parent) VALUES ($i,".nc_q($title.' 제목 '.$i).','.nc_q($title.' 본문 '.$i).','.nc_q($i===7?'secret':'').",'2026-10-26 12:00:00',$i)");
 }
+foreach(['free','gallery','qa']as $board)nc_query('UPDATE '.nc_write_table($board)." SET wr_name='공개 작성자 닉네임'");
 nc_query("INSERT INTO g5_group VALUES ('restricted',1)");nc_query("UPDATE g5_board SET gr_id='restricted' WHERE bo_table='grouponly'");
 @mkdir('community-proof',0700,true);file_put_contents('community-proof/isolated-install.json',json_encode(['first'=>$first,'replay'=>$second,'existingBoardPreserved'=>true,'environment'=>'isolated MySQL database, not production'],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));echo "COMMUNITY_ISOLATED_NATIVE_FIXTURE_READY\n";

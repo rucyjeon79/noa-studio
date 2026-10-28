@@ -18,7 +18,7 @@ try{
    foreach($targets as $t){if(!is_array($t)||!is_string($t['type']??null)||!is_string($t['key']??null))throw new DomainException('invalid_input');try{$items[]=['type'=>$t['type'],'key'=>$t['key']]+ne_stats($db,ne_target($db,$t['type'],$t['key']));}catch(DomainException $e){$items[]=['type'=>$t['type'],'key'=>$t['key'],'unavailable'=>true];}}
    ne_reply(['ok'=>true,'csrf'=>$csrf,'items'=>$items]);
   }
-  $target=ne_target($db,(string)($ne_query['type']??''),(string)($ne_query['key']??''));ne_reply(['ok'=>true,'csrf'=>$csrf,'stats'=>ne_stats($db,$target),'comments'=>ne_comments($db,$target,max(0,(int)($ne_query['page']??0)))]);
+  $target=ne_target($db,(string)($ne_query['type']??''),(string)($ne_query['key']??''));ne_reply(['ok'=>true,'csrf'=>$csrf,'stats'=>ne_stats($db,$target,true),'comments'=>ne_comments($db,$target,max(0,(int)($ne_query['page']??0)))]);
  }
  if($method!=='POST'){header('Allow: GET, POST');ne_reply(['ok'=>false,'error'=>'method_not_allowed'],405);}
  if(($_SERVER['HTTP_ORIGIN']??'')!=='https://noastudio.ai.kr'||!hash_equals($csrf,(string)($_SERVER['HTTP_X_NOA_CSRF']??'')))ne_reply(['ok'=>false,'error'=>'csrf_required'],403);
@@ -34,11 +34,11 @@ try{
   if(!is_bool($b['active']??null))throw new DomainException('invalid_input');ne_like($db,$target['entity'],$owner,$b['active'],isset(ne_legacy_likes($db,$target)[$owner]));
   if($b['active']&&function_exists('nmb_like'))nmb_like($owner,$target['entity'],time());
  }elseif(($b['action']??'')==='comment'){
-  if(!$target['canComment'])throw new DomainException('comment_not_allowed');$id=ne_comment($db,$target['entity'],$owner,(string)($b['requestId']??''),(string)($b['body']??''));
+  if(!$target['canComment'])throw new DomainException('comment_not_allowed');if(isset($b['replyTo'])&&!is_array($b['replyTo']))throw new DomainException('reply_not_available');$id=ne_comment($db,$target['entity'],$owner,(string)($b['requestId']??''),(string)($b['body']??''),null,is_array($b['replyTo']??null)?$b['replyTo']:[]);
   // Existing activity policy and idempotent point receipts apply to real saved app comments.
   if(function_exists('nr_policy')&&!empty(nr_policy()['enabled'])){try{nr_pending_login($owner,time());nr_reward($owner,'comment','noa_reaction',$id,time());}catch(Throwable $e){error_log('[noa-engagement-comment-reward] '.get_class($e));}}
  }else throw new DomainException('invalid_input');
- ne_reply(['ok'=>true,'csrf'=>$csrf,'stats'=>ne_stats($db,$target),'comments'=>ne_comments($db,$target,0)]);
+ ne_reply(['ok'=>true,'csrf'=>$csrf,'stats'=>ne_stats($db,$target,true),'comments'=>ne_comments($db,$target,0)]);
 }catch(DomainException $e){ne_reply(['ok'=>false,'error'=>$e->getMessage()],$e->getMessage()==='try_later'?429:($e->getMessage()==='post_not_available'?404:403));}
 catch(JsonException $e){ne_reply(['ok'=>false,'error'=>'invalid_input'],400);}
 catch(Throwable $e){error_log('[noa-engagement] '.get_class($e));ne_reply(['ok'=>false,'error'=>'temporarily_unavailable'],503);}

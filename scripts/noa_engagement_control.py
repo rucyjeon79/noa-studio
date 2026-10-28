@@ -1,4 +1,4 @@
-"""Three additive tables, expiring one-time setup endpoint, no production fixture accounts."""
+"""Additive engagement tables, expiring one-time setup endpoint, no production fixture accounts."""
 import hashlib,json,secrets,time,urllib.request
 from pathlib import Path
 import paramiko

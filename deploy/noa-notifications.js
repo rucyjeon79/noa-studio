@@ -2,10 +2,11 @@
  'use strict';
  const page=document.getElementById('noa-notification-page'),api='/noa-bridge/notifications.php',login='/bbs/login.php?url=%2Fnoa-notifications.php';
  let context={member:false};try{context=JSON.parse(document.getElementById('noa-notifications-context')?.textContent||'{}');}catch{}
+ let autoOpened=false,threadOpening=false;
  let state=null,busy=false,before=null,loadedMore=false,preferencesLoaded=false,device='',refreshing=false;
  const $=id=>document.getElementById(id);
  const message=(text)=>{if(page)$('nnt-status').textContent=text;};
- const errors={login_required:'로그인 후 내 알림을 확인해 주세요.',not_ready:'알림 연결을 준비하고 있어요. 잠시 후 다시 열어주세요.',device_limit:'연결된 기기가 많아요. 기기 관리에서 기존 연결을 끈 뒤 다시 시도해 주세요.',device_not_registered:'먼저 이 기기의 알림을 켜주세요.',csrf_required:'로그인 상태가 바뀌었습니다. 새로고침 후 다시 시도해 주세요.'};
+ const errors={login_required:'로그인 후 내 알림을 확인해 주세요.',not_ready:'알림 연결을 준비하고 있어요. 잠시 후 다시 열어주세요.',device_limit:'연결된 기기가 많아요. 기기 관리에서 기존 연결을 끈 뒤 다시 시도해 주세요.',device_not_registered:'먼저 이 기기의 알림을 켜주세요.',csrf_required:'로그인 상태가 바뀌었습니다. 새로고침 후 다시 시도해 주세요.',post_not_available:'삭제되었거나 현재 볼 수 없는 게시물입니다.'};
  async function request(body,query=''){
   const r=await fetch(api+query,{credentials:'same-origin',cache:'no-store',...(body?{method:'POST',headers:{'Content-Type':'application/json','X-NOA-CSRF':state?.csrf||''},body:JSON.stringify(body)}:{})});
   if(r.status===401)throw Error('login_required');
@@ -56,11 +57,32 @@
    if(document.getElementById('nnt-item-'+item.id))continue;
    const li=document.createElement('li'),a=document.createElement('a'),text=document.createElement('span'),date=document.createElement('time');a.className='nnt-item';a.dataset.read=String(item.read);a.id='nnt-item-'+item.id;a.href=item.url;text.textContent=item.text;date.dateTime=item.at;
    date.textContent=new Intl.DateTimeFormat('ko-KR',{month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(item.at));text.append(date);a.append(text);li.append(a);$('nnt-list').append(li);
-   a.addEventListener('click',async e=>{if(e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();try{await request({action:'read',id:item.id});location.assign(a.href);}catch(error){failure(error);}});
+   a.addEventListener('click',async e=>{if(e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();try{await openThread(item,a);}catch(error){failure(error);}});
   }
   $('nnt-empty').hidden=$('nnt-list').children.length>0;before=data.before;$('nnt-more').hidden=!data.more;updateBadges(data.unread);
   if(!preferencesLoaded){for(const [key,value] of Object.entries(data.preferences))$('nnt-preferences').elements[key].checked=value;preferencesLoaded=true;}
-  const notice=new URLSearchParams(location.search).get('notice');if(notice){const el=$('nnt-item-'+notice);if(el)el.setAttribute('aria-current','true');}
+  const notice=new URLSearchParams(location.search).get('notice');if(notice){const el=$('nnt-item-'+notice);if(el){el.setAttribute('aria-current','true');if(!autoOpened){autoOpened=true;const item=data.items.find(x=>x.id===Number(notice));if(item)void openThread(item,el).catch(failure);}}}
+ }
+ async function openThread(item,trigger){
+  if(threadOpening)return;threadOpening=true;
+  try{
+   const data=await request(null,'?thread='+encodeURIComponent(item.id));
+   await request({action:'read',id:item.id});trigger.dataset.read='true';if(!item.read){item.read=true;state.unread=Math.max(0,state.unread-1);updateBadges(state.unread);}
+   if(data.thread.test){message('테스트 알림을 확인했습니다.');return;}
+   if(data.thread.private){await privateThread(data.thread.id,trigger);return;}
+   if(!window.NoaEngagement?.open)throw Error('unavailable');
+   await window.NoaEngagement.open(data.thread.target,trigger,{preview:true,replyTo:data.thread.replyTo});
+  }finally{threadOpening=false;}
+ }
+ async function privateThread(id,trigger){
+  const dialog=document.createElement('dialog');dialog.className='noa-comments';
+  const heading=document.createElement('h2');heading.textContent='사연 신청 답변';const close=document.createElement('button');close.type='button';close.textContent='닫기';close.onclick=()=>dialog.close();const body=document.createElement('section'),note=document.createElement('p');note.setAttribute('role','status');dialog.append(heading,close,body,note);document.body.append(dialog);dialog.addEventListener('close',()=>{dialog.remove();if(trigger.isConnected)trigger.focus();},{once:true});dialog.showModal();let token='';
+  async function community(query,payload){const res=await fetch('/noa-bridge/community.php'+(query?'?'+new URLSearchParams(query):''),{credentials:'same-origin',cache:'no-store',...(payload?{method:'POST',headers:{'Content-Type':'application/json','X-NOA-CSRF':token},body:JSON.stringify(payload)}:{})});const d=await res.json();if(!res.ok||!d.ok)throw Error('작성자 계정과 글 비밀번호를 확인해 주세요.');return d;}
+  function show(d){body.replaceChildren();heading.textContent=d.title||'사연 신청 답변';if(d.locked){const form=document.createElement('form'),label=document.createElement('label'),pass=document.createElement('input'),save=document.createElement('button');label.textContent='글 비밀번호';pass.type='password';pass.required=true;pass.autocomplete='current-password';label.append(pass);save.type='submit';save.textContent='답변 확인';form.append(label,save);form.onsubmit=async e=>{e.preventDefault();save.disabled=true;try{show(await community(null,{action:'unlock',id,password:pass.value}));note.textContent='';}catch(e){note.textContent=e.message;}finally{save.disabled=false;}};body.append(form);return;}
+   const post=document.createElement('p');post.textContent=d.body;body.append(post);for(const c of d.comments){const row=document.createElement('p');row.textContent=(c.author||'관리자')+' · '+c.body;body.append(row);}if(!d.canComment){note.textContent='비공개 사연 신청은 기존 정책에 따라 관리자만 답변할 수 있습니다.';return;}
+   const form=document.createElement('form'),label=document.createElement('label'),input=document.createElement('textarea'),save=document.createElement('button');label.textContent='답변';input.required=true;input.maxLength=5000;label.append(input);save.textContent='답변 등록';save.type='submit';form.append(label,save);let requestId=crypto.randomUUID();input.oninput=()=>requestId=crypto.randomUUID();form.onsubmit=async e=>{e.preventDefault();save.disabled=true;input.readOnly=true;try{show(await community(null,{action:'comment',id,body:input.value,requestId}));note.textContent='답변을 등록했습니다.';}catch(e){note.textContent=e.message;}finally{save.disabled=false;input.readOnly=false;}};body.append(form);
+  }
+  try{const list=await community({board:'song_request'});token=list.csrf;show(await community({action:'read',board:'song_request',id}));}catch(e){note.textContent=e.message;}
  }
  function speakActivity(data){
   const account=window.NoaVoice?.getAccount();if(!account?.member||!data.items)return;

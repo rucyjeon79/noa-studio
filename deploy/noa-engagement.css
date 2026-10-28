@@ -128,3 +128,8 @@ html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-vide
 html[data-noa-precision] body.noa-page .noa-inline-song-row.noa-mastered{background:linear-gradient(115deg,rgba(210,177,108,.12),rgba(210,177,108,.025) 62%),var(--noa-surface,#1d2128);border:1px solid rgba(210,177,108,.25);border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,235,190,.08)}
 html[data-noa-theme="noa-ivory"] body.noa-page .noa-inline-song-row.noa-mastered{background:linear-gradient(115deg,#b78a3515,transparent 70%),var(--noa-surface,#fff);border-color:#a57d3540}
 @media(max-width:359px){html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-video-row){--noa-row-cover:40px;--noa-row-gap:2px}}
+
+/* Reply context stays readable without forcing mobile rows wider. */
+.noa-comments .noa-comment-post{max-height:30vh;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}
+.noa-comments .noa-reply-context,.noa-comments blockquote{margin:8px 0;padding:8px 12px;border-left:2px solid var(--noa-line);color:var(--noa-muted);overflow-wrap:anywhere}
+.noa-comments .noa-comment>button{min-height:44px;margin-right:8px;white-space:nowrap}

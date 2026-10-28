@@ -15,6 +15,18 @@ release.FILES={
 }
 release.NEW={k for k in release.FILES if 'engagement' in k}
 release.PROTECTED+=['bbs/write_comment_update.php','bbs/delete_comment.php','bbs/good.php','noa-bridge/community-core.php','noa-bridge/community.php']
+if '--conversation' in sys.argv:
+ sys.argv.remove('--conversation')
+ release.FILES.update({
+  'noa-bridge/community-core.php':'bridge/community-core.php',
+  'noa-community.js':'deploy/noa-community.js',
+  'noa-community.css':'deploy/noa-community.css',
+  'noa-bridge/notifications-sources.php':'bridge/notifications-sources.php',
+  'noa-bridge/notifications.php':'bridge/notifications.php',
+  'noa-notifications.js':'deploy/noa-notifications.js',
+  'noa-notifications.css':'deploy/noa-notifications.css',
+ })
+ release.PROTECTED.remove('noa-bridge/community-core.php')
 if __name__=='__main__':
  release.main()
  if 'rollback' not in sys.argv:

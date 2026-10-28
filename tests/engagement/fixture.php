@@ -26,7 +26,7 @@ $db->prepare('INSERT INTO noa_catalog_aliases VALUES (?,?,?)')->execute([$batch,
 $db->prepare("INSERT INTO noa_documents VALUES ('fixture-song','single',?)")->execute([json_encode(['title'=>'검증 음악','visibility'=>'public'])]);
 $run=str_repeat('c',32);$db->prepare('INSERT INTO noa_youtube_runs(run_id,channel_id,catalog_batch,report) VALUES (?,?,?,?)')->execute([$run,'UCwYy9xsAqDFat6AV5UKrfgA',$batch,'{}']);
 $video=['id'=>'abcdefghijk','snippet'=>['channelId'=>'UCwYy9xsAqDFat6AV5UKrfgA','title'=>'공개 음악 영상'],'status'=>['privacyStatus'=>'public','embeddable'=>true],'statistics'=>['viewCount'=>'10']];$db->prepare('INSERT INTO noa_youtube_videos VALUES (?,?,?,?)')->execute([$run,$video['id'],json_encode($video),json_encode(['songId'=>$song,'status'=>'matched'])]);
-$before=$db->query('SELECT COUNT(*) FROM g5_write_free')->fetchColumn();$created=ne_install($db);if(count($created)!==3||ne_install($db)!==[]||$before!==$db->query('SELECT COUNT(*) FROM g5_write_free')->fetchColumn())throw new RuntimeException('additive_install');
+$before=$db->query('SELECT COUNT(*) FROM g5_write_free')->fetchColumn();$created=ne_install($db);if(count($created)!==4||ne_install($db)!==[]||$before!==$db->query('SELECT COUNT(*) FROM g5_write_free')->fetchColumn())throw new RuntimeException('additive_install');
 $g5['member_table']='g5_member';$g5['board_good_table']='g5_board_good';$member=['mb_id'=>'qa_a','mb_level'=>4];$is_admin='';
 function ne_check($v,$label){if(!$v)throw new RuntimeException($label);}
 $a=ne_target($db,'music','fixture-song');$b=ne_target($db,'music','catalog:'.$song);ne_check($a['entity']===$b['entity'],'canonical alias');
@@ -37,6 +37,21 @@ try{ne_delete($db,$id,'qa_b',false,115);throw new RuntimeException('owner bypass
 ne_like($db,$a['entity'],'qa_a',false,false,130);ne_delete($db,$id,'qa_a',false,140);
 $past=ne_metrics($db,120);$after=ne_metrics($db,150);ne_check($past[$a['entity']]===['likes'=>1,'comments'=>1],'historical snapshot');ne_check(!isset($after[$a['entity']]),'unlike/delete offset');
 ne_check(ne_target($db,'video','abcdefghijk')['entity']==='video:abcdefghijk','video identity');$native=ne_target($db,'board','free:1');$member['mb_id']='qa_b';ne_check(ne_stats($db,$native)['likes']===1&&ne_stats($db,$native)['liked'],'existing native likes');ne_like($db,$native['entity'],'qa_b',false,true,200);ne_check(ne_stats($db,$native)['likes']===0,'native like override without native write');ne_check((int)$db->query('SELECT COUNT(*) FROM g5_board_good')->fetchColumn()===1,'native like data preserved');
+// Reply identity survives retries and cannot cross posts or reference deleted/secret comments.
+$parent=ne_comment($db,$a['entity'],'qa_a','77777777-7777-4777-8777-777777777777','parent',300);
+$reply=['kind'=>'app','id'=>$parent];$rid=ne_comment($db,$a['entity'],'qa_b','88888888-8888-4888-8888-888888888888','reply',301,$reply);
+ne_check($rid===ne_comment($db,$a['entity'],'qa_b','88888888-8888-4888-8888-888888888888','reply',302,$reply),'reply retry');
+ne_check(ne_comments($db,$a,0)['items'][0]['replyTo']['id']===$parent,'persisted parent');
+foreach([[$native['entity'],$reply],[$a['entity'],['kind'=>'app','id'=>$id]],[$a['entity'],['kind'=>'native','id'=>1]]]as [$entity,$bad]){
+ $before=(int)$db->query('SELECT COUNT(*) FROM noa_post_comments')->fetchColumn();try{ne_comment($db,$entity,'qa_b','99999999-9999-4999-8999-999999999999','must rollback',303,$bad);throw new RuntimeException('invalid parent accepted');}catch(DomainException $e){ne_check($e->getMessage()==='reply_not_available','exact rejection');}ne_check($before===(int)$db->query('SELECT COUNT(*) FROM noa_post_comments')->fetchColumn(),'atomic invalid parent rollback');
+}
+try{ne_comment($db,$a['entity'],'qa_b','88888888-8888-4888-8888-888888888888','reply',304,[]);throw new RuntimeException('retry changed parent');}catch(DomainException $e){ne_check($e->getMessage()==='request_conflict','retry parent conflict');}
+$db->exec("INSERT INTO g5_write_free (wr_id,wr_parent,wr_is_comment,mb_id,wr_name,wr_content,wr_option,wr_datetime) VALUES (50,1,1,'qa_a','별무리 A','native parent','',NOW()),(51,1,1,'qa_a','별무리 A','secret parent','secret',NOW())");
+$nr=ne_comment($db,$native['entity'],'qa_b','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','native reply',305,['kind'=>'native','id'=>50]);
+ne_check(ne_reply_parent($db,$native['entity'],'native',50)['name']==='별무리 A','native author');
+try{ne_comment($db,$native['entity'],'qa_b','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','denied',306,['kind'=>'native','id'=>51]);throw new RuntimeException('secret reply accepted');}catch(DomainException $expected){}
+ne_delete($db,$parent,'qa_a',false,307);ne_check(ne_comments($db,$a,0)['items'][0]['replyTo']['name']==='삭제된 댓글','deleted parent placeholder');
+$db->exec('DELETE FROM g5_write_free WHERE wr_id IN (50,51)');
 // Leave a clean app fixture for browser operations; only disposable app tables are reset.
 foreach(array_keys(ne_schema())as $t)$db->exec("TRUNCATE TABLE `$t`");
 copy('public/coming/kpop-original.jpg',$root.'/cover.jpg');

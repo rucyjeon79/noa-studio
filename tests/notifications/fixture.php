@@ -7,8 +7,10 @@ $extra= <<<'PHP'
 define('G5_PATH',__DIR__);$config['cf_admin']='qa_admin';
 if(($_SERVER['HTTP_ORIGIN']??'')==='http://127.0.0.1:8078')$_SERVER['HTTP_ORIGIN']='https://noastudio.ai.kr';
 require __DIR__.'/extend/zz.noa-notifications.php';
+require __DIR__.'/extend/zz.noa-engagement.php';
 PHP;
 file_put_contents($root.'/common.php',$extra,FILE_APPEND);
+copy('deploy/noa-engagement.extend.php',$root.'/extend/zz.noa-engagement.php');
 copy('deploy/noa-notifications.extend.php',$root.'/extend/zz.noa-notifications.php');
 foreach(['noa-notifications.php','noa-notifications.js','noa-notifications.css','noa-sw.js','noa-ainoa.js','noa-ainoa.css','noa-brand.js','noa-policy-20261024.css']as $file)copy('deploy/'.$file,$root.'/'.$file);
 @mkdir($root.'/noa-assets',0700,true);copy('public/ainoa/ainoa-symbol.png',$root.'/noa-assets/ainoa-symbol.png');
@@ -76,6 +78,16 @@ check(nnt_inline_drain($db,$directCfg,static fn()=>201)['claimed']===0,'retry ba
 nnt_unsubscribe($db,'qa_a',$direct);
 check(nnt_inline_drain($db,$directCfg,static fn()=>201)['claimed']===0,'revoked direct delivery cancelled');
 echo "NOTIFICATIONS_INLINE_PASS\n";
+// Direct reply goes to the actual parent author, not unrelated participants.
+$directReply=ne_comment($db,$entity,'qa_a','dddddddd-dddd-4ddd-8ddd-dddddddddddd','direct reply',$now+100,['kind'=>'app','id'=>$other]);nnt_collect($db,$now+101);
+check(nnt_one($db,"SELECT 1 FROM noa_notifications WHERE source='app_comment' AND source_id=? AND recipient='qa_b' AND kind='reply'",[$directReply])!==null,'direct parent recipient');
+check(nnt_one($db,"SELECT 1 FROM noa_notifications WHERE source='app_comment' AND source_id=? AND recipient='qa_temp'",[$directReply])===null,'no unrelated reply recipient');
+$db->exec("UPDATE g5_write_free SET wr_name='별무리 A' WHERE wr_id=1");
+$inline=ne_comment($db,'board:free:1','qa_b','eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee','알림에서 답할 원래 댓글',$now+102);nnt_collect($db,$now+103);
+$notice=nnt_one($db,"SELECT id FROM noa_notifications WHERE recipient='qa_a' AND source='app_comment' AND source_id=?",[$inline]);
+check(nnt_thread($db,'qa_a',(int)$notice['id'])['replyTo']['id']===$inline,'owned inline thread');
+try{nnt_thread($db,'qa_b',(int)$notice['id']);throw new RuntimeException('cross account thread');}catch(DomainException $expected){}
+check(nnt_thread($db,'qa_a',(int)$private[0]['id'])===['private'=>true,'id'=>1],'private thread remains gated');
 // Leave useful owned inbox items for UI/API tests, no active external subscriptions.
 $db->exec('DELETE FROM noa_notification_delivery');$db->exec('DELETE FROM noa_push_subscriptions');
 file_put_contents($root.'/notification-shell.php',"<?php require __DIR__.'/common.php';?><!doctype html><html lang=ko><head><meta charset=utf-8><link rel=stylesheet href=/noa-ui.css><link rel=stylesheet href=/noa-ainoa.css><script src=/noa-ainoa.js defer></script></head><body class=noa-page><main><h1>NOA STUDIO</h1></main></body></html>");

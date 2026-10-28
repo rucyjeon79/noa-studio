@@ -1,5 +1,7 @@
 name: NOA Home and Community Completion
 on:
+  pull_request:
+    paths: ['scripts/noa_community_*','.github/workflows/noa-community-finish.yml','scripts/qa/noa-community*','tests/community/**','bridge/community*.php','deploy/noa-community*']
   push:
     branches: [main]
     paths: ['scripts/noa_community_*','.github/workflows/noa-community-finish.yml','scripts/qa/noa-community*','tests/community/**','bridge/community*.php','deploy/noa-community*']
@@ -36,7 +38,7 @@ jobs:
         if: always()
         with: {name: 'noa-community-candidate-${{ github.run_id }}', path: community-proof/, retention-days: 7}
   deploy:
-    if: ${{ !contains(github.event.head_commit.message, '[install-release]') }}
+    if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '[install-release]') && !contains(github.event.head_commit.message, '[conversation-release]') }}
     needs: candidate
     runs-on: ubuntu-latest
     environment: production
