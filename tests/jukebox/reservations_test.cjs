@@ -38,7 +38,7 @@ console.log('PASS reopened-tab completion persists, storage merge stays terminal
  let finishFingerprint;const fingerprintGate=new Promise(resolve=>finishFingerprint=resolve);
  const stale={id:'resume-row',key:'song-a',fingerprint:'same',state:'needs_file',owner:'closed-tab',hold:true};
  const selectedFile={name:'resume.wav',size:2048};
- const race={reservations:[stale],active:null,deviceOwner:'new-tab',notice:{},fingerprint(){return fingerprintGate},persist(){},releaseSelection(){},render(){},pump(){},crypto:{randomUUID(){return 'unexpected-new-row'}},message:code=>code,deviceKey:'owners',readSaved:()=>[{...stale,hold:undefined}],localStorage:{getItem(){return '{}'}}};
+ const race={paused:false,transport:{open:false},reservations:[stale],active:null,deviceOwner:'new-tab',notice:{},fingerprint(){return fingerprintGate},persist(){},releaseSelection(){},render(){},pump(){},crypto:{randomUUID(){return 'unexpected-new-row'}},message:code=>code,deviceKey:'owners',readSaved:()=>[{...stale,hold:undefined}],localStorage:{getItem(){return '{}'}}};
  vm.createContext(race);vm.runInContext(source.slice(source.indexOf('async function reserve('),source.indexOf('picker.onchange=')),race);
  vm.runInContext(source.slice(source.indexOf('function syncReservations(){'),source.indexOf('// Transfer ownership coordinates')),race);
  const pending=race.reserve({existing:stale,key:'song-a'},selectedFile);
@@ -55,4 +55,20 @@ console.log('PASS reopened-tab completion persists, storage merge stays terminal
  const active={state:'needs_file',uploadId:'active'};c.active=active;await c.cancelReservation(active);assert.equal(canceled,1);assert.equal(active.state,'needs_file');
  const failedCancel={state:'needs_file',uploadId:'partial'};c.active=null;c.reconcile=async()=>({status:'uploading'});c.api=async()=>{throw Error('network_unavailable')};await c.cancelReservation(failedCancel);assert.equal(failedCancel.state,'needs_file');assert.equal(failedCancel.hold,false);
  console.log('PASS pending cancellation preserves accepted/active jobs and keeps a reservation on cancellation failure');
+})().catch(error=>{console.error(error);process.exitCode=1});
+
+(async()=>{
+ const file={name:'song.wav',size:2048};
+ const r={id:'blocked',key:'song',filename:file.name,fingerprint:'same',state:'needs_file',error:'temporary_storage_quota_reached'};
+ let pumped=0,healthChecks=0;
+ const c={reservations:[r],active:null,deviceOwner:'current',notice:{},paused:true,capacityWaitUntil:Date.now()+60000,transport:{open:true,reset(){this.open=false}},localStorage:{removeItem(){}},circuitKey:'circuit',diagnosticRows:[],isUnsent:()=>true,fingerprint:async()=> 'same',persist(){},releaseSelection(){},render(){},pump(){pumped++},message:x=>x,api:async(action)=>{assert.equal(action,'health');healthChecks++;return {can_upload:true}},requestRaw:async()=>{}};
+ vm.createContext(c);
+ vm.runInContext(source.slice(source.indexOf('async function resumeTransfers(){'),source.indexOf('function counts(')),c);
+ vm.runInContext(source.slice(source.indexOf('async function reserve('),source.indexOf('picker.onchange=')),c);
+ await c.reserve({existing:r,key:'song'},file);
+ assert.equal(healthChecks,1);assert.equal(c.paused,false);assert.equal(c.transport.open,false);assert.equal(c.capacityWaitUntil,0);assert.equal(r.error,null);assert.equal(r.file,file);assert.equal(pumped,1);
+ c.paused=true;c.transport.open=true;c.api=async()=>({can_upload:false,can_resume:false,storage_available:false});pumped=0;
+ await c.reserve({existing:r,key:'song'},file);
+ assert.equal(c.paused,true);assert.equal(c.transport.open,true);assert.equal(pumped,0);
+ console.log('PASS reselected source resumes after healthy capacity check; unavailable storage stays paused');
 })().catch(error=>{console.error(error);process.exitCode=1});
