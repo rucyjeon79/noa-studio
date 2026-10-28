@@ -18,15 +18,21 @@ try{
  }
  for(const engine of ['chromium','webkit']){
   browser=await(engine==='webkit'?webkit.launch():chromium.launch({channel:'chrome',args:['--no-sandbox']}));
-  for(const javaScriptEnabled of [true,false]){
+  for(const javaScriptEnabled of [false,true]){
    const context=await browser.newContext({viewport:{width:390,height:844},javaScriptEnabled,serviceWorkers:'block'});
    await context.addCookies([{name:'qa_toss_user',value:'tp_admin',url:base}]);
    const page=await context.newPage();
    const submit=async()=>{
-    const [response]=await Promise.all([
-     page.waitForNavigation({waitUntil:'domcontentloaded'}),
-     page.getByRole('button',{name:'연동 설정 저장',exact:true}).click()
-    ]);return response;
+    try{
+     const [response]=await Promise.all([
+      page.waitForResponse(r=>r.request().isNavigationRequest()&&r.request().method()==='POST'),
+      page.getByRole('button',{name:'연동 설정 저장',exact:true}).click()
+     ]);await response.finished();return response;
+    }catch(error){
+     await page.screenshot({path:`${out}/settings-failure-${engine}-${javaScriptEnabled}.png`,fullPage:true});
+     console.error('SETTINGS_SUBMIT_DIAGNOSTIC',engine,javaScriptEnabled,await page.locator('form').evaluateAll(forms=>forms.map(f=>({valid:f.checkValidity(),method:f.method,action:f.action,invalid:[...f.elements].filter(e=>e.validity&&!e.validity.valid).map(e=>({name:e.name,type:e.type,message:e.validationMessage}))}))));
+     throw error;
+    }
    };
    const before=readFileSync(config,'utf8');
    await page.goto(base+'/settings-before.php');
@@ -45,7 +51,7 @@ try{
    await page.locator('input[name=contractApproved]').uncheck();
    const saved=await submit();assert.equal(saved.status(),200);
    assert.equal(saved.request().headers().origin,base);
-   assert((await page.locator('main>p[role=status]').innerText()).includes('설정을 저장했습니다'));
+   await page.locator('main>p[role=status]').filter({hasText:'설정을 저장했습니다'}).waitFor();
    const stored=readFileSync(config,'utf8');
    assert(stored.includes('test_sk_settings_fixture')&&stored.includes('a'.repeat(64)));
    assert.equal(statSync(config).mode&0o777,0o600);
