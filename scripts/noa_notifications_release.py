@@ -17,7 +17,7 @@ release.FILES={
  'extend/noa.design.php':'deploy/noa-design.extend.php',
  'extend/zz.noa-notifications.php':'deploy/noa-notifications.extend.php',
 }
-release.FILES.update({'noa-voice.js':'deploy/noa-voice.js','noa-ainoa.php':'deploy/noa-ainoa.php','noa-bridge/ainoa-core.php':'bridge/ainoa-core.php','noa-bridge/ainoa-automation.php':'bridge/ainoa-automation.php'})
+release.FILES.update({'noa-bridge/ainoa-core.php':'bridge/ainoa-core.php','noa-bridge/ainoa-automation.php':'bridge/ainoa-automation.php','noa-ainoa.php':'deploy/noa-ainoa.php','noa-voice.js':'deploy/noa-voice.js'})
 release.NEW=set(release.FILES)-{'noa-sw.js','noa-sitemap.php','extend/noa.design.php'}
 release.PROTECTED+=['bbs/write_comment_update.php','bbs/delete_comment.php','bbs/good.php','noa-bridge/community-core.php','noa-bridge/engagement-core.php','noa-bridge/popularity-core.php']
 if __name__=='__main__':

@@ -104,7 +104,7 @@
  async function action(fn){if(busy)return;busy=true;page?.querySelectorAll('button').forEach(b=>b.disabled=true);try{await fn();}catch(error){failure(error);}finally{busy=false;if(page){page.querySelectorAll('button').forEach(b=>b.disabled=false);await deviceState();updateBadges(state?.unread||0);}}}
  if(page){
   document.addEventListener('close',e=>{if(e.target.matches('dialog.noa-comments')){loadedMore=false;void refresh();}},true);
-  $('nnt-filters').addEventListener('click',e=>{const b=e.target.closest('[data-filter]');if(!b||b.dataset.filter===filter)return;filter=b.dataset.filter;before=null;loadedMore=false;$('nnt-list').replaceChildren();$('nnt-empty').hidden=true;void refresh();});
+  $('nnt-filters').addEventListener('click',e=>{const b=e.target.closest('[data-filter]');if(!b||b.dataset.filter===filter)return;filter=b.dataset.filter;for(const tab of $('nnt-filters').querySelectorAll('[data-filter]'))tab.setAttribute('aria-pressed',String(tab.dataset.filter===filter));$('nnt-filter-status').textContent=filterNames[filter]+' 소식을 불러오는 중이에요.';before=null;loadedMore=false;$('nnt-list').replaceChildren();$('nnt-empty').hidden=true;void refresh();});
   $('nnt-enable').addEventListener('click',()=>{
    if(!state||support())return;
    // Called directly in the user's click; never prompt on page load or polling.
