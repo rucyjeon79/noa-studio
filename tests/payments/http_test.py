@@ -23,6 +23,7 @@ try:
  assert request('/noa-payment-settings.php',user='')[0]==403
  assert request('/noa-payment-settings.php')[0]==403
  code,body,h=request('/noa-payment-settings.php',user='tp_admin');assert code==200 and 'no-store' in h['Cache-Control']
+ assert '연결 준비 상태'.encode() in body and '확인 필요'.encode() in body
  assert request('/noa-payment-settings.php',{'csrf':'wrong','enabled':'1'},user='tp_admin',form=True)[0]==403
  assert not pathlib.Path('/tmp/noa-toss-http/noa-private/toss.php').exists()
  for f in ['toss-core.php','toss-config.php']:assert request('/noa-bridge/'+f,user='')[0]==403

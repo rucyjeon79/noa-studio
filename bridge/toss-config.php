@@ -7,14 +7,20 @@ function nt_config():array{
  $p=nt_config_path();$v=is_file($p)&&!is_link($p)?require $p:[];
  return is_array($v)?$v:[];
 }
-function nt_ready(array $c):bool{
- $mode=$c['mode']??'';
- return !empty($c['enabled'])&&in_array($mode,['test','live'],true)
-  &&preg_match('/^'.$mode.'_ck_[A-Za-z0-9_-]+$/D',$c['clientKey']??'')===1
-  &&preg_match('/^'.$mode.'_sk_[A-Za-z0-9_-]+$/D',$c['secretKey']??'')===1
-  &&preg_match('/^[A-Za-z0-9_-]{1,100}$/D',$c['mid']??'')===1
-  &&preg_match('/^[a-fA-F0-9]{64}$/D',$c['webhookSecret']??'')===1&&($mode!=='live'||!empty($c['contractApproved']));
+/** Local configuration checks only: these never claim provider verification. */
+function nt_setup_checks(array $c):array{
+ $mode=$c['mode']??'';$validMode=in_array($mode,['test','live'],true);$prefix=$validMode?$mode:'invalid';
+ return [
+  'mode'=>['label'=>'결제 모드 선택','ok'=>$validMode],
+  'mid'=>['label'=>'상점 ID (MID)','ok'=>preg_match('/^[A-Za-z0-9_-]{1,100}$/D',$c['mid']??'')===1],
+  'clientKey'=>['label'=>'같은 모드의 클라이언트 키','ok'=>preg_match('/^'.$prefix.'_ck_[A-Za-z0-9_-]+$/D',$c['clientKey']??'')===1],
+  'secretKey'=>['label'=>'같은 모드의 시크릿 키','ok'=>preg_match('/^'.$prefix.'_sk_[A-Za-z0-9_-]+$/D',$c['secretKey']??'')===1],
+  'webhookSecret'=>['label'=>'웹훅 보안 키','ok'=>preg_match('/^[a-fA-F0-9]{64}$/D',$c['webhookSecret']??'')===1],
+  'contractApproved'=>['label'=>'운영 상점 상품·결제수단 심사 확인','ok'=>$mode==='test'||!empty($c['contractApproved'])],
+  'enabled'=>['label'=>'결제 사용 설정','ok'=>!empty($c['enabled'])],
+ ];
 }
+function nt_ready(array $c):bool{return !in_array(false,array_column(nt_setup_checks($c),'ok'),true);}
 function nt_public_config(array $c):array{return ['provider'=>'토스페이먼츠','ready'=>nt_ready($c),'mode'=>$c['mode']??'disabled','clientKey'=>nt_ready($c)?$c['clientKey']:null,'methods'=>['CARD','KAKAOPAY']];}
 function nt_save_config(array $input):void{
  $old=nt_config();$mode=$input['mode']??'test';if(!in_array($mode,['test','live'],true))throw new InvalidArgumentException('invalid_configuration');

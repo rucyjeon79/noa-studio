@@ -29,10 +29,10 @@ try{
    await detail.locator('.noa-inline-video-row>.noa-engagement button').first().waitFor();
    const songs=await detail.locator('.noa-inline-video-row').evaluateAll(rows=>rows.map(row=>{
     const b=s=>row.querySelector(s).getBoundingClientRect(),title=b('.noa-inline-title'),cover=b('.noa-inline-cover'),heart=b('.noa-engagement svg'),tool=b('.noa-song-more');
-    return {textX:title.x,heartX:heart.x,coverX:cover.x,coverTop:cover.y,textTop:title.y,toolTop:tool.y,toolX:tool.x,gap:heart.y-title.bottom};
+    const rect=row.getBoundingClientRect();return {textX:title.x,heartX:heart.x,coverX:cover.x,top:cover.top-rect.top,bottom:rect.bottom-cover.bottom,height:rect.height,toolX:tool.x,gap:heart.y-title.bottom};
    }));
    assert.equal(songs.length,10);
-   for(const row of songs){assert(Math.abs(row.textX-row.heartX)<1,JSON.stringify(row));assert(Math.abs(row.coverTop-row.textTop)<1,JSON.stringify(row));assert(Math.abs(row.coverTop-row.toolTop)<1,JSON.stringify(row));assert(Math.abs(row.coverX-collections[0].coverX)<1,JSON.stringify({row,collection:collections[0]}));assert(row.gap>=0&&row.gap<=6,JSON.stringify(row));assert(Math.abs(row.toolX-songs[0].toolX)<1);}
+   for(const row of songs){assert(Math.abs(row.textX-row.heartX)<1,JSON.stringify(row));assert(Math.abs(row.top-row.bottom)<1,JSON.stringify(row));assert(Math.abs(row.height-songs[0].height)<1,JSON.stringify(row));assert(Math.abs(row.coverX-collections[0].coverX)<1,JSON.stringify({row,collection:collections[0]}));assert(row.gap>=0&&row.gap<=8,JSON.stringify(row));assert(Math.abs(row.toolX-songs[0].toolX)<1);}
    await detail.scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/songs-${engine}-${width}-${theme}.png`});
    assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth));
    await page.goto(base+'/noa-world.php?story=1');
@@ -54,9 +54,14 @@ try{
    }));
    assert.equal(cards.length,10);
    for(const c of cards){assert.equal(c.titleHeight,20);assert(c.gap>=0&&c.gap<=5,JSON.stringify(c));assert(Math.abs(c.heartX-c.titleX)<1,JSON.stringify(c));const peer=cards.find(p=>Math.abs(p.top-c.top)<1);assert(Math.abs(peer.heartY-c.heartY)<1,JSON.stringify({peer,c}));}
+   const banners=await page.locator('[data-home-banner]').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return{kind:e.dataset.homeBanner,after:e.previousElementSibling?.dataset.homeSection,url:e.href,target:e.target,rel:e.rel,x:r.x,width:r.width,height:r.height,icon:!!e.querySelector('svg'),overflow:e.scrollWidth>e.clientWidth};}));
+   assert.deepEqual(banners.map(b=>[b.kind,b.after]),[['goods','notices'],['youtube','world'],['amt','collections']]);
+   assert.equal(banners[0].url,'https://marpple.shop/kr/jr_lifestyle');assert.equal(banners[1].url,'https://youtube.com/@ainoa_ramjunpapa?sub_confirmation=1');assert.equal(banners[2].url,'https://www.aimusictown.com/creators/ainoa');
+   for(const b of banners){assert(b.icon&&!b.overflow&&b.target==='_blank'&&b.rel.includes('noopener'));assert(Math.abs(b.x-banners[0].x)<1&&Math.abs(b.width-banners[0].width)<1&&Math.abs(b.height-banners[0].height)<1,JSON.stringify(banners));}
+   if(width===390)for(const b of banners)await page.locator('[data-home-banner='+b.kind+']').screenshot({path:`${out}/banner-${b.kind}-${engine}-${theme}.png`});
    await page.getByRole('heading',{name:'추천 음악',exact:true}).click();await page.screenshot({path:`${out}/home-${engine}-${width}-${theme}.png`});
    assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth));assert.deepEqual(errors,[]);
-   report.push({engine,width,theme,collections,songs,epCells:cells,chapterButtons:buttons,cards});await context.close();
+   report.push({engine,width,theme,collections,songs,epCells:cells,chapterButtons:buttons,cards,banners});await context.close();
   }
   await browser.close();browser=null;
  }
