@@ -29,7 +29,7 @@ try{
  await visiblePath(p,'#editor-classification',['오리지널송','K-POP Original','ACT 1','EP.2 · EP 검증곡']);
  await c.route('**/noa-bridge/creator.php?action=list',r=>r.fulfill({json:{channel:null,songs:[{key:'creator:fixture',title:'내 검증곡',genre:'your-story',visibility:'private',fields:{title:'내 검증곡'},state:{ready:false,status:'draft'}}]}}));
  await c.route('**/noa-bridge/creator.php?action=status*',r=>r.fulfill({json:{ready:false,status:'draft'}}));
- await p.goto(base+'/noa-creator.php');await p.locator('.creator-row button').click();
+ await p.goto(base+'/noa-creator.php');await p.getByRole('button',{name:'모두 펼치기',exact:true}).click();await p.locator('.creator-row button').click();
  await visiblePath(p,'#creator-classification',['당신의 이야기, 우리의 음악','당신의 이야기, 우리의 음악 🎧','미분류','내 검증곡']);
  assert(await p.locator('#creator-classification').evaluate(e=>e.getBoundingClientRect().bottom<=document.getElementById('creator-editor-title').getBoundingClientRect().top));
  await p.locator('#creator-song [name=genre]').selectOption('cover-reborn');await p.locator('#creator-song [name=title]').fill('수정 중인 커버곡');
