@@ -446,9 +446,9 @@ html[data-noa-precision] main .noa-workspace-grid>.noa-action{justify-content:fl
 
 /* Shared action rhythm: ordinary controls are one horizontal row across pages. */
 html[data-noa-precision]{--noa-action-gap:6px;--noa-action-icon:18px;--noa-action-text:13px}
-html[data-noa-precision] body main .noa-action.noa-action:not(.noa-personal-card){flex-direction:row;align-items:center;justify-content:center;gap:var(--noa-action-gap);min-block-size:44px;padding:8px 12px;line-height:1.35;vertical-align:middle;text-align:center}
-html[data-noa-precision] body main .noa-action.noa-action:not(.noa-personal-card)>svg{inline-size:var(--noa-action-icon);block-size:var(--noa-action-icon);flex:none}
-html[data-noa-precision] body main .noa-action.noa-action:not(.noa-personal-card)>span{font-size:var(--noa-action-text);line-height:1.35;max-inline-size:none;min-width:0}
+html[data-noa-precision] body main .noa-action.noa-action:not(.noa-personal-card):not(.noa-engagement *,.noa-song-actions *,.noa-workspace-grid *,.noa-hero *){flex-direction:row;align-items:center;justify-content:center;gap:var(--noa-action-gap);min-block-size:44px;padding:8px 12px;line-height:1.35;vertical-align:middle;text-align:center}
+html[data-noa-precision] body main .noa-action.noa-action:not(.noa-personal-card):not(.noa-engagement *,.noa-song-actions *,.noa-workspace-grid *,.noa-hero *)>svg{inline-size:var(--noa-action-icon);block-size:var(--noa-action-icon);flex:none}
+html[data-noa-precision] body main .noa-action.noa-action:not(.noa-personal-card):not(.noa-engagement *,.noa-song-actions *,.noa-workspace-grid *,.noa-hero *)>span{font-size:var(--noa-action-text);line-height:1.35;max-inline-size:none;min-width:0}
 html[data-noa-precision] body main .noa-section-head{align-items:center;gap:12px;margin-bottom:12px}
 html[data-noa-precision] body main .noa-section-head>h2{margin:0;min-width:0;flex:1}
 html[data-noa-precision] body main .noa-section-head>.noa-action{flex:none;border:0;background:transparent;padding-inline:4px}
