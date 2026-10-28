@@ -16,7 +16,7 @@
   const dialog=document.createElement('dialog');dialog.id='noa-share-dialog';dialog.setAttribute('aria-labelledby','noa-share-title');
   dialog.innerHTML='<header><h2 id="noa-share-title">NOA STUDIO 공유</h2><button type="button" aria-label="공유 창 닫기">×</button></header><p>설치 링크를 보내 함께 음악을 즐겨요.</p><div class="noa-share-actions"><button type="button" data-share="copy">링크 복사</button><a data-share="sms">문자로 보내기</a><button type="button" data-share="kakao">카카오톡으로 공유</button></div><p class="noa-share-help">카톡 버튼을 누른 뒤 휴대폰 공유 목록에서 카카오톡을 선택해 주세요.</p><label for="noa-share-link">앱 설치 링크</label><input id="noa-share-link" readonly><p class="noa-share-status" role="status"></p>';
   const input=dialog.querySelector('input'),note=dialog.querySelector('.noa-share-status');input.value=installUrl;input.onclick=()=>input.select();dialog.querySelector('header button').onclick=()=>dialog.close();
-  const tell=text=>{if(window.NoaVoice?.say){note.textContent='';window.NoaVoice.say(text,{key:'share-feedback',priority:true});}else note.textContent=text;};
+  const tell=text=>{if(window.NoaVoice?.say){note.textContent='';window.NoaVoice.say(text,{key:'share-feedback',priority:true,force:true});}else note.textContent=text;};
   dialog.querySelector('[data-share="copy"]').onclick=async()=>{try{await navigator.clipboard.writeText(installUrl);tell('설치 링크를 복사했어요. 원하는 대화방에 붙여 넣어 주세요.');}catch{input.focus();input.select();tell('링크를 길게 눌러 복사해 주세요.');}};
   const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   dialog.querySelector('[data-share="sms"]').href='sms:'+(ios?'&':'?')+'body='+encodeURIComponent(shareText+'\n'+installUrl);
