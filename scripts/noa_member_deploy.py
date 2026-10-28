@@ -4,12 +4,12 @@ from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
 FILES={}
-for name in ['member-access.php','creator-core.php','creator.php','legacy-audio.php','home-core.php','home.php']:FILES['noa-bridge/'+name]='bridge/'+name
+for name in ['channel-ownership.php','member-access.php','creator-core.php','creator.php','legacy-audio.php','home-core.php','home.php']:FILES['noa-bridge/'+name]='bridge/'+name
 for name in ['noa-creator.js','noa-creator.css','noa-creator.php','noa-channel.php','noa-ui.js','noa-hero.js','noa-my.php','noa-sitemap.php','noa-app/jukebox/upload-core.php','noa-app/jukebox/stream.php','noa-app/jukebox/download.php','noa-app/home.php']:FILES[name]='deploy/'+name
 FILES['extend/noa.design.php']='deploy/noa-design.extend.php'
 FILES['data/noa-audio/.htaccess']='deploy/noa-legacy-audio.htaccess'
 FILES['extend/noa.access.php']='deploy/noa-access.extend.php'
-NEW={'noa-bridge/member-access.php','noa-bridge/creator-core.php','noa-bridge/creator.php','noa-bridge/legacy-audio.php','noa-creator.js','noa-creator.css','noa-creator.php','noa-channel.php','data/noa-audio/.htaccess','extend/noa.access.php'}
+NEW={'noa-bridge/channel-ownership.php','noa-bridge/member-access.php','noa-bridge/creator-core.php','noa-bridge/creator.php','noa-bridge/legacy-audio.php','noa-creator.js','noa-creator.css','noa-creator.php','noa-channel.php','data/noa-audio/.htaccess','extend/noa.access.php'}
 PROTECTED=['common.php','data/dbconfig.php','bbs/login.php','bbs/login_check.php','bbs/board.php','noa-music.php','noa-youtube.php','noa-world.php','noa-app/engine/n80.php','noa-app/jukebox/service.php','noa-bridge/youtube-thumbnail.php']
 BACKUP=Path(os.environ.get('RUNNER_TEMP','/tmp'))/'noa-member-before.json'
 def sha(b):return hashlib.sha256(b).hexdigest()

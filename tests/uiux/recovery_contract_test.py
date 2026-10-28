@@ -78,6 +78,8 @@ class RecoveryContract(unittest.TestCase):
   authorized.update({'deploy/noa-app/jukebox/drive-core.php','deploy/noa-app/jukebox/operations.php','deploy/noa-app/jukebox/queue-core.php','deploy/noa-app/jukebox/recovery-core.php','deploy/noa-app/jukebox/upload-transport.js','deploy/noa-app/jukebox/upload.php'})
   # 2026-10-28: explicit post author nickname and inline comment/reply request.
   authorized.add('bridge/community-core.php')
+  # 2026-10-29: explicit stable channel ownership and existing library binding request.
+  authorized.update({'bridge/channel-ownership.php','bridge/creator.php'})
   discovery=(ROOT/'bridge/home-discovery.php').read_text()
   self.assertNotRegex(discovery, r'(?i)\b(?:INSERT\s+INTO|UPDATE\s+noa_|DELETE\s+FROM|CREATE\s+TABLE|ALTER\s+TABLE)\b')
   self.assertFalse(any(p not in authorized and p.startswith(('deploy/noa-app/jukebox/','bridge/','scripts/noa_jukebox'))for p in paths))

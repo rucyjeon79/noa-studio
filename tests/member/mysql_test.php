@@ -12,3 +12,17 @@ check(count($db->query('SELECT * FROM noa_jukebox_uploads')->fetchAll())===1,'on
 // Reusable browser fixture: legitimate isolated member and canonical song only.
 nc_store($db,nc_channel_key($owner),'prefs',['title'=>'테스트 창작자 채널','description'=>'내 곡과 이야기'],0,$owner);
 echo "CREATOR_MYSQL_OK record_history revision_CAS cross_owner_denied upload_chunks resume MIME queue\n";
+// Legacy system records bind once; foreign and personal records are preserved.
+$legacy=['title'=>'기존 등록곡','genreId'=>'kpop-original','ep'=>'1','body'=>['lyrics'=>'원본 가사'],'visibility'=>'public'];
+nc_store($db,'single:legacy','single',$legacy,0,'old-import');
+nc_store($db,'playlist:legacy','playlist',['title'=>'기존 ACT','genreId'=>'kpop-original','body'=>['members'=>[['key'=>'single:legacy']]]],0,'old-import');
+nc_store($db,'story:other','story',['title'=>'다른 창작자','ownerId'=>'qa_owner_b','body'=>[]],0,'qa_owner_b');
+$before=nco_row($db,'single:legacy');$audit=nco_bind($db,$owner,'/tmp/noa-channel-test-backup',false);check($audit['planned']>=2&&nco_row($db,'single:legacy')===$before,'audit is read only');
+$bound=nco_bind($db,$owner,'/tmp/noa-channel-test-backup');check($bound['foreignPreserved']===1&&$bound['contentPreserved'],'foreign owner and exact payload preserved');
+$after=json_decode(nco_row($db,'single:legacy')['payload'],true);check($after['ownerId']===$owner&&$after['channelId']===hash('sha256',$owner),'explicit owner and channel');unset($after['ownerId'],$after['channelId']);check($after===$legacy,'legacy metadata retained');
+check(nco_bind($db,$owner,'/tmp/noa-channel-test-backup')['updated']===0,'binding replay no revisions');
+check(count(nc_owned_records($db,'qa_owner_b'))===1,'other creator only own data');
+try{nc_store($db,'single:legacy','single',array_replace($legacy,['ownerId'=>'qa_owner_b']),2,'qa_owner_b');throw new RuntimeException('transfer accepted');}catch(DomainException $e){check($e->getMessage()==='ownership_transfer_forbidden','transfer blocked');}
+nc_store($db,'story:new-system','story',['title'=>'후속 등록곡','body'=>[]],0,'catalog-register');check(json_decode(nco_row($db,'story:new-system')['payload'],true)['ownerId']===$owner,'future imports retain installed owner');
+try{nco_bind($db,'qa_owner_b','/tmp/noa-channel-test-backup');throw new RuntimeException('owner drift');}catch(DomainException $e){check($e->getMessage()==='installed_owner_mismatch','administrator change is not ownership transfer');}
+echo "CHANNEL_BINDING_MYSQL_OK\n";
