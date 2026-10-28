@@ -23,7 +23,8 @@
  .noa-desktop-ai{display:flex;flex-direction:column;flex:1 0 280px;min-height:280px;border:1px solid var(--noa-line);border-radius:16px;background:var(--noa-surface);overflow:hidden}
  .noa-desktop-ai>header{padding:16px;border-bottom:1px solid var(--noa-line);flex:none}.noa-desktop-ai>header img{border-radius:50%;object-fit:cover;flex:none}.noa-desktop-ai>header span{font-size:12px;color:var(--noa-muted)}
  #noa-desktop-ainoa{flex:1;min-height:0}#noa-desktop #noa-ainoa{position:static;width:auto;height:auto;pointer-events:auto;--ainoa-size:48px;--ainoa-panel-bg:var(--noa-surface)}
- #noa-desktop :is(.ainoa-symbol,.ainoa-tip,.ainoa-close,.ainoa-panel-body>header){display:none!important}
+ #noa-desktop :is(.ainoa-symbol,.ainoa-close,.ainoa-panel-body>header){display:none!important}
+ #noa-desktop .ainoa-tip{position:relative;inset:auto;width:auto;max-height:240px;margin:16px;padding:14px 16px;box-shadow:none}#noa-desktop .ainoa-tip::after{display:none}
  #noa-desktop .ainoa-panel{position:static;width:auto;max-width:none;border:0;border-radius:0;box-shadow:none;background:transparent}
  #noa-desktop .ainoa-panel::after{display:none}#noa-desktop .ainoa-panel-body{max-height:none;overflow:visible;padding:16px}
  #noa-desktop .ainoa-panel :is(button,input){min-height:44px}#noa-desktop .ainoa-note{margin:12px 0;font-size:12px;color:var(--noa-muted)}#noa-desktop .ainoa-admin-toggle{width:100%;margin-top:12px}

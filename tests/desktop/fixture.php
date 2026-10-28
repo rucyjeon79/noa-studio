@@ -1,7 +1,7 @@
 <?php
 /** Disposable native page bootstraps; production APIs are never mutated by browser QA. */
 require __DIR__.'/../navigation/fixture.php';
-foreach(['noa-notifications.js','noa-ainoa.js','noa-ainoa.css','noa-ainoa-admin.js','noa-desktop.js','noa-desktop.css','noa-member-badges.js','noa-member-badges.css','noa-app/p0-media.css']as $file)copy('deploy/'.$file,$root.'/'.$file);
+foreach(['noa-voice.js','noa-notifications.js','noa-ainoa.js','noa-ainoa.css','noa-ainoa-admin.js','noa-desktop.js','noa-desktop.css','noa-member-badges.js','noa-member-badges.css','noa-app/p0-media.css']as $file)copy('deploy/'.$file,$root.'/'.$file);
 @mkdir($root.'/noa-assets/splash',0700,true);copy('public/splash/kpop-original-g2-a.jpg',$root.'/noa-assets/splash/kpop-original-g2-a.jpg');
 copy('public/ainoa/ainoa-symbol.png',$root.'/noa-assets/ainoa-symbol.png');
 $common=file_get_contents($root.'/common.php');
