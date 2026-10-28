@@ -22,7 +22,7 @@ try{
  if($action==='chunk'){$index=filter_var($_GET['index']??'',FILTER_VALIDATE_INT);if($index===false)throw new InvalidArgumentException('invalid_chunk');$id=(string)($_GET['id']??'');$u=nu_row($db,$id);$fault=nr_fault_take($db,$faultSession,$u['song_key'],$action);
   if($fault==='http_503'){header('Retry-After: 1');nu_json(503,['error'=>'upload_service_unavailable']);}
   if($fault==='html_response'){http_response_code(200);header('Content-Type: text/html; charset=utf-8');echo '<!doctype html><title>QA temporary response</title>';exit;}
-  $raw=file_get_contents('php://input',false,null,0,NU_CHUNK+1);$out=nu_chunk($db,$id,$index,$raw);if($fault==='chunk_response_lost'){http_response_code(200);echo '';exit;}nu_json(200,$out);}
+  $raw=file_get_contents('php://input',false,null,0,(nd_is($u)?ND_CHUNK:NU_CHUNK)+1);$out=nu_chunk($db,$id,$index,$raw);if($fault==='chunk_response_lost'){http_response_code(200);echo '';exit;}nu_json(200,$out);}
  $raw=file_get_contents('php://input',false,null,0,16385);if(strlen($raw)>16384)throw new InvalidArgumentException('request_too_large');$b=json_decode($raw,true,32,JSON_THROW_ON_ERROR);
  if($action==='qa_selftest')nu_json(200,nr_selftest($db));
  if($action==='qa_fault')nu_json(200,nr_fault_setup($db,$b));
@@ -30,7 +30,8 @@ try{
  if($action==='init'&&nr_fault_take($db,$faultSession,(string)($b['key']??''),$action)==='storage_insufficient')throw new DomainException('hosting_storage_insufficient');
  if($action==='init')nu_json(200,nu_initialize($db,$b,(string)$member['mb_id']));
  if($action==='cancel')nu_json(200,nu_cancel_pending($db,(string)($b['id']??'')));
- if($action==='finish'){$u=nu_row($db,(string)($b['id']??''));$fault=nr_fault_take($db,$faultSession,$u['song_key'],$action);$out=nu_finish($db,$u['id']);if($fault==='finish_response_lost'){http_response_code(200);echo '';exit;}nu_json(200,$out);}
+ if($action==='cancel_processing')nu_json(200,nu_cancel_processing($db,(string)($b['id']??'')));
+ if($action==='finish'){$u=nu_row($db,(string)($b['id']??''));$fault=nr_fault_take($db,$faultSession,$u['song_key'],$action);$out=nu_finish($db,$u['id']);if($out['status']==='ready'){try{nu_cleanup_verified($db,$u['id']);}catch(Throwable $e){}}if($fault==='finish_response_lost'){http_response_code(200);echo '';exit;}nu_json(200,$out);}
  if($action==='retry'){nq_retry($db,(string)($b['id']??''));nu_json(200,nu_public($db,nu_row($db,$b['id'])['song_key']));}
  throw new InvalidArgumentException('unknown_action');
 }catch(DomainException $e){$code=$e->getMessage();nu_json(in_array($code,['account_storage_quota_exceeded','hosting_storage_insufficient','storage_permission_denied','upload_storage_unavailable'],true)?507:409,['error'=>$code]);}catch(InvalidArgumentException|JsonException $e){nu_json(400,['error'=>$e instanceof JsonException?'invalid_json':$e->getMessage()]);}catch(Throwable $e){error_log('[jukebox-upload] '.get_class($e).':'.$e->getCode());nu_json(503,['error'=>'upload_service_unavailable']);}

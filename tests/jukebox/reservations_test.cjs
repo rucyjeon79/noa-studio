@@ -25,7 +25,7 @@ const saved=()=>JSON.parse(JSON.stringify(disk));
 const resumed={deviceOwner:'new-tab',storeKey:'reservations',deviceKey:'owners',reservations:[{...disk[0],state:'ready',serverComplete:true,file:null}],notice:{},readSaved:saved,localStorage:{setItem(key,value){if(key==='reservations')disk=JSON.parse(value);},getItem(){return '{}';}}};
 vm.createContext(resumed);
 vm.runInContext(source.slice(source.indexOf('function persist(){'),source.indexOf('function syncReservations(')),resumed);
-vm.runInContext(source.slice(source.indexOf('function syncReservations(){'),source.indexOf('function stopMusic(')),resumed);
+vm.runInContext(source.slice(source.indexOf('function syncReservations(){'),source.indexOf('// Transfer ownership coordinates')),resumed);
 resumed.persist();assert.equal(disk[0].state,'ready');assert.equal(disk[0].owner,'closed-tab');assert.equal(disk[0].file,undefined);resumed.syncReservations();assert.equal(resumed.reservations[0].state,'ready');
 resumed.reservations=[{...disk[0],state:'uploaded',serverComplete:true}];resumed.persist();assert.equal(disk[0].state,'ready','late acknowledgement cannot demote confirmed ready');
 disk=[{...disk[0],state:'waiting',fingerprint:'replacement-source',uploadId:'replacement-upload'}];resumed.reservations=[{...disk[0],fingerprint:'source-a',uploadId:'upload-a',state:'ready',serverComplete:true}];resumed.persist();assert.equal(disk[0].fingerprint,'replacement-source');assert.equal(disk[0].state,'waiting');
@@ -40,7 +40,7 @@ console.log('PASS reopened-tab completion persists, storage merge stays terminal
  const selectedFile={name:'resume.wav',size:2048};
  const race={reservations:[stale],active:null,deviceOwner:'new-tab',notice:{},fingerprint(){return fingerprintGate},persist(){},releaseSelection(){},render(){},pump(){},crypto:{randomUUID(){return 'unexpected-new-row'}},message:code=>code,deviceKey:'owners',readSaved:()=>[{...stale,hold:undefined}],localStorage:{getItem(){return '{}'}}};
  vm.createContext(race);vm.runInContext(source.slice(source.indexOf('async function reserve('),source.indexOf('picker.onchange=')),race);
- vm.runInContext(source.slice(source.indexOf('function syncReservations(){'),source.indexOf('function stopMusic(')),race);
+ vm.runInContext(source.slice(source.indexOf('function syncReservations(){'),source.indexOf('// Transfer ownership coordinates')),race);
  const pending=race.reserve({existing:stale,key:'song-a'},selectedFile);
  race.syncReservations();finishFingerprint('same');await pending;
  assert.equal(race.reservations.length,1);assert.equal(race.reservations[0].file,selectedFile);assert.equal(race.reservations[0].state,'waiting');assert.equal(race.reservations[0].owner,'new-tab');

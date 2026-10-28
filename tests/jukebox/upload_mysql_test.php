@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);define('_GNUBOARD_',true);
+declare(strict_types=1);define('_GNUBOARD_',true);define('NOA_DRIVE_TEST',true);
 require dirname(__DIR__,2).'/bridge/sound-core.php';require dirname(__DIR__,2).'/deploy/noa-app/jukebox/operations.php';
 function check(bool $ok,string $why):void{if(!$ok)throw new RuntimeException($why);}
 function rejects(callable $fn,string $code):void{try{$fn();}catch(Throwable $e){check($e->getMessage()===$code,'expected '.$code.' got '.$e->getMessage());return;}throw new RuntimeException('expected rejection '.$code);}
@@ -23,13 +23,13 @@ $historyBefore=(int)$db->query('SELECT COUNT(*) FROM noa_jukebox_history')->fetc
 $db->exec("CREATE TRIGGER reject_ready_update BEFORE UPDATE ON noa_jukebox_uploads FOR EACH ROW BEGIN IF NEW.status='ready' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='fixture_atomic_rollback'; END IF; END");
 try{nj_operation($db,'upload_commit',$auth+['result'=>$r]);throw new RuntimeException('expected injected publication failure');}catch(PDOException $e){check($e->getCode()==='45000','controlled SQL publication failure');}
 check(!nj_verified(nj_find($db,$key),'audio')&&(int)$db->query('SELECT COUNT(*) FROM noa_jukebox_history')->fetchColumn()===$historyBefore,'late queue SQL failure rolls back asset and analysis history together');check(nu_row($db,$id)['status']==='verifying','failed SQL transaction retains worker ownership');$db->exec('DROP TRIGGER reject_ready_update');
-$result=nj_operation($db,'upload_commit',$auth+['result'=>$r]);check($result['ready']&&nj_operation($db,'upload_cleanup',['id'=>$id])['source_retained']&&hash_file('sha256',nu_dir($id).'/input.audio')===hash('sha256',$bytes),'publish preserves original WAV');$a=nj_find($db,$key);check(nj_verified($a,'audio'),'only verified MP3 becomes ready');check(hash_file('sha256',nj_file($a['audio_path']))===$fixture['audio_sha256'],'final hash matches SQL');
+$result=nj_operation($db,'upload_commit',$auth+['result'=>$r]);check($result['ready']&&nj_operation($db,'upload_cleanup',['id'=>$id])['input_removed']&&!is_file(nu_dir($id).'/input.audio'),'verified publication removes temporary WAV');$a=nj_find($db,$key);check(nj_verified($a,'audio'),'only verified MP3 becomes ready');check(hash_file('sha256',nj_file($a['audio_path']))===$fixture['audio_sha256'],'final hash matches SQL');
 check(dirname(nj_file($a['cover_path']))===dirname(nj_file($a['audio_path']))&&$a['cover_sha256']===$coverHash,'legacy cover copied intact beside private MP3');
 $same=nu_initialize($db,$b,'admin');foreach(str_split($bytes,NU_CHUNK) as $i=>$chunk)nu_chunk($db,$same['id'],$i,$chunk);check(nu_finish($db,$same['id'])['ready'],'identical source reused');check(nj_operation($db,'upload_claim')['uploads']===[],'same source never queued twice');check(hash_file('sha256',nu_dir($same['id']).'/input.audio')===hash('sha256',$bytes),'reused upload original retained');
 $bad=nu_initialize($db,array_merge($b,['filename'=>'fake.wav','fingerprint'=>str_repeat('c',64),'bytes'=>1024]),'admin');nu_chunk($db,$bad['id'],0,str_repeat('x',1024));rejects(fn()=>nu_finish($db,$bad['id']),'actual_audio_format_mismatch');rejects(fn()=>nu_finish($db,$bad['id']),'actual_audio_format_mismatch');check(nj_find($db,$key)['audio_sha256']===$fixture['audio_sha256'],'invalid replacement preserves confirmed MP3');
 check($db->query('SELECT payload FROM noa_documents')->fetchColumn()===$stored,'existing document unchanged');
 $newBytes=file_get_contents('/tmp/noa-jukebox-fixture/replacement.wav');$next=nu_initialize($db,array_merge($b,['filename'=>'교체.wav','bytes'=>strlen($newBytes),'fingerprint'=>hash('sha256',$newBytes)]),'admin');foreach(str_split($newBytes,NU_CHUNK) as $i=>$chunk)nu_chunk($db,$next['id'],$i,$chunk);nu_finish($db,$next['id']);check(nj_verified(nj_find($db,$key),'audio'),'old edition remains playable while replacement queued');$claim=nj_operation($db,'upload_claim')['uploads'][0];$auth=['id'=>$next['id'],'lease'=>$claim['lease'],'job_id'=>$claim['job_id']];$new=json_decode(file_get_contents('/tmp/noa-jukebox-fixture/replacement.json'),true);nj_operation($db,'upload_state',$auth+['status'=>'processing','source_analysis'=>$new['source_analysis']]);$nextDir=nj_private().'/media/K-POP/EP.01 업로드 검증곡 [v-replacement]';mkdir($nextDir,0700,true);copy('/tmp/noa-jukebox-fixture/replacement.mp3',$nextDir.'/원본제목.mp3');$newResult=array_merge($r,$new,['audio_path'=>'K-POP/EP.01 업로드 검증곡 [v-replacement]/원본제목.mp3']);nj_operation($db,'upload_state',$auth+['status'=>'verifying']);nj_operation($db,'upload_commit',$auth+['result'=>$newResult]);nj_operation($db,'upload_cleanup',['id'=>$next['id']]);$latest=nj_find($db,$key);check($latest['audio_sha256']===$new['audio_sha256']&&is_file($dir.'/원본제목.mp3')&&hash_file('sha256',$dir.'/원본제목.mp3')===$fixture['audio_sha256'],'verified replacement publishes new edition and retains old bytes');check(dirname(nj_file($latest['cover_path']))===dirname(nj_file($latest['audio_path'])),'replacement cover stays beside MP3');
-echo "PASS MySQL upload/resume, chunk integrity, duplicate prevention, worker leases, analyzed publication, invalid replacement preservation and original WAV retention\n";
+echo "PASS MySQL upload/resume, chunk integrity, duplicate prevention, worker leases, analyzed publication, invalid replacement preservation and verified original cleanup\n";
 
 // Finish B,C,A despite creating A,B,C: queue IDs follow completed transfers.
 $ids=[];foreach(['A','B','C'] as $label){$k='single:fifo:'.$label;$db->prepare('INSERT INTO noa_documents VALUES(?,?,?,1,?)')->execute([$k,'single',$raw,'fixture']);$uu=nu_initialize($db,array_merge($b,['key'=>$k,'fingerprint'=>hash('sha256',$label)]),'admin');foreach(str_split($bytes,NU_CHUNK) as $i=>$chunk)nu_chunk($db,$uu['id'],$i,$chunk);$ids[$label]=$uu['id'];}
@@ -63,3 +63,48 @@ $plan=nr_fault_setup($db,['key'=>$qaKey,'scenario'=>'http_503']);for($n=0;$n<3;$
 echo "PASS lost finish/claim/stage response recovery, runtime exclusion, long healthy FFmpeg, externally confirmed stopped-worker recovery, transactional consistency selftest and bounded private QA faults\n";
 
 $db->exec("UPDATE noa_jukebox_uploads SET updated_at=NOW()-INTERVAL 2 DAY WHERE id='".$replaceInit['id']."'");nu_housekeeping($db);check(is_file(nu_dir($replaceInit['id']).'/chunk-0'),'old interrupted source chunks retained');check(is_file(nu_dir($bad['id']).'/input.audio'),'invalid source preserved for inspection');echo "PASS retention on success reuse failure and housekeeping\n";
+
+// A recorded backlog above the old 512 MiB ceiling must not block new reservations.
+$oldBadBytes=nu_row($db,$bad['id'])['file_bytes'];$db->prepare('UPDATE noa_jukebox_uploads SET file_bytes=? WHERE id=?')->execute([1073741824,$bad['id']]);
+$health=nr_health($db);check($health['spool_bytes']>=1073741824&&$health['spool_limit']===null&&$health['can_upload'],'temporary storage has no artificial total quota');
+check(nj_operation($db,'capabilities')['spool_quota_bytes']===null,'worker capabilities report unlimited temporary storage');
+$unlimited=nu_initialize($db,array_merge($b,['fingerprint'=>str_repeat('7',64)]),'admin');nu_cancel_pending($db,$unlimited['id']);
+
+// New Drive uploads never write audio bytes to hosting. Model lost responses and retries.
+$driveConfig=nj_private().'/drive-token.json';file_put_contents($driveConfig,json_encode(['folder_id'=>ND_FOLDER,'access_token'=>'fixture-only','expires_at'=>time()+3600]));
+$remote=[];$lost=false;$deleteCount=0;
+$GLOBALS['nd_http']=function($method,$url,$body,$headers)use(&$remote,&$lost,&$deleteCount){
+ if(str_contains($url,'generateIds'))return ['code'=>200,'headers'=>[],'data'=>['ids'=>['driveFixture'.bin2hex(random_bytes(10))]]];
+ if($method==='POST'){$meta=json_decode($body,true);$remote[$meta['id']]=['meta'=>$meta,'bytes'=>''];return ['code'=>200,'headers'=>['location'=>'https://www.googleapis.com/upload/drive/v3/files?upload_id='.$meta['id']],'data'=>[]];}
+ parse_str(parse_url($url,PHP_URL_QUERY)?:'',$query);$id=$query['upload_id']??basename(parse_url($url,PHP_URL_PATH));
+ if($method==='DELETE'){unset($remote[$id]);$deleteCount++;return ['code'=>204,'headers'=>[],'data'=>[]];}
+ if(!isset($remote[$id]))return ['code'=>404,'headers'=>[],'data'=>[]];
+ if($method==='PUT'&&$body!==''){$remote[$id]['bytes'].=$body;if(!$lost){$lost=true;throw new RuntimeException('simulated_lost_ack');}}
+ $meta=$remote[$id]['meta']+['size'=>strlen($remote[$id]['bytes']),'sha256Checksum'=>hash('sha256',$remote[$id]['bytes'])];
+ return ['code'=>200,'headers'=>[],'data'=>$meta];
+};
+try{
+ $dk='single:drive:fixture';$db->prepare('INSERT INTO noa_documents VALUES(?,?,?,1,?)')->execute([$dk,'single',$raw,'fixture']);
+ $du=nu_initialize($db,array_merge($b,['key'=>$dk]),'admin');check($du['chunkSize']===ND_CHUNK&&$du['storage']==='google_drive','new uploads use Drive chunking');
+ try{nu_chunk($db,$du['id'],0,$bytes);}catch(RuntimeException $e){check($e->getMessage()==='simulated_lost_ack','controlled dropped response');}
+ $dr=nu_initialize($db,array_merge($b,['key'=>$dk]),'admin');check($dr['chunks']===[0]&&$dr['chunkHashes']->{'0'}===hash('sha256',$bytes),'lost Drive response resumes without duplicate bytes');
+ rejects(fn()=>nu_chunk($db,$du['id'],0,str_repeat('x',strlen($bytes))),'chunk_conflict');
+ check(!is_file(nu_dir($du['id']).'/input.audio')&&!glob(nu_dir($du['id']).'/chunk-*'),'no temporary audio on hosting');
+ check(nu_finish($db,$du['id'])['status']==='queued','Drive source queued after checksum verification');
+ check(nj_operation($db,'upload_claim')['uploads']===[],'old worker cannot claim Drive source');
+ $djob=nj_operation($db,'upload_claim',['drive_capable'=>true])['uploads'][0];check($djob['drive_source']['sha256']===hash('sha256',$bytes),'Drive source reaches capable worker');
+ rejects(fn()=>nu_cleanup_verified($db,$du['id']),'cleanup_final_not_verified');check($deleteCount===0,'uncommitted source never deleted');
+ $da=['id'=>$du['id'],'job_id'=>$djob['job_id'],'lease'=>$djob['lease']];nj_operation($db,'upload_state',$da+['status'=>'processing','source_analysis'=>$fixture['source_analysis']]);nj_operation($db,'upload_state',$da+['status'=>'verifying']);
+ $drs=array_merge($r,['song_key'=>$dk]);nj_operation($db,'upload_commit',$da+['result'=>$drs]);
+ check(nu_cleanup_verified($db,$du['id'])['input_removed']&&$deleteCount===1,'Drive source deleted only after final verification');check(nu_cleanup_verified($db,$du['id'])['input_removed']&&$deleteCount===1,'cleanup retries idempotent');
+ $duplicate=nu_initialize($db,array_merge($b,['key'=>$dk]),'admin');nu_chunk($db,$duplicate['id'],0,$bytes);check(nu_finish($db,$duplicate['id'])['status']==='ready','identical Drive source reuses verified final');check(nj_operation($db,'upload_claim',['drive_capable'=>true])['uploads']===[],'identical Drive source never optimized twice');nu_cleanup_verified($db,$duplicate['id']);check($deleteCount===2,'duplicate temporary source removed after reuse verification');
+ $db->exec("UPDATE noa_jukebox_audio_jobs SET status='queued',uploaded_at=NOW()-INTERVAL 1 HOUR WHERE id=".$djob['job_id']);$health=nr_health($db);check($health['reason']==='queue_without_worker'&&$health['can_upload'],'stalled optimizer never blocks upload intake');
+ foreach(['queued','retrying','analyzing','processing','verifying'] as $phase){
+  $db->prepare('UPDATE noa_jukebox_uploads SET status=? WHERE id=?')->execute([$phase,$du['id']]);
+  $db->prepare('UPDATE noa_jukebox_audio_jobs SET status=?,lease=? WHERE id=?')->execute([$phase,$da['lease'],$djob['job_id']]);
+  check(nu_cancel_processing($db,$du['id'])['canceled'],'cancellation accepted in '.$phase);
+  rejects(fn()=>nj_operation($db,'upload_heartbeat',$da),'upload_lease_changed');
+  check(nj_verified(nj_find($db,$dk),'audio'),'cancellation preserves published MP3');
+ }
+ echo "PASS Drive spool, no hosting audio, lost acknowledgement recovery, source identity, worker compatibility, verified cleanup and independent intake\n";
+}finally{unlink($driveConfig);unset($GLOBALS['nd_http']);$db->prepare('UPDATE noa_jukebox_uploads SET file_bytes=? WHERE id=?')->execute([$oldBadBytes,$bad['id']]);}

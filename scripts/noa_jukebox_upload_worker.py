@@ -30,7 +30,7 @@ def _drain_uploads(sftp,call,mkdir,source_reader=None,idle_seconds=0):
     started=time.monotonic();results=[];deadline=started+50*60;idle_until=min(deadline,started+max(0,idle_seconds));processed=0;last_maintenance=started
     while processed<100:
         if time.monotonic()>deadline:break
-        claimed=call('upload_claim')['uploads']
+        claimed=call('upload_claim',{'drive_capable':True})['uploads']
         if not claimed:
             if time.monotonic()>=idle_until:break
             if time.monotonic()-last_maintenance>=60:
@@ -56,23 +56,27 @@ def _drain_uploads(sftp,call,mkdir,source_reader=None,idle_seconds=0):
         try:
             with tempfile.TemporaryDirectory(prefix='noa-upload-') as temp:
                 source=Path(temp)/('input.'+job['extension']);output=Path(temp)/'final.mp3'
-                remote=PRIVATE+'/incoming/'+job['id']+'/input.audio'
-                info=sftp.lstat(remote)
-                if not stat.S_ISREG(info.st_mode) or info.st_size!=job['bytes'] or info.st_size>256*1024*1024:raise ValueError('uploaded_input_size_or_type_changed')
-                if sftp.normalize(PRIVATE+'/incoming/'+job['id'])!=PRIVATE+'/incoming/'+job['id']:raise ValueError('unsafe_input_directory')
-                transfer_started=time.monotonic();transport='sftp'
-                if source_reader and source_reader(job,source):transport='ssh_stream'
+                transfer_started=time.monotonic();transport='google_drive'
+                if job.get('drive_source'):
+                    if not source_reader or not source_reader(job,source):raise ValueError('drive_source_unavailable')
                 else:
-                    with sftp.open(remote,'rb') as src,source.open('xb') as dst:
-                        # Bound parallel reads to avoid one network round trip per 32 KiB.
-                        src.prefetch(file_size=job['bytes'],max_concurrent_requests=16)
-                        size=0
-                        while True:
-                            block=src.read(1024*1024)
-                            if not block:break
-                            size+=len(block)
-                            if size>job['bytes']:raise ValueError('uploaded_input_grew')
-                            dst.write(block)
+                    remote=PRIVATE+'/incoming/'+job['id']+'/input.audio'
+                    info=sftp.lstat(remote)
+                    if not stat.S_ISREG(info.st_mode) or info.st_size!=job['bytes'] or info.st_size>256*1024*1024:raise ValueError('uploaded_input_size_or_type_changed')
+                    if sftp.normalize(PRIVATE+'/incoming/'+job['id'])!=PRIVATE+'/incoming/'+job['id']:raise ValueError('unsafe_input_directory')
+                    transfer_started=time.monotonic();transport='sftp'
+                    if source_reader and source_reader(job,source):transport='ssh_stream'
+                    else:
+                        with sftp.open(remote,'rb') as src,source.open('xb') as dst:
+                            # Bound parallel reads to avoid one network round trip per 32 KiB.
+                            src.prefetch(file_size=job['bytes'],max_concurrent_requests=16)
+                            size=0
+                            while True:
+                                block=src.read(1024*1024)
+                                if not block:break
+                                size+=len(block)
+                                if size>job['bytes']:raise ValueError('uploaded_input_grew')
+                                dst.write(block)
                 transfer_seconds=round(time.monotonic()-transfer_started,2)
                 if media.digest(source)!=job['sha256']:raise ValueError('uploaded_input_hash_changed')
                 def measured(before):
@@ -132,6 +136,8 @@ def _drain_uploads(sftp,call,mkdir,source_reader=None,idle_seconds=0):
             try:call('upload_fail',auth|{'error':code[:190]})
             except Exception:code='processing_state_changed_or_network_error'
             results.append({'job_id':job['job_id'],'key':job['key'],'ready':False,'error':code[:190]})
-        finally:stop.set();heartbeat.join(timeout=2)
+        finally:
+            stop.set();heartbeat.join(timeout=2)
+            idle_until=min(deadline,time.monotonic()+max(0,idle_seconds))
     return results
 
