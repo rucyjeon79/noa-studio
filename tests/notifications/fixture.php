@@ -4,8 +4,8 @@ passthru('php '.escapeshellarg(__DIR__.'/../engagement/fixture.php'),$status);if
 $root='/tmp/noa-community-fixture';
 $extra= <<<'PHP'
 
-require_once __DIR__.'/noa-bridge/member-access.php';
-ob_start(static fn($html)=>str_replace('</head>','<link rel="stylesheet" href="/noa-account.css"></head>',$html));
+if(PHP_SAPI==='cli-server')require_once __DIR__.'/noa-bridge/member-access.php';
+if(PHP_SAPI==='cli-server')ob_start(static fn($html)=>str_replace('</head>','<link rel="stylesheet" href="/noa-account.css"></head>',$html));
 define('G5_PATH',__DIR__);$config['cf_admin']='qa_admin';
 if(($_SERVER['HTTP_ORIGIN']??'')==='http://127.0.0.1:8078')$_SERVER['HTTP_ORIGIN']='https://noastudio.ai.kr';
 require __DIR__.'/extend/zz.noa-notifications.php';
