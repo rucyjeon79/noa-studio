@@ -28,7 +28,7 @@ function nc_home():array{
   // Only the explicitly title-public song request board has a public title projection at level 2.
   if(!nc_admin()&&(!empty($b['gr_use_access'])||!empty($b['bo_use_cert'])||((int)$b['bo_list_level']>$level&&!($private&&(int)$b['bo_list_level']===2))))continue;
   $rows=nc_rows('SELECT wr_id,wr_subject,wr_name FROM '.nc_write_table($id)." WHERE wr_is_comment=0".($private?'':" AND FIND_IN_SET('secret',wr_option)=0").' ORDER BY wr_id DESC LIMIT 5');
-  $out[]=['board'=>$id,'title'=>nc_plain((string)$b['bo_subject']),'items'=>array_map(fn($r)=>['id'=>(int)$r['wr_id'],'title'=>nc_plain($r['wr_subject']),'author'=>$private?'':nc_plain($r['wr_name'])],$rows),'private'=>$private,'member'=>$logged,'admin'=>nc_admin(),'canWrite'=>false,'more'=>false,'next'=>null];
+  $out[]=['board'=>$id,'title'=>nc_plain((string)$b['bo_subject']),'items'=>array_map(fn($r)=>['id'=>(int)$r['wr_id'],'title'=>nc_plain($r['wr_subject']),...($private?[]:['author'=>nc_plain($r['wr_name'])])],$rows),'private'=>$private,'member'=>$logged,'admin'=>nc_admin(),'canWrite'=>false,'more'=>false,'next'=>null];
  }
  return ['boards'=>$out,'member'=>$logged,'csrf'=>$logged?($_SESSION['noa_community_csrf']??''):''];
 }
@@ -50,7 +50,7 @@ function nc_list(string $id,int $before=0):array{
  if(!$private&&!nc_admin()&&(int)($member['mb_level']??1)<(int)$b['bo_read_level'])throw new DomainException('board_not_available');
  $where='wr_is_comment=0'.($before>0?' AND wr_id<'.$before:'').($private?'':" AND FIND_IN_SET('secret',wr_option)=0");
  $rows=nc_rows("SELECT wr_id,wr_subject,wr_name FROM $t WHERE $where ORDER BY wr_id DESC LIMIT 6");$more=count($rows)>5;$rows=array_slice($rows,0,5);
- return ['items'=>array_map(fn($r)=>['id'=>(int)$r['wr_id'],'title'=>nc_plain($r['wr_subject']),'author'=>$private?'':nc_plain($r['wr_name'])],$rows),'more'=>$more,'next'=>$more?(int)end($rows)['wr_id']:null,'admin'=>nc_admin(),'canWrite'=>nc_admin()||(int)($member['mb_level']??1)>=max(3,$private?3:(int)$b['bo_write_level']),'displayName'=>(string)($member['mb_nick']??''),'private'=>$private];
+ return ['items'=>array_map(fn($r)=>['id'=>(int)$r['wr_id'],'title'=>nc_plain($r['wr_subject']),...($private?[]:['author'=>nc_plain($r['wr_name'])])],$rows),'more'=>$more,'next'=>$more?(int)end($rows)['wr_id']:null,'admin'=>nc_admin(),'canWrite'=>nc_admin()||(int)($member['mb_level']??1)>=max(3,$private?3:(int)$b['bo_write_level']),'displayName'=>(string)($member['mb_nick']??''),'private'=>$private];
 }
 function nc_content(string $board,int $id,?array $verified=null):array{
  $where=$board===NC_REQUEST_BOARD?'':" AND FIND_IN_SET('secret',wr_option)=0";

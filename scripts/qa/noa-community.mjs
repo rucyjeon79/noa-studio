@@ -44,7 +44,7 @@ try{
 
  // Home is one title-only projection; notice and restricted native boards never leak into it.
  const home=await get('guest',{action:'home'});assert.equal(home.status,200);assert.equal(home.data.csrf,'');assert.deepEqual(home.data.boards.map(b=>b.board),['free','gallery','qa','song_request']);
- for(const b of home.data.boards){assert.equal(b.items.length,5);for(const row of b.items){assert.deepEqual(Object.keys(row).sort(),['author','id','title']);if(b.private)assert.equal(row.author,'');else assert.equal(row.author,'공개 작성자 닉네임');}}assert(!JSON.stringify(home).includes(sentinel));assert(!JSON.stringify(home).includes('본문'));assert(!JSON.stringify(home).includes(password));
+ for(const b of home.data.boards){assert.equal(b.items.length,5);for(const row of b.items){assert.deepEqual(Object.keys(row).sort(),b.private?['id','title']:['author','id','title']);if(!b.private)assert.equal(row.author,'공개 작성자 닉네임');}}assert(!JSON.stringify(home).includes(sentinel));assert(!JSON.stringify(home).includes('본문'));assert(!JSON.stringify(home).includes(password));
  assert.deepEqual(home.data.boards.find(b=>b.board==='gallery').items.map(r=>r.id),[6,5,4,3,2]);assert.equal((await get('a',{board:'notice',action:'read',id:1})).data.error,'board_not_available');assert.equal((await get('a',{board:'staffonly',action:'read',id:1})).data.error,'board_not_available');assert.equal((await get('a',{board:'gallery',action:'read',id:6})).data.body,'갤러리 본문 6');
  report.home=[];
  for(const width of [320,390,1280])for(const theme of ['noa-studio','noa-ivory']){
