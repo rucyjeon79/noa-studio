@@ -72,6 +72,8 @@ class RecoveryContract(unittest.TestCase):
   # 2026-10-28: explicit monthly 10x login/write/comment/like point policy.
   # Existing native transaction and per-member receipts remain mandatory.
   authorized.update({'bridge/membership-core.php','bridge/monthly-rewards.php'})
+  # 2026-10-28: user authorized Toss card/Kakao checkout; native balance writers remain unchanged.
+  authorized.update({'bridge/toss-config.php','bridge/toss-core.php','bridge/toss.php','bridge/toss-webhook.php'})
   discovery=(ROOT/'bridge/home-discovery.php').read_text()
   self.assertNotRegex(discovery, r'(?i)\b(?:INSERT\s+INTO|UPDATE\s+noa_|DELETE\s+FROM|CREATE\s+TABLE|ALTER\s+TABLE)\b')
   self.assertFalse(any(p not in authorized and p.startswith(('deploy/noa-app/jukebox/','bridge/','scripts/noa_jukebox'))for p in paths))
