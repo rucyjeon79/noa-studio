@@ -29,9 +29,10 @@ try{
    await detail.locator('.noa-inline-video-row>.noa-engagement button').first().waitFor();
    const songs=await detail.locator('.noa-inline-video-row').evaluateAll(rows=>rows.map(row=>{
     const b=s=>row.querySelector(s).getBoundingClientRect(),title=b('.noa-inline-title'),cover=b('.noa-inline-cover'),heart=b('.noa-engagement svg'),tool=b('.noa-song-more');
-    const rect=row.getBoundingClientRect();return {textX:title.x,heartX:heart.x,coverX:cover.x,top:cover.top-rect.top,bottom:rect.bottom-cover.bottom,height:rect.height,toolX:tool.x,gap:heart.y-title.bottom};
+    const rect=row.getBoundingClientRect();return {textX:title.x,heartX:heart.x,coverX:cover.x,top:cover.top-rect.top,bottom:rect.bottom-cover.bottom,height:rect.height,y:rect.y,bottomY:rect.bottom,toolX:tool.x,gap:heart.y-title.bottom};
    }));
    assert.equal(songs.length,10);
+   for(let i=1;i<songs.length;i++)assert(Math.abs(songs[i].y-songs[i-1].bottomY)<1,'video dividers must have symmetric row insets');
    for(const row of songs){assert(Math.abs(row.textX-row.heartX)<1,JSON.stringify(row));assert(Math.abs(row.top-row.bottom)<1,JSON.stringify(row));assert(Math.abs(row.height-songs[0].height)<1,JSON.stringify(row));assert(Math.abs(row.coverX-collections[0].coverX)<1,JSON.stringify({row,collection:collections[0]}));assert(row.gap>=0&&row.gap<=8,JSON.stringify(row));assert(Math.abs(row.toolX-songs[0].toolX)<1);}
    await detail.scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/songs-${engine}-${width}-${theme}.png`});
    assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth));
