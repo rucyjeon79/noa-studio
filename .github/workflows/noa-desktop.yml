@@ -1,0 +1,68 @@
+name: NOA desktop MY and AInoa companion
+on:
+  pull_request:
+    paths: ['deploy/noa-desktop.*','deploy/noa-voice.js','deploy/noa-ainoa.css','deploy/noa-account.js','deploy/noa-notifications.js','deploy/noa-ainoa*.js','deploy/noa-design.extend.php','tests/desktop/**','scripts/noa_desktop*','scripts/qa/noa-desktop.mjs','.github/workflows/noa-desktop.yml']
+  push:
+    branches: [main]
+    paths: ['deploy/noa-desktop.*','tests/desktop/**','scripts/noa_desktop*','scripts/qa/noa-desktop.mjs','.github/workflows/noa-desktop.yml']
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'mbstring,pdo_sqlite'}
+      - name: Prepare real native page and desktop assets in isolation
+        run: |
+          php -l deploy/noa-design.extend.php
+          for f in deploy/noa-desktop.js deploy/noa-account.js deploy/noa-ainoa.js deploy/noa-ainoa-admin.js; do node --check "$f"; done
+          node --check deploy/noa-notifications.js
+          node --check deploy/noa-voice.js
+          php tests/desktop/fixture.php
+          python scripts/qa/noa-qa-font.py
+          npm install --prefix "$RUNNER_TEMP/desktop" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-desktop.mjs "$RUNNER_TEMP/desktop/check.mjs"
+      - name: Verify roles, both palettes, desktop/mobile resize, player and explicit AI submission
+        run: node "$RUNNER_TEMP/desktop/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-desktop-candidate-${{ github.run_id }}', path: desktop-proof/, retention-days: 7}
+  deploy:
+    if: github.event_name == 'push'
+    needs: verify
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'mbstring,pdo_sqlite'}
+      - name: Prepare scoped release and browser checks
+        run: |
+          python -m pip install 'paramiko>=3,<5'
+          php tests/desktop/fixture.php
+          python scripts/qa/noa-qa-font.py
+          npm install --prefix "$RUNNER_TEMP/desktop" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-desktop.mjs "$RUNNER_TEMP/desktop/check.mjs"
+      - name: Activate desktop assets before their shared extension
+        run: python scripts/noa_desktop_release.py
+      - name: Verify deployed bytes, production home and isolated authenticated use
+        env: {NOA_DESKTOP_PHASE: live}
+        run: node "$RUNNER_TEMP/desktop/check.mjs"
+      - name: Restore this release if acceptance fails
+        if: failure()
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then python scripts/noa_desktop_release.py rollback; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-desktop-live-${{ github.run_id }}', path: "desktop-proof/\nainoa-proof/deployment.json", retention-days: 7}

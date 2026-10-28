@@ -2,7 +2,7 @@
 (()=>{'use strict';if(window.NoaAInoaAdmin)return;
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 const button=(text,fn)=>{const n=el('button',text);n.type='button';n.onclick=fn;return n;};
-let dialog,client,state={tasks:[],generation:{ready:false,missing:['settings_unavailable']}},busy=false,thread='',retry=null,timer=null,activeTrack=null,generationRetry=null;
+let dialog,client,dockHost=null,state={tasks:[],generation:{ready:false,missing:['settings_unavailable']}},busy=false,thread='',retry=null,timer=null,activeTrack=null,generationRetry=null;
 const names={api_key:'API 키',text_enabled:'AI 활성화',per_request_budget:'요청 한도',daily_budget:'일일 한도',daily_budget_exhausted:'오늘 잔여 한도',model:'모델',settings_unavailable:'설정 연결'};
 const states={queued:'대기',running:'작성 중',succeeded:'응답 완료',review:'초안 검토',failed:'오류',needs_review:'응답 확인 필요',cancelled:'취소'};
 const fields={youtubeTitle:'YouTube 제목',description:'YouTube 설명',communityPost:'커뮤니티 글'};
@@ -53,7 +53,8 @@ function build(){
  const automation=el('details',undefined,'ainoa-admin-automation');automation.append(el('summary','선택한 곡 AI 생성 자동화'));const row=el('div',undefined,'ainoa-admin-toolbar'),field=el('select',undefined,'ainoa-admin-field');field.setAttribute('aria-label','AI 생성 항목');for(const [v,label]of Object.entries(fields)){const o=el('option',label);o.value=v;field.append(o);}const generateButton=button('초안 자동 생성',generate);generateButton.className='ainoa-admin-generate';row.append(field,generateButton);automation.append(row,el('p','N80이 대기 요청을 처리하고 초안을 보관합니다. 결과를 검토한 뒤 곡 편집 화면에서 저장하세요.'));
  const jobs=el('details');jobs.append(el('summary','N80 작업 기록','ainoa-admin-job-count'),el('div',undefined,'ainoa-admin-jobs'));const n80=el('a','N80 운영 상태');n80.href='/noa-work-status.php';
  dialog.append(head,status,settings,subscription,toolbar,note,log,form,automation,jobs,n80);document.body.append(dialog);
- dialog.addEventListener('close',()=>{clearInterval(timer);timer=null;});
+ dialog.addEventListener('close',()=>{if(dialog.open)return;clearInterval(timer);timer=null;window.dispatchEvent(new Event('noa-ainoa-admin-close'));});
 }
-window.NoaAInoaAdmin={async open(c){client=c;if(!dialog)build();if(!dialog.open)dialog.showModal();notice('대화와 작업 기록을 불러오고 있습니다.');try{state=await workspace();if(!thread)thread=state.tasks.find(t=>t.type==='chat')?.conversationId||crypto.randomUUID();render();notice('관리자 대화와 생성 초안은 계정별로 보관됩니다.');if(!timer)timer=setInterval(()=>{if(!busy&&document.visibilityState==='visible'&&state.tasks.some(t=>['queued','running'].includes(t.state)))refresh().catch(e=>notice(e.message));},5000);}catch(e){notice(e.message);}}};
+function present(){const focused=document.activeElement;if(dialog.open)dialog.close();(dockHost||document.body).append(dialog);dialog.querySelector('header button').textContent=dockHost?'음악 찾기':'닫기';dialog.querySelector('h2').textContent=dockHost?'AInoa 대화':'ChatGPT · N80';if(dockHost)dialog.show();else dialog.showModal();if(focused&&dialog.contains(focused))focused.focus({preventScroll:true});}
+window.NoaAInoaAdmin={dock(host){dockHost=host;if(dialog?.open)present();},async open(c,host=null){client=c;dockHost=host;if(!dialog)build();present();notice('대화와 작업 기록을 불러오고 있습니다.');try{state=await workspace();if(!thread)thread=state.tasks.find(t=>t.type==='chat')?.conversationId||crypto.randomUUID();render();notice('관리자 대화와 생성 초안은 계정별로 보관됩니다.');if(dialog.open&&!timer)timer=setInterval(()=>{if(!busy&&document.visibilityState==='visible'&&state.tasks.some(t=>['queued','running'].includes(t.state)))refresh().catch(e=>notice(e.message));},5000);}catch(e){notice(e.message);}}};
 })();

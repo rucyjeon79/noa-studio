@@ -29,10 +29,15 @@ function say(text,options={}){
  const item={text,options};if(options.key){const i=queue.findIndex(x=>x.options.key===options.key);if(i>=0)queue.splice(i,1);}
  if(options.priority&&active){if(active.options.requireAcknowledgement&&active.options.key!==options.key)queue.unshift(active);queue.unshift(item);close(false);}else{queue.push(item);render();}
 }
-function close(next=true,ack=false){if(ack)try{sessionStorage.removeItem('noa-voice-redirect');}catch{}clearTimeout(timer);active=null;const tip=doc.querySelector('#noa-ainoa .ainoa-tip');if(tip)tip.hidden=true;if(next||queue.length)render();}
-function place(){const root=doc.getElementById('noa-ainoa'),modal=[...doc.querySelectorAll('dialog[open]')].at(-1);if(root&&root.parentElement!==(modal||doc.body))(modal||doc.body).append(root);}
+function close(next=true,ack=false){if(ack)try{sessionStorage.removeItem('noa-voice-redirect');}catch{}clearTimeout(timer);active=null;const tip=doc.querySelector('.ainoa-tip');if(tip)tip.hidden=true;if(next||queue.length)render();}
+function place(){
+ const root=doc.getElementById('noa-ainoa');if(!root)return;const modal=[...doc.querySelectorAll('dialog:modal')].at(-1),dock=doc.documentElement.hasAttribute('data-noa-desktop')?doc.getElementById('noa-desktop-ainoa'):null,tip=doc.querySelector('.ainoa-tip');let proxy=doc.getElementById('noa-voice-modal');
+ if(dock){if(root.parentElement!==dock)dock.prepend(root);if(modal&&tip){if(!proxy){proxy=doc.createElement('aside');proxy.id='noa-voice-modal';proxy.setAttribute('aria-label','AInoa 안내');}if(proxy.parentElement!==modal)modal.append(proxy);if(tip.parentElement!==proxy)proxy.append(tip);}else if(tip&&tip.parentElement!==root)root.insertBefore(tip,root.querySelector('.ainoa-panel'));}
+ else{if(tip&&tip.parentElement!==root)root.insertBefore(tip,root.querySelector('.ainoa-panel'));if(root.parentElement!==(modal||doc.body))(modal||doc.body).append(root);}
+ if(proxy&&!proxy.childElementCount)proxy.remove();
+}
 function render(){
- place();if(active||!queue.length||doc.hidden)return;const tip=doc.querySelector('#noa-ainoa .ainoa-tip');if(!tip)return;
+ place();if(active||!queue.length||doc.hidden)return;const tip=doc.querySelector('.ainoa-tip');if(!tip)return;
  active=queue.shift();ownChange=true;tip.replaceChildren();tip.classList.add('ainoa-message');tip.setAttribute('aria-live','polite');tip.setAttribute('aria-atomic','true');
  const label=doc.createElement('strong');label.textContent='AInoa';const text=doc.createElement('p');
  text.textContent=compose(active.text,{index:counter++,name:active.options.name||'',title:currentTrack?.title||'',practical:active.options.key!=='welcome'});write('noa-voice-sequence',String(counter));
@@ -82,7 +87,7 @@ function boot(){if(mounted)return;mounted=true;if(location.pathname.startsWith('
  try{const carried=JSON.parse(read('noa-voice-redirect')||'null');sessionStorage.removeItem('noa-voice-redirect');if(carried&&Date.now()-carried.at<30000)say(carried.text,{sticky:true,priority:true,key:'pending-alert'});}catch{}
  schedule();if(!parentVoice)void welcome();
 }
-doc.addEventListener('close',e=>{if(e.target.matches?.('dialog')&&e.target.contains(doc.getElementById('noa-ainoa')))doc.body.append(doc.getElementById('noa-ainoa'));},true);
+doc.addEventListener('close',e=>{if(e.target.matches?.('dialog')){place();render();}},true);
 doc.addEventListener('invalid',e=>{if(e.target.validationMessage){e.preventDefault();say(e.target.validationMessage,{priority:true,requireAcknowledgement:true,key:'form-validation'});}},true);
 scope.addEventListener('pageshow',e=>{if(e.persisted){close(false);void welcome();}});
 scope.NoaVoice={say,compose,getAccount:()=>parentVoice?parentVoice.getAccount():account};if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
