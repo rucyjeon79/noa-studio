@@ -1677,5 +1677,34 @@
     "liveLockedNavigationVerified": true,
     "authenticatedFactsVerification": "isolated fixtures; no production account login",
     "evidence": "docs/operations/ainoa-voice-20261028.md"
+  },
+  "compactMusicRelease": {
+    "status": "deployed",
+    "pullRequests": [
+      244,
+      245
+    ],
+    "commit": "014cc8ca657ce13e54be41dde468e94039e75ee6",
+    "actionUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40606643021",
+    "changes": [
+      "compact inline music rows and secondary-action dialog",
+      "flat cards and icon/count social footer",
+      "bounded raw GET batch parsing after native bootstrap",
+      "one AInoa load-failure notice"
+    ],
+    "verifiedLayouts": [
+      320,
+      390,
+      1280
+    ],
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "apiPersistenceAndAuthorizationVerified": "isolated MySQL and HTTP fixture",
+    "liveGuestPresentationVerified": true,
+    "protectedUnchanged": 16,
+    "productionSyntheticReactions": 0,
+    "evidence": "docs/operations/compact-music-20261028.md"
   }
 }
