@@ -9,7 +9,7 @@ try{
  if($method==='GET'&&$action==='list'){
   $channel=nc_row($db,nc_channel_key($actor));$songs=[];
   foreach(nc_owned_records($db,$actor) as $r){$d=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);if(!nam_owner($d,$member)||!empty($d['_noaTrash']))continue;
-   $native=$r['kind']==='story'&&str_starts_with($r['doc_key'],'creator:');$state=$r['kind']==='playlist'?['status'=>'collection','error'=>'','ready'=>false,'audio'=>'','download'=>'']:nu_public($db,$r['doc_key']);
+   $native=$r['kind']==='story'&&str_starts_with($r['doc_key'],'creator:');$state=!$native?['status'=>$r['kind']==='playlist'?'collection':'registered','error'=>'','ready'=>false,'audio'=>'','download'=>'']:nu_public($db,$r['doc_key']);
    $songs[]=['key'=>$r['doc_key'],'kind'=>$r['kind'],'managed'=>!$native,'editUrl'=>!$native&&$a['admin']?'/noa-editor.php?key='.rawurlencode($r['doc_key']):'','revision'=>(int)$r['revision'],'title'=>$d['title']??'제목 없음','genre'=>$d['genreId']??'','visibility'=>$d['visibility']??'public','fields'=>nup_fields($d),'originalArtist'=>$d['body']['originalArtist']??'','state'=>['status'=>$state['status'],'error'=>$state['error'],'ready'=>$state['ready'],'audio'=>$state['audio'],'download'=>$a['ownDownload']?$state['download']:'']];}
   nc_reply(200,['channel'=>$channel?['fields'=>$channel['document'],'revision'=>$channel['revision'],'href'=>'/noa-channel.php?id='.hash('sha256',$actor)]:null,'songs'=>$songs,'downloadAllowed'=>$a['ownDownload']]);
  }
