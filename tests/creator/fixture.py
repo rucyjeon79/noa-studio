@@ -5,6 +5,7 @@ shutil.copytree('bridge',root/'noa-bridge',dirs_exist_ok=True)
 shutil.copytree('deploy',root,dirs_exist_ok=True,ignore=shutil.ignore_patterns('noastudio'))
 (root/'common.php').write_text('''<?php
 if(defined('_GNUBOARD_'))return;define('_GNUBOARD_',true);define('G5_PATH',__DIR__);session_start();
+$_POST=array_map(static fn($v)=>is_string($v)?addslashes($v):$v,$_POST);
 require_once __DIR__.'/noa-bridge/storage.php';$fixtureDb=noa_bridge_pdo();$fixtureDb->exec("SET SESSION sql_mode='NO_ENGINE_SUBSTITUTION'");
 $owner=$_COOKIE['qa_owner']??'';$allowed=['qa_owner_a','qa_two','qa_three','qa_four','qa_five','qa_six'];$q=$fixtureDb->prepare('SELECT * FROM g5_member WHERE mb_id=?');$q->execute([in_array($owner,$allowed,true)?$owner:'']);$member=$q->fetch(PDO::FETCH_ASSOC)?:[];$is_member=!empty($member['mb_id']);$is_admin=$owner==='qa_owner_a'?'super':'';
 $config=['cf_admin'=>'qa_owner_a','cf_cert_use'=>0,'cf_use_email_certify'=>0];$g5=['member_table'=>'g5_member','board_table'=>'g5_board','write_prefix'=>'g5_write_','group_table'=>'g5_group'];

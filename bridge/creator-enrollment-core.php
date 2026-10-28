@@ -17,7 +17,7 @@ function nce_cert_options(array $config):array{
  if((int)($config['cf_cert_use']??0)!==2)return [];
  $out=[];$hp=$config['cf_cert_hp']??'';$definitions=['kcb'=>['G5_OKNAME_URL','/hpcert1.php','kcb-hp','cf_cert_kcb_cd'],'kcp'=>['G5_KCPCERT_URL','/kcpcert_form.php','kcp-hp','cf_cert_kcp_cd'],'kcp_v2'=>['G5_KCPCERT_V2_URL','/kcpcert_form.php','kcp_v2-hp','cf_cert_kcp_cd'],'lg'=>['G5_LGXPAY_URL','/AuthOnlyReq.php','lg-hp','cf_lg_mid']];
  if(isset($definitions[$hp])){[$constant,$path,$type,$key]=$definitions[$hp];if(defined($constant)&&!empty($config[$key]))$out[]=['label'=>'휴대폰 본인인증','url'=>constant($constant).$path.'?pageType=register','type'=>$type];}
- if(!empty($config['cf_cert_simple'])&&defined('G5_INICERT_URL')&&!empty($config['cf_cert_simple_mid']))$out[]=['label'=>'간편 본인인증','url'=>G5_INICERT_URL.'/ini_request.php?pageType=register','type'=>'simple'];
+ if(!empty($config['cf_cert_simple'])&&defined('G5_INICERT_URL')&&!empty($config['cf_cert_kg_mid'])&&!empty($config['cf_cert_kg_cd']))$out[]=['label'=>'간편 본인인증','url'=>G5_INICERT_URL.'/ini_request.php?pageType=register','type'=>'simple'];
  return $out;
 }
 /** Only native provider callbacks or an already certified native account can attest identity. */
@@ -43,6 +43,9 @@ function nce_fields(array $b,array $m):array{
  return $v;
 }
 function nce_member(PDO $db,string $owner,bool $lock=false):?array{global $g5;return nce_one($db,'SELECT * FROM '.nce_table($g5['member_table']).' WHERE mb_id=?'.($lock?' FOR UPDATE':''),[$owner]);}
+function nce_require_transactions(PDO $db):void{
+ global $g5;foreach([$g5['member_table'],'noa_documents','noa_document_history','noa_creator_applications']as $table){$r=nce_one($db,'SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?',[$table]);if(strcasecmp((string)($r['ENGINE']??''),'InnoDB')!==0)throw new RuntimeException('transactional_storage_required');}
+}
 function nce_duplicate(PDO $db,array $v,?array $identity,bool $existing):void{
  global $g5;$table=nce_table($g5['member_table']);$owner=$v['ownerId'];$m=nce_member($db,$owner);
  if(!$existing&&$m)throw new DomainException('account_unavailable');
@@ -98,6 +101,7 @@ function nce_review(PDO $db,string $id,int $revision,string $action,string $note
   if($a['state']==='approved'&&$action==='approve')return ['state'=>'approved','replayed'=>true,'channelId'=>hash('sha256',$a['owner_id'])];
   if($a['state']!=='pending'||(int)$a['revision']!==$revision)throw new DomainException('revision_conflict');$v=nce_open($a['payload']);
   if($action==='approve'){
+   nce_require_transactions($db);
    if(empty($v['identity']['verifiedAt'])||empty($v['identity']['dupinfo'])||!hash_equals((string)$a['identity_hash'],hash_hmac('sha256',$v['identity']['dupinfo'],nce_key())))throw new DomainException('identity_verification_required');
    nce_duplicate($db,$v,$v['identity'],(bool)$a['existing_member']);
    $board=nce_board($db,$a['owner_id'],$v['title']);

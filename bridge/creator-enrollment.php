@@ -16,7 +16,9 @@ try{
  }
  if(in_array($action,['draft','submit'],true)){
   if(!empty($member['mb_id'])&&!in_array((int)$member['mb_level'],[2,3,4],true))throw new DomainException('application_not_allowed');
-  nce_rate($db,'application',20);$symbol=nce_symbol_upload($_FILES['symbol']??[]);try{$a=nce_save($db,$_POST,(array)$member,$_SESSION,$config,$_SESSION['noa_enrollment_claim'],$symbol,$action==='submit');}catch(Throwable $e){if($symbol!=='')unlink(nce_root().'/symbols/'.$symbol.'.jpg');throw $e;}
+  // common.php escapes native form values; PDO and password hashing need the original bytes.
+  $input=array_map(static fn($v)=>is_string($v)?stripslashes($v):$v,$_POST);
+  nce_rate($db,'application',20);$symbol=nce_symbol_upload($_FILES['symbol']??[]);try{$a=nce_save($db,$input,(array)$member,$_SESSION,$config,$_SESSION['noa_enrollment_claim'],$symbol,$action==='submit');}catch(Throwable $e){if($symbol!=='')unlink(nce_root().'/symbols/'.$symbol.'.jpg');throw $e;}
   nce_reply(200,['ok'=>true,'application'=>nce_public_application($a,true)]);
  }
  if($action==='review'){
