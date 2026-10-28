@@ -1730,5 +1730,31 @@
       "pointDebits": 0
     },
     "evidence": "docs/operations/share-quiet-layout-20261028.md"
+  },
+  "siteRhythmDiscoveryRelease": {
+    "date": "2026-10-28",
+    "status": "deployed-and-verified",
+    "runtimeCommit": "249bbb2de127a6010f7d1f6843534fe1897f20ed",
+    "pullRequest": 247,
+    "workflowRun": 40616011707,
+    "deployJob": 122579695669,
+    "features": [
+      "compact adjacent reactions",
+      "shared horizontal actions across site",
+      "mixed popular rising new discovery",
+      "cross-section recommendation deduplication"
+    ],
+    "verification": {
+      "layoutDiscoveryCases": 48,
+      "voiceAccessCases": 32,
+      "liveMixedCount": 8,
+      "secondaryDuplicates": 0,
+      "allRecommendationImagesLoaded": true,
+      "horizontalOverflow": false,
+      "internalPlaceholderVisible": false
+    },
+    "protectedUnchanged": 17,
+    "databaseWrites": 0,
+    "evidence": "docs/operations/site-rhythm-discovery-20261028.md"
   }
 }
