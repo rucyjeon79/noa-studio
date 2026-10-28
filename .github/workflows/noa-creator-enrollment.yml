@@ -87,6 +87,15 @@ jobs:
         run: python scripts/noa_creator_install.py
       - name: Verify public application, certification state and source assets
         run: python scripts/noa_creator_postflight.py
+      - name: Restore owned sources if activation or acceptance fails
+        if: failure()
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then python scripts/noa_creator_release.py rollback; fi
       - uses: actions/upload-artifact@v4
         if: always()
-        with: {name: 'noa-creator-live-${{ github.run_id }}', path: 'creator-proof/', retention-days: 7}
+        with:
+          name: 'noa-creator-live-${{ github.run_id }}'
+          path: |
+            creator-proof/
+            ainoa-proof/deployment.json
+          retention-days: 7
