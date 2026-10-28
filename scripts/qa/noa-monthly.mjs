@@ -8,7 +8,7 @@ try{for(const engine of ['chromium','webkit']){browser=await(engine==='webkit'?w
  const context=await browser.newContext({viewport:{width,height:900},serviceWorkers:'block',reducedMotion:'reduce'});await context.addCookies([{name:'qa_role',value:'admin',url:base}]);await context.addInitScript(t=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme:t,language:'ko',design:'ios',radius:'soft'})),theme);
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base+'/');await page.locator('.noa-monthly-benefits').waitFor();
- assert(await page.locator('[data-home-section="hero"]').evaluate(e=>e.nextElementSibling?.classList.contains('noa-monthly-benefits')));
+ assert(await page.locator('[data-home-section="hero"]').evaluate(e=>{let next=e.nextElementSibling;while(next?.tagName==='STYLE')next=next.nextElementSibling;return next?.classList.contains('noa-monthly-benefits');}));
  assert.deepEqual(await page.locator('.noa-monthly-rewards strong').allTextContents(),['1,000P','500P','300P','100P']);
  assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth));await page.locator('.noa-monthly-benefits').scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/banner-${engine}-${width}-${theme}.png`});
  await context.addCookies([{name:'qa_monthly',value:'off',url:base}]);await page.reload();assert.equal(await page.locator('.noa-monthly-benefits').count(),0);

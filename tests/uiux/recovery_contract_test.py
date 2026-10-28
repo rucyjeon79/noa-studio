@@ -69,6 +69,9 @@ class RecoveryContract(unittest.TestCase):
   authorized.update({'bridge/music-download-core.php','deploy/noa-app/jukebox/download.php','deploy/noa-app/jukebox/upload.js','deploy/noa-app/jukebox/upload.css','deploy/noa-app/jukebox/upload-core.php','deploy/noa-app/jukebox/index.php'})
   # 2026-10-28: user requested mixed home discovery; these readers never write scores or points.
   authorized.update({'bridge/home.php','bridge/home-core.php','bridge/home-discovery.php'})
+  # 2026-10-28: explicit monthly 10x login/write/comment/like point policy.
+  # Existing native transaction and per-member receipts remain mandatory.
+  authorized.update({'bridge/membership-core.php','bridge/monthly-rewards.php'})
   discovery=(ROOT/'bridge/home-discovery.php').read_text()
   self.assertNotRegex(discovery, r'(?i)\b(?:INSERT\s+INTO|UPDATE\s+noa_|DELETE\s+FROM|CREATE\s+TABLE|ALTER\s+TABLE)\b')
   self.assertFalse(any(p not in authorized and p.startswith(('deploy/noa-app/jukebox/','bridge/','scripts/noa_jukebox'))for p in paths))

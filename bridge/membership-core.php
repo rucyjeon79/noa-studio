@@ -43,7 +43,7 @@ function nr_reward(string $owner,string $kind,string $board,int $post,int $now):
   $old=ns_doc($key,true);if($old)return $old['data'];nr_member($owner);
   $quote=nmb_quote($owner,$kind,$kind==='write'?50:30,$now);$points=$quote['points'];$action=$kind==='write'?'쓰기':'댓글';
   // Native relation keys allow GnuBoard's own deletion/refund mechanism to remain effective.
-  nr_insert_points($owner,$points,'NOA '.($kind==='write'?'글 작성':'댓글 작성'),$board,(string)$post,$action);
+  nr_insert_points($owner,$points,'NOA '.($kind==='write'?'글 작성':'댓글 작성').($quote['first']?' · 매월 첫 활동 10배':''),$board,(string)$post,$action);
   nmb_record($owner,$kind,$quote,$key,$now);
   $loginKey=nr_key('login',$owner,nr_day($now));$login=ns_doc($loginKey,true);$bonus=0;
   if($login&&($login['data']['state']??'')==='pending'){
