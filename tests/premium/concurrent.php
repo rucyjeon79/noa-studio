@@ -1,0 +1,2 @@
+<?php
+require __DIR__.'/../subscription/native_fixture.php';require __DIR__.'/../../bridge/music-download-core.php';$a=['key'=>'song-one','sha'=>str_repeat('a',64),'path'=>'fixture.mp3','bytes'=>100,'ownerId'=>'owner','title'=>'동시 다운로드'];try{$r=nmd_purchase($argv[1],$argv[2],$a,fn()=>$a,time());echo json_encode(['ok'=>true,'id'=>$r['id']]);}catch(Throwable $e){echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);}
