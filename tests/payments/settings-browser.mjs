@@ -19,14 +19,16 @@ try{
  for(const engine of ['chromium','webkit']){
   browser=await(engine==='webkit'?webkit.launch():chromium.launch({channel:'chrome',args:['--no-sandbox']}));
   for(const javaScriptEnabled of [false,true]){
-   const context=await browser.newContext({viewport:{width:390,height:844},javaScriptEnabled,serviceWorkers:'block'});
+   const context=await browser.newContext({viewport:{width:390,height:844},javaScriptEnabled,serviceWorkers:'block',reducedMotion:'reduce'});
    await context.addCookies([{name:'qa_toss_user',value:'tp_admin',url:base}]);
    const page=await context.newPage();
    const submit=async()=>{
     try{
      const [response]=await Promise.all([
       page.waitForResponse(r=>r.request().isNavigationRequest()&&r.request().method()==='POST'),
-      page.getByRole('button',{name:'연동 설정 저장',exact:true}).click()
+      // Enter invokes the real native submission, including browser Origin
+      // handling, without racing mobile smooth-scroll actionability checks.
+      page.getByRole('button',{name:'연동 설정 저장',exact:true}).press('Enter')
      ]);await response.finished();return response;
     }catch(error){
      await page.screenshot({path:`${out}/settings-failure-${engine}-${javaScriptEnabled}.png`,fullPage:true});
@@ -47,8 +49,11 @@ try{
    await page.locator('input[name=clientKey]').fill('test_ck_settings_fixture');
    await page.locator('input[name=secretKey]').fill('test_sk_settings_fixture');
    await page.locator('input[name=webhookSecret]').fill('a'.repeat(64));
-   await page.locator('input[name=enabled]').uncheck();
-   await page.locator('input[name=contractApproved]').uncheck();
+   for(const name of ['enabled','contractApproved']){
+    const checkbox=page.locator(`input[name=${name}]`);
+    if(await checkbox.isChecked())await checkbox.press('Space');
+    assert(!(await checkbox.isChecked()));
+   }
    const saved=await submit();assert.equal(saved.status(),200);
    assert.equal(saved.request().headers().origin,base);
    await page.locator('main>p[role=status]').filter({hasText:'설정을 저장했습니다'}).waitFor();
