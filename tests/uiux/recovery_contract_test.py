@@ -86,6 +86,10 @@ class RecoveryContract(unittest.TestCase):
   authorized.add('bridge/community-core.php')
   # 2026-10-29: explicit stable channel ownership and existing library binding request.
   authorized.update({'bridge/channel-ownership.php','bridge/creator.php','bridge/creator-enrollment-core.php','bridge/creator-enrollment.php','bridge/creator-ai-core.php','bridge/creator-ai.php','bridge/member-badges.php'})
+  # 2026-10-29: explicit category-based channel viewing; this projection only reads.
+  authorized.add('bridge/channel-view.php')
+  channel_view=(ROOT/'bridge/channel-view.php').read_text()
+  self.assertNotRegex(channel_view, r'(?i)\b(?:INSERT\s+INTO|UPDATE\s+noa_|DELETE\s+FROM|CREATE\s+TABLE|ALTER\s+TABLE|nc_store\s*\()')
   discovery=(ROOT/'bridge/home-discovery.php').read_text()
   self.assertNotRegex(discovery, r'(?i)\b(?:INSERT\s+INTO|UPDATE\s+noa_|DELETE\s+FROM|CREATE\s+TABLE|ALTER\s+TABLE)\b')
   self.assertFalse(any(p not in authorized and p.startswith(('deploy/noa-app/jukebox/','bridge/','scripts/noa_jukebox'))for p in paths))
