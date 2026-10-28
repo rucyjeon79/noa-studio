@@ -65,5 +65,9 @@ class RecoveryContract(unittest.TestCase):
   authorized.add('bridge/notifications-inline.php')
   # 2026-10-28: public sitemap discovery; individual destination ACLs remain unchanged.
   authorized.add('bridge/member-access.php')
+  # 2026-10-28: user requested mixed home discovery; these readers never write scores or points.
+  authorized.update({'bridge/home.php','bridge/home-core.php','bridge/home-discovery.php'})
+  discovery=(ROOT/'bridge/home-discovery.php').read_text()
+  self.assertNotRegex(discovery, r'(?i)\b(?:INSERT\s+INTO|UPDATE\s+noa_|DELETE\s+FROM|CREATE\s+TABLE|ALTER\s+TABLE)\b')
   self.assertFalse(any(p not in authorized and p.startswith(('deploy/noa-app/jukebox/','bridge/','scripts/noa_jukebox'))for p in paths))
 if __name__=='__main__':unittest.main()
