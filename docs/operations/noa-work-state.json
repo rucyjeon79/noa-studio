@@ -1706,5 +1706,29 @@
     "protectedUnchanged": 16,
     "productionSyntheticReactions": 0,
     "evidence": "docs/operations/compact-music-20261028.md"
+  },
+  "shareQuietLayoutRelease": {
+    "date": "2026-10-28",
+    "status": "deployed-and-verified",
+    "commit": "cd5e4bebb0ab1c28f5ceeaedf457eccec868a5d1",
+    "pr": 246,
+    "workflow": "https://github.com/rucyjeon79/noa-studio/actions/runs/40609618870",
+    "features": [
+      "installation link copy/SMS/native share chooser for Kakao",
+      "ordinary AInoa 6–10 second expiry; explicit required acknowledgement only",
+      "compact reactions and aligned world chapter tools"
+    ],
+    "verification": {
+      "browserCases": 32,
+      "liveHeaderShortcuts": 4,
+      "liveHeaderHeight": 56,
+      "liveHorizontalOverflow": false,
+      "liveOrdinaryNoticeAutoDismiss": true,
+      "protectedUnchanged": 17,
+      "databaseWrites": 0,
+      "memberRowsChanged": 0,
+      "pointDebits": 0
+    },
+    "evidence": "docs/operations/share-quiet-layout-20261028.md"
   }
 }
