@@ -2,6 +2,7 @@
 import noa_ainoa_deploy as release
 release.FILES={
  'noa-bridge/subscription-core.php':'bridge/subscription-core.php',
+ 'noa-bridge/monthly-rewards.php':'bridge/monthly-rewards.php',
  'noa-bridge/membership-core.php':'bridge/membership-core.php',
  'noa-bridge/social-policy.php':'bridge/social-policy.php',
  'noa-bridge/membership.php':'bridge/membership.php',

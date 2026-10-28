@@ -9,7 +9,7 @@ if($nr_enabled){
  $path=parse_url($_SERVER['REQUEST_URI']??'',PHP_URL_PATH)??'';
  if(in_array($path,['/bbs/write_update.php','/bbs/write_comment_update.php'],true)&&isset($board)){$board['bo_write_point']=0;$board['bo_comment_point']=0;}
  if(!empty($member['mb_id'])){
-  try{if(($is_admin??'')!=='super'){nr_renew((string)$member['mb_id'],time());$fresh=nr_refresh((string)$member['mb_id'],time());$member['mb_level']=$fresh['mb_level'];$member['mb_point']=$fresh['mb_point'];}nr_pending_login((string)$member['mb_id'],time());}
+  try{nr_pending_login((string)$member['mb_id'],time());if(($is_admin??'')!=='super'){nr_renew((string)$member['mb_id'],time());$fresh=nr_refresh((string)$member['mb_id'],time());$member['mb_level']=$fresh['mb_level'];$member['mb_point']=$fresh['mb_point'];}}
   catch(Throwable $e){if(($is_admin??'')!=='super'&&in_array((int)($member['mb_level']??0),[2,3,4],true))$member['mb_level']=2;error_log('[noa-membership-refresh] '.get_class($e));}
  }
  if(function_exists('add_event')){

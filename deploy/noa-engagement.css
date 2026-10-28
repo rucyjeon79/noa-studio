@@ -84,3 +84,19 @@ html[data-noa-precision] body :is(.world-chapter-mv,.world-video,.world-mv-card)
 html[data-noa-precision] body :is(.world-chapter-mv,.world-video,.world-mv-card){row-gap:0}
 .noa-premium-badge{display:inline-flex;align-items:center;vertical-align:middle;gap:3px;margin-left:6px;color:var(--noa-accent,#d8bc7c);font-size:8px;font-weight:650;letter-spacing:.08em;line-height:16px;white-space:nowrap}
 .noa-premium-badge svg{width:13px;height:13px;flex:none}
+
+/* Compact collection copy: remove the reserved two-line card heights from list rows. */
+html[data-noa-precision] body.noa-page .noa-inline-act:has(>.noa-collection-tools){row-gap:0;padding-block:12px}
+html[data-noa-precision] body.noa-page .noa-inline-act>.noa-browse-card{grid-template-columns:48px minmax(0,1fr);min-height:56px;padding:0;gap:10px}
+html[data-noa-precision] body.noa-page .noa-inline-act>.noa-browse-card>span{display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0;background:none}
+html[data-noa-precision] body.noa-page .noa-inline-act>.noa-browse-card>span>:is(strong,small){display:block;block-size:auto;min-block-size:0;margin:0;padding:0;line-height:1.4;letter-spacing:normal;overflow-wrap:anywhere}
+html[data-noa-precision] body.noa-page .noa-inline-act>.noa-browse-card>span>strong{font-size:15px}
+html[data-noa-precision] body.noa-page .noa-inline-act>.noa-browse-card>span>small{font-size:12px}
+html[data-noa-precision] body.noa-page .noa-inline-act>.noa-browse-card>img{width:48px;height:48px;flex-basis:48px;aspect-ratio:1;align-self:center}
+html[data-noa-precision] body.noa-page .noa-inline-act>.noa-engagement{grid-column:1/-1;min-height:44px;margin:0;padding:0 0 0 58px}
+html[data-noa-precision] body.noa-page .noa-inline-act>.noa-collection-tools>.noa-action{min-height:44px;padding:6px;gap:4px}
+html[data-noa-precision] body.noa-page :is(.noa-inline-title,.song .info strong){letter-spacing:normal;word-spacing:normal}
+/* Completed masters retain only their compact song card and a quiet champagne finish. */
+html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.song,.creator-row).noa-mastered{background:linear-gradient(115deg,rgba(210,177,108,.12),rgba(210,177,108,.025) 62%),var(--noa-surface,#1d2128);border:1px solid rgba(210,177,108,.25);border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,235,190,.08)}
+html[data-noa-precision] body.noa-page .noa-inline-song-row.noa-mastered{padding:10px 8px;margin-block:6px}
+html[data-noa-theme="noa-ivory"] body.noa-page :is(.noa-inline-song-row,.song,.creator-row).noa-mastered{background:linear-gradient(115deg,#b78a3515,transparent 70%),var(--noa-surface,#fff);border-color:#a57d3540}
