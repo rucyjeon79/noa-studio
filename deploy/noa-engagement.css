@@ -39,3 +39,10 @@ html body :is(.noa-inline-song-row,.noa-inline-video-row)>:is(.noa-edit-form,.no
 html body .noa-song-menu>button{display:flex;width:100%;justify-content:flex-start;background:transparent;border:0;border-top:1px solid var(--noa-line);border-radius:0;padding:14px 8px;min-height:48px}
 #noa-engagement-notice{font-size:13px;color:var(--noa-muted);padding:12px 0}
 @media(max-width:600px){html body .noa-card-grid{gap:20px 12px}.noa-song-menu{margin:auto 0 0;width:100%;max-width:none;border-radius:20px 20px 0 0;padding-bottom:calc(24px + env(safe-area-inset-bottom))}}
+
+/* Win against the shared precision-card and decorated-control rules. */
+html[data-noa-precision] body .noa-engagement-card>a.noa-music-card{display:block;grid-template-rows:none;border:0;background:transparent;padding:0;box-shadow:none;border-radius:0}
+html[data-noa-precision] body .noa-engagement.noa-engagement :is(button,a){display:inline-flex;flex-direction:row;gap:6px;min-inline-size:44px;min-block-size:44px;height:44px;padding:8px;border:0;background:transparent;color:var(--noa-muted);font-size:12px;line-height:1.2;white-space:nowrap}
+html[data-noa-precision] body .noa-engagement.noa-engagement :is(button,a)>span{display:inline;font-size:12px;line-height:1.2}
+html[data-noa-precision] body .noa-engagement.noa-engagement button[aria-pressed=true]{color:var(--noa-accent)}
+html[data-noa-precision] body .noa-engagement-card .noa-music-card strong{font-size:14px;line-height:1.45;margin:10px 0 4px;min-height:2.9em}
