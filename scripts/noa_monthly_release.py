@@ -6,6 +6,7 @@ release.FILES={
  'noa-bridge/engagement.php':'bridge/engagement.php',
  'noa-app/monthly-banner.php':'deploy/noa-app/monthly-banner.php',
  'noa-app/home.php':'deploy/noa-app/home.php',
+ 'noa-membership.php':'deploy/noa-membership.php',
  'noa-premium.js':'deploy/noa-premium.js',
  'noa-engagement.css':'deploy/noa-engagement.css',
  'noa-creator.js':'deploy/noa-creator.js',

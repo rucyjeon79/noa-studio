@@ -27,7 +27,7 @@ jobs:
         with: {php-version: '8.2', extensions: 'mysqli,pdo_mysql,pdo_sqlite,mbstring,fileinfo'}
       - name: Verify native credits, monthly slots, concurrency and existing membership contracts
         run: |
-          for f in bridge/monthly-rewards.php bridge/membership-core.php bridge/engagement.php deploy/noa-membership.extend.php deploy/noa-app/home.php deploy/noa-app/monthly-banner.php scripts/noa_monthly_policy.php tests/monthly/*.php; do php -l "$f"; done
+          for f in bridge/monthly-rewards.php bridge/membership-core.php bridge/engagement.php deploy/noa-membership.extend.php deploy/noa-membership.php deploy/noa-app/home.php deploy/noa-app/monthly-banner.php scripts/noa_monthly_policy.php tests/monthly/*.php; do php -l "$f"; done
           node --check deploy/noa-premium.js
           node --check deploy/noa-creator.js
           php tests/subscription/core_test.php

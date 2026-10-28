@@ -86,7 +86,7 @@ html[data-noa-precision] body :is(.world-chapter-mv,.world-video,.world-mv-card)
 .noa-premium-badge svg{width:13px;height:13px;flex:none}
 
 /* Compact collection copy: remove the reserved two-line card heights from list rows. */
-html[data-noa-precision] body.noa-page .noa-inline-act:has(>.noa-collection-tools){row-gap:0;padding-block:12px}
+html[data-noa-precision] body.noa-page .noa-inline-act:has(>.noa-collection-tools){row-gap:0;padding-block:8px}
 html[data-noa-precision] body.noa-page .noa-inline-act>.noa-browse-card{grid-template-columns:48px minmax(0,1fr);min-height:56px;padding:0;gap:10px}
 html[data-noa-precision] body.noa-page .noa-inline-act>.noa-browse-card>span{display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0;background:none}
 html[data-noa-precision] body.noa-page .noa-inline-act>.noa-browse-card>span>:is(strong,small){display:block;block-size:auto;min-block-size:0;margin:0;padding:0;line-height:1.4;letter-spacing:normal;overflow-wrap:anywhere}
