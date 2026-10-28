@@ -58,3 +58,7 @@ html body.noa-shell-open>main{display:none!important}
 @media(max-width:760px){html body.noa-page .noa-transport.noa-two-line{left:0;padding-inline:6px}html body.noa-page .noa-two-line .noa-dock-top{gap:4px}html body.noa-page .noa-two-line :is(#dock-cover,#dock-cover-empty){width:30px;height:30px;min-width:30px}html body.noa-page .noa-two-line #dock-title{font-size:11px}#noa-shell-view{left:0;width:100%;height:calc(100dvh - 92px - var(--noa-nav-space,0px))}}
 @media(max-width:360px){html body.noa-page .noa-two-line #dock-artist{font-size:9px}}
 @media(prefers-reduced-motion:reduce){html body .noa-two-line #dock-title.noa-title-scroll{animation:none}}
+
+/* Recovery actions stay beside the affected song on mobile. */
+.jukebox-source-actions{grid-column:1/-1;flex-basis:100%;min-width:0;display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.jukebox-source-actions button{min-height:44px;padding:10px 14px;white-space:nowrap;cursor:pointer}
+html body.noa-page .jukebox-cancel-job{grid-column:1/-1;justify-self:start;align-self:start;flex:0 0 auto;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;width:auto;min-width:max-content;max-width:100%;height:auto;min-height:44px;margin:8px 0 0;padding:10px 14px;white-space:nowrap;word-break:keep-all;overflow-wrap:normal;writing-mode:horizontal-tb;line-height:1.4;cursor:pointer}

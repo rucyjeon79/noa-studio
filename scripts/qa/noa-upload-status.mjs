@@ -58,6 +58,47 @@ try{
   await page.waitForFunction(()=>JSON.parse(localStorage.getItem('noa-jukebox-reservations-v1'))[0].state==='ready');assert.equal(await dock.isVisible(),false);
   assert.equal(posts,0);assert.deepEqual(errors,[]);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   report.push({width,phase,unrelatedFailureIsolated:true,stalePositionRemoved:true,recoveredWithoutQueue:true,completionSurvivesReload:true,noJobReuseRecovered:true,posts,fixtureData:true});
+  // Reopened phone: stale capacity error + persisted open circuit, no File object.
+  await page.evaluate(value=>{localStorage.setItem('noa-jukebox-reservations-v1',JSON.stringify([{...value,uploadId:null,serverComplete:false,state:'waiting',error:'temporary_storage_quota_reached'}]));localStorage.setItem('noa-jukebox-circuit-v1',JSON.stringify({open:true}));},saved);
+  let initCalls=0,chunkCalls=0,finishCalls=0;
+  await context.route('**/noa-app/jukebox/upload.php*',async r=>{
+   const action=new URL(r.request().url()).searchParams.get('action');
+   if(action==='health')return r.fulfill({json:{can_upload:true,can_resume:true}});
+   if(action==='queue')return r.fulfill({json:{rows:[],counts:{},health:{can_upload:true}}});
+   if(action==='init'){initCalls++;return r.fulfill({json:{id:uploadId,chunks:[],status:'uploading',chunkSize:524288}});}
+   if(action==='chunk'){chunkCalls++;return r.fulfill({json:{index:0,sha256:'b'.repeat(64)}});}
+   if(action==='finish'){finishCalls++;return r.fulfill({json:{key,status:'ready',ready:true,audio:'/fixture.mp3',audio_sha256:'b'.repeat(64),audio_bytes:2048,download:'/fixture.mp3',upload:{id:uploadId}}});}
+   return r.fulfill({json:{recorded:true}});
+  });
+  await page.goto(base+'/noa-upload-status-fixture');
+  await page.addScriptTag({content:readFileSync('deploy/noa-premium.js','utf8')});
+  for(const name of Object.keys(code))await page.addScriptTag({content:code[name]});
+  const sourceActions=page.locator('.jukebox-source-actions');
+  await sourceActions.getByRole('button',{name:'파일 다시 선택',exact:true}).waitFor();
+  assert(!(await page.locator('.noa-track-progress').allTextContents()).join('').includes('임시 저장 공간이 가득'));
+  await page.screenshot({path:out+'/reselect-'+width+'.jpg'});
+  const chooser=page.waitForEvent('filechooser');await sourceActions.getByRole('button',{name:'파일 다시 선택',exact:true}).click();
+  await(await chooser).setFiles({name:'authorized.wav',mimeType:'audio/wav',buffer:Buffer.alloc(2048,1)});
+  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('noa-jukebox-reservations-v1')).some(r=>r.state==='ready'));
+  assert.equal(initCalls,1);assert.equal(chunkCalls,1);assert.equal(finishCalls,1);
+  assert.deepEqual(errors,[]);
+  report.push({width,reselectionAfterCapacityError:true,initCalls,chunkCalls,finishCalls,fixtureData:true});
+  // Reproduce the real song grid: cancellation must not occupy the 56px cover column.
+  const mediaCss=phase==='candidate'?readFileSync('deploy/noa-app/p0-media.css','utf8'):await(await context.request.get(base+'/noa-app/p0-media.css?qa='+Date.now())).text();
+  await page.setContent('<!doctype html><html data-noa-precision><meta name="viewport" content="width=device-width,initial-scale=1"><body class="noa-page"><main id="layout-fixture" style="max-width:700px;margin:12px"></main></body></html>');
+  for(const path of ['noa-ui.css','noa-policy-20261024.css','noa-engagement.css','noa-app/jukebox/upload.css'])await page.addStyleTag({content:readFileSync('deploy/'+path,'utf8')});
+  await page.addStyleTag({content:mediaCss});
+  await page.evaluate(()=>{
+   document.body.classList.add('noa-page');
+   const row=document.createElement('article');row.id='cancel-layout-check';row.className='noa-inline-song-row';
+   row.style.cssText='display:grid;grid-template-columns:56px minmax(88px,1fr) repeat(3,44px);gap:0 8px';
+   row.innerHTML='<div style="grid-column:1/-1">최적화 대기</div><button class="jukebox-cancel-job">최적화 취소</button>';
+   document.querySelector('#layout-fixture').append(row);
+  });
+  const geometry=await page.locator('#cancel-layout-check .jukebox-cancel-job').evaluate(el=>({width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height,column:getComputedStyle(el).gridColumn,wrap:getComputedStyle(el).whiteSpace}));
+  assert.equal(geometry.column,'1 / -1');assert.equal(geometry.wrap,'nowrap');assert(geometry.height>=44&&geometry.height<70);assert(geometry.width>80);
+  await page.screenshot({path:out+'/cancel-layout-'+width+'.jpg'});
+  report.push({width,cancelLayout:geometry});
   await context.close();
  }
  writeFileSync(out+'/browser.json',JSON.stringify(report,null,2));console.log('UPLOAD_STATUS_BROWSER_OK',JSON.stringify(report));
