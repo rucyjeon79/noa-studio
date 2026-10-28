@@ -37,7 +37,7 @@ function noa_workspace_groups():array{return [
  ]],
 ];}
 function noa_workspace_render():void{
- foreach(noa_workspace_groups() as $id=>$group){$advanced=$id==='advanced';echo $advanced?'<details class="noa-workspace-advanced"><summary>'.htmlspecialchars($group['title']).'</summary>':'<section class="noa-section"><h2>'.htmlspecialchars($group['title']).'</h2>';
+ foreach(noa_workspace_groups() as $id=>$group){if(in_array($id,['content','creation'],true))continue;if($id==='operation')array_unshift($group['routes'],['creatorReview','크리에이터 가입 심사','본인확인·신청 검토 → 승인·채널 개설','/noa-creator-review.php','user']);if($id==='advanced')$group['routes']=array_values(array_filter($group['routes'],fn($r)=>!in_array($r[0],['catalogAdmin','documents'],true)));$advanced=$id==='advanced';echo $advanced?'<details class="noa-workspace-advanced"><summary>'.htmlspecialchars($group['title']).'</summary>':'<section class="noa-section"><h2>'.htmlspecialchars($group['title']).'</h2>';
   echo '<p class="noa-muted">'.htmlspecialchars($group['intro']).'</p><nav class="noa-workspace-grid" aria-label="'.htmlspecialchars($group['title']).'">';
   foreach($group['routes'] as $r)echo '<a data-noa-icon="'.htmlspecialchars($r[4]).'" href="'.htmlspecialchars($r[3]).'"><span><strong>'.htmlspecialchars($r[1]).'</strong><small>'.htmlspecialchars($r[2]).'</small></span></a>';
   echo '</nav>'.($advanced?'</details>':'</section>');

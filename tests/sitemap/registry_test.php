@@ -17,7 +17,8 @@ try{
  check(in_array('popularity',$ids($admin),true)&&!in_array('popularity',$ids($guest),true)&&!in_array('popularity',$ids($member),true),'actual popularity service is administrator-only');
  check(isset($admin['admin-content'],$admin['admin-creation'],$admin['admin-operation'],$admin['admin-advanced'])&&count($admin['admin']['routes'])===1,'administrator task groups and single workspace entry included');
  foreach(noa_workspace_groups() as $g)check(is_string($g['intro']??null)&&count($g['routes'])>0,'task group description and destinations required');
- ob_start();noa_workspace_render();$workspace=ob_get_clean();check(substr_count($workspace,'class="noa-workspace-grid"')===4,'all administrator sections render');
+ ob_start();noa_workspace_render();$workspace=ob_get_clean();check(substr_count($workspace,'class="noa-workspace-grid"')===2,'site administration excludes content and creation groups');
+ check(!str_contains($workspace,'곡 검색·수정·삭제')&&str_contains($workspace,'크리에이터 가입 심사'),'creator content moved while site approval stays');
  check(!isset($guest['admin-content'])&&!isset($member['admin-content']),'task groups are administrator-only');
  check(in_array('workStatus',$ids($admin),true)&&!in_array('workStatus',$ids($member),true)&&!in_array('workStatus',$ids($guest),true),'work journal highest-admin-only');
  check(in_array('points',$ids($guest),true)&&in_array('payments',$ids($admin),true)&&!in_array('payments',$ids($member),true),'point packs public, payment setup highest-admin-only');

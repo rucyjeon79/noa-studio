@@ -84,7 +84,7 @@ jobs:
             navigation-proof/
           retention-days: 14
   production:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[creator-release]')
     needs: candidate
     runs-on: ubuntu-latest
     environment: production

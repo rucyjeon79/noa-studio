@@ -10,7 +10,7 @@ if(basename($nsp_script)==='config_form_update.php'&&$nsp_method==='POST'){
 }
 function nsp_reject_registration():never{
  http_response_code(403);header('Cache-Control: no-store');header('Content-Type: text/html; charset=utf-8');
- echo '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>회원가입 안내</title><link rel="stylesheet" href="/noa-ui.css"></head><body class="noa-page"><main><h1>소셜 계정으로 가입해 주세요</h1><p>회원가입은 구글·카카오 계정 인증 후 가능합니다.</p><a class="noa-button" href="/noa-login.php">가입 · 로그인</a></main></body></html>';exit;
+ echo '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>회원가입 안내</title><link rel="stylesheet" href="/noa-ui.css"></head><body class="noa-page"><main><h1>소셜 계정으로 가입해 주세요</h1><p>별무리는 구글·카카오로, 크리에이터는 본인인증과 승인 후 가입할 수 있습니다.</p><a class="noa-button" href="/noa-login.php">별무리 가입 · 로그인</a><a class="noa-button" href="/noa-creator-apply.php">크리에이터 가입 신청</a></main></body></html>';exit;
 }
 $nsp_verified=false;
 if(str_contains($nsp_script,'/plugin/social/')&&in_array(basename($nsp_script),['register_member.php','register_member_update.php'],true)){
@@ -18,7 +18,7 @@ if(str_contains($nsp_script,'/plugin/social/')&&in_array(basename($nsp_script),[
 }
 $nsp_decision=nsp_decide($nsp_script,$nsp_method,$_REQUEST,!empty($member['mb_id']),$nsp_verified);
 if($nsp_decision==='deny')nsp_reject_registration();
-if(in_array($nsp_decision,['signup','login'],true)){header('Cache-Control: no-store');header('Location: /noa-login.php?url='.rawurlencode(nsp_return($_GET['url']??'/')),true,302);exit;}
+if(in_array($nsp_decision,['signup','login'],true)){header('Cache-Control: no-store');header('Location: '.($nsp_decision==='signup'?'/noa-creator-apply.php':'/noa-login.php?url='.rawurlencode(nsp_return($_GET['url']??'/'))),true,302);exit;}
 // Defense in depth for callers that include the native update script under another URL.
 if(function_exists('add_event'))add_event('register_form_update_before',static function($id,$mode){global $member;if($mode!=='u'||empty($member['mb_id'])||!hash_equals((string)$member['mb_id'],(string)$id))nsp_reject_registration();},1,2);
 // The legacy login form remains available to existing accounts; remove its obsolete signup link.

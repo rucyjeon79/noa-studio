@@ -75,7 +75,7 @@ try{
  await page.getByRole('button',{name:'이 기기 알림 끄기',exact:true}).click();await page.getByText('이 기기 알림을 껐어요. 알림함에서는 계속 확인할 수 있어요.',{exact:true}).waitFor();assert(!(await get('a')).data.devices.includes(await page.evaluate(async endpoint=>{const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(endpoint));return [...new Uint8Array(bytes)].map(n=>n.toString(16).padStart(2,'0')).join('');},subscription.endpoint+'-ui')));
  await page.goto(base+'/notification-shell.php');await page.locator('.ainoa-symbol').click();await page.locator('.ainoa-panel-body').waitFor();assert.equal(await page.locator('#noa-ainoa .nnt-entry,#noa-ainoa>.nnt-badge').count(),0);
  await page.goto(base+'/noa-my.php');await page.locator('#noa-my-activity .nnt-entry').waitFor();
- assert.equal(await page.locator('#noa-my-account .noa-my-level').count(),1);assert.equal(await page.getByRole('heading',{name:'나의 회원 등급'}).count(),0);
+ assert.equal(await page.locator('#noa-my-account .noa-level-line').count(),1);assert.equal(await page.getByRole('heading',{name:'나의 회원 등급'}).count(),0);
  assert(await page.evaluate(()=>!!(document.querySelector('#noa-my-activity').compareDocumentPosition(document.querySelector('#my-recent'))&Node.DOCUMENT_POSITION_FOLLOWING)));
  for(const width of [390,1280])for(const theme of ['dark','light']){
   await page.setViewportSize({width,height:900});await setTheme(theme);

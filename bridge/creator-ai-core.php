@@ -1,0 +1,17 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__.'/creator-core.php';
+/** Creator production has its own entitlement, owner and idempotency boundary. */
+function ncai_access(array $member,string $admin=''):void{if(!nam_access($member,$admin)['creatorAI'])throw new DomainException('creator_level6_required');}
+function ncai_track(PDO $db,string $key,string $owner):array{$r=nc_row($db,$key);if(!$r||!in_array($r['kind'],['story','single','playlist'],true)||!nam_owner($r['document'],['mb_id'=>$owner])||!empty($r['document']['_noaTrash']))throw new DomainException('own_song_required');return $r;}
+function ncai_job(array $job,string $owner):bool{return isset($job['ownerId'])&&is_string($job['ownerId'])&&hash_equals($owner,$job['ownerId'])&&($job['origin']??'')==='creator-channel';}
+function ncai_enqueue(PDO $db,array &$s,array $b,array $member,string $admin='',?callable $directory=null):array{
+ ncai_access($member,$admin);$owner=(string)$member['mb_id'];$key=(string)($b['trackKey']??'');$row=ncai_track($db,$key,$owner);$request=(string)($b['requestId']??'');if(!preg_match('/^[a-f0-9]{32}$/D',$request))throw new InvalidArgumentException('invalid_request');
+ $operation=(string)($b['operation']??'');$prompt=$b['prompt']??'';if(!in_array($operation,['plan','lyrics','revise','hook','suno','translate','content','thumbnail'],true)||!is_string($prompt)||mb_strlen(trim($prompt))<2||mb_strlen($prompt)>8000)throw new InvalidArgumentException('invalid_prompt');
+ if(($b['costConfirmed']??false)!==true||($b['quotedPoints']??null)!==0)throw new DomainException('cost_confirmation_required');
+ $fingerprint=hash('sha256',json_encode([$key,$operation,$prompt,$b['quotedPoints']],JSON_THROW_ON_ERROR));$active=0;$today=0;$cost=0.;
+ foreach($s['jobs'] as $j){if(ncai_job($j,$owner)){if(($j['requestId']??'')===$request){if(!hash_equals($fingerprint,$j['requestFingerprint']??''))throw new DomainException('request_conflict');return ['job'=>$j,'replayed'=>true];}if(in_array($j['state']??'',['queued_text','creating_text'],true))$active++;if(substr($j['createdAt']??'',0,10)===gmdate('Y-m-d'))$today++;}if(substr($j['costReservedAt']??'',0,10)===gmdate('Y-m-d'))$cost+=(float)($j['costReservedUsd']??0);}
+ if($active>=2||$today>=10||count($s['jobs'])>=200)throw new DomainException('creator_ai_limit');
+ if(empty($s['config']['textEnabled'])||($s['config']['maxJobUsd']??0)<.1||$cost+.1>($s['config']['dailyBudgetUsd']??0))throw new DomainException('text_ai_enable_required');
+ $id=bin2hex(random_bytes(16));if($directory)$directory($id);$d=$row['document'];$job=['id'=>$id,'ownerId'=>$owner,'origin'=>'creator-channel','requestId'=>$request,'requestFingerprint'=>$fingerprint,'type'=>'creation','title'=>$d['title'],'trackKey'=>$key,'snapshot'=>$d,'sourceRevision'=>$row['revision'],'genre'=>$d['genreId']??'your-story','cast'=>'female','state'=>'queued_text','revision'=>1,'createdAt'=>gmdate('c'),'updatedAt'=>gmdate('c'),'attempts'=>0,'outputs'=>[],'settings'=>['mode'=>'text','posting'=>'save','formats'=>[]],'creationRequest'=>['operation'=>$operation,'prompt'=>$prompt,'language'=>'ko','rules'=>['principleZero'=>nup_policy()],'additionalRules'=>substr((string)($s['config']['creativeRules']??''),0,12000),'structure'=>'','mood'=>''],'costReservedUsd'=>.1,'costReservedAt'=>gmdate('c'),'chargedPoints'=>0];$s['jobs'][$id]=$job;return ['job'=>$job,'replayed'=>false];
+}

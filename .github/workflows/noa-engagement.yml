@@ -37,7 +37,7 @@ jobs:
         if: always()
         with: {name: 'noa-engagement-candidate-${{ github.run_id }}', path: engagement-proof/, retention-days: 7}
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[creator-release]')
     needs: verify
     runs-on: ubuntu-latest
     environment: production

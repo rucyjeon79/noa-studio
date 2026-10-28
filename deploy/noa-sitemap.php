@@ -28,6 +28,9 @@ function noa_sitemap_registry():array{
         ]],
         'account'=>['title'=>'회원 서비스','routes'=>[
             ['login','로그인','기존 계정 또는 구글·카카오로 로그인','/noa-login.php','user','guest'],
+            ['creatorApply','크리에이터 가입·전환','본인인증과 승인 후 5레벨·채널 개설','/noa-creator-apply.php','user','public'],
+            ['channelWorkspace','내 채널 작업실','소유한 콘텐츠·게시판·제작 관리','/noa-channel-workspace.php','music','member'],
+            ['creatorAI','채널 AI 제작실','6레벨 크리에이터 · 이용 포인트 확인','/noa-creator-ai.php','mic','member'],
             ['password','아이디·비밀번호 찾기','계정 접근 복구','/bbs/password_lost.php','settings','guest'],
             ['playlists','내 재생목록','나만의 목록 만들기와 편집','/noa-music.php#my-playlists','playlists','member'],
             ['subscription','월 구독 · 포인트','이용 기간과 구독 구매 내역','/noa-subscription.php','user','member'],
@@ -41,7 +44,7 @@ function noa_sitemap_registry():array{
             ['search','게시판 검색','공개된 게시글 찾기','/bbs/search.php','search','public'],
         ]],
         'legal'=>['title'=>'서비스 안내','routes'=>[]],
-        'admin'=>['title'=>'관리자 작업실','routes'=>[
+        'admin'=>['title'=>'홈페이지 관리','routes'=>[
             ['libraryAdmin','라이브러리 관리','음악 문서와 변경 이력','/noa-library.php','library','admin'],
             ['editor','음악 등록·편집','음악 문서 작성','/noa-editor.php','edit','admin'],
             ['categoryOrder','사연곡·커버곡 순서','드래그 정렬과 순서 저장','/noa-category-order-admin.php','playlists','admin'],
@@ -58,6 +61,7 @@ function noa_sitemap_registry():array{
             ['taxonomy','카테고리·제작 규칙','분류 체계 관리','/noa-app/taxonomy/','playlists','admin'],
             ['payments','토스 결제 연결','카드·카카오페이 연결과 테스트·운영 설정','/noa-payment-settings.php','settings','admin'],
             ['subscriptions','월 구독 설정','요금·포인트·결제 내역 확인','/noa-subscription-admin.php','settings','admin'],
+            ['creatorReview','크리에이터 가입 심사','본인인증·신청 검토와 승인','/noa-creator-review.php','user','admin'],
             ['members','회원 관리','그누보드 회원 서비스','/adm/member_list.php','user','admin'],
             ['boards','게시판 관리','그누보드 게시판 서비스','/adm/board_list.php','community','admin'],
             ['system','시스템 설정','그누보드 기본 설정','/adm/config_form.php','settings','admin'],
@@ -114,7 +118,7 @@ function noa_sitemap_board_allowed(array $board,int $level,bool $member,bool $su
 
 function noa_sitemap_visible_groups(string $root,string $role,array $boards=[],array $contents=[]):array{
     $groups=noa_sitemap_registry();
-    if($role==='admin'&&is_file(__DIR__.'/noa-workspace.php')){require_once __DIR__.'/noa-workspace.php';$groups['admin']=['title'=>'최고관리자 작업실','routes'=>[['libraryAdmin','최고관리자 작업실','콘텐츠·제작·운영 작업 시작','/noa-library.php','settings','admin']]];foreach(noa_workspace_groups() as $id=>$group){$groups['admin-'.$id]=['title'=>$group['title'],'routes'=>array_map(fn($r)=>array_merge($r,['admin']),$group['routes'])];}}
+    if($role==='admin'&&is_file(__DIR__.'/noa-workspace.php')){require_once __DIR__.'/noa-workspace.php';$groups['admin']=['title'=>'홈페이지 관리','routes'=>[['libraryAdmin','홈페이지 관리','회원·화면·시스템 운영','/noa-library.php','settings','admin']]];foreach(noa_workspace_groups() as $id=>$group){$groups['admin-'.$id]=['title'=>in_array($id,['content','creation'],true)?'내 채널 · '.$group['title']:$group['title'],'routes'=>array_map(fn($r)=>array_merge($r,['admin']),$group['routes'])];}}
     foreach($boards as $board){
         $id=(string)($board['bo_table']??'');
         if(!preg_match('/^[A-Za-z0-9_]{1,20}$/D',$id))continue;
@@ -134,7 +138,7 @@ function noa_sitemap_visible_groups(string $root,string $role,array $boards=[],a
             elseif(function_exists('nam_requirement')){
                 parse_str((string)parse_url($route[3],PHP_URL_QUERY),$query);
                 $need=nam_requirement(parse_url($route[3],PHP_URL_PATH)?:'/','GET',$query);
-                if(!nam_allowed($GLOBALS['noa_access']??nam_access(),$need))$reason=match($need){'music'=>'음원은 이용 기간이 남은 VIP회원·VIP 크리에이터가 들을 수 있어요. MY에서 이용권을 확인해 주세요.','creator'=>'창작자·VIP 크리에이터에게 열리는 메뉴예요. 계정의 창작자 자격을 확인해 주세요.','admin'=>'최고관리자 계정으로 로그인해 주세요.',default=>'로그인한 회원이 이용할 수 있어요. 먼저 로그인해 주세요.'};
+                if(!nam_allowed($GLOBALS['noa_access']??nam_access(),$need))$reason=match($need){'music'=>'음원은 이용 기간이 남은 VIP회원·VIP 크리에이터가 들을 수 있어요. MY에서 이용권을 확인해 주세요.','creator'=>'승인된 크리에이터의 채널 메뉴입니다. MY에서 전환 신청할 수 있어요.','creatorAI'=>'6레벨 크리에이터부터 이용할 수 있어요. 기능별 포인트 이용 조건을 확인해 주세요.','admin'=>'최고관리자 계정으로 로그인해 주세요.',default=>'로그인한 회원이 이용할 수 있어요. 먼저 로그인해 주세요.'};
             }
             if(!noa_sitemap_available($route[3],$root))$reason='아직 준비 중인 메뉴예요. 준비가 끝나면 이곳에서 열어드릴게요.';
             $route[6]=$reason;
