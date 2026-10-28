@@ -53,7 +53,7 @@ const seen=new WeakMap();let scheduled=false;
 function markAccess(){
  let caps=account?.capabilities;try{caps=caps||JSON.parse(doc.getElementById('noa-access')?.textContent||'null');}catch{}if(!caps)return;
  for(const a of doc.querySelectorAll('a[href]')){if(a.closest('#noa-ainoa'))continue;let url;try{url=new URL(a.href,location.href);}catch{continue;}if(url.origin!==location.origin)continue;
- const path=url.pathname,need=['/noa-music.php','/noa-catalog.php'].includes(path)?'music':['/noa-youtube.php','/noa-world.php','/noa-my.php','/noa-settings.php','/noa-notifications.php','/noa-membership.php','/noa-subscription.php'].includes(path)?'member':path==='/noa-creator.php'?'creator':null;
+ const path=url.pathname,need=path==='/noa-catalog.php'?'music':['/noa-music.php','/noa-music-download.php','/noa-youtube.php','/noa-world.php','/noa-my.php','/noa-settings.php','/noa-notifications.php','/noa-membership.php','/noa-subscription.php'].includes(path)?'member':path==='/noa-creator.php'?'creator':null;
  if(need&&!caps[need]){a.removeAttribute('href');a.tabIndex=0;a.setAttribute('role','button');a.setAttribute('aria-disabled','true');a.dataset.noaCondition=need==='music'?'음원은 이용 기간이 남은 VIP회원·VIP 크리에이터가 들을 수 있어요. MY에서 이용권을 확인해 주세요.':need==='creator'?'창작자·VIP 크리에이터가 이용할 수 있어요. 계정 자격을 확인해 주세요.':'로그인한 회원이 이용할 수 있어요. 먼저 로그인해 주세요.';}
  }
 }

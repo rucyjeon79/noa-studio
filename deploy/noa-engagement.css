@@ -62,3 +62,25 @@ html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-vide
 html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-video-row)>.noa-inline-song{min-height:44px;padding:0;gap:8px}
 html[data-noa-precision] body :is(.noa-inline-song-row,.noa-inline-video-row)>.noa-engagement{margin:0;padding:0 0 0 44px;min-height:44px}
 html[data-noa-precision] body .noa-inline-song>.noa-inline-cover{width:40px;height:40px;flex-basis:40px}
+
+/* Title and reactions form one compact stack; the cover and tools span that stack. */
+html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-video-row):has(>.noa-song-more){grid-template-columns:40px minmax(0,1fr) 44px 44px;grid-template-rows:auto auto;column-gap:8px;row-gap:0;padding:8px 0}
+html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-video-row)>.noa-inline-song{display:contents}
+html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-video-row)>.noa-inline-song>.noa-inline-cover{grid-column:1;grid-row:1/3;align-self:center}
+html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-video-row)>.noa-inline-song>.noa-inline-title{grid-column:2;grid-row:1;align-self:end;padding:0;margin:0;line-height:1.4}
+html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-video-row)>.noa-song-actions{grid-column:3;grid-row:1/3;align-self:center}
+html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-video-row)>.noa-song-more{grid-column:4;grid-row:1/3;align-self:center}
+html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-video-row)>.noa-engagement{grid-column:2;grid-row:2;padding:0;margin:-8px 0 0;min-height:44px}
+html[data-noa-precision] body .noa-engagement-card .noa-music-card strong{min-height:0;margin-bottom:2px}
+html[data-noa-precision] body .noa-engagement-card>.noa-engagement{margin-top:-8px}
+html[data-noa-precision] body :is(.noa-world-mv,.noa-world-video,.noa-world-act-video)>.noa-engagement{margin-top:-8px}
+/* Keep 44px targets below the content; visible icons start just 4px beneath it. */
+html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-video-row)>.noa-engagement,
+html[data-noa-precision] body .noa-engagement-card>.noa-engagement,
+html[data-noa-precision] body :is(.world-chapter-mv,.world-video,.world-mv-card)>.noa-engagement{margin-top:0}
+html[data-noa-precision] body .noa-engagement.noa-engagement>button{align-items:flex-start;padding-top:4px}
+html[data-noa-precision] body .noa-engagement.noa-engagement>button>span{line-height:17px}
+html[data-noa-precision] body :is(.world-chapter-mv,.world-video,.world-mv-card)>:is(figcaption,details,p){margin-bottom:0}
+html[data-noa-precision] body :is(.world-chapter-mv,.world-video,.world-mv-card){row-gap:0}
+.noa-premium-badge{display:inline-flex;align-items:center;vertical-align:middle;gap:3px;margin-left:6px;color:var(--noa-accent,#d8bc7c);font-size:8px;font-weight:650;letter-spacing:.08em;line-height:16px;white-space:nowrap}
+.noa-premium-badge svg{width:13px;height:13px;flex:none}

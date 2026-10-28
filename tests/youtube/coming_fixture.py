@@ -4,10 +4,11 @@ from pathlib import Path
 
 def render():
  root=Path(tempfile.mkdtemp(prefix='noa-coming-'));bridge=root/'noa-bridge';bridge.mkdir()
- for name in ['sound-core.php','music-readmodel.php','youtube-catalog.php']:shutil.copyfile(Path('bridge')/name,bridge/name)
- for name in ['noa-music.php','noa-youtube.php','noa-youtube.js','noa-youtube.css','noa-browse.js','noa-browse-edit.js','noa-ui.js']:shutil.copyfile(Path('deploy')/name,root/name)
+ for name in ['member-access.php','sound-core.php','music-readmodel.php','youtube-catalog.php']:shutil.copyfile(Path('bridge')/name,bridge/name)
+ for name in ['noa-premium.js','noa-music.php','noa-youtube.php','noa-youtube.js','noa-youtube.css','noa-browse.js','noa-browse-edit.js','noa-ui.js']:shutil.copyfile(Path('deploy')/name,root/name)
  (root/'extend').mkdir();shutil.copyfile('deploy/noa-design.extend.php',root/'extend/noa.design.php')
  (root/'noa-app/jukebox').mkdir(parents=True)
+ shutil.copyfile('deploy/noa-app/jukebox/upload.css',root/'noa-app/jukebox/upload.css')
  (root/'noa-app/jukebox/core.php').write_text('<?php function nj_assets(PDO $db):array{return [];}')
  # A disposable native renderer, not a production authentication bypass. Guest
  # denial is checked separately against the real access extension.

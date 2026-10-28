@@ -65,6 +65,8 @@ class RecoveryContract(unittest.TestCase):
   authorized.add('bridge/notifications-inline.php')
   # 2026-10-28: public sitemap discovery; individual destination ACLs remain unchanged.
   authorized.add('bridge/member-access.php')
+  # 2026-10-28 explicit premium download revenue and in-card progress request.
+  authorized.update({'bridge/music-download-core.php','deploy/noa-app/jukebox/download.php','deploy/noa-app/jukebox/upload.js','deploy/noa-app/jukebox/upload.css','deploy/noa-app/jukebox/upload-core.php','deploy/noa-app/jukebox/index.php'})
   # 2026-10-28: user requested mixed home discovery; these readers never write scores or points.
   authorized.update({'bridge/home.php','bridge/home-core.php','bridge/home-discovery.php'})
   discovery=(ROOT/'bridge/home-discovery.php').read_text()

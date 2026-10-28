@@ -2,12 +2,17 @@
 declare(strict_types=1);
 require dirname(__DIR__,2).'/common.php';require dirname(__DIR__,2).'/noa-bridge/storage.php';require dirname(__DIR__,2).'/noa-bridge/sound-core.php';require __DIR__.'/core.php';
 header('Cache-Control: private, no-store');header('X-Content-Type-Options: nosniff');
-require_once dirname(__DIR__,2).'/noa-bridge/member-access.php';
+require_once dirname(__DIR__,2).'/noa-bridge/member-access.php';require_once dirname(__DIR__,2).'/noa-bridge/music-download-core.php';
 $access=nam_access((array)($member??[]),(string)($is_admin??''));if(!$access['ownDownload']){http_response_code(403);exit;}
 if(!in_array($_SERVER['REQUEST_METHOD']??'GET',['GET','HEAD'],true)){http_response_code(405);exit;}
 try{
  $key=$_GET['key']??'';if(!is_string($key)||strlen($key)>191){http_response_code(404);exit;}$db=noa_bridge_pdo();$doc=nj_document($db,$key);$a=nj_find($db,$key);
- if(!$doc||(!$access['admin']&&!nam_owner($doc,(array)($member??[])))){http_response_code(403);exit;}
+ if(!$doc||(!noa_sound_visible($doc,$access['admin'])&&!nam_owner($doc,(array)($member??[])))){http_response_code(403);exit;}
+ if(!$access['admin']){
+  $receipt=$_GET['receipt']??'';if(!is_string($receipt)||$receipt===''){header('Location: /noa-music-download.php?key='.rawurlencode($key));exit;}
+  $paid=nmd_receipt((string)$member['mb_id'],$receipt,$key);
+  $a=['source_url'=>noa_sound_suno($doc['body']??[]),'status'=>'ready','audio_path'=>$paid['path'],'audio_sha256'=>$paid['sha'],'audio_bytes'=>$paid['bytes'],'suno_title'=>$paid['title'],'title'=>$paid['title']];
+ }
  if(!$a||!hash_equals($a['source_url'],noa_sound_suno($doc['body']??[]))||!nj_verified($a,'audio')){http_response_code(404);exit;}
  $p=nj_file($a['audio_path']);$size=filesize($p);try{[$start,$end,$code]=nj_range($_SERVER['HTTP_RANGE']??null,$size);}catch(InvalidArgumentException $e){http_response_code(416);header('Content-Range: bytes */'.$size);exit;}
  $filename=nj_download_name(($a['suno_title']?:$a['title'])?:'NOA');

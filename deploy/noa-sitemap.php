@@ -85,7 +85,7 @@ function noa_sitemap_role(bool $member,string $admin):string{
 /** Audit-only coverage check: new screen files need an explicit audience decision. */
 function noa_sitemap_unlisted_pages(string $root):array{
     // The deploy center has no verified production release yet and stays undiscoverable.
-    $known=['/noa-sitemap.php'=>true,'/noa-deploy-center.php'=>true,'/noa-channel.php'=>true]; // Channel URLs require an owner ID and are linked from MY.
+    $known=['/noa-sitemap.php'=>true,'/noa-deploy-center.php'=>true,'/noa-channel.php'=>true,'/noa-music-download.php'=>true]; // Channel URLs require an owner ID and are linked from MY.
     foreach(noa_sitemap_registry() as $group)foreach($group['routes'] as $route)$known[(string)parse_url($route[3],PHP_URL_PATH)]=true;
     $missing=[];
     foreach(glob(rtrim($root,'/').'/noa-*.php')?:[] as $file){
