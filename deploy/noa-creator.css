@@ -12,3 +12,4 @@
 
 .noa-page .creator-tree-label{justify-content:flex-start!important;text-align:start!important;background:transparent!important;box-shadow:none!important;border:0!important;font-weight:500}.noa-page .creator-tree-toggle{box-shadow:none!important;background:var(--noa-surface)!important;border:1px solid var(--noa-line)!important}.noa-page .creator-tree-line.creator-row{padding:3px 0;flex-wrap:nowrap}
 .noa-page .creator-tree-line.creator-row:has(.noa-track-progress){flex-wrap:wrap}
+.creator-actions{align-items:flex-start}
