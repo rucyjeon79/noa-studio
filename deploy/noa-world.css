@@ -37,3 +37,23 @@ html[data-noa-precision] .noa-page .noa-world-chapter>.noa-world-text{font-size:
 html[data-noa-precision] .noa-page .world-chapter-mv{margin:16px 0 8px}
 html[data-noa-precision] .noa-page .world-chapter-mv figcaption{font-size:12px;line-height:1.55;margin-top:8px}
 html[data-noa-precision] .noa-page .world-chapter-mv>.noa-engagement{padding:0;margin:4px 0 0}
+
+/* The same control row and reading rhythm apply to ACTs, chapters and source panels. */
+html[data-noa-precision] body .noa-world-links{gap:4px;margin:12px 0 20px}
+html[data-noa-precision] body .noa-world-links>*{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 10px;font-size:13px;line-height:1.3;border-radius:8px;white-space:nowrap}
+html[data-noa-precision] body .noa-world-links[aria-label="세계관 ACT 선택"]{flex-wrap:nowrap}
+html[data-noa-precision] body .noa-world-prose{margin:24px 0}
+html[data-noa-precision] body .noa-world-prose>h2{margin:0 0 12px;font-size:22px}
+html[data-noa-precision] body .world-mv-grid{margin:12px 0;gap:20px}
+html[data-noa-precision] body .world-mv-card>h3{font-size:14px;line-height:1.5;margin:8px 0 4px}
+html[data-noa-precision] body .world-mv-card>p{margin:4px 0;font-size:12px}
+html[data-noa-precision] body .world-mv-card>details{margin:0}
+html[data-noa-precision] body .world-mv-card>details>summary.noa-action{margin:0;border:0;background:transparent;padding-inline:0}
+html[data-noa-precision] body .world-mv-card>.noa-engagement{margin:0;padding:0}
+html[data-noa-precision] body .noa-world-source{margin:16px 0}
+@media(max-width:400px){html[data-noa-precision] body .noa-world-links>*{padding-inline:8px;font-size:12px}}
+
+html[data-noa-precision] body section[aria-label="ACT 공식 뮤직비디오"]>h2{margin:0 0 12px;font-size:22px}
+html[data-noa-precision] body section[aria-label="ACT 공식 뮤직비디오"]>.noa-world-grid{margin:12px 0 16px}
+html[data-noa-precision] body section[aria-label="ACT 공식 뮤직비디오"] .world-chapter-mv{margin:0}
+html[data-noa-precision] body .world-chapter-mv>details>summary.noa-action{margin:0;border:0;background:transparent;padding-inline:0}
