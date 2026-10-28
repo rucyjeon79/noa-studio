@@ -30,6 +30,7 @@ jobs:
           php -l bridge/ainoa-core.php
           php -l bridge/ainoa-automation.php
           php -l deploy/noa-ainoa.php
+          php -l deploy/noa-my.php
           php tests/catalog/ainoa_test.php
           node tests/notifications/sw_test.cjs
           python tests/notifications/push_test.py
