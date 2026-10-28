@@ -74,7 +74,7 @@ try {
         || !is_int($expected) || $expected < 0
         || !is_string($requestId) || !preg_match('/^[a-f0-9-]{36}$/i', $requestId)
         || !array_key_exists('payload', $data) || !is_array($data['payload']) || array_is_list($data['payload'])) fail(400, 'invalid_write');
-    if($key==='meta:package-record-policy')fail(400,'installation_policy_read_only');
+    if(in_array($key,['meta:package-record-policy',NCO_POLICY],true))fail(400,'installation_policy_read_only');
     if(str_starts_with($key,'meta:inline-'))fail(409,'complete_record_required');
     $payload = json_encode($data['payload'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
     $hash = hash('sha256', $key . "\n" . $kind . "\n" . $expected . "\n" . $payload);
@@ -110,6 +110,7 @@ try {
         if($full['packageType']==='original'&&!isset($incoming['body']['originalInfo']))foreach(['confirmedTitle'=>'title','lyricsBlock'=>'lyrics','vocalInfo'=>'vocal'] as $from=>$to)if(array_key_exists($from,$incoming['body']??[]))$full['body']['originalInfo'][$to]=$incoming['body'][$from];
         if($full['packageType']==='ep'&&empty($full['sourceRef'])){$original=nup_original($pdo,$full);if(($original['status']??'')==='linked')$full['sourceRef']=$original['key'];}
 
+        $full=nco_attach($pdo,$key,$kind,$full);
         $payload=json_encode($full,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
     }
     $next = $expected + 1;

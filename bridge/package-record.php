@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__.'/channel-ownership.php';
 /** One complete, versioned JSON record per song/playlist. No metadata sidecar writes.
  * noa_documents.payload is authoritative; history and JSON downloads are snapshots.
  */
@@ -130,6 +131,7 @@ function nup_merge_body(array $old,array $incoming):array{
  return $merged;
 }
 function nup_store(PDO $db,string $key,string $kind,array $payload,int $expected,string $actor):int{
+ $payload=nco_attach($db,$key,$kind,$payload);
  $encoded=json_encode($payload,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
  if($expected===0){$q=$db->prepare("INSERT IGNORE INTO noa_documents(doc_key,kind,payload,revision,updated_by) VALUES(?,?,'{}',0,?)");$q->execute([$key,$kind,$actor]);}
  $q=$db->prepare('UPDATE noa_documents SET payload=?,revision=revision+1,updated_by=? WHERE doc_key=? AND kind=? AND revision=?');$q->execute([$encoded,$actor,$key,$kind,$expected]);if($q->rowCount()!==1)throw new DomainException('revision_conflict');

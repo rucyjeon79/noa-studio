@@ -23,3 +23,8 @@ function nc_patch(array $document,array $body):array{
 function nc_store(PDO $db,string $key,string $kind,array $d,int $revision,string $actor):int{
  $db->beginTransaction();try{$next=nup_store($db,$key,$kind,$d,$revision,$actor);$db->commit();return $next;}catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
 }
+
+/** Explicit ownership, independent of legacy/imported document key format. */
+function nc_owned_records(PDO $db,string $owner):array{
+ $q=$db->prepare("SELECT doc_key,kind,payload,revision FROM noa_documents WHERE kind IN ('single','story','playlist') AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.ownerId'))=? ORDER BY updated_at DESC,doc_key");$q->execute([$owner]);return $q->fetchAll(PDO::FETCH_ASSOC);
+}
