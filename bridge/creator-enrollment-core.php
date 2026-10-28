@@ -71,8 +71,18 @@ function nce_save(PDO $db,array $b,array $m,array $session,array $config,string 
 function nce_symbol_upload(array $f):string{
  if(($f['error']??UPLOAD_ERR_NO_FILE)===UPLOAD_ERR_NO_FILE)return '';
  if(($f['error']??1)!==UPLOAD_ERR_OK||($f['size']??0)>5242880||!is_uploaded_file($f['tmp_name']))throw new InvalidArgumentException('invalid_symbol');
- $info=getimagesize($f['tmp_name']);if(!$info||!in_array($info[2],[IMAGETYPE_JPEG,IMAGETYPE_PNG,IMAGETYPE_WEBP],true)||$info[0]>8000||$info[1]>8000||$info[0]*$info[1]>20000000)throw new InvalidArgumentException('invalid_symbol');
- $src=imagecreatefromstring(file_get_contents($f['tmp_name']));if(!$src)throw new InvalidArgumentException('invalid_symbol');$w=$info[0];$h=$info[1];$scale=min(1,1000/max($w,$h));$dest=imagecreatetruecolor((int)round($w*$scale),(int)round($h*$scale));imagefill($dest,0,0,imagecolorallocate($dest,244,241,234));imagecopyresampled($dest,$src,0,0,0,0,imagesx($dest),imagesy($dest),$w,$h);$id=bin2hex(random_bytes(24));$path=nce_root().'/symbols/'.$id.'.jpg';if(!imagejpeg($dest,$path,88))throw new RuntimeException('symbol_save_failed');chmod($path,0600);imagedestroy($src);imagedestroy($dest);return $id;
+ $png=nce_symbol_png(file_get_contents($f['tmp_name']));$id=bin2hex(random_bytes(24));$path=nce_root().'/symbols/'.$id.'.png';$file=fopen($path,'xb');if(!$file)throw new RuntimeException('symbol_save_failed');
+ try{chmod($path,0600);if(fwrite($file,$png)!==strlen($png))throw new RuntimeException('symbol_save_failed');}catch(Throwable $e){unlink($path);throw $e;}finally{fclose($file);}return $id;
+}
+/** Decode and re-encode pixels, preserving alpha and removing uploaded metadata. */
+function nce_symbol_png(string $bytes):string{
+ $info=@getimagesizefromstring($bytes);if(strlen($bytes)>5242880||!$info||!in_array($info[2],[IMAGETYPE_JPEG,IMAGETYPE_PNG,IMAGETYPE_WEBP],true)||$info[0]>8000||$info[1]>8000||$info[0]*$info[1]>20000000)throw new InvalidArgumentException('invalid_symbol');
+ $src=@imagecreatefromstring($bytes);if(!$src)throw new InvalidArgumentException('invalid_symbol');$scale=min(1,1000/max($info[0],$info[1]));$dest=imagecreatetruecolor(max(1,(int)round($info[0]*$scale)),max(1,(int)round($info[1]*$scale)));
+ try{imagealphablending($dest,false);imagesavealpha($dest,true);imagefill($dest,0,0,imagecolorallocatealpha($dest,0,0,0,127));imagecopyresampled($dest,$src,0,0,0,0,imagesx($dest),imagesy($dest),$info[0],$info[1]);ob_start();try{if(!imagepng($dest,null,6))throw new RuntimeException('symbol_save_failed');return ob_get_contents();}finally{ob_end_clean();}}finally{imagedestroy($src);imagedestroy($dest);}
+}
+function nce_symbol_file(string $symbol):?array{
+ if(!preg_match('/^[a-f0-9]{48}$/D',$symbol))return null;
+ foreach(['png'=>'image/png','jpg'=>'image/jpeg'] as $ext=>$mime){$path=nce_root().'/symbols/'.$symbol.'.'.$ext;if(is_file($path)&&!is_link($path))return ['path'=>$path,'mime'=>$mime];}return null;
 }
 function nce_board_id(string $owner):string{return 'nc_'.substr(hash('sha256',$owner),0,16);}
 /** DDL is staged before the member/channel transaction; marker and membership gates hide unfinished boards. */

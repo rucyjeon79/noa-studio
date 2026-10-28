@@ -10,7 +10,8 @@ function nc_own(PDO $db,string $key,array $member):array{
  $r=nc_row($db,$key);if(!$r||$r['kind']!=='story'||!str_starts_with($key,'creator:')||!nam_owner($r['document'],$member))throw new DomainException('own_song_required');return $r;
 }
 function nc_channel(array $body):array{
- $title=trim((string)($body['title']??''));$description=trim((string)($body['description']??''));if($title===''||mb_strlen($title)>80||mb_strlen($description)>2000)throw new InvalidArgumentException('invalid_channel');return ['title'=>$title,'description'=>$description];
+ $title=trim((string)($body['title']??''));$description=trim((string)($body['description']??''));if($title===''||mb_strlen($title)>80||mb_strlen($description)>2000)throw new InvalidArgumentException('invalid_channel');$out=['title'=>$title,'description'=>$description];
+ if(array_key_exists('profileBackgroundOpacity',$body)){$opacity=$body['profileBackgroundOpacity'];if(!is_int($opacity)||$opacity<0||$opacity>100)throw new InvalidArgumentException('invalid_profile_opacity');$out['profileBackgroundOpacity']=$opacity;}return $out;
 }
 function nc_patch(array $document,array $body):array{
  $fields=$body['fields']??[];if(!is_array($fields)||array_diff(array_keys($fields),['title','lyrics','vocal','cast','description','geminiPrompt','communityPost','youtubeUrl','mvUrl','songDescription','lyricsTranslation','sunoPrompt','productionPrompt','characterPrompt','youtubeTitle','sunoUrl','creativeFields']))throw new InvalidArgumentException('invalid_song_fields');
