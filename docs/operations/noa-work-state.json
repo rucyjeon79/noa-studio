@@ -1806,5 +1806,62 @@
     "protectedUnchanged": 16,
     "productionSyntheticPurchases": 0,
     "evidence": "docs/operations/premium-download-progress-20261028.md"
+  },
+  "monthlyBenefitsRelease": {
+    "date": "2026-10-28",
+    "status": "deployed-and-verified",
+    "runtimeCommit": "6a5c3aca40b6c6310bfcd0edbcb634814836e638",
+    "pullRequest": 249,
+    "workflowRun": 40626809649,
+    "deployJob": 122615554742,
+    "features": [
+      "4px ACT title/description and content/reaction spacing",
+      "processing table removed on ready; premium completed-card background",
+      "policy-gated monthly 10x banner immediately after hero",
+      "independent KST monthly login/write/comment/like receipts with atomic native credits"
+    ],
+    "verification": {
+      "monthlyBrowserCases": 8,
+      "premiumBrowserCases": 8,
+      "layoutDiscoveryCases": 48,
+      "voiceAccessCases": 32,
+      "isolatedNativeTransactions": true,
+      "concurrentIdempotency": true,
+      "creditAndReceiptRollback": true,
+      "sourceReadback": true,
+      "publicAssetHashes": true,
+      "livePublicBannerBrowser": true,
+      "productionMemberPointTest": false
+    },
+    "policy": {
+      "ok": true,
+      "policyChanged": true,
+      "policyRevision": 2,
+      "monthlyBenefits": {
+        "enabled": true,
+        "multiplier": 10,
+        "likePoints": 10,
+        "activatedAt": 1793158544,
+        "timezone": "Asia/Seoul"
+      },
+      "firstMonthlyPoints": {
+        "login": 1000,
+        "write": 500,
+        "comment": 300,
+        "like": 100
+      },
+      "basePoints": {
+        "login": 100,
+        "write": 50,
+        "comment": 30,
+        "like": 10
+      },
+      "memberRowsChanged": 0,
+      "pointsGranted": 0,
+      "subscriptionPolicyPreserved": true
+    },
+    "protectedUnchanged": 18,
+    "productionSyntheticActivities": 0,
+    "evidence": "docs/operations/monthly-benefits-mastered-cards-20261028.md"
   }
 }
