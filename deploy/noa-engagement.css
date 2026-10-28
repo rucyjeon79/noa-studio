@@ -9,3 +9,33 @@
 .noa-inline-song-row:has(>.noa-engagement),.noa-inline-video-row:has(>.noa-engagement){flex-wrap:wrap}.noa-inline-song-row>.noa-engagement,.noa-inline-video-row>.noa-engagement{flex-basis:100%}
 .noa-comments{width:min(680px,calc(100vw - 24px));max-height:calc(100dvh - 32px);padding:20px;border:1px solid var(--noa-line,#555);border-radius:var(--noa-card-radius,16px);background:var(--noa-bg,#17191c);color:var(--noa-text,#efefef);overflow:auto;box-sizing:border-box}
 .noa-comments::backdrop{background:rgb(0 0 0/.65)}.noa-comments header{display:flex;align-items:center;gap:12px;position:sticky;top:-20px;background:var(--noa-bg,#17191c);color:var(--noa-text,#efefef);padding:12px 0;z-index:1}.noa-comments h2{flex:1;font-size:18px;line-height:1.5;margin:0;overflow-wrap:anywhere}.noa-comments p{line-height:1.6;overflow-wrap:anywhere}.noa-comments textarea{width:100%;min-height:110px;padding:12px;background:var(--noa-raised,#25282d);color:var(--noa-text,#efefef);border:1px solid var(--noa-line,#555);border-radius:8px;font:inherit;box-sizing:border-box}.noa-comments label{display:block;margin:8px 0}.noa-comments form{margin-bottom:20px}.noa-comments-list{list-style:none;padding:0;margin:0}.noa-comment{border-top:1px solid var(--noa-line,#555);padding:16px 0}.noa-comment p{white-space:pre-wrap;margin:8px 0}.noa-comment time,.noa-comments-note{color:var(--noa-muted,#bcbcbc);font-size:12px}.noa-comment strong{font-size:14px}.noa-comments-paging{display:flex;gap:8px;margin-top:16px}.noa-comments [role=status]{min-height:1.6em}.noa-engagement button:focus-visible,.noa-comments :is(button,a,textarea):focus-visible{outline:2px solid var(--noa-accent,#e2c57d);outline-offset:3px}
+
+/* Quiet social footer: artwork and titles lead, controls retain 44px touch targets. */
+html body .noa-engagement{flex-wrap:nowrap;gap:4px;padding:0;min-height:44px}
+html body .noa-engagement :is(button,a){flex-direction:row;min-width:44px;min-height:44px;padding:8px;gap:6px;border:0;background:transparent;color:var(--noa-muted);font-size:12px;line-height:1.2;white-space:nowrap;border-radius:8px}
+html body .noa-engagement button:hover,html body .noa-engagement button[aria-pressed=true]{color:var(--noa-accent);background:transparent}
+html body .noa-engagement button[aria-pressed=true] svg{fill:currentColor}
+html body .noa-engagement>small{display:none}
+html body .noa-engagement>p:empty{display:none}
+html body .noa-engagement-card{display:flex;flex-direction:column;min-width:0;background:transparent;border:0}
+html body .noa-engagement-card>a.noa-music-card{flex:1;border:0;box-shadow:none;background:transparent;padding:0;border-radius:0}
+html body .noa-engagement-card>.noa-engagement{padding:0;margin-top:4px}
+html body .noa-engagement-card .noa-art{border-radius:10px}
+html body .noa-engagement-card .noa-music-card strong{font-size:14px;line-height:1.45;margin:10px 0 4px;min-height:2.9em}
+html body .noa-engagement-card .noa-music-card small{font-size:11px;line-height:1.5}
+html[data-noa-precision] .noa-page :is(.noa-inline-song-row,.noa-inline-video-row):has(>.noa-song-more){display:grid;grid-template-columns:minmax(0,1fr) 44px 44px;gap:0 4px;padding:8px 0;border-bottom:1px solid var(--noa-line);align-items:center}
+html[data-noa-precision] .noa-page :is(.noa-inline-song-row,.noa-inline-video-row)>.noa-inline-song{grid-column:1;grid-row:1;min-width:0;min-height:56px;padding:4px 0;gap:10px;border:0}
+html body .noa-inline-song>.noa-inline-cover{width:44px;height:44px;flex:0 0 44px;border-radius:6px;object-fit:cover}
+html body .noa-inline-song>.noa-inline-title{font-size:14px;line-height:1.45;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+html body .noa-inline-song-row>.noa-song-actions{grid-column:2;grid-row:1;display:flex!important;width:44px;min-width:0}
+html body .noa-inline-song-row>.noa-edit-edit{display:none!important}
+html body .noa-inline-video-row>.noa-edit-edit{display:none!important}
+html body .noa-inline-song-row>.noa-song-actions>.noa-song-action{display:none!important}
+html body .noa-inline-song-row>.noa-song-actions>.noa-song-action[aria-label$=" 재생"]{display:inline-flex!important;min-width:44px;min-height:44px;width:44px;height:44px;padding:0;border:0;background:transparent;color:var(--noa-text)}
+html body .noa-inline-song-row>.noa-song-actions>.noa-song-action[aria-label$=" 재생"]>span{display:none}
+html body .noa-song-more{grid-column:3;grid-row:1;min-width:44px;min-height:44px;width:44px;height:44px;padding:0;border:0;background:transparent;color:var(--noa-muted);font-size:24px;line-height:1}
+html body :is(.noa-inline-song-row,.noa-inline-video-row)>.noa-engagement{grid-column:1/-1;grid-row:2;padding-left:46px}
+html body :is(.noa-inline-song-row,.noa-inline-video-row)>:is(.noa-edit-form,.noa-inline-playback){grid-column:1/-1}
+html body .noa-song-menu>button{display:flex;width:100%;justify-content:flex-start;background:transparent;border:0;border-top:1px solid var(--noa-line);border-radius:0;padding:14px 8px;min-height:48px}
+#noa-engagement-notice{font-size:13px;color:var(--noa-muted);padding:12px 0}
+@media(max-width:600px){html body .noa-card-grid{gap:20px 12px}.noa-song-menu{margin:auto 0 0;width:100%;max-width:none;border-radius:20px 20px 0 0;padding-bottom:calc(24px + env(safe-area-inset-bottom))}}

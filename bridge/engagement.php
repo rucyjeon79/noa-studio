@@ -9,12 +9,16 @@ try{
  $_SESSION['noa_engagement_csrf']??=bin2hex(random_bytes(32));$csrf=$_SESSION['noa_engagement_csrf'];$db=noa_bridge_pdo();if(!ne_ready($db))throw new DomainException('not_ready');
  $method=$_SERVER['REQUEST_METHOD']??'GET';
  if($method==='GET'){
-  if(isset($_GET['targets'])){
-   $targets=json_decode((string)$_GET['targets'],true,8,JSON_THROW_ON_ERROR);if(!is_array($targets)||count($targets)>30)throw new DomainException('invalid_input');$items=[];
+  // Native bootstrap SQL-escapes $_GET. Decode the original query for JSON,
+  // then apply the same bounded type checks and authorization below.
+  parse_str((string)($_SERVER['QUERY_STRING']??''),$ne_query);
+  if(isset($ne_query['targets'])){
+   if(!is_string($ne_query['targets'])||strlen($ne_query['targets'])>16000)throw new DomainException('invalid_input');
+   $targets=json_decode($ne_query['targets'],true,8,JSON_THROW_ON_ERROR);if(!is_array($targets)||count($targets)>30)throw new DomainException('invalid_input');$items=[];
    foreach($targets as $t){if(!is_array($t)||!is_string($t['type']??null)||!is_string($t['key']??null))throw new DomainException('invalid_input');try{$items[]=['type'=>$t['type'],'key'=>$t['key']]+ne_stats($db,ne_target($db,$t['type'],$t['key']));}catch(DomainException $e){$items[]=['type'=>$t['type'],'key'=>$t['key'],'unavailable'=>true];}}
    ne_reply(['ok'=>true,'csrf'=>$csrf,'items'=>$items]);
   }
-  $target=ne_target($db,(string)($_GET['type']??''),(string)($_GET['key']??''));ne_reply(['ok'=>true,'csrf'=>$csrf,'stats'=>ne_stats($db,$target),'comments'=>ne_comments($db,$target,max(0,(int)($_GET['page']??0)))]);
+  $target=ne_target($db,(string)($ne_query['type']??''),(string)($ne_query['key']??''));ne_reply(['ok'=>true,'csrf'=>$csrf,'stats'=>ne_stats($db,$target),'comments'=>ne_comments($db,$target,max(0,(int)($ne_query['page']??0)))]);
  }
  if($method!=='POST'){header('Allow: GET, POST');ne_reply(['ok'=>false,'error'=>'method_not_allowed'],405);}
  if(($_SERVER['HTTP_ORIGIN']??'')!=='https://noastudio.ai.kr'||!hash_equals($csrf,(string)($_SERVER['HTTP_X_NOA_CSRF']??'')))ne_reply(['ok'=>false,'error'=>'csrf_required'],403);
