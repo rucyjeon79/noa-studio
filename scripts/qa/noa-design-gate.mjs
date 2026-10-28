@@ -37,10 +37,10 @@ try{
  for(const width of [360,390,430])for(const theme of ['noa-studio','noa-ivory']){
   const c=await browser.newContext({viewport:{width,height:844},serviceWorkers:'block'}),p=await c.newPage();
   await c.route('**/noa-bridge/creator.php*',r=>r.fulfill({json:{channel:null,songs:[{key:'fixture',title:'모바일 수정 버튼 확인',genre:'your-story',visibility:'private',fields:{title:'모바일 수정 버튼 확인'},state:{ready:false,status:'draft'}}]}}));
-  await p.goto('http://127.0.0.1:8093/noa-creator.php');await p.waitForFunction(()=>document.querySelector('.creator-row button'));
+  await p.goto('http://127.0.0.1:8093/noa-creator.php');await p.getByRole('button',{name:'모두 펼치기',exact:true}).click();
   await p.waitForFunction(()=>window.NoaUI?.getState()?.theme);await p.evaluate(theme=>window.NoaUI.apply({...window.NoaUI.getState(),theme}),theme);
   await p.addStyleTag({url:'http://127.0.0.1:8093/noa-ainoa.css'});await p.addScriptTag({url:'http://127.0.0.1:8093/noa-ainoa.js'});
-  const edit=p.getByRole('button',{name:'수정',exact:true});await edit.scrollIntoViewIfNeeded();
+  const edit=p.getByRole('button',{name:'모바일 수정 버튼 확인 곡정보 수정',exact:true});await edit.scrollIntoViewIfNeeded();
   assert(await edit.evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return el===hit||el.contains(hit);}),'creator action obscured by floating search');
   await edit.click();assert(await p.locator('#creator-editor').isVisible());assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.screenshot({path:`${out}/creator-${theme}-${width}.png`});
   report.push({page:'creator',width,theme,editClickable:true,noOverflow:true});await c.close();
