@@ -12,6 +12,7 @@ function noa_workspace_groups():array{return [
  ]],
  'creation'=>['title'=>'제작 작업실','intro'=>'가사·영상 제작과 완성 음원 업로드를 구분합니다.','routes'=>[
   ['jukebox','완성 음원 업로드','곡 선택 → MP3 업로드 → 최적화 완료 확인','/noa-app/jukebox/','music'],
+  ['taxonomy','카테고리·제작 규칙','내 채널 분류·제작 원칙','/noa-channel-rules.php','playlists'],
   ['aiLab','AI 가사·뮤비 제작','제작 종류 선택 → 초안 검토 → 곡정보에 저장','/noa-ai-lab.php','mic'],
   ['youtubeAdmin','YouTube 채널 관리','채널 수집 → 원곡 연결 검토 → 성과 확인','/noa-youtube-admin.php','youtube'],
  ]],
@@ -30,7 +31,6 @@ function noa_workspace_groups():array{return [
   ['documents','문서·변경 이력','문서 키와 저장 버전 확인','/noa-library.php?view=documents','book'],
   ['recovery','원본 복구','보존 자료와 복구 상태 확인','/noa-recovery.php','book'],
   ['database','데이터베이스 점검','운영 자료 관계와 저장 상태 확인','/noa-app/database/','library'],
-  ['taxonomy','분류·제작 규칙','기존 장르의 분류 규칙과 제작 원칙 관리','/noa-app/taxonomy/','playlists'],
   ['popularity','인기 집계 점검','유효 재생과 순위 집계 확인','/noa-app/popularity/','playlists'],
   ['system','시스템 기본 설정','그누보드 기반 설정','/adm/config_form.php','settings'],
   ['nativeTheme','게시판 기반 테마','게시판 기반 테마 유지보수','/adm/theme.php','settings'],

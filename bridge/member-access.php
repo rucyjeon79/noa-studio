@@ -22,7 +22,7 @@ function nam_requirement(string $path,string $method='GET',array $query=[]):?str
  if(in_array($path,['/noa-creator-review.php'],true))return 'admin';
  if(in_array($path,['/noa-channel-workspace.php'],true))return 'creator';
  if(in_array($path,['/noa-creator-ai.php','/noa-bridge/creator-ai.php'],true))return 'creatorAI';
- if($path==='/noa-creator.php'||$path==='/noa-bridge/creator.php')return 'creator';
+ if($path==='/noa-channel-rules.php'||$path==='/noa-creator.php'||$path==='/noa-bridge/creator.php')return 'creator';
  if($path==='/noa-bridge/legacy-audio.php')return null;
  if($path==='/noa-app/jukebox/stream.php'||$path==='/noa-app/jukebox/download.php')return null; // asset ownership checked after loading the record
  if(in_array($path,['/noa-music.php','/noa-music-download.php'],true))return 'member';

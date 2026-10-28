@@ -28,9 +28,9 @@ function noa_sound_audio(array $body,string $webRoot): string {
 function noa_sound_cover(array $body): string {
     // Only acquired, verified local cover files. YouTube thumbnails and Suno share
     // pages never stand in for original square covers. Unacquired art stays in source.
-    $source=$body['coverImageUrl']??$body['thumbUrl']??'';
+    $sources=[$body['cardImageLocation']??'', $body['coverImageUrl']??'', $body['thumbUrl']??''];
     static $map=null;if($map===null)$map=is_file(__DIR__.'/asset-covers.php')?require __DIR__.'/asset-covers.php':[];
-    return is_string($source)&&is_array($map)&&isset($map[$source])?(string)$map[$source]:'';
+    foreach($sources as $source){if(!is_string($source)||$source==='')continue;if(isset($map[$source]))return (string)$map[$source];if(in_array($source,$map,true))return $source;}return '';
 }
 /** A registered catalog song exists independently of either playback source.
  * Read-only projection: explicit editorial privacy and document overrides stay authoritative.

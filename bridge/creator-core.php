@@ -28,3 +28,13 @@ function nc_store(PDO $db,string $key,string $kind,array $d,int $revision,string
 function nc_owned_records(PDO $db,string $owner):array{
  $q=$db->prepare("SELECT doc_key,kind,payload,revision FROM noa_documents WHERE kind IN ('single','story','playlist') AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.ownerId'))=? ORDER BY updated_at DESC,doc_key");$q->execute([$owner]);return $q->fetchAll(PDO::FETCH_ASSOC);
 }
+
+/** Only aliases belonging to the selected owner's records leave this boundary. */
+function nc_record_aliases(PDO $db,array $records):array{
+ $out=[];foreach($records as $r){$k=$r['doc_key'];$out[$k]=array_values(array_unique([$k,preg_replace('/^catalog:/','',$k)]));}
+ try{foreach($db->query("SELECT alias_key,entity_id FROM noa_catalog_aliases WHERE batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)")as $a)if(isset($out[$a['alias_key']]))$out[$a['alias_key']][]=$a['entity_id'];}catch(PDOException $e){error_log('[creator-aliases] catalog unavailable');}return $out;
+}
+function nc_rules(array $body):array{
+ $rules=$body['rules']??null;if(!is_array($rules)||array_diff(array_keys($rules),array_merge(['common'],NC_GENRES)))throw new InvalidArgumentException('invalid_rules');
+ foreach($rules as $text)if(!is_string($text)||!mb_check_encoding($text,'UTF-8')||mb_strlen($text)>6000)throw new InvalidArgumentException('invalid_rules');return $rules;
+}
