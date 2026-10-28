@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__.'/common.php';require_once __DIR__.'/noa-bridge/toss-config.php';
-header('Cache-Control: private, no-store');header('Referrer-Policy: no-referrer');header('X-Frame-Options: DENY');
+// Native form POSTs need their same-origin Origin header for the CSRF check below.
+// no-referrer turns that header into "null"; external referrers remain suppressed.
+header('Cache-Control: private, no-store');header('Referrer-Policy: same-origin');header('X-Frame-Options: DENY');
 if(($is_admin??'')!=='super'){http_response_code(403);exit('최고관리자만 결제 연동 설정을 열 수 있습니다.');}
 $_SESSION['noa_toss_settings_csrf']??=bin2hex(random_bytes(32));$message='';
 if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
