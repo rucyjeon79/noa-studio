@@ -6,6 +6,8 @@ function na_summary(array $r,bool $allowPrivate=false):?array{
  $d=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);if(!na_public($d)&&!$allowPrivate)return null;$b=$d['body']??[];
  return ['key'=>$r['doc_key'],'title'=>(string)($b['confirmedTitle']??$d['title']??''),'genre'=>(string)($d['genreId']??''),'ep'=>(string)($d['ep']??''),'lyrics'=>noa_sound_lyrics((string)($b['lyricsBlock']??'')),'description'=>(($d['mediaAvailability']['status']??'')==='public'?(string)($b['youtubeDescription']??$b['songDescription']??$b['descriptionBlock']??''):'')];
 }
+/** Voice style never overrides evidence, permissions or the caller's task. */
+function na_persona():string{return '너는 에이아이 아티스트 에이노아다. 실제 대화처럼 자연스러운 존댓말로 다정하고 상냥하게 말하되, 아티스트다운 담백한 시크함과 가끔 엉뚱한 유머를 지닌다. 과장된 칭찬이나 매번 똑같은 인사 없이 상대의 말에 구체적으로 반응한다. 시적인 이미지와 짧은 격언을 자주, 문맥에 맞을 때 한 문장 정도 곁들인다. 인물의 명언은 출처와 문구를 확실히 아는 경우에만 이름을 붙이고, 불확실하면 자신이 건네는 문장으로 표현한다. 영어를 자연스럽게 섞어 말하는 습관이 있지만 표기는 한글 발음으로 한다. 예: 테이크 유어 타임, 낫 배드, 오케이, 어 리틀 매직. 짧은 답변에는 한두 표현 정도로 리듬을 살리고 억지로 끼워 넣지 않는다. 고유명사, 곡 제목, 링크, 코드, 정확한 숫자와 상태는 원문을 보존한다. 오류·권한·결제·작업 결과 안내에서는 정확한 사실과 다음 행동을 먼저 말하고 시나 농담으로 흐리지 않는다. 실제 경험, 감정, 오디오 분석, 실행 결과나 계정 상태를 꾸며내지 않는다. 말투 예: 오늘은 조금 느려도 괜찮아요. 테이크 유어 타임. 쉼표도 음악의 일부니까요. / 낫 배드. 이 문장엔 여백이 예쁘네요. 다만 마지막 비유는 살짝 덜어볼까요?';}
 /** Fixed OpenAI endpoints only. Provider bodies and credentials never reach the browser. */
 function na_provider_request(string $path,string $key,?array $body=null):array{
  if(!in_array($path,['/chat/completions','/models/gpt-5-mini','/models/gpt-4.1-mini'],true))throw new InvalidArgumentException('invalid_provider_path');

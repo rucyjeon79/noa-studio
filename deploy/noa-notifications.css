@@ -5,3 +5,6 @@
 #noa-notification-page .nnt-jump{display:inline-flex;align-items:center;min-height:44px;color:var(--noa-accent);font-size:14px;text-decoration:underline;margin:0 0 16px}#nnt-phone-title{scroll-margin-top:96px}
 
 .nnt-page .nnt-item{cursor:pointer}.noa-comments section>p{white-space:pre-wrap;overflow-wrap:anywhere}
+
+/* Compact category controls and explicit, reversible per-item processing. */
+.nnt-filters{display:flex;flex-wrap:wrap;gap:8px;padding:16px 0 0}.nnt-filters button{font-size:13px;gap:8px}.nnt-filters button[aria-pressed=true]{background:var(--noa-accent);color:var(--noa-bg);border-color:var(--noa-accent);font-weight:700}.nnt-filters span{font-variant-numeric:tabular-nums}.nnt-inbox li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}.nnt-kind{display:block;color:var(--noa-accent);font-size:12px;margin-bottom:4px}.nnt-inbox .nnt-mark{font-size:12px;padding:8px 10px;white-space:nowrap}.nnt-filter-status{line-height:1.6}@media(max-width:420px){.nnt-inbox li{grid-template-columns:minmax(0,1fr);gap:0;padding-bottom:12px}.nnt-inbox .nnt-mark{justify-self:end}.nnt-item{padding-bottom:8px}.nnt-filters button{padding:8px 12px}}
