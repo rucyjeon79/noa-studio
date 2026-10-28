@@ -120,3 +120,10 @@ html[data-noa-precision] body.noa-page .noa-collection-tools>.noa-action>span{po
 html[data-noa-precision] body.noa-page .noa-inline-act>[data-browse-level]{grid-column:1/-1;grid-row:3;margin-inline:calc(-1 * (var(--noa-list-inset) + 1px));padding-block:16px 0}
 html[data-noa-precision] body.noa-page .noa-inline-act>[data-browse-level]>h3{margin:0 0 12px;padding-inline:calc(var(--noa-list-inset) + 1px)}
 html[data-noa-precision] body.noa-page .noa-inline-songs{padding:0}
+
+/* Compact cards use one title line, followed by two metadata lines. Titles
+   retain their complete accessible text and existing full-title tooltip. */
+html[data-noa-precision] body .noa-engagement-card .noa-music-card>.noa-card-heading{min-block-size:0;align-items:center;margin:8px 0 4px}
+html[data-noa-precision] body .noa-engagement-card .noa-music-card strong{display:block;block-size:20px;min-block-size:0;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;font-size:14px}
+html[data-noa-precision] body .noa-engagement-card .noa-card-heading>.noa-rank-badge{min-block-size:20px;line-height:20px}
+html[data-noa-precision] body .noa-engagement-card .noa-music-card>.noa-card-meta{display:block;block-size:32px;line-height:16px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

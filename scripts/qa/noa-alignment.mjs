@@ -47,7 +47,16 @@ try{
    if(await page.locator('.ainoa-message').isVisible())await page.locator('.ainoa-message').waitFor({state:'hidden',timeout:12000});
    await page.screenshot({path:`${out}/chapter-${engine}-${width}-${theme}.png`});
    assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth));assert.deepEqual(errors,[]);
-   report.push({engine,width,theme,collections,songs,epCells:cells,chapterButtons:buttons});await context.close();
+   await page.goto(base+'/');await page.locator('#noa-featured .noa-engagement').first().waitFor();
+   const cards=await page.locator('#noa-featured .noa-engagement-card').evaluateAll(es=>es.map(e=>{
+    const b=s=>e.querySelector(s).getBoundingClientRect(),title=b('strong'),meta=b('.noa-card-meta'),heart=b('.noa-engagement svg');
+    return{top:e.getBoundingClientRect().top,titleTop:title.top,titleHeight:title.height,metaTop:meta.top,gap:meta.top-title.bottom,heartY:heart.y,heartX:heart.x,titleX:title.x};
+   }));
+   assert.equal(cards.length,10);
+   for(const c of cards){assert.equal(c.titleHeight,20);assert(c.gap>=0&&c.gap<=5,JSON.stringify(c));assert(Math.abs(c.heartX-c.titleX)<1,JSON.stringify(c));const peer=cards.find(p=>Math.abs(p.top-c.top)<1);assert(Math.abs(peer.heartY-c.heartY)<1,JSON.stringify({peer,c}));}
+   await page.getByRole('heading',{name:'추천 음악',exact:true}).click();await page.screenshot({path:`${out}/home-${engine}-${width}-${theme}.png`});
+   assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth));assert.deepEqual(errors,[]);
+   report.push({engine,width,theme,collections,songs,epCells:cells,chapterButtons:buttons,cards});await context.close();
   }
   await browser.close();browser=null;
  }
