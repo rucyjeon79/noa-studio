@@ -1,15 +1,15 @@
 name: NOA Site rhythm and home discovery
 on:
   pull_request:
-    paths: ['bridge/home*.php','deploy/noa-home.js','deploy/noa-ui.css','deploy/noa-my.php','scripts/noa_rhythm_release.py','scripts/qa/noa-rhythm.mjs','tests/rhythm/**','.github/workflows/noa-rhythm.yml']
+    paths: ['bridge/home*.php','deploy/noa-home.js','deploy/noa-ui.css','deploy/noa-engagement.css','deploy/noa-world.css','deploy/noa-my.php','scripts/noa_rhythm_release.py','scripts/qa/noa-rhythm.mjs','scripts/qa/noa-alignment.mjs','tests/rhythm/**','.github/workflows/noa-rhythm.yml']
   push:
     branches: [main]
-    paths: ['bridge/home*.php','deploy/noa-home.js','deploy/noa-ui.css','deploy/noa-my.php','scripts/noa_rhythm_release.py','scripts/qa/noa-rhythm.mjs','tests/rhythm/**','.github/workflows/noa-rhythm.yml']
+    paths: ['bridge/home*.php','deploy/noa-home.js','deploy/noa-ui.css','deploy/noa-engagement.css','deploy/noa-world.css','deploy/noa-my.php','scripts/noa_rhythm_release.py','scripts/qa/noa-rhythm.mjs','scripts/qa/noa-alignment.mjs','tests/rhythm/**','.github/workflows/noa-rhythm.yml']
 permissions: {contents: read}
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
@@ -27,7 +27,7 @@ jobs:
           php tests/rhythm/discovery.php
           for f in bridge/home*.php deploy/noa-my.php tests/rhythm/*.php; do php -l "$f"; done
           node --check deploy/noa-home.js
-          php tests/rhythm/fixture.php
+          php tests/rhythm/alignment-fixture.php
           python scripts/qa/noa-qa-font.py
           npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-voice" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           "$RUNNER_TEMP/noa-voice/node_modules/.bin/playwright" install --with-deps webkit
@@ -35,6 +35,7 @@ jobs:
           cp scripts/qa/noa-rhythm.mjs "$RUNNER_TEMP/noa-voice/rhythm.mjs"
           node "$RUNNER_TEMP/noa-voice/rhythm.mjs"
           node "$RUNNER_TEMP/noa-voice/check.mjs"
+          for name in alignment monthly premium; do cp "scripts/qa/noa-$name.mjs" "$RUNNER_TEMP/noa-voice/$name.mjs"; node "$RUNNER_TEMP/noa-voice/$name.mjs"; done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -42,6 +43,9 @@ jobs:
           path: |
             rhythm-proof/
             voice-proof/
+            alignment-proof/
+            monthly-proof/
+            premium-proof/
           retention-days: 7
   deploy:
     if: github.event_name == 'push'
@@ -74,7 +78,7 @@ jobs:
             assert 'no-store' in r.headers['Cache-Control']
           with urllib.request.urlopen(root+'/noa-bridge/home.php') as r:
             d=json.load(r);assert d['ok'] and 'discoveryCandidates' not in d
-            discovery=d['discovery'];ids=[x['videoId'] for x in discovery['mixed']];assert ids and len(ids)==len(set(ids))
+            discovery=d['discovery'];ids=[x['videoId'] for x in discovery['mixed']];assert len(ids)==10 and len(ids)==len(set(ids))
             assert all(x['viewGain']>0 for x in discovery['rising'])
             assert all(x['publishedAt'] for x in discovery['new'])
           print('RHYTHM_PRODUCTION_DISCOVERY_AND_PRIVACY_OK',json.dumps({k:len(discovery[k]) for k in ['mixed','popular','rising','new']}))

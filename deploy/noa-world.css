@@ -57,3 +57,16 @@ html[data-noa-precision] body section[aria-label="ACT 공식 뮤직비디오"]>h
 html[data-noa-precision] body section[aria-label="ACT 공식 뮤직비디오"]>.noa-world-grid{margin:12px 0 16px}
 html[data-noa-precision] body section[aria-label="ACT 공식 뮤직비디오"] .world-chapter-mv{margin:0}
 html[data-noa-precision] body .world-chapter-mv>details>summary.noa-action{margin:0;border:0;background:transparent;padding-inline:0}
+
+/* Equal cells keep ACT/EP navigation aligned even when labels have two digits. */
+html[data-noa-precision] body .noa-world-links:is([aria-label="세계관 ACT 선택"],[aria-label="EP 선택"]){display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;max-width:780px;margin:12px 0 24px}
+html[data-noa-precision] body .noa-world-links:is([aria-label="세계관 ACT 선택"],[aria-label="EP 선택"])>*{width:100%;min-width:0;height:44px;margin:0;padding:8px 4px;box-sizing:border-box}
+html[data-noa-precision] body .noa-world-links[aria-label="이전 다음 EP"]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:780px}
+html[data-noa-precision] body .noa-world-chapter{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 8px;max-width:780px;padding:16px 0 24px}
+html[data-noa-precision] body .noa-world-chapter>*{grid-column:1/-1;min-width:0;margin:0}
+html[data-noa-precision] body .noa-world-chapter>details:not([open]),html[data-noa-precision] body .noa-world-chapter>a.noa-action{grid-column:auto;width:100%;margin:0}
+html[data-noa-precision] body .noa-world-chapter>details{display:block;margin:0}
+html[data-noa-precision] body .noa-world-chapter>details>summary.noa-action,html[data-noa-precision] body .noa-world-chapter>a.noa-action{width:100%;min-height:44px;margin:0;padding:8px 12px;box-sizing:border-box}
+html[data-noa-precision] body .noa-world-chapter>:is(.noa-eyebrow,h3,.noa-muted,.noa-world-text,.world-chapter-mv){margin:0}
+html[data-noa-precision] body .noa-world-chapter>details[open]>.noa-world-text{margin:12px 0 0}
+@media(min-width:760px){html[data-noa-precision] body .noa-world-links[aria-label="EP 선택"]{grid-template-columns:repeat(10,minmax(0,1fr))}}
