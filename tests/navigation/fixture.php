@@ -1,7 +1,8 @@
 <?php
 /** Disposable native-auth fixture. No production credentials, session or database. */
 require __DIR__.'/../pwa/fixture.php';
-foreach(['noa-my.php','noa-workspace.php','noa-browse.js','noa-browse-order.js','noa-browse-edit.js','noa-policy-20261024.css']as $file)copy('deploy/'.$file,$root.'/'.$file);
+foreach(glob('bridge/*.php') as $file)copy($file,$root.'/noa-bridge/'.basename($file));
+foreach(['noa-channel-menu.php','noa-member-badges.css','noa-member-badges.js','noa-creator-apply.php','noa-creator-ai.php','noa-creator-review.php','noa-channel-workspace.php','noa-my.php','noa-workspace.php','noa-browse.js','noa-browse-order.js','noa-browse-edit.js','noa-policy-20261024.css']as $file)copy('deploy/'.$file,$root.'/'.$file);
 $common=file_get_contents($root.'/common.php');$common=str_replace("\$is_admin='';","\$is_admin=\$role==='admin'?'super':'';",$common);file_put_contents($root.'/common.php',$common);
 $router=file_get_contents($root.'/router.php');$router=str_replace("if(\$path==='/noa-bridge/membership.php'||\$path==='/noa-bridge/ui-preferences.php')",<<<'CODE'
 if($path==='/bbs/logout.php'){setcookie('qa_role','',time()-3600,'/');header('Location: /');return true;}
