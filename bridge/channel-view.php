@@ -22,7 +22,7 @@ function ncv_records(PDO $db,array $channel,bool $canPlay):array{
  $owner=(string)($channel['document']['ownerId']??'');$id=substr($channel['doc_key'],strlen('creator-channel:'));if($owner===''||!hash_equals($id,hash('sha256',$owner)))throw new DomainException('channel_owner_mismatch');
  $records=nc_owned_records($db,$owner);$aliases=nc_record_aliases($db,$records);$assets=nj_assets($db);
  return ncv_project($records,$aliases,$id,static function(string $key,array $d)use($assets,$owner,$canPlay,$channel){
-  $source=(string)($assets[$key]['source_url']??'');$audio=noa_music_asset_url($assets,$key,$source,'audio');if($audio==='')return null;
+  $source=noa_sound_suno($d['body']??[]);$audio=noa_music_asset_url($assets,$key,$source,'audio');if($audio==='')return null;
   $cover=noa_music_cover($assets,$key,$source,$d['body']??[],$owner);if(str_starts_with($cover,'/noa-creator-symbol.php'))$cover.='&v='.$channel['revision'];
   return ['audio'=>$canPlay?$audio:'','cover'=>$cover];
  });

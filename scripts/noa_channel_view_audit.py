@@ -17,18 +17,18 @@ def main():
     with s.open(remote,'rb') as f:assert f.read()==code
     req=urllib.request.Request('https://noastudio.ai.kr/noa-bridge/'+name,data=b'{}',headers={'Content-Type':'application/json','X-NOA-Control':token})
     with urllib.request.build_opener(NoRedirect()).open(req,timeout=45) as r:data=json.load(r)
-    assert data['ok'] and data['counts']['emptyCovers']==0 and data['channelOwned'] and data['publicSongs']>0;(out/'ownership-covers.json').write_text(json.dumps(data,indent=2));print('CHANNEL_VIEW_LIVE_READ_ONLY_OK',json.dumps(data))
+    assert data['ok'] and data['counts']['emptyCovers']==0 and data['channelOwned'] and data['publicSongs']>0;html=data.pop('html');(out/'production-render.html').write_text(html);(out/'ownership-covers.json').write_text(json.dumps(data,indent=2));print('CHANNEL_VIEW_LIVE_READ_ONLY_OK',json.dumps(data))
    finally:
     if installed:s.remove(remote)
  finally:t.close()
  import re
  url='https://noastudio.ai.kr/noa-channel.php?id='+data['channelId']
- with urllib.request.urlopen(url,timeout=45) as r:html=r.read().decode()
+ with urllib.request.urlopen(url,timeout=45) as r:assert '/bbs/login.php' in r.url, 'guest membership gate preserved'
  projection=json.loads(re.search(r'<script id="channel-data" type="application/json">(.*?)</script>',html,re.S).group(1))
  songs=[v for v in projection['records'] if v['kind']!='playlist']
  assert len(songs)==data['publicSongs'] and all(not v['audio'] and v['cover'] for v in songs)
  assert 'data-columns="4"' in html and 'channel-navigation' in html
- (out/'production-page.json').write_text(json.dumps({'url':url,'publicSongs':len(songs),'audioUrlsExposedToGuest':0,'writes':0}))
+ (out/'production-page.json').write_text(json.dumps({'url':url,'publicSongs':len(songs),'audioUrlsExposedToBasicMember':0,'render':'signed-read-only-installed-template','guestLoginRequired':True,'writes':0}))
  for p in ['/noa-creator-symbol.php','/noa-creator-symbol.php?channel='+hashlib.sha256(b'admin').hexdigest()]:
   with urllib.request.urlopen('https://noastudio.ai.kr'+p,timeout=30) as r:assert r.status==200 and r.headers['Content-Type'].startswith('image/') and len(r.read())>100
  print('CHANNEL_VIEW_SYMBOL_PUBLIC_OK')
