@@ -2,6 +2,9 @@
 const metric=value=>{if(typeof value!=='number'&&(typeof value!=='string'||!/^\d+$/.test(value)))return null;const n=Number(value);return Number.isSafeInteger(n)&&n>=0?n:null;};
 const number=value=>{const n=metric(value);return n===null?'미확인':n.toLocaleString(document.documentElement.lang||'ko');};
 function metadata(row,playlist,integrated){
+ if(row.recommendationKind==='new'){const date=new Date(row.publishedAt);return Number.isFinite(date.getTime())?date.toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'})+' 공개':'최근 공개';}
+ if(row.recommendationKind==='rising')return '최근 조회수 +'+number(row.viewGain);
+ if(row.recommendationKind==='popular')return metric(row.jukeboxPlays)!==null?'인기 '+number(row.score)+'점':'조회 '+number(row.views);
  const plays=metric(row.jukeboxPlays);
  if(integrated||(plays!==null&&plays>0))return '인기 점수 '+number(row.score)+' · YouTube '+number(row.youtubeViews??row.views)+' · 음원 '+number(row.jukeboxPlays);
  return (playlist&&row.playlistId?'수록 영상 조회 ':'조회 ')+number(playlist?(row.youtubeViews??row.views??row.score):(row.youtubeViews??row.views));
