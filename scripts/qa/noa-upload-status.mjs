@@ -85,13 +85,15 @@ try{
   report.push({width,reselectionAfterCapacityError:true,initCalls,chunkCalls,finishCalls,fixtureData:true});
   // Reproduce the real song grid: cancellation must not occupy the 56px cover column.
   const mediaCss=phase==='candidate'?readFileSync('deploy/noa-app/p0-media.css','utf8'):await(await context.request.get(base+'/noa-app/p0-media.css?qa='+Date.now())).text();
+  await page.setContent('<!doctype html><html data-noa-precision><meta name="viewport" content="width=device-width,initial-scale=1"><body class="noa-page"><main id="layout-fixture" style="max-width:700px;margin:12px"></main></body></html>');
+  for(const path of ['noa-ui.css','noa-policy-20261024.css','noa-engagement.css','noa-app/jukebox/upload.css'])await page.addStyleTag({content:readFileSync('deploy/'+path,'utf8')});
   await page.addStyleTag({content:mediaCss});
   await page.evaluate(()=>{
    document.body.classList.add('noa-page');
-   const row=document.createElement('article');row.id='cancel-layout-check';
+   const row=document.createElement('article');row.id='cancel-layout-check';row.className='noa-inline-song-row';
    row.style.cssText='display:grid;grid-template-columns:56px minmax(88px,1fr) repeat(3,44px);gap:0 8px';
    row.innerHTML='<div style="grid-column:1/-1">최적화 대기</div><button class="jukebox-cancel-job">최적화 취소</button>';
-   document.body.append(row);
+   document.querySelector('#layout-fixture').append(row);
   });
   const geometry=await page.locator('#cancel-layout-check .jukebox-cancel-job').evaluate(el=>({width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height,column:getComputedStyle(el).gridColumn,wrap:getComputedStyle(el).whiteSpace}));
   assert.equal(geometry.column,'1 / -1');assert.equal(geometry.wrap,'nowrap');assert(geometry.height>=44&&geometry.height<70);assert(geometry.width>80);
