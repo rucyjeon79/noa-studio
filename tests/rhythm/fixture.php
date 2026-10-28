@@ -20,3 +20,7 @@ if($path==='/noa-bridge/engagement.php'){header('Content-Type: application/json'
 if($path==='/noa2.php')
 CODE,$router);file_put_contents($root.'/router.php',$router);
 echo "SITE_RHYTHM_FIXTURE_READY\n";
+copy('deploy/noa-settings.php',$root.'/noa-settings.php');
+file_put_contents($root.'/bbs/rhythm.php', <<<'HTML'
+<?php require dirname(__DIR__).'/common.php';?><!doctype html><html class="noa-g5" lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><script src="/noa-ui.js" defer></script></head><body><div id="wrapper"><h1>커뮤니티</h1><div class="btn_bo_user"><a href="#list">목록</a><a href="#write">글쓰기</a><button type="button">검색</button></div><p>게시판의 기존 권한과 작성 기능은 유지됩니다.</p></div></body></html>
+HTML);

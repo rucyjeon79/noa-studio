@@ -460,3 +460,7 @@ html[data-noa-precision] body main .noa-section>h2{margin:0 0 12px}
 .noa-discovery-tabs button{min-width:44px;min-height:44px;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:var(--noa-muted);padding:8px 12px;font:inherit;font-size:13px;cursor:pointer}
 .noa-discovery-tabs button[aria-pressed=true]{color:var(--noa-accent);border-bottom-color:currentColor}
 .noa-discovery-reason{display:block;color:var(--noa-accent);font-size:11px;line-height:1.5;margin:6px 0 0}
+/* Native board actions follow the same horizontal controls. */
+html[data-noa-precision].noa-g5 :is(.btn_bo_user,.btn_confirm,.bo_v_nb,.bo_v_com) .noa-action{flex-direction:row;gap:6px;min-height:44px;padding:8px 12px}
+html[data-noa-precision].noa-g5 :is(.btn_bo_user,.btn_confirm,.bo_v_nb,.bo_v_com) .noa-action>svg{width:18px;height:18px}
+html[data-noa-precision].noa-g5 :is(.btn_bo_user,.btn_confirm,.bo_v_nb,.bo_v_com) .noa-action>span{font-size:13px;line-height:1.35}

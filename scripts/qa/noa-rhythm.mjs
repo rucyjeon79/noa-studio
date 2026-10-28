@@ -10,7 +10,7 @@ try{for(const engine of ['chromium','webkit']){
  for(const width of engine==='webkit'?[390]:[320,390,1280])for(const theme of ['noa-studio','noa-ivory']){
   const context=await browser.newContext({viewport:{width,height:900},serviceWorkers:'block',reducedMotion:'reduce'});await context.addCookies([{name:'qa_role',value:'admin',url:base}]);await context.addInitScript(t=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme:t,language:'ko',design:'ios',radius:'soft'})),theme);
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  for(const [name,path]of [['home','/'],['my','/noa-my.php'],['world','/noa-world.php?story=1'],['music','/rhythm-music.php']]){
+  for(const [name,path]of [['home','/'],['my','/noa-my.php'],['world','/noa-world.php?story=1'],['music','/rhythm-music.php'],['settings','/noa-settings.php'],['board','/bbs/rhythm.php']]){
    await page.goto(base+path);await page.locator('#noa-account-bar').waitFor();
    if(name==='home'){
     await page.locator('.noa-discovery-tabs').waitFor();assert.equal(await page.locator('#noa-featured .noa-music-card').count(),8);
@@ -25,7 +25,7 @@ try{for(const engine of ['chromium','webkit']){
    if(name==='music'){
     await page.locator('.noa-inline-song-row .noa-engagement button').first().waitFor();const d=await page.locator('.noa-inline-song-row').evaluate(row=>{const b=[...row.querySelectorAll('.noa-engagement>button')],r=b.map(x=>x.getBoundingClientRect());return {height:row.getBoundingClientRect().height,gap:b[1].querySelector('svg').getBoundingClientRect().x-b[0].querySelector('span').getBoundingClientRect().right,targets:r.every(x=>x.width>=44&&x.height>=44),aligned:r[0].y===r[1].y};});assert(d.height<=104&&d.gap>=0&&d.gap<=5&&d.targets&&d.aligned,JSON.stringify(d));
    }
-   const dims=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth,controls:[...document.querySelectorAll('main .noa-action:not(.noa-personal-card)')].filter(e=>e.getBoundingClientRect().height>0&&!e.closest('.noa-workspace-grid,.noa-hero,.noa-engagement')).map(e=>({text:e.textContent.trim(),direction:getComputedStyle(e).flexDirection,height:e.getBoundingClientRect().height}))}));
+   const dims=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth,controls:[...document.querySelectorAll('main .noa-action:not(.noa-personal-card),.btn_bo_user .noa-action')].filter(e=>e.getBoundingClientRect().height>0&&!e.closest('.noa-workspace-grid,.noa-hero,.noa-engagement')).map(e=>({text:e.textContent.trim(),direction:getComputedStyle(e).flexDirection,height:e.getBoundingClientRect().height}))}));
    assert(!dims.overflow,`${name}/${width} overflow`);assert(dims.controls.every(x=>x.direction==='row'&&x.height>=44),JSON.stringify({name,width,...dims}));
    await page.screenshot({path:`${out}/${name}-${engine}-${width}-${theme}.png`});report.push({name,engine,width,theme,...dims});
   }
