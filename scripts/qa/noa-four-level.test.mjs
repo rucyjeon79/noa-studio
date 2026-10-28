@@ -6,7 +6,7 @@ class Element {
  constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.dataset={};this.attrs={};this.textContent='';}
  append(...nodes){this.children.push(...nodes);}
  prepend(...nodes){this.children.unshift(...nodes);}
- replaceChildren(...nodes){this.children=nodes;}
+ replaceChildren(...nodes){this.textContent='';this.children=nodes;}
  setAttribute(k,v){this.attrs[k]=v;}
  querySelectorAll(selector){
   if(selector==='.noa-inline-act[data-act-number]')return all(this,n=>n.className==='noa-inline-act'&&n.dataset.actNumber);
