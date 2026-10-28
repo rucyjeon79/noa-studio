@@ -1,4 +1,4 @@
-"""Preserve HOME outside the user-approved hero, account header assets, native notices and the approved per-board title projection.
+"""Preserve HOME outside the user-approved hero, account header assets, native notices and the approved per-board title projection and the three requested partner banners.
 Notice content and disclosure geometry are checked by the native and browser suites.
 """
 import argparse,re,subprocess
@@ -13,6 +13,10 @@ baseline=args.host_source.read_bytes()if args.host_source else subprocess.check_
 MONTHLY_INCLUDE=b"<?php if(is_file(__DIR__.'/monthly-banner.php'))require __DIR__.'/monthly-banner.php';?>\n"
 def outside_approved_hero(source):
  source=source.replace(MONTHLY_INCLUDE,b'')
+ # User-authorized partner renderer and exactly three call sites; other HOME bytes stay guarded.
+ source=re.sub(rb'\nfunction noa_home_banner\(string \$kind\):void\{.*?\n}\n',b'',source,flags=re.S)
+ for kind in [b'goods',b'youtube',b'amt']:
+  source=source.replace(b"<?php noa_home_banner('"+kind+b"');?>\n",b'')
  source=re.sub(rb'if\(is_file\(dirname\(__DIR__\).*?/noa-bridge/notices[.]php.*?\$noa_notices=.*?;\n',b'',source,flags=re.S)
  source=re.sub(rb'<section class="noa-section noa-notices".*?</section>\n',b'',source,flags=re.S)
  for pattern in [rb'<style id="noa-home-action-layout">.*?</style>',rb'<section class="noa-hero".*?</section>',rb'<script id="noa-home-hero-size">.*?</script>']:
@@ -35,3 +39,9 @@ assert candidate.count(b'noa-home.js?v=20261024-popularity-metrics')==1,'reviewe
 for marker in [b'id="noa-hero-video"',b'id="noa-hero-genre"',b'id="noa-hero-play"',b'id="noa-featured"',b'id="noa-ep"',b'id="noa-stories"',b'id="noa-covers"',b'id="noa-acts"']:
  assert candidate.count(marker)==1,'missing/duplicate HOME section '+marker.decode()
 print('NOA_HOME_NON_HERO_BYTES_PRESERVED_GENRE_VIDEO_SITEMAP_AND_COMMUNITY_CONTRACT_OK')
+
+for kind in [b'goods',b'youtube',b'amt']:
+ assert candidate.count(b"<?php noa_home_banner('"+kind+b"');?>") == 1,'one partner banner per requested position'
+for url in [b'https://marpple.shop/kr/jr_lifestyle',b'https://youtube.com/@ainoa_ramjunpapa?sub_confirmation=1',b'https://www.aimusictown.com/creators/ainoa']:
+ assert candidate.count(url)==1,'exact requested external destination'
+assert b'rel="noopener noreferrer"' in candidate and b'target="_blank"' in candidate
