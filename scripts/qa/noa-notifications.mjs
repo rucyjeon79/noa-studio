@@ -73,16 +73,22 @@ try{
   const dims=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth,targets:[...document.querySelectorAll('#noa-notification-page button')].filter(b=>b.getBoundingClientRect().height>0).every(b=>b.getBoundingClientRect().height>=44)}));assert(!dims.overflow&&dims.targets,JSON.stringify(dims));const name=`notifications-${width}-${theme}.png`;await page.screenshot({path:'/workspace/screenshots/'+name,fullPage:true});await page.screenshot({path:out+'/'+name,fullPage:true});report.layouts.push({width,theme,...dims});
  }
  await page.getByRole('button',{name:'이 기기 알림 끄기',exact:true}).click();await page.getByText('이 기기 알림을 껐어요. 알림함에서는 계속 확인할 수 있어요.',{exact:true}).waitFor();assert(!(await get('a')).data.devices.includes(await page.evaluate(async endpoint=>{const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(endpoint));return [...new Uint8Array(bytes)].map(n=>n.toString(16).padStart(2,'0')).join('');},subscription.endpoint+'-ui')));
- await page.goto(base+'/notification-shell.php');await page.locator('.ainoa-symbol').click();await page.getByRole('link',{name:/내 활동 알림/}).waitFor();
+ await page.goto(base+'/notification-shell.php');await page.locator('.ainoa-symbol').click();await page.locator('.ainoa-panel-body').waitFor();assert.equal(await page.locator('#noa-ainoa .nnt-entry,#noa-ainoa>.nnt-badge').count(),0);
+ await page.goto(base+'/noa-my.php');await page.locator('#noa-my-activity .nnt-entry').waitFor();
+ assert.equal(await page.locator('#noa-my-account .noa-my-level').count(),1);assert.equal(await page.getByRole('heading',{name:'나의 회원 등급'}).count(),0);
+ assert(await page.evaluate(()=>!!(document.querySelector('#noa-my-activity').compareDocumentPosition(document.querySelector('#my-recent'))&Node.DOCUMENT_POSITION_FOLLOWING)));
  for(const width of [390,1280])for(const theme of ['dark','light']){
   await page.setViewportSize({width,height:900});await setTheme(theme);
-  const entry=page.locator('.ainoa-panel-body>.nnt-entry');await entry.getByText('좋아요·댓글·답글 소식을 확인하세요.',{exact:true}).waitFor();
-  const dims=await entry.evaluate(el=>({width:el.clientWidth,overflow:el.scrollWidth>el.clientWidth,height:el.getBoundingClientRect().height,iconVisible:el.querySelector('svg').getBoundingClientRect().width>=24}));assert(!dims.overflow&&dims.height>=44&&dims.iconVisible,JSON.stringify(dims));
-  const name=`notification-entry-${width}-${theme}.png`;await page.screenshot({path:'/workspace/screenshots/'+name,fullPage:true});await page.screenshot({path:out+'/'+name,fullPage:true});report.layouts.push({surface:'AInoa entry',viewport:width,theme,...dims});
+  const entry=page.locator('#noa-my-activity>.nnt-entry');const dims=await entry.evaluate(el=>({overflow:el.scrollWidth>el.clientWidth,height:el.getBoundingClientRect().height}));assert(!dims.overflow&&dims.height>=44,JSON.stringify(dims));
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  const name=`my-activity-${width}-${theme}.png`;await page.screenshot({path:'/workspace/screenshots/'+name,fullPage:true});await page.screenshot({path:out+'/'+name,fullPage:true});report.layouts.push({surface:'MY activity',viewport:width,theme,...dims});
  }
- await page.getByRole('link',{name:/내 활동 알림/}).click();await page.getByRole('heading',{name:'내 활동 알림',exact:true}).waitFor();
+ await page.getByRole('link',{name:/도착한 소식/}).click();await page.getByRole('heading',{name:'내 활동 알림',exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:/새 글/}).count(),0);
+ const adminPage=await contexts.admin.newPage();await adminPage.goto(base+'/noa-notifications.php');await adminPage.locator('#nnt-content').waitFor();await adminPage.getByRole('button',{name:/새 글/}).click();await adminPage.getByText(/새 글 소식 2개/).waitFor();assert.equal(await adminPage.locator('#nnt-list li').count(),2);
+ const adminData=(await get('admin')).data;const publicPost=adminData.items.find(x=>x.kind==='new_post'&&x.url.includes('bo_table=free'));
+ await adminPage.locator('#nnt-item-'+publicPost.id).click();await adminPage.locator('dialog.noa-comments').waitFor();assert.equal(adminPage.url(),base+'/noa-notifications.php');await adminPage.close();
  assert.equal(errors.length,0,errors.join('\n'));
  await page.route('**/noa-bridge/notifications.php?*',route=>route.fulfill({status:401,contentType:'text/html',body:'<!doctype html><title>Unauthorized</title>'}));await page.reload();await page.locator('#nnt-login').getByRole('link',{name:'로그인',exact:true}).waitFor();
- report.api.push('explicit user gesture permission only','subscribe and revoke UI','preferences persisted','AInoa notification navigation','host HTML 401 login recovery');
+ report.api.push('explicit user gesture permission only','subscribe and revoke UI','preferences persisted','MY activity navigation and integrated membership','no AInoa inbox entry','administrator-only new posts','host HTML 401 login recovery');
  writeFileSync(out+'/qa.json',JSON.stringify(report,null,2));console.log('NOTIFICATION_API_UI_PASS',JSON.stringify(report));
 }finally{await browser.close();server.kill();}

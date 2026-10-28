@@ -47,10 +47,20 @@ function nnt_app_event(PDO $db,array $r,bool $like,int $now):void{
  // Flat comments notify existing participants as thread activity, not as direct mentions.
  if(!$like)foreach(nnt_rows($db,'SELECT DISTINCT owner FROM noa_post_comments WHERE entity=? AND id<? AND deleted_at IS NULL',[$r['entity'],$r['id']])as $p){if($p['owner']===$target['owner'])continue;nnt_emit($db,$p['owner'],$event,'reply',$r['entity'],$r['owner'],$source,(int)$r['id'],$target['url'],$now);}
 }
+/** Administrator inbox entries stay bound to the currently configured administrator. */
+function nnt_admin_post(PDO $db,string $owner,string $board,int $id):bool{
+ global $config,$g5;
+ if($owner===''||$owner!==($config['cf_admin']??'')||!nnt_member($db,$owner)||!preg_match('/^[A-Za-z0-9_]{1,20}$/D',$board)||!nnt_exists($db,$g5['write_prefix'].$board))return false;
+ return nnt_one($db,'SELECT 1 FROM '.nnt_table($g5['board_table']).' WHERE bo_table=?',[$board])!==null&&nnt_one($db,'SELECT 1 FROM '.nnt_table($g5['write_prefix'].$board).' WHERE wr_id=? AND wr_is_comment=0',[$id])!==null;
+}
 function nnt_native_event(PDO $db,array $r,bool $like,int $now):void{
  global $g5,$config;$board=(string)$r['bo_table'];if(!preg_match('/^[A-Za-z0-9_]{1,20}$/D',$board)||!nnt_exists($db,$g5['write_prefix'].$board))return;
  $table=nnt_table($g5['write_prefix'].$board);$post=nnt_one($db,"SELECT * FROM $table WHERE wr_id=?",[$r['wr_id']]);if(!$post)return;
  $parent=(int)($post['wr_is_comment']?$post['wr_parent']:$post['wr_id']);$entity='board:'.$board.':'.$parent;
+ if(!$like&&!$post['wr_is_comment']){
+  $admin=(string)($config['cf_admin']??'');
+  if(nnt_admin_post($db,$admin,$board,$parent))nnt_enqueue($db,$admin,'admin-post:'.$board.':'.$parent,'new_post',$entity,(string)$post['mb_id'],'native_post',$parent,'/bbs/board.php?bo_table='.rawurlencode($board).'&wr_id='.$parent,$now);
+ }
  if($board==='song_request'){
   // A private request produces only an owner notification for a real administrator reply.
   if($like||!$post['wr_is_comment']||$post['mb_id']!==($config['cf_admin']??''))return;$target=nnt_request($db,$board,$parent);if(!$target)return;
@@ -82,6 +92,7 @@ function nnt_collect(PDO $db,int $now):array{
 }
 function nnt_source_alive(PDO $db,array $r):bool{
  global $g5;if($r['source']==='test')return true;
+ if($r['kind']==='new_post')return $r['source']==='native_post'&&preg_match('/^board:([A-Za-z0-9_]{1,20}):([1-9][0-9]*)$/D',$r['entity'],$m)&&nnt_admin_post($db,$r['recipient'],$m[1],(int)$m[2]);
  if($r['source']==='app_comment'){$c=nnt_one($db,'SELECT deleted_at FROM noa_post_comments WHERE id=? AND entity=?',[$r['source_id'],$r['entity']]);if(!$c||$c['deleted_at']!==null)return false;}
  elseif($r['source']==='app_like'){if(!nnt_one($db,'SELECT 1 FROM noa_post_likes WHERE entity=? AND owner=? AND active=1',[$r['entity'],$r['actor']]))return false;}
  elseif(preg_match('/^board:([A-Za-z0-9_]{1,20}):([1-9][0-9]*)$/D',$r['entity'],$m)){
@@ -110,6 +121,10 @@ function nnt_prune(PDO $db,int $now):void{
 function nnt_thread(PDO $db,string $owner,int $id):array {
  $row=nnt_one($db,'SELECT * FROM noa_notifications WHERE id=? AND recipient=? AND cancelled_at IS NULL',[$id,$owner]);
  if(!$row||!nnt_source_alive($db,$row))throw new DomainException('post_not_available');
+ if($row['kind']==='new_post'){
+  if(preg_match('/^board:song_request:([1-9][0-9]*)$/D',$row['entity'],$m))return ['private'=>true,'id'=>(int)$m[1]];
+  if(!nnt_target($db,$row['entity'],$owner))return ['nativeUrl'=>$row['url']];
+ }
  if($row['kind']==='test')return ['test'=>true];
  if($row['kind']==='request_reply'&&preg_match('/^board:song_request:([1-9][0-9]*)$/D',$row['entity'],$m))return ['private'=>true,'id'=>(int)$m[1]];
  $resolved=nnt_target($db,$row['entity'],$owner);if(!$resolved)throw new DomainException('post_not_available');$target=$resolved['target'];$focus=null;

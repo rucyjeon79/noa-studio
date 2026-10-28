@@ -12,6 +12,7 @@ release.FILES={
  'noa-notifications.css':'deploy/noa-notifications.css',
  'noa-notifications.js':'deploy/noa-notifications.js',
  'noa-notifications.php':'deploy/noa-notifications.php',
+ 'noa-my.php':'deploy/noa-my.php',
  'noa-sw.js':'deploy/noa-sw.js',
  'noa-sitemap.php':'deploy/noa-sitemap.php',
  'extend/noa.design.php':'deploy/noa-design.extend.php',

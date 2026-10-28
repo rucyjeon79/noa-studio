@@ -12,7 +12,7 @@ PHP;
 file_put_contents($root.'/common.php',$extra,FILE_APPEND);
 copy('deploy/noa-engagement.extend.php',$root.'/extend/zz.noa-engagement.php');
 copy('deploy/noa-notifications.extend.php',$root.'/extend/zz.noa-notifications.php');
-foreach(['noa-notifications.php','noa-notifications.js','noa-notifications.css','noa-sw.js','noa-ainoa.js','noa-ainoa.css','noa-brand.js','noa-policy-20261024.css']as $file)copy('deploy/'.$file,$root.'/'.$file);
+foreach(['noa-my.php','noa-history.js','noa-account.css','noa-notifications.php','noa-notifications.js','noa-notifications.css','noa-sw.js','noa-ainoa.js','noa-ainoa.css','noa-brand.js','noa-policy-20261024.css']as $file)copy('deploy/'.$file,$root.'/'.$file);
 @mkdir($root.'/noa-assets',0700,true);copy('public/ainoa/ainoa-symbol.png',$root.'/noa-assets/ainoa-symbol.png');
 foreach(['papa-logo.png','icon-180.png']as $asset)copy('public/'.$asset,$root.'/noa-assets/'.$asset);
 foreach(['notifications-inline.php','notifications-core.php','notifications-sources.php','notifications.php','notification-worker.php']as $file)copy('bridge/'.$file,$root.'/noa-bridge/'.$file);
@@ -99,6 +99,17 @@ $systemUnread=nnt_inbox($db,'qa_a',0,'system')['unread'];nnt_mark($db,'qa_a',$fi
 nnt_mark($db,'qa_a',$firstId,false,'all',false);check(in_array($firstId,array_column(nnt_inbox($db,'qa_a',0,'comments')['items'],'id'),true),'reversible confirmation');
 try{nnt_inbox($db,'qa_a',0,'unknown');throw new RuntimeException('invalid filter accepted');}catch(DomainException $expected){}
 foreach($temporary as $id){nnt_exec($db,'DELETE FROM noa_notification_delivery WHERE notification_id=?',[$id]);nnt_exec($db,'DELETE FROM noa_notifications WHERE id=?',[$id]);}
+// Only the current administrator receives new public/private posts; no push opt-in expansion.
+$db->exec("INSERT INTO g5_board_new (bo_table,wr_id,wr_parent,bn_datetime,mb_id) VALUES ('free',1,1,NOW(),'qa_a'),('song_request',1,1,NOW(),'qa_a')");
+nnt_collect($db,time());$adminPosts=nnt_inbox($db,'qa_admin',0,'posts');check(count($adminPosts['items'])===2,'administrator sees public and private new posts');
+check(nnt_inbox($db,'qa_a',0,'posts')['items']===[],'ordinary member has no admin posts');
+foreach($adminPosts['items']as $item){check(!str_contains($item['text'],'private title'),'private title not exposed');check(nnt_one($db,'SELECT 1 FROM noa_notification_delivery WHERE notification_id=?',[$item['id']])===null,'admin inbox only');}
+$adminPublic=nnt_one($db,"SELECT * FROM noa_notifications WHERE recipient='qa_admin' AND kind='new_post' AND entity='board:free:1'");
+$adminPrivate=nnt_one($db,"SELECT * FROM noa_notifications WHERE recipient='qa_admin' AND kind='new_post' AND entity='board:song_request:1'");
+check(nnt_thread($db,'qa_admin',(int)$adminPublic['id'])['target']['key']==='free:1','admin public inline preview');
+check(nnt_thread($db,'qa_admin',(int)$adminPrivate['id'])===['private'=>true,'id'=>1],'admin private uses existing permission gates');
+$config['cf_admin']='qa_b';check(!nnt_source_alive($db,$adminPublic),'administrator role revocation');$config['cf_admin']='qa_admin';
+nnt_collect($db,time());check(nnt_inbox($db,'qa_admin',0,'posts')['counts']['posts']===2,'new post collection idempotent');
 // Leave useful owned inbox items for UI/API tests, no active external subscriptions.
 $db->exec('DELETE FROM noa_notification_delivery');$db->exec('DELETE FROM noa_push_subscriptions');
 file_put_contents($root.'/notification-shell.php',"<?php require __DIR__.'/common.php';?><!doctype html><html lang=ko><head><meta charset=utf-8><link rel=stylesheet href=/noa-ui.css><link rel=stylesheet href=/noa-ainoa.css><script src=/noa-ainoa.js defer></script></head><body class=noa-page><main><h1>NOA STUDIO</h1></main></body></html>");
