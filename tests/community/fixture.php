@@ -18,7 +18,7 @@ if(($_SERVER['HTTP_ORIGIN']??'')==='http://127.0.0.1:8076')$_SERVER['HTTP_ORIGIN
 require __DIR__.'/extend/noa.design.php';
 PHP;
 file_put_contents($root.'/common.php',$common);
-foreach(['community-core.php','community.php','community-install.php']as $file)copy('bridge/'.$file,$root.'/noa-bridge/'.$file);
+foreach(['member-access.php','member-badges.php','community-core.php','community.php','community-install.php']as $file)copy('bridge/'.$file,$root.'/noa-bridge/'.$file);
 copy('deploy/noa-community.extend.php',$root.'/extend/noa.01-community.php');copy('deploy/noa-design.extend.php',$root.'/extend/noa.design.php');
 foreach(['noa-community.js','noa-community.css','noa-ui.js','noa-ui.css','noa-design.json','noa-ui-words.json','noa-account.js','noa-account.css','noa-launch.js','noa-manifest.json','noa-sw.js']as $file)copy('deploy/'.$file,$root.'/'.$file);
 copy('deploy/noa-app/home.php',$root.'/noa-app/home.php');file_put_contents($root.'/index.php',"<?php require __DIR__.'/common.php';require __DIR__.'/noa-app/home.php';");
