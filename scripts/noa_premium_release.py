@@ -9,7 +9,7 @@ release.FILES={
  'noa-app/jukebox/download.php':'deploy/noa-app/jukebox/download.php',
  'noa-app/jukebox/upload.js':'deploy/noa-app/jukebox/upload.js',
  'noa-app/jukebox/index.php':'deploy/noa-app/jukebox/index.php',
- **{p:'deploy/'+p for p in ['noa-music.php','noa-creator.php','noa-creator.js','noa-ui.js','noa-subscription.js','noa-sitemap.php']},
+ **{p:'deploy/'+p for p in ['noa-music.php','noa-creator.php','noa-creator.js','noa-ui.js','noa-voice.js','noa-subscription.js','noa-sitemap.php']},
  'noa-bridge/member-access.php':'bridge/member-access.php',
 }
 release.NEW={'noa-bridge/music-download-core.php','noa-music-download.php','noa-premium.js'}

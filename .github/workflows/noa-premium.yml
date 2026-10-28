@@ -34,6 +34,9 @@ jobs:
           python tests/subscription/concurrent_test.py
           php tests/premium/mysql.php
           python tests/premium/race_test.py
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; fi
+          php tests/premium/http_fixture.php
+          python tests/premium/http_test.py
           php tests/member/access_test.php
           node tests/jukebox/transport_test.cjs
           node tests/jukebox/reservations_test.cjs
