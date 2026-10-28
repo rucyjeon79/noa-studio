@@ -1756,5 +1756,55 @@
     "protectedUnchanged": 17,
     "databaseWrites": 0,
     "evidence": "docs/operations/site-rhythm-discovery-20261028.md"
+  },
+  "premiumDownloadRelease": {
+    "date": "2026-10-28",
+    "status": "deployed-and-verified",
+    "runtimeCommit": "53c542e28c98727d3e3e4a122c23269f25c2ed3c",
+    "pullRequest": 248,
+    "workflowRun": 40621761983,
+    "deployJob": 122599214573,
+    "features": [
+      "4px vertical title-to-reaction gap with retained touch targets",
+      "gold verified-master premium badge",
+      "member download 1000P and owner 500P in one native transaction",
+      "creator calendar-month subscription 5000P",
+      "per-song upload and real measured mastering progress; player preserved"
+    ],
+    "verification": {
+      "premiumBrowserCases": 8,
+      "layoutDiscoveryCases": 48,
+      "voiceAccessCases": 32,
+      "isolatedNativeTransactions": true,
+      "httpConfirmationAndRange": true,
+      "concurrentIdempotency": true,
+      "sourceReadback": true,
+      "publicAssetHashes": true,
+      "readySongs": 20,
+      "resolvedOwners": 20,
+      "unresolvedOwners": 0,
+      "postDeploymentBrowserReload": "not completed: browser environment disconnected after successful server and HTTP verification"
+    },
+    "policy": {
+      "ok": true,
+      "creatorMonthlyPoints": 5000,
+      "period": "calendar-month",
+      "policyRevision": 3,
+      "policyChanged": true,
+      "vipPreserved": true,
+      "downloadPoints": 1000,
+      "ownerSharePoints": 500,
+      "nativePointsReady": true,
+      "catalog": {
+        "ready": 20,
+        "ownerResolved": 20,
+        "ownerUnresolved": 0
+      },
+      "memberRowsChanged": 0,
+      "pointDebits": 0
+    },
+    "protectedUnchanged": 16,
+    "productionSyntheticPurchases": 0,
+    "evidence": "docs/operations/premium-download-progress-20261028.md"
   }
 }
