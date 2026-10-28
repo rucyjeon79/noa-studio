@@ -7,10 +7,10 @@ require_once __DIR__.'/music-readmodel.php';
 function ncv_project(array $records,array $aliases,string $channelId,callable $media):array{
  $songs=[];$lists=[];$visible=[];
  foreach($records as $r){$d=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);
-  if(!empty($d['_noaTrash'])||($d['visibility']??'public')!=='public'||!hash_equals($channelId,hash('sha256',(string)($d['ownerId']??''))))continue;
+  if(!noa_sound_visible($d,false)||($d['visibility']??'public')!=='public'||!hash_equals($channelId,hash('sha256',(string)($d['ownerId']??''))))continue;
   if(!in_array($r['kind'],['single','story','playlist'],true))continue;
   $key=$r['doc_key'];$item=['key'=>$key,'kind'=>$r['kind'],'title'=>nup_fields($d)['title']?:($d['title']??'제목 없음'),'genre'=>(string)($d['genreId']??''),'ep'=>(int)($d['ep']??0),'act'=>(int)($d['act']??0)];
-  if($r['kind']==='playlist'){$item['members']=$d['body']['members']??[];$lists[]=$item;continue;}
+  if($r['kind']==='playlist'){$item['members']=is_array($d['body']['members']??null)?$d['body']['members']:[];$lists[]=$item;continue;}
   $asset=$media($key,$d);if(!$asset)continue;
   $item['aliases']=array_values(array_unique(array_merge([$key],$aliases[$key]??[])));foreach($item['aliases'] as $a)$visible[$a]=true;
   $songs[]=array_merge($item,$asset,['youtube'=>'/noa-youtube.php?track='.rawurlencode('coming:'.hash('sha256','song:'.$key))]);

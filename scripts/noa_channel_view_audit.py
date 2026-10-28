@@ -1,5 +1,5 @@
 """Temporary authenticated read-only owner and media projection receipt; removed in finally."""
-import hashlib,json,secrets,time,urllib.request
+import hashlib,json,secrets,time,urllib.request,urllib.parse
 from pathlib import Path
 import paramiko
 from noa_full_inventory import ROOT,connect
@@ -23,7 +23,7 @@ def main():
  finally:t.close()
  import re
  url='https://noastudio.ai.kr/noa-channel.php?id='+data['channelId']
- with urllib.request.urlopen(url,timeout=45) as r:assert '/bbs/login.php' in r.url, 'guest membership gate preserved'
+ with urllib.request.urlopen(url,timeout=45) as r:assert urllib.parse.urlparse(r.url).path.endswith('login.php'), 'guest membership gate preserved'
  projection=json.loads(re.search(r'<script id="channel-data" type="application/json">(.*?)</script>',html,re.S).group(1))
  songs=[v for v in projection['records'] if v['kind']!='playlist']
  assert len(songs)==data['publicSongs'] and all(not v['audio'] and v['cover'] for v in songs)
