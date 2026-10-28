@@ -16,8 +16,8 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with: {php-version: '8.2'}
       - run: |
-          for f in deploy/noa-voice-state.php deploy/noa-ainoa.php deploy/noa-design.extend.php deploy/noa-sitemap.php bridge/member-access.php; do php -l "$f"; done
-          for f in deploy/noa-voice.js deploy/noa-ui.js deploy/noa-ainoa.js deploy/noa-notifications.js; do node --check "$f"; done
+          for f in deploy/noa-voice-state.php deploy/noa-ainoa.php deploy/noa-design.extend.php deploy/noa-sitemap.php deploy/noa-app/world-view.php bridge/member-access.php; do php -l "$f"; done
+          for f in deploy/noa-voice.js deploy/noa-ui.js deploy/noa-ainoa.js deploy/noa-notifications.js deploy/noa-account.js; do node --check "$f"; done
           node --test tests/voice/composer_test.cjs
           php tests/voice/state_test.php
           php tests/member/access_test.php

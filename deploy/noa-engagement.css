@@ -46,3 +46,9 @@ html[data-noa-precision] body .noa-engagement.noa-engagement :is(button,a){displ
 html[data-noa-precision] body .noa-engagement.noa-engagement :is(button,a)>span{display:inline;font-size:12px;line-height:1.2}
 html[data-noa-precision] body .noa-engagement.noa-engagement button[aria-pressed=true]{color:var(--noa-accent)}
 html[data-noa-precision] body .noa-engagement-card .noa-music-card strong{font-size:14px;line-height:1.45;margin:10px 0 4px;min-height:2.9em}
+
+/* Keep the two reactions visually grouped, including decorated world cards. */
+html[data-noa-precision] body .noa-engagement.noa-engagement{justify-content:flex-start;gap:0;margin-top:2px}
+html[data-noa-precision] body .noa-engagement.noa-engagement>button{flex:0 0 auto;min-width:44px;min-inline-size:44px;padding:6px 4px;gap:4px}
+html[data-noa-precision] body .noa-engagement.noa-engagement>a{font-size:11px;white-space:normal;max-width:100%;padding-inline:4px}
+html[data-noa-precision] body .noa-engagement-card>.noa-music-card{flex:0 0 auto}

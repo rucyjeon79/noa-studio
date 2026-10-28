@@ -66,3 +66,10 @@ html[data-noa-voice-embedded] #noa-ainoa{display:none!important}
 
 /* Local widget colors do not change the native administrator theme. */
 html[data-noa-voice-admin] #noa-ainoa{--noa-bg:#fff;--noa-surface:#fff;--noa-raised:#f4f5f8;--noa-text:#182333;--noa-muted:#526175;--noa-accent:#886417;--noa-line:#d1d7df}
+
+/* Routine notices do not demand an acknowledgement. */
+#noa-ainoa .ainoa-message>strong{display:block;padding-right:32px}
+#noa-ainoa .ainoa-message .ainoa-message-dismiss{position:absolute;top:0;right:0;display:grid;place-items:center;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:0;background:transparent;color:var(--noa-muted);font-size:22px;line-height:1;box-shadow:none}
+#noa-ainoa .ainoa-message p{margin-bottom:4px}
+#noa-ainoa .ainoa-message-actions{margin-top:8px}
+@media(max-width:760px){#noa-ainoa{--ainoa-size:52px;right:max(12px,env(safe-area-inset-right));--ainoa-bottom:calc(var(--noa-nav-space,0px) + var(--noa-player-space,0px) + var(--noa-transfer-space,0px) + 12px)}}

@@ -22,8 +22,9 @@ function say(text,options={}){
  if(parentVoice)return parentVoice.say(text,options);
  text=readable(text);if(!text)return;
  const key=options.key||text,now=Date.now();if(!options.force&&now-(recent.get(key)||0)<4000)return;recent.set(key,now);if(recent.size>200)recent.delete(recent.keys().next().value);
+ options={...options,sticky:options.requireAcknowledgement===true};
  const item={text,options};if(options.key){const i=queue.findIndex(x=>x.options.key===options.key);if(i>=0)queue.splice(i,1);}
- if(options.priority&&active){if(active.options.key!==options.key)queue.unshift(active);queue.unshift(item);close(false);}else{queue.push(item);render();const b=doc.querySelector('.ainoa-message-actions button');if(b&&queue.length)b.textContent='다음 소식 · '+queue.length;}
+ if(options.priority&&active){if(active.options.requireAcknowledgement&&active.options.key!==options.key)queue.unshift(active);queue.unshift(item);close(false);}else{queue.push(item);render();}
 }
 function close(next=true,ack=false){if(ack)try{sessionStorage.removeItem('noa-voice-redirect');}catch{}clearTimeout(timer);active=null;const tip=doc.querySelector('#noa-ainoa .ainoa-tip');if(tip)tip.hidden=true;if(next||queue.length)render();}
 function place(){const root=doc.getElementById('noa-ainoa'),modal=[...doc.querySelectorAll('dialog[open]')].at(-1);if(root&&root.parentElement!==(modal||doc.body))(modal||doc.body).append(root);}
@@ -34,9 +35,11 @@ function render(){
  text.textContent=compose(active.text,{index:counter++,name:active.options.name||'',title:currentTrack?.title||''});write('noa-voice-sequence',String(counter));
  const actions=doc.createElement('div');actions.className='ainoa-message-actions';
  if(active.options.href){try{const url=new URL(active.options.href,location.origin);if(url.origin===location.origin){const a=doc.createElement('a');a.href=url.pathname+url.search+url.hash;a.textContent=active.options.linkLabel||'소식 보기';actions.append(a);}}catch{}}
- const button=doc.createElement('button');button.type='button';button.textContent='확인했어요';button.setAttribute('aria-label','AInoa 말풍선 닫기');button.onclick=()=>close(true,true);actions.append(button);tip.append(label,text,actions);tip.hidden=false;ownChange=false;
- // First welcome and errors remain until acknowledged. Other statuses can advance after reading.
- if(!active.options.sticky)timer=setTimeout(()=>close(),Math.max(14000,Math.min(30000,text.textContent.length*100)));
+ const button=doc.createElement('button');button.type='button';button.setAttribute('aria-label','AInoa 말풍선 닫기');button.onclick=()=>close(true,true);
+ if(active.options.requireAcknowledgement){button.textContent='확인했어요';actions.append(button);}else{button.textContent='×';button.className='ainoa-message-dismiss';tip.append(button);}
+ tip.append(label,text);if(actions.childElementCount)tip.append(actions);tip.hidden=false;ownChange=false;
+ // Only explicit operational acknowledgement stays open. Greetings and notices expire.
+ if(!active.options.requireAcknowledgement)timer=setTimeout(()=>close(),Math.max(6000,Math.min(10000,text.textContent.length*45)));
 }
 function condition(node){say(node.dataset.noaCondition,{priority:true,sticky:true,force:true,key:'access-condition',href:/로그인/.test(node.dataset.noaCondition)?'/noa-login.php':'/noa-my.php',linkLabel:/로그인/.test(node.dataset.noaCondition)?'로그인':'MY에서 확인'});}
 doc.addEventListener('click',e=>{const node=e.target.closest?.('[data-noa-condition]');if(!node)return;e.preventDefault();e.stopImmediatePropagation();condition(node);},true);
@@ -58,7 +61,7 @@ function scan(){scheduled=false;markAccess();render();for(const node of doc.quer
  if(node.closest('.ainoa-tip,.ainoa-admin-dialog')||node.matches('.ainoa-answer')||node.closest('[hidden]'))continue;
  const text=node.textContent.trim();if(!text||emptyStatus(text)||text===seen.get(node)||!node.getClientRects().length)continue;seen.set(node,text);
  // Dynamic operational notices only; progress numbers and empty-state copy are not repeated as alerts.
- if(node.matches('[role="alert"],.noa-toast,.toast,.alert-danger,.alert-success,.alert-warning')||/저장|실패|못했|오류|확인해|완료|차감|켜|껐|연결|전달|등록|삭제|필요|부족|지연/.test(text))say(text,{key:node.id||text,sticky:node.getAttribute('role')==='alert'});
+ if(node.matches('[role="alert"],.noa-toast,.toast,.alert-danger,.alert-success,.alert-warning')||/저장|실패|못했|오류|확인해|완료|차감|켜|껐|연결|전달|등록|삭제|필요|부족|지연/.test(text))say(text,{key:node.id||text,requireAcknowledgement:node.dataset.noaRequiredAck==='true'});
 }}
 function schedule(){if(scheduled)return;scheduled=true;setTimeout(scan,150);}
 function facts(d){if(!d.member)return '지금은 비로그인 상태예요. 로그인하면 구독 상태와 남은 기간, 포인트를 함께 알려드릴게요.';
@@ -77,7 +80,7 @@ function boot(){if(mounted)return;mounted=true;if(location.pathname.startsWith('
  schedule();if(!parentVoice)void welcome();
 }
 doc.addEventListener('close',e=>{if(e.target.matches?.('dialog')&&e.target.contains(doc.getElementById('noa-ainoa')))doc.body.append(doc.getElementById('noa-ainoa'));},true);
-doc.addEventListener('invalid',e=>{if(e.target.validationMessage){e.preventDefault();say(e.target.validationMessage,{priority:true,sticky:true,key:'form-validation'});}},true);
+doc.addEventListener('invalid',e=>{if(e.target.validationMessage){e.preventDefault();say(e.target.validationMessage,{priority:true,requireAcknowledgement:true,key:'form-validation'});}},true);
 scope.addEventListener('pageshow',e=>{if(e.persisted){close(false);void welcome();}});
 scope.NoaVoice={say,compose,getAccount:()=>parentVoice?parentVoice.getAccount():account};if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 doc.addEventListener('visibilitychange',()=>{if(!doc.hidden)render();});

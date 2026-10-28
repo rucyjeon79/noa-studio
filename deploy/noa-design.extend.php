@@ -13,6 +13,7 @@ function noa_policy_script_revision($html){
  $ui=dirname(__DIR__).'/noa-ui.js';$ui_revision=is_file($ui)?hash_file('sha256',$ui):'20261025-member-access';
  $html=preg_replace("~(<script\\b[^>]*\\bsrc=[\"'])/noa-ui[.]js(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.js?v='.$ui_revision.'$2',$html);
  $brand=dirname(__DIR__).'/noa-brand.js';if(is_file($brand))$html=preg_replace("~(/noa-brand[.]js)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$brand),$html);
+ $world_css=dirname(__DIR__).'/noa-world.css';if(is_file($world_css))$html=preg_replace("~(/noa-world[.]css)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$world_css),$html);
  $manifest=dirname(__DIR__).'/noa-manifest.json';
  if(is_file($manifest))$html=preg_replace("~(/noa-manifest[.]json)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$manifest),$html);
  return $html;

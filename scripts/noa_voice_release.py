@@ -3,6 +3,8 @@ import noa_ainoa_deploy as release
 release.FILES={
  'noa-voice-state.php':'deploy/noa-voice-state.php',
  'noa-voice.js':'deploy/noa-voice.js',
+ 'noa-app/world-view.php':'deploy/noa-app/world-view.php',
+ **{p:'deploy/'+p for p in ['noa-account.js','noa-account.css','noa-engagement.css','noa-world.css']},
  **{p:'deploy/'+p for p in ['noa-ainoa.php','noa-ainoa.js','noa-ainoa.css','noa-ui.js','noa-notifications.js','noa-sitemap.php']},
  'noa-bridge/member-access.php':'bridge/member-access.php',
  'extend/noa.design.php':'deploy/noa-design.extend.php',

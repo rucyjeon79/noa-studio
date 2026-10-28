@@ -6,7 +6,7 @@ async function header(p){
  assert.equal(await p.locator('.noa-topbar,.noa-g5-top').count(),0,'no duplicate home or native header');
  assert.equal(await bar.getByRole('link',{name:'홈으로',exact:true}).getAttribute('href'),'/');
  assert.equal(await bar.getByRole('link',{name:'사이트맵',exact:true}).getAttribute('href'),'/noa-sitemap.php');
- assert.equal(await bar.locator('.noa-account-shortcuts svg').count(),3);
+ assert.equal(await bar.locator('.noa-account-shortcuts svg').count(),4);
  await bar.locator('.noa-account-brand img').evaluate(img=>img.decode());
  const boxes=await bar.locator('a').evaluateAll(links=>links.map(a=>{const r=a.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom};}));
  assert(boxes.every(b=>b.h>=44&&b.x>=0&&b.right<=p.viewportSize().width+1),'header touch targets and horizontal fit');

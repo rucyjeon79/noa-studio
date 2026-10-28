@@ -22,3 +22,18 @@
 
 /* Saved English chapter titles can have no break opportunities at 320px. */
 .noa-world-chapter h3{min-inline-size:0;max-inline-size:100%;overflow-wrap:anywhere}
+
+/* Chapter reading rhythm: small inline tools, aligned media and social footer. */
+html[data-noa-precision] .noa-page .noa-world-chapter{padding:24px 0;scroll-margin-top:72px}
+html[data-noa-precision] .noa-page .noa-world-chapter>.noa-eyebrow{margin:0 0 8px}
+html[data-noa-precision] .noa-page .noa-world-chapter>h3{font-size:22px;line-height:1.4;margin:0 0 16px}
+html[data-noa-precision] .noa-page .noa-world-chapter>details{display:inline-block;vertical-align:top;max-width:100%;margin:0 8px 12px 0}
+html[data-noa-precision] .noa-page .noa-world-chapter>details[open]{display:block}
+html[data-noa-precision] .noa-page .noa-world-chapter>details>summary.noa-action,html[data-noa-precision] .noa-page .noa-world-chapter>a.noa-action{display:inline-flex;flex-direction:row;gap:6px;min-height:44px;padding:8px 10px;margin:0 0 12px;border:0;background:var(--noa-surface);border-radius:8px;vertical-align:top}
+html[data-noa-precision] .noa-page .noa-world-chapter :is(details>summary.noa-action,a.noa-action)>span{font-size:12px;line-height:1.4}
+html[data-noa-precision] .noa-page .noa-world-chapter :is(details>summary.noa-action,a.noa-action)>svg{width:16px;height:16px}
+html[data-noa-precision] .noa-page .noa-world-chapter>.noa-muted{font-size:13px;margin:4px 0 8px}
+html[data-noa-precision] .noa-page .noa-world-chapter>.noa-world-text{font-size:15px;line-height:1.75;margin:0 0 16px}
+html[data-noa-precision] .noa-page .world-chapter-mv{margin:16px 0 8px}
+html[data-noa-precision] .noa-page .world-chapter-mv figcaption{font-size:12px;line-height:1.55;margin-top:8px}
+html[data-noa-precision] .noa-page .world-chapter-mv>.noa-engagement{padding:0;margin:4px 0 0}
