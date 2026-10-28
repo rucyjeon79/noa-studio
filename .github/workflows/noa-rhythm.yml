@@ -32,9 +32,9 @@ jobs:
           npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-voice" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           "$RUNNER_TEMP/noa-voice/node_modules/.bin/playwright" install --with-deps webkit
           cp scripts/qa/noa-voice.mjs "$RUNNER_TEMP/noa-voice/check.mjs"
-          node "$RUNNER_TEMP/noa-voice/check.mjs"
           cp scripts/qa/noa-rhythm.mjs "$RUNNER_TEMP/noa-voice/rhythm.mjs"
           node "$RUNNER_TEMP/noa-voice/rhythm.mjs"
+          node "$RUNNER_TEMP/noa-voice/check.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
