@@ -2,7 +2,7 @@ name: NOA creator enrollment and channel workspace
 on:
   push:
     branches: [main]
-    paths: ['bridge/creator-enrollment*','bridge/creator-ai*','deploy/noa-creator-apply*','scripts/noa_creator_*','.github/workflows/noa-creator-enrollment.yml']
+    paths: ['bridge/creator-enrollment*','bridge/creator-ai*','deploy/noa-creator-apply*','deploy/noa-member-badges*','deploy/noa-channel-workspace.php','deploy/noa-channel-menu.php','scripts/noa_creator_*','.github/workflows/noa-creator-enrollment.yml']
   pull_request:
     paths: ['bridge/creator-enrollment*','deploy/noa-creator-apply*','scripts/noa_creator_*','.github/workflows/noa-creator-enrollment.yml']
 permissions: {contents: read}
