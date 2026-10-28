@@ -32,6 +32,7 @@ try{
  $target=ne_target($db,(string)($b['type']??''),(string)($b['key']??''));
  if(($b['action']??'')==='like'){
   if(!is_bool($b['active']??null))throw new DomainException('invalid_input');ne_like($db,$target['entity'],$owner,$b['active'],isset(ne_legacy_likes($db,$target)[$owner]));
+  if($b['active']&&function_exists('nmb_like'))nmb_like($owner,$target['entity'],time());
  }elseif(($b['action']??'')==='comment'){
   if(!$target['canComment'])throw new DomainException('comment_not_allowed');$id=ne_comment($db,$target['entity'],$owner,(string)($b['requestId']??''),(string)($b['body']??''));
   // Existing activity policy and idempotent point receipts apply to real saved app comments.

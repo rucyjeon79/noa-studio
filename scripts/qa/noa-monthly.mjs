@@ -1,0 +1,20 @@
+import {chromium,webkit} from 'playwright';
+import {spawn} from 'node:child_process';
+import {mkdirSync,writeFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const base='http://127.0.0.1:8079',out='monthly-proof';mkdirSync(out,{recursive:true});const report=[];
+const server=spawn('php',['-S','127.0.0.1:8079','-t','/tmp/noa-pwa-fixture','/tmp/noa-pwa-fixture/router.php'],{stdio:'ignore'});let browser;
+try{for(const engine of ['chromium','webkit']){browser=await(engine==='webkit'?webkit.launch():chromium.launch({channel:'chrome',args:['--no-sandbox']}));for(const width of engine==='webkit'?[390]:[320,390,1280])for(const theme of ['noa-studio','noa-ivory']){
+ const context=await browser.newContext({viewport:{width,height:900},serviceWorkers:'block',reducedMotion:'reduce'});await context.addCookies([{name:'qa_role',value:'admin',url:base}]);await context.addInitScript(t=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme:t,language:'ko',design:'ios',radius:'soft'})),theme);
+ const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(base+'/');await page.locator('.noa-monthly-benefits').waitFor();
+ assert(await page.locator('[data-home-section="hero"]').evaluate(e=>{let next=e.nextElementSibling;while(next?.tagName==='STYLE')next=next.nextElementSibling;return next?.classList.contains('noa-monthly-benefits');}));
+ assert.deepEqual(await page.locator('.noa-monthly-rewards strong').allTextContents(),['1,000P','500P','300P','100P']);
+ assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth));await page.locator('.noa-monthly-benefits').scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/banner-${engine}-${width}-${theme}.png`});
+ await context.addCookies([{name:'qa_monthly',value:'off',url:base}]);await page.reload();assert.equal(await page.locator('.noa-monthly-benefits').count(),0);
+ await page.goto(base+'/monthly-collections.php?genre=kpop-original');await page.locator('.noa-inline-act>.noa-engagement button').first().waitFor();await page.locator('.noa-inline-act').first().scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/collections-${engine}-${width}-${theme}.png`});
+ const d=await page.locator('.noa-inline-act').first().evaluate(row=>{const b=e=>e.getBoundingClientRect(),title=b(row.querySelector('.noa-browse-card strong')),meta=b(row.querySelector('.noa-browse-card small')),card=b(row.querySelector('.noa-browse-card')),icon=b(row.querySelector(':scope>.noa-engagement svg')),tools=[...row.querySelectorAll('.noa-collection-tools button')].map(b);return {titleMetaGap:meta.top-title.bottom,reactionGap:icon.top-card.bottom,height:b(row).height,targets:tools.every(r=>r.width>=44&&r.height>=44),overflow:document.documentElement.scrollWidth>innerWidth};});
+ assert(d.titleMetaGap>=0&&d.titleMetaGap<=5,JSON.stringify(d));assert(d.reactionGap>=0&&d.reactionGap<=6,JSON.stringify(d));assert(d.height<=126&&d.targets&&!d.overflow,JSON.stringify(d));
+ await page.locator('.noa-inline-act').first().scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/collections-${engine}-${width}-${theme}.png`});
+ await page.getByRole('button',{name:'ACT 1 수록곡 목록 펼치기',exact:true}).click();assert(await page.locator('.noa-inline-act').first().locator('[data-browse-level="4"]').isVisible());await page.getByRole('button',{name:'ACT 1 수록곡 목록 펼치기',exact:true}).click();assert(!await page.locator('.noa-inline-act').first().locator('[data-browse-level="4"]').isVisible());
+ assert.deepEqual(errors,[]);report.push({engine,width,theme,...d,bannerPlacement:true,policyDisabledHidesBanner:true});await context.close();}await browser.close();browser=null;}}finally{if(browser)await browser.close();server.kill();writeFileSync(out+'/report.json',JSON.stringify(report,null,2));}console.log('MONTHLY_BANNER_AND_COLLECTION_SPACING_UI_OK',report.length);

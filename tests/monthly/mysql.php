@@ -1,0 +1,24 @@
+<?php
+require __DIR__.'/../subscription/native_fixture.php';require __DIR__.'/../../bridge/membership-core.php';require __DIR__.'/../../bridge/engagement-core.php';
+if(!str_contains((string)getenv('NOA_MYSQL_DSN'),'dbname=noa_subscription_test;'))throw new RuntimeException('isolated_database_required');
+function check($v,$m){if(!$v)throw new RuntimeException($m);}
+function seed($id){ns_q('INSERT INTO g5_member VALUES('.ns_e($id).',2,0)');}
+$now=(new DateTimeImmutable('2026-10-28 12:00:00',new DateTimeZone('Asia/Seoul')))->getTimestamp();
+$p=ns_doc(NR_POLICY);$rules=$p['data'];$rules['monthlyBenefits']=['enabled'=>true,'multiplier'=>10,'likePoints'=>10,'activatedAt'=>$now];ns_atomic('membership-policy',false,fn()=>ns_put(NR_POLICY,'prefs',$rules,$p['revision'],'monthly-test'));
+$db=new PDO(getenv('NOA_MYSQL_DSN'),getenv('NOA_MYSQL_USER'),getenv('NOA_MYSQL_PASSWORD'),[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);ne_install($db);
+seed('monthly');nr_pending_login('monthly',$now);check(get_point_sum('monthly')===1000,'first_login_immediate_1000');nr_pending_login('monthly',$now);check(get_point_sum('monthly')===1000,'login_replay_once');check((int)nr_member('monthly',false)['mb_level']===3,'balance_level_refreshed');
+$r=nr_reward('monthly','write','free',11,$now);check($r['points']===500&&$r['loginBonus']===0,'first_write_500_no_extra_login');check(nr_reward('monthly','write','free',11,$now)===$r,'write_idempotent');check(nr_reward('monthly','write','free',12,$now)['points']===50,'second_write_normal');
+check(nr_reward('monthly','comment','free',13,$now)['points']===300,'independent_first_comment');check(nr_reward('monthly','comment','free',14,$now)['points']===30,'second_comment_normal');
+ne_like($db,'song:a','monthly',true,false,$now);check(nmb_like('monthly','song:a',$now)['points']===100,'first_like_100');$balance=get_point_sum('monthly');nmb_like('monthly','song:a',$now);ne_like($db,'song:a','monthly',false,false,$now+1);ne_like($db,'song:a','monthly',true,false,$now+2);nmb_like('monthly','song:a',$now+2);check(get_point_sum('monthly')===$balance,'unlike_relike_no_farming');
+ne_like($db,'song:b','monthly',true,false,$now);check(nmb_like('monthly','song:b',$now)['points']===10,'second_like_10');
+ne_like($db,'song:old','monthly',true,false,$now-1);check(nmb_like('monthly','song:old',$now)===null,'no_retroactive_likes');check(nmb_like('monthly','song:absent',$now)===null,'unpersisted_like_no_reward');
+nr_pending_login('monthly',$now+86400);check(nr_reward('monthly','comment','free',15,$now+86400)['total']===130,'ordinary_daily_bonus_preserved');
+$last=(new DateTimeImmutable('2026-10-31 23:59:59',new DateTimeZone('Asia/Seoul')))->getTimestamp();check(nmb_month($last)==='2026-10'&&nmb_month($last+1)==='2026-11','kst_boundary');nr_pending_login('monthly',$last);$balance=get_point_sum('monthly');nr_pending_login('monthly',$last+1);check(get_point_sum('monthly')===$balance+1000,'new_month_login');check(nr_reward('monthly','write','free',16,$last+1)['points']===500,'new_month_write');
+$year=(new DateTimeImmutable('2026-12-31 23:59:59',new DateTimeZone('Asia/Seoul')))->getTimestamp();check(nmb_month($year+1)==='2027-01','year_boundary');
+seed('month_other');nr_pending_login('month_other',$now);check(nr_reward('month_other','comment','free',21,$now)['points']===300,'independent_member');
+seed('month_topup');insert_point('month_topup',100,'fixture','noa_login',nr_day($now),'activity');ns_atomic('month_topup',false,fn()=>ns_put(nr_key('login','month_topup',nr_day($now)),'membership_login',['state'=>'paid','points'=>100],0,'month_topup'));nr_pending_login('month_topup',$now);check(get_point_sum('month_topup')===1000,'already_paid_login_tops_up_only_900');
+seed('month_fail');ns_q("CREATE TRIGGER monthly_failure BEFORE INSERT ON noa_documents FOR EACH ROW BEGIN IF @monthly_fail=1 AND NEW.kind='membership_monthly' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='fixture_failure'; END IF; END");ns_q('SET @monthly_fail=1');try{nr_pending_login('month_fail',$now);throw new RuntimeException('failure_missing');}catch(mysqli_sql_exception $e){}ns_q('SET @monthly_fail=0');check(get_point_sum('month_fail')===0&&!ns_doc(nmb_key('month_fail','login',$now))&&!ns_doc(nr_key('login','month_fail',nr_day($now))),'credit_and_slot_rollback');nr_pending_login('month_fail',$now);check(get_point_sum('month_fail')===1000,'retry_after_rollback');
+// Native delete/refund may remove a credit; it must never reopen the monthly slot.
+ns_q("DELETE FROM g5_point WHERE mb_id='month_other' AND po_rel_table='free' AND po_rel_id='21'");check(nr_reward('month_other','comment','free',22,$now)['points']===30,'delete_does_not_reopen_slot');
+foreach(['month_race','month_like_race']as $id)seed($id);
+echo "MONTHLY_10X_KST_INDEPENDENT_SLOTS_REPLAY_ROLLBACK_MIGRATION_OK\n";

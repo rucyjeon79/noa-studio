@@ -9,7 +9,10 @@ BASE_COMMIT='e92536b4ec3f20f6cb32e1ece0b1a6cd9584505e'
 parser=argparse.ArgumentParser();parser.add_argument('--host-source',type=Path);args=parser.parse_args()
 candidate=(ROOT/'deploy/noa-app/home.php').read_bytes()
 baseline=args.host_source.read_bytes()if args.host_source else subprocess.check_output(['git','show',BASE_COMMIT+':deploy/noa-app/home.php'],cwd=ROOT)
+# Exact user-authorized banner include; every other non-hero byte remains guarded.
+MONTHLY_INCLUDE=b"<?php if(is_file(__DIR__.'/monthly-banner.php'))require __DIR__.'/monthly-banner.php';?>\n"
 def outside_approved_hero(source):
+ source=source.replace(MONTHLY_INCLUDE,b'')
  source=re.sub(rb'if\(is_file\(dirname\(__DIR__\).*?/noa-bridge/notices[.]php.*?\$noa_notices=.*?;\n',b'',source,flags=re.S)
  source=re.sub(rb'<section class="noa-section noa-notices".*?</section>\n',b'',source,flags=re.S)
  for pattern in [rb'<style id="noa-home-action-layout">.*?</style>',rb'<section class="noa-hero".*?</section>',rb'<script id="noa-home-hero-size">.*?</script>']:
@@ -23,7 +26,8 @@ hero_start=candidate.index(b'<section class="noa-hero"');hero_end=candidate.inde
 addition=re.findall(rb"<\?php if\(is_file\(dirname\(__DIR__\)\.'/noa-sitemap[.]php'\)\):\?><nav[^\n]*data-home-section=\"sitemap\"[^\n]*</nav><\?php endif;\?>",candidate)
 assert len(addition)==1 and hero_start<candidate.index(addition[0])<hero_end,'guarded sitemap must remain inside hero'
 community=re.findall(rb'<section class="noa-section noa-home-community" data-home-section="community"[^>]*>[^\n]*</section>\n',candidate)
-assert len(community)==1 and candidate[hero_end+len(b'</section>'):].startswith(b'\n<section class="noa-section noa-notices"'),'notices must immediately follow hero'
+assert candidate.count(MONTHLY_INCLUDE)==1,'one guarded monthly banner include required'
+assert len(community)==1 and candidate[hero_end+len(b'</section>'):].startswith(b'\n'+MONTHLY_INCLUDE+b'<section class="noa-section noa-notices"'),'monthly benefits must follow hero, then native notices'
 assert candidate.index(b'data-home-section="notices"')<candidate.index(community[0]),'community remains below notices'
 assert candidate.count(b'data-noa-community-home')==1,'one native per-board title projection required'
 assert not re.search(rb'TOP\s*10',candidate,re.I),'removed TOP 10 labels returned'

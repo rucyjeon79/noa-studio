@@ -2,6 +2,7 @@
 declare(strict_types=1);
 /** Native GnuBoard balance and SQL receipts. Never trust a client-supplied reward amount. */
 require_once __DIR__.'/subscription-core.php';
+require_once __DIR__.'/monthly-rewards.php';
 const NR_POLICY='membership:rules';
 function nr_day(int $now):string{return (new DateTimeImmutable('@'.$now))->setTimezone(new DateTimeZone('Asia/Seoul'))->format('Y-m-d');}
 function nr_policy():array{$r=ns_doc(NR_POLICY);return $r&&($r['data']['version']??0)===1?$r['data']:['enabled'=>false];}
@@ -23,6 +24,7 @@ function nr_sync_member(string $owner,int $now):array{
 }
 function nr_refresh(string $owner,int $now):array{return ns_atomic($owner,true,fn()=>nr_sync_member($owner,$now));}
 function nr_pending_login(string $owner,int $now):array{
+ $monthly=nmb_login($owner,$now);if($monthly!==null)return $monthly;
  $day=nr_day($now);$key=nr_key('login',$owner,$day);$row=ns_doc($key);if($row)return $row['data'];
  return ns_atomic($owner,false,function()use($owner,$now,$day,$key){$r=ns_doc($key,true);if($r)return $r['data'];$d=['ownerId'=>$owner,'day'=>$day,'state'=>'pending','points'=>100,'createdAt'=>$now];ns_put($key,'membership_login',$d,0,$owner);return $d;});
 }
@@ -39,15 +41,16 @@ function nr_reward(string $owner,string $kind,string $board,int $post,int $now):
  $key=nr_key('reward',$owner,$kind.'|'.$board.'|'.$post);
  return ns_atomic($owner,true,function()use($owner,$kind,$board,$post,$now,$key){
   $old=ns_doc($key,true);if($old)return $old['data'];nr_member($owner);
-  $points=$kind==='write'?50:30;$action=$kind==='write'?'쓰기':'댓글';
+  $quote=nmb_quote($owner,$kind,$kind==='write'?50:30,$now);$points=$quote['points'];$action=$kind==='write'?'쓰기':'댓글';
   // Native relation keys allow GnuBoard's own deletion/refund mechanism to remain effective.
-  nr_insert_points($owner,$points,'NOA '.($kind==='write'?'글 작성':'댓글 작성'),$board,(string)$post,$action);
+  nr_insert_points($owner,$points,'NOA '.($kind==='write'?'글 작성':'댓글 작성').($quote['first']?' · 매월 첫 활동 10배':''),$board,(string)$post,$action);
+  nmb_record($owner,$kind,$quote,$key,$now);
   $loginKey=nr_key('login',$owner,nr_day($now));$login=ns_doc($loginKey,true);$bonus=0;
   if($login&&($login['data']['state']??'')==='pending'){
    $bonus=100;nr_insert_points($owner,100,'NOA 첫 활동 로그인 보너스','noa_login',nr_day($now),'activity');
    $d=$login['data'];$d['state']='paid';$d['paidAt']=$now;$d['rewardKey']=$key;ns_put($loginKey,'membership_login',$d,$login['revision'],$owner);
   }
-  $m=nr_sync_member($owner,$now);$result=['ownerId'=>$owner,'kind'=>$kind,'points'=>$points,'loginBonus'=>$bonus,'total'=>$points+$bonus,'balance'=>(int)$m['mb_point'],'level'=>(int)$m['mb_level'],'createdAt'=>$now];
+  $m=nr_sync_member($owner,$now);$result=['ownerId'=>$owner,'kind'=>$kind,'points'=>$points,'monthly'=>$quote['first'],'loginBonus'=>$bonus,'total'=>$points+$bonus,'balance'=>(int)$m['mb_point'],'level'=>(int)$m['mb_level'],'createdAt'=>$now];
   ns_put($key,'membership_reward',$result,0,$owner);return $result;
  });
 }

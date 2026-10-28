@@ -7,8 +7,8 @@ on:
 permissions: {contents: read}
 jobs:
   preflight:
-    # Preview-only header changes are validated and activated by noa-preview-fix.
-    if: ${{ !contains(github.event.head_commit.message, '[preview-release]') }}
+    # Scoped monthly releases run native/UI gates and activation in noa-monthly-benefits.
+    if: ${{ !contains(github.event.head_commit.message, '[preview-release]') && !contains(github.event.head_commit.message, '[monthly-release]') }}
     runs-on: ubuntu-latest
     environment: production
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
@@ -27,8 +27,8 @@ jobs:
         if: always()
         with: {name: 'noa-membership-audit-${{ github.run_id }}', path: membership-proof/, retention-days: 14}
   native:
-    # Preview-only header changes are validated and activated by noa-preview-fix.
-    if: ${{ !contains(github.event.head_commit.message, '[preview-release]') }}
+    # Scoped monthly releases run native/UI gates and activation in noa-monthly-benefits.
+    if: ${{ !contains(github.event.head_commit.message, '[preview-release]') && !contains(github.event.head_commit.message, '[monthly-release]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -87,8 +87,8 @@ jobs:
         if: always()
         with: {name: 'noa-membership-candidate-${{ github.run_id }}', path: membership-proof/, retention-days: 14}
   deploy:
-    # Preview-only header changes are validated and activated by noa-preview-fix.
-    if: ${{ !contains(github.event.head_commit.message, '[preview-release]') }}
+    # Scoped monthly releases run native/UI gates and activation in noa-monthly-benefits.
+    if: ${{ !contains(github.event.head_commit.message, '[preview-release]') && !contains(github.event.head_commit.message, '[monthly-release]') }}
     needs: [native, preflight]
     runs-on: ubuntu-latest
     environment: production
