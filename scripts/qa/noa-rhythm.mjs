@@ -27,6 +27,7 @@ try{for(const engine of ['chromium','webkit']){
    }
    const dims=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth,controls:[...document.querySelectorAll('main .noa-action:not(.noa-personal-card),.btn_bo_user .noa-action')].filter(e=>e.getBoundingClientRect().height>0&&!e.closest('.noa-workspace-grid,.noa-hero,.noa-engagement')).map(e=>({text:e.textContent.trim(),direction:getComputedStyle(e).flexDirection,height:e.getBoundingClientRect().height}))}));
    assert(!dims.overflow,`${name}/${width} overflow`);assert(dims.controls.every(x=>x.direction==='row'&&x.height>=44),JSON.stringify({name,width,...dims}));
+   if(await page.locator('.ainoa-message').isVisible())await page.locator('.ainoa-message').waitFor({state:'hidden',timeout:12000});
    await page.screenshot({path:`${out}/${name}-${engine}-${width}-${theme}.png`});report.push({name,engine,width,theme,...dims});
   }
   assert.deepEqual(errors,[]);await context.close();
