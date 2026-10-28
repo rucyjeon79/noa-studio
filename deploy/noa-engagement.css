@@ -137,7 +137,7 @@ html[data-noa-precision] body.noa-page .noa-track-name{display:block;min-width:0
 html[data-noa-precision] body.noa-page .noa-inline-title>.noa-premium-badge{flex:none;margin:0}
 html[data-noa-precision] body.noa-page .noa-inline-song-row>.noa-engagement{grid-column:2;grid-row:2;margin:0;padding:0}
 html[data-noa-precision] body.noa-page .noa-inline-song-row>.noa-song-actions{display:contents!important}
-html[data-noa-precision] body.noa-page .noa-inline-song-row>.noa-song-actions>.noa-song-action:is([aria-label$=" 재생"],[aria-label$=" 다운로드"]){display:inline-flex!important;grid-row:2;align-items:flex-start;justify-content:center;width:44px;height:44px;min-height:44px;padding:4px 0 0;border:0;background:transparent;color:var(--noa-text)}
+html[data-noa-precision] body.noa-page .noa-inline-song-row>.noa-song-actions>.noa-song-action:is([aria-label$=" 재생"],[aria-label$=" 다운로드"]){display:inline-flex!important;grid-row:2;flex-direction:row;align-items:flex-start;justify-content:center;width:44px;height:44px;min-height:44px;padding:4px 0 0;border:0;background:transparent;color:var(--noa-text)}
 html[data-noa-precision] body.noa-page .noa-inline-song-row>.noa-song-actions>.noa-song-action[aria-label$=" 재생"]{grid-column:3}
 html[data-noa-precision] body.noa-page .noa-inline-song-row>.noa-song-actions>.noa-song-action[aria-label$=" 다운로드"]{grid-column:4}
 html[data-noa-precision] body.noa-page .noa-inline-song-row>.noa-song-actions>.noa-song-action>span{display:none}

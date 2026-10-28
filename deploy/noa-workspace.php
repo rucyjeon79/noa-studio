@@ -18,6 +18,7 @@ function noa_workspace_groups():array{return [
  'operation'=>['title'=>'운영 설정','intro'=>'회원·게시판·화면·연결 정보를 관리합니다.','routes'=>[
   ['members','회원 관리','회원 상태와 권한 확인','/adm/member_list.php','user'],
   ['boards','게시판 관리','공지·커뮤니티 게시판 설정','/adm/board_list.php','community'],
+  ['payments','토스 결제 연결','카드·카카오페이 키 등록과 테스트·운영 설정','/noa-payment-settings.php','settings'],
   ['subscriptions','구독·포인트 설정','이용 정책과 결제 내역 확인','/noa-subscription-admin.php','user'],
   ['themeAdmin','화면·테마 설정','공통 디자인과 테마 수정','/noa-theme-admin.php','settings'],
   ['social','Google·Kakao 가입 연결','신규 회원 가입용 인증 설정','/adm/config_form.php#anc_cf_sns','user'],
