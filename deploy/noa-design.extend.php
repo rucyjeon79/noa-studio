@@ -7,7 +7,8 @@ function noa_policy_script_revision($html){
  $revision=is_file($browse)?hash_file('sha256',$browse):false;
  if(!$revision)$revision='20261025-four-level';
  $html=preg_replace("~(/noa-browse[.]js)(?:[?][^\"']*)?~i",'$1?v='.$revision,$html);
- $html=preg_replace("~(/noa-app/p0-media[.]css)(?:[?][^\"']*)?~i",'$1?v=20261024-approved-ui',$html);
+ $media_css=dirname(__DIR__).'/noa-app/p0-media.css';$media_revision=is_file($media_css)?hash_file('sha256',$media_css):'20261028-queue-rows';
+ $html=preg_replace("~(/noa-app/p0-media[.]css)(?:[?][^\"']*)?~i",'$1?v='.$media_revision,$html);
  $css=dirname(__DIR__).'/noa-ui.css';$css_revision=is_file($css)?hash_file('sha256',$css):'20261026-home-notices';
  $html=preg_replace("~(<link\\b[^>]*\\bhref=[\"'])/noa-ui[.]css(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.css?v='.$css_revision.'$2',$html);
  $ui=dirname(__DIR__).'/noa-ui.js';$ui_revision=is_file($ui)?hash_file('sha256',$ui):'20261025-member-access';

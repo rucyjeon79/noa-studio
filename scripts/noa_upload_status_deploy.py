@@ -6,6 +6,7 @@ from noa_full_inventory import connect,ROOT
 from noa_drive_snapshot import DriveStore
 from noa_upload_drive import UploadDrive
 FILES={p:'deploy/'+p for p in ['noa-app/jukebox/drive-core.php','noa-app/jukebox/upload-core.php','noa-app/jukebox/queue-core.php','noa-app/jukebox/recovery-core.php','noa-app/jukebox/operations.php','noa-app/jukebox/upload.php','noa-app/jukebox/upload-transport.js','noa-app/jukebox/upload.js','noa-music.php','noa-app/p0-media.css']}
+FILES['extend/noa.design.php']='deploy/noa-design.extend.php'
 NEW={'noa-app/jukebox/drive-core.php'}
 PROTECTED=['common.php','data/dbconfig.php','bbs/login.php','bbs/login_check.php','noa-app/jukebox/core.php','noa-app/jukebox/stream.php','noa-app/jukebox/download.php','noa-ainoa.js','noa-app/jukebox/index.php']
 BACKUP=Path(os.environ.get('RUNNER_TEMP','/tmp'))/'noa-upload-status-before.json'
@@ -54,7 +55,7 @@ def main():
     # Exact source bytes were saved and downloaded through the connected Drive API.
     # This receipt authorizes only that already-backed-up version, never arbitrary live bytes.
     receipt=json.loads(Path('scripts/noa_upload_prepared_backup.json').read_text())
-    prepared={p:None if p in NEW else subprocess.check_output(['git','show',receipt['base_commit']+':'+FILES[p]]) for p in FILES}
+    prepared={p:None if p in receipt.get('absent_paths',list(NEW)) else subprocess.check_output(['git','show',receipt['base_commit']+':'+FILES[p]]) for p in FILES}
     encoded=json.dumps({p:base64.b64encode(v).decode()if v is not None else None for p,v in prepared.items()},sort_keys=True,separators=(',',':')).encode()
     if not receipt['readback_verified'] or sha(encoded)!=receipt['sha256'] or before!=prepared:raise RuntimeError('prepared_drive_backup_does_not_match_operating_files')
     print('PREPARED_DRIVE_BACKUP_VERIFIED',json.dumps(receipt))
