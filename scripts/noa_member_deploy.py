@@ -4,7 +4,7 @@ from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
 FILES={}
-for name in ['channel-ownership.php','member-access.php','creator-core.php','creator.php','legacy-audio.php','home-core.php','home.php']:FILES['noa-bridge/'+name]='bridge/'+name
+for name in ['channel-ownership.php','member-badges.php','creator-enrollment-core.php','member-access.php','creator-core.php','creator.php','legacy-audio.php','home-core.php','home.php']:FILES['noa-bridge/'+name]='bridge/'+name
 for name in ['noa-creator.js','noa-creator.css','noa-creator.php','noa-channel.php','noa-ui.js','noa-hero.js','noa-my.php','noa-sitemap.php','noa-app/jukebox/upload-core.php','noa-app/jukebox/stream.php','noa-app/jukebox/download.php','noa-app/home.php']:FILES[name]='deploy/'+name
 FILES['extend/noa.design.php']='deploy/noa-design.extend.php'
 FILES['data/noa-audio/.htaccess']='deploy/noa-legacy-audio.htaccess'

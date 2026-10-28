@@ -9,5 +9,9 @@ if(G5_IS_MOBILE&&is_file(G5_MOBILE_PATH.'/skin/'.$noa_skin_family.'/basic/'.$noa
 if(!is_file($noa_core_skin.'/'.$noa_skin_file)){echo '<p class="noa-empty">설치된 기본 스킨에서 이 화면을 지원하지 않습니다.</p>';return;}
 ${$noa_skin_family.'_skin_path'}=$noa_core_skin;${$noa_skin_family.'_skin_url'}=$noa_core_url;
 add_stylesheet('<link rel="stylesheet" href="/noa-ui.css?v=20261022-recovery2">',99);
+if($noa_skin_family==='board'&&function_exists('nmb_lookup')){
+ if(isset($view['name'],$view['mb_id'])&&!str_contains($view['name'],'noa-rank-badge')){$rank=nmb_lookup((string)$view['mb_id']);if($rank)$view['name']=nmb_html($rank).$view['name'];}
+ if(isset($list)&&is_array($list))foreach($list as &$row)if(is_array($row)&&isset($row['name'],$row['mb_id'])&&!str_contains($row['name'],'noa-rank-badge')){$rank=nmb_lookup((string)$row['mb_id']);if($rank)$row['name']=nmb_html($rank).$row['name'];}unset($row,$rank);
+}
 include $noa_core_skin.'/'.$noa_skin_file;
 unset($noa_skin_family,$noa_skin_file,$noa_core_skin,$noa_core_url);

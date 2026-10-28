@@ -1,0 +1,9 @@
+<?php
+declare(strict_types=1);ini_set('display_errors','0');require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/storage.php';require_once __DIR__.'/lab-core.php';require_once __DIR__.'/creator-ai-core.php';
+$_SESSION['noa_creator_ai_csrf']??=bin2hex(random_bytes(32));
+try{
+ ncai_access((array)$member,(string)($is_admin??''));$owner=(string)$member['mb_id'];$db=noa_bridge_pdo();$method=$_SERVER['REQUEST_METHOD']??'GET';
+ if($method==='GET'){$s=lab_read();$jobs=[];foreach($s['jobs'] as $j)if(ncai_job($j,$owner))$jobs[]=lab_public_job($j)+['chargedPoints'=>0];lab_json(200,['ok'=>true,'csrf'=>$_SESSION['noa_creator_ai_csrf'],'jobs'=>array_reverse($jobs),'quotedPoints'=>0,'enabled'=>!empty($s['config']['textEnabled']),'notice'=>'현재 채널 AI 초안 제작은 0P입니다. 다른 AI 기능은 포인트가 소모될 수 있습니다.']);}
+ if($method!=='POST')lab_json(405,['ok'=>false,'error'=>'method_not_allowed']);if(($_SERVER['HTTP_ORIGIN']??'')!==NOA_LAB_ORIGIN||!hash_equals($_SESSION['noa_creator_ai_csrf'],(string)($_SERVER['HTTP_X_NOA_CSRF']??'')))lab_json(403,['ok'=>false,'error'=>'csrf_required']);$b=lab_json_body();
+ $result=lab_lock(function(&$s)use($db,$b,$member,$is_admin){if(empty(lab_unseal($s['secrets']??null)['openaiKey']))throw new DomainException('text_ai_enable_required');return ncai_enqueue($db,$s,$b,(array)$member,(string)($is_admin??''),function($id){if(!mkdir(lab_job_dir($id),0700))throw new RuntimeException('job_directory');});});lab_json(200,['ok'=>true,'job'=>lab_public_job($result['job']),'replayed'=>$result['replayed'],'chargedPoints'=>0]);
+}catch(DomainException $e){lab_json(409,['ok'=>false,'error'=>$e->getMessage()]);}catch(InvalidArgumentException $e){lab_json(400,['ok'=>false,'error'=>$e->getMessage()]);}catch(Throwable $e){error_log('[noa-creator-ai] '.get_class($e));lab_json(503,['ok'=>false,'error'=>'creator_ai_unavailable']);}

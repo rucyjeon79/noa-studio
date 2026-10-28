@@ -1,0 +1,1204 @@
+{
+  "member_table": {
+    "columns": [
+      {
+        "Field": "mb_no",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "PRI",
+        "Default": null,
+        "Extra": "auto_increment"
+      },
+      {
+        "Field": "mb_id",
+        "Type": "varchar(20)",
+        "Null": "NO",
+        "Key": "UNI",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_password",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_name",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_nick",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_nick_date",
+        "Type": "date",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0000-00-00",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_email",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_homepage",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_level",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_sex",
+        "Type": "char(1)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_birth",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_tel",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_hp",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_certify",
+        "Type": "varchar(20)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_adult",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_dupinfo",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_zip1",
+        "Type": "char(3)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_zip2",
+        "Type": "char(3)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_addr1",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_addr2",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_addr3",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_addr_jibeon",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_signature",
+        "Type": "text",
+        "Null": "NO",
+        "Key": "",
+        "Default": null,
+        "Extra": ""
+      },
+      {
+        "Field": "mb_recommend",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_point",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_today_login",
+        "Type": "datetime",
+        "Null": "NO",
+        "Key": "MUL",
+        "Default": "0000-00-00 00:00:00",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_login_ip",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_datetime",
+        "Type": "datetime",
+        "Null": "NO",
+        "Key": "MUL",
+        "Default": "0000-00-00 00:00:00",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_ip",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_leave_date",
+        "Type": "varchar(8)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_intercept_date",
+        "Type": "varchar(8)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_email_certify",
+        "Type": "datetime",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0000-00-00 00:00:00",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_email_certify2",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_memo",
+        "Type": "text",
+        "Null": "NO",
+        "Key": "",
+        "Default": null,
+        "Extra": ""
+      },
+      {
+        "Field": "mb_lost_certify",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": null,
+        "Extra": ""
+      },
+      {
+        "Field": "mb_mailling",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_sms",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_open",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_open_date",
+        "Type": "date",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0000-00-00",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_profile",
+        "Type": "text",
+        "Null": "NO",
+        "Key": "",
+        "Default": null,
+        "Extra": ""
+      },
+      {
+        "Field": "mb_memo_call",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_memo_cnt",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_scrap_cnt",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_1",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_2",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_3",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_4",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_5",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_6",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_7",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_8",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_9",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "mb_10",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      }
+    ],
+    "engine": "InnoDB"
+  },
+  "board_table": {
+    "columns": [
+      {
+        "Field": "bo_table",
+        "Type": "varchar(20)",
+        "Null": "NO",
+        "Key": "PRI",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "gr_id",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_subject",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_mobile_subject",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_device",
+        "Type": "enum('both','pc','mobile')",
+        "Null": "NO",
+        "Key": "",
+        "Default": "both",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_admin",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_list_level",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_read_level",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_write_level",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_reply_level",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_comment_level",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_upload_level",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_download_level",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_html_level",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_link_level",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_count_delete",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_count_modify",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_read_point",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_write_point",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_comment_point",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_download_point",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_category",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_category_list",
+        "Type": "text",
+        "Null": "NO",
+        "Key": "",
+        "Default": null,
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_sideview",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_file_content",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_secret",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_dhtml_editor",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_select_editor",
+        "Type": "varchar(50)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_rss_view",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_good",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_nogood",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_name",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_signature",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_ip_view",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_list_view",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_list_file",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_list_content",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_table_width",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_subject_len",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_mobile_subject_len",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_page_rows",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_mobile_page_rows",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_new",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_hot",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_image_width",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_skin",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_mobile_skin",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_include_head",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_include_tail",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_content_head",
+        "Type": "text",
+        "Null": "NO",
+        "Key": "",
+        "Default": null,
+        "Extra": ""
+      },
+      {
+        "Field": "bo_mobile_content_head",
+        "Type": "text",
+        "Null": "NO",
+        "Key": "",
+        "Default": null,
+        "Extra": ""
+      },
+      {
+        "Field": "bo_content_tail",
+        "Type": "text",
+        "Null": "NO",
+        "Key": "",
+        "Default": null,
+        "Extra": ""
+      },
+      {
+        "Field": "bo_mobile_content_tail",
+        "Type": "text",
+        "Null": "NO",
+        "Key": "",
+        "Default": null,
+        "Extra": ""
+      },
+      {
+        "Field": "bo_insert_content",
+        "Type": "text",
+        "Null": "NO",
+        "Key": "",
+        "Default": null,
+        "Extra": ""
+      },
+      {
+        "Field": "bo_gallery_cols",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_gallery_width",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_gallery_height",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_mobile_gallery_width",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_mobile_gallery_height",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_upload_size",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_reply_order",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_search",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_order",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_count_write",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_count_comment",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_write_min",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_write_max",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_comment_min",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_comment_max",
+        "Type": "int",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_notice",
+        "Type": "text",
+        "Null": "NO",
+        "Key": "",
+        "Default": null,
+        "Extra": ""
+      },
+      {
+        "Field": "bo_upload_count",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_email",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_cert",
+        "Type": "enum('','cert','adult','hp-cert','hp-adult')",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_sns",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_use_captcha",
+        "Type": "tinyint",
+        "Null": "NO",
+        "Key": "",
+        "Default": "0",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_sort_field",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_1_subj",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_2_subj",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_3_subj",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_4_subj",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_5_subj",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_6_subj",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_7_subj",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_8_subj",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_9_subj",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_10_subj",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_1",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_2",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_3",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_4",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_5",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_6",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_7",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_8",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_9",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      },
+      {
+        "Field": "bo_10",
+        "Type": "varchar(255)",
+        "Null": "NO",
+        "Key": "",
+        "Default": "",
+        "Extra": ""
+      }
+    ],
+    "engine": "MyISAM"
+  }
+}
