@@ -84,7 +84,7 @@ try{
   const name=`my-activity-${width}-${theme}.png`;await page.screenshot({path:'/workspace/screenshots/'+name,fullPage:true});await page.screenshot({path:out+'/'+name,fullPage:true});report.layouts.push({surface:'MY activity',viewport:width,theme,...dims});
  }
  await page.getByRole('link',{name:/도착한 소식/}).click();await page.getByRole('heading',{name:'내 활동 알림',exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:/새 글/}).count(),0);
- const adminPage=await contexts.admin.newPage();await adminPage.goto(base+'/noa-notifications.php');await adminPage.locator('#nnt-content').waitFor();await adminPage.getByRole('button',{name:/새 글/}).click();await adminPage.getByText(/새 글 소식 2개/).waitFor();assert.equal(await adminPage.locator('#nnt-list li').count(),2);
+ const adminPage=await contexts.admin.newPage();await adminPage.goto(base+'/noa-notifications.php');await adminPage.locator('#nnt-content').waitFor();await adminPage.locator('#nnt-filters').getByRole('button',{name:/새 글/}).click();await adminPage.getByText(/새 글 소식 2개/).waitFor();assert.equal(await adminPage.locator('#nnt-list li').count(),2);
  const adminData=(await get('admin')).data;const publicPost=adminData.items.find(x=>x.kind==='new_post'&&x.url.includes('bo_table=free'));
  await adminPage.locator('#nnt-item-'+publicPost.id).click();await adminPage.locator('dialog.noa-comments').waitFor();assert.equal(adminPage.url(),base+'/noa-notifications.php');await adminPage.close();
  assert.equal(errors.length,0,errors.join('\n'));
