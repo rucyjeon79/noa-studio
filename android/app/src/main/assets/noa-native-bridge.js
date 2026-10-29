@@ -9,6 +9,7 @@
  }
  window.addEventListener('storage',uploadState);window.setInterval?.(uploadState,3000);
  const originalPlay=HTMLMediaElement.prototype.play;
+ let domReady=document.readyState!=='loading';
  let audio=null,applying=false,pendingKey='',snapshot={key:'',position:0,duration:0,paused:true,playing:false,ended:false,volume:.7,closed:true};
  const key=()=>{try{return typeof selected!=='undefined'?selected?.dataset.key||'':'';}catch{return '';}};
  const event=name=>audio?.dispatchEvent(new Event(name));
@@ -21,7 +22,7 @@
   send({type,key:current,queue:keys.slice(0,500),repeat:!!repeatMode,shuffle:!!shuffleMode,volume:snapshot.volume});
  }
  function mount(){
-  if(document.readyState==='loading')return;
+  if(!domReady)return;
   const found=document.getElementById('sound-player');if(!found||found===audio)return;
   audio=found;
   // Instance-only facade: previews, video and unrelated audio retain browser behavior.
@@ -79,6 +80,6 @@
  });
  window.addEventListener('noa-media-activity',e=>{if(e.detail?.type==='youtube')send({type:'video'});});
  window.addEventListener('noa-app-update',()=>send({type:'update'}));
- const boot=()=>{mount();uploadState();if(document.body&&typeof MutationObserver!=='undefined')new MutationObserver(uploadState).observe(document.body,{attributes:true,attributeFilter:['class']});};
+ const boot=()=>{domReady=true;mount();uploadState();if(document.body&&typeof MutationObserver!=='undefined')new MutationObserver(uploadState).observe(document.body,{attributes:true,attributeFilter:['class']});};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

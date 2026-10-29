@@ -9,7 +9,7 @@ function app(readyState='complete'){
  const audio=new Media('sound-player'),dock={hidden:true},controls={};
  const rows=['single:jpop:02','single:jpop:01'].map(key=>({dataset:{key}}));
  const window={NoaAndroid:{postMessage(raw){messages.push(JSON.parse(raw));}},addEventListener(){},setInterval(fn){this.uploadTick=fn;}};window.top=window;
- const context={window,HTMLMediaElement:Media,Event:class{constructor(type){this.type=type;}},selected:rows[0],buttons:rows,queue:()=>rows,repeat:false,shuffle:false,queueMicrotask:fn=>fn(),document:{readyState,getElementById:id=>id==='sound-player'?audio:controls[id]||null,querySelector:()=>dock,addEventListener(){}}};
+ const context={window,HTMLMediaElement:Media,Event:class{constructor(type){this.type=type;}},selected:rows[0],buttons:rows,queue:()=>rows,repeat:false,shuffle:false,queueMicrotask:fn=>fn(),document:{readyState,getElementById:id=>id==='sound-player'?audio:controls[id]||null,querySelector:()=>dock,addEventListener(name,fn){if(name==='DOMContentLoaded')this.onReady=fn;}}};
  context.select=(row)=>{context.selected=row;audio.pause();audio.load();};vm.runInNewContext(script,context);messages.length=0;
  const state=more=>window.NoaNativeBridge.state({key:rows[0].dataset.key,queue:rows.map(r=>r.dataset.key),position:12,duration:180,paused:false,playing:true,ended:false,volume:.7,closed:false,repeat:false,shuffle:false,error:false,...more});
  return {messages,events,audio,rows,window,context,Media,state,dock};
@@ -26,4 +26,4 @@ test('restored native queue reaches a fresh PWA document in the same order',()=>
 
 test('PWA upload guard reaches the native engine without adding an upload UI',()=>{const a=app();let active=true;a.context.document.body={classList:{contains:()=>active}};a.window.uploadTick();active=false;a.window.uploadTick();assert.deepEqual(a.messages,[{type:'upload',active:true},{type:'upload',active:false}]);});
 
-test('document initialization cannot mount early or start a second browser player',async()=>{const a=app('loading');a.state();await a.audio.play();assert.equal(a.audio.webStarts,0);assert.equal(a.window.NoaNativeBridge.ready(),false);assert.equal(a.messages.length,0);a.context.document.readyState='interactive';a.state();assert.equal(a.window.NoaNativeBridge.ready(),true);assert.equal(a.audio.currentTime,12);assert.ok(a.messages.every(m=>m.type==='ready'));});
+test('document initialization cannot mount early or start a second browser player',async()=>{const a=app('loading');a.state();await a.audio.play();assert.equal(a.audio.webStarts,0);assert.equal(a.window.NoaNativeBridge.ready(),false);assert.equal(a.messages.length,0);a.context.document.readyState='interactive';a.state();assert.equal(a.window.NoaNativeBridge.ready(),false);a.context.document.onReady();a.state();assert.equal(a.window.NoaNativeBridge.ready(),true);assert.equal(a.audio.currentTime,12);assert.ok(a.messages.every(m=>m.type==='ready'||m.type==='upload'));});
