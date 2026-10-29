@@ -16,9 +16,9 @@ jobs:
         with:
           persist-credentials: false
       - run: python3 -m pip install --user 'paramiko==3.5.1'
-      - name: Compare authenticated audio responses and clean generated member
+      - name: Inspect live audio access rules without changes
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
-        run: python3 scripts/qa/noa-android-audio-diagnostic.py
+        run: python3 scripts/qa/noa-audio-access-readonly.py
