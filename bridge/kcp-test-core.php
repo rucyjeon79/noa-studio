@@ -94,15 +94,19 @@ function nk_return(string $id,array $input,int $now): array {
     });
     // A timeout or interrupted worker must never issue another approval blindly.
     if (!$claimed) return nk_order($id);
+    $responseCode=null;
     try {
         $response=nk_approval_api($body);
+        $responseCode=$response['res_cd'];
         if (($response['res_cd']??'')==='0000') return nk_finish($id,$response,$now);
         $state='declined';
     } catch (Throwable $e) { $state='review'; }
-    return ns_atomic($d['ownerId'],false,function()use($id,$state,$now){
+    return ns_atomic($d['ownerId'],false,function()use($id,$state,$now,$responseCode){
         $row=ns_doc(nk_order_key($id),true);$d=$row['data'];
         if ($d['state']!=='processing') return $d;
         $d['state']=$state;$d['verifiedAt']=$now;
+        // Keep only the validated provider code, never encrypted auth or card data.
+        if (is_string($responseCode) && preg_match('/^[A-Za-z0-9]{4}$/D',$responseCode)) $d['responseCode']=$responseCode;
         ns_put(nk_order_key($id),'kcp_test_order',$d,$row['revision'],$d['ownerId']);return $d;
     });
 }

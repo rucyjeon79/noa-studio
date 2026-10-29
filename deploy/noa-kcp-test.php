@@ -42,6 +42,10 @@ if (($_SERVER['REQUEST_METHOD']??'GET')==='POST') {
 ?><!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>KCP 테스트 연결 | NOA STUDIO</title><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-points.css"><script src="/noa-ui.js" defer></script><script src="/noa-kcp-test.js?v=<?=hash_file('sha256',__DIR__.'/noa-kcp-test.js')?>" defer></script></head><body class="noa-page"><main class="noa-points-page"><p class="noa-eyebrow">KCP · TEST</p><h1>KCP 결제창 연결</h1><p>관리자용 카드 결제창 테스트입니다. 실제 포인트는 지급되지 않습니다.</p><p role="status" id="kcp-notice"><?=nk_h($message)?></p><section><h2>연결 단계</h2><p>① PC·모바일 결제창 연결 테스트</p><p>② 테스트 인증서·서버 승인 연결 — 카드 인증 후 결과 확인</p><p>③ 가맹점 심사·운영 인증서·실결제 전환 — 미완료</p><p>테스트 승인 결과는 별도로 기록하며 실제 잔액은 바뀌지 않습니다. 실결제 연동 완료 상태는 아닙니다.</p></section>
 <?php if ($result): $labels=['created'=>'카드 인증 대기','processing'=>'승인 결과 확인 필요 · 재승인 요청 금지','approved'=>'KCP 서버 테스트 승인 확인','declined'=>'KCP 서버 승인 거절','review'=>'승인 결과 확인 필요 · 재승인 요청 금지']; ?>
 <section aria-label="최근 테스트 결과"><h2><?=nk_h($labels[$result['state']]??'결과 확인 필요')?></h2><p>주문번호: <?=nk_h($result['id'])?></p><p>테스트 금액: 1,000원 · 실제 지급: 0P</p><?php if ($result['state']==='approved'): ?><p>거래번호: <?=nk_h($result['transactionId'])?></p><p>테스트 포인트 처리: <?=nk_h((string)$result['simulatedPoints'])?>P 기록 · 실제 사용 불가</p><?php endif; ?></section>
+<?php if (in_array($result['state'],['declined','review'],true)): ?>
+<p>KCP 승인 응답 코드: <?=nk_h((string)($result['responseCode']??'기록 없음'))?></p>
+<?php if (!isset($result['responseCode'])): ?><p>이 주문에는 상세 응답 코드가 저장되지 않았습니다. 기존 거절 사유를 확인할 수 없으며, 자동으로 다시 승인 요청하지 않습니다.</p><?php endif; ?>
+<?php endif; ?>
 <?php endif; ?>
 <?php if (!$fields): ?>
 <form method="post"><input type="hidden" name="csrf" value="<?=nk_h($_SESSION['noa_kcp_test_csrf'])?>"><fieldset><legend>확인할 기기</legend><label><input type="radio" name="device" value="mobile" checked>모바일 카드 결제창</label><label><input type="radio" name="device" value="pc">PC 카드 결제창</label></fieldset><p>테스트 상품: 1,000원 포인트권 · 지급 포인트 0P</p><button class="noa-button" type="submit">테스트 주문 준비</button></form>

@@ -17,7 +17,7 @@ verify(nk_return($d2['id'],$auth,$now)['state']==='review','transaction_id_canno
 foreach(['amount'=>999,'pay_method'=>'PABK','tno'=>'invalid','ordr_idxx'=>'other'] as $k=>$v){$o=nk_create_order('regular',$now);$GLOBALS['nk_test_transport']=fn($b)=>array_replace($good,[$k=>$v]);verify(nk_return($o['id'],$auth,$now)['state']==='review','mismatch_'.$k);}
 $o=nk_create_order('regular',$now);$calls=0;$GLOBALS['nk_test_transport']=function($b)use(&$calls){$calls++;throw new RuntimeException('timeout');};
 verify(nk_return($o['id'],$auth,$now)['state']==='review','timeout_never_success');nk_return($o['id'],$auth,$now+1);verify($calls===1,'unknown_not_reapproved');
-$o=nk_create_order('regular',$now);$GLOBALS['nk_test_transport']=fn($b)=>['res_cd'=>'8350'];verify(nk_return($o['id'],$auth,$now)['state']==='declined','provider_rejected');
+$o=nk_create_order('regular',$now);$GLOBALS['nk_test_transport']=fn($b)=>['res_cd'=>'8350','res_msg'=>'private-provider-detail'];$declined=nk_return($o['id'],$auth,$now);verify($declined['state']==='declined'&&$declined['responseCode']==='8350','provider_rejected_code_preserved');verify(nk_order($o['id'])['responseCode']==='8350'&&!str_contains(json_encode($declined),'private-provider-detail'),'safe_durable_code_only');verify(nk_return($o['id'],$auth,$now)===$declined,'declined_replay_preserves_code');
 $o=nk_create_order('regular',$now-1801);denied(fn()=>nk_return($o['id'],$auth,$now));
 $o=nk_create_order('regular',$now);denied(fn()=>nk_return($o['id'],array_replace($auth,['enc_info'=>[]]),$now));verify(nk_order($o['id'])['state']==='created','invalid_before_claim');
 // Reentrant callback simulates a second worker after the durable processing claim.
