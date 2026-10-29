@@ -88,3 +88,16 @@ console.log('PASS reopened-tab completion persists, storage merge stays terminal
  await controls.children[1].onclick();assert.equal(current.state,'replaced');assert.equal(old.state,'needs_file');
  console.log('PASS stale inline buttons reselect and cancel the current polled reservation');
 })().catch(error=>{console.error(error);process.exitCode=1});
+
+// Hide only source-less reopened reservations on server-verified ready songs.
+{
+ const r={key:'song',state:'needs_file'},card={dataset:{jukeboxKey:'song',jukeboxStatus:'ready',audio:'/audio',audioSha:'hash'}};
+ const c={active:null,progressStates:new Map(),cards:()=>[card],latestJobs:()=>new Map(),busy:['queued','processing'],reservations:[r]};vm.createContext(c);
+ vm.runInContext(source.slice(source.indexOf('function showReservation('),source.indexOf('function latestJobs(')),c);
+ assert.equal(c.showReservation(r),false);assert.equal(r.state,'needs_file');
+ assert.equal(c.showReservation({...r,file:{}}),true);assert.equal(c.showReservation({...r,hold:true}),true);
+ c.progressStates.set('song',{status:'uploading',ready:true});assert.equal(c.showReservation(r),true);
+ c.progressStates.set('song',{status:'ready',ready:false});assert.equal(c.showReservation(r),true);
+ c.progressStates.set('song',{status:'ready',ready:true});assert.equal(c.showReservation(r),false);
+ console.log('PASS completed-song stale prompts hidden without deleting pending replacements');
+}

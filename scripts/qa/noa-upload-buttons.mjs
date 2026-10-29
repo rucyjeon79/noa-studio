@@ -40,5 +40,22 @@ try{for(const width of [360,1280]){
  await(await chooser).setFiles({name,mimeType:'audio/wav',buffer:file});
  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('noa-jukebox-reservations-v1'))[0].state==='ready');
  assert.equal(init,1);assert.equal(finish,1);assert.equal(cancel,1);assert.deepEqual(errors,[]);
+ // Ready audio + an unmatched old local reservation must not show re-upload UI.
+ await context.route('**/buttons-fixture',r=>r.fulfill({contentType:'text/html',body:'<meta name="noa-jukebox-csrf" content="fixture"><main><article data-jukebox-key="song" data-jukebox-status="ready" data-audio="/existing.mp3" data-audio-sha="verified" data-title="EP.31"><div class="jukebox-actions"></div></article></main>'}));
+ await context.route('**/noa-app/jukebox/upload.php*',r=>{
+ const action=new URL(r.request().url()).searchParams.get('action');
+ return r.fulfill({json:action==='queue'?{rows:[],counts:{},health:{can_upload:true}}:{key:'song',status:'ready',ready:true,audio:'/existing.mp3',audio_sha256:'verified',upload:{id:'different-server-upload'}}});
+ });
+ await page.goto(base+'/buttons-fixture');
+ for(const path of ['noa-premium.js','noa-app/jukebox/upload-transport.js','noa-app/jukebox/upload.js'])await page.addScriptTag({content:process.env.NOA_BUTTONS_LIVE?await(await context.request.get(base+'/'+path+'?buttons='+Date.now())).text():readFileSync('deploy/'+path,'utf8')});
+ await page.waitForFunction(()=>!document.querySelector('.jukebox-transfer-check').disabled);
+ await page.evaluate(()=>window.dispatchEvent(new Event('online')));
+ await page.waitForFunction(()=>!document.querySelector('.jukebox-transfer-check').disabled);
+ assert.equal(await page.locator('.jukebox-source-actions').count(),0);
+ assert.equal(await page.locator('.noa-track-progress').count(),0);
+ assert.equal(await page.locator('#jukebox-transfer-dock').isVisible(),false);
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('noa-jukebox-reservations-v1'))[0].uploadId),saved.uploadId);
+ assert.deepEqual(errors,[]);
+ console.log('READY_RESERVATION_HIDDEN_OK',JSON.stringify({width,metadataPreserved:true,live:!!process.env.NOA_BUTTONS_LIVE}));
  console.log('UPLOAD_BUTTONS_OK',JSON.stringify({width,queue,init,finish,cancel,sameFileResume:true,cancelAfterPolling:true,live:!!process.env.NOA_BUTTONS_LIVE}));await context.close();
 }}finally{await browser.close();}
