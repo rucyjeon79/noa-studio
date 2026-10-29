@@ -103,7 +103,7 @@ jobs:
       - name: Verify live public and protected routes without modifying data
         run: |
           python3 - <<'PY'
-          import urllib.request,urllib.error,json
+          import urllib.request,urllib.error,urllib.parse,json
           class NoRedirect(urllib.request.HTTPRedirectHandler):
               def redirect_request(self, req, fp, code, msg, headers, newurl): return None
           opener=urllib.request.build_opener(NoRedirect())
@@ -112,7 +112,10 @@ jobs:
               try:r=opener.open('https://noastudio.ai.kr'+path,timeout=25)
               except urllib.error.HTTPError as e:r=e
               assert r.status==expected,(path,r.status)
-              if path in ['/bbs/login.php','/bbs/register.php']: assert '/noa-login.php' in r.headers.get('Location',''),(path,'wrong_social_destination')
+              if path in ['/bbs/login.php','/bbs/register.php']:
+                  location=urllib.parse.urlsplit(r.headers.get('Location',''))
+                  destination='/noa-creator-apply.php' if path=='/bbs/register.php' else '/noa-login.php'
+                  assert location.path==destination and location.netloc in ('','noastudio.ai.kr'),(path,'wrong_onboarding_destination')
               print('LIVE_ACCESS',path,r.status)
           PY
   finish-live:
