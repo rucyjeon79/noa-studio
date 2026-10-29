@@ -133,3 +133,10 @@ html[data-noa-theme="noa-ivory"] body.noa-page .noa-inline-song-row.noa-mastered
 .noa-comments .noa-comment-post{max-height:30vh;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}
 .noa-comments .noa-reply-context,.noa-comments blockquote{margin:8px 0;padding:8px 12px;border-left:2px solid var(--noa-line);color:var(--noa-muted);overflow-wrap:anywhere}
 .noa-comments .noa-comment>button{min-height:44px;margin-right:8px;white-space:nowrap}
+/* A quiet gold highlight for mastered recordings; text remains readable without motion. */
+.noa-premium-badge{--premium-gold:var(--noa-accent,#d8bc7c);--premium-glint:#fff5d6;color:var(--premium-gold)}
+.noa-premium-badge>span{color:var(--premium-gold);font-weight:750;text-shadow:0 0 9px color-mix(in srgb,var(--premium-gold) 22%,transparent)}
+@supports (background-clip:text){.noa-premium-badge>span{background:linear-gradient(110deg,var(--premium-gold) 30%,var(--premium-glint) 46%,var(--premium-gold) 60%);background-size:250% 100%;background-position:110% 0;background-clip:text;-webkit-background-clip:text;color:transparent;animation:noa-premium-gold-sheen 6s ease-in-out infinite}}
+@keyframes noa-premium-gold-sheen{0%,32%{background-position:110% 0}68%,100%{background-position:-80% 0}}
+@media(prefers-reduced-motion:reduce){.noa-premium-badge>span{animation:none;background-position:50% 0}}
+@media(forced-colors:active){.noa-premium-badge>span{background:none;color:CanvasText;text-shadow:none;animation:none}}
