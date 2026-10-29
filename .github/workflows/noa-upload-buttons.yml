@@ -1,0 +1,44 @@
+name: NOA upload reservation buttons
+on:
+  pull_request:
+    paths: ['scripts/noa_upload_buttons_release.py','scripts/qa/noa-upload-buttons.mjs','.github/workflows/noa-upload-buttons.yml']
+  push:
+    branches: [main]
+    paths: ['scripts/noa_upload_buttons_release.py','scripts/qa/noa-upload-buttons.mjs','.github/workflows/noa-upload-buttons.yml']
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          node --check deploy/noa-app/jukebox/upload.js
+          node tests/jukebox/reservations_test.cjs
+          node tests/jukebox/transport_test.cjs
+          npm install --prefix "$RUNNER_TEMP/buttons" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-upload-buttons.mjs "$RUNNER_TEMP/buttons/check.mjs"
+          node "$RUNNER_TEMP/buttons/check.mjs"
+  deploy:
+    if: github.event_name == 'push'
+    needs: verify
+    environment: production
+    runs-on: ubuntu-latest
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - run: |
+          python -m pip install 'paramiko>=3,<5'
+          python scripts/noa_upload_buttons_release.py
+          npm install --prefix "$RUNNER_TEMP/buttons" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-upload-buttons.mjs "$RUNNER_TEMP/buttons/check.mjs"
+          NOA_BUTTONS_LIVE=1 node "$RUNNER_TEMP/buttons/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'upload-buttons-live-${{ github.run_id }}', path: ainoa-proof/deployment.json, retention-days: 7}
