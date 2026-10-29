@@ -89,6 +89,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
    form.addEventListener('input',()=>{state.dirty=true;});form.addEventListener('change',()=>{state.dirty=true;});
    form.onsubmit=async event=>{
     event.preventDefault();if(state.busy)return;const patch={};try{for(const[key,input]of Object.entries(inputs)){const value=window.NoaRecordForm.value(input),before=state.data.fields[key]??(key==='creativeFields'?{}:key==='confirmed'?false:'');if(JSON.stringify(value)!==JSON.stringify(before))patch[key]=key==='title'?value.trim():value;}}catch{status.textContent='추가 제작 자료의 JSON 형식을 확인해 주세요.';return;}
+    for(const key of Object.keys(patch))if(typeof patch[key]==='string'&&!patch[key].trim()&&typeof state.data.fields[key]==='string'&&state.data.fields[key].trim())patch[key]=state.data.fields[key];
     if(!Object.keys(patch).length&&selector.type!=='new'){state.dirty=false;close();return;}if('title'in patch&&!patch.title){status.textContent='제목을 입력해 주세요.';return;}
     if('ep'in patch)patch.ep=String(Number(patch.ep)).padStart(2,'0');
     if(selector.type==='new'&&inputs.members)patch.members=window.NoaRecordForm.value(inputs.members);

@@ -17,11 +17,18 @@ try{for(const width of [390,1280]){
  await page.reload();await open();
  assert.equal(await page.getByLabel('원곡 가수',{exact:true}).inputValue(),artist);
  assert.equal(await page.getByLabel('보컬 정보',{exact:true}).inputValue(),'남녀듀엣');
+ await page.getByLabel('원곡 가수',{exact:true}).fill('   ');
+ await page.getByLabel('보컬 정보',{exact:true}).selectOption('');
+ await page.getByRole('button',{name:'정보 수정 저장',exact:true}).click();
+ await page.locator('.noa-edit-form').waitFor({state:'detached'});
+ await page.reload();await open();
+ assert.equal(await page.getByLabel('원곡 가수',{exact:true}).inputValue(),artist);
+ assert.equal(await page.getByLabel('보컬 정보',{exact:true}).inputValue(),'남녀듀엣');
  const data=await page.evaluate(async()=>await(await fetch('/noa-inline-edit.php?type=song&source=music&key=story:cover-fixture')).json());
  assert.equal(data.payload.body.originalSinger,artist);assert.equal(data.payload.body.coverArtist,artist);
  assert.equal(data.payload.body.vocal,'남녀듀엣');assert.equal(data.payload.body.sourceVocal,'남녀듀엣');assert.equal(data.payload.body.thumbCast,'duet');
  assert.equal(data.payload.body.untouched,'preserve');
  assert.deepEqual(errors,[]);
- console.log('COVER_SAVE_REOPEN_OK',JSON.stringify({width,realPhpMysql:true,artist:true,vocal:true,aliases:true,reload:true}));
+ console.log('COVER_SAVE_REOPEN_OK',JSON.stringify({width,realPhpMysql:true,artist:true,vocal:true,aliases:true,reload:true,blankCannotOverwrite:true}));
  await context.close();
 }}finally{await browser.close();}

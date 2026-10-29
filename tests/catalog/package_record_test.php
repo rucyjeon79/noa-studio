@@ -26,7 +26,7 @@ check(nup_fields($masked)['songDescription']==='기존 곡 소개','existing sum
 $separated=nup_patch($masked,'single',['description'=>'새 영상 설명','lyricsTranslation'=>'번역','productionPrompt'=>'제작','characterPrompt'=>'캐릭터']);
 check(nup_fields($separated)['songDescription']==='기존 곡 소개'&&$separated['body']['summary']==='기존 곡 소개','YouTube edit preserves song introduction');
 check(nup_fields($separated)['lyricsTranslation']==='번역'&&nup_fields($separated)['characterPrompt']==='캐릭터','production fields roundtrip');
-$cleared=nup_patch($masked,'single',['sunoPrompt'=>'']);check(nup_fields($cleared)['sunoPrompt']==='','explicit clear is not restored');
+$cleared=nup_patch($masked,'single',['sunoPrompt'=>'']);check(nup_fields($cleared)['sunoPrompt']==='검증된 원본 스타일','populated style survives blank patch');
 $body=nup_merge_body(['sunoPrompt'=>'old','sunoStyle'=>'old'],['sunoPrompt'=>'old','sunoStyle'=>'new']);check($body['sunoPrompt']==='new'&&$body['sunoStyle']==='new','full editor updates canonical alias');
 denied(fn()=>nup_merge_body(['sunoPrompt'=>'old','sunoStyle'=>'old'],['sunoPrompt'=>'one','sunoStyle'=>'two']),'different concurrent alias edits rejected');
 echo "PRODUCTION_FIELDS_SOURCE_VISIBILITY_DESCRIPTION_SEPARATION_ALIAS_CONFLICT_OK\n";
