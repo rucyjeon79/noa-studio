@@ -25,7 +25,7 @@ try{for(const width of [360,1280]){
   const content=process.env.NOA_BUTTONS_LIVE?await(await context.request.get(base+'/'+path+'?buttons='+Date.now())).text():readFileSync('deploy/'+path,'utf8');await page.addScriptTag({content});
  }await page.locator('.jukebox-source-actions button').first().waitFor();
  // Force another successful poll before tapping retained controls.
- const before=queue;await page.evaluate(()=>window.dispatchEvent(new Event('online')));await page.waitForFunction(()=>!document.querySelector('.jukebox-transfer-check').disabled);assert(queue>before);
+ await page.waitForFunction(()=>!document.querySelector('.jukebox-transfer-check').disabled);const before=queue;await page.evaluate(()=>window.dispatchEvent(new Event('online')));await page.waitForFunction(()=>!document.querySelector('.jukebox-transfer-check').disabled);assert(queue>before);
  };
  await mount();
  await page.locator('.jukebox-source-actions').getByRole('button',{name:'전송 예약 취소',exact:true}).click();
