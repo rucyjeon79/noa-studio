@@ -2,6 +2,6 @@
 import sys
 sys.path.insert(0,'scripts')
 import noa_ainoa_deploy as release
-release.FILES={'noa-engagement.js':'deploy/noa-engagement.js'}
+release.FILES={'noa-engagement.js':'deploy/noa-engagement.js','noa-voice.js':'deploy/noa-voice.js'}
 release.NEW=set()
 release.main()

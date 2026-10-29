@@ -15,7 +15,8 @@ function compose(text,{date=new Date(),title='',index=0,name='',practical=false,
  return (name?name+'님, ':'')+opening+' '+feeling+saying+'\n'+String(text);
 }
 function emptyStatus(text){return /(?:등록된|표시할|검색된|일치하는).*(?:없습니다|없어요)/.test(text);}
-if(typeof module==='object'&&module.exports)module.exports={compose,emptyStatus};
+function routinePlaybackStatus(id,text){return id==='player-status'&&['저장된 음원 재생 중','일시정지','음원을 불러오는 중입니다.','저장된 음원을 준비하는 중입니다.','저장된 음원 · 추가 인코딩 없이 재생합니다.'].includes(text);}
+if(typeof module==='object'&&module.exports)module.exports={compose,emptyStatus,routinePlaybackStatus};
 if(!scope.document||scope.NoaVoice)return;
 const parentVoice=(()=>{try{return scope.parent!==scope?scope.parent.NoaVoice:null;}catch{return null;}})();
 const doc=scope.document,read=k=>{try{return sessionStorage.getItem(k);}catch{return null;}},write=(k,v)=>{try{sessionStorage.setItem(k,v);}catch{}};
@@ -68,7 +69,7 @@ function markAccess(){
 }
 function scan(){scheduled=false;markAccess();render();for(const node of doc.querySelectorAll(statusSelector)){
  if(node.closest('.ainoa-tip,.ainoa-admin-dialog')||node.matches('.ainoa-answer')||node.closest('[hidden]'))continue;
- const text=node.textContent.trim();if(!text||emptyStatus(text)||text===seen.get(node)||!node.getClientRects().length)continue;seen.set(node,text);
+ const text=node.textContent.trim();if(!text||emptyStatus(text)||routinePlaybackStatus(node.id,text)||text===seen.get(node)||!node.getClientRects().length)continue;seen.set(node,text);
  // Dynamic operational notices only; progress numbers and empty-state copy are not repeated as alerts.
  if(node.matches('[role="alert"],.noa-toast,.toast,.alert-danger,.alert-success,.alert-warning')||/저장|실패|못했|오류|확인해|완료|차감|켜|껐|연결|전달|등록|삭제|필요|부족|지연/.test(text))say(text,{key:node.id||text,requireAcknowledgement:node.dataset.noaRequiredAck==='true'});
 }}
@@ -99,3 +100,4 @@ scope.addEventListener('pageshow',e=>{if(e.persisted){close(false);void welcome(
 scope.NoaVoice={say,compose,getAccount:()=>parentVoice?parentVoice.getAccount():account};if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 doc.addEventListener('visibilitychange',()=>{if(!doc.hidden)render();});
 })(typeof window==='undefined'?globalThis:window);
+
