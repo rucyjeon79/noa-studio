@@ -478,3 +478,7 @@ html body .noa-home-banner-copy>span{min-height:40px;font-size:13px;line-height:
 html body .noa-home-banner-copy>b{display:flex;align-items:center;gap:8px;padding-top:4px;font-size:13px;font-weight:600;line-height:20px;color:var(--noa-accent)}
 @media(max-width:600px){html body .noa-home-banner{grid-template-columns:36px minmax(0,1fr);gap:12px;margin:20px 0;padding:16px;min-height:164px}html body .noa-home-banner-icon{width:36px;height:36px}html body .noa-home-banner-copy>strong{font-size:18px;line-height:24px}}
 @media(prefers-reduced-motion:reduce){html body .noa-home-banner{transition:none}}
+
+/* Keep vertical overscroll from reloading the document and destroying playback.
+   Normal scrolling, pinch zoom and horizontal navigation remain browser-native. */
+html,body{overscroll-behavior-y:contain}
