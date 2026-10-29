@@ -100,7 +100,10 @@ jobs:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
-        run: python3 scripts/noa_android_member_qa.py cleanup
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-android-qa-state.json" ]; then
+            python3 scripts/noa_android_member_qa.py cleanup
+          fi
       - name: Retain device verification
         if: always()
         uses: actions/upload-artifact@v4
