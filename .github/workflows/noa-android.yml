@@ -13,6 +13,24 @@ on:
 permissions:
   contents: read
 jobs:
+  signing-readiness:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Check original signing configuration without exposing values
+        env:
+          NOA_ANDROID_KEYSTORE_BASE64: ${{ secrets.NOA_ANDROID_KEYSTORE_BASE64 }}
+          NOA_ANDROID_KEY_ALIAS: ${{ secrets.NOA_ANDROID_KEY_ALIAS }}
+          NOA_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.NOA_ANDROID_KEYSTORE_PASSWORD }}
+          NOA_ANDROID_KEY_PASSWORD: ${{ secrets.NOA_ANDROID_KEY_PASSWORD }}
+        run: |
+          python3 - <<'PYCODE'
+          import os
+          required=('NOA_ANDROID_KEYSTORE_BASE64','NOA_ANDROID_KEY_ALIAS','NOA_ANDROID_KEYSTORE_PASSWORD','NOA_ANDROID_KEY_PASSWORD')
+          missing=[name for name in required if not os.environ.get(name)]
+          if missing: raise SystemExit('Original signing configuration missing: '+', '.join(missing))
+          print('Original signing configuration present; certificate continuity still required before publication.')
+          PYCODE
   apk:
     runs-on: ubuntu-latest
     environment: production
@@ -146,7 +164,7 @@ jobs:
   publish:
     # Native-scoped main pushes automatically publish after all device gates pass.
     if: (github.event_name == 'workflow_dispatch' && inputs.publish) || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    needs: apk
+    needs: [apk, signing-readiness]
     concurrency:
       group: noa-dothome-production
       cancel-in-progress: false
