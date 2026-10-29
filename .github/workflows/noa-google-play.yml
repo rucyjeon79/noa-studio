@@ -1,0 +1,49 @@
+name: NOA Google Play billing checks
+on:
+  push:
+    branches: [work/google-play-billing-20261029]
+  pull_request:
+    paths: ['bridge/google-play*.php','android/**','tests/google-play/**','scripts/noa_google_play_refunds.php','.github/workflows/noa-google-play.yml']
+permissions: {contents: read}
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: isolated-noa-ci, MYSQL_DATABASE: noa_subscription_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -pisolated-noa-ci" --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      NOA_MYSQL_DSN: 'mysql:host=127.0.0.1;port=3306;dbname=noa_subscription_test;charset=utf8mb4'
+      NOA_MYSQL_USER: root
+      NOA_MYSQL_PASSWORD: isolated-noa-ci
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'mysqli,pdo_mysql,mbstring,curl,openssl'}
+      - run: |
+          for f in bridge/google-play*.php tests/google-play/*.php scripts/noa_google_play_refunds.php; do php -l "$f"; done
+          php tests/google-play/policy.php
+          php tests/subscription/mysql_test.php
+          php tests/google-play/mysql.php
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '17'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: '8.11.1'}
+      - run: node --test tests/android/native_bridge_test.mjs
+      - run: gradle --no-daemon :app:assembleDebug :app:lintDebug
+        working-directory: android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NOA-Play-Billing-Test-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
