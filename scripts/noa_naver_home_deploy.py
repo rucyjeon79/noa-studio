@@ -43,11 +43,13 @@ def main():
                 sftp.posix_rename(temp,REMOTE)
             with sftp.open(REMOTE,'rb') as stream:
                 if sha(stream.read())!=new:raise RuntimeError('activation_hash_mismatch')
-            print('CSS_REMOTE_VERIFIED',new)
+            print('HOME_REMOTE_VERIFIED',new)
         finally:sftp.close()
     finally:transport.close()
-    request=urllib.request.Request('https://noastudio.ai.kr/noa-app/home.php?audit='+os.environ['GITHUB_SHA'][:12],headers={'Cache-Control':'no-cache'})
+    request=urllib.request.Request('https://noastudio.ai.kr/?audit='+os.environ['GITHUB_SHA'][:12],headers={'Cache-Control':'no-cache'})
     with urllib.request.urlopen(request,timeout=30) as response:
-        if sha(response.read())!=new:raise RuntimeError('public_css_mismatch')
-    print('CSS_PUBLIC_VERIFIED',new)
+        html=response.read().decode('utf-8','replace')
+    if '<meta name="naver-site-verification" content="1698e241d8bd56b9569f50bb12a136bb67d98bde">' not in html:
+        raise RuntimeError('naver_verification_tag_missing_from_public_home')
+    print('NAVER_META_PUBLIC_VERIFIED')
 if __name__=='__main__':main()
