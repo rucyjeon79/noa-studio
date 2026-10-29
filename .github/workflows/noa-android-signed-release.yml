@@ -26,7 +26,7 @@ jobs:
         with:
           gradle-version: '8.11.1'
       - name: Set stable release version
-        run: echo "NOA_RELEASE_VERSION_CODE=$((100000 + GITHUB_RUN_NUMBER))" >> "$GITHUB_ENV"
+        run: echo "NOA_RELEASE_VERSION_CODE=$(git show -s --format=%ct "$GITHUB_SHA")" >> "$GITHUB_ENV"
       - name: Build release APK and Play bundle
         working-directory: android
         run: GITHUB_RUN_NUMBER="$NOA_RELEASE_VERSION_CODE" gradle --no-daemon :app:assembleRelease :app:bundleRelease :app:lintRelease
