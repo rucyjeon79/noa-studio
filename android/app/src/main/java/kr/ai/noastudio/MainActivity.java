@@ -1,163 +1,143 @@
 package kr.ai.noastudio;
 
-import android.app.Activity;
-import android.app.DownloadManager;
-import android.os.Environment;
-import android.webkit.WebChromeClient;
-import android.webkit.ValueCallback;
-import android.webkit.URLUtil;
-import android.content.ComponentName;
-import android.content.Intent;
+import android.app.*;
+import android.content.*;
 import android.graphics.Color;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Rect;
-import android.graphics.drawable.GradientDrawable;
-import android.app.AlertDialog;
-import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.View;
-import android.webkit.CookieManager;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+import android.os.*;
+import android.webkit.*;
+import android.widget.Toast;
 import androidx.webkit.WebViewCompat;
 import androidx.webkit.WebViewFeature;
-import androidx.media3.session.SessionCommand;
-import android.widget.*;
-import androidx.media3.common.MediaItem;
-import androidx.media3.common.MediaMetadata;
-import androidx.media3.common.Player;
-import androidx.media3.session.MediaController;
-import androidx.media3.session.SessionToken;
+import androidx.media3.common.*;
+import androidx.media3.session.*;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.json.*;
+import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
 
+/** The production PWA owns every screen. Android supplies only the media engine. */
 @android.annotation.SuppressLint({"UnsafeOptInUsageError","SetJavaScriptEnabled"})
 public class MainActivity extends Activity {
+ private static final String BASE="https://noastudio.ai.kr";
+ private static final int FILE_PICK=7201;
+ private WebView browser;
+ private MediaController controller;
+ private ListenableFuture<MediaController> controllerFuture;
+ private PlaybackStateStore playbackStore;
  private AppUpdateChecker appUpdates;
  private ValueCallback<Uri[]> fileSelection;
- private static final int AUDIO_PICK_REQUEST=7201;
- private static final String BASE="https://noastudio.ai.kr";
- private int GOLD=Color.rgb(213,185,121), BLACK=Color.rgb(23,25,28), FG=Color.rgb(241,238,231), MUTED=Color.rgb(182,181,179), PANEL=Color.rgb(32,35,40), LINE=Color.rgb(59,63,69);
- private JSONObject uiWords=new JSONObject();private String language="ko";private JSONArray themes;private String themeId="noa-studio";private final ExecutorService images=Executors.newFixedThreadPool(2);
- private final android.util.LruCache<String,Bitmap> covers=new android.util.LruCache<String,Bitmap>(8*1024*1024){protected int sizeOf(String k,Bitmap b){return b.getByteCount();}};
- private int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
- private GradientDrawable surface(int color,int radius){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(radius));d.setStroke(dp(1),LINE);return d;}
- private String t(String key){if(language.equals("ko"))return key;JSONArray value=uiWords.optJSONArray(key);int index=language.equals("en")?0:language.equals("ja")?1:2;return value==null?key:value.optString(index,key);}
- private void chooseLanguage(){String[] names={"한국어","日本語","English","ไทย"},ids={"ko","ja","en","th"};int selected=0;for(int i=0;i<ids.length;i++)if(ids[i].equals(language))selected=i;new AlertDialog.Builder(this).setTitle(t("언어")).setSingleChoiceItems(names,selected,(dialog,index)->{getSharedPreferences("noa-design",MODE_PRIVATE).edit().putString("noa-view-lang",ids[index]).apply();language=ids[index];dialog.dismiss();showLibrary();}).setNegativeButton(t("닫기"),null).show();}
- private void readDesign(){try{SharedPreferences pref=getSharedPreferences("noa-design",MODE_PRIVATE);themeId=pref.getString("theme","noa-studio");language=pref.getString("noa-view-lang","ko");try(java.io.InputStream in=getAssets().open("noa-ui-words.json")){java.io.ByteArrayOutputStream bytes=new java.io.ByteArrayOutputStream();byte[] block=new byte[4096];int n;while((n=in.read(block))!=-1)bytes.write(block,0,n);uiWords=new JSONObject(bytes.toString(StandardCharsets.UTF_8.name()));}String raw;try(java.io.InputStream in=getAssets().open("noa-design.json")){java.io.ByteArrayOutputStream bytes=new java.io.ByteArrayOutputStream();byte[] block=new byte[4096];int n;while((n=in.read(block))!=-1)bytes.write(block,0,n);raw=bytes.toString(StandardCharsets.UTF_8.name());}themes=new JSONObject(raw).getJSONArray("themes");for(int i=0;i<themes.length();i++){JSONObject theme=themes.getJSONObject(i);if(!themeId.equals(theme.getString("id")))continue;JSONObject t=theme.getJSONObject("tokens");BLACK=Color.parseColor(t.getString("bg"));FG=Color.parseColor(t.getString("text"));MUTED=Color.parseColor(t.getString("muted"));PANEL=Color.parseColor(t.getString("surface"));LINE=Color.parseColor(t.getString("line"));GOLD=Color.parseColor(t.getString("accent"));}}catch(Exception e){android.util.Log.e("NoaDesign","Design asset unavailable",e);}}
- private void systemBarTheme(){if(android.os.Build.VERSION.SDK_INT>=30&&getWindow().getInsetsController()!=null){int light=android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS|android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;getWindow().getInsetsController().setSystemBarsAppearance(themeId.equals("noa-ivory")?light:0,light);}}
- private void chooseTheme(){if(themes==null)return;String[] names=new String[themes.length()];int checked=0;for(int i=0;i<names.length;i++){names[i]=themes.optJSONObject(i).optString("name");if(themes.optJSONObject(i).optString("id").equals(themeId))checked=i;}new AlertDialog.Builder(this).setTitle("NOA STUDIO · "+t("테마")).setSingleChoiceItems(names,checked,(dialog,index)->{getSharedPreferences("noa-design",MODE_PRIVATE).edit().putString("theme",themes.optJSONObject(index).optString("id")).apply();readDesign();getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(BLACK));getWindow().getDecorView().setBackgroundColor(BLACK);getWindow().setStatusBarColor(BLACK);getWindow().setNavigationBarColor(BLACK);getWindow().getDecorView().setSystemUiVisibility(themeId.equals("noa-ivory")?View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR:0);systemBarTheme();dialog.dismiss();showLibrary();}).setNegativeButton(t("닫기"),null).setNeutralButton(t("언어"),(dialog,which)->chooseLanguage()).show();}
- private void loadCover(ImageView image,String url){if(images.isShutdown()||isDestroyed())return;Bitmap hit=covers.get(url);if(hit!=null){image.setImageBitmap(hit);image.setContentDescription(image.getTag(R.id.noa_art_label) instanceof String?(String)image.getTag(R.id.noa_art_label):"앨범 아트");return;}images.execute(()->{try{Bitmap cached=covers.get(url);if(cached!=null){runOnUiThread(()->{if(url.equals(image.getTag())){image.setImageBitmap(cached);image.setContentDescription(image.getTag(R.id.noa_art_label) instanceof String?(String)image.getTag(R.id.noa_art_label):"앨범 아트");}});return;}HttpURLConnection c=(HttpURLConnection)new URL(url).openConnection();c.setConnectTimeout(10000);c.setReadTimeout(10000);NativeSession.authenticate(c);if(c.getResponseCode()!=200){c.disconnect();return;}Bitmap bitmap;try(java.io.InputStream in=c.getInputStream()){BitmapFactory.Options options=new BitmapFactory.Options();options.inSampleSize=2;bitmap=BitmapFactory.decodeStream(in,null,options);}finally{c.disconnect();}if(bitmap!=null){covers.put(url,bitmap);runOnUiThread(()->{if(url.equals(image.getTag())){image.setImageBitmap(bitmap);image.setContentDescription(image.getTag(R.id.noa_art_label) instanceof String?(String)image.getTag(R.id.noa_art_label):"앨범 아트");}});}}catch(Exception ignored){}});}
- private void visibleCovers(){if(list==null)return;Rect rect=new Rect();for(int i=0;i<list.getChildCount();i++){View row=list.getChildAt(i);if(row instanceof LinearLayout&&row.getLocalVisibleRect(rect)){View v=((LinearLayout)row).getChildAt(0);if(v instanceof ImageView&&v.getTag() instanceof String&&v.getContentDescription()==null){v.setContentDescription("NOA STUDIO");loadCover((ImageView)v,(String)v.getTag());}}}}
-
- private final ExecutorService executor=Executors.newSingleThreadExecutor();
- // Playlist edits stay ordered without waiting behind catalog network refreshes.
- private final ExecutorService playlistTasks=Executors.newSingleThreadExecutor();
  private final Handler handler=new Handler(Looper.getMainLooper());
- private final List<JSONObject> songs=new ArrayList<>();
- private LinearLayout root,list;private boolean loading=true;private TextView status;
- private WebView browser;private MediaController controller;private ListenableFuture<MediaController> controllerFuture;
- private FrameLayout pageHost;private LinearLayout shell,navigation,uploadDock;private JukeboxView dock;private TextView uploadTitle;private ProgressBar uploadProgress;private PlaybackStateStore playbackStore;private NativePlaylistRepository playlists;private boolean libraryVisible,catalogRequested;private long lastCatalogAt;private String catalogCookie;private int catalogAccess;
- private final Runnable tick=new Runnable(){public void run(){refreshDock();handler.postDelayed(this,500);}};
- @Override public void onCreate(Bundle saved){super.onCreate(saved);appUpdates=new AppUpdateChecker(this);readDesign();playbackStore=new PlaybackStateStore(this);playlists=new NativePlaylistRepository(this);getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(BLACK));getWindow().setStatusBarColor(BLACK);getWindow().setNavigationBarColor(BLACK);getWindow().getDecorView().setSystemUiVisibility(themeId.equals("noa-ivory")?View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR:0);getWindow().getDecorView().setOnApplyWindowInsetsListener((v,i)->{findViewById(android.R.id.content).setPadding(i.getSystemWindowInsetLeft(),i.getSystemWindowInsetTop(),i.getSystemWindowInsetRight(),i.getSystemWindowInsetBottom());return i;});
-  shell=new LinearLayout(this);shell.setOrientation(LinearLayout.VERTICAL);shell.setBackgroundColor(BLACK);pageHost=new FrameLayout(this);shell.addView(pageHost,new LinearLayout.LayoutParams(-1,0,1));
-  dock=new JukeboxView(this,new JukeboxView.Actions(){public void play(){resumeNative();}public void close(){closeNative();}public void queue(){showQueue();}});dock.theme(PANEL,FG,GOLD);shell.addView(dock);dock.setVisibility(View.GONE);
-  uploadDock=new LinearLayout(this);uploadDock.setOrientation(LinearLayout.VERTICAL);uploadDock.setId(R.id.noa_upload_dock);uploadTitle=text("음원 업로드 중",13);uploadDock.addView(uploadTitle);uploadProgress=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);uploadProgress.setMax(100);uploadDock.addView(uploadProgress,new LinearLayout.LayoutParams(-1,dp(12)));uploadDock.setVisibility(View.GONE);uploadDock.setOnClickListener(v->{if(browser!=null){attachPage(browser,"음원");browser.evaluateJavascript("document.getElementById('jukebox-transfer-details')?.removeAttribute('hidden');document.getElementById('jukebox-transfer-dock')?.scrollIntoView();",null);}});shell.addView(uploadDock);
-  navigation=new LinearLayout(this);shell.addView(navigation,new LinearLayout.LayoutParams(-1,dp(52)));setContentView(shell);systemBarTheme();showLibrary();openPage(BASE+"/");connectPlayer();handler.post(tick);
- }
- private void attachPage(View content,String menu){libraryVisible=content==root;android.view.ViewParent parent=content.getParent();if(parent instanceof android.view.ViewGroup)((android.view.ViewGroup)parent).removeView(content);pageHost.removeAllViews();pageHost.addView(content,new FrameLayout.LayoutParams(-1,-1));if(browser!=null&&trustedStudioUrl(browser.getUrl()))browser.evaluateJavascript("window.__noaNativeHidden="+(content!=browser)+";",null);String[] labels={"홈","YouTube","세계관","음원","MY"};int[] ids={R.id.noa_nav_home,R.id.noa_nav_youtube,R.id.noa_nav_world,R.id.noa_nav_music,R.id.noa_nav_my};for(int i=0;i<labels.length;i++){final int at=i;Button b=navigation.getChildCount()>i?(Button)navigation.getChildAt(i):button(labels[i],()->{switch(at){case 0:openPage(BASE+"/");break;case 1:openPage(BASE+"/noa-youtube.php");break;case 2:openPage(BASE+"/noa-world.php");break;case 3:showLibrary();break;case 4:showMy();break;}});b.setId(ids[i]);b.setContentDescription(labels[i]);b.setSelected(labels[i].equals(menu));b.setTextColor(b.isSelected()?GOLD:MUTED);if(i==0){android.graphics.drawable.Drawable home=getDrawable(R.drawable.noa_home).mutate();home.setTint(b.isSelected()?GOLD:MUTED);b.setCompoundDrawablesWithIntrinsicBounds(null,home,null,null);}b.setBackgroundColor(Color.TRANSPARENT);b.setPadding(0,0,0,0);b.setSingleLine();b.setTextSize(12);if(b.getParent()==null)navigation.addView(b,new LinearLayout.LayoutParams(0,-1,1));}shell.setBackgroundColor(BLACK);dock.theme(PANEL,FG,GOLD);refreshDock();}
- private void refreshDock(){if(dock==null)return;boolean blocked=playbackStore.uploadBlocked();dock.bind(controller,!playbackStore.closed()&&!blocked);if(blocked&&controller!=null&&controller.getPlayWhenReady())controller.pause();uploadDock.setVisibility(blocked?View.VISIBLE:View.GONE);}
- private void hushWeb(){if(browser!=null&&trustedStudioUrl(browser.getUrl()))browser.evaluateJavascript("window.dispatchEvent(new Event('noa-background'));document.querySelectorAll('audio,video').forEach(e=>e.pause());",null);}
- private void resumeNative(){if(controller==null)return;if(playbackStore.uploadBlocked()){Toast.makeText(this,"이 기기의 업로드가 끝나면 재생할 수 있습니다.",Toast.LENGTH_SHORT).show();return;}if(controller.isPlaying())controller.pause();else{hushWeb();playbackStore.setClosed(false);if(controller.getPlaybackState()==Player.STATE_IDLE)controller.prepare();controller.play();}refreshDock();}
- private void closeNative(){if(controller==null)return;playbackStore.setClosed(true);controller.sendCustomCommand(new SessionCommand(PlaybackService.CLOSE,Bundle.EMPTY),Bundle.EMPTY);refreshDock();}
- private void showQueue(){if(controller==null||controller.getMediaItemCount()==0)return;String[] titles=new String[controller.getMediaItemCount()];for(int i=0;i<titles.length;i++)titles[i]=String.valueOf(controller.getMediaItemAt(i).mediaMetadata.title);new AlertDialog.Builder(this).setTitle("JUKEBOX · 재생목록").setSingleChoiceItems(titles,controller.getCurrentMediaItemIndex(),(d,index)->{controller.seekTo(index,0);d.dismiss();}).setNegativeButton("닫기",null).show();}
- private void showMy(){hushWeb();ensureCatalogFresh();attachPage(new PlaylistPanel(this,playlists,playlistTasks,songs,this::playPlaylist,()->openPage(BASE+"/noa-my.php"),FG,PANEL,LINE,GOLD),"MY");}
- private void addToMy(JSONObject song){String cookie=playlists.cookie();playlistTasks.execute(()->{try{JSONObject data=playlists.lists(cookie);JSONArray items=data.getJSONArray("items");runOnUiThread(()->{if(isDestroyed())return;if(items.length()<=1){saveMySong(song,data,items.optJSONObject(0),cookie);return;}String[] names=new String[items.length()];for(int i=0;i<names.length;i++)names[i]=items.optJSONObject(i).optString("title");new AlertDialog.Builder(this).setTitle("재생목록에 담기").setItems(names,(d,index)->saveMySong(song,data,items.optJSONObject(index),cookie)).setNegativeButton("취소",null).show();});}catch(Exception e){runOnUiThread(()->Toast.makeText(this,"재생목록을 불러오지 못했습니다. 연결과 로그인을 확인해 주세요.",Toast.LENGTH_LONG).show());}});}
- private void saveMySong(JSONObject song,JSONObject data,JSONObject chosen,String cookie){playlistTasks.execute(()->{try{if(chosen==null)playlists.add(song.optString("key"),cookie);else playlists.addTo(data,chosen,song.optString("key"),cookie);runOnUiThread(()->Toast.makeText(this,"재생목록에 담았습니다.",Toast.LENGTH_SHORT).show());}catch(Exception e){runOnUiThread(()->Toast.makeText(this,e instanceof NativePlaylistRepository.PlaylistException?e.getMessage():"저장하지 못했습니다. 다시 열어 주세요.",Toast.LENGTH_LONG).show());}});}
- private void playPlaylist(JSONArray keys){List<MediaItem> items=new ArrayList<>();if(keys!=null)for(int i=0;i<keys.length();i++){String key=keys.optString(i);for(JSONObject song:songs)if(key.equals(song.optString("key"))&&playable(song)){items.add(mediaItem(song));break;}}startNative(items,0);}
- private TextView text(String value,int size){TextView v=new TextView(this);v.setText(value);v.setTextSize(size);v.setTextColor(FG);v.setFontFeatureSettings("kern");v.setPadding(dp(4),dp(8),dp(4),dp(8));return v;}
- private Button button(String value,Runnable action){Button b=new Button(this);b.setText(t(value));b.setContentDescription(t(value));b.setTextColor(FG);b.setStateListAnimator(null);b.setElevation(0);b.setMinWidth(0);b.setTextSize(13);b.setBackground(surface(PANEL,9));b.setMinHeight(dp(44));b.setPadding(dp(14),dp(8),dp(14),dp(8));b.setAllCaps(false);b.setOnClickListener(v->action.run());return b;}
- private void connectPlayer(){controllerFuture=new MediaController.Builder(this,new SessionToken(this,new ComponentName(this,PlaybackService.class))).buildAsync();controllerFuture.addListener(()->{try{controller=controllerFuture.get();controller.addListener(new Player.Listener(){@Override public void onEvents(Player player,Player.Events events){refreshDock();}@Override public void onPlayerError(androidx.media3.common.PlaybackException error){Toast.makeText(MainActivity.this,"음원을 재생하지 못했습니다. 연결 상태를 확인한 뒤 다시 재생해 주세요.",Toast.LENGTH_LONG).show();}});refreshDock();}catch(Exception e){Toast.makeText(this,"음원 플레이어를 연결하지 못했습니다.",Toast.LENGTH_SHORT).show();}},this::runOnUiThread);}
- private void showLibrary(){hushWeb();root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setBackgroundColor(BLACK);root.setPadding(dp(16),dp(12),dp(16),dp(8));LinearLayout titleRow=new LinearLayout(this);titleRow.addView(text("MUSIC",24),new LinearLayout.LayoutParams(0,-2,1));titleRow.addView(button("업데이트",()->appUpdates.check(true)));titleRow.addView(button("설정",this::chooseTheme));root.addView(titleRow);status=text(t("음악 목록을 불러오는 중입니다."),13);root.addView(status);ScrollView scroll=new ScrollView(this);list=new LinearLayout(this);list.setOrientation(LinearLayout.VERTICAL);scroll.addView(list);scroll.setOnScrollChangeListener((v,x,y,oldX,oldY)->visibleCovers());root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));attachPage(root,"음원");render();ensureCatalogFresh();}
- private void ensureCatalogFresh(){
-  String cookie=NativeSession.cookie(NativeSession.CATALOG);
-  if(!cookie.equals(catalogCookie)){boolean changed=catalogCookie!=null;catalogCookie=cookie;lastCatalogAt=0;catalogAccess=0;songs.clear();covers.evictAll();if(changed&&controller!=null){controller.pause();controller.clearMediaItems();}if(libraryVisible)render();}
- if(!catalogRequested&&!executor.isShutdown()&&(songs.isEmpty()||android.os.SystemClock.elapsedRealtime()-lastCatalogAt>60000))loadCatalog();}
- private void loadCatalog(){loadCatalog(0);}
- private void loadCatalog(int attempt){
-  catalogRequested=true;loading=true;status.setText(t("음악 목록을 불러오는 중입니다."));
-  // Capture the current account session; never accept an old account response.
-  final String requestedCookie=NativeSession.cookie(NativeSession.CATALOG);catalogCookie=requestedCookie;
-  executor.execute(()->{try{
-   HttpURLConnection c=(HttpURLConnection)new URL(NativeSession.CATALOG).openConnection();c.setConnectTimeout(20000);c.setReadTimeout(20000);c.setInstanceFollowRedirects(false);if(!requestedCookie.isEmpty())c.setRequestProperty("Cookie",requestedCookie);
-   int code=c.getResponseCode();if(code!=200){c.disconnect();throw new Exception("Catalog HTTP "+code);}
-   String raw;try(java.io.InputStream stream=c.getInputStream()){java.io.ByteArrayOutputStream bytes=new java.io.ByteArrayOutputStream();byte[] block=new byte[8192];int n;while((n=stream.read(block))!=-1)bytes.write(block,0,n);raw=bytes.toString(StandardCharsets.UTF_8.name());}finally{c.disconnect();}
-   JSONArray items=new JSONObject(raw).getJSONArray("items");List<JSONObject> fetched=new ArrayList<>();for(int i=0;i<items.length();i++){JSONObject item=items.getJSONObject(i);if("playlist".equals(item.optString("kind"))||!item.optString("sunoUrl").isEmpty()||ownAudio(item.optString("audioUrl")))fetched.add(item);};
-   fetched.sort((a,b)->Boolean.compare(playable(b),playable(a)));
-   runOnUiThread(()->{if(isDestroyed())return;catalogRequested=false;if(!requestedCookie.equals(NativeSession.cookie(NativeSession.CATALOG))){ensureCatalogFresh();return;}catalogAccess=0;loading=false;lastCatalogAt=android.os.SystemClock.elapsedRealtime();songs.clear();songs.addAll(fetched);if(libraryVisible)render();if(browser!=null)installBridge(browser);});
-  }catch(Exception e){if(executor.isShutdown()||isDestroyed())return;android.util.Log.e("NoaApi","Catalog request failed: "+e.getClass().getSimpleName()+": "+e.getMessage(),e);runOnUiThread(()->{if(attempt<2&&!isDestroyed()&&!String.valueOf(e.getMessage()).matches(".*HTTP (400|401|403|404|429).*")){handler.postDelayed(()->loadCatalog(attempt+1),1500);return;}loading=false;catalogRequested=false;if(!requestedCookie.equals(NativeSession.cookie(NativeSession.CATALOG))){ensureCatalogFresh();return;}catalogAccess=String.valueOf(e.getMessage()).contains("HTTP 401")?401:String.valueOf(e.getMessage()).contains("HTTP 403")?403:0;if(catalogAccess!=0){songs.clear();covers.evictAll();if(controller!=null){controller.pause();controller.clearMediaItems();}if(libraryVisible)render();}else if(libraryVisible)status.setText(t("목록을 불러오지 못했습니다. 인터넷 연결 후 새로고침해 주세요."));});}});
- }
- private void render(){if(list==null||!libraryVisible)return;list.removeAllViews();if(catalogAccess!=0){status.setText(catalogAccess==401?"로그인 후 음악을 이용해 주세요.":"음악 이용권을 확인해 주세요.");list.addView(button(catalogAccess==401?"로그인":"내 이용권 확인",()->openPage(BASE+(catalogAccess==401?"/noa-login.php":"/noa-my.php"))));return;}int count=0,ready=0;for(JSONObject song:songs){if("playlist".equals(song.optString("kind")))continue;count++;boolean playable=playable(song);if(playable)ready++;LinearLayout card=new LinearLayout(this);card.setGravity(android.view.Gravity.CENTER_VERTICAL);card.setPadding(dp(8),dp(8),0,dp(8));card.setBackground(surface(PANEL,10));ImageView cover=new ImageView(this);cover.setImageResource(R.drawable.noa_symbol);cover.setScaleType(ImageView.ScaleType.CENTER_CROP);String url=artwork(song.optString("coverImageUrl"));if(!url.isEmpty())cover.setTag(url);card.addView(cover,new LinearLayout.LayoutParams(dp(52),dp(52)));LinearLayout copy=new LinearLayout(this);copy.setPadding(dp(10),0,dp(4),0);copy.setOrientation(LinearLayout.VERTICAL);TextView name=text((value(song,"ep").isEmpty()?"":"EP."+value(song,"ep")+" · ")+song.optString("title"),14);name.setPadding(0,0,0,0);name.setMaxLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.END);copy.addView(name);TextView info=text(song.optString("genre").replace('-',' ')+" · "+(playable?"MP3":"MP3 준비 중"),10);info.setTextColor(MUTED);info.setPadding(0,dp(2),0,0);copy.addView(info);card.addView(copy,new LinearLayout.LayoutParams(0,-2,1));copy.setOnClickListener(v->showSong(song));if(playable){ImageButton play=new ImageButton(this);play.setImageResource(android.R.drawable.ic_media_play);play.setImageTintList(android.content.res.ColorStateList.valueOf(FG));play.setBackgroundColor(Color.TRANSPARENT);play.setContentDescription(song.optString("title")+" 재생");play.setOnClickListener(v->playAudio(song));card.addView(play,new LinearLayout.LayoutParams(dp(44),dp(44)));}ImageButton add=new ImageButton(this);add.setImageResource(android.R.drawable.ic_input_add);add.setImageTintList(android.content.res.ColorStateList.valueOf(FG));add.setBackgroundColor(Color.TRANSPARENT);add.setContentDescription(song.optString("title")+" My Playlist 담기");add.setOnClickListener(v->addToMy(song));card.addView(add,new LinearLayout.LayoutParams(dp(44),dp(44)));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.bottomMargin=dp(8);list.addView(card,lp);}status.setText(loading&&count==0?t("음악 목록을 불러오는 중입니다."):count+"곡 · MP3 "+ready+"곡");handler.post(this::visibleCovers);}
- private String value(JSONObject row,String key){return row.isNull(key)?"":row.optString(key,"");}
- private void showSong(JSONObject song){
-  LinearLayout detail=new LinearLayout(this);detail.setOrientation(LinearLayout.VERTICAL);detail.setBackgroundColor(BLACK);detail.setPadding(12,12,12,12);
-  detail.addView(button("← 라이브러리",this::showLibrary));detail.addView(text(song.optString("title"),25));detail.addView(text(song.optString("genre"),15));
-  String cast=song.optString("cast");detail.addView(text(cast.equals("duet")?"노아 & 노엘":cast.equals("male")?"노엘":cast.equals("female")?"노아":"",14));
-  if(playable(song))detail.addView(button("음원 재생",()->playAudio(song)));
-  if(!song.optString("sunoUrl").isEmpty()||ownAudio(song.optString("audioUrl")))detail.addView(button("곡 상세·Suno 링크",()->openPage(BASE+"/noa-music.php?track="+Uri.encode(song.optString("key")))));
-  if(song.optString("youtubeId").matches("[A-Za-z0-9_-]{11}"))detail.addView(button("YouTube 영상",()->openPage(BASE+"/noa-youtube.php?track="+Uri.encode(song.optString("youtubeId")))));
-  ScrollView scroll=new ScrollView(this);TextView lyrics=text(song.optString("kind").equals("playlist")?song.optString("tracklist"):song.optString("lyrics","등록된 가사가 없습니다."),16);lyrics.setTextColor(FG);lyrics.setTextIsSelectable(true);scroll.addView(lyrics);detail.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));attachPage(detail,"음원");
- }
- private boolean ownAudio(String value){return NoaMediaPolicy.audio(value);}
- private boolean playable(JSONObject song){return song.optBoolean("audioVerified")&&ownAudio(song.optString("audioUrl"));}
- private String artwork(String value){String url=value.startsWith("/")?BASE+value:value;return NoaMediaPolicy.artwork(url)?url:"";}
- private MediaItem mediaItem(JSONObject song){MediaMetadata.Builder md=new MediaMetadata.Builder().setTitle(song.optString("title")).setArtist("AI Artist Noa");String art=artwork(song.optString("coverImageUrl"));if(!art.isEmpty())md.setArtworkUri(Uri.parse(art));return new MediaItem.Builder().setMediaId(song.optString("key")).setUri(song.optString("audioUrl")).setMediaMetadata(md.build()).build();}
- private void startNative(List<MediaItem> items,int at){if(controller==null||items.isEmpty()){Toast.makeText(this,"재생 가능한 MP3가 없습니다.",Toast.LENGTH_SHORT).show();return;}if(playbackStore.uploadBlocked()){Toast.makeText(this,"이 기기의 업로드가 끝나면 재생할 수 있습니다.",Toast.LENGTH_SHORT).show();return;}hushWeb();playbackStore.setClosed(false);int selected=Math.max(0,Math.min(at,items.size()-1));MediaItem current=controller.getCurrentMediaItem(),target=items.get(selected);int oldIndex=controller.getCurrentMediaItemIndex();
-  boolean keep=current!=null&&oldIndex>=0&&current.mediaId.equals(target.mediaId)&&controller.getPlaybackState()!=Player.STATE_ENDED&&(current.localConfiguration==null||target.localConfiguration!=null&&current.localConfiguration.uri.equals(target.localConfiguration.uri));
-  if(keep){
-   // Keep the active source and position when the same song enters another list.
-   // Queue edits preserve its buffered audio instead of reopening the MP3 stream.
-   controller.removeMediaItems(oldIndex+1,controller.getMediaItemCount());controller.removeMediaItems(0,oldIndex);
-   if(selected+1<items.size())controller.addMediaItems(1,new ArrayList<>(items.subList(selected+1,items.size())));
-   if(selected>0)controller.addMediaItems(0,new ArrayList<>(items.subList(0,selected)));
-  }else controller.setMediaItems(items,selected,0);
-  if(controller.getPlaybackState()==Player.STATE_IDLE)controller.prepare();controller.play();refreshDock();}
- private void playAudio(JSONObject selected){if(!playable(selected))return;List<MediaItem> queue=new ArrayList<>();int at=0;for(JSONObject song:songs)if(playable(song)){if(selected.optString("key").equals(song.optString("key")))at=queue.size();queue.add(mediaItem(song));}startNative(queue,at);}
- private void nativeMessage(JSONObject message){String type=message.optString("type");if((type.equals("video")||type.equals("play"))&&(browser==null||pageHost.getChildCount()==0||pageHost.getChildAt(0)!=browser))return;if(type.equals("video")){if(controller!=null)controller.pause();return;}if(type.equals("upload")){boolean busy=message.optBoolean("active");playbackStore.upload(busy);uploadTitle.setText(message.optString("title","음원 업로드 중"));uploadProgress.setProgress(Math.max(0,Math.min(100,message.optInt("progress"))));refreshDock();return;}if(type.equals("play")){String key=message.optString("key"),url=message.optString("url");for(JSONObject song:songs)if(playable(song)&&(song.optString("key").equals(key)||song.optString("audioUrl").equals(url))){playAudio(song);return;}Toast.makeText(this,"음원 정보를 새로 확인해 주세요.",Toast.LENGTH_SHORT).show();}}
- private void installBridge(WebView view){if(!trustedStudioUrl(view.getUrl()))return;try(java.io.InputStream in=getAssets().open("noa-native-bridge.js")){java.io.ByteArrayOutputStream bytes=new java.io.ByteArrayOutputStream();byte[] block=new byte[4096];int n;while((n=in.read(block))!=-1)bytes.write(block,0,n);JSONArray keys=new JSONArray(),urls=new JSONArray();for(JSONObject song:songs)if(playable(song)){keys.put(song.optString("key"));urls.put(song.optString("audioUrl"));}JSONObject known=new JSONObject().put("keys",keys).put("urls",urls);view.evaluateJavascript("window.__noaNativeHidden="+(pageHost.getChildCount()==0||pageHost.getChildAt(0)!=view)+";window.__noaNativeAudio="+known.toString()+";"+bytes.toString(StandardCharsets.UTF_8.name()),null);}catch(Exception ignored){}}
- private void openPage(String url){
-  if(browser!=null&&playbackStore.uploadBlocked()){attachPage(browser,menuFor(browser.getUrl()==null?BASE:browser.getUrl()));Toast.makeText(this,"업로드 진행창에서 전송 상태를 확인해 주세요.",Toast.LENGTH_SHORT).show();return;}
-  if(browser!=null){if(browser.getParent()==null)attachPage(browser,menuFor(url));browser.loadUrl(url);return;}
+ private final ExecutorService network=Executors.newSingleThreadExecutor();
+ private final Map<String,JSONObject> songs=new LinkedHashMap<>();
+ private String catalogCookie,bridge="";
+ private long catalogAt;
+ private boolean loading;
+ private JSONObject pending;
+ private final Runnable tick=new Runnable(){public void run(){publishState();handler.postDelayed(this,500);}};
+
+ @Override public void onCreate(Bundle saved){
+  super.onCreate(saved);playbackStore=new PlaybackStateStore(this);appUpdates=new AppUpdateChecker(this);
+  getWindow().setStatusBarColor(Color.rgb(17,19,22));getWindow().setNavigationBarColor(Color.rgb(17,19,22));
+  getWindow().getDecorView().setOnApplyWindowInsetsListener((v,i)->{findViewById(android.R.id.content).setPadding(i.getSystemWindowInsetLeft(),i.getSystemWindowInsetTop(),i.getSystemWindowInsetRight(),i.getSystemWindowInsetBottom());return i;});
+  try(InputStream in=getAssets().open("noa-native-bridge.js")){bridge=read(in);}catch(IOException e){throw new IllegalStateException("Media bridge missing",e);}
   browser=new WebView(this);WebSettings settings=browser.getSettings();settings.setJavaScriptEnabled(true);settings.setDomStorageEnabled(true);settings.setAllowFileAccess(false);settings.setAllowContentAccess(true);settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);settings.setMediaPlaybackRequiresUserGesture(true);
-  if(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))WebViewCompat.addWebMessageListener(browser,"NoaAndroid",Collections.singleton(BASE),(view,message,origin,mainFrame,reply)->{if(!mainFrame||!BASE.equals(origin.toString())||!trustedStudioUrl(view.getUrl()))return;String raw=message.getData();if(raw==null||raw.length()>65536)return;try{nativeMessage(new JSONObject(raw));}catch(JSONException ignored){}});
-  browser.setWebChromeClient(new WebChromeClient(){@Override public boolean onShowFileChooser(WebView view,ValueCallback<Uri[]> callback,FileChooserParams params){
-   if(view.getUrl()==null||!trustedStudioUrl(view.getUrl()))return false;
-   if(fileSelection!=null)fileSelection.onReceiveValue(null);fileSelection=callback;
-   Intent pick=new Intent(Intent.ACTION_OPEN_DOCUMENT);pick.addCategory(Intent.CATEGORY_OPENABLE);pick.setType("audio/*");
-   try{startActivityForResult(pick,AUDIO_PICK_REQUEST);}catch(android.content.ActivityNotFoundException e){fileSelection.onReceiveValue(null);fileSelection=null;Toast.makeText(MainActivity.this,"음원 파일 선택기를 찾을 수 없습니다.",Toast.LENGTH_LONG).show();}return true;
-  }});
-  browser.setDownloadListener((downloadUrl,userAgent,disposition,mime,length)->{if(!trustedStudioUrl(downloadUrl))return;Uri uri=Uri.parse(downloadUrl);if(!"/noa-bridge/lab-file.php".equals(uri.getPath()))return;String name=URLUtil.guessFileName(downloadUrl,disposition,mime).replaceAll("[^\\p{L}\\p{N}._-]","_");DownloadManager.Request request=new DownloadManager.Request(uri);String cookies=CookieManager.getInstance().getCookie(BASE);if(cookies!=null)request.addRequestHeader("Cookie",cookies);request.addRequestHeader("User-Agent",userAgent);request.setMimeType(mime);request.setTitle(name);request.setDestinationInExternalFilesDir(this,Environment.DIRECTORY_DOWNLOADS,name);request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);try{((DownloadManager)getSystemService(DOWNLOAD_SERVICE)).enqueue(request);Toast.makeText(this,"다운로드를 시작했습니다.",Toast.LENGTH_SHORT).show();}catch(RuntimeException e){Toast.makeText(this,"다운로드를 시작하지 못했습니다.",Toast.LENGTH_LONG).show();}});
   CookieManager.getInstance().setAcceptCookie(true);
-  browser.setWebViewClient(new WebViewClient(){@Override public void onPageFinished(WebView view,String page){if(trustedStudioUrl(page)){lastCatalogAt=0;ensureCatalogFresh();installBridge(view);if(pageHost.getChildCount()>0&&pageHost.getChildAt(0)==view)attachPage(view,menuFor(page));}}@Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest req){if(!req.isForMainFrame())return false;Uri uri=req.getUrl();if(trustedStudioUrl(uri.toString())){if("/noa-bridge/lab-oauth.php".equals(uri.getPath())&&"start".equals(uri.getQueryParameter("action"))){startActivity(new Intent(Intent.ACTION_VIEW,uri));return true;}return false;}if("https".equals(uri.getScheme()))startActivity(new Intent(Intent.ACTION_VIEW,uri));return true;}});
-  attachPage(browser,menuFor(url));browser.loadUrl(url);
+  if(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)){
+   WebViewCompat.addWebMessageListener(browser,"NoaAndroid",Collections.singleton(BASE),(view,message,origin,mainFrame,reply)->{
+    if(!mainFrame||!BASE.equals(origin.toString())||!trusted(view.getUrl()))return;
+    String raw=message.getData();if(raw==null||raw.length()>65536)return;
+    try{nativeMessage(new JSONObject(raw));}catch(JSONException ignored){}
+   });
+   if(WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT))WebViewCompat.addDocumentStartJavaScript(browser,bridge,Collections.singleton(BASE));
+  }
+  browser.setWebViewClient(new WebViewClient(){
+   @Override public void onPageFinished(WebView view,String url){if(trusted(url)){view.evaluateJavascript(bridge,null);ensureCatalog();publishState();}}
+   @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest request){
+    if(!request.isForMainFrame())return false;Uri u=request.getUrl();
+    if(trusted(u.toString())){if("/noa-bridge/lab-oauth.php".equals(u.getPath())&&"start".equals(u.getQueryParameter("action"))){external(u);return true;}return false;}
+    if("https".equals(u.getScheme())||"mailto".equals(u.getScheme())||"tel".equals(u.getScheme()))external(u);
+    return true;
+   }
+  });
+  browser.setWebChromeClient(new WebChromeClient(){
+   @Override public boolean onShowFileChooser(WebView view,ValueCallback<Uri[]> callback,FileChooserParams params){
+    if(!trusted(view.getUrl()))return false;if(fileSelection!=null)fileSelection.onReceiveValue(null);fileSelection=callback;
+    Intent pick=new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");
+    String[] accept=params.getAcceptTypes();if(accept!=null&&accept.length>0&&!accept[0].isEmpty())pick.putExtra(Intent.EXTRA_MIME_TYPES,accept);
+    pick.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,params.getMode()==FileChooserParams.MODE_OPEN_MULTIPLE);
+    try{startActivityForResult(pick,FILE_PICK);}catch(ActivityNotFoundException e){fileSelection.onReceiveValue(null);fileSelection=null;notice("파일 선택기를 찾을 수 없습니다.");}return true;
+   }
+  });
+  browser.setDownloadListener((url,agent,disposition,mime,length)->{
+   if(!trusted(url))return;Uri u=Uri.parse(url);String path=u.getPath();
+   if(path!=null&&(path.endsWith(".apk")||path.equals("/noa-download.php"))){external(u);return;}
+   if(!Arrays.asList("/noa-bridge/lab-file.php","/noa-music-download.php","/noa-app/jukebox/download.php","/bbs/download.php").contains(path))return;
+   DownloadManager.Request request=new DownloadManager.Request(u);String cookie=CookieManager.getInstance().getCookie(url);if(cookie!=null)request.addRequestHeader("Cookie",cookie);request.addRequestHeader("User-Agent",agent);request.setMimeType(mime);String name=URLUtil.guessFileName(url,disposition,mime).replaceAll("[^\\p{L}\\p{N}._-]","_");request.setTitle(name);request.setDestinationInExternalFilesDir(this,Environment.DIRECTORY_DOWNLOADS,name);request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+   try{((DownloadManager)getSystemService(DOWNLOAD_SERVICE)).enqueue(request);notice("다운로드를 시작했습니다.");}catch(RuntimeException e){notice("다운로드를 시작하지 못했습니다.");}
+  });
+  setContentView(browser);browser.loadUrl(BASE+"/");
+  controllerFuture=new MediaController.Builder(this,new SessionToken(this,new ComponentName(this,PlaybackService.class))).buildAsync();
+  controllerFuture.addListener(()->{try{controller=controllerFuture.get();controller.addListener(new Player.Listener(){@Override public void onEvents(Player p,Player.Events e){publishState();}});drain();publishState();}catch(Exception e){notice("음악 재생기를 연결하지 못했습니다.");}},this::runOnUiThread);
+  handler.post(tick);
  }
- private String menuFor(String url){String p=Uri.parse(url).getPath();return p!=null&&p.contains("youtube")?"YouTube":p!=null&&p.contains("world")?"세계관":p!=null&&p.contains("music")?"음원":p!=null&&(p.contains("my")||p.contains("/bbs/"))?"MY":"홈";}
- private boolean trustedStudioUrl(String value){if(value==null)return false;Uri uri=Uri.parse(value);return "https".equals(uri.getScheme())&&"noastudio.ai.kr".equals(uri.getHost())&&uri.getUserInfo()==null&&(uri.getPort()==-1||uri.getPort()==443);}
- @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){super.onActivityResult(requestCode,resultCode,data);if(requestCode==AUDIO_PICK_REQUEST&&fileSelection!=null){Uri uri=resultCode==RESULT_OK&&data!=null?data.getData():null;fileSelection.onReceiveValue(uri!=null&&"content".equals(uri.getScheme())?new Uri[]{uri}:null);fileSelection=null;}}
- @Override public void onBackPressed(){if(browser!=null&&pageHost.getChildCount()>0&&pageHost.getChildAt(0)==browser&&browser.canGoBack())browser.goBack();else openPage(BASE+"/");}
- @Override protected void onPause(){if(browser!=null){browser.evaluateJavascript("window.dispatchEvent(new Event('noa-background'));",null);browser.onPause();}CookieManager.getInstance().flush();super.onPause();}
- @Override protected void onResume(){super.onResume();if(browser!=null)browser.onResume();if(playlists!=null)ensureCatalogFresh();if(appUpdates!=null)handler.postDelayed(()->{if(!isFinishing()&&!isDestroyed())appUpdates.check(false);},1500);}
- @Override protected void onDestroy(){if(appUpdates!=null)appUpdates.close();handler.removeCallbacksAndMessages(null);if(dock!=null)dock.release();if(fileSelection!=null){fileSelection.onReceiveValue(null);fileSelection=null;}if(browser!=null)browser.destroy();if(controllerFuture!=null)MediaController.releaseFuture(controllerFuture);executor.shutdownNow();playlistTasks.shutdownNow();images.shutdownNow();super.onDestroy();}
+ private static String read(InputStream in)throws IOException{ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] block=new byte[8192];int n;while((n=in.read(block))!=-1){if(out.size()+n>4*1024*1024)throw new IOException("Response too large");out.write(block,0,n);}return out.toString(StandardCharsets.UTF_8.name());}
+ private void external(Uri uri){try{startActivity(new Intent(Intent.ACTION_VIEW,uri));}catch(ActivityNotFoundException e){notice("링크를 열 수 있는 앱이 없습니다.");}}
+ private void notice(String message){Toast.makeText(this,message,Toast.LENGTH_LONG).show();}
+ private boolean trusted(String value){if(value==null)return false;Uri u=Uri.parse(value);return "https".equals(u.getScheme())&&"noastudio.ai.kr".equals(u.getHost())&&u.getUserInfo()==null&&(u.getPort()==-1||u.getPort()==443);}
+ private void ensureCatalog(){
+  String cookie=NativeSession.cookie(NativeSession.CATALOG);
+  if(!cookie.equals(catalogCookie)){boolean changed=catalogCookie!=null;catalogCookie=cookie;catalogAt=0;songs.clear();if(changed&&controller!=null){controller.pause();controller.clearMediaItems();}}
+  if(loading||network.isShutdown()||(!songs.isEmpty()&&SystemClock.elapsedRealtime()-catalogAt<60000))return;
+  loading=true;String captured=cookie;
+  network.execute(()->{
+   List<JSONObject> rows=new ArrayList<>();String error=null;
+   try{HttpURLConnection c=(HttpURLConnection)new URL(NativeSession.CATALOG).openConnection();c.setConnectTimeout(20000);c.setReadTimeout(30000);c.setInstanceFollowRedirects(false);if(!captured.isEmpty())c.setRequestProperty("Cookie",captured);
+    try{int code=c.getResponseCode();if(code!=200)throw new IOException("HTTP "+code);try(InputStream in=c.getInputStream()){JSONArray data=new JSONObject(read(in)).getJSONArray("items");for(int i=0;i<data.length();i++){JSONObject row=data.getJSONObject(i);if(row.optBoolean("audioVerified")&&NoaMediaPolicy.audio(row.optString("audioUrl")))rows.add(row);}}}finally{c.disconnect();}
+   }catch(Exception e){error=e.getMessage();}
+   final String failure=error;runOnUiThread(()->{loading=false;if(isDestroyed())return;if(!captured.equals(NativeSession.cookie(NativeSession.CATALOG))){ensureCatalog();return;}songs.clear();for(JSONObject row:rows)songs.put(row.optString("key"),row);catalogAt=SystemClock.elapsedRealtime();if(failure==null)drain();else{pending=null;if(controller!=null&&(failure.contains("401")||failure.contains("403"))){controller.pause();controller.clearMediaItems();}bridgeError("로그인과 음악 이용권을 확인해 주세요.");}});
+  });
+ }
+ private void drain(){if(controller==null||pending==null||loading)return;JSONObject request=pending;pending=null;nativeMessage(request);}
+ private void nativeMessage(JSONObject message){
+  String type=message.optString("type");
+  if(type.equals("ready")){ensureCatalog();publishState();return;}
+  if(type.equals("update")){appUpdates.check(true);return;}
+  if(type.equals("play")||type.equals("prepare")){
+   if(controller==null||songs.isEmpty()||!NativeSession.cookie(NativeSession.CATALOG).equals(catalogCookie)){pending=message;ensureCatalog();return;}
+   JSONObject selected=songs.get(message.optString("key"));if(selected==null){bridgeError("이 곡의 재생 권한 또는 음원 정보를 확인해 주세요.");return;}
+   JSONArray order=message.optJSONArray("queue");List<MediaItem> items=new ArrayList<>();Set<String> seen=new HashSet<>();int index=-1;
+   if(order!=null)for(int i=0;i<Math.min(order.length(),500);i++){String key=order.optString(i);JSONObject row=songs.get(key);if(row!=null&&seen.add(key)){if(key.equals(selected.optString("key")))index=items.size();items.add(media(row));}}
+   if(index<0){index=0;items.clear();items.add(media(selected));}
+   boolean play=type.equals("play");MediaItem current=controller.getCurrentMediaItem();
+   long position=current!=null&&current.mediaId.equals(selected.optString("key"))?controller.getCurrentPosition():0;
+   playbackStore.setClosed(false);boolean same=controller.getMediaItemCount()==items.size()&&current!=null&&current.mediaId.equals(selected.optString("key"));for(int i=0;same&&i<items.size();i++)same=controller.getMediaItemAt(i).mediaId.equals(items.get(i).mediaId);if(!same)controller.setMediaItems(items,index,position);controller.setRepeatMode(message.optBoolean("repeat")?Player.REPEAT_MODE_ONE:Player.REPEAT_MODE_OFF);controller.setShuffleModeEnabled(message.optBoolean("shuffle"));controller.setVolume((float)Math.max(0,Math.min(1,message.optDouble("volume",.7))));if(controller.getPlaybackState()==Player.STATE_IDLE)controller.prepare();if(play)controller.play();else controller.pause();return;
+  }
+  if(controller==null)return;
+  switch(type){
+   case "pause":case "video":controller.pause();break;
+   case "seek":long at=(long)(message.optDouble("seconds",0)*1000);if(at>=0)controller.seekTo(Math.min(at,Math.max(0,controller.getDuration())));break;
+   case "volume":controller.setVolume((float)Math.max(0,Math.min(1,message.optDouble("value",.7))));break;
+   case "modes":controller.setShuffleModeEnabled(message.optBoolean("shuffle"));controller.setRepeatMode(message.optBoolean("repeat")?Player.REPEAT_MODE_ONE:Player.REPEAT_MODE_OFF);break;
+   case "close":controller.sendCustomCommand(new SessionCommand(PlaybackService.CLOSE,Bundle.EMPTY),Bundle.EMPTY);break;
+  }
+  publishState();
+ }
+ private MediaItem media(JSONObject row){MediaMetadata.Builder md=new MediaMetadata.Builder().setTitle(row.optString("title")).setArtist("AI Artist Noa");String art=row.optString("coverImageUrl");if(NoaMediaPolicy.artwork(art))md.setArtworkUri(Uri.parse(art));return new MediaItem.Builder().setMediaId(row.optString("key")).setUri(row.optString("audioUrl")).setMediaMetadata(md.build()).build();}
+ private void bridgeError(String text){if(browser!=null&&trusted(browser.getUrl()))browser.evaluateJavascript("window.NoaNativeBridge?.error("+JSONObject.quote(text)+");",null);}
+ private void publishState(){
+  if(controller==null||browser==null||!trusted(browser.getUrl()))return;
+  try{MediaItem item=controller.getCurrentMediaItem();JSONArray keys=new JSONArray();for(int i=0;i<controller.getMediaItemCount();i++)keys.put(controller.getMediaItemAt(i).mediaId);
+   JSONObject state=new JSONObject().put("key",item==null?"":item.mediaId).put("queue",keys).put("position",Math.max(0,controller.getCurrentPosition())/1000.0).put("duration",Math.max(0,controller.getDuration())/1000.0).put("paused",!controller.getPlayWhenReady()).put("playing",controller.isPlaying()).put("ended",controller.getPlaybackState()==Player.STATE_ENDED).put("repeat",controller.getRepeatMode()==Player.REPEAT_MODE_ONE).put("shuffle",controller.getShuffleModeEnabled()).put("volume",controller.getVolume()).put("closed",playbackStore.closed()).put("error",controller.getPlayerError()!=null);
+   browser.evaluateJavascript("window.NoaNativeBridge?.state("+state+");",null);
+  }catch(JSONException ignored){}
+ }
+ @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){super.onActivityResult(requestCode,resultCode,data);if(requestCode==FILE_PICK&&fileSelection!=null){List<Uri> uris=new ArrayList<>();if(resultCode==RESULT_OK&&data!=null){if(data.getClipData()!=null)for(int i=0;i<data.getClipData().getItemCount();i++)uris.add(data.getClipData().getItemAt(i).getUri());else if(data.getData()!=null)uris.add(data.getData());}uris.removeIf(u->!"content".equals(u.getScheme()));fileSelection.onReceiveValue(uris.isEmpty()?null:uris.toArray(new Uri[0]));fileSelection=null;}}
+ @Override public void onBackPressed(){if(browser.canGoBack())browser.goBack();else moveTaskToBack(true);}
+ @Override protected void onPause(){if(browser!=null)browser.onPause();CookieManager.getInstance().flush();super.onPause();}
+ @Override protected void onResume(){super.onResume();if(browser!=null){browser.onResume();ensureCatalog();publishState();}if(appUpdates!=null)handler.postDelayed(()->{if(!isFinishing()&&!isDestroyed())appUpdates.check(false);},1500);}
+ @Override protected void onDestroy(){handler.removeCallbacksAndMessages(null);if(appUpdates!=null)appUpdates.close();if(fileSelection!=null)fileSelection.onReceiveValue(null);if(browser!=null)browser.destroy();if(controllerFuture!=null)MediaController.releaseFuture(controllerFuture);network.shutdownNow();super.onDestroy();}
 }
