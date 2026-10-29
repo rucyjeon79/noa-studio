@@ -112,7 +112,7 @@ html .noa-hero[data-home-section=hero] #noa-hero-status:not(:empty){position:abs
 <?php noa_home_banner('youtube');?>
 <section class="noa-section" data-home-section="collections"><div class="noa-section-head"><div><p class="noa-eyebrow">FIND YOUR SOUND</p><h2>음악 컬렉션</h2></div></div><div class="noa-genres" id="noa-genres"></div></section>
 <?php noa_home_banner('amt');?>
-<footer class="noa-footer"><span>NOA STUDIO · Music. Stories. Starlight.</span><a href="/bbs/content.php?co_id=privacy">개인정보처리방침</a><a href="/bbs/content.php?co_id=provision">이용약관</a><a href="/noa-settings.php" data-noa-i18n="설정">설정</a></footer></main></div><script id="noa-home-hero-size">
+<footer class="noa-footer"><span>NOA STUDIO · Music. Stories. Starlight.</span><a href="/noa-about.php">회사소개 · 제이알</a><a href="/bbs/content.php?co_id=privacy">개인정보처리방침</a><a href="/bbs/content.php?co_id=provision">이용약관</a><a href="/noa-settings.php" data-noa-i18n="설정">설정</a></footer></main></div><script id="noa-home-hero-size">
 /* Reuse actual home recommendations; never request or invent another ranking. */
 (()=>{'use strict';const picks=document.getElementById('noa-hero-picks');if(!picks)return;const fit=()=>{const host=picks.parentElement;if(!host.clientHeight)return;const heading=host.querySelector('h2'),space=host.clientHeight-(matchMedia('(orientation:portrait)').matches?0:22),count=Math.max(0,Math.min(4,Math.floor((space+4)/48)));picks.querySelectorAll('a').forEach((a,i)=>a.hidden=i>=count);heading.hidden=count===0;};window.addEventListener('noa-hero-picks',fit);if(window.ResizeObserver)new ResizeObserver(fit).observe(picks.parentElement);else window.addEventListener('resize',fit);fit();})();
 </script></body></html>

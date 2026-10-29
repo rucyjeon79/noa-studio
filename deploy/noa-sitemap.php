@@ -127,6 +127,7 @@ function noa_sitemap_visible_groups(string $root,string $role,array $boards=[],a
         $label=trim(strip_tags((string)($board['bo_subject']??'')))?:$id;
         $groups['community']['routes'][]=['board-'.$id,$label,'게시판 읽기','/bbs/board.php?bo_table='.rawurlencode($id),'community','public',(string)($board['noa_condition']??'')];
     }
+    $groups['legal']['routes'][]=['about-jr','회사소개 · 제이알','람준파파·NOA·NOEL·별무리의 이야기','/noa-about.php','book','public'];
     foreach(['privacy'=>'개인정보처리방침','provision'=>'이용약관'] as $id=>$label){
         if(!in_array($id,$contents,true))continue;
         $groups['legal']['routes'][]=['legal-'.$id,$label,'서비스 운영 안내','/bbs/content.php?co_id='.$id,'book','public'];
