@@ -9,15 +9,27 @@ permissions: {contents: read}
 jobs:
   verify:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: isolated-noa-ci, MYSQL_DATABASE: noa_subscription_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -pisolated-noa-ci" --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      NOA_MYSQL_DSN: 'mysql:host=127.0.0.1;port=3306;dbname=noa_subscription_test;charset=utf8mb4'
+      NOA_MYSQL_USER: root
+      NOA_MYSQL_PASSWORD: isolated-noa-ci
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
-        with: {php-version: '8.2', extensions: curl}
+        with: {php-version: '8.2', extensions: 'curl,mysqli,pdo_mysql,mbstring'}
       - run: |
           php -l bridge/kcp-test-core.php
           php -l deploy/noa-kcp-test.php
           php -l deploy/noa-payment-settings.php
           php tests/kcp/core.php
+          php tests/subscription/mysql_test.php
+          php tests/kcp/mysql.php
           node --check deploy/noa-kcp-test.js
           python tests/kcp/http_test.py
   deploy:
