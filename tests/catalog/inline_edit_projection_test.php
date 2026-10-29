@@ -12,3 +12,6 @@ $actKey=nie_meta_key('act','kpop-original:1');$edits[$actKey]=['fields'=>['title
 echo "INLINE_EDIT_SHARED_PROJECTION_MEDIA_PRIVACY_AND_ACT_OK\n";
 
 $edits[nie_meta_key('song',$id)]['fields']['collectionIds']=['collection-id'];$edits[nie_meta_key('song',$id)]['fields']['canonicalRecordKey']='catalog:'.$id;ie_check(nie_project($edits,[$video])[0]['collectionIds']===['collection-id'],'video collection follows canonical song');
+
+$edits[nie_meta_key('song',$id)]['fields']['originalArtist']='저장한 가수';$edits[nie_meta_key('song',$id)]['fields']['vocal']='남녀듀엣';
+foreach([$base,$video] as $row){$p=nie_project($edits,[$row])[0];ie_check($p['originalArtist']==='저장한 가수'&&$p['vocal']==='남녀듀엣','cover metadata projects to music and video');}

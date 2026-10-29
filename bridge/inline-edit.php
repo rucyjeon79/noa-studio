@@ -31,7 +31,7 @@ function nie_fields(array $edits,array $record):array{
  foreach($keys as $key)if(isset($edits[$key]))return $edits[$key]['fields'];return [];
 }
 function nie_project(array $edits,array $rows):array{
- foreach($rows as &$r){$f=($r['kind']??'')==='playlist'&&((int)($r['act']??0)>0)?($edits[nie_meta_key('act',$r['genre'].':'.(int)$r['act'])]['fields']??[]):nie_fields($edits,$r);foreach(['title','description','cast','genre','collectionIds','canonicalRecordKey'] as $name)if(array_key_exists($name,$f))$r[$name]=$f[$name];if(array_key_exists('lyrics',$f)){$r['rawLyrics']=$f['lyrics'];$r['lyrics']=noa_sound_lyrics($f['lyrics']);}}unset($r);return $rows;
+ foreach($rows as &$r){$f=($r['kind']??'')==='playlist'&&((int)($r['act']??0)>0)?($edits[nie_meta_key('act',$r['genre'].':'.(int)$r['act'])]['fields']??[]):nie_fields($edits,$r);foreach(['title','description','cast','vocal','originalArtist','genre','collectionIds','canonicalRecordKey'] as $name)if(array_key_exists($name,$f))$r[$name]=$f[$name];if(array_key_exists('lyrics',$f)){$r['rawLyrics']=$f['lyrics'];$r['lyrics']=noa_sound_lyrics($f['lyrics']);}}unset($r);return $rows;
 }
 function nie_act_labels(array $edits,array $rows):array{
  $out=[];foreach($rows as $r){$act=(int)($r['act']??0);if(!$act&&is_numeric($r['ep']??null))$act=(int)ceil((int)$r['ep']/10);if(!$act)continue;$id=$r['genre'].':'.$act;$f=$edits[nie_meta_key('act',$id)]['fields']??[];if(isset($f['title']))$out[$id]=$f['title'];}return $out;
