@@ -15,6 +15,7 @@ permissions:
 jobs:
   apk:
     runs-on: ubuntu-latest
+    environment: production
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -57,9 +58,9 @@ jobs:
           retention-days: 14
       - name: Prepare isolated live music member
         env:
-          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
         run: |
           python3 -m pip install --user 'paramiko==3.5.1'
           python3 scripts/noa_android_member_qa.py prepare
@@ -110,9 +111,9 @@ jobs:
       - name: Clean isolated live music member
         if: always()
         env:
-          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
         run: python3 scripts/noa_android_member_qa.py cleanup
       - name: Retain device verification
         if: always()
@@ -171,9 +172,9 @@ jobs:
         run: python3 scripts/noa_apk_signing_check.py
       - name: Publish tested APK with pinned SFTP
         env:
-          NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ vars.NOA_SSH_HOST_FINGERPRINT || 'SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU' }}
           NOA_SSH_ROOT: ${{ vars.NOA_FTP_ROOT || '/hosting/noastudio/html' }}
         run: |
