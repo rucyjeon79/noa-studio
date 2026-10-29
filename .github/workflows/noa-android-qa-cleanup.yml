@@ -1,0 +1,27 @@
+name: Recover temporary Android QA records
+on:
+  push:
+    branches: [work/n80-apk-update-20261029]
+    paths: ['.github/workflows/noa-android-qa-cleanup.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    concurrency:
+      group: noa-dothome-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: python3 -m pip install --user 'paramiko==3.5.1'
+      - name: Remove only exact generated Android QA records
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+        run: python3 scripts/qa/noa-android-cleanup.py
