@@ -17,6 +17,7 @@ jobs:
         run: |
           for file in deploy/noa-about.php deploy/noa-privacy.php deploy/noa-terms.php deploy/noa-editorial.extend.php deploy/noa-app/editorial*.php deploy/noa-app/home.php deploy/noa-sitemap.php; do php -l "$file"; done
           php tests/editorial/content_test.php
+          php tests/sitemap/registry_test.php
           node --check deploy/noa-editorial.js
           python -m py_compile scripts/noa_editorial_release.py
   deploy:

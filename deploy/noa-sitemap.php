@@ -45,7 +45,12 @@ function noa_sitemap_registry():array{
             ['search','게시판 검색','공개된 게시글 찾기','/bbs/search.php','search','public'],
         ]],
         'creatorTools'=>['title'=>'내 채널 · 전문 제작 도구','routes'=>[['taxonomy','공통 카테고리·제작 규칙','최고관리자의 공통 분류 기준','/noa-app/taxonomy/','playlists','admin']]],
-        'legal'=>['title'=>'서비스 안내','routes'=>[]],
+        'company'=>['title'=>'제이알 · 서비스 안내','routes'=>[
+            ['about-jr','회사소개 · 제이알','람준파파·NOA·NOEL·별무리의 이야기','/noa-about.php','book','public'],
+            ['privacy-page','개인정보처리방침','내 정보와 권리 안내','/noa-privacy.php','book','public'],
+            ['terms-page','이용약관','함께 지키는 서비스 이용 약속','/noa-terms.php','book','public'],
+        ]],
+        'legal'=>['title'=>'기존 서비스 안내','routes'=>[]],
         'admin'=>['title'=>'홈페이지 관리','routes'=>[
             ['libraryAdmin','라이브러리 관리','음악 문서와 변경 이력','/noa-library.php','library','admin'],
             ['editor','음악 등록·편집','음악 문서 작성','/noa-editor.php','edit','admin'],
@@ -127,7 +132,6 @@ function noa_sitemap_visible_groups(string $root,string $role,array $boards=[],a
         $label=trim(strip_tags((string)($board['bo_subject']??'')))?:$id;
         $groups['community']['routes'][]=['board-'.$id,$label,'게시판 읽기','/bbs/board.php?bo_table='.rawurlencode($id),'community','public',(string)($board['noa_condition']??'')];
     }
-    $groups['legal']['routes'][]=['about-jr','회사소개 · 제이알','람준파파·NOA·NOEL·별무리의 이야기','/noa-about.php','book','public'];
     foreach(['privacy'=>'개인정보처리방침','provision'=>'이용약관'] as $id=>$label){
         if(!in_array($id,$contents,true))continue;
         $groups['legal']['routes'][]=['legal-'.$id,$label,'서비스 운영 안내','/bbs/content.php?co_id='.$id,'book','public'];
