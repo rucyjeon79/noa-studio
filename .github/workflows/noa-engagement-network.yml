@@ -1,0 +1,41 @@
+name: NOA engagement network recovery
+on:
+  push:
+    branches: [main, work/android-live-failures-20261030]
+    paths: ['deploy/noa-engagement.js', 'tests/engagement/network_test.mjs', 'scripts/qa/noa-engagement-network-release.py', '.github/workflows/noa-engagement-network.yml']
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: node --check deploy/noa-engagement.js && node --test tests/engagement/network_test.mjs
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - run: python -m pip install 'paramiko==3.5.1'
+      - name: Replace only the browser script with preimage and public hash checks
+        id: upload
+        run: python scripts/qa/noa-engagement-network-release.py
+      - name: Restore owned script on failure
+        if: failure() && steps.upload.outcome == 'failure'
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then
+            python scripts/qa/noa-engagement-network-release.py rollback
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'engagement-network-${{ github.run_id }}', path: ainoa-proof/, retention-days: 14}
