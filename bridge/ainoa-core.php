@@ -46,6 +46,6 @@ function na_search_hit(array $song,string $query):?array{
 function na_guide(array $song):string{
  $description=trim(preg_replace('/\s+/u',' ',strip_tags((string)($song['description']??''))));
  $description=trim(preg_replace('~https?://\S+|#[^\s]+~u','',$description));
- if($description!=='')return mb_substr($description,0,140).(mb_strlen($description)>140?'…':'');
+ if($description!=='')return mb_substr($description,0,320).(mb_strlen($description)>320?'…':'');
  return '지금 듣는 곡은 “'.mb_substr((string)$song['title'],0,80).'”이에요. 편안히 감상해 주세요.';
 }

@@ -4,8 +4,9 @@ const seasons=[['겨울','겨울의 여백을 닮은','겨울 노래가 생각�
 const moods=['테이크 유어 타임. 쉼표도 음악의 일부니까요.','오늘은 마음의 볼륨을 한 칸만 낮춰볼까요? 어 리틀 피스.','낫 배드. 완벽하지 않은 하루에도 좋은 한 소절은 있죠.','저라면 걱정은 잠깐 사이드 비로 넘겨둘래요.','스몰 스텝. 작은 리듬도 모이면 한 곡이 되니까요.','가끔은 계획에 없는 쉼표가 제일 멋져요. 저스트 라이크 재즈.'];
 const sayings=['천 리 길도 한 걸음부터. 오늘은 딱 한 박자만 가봐요.','시작이 반이라는 말, 오늘의 첫 소절에 붙여둘까요?','급할수록 돌아가라는 말처럼, 잠깐 숨을 고르는 것도 방법이에요.'];
 const times={dawn:['고요한 새벽','하루가 시작되기 전 새벽','잠시 숨을 고르는 새벽'],morning:['새로운 아침','하루를 여는 아침','천천히 기지개를 켜는 아침'],day:['하루 한가운데','잠깐 쉬어 갈 오후','하루의 리듬을 이어 가는 시간'],evening:['하루를 마무리하는 저녁','여운을 나누기 좋은 저녁','잠시 돌아보는 저녁'],night:['차분한 밤','오늘을 접어 두는 밤','한 곡 더 생각나는 밤']};
-function compose(text,{date=new Date(),title='',index=0,name='',practical=false}={}){
+function compose(text,{date=new Date(),title='',index=0,name='',practical=false,kind=''}={}){
  if(practical)return String(text);
+ if(kind==='song')return String(text)+'\n'+moods[index%moods.length]+(index%3===1?' '+sayings[Math.floor(index/3)%sayings.length]:'');
  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',month:'numeric',hour:'numeric',hourCycle:'h23'}).formatToParts(date),part=k=>Number(parts.find(p=>p.type===k).value),month=part('month'),hour=part('hour');
  const season=seasons[Math.floor(month%12/3)],time=times[hour<6?'dawn':hour<12?'morning':hour<18?'day':hour<21?'evening':'night'];
  const opening=[`${season[1]} ${time[index%3]}, 작은 소식이 있어요.`,`${time[index%3]}, ${season[0]}의 여백에 헬로, 하고 인사를 놓아둘게요.`,`${season[2]} ${time[index%3]}, 함께해 줘서 반가워요.`][Math.floor(index/3)%3];
@@ -40,14 +41,14 @@ function render(){
  place();if(active||!queue.length||doc.hidden)return;const tip=doc.querySelector('.ainoa-tip');if(!tip)return;
  active=queue.shift();ownChange=true;tip.replaceChildren();tip.classList.add('ainoa-message');tip.setAttribute('aria-live','polite');tip.setAttribute('aria-atomic','true');
  const label=doc.createElement('strong');label.textContent='AInoa';const text=doc.createElement('p');
- text.textContent=compose(active.text,{index:counter++,name:active.options.name||'',title:currentTrack?.title||'',practical:active.options.key!=='welcome'});write('noa-voice-sequence',String(counter));
+ text.textContent=compose(active.text,{index:counter++,name:active.options.name||'',title:currentTrack?.title||'',kind:active.options.kind||'',practical:active.options.key!=='welcome'&&active.options.kind!=='song'});write('noa-voice-sequence',String(counter));
  const actions=doc.createElement('div');actions.className='ainoa-message-actions';
  if(active.options.href){try{const url=new URL(active.options.href,location.origin);if(url.origin===location.origin){const a=doc.createElement('a');a.href=url.pathname+url.search+url.hash;a.textContent=active.options.linkLabel||'소식 보기';actions.append(a);}}catch{}}
  const button=doc.createElement('button');button.type='button';button.setAttribute('aria-label','AInoa 말풍선 닫기');button.onclick=()=>close(true,true);
  if(active.options.requireAcknowledgement){button.textContent='확인했어요';actions.append(button);}else{button.textContent='×';button.className='ainoa-message-dismiss';tip.append(button);}
  tip.append(label,text);if(actions.childElementCount)tip.append(actions);tip.hidden=false;ownChange=false;
  // Only explicit operational acknowledgement stays open. Greetings and notices expire.
- if(!active.options.requireAcknowledgement)timer=setTimeout(()=>close(),Math.max(6000,Math.min(10000,text.textContent.length*45)));
+ if(!active.options.requireAcknowledgement)timer=setTimeout(()=>close(),Math.max(8000,Math.min(22000,text.textContent.length*65)));
 }
 function condition(node){say(node.dataset.noaCondition,{priority:true,sticky:true,force:true,key:'access-condition',href:/로그인/.test(node.dataset.noaCondition)?'/noa-login.php':'/noa-my.php',linkLabel:/로그인/.test(node.dataset.noaCondition)?'로그인':'MY에서 확인'});}
 doc.addEventListener('click',e=>{const node=e.target.closest?.('[data-noa-condition]');if(!node)return;e.preventDefault();e.stopImmediatePropagation();condition(node);},true);
@@ -76,11 +77,16 @@ function facts(d){if(!d.member)return '지금은 비로그인 상태예요. 로�
  const days=d.remainingDays===null?'잔여일은 '+(d.subscription==='확인 중'?'확인 중이에요.':'등록된 종료일이 없어 안내하기 어려워요.'):('남은 기간은 '+d.remainingDays+'일이에요.');
  return '현재 '+d.subscription+'이에요. '+days+' '+(Number.isSafeInteger(d.balance)?'잔여 포인트는 '+d.balance.toLocaleString('ko-KR')+'P예요.':'잔여 포인트를 확인하지 못했어요.');}
 async function welcome(){
- try{const abort=new AbortController(),timeout=setTimeout(()=>abort.abort(),10000);let d;try{const r=await fetch('/noa-ainoa.php?action=welcome',{credentials:'same-origin',cache:'no-store',signal:abort.signal});if(!r.ok)throw Error();d=await r.json();if(!d.ok)throw Error();}finally{clearTimeout(timeout);}account=d;markAccess();
+ try{let d;for(let attempt=0;attempt<2;attempt++){
+  const abort=new AbortController(),timeout=setTimeout(()=>abort.abort(),10000);
+  try{const r=await fetch('/noa-ainoa.php?action=welcome',{credentials:'same-origin',cache:'no-store',signal:abort.signal});if(!r.ok)throw Error();d=await r.json();if(!d.ok)throw Error();break;}
+  catch(error){if(attempt)throw error;await new Promise(resolve=>setTimeout(resolve,750));}
+  finally{clearTimeout(timeout);}
+ }account=d;try{sessionStorage.removeItem('noa-welcome-failed');}catch{}markAccess();
  const key='noa-welcome:'+d.accountKey,last=Number(read(key)||0),now=Date.now();
  if(now-last>30*60*1000){write(key,String(now));say(facts(d),{name:d.displayName||'방문자',priority:active?.options.key!=='pending-alert',sticky:true,key:'welcome'});}else write(key,String(now));
  scope.dispatchEvent(new CustomEvent('noa-voice-ready',{detail:{member:d.member,accountKey:d.accountKey}}));
- }catch{if(!read('noa-welcome-failed')){write('noa-welcome-failed','1');say('계정 정보를 잠시 불러오지 못했어요. 구독 상태·잔여일·포인트는 MY에서 다시 확인해 주세요.',{name:'방문자',sticky:true,key:'welcome-error'});}}
+ }catch{if(!read('noa-welcome-failed')){write('noa-welcome-failed','1');say('계정 정보를 잠시 불러오지 못했어요. 구독 상태·잔여일·포인트는 MY에서 다시 확인해 주세요.',{sticky:true,key:'welcome-error'});}}
 }
 function boot(){if(mounted)return;mounted=true;if(location.pathname.startsWith('/adm/'))doc.documentElement.dataset.noaVoiceAdmin='true';if(parentVoice)doc.documentElement.dataset.noaVoiceEmbedded='true';
  new MutationObserver(records=>{if(ownChange)return;if(records.some(r=>!r.target.closest?.('.ainoa-tip')))schedule();}).observe(doc.body,{subtree:true,childList:true,characterData:true});

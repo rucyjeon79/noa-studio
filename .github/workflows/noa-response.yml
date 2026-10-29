@@ -1,0 +1,68 @@
+name: NOA account responsiveness and artist guidance
+on:
+  pull_request:
+    paths: ['scripts/noa_response_release.py','scripts/qa/noa-response.mjs','.github/workflows/noa-response.yml']
+  push:
+    branches: [main]
+    paths: ['scripts/noa_response_release.py','scripts/qa/noa-response.mjs','.github/workflows/noa-response.yml']
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'mbstring'}
+      - run: |
+          php -l bridge/membership.php
+          php -l deploy/noa-ainoa.php
+          php tests/voice/summary_test.php
+          php tests/voice/state_test.php
+          php tests/catalog/ainoa_test.php
+          node --check deploy/noa-account.js
+          node --check deploy/noa-ainoa.js
+          node --test tests/voice/composer_test.cjs
+          php tests/voice/fixture.php
+          npm install --prefix "$RUNNER_TEMP/response-ui" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/response-ui/node_modules/.bin/playwright" install --with-deps chromium
+          cp scripts/qa/noa-response.mjs "$RUNNER_TEMP/response-ui/check.mjs"
+          node "$RUNNER_TEMP/response-ui/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'response-candidate-${{ github.run_id }}', path: response-proof/, retention-days: 7}
+  deploy:
+    if: github.event_name == 'push'
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 12
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - run: python -m pip install 'paramiko>=3,<5'
+      - run: python scripts/noa_response_release.py
+      - name: Verify live public read endpoints
+        run: |
+          python - <<'PY'
+          import urllib.request,json,time
+          results=[]
+          for path in ['/','/noa-ainoa.php?action=welcome','/noa-ainoa.php?action=status','/noa-bridge/membership.php?action=summary']:
+            start=time.monotonic()
+            with urllib.request.urlopen('https://noastudio.ai.kr'+path,timeout=25) as r:
+              body=r.read();assert r.status==200
+              if '?' in path:
+                d=json.loads(body);assert d['ok'] and not d['member'];assert 'no-store' in r.headers.get('Cache-Control','')
+              results.append({'path':path,'status':200,'seconds':round(time.monotonic()-start,3)})
+          print('NOA_RESPONSE_LIVE_READ_OK',json.dumps(results))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'response-live-${{ github.run_id }}', path: ainoa-proof/deployment.json, retention-days: 7}

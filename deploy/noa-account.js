@@ -29,9 +29,9 @@
  document.querySelector('.noa-topbar .noa-account')?.closest('.noa-topbar').remove();document.querySelector('.noa-g5-top')?.remove();document.body.prepend(bar);
  const summary=document.getElementById('noa-my-account'),status=document.getElementById('noa-my-account-status');
  const write=(id,value)=>{const node=document.getElementById(id);if(node)node.textContent=value;};
- let pending=false;
- async function update(){if(pending)return;pending=true;const abort=new AbortController(),timeout=setTimeout(()=>abort.abort(),10000);try{
-  const r=await fetch('/noa-bridge/membership.php',{credentials:'same-origin',cache:'no-store',signal:abort.signal}),d=await r.json();if(!r.ok||!d.ok)throw Error('account_unavailable');
+ let pending=false,lastAttempt=0;
+ async function update(force=false){if(pending||(!force&&Date.now()-lastAttempt<30000))return;pending=true;lastAttempt=Date.now();const abort=new AbortController(),timeout=setTimeout(()=>abort.abort(),10000);try{
+  const r=await fetch('/noa-bridge/membership.php?action=summary',{credentials:'same-origin',cache:'no-store',signal:abort.signal}),d=await r.json();if(!r.ok||!d.ok)throw Error('account_unavailable');
   bar.dataset.member=String(!!d.member);window.dispatchEvent(new CustomEvent('noa-membership-status',{detail:d}));
   if(summary){
    if(!d.member){summary.dataset.state='signed-out';write('noa-my-subscription','로그인이 필요합니다.');write('noa-my-points','—');if(status)status.replaceChildren(link('다시 로그인','/bbs/login.php?url=%2Fnoa-my.php'));return;}
@@ -41,5 +41,5 @@
   }
  }catch{window.dispatchEvent(new Event('noa-membership-error'));if(summary){summary.dataset.state='error';if(status)status.textContent='현재 계정 정보를 불러오지 못했습니다. 구독·포인트 내역에서 다시 확인해 주세요.';}}
  finally{clearTimeout(timeout);pending=false;}}
- update();window.addEventListener('pageshow',update);window.addEventListener('noa-membership-change',update);document.addEventListener('visibilitychange',()=>{if(!document.hidden)update();});
+ update();window.addEventListener('pageshow',()=>update());window.addEventListener('noa-membership-change',()=>update(true));document.addEventListener('visibilitychange',()=>{if(!document.hidden)update();});
 })();

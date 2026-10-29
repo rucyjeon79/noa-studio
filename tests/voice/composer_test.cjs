@@ -14,3 +14,5 @@ test('artist voice uses Hangul English, poetic lines and unattributed sayings wi
 });
 
 test('operational notices stay direct and exact',()=>{assert.equal(compose('저장 실패 · 다시 시도해 주세요.',{practical:true}),'저장 실패 · 다시 시도해 주세요.');});
+
+test('song guidance preserves the actual description and adds the artist voice',()=>{const info='등록된 곡 소개입니다.';const text=compose(info,{kind:'song',index:1});assert(text.startsWith(info));assert(text.includes('어 리틀 피스'));assert(text.includes('천 리 길도'));assert(!text.includes('작은 소식'));});
