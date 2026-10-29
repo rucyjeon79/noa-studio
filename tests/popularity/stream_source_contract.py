@@ -12,6 +12,12 @@ old_acl="$admin=!empty($is_member)&&($is_admin??'')==='super';if(!noa_sound_visi
 new_acl="$access=nam_access((array)($member??[]),(string)($is_admin??''));$admin=$access['admin'];$owner=$access['creator']&&nam_owner($doc,(array)($member??[]));if(($type==='audio'&&!$access['music']&&!$owner)||(!noa_sound_visible($doc,$admin)&&!$owner))"
 assert new_acl in new, 'approved VIP/owner authorization changed'
 compat=new.replace("require_once dirname(__DIR__,2).'/noa-bridge/member-access.php';\n",'',1).replace(new_acl,old_acl,1)
+# Cover-only provenance updates must never change the original audio identity.
+# Exercise that boundary before normalizing this one reviewed expression.
+source_expr="nj_asset_source($asset,$type)"
+assert new.count(source_expr)==1, 'exact source resolver boundary changed'
+subprocess.run(['php','tests/cover-source.php'],cwd=root,check=True)
+compat=compat.replace(source_expr,"$asset['source_url']",1)
 subprocess.run(['php','tests/member/access_test.php'],cwd=root,check=True)
 normalize=lambda s:re.sub(r'\s+','',s)
 assert normalize(old.split('fseek($file,$start)')[0])==normalize(compat.split('fseek($file,$start)')[0]),'media identity, permissions, SHA, ranges, HEAD or headers changed'
