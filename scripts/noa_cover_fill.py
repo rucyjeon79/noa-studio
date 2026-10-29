@@ -24,7 +24,7 @@ def main():
      try:
       with urllib.request.build_opener(NoRedirect()).open(req,timeout=60) as r:data=json.load(r)
      except urllib.error.HTTPError as e:
-      try:reason=json.load(e).get('error','control_http_'+str(e.code))
+      try:reason=e.headers.get('X-NOA-Cover-Error') or json.load(e).get('error','control_http_'+str(e.code))
       except Exception:reason='control_http_'+str(e.code)
       raise ValueError(reason) from None
      assert data['ok'];return data

@@ -25,5 +25,5 @@ try{
   if($old)foreach(['audio_path','audio_bytes','audio_sha256','source_analysis','correction','final_analysis','status'] as $field)if(($after[$field]??null)!==($old[$field]??null))throw new RuntimeException('audio_preservation_failed');
   if(!nj_verified($after,'cover'))throw new RuntimeException('cover_readback_failed');$db->commit();$result=['ok'=>true,'key'=>$key,'coverUrl'=>nj_url($key,'cover'),'audioPreserved'=>true,'public'=>noa_sound_visible($d,false)];
  }else throw new DomainException('invalid_action');
-}catch(Throwable $e){if(isset($db)&&$db->inTransaction())$db->rollBack();http_response_code(409);$result=['ok'=>false,'error'=>$e instanceof DomainException?$e->getMessage():'cover_control_failed'];}
+}catch(Throwable $e){if(isset($db)&&$db->inTransaction())$db->rollBack();http_response_code(409);header('X-NOA-Cover-Error: '.get_class($e).'-'.preg_replace('/[^a-zA-Z0-9_-]/','',substr($e->getMessage(),0,120)));$result=['ok'=>false,'error'=>$e instanceof DomainException?$e->getMessage():'cover_control_failed'];}
 while(ob_get_level()>$level)ob_end_clean();header('Content-Type: application/json');echo json_encode($result,JSON_THROW_ON_ERROR);
