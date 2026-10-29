@@ -49,7 +49,7 @@ console.log('PASS reopened-tab completion persists, storage merge stays terminal
 
 (async()=>{
  const row={id:'pending',state:'needs_file',owner:'closed',uploadId:'partial'};let canceled=0,applied=0;
- const c={active:null,deviceOwner:'current',busy:['queued','processing'],notice:{},isUnsent:r=>r.state==='needs_file',reconcile:async()=>({status:'uploading'}),api:async(action)=>{assert.equal(action,'cancel');canceled++},apply(){applied++},persist(){},render(){},message:code=>code};vm.createContext(c);vm.runInContext(source.slice(source.indexOf('async function cancelReservation('),source.indexOf('function releaseSelection(')),c);
+ const c={reservations:[],active:null,deviceOwner:'current',busy:['queued','processing'],notice:{},isUnsent:r=>r.state==='needs_file',reconcile:async()=>({status:'uploading'}),api:async(action)=>{assert.equal(action,'cancel');canceled++},apply(){applied++},persist(){},render(){},message:code=>code};vm.createContext(c);vm.runInContext(source.slice(source.indexOf('async function cancelReservation('),source.indexOf('function releaseSelection(')),c);
  await c.cancelReservation(row);assert.equal(canceled,1);assert.equal(row.state,'replaced');assert.equal(row.owner,'current');assert.equal(row.hold,false);
  const accepted={id:'accepted',state:'needs_file',uploadId:'queued'};c.reconcile=async()=>({status:'processing',job:{id:10},public:{status:'processing'}});await c.cancelReservation(accepted);assert.equal(canceled,1);assert.equal(accepted.state,'uploaded');assert.equal(accepted.serverComplete,true);assert.equal(applied,1);
  const active={state:'needs_file',uploadId:'active'};c.active=active;await c.cancelReservation(active);assert.equal(canceled,1);assert.equal(active.state,'needs_file');
@@ -71,4 +71,20 @@ console.log('PASS reopened-tab completion persists, storage merge stays terminal
  await c.reserve({existing:r,key:'song'},file);
  assert.equal(c.paused,true);assert.equal(c.transport.open,true);assert.equal(pumped,0);
  console.log('PASS reselected source resumes after healthy capacity check; unavailable storage stays paused');
+})().catch(error=>{console.error(error);process.exitCode=1});
+
+// A stable inline button must not keep the object discarded by queue polling.
+(async()=>{
+ const old={id:'same-reservation',key:'song',state:'needs_file',owner:'closed'};
+ const current={...old};let selected;
+ const controls={dataset:{},replaceChildren(){this.children=[]},append(...nodes){this.children=nodes}};
+ const target={querySelector:()=>controls};
+ const c={reservations:[current],active:null,deviceOwner:'new',busy:[],notice:{},isUnsent:r=>r.state==='needs_file',document:{createElement:()=>({})},openPicker:(data,r)=>{selected=r},render(){},persist(){},message:x=>x};
+ vm.createContext(c);
+ vm.runInContext(source.slice(source.indexOf('function renderReservationActions('),source.indexOf('function placeProgress(')),c);
+ vm.runInContext(source.slice(source.indexOf('async function cancelReservation('),source.indexOf('function releaseSelection(')),c);
+ c.renderReservationActions(target,old);
+ controls.children[0].onclick();assert.equal(selected,current);
+ await controls.children[1].onclick();assert.equal(current.state,'replaced');assert.equal(old.state,'needs_file');
+ console.log('PASS stale inline buttons reselect and cancel the current polled reservation');
 })().catch(error=>{console.error(error);process.exitCode=1});
