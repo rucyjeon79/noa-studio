@@ -17,7 +17,7 @@ public class PlaybackService extends MediaSessionService {
  private final Handler handler=new Handler(Looper.getMainLooper());
  private final Runnable checkpoint=new Runnable(){public void run(){if(session!=null&&!store.closed())store.save(session.getPlayer());handler.postDelayed(this,3000);}};
  @Override public void onCreate(){
-  super.onCreate();store=new PlaybackStateStore(this);engine=new ExoPlayer.Builder(this).build();
+  super.onCreate();store=new PlaybackStateStore(this);engine=new ExoPlayer.Builder(this).setMediaSourceFactory(new androidx.media3.exoplayer.source.DefaultMediaSourceFactory(new androidx.media3.datasource.okhttp.OkHttpDataSource.Factory(NativeSession.mediaClient()))).build();
   engine.setAudioAttributes(new AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(),true);
   engine.setHandleAudioBecomingNoisy(true);engine.setWakeMode(C.WAKE_MODE_NETWORK);
   Player player=new ForwardingPlayer(engine){
