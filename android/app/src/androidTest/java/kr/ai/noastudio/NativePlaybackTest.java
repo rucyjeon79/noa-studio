@@ -24,6 +24,12 @@ import static org.junit.Assert.*;
 @RunWith(AndroidJUnit4.class)
 @android.annotation.SuppressLint("UnsafeOptInUsageError")
 public class NativePlaybackTest {
+ // Reacquire nodes when an asynchronous playlist refresh replaces the editor.
+ void clickFresh(UiDevice device,BySelector selector,long timeout){
+  long deadline=SystemClock.uptimeMillis()+timeout;
+  do{try{UiObject2 node=device.wait(Until.findObject(selector),Math.max(1,deadline-SystemClock.uptimeMillis()));if(node!=null){node.click();return;}}catch(StaleObjectException stale){SystemClock.sleep(100);}}while(SystemClock.uptimeMillis()<deadline);
+  fail("Control unavailable after refresh: "+selector);
+ }
  void main(Runnable r){InstrumentationRegistry.getInstrumentation().runOnMainSync(r);}
  long pos(MediaController p){AtomicLong n=new AtomicLong();main(()->n.set(p.getCurrentPosition()));return n.get();}
  boolean playing(MediaController p){AtomicBoolean b=new AtomicBoolean();main(()->b.set(p.isPlaying()));return b.get();}
@@ -55,7 +61,10 @@ public class NativePlaybackTest {
    d.takeScreenshot(new File(c.getExternalFilesDir(null),"noa-android-my-playlists.png"));
    d.findObject(By.desc("출근길 편집")).click();d.wait(Until.findObject(By.text("재생목록 삭제")),5000).click();d.wait(Until.findObject(By.text("삭제")),5000).click();assertTrue(d.wait(Until.gone(By.desc("출근길 편집")),10000));
    for(int i=0;i<80&&my.lists("").getJSONArray("items").length()!=1;i++)SystemClock.sleep(100);assertEquals(1,my.lists("").getJSONArray("items").length());
-   d.wait(Until.findObject(By.desc("밤에 듣기 편집")),10000).click();d.wait(Until.findObject(By.desc(java.util.regex.Pattern.compile("1 · .+"))),5000).click();d.wait(Until.findObject(By.text("곡 제거")),5000).click();d.findObject(By.text("곡 변경 저장")).click();
+   clickFresh(d,By.desc("밤에 듣기 편집"),10000);
+   clickFresh(d,By.desc(java.util.regex.Pattern.compile("1 · .+")),5000);
+   clickFresh(d,By.text("곡 제거"),5000);
+   clickFresh(d,By.text("곡 변경 저장"),5000);
    for(int i=0;i<80&&my.lists("").getJSONArray("items").getJSONObject(0).getJSONArray("tracks").length()!=1;i++)SystemClock.sleep(100);assertEquals(1,my.lists("").getJSONArray("items").getJSONObject(0).getJSONArray("tracks").length());my.add(items.get(1).mediaId,"");assertEquals(2,my.lists("").getJSONArray("items").getJSONObject(0).getJSONArray("tracks").length());assertTrue("Playlist editing interrupted playback",playing(p));proof.put("guestPlaylistEditingUi",true);
    main(()->{store.upload(false);store.setClosed(false);p.setMediaItems(items,0,0);p.prepare();p.play();});waitPlaying(p,true);SystemClock.sleep(2000);long foreground=pos(p);assertTrue(foreground>500);
    d.findObject(By.res(c.getPackageName(),"noa_nav_music")).click();SystemClock.sleep(700);
