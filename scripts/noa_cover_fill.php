@@ -6,11 +6,11 @@ try{
  require_once __DIR__.'/storage.php';require_once __DIR__.'/creator-enrollment-core.php';require_once __DIR__.'/sound-core.php';require_once __DIR__.'/music-readmodel.php';require_once dirname(__DIR__).'/noa-app/jukebox/core.php';
  $db=noa_bridge_pdo();$owner=(string)$config['cf_admin'];$input=json_decode(file_get_contents('php://input'),true,32,JSON_THROW_ON_ERROR);
  if(($input['action']??'')==='inventory'){
-  $assets=nj_assets($db);$rows=[];$missingSource=0;$covered=0;
+  $assets=nj_assets($db);$rows=[];$missingSource=0;$covered=0;$readyWithoutSource=[];
   foreach(nc_owned_records($db,$owner) as $r){$d=json_decode($r['payload'],true);if($r['kind']==='playlist'||!empty($d['_noaTrash']))continue;$b=$d['body']??[];$source=noa_sound_suno($b);
    if(noa_music_asset_url($assets,$r['doc_key'],$source,'cover')||noa_sound_cover($b)){$covered++;continue;}
-   if(!$source){$missingSource++;continue;}$rows[]=['key'=>$r['doc_key'],'sunoUrl'=>$source,'title'=>$d['title']??'','revision'=>(int)$r['revision']];
-  }$result=['ok'=>true,'rows'=>$rows,'covered'=>$covered,'missingSource'=>$missingSource];
+   if(!$source){$missingSource++;if(nj_verified($assets[$r['doc_key']]??null,'audio'))$readyWithoutSource[]=$d['title']??'';continue;}$rows[]=['key'=>$r['doc_key'],'sunoUrl'=>$source,'title'=>$d['title']??'','revision'=>(int)$r['revision']];
+  }$result=['ok'=>true,'rows'=>$rows,'covered'=>$covered,'missingSource'=>$missingSource,'readyWithoutSource'=>$readyWithoutSource];
  }elseif(($input['action']??'')==='apply'){
   $r=$input['record'];$key=(string)$r['song_key'];$doc=nc_row($db,$key);if(!$doc||!nam_owner($doc['document'],['mb_id'=>$owner])||!in_array($doc['kind'],['single','story'],true)||!empty($doc['document']['_noaTrash']))throw new DomainException('owner_or_song_changed');
   if(!preg_match('~^cover-repair/[a-f0-9]{64}/[a-f0-9]{64}[.]webp$~D',(string)$r['cover_path'])||!nj_verified($r,'cover'))throw new DomainException('invalid_cover');
