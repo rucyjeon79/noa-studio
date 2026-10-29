@@ -133,3 +133,17 @@ function nnt_thread(PDO $db,string $owner,int $id):array {
  }
  return ['target'=>['type'=>$target['type'],'key'=>$target['key']],'replyTo'=>$focus];
 }
+
+/** Resolve titles only for this recipient, with the same current read gates as the thread. */
+function nnt_preview(PDO $db,string $owner,array $row):array{
+ if($row['kind']==='test')return [];
+ if(preg_match('/^board:song_request:([1-9][0-9]*)$/D',$row['entity'],$m)){
+  global $config,$g5;$r=nnt_one($db,'SELECT mb_id,wr_subject,wr_content FROM '.nnt_table($g5['write_prefix'].'song_request').' WHERE wr_id=? AND wr_is_comment=0',[(int)$m[1]]);
+  if(!$r||($owner!==($config['cf_admin']??'')&&$r['mb_id']!==$owner))return [];
+  $board=nnt_one($db,'SELECT bo_subject FROM '.nnt_table($g5['board_table']).' WHERE bo_table=?',['song_request']);
+  return ['boardTitle'=>$board['bo_subject']??'사연 신청','postTitle'=>nnt_plain($r['wr_subject']),'excerpt'=>mb_substr(nnt_plain($r['wr_content']),0,240)];
+ }
+ $resolved=nnt_target($db,$row['entity'],$owner);if(!$resolved)return [];$t=$resolved['target'];
+ return ['boardTitle'=>$t['boardTitle']??match($t['type']){'music'=>'음원','video'=>'YouTube 영상','playlist'=>'재생목록',default=>'게시판'},'postTitle'=>$t['title'],'excerpt'=>mb_substr(nnt_plain($t['body']??''),0,240)];
+}
+function nnt_plain(string $s):string{return trim(html_entity_decode(strip_tags(preg_replace('~<(script|style)\b[^>]*>.*?</\1>~is','',$s)),ENT_QUOTES,'UTF-8'));}

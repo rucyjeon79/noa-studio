@@ -37,7 +37,7 @@ function nnt_member(PDO $db,string $owner):?array{
 }
 function nnt_settings(PDO $db,string $owner):array{$r=nnt_one($db,'SELECT likes,comments,replies FROM noa_notification_settings WHERE owner=?',[$owner])??['likes'=>1,'comments'=>1,'replies'=>1];return array_map(static fn($v)=>(bool)$v,$r);}
 function nnt_category(string $kind):string{return match($kind){'like'=>'likes','comment'=>'comments',default=>'replies'};}
-function nnt_copy(string $kind):string{return match($kind){'like'=>'내 게시물에 좋아요가 도착했어요.','comment'=>'내 게시물에 새 댓글이 달렸어요.','reply'=>'내가 참여한 게시물에 새 답글이 달렸어요.','request_reply'=>'사연 신청에 답변이 도착했어요.','new_post'=>'게시판에 새 글이 등록됐어요.','test'=>'휴대폰 알림이 연결됐어요. 앞으로 내 활동 소식을 알려드릴게요.',default=>'나와 관련된 새로운 활동이 있어요.'};}
+function nnt_copy(string $kind):string{return match($kind){'like'=>'내 게시물에 좋아요가 도착했어요.','comment'=>'내 게시물에 새 댓글이 달렸어요.','reply'=>'내가 참여한 게시물에 새 답글이 달렸어요.','request_reply'=>'사연 신청에 답변이 도착했어요.','new_post'=>'게시판에 새 글이 등록됐어요.','test'=>'알림이 연결됐어요. 앞으로 내 활동 소식을 알려드릴게요.',default=>'나와 관련된 새로운 활동이 있어요.'};}
 function nnt_enqueue(PDO $db,string $recipient,string $event,string $kind,string $entity,string $actor,string $source,int $sourceId,string $url,int $now):?int{
  if(($recipient===$actor&&$kind!=='test')||!nnt_member($db,$recipient)||!str_starts_with($url,'/')||str_starts_with($url,'//')||strlen($url)>500)return null;
  if(!in_array($kind,['test','new_post'],true)&&!nnt_settings($db,$recipient)[nnt_category($kind)])return null;
@@ -84,11 +84,11 @@ function nnt_filter(string $filter):string{return match($filter){'all'=>'','unre
 function nnt_inbox(PDO $db,string $owner,int $before=0,string $filter='all'):array{
  $scope=nnt_filter($filter);
  foreach(nnt_rows($db,'SELECT * FROM noa_notifications WHERE recipient=? AND cancelled_at IS NULL ORDER BY id DESC LIMIT 200',[$owner])as $r)if(!nnt_source_alive($db,$r))nnt_exec($db,'UPDATE noa_notifications SET cancelled_at=? WHERE id=? AND recipient=?',[time(),$r['id'],$owner]);
- $rows=nnt_rows($db,'SELECT id,kind,url,created_at,read_at FROM noa_notifications WHERE recipient=? AND cancelled_at IS NULL'.$scope.($before>0?' AND id<?':'').' ORDER BY id DESC LIMIT 31',$before>0?[$owner,$before]:[$owner]);$more=count($rows)>30;$rows=array_slice($rows,0,30);
+ $rows=nnt_rows($db,'SELECT * FROM noa_notifications WHERE recipient=? AND cancelled_at IS NULL'.$scope.($before>0?' AND id<?':'').' ORDER BY id DESC LIMIT 31',$before>0?[$owner,$before]:[$owner]);$more=count($rows)>30;$rows=array_slice($rows,0,30);
  $counts=['all'=>0,'unread'=>0,'comments'=>0,'reactions'=>0,'posts'=>0,'system'=>0];
  foreach(nnt_rows($db,'SELECT kind,COUNT(*) n,SUM(read_at IS NULL) unread FROM noa_notifications WHERE recipient=? AND cancelled_at IS NULL GROUP BY kind',[$owner])as $group){$n=(int)$group['n'];$counts['all']+=$n;$counts['unread']+=(int)$group['unread'];$counts[in_array($group['kind'],['comment','reply','request_reply'],true)?'comments':($group['kind']==='like'?'reactions':($group['kind']==='new_post'?'posts':'system'))]+=$n;}
  $snapshot=(int)nnt_one($db,'SELECT COALESCE(MAX(id),0) id FROM noa_notifications WHERE recipient=? AND cancelled_at IS NULL'.$scope,[$owner])['id'];
- return ['items'=>array_map(static fn($r)=>['id'=>(int)$r['id'],'kind'=>$r['kind'],'text'=>nnt_copy($r['kind']),'url'=>$r['url'],'at'=>gmdate('c',(int)$r['created_at']),'read'=>$r['read_at']!==null],$rows),'filter'=>$filter,'counts'=>$counts,'snapshot'=>$snapshot,'more'=>$more,'before'=>$more?(int)end($rows)['id']:null,'unread'=>$counts['unread']];
+ return ['items'=>array_map(static fn($r)=>['id'=>(int)$r['id'],'kind'=>$r['kind'],'text'=>nnt_copy($r['kind']),'url'=>$r['url'],'at'=>gmdate('c',(int)$r['created_at']),'read'=>$r['read_at']!==null]+nnt_preview($db,$owner,$r),$rows),'filter'=>$filter,'counts'=>$counts,'snapshot'=>$snapshot,'more'=>$more,'before'=>$more?(int)end($rows)['id']:null,'unread'=>$counts['unread']];
 }
 function nnt_mark(PDO $db,string $owner,int $id,bool $all=false,string $filter='all',bool $read=true):void{
  $scope=nnt_filter($filter);if($id<1)return;if($all&&!$read)throw new DomainException('invalid_input');
