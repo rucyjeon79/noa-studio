@@ -2,7 +2,7 @@ name: NOA STUDIO Android
 # Production PWA owns navigation and layout; Android provides background media only.
 on:
   push:
-    branches: [main, work/android-background-20261022, work/n80-release-final-20261029, work/android-pwa-parity-20261029]
+    branches: [main, work/android-background-20261022, work/n80-release-final-20261029, work/android-live-failures-20261030]
     paths: ['.github/workflows/noa-android.yml', 'android/**', 'scripts/noa_android_*.py', 'scripts/noa_apk_*.py', 'tests/android/**', 'tests/n80/android_update_test.php', 'deploy/noa-app/engine/n80.php', 'deploy/noa-design.json', 'deploy/noa-ui-words.json', 'public/icon-512.png']
   workflow_dispatch:
     inputs:

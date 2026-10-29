@@ -11,6 +11,7 @@
  const originalPlay=HTMLMediaElement.prototype.play;
  let domReady=document.readyState!=='loading';
  let audio=null,applying=false,pendingKey='',snapshot={key:'',position:0,duration:0,paused:true,playing:false,ended:false,volume:.7,closed:true};
+ const collectionLoop=()=>{try{return typeof collectionQueue!=='undefined'&&!!collectionQueue&&(typeof activeQueue==='undefined'||!activeQueue);}catch{return false;}};
  const key=()=>{try{return typeof selected!=='undefined'?selected?.dataset.key||'':'';}catch{return '';}};
  const event=name=>audio?.dispatchEvent(new Event(name));
  function request(type){
@@ -19,7 +20,9 @@
   let keys=[current],repeatMode=false,shuffleMode=false;
   try{if(typeof queue==='function')keys=queue().map(row=>row.dataset.key);repeatMode=typeof repeat!=='undefined'&&repeat;shuffleMode=typeof shuffle!=='undefined'&&shuffle;}catch{}
   pendingKey=current;
-  send({type,key:current,queue:keys.slice(0,500),repeat:!!repeatMode,shuffle:!!shuffleMode,volume:snapshot.volume});
+  keys=keys.slice(0,500);if(!keys.includes(current))keys=[current];
+  const tracks=keys.map(id=>{const record=typeof lookup!=='undefined'?lookup.get(id):null;if(!record?.audio)return null;try{return {key:id,title:String(record.title||'').slice(0,256),audioUrl:new URL(record.audio,location.href).href,coverImageUrl:record.thumb?new URL(record.thumb,location.href).href:''};}catch{return null;}}).filter(Boolean);
+  send({type,key:current,queue:keys,tracks,repeat:!!repeatMode,collectionLoop:collectionLoop(),shuffle:!!shuffleMode,volume:snapshot.volume});
  }
  function mount(){
   if(!domReady)return;
@@ -51,7 +54,8 @@
    const previous=snapshot;applying=true;
    try{
     if(next.key&&!key()&&Array.isArray(next.queue)&&typeof activeQueue!=='undefined'){
-     activeQueue=next.queue.filter(id=>typeof buttons!=='undefined'&&buttons.some(row=>row.dataset.key===id));
+     const restored=next.queue.filter(id=>typeof buttons!=='undefined'&&buttons.some(row=>row.dataset.key===id));
+     if(next.collectionLoop&&typeof collectionQueue!=='undefined'){collectionQueue=restored;activeQueue=null;}else activeQueue=restored;
      if(typeof filter==='function')filter();
     }
     if(next.key&&next.key!==key()){
@@ -76,7 +80,7 @@
  };
  document.addEventListener('click',e=>{
   const control=e.target.closest?.('#repeat,#shuffle,#sequential,#dock-close');if(!control)return;
-  queueMicrotask(()=>{if(control.id==='dock-close'){send({type:'close'});return;}send({type:'modes',repeat:document.getElementById('repeat')?.getAttribute('aria-pressed')==='true',shuffle:document.getElementById('shuffle')?.getAttribute('aria-pressed')==='true'});});
+  queueMicrotask(()=>{if(control.id==='dock-close'){send({type:'close'});return;}send({type:'modes',collectionLoop:collectionLoop(),repeat:document.getElementById('repeat')?.getAttribute('aria-pressed')==='true',shuffle:document.getElementById('shuffle')?.getAttribute('aria-pressed')==='true'});});
  });
  window.addEventListener('noa-media-activity',e=>{if(e.detail?.type==='youtube')send({type:'video'});});
  window.addEventListener('noa-app-update',()=>send({type:'update'}));
