@@ -49,12 +49,12 @@ public class NativePlaybackTest {
    d.wait(Until.findObject(By.desc("My Playlist · 이 기기 편집")),10000).click();
    d.wait(Until.findObject(By.desc(java.util.regex.Pattern.compile("1 · .+"))),5000).click();
    d.wait(Until.findObject(By.text("아래로 이동")),5000).click();
-   d.findObject(By.text("곡 변경 저장")).click();
+   clickFresh(d,By.text("곡 변경 저장"),5000);
    for(int i=0;i<80&&!items.get(1).mediaId.equals(my.lists("").getJSONArray("items").getJSONObject(0).getJSONArray("tracks").optString(0));i++)SystemClock.sleep(100);
    assertEquals(items.get(1).mediaId,my.lists("").getJSONArray("items").getJSONObject(0).getJSONArray("tracks").getString(0));
-   assertTrue(d.wait(Until.hasObject(By.text("이 기기의 임시 재생목록")),10000));d.wait(Until.findObject(By.desc("My Playlist · 이 기기 편집")),10000).click();d.wait(Until.findObject(By.text("이름 변경")),5000).click();d.wait(Until.findObject(By.clazz("android.widget.EditText")),5000).setText("밤에 듣기");d.findObject(By.text("저장")).click();
+   assertTrue(d.wait(Until.hasObject(By.text("이 기기의 임시 재생목록")),10000));d.wait(Until.findObject(By.desc("My Playlist · 이 기기 편집")),10000).click();d.wait(Until.findObject(By.text("이름 변경")),5000).click();d.wait(Until.findObject(By.clazz("android.widget.EditText")),5000).setText("밤에 듣기");clickFresh(d,By.text("저장"),5000);
    assertNotNull(d.wait(Until.findObject(By.desc("밤에 듣기 편집")),45000));
-   d.findObject(By.desc("새 재생목록")).click();d.wait(Until.findObject(By.clazz("android.widget.EditText")),5000).setText("출근길");d.findObject(By.text("저장")).click();assertNotNull(d.wait(Until.findObject(By.desc("출근길 편집")),45000));
+   d.findObject(By.desc("새 재생목록")).click();d.wait(Until.findObject(By.clazz("android.widget.EditText")),5000).setText("출근길");clickFresh(d,By.text("저장"),5000);assertNotNull(d.wait(Until.findObject(By.desc("출근길 편집")),45000));
    d.findObject(By.res(c.getPackageName(),"noa_nav_music")).click();d.wait(Until.findObject(By.clazz("android.widget.ImageButton").desc(java.util.regex.Pattern.compile(".+ My Playlist 담기"))),10000).click();d.wait(Until.findObject(By.text("출근길")),10000).click();
    for(int i=0;i<100&&my.lists("").getJSONArray("items").getJSONObject(1).getJSONArray("tracks").length()!=1;i++)SystemClock.sleep(100);assertEquals(1,my.lists("").getJSONArray("items").getJSONObject(1).getJSONArray("tracks").length());proof.put("musicTargetPlaylistUi",true);
    d.findObject(By.res(c.getPackageName(),"noa_nav_my")).click();assertNotNull(d.wait(Until.findObject(By.desc("출근길 편집")),45000));
@@ -83,7 +83,7 @@ public class NativePlaybackTest {
    // Hardware/Bluetooth media keys use the same session transport path.
    d.executeShellCommand("input keyevent 127");waitPlaying(p,false);d.executeShellCommand("input keyevent 126");waitPlaying(p,true);proof.put("mediaKeyPauseResume",true);
    main(()->{store.upload(true);p.pause();p.play();});SystemClock.sleep(500);assertFalse("Upload device gate bypassed",playing(p));main(()->{store.upload(false);p.play();});waitPlaying(p,true);proof.put("deviceUploadGate",true);
-   main(()->{p.setShuffleModeEnabled(true);p.setRepeatMode(Player.REPEAT_MODE_OFF);p.seekTo(0,7000);p.pause();store.save(p);});for(int i=0;i<50&&store.position()<6900;i++)SystemClock.sleep(100);assertEquals(2,store.items().size());assertTrue(store.position()>=6900);assertTrue(store.shuffle());proof.put("persistedQueueCount",store.items().size()).put("persistedPositionMs",store.position());
+   main(()->{p.setShuffleModeEnabled(true);p.setRepeatMode(Player.REPEAT_MODE_OFF);p.seekTo(0,7000);p.pause();});for(int i=0;i<100&&(!store.shuffle()||store.position()<6900);i++)SystemClock.sleep(100);assertEquals(2,store.items().size());assertTrue(store.position()>=6900);assertTrue(store.shuffle());proof.put("persistedQueueCount",store.items().size()).put("persistedPositionMs",store.position());
    proof.put("completed",true);
   }finally{d.wakeUp();d.unfreezeRotation();if(!proof.optBoolean("completed"))d.takeScreenshot(new File(c.getExternalFilesDir(null),"noa-android-playing.png"));try(FileWriter out=new FileWriter(new File(c.getExternalFilesDir(null),"noa-native-playback.json"))){out.write(proof.toString());}main(()->{p.pause();p.release();});}
  }

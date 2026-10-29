@@ -18,12 +18,15 @@ public final class PlaybackStateStore {
  public void setClosed(boolean closed){pref.edit().putBoolean("closed",closed).apply();}
  public boolean uploadBlocked(){return pref.getLong("uploadUntil",0)>System.currentTimeMillis();}
  public void upload(boolean busy){pref.edit().putLong("uploadUntil",busy?System.currentTimeMillis()+15000:0).apply();}
- public void save(Player p){
+ public void save(Player p){save(p,false);}
+ public void saveNow(Player p){save(p,true);}
+ private void save(Player p,boolean durable){
   if(p.getMediaItemCount()==0)return;
   try{JSONArray queue=new JSONArray();int mapped=0;int index=p.getCurrentMediaItemIndex();
    for(int i=0;i<Math.min(p.getMediaItemCount(),500);i++){MediaItem m=p.getMediaItemAt(i);if(m.localConfiguration==null||!NoaMediaPolicy.audio(m.localConfiguration.uri.toString()))continue;if(i<index)mapped++;JSONObject row=new JSONObject().put("id",m.mediaId).put("url",m.localConfiguration.uri.toString()).put("title",String.valueOf(m.mediaMetadata.title)).put("art",m.mediaMetadata.artworkUri==null?"":m.mediaMetadata.artworkUri.toString());queue.put(row);}
    if(queue.length()==0)return;
-   pref.edit().putString("queue",queue.toString()).putInt("index",Math.min(mapped,queue.length()-1)).putLong("position",Math.max(0,p.getCurrentPosition())).putBoolean("shuffle",p.getShuffleModeEnabled()).putInt("repeat",p.getRepeatMode()).apply();
+   SharedPreferences.Editor edit=pref.edit().putString("queue",queue.toString()).putInt("index",Math.min(mapped,queue.length()-1)).putLong("position",Math.max(0,p.getCurrentPosition())).putBoolean("shuffle",p.getShuffleModeEnabled()).putInt("repeat",p.getRepeatMode());
+   if(durable)edit.commit();else edit.apply();
   }catch(JSONException ignored){}
  }
  public List<MediaItem> items(){List<MediaItem> out=new ArrayList<>();try{JSONArray rows=new JSONArray(pref.getString("queue","[]"));for(int i=0;i<Math.min(rows.length(),500);i++){JSONObject r=rows.getJSONObject(i);if(!NoaMediaPolicy.audio(r.optString("url")))continue;MediaMetadata.Builder md=new MediaMetadata.Builder().setTitle(r.optString("title")).setArtist("AI Artist Noa");if(NoaMediaPolicy.artwork(r.optString("art")))md.setArtworkUri(Uri.parse(r.optString("art")));out.add(new MediaItem.Builder().setMediaId(r.optString("id")).setUri(r.getString("url")).setMediaMetadata(md.build()).build());}}catch(JSONException ignored){}return out;}
