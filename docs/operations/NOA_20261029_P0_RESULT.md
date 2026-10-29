@@ -4,7 +4,7 @@
 
 ## 실제 운영에서 확인한 결과
 
-- 기준 운영 커밋: `22b7bb15e04139d5d3dc2f1be8b5c566e99fdbf1` ([PR #282](https://github.com/rucyjeon79/noa-studio/pull/282)). 기존 main의 스크롤 보정과 진행 중인 Android PR #281을 보존했다.
+- 기준 운영 커밋: `22b7bb15e04139d5d3dc2f1be8b5c566e99fdbf1` ([PR #282](https://github.com/rucyjeon79/noa-studio/pull/282)). 기존 main의 스크롤 보정과 감사 시작 당시 진행 중인 Android PR #281을 보존했다.
 - [운영 감사 Run 40813209671](https://github.com/rucyjeon79/noa-studio/actions/runs/40813209671): 2026-10-29 12:38 KST, SQL·N80·큐 조회 성공. 감사 DB 쓰기 0, 서비스 파일 쓰기 0.
 - [배포 Run 40813209675](https://github.com/rucyjeon79/noa-studio/actions/runs/40813209675): PHP 8.2, Chromium/WebKit 검증 후 실제 배포 성공. 바뀐 서비스 파일은 `noa-app/p0-player.js` 하나다. 보호 파일 10개 동일, 회원 변경·포인트 차감·DB 쓰기 모두 0.
 - 배포 전 감사 대상 25개 파일 중 24개 일치, 플레이어 1개가 이전본이었다. 배포 후 해당 파일을 공개 HTTP로 별도 읽어 SHA256 `c1dc07ee1d3d16a1e02d08ad1ff6e18dac55549f258a15a533ba04e2a6afd301`, 11,887바이트 일치를 확인했다. 이 결과는 파일 배포 정합성이지 전체 기능 통과율이 아니다.
@@ -29,7 +29,7 @@
 | UI/UX·모바일 | `deploy/noa-ui.css`, `noa-ui.js`, `noa-app/p0-media.css` | 주요 8개 화면 | 플레이어 격리 화면 10개 크기×2테마 통과. 390px 이미지 시각 확인. 전체 운영 관리자·태블릿 검수 미완료 |
 | MUSIC·YouTube 분류 | `deploy/noa-browse.js`, `bridge/category-order-store.php` | `/noa-music.php`, `/noa-youtube.php` | 운영 코드 해시 일치. 격리 분류·정렬 회귀 통과. 실제 회원 전체 콘텐츠 재시험 필요 |
 | JUKEBOX 페이지 이동 | `deploy/noa-app/p0-player.js` | `/noa-music.php` → `/` | 오류 수정·배포 완료. 격리 실제 오디오로 이동·뒤로가기 연속 재생 확인. 운영 회원 브라우저 재현 검사는 별도 필요 |
-| JUKEBOX 잠금·백그라운드 | 동일 파일, `android/` | `/noa-music.php` | 확인 불가/진행. 실제 iOS·Android 기기 검증을 데스크톱 WebKit 검사로 대체하지 않음. PR #281 담당 작업 보존 |
+| JUKEBOX 잠금·백그라운드 | 동일 파일, `android/` | `/noa-music.php` | 확인 불가/진행. 실제 iOS·Android 기기 검증을 데스크톱 WebKit 검사로 대체하지 않음. PR #281 담당 작업 보존; 후속 운영 배포 결과 별도 확인 |
 | 업로드 FIFO·상태 | `deploy/noa-app/jukebox/queue-core.php`, `operations.php` | `/noa-app/jukebox/` | 운영 대기 0·처리 중 0·ready 242·failed 3. 기존 실패를 이번 실행에서 복구 완료로 처리하지 않음. 신규 실음원 업로드 시험 안 함 |
 | HOME | `deploy/noa-app/home.php`, `deploy/noa-home.js` | `/` | 비회원 실제 카드·추천·목록 로드 확인. 전체 순위 정확성/모든 링크 검수 미완료 |
 | NOA WORLD | `deploy/noa-world.php` | `/noa-world.php` | 코드 일치. 모든 실제 YouTube 영상 재생·중복 검수 미완료 |
@@ -52,7 +52,7 @@
 - 기존 Approved UI 검사: 비회원 요청으로 회원 전용 MUSIC의 `const records`를 찾다 실패한다. [실패 Run 40812330866](https://github.com/rucyjeon79/noa-studio/actions/runs/40812330866). 접근 권한을 풀거나 실패를 성공으로 바꾸지 않았다. 활성 구독 임시 QA 계정과 정리 검사를 갖춘 회원 검증으로 교체해야 한다.
 - 가입 경로: 기존 승인 소스는 `/bbs/register.php`를 `/noa-creator-apply.php`로 보낸다. 검사도 정확한 경로·동일 호스트를 확인하도록 수정했다. 로컬 후속 읽기에서 503 응답을 한 번 관찰했다. 이후 main의 [품질 검사 Run 40813209664](https://github.com/rucyjeon79/noa-studio/actions/runs/40813209664)에서 18개 공개·보호 경로와 실제 MP3/단일 MySQL 재생 집계 검사가 통과했다. 일시 오류의 장기 안정성은 별도 관찰이 필요하다.
 - 원본 대조 차이 3건: 필드별 수정 이력과 최신 원본을 확인한 후 보존/복원 결정. 원본 없는 정보는 외부 원본 확보 전까지 확인 불가.
-- 다른 Work: Android PR #281은 진행 중이며 이번 작업에서 병합하거나 수정하지 않았다.
+- 다른 Work: 감사 시작 당시 Android PR #281이 진행 중이었다. 이후 다른 Work에서 `8baeb6b`로 병합했고, 계정 응답 개선 `1e35ed1`도 main에 추가된 것을 확인했다. 이번 작업에서 그 변경을 덮어쓰지 않았다. 그 배포 결과는 이 플레이어 배포 증거와 구분한다.
 - N80의 완료 이벤트는 발행하지 않는다. 플레이어 수정 배포와 감사는 마지막 성공 단계이며, 회원 실제 운영 시험·AI 준비·원본 전체 대조·성능 및 실제 기기 검증부터 이어간다.
 
 ## 검증과 백업
