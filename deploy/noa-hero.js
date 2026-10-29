@@ -15,7 +15,7 @@
   const heading=picks.parentElement.querySelector('h2');if(heading)heading.textContent=displayName(names[genre]||genre)+' 추천 음악';
   const render=rows=>{if(art?.dataset.genre!==genre)return;const items=rows.length?rows:[{title:displayName(names[genre]||genre)+' 음악 만나기',href:'/noa-youtube.php?genre='+encodeURIComponent(genre),thumbnail:browse?.genreArt?.(genre),comingSoon:true}];
    picks.replaceChildren(...items.slice(0,4).map(row=>{const a=document.createElement('a');a.className='noa-hero-pick';a.href=row.href;a.dataset.genre=genre;const img=document.createElement('img');img.src=row.thumbnail;img.alt='';img.loading='lazy';const span=document.createElement('span'),title=document.createElement('strong'),note=document.createElement('small');title.textContent=String(row.title).replace(/^[\s▪︎•]+/u,'').split('「')[0].trim();a.setAttribute('aria-label',row.title);note.textContent=row.comingSoon?'공개 준비 중':'추천 음악';span.append(note,title);a.append(img,span);return a;}));window.dispatchEvent(new Event('noa-hero-picks'));};
-  render([]);recommendations??=fetch('/noa-bridge/home.php',{credentials:'same-origin',cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).catch(()=>({}));recommendations.then(data=>render(data.genreFeatured?.[genre]||[]));
+  render([]);recommendations??=(window.NoaHomeSnapshot??=fetch('/noa-bridge/home.php',{credentials:'same-origin',cache:'no-store'}).then(async r=>{if(!r.ok)throw Error();const data=await r.json();if(!data.ok)throw Error();return data;})).catch(()=>({}));recommendations.then(data=>render(data.genreFeatured?.[genre]||[]));
  }
  function choose(genre,variant='a'){
   generation++;const base=(browse?.genreArt?.(genre)||'/noa-assets/splash/kpop-original-g2-a.jpg').replace(/-a\.jpg$/,'-'+variant);
