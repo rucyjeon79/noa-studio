@@ -21,3 +21,5 @@ test('native next-track selection reuses PWA selection and never pauses the engi
 test('video and preview audio keep their browser implementation and claim audio focus',async()=>{const a=app(),preview=new a.Media('preview');assert.equal(await preview.play(),'web');assert.equal(preview.webStarts,1);assert.equal(a.messages[0].type,'video');});
 test('stale previous-track updates cannot undo a user selection',async()=>{const a=app();await a.audio.play();a.state({key:a.rows[1].dataset.key});assert.equal(a.context.selected,a.rows[0]);});
 test('adapter contains no replacement navigation, hidden PWA controls or fabricated sorting',()=>{assert.doesNotMatch(script,/createElement\(['"]style|display\s*:\s*none|\.sort\(/);});
+
+test('restored native queue reaches a fresh PWA document in the same order',()=>{const a=app();a.context.selected=null;a.context.activeQueue=null;let filtered=false;a.context.filter=()=>{filtered=true;};a.state();assert.deepEqual(Array.from(a.context.activeQueue),a.rows.map(r=>r.dataset.key));assert.ok(filtered);assert.equal(a.messages.length,0);});

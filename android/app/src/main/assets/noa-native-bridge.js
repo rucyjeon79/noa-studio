@@ -42,6 +42,10 @@
    if(next.key===pendingKey)pendingKey='';
    const previous=snapshot;applying=true;
    try{
+    if(next.key&&!key()&&Array.isArray(next.queue)&&typeof activeQueue!=='undefined'){
+     activeQueue=next.queue.filter(id=>typeof buttons!=='undefined'&&buttons.some(row=>row.dataset.key===id));
+     if(typeof filter==='function')filter();
+    }
     if(next.key&&next.key!==key()){
      // Use the PWA's own selection/rendering path, including its classification UI.
      const row=typeof buttons!=='undefined'?buttons.find(row=>row.dataset.key===next.key):null;
