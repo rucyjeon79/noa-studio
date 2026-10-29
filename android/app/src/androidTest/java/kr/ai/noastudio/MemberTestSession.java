@@ -19,8 +19,8 @@ final class MemberTestSession {
             cookie=n>0?new String(bytes,0,n,StandardCharsets.UTF_8).trim():"";
         }
         if(!cookie.matches("PHPSESSID=[A-Za-z0-9,-]{16,128}"))throw new AssertionError("QA session unavailable");
-        // Only music requests use this member. Existing guest-playlist UI tests remain guest tests.
-        String[] paths={"/noa-bridge/catalog.php","/noa-app/jukebox/","/data/noa-audio/"};
+        // The same isolated authenticated session covers the production PWA and native media.
+        String[] paths={"/"};
         CountDownLatch latch=new CountDownLatch(paths.length);
         for(String path:paths) InstrumentationRegistry.getInstrumentation().runOnMainSync(()->
             CookieManager.getInstance().setCookie("https://noastudio.ai.kr"+path,cookie+"; Path="+path+"; Secure; HttpOnly",ok->latch.countDown()));
@@ -28,3 +28,4 @@ final class MemberTestSession {
         CookieManager.getInstance().flush();
     }
 }
+
