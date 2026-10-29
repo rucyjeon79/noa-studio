@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.*;
 import android.webkit.*;
+import android.webkit.CookieManager;
 import android.widget.Toast;
 import androidx.webkit.WebViewCompat;
 import androidx.webkit.WebViewFeature;
@@ -116,6 +117,8 @@ public class MainActivity extends Activity {
    long position=current!=null&&current.mediaId.equals(selected.optString("key"))?controller.getCurrentPosition():0;
    playbackStore.setClosed(false);boolean same=controller.getMediaItemCount()==items.size()&&current!=null&&current.mediaId.equals(selected.optString("key"));for(int i=0;same&&i<items.size();i++)same=controller.getMediaItemAt(i).mediaId.equals(items.get(i).mediaId);if(!same)controller.setMediaItems(items,index,position);controller.setRepeatMode(message.optBoolean("repeat")?Player.REPEAT_MODE_ONE:Player.REPEAT_MODE_OFF);controller.setShuffleModeEnabled(message.optBoolean("shuffle"));controller.setVolume((float)Math.max(0,Math.min(1,message.optDouble("volume",.7))));if(controller.getPlaybackState()==Player.STATE_IDLE)controller.prepare();if(play)controller.play();else controller.pause();return;
   }
+  if(type.equals("close")){pending=null;playbackStore.setClosed(true);}
+  if((type.equals("pause")||type.equals("video"))&&pending!=null)try{pending.put("type","prepare");}catch(JSONException ignored){}
   if(controller==null)return;
   switch(type){
    case "pause":case "video":controller.pause();break;
@@ -131,7 +134,7 @@ public class MainActivity extends Activity {
  private void publishState(){
   if(controller==null||browser==null||!trusted(browser.getUrl()))return;
   try{MediaItem item=controller.getCurrentMediaItem();JSONArray keys=new JSONArray();for(int i=0;i<controller.getMediaItemCount();i++)keys.put(controller.getMediaItemAt(i).mediaId);
-   JSONObject state=new JSONObject().put("key",item==null?"":item.mediaId).put("queue",keys).put("position",Math.max(0,controller.getCurrentPosition())/1000.0).put("duration",Math.max(0,controller.getDuration())/1000.0).put("paused",!controller.getPlayWhenReady()).put("playing",controller.isPlaying()).put("ended",controller.getPlaybackState()==Player.STATE_ENDED).put("repeat",controller.getRepeatMode()==Player.REPEAT_MODE_ONE).put("shuffle",controller.getShuffleModeEnabled()).put("volume",controller.getVolume()).put("closed",playbackStore.closed()).put("error",controller.getPlayerError()!=null);
+   JSONObject state=new JSONObject().put("key",item==null?"":item.mediaId).put("queue",keys).put("position",Math.max(0,controller.getCurrentPosition())/1000.0).put("duration",Math.max(0,controller.getDuration())/1000.0).put("paused",!controller.getPlayWhenReady()||controller.getPlaybackState()==Player.STATE_ENDED).put("playing",controller.isPlaying()).put("ended",controller.getPlaybackState()==Player.STATE_ENDED).put("repeat",controller.getRepeatMode()==Player.REPEAT_MODE_ONE).put("shuffle",controller.getShuffleModeEnabled()).put("volume",controller.getVolume()).put("closed",playbackStore.closed()).put("error",controller.getPlayerError()!=null);
    browser.evaluateJavascript("window.NoaNativeBridge?.state("+state+");",null);
   }catch(JSONException ignored){}
  }
