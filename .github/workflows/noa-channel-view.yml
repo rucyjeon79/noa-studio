@@ -1,0 +1,86 @@
+name: NOA public channel view and transparency
+on:
+  pull_request:
+    paths: ['bridge/channel-view.php','bridge/creator*.php','deploy/noa-channel-view.*','deploy/noa-channel.php','deploy/noa-creator*','tests/channel-view/**','scripts/noa_channel_view*','scripts/qa/noa-channel-view*.mjs','.github/workflows/noa-channel-view.yml']
+  push:
+    branches: [main]
+    paths: ['bridge/channel-view.php','deploy/noa-channel-view.*','tests/channel-view/**','scripts/noa_channel_view*','scripts/qa/noa-channel-view*.mjs','.github/workflows/noa-channel-view.yml']
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: isolated-noa-ci, MYSQL_DATABASE: noa_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -pisolated-noa-ci" --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      NOA_MYSQL_DSN: 'mysql:host=127.0.0.1;port=3306;dbname=noa_test;charset=utf8mb4'
+      NOA_MYSQL_USER: root
+      NOA_MYSQL_PASSWORD: isolated-noa-ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'pdo_mysql,pdo_sqlite,mbstring,fileinfo,gd,openssl'}
+      - name: Check owner, media, AI entitlement and hierarchy boundaries
+        run: |
+          for f in bridge/channel-view.php bridge/creator*.php deploy/noa-channel*.php deploy/noa-creator.php deploy/noa-creator-symbol.php scripts/noa_channel_view_audit.php; do php -l "$f"; done
+          for f in deploy/noa-channel*.js deploy/noa-creator.js deploy/noa-browse-edit.js; do node --check "$f"; done
+          node tests/explorer/tree_test.cjs
+          php tests/channel-view/core_test.php
+          php tests/member/access_test.php
+          php tests/member/mysql_test.php
+          php tests/creator/mysql_test.php
+          php tests/explorer/seed.php
+          python tests/creator/fixture.py
+          python tests/channel-view/fixture.py
+          php tests/channel-view/seed.php
+          python scripts/qa/noa-qa-font.py
+          npm install --prefix "$RUNNER_TEMP/channel-view" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-channel-view.mjs "$RUNNER_TEMP/channel-view/check.mjs"
+          php -S 127.0.0.1:18080 -t /tmp/noa-creator-site > "$RUNNER_TEMP/channel-view-php.log" 2>&1 &
+      - name: Verify transparent uploads, persisted background, public taxonomy and layouts
+        run: node "$RUNNER_TEMP/channel-view/check.mjs"
+      - name: Preserve isolated diagnostics
+        if: always()
+        run: mkdir -p channel-view-proof/candidate; cp "$RUNNER_TEMP/channel-view-php.log" channel-view-proof/candidate/php.log || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-channel-view-candidate-${{ github.run_id }}', path: 'channel-view-proof/candidate/', retention-days: 7}
+  deploy:
+    if: github.event_name == 'push'
+    needs: verify
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - run: python -m pip install 'paramiko>=3,<5'
+      - name: Prepare production browser inspection
+        run: |
+          python scripts/qa/noa-qa-font.py
+          npm install --prefix "$RUNNER_TEMP/channel-view" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-channel-view-live.mjs "$RUNNER_TEMP/channel-view/live.mjs"
+      - name: Activate dependency-first sources with exact preimage guards
+        run: python scripts/noa_channel_view_release.py
+      - name: Verify deployed public channel and ownership without data mutation
+        run: |
+          python scripts/noa_channel_view_audit.py
+          node "$RUNNER_TEMP/channel-view/live.mjs"
+      - name: Roll back owned source files if acceptance fails
+        if: failure()
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then python scripts/noa_channel_view_release.py rollback; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-channel-view-live-${{ github.run_id }}', path: "channel-view-proof/\nainoa-proof/deployment.json", retention-days: 7}

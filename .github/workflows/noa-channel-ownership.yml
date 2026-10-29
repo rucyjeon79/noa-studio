@@ -41,7 +41,7 @@ jobs:
         if: always()
         with: {name: 'noa-channel-candidate-${{ github.run_id }}', path: 'member-proof/candidate/', retention-days: 7}
   deploy:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[channel-view-release]')
     needs: verify
     environment: production
     runs-on: ubuntu-latest

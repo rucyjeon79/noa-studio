@@ -23,7 +23,7 @@ try{
   $previous=nc_row($db,nc_channel_key($actor));if(!$previous||!nam_owner($previous['document'],$member))throw new DomainException('create_channel_first');
   $revision=filter_var($_POST['revision']??'',FILTER_VALIDATE_INT);if($revision===false||$revision!==$previous['revision'])throw new DomainException('revision_conflict');
   require_once __DIR__.'/creator-enrollment-core.php';$symbol=nce_symbol_upload($_FILES['symbol']??[]);if($symbol==='')throw new InvalidArgumentException('invalid_symbol');
-  try{$d=$previous['document'];$d['symbol']=$symbol;$next=nc_store($db,nc_channel_key($actor),'prefs',$d,$revision,$actor);}catch(Throwable $e){unlink(nce_root().'/symbols/'.$symbol.'.jpg');throw $e;}nc_reply(200,['revision'=>$next]);
+  try{$d=$previous['document'];$d['symbol']=$symbol;$next=nc_store($db,nc_channel_key($actor),'prefs',$d,$revision,$actor);}catch(Throwable $e){$newFile=nce_symbol_file($symbol);if($newFile)unlink($newFile['path']);throw $e;}nc_reply(200,['revision'=>$next]);
  }
  $raw=file_get_contents('php://input',false,null,0,262145);if(strlen($raw)>262144)nc_reply(413,['error'=>'request_too_large']);$b=json_decode($raw,true,32,JSON_THROW_ON_ERROR);if(!is_array($b))throw new InvalidArgumentException('invalid_request');
  if($action==='channel'){$previous=nc_row($db,nc_channel_key($actor));$d=array_replace($previous['document']??[],nc_channel($b),['ownerId'=>$actor,'channelId'=>hash('sha256',$actor)]);$revision=$b['revision']??null;if(!is_int($revision)||$revision<0)throw new InvalidArgumentException('revision_required');$next=nc_store($db,nc_channel_key($actor),'prefs',$d,$revision,$actor);nc_reply(200,['revision'=>$next]);}
