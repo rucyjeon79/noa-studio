@@ -56,6 +56,17 @@ try{for(const width of [360,1280]){
  assert.equal(await page.locator('#jukebox-transfer-dock').isVisible(),false);
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('noa-jukebox-reservations-v1'))[0].uploadId),saved.uploadId);
  assert.deepEqual(errors,[]);
+ // Reproduce a large library with hundreds of old phone reservations.
+ const elapsed=await page.evaluate(async()=>{
+  const main=document.querySelector('main'),template=main.querySelector('article'),rows=[];
+  for(let i=0;i<600;i++){const card=template.cloneNode(true);card.dataset.jukeboxKey='large:'+i;main.append(card);rows.push({id:'large:'+i,key:'large:'+i,filename:'old.wav',owner:'closed',state:'waiting'});}
+  localStorage.setItem('noa-jukebox-reservations-v1',JSON.stringify(rows));
+  const start=performance.now();window.dispatchEvent(new Event('online'));
+  while(document.querySelector('.jukebox-transfer-check').disabled)await new Promise(r=>setTimeout(r,20));
+  await new Promise(requestAnimationFrame);return performance.now()-start;
+ });
+ assert(elapsed<8000,'large library blocked for '+elapsed+'ms');
+ console.log('LARGE_RESERVATION_RENDER_OK',JSON.stringify({width,rows:600,elapsedMs:Math.round(elapsed)}));
  console.log('READY_RESERVATION_HIDDEN_OK',JSON.stringify({width,metadataPreserved:true,live:!!process.env.NOA_BUTTONS_LIVE}));
  console.log('UPLOAD_BUTTONS_OK',JSON.stringify({width,queue,init,finish,cancel,sameFileResume:true,cancelAfterPolling:true,live:!!process.env.NOA_BUTTONS_LIVE}));await context.close();
 }}finally{await browser.close();}
