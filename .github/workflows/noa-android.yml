@@ -102,7 +102,10 @@ jobs:
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
         run: |
           if [ -f "$RUNNER_TEMP/noa-android-qa-state.json" ]; then
-            python3 scripts/noa_android_member_qa.py cleanup
+            for attempt in 1 2 3; do
+              if python3 scripts/noa_android_member_qa.py cleanup; then break; fi
+              if [ "$attempt" = 3 ]; then exit 1; fi
+            done
           fi
       - name: Retain device verification
         if: always()
