@@ -19,7 +19,7 @@ final class NativeSession {
         if (!value.isEmpty()) connection.setRequestProperty("Cookie",value);
     }
     static OkHttpClient mediaClient() {
-        return new OkHttpClient.Builder().followRedirects(false).followSslRedirects(false)
+        return new OkHttpClient.Builder().connectTimeout(20,java.util.concurrent.TimeUnit.SECONDS).readTimeout(30,java.util.concurrent.TimeUnit.SECONDS).followRedirects(false).followSslRedirects(false)
             .addInterceptor(chain -> {
                 String url=chain.request().url().toString();
                 if (!NoaMediaPolicy.audio(url)) throw new java.io.IOException("Untrusted audio origin");
