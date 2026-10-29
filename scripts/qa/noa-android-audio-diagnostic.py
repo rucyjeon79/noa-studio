@@ -6,6 +6,11 @@ import noa_android_member_qa as qa
 try:
     qa.main('prepare')
     cookie=qa.COOKIE.read_text()
+    state=json.loads(qa.STATE.read_text())
+    status,body=qa.request(urllib.request.build_opener(),'/'+state['helper'],json.dumps({'action':'subscription_state','owner':0}).encode(),{'X-NOA-QA':state['token'],'Content-Type':'application/json'})
+    print('QA_ENTITLEMENT '+body.decode())
+    qa.control(state,'subscription_fixture',active=True)
+
     def probe(url, agent):
         req=urllib.request.Request(url,headers={'Cookie':cookie,'Range':'bytes=0-0','User-Agent':agent,'Cache-Control':'no-cache'})
         try:
