@@ -1,0 +1,545 @@
+{
+  "audit": {
+    "commit": "22b7bb15e04139d5d3dc2f1be8b5c566e99fdbf1",
+    "runUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40813209671",
+    "checkedAtUTC": "2026-10-29T03:38:02Z",
+    "databaseWrites": 0,
+    "applicationFilesWritten": 0,
+    "completionClaimed": false,
+    "runtimeFiles": [
+      {
+        "source": "deploy/noa-app/engine/work-state.php",
+        "url": "https://***.ai.kr/noa-app/engine/work-state.php",
+        "sourceSha256": "890246cb3a229fd4c5179a86110bbd0e9b105ba77f78e6eeb44b613d00b9b998",
+        "operatingSha256": "890246cb3a229fd4c5179a86110bbd0e9b105ba77f78e6eeb44b613d00b9b998",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-app/home.php",
+        "url": "https://***.ai.kr/noa-app/home.php",
+        "sourceSha256": "baa7f2a3a0d380cb4f086a27f71177b169095c69db9aad79f7c65ce4be2b2097",
+        "operatingSha256": "baa7f2a3a0d380cb4f086a27f71177b169095c69db9aad79f7c65ce4be2b2097",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-app/jukebox/core.php",
+        "url": "https://***.ai.kr/noa-app/jukebox/core.php",
+        "sourceSha256": "1a869b6c5c27d815980557fcec1011f18982cf7e149a056444db30095fda8587",
+        "operatingSha256": "1a869b6c5c27d815980557fcec1011f18982cf7e149a056444db30095fda8587",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-app/jukebox/operations.php",
+        "url": "https://***.ai.kr/noa-app/jukebox/operations.php",
+        "sourceSha256": "b75d44cccd7e3bdb871661dd27142c5033560928aa9e273012fefc7499c30135",
+        "operatingSha256": "b75d44cccd7e3bdb871661dd27142c5033560928aa9e273012fefc7499c30135",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-app/jukebox/queue-core.php",
+        "url": "https://***.ai.kr/noa-app/jukebox/queue-core.php",
+        "sourceSha256": "207d68ffa729c85e04bfc6c34e3f8eea54583cf9a9578da91934c6a355d10f93",
+        "operatingSha256": "207d68ffa729c85e04bfc6c34e3f8eea54583cf9a9578da91934c6a355d10f93",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-app/jukebox/stream.php",
+        "url": "https://***.ai.kr/noa-app/jukebox/stream.php",
+        "sourceSha256": "fbcf17200e858f10a4891a0f80606c3d4460e86ad8fd191baadff42a070a768f",
+        "operatingSha256": "fbcf17200e858f10a4891a0f80606c3d4460e86ad8fd191baadff42a070a768f",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-app/jukebox/upload.js",
+        "url": "https://***.ai.kr/noa-app/jukebox/upload.js",
+        "sourceSha256": "1fcc9c270892d97b7ce8139f9c7b469909e6a27be376433f1a38aa03416a9398",
+        "operatingSha256": "1fcc9c270892d97b7ce8139f9c7b469909e6a27be376433f1a38aa03416a9398",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-app/jukebox/upload.php",
+        "url": "https://***.ai.kr/noa-app/jukebox/upload.php",
+        "sourceSha256": "0a282e507da73a4ac9490fc481ff3731e241a509b05a1baa4e0b4700a43e22df",
+        "operatingSha256": "0a282e507da73a4ac9490fc481ff3731e241a509b05a1baa4e0b4700a43e22df",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-app/p0-media.css",
+        "url": "https://***.ai.kr/noa-app/p0-media.css",
+        "sourceSha256": "99ac403f0145b929265588d0d7628dd1dc1ffd23bccc9781a0fd66858d3749b9",
+        "operatingSha256": "99ac403f0145b929265588d0d7628dd1dc1ffd23bccc9781a0fd66858d3749b9",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-app/p0-player.js",
+        "url": "https://***.ai.kr/noa-app/p0-player.js",
+        "sourceSha256": "c1dc07ee1d3d16a1e02d08ad1ff6e18dac55549f258a15a533ba04e2a6afd301",
+        "operatingSha256": "399304c092658191c7e995f484686e96e178b46d4da33b0f9b3fc29abe950ada",
+        "state": "different"
+      },
+      {
+        "source": "bridge/ainoa-generation.php",
+        "url": "https://***.ai.kr/noa-bridge/ainoa-generation.php",
+        "sourceSha256": "09ba74027f61debcc0ddb0f0b5cf9b3ca69662799240f5ed5355ee271341486e",
+        "operatingSha256": "09ba74027f61debcc0ddb0f0b5cf9b3ca69662799240f5ed5355ee271341486e",
+        "state": "match"
+      },
+      {
+        "source": "bridge/catalog-store.php",
+        "url": "https://***.ai.kr/noa-bridge/catalog-store.php",
+        "sourceSha256": "d95e2f5cf47a89a09b49619e2e2fdb633126290d7a03060fbfab6e8d213f63b9",
+        "operatingSha256": "d95e2f5cf47a89a09b49619e2e2fdb633126290d7a03060fbfab6e8d213f63b9",
+        "state": "match"
+      },
+      {
+        "source": "bridge/category-order-store.php",
+        "url": "https://***.ai.kr/noa-bridge/category-order-store.php",
+        "sourceSha256": "3da8a20d79c5616bd6d57818ab66cab0da6b659ed15cf552e193d55d7ee32159",
+        "operatingSha256": "3da8a20d79c5616bd6d57818ab66cab0da6b659ed15cf552e193d55d7ee32159",
+        "state": "match"
+      },
+      {
+        "source": "bridge/member-access.php",
+        "url": "https://***.ai.kr/noa-bridge/member-access.php",
+        "sourceSha256": "beea85fbe29924365fa6d7d424197a241de6ae9f6dc3c9cce4246ede346f7610",
+        "operatingSha256": "beea85fbe29924365fa6d7d424197a241de6ae9f6dc3c9cce4246ede346f7610",
+        "state": "match"
+      },
+      {
+        "source": "bridge/music-readmodel.php",
+        "url": "https://***.ai.kr/noa-bridge/music-readmodel.php",
+        "sourceSha256": "d7d186b298bd4790d46cf8e920ea4cd6e51f06f49881141d99fe95333f59e817",
+        "operatingSha256": "d7d186b298bd4790d46cf8e920ea4cd6e51f06f49881141d99fe95333f59e817",
+        "state": "match"
+      },
+      {
+        "source": "bridge/package-record.php",
+        "url": "https://***.ai.kr/noa-bridge/package-record.php",
+        "sourceSha256": "4b5629504a90c2a71a7ad6bdc6b981f68a4d6ce3f9dcfe319e688c8b1567fa2e",
+        "operatingSha256": "4b5629504a90c2a71a7ad6bdc6b981f68a4d6ce3f9dcfe319e688c8b1567fa2e",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-browse-edit.js",
+        "url": "https://***.ai.kr/noa-browse-edit.js",
+        "sourceSha256": "73ccfe17d4ef1573df401c77807da83631d1749947e6aa0fb632c5caa5c66471",
+        "operatingSha256": "73ccfe17d4ef1573df401c77807da83631d1749947e6aa0fb632c5caa5c66471",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-browse.js",
+        "url": "https://***.ai.kr/noa-browse.js",
+        "sourceSha256": "e1603f2e2ce18151ff84d66f852eb7736ce2014e5caa577d932059824e95b713",
+        "operatingSha256": "e1603f2e2ce18151ff84d66f852eb7736ce2014e5caa577d932059824e95b713",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-music.php",
+        "url": "https://***.ai.kr/noa-music.php",
+        "sourceSha256": "c892a8197266b4c028ec6303bd322f8df1aa9c1fcb8e32ab6885b0d6ba0ae339",
+        "operatingSha256": "c892a8197266b4c028ec6303bd322f8df1aa9c1fcb8e32ab6885b0d6ba0ae339",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-my.php",
+        "url": "https://***.ai.kr/noa-my.php",
+        "sourceSha256": "b23cd9daf3fcb1e25c9f38ea80e53c3bc1d1a591372f4e52019032131dff52a6",
+        "operatingSha256": "b23cd9daf3fcb1e25c9f38ea80e53c3bc1d1a591372f4e52019032131dff52a6",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-sitemap.php",
+        "url": "https://***.ai.kr/noa-sitemap.php",
+        "sourceSha256": "a6a63f56eef6b7361bae0bf7e3c81bfd1c74f045ed6edce3a57731b6aa137f68",
+        "operatingSha256": "a6a63f56eef6b7361bae0bf7e3c81bfd1c74f045ed6edce3a57731b6aa137f68",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-ui.css",
+        "url": "https://***.ai.kr/noa-ui.css",
+        "sourceSha256": "8703d94a454f7830deca052278df73cc466380f59d8e133f3c67cfe1fc258988",
+        "operatingSha256": "8703d94a454f7830deca052278df73cc466380f59d8e133f3c67cfe1fc258988",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-ui.js",
+        "url": "https://***.ai.kr/noa-ui.js",
+        "sourceSha256": "5a669d3e6d918c309da4c118f5444aeb523187be997d7598319d7e4855e4e174",
+        "operatingSha256": "5a669d3e6d918c309da4c118f5444aeb523187be997d7598319d7e4855e4e174",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-world.php",
+        "url": "https://***.ai.kr/noa-world.php",
+        "sourceSha256": "c463c291d9a26f05767b034bfdabb6ceee42d783aa6c42a76ad00ca0f35b6ef2",
+        "operatingSha256": "c463c291d9a26f05767b034bfdabb6ceee42d783aa6c42a76ad00ca0f35b6ef2",
+        "state": "match"
+      },
+      {
+        "source": "deploy/noa-youtube.php",
+        "url": "https://***.ai.kr/noa-youtube.php",
+        "sourceSha256": "841d4d392cf6e92e82e72e804019406764ba5a81ed1d3208bca2b47d1fc1c2d4",
+        "operatingSha256": "841d4d392cf6e92e82e72e804019406764ba5a81ed1d3208bca2b47d1fc1c2d4",
+        "state": "match"
+      }
+    ],
+    "database": {
+      "documents": 666,
+      "kinds": {
+        "story": 87,
+        "playlist": 59,
+        "single": 520
+      },
+      "tableEngines": {
+        "noa_catalog_sources": "InnoDB",
+        "noa_catalog_tracks": "InnoDB",
+        "noa_catalog_versions": "InnoDB",
+        "noa_document_history": "InnoDB",
+        "noa_documents": "InnoDB",
+        "noa_jukebox_audio_jobs": "InnoDB",
+        "noa_jukebox_uploads": "InnoDB",
+        "noa_source_files": "InnoDB"
+      },
+      "catalogBatch": "fb703509476f70e51f0d989e94da12d96129fe1655cc5223744a10b97026b8ea",
+      "catalogRecords": 669,
+      "fieldStats": {
+        "title": {
+          "present": 666,
+          "missing": 0,
+          "blankPrimary": 0,
+          "alternatePresent": 665,
+          "catalogDifferent": 2,
+          "notApplicable": 0
+        },
+        "ep": {
+          "present": 520,
+          "missing": 146,
+          "blankPrimary": 4,
+          "alternatePresent": 0,
+          "catalogDifferent": 0,
+          "notApplicable": 0
+        },
+        "act": {
+          "present": 52,
+          "missing": 614,
+          "blankPrimary": 4,
+          "alternatePresent": 0,
+          "catalogDifferent": 0,
+          "notApplicable": 0
+        },
+        "genre": {
+          "present": 666,
+          "missing": 0,
+          "blankPrimary": 0,
+          "alternatePresent": 0,
+          "catalogDifferent": 0,
+          "notApplicable": 0
+        },
+        "vocal": {
+          "present": 534,
+          "missing": 73,
+          "blankPrimary": 591,
+          "alternatePresent": 518,
+          "catalogDifferent": 1,
+          "notApplicable": 59
+        },
+        "originalArtist": {
+          "present": 6,
+          "missing": 34,
+          "blankPrimary": 34,
+          "alternatePresent": 0,
+          "catalogDifferent": 0,
+          "notApplicable": 626
+        },
+        "lyrics": {
+          "present": 604,
+          "missing": 3,
+          "blankPrimary": 0,
+          "alternatePresent": 0,
+          "catalogDifferent": 1,
+          "notApplicable": 59
+        },
+        "lyricsTranslation": {
+          "present": 0,
+          "missing": 607,
+          "blankPrimary": 0,
+          "alternatePresent": 0,
+          "catalogDifferent": 0,
+          "notApplicable": 59
+        },
+        "songDescription": {
+          "present": 486,
+          "missing": 180,
+          "blankPrimary": 1,
+          "alternatePresent": 483,
+          "catalogDifferent": 0,
+          "notApplicable": 0
+        },
+        "sunoStyle": {
+          "present": 479,
+          "missing": 128,
+          "blankPrimary": 42,
+          "alternatePresent": 0,
+          "catalogDifferent": 0,
+          "notApplicable": 59
+        },
+        "productionPrompt": {
+          "present": 0,
+          "missing": 607,
+          "blankPrimary": 0,
+          "alternatePresent": 0,
+          "catalogDifferent": 0,
+          "notApplicable": 59
+        },
+        "imagePrompt": {
+          "present": 565,
+          "missing": 101,
+          "blankPrimary": 101,
+          "alternatePresent": 0,
+          "catalogDifferent": 0,
+          "notApplicable": 0
+        },
+        "characterPrompt": {
+          "present": 0,
+          "missing": 666,
+          "blankPrimary": 0,
+          "alternatePresent": 0,
+          "catalogDifferent": 0,
+          "notApplicable": 0
+        },
+        "sunoUrl": {
+          "present": 495,
+          "missing": 171,
+          "blankPrimary": 1,
+          "alternatePresent": 493,
+          "catalogDifferent": 0,
+          "notApplicable": 0
+        },
+        "youtubeUrl": {
+          "present": 429,
+          "missing": 237,
+          "blankPrimary": 237,
+          "alternatePresent": 0,
+          "catalogDifferent": 1,
+          "notApplicable": 0
+        },
+        "youtubeTitle": {
+          "present": 649,
+          "missing": 17,
+          "blankPrimary": 17,
+          "alternatePresent": 0,
+          "catalogDifferent": 0,
+          "notApplicable": 0
+        },
+        "youtubeDescription": {
+          "present": 651,
+          "missing": 15,
+          "blankPrimary": 15,
+          "alternatePresent": 0,
+          "catalogDifferent": 381,
+          "notApplicable": 0
+        },
+        "communityPost": {
+          "present": 171,
+          "missing": 495,
+          "blankPrimary": 495,
+          "alternatePresent": 0,
+          "catalogDifferent": 0,
+          "notApplicable": 0
+        },
+        "cardImage": {
+          "present": 511,
+          "missing": 155,
+          "blankPrimary": 155,
+          "alternatePresent": 0,
+          "catalogDifferent": 445,
+          "notApplicable": 0
+        },
+        "mp3": {
+          "present": 157,
+          "missing": 509,
+          "blankPrimary": 509,
+          "alternatePresent": 0,
+          "catalogDifferent": 0,
+          "notApplicable": 0
+        },
+        "playlistMembership": {
+          "present": 585,
+          "missing": 81,
+          "blankPrimary": 0,
+          "alternatePresent": 0,
+          "catalogDifferent": 0,
+          "notApplicable": 0
+        },
+        "sortOrder": {
+          "present": 0,
+          "missing": 666,
+          "blankPrimary": 0,
+          "alternatePresent": 0,
+          "catalogDifferent": 0,
+          "notApplicable": 0
+        }
+      },
+      "aiSettings": {
+        "textEnabled": false,
+        "keyConfigured": false,
+        "model": "gpt-5-mini",
+        "maxJobUsd": 0,
+        "dailyBudgetUsd": 0,
+        "chatEnabled": false,
+        "chatPoints": null,
+        "videoEnabled": false,
+        "videoKeyConfigured": false
+      }
+    },
+    "sourceComparison": {
+      "matchedDocuments": 653,
+      "missingFields": 0,
+      "differentFields": 3
+    },
+    "n80": {
+      "revision": 24,
+      "allAreasComplete": false,
+      "areas": [
+        {
+          "id": "P0-01",
+          "label": "사이트맵 전체 완성",
+          "status": "in_progress",
+          "note": "운영 사이트맵과 관리자 링크 반영; 권한별 최종 검증 진행",
+          "evidence": []
+        },
+        {
+          "id": "P0-02",
+          "label": "HOME 정상화",
+          "status": "needs_review",
+          "note": "기존 HOME 유지 및 인기 지표 표시 보완; 전체 콘텐츠 검수 남음",
+          "evidence": []
+        },
+        {
+          "id": "P0-03",
+          "label": "MUSIC 정상화",
+          "status": "in_progress",
+          "note": "602곡 순서와 상세 원문 보존; 실제 재생 집계 활성화 검증 진행",
+          "evidence": []
+        },
+        {
+          "id": "P0-04",
+          "label": "YouTube 정상화",
+          "status": "needs_review",
+          "note": "일반 영상과 공식 MV 분리; 제공자 재생 인증 장벽 및 실제 재생 확인 필요",
+          "evidence": []
+        },
+        {
+          "id": "P0-05",
+          "label": "NOA WORLD 정상화",
+          "status": "needs_review",
+          "note": "공식 EP 30개와 ACT 3개 분리; 제공자 재생 확인 필요",
+          "evidence": []
+        },
+        {
+          "id": "P0-06",
+          "label": "JUKEBOX 정상화",
+          "status": "needs_review",
+          "note": "MP3 및 큐 보존; 실제 모바일 기기 잠금 재생 검증 남음",
+          "evidence": []
+        },
+        {
+          "id": "P0-07",
+          "label": "MY 정상화",
+          "status": "in_progress",
+          "note": "기존 개인 목록 보존 및 데스크톱 드래그 추가; 운영 회원 저장 검증 필요",
+          "evidence": []
+        },
+        {
+          "id": "P0-08",
+          "label": "공통 UI/UX",
+          "status": "in_progress",
+          "note": "확정 디자인 재사용; Dark와 Ivory 및 지정 화면 폭 검수 진행",
+          "evidence": []
+        },
+        {
+          "id": "P0-09",
+          "label": "전체 사이트 성능",
+          "status": "in_progress",
+          "note": "YouTube 초기 전체 상세 제거 전후 성능 측정 진행",
+          "evidence": []
+        },
+        {
+          "id": "P0-10",
+          "label": "N80 ENGINE",
+          "status": "in_progress",
+          "note": "기존 엔진 및 단일 상위 작업 승계; MUSIC 실제 ACK와 재요청 검증 진행",
+          "evidence": []
+        },
+        {
+          "id": "P0-11",
+          "label": "자동배포 정상화",
+          "status": "in_progress",
+          "note": "기존 자동배포 재사용; 독립 품질 검사 및 완료 증거 수집 진행",
+          "evidence": []
+        },
+        {
+          "id": "P0-12",
+          "label": "서버·백업·데이터",
+          "status": "needs_review",
+          "note": "기존 SQL Drive 이전과 회수량 증거 유지; 자동 Drive 인증 Secret 누락",
+          "evidence": []
+        }
+      ],
+      "instructionCount": 25
+    },
+    "queue": {
+      "queued": 0,
+      "active": 0,
+      "worker": {
+        "state": "running",
+        "run_id": "40810837915",
+        "last_started": "2026-10-29 12:20:18",
+        "last_seen": "2026-10-29 12:38:08",
+        "last_success": "2026-10-29 12:18:20",
+        "last_finished": "2026-10-29 12:18:20",
+        "watchdog_seen": "2026-10-29 12:37:54",
+        "last_audit": "2026-10-29 12:37:54",
+        "heartbeat_age_seconds": 20
+      },
+      "statuses": {
+        "ready": 242,
+        "failed": 3
+      }
+    },
+    "integrity": {
+      "documents": 817,
+      "documents_sha256": "d754b82a22d06ae9c59fdc9790bb676cb0f920d8916ed98b543834be73968948",
+      "members": 7
+    }
+  },
+  "deployment": {
+    "commit": "22b7bb15e04139d5d3dc2f1be8b5c566e99fdbf1",
+    "changed": [
+      "noa-app/p0-player.js"
+    ],
+    "sha256": {
+      "noa-app/p0-player.js": "c1dc07ee1d3d16a1e02d08ad1ff6e18dac55549f258a15a533ba04e2a6afd301",
+      "noa-launch.js": "2794c0492b3832a378a95ea1a5922ce26a13e8677f755f9ee33078876fc7400e",
+      "noa-music.php": "c892a8197266b4c028ec6303bd322f8df1aa9c1fcb8e32ab6885b0d6ba0ae339"
+    },
+    "protectedUnchanged": 10,
+    "databaseWrites": 0,
+    "memberRowsChanged": 0,
+    "pointDebits": 0,
+    "pricesSeeded": false,
+    "runUrl": "https://github.com/rucyjeon79/noa-studio/actions/runs/40813209675"
+  },
+  "publicReadback": {
+    "status": 200,
+    "sha256": "c1dc07ee1d3d16a1e02d08ad1ff6e18dac55549f258a15a533ba04e2a6afd301",
+    "bytes": 11887
+  },
+  "rollback": {
+    "driveFileId": "1-wVzEEXwJdtcymscJAAfFP-k8iG4QGOY",
+    "sha256": "399304c092658191c7e995f484686e96e178b46d4da33b0f9b3fc29abe950ada",
+    "bytes": 11833,
+    "readbackVerified": true
+  },
+  "completionClaimed": false
+}
