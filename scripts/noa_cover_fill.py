@@ -24,7 +24,7 @@ def main():
      try:
       with urllib.request.build_opener(NoRedirect()).open(req,timeout=60) as r:data=json.load(r)
      except urllib.error.HTTPError as e:
-      try:reason=json.load(e).get('error','control_http_'+str(e.code))
+      try:reason=e.headers.get('X-NOA-Cover-Error') or json.load(e).get('error','control_http_'+str(e.code))
       except Exception:reason='control_http_'+str(e.code)
       raise ValueError(reason) from None
      assert data['ok'];return data
@@ -37,7 +37,7 @@ def main():
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
      for row,meta,info,local,error in pool.map(acquire,rows):
       keyhash=hashlib.sha256(row['key'].encode()).hexdigest()
-      if error:report['unavailable'].append({'keyHash':keyhash,'reason':error});continue
+      if error:report['unavailable'].append({'keyHash':keyhash,'title':row['title'],'sunoUrl':row['sunoUrl'],'reason':error});continue
       relative='cover-repair/'+keyhash+'/'+info['cover_sha256']+'.webp';base='/hosting/noastudio/noa-jukebox-private/media'
       try:
        for folder in [base+'/cover-repair',base+'/cover-repair/'+keyhash]:
@@ -49,7 +49,7 @@ def main():
        if applied['public']:
         with urllib.request.urlopen(applied['coverUrl'],timeout=30) as r:assert hashlib.sha256(r.read()).hexdigest()==info['cover_sha256']
        report['recovered'].append({'keyHash':keyhash,'verified':True})
-      except Exception as e:report['unavailable'].append({'keyHash':keyhash,'reason':type(e).__name__+':'+str(e)[:120]})
+      except Exception as e:report['unavailable'].append({'keyHash':keyhash,'title':row['title'],'sunoUrl':row['sunoUrl'],'reason':type(e).__name__+':'+str(e)[:120]})
       (out/'result.json').write_text(json.dumps(report,indent=2));print('COVER_FILL_PROGRESS',len(report['recovered']),len(report['unavailable']),flush=True)
     after=call({'action':'inventory'});report['after']={k:v for k,v in after.items() if k!='rows'};report['remaining']=len(after['rows'])
    finally:
