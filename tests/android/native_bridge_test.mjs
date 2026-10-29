@@ -8,7 +8,7 @@ function app(){
  class Media{constructor(id){this.id=id;this.muted=false;this.webStarts=0;}play(){this.webStarts++;return Promise.resolve('web');}dispatchEvent(e){events.push(e.type);}}
  const audio=new Media('sound-player'),dock={hidden:true},controls={};
  const rows=['single:jpop:02','single:jpop:01'].map(key=>({dataset:{key}}));
- const window={NoaAndroid:{postMessage(raw){messages.push(JSON.parse(raw));}},addEventListener(){}};window.top=window;
+ const window={NoaAndroid:{postMessage(raw){messages.push(JSON.parse(raw));}},addEventListener(){},setInterval(fn){this.uploadTick=fn;}};window.top=window;
  const context={window,HTMLMediaElement:Media,Event:class{constructor(type){this.type=type;}},selected:rows[0],buttons:rows,queue:()=>rows,repeat:false,shuffle:false,queueMicrotask:fn=>fn(),document:{readyState:'complete',getElementById:id=>id==='sound-player'?audio:controls[id]||null,querySelector:()=>dock,addEventListener(){}}};
  context.select=(row)=>{context.selected=row;audio.pause();audio.load();};vm.runInNewContext(script,context);messages.length=0;
  const state=more=>window.NoaNativeBridge.state({key:rows[0].dataset.key,queue:rows.map(r=>r.dataset.key),position:12,duration:180,paused:false,playing:true,ended:false,volume:.7,closed:false,repeat:false,shuffle:false,error:false,...more});
@@ -23,3 +23,5 @@ test('stale previous-track updates cannot undo a user selection',async()=>{const
 test('adapter contains no replacement navigation, hidden PWA controls or fabricated sorting',()=>{assert.doesNotMatch(script,/createElement\(['"]style|display\s*:\s*none|\.sort\(/);});
 
 test('restored native queue reaches a fresh PWA document in the same order',()=>{const a=app();a.context.selected=null;a.context.activeQueue=null;let filtered=false;a.context.filter=()=>{filtered=true;};a.state();assert.deepEqual(Array.from(a.context.activeQueue),a.rows.map(r=>r.dataset.key));assert.ok(filtered);assert.equal(a.messages.length,0);});
+
+test('PWA upload guard reaches the native engine without adding an upload UI',()=>{const a=app();let active=true;a.context.document.body={classList:{contains:()=>active}};a.window.uploadTick();active=false;a.window.uploadTick();assert.deepEqual(a.messages,[{type:'upload',active:true},{type:'upload',active:false}]);});

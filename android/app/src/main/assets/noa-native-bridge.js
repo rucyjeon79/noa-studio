@@ -2,6 +2,12 @@
 (()=>{'use strict';
  if(window!==window.top||!window.NoaAndroid||window.NoaNativeBridge)return;
  const send=value=>{try{window.NoaAndroid.postMessage(JSON.stringify(value));}catch{}};
+ function uploadState(){
+  let active=!!document.body?.classList.contains('noa-upload-active');
+  try{const state=JSON.parse(localStorage.getItem('noa-jukebox-transferring-v1')||'null');active=active||Object.values(state?.owners||{}).some(at=>Date.now()-at>=0&&Date.now()-at<15000);}catch{}
+  send({type:'upload',active});
+ }
+ window.addEventListener('storage',uploadState);window.setInterval?.(uploadState,3000);
  const originalPlay=HTMLMediaElement.prototype.play;
  let audio=null,applying=false,pendingKey='',snapshot={key:'',position:0,duration:0,paused:true,playing:false,ended:false,volume:.7,closed:true};
  const key=()=>{try{return typeof selected!=='undefined'?selected?.dataset.key||'':'';}catch{return '';}};
@@ -72,5 +78,6 @@
  });
  window.addEventListener('noa-media-activity',e=>{if(e.detail?.type==='youtube')send({type:'video'});});
  window.addEventListener('noa-app-update',()=>send({type:'update'}));
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
+ const boot=()=>{mount();uploadState();if(document.body&&typeof MutationObserver!=='undefined')new MutationObserver(uploadState).observe(document.body,{attributes:true,attributeFilter:['class']});};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

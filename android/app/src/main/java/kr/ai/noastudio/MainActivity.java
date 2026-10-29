@@ -106,6 +106,7 @@ public class MainActivity extends Activity {
  private void nativeMessage(JSONObject message){
   String type=message.optString("type");
   if(type.equals("ready")){ensureCatalog();publishState();return;}
+  if(type.equals("upload")){boolean active=message.optBoolean("active");playbackStore.upload(active);if(active&&controller!=null)controller.pause();return;}
   if(type.equals("update")){appUpdates.check(true);return;}
   if(type.equals("play")||type.equals("prepare")){
    if(controller==null||songs.isEmpty()||!NativeSession.cookie(NativeSession.CATALOG).equals(catalogCookie)){pending=message;ensureCatalog();return;}
