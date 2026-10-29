@@ -1,0 +1,45 @@
+name: NOA signed Android release
+on:
+  push:
+    branches: [main, work/n80-apk-update-20261029]
+    paths: ['.github/workflows/noa-android-signed-release.yml', 'scripts/qa/noa-sign-release.py', 'android/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    concurrency:
+      group: noa-android-signed-release
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Set stable release version
+        run: echo "NOA_RELEASE_VERSION_CODE=$((100000 + GITHUB_RUN_NUMBER))" >> "$GITHUB_ENV"
+      - name: Build release APK and Play bundle
+        working-directory: android
+        run: GITHUB_RUN_NUMBER="$NOA_RELEASE_VERSION_CODE" gradle --no-daemon :app:assembleRelease :app:bundleRelease :app:lintRelease
+      - run: python3 -m pip install --user 'paramiko==3.5.1'
+      - name: Sign with permanent key and verify package, certificate and release variant
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+        run: python3 scripts/qa/noa-sign-release.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NOA-signed-release-${{ env.NOA_RELEASE_VERSION_CODE }}
+          path: release-artifact/
+          if-no-files-found: error
+          retention-days: 90
