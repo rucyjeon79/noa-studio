@@ -54,7 +54,7 @@ try:
  download_candidate=Path('deploy/noa-download.php').read_bytes()
  download_sha=hashlib.sha256(download_candidate).hexdigest()
  before_download=digest(download)
- if before_download not in ('8932f580a08287ab356e93ffbcb135a3ab10b3bea7265d7d6bfbc8aed3771e40',download_sha):raise RuntimeError('Download page conflict; production preserved')
+ if before_download not in ('8932f580a08287ab356e93ffbcb135a3ab10b3bea7265d7d6bfbc8aed3771e40','931c416e50914abb9e609b20a4f99da5eed56656909d60ff18031be20d79e38a',download_sha):raise RuntimeError('Download page conflict; production preserved')
  # Only the reviewed n80 facade may be changed. Any other live version is protected.
  facade=root+'/noa-app/engine/n80.php'
  candidate=Path('deploy/noa-app/engine/n80.php').read_bytes()
