@@ -1,1 +1,2 @@
-(()=>{'use strict';if(document.querySelector('[data-noa-taxonomy-link]'))return;const a=document.createElement('a');a.href='/noa-app/taxonomy/';a.textContent='카테고리·제작 규칙';a.dataset.noaTaxonomyLink='true';a.style.cssText='display:inline-block;padding:12px;margin:12px;color:#d4b66d;background:#17191c;border:1px solid #3b3a34;border-radius:6px';const host=document.querySelector('main')||document.body;host.prepend(a);})();
+/* Creator rules are explicitly linked inside the owner channel menu. */
+(()=>{'use strict';document.querySelectorAll('[data-noa-taxonomy-link]').forEach(a=>a.remove());})();

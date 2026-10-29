@@ -25,14 +25,14 @@
   link.querySelector('.nnt-entry-description').textContent=description;return link;
  }
  function mount(){
-  const settings=$('noa-settings-controls');if(settings&&!$('nnt-settings-link')){const link=entry('알림함 확인 및 휴대폰 알림 설정');link.id='nnt-settings-link';link.classList.add('nnt-settings-link');settings.after(link);}
+  const settings=$('noa-settings-controls');if(settings&&!$('nnt-settings-link')){const link=entry('알림함 확인 및 알림 설정');link.id='nnt-settings-link';link.classList.add('nnt-settings-link');settings.after(link);}
  }
  mount();new MutationObserver(mount).observe(document.body,{childList:true,subtree:true});
  function support(){
   if(/\bwv\b/.test(navigator.userAgent)||window.NoaAndroid)return '설치형 앱에서는 Chrome으로 noastudio.ai.kr/noa-notifications.php를 열어 알림을 켜주세요. 이 앱에서도 알림함은 확인할 수 있어요.';
   const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   if(ios&&!navigator.standalone&&!matchMedia('(display-mode: standalone)').matches)return 'Safari의 공유 메뉴에서 홈 화면에 추가한 뒤, 홈 화면의 NOA STUDIO를 열어 알림을 켜주세요.';
-  if(!isSecureContext||!('Notification' in window)||!('serviceWorker' in navigator)||!('PushManager' in window))return '이 브라우저에서는 휴대폰 알림을 지원하지 않아요. 최신 Chrome 또는 홈 화면에 추가한 Safari에서 설정해 주세요.';
+  if(!isSecureContext||!('Notification' in window)||!('serviceWorker' in navigator)||!('PushManager' in window))return '이 브라우저에서는 알림을 지원하지 않아요. 최신 Chrome 또는 홈 화면에 추가한 Safari에서 설정해 주세요.';
   return '';
  }
  async function hash(value){const a=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value));return [...new Uint8Array(a)].map(b=>b.toString(16).padStart(2,'0')).join('');}
@@ -52,7 +52,7 @@
   for(const item of data.items){
    if(!Number.isSafeInteger(item.id)||!String(item.url).startsWith('/')||String(item.url).startsWith('//'))continue;
    if(document.getElementById('nnt-item-'+item.id))continue;
-   const li=document.createElement('li'),a=document.createElement('a'),text=document.createElement('span'),date=document.createElement('time');li.dataset.kind=item.kind||'system';a.className='nnt-item';a.dataset.read=String(item.read);a.id='nnt-item-'+item.id;a.href=item.url;const tag=document.createElement('small');tag.className='nnt-kind';tag.textContent=(kindNames[item.kind]||'안내')+' · '+(item.read?'확인':'미확인');text.append(tag,document.createTextNode(item.text));date.dateTime=item.at;
+   const li=document.createElement('li'),a=document.createElement('a'),text=document.createElement('span'),date=document.createElement('time');li.dataset.kind=item.kind||'system';a.className='nnt-item';a.dataset.read=String(item.read);a.id='nnt-item-'+item.id;a.href=item.url;const tag=document.createElement('small');tag.className='nnt-kind';tag.textContent=(kindNames[item.kind]||'안내')+' · '+(item.read?'확인':'미확인');text.append(tag);if(item.boardTitle){const board=document.createElement('small');board.className='nnt-board';board.textContent=item.boardTitle;text.append(board);}if(item.postTitle){const title=document.createElement('strong');title.className='nnt-post-title';title.textContent=item.postTitle;text.append(title);}text.append(document.createTextNode(item.text));if(item.excerpt){const excerpt=document.createElement('span');excerpt.className='nnt-excerpt';excerpt.textContent=item.excerpt;text.append(excerpt);}const open=document.createElement('small');open.className='nnt-open';open.textContent=item.kind==='test'?'알림 확인':'내용 · 댓글 · 대댓글 보기';text.append(open);date.dateTime=item.at;
    date.textContent=new Intl.DateTimeFormat('ko-KR',{month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(item.at));text.append(date);a.append(text);li.append(a);const mark=document.createElement('button');mark.type='button';mark.className='nnt-mark';mark.textContent=item.read?'미확인으로':'확인 처리';mark.setAttribute('aria-label',item.text+' '+mark.textContent);mark.onclick=()=>action(async()=>{await request({action:'read',id:item.id,read:!item.read});loadedMore=false;await refresh();message(item.read?'미확인으로 돌렸어요. 나중에 다시 살펴보세요.':'확인한 소식으로 표시했어요.');});li.append(mark);$('nnt-list').append(li);
    a.addEventListener('click',async e=>{if(e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();try{await openThread(item,a);}catch(error){failure(error);}});
   }
@@ -98,11 +98,11 @@
    const permission=Notification.permission==='granted'?Promise.resolve('granted'):Notification.requestPermission();
    action(async()=>{if(await permission!=='granted'){await deviceState();message('알림을 허용하면 휴대폰으로 소식을 받을 수 있어요.');return;}
     await navigator.serviceWorker.register('/noa-sw.js',{scope:'/',updateViaCache:'none'});const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(state.publicKey)});
-    await request({action:'subscribe',subscription:sub.toJSON()});await refresh();message('휴대폰 알림을 켰어요. 테스트 알림으로 연결을 확인할 수 있어요.');
+    await request({action:'subscribe',subscription:sub.toJSON()});await refresh();message('알림을 켰어요. 테스트 알림으로 연결을 확인할 수 있어요.');
    });
   });
   $('nnt-disable').addEventListener('click',()=>action(async()=>{await request({action:'unsubscribe',device});const sub=await subscription();if(sub)await sub.unsubscribe();await refresh();message('이 기기 알림을 껐어요. 알림함에서는 계속 확인할 수 있어요.');}));
-  $('nnt-disable-all').addEventListener('click',()=>action(async()=>{await request({action:'unsubscribe',all:true});if(!support()){const sub=await subscription();if(sub)await sub.unsubscribe();}await refresh();message('모든 기기의 휴대폰 알림을 껐어요.');}));
+  $('nnt-disable-all').addEventListener('click',()=>action(async()=>{await request({action:'unsubscribe',all:true});if(!support()){const sub=await subscription();if(sub)await sub.unsubscribe();}await refresh();message('모든 기기의 알림을 껐어요.');}));
   $('nnt-test').addEventListener('click',()=>action(async()=>{const result=await request({action:'test',device});if(result.queued)$('nnt-delivery').textContent='테스트 알림 발송을 요청했어요. 잠시 후 전달 상태를 확인합니다.';else await refresh();message('테스트 알림은 이 기기에만 보냅니다.');}));
   $('nnt-preferences').addEventListener('submit',e=>{e.preventDefault();action(async()=>{const preferences=Object.fromEntries(['likes','comments','replies'].map(k=>[k,e.target.elements[k].checked]));await request({action:'preferences',preferences});state.preferences=preferences;message('받을 알림 종류를 저장했어요.');});});
   $('nnt-read-all').addEventListener('click',()=>action(async()=>{if(state?.snapshot)await request({action:'read',id:state.snapshot,all:true,filter});loadedMore=false;await refresh();message(filterNames[filter]+' 소식을 모두 확인 처리했어요.');}));

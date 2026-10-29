@@ -116,3 +116,7 @@ nnt_collect($db,time());check(nnt_inbox($db,'qa_admin',0,'posts')['counts']['pos
 $db->exec('DELETE FROM noa_notification_delivery');$db->exec('DELETE FROM noa_push_subscriptions');
 file_put_contents($root.'/notification-shell.php',"<?php require __DIR__.'/common.php';?><!doctype html><html lang=ko><head><meta charset=utf-8><link rel=stylesheet href=/noa-ui.css><link rel=stylesheet href=/noa-ainoa.css><script src=/noa-ainoa.js defer></script></head><body class=noa-page><main><h1>NOA STUDIO</h1></main></body></html>");
 echo "NOTIFICATIONS_MYSQL_PASS\n";
+
+$meta=nnt_preview($db,'qa_admin',$adminPublic);check($meta['boardTitle']==='자유게시판'&&$meta['postTitle']==='자유게시판 제목 1'&&str_contains($meta['excerpt'],'자유게시판 본문 1'),'inbox board and post context');check(!str_contains($meta['excerpt'],'unsafe'),'inbox strips executable content');
+check(nnt_target($db,'board:free:7','qa_b')===null,'foreign secret post denied');check(nnt_target($db,'board:free:7','qa_admin')!==null,'native super-admin secret preview');check(nnt_target($db,'board:certonly:1','qa_b')===null,'uncertified reader denied');check(nnt_target($db,'board:certonly:1','qa_admin')!==null,'native super-admin certified board preview');
+echo "INBOX_CONTEXT_AND_NATIVE_ADMIN_GATES_OK\n";

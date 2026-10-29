@@ -11,3 +11,5 @@
 
 /* MY keeps one full-width activity entry directly above listening history. */
 #noa-my-activity>.nnt-entry{display:flex;width:100%;max-width:none;align-items:center;justify-content:flex-start;text-align:left;gap:16px;padding:16px;box-sizing:border-box}#noa-my-activity>.nnt-entry .nnt-entry-copy{display:grid;flex:1;gap:4px;text-align:left}#noa-my-activity>.nnt-entry>.nnt-badge{flex:none}#noa-my-account>.noa-action-group{margin-top:12px}
+
+.nnt-item .nnt-board{display:block;color:var(--noa-accent);font-weight:600;margin:5px 0}.nnt-post-title{display:block;font-size:16px;line-height:1.5;margin:4px 0;overflow-wrap:anywhere}.nnt-excerpt{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-line;color:var(--noa-muted);line-height:1.6;margin-top:8px}.nnt-open{display:block;margin-top:10px;font-weight:600;color:var(--noa-accent)}.noa-comment-post>small{display:block;color:var(--noa-accent);margin-bottom:8px}.noa-comment-post p{white-space:pre-wrap;overflow-wrap:anywhere}

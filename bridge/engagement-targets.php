@@ -9,11 +9,11 @@ function ne_target(PDO $db,string $type,string $key): array {
  if($type==='board'){
   if(!preg_match('/^([A-Za-z0-9_]{1,20}):([1-9][0-9]{0,9})$/D',$key,$m)||$m[1]==='song_request')throw new DomainException('post_not_available');
   $b=ne_one($db,'SELECT b.*,g.gr_use_access FROM '.ne_table($g5['board_table']).' b JOIN '.ne_table($g5['group_table']).' g ON g.gr_id=b.gr_id WHERE b.bo_table=?',[$m[1]]);
-  // Fail closed for separately certified/group/private boards; their native gates remain authoritative.
-  if(!$b||!empty($b['bo_use_cert'])||!empty($b['gr_use_access'])||(!$access['admin']&&(int)$member['mb_level']<max((int)$b['bo_read_level'],(int)$b['bo_list_level'])))throw new DomainException('post_not_available');
+  // Native super-admin access is retained; other viewers still require the board gates.
+  if(!$b||(!$access['admin']&&(!empty($b['bo_use_cert'])||!empty($b['gr_use_access'])||(int)$member['mb_level']<max((int)$b['bo_read_level'],(int)$b['bo_list_level']))))throw new DomainException('post_not_available');
   $table=ne_table($g5['write_prefix'].$m[1]);$r=ne_one($db,"SELECT wr_id,wr_subject,wr_hit,wr_option,wr_name,wr_content,mb_id FROM $table WHERE wr_id=? AND wr_is_comment=0",[(int)$m[2]]);
-  if(!$r||in_array('secret',explode(',',$r['wr_option']),true))throw new DomainException('post_not_available');
-  return array_replace($base,['entity'=>'board:'.$key,'title'=>html_entity_decode(strip_tags($r['wr_subject']),ENT_QUOTES,'UTF-8'),'author'=>html_entity_decode(strip_tags($r['wr_name']),ENT_QUOTES,'UTF-8'),'authorBadge'=>nmb_lookup((string)($r['mb_id']??''),$db),'body'=>html_entity_decode(strip_tags(preg_replace('~<(script|style)\b[^>]*>.*?</\1>~is','',$r['wr_content'])),ENT_QUOTES,'UTF-8'),'native'=>true,'board'=>$m[1],'id'=>(int)$m[2],'table'=>$table,'views'=>(int)$r['wr_hit'],'canComment'=>$access['admin']||($access['write']&&(int)$member['mb_level']>=(int)$b['bo_comment_level'])]);
+  if(!$r||(in_array('secret',explode(',',$r['wr_option']),true)&&!$access['admin']&&($r['mb_id']===''||$r['mb_id']!==($member['mb_id']??''))))throw new DomainException('post_not_available');
+  return array_replace($base,['entity'=>'board:'.$key,'title'=>html_entity_decode(strip_tags($r['wr_subject']),ENT_QUOTES,'UTF-8'),'author'=>html_entity_decode(strip_tags($r['wr_name']),ENT_QUOTES,'UTF-8'),'authorBadge'=>nmb_lookup((string)($r['mb_id']??''),$db),'body'=>html_entity_decode(strip_tags(preg_replace('~<(script|style)\b[^>]*>.*?</\1>~is','',$r['wr_content'])),ENT_QUOTES,'UTF-8'),'boardTitle'=>html_entity_decode(strip_tags((string)($b['bo_subject']??$m[1])),ENT_QUOTES,'UTF-8'),'native'=>true,'board'=>$m[1],'id'=>(int)$m[2],'table'=>$table,'views'=>(int)$r['wr_hit'],'canComment'=>$access['admin']||($access['write']&&(int)$member['mb_level']>=(int)$b['bo_comment_level'])]);
  }
  if($type==='video'||$type==='playlist'){
   if(!preg_match('/^[A-Za-z0-9_-]{11,100}$/D',$key))throw new DomainException('post_not_available');$run=ny_latest($db);if(!$run)throw new DomainException('post_not_available');
@@ -46,7 +46,7 @@ function ne_stats(PDO $db,array $target,bool $preview=false): array {
  if($target['native'])$comments+=(int)ne_one($db,'SELECT COUNT(*) n FROM '.$target['table']." WHERE wr_parent=? AND wr_is_comment=1 AND FIND_IN_SET('secret',wr_option)=0",[$target['id']])['n'];
  $base=$target['views']??null;
 
- return ['entity'=>$target['entity'],'title'=>$target['title'],'author'=>$target['author']??'','authorBadge'=>$target['authorBadge']??null,'body'=>$preview?($target['body']??''):'','likes'=>count($likes),'comments'=>$comments,'liked'=>isset($likes[$member['mb_id']??'']),'canLike'=>$target['canLike'],'canComment'=>$target['canComment'],'reactionScore'=>count($likes)+$comments,'score'=>$base===null?null:$base+count($likes)+$comments,'rankingNote'=>'좋아요 1점 · 댓글 1점 · 음악 순위는 시간별 반영'];
+ return ['entity'=>$target['entity'],'title'=>$target['title'],'boardTitle'=>$target['boardTitle']??'','author'=>$target['author']??'','authorBadge'=>$target['authorBadge']??null,'body'=>$preview?($target['body']??''):'','likes'=>count($likes),'comments'=>$comments,'liked'=>isset($likes[$member['mb_id']??'']),'canLike'=>$target['canLike'],'canComment'=>$target['canComment'],'reactionScore'=>count($likes)+$comments,'score'=>$base===null?null:$base+count($likes)+$comments,'rankingNote'=>'좋아요 1점 · 댓글 1점 · 음악 순위는 시간별 반영'];
 }
 function ne_comments(PDO $db,array $target,int $page): array {
  global $g5,$member,$is_admin;$offset=max(0,min(10000,$page))*30;$members=ne_table($g5['member_table']);
