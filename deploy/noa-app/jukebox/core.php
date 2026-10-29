@@ -64,9 +64,14 @@ function nj_assets(PDO $db):array{
  try{$out=[];foreach($db->query('SELECT * FROM noa_jukebox_assets') as $r)$out[$r['song_key']]=$r;return $out;}
  catch(PDOException $e){error_log('[jukebox] assets unavailable');return [];}
 }
+/** Cover provenance may be refreshed independently of the preserved audio edition. */
+function nj_asset_source(array $asset,string $type):string{
+ if($type==='cover'){$e=json_decode((string)($asset['source_evidence']??''),true);$url=is_array($e)?($e['coverSourceUrl']??null):null;if(is_string($url)&&noa_sound_suno(['sunoUrl'=>$url])===$url&&$url!=='')return $url;}
+ return (string)($asset['source_url']??'');
+}
 function nj_resolve(array $assets,string $key,string $source,string $type):string{
  $r=$assets[$key]??null;
- return $r&&hash_equals($r['source_url'],$source)&&nj_verified($r,$type)?nj_url($key,$type):'';
+ return $r&&hash_equals(nj_asset_source($r,$type),$source)&&nj_verified($r,$type)?nj_url($key,$type):'';
 }
 function nj_range(?string $header,int $size):array{
  if($size<=0)throw new InvalidArgumentException('empty');
