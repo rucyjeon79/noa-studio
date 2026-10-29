@@ -4,7 +4,7 @@ declare(strict_types=1);
 function noa_music_asset_url(array $assets,string $key,string $source,string $type):string{
  if(!in_array($type,['audio','cover'],true))return '';
  $r=$assets[$key]??null;
- if(!$r||!hash_equals((string)$r['source_url'],$source)||($type==='audio'&&$r['status']!=='ready'))return '';
+ if(!$r||!hash_equals(nj_asset_source($r,$type),$source)||($type==='audio'&&$r['status']!=='ready'))return '';
  $path=nj_file((string)($r[$type.'_path']??''));
  if(!$path||!preg_match('/^[a-f0-9]{64}$/D',(string)($r[$type.'_sha256']??''))||filesize($path)!==(int)($r[$type.'_bytes']??0))return '';
  $mime=(new finfo(FILEINFO_MIME_TYPE))->file($path);

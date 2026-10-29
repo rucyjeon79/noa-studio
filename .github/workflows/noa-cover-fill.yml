@@ -16,6 +16,9 @@ jobs:
         with: {php-version: '8.2', extensions: 'mysqli,pdo_mysql,mbstring,fileinfo,gd'}
       - run: |
           php -l scripts/noa_cover_fill.php
+          php -l deploy/noa-app/jukebox/core.php
+          php -l deploy/noa-app/jukebox/stream.php
+          php tests/cover-source.php
           python -m pip install pillow paramiko
           python -m py_compile scripts/noa_cover_fill.py scripts/noa_cover_style_release.py
           python -m unittest discover -s tests/jukebox -p test_publish.py

@@ -17,12 +17,16 @@ try{
   $db->beginTransaction();$q=$db->prepare('SELECT * FROM noa_jukebox_assets WHERE song_key=? FOR UPDATE');$q->execute([$key]);$old=$q->fetch(PDO::FETCH_ASSOC)?:null;
   $q=$db->prepare('SELECT payload,revision FROM noa_documents WHERE doc_key=? FOR UPDATE');$q->execute([$key]);$current=$q->fetch(PDO::FETCH_ASSOC);$d=json_decode($current['payload'],true);$source=noa_sound_suno($d['body']??[]);
   if($current['revision']!=$input['revision']||$source!==$r['source_url']||!nam_owner($d,['mb_id'=>$owner])||!empty($d['_noaTrash']))throw new DomainException('song_changed');
-  if(($old&&$old['source_url']!==$source)||nj_verified($old,'cover')||noa_sound_cover($d['body']??[]))throw new DomainException('existing_media_preserved');
+  if(($old&&nj_asset_source($old,'cover')===$source&&nj_verified($old,'cover'))||noa_sound_cover($d['body']??[]))throw new DomainException('existing_media_preserved');
   $backup=nce_root().'/cover-before-'.hash('sha256',$key.'|'.$current['revision']).'.json';if(is_link($backup))throw new RuntimeException('unsafe_backup');
   if(!is_file($backup)){$bytes=nce_seal(['key'=>$key,'asset'=>$old,'document'=>$current]);$f=fopen($backup,'xb');if(!$f)throw new RuntimeException('backup_failed');try{chmod($backup,0600);if(fwrite($f,$bytes)!==strlen($bytes))throw new RuntimeException('backup_failed');}finally{fclose($f);}}
   $snapshot=nce_open(file_get_contents($backup));if($snapshot!==['key'=>$key,'asset'=>$old,'document'=>$current])throw new RuntimeException('backup_conflict');
-  nj_import($db,$r);$after=nj_find($db,$key);
-  if($old)foreach(['audio_path','audio_bytes','audio_sha256','source_analysis','correction','final_analysis','status'] as $field)if(($after[$field]??null)!==($old[$field]??null))throw new RuntimeException('audio_preservation_failed');
+  if($old){
+   $evidence=json_decode((string)($old['source_evidence']??'null'),true);if($evidence===null)$evidence=[];if(!is_array($evidence))throw new DomainException('invalid_source_evidence');$evidence['coverSourceUrl']=$source;$evidence['coverSunoId']=$r['suno_id'];
+   $db->prepare('UPDATE noa_jukebox_assets SET cover_path=?,cover_bytes=?,cover_sha256=?,source_evidence=? WHERE song_key=?')->execute([$r['cover_path'],$r['cover_bytes'],$r['cover_sha256'],json_encode($evidence,JSON_THROW_ON_ERROR),$key]);
+   $after=nj_find($db,$key);nup_attach_asset($db,$key,$after);$db->prepare('INSERT INTO noa_jukebox_history(song_key,result) VALUES(?,?)')->execute([$key,json_encode(['action'=>'cover-only-repair','result'=>$r],JSON_THROW_ON_ERROR)]);
+  }else nj_import($db,$r);$after=nj_find($db,$key);
+  if($old)foreach(['source_url','suno_id','suno_title','audio_path','audio_bytes','audio_sha256','source_analysis','correction','final_analysis','status','catalog_context','errors','verified_at'] as $field)if(($after[$field]??null)!==($old[$field]??null))throw new RuntimeException('audio_preservation_failed');
   if(!nj_verified($after,'cover'))throw new RuntimeException('cover_readback_failed');$db->commit();$result=['ok'=>true,'key'=>$key,'coverUrl'=>nj_url($key,'cover'),'audioPreserved'=>true,'public'=>noa_sound_visible($d,false)];
  }else throw new DomainException('invalid_action');
 }catch(Throwable $e){if(isset($db)&&$db->inTransaction())$db->rollBack();http_response_code(409);header('X-NOA-Cover-Error: '.get_class($e).'-'.preg_replace('/[^a-zA-Z0-9_-]/','',substr($e->getMessage(),0,120)));$result=['ok'=>false,'error'=>$e instanceof DomainException?$e->getMessage():'cover_control_failed'];}
