@@ -61,6 +61,7 @@ try{
  await page.locator('#nnt-item-'+itemId).locator('..').getByRole('button',{name:/미확인으로/}).click();await page.locator('#nnt-item-'+itemId).locator('..').getByRole('button',{name:/확인 처리/}).waitFor();
  await filters.getByRole('button',{name:/미확인/}).click();await page.locator('#nnt-filter-status').getByText(/미확인 소식/).waitFor();assert((await page.locator('#nnt-list .nnt-item').evaluateAll(rows=>rows.map(x=>x.dataset.read))).every(x=>x==='false'));
  await filters.getByRole('button',{name:/반응/}).click();await page.locator('#nnt-filter-status').getByText(/반응 소식/).waitFor();assert((await page.locator('#nnt-list li').evaluateAll(rows=>rows.map(x=>x.dataset.kind))).every(k=>k==='like'));
+ await page.locator('#nnt-list .nnt-post-title').filter({hasText:'자유게시판 제목 1'}).waitFor();
  await filters.getByRole('button',{name:/전체/}).click();await page.locator('#nnt-filter-status').getByText(/전체 소식/).waitFor();
  report.api.push('server category filters','reversible individual read state','unread filter','category navigation without post navigation');
 

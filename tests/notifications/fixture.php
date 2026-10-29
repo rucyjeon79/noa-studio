@@ -120,3 +120,7 @@ echo "NOTIFICATIONS_MYSQL_PASS\n";
 $meta=nnt_preview($db,'qa_admin',$adminPublic);check($meta['boardTitle']==='자유게시판'&&$meta['postTitle']==='자유게시판 제목 1'&&str_contains($meta['excerpt'],'자유게시판 본문 1'),'inbox board and post context');check(!str_contains($meta['excerpt'],'unsafe'),'inbox strips executable content');
 check(nnt_target($db,'board:free:7','qa_b')===null,'foreign secret post denied');check(nnt_target($db,'board:free:7','qa_admin')!==null,'native super-admin secret preview');check(nnt_target($db,'board:certonly:1','qa_b')===null,'uncertified reader denied');check(nnt_target($db,'board:certonly:1','qa_admin')!==null,'native super-admin certified board preview');
 echo "INBOX_CONTEXT_AND_NATIVE_ADMIN_GATES_OK\n";
+
+// A genuine board reaction must retain its target context in the authenticated inbox.
+ne_like($db,'board:free:1','qa_b',true,false,time());nnt_collect($db,time());
+$reactions=nnt_inbox($db,'qa_a',0,'reactions')['items'];check(count($reactions)>0,'reaction fixture exists');check($reactions[0]['postTitle']==='자유게시판 제목 1'&&$reactions[0]['boardTitle']==='자유게시판','reaction identifies exact board post');
