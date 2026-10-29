@@ -30,6 +30,7 @@ try{for(const width of [390,1280]){
  await page.waitForFunction(()=>document.querySelector('#dock-title').textContent==='two');
  await page.evaluate(()=>player.dispatchEvent(new Event('ended')));
  await page.waitForFunction(()=>document.querySelector('#dock-title').textContent==='three');
+ await page.getByRole('button',{name:'당신의 이야기, 우리의 음악 🎧',exact:true}).click();
  const other=page.locator('.noa-user-playlist').filter({hasText:'Other bundle'});
  await other.locator('.noa-browse-card').click();
  await other.getByRole('button',{name:'outside 재생',exact:true}).click();
