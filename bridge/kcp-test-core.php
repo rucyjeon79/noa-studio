@@ -2,17 +2,30 @@
 declare(strict_types=1);
 if (!defined('_GNUBOARD_') && PHP_SAPI !== 'cli') { http_response_code(403); exit; }
 // This module is deliberately test-only. No operating ledger or live URL exists here.
-function nk_fields(string $id, bool $mobile): array {
+// 결제 검증 보완: one mapping for window, registration and server approval.
+function nk_pay_type(string $method): string {
+    return match($method) {
+        'CARD','100000000000'=>'PACA',
+        'BANK','010000000000'=>'PABK',
+        'MOBX','000010000000'=>'PAMC',
+        default=>throw new DomainException('unsupported_payment_method')
+    };
+}
+function nk_window_method(string $method,bool $mobile): string {
+    $type=nk_pay_type($method);
+    return ($mobile ? ['PACA'=>'CARD','PABK'=>'BANK','PAMC'=>'MOBX'] : ['PACA'=>'100000000000','PABK'=>'010000000000','PAMC'=>'000010000000'])[$type];
+}
+function nk_fields(string $id, bool $mobile, string $method='CARD'): array {
     if (!preg_match('/^NK[0-9a-f]{32}$/D', $id)) throw new InvalidArgumentException('invalid_order');
     return ['site_cd'=>'T0000','site_name'=>'NOA STUDIO TEST','shop_name'=>'NOA STUDIO TEST',
-        'currency'=>'410','pay_method'=>$mobile?'CARD':'100000000000','ordr_idxx'=>$id,
+        'currency'=>'410','pay_method'=>nk_window_method($method,$mobile),'ordr_idxx'=>$id,
         'good_name'=>'NOA 테스트 포인트권','good_mny'=>'1000','good_cd'=>'00',
-        'Ret_URL'=>'https://noastudio.ai.kr/noa-kcp-test.php','quotaopt'=>'0',
+        'Ret_URL'=>'https://noastudio.ai.kr/noa-kcp-test.php','quotaopt'=>'12','encoding_trans'=>'UTF-8','user_agent'=>'',
         'res_cd'=>'','res_msg'=>'','enc_info'=>'','enc_data'=>'','tran_cd'=>''];
 }
 function nk_register(array $fields): array {
-    $body = array_intersect_key($fields, array_flip(['site_cd','ordr_idxx','good_name','good_mny','pay_method','Ret_URL']));
-    if (($body['site_cd']??'')!=='T0000' || ($body['pay_method']??'')!=='CARD' || ($body['good_mny']??'')!=='1000') throw new InvalidArgumentException('test_only');
+    $body = array_intersect_key($fields, array_flip(['site_cd','ordr_idxx','good_name','good_mny','pay_method','Ret_URL','user_agent']));
+    if (($body['site_cd']??'')!=='T0000' || !in_array($body['pay_method']??'',['CARD','BANK','MOBX'],true) || ($body['good_mny']??'')!=='1000') throw new InvalidArgumentException('test_only');
     $h=curl_init('https://testsmpay.kcp.co.kr/trade/register.do');
     curl_setopt_array($h,[CURLOPT_POST=>true,CURLOPT_HTTPHEADER=>['Content-Type: application/json; charset=utf-8'],CURLOPT_POSTFIELDS=>json_encode($body,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),CURLOPT_RETURNTRANSFER=>true,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>15,CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_FOLLOWLOCATION=>false]);
     $raw=curl_exec($h);$status=curl_getinfo($h,CURLINFO_HTTP_CODE);curl_close($h);
@@ -35,29 +48,59 @@ function nk_order(string $id, ?string $owner=null): array {
     if (!$r || ($owner!==null && !hash_equals($owner,$r['data']['ownerId']))) throw new DomainException('order_not_found');
     return $r['data'];
 }
-function nk_create_order(string $owner,int $now): array {
+function nk_create_order(string $owner,int $now,string $method='CARD',bool $mobile=false): array {
+    nk_pay_type($method);
     if ($owner==='' || strlen($owner)>20) throw new DomainException('login_required');
     $id='NK'.bin2hex(random_bytes(16));
-    return ns_atomic($owner,false,function()use($owner,$now,$id){
+    return ns_atomic($owner,false,function()use($owner,$now,$id,$method,$mobile){
         $d=['id'=>$id,'ownerId'=>$owner,'siteCode'=>'T0000','mode'=>'test','amount'=>1000,'state'=>'created','createdAt'=>$now,'simulatedPoints'=>0,'creditedPoints'=>0];
+        // 결제 검증 보완: retain the exact server-generated window quote durably.
+        $d['windowFields']=nk_fields($id,$mobile,$method);
+        // Required for mobile billing; stable pseudonymous shop member reference.
+        $d['windowFields']['shop_user_id']='NOA'.substr(hash('sha256',$owner),0,40);
+        $d['paymentMethod']=$d['windowFields']['pay_method'];
         ns_put(nk_order_key($id),'kcp_test_order',$d,0,$owner);return $d;
     });
 }
+// 결제 검증 보완: never log values, certificates, buyer data or encrypted authentication.
+function nk_quote_mismatch(string $field): never {
+    error_log('NOA KCP test: quote_mismatch field='.$field);
+    throw new DomainException('quote_mismatch_'.$field);
+}
+function nk_check_quote(array $order,array $input): string {
+    $method=$order['paymentMethod']??'100000000000'; // legacy card-only orders
+    $type=nk_pay_type($method);
+    $quote=$order['windowFields']??nk_fields($order['id'],false);
+    foreach(['ordr_idxx'=>$order['id'],'good_mny'=>(string)$order['amount'],'pay_method'=>$method] as $key=>$expected) {
+        if (!is_string($quote[$key]??null) || $quote[$key]!==$expected) nk_quote_mismatch($key);
+        // Mobile providers may omit plain quote fields; immutable stored quote remains authoritative.
+        if (array_key_exists($key,$input)) {
+            if (!is_string($input[$key])) nk_quote_mismatch($key);
+            if ($key==='pay_method') {
+                try { $actual=in_array($input[$key],['PACA','PABK','PAMC'],true)?$input[$key]:nk_pay_type($input[$key]); }
+                catch (DomainException $e) { nk_quote_mismatch($key); }
+                if ($actual!==$type) nk_quote_mismatch($key);
+            } elseif ($input[$key]!==$expected) nk_quote_mismatch($key);
+        }
+    }
+    return $type;
+}
 function nk_approval_request(array $order,array $input): array {
     if (($order['mode']??'')!=='test' || ($order['siteCode']??'')!=='T0000' || ($order['amount']??0)!==1000) throw new DomainException('test_only');
+    $type=nk_check_quote($order,$input);
     nk_order_key($order['id']);
     foreach(['enc_data'=>65536,'enc_info'=>16384,'tran_cd'=>8] as $key=>$max) {
         if (!is_string($input[$key]??null) || $input[$key]==='' || strlen($input[$key])>$max || str_contains($input[$key],"\0")) throw new InvalidArgumentException('invalid_authentication');
     }
     if (!preg_match('/^[0-9]{8}$/D',$input['tran_cd'])) throw new InvalidArgumentException('invalid_authentication');
     return ['site_cd'=>'T0000','kcp_cert_info'=>nk_test_certificate(),'enc_data'=>$input['enc_data'],'enc_info'=>$input['enc_info'],'tran_cd'=>$input['tran_cd'],
-        'ordr_mony'=>$order['amount'],'pay_type'=>'PACA','ordr_no'=>$order['id'],'ordr_idxx'=>$order['id']];
+        'ordr_mony'=>$order['amount'],'pay_type'=>$type,'ordr_no'=>$order['id'],'ordr_idxx'=>$order['id']];
 }
 function nk_approval_api(array $body): array {
     if (defined('NOA_KCP_TEST_HARNESS') && PHP_SAPI==='cli' && isset($GLOBALS['nk_test_transport'])) return ($GLOBALS['nk_test_transport'])($body);
     if (($body['site_cd']??'')!=='T0000') throw new DomainException('test_only');
     $h=curl_init('https://stg-spl.kcp.co.kr/gw/enc/v1/payment');
-    curl_setopt_array($h,[CURLOPT_POST=>true,CURLOPT_HTTPHEADER=>['Content-Type: application/json; charset=utf-8'],CURLOPT_POSTFIELDS=>json_encode($body,JSON_THROW_ON_ERROR),CURLOPT_RETURNTRANSFER=>true,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>20,CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS]);
+    curl_setopt_array($h,[CURLOPT_POST=>true,CURLOPT_HTTPHEADER=>['Content-Type: application/json; charset=utf-8','Accept-Charset: UTF-8'],CURLOPT_POSTFIELDS=>json_encode($body,JSON_THROW_ON_ERROR),CURLOPT_RETURNTRANSFER=>true,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>20,CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS]);
     $raw=curl_exec($h);$code=curl_getinfo($h,CURLINFO_HTTP_CODE);curl_close($h);
     if (!is_string($raw) || $code!==200 || strlen($raw)>262144) throw new RuntimeException('approval_unknown');
     $r=json_decode($raw,true,32,JSON_THROW_ON_ERROR);
@@ -66,7 +109,7 @@ function nk_approval_api(array $body): array {
 }
 function nk_validate_approval(array $d,array $r): void {
     if (($d['mode']??'')!=='test' || ($d['siteCode']??'')!=='T0000') throw new DomainException('test_only');
-    if (($r['res_cd']??'')!=='0000' || !in_array($r['amount']??null,[$d['amount'],(string)$d['amount']],true) || ($r['pay_method']??'')!=='PACA' || !is_string($r['tno']??null) || !preg_match('/^[0-9]{14}$/D',$r['tno'])) throw new DomainException('approval_mismatch');
+    if (($r['res_cd']??'')!=='0000' || !in_array($r['amount']??null,[$d['amount'],(string)$d['amount']],true) || ($r['pay_method']??'')!==nk_pay_type($d['paymentMethod']??'100000000000') || !is_string($r['tno']??null) || !preg_match('/^[0-9]{14}$/D',$r['tno'])) throw new DomainException('approval_mismatch');
     // KCP validates ordr_no in the approval request; some responses also echo the order ID.
     if (isset($r['ordr_idxx']) && $r['ordr_idxx']!==$d['id']) throw new DomainException('approval_mismatch');
 }
@@ -114,29 +157,8 @@ function nk_return(string $id,array $input,int $now): array {
 // Official PUBLIC T0000 test certificate (2026–2031); never a merchant credential.
 // Source: https://developer.kcp.co.kr/download/cert/splCert.pem
 function nk_test_certificate(): string {
-    $pem=<<<'PEM'
------BEGIN CERTIFICATE-----
-MIIDgTCCAmmgAwIBAgIHBzKxiAs+9jANBgkqhkiG9w0BAQsFADBzMQswCQYDVQQGE
-wJLUjEOMAwGA1UECAwFU2VvdWwxEDAOBgNVBAcMB0d1cm8tZ3UxFTATBgNVBAoMDE
-5ITktDUCBDb3JwLjETMBEGA1UECwwKSVQgQ2VudGVyLjEWMBQGA1UEAwwNc3BsLmt
-jcC5jby5rcjAeFw0yNjA2MjkwNjEwNTdaFw0zMTA2MjgwNjEwNTdaMHAxCzAJBgNV
-BAYTAktSMQ4wDAYDVQQIDAVTZW91bDEQMA4GA1UEBwwHR3Vyby1ndTERMA8GA1UEC
-gwITG9jYWxXZWIxETAPBgNVBAsMCERFVlBHV0VCMRkwFwYDVQQDDBAyMDIxMDYyOT
-EwMDAwMDI0MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAppkVQkU4SwN
-TYbIUaNDVhu2w1uvG4qip0U7h9n90cLfKymIRKDiebLhLIVFctuhTmgY7tkE7yQTN
-kD+jXHYufQ/qj06ukwf1BtqUVru9mqa7ysU298B6l9v0Fv8h3ztTYvfHEBmpB6AoZ
-DBChMEua7Or/L3C2vYtU/6lWLjBT1xwXVLvNN/7XpQokuWq0rnjSRThcXrDpWMbqY
-YUt/CL7YHosfBazAXLoN5JvTd1O9C3FPxLxwcIAI9H8SbWIQKhap7JeA/IUP1Vk4K
-/o3Yiytl6Aqh3U1egHfEdWNqwpaiHPuM/jsDkVzuS9FV4RCdcBEsRPnAWHz10w8CX
-7e7zdwIDAQABox0wGzAOBgNVHQ8BAf8EBAMCB4AwCQYDVR0TBAIwADANBgkqhkiG9
-w0BAQsFAAOCAQEAt8c1yT65AP32LOAaADoPelluhBgFVYEiFNOTTjO34ZO5X17ySA
-zQmIKc+3K4TesH46zSe1F91CBvBLjUCvWgzrycevdtqinOgDkN3J9zSGc5aw5sRIS
-rK4mdQ/Hx/TtT6mc2jiuJo4k6iBWWMtJnCOHl9urei3HIMR8quRIHMCFDfCpkjXez
-EUvM3kw6TCCeTkII7K+RZxQRyhI1xJzLsCMl1I9H+Znt/aBjFz4MWayXmE6yFZ+Gp
-T+BL5lG/J9PSUQLb5mVp7+PXJhepSQRYDYrvtX5oL8J6CZz91K8gxJxD2qX1AI72P
-ej4M9lVDLGtvVfndE4bazMZEyj2O42hw==
------END CERTIFICATE-----
-PEM;
+    // 결제 검증 보완: load separately; direct HTTP access is denied by the certificate file.
+    $pem=require __DIR__.'/kcp-test-cert.php';
     $c=openssl_x509_parse($pem);
     if (!$c || time()<$c['validFrom_time_t'] || time()>=$c['validTo_time_t']) throw new DomainException('test_certificate_expired');
     // KCP requires one serialized line including both PEM boundary markers.

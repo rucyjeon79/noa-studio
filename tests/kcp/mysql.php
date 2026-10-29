@@ -10,7 +10,8 @@ $before=ns_one('SELECT COUNT(*) AS n FROM g5_point')['n'];
 $d=nk_create_order('regular',$now);$calls=0;
 $GLOBALS['nk_test_transport']=function($body)use(&$calls,$d,$good){$calls++;verify($body['ordr_no']===$d['id']&&$body['ordr_mony']===1000&&$body['pay_type']==='PACA'&&$body['site_cd']==='T0000','stored_quote');return $good;};
 denied(fn()=>nk_order($d['id'],'creator'));
-$r=nk_return($d['id'],$auth+['good_mny'=>'1'],$now);verify($r['state']==='approved'&&$r['simulatedPoints']===1000&&$r['creditedPoints']===0,'approval_recorded');
+denied(fn()=>nk_return($d['id'],$auth+['good_mny'=>'1'],$now));verify($calls===0,'mismatch_blocks_transport');
+$r=nk_return($d['id'],$auth,$now);verify($r['state']==='approved'&&$r['simulatedPoints']===1000&&$r['creditedPoints']===0,'approval_recorded');
 verify(nk_return($d['id'],$auth,$now)===$r&&$calls===1,'replay_no_provider_call');
 $d2=nk_create_order('regular',$now);$GLOBALS['nk_test_transport']=fn($b)=>$good;
 verify(nk_return($d2['id'],$auth,$now)['state']==='review','transaction_id_cannot_credit_another_order');
@@ -23,6 +24,21 @@ $o=nk_create_order('regular',$now);denied(fn()=>nk_return($o['id'],array_replace
 // Reentrant callback simulates a second worker after the durable processing claim.
 $o=nk_create_order('regular',$now);$calls=0;$GLOBALS['nk_test_transport']=function($b)use(&$calls,$o,$auth,$now,$good){$calls++;verify(nk_return($o['id'],$auth,$now)['state']==='processing','concurrent_claim');return array_replace($good,['tno'=>'12345678901235']);};
 verify(nk_return($o['id'],$auth,$now)['state']==='approved'&&$calls===1,'one_provider_request');
+// 결제 검증 보완: all six device/method paths and pre-transport tamper rejection.
+$counter=40;
+foreach([false,true] as $mobile) foreach(['CARD'=>'PACA','BANK'=>'PABK','MOBX'=>'PAMC'] as $method=>$type) {
+    $o=nk_create_order('regular',$now,$method,$mobile);$calls=0;
+    verify(strlen($o['windowFields']['shop_user_id'])===43,'shop_user_id_present');
+    $GLOBALS['nk_test_transport']=function($b)use(&$calls,$o,$type,&$counter){
+        $calls++;verify($b['pay_type']===$type&&$b['ordr_mony']===$o['amount']&&$b['ordr_no']===$o['id'],'stored_quote_all_methods');
+        return ['res_cd'=>'0000','amount'=>'1000','pay_method'=>$type,'tno'=>'123456789012'.($counter++)];
+    };
+    foreach(['good_mny'=>'1','ordr_idxx'=>'NK'.str_repeat('f',32),'pay_method'=>'INVALID'] as $key=>$wrong) {
+        denied(fn()=>nk_return($o['id'],$auth+[$key=>$wrong],$now));verify($calls===0,'tamper_no_network_'.$key);
+    }
+    $quote=array_intersect_key($o['windowFields'],array_flip(['good_mny','ordr_idxx','pay_method']));
+    verify(nk_return($o['id'],$auth+$quote,$now)['state']==='approved'&&$calls===1,'six_paths');
+}
 // Local write failure rolls back the receipt and simulated credit together.
 $o=nk_create_order('regular',$now);ns_q("CREATE TRIGGER kcp_fail BEFORE UPDATE ON noa_documents FOR EACH ROW BEGIN IF @kcp_fail=1 AND NEW.kind='kcp_test_order' AND JSON_UNQUOTE(JSON_EXTRACT(NEW.payload,'$.state'))='approved' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='test_failure'; END IF; END");
 ns_q('SET @kcp_fail=1');$GLOBALS['nk_test_transport']=fn($b)=>array_replace($good,['tno'=>'12345678901236']);verify(nk_return($o['id'],$auth,$now)['state']==='review','failed_commit_not_success');ns_q('SET @kcp_fail=0');verify(!ns_doc('kcp:test:receipt:'.hash('sha256','12345678901236')),'receipt_rolled_back');

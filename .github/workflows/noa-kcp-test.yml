@@ -25,12 +25,14 @@ jobs:
         with: {php-version: '8.2', extensions: 'curl,mysqli,pdo_mysql,mbstring'}
       - run: |
           php -l bridge/kcp-test-core.php
+          php -l bridge/kcp-test-cert.php
           php -l deploy/noa-kcp-test.php
           php -l deploy/noa-payment-settings.php
           php tests/kcp/core.php
           php tests/subscription/mysql_test.php
           php tests/kcp/mysql.php
           node --check deploy/noa-kcp-test.js
+          node tests/kcp/window.cjs
           python tests/kcp/http_test.py
   deploy:
     if: github.event_name == 'push'
@@ -55,7 +57,7 @@ jobs:
         run: |
           python - <<'PY'
           import urllib.request,urllib.error
-          for path in ['/noa-kcp-test.php','/noa-bridge/kcp-test-core.php']:
+          for path in ['/noa-kcp-test.php','/noa-bridge/kcp-test-core.php','/noa-bridge/kcp-test-cert.php']:
             try:
               urllib.request.urlopen('https://noastudio.ai.kr'+path,timeout=20)
               raise AssertionError('admin route exposed')

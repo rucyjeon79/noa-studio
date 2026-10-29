@@ -15,3 +15,19 @@ check(is_string($der) && openssl_x509_parse("-----BEGIN CERTIFICATE-----\n".chun
 $body=nk_approval_request(['id'=>$f['ordr_idxx'],'mode'=>'test','siteCode'=>'T0000','amount'=>1000],['enc_data'=>'test-only','enc_info'=>'test-only','tran_cd'=>'00100000']);
 check($body['kcp_cert_info']===$certificate && !str_contains(json_encode($body),'\\n'));
 echo "KCP_TEST_ONLY_FIELDS_AND_REDIRECT_GUARDS_OK\n";
+
+// 결제 검증 보완: exact window-to-approval mapping, unknown method and corrupted quote.
+foreach([false,true] as $mobile) foreach(['CARD'=>'PACA','BANK'=>'PABK','MOBX'=>'PAMC'] as $method=>$expected) {
+    $f=nk_fields('NK'.str_repeat('b',32),$mobile,$method);
+    $d=['id'=>$f['ordr_idxx'],'mode'=>'test','siteCode'=>'T0000','amount'=>1000,'paymentMethod'=>$f['pay_method'],'windowFields'=>$f];
+    $auth=['enc_data'=>'unchanged+/%=','enc_info'=>'unchanged-info','tran_cd'=>'00100000'];
+    $b=nk_approval_request($d,$auth);
+    check($b['pay_type']===$expected && $b['ordr_no']===$f['ordr_idxx'] && (string)$b['ordr_mony']===$f['good_mny'] && $b['enc_data']===$auth['enc_data']);
+    foreach(['good_mny'=>'1004','ordr_idxx'=>'other','pay_method'=>'UNKNOWN'] as $k=>$v) {
+        try {nk_approval_request($d,$auth+[$k=>$v]);throw new LogicException('accepted mismatch');}catch(DomainException $e){}
+    }
+    $d['windowFields']['good_mny']='999';
+    try {nk_approval_request($d,$auth);throw new LogicException('accepted corrupted stored quote');}catch(DomainException $e){}
+}
+try {nk_pay_type('UNKNOWN');throw new LogicException('accepted unknown method');}catch(DomainException $e){}
+echo "KCP_SIX_METHOD_DEVICE_QUOTES_AND_TAMPER_REJECTION_OK\n";

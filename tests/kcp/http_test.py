@@ -5,6 +5,7 @@ with tempfile.TemporaryDirectory() as temp:
  p=pathlib.Path(temp);(p/'noa-bridge').mkdir()
  for name in ['noa-kcp-test.php','noa-kcp-test.js']:shutil.copy(root/'deploy'/name,p/name)
  shutil.copy(root/'bridge/kcp-test-core.php',p/'noa-bridge/kcp-test-core.php')
+ shutil.copy(root/'bridge/kcp-test-cert.php',p/'noa-bridge/kcp-test-cert.php')
  (p/'noa-bridge/subscription-core.php').write_text("<?php function ns_atomic($o,$p,$f){return $f();} function ns_put($k,$t,$d,$r,$o){$_SESSION['docs'][$k]=['data'=>$d,'revision'=>$r+1];} function ns_doc($k,$l=false){return $_SESSION['docs'][$k]??null;}")
  (p/'common.php').write_text("<?php define('_GNUBOARD_',true);session_start();$is_admin=($_SERVER['HTTP_X_TEST_ADMIN']??'')==='1'?'super':'';$member=['mb_id'=>$is_admin?'qa_admin':''];")
  server=subprocess.Popen(['php','-d','session.save_path='+temp,'-S','127.0.0.1:18793','-t',temp],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
@@ -20,6 +21,8 @@ with tempfile.TemporaryDirectory() as temp:
     with opener.open(urllib.request.Request(url,data=data,headers=headers or {})) as r:return r.status,r.read().decode()
    except urllib.error.HTTPError as e:return e.code,e.read().decode()
   assert request()[0]==403
+  try: urllib.request.urlopen('http://127.0.0.1:18793/noa-bridge/kcp-test-cert.php');raise AssertionError('certificate exposed')
+  except urllib.error.HTTPError as e: assert e.code==403
   code,body=request(headers={'X-Test-Admin':'1'});assert code==200 and 'KCP 결제창 연결' in body
   assert request(b'device=pc',{'X-Test-Admin':'1','Origin':'https://noastudio.ai.kr'})[0]==403
   import re
