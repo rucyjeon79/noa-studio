@@ -21,6 +21,7 @@
   send({type,key:current,queue:keys.slice(0,500),repeat:!!repeatMode,shuffle:!!shuffleMode,volume:snapshot.volume});
  }
  function mount(){
+  if(document.readyState==='loading')return;
   const found=document.getElementById('sound-player');if(!found||found===audio)return;
   audio=found;
   // Instance-only facade: previews, video and unrelated audio retain browser behavior.
@@ -37,7 +38,7 @@
   send({type:'ready'});
  }
  HTMLMediaElement.prototype.play=function(){
-  if(this.id==='sound-player'){mount();if(this===audio)return audio.play();}
+  if(this.id==='sound-player'){mount();if(this===audio)return audio.play();return Promise.resolve();}
   if(!this.muted)send({type:'video'});
   return originalPlay.call(this);
  };
