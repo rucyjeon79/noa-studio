@@ -1,10 +1,11 @@
-/* Admin presentation only. Preserve core form, permission and navigation behavior. */
-body{background:#f4f5f7;color:#222;font-family:Arial,"Noto Sans KR",sans-serif}
-#container,#container_title{color:#222}
-#container_title{background:#fff}
-.tmli_tit,.tmli_tit p{color:#20242b!important;font-weight:700}
-.tmli_tit{background:#f0f2f5;border-top:1px solid #dce0e5}
-#theme_list .tmli_if{color:#303640}
-#hd_top{background:#25282e}
-#tnb a,#hd_top a{color:#fff}
-a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #9c742e;outline-offset:3px}
+/* Administration uses the same Starlight palette. Native controls and permissions stay native. */
+body{background:var(--noa-bg,#111316);color:var(--noa-text,#F3F1EB);font-family:Arial,"Noto Sans KR",sans-serif}
+:is(#container,#container_title,#wrapper,#ft,#hd_top,#gnb,#gnb .gnb_ul,#gnb .gnb_oparea,#lnb,.local_desc,.local_desc01,.local_desc02,.local_sch,.local_sch01,.local_sch02,.local_ov01,.local_ov02,.tbl_wrap,.tbl_head01,.tbl_head02,.tbl_frm01,.btn_fixed_top){background:var(--noa-bg);color:var(--noa-text);border-color:var(--noa-line)}
+:is(.tbl_head01,.tbl_head02,.tbl_frm01,.tbl_wrap) :is(th,td,tr),.tmli_tit,.tmli_tit p,#theme_list .tmli_if,.local_desc p,.local_desc ol,.local_desc ul{background:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line)}
+:is(.tbl_head01,.tbl_head02) tbody tr:hover td{background:var(--noa-raised)}
+:is(a,#tnb a,#hd_top a,#gnb a,#lnb a){color:var(--noa-text)}
+:is(input:not([type=checkbox]):not([type=radio]),textarea,select,.frm_input,.tbl_frm01 textarea){background:var(--noa-surface);color:var(--noa-text);border:1px solid var(--noa-line);border-radius:6px}
+:is(.btn,.btn_01,.btn_02,.btn_03,.btn_submit,.btn_confirm a,.pg_page){background:var(--noa-raised);color:var(--noa-text);border-color:var(--noa-line);border-radius:6px}
+:is(.btn_submit,.pg_current){background:var(--noa-accent);color:var(--noa-accentText)}
+:is(.frm_info,.local_ov01 .ov_txt,.td_datetime){color:var(--noa-muted)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--noa-info);outline-offset:3px}

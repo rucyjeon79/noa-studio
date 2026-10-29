@@ -1,0 +1,69 @@
+/* NOA STUDIO / Starlight. One editorial system for the app, community and workspaces. */
+@media screen {
+:root,html[data-noa-style="starlight"]{
+ --noa-bg:#111316!important;--noa-surface:#191d22!important;--noa-raised:#242a31!important;
+ --noa-text:#F3F1EB!important;--noa-muted:#AEB2B8!important;--noa-line:#33383F!important;
+ --noa-accent:#C8B17D!important;--noa-accentText:#17191D!important;
+ --noa-radius:6px;--noa-card-radius:6px;--noa-control-radius:6px;
+ --noa-content-max:1480px;--noa-content-gutter:clamp(20px,4vw,64px);--noa-section-gap:56px;
+ --noa-glass-base:var(--noa-surface);--noa-glass-icon:var(--noa-text);--noa-glass-paint:none;
+ --noa-glass-highlight:transparent;--noa-feature-line:var(--noa-line);--noa-feature-surface:var(--noa-surface);
+ color-scheme:dark;accent-color:var(--noa-success,#34C785);
+}
+html,body{background-color:var(--noa-bg);color:var(--noa-text)}
+html[data-noa-style] :is(.noa-sidebar,.noa-mobile-nav,#noa-account-bar,.noa-global-header){background:var(--noa-bg);border-color:var(--noa-line);box-shadow:none}
+html[data-noa-style] .noa-sidebar{padding-top:32px}
+html[data-noa-style] .noa-logo{letter-spacing:.14em}
+html[data-noa-style] .noa-menu a{border-radius:4px}
+html[data-noa-style] .noa-menu a[aria-current=page]{background:var(--noa-surface);color:var(--noa-text);box-shadow:inset 2px 0 var(--noa-accent)}
+html[data-noa-style] .noa-menu a[aria-current=page] svg{color:var(--noa-accent)}
+html[data-noa-style] .noa-mobile-nav a[aria-current=page]{color:var(--noa-accent)}
+html[data-noa-style] :is(.noa-main,.noa-page main,.noa-g5 #wrapper){padding-inline:var(--noa-content-gutter)}
+html[data-noa-style] :is(h1,h2,h3){text-wrap:pretty;word-break:keep-all;overflow-wrap:anywhere}
+html[data-noa-style] :is(.noa-page main,.noa-main)>h1{font-size:clamp(30px,3.8vw,48px);font-weight:600;letter-spacing:-.045em;line-height:1.35;margin-block:20px 24px}
+html[data-noa-style] :is(.noa-section,.lab-section){margin-top:var(--noa-section-gap)}
+html[data-noa-style] :is(.noa-section-head,.noa-section-heading){padding-bottom:18px;border-bottom:1px solid var(--noa-line);margin-bottom:24px;align-items:end}
+html[data-noa-style] :is(.noa-section-head h2,.noa-section>h2){font-size:clamp(22px,2.7vw,30px);font-weight:600;letter-spacing:-.04em;line-height:1.5}
+html[data-noa-style] .noa-eyebrow{font-size:10px;font-weight:600;letter-spacing:.16em;color:var(--noa-muted)}
+html[data-noa-style] :is(.noa-card-grid,.noa-browse-grid){column-gap:24px;row-gap:32px}
+html[data-noa-style] :is(.noa-art,.noa-genre,.catalog-card,.noa-browse-card,.noa-personal-card,.noa-desktop-my,.noa-desktop-ai){border-radius:6px;box-shadow:none}
+html[data-noa-style] :is(.noa-art,.catalog-card img,.noa-browse-card>img){border-radius:4px}
+html[data-noa-style] :is(.noa-music-card strong,.noa-browse-card strong){font-weight:550;letter-spacing:-.02em}
+html[data-noa-style] :is(.noa-section h2,main>h1)>svg{display:none}
+/* Flatten decorative material without touching control geometry or event handlers. */
+html[data-noa-style] body :is(.noa-glass-control,.noa-site-map-link,.noa-button,.noa-action,.lab-icon-button){background-image:none!important;box-shadow:none!important;border-radius:6px}
+html[data-noa-style] body .noa-glass-control{background-color:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line)}
+html[data-noa-style] body .noa-glass-control svg{color:currentColor}
+html[data-noa-style] body :is(button,a)[aria-pressed=true]{color:var(--noa-success);border-color:var(--noa-success)}
+html[data-noa-style] body :is(button,a):is(:disabled,[aria-disabled=true]){color:var(--noa-inactive);cursor:not-allowed}
+html[data-noa-style] body :is(button,a,input,select,textarea,summary):focus-visible{outline:2px solid var(--noa-info);outline-offset:4px}
+html[data-noa-style] body :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]),select,textarea){background-color:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line);border-radius:6px}
+html[data-noa-style] body :is(input,textarea)::placeholder{color:var(--noa-muted);opacity:.8}
+html[data-noa-style] body :is(dialog,.noa-settings-dialog){background:var(--noa-surface);color:var(--noa-text);border:1px solid var(--noa-line);border-radius:8px}
+html[data-noa-style] body .noa-home-banner{border-width:1px 0;border-radius:0;background:transparent;min-height:140px;padding:28px 0;margin:44px 0}
+html[data-noa-style] body .noa-home-banner-icon{color:var(--noa-accent)}
+html[data-noa-style] .noa-home-banner-copy>strong{font-weight:550;font-size:24px;line-height:1.5}
+html[data-noa-style] .noa-notice-featured{border-radius:4px;border-color:var(--noa-line);background:var(--noa-surface)}
+html[data-noa-style] .noa-footer{margin-top:64px;padding-top:24px;font-size:11px}
+html[data-noa-style] .noa-footer a:hover{color:var(--noa-accent)}
+/* Homepage story entrance mirrors the company story without duplicating its cast section. */
+html[data-noa-style] .noa-story-entrance{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:48px;padding-block:32px;border-block:1px solid var(--noa-line)}
+.noa-story-entrance img{width:100%;height:360px;object-fit:cover;object-position:80% center;border-radius:4px}
+html[data-noa-style] .noa-story-entrance h2{font-size:clamp(26px,3vw,38px);line-height:1.6;letter-spacing:-.045em;font-weight:550;margin:12px 0 24px}
+.noa-story-entrance p:not(.noa-eyebrow){font-size:14px;color:var(--noa-muted);line-height:1.9}
+html[data-noa-style] .noa-story-entrance a{display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:48px;width:fit-content;border-bottom:1px solid var(--noa-line);padding:6px 0;margin-top:12px;font-size:13px}
+.noa-story-entrance a:hover{border-color:var(--noa-accent);color:var(--noa-accent)}
+/* Narrative surfaces keep links as editorial text, not a grid of icon buttons. */
+html[data-noa-style] :is(.ne-page,[data-world-editorial]){--ne-gold:var(--noa-accent)}
+html[data-noa-style] .ne-page .ne-main{max-width:1280px}
+@media(max-width:760px){
+ html[data-noa-style]{--noa-content-gutter:20px;--noa-section-gap:40px}
+ html[data-noa-style] :is(.noa-section-head,.noa-section-heading){margin-bottom:20px;padding-bottom:14px}
+ html[data-noa-style] .noa-story-entrance{grid-template-columns:1fr;gap:24px;padding-block:28px}
+ .noa-story-entrance img{height:240px;grid-row:1}
+ html[data-noa-style] .noa-story-entrance h2{font-size:28px}
+ html[data-noa-style] .noa-home-banner-copy>strong{font-size:20px}
+ html[data-noa-style] :is(.noa-card-grid,.noa-browse-grid){gap:24px 16px}
+}
+@media(prefers-reduced-motion:reduce){html[data-noa-style] :is(.noa-art img,.noa-home-banner,.noa-site-map-link){transition:none;transform:none}}
+}

@@ -93,7 +93,7 @@ html[data-noa-precision] body :is(.world-chapter-mv,.world-video,.world-mv-card)
 html[data-noa-precision] body.noa-page .noa-inline-act:has(>.noa-collection-tools){display:grid;grid-template-columns:var(--noa-list-cover) minmax(0,1fr) var(--noa-list-tool) var(--noa-list-tool);grid-template-rows:auto auto;gap:0 var(--noa-list-gap);align-items:start;align-content:start;padding:12px var(--noa-list-inset);border-inline:1px solid transparent;box-sizing:border-box}
 html[data-noa-precision] body.noa-page .noa-inline-act>.noa-browse-card>img{grid-column:1;grid-row:1/3;width:var(--noa-list-cover);height:var(--noa-list-cover);flex-basis:var(--noa-list-cover);align-self:start;object-fit:cover;border-radius:6px;margin:0}
 html[data-noa-precision] body.noa-page :is(.song,.creator-row).noa-mastered{background:linear-gradient(115deg,rgba(210,177,108,.12),rgba(210,177,108,.025) 62%),var(--noa-surface,#1d2128);border:1px solid rgba(210,177,108,.25);border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,235,190,.08)}
-html[data-noa-theme="noa-ivory"] body.noa-page :is(.song,.creator-row).noa-mastered{background:linear-gradient(115deg,#b78a3515,transparent 70%),var(--noa-surface,#fff);border-color:#a57d3540}
+
 
 /* A single row system for audio and video. 20px title + 44px controls,
    centered artwork, and the same outer spacing at every catalogue level. */
@@ -126,7 +126,7 @@ html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-vide
 html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-video-row)>:is(.noa-edit-form,.noa-inline-playback,.noa-track-progress,#jukebox-transfer-dock){grid-column:1/-1;grid-row:auto}
 html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-video-row)>.noa-inline-song:focus-visible>.noa-inline-title{outline:2px solid var(--noa-accent);outline-offset:-2px}
 html[data-noa-precision] body.noa-page .noa-inline-song-row.noa-mastered{background:linear-gradient(115deg,rgba(210,177,108,.12),rgba(210,177,108,.025) 62%),var(--noa-surface,#1d2128);border:1px solid rgba(210,177,108,.25);border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,235,190,.08)}
-html[data-noa-theme="noa-ivory"] body.noa-page .noa-inline-song-row.noa-mastered{background:linear-gradient(115deg,#b78a3515,transparent 70%),var(--noa-surface,#fff);border-color:#a57d3540}
+
 @media(max-width:359px){html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-video-row){--noa-row-cover:40px;--noa-row-gap:2px}}
 
 /* Reply context stays readable without forcing mobile rows wider. */
