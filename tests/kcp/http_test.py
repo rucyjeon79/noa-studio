@@ -6,7 +6,7 @@ with tempfile.TemporaryDirectory() as temp:
  for name in ['noa-kcp-test.php','noa-kcp-test.js']:shutil.copy(root/'deploy'/name,p/name)
  shutil.copy(root/'bridge/kcp-test-core.php',p/'noa-bridge/kcp-test-core.php')
  (p/'common.php').write_text("<?php define('_GNUBOARD_',true);session_start();$is_admin=($_SERVER['HTTP_X_TEST_ADMIN']??'')==='1'?'super':'';")
- server=subprocess.Popen(['php','-S','127.0.0.1:18793','-t',temp],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+ server=subprocess.Popen(['php','-d','session.save_path='+temp,'-S','127.0.0.1:18793','-t',temp],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
  try:
   opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
   url='http://127.0.0.1:18793/noa-kcp-test.php'
