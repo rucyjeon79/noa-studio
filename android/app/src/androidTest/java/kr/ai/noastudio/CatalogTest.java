@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 public class CatalogTest {
  private void awaitEmulatorNetwork()throws Exception{
   long deadline=android.os.SystemClock.elapsedRealtime()+90000;Exception last=null;
-  while(android.os.SystemClock.elapsedRealtime()<deadline){java.net.HttpURLConnection connection=null;try{connection=(java.net.HttpURLConnection)new java.net.URL("https://noastudio.ai.kr/noa-bridge/catalog.php").openConnection();connection.setConnectTimeout(5000);connection.setReadTimeout(5000);NativeSession.authenticate(connection);if(connection.getResponseCode()==200)return;last=new java.io.IOException("Public catalog probe not ready");}catch(java.io.IOException e){last=e;}finally{if(connection!=null)connection.disconnect();}android.os.SystemClock.sleep(1000);}
+  while(android.os.SystemClock.elapsedRealtime()<deadline){java.net.HttpURLConnection connection=null;try{connection=(java.net.HttpURLConnection)new java.net.URL("https://noastudio.ai.kr/noa-bridge/catalog.php").openConnection();connection.setConnectTimeout(15000);connection.setReadTimeout(30000);NativeSession.authenticate(connection);if(connection.getResponseCode()==200)return;last=new java.io.IOException("Authenticated catalog probe not ready");}catch(java.io.IOException e){last=e;}finally{if(connection!=null)connection.disconnect();}android.os.SystemClock.sleep(1000);}
   throw new java.io.IOException("Emulator network did not become ready before app verification",last);
  }
  @Test public void productionMusicAndBrandRemainAvailable()throws Exception{
