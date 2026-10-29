@@ -27,6 +27,12 @@ with tempfile.TemporaryDirectory() as directory:
     apk=out/'noa-studio-release.apk'
     subprocess.run([str(build/'zipalign'),'-p','-f','4','android/app/build/outputs/apk/release/app-release-unsigned.apk',str(apk)],check=True)
     subprocess.run([str(build/'apksigner'),'sign','--ks',str(key),'--ks-key-alias',identity['alias'],'--ks-pass','env:NOA_RELEASE_PASSWORD','--key-pass','env:NOA_RELEASE_PASSWORD',str(apk)],env=env,check=True,stdout=subprocess.DEVNULL)
+    test_source=Path('android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk')
+    if test_source.exists():
+        test_apk=out/'noa-studio-test.apk'
+        subprocess.run([str(build/'zipalign'),'-p','-f','4',str(test_source),str(test_apk)],check=True)
+        subprocess.run([str(build/'apksigner'),'sign','--ks',str(key),'--ks-key-alias',identity['alias'],'--ks-pass','env:NOA_RELEASE_PASSWORD','--key-pass','env:NOA_RELEASE_PASSWORD',str(test_apk)],env=env,check=True,stdout=subprocess.DEVNULL)
+        subprocess.run([str(build/'apksigner'),'verify',str(test_apk)],check=True)
     verification=subprocess.check_output([str(build/'apksigner'),'verify','--verbose','--print-certs',str(apk)],text=True)
     if CERT not in verification:raise RuntimeError('Signed APK certificate differs')
     badging=subprocess.check_output([str(build/'aapt'),'dump','badging',str(apk)],text=True)
