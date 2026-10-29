@@ -139,5 +139,6 @@ ej4M9lVDLGtvVfndE4bazMZEyj2O42hw==
 PEM;
     $c=openssl_x509_parse($pem);
     if (!$c || time()<$c['validFrom_time_t'] || time()>=$c['validTo_time_t']) throw new DomainException('test_certificate_expired');
-    return $pem;
+    // KCP requires one serialized line including both PEM boundary markers.
+    return str_replace(["\r", "\n"], '', $pem);
 }
