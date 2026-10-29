@@ -68,7 +68,7 @@ function nup_patch(array $d,string $kind,array $patch):array{
   // YouTube description and song introduction are distinct; never overwrite one with the other.
   if($key==='sunoPrompt'&&array_key_exists('sunoStyle',$d['body']))$d['body']['sunoStyle']=$value;
   if($key==='sunoUrl'&&isset($d['body']['sunoShareUrl']))$d['body']['sunoShareUrl']=$value;
-  foreach(['cardImageLocation'=>['coverImageUrl','thumbUrl'],'audioFileLocation'=>['audioUrl'],'mvUrl'=>['musicVideoUrl'],'vocal'=>['vocal'],'communityPost'=>['fanLetter'],'lyricsTranslation'=>['translatedLyrics','translationBlock']] as $canonical=>$aliases)if($key===$canonical)foreach($aliases as $alias)if(array_key_exists($alias,$d['body']))$d['body'][$alias]=$value;
+  foreach(['cardImageLocation'=>['coverImageUrl','thumbUrl'],'audioFileLocation'=>['audioUrl'],'mvUrl'=>['musicVideoUrl'],'originalArtist'=>['originalSinger','coverArtist'],'vocal'=>['vocal','sourceVocal'],'communityPost'=>['fanLetter'],'lyricsTranslation'=>['translatedLyrics','translationBlock']] as $canonical=>$aliases)if($key===$canonical)foreach($aliases as $alias)if(array_key_exists($alias,$d['body']))$d['body'][$alias]=$value;
  }
  return $d;
 }
@@ -123,7 +123,7 @@ function nup_complete(PDO $db,array $resolved):array{
 /** Shared full-editor write boundary. Canonical and legacy aliases cannot diverge silently. */
 function nup_merge_body(array $old,array $incoming):array{
  $merged=array_replace($old,$incoming);
- foreach([['sunoPrompt','sunoStyle'],['sunoUrl','sunoShareUrl'],['communityPost','fanLetter']]as $aliases){
+ foreach([['sunoPrompt','sunoStyle'],['sunoUrl','sunoShareUrl'],['communityPost','fanLetter'],['originalArtist','originalSinger','coverArtist'],['vocalInfo','vocal','sourceVocal']]as $aliases){
   $changes=[];foreach($aliases as $alias)if(array_key_exists($alias,$incoming)&&(!array_key_exists($alias,$old)||$incoming[$alias]!==$old[$alias]))$changes[$alias]=$incoming[$alias];
   if(!$changes)continue;$values=array_values($changes);foreach($values as $v)if(!is_string($v)||$v!==$values[0])throw new DomainException('metadata_alias_conflict');
   foreach($aliases as $alias)$merged[$alias]=$values[0];
