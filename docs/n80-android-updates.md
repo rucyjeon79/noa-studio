@@ -24,3 +24,17 @@ release receipt, not a fabricated n80 completion-event acknowledgement.
 The existing workflow still builds a debug variant and signs it with the existing
 installation identity. Play AAB/release-variant work and Play publishing are separate
 pending steps. Never replace the original signing key to get a green workflow.
+
+## Release gate status (2026-10-29)
+
+PR #276 is not deployed. The production environment returns empty values for all
+four original signing inputs: `NOA_ANDROID_KEYSTORE_BASE64`, `NOA_ANDROID_KEY_ALIAS`,
+`NOA_ANDROID_KEYSTORE_PASSWORD`, and `NOA_ANDROID_KEY_PASSWORD`. This is confirmed by
+Actions run 40806470372, job 123226518168. Restore the original installation key
+through GitHub environment Secrets; never commit a keystore or passwords. A new key
+cannot replace the build-13 APK in place.
+
+Native music now reads the current WebView member session for catalog, cover, and
+validated audio requests; authenticated redirects are disabled. Live device QA uses
+a unique temporary member and scoped instrumentation-only cookies, then deletes
+only that member and its verified helper. No guest music policy is relaxed.
