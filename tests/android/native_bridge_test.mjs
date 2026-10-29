@@ -3,24 +3,21 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 const script=readFileSync(new URL('../../android/app/src/main/assets/noa-native-bridge.js',import.meta.url),'utf8');
-const base='https://noastudio.ai.kr/noa-app/jukebox/stream.php?key=';
-function app(keys=['single:kpop-original:01']){
- const messages=[];
- class Media {constructor(url){this.tagName='AUDIO';this.src=this.currentSrc=url;this.muted=false;this.webStarts=0;}play(){this.webStarts++;return Promise.resolve('web-preview');}}
- const window={NoaAndroid:{postMessage(raw){messages.push(JSON.parse(raw));}},__noaNativeAudio:{keys,urls:[]},addEventListener(){}};
- const context={window,NoaAndroid:window.NoaAndroid,HTMLMediaElement:Media,URL,location:{href:'https://noastudio.ai.kr/noa-music.php'},localStorage:{getItem(){return null;}},MutationObserver:class{observe(){}},setInterval(){},document:{body:{className:'',classList:{contains(){return false;}}},head:{append(){}},createElement(){return {};},querySelector(){return null;},addEventListener(){}}};
- vm.runInNewContext(script,context);messages.length=0;return {messages,Media,window};
+function app(){
+ const messages=[],events=[];
+ class Media{constructor(id){this.id=id;this.muted=false;this.webStarts=0;}play(){this.webStarts++;return Promise.resolve('web');}dispatchEvent(e){events.push(e.type);}}
+ const audio=new Media('sound-player'),dock={hidden:true},controls={};
+ const rows=['single:jpop:02','single:jpop:01'].map(key=>({dataset:{key}}));
+ const window={NoaAndroid:{postMessage(raw){messages.push(JSON.parse(raw));}},addEventListener(){}};window.top=window;
+ const context={window,HTMLMediaElement:Media,Event:class{constructor(type){this.type=type;}},selected:rows[0],buttons:rows,queue:()=>rows,repeat:false,shuffle:false,queueMicrotask:fn=>fn(),document:{readyState:'complete',getElementById:id=>id==='sound-player'?audio:controls[id]||null,querySelector:()=>dock,addEventListener(){}}};
+ context.select=(row)=>{context.selected=row;audio.pause();audio.load();};vm.runInNewContext(script,context);messages.length=0;
+ const state=more=>window.NoaNativeBridge.state({key:rows[0].dataset.key,queue:rows.map(r=>r.dataset.key),position:12,duration:180,paused:false,playing:true,ended:false,volume:.7,closed:false,repeat:false,shuffle:false,error:false,...more});
+ return {messages,events,audio,rows,window,context,Media,state,dock};
 }
-test('catalogued public MP3 starts only the native audio engine',async()=>{
- const {messages,Media}=app();const audio=new Media(base+'single%3Akpop-original%3A01&type=audio');await audio.play();assert.equal(audio.webStarts,0);assert.equal(messages.length,1);assert.equal(messages[0].type,'play');assert.equal(messages[0].key,'single:kpop-original:01');
-});
-test('uncatalogued administrator preview keeps the original web playback path',async()=>{
- const {messages,Media}=app();const audio=new Media(base+'single%3Aprivate%3A01&type=audio');assert.equal(await audio.play(),'web-preview');assert.equal(audio.webStarts,1);assert.equal(messages.some(x=>x.type==='play'),false);assert.equal(messages[0].type,'video');
-});
-test('refreshed catalogue becomes native-playable without installing a second bridge',async()=>{
- const {messages,Media,window}=app([]);window.__noaNativeAudio={keys:['single:kpop-original:02'],urls:[]};const audio=new Media(base+'single%3Akpop-original%3A02&type=audio');await audio.play();assert.equal(audio.webStarts,0);assert.equal(messages[0].key,'single:kpop-original:02');
-});
-
-test('detached web media cannot steal focus or start a second audio engine',async()=>{
- const {messages,Media,window}=app();window.__noaNativeHidden=true;for(const key of ['single:kpop-original:01','single:private:01']){const audio=new Media(base+encodeURIComponent(key)+'&type=audio');await audio.play();assert.equal(audio.webStarts,0);}assert.equal(messages.length,0);
-});
+test('PWA queue order reaches native unchanged, without starting browser audio',async()=>{const a=app();await a.audio.play();assert.equal(a.audio.webStarts,0);assert.deepEqual(a.messages[0].queue,['single:jpop:02','single:jpop:01']);assert.equal(a.messages[0].key,'single:jpop:02');});
+test('native state drives the original player controls without command echo',()=>{const a=app();a.state();assert.equal(a.audio.currentTime,12);assert.equal(a.audio.duration,180);assert.equal(a.audio.paused,false);assert.equal(a.dock.hidden,false);assert.ok(a.events.includes('playing'));assert.equal(a.messages.length,0);});
+test('pause, seek and volume use native commands',()=>{const a=app();a.audio.pause();a.audio.currentTime=42;a.audio.volume=.4;assert.deepEqual(a.messages.map(x=>x.type),['pause','seek','volume']);assert.equal(a.messages[1].seconds,42);});
+test('native next-track selection reuses PWA selection and never pauses the engine',()=>{const a=app();a.state({key:a.rows[1].dataset.key});assert.equal(a.context.selected,a.rows[1]);assert.equal(a.messages.length,0);});
+test('video and preview audio keep their browser implementation and claim audio focus',async()=>{const a=app(),preview=new a.Media('preview');assert.equal(await preview.play(),'web');assert.equal(preview.webStarts,1);assert.equal(a.messages[0].type,'video');});
+test('stale previous-track updates cannot undo a user selection',async()=>{const a=app();await a.audio.play();a.state({key:a.rows[1].dataset.key});assert.equal(a.context.selected,a.rows[0]);});
+test('adapter contains no replacement navigation, hidden PWA controls or fabricated sorting',()=>{assert.doesNotMatch(script,/createElement\(['"]style|display\s*:\s*none|\.sort\(/);});
