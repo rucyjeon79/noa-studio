@@ -52,7 +52,7 @@ $songs=noa_music_browse_project($songs,$browseSources,$inlineEdits??[]);
 const records=<?=json_encode(array_map(static fn($r)=>array_diff_key($r,array_flip(['rawLyrics','lyrics','description'])),$songs),JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR)?>;
 const collections=<?=json_encode($collections,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR)?>;
 const buttons=[...document.querySelectorAll('.song')],search={value:''},genre={value:''},type={value:''};
-let browse=null,filteredQueue=[];const lookup=new Map(records.map(r=>[r.key,r]));let selected=null,player=document.getElementById('sound-player'),ready=true,repeat=false,shuffle=false,pendingAutoplay=false,activeQueue=null;
+let browse=null,filteredQueue=[];const lookup=new Map(records.map(r=>[r.key,r]));let selected=null,player=document.getElementById('sound-player'),ready=true,repeat=false,shuffle=false,pendingAutoplay=false,activeQueue=null,collectionQueue=null;
 const status=document.getElementById('player-status');
 // Tab-local checkpoint: resolve keys against the current authenticated catalog, never stored media URLs.
 const resumeKey='noa-playback-session-v1';let changingTrack=false,leavingPage=false,resumeAfterMetadata=false;
@@ -70,7 +70,8 @@ function requestPlayback(){
  resumeAfterMetadata=false;const key=selected.dataset.key;const request=player.play();if(request?.catch)request.catch(error=>{if(selected?.dataset.key!==key)return;pendingAutoplay=false;status.textContent=error?.name==='NotAllowedError'?'듣던 위치를 복원했어요. 재생 버튼을 누르면 이어집니다.':'음원을 재생하지 못했습니다. 재생 버튼과 파일 연결 상태를 확인해 주세요.';});
 }
 
-function queue(){const playable=filteredQueue.filter(b=>b.dataset.audio);if(activeQueue)return playable;const playlist=selected&&lookup.get(selected.dataset.key)?.kind==='playlist',sameKind=playable.filter(b=>(lookup.get(b.dataset.key)?.kind==='playlist')===!!playlist);return sameKind.length?sameKind:playable;}
+window.addEventListener('noa-collection-queue',event=>{const keys=event.detail?.keys;if(!Array.isArray(keys)||!keys.includes(event.detail?.key))return;collectionQueue=[...new Set(keys)].filter(key=>lookup.has(key)&&lookup.get(key).kind!=='playlist');activeQueue=null;});
+function queue(){if(collectionQueue&&!activeQueue)return collectionQueue.map(key=>buttons.find(b=>b.dataset.key===key)).filter(b=>b?.dataset.audio);const playable=filteredQueue.filter(b=>b.dataset.audio);if(activeQueue)return playable;const playlist=selected&&lookup.get(selected.dataset.key)?.kind==='playlist',sameKind=playable.filter(b=>(lookup.get(b.dataset.key)?.kind==='playlist')===!!playlist);return sameKind.length?sameKind:playable;}
 function filter(){
  let rows=records.filter(r=>r.kind!=='video'&&!r.video&&(!activeQueue||activeQueue.includes(r.key)));
  if(activeQueue)rows.sort((a,b)=>activeQueue.indexOf(a.key)-activeQueue.indexOf(b.key));

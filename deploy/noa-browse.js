@@ -123,7 +123,7 @@ function mount({host,rows,onChange,onSelect=null,adminControls=true,search=null,
    const raw=rawSongs.get(wrapper.dataset.inlineKey),tools=wrapper.querySelector('.noa-song-actions');if(!raw||!tools)continue;
    const definitions=[['.sound-play','재생'],['.noa-track-add','담기'],['.jukebox-download','다운로드'],['.jukebox-replace','교체'],['.sound-upload','업로드']];
    const signature=definitions.map(([selector])=>{const n=raw.querySelector(selector);return n?[selector,n.disabled,n.getAttribute('href'),n.getAttribute('aria-disabled')]:null;});const revision=JSON.stringify(signature);if(tools.dataset.revision===revision)continue;tools.dataset.revision=revision;tools.replaceChildren();
-   for(const [selector,label] of definitions){const source=raw.querySelector(selector);if(!source&&!['재생','다운로드'].includes(label))continue;const action=button(label,()=>raw.querySelector(selector)?.click());action.className='noa-song-action noa-action';labelMusicAction(action,label);action.disabled=!source||!!source.disabled||source.getAttribute('aria-disabled')==='true';action.setAttribute('aria-label',(raw.dataset.title||wrapper.dataset.inlineKey)+' '+label);tools.append(action);}
+   for(const [selector,label] of definitions){const source=raw.querySelector(selector);if(!source&&!['재생','다운로드'].includes(label))continue;const action=button(label,()=>{if(label==='재생'){const record=rows.find(r=>String(r.key)===wrapper.dataset.inlineKey);if(record){playInline(wrapper,record);return;}}raw.querySelector(selector)?.click();});action.className='noa-song-action noa-action';labelMusicAction(action,label);action.disabled=!source||!!source.disabled||source.getAttribute('aria-disabled')==='true';action.setAttribute('aria-label',(raw.dataset.title||wrapper.dataset.inlineKey)+' '+label);tools.append(action);}
    tools.dataset.adminControls=String(tools.children.length>2);
   }
  }
@@ -132,6 +132,7 @@ function mount({host,rows,onChange,onSelect=null,adminControls=true,search=null,
   syncMusicActions();const source=document.getElementById('songs');if(source&&window.MutationObserver){let pending=false;new MutationObserver(()=>{if(pending)return;pending=true;queueMicrotask(()=>{pending=false;syncMusicActions();});}).observe(source,{subtree:true,childList:true,attributes:true,attributeFilter:['disabled','aria-disabled','href','data-audio','data-jukebox-status']});}
  }
  function playInline(anchor,record,scrollBlock='start'){
+  if(kind!=='영상'){const list=anchor.closest?.('.noa-inline-songs');if(list){const keys=[...list.querySelectorAll('.noa-inline-song-row')].map(row=>row.dataset.inlineKey);window.dispatchEvent(new CustomEvent('noa-collection-queue',{detail:{keys,key:String(record.key)}}));}}
   if(onSelect){onSelect(record);return true;}
   activeSavedPlaylist=anchor.closest?.('.noa-user-playlist')?.dataset.playlistId||'';if(record.kind!=='playlist')expandedAct=actFor(record)||-1;
   const target=[...document.querySelectorAll('[data-browse-key],.song[data-key]')].find(n=>(n.dataset.browseKey||n.dataset.key)===String(record.key));
