@@ -33,7 +33,7 @@ html[data-noa-precision] body.noa-page.noa-processing-dock:has(#jukebox-transfer
 
 /* Standalone app workspaces reuse the same palette without a second app shell. */
 html[data-noa-theme-only]{--noa-rail:0px;--bg:var(--noa-bg);--surface:var(--noa-surface);--panel:var(--noa-surface);--text:var(--noa-text);--muted:var(--noa-muted);--gold:var(--noa-accent);--line:var(--noa-line);--border:var(--noa-line);--radius:var(--noa-radius);color-scheme:dark}
-html[data-noa-theme-only][data-noa-theme=noa-ivory]{color-scheme:light}
+
 html[data-noa-theme-only] body{background:var(--noa-bg);color:var(--noa-text);font-family:var(--noa-font)}
 html[data-noa-theme-only] .brand{font-family:var(--noa-font);font-weight:750;letter-spacing:.12em}
 html[data-noa-theme-only] :is(main>a,main>p>a){display:inline-flex;align-items:center;min-block-size:44px}

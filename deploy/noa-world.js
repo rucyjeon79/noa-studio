@@ -11,6 +11,6 @@ function syncEpisode(id){const match=/^ep-([0-9]+)$/.exec(id);if(!match||!episod
 
 function active(id){for(const a of links){if(a.hash==='#'+id)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current');}}
 for(const a of links)a.addEventListener('click',e=>{const target=document.getElementById(a.hash.slice(1));if(!target)return;e.preventDefault();history.replaceState(null,'',a.hash);active(target.id);syncEpisode(target.id);target.scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'});target.focus({preventScroll:true});});
-if('IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>{const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top);if(visible.length)active(visible[0].target.id);},{rootMargin:'-10% 0px -55% 0px'});document.querySelectorAll('.noa-world-chapter').forEach(el=>observer.observe(el));}
+if('IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>{const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top);if(visible.length){active(visible[0].target.id);syncEpisode(visible[0].target.id);}},{rootMargin:'-10% 0px -55% 0px'});document.querySelectorAll('.noa-world-chapter').forEach(el=>observer.observe(el));}
 const initial=location.hash.slice(1)||('ep-'+new URLSearchParams(location.search).get('ep'));if(document.getElementById(initial)){active(initial);syncEpisode(initial);document.getElementById(initial).scrollIntoView({behavior:'auto'});}
 })();
