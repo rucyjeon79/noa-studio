@@ -101,3 +101,13 @@ console.log('PASS reopened-tab completion persists, storage merge stays terminal
  c.progressStates.set('song',{status:'ready',ready:true});assert.equal(c.showReservation(r),false);
  console.log('PASS completed-song stale prompts hidden without deleting pending replacements');
 }
+
+// Large libraries must not rescan every DOM card for each old reservation.
+{
+ let scans=0,jobs=0;const rows=Array.from({length:600},(_,i)=>({key:'song'+i,state:'needs_file'}));
+ const nodes=rows.map(r=>({dataset:{jukeboxKey:r.key,jukeboxStatus:'ready',audio:'/audio',audioSha:'hash'}}));
+ const c={active:null,reservations:rows,progressStates:new Map(),cards:()=>{scans++;return nodes},latestJobs:()=>{jobs++;return new Map()},busy:[]};vm.createContext(c);
+ vm.runInContext(source.slice(source.indexOf('function showReservation('),source.indexOf('function latestJobs(')),c);
+ assert.equal(c.visibleReservations().length,0);assert.equal(scans,1);assert.equal(jobs,1);
+ console.log('PASS 600-song reservation filter uses one DOM scan and one job snapshot');
+}
