@@ -22,3 +22,14 @@ print('Existing signer SHA256:',existing)
 print('Candidate signer SHA256:',candidate)
 if existing!=candidate:raise SystemExit('APK signing identity differs. Existing download and installed user data preserved. Original signing key is required for an in-place upgrade.')
 print('APK signer continuity verified')
+
+# Signed identity alone is insufficient: package and increasing version must match.
+aapts=sorted((root/'build-tools').glob('*/aapt'))
+if not aapts:raise SystemExit('APK package verifier unavailable; production preserved')
+badging=subprocess.check_output([str(aapts[-1]),'dump','badging','artifact/app-debug.apk'],text=True)
+package=re.search(r"package: name='([^']+)' versionCode='([0-9]+)'",badging)
+if not package or package[1]!='kr.ai.noastudio' or package[2]!=os.environ['GITHUB_RUN_NUMBER']:
+    raise SystemExit('APK package/version mismatch; production preserved')
+if int(package[2])<int(meta.get('versionCode',meta.get('build',0))):
+    raise SystemExit('Stale APK version; production preserved')
+print('APK package and version verified')
