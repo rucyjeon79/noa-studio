@@ -21,6 +21,8 @@ foreach(['about','privacy','terms'] as $page){
  check($xpath->query('//a[@target="_blank" and not(contains(@rel,"noopener"))]')->length===0,'external_tab_isolation');
  if($page==='about')foreach(['하람','하준','부캐 버전','별무리'] as $text)check(str_contains($html,$text),'missing_user_fact');
 }
+$GLOBALS['is_member']=false;check(nea_service_url('/noa-world.php')==='/bbs/login.php?url=%2Fnoa-world.php','guest_cta_must_reach_login');
+$GLOBALS['is_member']=true;check(nea_service_url('/noa-world.php')==='/noa-world.php','member_cta_must_preserve_destination');
 check(nea_e('<script>')==='&lt;script&gt;','escape_failure');
 require __DIR__.'/../../bridge/member-access.php';
 foreach(['/noa-about.php','/noa-privacy.php','/noa-terms.php'] as $path)check(nam_allowed(nam_access(),nam_requirement($path)),'public_document_requires_login');
