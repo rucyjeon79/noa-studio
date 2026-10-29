@@ -96,6 +96,15 @@ class RecoveryContract(unittest.TestCase):
   # 2026-10-29: user authorized administrator-only KCP test window; no balance writes.
   authorized.update({'bridge/kcp-test-core.php','bridge/kcp-test-cert.php'})
   # 2026-10-29: explicit certificate-file separation; HTTP denial tested in tests/kcp/http_test.py.
+  # 2026-10-30: user requested one dark theme and music-first WORLD.
+  authorized.update({'bridge/ui-preferences.php','bridge/world-story.php'})
+  story=(ROOT/'bridge/world-story.php').read_text()
+  self.assertNotRegex(story, r'(?i)\b(?:INSERT\s+INTO|UPDATE\s+noa_|DELETE\s+FROM|CREATE\s+TABLE|ALTER\s+TABLE)\b')
+  # Only normalize retired presentation settings on read; preserve the write/auth path.
+  prefs=(ROOT/'bridge/ui-preferences.php').read_text()
+  old_prefs=subprocess.check_output(['git','show',baseline+':bridge/ui-preferences.php'],cwd=ROOT,text=True)
+  marker=" if(!$logged)noa_ui_reply(401"
+  self.assertEqual(prefs[prefs.index(marker):],old_prefs[old_prefs.index(marker):])
   channel_view=(ROOT/'bridge/channel-view.php').read_text()
   self.assertNotRegex(channel_view, r'(?i)\b(?:INSERT\s+INTO|UPDATE\s+noa_|DELETE\s+FROM|CREATE\s+TABLE|ALTER\s+TABLE|nc_store\s*\()')
   discovery=(ROOT/'bridge/home-discovery.php').read_text()

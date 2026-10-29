@@ -152,6 +152,7 @@ function arrange(host,spec){
  }row++;}
 }
 function scan(){pending=false;chromeSpace();for(const spec of specs)for(const host of document.querySelectorAll(spec[0])){
+ if(host.closest('[data-world-editorial]'))continue;
  if(!hosts.has(host)){hosts.set(host,spec);resize.observe(host);}arrange(host,spec);
  }for(const host of hosts.keys())if(!host.isConnected){resize.unobserve(host);hosts.delete(host);}}
 function schedule(){if(!pending){pending=true;requestAnimationFrame(scan);}}

@@ -29,6 +29,7 @@ html[data-noa-style] :is(.noa-card-grid,.noa-browse-grid){column-gap:24px;row-ga
 html[data-noa-style] :is(.noa-art,.noa-genre,.catalog-card,.noa-browse-card,.noa-personal-card,.noa-desktop-my,.noa-desktop-ai){border-radius:6px;box-shadow:none}
 html[data-noa-style] :is(.noa-art,.catalog-card img,.noa-browse-card>img){border-radius:4px}
 html[data-noa-style] :is(.noa-music-card strong,.noa-browse-card strong){font-weight:550;letter-spacing:-.02em}
+html[data-noa-style] :is(.noa-section h2,main>h1)>svg{display:none}
 /* Flatten decorative material without touching control geometry or event handlers. */
 html[data-noa-style] body :is(.noa-glass-control,.noa-site-map-link,.noa-button,.noa-action,.lab-icon-button){background-image:none!important;box-shadow:none!important;border-radius:6px}
 html[data-noa-style] body .noa-glass-control{background-color:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line)}

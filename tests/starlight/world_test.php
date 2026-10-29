@@ -20,3 +20,13 @@ if($story){
 } else {verify($xp->query('//a[contains(@class,"nw-act-card")]')->length===4,'four story acts');verify(str_contains($html,'/noa-about.php'),'cast introduction link');}
 verify(count(array_unique(array_map('nws_listening_note',range(1,40))))===40,'all reading notes distinct');
 echo 'PASS WORLD '.($story?:'index').": canonical text, safe markup, real anchors, chapters and player\n";
+// Private CI rendering artifact only; never install this harness on the production host.
+if($dir=getenv('STARLIGHT_RENDER_DIR')){
+ if(!is_dir($dir))mkdir($dir,0700,true);
+ $preview=preg_replace('~<script\b[^>]*>.*?</script>|<link\b[^>]*rel="stylesheet"[^>]*>~s','',$html);
+ $css=file_get_contents(__DIR__.'/../../deploy/noa-ui.css').file_get_contents(__DIR__.'/../../deploy/noa-world.css').file_get_contents(__DIR__.'/../../deploy/noa-starlight.css');
+ $preview=str_replace('</head>','<style>'.$css.'html{--noa-rail:0px}body.nw-page main[data-world-editorial]{margin:0 auto}body{margin:0}</style></head>',$preview);
+ $preview=str_replace('src="/cover.webp"','src="https://noastudio.ai.kr/noa-assets/editorial-starlight-studio.webp"',$preview);
+ $preview=str_replace('src="/noa-assets/','src="https://noastudio.ai.kr/noa-assets/',$preview);
+ file_put_contents($dir.'/world-'.($story?:'index').'.html',$preview);
+}
