@@ -1,0 +1,34 @@
+name: Inspect Android publication conflict
+on:
+  push:
+    branches: [work/android-publication-recovery-20261029]
+    paths: ['.github/workflows/noa-android-publication-recovery.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: python3 -m pip install --user 'paramiko==3.5.1'
+      - name: Read exact public PHP publication targets
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+        run: |
+          python3 - <<'PY'
+          import sys,hashlib,json,paramiko
+          sys.path.insert(0,'scripts')
+          from noa_full_inventory import connect,ROOT
+          t=connect();s=paramiko.SFTPClient.from_transport(t)
+          try:
+              for name in ['noa-download.php','noa-app/engine/n80.php']:
+                  with s.open(ROOT+'/'+name,'rb') as f:data=f.read(65537)
+                  if len(data)>65536:raise RuntimeError('Unexpected public PHP size')
+                  print('PUBLIC_TARGET '+json.dumps({'path':name,'sha256':hashlib.sha256(data).hexdigest(),'source':data.decode()}))
+          finally:s.close();t.close()
+          PY
