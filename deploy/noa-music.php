@@ -139,7 +139,7 @@ window.addEventListener('noa-inline-record-saved',event=>{const r=lookup.get(eve
 for(const id of ['music-description','music-lyrics'])document.getElementById(id).addEventListener('toggle',()=>{const r=selected&&lookup.get(selected.dataset.key);if(document.getElementById(id).open&&r&&!r.detailsLoaded)ensureMusicDetail(r);});
 let saved='';try{saved=sessionStorage.getItem('noa-last-song')||''}catch{}
 const requestedTrack=new URLSearchParams(location.search).get('track');
-let resumeNavigation=false;try{resumeNavigation=window.performance?.getEntriesByType('navigation')[0]?.type==='reload'||sessionStorage.getItem('noa-playback-return')!==null;}catch{}
+let resumeNavigation=false;try{const returned=JSON.parse(sessionStorage.getItem('noa-playback-return')||'null');resumeNavigation=window.performance?.getEntriesByType('navigation')[0]?.type==='reload'||!!(returned&&Date.now()-returned.at>=0&&Date.now()-returned.at<30000);}catch{}
 const checkpoint=resumeNavigation&&playbackCheckpoint&&(!requestedTrack||requestedTrack===playbackCheckpoint.key)?playbackCheckpoint:null;
 const first=buttons.find(b=>b.dataset.key===requestedTrack)||(checkpoint?buttons.find(b=>b.dataset.key===checkpoint.key&&b.dataset.audio):null)||(new URLSearchParams(location.search).get('view')==='all'?buttons.find(b=>b.dataset.key===saved&&!b.hidden):null);
 if(first){select(first,false);if(checkpoint&&first.dataset.key===checkpoint.key){
