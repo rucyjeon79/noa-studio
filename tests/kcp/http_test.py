@@ -5,7 +5,8 @@ with tempfile.TemporaryDirectory() as temp:
  p=pathlib.Path(temp);(p/'noa-bridge').mkdir()
  for name in ['noa-kcp-test.php','noa-kcp-test.js']:shutil.copy(root/'deploy'/name,p/name)
  shutil.copy(root/'bridge/kcp-test-core.php',p/'noa-bridge/kcp-test-core.php')
- (p/'common.php').write_text("<?php define('_GNUBOARD_',true);session_start();$is_admin=($_SERVER['HTTP_X_TEST_ADMIN']??'')==='1'?'super':'';")
+ (p/'noa-bridge/subscription-core.php').write_text("<?php function ns_atomic($o,$p,$f){return $f();} function ns_put($k,$t,$d,$r,$o){$_SESSION['docs'][$k]=['data'=>$d,'revision'=>$r+1];} function ns_doc($k,$l=false){return $_SESSION['docs'][$k]??null;}")
+ (p/'common.php').write_text("<?php define('_GNUBOARD_',true);session_start();$is_admin=($_SERVER['HTTP_X_TEST_ADMIN']??'')==='1'?'super':'';$member=['mb_id'=>$is_admin?'qa_admin':''];")
  server=subprocess.Popen(['php','-d','session.save_path='+temp,'-S','127.0.0.1:18793','-t',temp],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
  try:
   opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
@@ -27,6 +28,6 @@ with tempfile.TemporaryDirectory() as temp:
   code,body=request(urllib.parse.urlencode({'device':'pc','csrf':csrf}).encode(),{'X-Test-Admin':'1','Origin':'https://noastudio.ai.kr'})
   assert code==200 and 'value="T0000"' in body and 'value="1000"' in body
   code,body=request(b'res_cd=0000&enc_data=DO_NOT_ECHO',{'X-Test-Admin':'1'})
-  assert code==200 and '승인 API를 호출하지' in body and 'DO_NOT_ECHO' not in body
+  assert code==200 and '승인 성공으로 처리하지' in body and 'DO_NOT_ECHO' not in body
   print('KCP_HTTP_ADMIN_CSRF_NO_CREDIT_RETURN_OK')
  finally:server.terminate();server.wait()
