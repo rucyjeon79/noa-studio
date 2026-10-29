@@ -7,6 +7,12 @@ $access=nam_access((array)($member??[]),(string)($is_admin??''));$method=$_SERVE
 if(!$access['member'])nr_reply($method==='GET'?200:401,['ok'=>$method==='GET','member'=>false,'error'=>$method==='GET'?null:'login_required']);
 $owner=(string)$member['mb_id'];$_SESSION['noa_membership_csrf']??=bin2hex(random_bytes(32));
 try{
+ // Release the per-browser PHP session before read-only database work.
+ if($method==='GET'&&session_status()===PHP_SESSION_ACTIVE)session_write_close();
+ if($method==='GET'&&($_GET['action']??'')==='summary'){
+  $m=nr_member($owner,false);$g=ns_doc(ns_member_key($owner));$grant=$g['data']??null;
+  nr_reply(200,['ok'=>true,'member'=>true,'admin'=>$access['admin'],'csrf'=>$_SESSION['noa_membership_csrf'],'name'=>$access['name'],'level'=>$access['level'],'balance'=>(int)$m['mb_point'],'grant'=>$grant?array_intersect_key($grant,array_flip(['baseLevel','paidLevel','status','until'])):null,'remainingDays'=>($grant['status']??'')==='active'?max(0,(int)ceil((($grant['until']??0)-time())/86400)):0]);
+ }
  $rules=nr_policy();$active=!empty($rules['enabled']);$action=$_GET['action']??'status';
  if($method==='GET'){
   $m=nr_member($owner,false);$p=ns_policy();$g=ns_doc(ns_member_key($owner));$grant=$g['data']??null;$auto=nr_auto_settings($owner);$pending=ns_doc(nr_key('login',$owner,nr_day(time())));$ledger=[];

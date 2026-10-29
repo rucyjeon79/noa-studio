@@ -5,7 +5,13 @@ const root=document.createElement('aside');root.id='noa-ainoa';root.setAttribute
 const $=s=>root.querySelector(s),panel=$('.ainoa-panel'),symbol=$('.ainoa-symbol'),note=$('.ainoa-note'),chat=$('.ainoa-chat'),answer=$('.ainoa-answer');let access=null,current=null,chatBusy=false,searchBusy=false,requestNo=0,spoken=new Set(),guideBusy='',guideTimer=null,requestId='',requestSignature='',requestQuote=0,requestKey='';
 function applyAccess(s){$('.ainoa-admin-toggle').hidden=!s?.adminAssistant;const allowed=!!s?.conversation&&!!current;$('.ainoa-chat-toggle').hidden=!allowed;chat.querySelector('form').hidden=!allowed&&!(requestId&&requestKey===current?.key);chat.querySelector('input').readOnly=!!requestId;chat.querySelector('form button').setAttribute('aria-label',requestId?'이전 응답 다시 확인':'질문 보내기');if(allowed)$('.ainoa-chat-toggle span').textContent='AI 대화 · 응답당 '+s.pointsPerReply+'P';}
 async function request(url,options={},timeout=45000){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeout);try{return await fetch(url,{...options,signal:controller.signal});}catch(e){throw Error(e.name==='AbortError'?'연결 응답이 늦습니다. N80 작업 기록에서 결과를 확인해 주세요.':'네트워크 연결을 확인해 주세요.');}finally{clearTimeout(timer);}}
-async function status(fresh=false){if(fresh||!access){const r=await request('/noa-ainoa.php?action=status',{credentials:'same-origin',cache:'no-store'},12000);if(!r.ok)throw Error('안내 연결을 확인해 주세요.');access=await r.json();applyAccess(access);}return access;}
+let statusPending=null,statusAt=0;
+async function status(fresh=false){
+ if(statusPending)return statusPending;
+ if(!fresh&&access&&Date.now()-statusAt<30000)return access;
+ statusPending=(async()=>{const r=await request('/noa-ainoa.php?action=status',{credentials:'same-origin',cache:'no-store'},12000);if(!r.ok)throw Error('안내 연결을 확인해 주세요.');const data=await r.json();if(!data.ok)throw Error('안내 정보를 불러오지 못했어요. 잠시 후 다시 열어 주세요.');access=data;statusAt=Date.now();applyAccess(access);return access;})();
+ try{return await statusPending;}finally{statusPending=null;}
+}
 async function api(body){const s=await status(),r=await request('/noa-ainoa.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-NOA-CSRF':s.csrf},body:JSON.stringify(body)});let data;try{data=await r.json();}catch{const code=r.headers.get('X-NOA-Error-Code');throw Error(code==='ai_not_configured'?(access?.admin?'AI LAB에서 텍스트 AI 연결과 사용 한도를 먼저 설정해 주세요.':'노아와 대화를 준비 중입니다. 지금은 검색을 이용해 주세요.'):code==='ai_budget_exceeded'?'오늘의 AI 이용 한도에 도달했습니다.':'안내 연결을 확인해 주세요.');}if(!r.ok||!data.ok){if(r.status===403)access=null;const error=Error(data.message||'요청을 처리하지 못했습니다.');error.code=data.error;throw error;}return data;}
 let dockHost=null,mobileOpen=false;
 function open(value,focus=true){if(dockHost&&!value)return;panel.hidden=!value;symbol.setAttribute('aria-expanded',String(value));if(value){status(true).then(()=>{note.textContent='곡 제목·가사로 검색해 보세요.';}).catch(e=>note.textContent=e.message);if(focus){$('.ainoa-panel-body').scrollTop=0;$('.ainoa-search input').focus();}}}
@@ -37,7 +43,7 @@ document.addEventListener('playing',e=>{const audio=e.target;if(!(audio instance
 async function guide(){
  if(location.pathname!=='/noa-music.php'||!current||spoken.has(current.key)||guideBusy===current.key)return;
  const key=current.key;guideBusy=key;
- try{const data=await api({action:'guide',key});if(current?.key!==key)return;spoken.add(key);window.NoaVoice?.say(data.text,{kind:'song'});void status(true).catch(()=>{});}
+ try{const data=await api({action:'guide',key});if(current?.key!==key)return;spoken.add(key);window.NoaVoice?.say(data.text,{kind:'song'});}
  catch{}finally{if(guideBusy===key)guideBusy='';}
 }
 window.addEventListener('noa-media-activity',e=>{if(e.detail?.type==='audio')void guide();});
