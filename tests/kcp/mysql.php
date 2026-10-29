@@ -28,6 +28,7 @@ verify(nk_return($o['id'],$auth,$now)['state']==='approved'&&$calls===1,'one_pro
 $counter=40;
 foreach([false,true] as $mobile) foreach(['CARD'=>'PACA','BANK'=>'PABK','MOBX'=>'PAMC'] as $method=>$type) {
     $o=nk_create_order('regular',$now,$method,$mobile);$calls=0;
+    verify(strlen($o['windowFields']['shop_user_id'])===43,'shop_user_id_present');
     $GLOBALS['nk_test_transport']=function($b)use(&$calls,$o,$type,&$counter){
         $calls++;verify($b['pay_type']===$type&&$b['ordr_mony']===$o['amount']&&$b['ordr_no']===$o['id'],'stored_quote_all_methods');
         return ['res_cd'=>'0000','amount'=>'1000','pay_method'=>$type,'tno'=>'123456789012'.($counter++)];

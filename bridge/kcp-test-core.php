@@ -56,6 +56,8 @@ function nk_create_order(string $owner,int $now,string $method='CARD',bool $mobi
         $d=['id'=>$id,'ownerId'=>$owner,'siteCode'=>'T0000','mode'=>'test','amount'=>1000,'state'=>'created','createdAt'=>$now,'simulatedPoints'=>0,'creditedPoints'=>0];
         // 결제 검증 보완: retain the exact server-generated window quote durably.
         $d['windowFields']=nk_fields($id,$mobile,$method);
+        // Required for mobile billing; stable pseudonymous shop member reference.
+        $d['windowFields']['shop_user_id']='NOA'.substr(hash('sha256',$owner),0,40);
         $d['paymentMethod']=$d['windowFields']['pay_method'];
         ns_put(nk_order_key($id),'kcp_test_order',$d,0,$owner);return $d;
     });
