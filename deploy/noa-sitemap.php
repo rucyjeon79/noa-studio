@@ -61,6 +61,7 @@ function noa_sitemap_registry():array{
             ['database','데이터베이스 관리','운영 데이터 현황','/noa-app/database/','library','admin'],
             ['popularity','인기순위 관리','집계 상태와 유효 재생 정책','/noa-app/popularity/','playlists','admin'],
             ['payments','토스 결제 연결','카드·카카오페이 연결과 테스트·운영 설정','/noa-payment-settings.php','settings','admin'],
+            ['kcpTest','KCP 테스트 연결','관리자용 카드 결제창 호출·복귀 테스트','/noa-kcp-test.php','settings','admin'],
             ['subscriptions','월 구독 설정','요금·포인트·결제 내역 확인','/noa-subscription-admin.php','settings','admin'],
             ['creatorReview','크리에이터 가입 심사','본인인증·신청 검토와 승인','/noa-creator-review.php','user','admin'],
             ['members','회원 관리','그누보드 회원 서비스','/adm/member_list.php','user','admin'],
@@ -92,7 +93,7 @@ function noa_sitemap_role(bool $member,string $admin):string{
 /** Audit-only coverage check: new screen files need an explicit audience decision. */
 function noa_sitemap_unlisted_pages(string $root):array{
     // The deploy center has no verified production release yet and stays undiscoverable.
-    $known=['/noa-sitemap.php'=>true,'/noa-deploy-center.php'=>true,'/noa-channel.php'=>true,'/noa-music-download.php'=>true]; // Channel URLs require an owner ID and are linked from MY.
+    $known=['/noa-sitemap.php'=>true,'/noa-deploy-center.php'=>true,'/noa-channel.php'=>true,'/noa-music-download.php'=>true,'/noa-download.php'=>true]; // Download is reached through the installation page; channel URLs require an owner ID.
     foreach(noa_sitemap_registry() as $group)foreach($group['routes'] as $route)$known[(string)parse_url($route[3],PHP_URL_PATH)]=true;
     $missing=[];
     foreach(glob(rtrim($root,'/').'/noa-*.php')?:[] as $file){
