@@ -18,7 +18,7 @@ function card(row,playlist=false,integrated=false){
 }
 function fill(id,rows,playlist=false,integrated=false){const host=document.getElementById(id);host.replaceChildren();if(!rows.length){const empty=document.createElement('p');empty.className='noa-empty';empty.textContent=playlist?'조건에 맞는 공개 연속듣기 목록이 없습니다.':'음악을 준비하고 있습니다.';host.append(empty);return;}for(const row of rows)host.append(card(row,playlist,integrated));}
 (async()=>{try{
- const response=await fetch('/noa-bridge/home.php',{credentials:'same-origin',cache:'no-store'});if(!response.ok)throw Error();const data=await response.json();if(!data.ok)throw Error();
+ const data=await (window.NoaHomeSnapshot??=fetch('/noa-bridge/home.php',{credentials:'same-origin',cache:'no-store'}).then(async r=>{if(!r.ok)throw Error();const data=await r.json();if(!data.ok)throw Error();return data;}));
  const integrated=data.popularity?.jukeboxCollectionStatus==='enabled';
  for(const [id,key]of [['noa-ep','ep'],['noa-stories','stories'],['noa-covers','covers']])fill(id,data[key],false,integrated);fill('noa-acts',data.playlists,true,integrated);
  const discovery=data.discovery,featured=document.getElementById('noa-featured');
