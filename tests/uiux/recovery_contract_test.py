@@ -5,6 +5,11 @@ ROOT=Path(__file__).resolve().parents[2]
 class RecoveryContract(unittest.TestCase):
  def test_music_processing_and_permission_regions_preserved(self):
   s=(ROOT/'deploy/noa-music.php').read_text()
+  # Reviewed reload restoration (55a63dd) changes two player blocks only.
+  # Require behavioral playback/restore tests as well as exact byte protection;
+  # the database/permission prefix hash remains unchanged.
+  import subprocess
+  subprocess.run(['node','--test','scripts/noa_player_regression.test.mjs','tests/pwa/launch_test.cjs'],cwd=ROOT,check=True,capture_output=True)
   # Approved inline playback and shared-song projection are the current byte baseline.
   for selector in ['.player','[aria-label="곡 상세"]']:
    current="document.querySelector('"+selector+"').hidden=true;"

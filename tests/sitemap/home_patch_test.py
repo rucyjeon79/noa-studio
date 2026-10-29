@@ -13,6 +13,11 @@ baseline=args.host_source.read_bytes()if args.host_source else subprocess.check_
 MONTHLY_INCLUDE=b"<?php if(is_file(__DIR__.'/monthly-banner.php'))require __DIR__.'/monthly-banner.php';?>\n"
 def outside_approved_hero(source):
  source=source.replace(MONTHLY_INCLUDE,b'')
+ # Approved ownership verification tags (#270 and Google registration), not layout.
+ # Strip only the exact registered values; arbitrary tags or content still fail.
+ for tag in [b'<meta name="google-site-verification" content="ITP_veSgoV5LrunUOy08ITLPesQCjQkb8WgHLbeNv-c">',b'<meta name="naver-site-verification" content="1698e241d8bd56b9569f50bb12a136bb67d98bde">']:
+  assert candidate.count(tag)==1,'registered ownership tag missing or duplicated'
+  source=source.replace(tag,b'')
  # User-authorized partner renderer and exactly three call sites; other HOME bytes stay guarded.
  source=re.sub(rb'\nfunction noa_home_banner\(string \$kind\):void\{.*?\n}\n',b'',source,flags=re.S)
  for kind in [b'goods',b'youtube',b'amt']:

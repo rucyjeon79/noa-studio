@@ -23,6 +23,8 @@ jobs:
           "$RUNNER_TEMP/reload-ui/node_modules/.bin/playwright" install --with-deps chromium webkit
           cp scripts/qa/noa-playback-reload.mjs "$RUNNER_TEMP/reload-ui/check.mjs"
           node "$RUNNER_TEMP/reload-ui/check.mjs"
+          cp scripts/qa/noa-p0-media.mjs "$RUNNER_TEMP/reload-ui/media.mjs"
+          NOA_SOURCE_ROOT="$GITHUB_WORKSPACE" node "$RUNNER_TEMP/reload-ui/media.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'playback-reload-${{ github.run_id }}', path: playback-proof/, retention-days: 7}
