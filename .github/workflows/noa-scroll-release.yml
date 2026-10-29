@@ -1,0 +1,57 @@
+name: NOA prevent accidental pull-to-refresh
+on:
+  push:
+    branches: [main]
+    paths: ['scripts/noa_scroll_release.py','.github/workflows/noa-scroll-release.yml']
+permissions: {contents: read}
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 12
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - run: python -m pip install 'paramiko>=3,<5'
+      - run: python scripts/noa_scroll_release.py
+      - name: Check production scroll policy and ordinary scrolling
+        run: |
+          npm install --prefix "$RUNNER_TEMP/scroll-ui" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/scroll-ui/node_modules/.bin/playwright" install --with-deps chromium
+          cat > "$RUNNER_TEMP/scroll-ui/check.mjs" <<'JS'
+          import {chromium} from 'playwright';
+          import assert from 'node:assert/strict';
+          import {mkdirSync,writeFileSync} from 'node:fs';
+          mkdirSync('scroll-proof',{recursive:true});
+          const browser=await chromium.launch({headless:true});
+          try {
+            const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
+            await page.goto('https://noastudio.ai.kr/',{waitUntil:'domcontentloaded'});
+            await page.waitForFunction(()=>getComputedStyle(document.documentElement).overscrollBehaviorY==='contain'&&getComputedStyle(document.body).overscrollBehaviorY==='contain');
+            const policy=await page.evaluate(()=>({html:getComputedStyle(document.documentElement).overscrollBehaviorY,body:getComputedStyle(document.body).overscrollBehaviorY,horizontal:getComputedStyle(document.documentElement).overscrollBehaviorX,touchAction:getComputedStyle(document.documentElement).touchAction}));
+            assert.equal(policy.horizontal,'auto');assert.equal(policy.touchAction,'auto');
+            await page.evaluate(()=>scrollTo(0,300));
+            await page.waitForFunction(()=>scrollY>0);
+            const ordinaryScroll=await page.evaluate(()=>scrollY);
+            await page.evaluate(()=>scrollTo(0,0));
+            await page.screenshot({path:'scroll-proof/mobile.png'});
+            writeFileSync('scroll-proof/result.json',JSON.stringify({policy,ordinaryScroll,url:page.url(),deviceGestureVerified:false},null,2));
+            console.log('NOA_LIVE_SCROLL_POLICY_OK',JSON.stringify({policy,ordinaryScroll}));
+          } finally {await browser.close();}
+          JS
+          node "$RUNNER_TEMP/scroll-ui/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scroll-policy-${{ github.run_id }}
+          path: |
+            scroll-proof/
+            ainoa-proof/deployment.json
+          retention-days: 7
