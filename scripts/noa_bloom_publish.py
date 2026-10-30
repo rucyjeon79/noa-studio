@@ -17,7 +17,10 @@ raw=Path('scripts/noa_bloom_publish.php').read_text().replace('__EXPIRY__',str(i
 t=connect();s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(30);installed=False
 def request(body=None):
  req=urllib.request.Request('https://noastudio.ai.kr/'+name,data=None if body is None else json.dumps(body).encode(),headers={'X-NOA-Diagnostic':token,'Content-Type':'application/json'})
- with urllib.request.urlopen(req,timeout=60)as r:result=json.load(r)
+ try:
+  with urllib.request.urlopen(req,timeout=60)as r:result=json.load(r)
+ except urllib.error.HTTPError as e:
+  print('BLOOM_GUARD_FAILURE',e.read().decode()[:500],flush=True);raise
  if not result.get('ok'):raise RuntimeError('operation_failed')
  return result
 try:

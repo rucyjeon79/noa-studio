@@ -26,4 +26,4 @@ try{
  if($compare!==$before||!noa_sound_visible($after,false)||(int)$saved['revision']!==$revision)throw new RuntimeException('verification_failed');
  $q->execute([$list]);$same=$q->fetch(PDO::FETCH_ASSOC);if($same['payload']!==$by[$list]['payload']||(int)$same['revision']!==(int)$by[$list]['revision'])throw new RuntimeException('collection_changed');
  $db->commit();echo json_encode(['ok'=>true,'title'=>'BLOOM','visibility'=>'public','revision'=>$revision,'memberVisible'=>true,'otherFieldsUnchanged'=>true,'collectionUnchanged'=>true,'documentsUpdated'=>1,'historyRowsAdded'=>1],JSON_THROW_ON_ERROR);
-}catch(Throwable $e){if($db->inTransaction())$db->rollBack();http_response_code(409);echo json_encode(['ok'=>false,'error'=>'guard_or_database_failure']);}
+}catch(Throwable $e){if($db->inTransaction())$db->rollBack();http_response_code(409);echo json_encode(['ok'=>false,'error'=>($e instanceof PDOException?'database_error':$e->getMessage()),'exception'=>get_class($e),'sqlState'=>($e instanceof PDOException?$e->getCode():null),'driverCode'=>($e instanceof PDOException?($e->errorInfo[1]??null):null)]);}
