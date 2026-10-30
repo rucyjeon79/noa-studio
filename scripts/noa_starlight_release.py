@@ -22,6 +22,10 @@ release.FILES={
  'noa-assets/editorial-act-4.webp':'deploy/noa-assets/editorial/act-4.webp',
 
  'noa-home.js':'deploy/noa-home.js',
+ 'noa-community.js':'deploy/noa-community.js',
+ 'noa-bridge/home.php':'bridge/home.php',
+ 'noa-bridge/community.php':'bridge/community.php',
+ 'noa-bridge/engagement.php':'bridge/engagement.php',
  'noa-bridge/home-core.php':'bridge/home-core.php',
  'noa-bridge/home-discovery.php':'bridge/home-discovery.php',
  'noa-bridge/popularity-store.php':'bridge/popularity-store.php',

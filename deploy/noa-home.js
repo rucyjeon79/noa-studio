@@ -22,7 +22,7 @@ function homePageSize(width,height=800,cardHeight=240,chrome=160,columnGap=width
  const columns=Math.min(4,Math.max(1,Math.floor((width+gap)/(min+gap))));
  return columns*Math.max(1,Math.floor((height-chrome+rowGap)/(cardHeight+rowGap)));
 }
-function listSize(state){
+function rawListSize(state){
  const box=getComputedStyle(state.host),width=state.host.clientWidth-parseFloat(box.paddingLeft)-parseFloat(box.paddingRight);
  if(state.width!==width){state.width=width;state.cardHeight=0;}
  const gap=parseFloat(box.columnGap)||0,rowGap=parseFloat(box.rowGap)||0;
@@ -33,10 +33,11 @@ function listSize(state){
  const columns=homePageSize(width,1,1,0,gap,rowGap);
  return homePageSize(width,window.visualViewport?.height||window.innerHeight,state.cardHeight||((width-gap*(columns-1))/columns*.5625+120),chrome,gap,rowGap);
 }
+function listSize(state){return Math.min(rawListSize(state),...[...homeLists.values()].filter(item=>item.rows?.length).map(rawListSize));}
 function fitList(state){
  const heights=[...state.host.children].filter(node=>node.matches('.noa-music-card,.noa-engagement-card')).map(node=>node.getBoundingClientRect().height);
  state.cardHeight=Math.max(state.cardHeight||0,...heights);
- if(listSize(state)!==state.size)renderList(state);
+ refit();
 }
 function renderList(state){
  const {host,rows,playlist,integrated,pager}=state;
@@ -49,8 +50,9 @@ function renderList(state){
  if(pages>1){for(const [label,delta]of [['이전',-1],['다음',1]]){const button=document.createElement('button');button.type='button';button.className='noa-button';button.textContent=label;button.disabled=delta<0?state.page===0:state.page===pages-1;button.onclick=()=>{state.page+=delta;renderList(state);};pager.append(button);if(delta<0){const status=document.createElement('span');status.textContent=(state.page+1)+' / '+pages;status.setAttribute('aria-live','polite');pager.append(status);}}}
  window.NoaCardLayout?.refresh();requestAnimationFrame(()=>fitList(state));
 }
-const homeResize=new ResizeObserver(entries=>{for(const entry of entries){const state=homeLists.get(entry.target.id);if(state){if(listSize(state)!==state.size)renderList(state);else fitList(state);}}});
-const refit=()=>{for(const state of homeLists.values())if(listSize(state)!==state.size)renderList(state);};
+let refitFrame=0;
+const refit=()=>{if(refitFrame)return;refitFrame=requestAnimationFrame(()=>{refitFrame=0;const sizes=[...homeLists.values()].map(state=>[state,listSize(state)]);for(const [state,size]of sizes)if(size!==state.size)renderList(state);});};
+const homeResize=new ResizeObserver(entries=>{for(const entry of entries){const state=homeLists.get(entry.target.id);if(state)fitList(state);}});
 window.addEventListener('resize',refit,{passive:true});window.visualViewport?.addEventListener('resize',refit,{passive:true});
 document.fonts?.ready.then(refit);
 
@@ -62,14 +64,14 @@ function fill(id,rows,playlist=false,integrated=false){
 (async()=>{try{
  const data=await (window.NoaHomeSnapshot??=fetch('/noa-bridge/home.php',{credentials:'same-origin',cache:'no-store'}).then(async r=>{if(!r.ok)throw Error();const data=await r.json();if(!data.ok)throw Error();return data;}));
  const integrated=data.popularity?.jukeboxCollectionStatus==='enabled';
- for(const [id,key]of [['noa-ep','ep'],['noa-stories','stories'],['noa-covers','covers']])fill(id,data[key],false,integrated);fill('noa-acts',data.playlists,true,integrated);
+ fill('noa-acts',data.playlists,true,integrated);
  const discovery=data.discovery,featured=document.getElementById('noa-featured');
  if(discovery){
   const tabs=document.createElement('div');tabs.className='noa-discovery-tabs';tabs.setAttribute('role','group');tabs.setAttribute('aria-label','추천 음악 기준');
   const description=featured.parentElement.querySelector('p.noa-muted');
   const select=kind=>{for(const b of tabs.children)b.setAttribute('aria-pressed',String(b.dataset.kind===kind));fill('noa-featured',discovery[kind]||[],false,integrated);const selectedIds=new Set((discovery[kind]||[]).map(row=>row.videoId));for(const [id,key]of [['noa-ep','ep'],['noa-stories','stories'],['noa-covers','covers']])fill(id,(data[key]||[]).filter(row=>!selectedIds.has(row.videoId)),false,integrated);if(description)description.textContent=kind==='rising'?(discovery.comparisonHours?'약 '+discovery.comparisonHours+'시간 동안 조회수가 늘어난 음악이에요.':'상승세를 비교할 기록을 모으고 있어요.'):kind==='new'?'실제 공개일이 최근인 영상부터 만나보세요.':kind==='popular'?'조회수와 유효 재생, 좋아요·댓글이 반영된 인기 음악이에요.':'인기 음악, 조회수 상승, 최근 공개 영상을 골고루 만나보세요.';if(!(discovery[kind]||[]).length)featured.querySelector('p').textContent=kind==='rising'?'확인된 상승 영상이 생기면 여기에 소개할게요.':'조건에 맞는 공개 영상을 준비하고 있어요.';};
   for(const [kind,label]of [['mixed','골고루'],['popular','인기'],['rising','상승세'],['new','새 영상']]){const b=document.createElement('button');b.type='button';b.dataset.kind=kind;b.textContent=label;b.onclick=()=>select(kind);tabs.append(b);}featured.before(tabs);select('mixed');
- }else fill('noa-featured',data.featured||[],false,integrated);
+ }else{fill('noa-featured',data.featured||[],false,integrated);for(const [id,key]of [['noa-ep','ep'],['noa-stories','stories'],['noa-covers','covers']])fill(id,data[key],false,integrated);}
 
  document.getElementById('noa-playlist-basis').textContent='플레이리스트를 골라 음악을 이어 들어보세요.';
  const date=new Date(data.popularity?.aggregatedAt||data.collectedAt);document.getElementById('noa-ranking-status').textContent=(data.popularity?'인기 음악':'YouTube 조회수 기준')+(Number.isFinite(date.getTime())?' · '+date.toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'}):'');

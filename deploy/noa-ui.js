@@ -101,7 +101,7 @@ function plan(count,capacity,featured=true){
  return{columns,featured:false,rows};
 }
 const specs=[
- ['.noa-card-grid','.noa-music-card',true,168,136,4],
+ ['.noa-card-grid','.noa-music-card,.noa-engagement-card',true,168,136,4],
  ['.world-mv-grid','.world-mv-card',true,216,216,4],
  ['.yt-grid','.yt-card',true,216,216,4],
  ['.noa-browse-grid','.noa-browse-card',false,164,136,5],
@@ -122,7 +122,7 @@ function arrange(host,spec){
  if(!cards.length){host.classList.remove('noa-balanced');return;}
  const gap=parseFloat(box.columnGap)||(width<=600?12:16),min=width<=600?spec[4]:spec[3];
  if(spec[2])cards.forEach(card=>prepare(card));
- const capacity=Math.min(spec[5],Math.max(1,Math.floor((width+gap)/(min+gap))));
+ const capacity=Math.min((host.matches('.noa-browse-grid,.noa-genres')?Math.min(cards.length,spec[5]):spec[5]),Math.max(1,Math.floor((width+gap)/(min+gap))));
  const layout=plan(cards.length,capacity,spec[2]),offset=host.id==='youtube-playlists'?1:0;
  host.classList.add('noa-balanced');host.dataset.noaColumns=String(layout.columns);host.dataset.noaRows=[...(layout.featured?[1]:[]),...layout.rows].join('+');
  style(host,'--noa-balance-columns',String(layout.columns*2));style(host,'--noa-grid-columns',String(layout.columns));style(host,'--noa-balance-gap',gap+'px');

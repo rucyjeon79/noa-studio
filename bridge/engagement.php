@@ -9,6 +9,7 @@ try{
  $_SESSION['noa_engagement_csrf']??=bin2hex(random_bytes(32));$csrf=$_SESSION['noa_engagement_csrf'];$db=noa_bridge_pdo();if(!ne_ready($db))throw new DomainException('not_ready');
  $method=$_SERVER['REQUEST_METHOD']??'GET';
  if($method==='GET'){
+  if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
   // Native bootstrap SQL-escapes $_GET. Decode the original query for JSON,
   // then apply the same bounded type checks and authorization below.
   parse_str((string)($_SERVER['QUERY_STRING']??''),$ne_query);

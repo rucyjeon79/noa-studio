@@ -10,6 +10,7 @@ function nc_reply(array $data,int $status=200):never{http_response_code($status)
 $_SESSION['noa_community_csrf']??=bin2hex(random_bytes(32));
 try{
  $method=$_SERVER['REQUEST_METHOD']??'GET';
+ if($method==='GET'&&session_status()===PHP_SESSION_ACTIVE)session_write_close();
  if($method==='GET'&&($_GET['action']??'')==='home')nc_reply(['ok'=>true]+nc_home());
  if(empty($member['mb_id'])||(int)($member['mb_level']??1)<2)nc_reply(['ok'=>false,'error'=>'login_required'],401);
  if($method==='GET'){

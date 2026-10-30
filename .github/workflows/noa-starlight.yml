@@ -15,7 +15,7 @@ jobs:
         with: {php-version: '8.2', extensions: 'dom, mbstring'}
       - name: Validate stories, source priority, account theme fallback and player contracts
         run: |
-          for file in bridge/ui-preferences.php bridge/world-story.php deploy/noa-design.extend.php deploy/noa-app/world-view.php deploy/noa-app/home.php deploy/noa-settings.php deploy/noa-theme-admin.php; do php -l "$file"; done
+          for file in bridge/home.php bridge/community.php bridge/engagement.php bridge/ui-preferences.php bridge/world-story.php deploy/noa-design.extend.php deploy/noa-app/world-view.php deploy/noa-app/home.php deploy/noa-settings.php deploy/noa-theme-admin.php; do php -l "$file"; done
           for act in 0 1 2 3 4; do STARLIGHT_RENDER_DIR=starlight-proof php tests/starlight/world_test.php "$act"; done
           php tests/catalog/world_test.php
           php tests/catalog/world_mv_test.php

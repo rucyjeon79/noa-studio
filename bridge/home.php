@@ -2,6 +2,8 @@
 declare(strict_types=1);
 require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/storage.php';require_once __DIR__.'/youtube-store.php';require_once __DIR__.'/home-store.php';
 header('Content-Type: application/json; charset=utf-8');header('Cache-Control: private, no-store');header('X-Content-Type-Options: nosniff');
+// Release this read-only request's session lock before catalog and ranking queries.
+if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 try{
  $db=noa_bridge_pdo();$run=ny_latest($db);if(!$run||$run['channel_id']!=='UCwYy9xsAqDFat6AV5UKrfgA')throw new DomainException('verified_channel_collection_required');
  $data=nh_load($db,$run);
