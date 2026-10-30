@@ -31,9 +31,9 @@ try{for(const [width,height] of [[320,900],[390,900],[768,720],[1920,900]]){
   await page.locator('.noa-mobile-footer').scrollIntoViewIfNeeded();
   assert.equal(await page.locator('.noa-mobile-footer [data-visit="total"]').textContent(),'123,456');
   for(const link of await page.locator('.noa-mobile-footer .noa-sidebar-legal a').all())assert((await link.boundingBox()).height>=44);
-  await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));
+  await page.evaluate(()=>scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'}));
   const counter=await page.locator('.noa-mobile-footer .noa-sidebar-visitors').boundingBox(),dock=await page.locator('.noa-mobile-nav').boundingBox();
-  assert(counter.y+counter.height<=dock.y);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  assert(counter.y>=56);assert(counter.y+counter.height<=dock.y);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await page.screenshot({path:'starlight-proof/mobile-footer-'+width+'.png'});
  }else assert(!(await page.locator('.noa-mobile-footer').isVisible()));
  await page.locator('#noa-nav-all').click();await page.waitForURL(base+'/noa-sitemap.php');
