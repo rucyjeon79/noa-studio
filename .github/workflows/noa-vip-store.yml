@@ -2,7 +2,7 @@ name: NOA VIP pass store
 on:
   push:
     branches: [main]
-    paths: &paths ['bridge/vip-store*.php','deploy/noa-vip.*','deploy/noa-assets/vip-*.webp','tests/vip-store/**','scripts/noa_vip_store_release.py','.github/workflows/noa-vip-store.yml']
+    paths: &paths ['bridge/vip-store*.php','deploy/noa-vip.*','deploy/noa-points.php','deploy/noa-assets/vip-*.webp','tests/vip-store/**','scripts/noa_vip_store_release.py','.github/workflows/noa-vip-store.yml']
   pull_request:
     paths: *paths
 permissions: {contents: read}
