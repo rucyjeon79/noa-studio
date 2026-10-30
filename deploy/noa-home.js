@@ -34,7 +34,7 @@ function listSize(state){
  return homePageSize(width,window.visualViewport?.height||window.innerHeight,state.cardHeight||((width-gap*(columns-1))/columns*.5625+120),chrome,gap,rowGap);
 }
 function fitList(state){
- const heights=[...state.host.querySelectorAll('.noa-music-card')].map(node=>node.getBoundingClientRect().height);
+ const heights=[...state.host.children].filter(node=>node.matches('.noa-music-card,.noa-engagement-card')).map(node=>node.getBoundingClientRect().height);
  state.cardHeight=Math.max(state.cardHeight||0,...heights);
  if(listSize(state)!==state.size)renderList(state);
 }
