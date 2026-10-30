@@ -15,6 +15,7 @@ try{for(const engine of ['chromium','webkit']){browser=await(engine==='webkit'?w
  const dimensions=await page.locator('.noa-point-pack').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return{height:r.height,width:r.width};}));assert(Math.max(...dimensions.map(r=>r.height))-Math.min(...dimensions.map(r=>r.height))<1);
  await page.locator('.noa-point-pack').last().scrollIntoViewIfNeeded();await page.waitForFunction(()=>[...document.querySelectorAll('.np-pack-art img')].every(i=>i.complete&&i.naturalWidth>0));
  assert.equal(new Set(await page.locator('.np-pack-art img').evaluateAll(es=>es.map(e=>e.src))).size,6,'six distinct loaded artworks');
+ await page.evaluate(()=>scrollTo(0,0));assert(await page.locator('.np-header h1').isVisible());
  await page.screenshot({path:`${out}/packs-${engine}-${width}-${theme}.png`,fullPage:true});
  ready=true;await page.reload();await page.locator('.np-cart-item').waitFor();assert.equal(await page.locator('#points-cart-count').innerText(),'1','cart survives refresh');assert(await page.locator('#points-buy').isDisabled());
  await page.getByRole('button',{name:'10,000P 카트에서 삭제',exact:true}).click();assert.equal(await page.locator('#points-cart-count').innerText(),'0');

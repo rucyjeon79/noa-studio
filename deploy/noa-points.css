@@ -18,3 +18,10 @@ main.noa-points-page{max-width:1440px;margin-inline:auto;--np-space:24px;--np-bo
 @media(prefers-reduced-motion:reduce){.np-pack-art img{transition:none}.noa-point-pack:hover .np-pack-art img{transform:none}}
 .noa-payment-settings label{display:block;margin-block:16px}.noa-payment-settings input:not([type=checkbox]),.noa-payment-settings select{display:block;width:100%;min-height:44px;margin-top:8px}.noa-payment-settings code{display:block;overflow-wrap:anywhere;user-select:all}.noa-payment-settings button{min-height:44px}.noa-payment-readiness{margin-block:24px;padding:20px;border:1px solid var(--noa-line);border-radius:12px;background:var(--noa-surface);color:var(--noa-text)}.noa-payment-readiness h2{margin:0}.noa-payment-readiness ul{list-style:none;padding:0;margin:16px 0}.noa-payment-readiness li{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:44px;border-bottom:1px solid var(--noa-line);font-size:14px}.noa-payment-readiness li strong{font-size:12px;white-space:nowrap;color:var(--noa-muted)}.noa-payment-readiness [data-ready=true]{color:var(--noa-accent)}.noa-payment-readiness nav{display:flex;flex-wrap:wrap;gap:8px}.noa-payment-readiness p{font-size:13px;line-height:1.6;color:var(--noa-muted)}
 
+/* Keep the product heading visible; the legacy shell hides generic main headers. */
+body.noa-page main.noa-points-page>header.np-header{display:flex}
+.np-header>div:first-child{min-width:0}
+.noa-points-page label.noa-point-consent{display:flex;flex-direction:row;align-items:flex-start}
+@media(min-width:761px){html.noa-has-sidebar body.noa-page main.noa-points-page{inline-size:calc(100% - var(--noa-rail));max-inline-size:1440px;margin-inline-start:calc(var(--noa-rail) + max(0px,(100% - var(--noa-rail) - 1440px)/2));margin-inline-end:0}}
+@media(min-width:1280px){.noa-point-packs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){body.noa-page main.noa-points-page>header.np-header{display:block}.np-header-side{display:flex;align-items:center;justify-content:space-between;text-align:left;margin-top:14px}.np-header-side p{max-width:none;margin:0}.np-header .np-eyebrow{max-width:none}}
