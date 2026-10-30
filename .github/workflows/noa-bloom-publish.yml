@@ -1,0 +1,36 @@
+name: Publish authorized BLOOM visibility
+on:
+  pull_request:
+    paths: ['scripts/noa_bloom_publish.*','.github/workflows/noa-bloom-publish.yml']
+  push:
+    branches: [main]
+    paths: ['scripts/noa_bloom_publish.*','.github/workflows/noa-bloom-publish.yml']
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - run: |
+          php -l scripts/noa_bloom_publish.php
+          python -m py_compile scripts/noa_bloom_publish.py
+  publish:
+    if: github.event_name == 'push'
+    needs: verify
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 10
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_DRIVE_RCLONE_CONFIG_B64: ${{ secrets.NOA_DRIVE_RCLONE_CONFIG_B64 }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python -m pip install 'paramiko>=3,<5'
+      - run: python scripts/noa_bloom_publish.py
+      - run: python scripts/noa_collection_diagnostic.py
