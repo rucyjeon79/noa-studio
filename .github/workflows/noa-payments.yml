@@ -30,12 +30,17 @@ jobs:
         run: |
           for f in bridge/toss*.php deploy/noa-points.php deploy/noa-payment-settings.php deploy/noa-membership.php tests/payments/*.php; do php -l "$f"; done
           node --check deploy/noa-points.js
+          php tests/member/access_test.php
           php tests/subscription/core_test.php
           php tests/subscription/mysql_test.php
           php tests/payments/mysql.php
           python tests/payments/race_test.py
           php tests/payments/http_fixture.php
           python tests/payments/http_test.py
+          php tests/vip-store/mysql.php
+          python tests/vip-store/race.py
+          php tests/kcp/core.php
+          php tests/kcp/mysql.php
       - name: Verify checkout and seven audio cards on mobile and desktop
         run: |
           php tests/payments/fixture.php
@@ -46,9 +51,17 @@ jobs:
           node "$RUNNER_TEMP/noa-payments/check.mjs"
           cp tests/payments/settings-browser.mjs "$RUNNER_TEMP/noa-payments/settings-browser.mjs"
           node "$RUNNER_TEMP/noa-payments/settings-browser.mjs"
+          php tests/vip-store/fixture.php
+          cp tests/vip-store/browser.mjs "$RUNNER_TEMP/noa-payments/vip.mjs"
+          node "$RUNNER_TEMP/noa-payments/vip.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
-        with: {name: 'noa-payments-candidate-${{ github.run_id }}', path: 'payments-proof/', retention-days: 7}
+        with:
+          name: 'noa-payments-candidate-${{ github.run_id }}'
+          path: |
+            payments-proof/
+            vip-proof/
+          retention-days: 7
   deploy:
     if: github.event_name == 'push'
     needs: verify

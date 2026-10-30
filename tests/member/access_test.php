@@ -17,3 +17,5 @@ try{nc_patch($d,['fields'=>['confirmed'=>true]]);throw new RuntimeException('own
 echo "OWNER_COMMON_FIELDS_WITHOUT_ADMIN_ESCALATION_OK\n";
 
 check(nam_allowed(nam_access(),nam_requirement('/noa-sitemap.php')),'public sitemap describes locked destinations without granting access');
+
+$labels=[1=>"방문자",2=>"별하나 회원",3=>"별무리 회원",4=>"별무리 VIP회원",5=>"크레이터 회원",6=>"크레이터 VIP회원",7=>"관리자",8=>"관리자",9=>"관리자",10=>"최고 관리자"];foreach($labels as $level=>$label)check(nam_access($level===1?[]:["mb_id"=>"qa","mb_level"=>$level])["name"]===$label,"official_label_$level");check(nam_access(["mb_id"=>"admin","mb_level"=>10],"super")["name"]==="최고 관리자","official_super_label");

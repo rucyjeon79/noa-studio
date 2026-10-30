@@ -7,7 +7,7 @@ $a=nam_access((array)($member??[]),(string)($is_admin??''));$method=$_SERVER['RE
 try{
  if($method==='GET'&&$action==='status'){
   $orders=[];$csrf=null;$balance=null;
-  if($a['member']){$_SESSION['noa_toss_csrf']??=bin2hex(random_bytes(32));$csrf=$_SESSION['noa_toss_csrf'];$owner=(string)$member['mb_id'];$balance=(int)nr_member($owner,false)['mb_point'];$rows=ns_q("SELECT payload FROM noa_documents WHERE kind='toss_order' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.ownerId'))=".ns_e($owner).' ORDER BY updated_at DESC LIMIT 20');while($row=sql_fetch_array($rows))$orders[]=nt_view(json_decode($row['payload'],true,64,JSON_THROW_ON_ERROR));}
+  if($a['member']){$_SESSION['noa_toss_csrf']??=bin2hex(random_bytes(32));$csrf=$_SESSION['noa_toss_csrf'];$owner=(string)$member['mb_id'];if(session_status()===PHP_SESSION_ACTIVE)session_write_close();$balance=(int)nr_member($owner,false)['mb_point'];$rows=ns_q("SELECT payload FROM noa_documents WHERE kind='toss_order' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.ownerId'))=".ns_e($owner).' ORDER BY updated_at DESC LIMIT 20');while($row=sql_fetch_array($rows))$orders[]=nt_view(json_decode($row['payload'],true,64,JSON_THROW_ON_ERROR));}
   nt_reply(200,['ok'=>true,'member'=>$a['member'],'admin'=>($is_admin??'')==='super','csrf'=>$csrf,'balance'=>$balance,'payment'=>nt_public_config($c),'products'=>nt_products(),'orders'=>$orders]);
  }
  if(!$a['member'])nt_reply(401,['ok'=>false,'error'=>'login_required']);

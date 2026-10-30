@@ -5,8 +5,8 @@ if(is_file(__DIR__.'/music-proof-auth.php'))require_once __DIR__.'/music-proof-a
 function nam_access(array $member=[],string $admin=''):array{
  $logged=!empty($member['mb_id']);$level=$logged?max(1,min(10,(int)($member['mb_level']??2))):1;$super=$logged&&$admin==='super';
  $base=$logged&&$level>=2;$write=$logged&&$level>=3;$vip=$logged&&in_array($level,[4,6],true);$creator=$logged&&in_array($level,[5,6],true);
- $names=[1=>'비회원',2=>'별무리 · 시작회원',3=>'별무리 회원',4=>'VIP 별무리',5=>'크리에이터',6=>'VIP 크리에이터'];
- return ['level'=>$level,'name'=>$super?'최고관리자':($names[$level]??'앱 관리자 · 권한 지정 대기'),'home'=>true,'member'=>$base||$super,'write'=>$write||$super,'music'=>$vip||$super||(function_exists('nmr_current')&&nmr_current()),'creator'=>$creator||$super,'creatorAI'=>($logged&&$level===6)||$super,'ownDownload'=>$base||$super,'admin'=>$super];
+ $names=[1=>'방문자',2=>'별하나 회원',3=>'별무리 회원',4=>'별무리 VIP회원',5=>'크레이터 회원',6=>'크레이터 VIP회원',7=>'관리자',8=>'관리자',9=>'관리자',10=>'최고 관리자'];
+ return ['level'=>$level,'name'=>$super?'최고 관리자':$names[$level],'home'=>true,'member'=>$base||$super,'write'=>$write||$super,'music'=>$vip||$super||(function_exists('nmr_current')&&nmr_current()),'creator'=>$creator||$super,'creatorAI'=>($logged&&$level===6)||$super,'ownDownload'=>$base||$super,'admin'=>$super];
 }
 function nam_owner(array $document,array $member):bool{
  return !empty($member['mb_id'])&&is_string($document['ownerId']??null)&&hash_equals($document['ownerId'],(string)$member['mb_id']);
