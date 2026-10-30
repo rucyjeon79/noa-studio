@@ -30,3 +30,5 @@ $audit=nspp_detail($owner,$sk);ck(count($audit['history'])===4&&$audit['settleme
 $receipt=nspp_detail($owner,$receiptKey);ck(!isset($receipt['receipt']['balance'])&&!isset($receipt['funding']['sources']),'recipient_private_projection');
 nope(fn()=>nspp_detail('s_other',$sk,true),'administrator_required');
 echo "SETTLEMENT_OWNER_AUDIT_AND_PRIVATE_SOURCE_PROJECTION_OK\n";
+
+foreach(nspp_dashboard($owner)['items']as $item)ck(!isset($item['balance'])&&!isset($item['funding']['sources']),'dashboard_private_projection');
