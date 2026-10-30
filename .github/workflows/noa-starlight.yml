@@ -4,7 +4,7 @@ on:
     paths: ['bridge/world-story.php','deploy/noa-sitemap.php','deploy/noa-app/home.php','deploy/noa-starlight.css','deploy/noa-design*','deploy/noa-ui.*','deploy/noa-world*','deploy/noa-app/world-view.php','bridge/world-story.php','bridge/ui-preferences.php','tests/starlight/**','scripts/qa/noa-shared-navigation.mjs','scripts/noa_starlight_release.py','.github/workflows/noa-starlight.yml']
   push:
     branches: [main]
-    paths: ['bridge/world-story.php','deploy/noa-sitemap.php','deploy/noa-app/home.php','deploy/noa-starlight.css','tests/starlight/**','scripts/noa_starlight_release.py','.github/workflows/noa-starlight.yml']
+    paths: ['bridge/world-story.php','deploy/noa-sitemap.php','deploy/noa-app/home.php','deploy/noa-starlight.css','tests/starlight/**','scripts/qa/noa-shared-navigation.mjs','scripts/noa_starlight_release.py','.github/workflows/noa-starlight.yml']
 permissions: {contents: read}
 jobs:
   verify:
@@ -23,6 +23,7 @@ jobs:
           php tests/catalog/home_test.php
           php tests/catalog/home_uiux_test.php
           php tests/editorial/content_test.php
+          php tests/starlight/visitors_test.php
           php tests/sitemap/registry_test.php
           php tests/membership/extension_scope.php
           node --check deploy/noa-account.js

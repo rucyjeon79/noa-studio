@@ -6,8 +6,8 @@ import assert from 'node:assert/strict';
 const server=createServer((req,res)=>{
  if(req.url.startsWith('/noa-bridge/membership.php')){res.setHeader('Content-Type','application/json');return res.end(JSON.stringify({ok:true,member:false}));}
  if(req.url.startsWith('/noa-assets/')){res.writeHead(204);return res.end();}
- if(['/noa-account.js','/noa-account.css','/noa-ui.css','/noa-starlight.css'].includes(req.url)){res.setHeader('Content-Type',req.url.endsWith('.js')?'text/javascript':'text/css');return res.end(readFileSync('deploy'+req.url));}
- res.setHeader('Content-Type','text/html; charset=utf-8');res.end('<!doctype html><html lang="ko" data-noa-style="starlight"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-account.css"><link rel="stylesheet" href="/noa-starlight.css"><body><aside class="noa-sidebar"><a href="/">NOA STUDIO</a></aside><main class="noa-layout" style="padding:24px;min-height:2400px"><h1>이동 검증</h1><a href="/second">다음 화면</a></main><nav class="noa-mobile-nav"><a href="/">홈</a><a href="/second">음원</a><a href="/noa-my.php">MY</a></nav><script src="/noa-account.js"></script></body></html>');
+ if(['/noa-ui.js','/noa-account.js','/noa-account.css','/noa-ui.css','/noa-starlight.css'].includes(req.url)){res.setHeader('Content-Type',req.url.endsWith('.js')?'text/javascript':'text/css');return res.end(readFileSync('deploy'+req.url));}
+ res.setHeader('Content-Type','text/html; charset=utf-8');res.end('<!doctype html><html lang="ko" data-noa-style="starlight"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-account.css"><link rel="stylesheet" href="/noa-starlight.css"><body><script type="application/json" id="noa-visitor-counts">{"today":"123","yesterday":"45","total":"123456"}</script><main class="noa-layout" style="padding:24px;min-height:2400px"><h1>이동 검증</h1><a href="/second">다음 화면</a></main><script src="/noa-ui.js"></script><script src="/noa-account.js"></script></body></html>');
 });await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const base='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});mkdirSync('starlight-proof',{recursive:true});
@@ -21,6 +21,12 @@ try{for(const width of [320,390,768,1920]){
  await page.evaluate(()=>scrollTo(0,1800));assert((await page.locator('#noa-account-bar').boundingBox()).y===0);
  await page.locator('#noa-nav-top').click();await page.waitForFunction(()=>scrollY===0);
  assert(await page.locator(width<=760?'.noa-mobile-nav':'.noa-sidebar').isVisible());
+ if(width>760){
+  assert.equal(await page.locator('[data-visit="total"]').textContent(),'123,456');
+  for(const link of await page.locator('.noa-sidebar-legal a').all())assert((await link.boundingBox()).height>=44);
+  const sidebar=await page.locator('.noa-sidebar').boundingBox(),footer=await page.locator('.noa-sidebar-bottom').boundingBox();
+  assert(footer.y+footer.height<=sidebar.y+sidebar.height);assert(await page.locator('.noa-menu').isVisible());
+ }
  await page.locator('#noa-nav-all').click();await page.waitForURL(base+'/noa-sitemap.php');
  await page.screenshot({path:'starlight-proof/navigation-'+width+'.png'});assert.deepEqual(errors,[]);await page.close();
  console.log('PASS shared navigation '+width);

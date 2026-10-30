@@ -20,6 +20,14 @@ function noa_policy_script_revision($html){
  $world_js=dirname(__DIR__).'/noa-world.js';if(is_file($world_js))$html=preg_replace("~(/noa-world[.]js)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$world_js),$html);
  $manifest=dirname(__DIR__).'/noa-manifest.json';
  if(is_file($manifest))$html=preg_replace("~(/noa-manifest[.]json)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$manifest),$html);
+ // Reuse GnuBoard's existing visit summary: no extra request or database query.
+ if(!str_contains($html,'id="noa-visitor-counts"')){
+  $summary=(string)($GLOBALS['config']['cf_visit']??'');$counts=null;
+  if(preg_match('/^오늘:(\d+),어제:(\d+),최대:(\d+),전체:(\d+)$/u',trim($summary),$visit))
+   $counts=['today'=>$visit[1],'yesterday'=>$visit[2],'total'=>$visit[4]];
+  $data='<script type="application/json" id="noa-visitor-counts">'.json_encode($counts,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT).'</script>';
+  $html=str_ireplace('</head>',$data.'</head>',$html);
+ }
  return $html;
 }
 function noa_design_assets(){
