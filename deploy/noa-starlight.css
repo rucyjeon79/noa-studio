@@ -221,3 +221,5 @@ html[data-noa-home-ainoa] #noa-ainoa>.ainoa-symbol{display:none!important}
 html[data-noa-home-ainoa] #noa-ainoa :is(.ainoa-panel,.ainoa-tip){left:0;right:auto;bottom:0;transform:translateX(-50%);width:min(360px,calc(100vw - 24px))}
 html[data-noa-home-ainoa] #noa-ainoa .ainoa-panel::after{right:calc(50% - 7px)}
 html[data-noa-home-ainoa] #noa-ainoa:has(.ainoa-panel:not([hidden])) .ainoa-tip{visibility:hidden;pointer-events:none}
+
+html[data-noa-home-ainoa] #noa-ainoa .ainoa-tip::after{right:calc(50% - 8px)}
