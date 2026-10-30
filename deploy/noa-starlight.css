@@ -66,4 +66,16 @@ html[data-noa-style] .ne-page .ne-main{max-width:1280px}
  html[data-noa-style] :is(.noa-card-grid,.noa-browse-grid){gap:24px 16px}
 }
 @media(prefers-reduced-motion:reduce){html[data-noa-style] :is(.noa-art img,.noa-home-banner,.noa-site-map-link){transition:none;transform:none}}
+/* Native GnuBoard desktop AND mobile skins. Mobile uses .list_01, not .tbl_wrap.
+   Keep authored media, CAPTCHA pixels and editor documents intact. */
+html.noa-g5[data-noa-style] body :is(.list_01,.list_02,.list_03,.all_chk,.list_01>ul,.list_01>ul>li,.list_02>ul>li,.list_03>ul>li,#bo_list li,#bo_list tbody tr,#bo_list tbody td,#bo_list .bo_notice td,.more_opt,.more_opt li,.more_opt li button,.more_opt li a,#bo_v_top ul,.cmt_btn,#autosave_pop,.autosave_close,.filebox .fileName,.filebox .btn_file,#bo_w .file_wr,.new_win .win_ul li,.new_win .win_total,#win_title,.cke_sc_def,#copymove td,.copymove_currentbg,.hd_pops,#hd_nb,#gnb_1dul,.gnb_2dul){background-color:var(--noa-surface)!important;color:var(--noa-text);border-color:var(--noa-line)!important;box-shadow:none}
+html.noa-g5[data-noa-style] body :is(#bo_list .bo_notice,#bo_list tbody .even td,.bo_v_nb li:hover,.pg_page:hover,.pg_start:hover,.pg_prev:hover,.pg_end:hover,.pg_next:hover,.autosave_close:hover,#bo_v_share .btn:hover){background-color:var(--noa-raised)!important;color:var(--noa-text)}
+html.noa-g5[data-noa-style] body :is(.all_chk label,#bo_list .bo_subject,#bo_list .bo_tit a,#bo_list .sv_member,.more_opt button,.more_opt a,.cmt_btn,#autosave_pop a,.list_01 a,.list_02 a,.list_03 a){color:var(--noa-text)}
+html.noa-g5[data-noa-style] body :is(.bo_info,.bo_info span,.bo_date,.bo_view,.list_01 .li_info,.list_02 .li_info,.list_03 .li_info){color:var(--noa-muted)}
+html.noa-g5[data-noa-style] body :is(.list_01,.list_02,.list_03) :is(li,div,dl,dt,dd){border-color:var(--noa-line)}
+html.noa-g5[data-noa-style] body :is(.btn_close,button.btn01,button.btn_cancel,.btn_top .btn_cancel,.btn_top .btn_b01,#top_btn){background-color:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line)}
+/* Article titles are reading links, even if the shared enhancer decorates them. */
+html.noa-g5[data-noa-style] #bo_list :is(a.bo_subject,.bo_tit>a).noa-action{display:inline;min-height:0;padding:0;border:0;background:transparent;box-shadow:none;font:inherit;text-align:start;color:var(--noa-text)}
+html.noa-g5[data-noa-style] #bo_list :is(a.bo_subject,.bo_tit>a).noa-action>svg{display:none}
+
 }
