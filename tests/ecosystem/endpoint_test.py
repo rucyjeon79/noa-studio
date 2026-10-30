@@ -43,5 +43,17 @@ with tempfile.TemporaryDirectory(prefix='noa-ecosystem-http-') as temp:
   assert status==200,(status,upload)
   asset=json.loads(upload)['id'];assert a('asset&id='+asset)[0]==200;assert b('asset&id='+asset)[0]==409
   assert (root/'data/noa-ecosystem/.htaccess').read_text()=='Require all denied\n'
-  print('ECOSYSTEM_REAL_HTTP_CSRF_OWNERSHIP_PRIVATE_IMAGE_CART_OK')
+  collab={'id':'9'*32,'revision':0,'space':'lab','category':'collaboration','title':'HTTP collaboration','body':'work','visibility':'public','rightsConfirmed':True,'roles':'vocals','schedule':'November','compensation':'contract','rights':'shared credit'}
+  result=a('save',collab,csrf=csrf);assert result[0]==200,result
+  detail=json.loads(b('detail&id='+'9'*32)[1])
+  request={'id':'9'*32,'message':'participate','consent':True,'termsHash':detail['post']['termsHash']}
+  assert b('apply',request,csrf='bad')[0]==403
+  result=b('apply',request,csrf=other);assert result[0]==200,result
+  own=json.loads(b('detail&id='+'9'*32)[1])['ownApplication'];assert own['status']=='requested'
+  assert a('application-withdraw',{'id':'9'*32,'revision':own['revision']},csrf=csrf)[0]==409
+  result=b('application-withdraw',{'id':'9'*32,'revision':own['revision']},csrf=other);assert result[0]==200,result
+  request['applicationRevision']=json.loads(result[1])['revision']
+  assert b('apply',request,csrf=other)[0]==200
+  assert json.loads(b('activity')[1])['applications'][0]['space']=='lab'
+  print('ECOSYSTEM_REAL_HTTP_CSRF_OWNERSHIP_PRIVATE_IMAGE_CART_WITHDRAW_REAPPLY_OK')
  finally:proc.terminate();proc.wait(timeout=10)

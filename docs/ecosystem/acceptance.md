@@ -54,3 +54,11 @@ Marpple product-only composed thumbnails are reused within the official external
 - Levels 7–9 have no automatic administrator powers. The actual super administrator may independently delegate/revoke community moderation and shop operations. Finance and super access are never inherited from these grants.
 - Support history now includes an account-scoped transaction/settlement detail view and immutable processing history, excluding another member's balance and provider funding identifiers.
 - New database tests cover VIP expiry and list protection, scheduled public release, scoped staff revocation, feedback-version linkage, contextual product selection, gallery preservation and private financial audit projection.
+
+## Functional completion pass
+
+- Lounge events and LAB works may attach up to six existing visible goods; detail links resolve to actual SHOP products and hidden products stop appearing. Product management includes new registrations.
+- Collaboration consent records the exact terms hash and revision. Changed terms cannot be silently accepted. Pending applicants may withdraw and reapply with fresh consent; terminal reviews cannot be overwritten. Applicants see their own status, while private messages remain hidden from others.
+- Notifications use the original post's Lounge/LAB route. Report outcomes remain readable when moderation removes post access, without revealing private content. Moderation notifies the author and reporter and rejects repeat processing.
+- Deleted comments decrement the live count once and cannot be resurrected through editing. Failed cart writes reload authoritative state. Music selection only lists public references.
+- `tests/ecosystem/completion.php` exercises these transitions on the disposable MySQL fixture, in addition to the existing payment, support, permissions and endpoint suite.

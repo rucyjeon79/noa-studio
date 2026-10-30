@@ -46,3 +46,43 @@ function eco_related_products(array $q):array{
 function eco_product_popularity():array{$out=[];$q=ns_q("SELECT payload FROM noa_documents WHERE kind='ecosystem_shop'");while($r=sql_fetch_array($q)){foreach(array_unique(json_decode($r['payload'],true)['wishlist']??[])as $id)$out[$id]=($out[$id]??0)+1;}return $out;}
 
 function eco_latest_version(string $id):int{$r=ns_one("SELECT MAX(CAST(JSON_EXTRACT(payload,'$.version') AS UNSIGNED)) n FROM noa_documents WHERE kind='ecosystem_version' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.post'))=".ns_e($id));return (int)($r['n']??0);}
+
+/** Consent is bound to the actual public terms, not merely an unchecked client label. */
+function eco_terms(array $d):array{$out=[];foreach(['roles','schedule','compensation','rights']as $key)$out[$key]=$d[$key]??'';return $out;}
+function eco_terms_hash(array $d):string{return hash('sha256',json_encode(eco_terms($d),JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR));}
+function eco_product_ids(mixed $ids):array{if(!is_array($ids)||count($ids)>6)throw new InvalidArgumentException('invalid_product_relations');$out=[];foreach($ids as $id){$id=eco_text($id,80,true);eco_product($id);$out[]=$id;}return array_values(array_unique($out));}
+function eco_application(array $a,string $action,array $b,array $r):array{
+ $d=$r['data'];$id=$d['id'];if($d['category']!=='collaboration')throw new DomainException('recruitment_closed');
+ if($action==='application-review'){
+  eco_owner($r,$a);$app=(string)($b['application']??'');if(!preg_match('/^[a-f0-9]{64}$/D',$app)||!in_array($b['status']??'',['accepted','declined'],true))throw new InvalidArgumentException('invalid_application');
+  $key='ecosystem:application:'.$app;$old=ns_doc($key,true);if(!$old||$old['data']['post']!==$id)throw new DomainException('not_found');
+  if($old['data']['status']!=='requested')throw new DomainException('application_final');
+  if($b['status']==='accepted'&&($old['data']['terms']??[])!==eco_terms($d))throw new DomainException('terms_changed');
+  $v=$old['data'];$v['status']=$b['status'];$v['updated']=time();$revision=ns_put($key,'ecosystem_application',$v,$old['revision'],$a['id']);
+  eco_note($v['owner'],$a['id'],$id,'협업 신청 결과: '.($v['status']==='accepted'?'수락':'거절'),$key.':review:'.$revision);return ['status'=>$v['status'],'revision'=>$revision];
+ }
+ eco_creator($a);$key='ecosystem:application:'.hash('sha256',$id.'|'.$a['id']);$old=ns_doc($key,true);
+ if($action==='application-withdraw'){
+  if(!$old||$old['data']['owner']!==$a['id'])throw new DomainException('not_found');
+  if(($b['revision']??null)!==$old['revision'])throw new DomainException('revision_conflict');
+  if($old['data']['status']!=='requested')throw new DomainException('application_final');
+  $v=$old['data'];$v['status']='withdrawn';$v['updated']=time();$revision=ns_put($key,'ecosystem_application',$v,$old['revision'],$a['id']);
+  eco_note($d['owner'],$a['id'],$id,'협업 참여 신청이 철회되었습니다.',$key.':withdraw:'.$revision);return ['status'=>'withdrawn','revision'=>$revision];
+ }
+ if(in_array($d['stage'],['closed','complete'],true))throw new DomainException('recruitment_closed');if($d['owner']===$a['id'])throw new DomainException('own_application');
+ if($old&&$old['data']['status']!=='withdrawn')throw new DomainException('already_applied');
+ if(($b['consent']??false)!==true)throw new DomainException('terms_confirmation_required');
+ if(!is_string($b['termsHash']??null)||!hash_equals(eco_terms_hash($d),$b['termsHash']))throw new DomainException('terms_changed');
+ if(($b['applicationRevision']??0)!==($old['revision']??0))throw new DomainException('revision_conflict');
+ $v=['id'=>substr($key,strrpos($key,':')+1),'owner'=>$a['id'],'name'=>$a['name'],'channelId'=>hash('sha256',$a['id']),'post'=>$id,'message'=>eco_text($b['message']??'',3000,true),'terms'=>eco_terms($d),'status'=>'requested','at'=>time()];
+ $revision=ns_put($key,'ecosystem_application',$v,$old['revision']??0,$a['id']);eco_note($d['owner'],$a['id'],$id,'협업 참여 신청이 도착했습니다.',$key.':apply:'.$revision);return ['status'=>'requested','revision'=>$revision];
+}
+function eco_report_review(array $a,array $b):array{
+ if(!eco_can($a,'community'))throw new DomainException('administrator_required');$key=(string)($b['key']??'');if(!preg_match('/^ecosystem:report:[a-f0-9]{64}$/D',$key)||!in_array($b['decision']??'',['dismissed','hidden'],true))throw new InvalidArgumentException('invalid_report');
+ $report=ns_doc($key);if(!$report)throw new DomainException('not_found');$note=eco_text($b['note']??'',1000,true);
+ return ns_atomic('ecosystem:post:'.$report['data']['post'],false,function()use($a,$b,$key,$note){
+  $r=ns_doc($key,true);if($r['data']['status']!=='open')throw new DomainException('report_closed');$v=$r['data'];$v['status']=$b['decision'];$v['reviewNote']=$note;$v['reviewedAt']=time();$version=ns_put($key,'ecosystem_report',$v,$r['revision'],$a['id']);
+  if($v['status']==='hidden'){$p=ns_doc('ecosystem:post:'.$v['post'],true);if(!$p)throw new DomainException('not_found');$p['data']['visibility']='private';ns_put('ecosystem:post:'.$v['post'],'ecosystem_post',$p['data'],$p['revision'],$a['id']);eco_note($p['data']['owner'],$a['id'],$v['post'],'신고 검토에 따라 게시물이 비공개 처리되었습니다.',$key.':author:'.$version,true);}
+  eco_note($v['owner'],$a['id'],$v['post'],'신고 처리 결과: '.($v['status']==='hidden'?'게시물 비공개':'검토 후 종결'),$key.':reporter:'.$version,true);return ['status'=>$v['status']];
+ });
+}
