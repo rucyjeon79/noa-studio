@@ -2,8 +2,8 @@ name: NOA STUDIO Android
 # Production PWA owns navigation and layout; Android provides background media only.
 on:
   push:
-    branches: [main, work/android-background-20261022, work/n80-release-final-20261029, work/android-live-failures-20261030]
-    paths: ['.github/workflows/noa-android.yml', 'android/**', 'scripts/noa_android_*.py', 'scripts/noa_apk_*.py', 'tests/android/**', 'tests/n80/android_update_test.php', 'deploy/noa-app/engine/n80.php', 'deploy/noa-design.json', 'deploy/noa-ui-words.json', 'public/icon-512.png']
+    branches: [main, work/android-background-20261022, work/n80-release-final-20261029, work/android-live-failures-20261030, work/android-live-pwa-only-20261030]
+    paths: ['.github/workflows/noa-android.yml', 'android/**', 'scripts/noa_android_*.py', 'scripts/noa_apk_*.py', 'tests/android/**', 'tests/n80/android_update_test.php', 'public/icon-512.png']
   workflow_dispatch:
     inputs:
       publish:
@@ -29,7 +29,7 @@ jobs:
         with:
           gradle-version: '8.11.1'
       - name: Verify native bridge and administrator preview fallback
-        run: node --test tests/android/native_bridge_test.mjs
+        run: node --test tests/android/native_bridge_test.mjs tests/android/live_web_contract_test.mjs
       - name: Verify APK publication failure safety
         run: python3 tests/android/apk_deploy_test.py
       - name: Verify n80 Android release contract
@@ -81,6 +81,7 @@ jobs:
           profile: pixel_2
           disable-animations: true
           script: |
+            adb shell svc wifi enable
             adb push "$RUNNER_TEMP/noa-android-qa-cookie.txt" /data/local/tmp/noa-android-qa-cookie.txt
             adb shell chmod 600 /data/local/tmp/noa-android-qa-cookie.txt
             adb install release-artifact/noa-studio-release.apk
