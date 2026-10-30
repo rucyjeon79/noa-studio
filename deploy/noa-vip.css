@@ -2,3 +2,6 @@
 @media(max-width:760px){.nv-store-nav{margin-bottom:20px;gap:24px}.nv-products{gap:16px 12px}.nv-pack .np-pack-copy{padding:14px 12px}.nv-pack .np-pack-copy h3{font-size:15px;min-height:68px}.nv-price strong{font-size:24px}.nv-duration{font-size:12px;margin-bottom:12px}.nv-price{margin-bottom:16px}.nv-page .np-header{margin-bottom:24px}.nv-page .np-intro{font-size:13px}.nv-page .np-section-head h2{font-size:18px}.nv-page .np-edition{font-size:10px}.nv-page .np-caption{font-size:12px;line-height:1.7}}
 
 .nv-pack .np-pack-art{flex-shrink:0}.nv-pack .nv-price{margin-top:auto}.nv-page #vip-count{min-width:28px;height:28px;display:grid;place-items:center;border:1px solid var(--np-gold);border-radius:50%;color:var(--np-gold)}
+/* Keep store navigation as quiet tabs, overriding the shared action-link treatment. */
+main.noa-points-page .nv-store-nav a{background:transparent!important;border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;padding:0!important;box-shadow:none!important;font-size:14px;line-height:1.5;min-height:48px;text-decoration:none!important}
+main.noa-points-page .nv-store-nav a[aria-current=page]{border-bottom-color:var(--np-gold)!important;color:var(--np-gold)!important}
