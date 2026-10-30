@@ -33,7 +33,7 @@ function rawListSize(state){
  const columns=homePageSize(width,1,1,0,gap,rowGap);
  return homePageSize(width,window.visualViewport?.height||window.innerHeight,state.cardHeight||((width-gap*(columns-1))/columns*.5625+120),chrome,gap,rowGap);
 }
-function listSize(state){return Math.min(rawListSize(state),...[...homeLists.values()].filter(item=>item.rows?.length).map(rawListSize));}
+function listSize(state){if(window.matchMedia('(max-width:760px) and (orientation:portrait)').matches)return 4;return Math.min(rawListSize(state),...[...homeLists.values()].filter(item=>item.rows?.length).map(rawListSize));}
 function fitList(state){
  const heights=[...state.host.children].filter(node=>node.matches('.noa-music-card,.noa-engagement-card')).map(node=>node.getBoundingClientRect().height);
  state.cardHeight=Math.max(state.cardHeight||0,...heights);

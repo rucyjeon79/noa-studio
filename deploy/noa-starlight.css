@@ -151,3 +151,17 @@ html[data-noa-style] .noa-mobile-footer{display:none}
  html[data-noa-style] .noa-mobile-footer .noa-sidebar-visitors dl>div{display:grid;gap:6px;grid-column:auto}
  html[data-noa-style] .noa-mobile-footer .noa-sidebar-visitors dd{font-size:16px;font-weight:600}
 }
+
+/* Reserve fixed-control clearance once, instead of in both main and footer. */
+@media(max-width:760px){
+ html[data-noa-style] .noa-mobile-footer{gap:12px;margin-top:24px;padding-top:16px;padding-bottom:16px}
+ html[data-noa-style] .noa-mobile-footer .noa-sidebar-visitors{padding-top:12px}
+ html[data-noa-style] .noa-mobile-footer .noa-sidebar-visitors p{margin-bottom:8px}
+ html[data-noa-style] :is(main,.noa-main):has(>.noa-mobile-footer){padding-bottom:calc(var(--noa-dock,64px) + var(--noa-player-space,0px) + env(safe-area-inset-bottom) + 16px)}
+ html[data-noa-style] :is(main,.noa-main):has(+.noa-mobile-footer){padding-bottom:0;min-height:0}
+ html[data-noa-style] body>.noa-mobile-footer{padding-bottom:calc(var(--noa-dock,64px) + var(--noa-player-space,0px) + env(safe-area-inset-bottom) + 16px)}
+}
+@media(max-width:760px) and (orientation:portrait){
+ html[data-noa-style] [data-home-section]>.noa-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;column-gap:12px;row-gap:20px}
+ html[data-noa-style] [data-home-section]>.noa-card-grid>:is(.noa-music-card,.noa-engagement-card){grid-column:auto!important;grid-row:auto!important;min-width:0}
+}

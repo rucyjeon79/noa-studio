@@ -28,7 +28,7 @@ test('measured row gaps prevent overflow at mobile and desktop boundaries',()=>{
 test('all home lists share the most restrictive viewport capacity',()=>{
  const source=home.slice(home.indexOf('function listSize('),home.indexOf('function fitList('));
  const states=[{capacity:2,rows:[1]},{capacity:4,rows:[1]},{capacity:4,rows:[1]}];
- const fn=vm.runInNewContext(source+';listSize',{homeLists:new Map(states.map((s,i)=>[i,s])),rawListSize:s=>s.capacity});
+ const fn=vm.runInNewContext(source+';listSize',{window:{matchMedia:()=>({matches:false})},homeLists:new Map(states.map((s,i)=>[i,s])),rawListSize:s=>s.capacity});
  assert.deepEqual(states.map(fn),[2,2,2]);states[0].capacity=6;assert.deepEqual(states.map(fn),[4,4,4]);
 });
 
@@ -36,4 +36,10 @@ test('home community follows the AMT banner',()=>{
  const html=fs.readFileSync(new URL('../../deploy/noa-app/home.php',import.meta.url),'utf8');
  assert(html.indexOf('data-home-section="community"')>html.indexOf("<?php noa_home_banner('amt');?>"));
  assert.equal(html.match(/data-home-section="community"/g).length,1);
+});
+
+test('mobile portrait home uses four cards even when viewport fitting would yield two',()=>{
+ const source=home.slice(home.indexOf('function listSize('),home.indexOf('function fitList('));
+ const fn=vm.runInNewContext(source+';listSize',{window:{matchMedia:()=>({matches:true})}});
+ assert.equal(fn({}),4);
 });
