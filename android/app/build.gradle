@@ -3,7 +3,6 @@ def noaBuildNumber = Integer.parseInt(System.getenv('GITHUB_RUN_NUMBER') ?: '14'
 android {
     namespace 'kr.ai.noastudio'
     compileSdk 35
-    sourceSets.main.assets.srcDir layout.buildDirectory.dir("generated/noaDesignAssets")
     sourceSets.main.res.srcDir layout.buildDirectory.dir("generated/noaBrandResources")
     defaultConfig { applicationId 'kr.ai.noastudio'; minSdk 26; targetSdk 35; versionCode noaBuildNumber; versionName '2.0.' + noaBuildNumber; testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner' }
     buildTypes { debug { crunchPngs false }; release { crunchPngs false } }
@@ -19,12 +18,7 @@ dependencies {
     androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.3.0'
 }
 
-tasks.register('copyNoaDesign', Copy) {
-    from rootProject.file('../deploy/noa-design.json')
-    from rootProject.file('../deploy/noa-ui-words.json')
-    into layout.buildDirectory.dir('generated/noaDesignAssets')
-}
-tasks.named('preBuild').configure { dependsOn 'copyNoaDesign' }
+// Web design, labels and menus are served exclusively by the production PWA.
 
 tasks.register('copyNoaSymbol', Copy) {
     from(rootProject.file('../public/icon-512.png')) { rename { 'noa_symbol.png' } }
