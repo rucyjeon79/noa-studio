@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__.'/subscription-core.php';
+require_once __DIR__.'/support-settlement.php';
 function nsp_wallet_key(string $owner):string{return 'support:wallet:'.hash('sha256',$owner);}
 function nsp_wallet(string $owner,bool $lock=false):array{
  $key=nsp_wallet_key($owner);
@@ -57,11 +58,13 @@ function nsp_send(string $sender,string $id,array $input,callable $resolve):arra
   $t=$resolve();if($t['owner']===$sender)throw new DomainException('self_support_denied');
   if(!hash_equals($input['channelId'],$t['channelId'])||!hash_equals($input['entity'],$t['entity']))throw new DomainException('recipient_changed');
   $w=nsp_wallet($t['owner'],true);
+  $fundingBefore=nspp_snapshot($sender);
   nsp_debit($sender,$amount,$id,$t['channelTitle']);
+  $funding=nspp_funding($fundingBefore,nspp_snapshot($sender),$amount);
   $w['data']['received']+=$amount;$w['data']['count']++;ns_put($w['key'],'support_wallet',$w['data'],$w['revision'],$sender);
   $countKey='support:count:'.hash('sha256',$t['entity']);ns_q('INSERT IGNORE INTO noa_documents(doc_key,kind,payload,revision,updated_by) VALUES('.ns_e($countKey).",'support_count','{}',0,".ns_e($sender).')');$c=ns_doc($countKey,true);$count=(int)($c['data']['count']??0)+1;ns_put($countKey,'support_count',['count'=>$count],$c['revision'],$sender);
   $receipt=['id'=>$id,'amount'=>$amount,'title'=>$t['title'],'channelTitle'=>$t['channelTitle'],'channelId'=>$t['channelId'],'count'=>$count,'balance'=>(int)get_point_sum($sender),'at'=>time()];
-  ns_put($key,'support_receipt',['sender'=>$sender,'recipient'=>$t['owner'],'entity'=>$t['entity'],'fingerprint'=>$fingerprint,'message'=>$message,'receipt'=>$receipt],0,$sender);
+  ns_put($key,'support_receipt',['sender'=>$sender,'recipient'=>$t['owner'],'entity'=>$t['entity'],'fingerprint'=>$fingerprint,'message'=>$message,'funding'=>$funding,'receipt'=>$receipt],0,$sender);
   return $receipt+['replayed'=>false];
  });
 }

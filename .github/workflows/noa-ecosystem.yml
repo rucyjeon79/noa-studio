@@ -1,0 +1,79 @@
+name: NOA ecosystem complete release
+on:
+  push:
+    branches: [main, noa-ecosystem-complete]
+    paths: ['bridge/ecosystem*.php','bridge/support*.php','deploy/noa-ecosystem*','deploy/noa-app/ecosystem-view.php','deploy/noa-shop.php','deploy/noa-lounge.php','deploy/noa-creator-lab.php','deploy/noa-products.json','deploy/noa-settlement.js','tests/ecosystem/**','scripts/noa_ecosystem_release.py','.github/workflows/noa-ecosystem.yml']
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: isolated-noa-ci, MYSQL_DATABASE: noa_subscription_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -pisolated-noa-ci" --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      NOA_MYSQL_DSN: 'mysql:host=127.0.0.1;port=3306;dbname=noa_subscription_test;charset=utf8mb4'
+      NOA_MYSQL_USER: root
+      NOA_MYSQL_PASSWORD: isolated-noa-ci
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'mysqli,pdo_mysql,mbstring,gd'}
+      - name: Validate source and isolated durable workflows
+        run: |
+          set -e
+          for f in bridge/ecosystem*.php bridge/support*.php deploy/noa-shop.php deploy/noa-lounge.php deploy/noa-creator-lab.php deploy/noa-app/ecosystem-view.php deploy/noa-support.php deploy/noa-engagement.extend.php tests/ecosystem/*.php; do php -l "$f"; done
+          node --check deploy/noa-ecosystem.js
+          node --check deploy/noa-ecosystem-links.js
+          node --check deploy/noa-settlement.js
+          cp deploy/noa-products.json noa-products.json
+          php tests/sitemap/registry_test.php
+          php tests/subscription/mysql_test.php
+          php tests/support/mysql.php
+          python tests/support/race.py
+          php tests/ecosystem/mysql.php
+          php tests/ecosystem/settlement.php
+          python -m py_compile scripts/noa_ecosystem_release.py
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 15
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - run: python -m pip install 'paramiko>=3,<5'
+      - run: python scripts/noa_ecosystem_release.py
+      - name: Public read-only route verification
+        run: |
+          python - <<'PY'
+          import urllib.request,json,urllib.error
+          root='https://noastudio.ai.kr'
+          for path in ['/noa-shop.php','/noa-lounge.php','/noa-creator-lab.php']:
+              with urllib.request.urlopen(root+path,timeout=30) as r:
+                  html=r.read().decode()
+                  assert 'id="ecosystem"' in html and '/noa-ecosystem.js?v=' in html,path
+          for action in ['shop','list']:
+              with urllib.request.urlopen(root+'/noa-bridge/ecosystem.php?action='+action,timeout=30) as r:
+                  data=json.load(r);assert data['ok']
+          try:
+              urllib.request.urlopen(root+'/noa-bridge/support.php?action=dashboard',timeout=30)
+              raise RuntimeError('guest_not_denied')
+          except urllib.error.HTTPError as e:assert e.code==401
+          print('ECOSYSTEM_LIVE_PUBLIC_ROUTES_AND_GUEST_DENIAL_OK_NO_WRITES')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-ecosystem-live-${{ github.run_id }}', path: ainoa-proof/deployment.json, retention-days: 7}

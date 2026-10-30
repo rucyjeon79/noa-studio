@@ -43,7 +43,10 @@ function noa_sitemap_registry():array{
             ['profile','회원정보','내 계정 정보 확인과 수정','/bbs/member_confirm.php?url=register_form.php','user','member'],
             ['notifications','내 활동 알림','AInoa의 소식과 알림 설정','/noa-notifications.php','mail','member'],
         ]],
-        'community'=>['title'=>'커뮤니티','routes'=>[
+        'community'=>['title'=>'커뮤니티·창작·SHOP','routes'=>[
+            ['shop','NOA SHOP','굿즈 탐색·찜·공식 구매','/noa-shop.php','disc','public'],
+            ['lounge','별무리 라운지','음악과 일상을 나누는 팬 커뮤니티','/noa-lounge.php','community','public'],
+            ['creatorLab','CREATOR LAB','피드백·작품 성장 기록·협업','/noa-creator-lab.php','mic','public'],
             ['search','게시판 검색','공개된 게시글 찾기','/bbs/search.php','search','public'],
         ]],
         'creatorTools'=>['title'=>'내 채널 · 전문 제작 도구','routes'=>[['taxonomy','공통 카테고리·제작 규칙','최고관리자의 공통 분류 기준','/noa-app/taxonomy/','playlists','admin']]],

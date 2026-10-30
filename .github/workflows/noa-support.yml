@@ -33,7 +33,7 @@ jobs:
           python tests/support/race.py
           python -m py_compile scripts/noa_support_release.py
   deploy:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[ecosystem-release]')
     needs: verify
     runs-on: ubuntu-24.04
     environment: production

@@ -15,9 +15,9 @@ try{
   if($action==='review-list'){
 
    if(($is_admin??'')!=='super'||$owner!==($config['cf_admin']??''))nsp_reply(403,['ok'=>false,'error'=>'administrator_required']);
-   $items=[];$q=ns_q("SELECT doc_key,payload FROM noa_documents WHERE doc_key LIKE 'support:settlement:%' ORDER BY updated_at DESC LIMIT 100");while($r=sql_fetch_array($q))$items[]=['key'=>$r['doc_key']]+json_decode($r['payload'],true,64,JSON_THROW_ON_ERROR);nsp_reply(200,['ok'=>true,'csrf'=>$csrf,'items'=>$items]);
+   $items=[];$q=ns_q("SELECT doc_key,payload FROM noa_documents WHERE doc_key LIKE 'support:settlement:%' ORDER BY updated_at DESC LIMIT 100");while($r=sql_fetch_array($q))$items[]=['key'=>$r['doc_key']]+json_decode($r['payload'],true,64,JSON_THROW_ON_ERROR);nsp_reply(200,['ok'=>true,'csrf'=>$csrf,'items'=>$items,'queue'=>nspp_admin_queue(),'policy'=>nspp_policy()]);
   }
-  if($action==='dashboard')nsp_reply(200,['ok'=>true,'csrf'=>$csrf]+nsp_dashboard($owner));
+  if($action==='dashboard')nsp_reply(200,['ok'=>true,'csrf'=>$csrf]+nspp_dashboard($owner));
   if($action==='stats'){
    $targets=json_decode((string)($_GET['targets']??'[]'),true,8,JSON_THROW_ON_ERROR);if(!is_array($targets)||count($targets)>30)throw new InvalidArgumentException('invalid_target');$out=[];
    foreach($targets as $x){if(!is_array($x)||!is_string($x['key']??null)||!is_string($x['type']??null))throw new InvalidArgumentException('invalid_target');try{$t=nsp_target($db,$x['type'],$x['key']);$out[]=$x+['available'=>$t['owner']!==$owner]+nsp_public($t);}catch(DomainException $e){$out[]=$x+['available'=>false];}}
@@ -32,9 +32,15 @@ try{
  if($action==='review'){
   if(($is_admin??'')!=='super'||$owner!==($config['cf_admin']??''))nsp_reply(403,['ok'=>false,'error'=>'administrator_required']);
   if(($b['confirmed']??false)!==true||!is_int($b['net']??null))throw new InvalidArgumentException('invalid_review');
-  nsp_reply(200,['ok'=>true,'request'=>nsp_review($owner,(string)($b['key']??''),(string)($b['decision']??''),$b['net'],(string)($b['reference']??''))]);
+  nsp_reply(200,['ok'=>true,'request'=>nspp_review($owner,$b)]);
+ }
+ if($action==='profile')nsp_reply(200,['ok'=>true,'profile'=>nspp_profile($owner,$b)]);
+ if($action==='refund-request')nsp_reply(200,['ok'=>true]+nspp_refund_request($owner,(string)($b['key']??''),(string)($b['reason']??'')));
+ if(in_array($action,['policy','profile-review','refund-review'],true)){
+  if(($is_admin??'')!=='super')nsp_reply(403,['ok'=>false,'error'=>'administrator_required']);
+  $out=match($action){'policy'=>nspp_policy_save($owner,$b),'profile-review'=>nspp_profile_review($owner,$b),'refund-review'=>nspp_refund_review($owner,$b)};nsp_reply(200,['ok'=>true,'result'=>$out]);
  }
  if($action==='send')nsp_reply(200,['ok'=>true,'receipt'=>nsp_send($owner,$b['requestId'],$b,fn()=>nsp_target($db,$b['type'],$b['key']))]);
- if($action==='settlement'&&($b['confirmed']??false)===true)nsp_reply(200,['ok'=>true,'request'=>nsp_settlement($owner,$b['requestId'],(string)($b['kind']??''))]);
+ if($action==='settlement'&&($b['confirmed']??false)===true)nsp_reply(200,['ok'=>true,'request'=>nspp_request($owner,$b['requestId'],(string)($b['kind']??''))]);
  throw new InvalidArgumentException('unknown_action');
 }catch(DomainException $e){nsp_reply(409,['ok'=>false,'error'=>$e->getMessage()]);}catch(InvalidArgumentException|JsonException $e){nsp_reply(400,['ok'=>false,'error'=>$e instanceof JsonException?'invalid_json':$e->getMessage()]);}catch(Throwable $e){error_log('[noa-support] '.get_class($e));nsp_reply(503,['ok'=>false,'error'=>'support_unavailable']);}

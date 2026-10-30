@@ -48,7 +48,7 @@ try{
  file_put_contents($root.'/noa-sample-api.php','<?php header("Content-Type: application/json");');
  check(noa_sitemap_unlisted_pages($root)===['/noa-new-feature.php'],'new UI screens require an explicit registry and audience decision');
  check(noa_sitemap_unlisted_pages(dirname(__DIR__,2).'/deploy')===[],'repository screen coverage');
-  $locked=noa_sitemap_visible_groups($root,'member',[array_replace($board,['noa_condition'=>'이용 그룹 승인이 필요해요.'])]);check($locked['community']['routes'][1][6]==='이용 그룹 승인이 필요해요.','native board condition retained without a navigable link');
+  $locked=noa_sitemap_visible_groups($root,'member',[array_replace($board,['noa_condition'=>'이용 그룹 승인이 필요해요.'])]);check(array_values(array_filter($locked['community']['routes'],fn($r)=>$r[0]==='board-free'))[0][6]==='이용 그룹 승인이 필요해요.','native board condition retained without a navigable link');
  echo "NOA_SITEMAP_ROLE_RUNTIME_PATH_AND_NATIVE_PERMISSION_OK\n";
 }finally{
  $iterator=new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::CHILD_FIRST);
