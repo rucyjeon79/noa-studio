@@ -85,6 +85,6 @@ html.noa-g5[data-noa-style] #bo_list :is(a.bo_subject,.bo_tit>a).noa-action>svg{
 
 /* Readable home titles and compact category captions on small screens. */
 html[data-noa-precision] body .noa-card-grid .noa-card-heading :is(strong,h2,h3){white-space:normal;text-overflow:clip;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;block-size:44px;line-height:22px}
-html[data-noa-precision] body .noa-page [data-browse-level] .noa-browse-card>span{gap:6px;padding:12px;align-content:start}
-html[data-noa-precision] body .noa-page [data-browse-level] .noa-browse-card>span>strong{block-size:auto;min-block-size:22px;max-block-size:44px;margin:0}
-html[data-noa-precision] body .noa-page [data-browse-level] .noa-browse-card>span>small{block-size:auto;min-block-size:16px;margin:0}
+html[data-noa-precision] body.noa-page [data-browse-level] .noa-browse-card>span{gap:6px;padding:12px;align-content:start}
+html[data-noa-precision] body.noa-page [data-browse-level] .noa-browse-card>span>strong{block-size:auto;min-block-size:22px;max-block-size:44px;margin:0}
+html[data-noa-precision] body.noa-page [data-browse-level] .noa-browse-card>span>small{block-size:auto;min-block-size:16px;margin:0}
