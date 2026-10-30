@@ -29,17 +29,32 @@
  document.querySelector('.noa-topbar .noa-account')?.closest('.noa-topbar').remove();document.querySelector('.noa-g5-top')?.remove();document.body.prepend(bar);
  const summary=document.getElementById('noa-my-account'),status=document.getElementById('noa-my-account-status');
  const write=(id,value)=>{const node=document.getElementById(id);if(node)node.textContent=value;};
- let pending=false,lastAttempt=0;
- async function update(force=false){if(pending||(!force&&Date.now()-lastAttempt<30000))return;pending=true;lastAttempt=Date.now();const abort=new AbortController(),timeout=setTimeout(()=>abort.abort(),10000);try{
-  const r=await fetch('/noa-bridge/membership.php?action=summary',{credentials:'same-origin',cache:'no-store',signal:abort.signal}),d=await r.json();if(!r.ok||!d.ok)throw Error('account_unavailable');
-  bar.dataset.member=String(!!d.member);window.dispatchEvent(new CustomEvent('noa-membership-status',{detail:d}));
-  if(summary){
-   if(!d.member){summary.dataset.state='signed-out';write('noa-my-subscription','로그인이 필요합니다.');write('noa-my-points','—');if(status)status.replaceChildren(link('다시 로그인','/bbs/login.php?url=%2Fnoa-my.php'));return;}
-   const active=d.grant?.status==='active'&&Number(d.remainingDays)>0;
-   write('noa-my-subscription',active?'구독 중 · '+Number(d.remainingDays)+'일 남음':'구독 없음');
-   write('noa-my-points',Number(d.balance).toLocaleString('ko-KR')+'P');summary.dataset.state='ready';if(status)status.textContent='';
-  }
- }catch{window.dispatchEvent(new Event('noa-membership-error'));if(summary){summary.dataset.state='error';if(status)status.textContent='현재 계정 정보를 불러오지 못했습니다. 구독·포인트 내역에서 다시 확인해 주세요.';}}
- finally{clearTimeout(timeout);pending=false;}}
- update();window.addEventListener('pageshow',()=>update());window.addEventListener('noa-membership-change',()=>update(true));document.addEventListener('visibilitychange',()=>{if(!document.hidden)update();});
+ let pending=false,lastAttempt=0,retries=0,retryTimer=null,hasResult=false;
+ const retry=document.createElement('button');retry.type='button';retry.className='noa-button';retry.textContent='다시 확인';retry.onclick=()=>{retries=0;update(true);};
+ const report=(text,canRetry=false)=>{if(status){status.replaceChildren(document.createTextNode(text+' '));if(canRetry)status.append(retry);}};
+ async function update(force=false){
+  if(pending||(!force&&Date.now()-lastAttempt<30000))return;
+  clearTimeout(retryTimer);pending=true;retry.disabled=true;lastAttempt=Date.now();
+  if(summary){summary.dataset.state='loading';summary.setAttribute('aria-busy','true');report(hasResult?'계정 정보를 갱신하고 있습니다.':'계정 정보를 확인하고 있습니다.');}
+  const abort=new AbortController(),timeout=setTimeout(()=>abort.abort(),15000);
+  try{
+   const r=await fetch('/noa-bridge/membership.php?action=summary',{credentials:'same-origin',cache:'no-store',signal:abort.signal}),d=await r.json();
+   if(!r.ok||d.ok!==true||typeof d.member!=='boolean'||(d.member&&(!Number.isSafeInteger(d.balance)||!Number.isFinite(d.remainingDays))))throw Error('account_unavailable');
+   bar.dataset.member=String(d.member);window.dispatchEvent(new CustomEvent('noa-membership-status',{detail:d}));
+   retries=0;hasResult=true;
+   if(summary){
+    if(!d.member){summary.dataset.state='signed-out';write('noa-my-subscription','로그인이 필요합니다.');write('noa-my-points','—');if(status)status.replaceChildren(link('다시 로그인','/bbs/login.php?url=%2Fnoa-my.php'));return;}
+    const active=d.grant?.status==='active'&&d.remainingDays>0;
+    write('noa-my-subscription',active?'구독 중 · '+d.remainingDays+'일 남음':(d.admin?'관리자 이용 권한 · 유료 구독 없음':'구독 없음'));
+    write('noa-my-points',d.balance.toLocaleString('ko-KR')+'P');summary.dataset.state='ready';report('');
+   }
+  }catch{
+   if(summary){
+    if(!hasResult){write('noa-my-subscription','확인 불가');write('noa-my-points','확인 불가');}
+    if(retries<1&&navigator.onLine!==false){retries++;summary.dataset.state='retrying';report('연결이 지연되어 잠시 후 다시 확인합니다.',true);retryTimer=setTimeout(()=>update(true),1200);}
+    else{summary.dataset.state='error';report(hasResult?'최신 정보를 확인하지 못했습니다. 이전 조회값입니다.':'계정 정보를 확인하지 못했습니다. 다시 확인을 눌러 주세요.',true);window.dispatchEvent(new Event('noa-membership-error'));}
+   }else window.dispatchEvent(new Event('noa-membership-error'));
+  }finally{clearTimeout(timeout);pending=false;retry.disabled=false;if(summary)summary.setAttribute('aria-busy','false');}
+ }
+ update();window.addEventListener('pageshow',()=>update());window.addEventListener('noa-membership-change',()=>{retries=0;update(true);});document.addEventListener('visibilitychange',()=>{if(!document.hidden)update();});window.addEventListener('online',()=>{retries=0;update(true);});
 })();
