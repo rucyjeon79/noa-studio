@@ -35,7 +35,7 @@ jobs:
           php tests/subscription/mysql_test.php
           php tests/support/mysql.php
           python tests/support/race.py
-          php tests/ecosystem/mysql.php
+          php tests/ecosystem/features.php
           php tests/ecosystem/settlement.php
           python tests/ecosystem/endpoint_test.py
           python -m py_compile scripts/noa_ecosystem_release.py

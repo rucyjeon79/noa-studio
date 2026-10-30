@@ -5,6 +5,7 @@ import noa_ainoa_deploy as release
 from noa_full_inventory import connect,ROOT
 import paramiko
 release.FILES={
+ 'noa-bridge/ecosystem-features.php':'bridge/ecosystem-features.php',
  'noa-bridge/ecosystem-core.php':'bridge/ecosystem-core.php',
  'noa-bridge/ecosystem-shop.php':'bridge/ecosystem-shop.php',
  'noa-bridge/ecosystem.php':'bridge/ecosystem.php',

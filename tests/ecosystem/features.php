@@ -1,0 +1,15 @@
+<?php
+require __DIR__.'/mysql.php';
+$vip=['id'=>'ec_vip','name'=>'VIP','level'=>4,'admin'=>false];
+$event=array_replace($b,['id'=>str_repeat('4',32),'revision'=>0,'category'=>'event','vipOnly'=>true,'releaseAt'=>time()+3600,'visibility'=>'public']);
+fail(fn()=>eco_save($fan,$event),'vip_publishing_required');eco_save($admin,$event);
+fail(fn()=>eco_detail($event['id'],$guest),'not_found');fail(fn()=>eco_detail($event['id'],$vip),'not_found');
+$key=ns_member_key($vip['id']);ns_atomic($vip['id'],false,fn()=>ns_put($key,'prefs',['ownerId'=>$vip['id'],'status'=>'active','until'=>time()+3600,'paidLevel'=>4],0,$vip['id']));
+ok(eco_detail($event['id'],$vip)['post']['vipOnly'],'valid_subscription');ok(!in_array($event['id'],array_column(eco_list($guest,['space'=>'lounge'])['items'],'id'),true),'vip_list_exclusion');
+$grant=ns_doc($key);ns_atomic($vip['id'],false,fn()=>ns_put($key,'prefs',array_replace($grant['data'],['until'=>time()-1]),$grant['revision'],$vip['id']));fail(fn()=>eco_detail($event['id'],$vip),'not_found');
+eco_save($admin,array_replace($event,['revision'=>1,'releaseAt'=>time()-1]));ok(eco_detail($event['id'],$guest)['post']['vipOnly'],'scheduled_public_release');
+$comment=str_repeat('5',32);eco_mutate($fan,'comment',['id'=>$lab['id'],'commentId'=>$comment,'body'=>'보컬 개선 피드백']);fail(fn()=>eco_growth($fan,['id'=>$lab['id'],'commentId'=>$comment,'version'=>2,'note'=>'개선']),'owner_required');fail(fn()=>eco_growth($a,['id'=>$lab['id'],'commentId'=>$comment,'version'=>999,'note'=>'개선']),'invalid_version');eco_growth($a,['id'=>$lab['id'],'commentId'=>$comment,'version'=>2,'note'=>'보컬을 다시 녹음했습니다.']);$c=eco_detail($lab['id'],$a)['comments'][0];ok($c['version']===2&&$c['resolution']['version']===2,'feedback_version_snapshot_and_resolution');
+$staff=['id'=>'ec_staff','name'=>'운영','level'=>7,'admin'=>false];ns_q("INSERT INTO g5_member(mb_id,mb_level,mb_point) VALUES('ec_staff',7,0)");fail(fn()=>eco_staff_save($staff,['member'=>'ec_staff','revision'=>0,'capabilities'=>['community']]),'administrator_required');eco_staff_save($admin,['member'=>'ec_staff','revision'=>0,'capabilities'=>['community']]);$staff['capabilities']=eco_capabilities($staff);ok(eco_can($staff,'community')&&!eco_can($staff,'shop'),'scoped_staff');eco_staff_save($admin,['member'=>'ec_staff','revision'=>1,'capabilities'=>[]]);ok(eco_capabilities($staff)===[],'revoked');
+$product=eco_products()[0];fail(fn()=>eco_product_save($staff,$product),'administrator_required');$updated=eco_product_save($admin,array_replace($product,['featured'=>true,'acts'=>['1'],'availability'=>'공식 판매처에서 확인']));ok($updated['product']['images']===$product['images'],'preserve_gallery');ok(count(eco_related_products(['act'=>'1'])['items'])===1,'configured_context');ok(eco_related_products(['act'=>'99'])['items']===[],'no_invented_association');ok(eco_product_popularity()[$product['id']]===1,'actual_unique_wishlist');
+foreach(eco_discovery($guest,'lounge')['sections']as $section)foreach($section['items']as $p)ok($p['visibility']==='public','discovery_acl');
+echo "ECOSYSTEM_VIP_EXPIRY_PUBLICATION_STAFF_REVOCATION_GROWTH_AND_CURATED_SHOP_OK\n";
