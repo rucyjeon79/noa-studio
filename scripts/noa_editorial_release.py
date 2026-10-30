@@ -5,6 +5,16 @@ import urllib.request
 from pathlib import Path
 import noa_ainoa_deploy as release
 release.FILES={
+ 'noa-assets/editorial-privacy-sanctuary.webp':'deploy/noa-assets/editorial/privacy-sanctuary.webp',
+ 'noa-assets/editorial-home-story.webp':'deploy/noa-assets/editorial/home-story.webp',
+ 'noa-assets/editorial-act-3.webp':'deploy/noa-assets/editorial/act-3.webp',
+ 'noa-assets/editorial-act-1.webp':'deploy/noa-assets/editorial/act-1.webp',
+ 'noa-assets/editorial-act-4.webp':'deploy/noa-assets/editorial/act-4.webp',
+ 'noa-assets/editorial-world-journey.webp':'deploy/noa-assets/editorial/world-journey.webp',
+ 'noa-assets/editorial-terms-promise.webp':'deploy/noa-assets/editorial/terms-promise.webp',
+ 'noa-assets/editorial-fans-stars.webp':'deploy/noa-assets/editorial/fans-stars.webp',
+ 'noa-assets/editorial-act-2.webp':'deploy/noa-assets/editorial/act-2.webp',
+
  'noa-assets/editorial-starlight-studio.webp':'deploy/noa-assets/editorial/starlight-studio.webp',
  'noa-assets/editorial-noa-portrait.webp':'deploy/noa-assets/editorial/noa-portrait.webp',
  'noa-assets/editorial-noel-portrait.webp':'deploy/noa-assets/editorial/noel-portrait.webp',
