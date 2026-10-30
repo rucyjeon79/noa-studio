@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-24.04
     environment: production
     timeout-minutes: 10
-    concurrency: {group: noa-jukebox-upload-processing, cancel-in-progress: false}
+    concurrency: {group: noa-media-path-normalization, cancel-in-progress: false}
     env:
       NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
       NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
