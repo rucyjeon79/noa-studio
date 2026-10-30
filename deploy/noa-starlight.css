@@ -133,3 +133,21 @@ html[data-noa-style] #noa-genres>.noa-genre strong{font-size:15px;line-height:1.
  html[data-noa-style] .noa-sidebar-visitors p{margin-bottom:8px}
  html[data-noa-style] .noa-sidebar .noa-brand-mark{width:40px;height:40px}
 }
+
+/* The same studio signature closes mobile pages above the fixed controls. */
+html[data-noa-style] .noa-mobile-footer{display:none}
+@media(max-width:760px){
+ html.noa-has-sidebar :is(.noa-footer,.ne-footer){display:none}
+ html[data-noa-style] .noa-mobile-footer{display:grid;gap:20px;margin:40px 0 0;padding:24px 0 calc(var(--noa-dock,64px) + var(--noa-player-space,0px) + env(safe-area-inset-bottom) + 32px);text-align:left;clear:both}
+ html[data-noa-style] body>.noa-mobile-footer{margin-inline:24px}
+ html[data-noa-style] .noa-mobile-footer .noa-sidebar-signature{gap:8px}
+ html[data-noa-style] .noa-mobile-footer .noa-sidebar-signature strong{font-size:14px;letter-spacing:.18em}
+ html[data-noa-style] .noa-mobile-footer .noa-sidebar-signature>span{font-size:11px}
+ html[data-noa-style] .noa-mobile-footer .noa-sidebar-legal{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:16px}
+ html[data-noa-style] .noa-mobile-footer .noa-sidebar-legal a{font-size:12px;text-decoration:none}
+ html[data-noa-style] .noa-mobile-footer .noa-sidebar-legal a:first-child{grid-column:1/-1}
+ html[data-noa-style] .noa-mobile-footer .noa-sidebar-visitors{padding-top:20px}
+ html[data-noa-style] .noa-mobile-footer .noa-sidebar-visitors dl{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+ html[data-noa-style] .noa-mobile-footer .noa-sidebar-visitors dl>div{display:grid;gap:6px;grid-column:auto}
+ html[data-noa-style] .noa-mobile-footer .noa-sidebar-visitors dd{font-size:16px;font-weight:600}
+}
