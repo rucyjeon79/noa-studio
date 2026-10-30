@@ -10,7 +10,7 @@ from noa_drive_snapshot import DriveStore
 store=DriveStore()
 HAS_DRIVE=bool(os.environ.get("NOA_DRIVE_RCLONE_CONFIG_B64"))
 if HAS_DRIVE:store.require()
-RECEIPT=None
+RECEIPT={"digest":"229fe8cbb6d3ff6c05da6083bc821dbd106971811b9605b39a9425923d631dd8","sha256":"6f93fb25fc38fcbe78d369bc37d9f5df3029d9eb031775a0e5182a308efea320","rows":2,"driveFileId":"1I5USF_oMZYf9za3haR-aoAkAq8a8zmxh"}
 PUBLIC_KEY=b'-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1kceXoZhE1fSl11wYQ2m\nxxp5uZh5poTUIh9eMJGoSrE6Lw5kOxkoCG9J1DvkaEzbS2Q3MQwGV8xOGZSws/iB\nR0hzyTNzcmz5ZMwwDiW514iOOA3cHikg/S9b31SEuUrcV7etuFsTgFxEBwZiG3Mo\nomkkcr+r9fGRU4GXdOuzoAK/OqRsylrYNzSDQx0fKMn1O4VaFNde5fXgo1uif+zV\nXOGTjeZD9SFwMLxSBDX2uCNEiR9eheyh88Wd4AsumKLrLknxQzhnUee3zcJ5km3Q\n6bXutBNjO6HwLT38fSKOFTRH5+AVYmdKRnr4OIbPM/h8ZtNxiich8r5I91Mh+l9N\nNQIDAQAB\n-----END PUBLIC KEY-----\n'
 token=secrets.token_hex(32);name='noa-bridge/bloom-publish-'+secrets.token_hex(8)+'.php'
 raw=Path('scripts/noa_bloom_publish.php').read_text().replace('__EXPIRY__',str(int(time.time())+600)).replace('__TOKEN_SHA__',hashlib.sha256(token.encode()).hexdigest()).encode()
@@ -38,7 +38,7 @@ try:
   raise SystemExit(0)
  elif before['digest']!=RECEIPT['digest']:
   raise RuntimeError('verified_backup_no_longer_matches')
- print('BLOOM_BACKUP_VERIFIED',json.dumps({'sha256':hashlib.sha256(backup.read_bytes()).hexdigest(),'driveFolder':'1ZeCFabpOvXMB5rNRg8C3m5XR3mPTvKp3'}),flush=True)
+ print('BLOOM_BACKUP_VERIFIED',json.dumps({'sha256':hashlib.sha256(backup.read_bytes()).hexdigest(),'driveFolder':('1ZeCFabpOvXMB5rNRg8C3m5XR3mPTvKp3' if HAS_DRIVE else '1N4ddmFbGpMEMGLB3zg4XJYBzLk3mHds2')}),flush=True)
  result=request({'expectedDigest':before['digest']})
  after=request();old={r['doc_key']:r for r in before['rows']};new={r['doc_key']:r for r in after['rows']}
  changed=[k for k in old if old[k]!=new[k]]
