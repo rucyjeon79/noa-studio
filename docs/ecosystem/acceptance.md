@@ -44,3 +44,13 @@ Automated isolated MySQL checks cover guest/private visibility, owner-only updat
 - https://www.marppleshop.help/ko/articles/마플샵제작배송-상품을-외부에서-판매하고-싶어요-f08d4378
 
 Marpple product-only composed thumbnails are reused within the official external-promotion allowance. Model cuts, basic product-information images, and generated fictional products are excluded.
+
+## Remaining-brief completion pass
+
+- SHOP now exposes editorial featured/recommended collections, real unique-member wishlist ranking, registration ordering, reversible hidden products and editable availability/options/shipping/return notes. Existing gallery metadata survives edits. Administrators can associate actual music, genre, ACT and creator channel IDs; related goods only appear on matched content. Music also deep-links into a prefilled Lounge composer.
+- Lounge landing assembles category news, current popular posts, recent real music and playlists without fabricated activity or repeated post cards. LAB landing introduces recent publicly shared creator channels and category feeds.
+- VIP publication is restricted to delegated community operators/super administrators and official notices/diaries/events. Server read/list/image gates use the active, unexpired subscription grant, not numeric level alone; scheduled release is interpreted as Korean time. Ordinary fan conversation remains available to regular members.
+- LAB compares two immutable published versions and links resolved feedback to a validated version with a concrete improvement note. Feedback keeps its original reviewed version even after later edits.
+- Levels 7–9 have no automatic administrator powers. The actual super administrator may independently delegate/revoke community moderation and shop operations. Finance and super access are never inherited from these grants.
+- Support history now includes an account-scoped transaction/settlement detail view and immutable processing history, excluding another member's balance and provider funding identifiers.
+- New database tests cover VIP expiry and list protection, scheduled public release, scoped staff revocation, feedback-version linkage, contextual product selection, gallery preservation and private financial audit projection.

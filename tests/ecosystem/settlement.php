@@ -24,3 +24,9 @@ nspp_review('s_admin',['key'=>$sk,'decision'=>'verified','reference'=>'transacti
 ck(nsp_wallet($owner)['data']['paid']===100&&nsp_wallet($owner)['data']['reserved']===0,'approved_paid_ledger');
 nope(fn()=>nspp_refund_request('s_race',$receiptKey,'bad'),'settlement_in_progress');
 echo "SETTLEMENT_APPROVAL_STATE_MACHINE_PAID_ORIGIN_ONLY_OK\n";
+
+nope(fn()=>nspp_detail('s_empty',$sk),'request_unavailable');
+$audit=nspp_detail($owner,$sk);ck(count($audit['history'])===4&&$audit['settlement']['net']===97,'owner_settlement_audit');
+$receipt=nspp_detail($owner,$receiptKey);ck(!isset($receipt['receipt']['balance'])&&!isset($receipt['funding']['sources']),'recipient_private_projection');
+nope(fn()=>nspp_detail('s_other',$sk,true),'administrator_required');
+echo "SETTLEMENT_OWNER_AUDIT_AND_PRIVATE_SOURCE_PROJECTION_OK\n";

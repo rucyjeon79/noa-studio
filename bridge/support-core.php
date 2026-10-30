@@ -82,7 +82,7 @@ function nsp_dashboard(string $owner):array{
  // Indexed updated_by handles sent receipts; recipient is filtered in the private ledger.
  $q=ns_q("SELECT payload FROM noa_documents WHERE doc_key LIKE 'support:receipt:%' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.recipient'))=".ns_e($owner)." ORDER BY updated_at DESC LIMIT 50");
  while($r=sql_fetch_array($q)){$d=json_decode($r['payload'],true,64,JSON_THROW_ON_ERROR);$items[]=['amount'=>$d['receipt']['amount'],'title'=>$d['receipt']['title'],'at'=>$d['receipt']['at'],'message'=>$d['message']];}
- $requests=[];$q=ns_q("SELECT payload FROM noa_documents WHERE doc_key LIKE 'support:settlement:%' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.owner'))=".ns_e($owner)." ORDER BY updated_at DESC LIMIT 20");while($r=sql_fetch_array($q)){$d=json_decode($r['payload'],true,64,JSON_THROW_ON_ERROR);unset($d['owner']);$requests[]=$d;}
+ $requests=[];$q=ns_q("SELECT payload FROM noa_documents WHERE doc_key LIKE 'support:settlement:%' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.owner'))=".ns_e($owner)." ORDER BY updated_at DESC LIMIT 20");while($r=sql_fetch_array($q)){$d=json_decode($r['payload'],true,64,JSON_THROW_ON_ERROR);unset($d['owner']);$d['key']='support:settlement:'.hash('sha256',$owner.'|'.$d['id']);$requests[]=$d;}
  return ['wallet'=>$w['data'],'items'=>$items,'requests'=>$requests];
 }
 function nsp_review(string $actor,string $key,string $decision,int $net,string $reference):array{

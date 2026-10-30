@@ -17,6 +17,7 @@ try{
    if(($is_admin??'')!=='super'||$owner!==($config['cf_admin']??''))nsp_reply(403,['ok'=>false,'error'=>'administrator_required']);
    $items=[];$q=ns_q("SELECT doc_key,payload FROM noa_documents WHERE doc_key LIKE 'support:settlement:%' ORDER BY updated_at DESC LIMIT 100");while($r=sql_fetch_array($q))$items[]=['key'=>$r['doc_key']]+json_decode($r['payload'],true,64,JSON_THROW_ON_ERROR);nsp_reply(200,['ok'=>true,'csrf'=>$csrf,'items'=>$items,'queue'=>nspp_admin_queue(),'policy'=>nspp_policy()]);
   }
+  if($action==='detail')nsp_reply(200,['ok'=>true]+nspp_detail($owner,(string)($_GET['key']??''),($is_admin??'')==='super'));
   if($action==='dashboard')nsp_reply(200,['ok'=>true,'csrf'=>$csrf]+nspp_dashboard($owner));
   if($action==='stats'){
    $targets=json_decode((string)($_GET['targets']??'[]'),true,8,JSON_THROW_ON_ERROR);if(!is_array($targets)||count($targets)>30)throw new InvalidArgumentException('invalid_target');$out=[];
