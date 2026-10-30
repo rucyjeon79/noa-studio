@@ -8,6 +8,7 @@ import noa_ainoa_deploy as release
 # Independent BLOOM visibility maintenance does not change these presentation files.
 release.UNRELATED_PATH_PREFIXES=('scripts/noa_bloom_publish.php','scripts/noa_bloom_publish.py','.github/workflows/noa-bloom-publish.yml')
 release.FILES={
+ 'noa-my.php':'deploy/noa-my.php',
  'noa-editorial.css':'deploy/noa-editorial.css',
  'noa-app/editorial.php':'deploy/noa-app/editorial.php',
  'noa-app/editorial-content.php':'deploy/noa-app/editorial-content.php',
