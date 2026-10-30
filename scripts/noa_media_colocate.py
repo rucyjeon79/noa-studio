@@ -3,7 +3,7 @@ import hashlib,json,secrets,time,urllib.request,urllib.parse
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
-PLAN='AUDIT'
+PLAN='4bf79d65fd556442b9cae8151dfcb5759a0f28cd34e1a1cde4b23aeba5cd1b97'
 token=secrets.token_hex(32);name='noa-bridge/media-colocate-'+secrets.token_hex(8)+'.php'
 raw=Path('scripts/noa_media_colocate.php').read_text().replace('__EXPIRY__',str(int(time.time())+600)).replace('__TOKEN_SHA__',hashlib.sha256(token.encode()).hexdigest()).replace('__PLAN_SHA__',PLAN).encode()
 t=connect();s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(30);installed=False
@@ -16,6 +16,7 @@ try:
  req=urllib.request.Request('https://noastudio.ai.kr/'+name,data=None if PLAN=='AUDIT' else b'apply=1',headers={'X-NOA-Diagnostic':token,'Content-Type':'application/x-www-form-urlencoded'})
  with urllib.request.urlopen(req,timeout=210)as r:d=json.load(r)
  if not d.get('ok'):raise RuntimeError(json.dumps(d))
+ print('MEDIA_COLOCATE_FILESYSTEM_VERIFIED '+json.dumps({k:v for k,v in d.items() if k not in ['moves','httpChecks']},ensure_ascii=False),flush=True)
  if PLAN!='AUDIT':
   from concurrent.futures import ThreadPoolExecutor
   def check(row):
