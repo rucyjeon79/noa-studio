@@ -1,0 +1,87 @@
+name: NOA VIP pass store
+on:
+  push:
+    branches: [main]
+    paths: &paths ['bridge/vip-store*.php','deploy/noa-vip.*','deploy/noa-assets/vip-*.webp','tests/vip-store/**','scripts/noa_vip_store_release.py','.github/workflows/noa-vip-store.yml']
+  pull_request:
+    paths: *paths
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: isolated-noa-ci, MYSQL_DATABASE: noa_subscription_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -pisolated-noa-ci" --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      NOA_MYSQL_DSN: 'mysql:host=127.0.0.1;port=3306;dbname=noa_subscription_test;charset=utf8mb4'
+      NOA_MYSQL_USER: root
+      NOA_MYSQL_PASSWORD: isolated-noa-ci
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'mysqli,pdo_mysql,pdo_sqlite,mbstring,curl'}
+      - name: Verify exact prices, durations, expiry, ownership, rollback and duplicate purchases
+        run: |
+          for f in bridge/vip-store*.php deploy/noa-vip.php tests/vip-store/*.php; do php -l "$f"; done
+          node --check deploy/noa-vip.js
+          php tests/subscription/core_test.php
+          php tests/subscription/mysql_test.php
+          php tests/vip-store/mysql.php
+          python tests/vip-store/race.py
+      - name: Verify four illustrated passes and point cart on mobile and desktop
+        run: |
+          php tests/vip-store/fixture.php
+          python scripts/qa/noa-qa-font.py
+          npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-vip" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/noa-vip/node_modules/.bin/playwright" install --with-deps webkit
+          cp tests/vip-store/browser.mjs "$RUNNER_TEMP/noa-vip/check.mjs"
+          node "$RUNNER_TEMP/noa-vip/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-vip-candidate-${{ github.run_id }}', path: vip-proof/, retention-days: 7}
+  deploy:
+    if: github.event_name == 'push'
+    needs: verify
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 12
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - run: python -m pip install 'paramiko>=3,<5'
+      - run: python scripts/noa_vip_store_release.py
+      - name: Verify live catalog, artwork and guest rejection without buying
+        run: |
+          python - <<'PY'
+          import json,urllib.request,urllib.error
+          root='https://noastudio.ai.kr'
+          with urllib.request.urlopen(root+'/noa-bridge/vip-store.php') as r:d=json.load(r)
+          assert d['ok'] and d['member'] is False
+          assert [p['points'] for p in d['products']]==[2850,32400,4750,54000]
+          assert [p['durationDays'] for p in d['products']]==[30,365,30,365]
+          assert not any(k in d for k in ['csrf','orders','balance'])
+          for p in d['products']:
+            with urllib.request.urlopen(root+p['image']) as r:assert r.read(4)==b'RIFF'
+          with urllib.request.urlopen(root+'/noa-vip.php') as r:html=r.read().decode()
+          assert all(p['name'] in html for p in d['products'])
+          try:urllib.request.urlopen(urllib.request.Request(root+'/noa-bridge/vip-store.php',data=b'{}',headers={'Content-Type':'application/json'},method='POST'));raise AssertionError('guest_purchase_allowed')
+          except urllib.error.HTTPError as e:assert e.code==401
+          print('VIP_STORE_LIVE_FOUR_PRODUCTS_NO_PURCHASE_OK',json.dumps({'enabled':d['enabled']}))
+          PY
+      - if: failure()
+        run: if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then python scripts/noa_vip_store_release.py rollback; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-vip-live-${{ github.run_id }}', path: ainoa-proof/, retention-days: 7}

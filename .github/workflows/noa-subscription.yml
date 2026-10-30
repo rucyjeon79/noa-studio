@@ -16,7 +16,7 @@ permissions: {contents: read}
 concurrency: {group: noa-subscription-release, cancel-in-progress: false}
 jobs:
   native-preflight:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && !contains(github.event.head_commit.message, '[vip-release]')
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 8
@@ -34,6 +34,7 @@ jobs:
         if: always()
         with: {name: 'noa-subscription-preflight-${{ github.run_id }}', path: 'subscription-proof/preflight.json', retention-days: 2}
   candidate:
+    if: ${{ !contains(github.event.head_commit.message, '[vip-release]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:

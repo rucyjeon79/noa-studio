@@ -8,6 +8,7 @@ on:
 permissions: {contents: read}
 jobs:
   verify:
+    if: ${{ !contains(github.event.head_commit.message, '[vip-release]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 18
     services:

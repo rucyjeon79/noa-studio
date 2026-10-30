@@ -56,12 +56,12 @@ function ns_point_relation(string $id,string $action):array{
  $full=$action.':'.$id;if(strlen($full)>100)throw new InvalidArgumentException('point_relation_too_long');
  return [substr(hash('sha256',$id),0,20),$full];
 }
-function ns_points_debit(string $owner,int $points,string $id):void{
+function ns_points_debit(string $owner,int $points,string $id,string $description='NOA STUDIO 월 구독'):void{
  if($points<1||$points>1000000000)throw new InvalidArgumentException('positive_price_required');
  [$relation,$action]=ns_point_relation($id,'purchase');
  ns_q('SELECT po_id FROM '.ns_table('point_table').' WHERE mb_id='.ns_e($owner).' FOR UPDATE');$balance=(int)get_point_sum($owner);if($balance<$points)throw new DomainException('insufficient_points');
  $receipt=ns_one('SELECT po_id FROM '.ns_table('point_table').' WHERE mb_id='.ns_e($owner)." AND po_rel_table='noa_subscription' AND po_rel_id=".ns_e($relation).' AND po_rel_action='.ns_e($action));if($receipt)throw new DomainException('points_receipt_conflict');
- $buffer=ob_get_level();ob_start(static fn($v)=>'');try{$ok=insert_point($owner,-$points,'NOA STUDIO 월 구독','noa_subscription',$relation,$action);$unexpected=ob_get_contents();}finally{while(ob_get_level()>$buffer)ob_end_clean();}
+ $buffer=ob_get_level();ob_start(static fn($v)=>'');try{$ok=insert_point($owner,-$points,$description,'noa_subscription',$relation,$action);$unexpected=ob_get_contents();}finally{while(ob_get_level()>$buffer)ob_end_clean();}
  if($ok!==1||trim($unexpected)!=='')throw new RuntimeException('points_debit_failed');
  $verified=ns_one('SELECT po_point FROM '.ns_table('point_table').' WHERE mb_id='.ns_e($owner)." AND po_rel_table='noa_subscription' AND po_rel_id=".ns_e($relation).' AND po_rel_action='.ns_e($action));if(!$verified||(int)$verified['po_point']!==-$points)throw new RuntimeException('points_debit_failed');
 }
