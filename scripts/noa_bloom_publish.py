@@ -1,10 +1,17 @@
 """Publish only explicitly authorized BLOOM after verified Drive preimage backup."""
-import hashlib,json,os,secrets,time,urllib.request
+import hashlib,json,os,secrets,time,urllib.request,base64
+from cryptography.hazmat.primitives import serialization,hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
 from noa_drive_snapshot import DriveStore
-store=DriveStore();store.require() # Fail before hosting changes if backup access is absent.
+store=DriveStore()
+HAS_DRIVE=bool(os.environ.get("NOA_DRIVE_RCLONE_CONFIG_B64"))
+if HAS_DRIVE:store.require()
+RECEIPT=None
+PUBLIC_KEY=b'-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1kceXoZhE1fSl11wYQ2m\nxxp5uZh5poTUIh9eMJGoSrE6Lw5kOxkoCG9J1DvkaEzbS2Q3MQwGV8xOGZSws/iB\nR0hzyTNzcmz5ZMwwDiW514iOOA3cHikg/S9b31SEuUrcV7etuFsTgFxEBwZiG3Mo\nomkkcr+r9fGRU4GXdOuzoAK/OqRsylrYNzSDQx0fKMn1O4VaFNde5fXgo1uif+zV\nXOGTjeZD9SFwMLxSBDX2uCNEiR9eheyh88Wd4AsumKLrLknxQzhnUee3zcJ5km3Q\n6bXutBNjO6HwLT38fSKOFTRH5+AVYmdKRnr4OIbPM/h8ZtNxiich8r5I91Mh+l9N\nNQIDAQAB\n-----END PUBLIC KEY-----\n'
 token=secrets.token_hex(32);name='noa-bridge/bloom-publish-'+secrets.token_hex(8)+'.php'
 raw=Path('scripts/noa_bloom_publish.php').read_text().replace('__EXPIRY__',str(int(time.time())+600)).replace('__TOKEN_SHA__',hashlib.sha256(token.encode()).hexdigest()).encode()
 t=connect();s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(30);installed=False
@@ -20,7 +27,17 @@ try:
  with s.open(ROOT+'/'+name,'rb')as f:
   if f.read()!=raw:raise RuntimeError('helper_readback_mismatch')
  before=request();backup=Path(os.environ['RUNNER_TEMP'])/'bloom-before.json';backup.write_text(json.dumps(before,ensure_ascii=False));backup.chmod(0o600)
- store.publish('bloom-before-'+os.environ['GITHUB_RUN_ID'],backup)
+ if HAS_DRIVE:
+  store.publish('bloom-before-'+os.environ['GITHUB_RUN_ID'],backup)
+ elif RECEIPT is None:
+  key=secrets.token_bytes(32);nonce=secrets.token_bytes(12)
+  wrapped=serialization.load_pem_public_key(PUBLIC_KEY).encrypt(key,padding.OAEP(mgf=padding.MGF1(hashes.SHA256()),algorithm=hashes.SHA256(),label=None))
+  cipher=AESGCM(key).encrypt(nonce,backup.read_bytes(),None)
+  print('BLOOM_ENCRYPTED_BACKUP '+base64.b64encode(wrapped+nonce+cipher).decode(),flush=True)
+  print('BLOOM_AWAITING_DRIVE_RECEIPT',flush=True)
+  raise SystemExit(0)
+ elif before['digest']!=RECEIPT['digest']:
+  raise RuntimeError('verified_backup_no_longer_matches')
  print('BLOOM_BACKUP_VERIFIED',json.dumps({'sha256':hashlib.sha256(backup.read_bytes()).hexdigest(),'driveFolder':'1ZeCFabpOvXMB5rNRg8C3m5XR3mPTvKp3'}),flush=True)
  result=request({'expectedDigest':before['digest']})
  after=request();old={r['doc_key']:r for r in before['rows']};new={r['doc_key']:r for r in after['rows']}
