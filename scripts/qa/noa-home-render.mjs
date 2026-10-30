@@ -15,8 +15,11 @@ try{
  for(const width of [390,1280]){
   await page.setViewportSize({width,height:900});await page.goto('http://127.0.0.1:8097/',{waitUntil:'domcontentloaded'});await page.locator('body[data-noa-home-ready="true"]').waitFor();
   const rendered={};for(const [section,id]of [['stories','noa-stories'],['covers','noa-covers'],['playlists','noa-acts']]){
-   const cards=page.locator('#'+id+' a.noa-music-card');assert.equal(await cards.count(),source[section].length);
-   rendered[section]=await cards.evaluateAll(cs=>cs.map(c=>({video:c.dataset.video,playlist:c.dataset.playlist??null,href:c.getAttribute('href'),title:c.querySelector('strong').textContent,originalTitle:c.querySelector('strong').dataset.noaOriginalTitle,titleTooltip:c.querySelector('strong').title,note:c.querySelector('small').textContent})));
+   const cards=page.locator('#'+id+' a.noa-music-card');rendered[section]=[];let pages=0;
+   while(true){assert(++pages<=source[section].length+1,'pagination must terminate');if(width===390)assert.equal(await cards.count(),Math.min(4,source[section].length-rendered[section].length),'mobile portrait has four cards per page');
+   const batch=await cards.evaluateAll(cs=>cs.map(c=>({video:c.dataset.video,playlist:c.dataset.playlist??null,href:c.getAttribute('href'),title:c.querySelector('strong').textContent,originalTitle:c.querySelector('strong').dataset.noaOriginalTitle,titleTooltip:c.querySelector('strong').title,note:c.querySelector('small').textContent})));
+   rendered[section].push(...batch);const next=page.locator('#'+id+' + .noa-home-pages').getByRole('button',{name:'다음',exact:true});if(!await next.count()||!await next.isEnabled())break;await next.click();}
+   assert.equal(rendered[section].length,source[section].length,'all source rows across pages');
    for(let i=0;i<source[section].length;i++){const s=source[section][i],r=rendered[section][i];assert.equal(r.video,s.videoId);assert.equal(r.originalTitle,s.title,'full source title preserved');assert.equal(r.titleTooltip,s.title,'accessible full title preserved');assert.equal(r.title,await page.evaluate(row=>window.NoaCardLayout.presentTitle(row.title,row),s),'compact display uses the matching source row');assert.equal(r.href,s.href);assert.equal(r.playlist,s.playlistId??null);assert.doesNotMatch(r.note,/NaN|undefined|null/);assert.ok(r.note.includes(Number(s.youtubeViews??s.views??s.score).toLocaleString('ko')),'verified source metric preserved');if(section==='playlists')assert.match(r.note,s.playlistId?/^수록 영상 조회 /:/^조회 /);}
   }
   if(baseline)assert.deepEqual(rendered,baseline);baseline=rendered;
