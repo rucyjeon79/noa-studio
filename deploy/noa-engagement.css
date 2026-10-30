@@ -140,3 +140,26 @@ html[data-noa-precision] body.noa-page .noa-inline-song-row.noa-mastered{backgro
 @keyframes noa-premium-gold-sheen{0%,32%{background-position:110% 0}68%,100%{background-position:-80% 0}}
 @media(prefers-reduced-motion:reduce){.noa-premium-badge>span{animation:none;background-position:50% 0}}
 @media(forced-colors:active){.noa-premium-badge>span{background:none;color:CanvasText;text-shadow:none;animation:none}}
+
+/* Live design 02: shared charcoal, restrained service accents, stable counters. */
+html[data-noa-style][data-noa-section]{--noa-accent:#d0b67c!important;--noa-bg:#111315!important;--noa-surface:#1b1e22!important;--noa-raised:#22262b!important;--noa-line:#30343a!important;--noa-text:#eeede8!important;--noa-muted:#a1a6ad!important}
+html[data-noa-style][data-noa-section=lounge]{--noa-accent:#8ebca6!important}
+html[data-noa-style][data-noa-section=lab]{--noa-accent:#b6a1d0!important}
+html[data-noa-precision] body .noa-engagement.noa-engagement>button>span{font-variant-numeric:tabular-nums;min-width:3.8ch;text-align:center}
+html[data-noa-precision] body.noa-page .noa-inline-song-row>.noa-engagement>button{flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:3px 0;min-width:44px;height:48px}
+html[data-noa-precision] body.noa-page .noa-inline-song-row>.noa-song-actions>.noa-song-action:is([aria-label$=" 재생"],[aria-label$=" 다운로드"]){flex-direction:column;align-items:center;justify-content:center;gap:3px;height:48px;min-height:48px;padding:3px 0;color:var(--noa-muted)}
+html[data-noa-precision] body.noa-page .noa-inline-song-row>.noa-song-actions>.noa-song-action:is([aria-label$=" 재생"],[aria-label$=" 다운로드"])>span{display:block;position:static;width:auto;height:auto;clip-path:none;overflow:visible;font-size:10px;line-height:14px}
+html[data-noa-precision] body.noa-page .noa-inline-song-row{grid-template-rows:22px 48px;row-gap:4px}
+@media(min-width:900px){
+ html[data-noa-precision] body.noa-page .noa-inline-song-row{grid-template-columns:56px minmax(100px,1fr) 96px repeat(3,48px);grid-template-rows:minmax(64px,auto);column-gap:8px;padding:12px 8px}
+ html[data-noa-precision] body.noa-page .noa-inline-song-row>.noa-inline-song>.noa-inline-cover{grid-row:1}
+ html[data-noa-precision] body.noa-page .noa-inline-song-row>.noa-inline-song>.noa-inline-title{grid-column:2;grid-row:1;height:auto;min-height:44px}
+ html[data-noa-precision] body.noa-page .noa-inline-song-row>.noa-engagement{grid-column:3;grid-row:1;justify-content:space-between}
+ html[data-noa-precision] body.noa-page .noa-inline-song-row>.noa-song-actions>.noa-song-action[aria-label$=" 재생"]{grid-column:4;grid-row:1}
+ html[data-noa-precision] body.noa-page .noa-inline-song-row>.noa-song-actions>.noa-song-action[aria-label$=" 다운로드"]{grid-column:5;grid-row:1}
+ html[data-noa-precision] body.noa-page .noa-inline-song-row>.noa-song-more{grid-column:6;grid-row:1}
+}
+@media(max-width:560px){
+ html[data-noa-precision] body .noa-comments{width:100%;max-width:100%;max-height:90dvh;margin:auto 0 0;padding:16px;border-radius:16px 16px 0 0}
+ html[data-noa-precision] body .noa-comments header{top:-16px}
+}
