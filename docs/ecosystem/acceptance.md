@@ -62,3 +62,22 @@ Marpple product-only composed thumbnails are reused within the official external
 - Notifications use the original post's Lounge/LAB route. Report outcomes remain readable when moderation removes post access, without revealing private content. Moderation notifies the author and reporter and rejects repeat processing.
 - Deleted comments decrement the live count once and cannot be resurrected through editing. Failed cart writes reload authoritative state. Music selection only lists public references.
 - `tests/ecosystem/completion.php` exercises these transitions on the disposable MySQL fixture, in addition to the existing payment, support, permissions and endpoint suite.
+
+## Full brief reconciliation — 2026-10-31 KST
+
+| Brief sections | Actual implementation / evidence | Status |
+|---|---|---|
+| 1–2, 24–25 | Existing native PHP app, member identity, MySQL documents, separate NOA files and scoped release; shared ecosystem UI | Implemented; no data migration or replacement |
+| 3–4 SHOP discovery and comparison | Product catalog, collections, search/category/price filters, real prices and metadata, explicit 2–3 product comparison table; filters retained when returning from detail | Implemented; browser flows exercise comparison and return navigation |
+| 4 SHOP detail/cart/checkout | Gallery, detail, member wishlist and persistent goods list; native VIP/points carts remain separate; official Marpple product checkout | Implemented; external orders are not represented as NOA-completed orders |
+| 5 Cross-service shopping | Contextual music/genre/ACT/channel associations and explicit Lounge/LAB product references | Implemented; empty associations do not fabricate recommendations |
+| 6–10 Lounge | Category/discovery feeds, public/member/private post CRUD, images, media references, comments/replies, likes, bookmarks, polls, report review/results, activity notices, monthly highlights, questions, music/news and VIP timed publication | Implemented; real user/operator content is required for populated feeds |
+| 11–17 LAB | Creator feeds, work and feedback topics, immutable versions, comparison, resolution records, stages, classes/challenges, rights declarations, collaboration consent/withdrawal/reapply/review | Implemented; original media access controls stay authoritative |
+| 18–20 Support | Song/channel/work entry points; integer 1P through actual available balance, full balance, optional message, confirmation, receipt, atomic debit, duplicate guard, refund and funding provenance | Implemented and tested in isolated native ledger; no live test transfer |
+| 21–22 Settlement | MY workspace link, month/total/source metrics, personal/business review, request/hold/verify/approve/pay/reject workflow and immutable audit | Implemented; cash activation requires recorded legal/provider/tax approvals, actual bank transfer remains external |
+| 23 Membership | Existing 1–6 permissions, unexpired VIP grant, 7–9 scoped community/SHOP delegation and revocation, real super administrator | Implemented; no parallel member DB |
+| 26 Journeys | `journeys.md`, native links, browser flow tests and endpoint tests | Connected; duplicate workspace Support/LAB links removed |
+| 27–28 Screens and states | Shipped SHOP/Lounge/LAB/Support templates; loading/empty/failure/success, guest/owner/staff denial and transaction states | Implemented; responsive browser checks accompany release |
+| 29–30 Deliverables and subsequent authorization | This acceptance record, journeys, deployed native screens and existing permissions/data descriptions | User's later explicit implementation/deployment instructions supersede original design-only phase |
+
+External operational boundaries are not unfinished internal buttons: live payment provider credentials/contract readiness, Marpple-owned stock/order/shipping, and legal/tax-approved cash settlement activation remain authoritative outside this source release. No contract approval or completed payment is fabricated.

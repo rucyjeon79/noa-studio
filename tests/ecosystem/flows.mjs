@@ -12,7 +12,7 @@ try {
   let own=null,admin=false,failCart=false;
   const product={id:'real-product',title:'실제 굿즈',priceWon:12000,image:'/image.png',category:'팬 굿즈',url:'https://marpple.shop/kr/jr_lifestyle/products/1'};
   const post={id:'a'.repeat(32),space:'lab',category:'collaboration',title:'협업 검증',body:'함께 만드는 음악',name:'창작자',at:1,stage:'draft',visibility:'public',roles:'보컬',schedule:'11월',compensation:'서면 계약',rights:'공동 크레딧',termsHash:'verified-terms',revision:1,options:[],images:[],likes:0};
-  const shop=()=>({storeUrl:'https://marpple.shop/kr/jr_lifestyle',products:[product],managedProducts:admin?[product]:[],popularity:{},state:{wishlist:[],cart:[]},revision:0});
+  const shop=()=>({storeUrl:'https://marpple.shop/kr/jr_lifestyle',products:[product,{...product,id:"second-product",title:"다른 상품",priceWon:22000}],managedProducts:admin?[product]:[],popularity:{},state:{wishlist:[],cart:[]},revision:0});
   await page.route('http://noa.test/**',async route=>{
    const req=route.request(),url=new URL(req.url());
    if(url.pathname==='/noa-bridge/ecosystem.php') {
@@ -47,10 +47,12 @@ try {
   await page.getByLabel('제목',{exact:true}).fill('관련 상품 작품');await page.getByLabel('내용',{exact:true}).fill('작품 소개');await page.getByRole('checkbox',{name:/이 작품을 공개/}).check();await page.getByRole('button',{name:'게시하기',exact:true}).click();
   await page.waitForFunction(()=>!document.querySelector('dialog'));assert.deepEqual(calls.find(c=>c.action==='save').body.productIds,['real-product']);
   await page.goto('http://noa.test/noa-lounge.php?view=list');await page.getByRole('button',{name:'내 활동·알림'}).click();await page.getByRole('button',{name:/LAB 알림/}).click();await page.waitForURL('**/noa-creator-lab.php?post=*');
-  failCart=true;await page.goto('http://noa.test/noa-shop.php');await page.getByRole('button',{name:'담기',exact:true}).click();await page.getByText('다른 화면에서 변경되었습니다.',{exact:false}).waitFor();
+  await page.goto('http://noa.test/noa-shop.php');await page.getByRole('button',{name:'비교 선택',exact:true}).first().click();await page.getByRole('button',{name:'비교 선택',exact:true}).click();await page.getByRole('button',{name:'선택 상품 비교 (2/3)',exact:true}).click();await page.getByRole('region',{name:'선택 상품 비교표'}).waitFor();assert.equal(await page.locator('thead th').count(),3);assert((await page.locator('table').innerText()).includes('22,000원'));await page.getByRole('button',{name:'← 상품 목록',exact:true}).click();
+  await page.getByRole('searchbox',{name:'상품 찾기'}).fill('실제');await page.locator('.ec-open').click();await page.getByRole('button',{name:'← 상품 목록',exact:true}).click();assert.equal(await page.getByRole('searchbox',{name:'상품 찾기'}).inputValue(),'실제');assert.equal(await page.locator('.ec-card').count(),1);await page.getByRole('searchbox',{name:'상품 찾기'}).fill('');
+  failCart=true;await page.getByRole('button',{name:'담기',exact:true}).first().click();await page.getByText('다른 화면에서 변경되었습니다.',{exact:false}).waitFor();
   await page.getByRole('button',{name:'구매 목록',exact:true}).click();await page.getByText('구매 목록이 비어 있어요',{exact:true}).waitFor();
   admin=true;await page.reload();await page.getByRole('button',{name:'상품 관리',exact:true}).click();assert.equal(await page.getByLabel('상품 ID',{exact:true}).inputValue(),'');assert.equal(await page.getByLabel('상품',{exact:true}).inputValue(),'');
   assert.deepEqual(errors,[]);await page.close();
  }
- console.log('ECOSYSTEM_BROWSER_MOBILE_DESKTOP_CONSENT_WITHDRAW_REAPPLY_PRODUCT_LINK_ACTIVITY_CART_ROLLBACK_OK');
+ console.log('ECOSYSTEM_BROWSER_MOBILE_DESKTOP_CONSENT_WITHDRAW_REAPPLY_PRODUCT_LINK_ACTIVITY_CART_ROLLBACK_PRODUCT_COMPARE_FILTER_RESTORE_OK');
 } finally {await browser.close();}
