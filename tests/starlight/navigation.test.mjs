@@ -16,3 +16,11 @@ test('essential navigation remains available without loading account data',()=>{
  assert(mount<script.indexOf('async function update('));
  assert(script.includes("location.assign('/')"));
 });
+test('menu search filters visible routes and announces empty results',()=>{
+ const html=fs.readFileSync('deploy/noa-sitemap.php','utf8'),code=html.split('</main><script>')[1].split('</script>')[0];
+ const links=[{textContent:'음원 음악 재생'},{textContent:'설정 테마 언어'}],section={querySelectorAll:()=>links},status={},search={value:'',addEventListener:(event,fn)=>search.input=fn};
+ vm.runInNewContext(code,{document:{getElementById:id=>id==='noa-menu-search'?search:status,querySelectorAll:()=>[section]}});
+ search.value='설정';search.input();assert.equal(links[0].hidden,true);assert.equal(links[1].hidden,false);assert.equal(section.hidden,false);
+ search.value='없는 메뉴';search.input();assert.equal(section.hidden,true);assert.match(status.textContent,/없습니다/);
+ search.value='';search.input();assert(links.every(l=>!l.hidden));assert.equal(section.hidden,false);
+});
