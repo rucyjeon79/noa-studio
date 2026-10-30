@@ -4,8 +4,8 @@ Notice content and disclosure geometry are checked by the native and browser sui
 import argparse,re,subprocess
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
-# Approved and deployed home-board release; keeps all other home bytes protected.
-BASE_COMMIT='e92536b4ec3f20f6cb32e1ece0b1a6cd9584505e'
+# Approved and deployed responsive home/AMT placement release; preserve those bytes.
+BASE_COMMIT='f3a2262626c7622f6ca3062ab3bae895414fd63b'
 parser=argparse.ArgumentParser();parser.add_argument('--host-source',type=Path);args=parser.parse_args()
 candidate=(ROOT/'deploy/noa-app/home.php').read_bytes()
 baseline=args.host_source.read_bytes()if args.host_source else subprocess.check_output(['git','show',BASE_COMMIT+':deploy/noa-app/home.php'],cwd=ROOT)
@@ -37,10 +37,10 @@ assert len(addition)==1 and hero_start<candidate.index(addition[0])<hero_end,'gu
 community=re.findall(rb'<section class="noa-section noa-home-community" data-home-section="community"[^>]*>[^\n]*</section>\n',candidate)
 assert candidate.count(MONTHLY_INCLUDE)==1,'one guarded monthly banner include required'
 assert len(community)==1 and candidate[hero_end+len(b'</section>'):].startswith(b'\n'+MONTHLY_INCLUDE+b'<section class="noa-section noa-notices"'),'monthly benefits must follow hero, then native notices'
-assert candidate.index(b'data-home-section="notices"')<candidate.index(community[0]),'community remains below notices'
+assert candidate.index(b"<?php noa_home_banner('amt');?>")<candidate.index(community[0]),'community must follow the AMT banner'
 assert candidate.count(b'data-noa-community-home')==1,'one native per-board title projection required'
 assert not re.search(rb'TOP\s*10',candidate,re.I),'removed TOP 10 labels returned'
-assert candidate.count(b'noa-home.js?v=20261024-popularity-metrics')==1,'reviewed metrics cache revision changed'
+assert len(re.findall(rb'<script src="/noa-home[.]js[?]v=[^"]+" defer></script>',candidate))==1,'reviewed metrics cache revision changed'
 for marker in [b'id="noa-hero-video"',b'id="noa-hero-genre"',b'id="noa-hero-play"',b'id="noa-featured"',b'id="noa-ep"',b'id="noa-stories"',b'id="noa-covers"',b'id="noa-acts"']:
  assert candidate.count(marker)==1,'missing/duplicate HOME section '+marker.decode()
 print('NOA_HOME_NON_HERO_BYTES_PRESERVED_GENRE_VIDEO_SITEMAP_AND_COMMUNITY_CONTRACT_OK')
