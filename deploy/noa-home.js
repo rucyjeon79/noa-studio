@@ -27,7 +27,7 @@ function listSize(state){
  if(state.width!==width){state.width=width;state.cardHeight=0;}
  let chrome=88; // section spacing and reserved page controls
  for(const node of state.host.closest('section').children){if(node===state.host)break;const style=getComputedStyle(node);chrome+=node.getBoundingClientRect().height+(parseFloat(style.marginTop)||0)+(parseFloat(style.marginBottom)||0);}
- for(const selector of ['.noa-mobile-nav','.noa-transport','.noa-topbar']){const node=document.querySelector(selector);if(node&&!node.hidden){const style=getComputedStyle(node);if(style.display!=='none'&&['fixed','sticky'].includes(style.position))chrome+=node.getBoundingClientRect().height;}}
+ for(const selector of ['#noa-account-bar','.noa-mobile-nav','.noa-transport','.noa-topbar']){const node=document.querySelector(selector);if(node&&!node.hidden){const style=getComputedStyle(node);if(style.display!=='none'&&['fixed','sticky'].includes(style.position))chrome+=node.getBoundingClientRect().height;}}
  const columns=homePageSize(width,1,1,0),gap=width<=600?12:16;
  return homePageSize(width,window.visualViewport?.height||window.innerHeight,state.cardHeight||((width-gap*(columns-1))/columns*.5625+120),chrome);
 }
