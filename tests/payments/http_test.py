@@ -37,6 +37,12 @@ try:
  d=json.loads(request('/noa-bridge/toss.php')[1]);code,body,_=request('/noa-bridge/toss.php?action=create',payload,extra={'X-Noa-CSRF':d['csrf']});o=json.loads(body);assert code==200 and o['order']['totalPoints']==11000 and o['order']['state']=='created'
  assert json.loads(request('/proof.php')[1])['balance']==0
  code,body,_=request('/noa-bridge/toss.php?action=confirm',{'id':payload['requestId'],'paymentKey':'fixture','amount':1},extra={'X-Noa-CSRF':d['csrf']});assert code==409 and json.loads(body)['error']=='payment_amount_mismatch'
+ cart_payload={'requestId':'bc222222-2222-4222-8222-222222222222','items':[{'productId':'p1000','quantity':2,'priceWon':1},{'productId':'p10000','quantity':1}],'confirmed':True}
+ code,body,_=request('/noa-bridge/toss.php?action=create',cart_payload,extra={'X-Noa-CSRF':d['csrf']});cart_order=json.loads(body)['order'];assert code==200 and cart_order['priceWon']==12000 and cart_order['totalPoints']==13000 and len(cart_order['items'])==2
+ cart_payload['items'][0]['quantity']=0
+ assert request('/noa-bridge/toss.php?action=create',cart_payload,extra={'X-Noa-CSRF':d['csrf']})[0]==400
+ assert json.loads(request('/proof.php')[1])['balance']==0
  d=json.loads(request('/noa-bridge/toss.php',user='tp_other')[1]);assert not d['orders'],'cross-account order privacy'
  print('TOSS_HTTP_AUTH_CSRF_PRIVATE_CONFIG_NO_UNVERIFIED_CREDIT_OK')
 finally:server.terminate();server.wait(timeout=5)
+

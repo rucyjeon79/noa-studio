@@ -1,7 +1,7 @@
 name: NOA Toss point checkout
 on:
   pull_request:
-    paths: &paths ['bridge/toss*.php','deploy/noa-points*','deploy/noa-payment-settings.php','tests/payments/**','scripts/noa_payments_release.py','scripts/qa/noa-payments.mjs','.github/workflows/noa-payments.yml']
+    paths: &paths ['bridge/toss*.php','deploy/noa-points*','deploy/noa-assets/points/**','deploy/noa-payment-settings.php','tests/payments/**','scripts/noa_payments_release.py','scripts/qa/noa-payments.mjs','.github/workflows/noa-payments.yml']
   push:
     branches: [main]
     paths: *paths
@@ -77,6 +77,8 @@ jobs:
             assert 'no-store' in r.headers['Cache-Control']
             assert [p['totalPoints'] for p in d['products']]==[1000,3000,5000,11000,33000,55000]
             assert 'secretKey' not in str(d) and 'webhookSecret' not in str(d)
+          for p in [1000,3000,5000,10000,30000,50000]:
+            with urllib.request.urlopen(root+'/noa-assets/points/p'+str(p)+'.webp') as r:assert r.status==200 and r.read(4)==b'RIFF'
           for path in ['/noa-payment-settings.php','/noa-bridge/toss-config.php','/noa-bridge/toss-core.php']:
             try:urllib.request.urlopen(root+path);raise AssertionError('private route exposed')
             except urllib.error.HTTPError as e:assert e.code==403
@@ -89,3 +91,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'noa-payments-live-${{ github.run_id }}', path: ainoa-proof/, retention-days: 7}
+

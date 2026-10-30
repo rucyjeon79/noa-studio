@@ -1,8 +1,10 @@
 <?php
 require __DIR__.'/../rhythm/alignment-fixture.php';
 foreach(['noa-points.php','noa-points.js','noa-points.css']as $f)copy('deploy/'.$f,$root.'/'.$f);
+@mkdir($root.'/noa-assets/points',0700,true);foreach(glob('deploy/noa-assets/points/*.webp')as $image)copy($image,$root.'/noa-assets/points/'.basename($image));
 // The browser suite stubs the payment API/SDK only on this isolated origin.
 file_put_contents($root.'/audio-cards.php', <<<'CODE'
 <?php require __DIR__.'/common.php';?><!doctype html><html lang="ko" data-noa-precision="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-engagement.css"><script src="/noa-ui.js" defer></script><script src="/noa-browse.js" defer></script><script src="/noa-engagement.js" defer></script><script src="/noa-premium.js" defer></script><script type="application/json" id="noa-engagement-context">{"member":true}</script></head><body class="noa-page"><main><h1>음원</h1><div id="browse"></div><div id="songs" hidden></div></main><script>document.addEventListener('DOMContentLoaded',()=>{const rows=['하루의 끝에','난 다시 살아가','빛으로 널','세상 끝에서도','너와의 모든 순간','Remember','아주 긴 제목의 곡도 같은 여백으로 맞춥니다'].map((title,i)=>({key:'fixture-'+i,genre:'kpop-original',ep:i+1,title,thumb:'/cover.jpg',audio:'/fixture.mp3'}));for(const r of rows){const a=document.createElement('article');a.className='song';a.dataset.key=a.dataset.jukeboxKey=r.key;a.dataset.title=r.title;a.dataset.audio=r.audio;a.dataset.audioSha='a'.repeat(64);a.innerHTML='<div class="info"><strong>'+r.title+'</strong></div><div class="jukebox-actions"><button class="sound-play">재생</button><button class="jukebox-download">다운로드</button></div>';a.querySelector('.jukebox-download').onclick=()=>a.dataset.downloadClicked='true';document.getElementById('songs').append(a);}let ui;const refresh=()=>ui?.apply(rows);ui=NoaBrowse.mount({host:document.getElementById('browse'),rows,onChange:refresh});ui.apply(rows);});</script></body></html>
 CODE);
 echo "TOSS_AND_AUDIO_FIXTURE_READY\n";
+

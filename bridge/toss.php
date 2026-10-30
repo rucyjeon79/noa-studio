@@ -15,8 +15,8 @@ try{
  if(($_SERVER['HTTP_ORIGIN']??'')!=='https://noastudio.ai.kr'||empty($_SESSION['noa_toss_csrf'])||!hash_equals($_SESSION['noa_toss_csrf'],$_SERVER['HTTP_X_NOA_CSRF']??'')||strtolower(trim(explode(';',$_SERVER['CONTENT_TYPE']??'')[0]))!=='application/json')nt_reply(403,['ok'=>false,'error'=>'csrf_required']);
  $raw=file_get_contents('php://input',false,null,0,8193);if(strlen($raw)>8192)throw new InvalidArgumentException('invalid_request');$b=json_decode($raw,true,32,JSON_THROW_ON_ERROR);if(!is_array($b))throw new InvalidArgumentException('invalid_request');$owner=(string)$member['mb_id'];if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
  if($action==='create'){
-  if(!is_string($b['requestId']??null)||!is_string($b['productId']??null)||($b['confirmed']??false)!==true)throw new InvalidArgumentException('purchase_confirmation_required');
-  $d=nt_create($owner,$b['requestId'],$b['productId'],time());nt_reply(200,['ok'=>true,'order'=>nt_view($d),'customerKey'=>$d['customerKey'],'clientKey'=>$c['clientKey']]);
+  if(!is_string($b['requestId']??null)||(!is_string($b['productId']??null)&&!is_array($b['items']??null))||($b['confirmed']??false)!==true)throw new InvalidArgumentException('purchase_confirmation_required');
+  $d=nt_create($owner,$b['requestId'],$b['items']??$b['productId'],time());nt_reply(200,['ok'=>true,'order'=>nt_view($d),'customerKey'=>$d['customerKey'],'clientKey'=>$c['clientKey']]);
  }
  if(!is_string($b['id']??null))throw new InvalidArgumentException('invalid_request');
  if($action==='confirm'){
@@ -28,3 +28,4 @@ try{
 }catch(InvalidArgumentException|JsonException $e){nt_reply(400,['ok'=>false,'error'=>'invalid_request']);}
 catch(DomainException $e){$allowed=['payment_not_ready','payment_configuration_changed','order_not_found','order_expired','purchase_conflict','payment_amount_mismatch','payment_method_not_supported','payment_verification_pending','payment_reference_already_used','purchase_busy_retry','points_storage_not_ready'];nt_reply(409,['ok'=>false,'error'=>in_array($e->getMessage(),$allowed,true)?$e->getMessage():'payment_unavailable']);}
 catch(Throwable $e){nt_reply(503,['ok'=>false,'error'=>'payment_verification_pending']);}
+

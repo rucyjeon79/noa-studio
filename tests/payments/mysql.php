@@ -22,7 +22,23 @@ $GLOBALS['nt_test_config']['mode']='live';$GLOBALS['nt_test_config']['clientKey'
 $d=nt_create('tp_rollback',tid(3),'p30000',$now);ns_q("CREATE TRIGGER tp_failure BEFORE UPDATE ON noa_documents FOR EACH ROW BEGIN IF @tp_fail=1 AND NEW.kind='toss_order' AND JSON_UNQUOTE(JSON_EXTRACT(NEW.payload,'$.state'))='paid' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='fixture_failure'; END IF; END");ns_q('SET @tp_fail=1');try{nt_apply(tid(3),tp($d),$now);throw new RuntimeException('rollback_missing');}catch(mysqli_sql_exception $e){}ns_q('SET @tp_fail=0');tcheck(get_point_sum('tp_rollback')===0&&!nt_order(tid(3))['credited'],'bonus_receipt_balance_atomic');nt_apply(tid(3),tp($d),$now);tcheck(get_point_sum('tp_rollback')===33000,'failed_local_commit_recoverable');
 $d=nt_create('tp_timeout',tid(4),'p1000',$now);$calls=[];$GLOBALS['nt_test_transport']=function($m,$path,$body,$c,$idem)use(&$calls,$d){$calls[]=$m;if($m==='POST')throw new DomainException('payment_verification_pending');return tp($d);};nt_confirm('tp_timeout',tid(4),'fixture_'.tid(4),1000,$now);tcheck($calls===['POST','GET']&&get_point_sum('tp_timeout')===1000,'ambiguous_confirmation_recovered_by_lookup');
 $d=nt_create('tp_race',tid(5),'p10000',$now);file_put_contents('/tmp/noa-toss-race.json',json_encode(tp($d)));
+// A cart is one immutable, server-priced order, including mixed bonus rates.
+tseed('tp_cart');$items=[['productId'=>'p1000','quantity'=>2],['productId'=>'p10000','quantity'=>1]];
+$q=nt_cart_quote($items);tcheck($q['priceWon']===12000&&$q['totalPoints']===13000,'mixed_cart_quote');
+tcheck(nt_cart_quote([['productId'=>'p5000','quantity'=>2]])['bonusPoints']===0,'bonus_is_per_product_not_cart_threshold');
+foreach([[],[['productId'=>'p1000','quantity'=>0]],[['productId'=>'p1000','quantity'=>11]],[['productId'=>'p1000','quantity'=>1.5]],[['productId'=>'p1000','quantity'=>'2']],[['productId'=>'p1000','quantity'=>1],['productId'=>'p1000','quantity'=>1]]] as $bad)tdeny(fn()=>nt_cart_quote($bad),'invalid_cart');
+tdeny(fn()=>nt_cart_quote([['productId'=>'unknown','quantity'=>1]]),'invalid_product');
+$forged=$items;$forged[0]['priceWon']=1;tcheck(nt_cart_quote($forged)===$q,'client_prices_never_used');
+$d=nt_create('tp_cart',tid(20),$items,$now);tcheck(count(nt_view($d)['items'])===2,'cart_lines_in_receipt');
+tcheck(nt_create('tp_cart',tid(20),array_reverse($items),$now)===$d,'cart_order_does_not_change_idempotency');
+$changed=$items;$changed[0]['quantity']=3;tdeny(fn()=>nt_create('tp_cart',tid(20),$changed,$now),'purchase_conflict');
+tcheck(get_point_sum('tp_cart')===0,'cart_creation_no_credit');
+nt_apply(tid(20),tp($d),$now);nt_apply(tid(20),tp($d),$now);tcheck(get_point_sum('tp_cart')===13000,'cart_credit_exactly_once');
+nt_apply(tid(20),tp($d,'PARTIAL_CANCELED',6000),$now);tcheck(get_point_sum('tp_cart')===6500,'cart_partial_refund_reverses_bonus');
+nt_apply(tid(20),tp($d,'CANCELED',0),$now);tcheck(get_point_sum('tp_cart')===0,'cart_full_refund');
+echo "TOSS_CART_QUANTITY_SERVER_TOTAL_IDEMPOTENCY_REFUND_OK\n";
 $raw='{"eventType":"PAYMENT_STATUS_CHANGED"}';$stamp=gmdate('c',$now);$key=str_repeat('f',64);$sig='v1:'.base64_encode(hash_hmac('sha256',$raw.':'.$stamp,$key,true));tcheck(nt_webhook_valid($raw,$stamp,'v1:invalid,'.$sig,$key,$now),'signature_rotation');tcheck(!nt_webhook_valid($raw.' ',$stamp,$sig,$key,$now),'tampered_signature');tcheck(!nt_webhook_valid($raw,$stamp,$sig,$key,$now+301),'stale_signature');
 $c=$GLOBALS['nt_test_config'];$c['contractApproved']=false;tcheck(!nt_ready($c),'live_approval_required');$c['mode']='test';tcheck(!nt_ready($c),'mixed_key_modes_rejected');tcheck(!array_key_exists('secretKey',nt_public_config($GLOBALS['nt_test_config']))&&!array_key_exists('paymentKey',nt_view($r)),'secret_and_receipt_minimization');
 tcheck(!nt_ready([]),'missing_config_not_ready');$checks=nt_setup_checks([]);tcheck(count($checks)===7&&!$checks['secretKey']['ok'],'admin_diagnostics_missing_keys');$c=$GLOBALS['nt_test_config'];tcheck(!in_array(false,array_column(nt_setup_checks($c),'ok'),true),'admin_diagnostics_ready');tcheck(!str_contains(json_encode(nt_setup_checks($c)),$c['secretKey']),'diagnostics_never_return_key');
 echo "TOSS_PACKS_SERVER_VALIDATION_CREDIT_BONUS_REPLAY_REFUND_ROLLBACK_TIMEOUT_TEST_MODE_OK\n";
+
