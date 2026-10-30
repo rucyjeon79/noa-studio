@@ -23,9 +23,12 @@ jobs:
           php tests/catalog/home_test.php
           php tests/catalog/home_uiux_test.php
           php tests/editorial/content_test.php
+          php tests/sitemap/registry_test.php
+          php tests/membership/extension_scope.php
+          node --check deploy/noa-account.js
           node --check deploy/noa-ui.js
           node --check deploy/noa-world.js
-          node --test tests/starlight/theme.test.mjs scripts/qa/noa-card-balance.test.mjs scripts/qa/noa-browse.test.mjs scripts/qa/noa-hero.test.mjs scripts/noa_player_regression.test.mjs
+          node --test tests/starlight/navigation.test.mjs tests/starlight/theme.test.mjs scripts/qa/noa-card-balance.test.mjs scripts/qa/noa-browse.test.mjs scripts/qa/noa-hero.test.mjs scripts/noa_player_regression.test.mjs
           python -m py_compile scripts/noa_starlight_release.py
       - uses: actions/upload-artifact@v4
         with: {name: 'noa-starlight-render-${{ github.run_id }}', path: starlight-proof/, retention-days: 2}

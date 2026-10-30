@@ -21,6 +21,8 @@ release.FILES={
  'noa-assets/editorial-act-3.webp':'deploy/noa-assets/editorial/act-3.webp',
  'noa-assets/editorial-act-4.webp':'deploy/noa-assets/editorial/act-4.webp',
 
+ 'noa-account.js':'deploy/noa-account.js',
+ 'noa-account.css':'deploy/noa-account.css',
  'noa-home.js':'deploy/noa-home.js',
  'noa-community.js':'deploy/noa-community.js',
  'noa-bridge/home.php':'bridge/home.php',

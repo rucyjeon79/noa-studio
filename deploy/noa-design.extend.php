@@ -40,16 +40,7 @@ function noa_design_assets(){
  $public=$public||(bool)preg_match('~^/noa-[a-z0-9-]+[.]php$~D',$path);
  if(!$native&&!$workspace&&!$public)return;
  if(!$native&&($_SERVER['REQUEST_METHOD']??'GET')!=='GET')return;
- // Share the existing account and AInoa state on wide desktop pages.
- if(!$workspace&&!str_starts_with($path,'/adm/')){
-  $base=dirname(__DIR__);$desktop='';
-  foreach(['css','js']as $kind){$file=$base.'/noa-desktop.'.$kind;if(is_file($file)){$url='/noa-desktop.'.$kind.'?v='.hash_file('sha256',$file);$desktop.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'" defer></script>';}}
-  if($desktop!==''&&is_file($base.'/noa-bridge/member-badges.php')){
-   require_once $base.'/noa-bridge/member-badges.php';$m=(array)($GLOBALS['member']??[]);$a=(string)($GLOBALS['is_admin']??'');
-   $desktop.='<script type="application/json" id="noa-desktop-context">'.json_encode(['displayName'=>(string)($m['mb_nick']??''),'access'=>nam_access($m,$a),'badge'=>nmb_data($m,$a)],JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT).'</script>';
-  }
-  $ainoa.=$desktop;
- }
+ // MY stays in primary navigation; AInoa keeps its existing floating control.
  // Standalone views do not call GnuBoard html_end(); inject only completed HTML.
  if(!$native){
   $assets=$ainoa.'<link rel="stylesheet" href="/noa-policy-20261024.css?v=20261024-approved-ui">';

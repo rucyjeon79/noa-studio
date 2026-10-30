@@ -38,3 +38,12 @@ html .noa-page main.noa-social-layout{max-width:560px;padding:28px 24px 120px;ma
 html[data-noa-precision] body #noa-my-account .noa-action{border:0;background:transparent;padding:4px 0;justify-content:flex-start}
 .noa-my-account-actions{padding-top:8px;font-size:13px}
 .noa-my-level{font-size:13px;color:var(--noa-muted);margin:0 0 8px}
+
+/* One persistent utility row; primary destinations remain in the side/bottom menu. */
+#noa-account-bar{gap:8px;min-height:56px}
+#noa-account-bar #noa-nav-back{min-width:56px;flex:none}
+#noa-account-bar .noa-account-shortcuts{gap:12px}
+#noa-account-bar .noa-account-brand{margin-right:auto}
+@media(min-width:761px){body:has(.noa-sidebar) #noa-account-bar .noa-account-brand{display:none}}
+@media(max-width:760px){#noa-account-bar{padding-inline:8px}#noa-account-bar .noa-account-brand{font-size:11px;letter-spacing:0;gap:6px}#noa-account-bar .noa-account-brand img{width:28px;height:28px}#noa-account-bar .noa-account-shortcuts{gap:4px}#noa-account-bar #noa-nav-back{min-width:44px}}
+@media(max-width:350px){#noa-account-bar .noa-account-brand span{display:none}}

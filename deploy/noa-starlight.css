@@ -88,3 +88,19 @@ html[data-noa-precision] body .noa-card-grid .noa-music-card .noa-card-heading :
 html[data-noa-precision] body.noa-page [data-browse-level] .noa-browse-card>span{gap:6px;padding:12px;align-content:start}
 html[data-noa-precision] body.noa-page [data-browse-level] .noa-browse-card>span>strong{block-size:auto;min-block-size:22px;max-block-size:44px;margin:0}
 html[data-noa-precision] body.noa-page [data-browse-level] .noa-browse-card>span>small{block-size:auto;min-block-size:16px;margin:0}
+
+/* Shared navigation and a single central content column. */
+html[data-noa-style] .noa-sidebar-bottom{display:none}
+html[data-noa-style] .noa-sidebar{overflow-y:auto;overscroll-behavior:contain}
+html[data-noa-style] :is(.noa-main,.noa-page main){max-width:1440px}
+html[data-noa-style] body .noa-home-banner{min-height:104px;padding:20px 0;margin:28px 0;gap:16px}
+html[data-noa-style] .noa-home-banner-copy>strong{font-size:20px;line-height:1.4}
+html[data-noa-style] .noa-home-banner-copy>span{min-height:0}
+html[data-noa-style] #noa-genres{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+html[data-noa-style] #noa-genres>.noa-genre{grid-column:auto!important;grid-row:auto!important;padding:16px;min-width:0}
+html[data-noa-style] #noa-genres>.noa-genre small{white-space:normal;display:block;-webkit-line-clamp:unset;block-size:auto;overflow:visible;line-height:1.6;margin-top:8px;font-size:12px}
+#noa-menu-search{width:100%;max-width:640px;min-height:48px;margin-top:8px}
+.noa-menu-search-label{display:block;font-weight:550;margin-top:24px}
+#noa-menu-results{color:var(--noa-muted);min-height:24px}
+@media(max-width:760px){html[data-noa-style] #noa-genres{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}html[data-noa-style] body .noa-home-banner{margin:24px 0;min-height:100px;padding:16px 0}}
+@media(max-width:350px){html[data-noa-style] #noa-genres{grid-template-columns:minmax(0,1fr)}}
