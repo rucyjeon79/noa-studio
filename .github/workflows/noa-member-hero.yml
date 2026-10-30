@@ -13,6 +13,7 @@ on:
       - 'tests/member/**'
       - 'scripts/noa_member_deploy.py'
       - 'scripts/qa/noa-member.mjs'
+      - 'scripts/qa/noa-home-hero-layout.mjs'
       - '.github/workflows/noa-member-hero.yml'
   pull_request:
     paths: *paths
