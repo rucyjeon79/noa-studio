@@ -22,7 +22,7 @@ function noa_sitemap_registry():array{
         ]],
         'world'=>['title'=>'ACT 세계관','routes'=>[
             ['act1','ACT 1','첫 이야기 · EP.1–10','/noa-world.php?story=1','book','public'],
-            ['act2','ACT 2','엇갈린 마음 · EP.11–20','/noa-world.php?story=2','book','public'],
+            ['act2','ACT 2','엇갈린 사랑 · EP.11–20','/noa-world.php?story=2','book','public'],
             ['act3','ACT 3','다시 빛을 향해 · EP.21–30','/noa-world.php?story=3','book','public'],
             ['act4','ACT 4','새로운 시작 · EP.31–40','/noa-world.php?story=4','book','public'],
         ]],

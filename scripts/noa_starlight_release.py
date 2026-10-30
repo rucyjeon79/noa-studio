@@ -14,6 +14,7 @@ release.FILES={
  'noa-engagement.css':'deploy/noa-engagement.css',
  'noa-design.json':'deploy/noa-design.json',
  'noa-bridge/ui-preferences.php':'bridge/ui-preferences.php',
+ 'noa-sitemap.php':'deploy/noa-sitemap.php',
  'noa-settings.php':'deploy/noa-settings.php',
  'noa-theme-admin.php':'deploy/noa-theme-admin.php',
  'noa-bridge/world-story.php':'bridge/world-story.php',
