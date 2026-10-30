@@ -14,7 +14,7 @@ try{
    assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal overflow');
    if(path==='/'){
     await p.waitForFunction(()=>document.body.dataset.noaHomeReady==='true');
-    assert.equal(await p.locator('#noa-genres img').count(),4);assert.equal(new Set(await p.locator('#noa-genres img').evaluateAll(xs=>xs.map(x=>x.src))).size,4);
+    assert.equal(await p.locator('#noa-genres img').count(),4);assert.equal(await p.locator('#noa-genres img').first().evaluate(x=>getComputedStyle(x).objectPosition),'50% 25%');assert.equal(new Set(await p.locator('#noa-genres img').evaluateAll(xs=>xs.map(x=>x.src))).size,4);
     await p.locator('#noa-genres').scrollIntoViewIfNeeded();await p.waitForFunction(()=>[...document.querySelectorAll('#noa-genres img')].every(x=>x.complete&&x.naturalWidth>0));
     assert.equal(await p.locator('#noa-ecosystem-links').count(),0);assert.equal(await p.locator('[data-home-banner=goods]').getAttribute('href'),'/noa-shop.php');
     assert((await p.locator('#noa-featured .noa-card-meta').first().innerText()).includes('1.2M'));assert((await p.locator('#noa-featured .noa-card-meta').first().getAttribute('title')).includes('1,250,000'));

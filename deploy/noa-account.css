@@ -58,4 +58,4 @@ html body .noa-sidebar:not(.noa-mobile-footer) .noa-sidebar-legal a:nth-child(n+
 
 /* Collection artwork shares the existing category identity without adding a request before scroll. */
 html[data-noa-style] #noa-genres>.noa-genre{overflow:hidden}
-html[data-noa-style] #noa-genres .noa-collection-image{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;border-radius:4px;margin:0 0 12px}
+html[data-noa-style] #noa-genres .noa-collection-image{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;object-position:center 25%;border-radius:4px;margin:0 0 12px}
