@@ -11,3 +11,16 @@ $funding=nspp_funding([1=>['used'=>0]],[1=>['used'=>600,'paid'=>['order'=>'paid-
 ns_atomic('test-paid',false,fn()=>ns_put('toss:order:test-paid','payment',['mode'=>'live','state'=>'paid','credited'=>true,'paidReversed'=>0],0,'s_admin'));
 $d=['funding'=>['paid'=>100,'sources'=>[['order'=>'test-paid','amount'=>100]]]];ck(nspp_eligible($d)===100,'verified_eligible');$r=ns_doc('toss:order:test-paid');$r['data']['state']='canceled';ns_atomic('test-paid',false,fn()=>ns_put('toss:order:test-paid','payment',$r['data'],$r['revision'],'s_admin'));ck(nspp_eligible($d)===0,'canceled_not_eligible');
 echo "SETTLEMENT_FAIL_CLOSED_PROVENANCE_REFUND_REPLAY_OK\n";
+// Full approval state machine, isolated documents only.
+nspp_policy_save('s_admin',['enabled'=>true,'legalReviewed'=>true,'providerReviewed'=>true,'taxReviewed'=>true,'reference'=>'isolated fixture approval']);
+nspp_profile($owner,['kind'=>'personal','note'=>'fixture']);nspp_profile_review('s_admin',['owner'=>$owner,'status'=>'verified','reference'=>'fixture identity']);
+$paidId='ab000000-0000-4000-8000-000000000060';$receiptKey='support:receipt:'.hash('sha256','s_race|'.$paidId);$input['amount']=100;
+nsp_send('s_race',$paidId,$input,fn()=>$target);
+ns_atomic('source-fixture',false,fn()=>ns_put('toss:order:verified-fixture','payment',['mode'=>'live','state'=>'paid','credited'=>true,'paidReversed'=>0],0,'s_admin'));
+$rr=ns_doc($receiptKey);$rr['data']['funding']=['paid'=>100,'free'=>0,'unverified'=>0,'sources'=>[['order'=>'verified-fixture','amount'=>100]]];ns_atomic('source-fixture',false,fn()=>ns_put($receiptKey,'support_receipt',$rr['data'],$rr['revision'],'s_admin'));
+$reqId='ab000000-0000-4000-8000-000000000061';$req=nspp_request($owner,$reqId,'personal');ck($req['gross']===100,'only_verified_reserved');$sk='support:settlement:'.hash('sha256',$owner.'|'.$reqId);
+nope(fn()=>nspp_review('s_admin',['key'=>$sk,'decision'=>'paid','reference'=>'bad','externalPaidConfirmed'=>true]),'external_payment_confirmation_required');
+nspp_review('s_admin',['key'=>$sk,'decision'=>'verified','reference'=>'transactions checked']);nspp_review('s_admin',['key'=>$sk,'decision'=>'approved','reference'=>'tax approved','taxWon'=>3,'net'=>97,'classification'=>'fixture only']);nspp_review('s_admin',['key'=>$sk,'decision'=>'paid','reference'=>'external fixture payment','externalPaidConfirmed'=>true]);
+ck(nsp_wallet($owner)['data']['paid']===100&&nsp_wallet($owner)['data']['reserved']===0,'approved_paid_ledger');
+nope(fn()=>nspp_refund_request('s_race',$receiptKey,'bad'),'settlement_in_progress');
+echo "SETTLEMENT_APPROVAL_STATE_MACHINE_PAID_ORIGIN_ONLY_OK\n";

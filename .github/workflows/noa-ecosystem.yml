@@ -37,6 +37,7 @@ jobs:
           python tests/support/race.py
           php tests/ecosystem/mysql.php
           php tests/ecosystem/settlement.php
+          python tests/ecosystem/http.py
           python -m py_compile scripts/noa_ecosystem_release.py
   deploy:
     if: github.ref == 'refs/heads/main'
