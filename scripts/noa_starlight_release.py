@@ -55,7 +55,7 @@ release.PROTECTED=['common.php','data/dbconfig.php','bbs/login.php','bbs/login_c
 release.BACKUP=Path(os.environ.get('RUNNER_TEMP','/tmp'))/'noa-starlight-before.json'
 
 def verify():
- for path in ['/','/noa-about.php','/noa-privacy.php','/noa-terms.php','/bbs/login.php','/noa-sitemap.php']:
+ for path in ['/','/noa-about.php','/noa-privacy.php','/noa-terms.php','/bbs/login.php','/noa-sitemap.php','/bbs/content.php?co_id=privacy','/bbs/content.php?co_id=provision']:
   with urllib.request.urlopen('https://noastudio.ai.kr'+path,timeout=30) as response:
    html=response.read().decode('utf-8')
    if response.status!=200 or '/noa-starlight.css?v=' not in html or 'data-noa-style="starlight"' not in html or 'Fatal error' in html:raise RuntimeError('starlight_route_failed:'+path)

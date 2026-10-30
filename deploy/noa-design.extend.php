@@ -41,12 +41,18 @@ function noa_design_assets(){
  $ainoa.='<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="NOA STUDIO"><link rel="apple-touch-icon" href="/noa-assets/icon-180.png?v=original-symbol-1">';
  $starlight_file=dirname(__DIR__).'/noa-starlight.css';
  $starlight=is_file($starlight_file)?'<meta name="color-scheme" content="dark"><link rel="stylesheet" href="/noa-starlight.css?v='.hash_file('sha256',$starlight_file).'">':'';
- $native=preg_match('~^/(?:bbs|adm)/~',$path);
+ // Legacy legal pages render and exit before GnuBoard html_end(). Use the
+ // standalone HTML pipeline only for these two GET routes, never board forms.
+ $legacy_document=$path==='/bbs/content.php'
+  &&($_SERVER['REQUEST_METHOD']??'GET')==='GET'
+  &&is_string($_GET['co_id']??null)
+  &&in_array($_GET['co_id'],['privacy','provision'],true);
+ $native=preg_match('~^/(?:bbs|adm)/~',$path)&&!$legacy_document;
  $workspace=preg_match('~^/noa-app/(?:database|taxonomy|jukebox)/(?:index[.]php)?$~',$path);
  $public=in_array($path,['/','/index.php'],true)||preg_match('~^/noa-(?:music|youtube|world|my|settings|sitemap|notifications|catalog|ai-lab|library|editor|download|install|theme-admin|creator|channel|subscription|login|membership|quality)(?:-admin)?[.]php$~',$path);
  // All application HTML pages share the same voice; JSON responses are untouched.
  $public=$public||(bool)preg_match('~^/noa-[a-z0-9-]+[.]php$~D',$path);
- if(!$native&&!$workspace&&!$public)return;
+ if(!$native&&!$workspace&&!$public&&!$legacy_document)return;
  if(!$native&&($_SERVER['REQUEST_METHOD']??'GET')!=='GET')return;
  // MY stays in primary navigation; AInoa keeps its existing floating control.
  // Standalone views do not call GnuBoard html_end(); inject only completed HTML.

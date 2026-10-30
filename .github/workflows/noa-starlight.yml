@@ -24,6 +24,7 @@ jobs:
           php tests/catalog/home_uiux_test.php
           php tests/editorial/content_test.php
           php tests/starlight/visitors_test.php
+          php tests/starlight/legacy_documents_test.php
           php tests/sitemap/registry_test.php
           php tests/membership/extension_scope.php
           node --check deploy/noa-account.js
