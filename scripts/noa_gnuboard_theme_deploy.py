@@ -57,7 +57,7 @@ def main():
     with urllib.request.urlopen('https://noastudio.ai.kr/noa-gnuboard.css?audit='+os.environ['GITHUB_SHA'],timeout=30) as response:
         assert response.read()==desired['noa-gnuboard.css'],'public_css_mismatch'
     for device in ['mobile','pc']:
-        with urllib.request.urlopen('https://noastudio.ai.kr/bbs/login.php?device='+device,timeout=30) as response:html=response.read().decode()
+        with urllib.request.urlopen('https://noastudio.ai.kr/bbs/password_lost.php?device='+device,timeout=30) as response:html=response.read().decode()
         assert '/noa-gnuboard.css?v='+sha(desired['noa-gnuboard.css']) in html,'live_cache_revision_mismatch'
     Path('gnuboard-proof/live').mkdir(parents=True,exist_ok=True)
     Path('gnuboard-proof/live/deployment.json').write_text(json.dumps(receipt,indent=2))

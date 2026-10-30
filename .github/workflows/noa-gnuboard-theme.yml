@@ -32,7 +32,7 @@ jobs:
           sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
           npm install --prefix "$RUNNER_TEMP/noa-g5" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-gnuboard-theme.mjs "$RUNNER_TEMP/noa-g5/check.mjs"
-      - name: Check native mobile and desktop skins in both themes without writes
+      - name: Check native mobile and desktop skins and legacy theme fallback without writes
         run: node "$RUNNER_TEMP/noa-g5/check.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
@@ -59,7 +59,7 @@ jobs:
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
         run: python scripts/noa_gnuboard_theme_deploy.py
-      - name: Verify actual production skins in dark and ivory
+      - name: Verify actual production skins with legacy theme fallback
         env: {NOA_G5_PHASE: live}
         run: node "$RUNNER_TEMP/noa-g5/check.mjs"
       - uses: actions/upload-artifact@v4
