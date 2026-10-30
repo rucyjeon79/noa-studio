@@ -90,3 +90,12 @@ html.noa-g5 #bo_list #bo_btn_top{display:flex;align-items:center;justify-content
 html.noa-g5 #bo_list #bo_btn_top #bo_list_total{float:none;margin:0;padding:0;white-space:nowrap}
 html.noa-g5 #bo_list #bo_btn_top .btn_bo_user{float:none;margin:0;padding:0;gap:8px}
 html.noa-g5 #bo_list thead a{white-space:nowrap}
+
+/* Native skin fixed heights must accommodate the shared 48px inputs. */
+html.noa-g5 #bo_w #autosave_wrapper{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8px}
+html.noa-g5 #bo_w #btn_autosave{position:static;width:auto;height:auto;min-block-size:48px;white-space:nowrap;margin:0}
+html.noa-g5 #bo_w .file_wr{display:flex;align-items:center;gap:12px;height:auto;min-block-size:64px;padding:8px 12px}
+html.noa-g5 #bo_w .file_wr .lb_icon{position:static;width:auto;height:auto;line-height:1.4;margin:0;flex:none}
+html.noa-g5 #bo_w .file_wr input[type=file]{flex:1;min-inline-size:0;padding:0;height:auto;line-height:normal}
+html.noa-g5 #bo_w .bo_w_link .frm_input{padding-inline-start:44px}
+@media(max-width:760px){html.noa-g5 #bo_w #autosave_wrapper{grid-template-columns:minmax(0,1fr)}html.noa-g5 #bo_w #btn_autosave{justify-self:end}}
