@@ -5,6 +5,7 @@ require dirname(__DIR__,2).'/deploy/noa-design.extend.php';
 foreach([
  ['오늘:123,어제:45,최대:999,전체:123456',['today'=>'123','yesterday'=>'45','total'=>'123456']],
  ['오늘:0,어제:0,최대:0,전체:0',['today'=>'0','yesterday'=>'0','total'=>'0']],
+ [' 오늘:12,어제:3,최대:12,전체:100 ',['today'=>'12','yesterday'=>'3','total'=>'100']],
  ['',null],['오늘:<script>,어제:0,최대:0,전체:0',null]
 ] as [$summary,$expected]){
  $GLOBALS['config']=['cf_visit'=>$summary];
