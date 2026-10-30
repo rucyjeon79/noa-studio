@@ -99,3 +99,6 @@ html.noa-g5 #bo_w .file_wr .lb_icon{position:static;width:auto;height:auto;line-
 html.noa-g5 #bo_w .file_wr input[type=file]{flex:1;min-inline-size:0;padding:0;height:auto;line-height:normal}
 html.noa-g5 #bo_w .bo_w_link .frm_input{padding-inline-start:44px}
 @media(max-width:760px){html.noa-g5 #bo_w #autosave_wrapper{grid-template-columns:minmax(0,1fr)}html.noa-g5 #bo_w #btn_autosave{justify-self:end}}
+
+/* The native float clearfix must not become a third flex item. */
+html.noa-g5 #bo_list #bo_btn_top::after{content:none;display:none}
