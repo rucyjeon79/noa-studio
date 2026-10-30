@@ -21,8 +21,8 @@ function noa_sitemap_registry():array{
             ['cover','AInoa의 유명곡 커버','익숙한 노래의 새로운 목소리','/noa-music.php?group=cover','mic','public'],
         ]],
         'world'=>['title'=>'ACT 세계관','routes'=>[
-            ['act1','ACT 1','첫 이야기 · EP.1–10','/noa-world.php?story=1','book','public'],
-            ['act2','ACT 2','엇갈린 사랑 · EP.11–20','/noa-world.php?story=2','book','public'],
+            ['act1','ACT 1','사랑의 시작과 아픔 · EP.1–10','/noa-world.php?story=1','book','public'],
+            ['act2','ACT 2','엇갈린 사랑의 상처 · EP.11–20','/noa-world.php?story=2','book','public'],
             ['act3','ACT 3','다시 빛을 향해 · EP.21–30','/noa-world.php?story=3','book','public'],
             ['act4','ACT 4','새로운 시작 · EP.31–40','/noa-world.php?story=4','book','public'],
         ]],

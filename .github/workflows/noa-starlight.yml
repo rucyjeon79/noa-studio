@@ -1,10 +1,10 @@
 name: NOA Starlight design and music stories
 on:
   pull_request:
-    paths: ['deploy/noa-app/home.php','deploy/noa-starlight.css','deploy/noa-design*','deploy/noa-ui.*','deploy/noa-world*','deploy/noa-app/world-view.php','bridge/world-story.php','bridge/ui-preferences.php','tests/starlight/**','scripts/noa_starlight_release.py','.github/workflows/noa-starlight.yml']
+    paths: ['bridge/world-story.php','deploy/noa-sitemap.php','deploy/noa-app/home.php','deploy/noa-starlight.css','deploy/noa-design*','deploy/noa-ui.*','deploy/noa-world*','deploy/noa-app/world-view.php','bridge/world-story.php','bridge/ui-preferences.php','tests/starlight/**','scripts/noa_starlight_release.py','.github/workflows/noa-starlight.yml']
   push:
     branches: [main]
-    paths: ['deploy/noa-app/home.php','deploy/noa-starlight.css','tests/starlight/**','scripts/noa_starlight_release.py','.github/workflows/noa-starlight.yml']
+    paths: ['bridge/world-story.php','deploy/noa-sitemap.php','deploy/noa-app/home.php','deploy/noa-starlight.css','tests/starlight/**','scripts/noa_starlight_release.py','.github/workflows/noa-starlight.yml']
 permissions: {contents: read}
 jobs:
   verify:
