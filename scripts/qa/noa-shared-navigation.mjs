@@ -11,8 +11,8 @@ const server=createServer((req,res)=>{
 });await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const base='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});mkdirSync('starlight-proof',{recursive:true});
-try{for(const width of [320,390,768,1920]){
- const page=await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+try{for(const [width,height] of [[320,900],[390,900],[768,720],[1920,900]]){
+ const page=await browser.newPage({viewport:{width,height},reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base+'/');await page.locator('#noa-nav-all').waitFor();
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  for(const id of ['noa-nav-back','noa-nav-top','noa-nav-all']){const box=await page.locator('#'+id).boundingBox();assert(box.height>=44&&box.width>=44);}
@@ -29,5 +29,5 @@ try{for(const width of [320,390,768,1920]){
  }
  await page.locator('#noa-nav-all').click();await page.waitForURL(base+'/noa-sitemap.php');
  await page.screenshot({path:'starlight-proof/navigation-'+width+'.png'});assert.deepEqual(errors,[]);await page.close();
- console.log('PASS shared navigation '+width);
+ console.log('PASS shared navigation '+width+'x'+height);
 }}finally{await browser.close();server.close();}
