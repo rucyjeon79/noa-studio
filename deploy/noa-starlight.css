@@ -125,3 +125,11 @@ html[data-noa-style] #noa-genres>.noa-genre small{white-space:normal;display:blo
 @media(max-width:350px){html[data-noa-style] #noa-genres{grid-template-columns:minmax(0,1fr)}}
 
 html[data-noa-style] #noa-genres>.noa-genre strong{font-size:15px;line-height:1.5}
+/* Preserve navigation space on shorter laptop screens. */
+@media(min-width:761px) and (max-height:800px){
+ html[data-noa-style] .noa-sidebar{gap:16px;padding-block:16px}
+ html[data-noa-style] .noa-sidebar-bottom{gap:8px;padding-top:12px}
+ html[data-noa-style] .noa-sidebar-visitors{padding-top:8px}
+ html[data-noa-style] .noa-sidebar-visitors p{margin-bottom:8px}
+ html[data-noa-style] .noa-sidebar .noa-brand-mark{width:40px;height:40px}
+}
