@@ -165,3 +165,20 @@ html[data-noa-style] .noa-mobile-footer{display:none}
  html[data-noa-style] [data-home-section]>.noa-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;column-gap:12px;row-gap:20px}
  html[data-noa-style] [data-home-section]>.noa-card-grid>:is(.noa-music-card,.noa-engagement-card){grid-column:auto!important;grid-row:auto!important;min-width:0}
 }
+
+/* Precision audit: share column tracks, edges and heading rhythm across surfaces. */
+html[data-noa-style]{--noa-grid-column-gap:24px;--noa-grid-row-gap:32px;--noa-heading-padding:16px;--noa-heading-after:24px}
+html[data-noa-style] body :is(.noa-card-grid,.noa-browse-grid,#noa-genres){column-gap:var(--noa-grid-column-gap);row-gap:var(--noa-grid-row-gap)}
+html[data-noa-style][data-noa-precision] body main :is(.noa-section-head,.noa-section-heading){align-items:center;gap:12px;padding-bottom:var(--noa-heading-padding);margin-bottom:var(--noa-heading-after)}
+html[data-noa-style] .noa-community-actions{gap:12px}
+html[data-noa-style] .noa-community-post>summary,html[data-noa-style] .noa-community-body{padding-inline:0}
+html[data-noa-style] .noa-home-pages{gap:16px;margin-top:24px}
+html[data-noa-style] .noa-home-pages>button{min-width:64px;min-height:44px}
+@media(max-width:760px){
+ html[data-noa-style]{--noa-grid-column-gap:12px;--noa-grid-row-gap:20px;--noa-heading-after:16px}
+ html[data-noa-style] body>.noa-mobile-footer{margin-inline:var(--noa-content-gutter)}
+ html[data-noa-style] .noa-mobile-footer .noa-sidebar-legal{column-gap:var(--noa-grid-column-gap)}
+ html[data-noa-style] .noa-home-pages{margin-top:16px}
+}
+
+@media(max-width:760px){html[data-noa-style] #noa-genres{grid-template-columns:repeat(2,minmax(0,1fr))}}

@@ -1,10 +1,10 @@
 name: NOA Starlight design and music stories
 on:
   pull_request:
-    paths: ['bridge/world-story.php','deploy/noa-sitemap.php','deploy/noa-app/home.php','deploy/noa-starlight.css','deploy/noa-design*','deploy/noa-ui.*','deploy/noa-world*','deploy/noa-app/world-view.php','bridge/world-story.php','bridge/ui-preferences.php','tests/starlight/**','scripts/qa/noa-shared-navigation.mjs','scripts/noa_starlight_release.py','.github/workflows/noa-starlight.yml']
+    paths: ['bridge/world-story.php','deploy/noa-sitemap.php','deploy/noa-app/home.php','deploy/noa-starlight.css','deploy/noa-design*','deploy/noa-ui.*','deploy/noa-world*','deploy/noa-app/world-view.php','bridge/world-story.php','bridge/ui-preferences.php','tests/starlight/**','scripts/qa/noa-shared-navigation.mjs','scripts/qa/noa-spacing.mjs','scripts/noa_starlight_release.py','.github/workflows/noa-starlight.yml']
   push:
     branches: [main]
-    paths: ['bridge/world-story.php','deploy/noa-sitemap.php','deploy/noa-app/home.php','deploy/noa-starlight.css','deploy/noa-ui.js','tests/starlight/**','scripts/qa/noa-shared-navigation.mjs','scripts/noa_starlight_release.py','.github/workflows/noa-starlight.yml']
+    paths: ['bridge/world-story.php','deploy/noa-sitemap.php','deploy/noa-app/home.php','deploy/noa-starlight.css','deploy/noa-ui.js','tests/starlight/**','scripts/qa/noa-shared-navigation.mjs','scripts/qa/noa-spacing.mjs','scripts/noa_starlight_release.py','.github/workflows/noa-starlight.yml']
 permissions: {contents: read}
 jobs:
   verify:
@@ -36,6 +36,8 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/noa-nav" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-shared-navigation.mjs "$RUNNER_TEMP/noa-nav/check.mjs"
           node "$RUNNER_TEMP/noa-nav/check.mjs"
+          cp scripts/qa/noa-spacing.mjs "$RUNNER_TEMP/noa-nav/spacing.mjs"
+          node "$RUNNER_TEMP/noa-nav/spacing.mjs"
       - uses: actions/upload-artifact@v4
         with: {name: 'noa-starlight-render-${{ github.run_id }}', path: starlight-proof/, retention-days: 2}
   deploy:
