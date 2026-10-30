@@ -53,7 +53,7 @@ try{
   foreach($plan as $c){if(!unlink($c['path']))throw new RuntimeException('delete_failed');$removed[]=$c;}
   // Only synthetic asset rows whose files were removed; song documents/history are preserved.
   foreach($qaAssets as $a){$has=false;foreach(['audio','cover']as $type)if(!empty($a[$type.'_path'])&&nj_file($a[$type.'_path']))$has=true;if(!$has)$db->prepare('DELETE FROM noa_jukebox_assets WHERE song_key=?')->execute([$a['song_key']]);}
-  $dirs=[];foreach($removed as $c){$p=dirname($c['path']);while($p!==$root&&$p!==$public&&str_starts_with($p,'/hosting/noastudio/')){$dirs[$p]=true;$p=dirname($p);}}uksort($dirs,fn($a,$b)=>strlen($b)<=>strlen($a));foreach($dirs as $p)if(is_dir($p)&&!is_link($p)&&count(scandir($p))===2)rmdir($p);
+  $dirs=[];foreach($removed as $c){$p=dirname($c['path']);while($p!==$root&&$p!==$public&&str_starts_with($p,'/hosting/noastudio/')){$dirs[$p]=true;$p=dirname($p);}}uksort($dirs,fn($a,$b)=>strlen($b)<=>strlen($a));foreach(array_keys($dirs) as $p)if(is_dir($p)&&!is_link($p)&&count(scandir($p))===2)rmdir($p);
   foreach($protected as $p=>$v)if(!is_file($p)||filesize($p)!==$v['bytes']||!hash_equals($v['sha256'],hash_file('sha256',$p)))throw new RuntimeException('protected_file_changed');
  }
  $db->commit();echo json_encode(['ok'=>true,'mode'=>$apply?'apply':'audit','planSha256'=>$digest,'candidates'=>$plan,'duplicatePrivateCovers'=>count($duplicatePrivate),'candidateCount'=>count($plan),'candidateBytes'=>array_sum(array_column($plan,'bytes')),'removedCount'=>count($removed),'protectedFiles'=>count($protected),'backupCreated'=>false,'realSongRowsChanged'=>0],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
