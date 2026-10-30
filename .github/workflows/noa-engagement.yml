@@ -3,12 +3,12 @@ on:
   pull_request:
     paths: ['bridge/engagement*.php','deploy/noa-engagement.*','bridge/popularity-core.php','bridge/popularity-store.php','scripts/noa_engagement*','scripts/qa/noa-engagement.mjs','tests/engagement/**','.github/workflows/noa-engagement.yml']
   push:
-    branches: [main]
+    branches: [main, noa-ecosystem-complete]
     paths: ['bridge/engagement*.php','deploy/noa-engagement.*','bridge/popularity-core.php','bridge/popularity-store.php','scripts/noa_engagement*','scripts/qa/noa-engagement.mjs','tests/engagement/**','.github/workflows/noa-engagement.yml']
 permissions: {contents: read}
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     services:
       mysql:
@@ -39,7 +39,7 @@ jobs:
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[creator-release]')
     needs: verify
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: production
     timeout-minutes: 12
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
