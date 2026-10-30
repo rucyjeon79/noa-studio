@@ -1,7 +1,7 @@
 name: NOA Starlight design and music stories
 on:
   pull_request:
-    paths: ['bridge/world-story.php','deploy/noa-sitemap.php','deploy/noa-app/home.php','deploy/noa-starlight.css','deploy/noa-design*','deploy/noa-ui.*','deploy/noa-world*','deploy/noa-app/world-view.php','bridge/world-story.php','bridge/ui-preferences.php','tests/starlight/**','scripts/noa_starlight_release.py','.github/workflows/noa-starlight.yml']
+    paths: ['bridge/world-story.php','deploy/noa-sitemap.php','deploy/noa-app/home.php','deploy/noa-starlight.css','deploy/noa-design*','deploy/noa-ui.*','deploy/noa-world*','deploy/noa-app/world-view.php','bridge/world-story.php','bridge/ui-preferences.php','tests/starlight/**','scripts/qa/noa-shared-navigation.mjs','scripts/noa_starlight_release.py','.github/workflows/noa-starlight.yml']
   push:
     branches: [main]
     paths: ['bridge/world-story.php','deploy/noa-sitemap.php','deploy/noa-app/home.php','deploy/noa-starlight.css','tests/starlight/**','scripts/noa_starlight_release.py','.github/workflows/noa-starlight.yml']
