@@ -43,6 +43,8 @@ def verify():
  with urllib.request.urlopen('https://noastudio.ai.kr/noa-bridge/ui-preferences.php',timeout=30) as response:
   prefs=json.load(response)
   if prefs['defaults']!={'theme':'noa-studio','enabled':['noa-studio']}:raise RuntimeError('preference_migration_failed')
+ with urllib.request.urlopen('https://noastudio.ai.kr/noa-home.js',timeout=30) as response:
+  if 'function listSize(state)' not in response.read().decode('utf-8'):raise RuntimeError('viewport_rows_script_missing')
  print('STARLIGHT_PUBLIC_ROUTES_AND_DARK_PREFERENCES_VERIFIED')
 
 if __name__=='__main__':
