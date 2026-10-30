@@ -47,3 +47,11 @@ html[data-noa-precision] body #noa-my-account .noa-action{border:0;background:tr
 @media(min-width:761px){body:has(.noa-sidebar) #noa-account-bar .noa-account-brand{display:none}}
 @media(max-width:760px){#noa-account-bar{padding-inline:8px}#noa-account-bar .noa-account-brand{font-size:11px;letter-spacing:0;gap:6px}#noa-account-bar .noa-account-brand img{width:28px;height:28px}#noa-account-bar .noa-account-shortcuts{gap:4px}#noa-account-bar #noa-nav-back{min-width:44px}}
 @media(max-width:350px){#noa-account-bar .noa-account-brand span{display:none}}
+
+/* Account lives after the whole-menu shortcut; five primary destinations stay below. */
+#noa-account-bar #noa-nav-account{flex:none;min-width:44px}
+html body .noa-sidebar-legal{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px}
+html body .noa-sidebar-legal a:first-child,html[data-noa-style] .noa-mobile-footer .noa-sidebar-legal a:first-child{grid-column:auto}
+html body .noa-sidebar-legal .noa-footer-world{grid-column:2;grid-row:1}
+html body .noa-sidebar:not(.noa-mobile-footer) .noa-sidebar-legal a:nth-child(n+3){grid-column:1/-1}
+@media(max-width:760px){#noa-account-bar .noa-account-shortcut{flex-direction:column;gap:2px;font-size:10px}#noa-account-bar .noa-account-brand{overflow:hidden}#noa-account-bar .noa-account-brand span{overflow:hidden;text-overflow:ellipsis}#noa-account-bar .noa-account-shortcuts{gap:2px}}

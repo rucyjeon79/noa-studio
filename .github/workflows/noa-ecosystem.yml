@@ -2,7 +2,7 @@ name: NOA ecosystem complete release
 on:
   push:
     branches: [main, noa-ecosystem-complete]
-    paths: ['bridge/ecosystem*.php','bridge/support*.php','deploy/noa-ecosystem*','deploy/noa-app/ecosystem-view.php','deploy/noa-shop.php','deploy/noa-lounge.php','deploy/noa-creator-lab.php','deploy/noa-products.json','deploy/noa-settlement.js','tests/ecosystem/**','scripts/noa_ecosystem_release.py','.github/workflows/noa-ecosystem.yml']
+    paths: ['bridge/ecosystem*.php','bridge/support*.php','deploy/noa-ecosystem*','deploy/noa-app/ecosystem-view.php','deploy/noa-shop.php','deploy/noa-lounge.php','deploy/noa-creator-lab.php','deploy/noa-products.json','deploy/noa-settlement.js','tests/ecosystem/**','tests/navigation/menu*','scripts/noa_ecosystem_release.py','.github/workflows/noa-ecosystem.yml']
 permissions: {contents: read}
 jobs:
   verify:
@@ -39,6 +39,12 @@ jobs:
           php tests/ecosystem/settlement.php
           python tests/ecosystem/endpoint_test.py
           python -m py_compile scripts/noa_ecosystem_release.py
+      - name: Verify shared menu positions across native pages and account states
+        run: |
+          php tests/navigation/menu_fixture.php
+          npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-menu" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp tests/navigation/menu.mjs "$RUNNER_TEMP/noa-menu/check.mjs"
+          node "$RUNNER_TEMP/noa-menu/check.mjs"
   deploy:
     if: github.ref == 'refs/heads/main'
     needs: verify

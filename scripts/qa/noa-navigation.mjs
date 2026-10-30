@@ -15,18 +15,18 @@ try{
   for(const width of engine==='webkit'?[390]:[320,390,1280])for(const theme of ['noa-studio','noa-ivory'])for(const role of ['guest','member','vip','admin']){
    const c=await context({viewport:{width,height:900}});await c.addCookies([{name:'qa_role',value:role,url:base}]);await c.addInitScript(theme=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',design:'ios',radius:'soft'})),theme);
    const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto(base+'/');const bar=p.locator('#noa-account-bar');await bar.waitFor();await p.waitForFunction(()=>document.getElementById('noa-account-bar').dataset.member!==undefined);
-   assert.equal(await bar.locator('a[href*=login],a[href*=logout],.noa-account-status').count(),0);
+   assert.equal(await bar.locator('a[href*=login]').count(),role==='guest'?1:0);assert.equal(await bar.locator('a[href*=logout],.noa-account-status').count(),0);
    assert.equal(await bar.locator('.noa-account-brand span').textContent(),'NOA STUDIO');assert.equal(await bar.locator('.noa-account-shortcut').count(),4);
-   const brand=await bar.locator('.noa-account-brand').boundingBox(),shortcuts=await bar.locator('.noa-account-shortcuts').boundingBox();assert(shortcuts.x>=brand.x+brand.width,'shortcuts are right of full brand');assert((await bar.boundingBox()).height<=64);
-   const nav=p.locator(width<=760?'.noa-mobile-nav':'.noa-menu');const account=nav.locator('[data-noa-account-nav]');assert.equal(await account.textContent(),role==='guest'?'로그인':'MY');assert.equal(await account.locator('svg').count(),1);
+   const brand=await bar.locator('.noa-account-brand').boundingBox(),shortcuts=await bar.locator('.noa-account-shortcuts').boundingBox();if(brand)assert(shortcuts.x>=brand.x+brand.width,'shortcuts follow brand');assert((await bar.boundingBox()).height<=64);
+   const nav=p.locator(width<=760?'.noa-mobile-nav':'.noa-menu');assert.deepEqual(await nav.locator('a span').allTextContents(),['홈','유튜브','음원','커뮤니티','SHOP']);const account=bar.locator('#noa-nav-account');assert.equal(await account.textContent(),role==='guest'?'로그인':'MY');assert.equal(await account.locator('svg').count(),1);
    assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    if(role==='guest'){await account.click();await p.locator('input[name=mb_password]').waitFor();assert(new URL(p.url()).pathname.includes('login'));}
    else{
     await account.click();await p.waitForURL('**/noa-my.php');const summary=p.locator('#noa-my-account[data-state=ready]');await summary.waitFor();assert.equal(await p.locator('#noa-my-points').textContent(),role==='admin'?'12,345,678P':role==='member'?'0P':'600P');assert.equal(await p.locator('#noa-my-subscription').textContent(),role==='vip'?'구독 중 · 14일 남음':'구독 없음');assert.equal(await summary.locator('a[href="/noa-membership.php#points"]').count(),1);assert(await summary.getByRole('link',{name:'로그아웃',exact:true}).isVisible());
     assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));if(width===390||width===1280&&role==='vip')await p.screenshot({path:out+'/'+engine+'-'+theme+'-'+width+'-'+role+'-my.png'});
-    await summary.getByRole('link',{name:'로그아웃',exact:true}).click();await p.waitForURL(base+'/');await p.locator('.noa-mobile-nav [data-noa-account-nav=login]').waitFor({state:width<=760?'visible':'attached'});
+    await summary.getByRole('link',{name:'로그아웃',exact:true}).click();await p.waitForURL(base+'/');await p.locator('#noa-account-bar [data-noa-account-nav=login]').waitFor({state:width<=760?'visible':'attached'});
    }
-   assert.deepEqual(errors,[]);report.accounts.push({engine,width,theme,role,brandAndRightShortcuts:true,bottomAccount:true,mySummary:role!=='guest',logout:role!=='guest',noOverflow:true});await c.close();
+   assert.deepEqual(errors,[]);report.accounts.push({engine,width,theme,role,brandAndRightShortcuts:true,topAccount:true,mySummary:role!=='guest',logout:role!=='guest',noOverflow:true});await c.close();
   }
   // Exercise the actual shared hierarchy in both media modes, including administrator pool controls.
   for(const kind of ['곡','영상']){
@@ -46,7 +46,7 @@ try{
    report.hierarchy.push({engine,kind,fourLevels:true,actShortcut:true,actOrder:true,savedOrder:true,unclassifiedAlwaysVisible:true,administratorPoolUsable:true,deepLinkVisible:true});await c.close();
   }
   const c=await context();await c.addCookies([{name:'qa_role',value:'vip',url:base}]);await c.route('**/noa-bridge/membership.php',r=>r.fulfill({status:503,json:{ok:false}}));const p=await c.newPage();await p.goto(base+'/noa-my.php');await p.locator('#noa-my-account[data-state=error]').waitFor();assert.match(await p.locator('#noa-my-account-status').textContent(),/불러오지 못/);assert(await p.getByRole('link',{name:'로그아웃',exact:true}).isVisible());report.errorState=true;await c.close();
-  if(live){const c=await browser.newContext({viewport:{width:390,height:844}}),p=await c.newPage();await p.goto('https://noastudio.ai.kr/');await p.locator('.noa-mobile-nav [data-noa-account-nav=login]').waitFor();assert.equal(await p.locator('#noa-account-bar .noa-account-brand span').textContent(),'NOA STUDIO');assert(await p.locator('[data-home-section=hero]').isVisible());await p.screenshot({path:out+'/production-home.png'});await p.locator('.noa-mobile-nav [data-noa-account-nav=login]').click();await p.locator('input[name=mb_password]').waitFor();report.liveHomeAndLogin=true;await c.close();}
+  if(live){const c=await browser.newContext({viewport:{width:390,height:844}}),p=await c.newPage();await p.goto('https://noastudio.ai.kr/');await p.locator('#noa-account-bar [data-noa-account-nav=login]').waitFor();assert.equal(await p.locator('#noa-account-bar .noa-account-brand span').textContent(),'NOA STUDIO');assert(await p.locator('[data-home-section=hero]').isVisible());await p.screenshot({path:out+'/production-home.png'});await p.locator('#noa-account-bar [data-noa-account-nav=login]').click();await p.locator('input[name=mb_password]').waitFor();report.liveHomeAndLogin=true;await c.close();}
  }
 }finally{for(const browser of browsers)await browser.close();server.kill();writeFileSync(out+'/report.json',JSON.stringify(report,null,2));}
 console.log('NAVIGATION_MY_FOUR_LEVEL_OK',JSON.stringify({accounts:report.accounts.length,hierarchy:report.hierarchy.length,live}));
