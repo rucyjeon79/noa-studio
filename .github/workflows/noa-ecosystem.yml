@@ -27,12 +27,21 @@ jobs:
         run: |
           set -e
           for f in bridge/ecosystem*.php bridge/support*.php deploy/noa-shop.php deploy/noa-lounge.php deploy/noa-creator-lab.php deploy/noa-app/ecosystem-view.php deploy/noa-support.php deploy/noa-engagement.extend.php tests/ecosystem/*.php; do php -l "$f"; done
+          node --check deploy/noa-home.js
+          node --test tests/home/metadata_test.cjs
           node --check deploy/noa-ecosystem.js
           node --check deploy/noa-ecosystem-links.js
           node --check deploy/noa-settlement.js
           cp deploy/noa-products.json noa-products.json
           php tests/sitemap/registry_test.php
           php tests/subscription/mysql_test.php
+          php tests/payments/mysql.php
+          python tests/payments/race_test.py
+          php tests/vip-store/mysql.php
+          python tests/vip-store/race.py
+          php tests/kcp/core.php
+          php tests/kcp/mysql.php
+          node tests/kcp/window.cjs
           php tests/support/mysql.php
           python tests/support/race.py
           php tests/ecosystem/features.php

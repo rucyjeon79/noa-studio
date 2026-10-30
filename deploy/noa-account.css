@@ -55,3 +55,7 @@ html body .noa-sidebar-legal a:first-child,html[data-noa-style] .noa-mobile-foot
 html body .noa-sidebar-legal .noa-footer-world{grid-column:2;grid-row:1}
 html body .noa-sidebar:not(.noa-mobile-footer) .noa-sidebar-legal a:nth-child(n+3){grid-column:1/-1}
 @media(max-width:760px){#noa-account-bar .noa-account-shortcut{flex-direction:column;gap:2px;font-size:10px}#noa-account-bar .noa-account-brand{overflow:hidden}#noa-account-bar .noa-account-brand span{overflow:hidden;text-overflow:ellipsis}#noa-account-bar .noa-account-shortcuts{gap:2px}}
+
+/* Collection artwork shares the existing category identity without adding a request before scroll. */
+html[data-noa-style] #noa-genres>.noa-genre{overflow:hidden}
+html[data-noa-style] #noa-genres .noa-collection-image{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;border-radius:4px;margin:0 0 12px}

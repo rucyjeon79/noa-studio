@@ -5,6 +5,7 @@ import noa_ainoa_deploy as release
 from noa_full_inventory import connect,ROOT
 import paramiko
 release.FILES={
+ 'noa-home.js':'deploy/noa-home.js',
  'noa-ui.js':'deploy/noa-ui.js',
  'noa-account.js':'deploy/noa-account.js',
  'noa-account.css':'deploy/noa-account.css',
@@ -31,7 +32,7 @@ release.FILES={
 }
 assets={str(p.relative_to('deploy')):str(p)for p in sorted(Path('deploy/noa-assets/ecosystem').glob('*'))if p.is_file()}
 release.FILES={**assets,**release.FILES}
-existing={'noa-ui.js','noa-account.js','noa-account.css','noa-bridge/support-core.php','noa-bridge/support.php','noa-support.php','noa-channel-workspace.php','noa-sitemap.php','extend/zz.noa-engagement.php'}
+existing={'noa-home.js','noa-ui.js','noa-account.js','noa-account.css','noa-bridge/support-core.php','noa-bridge/support.php','noa-support.php','noa-channel-workspace.php','noa-sitemap.php','extend/zz.noa-engagement.php'}
 release.NEW=set(release.FILES)-existing
 release.PROTECTED+=['noa-bridge/subscription-core.php','noa-bridge/toss-core.php','noa-bridge/member-access.php','noa-browse.js']
 if __name__=='__main__':

@@ -1,7 +1,8 @@
 (()=>{'use strict';
 const metric=value=>{if(typeof value!=='number'&&(typeof value!=='string'||!/^\d+$/.test(value)))return null;const n=Number(value);return Number.isSafeInteger(n)&&n>=0?n:null;};
-const number=value=>{const n=metric(value);return n===null?'미확인':n.toLocaleString(document.documentElement.lang||'ko');};
-function metadata(row,playlist,integrated){
+const formatNumber=(value,exact=false)=>{const n=metric(value);if(n===null)return '미확인';if(exact||n<1000)return n.toLocaleString(document.documentElement.lang||'ko');const scale=n>=1000000?1000000:1000;return String(Math.floor(n/(scale/10))/10)+(scale===1000000?'M':'K');};
+function metadata(row,playlist,integrated,exact=false){
+ const number=value=>formatNumber(value,exact);
  if(row.recommendationKind==='new'){const date=new Date(row.publishedAt);return Number.isFinite(date.getTime())?date.toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'})+' 공개':'최근 공개';}
  if(row.recommendationKind==='rising')return '최근 조회수 +'+number(row.viewGain);
  if(row.recommendationKind==='popular')return metric(row.jukeboxPlays)!==null?'인기 '+number(row.score)+'점':'조회 '+number(row.views);
@@ -14,7 +15,7 @@ function card(row,playlist=false,integrated=false){
  const art=document.createElement('div');art.className='noa-art';const image=document.createElement('img');image.loading='lazy';image.src=row.thumbnail;image.alt='';art.append(image);
  image.onerror=()=>{image.hidden=true;art.dataset.unavailable='true';};
  const title=document.createElement('strong');title.textContent=row.title;const note=document.createElement('small');
- note.className='noa-card-meta';const context=document.createElement('span');context.className='noa-card-context';context.textContent=[window.NoaBrowse.names[row.genre]||'',row.language&&row.language!=='und'?({ko:'한국어',ja:'日本語',en:'English',th:'ไทย'}[row.language]||row.language):'',row.version&&!/^(?:unspecified|unknown|default|und)$/i.test(row.version)?row.version:''].filter(Boolean).join(' · ');note.textContent=metadata(row,playlist,integrated);if(context.textContent)note.append(context);a.append(art,title,note);window.NoaCardLayout?.prepare(a,row);if(row.recommendationLabel){const reason=document.createElement('span');reason.className='noa-discovery-reason';reason.textContent=row.recommendationLabel;a.append(reason);}return a;
+ note.className='noa-card-meta';const context=document.createElement('span');context.className='noa-card-context';context.textContent=[window.NoaBrowse.names[row.genre]||'',row.language&&row.language!=='und'?({ko:'한국어',ja:'日本語',en:'English',th:'ไทย'}[row.language]||row.language):'',row.version&&!/^(?:unspecified|unknown|default|und)$/i.test(row.version)?row.version:''].filter(Boolean).join(' · ');note.textContent=metadata(row,playlist,integrated);note.title=metadata(row,playlist,integrated,true);if(context.textContent)note.append(context);a.append(art,title,note);window.NoaCardLayout?.prepare(a,row);if(row.recommendationLabel){const reason=document.createElement('span');reason.className='noa-discovery-reason';reason.textContent=row.recommendationLabel;a.append(reason);}return a;
 }
 const homeLists=new Map();
 function homePageSize(width,height=800,cardHeight=240,chrome=160,columnGap=width<=600?12:16,rowGap=columnGap){
@@ -75,7 +76,7 @@ function fill(id,rows,playlist=false,integrated=false){
 
  document.getElementById('noa-playlist-basis').textContent='플레이리스트를 골라 음악을 이어 들어보세요.';
  const date=new Date(data.popularity?.aggregatedAt||data.collectedAt);document.getElementById('noa-ranking-status').textContent=(data.popularity?'인기 음악':'YouTube 조회수 기준')+(Number.isFinite(date.getTime())?' · '+date.toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'}):'');
- const host=document.getElementById('noa-genres');for(const [id,title,genres]of window.NoaBrowse.groups){const a=document.createElement('a');a.className='noa-genre';a.href='/noa-music.php?group='+encodeURIComponent(id);const name=document.createElement('strong');name.textContent=window.NoaUI?.translate(title)||title;const small=document.createElement('small');small.textContent=({original:genres.length+'개 장르의 오리지널 음악',ep:genres.length+'개 장르 · ACT·EP별 감상',story:'별무리의 사연으로 만든 음악',cover:'노아의 목소리로 다시 듣는 명곡'})[id]||'음악 둘러보기';a.append(name,small);host.append(a);}
+ const host=document.getElementById('noa-genres');for(const [id,title,genres]of window.NoaBrowse.groups){const a=document.createElement('a');a.className='noa-genre';a.href='/noa-music.php?group='+encodeURIComponent(id);const name=document.createElement('strong');name.textContent=window.NoaUI?.translate(title)||title;const small=document.createElement('small');small.textContent=({original:genres.length+'개 장르의 오리지널 음악',ep:genres.length+'개 장르 · ACT·EP별 감상',story:'별무리의 사연으로 만든 음악',cover:'노아의 목소리로 다시 듣는 명곡'})[id]||'음악 둘러보기';const image=document.createElement('img');image.src=window.NoaBrowse.genreArt(genres[0]);image.alt='';image.loading='lazy';image.decoding='async';image.width=480;image.height=270;image.className='noa-collection-image';image.onerror=()=>{image.hidden=true;};a.append(image,name,small);host.append(a);}
  document.body.dataset.noaHomeReady='true';
  }catch{for(const id of ['noa-featured','noa-ep','noa-stories','noa-covers','noa-acts']){const host=document.getElementById(id);host.replaceChildren();const p=document.createElement('p');p.className='noa-empty';p.textContent='공개 영상 순위를 불러오지 못했습니다. 잠시 후 다시 열어 주세요.';host.append(p);}document.getElementById('noa-ranking-status').textContent='잠시 후 다시 이용해 주세요.';document.body.dataset.noaHomeReady='error';}
 })();})();
