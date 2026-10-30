@@ -33,5 +33,5 @@ public final class PlaybackStateStore {
  public int index(){return Math.max(0,pref.getInt("index",0));}
  public long position(){return Math.max(0,pref.getLong("position",0));}
  public boolean shuffle(){return pref.getBoolean("shuffle",false);}
- public int repeat(){int value=pref.getInt("repeat",Player.REPEAT_MODE_OFF);return value==Player.REPEAT_MODE_ONE?value:Player.REPEAT_MODE_OFF;}
+ public int repeat(){int value=pref.getInt("repeat",Player.REPEAT_MODE_OFF);return (value==Player.REPEAT_MODE_ONE||value==Player.REPEAT_MODE_ALL)?value:Player.REPEAT_MODE_OFF;}
 }

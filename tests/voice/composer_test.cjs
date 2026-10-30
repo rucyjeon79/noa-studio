@@ -16,3 +16,6 @@ test('artist voice uses Hangul English, poetic lines and unattributed sayings wi
 test('operational notices stay direct and exact',()=>{assert.equal(compose('저장 실패 · 다시 시도해 주세요.',{practical:true}),'저장 실패 · 다시 시도해 주세요.');});
 
 test('song guidance preserves the actual description and adds the artist voice',()=>{const info='등록된 곡 소개입니다.';const text=compose(info,{kind:'song',index:1});assert(text.startsWith(info));assert(text.includes('어 리틀 피스'));assert(text.includes('천 리 길도'));assert(!text.includes('작은 소식'));});
+
+test('routine player progress stays in the player; errors and account notices remain alerts',()=>{const {routinePlaybackStatus}=sandbox.module.exports;for(const text of ['저장된 음원 재생 중','일시정지','음원을 불러오는 중입니다.'])assert(routinePlaybackStatus('player-status',text));for(const text of ['음원 파일을 재생할 수 없습니다. 파일 형식과 접근 권한을 확인해 주세요.','로그인 후 이용해 주세요.'])assert(!routinePlaybackStatus('player-status',text));assert(!routinePlaybackStatus('upload-status','저장된 음원 재생 중'));});
+
