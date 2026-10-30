@@ -6,6 +6,10 @@ import urllib.request
 from pathlib import Path
 import noa_ainoa_deploy as release
 release.FILES={
+ 'noa-home.js':'deploy/noa-home.js',
+ 'noa-bridge/home-core.php':'bridge/home-core.php',
+ 'noa-bridge/home-discovery.php':'bridge/home-discovery.php',
+ 'noa-bridge/popularity-store.php':'bridge/popularity-store.php',
  'noa-starlight.css':'deploy/noa-starlight.css',
  'noa-ui.css':'deploy/noa-ui.css',
  'noa-ui.js':'deploy/noa-ui.js',

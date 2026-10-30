@@ -13,7 +13,7 @@ try{for(const engine of ['chromium','webkit']){
   for(const [name,path]of [['home','/'],['my','/noa-my.php'],['world','/noa-world.php?story=1'],['music','/rhythm-music.php'],['settings','/noa-settings.php'],['board','/bbs/rhythm.php']]){
    await page.goto(base+path);await page.locator('#noa-account-bar').waitFor();
    if(name==='home'){
-    await page.locator('.noa-discovery-tabs').waitFor();assert.equal(await page.locator('#noa-featured .noa-music-card').count(),10);assert(!(await page.locator('#noa-featured').innerText()).includes('unspecified'));
+    await page.locator('.noa-discovery-tabs').waitFor();assert((await page.locator('#noa-featured .noa-music-card').count())>0);await page.waitForTimeout(300);const layout=await page.locator('#noa-featured').evaluate(el=>({count:el.children.length,columns:Number(el.dataset.noaColumns)}));assert.equal(layout.count%layout.columns,0);assert(!(await page.locator('#noa-featured').innerText()).includes('unspecified'));
     assert.equal(new Set(await page.locator('#noa-featured .noa-discovery-reason').allTextContents()).size,3);assert(await page.evaluate(()=>{const ids=new Set([...document.querySelectorAll('#noa-featured [data-video]')].map(x=>x.dataset.video));return [...document.querySelectorAll('#noa-ep [data-video]')].every(x=>!ids.has(x.dataset.video));}));
     await page.getByRole('button',{name:'상승세',exact:true}).click();assert.equal(await page.locator('#noa-featured .noa-music-card').count(),2);assert((await page.locator('[data-home-section="recommendations"]>p').innerText()).includes('24시간'));
     await page.getByRole('button',{name:'새 영상',exact:true}).click();assert((await page.locator('#noa-featured .noa-music-card').first().getAttribute('href')).includes('video000011'));

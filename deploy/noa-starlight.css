@@ -79,3 +79,6 @@ html.noa-g5[data-noa-style] #bo_list :is(a.bo_subject,.bo_tit>a).noa-action{disp
 html.noa-g5[data-noa-style] #bo_list :is(a.bo_subject,.bo_tit>a).noa-action>svg{display:none}
 
 }
+
+/* Equal-width responsive rows; overflow remains reachable. */
+.noa-home-pages{display:flex;justify-content:center;align-items:center;gap:16px;margin-top:20px}.noa-home-pages[hidden]{display:none}

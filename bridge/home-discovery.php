@@ -19,8 +19,8 @@ function nh_discovery_build(array $candidates,array $ranked,array $previous=[],?
  usort($rising,fn($a,$b)=>($b['viewGain']<=>$a['viewGain'])?:strcmp($a['videoId'],$b['videoId']));
  usort($new,fn($a,$b)=>(strtotime($b['publishedAt'])<=>strtotime($a['publishedAt']))?:strcmp($a['videoId'],$b['videoId']));
  $pools=['popular'=>$popular,'rising'=>$rising,'new'=>$new];$indices=array_fill_keys(array_keys($pools),0);$mixed=[];$seen=[];
- while(count($mixed)<10){$added=false;foreach(['popular','rising','new']as $type){while(isset($pools[$type][$indices[$type]])&&isset($seen[$pools[$type][$indices[$type]]['videoId']]))$indices[$type]++;if(!isset($pools[$type][$indices[$type]]))continue;$row=$pools[$type][$indices[$type]++];$mixed[]=$row;$seen[$row['videoId']]=true;$added=true;if(count($mixed)===10)break;}if(!$added)break;}
- return ['mixed'=>$mixed,'popular'=>array_slice($popular,0,10),'rising'=>array_slice($rising,0,10),'new'=>array_slice($new,0,10),'comparisonHours'=>$comparisonSeconds===null?null:round($comparisonSeconds/3600,1),'basis'=>'인기 점수 · 이전 수집 대비 조회수 증가 · 실제 공개일'];
+ while(count($mixed)<36){$added=false;foreach(['popular','rising','new']as $type){while(isset($pools[$type][$indices[$type]])&&isset($seen[$pools[$type][$indices[$type]]['videoId']]))$indices[$type]++;if(!isset($pools[$type][$indices[$type]]))continue;$row=$pools[$type][$indices[$type]++];$mixed[]=$row;$seen[$row['videoId']]=true;$added=true;if(count($mixed)===36)break;}if(!$added)break;}
+ return ['mixed'=>$mixed,'popular'=>array_slice($popular,0,36),'rising'=>array_slice($rising,0,36),'new'=>array_slice($new,0,36),'comparisonHours'=>$comparisonSeconds===null?null:round($comparisonSeconds/3600,1),'basis'=>'인기 점수 · 이전 수집 대비 조회수 증가 · 실제 공개일'];
 }
 function nh_discovery_load(PDO $db,array $run,array $data):array{
  $previous=[];$seconds=null;$at=strtotime($run['created_at'].' UTC');

@@ -96,29 +96,12 @@ function prepare(card,meta){
  else if(card.dataset.noaRankMovement){try{setMovement(card,JSON.parse(card.dataset.noaRankMovement));}catch{setMovement(card,null);}}
 }
 function plan(count,capacity,featured=true){
- const max=Math.max(1,Math.min(5,Math.floor(capacity))),n=Math.max(0,count);
- let columns=Math.min(n||1,max);
- if(n===10)columns=max>=5?5:Math.min(2,max);
- else if(n===9)columns=max>=3?3:Math.min(2,max);
- else if(n===8)columns=max>=4?4:Math.min(2,max);
- else if(n===7)columns=max>=4?4:Math.min(3,max);
- else if(n===5)columns=Math.min(3,max);
- else if(n===6)columns=max>=3?3:Math.min(2,max);
- else if(n===4)columns=Math.min(2,max);
- else if(n===3)columns=max>=3?3:1;
- if(!featured&&columns===2&&n>2&&n%2===1)columns=1;
- const hero=featured&&columns===2&&n>columns&&n%columns===1;
- const remaining=n-(hero?1:0),rows=[];
- if(remaining){
-  if(!hero&&columns>1&&remaining>columns&&remaining%columns===1){
-   const length=Math.ceil(remaining/columns),small=Math.floor(remaining/length),extra=remaining%length;
-   for(let i=0;i<length;i++)rows.push(small+(i<extra?1:0));
-  }else for(let left=remaining;left>0;left-=columns)rows.push(Math.min(columns,left));
- }
- return{columns,featured:hero,rows};
+ const columns=Math.max(1,Math.min(5,Math.floor(capacity))),rows=[];
+ for(let left=Math.max(0,count);left>0;left-=columns)rows.push(Math.min(columns,left));
+ return{columns,featured:false,rows};
 }
 const specs=[
- ['.noa-card-grid','.noa-music-card',true,168,136,5],
+ ['.noa-card-grid','.noa-music-card',true,168,136,4],
  ['.world-mv-grid','.world-mv-card',true,216,216,4],
  ['.yt-grid','.yt-card',true,216,216,4],
  ['.noa-browse-grid','.noa-browse-card',false,164,136,5],

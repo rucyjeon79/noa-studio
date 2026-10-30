@@ -11,7 +11,7 @@ check(!$r['ep']&&!$r['stories']&&!$r['covers'],'featured IDs leaked into seconda
 check($r['playlists'][0]['score']===89020&&$r['playlists'][0]['countedVideos']===3&&$r['playlists'][0]['excludedVideos']===1,'playlist must include unlinked compilation, dedup repeats and exclude private members');$list['snippet']['title']='연속 듣기';check(count(nh_build($videos,$songs,[$list],['PLcontinuous1'=>['unknown0000']],$channel)['playlists'])===1,'spaced label or compilation member excluded');check(str_contains($r['playlistBasis'],'공식 재생목록 조회수가 아닙니다'),'aggregate mislabeled');check(str_ends_with($r['featured'][0]['href'],'&play=1'),'explicit selection route');
 $list['status']['privacyStatus']='private';check(nh_build($videos,$songs,[$list],[], $channel)['playlists']===[],'private playlist exposed');
 check(nh_views('9223372036854775808')===null&&nh_views('-1')===null&&nh_views('1.5')===null&&nh_views('0')===0,'invalid numeric views');
-$many=[];for($i=0;$i<20;$i++)$many[]=video(str_pad((string)$i,11,'0',STR_PAD_LEFT),'a',(string)$i);$a=nh_build($many,$songs,[],[],$channel);check(count($a['featured'])===10&&$a['featured'][0]['views']===19,'top ten limit');
+$many=[];for($i=0;$i<20;$i++)$many[]=video(str_pad((string)$i,11,'0',STR_PAD_LEFT),'a',(string)$i);$a=nh_build($many,$songs,[],[],$channel);check(count($a['featured'])===20&&$a['featured'][0]['views']===19,'available ranked candidates');
 echo "PASS home privacy, identity, ranking, genre winner, missing metrics and distinct playlist aggregation\n";
 
 

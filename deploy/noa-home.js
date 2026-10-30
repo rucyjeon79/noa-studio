@@ -16,7 +16,47 @@ function card(row,playlist=false,integrated=false){
  const title=document.createElement('strong');title.textContent=row.title;const note=document.createElement('small');
  note.className='noa-card-meta';const context=document.createElement('span');context.className='noa-card-context';context.textContent=[window.NoaBrowse.names[row.genre]||'',row.language&&row.language!=='und'?({ko:'한국어',ja:'日本語',en:'English',th:'ไทย'}[row.language]||row.language):'',row.version&&!/^(?:unspecified|unknown|default|und)$/i.test(row.version)?row.version:''].filter(Boolean).join(' · ');note.textContent=metadata(row,playlist,integrated);if(context.textContent)note.append(context);a.append(art,title,note);window.NoaCardLayout?.prepare(a,row);if(row.recommendationLabel){const reason=document.createElement('span');reason.className='noa-discovery-reason';reason.textContent=row.recommendationLabel;a.append(reason);}return a;
 }
-function fill(id,rows,playlist=false,integrated=false){const host=document.getElementById(id);host.replaceChildren();if(!rows.length){const empty=document.createElement('p');empty.className='noa-empty';empty.textContent=playlist?'조건에 맞는 공개 연속듣기 목록이 없습니다.':'음악을 준비하고 있습니다.';host.append(empty);return;}for(const row of rows)host.append(card(row,playlist,integrated));}
+const homeLists=new Map();
+function homePageSize(width,height=800,cardHeight=240,chrome=160){
+ const gap=width<=600?12:16,min=width<=600?136:168;
+ const columns=Math.min(4,Math.max(1,Math.floor((width+gap)/(min+gap))));
+ return columns*Math.max(1,Math.floor((height-chrome+gap)/(cardHeight+gap)));
+}
+function listSize(state){
+ const box=getComputedStyle(state.host),width=state.host.clientWidth-parseFloat(box.paddingLeft)-parseFloat(box.paddingRight);
+ if(state.width!==width){state.width=width;state.cardHeight=0;}
+ let chrome=88; // section spacing and reserved page controls
+ for(const node of state.host.closest('section').children){if(node===state.host)break;const style=getComputedStyle(node);chrome+=node.getBoundingClientRect().height+(parseFloat(style.marginTop)||0)+(parseFloat(style.marginBottom)||0);}
+ for(const selector of ['.noa-mobile-nav','.noa-transport','.noa-topbar']){const node=document.querySelector(selector);if(node&&!node.hidden){const style=getComputedStyle(node);if(style.display!=='none'&&['fixed','sticky'].includes(style.position))chrome+=node.getBoundingClientRect().height;}}
+ const columns=homePageSize(width,1,1,0),gap=width<=600?12:16;
+ return homePageSize(width,window.visualViewport?.height||window.innerHeight,state.cardHeight||((width-gap*(columns-1))/columns*.5625+120),chrome);
+}
+function fitList(state){
+ const heights=[...state.host.querySelectorAll('.noa-music-card')].map(node=>node.getBoundingClientRect().height);
+ state.cardHeight=Math.max(state.cardHeight||0,...heights);
+ if(listSize(state)!==state.size)renderList(state);
+}
+function renderList(state){
+ const {host,rows,playlist,integrated,pager}=state;
+ const size=listSize(state);if(state.size&&state.size!==size)state.page=Math.floor(state.page*state.size/size);state.size=size;
+ const pages=Math.max(1,Math.ceil(rows.length/size));state.page=Math.min(state.page,pages-1);
+ host.replaceChildren();
+ if(!rows.length){const empty=document.createElement('p');empty.className='noa-empty';empty.textContent=playlist?'조건에 맞는 공개 연속듣기 목록이 없습니다.':'음악을 준비하고 있습니다.';host.append(empty);}
+ for(const row of rows.slice(state.page*size,(state.page+1)*size))host.append(card(row,playlist,integrated));
+ pager.replaceChildren();pager.hidden=pages<=1;
+ if(pages>1){for(const [label,delta]of [['이전',-1],['다음',1]]){const button=document.createElement('button');button.type='button';button.className='noa-button';button.textContent=label;button.disabled=delta<0?state.page===0:state.page===pages-1;button.onclick=()=>{state.page+=delta;renderList(state);};pager.append(button);if(delta<0){const status=document.createElement('span');status.textContent=(state.page+1)+' / '+pages;status.setAttribute('aria-live','polite');pager.append(status);}}}
+ window.NoaCardLayout?.refresh();requestAnimationFrame(()=>fitList(state));
+}
+const homeResize=new ResizeObserver(entries=>{for(const entry of entries){const state=homeLists.get(entry.target.id);if(state){if(listSize(state)!==state.size)renderList(state);else fitList(state);}}});
+const refit=()=>{for(const state of homeLists.values())if(listSize(state)!==state.size)renderList(state);};
+window.addEventListener('resize',refit,{passive:true});window.visualViewport?.addEventListener('resize',refit,{passive:true});
+document.fonts?.ready.then(refit);
+
+function fill(id,rows,playlist=false,integrated=false){
+ const host=document.getElementById(id);let state=homeLists.get(id);
+ if(!state){const pager=document.createElement('nav');pager.className='noa-home-pages';pager.setAttribute('aria-label',host.closest('section').querySelector('h2').textContent+' 페이지');host.after(pager);state={host,pager,page:0};homeLists.set(id,state);homeResize.observe(host);}
+ Object.assign(state,{rows,playlist,integrated,page:0});renderList(state);
+}
 (async()=>{try{
  const data=await (window.NoaHomeSnapshot??=fetch('/noa-bridge/home.php',{credentials:'same-origin',cache:'no-store'}).then(async r=>{if(!r.ok)throw Error();const data=await r.json();if(!data.ok)throw Error();return data;}));
  const integrated=data.popularity?.jukeboxCollectionStatus==='enabled';
