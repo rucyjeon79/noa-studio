@@ -3,7 +3,7 @@ import hashlib,json,secrets,time,urllib.request,urllib.parse
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
-PLAN='AUDIT'
+PLAN='336a6993c62948af2931dd26fc6ac50236a6d4fc9281e05db8605e2596d6b2b1'
 token=secrets.token_hex(32);name='noa-bridge/media-paths-'+secrets.token_hex(8)+'.php'
 raw=Path('scripts/noa_media_paths.php').read_text().replace('__EXPIRY__',str(int(time.time())+600)).replace('__TOKEN_SHA__',hashlib.sha256(token.encode()).hexdigest()).replace('__PLAN_SHA__',PLAN).encode()
 t=connect();s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(30);installed=False
