@@ -16,7 +16,7 @@ function changeCart(id,delta){
  retry=null;$('points-consent').checked=false;saveCart();renderCart();notice(delta>0?fmt(p.paidPoints)+'P 금액권을 카트에 담았어요.':'카트를 변경했어요.',false);
 }
 function totals(){return cartItems().reduce((a,p)=>{for(const k of ['priceWon','paidPoints','bonusPoints','totalPoints'])a[k]+=p[k]*p.quantity;a.quantity+=p.quantity;return a;},{priceWon:0,paidPoints:0,bonusPoints:0,totalPoints:0,quantity:0});}
-function art(p,loading='lazy'){const img=el('img');img.src='/noa-assets/points/'+p.id+'.webp';img.alt='';img.width=768;img.height=512;img.loading=loading;img.decoding='async';return img;}
+function art(p,loading='lazy'){const img=el('img');img.src='/noa-assets/points-'+p.id+'.webp';img.alt='';img.width=768;img.height=512;img.loading=loading;img.decoding='async';return img;}
 function button(text,label,action){const b=el('button',text);b.type='button';b.setAttribute('aria-label',label);b.disabled=busy;b.onclick=action;return b;}
 function renderCart(){
  const holder=$('points-cart-items');holder.replaceChildren();const items=cartItems();

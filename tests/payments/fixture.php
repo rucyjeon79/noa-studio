@@ -1,7 +1,7 @@
 <?php
 require __DIR__.'/../rhythm/alignment-fixture.php';
 foreach(['noa-points.php','noa-points.js','noa-points.css']as $f)copy('deploy/'.$f,$root.'/'.$f);
-@mkdir($root.'/noa-assets/points',0700,true);foreach(glob('deploy/noa-assets/points/*.webp')as $image)copy($image,$root.'/noa-assets/points/'.basename($image));
+@mkdir($root.'/noa-assets',0700,true);foreach(glob('deploy/noa-assets/points/*.webp')as $image)copy($image,$root.'/noa-assets/points-'.basename($image));
 // Include the production shared palette and footer rules in the point-store fixture.
 copy('deploy/noa-starlight.css',$root.'/noa-starlight.css');
 $store=file_get_contents($root.'/noa-points.php');
