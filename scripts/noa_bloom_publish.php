@@ -20,8 +20,8 @@ try{
  if(!hash_equals($digest,$input['expectedDigest']??''))throw new RuntimeException('concurrent_change');
  if(($d['visibility']??'')!=='private')throw new RuntimeException('unexpected_visibility');
  $before=$d;$d['visibility']='public';$encoded=json_encode($d,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
- $q=$db->prepare('UPDATE noa_documents SET payload=?,revision=revision+1,updated_by=? WHERE doc_key=? AND revision=?');$q->execute([$encoded,'authorized:bloom-public:20261030',$key,(int)$row['revision']]);if($q->rowCount()!==1)throw new RuntimeException('revision_conflict');
- $revision=(int)$row['revision']+1;$q=$db->prepare('INSERT INTO noa_document_history(doc_key,revision,payload,changed_by) VALUES(?,?,?,?)');$q->execute([$key,$revision,$encoded,'authorized:bloom-public:20261030']);
+ $q=$db->prepare('UPDATE noa_documents SET payload=?,revision=revision+1,updated_by=? WHERE doc_key=? AND revision=?');$q->execute([$encoded,'noa-bloom',$key,(int)$row['revision']]);if($q->rowCount()!==1)throw new RuntimeException('revision_conflict');
+ $revision=(int)$row['revision']+1;$q=$db->prepare('INSERT INTO noa_document_history(doc_key,revision,payload,changed_by) VALUES(?,?,?,?)');$q->execute([$key,$revision,$encoded,'noa-bloom']);
  $q=$db->prepare('SELECT payload,revision FROM noa_documents WHERE doc_key=?');$q->execute([$key]);$saved=$q->fetch(PDO::FETCH_ASSOC);$after=json_decode($saved['payload'],true,512,JSON_THROW_ON_ERROR);$compare=$after;$compare['visibility']='private';
  if($compare!==$before||!noa_sound_visible($after,false)||(int)$saved['revision']!==$revision)throw new RuntimeException('verification_failed');
  $q->execute([$list]);$same=$q->fetch(PDO::FETCH_ASSOC);if($same['payload']!==$by[$list]['payload']||(int)$same['revision']!==(int)$by[$list]['revision'])throw new RuntimeException('collection_changed');
