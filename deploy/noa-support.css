@@ -1,0 +1,27 @@
+/* Five song actions remain in the same order at every width. */
+.noa-support-button svg{fill:none;stroke:currentColor;stroke-width:1.6;width:20px;height:20px}
+html[data-noa-precision] body .noa-support-button{color:#d0b67c!important}
+html[data-noa-precision] body .noa-support-button:disabled{opacity:.55}
+.noa-support-dialog label{display:block;line-height:1.6;margin-block:12px}
+.noa-support-dialog input:not([type=checkbox]){width:100%;min-height:52px;padding:12px;font:inherit;box-sizing:border-box;border:1px solid var(--noa-line);border-radius:8px;background:var(--noa-surface);color:var(--noa-text)}
+.noa-support-dialog input[type=checkbox]{width:20px;height:20px;vertical-align:middle;margin-right:8px}
+.noa-support-dialog h3{font-size:24px;color:#d0b67c;line-height:1.5}
+html body .noa-support-dialog .noa-support-primary{display:block;width:100%;min-height:48px;margin-top:16px;color:#17191d;background:#d0b67c;border:0;font-weight:700}
+.noa-channel-support{display:flex;align-items:center;gap:12px;margin-block:16px;color:#d0b67c}
+.noa-channel-support button{display:flex;align-items:center;gap:8px;min-height:48px;padding:8px 16px;background:var(--noa-surface);border:1px solid var(--noa-line);color:inherit;border-radius:8px}
+.noa-support-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;padding-block:24px;border-block:1px solid var(--noa-line);margin-block:24px}
+.noa-support-summary small,.noa-support-summary strong{display:block}.noa-support-summary strong{font-size:24px;color:#d0b67c;margin-top:8px;font-variant-numeric:tabular-nums}
+.noa-support-receipt{padding:16px 0;border-bottom:1px solid var(--noa-line)}.noa-support-receipt p{white-space:pre-wrap;overflow-wrap:anywhere}
+#noa-support-dashboard :is(button,select),#noa-support-review :is(button,input,select){min-height:44px;padding:8px 12px;margin:8px 8px 8px 0;font:inherit;background:var(--noa-surface);color:var(--noa-text);border:1px solid var(--noa-line);border-radius:8px;max-width:100%;box-sizing:border-box}
+#noa-support-review input{display:block;width:100%}
+@media(min-width:900px){html[data-noa-precision] body.noa-page .noa-inline-song-row.noa-has-support{grid-template-columns:56px minmax(100px,1fr) 144px repeat(3,48px)}}
+@media(max-width:899px){
+ html[data-noa-precision] body.noa-page .noa-inline-song-row.noa-has-support{grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:48px 48px;gap:4px 0;padding:8px 4px}
+ html[data-noa-precision] body.noa-page .noa-inline-song-row.noa-has-support>.noa-inline-song>.noa-inline-cover{grid-column:1;grid-row:1;width:44px;height:44px}
+ html[data-noa-precision] body.noa-page .noa-inline-song-row.noa-has-support>.noa-inline-song>.noa-inline-title{grid-column:2/-1;grid-row:1;padding-left:8px}
+ html[data-noa-precision] body.noa-page .noa-inline-song-row.noa-has-support>.noa-engagement{grid-column:1/4;grid-row:2;justify-content:space-around}
+ html[data-noa-precision] body.noa-page .noa-inline-song-row.noa-has-support>.noa-song-actions>.noa-song-action[aria-label$=" 재생"]{grid-column:4;grid-row:2}
+ html[data-noa-precision] body.noa-page .noa-inline-song-row.noa-has-support>.noa-song-actions>.noa-song-action[aria-label$=" 다운로드"]{grid-column:5;grid-row:2}
+ html[data-noa-precision] body.noa-page .noa-inline-song-row.noa-has-support>.noa-song-more{grid-column:6;grid-row:2}
+}
+@media(max-width:600px){.noa-support-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.noa-support-summary strong{font-size:20px}}
