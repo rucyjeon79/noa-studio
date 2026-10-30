@@ -1,4 +1,5 @@
 name: NOA Home AInoa integration
+# Isolated release after the shared presentation checks have been queued.
 on:
   push:
     branches: [main]
