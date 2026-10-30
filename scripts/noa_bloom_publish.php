@@ -16,7 +16,7 @@ try{
  $members=array_column($playlist['body']['members']??[],'key');if(!in_array(substr($key,8),$members,true)&&!in_array($key,$members,true))throw new RuntimeException('membership_changed');
  $digest=hash('sha256',json_encode($rows,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR));
  if(!$write){echo json_encode(['ok'=>true,'rows'=>$rows,'digest'=>$digest,'databaseWrites'=>0],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;}
- $input=json_decode(file_get_contents('php://input'),true,512,JSON_THROW_ON_ERROR);
+ $input=$_POST;
  if(!hash_equals($digest,$input['expectedDigest']??''))throw new RuntimeException('concurrent_change');
  if(($d['visibility']??'')!=='private')throw new RuntimeException('unexpected_visibility');
  $before=$d;$d['visibility']='public';$encoded=json_encode($d,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);

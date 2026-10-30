@@ -1,5 +1,5 @@
 """Publish only explicitly authorized BLOOM after verified Drive preimage backup."""
-import hashlib,json,os,secrets,time,urllib.request,base64
+import hashlib,json,os,secrets,time,urllib.request,urllib.parse,base64
 from cryptography.hazmat.primitives import serialization,hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -16,7 +16,7 @@ token=secrets.token_hex(32);name='noa-bridge/bloom-publish-'+secrets.token_hex(8
 raw=Path('scripts/noa_bloom_publish.php').read_text().replace('__EXPIRY__',str(int(time.time())+600)).replace('__TOKEN_SHA__',hashlib.sha256(token.encode()).hexdigest()).encode()
 t=connect();s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(30);installed=False
 def request(body=None):
- req=urllib.request.Request('https://noastudio.ai.kr/'+name,data=None if body is None else json.dumps(body).encode(),headers={'X-NOA-Diagnostic':token,'Content-Type':'application/json'})
+ req=urllib.request.Request('https://noastudio.ai.kr/'+name,data=None if body is None else urllib.parse.urlencode(body).encode(),headers={'X-NOA-Diagnostic':token,'Content-Type':'application/x-www-form-urlencoded','User-Agent':'NOA-authorized-publisher/1','Origin':'https://noastudio.ai.kr','Referer':'https://noastudio.ai.kr/'})
  try:
   with urllib.request.urlopen(req,timeout=60)as r:result=json.load(r)
  except urllib.error.HTTPError as e:
