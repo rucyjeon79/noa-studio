@@ -104,3 +104,5 @@ html[data-noa-style] #noa-genres>.noa-genre small{white-space:normal;display:blo
 #noa-menu-results{color:var(--noa-muted);min-height:24px}
 @media(max-width:760px){html[data-noa-style] #noa-genres{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}html[data-noa-style] body .noa-home-banner{margin:24px 0;min-height:100px;padding:16px 0}}
 @media(max-width:350px){html[data-noa-style] #noa-genres{grid-template-columns:minmax(0,1fr)}}
+
+html[data-noa-style] #noa-genres>.noa-genre strong{font-size:15px;line-height:1.5}
