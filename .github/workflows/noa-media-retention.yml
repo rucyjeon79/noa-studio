@@ -1,0 +1,26 @@
+name: NOA authorized latest media retention
+on:
+  push:
+    branches: [main]
+    paths: ['scripts/noa_media_retention.*','.github/workflows/noa-media-retention.yml']
+permissions: {contents: read}
+jobs:
+  cleanup:
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 10
+    concurrency: {group: noa-jukebox-upload-processing, cancel-in-progress: false}
+    env:
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - run: |
+          php -l scripts/noa_media_retention.php
+          python -m py_compile scripts/noa_media_retention.py
+          python -m pip install 'paramiko>=3,<5'
+      - run: python scripts/noa_media_retention.py
