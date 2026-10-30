@@ -3,9 +3,7 @@ function nws_genre_label(string $g):string{if(in_array($g,['unclassified','unkno
 function nwe(string $s):string{return htmlspecialchars($s,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
 function nwl(array $query):string{return '/noa-world.php'.($query?'?'.http_build_query($query):'');}
 function nw_cover(array $world,int $act):string{
- foreach($world['actCollection']['videos']??[] as $v)if((int)($v['act']??0)===$act&&!empty($v['thumbnail']))return (string)$v['thumbnail'];
- foreach($world['videos']??[] as $v)if((int)($v['storyAct']??0)===$act&&!empty($v['thumbnail']))return (string)$v['thumbnail'];
- return '/noa-assets/editorial-starlight-studio.webp';
+ return '/noa-assets/editorial-act-'.max(1,min(4,$act)).'.webp';
 }
 function nw_mv(array $v,string $label=''):void{?>
  <figure class="world-chapter-mv"><button type="button" class="world-play world-thumbnail" data-video="<?=nwe((string)$v['videoId'])?>" data-title="<?=nwe((string)$v['title'])?>" aria-label="<?=nwe(($label!==''?$label:$v['title']).' 공식 MV 재생')?>"><img src="<?=nwe((string)$v['thumbnail'])?>" loading="lazy" alt=""><span aria-hidden="true">▷</span></button><figcaption><?=nwe((string)$v['title'])?></figcaption></figure>
@@ -20,7 +18,7 @@ $chapterEps=$actNo?range(($actNo-1)*10+1,$actNo*10):[];$actCopy=nws_editorial_ac
 <nav class="nw-breadcrumb" aria-label="세계관 경로"><a href="/">NOA STUDIO</a><span aria-hidden="true">/</span><a href="/noa-world.php" <?=!$actNo?'aria-current="page"':''?>>NOA WORLD</a><?php if($actNo):?><span aria-hidden="true">/</span><span aria-current="page">ACT.<?=$actNo?></span><?php endif;?></nav>
 <?php if($missing||$error):?><section class="nw-error"><p class="nw-kicker">NOA WORLD</p><h1><?=$missing?'이야기를 찾을 수 없습니다.':'잠시 쉬어가는 중입니다.'?></h1><p role="status"><?=$missing?'공개된 ACT 또는 해당 EP를 찾을 수 없습니다.':'이야기를 불러오지 못했습니다. 잠시 후 다시 이용해 주세요.'?></p><a class="nw-link" href="/noa-world.php">전체 이야기로 돌아가기 →</a></section><?php else:?>
 <?php if(!$actNo):?>
-<section class="nw-hero" aria-labelledby="world-title"><img src="/noa-assets/editorial-starlight-studio.webp" alt="별빛 아래, 다음 이야기를 기다리는 피아노" fetchpriority="high"><div class="nw-hero-copy"><p class="nw-kicker">NOA WORLD / THE MUSIC STORY</p><h1 id="world-title">노래가 끝나도,<br>이야기는 계속됩니다.</h1><p>처음 사랑을 알게 된 순간부터<br>다시 누군가와 함께 걸어보기까지.<br>노아의 시간을 음악으로 읽는 곳.</p><a class="nw-link" href="#world-content">첫 장을 펼치다 <span aria-hidden="true">↓</span></a></div><span class="nw-hero-sign">MUSIC. STORIES. STARLIGHT.</span></section>
+<section class="nw-hero" aria-labelledby="world-title"><img src="/noa-assets/editorial-world-journey.webp" alt="별빛 해안을 따라 이어지는 음악 이야기의 여정" fetchpriority="high"><div class="nw-hero-copy"><p class="nw-kicker">NOA WORLD / THE MUSIC STORY</p><h1 id="world-title">노래가 끝나도,<br>이야기는 계속됩니다.</h1><p>처음 사랑을 알게 된 순간부터<br>다시 누군가와 함께 걸어보기까지.<br>노아의 시간을 음악으로 읽는 곳.</p><a class="nw-link" href="#world-content">첫 장을 펼치다 <span aria-hidden="true">↓</span></a></div><span class="nw-hero-sign">MUSIC. STORIES. STARLIGHT.</span></section>
 <div class="nw-intro"><p>한 곡은 하나의 장면이 되고,<br>열 개의 장면은 하나의 ACT가 됩니다.</p><div><span>이야기 구성</span><strong>4 ACTS <i> / </i> 40 EPS</strong><small>노래와 공식 MV를 따라 이어지는 음악 서사</small></div></div>
 <section id="world-content" class="nw-section" aria-labelledby="nw-contents-title"><div class="nw-section-heading"><div><p class="nw-kicker">THE CHAPTERS</p><h2 id="nw-contents-title">어떤 마음에서<br>시작해 볼까요.</h2></div><p>처음이라면 ACT.1부터.<br>지금의 마음과 닮은 장부터 읽어도 좋아요.</p></div>
 <nav class="nw-timeline" aria-label="세계관 ACT 선택"><?php foreach($drafts as $n=>$d):?><a href="<?=nwe(nwl(['story'=>$n,'genre'=>$genre]))?>"><span>0<?=$n?></span><strong><?=nwe($d['title'])?></strong><small>EP.<?=($n-1)*10+1?>–<?=$n*10?></small></a><?php endforeach;?></nav>
