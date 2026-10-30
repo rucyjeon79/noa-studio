@@ -27,6 +27,16 @@ try{
   foreach(['audio','cover']as $type){if(empty($a[$type.'_path']))continue;$p=nj_file($a[$type.'_path']);if(!$p||!verified_cached($a,$type)){$bad[]=['key'=>$a['song_key'],'type'=>$type];continue;}$protected[$p]=['sha256'=>$a[$type.'_sha256'],'bytes'=>(int)$a[$type.'_bytes']];}
  }
  if($bad)throw new RuntimeException('current_media_verification_failed:'.count($bad));
+ // When both copies are identical, retain the public copy so existing direct URLs
+ // and nj_file's fallback keep working without any database rewrite.
+ $duplicatePrivate=[];
+ foreach($assets as $a){$rel=$a['cover_path']??'';$privatePath=$root.'/'.$rel;$publicPath=$public.'/'.$rel;
+  if(!$rel||!isset($protected[$privatePath])||!safe_file($publicPath,$public))continue;
+  if(filesize($publicPath)!==(int)$a['cover_bytes']||!hash_equals((string)$a['cover_sha256'],hash_file('sha256',$publicPath)))continue;
+  $protected[$publicPath]=$protected[$privatePath];unset($protected[$privatePath]);
+  $duplicatePrivate[$privatePath]=['path'=>$privatePath,'sha256'=>$a['cover_sha256'],'bytes'=>(int)$a['cover_bytes'],'reason'=>'duplicate_private_cover'];
+ }
+ $candidates=$duplicatePrivate;
  foreach($db->query('SELECT song_key,result FROM noa_jukebox_history ORDER BY id')as $r){$h=json_decode($r['result'],true);$a=$current[$r['song_key']]??null;
   foreach(['audio','cover']as $type){$relative=$h[$type.'_path']??'';if(!$relative||str_contains($relative,'..')||str_starts_with($relative,'/'))continue;
    $isQa=isset($qa[$r['song_key']]);if(!$isQa&&(!$a||empty($a[$type.'_path'])||!verified_cached($a,$type)))continue;
@@ -46,5 +56,5 @@ try{
   $dirs=[];foreach($removed as $c){$p=dirname($c['path']);while($p!==$root&&$p!==$public&&str_starts_with($p,'/hosting/noastudio/')){$dirs[$p]=true;$p=dirname($p);}}uksort($dirs,fn($a,$b)=>strlen($b)<=>strlen($a));foreach($dirs as $p)if(is_dir($p)&&!is_link($p)&&count(scandir($p))===2)rmdir($p);
   foreach($protected as $p=>$v)if(!is_file($p)||filesize($p)!==$v['bytes']||!hash_equals($v['sha256'],hash_file('sha256',$p)))throw new RuntimeException('protected_file_changed');
  }
- $db->commit();echo json_encode(['ok'=>true,'mode'=>$apply?'apply':'audit','planSha256'=>$digest,'candidates'=>$plan,'candidateCount'=>count($plan),'candidateBytes'=>array_sum(array_column($plan,'bytes')),'removedCount'=>count($removed),'protectedFiles'=>count($protected),'backupCreated'=>false,'realSongRowsChanged'=>0],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
+ $db->commit();echo json_encode(['ok'=>true,'mode'=>$apply?'apply':'audit','planSha256'=>$digest,'candidates'=>$plan,'duplicatePrivateCovers'=>count($duplicatePrivate),'candidateCount'=>count($plan),'candidateBytes'=>array_sum(array_column($plan,'bytes')),'removedCount'=>count($removed),'protectedFiles'=>count($protected),'backupCreated'=>false,'realSongRowsChanged'=>0],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
 }catch(Throwable $e){if($db->inTransaction())$db->rollBack();echo json_encode(['ok'=>false,'error'=>$e instanceof PDOException?'database_error':$e->getMessage()]);}
