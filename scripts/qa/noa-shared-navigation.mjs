@@ -6,8 +6,8 @@ import assert from 'node:assert/strict';
 const server=createServer((req,res)=>{
  if(req.url.startsWith('/noa-bridge/membership.php')){res.setHeader('Content-Type','application/json');return res.end(JSON.stringify({ok:true,member:false}));}
  if(req.url.startsWith('/noa-assets/')){res.writeHead(204);return res.end();}
- if(['/noa-ui.js','/noa-account.js','/noa-account.css','/noa-ui.css','/noa-starlight.css'].includes(req.url)){res.setHeader('Content-Type',req.url.endsWith('.js')?'text/javascript':'text/css');return res.end(readFileSync('deploy'+req.url));}
- res.setHeader('Content-Type','text/html; charset=utf-8');res.end('<!doctype html><html lang="ko" data-noa-style="starlight"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-account.css"><link rel="stylesheet" href="/noa-starlight.css"><body><script type="application/json" id="noa-visitor-counts">{"today":"123","yesterday":"45","total":"123456"}</script><main class="noa-layout" style="padding:24px;min-height:2400px"><h1>이동 검증</h1><a href="/second">다음 화면</a><div style="height:2200px"></div><section data-home-section="recommendations"><div class="noa-card-grid" id="noa-featured"><article class="noa-music-card">Track A</article><article class="noa-music-card">Track B</article><article class="noa-music-card">Track C</article><article class="noa-music-card">Track D</article></div></section></main><script src="/noa-ui.js"></script><script src="/noa-account.js"></script></body></html>');
+ if(['/noa-ui.js','/noa-account.js','/noa-account.css','/noa-ui.css','/noa-starlight.css','/noa-gnuboard.css'].includes(req.url)){res.setHeader('Content-Type',req.url.endsWith('.js')?'text/javascript':'text/css');return res.end(readFileSync('deploy'+req.url));}
+ res.setHeader('Content-Type','text/html; charset=utf-8');res.end('<!doctype html><html lang="ko" data-noa-style="starlight"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-account.css"><link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-gnuboard.css"><body><script type="application/json" id="noa-visitor-counts">{"today":"123","yesterday":"45","total":"123456"}</script><main class="noa-layout" style="padding:24px;min-height:2400px"><h1>이동 검증</h1><a href="/second">다음 화면</a><section id="bo_list"><div id="bo_btn_top"><div id="bo_list_total">Total 1건</div><ul class="btn_bo_user"><li><a href="/bbs/write.php">글쓰기</a></li></ul></div><table><thead><tr><th><a href="?sst=wr_hit">조회</a></th><th><a href="?sst=wr_datetime">날짜</a></th></tr></thead><tbody><tr><td colspan="2">게시판</td></tr></tbody></table></section><div style="height:2200px"></div><section data-home-section="recommendations"><div class="noa-card-grid" id="noa-featured"><article class="noa-music-card">Track A</article><article class="noa-music-card">Track B</article><article class="noa-music-card">Track C</article><article class="noa-music-card">Track D</article></div></section></main><script src="/noa-ui.js"></script><script src="/noa-account.js"></script></body></html>');
 });await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const base='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});mkdirSync('starlight-proof',{recursive:true});
@@ -41,6 +41,15 @@ try{for(const [width,height] of [[320,900],[390,900],[768,720],[1920,900]]){
   await page.screenshot({path:'starlight-proof/mobile-footer-'+width+'.png'});
  }else assert(!(await page.locator('.noa-mobile-footer').isVisible()));
  await page.locator('#noa-nav-all').click();await page.waitForURL(base+'/noa-sitemap.php');
- await page.screenshot({path:'starlight-proof/navigation-'+width+'.png'});assert.deepEqual(errors,[]);await page.close();
+ await page.screenshot({path:'starlight-proof/navigation-'+width+'.png'});assert.deepEqual(errors,[]);
+ await page.goto(base+'/bbs/board.php');await page.locator('#noa-nav-all').waitFor();
+ for(const link of await page.locator('#bo_list thead a').all()){
+  assert.equal(await link.locator('svg').count(),0,'sort links must not become decorated action buttons');
+  assert(!(await link.getAttribute('class')||'').includes('noa-action'));
+ }
+ const total=await page.locator('#bo_list_total').boundingBox(),actions=await page.locator('#bo_btn_top .btn_bo_user').boundingBox();
+ assert(actions.y>=total.y+total.height||actions.x>=total.x+total.width,'toolbar controls overlap');
+ assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+ await page.close();
  console.log('PASS shared navigation '+width+'x'+height);
 }}finally{await browser.close();server.close();}

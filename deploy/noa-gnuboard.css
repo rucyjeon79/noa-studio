@@ -69,7 +69,7 @@ html.noa-g5 :is(#bo_sch,.bo_sch){border:1px solid var(--noa-line);border-radius:
 html.noa-g5 .pg_wrap{clear:both;margin-block:28px}
 html.noa-g5 :is(.pg_page,.pg_current){display:inline-flex;align-items:center;justify-content:center;min-inline-size:44px;min-block-size:44px;border-radius:var(--noa-control-radius,8px)}
 @media(min-width:761px){html.noa-g5 body:has(:is(#bo_list,#bo_v,#bo_w)) #wrapper{inline-size:calc(100% - var(--noa-rail));margin-inline-start:calc(var(--noa-rail) + (100% - var(--noa-rail) - min(1040px,100% - var(--noa-rail)))/2)}}
-@media(max-width:760px){html.noa-g5 body:has(:is(#bo_list,#bo_v,#bo_w)) #wrapper{padding-inline:18px}html.noa-g5 #bo_list :is(th,td){padding-inline:6px}html.noa-g5 :is(#bo_list,#bo_v,#bo_w) .btn_bo_user{justify-content:flex-end}html.noa-g5 #bo_w .bo_w_info{display:flex;flex-wrap:wrap;gap:10px}html.noa-g5 #bo_w .bo_w_info .frm_input{flex:1 1 160px;inline-size:100%}}
+@media(max-width:760px){html.noa-g5 body:has(:is(#bo_list,#bo_v,#bo_w)) #wrapper{padding-inline:var(--noa-content-gutter,20px)}html.noa-g5 #bo_list :is(th,td){padding-inline:6px}html.noa-g5 :is(#bo_list,#bo_v,#bo_w) .btn_bo_user{justify-content:flex-end}html.noa-g5 #bo_w .bo_w_info{display:flex;flex-wrap:wrap;gap:10px}html.noa-g5 #bo_w .bo_w_info .frm_input{flex:1 1 160px;inline-size:100%}}
 html.noa-g5 #bo_w input[type=file]{max-inline-size:100%;min-block-size:48px;color:var(--noa-text);font:inherit}
 html.noa-g5 #bo_w input[type=file]::file-selector-button{min-block-size:44px;margin-inline-end:10px;padding:10px 14px;border:1px solid var(--noa-line);border-radius:8px;background:var(--noa-raised);color:var(--noa-text);font:inherit}
 html.noa-g5 #bo_list #bo_cate{margin-block:0 24px;background:transparent}
@@ -84,3 +84,9 @@ html.noa-g5 #bo_list #bo_sch{display:flex;align-items:center;flex-wrap:wrap;gap:
 html.noa-g5 #bo_list #bo_sch>label{flex-basis:100%;font-size:14px}
 html.noa-g5 #bo_list #bo_sch .sch_input{flex:1 1 140px;min-inline-size:0;inline-size:140px}
 html.noa-g5 :is(#bo_sch,.bo_sch) .sch_btn{min-block-size:44px;padding:10px 16px;border:1px solid var(--noa-line);border-radius:8px;background:var(--noa-raised);color:var(--noa-text);font:inherit}
+
+/* Keep list totals and actions on separate, aligned tracks, wrapping on phones. */
+html.noa-g5 #bo_list #bo_btn_top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-block:0 24px}
+html.noa-g5 #bo_list #bo_btn_top #bo_list_total{float:none;margin:0;padding:0;white-space:nowrap}
+html.noa-g5 #bo_list #bo_btn_top .btn_bo_user{float:none;margin:0;padding:0;gap:8px}
+html.noa-g5 #bo_list thead a{white-space:nowrap}
