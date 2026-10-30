@@ -120,7 +120,7 @@ function arrange(host,spec){
  const box=getComputedStyle(host),width=host.clientWidth-parseFloat(box.paddingLeft)-parseFloat(box.paddingRight);if(!width||host.hidden)return;
  const cards=[...host.children].filter(e=>e.matches(spec[1])&&!e.hidden&&getComputedStyle(e).display!=='none');
  if(!cards.length){host.classList.remove('noa-balanced');return;}
- const gap=width<=600?12:16,min=width<=600?spec[4]:spec[3];
+ const gap=parseFloat(box.columnGap)||(width<=600?12:16),min=width<=600?spec[4]:spec[3];
  if(spec[2])cards.forEach(card=>prepare(card));
  const capacity=Math.min(spec[5],Math.max(1,Math.floor((width+gap)/(min+gap))));
  const layout=plan(cards.length,capacity,spec[2]),offset=host.id==='youtube-playlists'?1:0;

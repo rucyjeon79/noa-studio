@@ -17,19 +17,21 @@ function card(row,playlist=false,integrated=false){
  note.className='noa-card-meta';const context=document.createElement('span');context.className='noa-card-context';context.textContent=[window.NoaBrowse.names[row.genre]||'',row.language&&row.language!=='und'?({ko:'한국어',ja:'日本語',en:'English',th:'ไทย'}[row.language]||row.language):'',row.version&&!/^(?:unspecified|unknown|default|und)$/i.test(row.version)?row.version:''].filter(Boolean).join(' · ');note.textContent=metadata(row,playlist,integrated);if(context.textContent)note.append(context);a.append(art,title,note);window.NoaCardLayout?.prepare(a,row);if(row.recommendationLabel){const reason=document.createElement('span');reason.className='noa-discovery-reason';reason.textContent=row.recommendationLabel;a.append(reason);}return a;
 }
 const homeLists=new Map();
-function homePageSize(width,height=800,cardHeight=240,chrome=160){
- const gap=width<=600?12:16,min=width<=600?136:168;
+function homePageSize(width,height=800,cardHeight=240,chrome=160,columnGap=width<=600?12:16,rowGap=columnGap){
+ const gap=columnGap,min=width<=600?136:168;
  const columns=Math.min(4,Math.max(1,Math.floor((width+gap)/(min+gap))));
- return columns*Math.max(1,Math.floor((height-chrome+gap)/(cardHeight+gap)));
+ return columns*Math.max(1,Math.floor((height-chrome+rowGap)/(cardHeight+rowGap)));
 }
 function listSize(state){
  const box=getComputedStyle(state.host),width=state.host.clientWidth-parseFloat(box.paddingLeft)-parseFloat(box.paddingRight);
  if(state.width!==width){state.width=width;state.cardHeight=0;}
- let chrome=88; // section spacing and reserved page controls
- for(const node of state.host.closest('section').children){if(node===state.host)break;const style=getComputedStyle(node);chrome+=node.getBoundingClientRect().height+(parseFloat(style.marginTop)||0)+(parseFloat(style.marginBottom)||0);}
+ const gap=parseFloat(box.columnGap)||0,rowGap=parseFloat(box.rowGap)||0;
+ const section=state.host.closest('section');
+ // Measure the actual heading span, including collapsed margins and tabs.
+ let chrome=state.host.getBoundingClientRect().top-section.getBoundingClientRect().top+80;
  for(const selector of ['#noa-account-bar','.noa-mobile-nav','.noa-transport','.noa-topbar']){const node=document.querySelector(selector);if(node&&!node.hidden){const style=getComputedStyle(node);if(style.display!=='none'&&['fixed','sticky'].includes(style.position))chrome+=node.getBoundingClientRect().height;}}
- const columns=homePageSize(width,1,1,0),gap=width<=600?12:16;
- return homePageSize(width,window.visualViewport?.height||window.innerHeight,state.cardHeight||((width-gap*(columns-1))/columns*.5625+120),chrome);
+ const columns=homePageSize(width,1,1,0,gap,rowGap);
+ return homePageSize(width,window.visualViewport?.height||window.innerHeight,state.cardHeight||((width-gap*(columns-1))/columns*.5625+120),chrome,gap,rowGap);
 }
 function fitList(state){
  const heights=[...state.host.querySelectorAll('.noa-music-card')].map(node=>node.getBoundingClientRect().height);

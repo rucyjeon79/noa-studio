@@ -10,6 +10,7 @@ release.UNRELATED_PATH_PREFIXES=('scripts/noa_bloom_publish.php','scripts/noa_bl
 release.FILES={
  'noa-editorial.css':'deploy/noa-editorial.css',
  'noa-app/editorial.php':'deploy/noa-app/editorial.php',
+ 'noa-app/editorial-content.php':'deploy/noa-app/editorial-content.php',
  'noa-assets/editorial-home-story.webp':'deploy/noa-assets/editorial/home-story.webp',
  'noa-assets/editorial-world-journey.webp':'deploy/noa-assets/editorial/world-journey.webp',
  'noa-assets/editorial-privacy-sanctuary.webp':'deploy/noa-assets/editorial/privacy-sanctuary.webp',
@@ -43,7 +44,7 @@ release.FILES={
  'extend/noa.design.php':'deploy/noa-design.extend.php',
 }
 release.NEW={'noa-starlight.css'}|{p for p in release.FILES if p.endswith('.webp')}
-release.PROTECTED=['common.php','data/dbconfig.php','bbs/login.php','bbs/login_check.php','bbs/board.php','noa-music.php','noa-world.php','noa-hero.js','noa-app/engine/n80.php','noa-app/jukebox/stream.php','noa-app/jukebox/download.php','noa-app/editorial-content.php']
+release.PROTECTED=['common.php','data/dbconfig.php','bbs/login.php','bbs/login_check.php','bbs/board.php','noa-music.php','noa-world.php','noa-hero.js','noa-app/engine/n80.php','noa-app/jukebox/stream.php','noa-app/jukebox/download.php']
 release.BACKUP=Path(os.environ.get('RUNNER_TEMP','/tmp'))/'noa-starlight-before.json'
 
 def verify():

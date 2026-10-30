@@ -17,6 +17,7 @@ foreach(['about','privacy','terms'] as $page){
  check(str_contains($html,'aria-current="page"'),'current_navigation_missing');
  $art=['about'=>'starlight-studio','privacy'=>'privacy-sanctuary','terms'=>'terms-promise'][$page];
  check(str_contains($html,'/noa-assets/editorial-'.$art.'.webp'),'page_specific_hero_missing');
+ if($page!=='about'){check(str_contains($html,'datetime="2026-10-29"'),'publication_date');check(str_contains(noa_editorial_plain($page),'2026년 10월 29일'),'body_publication_date');}
  $dom=new DOMDocument();libxml_use_internal_errors(true);$dom->loadHTML('<?xml encoding="UTF-8">'.$html);libxml_clear_errors();
  $xpath=new DOMXPath($dom);foreach($xpath->query('//a[starts-with(@href,"#")]') as $a){$id=substr($a->getAttribute('href'),1);check($xpath->query('//*[@id="'.$id.'"]')->length===1,'broken_section_link:'.$id);}
  check($xpath->query('//a[@target="_blank" and not(contains(@rel,"noopener"))]')->length===0,'external_tab_isolation');

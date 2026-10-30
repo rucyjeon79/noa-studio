@@ -17,3 +17,10 @@ test('viewport height fills only complete equal-width rows',()=>{
  assert.equal(size(760,600,200,160),8);assert.equal(size(760,1050,200,160),16);
  for(let h=400;h<1400;h++){const count=size(760,h,200,160),rows=count/4;assert.equal(count%4,0);assert(rows*200+(rows-1)*16<=h-160);assert((rows+1)*200+rows*16>h-160);}
 });
+
+test('measured row gaps prevent overflow at mobile and desktop boundaries',()=>{
+ for(const width of [280,350,390,540,760,1100])for(const rowGap of [16,24,32])for(let h=500;h<1200;h+=7){
+  const columns=size(width,1,1,0,16,rowGap),count=size(width,h,180,200,16,rowGap),rows=count/columns;
+  assert.equal(count%columns,0);assert(rows*180+(rows-1)*rowGap<=h-200);assert((rows+1)*180+rows*rowGap>h-200);
+ }
+});
