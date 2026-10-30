@@ -207,3 +207,17 @@ html[data-noa-area] .noa-mobile-nav{align-items:center;grid-template-columns:rep
 .noa-board-group a{display:flex;flex-direction:column;justify-content:center;min-height:52px;padding:12px 0;border-bottom:1px solid var(--noa-line);text-decoration:none}
 .noa-board-group a small{color:var(--noa-muted);font-size:12px}
 @media(max-width:600px){.noa-board-groups{grid-template-columns:1fr;gap:12px}.noa-section-navigation{gap:4px 16px}.noa-section-navigation a{font-size:12px}}
+/* Home is centered inside the dock, never raised above its neighbours. */
+html[data-noa-area] .noa-mobile-nav a[data-noa-nav="home"],
+html[data-noa-area] .noa-mobile-nav a[data-noa-nav="home"][aria-current="page"]{display:flex!important;align-items:center;justify-content:center;gap:0;padding:0!important;margin:0;position:relative;top:auto;transform:none;box-sizing:border-box;border:1.5px solid var(--noa-accent);background:transparent;color:var(--noa-accent);overflow:hidden;touch-action:manipulation;-webkit-touch-callout:none;user-select:none}
+html[data-noa-area] .noa-mobile-nav a[data-noa-nav="home"]>svg{display:block;flex:none;width:28px;height:28px;margin:0;position:relative;z-index:1}
+.noa-mobile-nav .noa-home-portrait{display:none;width:100%;height:100%;object-fit:cover;pointer-events:none}
+html[data-noa-home-ainoa] .noa-mobile-nav a.has-ainoa-alert>.noa-home-portrait{display:block}
+html[data-noa-home-ainoa] .noa-mobile-nav a.has-ainoa-alert>svg{display:none}
+html[data-noa-home-ainoa] .noa-mobile-nav a[data-noa-nav="home"].is-ainoa-open{background:var(--noa-accent);color:var(--noa-accentText)}
+html[data-noa-home-ainoa] .noa-mobile-nav a[data-noa-nav="home"].is-holding{box-shadow:inset 0 0 0 3px var(--noa-accent)}
+html[data-noa-home-ainoa] #noa-ainoa{left:50%;right:auto;bottom:calc(var(--noa-nav-space,72px) + var(--noa-player-space,0px) + var(--noa-transfer-space,0px) + 12px);width:0;height:0;--ainoa-size:0px;--ainoa-gap:0px}
+html[data-noa-home-ainoa] #noa-ainoa>.ainoa-symbol{display:none!important}
+html[data-noa-home-ainoa] #noa-ainoa :is(.ainoa-panel,.ainoa-tip){left:0;right:auto;bottom:0;transform:translateX(-50%);width:min(360px,calc(100vw - 24px))}
+html[data-noa-home-ainoa] #noa-ainoa .ainoa-panel::after{right:calc(50% - 7px)}
+html[data-noa-home-ainoa] #noa-ainoa:has(.ainoa-panel:not([hidden])) .ainoa-tip{visibility:hidden;pointer-events:none}

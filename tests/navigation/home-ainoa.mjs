@@ -1,0 +1,23 @@
+import {chromium} from 'playwright';
+import {createServer} from 'node:http';
+import {readFileSync,mkdirSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const html=`<!doctype html><html lang="ko" data-noa-style="starlight"><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-ainoa.css"><script src="/noa-ui.js" defer></script><script src="/noa-ainoa.js" defer></script></head><body class="noa-page"><main><h1>NOA STUDIO</h1><p>홈 · AInoa 통합 검증</p></main></body></html>`;
+const server=createServer((req,res)=>{const path=req.url.split('?')[0];if(path==='/noa-ainoa.php'||path==='/noa-bridge/ui-preferences.php'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({ok:true,member:false,settings:null,defaults:{theme:'noa-studio',enabled:['noa-studio']}}));return;}if(path==='/noa-shop.php'||path==='/'){res.setHeader('Content-Type','text/html');res.end(html);return;}try{res.setHeader('Content-Type',path.endsWith('.js')?'text/javascript':path.endsWith('.css')?'text/css':path.endsWith('.png')?'image/png':'application/json');res.end(readFileSync(path.startsWith('/noa-assets/')?'public/ainoa/ainoa-symbol.png':'deploy'+path));}catch{res.statusCode=404;res.end();}});
+await new Promise(r=>server.listen(8087,'127.0.0.1',r));const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});mkdirSync('home-ainoa-proof',{recursive:true});
+try{
+ for(const width of [320,390,760]){
+ const page=await browser.newPage({viewport:{width,height:844},reducedMotion:'reduce'});const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:8087/noa-shop.php');
+ const home=page.locator('.noa-mobile-nav [data-noa-nav=home]'),panel=page.locator('#ainoa-panel');await page.waitForFunction(()=>document.documentElement.hasAttribute('data-noa-home-ainoa'));
+ assert.equal(await page.locator('.ainoa-symbol').isVisible(),false);assert.equal(await home.innerText(),'');
+ const geometry=await home.evaluate(el=>{const a=el.getBoundingClientRect(),s=el.querySelector('svg').getBoundingClientRect();return {bg:getComputedStyle(el).backgroundColor,cx:a.x+a.width/2,cy:a.y+a.height/2,sx:s.x+s.width/2,sy:s.y+s.height/2,w:a.width,h:a.height};});assert.equal(geometry.bg,'rgba(0, 0, 0, 0)');assert(Math.abs(geometry.cx-geometry.sx)<1&&Math.abs(geometry.cy-geometry.sy)<1,'glyph centered');assert(Math.abs(geometry.w-geometry.h)<1);
+ await page.mouse.move(geometry.cx,geometry.cy);await page.mouse.down();await page.waitForTimeout(850);assert.equal(await panel.isVisible(),false);await page.waitForTimeout(250);assert.equal(await panel.isVisible(),true);await page.mouse.up();await page.waitForTimeout(50);assert(page.url().endsWith('/noa-shop.php'),'long press must not navigate');assert(await home.evaluate(el=>el.classList.contains('is-ainoa-open')));
+ await page.locator('.ainoa-close').click();assert.equal(await panel.isVisible(),false);await page.waitForTimeout(40);
+ await page.mouse.move(geometry.cx,geometry.cy);await page.mouse.down();await page.mouse.move(geometry.cx+20,geometry.cy-15);await page.waitForTimeout(1100);assert.equal(await panel.isVisible(),false);await page.mouse.up();assert(page.url().endsWith('/noa-shop.php'));
+ await page.evaluate(()=>{const tip=document.querySelector('.ainoa-tip');tip.textContent='새로운 AInoa 알림입니다.';tip.hidden=false;});await page.waitForFunction(()=>document.querySelector('[data-noa-nav=home]').classList.contains('has-ainoa-alert'));assert.equal(await home.locator('img').isVisible(),true);assert.equal(await home.locator('svg').isVisible(),false);await page.screenshot({path:`home-ainoa-proof/alert-${width}.png`});
+ await page.evaluate(()=>document.querySelector('.ainoa-tip').hidden=true);await page.waitForFunction(()=>!document.querySelector('[data-noa-nav=home]').classList.contains('has-ainoa-alert'));assert.equal(await home.locator('svg').isVisible(),true);await page.screenshot({path:`home-ainoa-proof/home-${width}.png`});
+ await home.click();await page.waitForURL('http://127.0.0.1:8087/');assert.deepEqual(errors,[]);await page.close();
+ }
+ const desktop=await browser.newPage({viewport:{width:1280,height:900}});await desktop.goto('http://127.0.0.1:8087/');await desktop.locator('.ainoa-symbol').waitFor();assert.equal(await desktop.locator('.ainoa-symbol').isVisible(),true);await desktop.close();
+ console.log('HOME_AINOA_CENTER_OUTLINE_1000MS_CANCEL_NOTIFICATION_RESTORE_SHORT_TAP_DESKTOP_OK');
+}finally{await browser.close();await new Promise(r=>server.close(r));}

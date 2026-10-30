@@ -17,7 +17,7 @@ let dockHost=null,mobileOpen=false;
 function open(value,focus=true){if(dockHost&&!value)return;panel.hidden=!value;symbol.setAttribute('aria-expanded',String(value));if(value){status(true).then(()=>{note.textContent='곡 제목·가사로 검색해 보세요.';}).catch(e=>note.textContent=e.message);if(focus){$('.ainoa-panel-body').scrollTop=0;$('.ainoa-search input').focus();}}}
 $('.ainoa-admin-toggle').onclick=async()=>{const b=$('.ainoa-admin-toggle');b.disabled=true;try{const s=await status(true);if(!s.adminAssistant)throw Error('최고관리자만 이용할 수 있습니다.');if(!window.NoaAInoaAdmin)await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='/noa-ainoa-admin.js?v='+encodeURIComponent(s.adminAssistantVersion);script.onload=resolve;script.onerror=()=>{script.remove();reject(Error('대화창을 불러오지 못했습니다. 다시 눌러 주세요.'));};document.head.append(script);});open(false);await window.NoaAInoaAdmin.open({api,current:()=>current},dockHost?.querySelector('#noa-desktop-admin')||null);if(dockHost)panel.hidden=!!document.querySelector('#ainoa-admin-dialog[open]');}catch(e){note.textContent=e.message;}finally{b.disabled=false;}};
 window.addEventListener('noa-ainoa-admin-close',()=>{if(dockHost){panel.hidden=false;$('.ainoa-admin-toggle').focus({preventScroll:true});}else symbol.focus({preventScroll:true});});
-window.NoaAInoa={dock(host){const focused=document.activeElement;if(host){if(!dockHost)mobileOpen=!panel.hidden;dockHost=host;host.append(root);$('.ainoa-admin-toggle').textContent='AInoa와 대화';if(!host.querySelector('#noa-desktop-admin')){const admin=document.createElement('div');admin.id='noa-desktop-admin';host.append(admin);}panel.hidden=!!document.querySelector('#ainoa-admin-dialog[open]');symbol.setAttribute('aria-expanded','true');if(!access)void status().then(()=>{if(!note.textContent)note.textContent='곡 제목이나 가사로 음악을 찾아보세요.';}).catch(e=>note.textContent=e.message);}else if(dockHost){document.body.append(root);dockHost=null;$('.ainoa-admin-toggle').textContent='ChatGPT · 최고관리자';panel.hidden=!mobileOpen;symbol.setAttribute('aria-expanded',String(mobileOpen));}if(focused&&root.contains(focused)&&focused.getClientRects().length)focused.focus({preventScroll:true});}};
+window.NoaAInoa={open:()=>open(true),close:()=>open(false),dock(host){const focused=document.activeElement;if(host){if(!dockHost)mobileOpen=!panel.hidden;dockHost=host;host.append(root);$('.ainoa-admin-toggle').textContent='AInoa와 대화';if(!host.querySelector('#noa-desktop-admin')){const admin=document.createElement('div');admin.id='noa-desktop-admin';host.append(admin);}panel.hidden=!!document.querySelector('#ainoa-admin-dialog[open]');symbol.setAttribute('aria-expanded','true');if(!access)void status().then(()=>{if(!note.textContent)note.textContent='곡 제목이나 가사로 음악을 찾아보세요.';}).catch(e=>note.textContent=e.message);}else if(dockHost){document.body.append(root);dockHost=null;$('.ainoa-admin-toggle').textContent='ChatGPT · 최고관리자';panel.hidden=!mobileOpen;symbol.setAttribute('aria-expanded',String(mobileOpen));}if(focused&&root.contains(focused)&&focused.getClientRects().length)focused.focus({preventScroll:true});}};
 window.dispatchEvent(new Event('noa-ainoa-ready'));
 $('.ainoa-close').onclick=()=>{open(false);symbol.focus();};root.addEventListener('keydown',e=>{if(e.key==='Escape'){open(false);symbol.focus();}});
 let pointer=null,timer=null,frame=null,suppress=false;
@@ -47,4 +47,36 @@ async function guide(){
  catch{}finally{if(guideBusy===key)guideBusy='';}
 }
 window.addEventListener('noa-media-activity',e=>{if(e.detail?.type==='audio')void guide();});
+})();
+
+/* The mobile home destination owns AInoa; desktop docking stays unchanged. */
+(()=>{'use strict';
+const doc=document,html=doc.documentElement,selector='.noa-mobile-nav [data-noa-nav="home"]';
+let press=null,holdTimer=null,blockedClick=null,scheduled=false;
+const home=()=>doc.querySelector(selector);
+function cancel(block=false){clearTimeout(holdTimer);if(press){press.el.classList.remove('is-holding');if(block)blockedClick=press.el;}press=null;}
+function sync(){
+ scheduled=false;const button=home(),root=doc.getElementById('noa-ainoa'),panel=doc.getElementById('ainoa-panel');
+ const enabled=!!button&&!!root&&button.getClientRects().length>0;
+ html.toggleAttribute('data-noa-home-ainoa',enabled);
+ if(!enabled){cancel();return;}
+ if(!button.querySelector('.noa-home-portrait')){const portrait=doc.createElement('img');portrait.className='noa-home-portrait';portrait.src='/noa-assets/ainoa-symbol.png?v=20261026-portrait-1';portrait.alt='';portrait.draggable=false;button.append(portrait);}
+ const alert=!!doc.querySelector('.ainoa-tip:not([hidden])'),opened=!!panel&&!panel.hidden;
+ button.classList.toggle('has-ainoa-alert',alert);button.classList.toggle('is-ainoa-open',opened);
+ for(const [key,value]of Object.entries({'aria-label':'홈','aria-description':alert?'AInoa 알림 · 1초 길게 눌러 열기':'1초 길게 눌러 AInoa 열기','aria-controls':'ainoa-panel','aria-expanded':String(opened)}))if(button.getAttribute(key)!==value)button.setAttribute(key,value);
+}
+function schedule(){if(!scheduled){scheduled=true;requestAnimationFrame(sync);}}
+function begin(e){const el=e.target.closest?.(selector);if(!el||e.button!==0||!html.hasAttribute('data-noa-home-ainoa'))return;cancel();blockedClick=null;press={el,id:e.pointerId,x:e.clientX,y:e.clientY};el.classList.add('is-holding');holdTimer=setTimeout(()=>{if(!press||!press.el.isConnected)return;const target=press.el;blockedClick=target;cancel();window.NoaAInoa?.open();sync();},1000);}
+doc.addEventListener('pointerdown',begin,true);
+doc.addEventListener('pointermove',e=>{if(press?.id===e.pointerId&&Math.hypot(e.clientX-press.x,e.clientY-press.y)>10)cancel(true);},true);
+doc.addEventListener('pointerup',e=>{if(press?.id===e.pointerId)cancel();},true);
+doc.addEventListener('pointercancel',()=>cancel(true),true);
+doc.addEventListener('click',e=>{const target=e.target.closest?.(selector);if(target&&blockedClick===target){e.preventDefault();e.stopImmediatePropagation();blockedClick=null;}},true);
+doc.addEventListener('contextmenu',e=>{if(e.target.closest?.(selector))e.preventDefault();},true);
+doc.addEventListener('keydown',e=>{if(e.key==='Escape'&&html.hasAttribute('data-noa-home-ainoa')&&!doc.getElementById('ainoa-panel')?.hidden){cancel();window.NoaAInoa?.close();home()?.focus({preventScroll:true});return;}const el=e.target.closest?.(selector);if(!el||!html.hasAttribute('data-noa-home-ainoa'))return;if(e.key===' '&&!e.repeat){e.preventDefault();begin({target:el,button:0,pointerId:'keyboard',clientX:0,clientY:0});}if(e.key==='Escape'){cancel();window.NoaAInoa?.close();el.focus();}},true);
+doc.addEventListener('keyup',e=>{if(e.key===' '&&press?.id==='keyboard'){e.preventDefault();cancel();}},true);
+window.addEventListener('blur',()=>cancel(true));doc.addEventListener('visibilitychange',()=>{if(doc.hidden)cancel(true);});window.addEventListener('resize',schedule);
+doc.addEventListener('click',e=>{if(html.hasAttribute('data-noa-home-ainoa')&&e.target.closest?.('.ainoa-close'))home()?.focus({preventScroll:true});});
+new MutationObserver(schedule).observe(doc.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
+sync();
 })();
