@@ -21,7 +21,7 @@ def request(body=None):
   with urllib.request.urlopen(req,timeout=60)as r:result=json.load(r)
  except urllib.error.HTTPError as e:
   print('BLOOM_GUARD_FAILURE',e.read().decode()[:500],flush=True);raise
- if not result.get('ok'):raise RuntimeError('operation_failed')
+ if not result.get('ok'):raise RuntimeError('operation_failed: '+json.dumps(result))
  return result
 try:
  if s.normalize(ROOT)!=ROOT:raise RuntimeError('wrong_root')
