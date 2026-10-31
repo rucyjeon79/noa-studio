@@ -15,7 +15,7 @@ function reply(int $code, array $data): never {
 }
 const TARGETS = ['title','lyrics','sunoPrompt','geminiPrompt','youtubeTitle','description','communityPost'];
 $op = $_GET['op'] ?? '';
-$external = in_array($op, ['read','save'], true);
+$external = in_array($op, ['read','save','health','list','update'], true);
 $method = $_SERVER['REQUEST_METHOD'] ?? '';
 if ($method !== ($op === 'read' ? 'GET' : 'POST')) reply(405, ['error'=>'method']);
 if (!$external && (empty($is_member) || ($is_admin ?? '') !== 'super')) reply(403, ['error'=>'admin_required']);
@@ -37,14 +37,25 @@ try {
     if (!$lock || !flock($lock, LOCK_EX)) throw new RuntimeException('lock');
     $file = $dir.'/state.json';
     $state = is_file($file) ? json_decode(file_get_contents($file), true, 32, JSON_THROW_ON_ERROR) : [];
-    if ($external && (!hash_equals($state['hash'] ?? '', hash('sha256', $secret)) || ($state['owner'] ?? '') !== ($config['cf_admin'] ?? null))) reply(401, ['error'=>'invalid_key']);
+    $pluginHash = '150359b8182e0bca302676a20bccadb0e007a8aa0a2000309a53995c1e35f97f';
+    $isPlugin = $external && !empty($state['pluginEnabled']) && hash_equals($pluginHash,hash('sha256',$secret));
+    if ($external && ((!$isPlugin && !hash_equals($state['hash'] ?? '',hash('sha256',$secret))) || ($state['owner'] ?? '') !== ($config['cf_admin'] ?? null))) reply(401,['error'=>'invalid_key']);
+    if (in_array($op,['health','list','update'],true)) {
+        if (!$isPlugin) reply(403,['error'=>'plugin_required']);
+        require_once __DIR__.'/noa-plugin-records.php';
+        reply(200,['ok'=>true]+noa_plugin_records($op,$body,$state['owner']));
+    }
     $before = $state;
     $job = $state['job'] ?? [];
     $valid = ($job['expires'] ?? 0) > time();
     $out = [];
     switch ($op) {
+    case 'pluginToggle':
+        if (!is_bool($body['enabled'] ?? null)) reply(400,['error'=>'invalid_request']);
+        $state['owner']=$member['mb_id'];$state['pluginEnabled']=$body['enabled'];unset($state['job']);
+        break;
     case 'config':
-        $out = ['configured'=>isset($state['hash']), 'url'=>$state['url'] ?? ''];
+        $out = ['pluginEnabled'=>!empty($state['pluginEnabled']), 'configured'=>isset($state['hash']), 'url'=>$state['url'] ?? ''];
         break;
     case 'pair':
         $key = bin2hex(random_bytes(32));
@@ -58,7 +69,7 @@ try {
         $state['url'] = $url;
         break;
     case 'start':
-        if (empty($state['url']) || ($state['owner'] ?? '') !== $member['mb_id']) reply(409,['error'=>'setup_required']);
+        if ((empty($state['url']) && empty($state['pluginEnabled'])) || ($state['owner'] ?? '') !== $member['mb_id']) reply(409,['error'=>'setup_required']);
         $selector = $body['selector'] ?? [];
         $field = $body['field'] ?? '';
         if (($selector['type'] ?? '') !== 'song' || !in_array($field,TARGETS,true)) reply(400,['error'=>'invalid_target']);
@@ -66,7 +77,7 @@ try {
         if ($record['revision'] !== ($body['revision'] ?? null) || !empty($record['payload']['_noaTrash'])) reply(409,['error'=>'revision_conflict']);
         if (trim((string)($record['fields'][$field] ?? '')) !== '' && ($body['replace'] ?? false) !== true) reply(409,['error'=>'overwrite_confirmation']);
         $state['job'] = ['id'=>bin2hex(random_bytes(16)),'selector'=>$selector,'key'=>$record['writeKey'],'revision'=>$record['revision'],'field'=>$field,'expires'=>time()+3600];
-        $out = ['url'=>$state['url'],'id'=>$state['job']['id']];
+        $out = ['url'=>!empty($state['pluginEnabled'])?'https://chatgpt.com/':$state['url'],'id'=>$state['job']['id']];
         break;
     case 'read':
     case 'save':
