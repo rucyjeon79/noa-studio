@@ -23,6 +23,7 @@ function noa_plugin_records(string $op, array $body, string $actor): array {
     if(!is_string($id)||!is_int($rev)||$rev<1||!is_array($changes)||count($changes)!==1||array_diff(array_keys($changes),$allowed[$resource])) throw new InvalidArgumentException('one_supported_field_required');
     $field=array_key_first($changes);$text=$changes[$field];
     if(!is_string($text)||trim($text)===''||mb_strlen($text)>20000||($field==='youtubeTitle'&&mb_strlen($text)>100))throw new InvalidArgumentException('invalid_text');
+    noa_check_prompt_language($field,$text);
     $db->beginTransaction();
     try{
         $q=$db->prepare("SELECT kind,payload,revision FROM noa_documents WHERE doc_key=? AND $predicate FOR UPDATE");

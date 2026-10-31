@@ -34,10 +34,14 @@ with tempfile.TemporaryDirectory() as tmp:
     bridge_src = re.sub(r"\$pluginHash = '[a-f0-9]{64}';", "$pluginHash = '"+hashlib.sha256(plugin_key.encode()).hexdigest()+"';", bridge_src)
     shutil.copy("deploy/noa-plugin-records.php",root)
     target.write_text(bridge_src.replace(' WHERE request_id=? FOR UPDATE',' WHERE request_id=?'))
+    shutil.copy("bridge/generation-rules.php",bridge)
+    (bridge/"taxonomy-store.php").write_text("""<?php
+    function nt_effective_rules($db,$genre){return ['common'=>['layout'=>'common-layout'],'genre'=>['style'=>$genre.'-style'],'principleZero'=>[]];}
+    """)
     (bridge/"sound-core.php").touch()
     (bridge/"inline-edit.php").write_text("""<?php
     function nie_resolve($db,$q){$r=$db->query('SELECT title,revision FROM song')->fetch();
-    return ['writeKey'=>'song:1','fields'=>['title'=>$r['title']],'kind'=>'single','payload'=>[],
+    return ['writeKey'=>'song:1','fields'=>['title'=>$r['title']],'kind'=>'single','context'=>['genre'=>'your-story'],'payload'=>[],
     'revision'=>(int)$r['revision'],'packageType'=>'original'];}
     function nup_patch($old,$kind,$patch){return $patch;}
     function nup_validate_classification(...$args){}
@@ -72,7 +76,13 @@ with tempfile.TemporaryDirectory() as tmp:
         assert not call('progress',{'id':started['id']},admin=True)['saved']
         call('progress',{'id':'wrong'},admin=True,status=409)
         call('read',status=401)
-        assert call('read',key=key)['song']['title']=='Original'
+        read=call('read',key=key)
+        assert read['song']['title']=='Original' and read['rules']['common']['layout']=='common-layout'
+        assert read['rules']['genre']['style']=='your-story-style'
+        thumbnail=call('start',{**task,'field':'geminiPrompt'},admin=True)
+        assert 'in English' in call('read',key=key)['generationInstructions']
+        call('save',{'id':thumbnail['id'],'text':'한글로 작성된 지시문'},key=key,status=409)
+        started=call('start',{**task,'replace':True},admin=True)
         result={'id':started['id'],'text':'새 제목'}
         call('save',{**result,'id':'incorrect'},key=key,status=409)
         assert call('save',result,key=key)['revision']==2
