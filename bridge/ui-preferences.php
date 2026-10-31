@@ -15,7 +15,7 @@ try{
  $key=$logged?'ui:user:'.hash('sha256',(string)$member['mb_id']):'';$settings=null;$revision=0;
  if($logged){$q->execute([$key]);$row=$q->fetch(PDO::FETCH_ASSOC);if($row){$settings=json_decode($row['payload'],true,512,JSON_THROW_ON_ERROR);$revision=(int)$row['revision'];}}
  $defaults=['theme'=>$design['defaultTheme'],'enabled'=>$ids];
- if(is_array($settings))$settings=array_merge($settings,['theme'=>$design['defaultTheme'],'design'=>'ios','radius'=>'soft']);
+ if(is_array($settings))$settings=array_merge($settings,['theme'=>in_array($settings['theme']??null,$ids,true)?$settings['theme']:$design['defaultTheme'],'design'=>'ios','radius'=>'soft']);
  if($method==='GET')noa_ui_reply(200,['member'=>$logged,'admin'=>$admin,'displayName'=>$logged?get_text((string)$member['mb_nick']):'','settings'=>$settings,'revision'=>$revision,'defaults'=>$defaults,'policyRevision'=>$policyRevision,'csrf'=>$logged?$_SESSION['noa_ui_token']:null]);
  if(!$logged)noa_ui_reply(401,['error'=>'login_required']);
  if(($_SERVER['HTTP_ORIGIN']??'')!=='https://noastudio.ai.kr'||!hash_equals($_SESSION['noa_ui_token'],$_SERVER['HTTP_X_NOA_CSRF']??'')||strtolower(trim(explode(';',$_SERVER['CONTENT_TYPE']??'')[0]))!=='application/json')noa_ui_reply(403,['error'=>'request_verification_failed']);

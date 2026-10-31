@@ -4,7 +4,7 @@
   "themes": [
     {
       "id": "noa-studio",
-      "name": "NOA STUDIO · Starlight",
+      "name": "스타라이트 · 다크",
       "tokens": {
         "bg": "#111316",
         "surface": "#191d22",
@@ -24,6 +24,30 @@
         "warning": "#F0B35B",
         "creative": "#AD91EB",
         "control": "#F5F6F8"
+      }
+    },
+    {
+      "id": "noa-ivory",
+      "name": "아이보리 · 라이트",
+      "tokens": {
+        "bg": "#F6F2EA",
+        "surface": "#FFFCF6",
+        "raised": "#EEE8DC",
+        "text": "#272825",
+        "muted": "#615E58",
+        "line": "#CFC7B8",
+        "accent": "#755720",
+        "accentText": "#FFFFFF",
+        "confirmed": "#146747",
+        "ribbon": "#A73545",
+        "source": "#285F91",
+        "success": "#146747",
+        "inactive": "#706E67",
+        "danger": "#A73545",
+        "info": "#285F91",
+        "warning": "#805313",
+        "creative": "#73528C",
+        "control": "#292B28"
       }
     }
   ],

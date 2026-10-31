@@ -273,3 +273,53 @@ html body .noa-record-library #noa-genres .record-note{display:block;margin:6px 
 @media(max-width:900px){html body .noa-record-library #noa-genres.noa-sleeves{grid-template-columns:repeat(2,minmax(0,1fr))}.record-label{gap:5px;margin-top:11px}}
 @media(max-width:350px){.record-number{display:none}.record-label{grid-template-columns:minmax(0,1fr) auto}}
 .record-face{border-inline-start:3px solid var(--label)}
+
+/* Five rooms share navigation and typography. Each room has its own material and accent. */
+html[data-noa-room=home]{--room-ink:#d6bd87;--room-wash:#b39b6b}
+html[data-noa-room=youtube]{--room-ink:#efaaa4;--room-wash:#b65c58}
+html[data-noa-room=music]{--room-ink:#a5cec4;--room-wash:#62988d}
+html[data-noa-room=community]{--room-ink:#c1b1dc;--room-wash:#9a86b8}
+html[data-noa-room=shop]{--room-ink:#e2be94;--room-wash:#b28759}
+html[data-noa-theme=noa-ivory][data-noa-room=home]{--room-ink:#745821}
+html[data-noa-theme=noa-ivory][data-noa-room=youtube]{--room-ink:#924740}
+html[data-noa-theme=noa-ivory][data-noa-room=music]{--room-ink:#31695d}
+html[data-noa-theme=noa-ivory][data-noa-room=community]{--room-ink:#6b507d}
+html[data-noa-theme=noa-ivory][data-noa-room=shop]{--room-ink:#7f502c}
+
+html[data-noa-room=home] .noa-record-library .noa-section-head{position:relative;isolation:isolate;background-image:url("/noa-assets/room-constellation.svg");background-repeat:no-repeat;background-position:right center;background-size:auto 100%}
+html[data-noa-room=home] .noa-record-library .noa-eyebrow{color:var(--room-ink)}
+html[data-noa-room=home] .noa-record-library{border-top:1px solid color-mix(in srgb,var(--room-wash) 55%,var(--noa-line))}
+html[data-noa-room=youtube] .cinema-feature{border-top:0;background:repeating-linear-gradient(90deg,color-mix(in srgb,var(--room-wash) 56%,transparent) 0 9px,transparent 9px 23px) top left/100% 3px no-repeat}
+html[data-noa-room=youtube] .cinema-kicker{color:var(--room-ink)}
+html[data-noa-room=music] .noa-record-room main>h1{border-bottom:1px solid var(--noa-line);padding-block:10px 16px;background-image:url("/noa-assets/room-grooves.svg");background-position:right center;background-size:auto 100%;background-repeat:no-repeat}
+html[data-noa-room=music] .noa-record-room main>h1::before{color:var(--room-ink)}
+html[data-noa-room=community] #ecosystem{--ec-accent:var(--room-ink);--ec-soft:var(--noa-raised)}
+html[data-noa-room=community] #ecosystem .ec-hero{position:relative;border-top:1px solid var(--noa-line);border-bottom-color:var(--room-wash);background:linear-gradient(110deg,color-mix(in srgb,var(--room-wash) 12%,var(--noa-bg)),var(--noa-bg) 72%);padding-inline:clamp(16px,3vw,34px)}
+html[data-noa-room=community] #ecosystem .ec-hero h1{font-family:Georgia,"Noto Serif KR",serif}
+html[data-noa-room=community] #ecosystem .ec-write-invite{padding:20px 0;border-top:0;border-bottom:1px solid var(--noa-line);background:repeating-linear-gradient(0deg,transparent 0 23px,color-mix(in srgb,var(--room-wash) 11%,transparent) 23px 24px) right center/25% 70% no-repeat}
+html[data-noa-room=community] #ecosystem .ec-write-invite>button{background:var(--room-ink);color:var(--noa-bg);border-color:transparent;font-weight:700}
+html[data-noa-room=shop] #ecosystem{--ec-accent:var(--room-ink);--ec-soft:var(--noa-raised)}
+html[data-noa-room=shop] #ecosystem .ec-hero{border-block:1px solid var(--room-wash);background:linear-gradient(105deg,color-mix(in srgb,var(--room-wash) 12%,var(--noa-bg)),var(--noa-bg) 75%);padding-inline:clamp(14px,3vw,32px)}
+html[data-noa-room=shop] #ecosystem .ec-hero .ec-eyebrow{display:block;letter-spacing:.2em;color:var(--room-ink)}
+html[data-noa-room=shop] #ecosystem .ec-hero h1{font-family:Georgia,"Noto Serif KR",serif}
+html[data-noa-room=shop] #ecosystem .ec-card .ec-price{font-variant-numeric:tabular-nums;color:var(--room-ink)}
+html[data-noa-room=shop] #ecosystem .ec-card .ec-buy{border-color:var(--room-ink);border-radius:4px}
+html[data-noa-room=shop] #ecosystem .ec-grid .ec-card{border-bottom:1px dashed color-mix(in srgb,var(--room-wash) 55%,var(--noa-line))}
+
+html[data-noa-theme=noa-ivory] :is(.noa-sidebar,.noa-mobile-nav,#noa-account-bar,.ec-dialog){background-color:var(--noa-surface);color:var(--noa-text)}
+html[data-noa-theme=noa-ivory] .noa-hero .noa-hero-copy{color:#fff9ed}
+html[data-noa-theme=noa-ivory] .cinema-next,html[data-noa-theme=noa-ivory] .cinema-external{color:#ead7ad}
+html[data-noa-theme=noa-ivory] #noa-referral-dialog .nrf-close{color:#eeeae0}
+html[data-noa-theme=noa-ivory] #ecosystem .ec-tools,html[data-noa-theme=noa-ivory] #ecosystem .ec-tabs{color:var(--noa-text)}
+html[data-noa-theme=noa-ivory] #ecosystem .ec-card,html[data-noa-theme=noa-ivory] #ecosystem .ec-detail{color:var(--noa-text);background-color:var(--noa-bg)}
+@media(max-width:600px){
+ html[data-noa-room=community] #ecosystem .ec-hero:not([hidden]){background-image:url("/noa-assets/room-letter.svg"),linear-gradient(110deg,color-mix(in srgb,var(--room-wash) 14%,var(--noa-bg)),var(--noa-bg));background-position:right 12px top 15px,center;background-size:54px auto,cover;background-repeat:no-repeat}
+ html[data-noa-room=community] #ecosystem .ec-hero>div{padding-inline-end:48px}
+ html[data-noa-room=shop] #ecosystem .ec-hero{padding-block:12px}
+ html[data-noa-room=home] .noa-record-library .noa-section-head{background-size:35% auto}
+}
+html[data-noa-style] .noa-display-settings{display:inline-flex;align-items:center;align-self:start;gap:9px;min-height:44px;padding:4px 2px;background:transparent;border:0;color:var(--noa-text);font:inherit;font-size:13px;cursor:pointer}
+html[data-noa-style] .noa-display-settings::before{content:"";width:15px;height:15px;border:1px solid var(--noa-muted);border-radius:50%;background:linear-gradient(90deg,#24292d 50%,#efe5cf 50%)}
+html[data-noa-style] #noa-settings-dialog{background:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line)}
+html[data-noa-style] #noa-settings-dialog :is(select,button){color:var(--noa-text);background:var(--noa-raised);border-color:var(--noa-line)}
+html[data-noa-style] #noa-settings-dialog select{min-height:44px}
