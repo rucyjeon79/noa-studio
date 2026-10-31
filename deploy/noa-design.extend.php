@@ -14,13 +14,13 @@ function noa_policy_script_revision($html){
  $html=preg_replace("~(<link\\b[^>]*\\bhref=[\"'])/noa-ui[.]css(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.css?v='.$css_revision.'$2',$html);
  $ui=dirname(__DIR__).'/noa-ui.js';$ui_revision=is_file($ui)?hash_file('sha256',$ui):'20261025-member-access';
  $html=preg_replace("~(<script\\b[^>]*\\bsrc=[\"'])/noa-ui[.]js(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.js?v='.$ui_revision.'$2',$html);
- $brand=dirname(__DIR__).'/noa-brand.js';if(is_file($brand))$html=preg_replace("~(/noa-brand[.]js)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$brand),$html);
- $home_js=dirname(__DIR__).'/noa-home.js';if(is_file($home_js))$html=preg_replace("~(/noa-home[.]js)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$home_js),$html);
- foreach(['css','js'] as $kind){$f=dirname(__DIR__).'/noa-community.'.$kind;if(is_file($f))$html=preg_replace("~(/noa-community[.]".$kind.")(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$f),$html);}
- $world_css=dirname(__DIR__).'/noa-world.css';if(is_file($world_css))$html=preg_replace("~(/noa-world[.]css)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$world_css),$html);
- $world_js=dirname(__DIR__).'/noa-world.js';if(is_file($world_js))$html=preg_replace("~(/noa-world[.]js)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$world_js),$html);
+ $brand=dirname(__DIR__).'/noa-brand.js';if(str_contains($html,'/noa-brand.js')&&is_file($brand))$html=preg_replace("~(/noa-brand[.]js)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$brand),$html);
+ $home_js=dirname(__DIR__).'/noa-home.js';if(str_contains($html,'/noa-home.js')&&is_file($home_js))$html=preg_replace("~(/noa-home[.]js)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$home_js),$html);
+ foreach(['css','js'] as $kind){$f=dirname(__DIR__).'/noa-community.'.$kind;if(str_contains($html,'/noa-community.'.$kind)&&is_file($f))$html=preg_replace("~(/noa-community[.]".$kind.")(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$f),$html);}
+ $world_css=dirname(__DIR__).'/noa-world.css';if(str_contains($html,'/noa-world.css')&&is_file($world_css))$html=preg_replace("~(/noa-world[.]css)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$world_css),$html);
+ $world_js=dirname(__DIR__).'/noa-world.js';if(str_contains($html,'/noa-world.js')&&is_file($world_js))$html=preg_replace("~(/noa-world[.]js)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$world_js),$html);
  $manifest=dirname(__DIR__).'/noa-manifest.json';
- if(is_file($manifest))$html=preg_replace("~(/noa-manifest[.]json)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$manifest),$html);
+ if(str_contains($html,'/noa-manifest.json')&&is_file($manifest))$html=preg_replace("~(/noa-manifest[.]json)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$manifest),$html);
  // Reuse GnuBoard's existing visit summary: no extra request or database query.
  if(!str_contains($html,'id="noa-visitor-counts"')){
   $summary=(string)($GLOBALS['config']['cf_visit']??'');$counts=null;
@@ -35,13 +35,6 @@ function noa_design_assets(){
  global $config;
  $path=parse_url($_SERVER['REQUEST_URI']??'',PHP_URL_PATH);
  if(!is_string($path))return;
- $launch=dirname(__DIR__).'/noa-launch.js';$ainoa=is_file($launch)?'<script src="/noa-launch.js?v='.hash_file('sha256',$launch).'"></script>':'';
- $voice=dirname(__DIR__).'/noa-voice.js';if(is_file($voice))$ainoa.='<script src="/noa-voice.js?v='.hash_file('sha256',$voice).'"></script>';
- foreach(['css','js'] as $kind){$asset=dirname(__DIR__).'/noa-ainoa.'.$kind;if(is_file($asset)){$url='/noa-ainoa.'.$kind.'?v='.hash_file('sha256',$asset);$ainoa.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'" defer></script>';}}
- foreach(['css','js']as $kind){$file=dirname(__DIR__).'/noa-install.'.$kind;if(is_file($file)){$url='/noa-install.'.$kind.'?v='.hash_file('sha256',$file);$ainoa.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'"></script>';}}
- $ainoa.='<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="NOA STUDIO"><link rel="apple-touch-icon" href="/noa-assets/icon-180.png?v=original-symbol-1">';
- $starlight_file=dirname(__DIR__).'/noa-starlight.css';
- $starlight=is_file($starlight_file)?'<meta name="color-scheme" content="dark"><link rel="stylesheet" href="/noa-starlight.css?v='.hash_file('sha256',$starlight_file).'">':'';
  // Legacy legal pages render and exit before GnuBoard html_end(). Use the
  // standalone HTML pipeline only for these two GET routes, never board forms.
  $legacy_document=$path==='/bbs/content.php'
@@ -55,6 +48,13 @@ function noa_design_assets(){
  $public=$public||(bool)preg_match('~^/noa-[a-z0-9-]+[.]php$~D',$path);
  if(!$native&&!$workspace&&!$public&&!$legacy_document)return;
  if(!$native&&($_SERVER['REQUEST_METHOD']??'GET')!=='GET')return;
+ $launch=dirname(__DIR__).'/noa-launch.js';$ainoa=is_file($launch)?'<script src="/noa-launch.js?v='.hash_file('sha256',$launch).'"></script>':'';
+ $voice=dirname(__DIR__).'/noa-voice.js';if(is_file($voice))$ainoa.='<script src="/noa-voice.js?v='.hash_file('sha256',$voice).'" defer></script>';
+ foreach(['css','js'] as $kind){$asset=dirname(__DIR__).'/noa-ainoa.'.$kind;if(is_file($asset)){$url='/noa-ainoa.'.$kind.'?v='.hash_file('sha256',$asset);$ainoa.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'" defer></script>';}}
+ foreach(['css','js']as $kind){$file=dirname(__DIR__).'/noa-install.'.$kind;if(is_file($file)){$url='/noa-install.'.$kind.'?v='.hash_file('sha256',$file);$ainoa.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'" defer></script>';}}
+ $ainoa.='<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="NOA STUDIO"><link rel="apple-touch-icon" href="/noa-assets/icon-180.png?v=original-symbol-1">';
+ $starlight_file=dirname(__DIR__).'/noa-starlight.css';
+ $starlight=is_file($starlight_file)?'<meta name="color-scheme" content="dark"><link rel="stylesheet" href="/noa-starlight.css?v='.hash_file('sha256',$starlight_file).'">':'';
  // MY stays in primary navigation; AInoa keeps its existing floating control.
  // Standalone views do not call GnuBoard html_end(); inject only completed HTML.
  if(!$native){
