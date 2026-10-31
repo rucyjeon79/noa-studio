@@ -68,6 +68,10 @@ try {
         if (!isset($state['hash'])) reply(409,['error'=>'pair_first']);
         $state['url'] = $url;
         break;
+    case 'progress':
+        if (!$valid || ($body['id'] ?? '') !== $job['id']) reply(409,['error'=>'task_replaced']);
+        $out=['saved'=>isset($job['saved'])];
+        break;
     case 'start':
         if ((empty($state['url']) && empty($state['pluginEnabled'])) || ($state['owner'] ?? '') !== $member['mb_id']) reply(409,['error'=>'setup_required']);
         $selector = $body['selector'] ?? [];
@@ -77,7 +81,7 @@ try {
         if ($record['revision'] !== ($body['revision'] ?? null) || !empty($record['payload']['_noaTrash'])) reply(409,['error'=>'revision_conflict']);
         if (trim((string)($record['fields'][$field] ?? '')) !== '' && ($body['replace'] ?? false) !== true) reply(409,['error'=>'overwrite_confirmation']);
         $state['job'] = ['id'=>bin2hex(random_bytes(16)),'selector'=>$selector,'key'=>$record['writeKey'],'revision'=>$record['revision'],'field'=>$field,'expires'=>time()+3600];
-        $out = ['url'=>!empty($state['pluginEnabled'])?'https://chatgpt.com/':$state['url'],'id'=>$state['job']['id']];
+        $out = ['plugin'=>!empty($state['pluginEnabled']),'url'=>$state['url'] ?? '', 'id'=>$state['job']['id']];
         break;
     case 'read':
     case 'save':

@@ -69,12 +69,15 @@ with tempfile.TemporaryDirectory() as tmp:
         task={'selector':{'type':'song','key':'one','source':'music'},'revision':1,'field':'title'}
         call('start',task,admin=True,status=409)
         started=call('start',{**task,'replace':True},admin=True)
+        assert not call('progress',{'id':started['id']},admin=True)['saved']
+        call('progress',{'id':'wrong'},admin=True,status=409)
         call('read',status=401)
         assert call('read',key=key)['song']['title']=='Original'
         result={'id':started['id'],'text':'새 제목'}
         call('save',{**result,'id':'incorrect'},key=key,status=409)
         assert call('save',result,key=key)['revision']==2
         assert call('save',result,key=key)['revision']==2
+        assert call('progress',{'id':started['id']},admin=True)['saved']
         call('save',{**result,'text':'다른 제목'},key=key,status=409)
         call('start',{**task,'replace':True},admin=True,status=409)
         call('pair',{},admin=True)
