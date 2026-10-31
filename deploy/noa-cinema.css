@@ -1,3 +1,4 @@
+html:has(body.noa-screen-room){scroll-behavior:auto}
 .noa-screen-room .cinema-feature{margin:32px 0;border-block:1px solid var(--noa-line,#373b40);padding:24px 0 30px}
 .cinema-kicker,.cinema-tag{font:650 11px/1.45 system-ui;letter-spacing:.16em;color:#d9bf95}
 body.noa-screen-room .cinema-heading{font-size:clamp(25px,3vw,42px);letter-spacing:-.05em;margin:6px 0 18px}
