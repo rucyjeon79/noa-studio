@@ -35,3 +35,12 @@ jobs:
                   release.main()
               raise
           PY
+      - name: Verify published home notice selection
+        run: |
+          curl -fsS "https://noastudio.ai.kr/?notice-check=$GITHUB_SHA" -o /tmp/noa-home-check.html
+          python - <<'PY'
+          from pathlib import Path
+          html = Path('/tmp/noa-home-check.html').read_text()
+          assert 'id="noa-notices-heading"' in html and 'id="noa-notice-2"' not in html
+          assert '/noa-amt-fan.js' in html
+          PY
