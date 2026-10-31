@@ -2,7 +2,7 @@ name: NOA SHOP purchase flow
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/noa-shop.yml','scripts/noa_shop_release.py','tests/ecosystem/shop-layout.mjs']
+    paths: ['.github/workflows/noa-shop.yml','scripts/noa_shop_release.py','tests/ecosystem/shop-layout.mjs','tests/ecosystem/flows.mjs']
 permissions: {contents: read}
 jobs:
   verify:

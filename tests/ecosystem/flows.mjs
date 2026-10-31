@@ -50,7 +50,7 @@ try {
   await page.goto('http://noa.test/noa-shop.php');await page.locator('.ec-shop-secondary button[aria-pressed=false]').filter({hasText:'비교'}).first().click();await page.locator('.ec-shop-secondary button[aria-pressed=false]').filter({hasText:'비교'}).click();await page.getByRole('button',{name:'선택 상품 비교 (2/3)',exact:true}).click();await page.getByRole('region',{name:'선택 상품 비교표'}).waitFor();assert.equal(await page.locator('thead th').count(),3);assert((await page.locator('table').innerText()).includes('22,000원'));await page.getByRole('button',{name:'← 상품 목록',exact:true}).click();
   await page.getByRole('searchbox',{name:'상품 찾기'}).fill('실제');await page.locator('.ec-open').click();await page.getByRole('button',{name:'← 상품 목록',exact:true}).click();assert.equal(await page.getByRole('searchbox',{name:'상품 찾기'}).inputValue(),'실제');assert.equal(await page.locator('.ec-card').count(),1);await page.getByRole('searchbox',{name:'상품 찾기'}).fill('');
   failCart=true;await page.locator('.ec-open').first().click();await page.getByRole('button',{name:'상품 보관',exact:true}).click();await page.getByText('다른 화면에서 변경되었습니다.',{exact:false}).waitFor();
-  await page.getByRole('button',{name:'구매 목록',exact:true}).click();await page.getByText('구매 목록이 비어 있어요',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'보관한 상품',exact:true}).click();await page.getByText('보관한 상품이 없어요',{exact:true}).waitFor();
   admin=true;await page.reload();await page.getByRole('button',{name:'상품 관리',exact:true}).click();assert.equal(await page.getByLabel('상품 ID',{exact:true}).inputValue(),'');assert.equal(await page.getByLabel('상품',{exact:true}).inputValue(),'');
   assert.deepEqual(errors,[]);await page.close();
  }
