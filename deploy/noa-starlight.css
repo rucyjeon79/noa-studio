@@ -212,8 +212,8 @@ html[data-noa-area] .noa-mobile-nav a[data-noa-nav="home"],
 html[data-noa-area] .noa-mobile-nav a[data-noa-nav="home"][aria-current="page"]{display:flex!important;align-items:center;justify-content:center;gap:0;padding:0!important;margin:0;position:relative;top:auto;transform:none;box-sizing:border-box;border:1.5px solid var(--noa-accent);background:transparent;color:var(--noa-accent);overflow:hidden;touch-action:manipulation;-webkit-touch-callout:none;user-select:none}
 html[data-noa-area] .noa-mobile-nav a[data-noa-nav="home"]>svg{display:block;flex:none;width:28px;height:28px;margin:0;position:relative;z-index:1}
 .noa-mobile-nav .noa-home-portrait{display:none;width:100%;height:100%;object-fit:cover;pointer-events:none}
-html[data-noa-home-ainoa] .noa-mobile-nav a.has-ainoa-alert>.noa-home-portrait{display:block}
-html[data-noa-home-ainoa] .noa-mobile-nav a.has-ainoa-alert>svg{display:none}
+html[data-noa-area][data-noa-home-ainoa] .noa-mobile-nav a[data-noa-nav="home"]:is(.has-ainoa-alert,.is-ainoa-open)>.noa-home-portrait{display:block}
+html[data-noa-area][data-noa-home-ainoa] .noa-mobile-nav a[data-noa-nav="home"]:is(.has-ainoa-alert,.is-ainoa-open)>svg{display:none}
 html[data-noa-home-ainoa] .noa-mobile-nav a[data-noa-nav="home"].is-ainoa-open{background:var(--noa-accent);color:var(--noa-accentText)}
 html[data-noa-home-ainoa] .noa-mobile-nav a[data-noa-nav="home"].is-holding{box-shadow:inset 0 0 0 3px var(--noa-accent)}
 html[data-noa-home-ainoa] #noa-ainoa{left:50%;right:auto;bottom:calc(var(--noa-nav-space,72px) + var(--noa-player-space,0px) + var(--noa-transfer-space,0px) + 12px);width:0;height:0;--ainoa-size:0px;--ainoa-gap:0px}
