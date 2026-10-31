@@ -10,7 +10,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     environment: production
-    timeout-minutes: 12
+    timeout-minutes: 15
     env:
       GH_TOKEN: ${{ github.token }}
       NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
