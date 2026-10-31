@@ -3,7 +3,6 @@ declare(strict_types=1);
 // Loaded only after the private plugin's owner binding is verified.
 function noa_plugin_records(string $op, array $body, string $actor): array {
     if ($op === 'health') return ['managementConnected'=>true,'musicBriefReady'=>true];
-    require_once __DIR__.'/noa-bridge/creator-core.php';
     $resource=$body['resource']??'';
     $filters=['songs'=>"kind IN ('single','story')",'channels'=>"kind='prefs' AND doc_key LIKE 'creator-channel:%'",'posts'=>"kind='ecosystem_post'"];
     $allowed=['songs'=>TARGETS,'channels'=>['title','description'],'posts'=>['title','body']];
@@ -33,7 +32,7 @@ function noa_plugin_records(string $op, array $body, string $actor): array {
         if($resource==='songs'){
             $before=$d;$d=nup_patch($d,$r['kind'],$changes);
             nup_validate_classification($db,$id,$before,$d);
-        }elseif($resource==='channels'){$d=array_replace($d,nc_channel(array_replace($d,$changes)));}
+        }elseif($resource==='channels'){require_once __DIR__.'/noa-bridge/creator-core.php';$d=array_replace($d,nc_channel(array_replace($d,$changes)));}
         else{if($field==='title'&&mb_strlen($text)>120)throw new InvalidArgumentException('title_too_long');$d[$field]=$text;}
         $next=nup_store($db,$id,$r['kind'],$d,$rev,$actor);
         $db->commit();
