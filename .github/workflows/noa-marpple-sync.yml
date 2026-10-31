@@ -1,21 +1,54 @@
 name: NOA Marpple catalog sync
 on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
   push:
     branches: [main]
-    paths: ['.github/workflows/noa-marpple-sync.yml','scripts/noa_marpple_sync.py','scripts/noa_marpple_collect.mjs']
-  workflow_dispatch:
+    paths: ['.github/workflows/noa-marpple-sync.yml','scripts/noa_marpple_*.py','scripts/noa_marpple_collect.mjs','bridge/ecosystem-catalog.php','tests/ecosystem/catalog.php']
 permissions: {contents: read}
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - run: python -m pip install beautifulsoup4
-      - run: |
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - name: Collect and verify full public catalog
+        run: |
           npm install --prefix "$RUNNER_TEMP/marpple" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/noa_marpple_collect.mjs "$RUNNER_TEMP/marpple/collect.mjs"
           node "$RUNNER_TEMP/marpple/collect.mjs"
+          python -c "import sys,json;sys.path.insert(0,'scripts');from noa_marpple_sync import validate;validate(json.load(open('marpple-proof/catalog.json')))"
+          php -l bridge/ecosystem-shop.php
+          php -l bridge/ecosystem-catalog.php
+          php tests/ecosystem/catalog.php
+          node --check deploy/noa-ecosystem.js
+          cp tests/ecosystem/flows.mjs "$RUNNER_TEMP/marpple/flows.mjs"
+          node "$RUNNER_TEMP/marpple/flows.mjs"
       - uses: actions/upload-artifact@v4
-        if: always()
-        with: {name: marpple-catalog, path: marpple-proof/, retention-days: 3}
+        with: {name: marpple-catalog, path: marpple-proof/catalog.json, retention-days: 3}
+  publish:
+    needs: collect
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: actions/download-artifact@v4
+        with: {name: marpple-catalog, path: marpple-proof}
+      - run: python -m pip install 'paramiko>=3,<5'
+      - name: Deploy catalog reader
+        if: github.event_name == 'push'
+        run: python scripts/noa_marpple_release.py
+      - name: Atomically sync full catalog and verify live API
+        run: python scripts/noa_marpple_sync.py
