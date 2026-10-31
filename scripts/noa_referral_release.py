@@ -9,7 +9,14 @@ release.FILES={
  'extend/zz.noa-referral.php':'deploy/noa-referral.extend.php',
  'noa-bridge/creator-enrollment-core.php':'bridge/creator-enrollment-core.php',
 }
-release.NEW=set(release.FILES)-{'noa-bridge/creator-enrollment-core.php'}
+release.FILES.update({
+ 'noa-assets/starlight-invite-v1.jpg':'deploy/noa-assets/share/starlight-invite-v1.jpg',
+ 'noa-assets/starlight-studio-v1.jpg':'deploy/noa-assets/share/starlight-studio-v1.jpg',
+ 'noa-app/welcome-guide.html':'docs/notices/NOA_20261026_WELCOME.html',
+ 'noa-bridge/notices.php':'bridge/notices.php',
+ 'noa-app/home.php':'deploy/noa-app/home.php',
+})
+release.NEW=set(release.FILES)-{'noa-bridge/creator-enrollment-core.php','noa-bridge/notices.php','noa-app/home.php'}
 release.PROTECTED+=['plugin/social/register_member_update.php','noa-bridge/subscription-core.php','noa-bridge/membership-core.php']
 if __name__=='__main__':
  try:release.main()

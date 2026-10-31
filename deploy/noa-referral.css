@@ -8,3 +8,10 @@
 @media(max-width:760px){#noa-account-bar{gap:2px;padding-inline:8px}#noa-account-bar .noa-account-brand{font-size:11px;gap:5px;letter-spacing:0}#noa-account-bar .noa-account-brand img{width:28px;height:28px}#noa-account-bar .noa-account-shortcuts{gap:0}#noa-referral-banner{gap:14px;padding:20px;margin-top:24px}.nrf-banner-mark{width:42px;height:42px;border-radius:13px}.nrf-banner-copy strong{font-size:20px}.nrf-banner-copy>span{font-size:11px}.nrf-banner-action{font-size:12px}}
 @media(max-width:360px){#noa-account-bar .noa-account-brand img{display:none}#noa-account-bar .noa-account-brand{font-size:10px}#noa-referral-banner{padding:20px 16px;gap:10px}.nrf-banner-mark{display:none}.nrf-banner-copy strong{font-size:19px}}
 #noa-referral-banner:focus-visible,#noa-referral-share:focus-visible,#noa-referral-dialog button:focus-visible,#noa-referral-dialog a:focus-visible{outline:2px solid #e4ca85;outline-offset:3px}
+/* The pinned guide uses the same typography in the home disclosure and native post. */
+html body .noa-welcome-guide{max-width:640px;margin:0 auto 24px;text-align:left;word-break:keep-all;overflow-wrap:anywhere}
+html body .noa-welcome-guide .nw-kicker{margin:0 0 8px;color:var(--noa-accent,#cfb878);font-size:13px;font-weight:700}
+html body .noa-welcome-guide h2{font-size:clamp(23px,4vw,32px);line-height:1.3;margin:0 0 8px;letter-spacing:-.04em}
+html body .noa-welcome-guide h3{font-size:19px;line-height:1.4;margin:22px 0 6px;padding-top:18px;border-top:1px solid var(--noa-line,#414348)}
+html body .noa-welcome-guide p{font-size:15px;line-height:1.7;margin:5px 0;white-space:normal}
+html body .noa-welcome-guide p a{display:inline-flex;align-items:center;min-height:44px;text-decoration:underline;text-underline-offset:4px;color:inherit;font-weight:650}

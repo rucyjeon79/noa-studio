@@ -1,7 +1,7 @@
 (()=>{'use strict';
  const icon='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4m-6.8 7 6.8 4"/></svg>';
  let state=null,loading=null;
- async function load(){if(loading)return loading;loading=fetch('/noa-bridge/referral.php',{credentials:'same-origin',cache:'no-store'}).then(async r=>{if(!r.ok)throw Error();const v=await r.json();if(!v.ok||(v.member&&!/^https:\/\/noastudio\.ai\.kr\/\?invite=[a-f0-9]{48}$/.test(v.url)))throw Error();state=v;return v;}).finally(()=>loading=null);return loading;}
+ async function load(){if(loading)return loading;loading=fetch('/noa-bridge/referral.php',{credentials:'same-origin',cache:'no-store'}).then(async r=>{if(!r.ok)throw Error();const v=await r.json();if(!v.ok||(v.member&&!/^https:\/\/noastudio\.ai\.kr\/\?invite=[a-f0-9]{48}$/.test(v.url)))throw Error();if(v.member)v.url+='&card=2';state=v;return v;}).finally(()=>loading=null);return loading;}
  const shareData=()=>({title:'NOA STUDIO · 친구 초대',text:'음악과 이야기를 함께 즐겨요. 이 링크로 가입하면 친구도 나도 각각 500P!',url:state.url});
  async function nativeShare(){try{await navigator.share(shareData());return true;}catch(e){return e.name==='AbortError';}}
  function dialog(){
@@ -26,6 +26,6 @@
  }
  mount();const observer=new MutationObserver(mount);observer.observe(document.body,{childList:true,subtree:true});
  load().then(v=>{if(v.invited){const banner=document.getElementById('noa-referral-banner');if(banner){banner.querySelector('.nrf-banner-copy').innerHTML='<small>친구의 초대가 도착했어요</small><strong>가입하고 <em>500P</em> 받기</strong><span>초대한 친구에게도 500P가 지급돼요</span>';banner.querySelector('.nrf-banner-action').textContent='가입하기 ↗';banner.onclick=()=>location.assign('/noa-login.php?url=%2F');}}
-  if(new URLSearchParams(location.search).get('invite_share')==='1'&&v.member)dialog();
+  if(new URLSearchParams(location.search).get('invite_share')==='1')dialog();
  }).catch(()=>{});
 })();

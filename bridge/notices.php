@@ -12,7 +12,17 @@ function nn_project(array $rows):array {
   if(count($items)>=5)break;
   if((int)($row['wr_is_comment']??0)!==0||preg_match('/(?:^|,)secret(?:,|$)/',(string)($row['wr_option']??''))||(int)($row['wr_id']??0)<1)continue;
   $body=nn_plain((string)($row['wr_content']??''));$title=nn_plain((string)($row['wr_subject']??''));
-  $items[]=['id'=>(int)$row['wr_id'],'title'=>$title,'body'=>$body,'excerpt'=>mb_strimwidth(preg_replace('/\s+/u',' ',$body),0,150,'…','UTF-8'),'date'=>substr((string)($row['wr_datetime']??''),0,10)];
+  $item=['id'=>(int)$row['wr_id'],'title'=>$title,'body'=>$body,'excerpt'=>mb_strimwidth(preg_replace('/\s+/u',' ',$body),0,150,'…','UTF-8'),'date'=>substr((string)($row['wr_datetime']??''),0,10)];
+  // Only the reviewed guide file can supply markup to the public home projection.
+  if($item['id']===1 && str_starts_with($title,'[이용안내]')){
+   $guidePath=dirname(__DIR__).'/noa-app/welcome-guide.html';
+   $guide=is_file($guidePath)?file_get_contents($guidePath):false;
+   if(is_string($guide) && $guide===(string)$row['wr_content']){
+    $item['welcomeGuide']=$guide;
+    $item['excerpt']='음악 듣기 · 사연곡 신청 · 친구 초대 · AInoa 사용법';
+   }
+  }
+  $items[]=$item;
  }
  return $items;
 }

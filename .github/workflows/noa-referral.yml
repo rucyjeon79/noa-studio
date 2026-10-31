@@ -33,6 +33,9 @@ jobs:
           php tests/referral/native.php
           php tests/referral/native.php check
           node --check deploy/noa-referral.js
+          php -l deploy/noa-app/home.php
+          php -l bridge/notices.php
+          php tests/membership/notices.php
       - name: Verify shared invitation UI on mobile and desktop
         run: |
           python scripts/qa/noa-qa-font.py
@@ -60,12 +63,21 @@ jobs:
       - run: python -m pip install 'paramiko>=3,<5'
       - name: Deploy verified UI assets and check public hashes
         run: python scripts/noa_referral_release.py
+      - name: Update the pinned guide in place and verify the shared preview
+        if: contains(github.event.head_commit.message, '[guide-release]')
+        run: |
+          python scripts/noa_notice_publish.py
+          python scripts/qa/noa_share_preview.py
       - name: Inspect all live destinations without transactions
         run: |
           python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/noa-live-ui" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp tests/referral/ui.mjs "$RUNNER_TEMP/noa-live-ui/check.mjs"
           LIVE_ONLY=1 node "$RUNNER_TEMP/noa-live-ui/check.mjs"
+          if [ -f notice-proof/receipt.json ]; then
+            cp scripts/qa/noa-notice-published.mjs "$RUNNER_TEMP/noa-live-ui/guide.mjs"
+            node "$RUNNER_TEMP/noa-live-ui/guide.mjs"
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'noa-referral-live-${{ github.run_id }}', path: 'referral-proof/', retention-days: 7}

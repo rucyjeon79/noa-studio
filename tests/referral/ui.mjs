@@ -13,15 +13,15 @@ try{for(const width of [320,390,1280]){
  const geometry=await p.locator('#noa-account-bar').evaluate(bar=>[...bar.querySelectorAll(':scope > :not(.noa-account-shortcuts), .noa-account-shortcuts > *')].filter(x=>x.getBoundingClientRect().width>0).map(x=>({x:x.getBoundingClientRect().x,right:x.getBoundingClientRect().right})));for(let i=1;i<geometry.length;i++)assert(geometry[i].x>=geometry[i-1].right-1,'header_overlap '+width);
  await p.screenshot({path:`referral-proof/${live?'live':'fixture'}-home-${width}.png`,fullPage:false});
  await p.locator('#noa-referral-banner').click();await p.locator('#noa-referral-dialog').waitFor();
- if(live)assert(await p.getByRole('link',{name:'로그인하고 내 초대 링크 받기'}).count());else{assert.equal(await p.locator('#nrf-url').inputValue(),url);await p.addInitScript(()=>{});}
+ if(live)assert(await p.getByRole('link',{name:'로그인하고 내 초대 링크 받기'}).count());else{assert.equal(await p.locator('#nrf-url').inputValue(),url+'&card=2');await p.addInitScript(()=>{});}
  await p.screenshot({path:`referral-proof/${live?'live':'fixture'}-share-${width}.png`});
- await p.getByRole('button',{name:'초대 창 닫기'}).click();await p.locator('#noa-referral-share').click();await p.locator('#noa-referral-dialog').waitFor();if(!live)assert.equal(await p.locator('#nrf-url').inputValue(),url);
+ await p.getByRole('button',{name:'초대 창 닫기'}).click();await p.locator('#noa-referral-share').click();await p.locator('#noa-referral-dialog').waitFor();if(!live)assert.equal(await p.locator('#nrf-url').inputValue(),url+'&card=2');
  if(!live){
  await p.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async value=>{window.__copied=value;}}}));
- await p.getByRole('button',{name:'링크 복사',exact:true}).click();assert.equal(await p.evaluate(()=>window.__copied),url);
+ await p.getByRole('button',{name:'링크 복사',exact:true}).click();assert.equal(await p.evaluate(()=>window.__copied),url+'&card=2');
  await p.getByRole('button',{name:'초대 창 닫기'}).click();
  await p.evaluate(()=>Object.defineProperty(navigator,'share',{configurable:true,value:async value=>{window.__shared=value;}}));
- await p.locator('#noa-referral-share').click();assert.equal(await p.evaluate(()=>window.__shared.url),url);assert.equal(await p.locator('#noa-referral-dialog').count(),0);
+ await p.locator('#noa-referral-share').click();assert.equal(await p.evaluate(()=>window.__shared.url),url+'&card=2');assert.equal(await p.locator('#noa-referral-dialog').count(),0);
  await p.evaluate(()=>Object.defineProperty(navigator,'share',{configurable:true,value:async()=>{throw new DOMException('cancel','AbortError');}}));
  await p.locator('#noa-referral-banner').click();assert.equal(await p.locator('#noa-referral-dialog').count(),0);
  }
