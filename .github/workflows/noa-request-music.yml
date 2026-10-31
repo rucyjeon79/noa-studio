@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
       - uses: shivammathur/setup-php@v2
-        with: {php-version: '8.2', extensions: mysqli, pdo_mysql, mbstring}
+        with: {php-version: '8.2', extensions: 'mysqli, pdo_mysql, mbstring'}
       - name: Install disposable audio test encoder
         run: |
           sudo apt-get update -qq
