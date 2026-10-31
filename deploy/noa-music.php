@@ -68,7 +68,7 @@ window.addEventListener('visibilitychange',savePlayback);
 function requestPlayback(){
  if(!selected?.dataset.audio){status.textContent='음원 업로드 대기 중입니다. 업로드한 음원이 연결되면 재생할 수 있습니다.';return;}
  document.querySelector('.noa-transport').hidden=false;pendingAutoplay=true;status.textContent='저장된 음원을 준비하는 중입니다.';
- resumeAfterMetadata=false;const key=selected.dataset.key;if(player.error)player.load();const request=player.play();if(request?.catch)request.catch(error=>{if(selected?.dataset.key!==key)return;pendingAutoplay=false;status.textContent=error?.name==='NotAllowedError'?'듣던 위치를 복원했어요. 재생 버튼을 누르면 이어집니다.':'음원을 재생하지 못했습니다. 재생 버튼과 파일 연결 상태를 확인해 주세요.';});
+ resumeAfterMetadata=false;const key=selected.dataset.key;if(player.error)player.load();const request=player.play();if(request?.catch)request.catch(error=>{if(selected?.dataset.key!==key||error?.name==='AbortError')return;pendingAutoplay=false;status.textContent=error?.name==='NotAllowedError'?'듣던 위치를 복원했어요. 재생 버튼을 누르면 이어집니다.':'음원을 재생하지 못했습니다. 재생 버튼과 파일 연결 상태를 확인해 주세요.';});
 }
 
 window.addEventListener('noa-collection-queue',event=>{const keys=event.detail?.keys;if(!Array.isArray(keys)||!keys.includes(event.detail?.key))return;collectionQueue=[...new Set(keys)].filter(key=>lookup.has(key)&&lookup.get(key).kind!=='playlist');activeQueue=null;});
