@@ -28,6 +28,24 @@ try{for(const width of [320,390,1280]){
   assert(within,'Disc and category caption must fit their own sleeve');
  }
  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+ const awards=[
+  ['story:your-story:4e75f1a6f5919a67c7b9cbb7','예선 1위'],
+  ['story:your-story:ee00443af14f2754a18a6b1c','본선 1위'],
+  ['story:your-story:86c38c573de24a6ac5b793a5','결선 1위'],
+  ['story:your-story:35fa27149612463491996053','예선 참가곡'],
+  ['catalog:a785dbc3e646c64b54cd1536048100e5ee66f55ec9be69d39e6b5251c91f4bba','본선 참가곡'],
+  ['story:your-story:6d2ff36af19c40d596c51002','결선 참가곡']
+ ];
+ await p.evaluate(keys=>{
+  const box=document.createElement('div');
+  for(const key of [...keys,'different-song']){
+   const row=document.createElement('button');row.className='noa-inline-song';row.dataset.inlineKey=key;
+   row.innerHTML='<span class="noa-inline-title"><span class="noa-track-name">곡 제목</span></span>';box.append(row);
+  }
+  document.querySelector('#music-browse').append(box);
+ },awards.map(([key])=>key));
+ await p.locator('.noa-amt-award').first().waitFor();
+ assert.deepEqual(await p.locator('.noa-amt-award').allTextContents(),awards.map(([,award])=>award));
  await p.evaluate(()=>document.querySelector('audio').play());
  await p.locator('.lp-dock-art.lp-running').waitFor();
  const disc=p.locator('.lp-dock-art>.lp-spindle');assert.equal(await disc.evaluate(n=>getComputedStyle(n).animationPlayState),'running');

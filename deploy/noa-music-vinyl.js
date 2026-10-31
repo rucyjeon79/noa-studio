@@ -55,6 +55,14 @@
  }
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)activity();});
 
+ const songAwards=new Map([
+  ['story:your-story:4e75f1a6f5919a67c7b9cbb7','예선 1위'],
+  ['story:your-story:ee00443af14f2754a18a6b1c','본선 1위'],
+  ['story:your-story:86c38c573de24a6ac5b793a5','결선 1위'],
+  ['story:your-story:35fa27149612463491996053','예선 참가곡'],
+  ['catalog:a785dbc3e646c64b54cd1536048100e5ee66f55ec9be69d39e6b5251c91f4bba','본선 참가곡'],
+  ['story:your-story:6d2ff36af19c40d596c51002','결선 참가곡']
+ ]);
  function sync(){
   pending=false;
   const buttons=browse.querySelectorAll('[data-browse-level="1"] .noa-browse-grid>.noa-browse-card');
@@ -72,6 +80,15 @@
   });
   for(const item of document.querySelectorAll('#music-browse .noa-inline-song[data-inline-key],#songs .song[data-key]')){
    const active=(item.dataset.inlineKey||item.dataset.key)===key && !!key;
+   const award=songAwards.get(item.dataset.inlineKey||item.dataset.key);
+   if(award){
+    const title=item.querySelector('.noa-inline-title,.info strong');
+    if(title&&!title.querySelector('.noa-amt-award')){
+     const badge=make('noa-amt-award',award);
+     badge.dataset.winner=String(award.endsWith('1위'));
+     title.append(badge);
+    }
+   }
    const parent=item.matches('.song')?item.querySelector('.song-select'):item;
    if(!parent)continue;
    let holder=parent.querySelector(':scope>.lp-track-art');
