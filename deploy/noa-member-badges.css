@@ -48,3 +48,12 @@ html body #profile.new_win section p {color: #d6dce4 !important;}
   box-shadow: 0 0 10px #cb648350, inset 0 0 0 1px #69374b;
 }
 #profile .sv_member:has(.noa-rank-6) .profile_img:has(img[src$="/no_profile.gif"]) {display: none;}
+
+/* Legacy profile opens both as a pop-up and inside the full site shell. */
+@media (min-width: 761px) {
+  body:has(.noa-sidebar) #profile.new_win {
+    box-sizing: border-box;
+    margin-inline-start: var(--noa-rail, 224px);
+    width: calc(100% - var(--noa-rail, 224px));
+  }
+}
