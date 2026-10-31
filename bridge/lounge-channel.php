@@ -31,6 +31,22 @@ function channelItems(string $kind): array {
         }
         throw new RuntimeException('tab');
     }
+    try{
+        require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/storage.php';require_once __DIR__.'/youtube-store.php';
+        if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
+        $token=ny_token(lab_read(),CHANNEL);
+        $uploads=ny_get($token,'playlistItems',['part'=>'contentDetails','playlistId'=>'UU'.substr(CHANNEL,2),'maxResults'=>50]);
+        $ids=array_filter(array_column(array_column($uploads['items']??[],'contentDetails'),'videoId'));
+        if(!$ids)return [];
+        $videos=ny_get($token,'videos',['part'=>'snippet,status','id'=>implode(',',$ids)]);
+        $rows=[];
+        foreach($videos['items']??[] as $video){
+            $snippet=$video['snippet'];
+            if($snippet['channelId']!==CHANNEL||$video['status']['privacyStatus']!=='public')continue;
+            $rows[]=['title'=>$snippet['title'],'at'=>strtotime($snippet['publishedAt']),'url'=>'https://www.youtube.com/watch?v='.$video['id']];
+        }
+        return $rows;
+    }catch(Throwable $unavailable){}
     $feed=simplexml_load_string(fetchChannel('https://www.youtube.com/feeds/videos.xml?channel_id='.CHANNEL),SimpleXMLElement::class,LIBXML_NONET);
     if(!$feed || (string)$feed->children('http://www.youtube.com/xml/schemas/2015')->channelId!==CHANNEL)throw new RuntimeException('feed');
     $items=[];
