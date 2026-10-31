@@ -1,0 +1,19 @@
+name: NOA public illustrated guide verification
+on:
+  push:
+    branches: [main]
+    paths: ['scripts/qa/noa-illustrated-guide.mjs','.github/workflows/noa-illustrated-check.yml']
+permissions: {contents: read}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python scripts/qa/noa-qa-font.py
+          npm install --prefix "$RUNNER_TEMP/guide" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-illustrated-guide.mjs "$RUNNER_TEMP/guide/check.mjs"
+          node "$RUNNER_TEMP/guide/check.mjs"
+      - uses: actions/upload-artifact@v4
+        with: {name: illustrated-guide-screens, path: points-proof/, retention-days: 7}
