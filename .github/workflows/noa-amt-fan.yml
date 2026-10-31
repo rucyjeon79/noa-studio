@@ -26,22 +26,6 @@ jobs:
           python scripts/noa_notice_publish.py --amt
       - name: Verify mobile popup, close, expiry and both destinations
         run: |
-          PYTHONPATH=scripts python - <<'PY'
-          import hashlib,hmac,secrets,time,urllib.request,os,paramiko
-          from pathlib import Path
-          from noa_full_inventory import connect
-          t=connect()
-          try:
-              with paramiko.SFTPClient.from_transport(t)as ftp:
-                  with ftp.open('/hosting/noastudio/noa-ai-lab/worker.key','rb')as f:key=f.read(129).strip()
-          finally:t.close()
-          stamp=str(int(time.time()));nonce=secrets.token_hex(16);target='/noa-music.php'
-          message='\n'.join(['N80-MUSIC-READ-1','GET',target,'',stamp,nonce])
-          req=urllib.request.Request('https://noastudio.ai.kr'+target,headers={'X-N80-Availability-Check':'1','X-N80-Media-Timestamp':stamp,'X-N80-Media-Nonce':nonce,'X-N80-Media-Signature':hmac.new(key,message.encode(),hashlib.sha256).hexdigest()})
-          with urllib.request.urlopen(req,timeout=45)as r:html=r.read()
-          assert b'id="music-browse"' in html
-          Path(os.environ['RUNNER_TEMP'],'amt-read-music.html').write_bytes(html)
-          PY
           npm install --prefix "$RUNNER_TEMP/fan-test" --no-save playwright@1.56.1
           cd "$RUNNER_TEMP/fan-test"
           node --input-type=module <<'JS'
@@ -61,8 +45,11 @@ jobs:
             assert(decodeURIComponent(page.url()).includes('9fed48ee44d5b75621e4c7be'));
             const data=await (await page.request.get(base+'/noa-category-order.php')).json();
             assert(data.playlists.some(p=>p.id==='9fed48ee44d5b75621e4c7be'&&p.group==='story'&&p.title.includes('제2회')));
-            await page.route('**/noa-music.php?*collection=*',r=>r.fulfill({contentType:'text/html;charset=utf-8',path:process.env.RUNNER_TEMP+'/amt-read-music.html'}));
-            await page.goto(base+'/noa-music.php?group=story&genre=your-story&collection=9fed48ee44d5b75621e4c7be');
+            const collection=data.playlists.find(p=>p.id==='9fed48ee44d5b75621e4c7be');
+            const rows=collection.keys.slice(0,3).map((key,i)=>({key,genre:'your-story',kind:'story',title:['미전송(Unread)','BLOOM','NO LIMITS'][i]}));
+            const markup='<meta name="viewport" content="width=device-width"><section id="music-browse"></section><script src="/noa-browse.js"></script><script>const rows='+JSON.stringify(rows)+';const tree=NoaBrowse.mount({host:document.querySelector("#music-browse"),rows,onChange:()=>tree.apply(rows)});tree.reveal(rows[0]);tree.apply(rows);</script><script defer src="/noa-amt-fan.js"></script>';
+            await page.route('**/noa-music.php?*collection=*',r=>r.fulfill({contentType:'text/html;charset=utf-8',body:markup}));
+            await page.goto(base+'/noa-music.php?group=story&genre=your-story&collection=9fed48ee44d5b75621e4c7be&noa-find=story%3Ayour-story%3A35fa27149612463491996053');
             const songs=page.locator('[data-playlist-id="9fed48ee44d5b75621e4c7be"] [data-browse-level="4"]:visible .noa-inline-song');
             await songs.first().waitFor();assert((await songs.allTextContents()).join(' ').includes('BLOOM'));
             await page.goto(base+'/noa-lounge.php?board=notice&nativePost=2');

@@ -1,7 +1,7 @@
 (()=>{
  const entry='https://www.aimusictown.com/competition/2?entryId=353';
  const collection='9fed48ee44d5b75621e4c7be';
- const playlist='/noa-music.php?group=story&genre=your-story&collection='+collection;
+ const playlist='/noa-music.php?group=story&genre=your-story&collection='+collection+'&noa-find=story%3Ayour-story%3A35fa27149612463491996053';
  const title='람준파파 응원하기 · 제2회 AMT AI 작곡대회';
  const end=Date.parse('2026-11-16T00:00:00+09:00'),key='noa-amt2-fan-2026';
  const el=(tag,text)=>{const n=document.createElement(tag);if(text)n.textContent=text;return n;};
