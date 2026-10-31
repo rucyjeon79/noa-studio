@@ -46,6 +46,21 @@ try{for(const width of [320,390,1280]){
  },awards.map(([key])=>key));
  await p.locator('.noa-amt-award').first().waitFor();
  assert.deepEqual(await p.locator('.noa-amt-award').allTextContents(),awards.map(([,award])=>award));
+ await p.evaluate(()=>{
+  const title=document.querySelector('.noa-inline-song .noa-inline-title');
+  title.style.width='145px';
+  const premium=document.createElement('span');premium.className='noa-premium-badge';premium.textContent='PREMIUM';title.append(premium);
+ });
+ const heading=p.locator('.noa-inline-song .noa-inline-title').first();
+ for(const name of ['가을빛','제목이 긴 음악에서도 프리미엄 표시는 곡 이름 바로 옆에 보입니다']){
+  await heading.locator('.noa-track-name').evaluate((el,value)=>el.textContent=value,name);
+  const geometry=await heading.evaluate(title=>{
+   const box=sel=>title.querySelector(sel).getBoundingClientRect();
+   const n=box('.noa-track-name'),p=box('.noa-premium-badge'),a=box('.noa-amt-award');
+   return [p.left-n.right,p.right<=title.getBoundingClientRect().right+1,a.top>=n.bottom-1];
+  });
+  assert(geometry[0]>=0&&geometry[0]<=8&&geometry[1]&&geometry[2],'Premium stays beside the title; award stays below');
+ }
  await p.evaluate(()=>document.querySelector('audio').play());
  await p.locator('.lp-dock-art.lp-running').waitFor();
  const disc=p.locator('.lp-dock-art>.lp-spindle');assert.equal(await disc.evaluate(n=>getComputedStyle(n).animationPlayState),'running');

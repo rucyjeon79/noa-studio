@@ -78,7 +78,7 @@ body.noa-record-room .noa-amt-award{
 }
 body.noa-record-room .noa-amt-award[data-winner="true"]{color:var(--noa-accent,#dec58d)}
 body.noa-record-room #music-browse .noa-inline-title:has(.noa-amt-award){
- display:grid;grid-template-columns:minmax(0,1fr) auto;height:auto;row-gap:2px;
+ display:grid;grid-template-columns:minmax(0,max-content) max-content;justify-content:start;column-gap:6px;height:auto;row-gap:2px;
 }
 body.noa-record-room #music-browse .noa-amt-award{grid-column:1/-1;grid-row:2}
 body.noa-record-room #music-browse .noa-inline-title:has(.noa-amt-award)>.noa-premium-badge{grid-column:2;grid-row:1}
