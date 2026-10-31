@@ -36,3 +36,21 @@ html[data-noa-area] .noa-feed-invite a,.noa-feed-invite a{display:inline-flex;al
 .noa-community .noa-community-write{background:var(--noa-accent,#d4bb7e);color:var(--noa-accentText,#17191c);border-color:transparent;font-weight:650;min-height:44px;padding:10px 16px;border-radius:10px}
 .noa-community-form input[type=checkbox]{width:20px;height:20px}.noa-community-form label:has(input[type=checkbox]){display:flex;align-items:center;gap:10px;line-height:1.6}
 @media(max-width:500px){.noa-feed-invite{align-items:flex-start;flex-direction:column;gap:2px}.noa-community-feed a.noa-feed-row{padding:16px 0}.noa-feed-row strong{font-size:16px}.noa-community .noa-section-head{flex-wrap:wrap;gap:12px}}
+
+/* One compact reply player, independent of generic site button treatment. */
+html body .noa-community .noa-community-reply{padding:18px 0;border-bottom:1px solid var(--noa-line,#303438);white-space:normal}
+.noa-community-reply>p{white-space:pre-wrap;font-size:15px;line-height:1.75;margin:10px 0 14px}
+html body .noa-community .noa-reply-music{margin:12px 0 0;padding:14px;border:1px solid var(--noa-line,#303438);border-radius:14px;background:var(--noa-surface,#1b1e22)}
+html body .noa-community .noa-reply-music-play{display:flex;justify-content:flex-start;align-items:center;gap:12px;width:100%;min-height:48px;padding:0;border:0!important;border-radius:0;background:transparent!important;color:inherit;text-align:left;box-shadow:none}
+html body .noa-community .noa-reply-music-play img{width:48px;height:48px;flex:0 0 48px;border-radius:9px;object-fit:cover}
+.noa-reply-music-labels{flex:1;min-width:0}.noa-reply-music-labels strong{display:block;font-size:16px;line-height:1.45;overflow-wrap:anywhere}.noa-reply-music-labels small{display:block;margin-top:4px;font-size:11px;color:var(--noa-muted,#a5a8ad);font-weight:400}
+.noa-reply-play-icon{display:grid;place-items:center;flex:0 0 36px;height:36px;border:1px solid var(--noa-gold,#cbb786);border-radius:50%;color:var(--noa-gold,#cbb786);font-size:14px}
+.noa-reply-timeline{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:11px;font-variant-numeric:tabular-nums;color:var(--noa-muted,#a5a8ad)}
+html body .noa-community .noa-reply-timeline input{flex:1;min-width:0;width:auto;height:22px;min-height:0;margin:0;padding:0;border:0;background:transparent;accent-color:var(--noa-gold,#cbb786)}
+.noa-reply-music>p:empty{display:none}.noa-reply-music audio[hidden]{display:none!important}
+html body .noa-community .noa-reply-form{gap:12px;margin-top:22px;padding-top:18px;border-top:1px solid var(--noa-line,#303438)}
+html body .noa-community .noa-reply-form textarea{min-height:88px;height:88px;padding:12px;font-size:15px;line-height:1.6;border-radius:10px}
+.noa-reply-attachment summary{cursor:pointer;font-size:13px;padding:8px 0;color:var(--noa-gold,#cbb786)}
+.noa-reply-search{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:8px}.noa-reply-search button{white-space:nowrap}
+.noa-reply-selected:empty{display:none}.noa-reply-selected{font-size:13px;margin:10px 0;color:var(--noa-gold,#cbb786)}
+html body .noa-reply-form button[type=submit]{justify-self:end;min-height:40px;padding:8px 18px;border-radius:9px}

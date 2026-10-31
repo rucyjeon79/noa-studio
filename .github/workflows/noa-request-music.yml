@@ -30,6 +30,8 @@ jobs:
       - name: Verify shared boards and request authorization in disposable database
         run: |
           for file in bridge/community*.php deploy/noa-app/ecosystem-view.php deploy/noa-channel.php deploy/noa-design.extend.php; do php -l "$file"; done
+          php -l bridge/support.php
+          node --check deploy/noa-support.js
           node --check deploy/noa-community.js
           node --check deploy/noa-ecosystem.js
           php tests/community/music-flow.php

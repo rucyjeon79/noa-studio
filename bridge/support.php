@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);ini_set('display_errors','0');
-require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/storage.php';require_once __DIR__.'/support-core.php';
+$nsp_output_level=ob_get_level();ob_start();require_once dirname(__DIR__).'/common.php';while(ob_get_level()>$nsp_output_level)ob_end_clean();ini_set('display_errors','0');ob_start();require_once __DIR__.'/storage.php';require_once __DIR__.'/support-core.php';
 header('Content-Type: application/json; charset=utf-8');header('Cache-Control: private, no-store');header('X-Content-Type-Options: nosniff');
-function nsp_reply(int $status,array $data):never{http_response_code($status);echo json_encode($data,JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR);exit;}
+function nsp_reply(int $status,array $data):never{global $nsp_output_level;$data['status']=$status;$json=json_encode($data,JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR);while(ob_get_level()>$nsp_output_level)ob_end_clean();http_response_code(200);header('X-NOA-Status: '.$status);echo $json;if(session_status()===PHP_SESSION_ACTIVE)session_write_close();ob_start(static fn($output)=>'');exit;}
 if(empty($member['mb_id']))nsp_reply(401,['ok'=>false,'error'=>'login_required']);
 $owner=(string)$member['mb_id'];$method=$_SERVER['REQUEST_METHOD']??'GET';
 try{

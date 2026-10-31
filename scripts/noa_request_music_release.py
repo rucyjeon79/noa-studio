@@ -1,7 +1,7 @@
 """Home/AInoa presentation only; no service or data mutations."""
 import sys
 import noa_ainoa_deploy as release
-release.FILES={'noa-bridge/community.php':'bridge/community.php','noa-bridge/community-core.php':'bridge/community-core.php','noa-bridge/community-music.php':'bridge/community-music.php','noa-community.js':'deploy/noa-community.js'}
+release.FILES={'noa-community.js':'deploy/noa-community.js','noa-community.css':'deploy/noa-community.css','noa-bridge/support.php':'bridge/support.php','noa-support.js':'deploy/noa-support.js'}
 release.NEW=set()
 release.PROTECTED += ['noa-ainoa.js','noa-voice.js','noa-ainoa.php']
 if __name__=='__main__':

@@ -29,3 +29,8 @@ with urllib.request.urlopen(req,timeout=30)as response:
  result=json.load(response)
  assert result['ok'] is False and result['error']=='login_required' and result['status']==401
 print('LIVE_JSON_AUTH_ERROR_ENVELOPE_OK')
+
+with urllib.request.urlopen('https://noastudio.ai.kr/noa-bridge/support.php?action=quote&type=music&key=invalid',timeout=30)as response:
+ result=json.load(response)
+ assert result['ok'] is False and result['error']=='login_required' and result['status']==401
+print('LIVE_SUPPORT_JSON_ERROR_ENVELOPE_OK')
