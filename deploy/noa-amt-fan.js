@@ -21,8 +21,25 @@
   const observer=new MutationObserver(()=>{if(reveal())observer.disconnect();});if(!reveal())observer.observe(document.body,{childList:true,subtree:true});
  }
  if(Date.now()>=end)return;
+ for(const post of document.querySelectorAll('.noa-notice-list details')){
+  if(post.querySelector('summary strong')?.textContent===title)post.querySelector('.noa-notice-body')?.prepend(cta());
+ }
  if(location.pathname==='/noa-lounge.php'){
-  const attach=()=>{for(const post of document.querySelectorAll('.noa-community-post[open]')){
+  const noticeURL='/noa-lounge.php?board=notice&nativePost=2#noa-notice-2';
+  const attach=()=>{
+   const params=new URLSearchParams(location.search);
+   const content=document.getElementById('ec-content');
+   if(!content)return;
+   if(params.get('category')==='notice'&&!params.has('post')&&!params.get('q')&&!params.get('mine')&&!params.get('saved')&&!content.querySelector('.amt-notice-link')){
+    const a=el('a',title);a.className='amt-notice-link ec-link';a.href=noticeURL;content.prepend(a);
+   }
+   const board=content.querySelector('[data-noa-community="notice"]');
+   if(board?.querySelector('a.noa-community-write[href*="login"]')&&!board.querySelector('.amt-public-notice')&&(!params.has('nativePost')||params.get('nativePost')==='2')){
+    const article=el('article');article.className='amt-public-notice';
+    article.append(el('h2',title),el('p','별무리 여러분, 람준파파가 K-POP 부문에 참가하고 있어요. 미전송(Unread), BLOOM, NO LIMITS 세 곡을 듣고 AMT 참가 페이지에서 응원을 보내 주세요.'),cta());
+    board.prepend(article);
+   }
+   for(const post of document.querySelectorAll('.noa-community-post[open]')){
    if(post.querySelector('summary strong')?.textContent!==title)continue;
    const body=post.querySelector('.noa-community-text');if(body&&!body.querySelector('.amt-fan-cta'))body.append(cta());
   }};

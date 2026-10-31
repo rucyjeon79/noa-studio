@@ -26,6 +26,22 @@ jobs:
           python scripts/noa_notice_publish.py --amt
       - name: Verify mobile popup, close, expiry and both destinations
         run: |
+          PYTHONPATH=scripts python - <<'PY'
+          import hashlib,hmac,secrets,time,urllib.request,os,paramiko
+          from pathlib import Path
+          from noa_full_inventory import connect
+          t=connect()
+          try:
+              with paramiko.SFTPClient.from_transport(t)as ftp:
+                  with ftp.open('/hosting/noastudio/noa-ai-lab/worker.key','rb')as f:key=f.read(129).strip()
+          finally:t.close()
+          stamp=str(int(time.time()));nonce=secrets.token_hex(16);target='/noa-music.php'
+          message='\n'.join(['N80-MUSIC-READ-1','GET',target,'',stamp,nonce])
+          req=urllib.request.Request('https://noastudio.ai.kr'+target,headers={'X-N80-Availability-Check':'1','X-N80-Media-Timestamp':stamp,'X-N80-Media-Nonce':nonce,'X-N80-Media-Signature':hmac.new(key,message.encode(),hashlib.sha256).hexdigest()})
+          with urllib.request.urlopen(req,timeout=45)as r:html=r.read()
+          assert b'id="music-browse"' in html
+          Path(os.environ['RUNNER_TEMP'],'amt-read-music.html').write_bytes(html)
+          PY
           npm install --prefix "$RUNNER_TEMP/fan-test" --no-save playwright@1.56.1
           cd "$RUNNER_TEMP/fan-test"
           node --input-type=module <<'JS'
@@ -41,10 +57,16 @@ jobs:
             const pop=page.waitForEvent('popup');
             await page.locator('#noa-amt-fan .amt-fan-cta').click();
             const external=await pop;await external.waitForURL(target,{waitUntil:'commit'});
-            await page.waitForURL(url=>url.pathname==='/bbs/login.php'||url.pathname==='/noa-music.php');
+            await page.waitForURL(url=>url.pathname==='/noa-login.php'||url.pathname==='/bbs/login.php'||url.pathname==='/noa-music.php');
             assert(decodeURIComponent(page.url()).includes('9fed48ee44d5b75621e4c7be'));
             const data=await (await page.request.get(base+'/noa-category-order.php')).json();
             assert(data.playlists.some(p=>p.id==='9fed48ee44d5b75621e4c7be'&&p.group==='story'&&p.title.includes('제2회')));
+            await page.route('**/noa-music.php?*collection=*',r=>r.fulfill({contentType:'text/html;charset=utf-8',path:process.env.RUNNER_TEMP+'/amt-read-music.html'}));
+            await page.goto(base+'/noa-music.php?group=story&genre=your-story&collection=9fed48ee44d5b75621e4c7be');
+            const songs=page.locator('[data-playlist-id="9fed48ee44d5b75621e4c7be"] [data-browse-level="4"]:visible .noa-inline-song');
+            await songs.first().waitFor();assert((await songs.allTextContents()).join(' ').includes('BLOOM'));
+            await page.goto(base+'/noa-lounge.php?board=notice&nativePost=2');
+            await page.locator('#ec-content .amt-fan-cta').waitFor();
             await page.clock.install({time:new Date('2026-11-16T00:00:01+09:00')});
             await page.goto(base);await page.evaluate(()=>sessionStorage.clear());await page.reload();assert.equal(await page.locator('#noa-amt-fan').count(),0);
           }finally{await browser.close();}
