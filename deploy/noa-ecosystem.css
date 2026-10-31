@@ -47,3 +47,8 @@
 #ecosystem[data-space=shop] .ec-tools button,#ecosystem[data-space=shop] .ec-actions button{white-space:nowrap;font-size:13px;padding:10px 12px;flex-shrink:0}
 #ecosystem[data-space=shop] .ec-cart-row>input{grid-column:1/-1;width:100%!important;min-width:0}
 @media(max-width:360px){#ecosystem[data-space=shop] .ec-buy{font-size:12px;padding-inline:6px}#ecosystem[data-space=shop] .ec-card h2{font-size:13px}}
+
+/* Reading and purchasing stay focused on the selected content. */
+#ecosystem[data-view=detail]>.ec-hero,#ecosystem[data-view=detail]>#community-boards{display:none}
+#ecosystem .ec-card>a.ec-open{display:block;text-decoration:none;color:inherit;text-align:left}
+#ecosystem .ec-card>a.ec-open:hover h2{text-decoration:underline;text-underline-offset:4px}
