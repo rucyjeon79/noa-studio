@@ -45,6 +45,18 @@ jobs:
             await page.addInitScript(()=>sessionStorage.setItem('noa-amt2-fan-2026','1'));
             await page.goto('https://noastudio.ai.kr/');
             await page.locator('[data-noa-community-home] .noa-feed-invite').getByText('별 하나가 모이면 별무리가 된다.',{exact:true}).waitFor();
+            const homeArt=['#noa-home-community .noa-banner-art','#noa-referral-banner img','.noa-monthly-intro img','[data-home-banner="goods"] img','[data-home-banner="youtube"] img','[data-home-banner="amt"] img'];
+            for(const width of [320,390,1280]){
+              await page.setViewportSize({width,height:844});
+              for(const selector of homeArt){
+                const pic=page.locator(selector).first();await pic.scrollIntoViewIfNeeded();await pic.evaluate(n=>n.decode());
+                const bounds=await pic.boundingBox();assert(bounds&&bounds.width>=50&&bounds.height>=45,selector+' visible at '+width);
+              }
+              const banner=page.locator('a.noa-feed-invite'), lines=banner.locator('.noa-banner-lines');
+              const label=await lines.locator('small').boundingBox(),title=await lines.locator('strong').boundingBox(),action=await lines.locator('span').boundingBox();
+              assert(title.y>=label.y+label.height-1&&action.y>=title.y+title.height-1,'separate copy lines at '+width);
+            }
+            await page.setViewportSize({width:390,height:844});
             assert((await page.locator('a.noa-feed-invite').getAttribute('href')).includes('compose=chat'));
             const root='https://noastudio.ai.kr';
             await page.locator('a.noa-feed-invite').click();
@@ -91,7 +103,7 @@ jobs:
             await page.goBack();await page.locator('#ec-lounge-nav a[aria-current="page"]').filter({hasText:'오늘의 노래'}).waitFor();
             await open('category=story');
             const offer=page.locator('.ec-story-offer');await offer.waitFor();
-            assert.equal(await offer.count(),1);
+            assert.equal(await offer.count(),1);await offer.locator('img').evaluate(i=>i.decode());
             assert(await offer.evaluate(n=>n.nextElementSibling?.id==='noa-song-requests' && n.getBoundingClientRect().top>=document.querySelector('#ec-lounge-nav').getBoundingClientRect().bottom-1));
             assert.equal(await offer.locator('button,a').count(),0);
             await open('category=chat');

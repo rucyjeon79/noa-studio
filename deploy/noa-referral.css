@@ -19,3 +19,6 @@ html body .noa-welcome-guide .nw-hero-art{display:block;width:100%;height:clamp(
 html body .noa-welcome-guide h3{display:flex;align-items:center;gap:15px}
 html body .noa-welcome-guide .nw-spot-art{display:block;width:76px;height:60px;flex:none;object-fit:contain}
 @media(max-width:380px){html body .noa-welcome-guide h3{gap:12px;font-size:17px}html body .noa-welcome-guide .nw-spot-art{width:61px;height:48px}}
+
+#noa-referral-banner .nrf-invite-photo{display:block;width:clamp(62px,20%,118px);height:86px;object-fit:cover;border-radius:6px;flex:none}
+@media(max-width:600px){#noa-referral-banner{display:grid;grid-template-columns:70px minmax(0,1fr);gap:3px 14px;padding:12px;text-align:left}#noa-referral-banner .nrf-invite-photo{grid-row:1/3;width:70px;height:90px}#noa-referral-banner .nrf-banner-action{grid-column:2;margin:4px 0 0}}

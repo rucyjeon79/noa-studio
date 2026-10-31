@@ -21,6 +21,17 @@
  }
  window.addEventListener('noa-media-activity',e=>{if(activeReplyAudio&&e.detail?.key!==activeReplyAudio.dataset.key)activeReplyAudio.pause();});
  new MutationObserver(()=>{if(activeReplyAudio&&!activeReplyAudio.isConnected){activeReplyAudio.pause();activeReplyAudio=null;}}).observe(document.documentElement,{childList:true,subtree:true});
+ function illustratedBanner(kind){
+  const story=kind==='story';
+  const banner=document.createElement(story?'aside':'a');banner.className=story?'ec-story-offer':'noa-feed-invite';
+  if(story)banner.setAttribute('aria-label','오픈 기념 혜택');else banner.href='/noa-lounge.php?compose=chat';
+  const art=document.createElement('img');art.alt='';art.className='noa-banner-art';art.src='/noa-assets/editorial-'+(story?'home-story':'fans-stars')+'.webp';
+  const copy=document.createElement('span');copy.className='noa-banner-lines';
+  for(const [tag,text] of [['small',story?'OPEN EVENT · 오픈 기념':'별무리 이야기'],['strong',story?'사연곡 신청 무료':'별 하나가 모이면 별무리가 된다.'],['span',story?'소중한 이야기를 한 곡의 음악으로 들려주세요.':'이야기 쓰기 ↗']]){
+   const line=document.createElement(tag);line.textContent=text;copy.append(line);
+  }
+  banner.append(art,copy);return banner;
+ }
  function mount(host,initial=null){if(host.dataset.noaCommunityMounted)return;host.dataset.noaCommunityMounted='true';const compact=host.hasAttribute('data-noa-community-compact');
  const board=host.dataset.noaCommunity,privateBoard=board==='song_request',api='/noa-bridge/community.php';
  const el=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
@@ -33,6 +44,8 @@
  const list=el('div');list.className='noa-community-list';const status=el('p');status.className='noa-muted';status.setAttribute('role','status');const pager=el('nav');pager.className='noa-community-pager';pager.setAttribute('aria-label','게시글 목록 이동');
  const guide=board==='notice'?document.getElementById('noa-published-welcome'):null;
  host.replaceChildren(heading);
+ if(location.pathname==='/noa-music.php'&&privateBoard)host.prepend(illustratedBanner('story'));
+ if(location.pathname==='/noa-youtube.php'&&board==='free')host.append(illustratedBanner('chat'));
  // This public article was permission-checked and matched to the reviewed guide on the server.
  if(guide?.dataset.guest==='1' && new URLSearchParams(location.search).get('nativePost')==='1'){
   heading.querySelector('h2,h3').textContent='공지사항';
@@ -63,7 +76,7 @@
  async function load(){const revision=++listRevision;status.textContent='게시글을 불러오는 중입니다.';list.replaceChildren();pager.replaceChildren();try{const data=initial||await request({action:'list',board,...(before?{before}:{}),...(!before&&new URLSearchParams(location.search).get('nativePost')?{focus:new URLSearchParams(location.search).get('nativePost')}:{})});if(revision!==listRevision)return;state=data;csrf=data.csrf;if(data.title)heading.querySelector('h2,h3').textContent=data.title;actions.replaceChildren();
    if(compact){const all=el('a','전체 보기');all.href=destination(board);all.setAttribute('aria-label',(initial?.title||board)+' 전체 보기');actions.append(all);}
    else if(privateBoard){const create=button('사연곡 신청하기',()=>{compose.hidden=!compose.hidden;if(!compose.hidden){writeForm();compose.querySelector('input')?.focus();}else compose.replaceChildren();});create.className='noa-community-write';if(!data.canWrite){create.textContent='로그인하고 사연 남기기';create.onclick=()=>{location.href='/noa-login.php?'+new URLSearchParams({url:location.pathname+location.search});};}actions.append(create);if(data.admin){const manage=el('a','게시판 관리');manage.href='/bbs/board.php?bo_table=song_request&native=1';actions.append(manage);}}
-   else{if(location.pathname!=='/noa-lounge.php'){const all=el('a','전체 보기');all.href=destination(board);actions.append(all);}if(data.canWrite){const write=el('a','이야기 쓰기');write.className='noa-community-write';write.href=board==='free'?'/noa-lounge.php?compose=chat':'/bbs/write.php?'+new URLSearchParams({bo_table:board});actions.append(write);}}
+   else{if(location.pathname!=='/noa-lounge.php'){const all=el('a','전체 보기');all.href=destination(board);actions.append(all);}if(data.canWrite&&!(location.pathname==='/noa-youtube.php'&&board==='free')){const write=el('a','이야기 쓰기');write.className='noa-community-write';write.href=board==='free'?'/noa-lounge.php?compose=chat':'/bbs/write.php?'+new URLSearchParams({bo_table:board});actions.append(write);}}
    data.items.forEach(item=>list.append(row(item)));status.textContent=data.items.length?'':compact?'등록된 글이 없습니다.':privateBoard?'당신의 사연이 한 곡의 음악이 됩니다. 첫 사연을 들려주세요.':'짧은 인사도 좋아요. 첫 이야기를 들려주세요.';
    const target=document.getElementById(location.hash.slice(1)||('noa-'+board+'-'+new URLSearchParams(location.search).get('nativePost')));if(target&&list.contains(target)&&target.matches('details'))target.open=true;
    if(history.length)pager.append(button('새 글',()=>{before=history.pop();load();}));if(data.more)pager.append(button('이전 글 5개',()=>{history.push(before);before=data.next;load();}));
@@ -85,13 +98,9 @@
  }
  if(rows.length)host.append(list);else{const empty=document.createElement('p');empty.className='noa-feed-empty';empty.textContent=results.every(r=>r.status==='rejected')?'소식을 잠시 불러오지 못했어요.':'첫 이야기를 기다리고 있어요.';host.append(empty);}
  if(results.some(r=>r.status==='rejected')){const retry=document.createElement('button');retry.type='button';retry.textContent='소식 다시 불러오기';retry.onclick=()=>homeFeed(host);host.append(retry);}
- const invite=document.createElement('a');invite.className='noa-feed-invite';invite.href='/noa-lounge.php?compose=chat';
- const tag=document.createElement('small');tag.textContent='별무리 이야기';
- const copy=document.createElement('strong');copy.textContent='별 하나가 모이면 별무리가 된다.';
- const action=document.createElement('span');action.textContent='이야기 쓰기 ↗';
- invite.append(tag,copy,action);host.append(invite);host.dataset.ready='true';
+ host.append(illustratedBanner('chat'));host.dataset.ready='true';
  }
- window.NoaCommunity={mount,destination};
+ window.NoaCommunity={mount,destination,illustratedBanner};
  document.querySelectorAll('[data-noa-community]').forEach(host=>mount(host));
  const home=document.querySelector('[data-noa-community-home]');if(home)homeFeed(home);
 })();
