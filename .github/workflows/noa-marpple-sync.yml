@@ -2,7 +2,7 @@ name: NOA Marpple catalog sync
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/noa-marpple-sync.yml','scripts/noa_marpple_sync.py']
+    paths: ['.github/workflows/noa-marpple-sync.yml','scripts/noa_marpple_sync.py','scripts/noa_marpple_collect.mjs']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
@@ -12,7 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python -m pip install beautifulsoup4
-      - run: python scripts/noa_marpple_sync.py
+      - run: |
+          npm install --prefix "$RUNNER_TEMP/marpple" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/noa_marpple_collect.mjs "$RUNNER_TEMP/marpple/collect.mjs"
+          node "$RUNNER_TEMP/marpple/collect.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: marpple-catalog, path: marpple-proof/, retention-days: 3}
