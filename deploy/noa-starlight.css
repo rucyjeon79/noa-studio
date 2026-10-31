@@ -243,3 +243,33 @@ html[data-noa-style] body .nw-breadcrumb a{padding:8px 0;border:0;border-radius:
 html[data-noa-style] body .nw-breadcrumb a[aria-current]{color:var(--noa-text)}
 html[data-noa-style] body .noa-section-navigation a:focus-visible{outline:2px solid var(--noa-info);outline-offset:2px}
 @media(max-width:600px){html[data-noa-style] body .noa-section-navigation{gap:6px}html[data-noa-style] body .noa-section-navigation a{padding:10px 12px;font-size:12px}}
+
+/* Home record library. Catalog labels live below the artwork, as on a record shelf. */
+html body .noa-record-library{padding-block:clamp(28px,4vw,54px);border-block:1px solid var(--noa-line,#3a3935)}
+html body .noa-record-library .noa-section-head{margin-bottom:clamp(20px,3vw,32px)}
+html body .noa-record-library .noa-eyebrow{font-size:11px;letter-spacing:.21em;color:var(--noa-accent,#c9b485)}
+html body .noa-record-library h2{font-size:clamp(26px,3vw,40px);letter-spacing:-.055em;line-height:1.2}
+html body .noa-record-library h2>svg{display:none}
+html body .noa-record-library #noa-genres.noa-sleeves{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px clamp(12px,2vw,26px)}
+html body .noa-record-library #noa-genres>.record-sleeve{--ink:#243441;--label:#dcc18b;display:block;padding:0;overflow:visible;background:none;border:0;border-radius:2px;color:inherit;text-decoration:none;min-width:0}
+.record-sleeve[data-collection=ep]{--ink:#443441!important;--label:#d2b8b1!important}
+.record-sleeve[data-collection=story]{--ink:#303d39!important;--label:#c2cda3!important}
+.record-sleeve[data-collection=cover]{--ink:#493d31!important;--label:#d5b585!important}
+.record-stack{position:relative;display:block;aspect-ratio:1.12;isolation:isolate}
+.record-face{position:absolute;inset:0 auto 0 0;width:89.3%;overflow:hidden;background:var(--ink);box-shadow:0 4px 9px #0004;border:1px solid #ffffff26;border-radius:2px}
+.record-art{display:block;width:100%;height:100%;object-fit:cover}
+.record-face::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#0005,transparent 33%,transparent 52%,#070b11d9),linear-gradient(90deg,#0005,transparent 4%);pointer-events:none}
+.record-imprint,.record-edition{position:absolute;z-index:1;left:9%;color:#fff7e6;line-height:1.2}
+.record-imprint{top:9%;font-size:clamp(8px,.85vw,12px);letter-spacing:.17em}
+.record-edition{bottom:9%;right:5%;font-family:Georgia,serif;font-size:clamp(15px,1.7vw,28px);letter-spacing:.045em}
+.record-disc{position:absolute;inset:4% 0 4% auto;aspect-ratio:1;border-radius:50%;border:1px solid #7c8078;background:repeating-radial-gradient(circle,transparent 0 2px,#959a922f 2px 3px),conic-gradient(from 35deg,#151819,#616660 35deg,#171a19 72deg,#252827 145deg,#5b615e 205deg,#171a1a 248deg,#151819);transition:transform .25s ease}
+.record-label{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:7px;align-items:baseline;margin-top:14px}
+.record-number{font:italic 13px Georgia,serif;color:var(--noa-muted)}
+html body .noa-record-library #noa-genres .record-name{font-size:clamp(15px,1.5vw,22px);letter-spacing:-.045em;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere}
+.record-arrow{font-size:14px;color:var(--noa-muted)}
+html body .noa-record-library #noa-genres .record-note{display:block;margin:6px 0 0;line-height:1.5;font-size:12px;color:var(--noa-muted);white-space:normal;word-break:keep-all}
+.record-sleeve:focus-visible{outline:2px solid var(--noa-accent);outline-offset:4px}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){.record-sleeve:hover .record-disc{transform:translateX(3px) rotate(12deg)}}
+@media(max-width:900px){html body .noa-record-library #noa-genres.noa-sleeves{grid-template-columns:repeat(2,minmax(0,1fr))}.record-label{gap:5px;margin-top:11px}}
+@media(max-width:350px){.record-number{display:none}.record-label{grid-template-columns:minmax(0,1fr) auto}}
+.record-face{border-inline-start:3px solid var(--label)}

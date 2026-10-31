@@ -62,6 +62,48 @@ function fill(id,rows,playlist=false,integrated=false){
  if(!state){const pager=document.createElement('nav');pager.className='noa-home-pages';pager.setAttribute('aria-label',host.closest('section').querySelector('h2').textContent+' 페이지');host.after(pager);state={host,pager,page:0};homeLists.set(id,state);homeResize.observe(host);}
  Object.assign(state,{rows,playlist,integrated,page:0});renderList(state);
 }
+function renderRecordLibrary(){
+ const host=document.getElementById('noa-genres');
+ if(!host||!window.NoaBrowse?.groups)return;
+ const section=host.closest('section');
+ section.classList.add('noa-record-library');
+ host.classList.replace('noa-genres','noa-sleeves');
+ const eyebrow=section.querySelector('.noa-eyebrow');
+ if(eyebrow)eyebrow.textContent='NOA RECORD LIBRARY';
+ const covers={
+  original:['ORIGINALS','editorial-starlight-studio.webp','노아의 목소리로 시작된 곡들'],
+  ep:['EP SERIES','editorial-world-journey.webp','첫 장부터 이어 듣는 ACT와 EP'],
+  story:['YOUR STORIES','editorial-fans-stars.webp','별무리의 사연이 노래가 되는 곳'],
+  cover:['COVER SESSIONS','editorial-act-1.webp','익숙한 명곡에 담은 노아의 목소리']
+ };
+ let member=true;
+ try{member=JSON.parse(document.getElementById('noa-access')?.textContent||'null')?.member!==false;}catch{}
+ const element=(tag,cls,text)=>{const node=document.createElement(tag);node.className=cls;if(text)node.textContent=text;return node;};
+ const tiles=window.NoaBrowse.groups.map(([id,title,genres],index)=>{
+  const [edition,file,note]=covers[id]||['COLLECTION',null,title];
+  const link=element('a','noa-genre record-sleeve');
+  const destination='/noa-music.php?group='+encodeURIComponent(id);
+  link.href=member?destination:'/noa-login.php?'+new URLSearchParams({url:destination});
+  link.dataset.collection=id;
+  const translated=window.NoaUI?.translate(title)||title;
+  link.setAttribute('aria-label',translated+(member?' 컬렉션 열기':' · 로그인 후 컬렉션 열기'));
+  const jacket=element('span','record-stack');jacket.setAttribute('aria-hidden','true');
+  const disc=element('span','record-disc');
+  const face=element('span','record-face');
+  const art=element('img','record-art');
+  art.alt='';art.loading='lazy';art.decoding='async';art.width=440;art.height=440;
+  art.src=file?'/noa-assets/'+file:window.NoaBrowse.genreArt(genres[0]);
+  art.onerror=()=>{art.hidden=true;};
+  face.append(art,element('span','record-imprint','NOA  /  STUDIO'),element('span','record-edition',edition));
+  jacket.append(disc,face);
+  const label=element('span','record-label');
+  label.append(element('span','record-number',String(index+1).padStart(2,'0')),element('strong','record-name',translated),element('span','record-arrow','↗'));
+  link.append(jacket,label,element('small','record-note',note));
+  return link;
+ });
+ host.replaceChildren(...tiles);
+}
+renderRecordLibrary();
 (async()=>{try{
  const data=await (window.NoaHomeSnapshot??=fetch('/noa-bridge/home.php',{credentials:'same-origin',cache:'no-store'}).then(async r=>{if(!r.ok)throw Error();const data=await r.json();if(!data.ok)throw Error();return data;}));
  const integrated=data.popularity?.jukeboxCollectionStatus==='enabled';
@@ -76,7 +118,7 @@ function fill(id,rows,playlist=false,integrated=false){
 
  document.getElementById('noa-playlist-basis').textContent='플레이리스트를 골라 음악을 이어 들어보세요.';
  const date=new Date(data.popularity?.aggregatedAt||data.collectedAt);document.getElementById('noa-ranking-status').textContent=(data.popularity?'인기 음악':'YouTube 조회수 기준')+(Number.isFinite(date.getTime())?' · '+date.toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'}):'');
- const host=document.getElementById('noa-genres');for(const [id,title,genres]of window.NoaBrowse.groups){const a=document.createElement('a');a.className='noa-genre';a.href='/noa-music.php?group='+encodeURIComponent(id);const name=document.createElement('strong');name.textContent=window.NoaUI?.translate(title)||title;const small=document.createElement('small');small.textContent=({original:genres.length+'개 장르의 오리지널 음악',ep:genres.length+'개 장르 · ACT·EP별 감상',story:'별무리의 사연으로 만든 음악',cover:'노아의 목소리로 다시 듣는 명곡'})[id]||'음악 둘러보기';const image=document.createElement('img');image.src=window.NoaBrowse.genreArt(genres[0]);image.alt='';image.loading='lazy';image.decoding='async';image.width=480;image.height=270;image.className='noa-collection-image';image.onerror=()=>{image.hidden=true;};a.append(image,name,small);host.append(a);}
+
  document.body.dataset.noaHomeReady='true';
  }catch{for(const id of ['noa-featured','noa-ep','noa-stories','noa-covers','noa-acts']){const host=document.getElementById(id);host.replaceChildren();const p=document.createElement('p');p.className='noa-empty';p.textContent='공개 영상 순위를 불러오지 못했습니다. 잠시 후 다시 열어 주세요.';host.append(p);}document.getElementById('noa-ranking-status').textContent='잠시 후 다시 이용해 주세요.';document.body.dataset.noaHomeReady='error';}
 })();})();
