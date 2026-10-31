@@ -22,7 +22,7 @@ function nrf_invite(mixed $code,int $now):?array {
  return ['code'=>$code,'capturedAt'=>$now];
 }
 function nrf_session_invite(array $session,int $now):?array {
- $v=$session['noa_referral']??null;if(!is_array($v)||!is_int($v['capturedAt']??null)||$v['capturedAt']>$now||$now-$v['capturedAt']>7*86400)return null;
+ $v=$session['noa_referral']??null;if(!is_array($v)||!is_int($v['capturedAt']??null)||$v['capturedAt']>$now)return null;
  return nrf_invite($v['code']??null,$v['capturedAt']);
 }
 /** Called only by verified native signup completion / approved NEW creator application. */

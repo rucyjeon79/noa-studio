@@ -15,7 +15,7 @@
    const input=box.querySelector('input');input.value=v.url;input.onclick=()=>input.select();
    const copy=async()=>{try{await navigator.clipboard.writeText(v.url);status.textContent='초대 링크를 복사했어요. 친구에게 보내 주세요.';}catch{input.focus();input.select();status.textContent='아래 링크를 길게 누르거나 선택해서 복사해 주세요.';}};
    box.querySelector('[data-copy]').onclick=copy;box.querySelector('[data-native]').onclick=async()=>{if(!navigator.share||!await nativeShare())await copy();};
-   if(!navigator.share)box.querySelector('[data-native]').remove();
+   if(!navigator.share){box.querySelector('[data-native]').remove();box.querySelector('[data-copy]').classList.add('nrf-primary');}
   }
   if(state)render(state);else load().then(render).catch(()=>{status.textContent='초대 링크를 준비하지 못했어요.';const retry=document.createElement('button');retry.textContent='다시 시도';retry.onclick=()=>{d.close();dialog();};box.append(retry);});
  }

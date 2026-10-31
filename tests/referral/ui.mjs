@@ -15,5 +15,14 @@ try{for(const width of [320,390,1280]){
  if(live)assert(await p.getByRole('link',{name:'로그인하고 내 초대 링크 받기'}).count());else{assert.equal(await p.locator('#nrf-url').inputValue(),url);await p.addInitScript(()=>{});}
  await p.screenshot({path:`referral-proof/${live?'live':'fixture'}-share-${width}.png`});
  await p.getByRole('button',{name:'초대 창 닫기'}).click();await p.locator('#noa-referral-share').click();await p.locator('#noa-referral-dialog').waitFor();if(!live)assert.equal(await p.locator('#nrf-url').inputValue(),url);
+ if(!live){
+ await p.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async value=>{window.__copied=value;}}}));
+ await p.getByRole('button',{name:'링크 복사',exact:true}).click();assert.equal(await p.evaluate(()=>window.__copied),url);
+ await p.getByRole('button',{name:'초대 창 닫기'}).click();
+ await p.evaluate(()=>Object.defineProperty(navigator,'share',{configurable:true,value:async value=>{window.__shared=value;}}));
+ await p.locator('#noa-referral-share').click();assert.equal(await p.evaluate(()=>window.__shared.url),url);assert.equal(await p.locator('#noa-referral-dialog').count(),0);
+ await p.evaluate(()=>Object.defineProperty(navigator,'share',{configurable:true,value:async()=>{throw new DOMException('cancel','AbortError');}}));
+ await p.locator('#noa-referral-banner').click();assert.equal(await p.locator('#noa-referral-dialog').count(),0);
+ }
  assert.deepEqual(errors,[]);await context.close();
  }console.log(live?'REFERRAL_LIVE_GUEST_LAYOUT_OK':'REFERRAL_SHARED_LINK_HEADER_BANNER_RESPONSIVE_OK');}finally{await browser.close();}
