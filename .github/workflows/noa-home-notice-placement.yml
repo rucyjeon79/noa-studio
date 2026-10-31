@@ -25,7 +25,7 @@ jobs:
           PYTHONPATH=scripts python - <<'PY'
           import sys
           import noa_ainoa_deploy as release
-          release.FILES={'noa-bridge/notices.php':'bridge/notices.php','noa-app/home.php':'deploy/noa-app/home.php'}
+          release.FILES={'noa-app/home.php':'deploy/noa-app/home.php'}
           release.NEW=set()
           try:
               release.main()
@@ -35,7 +35,7 @@ jobs:
                   release.main()
               raise
           PY
-      - name: Verify published home notice selection
+      - name: Verify published notice and ranking sections
         run: |
           curl -fsS "https://noastudio.ai.kr/?notice-check=$GITHUB_SHA" -o /tmp/noa-home-check.html
           python - <<'PY'
