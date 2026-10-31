@@ -29,9 +29,18 @@ function nc_reply_card(string $key,int $request):?array{
 }
 function nc_music_search(string $term):array{
  global $member;if(!nc_is_creator())throw new DomainException('comment_not_allowed');if(mb_strlen($term)>80)throw new DomainException('invalid_input');
- $where="kind IN ('single','story')";if(!nc_admin())$where.=" AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.ownerId'))=".nc_q((string)$member['mb_id']);
- $where.=" AND LOCATE(".nc_q(mb_strtolower(trim($term))).",LOWER(CONCAT(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(payload,'$.title')),''),' ',COALESCE(JSON_UNQUOTE(JSON_EXTRACT(payload,'$.body.confirmedTitle')),''))))>0";
- $out=[];foreach(nc_rows('SELECT doc_key FROM noa_documents WHERE '.$where.' ORDER BY updated_at DESC LIMIT 40')as $r){try{$out[]=nc_music($r['doc_key'],true);}catch(DomainException $e){continue;}if(count($out)>=20)break;}return $out;
+ require_once __DIR__.'/storage.php';require_once __DIR__.'/sound-core.php';require_once __DIR__.'/member-access.php';require_once dirname(__DIR__).'/noa-app/jukebox/core.php';
+ // Use the same merged document/catalog identities as the music player.
+ $needle=mb_strtolower(preg_replace('/\s+/u','',trim($term)));$out=[];
+ foreach(nj_catalog(noa_bridge_pdo()) as $key=>$doc){
+  if(!$doc||(!nc_admin()&&!nam_owner($doc,(array)$member))||!noa_sound_visible($doc,false))continue;
+  $title=(string)(($doc['body']['confirmedTitle']??'')?:($doc['title']??''));
+  $haystack=mb_strtolower(preg_replace('/\s+/u','',$title.' '.($doc['title']??'')));
+  if($needle!==''&&!str_contains($haystack,$needle))continue;
+  try{$out[]=nc_music((string)$key,true);}catch(DomainException $e){continue;}
+  if(count($out)>=20)break;
+ }
+ return $out;
 }
 function nc_request_audio_allowed(int $id,string $key):bool{
  if(!nc_admin()&&!nc_owner_verified($id)&&!nc_creator_shared($id))return false;
