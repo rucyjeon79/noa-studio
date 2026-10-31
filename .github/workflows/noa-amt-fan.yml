@@ -22,8 +22,8 @@ jobs:
           php -l deploy/noa-amt-fan.extend.php && php -l scripts/noa_notice_publish.php
           node --check deploy/noa-amt-fan.js
           pip -q install 'paramiko>=3,<5'
-          python scripts/noa_amt_release.py
           python scripts/noa_notice_publish.py --amt
+          python scripts/noa_amt_release.py
       - name: Verify mobile popup, close, expiry and both destinations
         run: |
           npm install --prefix "$RUNNER_TEMP/fan-test" --no-save playwright@1.56.1
@@ -52,6 +52,10 @@ jobs:
             await page.goto(base+'/noa-music.php?group=story&genre=your-story&collection=9fed48ee44d5b75621e4c7be&noa-find=story%3Ayour-story%3A35fa27149612463491996053');
             const songs=page.locator('[data-playlist-id="9fed48ee44d5b75621e4c7be"] [data-browse-level="4"]:visible .noa-inline-song');
             await songs.first().waitFor();assert((await songs.allTextContents()).join(' ').includes('BLOOM'));
+            await page.goto(base+'/noa-lounge.php?category=notice&view=list&q='+encodeURIComponent('람준파파 응원하기'));
+            await page.getByText('람준파파 응원하기 · 제2회 AMT AI 작곡대회',{exact:true}).first().click();
+            await page.waitForURL(url=>url.searchParams.get('post')==='d241a8b58ef64b469fca77aacfca1031');
+            assert.equal(await page.locator('.amt-notice-link').count(),0);
             await page.goto(base+'/noa-lounge.php?board=notice&nativePost=2');
             await page.locator('#ec-content .amt-fan-cta').waitFor();
             await page.clock.install({time:new Date('2026-11-16T00:00:01+09:00')});

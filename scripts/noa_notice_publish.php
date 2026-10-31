@@ -18,6 +18,16 @@ try{
  $key=$p['noticeKey'];$bodyHash=hash('sha256',$p['body']);$write=ng_table($g5['write_prefix'].'notice');$boards=ng_table($g5['board_table']);$new=ng_table($g5['board_new_table']);$members=ng_table($g5['member_table']);
  $board=ng_one("SELECT bo_table,bo_notice,bo_list_level,bo_read_level,bo_count_write FROM $boards WHERE bo_table='notice'");if(!$board)throw new RuntimeException('notice_board_missing');
  $author=ng_one('SELECT mb_id,mb_level FROM '.$members.' WHERE mb_id='.ng_q((string)$config['cf_admin']));if(!$author||(int)$author['mb_level']<10)throw new RuntimeException('native_super_admin_missing');
+ if($key==='NOA-20261031-AMT2-FAN'){
+  require_once __DIR__.'/ecosystem-core.php';
+  require_once __DIR__.'/notices.php';
+  $id='d241a8b58ef64b469fca77aacfca1031';$owner=(string)$author['mb_id'];$docKey='ecosystem:post:'.$id;
+  $body=nn_plain($p['body']);$created=!ns_doc($docKey);
+  if($created)eco_save(['id'=>$owner,'level'=>10,'name'=>'NOA STUDIO','admin'=>true],['id'=>$id,'revision'=>0,'space'=>'lounge','category'=>'notice','visibility'=>'public','title'=>$p['title'],'body'=>$body]);
+  $saved=ns_doc($docKey)['data']??[];
+  if(($saved['title']??'')!==$p['title']||($saved['category']??'')!=='notice'||($saved['body']??'')!==$body)throw new RuntimeException('community_notice_mismatch');
+  ng_reply(['ok'=>true,'created'=>$created,'id'=>$id,'bodySha256'=>hash('sha256',$body)]);
+ }
  $columns=[];$rows=ng_query('SHOW COLUMNS FROM '.$write);while($row=sql_fetch_array($rows))$columns[$row['Field']]=$row;
  foreach(['wr_id','wr_num','wr_reply','wr_is_comment','wr_parent','wr_subject','wr_content','wr_option','wr_datetime','wr_last','wr_9','wr_10','mb_id']as $field)if(!isset($columns[$field]))throw new RuntimeException('native_notice_schema_mismatch');
  $lock=ng_one("SELECT GET_LOCK('noa-welcome-notice-20261026',15) AS acquired");if((int)($lock['acquired']??0)!==1)throw new RuntimeException('notice_publish_busy');$locked=true;

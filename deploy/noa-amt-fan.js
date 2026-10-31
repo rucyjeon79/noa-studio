@@ -25,14 +25,14 @@
   if(post.querySelector('summary strong')?.textContent===title)post.querySelector('.noa-notice-body')?.prepend(cta());
  }
  if(location.pathname==='/noa-lounge.php'){
-  const noticeURL='/noa-lounge.php?board=notice&nativePost=2#noa-notice-2';
+  const legacy=new URLSearchParams(location.search);
+  if(legacy.get('board')==='notice'&&legacy.get('nativePost')==='2'){location.replace('/noa-lounge.php?post=d241a8b58ef64b469fca77aacfca1031#ec-content');return;}
   const attach=()=>{
    const params=new URLSearchParams(location.search);
    const content=document.getElementById('ec-content');
    if(!content)return;
-   if(params.get('category')==='notice'&&!params.has('post')&&!params.get('q')&&!params.get('mine')&&!params.get('saved')&&!content.querySelector('.amt-notice-link')){
-    const a=el('a',title);a.className='amt-notice-link ec-link';a.href=noticeURL;content.prepend(a);
-   }
+   const detail=content.querySelector('.ec-detail');
+   if(params.get('post')==='d241a8b58ef64b469fca77aacfca1031'&&detail&&!detail.querySelector('.amt-fan-cta'))detail.querySelector('.ec-body')?.after(cta());
    const board=content.querySelector('[data-noa-community="notice"]');
    if(board?.querySelector('a.noa-community-write[href*="login"]')&&!board.querySelector('.amt-public-notice')&&(!params.has('nativePost')||params.get('nativePost')==='2')){
     const article=el('article');article.className='amt-public-notice';
