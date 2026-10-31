@@ -54,14 +54,14 @@
  async function load(){const revision=++listRevision;status.textContent='게시글을 불러오는 중입니다.';list.replaceChildren();pager.replaceChildren();try{const data=initial||await request({action:'list',board,...(before?{before}:{}),...(!before&&new URLSearchParams(location.search).get('nativePost')?{focus:new URLSearchParams(location.search).get('nativePost')}:{})});if(revision!==listRevision)return;state=data;csrf=data.csrf;if(data.title)heading.querySelector('h2,h3').textContent=data.title;actions.replaceChildren();
    if(compact){const all=el('a','전체 보기');all.href=destination(board);all.setAttribute('aria-label',(initial?.title||board)+' 전체 보기');actions.append(all);}
    else if(privateBoard){const create=button('사연곡 신청하기',()=>{compose.hidden=!compose.hidden;if(!compose.hidden){writeForm();compose.querySelector('input')?.focus();}else compose.replaceChildren();});create.className='noa-community-write';if(!data.canWrite){create.textContent='로그인하고 사연 남기기';create.onclick=()=>{location.href='/noa-login.php?'+new URLSearchParams({url:location.pathname+location.search});};}actions.append(create);if(data.admin){const manage=el('a','게시판 관리');manage.href='/bbs/board.php?bo_table=song_request&native=1';actions.append(manage);}}
-   else{const all=el('a','전체 보기');all.href=destination(board);actions.append(all);if(data.canWrite){const write=el('a','이야기 쓰기');write.className='noa-community-write';write.href='/bbs/write.php?'+new URLSearchParams({bo_table:board});actions.append(write);}}
+   else{if(location.pathname!=='/noa-lounge.php'){const all=el('a','전체 보기');all.href=destination(board);actions.append(all);}if(data.canWrite){const write=el('a','이야기 쓰기');write.className='noa-community-write';write.href=board==='free'?'/noa-lounge.php?compose=chat':'/bbs/write.php?'+new URLSearchParams({bo_table:board});actions.append(write);}}
    data.items.forEach(item=>list.append(row(item)));status.textContent=data.items.length?'':compact?'등록된 글이 없습니다.':privateBoard?'당신의 사연이 한 곡의 음악이 됩니다. 첫 사연을 들려주세요.':'짧은 인사도 좋아요. 첫 이야기를 들려주세요.';
    const target=document.getElementById(location.hash.slice(1)||('noa-'+board+'-'+new URLSearchParams(location.search).get('nativePost')));if(target&&list.contains(target)&&target.matches('details'))target.open=true;
    if(history.length)pager.append(button('새 글',()=>{before=history.pop();load();}));if(data.more)pager.append(button('이전 글 5개',()=>{history.push(before);before=data.next;load();}));
   }catch(e){if(revision===listRevision){status.textContent=e.message;pager.append(button('다시 불러오기',load));}}}
  load();
  }
- const categoryNames={chat:'별무리 자유수다',music:'오늘의 노래',story:'당신의 이야기, 우리의 음악',diary:'노아의 일기',event:'별무리 이벤트',notice:'공지'};
+ const categoryNames={chat:'별무리 이야기',music:'오늘의 노래',story:'당신의 이야기, 우리의 음악',diary:'노아의 일기',event:'별무리 이벤트',notice:'공지'};
  const stamp=value=>{if(typeof value==='number')return value*1000;const t=Date.parse(String(value||'').replace(' ','T')+(/Z$|[+]\d\d:\d\d$/.test(String(value))?'':'+09:00'));return Number.isFinite(t)?t:0;};
  const dateLabel=value=>value?new Intl.DateTimeFormat('ko-KR',{month:'long',day:'numeric',timeZone:'Asia/Seoul'}).format(new Date(value)):'';
  async function homeFeed(host){
