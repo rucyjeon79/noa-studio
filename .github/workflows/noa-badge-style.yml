@@ -1,8 +1,8 @@
-name: NOA member badge stylesheet
+name: NOA member badges and operating rules
 on:
   push:
     branches: [main]
-    paths: ['deploy/noa-member-badges.css', '.github/workflows/noa-badge-style.yml']
+    paths: ['deploy/noa-member-badges.css', 'deploy/noa-membership.php', '.github/workflows/noa-badge-style.yml']
 permissions: {contents: read}
 concurrency: {group: noa-production-sftp, cancel-in-progress: false}
 jobs:
@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
       - run: python -m pip install 'paramiko>=3,<5'
-      - name: Publish and verify the member badge stylesheet
+      - name: Publish member presentation files
         env:
           GH_TOKEN: ${{ github.token }}
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
@@ -23,10 +23,11 @@ jobs:
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
           PYTHONPATH: scripts
         run: |
+          php -l deploy/noa-membership.php
           python - <<'PY'
           import sys
           import noa_ainoa_deploy as release
-          release.FILES = {'noa-member-badges.css': 'deploy/noa-member-badges.css'}
+          release.FILES = {'noa-member-badges.css': 'deploy/noa-member-badges.css', 'noa-membership.php': 'deploy/noa-membership.php'}
           release.NEW = set()
           try:
               release.main()
