@@ -28,3 +28,22 @@ body.noa-record-room #music-browse .lp-edition>.lp-edition-art{display:block;pad
 body.noa-record-room #music-browse .lp-edition>span:last-child{padding:0}
 body.noa-record-room #music-browse .lp-edition strong{color:inherit;text-shadow:none}
 body.noa-record-room #music-browse .lp-edition[aria-expanded="true"],body.noa-record-room #music-browse .lp-edition[aria-current="true"]{border-bottom-color:var(--noa-accent)}
+
+/* Keep the sleeve and disc in the same grid cell when shared card rules are active. */
+body.noa-record-room #music-browse .lp-edition>.lp-edition-art{
+  position:relative;inset:auto;width:100%;aspect-ratio:1.12;overflow:hidden;background:transparent;
+}
+body.noa-record-room #music-browse .lp-edition>span:last-child{
+  position:static;inset:auto;background:transparent;
+}
+body.noa-record-room #music-browse .lp-edition-art>.lp-spindle{
+  height:92%;width:auto;
+}
+body.noa-record-room .lp-track-art:not(.lp-dock-art){--art-size:var(--noa-list-cover,44px)}
+body.noa-record-room .lp-dock-art{--art-size:32px}
+body.noa-record-room .lp-track-art.lp-on-record{width:calc(var(--art-size)*1.42)}
+body.noa-record-room .lp-track-art>.lp-spindle{width:auto;aspect-ratio:1}
+body.noa-record-room #songs .song:has(.lp-running),
+body.noa-record-room #music-browse .noa-inline-song:has(.lp-running){
+  box-shadow:inset 3px 0 var(--noa-success,#74bfa4);
+}
