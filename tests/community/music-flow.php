@@ -2,7 +2,7 @@
 declare(strict_types=1);
 $root='/tmp/noa-community-fixture';@mkdir($root.'/noa-bridge',0700,true);
 foreach(['community-navigation.php','community-music.php']as $f)copy('bridge/'.$f,$root.'/noa-bridge/'.$f);
-require __DIR__.'/fixture.php';
+require __DIR__.'/fixture.php';require_once __DIR__.'/../../bridge/catalog-store.php';
 foreach(['storage.php','sound-core.php','community-audio.php']as $f)copy('bridge/'.$f,$root.'/noa-bridge/'.$f);
 @mkdir($root.'/noa-app/jukebox',0700,true);copy('deploy/noa-app/jukebox/core.php',$root.'/noa-app/jukebox/core.php');
 @mkdir($root.'/noa-jukebox',0700,true);

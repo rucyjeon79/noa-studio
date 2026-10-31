@@ -35,7 +35,7 @@ function nc_home():array{
  }
  return ['boards'=>$out,'member'=>$logged,'csrf'=>$logged?($_SESSION['noa_community_csrf']??''):''];
 }
-function nc_text(string $value,int $max,bool $multiline=false):string{
+function nc_request_text(string $value,int $max,bool $multiline=false):string{
  $value=trim($value);if($value===''||!mb_check_encoding($value,'UTF-8')||mb_strlen($value,'UTF-8')>$max||str_contains($value,"\0")||(!$multiline&&preg_match('/[\r\n]/',$value)))throw new DomainException('invalid_input');return $value;
 }
 function nc_plain(string $v):string{
@@ -81,7 +81,7 @@ function nc_unlock(int $id,string $password):array{
 function nc_request_id(string $id):string{if(!preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/D',$id))throw new DomainException('invalid_input');return $id;}
 function nc_lock():void{$r=nc_one("SELECT GET_LOCK('noa-song-request-write',10) AS acquired");if((int)($r['acquired']??0)!==1)throw new RuntimeException('write_busy');}
 function nc_unlock_write():void{sql_query("SELECT RELEASE_LOCK('noa-song-request-write')",false);}
-function nc_insert(array $fields):int{
+function nc_request_insert(array $fields):int{
  $all=['wr_num'=>0,'wr_reply'=>'','wr_parent'=>0,'wr_is_comment'=>0,'wr_comment'=>0,'wr_comment_reply'=>'','ca_name'=>'','wr_option'=>'secret','wr_subject'=>'','wr_content'=>'','wr_seo_title'=>'','wr_link1'=>'','wr_link2'=>'','wr_link1_hit'=>0,'wr_link2_hit'=>0,'wr_hit'=>0,'wr_good'=>0,'wr_nogood'=>0,'mb_id'=>'','wr_password'=>'','wr_name'=>'','wr_email'=>'','wr_homepage'=>'','wr_datetime'=>G5_TIME_YMDHIS,'wr_file'=>0,'wr_last'=>G5_TIME_YMDHIS,'wr_ip'=>'','wr_facebook_user'=>'','wr_twitter_user'=>''];for($i=1;$i<=10;$i++)$all['wr_'.$i]='';$all=array_replace($all,$fields);
  $pairs=[];foreach($all as $k=>$v)$pairs[]=nc_table($k).'='.(is_int($v)?$v:nc_q($v));nc_query('INSERT INTO '.nc_write_table(NC_REQUEST_BOARD).' SET '.implode(',',$pairs));$id=(int)sql_insert_id();if($id<1)throw new RuntimeException('save_failed');return $id;
 }
@@ -106,24 +106,24 @@ function nc_defer_activity(string $kind,int $id,string $mode):void{
 }
 function nc_create(array $data):array{
  global $member;if(!nc_admin()&&(empty($member['mb_id'])||(int)($member['mb_level']??1)<3))throw new DomainException('write_not_allowed');nc_board(NC_REQUEST_BOARD);
- $title=nc_text((string)($data['title']??''),150);$body=nc_text((string)($data['body']??''),15000,true);$name=nc_text((string)($data['name']??''),40);$password=(string)($data['password']??'');if(mb_strlen($password,'UTF-8')<8||strlen($password)>128)throw new DomainException('password_length');
+ $title=nc_request_text((string)($data['title']??''),150);$body=nc_request_text((string)($data['body']??''),15000,true);$name=nc_request_text((string)($data['name']??''),40);$password=(string)($data['password']??'');if(mb_strlen($password,'UTF-8')<8||strlen($password)>128)throw new DomainException('password_length');
  $shared=($data['shareCreators']??false)===true?'NOA-CREATOR-SHARED':'';
  $request=nc_request_id((string)($data['requestId']??''));$marker='NOA-REQUEST:'.$request;$owner=(string)$member['mb_id'];nc_rate('create',6,60);nc_lock();
  try{
   $t=nc_write_table(NC_REQUEST_BOARD);$old=nc_one("SELECT wr_id,mb_id,wr_subject,wr_content,wr_password,wr_8 FROM $t WHERE wr_10=".nc_q($marker));
   if($old){if($old['mb_id']!==$owner||$old['wr_subject']!==$title||$old['wr_content']!==$body||($old['wr_8']??'')!==$shared||!check_password($password,$old['wr_password']))throw new DomainException('request_conflict');$id=(int)$old['wr_id'];}
-  else{$num=(int)nc_one("SELECT COALESCE(MIN(wr_num),0)-1 AS n FROM $t")['n'];$id=nc_insert(['wr_num'=>$num,'wr_subject'=>$title,'wr_content'=>$body,'mb_id'=>$owner,'wr_name'=>$name,'wr_password'=>get_encrypt_string($password),'wr_8'=>$shared,'wr_10'=>$marker]);}
+  else{$num=(int)nc_one("SELECT COALESCE(MIN(wr_num),0)-1 AS n FROM $t")['n'];$id=nc_request_insert(['wr_num'=>$num,'wr_subject'=>$title,'wr_content'=>$body,'mb_id'=>$owner,'wr_name'=>$name,'wr_password'=>get_encrypt_string($password),'wr_8'=>$shared,'wr_10'=>$marker]);}
   nc_reconcile($id,$id,$owner);
  }finally{nc_unlock_write();}
  nc_defer_activity('write',$id,'');
  return ['id'=>$id,'created'=>!$old];
 }
 function nc_comment(array $data):array{
- global $member;nc_board(NC_REQUEST_BOARD);$id=(int)($data['id']??0);if(!nc_admin()&&!nc_creator_shared($id)&&!nc_owner_verified($id))throw new DomainException('comment_not_allowed');$musicKey=(string)($data['musicKey']??'');if($musicKey!==''){if(!nc_is_creator())throw new DomainException('comment_not_allowed');nc_music($musicKey,true);}$body=nc_text((string)($data['body']??''),5000,true);$request=nc_request_id((string)($data['requestId']??''));$owner=(string)$member['mb_id'];nc_rate('comment',30,60);nc_lock();
+ global $member;nc_board(NC_REQUEST_BOARD);$id=(int)($data['id']??0);if(!nc_admin()&&!nc_creator_shared($id)&&!nc_owner_verified($id))throw new DomainException('comment_not_allowed');$musicKey=(string)($data['musicKey']??'');if($musicKey!==''){if(!nc_is_creator())throw new DomainException('comment_not_allowed');nc_music($musicKey,true);}$body=nc_request_text((string)($data['body']??''),5000,true);$request=nc_request_id((string)($data['requestId']??''));$owner=(string)$member['mb_id'];nc_rate('comment',30,60);nc_lock();
  try{
   $t=nc_write_table(NC_REQUEST_BOARD);$post=nc_one("SELECT wr_num FROM $t WHERE wr_id=$id AND wr_is_comment=0");if(!$post)throw new DomainException('post_not_available');$marker='NOA-COMMENT:'.$request;$old=nc_one("SELECT wr_id,wr_parent,mb_id,wr_content,wr_9 FROM $t WHERE wr_10=".nc_q($marker));
   if($old){if((int)$old['wr_parent']!==$id||$old['mb_id']!==$owner||$old['wr_content']!==$body||($old['wr_9']??'')!==$musicKey)throw new DomainException('request_conflict');$cid=(int)$old['wr_id'];}
-  else{$number=(int)nc_one("SELECT COALESCE(MAX(wr_comment),0)+1 AS n FROM $t WHERE wr_parent=$id AND wr_is_comment=1")['n'];$cid=nc_insert(['wr_num'=>(int)$post['wr_num'],'wr_parent'=>$id,'wr_is_comment'=>1,'wr_comment'=>$number,'wr_content'=>$body,'mb_id'=>$owner,'wr_name'=>(string)($member['mb_nick']??'관리자'),'wr_9'=>$musicKey,'wr_10'=>$marker]);}
+  else{$number=(int)nc_one("SELECT COALESCE(MAX(wr_comment),0)+1 AS n FROM $t WHERE wr_parent=$id AND wr_is_comment=1")['n'];$cid=nc_request_insert(['wr_num'=>(int)$post['wr_num'],'wr_parent'=>$id,'wr_is_comment'=>1,'wr_comment'=>$number,'wr_content'=>$body,'mb_id'=>$owner,'wr_name'=>(string)($member['mb_nick']??'관리자'),'wr_9'=>$musicKey,'wr_10'=>$marker]);}
   nc_reconcile($cid,$id,$owner);
  }finally{nc_unlock_write();}
  $result=nc_content(NC_REQUEST_BOARD,$id,nc_verified($id));
