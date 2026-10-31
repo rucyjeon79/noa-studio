@@ -2,6 +2,7 @@
 declare(strict_types=1);
 /** Existing GnuBoard storage, a title-only projection, and per-post private request access. */
 require_once __DIR__.'/member-badges.php';
+require_once __DIR__.'/community-navigation.php';
 const NC_REQUEST_BOARD='song_request';
 const NC_REQUEST_MARKER='NOA-SONG-REQUESTS-V1';
 function nc_query(string $sql){$r=sql_query($sql,false);if($r===false)throw new RuntimeException('database_unavailable');return $r;}
@@ -24,12 +25,12 @@ function nc_board(string $id):array{
 function nc_home():array{
  global $g5,$member;$logged=!empty($member['mb_id'])&&(int)($member['mb_level']??1)>=2;$level=$logged?(int)$member['mb_level']:1;
  $boards=nc_rows('SELECT b.*,g.gr_use_access FROM '.nc_table($g5['board_table']).' b INNER JOIN '.nc_table($g5['group_table'])." g ON g.gr_id=b.gr_id WHERE b.bo_table<>'notice' ORDER BY b.bo_order,b.bo_table");$out=[];
- foreach($boards as $b){$id=(string)$b['bo_table'];if(!preg_match('/^[A-Za-z0-9_]{1,20}$/D',$id))continue;$private=$id===NC_REQUEST_BOARD;
+ foreach($boards as $b){$id=(string)$b['bo_table'];if(!preg_match('/^[A-Za-z0-9_]{1,20}$/D',$id))continue;if(!noa_community_board_visible($id,(string)$b['bo_subject']))continue;$private=$id===NC_REQUEST_BOARD;
   if($private&&!nc_private_policy($b))continue;
   // Only the explicitly title-public song request board has a public title projection at level 2.
   if(!nc_admin()&&(!empty($b['gr_use_access'])||!empty($b['bo_use_cert'])||((int)$b['bo_list_level']>$level&&!($private&&(int)$b['bo_list_level']===2))))continue;
   $rows=nc_rows('SELECT wr_id,wr_subject,wr_name,mb_id FROM '.nc_write_table($id)." WHERE wr_is_comment=0".($private?'':" AND FIND_IN_SET('secret',wr_option)=0").' ORDER BY wr_id DESC LIMIT 5');
-  $out[]=['board'=>$id,'title'=>nc_plain((string)$b['bo_subject']),'items'=>array_map(fn($r)=>['id'=>(int)$r['wr_id'],'title'=>nc_plain($r['wr_subject']),...($private?[]:['author'=>nc_plain($r['wr_name']),'badge'=>nmb_lookup((string)($r['mb_id']??''))])],$rows),'private'=>$private,'member'=>$logged,'admin'=>nc_admin(),'canWrite'=>false,'more'=>false,'next'=>null];
+  $out[]=['board'=>$id,'title'=>noa_community_board_title($id,nc_plain((string)$b['bo_subject'])),'items'=>array_map(fn($r)=>['id'=>(int)$r['wr_id'],'title'=>nc_plain($r['wr_subject']),...($private?[]:['author'=>nc_plain($r['wr_name']),'badge'=>nmb_lookup((string)($r['mb_id']??''))])],$rows),'private'=>$private,'member'=>$logged,'admin'=>nc_admin(),'canWrite'=>false,'more'=>false,'next'=>null];
  }
  return ['boards'=>$out,'member'=>$logged,'csrf'=>$logged?($_SESSION['noa_community_csrf']??''):''];
 }

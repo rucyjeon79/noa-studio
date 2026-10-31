@@ -16,6 +16,7 @@ function noa_policy_script_revision($html){
  $html=preg_replace("~(<script\\b[^>]*\\bsrc=[\"'])/noa-ui[.]js(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.js?v='.$ui_revision.'$2',$html);
  $brand=dirname(__DIR__).'/noa-brand.js';if(is_file($brand))$html=preg_replace("~(/noa-brand[.]js)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$brand),$html);
  $home_js=dirname(__DIR__).'/noa-home.js';if(is_file($home_js))$html=preg_replace("~(/noa-home[.]js)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$home_js),$html);
+ foreach(['css','js'] as $kind){$f=dirname(__DIR__).'/noa-community.'.$kind;if(is_file($f))$html=preg_replace("~(/noa-community[.]".$kind.")(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$f),$html);}
  $world_css=dirname(__DIR__).'/noa-world.css';if(is_file($world_css))$html=preg_replace("~(/noa-world[.]css)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$world_css),$html);
  $world_js=dirname(__DIR__).'/noa-world.js';if(is_file($world_js))$html=preg_replace("~(/noa-world[.]js)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$world_js),$html);
  $manifest=dirname(__DIR__).'/noa-manifest.json';
@@ -66,8 +67,9 @@ function noa_design_assets(){
    if(http_response_code()>=300||stripos($html,'</head>')===false)return $html;
    $html=noa_policy_script_revision($html);
    if(in_array($path,['/noa-youtube.php','/noa-music.php'],true)&&!str_contains($html,'data-noa-community=')){
-    $board=$path==='/noa-music.php'?'song_request':'free';$id=$board==='song_request'?'noa-song-requests':'noa-free-board';$title=$board==='song_request'?'사연곡 신청':'자유게시판';
+    $board=$path==='/noa-music.php'?'song_request':'free';$id=$board==='song_request'?'noa-song-requests':'noa-free-board';$title=$board==='song_request'?'당신의 이야기, 우리의 음악':'별무리 이야기';
     $widget='<section id="'.$id.'" class="noa-section noa-community" data-noa-community="'.$board.'" aria-label="'.$title.'"><h2>'.$title.'</h2><p role="status">게시글을 불러오는 중입니다.</p></section>';
+    $widget='<section class="noa-section"><a href="'.($board==='song_request'?'/noa-lounge.php?category=story&amp;view=list#noa-song-requests':'/bbs/board.php?bo_table=free').'">'.$title.' →</a></section>';
     $html=str_ireplace('</main>',$widget.'</main>',$html);
     foreach(['css','js']as $kind){$file=dirname(__DIR__).'/noa-community.'.$kind;if(is_file($file)){$url='/noa-community.'.$kind.'?v='.hash_file('sha256',$file);$assets.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'" defer></script>';}}
    }
@@ -100,6 +102,7 @@ function noa_design_assets(){
 }
 if(function_exists('add_event'))add_event('common_header','noa_design_assets',10,0);
 if(function_exists('add_replace'))add_replace('html_process_buffer',static function($html){
+ if(($_GET['bo_table']??'')==='free')$html=preg_replace('~(<(?:title|h[1-3])\b[^>]*>[^<]*)자유게시판~u','$1별무리 이야기',$html);
  $path=parse_url($_SERVER['REQUEST_URI']??'',PHP_URL_PATH);
  return is_string($path)&&preg_match('~^/(bbs|adm)/~',$path)?noa_policy_script_revision($html):$html;
 },10,1);

@@ -163,12 +163,15 @@ function noa_sitemap_visible_groups(string $root,string $role,array $boards=[],a
 }
 
 function noa_sitemap_native_content(array $g5,array $account,bool $member,bool $super):array{
+    require_once __DIR__.'/noa-bridge/community-navigation.php';
     $boards=[];$contents=[];
     if(!function_exists('sql_query')||!function_exists('sql_fetch_array'))return [$boards,$contents];
     try{
         if(!empty($g5['board_table'])&&!empty($g5['group_table'])){
             $result=sql_query("SELECT b.bo_table,b.bo_subject,b.bo_read_level,b.bo_list_level,b.bo_use_cert,b.gr_id,g.gr_use_access FROM {$g5['board_table']} b LEFT JOIN {$g5['group_table']} g ON g.gr_id=b.gr_id ORDER BY b.bo_order,b.bo_table",false);
             while($result&&($board=sql_fetch_array($result))){
+                if(!noa_community_board_visible((string)$board['bo_table'],(string)$board['bo_subject']))continue;
+                $board['bo_subject']=noa_community_board_title((string)$board['bo_table'],(string)$board['bo_subject']);
                 $board['group_allowed']=false;
                 if(!empty($board['gr_use_access'])&&$member&&!empty($g5['group_member_table'])&&function_exists('sql_real_escape_string')){
                     $group=sql_real_escape_string((string)$board['gr_id']);$id=sql_real_escape_string((string)($account['mb_id']??''));
