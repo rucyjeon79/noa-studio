@@ -9,7 +9,7 @@ try{for(const width of [320,390,1280]){
  await p.goto('https://noastudio.ai.kr/',{waitUntil:'networkidle'});await p.locator('#noa-referral-banner').waitFor();assert.equal(await p.locator('#noa-referral-share').count(),1);
  assert(await p.evaluate(()=>document.querySelector('#noa-referral-banner').nextElementSibling.matches('[data-home-section="recommendations"]')),'banner_position');
  assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,'overflow '+width);
- const geometry=await p.locator('#noa-account-bar').evaluate(bar=>[...bar.children].map(x=>({x:x.getBoundingClientRect().x,right:x.getBoundingClientRect().right})));for(let i=1;i<geometry.length;i++)assert(geometry[i].x>=geometry[i-1].right-1,'header_overlap '+width);
+ const geometry=await p.locator('#noa-account-bar').evaluate(bar=>[...bar.children].filter(x=>x.getBoundingClientRect().width>0).map(x=>({x:x.getBoundingClientRect().x,right:x.getBoundingClientRect().right})));for(let i=1;i<geometry.length;i++)assert(geometry[i].x>=geometry[i-1].right-1,'header_overlap '+width);
  await p.screenshot({path:`referral-proof/${live?'live':'fixture'}-home-${width}.png`,fullPage:false});
  await p.locator('#noa-referral-banner').click();await p.locator('#noa-referral-dialog').waitFor();
  if(live)assert(await p.getByRole('link',{name:'로그인하고 내 초대 링크 받기'}).count());else{assert.equal(await p.locator('#nrf-url').inputValue(),url);await p.addInitScript(()=>{});}
