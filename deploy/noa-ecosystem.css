@@ -67,3 +67,13 @@
 #ec-lounge-nav a[aria-current]{color:var(--noa-room-ink,var(--noa-accent));font-weight:700}
 #ec-lounge-nav .ec-lounge-nav-grid a[aria-current]{border-color:currentColor;box-shadow:inset 3px 0 currentColor}
 @media(max-width:600px){#ec-lounge-nav .ec-lounge-nav-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+#ecosystem:has(.ec-story-offer) #ec-tools{display:none}
+#ecosystem .ec-story-offer{
+ display:grid;gap:4px;margin:12px 0;padding:14px clamp(16px,4vw,26px);border-radius:8px;
+ background:linear-gradient(95deg,#211b24 10%,#211b24ed 50%,#211b2455),url('/noa-assets/editorial-home-story.webp') center 55%/cover;
+ color:#fff8ed;line-height:1.4;word-break:keep-all;
+}
+.ec-story-offer small{color:#edce9c;font-size:11px;font-weight:650;letter-spacing:.06em}
+.ec-story-offer strong{font-size:clamp(18px,4vw,23px)}
+.ec-story-offer span{color:#eee2da;font-size:13px}

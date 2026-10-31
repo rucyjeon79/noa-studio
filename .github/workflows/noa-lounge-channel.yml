@@ -57,7 +57,13 @@ jobs:
               await page.locator('#ec-lounge-nav a[aria-current="page"]').filter({hasText:label}).waitFor();
             }
             await page.goBack();await page.locator('#ec-lounge-nav a[aria-current="page"]').filter({hasText:'오늘의 노래'}).waitFor();
+            await open('category=story');
+            const offer=page.locator('.ec-story-offer');await offer.waitFor();
+            assert.equal(await offer.count(),1);
+            assert(await offer.evaluate(n=>n.nextElementSibling?.id==='noa-song-requests' && n.getBoundingClientRect().top>=document.querySelector('#ec-lounge-nav').getBoundingClientRect().bottom-1));
+            assert.equal(await offer.locator('button,a').count(),0);
             await open('category=chat');
+            assert.equal(await page.locator('.ec-story-offer').count(),0);
             await page.getByRole('heading',{name:'새롭게 단장한 노아 스튜디오, 감성으로 물들다'}).waitFor();
             await open('category=event');
             const images=page.locator('.noa-event-photo');
