@@ -2,12 +2,19 @@
 declare(strict_types=1);
 require __DIR__.'/../subscription/native_fixture.php';
 require __DIR__.'/../../bridge/fan-membership.php';
+if(($argv[1]??'')==='race'){
+ $config['cf_admin']='boss';
+ echo "ready\n";fflush(STDOUT);fgets(STDIN);
+ try{nfan_appoint($argv[2],$argv[3],5);echo "appointed";}
+ catch(DomainException $e){echo $e->getMessage();}
+ exit;
+}
 function expect(bool $ok):void{if(!$ok)throw new RuntimeException('fan assertion failed at '.debug_backtrace()[0]['line']);}
 function denied(callable $fn):void{try{$fn();}catch(DomainException){return;}throw new RuntimeException('unexpected access');}
 ns_q("ALTER TABLE g5_member ADD mb_leave_date VARCHAR(8) NOT NULL DEFAULT '', ADD mb_intercept_date VARCHAR(8) NOT NULL DEFAULT ''");
 $config['cf_admin']='boss';
 foreach(['boss'=>10,'lead'=>3,'fan'=>2,'reader'=>4,'staff'=>9,'artist'=>7] as $id=>$level)ns_q('INSERT INTO g5_member(mb_id,mb_level,mb_point) VALUES('.ns_e($id).','.$level.',0)');
-denied(fn()=>nfan_appoint('boss','fan',5));denied(fn()=>nfan_appoint('staff','lead',6));
+denied(fn()=>nfan_appoint('artist','fan',5));denied(fn()=>nfan_appoint('staff','lead',6));
 nfan_appoint('boss','lead',6);nfan_appoint('lead','fan',5);
 $now=time();expect(nfan_monthly('lead',$now)===3000&&nfan_monthly('lead',$now)===0);
 expect(nfan_monthly('fan',$now)===1000);
@@ -31,4 +38,19 @@ nfan_appoint('boss','aide2',6);
 expect(nfan_aide_count('lead')===1);
 nfan_appoint('lead','reader',5);
 expect(nfan_aide_count('lead')===2);
+foreach(['shared1','shared2','shared3'] as $id)ns_q('INSERT INTO g5_member(mb_id,mb_level,mb_point) VALUES('.ns_e($id).',3,0)');
+nfan_appoint('staff','shared1',5);
+$workers=[];
+foreach([['staff','shared2'],['boss','shared3']] as [$actor,$target]){
+ $proc=proc_open([PHP_BINARY,__FILE__,'race',$actor,$target],[0=>['pipe','r'],1=>['pipe','w'],2=>STDERR],$pipes);
+ expect(trim(fgets($pipes[1]))==='ready');
+ $workers[]=[$proc,$pipes];
+}
+foreach($workers as [$proc,$pipes]){fwrite($pipes[0],"go\n");fclose($pipes[0]);}
+$out=[];
+foreach($workers as [$proc,$pipes]){$out[]=stream_get_contents($pipes[1]);fclose($pipes[1]);expect(proc_close($proc)===0);}
+sort($out);expect($out===['appointed','staff_aide_limit_reached']);
+expect(nfan_aide_count(null)===2&&nfan_aide_count('lead')===2);
+nfan_appoint('boss','shared1',6);
+expect(nfan_aide_count(null)===1);
 echo "FAN_APPOINTMENTS_MONTHLY_GIFTS_REPLAY_AND_REBATE_OK\n";
