@@ -58,3 +58,12 @@ let last=0;audio.addEventListener('timeupdate',()=>{const now=Date.now();if(now-
 audio.addEventListener('playing',()=>{session.playbackState='playing';position();});audio.addEventListener('pause',()=>{session.playbackState='paused';position();});
 window.addEventListener('noa-track-selected',e=>{const r=e.detail?.record;if(!r||!window.MediaMetadata)return;try{session.metadata=new MediaMetadata({title:r.title||'NOA STUDIO',artist:document.getElementById('detail-cast')?.textContent||'AI Artist Noa',album:'NOA STUDIO',artwork:r.thumb?[{src:new URL(r.thumb,location.href).href}]:[]});}catch{}});
 })();
+
+// The main player owns play intent; retry logic must not override pause/close/track changes.
+(()=>{
+ if(!window.NoaPlaybackRecovery||typeof player==='undefined')return;
+ const recovery=window.NoaPlaybackRecovery.attach(player,{wanted:()=>pendingAutoplay&&!leavingPage&&!changingTrack,key:()=>selected?.dataset.key||'',status:message=>{status.textContent=message;}});
+ window.addEventListener('noa-track-selected',()=>recovery.reset());
+ window.addEventListener('online',()=>recovery.online());
+ window.addEventListener('pagehide',()=>recovery.stop());
+})();
