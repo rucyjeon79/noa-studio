@@ -45,7 +45,28 @@ jobs:
             await page.addInitScript(()=>sessionStorage.setItem('noa-amt2-fan-2026','1'));
             await page.goto('https://noastudio.ai.kr/');
             await page.locator('[data-noa-community-home] .noa-feed-invite').getByText('별 하나가 모이면 별무리가 된다.',{exact:true}).waitFor();
-            assert((await page.locator('.noa-feed-invite a').getAttribute('href')).includes('compose=chat'));
+            assert((await page.locator('a.noa-feed-invite').getAttribute('href')).includes('compose=chat'));
+            const root='https://noastudio.ai.kr';
+            await page.locator('a.noa-feed-invite').click();
+            assert(new URL(page.url()).searchParams.get('compose')==='chat');
+            const routes=['/','/noa-youtube.php','/noa-music.php','/noa-lounge.php','/noa-shop.php','/noa-world.php','/noa-my.php','/noa-sitemap.php','/noa-about.php'];
+            const findings=[];
+            for(const width of [390,1280]){
+              await page.setViewportSize({width,height:844});
+              for(const route of routes){
+                const r=await page.goto(root+route);
+                const dest=new URL(page.url()).pathname;
+                await page.waitForTimeout(300);
+                const layout=await page.evaluate(async()=>{
+                  const imgs=Array.from(document.images).filter(img=>img.getBoundingClientRect().width&&img.getBoundingClientRect().top<innerHeight&&img.getBoundingClientRect().bottom>0);
+                  const broken=(await Promise.all(imgs.map(async img=>{try{await img.decode();return null;}catch{return img.currentSrc||img.src;}}))).filter(Boolean);
+                  return {overflow:document.documentElement.scrollWidth-innerWidth,nav:[...document.querySelectorAll('.noa-mobile-nav')].filter(n=>n.getBoundingClientRect().width>0).length,broken};
+                });
+                findings.push({width,route,dest,status:r.status(),...layout});
+              }
+            }
+            console.log('SITE_REVIEW',JSON.stringify(findings));
+            assert(findings.every(x=>x.status<400&&x.overflow<=1&&x.nav<=1&&!x.broken.length),'See SITE_REVIEW for affected routes');
             const labels=['공지','별무리 이벤트','당신의 이야기, 우리의 음악','별무리 이야기','오늘의 노래','노아의 일기'];
             for(const width of [320,390,1280]){
               await page.setViewportSize({width,height:844});await open('category=chat');
