@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);require __DIR__.'/../../bridge/member-access.php';require __DIR__.'/../../bridge/creator-core.php';
 function check($v,string $m):void{if(!$v)throw new RuntimeException($m);}
-$expected=[1=>[0,0,0,0,0],2=>[1,0,0,0,0],3=>[1,1,0,0,0],4=>[1,1,1,0,0],5=>[1,1,0,1,0],6=>[1,1,1,1,1],7=>[1,1,0,0,0],8=>[1,1,0,0,0],9=>[1,1,0,0,0],10=>[1,1,0,0,0]];
+$expected=[1=>[0,0,0,0,0],2=>[1,0,0,0,0],3=>[1,1,0,0,0],4=>[1,1,1,0,0],5=>[1,1,1,0,0],6=>[1,1,1,0,0],7=>[1,1,0,1,0],8=>[1,1,1,1,1],9=>[1,1,0,0,0],10=>[1,1,0,0,0]];
 foreach($expected as $level=>$values){$values[4]=$level>=2?1:0;$a=nam_access($level===1?[]:['mb_id'=>'qa','mb_level'=>$level]);foreach(['member','write','music','creator','ownDownload']as $i=>$cap)check($a[$cap]===(bool)$values[$i],"level_$level:$cap");check(!$a['admin'],"no_numeric_admin_$level");foreach(['/noa-music.php','/noa-music-download.php','/noa-youtube.php','/noa-world.php','/noa-my.php','/noa-bridge/catalog.php','/bbs/board.php']as $p)check(nam_allowed($a,nam_requirement($p))===(bool)$values[0],"member_path:$p:$level");foreach(['/noa-bridge/user-playlists.php']as $p)check(nam_allowed($a,nam_requirement($p))===(bool)$values[2],"music_path:$p:$level");foreach(['/bbs/write.php','/bbs/write_update.php','/bbs/write_comment_update.php','/bbs/delete_comment.php']as $p)check(nam_allowed($a,nam_requirement($p,'POST'))===(bool)$values[1],"write_path:$p:$level");check(!nam_allowed($a,nam_requirement('/adm/member_list.php')),'admin_denied');}
 $a=nam_access(['mb_id'=>'admin','mb_level'=>10],'super');foreach($a as $k=>$v)if(is_bool($v))check($v,'super_'.$k);
 foreach(['/bbs/login.php','/bbs/login_check.php','/bbs/register.php','/bbs/register_form_update.php','/bbs/password_lost.php','/','/noa-bridge/home.php']as $p)check(nam_allowed(nam_access(),nam_requirement($p)),'onboarding_'.$p);
@@ -18,4 +18,4 @@ echo "OWNER_COMMON_FIELDS_WITHOUT_ADMIN_ESCALATION_OK\n";
 
 check(nam_allowed(nam_access(),nam_requirement('/noa-sitemap.php')),'public sitemap describes locked destinations without granting access');
 
-$labels=[1=>"방문자",2=>"별하나 회원",3=>"별무리 회원",4=>"별무리 VIP회원",5=>"크레이터 회원",6=>"크레이터 VIP회원",7=>"관리자",8=>"관리자",9=>"관리자",10=>"최고 관리자"];foreach($labels as $level=>$label)check(nam_access($level===1?[]:["mb_id"=>"qa","mb_level"=>$level])["name"]===$label,"official_label_$level");check(nam_access(["mb_id"=>"admin","mb_level"=>10],"super")["name"]==="최고 관리자","official_super_label");
+$labels=[1=>"방문자",2=>"별하나 회원",3=>"별무리 회원",4=>"별무리 VIP회원",5=>"갤럭시 회원",6=>"스타 클러스터",7=>"크레이터 회원",8=>"크레이터 VIP회원",9=>"관리자",10=>"최고 관리자"];foreach($labels as $level=>$label)check(nam_access($level===1?[]:["mb_id"=>"qa","mb_level"=>$level])["name"]===$label,"official_label_$level");check(nam_access(["mb_id"=>"admin","mb_level"=>10],"super")["name"]==="최고 관리자","official_super_label");

@@ -22,12 +22,13 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with: {php-version: '8.2', extensions: 'mysqli,pdo_mysql,mbstring'}
       - run: |
+          php tests/member/access_test.php
           php tests/subscription/core_test.php
           php tests/subscription/mysql_test.php
           php tests/membership/mysql.php
           php tests/membership/fan.php
   publish:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[rank-qa]')
     needs: verify
     runs-on: ubuntu-latest
     environment: production

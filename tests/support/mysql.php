@@ -2,7 +2,7 @@
 require __DIR__.'/../subscription/native_fixture.php';require __DIR__.'/../../bridge/support-core.php';
 function sc($ok,$msg){if(!$ok)throw new RuntimeException($msg);}function sid($n){return sprintf('ab000000-0000-4000-8000-%012d',$n);}function denied($f,$code){try{$f();}catch(DomainException|InvalidArgumentException $e){sc($e->getMessage()===$code,$e->getMessage().' != '.$code);return;}throw new RuntimeException('missing_denial_'.$code);}
 ns_q("ALTER TABLE g5_member ADD mb_leave_date VARCHAR(8) NOT NULL DEFAULT '', ADD mb_intercept_date VARCHAR(8) NOT NULL DEFAULT ''");
-foreach(['s_sender'=>[2,10000],'s_receiver'=>[5,0],'s_other'=>[5,0],'s_race'=>[3,10000],'s_empty'=>[3,10]] as $name=>$v){ns_q('INSERT INTO g5_member(mb_id,mb_level,mb_point) VALUES('.ns_e($name).','.$v[0].',0)');if($v[1])insert_point($name,$v[1],'fixture','fixture',$name,'seed');}
+foreach(['s_sender'=>[2,10000],'s_receiver'=>[7,0],'s_other'=>[7,0],'s_race'=>[3,10000],'s_empty'=>[3,10]] as $name=>$v){ns_q('INSERT INTO g5_member(mb_id,mb_level,mb_point) VALUES('.ns_e($name).','.$v[0].',0)');if($v[1])insert_point($name,$v[1],'fixture','fixture',$name,'seed');}
 $config['cf_admin']='s_admin';
 $t=['owner'=>'s_receiver','channelId'=>hash('sha256','s_receiver'),'channelTitle'=>'검수 채널','entity'=>'song:test','title'=>'검수 곡'];
 $b=['type'=>'music','key'=>'test','entity'=>$t['entity'],'channelId'=>$t['channelId'],'amount'=>1234,'message'=>'응원합니다','confirmed'=>true];
