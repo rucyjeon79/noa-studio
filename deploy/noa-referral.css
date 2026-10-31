@@ -20,5 +20,7 @@ html body .noa-welcome-guide h3{display:flex;align-items:center;gap:15px}
 html body .noa-welcome-guide .nw-spot-art{display:block;width:76px;height:60px;flex:none;object-fit:contain}
 @media(max-width:380px){html body .noa-welcome-guide h3{gap:12px;font-size:17px}html body .noa-welcome-guide .nw-spot-art{width:61px;height:48px}}
 
-#noa-referral-banner .nrf-invite-photo{display:block;width:clamp(62px,20%,118px);height:86px;object-fit:cover;border-radius:6px;flex:none}
-@media(max-width:600px){#noa-referral-banner{display:grid;grid-template-columns:70px minmax(0,1fr);gap:3px 14px;padding:12px;text-align:left}#noa-referral-banner .nrf-invite-photo{grid-row:1/3;width:70px;height:90px}#noa-referral-banner .nrf-banner-action{grid-column:2;margin:4px 0 0}}
+#noa-referral-banner{display:grid;position:relative;isolation:isolate;align-content:center;justify-items:start;gap:12px;min-height:154px;overflow:hidden;padding:20px clamp(18px,4vw,34px);border-radius:12px;background:radial-gradient(ellipse at 84% 36%,#4b4032,transparent 65%),#221f1c}
+#noa-referral-banner .nrf-invite-photo{position:absolute;inset:0 1% 0 auto;width:39%;height:100%;object-fit:contain}
+#noa-referral-banner .nrf-banner-copy{max-width:62%;word-break:keep-all;line-height:1.5}
+#noa-referral-banner .nrf-banner-action{margin:0;color:#f1d7a5}

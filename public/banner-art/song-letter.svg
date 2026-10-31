@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180">
+ <defs>
+  <linearGradient id="record" x2="1" y2="1"><stop stop-color="#26262f"/><stop offset=".32" stop-color="#978590"/><stop offset=".46" stop-color="#34323c"/><stop offset=".78" stop-color="#181923"/><stop offset="1" stop-color="#837780"/></linearGradient>
+  <linearGradient id="sleeve" x2="1" y2="1"><stop stop-color="#6c4651"/><stop offset="1" stop-color="#352735"/></linearGradient>
+ </defs>
+ <g transform="rotate(-9 125 95)"><circle cx="151" cy="87" r="58" fill="url(#record)" stroke="#aa959a"/>
+ <g fill="none" stroke="#eed3bd" opacity=".32"><circle cx="151" cy="87" r="54"/><circle cx="151" cy="87" r="50"/><circle cx="151" cy="87" r="46"/><circle cx="151" cy="87" r="41"/></g>
+ <circle cx="151" cy="87" r="19" fill="#cda997"/><circle cx="151" cy="87" r="3" fill="#30232d"/>
+ <rect x="33" y="49" width="111" height="110" rx="2" fill="url(#sleeve)" stroke="#c1a291"/>
+ <rect x="40" y="56" width="97" height="96" fill="none" stroke="#bf9a83" opacity=".55"/>
+ <path d="M52 117q36-56 71-26M52 121q38-51 71-26M52 125q40-46 71-26" fill="none" stroke="#d6b799" stroke-width="1"/>
+ <path d="m91 74 2 7 7 2-7 2-2 7-2-7-7-2 7-2z" fill="#f0d0b1"/></g>
+</svg>

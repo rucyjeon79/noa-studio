@@ -54,18 +54,22 @@ html body .noa-community .noa-reply-form textarea{min-height:88px;height:88px;pa
 .noa-reply-selected:empty{display:none}.noa-reply-selected{font-size:13px;margin:10px 0;color:var(--noa-gold,#cbb786)}
 html body .noa-reply-form button[type=submit]{justify-self:end;min-height:40px;padding:8px 18px;border-radius:9px}
 
-/* Use a real picture and a separate copy column even under the shared link/button theme. */
+/* Pair each invitation with its commissioned mark in a quiet right-hand field. */
 html body :is(#noa-home-community,#noa-free-board) a.noa-feed-invite,
 html body :is(#ecosystem,#noa-song-requests) .ec-story-offer{
- display:grid!important;grid-template-columns:clamp(74px,22%,144px) minmax(0,1fr);align-items:center;justify-items:stretch;gap:clamp(12px,3vw,22px);
- box-sizing:border-box;width:100%;min-height:106px;margin:16px 0;padding:0 16px 0 0!important;overflow:hidden;
- border:1px solid #68584d;border-radius:10px;background:#24202b!important;color:#fff5e8;text-align:left;text-decoration:none;
+ position:relative;isolation:isolate;display:grid!important;align-content:center;justify-items:start;
+ box-sizing:border-box;width:100%;min-height:154px;margin:16px 0;padding:20px clamp(18px,4vw,34px)!important;
+ overflow:hidden;border:1px solid #5f5655;border-radius:12px;color:#fff5e8;text-align:left;text-decoration:none;
+ background:radial-gradient(ellipse at 85% 30%,#373747,transparent 65%),#191a23!important;
 }
-html body :is(.noa-feed-invite,.ec-story-offer) img.noa-banner-art{display:block;width:100%;height:100%;min-height:106px;max-height:155px;object-fit:cover;margin:0;border-radius:0}
-html body :is(.noa-feed-invite,.ec-story-offer) .noa-banner-lines{display:grid;gap:6px;padding:12px 0;min-width:0;line-height:1.4;text-align:left;word-break:keep-all;white-space:normal}
-html body :is(.noa-feed-invite,.ec-story-offer) .noa-banner-lines>strong{font-size:clamp(16px,3.8vw,21px);color:#fff5e8}
-html body :is(.noa-feed-invite,.ec-story-offer) .noa-banner-lines>small{font-size:11px;color:#e3caa5}
-html body :is(.noa-feed-invite,.ec-story-offer) .noa-banner-lines>span{font-size:13px;color:#eedcc2}
+html body :is(#ecosystem,#noa-song-requests) .ec-story-offer{background:radial-gradient(ellipse at 85% 30%,#48343e,transparent 65%),#231c24!important}
+html body :is(.noa-feed-invite,.ec-story-offer) img.noa-banner-art{
+ position:absolute;inset:0 1% 0 auto;width:39%;height:100%;object-fit:contain;margin:0;border:0
+}
+html body :is(.noa-feed-invite,.ec-story-offer) .noa-banner-lines{display:grid;gap:8px;max-width:61%;min-width:0;line-height:1.45;text-align:left;word-break:keep-all;white-space:normal}
+html body :is(.noa-feed-invite,.ec-story-offer) .noa-banner-lines>strong{font-size:clamp(18px,3.8vw,24px);font-weight:650;letter-spacing:-.045em;color:#fff5e8;text-wrap:balance}
+html body :is(.noa-feed-invite,.ec-story-offer) .noa-banner-lines>small{font-size:11px;font-weight:600;color:#d9bd97;letter-spacing:.07em}
+html body :is(.noa-feed-invite,.ec-story-offer) .noa-banner-lines>span{font-size:13px;color:#eadac7}
 html body .noa-feed-invite>svg{display:none!important}
 html body .noa-feed-invite:focus-visible{outline:2px solid var(--noa-accent);outline-offset:3px}
 html body a.noa-home-banner[data-home-banner]{grid-template-columns:clamp(76px,22%,144px) minmax(0,1fr);gap:16px}

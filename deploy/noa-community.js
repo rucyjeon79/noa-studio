@@ -25,7 +25,7 @@
   const story=kind==='story';
   const banner=document.createElement(story?'aside':'a');banner.className=story?'ec-story-offer':'noa-feed-invite';
   if(story)banner.setAttribute('aria-label','오픈 기념 혜택');else banner.href='/noa-lounge.php?compose=chat';
-  const art=document.createElement('img');art.alt='';art.className='noa-banner-art';art.src='/noa-assets/editorial-'+(story?'home-story':'fans-stars')+'.webp';
+  const art=document.createElement('img');art.alt='';art.className='noa-banner-art';art.src='/noa-assets/banner-'+(story?'song-letter':'constellation')+'.svg';
   const copy=document.createElement('span');copy.className='noa-banner-lines';
   for(const [tag,text] of [['small',story?'OPEN EVENT · 오픈 기념':'별무리 이야기'],['strong',story?'사연곡 신청 무료':'별 하나가 모이면 별무리가 된다.'],['span',story?'소중한 이야기를 한 곡의 음악으로 들려주세요.':'이야기 쓰기 ↗']]){
    const line=document.createElement(tag);line.textContent=text;copy.append(line);

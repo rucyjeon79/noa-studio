@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180">
+ <defs>
+  <radialGradient id="halo"><stop stop-color="#fff3c7" stop-opacity=".85"/><stop offset=".2" stop-color="#edc887" stop-opacity=".35"/><stop offset="1" stop-color="#edc887" stop-opacity="0"/></radialGradient>
+  <path id="star" d="M0-8Q1-1 7 0 1 1 0 8-1 1-7 0-1-1 0-8" fill="#fff3cd"/>
+ </defs>
+ <g fill="none" stroke="#bfaa83" stroke-width=".7" opacity=".47"><circle cx="135" cy="88" r="63"/><circle cx="135" cy="88" r="69" stroke-dasharray="1 5"/><ellipse cx="135" cy="88" rx="94" ry="36" transform="rotate(-26 135 88)"/></g>
+ <path d="m52 119 33-34 30 9 24-43 25 28 33-13" fill="none" stroke="#e2c18b"/><path d="m115 94 29 29 20-44" stroke="#b69877" stroke-dasharray="2 3" fill="none"/>
+ <g fill="url(#halo)"><circle cx="139" cy="51" r="28"/><circle cx="85" cy="85" r="16"/><circle cx="164" cy="79" r="17"/></g>
+ <use href="#star" x="139" y="51"/><use href="#star" x="85" y="85"/><use href="#star" x="164" y="79"/>
+ <g fill="#f1d9ac"><circle cx="52" cy="119" r="2"/><circle cx="115" cy="94" r="2.4"/><circle cx="197" cy="66" r="2"/><circle cx="144" cy="123" r="2"/><circle cx="91" cy="36" r="1"/><circle cx="198" cy="113" r="1"/><circle cx="180" cy="135" r="1.2"/><circle cx="60" cy="59" r="1"/></g>
+</svg>
