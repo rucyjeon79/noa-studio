@@ -57,7 +57,7 @@ jobs:
           cp tests/ecosystem/flows.mjs "$RUNNER_TEMP/noa-menu/flows.mjs"
           node "$RUNNER_TEMP/noa-menu/flows.mjs"
   deploy:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[fan-ranks]')
     needs: verify
     runs-on: ubuntu-24.04
     environment: production

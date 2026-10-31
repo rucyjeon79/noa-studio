@@ -30,6 +30,10 @@ function nr_pending_login(string $owner,int $now):array{
 }
 function nr_insert_points(string $owner,int $points,string $content,string $table,string $id,string $action):void{
  if($points<=0||$points>1000000)throw new InvalidArgumentException('invalid_points');
+ nr_record_points($owner,$points,$content,$table,$id,$action);
+}
+function nr_record_points(string $owner,int $points,string $content,string $table,string $id,string $action):void{
+ if($points===0)throw new InvalidArgumentException('invalid_points');
  [$id,$action]=ns_point_relation($id,$action);
  $buffer=ob_get_level();ob_start(static fn($v)=>'');try{$ok=insert_point($owner,$points,$content,$table,$id,$action);$output=ob_get_contents();}finally{while(ob_get_level()>$buffer)ob_end_clean();}
  if($ok!==1||trim($output)!=='')throw new RuntimeException('reward_credit_failed');

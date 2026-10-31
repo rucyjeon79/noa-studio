@@ -1,12 +1,17 @@
 <?php
 declare(strict_types=1);
 if(is_file(__DIR__.'/music-proof-auth.php'))require_once __DIR__.'/music-proof-auth.php';
+const NOA_MEMBER_TITLES = [
+ 1=>'방문자', 2=>'별하나 회원', 3=>'별무리 회원', 4=>'별무리 VIP회원',
+ 5=>'갤럭시 회원', 6=>'스타 클러스터', 7=>'크레이터 회원',
+ 8=>'크레이터 VIP회원', 9=>'관리자', 10=>'최고 관리자',
+];
 /** Explicit roles. A numeric staff level never implies highest-administrator access. */
 function nam_access(array $member=[],string $admin=''):array{
  $logged=!empty($member['mb_id']);$level=$logged?max(1,min(10,(int)($member['mb_level']??2))):1;$super=$logged&&$admin==='super';
- $base=$logged&&$level>=2;$write=$logged&&$level>=3;$vip=$logged&&in_array($level,[4,6],true);$creator=$logged&&in_array($level,[5,6],true);
- $names=[1=>'방문자',2=>'별하나 회원',3=>'별무리 회원',4=>'별무리 VIP회원',5=>'크레이터 회원',6=>'크레이터 VIP회원',7=>'관리자',8=>'관리자',9=>'관리자',10=>'최고 관리자'];
- return ['level'=>$level,'name'=>$super?'최고 관리자':$names[$level],'home'=>true,'member'=>$base||$super,'write'=>$write||$super,'music'=>$vip||$super||(function_exists('nmr_current')&&nmr_current()),'creator'=>$creator||$super,'creatorAI'=>($logged&&$level===6)||$super,'ownDownload'=>$base||$super,'admin'=>$super];
+ $base=$logged&&$level>=2;$write=$logged&&$level>=3;$vip=$logged&&in_array($level,[4,5,6,8],true);$creator=$logged&&in_array($level,[7,8],true);
+
+ return ['level'=>$level,'name'=>$super?'최고 관리자':NOA_MEMBER_TITLES[$level],'home'=>true,'member'=>$base||$super,'write'=>$write||$super,'music'=>$vip||$super||(function_exists('nmr_current')&&nmr_current()),'creator'=>$creator||$super,'creatorAI'=>($logged&&$level===8)||$super,'ownDownload'=>$base||$super,'admin'=>$super];
 }
 function nam_owner(array $document,array $member):bool{
  return !empty($member['mb_id'])&&is_string($document['ownerId']??null)&&hash_equals($document['ownerId'],(string)$member['mb_id']);

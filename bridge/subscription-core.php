@@ -13,7 +13,7 @@ function ns_policy_validate(array $p):array{
 }
 function ns_quote(array $policy,string $plan,string $method,int $rawLevel):array{
  if(!in_array($plan,['vip','creator'],true)||!in_array($method,['points','payment'],true))throw new InvalidArgumentException('invalid_plan');
- if(ns_family($rawLevel)!==($plan==='creator'?5:3))throw new DomainException('regular_or_creator_required');
+ if(ns_family($rawLevel)!==($plan==='creator'?7:3))throw new DomainException('regular_or_creator_required');
  $p=$policy['plans'][$plan];if(!$policy['enabled']||!$p['enabled'])throw new DomainException('subscription_not_configured');
  if($method==='points'&&(!$policy['pointsEnabled']||!is_int($p['points'])||$p['points']<1))throw new DomainException('points_purchase_disabled');
  if($method==='payment'&&(!$policy['paymentApprovalEnabled']||!is_int($p['priceWon'])||$p['priceWon']<1||$policy['provider']===''||$policy['paymentInstructions']===''))throw new DomainException('payment_purchase_disabled');
@@ -45,10 +45,10 @@ function ns_native_member(string $owner,bool $lock=true):array{
 }
 function ns_order_key(string $id):string{if(!preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/D',$id))throw new InvalidArgumentException('request_id_required');return 'subscription:order:'.$id;}
 function ns_grant(array $order,string $actor,int $now):array{
- $key=ns_member_key($order['ownerId']);$r=ns_doc($key,true);$g=$r['data']??null;$base=$order['plan']==='creator'?5:3;
+ $key=ns_member_key($order['ownerId']);$r=ns_doc($key,true);$g=$r['data']??null;$base=$order['plan']==='creator'?7:3;
  if($g&&($g['ownerId']??'')!==$order['ownerId'])throw new DomainException('subscription_owner_mismatch');
  $continuing=$g&&($g['baseLevel']??0)===$base&&($g['status']??'')==='active'&&($g['until']??0)>$now;$start=$continuing?$g['until']:$now;$anchor=$continuing?($g['anchorDay']??null):null;$anchor??=(int)(new DateTimeImmutable('@'.$start))->setTimezone(new DateTimeZone('Asia/Seoul'))->format('j');
- $next=['ownerId'=>$order['ownerId'],'baseLevel'=>$base,'paidLevel'=>$base===5?6:4,'status'=>'active','until'=>isset($order['durationDays'])?$start+(int)$order['durationDays']*86400:ns_month_end($start,$anchor),'anchorDay'=>$anchor,'lastOrderId'=>$order['id'],'source'=>$order['method'],'updatedAt'=>$now];ns_put($key,'prefs',$next,$r['revision']??0,$actor);return $next;
+ $next=['ownerId'=>$order['ownerId'],'baseLevel'=>$base,'paidLevel'=>$base===7?8:4,'status'=>'active','until'=>isset($order['durationDays'])?$start+(int)$order['durationDays']*86400:ns_month_end($start,$anchor),'anchorDay'=>$anchor,'lastOrderId'=>$order['id'],'source'=>$order['method'],'updatedAt'=>$now];ns_put($key,'prefs',$next,$r['revision']??0,$actor);return $next;
 }
 /** Native GnuBoard po_rel_id is VARCHAR(20); retain the full order identity in po_rel_action. */
 function ns_point_relation(string $id,string $action):array{
@@ -81,7 +81,7 @@ function ns_create_order(string $owner,string $id,string $plan,string $method,in
 function ns_confirm_payment(string $id,string $reference,int $amount,string $actor,int $now):array{
  $r=ns_doc(ns_order_key($id));if(!$r)throw new DomainException('order_not_found');$owner=$r['data']['ownerId'];$reference=trim($reference);if($reference===''||mb_strlen($reference)>160||str_contains($reference,"\0"))throw new InvalidArgumentException('payment_reference_required');
  return ns_atomic($owner,false,function()use($id,$reference,$amount,$actor,$now,$owner){$r=ns_doc(ns_order_key($id),true);$d=$r['data'];if($d['method']!=='payment')throw new DomainException('payment_order_required');if($d['status']==='paid'){if($d['paymentReference']!==$reference||$d['priceWon']!==$amount)throw new DomainException('purchase_conflict');return $d;}if($d['status']!=='awaiting_payment'||$d['priceWon']!==$amount)throw new DomainException('payment_amount_mismatch');
-  $member=ns_native_member($owner);if(ns_family((int)$member['mb_level'])!==($d['plan']==='creator'?5:3))throw new DomainException('regular_or_creator_required');
+  $member=ns_native_member($owner);if(ns_family((int)$member['mb_level'])!==($d['plan']==='creator'?7:3))throw new DomainException('regular_or_creator_required');
   $receiptKey='subscription:receipt:'.hash('sha256',strtolower($d['provider'])."\n".$reference);$receipt=ns_doc($receiptKey,true);if($receipt&&($receipt['data']['orderId']??'')!==$id)throw new DomainException('payment_reference_already_used');
   if(!$receipt)ns_put($receiptKey,'subscription_receipt',['orderId'=>$id,'ownerId'=>$owner,'verifiedBy'=>$actor,'verifiedAt'=>$now],0,$actor);
   $g=ns_grant($d,$actor,$now);$d['status']='paid';$d['paymentReference']=$reference;$d['verifiedBy']=$actor;$d['paidAt']=$now;$d['until']=$g['until'];ns_put(ns_order_key($id),'subscription_order',$d,$r['revision'],$actor);return $d;

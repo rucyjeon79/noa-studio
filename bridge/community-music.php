@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /** Request consent, reply attachments and per-request playback authorization. */
-function nc_is_creator():bool{global $member;return nc_admin()||(!empty($member['mb_id'])&&in_array((int)($member['mb_level']??1),[5,6],true));}
+function nc_is_creator():bool{global $member;return nc_admin()||(!empty($member['mb_id'])&&in_array((int)($member['mb_level']??1),[7,8],true));}
 function nc_request_row(int $id):array{return $id>0?nc_one('SELECT wr_id,mb_id,wr_password,wr_8 FROM '.nc_write_table(NC_REQUEST_BOARD)." WHERE wr_id=$id AND wr_is_comment=0"):[];}
 function nc_verified(int $id):?array{
  global $member;$v=$_SESSION['noa_request_verified'][$id]??null;$r=nc_request_row($id);

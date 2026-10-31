@@ -3,15 +3,16 @@
 declare(strict_types=1);
 function eco_vip(array $a):bool{
  if($a['admin'])return true;if($a['id']==='')return false;
+ if(in_array($a['level'],[5,6],true))return true;
  $g=ns_doc(ns_member_key($a['id']))['data']??[];
- return ($g['ownerId']??'')===$a['id']&&($g['status']??'')==='active'&&(int)($g['until']??0)>time()&&in_array((int)($g['paidLevel']??0),[4,6],true);
+ return ($g['ownerId']??'')===$a['id']&&($g['status']??'')==='active'&&(int)($g['until']??0)>time()&&in_array((int)($g['paidLevel']??0),[4,8],true);
 }
 function eco_can(array $a,string $cap):bool{return $a['admin']||(!empty($a['capabilities'])&&in_array($cap,$a['capabilities'],true));}
-function eco_capabilities(array $a):array{if($a['id']===''||!in_array($a['level'],[7,8,9],true))return [];return array_values(array_intersect(ns_doc('ecosystem:staff:'.hash('sha256',$a['id']))['data']['capabilities']??[],['community','shop']));}
+function eco_capabilities(array $a):array{if($a['id']===''||!in_array($a['level'],[9],true))return [];return array_values(array_intersect(ns_doc('ecosystem:staff:'.hash('sha256',$a['id']))['data']['capabilities']??[],['community','shop']));}
 function eco_staff_save(array $a,array $b):array{
  if(!$a['admin'])throw new DomainException('administrator_required');$member=eco_text($b['member']??'',100,true);$caps=$b['capabilities']??[];
  if(!is_array($caps)||array_diff($caps,['community','shop']))throw new InvalidArgumentException('invalid_capabilities');
- $r=ns_one('SELECT mb_id,mb_level FROM '.ns_table('member_table').' WHERE mb_id='.ns_e($member));if(!$r||!in_array((int)$r['mb_level'],[7,8,9],true))throw new DomainException('staff_level_required');
+ $r=ns_one('SELECT mb_id,mb_level FROM '.ns_table('member_table').' WHERE mb_id='.ns_e($member));if(!$r||!in_array((int)$r['mb_level'],[9],true))throw new DomainException('staff_level_required');
  return ns_atomic('ecosystem:staff',false,function()use($a,$b,$member,$caps){$key='ecosystem:staff:'.hash('sha256',$member);$old=ns_doc($key,true);if(($b['revision']??null)!==($old['revision']??0))throw new DomainException('revision_conflict');$d=['member'=>$member,'capabilities'=>array_values(array_unique($caps)),'at'=>time()];$v=ns_put($key,'ecosystem_staff',$d,$old['revision']??0,$a['id']);return ['revision'=>$v];});
 }
 function eco_staff_list(array $a):array{if(!$a['admin'])throw new DomainException('administrator_required');$out=[];$q=ns_q("SELECT payload,revision FROM noa_documents WHERE kind='ecosystem_staff' ORDER BY updated_at DESC LIMIT 100");while($r=sql_fetch_array($q))$out[]=json_decode($r['payload'],true)+['revision'=>(int)$r['revision']];return ['items'=>$out];}

@@ -8,7 +8,7 @@ try{
  if($a['id']!==''&&!empty($member['mb_intercept_date']))throw new DomainException('membership_required');
  if($method==='GET'){
   if(empty($_SESSION['noa_ecosystem_csrf']))$_SESSION['noa_ecosystem_csrf']=bin2hex(random_bytes(32));$csrf=$_SESSION['noa_ecosystem_csrf'];session_write_close();
-  if($action==='session')eco_reply(200,['ok'=>true,'csrf'=>$csrf,'member'=>$a['id']!=='','level'=>$a['level'],'name'=>$a['name'],'admin'=>$a['admin'],'capabilities'=>$a['capabilities'],'vip'=>eco_vip($a),'creator'=>$a['admin']||in_array($a['level'],[5,6],true)]);
+  if($action==='session')eco_reply(200,['ok'=>true,'csrf'=>$csrf,'member'=>$a['id']!=='','level'=>$a['level'],'name'=>$a['name'],'admin'=>$a['admin'],'capabilities'=>$a['capabilities'],'vip'=>eco_vip($a),'creator'=>$a['admin']||in_array($a['level'],[7,8],true)]);
   if($action==='discovery')eco_reply(200,['ok'=>true]+eco_discovery($a,(string)($_GET['space']??'lounge')));
   if($action==='staff')eco_reply(200,['ok'=>true]+eco_staff_list($a));
   if($action==='related-products')eco_reply(200,['ok'=>true]+eco_related_products($_GET));
