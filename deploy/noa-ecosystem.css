@@ -20,14 +20,14 @@
 [data-space=lounge] .ec-hero{min-height:0;padding-block:28px;gap:24px}
 [data-space=lounge] .ec-hero>img{max-height:210px;object-fit:cover}
 [data-space=lounge] .ec-hero h1{font-size:clamp(26px,4vw,38px);line-height:1.35}
-[data-space=lounge] .ec-write-invite{grid-column:1/-1;display:grid;grid-template-columns:1fr auto;gap:6px 20px;align-items:center;padding:22px 0;margin-bottom:12px;border-block:1px solid var(--ec-line,var(--noa-line,#333))}
+[data-space=lounge] .ec-write-invite{grid-column:1/-1;flex-basis:100%;width:100%;display:grid;grid-template-columns:1fr auto;gap:6px 20px;align-items:center;padding:22px 0;margin-bottom:12px;border-block:1px solid var(--ec-line,var(--noa-line,#333))}
 .ec-write-invite>strong{font-size:20px;line-height:1.5}.ec-write-invite>p{font-size:14px;line-height:1.7;margin:0;color:var(--noa-muted,#a1a6ad)}.ec-write-invite>button{grid-column:2;grid-row:1/3;min-height:46px}
 [data-space=lounge] .ec-posts{display:flex;flex-direction:column;gap:0}
 [data-space=lounge] .ec-posts>.ec-card{display:block;background:transparent;border:0;border-bottom:1px solid var(--noa-line,#333);border-radius:0;box-shadow:none;padding:24px 0}
 [data-space=lounge] .ec-card>.ec-open{display:block;text-align:left;border:0;padding:0;background:transparent;box-shadow:none;width:100%;color:inherit}
 [data-space=lounge] .ec-card h2{font-size:21px;line-height:1.5;margin:10px 0;font-weight:650}
 [data-space=lounge] .ec-card>.ec-body-preview{font-size:15px;line-height:1.75;color:var(--noa-muted,#a1a6ad);margin:8px 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-[data-space=lounge] .ec-card>small{display:inline-block;margin-right:12px;font-size:12px;line-height:1.6;color:var(--noa-muted,#a1a6ad)}
+[data-space=lounge] .ec-card>.ec-subtle{display:inline-block;margin-right:12px;font-size:12px;line-height:1.6;color:var(--noa-muted,#a1a6ad)}
 [data-space=lounge] .ec-card>img{float:right;width:88px;height:88px;object-fit:cover;border-radius:10px;margin:0 0 12px 18px}
 [data-space=lounge] .ec-card::after{content:'';display:block;clear:both}
 [data-space=lounge] .ec-detail>.ec-body{font-size:17px;line-height:1.95;max-width:72ch}
