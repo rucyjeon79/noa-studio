@@ -135,7 +135,7 @@ function noa_sitemap_visible_groups(string $root,string $role,array $boards=[],a
         $id=(string)($board['bo_table']??'');
         if(!preg_match('/^[A-Za-z0-9_]{1,20}$/D',$id))continue;
         $label=trim(strip_tags((string)($board['bo_subject']??'')))?:$id;
-        $groups['community']['routes'][]=['board-'.$id,$label,'게시판 읽기','/bbs/board.php?bo_table='.rawurlencode($id),'community','public',(string)($board['noa_condition']??'')];
+        $groups['community']['routes'][]=['board-'.$id,$label,'게시판 읽기','/noa-lounge.php?board='.rawurlencode($id).'#ec-content','community','public',(string)($board['noa_condition']??'')];
     }
     foreach(['privacy'=>'개인정보처리방침','provision'=>'이용약관'] as $id=>$label){
         if(!in_array($id,$contents,true))continue;

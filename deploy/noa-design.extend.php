@@ -69,7 +69,7 @@ function noa_design_assets(){
    if(in_array($path,['/noa-youtube.php','/noa-music.php'],true)&&!str_contains($html,'data-noa-community=')){
     $board=$path==='/noa-music.php'?'song_request':'free';$id=$board==='song_request'?'noa-song-requests':'noa-free-board';$title=$board==='song_request'?'당신의 이야기, 우리의 음악':'별무리 이야기';
     $widget='<section id="'.$id.'" class="noa-section noa-community" data-noa-community="'.$board.'" aria-label="'.$title.'"><h2>'.$title.'</h2><p role="status">게시글을 불러오는 중입니다.</p></section>';
-    $widget='<section class="noa-section"><a href="'.($board==='song_request'?'/noa-lounge.php?category=story&amp;view=list#noa-song-requests':'/bbs/board.php?bo_table=free').'">'.$title.' →</a></section>';
+
     $html=str_ireplace('</main>',$widget.'</main>',$html);
     foreach(['css','js']as $kind){$file=dirname(__DIR__).'/noa-community.'.$kind;if(is_file($file)){$url='/noa-community.'.$kind.'?v='.hash_file('sha256',$file);$assets.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'" defer></script>';}}
    }

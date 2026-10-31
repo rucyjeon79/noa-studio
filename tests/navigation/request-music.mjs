@@ -1,0 +1,15 @@
+import {chromium} from 'playwright';
+import {spawn} from 'node:child_process';
+import {readFileSync,mkdirSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const root='/tmp/noa-community-fixture',id=JSON.parse(readFileSync(root+'/request-id.json')).id;
+const server=spawn('php',['-S','127.0.0.1:8076','-t',root,root+'/router.php'],{stdio:'ignore'});
+let browser;
+try{for(let n=0;n<50;n++){try{await fetch('http://127.0.0.1:8076/request-id.json');break;}catch{await new Promise(r=>setTimeout(r,100));}}
+ browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});mkdirSync('request-music-proof',{recursive:true});
+ const owner=await browser.newContext({viewport:{width:390,height:844}});await owner.addCookies([{name:'qa_role',value:'owner',url:'http://127.0.0.1:8076'}]);const p=await owner.newPage();const errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto('http://127.0.0.1:8076/request-test.php?nativePost='+id+'#noa-song_request-'+id);await p.getByLabel('글 비밀번호').fill('test-password');await p.getByRole('button',{name:'내용 확인',exact:true}).click();await p.getByRole('button',{name:'창작자에게 사연 공유하기',exact:true}).click();await p.getByRole('button',{name:'창작자 공유 중 · 공유 끄기'}).waitFor();
+ const creator=await browser.newContext({viewport:{width:390,height:844}});await creator.addCookies([{name:'qa_role',value:'creator',url:'http://127.0.0.1:8076'}]);const c=await creator.newPage();c.on('pageerror',e=>errors.push(e.message));await c.goto('http://127.0.0.1:8076/request-test.php?nativePost='+id+'#noa-song_request-'+id);await c.getByLabel('댓글',{exact:true}).fill('사연으로 만든 곡을 첨부합니다.');await c.getByRole('button',{name:'곡 찾기',exact:true}).click();await c.getByRole('button',{name:'완성곡 mine',exact:true}).click();await c.getByRole('button',{name:'답변 등록',exact:true}).click();await c.getByText('사연으로 만든 곡을 첨부합니다.',{exact:true}).waitFor();
+ await p.reload();await p.getByText('사연으로 만든 곡을 첨부합니다.',{exact:true}).waitFor();await p.getByRole('button',{name:'완성곡 mine 바로 듣기',exact:true}).last().click();await p.waitForFunction(()=>[...document.querySelectorAll('audio')].some(a=>!a.paused&&a.currentTime>0));const audio=await owner.request.get('http://127.0.0.1:8076/noa-bridge/community-audio.php?request='+id+'&key=mine',{headers:{Range:'bytes=0-99'}});assert.equal(audio.status(),206);assert.equal((await audio.body()).length,100);
+ const stranger=await browser.newContext();await stranger.addCookies([{name:'qa_role',value:'other',url:'http://127.0.0.1:8076'}]);assert.equal((await stranger.request.get('http://127.0.0.1:8076/noa-bridge/community-audio.php?request='+id+'&key=mine')).status(),403);assert.equal((await owner.request.get('http://127.0.0.1:8076/noa-bridge/community-audio.php?request='+id+'&key=other')).status(),403);
+ await p.screenshot({path:'request-music-proof/requester-mobile.png',fullPage:true});await c.screenshot({path:'request-music-proof/creator-mobile.png',fullPage:true});assert.deepEqual(errors,[]);console.log('CREATOR_REPLY_ATTACHMENT_REQUESTER_INLINE_PLAYBACK_RANGE_AND_DENIAL_OK');
+}finally{if(browser)await browser.close();server.kill();}

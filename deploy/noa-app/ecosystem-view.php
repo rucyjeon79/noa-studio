@@ -12,7 +12,7 @@ if($space==='lounge'){
   $id=(string)$b['bo_table'];if(!preg_match('/^[A-Za-z0-9_]{1,20}$/D',$id))continue;
   $label=trim(strip_tags((string)$b['bo_subject']))?:$id;
   $group=preg_match('/notice|공지|안내|소식|news/ui',$id.' '.$label)?'소식 · 안내':(preg_match('/request|신청|문의|제안|event|이벤트/ui',$id.' '.$label)?'신청 · 참여':'이야기 · 교류');
-  $community_groups[$group][]=[$label,$id==='song_request'?'/noa-music.php#noa-song-requests':'/bbs/board.php?bo_table='.rawurlencode($id),(string)($b['noa_condition']??'')];
+  $community_groups[$group][]=[$label,$id==='song_request'?'/noa-music.php#noa-song-requests':'/noa-lounge.php?board='.rawurlencode($id).'#ec-content',(string)($b['noa_condition']??'')];
  }
 }
 function nec_e($x){return htmlspecialchars($x,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
