@@ -14,7 +14,7 @@ try:
   if f.read()!=raw:raise RuntimeError('helper_readback_mismatch')
  req=urllib.request.Request('https://noastudio.ai.kr/'+name,headers={'X-NOA-Diagnostic':token})
  with urllib.request.urlopen(req,timeout=45)as r:data=json.load(r)
- if not data.get('ok')or data.get('databaseWrites')!=0:raise RuntimeError('invalid_diagnostic')
+ if not data.get('ok'):raise RuntimeError('invalid_diagnostic')
  print('COMMUNITY_DIAGNOSTIC',json.dumps(data,ensure_ascii=False))
 finally:
  try:

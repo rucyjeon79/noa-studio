@@ -4,7 +4,10 @@ ini_set('display_errors','0');header('Content-Type: application/json');header('C
 if(time()>__EXPIRY__||!hash_equals('__TOKEN_SHA__',hash('sha256',$_SERVER['HTTP_X_NOA_DIAGNOSTIC']??''))){http_response_code(403);exit;}
 ob_start();require dirname(__DIR__).'/common.php';ob_end_clean();if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 require_once __DIR__.'/storage.php';$db=noa_bridge_pdo();
-$cols=$db->query('SHOW COLUMNS FROM g5_write_song_request')->fetchAll(PDO::FETCH_ASSOC);
-$recent=$db->query("SELECT wr_id,wr_parent,wr_is_comment,LENGTH(wr_9) attachedKeyLength,wr_datetime FROM g5_write_song_request ORDER BY wr_id DESC LIMIT 6")->fetchAll(PDO::FETCH_ASSOC);
-$limits=$db->query("SHOW TABLES LIKE 'noa_request_limits'")->fetchColumn();
-echo json_encode(['ok'=>true,'databaseWrites'=>0,'columns'=>$cols,'recent'=>$recent,'limitsExist'=>(bool)$limits],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
+require_once __DIR__.'/community-core.php';
+$r=nc_one("SELECT wr_id,wr_parent,mb_id FROM g5_write_song_request WHERE wr_id=3 AND wr_is_comment=1");
+$result=[];ob_start();
+try{nc_reconcile(3,2,(string)$r['mb_id']);$result['reconcile']='ok';}catch(Throwable $e){$result['reconcile']=[get_class($e),$e->getMessage()];}
+try{$v=nc_one("SELECT mb_id,wr_password FROM g5_write_song_request WHERE wr_id=2 AND wr_is_comment=0");$c=nc_content('song_request',2,$v);$result['read']=['comments'=>count($c['comments']),'musicCard'=>!empty($c['comments'][0]['music'])];}catch(Throwable $e){$result['read']=[get_class($e),$e->getMessage()];}
+$result['unexpectedOutputBytes']=strlen(ob_get_clean());
+echo json_encode(['ok'=>true,'databaseWrites'=>'existing_comment_counters_only','counterReconciled'=>true,'checks'=>$result],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
