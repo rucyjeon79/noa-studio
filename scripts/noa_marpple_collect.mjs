@@ -38,14 +38,14 @@ try {
  assert.equal(categories.size,rows.length,'Root/category inventory mismatch');
  const checkedAt=new Date().toISOString();
  const products=rows.map(row=>{
-  const url=new URL(row.url),id=url.pathname.match(/^\/kr\/jr_lifestyle\/products\/(\d+)$/)?.[1];
+  const url=new URL(row.url),id=url.pathname.match(/^\/(?:kr\/)?jr_lifestyle\/products\/(\d+)$/)?.[1];
   assert(url.origin==='https://marpple.shop'&&id,'Unexpected product URL: '+row.url);
   assert(row.title&&row.title.length<=200,'Invalid title');
   const amount=row.priceText?.match(/([\d,]+)\s*원/);assert(amount,'Missing KRW price');
   const priceWon=Number(amount[1].replaceAll(',',''));assert(Number.isSafeInteger(priceWon)&&priceWon>0&&priceWon<100000000,'Invalid price');
   const image=new URL(row.image);assert(image.protocol==='https:'&&['common.image.cf.marpple.co','s3.marpple.co'].includes(image.hostname),'Unapproved product image');
   assert(categories.has(row.url),'Missing category');
-  return {id,title:row.title,url:row.url,image:row.image,images:[row.image],priceWon,category:categories.get(row.url),checkedAt,sourceUrl:row.url,synced:true,soldOut:row.soldOut,availability:row.soldOut?'품절 · 마플샵에서 확인':'마플샵에서 판매 상태 확인',optionsRequired:true,description:'상품 상세와 옵션은 마플샵에서 확인해 주세요.',optionNote:'색상·사이즈·수량은 마플샵에서 선택합니다.',seller:'제이알 · 마플샵',checkout:'external'};
+  return {id,title:row.title,url:'https://marpple.shop/kr/jr_lifestyle/products/'+id,image:row.image,images:[row.image],priceWon,category:categories.get(row.url),checkedAt,sourceUrl:row.url,synced:true,soldOut:row.soldOut,availability:row.soldOut?'품절 · 마플샵에서 확인':'마플샵에서 판매 상태 확인',optionsRequired:true,description:'상품 상세와 옵션은 마플샵에서 확인해 주세요.',optionNote:'색상·사이즈·수량은 마플샵에서 선택합니다.',seller:'제이알 · 마플샵',checkout:'external'};
  });
  writeFileSync('marpple-proof/catalog.json',JSON.stringify({version:1,source:ROOT,complete:true,checkedAt,count:products.length,products},null,2));
  console.log('MARPPLE_COMPLETE_CATALOG '+JSON.stringify({count:products.length,categories:categoryLinks.map(c=>c.name),checkedAt}));
