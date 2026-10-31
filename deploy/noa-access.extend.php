@@ -15,8 +15,12 @@ $noa_access=nam_access((array)($member??[]),(string)($is_admin??''));
 $noa_path=(string)(parse_url($_SERVER['REQUEST_URI']??'/',PHP_URL_PATH)??'/');
 // Fan appointments are issued exclusively by the audited membership action.
 if(($_SERVER['REQUEST_METHOD']??'')==='POST'&&in_array($noa_path,['/adm/member_form_update.php','/adm/member_list_update.php'],true)){
- foreach((array)($_POST['mb_level']??[]) as $requested){
-  if(in_array((int)$requested,[5,6],true)){http_response_code(403);exit('팬클럽 임명은 MY 회원 정보에서 진행해 주세요.');}
+ $submitted=(array)($_POST['mb_level']??[]);
+ foreach($submitted as $key=>$requested){
+  if(!in_array((int)$requested,[5,6],true))continue;
+  $ids=$_POST['mb_id']??'';$id=is_array($ids)?($ids[$key]??''):$ids;
+  $prior=is_string($id)&&$id!==''?get_member($id,'mb_level'):[];
+  if((int)($prior['mb_level']??0)!==(int)$requested){http_response_code(403);exit('팬클럽 임명은 MY 회원 정보에서 진행해 주세요.');}
  }
 }
 $noa_need=nam_requirement($noa_path,$_SERVER['REQUEST_METHOD']??'GET',$_GET);

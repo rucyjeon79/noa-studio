@@ -41,7 +41,7 @@ function nfan_gift(string $sender,string $recipient,int $amount,string $requestI
   if(!nfan_appointed($members[$sender])||
     !in_array((int)$members[$recipient]['mb_level'],[2,3,4],true)||
     $members[$sender]['mb_id']===$members[$recipient]['mb_id'])throw new DomainException('gift_not_allowed');
-  $relation='praise:'.$requestId;
+  $relation=hash('sha256',$sender.'|'.$requestId);
   if((int)get_point_sum($sender)<$amount)throw new DomainException('insufficient_points');
   nr_record_points($sender,-$amount,'칭찬 포인트 선물','noa_fan_gift',$relation,'send');
   nr_record_points($recipient,$amount,'칭찬 포인트 받음','noa_fan_gift',$relation,'receive');
