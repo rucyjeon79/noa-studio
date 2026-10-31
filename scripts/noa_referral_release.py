@@ -19,6 +19,10 @@ release.FILES.update({
  'noa-community.js':'deploy/noa-community.js',
 })
 release.NEW=set(release.FILES)-{'noa-bridge/creator-enrollment-core.php','noa-bridge/notices.php','noa-app/home.php','noa-app/ecosystem-view.php','noa-community.js'}
+for illustration in ('listen','story','invite','search','account'):
+ remote='noa-assets/noa-guide-'+illustration+'.svg'
+ release.FILES[remote]='deploy/noa-assets/guide/'+illustration+'.svg'
+ release.NEW.add(remote)
 release.PROTECTED+=['plugin/social/register_member_update.php','noa-bridge/subscription-core.php','noa-bridge/membership-core.php']
 if __name__=='__main__':
  try:release.main()

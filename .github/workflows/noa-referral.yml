@@ -66,6 +66,10 @@ jobs:
       - name: Update the pinned guide in place and verify the shared preview
         if: contains(github.event.head_commit.message, '[guide-release]')
         run: |
+          if [[ "${{ contains(github.event.head_commit.message, '[illustrated-release]') }}" == 'true' ]]; then
+            php -l scripts/noa_points_publish.php
+            python scripts/noa_notice_publish.py --points
+          fi
           python scripts/noa_notice_publish.py
           python scripts/qa/noa_share_preview.py
       - name: Inspect all live destinations without transactions
@@ -74,6 +78,10 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/noa-live-ui" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp tests/referral/ui.mjs "$RUNNER_TEMP/noa-live-ui/check.mjs"
           LIVE_ONLY=1 node "$RUNNER_TEMP/noa-live-ui/check.mjs"
+          if [ -f points-proof/receipt.json ]; then
+            cp scripts/qa/noa-illustrated-guide.mjs "$RUNNER_TEMP/noa-live-ui/illustrated.mjs"
+            node "$RUNNER_TEMP/noa-live-ui/illustrated.mjs"
+          fi
           if [ -f notice-proof/receipt.json ]; then
             cp scripts/qa/noa-notice-published.mjs "$RUNNER_TEMP/noa-live-ui/guide.mjs"
             node "$RUNNER_TEMP/noa-live-ui/guide.mjs"
