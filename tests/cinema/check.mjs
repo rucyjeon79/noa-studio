@@ -25,7 +25,12 @@ try{for(const width of [320,390,1280]){
  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  await p.locator('.cinema-feature').screenshot({path:'cinema-proof/feature-'+width+'.png'});await cards.first().locator('..').screenshot({path:'cinema-proof/programmes-'+width+'.png'});
  const hero=p.locator('.cinema-feature .cinema-poster');await hero.click();assert.equal(await p.locator('.cinema-feature #yt-frame').count(),1);
- await cards.nth(1).locator('.cinema-poster').click();await cards.nth(1).locator('#yt-frame').waitFor();await p.waitForFunction(()=>window.currentEvents&&document.querySelector('#yt-frame').src.includes('abcdefghij1'));
+ await p.evaluate(()=>{window.__clicks=[];document.addEventListener('click',e=>window.__clicks.push(e.target.outerHTML.slice(0,220)),true);});
+ await cards.nth(1).locator('.cinema-poster').click();
+ if(!await cards.nth(1).locator('#yt-frame').count()){
+  console.log('SCREEN_DIAGNOSTIC',width,errors,await p.evaluate(()=>({clicks:window.__clicks,screen:document.querySelector('#yt-player')?.parentElement?.outerHTML.slice(0,400),programmes:[...document.querySelectorAll('.cinema-programme')].map(n=>n.textContent.slice(0,90))})));
+ }
+ await cards.nth(1).locator('#yt-frame').waitFor({timeout:4000});await p.waitForFunction(()=>window.currentEvents&&document.querySelector('#yt-frame').src.includes('abcdefghij1'));
  await p.evaluate(()=>window.currentEvents.onStateChange({data:1}));assert.equal(await p.locator('.cinema-badge').innerText(),'상영 중');
  await p.evaluate(()=>window.currentEvents.onStateChange({data:2}));assert.equal(await p.locator('.cinema-badge').innerText(),'일시정지');
  await p.locator('.cinema-next').click();assert((await p.locator('#yt-frame').getAttribute('src')).includes(rows[4].video));assert(await p.locator('.cinema-next').isHidden());
