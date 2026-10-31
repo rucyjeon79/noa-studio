@@ -14,6 +14,7 @@ try{
  require_once __DIR__.'/ecosystem-core.php';
  require_once __DIR__.'/membership-core.php';
  if(!nmb_rules())throw new RuntimeException('monthly_benefit_inactive');
+ if(isset($p['expectedBodySha256']) && (int)($config['cf_register_point']??0)!==1000)throw new RuntimeException('signup_policy_amount_'.(int)($config['cf_register_point']??0));
  $id=eco_id($p['id']);$owner=(string)$config['cf_admin'];
  $admin=nr_member($owner,false);
  if((int)$admin['mb_level']!==10)throw new RuntimeException('publisher_unavailable');
@@ -38,6 +39,16 @@ try{
  });
  $key='ecosystem:post:'.$id;$created=!ns_doc($key);
  if($created)eco_save($actor,['id'=>$id,'revision'=>0,'space'=>'lounge','category'=>'notice','title'=>$p['title'],'body'=>$p['body'],'images'=>[$imageId],'visibility'=>'public']);
+ if(!$created && isset($p['expectedBodySha256'])){
+  ns_atomic($key,false,function()use($key,$owner,$p,$imageId){
+   $current=ns_doc($key,true);$d=$current['data'];
+   if($d['owner']!==$owner||$d['space']!=='lounge'||$d['category']!=='notice'||$d['title']!==$p['title']||$d['images']!==[$imageId]||!empty($d['deleted']))throw new RuntimeException('existing_post_preserved');
+   if($d['body']===$p['body'])return;
+   if(!hash_equals($p['expectedBodySha256'],hash('sha256',$d['body'])))throw new RuntimeException('existing_post_edit_preserved');
+   $d['body']=$p['body'];$d['updated']=time();
+   ns_put($key,'ecosystem_post',$d,$current['revision'],$owner);
+  });
+ }
  $post=eco_record($id,['id'=>'','admin'=>false,'level'=>1])['data'];
  if($post['title']!==$p['title']||$post['body']!==$p['body']||$post['owner']!==$owner||$post['images']!==[$imageId])throw new RuntimeException('existing_post_preserved');
  $result=['ok'=>true,'created'=>$created,'id'=>$id,'bodySha256'=>hash('sha256',$post['body']),'url'=>'https://noastudio.ai.kr/noa-lounge.php?post='.$id];
