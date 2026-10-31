@@ -56,3 +56,12 @@ jobs:
       - run: python -m pip install 'paramiko>=3,<5'
       - name: Deploy verified UI assets and check public hashes
         run: python scripts/noa_ui_audit_release.py
+      - name: Inspect all live destinations without transactions
+        run: |
+          python scripts/qa/noa-qa-font.py
+          npm install --prefix "$RUNNER_TEMP/noa-live-ui" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp tests/navigation/ui-audit.mjs "$RUNNER_TEMP/noa-live-ui/check.mjs"
+          LIVE_ONLY=1 node "$RUNNER_TEMP/noa-live-ui/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-ui-live-${{ github.run_id }}', path: 'ui-audit-proof/', retention-days: 7}

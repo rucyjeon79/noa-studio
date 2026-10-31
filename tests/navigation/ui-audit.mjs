@@ -3,6 +3,16 @@ import {readFileSync,mkdirSync,existsSync} from 'node:fs';
 import assert from 'node:assert/strict';
 const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
 mkdirSync('ui-audit-proof',{recursive:true});
+if(process.env.LIVE_ONLY==='1'){
+ const results=[];try{for(const width of [390,1280]){const p=await browser.newPage({viewport:{width,height:900}});for(const path of ['/','/noa-lounge.php','/noa-shop.php','/noa-points.php','/noa-vip.php','/noa-youtube.php','/noa-music.php','/noa-world.php','/noa-my.php']){
+ await p.goto('https://noastudio.ai.kr'+path,{waitUntil:'domcontentloaded'});if(path==='/noa-lounge.php')await p.locator('.ec-card,.ec-empty').first().waitFor();if(path==='/noa-shop.php')await p.locator('.ec-grid .ec-card').first().waitFor();
+ assert(await p.locator('body').innerText());assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,'overflow '+path+' '+width);
+ const nav=p.locator('#noa-section-navigation a');if(await nav.count()){const geometry=await nav.evaluateAll(ns=>ns.map(n=>({padding:parseFloat(getComputedStyle(n).paddingLeft),height:n.getBoundingClientRect().height})));assert(geometry.every(x=>x.padding>=12&&x.height>=44),'nav geometry '+path);}
+ if(path==='/noa-lounge.php'){assert.equal(await p.getByRole('button',{name:'이야기 쓰기',exact:true}).count(),1);assert.equal(await p.getByText('등록된 게시판이 없습니다.',{exact:true}).count(),0);}
+ if(path==='/noa-shop.php'){assert.equal(await p.locator('#ec-hero-actions a').count(),0);assert(await p.locator('.ec-card .ec-buy').count()>6);}
+ results.push({width,path,url:p.url(),cards:await p.locator('.ec-card').count()});await p.screenshot({path:'ui-audit-proof/live-'+(path==='/'?'home':path.slice(1,-4))+'-'+width+'.png'});
+ }await p.close();}console.log('LIVE_UI_AUDIT',JSON.stringify(results));}finally{await browser.close();}process.exit(0);
+}
 const css=['noa-ui','noa-engagement','noa-support','noa-world','noa-ecosystem','noa-starlight'];
 try{
  for(const width of [320,390,1280]){
@@ -37,11 +47,11 @@ try{
   await p.getByRole('button',{name:'3,000P 응원 확인',exact:true}).click();assert.equal(sends.length,0);
   await p.getByRole('button',{name:'금액·메시지 수정'}).click();assert.equal(await p.getByLabel('후원할 포인트',{exact:true}).inputValue(),'3000');assert.equal(await p.getByLabel('응원 메시지',{exact:true}).inputValue(),'오늘도 잘 들었어요');
   await p.getByLabel('후원할 포인트',{exact:true}).fill('8000');await p.getByText('포인트가 1,000P 부족해요. 충전 후 이어서 응원하세요.').waitFor();
-  await p.getByRole('link',{name:'포인트 충전하고 돌아오기'}).click();await p.getByRole('link',{name:'충전 후 원래 곡으로 돌아가 응원하기'}).waitFor();balance=10000;
-  await p.getByRole('link',{name:'충전 후 원래 곡으로 돌아가 응원하기'}).click();await p.getByRole('button',{name:'8,000P 응원 확인'}).waitFor();assert.equal(await p.getByLabel('응원 메시지',{exact:true}).inputValue(),'오늘도 잘 들었어요');assert.equal(sends.length,0);
+  await p.getByRole('link',{name:'포인트 충전하고 돌아오기'}).click();await p.getByRole('link',{name:'응원하던 곳으로 돌아가기'}).waitFor();balance=10000;
+  await p.getByRole('link',{name:'응원하던 곳으로 돌아가기'}).click();await p.getByRole('button',{name:'8,000P 응원 확인'}).waitFor();assert.equal(await p.getByLabel('응원 메시지',{exact:true}).inputValue(),'오늘도 잘 들었어요');assert.equal(sends.length,0);
   await p.getByRole('button',{name:'8,000P 응원 확인'}).click();await p.getByRole('button',{name:'8,000P로 응원 보내기'}).click();assert.equal(sends.length,0);
   await p.getByRole('checkbox').check();fail=true;await p.getByRole('button',{name:'8,000P로 응원 보내기'}).click();await p.getByRole('button',{name:'같은 요청으로 다시 확인'}).waitFor();fail=false;await p.getByRole('button',{name:'같은 요청으로 다시 확인'}).click();await p.getByText('응원이 전달되었습니다',{exact:true}).waitFor();assert.equal(sends.length,2);assert.equal(sends[0].requestId,sends[1].requestId);assert.equal(sends[1].amount,8000);
-  await p.getByRole('button',{name:'완료',exact:true}).click();await support.click();await p.getByRole('button',{name:'1,000P',exact:true}).click();await p.getByRole('link',{name:'포인트 충전하고 돌아오기'}).click();sender='member-b';await p.getByRole('link',{name:'충전 후 원래 곡으로 돌아가 응원하기'}).click();await p.getByLabel('후원할 포인트',{exact:true}).waitFor();assert.equal(await p.getByLabel('후원할 포인트',{exact:true}).inputValue(),'');
+  await p.getByRole('button',{name:'완료',exact:true}).click();await support.click();await p.getByRole('button',{name:'1,000P',exact:true}).click();await p.getByRole('link',{name:'포인트 충전하고 돌아오기'}).click();sender='member-b';await p.getByRole('link',{name:'응원하던 곳으로 돌아가기'}).click();await p.getByLabel('후원할 포인트',{exact:true}).waitFor();assert.equal(await p.getByLabel('후원할 포인트',{exact:true}).inputValue(),'');
   assert.deepEqual(errors,[]);await context.close();
  }
  console.log('UI_AUDIT_320_390_1280_NAV_SPACING_BREADCRUMB_SUPPORT_BALANCE_EDIT_CHARGE_RETURN_ACCOUNT_SWITCH_RETRY_IDEMPOTENCY_OK');
