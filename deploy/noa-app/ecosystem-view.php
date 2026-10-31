@@ -1,7 +1,7 @@
 <?php
 require_once dirname(__DIR__).'/common.php';
 $space=defined('NOA_ECOSYSTEM_SPACE')?NOA_ECOSYSTEM_SPACE:'lounge';
-$meta=['shop'=>['NOA SHOP','음악을, 일상에.','좋아하는 마음을 오래 간직하는 방법.','shop.jpg'],'lounge'=>['별무리 라운지','오늘의 마음도, 음악처럼.','듣고, 나누고, 함께 머무는 별무리의 공간.','lounge.webp'],'lab'=>['CREATOR LAB','함께 만드는 다음 장면.','한 번의 피드백이 다음 작품을 바꿉니다.','creator.webp']][$space];
+$meta=['shop'=>['NOA SHOP','음악을, 일상에.','좋아하는 마음을 오래 간직하는 방법.','shop.jpg'],'lounge'=>['별무리 라운지','별 하나가 모이면 별무리가 된다.','노래를 듣고 떠오른 이야기, 별무리에게 들려주세요.','lounge.webp'],'lab'=>['CREATOR LAB','함께 만드는 다음 장면.','한 번의 피드백이 다음 작품을 바꿉니다.','creator.webp']][$space];
 $community_groups=['소식 · 안내'=>[],'이야기 · 교류'=>[],'신청 · 참여'=>[]];
 if($space==='lounge'){
  if(!defined('NOA_SITEMAP_REGISTRY_ONLY'))define('NOA_SITEMAP_REGISTRY_ONLY',true);

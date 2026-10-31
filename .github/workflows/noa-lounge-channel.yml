@@ -43,6 +43,9 @@ jobs:
             const page=await browser.newPage({serviceWorkers:'block',viewport:{width:390,height:844}});
             const open=q=>page.goto('https://noastudio.ai.kr/noa-lounge.php?'+q);
             await page.addInitScript(()=>sessionStorage.setItem('noa-amt2-fan-2026','1'));
+            await page.goto('https://noastudio.ai.kr/');
+            await page.locator('[data-noa-community-home] .noa-feed-invite').getByText('별 하나가 모이면 별무리가 된다.',{exact:true}).waitFor();
+            assert((await page.locator('.noa-feed-invite a').getAttribute('href')).includes('compose=chat'));
             const labels=['공지','별무리 이벤트','당신의 이야기, 우리의 음악','별무리 이야기','오늘의 노래','노아의 일기'];
             for(const width of [320,390,1280]){
               await page.setViewportSize({width,height:844});await open('category=chat');
@@ -56,6 +59,14 @@ jobs:
               await page.locator('#ec-lounge-nav').getByRole('link',{name:label,exact:true}).click();
               await page.locator('#ec-lounge-nav a[aria-current="page"]').filter({hasText:label}).waitFor();
             }
+            await page.getByRole('heading',{name:'별 하나가 모이면 별무리가 된다.'}).waitFor();
+            for(const kind of ['notice','event','diary','music','story','chat']){
+              await open('category='+kind);await page.locator('#ec-lounge-nav').waitFor();
+              await page.waitForFunction(()=>!document.querySelector('#ec-content')?.textContent.includes('불러오는 중입니다.'));
+              assert.equal(await page.locator('.ec-write-invite').count(),kind==='chat'?1:0);
+              if(kind==='notice')await page.getByRole('link',{name:'공지사항 게시판 전체 보기'}).waitFor();
+            }
+            await open('category=music');await open('category=diary');
             await page.goBack();await page.locator('#ec-lounge-nav a[aria-current="page"]').filter({hasText:'오늘의 노래'}).waitFor();
             await open('category=story');
             const offer=page.locator('.ec-story-offer');await offer.waitFor();

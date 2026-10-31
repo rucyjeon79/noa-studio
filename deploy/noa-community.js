@@ -85,7 +85,7 @@
  }
  if(rows.length)host.append(list);else{const empty=document.createElement('p');empty.className='noa-feed-empty';empty.textContent=results.every(r=>r.status==='rejected')?'소식을 잠시 불러오지 못했어요.':'첫 이야기를 기다리고 있어요.';host.append(empty);}
  if(results.some(r=>r.status==='rejected')){const retry=document.createElement('button');retry.type='button';retry.textContent='소식 다시 불러오기';retry.onclick=()=>homeFeed(host);host.append(retry);}
- const invite=document.createElement('div');invite.className='noa-feed-invite';const copy=document.createElement('span');copy.textContent='오늘 마음에 남은 노래가 있나요?';const write=document.createElement('a');write.href='/noa-lounge.php?compose=chat';write.textContent='이야기 쓰기 ↗';invite.append(copy,write);host.append(invite);host.dataset.ready='true';
+ const invite=document.createElement('div');invite.className='noa-feed-invite';const copy=document.createElement('span');copy.textContent='별 하나가 모이면 별무리가 된다.';const write=document.createElement('a');write.href='/noa-lounge.php?compose=chat';write.textContent='이야기 쓰기 ↗';invite.append(copy,write);host.append(invite);host.dataset.ready='true';
  }
  window.NoaCommunity={mount,destination};
  document.querySelectorAll('[data-noa-community]').forEach(host=>mount(host));
