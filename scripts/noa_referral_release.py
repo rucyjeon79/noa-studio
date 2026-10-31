@@ -15,8 +15,10 @@ release.FILES.update({
  'noa-app/welcome-guide.html':'docs/notices/NOA_20261026_WELCOME.html',
  'noa-bridge/notices.php':'bridge/notices.php',
  'noa-app/home.php':'deploy/noa-app/home.php',
+ 'noa-app/ecosystem-view.php':'deploy/noa-app/ecosystem-view.php',
+ 'noa-community.js':'deploy/noa-community.js',
 })
-release.NEW=set(release.FILES)-{'noa-bridge/creator-enrollment-core.php','noa-bridge/notices.php','noa-app/home.php'}
+release.NEW=set(release.FILES)-{'noa-bridge/creator-enrollment-core.php','noa-bridge/notices.php','noa-app/home.php','noa-app/ecosystem-view.php','noa-community.js'}
 release.PROTECTED+=['plugin/social/register_member_update.php','noa-bridge/subscription-core.php','noa-bridge/membership-core.php']
 if __name__=='__main__':
  try:release.main()

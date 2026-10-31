@@ -26,7 +26,7 @@ function nn_project(array $rows):array {
  }
  return $items;
 }
-function nn_native_notices():array {
+function nn_native_notices(?int $postId=null):array {
  global $g5,$member,$is_admin;
  $empty=['items'=>[],'restricted'=>false];
  if(!function_exists('sql_fetch')||!isset($g5['board_table'],$g5['group_table'],$g5['write_prefix']))return $empty;
@@ -35,7 +35,8 @@ function nn_native_notices():array {
  if(!$board)return $empty;
  // Native group/certification requirements remain authoritative; this home projection fails closed.
  if(($is_admin??'')!=='super'&&((int)($member['mb_level']??1)<max((int)$board['bo_list_level'],(int)$board['bo_read_level'])||!empty($board['gr_use_access'])||!empty($board['bo_use_cert'])))return ['items'=>[],'restricted'=>true];
- $result=sql_query("SELECT wr_id,wr_subject,wr_content,wr_datetime,wr_option,wr_is_comment FROM {$g5['write_prefix']}notice WHERE wr_is_comment=0 AND FIND_IN_SET('secret',wr_option)=0 ORDER BY wr_id DESC LIMIT 5",false);
+ $focus=$postId===null?'':' AND wr_id='.(int)$postId;
+ $result=sql_query("SELECT wr_id,wr_subject,wr_content,wr_datetime,wr_option,wr_is_comment FROM {$g5['write_prefix']}notice WHERE wr_is_comment=0 AND FIND_IN_SET('secret',wr_option)=0{$focus} ORDER BY wr_id DESC LIMIT 5",false);
  if(!$result)return $empty;$rows=[];while($row=sql_fetch_array($result))$rows[]=$row;
  return ['items'=>nn_project($rows),'restricted'=>false];
 }
