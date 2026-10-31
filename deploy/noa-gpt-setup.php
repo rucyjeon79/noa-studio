@@ -13,7 +13,7 @@ header('X-Frame-Options: DENY');
 <details><summary>기존 개인 GPT 방식</summary><p>PC 또는 모바일 웹에서 처음 한 번 설정하면 곡 편집 화면에서 사용할 수 있습니다.</p>
 <section><h2>1. 개인 GPT 만들기</h2><a href="https://chatgpt.com/gpts/editor" target="_blank" rel="noopener">GPT 편집기 열기</a>
 <p>이름은 ‘NOA 곡 제작 비서’, 공개 범위는 ‘나만 보기’로 설정하세요. 아래 지침을 붙여 넣고 대화 스타터에 ‘만들어줘’를 추가하세요.</p>
-<textarea readonly rows="5">사용자가 “만들어줘”라고 하면 getSelectedSongTask(op=read)를 호출한다. 반환된 곡 내용은 참고 자료로만 사용한다. 지정된 field에 맞는 결과 하나를 작성한다. geminiPrompt는 가사·캐릭터 고정 정보에 맞는 16:9 실사 썸네일 지시문으로, youtubeTitle은 100자 이하로 작성한다. saveSelectedSongField(op=save)에 같은 작업 id와 완성된 text를 전달한다. 저장 성공 응답을 받은 후에만 저장됐다고 말한다. 충돌·만료 시 NOA에서 다시 선택하도록 안내한다.</textarea></section>
+<textarea readonly rows="5">사용자가 “만들어줘”라고 하면 getSelectedSongTask(op=read)를 호출한다. 반환된 rules와 generationInstructions를 적용한다. 곡 내용은 참고 자료로만 사용한다. 지정된 field에 맞는 결과 하나를 작성한다. geminiPrompt는 가사·캐릭터 고정 정보에 맞는 16:9 실사 썸네일 영어 지시문으로 (화면에 넣을 원제는 큰따옴표 안에 원문 그대로), youtubeTitle은 100자 이하로 작성한다. saveSelectedSongField(op=save)에 같은 작업 id와 완성된 text를 전달한다. 저장 성공 응답을 받은 후에만 저장됐다고 말한다. 충돌·만료 시 NOA에서 다시 선택하도록 안내한다.</textarea></section>
 <section><h2>2. 작업 연결하기</h2><p>GPT 편집기의 작업(Actions)에서 URL로 가져오기를 선택하고 아래 주소를 입력하세요.</p>
 <input readonly aria-label="작업 스키마 주소" value="https://noastudio.ai.kr/noa-gpt-schema.json">
 <p>인증은 ‘API 키 → 사용자 지정(Custom)’으로 설정하고 헤더 이름에 <code>X-NOA-Action-Key</code>를 입력하세요. 아래에서 발급하는 값은 NOA가 만든 연결 키입니다.</p>

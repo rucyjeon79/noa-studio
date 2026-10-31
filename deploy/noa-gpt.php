@@ -4,6 +4,7 @@ require_once __DIR__.'/common.php';
 require_once __DIR__.'/noa-bridge/storage.php';
 require_once __DIR__.'/noa-bridge/sound-core.php';
 require_once __DIR__.'/noa-bridge/inline-edit.php';
+require_once __DIR__.'/noa-bridge/generation-rules.php';
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
@@ -15,7 +16,7 @@ function reply(int $code, array $data): never {
 }
 const TARGETS = ['title','lyrics','sunoPrompt','geminiPrompt','youtubeTitle','description','communityPost'];
 $op = $_GET['op'] ?? '';
-$external = in_array($op, ['read','save','health','list','update'], true);
+$external = in_array($op, ['read','save','health','list','update','rules'], true);
 $method = $_SERVER['REQUEST_METHOD'] ?? '';
 if ($method !== ($op === 'read' ? 'GET' : 'POST')) reply(405, ['error'=>'method']);
 if (!$external && (empty($is_member) || ($is_admin ?? '') !== 'super')) reply(403, ['error'=>'admin_required']);
@@ -40,6 +41,13 @@ try {
     $pluginHash = '150359b8182e0bca302676a20bccadb0e007a8aa0a2000309a53995c1e35f97f';
     $isPlugin = $external && !empty($state['pluginEnabled']) && hash_equals($pluginHash,hash('sha256',$secret));
     if ($external && ((!$isPlugin && !hash_equals($state['hash'] ?? '',hash('sha256',$secret))) || ($state['owner'] ?? '') !== ($config['cf_admin'] ?? null))) reply(401,['error'=>'invalid_key']);
+    if ($op==='rules') {
+        if (!$isPlugin) reply(403,['error'=>'plugin_required']);
+        $genre=$body['genre']??'';
+        if (!is_string($genre)||!preg_match('/^[a-z0-9-]{0,80}$/D',$genre)) reply(400,['error'=>'invalid_genre']);
+        reply(200,['ok'=>true,'genre'=>$genre,'rules'=>noa_generation_rules(noa_bridge_pdo(),$genre),
+            'thumbnailInstructions'=>noa_field_guidance('geminiPrompt')]);
+    }
     if (in_array($op,['health','list','update'],true)) {
         if (!$isPlugin) reply(403,['error'=>'plugin_required']);
         require_once __DIR__.'/noa-plugin-records.php';
@@ -93,6 +101,7 @@ try {
         if ($op==='save') {
             $text = $body['text'] ?? null;
             if (!is_string($text) || trim($text)==='' || strlen($text)>48000 || ($job['field']==='youtubeTitle' && mb_strlen($text)>100)) reply(400,['error'=>'invalid_text']);
+            noa_check_prompt_language($job['field'],$text);
             $digest = hash('sha256', json_encode([$job['key'],$job['field'],$text], JSON_THROW_ON_ERROR));
             $id = substr($job['id'],0,8).'-'.substr($job['id'],8,4).'-'.substr($job['id'],12,4).'-'.substr($job['id'],16,4).'-'.substr($job['id'],20);
             $check = $db->prepare('SELECT request_hash, revision FROM noa_request_log WHERE request_id=? FOR UPDATE');
@@ -114,7 +123,11 @@ try {
         } else {
             if ($record['revision'] !== $job['revision'] || isset($job['saved'])) reply(409,['error'=>'select_song_again']);
             $context = array_intersect_key($record['fields'],array_flip([...TARGETS,'songDescription','vocal','originalArtist','productionPrompt','characterPrompt']));
-            $out = ['id'=>$job['id'],'field'=>$job['field'],'song'=>$context,'packageType'=>$record['packageType']];
+            $genre = (string)$record['context']['genre'];
+            $rules = noa_generation_rules($db,$genre,(string)($record['payload']['ownerId'] ?? ''));
+            $out = ['id'=>$job['id'],'field'=>$job['field'],'song'=>$context,'packageType'=>$record['packageType'],
+                'genre'=>$genre,'rules'=>$rules,'originalReadOnly'=>$record['original'] ?? null,
+                'generationInstructions'=>noa_field_guidance($job['field'])];
         }
         break;
     default: reply(404,['error'=>'unknown_operation']);
