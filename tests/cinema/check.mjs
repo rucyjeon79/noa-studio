@@ -10,7 +10,7 @@ try{for(const width of [320,390,1280]){
   const u=new URL(route.request().url());
   if(u.hostname==='www.youtube.com'){
    if(u.pathname==='/iframe_api')return route.fulfill({contentType:'application/javascript',body:'window.YT={Player:class{constructor(frame,{events}){window.currentEvents=events;events.onReady({target:{getPlayerState:()=>-1}});}destroy(){}}};window.onYouTubeIframeAPIReady();'});
-   switches++;return route.fulfill({contentType:'text/html',body:'<!doctype html><title>테스트 영상</title>'});
+   switches++;return route.fulfill({contentType:'text/html',body:'<!doctype html><title>테스트 영상</title><span id="video-surface">테스트 영상</span>'});
   }
   if(u.pathname==='/noa-bridge/youtube-thumbnail.php'){
    const art=['starlight-studio','world-journey','fans-stars','act-1','act-2','act-3'][Number(u.searchParams.get('id').slice(-1))];
@@ -27,8 +27,14 @@ try{for(const width of [320,390,1280]){
  const hero=p.locator('.cinema-feature .cinema-poster');await hero.click();assert.equal(await p.locator('.cinema-feature #yt-frame').count(),1);
  const epPoster=cards.nth(1).locator('.cinema-poster');
  await p.waitForFunction(()=>!!window.currentEvents);
+ await p.frameLocator('#yt-frame').locator('#video-surface').waitFor();
+ await p.evaluate(()=>document.fonts.ready);
  await epPoster.evaluate(el=>el.scrollIntoView({behavior:'instant',block:'center'}));
+ const before=await epPoster.evaluate(el=>{const r=el.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return [x,y,scrollY,document.elementFromPoint(x,y)?.outerHTML.slice(0,120)];});
+ await p.evaluate(()=>{window.clickTrace=[];for(const type of ['pointerdown','pointerup','click'])document.addEventListener(type,e=>window.clickTrace.push([type,e.clientX,e.clientY,e.target.outerHTML.slice(0,85)]),true);});
+
  await epPoster.click();
+ if(!await cards.nth(1).locator('#yt-frame').count())console.log('POSTER_TRACE',width,before,await p.evaluate(()=>[scrollY,window.clickTrace,document.activeElement.tagName]));
  await cards.nth(1).locator('#yt-frame').waitFor({timeout:4000});await p.waitForFunction(()=>window.currentEvents&&document.querySelector('#yt-frame').src.includes('abcdefghij1'));
  await p.evaluate(()=>window.currentEvents.onStateChange({data:1}));assert.equal(await p.locator('.cinema-badge').innerText(),'상영 중');
  await p.evaluate(()=>window.currentEvents.onStateChange({data:2}));assert.equal(await p.locator('.cinema-badge').innerText(),'일시정지');
