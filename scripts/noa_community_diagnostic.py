@@ -1,4 +1,4 @@
-"""Short-lived fixed read-only collection diagnostic, removed after readback."""
+"""Short-lived fixed read-only community diagnostic, removed after readback."""
 import hashlib,json,secrets,time,urllib.request
 from pathlib import Path
 import paramiko
