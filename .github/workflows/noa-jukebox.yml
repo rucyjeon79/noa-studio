@@ -14,7 +14,7 @@ on:
 permissions: {contents: read}
 jobs:
   validate:
-    if: github.event_name != 'schedule'
+    if: github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -31,7 +31,7 @@ jobs:
           python3 -m unittest discover -s tests/jukebox -p 'test_*.py'
   watchdog:
     needs: validate
-    if: always() && github.event_name != 'pull_request' && (github.event_name == 'schedule' || needs.validate.result == 'success')
+    if: always() && github.event_name != 'pull_request' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || needs.validate.result == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: production
@@ -57,7 +57,7 @@ jobs:
           retention-days: 14
   release:
     needs: validate
-    if: always() && github.event_name != 'pull_request' && (github.event_name == 'schedule' || needs.validate.result == 'success')
+    if: always() && github.event_name != 'pull_request' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || needs.validate.result == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 120
     environment: production
