@@ -1,0 +1,37 @@
+name: NOA home notice placement
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-home-notice-placement.yml']
+permissions: {contents: read}
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - run: |
+          php -l bridge/notices.php
+          php -l deploy/noa-app/home.php
+          pip -q install 'paramiko>=3,<5'
+          PYTHONPATH=scripts python - <<'PY'
+          import sys
+          import noa_ainoa_deploy as release
+          release.FILES={'noa-bridge/notices.php':'bridge/notices.php','noa-app/home.php':'deploy/noa-app/home.php'}
+          release.NEW=set()
+          try:
+              release.main()
+          except Exception:
+              if release.BACKUP.exists():
+                  sys.argv.append('rollback')
+                  release.main()
+              raise
+          PY

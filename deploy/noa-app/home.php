@@ -4,7 +4,7 @@ if (!defined('_GNUBOARD_')) { http_response_code(403); exit; }
 header('Content-Type: text/html; charset=utf-8');header('Cache-Control: private, no-store');header('X-Content-Type-Options: nosniff');header('Referrer-Policy: strict-origin-when-cross-origin');
 function noa_home_e(string $text):string{return htmlspecialchars($text,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
 if(is_file(dirname(__DIR__).'/noa-bridge/notices.php'))require_once dirname(__DIR__).'/noa-bridge/notices.php';
-$noa_notices=function_exists('nn_native_notices')?nn_native_notices():['items'=>[],'restricted'=>false];
+$noa_notices=function_exists('nn_native_notices')?nn_native_notices(null,true):['items'=>[],'restricted'=>false];
 
 function noa_home_banner(string $kind):void{
  $items=[
@@ -102,7 +102,7 @@ html .noa-hero[data-home-section=hero] #noa-hero-status:not(:empty){position:abs
 <section class="noa-section noa-notices" data-home-section="notices" aria-labelledby="noa-notices-heading"><div class="noa-section-head"><h2 id="noa-notices-heading">공지사항</h2><a href="/bbs/board.php?bo_table=notice" data-noa-icon="notice">전체 보기</a></div>
 <?php if(!$noa_notices['items']):?><div class="noa-notice-empty"><p><?=$noa_notices['restricted']?'공지사항을 보려면 로그인해 주세요.':'아직 등록된 공지사항이 없습니다.'?></p></div><?php else:?>
 <div class="noa-notice-list"><?php foreach($noa_notices['items'] as $i=>$notice):?><details class="noa-notice <?=$i===0?'noa-notice-featured':''?>" id="noa-notice-<?=$notice['id']?>" data-noa-disclosure>
-<summary data-noa-document-link><span class="noa-notice-summary"><?php if($i===0 && $notice['title']==='람준파파 응원하기 · 제2회 AMT AI 작곡대회'):?><img class="noa-amt-notice-photo" src="/noa-assets/editorial-act-1.webp" alt=""><?php endif;?><?php if($i===0):?><small>최근 공지 · <time datetime="<?=noa_home_e($notice['date'])?>"><?=noa_home_e($notice['date'])?></time></small><?php endif;?><strong><?=noa_home_e($notice['title'])?></strong><?php if($i===0):?><span class="noa-notice-excerpt"><?=noa_home_e($notice['excerpt'])?></span><?php endif;?></span><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 9 6 6 6-6"/></svg></summary>
+<summary data-noa-document-link><span class="noa-notice-summary"><?php if($i===0):?><small>최근 공지 · <time datetime="<?=noa_home_e($notice['date'])?>"><?=noa_home_e($notice['date'])?></time></small><?php endif;?><strong><?=noa_home_e($notice['title'])?></strong><?php if($i===0):?><span class="noa-notice-excerpt"><?=noa_home_e($notice['excerpt'])?></span><?php endif;?></span><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 9 6 6 6-6"/></svg></summary>
 <div class="noa-notice-body" data-noa-document-link><?php if(!empty($notice['welcomeGuide'])): echo $notice['welcomeGuide']; else:?><p><?=nl2br(noa_home_e($notice['body']))?></p><?php endif;?><a href="/bbs/board.php?bo_table=notice&amp;wr_id=<?=$notice['id']?>">게시판에서 보기</a><button class="noa-button" type="button" data-noa-collapse>접기</button></div></details><?php endforeach;?></div><?php endif;?></section>
 <?php noa_home_banner('goods');?>
 
