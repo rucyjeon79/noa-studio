@@ -20,7 +20,7 @@ def main():
     for replay in [False]:
      req=urllib.request.Request('https://noastudio.ai.kr/noa-bridge/'+name,data=b'{}',headers={'Content-Type':'application/json','X-NOA-Control':token})
      with urllib.request.build_opener(NoRedirect()).open(req,timeout=45) as r:data=json.load(r)
-     assert data['ok'];print('ACT_REACTIONS',json.dumps(data,ensure_ascii=False))
+     assert data['ok'] and len(data['rows'])>=3 and all(row[1]=='ok' for row in data['rows']);print('ACT_REACTIONS',json.dumps(data,ensure_ascii=False))
    finally:
     if installed:
      with s.open(remote,'rb') as f:assert f.read()==code

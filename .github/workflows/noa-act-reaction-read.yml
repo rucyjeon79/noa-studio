@@ -2,17 +2,20 @@ name: ACT music reaction read check
 on:
   push:
     branches: [main]
-    paths: ['scripts/act_reaction_read.py','scripts/qa/act-reaction-read.php','.github/workflows/noa-act-reaction-read.yml']
+    paths: ['bridge/engagement-targets.php','scripts/act_reaction_release.py','scripts/act_reaction_read.py','scripts/qa/act-reaction-read.php','.github/workflows/noa-act-reaction-read.yml']
 permissions: {contents: read}
 jobs:
   read:
     runs-on: ubuntu-latest
     environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     steps:
       - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
       - run: python -m pip install 'paramiko>=3,<5'
-      - run: php -l scripts/qa/act-reaction-read.php && python scripts/act_reaction_read.py
+      - run: php -l bridge/engagement-targets.php && python scripts/act_reaction_release.py && python scripts/act_reaction_read.py
         env:
+          GH_TOKEN: ${{ github.token }}
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}

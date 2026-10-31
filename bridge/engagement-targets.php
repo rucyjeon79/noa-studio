@@ -32,7 +32,13 @@ function ne_target(PDO $db,string $type,string $key): array {
  if($sid){
   $s=ne_one($db,"SELECT v.public_verified,v.fields_json FROM noa_catalog_versions v WHERE v.batch_id=? AND v.entity_id=? AND v.entity_type='song'",[$batch,$sid]);
   $f=$s?json_decode($s['fields_json'],true):[];$trash=noa_sound_trash_index($db);
-  if(!$s||!$s['public_verified']||!noa_sound_visible($f,false)||in_array($f['privacyStatus']??'public',['private','unlisted','hidden','draft'],true)||isset($trash['ids'][$sid]))throw new DomainException('post_not_available');
+  if(isset($trash['ids'][$sid])||isset($trash['keys'][$key]))throw new DomainException('post_not_available');
+  if(!$s||!$s['public_verified']||!noa_sound_visible($f,false)||in_array($f['privacyStatus']??'public',['private','unlisted','hidden','draft'],true)){
+   // A visible studio document can stand on its own when its catalog alias is unpublished.
+   // Keep its reactions separate from the inaccessible catalog entity.
+   if(!$d||str_starts_with($key,'catalog:'))throw new DomainException('post_not_available');
+   return $base+['entity'=>'document:'.hash('sha256',$key),'title'=>(string)(($d['body']['confirmedTitle']??'')?:($d['title']??'음악'))];
+  }
   return $base+['entity'=>'song:'.$sid,'title'=>(string)(($d['body']['confirmedTitle']??'')?:($d['title']??$f['confirmedTitle']??$f['title']??'음악'))];
  }
  if(!$d)throw new DomainException('post_not_available');return $base+['entity'=>'document:'.hash('sha256',$key),'title'=>(string)($d['title']??'게시물')];
