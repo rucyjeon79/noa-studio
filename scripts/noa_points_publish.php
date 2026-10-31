@@ -42,10 +42,11 @@ try{
  if(!$created && isset($p['expectedBodySha256'])){
   ns_atomic($key,false,function()use($key,$owner,$p,$imageId){
    $current=ns_doc($key,true);$d=$current['data'];
-   if($d['owner']!==$owner||$d['space']!=='lounge'||$d['category']!=='notice'||$d['title']!==$p['title']||$d['images']!==[$imageId]||!empty($d['deleted']))throw new RuntimeException('existing_post_preserved');
-   if($d['body']===$p['body'])return;
+   if($d['owner']!==$owner||$d['space']!=='lounge'||$d['category']!=='notice'||$d['images']!==[$imageId]||!empty($d['deleted']))throw new RuntimeException('existing_post_preserved');
+   if($d['title']===$p['title'] && $d['body']===$p['body'])return;
+   if($d['title']!==($p['expectedTitle']??$p['title']))throw new RuntimeException('existing_title_edit_preserved');
    if(!hash_equals($p['expectedBodySha256'],hash('sha256',$d['body'])))throw new RuntimeException('existing_post_edit_preserved');
-   $d['body']=$p['body'];$d['updated']=time();
+   $d['title']=$p['title'];$d['body']=$p['body'];$d['updated']=time();
    ns_put($key,'ecosystem_post',$d,$current['revision'],$owner);
   });
  }

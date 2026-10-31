@@ -14,7 +14,7 @@ try{
   const pointsLink=guide.getByRole('link',{name:'포인트 모으는 방법'});
   assert.equal(new URL(await pointsLink.getAttribute('href'),p.url()).searchParams.get('post'),post.id);
   await guide.scrollIntoViewIfNeeded();await p.screenshot({path:'points-proof/guide-'+width+'.png'});
-  await pointsLink.click();await p.getByRole('heading',{name:'별무리 포인트 모으기 · 첫 활동 네 번으로 1,900P'}).waitFor();
+  await pointsLink.click();await p.getByRole('heading',{name:post.title}).waitFor();
   const image=p.locator('.ec-detail .ec-gallery img').first();await image.waitFor();await image.evaluate(async i=>{await i.decode();if(i.naturalWidth!==960)throw Error('wrong_chart');});
   assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   await p.close();

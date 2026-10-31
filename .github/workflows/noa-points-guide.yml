@@ -28,6 +28,6 @@ jobs:
           p=json.loads(Path('docs/notices/NOA_POINTS_FIELDGUIDE.json').read_text())
           url='https://noastudio.ai.kr/noa-bridge/ecosystem.php?action=detail&id='+p['id']
           with urllib.request.urlopen(url,timeout=30) as r: actual=json.load(r)['post']
-          assert actual['body']==p['body'] and actual['visibility']=='public'
+          assert actual['title']==p['title'] and actual['body']==p['body'] and actual['visibility']=='public'
           print('VERIFIED_PUBLIC_SIGNUP_AND_MONTHLY_GUIDE')
           PY
