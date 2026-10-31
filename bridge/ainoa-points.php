@@ -6,11 +6,12 @@ require_once __DIR__.'/subscription-core.php';
 function na_paid_member(array $member,?array $grant,int $now):bool{
  if(empty($member['mb_id']))return false;
  $raw=(int)($member['noa_raw_level']??$member['mb_level']??0);
+ if(in_array($raw,[5,6],true))return true;
  if($grant!==null){
   if(($grant['baseLevel']??null)!==ns_family($raw)||($grant['ownerId']??'')!==$member['mb_id']||($grant['status']??'')!=='active'||!is_int($grant['until']??null)||$grant['until']<=$now)return false;
-  return in_array(ns_effective_level($raw,$grant,$now),[4,6],true);
+  return in_array(ns_effective_level($raw,$grant,$now),[4,8],true);
  }
- return in_array($raw,[4,6],true);
+ return in_array($raw,[4,8],true);
 }
 function na_chat_policy(array $config):array{
  $points=$config['chatPoints']??null;

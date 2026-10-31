@@ -13,6 +13,12 @@ if(!empty($member['mb_id'])&&($is_admin??'')!=='super'&&is_file(dirname(__DIR__)
 }
 $noa_access=nam_access((array)($member??[]),(string)($is_admin??''));
 $noa_path=(string)(parse_url($_SERVER['REQUEST_URI']??'/',PHP_URL_PATH)??'/');
+// Fan appointments are issued exclusively by the audited membership action.
+if(($_SERVER['REQUEST_METHOD']??'')==='POST'&&in_array($noa_path,['/adm/member_form_update.php','/adm/member_list_update.php'],true)){
+ foreach((array)($_POST['mb_level']??[]) as $requested){
+  if(in_array((int)$requested,[5,6],true)){http_response_code(403);exit('팬클럽 임명은 MY 회원 정보에서 진행해 주세요.');}
+ }
+}
 $noa_need=nam_requirement($noa_path,$_SERVER['REQUEST_METHOD']??'GET',$_GET);
 // New registrations start as temporary members; never change existing member rows.
 if(isset($config)&&is_array($config))$config['cf_register_level']=2;
@@ -25,7 +31,7 @@ if(!nam_allowed($noa_access,$noa_need)){
   header('Location: /bbs/login.php?url='.rawurlencode($_SERVER['REQUEST_URI']??'/'),true,302);exit;
  }
  http_response_code(403);header('Content-Type: text/html; charset=utf-8');
- $message=$noa_need==='music'?'음원은 VIP회원·VIP 크리에이터가 이용할 수 있습니다.':($noa_need==='write'?'글과 댓글은 정회원부터 작성할 수 있습니다.':($noa_need==='creator'?'승인된 크리에이터가 이용할 수 있습니다. MY에서 크리에이터 전환을 신청하세요.':($noa_need==='creatorAI'?'AI 제작 기능은 6레벨 크리에이터부터 이용할 수 있습니다.':'이 메뉴를 이용할 권한이 없습니다.')));
+ $message=$noa_need==='music'?'음원은 VIP회원·VIP 크리에이터가 이용할 수 있습니다.':($noa_need==='write'?'글과 댓글은 정회원부터 작성할 수 있습니다.':($noa_need==='creator'?'승인된 크리에이터가 이용할 수 있습니다. MY에서 크리에이터 전환을 신청하세요.':($noa_need==='creatorAI'?'AI 제작 기능은 8레벨 크리에이터부터 이용할 수 있습니다.':'이 메뉴를 이용할 권한이 없습니다.')));
  $launch=dirname(__DIR__).'/noa-launch.js';$launchTag=is_file($launch)?'<script src="/noa-launch.js?v='.hash_file('sha256',$launch).'"></script>':'';
  echo '<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>이용 안내 | NOA STUDIO</title>'.$launchTag.'<link rel="stylesheet" href="/noa-ui.css"><script src="/noa-brand.js" defer></script><script src="/noa-ui.js" defer></script><body class="noa-page"><main><h1>이용 안내</h1><p>'.$message.'</p><a class="noa-button" href="/">홈</a><a class="noa-button" href="/noa-my.php">MY</a></main></body></html>';exit;
 }

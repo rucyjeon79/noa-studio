@@ -30,7 +30,7 @@ function nsp_target(PDO $db,string $type,string $key):array{
   if(($d['ownerId']??'')!==$owner)throw new DomainException('recipient_unavailable');
  }else throw new InvalidArgumentException('invalid_target');
  $member=nsp_member($owner);
- if(!in_array((int)$member['mb_level'],[5,6],true)&&$owner!==($config['cf_admin']??''))throw new DomainException('recipient_unavailable');
+ if(!in_array((int)$member['mb_level'],[7,8],true)&&$owner!==($config['cf_admin']??''))throw new DomainException('recipient_unavailable');
  return ['owner'=>$owner,'channelId'=>hash('sha256',$owner),'channelTitle'=>(string)($d['title']??'크레이터'),'entity'=>$entity,'title'=>$title];
 }
 function nsp_count(string $entity):int{return (int)(ns_doc('support:count:'.hash('sha256',$entity))['data']['count']??0);}

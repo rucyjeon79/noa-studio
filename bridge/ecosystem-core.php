@@ -7,7 +7,7 @@ function eco_actor():array{global $member,$is_admin;$a=['id'=>(string)($member['
 function eco_text(mixed $v,int $max,bool $required=false):string{if(!is_string($v)||!mb_check_encoding($v,'UTF-8')||str_contains($v,"\0")||mb_strlen($v)>$max||($required&&trim($v)===''))throw new InvalidArgumentException('invalid_text');return trim($v);}
 function eco_id(string $id):string{if(!preg_match('/^[a-f0-9]{32}$/D',$id))throw new InvalidArgumentException('invalid_id');return $id;}
 function eco_require(array $a,int $level=2):void{if($a['id']===''||(!$a['admin']&&$a['level']<$level))throw new DomainException('membership_required');}
-function eco_creator(array $a):void{eco_require($a);if(!$a['admin']&&!in_array($a['level'],[5,6],true))throw new DomainException('creator_required');}
+function eco_creator(array $a):void{eco_require($a);if(!$a['admin']&&!in_array($a['level'],[7,8],true))throw new DomainException('creator_required');}
 function eco_readable(array $d,array $a):bool{return empty($d['deleted'])&&($a['admin']||($a['id']!==''&&($d['owner']??null)===$a['id'])||(($d['visibility']??'public')==='public'&&eco_perks_allowed($d,$a))||(($d['visibility']??'')==='members'&&$a['id']!==''&&eco_perks_allowed($d,$a)));}
 function eco_record(string $id,array $a,bool $lock=false):array{$r=ns_doc('ecosystem:post:'.eco_id($id),$lock);if(!$r||$r['kind']!=='ecosystem_post'||!eco_readable($r['data'],$a))throw new DomainException('not_found');return $r;}
 function eco_owner(array $r,array $a):void{eco_require($a);if(!$a['admin']&&$r['data']['owner']!==$a['id'])throw new DomainException('owner_required');}

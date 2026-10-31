@@ -24,6 +24,13 @@ try{
  if(($_SERVER['HTTP_ORIGIN']??'')!=='https://noastudio.ai.kr'||!hash_equals($_SESSION['noa_membership_csrf'],$_SERVER['HTTP_X_NOA_CSRF']??'')||strtolower(trim(explode(';',$_SERVER['CONTENT_TYPE']??'')[0]))!=='application/json')nr_reply(403,['ok'=>false,'error'=>'csrf_required']);
  if(!$active)throw new DomainException('membership_not_ready');$raw=file_get_contents('php://input',false,null,0,8193);if(strlen($raw)>8192)throw new InvalidArgumentException('request_too_large');$b=json_decode($raw,true,32,JSON_THROW_ON_ERROR);if(!is_array($b))throw new InvalidArgumentException('invalid_request');
  if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
+ if(in_array($action,['praise','appoint'],true)){
+  require_once __DIR__.'/fan-membership.php';
+  $id=$b['recipient']??null;if(!is_string($id)||trim($id)===''||strlen($id)>100)throw new InvalidArgumentException('invalid_member');
+  if($action==='appoint'){if(!is_int($b['level']??null))throw new InvalidArgumentException('invalid_level');nfan_appoint($owner,trim($id),$b['level']);nr_reply(200,['ok'=>true]);}
+  if(!is_int($b['points']??null)||!is_string($b['requestId']??null))throw new InvalidArgumentException('invalid_gift');
+  nr_reply(200,['ok'=>true,'gift'=>nfan_gift($owner,trim($id),$b['points'],$b['requestId'])]);
+ }
  if($action==='vip'){
   if(!is_string($b['requestId']??null)||!is_int($b['policyRevision']??null)||($b['quotedPoints']??null)!==3000||($b['durationDays']??null)!==30||($b['confirmed']??false)!==true)throw new InvalidArgumentException('purchase_confirmation_required');
   nr_reply(200,['ok'=>true,'order'=>nr_buy_vip($owner,$b['requestId'],$b['policyRevision'],time())]);

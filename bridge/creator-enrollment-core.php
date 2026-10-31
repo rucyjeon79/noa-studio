@@ -100,7 +100,7 @@ function nce_board(PDO $db,string $owner,string $title):string{
 }
 function nce_native_insert(PDO $db,array $v):void{
  global $g5,$config;$now=date('Y-m-d H:i:s');$identity=$v['identity'];
- $values=['mb_id'=>$v['ownerId'],'mb_password'=>$v['passwordHash'],'mb_name'=>$identity['name'],'mb_nick'=>$v['nickname'],'mb_email'=>$v['mb_email'],'mb_level'=>5,'mb_hp'=>$identity['hp'],'mb_birth'=>$identity['birth'],'mb_certify'=>$identity['type'],'mb_dupinfo'=>$identity['dupinfo'],'mb_nick_date'=>date('Y-m-d'),'mb_open_date'=>date('Y-m-d'),'mb_datetime'=>$now,'mb_today_login'=>$now,'mb_email_certify'=>$now,'mb_signature'=>'','mb_profile'=>'','mb_memo'=>'','mb_lost_certify'=>''];
+ $values=['mb_id'=>$v['ownerId'],'mb_password'=>$v['passwordHash'],'mb_name'=>$identity['name'],'mb_nick'=>$v['nickname'],'mb_email'=>$v['mb_email'],'mb_level'=>7,'mb_hp'=>$identity['hp'],'mb_birth'=>$identity['birth'],'mb_certify'=>$identity['type'],'mb_dupinfo'=>$identity['dupinfo'],'mb_nick_date'=>date('Y-m-d'),'mb_open_date'=>date('Y-m-d'),'mb_datetime'=>$now,'mb_today_login'=>$now,'mb_email_certify'=>$now,'mb_signature'=>'','mb_profile'=>'','mb_memo'=>'','mb_lost_certify'=>''];
  if(!empty($config['cf_use_email_certify']))throw new DomainException('native_email_policy_review_required');
  $q=$db->prepare('INSERT INTO '.nce_table($g5['member_table']).' ('.implode(',',array_map('nce_table',array_keys($values))).') VALUES ('.implode(',',array_fill(0,count($values),'?')).')');$q->execute(array_values($values));
 }
@@ -120,7 +120,7 @@ function nce_review(PDO $db,string $id,int $revision,string $action,string $note
   $db->beginTransaction();$current=nce_one($db,'SELECT * FROM noa_creator_applications WHERE id=? FOR UPDATE',[$id]);if((int)$current['revision']!==$revision||$current['state']!=='pending')throw new DomainException('revision_conflict');
   if($action==='approve'){
    $m=nce_member($db,$a['owner_id'],true);nce_duplicate($db,$v,$v['identity'],(bool)$a['existing_member']);
-   if(!$a['existing_member'])nce_native_insert($db,$v);else{$q=$db->prepare('UPDATE '.nce_table($g5['member_table']).' SET mb_level=5,mb_name=?,mb_hp=?,mb_birth=?,mb_certify=?,mb_dupinfo=? WHERE mb_id=? AND mb_level IN (2,3,4)');$q->execute([$v['identity']['name'],$v['identity']['hp'],$v['identity']['birth'],$v['identity']['type'],$v['identity']['dupinfo'],$a['owner_id']]);if($q->rowCount()!==1)throw new DomainException('member_changed');}
+   if(!$a['existing_member'])nce_native_insert($db,$v);else{$q=$db->prepare('UPDATE '.nce_table($g5['member_table']).' SET mb_level=7,mb_name=?,mb_hp=?,mb_birth=?,mb_certify=?,mb_dupinfo=? WHERE mb_id=? AND mb_level IN (2,3,4)');$q->execute([$v['identity']['name'],$v['identity']['hp'],$v['identity']['birth'],$v['identity']['type'],$v['identity']['dupinfo'],$a['owner_id']]);if($q->rowCount()!==1)throw new DomainException('member_changed');}
    $key=nc_channel_key($a['owner_id']);$channel=nc_row($db,$key);if($channel)throw new DomainException('channel_already_exists');
    nup_store($db,$key,'prefs',['ownerId'=>$a['owner_id'],'channelId'=>hash('sha256',$a['owner_id']),'title'=>$v['title'],'description'=>$v['description'],'artistName'=>$v['artistName'],'symbol'=>$v['symbol'],'boardId'=>$board,'approvedAt'=>time()],0,$reviewer);
    unset($v['passwordHash']);$next='approved';

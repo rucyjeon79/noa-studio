@@ -24,6 +24,11 @@ try{
   require_once __DIR__.'/membership-core.php';if(empty(nr_policy()['enabled']))throw new RuntimeException('membership_not_active');
   $rows=ns_q('SELECT mb_id FROM '.ns_table('member_table').' WHERE mb_level BETWEEN 2 AND 4 ORDER BY mb_id');$owners=[];while($row=sql_fetch_array($rows)){$owners[]=$row['mb_id'];if(count($owners)>10000)throw new RuntimeException('maintenance_batch_limit');}
   $counts=[];foreach($owners as $owner){$r=nr_renew($owner,time());nr_refresh($owner,time());$counts[$r['state']]=($counts[$r['state']]??0)+1;}
+  if(is_file(__DIR__.'/fan-membership.php')){
+   require_once __DIR__.'/fan-membership.php';
+   $fans=ns_q('SELECT mb_id FROM '.ns_table('member_table')." WHERE mb_level IN (5,6) AND mb_leave_date='' AND mb_intercept_date=''");
+   while($fan=sql_fetch_array($fans)){if(nfan_monthly($fan['mb_id'],time())>0)$counts['fanCredits']=1+($counts['fanCredits']??0);}
+  }
   $result['maintenance']=['membersChecked'=>count($owners),'results'=>$counts];$result['databaseWrites']='consented_renewal_and_member_level_reconciliation';
   ns_atomic('membership-maintenance',false,function()use($result){$key='membership:maintenance';$old=ns_doc($key,true);ns_put($key,'membership_maintenance',['checkedAt'=>time()]+$result['maintenance'],$old['revision']??0,'n80-membership-worker');});
  }

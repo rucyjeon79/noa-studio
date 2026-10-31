@@ -2,10 +2,10 @@
 declare(strict_types=1);
 /** Request-time entitlement overlay; no GnuBoard member rows are rewritten. */
 function ns_member_key(string $owner):string{return 'subscription:member:'.hash('sha256',$owner);}
-function ns_family(int $level):?int{return in_array($level,[3,4],true)?3:(in_array($level,[5,6],true)?5:null);}
+function ns_family(int $level):?int{return in_array($level,[3,4],true)?3:(in_array($level,[7,8],true)?7:null);}
 function ns_effective_level(int $raw,?array $grant,int $now):int{
  $base=ns_family($raw);if($base===null||!$grant||($grant['baseLevel']??null)!==$base)return $raw;
- return ($grant['status']??'')==='active'&&is_int($grant['until']??null)&&$grant['until']>$now?($base===5?6:4):$base;
+ return ($grant['status']??'')==='active'&&is_int($grant['until']??null)&&$grant['until']>$now?($base===7?8:4):$base;
 }
 function ns_read_grant(PDO $db,string $owner):?array{
  $q=$db->prepare("SELECT payload FROM noa_documents WHERE doc_key=? AND kind='prefs'");$q->execute([ns_member_key($owner)]);$raw=$q->fetchColumn();if($raw===false)return null;

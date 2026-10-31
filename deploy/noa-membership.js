@@ -18,5 +18,17 @@ async function act(fn){if(busy)return;busy=true;render();try{await fn();await re
 $('membership-confirm').onchange=()=>render();$('membership-buy').onclick=()=>act(async()=>{purchaseId??=crypto.randomUUID();await post('vip',{requestId:purchaseId,policyRevision:state.policyRevision,quotedPoints:3000,durationDays:30,confirmed:$('membership-confirm').checked});purchaseId=null;$('membership-confirm').checked=false;notice('VIP 30일 이용권을 적용했습니다.');});
 $('membership-auto').onchange=()=>{const enabled=$('membership-auto').checked;act(async()=>{await post('auto',{enabled,revision:state.autoRenew.revision});notice(enabled?'자동연장을 켰습니다. 만료 시 잔액이 충분하면 3,000P로 30일 연장합니다.':'자동연장을 해제했습니다.');});};
 $('membership-topup').onsubmit=e=>{e.preventDefault();const points=Number($('membership-topup-points').value);act(async()=>{if(!topupRetry||topupRetry.points!==points)topupRetry={requestId:crypto.randomUUID(),points};await post('topup',topupRetry);topupRetry=null;notice('구매 신청을 보관했습니다. 안내된 실제 결제 확인 후 충전됩니다.');});};
+let pendingGift;
+const praise=$('fan-praise');
+if(praise)praise.onsubmit=e=>{e.preventDefault();if(!state||busy)return;
+ const recipient=praise.elements.recipient.value.trim(),points=Number(praise.elements.points.value);
+ if(!Number.isSafeInteger(points)||points<1||points>state.balance){notice('보유 포인트 안에서 입력해 주세요.');return;}
+ if(!confirm(recipient+' 회원에게 '+points.toLocaleString()+'P를 선물할까요?'))return;
+ if(!pendingGift||pendingGift.recipient!==recipient||pendingGift.points!==points)pendingGift={recipient,points,requestId:crypto.randomUUID()};
+ act(async()=>{const d=await post('praise',pendingGift);pendingGift=null;praise.reset();notice('선물했습니다.'+(d.gift.rebate?' '+d.gift.rebate+'P가 돌아왔습니다.':''));});};
+const appoint=$('fan-appoint');
+if(appoint)appoint.onsubmit=e=>{e.preventDefault();if(!state||busy)return;
+ const recipient=appoint.elements.recipient.value.trim(),level=Number(appoint.dataset.level);
+ if(confirm(recipient+' 회원을 '+level+'레벨로 임명할까요?'))act(async()=>{await post('appoint',{recipient,level});appoint.reset();notice('임명했습니다.');});};
 refresh().then(()=>notice(state.enabled?'잔액과 이용 기간을 확인하세요.':'회원 정책 적용을 준비 중입니다.')).catch(e=>notice(e.message));
 })();
