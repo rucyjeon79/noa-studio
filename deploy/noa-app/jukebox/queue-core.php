@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
-require_once __DIR__.'/recovery-core.php';
+require_once __DIR__.'/recovery-core.php';require_once __DIR__.'/wake-core.php';
 const NQ_ACTIVE=['analyzing','processing','verifying'];
 const NQ_WAIT=['queued','retrying'];
 const NQ_MAX_ATTEMPTS=3;
@@ -12,7 +12,7 @@ function nq_insert(PDO $db,array $u,string $status='queued',int $attempt=1,?int 
  $db->prepare('INSERT INTO noa_jukebox_audio_jobs(upload_id,song_key,status,attempt,retry_of) VALUES(?,?,?,?,?)')->execute([$u['id'],$u['song_key'],$status,$attempt,$retryOf]);$id=(int)$db->lastInsertId();
  $db->prepare('UPDATE noa_jukebox_uploads SET status=?,lease=NULL,lease_until=NULL,error=NULL WHERE id=?')->execute([$status,$u['id']]);return $id;
 }
-function nq_enqueue(PDO $db,array $u):int{return nq_atomic($db,function()use($db,$u){$q=$db->prepare("SELECT id FROM noa_jukebox_audio_jobs WHERE upload_id=? ORDER BY id DESC LIMIT 1");$q->execute([$u['id']]);$id=$q->fetchColumn();return $id?(int)$id:nq_insert($db,$u);});}
+function nq_enqueue(PDO $db,array $u):int{$job=nq_atomic($db,function()use($db,$u){$q=$db->prepare("SELECT id FROM noa_jukebox_audio_jobs WHERE upload_id=? ORDER BY id DESC LIMIT 1");$q->execute([$u['id']]);$id=$q->fetchColumn();return $id?(int)$id:nq_insert($db,$u);});nw_after_enqueue();return $job;}
 function nq_migrate(PDO $db):void{
  // Adopt old completed uploads only; never reset an existing queue or confirmed asset.
  nq_atomic($db,function()use($db){$rows=$db->query("SELECT u.* FROM noa_jukebox_uploads u WHERE u.status IN ('analyzing','processing') AND (u.lease_until IS NULL OR u.lease_until<CURRENT_TIMESTAMP) AND NOT EXISTS(SELECT 1 FROM noa_jukebox_audio_jobs j WHERE j.upload_id=u.id) ORDER BY u.updated_at,u.sequence")->fetchAll(PDO::FETCH_ASSOC);foreach($rows as $u)nq_insert($db,$u);});
