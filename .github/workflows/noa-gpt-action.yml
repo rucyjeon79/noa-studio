@@ -1,5 +1,7 @@
 name: NOA private GPT song action
 on:
+  pull_request:
+    paths: ['deploy/noa-gpt*','tests/gpt/**','.github/workflows/noa-gpt-action.yml']
   push:
     branches: [main, work/chatgpt-song-action]
     paths: ['deploy/noa-gpt*','scripts/noa_gpt_release.py','tests/gpt/**','.github/workflows/noa-gpt-action.yml']
