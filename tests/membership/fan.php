@@ -18,4 +18,17 @@ expect(nfan_gift('fan','reader',1000,$second)['rebate']===0&&get_point_sum('fan'
 denied(fn()=>nfan_gift('fan','reader',1,$id));denied(fn()=>nfan_gift('lead','artist',1,$second));
 insert_point('lead',2000000,'seed','test','large','credit');
 expect(nfan_gift('lead','reader',1000001,$second)['rebate']===100000);
+foreach(['aide2','aide3','lead2'] as $id)ns_q('INSERT INTO g5_member(mb_id,mb_level,mb_point) VALUES('.ns_e($id).',3,0)');
+nfan_appoint('lead','aide2',5);
+expect(nfan_aide_count('lead')===2);
+try{nfan_appoint('lead','aide3',5);throw new RuntimeException('third appointment accepted');}
+catch(DomainException $e){expect($e->getMessage()==='aide_limit_reached');}
+expect((int)nr_member('aide3')['mb_level']===3);
+nfan_appoint('boss','lead2',6);
+nfan_appoint('lead2','aide3',5);
+expect(nfan_aide_count('lead2')===1);
+nfan_appoint('boss','aide2',6);
+expect(nfan_aide_count('lead')===1);
+nfan_appoint('lead','reader',5);
+expect(nfan_aide_count('lead')===2);
 echo "FAN_APPOINTMENTS_MONTHLY_GIFTS_REPLAY_AND_REBATE_OK\n";

@@ -71,6 +71,16 @@ function nfan_appointed(array $m):bool{
  return isset(NOA_FAN_MONTHLY[(int)$m['mb_level']])&&($grant['level']??0)===(int)$m['mb_level'];
 }
 
+const NOA_FAN_AIDE_LIMIT = 2;
+
+function nfan_aide_count(string $chair):int{
+ $row=ns_one("SELECT COUNT(*) AS total FROM ".ns_table('member_table')." m
+   JOIN noa_documents d ON d.doc_key=CONCAT('membership:fan-rank:',SHA2(CONCAT(m.mb_id,'|'),256))
+   WHERE m.mb_level=5 AND m.mb_leave_date='' AND m.mb_intercept_date=''
+     AND d.kind='fan_rank' AND JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.appointedBy'))=".ns_e($chair));
+ return (int)$row['total'];
+}
+
 function nfan_appoint(string $sender,string $target,int $level):void{
  global $config;
  ns_atomic($sender,false,function()use($sender,$target,$level,$config){
@@ -78,6 +88,8 @@ function nfan_appoint(string $sender,string $target,int $level):void{
   if(!nfan_may_appoint($actor,(string)$config['cf_admin'],$level)||($level===5&&!nfan_appointed($actor)))throw new DomainException('appointment_denied');
   if($member['mb_id']===$actor['mb_id']||$member['mb_id']===$config['cf_admin'])throw new DomainException('appointment_denied');
   if(!in_array((int)$member['mb_level'],$level===6?[2,3,4,5]:[2,3,4],true))throw new DomainException('appointment_target_invalid');
+  // ns_atomic serializes appointments by this chair before counting occupied seats.
+  if($level===5&&nfan_aide_count($actor['mb_id'])>=NOA_FAN_AIDE_LIMIT)throw new DomainException('aide_limit_reached');
   $key=nr_key('fan-rank',$member['mb_id']);$old=ns_doc($key,true);
   ns_put($key,'fan_rank',['level'=>$level,'appointedBy'=>$actor['mb_id'],'appointedAt'=>time()],$old['revision']??0,$actor['mb_id']);
   ns_q('UPDATE '.ns_table('member_table').' SET mb_level='.$level.' WHERE mb_id='.ns_e($member['mb_id']));

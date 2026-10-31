@@ -43,7 +43,27 @@ jobs:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
       - run: python -m pip install 'paramiko>=3,<5'
-      - run: |
+      - name: Publish appointment limit after isolated database tests
+        if: contains(github.event.head_commit.message, '[aide-limit]')
+        env: {PYTHONPATH: scripts}
+        run: |
+          php -l deploy/noa-membership.php
+          node --check deploy/noa-membership.js
+          python - <<'PY'
+          import sys
+          import noa_ainoa_deploy as release
+          release.FILES = {'noa-bridge/fan-membership.php': 'bridge/fan-membership.php', 'noa-membership.php': 'deploy/noa-membership.php', 'noa-membership.js': 'deploy/noa-membership.js'}
+          release.NEW = set()
+          try:
+              release.main()
+          except Exception:
+              if release.BACKUP.exists():
+                  sys.argv.append('rollback')
+                  release.main()
+              raise
+          PY
+      - if: "!contains(github.event.head_commit.message, '[aide-limit]')"
+        run: |
           python scripts/noa_rank_audit.py | tee /tmp/rank-inventory
           python - <<'PY'
           import json
