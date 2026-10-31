@@ -3,7 +3,7 @@ import sys
 import noa_ainoa_deploy as release
 
 release.FILES = {name: 'deploy/'+name for name in (
-    'noa-plugin-records.php','noa-gpt.php','noa-gpt-schema.json','noa-gpt-setup.php','noa-browse-edit.js')}
+    'noa-publish-set.php','noa-plugin-records.php','noa-gpt.php','noa-gpt-schema.json','noa-gpt-setup.php','noa-browse-edit.js')}
 release.FILES = {'noa-bridge/generation-rules.php':'bridge/generation-rules.php',**release.FILES,'noa-bridge/ainoa-generation.php':'bridge/ainoa-generation.php'}
 release.NEW = set(release.FILES) - {'noa-browse-edit.js'}
 if __name__ == '__main__':
