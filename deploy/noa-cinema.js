@@ -51,7 +51,7 @@
  function launch(slot,film){
   const screen=byId('yt-player');
   if(screen.parentNode!==slot)slot.append(screen);
-  document.dispatchEvent(new CustomEvent('noa-cinema-request',{detail:{id:film.video}}));
+  window.dispatchEvent(new CustomEvent('noa-cinema-request',{detail:{id:film.video}}));
   window.NoaBrowse.renderPath(byId('video-classification'),film,{base:'/noa-youtube.php'});
  }
  function poster(film,label,hero=false){
@@ -74,6 +74,7 @@
   const bar=node('div','cinema-screen-status');badge=node('span','cinema-badge');badge.setAttribute('role','status');external=node('a','cinema-external','YouTube에서 보기 ↗');external.target='_blank';external.rel='noopener noreferrer';external.hidden=true;bar.append(badge,external);screen.prepend(bar);state(-1);
   next=node('button','cinema-next');next.type='button';next.hidden=true;screen.append(next);
   document.body.classList.add('noa-screen-room');
+  const heading=screen.closest('main')?.querySelector(':scope>h1');if(heading)heading.textContent='NOA 상영관';
   feature=node('section','cinema-feature');feature.setAttribute('aria-label','NOA 상영관 · 오늘의 상영작');
   const day=Math.floor((Date.now()+9*3600000)/86400000);
   const film=films[day%films.length];
