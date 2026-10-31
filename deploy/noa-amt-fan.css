@@ -1,0 +1,10 @@
+#noa-amt-fan{width:min(390px,calc(100vw - 36px));max-height:85dvh;max-height:85svh;overflow:auto;border:1px solid #635368;border-radius:16px;padding:0;background:#19161e;color:#fff6ee;box-shadow:0 16px 64px #0008}
+#noa-amt-fan::backdrop{background:#090810b8}
+#noa-amt-fan .amt-art{position:relative;height:clamp(95px,21vh,155px);background:linear-gradient(0deg,#19161e,transparent 85%),url('/noa-assets/editorial-fans-stars.webp') center 52%/cover}
+#noa-amt-fan .amt-art span{position:absolute;bottom:10px;left:24px;color:#f0cf98;font:650 11px/1.5 system-ui;letter-spacing:.18em}
+#noa-amt-fan .amt-copy{display:grid;gap:12px;padding:8px 24px 22px;text-align:left}
+#noa-amt-fan h2{font-size:clamp(22px,5vw,29px);line-height:1.25;margin:0;word-break:keep-all}
+#noa-amt-fan p{font-size:15px;line-height:1.7;color:#e1d8e3;margin:0}
+#noa-amt-fan small{color:#c6b6cb}
+#noa-amt-fan .amt-close{position:absolute;right:10px;top:8px;min-height:44px;padding:0 12px;color:white;background:#17141de8;border:1px solid #ffffff42;border-radius:22px}
+a.amt-fan-cta{display:inline-flex;align-items:center;justify-content:center;margin-block:4px;min-height:46px;padding-inline:15px;background:#ebce98;color:#271e13;border-radius:8px;text-decoration:none;font-weight:700}

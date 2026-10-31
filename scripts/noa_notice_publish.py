@@ -7,7 +7,10 @@ from n80_live_observer import NoRedirect
 
 def main():
     points='--points' in sys.argv
-    if points:
+    amt='--amt' in sys.argv
+    if amt:
+        payload=Path('docs/notices/NOA_AMT2_SUPPORT.json').read_bytes()
+    elif points:
         post=json.loads(Path('docs/notices/NOA_POINTS_FIELDGUIDE.json').read_text())
         post['image']=base64.b64encode(Path('deploy/noa-assets/guide/points-map.jpg').read_bytes()).decode()
         payload=json.dumps(post,ensure_ascii=False).encode()

@@ -1,0 +1,51 @@
+name: NOA AMT fan campaign
+on:
+  push:
+    branches: [main]
+    paths: ['deploy/noa-amt-fan*','scripts/noa_amt_release.py','docs/notices/NOA_AMT2_SUPPORT.json','.github/workflows/noa-amt-fan.yml']
+permissions: {contents: read}
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - run: |
+          php -l deploy/noa-amt-fan.extend.php && php -l scripts/noa_notice_publish.php
+          node --check deploy/noa-amt-fan.js
+          pip -q install 'paramiko>=3,<5'
+          python scripts/noa_amt_release.py
+          python scripts/noa_notice_publish.py --amt
+      - name: Verify mobile popup, close, expiry and both destinations
+        run: |
+          npm install --prefix "$RUNNER_TEMP/fan-test" --no-save playwright@1.56.1
+          cd "$RUNNER_TEMP/fan-test"
+          node --input-type=module <<'JS'
+          import {chromium} from 'playwright';
+          import assert from 'node:assert/strict';
+          const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
+          const base='https://noastudio.ai.kr', target='https://www.aimusictown.com/competition/2?entryId=353';
+          try{
+            const page=await browser.newPage({viewport:{width:390,height:844},serviceWorkers:'block'});
+            await page.goto(base);await page.locator('#noa-amt-fan[open] .amt-close').click();
+            await page.reload();assert.equal(await page.locator('#noa-amt-fan').count(),0);
+            await page.evaluate(()=>sessionStorage.removeItem('noa-amt2-fan-2026'));await page.reload();
+            const pop=page.waitForEvent('popup');
+            await page.locator('#noa-amt-fan .amt-fan-cta').click();
+            const external=await pop;await external.waitForURL(target,{waitUntil:'commit'});
+            await page.waitForURL(url=>url.pathname==='/bbs/login.php'||url.pathname==='/noa-music.php');
+            assert(decodeURIComponent(page.url()).includes('9fed48ee44d5b75621e4c7be'));
+            const data=await (await page.request.get(base+'/noa-category-order.php')).json();
+            assert(data.playlists.some(p=>p.id==='9fed48ee44d5b75621e4c7be'&&p.group==='story'&&p.title.includes('제2회')));
+            await page.clock.install({time:new Date('2026-11-16T00:00:01+09:00')});
+            await page.goto(base);await page.evaluate(()=>sessionStorage.clear());await page.reload();assert.equal(await page.locator('#noa-amt-fan').count(),0);
+          }finally{await browser.close();}
+          JS
