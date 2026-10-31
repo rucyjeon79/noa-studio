@@ -68,5 +68,6 @@ ne_like($db,$published['entity'],'qa_a',true,false,101);
 ne_comment($db,$published['entity'],'qa_a','98765432-1111-4111-8111-111111111111','공개 음원 댓글',101);
 $state=ne_stats($db,$published);
 ne_check($state['likes']===1 && $state['comments']===1,'public override like and comment persisted');
+$db->prepare('DELETE FROM noa_documents WHERE doc_key=?')->execute([$override]);
 
 file_put_contents($root.'/engagement-test.php',$html);@mkdir('engagement-proof',0700,true);file_put_contents('engagement-proof/mysql.json',json_encode(['additiveInstall'=>true,'canonicalAlias'=>true,'privateAndRestrictedDenied'=>true,'likeAndCommentReplay'=>true,'historicalCutoff'=>true,'deletionOwnerOnly'=>true,'nativeDataPreserved'=>true]));echo "ENGAGEMENT_MYSQL_PASS\n";
