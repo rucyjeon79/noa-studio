@@ -31,6 +31,8 @@ $g5['member_table']='g5_member';$g5['board_good_table']='g5_board_good';$member=
 function ne_check($v,$label){if(!$v)throw new RuntimeException($label);}
 $a=ne_target($db,'music','fixture-song');$b=ne_target($db,'music','catalog:'.$song);ne_check($a['entity']===$b['entity'],'canonical alias');
 foreach([['music','catalog:'.$private],['board','free:7'],['board','song_request:1'],['board','certonly:1'],['board','grouponly:1'],['board','staffonly:1'],['video','missingxxxx']]as [$type,$id]){try{ne_target($db,$type,$id);throw new RuntimeException('access leak '.$id);}catch(DomainException $expected){}}
+
+
 ne_like($db,$a['entity'],'qa_a',true,false,100);ne_like($db,$a['entity'],'qa_a',true,false,101);ne_check((int)$db->query('SELECT COUNT(*) FROM noa_post_like_events')->fetchColumn()===1,'like replay');
 $id=ne_comment($db,$a['entity'],'qa_a','11111111-1111-4111-8111-111111111111','댓글',110);ne_check($id===ne_comment($db,$a['entity'],'qa_a','11111111-1111-4111-8111-111111111111','댓글',111),'comment replay');
 try{ne_delete($db,$id,'qa_b',false,115);throw new RuntimeException('owner bypass');}catch(DomainException $expected){}
@@ -58,4 +60,13 @@ copy('public/coming/kpop-original.jpg',$root.'/cover.jpg');
 $html= <<<'PHP'
 <?php require __DIR__.'/common.php';?><!doctype html><html lang="ko" data-noa-precision="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-engagement.css"><script type="application/json" id="noa-engagement-context"><?=json_encode(['member'=>!!$member])?></script><script src="/noa-ui.js" defer></script><script src="/noa-engagement.js" defer></script></head><body class="noa-page"><main><h1>NOA STUDIO · 게시물 반응</h1><div class="noa-inline-song-row" data-inline-key="fixture-song"><button class="noa-inline-song"><img class="noa-inline-cover" src="/cover.jpg" alt=""><span class="noa-inline-title">EP.1 · 하루의 끝에</span></button><button class="noa-edit-edit" onclick="this.dataset.used='true'">수정</button><div class="noa-song-actions" data-admin-controls="true"><button class="noa-song-action noa-action" aria-label="하루의 끝에 재생" onclick="this.dataset.used='true'">▷<span>재생</span></button><button class="noa-song-action noa-action" aria-label="하루의 끝에 담기" onclick="this.dataset.used='true'">담기</button><button class="noa-song-action noa-action" aria-label="하루의 끝에 다운로드" onclick="this.dataset.used='true'">다운로드</button></div></div><section class="noa-card-grid"><a class="noa-music-card" data-video="abcdefghijk" href="#song"><div class="noa-art"><img src="/cover.jpg" alt=""></div><strong>EP.7 · 아직 그 자리에</strong><small>인기 점수 268 · YouTube 267 · 음원 1</small></a><a class="noa-music-card" data-video="abcdefghijk" href="#song"><div class="noa-art"><img src="/cover.jpg" alt=""></div><strong>흰수염고래 - 윤도현 밴드 (YB)</strong><small>인기 점수 260 · YouTube 260 · 음원 0</small></a></section><section data-noa-community="free"><details class="noa-community-post" id="noa-free-1" open><summary>자유게시판 글</summary><p>기존 게시물과 댓글은 보존됩니다.</p></details></section></main></body></html>
 PHP;
+$override='catalog:'.$private;
+$db->prepare("INSERT INTO noa_documents VALUES (?,'story',?)")->execute([$override,json_encode(['title'=>'공개 원본','visibility'=>'public'])]);
+$published=ne_target($db,'music',$override);
+ne_check($published['entity']==='document:'.hash('sha256',$override),'explicitly public override has isolated reactions');
+ne_like($db,$published['entity'],'qa_a',true,false,101);
+ne_comment($db,$published['entity'],'qa_a','98765432-1111-4111-8111-111111111111','공개 음원 댓글',101);
+$state=ne_stats($db,$published);
+ne_check($state['likes']===1 && $state['comments']===1,'public override like and comment persisted');
+
 file_put_contents($root.'/engagement-test.php',$html);@mkdir('engagement-proof',0700,true);file_put_contents('engagement-proof/mysql.json',json_encode(['additiveInstall'=>true,'canonicalAlias'=>true,'privateAndRestrictedDenied'=>true,'likeAndCommentReplay'=>true,'historicalCutoff'=>true,'deletionOwnerOnly'=>true,'nativeDataPreserved'=>true]));echo "ENGAGEMENT_MYSQL_PASS\n";

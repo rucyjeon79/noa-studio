@@ -14,6 +14,11 @@ try{
   try{$t=ne_target($db,'music',$k);ne_stats($db,$t);$state='ok';}catch(Throwable $e){$state=$e instanceof DomainException?$e->getMessage():get_class($e);}
   $out[]=[$k,$state,count($aliases),array_column($aliases,'public_verified')];
  }
- $result=['ok'=>true,'rows'=>$out];
+ $amt=[];
+ foreach(['story:your-story:35fa27149612463491996053','catalog:a785dbc3e646c64b54cd1536048100e5ee66f55ec9be69d39e6b5251c91f4bba','story:your-story:6d2ff36af19c40d596c51002'] as $k){
+  $t=ne_target($db,'music',$k);$stats=ne_stats($db,$t,true);$comments=ne_comments($db,$t,0);
+  $amt[]=['title'=>$t['title'],'like'=>$t['canLike'],'comment'=>$t['canComment'],'counts'=>[$stats['likes'],$stats['comments']],'list'=>isset($comments['items'])];
+ }
+ $result=['ok'=>true,'rows'=>$out,'amt'=>$amt];
 }catch(Throwable $e){$result=['ok'=>false,'class'=>get_class($e)];}
 while(ob_get_level()>$level)ob_end_clean();echo json_encode($result,JSON_THROW_ON_ERROR);
