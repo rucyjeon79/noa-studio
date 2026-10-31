@@ -5,7 +5,7 @@ t=connect()
 try:
  with paramiko.SFTPClient.from_transport(t) as s:
   with s.open(ROOT+'/lib/common.lib.php','rb') as f:src=f.read().decode('utf-8',errors='replace')
-  for name in ['delete_cache_latest','sql_escape_string']:
+  for name in ['delete_cache_latest']:
    start=src.index('function '+name+'(');end=src.find('\nfunction ',start+10);print(src[start:end])
   with s.open(ROOT+'/common.php','rb') as f:common=f.read().decode('utf-8',errors='replace')
   lines=common.splitlines()
