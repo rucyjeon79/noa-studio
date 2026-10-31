@@ -35,7 +35,7 @@ if(!nam_allowed($noa_access,$noa_need)){
   header('Location: /bbs/login.php?url='.rawurlencode($_SERVER['REQUEST_URI']??'/'),true,302);exit;
  }
  http_response_code(403);header('Content-Type: text/html; charset=utf-8');
- $message=$noa_need==='music'?'음원은 VIP회원·VIP 크리에이터가 이용할 수 있습니다.':($noa_need==='write'?'글과 댓글은 정회원부터 작성할 수 있습니다.':($noa_need==='creator'?'승인된 크리에이터가 이용할 수 있습니다. MY에서 크리에이터 전환을 신청하세요.':($noa_need==='creatorAI'?'AI 제작 기능은 8레벨 크리에이터부터 이용할 수 있습니다.':'이 메뉴를 이용할 권한이 없습니다.')));
+ $message=$noa_need==='music'?'음원은 VIP회원·VIP 크리에이터가 이용할 수 있습니다.':($noa_need==='write'?'글과 댓글은 정회원부터 작성할 수 있습니다.':($noa_need==='creator'?'승인된 크리에이터가 이용할 수 있습니다. MY에서 크리에이터 전환을 신청하세요.':($noa_need==='creatorAI'?'AI 제작 기능은 8레벨 크레이터 VIP회원 또는 최고 관리자만 이용할 수 있습니다.':'이 메뉴를 이용할 권한이 없습니다.')));
  $launch=dirname(__DIR__).'/noa-launch.js';$launchTag=is_file($launch)?'<script src="/noa-launch.js?v='.hash_file('sha256',$launch).'"></script>':'';
  echo '<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>이용 안내 | NOA STUDIO</title>'.$launchTag.'<link rel="stylesheet" href="/noa-ui.css"><script src="/noa-brand.js" defer></script><script src="/noa-ui.js" defer></script><body class="noa-page"><main><h1>이용 안내</h1><p>'.$message.'</p><a class="noa-button" href="/">홈</a><a class="noa-button" href="/noa-my.php">MY</a></main></body></html>';exit;
 }

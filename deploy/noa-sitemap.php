@@ -31,7 +31,7 @@ function noa_sitemap_registry():array{
             ['creatorApply','크리에이터 가입·전환','본인인증과 승인 후 7레벨·채널 개설','/noa-creator-apply.php','user','public'],
             ['channelWorkspace','내 채널 작업실','소유한 콘텐츠·게시판·제작 관리','/noa-channel-workspace.php','music','member'],
             ['channelRules','카테고리·제작 규칙','내 채널 장르별 제작 원칙','/noa-channel-rules.php','playlists','member'],
-            ['creatorAI','채널 AI 제작실','8레벨 크리에이터 · 이용 포인트 확인','/noa-creator-ai.php','mic','member'],
+            ['creatorAI','채널 AI 제작실','8레벨 크레이터 VIP회원 · 최고 관리자','/noa-creator-ai.php','mic','member'],
             ['password','아이디·비밀번호 찾기','계정 접근 복구','/bbs/password_lost.php','settings','guest'],
             ['playlists','내 재생목록','나만의 목록 만들기와 편집','/noa-music.php#my-playlists','playlists','member'],
             ['subscription','월 구독 · 포인트','이용 기간과 구독 구매 내역','/noa-subscription.php','user','member'],
@@ -150,7 +150,7 @@ function noa_sitemap_visible_groups(string $root,string $role,array $boards=[],a
             elseif(function_exists('nam_requirement')){
                 parse_str((string)parse_url($route[3],PHP_URL_QUERY),$query);
                 $need=nam_requirement(parse_url($route[3],PHP_URL_PATH)?:'/','GET',$query);
-                if(!nam_allowed($GLOBALS['noa_access']??nam_access(),$need))$reason=match($need){'music'=>'음원은 이용 기간이 남은 VIP회원·VIP 크리에이터가 들을 수 있어요. MY에서 이용권을 확인해 주세요.','creator'=>'승인된 크리에이터의 채널 메뉴입니다. MY에서 전환 신청할 수 있어요.','creatorAI'=>'8레벨 크리에이터부터 이용할 수 있어요. 기능별 포인트 이용 조건을 확인해 주세요.','admin'=>'최고관리자 계정으로 로그인해 주세요.',default=>'로그인한 회원이 이용할 수 있어요. 먼저 로그인해 주세요.'};
+                if(!nam_allowed($GLOBALS['noa_access']??nam_access(),$need))$reason=match($need){'music'=>'음원은 이용 기간이 남은 VIP회원·VIP 크리에이터가 들을 수 있어요. MY에서 이용권을 확인해 주세요.','creator'=>'승인된 크리에이터의 채널 메뉴입니다. MY에서 전환 신청할 수 있어요.','creatorAI'=>'8레벨 크레이터 VIP회원 또는 최고 관리자만 이용할 수 있어요. 기능별 포인트 이용 조건을 확인해 주세요.','admin'=>'최고관리자 계정으로 로그인해 주세요.',default=>'로그인한 회원이 이용할 수 있어요. 먼저 로그인해 주세요.'};
             }
             if(!noa_sitemap_available($route[3],$root))$reason='아직 준비 중인 메뉴예요. 준비가 끝나면 이곳에서 열어드릴게요.';
             $route[6]=$reason;

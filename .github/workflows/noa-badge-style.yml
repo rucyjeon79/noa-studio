@@ -28,6 +28,7 @@ jobs:
           import sys
           import noa_ainoa_deploy as release
           release.FILES = {'noa-member-badges.css': 'deploy/noa-member-badges.css', 'noa-membership.php': 'deploy/noa-membership.php'}
+          release.FILES.update({"noa-channel-menu.php":"deploy/noa-channel-menu.php","noa-channel-controls.js":"deploy/noa-channel-controls.js","noa-sitemap.php":"deploy/noa-sitemap.php","noa-creator-ai.php":"deploy/noa-creator-ai.php","noa-creator-ai.js":"deploy/noa-creator-ai.js","noa-creator-apply.php":"deploy/noa-creator-apply.php","extend/noa.access.php":"deploy/noa-access.extend.php"})
           release.NEW = set()
           try:
               release.main()
