@@ -1,4 +1,4 @@
-name: NOA home notice placement
+name: NOA home section placement
 on:
   push:
     branches: [main]
@@ -42,5 +42,7 @@ jobs:
           from pathlib import Path
           html = Path('/tmp/noa-home-check.html').read_text()
           assert 'id="noa-notices-heading"' in html and 'id="noa-notice-2"' not in html
+          section = html.split('data-home-section="recommendations"', 1)[1].split('</section>', 1)[0]
+          assert 'id="noa-ranking-status"' in section and html.count('id="noa-ranking-status"') == 1
           assert '/noa-amt-fan.js' in html
           PY
