@@ -4,9 +4,20 @@ ini_set('display_errors','0');
 $nc_output_level=ob_get_level();ob_start();
 require_once dirname(__DIR__).'/common.php';
 while(ob_get_level()>$nc_output_level)ob_end_clean();
+ini_set('display_errors','0');ob_start();
 require_once __DIR__.'/community-core.php';
 header('Content-Type: application/json; charset=utf-8');header('Cache-Control: private, no-store, max-age=0');header('Vary: Cookie');header('X-Content-Type-Options: nosniff');
-function nc_reply(array $data,int $status=200):never{http_response_code($status);echo json_encode($data,JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR);exit;}
+function nc_reply(array $data,int $status=200):never{
+ global $nc_output_level;
+ // This host replaces non-2xx FastCGI bodies with HTML. Keep the application
+ // status in the envelope; authorization is still enforced before any action.
+ $data['status']=$status;$json=json_encode($data,JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR);
+ while(ob_get_level()>$nc_output_level)ob_end_clean();
+ http_response_code(200);header('X-NOA-Status: '.$status);echo $json;
+ if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
+ // Native shutdown hooks may print or terminate; preserve the completed JSON.
+ ob_start(static fn($output)=>'');exit;
+}
 $_SESSION['noa_community_csrf']??=bin2hex(random_bytes(32));
 try{
  $method=$_SERVER['REQUEST_METHOD']??'GET';

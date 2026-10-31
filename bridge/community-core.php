@@ -6,7 +6,7 @@ require_once __DIR__.'/community-navigation.php';
 require_once __DIR__.'/community-music.php';
 const NC_REQUEST_BOARD='song_request';
 const NC_REQUEST_MARKER='NOA-SONG-REQUESTS-V1';
-function nc_query(string $sql){$r=sql_query($sql,false);if($r===false)throw new RuntimeException('database_unavailable');return $r;}
+function nc_query(string $sql){$r=sql_query($sql,false);if($r===false||$r===null)throw new RuntimeException('database_unavailable');return $r;}
 function nc_one(string $sql):array{$r=nc_query($sql);return sql_fetch_array($r)?:[];}
 function nc_rows(string $sql):array{$r=nc_query($sql);$rows=[];while($row=sql_fetch_array($r))$rows[]=$row;return $rows;}
 function nc_q(string $v):string{return "'".sql_escape_string($v)."'";}
@@ -93,6 +93,17 @@ function nc_reconcile(int $id,int $parent,string $owner):void{
  $counts=nc_one("SELECT SUM(wr_is_comment=0) posts,SUM(wr_is_comment=1) comments FROM $t");nc_query('UPDATE '.nc_table($g5['board_table']).' SET bo_count_write='.(int)$counts['posts'].',bo_count_comment='.(int)$counts['comments'].' WHERE bo_table='.$board);
  if(function_exists('delete_cache_latest'))delete_cache_latest(NC_REQUEST_BOARD);
 }
+/** Optional native reward hooks must never interrupt the saved reply's JSON response. */
+function nc_defer_activity(string $kind,int $id,string $mode):void{
+ if(!function_exists('nr_activity'))return;
+ register_shutdown_function(static function()use($kind,$id,$mode){
+  if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
+  if(function_exists('fastcgi_finish_request'))fastcgi_finish_request();
+  ob_start(static fn($output)=>'');
+  try{nr_activity($kind,['bo_table'=>NC_REQUEST_BOARD],$id,$mode,time());}
+  catch(Throwable $e){error_log('[noa-request-reward] '.get_class($e));}
+ });
+}
 function nc_create(array $data):array{
  global $member;if(!nc_admin()&&(empty($member['mb_id'])||(int)($member['mb_level']??1)<3))throw new DomainException('write_not_allowed');nc_board(NC_REQUEST_BOARD);
  $title=nc_text((string)($data['title']??''),150);$body=nc_text((string)($data['body']??''),15000,true);$name=nc_text((string)($data['name']??''),40);$password=(string)($data['password']??'');if(mb_strlen($password,'UTF-8')<8||strlen($password)>128)throw new DomainException('password_length');
@@ -104,7 +115,7 @@ function nc_create(array $data):array{
   else{$num=(int)nc_one("SELECT COALESCE(MIN(wr_num),0)-1 AS n FROM $t")['n'];$id=nc_insert(['wr_num'=>$num,'wr_subject'=>$title,'wr_content'=>$body,'mb_id'=>$owner,'wr_name'=>$name,'wr_password'=>get_encrypt_string($password),'wr_8'=>$shared,'wr_10'=>$marker]);}
   nc_reconcile($id,$id,$owner);
  }finally{nc_unlock_write();}
- if(function_exists('nr_activity')){try{nr_activity('write',['bo_table'=>NC_REQUEST_BOARD],$id,'',time());}catch(Throwable $e){error_log('[noa-request-reward] '.get_class($e));}}
+ nc_defer_activity('write',$id,'');
  return ['id'=>$id,'created'=>!$old];
 }
 function nc_comment(array $data):array{
@@ -115,6 +126,7 @@ function nc_comment(array $data):array{
   else{$number=(int)nc_one("SELECT COALESCE(MAX(wr_comment),0)+1 AS n FROM $t WHERE wr_parent=$id AND wr_is_comment=1")['n'];$cid=nc_insert(['wr_num'=>(int)$post['wr_num'],'wr_parent'=>$id,'wr_is_comment'=>1,'wr_comment'=>$number,'wr_content'=>$body,'mb_id'=>$owner,'wr_name'=>(string)($member['mb_nick']??'관리자'),'wr_9'=>$musicKey,'wr_10'=>$marker]);}
   nc_reconcile($cid,$id,$owner);
  }finally{nc_unlock_write();}
- if(function_exists('nr_activity')){try{nr_activity('comment',['bo_table'=>NC_REQUEST_BOARD],$cid,'c',time());}catch(Throwable $e){error_log('[noa-request-comment-reward] '.get_class($e));}}
- return nc_content(NC_REQUEST_BOARD,$id,nc_verified($id));
+ $result=nc_content(NC_REQUEST_BOARD,$id,nc_verified($id));
+ nc_defer_activity('comment',$cid,'c');
+ return $result;
 }

@@ -23,3 +23,9 @@ finally:
    if current!=raw:raise RuntimeError('helper_changed_preserved')
    s.remove(ROOT+'/'+name);print('COMMUNITY_DIAGNOSTIC_HELPER_REMOVED')
  finally:s.close();t.close()
+
+req=urllib.request.Request('https://noastudio.ai.kr/noa-bridge/community.php',data=b'{"action":"comment"}',headers={'Content-Type':'application/json','Origin':'https://noastudio.ai.kr'})
+with urllib.request.urlopen(req,timeout=30)as response:
+ result=json.load(response)
+ assert result['ok'] is False and result['error']=='login_required' and result['status']==401
+print('LIVE_JSON_AUTH_ERROR_ENVELOPE_OK')
