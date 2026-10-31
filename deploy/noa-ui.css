@@ -17,7 +17,7 @@ html[data-radius="sharp"]{--noa-radius:4px}*{box-sizing:border-box}body{margin:0
 
 .noa-hero-art{display:flex;align-items:center;background:var(--noa-raised)}.noa-face-window{position:relative;overflow:hidden;aspect-ratio:344/292;width:100%;align-self:center}.noa-face-window img{position:absolute;top:0;left:0;width:400%;height:auto;max-width:none;max-height:none;object-fit:initial;transform:translateY(-58.2%)}.noa-character{grid-template-columns:150px 1fr}.noa-character .noa-face-window img{width:400%;height:auto;max-width:none}.noa-hero-art .noa-face-window{height:auto}@media(max-width:760px){.noa-hero-art{grid-row:1}.noa-hero-art .noa-face-window{width:100%}.noa-character{grid-template-columns:130px 1fr}}
 
-.noa-menu{margin:0}.noa-menu a{border:0}.noa-page table{background:var(--noa-surface);color:var(--noa-text)}.noa-page td,.noa-page th{border-color:var(--noa-line)}.noa-page th{color:var(--noa-muted)}.noa-page main>nav a{border:1px solid var(--noa-line);background:var(--noa-raised);color:var(--noa-text)}.noa-page [readonly]{border-color:var(--noa-source)}
+.noa-menu{margin:0}.noa-menu a{border:0}.noa-page table{background:var(--noa-surface);color:var(--noa-text)}.noa-page td,.noa-page th{border-color:var(--noa-line)}.noa-page th{color:var(--noa-muted)}.noa-page main>nav a{color:var(--noa-text)}.noa-page [readonly]{border-color:var(--noa-source)}
 
 /* Quality pass: cards own their layout; common controls never dictate artwork flow. */
 :root{--noa-space-1:8px;--noa-space-2:16px;--noa-space-3:24px;--noa-title-leading:1.5}

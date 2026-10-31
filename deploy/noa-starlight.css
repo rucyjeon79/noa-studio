@@ -233,3 +233,13 @@ html[data-noa-home-ainoa] #noa-ainoa .ainoa-tip::after{right:calc(50% - 8px)}
  html[data-noa-area] .noa-mobile-nav>a[data-noa-nav="home"]{width:48px;height:48px;min-height:48px;justify-self:center;align-self:center;border-width:1.25px;}
  html[data-noa-area] .noa-mobile-nav>a[data-noa-nav="home"]>svg{width:29px;height:29px;stroke-width:1.7;}
 }
+
+/* Shared navigation: explicit spacing, with location trails kept as text. */
+html[data-noa-style] body .noa-section-navigation{gap:8px;padding:8px 0 16px;margin-bottom:20px}
+html[data-noa-style] body .noa-section-navigation a{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--noa-muted);line-height:1.5;white-space:nowrap;text-decoration:none}
+html[data-noa-style] body .noa-section-navigation a[aria-current=page]{background:var(--noa-surface);border-color:var(--noa-line);color:var(--noa-section-accent,var(--noa-accent))}
+html[data-noa-style] body .noa-section-navigation a:hover{background:var(--noa-surface);color:var(--noa-text)}
+html[data-noa-style] body .nw-breadcrumb a{padding:8px 0;border:0;border-radius:0;background:transparent;box-shadow:none;color:inherit;text-decoration:none}
+html[data-noa-style] body .nw-breadcrumb a[aria-current]{color:var(--noa-text)}
+html[data-noa-style] body .noa-section-navigation a:focus-visible{outline:2px solid var(--noa-info);outline-offset:2px}
+@media(max-width:600px){html[data-noa-style] body .noa-section-navigation{gap:6px}html[data-noa-style] body .noa-section-navigation a{padding:10px 12px;font-size:12px}}

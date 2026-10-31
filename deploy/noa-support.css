@@ -25,3 +25,24 @@ html body .noa-support-dialog .noa-support-primary{display:block;width:100%;min-
  html[data-noa-precision] body.noa-page .noa-inline-song-row.noa-has-support>.noa-song-more{grid-column:6;grid-row:2}
 }
 @media(max-width:600px){.noa-support-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.noa-support-summary strong{font-size:20px}}
+
+/* Clear, voluntary point use: one amount, one balance, one primary action. */
+html body .noa-support-dialog{width:min(480px,calc(100% - 32px));max-height:85dvh;box-sizing:border-box;padding:24px;border-radius:20px;overflow:auto}
+html body .noa-support-dialog>header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 20px;padding:0 0 16px;border-bottom:1px solid var(--noa-line);background:transparent}
+html body .noa-support-dialog>header h2{margin:0;font-size:20px;line-height:1.5}
+html body .noa-support-dialog button{min-height:44px;padding:10px 14px;border-radius:10px;line-height:1.5;white-space:normal;cursor:pointer}
+html body .noa-support-dialog section>p{margin:12px 0;line-height:1.6;overflow-wrap:anywhere}
+html body .noa-support-dialog section>h3{margin:8px 0 16px;font-size:24px}
+html body .noa-support-presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:16px 0}
+html body .noa-support-presets button{padding:10px 4px;font-size:12px;background:var(--noa-bg);color:var(--noa-text);border:1px solid var(--noa-line);white-space:nowrap}
+html body .noa-support-presets button[aria-pressed=true]{border-color:var(--noa-accent);color:var(--noa-accent)}
+html body .noa-support-presets button:disabled{opacity:.4;cursor:not-allowed}
+html body .noa-support-dialog textarea{display:block;box-sizing:border-box;width:100%;min-height:96px;margin-top:8px;padding:12px;font:inherit;line-height:1.6;border:1px solid var(--noa-line);border-radius:10px;background:var(--noa-bg);color:var(--noa-text);resize:vertical}
+html body .noa-support-dialog label input:not([type=checkbox]){margin-top:8px}
+.noa-support-balance{font-weight:600;font-variant-numeric:tabular-nums}
+.noa-support-remaining{font-size:13px;color:var(--noa-muted);font-variant-numeric:tabular-nums}
+html body .noa-support-charge,html body .noa-support-return{display:flex;align-items:center;min-height:44px;padding:10px 0;box-sizing:border-box;color:var(--noa-accent);text-decoration:none;line-height:1.5}
+html body .noa-support-return{margin:12px 0 20px;border-bottom:1px solid var(--noa-line)}
+html body .noa-support-button .noa-support-caption{display:block;font-size:10px;line-height:12px;font-weight:500}
+html body .noa-support-dialog .noa-support-primary:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:360px){html body .noa-support-dialog{padding:20px}.noa-support-presets{gap:4px}}
