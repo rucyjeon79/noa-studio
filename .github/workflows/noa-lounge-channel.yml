@@ -45,6 +45,9 @@ jobs:
             await page.addInitScript(()=>sessionStorage.setItem('noa-amt2-fan-2026','1'));
             await page.goto('https://noastudio.ai.kr/');
             await page.locator('[data-noa-community-home] .noa-feed-invite').getByText('별 하나가 모이면 별무리가 된다.',{exact:true}).waitFor();
+            const subscription=page.locator('[data-home-banner="youtube"]');
+            assert.equal(await subscription.locator('img').getAttribute('src'),'/noa-assets/editorial-act-3.webp');
+            assert.equal(await subscription.getAttribute('href'),'https://youtube.com/@ainoa_ramjunpapa?sub_confirmation=1');
             const homeArt=['#noa-home-community .noa-banner-art','#noa-referral-banner img','.noa-monthly-intro img','[data-home-banner="goods"] img','[data-home-banner="youtube"] img','[data-home-banner="amt"] img'];
             for(const width of [320,390,1280]){
               await page.setViewportSize({width,height:844});
