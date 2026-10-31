@@ -66,6 +66,28 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
       }catch(e){tell(/[가-힣]/.test(e.message)?e.message:'네트워크 연결을 확인해 주세요. 입력 내용은 유지됩니다. 같은 버튼으로 결과를 다시 확인할 수 있습니다.',true);}
       finally{state.busy=false;ai.disabled=false;ai.removeAttribute('aria-busy');}
      };heading.append(ai);
+     if(selector.type==='song'){
+      const gpt=control('ai','ChatGPT로 만들기',label+' ChatGPT로 만들기');
+      gpt.onclick=async()=>{
+       if(state.busy)return;
+       if(state.dirty){tell('먼저 곡 정보를 저장한 뒤 다시 눌러 주세요.',true);return;}
+       const replace=Boolean(input.value.trim());
+       if(replace&&!window.confirm(label+'에 기존 내용이 있습니다. 새 결과로 교체할까요?'))return;
+       state.busy=true;gpt.disabled=true;
+       try{
+        const response=await fetch('/noa-gpt.php?op=start',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify({selector,field:key,revision:state.data.revision,replace})});
+        const result=await response.json();
+        if(result.error==='setup_required'){
+         tell('처음 한 번 전용 GPT를 연결해 주세요.');
+         const link=document.createElement('a');link.href='/noa-gpt-setup.php';link.textContent='전용 GPT 연결 설정';feedback.append(link);return;
+        }
+        if(!response.ok||!result.ok)throw Error(result.error==='revision_conflict'?'곡이 변경되었습니다. 편집기를 다시 열어 주세요.':'작업을 등록하지 못했습니다. 다시 시도해 주세요.');
+        tell('전용 GPT에서 “만들어줘”를 누르면 이 항목에 저장됩니다.');
+        window.addEventListener('pageshow',event=>{if(event.persisted&&!state.dirty)location.reload();},{once:true});
+        location.assign(result.url);
+       }catch(e){tell(e.message,true);}finally{state.busy=false;gpt.disabled=false;}
+      };heading.append(gpt);
+     }
     }
     if(feedback)wrap.append(feedback);sections.add(key,wrap);inputs[key]=input;
    }
