@@ -4,11 +4,9 @@ on:
     branches: [main]
     paths: ['.github/workflows/noa-request-music.yml','scripts/noa_request_music_release.py','tests/navigation/request-music.mjs']
 permissions: {contents: read}
-concurrency: {group: noa-production-sftp, cancel-in-progress: false}
 jobs:
-  publish:
+  verify:
     runs-on: ubuntu-latest
-    environment: production
     timeout-minutes: 15
     services:
       mysql:
@@ -17,11 +15,6 @@ jobs:
         ports: ['3306:3306']
         options: --health-cmd="mysqladmin ping -h localhost -pfixture-only" --health-interval=10s --health-timeout=5s --health-retries=10
     env:
-      GH_TOKEN: ${{ github.token }}
-      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
-      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
-      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
-      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
       NOA_MYSQL_DSN: 'mysql:host=127.0.0.1;dbname=noa_community;charset=utf8mb4'
       NOA_MYSQL_USER: root
       NOA_MYSQL_PASSWORD: fixture-only
@@ -46,9 +39,25 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/noa-requests" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp tests/navigation/request-music.mjs "$RUNNER_TEMP/noa-requests/check.mjs"
           node "$RUNNER_TEMP/noa-requests/check.mjs"
-      - run: python -m pip install 'paramiko>=3,<5'
-      - name: Deploy checked community files and verify public hashes
-        run: python scripts/noa_request_music_release.py
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'noa-request-music-${{ github.run_id }}', path: 'request-music-proof/', retention-days: 7}
+
+  publish:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - run: python -m pip install 'paramiko>=3,<5'
+      - name: Deploy verified community files and check public hashes
+        run: python scripts/noa_request_music_release.py
