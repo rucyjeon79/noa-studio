@@ -20,6 +20,7 @@ try{
   p.on('pageerror',e=>errors.push(e.message));
   await p.route('http://noa.test/**',async route=>{
    const u=new URL(route.request().url());
+   if(u.pathname==='/noa-bridge/community.php')return route.fulfill({status:401,json:{ok:false,error:'login_required'}});
    if(u.pathname==='/noa-bridge/support.php'){
     const action=u.searchParams.get('action');let data={};
     if(action==='stats')data={items:[{type:'channel',key:'channel-a',available:true,count:4}]};
@@ -31,6 +32,7 @@ try{
    if(u.pathname.startsWith('/noa-bridge/'))return route.fulfill({json:{ok:true,member:true,level:3,access:{home:true,member:true,music:true},items:[],notifications:[]}});
    if(/\.(css|js)$/.test(u.pathname)&&existsSync('deploy'+u.pathname))return route.fulfill({contentType:u.pathname.endsWith('.css')?'text/css':'application/javascript',body:readFileSync('deploy'+u.pathname)});
    if(/\.(png|webp|jpg)$/.test(u.pathname))return route.fulfill({status:204});
+   if(u.pathname==='/noa-lounge.php')return route.fulfill({contentType:'text/html',body:'<!doctype html><html><meta charset=utf-8><body><section data-noa-community=free></section><script src=/noa-community.js></script></body></html>'});
    const world=u.pathname.includes('world'),points=u.pathname.includes('points');
    return route.fulfill({contentType:'text/html',body:`<!doctype html><html lang=ko data-noa-style=starlight data-noa-precision=true><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">${css.map(x=>`<link rel=stylesheet href=/${x}.css>`).join('')}<body class="noa-page ${world?'nw-page':''}"><script id=noa-access type=application/json>{"home":true,"member":true,"music":true}</script><main ${world?'data-world-editorial':''}>${world?'<nav class=nw-breadcrumb><a href=/>NOA STUDIO</a><span>/</span><a href=/noa-world.php aria-current=page>NOA WORLD</a></nav><h1>노래가 끝나도,<br>이야기는 계속됩니다.</h1>':points?'<h1>포인트 충전</h1>':'<section class=channel-profile><h1>람준파파의 음악</h1></section>'}</main><script src=/noa-ui.js></script><script src=/noa-support.js></script></body></html>`});
   });
@@ -52,7 +54,7 @@ try{
   await p.getByRole('button',{name:'8,000P 응원 확인'}).click();await p.getByRole('button',{name:'8,000P로 응원 보내기'}).click();assert.equal(sends.length,0);
   await p.getByRole('checkbox').check();fail=true;await p.getByRole('button',{name:'8,000P로 응원 보내기'}).click();await p.getByRole('button',{name:'같은 요청으로 다시 확인'}).waitFor();fail=false;await p.getByRole('button',{name:'같은 요청으로 다시 확인'}).click();await p.getByText('응원이 전달되었습니다',{exact:true}).waitFor();assert.equal(sends.length,2);assert.equal(sends[0].requestId,sends[1].requestId);assert.equal(sends[1].amount,8000);
   await p.getByRole('button',{name:'완료',exact:true}).click();await support.click();await p.getByRole('button',{name:'1,000P',exact:true}).click();await p.getByRole('link',{name:'포인트 충전하고 돌아오기'}).click();sender='member-b';await p.getByRole('link',{name:'응원하던 곳으로 돌아가기'}).click();await p.getByLabel('후원할 포인트',{exact:true}).waitFor();assert.equal(await p.getByLabel('후원할 포인트',{exact:true}).inputValue(),'');
-  assert.deepEqual(errors,[]);await context.close();
+  await p.goto('http://noa.test/noa-lounge.php?board=free&nativePost=1#noa-free-1');const login=p.getByRole('link',{name:'로그인하고 글 보기'});await login.waitFor();assert.equal(new URL(await login.getAttribute('href'),'http://noa.test').searchParams.get('url'),'/noa-lounge.php?board=free&nativePost=1#noa-free-1');assert.equal(await p.getByRole('button',{name:'다시 불러오기'}).count(),0);assert.deepEqual(errors,[]);await context.close();
  }
  console.log('UI_AUDIT_320_390_1280_NAV_SPACING_BREADCRUMB_SUPPORT_BALANCE_EDIT_CHARGE_RETURN_ACCOUNT_SWITCH_RETRY_IDEMPOTENCY_OK');
 }finally{await browser.close();}

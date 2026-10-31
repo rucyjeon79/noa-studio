@@ -58,7 +58,7 @@
    data.items.forEach(item=>list.append(row(item)));status.textContent=data.items.length?'':compact?'등록된 글이 없습니다.':privateBoard?'당신의 사연이 한 곡의 음악이 됩니다. 첫 사연을 들려주세요.':'짧은 인사도 좋아요. 첫 이야기를 들려주세요.';
    const target=document.getElementById(location.hash.slice(1)||('noa-'+board+'-'+new URLSearchParams(location.search).get('nativePost')));if(target&&list.contains(target)&&target.matches('details'))target.open=true;
    if(history.length)pager.append(button('새 글',()=>{before=history.pop();load();}));if(data.more)pager.append(button('이전 글 5개',()=>{history.push(before);before=data.next;load();}));
-  }catch(e){if(revision===listRevision){status.textContent=e.message;pager.append(button('다시 불러오기',load));}}}
+  }catch(e){if(revision===listRevision){status.textContent=e.message;if(e.message===errors.login_required){const login=el('a','로그인하고 글 보기');login.className='noa-community-write';login.href='/noa-login.php?'+new URLSearchParams({url:location.pathname+location.search+location.hash});pager.append(login);}else pager.append(button('다시 불러오기',load));}}}
  load();
  }
  const categoryNames={chat:'별무리 이야기',music:'오늘의 노래',story:'당신의 이야기, 우리의 음악',diary:'노아의 일기',event:'별무리 이벤트',notice:'공지'};
