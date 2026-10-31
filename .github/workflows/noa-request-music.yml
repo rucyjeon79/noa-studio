@@ -30,6 +30,10 @@ jobs:
         with: {fetch-depth: 0, persist-credentials: false}
       - uses: shivammathur/setup-php@v2
         with: {php-version: '8.2', extensions: mysqli, pdo_mysql, mbstring}
+      - name: Install disposable audio test encoder
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
       - name: Verify shared boards and request authorization in disposable database
         run: |
           for file in bridge/community*.php deploy/noa-app/ecosystem-view.php deploy/noa-channel.php deploy/noa-design.extend.php; do php -l "$file"; done
