@@ -41,3 +41,8 @@ actor('owner',3);check(nc_request_audio_allowed($id,'mine'),'requester_keeps_att
 $common=file_get_contents($root.'/common.php');$common.="\nfunction nr_activity(...\$args){if((\$_COOKIE['qa_role']??'')==='creator'){echo 'NATIVE_REWARD_OUTPUT_MUST_NOT_CORRUPT_JSON';exit;}}\n";$common=str_replace("(\$role==='temp'?2:4)","(\$role==='creator'?5:(\$role==='owner'?3:(\$role==='temp'?2:4)))",$common);file_put_contents($root.'/common.php',$common);
 file_put_contents($root.'/request-test.php','<?php require __DIR__."/common.php"; ?><!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-community.css"><body class="noa-page"><main class="noa-main"><section class="noa-community" data-noa-community="song_request"></section></main><script src="/noa-community.js" defer></script>');
 file_put_contents($root.'/request-id.json',json_encode(['id'=>$id]));echo "REQUEST_CONSENT_OWNER_ATTACHMENT_REPLAY_AND_STREAM_ACL_OK\n";
+
+copy($root.'/request-test.php',$root.'/noa-lounge.php');
+copy('deploy/noa-notifications.js',$root.'/noa-notifications.js');
+$inbox=file_get_contents('deploy/noa-notifications.php');$inbox=preg_replace('~<script[^>]+src=[^>]+></script>~','',$inbox);
+$inbox=str_replace('</body>','<script id="noa-notifications-context" type="application/json">{"member":true}</script><script src="/noa-notifications.js"></script></body>',$inbox);file_put_contents($root.'/noa-notifications.php',$inbox);
