@@ -23,7 +23,7 @@
    const id=new URL(item.url).searchParams.get('v');if(!/^[\w-]{11}$/.test(id))return row;
    row.append(el('h3',item.title));
    const play=el('button');play.className='noa-video-cover';play.type='button';play.setAttribute('aria-label',item.title+' 재생');
-   const thumb=el('img');thumb.alt='';thumb.src='/noa-bridge/youtube-thumbnail.php?id='+id;play.append(thumb,el('span','▶ 영상 재생'));
+   const thumb=el('img');thumb.alt='';thumb.onerror=()=>{thumb.onerror=null;thumb.src='/noa-assets/editorial-starlight-studio.webp';};thumb.src='https://i.ytimg.com/vi/'+id+'/hqdefault.jpg';play.append(thumb,el('span','▶ 영상 재생'));
    play.onclick=()=>{const frame=el('iframe');frame.title=item.title;frame.allow='autoplay; encrypted-media; picture-in-picture';frame.allowFullscreen=true;frame.referrerPolicy='strict-origin-when-cross-origin';frame.src='https://www.youtube.com/embed/'+id+'?autoplay=1&playsinline=1';play.replaceWith(frame);};
    row.append(play,link('유튜브에서 보기',item.url));return row;
   }

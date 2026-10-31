@@ -32,3 +32,13 @@ body.noa-screen-room #yt-frame:not([hidden]){display:block;width:100%;height:aut
 .cinema-external,.cinema-next:not([hidden]){display:inline-flex;align-items:center;min-height:44px;color:#e8d2a6}
 body.noa-screen-room .cinema-next{max-width:100%;white-space:normal;text-align:left;border:0;background:none}
 @media(max-width:900px){body.noa-screen-room #youtube-browse .noa-browse-grid[data-cinema]{grid-template-columns:repeat(2,minmax(0,1fr))!important}.cinema-programme .cinema-title{-webkit-line-clamp:1}}
+
+/* Keep the lettering baked into video artwork separate from the controls. */
+body.noa-screen-room .cinema-poster{aspect-ratio:auto;background:var(--noa-surface);color:var(--noa-text)}
+body.noa-screen-room .cinema-still{position:static;display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+body.noa-screen-room .cinema-still[hidden]{display:none}
+body.noa-screen-room .cinema-overlay{position:static;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 12px;padding:14px;background:transparent}
+body.noa-screen-room .cinema-tag{grid-column:1/-1;color:var(--noa-room-ink,var(--noa-accent))}
+body.noa-screen-room .cinema-title{align-self:center}
+body.noa-screen-room .cinema-programme .cinema-overlay{display:flex;align-items:flex-start;padding:8px;gap:5px}
+body.noa-screen-room .cinema-programme .cinema-play{color:var(--noa-text)}

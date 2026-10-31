@@ -57,6 +57,16 @@ jobs:
             await open('category=music');
             await page.locator('#noa-channel-shelf article, #noa-channel-shelf div > p').first().waitFor();
             const button=page.locator('.noa-video-cover').first();
-            if(await button.count()){await button.click();await page.locator('#noa-channel-shelf iframe[src*="/embed/"]').waitFor();}
+            if(await button.count()){await button.locator('img').evaluate(i=>i.decode());assert(await button.locator('img').evaluate(i=>i.naturalWidth>0));await button.click();await page.locator('#noa-channel-shelf iframe[src*="/embed/"]').waitFor();}
+            const origin='https://noastudio.ai.kr';
+            await page.route('**/noa-music.php?layout-check',r=>r.fulfill({contentType:'text/html',body:'<meta name="viewport" content="width=device-width"><nav class="noa-mobile-nav"><a href="/noa-youtube.php?layout-check">YouTube</a></nav><audio id="sound-player" src="/silent" preload="none"></audio><div class="noa-two-line"><span id="dock-title"></span></div><dialog id="dock-queue"></dialog><script defer src="/noa-app/p0-player.js"></script>'}));
+            await page.route('**/noa-youtube.php?layout-check',r=>r.fulfill({contentType:'text/html',body:'<html data-noa-area="youtube"><meta name="viewport" content="width=device-width"><link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-cinema.css"><body class="noa-page noa-screen-room"><nav class="noa-mobile-nav">Inner nav</nav><button class="cinema-poster"><img class="cinema-still" src="/noa-assets/editorial-starlight-studio.webp"><span class="cinema-overlay"><strong>상영작 제목</strong></span></button>'}));
+            await page.goto(origin+'/noa-music.php?layout-check');await page.getByText('YouTube',{exact:true}).click();
+            const child=page.frameLocator('#noa-shell-view');
+            await child.locator('html[data-noa-shell-child]').waitFor();
+            assert(await child.locator('.noa-mobile-nav').isHidden());
+            assert(await page.locator('.noa-mobile-nav').isVisible());
+            const still=await child.locator('.cinema-still').boundingBox(),caption=await child.locator('.cinema-overlay').boundingBox();
+            assert(caption.y>=still.y+still.height-1);
           }finally{await browser.close();}
           JS
