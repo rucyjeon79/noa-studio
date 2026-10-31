@@ -1,0 +1,105 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "NOA STUDIO 곡 제작",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://noastudio.ai.kr"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "noaKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-NOA-Action-Key"
+      }
+    },
+    "schemas": {}
+  },
+  "security": [
+    {
+      "noaKey": []
+    }
+  ],
+  "paths": {
+    "/noa-gpt.php": {
+      "get": {
+        "operationId": "getSelectedSongTask",
+        "description": "Read the single task selected by the signed-in NOA administrator.",
+        "parameters": [
+          {
+            "name": "op",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "read"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task data or confirmed save receipt"
+          },
+          "409": {
+            "description": "Expired, replaced or conflicted task. Return to NOA."
+          }
+        }
+      },
+      "post": {
+        "operationId": "saveSelectedSongField",
+        "description": "Save generated text only to the field authorized by this task. Repeat the same id and text to retry.",
+        "parameters": [
+          {
+            "name": "op",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "save"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task data or confirmed save receipt"
+          },
+          "409": {
+            "description": "Expired, replaced or conflicted task. Return to NOA."
+          }
+        },
+        "x-openai-isConsequential": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "text"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Exact id returned by getSelectedSongTask"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
