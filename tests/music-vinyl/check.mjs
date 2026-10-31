@@ -32,6 +32,18 @@ try{for(const width of [320,390,1280]){
  await p.locator('.lp-dock-art.lp-running').waitFor();
  const disc=p.locator('.lp-dock-art>.lp-spindle');assert.equal(await disc.evaluate(n=>getComputedStyle(n).animationPlayState),'running');
  assert.equal(await p.locator('.song .lp-running').count(),1);
+ if(width===390){
+  await p.evaluate(()=>{
+   document.querySelector('audio').loop=true;
+   document.body.style.paddingBottom='220vh';
+   window.scrollTo(0,document.body.scrollHeight);
+  });
+  await p.waitForTimeout(5500);
+  await p.mouse.wheel(0,-60);
+  await p.waitForTimeout(5500);
+  assert(await p.locator('.song .lp-running').evaluate(el=>el.getBoundingClientRect().bottom<0),'Browsing restarts the idle countdown');
+  await p.waitForFunction(()=>document.querySelector('.song .lp-running').getBoundingClientRect().top>=0,{},{timeout:8000});
+ }
  await p.evaluate(()=>document.querySelector('audio').pause());
  await p.waitForFunction(()=>!document.querySelector('.lp-dock-art').classList.contains('lp-running'));
  assert.equal(await disc.evaluate(n=>getComputedStyle(n).animationPlayState),'paused');

@@ -27,6 +27,34 @@
  let started=!audio.paused&&!audio.ended&&audio.readyState>=3;
  let running=started;
  let pending=false;
+ let idleTimer;
+ let lastBrowse=-Infinity;
+ let followedKey='';
+ function followTrack(){
+  if(!key||!running||audio.paused||document.hidden||document.querySelector('dialog[open],[aria-modal="true"]:not([hidden])')||document.activeElement?.matches('input,textarea,select,[contenteditable="true"]'))return;
+  const playingCover=()=>Array.from(document.querySelectorAll('#music-browse .lp-running,#songs .lp-running')).find(el=>el.getClientRects().length);
+  function center(){
+   const el=playingCover();
+   if(!el)return false;
+   const rect=el.getBoundingClientRect();
+   if(rect.top<80||rect.bottom>innerHeight-160)el.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+   return true;
+  }
+  if(!center()){
+   window.dispatchEvent(new CustomEvent('noa-find-song',{detail:{key}}));
+   requestAnimationFrame(()=>{sync();center();});
+  }
+ }
+ function activity(){
+  lastBrowse=performance.now();
+  clearTimeout(idleTimer);
+  if(running)idleTimer=setTimeout(followTrack,10000);
+ }
+ for(const type of ['pointerdown','pointermove','touchmove','wheel','scroll','keydown','input']){
+  window.addEventListener(type,activity,{passive:true,capture:true});
+ }
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)activity();});
+
  function sync(){
   pending=false;
   const buttons=browse.querySelectorAll('[data-browse-level="1"] .noa-browse-grid>.noa-browse-card');
@@ -52,11 +80,16 @@
   }
   dockArt.classList.toggle('lp-on-record',started);
   dockArt.classList.toggle('lp-running',running);
+  if(running&&key&&followedKey!==key){
+   followedKey=key;
+   clearTimeout(idleTimer);
+   idleTimer=setTimeout(followTrack,Math.max(0,10000-(performance.now()-lastBrowse)));
+  }
  }
  function schedule(){if(!pending){pending=true;requestAnimationFrame(sync);}}
  window.addEventListener('noa-track-selected',event=>{
   const next=event.detail?.record?.key||document.querySelector('#songs .song.selected')?.dataset.key||'';
-  if(next!==key){key=next;started=false;running=false;schedule();}
+  if(next!==key){followedKey='';key=next;started=false;running=false;schedule();}
  });
  audio.addEventListener('playing',()=>{running=!audio.paused&&!audio.ended;started=started||running;schedule();});
  for(const event of ['waiting','pause','seeking','ended','error','emptied','loadstart']){

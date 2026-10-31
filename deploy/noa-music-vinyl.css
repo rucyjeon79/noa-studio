@@ -47,3 +47,27 @@ body.noa-record-room #songs .song:has(.lp-running),
 body.noa-record-room #music-browse .noa-inline-song:has(.lp-running){
   box-shadow:inset 3px 0 var(--noa-success,#74bfa4);
 }
+
+body.noa-record-room #music-browse .noa-inline-song-row{
+  padding-inline:clamp(12px,3vw,18px);
+}
+body.noa-record-room #music-browse .noa-inline-song>.lp-track-art{
+  grid-column:1;grid-row:1;align-self:center;
+}
+body.noa-record-room .lp-track-art{
+  transition:width .85s ease-out;
+}
+body.noa-record-room .lp-track-art>.lp-spindle{
+  right:auto;left:4%;translate:0;opacity:1;transition:translate .85s ease-out;
+}
+body.noa-record-room .lp-track-art.lp-on-record>.lp-spindle{
+  translate:calc(var(--art-size)*.42) 0;
+}
+@media(max-width:899px){
+  body.noa-record-room #music-browse .noa-inline-song:has(.lp-on-record)>.noa-inline-title{
+    padding-inline-start:20px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  body.noa-record-room .lp-track-art,body.noa-record-room .lp-track-art>.lp-spindle{transition:none}
+}
