@@ -9,7 +9,7 @@ if(process.env.LIVE_ONLY==='1'){
  assert(await p.locator('body').innerText());assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,'overflow '+path+' '+width);
  const nav=p.locator('#noa-section-navigation a');if(await nav.count()){const geometry=await nav.evaluateAll(ns=>ns.map(n=>({padding:parseFloat(getComputedStyle(n).paddingLeft),height:n.getBoundingClientRect().height})));assert(geometry.every(x=>x.padding>=12&&x.height>=44),'nav geometry '+path);}
  if(path==='/noa-lounge.php'){assert.equal(await p.getByRole('button',{name:'이야기 쓰기',exact:true}).count(),1);assert.equal(await p.getByText('등록된 게시판이 없습니다.',{exact:true}).count(),0);}
- if(path==='/noa-shop.php'){assert.equal(await p.locator('#ec-hero-actions a').count(),0);assert(await p.locator('.ec-card .ec-buy').count()>6);}
+ if(path==='/noa-shop.php'){assert.equal(await p.locator('#ec-hero-actions a').count(),0);assert(await p.locator('.ec-card .ec-buy').count()>6);if(width===390)assert((await p.locator('.ec-grid .ec-card').first().boundingBox()).y<700,'show products early');}
  results.push({width,path,url:p.url(),cards:await p.locator('.ec-card').count()});await p.screenshot({path:'ui-audit-proof/live-'+(path==='/'?'home':path.slice(1,-4))+'-'+width+'.png'});
  }await p.close();}console.log('LIVE_UI_AUDIT',JSON.stringify(results));}finally{await browser.close();}process.exit(0);
 }

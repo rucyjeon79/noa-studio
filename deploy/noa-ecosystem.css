@@ -52,3 +52,9 @@
 #ecosystem[data-view=detail]>.ec-hero,#ecosystem[data-view=detail]>#community-boards{display:none}
 #ecosystem .ec-card>a.ec-open{display:block;text-decoration:none;color:inherit;text-align:left}
 #ecosystem .ec-card>a.ec-open:hover h2{text-decoration:underline;text-underline-offset:4px}
+
+#ecosystem .ec-shop-info{margin:4px 0 16px;color:var(--ec-muted);font-size:12px}
+#ecosystem .ec-shop-info summary{display:list-item;min-height:44px;padding:12px 0;box-sizing:border-box;cursor:pointer;line-height:20px}
+#ecosystem .ec-compare-toggle:disabled{display:none}
+#ecosystem .ec-hero .ec-actions:empty{display:none}
+@media(max-width:600px){#ecosystem[data-space=shop] .ec-hero{display:block;padding:8px 0 16px}#ecosystem[data-space=shop] .ec-hero>img{display:none}#ecosystem[data-space=shop] .ec-hero .ec-eyebrow{display:none}#ecosystem[data-space=shop] .ec-hero h1{font-size:26px}#ecosystem[data-space=shop] .ec-hero>div>p{margin:8px 0}}
