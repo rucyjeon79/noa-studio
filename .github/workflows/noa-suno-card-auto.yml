@@ -1,0 +1,60 @@
+name: NOA automatic missing Suno card images
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+  pull_request:
+    paths: ['scripts/noa_suno_card_auto.*','tests/jukebox/test_card_auto.py','tests/jukebox/card_target_test.php','.github/workflows/noa-suno-card-auto.yml']
+  push:
+    branches: [main]
+    paths: ['scripts/noa_suno_card_auto.*','tests/jukebox/test_card_auto.py','tests/jukebox/card_target_test.php','.github/workflows/noa-suno-card-auto.yml']
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - run: |
+          php -l scripts/noa_suno_card_auto.php
+          php tests/jukebox/card_target_test.php
+          php tests/cover-source.php
+          python -m pip install pillow 'paramiko>=3,<5'
+          python -m py_compile scripts/noa_suno_card_auto.py
+          python -m unittest discover -s tests/jukebox -p test_card_auto.py
+          python -m unittest discover -s tests/jukebox -p test_publish.py
+  fill:
+    if: github.event_name != 'pull_request'
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/cache/restore@v4
+        with:
+          path: cover-proof/retry.json
+          key: suno-card-retry-v1-${{ github.run_id }}
+          restore-keys: suno-card-retry-v1-
+      - run: |
+          python -m pip install pillow 'paramiko>=3,<5'
+          python scripts/noa_suno_card_auto.py
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: cover-proof/retry.json
+          key: suno-card-retry-v1-${{ github.run_id }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: suno-card-auto-${{ github.run_id }}
+          path: cover-proof/result.json
+          retention-days: 7
