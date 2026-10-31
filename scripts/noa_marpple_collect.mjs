@@ -39,7 +39,7 @@ try {
  const checkedAt=new Date().toISOString();
  const products=rows.map(row=>{
   const url=new URL(row.url),id=url.pathname.match(/^\/kr\/jr_lifestyle\/products\/(\d+)$/)?.[1];
-  assert(url.origin==='https://marpple.shop'&&id,'Unexpected product URL');
+  assert(url.origin==='https://marpple.shop'&&id,'Unexpected product URL: '+row.url);
   assert(row.title&&row.title.length<=200,'Invalid title');
   const amount=row.priceText?.match(/([\d,]+)\s*원/);assert(amount,'Missing KRW price');
   const priceWon=Number(amount[1].replaceAll(',',''));assert(Number.isSafeInteger(priceWon)&&priceWon>0&&priceWon<100000000,'Invalid price');
