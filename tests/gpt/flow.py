@@ -1,4 +1,5 @@
 """Exercise the two trust boundaries and real PHP request handling with an isolated song store."""
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -27,7 +28,12 @@ with tempfile.TemporaryDirectory() as tmp:
     """)
     # SQLite has no row lock clause. The production SQL and PDO implementation are unchanged.
     target = root/"noa-gpt.php"
-    target.write_text(target.read_text().replace(' WHERE request_id=? FOR UPDATE',' WHERE request_id=?'))
+    plugin_key = 'b'*64
+    bridge_src = target.read_text()
+    import re
+    bridge_src = re.sub(r"\$pluginHash = '[a-f0-9]{64}';", "$pluginHash = '"+hashlib.sha256(plugin_key.encode()).hexdigest()+"';", bridge_src)
+    shutil.copy("deploy/noa-plugin-records.php",root)
+    target.write_text(bridge_src.replace(' WHERE request_id=? FOR UPDATE',' WHERE request_id=?'))
     (bridge/"sound-core.php").touch()
     (bridge/"inline-edit.php").write_text("""<?php
     function nie_resolve($db,$q){$r=$db->query('SELECT title,revision FROM song')->fetch();
@@ -73,6 +79,12 @@ with tempfile.TemporaryDirectory() as tmp:
         call('start',{**task,'replace':True},admin=True,status=409)
         call('pair',{},admin=True)
         call('read',key=key,status=401)
+        call('health',{},key=plugin_key,status=401)
+        call('pluginToggle',{'enabled':True},status=403)
+        call('pluginToggle',{'enabled':True},admin=True)
+        assert call('health',{},key=plugin_key)['managementConnected']
+        call('pluginToggle',{'enabled':False},admin=True)
+        call('health',{},key=plugin_key,status=401)
         print('PASS: authenticated single-field save, overwrite consent, stale revision, idempotent retry and key revocation')
     finally:
         server.terminate()
