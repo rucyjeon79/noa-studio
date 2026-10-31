@@ -82,9 +82,45 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
          const link=document.createElement('a');link.href='/noa-gpt-setup.php';link.textContent='전용 GPT 연결 설정';feedback.append(link);return;
         }
         if(!response.ok||!result.ok)throw Error(result.error==='revision_conflict'?'곡이 변경되었습니다. 편집기를 다시 열어 주세요.':'작업을 등록하지 못했습니다. 다시 시도해 주세요.');
-        tell('전용 GPT에서 “만들어줘”를 누르면 이 항목에 저장됩니다.');
-        window.addEventListener('pageshow',event=>{if(event.persisted&&!state.dirty)location.reload();},{once:true});
-        location.assign(result.url);
+        if(!result.plugin){location.assign(result.url);return;}
+        const title=state.data.fields.title||'선택한 곡';
+        const taskId=result.id;
+        const request='NOA STUDIO Assistant로 선택한 작업을 읽어줘. 작업 ID가 '+taskId+'일 때만 지정된 항목의 결과를 작성해 그 작업에 저장해줘.';
+        tell('〈'+title+'〉 · '+label+' 작업을 준비했어요. ChatGPT에서 요청을 보내면 이 칸에 결과가 표시됩니다.');
+        const launch=document.createElement('a'),copy=document.createElement('button');
+        const chat=new URL('https://chatgpt.com/');chat.searchParams.set('q',request);
+        launch.href=chat.href;launch.target='_blank';launch.rel='noopener';launch.textContent='ChatGPT에서 이 작업 열기';
+        copy.type='button';copy.textContent='요청 복사';copy.onclick=async()=>{
+         try{await navigator.clipboard.writeText(request);copy.textContent='요청 복사됨';}catch{
+          const box=document.createElement('textarea');box.readOnly=true;box.value=request;feedback.append(box);box.select();
+         }
+        };
+        feedback.append(launch,document.createTextNode('　'),copy);
+        state.gptTask=taskId;
+        const until=Date.now()+3600000;
+        async function refreshTask(){
+         if(active!==state||state.gptTask!==taskId||Date.now()>until)return;
+         if(!document.hidden){
+          try{
+           const response=await fetch('/noa-gpt.php?op=progress',{method:'POST',headers:{'Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify({id:taskId})});
+           if(active!==state||state.gptTask!==taskId)return;
+           if(response.status===409){tell('다른 작업으로 바뀌었거나 작업 시간이 만료됐습니다.');return;}
+           if(response.ok&&(await response.json()).saved){
+            if(state.dirty){tell('결과가 저장됐어요. 현재 편집 내용은 유지됩니다. 편집기를 다시 열면 결과를 볼 수 있어요.');return;}
+            const res=await fetch('/noa-inline-edit.php?'+new URLSearchParams(selector),{cache:'no-store'});
+            const updated=await res.json();
+            if(active!==state||state.gptTask!==taskId)return;
+            if(updated.ok&&updated.writeKey===state.data.writeKey&&!state.dirty){
+             state.data=updated;
+             for(const [name,el] of Object.entries(inputs))window.NoaRecordForm.set(el,updated.fields[name]);
+             tell('〈'+title+'〉 · '+label+'에 저장했어요.');return;
+            }
+           }
+          }catch{}
+         }
+         setTimeout(refreshTask,5000);
+        }
+        setTimeout(refreshTask,1800);
        }catch(e){tell(e.message,true);}finally{state.busy=false;gpt.disabled=false;}
       };heading.append(gpt);
      }
