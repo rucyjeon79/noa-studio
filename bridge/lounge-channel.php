@@ -32,8 +32,7 @@ function channelItems(string $kind): array {
         throw new RuntimeException('tab');
     }
     try{
-        require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/storage.php';require_once __DIR__.'/youtube-store.php';
-        if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
+
         $token=ny_token(lab_read(),CHANNEL);
         $uploads=ny_get($token,'playlistItems',['part'=>'contentDetails','playlistId'=>'UU'.substr(CHANNEL,2),'maxResults'=>50]);
         $ids=array_filter(array_column(array_column($uploads['items']??[],'contentDetails'),'videoId'));
@@ -47,6 +46,33 @@ function channelItems(string $kind): array {
         }
         return $rows;
     }catch(Throwable $unavailable){}
+    try{
+        $page=fetchChannel('https://www.youtube.com/channel/'.CHANNEL.'/videos?hl=en');
+        if(!preg_match('/var ytInitialData\s*=\s*(\{.*?\});\s*<\/script>/s',$page,$match))throw new RuntimeException('videos tab');
+        $data=json_decode($match[1],true,512,JSON_THROW_ON_ERROR);$rows=[];
+        $tabs=$data['contents']['twoColumnBrowseResultsRenderer']['tabs']??[];
+        foreach($tabs as $tab){
+            $tab=$tab['tabRenderer']??[];
+            if(empty($tab['selected'])||!str_ends_with($tab['endpoint']['commandMetadata']['webCommandMetadata']['url']??'','/videos'))continue;
+            $entries=$tab['content']['richGridRenderer']['contents']??[];
+            if(!$entries)throw new RuntimeException('empty tab');
+            $recognized=false;
+            foreach($entries as $entry){
+                $video=$entry['richItemRenderer']['content']['videoRenderer']??null;
+                if(!$video)continue;
+                $age=$video['publishedTimeText']['simpleText']??'';
+                if(!preg_match('/(second|minute|hour|day|week|month|year)s? ago/i',$age))continue;
+                $recognized=true;
+                if(!preg_match('/(second|minute|hour)s? ago/i',$age))continue;
+                $id=$video['videoId'];
+                if(!preg_match('/^[A-Za-z0-9_-]{11}$/D',$id))continue;
+                $watch=fetchChannel('https://www.youtube.com/watch?v='.$id);
+                if(!preg_match('/"publishDate"\s*:\s*"([^"]+T[^"]+)"/',$watch,$when))throw new RuntimeException('publish time');
+                $rows[]=['title'=>implode('',array_column($video['title']['runs']??[],'text')),'at'=>strtotime($when[1]),'url'=>'https://www.youtube.com/watch?v='.$id];
+            }
+            if($recognized)return $rows;
+        }
+    }catch(Throwable $unavailable){}
     $feed=simplexml_load_string(fetchChannel('https://www.youtube.com/feeds/videos.xml?channel_id='.CHANNEL),SimpleXMLElement::class,LIBXML_NONET);
     if(!$feed || (string)$feed->children('http://www.youtube.com/xml/schemas/2015')->channelId!==CHANNEL)throw new RuntimeException('feed');
     $items=[];
@@ -55,6 +81,12 @@ function channelItems(string $kind): array {
         if(preg_match('/^[\w-]{11}$/D',$id))$items[]=['title'=>(string)$entry->title,'at'=>strtotime((string)$entry->published),'url'=>'https://www.youtube.com/watch?v='.$id];
     }
     return $items;
+}
+if(($_GET['kind']??'')==='music'){
+    require_once dirname(__DIR__).'/common.php';
+    require_once __DIR__.'/storage.php';
+    require_once __DIR__.'/youtube-store.php';
+    if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 }
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
