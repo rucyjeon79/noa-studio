@@ -44,6 +44,7 @@ function notice(message){if(lastNotice===message)return;lastNotice=message;
 function compactRows(){for(const row of document.querySelectorAll('.noa-inline-song-row,.noa-inline-video-row')){
  if(row.matches('#music-browse .noa-inline-song-row')){
   const actions=row.querySelectorAll(':scope>.noa-edit-edit,:scope>.noa-song-actions>.noa-song-action:not([aria-label$=" 재생"])');
+  row.style.setProperty('--tool-count',String(actions.length));
   actions.forEach((action,index)=>{
    action.classList.add('noa-direct-action');
    action.style.setProperty('--action-slot',String(actions.length-index-1));
