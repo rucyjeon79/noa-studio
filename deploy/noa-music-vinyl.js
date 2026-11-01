@@ -172,9 +172,32 @@
    note.title='원곡과 제목 불일치 · '+label;
   }
  }
+ function fitTrackName(viewport){
+  const text=viewport.firstElementChild;
+  if(!text||!viewport.clientWidth)return;
+  const overflow=Math.max(0,text.offsetWidth-viewport.clientWidth);
+  viewport.classList.toggle('lp-title-overflow',overflow>0);
+  viewport.style.setProperty('--title-offset',-overflow+'px');
+  viewport.style.setProperty('--title-duration',Math.max(4,overflow/26+2)+'s');
+ }
+ const titleSizes=new ResizeObserver(entries=>{
+  const viewports=new Set(entries.map(({target})=>target.closest('.noa-track-name')));
+  for(const viewport of viewports)if(viewport?.isConnected)fitTrackName(viewport);
+ });
+ function prepareTrackNames(){
+  for(const viewport of browse.querySelectorAll('.noa-inline-song-row .noa-track-name')){
+   if(viewport.firstElementChild?.classList.contains('lp-title-text'))continue;
+   const text=make('lp-title-text',viewport.textContent);
+   viewport.replaceChildren(text);
+   titleSizes.observe(viewport);
+   titleSizes.observe(text);
+   fitTrackName(viewport);
+  }
+ }
  function sync(){
   showActionCounts();
   showOriginalTitles();
+  prepareTrackNames();
   pending=false;
   const buttons=browse.querySelectorAll('[data-browse-level="1"] .noa-browse-grid>.noa-browse-card');
   buttons.forEach((btn,i)=>{

@@ -366,3 +366,25 @@ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline
 html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-engagement>button{
  display:flex;justify-content:center;flex-direction:column;padding:0;gap:2px;
 }
+
+/* Keep the track name and original credit in one left-aligned block. */
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-inline-song>.noa-inline-title{
+ grid-template-columns:minmax(0,1fr);align-self:center;justify-items:start;row-gap:4px;
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-inline-song>.noa-inline-title:not(:has(.noa-original-title)){
+ margin-block-end:6px;
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .noa-track-name{
+ width:100%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:clip;
+}
+#music-browse .lp-title-text{display:block;width:max-content;white-space:nowrap}
+@keyframes noa-title-pan{
+ 0%,15%{transform:translateX(0)}
+ 85%,100%{transform:translateX(var(--title-offset))}
+}
+@media(prefers-reduced-motion:no-preference){
+ #music-browse .lp-title-overflow>.lp-title-text{animation:noa-title-pan var(--title-duration) linear infinite alternate}
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .noa-track-name.lp-title-overflow{overflow-x:auto;scrollbar-width:none}
+}

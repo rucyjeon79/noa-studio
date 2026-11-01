@@ -75,6 +75,18 @@ try{for(const width of [320,390,1280]){
   assert(await title.evaluate(n=>{const box=x=>n.querySelector(x).getBoundingClientRect();return box('.noa-original-title').top>=box('.noa-track-name').bottom&&box('.noa-premium-badge').bottom<=box('.noa-track-name').top&&Math.abs(box('.noa-premium-badge').right-n.closest('.noa-inline-song-row').getBoundingClientRect().right)<=3;}));
   assert(await mismatchPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await mismatchPage.screenshot({path:'music-vinyl-proof/original-title-'+width+'.png'});
+  const trackName=title.locator('.noa-track-name');
+  await trackName.evaluate(n=>n.textContent='줄바꿈 없이 지나가는 긴 제목 '.repeat(12));
+  await title.locator('.lp-title-overflow>.lp-title-text').waitFor();
+  assert(await trackName.evaluate(n=>{
+   const box=n.getBoundingClientRect(),credit=n.parentElement.querySelector('.noa-original-title').getBoundingClientRect();
+   return box.height===24 && Math.abs(box.left-credit.left)<1 && credit.top>=box.bottom && credit.top-box.bottom<=6
+    && getComputedStyle(n.firstElementChild).animationName==='noa-title-pan';
+  }),'Long title pans on one line above its aligned credit');
+  await mismatchPage.emulateMedia({reducedMotion:'reduce'});
+  assert.equal(await trackName.locator('.lp-title-text').evaluate(n=>getComputedStyle(n).animationName),'none');
+  await trackName.evaluate(n=>n.textContent='봄');
+  await mismatchPage.waitForFunction(()=>!document.querySelector('[data-inline-key="translated"] .noa-track-name').classList.contains('lp-title-overflow'));
   const badgeRight=await title.locator('.noa-premium-badge').evaluate(n=>n.getBoundingClientRect().right);
   await mismatchPage.evaluate(()=>{records[0].title='하루의 끝에';document.querySelector('.noa-track-name').textContent='하루의 끝에';});
   await mismatchPage.waitForFunction(()=>!document.querySelector('.noa-original-title'));
