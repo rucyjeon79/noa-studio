@@ -83,3 +83,22 @@ body.noa-record-room #music-browse .noa-inline-title:has(.noa-amt-award){
 body.noa-record-room #music-browse .noa-amt-award{grid-column:1/-1;grid-row:2}
 body.noa-record-room #music-browse .noa-inline-title:has(.noa-amt-award)>.noa-premium-badge{grid-column:2;grid-row:1}
 body.noa-record-room #songs .noa-amt-award{margin-inline-start:6px}
+
+/* Controlled highlights on the exposed vinyl; the sleeve keeps its original silhouette. */
+#music-browse .lp-edition[data-lp-complete="true"] .lp-spindle{
+ background:repeating-radial-gradient(circle,transparent 0 1px,#ffedc657 1px 2px,transparent 2px 4px),
+ conic-gradient(from 12deg,#29231c,#665237 35deg,#efd59e 65deg,#796042 88deg,#211e1a 123deg,#40382b 210deg,#ac9160 247deg,#29231c 312deg);
+ border-color:#b69a65;
+}
+#music-browse .lp-tally{display:inline-block;margin-inline-start:.65em;font-variant-numeric:tabular-nums;white-space:nowrap}
+#music-browse [data-lp-complete="true"] .lp-tally{color:#d4b982}
+#music-browse .noa-inline-act>.noa-browse-card[data-lp-complete="true"] strong{color:#dfc596}
+@supports (background-clip:text){
+ #music-browse .noa-inline-act>.noa-browse-card[data-lp-complete="true"] strong{
+  background:linear-gradient(110deg,#c6a571,#f6e4ba 42%,#d2b583 78%);background-clip:text;color:transparent;
+ }
+}
+@media(prefers-reduced-motion:no-preference){
+ #music-browse .lp-edition.lp-new-pressing .lp-spindle{animation:noa-press-glint .85s ease-out}
+ @keyframes noa-press-glint{40%{filter:brightness(1.35)}}
+}

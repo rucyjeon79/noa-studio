@@ -63,6 +63,43 @@
   ['catalog:a785dbc3e646c64b54cd1536048100e5ee66f55ec9be69d39e6b5251c91f4bba','본선 참가곡'],
   ['story:your-story:6d2ff36af19c40d596c51002','결선 참가곡']
  ]);
+ // Mirror the browse tree's canonical membership, including tracks in closed groups.
+ function syncPressings(buttons){
+  if(typeof records==='undefined'||typeof collections==='undefined'||!window.NoaBrowse)return;
+  const catalog=new Map([...collections,...records].map(row=>[row.key,row]));
+  const tracks=NoaBrowse.canonicalBrowseRows([...catalog.values()].filter(row=>row.kind!=='video'&&!row.video)).filter(row=>row.kind!=='playlist');
+  const ready=new Set();
+  for(const row of document.querySelectorAll('#songs .song[data-key]')){
+   const {key,audio,audioSha,jukeboxStatus}=row.dataset;
+   if(audio&&audioSha&&(!jukeboxStatus||jukeboxStatus==='ready'))ready.add(key);
+  }
+  function mark(card,keys){
+   if(!card||!keys.length)return;
+   const count=keys.filter(key=>ready.has(String(key))).length;
+   const complete=count===keys.length;
+   if(complete&&card.dataset.lpComplete==='false')card.classList.add('lp-new-pressing');
+   if(!complete)card.classList.remove('lp-new-pressing');
+   card.dataset.lpComplete=String(complete);
+   const caption=card.querySelector(':scope>span:last-child small');
+   if(!caption)return;
+   let tally=caption.querySelector('.lp-tally');
+   if(!tally){
+    const prefix=caption.textContent.replace(/\d+개 곡$/, '').trim();
+    tally=make('lp-tally');
+    caption.replaceChildren(document.createTextNode(prefix),tally);
+   }
+   const label=count+'/'+keys.length+'곡 완료';
+   if(tally.textContent!==label)tally.textContent=label;
+  }
+  buttons.forEach((card,index)=>{
+   const genres=NoaBrowse.groups[index]?.[2]||[];
+   mark(card,tracks.filter(row=>genres.includes(row.genre)).map(row=>row.key));
+  });
+  for(const section of browse.querySelectorAll('.noa-inline-act')){
+   const keys=[...section.querySelectorAll('.noa-inline-song[data-inline-key]')].map(row=>row.dataset.inlineKey);
+   mark(section.querySelector(':scope>.noa-browse-card'),keys);
+  }
+ }
  function sync(){
   pending=false;
   const buttons=browse.querySelectorAll('[data-browse-level="1"] .noa-browse-grid>.noa-browse-card');
@@ -78,6 +115,7 @@
    const imprint=make('lp-imprint',edition);imprint.setAttribute('aria-hidden','true');
    image.before(sleeve);image.src='/noa-assets/editorial-'+photo+'.webp';face.append(image,imprint);sleeve.append(disc,face);
   });
+  syncPressings(buttons);
   for(const item of document.querySelectorAll('#music-browse .noa-inline-song[data-inline-key],#songs .song[data-key]')){
    const active=(item.dataset.inlineKey||item.dataset.key)===key && !!key;
    const award=songAwards.get(item.dataset.inlineKey||item.dataset.key);
@@ -113,5 +151,7 @@
   audio.addEventListener(event,()=>{running=false;schedule();});
  }
  new MutationObserver(schedule).observe(browse,{subtree:true,childList:true});
+ const songs=document.getElementById('songs');
+ if(songs)new MutationObserver(schedule).observe(songs,{subtree:true,attributes:true,attributeFilter:['data-audio','data-audio-sha','data-jukebox-status']});
  sync();
 })();
