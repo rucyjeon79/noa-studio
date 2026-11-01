@@ -139,7 +139,7 @@ body.noa-record-room #songs .noa-amt-award{margin-inline-start:6px}
 /* Keep the original credit on its own line, outside the title / PREMIUM row. */
 html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song>.noa-inline-title:is(:has(.noa-original-title),:has(.noa-premium-badge)){
  display:grid;grid-template-columns:minmax(0,1fr) max-content;justify-content:stretch;
- align-content:start;align-items:start;align-self:start;column-gap:8px;row-gap:6px;height:auto;white-space:normal;
+ align-content:center;align-items:center;align-self:center;column-gap:8px;row-gap:6px;height:auto;white-space:normal;
 }
 body.noa-record-room #music-browse .noa-inline-title:is(:has(.noa-original-title),:has(.noa-premium-badge))>.noa-premium-badge{grid-column:2;grid-row:1}
 body.noa-record-room .noa-original-title{
@@ -155,7 +155,7 @@ body.noa-record-room #songs .noa-original-title{margin-top:4px}
  html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:is(:has(.noa-original-title),:has(.noa-premium-badge)){grid-template-rows:minmax(44px,auto) 48px}
 }
 
-/* Anchor artwork and badges to the first title line, regardless of title length. */
+/* Keep the title block and artwork vertically centered; badges retain their right column. */
 html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-title:is(:has(.noa-original-title),:has(.noa-premium-badge))>.noa-track-name{white-space:normal;word-break:normal;overflow-wrap:anywhere}
-html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-title:is(:has(.noa-original-title),:has(.noa-premium-badge))>.noa-premium-badge{align-self:start;justify-self:end}
-html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:is(:has(.noa-original-title),:has(.noa-premium-badge))>.noa-inline-song>:is(.noa-inline-cover,.lp-track-art){align-self:start;grid-row:1}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-title:is(:has(.noa-original-title),:has(.noa-premium-badge))>.noa-premium-badge{align-self:center;justify-self:end}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:is(:has(.noa-original-title),:has(.noa-premium-badge))>.noa-inline-song>:is(.noa-inline-cover,.lp-track-art){align-self:center;grid-row:1}
