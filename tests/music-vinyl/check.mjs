@@ -72,7 +72,7 @@ try{for(const width of [320,390,1280]){
   await credit.waitFor();assert.equal(await credit.count(),1);assert.equal(await credit.textContent(),'≠원곡: 하루의 끝에');
   const title=mismatchPage.locator('[data-inline-key="translated"] .noa-inline-title');
   await title.evaluate(n=>{const b=document.createElement('span');b.className='noa-premium-badge';b.textContent='PREMIUM';n.append(b);});
-  assert(await title.evaluate(n=>{const box=x=>n.querySelector(x).getBoundingClientRect();return box('.noa-original-title').top>=box('.noa-track-name').bottom&&box('.noa-premium-badge').left>=box('.noa-track-name').right-1;}));
+  assert(await title.evaluate(n=>{const box=x=>n.querySelector(x).getBoundingClientRect();return box('.noa-original-title').top>=box('.noa-track-name').bottom&&box('.noa-premium-badge').bottom<=box('.noa-track-name').top&&Math.abs(box('.noa-premium-badge').right-n.closest('.noa-inline-song-row').getBoundingClientRect().right)<=3;}));
   assert(await mismatchPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await mismatchPage.screenshot({path:'music-vinyl-proof/original-title-'+width+'.png'});
   const badgeRight=await title.locator('.noa-premium-badge').evaluate(n=>n.getBoundingClientRect().right);
