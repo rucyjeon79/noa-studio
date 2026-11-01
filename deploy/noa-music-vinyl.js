@@ -143,6 +143,15 @@
     const count=totals==null?'—':Number(totals[row.dataset.inlineKey]||0).toLocaleString('ko-KR');
     if(label.textContent!==count)label.textContent=count;
    }
+   const art=row.querySelector('.lp-track-art');
+   if(art){
+    let label=art.querySelector('.lp-play-count');
+    if(!label){label=make('lp-play-count');art.append(label);}
+    const totals=actionCounts.plays;
+    const count=totals==null?'—':Number(totals[row.dataset.inlineKey]||0).toLocaleString('ko-KR');
+    if(label.textContent!==count)label.textContent=count;
+    label.setAttribute('aria-label',totals==null?'재생 횟수 확인 중':'재생 '+count+'회');
+   }
   }
  }
  const originalTitles=JSON.parse(document.getElementById('noa-original-titles')?.textContent||'{}');

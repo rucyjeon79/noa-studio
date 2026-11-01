@@ -143,6 +143,15 @@ try{for(const width of [320,390,1280]){
   document.querySelector('#music-browse').append(row);
  });
  const transport=p.locator('#sleeve-transport-test .lp-cover-toggle');await transport.waitFor();
+ const playTotal=p.locator('#sleeve-transport-test .lp-play-count');await playTotal.waitFor();
+ assert(await playTotal.evaluate(n=>{
+  const box=n.getBoundingClientRect(),art=n.closest('.lp-track-art'),disc=art.querySelector('.lp-spindle').getBoundingClientRect(),cover=art.querySelector('.lp-track-jacket').getBoundingClientRect();
+  return Math.abs(box.x+box.width/2-disc.x-disc.width/2)<2&&Math.abs(box.y+box.height/2-disc.y-disc.height/2)<2&&box.right<=cover.left&&getComputedStyle(n).animationName==='none';
+ }),'Play count stays centered and upright on the exposed vinyl, clear of the cover');
+ assert.equal(await transport.locator('span').evaluate(n=>getComputedStyle(n).display),'none');
+ await p.route('**/*',route=>route.request().headers()['x-noa-track-totals']==='1'?route.fulfill({contentType:'application/json',body:JSON.stringify({plays:{a:1234},downloads:{a:12}})}):route.continue());
+ await p.evaluate(()=>window.dispatchEvent(new Event('noa-play-counted')));
+ await p.waitForFunction(()=>document.querySelector('#sleeve-transport-test .lp-play-count')?.textContent==='1,234');
  assert(await transport.evaluate(n=>{const row=n.closest('.noa-inline-song-row'),a=row.querySelector('.lp-track-jacket').getBoundingClientRect(),b=n.getBoundingClientRect(),disc=row.querySelector('.lp-spindle').getBoundingClientRect();return Math.abs((a.left+a.right-b.left-b.right)/2)<2&&Math.abs((a.top+a.bottom-b.top-b.bottom)/2)<2&&disc.left<a.left;}),'Transport centered on cover; vinyl emerges on the left');
  await transport.click();await p.waitForFunction(()=>document.querySelector('audio').paused);
  const pausedAt=await p.locator('audio').evaluate(n=>n.currentTime);

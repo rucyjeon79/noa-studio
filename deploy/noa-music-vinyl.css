@@ -296,3 +296,19 @@ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline
 html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:not(:has(.noa-premium-badge))>.noa-song-actions>.noa-song-action[aria-label$=" 다운로드"]{right:48px}
 html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:not(:has(.noa-premium-badge))>.noa-song-more{right:4px}
 html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row button:focus-visible{outline:2px solid #f1deb4;outline-offset:2px}
+
+/* Readable play totals on the stationary label of an exposed, rotating disc. */
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row,
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:has(.noa-premium-badge){
+ --noa-list-cover:clamp(60px,18vw,88px);--lp-reveal:calc(var(--noa-list-cover)*.8);
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .lp-track-art>.lp-spindle{translate:calc(0px - var(--lp-reveal)) 0}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .lp-play-count{
+ position:absolute;left:calc(var(--art-size)*.5);top:50%;translate:-50% -50%;z-index:2;
+ display:flex;align-items:center;justify-content:center;box-sizing:border-box;
+ width:calc(var(--art-size)*.56);height:calc(var(--art-size)*.56);border-radius:50%;
+ border:1px solid #d9be84aa;background:#191b1c;color:#f1deb4;
+ font-size:clamp(9px,2.6vw,12px);font-weight:650;font-variant-numeric:tabular-nums;line-height:1;
+ white-space:nowrap;pointer-events:none;animation:none;transform:none;
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-song-actions>.noa-song-action:is([aria-label$=" 재생"],[aria-label$=" 다운로드"])>span{display:none!important}
