@@ -47,11 +47,11 @@ function compactRows(){for(const row of document.querySelectorAll('.noa-inline-s
  const more=button('',()=>{
   const sources=[...row.querySelectorAll(':scope>.noa-edit-edit,.noa-song-actions>.noa-song-action')].filter(b=>![' 재생',' 다운로드'].some(s=>b.getAttribute('aria-label')?.endsWith(s)));
   const dialog=el('dialog');dialog.className='noa-comments noa-song-menu';
-  const header=el('header'),title=el('h2',row.querySelector('.noa-inline-title')?.textContent||'곡 메뉴'),close=button('닫기',()=>dialog.close());title.id='noa-song-menu-title';dialog.setAttribute('aria-labelledby',title.id);header.append(title,close);dialog.append(header);
+  const header=el('header'),title=el('h2',(row.querySelector('.noa-track-name')?.textContent||row.querySelector('.noa-inline-title')?.title)||'곡 메뉴'),close=button('닫기',()=>dialog.close());title.id='noa-song-menu-title';dialog.setAttribute('aria-labelledby',title.id);header.append(title,close);dialog.append(header);
   for(const source of sources){const action=button(source.textContent.trim(),()=>{dialog.close();source.click();});action.disabled=source.disabled||source.getAttribute('aria-disabled')==='true';dialog.append(action);}
   if(!sources.length)dialog.append(el('p','이 곡에 추가로 사용할 메뉴가 없어요.'));
   document.body.append(dialog);dialog.addEventListener('close',()=>{dialog.remove();more.focus();},{once:true});dialog.showModal();
- });more.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>';more.className='noa-song-more';more.setAttribute('aria-label',(row.querySelector('.noa-inline-title')?.textContent||'곡')+' 더보기');more.setAttribute('aria-haspopup','dialog');row.append(more);
+ });more.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>';more.className='noa-song-more';more.setAttribute('aria-label',((row.querySelector('.noa-track-name')?.textContent||row.querySelector('.noa-inline-title')?.title)||'곡')+' 더보기');more.setAttribute('aria-haspopup','dialog');row.append(more);
 }}
 function scan(){scheduled=false;compactRows();
  const music=location.pathname!=='/noa-youtube.php';
