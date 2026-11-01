@@ -18,3 +18,11 @@ test('MUSIC keeps the playable file when an imported duplicate has the audio',()
  const rows=[{key:'native',browseIdentity:'same',browsePriority:3},{key:'import',browseIdentity:'same',audio:'/verified/audio'}];
  assert.equal(m.canonicalBrowseRows(rows)[0].key,'import');assert.equal(rows.length,2);
 });
+test('cover labels use the original artist once and keep the editable title intact',()=>{
+ const row={title:'기다려 줘',genre:'cover-reborn',originalArtist:' 김광석 '};
+ assert.equal(m.displayTitle(row),'기다려 줘 - 김광석');
+ assert.equal(row.title,'기다려 줘');
+ assert.equal(m.displayTitle({...row,title:'기다려 줘 - 김광석'}),'기다려 줘 - 김광석');
+ assert.equal(m.displayTitle({...row,originalArtist:''}),row.title);
+ assert.equal(m.displayTitle({...row,genre:'your-story'}),row.title);
+});
