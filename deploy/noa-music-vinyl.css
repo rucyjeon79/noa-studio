@@ -102,3 +102,11 @@ body.noa-record-room #songs .noa-amt-award{margin-inline-start:6px}
  #music-browse .lp-edition.lp-new-pressing .lp-spindle{animation:noa-press-glint .85s ease-out}
  @keyframes noa-press-glint{40%{filter:brightness(1.35)}}
 }
+
+/* Foil corner stays inside the genre photograph, above the caption. */
+#music-browse [data-browse-level="2"] .noa-browse-card[data-lp-complete="true"]{position:relative;isolation:isolate}
+#music-browse [data-browse-level="2"] .noa-browse-card[data-lp-complete="true"]>img{filter:sepia(.21) saturate(.94)}
+#music-browse [data-browse-level="2"] .noa-browse-card[data-lp-complete="true"]::after{
+ content:"";position:absolute;z-index:1;inset:0 0 auto auto;width:28%;aspect-ratio:1;pointer-events:none;
+ clip-path:polygon(0 0,100% 0,100% 100%);background:repeating-linear-gradient(135deg,transparent 0 3px,#fff5 3px 4px),linear-gradient(135deg,#8c6838,#f1dcb1 48%,#a27e49 75%,#e2c695);
+}

@@ -97,6 +97,12 @@
    const genres=NoaBrowse.groups[index]?.[2]||[];
    mark(card,tracks.filter(row=>genres.includes(row.genre)).map(row=>row.key));
   });
+  const selectedGroup=Array.from(buttons).findIndex(card=>card.getAttribute('aria-pressed')==='true');
+  const genres=NoaBrowse.groups[selectedGroup]?.[2]||[];
+  const genreCards=browse.querySelectorAll('[data-browse-level="2"]>.noa-browse-grid>.noa-browse-card');
+  genreCards.forEach((card,index)=>{
+   mark(card,tracks.filter(row=>row.genre===genres[index]).map(row=>row.key));
+  });
   for(const section of browse.querySelectorAll('.noa-inline-act')){
    const keys=[...section.querySelectorAll('.noa-inline-song[data-inline-key]')].map(row=>row.dataset.inlineKey);
    mark(section.querySelector(':scope>.noa-browse-card'),keys);

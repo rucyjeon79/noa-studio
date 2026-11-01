@@ -15,6 +15,26 @@ await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox','--autoplay-policy=no-user-gesture-required']});mkdirSync('music-vinyl-proof',{recursive:true});
 try{for(const width of [320,390,1280]){
  const p=await browser.newPage({viewport:{width,height:880}});await p.goto('http://127.0.0.1:'+server.address().port+'/');
+ if(width===390){
+  const genrePage=await browser.newPage({viewport:{width,height:880}});
+  const rows=Array.from({length:41},(_,i)=>({key:'qa-'+i,title:'Track '+i,genre:i<40?'kpop-original':'jpop-original',ep:i%40+1}));
+  const songs=rows.slice(0,40).map(r=>'<article class="song" data-key="'+r.key+'" data-audio="master.mp3" data-audio-sha="verified"></article>').join('');
+  const fixture=html.replace('<div id="songs" hidden>', '<div id="songs" hidden>'+songs)
+   .replace('<div id="songs">','<div id="songs">'+songs)
+   .replace('const tree=','const records='+JSON.stringify(rows)+',collections=[];const tree=').replace('rows:[]','rows:records');
+  await genrePage.route('**/genre-fixture?*',route=>route.fulfill({contentType:'text/html',body:fixture}));
+  try{
+   await genrePage.goto('http://127.0.0.1:'+server.address().port+'/genre-fixture?group=original&genre=kpop-original');
+   const cards=genrePage.locator('[data-browse-level="2"] .noa-browse-card');
+   await cards.first().getByText('40/40곡 완료').waitFor();
+   assert.equal(await cards.first().getAttribute('data-lp-complete'),'true');
+   assert.equal(await cards.nth(1).getAttribute('data-lp-complete'),'false');
+   assert.notEqual(await cards.first().evaluate(n=>getComputedStyle(n,'::after').clipPath),'none');
+   await genrePage.locator('#songs [data-key="qa-0"]').evaluate(n=>n.removeAttribute('data-audio-sha'));
+   await cards.first().getByText('39/40곡 완료').waitFor();
+   assert.equal(await cards.first().getAttribute('data-lp-complete'),'false');
+  }finally{await genrePage.close();}
+ }
  const editions=p.locator('.lp-edition');await editions.first().waitFor();assert.equal(await editions.count(),4);
  await editions.locator('img').evaluateAll(images=>Promise.all(images.map(i=>i.decode())));
  for(const card of await editions.all()){
