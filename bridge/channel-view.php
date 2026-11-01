@@ -11,6 +11,10 @@ function ncv_project(array $records,array $aliases,string $channelId,callable $m
   if(!in_array($r['kind'],['single','story','playlist'],true))continue;
   $key=$r['doc_key'];$item=['key'=>$key,'kind'=>$r['kind'],'title'=>nup_fields($d)['title']?:($d['title']??'제목 없음'),'genre'=>(string)($d['genreId']??''),'ep'=>(int)($d['ep']??0),'act'=>(int)($d['act']??0)];
   if($r['kind']==='playlist'){$item['members']=is_array($d['body']['members']??null)?$d['body']['members']:[];$lists[]=$item;continue;}
+  if($item['genre']==='cover-reborn'){
+   $item['originalArtist']=noa_music_original_artist($d['body']??[]);
+   $item['title']=noa_music_display_title($item);
+  }
   $asset=$media($key,$d);if(!$asset)continue;
   $item['aliases']=array_values(array_unique(array_merge([$key],$aliases[$key]??[])));foreach($item['aliases'] as $a)$visible[$a]=true;
   $songs[]=array_merge($item,$asset,['youtube'=>'/noa-youtube.php?track='.rawurlencode('coming:'.hash('sha256','song:'.$key))]);
