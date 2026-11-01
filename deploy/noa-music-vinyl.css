@@ -118,3 +118,20 @@ body.noa-record-room #songs .noa-amt-award{margin-inline-start:6px}
 #music-browse [data-browse-level="2"] .noa-browse-card>img[src*="/fantasy-"],
 #music-browse [data-browse-level="2"] .noa-browse-card>img[src*="/rain-"],
 #music-browse [data-browse-level="2"] .noa-browse-card>img[src*="/latin-"]{object-position:50% 37%}
+
+/* Genre titles sit on the photograph, with light falling away behind the type. */
+#music-browse [data-browse-level="2"] .noa-browse-card{
+ display:grid;grid-template:1fr / minmax(0,1fr);position:relative;isolation:isolate;overflow:hidden;
+}
+#music-browse [data-browse-level="2"] .noa-browse-card>img{
+ grid-area:1/1;width:100%;height:100%;aspect-ratio:4/3;object-fit:cover;
+}
+#music-browse [data-browse-level="2"] .noa-browse-card>span{
+ grid-area:1/1;align-self:end;position:relative;z-index:1;margin:0;
+ padding:clamp(22px,6vw,46px) 12px 10px;
+ background:linear-gradient(transparent,rgba(6,9,14,.66) 61%,rgba(6,9,14,.84));
+ text-shadow:0 1px 3px #000a;
+}
+#music-browse [data-browse-level="2"] .noa-browse-card strong{color:#fff;text-shadow:inherit}
+#music-browse [data-browse-level="2"] .noa-browse-card small{color:#e2e2e2}
+#music-browse [data-browse-level="2"] .lp-tally{margin-inline-start:0}

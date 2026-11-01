@@ -45,6 +45,10 @@ try{for(const width of [320,390,1280]){
     const photo=card.locator('img');
     await photo.evaluate(n=>n.decode());
     assert.equal(await photo.evaluate(n=>n.naturalWidth),720);
+    assert(await card.evaluate(n=>{
+     const caption=n.querySelector(':scope>span'),photo=n.querySelector('img').getBoundingClientRect(),title=caption.querySelector('strong').getBoundingClientRect();
+     return title.top>=photo.top && title.bottom<=photo.bottom && getComputedStyle(caption).backgroundColor==='rgba(0, 0, 0, 0)';
+    }));
     assert.equal(await photo.evaluate(n=>getComputedStyle(n).objectPosition),'50% 16%');
    }
   }finally{await genrePage.close();}
