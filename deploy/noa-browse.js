@@ -8,7 +8,18 @@ const groupFor=g=>groups.find(x=>x[2].includes(g))?.[0]||null;
 const actFor=r=>Number(r.act)>0?Number(r.act):Number(r.ep)>0?Math.ceil(Number(r.ep)/10):null;
 const epOrder=(a,b)=>{const ea=Number(a.ep),eb=Number(b.ep);return (ea>0?ea:Number.MAX_SAFE_INTEGER)-(eb>0?eb:Number.MAX_SAFE_INTEGER);};
 let manualOrder={story:[],cover:[],playlists:[]};
-const orderFor=(a,b)=>{const ga=groupFor(a.genre),gb=groupFor(b.genre);if(ga===gb&&(ga==='story'||ga==='cover')){if(Number(a.ep)>0||Number(b.ep)>0)return epOrder(a,b);const keys=manualOrder[ga]||[],ia=keys.indexOf(String(a.orderKey||a.key).replace(/^catalog:/,'')),ib=keys.indexOf(String(b.orderKey||b.key).replace(/^catalog:/,''));return (ia<0?Number.MAX_SAFE_INTEGER:ia)-(ib<0?Number.MAX_SAFE_INTEGER:ib);}return epOrder(a,b);};
+function orderFor(a,b){
+ const group=groupFor(a.genre);
+ if(group!==groupFor(b.genre)||!['story','cover'].includes(group))return epOrder(a,b);
+ const keys=manualOrder[group]||[];
+ const rank=row=>keys.indexOf(String(row.orderKey||row.key).replace(/^catalog:/,''));
+ const rankA=rank(a),rankB=rank(b);
+ const newA=rankA<0?Number(a.registeredAt)||0:0;
+ const newB=rankB<0?Number(b.registeredAt)||0:0;
+ if(newA!==newB)return newB-newA;
+ if(rankA!==rankB)return (rankA<0?Infinity:rankA)-(rankB<0?Infinity:rankB);
+ return epOrder(a,b);
+}
 
 
 const canonicalKey=r=>String(r.orderKey||r.musicKey||r.key||'').replace(/^catalog:/,'');
