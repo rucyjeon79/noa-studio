@@ -57,7 +57,7 @@ function noa_music_display_title(array $row):string{
  return $title.' - '.$artist;
 }
 function noa_music_browse_project(array $rows,array $sources=[],array $edits=[]):array{
- foreach($rows as &$row){$key=(string)($row['musicKey']??$row['key']??'');$d=$sources[$key]??[];$b=$d['body']??$row['fields']??[];$f=function_exists('nie_fields')?nie_fields($edits,$row):[];$row['originalArtist']=noa_music_original_artist($b,(string)($f['originalArtist']??$row['originalArtist']??''));$row['canonicalVideo']=noa_music_video_id((string)($f['youtubeUrl']??$b['youtubeUrl']??''));$row['_browseSuno']=(string)($f['sunoUrl']??($row['suno']??(($b['sunoUrl']??'')?:($b['sunoShareUrl']??''))));$row['browsePriority']??=(str_starts_with($key,'catalog:')?0:2)+(!empty($d['packageSchema'])?1:0);}unset($row);
+ foreach($rows as &$row){$key=(string)($row['musicKey']??$row['key']??'');$d=$sources[$key]??[];$b=$d['body']??$row['fields']??[];$f=function_exists('nie_fields')?nie_fields($edits,$row):[];foreach([$f['vocal']??null,$b['vocalInfo']??null,$b['vocal']??null,$b['sourceVocal']??null,$row['vocal']??null] as $voice){if(is_string($voice)&&trim($voice)!==''){$row['vocal']=trim($voice);break;}}$row['originalArtist']=noa_music_original_artist($b,(string)($f['originalArtist']??$row['originalArtist']??''));$row['canonicalVideo']=noa_music_video_id((string)($f['youtubeUrl']??$b['youtubeUrl']??''));$row['_browseSuno']=(string)($f['sunoUrl']??($row['suno']??(($b['sunoUrl']??'')?:($b['sunoShareUrl']??''))));$row['browsePriority']??=(str_starts_with($key,'catalog:')?0:2)+(!empty($d['packageSchema'])?1:0);}unset($row);
  $rows=noa_music_browse_catalog($rows);foreach($rows as &$row)unset($row['canonicalVideo'],$row['_browseSuno']);unset($row);return $rows;
 }
 
