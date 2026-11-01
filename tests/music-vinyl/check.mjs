@@ -8,7 +8,7 @@ const server=createServer((req,res)=>{
  const path=new URL(req.url,'http://localhost').pathname;
  if(path==='/tone.wav'){res.writeHead(200,{'Content-Type':'audio/wav'});return res.end(wav);}
  if(path==='/'){res.writeHead(200,{'Content-Type':'text/html;charset=utf-8'});return res.end(html);}
- const file=path.startsWith('/noa-assets/editorial-')?'deploy/noa-assets/editorial/'+path.split('editorial-')[1]:'deploy'+path;
+ const file=path.startsWith('/noa-assets/editorial-')?'deploy/noa-assets/editorial/'+path.split('editorial-')[1]:path.startsWith('/noa-assets/splash/')?'public/splash/'+path.split('/').pop():'deploy'+path;
  try{res.setHeader('Content-Type',path.endsWith('.js')?'application/javascript;charset=utf-8':path.endsWith('.css')?'text/css;charset=utf-8':'image/webp');res.end(readFileSync(file));}catch{res.writeHead(404);res.end();}
 });
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
@@ -41,6 +41,12 @@ try{for(const width of [320,390,1280]){
    await genrePage.locator('[data-browse-level="2"] [data-lp-complete="true"]').waitFor();
    assert.equal(await genrePage.locator('.lp-tally').count(),0);
    assert.equal(await cards.first().locator('img').evaluate(n=>getComputedStyle(n).borderTopWidth),'3px');
+   for(const card of await cards.all()){
+    const photo=card.locator('img');
+    await photo.evaluate(n=>n.decode());
+    assert.equal(await photo.evaluate(n=>n.naturalWidth),720);
+    assert.equal(await photo.evaluate(n=>getComputedStyle(n).objectPosition),'50% 16%');
+   }
   }finally{await genrePage.close();}
  }
  const editions=p.locator('.lp-edition');await editions.first().waitFor();assert.equal(await editions.count(),4);

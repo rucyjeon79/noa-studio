@@ -112,3 +112,9 @@ body.noa-record-room #songs .noa-amt-award{margin-inline-start:6px}
 }
 
 #music-browse .noa-inline-act>.noa-browse-card[data-lp-complete="true"]>img{box-sizing:border-box;border:2px solid #d5b77e;filter:sepia(.23) contrast(1.04)}
+
+/* Keep portrait faces in the landscape genre window on both standard and foil sleeves. */
+#music-browse [data-browse-level="2"] .noa-browse-card>img{object-position:50% 16%}
+#music-browse [data-browse-level="2"] .noa-browse-card>img[src*="/fantasy-"],
+#music-browse [data-browse-level="2"] .noa-browse-card>img[src*="/rain-"],
+#music-browse [data-browse-level="2"] .noa-browse-card>img[src*="/latin-"]{object-position:50% 37%}
