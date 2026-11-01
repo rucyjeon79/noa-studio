@@ -144,10 +144,12 @@ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline
 body.noa-record-room #music-browse .noa-inline-title:has(.noa-original-title)>.noa-premium-badge{grid-column:2;grid-row:1}
 body.noa-record-room .noa-original-title{
  display:flex;align-items:baseline;gap:6px;grid-column:1/-1;grid-row:2;
- min-width:0;color:var(--noa-accent);font-size:12px;font-weight:400;line-height:1.5;
+ min-width:0;width:fit-content;max-width:100%;box-sizing:border-box;justify-self:start;
+ padding:3px 8px;border:1px solid #30343a;border-radius:6px;background:#090a0e;color:#c5c7ca;
+ font-size:12px;font-weight:400;line-height:1.5;
  white-space:normal;overflow-wrap:anywhere;letter-spacing:normal;
 }
-body.noa-record-room .noa-title-mismatch-icon{flex:none;font-size:14px;font-weight:600}
+body.noa-record-room .noa-title-mismatch-icon{flex:none;font-size:14px;font-weight:600;color:var(--noa-accent)}
 body.noa-record-room #songs .noa-original-title{margin-top:4px}
 @media(max-width:899px){
  html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:has(.noa-original-title){grid-template-rows:minmax(44px,auto) 48px}
