@@ -42,6 +42,16 @@ function notice(message){if(lastNotice===message)return;lastNotice=message;
  let node=document.getElementById('noa-engagement-notice');if(!node){node=el('p');node.id='noa-engagement-notice';node.setAttribute('role','status');(document.querySelector('main')||document.body).prepend(node);}node.textContent=message;
 }
 function compactRows(){for(const row of document.querySelectorAll('.noa-inline-song-row,.noa-inline-video-row')){
+ if(row.matches('#music-browse .noa-inline-song-row')){
+  const actions=row.querySelectorAll(':scope>.noa-edit-edit,:scope>.noa-song-actions>.noa-song-action:not([aria-label$=" 재생"])');
+  actions.forEach((action,index)=>{
+   action.classList.add('noa-direct-action');
+   action.style.setProperty('--action-slot',String(actions.length-index-1));
+   action.title=action.getAttribute('aria-label')||action.textContent.trim();
+   if(action.title.endsWith(' 교체'))action.querySelector('svg path')?.setAttribute('d','M3 7h15l-3-3m6 13H6l3 3M18 7l-3 3M6 17l3-3');
+  });
+  continue;
+ }
  if(row.querySelector(':scope>.noa-song-more'))continue;
  if(!row.querySelector(':scope>.noa-edit-edit,.noa-song-actions>.noa-song-action:not([aria-label$=" 재생"])'))continue;
  const more=button('',()=>{

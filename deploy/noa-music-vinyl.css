@@ -314,3 +314,21 @@ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline
 html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .lp-track-art:not(.lp-running)>.lp-spindle{visibility:hidden;opacity:0}
 html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .lp-spindle::after{display:none}
 html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:has(.noa-premium-badge) .lp-track-jacket{box-shadow:none}
+
+/* Compact track tools use the original action buttons and their permission checks. */
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row,
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:has(.noa-premium-badge){
+ --tool-end:4px;--tool-width:clamp(32px,9vw,44px);
+ padding:38px 12px 7px;column-gap:8px;row-gap:0;grid-template-rows:minmax(24px,auto) 44px;
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:has(.noa-premium-badge){--tool-end:103px}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>button.noa-direct-action,
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-song-actions>button.noa-song-action.noa-direct-action{
+ display:inline-flex!important;position:absolute;grid-area:auto;top:0;
+ right:calc(var(--tool-end) + var(--action-slot)*var(--tool-width))!important;
+ justify-content:center;align-items:center;width:var(--tool-width);min-width:0;height:36px;min-height:36px;
+ margin:0;padding:0;border:0;border-radius:4px;background:transparent;color:var(--noa-muted);box-shadow:none;
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-direct-action>svg{width:18px;height:18px}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-direct-action>span{display:none!important}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-edit-form{grid-column:1/-1}
