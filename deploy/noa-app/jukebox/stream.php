@@ -17,13 +17,13 @@ try{
  if($code===206)header('Content-Range: bytes '.$start.'-'.$end.'/'.$size);
  if(($_SERVER['REQUEST_METHOD']??'GET')==='HEAD'){fclose($file);exit;}
  fseek($file,$start);$left=$end-$start+1;
- // Deliver the first real block before optional ranking work: playback never waits for event setup.
+ // Read a verified block before counting. Finish session work before the response starts playing.
  $first=fread($file,min(65536,$left));
  if($first!==false&&$first!==''&&!connection_aborted()){
-  echo $first;$left-=strlen($first);flush();
   if($type==='audio'&&($_SERVER['HTTP_X_N80_AVAILABILITY_CHECK']??'')!=='1'&&session_status()===PHP_SESSION_ACTIVE){require_once __DIR__.'/stream-popularity.php';nj_track_verified_audio($db,$doc,$key,($is_admin??'')!=='',$_SESSION,time());}
  }
  if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
+ if($first!==false&&$first!==''){echo $first;$left-=strlen($first);flush();}
  while($left>0&&!connection_aborted()){$block=fread($file,min(65536,$left));if($block===false||$block==='')break;echo $block;$left-=strlen($block);flush();}fclose($file);
 }catch(Throwable $e){error_log('[jukebox-stream] '.get_class($e));http_response_code(503);}
 
