@@ -477,3 +477,16 @@ html body .noa-home-banner-copy>b{display:flex;align-items:center;gap:8px;paddin
 /* Keep vertical overscroll from reloading the document and destroying playback.
    Normal scrolling, pinch zoom and horizontal navigation remain browser-native. */
 html,body{overscroll-behavior-y:contain}
+
+/* The description, chart date and filters belong to one section heading. */
+html body [data-home-section="recommendations"] > .noa-section-head { margin-bottom: 12px; }
+html body [data-home-section="recommendations"] > p.noa-muted:first-of-type { margin-block: 0 4px; }
+html body [data-home-section="recommendations"] > #noa-ranking-status {
+  margin: 0;
+  color: var(--noa-muted,#aeb3bc);
+  font-size: 12px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+html body .noa-discovery-tabs button:focus-visible,
+html body .noa-section-head a:focus-visible { outline: 2px solid var(--noa-accent,#d9bb80); outline-offset: 2px; }
