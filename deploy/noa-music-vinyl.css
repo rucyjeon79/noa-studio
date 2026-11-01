@@ -389,3 +389,16 @@ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline
 @media(prefers-reduced-motion:reduce){
  html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .noa-track-name.lp-title-overflow{overflow-x:auto;scrollbar-width:none}
 }
+
+/* A full-width card can share its reaction row with the direct action buttons. */
+#music-browse .noa-inline-songs{container:track-list / inline-size}
+@container track-list (min-width:560px){
+ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-engagement{
+  justify-self:start;width:max-content;
+ }
+ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>button.noa-direct-action,
+ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-song-actions>button.noa-song-action.noa-direct-action{
+  position:static;grid-area:2 / 2;align-self:center;justify-self:end;
+  width:44px;height:44px;margin-inline-end:calc(var(--action-slot)*44px);z-index:1;
+ }
+}
