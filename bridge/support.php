@@ -20,7 +20,8 @@ try{
   if($action==='detail')nsp_reply(200,['ok'=>true]+nspp_detail($owner,(string)($_GET['key']??''),($is_admin??'')==='super'));
   if($action==='dashboard')nsp_reply(200,['ok'=>true,'csrf'=>$csrf]+nspp_dashboard($owner));
   if($action==='stats'){
-   $targets=json_decode((string)($_GET['targets']??'[]'),true,8,JSON_THROW_ON_ERROR);if(!is_array($targets)||count($targets)>30)throw new InvalidArgumentException('invalid_target');$out=[];
+   parse_str((string)($_SERVER['QUERY_STRING']??''),$query);
+   $targets=json_decode((string)($query['targets']??'[]'),true,8,JSON_THROW_ON_ERROR);if(!is_array($targets)||count($targets)>30)throw new InvalidArgumentException('invalid_target');$out=[];
    foreach($targets as $x){if(!is_array($x)||!is_string($x['key']??null)||!is_string($x['type']??null))throw new InvalidArgumentException('invalid_target');try{$t=nsp_target($db,$x['type'],$x['key']);$out[]=$x+['available'=>$t['owner']!==$owner]+nsp_public($t);}catch(DomainException $e){$out[]=$x+['available'=>false];}}
    nsp_reply(200,['ok'=>true,'items'=>$out]);
   }

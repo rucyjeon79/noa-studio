@@ -15,6 +15,10 @@ if(parse_url($_SERVER['REQUEST_URI']??'',PHP_URL_PATH)==='/noa-music.php' && ($_
     }
    }catch(Throwable $error){$counts[$metric]=null;error_log('[noa-track-counts] '.$metric.' unavailable');}
   }
+  if(($_SERVER['HTTP_X_NOA_TRACK_TOTALS']??'')==='1'){
+   if(!headers_sent()){header('Content-Type: application/json; charset=utf-8');header('Cache-Control: private, no-store');}
+   return json_encode($counts,JSON_THROW_ON_ERROR);
+  }
   $assets.='<script type="application/json" id="noa-track-counts">'.json_encode($counts,JSON_HEX_TAG|JSON_THROW_ON_ERROR).'</script>';
   return str_ireplace('</head>',$assets.'</head>',$html);
  });

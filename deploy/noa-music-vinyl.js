@@ -118,7 +118,22 @@
    mark(section.querySelector(':scope>.noa-browse-card'),keys);
   }
  }
- const actionCounts=JSON.parse(document.getElementById('noa-track-counts')?.textContent||'{}');
+ let actionCounts=JSON.parse(document.getElementById('noa-track-counts')?.textContent||'{}');
+ let refreshSequence=0;
+ async function refreshActionCounts(){
+  const sequence=++refreshSequence;
+  try{
+   const response=await fetch(location.href,{credentials:'same-origin',cache:'no-store',headers:{'X-Noa-Track-Totals':'1'}});
+   if(!response.ok)return;
+   const totals=await response.json();
+   if(sequence!==refreshSequence||!totals||!('plays' in totals)||!('downloads' in totals))return;
+   actionCounts=totals;
+   showActionCounts();
+  }catch{/* Preserve the last confirmed values until the next refresh. */}
+ }
+ window.addEventListener('noa-play-counted',refreshActionCounts);
+ window.addEventListener('pageshow',event=>{if(event.persisted)refreshActionCounts();});
+ window.addEventListener('focus',refreshActionCounts);
  function showActionCounts(){
   for(const row of browse.querySelectorAll('.noa-inline-song-row[data-inline-key]')){
    for(const [action,metric] of [['재생','plays'],['다운로드','downloads']]){
