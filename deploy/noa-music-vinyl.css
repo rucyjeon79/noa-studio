@@ -312,7 +312,6 @@ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline
 }
 html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .lp-track-jacket{box-shadow:none}
 html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .lp-track-art:not(.lp-running)>.lp-spindle{visibility:hidden;opacity:0}
-html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .lp-spindle::after{display:none}
 html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:has(.noa-premium-badge) .lp-track-jacket{box-shadow:none}
 
 /* Compact track tools use the original action buttons and their permission checks. */
