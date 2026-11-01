@@ -154,8 +154,13 @@ try{for(const width of [320,390,1280]){
  await p.waitForFunction(()=>document.querySelector('#sleeve-transport-test .lp-play-count')?.textContent==='1,234');
  assert(await transport.evaluate(n=>{const row=n.closest('.noa-inline-song-row'),a=row.querySelector('.lp-track-jacket').getBoundingClientRect(),b=n.getBoundingClientRect(),disc=row.querySelector('.lp-spindle').getBoundingClientRect();return Math.abs((a.left+a.right-b.left-b.right)/2)<2&&Math.abs((a.top+a.bottom-b.top-b.bottom)/2)<2&&disc.left<a.left;}),'Transport centered on cover; vinyl emerges on the left');
  await transport.click();await p.waitForFunction(()=>document.querySelector('audio').paused);
+ await p.waitForFunction(()=>getComputedStyle(document.querySelector('#sleeve-transport-test .lp-spindle')).visibility==='hidden');
+ assert.equal(await playTotal.evaluate(n=>getComputedStyle(n).display),'none');
+ assert(await transport.evaluate(n=>{const s=getComputedStyle(n);return s.backgroundColor==='rgba(0, 0, 0, 0)'&&s.borderTopWidth==='0px';}),'Cover play icon has no circular background or border');
+ assert(await playTotal.evaluate(n=>{const s=getComputedStyle(n);return s.backgroundColor==='rgba(0, 0, 0, 0)'&&s.borderTopWidth==='0px';}),'Vinyl count has no circular background or border');
  const pausedAt=await p.locator('audio').evaluate(n=>n.currentTime);
  await transport.click();await p.waitForFunction(()=>!document.querySelector('audio').paused);
+ await playTotal.waitFor({state:'visible'});
  assert(await p.locator('audio').evaluate(n=>n.currentTime)>=pausedAt,'Resume preserves playback position');
  await p.locator('#sleeve-transport-test').evaluate(n=>n.remove());
  if(width===390){
