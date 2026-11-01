@@ -22,4 +22,17 @@ try{
  await page.waitForFunction(()=>[...document.querySelectorAll('.noa-inline-song-row button[aria-label$=" 재생"]>span')].some(x=>/^\d+$/.test(x.textContent)));
  const view=await sample();console.log('VISIBLE_COUNT_CHECK',JSON.stringify({target:[target.title,target.genre,target.ep],view}));
  if(!view.some(r=>r.title?.includes(target.title)&&Number(r.count)>0))throw Error('positive song count not visible');
+ const comparison=await page.evaluate(()=>{
+  const titles=JSON.parse(document.getElementById('noa-original-titles')?.textContent||'{}');
+  const normalize=s=>String(s||'').normalize('NFC').trim().replace(/\s+/gu,' ');
+  return {originals:Object.keys(titles).length,targets:['original','ep'].map(group=>records.find(r=>r.genre!=='kpop-original'&&NoaBrowse.groupFor(r.genre)===group&&r.kind!=='playlist'&&titles[+r.ep]&&normalize(r.title)!==normalize(titles[+r.ep]))).filter(Boolean)};
+ });
+ if(!comparison.originals||comparison.targets.length!==2)throw Error('original title projection unavailable');
+ for(const target of comparison.targets){
+  await page.goto('https://noastudio.ai.kr/noa-music.php?genre='+encodeURIComponent(target.genre)+'&act='+Math.ceil(target.ep/10),{waitUntil:'domcontentloaded'});
+  await page.waitForSelector('.noa-original-title');
+  const notes=await page.locator('.noa-inline-song-row').evaluateAll(rows=>rows.filter(r=>r.getClientRects().length).map(r=>({title:r.querySelector('.noa-track-name')?.textContent,original:r.querySelector('.noa-original-title')?.textContent})).filter(r=>r.original));
+  if(!notes.some(r=>r.title.includes(target.title)))throw Error('original title not visible for '+target.genre);
+  console.log('VISIBLE_ORIGINAL_TITLE',JSON.stringify({genre:target.genre,originals:comparison.originals,notes}));
+ }
 }finally{await browser.close();}
