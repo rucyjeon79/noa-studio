@@ -111,3 +111,14 @@
   outline: 2px solid var(--noa-accent,#d9bb80);
   outline-offset: 3px;
 }
+
+#ecosystem[data-space=lounge] .ec-card:has(.ec-body-preview) > .ec-badge {
+  display: block;
+  line-height: 20px;
+}
+#ecosystem[data-space=lounge] .ec-card:has(.ec-body-preview) > .ec-open {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}

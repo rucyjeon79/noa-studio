@@ -2,7 +2,7 @@ name: NOA responsive presentation audit
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/noa-responsive-presentation.yml']
+    paths: ['.github/workflows/noa-responsive-presentation.yml', 'deploy/noa-ecosystem.css', 'deploy/noa-ui.css']
 permissions: {contents: read}
 jobs:
   publish:
