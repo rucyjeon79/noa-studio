@@ -143,24 +143,14 @@ try{for(const width of [320,390,1280]){
   document.querySelector('#music-browse').append(row);
  });
  const transport=p.locator('#sleeve-transport-test .lp-cover-toggle');await transport.waitFor();
- const playTotal=p.locator('#sleeve-transport-test .lp-play-count');await playTotal.waitFor();
- assert(await playTotal.evaluate(n=>{
-  const box=n.getBoundingClientRect(),art=n.closest('.lp-track-art'),disc=art.querySelector('.lp-spindle').getBoundingClientRect(),cover=art.querySelector('.lp-track-jacket').getBoundingClientRect();
-  return Math.abs(box.x+box.width/2-disc.x-disc.width/2)<2&&Math.abs(box.y+box.height/2-disc.y-disc.height/2)<2&&box.right<=cover.left&&getComputedStyle(n).animationName==='none';
- }),'Play count stays centered and upright on the exposed vinyl, clear of the cover');
+ assert.equal(await p.locator('#sleeve-transport-test .lp-play-count').count(),0);
  assert.equal(await transport.locator('span').evaluate(n=>getComputedStyle(n).display),'none');
- await p.route('**/*',route=>route.request().headers()['x-noa-track-totals']==='1'?route.fulfill({contentType:'application/json',body:JSON.stringify({plays:{a:1234},downloads:{a:12}})}):route.continue());
- await p.evaluate(()=>window.dispatchEvent(new Event('noa-play-counted')));
- await p.waitForFunction(()=>document.querySelector('#sleeve-transport-test .lp-play-count')?.textContent==='1,234');
- assert(await transport.evaluate(n=>{const row=n.closest('.noa-inline-song-row'),a=row.querySelector('.lp-track-jacket').getBoundingClientRect(),b=n.getBoundingClientRect(),disc=row.querySelector('.lp-spindle').getBoundingClientRect();return Math.abs((a.left+a.right-b.left-b.right)/2)<2&&Math.abs((a.top+a.bottom-b.top-b.bottom)/2)<2&&disc.left<a.left;}),'Transport centered on cover; vinyl emerges on the left');
+ assert(await transport.evaluate(n=>{const row=n.closest('.noa-inline-song-row'),a=row.querySelector('.lp-track-jacket').getBoundingClientRect(),b=n.getBoundingClientRect(),disc=row.querySelector('.lp-spindle').getBoundingClientRect();return Math.abs((a.left+a.right-b.left-b.right)/2)<2&&Math.abs((a.top+a.bottom-b.top-b.bottom)/2)<2&&Math.abs(disc.left+disc.width/2-a.left)<1;}),'Transport centered on cover; exactly half the record is exposed');
  await transport.click();await p.waitForFunction(()=>document.querySelector('audio').paused);
  await p.waitForFunction(()=>getComputedStyle(document.querySelector('#sleeve-transport-test .lp-spindle')).visibility==='hidden');
- assert.equal(await playTotal.evaluate(n=>getComputedStyle(n).display),'none');
  assert(await transport.evaluate(n=>{const s=getComputedStyle(n);return s.backgroundColor==='rgba(0, 0, 0, 0)'&&s.borderTopWidth==='0px';}),'Cover play icon has no circular background or border');
- assert(await playTotal.evaluate(n=>{const s=getComputedStyle(n);return s.backgroundColor==='rgba(0, 0, 0, 0)'&&s.borderTopWidth==='0px';}),'Vinyl count has no circular background or border');
  const pausedAt=await p.locator('audio').evaluate(n=>n.currentTime);
  await transport.click();await p.waitForFunction(()=>!document.querySelector('audio').paused);
- await playTotal.waitFor({state:'visible'});
  assert(await p.locator('audio').evaluate(n=>n.currentTime)>=pausedAt,'Resume preserves playback position');
  await p.locator('#sleeve-transport-test').evaluate(n=>n.remove());
  if(width===390){
