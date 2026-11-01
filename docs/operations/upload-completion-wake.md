@@ -1,4 +1,4 @@
-# Upload completion wake — activation pending
+# Upload completion wake
 
 Both local and Drive uploads call `nq_enqueue`. After the queue transaction commits,
 request the existing `noa-jukebox.yml` workflow on `main`. Do not call GitHub inside
@@ -16,14 +16,15 @@ on the execution path; PR/push validation remains enabled.
 
 Provision a dedicated fine-grained GitHub credential restricted to repository
 `rucyjeon79/noa-studio`, Actions write (and required metadata read), with expiration.
-Keep the value out of chat, source control and public web files. Install it as
-`/hosting/noastudio/noa-jukebox-private/upload-wake-token`, mode 0600, using the
-existing pinned SSH deployment channel. Do not reuse a short-lived workflow token.
-No suitable durable dispatch credential has been verified in this session.
+Store the credential in the production environment GitHub Actions secret
+`NOA_JUKEBOX_WAKE_TOKEN`. Run the upload completion wake verification workflow on
+main to install or rotate it under the private directory with mode 0600. The
+workflow logs only its configuration state. If no new secret was supplied, it
+leaves an existing private credential untouched. A missing credential leaves the
+scheduled worker responsible for recovery. Never use a short-lived workflow token.
 
-Deploy `wake-core.php` before its `queue-core.php` caller, using the existing scoped
-release/preimage checks. The absence of the private credential leaves scheduled
-processing in place; this is NOT evidence of successful immediate activation.
+The release installs the helper before the queue caller, using scoped preimage
+checks. An installed file alone does not prove GitHub accepted a dispatch.
 
 ## Acceptance evidence
 
