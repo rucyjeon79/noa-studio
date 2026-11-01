@@ -203,8 +203,14 @@
    const parent=item.matches('.song')?item.querySelector('.song-select'):item;
    if(!parent)continue;
    let holder=parent.querySelector(':scope>.lp-track-art');
-   if(active&&!holder)holder=wrapArt(parent,[...parent.querySelectorAll(':scope>img,:scope>.cover')]);
+   if((active||item.matches('.noa-inline-song'))&&!holder)holder=wrapArt(parent,[...parent.querySelectorAll(':scope>img,:scope>.cover')]);
    if(holder){holder.classList.toggle('lp-on-record',active&&started);holder.classList.toggle('lp-running',active&&running);}
+   const toggle=item.closest('.noa-inline-song-row')?.querySelector('.noa-song-action[aria-label$=" 재생"]');
+   if(toggle){
+    toggle.classList.add('lp-cover-toggle');
+    toggle.setAttribute('aria-pressed',String(active&&!audio.paused&&!audio.ended));
+    toggle.title=active&&!audio.paused&&!audio.ended?'일시정지':'재생';
+   }
   }
   dockArt.classList.toggle('lp-on-record',started);
   dockArt.classList.toggle('lp-running',running);
@@ -215,6 +221,14 @@
   }
  }
  function schedule(){if(!pending){pending=true;requestAnimationFrame(sync);}}
+ browse.addEventListener('click',event=>{
+  const toggle=event.target.closest('.lp-cover-toggle');
+  if(!toggle||toggle.disabled)return;
+  const row=toggle.closest('.noa-inline-song-row');
+  if(row?.dataset.inlineKey!==key||!audio.currentSrc)return;
+  event.preventDefault();event.stopImmediatePropagation();
+  if(audio.paused||audio.ended)audio.play().catch(()=>{});else audio.pause();
+ },true);
  window.addEventListener('noa-track-selected',event=>{
   const next=event.detail?.record?.key||document.querySelector('#songs .song.selected')?.dataset.key||'';
   if(next!==key){followedKey='';key=next;started=false;running=false;schedule();}

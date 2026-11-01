@@ -130,12 +130,25 @@ try{for(const width of [320,390,1280]){
    const n=box('.noa-track-name'),p=box('.noa-premium-badge'),a=box('.noa-amt-award');
    return [p.left-n.right,p.right<=title.getBoundingClientRect().right+1,a.top>=n.bottom-1];
   });
-  assert(geometry[0]>=0&&geometry[0]<=8&&geometry[1]&&geometry[2],'Premium uses the right column; award stays below');
+  assert(geometry[0]>=0&&geometry[0]<=8&&geometry[1]&&geometry[2],'Premium stays beside the title; award stays below');
  }
  await p.evaluate(()=>document.querySelector('audio').play());
  await p.locator('.lp-dock-art.lp-running').waitFor();
  const disc=p.locator('.lp-dock-art>.lp-spindle');assert.equal(await disc.evaluate(n=>getComputedStyle(n).animationPlayState),'running');
  assert.equal(await p.locator('.song .lp-running').count(),1);
+ // The cover transport must control the current audio without restarting it.
+ await p.evaluate(()=>{
+  const row=document.createElement('div');row.id='sleeve-transport-test';row.className='noa-inline-song-row noa-has-support';row.dataset.inlineKey='a';
+  row.innerHTML='<button class="noa-inline-song" data-inline-key="a"><span class="cover">♫</span><span class="noa-inline-title"><span class="noa-track-name">긴 제목의 커버 재생 버튼 확인</span><span class="noa-premium-badge">PREMIUM</span></span></button><div class="noa-song-actions"><button class="noa-song-action" aria-label="테스트 재생"><svg viewBox="0 0 24 24"></svg><span>0</span></button></div>';
+  document.querySelector('#music-browse').append(row);
+ });
+ const transport=p.locator('#sleeve-transport-test .lp-cover-toggle');await transport.waitFor();
+ assert(await transport.evaluate(n=>{const row=n.closest('.noa-inline-song-row'),a=row.querySelector('.lp-track-jacket').getBoundingClientRect(),b=n.getBoundingClientRect(),disc=row.querySelector('.lp-spindle').getBoundingClientRect();return Math.abs((a.left+a.right-b.left-b.right)/2)<2&&Math.abs((a.top+a.bottom-b.top-b.bottom)/2)<2&&disc.left<a.left;}),'Transport centered on cover; vinyl emerges on the left');
+ await transport.click();await p.waitForFunction(()=>document.querySelector('audio').paused);
+ const pausedAt=await p.locator('audio').evaluate(n=>n.currentTime);
+ await transport.click();await p.waitForFunction(()=>!document.querySelector('audio').paused);
+ assert(await p.locator('audio').evaluate(n=>n.currentTime)>=pausedAt,'Resume preserves playback position');
+ await p.locator('#sleeve-transport-test').evaluate(n=>n.remove());
  if(width===390){
   await p.evaluate(()=>{
    document.querySelector('audio').loop=true;

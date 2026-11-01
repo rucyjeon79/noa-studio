@@ -249,3 +249,50 @@ html[data-noa-precision] body.noa-page.noa-record-room :is(#music-browse .noa-in
  html[data-noa-precision] body.noa-page.noa-record-room :is(#music-browse .noa-inline-song-row,#songs .song):has(.noa-premium-badge)::before,
  html[data-noa-precision] body.noa-page.noa-record-room :is(#music-browse .noa-inline-song-row,#songs .song):has(.noa-premium-badge)::after{display:none}
 }
+
+/* Sleeve-led listening cards: left vinyl, centered transport, right metadata. */
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row{
+ --noa-list-cover:clamp(68px,20vw,96px);--lp-reveal:calc(var(--noa-list-cover)*.32);
+ display:grid;grid-template-columns:calc(var(--noa-list-cover) + var(--lp-reveal)) minmax(0,1fr);
+ grid-template-rows:minmax(40px,auto) 48px;column-gap:12px;row-gap:4px;
+ position:relative;isolation:isolate;padding:48px 14px 16px;
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:has(.noa-premium-badge){
+ --noa-list-cover:clamp(68px,20vw,96px);
+ grid-template-columns:calc(var(--noa-list-cover) + var(--lp-reveal)) minmax(0,1fr);
+ grid-template-rows:minmax(40px,auto) 48px;padding:48px 14px 16px;row-gap:4px;
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .noa-inline-song,
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-song-actions{display:contents!important}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .noa-inline-title{
+ grid-column:2!important;grid-row:1;align-self:end;padding:0!important;text-align:left;
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .lp-track-art{
+ grid-column:1!important;grid-row:1/3!important;align-self:center;justify-self:start;
+ width:calc(var(--art-size) + var(--lp-reveal));padding-left:var(--lp-reveal);box-sizing:border-box;
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .lp-track-art>.lp-spindle{left:calc(var(--lp-reveal) + var(--art-size)*.04);translate:0}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .lp-track-art.lp-on-record>.lp-spindle{translate:calc(0px - var(--lp-reveal)) 0}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-engagement{
+ grid-column:2;grid-row:2;align-self:start;justify-content:flex-start;gap:clamp(2px,2vw,12px);width:auto;padding:0;
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-engagement>button{flex:0 0 44px;min-width:44px;min-height:44px}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-song-actions>.noa-song-action[aria-label$=" 재생"]{
+ grid-column:1;grid-row:1/3;align-self:center;justify-self:center;margin-left:var(--lp-reveal);z-index:3;
+ width:44px;height:44px;min-height:44px;padding:2px;gap:0;border:1px solid #e4c68c99;border-radius:50%;
+ background:#0c1013bd;color:#fff2d5;box-shadow:0 2px 9px #0006;backdrop-filter:blur(3px);
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .lp-cover-toggle[aria-pressed="true"]>svg{display:none}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .lp-cover-toggle[aria-pressed="true"]::before{
+ content:"";display:block;width:14px;height:17px;margin:1px 0;
+ background:linear-gradient(90deg,currentColor 0 4px,transparent 4px 10px,currentColor 10px);
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-song-actions>.noa-song-action[aria-label$=" 다운로드"],
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-song-more{
+ position:absolute;grid-area:auto;top:0;width:44px;height:44px;min-height:44px;margin:0;padding:2px 0;align-items:center;justify-content:center;
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-song-actions>.noa-song-action[aria-label$=" 다운로드"]{right:148px}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-song-more{right:104px}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:not(:has(.noa-premium-badge))>.noa-song-actions>.noa-song-action[aria-label$=" 다운로드"]{right:48px}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:not(:has(.noa-premium-badge))>.noa-song-more{right:4px}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row button:focus-visible{outline:2px solid #f1deb4;outline-offset:2px}
