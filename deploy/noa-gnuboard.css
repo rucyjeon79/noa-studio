@@ -116,3 +116,9 @@ html.noa-g5 #bo_w :is(.cke,iframe,.autosave_wrapper) { max-inline-size: 100%; }
   html.noa-g5 #bo_w .bo_w_link .frm_input { inline-size: 100%; }
   html.noa-g5 #bo_w .btn_confirm { justify-content: flex-end; }
 }
+
+html.noa-g5 #bo_w input#wr_subject { font-size: 18px; font-weight: 650; letter-spacing: -.02em; }
+html.noa-g5 #bo_w textarea#wr_content { font-size: 16px; line-height: 1.75; }
+html.noa-g5 #bo_w :is(input,textarea,select):focus-visible { outline: 2px solid #cfb783; outline-offset: 2px; }
+html.noa-g5 #bo_w .btn_confirm { border-top: 1px solid var(--noa-line,#383d44); padding-top: 16px; }
+html.noa-g5 #bo_w .btn_confirm .btn_submit { background: #dbc69b; color: #211c14; border-color: #dbc69b; font-weight: 700; }

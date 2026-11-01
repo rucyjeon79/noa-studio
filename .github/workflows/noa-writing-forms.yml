@@ -18,6 +18,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
+      - name: Verify composer typography and action styling
+        run: |
+          grep -Fq 'textarea[maxlength="20000"]' deploy/noa-ecosystem.css
+          grep -Fq '#bo_w input#wr_subject' deploy/noa-gnuboard.css
       - name: Check the shipped editor with isolated member data
         run: |
           npm install --prefix "$RUNNER_TEMP/noa-form" --no-save playwright@1.56.1
