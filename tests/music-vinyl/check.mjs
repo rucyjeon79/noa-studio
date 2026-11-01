@@ -181,7 +181,7 @@ try{for(const width of [320,390,1280]){
   await p.mouse.wheel(0,-60);
   await p.waitForTimeout(5500);
   assert(await p.locator('.song .lp-running').evaluate(el=>el.getBoundingClientRect().bottom<0),'Browsing restarts the idle countdown');
-  await p.waitForFunction(()=>document.querySelector('.song .lp-running').getBoundingClientRect().top>=0,{},{timeout:8000});
+  await p.waitForFunction(()=>document.querySelector('.song .lp-running')?.getBoundingClientRect().top>=0,{},{timeout:8000});
  }
  await p.evaluate(()=>document.querySelector('audio').pause());
  await p.waitForFunction(()=>!document.querySelector('.lp-dock-art').classList.contains('lp-running'));
