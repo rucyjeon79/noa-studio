@@ -145,8 +145,35 @@
    }
   }
  }
+ const originalTitles=JSON.parse(document.getElementById('noa-original-titles')?.textContent||'{}');
+ const normalizeTitle=value=>String(value||'').normalize('NFC').trim().replace(/\s+/gu,' ');
+ function showOriginalTitles(){
+  if(typeof records==='undefined'||!window.NoaBrowse)return;
+  const byKey=new Map(records.map(row=>[String(row.key),row]));
+  for(const item of document.querySelectorAll('#music-browse .noa-inline-song[data-inline-key],#songs .song[data-key]')){
+   const record=byKey.get(item.dataset.inlineKey||item.dataset.key);
+   const title=item.querySelector('.noa-inline-title,.info strong');
+   if(!title||!record)continue;
+   const original=originalTitles[Number(record.ep)];
+   const eligible=record.genre!=='kpop-original'&&['original','ep'].includes(NoaBrowse.groupFor(record.genre))&&record.kind!=='playlist'&&!record.video;
+   const mismatch=eligible&&original&&normalizeTitle(record.title)&&normalizeTitle(record.title)!==normalizeTitle(original);
+   let note=title.querySelector('.noa-original-title');
+   if(!mismatch){note?.remove();continue;}
+   if(!note){
+    note=make('noa-original-title');
+    note.setAttribute('aria-label','원곡과 제목 불일치');
+    const icon=make('noa-title-mismatch-icon','≠');icon.setAttribute('aria-hidden','true');
+    note.append(icon,make('noa-original-title-text'));title.append(note);
+   }
+   const label='원곡: '+original;
+   const text=note.querySelector('.noa-original-title-text');
+   if(text.textContent!==label)text.textContent=label;
+   note.title='원곡과 제목 불일치 · '+label;
+  }
+ }
  function sync(){
   showActionCounts();
+  showOriginalTitles();
   pending=false;
   const buttons=browse.querySelectorAll('[data-browse-level="1"] .noa-browse-grid>.noa-browse-card');
   buttons.forEach((btn,i)=>{

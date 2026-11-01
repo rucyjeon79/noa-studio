@@ -28,6 +28,20 @@ if(parse_url($_SERVER['REQUEST_URI']??'',PHP_URL_PATH)==='/noa-music.php' && ($_
    if(!headers_sent()){header('Content-Type: application/json; charset=utf-8');header('Cache-Control: private, no-store');}
    return json_encode($counts,JSON_THROW_ON_ERROR);
   }
+  // The unified package contract links every EP genre to the same K-POP EP.
+  // Use originalInfo, not translated titles or a guessed title match.
+  $originals=[];$conflicts=[];
+  foreach($GLOBALS['browseSources']??[] as $source){
+   if(($source['genreId']??'')!=='kpop-original')continue;
+   $info=$source['body']['originalInfo']??[];
+   $ep=(int)($info['ep']??$source['ep']??0);
+   $title=trim((string)($info['title']??''));
+   if($ep<1||$title==='')continue;
+   if(isset($originals[$ep])&&$originals[$ep]!==$title)$conflicts[$ep]=true;
+   $originals[$ep]=$title;
+  }
+  foreach($conflicts as $ep=>$_)unset($originals[$ep]);
+  $assets.='<script type="application/json" id="noa-original-titles">'.json_encode((object)$originals,JSON_HEX_TAG|JSON_THROW_ON_ERROR).'</script>';
   $assets.='<script type="application/json" id="noa-track-counts">'.json_encode($counts,JSON_HEX_TAG|JSON_THROW_ON_ERROR).'</script>';
   return str_ireplace('</head>',$assets.'</head>',$html);
  });

@@ -135,3 +135,20 @@ body.noa-record-room #songs .noa-amt-award{margin-inline-start:6px}
 #music-browse [data-browse-level="2"] .noa-browse-card strong{color:#fff;text-shadow:inherit}
 #music-browse [data-browse-level="2"] .noa-browse-card small{color:#e2e2e2}
 #music-browse [data-browse-level="2"] .lp-tally{margin-inline-start:0}
+
+/* Keep the original credit on its own line, outside the title / PREMIUM row. */
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song>.noa-inline-title:has(.noa-original-title){
+ display:grid;grid-template-columns:minmax(0,max-content) max-content;justify-content:start;
+ align-content:center;column-gap:6px;row-gap:4px;height:auto;white-space:normal;
+}
+body.noa-record-room #music-browse .noa-inline-title:has(.noa-original-title)>.noa-premium-badge{grid-column:2;grid-row:1}
+body.noa-record-room .noa-original-title{
+ display:flex;align-items:baseline;gap:6px;grid-column:1/-1;grid-row:2;
+ min-width:0;color:var(--noa-accent);font-size:12px;font-weight:400;line-height:1.5;
+ white-space:normal;overflow-wrap:anywhere;letter-spacing:normal;
+}
+body.noa-record-room .noa-title-mismatch-icon{flex:none;font-size:14px;font-weight:600}
+body.noa-record-room #songs .noa-original-title{margin-top:4px}
+@media(max-width:899px){
+ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:has(.noa-original-title){grid-template-rows:minmax(44px,auto) 48px}
+}

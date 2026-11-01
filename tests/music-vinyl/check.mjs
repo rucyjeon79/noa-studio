@@ -53,6 +53,37 @@ try{for(const width of [320,390,1280]){
    }
   }finally{await genrePage.close();}
  }
+ const mismatchPage=await browser.newPage({viewport:{width,height:880}});
+ const mismatchRows=[
+  {key:'translated',title:'At the end of the day',genre:'pop-original',ep:'01'},
+  {key:'same',title:'  작은   떨림 ',genre:'pop-original',ep:'02'},
+  {key:'unknown',title:'Unknown',genre:'pop-original',ep:'99'},
+  {key:'kpop',title:'다른 이름',genre:'kpop-original',ep:'01'},
+  {key:'ep',title:'긴 밤의 이야기',genre:'joseon-ballad',ep:'01'},
+  {key:'cover',title:'커버',genre:'cover-reborn',ep:'01'}
+ ];
+ const mismatchFixture=html.replace('<body ', '<link rel="stylesheet" href="/noa-engagement.css"><body ')
+  .replace('<script src="/noa-browse.js">','<script type="application/json" id="noa-original-titles">'+JSON.stringify({1:'하루의 끝에',2:'작은 떨림'})+'</script><script src="/noa-browse.js">')
+  .replace('const tree=','const records='+JSON.stringify(mismatchRows)+',collections=[];const tree=').replace('rows:[]','rows:records');
+ await mismatchPage.route('**/mismatch?*',route=>route.fulfill({contentType:'text/html',body:mismatchFixture}));
+ try{
+  await mismatchPage.goto('http://127.0.0.1:'+server.address().port+'/mismatch?group=original&genre=pop-original&act=1');
+  const credit=mismatchPage.locator('.noa-original-title');
+  await credit.waitFor();assert.equal(await credit.count(),1);assert.equal(await credit.textContent(),'≠원곡: 하루의 끝에');
+  const title=mismatchPage.locator('[data-inline-key="translated"] .noa-inline-title');
+  await title.evaluate(n=>{const b=document.createElement('span');b.className='noa-premium-badge';b.textContent='PREMIUM';n.append(b);});
+  assert(await title.evaluate(n=>{const box=x=>n.querySelector(x).getBoundingClientRect();return box('.noa-original-title').top>=box('.noa-track-name').bottom&&box('.noa-premium-badge').left>=box('.noa-track-name').right-1;}));
+  assert(await mismatchPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  await mismatchPage.screenshot({path:'music-vinyl-proof/original-title-'+width+'.png'});
+  await mismatchPage.evaluate(()=>{records[0].title='하루의 끝에';document.querySelector('.noa-track-name').textContent='하루의 끝에';});
+  await mismatchPage.waitForFunction(()=>!document.querySelector('.noa-original-title'));
+  for(const [group,genre,count] of [['original','kpop-original',0],['ep','joseon-ballad',1],['cover','cover-reborn',0]]){
+   await mismatchPage.goto('http://127.0.0.1:'+server.address().port+'/mismatch?group='+group+'&genre='+genre+'&act=1');
+   await mismatchPage.locator('.noa-inline-song').first().waitFor({state:'attached'});
+   await mismatchPage.waitForFunction(()=>document.querySelector('.lp-edition'));
+   assert.equal(await mismatchPage.locator('.noa-original-title').count(),count);
+  }
+ }finally{await mismatchPage.close();}
  const editions=p.locator('.lp-edition');await editions.first().waitFor();assert.equal(await editions.count(),4);
  await editions.locator('img').evaluateAll(images=>Promise.all(images.map(i=>i.decode())));
  for(const card of await editions.all()){
