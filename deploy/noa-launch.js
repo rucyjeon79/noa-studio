@@ -3,7 +3,7 @@
  const here=new URL(location.href),intentKey='noa-music-navigation-v3';
  const bareMusic=url=>url.origin===here.origin&&url.pathname==='/noa-music.php'&&!url.search&&!url.hash;
  // Rebuild the persistent music shell after a full reload of one of its app views.
- const shellRoutes=new Set(['/','/index.php','/noa-my.php','/noa-youtube.php','/noa-world.php','/noa-settings.php','/noa-sitemap.php']);
+ const shellRoutes=new Set(["/","/index.php","/noa-music.php","/noa-youtube.php","/noa-world.php","/noa-my.php","/noa-settings.php","/noa-sitemap.php","/noa-lounge.php","/noa-community.php","/noa-shop.php","/noa-vip.php","/noa-points.php","/noa-membership.php","/noa-channel.php","/noa-creator.php","/noa-creator-lab.php","/noa-catalog.php","/noa-about.php","/noa-privacy.php","/noa-terms.php","/noa-support.php","/noa-install.php","/bbs/board.php","/bbs/write.php","/bbs/new.php","/bbs/search.php","/bbs/content.php","/bbs/profile.php"]);
  try{const s=JSON.parse(sessionStorage.getItem('noa-playback-session-v1')||'null');const reload=window.performance?.getEntriesByType('navigation')[0]?.type==='reload';
  if(window.top===window&&reload&&shellRoutes.has(here.pathname)&&s&&s.path===here.pathname+here.search+here.hash&&!s.closed&&typeof s.key==='string'&&Date.now()-s.at>=0&&Date.now()-s.at<86400000){sessionStorage.setItem('noa-playback-return',JSON.stringify({path:s.path,at:Date.now()}));location.replace('/noa-music.php?resume=1');return;}
  }catch{}
