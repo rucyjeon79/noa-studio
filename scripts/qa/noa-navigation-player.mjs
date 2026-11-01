@@ -9,7 +9,7 @@ try{
  browser=await chromium.launch();
  for(const width of [390,1280]){
   const page=await browser.newPage({viewport:{width,height:900},serviceWorkers:'block'});
-  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  const errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error('BROWSER_ERROR',e.message);});
   await page.goto('http://127.0.0.1:8093/noa-music.php?track=one');
   await page.locator('#pause-play').click();
   await page.waitForFunction(()=>document.querySelector('audio').currentTime>0.2);
