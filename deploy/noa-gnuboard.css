@@ -102,3 +102,17 @@ html.noa-g5 #bo_w .bo_w_link .frm_input{padding-inline-start:44px}
 
 /* The native float clearfix must not become a third flex item. */
 html.noa-g5 #bo_list #bo_btn_top::after{content:none;display:none}
+
+/* Constrain the editing column without changing the editor's internal toolbar. */
+html.noa-g5 #bo_w :is(#fwrite,.write_div,.bo_w_tit,#autosave_wrapper,.file_wr,.btn_confirm) {
+  box-sizing: border-box;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+html.noa-g5 #bo_w :is(input.frm_input,select,textarea,.file_wr input[type=file]) { box-sizing: border-box; }
+html.noa-g5 #bo_w :is(.cke,iframe,.autosave_wrapper) { max-inline-size: 100%; }
+@media (max-width: 600px) {
+  html.noa-g5 #bo_w .bo_w_info { display: grid; grid-template-columns: minmax(0,1fr); }
+  html.noa-g5 #bo_w .bo_w_link .frm_input { inline-size: 100%; }
+  html.noa-g5 #bo_w .btn_confirm { justify-content: flex-end; }
+}

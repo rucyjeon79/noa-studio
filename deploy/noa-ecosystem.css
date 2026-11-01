@@ -122,3 +122,34 @@
   justify-content: flex-start;
   align-items: flex-start;
 }
+
+/* The editor is mounted on body, outside the ecosystem layout. */
+dialog.ec-dialog {
+  box-sizing: border-box;
+  inline-size: min(680px, calc(100% - 24px));
+  max-inline-size: calc(100% - 24px);
+  max-block-size: calc(100dvh - 24px);
+  overscroll-behavior: contain;
+  overflow-wrap: anywhere;
+  color-scheme: dark;
+}
+.ec-dialog header > h2 { min-inline-size: 0; line-height: 1.35; }
+.ec-dialog header > button { flex: none; }
+.ec-dialog .ec-form { grid-template-columns: minmax(0,1fr); }
+.ec-dialog .ec-form :is(label,details,.ec-form) { min-inline-size: 0; }
+.ec-dialog .ec-form label[hidden] { display: none !important; }
+.ec-dialog .ec-form :is(input:not([type=checkbox]):not([type=radio]),select,textarea) {
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+.ec-dialog input[type=file] { overflow: hidden; text-overflow: ellipsis; }
+.ec-dialog .ec-form details > summary { padding-block: 10px; cursor: pointer; }
+.ec-dialog .ec-form details[open] > .ec-form { margin-block: 8px; }
+.ec-dialog .ec-check input { flex: 0 0 20px; padding: 0; }
+.ec-dialog .ec-primary { max-inline-size: 100%; margin-block-start: 8px; }
+@media (max-width: 600px) {
+  dialog.ec-dialog { padding: 16px; }
+  .ec-dialog .ec-primary { inline-size: 100%; }
+}
