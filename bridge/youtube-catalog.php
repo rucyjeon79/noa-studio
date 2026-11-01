@@ -5,13 +5,13 @@ require_once __DIR__.'/sound-core.php';
 require_once __DIR__.'/music-readmodel.php';
 function ny_listener_catalog(PDO $db,bool $admin,array $edits=[]):array{
  $documents=[];
- foreach($db->query("SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','story','playlist') ORDER BY doc_key") as $r){$d=json_decode($r['payload'],true);if(is_array($d)){$d['_listenerKind']=$r['kind'];$documents[$r['doc_key']]=$d;}}
+ foreach($db->query("SELECT d.doc_key,d.kind,d.payload,UNIX_TIMESTAMP(h.changed_at) AS registered_at FROM noa_documents d LEFT JOIN noa_document_history h ON h.doc_key=d.doc_key AND h.revision=1 WHERE d.kind IN ('single','story','playlist') ORDER BY d.doc_key") as $r){$d=json_decode($r['payload'],true);if(is_array($d)){$d['_listenerKind']=$r['kind'];$d['_registeredAt']=(int)$r['registered_at'];$documents[$r['doc_key']]=$d;}}
  foreach(noa_music_recovered_catalog($db) as $key=>$d)if(!isset($documents[$key]))$documents[$key]=$d;
  $aliases=[];foreach($db->query("SELECT alias_key,entity_id FROM noa_catalog_aliases WHERE batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)") as $r)$aliases[$r['alias_key']][]=$r['entity_id'];
  $out=[];
  foreach($documents as $key=>$d){
   if(!noa_sound_visible($d,$admin))continue;$b=$d['body']??[];$ids=array_unique($aliases[$key]??[]);$identity=str_starts_with($key,'catalog:')?substr($key,8):(count($ids)===1?array_values($ids)[0]:$key);
-  $r=['key'=>$key,'orderKey'=>$identity,'title'=>(string)(($b['confirmedTitle']??'')?:($d['title']??$key)),'genre'=>(string)($d['genreId']??'other'),'ep'=>(string)($d['ep']??''),'act'=>(string)($d['act']??''),'kind'=>($d['_listenerKind']??'')==='playlist'?'playlist':'video','browsePriority'=>(str_starts_with($key,'catalog:')?0:2)+(!empty($d['packageSchema'])?1:0)];
+  $r=['registeredAt'=>(int)($d['_registeredAt']??0),'key'=>$key,'orderKey'=>$identity,'title'=>(string)(($b['confirmedTitle']??'')?:($d['title']??$key)),'genre'=>(string)($d['genreId']??'other'),'ep'=>(string)($d['ep']??''),'act'=>(string)($d['act']??''),'kind'=>($d['_listenerKind']??'')==='playlist'?'playlist':'video','browsePriority'=>(str_starts_with($key,'catalog:')?0:2)+(!empty($d['packageSchema'])?1:0)];
   $fields=function_exists('nie_fields')?nie_fields($edits,$r):[];foreach(['title','genre','collectionIds','canonicalRecordKey'] as $field)if(array_key_exists($field,$fields))$r[$field]=$fields[$field];$r['_browseSuno']=(string)($fields['sunoUrl']??(($b['sunoUrl']??'')?:($b['sunoShareUrl']??'')));$r['canonicalVideo']=ny_video_id((string)($fields['youtubeUrl']??$b['youtubeUrl']??''));if(!empty($d['customPlaylistId'])){if(!$r['canonicalVideo'])continue;$r['customPlaylistId']=(string)$d['customPlaylistId'];}$out[$identity]=$r;
  }
  return $out;
@@ -46,5 +46,5 @@ function ny_complete_catalog_rows(array $publicRows,array $videos,array $catalog
   $rows[]=array_merge($r,ny_coming_art($r['genre']),['key'=>'coming:'.hash('sha256','video:'.$id),'musicKey'=>$r['key'],'video'=>'','comingSoon'=>true,'preferredVideo'=>$r['canonicalVideo']===$id,'availability'=>'coming-soon']);
  }
  foreach($catalog as $identity=>$r){if($playlistScoped||isset($represented[$identity]))continue;$playable=ny_act_public_sources($videos,[$r]);if($playable){$id=array_key_first($playable);$rows[]=array_merge($r,['key'=>$id,'musicKey'=>$r['key'],'video'=>$id,'preferredVideo'=>true]);continue;}$rows[]=array_merge($r,ny_coming_art($r['genre']),['key'=>'coming:'.hash('sha256','song:'.$identity),'musicKey'=>$r['key'],'video'=>'','comingSoon'=>true,'preferredVideo'=>true,'availability'=>'coming-soon']);}
- foreach($rows as &$r){$source=$catalog[$r['orderKey']??'']??[];foreach(['browseIdentity','browseKeys','canonicalRecordKey','collectionIds'] as $field)if(array_key_exists($field,$source))$r[$field]=$source[$field];if(isset($source['browseIdentity']))$r['browsePriority']=$source['browsePriority']??0;unset($r['canonicalVideo'],$r['_browseSuno']);}unset($r);return $rows;
+ foreach($rows as &$r){$source=$catalog[$r['orderKey']??'']??[];foreach(['registeredAt','browseIdentity','browseKeys','canonicalRecordKey','collectionIds'] as $field)if(array_key_exists($field,$source))$r[$field]=$source[$field];if(isset($source['browseIdentity']))$r['browsePriority']=$source['browsePriority']??0;unset($r['canonicalVideo'],$r['_browseSuno']);}unset($r);return $rows;
 }
