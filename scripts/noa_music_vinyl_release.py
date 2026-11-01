@@ -5,6 +5,7 @@ release.FILES['noa-support.js']='deploy/noa-support.js'
 release.FILES['noa-engagement.js']='deploy/noa-engagement.js'
 release.FILES['noa-playcount.js']='deploy/noa-playcount.js'
 release.FILES['noa-bridge/support.php']='bridge/support.php'
+release.FILES['noa-ui.js']='deploy/noa-ui.js'
 release.NEW=set(release.FILES)
 if __name__=='__main__':
     import sys
