@@ -70,8 +70,10 @@
   const tracks=NoaBrowse.canonicalBrowseRows([...catalog.values()].filter(row=>row.kind!=='video'&&!row.video)).filter(row=>row.kind!=='playlist');
   const ready=new Set();
   for(const row of document.querySelectorAll('#songs .song[data-key]')){
-   const {key,audio,audioSha,jukeboxStatus}=row.dataset;
-   if(audio&&audioSha&&(!jukeboxStatus||jukeboxStatus==='ready'))ready.add(key);
+   // Count the published master, just as the track's PREMIUM badge does.
+   // A replacement upload has its own status while the old master remains playable.
+   const {key,audio,audioSha}=row.dataset;
+   if(audio&&audioSha)ready.add(key);
   }
   function mark(card,keys){
    if(!card||!keys.length)return;
@@ -152,6 +154,6 @@
  }
  new MutationObserver(schedule).observe(browse,{subtree:true,childList:true});
  const songs=document.getElementById('songs');
- if(songs)new MutationObserver(schedule).observe(songs,{subtree:true,attributes:true,attributeFilter:['data-audio','data-audio-sha','data-jukebox-status']});
+ if(songs)new MutationObserver(schedule).observe(songs,{subtree:true,attributes:true,attributeFilter:['data-audio','data-audio-sha']});
  sync();
 })();
