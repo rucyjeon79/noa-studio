@@ -20,7 +20,7 @@ jobs:
           php -l deploy/noa-app/jukebox/stream.php
           php tests/popularity/stream_tracking_test.php
           node --check deploy/noa-app/p0-player.js
-          node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs
+          node --test tests/jukebox/playback_recovery.test.cjs scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs
   deploy:
     if: github.event_name == 'push'
     needs: verify

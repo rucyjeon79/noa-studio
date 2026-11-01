@@ -25,7 +25,7 @@ test('seek, pause and background operate only on native audio',()=>{
  const p=openSound();p.run('select(buttons[1],true)');p.node('seek').oninput({target:{value:'250'}});assert.equal(p.audio.currentTime,25);p.node('pause-play').onclick();assert.equal(p.audio.paused,true);p.node('pause-play').onclick();assert.equal(p.audio.paused,false);p.events['noa-background']();assert.equal(p.audio.paused,true);
 });
 test('position persistence and playback failure remain honest',()=>{
- const p=openSound();p.run('select(buttons[1],false)');p.audio.currentTime=42;p.audioEvents.timeupdate();assert.equal(JSON.parse(p.storage.get('noa-playback-position')).seconds,42);p.audioEvents.error();assert.match(p.node('player-status').textContent,/파일 형식과 접근 권한/);assert.equal(p.node('seek-clock').textContent,'0:42 / 1:40');
+ const p=openSound();p.run('select(buttons[1],false)');p.audio.currentTime=42;p.audioEvents.timeupdate();assert.equal(JSON.parse(p.storage.get('noa-playback-session-v1')).seconds,42);p.audioEvents.error();assert.match(p.node('player-status').textContent,/파일 형식과 접근 권한/);assert.equal(p.node('seek-clock').textContent,'0:42 / 1:40');
 });
 
 test('recent audio activity starts on actual playing, never on selection, loading or failure',()=>{
@@ -45,3 +45,9 @@ test('pagehide captures precise position and subsequent unload pause cannot eras
 test('autoplay rejection offers one-tap continuation at restored position',async()=>{const p=openSound(checkpoint(),'reload');p.audio.play=()=>Promise.reject({name:'NotAllowedError'});p.audioEvents.loadedmetadata();await Promise.resolve();assert.equal(p.audio.currentTime,42);assert.match(p.node('player-status').textContent,/재생 버튼을 누르면 이어집니다/);});
 
 test('media reload abort does not erase the current playback intent',async()=>{const p=openSound();p.audio.play=()=>Promise.reject({name:'AbortError'});p.run('select(buttons[1],true)');await Promise.resolve();assert.equal(p.run('pendingAutoplay'),true);});
+
+test('fresh play ignores stale seek position and a reload checkpoint is applied only once',()=>{
+ const fresh=openSound({'noa-playback-position':JSON.stringify({key:'two',seconds:17})});
+ fresh.run('select(buttons[1],true)');fresh.audioEvents.loadedmetadata();assert.equal(fresh.audio.currentTime,0);
+ const restored=openSound(checkpoint(),'reload');restored.audioEvents.loadedmetadata();restored.audio.currentTime=44;restored.audioEvents.loadedmetadata();assert.equal(restored.audio.currentTime,44);
+});
