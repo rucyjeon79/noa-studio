@@ -20,4 +20,4 @@ foreach($records??[] as $r){$id=$r['catalogSongId']??'';if(!isset($groups[$id]))
  $value=(int)($counts['plays'][$r['key']]??0);if($value!==(int)$groups[$id])$errors++;
  if(!isset($seen[$id]))$examples[]=[$r['title'],$value];$seen[$id]=$value;
 }
-header('Content-Type: application/json');echo json_encode(['ok'=>is_array($records)&&is_array($counts['plays']??null)&&!$errors&&count($seen)===count($groups),'expected'=>array_sum($groups),'rendered'=>array_sum($seen),'unmatched'=>count(array_diff_key($groups,$seen)),'errors'=>$errors,'rows'=>count($records??[]),'examples'=>array_slice($examples,0,5)],JSON_THROW_ON_ERROR);
+header('Content-Type: application/json');echo json_encode(['html'=>$html,'ok'=>is_array($records)&&is_array($counts['plays']??null)&&!$errors&&count($seen)===count($groups),'expected'=>array_sum($groups),'rendered'=>array_sum($seen),'unmatched'=>count(array_diff_key($groups,$seen)),'errors'=>$errors,'rows'=>count($records??[]),'examples'=>array_slice($examples,0,5)],JSON_THROW_ON_ERROR);

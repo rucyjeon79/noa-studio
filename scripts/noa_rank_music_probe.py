@@ -17,6 +17,11 @@ def main():
     with s.open(remote,'rb') as f:assert f.read()==code
     req=urllib.request.Request('https://noastudio.ai.kr/noa-bridge/'+name,data=b'{}',headers={'Content-Type':'application/json','X-NOA-Control':token})
     with urllib.request.build_opener(NoRedirect()).open(req,timeout=45) as r:data=json.load(r)
+    import subprocess,tempfile
+    with tempfile.TemporaryDirectory() as folder:
+     html=Path(folder)/'music.html'
+     html.write_text(data.pop('html'))
+     subprocess.run(['node','scripts/noa_rank_music_probe.mjs',str(html)],check=True)
     print('RANK_MUSIC_RECEIPT',json.dumps(data,ensure_ascii=False),flush=True)
     assert data['ok'], 'music count mismatch'
    finally:

@@ -13,6 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python -m pip install 'paramiko>=3,<5'
+      - run: npm install --no-save --ignore-scripts --package-lock=false --prefix "$RUNNER_TEMP/rank-browser" playwright@1.56.1 && ln -s "$RUNNER_TEMP/rank-browser/node_modules" scripts/node_modules
       - run: python scripts/noa_rank_music_probe.py
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
