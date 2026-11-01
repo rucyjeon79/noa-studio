@@ -26,7 +26,7 @@ try{
   // Follow a content link inside the retained view, then browser back.
   await page.frameLocator('#noa-shell-view').locator('a[href^="/bbs/board.php"]').click();
   await page.waitForFunction(()=>location.pathname==='/bbs/board.php');
-  await page.goBack();
+  await page.evaluate(()=>history.back());
   await page.waitForFunction(()=>location.pathname==='/');
   assert(await page.evaluate(()=>window.originalAudio===document.querySelector('audio')&&!window.originalAudio.paused));
   // MY entry and an explicit _self link must retain the same engine.
