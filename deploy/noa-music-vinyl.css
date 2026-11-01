@@ -105,8 +105,10 @@ body.noa-record-room #songs .noa-amt-award{margin-inline-start:6px}
 
 /* Foil corner stays inside the genre photograph, above the caption. */
 #music-browse [data-browse-level="2"] .noa-browse-card[data-lp-complete="true"]{position:relative;isolation:isolate}
-#music-browse [data-browse-level="2"] .noa-browse-card[data-lp-complete="true"]>img{filter:sepia(.21) saturate(.94)}
+#music-browse [data-browse-level="2"] .noa-browse-card[data-lp-complete="true"]>img{box-sizing:border-box;border:3px solid #dec796;border-image:linear-gradient(120deg,#a07b41,#fff0c5 34%,#94713e 62%,#e7cb94) 1;filter:sepia(.42) saturate(.93) contrast(1.05)}
 #music-browse [data-browse-level="2"] .noa-browse-card[data-lp-complete="true"]::after{
  content:"";position:absolute;z-index:1;inset:0 0 auto auto;width:28%;aspect-ratio:1;pointer-events:none;
  clip-path:polygon(0 0,100% 0,100% 100%);background:repeating-linear-gradient(135deg,transparent 0 3px,#fff5 3px 4px),linear-gradient(135deg,#8c6838,#f1dcb1 48%,#a27e49 75%,#e2c695);
 }
+
+#music-browse .noa-inline-act>.noa-browse-card[data-lp-complete="true"]>img{box-sizing:border-box;border:2px solid #d5b77e;filter:sepia(.23) contrast(1.04)}

@@ -64,6 +64,7 @@
   ['story:your-story:6d2ff36af19c40d596c51002','결선 참가곡']
  ]);
  // Mirror the browse tree's canonical membership, including tracks in closed groups.
+ const showMasterCounts=!!document.querySelector('meta[name="noa-jukebox-csrf"]');
  function syncPressings(buttons){
   if(typeof records==='undefined'||typeof collections==='undefined'||!window.NoaBrowse)return;
   const catalog=new Map([...collections,...records].map(row=>[row.key,row]));
@@ -73,8 +74,16 @@
    // Count the published master, just as the track's PREMIUM badge does.
    // A replacement upload has its own status while the old master remains playable.
    const {key,audio,audioSha}=row.dataset;
-   if(audio&&audioSha)ready.add(key);
+   if(audio&&audioSha){ready.add(key);ready.add(row.dataset.jukeboxKey||key);}
   }
+  // The progress renderer can confirm a master before the raw song attributes refresh.
+  for(const badge of document.querySelectorAll('#songs .song .noa-premium-badge,#music-browse .noa-inline-song-row .noa-premium-badge')){
+   const row=badge.closest('.noa-inline-song-row,.song');
+   ready.add(row.dataset.inlineKey||row.dataset.key);
+  }
+  const identity=row=>String(row.browseIdentity||row.canonicalRecordKey||row.orderKey||row.musicKey||row.key).replace(/^catalog:/,'');
+  const mastered=new Set([...catalog.values()].filter(row=>ready.has(String(row.key))).map(identity));
+  for(const row of tracks)if(mastered.has(identity(row)))ready.add(String(row.key));
   function mark(card,keys){
    if(!card||!keys.length)return;
    const count=keys.filter(key=>ready.has(String(key))).length;
@@ -82,6 +91,7 @@
    if(complete&&card.dataset.lpComplete==='false')card.classList.add('lp-new-pressing');
    if(!complete)card.classList.remove('lp-new-pressing');
    card.dataset.lpComplete=String(complete);
+   if(!showMasterCounts)return;
    const caption=card.querySelector(':scope>span:last-child small');
    if(!caption)return;
    let tally=caption.querySelector('.lp-tally');
@@ -160,6 +170,6 @@
  }
  new MutationObserver(schedule).observe(browse,{subtree:true,childList:true});
  const songs=document.getElementById('songs');
- if(songs)new MutationObserver(schedule).observe(songs,{subtree:true,attributes:true,attributeFilter:['data-audio','data-audio-sha']});
+ if(songs)new MutationObserver(schedule).observe(songs,{subtree:true,childList:true,attributes:true,attributeFilter:['data-audio','data-audio-sha']});
  sync();
 })();

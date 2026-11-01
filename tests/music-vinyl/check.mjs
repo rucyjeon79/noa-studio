@@ -22,9 +22,9 @@ try{for(const width of [320,390,1280]){
   const fixture=html.replace('<div id="songs" hidden>', '<div id="songs" hidden>'+songs)
    .replace('<div id="songs">','<div id="songs">'+songs)
    .replace('const tree=','const records='+JSON.stringify(rows)+',collections=[];const tree=').replace('rows:[]','rows:records');
-  await genrePage.route('**/genre-fixture?*',route=>route.fulfill({contentType:'text/html',body:fixture}));
+  await genrePage.route('**/genre-fixture?*',route=>route.fulfill({contentType:'text/html',body:route.request().url().includes('qaAdmin')?fixture.replace('<meta charset', '<meta name="noa-jukebox-csrf"><meta charset'):fixture}));
   try{
-   await genrePage.goto('http://127.0.0.1:'+server.address().port+'/genre-fixture?group=original&genre=kpop-original');
+   await genrePage.goto('http://127.0.0.1:'+server.address().port+'/genre-fixture?group=original&genre=kpop-original&qaAdmin=1');
    const cards=genrePage.locator('[data-browse-level="2"] .noa-browse-card');
    await cards.first().getByText('40/40곡 완료').waitFor();
    assert.equal(await cards.first().getAttribute('data-lp-complete'),'true');
@@ -33,6 +33,14 @@ try{for(const width of [320,390,1280]){
    await genrePage.locator('#songs [data-key="qa-0"]').evaluate(n=>n.removeAttribute('data-audio-sha'));
    await cards.first().getByText('39/40곡 완료').waitFor();
    assert.equal(await cards.first().getAttribute('data-lp-complete'),'false');
+   await genrePage.locator('.noa-inline-song-row[data-inline-key="qa-0"] .noa-inline-title').first().evaluate(el=>{
+    const badge=document.createElement('span');badge.className='noa-premium-badge';el.append(badge);
+   });
+   await cards.first().getByText('40/40곡 완료').waitFor();
+   await genrePage.goto('http://127.0.0.1:'+server.address().port+'/genre-fixture?group=original&genre=kpop-original');
+   await genrePage.locator('[data-browse-level="2"] [data-lp-complete="true"]').waitFor();
+   assert.equal(await genrePage.locator('.lp-tally').count(),0);
+   assert.equal(await cards.first().locator('img').evaluate(n=>getComputedStyle(n).borderTopWidth),'3px');
   }finally{await genrePage.close();}
  }
  const editions=p.locator('.lp-edition');await editions.first().waitFor();assert.equal(await editions.count(),4);
