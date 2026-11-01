@@ -76,6 +76,14 @@ function scan(){scheduled=false;compactRows();
  for(const row of document.querySelectorAll('.noa-notice[id^="noa-notice-"]')){const id=row.id.slice('noa-notice-'.length);if(/^\d+$/.test(id))mount(row,{type:'board',key:'notice:'+id});}
  if(context.native)mount(document.querySelector('#bo_v'),context.native);
 }
-new MutationObserver(records=>{if(scheduled||!records.some(r=>r.type==='childList'&&[...r.addedNodes].some(n=>n.nodeType===1&&!n.closest?.('.noa-engagement,.noa-comments'))))return;scheduled=true;requestAnimationFrame(scan);}).observe(document.body,{subtree:true,childList:true});scan();
+new MutationObserver(records=>{
+ if(scheduled)return;
+ const changed=records.some(record=>{
+  const added=Array.from(record.addedNodes).some(node=>node.nodeType===1&&!node.closest('.noa-engagement,.noa-comments'));
+  const removedTool=Array.from(record.removedNodes).some(node=>node.nodeType===1&&node.matches('.noa-direct-action'));
+  return added||removedTool;
+ });
+ if(changed){scheduled=true;requestAnimationFrame(scan);}
+}).observe(document.body,{subtree:true,childList:true});scan();
 })();
 

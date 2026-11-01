@@ -332,3 +332,35 @@ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline
 html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-direct-action>svg{width:18px;height:18px}
 html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-direct-action>span{display:none!important}
 html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-edit-form{grid-column:1/-1}
+
+/* Align the catalogue edges, then use the same text and control metrics in each track. */
+body.noa-record-room #music-browse .lp-edition{
+ display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;
+}
+body.noa-record-room #music-browse .lp-edition>.lp-edition-art{flex:none}
+body.noa-record-room #music-browse .lp-edition>span:last-child{
+ display:flex;flex:1;flex-direction:column;align-items:flex-start;text-align:start;
+}
+body.noa-record-room #music-browse .lp-edition small{margin-block-start:auto;padding-block-start:4px}
+body.noa-record-room #music-browse .lp-edition .lp-tally{margin-inline-start:0}
+body.noa-record-room #music-browse [data-browse-level="2"] .noa-browse-card>span{box-sizing:border-box;width:100%;text-align:start}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-act>.noa-collection-tools{
+ align-self:center;align-items:center;justify-items:center;
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-act>.noa-browse-card>img{align-self:center}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .noa-premium-badge{top:7px}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-inline-song>.noa-inline-title{
+ display:grid;grid-template-columns:minmax(0,1fr);align-content:center;justify-content:stretch;
+ align-self:end;min-height:0;height:auto;white-space:normal;overflow:visible;row-gap:4px;
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .noa-track-name{
+ grid-column:1;grid-row:1;font-size:16px;line-height:24px;white-space:normal;overflow-wrap:anywhere;
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .noa-inline-title:has(.noa-original-title)>.noa-amt-award{grid-column:1;grid-row:3}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-engagement,
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-engagement>button{
+ box-sizing:border-box;height:44px;min-height:44px;align-items:center;
+}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-engagement>button{
+ display:flex;justify-content:center;flex-direction:column;padding:0;gap:2px;
+}
