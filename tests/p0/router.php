@@ -52,6 +52,6 @@ if(in_array($path,['/noa-music.php','/noa-youtube.php'])){
  }
  $offset=strpos($src,$path==='/noa-youtube.php'?'function nye(':'?><!doctype html>');eval(substr($src,$offset));return;
 }
-if(in_array($path,['/','/index.php','/noa-my.php','/noa-world.php','/noa-settings.php'])){echo '<!doctype html><html><head><title>App view</title><link rel="stylesheet" href="/noa-ui.css"></head><body class="noa-page"><main><h1>App view</h1><a href="/noa-music.php">음원 돌아가기</a><a href="/noa-youtube.php">영상으로</a></main></body></html>';return;}
+if(in_array($path,['/','/index.php','/noa-my.php','/noa-world.php','/noa-settings.php','/noa-lounge.php','/noa-shop.php','/noa-vip.php','/bbs/board.php'])){echo '<!doctype html><html><head><title>App view</title><link rel="stylesheet" href="/noa-ui.css"></head><body class="noa-page"><main><h1>App view</h1><a href="/noa-music.php">음원 돌아가기</a><a href="/noa-youtube.php">영상으로</a><a href="/bbs/board.php?bo_table=music">게시판</a></main></body></html>';return;}
 $file=$root.'/deploy'.$path;if(is_file($file)){header('Content-Type: '.match(pathinfo($file,PATHINFO_EXTENSION)){'js'=>'text/javascript','css'=>'text/css','json'=>'application/json',default=>'application/octet-stream'});readfile($file);return;}http_response_code(404);
 
