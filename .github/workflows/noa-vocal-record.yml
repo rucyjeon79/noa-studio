@@ -1,7 +1,7 @@
 name: NOA song vocal and record audit
 on:
   pull_request:
-    paths: &paths ['scripts/noa_vocal_release.py','.github/workflows/noa-vocal-record.yml']
+    paths: &paths ['scripts/noa_vocal_release.py','scripts/noa_vocal_audit.php','.github/workflows/noa-vocal-record.yml']
   push:
     branches: [main]
     paths: *paths
