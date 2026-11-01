@@ -175,10 +175,14 @@
  function fitTrackName(viewport){
   const text=viewport.firstElementChild;
   if(!text||!viewport.clientWidth)return;
-  const overflow=Math.max(0,text.offsetWidth-viewport.clientWidth);
-  viewport.classList.toggle('lp-title-overflow',overflow>0);
-  viewport.style.setProperty('--title-offset',-overflow+'px');
-  viewport.style.setProperty('--title-duration',Math.max(4,overflow/26+2)+'s');
+  const textWidth=text.getBoundingClientRect().width;
+  const overflows=textWidth>viewport.clientWidth+0.5;
+  viewport.classList.toggle('lp-title-overflow',overflows);
+  if(!overflows)return;
+  const gap=28;
+  text.dataset.repeat=text.textContent;
+  viewport.style.setProperty('--title-gap',gap+'px');
+  viewport.style.setProperty('--title-duration',(textWidth+gap)/32+'s');
  }
  const titleSizes=new ResizeObserver(entries=>{
   const viewports=new Set(entries.map(({target})=>target.closest('.noa-track-name')));

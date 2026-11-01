@@ -377,13 +377,14 @@ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline
 html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .noa-track-name{
  width:100%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:clip;
 }
-#music-browse .lp-title-text{display:block;width:max-content;white-space:nowrap}
+#music-browse .lp-title-text{position:relative;display:block;width:max-content;max-width:none;white-space:nowrap}
 @keyframes noa-title-pan{
- 0%,15%{transform:translateX(0)}
- 85%,100%{transform:translateX(var(--title-offset))}
+ from{transform:translateX(0)}
+ to{transform:translateX(calc(-100% - var(--title-gap)))}
 }
 @media(prefers-reduced-motion:no-preference){
- #music-browse .lp-title-overflow>.lp-title-text{animation:noa-title-pan var(--title-duration) linear infinite alternate}
+ #music-browse .lp-title-overflow>.lp-title-text{animation:noa-title-pan var(--title-duration) linear infinite}
+ #music-browse .lp-title-overflow>.lp-title-text::after{content:attr(data-repeat);content:attr(data-repeat) / "";position:absolute;left:calc(100% + var(--title-gap));top:0;white-space:nowrap}
 }
 @media(prefers-reduced-motion:reduce){
  html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .noa-track-name.lp-title-overflow{overflow-x:auto;scrollbar-width:none}

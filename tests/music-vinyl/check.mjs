@@ -83,6 +83,12 @@ try{for(const width of [320,390,1280]){
    return box.height===24 && Math.abs(box.left-credit.left)<1 && credit.top>=box.bottom && credit.top-box.bottom<=6
     && getComputedStyle(n.firstElementChild).animationName==='noa-title-pan';
   }),'Long title pans on one line above its aligned credit');
+  const movingTitle=trackName.locator('.lp-title-text');
+  const startX=await movingTitle.evaluate(n=>n.getBoundingClientRect().left);
+  await mismatchPage.waitForFunction(x=>{
+   const n=document.querySelector('[data-inline-key="translated"] .lp-title-text');
+   return n&&n.getBoundingClientRect().left<x-8;
+  },startX,{timeout:1800});
   await mismatchPage.emulateMedia({reducedMotion:'reduce'});
   assert.equal(await trackName.locator('.lp-title-text').evaluate(n=>getComputedStyle(n).animationName),'none');
   await trackName.evaluate(n=>n.textContent='봄');
