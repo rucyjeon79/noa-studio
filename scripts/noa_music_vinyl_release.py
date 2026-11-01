@@ -1,6 +1,7 @@
 """Publish only the home collection renderer and its stylesheet."""
 import noa_ainoa_deploy as release
 release.FILES={'noa-music-vinyl.css':'deploy/noa-music-vinyl.css','noa-music-vinyl.js':'deploy/noa-music-vinyl.js','extend/zz.noa-music-vinyl.php':'deploy/noa-music-vinyl.extend.php'}
+release.FILES['noa-support.js']='deploy/noa-support.js'
 release.NEW=set(release.FILES)
 if __name__=='__main__':
     import sys

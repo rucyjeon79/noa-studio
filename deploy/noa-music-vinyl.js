@@ -118,7 +118,20 @@
    mark(section.querySelector(':scope>.noa-browse-card'),keys);
   }
  }
+ const actionCounts=JSON.parse(document.getElementById('noa-track-counts')?.textContent||'{}');
+ function showActionCounts(){
+  for(const row of browse.querySelectorAll('.noa-inline-song-row[data-inline-key]')){
+   for(const [action,metric] of [['재생','plays'],['다운로드','downloads']]){
+    const label=row.querySelector('.noa-song-actions button[aria-label$=" '+action+'"]>span');
+    if(!label)continue;
+    const totals=actionCounts[metric];
+    const count=totals==null?'—':Number(totals[row.dataset.inlineKey]||0).toLocaleString('ko-KR');
+    if(label.textContent!==count)label.textContent=count;
+   }
+  }
+ }
  function sync(){
+  showActionCounts();
   pending=false;
   const buttons=browse.querySelectorAll('[data-browse-level="1"] .noa-browse-grid>.noa-browse-card');
   buttons.forEach((btn,i)=>{
