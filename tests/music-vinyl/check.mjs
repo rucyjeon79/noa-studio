@@ -75,8 +75,10 @@ try{for(const width of [320,390,1280]){
   assert(await title.evaluate(n=>{const box=x=>n.querySelector(x).getBoundingClientRect();return box('.noa-original-title').top>=box('.noa-track-name').bottom&&box('.noa-premium-badge').left>=box('.noa-track-name').right-1;}));
   assert(await mismatchPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await mismatchPage.screenshot({path:'music-vinyl-proof/original-title-'+width+'.png'});
+  const badgeRight=await title.locator('.noa-premium-badge').evaluate(n=>n.getBoundingClientRect().right);
   await mismatchPage.evaluate(()=>{records[0].title='하루의 끝에';document.querySelector('.noa-track-name').textContent='하루의 끝에';});
   await mismatchPage.waitForFunction(()=>!document.querySelector('.noa-original-title'));
+  assert.equal(await title.locator('.noa-premium-badge').evaluate(n=>n.getBoundingClientRect().right),badgeRight,'Premium position must not depend on original-title credit');
   for(const [group,genre,count] of [['original','kpop-original',0],['ep','joseon-ballad',1],['cover','cover-reborn',0]]){
    await mismatchPage.goto('http://127.0.0.1:'+server.address().port+'/mismatch?group='+group+'&genre='+genre+'&act=1');
    await mismatchPage.locator('.noa-inline-song').first().waitFor({state:'attached'});
@@ -128,7 +130,7 @@ try{for(const width of [320,390,1280]){
    const n=box('.noa-track-name'),p=box('.noa-premium-badge'),a=box('.noa-amt-award');
    return [p.left-n.right,p.right<=title.getBoundingClientRect().right+1,a.top>=n.bottom-1];
   });
-  assert(geometry[0]>=0&&geometry[0]<=8&&geometry[1]&&geometry[2],'Premium stays beside the title; award stays below');
+  assert(geometry[0]>=0&&geometry[0]<=8&&geometry[1]&&geometry[2],'Premium uses the right column; award stays below');
  }
  await p.evaluate(()=>document.querySelector('audio').play());
  await p.locator('.lp-dock-art.lp-running').waitFor();

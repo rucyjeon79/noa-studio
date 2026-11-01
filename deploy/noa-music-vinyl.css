@@ -137,11 +137,11 @@ body.noa-record-room #songs .noa-amt-award{margin-inline-start:6px}
 #music-browse [data-browse-level="2"] .lp-tally{margin-inline-start:0}
 
 /* Keep the original credit on its own line, outside the title / PREMIUM row. */
-html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song>.noa-inline-title:has(.noa-original-title){
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song>.noa-inline-title:is(:has(.noa-original-title),:has(.noa-premium-badge)){
  display:grid;grid-template-columns:minmax(0,1fr) max-content;justify-content:stretch;
  align-content:start;align-items:start;align-self:start;column-gap:8px;row-gap:6px;height:auto;white-space:normal;
 }
-body.noa-record-room #music-browse .noa-inline-title:has(.noa-original-title)>.noa-premium-badge{grid-column:2;grid-row:1}
+body.noa-record-room #music-browse .noa-inline-title:is(:has(.noa-original-title),:has(.noa-premium-badge))>.noa-premium-badge{grid-column:2;grid-row:1}
 body.noa-record-room .noa-original-title{
  display:flex;align-items:baseline;gap:6px;grid-column:1/-1;grid-row:2;
  min-width:0;width:fit-content;max-width:100%;box-sizing:border-box;justify-self:start;
@@ -152,10 +152,10 @@ body.noa-record-room .noa-original-title{
 body.noa-record-room .noa-title-mismatch-icon{flex:none;font-size:14px;font-weight:600;color:var(--noa-accent)}
 body.noa-record-room #songs .noa-original-title{margin-top:4px}
 @media(max-width:899px){
- html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:has(.noa-original-title){grid-template-rows:minmax(44px,auto) 48px}
+ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:is(:has(.noa-original-title),:has(.noa-premium-badge)){grid-template-rows:minmax(44px,auto) 48px}
 }
 
 /* Anchor artwork and badges to the first title line, regardless of title length. */
-html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-title:has(.noa-original-title)>.noa-track-name{white-space:normal;word-break:normal;overflow-wrap:anywhere}
-html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-title:has(.noa-original-title)>.noa-premium-badge{align-self:start;justify-self:end}
-html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:has(.noa-original-title)>.noa-inline-song>:is(.noa-inline-cover,.lp-track-art){align-self:start;grid-row:1}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-title:is(:has(.noa-original-title),:has(.noa-premium-badge))>.noa-track-name{white-space:normal;word-break:normal;overflow-wrap:anywhere}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-title:is(:has(.noa-original-title),:has(.noa-premium-badge))>.noa-premium-badge{align-self:start;justify-self:end}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row:is(:has(.noa-original-title),:has(.noa-premium-badge))>.noa-inline-song>:is(.noa-inline-cover,.lp-track-art){align-self:start;grid-row:1}
