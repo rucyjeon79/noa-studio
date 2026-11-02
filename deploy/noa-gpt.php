@@ -62,12 +62,18 @@ try {
     $valid = ($job['expires'] ?? 0) > time();
     $out = [];
     $dispatchToken = trim((string)getenv('NOA_GITHUB_DISPATCH_TOKEN'));
+    if ($dispatchToken === '') $dispatchToken = (string)($state['dispatchToken'] ?? '');
     $hosted = $dispatchToken !== '' && isset($state['workerHash']);
     $workerReady = $hosted || ($state['workerSeen'] ?? 0) > time()-45;
     switch ($op) {
     case 'workerDisable':
         unset($state['workerHash'],$state['workerSeen']);
         if (!empty($job['worker'])) unset($state['job']);
+        break;
+    case 'dispatchSetup':
+        $token = $body['token'] ?? null;
+        if (!is_string($token) || !preg_match('/^github_pat_[A-Za-z0-9_]{40,200}$/D',$token)) reply(400,['error'=>'invalid_token']);
+        $state['dispatchToken']=$token;
         break;
     case 'workerPair':
         $key = bin2hex(random_bytes(32));
