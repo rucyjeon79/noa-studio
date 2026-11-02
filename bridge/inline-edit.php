@@ -71,6 +71,7 @@ function nie_resolve(PDO $db,array $input):array{
   if($source==='youtube'){
    if(!preg_match('/^[A-Za-z0-9_-]{11}$/D',$key))throw new InvalidArgumentException('invalid_video');
    require_once __DIR__.'/youtube-store.php';$run=ny_latest($db);$videos=$run?ny_videos($db,$run):[];$video=$videos[$key]??null;if(!$video)throw new DomainException('not_found');
+   if(in_array($video['match']['status']??'',['conflict','rejected'],true))throw new DomainException('ambiguous_song');
    $sid=$video['match']['songId']??null;$keyForIdentity=$sid?'catalog:'.$sid:'youtube:'.$key;
   }else $keyForIdentity=$key;
   $id=nie_identity($db,$keyForIdentity);
