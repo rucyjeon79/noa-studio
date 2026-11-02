@@ -115,7 +115,7 @@ try {
         break;
     case 'progress':
         if (!$valid || ($body['id'] ?? '') !== $job['id']) reply(409,['error'=>'task_replaced']);
-        $out=['saved'=>isset($job['saved']), 'failed'=>!empty($job['failed']) || (!empty($job['worker']) && time() > $job['expires']-3600+(!empty($job['hosted']) ? 1200 : 360) && !isset($job['saved']))];
+        $out=['revision'=>$job['saved']??null,'saved'=>isset($job['saved']), 'failed'=>!empty($job['failed']) || (!empty($job['worker']) && time() > $job['expires']-3600+(!empty($job['hosted']) ? 1200 : 360) && !isset($job['saved']))];
         break;
     case 'start':
         $useWorker = ($body['worker'] ?? false) === true;
@@ -123,12 +123,26 @@ try {
         if ((!$useWorker && empty($state['url']) && empty($state['pluginEnabled'])) || ($state['owner'] ?? '') !== $member['mb_id']) reply(409,['error'=>'setup_required']);
         $selector = $body['selector'] ?? [];
         $field = $body['field'] ?? '';
-        if (($selector['type'] ?? '') !== 'song' || !in_array($field,TARGETS,true)) reply(400,['error'=>'invalid_target']);
+        if (($selector['type'] ?? '') !== 'song' || !(in_array($field,TARGETS,true) || ($field==='publishSet' && $useWorker))) reply(400,['error'=>'invalid_target']);
         $record = nie_resolve(noa_bridge_pdo(), $selector);
         if ($record['revision'] !== ($body['revision'] ?? null) || !empty($record['payload']['_noaTrash'])) reply(409,['error'=>'revision_conflict']);
         if (trim((string)($record['fields'][$field] ?? '')) !== '' && ($body['replace'] ?? false) !== true) reply(409,['error'=>'overwrite_confirmation']);
-        $state['job'] = ['hosted'=>$hosted && $useWorker,'worker'=>$useWorker,'id'=>bin2hex(random_bytes(16)),'selector'=>$selector,'key'=>$record['writeKey'],'revision'=>$record['revision'],'field'=>$field,'expires'=>time()+3600];
-        $out = ['worker'=>$useWorker,'plugin'=>!empty($state['pluginEnabled']),'url'=>$state['url'] ?? '', 'id'=>$state['job']['id']];
+        $targets=[];
+        if ($field==='publishSet') {
+            $requested=$body['targets']??null;
+            $allowed=['geminiPrompt'=>'thumb','youtubeTitle'=>'ytTitle','description'=>'ytDesc','communityPost'=>'letter'];
+            if (!is_array($requested)||!array_is_list($requested)||!$requested||count($requested)>4) reply(400,['error'=>'invalid_targets']);
+            $rules=noa_generation_rules(noa_bridge_pdo(),(string)$record['context']['genre'],(string)($record['payload']['ownerId']??''));
+            foreach ($requested as $k) {
+                if (!is_string($k)||!isset($allowed[$k])||in_array($k,$targets,true)) reply(400,['error'=>'invalid_targets']);
+                if (($rules['genre']['output'][$allowed[$k]]??true)===false || ($k==='communityPost' && ($rules['genre']['community']??true)===false)) continue;
+                if (trim((string)($record['fields'][$k]??''))!=='' && ($body['replace']??false)!==true) reply(409,['error'=>'overwrite_confirmation']);
+                $targets[]=$k;
+            }
+            if (!$targets) reply(409,['error'=>'no_enabled_fields']);
+        }
+        $state['job'] = ['targets'=>$targets,'hosted'=>$hosted && $useWorker,'worker'=>$useWorker,'id'=>bin2hex(random_bytes(16)),'selector'=>$selector,'key'=>$record['writeKey'],'revision'=>$record['revision'],'field'=>$field,'expires'=>time()+3600];
+        $out = ['targets'=>$targets,'worker'=>$useWorker,'plugin'=>!empty($state['pluginEnabled']),'url'=>$state['url'] ?? '', 'id'=>$state['job']['id']];
         break;
     case 'read':
     case 'save':
@@ -142,7 +156,16 @@ try {
         if ($op==='save') {
             $text = $body['text'] ?? null;
             if (!is_string($text) || trim($text)==='' || strlen($text)>48000 || ($job['field']==='youtubeTitle' && mb_strlen($text)>100)) reply(400,['error'=>'invalid_text']);
-            noa_check_prompt_language($job['field'],$text);
+            $patch=[$job['field']=>$text];
+            if ($job['field']==='publishSet') {
+                $patch=json_decode($text,true,16,JSON_THROW_ON_ERROR);
+                if (!is_array($patch)||count($patch)!==count($job['targets'])) reply(400,['error'=>'invalid_publish_set']);
+                foreach ($job['targets'] as $k) {
+                    $v=$patch[$k]??null;
+                    if (!is_string($v)||trim($v)===''||mb_strlen($v)>($k==='youtubeTitle'?100:($k==='geminiPrompt'?1000:20000))) reply(400,['error'=>'invalid_publish_set']);
+                    noa_check_prompt_language($k,$v);
+                }
+            } else noa_check_prompt_language($job['field'],$text);
             $digest = hash('sha256', json_encode([$job['key'],$job['field'],$text], JSON_THROW_ON_ERROR));
             $id = substr($job['id'],0,8).'-'.substr($job['id'],8,4).'-'.substr($job['id'],12,4).'-'.substr($job['id'],16,4).'-'.substr($job['id'],20);
             $check = $db->prepare('SELECT request_hash, revision FROM noa_request_log WHERE request_id=? FOR UPDATE');
@@ -152,7 +175,7 @@ try {
                 $next = (int)$prior['revision'];
             } else {
                 if ($record['revision'] !== $job['revision']) reply(409,['error'=>'revision_conflict']);
-                $payload = nup_patch($record['payload'],$record['kind'],[$job['field']=>$text]);
+                $payload = nup_patch($record['payload'],$record['kind'],$patch);
                 nup_validate_classification($db,$job['key'],$record['payload'],$payload);
                 $next = nup_store($db,$job['key'],$record['kind'],$payload,$job['revision'],$state['owner']);
                 $db->prepare('INSERT INTO noa_request_log(request_id,doc_key,request_hash,revision) VALUES(?,?,?,?)')->execute([$id,$job['key'],$digest,$next]);
@@ -168,7 +191,7 @@ try {
             $rules = noa_generation_rules($db,$genre,(string)($record['payload']['ownerId'] ?? ''));
             $out = ['id'=>$job['id'],'field'=>$job['field'],'song'=>$context,'packageType'=>$record['packageType'],
                 'genre'=>$genre,'rules'=>$rules,'originalReadOnly'=>$record['original'] ?? null,
-                'generationInstructions'=>noa_field_guidance($job['field'])];
+                'generationInstructions'=>$job['field']==='publishSet' ? 'Return a JSON object only, no markdown. Exactly these fields: '.json_encode(array_combine($job['targets'],array_map('noa_field_guidance',$job['targets'])),JSON_UNESCAPED_UNICODE).'. Gemini instructions in English, max 1000 characters; youtubeTitle max 100.' : noa_field_guidance($job['field'])];
         }
         break;
     default: reply(404,['error'=>'unknown_operation']);

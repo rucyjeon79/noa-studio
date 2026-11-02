@@ -48,7 +48,7 @@ with tempfile.TemporaryDirectory() as tmp:
     'revision'=>(int)$r['revision'],'packageType'=>'original'];}
     function nup_patch($old,$kind,$patch){return $patch;}
     function nup_validate_classification(...$args){}
-    function nup_store($db,$key,$kind,$p,$rev,$actor){$q=$db->prepare('UPDATE song SET title=?,revision=revision+1 WHERE revision=?');$q->execute([$p['title'],$rev]);if(!$q->rowCount())throw new DomainException('revision_conflict');return $rev+1;}
+    function nup_store($db,$key,$kind,$p,$rev,$actor){$q=$db->prepare('UPDATE song SET title=COALESCE(?,title),revision=revision+1 WHERE revision=?');$q->execute([$p['title']??null,$rev]);if(!$q->rowCount())throw new DomainException('revision_conflict');return $rev+1;}
     function nup_snapshot(...$args){}
     """)
     with socket.socket() as s:
@@ -120,6 +120,13 @@ with tempfile.TemporaryDirectory() as tmp:
         call('workerPoll',{'id':'a'*32},key=worker,status=409)
         assert call('workerPoll',{'id':hosted['id']},key=worker)['id']==hosted['id']
         assert call('save',{'id':hosted['id'],'text':'닷홈 요청'},key=worker)['saved']
+        batch=call('start',{**one_tap,'revision':4,'field':'publishSet','targets':['description','youtubeTitle']},admin=True)
+        assert call('workerPoll',{'id':batch['id']},key=worker)['id']==batch['id']
+        assert 'youtubeTitle' in call('read',key=worker)['generationInstructions']
+        call('save',{'id':batch['id'],'text':'{"description":"설명"}'},key=worker,status=400)
+        result={'id':batch['id'],'text':'{"description":"설명","youtubeTitle":"제목"}'}
+        assert call('save',result,key=worker)['revision']==5
+        assert call('progress',{'id':batch['id']},admin=True)['revision']==5
         call('workerDisable',{},admin=True)
         call('workerPoll',{},key=worker,status=401)
         print('PASS: authenticated single-field save, overwrite consent, stale revision, idempotent retry and key revocation')
