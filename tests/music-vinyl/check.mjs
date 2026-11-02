@@ -102,6 +102,16 @@ try{for(const width of [320,390,1280]){
    await mismatchPage.locator('.noa-inline-song').first().waitFor({state:'attached'});
    await mismatchPage.waitForFunction(()=>document.querySelector('.lp-edition'));
    assert.equal(await mismatchPage.locator('.noa-original-title').count(),count);
+   const list=mismatchPage.locator('.noa-inline-songs').first();
+   assert.equal(await list.getAttribute('data-track-view'),group==='cover'?'album':'list');
+   if(group==='cover'){
+    await mismatchPage.locator('.lp-view-switch [data-mode=list]').first().evaluate(b=>b.click());
+    await mismatchPage.waitForFunction(()=>document.querySelector('.noa-inline-songs').dataset.trackView==='list');
+    await mismatchPage.reload();
+    await mismatchPage.waitForSelector('.noa-inline-songs[data-track-view=list]',{state:'attached'});
+    await mismatchPage.locator('.lp-view-switch [data-mode=album]').first().evaluate(b=>b.click());
+    await mismatchPage.waitForSelector('.noa-inline-songs[data-track-view=album]',{state:'attached'});
+   }
   }
  }finally{await mismatchPage.close();}
  const editions=p.locator('.lp-edition');await editions.first().waitFor();assert.equal(await editions.count(),4);

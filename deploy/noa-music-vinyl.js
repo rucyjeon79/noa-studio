@@ -198,6 +198,43 @@
    fitTrackName(viewport);
   }
  }
+ const viewChoices=new Map();
+ function setTrackViews(buttons){
+  const index=[...buttons].findIndex(button=>button.getAttribute('aria-pressed')==='true');
+  const group=window.NoaBrowse?.groups[index]?.[0];
+  if(!group)return;
+  const storageKey='noa-track-view:'+group;
+  if(!viewChoices.has(group)){
+   let saved;
+   try{saved=localStorage.getItem(storageKey);}catch{}
+   viewChoices.set(group,['album','list'].includes(saved)?saved:['story','cover'].includes(group)?'album':'list');
+  }
+  const mode=viewChoices.get(group);
+  for(const list of browse.querySelectorAll('.noa-inline-songs')){
+   list.dataset.trackView=mode;
+   let bar=list.previousElementSibling;
+   if(!bar?.classList.contains('lp-view-switch')){
+    bar=document.createElement('div');
+    bar.className='lp-view-switch';
+    bar.setAttribute('role','group');
+    bar.setAttribute('aria-label','세부 곡목록 보기 방식');
+    const heading=list.previousElementSibling;
+    if(heading?.matches('h3'))bar.append(heading);
+    for(const [value,label] of [['album','앨범'],['list','목록']]){
+     const button=document.createElement('button');
+     button.type='button';button.dataset.mode=value;button.textContent=label;
+     button.addEventListener('click',()=>{
+      viewChoices.set(group,value);
+      try{localStorage.setItem(storageKey,value);}catch{}
+      schedule();
+     });
+     bar.append(button);
+    }
+    list.before(bar);
+   }
+   for(const button of bar.querySelectorAll('[data-mode]'))button.setAttribute('aria-pressed',String(button.dataset.mode===mode));
+  }
+ }
  function sync(){
   showActionCounts();
   showOriginalTitles();
@@ -216,6 +253,7 @@
    const imprint=make('lp-imprint',edition);imprint.setAttribute('aria-hidden','true');
    image.before(sleeve);image.src='/noa-assets/editorial-'+photo+'.webp';face.append(image,imprint);sleeve.append(disc,face);
   });
+  setTrackViews(buttons);
   syncPressings(buttons);
   for(const item of document.querySelectorAll('#music-browse .noa-inline-song[data-inline-key],#songs .song[data-key]')){
    const active=(item.dataset.inlineKey||item.dataset.key)===key && !!key;
