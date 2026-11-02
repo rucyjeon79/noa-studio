@@ -191,7 +191,7 @@ try {
             $rules = noa_generation_rules($db,$genre,(string)($record['payload']['ownerId'] ?? ''));
             $out = ['id'=>$job['id'],'field'=>$job['field'],'song'=>$context,'packageType'=>$record['packageType'],
                 'genre'=>$genre,'rules'=>$rules,'originalReadOnly'=>$record['original'] ?? null,
-                'generationInstructions'=>$job['field']==='publishSet' ? 'Return a JSON object only, no markdown. Exactly these fields: '.json_encode(array_combine($job['targets'],array_map('noa_field_guidance',$job['targets'])),JSON_UNESCAPED_UNICODE).'. Gemini instructions in English, max 1000 characters; youtubeTitle max 100.' : noa_field_guidance($job['field'])];
+                'generationInstructions'=>'Use only the selected song and its linked original for facts. Genre examples describe format only. '.($job['field']==='publishSet' ? 'Return a JSON object only, no markdown. Exactly these fields: '.json_encode(array_combine($job['targets'],array_map('noa_field_guidance',$job['targets'])),JSON_UNESCAPED_UNICODE).'. Gemini instructions in English, max 1000 characters; youtubeTitle max 100.' : noa_field_guidance($job['field']))];
         }
         break;
     default: reply(404,['error'=>'unknown_operation']);
