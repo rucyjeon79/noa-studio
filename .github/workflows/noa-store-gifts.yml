@@ -1,0 +1,74 @@
+name: NOA store gifts
+on:
+  pull_request:
+    paths: &paths ['bridge/gift-core.php','bridge/toss-core.php','bridge/notifications-*.php','deploy/noa-gifts.*','tests/payments/*gift*','scripts/noa_gifts_release.py','.github/workflows/noa-store-gifts.yml']
+  push:
+    branches: [main]
+    paths: *paths
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: isolated-noa-ci, MYSQL_DATABASE: noa_subscription_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -pisolated-noa-ci" --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      NOA_MYSQL_DSN: 'mysql:host=127.0.0.1;port=3306;dbname=noa_subscription_test;charset=utf8mb4'
+      NOA_MYSQL_USER: root
+      NOA_MYSQL_PASSWORD: isolated-noa-ci
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'mysqli,pdo_mysql,pdo_sqlite,mbstring,curl'}
+      - name: Verify payment ledger, purchase authorization, concurrent callbacks and VIP grants
+        run: |
+          for f in bridge/gift-core.php bridge/toss-core.php bridge/notifications-{core,sources}.php deploy/noa-{gifts,vip,my,sitemap}.php; do php -l "$f"; done
+          node --check deploy/noa-points.js
+          php tests/subscription/mysql_test.php
+          php tests/payments/mysql.php
+          python tests/payments/race_test.py
+          php tests/payments/http_fixture.php
+          python tests/payments/http_test.py
+          php tests/vip-store/mysql.php
+          python tests/vip-store/race.py
+      - name: Verify gift expiry notices, sender history, refunds and authenticated gift pages
+        run: |
+          php tests/payments/store_gifts.php
+          python tests/payments/gift_http.py
+  publish:
+    needs: verify
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    timeout-minutes: 12
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - run: python -m pip install 'paramiko>=3,<5'
+      - run: python scripts/noa_gifts_release.py
+      - name: Check public VIP gift entry and private inbox redirect
+        run: |
+          python - <<'PY'
+          import urllib.request, urllib.error
+          root='https://noastudio.ai.kr'
+          assert '/noa-gifts.php?product=vip30' in urllib.request.urlopen(root+'/noa-vip.php').read().decode()
+          class Stop(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self,*args): return None
+          try: urllib.request.build_opener(Stop).open(root+'/noa-gifts.php?box=received')
+          except urllib.error.HTTPError as e: assert e.code in (302,303) and 'login' in e.headers['Location']
+          else: raise AssertionError('private inbox must require login')
+          PY
+      - if: failure()
+        run: if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then python scripts/noa_gifts_release.py rollback; fi
