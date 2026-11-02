@@ -9,6 +9,7 @@ release.FILES = {name: 'deploy/'+name for name in (
     'noa-publish-set.php','noa-plugin-records.php','noa-gpt.php','noa-gpt-schema.json','noa-gpt-setup.php','noa-browse-edit.js')}
 release.FILES = {'noa-app/engine/song-generation.php':'deploy/noa-app/engine/song-generation.php','noa-work-status.php':'deploy/noa-work-status.php','noa-bridge/generation-rules.php':'bridge/generation-rules.php',**release.FILES,'noa-bridge/ainoa-generation.php':'bridge/ainoa-generation.php'}
 release.FILES.update({'noa-bridge/package-record.php':'bridge/package-record.php','noa-bridge/inline-edit.php':'bridge/inline-edit.php'})
+release.FILES['noa-bridge/youtube-catalog.php']='bridge/youtube-catalog.php'
 release.NEW = set(release.FILES) - {'noa-browse-edit.js'}
 if __name__ == '__main__':
     try:
