@@ -2,7 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__.'/common.php';
 require_once __DIR__.'/noa-bridge/special-invite.php';
-header('Cache-Control: private, no-store');header('Referrer-Policy: no-referrer');header('X-Robots-Tag: noindex, nofollow');
+header('Cache-Control: private, no-store');header('Referrer-Policy: strict-origin');header('X-Robots-Tag: noindex, nofollow');
 $title='람준파파의 특별한 별무리 초대장';
 $csrf=$_SESSION['noa_invite_csrf']??=bin2hex(random_bytes(32));
 $owner=(string)($member['mb_id']??'');
