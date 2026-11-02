@@ -9,6 +9,20 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import build_opener, HTTPCookieProcessor, Request
 
+# The MY account boxes rely on the gift stylesheet being linked by the page itself.
+class Stylesheets(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.paths = []
+    def handle_starttag(self, tag, attrs):
+        values = dict(attrs)
+        if tag == 'link' and values.get('rel') == 'stylesheet':
+            self.paths.append(values.get('href', '').split('?')[0])
+
+head = Stylesheets()
+head.feed(Path('deploy/noa-my.php').read_text().split('</head>')[0])
+assert '/noa-gifts.css' in head.paths, 'MY must request the stylesheet for account actions'
+
 site = Path('/tmp/noa-toss-http/site')
 assert (site / 'common.php').exists()
 for name in ('gift-core.php', 'vip-store-core.php', 'toss-core.php'):
