@@ -115,7 +115,7 @@ try {
         break;
     case 'progress':
         if (!$valid || ($body['id'] ?? '') !== $job['id']) reply(409,['error'=>'task_replaced']);
-        $out=['revision'=>$job['saved']??null,'saved'=>isset($job['saved']), 'failed'=>!empty($job['failed']) || (!empty($job['worker']) && time() > $job['expires']-3600+(!empty($job['hosted']) ? 1200 : 360) && !isset($job['saved']))];
+        $out=['claimed'=>!empty($job['claimed']),'revision'=>$job['saved']??null,'saved'=>isset($job['saved']), 'failed'=>!empty($job['failed']) || (!empty($job['worker']) && time() > $job['expires']-3600+(!empty($job['hosted']) ? 1200 : 360) && !isset($job['saved']))];
         break;
     case 'start':
         $useWorker = ($body['worker'] ?? false) === true;
