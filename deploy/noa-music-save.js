@@ -8,13 +8,68 @@
   const status = document.getElementById('music-save-status');
   const cancel = document.getElementById('music-save-cancel');
   const fallback = document.getElementById('music-save-fallback');
-  if (typeof window.showSaveFilePicker !== 'function' || !window.isSecureContext) {
+  const folders = window.isSecureContext && typeof window.showDirectoryPicker === 'function' && !!window.indexedDB;
+  let directory = null;
+  let change;
+  function storeFolder(value) {
+    return new Promise((resolve, reject) => {
+      const open = window.indexedDB.open('noa-music-folders', 1);
+      open.onupgradeneeded = () => open.result.createObjectStore('settings');
+      open.onerror = () => reject(open.error);
+      open.onsuccess = () => {
+        const db = open.result;
+        const tx = db.transaction('settings', value ? 'readwrite' : 'readonly');
+        const settings = tx.objectStore('settings');
+        const request = value ? settings.put(value, 'directory') : settings.get('directory');
+        tx.oncomplete = () => { db.close(); resolve(request.result); };
+        tx.onabort = () => { db.close(); reject(tx.error); };
+      };
+    });
+  }
+  async function chooseFolder() {
+    const selected = await window.showDirectoryPicker({id:'noa-music-download',mode:'readwrite',startIn:directory || 'music'});
+    await storeFolder(selected);
+    directory = selected;
+    help.textContent = '고정 저장 폴더 · ' + selected.name;
+    button.textContent = '이 폴더에 MP3 저장';
+  }
+  async function newFile(folder, name) {
+    const stem = name.replace(/\.mp3$/i,'');
+    for (let n = 0; ; n++) {
+      const candidate = stem + (n ? ' (' + n + ')' : '') + '.mp3';
+      try { await folder.getFileHandle(candidate); }
+      catch (error) {
+        if (error.name === 'TypeMismatchError') continue;
+        if (error.name !== 'NotFoundError') throw error;
+        return folder.getFileHandle(candidate,{create:true});
+      }
+    }
+  }
+  if (!folders && typeof window.showSaveFilePicker !== 'function' || !window.isSecureContext) {
     help.textContent = '이 환경에서는 앱에서 저장 위치를 지정할 수 없어요. 기기·브라우저의 다운로드 설정을 이용해 주세요.';
     return;
   }
   button.textContent = '저장 위치 선택하고 MP3 받기';
   help.textContent = '저장할 폴더를 선택하세요. 다음에는 이 기기의 같은 브라우저에서 마지막 폴더를 먼저 열어요. 위치는 서버에 저장하지 않아요.';
-  let busy = false;
+  if (folders) {
+    change = document.createElement('button');
+    change.type = 'button'; change.className = 'noa-button'; change.textContent = '저장 폴더 변경';
+    button.after(change);
+    change.onclick = async () => {
+      if (busy) return;
+      busy = true;
+      try { await chooseFolder(); }
+      catch (error) { if(error.name !== 'AbortError') status.textContent = '폴더를 기억할 수 없어요. 브라우저 저장 권한을 확인해 주세요.'; }
+      finally { busy = false; }
+    };
+    button.setAttribute('aria-disabled','true');change.disabled = true;
+    storeFolder().then(saved => {
+      directory = saved || null;
+      help.textContent = saved ? '고정 저장 폴더 · ' + saved.name : '처음 한 번 저장 폴더를 선택하면 다음 곡도 같은 폴더에 저장해요.';
+      if (saved) button.textContent = '이 폴더에 MP3 저장';
+    }).catch(()=>{}).finally(()=>{busy=false;button.removeAttribute('aria-disabled');change.disabled=false;});
+  }
+  let busy = !!folders;
   let controller;
   cancel.addEventListener('click', () => controller?.abort());
   button.addEventListener('click', async event => {
@@ -26,9 +81,14 @@
     let writer;
     let reader;
     let committed = false;
+    let created;
     try {
       // Must open during the click, before any asynchronous network request.
-      const handle = await window.showSaveFilePicker({
+      let handle;
+      if (folders) {
+        if (!directory) await chooseFolder();
+        else if (await directory.requestPermission({mode:'readwrite'}) !== 'granted') throw new Error('permission');
+      } else handle = await window.showSaveFilePicker({
         id: 'noa-music-download', startIn: 'music',
         suggestedName: (button.dataset.filename || 'NOA.mp3').replace(/[\\/\u0000-\u001f]/g, '_'),
         types: [{description: 'MP3 음원', accept: {'audio/mpeg': ['.mp3']}}]
@@ -40,6 +100,11 @@
       if (response.status !== 200 || !/^audio\/mpeg(?:;|$)/i.test(response.headers.get('Content-Type') || '') || !response.body) throw new Error('invalid_audio_response');
       const size = Number(response.headers.get('Content-Length'));
       if (!Number.isSafeInteger(size) || size <= 0) throw new Error('invalid_audio_size');
+      if (folders) {
+        const filename = (button.dataset.filename || 'NOA.mp3').replace(/[\\/]/g,'_');
+        const allocate = () => newFile(directory, filename);
+        created = handle = window.navigator?.locks ? await window.navigator.locks.request('noa-music-create-file', allocate) : await allocate();
+      }
       writer = await handle.createWritable();
       reader = response.body.getReader();
       let received = 0;
@@ -65,6 +130,7 @@
         controller?.abort();
         try { await reader?.cancel(); } catch (_) {}
         try { await writer?.abort(); } catch (_) {}
+        if (created) try { await directory.removeEntry(created.name); } catch (_) {}
       }
       controller = undefined;
       cancel.hidden = true;
