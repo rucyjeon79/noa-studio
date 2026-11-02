@@ -49,6 +49,7 @@ try{
     }
 }catch(Throwable $e){
     $errors=['search_length'=>'닉네임 또는 아이디를 두 글자 이상 입력해 주세요.','recipient_unavailable'=>'선택한 회원에게 보낼 수 없습니다.','recipient_plan'=>'받는 회원의 등급과 이용권 종류가 맞지 않습니다.','self_gift'=>'다른 회원을 선택해 주세요.','insufficient_points'=>'보유 포인트가 부족합니다.','membership_not_ready'=>'현재 이용권 판매 준비 중입니다.','payment_not_ready'=>'현재 포인트권 결제 준비 중입니다.','gift_unavailable'=>'이미 사용·취소되었거나 만료된 선물입니다.','gift_changed'=>'유효기간이 이미 변경되었습니다. 선물함을 다시 확인해 주세요.','purchase_conflict'=>'이전 주문과 선택한 상품 또는 회원이 다릅니다. 상품을 다시 선택해 주세요.','csrf_required'=>'페이지를 다시 열어 주세요.','invalid_product'=>'존재하지 않는 상품입니다.','gift_not_found'=>'선물을 찾을 수 없습니다.'];
+    http_response_code(match($e->getMessage()){'csrf_required'=>403,'gift_not_found'=>404,'search_length','invalid_product'=>400,default=>isset($errors[$e->getMessage()])?409:503});
     $error=$errors[$e->getMessage()]??'요청을 처리하지 못했습니다. 선물함에서 처리 결과를 확인해 주세요.';
     if(!isset($errors[$e->getMessage()]))error_log('[noa-gifts] '.get_class($e));
 }
@@ -63,7 +64,7 @@ $labels=['available'=>'미사용','used'=>'사용 완료','expired'=>'기간 만
 <?php if($users):?><form method="post"><input type="hidden" name="csrf" value="<?=gh($csrf)?>"><input type="hidden" name="id" value="<?=gh($id)?>"><input type="hidden" name="action" value="send"><fieldset><legend>받는 회원 선택</legend><?php foreach($users as $u):?><label><input type="radio" name="recipient" required value="<?=gh($u['mb_id'])?>"> <?=gh($u['mb_nick'])?> <small><?=gh($u['mb_id'])?></small></label><?php endforeach;?></fieldset><button class="noa-button"><?=gh($vip?number_format($vip['points']).'P로 구매해 선물 보내기':'선물 결제 진행')?></button></form><?php elseif($query!==''&&!$error):?><p>검색 결과가 없습니다.</p><?php endif;?>
 <?php else:?><p><?=gh($payment['recipient'])?> 회원에게 보낼 선물입니다. <?= $payment['test']?'테스트 결제에서는 선물이 발급되지 않습니다.':'' ?></p><button id="gift-pay">카드로 <?=number_format($payment['amount'])?>원 결제</button><p id="pay-message" role="status"></p><script src="https://js.tosspayments.com/v2/standard"></script>
 <script>const gift=<?=json_encode($payment,JSON_HEX_TAG|JSON_HEX_QUOT|JSON_HEX_APOS|JSON_HEX_AMP)?>;document.getElementById('gift-pay').onclick=async function(){this.disabled=true;try{await TossPayments(gift.client).payment({customerKey:gift.customer}).requestPayment({method:'CARD',amount:{currency:'KRW',value:gift.amount},orderId:gift.orderId,orderName:'NOA 포인트 충전권 선물',successUrl:location.origin+'/noa-points.php?result=success&id='+gift.id,failUrl:location.origin+'/noa-points.php?result=fail'});}catch{document.getElementById('pay-message').textContent='결제가 완료되지 않았습니다. 다시 시도할 수 있어요.';}finally{this.disabled=false;}};</script><?php endif;?></section>
-<?php elseif($product===''):?>
+<?php elseif($product===''):?><p><?= $box==='sent'?'만료된 선물도 발송 기록에서 언제든지 확인할 수 있어요.':'선물은 원할 때 사용하세요. 미사용 선물은 만료 한 달 전에 알려드리며, 만료 전까지 1년씩 연장할 수 있어요.' ?></p>
 <?php if(!$gifts&&!$error):?><p>아직 표시할 선물이 없습니다.</p><?php endif;?>
 <?php foreach($gifts as $g):$status=ng_status($g,$now);?><article><h2><?=gh($g['name'])?></h2><strong><?=gh($labels[$status])?></strong>
 <p><?= $box==='sent'?'받는 회원':'보낸 회원' ?> · <?=gh($g[$box==='sent'?'recipient':'sender'])?></p>

@@ -44,6 +44,7 @@ jobs:
           php -l deploy/noa-gifts.php
           php -l bridge/gift-core.php
           php tests/payments/store_gifts.php
+          python tests/payments/gift_http.py
       - name: Verify checkout and seven audio cards on mobile and desktop
         run: |
           php tests/payments/fixture.php
