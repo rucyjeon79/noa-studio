@@ -78,6 +78,31 @@ function nnt_native_event(PDO $db,array $r,bool $like,int $now):void{
   if($reply&&nnt_target($db,'board:'.$board.':'.$reply['wr_id'],$reply['mb_id']))nnt_emit($db,$reply['mb_id'],'native-reply:'.$board.':'.$post['wr_id'],'reply',$entity,$post['mb_id'],'native_reply',(int)$post['wr_id'],$target['url'],$now);
  }
 }
+function nnt_gift_reminders(PDO $db,int $now):int{
+ if(!nnt_exists($db,'noa_documents'))return 0;
+ $rows=nnt_rows($db,"SELECT d.doc_key FROM noa_documents d WHERE d.kind='store_gift'
+  AND JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.usedAt'))='null'
+  AND JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.canceled'))='false'
+  AND CAST(JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.remindAt')) AS UNSIGNED)<=?
+  AND CAST(JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.expiresAt')) AS UNSIGNED)>?
+  AND NOT EXISTS(SELECT 1 FROM noa_notifications n WHERE n.recipient=JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.recipient'))
+    AND n.event_key=SHA2(CONCAT(d.doc_key,':',JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.expiresAt'))),256))
+  ORDER BY d.doc_key LIMIT 200",[$now,$now]);
+ $count=0;
+ foreach($rows as $row){
+  $db->beginTransaction();
+  try{
+   $locked=nnt_one($db,'SELECT payload FROM noa_documents WHERE doc_key=? FOR UPDATE',[$row['doc_key']]);
+   $g=json_decode($locked['payload']??'null',true);
+   if($g && !$g['canceled'] && $g['usedAt']===null && $g['remindAt']<=$now && $now<$g['expiresAt']){
+    $event=$row['doc_key'].':'.$g['expiresAt'];
+    if(nnt_enqueue($db,$g['recipient'],$event,'gift_expiring',$event,'','store_gift',0,'/noa-gifts.php?box=received',$now))$count++;
+   }
+   $db->commit();
+  }catch(Throwable $e){$db->rollBack();throw $e;}
+ }
+ return $count;
+}
 function nnt_collect(PDO $db,int $now):array{
  global $g5;$sources=['app_likes'=>['noa_post_like_events','id'],'app_comments'=>['noa_post_comments','id'],'native_new'=>[$g5['board_new_table'],'bn_id'],'native_good'=>[$g5['board_good_table'],'bg_id']];$counts=[];
  foreach($sources as $source=>[$table,$id]){
@@ -88,10 +113,16 @@ function nnt_collect(PDO $db,int $now):array{
    foreach($rows as $row){if(str_starts_with($source,'app_'))nnt_app_event($db,$row,$source==='app_likes',$now);else nnt_native_event($db,$row,$source==='native_good',$now);}
    if($rows)nnt_exec($db,'UPDATE noa_notification_cursor SET position=GREATEST(position,?) WHERE source=?',[(int)end($rows)[$id],$source]);$db->commit();$counts[$source]=count(array_filter($rows,static fn($r)=>(int)$r[$id]>(int)$cursor['position']));
   }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
- }return $counts;
+ }$counts['gifts']=nnt_gift_reminders($db,$now);return $counts;
 }
 function nnt_source_alive(PDO $db,array $r):bool{
  global $g5;if($r['source']==='test')return true;
+ if($r['kind']==='gift_expiring'){
+  if(!preg_match('/^(store:gift:[a-f0-9-]{36}):([0-9]+)$/D',$r['entity'],$parts))return false;
+  $record=nnt_one($db,"SELECT payload FROM noa_documents WHERE kind='store_gift' AND doc_key=?",[$parts[1]]);
+  $gift=json_decode($record['payload']??'null',true);
+  return $gift && $gift['recipient']===$r['recipient'] && !$gift['canceled'] && $gift['usedAt']===null && (string)$gift['expiresAt']===$parts[2] && time()<$gift['expiresAt'];
+ }
  if($r['kind']==='new_post')return $r['source']==='native_post'&&preg_match('/^board:([A-Za-z0-9_]{1,20}):([1-9][0-9]*)$/D',$r['entity'],$m)&&nnt_admin_post($db,$r['recipient'],$m[1],(int)$m[2]);
  if($r['source']==='app_comment'){$c=nnt_one($db,'SELECT deleted_at FROM noa_post_comments WHERE id=? AND entity=?',[$r['source_id'],$r['entity']]);if(!$c||$c['deleted_at']!==null)return false;}
  elseif($r['source']==='app_like'){if(!nnt_one($db,'SELECT 1 FROM noa_post_likes WHERE entity=? AND owner=? AND active=1',[$r['entity'],$r['actor']]))return false;}
