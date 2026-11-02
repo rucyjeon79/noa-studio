@@ -4,7 +4,7 @@ from pathlib import Path
 
 def render():
  root=Path(tempfile.mkdtemp(prefix='noa-coming-'));bridge=root/'noa-bridge';bridge.mkdir()
- for name in ['member-access.php','package-record.php','sound-core.php','music-readmodel.php','youtube-catalog.php']:shutil.copyfile(Path('bridge')/name,bridge/name)
+ for name in ['member-access.php','package-record.php','channel-ownership.php','sound-core.php','music-readmodel.php','youtube-catalog.php']:shutil.copyfile(Path('bridge')/name,bridge/name)
  for name in ['noa-premium.js','noa-music.php','noa-youtube.php','noa-youtube.js','noa-youtube.css','noa-browse.js','noa-browse-edit.js','noa-ui.js']:shutil.copyfile(Path('deploy')/name,root/name)
  (root/'extend').mkdir();shutil.copyfile('deploy/noa-design.extend.php',root/'extend/noa.design.php')
  (root/'noa-app/jukebox').mkdir(parents=True)
