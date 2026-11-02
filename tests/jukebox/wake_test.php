@@ -16,6 +16,7 @@ try{
  check(nw_request($dir,fn($token)=>throw new RuntimeException('offline'),233),'recovery_pending');
  check(nw_request($dir,$send,234),'already_requested');check($calls,2);
  check(nw_request($dir,$send,244),'requested');check($calls,3);
+ check(nw_request($dir,fn($token)=>200,305),'requested');
  $lock=fopen($dir.'/upload-wake-state','c+');flock($lock,LOCK_EX);
  check(nw_request($dir,$send,400),'already_requested');check($calls,3);fclose($lock);
  check(str_contains(file_get_contents($dir.'/upload-wake-state'),str_repeat('a',40)),false);
