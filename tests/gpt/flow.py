@@ -44,7 +44,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (bridge/"sound-core.php").touch()
     (bridge/"inline-edit.php").write_text("""<?php
     function nie_resolve($db,$q){$r=$db->query('SELECT title,revision FROM song')->fetch();
-    return ['writeKey'=>'song:1','fields'=>['title'=>$r['title']],'kind'=>'single','context'=>['genre'=>'your-story'],'payload'=>[],
+    return ['writeKey'=>'song:1','fields'=>['title'=>$r['title'],'description'=>'Stale copy from another campaign'],'kind'=>'single','context'=>['genre'=>'your-story'],'payload'=>[],
     'revision'=>(int)$r['revision'],'packageType'=>(($q['key']??'')==='ep-test'?'ep':'original')];}
     function nup_patch($old,$kind,$patch){return $patch;}
     function nup_validate_classification(...$args){}
@@ -81,6 +81,7 @@ with tempfile.TemporaryDirectory() as tmp:
         call('read',status=401)
         read=call('read',key=key)
         assert read['song']['title']=='Original' and read['rules']['common']['layout']=='common-layout'
+        assert 'description' not in read['song']
         assert read['rules']['genre']['style']=='your-story-style'
         thumbnail=call('start',{**task,'field':'geminiPrompt'},admin=True)
         assert 'in English' in call('read',key=key)['generationInstructions']
