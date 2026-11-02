@@ -176,7 +176,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
     const info=document.createElement('p');info.setAttribute('role','status');
     const area=document.createElement('section');area.append(publish,choices,info);form.prepend(area);
     async function post(url,body){
-     const r=await fetch(url,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify(body)});
+     const r=await fetch(url,{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify(body)});
      const j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw Error(j.error||r.headers.get('X-NOA-Error-Code')||'publish_unavailable');return j;
     }
     publish.onclick=async()=>{
@@ -187,6 +187,27 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
      const revision=state.data.revision,job={selector,revision,targets};
      state.busy=true;publish.disabled=true;const wasDisabled=[...form.querySelectorAll('input,textarea,button,select')].map(el=>[el,el.disabled]);for(const [el] of wasDisabled)el.disabled=true;
      try{
+      const connection=await post('/noa-gpt.php?op=config',{});
+      if(connection.workerConfigured){
+       const started=await post('/noa-gpt.php?op=start',{...job,worker:true,field:'publishSet',replace:true});
+       info.textContent=started.targets.map(k=>names[k]).join(' · ')+' 생성 중…';
+       const deadline=Date.now()+1200000;
+       while(Date.now()<deadline){
+        await new Promise(resolve=>setTimeout(resolve,4000));
+        if(active!==state)return;
+        const progress=await post('/noa-gpt.php?op=progress',{id:started.id});
+        if(progress.failed)throw Error('worker_failed');
+        if(!progress.saved)continue;
+        const r=await fetch('/noa-inline-edit.php?'+new URLSearchParams(selector),{cache:'no-store',headers:{Accept:'application/json'}});
+        const fresh=await r.json();
+        if(!fresh.ok||fresh.revision!==progress.revision||fresh.writeKey!==state.data.writeKey)throw Error('readback');
+        state.data=fresh;
+        for(const k of started.targets){window.NoaRecordForm.set(inputs[k],fresh.fields[k]);options.get(k).checked=false;}
+        info.textContent=started.targets.map(k=>names[k]).join(' · ')+' 저장 완료';
+        onSaved({selector,record:byKey.get(selector.key),data:fresh});return;
+       }
+       throw Error('worker_timeout');
+      }
       const config=await post('/noa-publish-set.php',{...job,mode:'inspect'});
       if(!config.ready){info.textContent='AI LAB의 서버 키와 텍스트 생성 한도 설정이 필요합니다.';return;}
       const creditMark='noa-free-api-confirm:'+config.keyId;
@@ -203,7 +224,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
       state.data=fresh;for(const k of Object.keys(result.patch)){window.NoaRecordForm.set(inputs[k],fresh.fields[k]);options.get(k).checked=false;}
       info.textContent=Object.keys(result.patch).map(k=>names[k]).join(' · ')+' 저장 완료';
       onSaved({selector,record:byKey.get(selector.key),data:fresh});
-     }catch(e){info.textContent=({revision_conflict:'곡이 다른 곳에서 수정됐습니다. 다시 열어 최신 내용을 확인해 주세요.',ai_revision_changed:'곡이 변경되었습니다. 편집기를 다시 열어 주세요.',ai_provider_rate_limit:'API 한도 또는 크레딧 잔액을 확인해 주세요.',ai_budget_exceeded:'AI LAB의 사용 한도에 도달했습니다.',no_enabled_fields:'선택한 항목은 장르 규칙에서 꺼져 있습니다.',readback:'저장 응답을 받았지만 다시 읽어 확인하지 못했습니다. 곡을 다시 열어 주세요.'})[e.message]||'게시 자료 생성을 확인하지 못했습니다. 곡을 다시 열어 저장 상태를 확인해 주세요.';}
+     }catch(e){info.textContent=({worker_failed:'n80 생성에 실패했습니다. 작업 현황을 확인해 주세요.',dispatch_failed:'GitHub 실행 요청을 보내지 못했습니다. 닷홈 실행 토큰을 확인해 주세요.',worker_offline:'n80 실행기 연결 설정을 확인해 주세요.',worker_timeout:'결과 대기 시간이 지났습니다. 곡을 다시 열어 확인해 주세요.',revision_conflict:'곡이 다른 곳에서 수정됐습니다. 다시 열어 최신 내용을 확인해 주세요.',ai_revision_changed:'곡이 변경되었습니다. 편집기를 다시 열어 주세요.',ai_provider_rate_limit:'API 한도 또는 크레딧 잔액을 확인해 주세요.',ai_budget_exceeded:'AI LAB의 사용 한도에 도달했습니다.',no_enabled_fields:'선택한 항목은 장르 규칙에서 꺼져 있습니다.',readback:'저장 응답을 받았지만 다시 읽어 확인하지 못했습니다. 곡을 다시 열어 주세요.'})[e.message]||'게시 자료 생성을 확인하지 못했습니다. 곡을 다시 열어 저장 상태를 확인해 주세요.';}
      finally{for(const [el,disabled]of wasDisabled)el.disabled=disabled;publish.disabled=false;state.busy=false;}
     };
    }
