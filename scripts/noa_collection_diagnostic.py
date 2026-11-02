@@ -1,10 +1,11 @@
 """Short-lived fixed read-only collection diagnostic, removed after readback."""
-import hashlib,json,secrets,time,urllib.request
+import hashlib,json,secrets,time,urllib.request,sys
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
 token=secrets.token_hex(32);name='noa-bridge/collection-check-'+secrets.token_hex(8)+'.php'
-raw=Path('scripts/noa_collection_diagnostic.php').read_text().replace('__EXPIRY__',str(int(time.time())+300)).replace('__TOKEN_SHA__',hashlib.sha256(token.encode()).hexdigest()).encode()
+source='scripts/noa_song_identity_audit.php' if sys.argv[1:]==['song-identity'] else 'scripts/noa_collection_diagnostic.php'
+raw=Path(source).read_text().replace('__EXPIRY__',str(int(time.time())+300)).replace('__TOKEN_SHA__',hashlib.sha256(token.encode()).hexdigest()).encode()
 t=connect();s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(30);installed=False
 try:
  if s.normalize(ROOT)!=ROOT:raise RuntimeError('wrong_root')

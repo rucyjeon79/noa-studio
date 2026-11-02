@@ -33,7 +33,9 @@ jobs:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
       - run: python -m pip install 'paramiko>=3,<5'
-      - run: python scripts/noa_gpt_release.py
+      - run: |
+          python scripts/noa_gpt_release.py
+          python scripts/noa_collection_diagnostic.py song-identity
         env:
           GH_TOKEN: ${{ github.token }}
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
