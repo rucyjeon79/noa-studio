@@ -1,10 +1,27 @@
 .noa-gifts{max-width:48rem;margin:auto}.noa-gifts nav,.noa-gifts form{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;margin-block:1rem}.noa-gifts :is(article,section){border:1px solid var(--noa-line,#353637);border-radius:12px;padding:1rem;margin-block:.85rem}.noa-gifts fieldset{width:100%;border:0;padding:0}.noa-gifts fieldset label{display:block;padding:.65rem}.noa-gifts h2{font-size:1.12rem}.noa-gifts button,.noa-gifts nav a{min-height:44px;display:inline-flex;align-items:center;padding:0 .85rem}.noa-gifts article strong{color:var(--noa-accent,#dec58d)}.noa-gifts input:not([type=radio]){max-width:100%;padding:.6rem}
 
+#noa-my-account .noa-membership-card{padding-inline:0;gap:clamp(8px,2vw,20px)}
 #noa-my-account .noa-membership-copy{flex:1;min-width:0}
-.noa-my-rank-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
-#noa-my-account .noa-my-rank-heading h2{min-width:0;margin:0;overflow-wrap:anywhere}
-#noa-my-account .noa-my-signout,.noa-my-gift-actions a{display:inline-flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;min-height:44px;text-decoration:none}
-#noa-my-account .noa-my-signout{flex:none;padding-inline:6px;color:var(--noa-muted);font-size:13px;white-space:nowrap}
-.noa-my-gift-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;border-top:1px solid var(--noa-line);padding-block:10px}
-.noa-my-gift-actions a{border:1px solid var(--noa-line);border-radius:8px;color:var(--noa-text)}
-.noa-my-gift-actions svg{color:var(--noa-accent,#d0b67c);flex:none}
+#noa-my-account .noa-my-rank-heading{
+ display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:center;gap:8px;width:100%;margin-bottom:6px;
+}
+#noa-my-account .noa-my-rank-heading h2{grid-column:1;grid-row:1;min-width:0;margin:0;line-height:1.25;overflow-wrap:anywhere}
+#noa-my-account .noa-my-signout,#noa-my-account .noa-my-gift-actions>a,#noa-my-account .noa-my-creator-apply{
+ display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;min-height:44px;
+ border:1px solid var(--noa-line,#444);border-radius:8px;text-decoration:none;
+}
+#noa-my-account .noa-my-signout{
+ grid-column:2;grid-row:1;justify-self:end;width:auto;padding:0 10px;background:var(--noa-surface,#202226);color:var(--noa-text);font-size:13px;white-space:nowrap;
+}
+#noa-my-account .noa-my-gift-actions{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%;box-sizing:border-box;padding:0;margin:12px 0;
+}
+#noa-my-account .noa-my-gift-actions>a{
+ width:100%;margin:0;padding:8px 4px;background:var(--noa-surface,#202226);color:var(--noa-text);min-height:48px;
+}
+#noa-my-account .noa-my-gift-actions svg,#noa-my-account .noa-my-signout svg{color:var(--noa-accent,#d0b67c);flex:none}
+#noa-my-account .noa-my-creator-entry p{margin:14px 0 8px;font-size:14px;color:var(--noa-muted)}
+#noa-my-account .noa-my-creator-apply{
+ width:100%;min-height:52px;padding:10px 12px;background:linear-gradient(110deg,#c0a16c,#eed9ae 58%,#d3b77e);
+ border-color:#d6ba85;color:#272116;font-weight:700;
+}
