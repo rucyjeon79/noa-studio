@@ -122,7 +122,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
        let launched=false;
        state.busy=true;gpt.disabled=true;
        try{
-        const response=await fetch('/noa-gpt.php?op=start',{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify({selector,field:key,revision:state.data.revision,replace,worker:state.privateWorker})});
+        const response=await fetch('/noa-gpt.php?op=start',{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify({selector,expectedKey:state.data.writeKey,field:key,revision:state.data.revision,replace,worker:state.privateWorker})});
         const result=await generationReply(response);
         if(result.error==='setup_required'){
          tell('처음 한 번 전용 GPT를 연결해 주세요.');
@@ -208,7 +208,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
      if(state.dirty){info.textContent='먼저 수정 중인 곡 정보를 저장해 주세요.';return;}
      const targets=keys.filter(k=>options.get(k).checked);
      if(!targets.length){choices.open=true;info.textContent='빈 항목이 없습니다. 교체할 항목만 선택해 주세요.';return;}
-     const revision=state.data.revision,job={selector,revision,targets};
+     const revision=state.data.revision,job={selector,expectedKey:state.data.writeKey,revision,targets};
      state.busy=true;publish.disabled=true;const wasDisabled=[...form.querySelectorAll('input,textarea,button,select')].map(el=>[el,el.disabled]);for(const [el] of wasDisabled)el.disabled=true;
      const began=Date.now();
      info.textContent='선택한 '+targets.length+'개 항목 · 연결 확인 중';
