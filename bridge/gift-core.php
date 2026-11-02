@@ -95,3 +95,13 @@ function ng_update(string $owner,string $id,string $action,int $expectedExpiry,i
         ns_put($key,'store_gift',$g,$r['revision'],$owner);return $g;
     });
 }
+
+function ng_list(string $owner,string $box,int $page,int $now):array {
+    $gifts=[];
+    $field=$box==='sent'?'sender':'recipient';
+    $sql="SELECT payload FROM noa_documents WHERE kind='store_gift' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.$field'))=".ns_e($owner);
+    if($box==='received')$sql.=" AND CAST(JSON_UNQUOTE(JSON_EXTRACT(payload,'$.expiresAt')) AS UNSIGNED)>".$now;
+    $q=ns_q($sql." ORDER BY CAST(JSON_UNQUOTE(JSON_EXTRACT(payload,'$.sentAt')) AS UNSIGNED) DESC,doc_key DESC LIMIT 21 OFFSET ".(($page-1)*20));
+    while($r=sql_fetch_array($q))$gifts[]=json_decode($r['payload'],true,32,JSON_THROW_ON_ERROR);
+    return $gifts;
+}

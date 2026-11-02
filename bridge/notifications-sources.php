@@ -86,7 +86,7 @@ function nnt_gift_reminders(PDO $db,int $now):int{
   AND CAST(JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.remindAt')) AS UNSIGNED)<=?
   AND CAST(JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.expiresAt')) AS UNSIGNED)>?
   AND NOT EXISTS(SELECT 1 FROM noa_notifications n WHERE n.recipient=JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.recipient'))
-    AND n.event_key=SHA2(CONCAT(d.doc_key,':',JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.expiresAt'))),256))
+    AND n.event_key=SHA2(CONCAT(BINARY d.doc_key,':',JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.expiresAt'))),256))
   ORDER BY d.doc_key LIMIT 200",[$now,$now]);
  $count=0;
  foreach($rows as $row){

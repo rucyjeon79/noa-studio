@@ -23,6 +23,9 @@ gc_check(ng_buy_vip('g_sender',$id,'vip30','g_to',$now)===$v&&get_point_sum('g_s
 gc_deny(fn()=>ng_update('g_other',$id,'use',0,$now),'gift_not_found');
 gc_deny(fn()=>ng_update('g_to',$id,'extend',$v['expiresAt'],$v['expiresAt']),'gift_unavailable');
 gc_check(ng_status(ns_doc(ng_key($id))['data'],$v['expiresAt'])==='expired','permanent expired history');
+gc_check(count(ng_list('g_to','received',1,$now))===1&&ng_list('g_to','received',1,$v['expiresAt'])===[],'recipient expiry removal');
+gc_check(count(ng_list('g_sender','sent',1,$v['expiresAt']))===1&&ng_list('g_other','sent',1,$now)===[],'sender history and ownership');
+gc_check(ng_shift(strtotime('2028-02-29 12:00:00 Asia/Seoul'),12)===strtotime('2029-02-28 12:00:00 Asia/Seoul'),'calendar leap day');
 $db=new PDO(getenv('NOA_MYSQL_DSN'),getenv('NOA_MYSQL_USER'),getenv('NOA_MYSQL_PASSWORD'),[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
 foreach(nnt_schema() as $table=>$ddl)$db->exec("CREATE TABLE IF NOT EXISTS `$table` $ddl ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin");
 gc_check(nnt_gift_reminders($db,$v['remindAt']-1)===0,'not early');

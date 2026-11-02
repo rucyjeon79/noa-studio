@@ -44,11 +44,7 @@ try{
         while($u=sql_fetch_array($q))$users[]=$u;
     }
     if($product===''){
-        $field=$box==='sent'?'sender':'recipient';
-        $sql="SELECT payload FROM noa_documents WHERE kind='store_gift' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.$field'))=".ns_e($owner);
-        if($box==='received')$sql.=" AND CAST(JSON_UNQUOTE(JSON_EXTRACT(payload,'$.expiresAt')) AS UNSIGNED)>".$now;
-        $q=ns_q($sql." ORDER BY CAST(JSON_UNQUOTE(JSON_EXTRACT(payload,'$.sentAt')) AS UNSIGNED) DESC,doc_key DESC LIMIT 21 OFFSET ".(($page-1)*20));
-        while($r=sql_fetch_array($q))$gifts[]=json_decode($r['payload'],true,32,JSON_THROW_ON_ERROR);
+        $gifts=ng_list($owner,$box,$page,$now);
         if(count($gifts)>20){array_pop($gifts);$next=true;}
     }
 }catch(Throwable $e){
