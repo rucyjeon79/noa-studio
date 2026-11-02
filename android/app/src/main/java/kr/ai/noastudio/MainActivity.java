@@ -25,6 +25,8 @@ import java.util.concurrent.*;
 public class MainActivity extends Activity {
  private static final String BASE="https://noastudio.ai.kr";
  private static final int FILE_PICK=7201;
+ private static final int MUSIC_FOLDER=7250;
+ private String musicUrl,musicName;
  private WebView browser;
  private MediaController controller;
  private ListenableFuture<MediaController> controllerFuture;
@@ -37,7 +39,7 @@ public class MainActivity extends Activity {
  private final Runnable tick=new Runnable(){public void run(){publishState();handler.postDelayed(this,500);}};
 
  @Override public void onCreate(Bundle saved){
-  super.onCreate(saved);playbackStore=new PlaybackStateStore(this);appUpdates=new AppUpdateChecker(this);
+  super.onCreate(saved);if(saved!=null){musicUrl=saved.getString("musicUrl");musicName=saved.getString("musicName");}playbackStore=new PlaybackStateStore(this);appUpdates=new AppUpdateChecker(this);
   getWindow().setStatusBarColor(Color.rgb(17,19,22));getWindow().setNavigationBarColor(Color.rgb(17,19,22));
   getWindow().getDecorView().setOnApplyWindowInsetsListener((v,i)->{findViewById(android.R.id.content).setPadding(i.getSystemWindowInsetLeft(),i.getSystemWindowInsetTop(),i.getSystemWindowInsetRight(),i.getSystemWindowInsetBottom());return i.consumeSystemWindowInsets();});
   try(InputStream in=getAssets().open("noa-native-bridge.js")){bridge=read(in);}catch(IOException e){throw new IllegalStateException("Media bridge missing",e);}
@@ -73,6 +75,16 @@ public class MainActivity extends Activity {
    if(!trusted(url))return;Uri u=Uri.parse(url);String path=u.getPath();
    if(path!=null&&(path.endsWith(".apk")||path.equals("/noa-download.php"))){external(u);return;}
    if(!Arrays.asList("/noa-bridge/lab-file.php","/noa-music-download.php","/noa-app/jukebox/download.php","/bbs/download.php").contains(path))return;
+   if("/noa-app/jukebox/download.php".equals(path)){
+    if(musicUrl!=null){notice("먼저 저장 폴더를 선택해 주세요.");return;}
+    String marker="filename*=UTF-8''";
+    String filename=disposition!=null&&disposition.contains(marker)?Uri.decode(disposition.substring(disposition.indexOf(marker)+marker.length())):URLUtil.guessFileName(url,disposition,mime);
+    musicUrl=url;musicName=filename.replace('/','_').replace((char)92,'_');
+    String tree=getPreferences(MODE_PRIVATE).getString("musicFolder",null);
+    if(tree!=null&&getContentResolver().getPersistedUriPermissions().stream().anyMatch(p->p.isWritePermission()&&p.getUri().toString().equals(tree)))saveMusic(Uri.parse(tree));
+    else pickMusicFolder();
+    return;
+   }
    DownloadManager.Request request=new DownloadManager.Request(u);String cookie=CookieManager.getInstance().getCookie(url);if(cookie!=null)request.addRequestHeader("Cookie",cookie);request.addRequestHeader("User-Agent",agent);request.setMimeType(mime);String name=URLUtil.guessFileName(url,disposition,mime).replaceAll("[^\\p{L}\\p{N}._-]","_");request.setTitle(name);request.setDestinationInExternalFilesDir(this,Environment.DIRECTORY_DOWNLOADS,name);request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
    try{((DownloadManager)getSystemService(DOWNLOAD_SERVICE)).enqueue(request);notice("다운로드를 시작했습니다.");}catch(RuntimeException e){notice("다운로드를 시작하지 못했습니다.");}
   });
@@ -144,7 +156,47 @@ public class MainActivity extends Activity {
    browser.evaluateJavascript("window.NoaNativeBridge?.state("+state+");",null);
   }catch(JSONException ignored){}
  }
- @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){super.onActivityResult(requestCode,resultCode,data);if(requestCode==FILE_PICK&&fileSelection!=null){List<Uri> uris=new ArrayList<>();if(resultCode==RESULT_OK&&data!=null){if(data.getClipData()!=null)for(int i=0;i<data.getClipData().getItemCount();i++)uris.add(data.getClipData().getItemAt(i).getUri());else if(data.getData()!=null)uris.add(data.getData());}uris.removeIf(u->!"content".equals(u.getScheme()));fileSelection.onReceiveValue(uris.isEmpty()?null:uris.toArray(new Uri[0]));fileSelection=null;}}
+ @Override protected void onSaveInstanceState(Bundle state){
+  super.onSaveInstanceState(state);state.putString("musicUrl",musicUrl);state.putString("musicName",musicName);
+ }
+ private void pickMusicFolder(){
+  Intent pick=new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+  pick.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION|Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+  try{startActivityForResult(pick,MUSIC_FOLDER);}catch(ActivityNotFoundException e){musicUrl=null;notice("파일 탐색기를 열 수 없습니다.");}
+ }
+ private void saveMusic(Uri tree){
+  final String url=musicUrl,name=musicName;musicUrl=null;musicName=null;
+  if(url==null||!trusted(url)||!"/noa-app/jukebox/download.php".equals(Uri.parse(url).getPath()))return;
+  String cookie=CookieManager.getInstance().getCookie(url);
+  new Thread(()->{
+   HttpURLConnection conn=null;Uri output=null;
+   try{
+    conn=(HttpURLConnection)new URL(url).openConnection();conn.setInstanceFollowRedirects(false);
+    conn.setConnectTimeout(15000);conn.setReadTimeout(45000);if(cookie!=null)conn.setRequestProperty("Cookie",cookie);
+    if(conn.getResponseCode()!=200||!"audio/mpeg".equalsIgnoreCase(conn.getContentType())||conn.getContentLengthLong()<=0)throw new IOException();
+    Uri parent=android.provider.DocumentsContract.buildDocumentUriUsingTree(tree,android.provider.DocumentsContract.getTreeDocumentId(tree));
+    output=android.provider.DocumentsContract.createDocument(getContentResolver(),parent,"audio/mpeg",name);
+    if(output==null)throw new IOException();
+    try(InputStream in=conn.getInputStream();OutputStream out=getContentResolver().openOutputStream(output)){
+     if(out==null)throw new IOException();byte[] buf=new byte[65536];long total=0;int n;
+     while((n=in.read(buf))!=-1){out.write(buf,0,n);total+=n;}
+     if(total!=conn.getContentLengthLong())throw new IOException();
+    }
+    output=null;runOnUiThread(()->notice("지정한 폴더에 저장했습니다."));
+   }catch(Exception e){
+    if(output!=null)try{android.provider.DocumentsContract.deleteDocument(getContentResolver(),output);}catch(Exception ignored){}
+    runOnUiThread(()->{if(!isFinishing()&&!isDestroyed())new AlertDialog.Builder(this).setMessage("저장하지 못했습니다. 다음 다운로드의 폴더를 다시 지정할까요?").setNegativeButton("닫기",null).setPositiveButton("위치 다시 지정",(dialog,which)->pickMusicFolder()).show();});
+   }finally{if(conn!=null)conn.disconnect();}
+  }).start();
+ }
+ @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){super.onActivityResult(requestCode,resultCode,data);if(requestCode==MUSIC_FOLDER){
+  if(resultCode==RESULT_OK&&data!=null&&data.getData()!=null){
+   Uri tree=data.getData();
+   try{getContentResolver().takePersistableUriPermission(tree,data.getFlags()&(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION));getPreferences(MODE_PRIVATE).edit().putString("musicFolder",tree.toString()).apply();saveMusic(tree);}
+   catch(SecurityException e){musicUrl=null;notice("폴더 저장 권한을 허용해 주세요.");}
+  }else musicUrl=null;
+  return;
+ }if(requestCode==FILE_PICK&&fileSelection!=null){List<Uri> uris=new ArrayList<>();if(resultCode==RESULT_OK&&data!=null){if(data.getClipData()!=null)for(int i=0;i<data.getClipData().getItemCount();i++)uris.add(data.getClipData().getItemAt(i).getUri());else if(data.getData()!=null)uris.add(data.getData());}uris.removeIf(u->!"content".equals(u.getScheme()));fileSelection.onReceiveValue(uris.isEmpty()?null:uris.toArray(new Uri[0]));fileSelection=null;}}
  @Override public void onBackPressed(){if(browser.canGoBack())browser.goBack();else moveTaskToBack(true);}
  @Override protected void onPause(){if(browser!=null)browser.onPause();CookieManager.getInstance().flush();super.onPause();}
  @Override protected void onResume(){super.onResume();if(browser!=null){browser.onResume();syncSession();publishState();}if(appUpdates!=null)handler.postDelayed(()->{if(!isFinishing()&&!isDestroyed())appUpdates.check(false);},1500);}
