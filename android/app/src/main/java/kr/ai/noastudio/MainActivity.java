@@ -54,7 +54,11 @@ public class MainActivity extends Activity {
    if(WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT))WebViewCompat.addDocumentStartJavaScript(browser,bridge,Collections.singleton(BASE));
   }
   browser.setWebViewClient(new WebViewClient(){
-   @Override public void onPageFinished(WebView view,String url){if(trusted(url)){view.evaluateJavascript(bridge,null);syncSession();publishState();}}
+   @Override public void onPageFinished(WebView view,String url){if(trusted(url)){view.evaluateJavascript(bridge,null);
+    if("/noa-music-download.php".equals(Uri.parse(url).getPath())&&WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)){
+     view.evaluateJavascript("(()=>{const h=document.getElementById('music-save-help');if(!h||document.getElementById('native-music-folder'))return;h.textContent='Android 파일 탐색기에서 정한 폴더에 저장합니다.';const b=document.createElement('button');b.id='native-music-folder';b.type='button';b.className='noa-button';b.textContent='앱 저장 폴더 변경';b.onclick=()=>NoaAndroid.postMessage(JSON.stringify({type:'musicFolder'}));h.after(b);})()",null);
+    }
+    syncSession();publishState();}}
    @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest request){
     if(!request.isForMainFrame())return false;Uri u=request.getUrl();
     if(trusted(u.toString())){if("/noa-bridge/lab-oauth.php".equals(u.getPath())&&"start".equals(u.getQueryParameter("action"))){external(u);return true;}return false;}
@@ -121,6 +125,7 @@ public class MainActivity extends Activity {
  private int repeatMode(JSONObject message){return message.optBoolean("repeat")?Player.REPEAT_MODE_ONE:message.optBoolean("collectionLoop")?Player.REPEAT_MODE_ALL:Player.REPEAT_MODE_OFF;}
  private void nativeMessage(JSONObject message){
   String type=message.optString("type");
+  if(type.equals("musicFolder")&&"/noa-music-download.php".equals(Uri.parse(browser.getUrl()).getPath())&&musicUrl==null){pickMusicFolder();return;}
   if(type.equals("ready")){syncSession();publishState();return;}
   if(type.equals("upload")){boolean active=message.optBoolean("active");playbackStore.upload(active);if(active&&controller!=null)controller.pause();return;}
   if(type.equals("update")){appUpdates.check(true);return;}
@@ -192,7 +197,7 @@ public class MainActivity extends Activity {
  @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){super.onActivityResult(requestCode,resultCode,data);if(requestCode==MUSIC_FOLDER){
   if(resultCode==RESULT_OK&&data!=null&&data.getData()!=null){
    Uri tree=data.getData();
-   try{getContentResolver().takePersistableUriPermission(tree,data.getFlags()&(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION));getPreferences(MODE_PRIVATE).edit().putString("musicFolder",tree.toString()).apply();saveMusic(tree);}
+   try{getContentResolver().takePersistableUriPermission(tree,Intent.FLAG_GRANT_WRITE_URI_PERMISSION);getPreferences(MODE_PRIVATE).edit().putString("musicFolder",tree.toString()).apply();saveMusic(tree);}
    catch(SecurityException e){musicUrl=null;notice("폴더 저장 권한을 허용해 주세요.");}
   }else musicUrl=null;
   return;
