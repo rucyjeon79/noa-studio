@@ -1,1 +1,10 @@
 .noa-gifts{max-width:48rem;margin:auto}.noa-gifts nav,.noa-gifts form{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;margin-block:1rem}.noa-gifts :is(article,section){border:1px solid var(--noa-line,#353637);border-radius:12px;padding:1rem;margin-block:.85rem}.noa-gifts fieldset{width:100%;border:0;padding:0}.noa-gifts fieldset label{display:block;padding:.65rem}.noa-gifts h2{font-size:1.12rem}.noa-gifts button,.noa-gifts nav a{min-height:44px;display:inline-flex;align-items:center;padding:0 .85rem}.noa-gifts article strong{color:var(--noa-accent,#dec58d)}.noa-gifts input:not([type=radio]){max-width:100%;padding:.6rem}
+
+#noa-my-account .noa-membership-copy{flex:1;min-width:0}
+.noa-my-rank-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+#noa-my-account .noa-my-rank-heading h2{min-width:0;margin:0;overflow-wrap:anywhere}
+#noa-my-account .noa-my-signout,.noa-my-gift-actions a{display:inline-flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;min-height:44px;text-decoration:none}
+#noa-my-account .noa-my-signout{flex:none;padding-inline:6px;color:var(--noa-muted);font-size:13px;white-space:nowrap}
+.noa-my-gift-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;border-top:1px solid var(--noa-line);padding-block:10px}
+.noa-my-gift-actions a{border:1px solid var(--noa-line);border-radius:8px;color:var(--noa-text)}
+.noa-my-gift-actions svg{color:var(--noa-accent,#d0b67c);flex:none}
