@@ -34,11 +34,26 @@ async function restoreCompleted(r,retryFinish=false){
 }
 async function resumeTransfers(){notice.textContent='서버 응답 확인 중';try{const health=await api('health');if(!health.can_upload&&!(health.can_resume&&reservations.some(r=>isUnsent(r)&&r.uploadId))){notice.textContent=health.storage_available?'자동 복구 중 · 서버 작업 상태를 확인하고 있습니다.':'전송 일시정지 · 서버 저장 공간을 확인해 주세요.';return;}transport.reset();localStorage.removeItem(circuitKey);paused=false;for(const r of reservations)if(['paused','waiting','checking','recovering'].includes(r.state)&&r.file){r.state='waiting';r.error=null;}capacityWaitUntil=0;notice.textContent='서버 상태 확인 완료 · 전송을 이어갑니다.';persist();render();pump();const diagnostics=diagnosticRows.slice(-6);void(async()=>{for(const row of diagnostics){try{await requestRaw('client_incident',row,'',5000);}catch{break;}}})();}catch{notice.textContent='전송 일시정지 · 서버 응답을 아직 확인하지 못했습니다.';}}
 function counts(key,before,after,oldReady,newReady,oldBytes,newBytes){if(key.startsWith('jukebox:qa:'))return;if(before!==after){for(const [state,delta] of [[before,-1],[after,1]]){const n=document.querySelector('[data-jukebox-state-count="'+state+'"]');if(n)n.textContent=String(Math.max(0,Number(n.textContent)+delta));}}if(oldReady!==newReady){for(const [kind,delta] of [['ready',newReady?1:-1],['pending',newReady?-1:1]]){const n=document.querySelector('[data-jukebox-count="'+kind+'"]');if(n)n.textContent=String(Math.max(0,Number(n.textContent)+delta));}}const size=document.querySelector('[data-jukebox-byte-total]');if(size){const bytes=Math.max(0,Number(size.dataset.jukeboxByteTotal)+(newReady?newBytes:0)-(oldReady?oldBytes:0));size.dataset.jukeboxByteTotal=String(bytes);size.textContent='MP3 '+(bytes/1048576).toFixed(2)+' MiB';}}
+function addReplaceButton(card,actions){
+ const button=document.createElement('button');
+ button.type='button';
+ button.className='jukebox-replace noa-icon-button';
+ button.title='음원 교체';
+ button.setAttribute('aria-label',card.dataset.title+' 음원 교체');
+ button.innerHTML=svg('upload');
+ actions.append(button);
+}
+for(const card of cards()){
+ const actions=card.querySelector('.jukebox-actions');
+ if(actions&&card.dataset.audio&&!busy.includes(card.dataset.jukeboxStatus)&&!actions.querySelector('.jukebox-replace')){
+  addReplaceButton(card,actions);
+ }
+}
 function apply(d){progressStates.set(d.key,{...progressStates.get(d.key),...d});const matched=cards().filter(c=>c.dataset.jukeboxKey===d.key),previous=matched[0];const rank={queued:0,retrying:0,analyzing:1,processing:2,verifying:3,ready:4,failed:4};if(previous&&d.job){const oldId=Number(previous.dataset.jukeboxJob)||0,newId=Number(d.job.id)||0;if(newId<oldId||(newId===oldId&&(rank[d.status]??-1)<(rank[previous.dataset.jukeboxStatus]??-1)))return;}const changed=d.ready&&previous&&(!previous.dataset.audio||previous.dataset.audioSha!==d.audio_sha256);if(previous)counts(d.key,previous.dataset.jukeboxStatus,d.status,!!previous.dataset.audio,!!d.ready,Number(previous.dataset.audioBytes)||0,Number(d.audio_bytes)||0);
  for(const c of matched){
  if(d.job)c.dataset.jukeboxJob=String(d.job.id);c.dataset.jukeboxStatus=d.status;c.dataset.audio=d.audio||'';c.dataset.audioSha=d.audio_sha256||'';c.dataset.audioBytes=String(d.audio_bytes||0);let actions=c.querySelector('.jukebox-actions');if(!actions)continue;actions.replaceChildren();
  const button=(label,kind,cls)=>{const b=document.createElement('button');b.type='button';b.className=cls+' noa-icon-button';b.setAttribute('aria-label',c.dataset.title+' '+label);b.title=label;b.innerHTML=svg(kind);actions.append(b);return b;};
- if(d.ready){button('최적화 MP3 재생','play','sound-play');const a=document.createElement('a');a.className='jukebox-download noa-icon-button';a.href=d.download;a.download='';a.title='최적화 MP3 다운로드';a.setAttribute('aria-label',c.dataset.title+' 최적화 MP3 다운로드');a.innerHTML=svg('download');actions.append(a);if(!busy.includes(d.status))button('음원 교체','upload','jukebox-replace');}
+ if(d.ready){button('최적화 MP3 재생','play','sound-play');const a=document.createElement('a');a.className='jukebox-download noa-icon-button';a.href=d.download;a.download='';a.title='최적화 MP3 다운로드';a.setAttribute('aria-label',c.dataset.title+' 최적화 MP3 다운로드');a.innerHTML=svg('download');actions.append(a);if(!busy.includes(d.status))addReplaceButton(c,actions);}
  if(busy.includes(d.status)){button(labels[d.status]+' · 파일 변경','busy','jukebox-busy sound-upload');}
  else if(!d.ready){button(labels[d.status]||'음원 업로드','upload','sound-upload');}
  const state=c.querySelector('.jukebox-state');if(state){state.textContent=(labels[d.status]||d.status)+(d.job?.position?' · 대기 '+d.job.position+'번':'');if(d.error)state.textContent+=' · '+message(d.error);}
