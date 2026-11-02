@@ -1,0 +1,22 @@
+name: NOA private song worker
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: noa-private-worker
+  cancel-in-progress: false
+jobs:
+  generate:
+    if: github.event.repository.private == true
+    runs-on: [self-hosted, noa-private]
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - run: python3 worker.py
+        env:
+          NOA_WORKER_KEY: ${{ secrets.NOA_WORKER_KEY }}

@@ -10,6 +10,7 @@ header('X-Frame-Options: DENY');
 <style>body{max-width:42rem;margin:2rem auto;padding:0 1rem;font:1rem/1.65 system-ui;color:#242129}section{border-top:1px solid #ddd;padding:1rem 0}button,input,textarea{font:inherit;padding:.55rem;max-width:100%;box-sizing:border-box}textarea,input{width:100%}a{color:#5d3480}h1{line-height:1.2}#msg{position:sticky;bottom:0;background:white}</style>
 <h1>NOA STUDIO Assistant 연결</h1>
 <section><h2>플러그인으로 연결</h2><p>최고관리자 권한으로 개인 NOA STUDIO Assistant에 곡·채널·커뮤니티 게시글 조회와 항목 수정 권한을 부여합니다. 선택한 곡 제작도 사용할 수 있습니다.</p><button id="plugin" disabled>연결 상태 확인 중</button> <a href="https://noa-studio-assistant.fizzyorbit19.chatgpt.site">플러그인 안내</a><p>연결 후 ChatGPT에서 NOA STUDIO Assistant를 선택하고 “연결 상태 확인해줘”라고 입력하세요.</p></section>
+<details><summary>관리자 전용 비공개 실행기</summary><p>비공개 실행기의 NOA_WORKER_KEY 설정에 사용할 키를 발급합니다.</p><button id="workerPair">실행기 연결 키 발급</button> <button id="workerDisable">실행기 연결 해제</button><input id="workerSecret" readonly hidden aria-label="실행기 연결 키"></details>
 <details><summary>기존 개인 GPT 방식</summary><p>PC 또는 모바일 웹에서 처음 한 번 설정하면 곡 편집 화면에서 사용할 수 있습니다.</p>
 <section><h2>1. 개인 GPT 만들기</h2><a href="https://chatgpt.com/gpts/editor" target="_blank" rel="noopener">GPT 편집기 열기</a>
 <p>이름은 ‘NOA 곡 제작 비서’, 공개 범위는 ‘나만 보기’로 설정하세요. 아래 지침을 붙여 넣고 대화 스타터에 ‘만들어줘’를 추가하세요.</p>
@@ -28,6 +29,9 @@ async function api(op,data={}){
  const j=await r.json();if(!j.ok)throw Error(({invalid_gpt_url:'전용 GPT 공유 주소를 확인해 주세요.',pair_first:'먼저 연결 키를 발급해 주세요.'})[j.error]||'연결 설정을 확인하지 못했습니다.');return j;
 }
 async function run(fn){try{await fn();}catch(e){el('msg').textContent=e.message;}}
+el('workerDisable').onclick=()=>run(async()=>{await api('workerDisable');el('workerSecret').value='';el('workerSecret').hidden=true;el('msg').textContent='실행기 연결을 해제했습니다.';});
+el('workerPair').onclick=()=>run(async()=>{if(!confirm('생성 버튼을 비공개 실행기 방식으로 전환할까요? 기존 실행기 키가 있으면 교체됩니다.'))return;
+ const j=await api('workerPair');el('workerSecret').hidden=false;el('workerSecret').value=j.key;el('workerSecret').select();});
 let paired=false,pluginEnabled=false;
 function pluginLabel(){el('plugin').disabled=false;el('plugin').textContent=pluginEnabled?'플러그인 연결 해제':'NOA STUDIO Assistant 연결 허용';}
 el('plugin').onclick=()=>run(async()=>{const enable=!pluginEnabled;if(!confirm(enable?'개인 플러그인에 위 조회·수정 권한을 허용할까요?':'플러그인 연결을 해제할까요?'))return;await api('pluginToggle',{enabled:enable});pluginEnabled=enable;pluginLabel();});

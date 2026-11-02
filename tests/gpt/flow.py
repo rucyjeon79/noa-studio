@@ -98,6 +98,18 @@ with tempfile.TemporaryDirectory() as tmp:
         assert call('health',{},key=plugin_key)['managementConnected']
         call('pluginToggle',{'enabled':False},admin=True)
         call('health',{},key=plugin_key,status=401)
+        worker=call('workerPair',{},admin=True)['key']
+        one_tap={**task,'worker':True,'revision':2,'replace':True}
+        call('start',one_tap,admin=True,status=503)
+        call('workerPoll',{},key=worker)
+        queued=call('start',one_tap,admin=True)
+        assert call('workerPoll',{},key=worker)['id']==queued['id']
+        assert 'id' not in call('workerPoll',{},key=worker)
+        assert call('read',key=worker)['id']==queued['id']
+        assert call('save',{'id':queued['id'],'text':'실행기 결과'},key=worker)['saved']
+        assert call('progress',{'id':queued['id']},admin=True)['saved']
+        call('workerDisable',{},admin=True)
+        call('workerPoll',{},key=worker,status=401)
         print('PASS: authenticated single-field save, overwrite consent, stale revision, idempotent retry and key revocation')
     finally:
         server.terminate()
