@@ -1,4 +1,4 @@
-"""One-shot recovery of observed job 83 after actual availability proof; no general redrive endpoint."""
+"""One-shot recovery of observed job 590 after actual availability proof; no general redrive endpoint."""
 import hashlib,json,secrets,time,urllib.request,os
 from pathlib import Path
 import paramiko
@@ -11,7 +11,7 @@ def main():
         with paramiko.SFTPClient.from_transport(t)as s:
             s.get_channel().settimeout(45)
             with s.open('/hosting/noastudio/noa-ai-lab/worker.key','rb')as f:key=f.read(129).strip()
-            observation=request_observation(key);rows=[r for r in observation['receipts']if r['jobId']==83]
+            observation=request_observation(key);rows=[r for r in observation['receipts']if r['jobId']==590]
             if len(rows)!=1:raise RuntimeError('reviewed_job_missing')
             event=rows[0]['eventId'];lease='/hosting/noastudio/noa-ai-lab/n80-music-consumer/leases/'+hashlib.sha256((event+'|music').encode()).hexdigest()+'.json'
             with s.open(lease,'rb')as f:raw=f.read(65536)
@@ -42,6 +42,6 @@ def main():
                             if f.read()!=code:raise RuntimeError('changed_helper_preserved')
                         s.remove(remote)
     finally:t.close()
-    result.update({'jobId':83,'commit':os.environ['GITHUB_SHA'],'temporaryHelperRemoved':True})
+    result.update({'jobId':590,'commit':os.environ['GITHUB_SHA'],'temporaryHelperRemoved':True})
     (out/'retry.json').write_text(json.dumps(result,indent=2)+'\n');print('MUSIC_RETRY_REPAIR',json.dumps(result))
 if __name__=='__main__':main()

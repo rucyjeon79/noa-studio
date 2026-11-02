@@ -22,13 +22,18 @@ jobs:
           php tests/engine/music_retry_repair_test.php
           python -m py_compile scripts/n80_music_retry.py
           python -m pip install 'paramiko>=3,<5'
-      - name: Reverify availability and recover only reviewed failed MUSIC job 83
+      - name: Reverify availability and recover only reviewed failed MUSIC job 590
         env: &retry_env
+          GH_TOKEN: ${{ github.token }}
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
-        run: python scripts/n80_music_retry.py
+        run: |
+          php tests/engine/music_proof_auth_test.php
+          python tests/popularity/stream_source_contract.py
+          python scripts/noa_n80_music_route_release.py
+          python scripts/n80_music_retry.py
       - name: Verify actual acknowledgement and identical replay of all ten observations
         env: *retry_env
         run: python scripts/n80_live_observer.py
