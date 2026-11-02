@@ -4,6 +4,9 @@ import os
 import re
 import subprocess
 import tempfile
+import time
+import urllib.error
+from http.client import IncompleteRead
 import urllib.request
 from pathlib import Path
 
@@ -22,6 +25,21 @@ def api(op, data=None):
     return result
 
 
+def save_result(task_id, text):
+    # Reuse the request ID and exact output if the server committed before a timeout.
+    payload = {"id": task_id, "text": text}
+    for attempt in range(3):
+        try:
+            return api("save", payload)
+        except urllib.error.HTTPError as error:
+            if error.code not in (502, 503, 504) or attempt == 2:
+                raise
+        except (urllib.error.URLError, TimeoutError, ConnectionError, IncompleteRead):
+            if attempt == 2:
+                raise
+        time.sleep(2 ** attempt)
+
+
 def generate(task_id):
     task = api("read")
     if task.get("id") != task_id:
@@ -37,7 +55,7 @@ def generate(task_id):
                         "-o", str(target), "-"], cwd=directory, timeout=240, check=True,
                        input=prompt + json.dumps(task, ensure_ascii=False), text=True,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        api("save", {"id": task_id, "text": target.read_text().strip()})
+        save_result(task_id, target.read_text().strip())
 
 
 def main():
