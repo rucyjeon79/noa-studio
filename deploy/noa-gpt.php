@@ -130,8 +130,8 @@ try {
         $targets=[];
         if ($field==='publishSet') {
             $requested=$body['targets']??null;
-            $allowed=['geminiPrompt'=>'thumb','youtubeTitle'=>'ytTitle','description'=>'ytDesc','communityPost'=>'letter'];
-            if (!is_array($requested)||!array_is_list($requested)||!$requested||count($requested)>4) reply(400,['error'=>'invalid_targets']);
+            $allowed=noa_publish_targets($record['packageType']);
+            if (!is_array($requested)||!array_is_list($requested)||!$requested||count($requested)>count($allowed)) reply(400,['error'=>'invalid_targets']);
             $rules=noa_generation_rules(noa_bridge_pdo(),(string)$record['context']['genre'],(string)($record['payload']['ownerId']??''));
             foreach ($requested as $k) {
                 if (!is_string($k)||!isset($allowed[$k])||in_array($k,$targets,true)) reply(400,['error'=>'invalid_targets']);

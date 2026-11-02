@@ -178,7 +178,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
     drawMembers();if(data.packageType==='act'){const range=document.createElement('p');range.className='noa-edit-readonly';range.textContent='ACT '+data.context.act+' · '+data.context.range+' · 해당 EP 10곡을 오름차순으로 저장합니다.';members.append(range);}
    }
    if(selector.type==='song'){
-    const names={geminiPrompt:'썸네일 프롬프트',youtubeTitle:'유튜브 제목',description:'영상 설명',communityPost:'커뮤니티 글'};
+    const names={...(data.packageType==='ep'?{title:'장르 곡 제목',lyrics:'장르 가사'}:{}),geminiPrompt:'썸네일 프롬프트',youtubeTitle:'유튜브 제목',description:'영상 설명',communityPost:'커뮤니티 글'};
     const keys=Object.keys(names).filter(k=>inputs[k]);
     const publish=control('ai','게시 자료 생성','게시 자료 일괄 생성');
     const choices=document.createElement('details'),summary=document.createElement('summary');choices.className='noa-publish-options';summary.textContent='생성할 항목 선택';choices.append(summary);

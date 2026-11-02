@@ -45,7 +45,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (bridge/"inline-edit.php").write_text("""<?php
     function nie_resolve($db,$q){$r=$db->query('SELECT title,revision FROM song')->fetch();
     return ['writeKey'=>'song:1','fields'=>['title'=>$r['title']],'kind'=>'single','context'=>['genre'=>'your-story'],'payload'=>[],
-    'revision'=>(int)$r['revision'],'packageType'=>'original'];}
+    'revision'=>(int)$r['revision'],'packageType'=>(($q['key']??'')==='ep-test'?'ep':'original')];}
     function nup_patch($old,$kind,$patch){return $patch;}
     function nup_validate_classification(...$args){}
     function nup_store($db,$key,$kind,$p,$rev,$actor){$q=$db->prepare('UPDATE song SET title=COALESCE(?,title),revision=revision+1 WHERE revision=?');$q->execute([$p['title']??null,$rev]);if(!$q->rowCount())throw new DomainException('revision_conflict');return $rev+1;}
@@ -127,6 +127,15 @@ with tempfile.TemporaryDirectory() as tmp:
         result={'id':batch['id'],'text':'{"description":"설명","youtubeTitle":"제목"}'}
         assert call('save',result,key=worker)['revision']==5
         assert call('progress',{'id':batch['id']},admin=True)['revision']==5
+        genre_job={**one_tap,'revision':5,'field':'publishSet','targets':['title','lyrics','geminiPrompt','youtubeTitle','description','communityPost']}
+        call('start',genre_job,admin=True,status=400)
+        genre_job['selector']={**task['selector'],'key':'ep-test'}
+        genre_batch=call('start',genre_job,admin=True)
+        assert genre_batch['targets']==genre_job['targets']
+        call('workerPoll',{'id':genre_batch['id']},key=worker)
+        values={k:'내용' for k in genre_batch['targets']}
+        values.update(title='장르 제목',geminiPrompt='Create a cinematic portrait.')
+        assert call('save',{'id':genre_batch['id'],'text':json.dumps(values)},key=worker)['revision']==6
         call('workerDisable',{},admin=True)
         call('workerPoll',{},key=worker,status=401)
         print('PASS: authenticated single-field save, overwrite consent, stale revision, idempotent retry and key revocation')

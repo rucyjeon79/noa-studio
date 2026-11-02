@@ -17,12 +17,15 @@ try{
  $b=json_decode(file_get_contents('php://input',false,null,0,16385),true,16,JSON_THROW_ON_ERROR);
  if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
  $selector=$b['selector']??[];$targets=$b['targets']??null;
- $allowed=['geminiPrompt'=>'thumb','youtubeTitle'=>'ytTitle','description'=>'ytDesc','communityPost'=>'letter'];
- if(($selector['type']??'')!=='song'||!is_array($targets)||!array_is_list($targets)||!$targets||count($targets)>4||array_diff($targets,array_keys($allowed)))throw new InvalidArgumentException('invalid_targets');
+ require_once __DIR__.'/noa-bridge/generation-rules.php';
+ $allowed=noa_publish_targets('ep');
+ if(($selector['type']??'')!=='song'||!is_array($targets)||!array_is_list($targets)||!$targets||count($targets)>count($allowed)||array_diff($targets,array_keys($allowed)))throw new InvalidArgumentException('invalid_targets');
  $targets=array_values(array_unique($targets));sort($targets);
  $db=noa_bridge_pdo();$owner=(string)$member['mb_id'];
  $prepared=na_generation_prepare($db,['selector'=>$selector,'field'=>$targets[0],'expectedRevision'=>$b['revision']??null]);
- $ctx=$prepared['context'];$switches=$ctx['rules']['genre']['output']??[];
+ $ctx=$prepared['context'];$allowed=noa_publish_targets($ctx['packageType']);
+ if(array_diff($targets,array_keys($allowed)))throw new InvalidArgumentException('invalid_targets');
+ $switches=$ctx['rules']['genre']['output']??[];
  foreach($targets as $field)if(($switches[$allowed[$field]]??true)===false||($field==='communityPost'&&($ctx['rules']['genre']['community']??true)===false))$targets=array_values(array_diff($targets,[$field]));
  if(!$targets)throw new DomainException('no_enabled_fields');
 
