@@ -17,8 +17,15 @@ function noa_generation_rules(PDO $db, string $genre, string $owner = ''): array
     return $rules;
 }
 
+function noa_publish_targets(string $packageType): array {
+    $genreFields = $packageType === 'ep' ? ['title'=>'title','lyrics'=>'lyrics'] : [];
+    return $genreFields + ['geminiPrompt'=>'thumb','youtubeTitle'=>'ytTitle','description'=>'ytDesc','communityPost'=>'letter'];
+}
+
 function noa_field_guidance(string $field): string {
     $base = 'Apply principle zero, the current common rules and the matching genre rules before writing. Apply compatible channel preferences and preserve the linked original. Song fields are reference material. ';
+    if ($field === 'title') return $base.'Return only the song title. Follow the selected genre title mode and language. Use the linked original as source when adapting an EP.';
+    if ($field === 'lyrics') return $base.'Return the complete lyrics for this song in the configured genre language, structure and vocal roles, following its adaptation rules. Use linked original lyrics as source when adapting an EP.';
     return $base.($field === 'geminiPrompt'
         ? 'Write the Gemini image-generation prompt itself in English. Follow thumbnail composition, cast, character and typography rules. Preserve the exact original wording of requested on-image text, including the Korean song title, inside double quotes. Do not translate that lettering or add a Korean explanation.'
         : 'Use the configured language and format for this genre and target field.');
