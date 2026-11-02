@@ -42,3 +42,7 @@ jobs:
                   release.main()
               raise
           PY
+      - name: Inspect ten public entry points at phone and desktop widths
+        run: |
+          cp scripts/qa/noa-public-layout.mjs "$RUNNER_TEMP/noa-form/public-layout.mjs"
+          node "$RUNNER_TEMP/noa-form/public-layout.mjs"
