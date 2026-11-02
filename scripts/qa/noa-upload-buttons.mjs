@@ -51,6 +51,11 @@ try{for(const width of [360,1280]){
  await page.waitForFunction(()=>!document.querySelector('.jukebox-transfer-check').disabled);
  await page.evaluate(()=>window.dispatchEvent(new Event('online')));
  await page.waitForFunction(()=>!document.querySelector('.jukebox-transfer-check').disabled);
+ const replace=page.getByRole('button',{name:'EP.31 음원 교체',exact:true});
+ assert.equal(await replace.count(),1);
+ await replace.click();
+ await page.locator('.jukebox-duplicate-keep').click();
+ assert.equal(init,1);
  assert.equal(await page.locator('.jukebox-source-actions').count(),0);
  assert.equal(await page.locator('.noa-track-progress').count(),0);
  assert.equal(await page.locator('#jukebox-transfer-dock').isVisible(),false);
