@@ -4,7 +4,6 @@ import os
 import re
 import subprocess
 import tempfile
-import time
 import urllib.request
 from pathlib import Path
 
@@ -45,15 +44,16 @@ def main():
     status = subprocess.run(["codex", "login", "status"], capture_output=True, text=True)
     if status.returncode or "chatgpt" not in (status.stdout + status.stderr).lower():
         raise SystemExit("ChatGPT login required on this runner")
-    deadline = time.monotonic() + 18 * 60
-    while time.monotonic() < deadline:
-        task_id = api("workerPoll", {}).get("id")
-        if task_id and re.fullmatch("[a-f0-9]{32}", task_id):
-            try:
-                generate(task_id)
-            except Exception:
-                api("workerFail", {"id": task_id})
-        time.sleep(5)
+    task_id = os.environ["NOA_TASK_ID"]
+    if not re.fullmatch("[a-f0-9]{32}", task_id):
+        raise ValueError("Invalid task ID")
+    if api("workerPoll", {"id": task_id}).get("id") != task_id:
+        return
+    try:
+        generate(task_id)
+    except Exception:
+        api("workerFail", {"id": task_id})
+        raise
 
 
 if __name__ == "__main__":

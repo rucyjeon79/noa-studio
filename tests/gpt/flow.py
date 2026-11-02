@@ -108,6 +108,15 @@ with tempfile.TemporaryDirectory() as tmp:
         assert call('read',key=worker)['id']==queued['id']
         assert call('save',{'id':queued['id'],'text':'실행기 결과'},key=worker)['saved']
         assert call('progress',{'id':queued['id']},admin=True)['saved']
+        # Exercise a dispatched worker without outbound traffic or real credentials.
+        hosted_src=target.read_text().replace("getenv('NOA_GITHUB_DISPATCH_TOKEN')","'fixture'")
+        start=hosted_src.index("        $request = curl_init(")
+        end=hosted_src.index("        if ($status <", start)
+        target.write_text(hosted_src[:start]+"        $status = 204;\n"+hosted_src[end:])
+        hosted=call('start',{**one_tap,'revision':3},admin=True)
+        call('workerPoll',{'id':'a'*32},key=worker,status=409)
+        assert call('workerPoll',{'id':hosted['id']},key=worker)['id']==hosted['id']
+        assert call('save',{'id':hosted['id'],'text':'닷홈 요청'},key=worker)['saved']
         call('workerDisable',{},admin=True)
         call('workerPoll',{},key=worker,status=401)
         print('PASS: authenticated single-field save, overwrite consent, stale revision, idempotent retry and key revocation')

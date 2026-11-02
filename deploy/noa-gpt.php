@@ -60,7 +60,9 @@ try {
     $job = $state['job'] ?? [];
     $valid = ($job['expires'] ?? 0) > time();
     $out = [];
-    $workerReady = ($state['workerSeen'] ?? 0) > time()-45;
+    $dispatchToken = trim((string)getenv('NOA_GITHUB_DISPATCH_TOKEN'));
+    $hosted = $dispatchToken !== '' && isset($state['workerHash']);
+    $workerReady = $hosted || ($state['workerSeen'] ?? 0) > time()-45;
     switch ($op) {
     case 'workerDisable':
         unset($state['workerHash'],$state['workerSeen']);
@@ -76,6 +78,7 @@ try {
     case 'workerPoll':
         $state['workerSeen'] = time();
         $pending = $valid && !empty($job['worker']) && !isset($job['saved']) && !isset($job['failed']);
+        if ($pending && !empty($job['hosted']) && ($body['id'] ?? '') !== $job['id']) reply(409,['error'=>'task_replaced']);
         if ($pending && empty($job['claimed'])) {
             $state['job']['claimed'] = time();
             $out = ['id'=>$job['id']];
@@ -105,7 +108,7 @@ try {
         break;
     case 'progress':
         if (!$valid || ($body['id'] ?? '') !== $job['id']) reply(409,['error'=>'task_replaced']);
-        $out=['saved'=>isset($job['saved']), 'failed'=>!empty($job['failed']) || (!empty($job['worker']) && time() > $job['expires']-3600+360 && !isset($job['saved']))];
+        $out=['saved'=>isset($job['saved']), 'failed'=>!empty($job['failed']) || (!empty($job['worker']) && time() > $job['expires']-3600+(!empty($job['hosted']) ? 1200 : 360) && !isset($job['saved']))];
         break;
     case 'start':
         $useWorker = ($body['worker'] ?? false) === true;
@@ -117,7 +120,7 @@ try {
         $record = nie_resolve(noa_bridge_pdo(), $selector);
         if ($record['revision'] !== ($body['revision'] ?? null) || !empty($record['payload']['_noaTrash'])) reply(409,['error'=>'revision_conflict']);
         if (trim((string)($record['fields'][$field] ?? '')) !== '' && ($body['replace'] ?? false) !== true) reply(409,['error'=>'overwrite_confirmation']);
-        $state['job'] = ['worker'=>$useWorker,'id'=>bin2hex(random_bytes(16)),'selector'=>$selector,'key'=>$record['writeKey'],'revision'=>$record['revision'],'field'=>$field,'expires'=>time()+3600];
+        $state['job'] = ['hosted'=>$hosted && $useWorker,'worker'=>$useWorker,'id'=>bin2hex(random_bytes(16)),'selector'=>$selector,'key'=>$record['writeKey'],'revision'=>$record['revision'],'field'=>$field,'expires'=>time()+3600];
         $out = ['worker'=>$useWorker,'plugin'=>!empty($state['pluginEnabled']),'url'=>$state['url'] ?? '', 'id'=>$state['job']['id']];
         break;
     case 'read':
@@ -168,6 +171,19 @@ try {
         $bytes = json_encode($state, JSON_THROW_ON_ERROR);
         try { if (!$tmp || file_put_contents($tmp,$bytes)!==strlen($bytes) || !rename($tmp,$file)) throw new RuntimeException('state_write'); }
         finally { if ($tmp && is_file($tmp)) unlink($tmp); }
+    }
+    if ($op === 'start' && !empty($state['job']['hosted'])) {
+        flock($lock, LOCK_UN);
+        $request = curl_init('https://api.github.com/repos/rucyjeon79/noa-private-worker/actions/workflows/noa-worker.yml/dispatches');
+        curl_setopt_array($request, [
+            CURLOPT_POST=>true, CURLOPT_RETURNTRANSFER=>true, CURLOPT_TIMEOUT=>12,
+            CURLOPT_HTTPHEADER=>['User-Agent: NOA-STUDIO','Accept: application/vnd.github+json',
+                'Content-Type: application/json','Authorization: Bearer '.$dispatchToken],
+            CURLOPT_POSTFIELDS=>json_encode(['ref'=>'main','inputs'=>['task_id'=>$out['id']]],JSON_THROW_ON_ERROR)
+        ]);
+        curl_exec($request);
+        $status = curl_getinfo($request,CURLINFO_RESPONSE_CODE);
+        if ($status < 200 || $status >= 300) reply(502,['error'=>'dispatch_failed']);
     }
     reply(200,['ok'=>true]+$out);
 } catch (InvalidArgumentException|JsonException $e) { reply(400,['error'=>'invalid_request']); }

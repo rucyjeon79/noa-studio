@@ -1,8 +1,11 @@
 name: NOA private song worker
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '*/15 * * * *'
+    inputs:
+      task_id:
+        description: NOA song field request ID
+        required: true
+        type: string
 permissions:
   contents: read
 concurrency:
@@ -10,13 +13,41 @@ concurrency:
   cancel-in-progress: false
 jobs:
   generate:
-    if: github.event.repository.private == true
-    runs-on: [self-hosted, noa-private]
-    timeout-minutes: 25
+    if: github.event.repository.private == true && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-      - run: python3 worker.py
+      - name: Select temporary login directory
+        run: echo "CODEX_HOME=$RUNNER_TEMP/noa-codex" >> "$GITHUB_ENV"
+      - name: Install Codex
+        run: npm install --global @openai/codex@0.116.0
+      - name: Restore private login
+        env:
+          INITIAL_AUTH: ${{ secrets.NOA_CODEX_AUTH }}
+          ROTATION_TOKEN: ${{ secrets.NOA_SECRET_ROTATION_TOKEN }}
+        run: |
+          set -eu
+          test -n "$ROTATION_TOKEN"
+          umask 077
+          mkdir -p "$CODEX_HOME"
+          printf '%s' "$INITIAL_AUTH" | jq -ce 'select(.tokens.refresh_token | type == "string")' > "$CODEX_HOME/auth.json"
+          cp "$CODEX_HOME/auth.json" "$RUNNER_TEMP/noa-auth-original"
+      - name: Generate the selected field
         env:
           NOA_WORKER_KEY: ${{ secrets.NOA_WORKER_KEY }}
+          NOA_TASK_ID: ${{ inputs.task_id }}
+        run: python3 worker.py
+      - name: Persist refreshed login
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.NOA_SECRET_ROTATION_TOKEN }}
+        run: |
+          set -eu
+          trap 'rm -rf "$CODEX_HOME" "$RUNNER_TEMP/noa-auth-original"' EXIT
+          if test -s "$RUNNER_TEMP/noa-auth-original" && ! cmp -s "$CODEX_HOME/auth.json" "$RUNNER_TEMP/noa-auth-original"; then
+            jq -e '.tokens.refresh_token | type == "string"' "$CODEX_HOME/auth.json" >/dev/null
+            gh secret set NOA_CODEX_AUTH --repo "$GITHUB_REPOSITORY" < "$CODEX_HOME/auth.json"
+          fi
