@@ -6,6 +6,7 @@ $extra= <<<'PHP'
 
 if(PHP_SAPI==='cli-server')require_once __DIR__.'/noa-bridge/member-access.php';
 if(PHP_SAPI==='cli-server')ob_start(static fn($html)=>str_replace('</head>','<link rel="stylesheet" href="/noa-account.css"></head>',$html));
+$g5['connect_db']=$nc_db;
 define('G5_PATH',__DIR__);$config['cf_admin']='qa_admin';
 if(($_SERVER['HTTP_ORIGIN']??'')==='http://127.0.0.1:8078')$_SERVER['HTTP_ORIGIN']='https://noastudio.ai.kr';
 require __DIR__.'/extend/zz.noa-notifications.php';
@@ -14,10 +15,10 @@ PHP;
 file_put_contents($root.'/common.php',$extra,FILE_APPEND);
 copy('deploy/noa-engagement.extend.php',$root.'/extend/zz.noa-engagement.php');
 copy('deploy/noa-notifications.extend.php',$root.'/extend/zz.noa-notifications.php');
-foreach(['noa-channel-menu.php','noa-member-badges.css','noa-member-badges.js','noa-my.php','noa-history.js','noa-account.css','noa-notifications.php','noa-notifications.js','noa-notifications.css','noa-sw.js','noa-ainoa.js','noa-ainoa.css','noa-brand.js','noa-policy-20261024.css']as $file)copy('deploy/'.$file,$root.'/'.$file);
+foreach(['noa-gifts.css','noa-channel-menu.php','noa-member-badges.css','noa-member-badges.js','noa-my.php','noa-history.js','noa-account.css','noa-notifications.php','noa-notifications.js','noa-notifications.css','noa-sw.js','noa-ainoa.js','noa-ainoa.css','noa-brand.js','noa-policy-20261024.css']as $file)copy('deploy/'.$file,$root.'/'.$file);
 @mkdir($root.'/noa-assets',0700,true);copy('public/ainoa/ainoa-symbol.png',$root.'/noa-assets/ainoa-symbol.png');
 foreach(['papa-logo.png','icon-180.png']as $asset)copy('public/'.$asset,$root.'/noa-assets/'.$asset);
-foreach(['member-badges.php','creator-core.php','channel-ownership.php','package-record.php','notifications-inline.php','notifications-core.php','notifications-sources.php','notifications.php','notification-worker.php']as $file)copy('bridge/'.$file,$root.'/noa-bridge/'.$file);
+foreach(['gift-core.php','vip-store-core.php','membership-core.php','subscription-core.php','subscription-access.php','monthly-rewards.php','member-badges.php','creator-core.php','channel-ownership.php','package-record.php','notifications-inline.php','notifications-core.php','notifications-sources.php','notifications.php','notification-worker.php']as $file)copy('bridge/'.$file,$root.'/noa-bridge/'.$file);
 require $root.'/common.php';require 'bridge/notifications-sources.php';
 $db=new PDO('mysql:host=127.0.0.1;dbname=noa_community;charset=utf8mb4','root','fixture-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_EMULATE_PREPARES=>false]);
 $db->exec("SET SESSION sql_mode=''");
