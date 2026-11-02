@@ -27,15 +27,19 @@ function nt_key(string $id):string{ns_order_key($id);return 'toss:order:'.$id;}
 function nt_payment_key(string $key):string{if(!preg_match('/^[A-Za-z0-9_-]{1,200}$/D',$key))throw new InvalidArgumentException('invalid_payment');return $key;}
 function nt_order(string $id,?string $owner=null):array{$r=ns_doc(nt_key($id));if(!$r||($owner!==null&&!hash_equals($owner,$r['data']['ownerId'])))throw new DomainException('order_not_found');return $r['data'];}
 function nt_mode(array $d,array $c):void{if(!nt_ready($c))throw new DomainException('payment_not_ready');if($d['mode']!==$c['mode']||!hash_equals($d['mid'],$c['mid']))throw new DomainException('payment_configuration_changed');}
-function nt_create(string $owner,string $id,string|array $product,int $now):array{
+function nt_create(string $owner,string $id,string|array $product,int $now,?string $giftRecipient=null):array{
  $q=nt_cart_quote($product);$key=nt_key($id);$c=nt_config();if(!nt_ready($c))throw new DomainException('payment_not_ready');
- return ns_atomic($owner,true,function()use($owner,$id,$q,$key,$c,$now){nr_member($owner);$old=ns_doc($key,true);if($old){$d=$old['data'];if($d['ownerId']!==$owner||$d['productId']!==$q['id'])throw new DomainException('purchase_conflict');nt_mode($d,$c);return $d;}
+ return ns_atomic($owner,true,function()use($owner,$id,$q,$key,$c,$now,$giftRecipient){nr_member($owner);$old=ns_doc($key,true);if($old){$d=$old['data'];if($d['ownerId']!==$owner||$d['productId']!==$q['id']||($d['giftRecipient']??null)!==$giftRecipient)throw new DomainException('purchase_conflict');nt_mode($d,$c);return $d;}
   $customerKey='toss:customer:'.hash('sha256',$owner);$customer=ns_doc($customerKey,true);if(!$customer){ns_put($customerKey,'toss_customer',['key'=>bin2hex(random_bytes(24))],0,$owner);$customer=ns_doc($customerKey);}
   $d=['id'=>$id,'orderId'=>'NOA_'.str_replace('-','',$id),'ownerId'=>$owner,'customerKey'=>$customer['data']['key'],'productId'=>$q['id'],'items'=>$q['items'],'priceWon'=>$q['priceWon'],'paidPoints'=>$q['paidPoints'],'bonusPoints'=>$q['bonusPoints'],'totalPoints'=>$q['totalPoints'],'mode'=>$c['mode'],'mid'=>$c['mid'],'state'=>'created','credited'=>false,'paidReversed'=>0,'bonusReversed'=>0,'createdAt'=>$now,'paymentKey'=>null];
+  if($giftRecipient!==null){
+   require_once __DIR__.'/gift-core.php';
+   $d['giftRecipient']=ng_recipient($owner,$giftRecipient)['mb_id'];
+  }
   ns_put($key,'toss_order',$d,0,$owner);return $d;
  });
 }
-function nt_view(array $d):array{return array_intersect_key($d,array_flip(['id','orderId','productId','items','priceWon','paidPoints','bonusPoints','totalPoints','mode','state','paidReversed','bonusReversed','createdAt','paidAt']));}
+function nt_view(array $d):array{return array_intersect_key($d,array_flip(['id','orderId','productId','items','priceWon','paidPoints','bonusPoints','totalPoints','mode','state','paidReversed','bonusReversed','createdAt','paidAt','giftRecipient']));}
 function nt_api(string $method,string $path,?array $body,array $c,string $id=''):array{
  if(defined('NOA_TOSS_TEST_HARNESS')&&PHP_SAPI==='cli'&&isset($GLOBALS['nt_test_transport']))return ($GLOBALS['nt_test_transport'])($method,$path,$body,$c,$id);
  if(!function_exists('curl_init'))throw new DomainException('payment_not_ready');
@@ -68,10 +72,11 @@ function nt_apply(string $id,array $p,int $now):array{
   if($reversed<$d['paidReversed']||$d['state']==='canceled')return $d;
   $receipt='toss:receipt:'.hash('sha256',$p['paymentKey']);$seen=ns_doc($receipt,true);if($seen&&$seen['data']['orderId']!==$id)throw new DomainException('payment_reference_already_used');if(!$seen)ns_put($receipt,'toss_receipt',['orderId'=>$id],0,$d['ownerId']);
   $live=$d['mode']==='live';if(!$d['credited']&&$status!=='CANCELED'){
-   if($live){nr_insert_points($d['ownerId'],$d['paidPoints'],'NOA 포인트권 구매','noa_toss',$id,'paid');if($d['bonusPoints'])nr_insert_points($d['ownerId'],$d['bonusPoints'],'NOA 포인트권 추가 10%','noa_toss',$id,'bonus');}
+   if($live&&empty($d['giftRecipient'])){nr_insert_points($d['ownerId'],$d['paidPoints'],'NOA 포인트권 구매','noa_toss',$id,'paid');if($d['bonusPoints'])nr_insert_points($d['ownerId'],$d['bonusPoints'],'NOA 포인트권 추가 10%','noa_toss',$id,'bonus');}
    $d['credited']=true;$d['paidAt']=$now;
   }
-  if($live&&$d['credited']){nt_revoke($d['ownerId'],$reversed-$d['paidReversed'],$id,'cancel_paid_'.$reversed);nt_revoke($d['ownerId'],$bonus-$d['bonusReversed'],$id,'cancel_bonus_'.$bonus);}
+  if($live&&!empty($d['giftRecipient'])){require_once __DIR__.'/gift-core.php';ng_settle_points($d,$reversed,$bonus,$now);}
+  elseif($live&&$d['credited']){nt_revoke($d['ownerId'],$reversed-$d['paidReversed'],$id,'cancel_paid_'.$reversed);nt_revoke($d['ownerId'],$bonus-$d['bonusReversed'],$id,'cancel_bonus_'.$bonus);}
   $d['paidReversed']=$reversed;$d['bonusReversed']=$bonus;$d['paymentKey']=$p['paymentKey'];$d['state']=$status==='DONE'?'paid':($status==='CANCELED'?'canceled':'partially_canceled');$d['verifiedAt']=$now;
   if($d!==$r['data'])ns_put(nt_key($id),'toss_order',$d,$r['revision'],$d['ownerId']);if($live)nr_sync_member($d['ownerId'],$now);return $d;
  });

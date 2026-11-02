@@ -35,6 +35,7 @@ function noa_sitemap_registry():array{
             ['password','아이디·비밀번호 찾기','계정 접근 복구','/bbs/password_lost.php','settings','guest'],
             ['playlists','내 재생목록','나만의 목록 만들기와 편집','/noa-music.php#my-playlists','playlists','member'],
             ['subscription','월 구독 · 포인트','이용 기간과 구독 구매 내역','/noa-subscription.php','user','member'],
+            ['giftBox','선물함','받은 선물 사용·연장 및 보낸 선물 현황','/noa-gifts.php','user','member'],
             ['vipStore','VIP 이용권','별무리·크레이터 30일·365일 이용권','/noa-vip.php','user','public'],
             ['points','포인트권 구매','카드·카카오페이 · 10,000P부터 10% 추가','/noa-points.php','user','public'],
             ['membership','포인트 · VIP 이용권','포인트 잔액·적립·이용 기간 확인','/noa-membership.php','user','member'],
@@ -237,4 +238,3 @@ function noa_sitemap_escape(string $value):string{return htmlspecialchars($value
 (()=>{'use strict';const search=document.getElementById('noa-menu-search'),status=document.getElementById('noa-menu-results'),sections=[...document.querySelectorAll('.noa-site-map')];
 search.addEventListener('input',()=>{const query=search.value.trim().toLocaleLowerCase();let count=0;for(const section of sections){let shown=0;for(const link of section.querySelectorAll('.noa-site-map-link')){const match=link.textContent.toLocaleLowerCase().includes(query);link.hidden=!match;if(match)shown++;}section.hidden=shown===0;count+=shown;}status.textContent=query?(count?count+'개 메뉴를 찾았습니다.':'일치하는 메뉴가 없습니다. 다른 단어로 찾아보세요.') : '';});})();
 </script></body></html>
-

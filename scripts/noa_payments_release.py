@@ -9,4 +9,3 @@ release.FILES.update({'noa-vip.js':'deploy/noa-vip.js','noa-bridge/member-access
 release.NEW=set(release.FILES)-{'noa-engagement.css','noa-membership.php','noa-sitemap.php','noa-workspace.php'}
 release.PROTECTED+=['noa-bridge/subscription-core.php','noa-bridge/membership-core.php','noa-bridge/music-download-core.php','noa-music-download.php','noa-bridge/engagement-core.php']
 if __name__=='__main__':release.main()
-
