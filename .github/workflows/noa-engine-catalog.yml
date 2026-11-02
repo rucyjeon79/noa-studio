@@ -1,7 +1,7 @@
 name: NOA engine and catalog reads
 on:
   pull_request:
-    paths: &paths ['scripts/noa_engine_catalog_release.py','.github/workflows/noa-engine-catalog.yml']
+    paths: &paths ['scripts/noa_engine_catalog_release.py','tests/workspace/classification_test.php','tests/workspace/duplicates_test.php','.github/workflows/noa-engine-catalog.yml']
   push:
     branches: [main]
     paths: *paths
