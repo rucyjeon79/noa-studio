@@ -125,6 +125,7 @@ try {
         $field = $body['field'] ?? '';
         if (($selector['type'] ?? '') !== 'song' || !(in_array($field,TARGETS,true) || ($field==='publishSet' && $useWorker))) reply(400,['error'=>'invalid_target']);
         $record = nie_resolve(noa_bridge_pdo(), $selector);
+        if (array_key_exists('expectedKey',$body) && $body['expectedKey'] !== $record['writeKey']) reply(409,['error'=>'song_changed']);
         if ($record['revision'] !== ($body['revision'] ?? null) || !empty($record['payload']['_noaTrash'])) reply(409,['error'=>'revision_conflict']);
         if (trim((string)($record['fields'][$field] ?? '')) !== '' && ($body['replace'] ?? false) !== true) reply(409,['error'=>'overwrite_confirmation']);
         $targets=[];

@@ -83,7 +83,7 @@ function nie_resolve(PDO $db,array $input):array{
    $q=$db->prepare("SELECT s.song_id,s.genre_id,s.ep,v.fields_json,v.public_verified FROM noa_catalog_songs s JOIN noa_catalog_versions v ON v.entity_id=s.song_id AND v.entity_type='song' WHERE s.song_id=? AND v.batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)");$q->execute([$id]);$r=$q->fetch(PDO::FETCH_ASSOC);if($r){$document=noa_sound_catalog_document($r);$documentKey='catalog:'.$id;$documentKind='story';}
   }
   if(!$document)throw new DomainException('song_registration_required');
-  $b=$document['body']??[];$fields=['title'=>(string)($video['snippet']['title']??$b['confirmedTitle']??$document['title']??''),'description'=>(string)($video['snippet']['description']??$b['songDescription']??$b['descriptionBlock']??''),'lyrics'=>(string)($b['lyricsBlock']??''),'cast'=>(string)($b['thumbCast']??'')];
+  $b=$document['body']??[];$fields=['title'=>(string)($video['snippet']['title']??$b['confirmedTitle']??$document['title']??''),'description'=>(string)($b['youtubeDescription']??$video['snippet']['description']??$b['descriptionBlock']??$b['description']??''),'lyrics'=>(string)($b['lyricsBlock']??''),'cast'=>(string)($b['thumbCast']??'')];
   $genre=(string)($document['genreId']??'unclassified');$ep=(string)($document['ep']??'');$act=(string)($document['act']??'');
   $context=['genre'=>$genre,'ep'=>$ep,'act'=>$act,'youtube'=>(string)($b['youtubeUrl']??($video?'https://www.youtube.com/watch?v='.$video['id']:'')),'suno'=>noa_sound_suno($b)];
  }elseif($type==='playlist'){
