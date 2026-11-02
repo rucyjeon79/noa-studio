@@ -74,6 +74,7 @@ with tempfile.TemporaryDirectory() as tmp:
         key=call('pair',{},admin=True)['key']
         call('link',{'url':'https://chatgpt.com/g/g-Test'},admin=True)
         task={'selector':{'type':'song','key':'one','source':'music'},'revision':1,'field':'title'}
+        call('start',{**task,'expectedKey':'song:other','replace':True},admin=True,status=409)
         call('start',task,admin=True,status=409)
         started=call('start',{**task,'replace':True},admin=True)
         assert not call('progress',{'id':started['id']},admin=True)['saved']
