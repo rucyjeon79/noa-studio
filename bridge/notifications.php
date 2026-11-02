@@ -15,6 +15,11 @@ try{
  $owner=(string)($member['mb_id']??'');if(!nnt_member($db,$owner))nnt_reply(['ok'=>false,'error'=>'login_required'],401);
  $_SESSION['noa_notification_csrf']??=bin2hex(random_bytes(32));$csrf=$_SESSION['noa_notification_csrf'];
  if($method==='GET'){
+  if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
+  if(($_GET['view']??'')==='badge'){
+   $row=nnt_one($db,'SELECT COUNT(*) AS unread FROM noa_notifications WHERE recipient=? AND read_at IS NULL AND cancelled_at IS NULL',[$owner]);
+   nnt_reply(['ok'=>true,'csrf'=>$csrf,'unread'=>(int)$row['unread']]);
+  }
   if(isset($_GET['thread']))nnt_reply(['ok'=>true,'thread'=>nnt_thread($db,$owner,(int)$_GET['thread'])]);
   // A bounded, serialised collector also keeps the open inbox fresh between push runs.
   nnt_exec($db,"INSERT IGNORE INTO noa_notification_cursor VALUES ('last_collect',0)");
