@@ -48,3 +48,18 @@ echo "CLASSIFICATION_PATCH_AND_SOURCE_PRESERVATION_OK\n";
 $roundtrip=nup_patch($original,'single',['genre'=>'cover-reborn']);$roundtrip=nup_patch($roundtrip,'single',['title'=>'변경된 제목','lyrics'=>'변경된 가사']);$roundtrip=nup_patch($roundtrip,'single',['genre'=>'kpop-original']);check($roundtrip['body']['originalInfo']['title']==='변경된 제목'&&$roundtrip['body']['originalInfo']['lyrics']==='변경된 가사','returning to original never resurrects stale originalInfo');
 
 $cleared=nup_patch($moved,'story',['genre'=>'unclassified']);check($cleared['genreId']==='unclassified'&&$cleared['packageType']==='song'&&$cleared['classificationOverride']===['source'=>'manual','genre'=>'unclassified'],'explicit category clear is valid and remembered');check($cleared['body']===$moved['body'],'clear preserves complete production body');$cleared=nup_patch($numbered,'story',['genre'=>'unclassified']);check($cleared['packageType']==='song'&&$cleared['ep']==='08','cleared numbered song retains evidence without becoming a linked EP');
+
+// A story's sequence number is not a reference to the master with that EP number.
+if (in_array('sqlite', PDO::getAvailableDrivers(), true)) {
+ $db=new PDO('sqlite::memory:');
+ $db->sqliteCreateFunction('JSON_UNQUOTE',fn($v)=>$v);
+ $db->exec('CREATE TABLE noa_documents(doc_key TEXT,kind TEXT,payload TEXT,revision INTEGER)');
+ $insert=$db->prepare("INSERT INTO noa_documents VALUES(?,'single',?,1)");
+ foreach([32,33] as $n)$insert->execute(['master-'.$n,json_encode(['genreId'=>'kpop-original','ep'=>$n,'title'=>'Master '.$n])]);
+ $story=['genreId'=>'your-story','ep'=>32,'body'=>['songDescription'=>'Story introduction']];
+ check(nup_original($db,$story)['status']==='not_applicable','numbered story cannot inherit master lyrics');
+ check(nup_normalize($story,'story')['body']['youtubeDescription']==='','song introduction is not saved as video description');
+ $adaptation=['genreId'=>'pop-original','ep'=>32];
+ check(nup_original($db,$adaptation)['key']==='master-32','genre adaptation links matching master');
+ check(nup_original($db,$adaptation+['sourceRef'=>'master-33'])['status']==='missing','stale explicit link cannot override episode');
+}
