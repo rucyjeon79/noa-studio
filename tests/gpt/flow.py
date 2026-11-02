@@ -15,6 +15,9 @@ with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp) / "web"
     bridge = root / "noa-bridge"
     bridge.mkdir(parents=True)
+    engine = root / 'noa-app/engine'
+    engine.mkdir(parents=True)
+    shutil.copy('deploy/noa-app/engine/song-generation.php', engine)
     shutil.copy("deploy/noa-gpt.php", root)
     (root/"common.php").write_text("""<?php
     $config=['cf_admin'=>'test-owner'];$member=['mb_id'=>'test-owner'];
@@ -110,7 +113,7 @@ with tempfile.TemporaryDirectory() as tmp:
         assert call('progress',{'id':queued['id']},admin=True)['saved']
         # Exercise a dispatched worker without outbound traffic or real credentials.
         hosted_src=target.read_text().replace("getenv('NOA_GITHUB_DISPATCH_TOKEN')","'fixture'")
-        start=hosted_src.index("        $request = curl_init(")
+        start=hosted_src.index("        $status = n80_song_dispatch(")
         end=hosted_src.index("        if ($status <", start)
         target.write_text(hosted_src[:start]+"        $status = 204;\n"+hosted_src[end:])
         hosted=call('start',{**one_tap,'revision':3},admin=True)

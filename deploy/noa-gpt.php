@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__.'/common.php';
+require_once __DIR__.'/noa-app/engine/song-generation.php';
 require_once __DIR__.'/noa-bridge/storage.php';
 require_once __DIR__.'/noa-bridge/sound-core.php';
 require_once __DIR__.'/noa-bridge/inline-edit.php';
@@ -174,15 +175,7 @@ try {
     }
     if ($op === 'start' && !empty($state['job']['hosted'])) {
         flock($lock, LOCK_UN);
-        $request = curl_init('https://api.github.com/repos/rucyjeon79/noa-private-worker/actions/workflows/noa-worker.yml/dispatches');
-        curl_setopt_array($request, [
-            CURLOPT_POST=>true, CURLOPT_RETURNTRANSFER=>true, CURLOPT_TIMEOUT=>12,
-            CURLOPT_HTTPHEADER=>['User-Agent: NOA-STUDIO','Accept: application/vnd.github+json',
-                'Content-Type: application/json','Authorization: Bearer '.$dispatchToken],
-            CURLOPT_POSTFIELDS=>json_encode(['ref'=>'main','inputs'=>['task_id'=>$out['id']]],JSON_THROW_ON_ERROR)
-        ]);
-        curl_exec($request);
-        $status = curl_getinfo($request,CURLINFO_RESPONSE_CODE);
+        $status = n80_song_dispatch($out['id'],$dispatchToken);
         if ($status < 200 || $status >= 300) reply(502,['error'=>'dispatch_failed']);
     }
     reply(200,['ok'=>true]+$out);
