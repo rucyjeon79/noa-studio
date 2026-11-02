@@ -156,9 +156,16 @@ function nup_attach_asset(PDO $db,string $key,array $asset):void{
  $before=$d;$d['body']['uploadedAsset']=$asset;foreach(['audio'=>'audioFileLocation','cover'=>'cardImageLocation'] as $prefix=>$field)if(!empty($asset[$prefix.'_path']))$d['body'][$field]=$asset[$prefix.'_path'];if($before!==$d)nup_store($db,$key,$r['kind'],$d,(int)$r['revision'],'media-publisher');
 }
 /** All unambiguous source identities point to the same canonical document. */
-function nup_song_pool(PDO $db,array $overrides=[]):array{
+function nup_song_aliases(PDO $db):array{
  $aliases=[];foreach($db->query("SELECT alias_key,entity_id FROM noa_catalog_aliases WHERE batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)") as $a)$aliases[$a['alias_key']][]=$a['entity_id'];
- $pool=[];foreach($db->query("SELECT doc_key,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key") as $r){$key=$r['doc_key'];$p=$overrides[$key]??json_decode($r['payload'],true);if(!empty($p['_noaTrash']))continue;foreach(array_unique(array_merge([$key,preg_replace('/^catalog:/','',$key)],$aliases[$key]??[])) as $id)$pool[$id][$key]=$p;}return $pool;
+ return $aliases;
+}
+function nup_song_ids(string $key,array $aliases):array{
+ return array_unique(array_merge([$key,preg_replace('/^catalog:/','',$key)],$aliases[$key]??[]));
+}
+function nup_song_pool(PDO $db,array $overrides=[]):array{
+ $aliases=nup_song_aliases($db);
+ $pool=[];foreach($db->query("SELECT doc_key,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key") as $r){$key=$r['doc_key'];$p=$overrides[$key]??json_decode($r['payload'],true);if(!empty($p['_noaTrash']))continue;foreach(nup_song_ids($key,$aliases) as $id)$pool[$id][$key]=$p;}return $pool;
 }
 function nup_member_owner(array $pool,string $id):?string{$matches=$pool[$id]??[];return count($matches)===1?(string)array_key_first($matches):null;}
 /** Only exact aliases of one document are redundant. Preserve the first member's metadata. */

@@ -17,11 +17,20 @@ function nie_overrides(PDO $db):array{
   $valid=[];foreach(['title','description','lyrics','cast'] as $field)if(isset($p['fields'][$field])&&is_string($p['fields'][$field]))$valid[$field]=$p['fields'][$field];
   $out[$r['doc_key']]=['key'=>$r['doc_key'],'revision'=>(int)$r['revision'],'payload'=>$p,'fields'=>$valid];
  }
- $classification=nsc_context($db);$pool=nup_song_pool($db);$memberships=nup_collection_memberships($pool,nup_collections($db));$ids=[];foreach($pool as $id=>$matches)if(count($matches)===1)$ids[array_key_first($matches)][]=$id;
- foreach($db->query("SELECT doc_key,kind,payload,revision FROM noa_documents WHERE kind IN ('single','story','playlist') ORDER BY doc_key") as $r){$d=json_decode($r['payload'],true);if(empty($d['packageSchema'])||!empty($d['_noaTrash']))continue;$d=nsc_document($d,$classification);$fields=nup_fields($d);
-  if($r['kind']==='playlist'){if(!isset($d['body']['displayTitle']))unset($fields['title']);$targets=[nie_meta_key('act',($d['genreId']??'').':'.(int)($d['act']??0))];}
-  else{$fields['canonicalRecordKey']=$r['doc_key'];$fields['collectionIds']=array_values($memberships[$r['doc_key']]??[]);$targets=array_map(fn($id)=>nie_meta_key('song',nie_song_id($id)),$ids[$r['doc_key']]??[]);}
-  foreach($targets as $target)$out[$target]=['key'=>$r['doc_key'],'revision'=>(int)$r['revision'],'payload'=>$d,'fields'=>$fields];
+ $classification=nsc_context($db);
+ $aliases=nup_song_aliases($db);$pool=[];$packages=[];
+ foreach($db->query("SELECT doc_key,kind,payload,revision FROM noa_documents WHERE kind IN ('single','story','playlist') ORDER BY doc_key") as $r){
+  $d=json_decode($r['payload'],true);if(!empty($d['_noaTrash']))continue;
+  $key=$r['doc_key'];
+  if($r['kind']!=='playlist')foreach(nup_song_ids($key,$aliases) as $id)$pool[$id][$key]=true;
+  if(!empty($d['packageSchema']))$packages[]=[$key,$r['kind'],(int)$r['revision'],$d];
+ }
+ $memberships=nup_collection_memberships($pool,nup_collections($db));$ids=[];
+ foreach($pool as $id=>$matches)if(count($matches)===1)$ids[array_key_first($matches)][]=$id;
+ foreach($packages as [$key,$kind,$revision,$d]){$d=nsc_document($d,$classification);$fields=nup_fields($d);
+  if($kind==='playlist'){if(!isset($d['body']['displayTitle']))unset($fields['title']);$targets=[nie_meta_key('act',($d['genreId']??'').':'.(int)($d['act']??0))];}
+  else{$fields['canonicalRecordKey']=$key;$fields['collectionIds']=array_values($memberships[$key]??[]);$targets=array_map(fn($id)=>nie_meta_key('song',nie_song_id($id)),$ids[$key]??[]);}
+  foreach($targets as $target)$out[$target]=['key'=>$key,'revision'=>$revision,'payload'=>$d,'fields'=>$fields];
  }
  return $out;
 }
