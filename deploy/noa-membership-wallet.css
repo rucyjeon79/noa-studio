@@ -1,0 +1,20 @@
+.member-wallet{--wallet-edge:var(--noa-line,#393a3c);--wallet-gold:var(--noa-accent,#d6bb84)}
+.member-wallet .wallet-overview{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);border:1px solid var(--wallet-edge);border-radius:12px;background:var(--noa-surface,#1a1c20);overflow:hidden}
+.wallet-overview>div{min-width:0;padding:clamp(14px,3vw,24px)}
+.wallet-overview .wallet-balance{border-inline-end:1px solid var(--wallet-edge);box-shadow:inset 0 2px var(--wallet-gold)}
+.wallet-overview p{margin:0 0 8px;color:var(--noa-muted);font-size:13px}
+.wallet-overview strong{display:block;line-height:1.45;overflow-wrap:anywhere}
+.wallet-overview .wallet-balance strong{font-size:clamp(22px,5vw,34px);font-variant-numeric:tabular-nums;color:var(--wallet-gold)}
+.wallet-overview .wallet-balance a{display:inline-flex;align-items:center;min-height:44px;font-size:13px}
+.wallet-overview .wallet-pass strong{font-size:clamp(14px,2.8vw,18px);word-break:keep-all}
+.member-wallet .wallet-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 16px}
+.member-wallet .wallet-actions a{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:8px 14px;min-height:46px;box-sizing:border-box;border:1px solid var(--wallet-edge);border-radius:8px;background:var(--noa-surface);color:var(--noa-text);text-decoration:none}
+.wallet-actions a span{color:var(--wallet-gold)}
+.member-wallet .wallet-guide{margin:8px 0;border:1px solid var(--wallet-edge);border-radius:9px;padding:0 14px;background:var(--noa-surface)}
+.member-wallet .wallet-guide>summary{display:list-item;cursor:pointer;padding:13px 0;min-height:44px;box-sizing:border-box;list-style-position:inside;font-weight:600}
+.member-wallet .wallet-guide[open]{padding-bottom:12px}
+.member-wallet .wallet-guide p{line-height:1.65;overflow-wrap:anywhere}
+.member-wallet .wallet-guide h2{margin:16px 0 8px;font-size:16px}
+.member-wallet .wallet-ranks{padding:0;margin:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:4px 10px}
+.wallet-ranks li{display:flex;align-items:baseline;gap:8px;padding:6px 0;font-size:14px}
+.wallet-ranks small{color:var(--wallet-gold);min-width:38px;font-variant-numeric:tabular-nums}

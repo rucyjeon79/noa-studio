@@ -27,7 +27,7 @@ jobs:
         with: {php-version: '8.2', extensions: 'mysqli,pdo_mysql,pdo_sqlite,mbstring,curl'}
       - name: Verify payment ledger, purchase authorization, concurrent callbacks and VIP grants
         run: |
-          for f in bridge/gift-core.php bridge/toss-core.php bridge/notifications-{core,sources}.php deploy/noa-{gifts,vip,my,sitemap}.php; do php -l "$f"; done
+          for f in bridge/gift-core.php bridge/toss-core.php bridge/notifications-{core,sources}.php deploy/noa-{gifts,vip,my,sitemap,membership}.php; do php -l "$f"; done
           node --check deploy/noa-points.js
           php tests/subscription/mysql_test.php
           php tests/payments/mysql.php
