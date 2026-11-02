@@ -198,3 +198,10 @@ dialog.ec-dialog:has(form.ec-form) {
     gap: 10px;
   }
 }
+
+/* The estimate describes merchandise; the links below open separate stores. */
+#ecosystem[data-space=shop] .ec-total + .ec-subtle + .ec-actions {
+  margin-block-start: 20px;
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--ec-line);
+}

@@ -19,7 +19,7 @@ try {
       // Compare visible controls against the next independent block on both axes.
       const pairs = [
         ['#points-login','.np-store-layout',20],
-        ['#vip-login','#vip-login + .np-history-link',12],
+        ['#vip-login','#vip-login + .np-history-link',20],
         ['.noa-social-links a:first-child','.noa-social-links a:nth-child(2)',8]
       ];
       for(const [first,second,min] of pairs){

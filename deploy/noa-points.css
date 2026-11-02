@@ -38,4 +38,4 @@ body.noa-page main.noa-points-page>header.np-header{display:flex}
 }
 
 .noa-points-page #points-login:not([hidden]) { margin-block-end: 20px; }
-.noa-point-checkout .np-history-link + .np-history-link { display: flex; margin-block-start: 12px; }
+.noa-point-checkout .np-history-link + .np-history-link { display: flex; margin-block-start: 20px; }
