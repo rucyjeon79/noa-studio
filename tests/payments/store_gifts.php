@@ -28,12 +28,16 @@ gc_check(count(ng_list('g_sender','sent',1,$v['expiresAt']))===1&&ng_list('g_oth
 gc_check(ng_shift(strtotime('2028-02-29 12:00:00 Asia/Seoul'),12)===strtotime('2029-02-28 12:00:00 Asia/Seoul'),'calendar leap day');
 $db=new PDO(getenv('NOA_MYSQL_DSN'),getenv('NOA_MYSQL_USER'),getenv('NOA_MYSQL_PASSWORD'),[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
 foreach(nnt_schema() as $table=>$ddl)$db->exec("CREATE TABLE IF NOT EXISTS `$table` $ddl ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin");
+gc_check(ng_available_count('g_to',$now)===1&&ng_available_count('g_sender',$now)===0,'badge belongs only to recipient');
+gc_check(nnt_gift_reminders($db,$now,true,'g_sender')===0&&nnt_gift_reminders($db,$now,true,'g_to')===1&&nnt_gift_reminders($db,$now,true)===0,'arrival only once across inbox and worker');
+gc_check(nnt_one($db,"SELECT kind FROM noa_notifications WHERE recipient='g_to'")['kind']==='gift_received','arrival notification');
 gc_check(nnt_gift_reminders($db,$v['remindAt']-1)===0,'not early');
 gc_check(nnt_gift_reminders($db,$v['remindAt'])===1&&nnt_gift_reminders($db,$v['remindAt'])===0,'one reminder per expiry');
 $ext=ng_update('g_to',$id,'extend',$v['expiresAt'],$v['remindAt']);
 gc_deny(fn()=>ng_update('g_to',$id,'extend',$v['expiresAt'],$now),'gift_changed');
 gc_check($ext['expiresAt']===ng_shift($v['expiresAt'],12)&&nnt_gift_reminders($db,$ext['remindAt'])===1,'renewal schedules next reminder');
 $used=ng_update('g_to',$id,'use',0,$now);ng_update('g_to',$id,'use',0,$now);
+gc_check(ng_available_count('g_to',$now)===0,'used gift clears badge');
 gc_check($used['usedAt']===$now&&ns_doc(ns_member_key('g_to'))['data']['until']===$now+30*86400,'one VIP activation');
 $GLOBALS['nt_test_config']=['enabled'=>true,'mode'=>'live','clientKey'=>'live_ck_fixture','secretKey'=>'live_sk_fixture','mid'=>'fixture','webhookSecret'=>str_repeat('f',64),'contractApproved'=>true];
 $id=gc_id(2);$o=nt_create('g_sender',$id,'p10000',$now,'g_to');

@@ -25,3 +25,5 @@
  width:100%;min-height:52px;padding:10px 12px;background:linear-gradient(110deg,#c0a16c,#eed9ae 58%,#d3b77e);
  border-color:#d6ba85;color:#272116;font-weight:700;
 }
+
+#noa-my-account .noa-gift-count{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 4px;box-sizing:border-box;border-radius:10px;background:#e2c48a;color:#201c15;font:700 11px/1 system-ui;font-variant-numeric:tabular-nums}

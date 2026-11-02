@@ -78,25 +78,30 @@ function nnt_native_event(PDO $db,array $r,bool $like,int $now):void{
   if($reply&&nnt_target($db,'board:'.$board.':'.$reply['wr_id'],$reply['mb_id']))nnt_emit($db,$reply['mb_id'],'native-reply:'.$board.':'.$post['wr_id'],'reply',$entity,$post['mb_id'],'native_reply',(int)$post['wr_id'],$target['url'],$now);
  }
 }
-function nnt_gift_reminders(PDO $db,int $now):int{
+function nnt_gift_reminders(PDO $db,int $now,bool $arrival=false,?string $owner=null):int{
  if(!nnt_exists($db,'noa_documents'))return 0;
+ $due=$arrival?'':"AND CAST(JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.remindAt')) AS UNSIGNED)<=?";
+ $identity=$arrival?"SHA2(CONCAT(BINARY d.doc_key,':arrival'),256)":"SHA2(CONCAT(BINARY d.doc_key,':',JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.expiresAt'))),256)";
+ $scope=$owner===null?'':"AND JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.recipient'))=?";
+ $args=$arrival?[$now]:[$now,$now];
+ if($owner!==null)$args[]=$owner;
  $rows=nnt_rows($db,"SELECT d.doc_key FROM noa_documents d WHERE d.kind='store_gift'
   AND JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.usedAt'))='null'
   AND JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.canceled'))='false'
-  AND CAST(JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.remindAt')) AS UNSIGNED)<=?
+  $due
   AND CAST(JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.expiresAt')) AS UNSIGNED)>?
-  AND NOT EXISTS(SELECT 1 FROM noa_notifications n WHERE n.recipient=JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.recipient'))
-    AND n.event_key=SHA2(CONCAT(BINARY d.doc_key,':',JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.expiresAt'))),256))
-  ORDER BY d.doc_key LIMIT 200",[$now,$now]);
+  $scope AND NOT EXISTS(SELECT 1 FROM noa_notifications n WHERE n.recipient=JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.recipient'))
+    AND n.event_key=$identity)
+  ORDER BY d.doc_key LIMIT 200",$args);
  $count=0;
  foreach($rows as $row){
   $db->beginTransaction();
   try{
    $locked=nnt_one($db,'SELECT payload FROM noa_documents WHERE doc_key=? FOR UPDATE',[$row['doc_key']]);
    $g=json_decode($locked['payload']??'null',true);
-   if($g && !$g['canceled'] && $g['usedAt']===null && $g['remindAt']<=$now && $now<$g['expiresAt']){
-    $event=$row['doc_key'].':'.$g['expiresAt'];
-    if(nnt_enqueue($db,$g['recipient'],$event,'gift_expiring',$event,'','store_gift',0,'/noa-gifts.php?box=received',$now))$count++;
+   if($g && !$g['canceled'] && $g['usedAt']===null && ($arrival||$g['remindAt']<=$now) && $now<$g['expiresAt']){
+    $event=$row['doc_key'].':'.($arrival?'arrival':$g['expiresAt']);
+    if(nnt_enqueue($db,$g['recipient'],$event,$arrival?'gift_received':'gift_expiring',$event,'','store_gift',0,'/noa-gifts.php?box=received',$now))$count++;
    }
    $db->commit();
   }catch(Throwable $e){$db->rollBack();throw $e;}
@@ -113,10 +118,16 @@ function nnt_collect(PDO $db,int $now):array{
    foreach($rows as $row){if(str_starts_with($source,'app_'))nnt_app_event($db,$row,$source==='app_likes',$now);else nnt_native_event($db,$row,$source==='native_good',$now);}
    if($rows)nnt_exec($db,'UPDATE noa_notification_cursor SET position=GREATEST(position,?) WHERE source=?',[(int)end($rows)[$id],$source]);$db->commit();$counts[$source]=count(array_filter($rows,static fn($r)=>(int)$r[$id]>(int)$cursor['position']));
   }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
- }$counts['gifts']=nnt_gift_reminders($db,$now);return $counts;
+ }$counts['giftArrivals']=nnt_gift_reminders($db,$now,true);$counts['gifts']=nnt_gift_reminders($db,$now);return $counts;
 }
 function nnt_source_alive(PDO $db,array $r):bool{
  global $g5;if($r['source']==='test')return true;
+ if($r['kind']==='gift_received'){
+  if(!preg_match('/^(store:gift:[a-f0-9-]{36}):arrival$/D',$r['entity'],$parts))return false;
+  $row=nnt_one($db,"SELECT payload FROM noa_documents WHERE kind='store_gift' AND doc_key=?",[$parts[1]]);
+  $gift=json_decode($row['payload']??'null',true);
+  return $gift && $gift['recipient']===$r['recipient'] && !$gift['canceled'] && $gift['usedAt']===null && time()<$gift['expiresAt'];
+ }
  if($r['kind']==='gift_expiring'){
   if(!preg_match('/^(store:gift:[a-f0-9-]{36}):([0-9]+)$/D',$r['entity'],$parts))return false;
   $record=nnt_one($db,"SELECT payload FROM noa_documents WHERE kind='store_gift' AND doc_key=?",[$parts[1]]);

@@ -119,3 +119,12 @@ function ng_list(string $owner,string $box,int $page,int $now):array {
     while($r=sql_fetch_array($q))$gifts[]=json_decode($r['payload'],true,32,JSON_THROW_ON_ERROR);
     return $gifts;
 }
+
+function ng_available_count(string $owner,int $now):int {
+    $row=ns_one("SELECT COUNT(*) AS total FROM noa_documents WHERE kind='store_gift'
+      AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.recipient'))=".ns_e($owner)."
+      AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.usedAt'))='null'
+      AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.canceled'))='false'
+      AND CAST(JSON_UNQUOTE(JSON_EXTRACT(payload,'$.expiresAt')) AS UNSIGNED)>".$now);
+    return (int)$row['total'];
+}
