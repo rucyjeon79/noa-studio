@@ -2,7 +2,7 @@ name: NOA writing form layout
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/noa-writing-forms.yml','scripts/qa/noa-writing-forms.mjs']
+    paths: ['.github/workflows/noa-writing-forms.yml','scripts/qa/noa-writing-forms.mjs','scripts/qa/noa-public-layout.mjs']
 permissions: {contents: read}
 jobs:
   publish:
@@ -32,7 +32,7 @@ jobs:
           PYTHONPATH=scripts python - <<'PY'
           import sys
           import noa_ainoa_deploy as release
-          release.FILES={'noa-gnuboard.css':'deploy/noa-gnuboard.css','noa-ecosystem.css':'deploy/noa-ecosystem.css'}
+          release.FILES={name:'deploy/'+name for name in ('noa-gnuboard.css','noa-ecosystem.css','noa-points.css','noa-account.css')}
           release.NEW=set()
           try:
               release.main()

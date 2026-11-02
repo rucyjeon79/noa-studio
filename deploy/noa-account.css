@@ -59,3 +59,13 @@ html body .noa-sidebar:not(.noa-mobile-footer) .noa-sidebar-legal a:nth-child(n+
 /* Collection artwork shares the existing category identity without adding a request before scroll. */
 html[data-noa-style] #noa-genres>.noa-genre{overflow:hidden}
 html[data-noa-style] #noa-genres .noa-collection-image{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;object-position:center 25%;border-radius:4px;margin:0 0 12px}
+
+.noa-social-layout .noa-login-form { grid-template-columns: minmax(0,1fr); }
+.noa-login-form :is(input,button) { box-sizing: border-box; min-inline-size: 0; }
+.noa-login-form label:not(:first-child) { margin-block-start: 6px; }
+.noa-login-form .noa-login-recovery {
+  display: inline-flex; align-items: center; min-block-size: 44px; padding-inline: 4px;
+}
+.noa-social-layout :is(input,button,a):focus-visible {
+  outline: 2px solid var(--noa-gold,#cfb783); outline-offset: 2px;
+}

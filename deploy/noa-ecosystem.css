@@ -178,3 +178,23 @@ dialog.ec-dialog:has(form.ec-form) {
 .ec-dialog form.ec-form :is(input,textarea,select):focus-visible { border-color: #cfb783; outline: 2px solid #cfb783; outline-offset: 2px; }
 .ec-dialog form.ec-form button.ec-primary { background: #dbc69b; color: #211c14; border-color: #dbc69b; font-weight: 700; }
 .ec-dialog form.ec-form button.ec-primary:disabled { background: #41454c; color: #c2c6cd; border-color: #41454c; }
+
+/* Group quantity controls with the product and keep the note beside its save action. */
+#ecosystem[data-space=shop] .ec-cart-row {
+  grid-template-columns: 72px minmax(0,1fr) auto;
+  grid-template-areas: "cover product product" ". tools tools" ". note save";
+  gap: 12px 16px;
+}
+#ecosystem .ec-cart-row > img { grid-area: cover; border-radius: 6px; }
+#ecosystem .ec-cart-row > div:first-of-type { grid-area: product; min-width: 0; overflow-wrap: anywhere; }
+#ecosystem .ec-cart-row h3 { margin: 0 0 4px; }
+#ecosystem[data-space=shop] .ec-cart-row > .ec-actions { grid-area: tools; }
+#ecosystem[data-space=shop] .ec-cart-row > input { grid-area: note; }
+#ecosystem .ec-cart-row > button { grid-area: save; }
+@media (max-width: 560px) {
+  #ecosystem[data-space=shop] .ec-cart-row {
+    grid-template-columns: 56px minmax(0,1fr) auto;
+    grid-template-areas: "cover product product" "tools tools tools" "note note save";
+    gap: 10px;
+  }
+}

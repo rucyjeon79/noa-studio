@@ -25,3 +25,14 @@ body.noa-page main.noa-points-page>header.np-header{display:flex}
 @media(min-width:761px){html.noa-has-sidebar body.noa-page main.noa-points-page{inline-size:calc(100% - var(--noa-rail));max-inline-size:1440px;margin-inline-start:calc(var(--noa-rail) + max(0px,(100% - var(--noa-rail) - 1440px)/2));margin-inline-end:0}}
 @media(min-width:1280px){.noa-point-packs{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:760px){body.noa-page main.noa-points-page>header.np-header{display:block}.np-header-side{display:flex;align-items:center;justify-content:space-between;text-align:left;margin-top:14px}.np-header-side p{max-width:none;margin:0}.np-header .np-eyebrow{max-width:none}}
+
+/* The same checkout controls serve both currency packs and VIP passes. */
+.noa-point-checkout .np-cart-copy { min-inline-size: 0; overflow-wrap: anywhere; }
+.noa-points-page .np-cart-item .np-remove { min-inline-size: 44px; justify-self: end; }
+.noa-point-checkout :is(button,input,a):focus-visible {
+  outline: 2px solid var(--np-gold); outline-offset: 2px;
+}
+@media (max-width: 400px) {
+  .noa-point-checkout .np-cart-item { grid-template-columns: 44px minmax(0,1fr) 44px; gap: 8px; }
+  .noa-point-checkout .np-cart-item > img { inline-size: 44px; block-size: 44px; }
+}

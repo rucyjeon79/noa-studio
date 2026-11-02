@@ -49,6 +49,11 @@ try {
       const bounds=await page.locator('#bo_w').evaluate(el=>({scroll:el.scrollWidth-el.clientWidth,outside:[...el.querySelectorAll('button,input,textarea')].some(x=>x.getBoundingClientRect().right>document.documentElement.clientWidth+1)}));
       assert(bounds.scroll<=1&&!bounds.outside,JSON.stringify({width,bounds}));
     }
+    await page.setContent('<meta name="viewport" content="width=device-width,initial-scale=1"><main id="ecosystem" data-space="shop"><article class="ec-cart-row"><img alt=""><div><h3>한정판 별무리 머그잔</h3></div><div class="ec-actions"><input type="number" value="10"><button>수량 저장</button><button>빼기</button></div><input aria-label="옵션 메모"><button>메모 저장</button></article></main>');
+    for(const name of ['noa-ui','noa-ecosystem'])await page.addStyleTag({content:fs.readFileSync('deploy/'+name+'.css','utf8')});
+    const note=await page.getByLabel('옵션 메모').boundingBox();
+    const save=await page.getByRole('button',{name:'메모 저장'}).boundingBox();
+    assert(Math.abs(note.y-save.y)<2 && note.x+note.width<=save.x && save.x+save.width<=width+1,JSON.stringify({width,note,save}));
     await page.close();
     console.log(width,'create and edit OK');
   }
