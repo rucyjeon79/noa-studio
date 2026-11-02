@@ -58,6 +58,7 @@ function nt_classify(array $v,?array $song,array $lists,array $rules):array{
 }
 function nt_match(array $v,array $songs,array $classification):array{
  $existing=$v['match']??[];if(($existing['status']??'')==='rejected')return ['status'=>'rejected','songId'=>null,'reason'=>'administrator_rejected'];
+ if(($existing['status']??'')==='conflict')return ['status'=>'review','songId'=>null,'reason'=>'conflicting_song_identifiers','candidates'=>[]];
  if(!empty($existing['songId']))return ['status'=>'preserved','songId'=>$existing['songId'],'reason'=>'existing_confirmed_link'];
  $title=(string)($v['snippet']['title']??'');if(preg_match('/\b(?:ACT\s*[. ]*\d+[^\r\n]*Playlist|Playlist\b)|연속\s*듣기|連続再生|Continuous\s*Listening/iu',$title))return ['status'=>'not_applicable','songId'=>null,'reason'=>'compilation'];
  $keys=nt_titles($title);$ep=nt_ep($title);$language=nt_language($title);$categories=$classification['categories'];$genre=null;
