@@ -2,6 +2,9 @@
 import sys
 import noa_ainoa_deploy as release
 
+# Independent music downloads and Android builds may ship while SFTP is queued.
+release.UNRELATED_PATH_PREFIXES = ("scripts/noa_music_save_release.py", "android/", ".github/workflows/noa-android", "deploy/noa-music-save.php")
+
 release.FILES = {name: 'deploy/'+name for name in (
     'noa-publish-set.php','noa-plugin-records.php','noa-gpt.php','noa-gpt-schema.json','noa-gpt-setup.php','noa-browse-edit.js')}
 release.FILES = {'noa-app/engine/song-generation.php':'deploy/noa-app/engine/song-generation.php','noa-work-status.php':'deploy/noa-work-status.php','noa-bridge/generation-rules.php':'bridge/generation-rules.php',**release.FILES,'noa-bridge/ainoa-generation.php':'bridge/ainoa-generation.php'}
