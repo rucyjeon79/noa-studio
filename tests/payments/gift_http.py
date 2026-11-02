@@ -25,8 +25,10 @@ assert '/noa-gifts.css' in head.paths, 'MY must request the stylesheet for accou
 
 site = Path('/tmp/noa-toss-http/site')
 assert (site / 'common.php').exists()
-for name in ('gift-core.php', 'vip-store-core.php', 'toss-core.php'):
+for name in ('special-invite.php','gift-core.php', 'vip-store-core.php', 'toss-core.php'):
     shutil.copyfile('bridge/' + name, site / 'noa-bridge' / name)
+shutil.copyfile('deploy/noa-special-invite.php', site / 'noa-special-invite.php')
+shutil.copyfile('deploy/noa-gifts.css',site/'noa-gifts.css')
 shutil.copyfile('deploy/noa-gifts.php', site / 'noa-gifts.php')
 base = 'http://127.0.0.1:18090'
 server = subprocess.Popen(['php', '-S', '127.0.0.1:18090', '-t', str(site)],
@@ -82,6 +84,37 @@ try:
     assert fetch(receiver,'g_other','box=received',{**claim.data,'action':'use'})[0] == 200
     code, sent = fetch(sender,'g_sender','box=sent')
     assert code == 200 and '사용 완료' in sent and 'g_other' in sent
+    # A messaging preview GET does not claim. The guest explicitly opts in
+    # before login. Simulate an identity-provider session rotation on return.
+    from urllib.request import HTTPRedirectHandler
+    class NoRedirect(HTTPRedirectHandler):
+        def redirect_request(self,*args): return None
+    def invite_http(user, query, jar, form=None, extra_cookie=''):
+        client=build_opener(HTTPCookieProcessor(jar),NoRedirect())
+        cookies=['qa_toss_user='+user]+[c.name+'='+c.value for c in jar if c.name!='qa_toss_user']
+        if extra_cookie:cookies.append(extra_cookie)
+        req=Request(base+'/noa-special-invite.php?'+query,data=urlencode(form).encode() if form else None,
+                    headers={'Cookie':'; '.join(cookies),'Origin':base})
+        try: result=client.open(req)
+        except HTTPError as e:result=e
+        return result.code,result.headers,result.read().decode()
+    token='e'*64
+    guestjar=http.cookiejar.CookieJar()
+    status,_,landing=invite_http('','t='+token,guestjar)
+    assert status==200 and '초대장 받기' in landing
+    accept=Fields();accept.feed(landing)
+    status,h,_=invite_http('','t='+token,guestjar,accept.data)
+    assert status==303 and h['Location'].startswith('/noa-login.php?') and 'resume' in h['Location']
+    assert '__Host-noa_invite='+token in str(h)
+    memberjar=http.cookiejar.CookieJar()
+    status,_,landing=invite_http('invite_b','resume=1',memberjar,extra_cookie='__Host-noa_invite='+token)
+    assert status==200 and 'requestSubmit()' in landing
+    claim=Fields();claim.feed(landing)
+    status,h,_=invite_http('invite_b','resume=1',memberjar,claim.data,'__Host-noa_invite='+token)
+    assert status==303 and 'box=received' in h['Location']
+    status,_,_=invite_http('invite_a','t='+token,http.cookiejar.CookieJar())
+    assert status==409
+    print('GUEST_INVITE_PREVIEW_AUTH_RETURN_AND_PRIVATE_GIFT_OK')
     print('GIFT_HTTP_MEMBER_SEARCH_SEND_RECEIVE_EXTEND_USE_SENT_HISTORY_OK')
 finally:
     server.terminate()

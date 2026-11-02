@@ -27,3 +27,11 @@
 }
 
 #noa-my-account .noa-gift-count{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 4px;box-sizing:border-box;border-radius:10px;background:#e2c48a;color:#201c15;font:700 11px/1 system-ui;font-variant-numeric:tabular-nums}
+
+.noa-my-insignia{display:grid;justify-items:center;align-content:center;gap:7px;flex:none}
+#special-invite-issue{margin:0}
+#special-invite-issue button{display:grid;justify-items:center;align-content:center;gap:2px;min-height:44px;padding:3px 8px;font-size:11px;color:#eed6a8;background:#28241f;border:1px solid #907448;border-radius:8px}
+#special-invite-share:not([hidden]),.noa-special-letter{padding:20px;border:1px solid #947b50;border-radius:12px;background:var(--noa-surface,#202124)}
+.noa-special-letter{max-width:34rem;margin:clamp(16px,5vw,64px) auto;color:var(--noa-text);box-sizing:border-box}
+#special-invite-share input,.noa-special-letter input:not([type=hidden]){width:100%;box-sizing:border-box;margin-top:10px}
+#special-invite-share[hidden]{display:none}

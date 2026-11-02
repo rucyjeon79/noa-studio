@@ -85,3 +85,21 @@ gc_deny(fn()=>ng_buy_wallet('g_staff',gc_id(25),'p1000','g_wallet_to',$now),'ins
 // Restore the balance and received-box fixture used by the subsequent HTTP test.
 insert_point('g_sender',7150,'http fixture','wallet-test','http','seed');
 echo "WALLET_FIRST_EXACT_SHORTFALL_NO_BONUS_SUPER_ACCOUNT_ONLY_OK\n";
+require_once __DIR__.'/../../bridge/special-invite.php';
+foreach(['invite_a','invite_b'] as $user)ns_q("INSERT INTO g5_member(mb_id,mb_nick,mb_level,mb_point) VALUES(".ns_e($user).",".ns_e($user).",3,0)");
+$token=str_repeat('d',64);
+gc_deny(fn()=>ni_issue('g_staff',$token,$now),'invite_forbidden');
+ni_issue('g_super',$token,$now);ni_issue('g_super',$token,$now);
+gc_check(!ns_doc(ni_key($token))['data']['claimedBy'],'issued and unspent');
+gc_deny(fn()=>ni_claim('g_super',$token,$now),'invite_self');
+$giftId=ni_claim('invite_a',$token,$now);
+gc_check(ni_claim('invite_a',$token,$now)===$giftId,'repeat request returns existing gift');
+gc_deny(fn()=>ni_claim('invite_b',$token,$now),'invite_taken');
+$inviteGift=ns_doc(ng_key($giftId))['data'];
+gc_check($inviteGift['sender']==='g_super'&&$inviteGift['days']===30&&$inviteGift['plan']==='vip'&&$inviteGift['usedAt']===null,'invitation issues unused 30-day starlight pass');
+gc_check(!ns_doc(ns_member_key('invite_a')),'no subscription before redeem');
+ng_update('invite_a',$giftId,'use',0,$now);
+gc_check(ns_doc(ns_member_key('invite_a'))['data']['until']===$now+30*86400,'VIP activated on explicit use');
+ni_issue('g_super',str_repeat('e',64),$now);
+ni_issue('g_super',str_repeat('f',64),$now);
+echo "SPECIAL_INVITE_SUPER_ONLY_SINGLE_USE_UNREDEEMED_PASS_OK\n";

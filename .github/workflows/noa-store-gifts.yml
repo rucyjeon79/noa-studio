@@ -1,7 +1,7 @@
 name: NOA store gifts
 on:
   pull_request:
-    paths: &paths ['bridge/gift-core.php','bridge/toss-core.php','bridge/notifications-*.php','deploy/noa-gifts.*','deploy/noa-membership.php','deploy/noa-membership-wallet.css','tests/payments/*gift*','scripts/noa_gifts_release.py','.github/workflows/noa-store-gifts.yml']
+    paths: &paths ['bridge/special-invite.php','deploy/noa-special-invite.*','deploy/noa-invite-resume.extend.php','bridge/gift-core.php','bridge/toss-core.php','bridge/notifications-*.php','deploy/noa-gifts.*','deploy/noa-membership.php','deploy/noa-membership-wallet.css','tests/payments/*gift*','scripts/noa_gifts_release.py','.github/workflows/noa-store-gifts.yml']
   push:
     branches: [main]
     paths: *paths
@@ -27,8 +27,9 @@ jobs:
         with: {php-version: '8.2', extensions: 'mysqli,pdo_mysql,pdo_sqlite,mbstring,curl'}
       - name: Verify payment ledger, purchase authorization, concurrent callbacks and VIP grants
         run: |
-          for f in bridge/gift-core.php bridge/toss-core.php bridge/notifications-{core,sources}.php deploy/noa-{gifts,vip,my,sitemap,membership}.php; do php -l "$f"; done
+          for f in bridge/special-invite.php deploy/noa-special-invite.php deploy/noa-invite-resume.extend.php bridge/gift-core.php bridge/toss-core.php bridge/notifications-{core,sources}.php deploy/noa-{gifts,vip,my,sitemap,membership}.php; do php -l "$f"; done
           node --check deploy/noa-points.js
+          node --check deploy/noa-special-invite.js
           php tests/subscription/mysql_test.php
           php tests/payments/mysql.php
           python tests/payments/race_test.py
@@ -39,6 +40,7 @@ jobs:
       - name: Verify gift expiry notices, sender history, refunds and authenticated gift pages
         run: |
           php tests/payments/store_gifts.php
+          python tests/payments/gift_invite_race.py
           python tests/payments/gift_http.py
   publish:
     needs: verify
