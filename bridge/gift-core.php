@@ -34,23 +34,37 @@ function ng_status(array $g,int $now):string {
     if($g['usedAt']!==null)return 'used';
     return $now >= $g['expiresAt']?'expired':'available';
 }
+function ng_unlimited(string $owner):bool {
+    return $owner!=='' && $owner===($GLOBALS['config']['cf_admin']??'');
+}
+function ng_item(string $product):array {
+    $vip=nv_products()[$product]??null;
+    if($vip)return ['product'=>$product,'kind'=>'vip','name'=>$vip['name'],'plan'=>$vip['plan'],'days'=>$vip['durationDays'],'price'=>$vip['points']];
+    require_once __DIR__.'/toss-core.php';
+    $pack=nt_quote($product);
+    // A wallet transfer must never mint a cash-purchase bonus.
+    return ['product'=>$product,'kind'=>'points','name'=>'포인트 선물권','plan'=>null,'points'=>$pack['paidPoints'],'price'=>$pack['paidPoints']];
+}
 function ng_buy_vip(string $sender,string $id,string $product,string $to,int $now):array {
-    $catalog=nv_products();
-    if(!isset($catalog[$product]))throw new InvalidArgumentException('invalid_product');
-    $item=$catalog[$product];
+    if(!isset(nv_products()[$product]))throw new InvalidArgumentException('invalid_product');
+    return ng_buy_wallet($sender,$id,$product,$to,$now);
+}
+function ng_buy_wallet(string $sender,string $id,string $product,string $to,int $now):array {
+    $item=ng_item($product);
     return ns_atomic($sender,true,function()use($sender,$id,$item,$to,$now){
         $key=ng_key($id);
         $old=ns_doc($key,true);
         if($old){
             $g=$old['data'];
-            if($g['sender']!==$sender||$g['recipient']!==$to||$g['product']!==$item['id'])throw new DomainException('purchase_conflict');
+            if($g['sender']!==$sender||$g['recipient']!==$to||$g['product']!==$item['product'])throw new DomainException('purchase_conflict');
             return $g;
         }
-        if(empty(nr_policy()['enabled']))throw new DomainException('membership_not_ready');
+        if($item['kind']==='vip'&&empty(nr_policy()['enabled']))throw new DomainException('membership_not_ready');
         nr_member($sender);
         $recipient=ng_recipient($sender,$to,$item['plan']);
-        $g=ng_new($id,$sender,$recipient['mb_id'],$item['name'],$now)+['product'=>$item['id'],'kind'=>'vip','plan'=>$item['plan'],'days'=>$item['durationDays'],'price'=>$item['points']];
-        ns_points_debit($sender,$item['points'],$id,'NOA VIP 이용권 선물');
+        $unlimited=ng_unlimited($sender);
+        if(!$unlimited)ns_points_debit($sender,$item['price'],$id,'NOA '.$item['name'].' 선물');
+        $g=ng_new($id,$sender,$recipient['mb_id'],$item['name'],$now)+$item+['funding'=>$unlimited?'admin_unlimited':'wallet','debitedPoints'=>$unlimited?0:$item['price']];
         ns_put($key,'store_gift',$g,0,$sender);
         nr_sync_member($sender,$now);
         return $g;

@@ -27,11 +27,20 @@ function nt_key(string $id):string{ns_order_key($id);return 'toss:order:'.$id;}
 function nt_payment_key(string $key):string{if(!preg_match('/^[A-Za-z0-9_-]{1,200}$/D',$key))throw new InvalidArgumentException('invalid_payment');return $key;}
 function nt_order(string $id,?string $owner=null):array{$r=ns_doc(nt_key($id));if(!$r||($owner!==null&&!hash_equals($owner,$r['data']['ownerId'])))throw new DomainException('order_not_found');return $r['data'];}
 function nt_mode(array $d,array $c):void{if(!nt_ready($c))throw new DomainException('payment_not_ready');if($d['mode']!==$c['mode']||!hash_equals($d['mid'],$c['mid']))throw new DomainException('payment_configuration_changed');}
-function nt_create(string $owner,string $id,string|array $product,int $now,?string $giftRecipient=null):array{
- $q=nt_cart_quote($product);$key=nt_key($id);$c=nt_config();if(!nt_ready($c))throw new DomainException('payment_not_ready');
- return ns_atomic($owner,true,function()use($owner,$id,$q,$key,$c,$now,$giftRecipient){nr_member($owner);$old=ns_doc($key,true);if($old){$d=$old['data'];if($d['ownerId']!==$owner||$d['productId']!==$q['id']||($d['giftRecipient']??null)!==$giftRecipient)throw new DomainException('purchase_conflict');nt_mode($d,$c);return $d;}
+function nt_create(string $owner,string $id,string|array $product,int $now,?string $giftRecipient=null,?array $resumeGift=null):array{
+ $q=$resumeGift===null?nt_cart_quote($product):null;$key=nt_key($id);$c=nt_config();if(!nt_ready($c))throw new DomainException('payment_not_ready');
+ return ns_atomic($owner,true,function()use($owner,$id,$q,$key,$c,$now,$giftRecipient,$resumeGift){nr_member($owner);$old=ns_doc($key,true);if($old){$d=$old['data'];if($d['ownerId']!==$owner||($d['resumeGift']??null)!==$resumeGift||($q!==null&&$d['productId']!==$q['id'])||($d['giftRecipient']??null)!==$giftRecipient)throw new DomainException('purchase_conflict');nt_mode($d,$c);return $d;}
+  if($resumeGift!==null){
+   require_once __DIR__.'/gift-core.php';
+   $item=ng_item($resumeGift['product']);
+   ng_recipient($owner,$resumeGift['recipient'],$item['plan']);
+   $missing=$item['price']-(int)get_point_sum($owner);
+   if($giftRecipient!==null||ng_unlimited($owner)||$missing<=0||$missing>1000000)throw new DomainException('wallet_quote_changed');
+   $q=['id'=>'wallet_shortfall','items'=>[],'priceWon'=>$missing,'paidPoints'=>$missing,'bonusPoints'=>0,'totalPoints'=>$missing];
+  }
   $customerKey='toss:customer:'.hash('sha256',$owner);$customer=ns_doc($customerKey,true);if(!$customer){ns_put($customerKey,'toss_customer',['key'=>bin2hex(random_bytes(24))],0,$owner);$customer=ns_doc($customerKey);}
   $d=['id'=>$id,'orderId'=>'NOA_'.str_replace('-','',$id),'ownerId'=>$owner,'customerKey'=>$customer['data']['key'],'productId'=>$q['id'],'items'=>$q['items'],'priceWon'=>$q['priceWon'],'paidPoints'=>$q['paidPoints'],'bonusPoints'=>$q['bonusPoints'],'totalPoints'=>$q['totalPoints'],'mode'=>$c['mode'],'mid'=>$c['mid'],'state'=>'created','credited'=>false,'paidReversed'=>0,'bonusReversed'=>0,'createdAt'=>$now,'paymentKey'=>null];
+  if($resumeGift!==null)$d['resumeGift']=$resumeGift;
   if($giftRecipient!==null){
    require_once __DIR__.'/gift-core.php';
    $d['giftRecipient']=ng_recipient($owner,$giftRecipient)['mb_id'];
@@ -39,7 +48,7 @@ function nt_create(string $owner,string $id,string|array $product,int $now,?stri
   ns_put($key,'toss_order',$d,0,$owner);return $d;
  });
 }
-function nt_view(array $d):array{return array_intersect_key($d,array_flip(['id','orderId','productId','items','priceWon','paidPoints','bonusPoints','totalPoints','mode','state','paidReversed','bonusReversed','createdAt','paidAt','giftRecipient']));}
+function nt_view(array $d):array{return array_intersect_key($d,array_flip(['id','orderId','productId','items','priceWon','paidPoints','bonusPoints','totalPoints','mode','state','paidReversed','bonusReversed','createdAt','paidAt','giftRecipient','resumeGift']));}
 function nt_api(string $method,string $path,?array $body,array $c,string $id=''):array{
  if(defined('NOA_TOSS_TEST_HARNESS')&&PHP_SAPI==='cli'&&isset($GLOBALS['nt_test_transport']))return ($GLOBALS['nt_test_transport'])($method,$path,$body,$c,$id);
  if(!function_exists('curl_init'))throw new DomainException('payment_not_ready');

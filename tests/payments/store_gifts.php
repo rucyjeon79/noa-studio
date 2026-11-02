@@ -49,3 +49,35 @@ $pay['status']='CANCELED';$pay['balanceAmount']=0;nt_apply($id,$pay,$now);nt_app
 gc_check(get_point_sum('g_to')===0&&get_point_sum('g_sender')===7150,'refund reverses recipient only');
 gc_check(ng_status(ns_doc(ng_key($id))['data'],$now)==='canceled','canceled history retained');
 echo "STORE_GIFT_AUTH_PAYMENT_REFUND_EXPIRY_RENEWAL_REMINDER_REPLAY_OK\n";
+
+ns_q("INSERT INTO g5_member(mb_id,mb_nick,mb_level,mb_point) VALUES('g_wallet_to','wallet',3,0)");
+$walletId=gc_id(10);
+$wallet=ng_buy_wallet('g_sender',$walletId,'p1000','g_wallet_to',$now);
+gc_check($wallet['points']===1000&&$wallet['debitedPoints']===1000&&get_point_sum('g_sender')===6150,'wallet points fund a gift without PG');
+ng_buy_wallet('g_sender',$walletId,'p1000','g_wallet_to',$now);
+gc_check(get_point_sum('g_sender')===6150,'wallet replay never debits twice');
+$r=ng_update('g_wallet_to',$walletId,'use',0,$now);
+gc_check(get_point_sum('g_wallet_to')===1000,'wallet face value reaches recipient');
+$id=gc_id(11);
+gc_deny(fn()=>ng_buy_wallet('g_sender',$id,'p10000','g_wallet_to',$now),'insufficient_points');
+gc_check(!ns_doc(ng_key($id)),'insufficient balance never issues');
+$intent=['product'=>'p10000','recipient'=>'g_wallet_to'];
+$o=nt_create('g_sender',$id,'p10000',$now,null,$intent);
+gc_check($o['priceWon']===3850&&$o['totalPoints']===3850&&$o['bonusPoints']===0,'only shortage charged');
+gc_check(nt_create('g_sender',$id,'p10000',$now,null,$intent)===$o,'stable shortfall retry');
+gc_deny(fn()=>nt_create('g_sender',$id,'p10000',$now,null,['product'=>'p10000','recipient'=>'g_to']),'purchase_conflict');
+$pay=['paymentKey'=>'fixture_gap','orderId'=>$o['orderId'],'mId'=>$o['mid'],'currency'=>'KRW','totalAmount'=>3850,'balanceAmount'=>3850,'method'=>'카드','status'=>'DONE'];
+nt_apply($id,$pay,$now);nt_apply($id,$pay,$now);
+gc_check(get_point_sum('g_sender')===10000&&!ns_doc(ng_key($id)),'approval credits shortage once');
+ng_buy_wallet('g_sender',$id,'p10000','g_wallet_to',$now);
+gc_check(get_point_sum('g_sender')===0&&ns_doc(ng_key($id))['data']['points']===10000,'no bonus minted by wallet gifts');
+ns_q("INSERT INTO g5_member(mb_id,mb_nick,mb_level,mb_point) VALUES('g_super','super',10,0),('g_staff','staff',10,0)");
+$config['cf_admin']='g_super';
+foreach(['p50000','vip30'] as $i=>$product){
+ $g=ng_buy_wallet('g_super',gc_id(20+$i),$product,'g_wallet_to',$now);
+ gc_check($g['funding']==='admin_unlimited'&&$g['debitedPoints']===0&&get_point_sum('g_super')===0,'admin unrestricted budget with audit');
+}
+gc_deny(fn()=>ng_buy_wallet('g_staff',gc_id(25),'p1000','g_wallet_to',$now),'insufficient_points');
+// Restore the balance and received-box fixture used by the subsequent HTTP test.
+insert_point('g_sender',7150,'http fixture','wallet-test','http','seed');
+echo "WALLET_FIRST_EXACT_SHORTFALL_NO_BONUS_SUPER_ACCOUNT_ONLY_OK\n";
