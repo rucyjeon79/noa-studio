@@ -186,7 +186,7 @@ try {
             $out = ['saved'=>true,'revision'=>$next,'field'=>$job['field']];
         } else {
             if ($record['revision'] !== $job['revision'] || isset($job['saved'])) reply(409,['error'=>'select_song_again']);
-            $context = array_intersect_key($record['fields'],array_flip([...TARGETS,'songDescription','vocal','originalArtist','productionPrompt','characterPrompt']));
+            $context = array_intersect_key($record['fields'],array_flip(['title','lyrics','sunoPrompt','songDescription','vocal','originalArtist','productionPrompt','characterPrompt']));
             $genre = (string)$record['context']['genre'];
             $rules = noa_generation_rules($db,$genre,(string)($record['payload']['ownerId'] ?? ''));
             $out = ['id'=>$job['id'],'field'=>$job['field'],'song'=>$context,'packageType'=>$record['packageType'],
