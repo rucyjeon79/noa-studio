@@ -22,6 +22,7 @@ jobs:
           php -l deploy/noa-gpt.php
           php -l deploy/noa-gpt-setup.php
           node --check deploy/noa-browse-edit.js
+          php -r 'define("_GNUBOARD_",true);require "bridge/youtube-store.php";foreach([["songId"=>"a","status"=>"matched"],["songId"=>null,"status"=>"conflict"]] as $m){$r=ny_resolve_video_links($m,["b"=>true],null);if($r["status"]!=="conflict"||$r["songId"]!==null)exit(1);}if(ny_resolve_video_links([],["a"=>true,"b"=>true],["entity_id"=>"b"])["songId"]!=="b")exit(1);'
           python tests/gpt/flow.py
   deploy:
     if: github.ref == 'refs/heads/main'
