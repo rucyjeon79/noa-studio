@@ -36,3 +36,6 @@ body.noa-page main.noa-points-page>header.np-header{display:flex}
   .noa-point-checkout .np-cart-item { grid-template-columns: 44px minmax(0,1fr) 44px; gap: 8px; }
   .noa-point-checkout .np-cart-item > img { inline-size: 44px; block-size: 44px; }
 }
+
+.noa-points-page #points-login:not([hidden]) { margin-block-end: 20px; }
+.noa-point-checkout .np-history-link + .np-history-link { display: flex; margin-block-start: 12px; }

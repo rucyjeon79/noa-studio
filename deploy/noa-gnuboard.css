@@ -132,3 +132,5 @@ html.noa-g5 :is(#bo_vc_w,#bo_sch) :is(textarea,input,select,button):focus-visibl
 }
 html.noa-g5 #bo_vc_w .btn_confirm { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
 html.noa-g5 #bo_vc_w .btn_confirm .btn_submit { min-block-size: 44px; padding-inline: 16px; }
+
+html.noa-g5 #bo_vc_w .btn_confirm { margin-block-start: 16px; }

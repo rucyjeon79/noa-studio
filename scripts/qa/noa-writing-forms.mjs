@@ -54,6 +54,13 @@ try {
     const note=await page.getByLabel('옵션 메모').boundingBox();
     const save=await page.getByRole('button',{name:'메모 저장'}).boundingBox();
     assert(Math.abs(note.y-save.y)<2 && note.x+note.width<=save.x && save.x+save.width<=width+1,JSON.stringify({width,note,save}));
+    await page.setContent('<main id="noa-my-account"><section id="special-invite-share"><strong>람준파파의 특별한 별무리 초대장</strong><p>한 분에게만 전달해 주세요.</p><a class="noa-button" href="#">메시지로 보내기</a><button>링크 복사</button><input readonly></section><dl class="noa-my-account-grid"><dt>현재 구독상태</dt></dl></main>');
+    for(const name of ['noa-ui','noa-account','noa-gifts'])await page.addStyleTag({content:fs.readFileSync('deploy/'+name+'.css','utf8')});
+    const share=page.locator('#special-invite-share');
+    const first=await share.locator('a').boundingBox(), second=await share.locator('button').boundingBox();
+    const panel=await share.boundingBox(), wallet=await page.locator('.noa-my-account-grid').boundingBox();
+    assert(Math.max(second.x-first.x-first.width,second.y-first.y-first.height)>=7.9,'invitation controls touch');
+    assert(wallet.y-panel.y-panel.height>=19.9,'wallet touches invitation');
     await page.close();
     console.log(width,'create and edit OK');
   }

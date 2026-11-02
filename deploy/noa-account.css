@@ -69,3 +69,21 @@ html[data-noa-style] #noa-genres .noa-collection-image{display:block;width:100%;
 .noa-social-layout :is(input,button,a):focus-visible {
   outline: 2px solid var(--noa-gold,#cfb783); outline-offset: 2px;
 }
+
+/* Keep the invitation actions together and the wallet summary in its own section. */
+#noa-my-account #special-invite-share:not([hidden]) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 8px;
+  margin-block: 20px;
+}
+#noa-my-account #special-invite-share > :is(strong,p,input) {
+  flex: 1 0 100%;
+  min-inline-size: 0;
+  margin: 0;
+}
+#noa-my-account #special-invite-share > :is(a,button) {
+  margin: 0;
+  min-block-size: 44px;
+}
