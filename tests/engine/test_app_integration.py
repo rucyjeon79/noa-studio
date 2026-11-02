@@ -85,6 +85,8 @@ class GuestAccessProbeTest(unittest.TestCase):
                     raise urllib.error.HTTPError(url, 401, 'Unauthorized', headers, io.BytesIO(b'denied'))
                 social = path in ('/bbs/login.php', '/bbs/register.php')
                 headers['Location'] = ('https://other.invalid' if wrong_login else '') + ('/noa-login.php' if social else '/bbs/login.php') + '?url=' + urllib.parse.quote('/' if social else path, safe='')
+                if path == '/bbs/register.php':
+                    headers.replace_header('Location', '/noa-creator-apply.php')
                 raise urllib.error.HTTPError(url, 302, 'Found', headers, io.BytesIO())
         return Opener()
 

@@ -127,7 +127,7 @@ def install(sftp):
                     raise RuntimeError('adapter_restore_failed') from None
             raise
         installed.append(ADAPTER)
-    verified = compare_sources(sftp)
+    verified = compare_sources(sftp) if installed else audit
     if not verified['allMatch']:
         raise RuntimeError('post_install_source_drift')
     return {'changedFiles': installed, 'verifiedFiles': verified['requiredCount'],
@@ -195,6 +195,8 @@ def public_checks():
             target = '/noa-login.php' if social_entry else '/bbs/login.php'
             ok = ok and location.path == target and location.netloc in ('', 'noastudio.ai.kr')
             ok = ok and urllib.parse.parse_qs(location.query).get('url') == ['/' if social_entry else path]
+            if path == '/bbs/register.php':
+                ok = status == expected and headers.get('Location') == '/noa-creator-apply.php'
         elif expected == 401:
             # DotHome may substitute its HTML error body. The access extension's
             # response header must still prove this is the intended denial.

@@ -31,13 +31,16 @@ def main():
         try:
             with paramiko.SFTPClient.from_transport(t)as s:
                 s.get_channel().settimeout(30);states=[]
-                for row in observed['receipts'][:10]:
+                for row in observed['receipts']:
                     path='/hosting/noastudio/noa-ai-lab/n80-music-consumer/leases/'+hashlib.sha256((row['eventId']+'|music').encode()).hexdigest()+'.json'
                     try:
                         with s.open(path,'rb')as f:state=json.loads(f.read(65536))
                     except FileNotFoundError:state={}
                     states.append({'jobId':row['jobId'],'status':state.get('status'),'attempts':state.get('attempts'),'generation':state.get('generation'),'leaseUntil':state.get('leaseUntil'),'hasReceipt':bool(state.get('receipt'))})
                 proof['musicLeaseStates']=states
+                failed=next((row for row,state in zip(observed['receipts'],states) if state['status']!='succeeded'),None)
+                if failed and failed['jobId']!=observed['receipts'][0]['jobId']:
+                    proof['firstUnconfirmedDiagnostic']=request_music_diagnostic(key,failed)
         finally:t.close()
         proof['ok']=True
     finally:
