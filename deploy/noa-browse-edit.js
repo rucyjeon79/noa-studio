@@ -71,11 +71,13 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
       // Keep the configured API route for installations using AI LAB.
       state.gptMode??=fetch('/noa-gpt.php?op=config',{method:'POST',headers:{'Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:'{}'})
        .then(r=>r.json()).then(async cfg=>{
+        if(cfg.ok&&cfg.workerConfigured)return 'worker';
         if(!cfg.ok||cfg.pluginEnabled||cfg.url)return 'gpt';
         const session=await api('/noa-ainoa.php?action=status',{},12000);
         return session.generation?.ready?'api':'gpt';
        }).catch(()=>'gpt');
-      state.gptMode.then(mode=>{if(mode==='api'&&gpt.isConnected)gpt.replaceWith(ai);});
+      gpt.disabled=true;
+      state.gptMode.then(mode=>{state.privateWorker=mode==='worker';gpt.disabled=false;if(mode==='api'&&gpt.isConnected)gpt.replaceWith(ai);});
       gpt.onclick=async()=>{
        if(state.busy)return;
        if(state.dirty){tell('먼저 곡 정보를 저장한 뒤 다시 눌러 주세요.',true);return;}
@@ -83,29 +85,30 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
        if(replace&&!window.confirm(label+'에 기존 내용이 있습니다. 새 결과로 교체할까요?'))return;
        if(state.gptTask && state.gptField!==key && !window.confirm('앞선 생성 요청을 종료하고 '+label+' 작업을 시작할까요?'))return;
        // Create the tab during the tap so mobile browsers keep the user gesture.
-       const tab=window.open('about:blank','_blank');
+       const tab=state.privateWorker?null:window.open('about:blank','_blank');
        if(tab)tab.opener=null;
        let launched=false;
        state.busy=true;gpt.disabled=true;
        try{
-        const response=await fetch('/noa-gpt.php?op=start',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify({selector,field:key,revision:state.data.revision,replace})});
+        const response=await fetch('/noa-gpt.php?op=start',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify({selector,field:key,revision:state.data.revision,replace,worker:state.privateWorker})});
         const result=await response.json();
         if(result.error==='setup_required'){
          tell('처음 한 번 전용 GPT를 연결해 주세요.');
          const link=document.createElement('a');link.href='/noa-gpt-setup.php';link.textContent='전용 GPT 연결 설정';feedback.append(link);return;
         }
-        if(!response.ok||!result.ok)throw Error(result.error==='revision_conflict'?'곡이 변경되었습니다. 편집기를 다시 열어 주세요.':'작업을 등록하지 못했습니다. 다시 시도해 주세요.');
-        if(!result.plugin){if(tab){tab.location.replace(result.url);launched=true;}else location.assign(result.url);return;}
+        if(!response.ok||!result.ok)throw Error(result.error==='worker_offline'?'비공개 실행기가 오프라인이에요. 연결 후 다시 눌러 주세요.':result.error==='revision_conflict'?'곡이 변경되었습니다. 편집기를 다시 열어 주세요.':'작업을 등록하지 못했습니다. 다시 시도해 주세요.');
+        if(!result.plugin&&!result.worker){if(tab){tab.location.replace(result.url);launched=true;}else location.assign(result.url);return;}
         const title=state.data.fields.title||'선택한 곡';
         const taskId=result.id;
         const request='NOA STUDIO Assistant로 선택한 작업을 읽어줘. 작업 ID가 '+taskId+'일 때만 지정된 항목의 결과를 작성해 그 작업에 저장해줘.';
         if(state.gptFeedback && state.gptFeedback!==feedback){state.gptFeedback.hidden=true;state.gptFeedback.replaceChildren();}
         state.gptTask=taskId;state.gptField=key;state.gptFeedback=feedback;
         const chat=new URL('https://chatgpt.com/');chat.searchParams.set('q',request);
-        tell('ChatGPT에서 요청을 보내면 여기에 저장됩니다.');
+        if(result.worker){tell('생성 중이에요. 완료되면 이 칸에 저장됩니다.');}else{tell('ChatGPT에서 요청을 보내면 여기에 저장됩니다.');
         if(tab && !tab.closed){tab.location.replace(chat.href);launched=true;}
         else{
          const launch=document.createElement('a');launch.href=chat.href;launch.target='_blank';launch.rel='noopener';launch.textContent='ChatGPT 열기';feedback.append(launch);
+        }
         }
         const until=Date.now()+3600000;
         async function refreshTask(){
@@ -116,7 +119,9 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
            const response=await fetch('/noa-gpt.php?op=progress',{method:'POST',headers:{'Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify({id:taskId})});
            if(active!==state||state.gptTask!==taskId)return;
            if(response.status===409){state.gptTask=null;tell('다른 작업으로 바뀌었거나 작업 시간이 만료됐습니다.');return;}
-           if(response.ok&&(await response.json()).saved){
+           const progress=response.ok?await response.json():{};
+           if(progress.failed){state.gptTask=null;tell('생성을 완료하지 못했어요. 다시 시도해 주세요.',true);return;}
+           if(progress.saved){
             if(state.dirty){state.gptTask=null;tell('결과가 저장됐어요. 현재 편집 내용은 유지됩니다. 편집기를 다시 열면 결과를 볼 수 있어요.');return;}
             const res=await fetch('/noa-inline-edit.php?'+new URLSearchParams(selector),{cache:'no-store'});
             const updated=await res.json();

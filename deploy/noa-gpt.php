@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__.'/common.php';
+require_once __DIR__.'/noa-app/engine/song-generation.php';
 require_once __DIR__.'/noa-bridge/storage.php';
 require_once __DIR__.'/noa-bridge/sound-core.php';
 require_once __DIR__.'/noa-bridge/inline-edit.php';
@@ -16,7 +17,7 @@ function reply(int $code, array $data): never {
 }
 const TARGETS = ['title','lyrics','sunoPrompt','geminiPrompt','youtubeTitle','description','communityPost'];
 $op = $_GET['op'] ?? '';
-$external = in_array($op, ['read','save','health','list','update','rules'], true);
+$external = in_array($op, ['read','save','health','list','update','rules','workerPoll','workerFail'], true);
 $method = $_SERVER['REQUEST_METHOD'] ?? '';
 if ($method !== ($op === 'read' ? 'GET' : 'POST')) reply(405, ['error'=>'method']);
 if (!$external && (empty($is_member) || ($is_admin ?? '') !== 'super')) reply(403, ['error'=>'admin_required']);
@@ -40,7 +41,10 @@ try {
     $state = is_file($file) ? json_decode(file_get_contents($file), true, 32, JSON_THROW_ON_ERROR) : [];
     $pluginHash = '150359b8182e0bca302676a20bccadb0e007a8aa0a2000309a53995c1e35f97f';
     $isPlugin = $external && !empty($state['pluginEnabled']) && hash_equals($pluginHash,hash('sha256',$secret));
-    if ($external && ((!$isPlugin && !hash_equals($state['hash'] ?? '',hash('sha256',$secret))) || ($state['owner'] ?? '') !== ($config['cf_admin'] ?? null))) reply(401,['error'=>'invalid_key']);
+    $isWorker = $external && isset($state['workerHash']) && hash_equals($state['workerHash'],hash('sha256',$secret));
+    if ($external && ((!$isWorker && !$isPlugin && !hash_equals($state['hash'] ?? '',hash('sha256',$secret))) || ($state['owner'] ?? '') !== ($config['cf_admin'] ?? null))) reply(401,['error'=>'invalid_key']);
+    $workerOp = in_array($op,['workerPoll','workerFail'],true);
+    if ($workerOp && !$isWorker) reply(403,['error'=>'worker_key_required']);
     if ($op==='rules') {
         if (!$isPlugin) reply(403,['error'=>'plugin_required']);
         $genre=$body['genre']??'';
@@ -57,17 +61,50 @@ try {
     $job = $state['job'] ?? [];
     $valid = ($job['expires'] ?? 0) > time();
     $out = [];
+    $dispatchToken = trim((string)getenv('NOA_GITHUB_DISPATCH_TOKEN'));
+    if ($dispatchToken === '') $dispatchToken = (string)($state['dispatchToken'] ?? '');
+    $hosted = $dispatchToken !== '' && isset($state['workerHash']);
+    $workerReady = $hosted || ($state['workerSeen'] ?? 0) > time()-45;
     switch ($op) {
+    case 'workerDisable':
+        unset($state['workerHash'],$state['workerSeen']);
+        if (!empty($job['worker'])) unset($state['job']);
+        break;
+    case 'dispatchSetup':
+        $token = $body['token'] ?? null;
+        if (!is_string($token) || !preg_match('/^github_pat_[A-Za-z0-9_]{40,200}$/D',$token)) reply(400,['error'=>'invalid_token']);
+        $state['dispatchToken']=$token;
+        break;
+    case 'workerPair':
+        $key = bin2hex(random_bytes(32));
+        $state['owner'] = $member['mb_id'];
+        $state['workerHash'] = hash('sha256',$key);
+        unset($state['workerSeen']);
+        $out = ['key'=>$key];
+        break;
+    case 'workerPoll':
+        $state['workerSeen'] = time();
+        $pending = $valid && !empty($job['worker']) && !isset($job['saved']) && !isset($job['failed']);
+        if ($pending && !empty($job['hosted']) && ($body['id'] ?? '') !== $job['id']) reply(409,['error'=>'task_replaced']);
+        if ($pending && empty($job['claimed'])) {
+            $state['job']['claimed'] = time();
+            $out = ['id'=>$job['id']];
+        }
+        break;
+    case 'workerFail':
+        if (!$valid || empty($job['worker']) || ($body['id'] ?? '') !== $job['id']) reply(409,['error'=>'task_replaced']);
+        if (!isset($job['saved'])) $state['job']['failed'] = true;
+        break;
     case 'pluginToggle':
         if (!is_bool($body['enabled'] ?? null)) reply(400,['error'=>'invalid_request']);
         $state['owner']=$member['mb_id'];$state['pluginEnabled']=$body['enabled'];unset($state['job']);
         break;
     case 'config':
-        $out = ['pluginEnabled'=>!empty($state['pluginEnabled']), 'configured'=>isset($state['hash']), 'url'=>$state['url'] ?? ''];
+        $out = ['workerConfigured'=>isset($state['workerHash']),'workerReady'=>$workerReady,'pluginEnabled'=>!empty($state['pluginEnabled']), 'configured'=>isset($state['hash']), 'url'=>$state['url'] ?? ''];
         break;
     case 'pair':
         $key = bin2hex(random_bytes(32));
-        $state = ['owner'=>$member['mb_id'],'hash'=>hash('sha256',$key),'url'=>$state['url'] ?? ''];
+        $state['owner']=$member['mb_id']; $state['hash']=hash('sha256',$key); unset($state['job']);
         $out = ['key'=>$key];
         break;
     case 'link':
@@ -78,22 +115,26 @@ try {
         break;
     case 'progress':
         if (!$valid || ($body['id'] ?? '') !== $job['id']) reply(409,['error'=>'task_replaced']);
-        $out=['saved'=>isset($job['saved'])];
+        $out=['saved'=>isset($job['saved']), 'failed'=>!empty($job['failed']) || (!empty($job['worker']) && time() > $job['expires']-3600+(!empty($job['hosted']) ? 1200 : 360) && !isset($job['saved']))];
         break;
     case 'start':
-        if ((empty($state['url']) && empty($state['pluginEnabled'])) || ($state['owner'] ?? '') !== $member['mb_id']) reply(409,['error'=>'setup_required']);
+        $useWorker = ($body['worker'] ?? false) === true;
+        if ($useWorker && !$workerReady) reply(503,['error'=>'worker_offline']);
+        if ((!$useWorker && empty($state['url']) && empty($state['pluginEnabled'])) || ($state['owner'] ?? '') !== $member['mb_id']) reply(409,['error'=>'setup_required']);
         $selector = $body['selector'] ?? [];
         $field = $body['field'] ?? '';
         if (($selector['type'] ?? '') !== 'song' || !in_array($field,TARGETS,true)) reply(400,['error'=>'invalid_target']);
         $record = nie_resolve(noa_bridge_pdo(), $selector);
         if ($record['revision'] !== ($body['revision'] ?? null) || !empty($record['payload']['_noaTrash'])) reply(409,['error'=>'revision_conflict']);
         if (trim((string)($record['fields'][$field] ?? '')) !== '' && ($body['replace'] ?? false) !== true) reply(409,['error'=>'overwrite_confirmation']);
-        $state['job'] = ['id'=>bin2hex(random_bytes(16)),'selector'=>$selector,'key'=>$record['writeKey'],'revision'=>$record['revision'],'field'=>$field,'expires'=>time()+3600];
-        $out = ['plugin'=>!empty($state['pluginEnabled']),'url'=>$state['url'] ?? '', 'id'=>$state['job']['id']];
+        $state['job'] = ['hosted'=>$hosted && $useWorker,'worker'=>$useWorker,'id'=>bin2hex(random_bytes(16)),'selector'=>$selector,'key'=>$record['writeKey'],'revision'=>$record['revision'],'field'=>$field,'expires'=>time()+3600];
+        $out = ['worker'=>$useWorker,'plugin'=>!empty($state['pluginEnabled']),'url'=>$state['url'] ?? '', 'id'=>$state['job']['id']];
         break;
     case 'read':
     case 'save':
         if (!$valid || ($op==='save' && ($body['id'] ?? '') !== $job['id'])) reply(409,['error'=>'select_song_again']);
+        if ($isWorker !== !empty($job['worker'])) reply(409,['error'=>'wrong_worker']);
+        if (!empty($job['worker']) && (!$isWorker || empty($job['claimed']) || isset($job['failed']))) reply(409,['error'=>'worker_required']);
         $db = noa_bridge_pdo();
         if ($op==='save') $db->beginTransaction();
         $record = nie_resolve($db, $job['selector']);
@@ -137,6 +178,11 @@ try {
         $bytes = json_encode($state, JSON_THROW_ON_ERROR);
         try { if (!$tmp || file_put_contents($tmp,$bytes)!==strlen($bytes) || !rename($tmp,$file)) throw new RuntimeException('state_write'); }
         finally { if ($tmp && is_file($tmp)) unlink($tmp); }
+    }
+    if ($op === 'start' && !empty($state['job']['hosted'])) {
+        flock($lock, LOCK_UN);
+        $status = n80_song_dispatch($out['id'],$dispatchToken);
+        if ($status < 200 || $status >= 300) reply(502,['error'=>'dispatch_failed']);
     }
     reply(200,['ok'=>true]+$out);
 } catch (InvalidArgumentException|JsonException $e) { reply(400,['error'=>'invalid_request']); }
