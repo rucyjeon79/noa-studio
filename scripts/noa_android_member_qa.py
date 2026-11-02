@@ -22,10 +22,10 @@ def private_write(path, data):
     fd=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600)
     with os.fdopen(fd,'w') as f: f.write(data)
 
-def request(client,path,data=None,headers=None):
+def request(client,path,data=None,headers=None,timeout=30):
     req=urllib.request.Request(BASE+path,data=data,headers={'Cache-Control':'no-cache',**(headers or {})})
     try:
-        with client.open(req,timeout=30) as response:return response.status,response.read()
+        with client.open(req,timeout=timeout) as response:return response.status,response.read()
     except urllib.error.HTTPError as e:return e.code,e.read()
 
 def control(state, action, **values):
@@ -62,7 +62,7 @@ def main(action):
             request(client,'/bbs/login.php')
             request(client,'/bbs/login_check.php',urllib.parse.urlencode({'mb_id':state['id'],'mb_password':password,'url':'/noa-my.php'}).encode(),
                     {'Content-Type':'application/x-www-form-urlencoded','Referer':BASE+'/bbs/login.php'})
-            status,body=request(client,'/noa-bridge/catalog.php')
+            status,body=request(client,'/noa-bridge/catalog.php',timeout=150)
             if status!=200 or not json.loads(body).get('items'):raise RuntimeError('Authenticated live catalog unavailable')
             status,_=request(urllib.request.build_opener(),'/noa-bridge/catalog.php')
             if status!=401:raise RuntimeError('Guest music authorization changed')
