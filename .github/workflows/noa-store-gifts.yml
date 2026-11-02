@@ -1,7 +1,7 @@
 name: NOA store gifts
 on:
   pull_request:
-    paths: &paths ['bridge/gift-core.php','bridge/toss-core.php','bridge/notifications-*.php','deploy/noa-gifts.*','tests/payments/*gift*','scripts/noa_gifts_release.py','.github/workflows/noa-store-gifts.yml']
+    paths: &paths ['bridge/gift-core.php','bridge/toss-core.php','bridge/notifications-*.php','deploy/noa-gifts.*','deploy/noa-membership.php','deploy/noa-membership-wallet.css','tests/payments/*gift*','scripts/noa_gifts_release.py','.github/workflows/noa-store-gifts.yml']
   push:
     branches: [main]
     paths: *paths

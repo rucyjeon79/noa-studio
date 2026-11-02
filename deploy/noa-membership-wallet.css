@@ -5,7 +5,6 @@
 .wallet-overview p{margin:0 0 8px;color:var(--noa-muted);font-size:13px}
 .wallet-overview strong{display:block;line-height:1.45;overflow-wrap:anywhere}
 .wallet-overview .wallet-balance strong{font-size:clamp(22px,5vw,34px);font-variant-numeric:tabular-nums;color:var(--wallet-gold)}
-.wallet-overview .wallet-balance a{display:inline-flex;align-items:center;min-height:44px;font-size:13px}
 .wallet-overview .wallet-pass strong{font-size:clamp(14px,2.8vw,18px);word-break:keep-all}
 .member-wallet .wallet-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 16px}
 .member-wallet .wallet-actions a{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:8px 14px;min-height:46px;box-sizing:border-box;border:1px solid var(--wallet-edge);border-radius:8px;background:var(--noa-surface);color:var(--noa-text);text-decoration:none}
@@ -18,3 +17,6 @@
 .member-wallet .wallet-ranks{padding:0;margin:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:4px 10px}
 .wallet-ranks li{display:flex;align-items:baseline;gap:8px;padding:6px 0;font-size:14px}
 .wallet-ranks small{color:var(--wallet-gold);min-width:38px;font-variant-numeric:tabular-nums}
+.member-wallet .wallet-actions .wallet-action-copy{display:grid;gap:3px;min-width:0;color:var(--noa-text);text-align:start}
+.wallet-action-copy small{font-size:12px;line-height:1.4;color:var(--noa-muted)}
+.wallet-action-copy strong{font-size:15px;line-height:1.4;word-break:keep-all}
