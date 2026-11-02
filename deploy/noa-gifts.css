@@ -35,3 +35,8 @@
 .noa-special-letter{max-width:34rem;margin:clamp(16px,5vw,64px) auto;color:var(--noa-text);box-sizing:border-box}
 #special-invite-share input,.noa-special-letter input:not([type=hidden]){width:100%;box-sizing:border-box;margin-top:10px}
 #special-invite-share[hidden]{display:none}
+
+#special-invite-issue .invite-wordmark{display:block;line-height:1.25;text-align:center;color:#eddbb9}
+#special-invite-issue .invite-wordmark b{color:#ffe09a;font-weight:800}
+#special-invite-issue svg{width:32px;height:24px}
+#special-invite-share [hidden]{display:none!important}
