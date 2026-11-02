@@ -1,5 +1,13 @@
 /* Inline administrator metadata editing. Uses the existing audited bridge writer. */
 (()=>{'use strict';if(window.NoaBrowseEdit)return;
+async function generationReply(response){
+ const denied=response.status===401||response.status===403;
+ if(denied)throw Error('최고관리자 로그인 상태와 접근 권한을 확인해 주세요.');
+ if(response.redirected||!response.headers.get('Content-Type')?.toLowerCase().includes('application/json')){
+  throw Error('서버에서 생성 응답을 확인할 수 없습니다. (HTTP '+response.status+') 곡 편집기를 다시 열어 저장 상태를 확인해 주세요.');
+ }
+ try{return await response.json();}catch{throw Error('생성 응답이 중간에 끊겼습니다. 곡 편집기를 다시 열어 저장 상태를 확인해 주세요.');}
+}
 const formReady=window.NoaRecordForm?Promise.resolve():new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='/noa-record-form.js?v=20261027-clear1';script.onload=resolve;script.onerror=()=>reject(Error('곡정보 폼을 불러오지 못했습니다. 다시 열어 주세요.'));document.head.append(script);});
 const fieldErrors={collection_revision_conflict:'묶음의 수록곡이 다른 곳에서 변경되었습니다. 취소 후 다시 열어 최신 목록을 확인해 주세요.',collection_unavailable:'선택한 묶음의 장르나 공개 상태가 바뀌었습니다. 취소 후 다시 열어 확인해 주세요.',invalid_collections:'곡 묶음 선택을 다시 확인해 주세요.',invalid_genre:'카테고리와 세부 장르를 선택해 주세요.',classification_ep_required:'K-POP 원곡은 EP 번호를 입력해 주세요.',classification_ep_conflict:'선택한 장르에 같은 EP 번호가 있습니다. 기존 곡을 확인해 주세요.',classification_source_linked:'원곡·파생곡 연결이 있는 곡입니다. 연결을 유지하기 위해 분류 변경을 보류했습니다.',classification_playlist_linked:'이 곡이 수록된 곡 묶음이 있습니다. 묶음의 수록곡에서 먼저 제외한 후 분류를 바꿔 주세요.',record_already_exists:'해당 장르·번호의 문서가 이미 있습니다. 곡 검색·수정에서 기존 곡을 열어 주세요.',number_required:'EP 또는 ACT 번호를 입력해 주세요.',original_ep_conflict:'이 EP 번호의 원곡이 이미 있습니다. 다른 번호를 쓰거나 기존 원곡을 수정해 주세요.',invalid_members:'ACT에는 해당 범위의 EP 10곡이 필요합니다. 수록곡 선택을 확인해 주세요.',act_requires_ep_range:'ACT 수록곡은 해당 EP 10곡을 번호순으로 선택해 주세요.',member_missing_or_ambiguous:'수록곡의 원본 연결이 없거나 중복되어 있습니다. 곡 연결을 먼저 확인해 주세요.',member_genre_or_ep_mismatch:'수록곡의 장르 또는 EP 번호가 이 목록과 맞지 않습니다.',invalid_url:'미디어 주소는 https 주소로 입력해 주세요.',invalid_media_host:'Suno 또는 YouTube의 올바른 공유 주소를 입력해 주세요.',title_required:'곡 제목을 입력해 주세요.',ambiguous_song:'같은 곡에 여러 원본이 연결되어 있습니다. 원본 연결을 먼저 검토해 주세요.',restore_required:'휴지통에 있는 곡입니다. 복원 후 수정해 주세요.'};
 const paths={edit:'m16 3 5 5-12 12-6 1 1-6L16 3ZM13 6l5 5',save:'M5 3h12l4 4v14H3V3h2Zm2 0v6h10V3M7 21v-8h10v8',cancel:'m6 6 12 12M6 18 18 6',ai:'m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z'};
@@ -69,8 +77,8 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
      if(selector.type==='song'){
       const gpt=control('ai','생성',label+' ChatGPT로 생성');
       // Keep the configured API route for installations using AI LAB.
-      state.gptMode??=fetch('/noa-gpt.php?op=config',{method:'POST',headers:{'Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:'{}'})
-       .then(r=>r.json()).then(async cfg=>{
+      state.gptMode??=fetch('/noa-gpt.php?op=config',{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:'{}'})
+       .then(generationReply).then(async cfg=>{
         if(cfg.ok&&cfg.workerConfigured)return 'worker';
         if(!cfg.ok||cfg.pluginEnabled||cfg.url)return 'gpt';
         const session=await api('/noa-ainoa.php?action=status',{},12000);
@@ -90,8 +98,8 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
        let launched=false;
        state.busy=true;gpt.disabled=true;
        try{
-        const response=await fetch('/noa-gpt.php?op=start',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify({selector,field:key,revision:state.data.revision,replace,worker:state.privateWorker})});
-        const result=await response.json();
+        const response=await fetch('/noa-gpt.php?op=start',{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify({selector,field:key,revision:state.data.revision,replace,worker:state.privateWorker})});
+        const result=await generationReply(response);
         if(result.error==='setup_required'){
          tell('처음 한 번 전용 GPT를 연결해 주세요.');
          const link=document.createElement('a');link.href='/noa-gpt-setup.php';link.textContent='전용 GPT 연결 설정';feedback.append(link);return;
@@ -116,15 +124,15 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
          if(Date.now()>until){state.gptTask=null;tell('요청 시간이 지났습니다. 생성 버튼을 다시 눌러 주세요.');return;}
          if(!document.hidden){
           try{
-           const response=await fetch('/noa-gpt.php?op=progress',{method:'POST',headers:{'Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify({id:taskId})});
+           const response=await fetch('/noa-gpt.php?op=progress',{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify({id:taskId})});
            if(active!==state||state.gptTask!==taskId)return;
            if(response.status===409){state.gptTask=null;tell('다른 작업으로 바뀌었거나 작업 시간이 만료됐습니다.');return;}
-           const progress=response.ok?await response.json():{};
+           const progress=await generationReply(response);
            if(progress.failed){state.gptTask=null;tell('생성을 완료하지 못했어요. 다시 시도해 주세요.',true);return;}
            if(progress.saved){
             if(state.dirty){state.gptTask=null;tell('결과가 저장됐어요. 현재 편집 내용은 유지됩니다. 편집기를 다시 열면 결과를 볼 수 있어요.');return;}
-            const res=await fetch('/noa-inline-edit.php?'+new URLSearchParams(selector),{cache:'no-store'});
-            const updated=await res.json();
+            const res=await fetch('/noa-inline-edit.php?'+new URLSearchParams(selector),{cache:'no-store',headers:{Accept:'application/json'}});
+            const updated=await generationReply(res);
             if(active!==state||state.gptTask!==taskId)return;
             if(updated.ok&&updated.writeKey===state.data.writeKey&&!state.dirty){
              state.data=updated;
@@ -132,12 +140,12 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
              state.gptTask=null;tell('저장됨');return;
             }
            }
-          }catch{}
+          }catch(e){if(active===state&&state.gptTask===taskId)tell(/[가-힣]/.test(e.message)?e.message:'연결을 확인하고 있습니다.',true);}
          }
          setTimeout(refreshTask,5000);
         }
         setTimeout(refreshTask,1800);
-       }catch(e){tell(e.message,true);}finally{if(tab&&!launched&&!tab.closed)tab.close();state.busy=false;gpt.disabled=false;}
+       }catch(e){tell(/[가-힣]/.test(e.message)?e.message:'서버에 연결할 수 없습니다. 곡 편집기를 다시 열어 주세요.',true);}finally{if(tab&&!launched&&!tab.closed)tab.close();state.busy=false;gpt.disabled=false;}
       };heading.append(gpt);
      }
     }
