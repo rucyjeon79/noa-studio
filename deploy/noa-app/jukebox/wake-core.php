@@ -5,7 +5,7 @@ if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
 function nw_dispatch(string $token):int{
  if(!function_exists('curl_init'))return 0;
  $ch=curl_init('https://api.github.com/repos/rucyjeon79/noa-studio/actions/workflows/noa-jukebox.yml/dispatches');
- curl_setopt_array($ch,[CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>'{"ref":"main"}',CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$token,'Accept: application/vnd.github+json','Content-Type: application/json','X-GitHub-Api-Version: 2022-11-28'],CURLOPT_USERAGENT=>'NOA-upload-wake',CURLOPT_CONNECTTIMEOUT_MS=>750,CURLOPT_TIMEOUT_MS=>2000,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_WRITEFUNCTION=>static fn($ch,$data)=>strlen($data)]);
+ curl_setopt_array($ch,[CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>'{"ref":"main"}',CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$token,'Accept: application/vnd.github+json','Content-Type: application/json','X-GitHub-Api-Version: 2022-11-28'],CURLOPT_USERAGENT=>'NOA-upload-wake',CURLOPT_CONNECTTIMEOUT_MS=>2000,CURLOPT_TIMEOUT_MS=>5000,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_WRITEFUNCTION=>static fn($ch,$data)=>strlen($data)]);
  curl_exec($ch);$status=(int)curl_getinfo($ch,CURLINFO_RESPONSE_CODE);curl_close($ch);return $status;
 }
 /** Failure never rolls back an accepted upload; the scheduled recovery remains enabled. */
@@ -24,7 +24,7 @@ function nw_request(string $directory,?callable $send=null,?int $now=null):strin
   $last=(int)($state['at']??0);$delay=($state['accepted']??false)?60:10;
   if($last>0&&$now>=$last&&$now-$last<$delay)return 'already_requested';
   rewind($lock);ftruncate($lock,0);fwrite($lock,json_encode(['at'=>$now,'accepted'=>false]));fflush($lock);
-  $accepted=(($send??'nw_dispatch')($token)===204);
+  $accepted=in_array(($send??'nw_dispatch')($token),[200,204],true);
   rewind($lock);ftruncate($lock,0);fwrite($lock,json_encode(['at'=>$now,'accepted'=>$accepted]));fflush($lock);
   return $accepted?'requested':'recovery_pending';
  }catch(Throwable $e){return 'recovery_pending';}

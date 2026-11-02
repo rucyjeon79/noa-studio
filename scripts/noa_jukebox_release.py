@@ -111,10 +111,6 @@ def main():
    host_probe=probe.makefile('r').read(4096).decode(errors='replace');probe.close()
   except Exception:host_probe='SSH executable probe unavailable; external worker retained'
   print('DOTHOME_EXECUTABLE_PROBE '+json.dumps(host_probe),flush=True)
-  pending=cli('jobs')
-  claimed=cli('claim')['ids']
-  catalog=cli('export');(work/'catalog-private.json').write_text(json.dumps(catalog,ensure_ascii=False))
-  print('LIVE_DB_COUNTS '+json.dumps({k:v for k,v in catalog.items() if k!='items'}),flush=True)
   # SSH keepalive while acquisition happens on the worker, not on shared hosting.
   t.set_keepalive(20)
   # Exact known baseline plus private per-file backups protect simultaneous work.
@@ -166,6 +162,10 @@ def main():
    finally:
     if channel:channel.close()
   uploads=process_uploads(s,lambda action,payload=None:cli(action,json.dumps(payload,ensure_ascii=False).encode() if payload else None),mkdir,source_reader,{'run_id':os.environ['GITHUB_RUN_ID'],'source_commit':os.environ['GITHUB_SHA'],'keepalive_seconds':idle_seconds})
+  pending=cli('jobs')
+  claimed=cli('claim')['ids']
+  catalog=cli('export');(work/'catalog-private.json').write_text(json.dumps(catalog,ensure_ascii=False))
+  print('LIVE_DB_COUNTS '+json.dumps({k:v for k,v in catalog.items() if k!='items'}),flush=True)
   recovery=watchdog(cli)
 
   print('JUKEBOX_UPLOAD_RESULT '+json.dumps(uploads),flush=True)

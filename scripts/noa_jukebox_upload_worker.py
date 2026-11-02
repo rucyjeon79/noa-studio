@@ -37,7 +37,7 @@ def _drain_uploads(sftp,call,mkdir,source_reader=None,idle_seconds=0):
                 try:call('maintenance')
                 except Exception:pass
                 last_maintenance=time.monotonic()
-            time.sleep(min(15,max(0,idle_until-time.monotonic())));continue
+            time.sleep(min(3,max(0,idle_until-time.monotonic())));continue
         processed+=1
         if len(claimed)!=1:raise ValueError('queue_concurrency_contract')
         job=claimed[0];auth={'id':job['id'],'lease':job['lease'],'job_id':job['job_id']}
