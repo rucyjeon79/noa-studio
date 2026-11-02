@@ -6,6 +6,9 @@ import stat
 import paramiko
 import noa_ainoa_deploy as release
 
+# Independent music downloads and Android builds may ship while SFTP is queued.
+release.UNRELATED_PATH_PREFIXES = ("scripts/noa_music_save_release.py", "android/", ".github/workflows/noa-android", "deploy/noa-music-save.php")
+
 PRIVATE = '/hosting/noastudio/noa-jukebox-private'
 release.FILES = {
     'noa-app/jukebox/wake-core.php': 'deploy/noa-app/jukebox/wake-core.php',
