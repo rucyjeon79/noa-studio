@@ -93,8 +93,6 @@ function shell(){if(themeOnly||admin||document.querySelector('.noa-sidebar'))ret
 
 /* One navigation: pinned on wide landscape screens, modal on compact screens. */
 function wideShell(side){
- // Original genre films are portrait: retain every pixel and fill the surrounding stage with their own soft backdrop.
- const poster=document.getElementById('noa-hero-poster');if(poster){const art=poster.closest('.noa-hero-art');const backdrop=()=>art?.style.setProperty('--noa-hero-backdrop','url('+JSON.stringify(poster.src)+')');backdrop();new MutationObserver(backdrop).observe(poster,{attributes:true,attributeFilter:['src']});}
  const head=document.createElement('header');head.className='noa-drawer-head';head.append(side.querySelector('.noa-logo'));
  const close=document.createElement('button');close.type='button';close.className='noa-drawer-close';close.setAttribute('aria-label','전체 메뉴 닫기');close.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 6 12 12M18 6 6 18"/></svg>';close.onclick=()=>side.close();head.append(close);side.prepend(head);
  const profile=document.createElement('section');profile.className='noa-drawer-profile';profile.setAttribute('aria-label','내 계정');
