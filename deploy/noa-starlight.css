@@ -1,10 +1,10 @@
 /* NOA STUDIO / Starlight. One editorial system for the app, community and workspaces. */
 @media screen {
 :root,html[data-noa-style="starlight"]{
- --noa-bg:#111316!important;--noa-surface:#191d22!important;--noa-raised:#242a31!important;
- --noa-text:#F3F1EB!important;--noa-muted:#AEB2B8!important;--noa-line:#33383F!important;
+ --noa-bg:#111316!important;--noa-surface:#191d22!important;--noa-raised:#30343B!important;
+ --noa-text:#F5F6F8!important;--noa-muted:#AEB2B8!important;--noa-line:#33383F!important;
  --noa-accent:#C8B17D!important;--noa-accentText:#17191D!important;
- --noa-radius:6px;--noa-card-radius:6px;--noa-control-radius:6px;
+ --noa-darkGray:#30343B;--noa-radius:4px;--noa-card-radius:4px;--noa-control-radius:4px;
  --noa-content-max:1480px;--noa-content-gutter:clamp(20px,4vw,64px);--noa-section-gap:56px;
  --noa-glass-base:var(--noa-surface);--noa-glass-icon:var(--noa-text);--noa-glass-paint:none;
  --noa-glass-highlight:transparent;--noa-feature-line:var(--noa-line);--noa-feature-surface:var(--noa-surface);
@@ -280,11 +280,11 @@ html[data-noa-room=youtube]{--room-ink:#efaaa4;--room-wash:#b65c58}
 html[data-noa-room=music]{--room-ink:#a5cec4;--room-wash:#62988d}
 html[data-noa-room=community]{--room-ink:#c1b1dc;--room-wash:#9a86b8}
 html[data-noa-room=shop]{--room-ink:#e2be94;--room-wash:#b28759}
-html[data-noa-theme=noa-ivory][data-noa-room=home]{--room-ink:#745821}
-html[data-noa-theme=noa-ivory][data-noa-room=youtube]{--room-ink:#924740}
-html[data-noa-theme=noa-ivory][data-noa-room=music]{--room-ink:#31695d}
-html[data-noa-theme=noa-ivory][data-noa-room=community]{--room-ink:#6b507d}
-html[data-noa-theme=noa-ivory][data-noa-room=shop]{--room-ink:#7f502c}
+html[data-noa-theme=noa-ivory][data-noa-room=home]{--room-ink:var(--noa-darkGray);--room-wash:#80858F}
+html[data-noa-theme=noa-ivory][data-noa-room=youtube]{--room-ink:var(--noa-darkGray);--room-wash:#80858F}
+html[data-noa-theme=noa-ivory][data-noa-room=music]{--room-ink:var(--noa-darkGray);--room-wash:#80858F}
+html[data-noa-theme=noa-ivory][data-noa-room=community]{--room-ink:var(--noa-darkGray);--room-wash:#80858F}
+html[data-noa-theme=noa-ivory][data-noa-room=shop]{--room-ink:var(--noa-darkGray);--room-wash:#80858F}
 
 html[data-noa-room=home] .noa-record-library .noa-section-head{position:relative;isolation:isolate;background-image:url("/noa-assets/room-constellation.svg");background-repeat:no-repeat;background-position:right center;background-size:auto 100%}
 html[data-noa-room=home] .noa-record-library .noa-eyebrow{color:var(--room-ink)}
@@ -307,9 +307,9 @@ html[data-noa-room=shop] #ecosystem .ec-card .ec-buy{border-color:var(--room-ink
 html[data-noa-room=shop] #ecosystem .ec-grid .ec-card{border-bottom:1px dashed color-mix(in srgb,var(--room-wash) 55%,var(--noa-line))}
 
 html[data-noa-theme=noa-ivory] :is(.noa-sidebar,.noa-mobile-nav,#noa-account-bar,.ec-dialog){background-color:var(--noa-surface);color:var(--noa-text)}
-html[data-noa-theme=noa-ivory] .noa-hero .noa-hero-copy{color:#fff9ed}
-html[data-noa-theme=noa-ivory] .cinema-next,html[data-noa-theme=noa-ivory] .cinema-external{color:#ead7ad}
-html[data-noa-theme=noa-ivory] #noa-referral-dialog .nrf-close{color:#eeeae0}
+html[data-noa-theme=noa-ivory] .noa-hero .noa-hero-copy{color:var(--noa-text)}
+html[data-noa-theme=noa-ivory] .cinema-next,html[data-noa-theme=noa-ivory] .cinema-external{color:#FFFFFF}
+html[data-noa-theme=noa-ivory] #noa-referral-dialog .nrf-close{color:#FFFFFF}
 html[data-noa-theme=noa-ivory] #ecosystem .ec-tools,html[data-noa-theme=noa-ivory] #ecosystem .ec-tabs{color:var(--noa-text)}
 html[data-noa-theme=noa-ivory] #ecosystem .ec-card,html[data-noa-theme=noa-ivory] #ecosystem .ec-detail{color:var(--noa-text);background-color:var(--noa-bg)}
 @media(max-width:600px){
@@ -319,7 +319,63 @@ html[data-noa-theme=noa-ivory] #ecosystem .ec-card,html[data-noa-theme=noa-ivory
  html[data-noa-room=home] .noa-record-library .noa-section-head{background-size:35% auto}
 }
 html[data-noa-style] .noa-display-settings{display:inline-flex;align-items:center;align-self:start;gap:9px;min-height:44px;padding:4px 2px;background:transparent;border:0;color:var(--noa-text);font:inherit;font-size:13px;cursor:pointer}
-html[data-noa-style] .noa-display-settings::before{content:"";width:15px;height:15px;border:1px solid var(--noa-muted);border-radius:50%;background:linear-gradient(90deg,#24292d 50%,#efe5cf 50%)}
+html[data-noa-style] .noa-display-settings::before{content:"";width:15px;height:15px;border:1px solid var(--noa-muted);border-radius:50%;background:linear-gradient(90deg,var(--noa-darkGray) 50%,#FFFFFF 50%)}
 html[data-noa-style] #noa-settings-dialog{background:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line)}
 html[data-noa-style] #noa-settings-dialog :is(select,button){color:var(--noa-text);background:var(--noa-raised);border-color:var(--noa-line)}
 html[data-noa-style] #noa-settings-dialog select{min-height:44px}
+
+/* Neutral light palette. Keep noa-ivory as the persisted ID for existing members. */
+@media screen {
+ html[data-noa-theme=noa-ivory]{
+  --noa-bg:#FFFFFF!important;--noa-surface:#F5F6F8!important;--noa-raised:#E9EBEF!important;
+  --noa-text:#30343B!important;--noa-muted:#626873!important;--noa-line:#CCD0D6!important;
+  --noa-accent:#30343B!important;--noa-accentText:#FFFFFF!important;
+  --noa-control:#30343B!important;--noa-inactive:#626873!important;color-scheme:light;
+ }
+ /* One radius and spacing scale across both modes; preserve circular media controls. */
+ html[data-noa-style=starlight]{--noa-darkGray:#30343B;--noa-card-radius:4px;--noa-control-radius:4px;--noa-radius:4px}
+ html[data-noa-style] :is(.noa-menu,.noa-settings-row){gap:8px}
+ html[data-noa-style] .noa-menu a{min-height:48px;padding:12px 16px;border-radius:4px}
+ html[data-noa-style] body :is(.noa-section-head,.noa-section-heading){gap:16px;padding-bottom:16px;margin-bottom:24px}
+ html[data-noa-style] body :is(.noa-precision-card,.noa-browse-card,.catalog-card,.noa-personal-card,.noa-notice-featured){border-radius:var(--noa-card-radius);border-color:var(--noa-line);box-shadow:none}
+ html[data-noa-style] body .noa-section-navigation{gap:8px}
+ html[data-noa-style] body .noa-section-navigation a{border-radius:var(--noa-control-radius)}
+ html[data-noa-style] body :is(.noa-button,.lab-icon-button,.noa-glass-control){border-radius:var(--noa-control-radius)}
+ html[data-noa-style] body :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]),select,textarea){border-radius:var(--noa-control-radius)}
+ html[data-noa-style] body :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]),select){min-height:44px}
+ html[data-noa-style] body :is(input,textarea)::placeholder{color:var(--noa-muted);opacity:1}
+ html[data-noa-style] body #noa-settings-dialog{box-sizing:border-box;width:min(480px,calc(100vw - 32px));padding:24px;border-radius:8px;box-shadow:0 16px 48px #0003}
+ html[data-noa-style] #noa-settings-dialog h2{margin:0 48px 24px 0;font-size:24px;line-height:1.5}
+ html[data-noa-style] #noa-settings-dialog .noa-dialog-close{position:absolute;top:16px;right:16px;margin:0;padding:0;width:44px;height:44px;border-radius:4px}
+ html[data-noa-style] .noa-settings-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+ html[data-noa-style] .noa-settings-row label{display:grid;gap:8px;min-width:0;margin:0}
+ html[data-noa-style] .noa-settings-row select{box-sizing:border-box;width:100%;min-width:0;margin:0;padding:8px 12px}
+ html[data-noa-style] .noa-preview{gap:8px;margin-top:24px}
+ html[data-noa-style] .noa-preview i{border:1px solid var(--noa-line);border-radius:4px}
+ html[data-noa-style] #noa-settings-status{margin:16px 0 0;line-height:1.6;color:var(--noa-muted)}
+ html[data-noa-theme=noa-ivory] :is(.noa-sidebar,.noa-mobile-nav,#noa-account-bar,.noa-global-header){background:var(--noa-bg);color:var(--noa-text);border-color:var(--noa-line)}
+ html[data-noa-theme=noa-ivory] body .noa-menu a[aria-current=page]{background:var(--noa-darkGray);color:#FFFFFF;box-shadow:none}
+ html[data-noa-theme=noa-ivory] .noa-menu a[aria-current=page] svg{color:inherit}
+ html[data-noa-theme=noa-ivory] .noa-mobile-nav a[aria-current=page]{background:var(--noa-raised);color:var(--noa-darkGray);border-radius:4px}
+ html[data-noa-theme=noa-ivory] body .noa-section-navigation a[aria-current=page]{background:var(--noa-darkGray);border-color:var(--noa-darkGray);color:#FFFFFF}
+ html[data-noa-theme=noa-ivory] #ecosystem :is(.ec-hero,.ec-write-invite){background:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line)}
+ html[data-noa-theme=noa-ivory] #ecosystem .ec-write-invite{padding:16px;border-radius:4px}
+ html[data-noa-theme=noa-ivory] #ecosystem .ec-write-invite>button{background:var(--noa-darkGray);color:#FFFFFF}
+ html[data-noa-theme=noa-ivory] #ecosystem .ec-card .ec-buy{border-color:var(--noa-darkGray);color:var(--noa-darkGray)}
+ @media(max-width:760px){
+  html[data-noa-style] body :is(.noa-section-head,.noa-section-heading){gap:12px;padding-bottom:16px;margin-bottom:16px}
+ }
+ @media(max-width:360px){html[data-noa-style] .noa-settings-row{grid-template-columns:1fr}}
+}
+
+/* Neutral promotional surfaces keep artwork intact and the text legible. */
+html[data-noa-style] body :is(.noa-monthly-benefits,#noa-referral-banner){border-radius:4px}
+html[data-noa-style] body .noa-monthly-badge{border-radius:4px}
+html[data-noa-style] body .noa-monthly-intro{gap:16px}
+html[data-noa-style] body .noa-monthly-rewards{gap:16px;margin-block:24px 16px}
+html[data-noa-theme=noa-ivory] body .noa-monthly-benefits{background:var(--noa-surface);border-color:var(--noa-line);color:var(--noa-text)}
+html[data-noa-theme=noa-ivory] body .noa-monthly-badge{background:var(--noa-darkGray);border-color:var(--noa-darkGray);color:#FFFFFF;box-shadow:none}
+html[data-noa-theme=noa-ivory] body .noa-monthly-rewards li{border-color:var(--noa-line)}
+html[data-noa-theme=noa-ivory] body #noa-referral-banner{background:var(--noa-darkGray);border-color:var(--noa-darkGray);color:#FFFFFF;box-shadow:none}
+html[data-noa-theme=noa-ivory] #noa-referral-banner :is(strong,.nrf-banner-action,.nrf-banner-copy){color:#FFFFFF}
+html[data-noa-theme=noa-ivory] #noa-referral-banner small{color:#D5D8DE}

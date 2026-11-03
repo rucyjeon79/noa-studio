@@ -6,6 +6,8 @@ on:
 permissions: {contents: read}
 jobs:
   publish:
+    # The scoped light-theme workflow owns validation and activation for this release.
+    if: "!contains(github.event.head_commit.message, '[light-theme-release]')"
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 15
