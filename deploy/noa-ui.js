@@ -120,17 +120,25 @@ function wideShell(side){
   syncMenuState();window.dispatchEvent(new Event('noa-shell-layout'));
  };
  wide.addEventListener('change',syncDock);
- const open=focusSearch=>{if(wide.matches)setExpanded(true);else if(!side.open)side.showModal();syncMenuState();if(focusSearch||wide.matches)search.focus();else close.focus();};
+ const open=()=>{if(wide.matches)setExpanded(true);else if(!side.open)side.showModal();syncMenuState();if(wide.matches)expand.focus();else close.focus();};
  side.addEventListener('close',syncMenuState);
  side.addEventListener('cancel',event=>{if(wide.matches)event.preventDefault();});
- side.addEventListener('keydown',event=>{if(wide.matches&&event.key==='Escape'){event.preventDefault();setExpanded(false);document.getElementById('noa-nav-all')?.focus();}});
+ side.addEventListener('keydown',event=>{if(wide.matches&&event.key==='Escape'){event.preventDefault();setExpanded(false);(wide.matches?expand:document.getElementById('noa-nav-all'))?.focus();}});
  side.addEventListener('click',e=>{if(wide.matches)return;if(e.target===side){const r=side.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)side.close();}if(e.target.closest('[data-noa-display-settings]'))side.close();});
  setExpanded(false);syncDock();
  const installHeader=()=>{const bar=document.getElementById('noa-account-bar');if(!bar)return false;if(bar.dataset.noaWide)return true;bar.dataset.noaWide='true';
   const nav=document.createElement('nav');nav.className='noa-primary-nav';nav.setAttribute('aria-label','주요 메뉴');bar.querySelector('.noa-account-brand').after(nav);
   const all=document.getElementById('noa-nav-all');all.setAttribute('aria-haspopup','dialog');all.setAttribute('aria-controls',side.id);all.setAttribute('aria-expanded',String(side.open));all.addEventListener('click',e=>{if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();open(false);});
-  const find=document.createElement('button');find.type='button';find.id='noa-menu-find';find.className='noa-header-control';find.setAttribute('aria-label','메뉴 검색');find.innerHTML=icon('search');find.onclick=()=>open(true);
-  const theme=document.createElement('button');theme.type='button';theme.className='noa-header-control noa-display-settings';theme.dataset.noaDisplaySettings='';theme.setAttribute('aria-label','화면 테마');theme.innerHTML='<span class="noa-sr-only">화면 테마</span>';
+  const find=document.createElement('button');find.type='button';find.id='noa-menu-find';find.className='noa-header-control';find.setAttribute('aria-label','찾기');find.setAttribute('aria-haspopup','dialog');find.innerHTML=icon('search')+'<span>찾기</span>';find.onclick=()=>{
+   let dialog=document.getElementById('noa-find-dialog');if(dialog){dialog.showModal();dialog.querySelector('input').focus();return;}
+   dialog=document.createElement('dialog');dialog.id='noa-find-dialog';dialog.className='noa-header-dialog';dialog.setAttribute('aria-labelledby','noa-find-title');
+   dialog.innerHTML='<form method="dialog"><button aria-label="찾기 닫기" class="noa-dialog-close">×</button></form><h2 id="noa-find-title">찾기</h2><label for="noa-global-search">원하는 메뉴를 찾아보세요</label><input id="noa-global-search" type="search" placeholder="음원, 공지사항, 이용권…" autocomplete="off"><nav aria-label="찾기 결과"></nav><p role="status" hidden>일치하는 메뉴가 없어요.</p>';
+   const list=dialog.querySelector('nav'),input=dialog.querySelector('input'),empty=dialog.querySelector('[role=status]');
+   for(const a of side.querySelectorAll('.noa-menu a,.noa-drawer-secondary a')){const copy=a.cloneNode(true);copy.hidden=false;copy.removeAttribute('aria-current');list.append(copy);}
+   input.oninput=()=>{let count=0;const q=input.value.trim().toLocaleLowerCase();for(const a of list.children){a.hidden=!a.textContent.toLocaleLowerCase().includes(q);if(!a.hidden)count++;}empty.hidden=count>0;};
+   dialog.addEventListener('close',()=>find.focus());document.body.append(dialog);dialog.showModal();input.focus();
+  };
+  const theme=document.createElement('button');theme.type='button';theme.className='noa-header-control noa-display-settings';theme.dataset.noaDisplaySettings='';theme.setAttribute('aria-label','테마 선택');theme.innerHTML='<span>테마 선택</span>';
   all.before(find,theme);
   const locationLabel=document.createElement('span');locationLabel.className='noa-location-label';const section=sectionFor(location.pathname);locationLabel.textContent=section==='home'?'음악과 이야기가 만나는 곳':(menu().find(item=>item[0]===section)?.[1]||document.querySelector('main h1')?.textContent||'NOA STUDIO');bar.prepend(locationLabel);
   refreshNavigation();syncMenuState();return true;
@@ -265,7 +273,7 @@ async function init(){shell();if(!themeOnly&&!admin){sectionNavigation();roomInt
  ]);
  config=design;if(dictionary)Object.assign(words,dictionary);
  let local=null;try{local=JSON.parse(safeRead(themeStorageKey)||safeRead('noa-ui-selection')||'null')}catch{}apply(local&&isThemeChoice(local.theme)?{design:'ios',radius:'soft',...local,language}:{theme:config.defaultTheme,language,design:root.dataset.design||'ios',radius:root.dataset.radius||'soft'});settings();try{remote=await preferences;if(!remote)throw Error();revision=remote.revision;if(!dirty&&remote.settings)apply({...remote.settings,theme:isThemeChoice(remote.settings.theme)?remote.settings.theme:config.defaultTheme});else if(!dirty&&!local)apply({...state,theme:config.defaultTheme});document.querySelectorAll('[data-noa-login]').forEach(a=>{a.href=remote.member?'/bbs/member_confirm.php?url=register_form.php':'/bbs/login.php';a.textContent=remote.member?remote.displayName:tr('로그인')});document.querySelectorAll('[data-noa-admin],[data-noa-lab]').forEach(a=>a.hidden=!remote.admin);settings();status(remote.member?'계정에 저장하면 웹과 앱의 동일 설정 화면에서 불러옵니다.':'비로그인 설정은 이 기기에 보관합니다.');}catch{status('서버 설정을 불러오지 못했습니다. 마지막 기기 설정을 유지합니다.');}}catch{status('디자인 설정을 불러오지 못했습니다. 기본 화면을 유지합니다.');}}
-window.addEventListener('storage',e=>{if((e.key===themeStorageKey||(e.key==='noa-ui-selection'&&!safeRead(themeStorageKey)))&&e.newValue){try{apply(JSON.parse(e.newValue));settings()}catch{}}});let markPending=false;new MutationObserver(records=>{if(markPending||records.every(r=>['dock-current','dock-duration','seek-clock'].includes(r.target.id)))return;markPending=true;requestAnimationFrame(()=>{markPending=false;markLabels()});}).observe(document.body||root,{childList:true,subtree:true,characterData:true});window.addEventListener('hashchange',refreshNavigation);window.NoaUI={translate:tr,apply,getState:()=>state};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+window.addEventListener('storage',e=>{if((e.key===themeStorageKey||(e.key==='noa-ui-selection'&&!safeRead(themeStorageKey)))&&e.newValue){try{apply(JSON.parse(e.newValue));settings()}catch{}}});let markPending=false;new MutationObserver(records=>{if(markPending||records.every(r=>['dock-current','dock-duration','seek-clock'].includes(r.target.id)||r.target.closest?.('#noa-header-clock')))return;markPending=true;requestAnimationFrame(()=>{markPending=false;markLabels()});}).observe(document.body||root,{childList:true,subtree:true,characterData:true});window.addEventListener('hashchange',refreshNavigation);window.NoaUI={translate:tr,apply,getState:()=>state,setLanguage:value=>{if(!state||!['ko','ja','en','th'].includes(value))return;dirty=true;apply({...state,language:value});settings();}};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 /* Count-aware card layout: presentation only. Keep nodes, handlers and source order intact. */
 (()=>{'use strict';

@@ -33,6 +33,8 @@ jobs:
           node --test tests/voice/composer_test.cjs
           node --check tests/room-themes/member.mjs
           node --check tests/room-themes/forms.mjs
+          php -l bridge/weather.php
+          php tests/header/weather_test.php
           php -l bridge/ui-preferences.php
           php -l deploy/noa-theme-admin.php
           php -l deploy/noa-design.extend.php
@@ -49,6 +51,8 @@ jobs:
           python -m pip install 'paramiko>=3,<5'
           python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/noa-light" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp tests/header/header.mjs "$RUNNER_TEMP/noa-light/header.mjs"
+          node "$RUNNER_TEMP/noa-light/header.mjs"
           cp tests/room-themes/live.mjs "$RUNNER_TEMP/noa-light/check.mjs"
           cp tests/room-themes/member.mjs "$RUNNER_TEMP/noa-light/member.mjs"
           cp tests/room-themes/forms.mjs "$RUNNER_TEMP/noa-light/forms.mjs"

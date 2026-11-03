@@ -1,4 +1,4 @@
-"""Publish the current pinned/drawer navigation, footer controls, store coverage and listening spacing."""
+"""Publish the two-frame header, shared navigation, language, clock and location weather."""
 import os
 import sys
 from pathlib import Path
@@ -11,7 +11,8 @@ theme_assets = {'noa-assets/theme-' + p.name: str(p) for p in sorted(Path('publi
 release.FILES = {**theme_assets, 'noa-bridge/ui-preferences.php': 'bridge/ui-preferences.php', **{name: 'deploy/' + name for name in ('noa-starlight.css', 'noa-design.json', 'noa-ui.js', 'noa-home.js', 'noa-desktop.js', 'noa-theme-admin.php', 'noa-vip.php', 'noa-app/home.php')}}
 release.FILES['extend/noa.design.php'] = 'deploy/noa-design.extend.php'
 release.FILES.update({name: 'deploy/' + name for name in ('noa-account.js', 'noa-voice.js', 'noa-ainoa.css', 'noa-amt-fan.js', 'noa-amt-fan.css', 'noa-sitemap.php')})
-release.NEW = set(theme_assets)
+release.FILES = {'noa-bridge/weather.php':'bridge/weather.php', **release.FILES}
+release.NEW = set(theme_assets) | {'noa-bridge/weather.php'}
 release.BACKUP = Path(os.environ.get('RUNNER_TEMP', '/tmp')) / 'noa-light-theme-before.json'
 
 if __name__ == '__main__':

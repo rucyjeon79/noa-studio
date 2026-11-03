@@ -5,24 +5,24 @@
  const utilities=document.createElement('nav');utilities.className='noa-account-utilities';utilities.setAttribute('aria-label','화면 바로가기');
  const link=(text,href)=>{const a=document.createElement('a');a.textContent=text;a.href=href;return a;};
  const brand=link('','/');brand.className='noa-account-brand';brand.setAttribute('aria-label','NOA STUDIO 홈');
- const mark=document.createElement('img');mark.src='/noa-assets/papa-logo.png';mark.alt='';mark.width=36;mark.height=36;mark.decoding='async';const name=document.createElement('span');name.textContent='NOA STUDIO';brand.append(mark,name);bar.append(brand,shortcuts,utilities);
- const wideUtilities=matchMedia('(min-width:1200px) and (orientation:landscape)');
- const placeUtilities=()=>{if(wideUtilities.matches)shortcuts.before(utilities);else shortcuts.after(utilities);};
- placeUtilities();wideUtilities.addEventListener('change',placeUtilities);
+ const mark=document.createElement('img');mark.src='/noa-assets/papa-logo.png';mark.alt='';mark.width=36;mark.height=36;mark.decoding='async';const name=document.createElement('span');name.textContent='NOA STUDIO';brand.append(mark,name);const navigation=document.createElement('div');navigation.className='noa-navigation-bar';navigation.append(brand,utilities,shortcuts);bar.append(navigation);
  const control=(label,path,run)=>{const button=document.createElement('button');button.type='button';button.className='noa-account-shortcut';button.setAttribute('aria-label',label);button.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="'+path+'"/></svg><span>'+label+'</span>';button.onclick=run;return button;};
  function hasInternalPrevious(referrer,origin,length){try{return length>1&&new URL(referrer).origin===origin;}catch{return false;}}
  const back=control('이전','M15 6l-6 6 6 6',()=>{if(document.getElementById('noa-shell-view')||hasInternalPrevious(document.referrer,location.origin,history.length))history.back();else location.assign('/');});back.id='noa-nav-back';utilities.append(back);
  const top=control('맨 위','M6 14l6-6 6 6 M5 4h14',()=>{const view=document.getElementById('noa-shell-view')?.contentWindow||window;view.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});});top.id='noa-nav-top';utilities.append(top);
- const install=link('','/noa-install.php');install.id='noa-nav-install';install.className='noa-account-shortcut';install.setAttribute('aria-label','앱 설치');install.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-4-4 4 4 4-4M5 16v5h14v-5"/></svg><span>앱 설치</span>';utilities.append(install);
+ const info=document.createElement('div');info.id='noa-info-bar';info.setAttribute('aria-label','설치 · 공유 · 시간 · 날씨');
+ const infoActions=document.createElement('nav');infoActions.className='noa-info-actions';infoActions.setAttribute('aria-label','앱 바로가기');info.append(infoActions);bar.prepend(info);
+ const install=link('','/noa-install.php');install.id='noa-nav-install';install.className='noa-account-shortcut';install.setAttribute('aria-label','앱 설치');install.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-4-4 4 4 4-4M5 16v5h14v-5"/></svg><span>앱 설치</span>';infoActions.append(install);
  const all=link('전체 메뉴','/noa-sitemap.php');all.className='noa-account-shortcut';all.id='noa-nav-all';all.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>전체 메뉴</span>';if(location.pathname==='/noa-sitemap.php')all.setAttribute('aria-current','page');shortcuts.append(all);
  const account=link('','/bbs/login.php?url=%2Fnoa-my.php');account.className='noa-account-shortcut';account.id='noa-nav-account';
  const accountLabel=document.createElement('span');account.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M20 21v-2a6 6 0 0 0-12 0v2 M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0"/></svg>';account.append(accountLabel);shortcuts.append(account);
  function accountState(member){account.href=member?'/noa-my.php':'/bbs/login.php?url=%2Fnoa-my.php';accountLabel.textContent=member?'MY':'로그인';account.dataset.noaAccountNav=member?'user':'login';account.setAttribute('aria-label',member?'MY':'로그인');if(member&&location.pathname==='/noa-my.php')account.setAttribute('aria-current','page');else account.removeAttribute('aria-current');}
  let initialMember=false;try{initialMember=!!JSON.parse(document.getElementById('noa-access')?.textContent||'null')?.member;}catch{}accountState(initialMember);
  window.addEventListener('noa-membership-status',event=>accountState(!!event.detail?.member));
+ const favorite=link('','/');favorite.id='noa-nav-favorite';favorite.className='noa-account-shortcut';favorite.setAttribute('aria-label','즐겨찾기 · 홈에 바로가기');favorite.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="m12 3 2.8 5.7 6.3.9-4.5 4.4 1.1 6.2-5.7-3-5.7 3 1.1-6.2L3.2 9.6l6.3-.9z"/></svg><span>즐겨찾기</span>';infoActions.append(favorite);
  // Share the public installation guide, never an account-specific URL.
  const installUrl='https://noastudio.ai.kr/noa-install.php',shareText='NOA STUDIO에서 노아의 음악을 만나보세요. 아래 링크에서 앱을 설치할 수 있어요.';
- const share=document.createElement('button');share.id='noa-nav-share';share.type='button';share.className='noa-account-shortcut';share.setAttribute('aria-label','공유하기');share.setAttribute('aria-haspopup','dialog');share.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3m-4 4 4-4 4 4M5 12v9h14v-9"/></svg><span>공유</span>';install.before(share);
+ const share=document.createElement('button');share.id='noa-nav-share';share.type='button';share.className='noa-account-shortcut';share.setAttribute('aria-label','공유하기');share.setAttribute('aria-haspopup','dialog');share.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3m-4 4 4-4 4 4M5 12v9h14v-9"/></svg><span>공유</span>';infoActions.append(share);
  share.onclick=()=>{
   if(document.getElementById('noa-share-dialog'))return;
   const dialog=document.createElement('dialog');dialog.id='noa-share-dialog';dialog.setAttribute('aria-labelledby','noa-share-title');
@@ -41,10 +41,48 @@
  document.querySelector('.noa-topbar .noa-account')?.closest('.noa-topbar').remove();document.querySelector('.noa-g5-top')?.remove();document.body.prepend(bar);
  // The invitation module arrives asynchronously. Move its real control, retaining
  // the member's existing invitation action and a visible label at every width.
- const attachInvitation=()=>{const invitation=bar.querySelector('#noa-referral-share');if(!invitation||invitation.parentElement===utilities)return;invitation.classList.add('noa-account-shortcut');if(!invitation.querySelector('span')){const label=document.createElement('span');label.textContent='공유';invitation.append(label);}share.remove();install.before(invitation);};
+ const attachInvitation=()=>{const invitation=bar.querySelector('#noa-referral-share');if(!invitation||invitation.parentElement===infoActions)return;invitation.classList.add('noa-account-shortcut');if(!invitation.querySelector('span')){const label=document.createElement('span');label.textContent='공유';invitation.append(label);}share.remove();infoActions.append(invitation);};
  attachInvitation();new MutationObserver(attachInvitation).observe(shortcuts,{childList:true});
  // Anchor links clear the actual one- or two-row header, including text zoom.
  if(window.ResizeObserver)new ResizeObserver(()=>document.documentElement.style.setProperty('--noa-header-height',Math.ceil(bar.getBoundingClientRect().height)+'px')).observe(bar);
+ if(window.ResizeObserver)new ResizeObserver(()=>document.documentElement.style.setProperty('--noa-info-height',Math.ceil(info.getBoundingClientRect().height)+'px')).observe(info);
+ // Time follows the visitor's device; the language picker shares the existing preference.
+ const clock=document.createElement('time');clock.id='noa-header-clock';clock.innerHTML='<strong></strong><span></span>';info.append(clock);
+ const context=document.createElement('div');context.className='noa-info-context';info.append(context);
+ const weather=control('내 위치 · 날씨','M12 22s8-7 8-13a8 8 0 1 0-16 0c0 6 8 13 8 13z M15 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0',openWeather);weather.id='noa-header-weather';weather.setAttribute('aria-haspopup','dialog');context.append(weather);
+ const language=document.createElement('select');language.id='noa-header-language';language.setAttribute('aria-label','언어 선택');for(const [value,label]of [['ko','한국어'],['ja','日本語'],['en','English'],['th','ไทย']]){const option=document.createElement('option');option.value=value;option.textContent=label;language.append(option);}context.append(language);
+ const locale=()=>({ko:'ko-KR',ja:'ja-JP',en:'en-GB',th:'th-TH'}[language.value]||'ko-KR');
+ function tick(){const now=new Date();clock.dateTime=now.toISOString();const time=new Intl.DateTimeFormat(locale(),{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(now),date=new Intl.DateTimeFormat(locale(),{year:'numeric',month:'2-digit',day:'2-digit',weekday:'short'}).format(now);if(clock.querySelector('strong').textContent!==time)clock.querySelector('strong').textContent=time;if(clock.querySelector('span').textContent!==date)clock.querySelector('span').textContent=date;}
+ function syncLanguage(){const value=window.NoaUI?.getState()?.language;language.value=['ko','ja','en','th'].includes(value)?value:'ko';tick();}
+ language.onchange=()=>{window.NoaUI?.setLanguage(language.value);tick();};window.addEventListener('noa-theme',syncLanguage);syncLanguage();
+ setInterval(()=>{if(!document.hidden)tick();},1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick();});
+ let weatherData=null,weatherBusy=false,weatherRefresh=null;
+ const readWeather=()=>{try{return JSON.parse(sessionStorage.getItem('noa-header-weather')||'null');}catch{return null;}};
+ const weatherFresh=data=>data&&Number.isFinite(data.temperature)&&Date.parse(data.validUntil)>Date.now()&&Date.parse(data.forecastAt)>Date.now()-7200000;
+ function paintWeather(){const label=weather.querySelector('span');if(weatherFresh(weatherData)){label.textContent=weatherData.location+' · '+Math.round(weatherData.temperature)+'° '+weatherData.condition;weather.title=weatherData.location+' 부근 · '+weatherData.condition+' · '+weatherData.temperature+'°C';}else{weatherData=null;label.textContent='내 위치 · 날씨';weather.removeAttribute('title');}weather.setAttribute('aria-label',label.textContent);}
+ function openWeather(){let dialog=document.getElementById('noa-weather-dialog');if(dialog){dialog.showModal();return;}
+  dialog=document.createElement('dialog');dialog.id='noa-weather-dialog';dialog.className='noa-header-dialog';dialog.setAttribute('aria-labelledby','noa-weather-title');dialog.innerHTML='<form method="dialog"><button class="noa-dialog-close" aria-label="날씨 닫기">×</button></form><h2 id="noa-weather-title">현재 위치의 날씨</h2><p class="noa-weather-summary"></p><p>위치를 허용하면 지금 머무는 지역의 날씨를 보여드려요. 약 1km 단위의 대략적인 위치만 지역명과 날씨 조회에 사용합니다.</p><button type="button" class="noa-button" data-weather-locate>내 위치로 날씨 보기</button><p role="status" data-weather-status></p><small>날씨: <a href="https://api.met.no/" target="_blank" rel="noopener noreferrer">MET Norway</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a><br>지역명: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap 기여자</a><br>현재 시각에 가까운 예보를 요약해 표시합니다.</small>';
+  dialog.querySelector('[data-weather-locate]').onclick=()=>locateWeather();dialog.addEventListener('close',()=>{dialog.remove();weather.focus();},{once:true});document.body.append(dialog);updateWeatherDialog();dialog.showModal();
+ }
+ function updateWeatherDialog(message=''){const dialog=document.getElementById('noa-weather-dialog');if(!dialog)return;const summary=dialog.querySelector('.noa-weather-summary');summary.textContent=weatherFresh(weatherData)?weatherData.location+' · '+weatherData.condition+' · '+weatherData.temperature+'°C':'';summary.hidden=!summary.textContent;dialog.querySelector('[data-weather-status]').textContent=message;dialog.querySelector('[data-weather-locate]').disabled=weatherBusy;}
+ async function locateWeather(){if(weatherBusy)return;if(!navigator.geolocation){updateWeatherDialog('이 브라우저에서는 위치를 확인할 수 없어요.');return;}
+  weatherBusy=true;weather.setAttribute('aria-busy','true');updateWeatherDialog('현재 위치와 날씨를 확인하고 있어요.');
+  try{
+   const position=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:false,timeout:12000,maximumAge:300000}));
+   // Exact coordinates stay in the browser; neither addresses nor coordinates are stored in an account.
+   const coordinates={latitude:Math.round(position.coords.latitude*100)/100,longitude:Math.round(position.coords.longitude*100)/100};
+   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),18000);let response,data;
+   try{response=await fetch('/noa-bridge/weather.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(coordinates),signal:controller.signal});data=await response.json();}finally{clearTimeout(timeout);}
+   if(!response.ok||!data.ok||!weatherFresh(data))throw Error('weather_unavailable');weatherData=data;try{sessionStorage.setItem('noa-header-weather',JSON.stringify(data));localStorage.setItem('noa-weather-enabled','1');}catch{}
+   paintWeather();updateWeatherDialog('현재 위치의 날씨를 확인했어요.');
+  }catch(error){weatherData=null;try{sessionStorage.removeItem('noa-header-weather');}catch{}paintWeather();const denied=error.code===1;updateWeatherDialog(denied?'위치 사용이 꺼져 있어요. 브라우저의 사이트 설정에서 위치를 허용해 주세요.':'지금은 날씨를 확인하지 못했어요. 잠시 후 다시 눌러 주세요.');}
+  finally{weatherBusy=false;weather.removeAttribute('aria-busy');const button=document.querySelector('[data-weather-locate]');if(button)button.disabled=false;scheduleWeather();}
+ }
+ function scheduleWeather(){clearTimeout(weatherRefresh);weatherRefresh=setTimeout(async()=>{paintWeather();if(document.hidden)return;try{if(localStorage.getItem('noa-weather-enabled')==='1'&&(await navigator.permissions.query({name:'geolocation'})).state==='granted')locateWeather();}catch{}},weatherData?Math.max(60000,Date.parse(weatherData.validUntil)-Date.now()):900000);}
+ weatherData=readWeather();paintWeather();scheduleWeather();
+ async function resumeWeather(){paintWeather();try{if(!weatherData&&localStorage.getItem('noa-weather-enabled')==='1'&&(await navigator.permissions.query({name:'geolocation'})).state==='granted')locateWeather();}catch{}}
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)resumeWeather();});resumeWeather();
+
  const summary=document.getElementById('noa-my-account'),status=document.getElementById('noa-my-account-status');
  const write=(id,value)=>{const node=document.getElementById(id);if(node)node.textContent=value;};
  let pending=false,lastAttempt=0,retries=0,retryTimer=null,hasResult=false;
