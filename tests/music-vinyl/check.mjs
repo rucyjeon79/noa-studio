@@ -176,6 +176,10 @@ try{for(const width of [320,390,1280]){
      const before=await card.boundingBox();
      await card.locator(':scope>.noa-edit-edit').evaluate(b=>b.click());
      const panel=list.locator(':scope>form.noa-edit-form');await panel.waitFor();
+     const after=await card.boundingBox(), box=await panel.boundingBox();
+     assert(Math.abs(before.width-after.width)<1 && Math.abs(before.height-after.height)<1 && Math.abs(before.y-after.y)<1);
+     assert(box.width>=(await list.boundingBox()).width*.8 && box.y>=after.y+after.height-1);
+     if(mode==='album')assert(Math.abs((await list.locator(':scope>.noa-inline-song-row').nth(1).boundingBox()).y-after.y)<1);
      const field=panel.locator('[data-record-field=title]'),input=field.locator('input');
      await field.getByRole('button',{name:'곡 제목 수정',exact:true}).waitFor();
      assert(await input.evaluate(e=>e.readOnly));
@@ -194,10 +198,6 @@ try{for(const width of [320,390,1280]){
       await panel.getByRole('button',{name:'곡정보창 접기'}).click();
       assert(!await field.isVisible());await panel.getByRole('button',{name:'곡정보창 펼치기'}).click();
      }
-     const after=await card.boundingBox(), box=await panel.boundingBox();
-     assert(Math.abs(before.width-after.width)<1 && Math.abs(before.height-after.height)<1 && Math.abs(before.y-after.y)<1);
-     assert(box.width>=(await list.boundingBox()).width*.8 && box.y>=after.y+after.height-1);
-     if(mode==='album')assert(Math.abs((await list.locator(':scope>.noa-inline-song-row').nth(1).boundingBox()).y-after.y)<1);
      await card.locator(':scope>.noa-edit-edit').evaluate(b=>b.click());await panel.waitFor({state:'detached'});
     }
 
