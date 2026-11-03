@@ -7,3 +7,6 @@ test('ACT preserves episode order',()=>assert.deepEqual(model.albums(rows,'k')[0
 test('popular is real valid plays, no invented zero ranks',()=>assert.deepEqual(model.select(rows,{genre:'k',mode:'popular',popular:{k1:10,k2:2,j1:100}}).rows.map(r=>r.key),['k1','k2']));
 test('latest uses known registration date',()=>assert.deepEqual(model.select(rows,{genre:'k',mode:'latest'}).rows.map(r=>r.key),['k2','k1']));
 test('library cannot cross genres',()=>assert.deepEqual(model.select(rows,{genre:'k',mode:'library',library:[{tracks:['k1','j1']}]}).rows.map(r=>r.key),['k1']));
+
+test('recommended albums rank matching moods while keeping story order',()=>{const albums=model.albums([...rows,{key:'k11',genre:'k',audio:'/a',ep:'11',moodTags:['calm']}],'k',{mood:'calm'});assert.deepEqual(albums.map(a=>a.act),[2,1]);assert.deepEqual(albums[1].rows.map(r=>r.ep),['1','2']);});
+test('popular counts include canonical aliases without counting a key twice',()=>{const r=[{...rows[0],browseKeys:['k2','oldk2']},rows[2]];assert.equal(model.select(r,{genre:'k',mode:'popular',popular:{oldk2:4,k1:3}}).rows[0].key,'k2');});

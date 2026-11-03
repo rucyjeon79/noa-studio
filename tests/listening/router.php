@@ -5,7 +5,7 @@ if($path==='/noa-bridge/listening.php'){
  $src=file_get_contents($root.'/bridge/listening.php');$src=str_replace("require_once dirname(__DIR__).'/common.php';",'',$src);$src=str_replace("dirname(__DIR__).'/noa-app/engine/personal-listening.php'",var_export($root.'/deploy/noa-app/engine/personal-listening.php',true),$src);$src=str_replace('__DIR__',var_export($root.'/bridge',true),$src);eval(substr($src,5));return;
 }
 if($path==='/'){
- echo '<!doctype html><html lang="ko"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>NOA STUDIO</title><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-listening.css"><script defer src="/noa-listening-model.js"></script><script defer src="/noa-listening.js"></script></head><body class="noa-page"><main><h1>NOA STUDIO</h1><section id="noa-listening" data-noa-listening="home"></section></main></body></html>';return;
+ echo '<!doctype html><html lang="ko"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>NOA STUDIO</title><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-listening.css"><script defer src="/noa-listening-model.js"></script><script defer src="/noa-listening.js"></script></head><body class="noa-page"><main><h1>NOA STUDIO</h1><a href="#noa-listening" data-noa-listen-now>내 음악 바로 듣기</a><section id="noa-listening" data-noa-listening="home"></section></main></body></html>';return;
 }
 if($path==='/noa-music.php'){
  define('_GNUBOARD_',true);$admin=false;$is_member=true;$is_admin='';$error=false;$collections=[];$jukebox=[];$genres=[];$musicAccess=['music'=>true];require_once $root.'/bridge/music-readmodel.php';
