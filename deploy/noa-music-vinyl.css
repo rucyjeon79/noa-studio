@@ -472,11 +472,3 @@ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline
   position:static;grid-area:auto;grid-row:4;justify-self:stretch;align-self:center;width:100%;height:44px;margin:0;border:0;border-radius:0;background:rgb(128 128 128 / .06);
  }
 }
-
-/* Keep the existing action slots and handlers; show a caption without exposing counters. */
-html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .noa-direct-action[data-command-label] {
- flex-direction:column;gap:1px;line-height:1.1;
-}
-html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-direct-action[data-command-label]::after {
- content:attr(data-command-label);font-size:10px;line-height:12px;letter-spacing:-.04em;white-space:nowrap;
-}
