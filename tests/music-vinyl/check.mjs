@@ -159,6 +159,16 @@ try{for(const width of [320,390,1280]){
      card.querySelector('.noa-edit-edit')?.remove();
      window.NoaBrowseEdit.mount({host:list,rows:[{key:card.dataset.inlineKey,title:'곡 정보 검수'}]});
     });
+    let metadata={ok:true,writeKey:'cover',kind:'single',packageType:'cover',revision:1,context:{genre:'cover-reborn'},fields:{title:'편집 전',lyrics:'가사'}};
+    let savedPatch=null, failSave=true;
+    await mismatchPage.route('**/noa-inline-edit.php*',async route=>{
+     if(route.request().method()==='POST'){
+      savedPatch=route.request().postDataJSON().patch;
+      if(failSave){failSave=false;return route.fulfill({status:503,json:{ok:false}});}
+      metadata={...metadata,revision:metadata.revision+1,fields:{...metadata.fields,...savedPatch}};
+     }
+     await route.fulfill({json:metadata});
+    });
     for(const mode of ['album','list']){
      await mismatchPage.locator('.lp-view-switch [data-mode='+mode+']').first().evaluate(b=>b.click());
      await mismatchPage.waitForFunction(mode=>document.querySelector('.noa-inline-songs').dataset.trackView===mode,mode);
@@ -166,6 +176,24 @@ try{for(const width of [320,390,1280]){
      const before=await card.boundingBox();
      await card.locator(':scope>.noa-edit-edit').evaluate(b=>b.click());
      const panel=list.locator(':scope>form.noa-edit-form');await panel.waitFor();
+     const field=panel.locator('[data-record-field=title]'),input=field.locator('input');
+     await field.getByRole('button',{name:'곡 제목 수정',exact:true}).waitFor();
+     assert(await input.evaluate(e=>e.readOnly));
+     if(mode==='album'){
+      await field.getByRole('button',{name:'곡 제목 수정',exact:true}).click();
+      await input.fill('개별 저장 확인');
+      const commit=field.getByRole('button',{name:'곡 제목 저장',exact:true});
+      await commit.click();await panel.getByText(/저장하지 못했습니다/).first().waitFor();
+      assert.equal(await input.inputValue(),'개별 저장 확인');
+      await commit.click();await field.getByRole('button',{name:'곡 제목 수정',exact:true}).waitFor();
+      assert.deepEqual(savedPatch,{title:'개별 저장 확인'});assert(await input.evaluate(e=>e.readOnly));
+      const controls=panel.locator('.noa-publish-panel');
+      const options=await controls.locator('summary').boundingBox(),generate=await controls.locator(':scope>button').boundingBox();
+      assert(Math.abs(options.y-generate.y)<2 && options.x+options.width<=generate.x);
+      assert.equal(await panel.locator('[data-record-field]:not(:has(.noa-edit-copy))').count(),0);
+      await panel.getByRole('button',{name:'곡정보창 접기'}).click();
+      assert(!await field.isVisible());await panel.getByRole('button',{name:'곡정보창 펼치기'}).click();
+     }
      const after=await card.boundingBox(), box=await panel.boundingBox();
      assert(Math.abs(before.width-after.width)<1 && Math.abs(before.height-after.height)<1 && Math.abs(before.y-after.y)<1);
      assert(box.width>=(await list.boundingBox()).width*.8 && box.y>=after.y+after.height-1);
