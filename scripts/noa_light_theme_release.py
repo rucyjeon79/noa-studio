@@ -1,4 +1,4 @@
-"""Release the expansive home with news before promotions, searchable navigation and width-based media with accessible dialog lifecycle and existing hash/rollback guards."""
+"""Release the expansive home with news before promotions, searchable navigation and width-based media with visible studio branding, balanced news cards, accessible dialog lifecycle and existing hash/rollback guards."""
 import os
 import sys
 from pathlib import Path

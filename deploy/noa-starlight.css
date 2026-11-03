@@ -658,3 +658,12 @@ html.noa-shell-wide .noa-mobile-footer+.noa-footer{display:none}
 
 /* Give the two principal discovery actions a clear, accessible visual weight. */
 html.noa-shell-wide[data-noa-theme] body :is(.noa-scene-actions,.noa-hero-actions) .noa-button.primary{background:var(--noa-accent);border-color:var(--noa-accent);color:var(--noa-accentText);box-shadow:none}
+
+/* Override the older account bar's desktop-only brand hiding rule. */
+html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-account-brand{display:inline-flex}
+/* One highlighted notice beside three recent conversations, on matching card edges. */
+html.noa-shell-wide[data-noa-theme] .noa-main>:is([data-home-section=notices],[data-home-section=community]){display:flex;flex-direction:column;align-self:stretch}
+html.noa-shell-wide[data-noa-theme] .noa-main :is(.noa-notice-list,.noa-community-feed){flex:1}
+html.noa-shell-wide[data-noa-theme] body .noa-main .noa-feed-row{display:grid;grid-template-columns:minmax(0,1fr);justify-items:start;justify-content:stretch;align-items:start;gap:4px;text-align:left}
+html.noa-shell-wide[data-noa-theme] body .noa-main .noa-feed-row:nth-child(n+4){display:none}
+html.noa-shell-wide[data-noa-theme] .noa-main .noa-notice-summary>strong{font-size:20px;line-height:1.65;font-weight:550}

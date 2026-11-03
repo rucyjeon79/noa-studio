@@ -154,6 +154,7 @@ async function verifyAutomaticClock(){
 }
 
 async function verifyExpansiveShell(p,width,mode){
+ assert(await p.locator('#noa-account-bar .noa-account-brand').isVisible(),'studio identity remains visible in the desktop header');
  const geometry=await p.evaluate(()=>{const box=s=>{const r=document.querySelector(s).getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom};};return {hero:box('.noa-hero'),media:box('.noa-hero-art'),copy:box('.noa-hero-copy'),scene:box('#noa-theme-scene'),notices:box('[data-home-section=notices]'),community:box('[data-home-section=community]'),rightDock:document.documentElement.hasAttribute('data-noa-desktop')};});
  assert(geometry.scene.x>=0&&geometry.scene.x<100,'content is no longer narrowed by a persistent sidebar');
  assert(!geometry.rightDock,'assistant remains floating instead of taking a permanent content column');
