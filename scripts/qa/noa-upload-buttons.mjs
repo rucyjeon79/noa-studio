@@ -58,6 +58,8 @@ async function checkEditorProgress(width){
   await list.locator('img').evaluateAll(images=>Promise.all(images.map(img=>img.decode().catch(()=>{}))));
   await page.evaluate(()=>document.fonts.ready);
   await page.waitForTimeout(100);
+  const geometry=()=>list.locator(':scope>.noa-inline-song-row').first().evaluate(n=>({box:n.getBoundingClientRect().toJSON(),rows:getComputedStyle(n).gridTemplateRows,columns:getComputedStyle(n.parentElement).gridTemplateColumns,children:[...n.children].map(el=>({class:el.className,box:el.getBoundingClientRect().toJSON(),style:getComputedStyle(el).display,text:el.textContent.slice(0,100)}))}));
+  const beforeGeometry=await geometry();
   const baseline=await list.locator(':scope>.noa-inline-song-row').evaluateAll(nodes=>nodes.map(n=>n.getBoundingClientRect().height));
   const card=page.locator('.noa-inline-song-row').nth(1),other=page.locator('.noa-inline-song-row').nth(2);
   await card.locator('.noa-edit-edit').click();
@@ -79,7 +81,7 @@ async function checkEditorProgress(width){
   await detached.locator('.noa-track-progress[data-phase=uploading]').waitFor();
   assert.equal(await card.locator('.noa-track-progress,#jukebox-transfer-dock').count(),0);
   const heights=await list.locator(':scope>.noa-inline-song-row').evaluateAll(nodes=>nodes.map(n=>n.getBoundingClientRect().height));
-  assert(heights.every((h,i)=>Math.abs(h-baseline[i])<2),'Processing must not stretch either album card '+JSON.stringify({baseline,heights}));
+  assert(heights.every((h,i)=>Math.abs(h-baseline[i])<2),'Processing must not stretch either album card '+JSON.stringify({baseline,heights,beforeGeometry,afterGeometry:await geometry()}));
   assert.equal(await field.locator('.noa-track-progress,#jukebox-transfer-dock').count(),0);
   await page.getByRole('button',{name:'정보 수정 취소',exact:true}).click();
   await detached.locator('.noa-track-progress').waitFor();
