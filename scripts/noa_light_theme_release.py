@@ -1,4 +1,4 @@
-"""Publish the two-frame header, shared navigation, language, clock and verified location weather in both palettes."""
+"""Publish the two-frame header, shared navigation, language, clock and verified location weather with the requested compact home shortcut."""
 import os
 import sys
 from pathlib import Path

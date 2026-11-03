@@ -119,7 +119,7 @@ try{for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]
    if(route==='/noa-about.php'){
     assert.equal(await p.locator('.ne-hero>img').getAttribute('src'),theme.images.music,'studio introduction follows the active scene');
     assert.equal(await p.locator('.ne-masthead').isVisible(),false,'one global brand header');
-    assert(await p.locator(width>=1200&&width>height?'#noa-menu-drawer .noa-logo':'#noa-account-bar .noa-account-brand').isVisible());
+    assert(await p.locator(width>=1200&&width>height?'#noa-menu-drawer .noa-logo':'#noa-nav-favorite').isVisible());
     assert.deepEqual(await p.locator('.ne-artist img').evaluateAll(images=>images.map(img=>img.getAttribute('src'))),['/noa-assets/editorial-noa-portrait.webp','/noa-assets/editorial-noel-portrait.webp'],'artist portraits remain original');
    }
    await p.screenshot({path:output+'/'+(route==='/'?'home':route.replace('/noa-','').replace('.php',''))+'-'+mode+'-'+width+'.png'});
@@ -266,7 +266,7 @@ async function verifyMusicShelves(p,width,mode,theme){
 
 async function verifyExpansiveShell(p,width,mode){
  const pinned=await p.locator('html').evaluate(el=>el.classList.contains('noa-menu-pinned'));
- assert(await p.locator(pinned?'#noa-menu-drawer .noa-logo':'#noa-account-bar .noa-account-brand').isVisible(),'studio identity remains visible');
+ assert(await p.locator(pinned?'#noa-menu-drawer .noa-logo':'#noa-nav-favorite').isVisible(),'studio home shortcut remains visible');
  const geometry=await p.evaluate(()=>{const box=s=>{const r=document.querySelector(s).getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom};};return {hero:box('.noa-hero'),media:box('.noa-hero-art'),copy:box('.noa-hero-copy'),scene:box('#noa-theme-scene'),notices:box('[data-home-section=notices]'),community:box('[data-home-section=community]'),rightDock:document.documentElement.hasAttribute('data-noa-desktop')};});
  assert(geometry.scene.x>=(pinned?220:0)&&geometry.scene.x<(pinned?320:100),'content clears the pinned navigation at wide landscape sizes');
  assert(!geometry.rightDock,'assistant remains floating instead of taking a permanent content column');
