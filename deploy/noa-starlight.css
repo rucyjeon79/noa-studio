@@ -1,9 +1,9 @@
 /* NOA STUDIO / Starlight. One editorial system for the app, community and workspaces. */
 @media screen {
 :root,html[data-noa-style="starlight"]{
- --noa-bg:#111316!important;--noa-surface:#191d22!important;--noa-raised:#30343B!important;
- --noa-text:#F5F6F8!important;--noa-muted:#AEB2B8!important;--noa-line:#33383F!important;
- --noa-accent:#C8B17D!important;--noa-accentText:#17191D!important;
+ --noa-bg:#10151F!important;--noa-surface:#19222F!important;--noa-raised:#30343B!important;
+ --noa-text:#F4F6FA!important;--noa-muted:#B5BFCE!important;--noa-line:#3A475A!important;
+ --noa-accent:#E4C98D!important;--noa-accentText:#10151F!important;
  --noa-darkGray:#30343B;--noa-radius:4px;--noa-card-radius:4px;--noa-control-radius:4px;
  --noa-content-max:1480px;--noa-content-gutter:clamp(20px,4vw,64px);--noa-section-gap:56px;
  --noa-glass-base:var(--noa-surface);--noa-glass-icon:var(--noa-text);--noa-glass-paint:none;
@@ -275,16 +275,16 @@ html body .noa-record-library #noa-genres .record-note{display:block;margin:6px 
 .record-face{border-inline-start:3px solid var(--label)}
 
 /* Five rooms share navigation and typography. Each room has its own material and accent. */
-html[data-noa-room=home]{--room-ink:#d6bd87;--room-wash:#b39b6b}
-html[data-noa-room=youtube]{--room-ink:#efaaa4;--room-wash:#b65c58}
-html[data-noa-room=music]{--room-ink:#a5cec4;--room-wash:#62988d}
-html[data-noa-room=community]{--room-ink:#c1b1dc;--room-wash:#9a86b8}
-html[data-noa-room=shop]{--room-ink:#e2be94;--room-wash:#b28759}
-html[data-noa-theme=noa-ivory][data-noa-room=home]{--room-ink:var(--noa-darkGray);--room-wash:#80858F}
-html[data-noa-theme=noa-ivory][data-noa-room=youtube]{--room-ink:var(--noa-darkGray);--room-wash:#80858F}
-html[data-noa-theme=noa-ivory][data-noa-room=music]{--room-ink:var(--noa-darkGray);--room-wash:#80858F}
-html[data-noa-theme=noa-ivory][data-noa-room=community]{--room-ink:var(--noa-darkGray);--room-wash:#80858F}
-html[data-noa-theme=noa-ivory][data-noa-room=shop]{--room-ink:var(--noa-darkGray);--room-wash:#80858F}
+html[data-noa-theme=noa-studio][data-noa-room=home]{--room-ink:var(--noa-accent);--room-wash:var(--noa-accent)}
+html[data-noa-theme=noa-studio][data-noa-room=youtube]{--room-ink:var(--noa-moon);--room-wash:var(--noa-moon)}
+html[data-noa-theme=noa-studio][data-noa-room=music]{--room-ink:var(--noa-moon);--room-wash:var(--noa-moon)}
+html[data-noa-theme=noa-studio][data-noa-room=community]{--room-ink:var(--noa-moon);--room-wash:var(--noa-moon)}
+html[data-noa-theme=noa-studio][data-noa-room=shop]{--room-ink:var(--noa-accent);--room-wash:var(--noa-accent)}
+html[data-noa-theme=noa-ivory][data-noa-room=home]{--room-ink:var(--noa-sun);--room-wash:var(--noa-sun)}
+html[data-noa-theme=noa-ivory][data-noa-room=youtube]{--room-ink:var(--noa-sun);--room-wash:var(--noa-sun)}
+html[data-noa-theme=noa-ivory][data-noa-room=music]{--room-ink:var(--noa-sea);--room-wash:var(--noa-sea)}
+html[data-noa-theme=noa-ivory][data-noa-room=community]{--room-ink:var(--noa-forest);--room-wash:var(--noa-forest)}
+html[data-noa-theme=noa-ivory][data-noa-room=shop]{--room-ink:var(--noa-sea);--room-wash:var(--noa-sea)}
 
 html[data-noa-room=home] .noa-record-library .noa-section-head{position:relative;isolation:isolate;background-image:url("/noa-assets/room-constellation.svg");background-repeat:no-repeat;background-position:right center;background-size:auto 100%}
 html[data-noa-room=home] .noa-record-library .noa-eyebrow{color:var(--room-ink)}
@@ -329,7 +329,7 @@ html[data-noa-style] #noa-settings-dialog select{min-height:44px}
  html[data-noa-theme=noa-ivory]{
   --noa-bg:#FFFFFF!important;--noa-surface:#F5F6F8!important;--noa-raised:#E9EBEF!important;
   --noa-text:#30343B!important;--noa-muted:#626873!important;--noa-line:#CCD0D6!important;
-  --noa-accent:#30343B!important;--noa-accentText:#FFFFFF!important;
+  --noa-accent:#25677D!important;--noa-accentText:#FFFFFF!important;
   --noa-control:#30343B!important;--noa-inactive:#626873!important;color-scheme:light;
  }
  /* One radius and spacing scale across both modes; preserve circular media controls. */
@@ -381,6 +381,63 @@ html[data-noa-theme=noa-ivory] #noa-referral-banner :is(strong,.nrf-banner-actio
 html[data-noa-theme=noa-ivory] #noa-referral-banner small{color:#D5D8DE}
 
 /* Section links inside #ecosystem must outrank its inherited link color. */
-html[data-noa-theme=noa-ivory][data-noa-area]{--noa-section-accent:var(--noa-darkGray)}
+html[data-noa-theme][data-noa-area]{--noa-section-accent:var(--room-ink,var(--noa-accent))}
 /* The legacy ecosystem primary control uses important paint declarations. */
-html[data-noa-theme=noa-ivory] .ec-primary{background:var(--noa-darkGray)!important;color:#FFFFFF!important;border-color:var(--noa-darkGray)!important}
+html[data-noa-theme] .ec-primary{background:var(--noa-accent)!important;color:var(--noa-accentText)!important;border-color:var(--noa-accent)!important}
+
+/* Midnight / Noon: two editorial moods on one precise grid. */
+@media screen {
+ html[data-noa-theme=noa-studio]{--noa-moon:#B6CCE8;--noa-sun:#E4C98D;--noa-sea:#B6CCE8;--noa-forest:#B6CCE8;--noa-wash:#1E2B3D}
+ html[data-noa-theme=noa-ivory]{--noa-moon:#607184;--noa-sun:#8A6018;--noa-sea:#25677D;--noa-forest:#37694F;--noa-wash:#EDF5F5}
+ html[data-noa-theme] body .noa-menu a[aria-current=page]{background:var(--noa-wash);color:var(--room-ink,var(--noa-accent));box-shadow:inset 2px 0 var(--room-ink,var(--noa-accent))}
+ html[data-noa-theme] body .noa-menu a[aria-current=page] svg{color:inherit}
+ html[data-noa-theme] body #noa-section-navigation a[aria-current=page]{background:var(--noa-accent);border-color:var(--noa-accent);color:var(--noa-accentText)}
+ html[data-noa-theme] .noa-sidebar-bottom{border-top-color:var(--noa-accent)}
+ html[data-noa-theme] .noa-sidebar-signature>span{color:var(--room-ink,var(--noa-accent));letter-spacing:.025em}
+ html[data-noa-theme] .noa-mobile-nav a[aria-current=page]{color:var(--room-ink,var(--noa-accent))}
+ html[data-noa-theme] body .noa-display-settings::before{background:var(--noa-accent);border-color:var(--noa-accent);box-shadow:inset -5px 0 var(--noa-bg)}
+ html[data-noa-theme=noa-ivory] body .noa-display-settings::before{background:transparent;box-shadow:inset 0 0 0 3px var(--noa-bg);background-color:var(--noa-sun);border-color:var(--noa-sun)}
+ html[data-noa-theme] .noa-record-library .noa-section-head{background-image:none;border-bottom-color:var(--room-ink)}
+ html[data-noa-theme=noa-studio] .noa-record-library .noa-section-head{background-image:url('/noa-assets/room-constellation.svg')}
+ html[data-noa-theme] #ecosystem .ec-hero{border-block:1px solid var(--noa-line);border-inline-start:3px solid var(--room-ink);background:var(--noa-surface);color:var(--noa-text)}
+ html[data-noa-theme=noa-ivory] #ecosystem .ec-hero{background:var(--noa-wash)}
+ html[data-noa-theme] #ecosystem .ec-hero :is(h1,p){text-shadow:none}
+ html[data-noa-theme] #ecosystem .ec-hero :is(.ec-eyebrow,h1){color:var(--room-ink)}
+ html[data-noa-theme] #ecosystem .ec-write-invite{border-inline-start:3px solid var(--room-ink);background:var(--noa-surface);padding:16px}
+ html[data-noa-theme] #ecosystem .ec-card .ec-buy{border-color:var(--room-ink);color:var(--room-ink)}
+ html[data-noa-theme] .ec-dialog{--ec-accent:var(--noa-accent);--ec-line:var(--noa-line)}
+ html[data-noa-theme] .ec-dialog .ec-subtle{color:var(--noa-muted)}
+ html[data-noa-theme=noa-ivory] .noa-monthly-badge{background:var(--noa-sun);border-color:var(--noa-sun);color:#FFFFFF}
+ html[data-noa-theme=noa-ivory] body #noa-referral-banner{background:var(--noa-forest);border-color:var(--noa-forest);color:#FFFFFF}
+ html[data-noa-theme=noa-ivory] #noa-referral-banner small{color:#FFFFFF}
+ html[data-noa-theme] body .noa-theme-scene{display:grid;grid-template-columns:minmax(0,1fr) 180px;align-items:center;gap:32px;position:relative;isolation:isolate;overflow:hidden;box-sizing:border-box;padding:28px 32px;margin:24px 0;border:1px solid var(--noa-line);border-radius:4px;background:var(--noa-surface);color:var(--noa-text)}
+ .noa-theme-story{position:relative;z-index:1;min-width:0}
+ html[data-noa-theme] .noa-theme-scene .noa-theme-kicker{margin:0 0 12px;font-size:10px;font-weight:650;line-height:1.4;letter-spacing:.18em;color:var(--noa-accent)}
+ html[data-noa-theme] .noa-theme-scene h2{margin:0;font-size:clamp(24px,2.6vw,36px);line-height:1.4;font-weight:550;letter-spacing:-.045em;word-break:keep-all;color:var(--noa-text)}
+ html[data-noa-theme] .noa-theme-scene .noa-theme-caption{margin:12px 0 0;font-size:13px;line-height:1.7;color:var(--noa-muted);max-width:54ch;word-break:keep-all}
+ .noa-theme-hour{position:relative;display:grid;justify-items:center;gap:8px;padding:8px 0 8px 24px;border-inline-start:1px solid var(--noa-line);color:var(--noa-accent)}
+ .noa-theme-hour strong{font-family:Georgia,serif;font-size:44px;line-height:1;font-weight:400;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+ .noa-theme-hour small{font-size:11px;letter-spacing:.08em;color:var(--noa-muted)}
+ .noa-theme-orbit{display:block;width:28px;height:28px;border-radius:50%;margin-bottom:4px;box-shadow:inset -7px -3px var(--noa-moon);transform:rotate(-20deg)}
+ html[data-noa-theme=noa-studio] .noa-theme-scene{background-image:radial-gradient(circle at 78% 17%,#E4C98D 0 1px,transparent 1.6px),radial-gradient(circle at 93% 36%,#B6CCE8 0 1px,transparent 1.6px),radial-gradient(circle at 64% 76%,#B6CCE899 0 1px,transparent 1.6px);border-top-color:var(--noa-accent)}
+ html[data-noa-theme=noa-ivory] .noa-theme-scene{background-color:var(--noa-bg);border-top:2px solid var(--noa-sun);border-bottom-color:var(--noa-sea)}
+ html[data-noa-theme=noa-ivory] .noa-theme-scene::after{content:'';position:absolute;inset:auto 0 0;height:3px;background:linear-gradient(90deg,var(--noa-sun) 0 33.333%,var(--noa-sea) 33.333% 66.666%,var(--noa-forest) 66.666%)}
+ html[data-noa-theme=noa-ivory] .noa-theme-kicker{color:var(--noa-sun)}
+ html[data-noa-theme=noa-ivory] .noa-theme-hour{color:var(--noa-sea)}
+ html[data-noa-theme=noa-ivory] .noa-theme-orbit{background:var(--noa-sun);box-shadow:0 0 0 5px color-mix(in srgb,var(--noa-sun) 10%,transparent);transform:none;width:24px;height:24px;margin:4px 0 8px}
+ html[data-noa-theme] body .noa-theme-schedule{font-size:12px;line-height:1.7;color:var(--noa-muted);margin:16px 0 24px;word-break:keep-all}
+ html[data-noa-theme] body .noa-theme-summary{border-top:1px solid var(--noa-line);padding-top:20px}
+ .noa-theme-summary strong{display:block;font-size:14px;line-height:1.5;color:var(--noa-accent)}
+ .noa-theme-summary p{font-size:12px;line-height:1.7;margin:8px 0 0;color:var(--noa-muted);word-break:keep-all}
+ html[data-noa-theme] body .noa-preview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:16px}
+ html[data-noa-theme] .noa-preview i{display:block;width:auto;height:28px;border-radius:2px}
+ @media(max-width:760px){
+  html[data-noa-theme] body .noa-theme-scene{grid-template-columns:minmax(0,1fr) 80px;gap:16px;margin:16px 0;padding:20px 16px}
+  html[data-noa-theme] .noa-theme-scene h2{font-size:24px;line-height:1.4}
+  html[data-noa-theme] .noa-theme-scene .noa-theme-kicker{font-size:9px;letter-spacing:.1em;margin-bottom:8px}
+  html[data-noa-theme] .noa-theme-scene .noa-theme-caption{font-size:12px;margin-top:8px}
+  .noa-theme-hour{padding-inline-start:12px;gap:8px}.noa-theme-hour strong{font-size:28px}.noa-theme-hour small{font-size:10px;line-height:1.5;text-align:center}
+  html[data-noa-theme] #ecosystem .ec-hero>div{padding-inline-end:0}
+ }
+ @media(prefers-reduced-motion:no-preference){html[data-noa-theme] :is(.noa-theme-scene,.noa-menu a,.noa-section-navigation a){transition:background-color .2s,color .2s,border-color .2s}}
+}

@@ -1,4 +1,4 @@
-name: NOA neutral light theme release
+name: NOA premium day and night theme release
 on:
   push:
     branches: [main]
@@ -22,8 +22,10 @@ jobs:
         with: {fetch-depth: 0, persist-credentials: false}
       - name: Validate saved preferences, default theme and contrast
         run: |
-          node --test tests/starlight/theme.test.mjs
+          node --test tests/starlight/theme.test.mjs tests/starlight/sections.test.mjs scripts/qa/noa-precision.test.mjs scripts/qa/noa-card-balance.test.mjs
           node --check deploy/noa-ui.js
+          php -l bridge/ui-preferences.php
+          php -l deploy/noa-theme-admin.php
           python -m py_compile scripts/noa_light_theme_release.py
       - name: Prepare visual verification
         run: |
@@ -34,7 +36,7 @@ jobs:
       - name: Verify candidate themes before activation
         env: {NOA_THEME_PHASE: candidate, NOA_SOURCE_ROOT: '${{ github.workspace }}'}
         run: node "$RUNNER_TEMP/noa-light/check.mjs"
-      - name: Activate two presentation assets and verify public hashes
+      - name: Activate theme assets and preferences with public hash verification
         id: activate
         run: python scripts/noa_light_theme_release.py
       - name: Verify live themes and saved selection

@@ -1,10 +1,10 @@
-"""Release only the shared light/dark palette, navigation/control contrast and stylesheet with existing hash/rollback guards."""
+"""Release the premium day/night palettes and scheduled preferences with existing hash/rollback guards."""
 import os
 import sys
 from pathlib import Path
 import noa_ainoa_deploy as release
 
-release.FILES = {name: 'deploy/' + name for name in ('noa-starlight.css', 'noa-design.json')}
+release.FILES = {'noa-bridge/ui-preferences.php': 'bridge/ui-preferences.php', **{name: 'deploy/' + name for name in ('noa-starlight.css', 'noa-design.json', 'noa-ui.js', 'noa-theme-admin.php')}}
 release.NEW = set()
 release.BACKUP = Path(os.environ.get('RUNNER_TEMP', '/tmp')) / 'noa-light-theme-before.json'
 

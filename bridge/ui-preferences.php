@@ -5,7 +5,7 @@ require_once __DIR__.'/storage.php';
 header('Content-Type: application/json; charset=utf-8');header('Cache-Control: private, no-store');header('X-Content-Type-Options: nosniff');
 function noa_ui_reply(int $status,array $value):never{http_response_code($status);echo json_encode($value,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;}
 $design=json_decode(file_get_contents(dirname(__DIR__).'/noa-design.json'),true,512,JSON_THROW_ON_ERROR);
-$ids=array_column($design['themes'],'id');$method=$_SERVER['REQUEST_METHOD']??'GET';$logged=!empty($is_member)&&!empty($member['mb_id']);$admin=$logged&&($is_admin??'')==='super';
+$ids=array_column($design['themes'],'id');if(($design['automaticTheme']['id']??null)==='auto')array_unshift($ids,'auto');$method=$_SERVER['REQUEST_METHOD']??'GET';$logged=!empty($is_member)&&!empty($member['mb_id']);$admin=$logged&&($is_admin??'')==='super';
 if(!in_array($method,['GET','POST'],true))noa_ui_reply(405,['error'=>'method_not_allowed']);
 if(empty($_SESSION['noa_ui_token']))$_SESSION['noa_ui_token']=bin2hex(random_bytes(32));
 try{
