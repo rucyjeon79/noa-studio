@@ -84,11 +84,16 @@ try{for(const width of [320,390,1280]){
     && getComputedStyle(n.firstElementChild).animationName==='noa-title-pan';
   }),'Long title pans on one line above its aligned credit');
   const movingTitle=trackName.locator('.lp-title-text');
+  const viewSwitch=trackName.locator('xpath=ancestor::*[contains(@class,"noa-inline-songs")][1]/preceding-sibling::*[1]');
+  await viewSwitch.locator('[data-mode=album]').click();
+  await mismatchPage.waitForFunction(()=>document.querySelector('[data-inline-key="translated"]')?.closest('.noa-inline-songs')?.dataset.trackView==='album');
+  assert(await movingTitle.evaluate(n=>!n.closest('.noa-inline-song-row').matches(':focus-within,:has(.lp-running)') && getComputedStyle(n).animationName==='noa-title-pan'));
   const startX=await movingTitle.evaluate(n=>n.getBoundingClientRect().left);
   await mismatchPage.waitForFunction(x=>{
    const n=document.querySelector('[data-inline-key="translated"] .lp-title-text');
    return n&&n.getBoundingClientRect().left<x-8;
   },startX,{timeout:1800});
+  await viewSwitch.locator("[data-mode=list]").click();
   await mismatchPage.emulateMedia({reducedMotion:'reduce'});
   assert.equal(await trackName.locator('.lp-title-text').evaluate(n=>getComputedStyle(n).animationName),'none');
   await trackName.evaluate(n=>n.textContent='봄');
