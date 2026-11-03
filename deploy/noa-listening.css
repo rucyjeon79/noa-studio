@@ -39,3 +39,12 @@ html body .nl-dialog{--nl-line:var(--noa-line,#464b53);--nl-gold:var(--noa-accen
 html body .nl-play-shell{position:fixed;inset:0;width:100%;height:100dvh;border:0;background:var(--noa-bg,#111315);z-index:2147483000}html body .nl-play-shell[hidden]{display:none!important}html.nl-host-open{overflow:hidden}
 @media(max-width:1000px){html body #noa-listening .nl-results{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){html body #noa-listening{padding:20px 16px;margin:24px 0;border-radius:var(--noa-radius,8px)}html body #noa-listening .nl-controls{gap:8px}html body #noa-listening .nl-controls button{padding-inline:10px;font-size:12px;min-height:48px}html body #noa-listening .nl-summary{align-items:stretch;flex-direction:column;gap:12px}html body #noa-listening .nl-results{grid-template-columns:minmax(0,1fr);gap:8px}html body #noa-listening .nl-moods button{padding-inline:10px}html body .nl-dialog{padding:20px 16px}}
+
+/* Keep category browsing first; recommendations are an optional expansion. */
+html body .nl-music-discovery{margin:24px 0;padding:0;border:1px solid var(--noa-line,#353a40);border-radius:var(--noa-control-radius,8px);background:var(--noa-surface,#191d21);color:var(--noa-text,#f2f1eb)}
+html body .nl-music-discovery>summary{cursor:pointer;display:flex;align-items:center;gap:8px;width:100%;min-height:48px;margin:0;padding:14px 16px;border:0;border-radius:inherit;box-shadow:none;font:inherit;font-weight:600;line-height:1.4;color:inherit;background:none}
+html body .nl-music-discovery>summary:focus-visible{outline:2px solid var(--noa-accent,#c9b47b);outline-offset:3px}
+html body .nl-music-discovery:not([open])>#noa-listening{display:none!important}
+html body .nl-music-discovery>#noa-listening{margin:0;border:0;border-top:1px solid var(--noa-line,#353a40);border-radius:0;background:transparent}
+html body .nl-music-discovery>summary::after{content:"";width:8px;height:8px;flex:none;margin-left:auto;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg)}
+html body .nl-music-discovery[open]>summary::after{transform:rotate(225deg)}

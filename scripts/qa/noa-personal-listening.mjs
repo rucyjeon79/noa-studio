@@ -18,7 +18,27 @@ try{
  }
  for(const width of [320,390,1280]){
   const c=await browser.newContext({viewport:{width,height:900},serviceWorkers:'block'}),page=await c.newPage();activePage=page;page.setDefaultTimeout(20000);page.on('pageerror',e=>report.errors.push(e.message));
-  await page.goto(base+(live?'/':'/noa-music.php'),{waitUntil:'domcontentloaded',timeout:90000});await page.locator('#noa-listening .nl-primary').waitFor();await page.waitForFunction(()=>document.querySelector('#noa-listening .nl-primary')?.disabled===false);await page.locator('#noa-listening').scrollIntoViewIfNeeded();
+  await page.goto(base+(live?'/':'/noa-music.php'),{waitUntil:'domcontentloaded',timeout:90000});
+  if(!live){
+   const browse=page.locator('#music-browse');await browse.locator('[data-browse-level="1"] .noa-browse-card').first().waitFor();
+   assert.equal(await browse.locator('[data-browse-level="1"] .noa-browse-card').count(),4);assert(!await page.locator('#noa-listening').isVisible());
+   await page.screenshot({path:out+'/categories-'+width+'.png'});
+   await browse.locator('[data-browse-level="1"] .noa-browse-card').first().click();assert.equal(await browse.locator('[data-browse-level="2"] .noa-browse-card').count(),4);
+   await browse.locator('[data-browse-level="2"] .noa-browse-card').first().click();await browse.locator('[data-browse-level="4"] .noa-inline-song').first().waitFor();
+   assert.equal(await browse.locator('[data-browse-level="4"] .noa-inline-song').count(),3);
+   await browse.locator('[data-browse-level="4"] .noa-inline-song').first().click();await page.waitForFunction(()=>!document.getElementById('sound-player').paused&&document.getElementById('sound-player').currentTime>0);
+   const before=await page.locator('#sound-player').evaluate(a=>({src:a.getAttribute('src'),time:a.currentTime}));await browse.locator('.noa-browse-crumbs button').first().click();
+   assert.equal(await browse.locator('[data-browse-level="1"] .noa-browse-card').count(),4);assert(await page.locator('#sound-player').evaluate((a,b)=>!a.paused&&a.getAttribute('src')===b.src&&a.currentTime>=b.time,before));
+   for(const [index,expectedGenre] of [[1,'groovy-airy-pop'],[2,'your-story'],[3,'cover-reborn']]){
+    await browse.locator('[data-browse-level="1"] .noa-browse-card').nth(index).click();
+    if(index===1){await browse.locator('[data-browse-level="2"] .noa-browse-card').nth(2).click();assert.equal(await browse.locator('[data-act-number]').count(),2);await browse.locator('[data-act-number="1"]>.noa-browse-card').click();}
+    await browse.locator('[data-browse-level="4"] .noa-inline-song').first().click();await page.waitForFunction(()=>!document.getElementById('sound-player').paused);
+    assert.equal(await page.locator('.song.selected').getAttribute('data-genre'),expectedGenre);await browse.locator('.noa-browse-crumbs button').first().click();
+   }
+   report.categoryBrowsing??=[];report.categoryBrowsing.push({width,defaultCategories:4,genreCards:4,actTracks:3,allFourCategoriesPlayable:true,browsingKeepsAudio:true});
+   await page.locator('.nl-music-discovery>summary').click();
+  }
+  await page.locator('#noa-listening .nl-primary').waitFor();await page.waitForFunction(()=>document.querySelector('#noa-listening .nl-primary')?.disabled===false);await page.locator('#noa-listening').scrollIntoViewIfNeeded();
   assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1));
   if(!live){
    const birthCases=[
@@ -52,12 +72,20 @@ try{
    }
    await page.locator('.nl-primary').click();await page.waitForFunction(()=>{const a=document.getElementById('sound-player');return a&&!a.paused&&a.currentTime>0;});
    const playing=await page.evaluate(()=>({key:document.querySelector('.song.selected')?.dataset.key,src:document.getElementById('sound-player').getAttribute('src')}));assert(playing.key.startsWith('single:kpop-original:'));report.cases.push({width,...playing,oneClickActualAudio:true});
+   assert.equal(await page.locator('#music-browse [data-browse-level="1"] .noa-browse-card').count(),4);
+   const beforeBrowse=await page.locator('#sound-player').evaluate(a=>a.currentTime);await page.locator('#noa-listening .nl-catalog').click();
+   assert(!await page.locator('#noa-listening').isVisible());assert.equal(await page.locator('#music-browse [data-browse-level="1"] .noa-browse-card').count(),4);
+   assert(await page.locator('#sound-player').evaluate((a,t)=>!a.paused&&a.currentTime>=t,beforeBrowse));assert.equal(await page.locator('.song.selected').getAttribute('data-key'),playing.key);
+   await page.locator('#next').click();assert.equal(await page.locator('.song.selected').getAttribute('data-genre'),'kpop-original');
+   await page.reload();await page.locator('#music-browse [data-browse-level="1"] .noa-browse-card').first().waitFor();assert.equal(await page.locator('#music-browse [data-browse-level="1"] .noa-browse-card').count(),4);assert(!await page.locator('#noa-listening').isVisible());
+   await page.locator('.nl-music-discovery>summary').click();await page.waitForFunction(()=>!document.querySelector('.nl-primary').disabled);
+   report.categoryBrowsing.at(-1).recommendationKeepsCategories=true;report.categoryBrowsing.at(-1).reloadKeepsCategories=true;
    await page.evaluate(()=>document.getElementById('sound-player').pause());await page.locator('[data-mode=albums]').click();await page.locator('.nl-album').first().click();await page.waitForFunction(()=>document.querySelector('.song.selected')?.dataset.ep==='1');
    await page.locator('#next').click();assert.equal(await page.locator('.song.selected').getAttribute('data-ep'),'2');await page.evaluate(()=>document.getElementById('sound-player').pause());
    await page.locator('[data-mode=now]').click();
   }else{assert((await page.locator('.nl-primary').innerText()).includes('로그인하고 듣기'));report.cases.push({width,guestGate:true});}
   await page.locator('#noa-listening').screenshot({path:out+'/listening-'+width+'.png'});await c.close();
  }
- if(!live){const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block'}),page=await c.newPage();activePage=page;page.setDefaultTimeout(20000);await page.goto(base);await page.waitForFunction(()=>!document.querySelector('.nl-primary').disabled);await page.getByRole('link',{name:'내 음악 바로 듣기',exact:true}).click();const f=page.frames().find(f=>f.url().includes('listenHost'));assert(f);await f.waitForFunction(()=>!document.getElementById('sound-player').paused&&document.getElementById('sound-player').currentTime>0);assert.equal(await page.locator('.nl-play-shell').isVisible(),true);await page.screenshot({path:out+'/home-one-click.png'});await page.goBack();assert(!await page.locator('.nl-play-shell').isVisible());report.homeOneClickActualAudio=true;await page.getByRole('link',{name:'내 음악 바로 듣기',exact:true}).click();await f.locator('.noa-mobile-nav a[data-noa-nav=home]').click();await page.waitForURL(base+'/');assert.equal(new URL(page.url()).pathname,'/');report.homeNavigationLeavesPlayer=true;await c.close();}
+ if(!live){const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block'}),page=await c.newPage();activePage=page;page.setDefaultTimeout(20000);await page.goto(base);assert.equal(await page.locator('.nl-catalog').getAttribute('href'),'/noa-music.php#music-browse');await page.waitForFunction(()=>!document.querySelector('.nl-primary').disabled);await page.getByRole('link',{name:'내 음악 바로 듣기',exact:true}).click();const f=page.frames().find(f=>f.url().includes('listenHost'));assert(f);await f.waitForFunction(()=>!document.getElementById('sound-player').paused&&document.getElementById('sound-player').currentTime>0);assert.equal(await f.locator('#music-browse [data-browse-level="1"] .noa-browse-card').count(),4);assert.equal(await page.locator('.nl-play-shell').isVisible(),true);await page.screenshot({path:out+'/home-one-click.png'});await page.goBack();assert(!await page.locator('.nl-play-shell').isVisible());report.homeOneClickActualAudio=true;await page.getByRole('link',{name:'내 음악 바로 듣기',exact:true}).click();await f.locator('.noa-mobile-nav a[data-noa-nav=home]').click();await page.waitForURL(base+'/');assert.equal(new URL(page.url()).pathname,'/');report.homeNavigationLeavesPlayer=true;await c.close();}
  assert.deepEqual(report.errors,[]);report.ok=true;
 }catch(error){report.failure=String(error);if(activePage&&!activePage.isClosed()){await activePage.screenshot({path:out+'/failure.png'}).catch(()=>{});writeFileSync(out+'/failure.html',await activePage.content().catch(()=>''));}throw error;}finally{if(server)writeFileSync(out+'/server.log',serverLog);writeFileSync(out+'/report.json',JSON.stringify(report,null,2));await browser.close();server?.kill();}console.log('N80_PERSONAL_LISTENING_OK');
