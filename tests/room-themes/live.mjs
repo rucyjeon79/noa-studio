@@ -210,9 +210,15 @@ async function verifyMusicShelves(p,width,mode,theme){
   assert(Math.abs(left.bottom-right.bottom)<2,'paired shelves finish on the same line: '+pair);
   if(left.pager&&right.pager)assert(Math.abs(left.pager.y-right.pager.y)<2,'paired page controls align: '+pair);
  }
- const readingOrder=await p.locator('.noa-main').evaluate(main=>[...main.children].map(n=>n.dataset.homeSection||n.dataset.homeBanner||n.id||n.className));
- assert(readingOrder.indexOf('recommendations')<readingOrder.indexOf('noa-referral-banner'),'music is reachable before referral promotion');
- assert(readingOrder.indexOf('stories')<readingOrder.indexOf('goods'),'music collections precede merchandise promotion');
+ const placements=await p.locator('.noa-main').evaluate(main=>{
+  const hero=main.querySelector('[data-home-section=hero]'),notice=main.querySelector('[data-home-section=notices]'),goods=main.querySelector('[data-home-banner=goods]'),youtube=main.querySelector('[data-home-banner=youtube]'),benefits=main.querySelector('.noa-monthly-benefits'),referral=main.querySelector('#noa-referral-banner');
+  const box=el=>{const r=el.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,bottom:r.bottom};};
+  return {benefitsBefore:hero.previousElementSibling===benefits,referralAfter:hero.nextElementSibling===referral,goodsBelowNotice:goods.parentElement===notice&&goods.previousElementSibling===notice.querySelector('.noa-notice-list'),youtubeBefore:youtube.nextElementSibling?.dataset.homeSection==='collections',hero:box(hero),benefits:box(benefits),referral:box(referral),goods:box(goods),notice:box(notice.querySelector('.noa-notice-list')),youtube:box(youtube),collections:box(main.querySelector('[data-home-section=collections]'))};
+ });
+ for(const key of ['benefitsBefore','referralAfter','goodsBelowNotice','youtubeBefore'])assert(placements[key],JSON.stringify({width,mode,key,placements}));
+ for(const [above,below]of [['benefits','hero'],['hero','referral'],['notice','goods'],['youtube','collections']]){assert(placements[below].y>=placements[above].bottom+15,'requested banners have a clear vertical gap: '+above+' / '+below);assert(Math.abs(placements[below].x-placements[above].x)<2,'moved banner shares its section left edge: '+below);assert(Math.abs(placements[below].width-placements[above].width)<2,'moved banner shares its section width: '+below);}
+ for(const selector of ['.noa-monthly-benefits','#noa-referral-banner','[data-home-banner=goods]','[data-home-banner=youtube]'])assert.equal(await p.locator(selector).count(),1,'existing banner moved without duplication');
+ console.log('HOME_BANNER_POSITIONS_VERIFIED',JSON.stringify({width,mode,placements}));
  const banner=p.locator('#noa-home-community .noa-feed-invite');
  const paint=await banner.evaluate(el=>({image:getComputedStyle(el,'::before').backgroundImage,radius:getComputedStyle(el).borderRadius,color:getComputedStyle(el.querySelector('strong')).color}));
  assert(paint.image.includes(theme.images.journey),'late-loading community invitation follows the selected day/night scenery');
@@ -242,7 +248,7 @@ async function verifyExpansiveShell(p,width,mode){
  else{assert(Math.abs(geometry.media.width/geometry.media.height-9/16)<.03,'mobile retains the complete portrait film');assert(geometry.copy.y>=geometry.media.bottom-1,'mobile text is below the media');}
  if(width>=960){assert(await p.locator('.noa-home-quickstart').isVisible(),'short notices share the card with real studio shortcuts');assert(Math.abs(geometry.notices.y-geometry.community.y)<2,'news sections share a row');assert(geometry.community.x>geometry.notices.x,'news columns are side by side');}
  else assert(geometry.community.y>=geometry.notices.bottom-1,'mobile news sections follow reading order');
- assert.equal(await p.locator('.noa-hero').evaluate(h=>h.nextElementSibling.dataset.homeSection),'notices','real news follows the music introduction before promotions');
+ assert.equal(await p.locator('.noa-hero').evaluate(h=>h.nextElementSibling.id),'noa-referral-banner','500P invitation immediately follows the hero');
  assert.equal(await p.locator('#noa-hero-video').evaluate(v=>getComputedStyle(v).objectFit),'contain','original portrait film is never cropped to a landscape strip');
  assert.equal(await p.locator('#noa-hero-poster').evaluate(v=>getComputedStyle(v).objectFit),'contain','fallback poster retains the full original frame');
  assert.equal(await p.locator('.noa-feed-row.noa-action').count(),0,'feed rows remain semantic content instead of centered action buttons');

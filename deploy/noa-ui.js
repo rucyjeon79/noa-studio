@@ -140,13 +140,14 @@ function wideShell(side){
  const notices=document.querySelector('[data-home-section="notices"]'),community=document.querySelector('[data-home-section="community"]');if(notices&&community){const hero=document.querySelector('[data-home-section=hero]');if(hero)hero.after(notices,community);else notices.after(community);}
  const noticeCard=notices?.querySelector('.noa-notice-list');if(noticeCard){const quick=document.createElement('nav');quick.className='noa-home-quickstart';quick.setAttribute('aria-label','스튜디오 빠른 시작');quick.innerHTML='<h3>스튜디오 빠른 시작</h3>';for(const [label,href]of [['음악 영상 둘러보기','/noa-youtube.php'],['내 사연을 노래로','/noa-lounge.php?category=story&view=list#ec-content'],['VIP 이용권 알아보기','/noa-vip.php']]){const a=document.createElement('a');a.href=href;a.dataset.noaDocumentLink='';const text=document.createElement('span');text.textContent=label;const arrow=document.createElement('span');arrow.textContent='↗';arrow.setAttribute('aria-hidden','true');a.append(text,arrow);quick.append(a);}noticeCard.append(quick);}
 
- // Keep discovery ahead of promotional inserts, including those arriving asynchronously.
+ // Keep the requested home banner positions, including banners arriving asynchronously.
  // Moving existing nodes preserves event handlers and makes keyboard order match the page.
  const main=document.querySelector('.noa-main');
  if(main&&community){
   for(const grid of main.querySelectorAll('section>.noa-card-grid'))grid.parentElement.classList.add('noa-home-shelf');
   const arrangeHome=()=>{
-   const selectors=['#noa-theme-scene','[data-home-section=hero]','[data-home-section=notices]','[data-home-section=community]','[data-home-section=recommendations]','[data-home-section=ep]','[data-home-section=stories]','[data-home-section=world]','[data-home-section=covers]','[data-home-section=playlists]','#noa-playlist-basis','.noa-monthly-benefits','#noa-referral-banner','[data-home-section=collections]','[data-home-banner=goods]','[data-home-banner=youtube]','[data-home-banner=amt]'];
+   const goods=main.querySelector('[data-home-banner=goods]');if(goods&&goods.parentElement!==notices)notices.append(goods);
+   const selectors=['#noa-theme-scene','.noa-monthly-benefits','[data-home-section=hero]','#noa-referral-banner','[data-home-section=notices]','[data-home-section=community]','[data-home-section=recommendations]','[data-home-section=ep]','[data-home-section=stories]','[data-home-section=world]','[data-home-section=covers]','[data-home-section=playlists]','#noa-playlist-basis','[data-home-banner=youtube]','[data-home-section=collections]','[data-home-banner=amt]'];
    let previous=main.querySelector(':scope>.noa-topbar');
    for(const selector of selectors){const node=main.querySelector(':scope>'+selector);if(!node)continue;if(previous&&node.previousElementSibling!==previous)previous.after(node);previous=node;}
   };

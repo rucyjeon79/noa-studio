@@ -703,7 +703,8 @@ html.noa-shell-wide[data-noa-theme] [data-home-section=recommendations]>p.noa-mu
 html.noa-shell-wide[data-noa-theme] [data-home-section=recommendations]>.noa-discovery-tabs{grid-column:2;grid-row:2/4;align-self:center;justify-self:end;margin:0}
 html.noa-shell-wide[data-noa-theme] [data-home-section=recommendations]>.noa-card-grid{margin-top:24px}
 html.noa-shell-wide[data-noa-theme] #noa-playlist-basis{display:none}
-html.noa-shell-wide[data-noa-theme] .noa-main>:is([data-home-banner=goods],[data-home-banner=youtube]){grid-column:auto;align-self:stretch;margin:0}
+html.noa-shell-wide[data-noa-theme] .noa-main>[data-home-banner=youtube]{grid-column:1/-1;align-self:stretch;margin:0}
+html.noa-shell-wide[data-noa-theme] body .noa-main>[data-home-section=notices]>[data-home-banner=goods]{flex:none;margin:24px 0 0}
 
 /* Invitations use the current scenery even when loaded after the theme script. */
 html.noa-shell-wide[data-noa-theme]{--noa-invite-shade:linear-gradient(90deg,#10151ff5 0%,#10151fe8 48%,#10151f35 100%)}

@@ -1,4 +1,4 @@
-"""Publish the visually reviewed clean original five-link rail and original portrait film in a dedicated frame with aligned recommendations and left-aligned content; keep day/night scenery secondary and retain all navigation, member, playback and commerce checks."""
+"""Move the existing home banners to their requested positions without replacing artwork, text, or interactive nodes; retain public hashes and rollback guards."""
 import os
 import sys
 from pathlib import Path
