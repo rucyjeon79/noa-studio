@@ -415,16 +415,29 @@ html[data-noa-theme] .ec-primary{background:var(--noa-accent)!important;color:va
  html[data-noa-theme] .noa-theme-scene .noa-theme-kicker{margin:0 0 12px;font-size:10px;font-weight:650;line-height:1.4;letter-spacing:.18em;color:var(--noa-accent)}
  html[data-noa-theme] .noa-theme-scene h2{margin:0;font-size:clamp(24px,2.6vw,36px);line-height:1.4;font-weight:550;letter-spacing:-.045em;word-break:keep-all;color:var(--noa-text)}
  html[data-noa-theme] .noa-theme-scene .noa-theme-caption{margin:12px 0 0;font-size:13px;line-height:1.7;color:var(--noa-muted);max-width:54ch;word-break:keep-all}
- .noa-theme-hour{position:relative;display:grid;justify-items:center;gap:8px;padding:8px 0 8px 24px;border-inline-start:1px solid var(--noa-line);color:var(--noa-accent)}
- .noa-theme-hour strong{font-family:Georgia,serif;font-size:44px;line-height:1;font-weight:400;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
- .noa-theme-hour small{font-size:11px;letter-spacing:.08em;color:var(--noa-muted)}
- .noa-theme-orbit{display:block;width:28px;height:28px;border-radius:50%;margin-bottom:4px;box-shadow:inset -7px -3px var(--noa-moon);transform:rotate(-20deg)}
+ .noa-theme-visual{display:grid;place-items:center;padding:8px 0 8px 24px;border-inline-start:1px solid var(--noa-line)}
+ .noa-theme-art{position:relative;width:100%;max-width:144px;aspect-ratio:3/2}
+ .noa-theme-art span,.noa-theme-stars i{position:absolute;display:block}
+ .noa-theme-celestial{width:26%;aspect-ratio:1;top:4%;right:10%;border-radius:50%;box-shadow:inset -10px -4px var(--noa-moon);transform:rotate(-20deg)}
+ .noa-theme-stars{inset:0;color:var(--noa-accent)}
+ .noa-theme-stars i{width:5%;aspect-ratio:1;background:currentColor;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%)}
+ .noa-theme-stars i:nth-child(1){left:8%;top:44%;width:7%}
+ .noa-theme-stars i:nth-child(2){left:32%;top:18%;width:4%}
+ .noa-theme-stars i:nth-child(3){left:46%;top:60%;width:9%}
+ .noa-theme-stars i:nth-child(4){left:80%;top:78%;width:5%}
+ .noa-theme-stars i:nth-child(5){left:22%;top:84%;width:3%;color:var(--noa-moon)}
+ .noa-theme-stars::before,.noa-theme-stars::after{content:'';position:absolute;height:1px;background:var(--noa-moon);opacity:.28;transform-origin:left center}
+ .noa-theme-stars::before{left:12%;top:50%;width:35%;transform:rotate(16deg)}
+ .noa-theme-stars::after{left:53%;top:68%;width:27%;transform:rotate(16deg)}
+ .noa-theme-art .noa-theme-mountains,.noa-theme-art .noa-theme-sea{display:none}
  html[data-noa-theme=noa-studio] body .noa-theme-scene{background-image:radial-gradient(circle at 78% 17%,#E4C98D 0 1px,transparent 1.6px),radial-gradient(circle at 93% 36%,#B6CCE8 0 1px,transparent 1.6px),radial-gradient(circle at 64% 76%,#B6CCE899 0 1px,transparent 1.6px);border-top-color:var(--noa-accent)}
  html[data-noa-theme=noa-ivory] body .noa-theme-scene{background-color:var(--noa-bg);border-top:2px solid var(--noa-sun);border-bottom-color:var(--noa-sea)}
  html[data-noa-theme=noa-ivory] .noa-theme-scene::after{content:'';position:absolute;inset:auto 0 0;height:3px;background:linear-gradient(90deg,var(--noa-sun) 0 33.333%,var(--noa-sea) 33.333% 66.666%,var(--noa-forest) 66.666%)}
  html[data-noa-theme=noa-ivory] body .noa-theme-scene .noa-theme-kicker{color:var(--noa-sun)}
- html[data-noa-theme=noa-ivory] .noa-theme-hour{color:var(--noa-sea)}
- html[data-noa-theme=noa-ivory] .noa-theme-orbit{background:var(--noa-sun);box-shadow:0 0 0 5px color-mix(in srgb,var(--noa-sun) 10%,transparent);transform:none;width:24px;height:24px;margin:4px 0 8px}
+ html[data-noa-theme=noa-ivory] .noa-theme-stars{display:none}
+ html[data-noa-theme=noa-ivory] .noa-theme-celestial{background:var(--noa-sun);box-shadow:0 0 0 6px color-mix(in srgb,var(--noa-sun) 10%,transparent);transform:none;width:20%;right:16%;top:10%}
+ html[data-noa-theme=noa-ivory] .noa-theme-art .noa-theme-mountains{display:block;left:6%;right:14%;top:40%;height:34%;background:var(--noa-forest);clip-path:polygon(0 100%,32% 0,56% 67%,73% 28%,100% 100%)}
+ html[data-noa-theme=noa-ivory] .noa-theme-art .noa-theme-sea{display:block;left:6%;right:6%;bottom:10%;height:8%;border-block:1px solid var(--noa-sea)}
  html[data-noa-theme] body .noa-theme-schedule{font-size:12px;line-height:1.7;color:var(--noa-muted);margin:16px 0 24px;word-break:keep-all}
  html[data-noa-theme] body .noa-theme-summary{border-top:1px solid var(--noa-line);padding-top:20px}
  .noa-theme-summary strong{display:block;font-size:14px;line-height:1.5;color:var(--noa-accent)}
@@ -436,7 +449,7 @@ html[data-noa-theme] .ec-primary{background:var(--noa-accent)!important;color:va
   html[data-noa-theme] .noa-theme-scene h2{font-size:24px;line-height:1.4}
   html[data-noa-theme] .noa-theme-scene .noa-theme-kicker{font-size:9px;letter-spacing:.1em;margin-bottom:8px}
   html[data-noa-theme] .noa-theme-scene .noa-theme-caption{font-size:12px;margin-top:8px}
-  .noa-theme-hour{padding-inline-start:12px;gap:8px}.noa-theme-hour strong{font-size:28px}.noa-theme-hour small{font-size:10px;line-height:1.5;text-align:center}
+  .noa-theme-visual{padding-inline-start:12px}.noa-theme-art{aspect-ratio:1}.noa-theme-celestial{width:34%;box-shadow:inset -6px -3px var(--noa-moon)}
   html[data-noa-theme] #ecosystem .ec-hero>div{padding-inline-end:0}
  }
  @media(prefers-reduced-motion:no-preference){html[data-noa-theme] :is(.noa-theme-scene,.noa-menu a,.noa-section-navigation a){transition:background-color .2s,color .2s,border-color .2s}}

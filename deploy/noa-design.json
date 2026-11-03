@@ -32,11 +32,10 @@
         "wash": "#1E2B3D"
       },
       "concept": {
-        "eyebrow": "MIDNIGHT · 밤 12시",
+        "eyebrow": "STARLIGHT · 별빛이 모이는 밤",
         "title": "하루의 끝, 우리는 별무리가 된다.",
         "description": "일상을 마친 별 하나, 별무리가 되어 밤하늘을 밝히다.",
         "signature": "별빛이 모이는 밤.",
-        "time": "00:00",
         "name": "별빛과 달빛"
       }
     },
@@ -70,11 +69,10 @@
         "wash": "#EDF5F5"
       },
       "concept": {
-        "eyebrow": "NOON · 낮 12시",
+        "eyebrow": "SUNLIGHT · 빛나는 하루",
         "title": "햇살 가득한 오늘, 함께 빛나다.",
         "description": "생동감 있는 일상부터 바다와 산으로 떠나는 별무리의 휴가까지.",
         "signature": "햇살 따라, 음악 따라.",
-        "time": "12:00",
         "name": "햇빛, 바다와 산"
       }
     }

@@ -112,16 +112,17 @@ function refreshAutomaticTheme(){
  if(state?.theme!=='auto')return;
  if(root.dataset.noaTheme!==resolvedTheme('auto'))apply(state);else scheduleTheme();
 }
+function themeArtwork(){return '<div class="noa-theme-visual" aria-hidden="true"><div class="noa-theme-art"><span class="noa-theme-celestial"></span><span class="noa-theme-stars"><i></i><i></i><i></i><i></i><i></i></span><span class="noa-theme-mountains"></span><span class="noa-theme-sea"></span></div></div>';}
 function themePresentation(theme){
  if(themeOnly||admin||!theme.concept)return;
  const concept=theme.concept,hero=document.querySelector('.noa-hero[data-home-section="hero"]');
  let scene=document.getElementById('noa-theme-scene');
  if(hero&&!scene){
   scene=document.createElement('section');scene.id='noa-theme-scene';scene.className='noa-theme-scene';scene.setAttribute('aria-label','NOA STUDIO의 낮과 밤');
-  scene.innerHTML='<div class="noa-theme-story"><p class="noa-theme-kicker"></p><h2></h2><p class="noa-theme-caption"></p></div><div class="noa-theme-hour" aria-hidden="true"><span class="noa-theme-orbit"></span><strong></strong><small></small></div>';
+  scene.innerHTML='<div class="noa-theme-story"><p class="noa-theme-kicker"></p><h2></h2><p class="noa-theme-caption"></p></div>'+themeArtwork();
   hero.before(scene);
  }
- if(scene){scene.querySelector('.noa-theme-kicker').textContent=concept.eyebrow;scene.querySelector('h2').textContent=concept.title;scene.querySelector('.noa-theme-caption').textContent=concept.description;scene.querySelector('.noa-theme-hour strong').textContent=concept.time;scene.querySelector('.noa-theme-hour small').textContent=concept.name;}
+ if(scene){scene.querySelector('.noa-theme-kicker').textContent=concept.eyebrow;scene.querySelector('h2').textContent=concept.title;scene.querySelector('.noa-theme-caption').textContent=concept.description;const oldClock=scene.querySelector('.noa-theme-hour');if(oldClock){oldClock.insertAdjacentHTML('beforebegin',themeArtwork());oldClock.remove();}}
  document.querySelectorAll('.noa-sidebar-signature>span').forEach(el=>el.textContent=concept.signature);
  const current=document.getElementById('noa-theme-current');if(current)current.textContent=(state.theme==='auto'?'지금은 ':'')+theme.name+' · '+concept.name;
  const detail=document.getElementById('noa-theme-description');if(detail)detail.textContent=concept.description;

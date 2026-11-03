@@ -56,7 +56,7 @@ try{for(const width of [390,768,1280]){
    assert.deepEqual(errors,[],'uncaught browser errors: '+route);
    const selected=p.locator('#noa-section-navigation a[aria-current=page]');
    if(mode==='noa-ivory'&&await selected.count())assert.equal(await selected.evaluate(el=>getComputedStyle(el).color),'rgb(255, 255, 255)','active section label remains readable: '+route);
-   if(room==='home'){assert(await p.locator('#noa-theme-scene').evaluate(el=>el.getBoundingClientRect().top>=0),'home theme introduction stays above the fold');assert.equal(await p.locator('#noa-theme-scene h2').innerText(),theme.concept.title);assert.equal(await p.locator('#noa-theme-scene .noa-theme-hour strong').innerText(),theme.concept.time);}
+   if(room==='home'){assert(await p.locator('#noa-theme-scene').evaluate(el=>el.getBoundingClientRect().top>=0),'home theme introduction stays above the fold');assert.equal(await p.locator('#noa-theme-scene h2').innerText(),theme.concept.title);assert.doesNotMatch(await p.locator('#noa-theme-scene').innerText(),/\d{1,2}:\d{2}|12시/,'theme artwork does not imply a live clock');assert(await p.locator('#noa-theme-scene .noa-theme-art').isVisible(),'theme artwork is visible');assert.equal(await p.locator('#noa-theme-scene .noa-theme-stars').isVisible(),mode==='noa-studio');assert.equal(await p.locator('#noa-theme-scene .noa-theme-mountains').isVisible(),mode==='noa-ivory');}
    if(room==='shop')await p.locator('.ec-grid .ec-card').first().waitFor();
    if(room==='community')await p.locator('.ec-write-invite').first().waitFor();
    if(mode==='noa-ivory')for(const primary of await p.locator('.ec-primary:visible').all()){
