@@ -39,3 +39,13 @@
 .ny-native #sod_bsk .btn_cart_del{display:flex;gap:8px;padding:16px;border-top:1px solid var(--noa-line)}
 .ny-native #sod_bsk button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border:1px solid var(--noa-line);border-radius:4px;background:var(--noa-surface);color:var(--noa-text);font-size:13px;line-height:1.5;box-shadow:none}
 @media(max-width:760px){.ny-native #noa-account-bar{padding-inline:12px!important}}
+
+/* The installed mobile theme has no wrapper; use the same content origin. */
+.ny-native body>#container{max-width:1280px!important;margin:0 auto!important;padding:0 24px 40px!important}
+.ny-native #container_title{position:static!important;height:auto!important;text-align:left!important;margin:0!important;padding:24px 0!important;background:transparent!important;color:var(--noa-text)!important;border:0!important;font-size:24px!important;line-height:1.4!important;letter-spacing:-.04em}
+.ny-native #container_title>a{display:none!important}
+.ny-native .sod_list{margin:0 0 16px;padding:0;border:1px solid var(--noa-line);border-radius:4px;background:var(--noa-surface);color:var(--noa-text)}
+.ny-native .sod_list .empty_list{padding:64px 16px;color:var(--noa-muted);background:transparent}
+.ny-native .btn_del_wr{display:flex;gap:8px;margin:16px 0}
+.ny-native .go_shopping{margin-top:24px}
+@media(max-width:760px){.ny-native body>#container{padding-inline:16px!important}}
