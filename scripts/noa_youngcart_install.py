@@ -14,6 +14,8 @@ try{
  if(!hash_equals('YC_SCHEMA',hash('sha256',$schema)))throw new RuntimeException('schema_changed');
  $schema=preg_replace('/^--.*$/m','',$schema);$queries=[];$tables=[];
  foreach(explode(';',$schema) as $q){$q=trim($q);if($q==='')continue;
+  // Native full installer includes DROP statements; discard them without executing.
+  if(preg_match('/^DROP TABLE IF EXISTS `g5_shop_[a-z_]+`$/D',$q))continue;
   if(!preg_match('/^CREATE TABLE IF NOT EXISTS `(g5_shop_[a-z_]+)`\\s*\\(/',$q,$m))throw new RuntimeException('unexpected_schema_statement');
   $tables[]=$m[1];$queries[]=$q;
  }
