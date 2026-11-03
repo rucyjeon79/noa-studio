@@ -357,7 +357,7 @@ html[data-noa-style] #noa-settings-dialog select{min-height:44px}
  html[data-noa-theme=noa-ivory] body .noa-menu a[aria-current=page]{background:var(--noa-darkGray);color:#FFFFFF;box-shadow:none}
  html[data-noa-theme=noa-ivory] .noa-menu a[aria-current=page] svg{color:inherit}
  html[data-noa-theme=noa-ivory] .noa-mobile-nav a[aria-current=page]{background:var(--noa-raised);color:var(--noa-darkGray);border-radius:4px}
- html[data-noa-theme=noa-ivory] body .noa-section-navigation a[aria-current=page]{background:var(--noa-darkGray);border-color:var(--noa-darkGray);color:#FFFFFF}
+ html[data-noa-theme=noa-ivory] #noa-section-navigation a[aria-current=page]{background:var(--noa-darkGray);border-color:var(--noa-darkGray);color:#FFFFFF}
  html[data-noa-theme=noa-ivory] #ecosystem :is(.ec-hero,.ec-write-invite){background:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line)}
  html[data-noa-theme=noa-ivory] #ecosystem .ec-write-invite{padding:16px;border-radius:4px}
  html[data-noa-theme=noa-ivory] #ecosystem .ec-write-invite>button{background:var(--noa-darkGray);color:#FFFFFF}
@@ -379,3 +379,6 @@ html[data-noa-theme=noa-ivory] body .noa-monthly-rewards li{border-color:var(--n
 html[data-noa-theme=noa-ivory] body #noa-referral-banner{background:var(--noa-darkGray);border-color:var(--noa-darkGray);color:#FFFFFF;box-shadow:none}
 html[data-noa-theme=noa-ivory] #noa-referral-banner :is(strong,.nrf-banner-action,.nrf-banner-copy){color:#FFFFFF}
 html[data-noa-theme=noa-ivory] #noa-referral-banner small{color:#D5D8DE}
+
+/* Section links inside #ecosystem must outrank its inherited link color. */
+html[data-noa-theme=noa-ivory][data-noa-area]{--noa-section-accent:var(--noa-darkGray)}

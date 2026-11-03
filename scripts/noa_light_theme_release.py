@@ -1,4 +1,4 @@
-"""Release only the shared light/dark palette and stylesheet with existing hash/rollback guards."""
+"""Release only the shared light/dark palette, contrast and stylesheet with existing hash/rollback guards."""
 import os
 import sys
 from pathlib import Path

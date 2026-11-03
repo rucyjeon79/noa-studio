@@ -46,6 +46,10 @@ try{for(const width of [390,768,1280]){
    assert(metrics.overflow<=1,JSON.stringify(results.at(-1)));
    assert(metrics.text>20,'visible content: '+route);
    assert.deepEqual(errors,[],'uncaught browser errors: '+route);
+   const selected=p.locator('#noa-section-navigation a[aria-current=page]');
+   if(mode==='noa-ivory'&&await selected.count())assert.equal(await selected.evaluate(el=>getComputedStyle(el).color),'rgb(255, 255, 255)','active section label remains readable: '+route);
+   if(room==='shop')await p.locator('.ec-grid .ec-card').first().waitFor();
+   if(room==='community')await p.locator('.ec-write-invite').first().waitFor();
    await p.screenshot({path:output+'/'+(room||'settings')+'-'+mode+'-'+width+'.png'});
   }
   await p.locator('[data-noa-display-settings]:visible').first().click();
