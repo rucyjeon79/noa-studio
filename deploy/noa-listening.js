@@ -15,7 +15,7 @@ const listen=button('지금 듣기','play',()=>play(current().rows));listen.clas
 const summary=el('div','nl-summary');summary.append(el('p','nl-reason',''),listen);host.insertBefore(summary,status);
 const tabs=el('div','nl-tabs');tabs.setAttribute('role','group');tabs.setAttribute('aria-label','선곡 방식');for(const [key,label]of Object.entries({now:'빠른 선곡',popular:'인기곡',latest:'최신 음원',albums:'추천 앨범',library:'내 보관함'})){const b=el('button','',label);b.type='button';b.dataset.mode=key;b.onclick=()=>{mode=key;render();};tabs.append(b);}host.append(tabs);
 const results=el('div','nl-results');host.append(results);
-const more=el('a','nl-catalog','전체 음원 둘러보기 →');more.href='/noa-music.php?view=all#music-browse';host.append(more);
+const more=el('a','nl-catalog','카테고리별 음원 찾기 →');more.href=home?'/noa-music.php#music-browse':'#music-browse';if(!home)more.onclick=()=>{const panel=host.closest('.nl-music-discovery');if(panel)panel.open=false;window.NoaMusic?.showCategories();};host.append(more);
 const info=el('details','nl-basis');info.append(el('summary','','추천 기준'));const infoText=el('p');info.append(infoText);host.append(info);
 function current(){return model.select(records,{genre,mood,mode,theme:state?.theme,popular:state?.popular,library:state?.library});}
 function songButton(row,queue){const b=el('button','nl-track');b.type='button';const art=el('img');art.alt='';art.loading='lazy';if(row.thumb)art.src=row.thumb;else art.hidden=true;const copy=el('span','nl-track-copy');copy.append(el('strong','',row.title),el('small','',row.ep?'EP.'+String(row.ep).padStart(2,'0'):state.genres[genre]));b.append(art,copy,icon('play'));b.setAttribute('aria-label',row.title+' 재생');b.onclick=()=>play([row,...queue.filter(r=>r.key!==row.key)]);return b;}
