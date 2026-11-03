@@ -41,3 +41,12 @@
 사용자가 이미지 전부를 텍스트로 바꾼 방식에 이의를 제기하여 v20261103-2에서 소개4장·비전5장 원본 이미지를 모두 원래 순서로 다시 표시. 테마 배너/내비/읽기 쉬운 본문은 유지하고 문맥별 섹션에 원본 figure를 함께 배치. 원본 파일 삭제·수정 없음, 공식 HTTPS 동일파일 참조. 이미지 고유 비율/내용 유지, width100% heightauto 및 lazy loading, 의미 있는 alt 제공.
 
 run41610135467 / job125829670758 성공. 네 페이지 테스트와 원본4/5장 개수 확인, 원본9개 이미지 HTTP 접근/Content-Type 검증 통과. 실제 브라우저에서 소개4장 DOM 및 현재 화면 이미지 로드, 가로 넘침 없음 확인. 향후 디자인 수정은 기존 이미지의 장점을 보존하며 진행.
+
+
+## Superseding correction: text only (2026-11-03, v4)
+
+The owner explicitly requires all existing embedded images and photographs to be removed from these content pages and the content presented as HTML text only. Earlier full-poster restoration and photo-crop interpretations were incorrect and are superseded. Do not restore those image blocks, photo viewports, or photographic page heroes.
+
+Release 1791890de234366f66777ecbe4595cc01bcc11f5 removes image rendering from all four content articles, keeps theme colors, typography, navigation and original mission principles, and preserves dynamic native legal clauses and dates. Original source media are not deleted from storage. Main homepage banners and other accounts are outside this change.
+
+Validation: PHP lint, all native desktop/mobile skin entry tests, legal text preservation tests and live HTTP checks require zero img/image/svg/picture/figure elements inside each content article. Deployment run: https://github.com/rucyjeon79/noa-studio/actions/runs/41612402594 .
