@@ -28,8 +28,8 @@ $original='';foreach($summary['instructionQueue']??[]as $entry)if(str_starts_wit
 <details><summary>2026.10.26 추가 지시 원문</summary><pre><?=nws_e($original)?></pre></details>
 <?php endif;?>
 <section><h2>곡 편집기 · ChatGPT 계정 생성</h2><p><?=nws_e($workerStage)?></p></section>
-<section id="ai-automation"><h2>N80 AI 자동화</h2><p>관리자 대화·곡별 생성 요청을 SQL에 보관하고, 텍스트 초안을 순서대로 처리합니다. 초안은 검토 후 저장합니다.</p>
-<?php if(isset($ai)&&is_array($ai)):?><p><?=!empty($ai['generation']['ready'])?'OpenAI API 요청 가능':'AI 연결 설정 필요 · 대기 요청 보존 중'?></p>
+<section id="ai-automation"><h2>N80 AI 자동화</h2><p>관리자 대화와 곡별 생성 요청을 저장하고, 텍스트 초안을 순서대로 처리합니다. 초안은 검토 후 저장합니다.</p>
+<?php if(isset($ai)&&is_array($ai)):?><p><?=!empty($ai['generation']['ready'])?'AI 생성 이용 가능':'AI 연결 설정 필요 · 대기 요청 보존 중'?></p>
 <?php foreach($ai['tasks']as $job):?><details><summary><?=nws_e($job['title'])?> · <?=nws_e($job['stage'])?></summary><p>작업 <?=nws_e(substr($job['id'],-12))?> · <?=nws_e($job['updatedAt'])?></p><p><?=nws_e($job['lastSuccessfulStage'])?></p><?php if(!empty($job['result'])):?><pre><?=nws_e($job['result'])?></pre><?php endif;?><?php if(!empty($job['error'])):?><p><?=nws_e($job['error'])?></p><?php endif;?></details><?php endforeach;?>
 <?php else:?><p>AI 작업 기록 연결을 확인하고 있습니다.</p><?php endif;?><a href="/noa-ai-lab.php">AI 서비스 설정</a></section>
 </main></body></html>

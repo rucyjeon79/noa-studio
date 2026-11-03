@@ -3,14 +3,14 @@
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 const button=(text,fn)=>{const n=el('button',text);n.type='button';n.onclick=fn;return n;};
 let dialog,client,dockHost=null,state={tasks:[],generation:{ready:false,missing:['settings_unavailable']}},busy=false,thread='',retry=null,timer=null,activeTrack=null,generationRetry=null;
-const names={api_key:'API 키',text_enabled:'AI 활성화',per_request_budget:'요청 한도',daily_budget:'일일 한도',daily_budget_exhausted:'오늘 잔여 한도',model:'모델',settings_unavailable:'설정 연결'};
+const names={api_key:'서비스 연결 키',text_enabled:'AI 활성화',per_request_budget:'요청 한도',daily_budget:'일일 한도',daily_budget_exhausted:'오늘 잔여 한도',model:'모델',settings_unavailable:'설정 연결'};
 const states={queued:'대기',running:'작성 중',succeeded:'응답 완료',review:'초안 검토',failed:'오류',needs_review:'응답 확인 필요',cancelled:'취소'};
 const fields={youtubeTitle:'YouTube 제목',description:'YouTube 설명',communityPost:'커뮤니티 글'};
 const errors={ai_result_unconfirmed:'응답을 확정하지 못했습니다. 이 요청은 자동 재실행하지 않습니다.',ai_revision_changed:'곡 정보가 바뀌어 생성을 중단했습니다. 최신 곡 정보로 다시 요청하세요.',ai_provider_auth:'OpenAI 인증을 확인하세요.',ai_budget_exceeded:'AI 사용 한도에 도달했습니다.',ai_not_configured:'AI 연결 설정이 필요합니다.',ai_provider_rate_limit:'OpenAI 요청 한도에 도달했습니다.',ai_provider_unavailable:'AI 제공자 응답에 오류가 있습니다.'};
 const $=s=>dialog.querySelector(s);
 async function workspace(){const c=new AbortController(),t=setTimeout(()=>c.abort(),12000);try{const r=await fetch('/noa-ainoa.php?action=admin_workspace',{credentials:'same-origin',cache:'no-store',signal:c.signal});const d=await r.json();if(!r.ok||!d.ok)throw Error(r.status===403?'최고관리자로 다시 로그인해 주세요.':'대화 기록을 불러오지 못했습니다.');return d;}finally{clearTimeout(t);}}
 function notice(text){$('.ainoa-admin-notice').textContent=text;}
-function connection(){const g=state.generation;$('.ainoa-admin-connection').textContent=g.ready?'OpenAI API · '+g.model+' · 요청 가능':'연결 설정 필요 · '+g.missing.map(k=>names[k]||k).join(' · ');}
+function connection(){const g=state.generation;$('.ainoa-admin-connection').textContent=g.ready?'OpenAI 연결 · '+g.model+' · 요청 가능':'연결 설정 필요 · '+g.missing.map(k=>names[k]||k).join(' · ');}
 function selection(){activeTrack=client.current();$('.ainoa-admin-song-label').textContent=activeTrack?'선택한 곡 포함 · '+activeTrack.title:'선택된 곡 없음';$('.ainoa-admin-song').disabled=!activeTrack;$('.ainoa-admin-generate').disabled=busy||!activeTrack;}
 function render(){
  connection();selection();const tasks=state.tasks||[],threads=[...new Map(tasks.filter(t=>t.type==='chat').map(t=>[t.conversationId,t])).values()];
@@ -45,7 +45,7 @@ function build(){
  dialog=el('dialog',undefined,'ainoa-admin-dialog');dialog.id='ainoa-admin-dialog';dialog.setAttribute('aria-labelledby','ainoa-admin-title');
  const head=el('header'),title=el('h2','ChatGPT · N80');title.id='ainoa-admin-title';head.append(title,button('닫기',()=>dialog.close()));
  const status=el('p','연결 상태 확인 중','ainoa-admin-connection'),settings=el('a','AI 연결 설정');settings.href='/noa-ai-lab.php';
- const subscription=el('details',undefined,'ainoa-admin-subscription');subscription.append(el('summary','ChatGPT 구독 한도 연결'),el('p','현재 대화는 OpenAI API 설정을 사용합니다. ChatGPT 구독 한도 연결은 원격 호스팅 앱 접근 승인 후 별도로 연결해야 하며, 현재 연결되지 않았습니다.'));const official=el('a','공식 연결 안내');official.href='https://developers.openai.com/siwc/quickstart';official.target='_blank';official.rel='noopener noreferrer';subscription.append(official);
+ const subscription=el('details',undefined,'ainoa-admin-subscription');subscription.append(el('summary','ChatGPT 구독 한도 연결'),el('p','현재 대화는 별도로 연결한 OpenAI 서비스를 사용합니다. ChatGPT 구독 한도 연결은 온라인 앱 연결 승인 후 별도로 연결해야 하며, 현재 연결되지 않았습니다.'));const official=el('a','공식 연결 안내');official.href='https://developers.openai.com/siwc/quickstart';official.target='_blank';official.rel='noopener noreferrer';subscription.append(official);
  const toolbar=el('div',undefined,'ainoa-admin-toolbar'),threads=el('select',undefined,'ainoa-admin-threads');threads.setAttribute('aria-label','이전 대화');threads.onchange=()=>{thread=threads.value;retry=null;$('.ainoa-admin-input').value='';render();};const fresh=button('새 대화',()=>{thread=crypto.randomUUID();retry=null;$('.ainoa-admin-input').value='';render();});fresh.className='ainoa-admin-new';toolbar.append(threads,fresh,button('새로고침',()=>refresh().catch(e=>notice(e.message))));
  const note=el('p','','ainoa-admin-notice');note.setAttribute('role','status');const log=el('section',undefined,'ainoa-admin-log');log.setAttribute('aria-label','관리자 대화 기록');log.setAttribute('role','log');
  const form=el('form'),input=el('textarea',undefined,'ainoa-admin-input');input.rows=3;input.maxLength=4000;input.required=true;input.placeholder='대화하거나 제작할 내용을 입력하세요';input.setAttribute('aria-label','관리자 ChatGPT 질문');const sendButton=el('button','보내기','ainoa-admin-send');sendButton.type='submit';

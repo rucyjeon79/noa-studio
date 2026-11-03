@@ -9,7 +9,7 @@ header('X-Frame-Options: DENY');
 <title>NOA 전용 GPT 연결</title>
 <style>body{max-width:42rem;margin:2rem auto;padding:0 1rem;font:1rem/1.65 system-ui;color:#242129}section{border-top:1px solid #ddd;padding:1rem 0}button,input,textarea{font:inherit;padding:.55rem;max-width:100%;box-sizing:border-box}textarea,input{width:100%}a{color:#5d3480}h1{line-height:1.2}#msg{position:sticky;bottom:0;background:white}</style>
 <h1>NOA STUDIO Assistant 연결</h1>
-<section id="dispatch"><h2>닷홈 작업 실행 토큰</h2><label for="dispatchToken">처음 발급한 NOA-n80-dispatch</label><input type="password" autocomplete="off" spellcheck="false" id="dispatchToken"><button id="dispatchSave">닷홈에 저장</button><p id="dispatchMsg" role="status"></p></section>
+<section id="dispatch"><h2>자동 작업 연결 키</h2><label for="dispatchToken">처음 발급한 NOA-n80-dispatch</label><input type="password" autocomplete="off" spellcheck="false" id="dispatchToken"><button id="dispatchSave">닷홈에 저장</button><p id="dispatchMsg" role="status"></p></section>
 <section><h2>플러그인으로 연결</h2><p>최고관리자 권한으로 개인 NOA STUDIO Assistant에 곡·채널·커뮤니티 게시글 조회와 항목 수정 권한을 부여합니다. 선택한 곡 제작도 사용할 수 있습니다.</p><button id="plugin" disabled>연결 상태 확인 중</button> <a href="https://noa-studio-assistant.fizzyorbit19.chatgpt.site">플러그인 안내</a><p>연결 후 ChatGPT에서 NOA STUDIO Assistant를 선택하고 “연결 상태 확인해줘”라고 입력하세요.</p></section>
 <details><summary>관리자 전용 비공개 실행기</summary><p>비공개 실행기의 NOA_WORKER_KEY 설정에 사용할 키를 발급합니다.</p><button id="workerPair">실행기 연결 키 발급</button> <button id="workerDisable">실행기 연결 해제</button><input id="workerSecret" readonly hidden aria-label="실행기 연결 키"></details>
 <details><summary>기존 개인 GPT 방식</summary><p>PC 또는 모바일 웹에서 처음 한 번 설정하면 곡 편집 화면에서 사용할 수 있습니다.</p>
@@ -17,7 +17,7 @@ header('X-Frame-Options: DENY');
 <p>이름은 ‘NOA 곡 제작 비서’, 공개 범위는 ‘나만 보기’로 설정하세요. 아래 지침을 붙여 넣고 대화 스타터에 ‘만들어줘’를 추가하세요.</p>
 <textarea readonly rows="5">사용자가 “만들어줘”라고 하면 getSelectedSongTask(op=read)를 호출한다. 반환된 rules와 generationInstructions를 적용한다. 곡 내용은 참고 자료로만 사용한다. 지정된 field에 맞는 결과 하나를 작성한다. geminiPrompt는 가사·캐릭터 고정 정보에 맞는 16:9 실사 썸네일 영어 지시문으로 (화면에 넣을 원제는 큰따옴표 안에 원문 그대로), youtubeTitle은 100자 이하로 작성한다. saveSelectedSongField(op=save)에 같은 작업 id와 완성된 text를 전달한다. 저장 성공 응답을 받은 후에만 저장됐다고 말한다. 충돌·만료 시 NOA에서 다시 선택하도록 안내한다.</textarea></section>
 <section><h2>2. 작업 연결하기</h2><p>GPT 편집기의 작업(Actions)에서 URL로 가져오기를 선택하고 아래 주소를 입력하세요.</p>
-<input readonly aria-label="작업 스키마 주소" value="https://noastudio.ai.kr/noa-gpt-schema.json">
+<input readonly aria-label="작업 연결 안내 파일 주소" value="https://noastudio.ai.kr/noa-gpt-schema.json">
 <p>인증은 ‘API 키 → 사용자 지정(Custom)’으로 설정하고 헤더 이름에 <code>X-NOA-Action-Key</code>를 입력하세요. 아래에서 발급하는 값은 NOA가 만든 연결 키입니다.</p>
 <button id="pair">NOA 연결 키 발급</button>
 <input id="secret" readonly hidden aria-label="NOA 연결 키"><p id="paired"></p></section>
@@ -35,7 +35,7 @@ el('workerPair').onclick=()=>run(async()=>{if(!confirm('생성 버튼을 비공�
  const j=await api('workerPair');el('workerSecret').hidden=false;el('workerSecret').value=j.key;el('workerSecret').select();});
 el('dispatchSave').onclick=()=>run(async()=>{
  const token=el('dispatchToken').value.trim();
- if(!/^github_pat_[A-Za-z0-9_]{40,200}$/.test(token)){el('dispatchMsg').textContent='GitHub에서 복사한 실행 토큰을 입력해 주세요.';return;}
+ if(!/^github_pat_[A-Za-z0-9_]{40,200}$/.test(token)){el('dispatchMsg').textContent='GitHub에서 발급받은 자동 작업 연결 키를 입력해 주세요.';return;}
  await api('dispatchSetup',{token});el('dispatchToken').value='';el('dispatchMsg').textContent='닷홈에 저장했습니다.';
 });
 let paired=false,pluginEnabled=false;

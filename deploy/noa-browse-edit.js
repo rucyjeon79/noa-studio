@@ -228,7 +228,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
        try{requestId??=sessionStorage.getItem(storageKey);}catch{}requestId??=crypto.randomUUID();state.aiRequests[signature]=requestId;try{sessionStorage.setItem(storageKey,requestId);}catch{}
        const session=await api('/noa-ainoa.php?action=status',{},12000);
        if(session.generation?.ready===false){
-        const names={api_key:'OpenAI API 키',text_enabled:'텍스트 AI 활성화',per_request_budget:'요청당 이용 한도',daily_budget:'일일 이용 한도',daily_budget_exhausted:'남은 일일 이용 한도',model:'사용 가능한 모델',settings_unavailable:'서비스 설정 연결'};
+        const names={api_key:'OpenAI 서비스 연결 키',text_enabled:'텍스트 AI 활성화',per_request_budget:'요청당 이용 한도',daily_budget:'일일 이용 한도',daily_budget_exhausted:'남은 일일 이용 한도',model:'사용 가능한 모델',settings_unavailable:'서비스 설정 연결'};
         tell('AI 생성 준비가 필요합니다: '+session.generation.missing.map(k=>names[k]||k).join(' · ')+'.',true);const link=iconCommand('a','external','AI LAB 서비스 설정 열기');link.href='/noa-ai-lab.php';feedback.append(link);return;
        }
        tell(label+' AI 초안을 작성 중입니다. 기존 내용은 유지됩니다.');
@@ -432,13 +432,13 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
       state.data=fresh;for(const k of Object.keys(result.patch)){refreshField(k,fresh.fields);options.get(k).checked=false;}
       info.textContent=Object.keys(result.patch).map(k=>names[k]).join(' · ')+' 저장 완료';
       onSaved({selector,record:displayRow||byKey.get(selector.key),data:fresh});
-     }catch(e){info.textContent=({worker_failed:'n80 생성에 실패했습니다. 작업 현황을 확인해 주세요.',dispatch_failed:'GitHub 실행 요청을 보내지 못했습니다. 닷홈 실행 토큰을 확인해 주세요.',worker_offline:'n80 실행기 연결 설정을 확인해 주세요.',worker_timeout:'결과 대기 시간이 지났습니다. 곡을 다시 열어 확인해 주세요.',revision_conflict:'곡이 다른 곳에서 수정됐습니다. 다시 열어 최신 내용을 확인해 주세요.',ai_revision_changed:'곡이 변경되었습니다. 편집기를 다시 열어 주세요.',ai_provider_rate_limit:'API 한도 또는 크레딧 잔액을 확인해 주세요.',ai_budget_exceeded:'AI LAB의 사용 한도에 도달했습니다.',no_enabled_fields:'선택한 항목은 장르 규칙에서 꺼져 있습니다.',readback:'저장 응답을 받았지만 다시 읽어 확인하지 못했습니다. 곡을 다시 열어 주세요.'})[e.message]||'게시 자료 생성을 확인하지 못했습니다. 곡을 다시 열어 저장 상태를 확인해 주세요.';}
+     }catch(e){info.textContent=({worker_failed:'n80 생성에 실패했습니다. 작업 현황을 확인해 주세요.',dispatch_failed:'자동 제작을 시작하지 못했습니다. 관리자 연결 설정을 확인해 주세요.',worker_offline:'n80 실행기 연결 설정을 확인해 주세요.',worker_timeout:'결과 대기 시간이 지났습니다. 곡을 다시 열어 확인해 주세요.',revision_conflict:'곡이 다른 곳에서 수정됐습니다. 다시 열어 최신 내용을 확인해 주세요.',ai_revision_changed:'곡이 변경되었습니다. 편집기를 다시 열어 주세요.',ai_provider_rate_limit:'AI 서비스 이용 한도와 잔액을 확인해 주세요.',ai_budget_exceeded:'AI LAB의 사용 한도에 도달했습니다.',no_enabled_fields:'선택한 항목은 장르 규칙에서 꺼져 있습니다.',readback:'저장 응답을 받았지만 다시 읽어 확인하지 못했습니다. 곡을 다시 열어 주세요.'})[e.message]||'게시 자료 생성을 확인하지 못했습니다. 곡을 다시 열어 저장 상태를 확인해 주세요.';}
      finally{for(const [el,disabled]of wasDisabled)el.disabled=disabled;publish.disabled=false;state.busy=false;}
     };
    }
-   const download=iconCommand('a','download','전체 정보 JSON 파일 다운로드');download.href='/noa-inline-edit.php?'+new URLSearchParams({...selector,download:'1'});download.download='';
+   const download=iconCommand('a','download','곡 정보 파일 저장');download.href='/noa-inline-edit.php?'+new URLSearchParams({...selector,download:'1'});download.download='';
    const advanced=document.createElement('details'),advancedLabel=document.createElement('summary');
-   advanced.className='noa-advanced';advancedLabel.textContent='고급 자료';advanced.append(advancedLabel,sections.get('extra'));
+   advanced.className='noa-advanced';advancedLabel.textContent='추가 자료·파일 저장';advanced.append(advancedLabel,sections.get('extra'));
    if(selector.type!=='new')advanced.append(download);
    form.append(advanced);
    const toolbar=document.createElement('div');toolbar.className='noa-field-toolbar';
@@ -460,7 +460,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
    if(draftFields){for(const [key,value]of Object.entries(draftFields))if(inputs[key])window.NoaRecordForm.set(inputs[key],value);state.dirty=true;status.textContent='AI 제작 초안입니다. 검토 후 저장하면 곡에 반영됩니다.';}
    form.addEventListener('input',()=>{state.dirty=true;});form.addEventListener('change',()=>{state.dirty=true;});
    form.onsubmit=async event=>{
-    event.preventDefault();if(state.busy||(lockedSong?!state.editKey:!batchEditing))return;const patch={};try{for(const[key,input]of Object.entries(inputs)){if(lockedSong && !(state.editKey==='classification'?['genre','ep','collections'].includes(key):key===state.editKey))continue;const value=window.NoaRecordForm.value(input),before=state.data.fields[key]??(key==='creativeFields'?{}:key==='confirmed'?false:'');if(JSON.stringify(value)!==JSON.stringify(before))patch[key]=key==='title'?value.trim():value;}}catch{status.textContent='추가 제작 자료의 JSON 형식을 확인해 주세요.';return;}
+    event.preventDefault();if(state.busy||(lockedSong?!state.editKey:!batchEditing))return;const patch={};try{for(const[key,input]of Object.entries(inputs)){if(lockedSong && !(state.editKey==='classification'?['genre','ep','collections'].includes(key):key===state.editKey))continue;const value=window.NoaRecordForm.value(input),before=state.data.fields[key]??(key==='creativeFields'?{}:key==='confirmed'?false:'');if(JSON.stringify(value)!==JSON.stringify(before))patch[key]=key==='title'?value.trim():value;}}catch{status.textContent='추가 제작 자료의 입력 형식이 맞지 않습니다. 항목 이름과 내용을 확인해 주세요.';return;}
     for(const key of Object.keys(patch))if(typeof patch[key]==='string'&&!patch[key].trim()&&typeof state.data.fields[key]==='string'&&state.data.fields[key].trim())patch[key]=state.data.fields[key];
     if(!Object.keys(patch).length&&selector.type!=='new'){state.dirty=false;if(lockedSong){locks.get(state.editKey)?.(false);state.editKey=null;status.textContent='변경 사항이 없습니다.';}else close();return;}if('title'in patch&&!patch.title){status.textContent='제목을 입력해 주세요.';return;}
     if('ep'in patch)patch.ep=String(Number(patch.ep)).padStart(2,'0');

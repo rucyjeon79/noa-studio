@@ -70,7 +70,7 @@ function noa_sitemap_registry():array{
             ['assistantSetup','NOA STUDIO Assistant 연결','관리자 연결 상태와 권한 확인','/noa-gpt-setup.php','settings','admin'],
             ['aiLab','AI LAB','영상 제작과 채널 성장','/noa-ai-lab.php','mic','admin'],
             ['themeAdmin','테마 정책','디자인 설정과 변경 이력','/noa-theme-admin.php','settings','admin'],
-            ['database','데이터베이스 관리','운영 데이터 현황','/noa-app/database/','library','admin'],
+            ['database','자료 저장소 관리','운영 데이터 현황','/noa-app/database/','library','admin'],
             ['popularity','인기순위 관리','집계 상태와 유효 재생 정책','/noa-app/popularity/','playlists','admin'],
             ['payments','토스 결제 연결','카드·카카오페이 연결과 테스트·운영 설정','/noa-payment-settings.php','settings','admin'],
             ['kcpTest','KCP 테스트 연결','관리자용 카드 결제창 호출·복귀 테스트','/noa-kcp-test.php','settings','admin'],

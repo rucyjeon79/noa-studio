@@ -23,7 +23,7 @@ function noa_workspace_groups():array{return [
   ['subscriptions','구독·포인트 설정','이용 정책과 결제 내역 확인','/noa-subscription-admin.php','user'],
   ['themeAdmin','화면·테마 설정','공통 디자인과 테마 수정','/noa-theme-admin.php','settings'],
   ['social','Google·Kakao 가입 연결','신규 회원 가입용 인증 설정','/adm/config_form.php#anc_cf_sns','user'],
-  ['aiSettings','AI·YouTube 연결 설정','제작 API·비용 한도·채널 소유자 인증','/noa-ai-lab.php#settings','settings'],
+  ['aiSettings','AI·YouTube 연결 설정','AI 서비스 연결·비용 한도·채널 소유자 확인','/noa-ai-lab.php#settings','settings'],
  ]],
  'advanced'=>['title'=>'고급 점검·데이터 복구','intro'=>'자료 연결에 문제가 있을 때 사용합니다. 일상적인 곡 수정은 콘텐츠 관리에서 합니다.','routes'=>[
   ['workStatus','N80 작업 현황','지시·단계·검증 결과 확인','/noa-work-status.php','settings'],
@@ -31,7 +31,7 @@ function noa_workspace_groups():array{return [
   ['catalogAdmin','원본 가져오기·통합 등록','이전 원본을 추가로 가져올 때 사용','/noa-catalog-admin.php','library'],
   ['documents','문서·변경 이력','문서 키와 저장 버전 확인','/noa-library.php?view=documents','book'],
   ['recovery','원본 복구','보존 자료와 복구 상태 확인','/noa-recovery.php','book'],
-  ['database','데이터베이스 점검','운영 자료 관계와 저장 상태 확인','/noa-app/database/','library'],
+  ['database','자료 저장소 점검','운영 자료 관계와 저장 상태 확인','/noa-app/database/','library'],
   ['popularity','인기 집계 점검','유효 재생과 순위 집계 확인','/noa-app/popularity/','playlists'],
   ['system','시스템 기본 설정','그누보드 기반 설정','/adm/config_form.php','settings'],
   ['nativeTheme','게시판 기반 테마','게시판 기반 테마 유지보수','/adm/theme.php','settings'],
