@@ -7,13 +7,13 @@ function ny_catalog():array{
  $out=[];
  foreach(nt_products()as $p){$id=ny_id('points',$p['id']);$out[$id]=['id'=>$id,'source'=>'points','sourceId'=>$p['id'],'title'=>number_format($p['paidPoints']).'P 포인트 충전권','price'=>$p['priceWon'],'points'=>$p['totalPoints'],'image'=>'/noa-assets/points/'.$p['id'].'.webp','description'=>'기본 '.number_format($p['paidPoints']).'P + 추가 '.number_format($p['bonusPoints']).'P','orderable'=>true];}
  foreach(nv_products()as $p){$id=ny_id('vip',$p['id']);$out[$id]=['id'=>$id,'source'=>'vip','sourceId'=>$p['id'],'title'=>$p['name'],'price'=>$p['points'],'plan'=>$p['plan'],'days'=>$p['durationDays'],'image'=>$p['image'],'description'=>$p['durationDays'].'일 이용권','orderable'=>true];}
- require_once __DIR__.'/ecosystem-shop.php';foreach(eco_products()as $p){$id=ny_id('goods',$p['id']);$out[$id]=['id'=>$id,'source'=>'goods','sourceId'=>$p['id'],'title'=>$p['title'],'price'=>$p['priceWon'],'image'=>$p['image'],'description'=>$p['description']??'','orderable'=>false,'sourceUrl'=>$p['url'],'optionNote'=>$p['optionNote']??'','shippingNote'=>$p['shippingNote']??''];}return $out;
+ require_once __DIR__.'/ecosystem-shop.php';foreach(eco_products()as $p){$id=ny_id('goods',$p['id']);$out[$id]=['id'=>$id,'source'=>'goods','sourceId'=>$p['id'],'title'=>$p['title'],'price'=>$p['priceWon'],'image'=>$p['image'],'description'=>$p['description']??'','orderable'=>false,'sourceUrl'=>$p['url'],'optionNote'=>$p['optionNote']??'','shippingNote'=>$p['shippingNote']??''];$native=ns_one('SELECT it_use,it_stock_qty,it_10 FROM '.ns_table('g5_shop_item_table').' WHERE it_id='.ns_e($id));if($native&&$native['it_10']==='noa:goods:'.$p['id']&&(int)$native['it_use']===1&&(int)$native['it_stock_qty']>0)$out[$id]['orderable']=true;}return $out;
 }
 function ny_benefits(array $catalog,array $lines):array{
  if(!$lines||count($lines)>50)throw new DomainException('invalid_cart');$out=['amount'=>0,'points'=>0,'plan'=>null,'days'=>0,'items'=>[]];$seen=[];
  foreach($lines as $r){$id=$r['id']??'';$n=$r['quantity']??0;$price=$r['price']??-1;
  if(!is_string($id)||!isset($catalog[$id])||isset($seen[$id])||!is_int($n)||$n<1||$n>10||!is_int($price)||$price!==$catalog[$id]['price'])throw new DomainException('cart_changed');
- $p=$catalog[$id];if(!$p['orderable'])throw new DomainException('goods_options_shipping_required');$seen[$id]=true;$out['amount']+=$price*$n;$out['points']+=($p['points']??0)*$n;
+ $p=$catalog[$id];if(!$p['orderable']||$p['source']==='goods')throw new DomainException('goods_options_shipping_required');$seen[$id]=true;$out['amount']+=$price*$n;$out['points']+=($p['points']??0)*$n;
  if($p['source']==='vip'){if($out['plan']!==null&&$out['plan']!==$p['plan'])throw new DomainException('mixed_membership');$out['plan']=$p['plan'];$out['days']+=$p['days']*$n;}$out['items'][]=['id'=>$id,'quantity'=>$n,'price'=>$price];}return $out;
 }
 function ny_validate_paid(array $o,array $s):void{
@@ -23,11 +23,10 @@ function ny_validate_paid(array $o,array $s):void{
 function ny_capture():void{
  global $member,$default,$config;$owner=(string)($member['mb_id']??'');$id=(string)get_session('ss_order_id');$cart=(string)get_session(!empty($_POST['sw_direct'])?'ss_cart_direct':'ss_cart_id');$catalog=ny_catalog();
  if(!preg_match('/^[A-Za-z0-9_-]{1,64}$/D',$cart))return;
- $rows=[];$owned=false;$r=ns_q('SELECT it_id,ct_qty,ct_price,io_id,io_price FROM '.ns_table('g5_shop_cart_table').' WHERE od_id='.ns_e($cart)." AND ct_status='쇼핑' AND ct_select='1'");while($v=sql_fetch_array($r)){$owned=$owned||isset($catalog[$v['it_id']]);$rows[]=$v;}if(!$owned)return;
+ $rows=[];$owned=false;$r=ns_q('SELECT it_id,ct_qty,ct_price,io_id,io_price FROM '.ns_table('g5_shop_cart_table').' WHERE od_id='.ns_e($cart)." AND ct_status='쇼핑' AND ct_select='1'");while($v=sql_fetch_array($r)){$owned=$owned||(isset($catalog[$v['it_id']])&&$catalog[$v['it_id']]['source']!=='goods');$rows[]=$v;}if(!$owned)return;
  if($owner===''||!preg_match('/^[0-9]{10,20}$/D',$id))throw new DomainException('native_order_session_required');
  $lines=[];foreach($rows as $v){if($v['io_id']!==''||(int)$v['io_price']!==0)throw new DomainException('cart_changed');$lines[]=['id'=>$v['it_id'],'quantity'=>(int)$v['ct_qty'],'price'=>(int)$v['ct_price']];}$b=ny_benefits($catalog,$lines);
- if(empty($default['de_card_test'])&&empty(ns_doc('youngcart:policy')['data']['liveApproved']))throw new DomainException('live_release_not_approved');
- $usedPoints=(int)($_POST['od_temp_point']??0);$pointMode=$usedPoints>0;if($pointMode&&($b['points']>0||$b['plan']===null||$usedPoints!==$b['amount']))throw new DomainException('mixed_point_payment_not_enabled');
+ $usedPoints=(int)($_POST['od_temp_point']??0);$pointMode=$usedPoints>0;if(!$pointMode&&empty($default['de_card_test'])&&empty(ns_doc('youngcart:policy')['data']['liveApproved']))throw new DomainException('live_release_not_approved');if($pointMode&&($b['points']>0||$b['plan']===null||$usedPoints!==$b['amount']))throw new DomainException('mixed_point_payment_not_enabled');
  $m=nr_member($owner,false);if($b['plan']!==null&&(!in_array((int)$m['mb_level'],$b['plan']==='vip'?[2,3,4]:[7,8],true)||$owner===($config['cf_admin']??'')))throw new DomainException('membership_level_required');
  ns_atomic($owner,false,function()use($owner,$id,$b,$default,$pointMode){$k='youngcart:quote:'.$id;$r=ns_doc($k,true);$d=['owner'=>$owner,'order'=>$id,'mode'=>$pointMode?'points':(!empty($default['de_card_test'])?'test':'live'),'benefits'=>$b];if($r){if($r['data']!==$d)throw new DomainException('order_quote_changed');return;}ns_put($k,'youngcart_quote',$d,0,$owner);});
 }
