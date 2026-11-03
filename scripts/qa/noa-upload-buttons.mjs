@@ -57,7 +57,7 @@ async function checkEditorProgress(width){
   await list.locator('.noa-direct-action').first().waitFor();
   await list.locator('img').evaluateAll(images=>Promise.all(images.map(img=>img.decode().catch(()=>{}))));
   await page.evaluate(()=>document.fonts.ready);
-  await page.waitForTimeout(100);
+  await page.waitForFunction(()=>[...document.querySelectorAll('.noa-inline-song-row')].every(card=>Math.abs(card.getBoundingClientRect().width-card.querySelector('.lp-track-art').getBoundingClientRect().width)<.1));
   const geometry=()=>list.locator(':scope>.noa-inline-song-row').first().evaluate(n=>({box:n.getBoundingClientRect().toJSON(),rows:getComputedStyle(n).gridTemplateRows,columns:getComputedStyle(n.parentElement).gridTemplateColumns,children:[...n.children].map(el=>({class:el.className,box:el.getBoundingClientRect().toJSON(),style:getComputedStyle(el).display,text:el.textContent.slice(0,100)}))}));
   const beforeGeometry=await geometry();
   const baseline=await list.locator(':scope>.noa-inline-song-row').evaluateAll(nodes=>nodes.map(n=>n.getBoundingClientRect().height));
