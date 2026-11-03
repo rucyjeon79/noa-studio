@@ -50,3 +50,14 @@ The owner explicitly requires all existing embedded images and photographs to be
 Release 1791890de234366f66777ecbe4595cc01bcc11f5 removes image rendering from all four content articles, keeps theme colors, typography, navigation and original mission principles, and preserves dynamic native legal clauses and dates. Original source media are not deleted from storage. Main homepage banners and other accounts are outside this change.
 
 Validation: PHP lint, all native desktop/mobile skin entry tests, legal text preservation tests and live HTTP checks require zero img/image/svg/picture/figure elements inside each content article. Deployment run: https://github.com/rucyjeon79/noa-studio/actions/runs/41612402594 .
+
+
+## Current direction: new union imagery, live HTML text (v5)
+
+The owner's next clarification rejects an all-text design as lacking union spirit. The intended design replaces dated embedded posters with new imagery that expresses workers, solidarity, dignity and determination. Keep headings and body as live HTML; do not restore the old poster files or photo-crop blocks. This supersedes the v4 text-only interpretation for company and slogan.
+
+Two new conceptual AI-generated photographs are deployed as versioned WebP assets under busan-assistant/content-pages/assets/busan-union-{light,dark}-20261103.webp. They depict generic Korean field workers, not an actual branch event. Alt text explicitly describes imagery expressing unity and resolve. Light uses morning sunlight and navy work jackets; dark uses midnight blue and silver light. Existing theme switching updates the image. Mobile CSS stacks text and the full image so headings do not cover faces. Legal pages remain readable native text.
+
+Production run https://github.com/rucyjeon79/noa-studio/actions/runs/41613852024 succeeded. All PHP lint/native-skin/legal-text checks and four live page checks passed; both image URLs returned valid WebP. Desktop browser verification confirmed both light and dark image loads, theme switching and no horizontal overflow; mobile stacking implemented but not visually tested in a mobile browser. Existing main-page banners, SQL data and NOA account were not modified.
+
+Generation prompts (built-in image generation): conceptual editorial photographs of Korean telecom field workers standing shoulder to shoulder at Busan harbor, resolute peaceful solidarity with raised fists and plain crimson flags, no text/logos; morning sunlight for light, moonlit navy and silver for dark. Full generation prompts are in the working conversation. Source images preserved; web encoding only, no photographic edits.
