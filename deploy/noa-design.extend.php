@@ -111,5 +111,5 @@ if(function_exists('add_event'))add_event('common_header','noa_design_assets',10
 if(function_exists('add_replace'))add_replace('html_process_buffer',static function($html){
  if(($_GET['bo_table']??'')==='free')$html=preg_replace('~(<(?:title|h[1-3])\b[^>]*>[^<]*)자유게시판~u','$1별무리 이야기',$html);
  $path=parse_url($_SERVER['REQUEST_URI']??'',PHP_URL_PATH);
- return is_string($path)&&preg_match('~^/(bbs|adm)/~',$path)?noa_policy_script_revision($html):$html;
+ return is_string($path)&&preg_match('~^/(?:(?:bbs|adm)/|(?:mobile/)?shop/)~',$path)?noa_policy_script_revision($html):$html;
 },10,1);

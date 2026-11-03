@@ -31,6 +31,7 @@ jobs:
           php -l bridge/ui-preferences.php
           php -l deploy/noa-theme-admin.php
           php -l deploy/noa-design.extend.php
+          php -l deploy/noa-vip.php
           php -l deploy/noa-app/home.php
           php tests/catalog/home_test.php
           php tests/catalog/home_uiux_test.php
@@ -44,11 +45,13 @@ jobs:
           cp tests/room-themes/live.mjs "$RUNNER_TEMP/noa-light/check.mjs"
           cp tests/room-themes/member.mjs "$RUNNER_TEMP/noa-light/member.mjs"
           cp tests/room-themes/forms.mjs "$RUNNER_TEMP/noa-light/forms.mjs"
+          cp tests/room-themes/player.mjs "$RUNNER_TEMP/noa-light/player.mjs"
       - name: Verify member pages and writing forms in an isolated fixture
         run: |
           php tests/room-themes/fixture.php
           node "$RUNNER_TEMP/noa-light/member.mjs"
           node "$RUNNER_TEMP/noa-light/forms.mjs"
+          node "$RUNNER_TEMP/noa-light/player.mjs"
       - name: Verify candidate themes before activation
         env: {NOA_THEME_PHASE: candidate, NOA_SOURCE_ROOT: '${{ github.workspace }}'}
         run: node "$RUNNER_TEMP/noa-light/check.mjs"

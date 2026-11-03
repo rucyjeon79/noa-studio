@@ -28,6 +28,12 @@ try{for(const [width,height] of [[390,900],[768,900],[1280,1440],[1600,900]]){
   for(const id of ['noa-home-action-layout','noa-home-hero-size']){const tag=id==='noa-home-action-layout'?'style':'script';const pattern=new RegExp('<'+tag+' id="'+id+'">[\\s\\S]*?<\/'+tag+'>');body=body.replace(pattern,homeSource.match(pattern)[0]);}
   await route.fulfill({response,body});
  });
+ if(phase==='candidate')await context.route('https://noastudio.ai.kr/noa-vip.php',async route=>{
+  const response=await route.fetch();let body=await response.text();
+  const catalog=JSON.parse(body.match(/<script[^>]*id="vip-catalog"[^>]*>([\s\S]*?)<\/script>/)[1]);
+  body=body.replace(/(STARLIGHT|CREATOR) \/ LV[.]\d+/g,(_,name)=>name+' / LV.'+Object.values(catalog).find(p=>p.plan===(name==='STARLIGHT'?'vip':'creator')).paidLevel);
+  await route.fulfill({response,body});
+ });
  if(phase==='candidate')await context.route('https://noastudio.ai.kr/shop/cart.php',async route=>{
   const response=await route.fetch();let body=await response.text();
   // Mirror the newly shared native commerce assets without touching cart data or handlers.
@@ -106,7 +112,12 @@ try{for(const [width,height] of [[390,900],[768,900],[1280,1440],[1600,900]]){
    if(route==='/noa-vip.php'||route==='/noa-points.php'){
     assert.equal(await p.locator('.nv-store-nav:visible').count(),0,'one store navigation row');
     assert(await p.locator('.np-header').evaluate(el=>getComputedStyle(el,'::before').backgroundImage.includes('theme-')),'store heading has day/night scenery');
-    assert(await p.locator('.np-pack-art img').count()>0,'original product artwork remains present');
+    await p.locator('.np-pack-art img').first().waitFor();
+    assert(await p.locator('.np-pack-art img').count()>0,'original product artwork remains present after the catalog loads');
+   }
+   if(route==='/noa-vip.php'){
+    const catalog=JSON.parse(await p.locator('#vip-catalog').textContent());
+    for(const product of Object.values(catalog))assert((await p.locator('[data-product="'+product.id+'"] .np-edition').innerText()).endsWith('LV.'+product.paidLevel),'displayed membership level matches the existing catalog');
    }
    if(route==='/noa-settings.php'||route==='/noa-sitemap.php')assert(await p.locator('.noa-room-heading h1').isVisible(),'internal introduction is framed');
    if(route==='/noa-sitemap.php'){

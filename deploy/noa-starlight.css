@@ -755,7 +755,9 @@ html.noa-shell-wide.noa-menu-pinned[data-noa-theme] body #noa-account-bar{paddin
 html.noa-shell-wide.noa-menu-pinned[data-noa-theme] body #noa-account-bar :is(.noa-account-brand,.noa-primary-nav){display:none}
 html.noa-shell-wide.noa-menu-pinned #noa-account-bar .noa-account-shortcuts{margin-left:auto}
 html.noa-shell-wide.noa-menu-pinned .noa-location-label{display:block;min-width:0;font-size:13px;letter-spacing:.02em;color:var(--noa-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-html.noa-shell-wide.noa-menu-pinned .noa-transport{left:var(--noa-pinned-width)}
+html.noa-shell-wide.noa-menu-pinned[data-noa-theme] body .noa-transport{left:var(--noa-pinned-width)}
+html.noa-shell-wide.noa-menu-pinned #noa-shell-view{left:var(--noa-pinned-width);width:calc(100% - var(--noa-pinned-width))}
+html.noa-shell-wide[data-noa-shell-child] body{padding-inline-start:0}
 html.noa-shell-wide :is(.noa-menu a,.noa-drawer-secondary a,.noa-drawer-search):focus-within{outline:2px solid var(--noa-accent);outline-offset:3px}
 
 /* A shared introduction for MY, settings, music, video and service directories.
