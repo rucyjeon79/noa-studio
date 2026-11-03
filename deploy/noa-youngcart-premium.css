@@ -49,3 +49,7 @@
 .ny-native .btn_del_wr{display:flex;gap:8px;margin:16px 0}
 .ny-native .go_shopping{margin-top:24px}
 @media(max-width:760px){.ny-native body>#container{padding-inline:16px!important}}
+
+.ny-native :is(#container_title,#wrapper_title){box-shadow:none!important;text-shadow:none!important}
+.ny-native body>#container{padding-inline:32px!important}
+@media(max-width:900px){.ny-native body>#container{padding-inline:16px!important}}
