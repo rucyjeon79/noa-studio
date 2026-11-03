@@ -152,15 +152,26 @@ try{for(const width of [320,390,1280]){
     assert.equal(geometry.corner,'none');
     const sorted=geometry.rects.sort((a,b)=>a.x-b.x);
     assert(sorted.every((r,i)=>r.width>0 && r.height>=44 && Math.abs(r.y-sorted[0].y)<1 && (!i || r.x>=sorted[i-1].right-1)),JSON.stringify(geometry));
-    const editLayout=await list.evaluate(list=>{
+    await mismatchPage.addScriptTag({url:'/noa-browse-edit.js'});
+    await list.evaluate(list=>{
      const card=list.querySelector('.noa-inline-song-row');
      const other=card.cloneNode(true);card.after(other);
-     const form=document.createElement('form');form.className='noa-edit-form';form.style.minHeight='620px';card.append(form);
-     const box=el=>el.getBoundingClientRect();
-     const result={width:box(form).width,list:box(list).width,otherTop:box(other).top,formBottom:box(form).bottom};
-     form.remove();result.closed=box(card).width;other.remove();return result;
+     card.querySelector('.noa-edit-edit')?.remove();
+     window.NoaBrowseEdit.mount({host:list,rows:[{key:card.dataset.inlineKey,title:'곡 정보 검수'}]});
     });
-    assert(editLayout.width>editLayout.list*.8 && editLayout.otherTop>=editLayout.formBottom && editLayout.closed<editLayout.width,JSON.stringify(editLayout));
+    for(const mode of ['album','list']){
+     await mismatchPage.locator('.lp-view-switch [data-mode='+mode+']').first().evaluate(b=>b.click());
+     await mismatchPage.waitForFunction(mode=>document.querySelector('.noa-inline-songs').dataset.trackView===mode,mode);
+     const card=list.locator(':scope>.noa-inline-song-row').first();
+     const before=await card.boundingBox();
+     await card.locator(':scope>.noa-edit-edit').evaluate(b=>b.click());
+     const panel=list.locator(':scope>form.noa-edit-form');await panel.waitFor();
+     const after=await card.boundingBox(), box=await panel.boundingBox();
+     assert(Math.abs(before.width-after.width)<1 && Math.abs(before.height-after.height)<1 && Math.abs(before.y-after.y)<1);
+     assert(box.width>=(await list.boundingBox()).width*.8 && box.y>=after.y+after.height-1);
+     if(mode==='album')assert(Math.abs((await list.locator(':scope>.noa-inline-song-row').nth(1).boundingBox()).y-after.y)<1);
+     await card.locator(':scope>.noa-edit-edit').evaluate(b=>b.click());await panel.waitFor({state:'detached'});
+    }
 
    }
   }
