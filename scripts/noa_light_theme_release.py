@@ -1,4 +1,4 @@
-"""Restore labelled navigation at every viewport with flush brand alignment, matching keyboard order, themed spacing, social sign-in, account and gift controls, and dialogs."""
+"""Publish aligned utility navigation, social sign-in and dialogs alongside the current personal listening integration."""
 import os
 import sys
 from pathlib import Path
