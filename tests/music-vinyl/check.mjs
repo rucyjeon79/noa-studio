@@ -60,7 +60,7 @@ try{for(const width of [320,390,1280]){
   {key:'unknown',title:'Unknown',genre:'pop-original',ep:'99'},
   {key:'kpop',title:'다른 이름',genre:'kpop-original',ep:'01'},
   {key:'ep',title:'긴 밤의 이야기',genre:'joseon-ballad',ep:'01'},
-  {key:'cover',title:'커버',genre:'cover-reborn',ep:'01'}
+  {key:'cover',title:'커버',originalArtist:'원곡 가수',genre:'cover-reborn',ep:'01'}
  ];
  const mismatchFixture=html.replace('<body ', '<link rel="stylesheet" href="/noa-engagement.css"><body ')
   .replace('<script src="/noa-browse.js">','<script type="application/json" id="noa-original-titles">'+JSON.stringify({1:'하루의 끝에',2:'작은 떨림'})+'</script><script src="/noa-browse.js">')
@@ -105,6 +105,11 @@ try{for(const width of [320,390,1280]){
    const list=mismatchPage.locator('.noa-inline-songs').first();
    assert.equal(await list.getAttribute('data-track-view'),group==='cover'?'album':'list');
    if(group==='cover'){
+    await mismatchPage.evaluate(()=>{
+     const track=document.createElement('div');track.className='song';track.dataset.key='cover';track.dataset.originalArtist='원곡 가수';document.querySelector('#songs').append(track);
+    });
+    await mismatchPage.waitForFunction(()=>document.querySelector('.lp-cover-credit')?.textContent==='원곡 가수');
+    assert(!(await list.locator('.lp-title-text').first().textContent()).includes('원곡 가수'));
     await mismatchPage.locator('.lp-view-switch [data-mode=list]').first().evaluate(b=>b.click());
     await mismatchPage.waitForFunction(()=>document.querySelector('.noa-inline-songs').dataset.trackView==='list');
     await mismatchPage.reload();

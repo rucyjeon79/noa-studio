@@ -210,8 +210,28 @@
    viewChoices.set(group,['album','list'].includes(saved)?saved:['story','cover'].includes(group)?'album':'list');
   }
   const mode=viewChoices.get(group);
+  const artists=new Map();
+  if(group==='cover' && mode==='album'){
+   for(const track of document.querySelectorAll('#songs .song[data-original-artist]')){
+    artists.set(track.dataset.key,track.dataset.originalArtist.trim());
+   }
+  }
   for(const list of browse.querySelectorAll('.noa-inline-songs')){
    list.dataset.trackView=mode;
+   for(const title of list.querySelectorAll('.noa-inline-title[title]')){
+    const key=title.closest('.noa-inline-song').dataset.inlineKey;
+    const artist=artists.get(key);
+    const full=title.title;
+    const split=artist && full.endsWith(' - '+artist);
+    const text=title.querySelector('.lp-title-text');
+    const name=split?full.slice(0,-(artist.length+3)):full;
+    let credit=title.querySelector('.lp-cover-credit');
+    if((split||credit) && text && text.textContent!==name)text.textContent=name;
+    if(split){
+     if(!credit){credit=make('lp-cover-credit');title.append(credit);}
+     if(credit.textContent!==artist)credit.textContent=artist;
+    }else credit?.remove();
+   }
    let bar=list.previousElementSibling;
    if(!bar?.classList.contains('lp-view-switch')){
     bar=document.createElement('div');
