@@ -29,6 +29,7 @@ jobs:
           php -l bridge/youngcart-core.php
           php -l deploy/noa-youngcart.php
           php -l deploy/noa-youngcart.extend.php
+          php tests/subscription/mysql_test.php
           php tests/youngcart_mysql.php
           node --check deploy/noa-youngcart.js
           node --check deploy/noa-youngcart-relay.js
