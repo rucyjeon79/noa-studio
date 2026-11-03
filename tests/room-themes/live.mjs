@@ -21,7 +21,7 @@ try{for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]
   return route.fulfill({body:readFileSync(source+'/public/noa-theme-scenes/'+name),contentType:'image/webp'});
  });
  if(phase==='candidate')await context.route('https://noastudio.ai.kr/',async route=>{
-  const response=await route.fetch(),html=await response.text();
+  const response=await route.fetch({maxRetries:2}),html=await response.text();
   const fragment=readFileSync(source+'/deploy/noa-app/home.php','utf8').match(/<!-- noa-theme-scene:start -->[\s\S]*?<!-- noa-theme-scene:end -->/)[0];
   let body=html.includes('<!-- noa-theme-scene:start -->')?html.replace(/<!-- noa-theme-scene:start -->[\s\S]*?<!-- noa-theme-scene:end -->/,fragment):html.replace('<section class="noa-hero" data-home-section="hero">',fragment+'<section class="noa-hero" data-home-section="hero">');
   const homeSource=readFileSync(source+'/deploy/noa-app/home.php','utf8');
@@ -29,13 +29,13 @@ try{for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]
   await route.fulfill({response,body});
  });
  if(phase==='candidate')await context.route('https://noastudio.ai.kr/noa-vip.php',async route=>{
-  const response=await route.fetch();let body=await response.text();
+  const response=await route.fetch({maxRetries:2});let body=await response.text();
   const catalog=JSON.parse(body.match(/<script[^>]*id="vip-catalog"[^>]*>([\s\S]*?)<\/script>/)[1]);
   body=body.replace(/(STARLIGHT|CREATOR) \/ LV[.]\d+/g,(_,name)=>name+' / LV.'+Object.values(catalog).find(p=>p.plan===(name==='STARLIGHT'?'vip':'creator')).paidLevel);
   await route.fulfill({response,body});
  });
  if(phase==='candidate')await context.route('https://noastudio.ai.kr/shop/cart.php',async route=>{
-  const response=await route.fetch();let body=await response.text();
+  const response=await route.fetch({maxRetries:2});let body=await response.text();
   // Mirror the newly shared native commerce assets without touching cart data or handlers.
   if(!body.includes('src="/noa-ui.js'))body=body.replace('</head>','<script src="/noa-brand.js" defer></script><script src="/noa-ui.js" defer></script><link rel="stylesheet" href="/noa-starlight.css"></head>');
   await route.fulfill({response,body});

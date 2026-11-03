@@ -1,4 +1,4 @@
-"""Restore labelled navigation and installation at every viewport with aligned keyboard order, themed spacing, account and gift controls, and dialogs."""
+"""Restore labelled navigation and installation at every viewport with aligned keyboard order, themed spacing, social sign-in, account and gift controls, and dialogs."""
 import os
 import sys
 from pathlib import Path
