@@ -1,4 +1,4 @@
-"""Publish the two-frame header, shared navigation, language, clock and verified location weather."""
+"""Publish the two-frame header, shared navigation, language, clock and verified location weather in both palettes."""
 import os
 import sys
 from pathlib import Path
