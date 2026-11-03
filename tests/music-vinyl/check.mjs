@@ -152,6 +152,16 @@ try{for(const width of [320,390,1280]){
     assert.equal(geometry.corner,'none');
     const sorted=geometry.rects.sort((a,b)=>a.x-b.x);
     assert(sorted.every((r,i)=>r.width>0 && r.height>=44 && Math.abs(r.y-sorted[0].y)<1 && (!i || r.x>=sorted[i-1].right-1)),JSON.stringify(geometry));
+    const editLayout=await list.evaluate(list=>{
+     const card=list.querySelector('.noa-inline-song-row');
+     const other=card.cloneNode(true);card.after(other);
+     const form=document.createElement('form');form.className='noa-edit-form';form.style.minHeight='620px';card.append(form);
+     const box=el=>el.getBoundingClientRect();
+     const result={width:box(form).width,list:box(list).width,otherTop:box(other).top,formBottom:box(form).bottom};
+     form.remove();result.closed=box(card).width;other.remove();return result;
+    });
+    assert(editLayout.width>editLayout.list*.8 && editLayout.otherTop>=editLayout.formBottom && editLayout.closed<editLayout.width,JSON.stringify(editLayout));
+
    }
   }
  }finally{await mismatchPage.close();}

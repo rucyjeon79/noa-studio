@@ -482,3 +482,17 @@ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline
  #music-browse [data-track-view=album] .lp-running>.lp-album-meter>span:nth-child(2) {animation-duration:.47s;animation-delay:-.32s}
  #music-browse [data-track-view=album] .lp-running>.lp-album-meter>span:nth-child(3) {animation-duration:.39s;animation-delay:-.17s}
 }
+
+/* An open record editor occupies its own catalogue row. */
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-songs[data-track-view=album] > .noa-inline-song-row:has(>.noa-edit-form) {
+ grid-column:1/-1;
+ grid-template-columns:repeat(max(2,var(--tool-count,2)),minmax(0,1fr));
+ grid-template-rows:auto auto auto auto;
+ padding:12px;overflow:visible;
+ & .lp-track-art {grid-area:1 / 1!important;inline-size:min(72px,100%);justify-self:center}
+ &>.noa-song-actions>button.lp-cover-toggle {grid-area:1 / 1;inline-size:44px}
+ &>.noa-inline-song>.noa-inline-title {grid-area:1 / 2 / 2 / -1!important;align-self:center;padding:20px 8px 4px!important}
+ &>.noa-engagement {grid-row:2}
+ &>button.noa-direct-action,&>.noa-song-actions>button.noa-direct-action {grid-row:3}
+ &>.noa-edit-form {grid-area:4 / 1 / 5 / -1;box-sizing:border-box;inline-size:100%;min-inline-size:0;margin-top:12px}
+}
