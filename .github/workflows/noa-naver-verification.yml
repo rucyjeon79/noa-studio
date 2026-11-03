@@ -14,6 +14,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
+    # Theme releases validate and activate the same home file with the palette.
+    if: "!contains(github.event.head_commit.message, '[light-theme-release]')"
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 20

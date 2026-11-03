@@ -14,6 +14,12 @@ try{for(const width of [390,768,1280]){
  if(phase==='candidate')for(const name of ['noa-design.json','noa-starlight.css','noa-ui.js']){
   await context.route('**/'+name+'*',route=>route.fulfill({body:readFileSync(source+'/deploy/'+name),contentType:name.endsWith('.css')?'text/css':name.endsWith('.js')?'text/javascript':'application/json'}));
  }
+ if(phase==='candidate')await context.route('https://noastudio.ai.kr/',async route=>{
+  const response=await route.fetch(),html=await response.text();
+  const fragment=readFileSync(source+'/deploy/noa-app/home.php','utf8').match(/<!-- noa-theme-scene:start -->[\s\S]*?<!-- noa-theme-scene:end -->/)[0];
+  const body=html.includes('<!-- noa-theme-scene:start -->')?html.replace(/<!-- noa-theme-scene:start -->[\s\S]*?<!-- noa-theme-scene:end -->/,fragment):html.replace('<section class="noa-hero" data-home-section="hero">',fragment+'<section class="noa-hero" data-home-section="hero">');
+  await route.fulfill({response,body});
+ });
  const base='https://noastudio.ai.kr';
  await p.clock.setFixedTime(new Date('2026-11-03T12:00:00+09:00'));
  await p.goto(base+'/');
@@ -49,7 +55,7 @@ try{for(const width of [390,768,1280]){
    assert.deepEqual(errors,[],'uncaught browser errors: '+route);
    const selected=p.locator('#noa-section-navigation a[aria-current=page]');
    if(mode==='noa-ivory'&&await selected.count())assert.equal(await selected.evaluate(el=>getComputedStyle(el).color),'rgb(255, 255, 255)','active section label remains readable: '+route);
-   if(room==='home'){assert.equal(await p.locator('#noa-theme-scene h2').innerText(),theme.concept.title);assert.equal(await p.locator('#noa-theme-scene .noa-theme-hour strong').innerText(),theme.concept.time);}
+   if(room==='home'){assert(await p.locator('#noa-theme-scene').evaluate(el=>el.getBoundingClientRect().top>=0),'home theme introduction stays above the fold');assert.equal(await p.locator('#noa-theme-scene h2').innerText(),theme.concept.title);assert.equal(await p.locator('#noa-theme-scene .noa-theme-hour strong').innerText(),theme.concept.time);}
    if(room==='shop')await p.locator('.ec-grid .ec-card').first().waitFor();
    if(room==='community')await p.locator('.ec-write-invite').first().waitFor();
    if(mode==='noa-ivory')for(const primary of await p.locator('.ec-primary:visible').all()){

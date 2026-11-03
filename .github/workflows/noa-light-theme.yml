@@ -26,6 +26,9 @@ jobs:
           node --check deploy/noa-ui.js
           php -l bridge/ui-preferences.php
           php -l deploy/noa-theme-admin.php
+          php -l deploy/noa-app/home.php
+          php tests/catalog/home_test.php
+          php tests/catalog/home_uiux_test.php
           python -m py_compile scripts/noa_light_theme_release.py
       - name: Prepare visual verification
         run: |
