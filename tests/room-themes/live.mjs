@@ -169,7 +169,7 @@ async function verifyExpansiveShell(p,width,mode){
  await search.fill('없는메뉴xyz');assert(await drawer.locator('.noa-menu-empty').isVisible());await search.fill('');
  assert.equal(await drawer.locator('.noa-menu a:visible').count(),5);assert.equal(await drawer.locator('[data-noa-nav=music]').getAttribute('aria-disabled'),'true','guest access rules stay in place');
  await drawer.screenshot({path:output+'/menu-'+mode+'-'+width+'.png'});
- await p.keyboard.press('Escape');await drawer.waitFor({state:'hidden'});assert.equal(await all.getAttribute('aria-expanded'),'false');assert(await all.evaluate(a=>a===document.activeElement),'Escape returns focus to the invoking control');
+ await p.keyboard.press('Escape');await drawer.waitFor({state:'hidden'});await p.waitForFunction(()=>document.getElementById('noa-nav-all')?.getAttribute('aria-expanded')==='false');assert.equal(await all.getAttribute('aria-expanded'),'false');assert(await all.evaluate(a=>a===document.activeElement),'Escape returns focus to the invoking control');
  await all.click();await p.mouse.click(width-8,100);await drawer.waitFor({state:'hidden'});
  console.log('EXPANSIVE_GEOMETRY',JSON.stringify({width,mode,...geometry}));
 }

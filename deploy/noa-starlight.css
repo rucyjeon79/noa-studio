@@ -655,3 +655,6 @@ html.noa-shell-wide .noa-mobile-footer+.noa-footer{display:none}
  html.noa-shell-wide .noa-menu-drawer[open]{padding:20px;gap:20px}
 }
 @media(max-width:359px){html.noa-shell-wide #noa-account-bar .noa-account-brand span{display:none}}
+
+/* Give the two principal discovery actions a clear, accessible visual weight. */
+html.noa-shell-wide[data-noa-theme] body :is(.noa-scene-actions,.noa-hero-actions) .noa-button.primary{background:var(--noa-accent);border-color:var(--noa-accent);color:var(--noa-accentText);box-shadow:none}
