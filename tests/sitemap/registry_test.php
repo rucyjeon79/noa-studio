@@ -22,6 +22,7 @@ try{
  check(!isset($guest['admin-content'])&&!isset($member['admin-content']),'task groups are administrator-only');
  check(in_array('workStatus',$ids($admin),true)&&!in_array('workStatus',$ids($member),true)&&!in_array('workStatus',$ids($guest),true),'work journal highest-admin-only');
  check(in_array('points',$ids($guest),true)&&in_array('payments',$ids($admin),true)&&!in_array('payments',$ids($member),true),'point packs public, payment setup highest-admin-only');
+ check(in_array('store',$ids($guest),true)&&in_array('store',$ids($member),true)&&in_array('store',$ids($admin),true),'integrated store browsing is available to every audience');
  check(in_array('subscriptions',$ids($admin),true)&&!in_array('subscriptions',$ids($member),true)&&!in_array('subscriptions',$ids($guest),true),'subscription configuration highest-admin-only');
  check(!in_array('register',$ids($guest),true),'no duplicate signup button; social enrollment stays in the login screen');
  check(in_array('login',$ids($guest),true)&&!in_array('playlists',$ids($guest),true),'guest account destinations');

@@ -40,6 +40,8 @@ jobs:
           php -l deploy/noa-app/home.php
           php tests/catalog/home_test.php
           php tests/catalog/home_uiux_test.php
+          php tests/sitemap/registry_test.php
+          python tests/sitemap/home_patch_test.py
           python -m py_compile scripts/noa_light_theme_release.py
           python tests/room-themes/release_freshness_test.py
       - name: Prepare visual verification

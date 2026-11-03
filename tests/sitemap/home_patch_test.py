@@ -4,8 +4,9 @@ Notice content and disclosure geometry are checked by the native and browser sui
 import argparse,re,subprocess
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
-# Approved and deployed responsive home/AMT placement release; preserve those bytes.
-BASE_COMMIT='f3a2262626c7622f6ca3062ab3bae895414fd63b'
+# Approved hero-first home, partner banner positions and personal listening integration.
+# Preserve the current accepted page instead of comparing against the superseded layout.
+BASE_COMMIT='d7ec1994a89d23d47ba67d8c38c1f652de3100e1'
 parser=argparse.ArgumentParser();parser.add_argument('--host-source',type=Path);args=parser.parse_args()
 candidate=(ROOT/'deploy/noa-app/home.php').read_bytes()
 baseline=args.host_source.read_bytes()if args.host_source else subprocess.check_output(['git','show',BASE_COMMIT+':deploy/noa-app/home.php'],cwd=ROOT)
@@ -29,6 +30,8 @@ def outside_approved_hero(source):
   assert count==1,'one approved hero scope required'
  source=re.sub(rb'/noa-hero[.]js[?]v=[^"\s]+',b'/noa-hero.js?v=APPROVED_RUNTIME',source)
  source=re.sub(rb'/noa-ui[.](css|js)[?]v=[^"\s]+',lambda m:b'/noa-ui.'+m[1]+b'?v=APPROVED_UI',source)
+ # Listening fixes may advance cache versions without changing HOME content or geometry.
+ source=re.sub(rb'(/noa-listening(?:-model)?[.]js)[?]v=[^"\s]+',rb'\1?v=APPROVED_LISTENING',source)
  return source
 assert outside_approved_hero(candidate)==outside_approved_hero(baseline),'non-hero HOME source changed'
 hero_start=candidate.index(b'<section class="noa-hero"');hero_end=candidate.index(b'</section>',hero_start)
