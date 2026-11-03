@@ -667,3 +667,12 @@ html.noa-shell-wide[data-noa-theme] .noa-main :is(.noa-notice-list,.noa-communit
 html.noa-shell-wide[data-noa-theme] body .noa-main .noa-feed-row{display:grid;grid-template-columns:minmax(0,1fr);justify-items:start;justify-content:stretch;align-items:start;gap:4px;text-align:left}
 html.noa-shell-wide[data-noa-theme] body .noa-main .noa-feed-row:nth-child(n+4){display:none}
 html.noa-shell-wide[data-noa-theme] .noa-main .noa-notice-summary>strong{font-size:20px;line-height:1.65;font-weight:550}
+
+/* A short notice shares its card with useful, real destinations instead of empty space. */
+html.noa-shell-wide[data-noa-theme] .noa-main .noa-notice-list{display:flex;flex-direction:column}
+html.noa-shell-wide[data-noa-theme] .noa-main .noa-notice-list>.noa-notice{flex:none}
+html.noa-shell-wide[data-noa-theme] .noa-home-quickstart{display:grid;gap:0;margin-top:auto;padding-top:24px}
+html.noa-shell-wide[data-noa-theme] .noa-home-quickstart h3{font-size:11px;line-height:1.5;font-weight:500;letter-spacing:.06em;color:var(--noa-accent);margin:0 0 12px}
+html.noa-shell-wide[data-noa-theme] .noa-home-quickstart a{display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:48px;border-top:1px solid var(--noa-line);font-size:13px;text-decoration:none;color:var(--noa-text)}
+html.noa-shell-wide[data-noa-theme] .noa-home-quickstart a:hover{color:var(--noa-accent)}
+@media(max-width:959px){html.noa-shell-wide[data-noa-theme] .noa-home-quickstart{display:none}}

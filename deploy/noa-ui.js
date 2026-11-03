@@ -120,6 +120,8 @@ function wideShell(side){
  if(!installHeader()){const watch=new MutationObserver(()=>{if(installHeader())watch.disconnect();});watch.observe(document.body,{childList:true,subtree:true});}
  // Move the real feed node so visual order, keyboard order and its existing event handlers agree.
  const notices=document.querySelector('[data-home-section="notices"]'),community=document.querySelector('[data-home-section="community"]');if(notices&&community){const hero=document.querySelector('[data-home-section=hero]');if(hero)hero.after(notices,community);else notices.after(community);}
+ const noticeCard=notices?.querySelector('.noa-notice-list');if(noticeCard){const quick=document.createElement('nav');quick.className='noa-home-quickstart';quick.setAttribute('aria-label','스튜디오 빠른 시작');quick.innerHTML='<h3>스튜디오 빠른 시작</h3>';for(const [label,href]of [['음악 영상 둘러보기','/noa-youtube.php'],['내 사연을 노래로','/noa-lounge.php?category=story&view=list#ec-content'],['VIP 이용권 알아보기','/noa-vip.php']]){const a=document.createElement('a');a.href=href;a.dataset.noaDocumentLink='';const text=document.createElement('span');text.textContent=label;const arrow=document.createElement('span');arrow.textContent='↗';arrow.setAttribute('aria-hidden','true');a.append(text,arrow);quick.append(a);}noticeCard.append(quick);}
+
  window.dispatchEvent(new Event('noa-shell-ready'));
 }
 // A preference is distinct from the currently rendered palette. Never save clock changes to an account.

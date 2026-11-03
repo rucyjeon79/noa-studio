@@ -160,7 +160,7 @@ async function verifyExpansiveShell(p,width,mode){
  assert(!geometry.rightDock,'assistant remains floating instead of taking a permanent content column');
  if(width>=768){assert(geometry.hero.height<460,'portrait desktop must not turn the video into a tall square');assert(geometry.media.x<geometry.copy.x,'desktop has separate media and recommendation columns');}
  else{assert(Math.abs(geometry.media.width/geometry.media.height-16/9)<.03,'mobile media keeps a landscape frame');assert(geometry.copy.y>=geometry.media.bottom-1,'mobile text is below the media');}
- if(width>=960){assert(Math.abs(geometry.notices.y-geometry.community.y)<2,'news sections share a row');assert(geometry.community.x>geometry.notices.x,'news columns are side by side');}
+ if(width>=960){assert(await p.locator('.noa-home-quickstart').isVisible(),'short notices share the card with real studio shortcuts');assert(Math.abs(geometry.notices.y-geometry.community.y)<2,'news sections share a row');assert(geometry.community.x>geometry.notices.x,'news columns are side by side');}
  else assert(geometry.community.y>=geometry.notices.bottom-1,'mobile news sections follow reading order');
  assert.equal(await p.locator('.noa-hero').evaluate(h=>h.nextElementSibling.dataset.homeSection),'notices','real news follows the music introduction before promotions');
  const all=p.locator('#noa-nav-all'),drawer=p.locator('#noa-menu-drawer');assert.equal(await drawer.isVisible(),false);
