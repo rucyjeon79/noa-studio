@@ -49,6 +49,8 @@ function compactRows(){for(const row of document.querySelectorAll('.noa-inline-s
    action.classList.add('noa-direct-action');
    action.style.setProperty('--action-slot',String(actions.length-index-1));
    action.title=action.getAttribute('aria-label')||action.textContent.trim();
+   const command=action.title.trim().split(/\s+/).pop();
+   if(command)action.dataset.commandLabel=command;
    if(action.title.endsWith(' 교체'))action.querySelector('svg path')?.setAttribute('d','M3 7h15l-3-3m6 13H6l3 3M18 7l-3 3M6 17l3-3');
   });
   continue;

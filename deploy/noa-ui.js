@@ -41,6 +41,38 @@ function markLabels(){if(themeOnly)return;decorate();markMetadata();translateFix
 
 function icon(key){return '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="'+icons[key]+'"/></svg>'}
 function actionIcon(el){const href=el.getAttribute('href')||'',text=el.textContent.trim();return /사이트맵|전체 서비스|noa-sitemap/.test(text+' '+href)?'sitemap':/공지/.test(text)?'notice':/삭제/.test(text)?'trash':/검색/.test(text)?'search':/글쓰기|작성|수정/.test(text)?'edit':/옵션/.test(text)?'more':/다운로드|설치 파일|받기/.test(text)?'download':/캐릭터|회원|계정|로그인|로그아웃/.test(text)?'user':/설명|정보|세계관/.test(text)?'book':/커뮤니티|소식/.test(text)?'community':/youtube|영상|MV/.test(text+' '+href)?'youtube':/관리|설정/.test(text)?'settings':/곡|suno|재생|제작|생성/.test(text+' '+href)?'music':'library';}
+// Action footers, forms and storefront controls may render after the page shell.
+const actionScopes=[
+ '#ecosystem .ec-actions button','#ecosystem .ec-shop-secondary button','#ecosystem .ec-buy',
+ '.ec-dialog form button','.noa-gifts button','.noa-membership-layout form button',
+ '.noa-points-page button[data-add]','.noa-point-packs button','.noa-point-checkout button[type=submit]',
+ '.noa-login-form button','.noa-g5 .btn_confirm button','.noa-g5 #bo_sch button',
+ '.noa-page button.noa-button','.lp-view-switch button'
+].join(',');
+function markAction(el){
+ const name=el.textContent.trim();
+ if(!name||/^[+−–0-9]+$/.test(name))return;
+ el.classList.add('noa-labelled-command');
+ if(el.querySelector('svg,img,i')||el.hasAttribute('data-noa-glass-label'))return;
+ const key=/카트|구매|결제|충전/.test(name)?'shop':/앨범/.test(name)?'disc':/목록|담기/.test(name)?'playlists':
+  /보내|선물|발송/.test(name)?'mail':/저장|변경|신청|작성|등록/.test(name)?'edit':actionIcon(el);
+ el.insertAdjacentHTML('afterbegin',icon(key));
+}
+function watchActions(){
+ const scan=node=>{
+  if(node.nodeType!==1)return;
+  if(node.matches(actionScopes))markAction(node);
+  node.querySelectorAll(actionScopes).forEach(markAction);
+ };
+ scan(document.body);
+ new MutationObserver(changes=>{
+  for(const change of changes){
+   if(change.target.matches?.(actionScopes))markAction(change.target);
+   for(const node of change.addedNodes)scan(node);
+  }
+ }).observe(document.body,{childList:true,subtree:true});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watchActions);else watchActions();
 function decorate(){
  if(document.querySelector('[data-world-editorial]'))return;
  for(const el of document.querySelectorAll('#my-recent a,#my-recent-youtube a'))if(!el.querySelector('svg'))el.dataset.noaIcon=el.closest('#my-recent-youtube')?'youtube':'play';
