@@ -99,19 +99,68 @@ function visibleReservations(){const index=new Map(cards().map(c=>[c.dataset.juk
 function latestJobs(){const map=new Map();for(const j of serverRows)if(!map.has(j.song_key)||map.get(j.song_key).id<j.id)map.set(j.song_key,j);return map;}
 function renderCardReservations(){const visible=visibleReservations();for(const c of cards()){const r=visible.findLast(r=>r.key===c.dataset.jukeboxKey&&isUnsent(r));if(!r){if(c.dataset.reservationState){delete c.dataset.reservationState;const n=c.querySelector('.jukebox-state');if(n)n.textContent=labels[c.dataset.jukeboxStatus]||c.dataset.jukeboxStatus;const small=c.querySelector('.song-select .info small');if(small)small.textContent=(c.dataset.genre||'').replaceAll('-',' ').toUpperCase()+' · '+(labels[c.dataset.jukeboxStatus]||c.dataset.jukeboxStatus);}continue;}const state=r.state==='uploading'?'업로드 중':r.state==='checking'?'서버 응답 확인 중':r.state==='recovering'?'자동 복구 중':r.state==='paused'?'전송 일시정지':r.state==='needs_file'?'파일 재선택 필요':r.state==='failed'?'실패':'전송 예약';c.dataset.reservationState=state;const n=c.querySelector('.jukebox-state');if(n)n.textContent=state;const small=c.querySelector('.song-select .info small');if(small)small.textContent=(c.dataset.genre||'').replaceAll('-',' ').toUpperCase()+' · '+state;}}
 
-function progressTarget(key){return [...document.querySelectorAll('.noa-inline-song-row')].find(n=>n.dataset.inlineKey===key&&n.getClientRects().length)||cards().find(n=>n.dataset.jukeboxKey===key&&n.getClientRects().length);}
+const previousProgressTargets=new Map();
+const trackControls=':scope > :is(.noa-track-progress,.jukebox-source-actions,.jukebox-cancel-job)';
+function progressTarget(key){
+ const value=CSS.escape(key);
+ // The editor owns this song's progress even while its fields are folded.
+ const field=document.querySelector('[data-audio-progress-key="'+value+'"]');
+ if(field?.closest('.noa-edit-form')?.getClientRects().length)return field;
+ const visible=selector=>[...document.querySelectorAll(selector)].find(n=>n.getClientRects().length);
+ return visible('.noa-inline-song-row[data-inline-key="'+value+'"]')||visible('[data-jukebox-key="'+value+'"]');
+}
 function readAnalysis(v){if(typeof v==='string'){try{return JSON.parse(v);}catch{return null;}}return v||null;}
-function renderTrackProgress(){if(!window.NoaPremium)return;const jobs=latestJobs(),visible=visibleReservations();for(const card of cards()){const key=card.dataset.jukeboxKey,r=visible.findLast(r=>r.key===key&&r.state!=='replaced'),j=jobs.get(key),d=progressStates.get(key);const target=progressTarget(key);if(!target)continue;if(!r&&!j&&!busy.includes(card.dataset.jukeboxStatus)){target.querySelector('.jukebox-source-actions')?.remove();target.querySelector('.noa-track-progress')?.remove();continue;}const status=r&&isUnsent(r)?r.state:j?.status||d?.status||card.dataset.jukeboxStatus;const u=d?.upload;window.NoaPremium.progress(target,{status,percent:r?.percent,source:u?readAnalysis(u.source_analysis):d?.analysis?.source,final:status==='ready'?(readAnalysis(u?.final_analysis)||d?.analysis?.final):null,correction:status==='ready'?(readAnalysis(u?.correction)||d?.analysis?.correction):null,stale:!!queueError,note:r?.state==='needs_file'?'페이지가 다시 열려 원본 파일을 다시 선택해야 합니다. 이미 전송된 부분은 확인 후 이어갑니다.':r?.error?message(r.error):''});let cancel=target.querySelector('.jukebox-cancel-job');if(j&&busy.includes(j.status)){if(!cancel){cancel=document.createElement('button');cancel.type='button';cancel.className='jukebox-cancel-job';cancel.textContent='최적화 취소';target.append(cancel);}cancel.onclick=()=>cancelProcessing(j.upload_id,cancel);}else cancel?.remove();renderReservationActions(target,r);}}
+function renderTrackProgress(){
+ if(!window.NoaPremium)return;
+ const jobs=latestJobs(),visible=visibleReservations();
+ for(const card of cards()){
+  const key=card.dataset.jukeboxKey,r=visible.findLast(row=>row.key===key&&row.state!=='replaced'),j=jobs.get(key),d=progressStates.get(key);
+  const previous=previousProgressTargets.get(key);
+  if(!r&&!j&&!busy.includes(card.dataset.jukeboxStatus)){
+   previous?.querySelectorAll(trackControls).forEach(el=>el.remove());
+   previousProgressTargets.delete(key);
+   continue;
+  }
+  const target=progressTarget(key);
+  if(previous&&previous!==target){
+   for(const control of previous.querySelectorAll(trackControls)){
+    if(target)target.append(control);else control.remove();
+   }
+   previousProgressTargets.delete(key);
+  }
+  if(!target)continue;
+  const status=r&&isUnsent(r)?r.state:j?.status||d?.status||card.dataset.jukeboxStatus;
+  const u=d?.upload;
+  window.NoaPremium.progress(target,{status,percent:r?.percent,source:u?readAnalysis(u.source_analysis):d?.analysis?.source,final:status==='ready'?(readAnalysis(u?.final_analysis)||d?.analysis?.final):null,correction:status==='ready'?(readAnalysis(u?.correction)||d?.analysis?.correction):null,stale:!!queueError,note:r?.state==='needs_file'?'페이지가 다시 열려 원본 파일을 다시 선택해야 합니다. 이미 전송된 부분은 확인 후 이어갑니다.':r?.error?message(r.error):''});
+  let cancel=target.querySelector(':scope > .jukebox-cancel-job');
+  if(j&&busy.includes(j.status)){
+   if(!cancel){cancel=document.createElement('button');cancel.type='button';cancel.className='jukebox-cancel-job';cancel.textContent='최적화 취소';target.append(cancel);}
+   cancel.onclick=()=>cancelProcessing(j.upload_id,cancel);
+  }else cancel?.remove();
+  renderReservationActions(target,r);
+  if(target.querySelector(trackControls))previousProgressTargets.set(key,target);else previousProgressTargets.delete(key);
+ }
+}
 function renderReservationActions(target,r){
- let controls=target.querySelector('.jukebox-source-actions');
+ let controls=target.querySelector(':scope > .jukebox-source-actions');
  if(!r||!isUnsent(r)||r===active){controls?.remove();return;}
  if(!controls){controls=document.createElement('div');controls.className='jukebox-source-actions jukebox-upload-controls';target.append(controls);}
  const signature=[r.id,r.state,!!r.file,!!r.hold].join(':');if(controls.dataset.render===signature)return;controls.dataset.render=signature;controls.replaceChildren();
  const retry=document.createElement('button');retry.type='button';retry.textContent=r.file?'전송 재시도':'파일 다시 선택';retry.disabled=!!r.hold;retry.onclick=()=>{const current=reservations.find(row=>row.id===r.id);if(!current||!isUnsent(current)||current.hold||current.state==='external')return;if(current.file){current.state='waiting';void resumeTransfers();}else openPicker({key:current.key,title:current.title,artist:current.artist||'',genre:current.genre,ep:current.ep},current);};
  const cancel=document.createElement('button');cancel.type='button';cancel.textContent='전송 예약 취소';cancel.disabled=!!r.hold;cancel.onclick=()=>cancelReservation(r);controls.append(retry,cancel);
 }
-function placeProgress(now){const target=now?progressTarget(now.key||now.song_key):null;if(target&&panel.parentElement!==target)target.append(panel);panel.hidden=panel.hidden||!target;renderTrackProgress();}
-let placementPending=false;new MutationObserver(records=>{if(placementPending||!records.some(r=>[...r.addedNodes].some(n=>n.nodeType===1&&(n.matches?.('.noa-inline-song-row')||n.querySelector?.('.noa-inline-song-row')))))return;placementPending=true;requestAnimationFrame(()=>{placementPending=false;render();});}).observe(document.body,{childList:true,subtree:true});
+function placeProgress(now){
+ renderTrackProgress();
+ const target=now?progressTarget(now.key||now.song_key):null;
+ if(target&&panel.parentElement!==target)target.append(panel);
+ panel.hidden=panel.hidden||!target;
+}
+const progressAnchor='.noa-inline-song-row,[data-audio-progress-key]';
+let placementPending=false;
+new MutationObserver(records=>{
+ if(placementPending||!records.some(r=>[...r.addedNodes,...r.removedNodes].some(n=>n.nodeType===1&&(n.matches(progressAnchor)||n.querySelector(progressAnchor)))))return;
+ placementPending=true;requestAnimationFrame(()=>{placementPending=false;render();});
+}).observe(document.body,{childList:true,subtree:true});
 
 function displayTitle(r){if(!r)return '음원 처리';const ep=r.ep||cards().find(c=>c.dataset.jukeboxKey===(r.key||r.song_key))?.dataset.ep;return (ep&&!/^EP[. ]/i.test(r.title)?'EP.'+ep+' · ':'')+r.title;}
 function render(){

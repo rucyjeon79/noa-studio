@@ -192,11 +192,12 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
     const section=form.querySelector('.noa-record-classification');
     editControl('classification','분류',section.querySelector('legend'),locked=>{section.disabled=locked;section.dataset.locked=String(locked);});
    }
-   function attachAudioPicker(heading){
+   function attachAudioPicker(heading,field){
     const sourceKey=node.dataset.inlineKey||node.dataset.key||selector.key;
     const raw=Array.from(document.querySelectorAll('#songs .song[data-key]')).find(card=>card.dataset.key===sourceKey);
     const actions=raw?.querySelector('.jukebox-actions');
     if(!actions || selector.source!=='music')return;
+    field.dataset.audioProgressKey=raw.dataset.jukeboxKey||sourceKey;
     const source=()=>actions.querySelector('.jukebox-replace,.sound-upload');
     const pick=iconCommand('button','upload','음원 업로드');
     function sync(){
@@ -353,7 +354,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
       updatePreview();
      });
     }
-    if(key==='audioFileLocation')attachAudioPicker(heading);
+    if(key==='audioFileLocation')attachAudioPicker(heading,wrap);
     if(window.NoaRecordForm.describe(key,data.packageType).group!=='media')heading.append(copyButton(label,()=>input.tagName==='SELECT'?input.selectedOptions[0]?.textContent||'':input.value));
     if(feedback)wrap.append(feedback);sections.add(key,wrap);inputs[key]=input;
    }

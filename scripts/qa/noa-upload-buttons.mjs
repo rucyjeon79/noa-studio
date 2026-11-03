@@ -5,7 +5,70 @@ import assert from 'node:assert/strict';
 const browser=await chromium.launch({channel:'chrome',headless:true});
 const base='https://noastudio.ai.kr',file=Buffer.alloc(2048,1),name='original.wav';
 const fingerprint=createHash('sha256').update(Buffer.concat([Buffer.from(JSON.stringify([name,file.length])),file,file])).digest('hex');
+async function checkEditorProgress(width){
+ const page=await browser.newPage({viewport:{width,height:844},serviceWorkers:'block'});
+ const editorKey='track:audio-34',keys=[editorKey,'other'],isReplace=width>600;
+ const rows=keys.map(key=>({key,title:key}));
+ let releaseInit,releaseFinish;
+ const initGate=new Promise(resolve=>releaseInit=resolve),finishGate=new Promise(resolve=>releaseFinish=resolve);
+ const errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ try{
+  const cards=keys.map(key=>'<article class="noa-inline-song-row" data-inline-key="'+key+'"><span>'+key+'</span></article>').join('');
+  const sources=keys.map(key=>'<article class="song" data-key="'+key+'" data-jukebox-key="'+key+'" data-title="'+key+'" '+(isReplace?'data-audio="/old.mp3" data-jukebox-status="ready"':'data-jukebox-status="audio_pending"')+'><div class="jukebox-actions">'+(isReplace?'':'<button type="button" class="sound-upload">Upload</button>')+'</div></article>').join('');
+  await page.route('**/editor-progress-fixture',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><meta name="viewport" content="width=device-width"><meta name="noa-jukebox-csrf" content="fixture"><body class="noa-page"><main><div id="music-browse"><div class="noa-inline-songs" data-track-view="'+(isReplace?'list':'album')+'">'+cards+'</div></div><div id="songs" hidden>'+sources+'</div></main>'}));
+  await page.route('**/noa-inline-edit.php?*',r=>{
+   const key=new URL(r.request().url()).searchParams.get('key');
+   return r.fulfill({json:{ok:true,kind:'single',writeKey:key,packageType:'song',revision:1,context:{},fields:{title:key}}});
+  });
+  await page.route('**/noa-gpt.php?*',r=>r.fulfill({json:{ok:true,workerConfigured:true}}));
+  await page.route('**/noa-app/jukebox/upload.php?*',async r=>{
+   const action=new URL(r.request().url()).searchParams.get('action');
+   if(action==='queue')return r.fulfill({json:{rows:[],counts:{},health:{can_upload:true}}});
+   if(action==='init'){assert.equal(r.request().postDataJSON().key,editorKey);await initGate;return r.fulfill({json:{id:'a'.repeat(32),chunks:[],chunkSize:65536,status:'uploading'}});}
+   if(action==='chunk')return r.fulfill({json:{index:0,sha256:'b'.repeat(64)}});
+   if(action==='finish')await finishGate;
+   return r.fulfill({json:{key:editorKey,status:'ready',ready:true,audio:'/fixture.mp3',audio_sha256:'verified',upload:{id:'a'.repeat(32)}}});
+  });
+  await page.goto(base+'/editor-progress-fixture');
+  for(const path of ['noa-ui.css','noa-record-form.css','noa-app/jukebox/upload.css','noa-browse.js','noa-record-form.js','noa-browse-edit.js','noa-premium.js','noa-app/jukebox/upload-transport.js','noa-app/jukebox/upload.js']){
+   const content=process.env.NOA_BUTTONS_LIVE?await(await page.request.get(base+'/'+path+'?progress='+Date.now())).text():readFileSync('deploy/'+path,'utf8');
+   if(path.endsWith('.css'))await page.addStyleTag({content});else await page.addScriptTag({content});
+  }
+  await page.evaluate(rows=>NoaBrowseEdit.mount({host:document.querySelector('#music-browse'),rows}),rows);
+  const card=page.locator('.noa-inline-song-row').first(),other=page.locator('.noa-inline-song-row').last();
+  await card.locator('.noa-edit-edit').click();
+  const field=page.locator('[data-record-field="audioFileLocation"]'),progress=field.locator('.noa-track-progress');
+  const chooser=page.waitForEvent('filechooser');
+  await field.getByRole('button',{name:isReplace?'음원 교체':'음원 업로드',exact:true}).click();
+  await(await chooser).setFiles({name,mimeType:'audio/wav',buffer:file});
+  await field.locator('[data-phase=uploading] progress').waitFor();
+  const path=await field.locator('.noa-input-guard').boundingBox(),meter=await progress.boundingBox();
+  assert(meter.y>=path.y+path.height-1 && Math.abs(path.x-meter.x)<=2);
+  await field.getByRole('button',{name:'음원 처리 상세 펼침'}).click();
+  assert(await field.locator('#jukebox-transfer-details').isVisible());
+  await page.getByRole('button',{name:'곡정보창 접기'}).click();
+  assert(await progress.isHidden());
+  await page.getByRole('button',{name:'곡정보창 펼치기'}).click();await progress.waitFor();
+  await other.locator('.noa-edit-edit').click();
+  await page.locator('[data-audio-progress-key=other]').waitFor();
+  await card.locator('.noa-track-progress[data-phase=uploading]').waitFor();
+  assert.equal(await field.locator('.noa-track-progress,#jukebox-transfer-dock').count(),0);
+  await card.locator('.noa-edit-edit').click();
+  await field.locator('#jukebox-transfer-details').waitFor();await progress.waitFor();
+  assert.equal(await page.locator('.noa-track-progress').count(),1);
+  releaseInit();
+  await field.locator('[data-phase=checking]').waitFor();
+  releaseFinish();
+  await field.getByRole('button',{name:'음원 교체',exact:true}).waitFor();
+  await progress.waitFor({state:'detached'});assert(await field.locator('#jukebox-transfer-dock').isHidden());
+  assert.deepEqual(errors,[]);
+  console.log('EDITOR_UPLOAD_PROGRESS_OK',JSON.stringify({width,isReplace}));
+ }finally{releaseInit();releaseFinish();await page.close();}
+}
+
 try{for(const width of [360,1280]){
+ await checkEditorProgress(width);
  const context=await browser.newContext({viewport:{width,height:844},serviceWorkers:'block'}),page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));let queue=0,init=0,finish=0,cancel=0,gate;
  const saved={id:'reservation',key:'song',title:'EP.34',filename:name,bytes:file.length,fingerprint,owner:'closed-tab',state:'waiting',uploadId:'a'.repeat(32)};
