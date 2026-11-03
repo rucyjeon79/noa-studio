@@ -71,6 +71,7 @@ html[data-noa-voice-admin] :is(#noa-ainoa,#noa-voice-modal){--noa-bg:#fff;--noa-
 :is(#noa-ainoa,#noa-voice-modal) .ainoa-message>strong{display:block;padding-right:32px}
 :is(#noa-ainoa,#noa-voice-modal) .ainoa-message .ainoa-message-dismiss{position:absolute;top:0;right:0;display:grid;place-items:center;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:0;background:transparent;color:var(--noa-muted);font-size:22px;line-height:1;box-shadow:none}
 :is(#noa-ainoa,#noa-voice-modal) .ainoa-message p{margin-bottom:4px}
+:is(#noa-ainoa,#noa-voice-modal) .ainoa-message::after{display:none}
 :is(#noa-ainoa,#noa-voice-modal) .ainoa-message-actions{margin-top:8px}
 @media(max-width:760px){:is(#noa-ainoa,#noa-voice-modal){--ainoa-size:52px;right:max(12px,env(safe-area-inset-right));--ainoa-bottom:calc(var(--noa-nav-space,0px) + var(--noa-player-space,0px) + var(--noa-transfer-space,0px) + 12px)}}
 

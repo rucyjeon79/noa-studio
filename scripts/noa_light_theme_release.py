@@ -1,4 +1,4 @@
-"""Release readable, sequential home overlays after mobile theme and modal lifecycle checks; preserve home order, account data, and rollback guards."""
+"""Finish sequential home overlays with readable text and no decorative scrollbar; preserve home order, account data, and rollback guards."""
 import os
 import sys
 from pathlib import Path

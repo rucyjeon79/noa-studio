@@ -35,6 +35,8 @@ try{
   await close.click();await tip.waitFor({state:'visible'});
   assert((await tip.innerText()).includes(member?'1,234P':'비로그인'),'welcome retains exact account facts after closing');
   ratios.welcome=await contrast(tip.locator('p'),'.ainoa-tip');
+  const overflow=await tip.evaluate(e=>({height:e.getBoundingClientRect().height,max:parseFloat(getComputedStyle(e).maxHeight),client:e.clientHeight,scroll:e.scrollHeight}));
+  if(overflow.height<overflow.max-2)assert(overflow.scroll<=overflow.client+1,'short speech has no scrollbar from decorative overflow: '+JSON.stringify(overflow));
   const bubble=await tip.boundingBox(),nav=await p.locator('.noa-mobile-nav').boundingBox();assert(bubble.x>=0&&bubble.x+bubble.width<=width+1&&bubble.y>=0&&bubble.y+bubble.height<=height,'welcome remains within the viewport');if(nav?.height)assert(bubble.y+bubble.height<=nav.y-8,'welcome clears the bottom navigation');
   await p.screenshot({path:out+'/welcome-'+mode+'-'+width+'.png'});
   // Reopening a pre-existing dialog (only its open attribute changes) pauses an already visible greeting.
