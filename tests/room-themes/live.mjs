@@ -10,6 +10,14 @@ const config=JSON.parse(readFileSync(source+'/deploy/noa-design.json','utf8'));
 const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
 mkdirSync(output,{recursive:true});
 const results=[];
+if(phase==='live'){
+ const probe=await browser.newContext();try{
+  const response=await probe.request.post('https://noastudio.ai.kr/noa-bridge/weather.php',{data:{latitude:35.18,longitude:129.08},timeout:30000});
+  const weather=await response.json();assert(response.ok()&&weather.ok,'live weather provider responds');assert(Number.isFinite(weather.temperature)&&Date.parse(weather.validUntil)>Date.now());
+  writeFileSync(output+'/weather.json',JSON.stringify(weather,null,2));console.log('LIVE_LOCATION_WEATHER_PROVIDER_OK',JSON.stringify(weather));
+ }finally{await probe.close();}
+}
+
 try{for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])await Promise.all(sizes.map(async([width,height])=>{
  const context=await browser.newContext({viewport:{width,height},timezoneId:'Asia/Seoul',serviceWorkers:'block'}),p=await context.newPage();
  const errors=[];p.on('pageerror',e=>errors.push(e.message));
