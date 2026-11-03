@@ -1,4 +1,4 @@
-"""Finish sequential home overlays with readable text and no decorative scrollbar; preserve home order, account data, and rollback guards."""
+"""Place the original home hero first, keeping its 500P invitation directly below and retaining the remaining home content and verified overlays."""
 import os
 import sys
 from pathlib import Path
