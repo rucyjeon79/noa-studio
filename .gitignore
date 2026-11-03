@@ -14,3 +14,9 @@ data/live/pglite-broken
 
 quality-taxonomy/
 quality-popularity/
+
+# Pinned calendar sources are rebuilt and hash-checked in the listening release.
+/deploy/noa-app/engine/personal-calendar-vendor.php
+/deploy/noa-app/engine/personal-korean-months.json
+/deploy/noa-app/engine/personal-calendar-LICENSE.txt
+/listening-proof/
