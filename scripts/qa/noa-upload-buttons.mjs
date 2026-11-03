@@ -15,7 +15,7 @@ async function checkEditorProgress(width){
  page.on('pageerror',e=>errors.push(e.message));
  try{
   const sources=keys.map(key=>'<article class="song" data-key="'+key+'" data-jukebox-key="'+key+'" data-title="'+key+'" '+(isReplace?'data-audio="/old.mp3" data-jukebox-status="ready"':'data-jukebox-status="audio_pending"')+'><div class="jukebox-actions">'+(isReplace?'':'<button type="button" class="sound-upload">Upload</button>')+'</div></article>').join('');
-  await page.route('**/editor-progress-fixture?*',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><html data-noa-style="starlight" data-noa-precision="1"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta name="noa-jukebox-csrf" content="fixture"><body class="noa-page noa-record-room"><main><div id="music-browse"></div><div id="songs" hidden>'+sources+'</div><audio id="sound-player"></audio><img id="dock-cover" hidden><span id="dock-cover-empty" hidden></span></main>'}));
+  await page.route('**/editor-progress-fixture?*',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><html data-noa-style="starlight" data-noa-precision="1"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta name="noa-jukebox-csrf" content="fixture"><script type="application/json" id="noa-engagement-context">{"member":true}</script><body class="noa-page noa-record-room"><main><div id="music-browse"></div><div id="songs" hidden>'+sources+'</div><audio id="sound-player"></audio><img id="dock-cover" hidden><span id="dock-cover-empty" hidden></span></main>'}));
   await page.route('**/test-cover.svg',r=>r.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320"><rect width="320" height="320" fill="#172e36"/><circle cx="160" cy="160" r="80" fill="#99845a"/><circle cx="160" cy="160" r="8" fill="#172e36"/></svg>'}));
   await page.route('**/noa-inline-edit.php?*',r=>{
    const key=new URL(r.request().url()).searchParams.get('key');
@@ -53,7 +53,11 @@ async function checkEditorProgress(width){
   const list=page.locator('.noa-inline-songs').first();
   await list.locator('.lp-track-art').first().waitFor();
   await page.locator('.lp-view-switch [data-mode=album]').first().click();
+  await page.waitForFunction(()=>document.querySelector('.noa-inline-songs')?.dataset.trackView==='album');
   await list.locator('.noa-direct-action').first().waitFor();
+  await list.locator('img').evaluateAll(images=>Promise.all(images.map(img=>img.decode().catch(()=>{}))));
+  await page.evaluate(()=>document.fonts.ready);
+  await page.waitForTimeout(100);
   const baseline=await list.locator(':scope>.noa-inline-song-row').evaluateAll(nodes=>nodes.map(n=>n.getBoundingClientRect().height));
   const card=page.locator('.noa-inline-song-row').nth(1),other=page.locator('.noa-inline-song-row').nth(2);
   await card.locator('.noa-edit-edit').click();
@@ -75,7 +79,7 @@ async function checkEditorProgress(width){
   await detached.locator('.noa-track-progress[data-phase=uploading]').waitFor();
   assert.equal(await card.locator('.noa-track-progress,#jukebox-transfer-dock').count(),0);
   const heights=await list.locator(':scope>.noa-inline-song-row').evaluateAll(nodes=>nodes.map(n=>n.getBoundingClientRect().height));
-  assert(heights.every((h,i)=>Math.abs(h-baseline[i])<2),'Processing must not stretch either album card');
+  assert(heights.every((h,i)=>Math.abs(h-baseline[i])<2),'Processing must not stretch either album card '+JSON.stringify({baseline,heights}));
   assert.equal(await field.locator('.noa-track-progress,#jukebox-transfer-dock').count(),0);
   await page.getByRole('button',{name:'정보 수정 취소',exact:true}).click();
   await detached.locator('.noa-track-progress').waitFor();
