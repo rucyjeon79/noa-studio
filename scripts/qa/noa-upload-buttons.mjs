@@ -25,6 +25,7 @@ async function checkEditorProgress(width){
    const targets=JSON.parse(new URL(r.request().url()).searchParams.get('targets')||'[]');
    return r.fulfill({json:{ok:true,items:targets.map(t=>({...t,likes:0,comments:0,reactionScore:0,score:0,liked:false}))}});
   });
+  await page.route('**/noa-category-order.php',r=>r.fulfill({json:{revision:1,story:[],cover:[],playlists:[],admin:false}}));
   await page.route('**/noa-gpt.php?*',r=>r.fulfill({json:{ok:true,workerConfigured:true}}));
   await page.route('**/noa-app/jukebox/upload.php?*',async r=>{
    const action=new URL(r.request().url()).searchParams.get('action');
@@ -43,6 +44,7 @@ async function checkEditorProgress(width){
    const content=process.env.NOA_BUTTONS_LIVE?await(await page.request.get(base+'/'+path+'?progress='+Date.now())).text():readFileSync('deploy/'+path,'utf8');
    if(path.endsWith('.css'))await page.addStyleTag({content});else await page.addScriptTag({content});
   }
+  await page.evaluate(()=>NoaBrowse.loadClassification());
   await page.evaluate(rows=>{
    const host=document.querySelector('#music-browse');
    const tree=NoaBrowse.mount({host,rows,onChange:()=>tree.apply([])});tree.apply([]);
