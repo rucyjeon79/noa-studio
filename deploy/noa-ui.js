@@ -136,6 +136,7 @@ function wideShell(side){
    const list=dialog.querySelector('nav'),input=dialog.querySelector('input'),empty=dialog.querySelector('[role=status]');
    for(const a of side.querySelectorAll('.noa-menu a,.noa-drawer-secondary a')){const copy=a.cloneNode(true);copy.hidden=false;copy.removeAttribute('aria-current');list.append(copy);}
    input.oninput=()=>{let count=0;const q=input.value.trim().toLocaleLowerCase();for(const a of list.children){a.hidden=!a.textContent.toLocaleLowerCase().includes(q);if(!a.hidden)count++;}empty.hidden=count>0;};
+   dialog.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();dialog.close();}});list.addEventListener('click',e=>{if(e.target.closest('a[href]'))dialog.close();});
    dialog.addEventListener('close',()=>find.focus());document.body.append(dialog);dialog.showModal();input.focus();
   };
   const theme=document.createElement('button');theme.type='button';theme.className='noa-header-control noa-display-settings';theme.dataset.noaDisplaySettings='';theme.setAttribute('aria-label','테마 선택');theme.innerHTML='<span>테마 선택</span>';
