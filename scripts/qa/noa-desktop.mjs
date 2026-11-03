@@ -35,7 +35,7 @@ try{
    if(role==='admin'){
     await p.locator('.ainoa-admin-toggle').click();const dialog=p.locator('#ainoa-admin-dialog');await dialog.waitFor();assert(await dialog.evaluate(d=>d.matches(':modal')));
     await dialog.locator('textarea.ainoa-admin-input').fill('창 크기를 바꿔도 유지할 초안');await p.setViewportSize({width:390,height:844});assert.equal(await dialog.locator('textarea.ainoa-admin-input').inputValue(),'창 크기를 바꿔도 유지할 초안');await p.setViewportSize({width,height});
-    await dialog.locator('.ainoa-admin-send').click();await dialog.getByText('격리 검증 응답',{exact:true}).waitFor();assert.equal(posts.filter(x=>x.action==='admin_chat').length,1);assert.equal(posts.filter(x=>x.action==='admin_run').length,1);await dialog.getByRole('button',{name:'음악 찾기',exact:true}).click();
+    await dialog.locator('.ainoa-admin-send').click();await dialog.getByText('격리 검증 응답',{exact:true}).waitFor();assert.equal(posts.filter(x=>x.action==='admin_chat').length,1);assert.equal(posts.filter(x=>x.action==='admin_run').length,1);await dialog.getByRole('button',{name:'닫기',exact:true}).click();
    }
    if(['vip','six'].includes(role)){await p.evaluate(()=>window.dispatchEvent(new CustomEvent('noa-track-selected',{detail:{record:{key:'qa-song',title:'기억의 온도'}}})));await p.locator('.ainoa-chat-toggle').click();await p.locator('.ainoa-chat input').fill('이 곡의 이야기');await p.locator('.ainoa-chat form button').click();await p.getByText('검증 대화 응답',{exact:true}).waitFor();assert.equal(posts.filter(x=>x.action==='chat').length,1);}
    await p.setViewportSize({width,height});await p.screenshot({path:out+'/'+theme+'-'+width+'-'+role+'-floating.jpg',type:'jpeg',quality:85});

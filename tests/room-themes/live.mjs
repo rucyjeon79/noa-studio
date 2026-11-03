@@ -161,6 +161,7 @@ async function verifyExpansiveShell(p,width,mode){
  else{assert(Math.abs(geometry.media.width/geometry.media.height-16/9)<.03,'mobile media keeps a landscape frame');assert(geometry.copy.y>=geometry.media.bottom-1,'mobile text is below the media');}
  if(width>=960){assert(Math.abs(geometry.notices.y-geometry.community.y)<2,'news sections share a row');assert(geometry.community.x>geometry.notices.x,'news columns are side by side');}
  else assert(geometry.community.y>=geometry.notices.bottom-1,'mobile news sections follow reading order');
+ assert.equal(await p.locator('.noa-hero').evaluate(h=>h.nextElementSibling.dataset.homeSection),'notices','real news follows the music introduction before promotions');
  const all=p.locator('#noa-nav-all'),drawer=p.locator('#noa-menu-drawer');assert.equal(await drawer.isVisible(),false);
  await all.click();await drawer.waitFor({state:'visible'});assert.equal(await all.getAttribute('aria-expanded'),'true');
  assert.equal(await drawer.evaluate(d=>d.matches(':modal')),true,'drawer makes the page behind it inert');

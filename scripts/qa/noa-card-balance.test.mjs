@@ -32,7 +32,7 @@ test('all home lists share the most restrictive viewport capacity',()=>{
  assert.deepEqual(states.map(fn),[2,2,2]);states[0].capacity=6;assert.deepEqual(states.map(fn),[4,4,4]);
 });
 
-test('home community follows the AMT banner',()=>{
+test('static home keeps one community fallback after the AMT banner',()=>{
  const html=fs.readFileSync(new URL('../../deploy/noa-app/home.php',import.meta.url),'utf8');
  assert(html.indexOf('data-home-section="community"')>html.indexOf("<?php noa_home_banner('amt');?>"));
  assert.equal(html.match(/data-home-section="community"/g).length,1);
