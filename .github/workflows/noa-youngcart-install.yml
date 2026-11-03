@@ -1,0 +1,90 @@
+name: NOA Youngcart installation audit
+on:
+  pull_request:
+    paths: ['.github/workflows/noa-youngcart-install.yml','scripts/noa_youngcart_install.py']
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-youngcart-install.yml','scripts/noa_youngcart_install.py']
+permissions: {contents: read}
+jobs:
+  audit:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 6
+    env:
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python -m pip install 'paramiko>=3,<5'
+      - name: Read native shop installation contracts only
+        run: |
+          python - <<'PY'
+          import sys,re,json
+          sys.path.insert(0,'scripts')
+          from noa_full_inventory import connect,ROOT
+          import paramiko
+          t=connect()
+          try:
+           with paramiko.SFTPClient.from_transport(t) as s:
+            for p in ['version.php','shop.config.php','data/dbconfig.php','adm/shop_admin/_common.php','install/gnuboard5shop.sql','install/install_db.php','install/install.inc.php']:
+             try:
+              with s.open(ROOT+'/'+p,'rb') as f:raw=f.read().decode('utf-8')
+             except FileNotFoundError:
+              print('MISSING',p);continue
+             print('SOURCE',p,'bytes',len(raw))
+             if p=='data/dbconfig.php':
+              print('SHOP_DEFINITIONS',json.dumps([x for x in raw.splitlines() if 'G5_USE_SHOP' in x or 'SHOP_TABLE_PREFIX' in x or "g5_shop_" in x]))
+             elif p=='install/gnuboard5shop.sql':
+              print('TABLES',re.findall(r'CREATE TABLE[^\n]+',raw))
+              print('INSERTS',raw[raw.find('INSERT INTO'):][:24000] if 'INSERT INTO' in raw else 'none')
+             elif p=='install/install_db.php':
+              print(raw)
+              lines=[]
+              for i,line in enumerate(lines):
+               if 'g5_shop_default_table' in line or 'gnuboard5shop.sql' in line or 'shop_default' in line:
+                print('\n'.join(lines[max(0,i-5):i+25]))
+             else:print(raw[:16000])
+          finally:t.close()
+          PY
+
+  install:
+    if: github.event_name == 'push'
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - run: python -m pip install 'paramiko>=3,<5'
+      - name: Verify installer syntax
+        run: |
+          python -m py_compile scripts/noa_youngcart_install.py
+          PYTHONPATH=scripts python -c 'from noa_youngcart_install import PHP; print(PHP)' > /tmp/youngcart-install.php
+          php -l /tmp/youngcart-install.php
+      - name: Add native shop tables then enable shop
+        run: python scripts/noa_youngcart_install.py
+
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - run: python -m pip install 'paramiko>=3,<5'
+      - run: |
+          python -m py_compile scripts/noa_youngcart_install.py
+          PYTHONPATH=scripts python -c 'from noa_youngcart_install import PHP; print(PHP)' > /tmp/youngcart-install.php
+          php -l /tmp/youngcart-install.php
