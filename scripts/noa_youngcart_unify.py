@@ -48,6 +48,8 @@ def main():
  except:
   with paramiko.SFTPClient.from_transport(t) as s:
    for p,data in before.items():
+    # Retain validated integration/fulfillment code after any partial catalog creation.
+    if p in FILES.values():continue
     if data is not None:
      with s.open(ROOT+'/'+p,'wb') as f:f.write(data)
     else:
