@@ -10,10 +10,10 @@ const config=JSON.parse(readFileSync(source+'/deploy/noa-design.json','utf8'));
 const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
 mkdirSync(output,{recursive:true});
 const results=[];
-try{for(const sizes of [[[390,900],[768,900]],[[1280,1440],[1600,900]]])await Promise.all(sizes.map(async([width,height])=>{
+try{for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])await Promise.all(sizes.map(async([width,height])=>{
  const context=await browser.newContext({viewport:{width,height},timezoneId:'Asia/Seoul',serviceWorkers:'block'}),p=await context.newPage();
  const errors=[];p.on('pageerror',e=>errors.push(e.message));
- if(phase==='candidate')for(const name of ['noa-design.json','noa-starlight.css','noa-ui.js','noa-home.js','noa-desktop.js','noa-voice.js','noa-ainoa.css','noa-amt-fan.js','noa-amt-fan.css']){
+ if(phase==='candidate')for(const name of ['noa-account.js','noa-design.json','noa-starlight.css','noa-ui.js','noa-home.js','noa-desktop.js','noa-voice.js','noa-ainoa.css','noa-amt-fan.js','noa-amt-fan.css']){
   await context.route('**/'+name+'*',route=>route.fulfill({body:readFileSync(source+'/deploy/'+name),contentType:name.endsWith('.css')?'text/css':name.endsWith('.js')?'text/javascript':'application/json'}));
  }
  if(phase==='candidate')await context.route('**/noa-assets/theme-*.webp*',route=>{
@@ -53,7 +53,7 @@ try{for(const sizes of [[[390,900],[768,900]],[[1280,1440],[1600,900]]])await Pr
   await p.locator('#noa-theme').selectOption(mode);
   assert.equal(await p.locator('#noa-theme option:checked').innerText(),theme.name);
   await p.locator('#noa-settings-dialog .noa-dialog-close').click();
-  for(const [route,room] of [['/','home'],['/noa-lounge.php','community'],['/noa-shop.php','shop'],['/noa-vip.php','shop'],['/noa-points.php','shop'],['/noa-settings.php',''],['/noa-sitemap.php',''],['/noa-about.php',''],['/noa-login.php',''],['/shop/cart.php','shop']].filter(([route])=>process.env.NOA_VISUAL_REVIEW!=='true'||route==='/')){
+  for(const [route,room] of [['/','home'],['/noa-lounge.php','community'],['/noa-shop.php','shop'],['/noa-vip.php','shop'],['/noa-points.php','shop'],['/noa-settings.php',''],['/noa-sitemap.php',''],['/noa-about.php',''],['/noa-login.php',''],['/noa-install.php',''],['/shop/cart.php','shop']].filter(([route])=>process.env.NOA_VISUAL_REVIEW!=='true'||route==='/')){
    await p.goto(base+route,{waitUntil:'domcontentloaded'});
    await p.waitForFunction(([mode,room])=>document.documentElement.dataset.noaTheme===mode&&document.documentElement.dataset.noaRoom===room,[mode,room]);
    // Close the real campaign overlay through its existing control, without account writes.
@@ -76,6 +76,7 @@ try{for(const sizes of [[[390,900],[768,900]],[[1280,1440],[1600,900]]])await Pr
     assert(await p.locator('#noa-menu-drawer').isVisible(),'left menu is always visible: '+route);
     assert(await p.evaluate(()=>{const host=document.querySelector('main')||document.querySelector('#container');return host.getBoundingClientRect().left>=220;}),'content clears pinned navigation: '+route);
    }
+   await verifyHeader(p,width,height);
    if(route==='/shop/cart.php')assert(await p.locator('.ny-native-nav').isVisible(),'native store/order navigation is preserved');
    assert.deepEqual(errors,[],'uncaught browser errors: '+route);
    const selected=p.locator('#noa-section-navigation a[aria-current=page]');
@@ -124,7 +125,7 @@ try{for(const sizes of [[[390,900],[768,900]],[[1280,1440],[1600,900]]])await Pr
     assert.equal(await p.locator('#noa-menu-search').count(),1,'directory and drawer searches have independent IDs');
     await p.locator('#noa-menu-search').fill('포인트');assert(await p.locator('.noa-site-map-link:visible').count()>0);await p.locator('#noa-menu-search').fill('');
    }
-   if(room==='home'){await verifyMusicShelves(p,width,mode,theme);await verifyExpansiveShell(p,width,mode);}
+   if(room==='home'){await verifyMusicShelves(p,width,mode,theme);await verifyExpansiveShell(p,width,mode);await verifyUtilityActions(p,width,mode);}
   }
   await p.locator('[data-noa-display-settings]:visible').first().click();
   assert.equal(await p.locator('#noa-theme').inputValue(),mode,'theme survives navigation');
@@ -156,7 +157,7 @@ try{for(const sizes of [[[390,900],[768,900]],[[1280,1440],[1600,900]]])await Pr
 async function verifyAutomaticClock(){
  const context=await browser.newContext({viewport:{width:390,height:900},timezoneId:'Asia/Seoul',serviceWorkers:'block'}),p=await context.newPage();
  const posts=[];p.on('request',r=>{if(r.url().includes('/ui-preferences.php')&&r.method()==='POST')posts.push(r.url());});
- if(phase==='candidate')for(const name of ['noa-design.json','noa-starlight.css','noa-ui.js','noa-home.js','noa-desktop.js'])await context.route('**/'+name+'*',r=>r.fulfill({body:readFileSync(source+'/deploy/'+name),contentType:name.endsWith('.css')?'text/css':name.endsWith('.js')?'text/javascript':'application/json'}));
+ if(phase==='candidate')for(const name of ['noa-account.js','noa-design.json','noa-starlight.css','noa-ui.js','noa-home.js','noa-desktop.js'])await context.route('**/'+name+'*',r=>r.fulfill({body:readFileSync(source+'/deploy/'+name),contentType:name.endsWith('.css')?'text/css':name.endsWith('.js')?'text/javascript':'application/json'}));
  await p.clock.install({time:new Date('2026-11-03T08:55:00+09:00')});
  await p.goto('https://noastudio.ai.kr/noa-login.php');
  await p.waitForFunction(()=>document.documentElement.dataset.noaThemePreference==='auto'&&document.documentElement.dataset.noaTheme==='noa-studio');
@@ -286,4 +287,36 @@ async function verifyExpansiveShell(p,width,mode){
   await all.click();await p.mouse.click(width-8,100);await drawer.waitFor({state:'hidden'});
  }
  console.log('EXPANSIVE_GEOMETRY',JSON.stringify({width,mode,...geometry}));
+}
+
+
+async function verifyHeader(p,width,height){
+ const state=await p.evaluate(()=>{
+  const bar=document.querySelector('#noa-account-bar'),rect=e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return {id:e.id,x:r.x,y:r.y,width:r.width,height:r.height,radius:s.borderRadius,text:e.textContent.trim(),display:s.display};};
+  return {bar:rect(bar),actions:[...bar.querySelector('.noa-account-utilities').children].map(rect),overflow:bar.scrollWidth-bar.clientWidth};
+ });
+ assert.deepEqual(state.actions.map(a=>a.id),['noa-nav-back','noa-nav-top','noa-referral-share','noa-nav-install'],'same four real actions on every page');
+ assert.deepEqual(state.actions.map(a=>a.text),['이전','맨 위','공유','앱 설치']);
+ assert(state.overflow<=1,JSON.stringify(state));
+ for(const [i,a] of state.actions.entries()){
+  assert(a.width>=44&&a.height>=44&&a.x>=state.bar.x&&a.x+a.width<=width+1&&a.y>=state.bar.y&&a.y+a.height<=state.bar.y+state.bar.height+1,JSON.stringify(a));
+  assert.equal(a.radius,'4px');assert.equal(a.display,'inline-flex');
+  assert(Math.abs(a.y-state.actions[0].y)<1,'utility buttons share one baseline');
+  if(i)assert(a.x>=state.actions[i-1].x+state.actions[i-1].width+3,'utility touch areas do not overlap');
+ }
+ if(!(width>=1200&&width>height))assert(Math.max(...state.actions.map(a=>a.width))-Math.min(...state.actions.map(a=>a.width))<1,'compact utilities have equal width');
+ assert.equal(await p.locator('#noa-nav-install').getAttribute('href'),'/noa-install.php');
+}
+async function verifyUtilityActions(p,width,mode){
+ await p.evaluate(()=>scrollTo(0,1200));await p.locator('#noa-nav-top').click();await p.waitForFunction(()=>scrollY===0);
+ await p.locator('#noa-referral-share').click();const dialog=p.locator('#noa-referral-dialog');await dialog.waitFor();
+ await dialog.locator('.nrf-primary').waitFor();
+ const colors=await dialog.evaluate(d=>({bg:getComputedStyle(d).backgroundColor,surface:getComputedStyle(document.documentElement).getPropertyValue('--noa-surface').trim(),radius:getComputedStyle(d).borderRadius,overflow:d.scrollWidth-d.clientWidth}));
+ assert.equal(colors.radius,'4px');assert(colors.overflow<=1);assert.equal(colors.bg,mode==='noa-ivory'?'rgb(245, 246, 248)':'rgb(25, 34, 47)');
+ await p.screenshot({path:output+'/share-'+mode+'-'+width+'.png'});
+ await dialog.locator('.nrf-close').click();await dialog.waitFor({state:'detached'});
+ await p.locator('#noa-nav-install').click();await p.waitForURL('**/noa-install.php');await p.locator('[data-noa-install-page]').waitFor();
+ await p.locator('#noa-nav-back').click();await p.waitForURL('https://noastudio.ai.kr/');
+ await p.waitForFunction(()=>document.querySelector('.noa-main')?.firstElementChild?.dataset.homeSection==='hero');
+ console.log('VISIBLE_UTILITIES_CLICK_TOP_SHARE_INSTALL_BACK_OK',JSON.stringify({width,mode,colors}));
 }

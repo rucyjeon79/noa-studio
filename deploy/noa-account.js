@@ -2,13 +2,15 @@
 (()=>{'use strict';if(document.getElementById('noa-account-bar')||location.pathname.startsWith('/adm/'))return;
  const bar=document.createElement('header');bar.id='noa-account-bar';bar.setAttribute('aria-label','NOA STUDIO · 바로가기');
  const shortcuts=document.createElement('nav');shortcuts.className='noa-account-shortcuts';shortcuts.setAttribute('aria-label','바로가기');
+ const utilities=document.createElement('nav');utilities.className='noa-account-utilities';utilities.setAttribute('aria-label','화면 바로가기');
  const link=(text,href)=>{const a=document.createElement('a');a.textContent=text;a.href=href;return a;};
  const brand=link('','/');brand.className='noa-account-brand';brand.setAttribute('aria-label','NOA STUDIO 홈');
- const mark=document.createElement('img');mark.src='/noa-assets/papa-logo.png';mark.alt='';mark.width=36;mark.height=36;mark.decoding='async';const name=document.createElement('span');name.textContent='NOA STUDIO';brand.append(mark,name);bar.append(brand,shortcuts);
+ const mark=document.createElement('img');mark.src='/noa-assets/papa-logo.png';mark.alt='';mark.width=36;mark.height=36;mark.decoding='async';const name=document.createElement('span');name.textContent='NOA STUDIO';brand.append(mark,name);bar.append(brand,shortcuts,utilities);
  const control=(label,path,run)=>{const button=document.createElement('button');button.type='button';button.className='noa-account-shortcut';button.setAttribute('aria-label',label);button.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="'+path+'"/></svg><span>'+label+'</span>';button.onclick=run;return button;};
  function hasInternalPrevious(referrer,origin,length){try{return length>1&&new URL(referrer).origin===origin;}catch{return false;}}
- const back=control('이전','M15 6l-6 6 6 6',()=>{if(hasInternalPrevious(document.referrer,location.origin,history.length))history.back();else location.assign('/');});back.id='noa-nav-back';bar.prepend(back);
- const top=control('맨 위','M6 14l6-6 6 6 M5 4h14',()=>{window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});});top.id='noa-nav-top';shortcuts.append(top);
+ const back=control('이전','M15 6l-6 6 6 6',()=>{if(document.getElementById('noa-shell-view')||hasInternalPrevious(document.referrer,location.origin,history.length))history.back();else location.assign('/');});back.id='noa-nav-back';utilities.append(back);
+ const top=control('맨 위','M6 14l6-6 6 6 M5 4h14',()=>{const view=document.getElementById('noa-shell-view')?.contentWindow||window;view.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});});top.id='noa-nav-top';utilities.append(top);
+ const install=link('','/noa-install.php');install.id='noa-nav-install';install.className='noa-account-shortcut';install.setAttribute('aria-label','앱 설치');install.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-4-4 4 4 4-4M5 16v5h14v-5"/></svg><span>앱 설치</span>';utilities.append(install);
  const all=link('전체 메뉴','/noa-sitemap.php');all.className='noa-account-shortcut';all.id='noa-nav-all';all.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>전체 메뉴</span>';if(location.pathname==='/noa-sitemap.php')all.setAttribute('aria-current','page');shortcuts.append(all);
  const account=link('','/bbs/login.php?url=%2Fnoa-my.php');account.className='noa-account-shortcut';account.id='noa-nav-account';
  const accountLabel=document.createElement('span');account.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M20 21v-2a6 6 0 0 0-12 0v2 M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0"/></svg>';account.append(accountLabel);shortcuts.append(account);
@@ -17,7 +19,7 @@
  window.addEventListener('noa-membership-status',event=>accountState(!!event.detail?.member));
  // Share the public installation guide, never an account-specific URL.
  const installUrl='https://noastudio.ai.kr/noa-install.php',shareText='NOA STUDIO에서 노아의 음악을 만나보세요. 아래 링크에서 앱을 설치할 수 있어요.';
- const share=document.createElement('button');share.type='button';share.className='noa-account-shortcut';share.setAttribute('aria-label','공유하기');share.setAttribute('aria-haspopup','dialog');share.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3m-4 4 4-4 4 4M5 12v9h14v-9"/></svg><span>공유</span>';if(location.pathname==='/noa-install.php')shortcuts.append(share);
+ const share=document.createElement('button');share.id='noa-nav-share';share.type='button';share.className='noa-account-shortcut';share.setAttribute('aria-label','공유하기');share.setAttribute('aria-haspopup','dialog');share.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3m-4 4 4-4 4 4M5 12v9h14v-9"/></svg><span>공유</span>';install.before(share);
  share.onclick=()=>{
   if(document.getElementById('noa-share-dialog'))return;
   const dialog=document.createElement('dialog');dialog.id='noa-share-dialog';dialog.setAttribute('aria-labelledby','noa-share-title');
@@ -34,6 +36,12 @@
   dialog.addEventListener('close',()=>{dialog.remove();share.focus();},{once:true});document.body.append(dialog);dialog.showModal();
  };
  document.querySelector('.noa-topbar .noa-account')?.closest('.noa-topbar').remove();document.querySelector('.noa-g5-top')?.remove();document.body.prepend(bar);
+ // The invitation module arrives asynchronously. Move its real control, retaining
+ // the member's existing invitation action and a visible label at every width.
+ const attachInvitation=()=>{const invitation=bar.querySelector('#noa-referral-share');if(!invitation||invitation.parentElement===utilities)return;invitation.classList.add('noa-account-shortcut');if(!invitation.querySelector('span')){const label=document.createElement('span');label.textContent='공유';invitation.append(label);}share.remove();install.before(invitation);};
+ attachInvitation();new MutationObserver(attachInvitation).observe(shortcuts,{childList:true});
+ // Anchor links clear the actual one- or two-row header, including text zoom.
+ if(window.ResizeObserver)new ResizeObserver(()=>document.documentElement.style.setProperty('--noa-header-height',Math.ceil(bar.getBoundingClientRect().height)+'px')).observe(bar);
  const summary=document.getElementById('noa-my-account'),status=document.getElementById('noa-my-account-status');
  const write=(id,value)=>{const node=document.getElementById(id);if(node)node.textContent=value;};
  let pending=false,lastAttempt=0,retries=0,retryTimer=null,hasResult=false;

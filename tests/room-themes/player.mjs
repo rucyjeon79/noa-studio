@@ -37,12 +37,17 @@ try{
    assert(frameBox.x+frameBox.width<=width+1);
    const childPadding=await page.frameLocator('#noa-shell-view').locator('body').evaluate(b=>parseFloat(getComputedStyle(b).paddingLeft));assert.equal(childPadding,0,'embedded pages do not reserve a second sidebar');
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+   await page.frameLocator('#noa-shell-view').locator('main').evaluate(e=>e.style.minHeight='2000px');
+   await page.frameLocator('#noa-shell-view').locator('body').evaluate(()=>scrollTo(0,700));
+   await page.locator('#noa-nav-top').click();
+   await page.waitForFunction(()=>document.querySelector('#noa-shell-view').contentWindow.scrollY===0);
+   assert(await page.evaluate(()=>window.originalAudio===document.querySelector('audio')&&!window.originalAudio.paused),'top button scrolls the displayed page without restarting music');
    await page.screenshot({path:out+'/'+width+'-'+(path==='/'?'home':path.split('/').at(-1))+'.png'});
   }
   // Follow a content link inside the retained view, then browser back.
   await page.frameLocator('#noa-shell-view').locator('main>a[href^="/bbs/board.php"]').click();
   await page.waitForFunction(()=>location.pathname==='/bbs/board.php');
-  await page.evaluate(()=>history.back());
+  await page.locator('#noa-nav-back').click();
   await page.waitForFunction(()=>location.pathname==='/');
   assert(await page.evaluate(()=>window.originalAudio===document.querySelector('audio')&&!window.originalAudio.paused));
   // MY entry and an explicit _self link must retain the same engine.

@@ -1,4 +1,4 @@
-"""Place the original home hero first, keeping its 500P invitation directly below and retaining the remaining home content and verified overlays."""
+"""Restore labelled navigation and installation at every viewport with consistent themed spacing and dialogs."""
 import os
 import sys
 from pathlib import Path
@@ -10,7 +10,7 @@ release.UNRELATED_PATH_PREFIXES = ('scripts/busan_', '.github/workflows/busan-',
 theme_assets = {'noa-assets/theme-' + p.name: str(p) for p in sorted(Path('public/noa-theme-scenes').glob('*.webp'))}
 release.FILES = {**theme_assets, 'noa-bridge/ui-preferences.php': 'bridge/ui-preferences.php', **{name: 'deploy/' + name for name in ('noa-starlight.css', 'noa-design.json', 'noa-ui.js', 'noa-home.js', 'noa-desktop.js', 'noa-theme-admin.php', 'noa-vip.php', 'noa-app/home.php')}}
 release.FILES['extend/noa.design.php'] = 'deploy/noa-design.extend.php'
-release.FILES.update({name: 'deploy/' + name for name in ('noa-voice.js', 'noa-ainoa.css', 'noa-amt-fan.js', 'noa-amt-fan.css')})
+release.FILES.update({name: 'deploy/' + name for name in ('noa-account.js', 'noa-voice.js', 'noa-ainoa.css', 'noa-amt-fan.js', 'noa-amt-fan.css')})
 release.NEW = set(theme_assets)
 release.BACKUP = Path(os.environ.get('RUNNER_TEMP', '/tmp')) / 'noa-light-theme-before.json'
 
