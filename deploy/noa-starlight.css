@@ -810,3 +810,6 @@ html.noa-shell-wide[data-noa-theme] .ec-dialog form{gap:16px}
  html.noa-shell-wide[data-noa-theme] .noa-point-checkout{padding:20px}
  html.noa-shell-wide[data-noa-theme] .np-announcement{padding:12px 16px}
 }
+
+/* Keep member and personal-library panels on the same precise corner system. */
+html.noa-shell-wide[data-noa-theme] body :is(#noa-my-account,.noa-personal-card,.noa-my-gift-actions>a,.noa-empty){border-radius:4px}

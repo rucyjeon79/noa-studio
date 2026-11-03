@@ -46,7 +46,7 @@ jobs:
           cp tests/room-themes/member.mjs "$RUNNER_TEMP/noa-light/member.mjs"
           cp tests/room-themes/forms.mjs "$RUNNER_TEMP/noa-light/forms.mjs"
           cp tests/room-themes/player.mjs "$RUNNER_TEMP/noa-light/player.mjs"
-      - name: Verify member pages and writing forms in an isolated fixture
+      - name: Verify member pages, writing forms and uninterrupted playback in isolation
         run: |
           php tests/room-themes/fixture.php
           node "$RUNNER_TEMP/noa-light/member.mjs"

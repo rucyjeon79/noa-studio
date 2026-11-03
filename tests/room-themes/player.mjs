@@ -40,7 +40,7 @@ try{
    await page.screenshot({path:out+'/'+width+'-'+(path==='/'?'home':path.split('/').at(-1))+'.png'});
   }
   // Follow a content link inside the retained view, then browser back.
-  await page.frameLocator('#noa-shell-view').locator('a[href^="/bbs/board.php"]').click();
+  await page.frameLocator('#noa-shell-view').locator('main>a[href^="/bbs/board.php"]').click();
   await page.waitForFunction(()=>location.pathname==='/bbs/board.php');
   await page.evaluate(()=>history.back());
   await page.waitForFunction(()=>location.pathname==='/');
@@ -49,7 +49,7 @@ try{
   await page.evaluate(()=>{const a=document.createElement('a');a.id='test-my';a.href='/noa-my.php';a.target='_self';a.textContent='MY';document.querySelector('.noa-two-line').append(a);});
   await page.locator('#test-my').click();
   await page.waitForFunction(()=>document.querySelector('#noa-shell-view')?.contentDocument?.location.pathname==='/noa-my.php');
-  await page.frameLocator('#noa-shell-view').locator('a[href="/noa-music.php"]').click();
+  await page.frameLocator('#noa-shell-view').locator('main>a[href="/noa-music.php"]').click();
   await page.waitForFunction(()=>!document.querySelector('#noa-shell-view'));
   assert(await page.evaluate(()=>window.originalAudio===document.querySelector('audio')&&!window.originalAudio.paused));
   await page.locator('#pause-play').click();
