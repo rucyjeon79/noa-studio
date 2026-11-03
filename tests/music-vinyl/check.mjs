@@ -159,7 +159,7 @@ try{for(const width of [320,390,1280]){
      card.querySelector('.noa-edit-edit')?.remove();
      window.NoaBrowseEdit.mount({host:list,rows:[{key:card.dataset.inlineKey,title:'곡 정보 검수'}]});
     });
-    let metadata={ok:true,writeKey:'cover',kind:'single',packageType:'cover',revision:1,context:{genre:'cover-reborn'},fields:{title:'편집 전',lyrics:'가사'}};
+    let metadata={ok:true,writeKey:'cover',kind:'single',packageType:'ep',revision:1,original:{status:'linked',ep:'32',title:'작은 떨림',lyrics:'[Intro]\n(oh, 괜찮아요...)'},context:{genre:'pop-original',ep:'32'},fields:{title:'편집 전',lyrics:'가사',geminiPrompt:'prompt',youtubeTitle:'제목',description:'설명',communityPost:'글'}};
     let savedPatch=null, failSave=true;
     await mismatchPage.route('**/noa-inline-edit.php*',async route=>{
      if(route.request().method()==='POST'){
@@ -195,6 +195,19 @@ try{for(const width of [320,390,1280]){
       const controls=panel.locator('.noa-publish-panel');
       const options=await controls.locator('summary').boundingBox(),generate=await controls.locator(':scope>button').boundingBox();
       assert(Math.abs(options.y-generate.y)<2 && options.x+options.width<=generate.x);
+      await controls.locator('summary').click();
+      const rows=controls.locator('.noa-publish-options>label');assert.equal(await rows.count(),6);
+      for(const label of await rows.all()){
+       const rect=await label.boundingBox(),hint=await label.locator('small').boundingBox();
+       assert(rect.width>=options.width+generate.width-1 && rect.y>=generate.y+generate.height-1);
+       assert(hint.x+hint.width<=rect.x+rect.width+1);
+       assert(await label.evaluate(el=>{const r=document.createRange();r.selectNodeContents(el.childNodes[1]);return r.getClientRects().length===1;}));
+      }
+      const source=panel.locator('[data-source-field=ep]');
+      const number=await source.locator('.noa-source-value').boundingBox(),copy=await source.locator('button').boundingBox();
+      assert(number.x+number.width<=copy.x+1 && number.y<copy.y+copy.height);
+      await controls.screenshot({path:'music-vinyl-proof/ep-publish-options-'+width+'.png'});
+      await controls.locator('summary').click();
       const stacked=await field.locator('button span').evaluateAll(labels=>labels.filter(label=>{
        const range=document.createRange();range.selectNodeContents(label);
        return range.getClientRects().length>1 || label.scrollWidth>label.clientWidth+1;
