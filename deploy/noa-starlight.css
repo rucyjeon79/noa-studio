@@ -498,3 +498,160 @@ html[data-noa-theme] .ec-primary{background:var(--noa-accent)!important;color:va
 }
 
 html[data-noa-theme] body a.noa-home-banner[data-home-banner="goods"]>.noa-home-banner-photo{object-fit:contain;background:var(--noa-raised)}
+
+/* Expansive studio: one shared header, a searchable drawer, and aligned editorial rows. */
+html.noa-shell-wide[data-noa-precision]{--noa-rail:0px;--noa-content-max:1488px;--noa-content-gutter:32px}
+html.noa-shell-wide .noa-layout{margin-left:0}
+html.noa-shell-wide[data-noa-precision] .noa-main{max-width:1488px;margin-inline:auto;padding:24px 32px 48px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 24px;align-items:start}
+html.noa-shell-wide .noa-main>*{grid-column:1/-1;min-width:0;margin-block:0}
+html.noa-shell-wide[data-noa-precision] .noa-main>.noa-topbar{display:none}
+html.noa-shell-wide .noa-main>[data-home-section]:is([data-home-section=notices],[data-home-section=community],[data-home-section=recommendations],[data-home-section=ep],[data-home-section=stories],[data-home-section=covers]){grid-column:auto;margin:0}
+html.noa-shell-wide[data-noa-precision] .noa-main>.noa-section{margin-top:0}
+html.noa-shell-wide .noa-main :is(.noa-section-head,.noa-section-heading){align-items:center;flex-wrap:nowrap;min-height:44px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--noa-line)}
+html.noa-shell-wide .noa-main .noa-section-head h2{font-size:20px;line-height:1.5;min-width:0;word-break:keep-all}
+html.noa-shell-wide .noa-main .noa-section-head>a{flex:none;min-height:44px;display:inline-flex;align-items:center;font-size:12px}
+html.noa-shell-wide .noa-main :is(.noa-notice-list,.noa-community-feed){padding:16px 20px;border:1px solid var(--noa-line);border-radius:4px;background:var(--noa-surface)}
+html.noa-shell-wide .noa-main .noa-notice{border-radius:0;background:transparent;border-inline:0}
+html.noa-shell-wide .noa-main .noa-notice-featured{padding:0;box-shadow:none;border-top:0}
+html.noa-shell-wide .noa-main .noa-notice summary{min-height:64px;padding:12px 0}
+html.noa-shell-wide .noa-main .noa-notice-excerpt{font-size:12px;line-height:1.6}
+html.noa-shell-wide .noa-main .noa-feed-row{padding-block:12px;min-height:64px}
+html.noa-shell-wide .noa-main .noa-feed-row strong{font-size:14px;line-height:1.6;font-weight:550}
+html.noa-shell-wide .noa-main .noa-feed-invite{margin-top:16px}
+html.noa-shell-wide .noa-main>.noa-story-entrance{margin:0}
+/* The brand and five destinations stay in one level on a desktop. */
+html.noa-shell-wide #noa-account-bar{margin-inline:0;min-height:76px;padding:12px max(24px,calc((100vw - 1424px)/2));gap:24px;background:var(--noa-bg)}
+html.noa-shell-wide #noa-account-bar .noa-account-brand{display:inline-flex;flex:none;margin-right:0;gap:12px;font-size:15px;letter-spacing:.08em}
+html.noa-shell-wide #noa-account-bar .noa-account-brand img{width:40px;height:40px}
+html.noa-shell-wide #noa-account-bar .noa-primary-nav{display:flex;gap:8px;align-items:center;margin-left:auto}
+html.noa-shell-wide #noa-account-bar .noa-primary-nav a{gap:6px;padding:8px 14px;font-size:14px;border-bottom:2px solid transparent;min-height:48px;position:relative}
+html.noa-shell-wide #noa-account-bar .noa-primary-nav svg{display:none}
+html.noa-shell-wide #noa-account-bar .noa-primary-nav a[aria-current=page]{color:var(--noa-accent);border-color:var(--noa-accent)}
+html.noa-shell-wide #noa-account-bar .noa-primary-nav a:hover{background:var(--noa-raised)}
+html.noa-shell-wide #noa-account-bar .noa-account-shortcuts{gap:4px;margin-left:0}
+html.noa-shell-wide #noa-account-bar :is(.noa-header-control,#noa-nav-all,#noa-nav-account){display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:44px;min-height:44px;margin:0;padding:8px;border:0;border-radius:4px;background:transparent;color:var(--noa-text);font-size:12px;line-height:1.5;white-space:nowrap}
+html.noa-shell-wide #noa-account-bar :is(.noa-header-control,#noa-nav-all,#noa-nav-account):hover{background:var(--noa-raised)}
+html.noa-shell-wide #noa-account-bar .noa-header-control svg{width:20px;height:20px}
+html.noa-shell-wide #noa-account-bar :is(#noa-nav-back,#noa-nav-top,#noa-referral-share){display:none}
+html.noa-shell-wide #noa-account-bar .noa-display-settings::before{flex:none;width:18px;height:18px;margin:0}
+.noa-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* Native dialog supplies focus containment, Escape, and an inert backdrop. */
+html.noa-shell-wide .noa-menu-drawer:not([open]){display:none}
+html.noa-shell-wide .noa-menu-drawer[open]{position:fixed;inset:0 auto 0 0;display:flex;flex-direction:column;gap:24px;width:min(368px,90vw);max-width:none;height:100dvh;max-height:none;margin:0;padding:24px;overflow-y:auto;overscroll-behavior:contain;border:0;border-right:1px solid var(--noa-line);border-radius:0 4px 4px 0;box-sizing:border-box;background:var(--noa-bg);color:var(--noa-text);box-shadow:16px 0 64px #0003}
+html.noa-shell-wide .noa-menu-drawer::backdrop{background:#060b13a3;backdrop-filter:blur(5px)}
+html.noa-shell-wide.noa-menu-open{overflow:hidden}
+html.noa-shell-wide .noa-drawer-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
+html.noa-shell-wide .noa-drawer-head .noa-logo{font-size:16px;letter-spacing:.08em}
+html.noa-shell-wide .noa-drawer-head .noa-brand-mark{width:36px;height:36px}
+html.noa-shell-wide .noa-drawer-close{flex:none;display:grid;place-items:center;width:44px;height:44px;margin:0;padding:10px;border:1px solid var(--noa-line);border-radius:4px;background:transparent;color:var(--noa-text)}
+html.noa-shell-wide .noa-drawer-close svg{width:20px;height:20px}
+html.noa-shell-wide .noa-drawer-profile{padding:20px;border:1px solid var(--noa-line);border-radius:4px;background:var(--noa-surface)}
+html.noa-shell-wide .noa-drawer-profile strong{font-size:17px;font-weight:600;line-height:1.5}
+html.noa-shell-wide .noa-drawer-profile p{font-size:12px;line-height:1.7;margin:8px 0 16px;color:var(--noa-muted)}
+html.noa-shell-wide .noa-drawer-profile .noa-button{display:flex;min-height:44px;padding:10px 12px;font-size:13px;background:var(--noa-darkGray);color:#fff;border:0}
+html.noa-shell-wide .noa-drawer-search{display:flex;align-items:center;gap:12px;margin:0;padding:0 12px;border:1px solid var(--noa-line);border-radius:4px;background:var(--noa-surface)}
+html.noa-shell-wide .noa-drawer-search svg{width:20px;height:20px;flex:none;color:var(--noa-muted)}
+html.noa-shell-wide .noa-drawer-search input{min-width:0;width:100%;height:48px;border:0;margin:0;padding:8px 0;background:transparent;color:var(--noa-text);font-size:14px}
+html.noa-shell-wide .noa-menu{gap:4px;margin:0}
+html.noa-shell-wide .noa-menu a{min-height:48px;padding:12px 16px;font-size:14px}
+html.noa-shell-wide .noa-drawer-secondary{display:grid;gap:24px;border-top:1px solid var(--noa-line);padding-top:24px}
+html.noa-shell-wide .noa-drawer-secondary h2{margin:0 0 8px;font-size:11px;letter-spacing:.08em;color:var(--noa-accent);font-weight:600}
+html.noa-shell-wide .noa-drawer-secondary a{display:flex;align-items:center;min-height:44px;text-decoration:none;font-size:13px;padding:8px 12px;border-left:1px solid var(--noa-line);margin-left:4px}
+html.noa-shell-wide .noa-drawer-secondary a:hover{background:var(--noa-raised);color:var(--noa-accent)}
+html.noa-shell-wide .noa-menu-empty{margin:0;font-size:13px;color:var(--noa-muted)}
+html.noa-shell-wide .noa-menu-drawer .noa-sidebar-bottom{margin-top:0;gap:16px;padding-top:24px}
+html.noa-shell-wide .noa-menu-drawer .noa-sidebar-visitors{display:none}
+/* A panoramic welcome; original song imagery remains in its own compact media frame. */
+html.noa-shell-wide[data-noa-theme] body .noa-theme-scene{display:grid;grid-template-columns:1fr;min-height:328px;margin:0;padding:0;border:1px solid var(--noa-line);background:var(--noa-surface);isolation:isolate}
+html.noa-shell-wide[data-noa-theme] .noa-theme-scene .noa-theme-visual{position:absolute;inset:0;min-height:0;z-index:-2;width:100%;height:100%}
+html.noa-shell-wide[data-noa-theme] .noa-theme-scene .noa-theme-cover{object-position:center 56%}
+html.noa-shell-wide[data-noa-theme] .noa-theme-scene::before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#101824fa 0%,#101824e8 30%,#10182465 62%,#10182408 100%)}
+html.noa-shell-wide[data-noa-theme=noa-ivory] .noa-theme-scene::before{background:linear-gradient(90deg,#fffffffa 0%,#fffffff0 30%,#ffffff70 63%,#ffffff08 100%)}
+html.noa-shell-wide[data-noa-theme] .noa-theme-scene .noa-theme-story{padding:40px 48px;max-width:750px;align-self:center}
+html.noa-shell-wide[data-noa-theme] .noa-theme-scene h2{font-size:clamp(30px,3.1vw,44px);font-weight:650;line-height:1.35;max-width:14em;letter-spacing:-.045em;word-break:keep-all}
+html.noa-shell-wide[data-noa-theme] .noa-theme-scene .noa-theme-caption{font-size:14px;line-height:1.8;margin-top:16px;max-width:42ch}
+html.noa-shell-wide[data-noa-theme] .noa-scene-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;margin-top:24px}
+html.noa-shell-wide .noa-scene-actions .noa-button{font-size:13px;min-height:48px;padding:12px 20px;border-radius:4px}
+html.noa-shell-wide .noa-scene-link{display:inline-flex;align-items:center;gap:20px;min-height:48px;font-size:13px;text-decoration:none;color:var(--noa-text)}
+html.noa-shell-wide .noa-scene-signature{margin:24px 0 0;font-size:9px;line-height:1.5;letter-spacing:.16em;color:var(--noa-muted)}
+html.noa-shell-wide .noa-hero[data-home-section=hero]{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);grid-template-areas:'media copy';grid-template-rows:auto;gap:0;aspect-ratio:auto;min-height:0;block-size:auto;border:1px solid var(--noa-line);border-radius:4px;overflow:hidden;align-items:stretch;background:var(--noa-surface)}
+html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-art{grid-area:media;position:relative;min-width:0;min-height:0;width:100%;height:100%;margin:0;overflow:hidden;aspect-ratio:auto;contain:size;align-self:stretch}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-art>:is(picture,video){position:absolute;inset:0;display:block;width:100%;height:100%;max-height:none;object-fit:cover;object-position:center 30%;aspect-ratio:auto;transform:none;animation:none}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-art picture img{display:block;width:100%;height:100%;max-height:none;object-fit:cover;object-position:center 30%;transform:none;aspect-ratio:auto}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-art::before{content:none}
+html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-copy{grid-area:copy;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;gap:16px;min-width:0;min-height:0;width:100%;height:auto;padding:24px 32px;overflow:visible;background:var(--noa-surface);color:var(--noa-text);text-shadow:none}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-intro{display:grid;gap:8px}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-intro .noa-eyebrow{font-size:10px;line-height:1.4;letter-spacing:.08em;color:var(--noa-accent)}
+html.noa-shell-wide .noa-hero[data-home-section=hero] h1{font-size:26px;line-height:1.35;letter-spacing:-.03em;font-weight:600;margin:0;word-break:keep-all}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-copy p{font-size:13px;line-height:1.6;margin:0;max-width:none;color:var(--noa-muted)}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;order:3;margin-top:auto;width:100%}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-services{display:flex;margin:0;min-width:0}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-actions .noa-button{display:flex;flex-direction:row;justify-content:center;align-items:center;gap:8px;min-width:0;width:100%;min-height:44px;margin:0;padding:8px 10px;font-size:12px;white-space:normal;border-radius:4px;line-height:1.5}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-actions svg{width:18px;height:18px;flex:none}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-discover{display:grid;gap:8px;order:2;flex:none;min-height:0;overflow:visible}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-discover h2{margin:0;font-size:11px;line-height:1.5;font-weight:500;color:var(--noa-muted)}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-picks{display:grid;gap:0;min-width:0}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-pick{display:flex;gap:12px;align-items:center;min-width:0;min-height:48px;padding:6px 0;text-decoration:none;border-top:1px solid var(--noa-line);color:var(--noa-text);text-shadow:none}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-pick img{position:static;width:52px;height:36px;flex:none;object-fit:cover;aspect-ratio:auto;border-radius:2px}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-pick span{display:block;min-width:0}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-pick strong{display:block;margin:0;font-size:12px;line-height:1.6;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-pick small{display:none}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-play{position:absolute;inset:auto 16px 16px auto;z-index:2;min-height:44px}
+html.noa-shell-wide .noa-hero[data-home-section=hero] #noa-hero-status:not(:empty){position:absolute;inset:16px 16px auto;z-index:2;font-size:12px;line-height:1.6}
+/* The studio details are reachable at the end of every page as well as inside the drawer. */
+html.noa-shell-wide[data-noa-style] .noa-mobile-footer{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:24px;margin:32px 0 0;padding:24px 0;border-top:1px solid var(--noa-line)}
+html.noa-shell-wide[data-noa-style] body>.noa-mobile-footer{max-width:1424px;margin-inline:auto;padding-inline:32px}
+html.noa-shell-wide .noa-mobile-footer .noa-sidebar-visitors{margin:0;padding:0;border:0}
+html.noa-shell-wide .noa-mobile-footer .noa-sidebar-visitors dl{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+html.noa-shell-wide .noa-mobile-footer .noa-sidebar-visitors dl>div{grid-column:auto;display:grid;gap:4px}
+html.noa-shell-wide .noa-mobile-footer .noa-sidebar-visitors dd{font-size:16px}
+html.noa-shell-wide .noa-mobile-footer>.noa-display-settings{grid-column:1/-1;justify-self:start;margin:0}
+html.noa-shell-wide .noa-mobile-footer+.noa-footer{display:none}
+@media(max-width:1100px){
+ html.noa-shell-wide #noa-account-bar{gap:12px;padding-inline:24px}
+ html.noa-shell-wide #noa-account-bar .noa-primary-nav{gap:0}
+ html.noa-shell-wide #noa-account-bar .noa-primary-nav a{padding-inline:10px;font-size:13px}
+ html.noa-shell-wide #noa-account-bar .noa-account-brand{font-size:13px;gap:8px}
+ html.noa-shell-wide #noa-account-bar .noa-account-brand img{width:32px;height:32px}
+ html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-copy{padding:24px}
+}
+@media(max-width:959px){
+ html.noa-shell-wide #noa-account-bar .noa-primary-nav{display:none}
+ html.noa-shell-wide #noa-account-bar .noa-account-shortcuts{margin-left:auto}
+ html.noa-shell-wide[data-noa-precision] .noa-main{grid-template-columns:minmax(0,1fr);gap:24px;padding-inline:24px}
+ html.noa-shell-wide .noa-main>[data-home-section]{grid-column:1/-1}
+ html.noa-shell-wide[data-noa-theme] .noa-theme-scene .noa-theme-story{padding:32px;max-width:620px}
+ html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-copy{padding:20px}
+}
+@media(max-width:760px){
+ html.noa-shell-wide[data-noa-precision]{--noa-content-gutter:16px}
+ html.noa-shell-wide #noa-account-bar{min-height:64px;padding:8px 16px;gap:8px}
+ html.noa-shell-wide #noa-account-bar .noa-account-brand{font-size:12px;letter-spacing:.03em;flex-shrink:1}
+ html.noa-shell-wide #noa-account-bar .noa-account-brand img{width:32px;height:32px}
+ html.noa-shell-wide #noa-account-bar .noa-account-shortcuts{gap:0}
+ html.noa-shell-wide #noa-account-bar :is(#noa-nav-all,#noa-nav-account){flex-direction:column;gap:2px;font-size:9px;padding:4px}
+ html.noa-shell-wide #noa-account-bar #noa-menu-find{display:none}
+ html.noa-shell-wide[data-noa-precision] .noa-main{padding:16px 16px calc(var(--noa-dock,72px) + var(--noa-player-space,0px) + 24px);gap:24px}
+ html.noa-shell-wide[data-noa-theme] body .noa-theme-scene{min-height:352px}
+ html.noa-shell-wide[data-noa-theme] .noa-theme-scene .noa-theme-story{padding:28px 24px;width:100%;max-width:480px;align-self:start}
+ html.noa-shell-wide[data-noa-theme] .noa-theme-scene h2{font-size:30px;max-width:10em}
+ html.noa-shell-wide[data-noa-theme] .noa-theme-scene .noa-theme-caption{font-size:12px;max-width:24em}
+ html.noa-shell-wide[data-noa-theme] .noa-theme-scene .noa-theme-visual{grid-row:auto}
+ html.noa-shell-wide[data-noa-theme] .noa-theme-scene .noa-theme-cover{object-position:72% center}
+ html.noa-shell-wide[data-noa-theme] .noa-theme-scene::before{background:linear-gradient(110deg,#101824f5 0%,#101824d9 48%,#10182425 100%)}
+ html.noa-shell-wide[data-noa-theme=noa-ivory] .noa-theme-scene::before{background:linear-gradient(110deg,#fffffffa 0%,#ffffffdc 48%,#ffffff25 100%)}
+ html.noa-shell-wide[data-noa-theme] .noa-scene-actions{gap:8px 16px;margin-top:20px}
+ html.noa-shell-wide .noa-scene-actions .noa-button{min-height:44px;padding:10px 16px;font-size:12px}
+ html.noa-shell-wide .noa-scene-link{font-size:12px;gap:8px;min-height:44px}
+ html.noa-shell-wide .noa-scene-signature{margin-top:20px;font-size:8px}
+ html.noa-shell-wide .noa-hero[data-home-section=hero]{grid-template-columns:minmax(0,1fr);grid-template-areas:'media' 'copy';grid-template-rows:auto auto}
+ html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-art{aspect-ratio:16/9;height:auto;min-height:0;contain:none}
+ html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-copy{padding:20px;gap:16px;align-self:stretch}
+ html.noa-shell-wide .noa-hero[data-home-section=hero] h1{font-size:23px}
+ html.noa-shell-wide .noa-main .noa-section-head h2{font-size:18px}
+ html.noa-shell-wide .noa-main :is(.noa-notice-list,.noa-community-feed){padding:12px 16px}
+ html.noa-shell-wide[data-noa-style] .noa-mobile-footer{grid-template-columns:1fr;gap:20px;margin-top:8px;padding:24px 0}
+ html.noa-shell-wide[data-noa-style] body>.noa-mobile-footer{margin-inline:16px;padding:24px 0 calc(var(--noa-dock,72px) + var(--noa-player-space,0px) + 24px)}
+ html.noa-shell-wide .noa-menu-drawer[open]{padding:20px;gap:20px}
+}
+@media(max-width:359px){html.noa-shell-wide #noa-account-bar .noa-account-brand span{display:none}}

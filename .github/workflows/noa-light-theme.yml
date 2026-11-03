@@ -24,6 +24,7 @@ jobs:
         run: |
           node --test tests/starlight/theme.test.mjs tests/starlight/sections.test.mjs scripts/qa/noa-precision.test.mjs scripts/qa/noa-card-balance.test.mjs
           node --check deploy/noa-ui.js
+          node --check deploy/noa-desktop.js
           php -l bridge/ui-preferences.php
           php -l deploy/noa-theme-admin.php
           php -l deploy/noa-app/home.php

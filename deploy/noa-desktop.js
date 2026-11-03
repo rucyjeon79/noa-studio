@@ -29,11 +29,12 @@ function build(){
  if(latest)account(latest);
 }
 function sync(){
- if(!window.NoaAInoa?.dock)return;const next=wide.matches&&!html.hasAttribute('data-noa-voice-embedded')&&!html.hasAttribute('data-noa-theme-only');
+ if(!window.NoaAInoa?.dock)return;const next=wide.matches&&!html.classList.contains('noa-shell-wide')&&!html.hasAttribute('data-noa-voice-embedded')&&!html.hasAttribute('data-noa-theme-only');
  if(next&&!rail)build();if(next===active)return;active=next;html.toggleAttribute('data-noa-desktop',active);rail.hidden=!active;
  window.NoaAInoa.dock(active?host:null);
  window.NoaAInoaAdmin?.dock(active?document.getElementById('noa-desktop-admin'):null);
 }
+window.addEventListener('noa-shell-ready',sync);
 function start(){sync();wide.addEventListener('change',sync);window.addEventListener('noa-ainoa-ready',sync);window.addEventListener('noa-membership-change',()=>{if(notice)notice.textContent='갱신 중';});
  const bar=document.getElementById('noa-account-bar');if(bar)new ResizeObserver(()=>html.style.setProperty('--noa-desktop-top',Math.ceil(bar.getBoundingClientRect().height)+'px')).observe(bar);
 }
