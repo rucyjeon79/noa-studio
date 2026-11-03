@@ -1,4 +1,4 @@
-"""Restore the clean original five-link rail and original portrait film in a dedicated frame with aligned recommendations and left-aligned content; keep day/night scenery secondary and retain all navigation, member, playback and commerce checks."""
+"""Publish the visually reviewed clean original five-link rail and original portrait film in a dedicated frame with aligned recommendations and left-aligned content; keep day/night scenery secondary and retain all navigation, member, playback and commerce checks."""
 import os
 import sys
 from pathlib import Path
