@@ -41,7 +41,7 @@ try{for(const [width,height] of [[390,900],[768,900],[1280,1440],[1600,900]]){
   await p.locator('#noa-theme').selectOption(mode);
   assert.equal(await p.locator('#noa-theme option:checked').innerText(),theme.name);
   await p.locator('#noa-settings-dialog .noa-dialog-close').click();
-  for(const [route,room] of [['/','home'],['/noa-lounge.php','community'],['/noa-shop.php','shop'],['/noa-login.php','']]){
+  for(const [route,room] of [['/','home'],['/noa-lounge.php','community'],['/noa-shop.php','shop'],['/noa-about.php',''],['/noa-login.php','']]){
    await p.goto(base+route,{waitUntil:'domcontentloaded'});
    await p.waitForFunction(([mode,room])=>document.documentElement.dataset.noaTheme===mode&&document.documentElement.dataset.noaRoom===room,[mode,room]);
    // Close the real campaign overlay through its existing control, without account writes.
@@ -85,7 +85,13 @@ try{for(const [width,height] of [[390,900],[768,900],[1280,1440],[1600,900]]){
     }
    }
    await p.evaluate(()=>scrollTo(0,0));
-   await p.screenshot({path:output+'/'+(room||'settings')+'-'+mode+'-'+width+'.png'});
+   if(route==='/noa-about.php'){
+    assert.equal(await p.locator('.ne-hero>img').getAttribute('src'),theme.images.music,'studio introduction follows the active scene');
+    assert.equal(await p.locator('.ne-masthead').isVisible(),false,'one global brand header');
+    assert(await p.locator('#noa-account-bar .noa-account-brand').isVisible());
+    assert.deepEqual(await p.locator('.ne-artist img').evaluateAll(images=>images.map(img=>img.getAttribute('src'))),['/noa-assets/editorial-noa-portrait.webp','/noa-assets/editorial-noel-portrait.webp'],'artist portraits remain original');
+   }
+   await p.screenshot({path:output+'/'+(room||(route==='/noa-about.php'?'about':'settings'))+'-'+mode+'-'+width+'.png'});
    if(room==='home'){await verifyMusicShelves(p,width,mode,theme);await verifyExpansiveShell(p,width,mode);}
   }
   await p.locator('[data-noa-display-settings]:visible').first().click();

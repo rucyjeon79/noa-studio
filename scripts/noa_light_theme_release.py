@@ -1,4 +1,4 @@
-"""Release music-first home shelves with four-card paging, aligned collection pairs and day/night community invitations; retain candidate checks, public hashes and rollback guards."""
+"""Release music-first home shelves with four-card paging, aligned collection pairs and day/night community invitations and studio introduction; retain candidate checks, public hashes and rollback guards."""
 import os
 import sys
 from pathlib import Path

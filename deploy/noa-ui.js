@@ -174,6 +174,7 @@ function themeImages(theme){
   ['.noa-monthly-intro>img','music'],
   ['[data-home-banner="youtube"]>.noa-home-banner-photo','music'],
   ['[data-home-banner="amt"]>.noa-home-banner-photo','journey'],
+  ['.ne-hero>img','music'],
   ['#ecosystem[data-space="lounge"]>.ec-hero>img','coast'],
   ['#ecosystem[data-space="lab"]>.ec-hero>img','music']
  ];

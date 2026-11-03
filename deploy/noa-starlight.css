@@ -713,6 +713,13 @@ html.noa-shell-wide[data-noa-theme] body :is(.noa-feed-invite,.ec-story-offer) .
 /* Shared rectangular surfaces and controls keep the same corner rule. */
 html.noa-shell-wide[data-noa-theme] body :is(.noa-button,.noa-action,.ec-hero,.ec-card,.ec-write-invite,.ec-category-link,.noa-discovery-tabs button){border-radius:4px}
 html.noa-shell-wide[data-noa-theme] body :is(input:not([type=range]):not([type=checkbox]):not([type=radio]),select,textarea){border-radius:4px}
+/* The studio story shares the day/night scenery and the existing global masthead. */
+html.noa-shell-wide[data-noa-theme] .ne-masthead{display:none}
+html.noa-shell-wide[data-noa-theme] .ne-hero{min-height:440px;background:var(--noa-surface);color:var(--noa-text)}
+html.noa-shell-wide[data-noa-theme] .ne-hero::before{background:var(--noa-invite-shade)}
+html.noa-shell-wide[data-noa-theme] .ne-hero :is(h1,p:not(.ne-kicker),.ne-hero-link){color:var(--noa-text);opacity:1}
+html.noa-shell-wide[data-noa-theme] .ne-hero .ne-kicker{color:var(--noa-accent)}
+html.noa-shell-wide[data-noa-theme] .ne-hero-caption{color:var(--noa-text);opacity:1;background:var(--noa-surface);padding:4px 8px;border-radius:2px}
 @media(max-width:959px){
  html.noa-shell-wide[data-noa-theme] .noa-main>:is([data-home-banner=goods],[data-home-banner=youtube]){grid-column:1/-1}
  html.noa-shell-wide[data-noa-theme] body .noa-main>[data-home-section=recommendations]{display:flex}
