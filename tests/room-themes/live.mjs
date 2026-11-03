@@ -13,7 +13,7 @@ const results=[];
 try{for(const [width,height] of [[390,900],[768,900],[1280,1440],[1600,900]]){
  const context=await browser.newContext({viewport:{width,height},timezoneId:'Asia/Seoul',serviceWorkers:'block'}),p=await context.newPage();
  const errors=[];p.on('pageerror',e=>errors.push(e.message));
- if(phase==='candidate')for(const name of ['noa-design.json','noa-starlight.css','noa-ui.js','noa-desktop.js']){
+ if(phase==='candidate')for(const name of ['noa-design.json','noa-starlight.css','noa-ui.js','noa-home.js','noa-desktop.js']){
   await context.route('**/'+name+'*',route=>route.fulfill({body:readFileSync(source+'/deploy/'+name),contentType:name.endsWith('.css')?'text/css':name.endsWith('.js')?'text/javascript':'application/json'}));
  }
  if(phase==='candidate')await context.route('**/noa-assets/theme-*.webp*',route=>{
@@ -86,7 +86,7 @@ try{for(const [width,height] of [[390,900],[768,900],[1280,1440],[1600,900]]){
    }
    await p.evaluate(()=>scrollTo(0,0));
    await p.screenshot({path:output+'/'+(room||'settings')+'-'+mode+'-'+width+'.png'});
-   if(room==='home')await verifyExpansiveShell(p,width,mode);
+   if(room==='home'){await verifyMusicShelves(p,width,mode,theme);await verifyExpansiveShell(p,width,mode);}
   }
   await p.locator('[data-noa-display-settings]:visible').first().click();
   assert.equal(await p.locator('#noa-theme').inputValue(),mode,'theme survives navigation');
@@ -109,7 +109,7 @@ try{for(const [width,height] of [[390,900],[768,900],[1280,1440],[1600,900]]){
 async function verifyAutomaticClock(){
  const context=await browser.newContext({viewport:{width:390,height:900},timezoneId:'Asia/Seoul',serviceWorkers:'block'}),p=await context.newPage();
  const posts=[];p.on('request',r=>{if(r.url().includes('/ui-preferences.php')&&r.method()==='POST')posts.push(r.url());});
- if(phase==='candidate')for(const name of ['noa-design.json','noa-starlight.css','noa-ui.js','noa-desktop.js'])await context.route('**/'+name+'*',r=>r.fulfill({body:readFileSync(source+'/deploy/'+name),contentType:name.endsWith('.css')?'text/css':name.endsWith('.js')?'text/javascript':'application/json'}));
+ if(phase==='candidate')for(const name of ['noa-design.json','noa-starlight.css','noa-ui.js','noa-home.js','noa-desktop.js'])await context.route('**/'+name+'*',r=>r.fulfill({body:readFileSync(source+'/deploy/'+name),contentType:name.endsWith('.css')?'text/css':name.endsWith('.js')?'text/javascript':'application/json'}));
  await p.clock.install({time:new Date('2026-11-03T08:55:00+09:00')});
  await p.goto('https://noastudio.ai.kr/noa-login.php');
  await p.waitForFunction(()=>document.documentElement.dataset.noaThemePreference==='auto'&&document.documentElement.dataset.noaTheme==='noa-studio');
@@ -151,6 +151,47 @@ async function verifyAutomaticClock(){
   const prefs=await response.json();assert.equal(prefs.defaults.theme,'auto');assert(prefs.defaults.enabled.includes('auto'));assert.equal(prefs.member,false);
  }
  console.log('AUTOMATIC_0900_2100_MANUAL_OVERRIDE_RELOAD_OLD_TAB_COMPATIBILITY_NO_ACCOUNT_WRITES_OK');await context.close();
+}
+
+async function verifyMusicShelves(p,width,mode,theme){
+ await p.waitForFunction(()=>document.body.dataset.noaHomeReady==='true'&&[...document.querySelectorAll('.noa-home-shelf')].length===5&&[...document.querySelectorAll('.noa-home-shelf>.noa-card-grid')].every(g=>g.querySelectorAll('.noa-music-card').length<=4));
+ await p.locator('#noa-home-community .noa-feed-invite').waitFor();
+ const layout=await p.evaluate(()=>{
+  const box=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom};};
+  return [...document.querySelectorAll('.noa-home-shelf')].map(s=>({key:s.dataset.homeSection,...box(s),grid:box(s.querySelector('.noa-card-grid')),columns:Number(s.querySelector('.noa-card-grid').dataset.noaColumns),cards:[...s.querySelectorAll('.noa-music-card')].map(a=>({key:a.dataset.video,...box(a),art:box(a.querySelector('.noa-art')),title:box(a.querySelector('.noa-card-heading'))})),pager:s.querySelector('.noa-home-pages:not([hidden])')?box(s.querySelector('.noa-home-pages')):null}));
+ });
+ for(const shelf of layout){
+  assert.equal(shelf.cards.length,4,'each populated home shelf starts with four actual tracks: '+shelf.key);
+  assert.equal(shelf.columns,shelf.key==='recommendations'&&width>=960?4:2,'shelf column count matches its content width');
+  for(const card of shelf.cards){assert(Math.abs(card.art.width/card.art.height-16/9)<.03,'song art keeps landscape proportions');assert(Math.abs(card.title.height-44)<1,'two title lines have a stable baseline');}
+ }
+ if(width>=960)for(const pair of [['ep','stories'],['covers','playlists']]){
+  const [left,right]=pair.map(key=>layout.find(s=>s.key===key));
+  assert(Math.abs(left.y-right.y)<2,'paired headings align: '+pair);
+  assert(Math.abs(left.grid.y-right.grid.y)<2,'paired artwork starts on the same line: '+pair);
+  assert(Math.abs(left.bottom-right.bottom)<2,'paired shelves finish on the same line: '+pair);
+  if(left.pager&&right.pager)assert(Math.abs(left.pager.y-right.pager.y)<2,'paired page controls align: '+pair);
+ }
+ const readingOrder=await p.locator('.noa-main').evaluate(main=>[...main.children].map(n=>n.dataset.homeSection||n.dataset.homeBanner||n.id||n.className));
+ assert(readingOrder.indexOf('recommendations')<readingOrder.indexOf('noa-referral-banner'),'music is reachable before referral promotion');
+ assert(readingOrder.indexOf('stories')<readingOrder.indexOf('goods'),'music collections precede merchandise promotion');
+ const banner=p.locator('#noa-home-community .noa-feed-invite');
+ const paint=await banner.evaluate(el=>({image:getComputedStyle(el,'::before').backgroundImage,radius:getComputedStyle(el).borderRadius,color:getComputedStyle(el.querySelector('strong')).color}));
+ assert(paint.image.includes(theme.images.journey),'late-loading community invitation follows the selected day/night scenery');
+ assert.equal(paint.radius,'4px');
+ const hex=theme.tokens.text.replace('#','');assert.equal(paint.color,'rgb('+[0,2,4].map(i=>parseInt(hex.slice(i,i+2),16)).join(', ')+')','invitation heading uses the readable theme text');
+ await banner.screenshot({path:output+'/community-invite-'+mode+'-'+width+'.png'});
+ const featured=p.locator('[data-home-section=recommendations]');
+ await featured.screenshot({path:output+'/music-discovery-'+mode+'-'+width+'.png'});
+ if(width>=960){await p.locator('[data-home-section=ep]').scrollIntoViewIfNeeded();await p.screenshot({path:output+'/music-pair-'+mode+'-'+width+'.png'});}
+ if(width===390||width===1600){
+  const ids=()=>featured.locator('.noa-music-card').evaluateAll(cards=>cards.map(c=>c.dataset.video));
+  const first=await ids();await featured.getByRole('button',{name:'다음',exact:true}).click();
+  const second=await ids();assert(second.length>0&&second.length<=4);assert(second.every(id=>!first.includes(id)),'next page exposes different real tracks');
+  await featured.getByRole('button',{name:'이전',exact:true}).click();assert.deepEqual(await ids(),first,'previous page restores the same tracks');
+ }
+ console.log('MUSIC_SHELVES_AND_THEME_INVITATION',JSON.stringify({width,mode,layout,paint}));
+ await p.evaluate(()=>scrollTo(0,0));
 }
 
 async function verifyExpansiveShell(p,width,mode){

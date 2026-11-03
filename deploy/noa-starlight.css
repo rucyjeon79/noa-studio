@@ -505,7 +505,7 @@ html.noa-shell-wide .noa-layout{margin-left:0}
 html.noa-shell-wide[data-noa-precision] .noa-main{max-width:1488px;margin-inline:auto;padding:24px 32px 48px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 24px;align-items:start}
 html.noa-shell-wide .noa-main>*{grid-column:1/-1;min-width:0;margin-block:0}
 html.noa-shell-wide[data-noa-precision] .noa-main>.noa-topbar{display:none}
-html.noa-shell-wide .noa-main>[data-home-section]:is([data-home-section=notices],[data-home-section=community],[data-home-section=recommendations],[data-home-section=ep],[data-home-section=stories],[data-home-section=covers]){grid-column:auto;margin:0}
+html.noa-shell-wide .noa-main>[data-home-section]:is([data-home-section=notices],[data-home-section=community],[data-home-section=ep],[data-home-section=stories],[data-home-section=covers],[data-home-section=playlists]){grid-column:auto;margin:0}
 html.noa-shell-wide[data-noa-precision] .noa-main>.noa-section{margin-top:0}
 html.noa-shell-wide .noa-main :is(.noa-section-head,.noa-section-heading){align-items:center;flex-wrap:nowrap;min-height:44px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--noa-line)}
 html.noa-shell-wide .noa-main .noa-section-head h2{font-size:20px;line-height:1.5;min-width:0;word-break:keep-all}
@@ -676,3 +676,52 @@ html.noa-shell-wide[data-noa-theme] .noa-home-quickstart h3{font-size:11px;line-
 html.noa-shell-wide[data-noa-theme] .noa-home-quickstart a{display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:48px;border-top:1px solid var(--noa-line);font-size:13px;text-decoration:none;color:var(--noa-text)}
 html.noa-shell-wide[data-noa-theme] .noa-home-quickstart a:hover{color:var(--noa-accent)}
 @media(max-width:959px){html.noa-shell-wide[data-noa-theme] .noa-home-quickstart{display:none}}
+
+/* Music shelves follow one rhythm: four discoveries, then two paired collections. */
+html.noa-shell-wide[data-noa-theme] body .noa-main>.noa-home-shelf{display:flex;flex-direction:column;align-self:stretch;min-width:0}
+html.noa-shell-wide[data-noa-theme] .noa-home-shelf>.noa-muted{margin:0 0 20px;min-height:24px;font-size:13px;line-height:24px}
+html.noa-shell-wide[data-noa-theme] .noa-home-shelf>.noa-card-grid{column-gap:24px;row-gap:24px}
+html.noa-shell-wide[data-noa-theme] .noa-home-shelf>.noa-home-pages{margin-top:auto;padding-top:24px;min-height:68px}
+html.noa-shell-wide[data-noa-theme] body .noa-home-shelf .noa-engagement-card>.noa-music-card{display:grid;grid-template-rows:auto 44px 32px;gap:8px;padding:0;background:transparent}
+html.noa-shell-wide[data-noa-theme] .noa-home-shelf .noa-music-card>.noa-card-heading{align-items:start;min-height:44px;margin:0}
+html.noa-shell-wide[data-noa-theme] body .noa-home-shelf .noa-music-card .noa-card-heading strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;block-size:44px;line-height:22px;margin:0;font-size:14px}
+html.noa-shell-wide[data-noa-theme] .noa-home-shelf .noa-art{border-radius:4px}
+html.noa-shell-wide[data-noa-theme] .noa-home-shelf .noa-discovery-reason{margin:0;line-height:16px;font-size:11px}
+html.noa-shell-wide[data-noa-theme] .noa-home-shelf .noa-engagement{min-height:44px;align-items:center}
+html.noa-shell-wide[data-noa-theme] .noa-home-shelf .noa-engagement>a{min-height:44px;justify-content:flex-start;font-size:11px}
+html.noa-shell-wide[data-noa-theme] body .noa-main>[data-home-section=recommendations]{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:24px}
+html.noa-shell-wide[data-noa-theme] [data-home-section=recommendations]>:is(.noa-section-head,.noa-card-grid,.noa-home-pages){grid-column:1/-1}
+html.noa-shell-wide[data-noa-theme] [data-home-section=recommendations]>p.noa-muted{grid-column:1;margin:0;min-height:24px;line-height:24px}
+html.noa-shell-wide[data-noa-theme] [data-home-section=recommendations]>.noa-discovery-tabs{grid-column:2;grid-row:2/4;align-self:center;justify-self:end;margin:0}
+html.noa-shell-wide[data-noa-theme] [data-home-section=recommendations]>.noa-card-grid{margin-top:24px}
+html.noa-shell-wide[data-noa-theme] #noa-playlist-basis{display:none}
+html.noa-shell-wide[data-noa-theme] .noa-main>:is([data-home-banner=goods],[data-home-banner=youtube]){grid-column:auto;align-self:stretch;margin:0}
+
+/* Invitations use the current scenery even when loaded after the theme script. */
+html.noa-shell-wide[data-noa-theme]{--noa-invite-shade:linear-gradient(90deg,#10151ff5 0%,#10151fe8 48%,#10151f35 100%)}
+html.noa-shell-wide[data-noa-theme=noa-ivory]{--noa-invite-shade:linear-gradient(90deg,#fffffff5 0%,#fffffff0 48%,#ffffff35 100%)}
+html.noa-shell-wide[data-noa-theme] body :is(#noa-home-community,#noa-free-board,#ecosystem,#noa-song-requests) :is(.noa-feed-invite,.ec-story-offer){
+ background:var(--noa-surface)!important;border:1px solid var(--noa-line);border-radius:4px;color:var(--noa-text);min-height:168px;padding:24px!important;
+}
+html.noa-shell-wide[data-noa-theme] body :is(.noa-feed-invite,.ec-story-offer)::before{content:'';position:absolute;inset:0;z-index:-1;background-image:var(--noa-invite-shade),var(--noa-image-journey);background-position:center;background-size:cover}
+html.noa-shell-wide[data-noa-theme] body .ec-story-offer::before{background-image:var(--noa-invite-shade),var(--noa-image-music)}
+html.noa-shell-wide[data-noa-theme] body :is(.noa-feed-invite,.ec-story-offer)>img.noa-banner-art{display:none}
+html.noa-shell-wide[data-noa-theme] body :is(.noa-feed-invite,.ec-story-offer) .noa-banner-lines{max-width:78%;gap:8px}
+html.noa-shell-wide[data-noa-theme] body :is(.noa-feed-invite,.ec-story-offer) .noa-banner-lines>strong{color:var(--noa-text);font-size:21px;line-height:1.5;text-wrap:pretty}
+html.noa-shell-wide[data-noa-theme] body :is(.noa-feed-invite,.ec-story-offer) .noa-banner-lines>small{color:var(--noa-accent);font-size:10px}
+html.noa-shell-wide[data-noa-theme] body :is(.noa-feed-invite,.ec-story-offer) .noa-banner-lines>span{color:var(--noa-muted);font-size:12px}
+/* Shared rectangular surfaces and controls keep the same corner rule. */
+html.noa-shell-wide[data-noa-theme] body :is(.noa-button,.noa-action,.ec-hero,.ec-card,.ec-write-invite,.ec-category-link,.noa-discovery-tabs button){border-radius:4px}
+html.noa-shell-wide[data-noa-theme] body :is(input:not([type=range]):not([type=checkbox]):not([type=radio]),select,textarea){border-radius:4px}
+@media(max-width:959px){
+ html.noa-shell-wide[data-noa-theme] .noa-main>:is([data-home-banner=goods],[data-home-banner=youtube]){grid-column:1/-1}
+ html.noa-shell-wide[data-noa-theme] body .noa-main>[data-home-section=recommendations]{display:flex}
+ html.noa-shell-wide[data-noa-theme] [data-home-section=recommendations]>.noa-discovery-tabs{align-self:flex-start;margin-top:12px}
+ html.noa-shell-wide[data-noa-theme] [data-home-section=recommendations]>.noa-card-grid{margin-top:16px}
+}
+@media(max-width:760px){
+ html.noa-shell-wide[data-noa-theme] .noa-home-shelf>.noa-card-grid{column-gap:12px;row-gap:20px}
+ html.noa-shell-wide[data-noa-theme] .noa-home-shelf>.noa-home-pages{padding-top:16px;min-height:60px}
+ html.noa-shell-wide[data-noa-theme] body :is(.noa-feed-invite,.ec-story-offer) .noa-banner-lines{max-width:85%}
+ html.noa-shell-wide[data-noa-theme] body :is(.noa-feed-invite,.ec-story-offer) .noa-banner-lines>strong{font-size:19px}
+}

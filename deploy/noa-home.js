@@ -34,7 +34,7 @@ function rawListSize(state){
  const columns=homePageSize(width,1,1,0,gap,rowGap);
  return homePageSize(width,window.visualViewport?.height||window.innerHeight,state.cardHeight||((width-gap*(columns-1))/columns*.5625+120),chrome,gap,rowGap);
 }
-function listSize(state){if(window.matchMedia('(max-width:760px) and (orientation:portrait)').matches)return 4;return Math.min(rawListSize(state),...[...homeLists.values()].filter(item=>item.rows?.length).map(rawListSize));}
+function listSize(state){if(state.host?.closest('.noa-home-shelf')||window.matchMedia('(max-width:760px) and (orientation:portrait)').matches)return 4;return Math.min(rawListSize(state),...[...homeLists.values()].filter(item=>item.rows?.length).map(rawListSize));}
 function fitList(state){
  const heights=[...state.host.children].filter(node=>node.matches('.noa-music-card,.noa-engagement-card')).map(node=>node.getBoundingClientRect().height);
  state.cardHeight=Math.max(state.cardHeight||0,...heights);
@@ -55,6 +55,7 @@ let refitFrame=0;
 const refit=()=>{if(refitFrame)return;refitFrame=requestAnimationFrame(()=>{refitFrame=0;const sizes=[...homeLists.values()].map(state=>[state,listSize(state)]);for(const [state,size]of sizes)if(size!==state.size)renderList(state);});};
 const homeResize=new ResizeObserver(entries=>{for(const entry of entries){const state=homeLists.get(entry.target.id);if(state)fitList(state);}});
 window.addEventListener('resize',refit,{passive:true});window.visualViewport?.addEventListener('resize',refit,{passive:true});
+window.addEventListener('noa-shell-ready',refit);
 document.fonts?.ready.then(refit);
 
 function fill(id,rows,playlist=false,integrated=false){
