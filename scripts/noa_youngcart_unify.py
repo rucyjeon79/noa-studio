@@ -3,7 +3,7 @@ import sys,time,secrets,hashlib,json,urllib.request
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
-FILES={'bridge/youngcart-core.php':'noa-bridge/youngcart-core.php','deploy/noa-youngcart.php':'noa-youngcart.php','deploy/noa-youngcart.js':'noa-youngcart.js','deploy/noa-youngcart-relay.js':'noa-youngcart-relay.js','deploy/noa-youngcart.extend.php':'extend/zz.noa-youngcart.php'}
+FILES={'deploy/noa-youngcart-premium.css':'noa-youngcart-premium.css','deploy/noa-youngcart-premium.js':'noa-youngcart-premium.js','bridge/youngcart-core.php':'noa-bridge/youngcart-core.php','deploy/noa-youngcart.php':'noa-youngcart.php','deploy/noa-youngcart.js':'noa-youngcart.js','deploy/noa-youngcart-relay.js':'noa-youngcart-relay.js','deploy/noa-youngcart.extend.php':'extend/zz.noa-youngcart.php'}
 PHP=r'''<?php
 ini_set('display_errors','0');
 if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||time()>YC_EXPIRY||!hash_equals('YC_TOKEN',hash('sha256',(string)($_SERVER['HTTP_X_NOA_CONTROL']??'')))){http_response_code(404);exit;}
