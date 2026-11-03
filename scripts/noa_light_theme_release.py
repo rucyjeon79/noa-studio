@@ -1,4 +1,4 @@
-"""Release persistent left navigation on wide landscape screens, preserve compact modal access and refine internal page introductions, store surfaces and readable themed writing forms; retain candidate checks, public hashes and rollback guards."""
+"""Restore the clean original five-link rail and full-width artist feature; keep day/night scenery secondary and retain all navigation, member, playback and commerce checks."""
 import os
 import sys
 from pathlib import Path

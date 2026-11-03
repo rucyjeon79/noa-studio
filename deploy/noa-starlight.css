@@ -561,42 +561,43 @@ html.noa-shell-wide .noa-drawer-secondary a:hover{background:var(--noa-raised);c
 html.noa-shell-wide .noa-menu-empty{margin:0;font-size:13px;color:var(--noa-muted)}
 html.noa-shell-wide .noa-menu-drawer .noa-sidebar-bottom{margin-top:0;gap:16px;padding-top:24px}
 html.noa-shell-wide .noa-menu-drawer .noa-sidebar-visitors{display:none}
-/* A panoramic welcome; original song imagery remains in its own compact media frame. */
-html.noa-shell-wide[data-noa-theme] body .noa-theme-scene{display:grid;grid-template-columns:1fr;min-height:328px;margin:0;padding:0;border:1px solid var(--noa-line);background:var(--noa-surface);isolation:isolate}
+/* The scenery introduces the theme; the original artist film remains the feature. */
+html.noa-shell-wide[data-noa-theme] body .noa-theme-scene{display:grid;grid-template-columns:1fr;min-height:232px;margin:0;padding:0;border:1px solid var(--noa-line);background:var(--noa-surface);isolation:isolate}
 html.noa-shell-wide[data-noa-theme] .noa-theme-scene .noa-theme-visual{position:absolute;inset:0;min-height:0;z-index:-2;width:100%;height:100%}
 html.noa-shell-wide[data-noa-theme] .noa-theme-scene .noa-theme-cover{object-position:center 56%}
 html.noa-shell-wide[data-noa-theme] .noa-theme-scene::before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#101824fa 0%,#101824e8 30%,#10182465 62%,#10182408 100%)}
 html.noa-shell-wide[data-noa-theme=noa-ivory] .noa-theme-scene::before{background:linear-gradient(90deg,#fffffffa 0%,#fffffff0 30%,#ffffff70 63%,#ffffff08 100%)}
-html.noa-shell-wide[data-noa-theme] .noa-theme-scene .noa-theme-story{padding:40px 48px;max-width:750px;align-self:center}
-html.noa-shell-wide[data-noa-theme] .noa-theme-scene h2{font-size:clamp(30px,3.1vw,44px);font-weight:650;line-height:1.35;max-width:14em;letter-spacing:-.045em;word-break:keep-all}
-html.noa-shell-wide[data-noa-theme] .noa-theme-scene .noa-theme-caption{font-size:14px;line-height:1.8;margin-top:16px;max-width:42ch}
-html.noa-shell-wide[data-noa-theme] .noa-scene-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;margin-top:24px}
-html.noa-shell-wide .noa-scene-actions .noa-button{font-size:13px;min-height:48px;padding:12px 20px;border-radius:4px}
-html.noa-shell-wide .noa-scene-link{display:inline-flex;align-items:center;gap:20px;min-height:48px;font-size:13px;text-decoration:none;color:var(--noa-text)}
-html.noa-shell-wide .noa-scene-signature{margin:24px 0 0;font-size:9px;line-height:1.5;letter-spacing:.16em;color:var(--noa-muted)}
-html.noa-shell-wide .noa-hero[data-home-section=hero]{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);grid-template-areas:'media copy';grid-template-rows:auto;gap:0;aspect-ratio:auto;min-height:0;block-size:auto;border:1px solid var(--noa-line);border-radius:4px;overflow:hidden;align-items:stretch;background:var(--noa-surface)}
-html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-art{grid-area:media;position:relative;min-width:0;min-height:0;width:100%;height:100%;margin:0;overflow:hidden;aspect-ratio:auto;contain:size;align-self:stretch}
+html.noa-shell-wide[data-noa-theme] .noa-theme-scene .noa-theme-story{padding:28px 32px;max-width:680px;align-self:center}
+html.noa-shell-wide[data-noa-theme] .noa-theme-scene h2{font-size:clamp(26px,2.3vw,34px);font-weight:600;line-height:1.4;max-width:17em;letter-spacing:-.04em;word-break:keep-all}
+html.noa-shell-wide[data-noa-theme] .noa-theme-scene .noa-theme-caption{font-size:13px;line-height:1.8;margin-top:12px;max-width:42ch}
+html.noa-shell-wide[data-noa-theme] .noa-scene-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;margin-top:16px}
+html.noa-shell-wide .noa-scene-actions .noa-button{font-size:12px;min-height:44px;padding:10px 16px;border-radius:4px}
+html.noa-shell-wide .noa-scene-link{display:inline-flex;align-items:center;gap:16px;min-height:44px;font-size:12px;text-decoration:none;color:var(--noa-text)}
+html.noa-shell-wide .noa-scene-signature{display:none}
+html.noa-shell-wide .noa-hero[data-home-section=hero]{position:relative;display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:'feature';grid-template-rows:minmax(0,1fr);gap:0;aspect-ratio:auto;min-height:480px;block-size:clamp(480px,42vw,620px);border:1px solid var(--noa-line);border-radius:4px;overflow:hidden;align-items:stretch;background:#17191c;isolation:isolate}
+html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-art{grid-area:feature;position:absolute;inset:0;min-width:0;min-height:0;width:100%;height:100%;margin:0;overflow:hidden;aspect-ratio:auto;contain:size;align-self:stretch;z-index:0}
 html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-art>:is(picture,video){position:absolute;inset:0;display:block;width:100%;height:100%;max-height:none;object-fit:cover;object-position:center 30%;aspect-ratio:auto;transform:none;animation:none}
 html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-art picture img{display:block;width:100%;height:100%;max-height:none;object-fit:cover;object-position:center 30%;transform:none;aspect-ratio:auto}
 html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-art::before{content:none}
-html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-copy{grid-area:copy;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;gap:16px;min-width:0;min-height:0;width:100%;height:auto;padding:24px 32px;overflow:visible;background:var(--noa-surface);color:var(--noa-text);text-shadow:none}
-html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-intro{display:grid;gap:8px}
-html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-intro .noa-eyebrow{font-size:10px;line-height:1.4;letter-spacing:.08em;color:var(--noa-accent)}
-html.noa-shell-wide .noa-hero[data-home-section=hero] h1{font-size:26px;line-height:1.35;letter-spacing:-.03em;font-weight:600;margin:0;word-break:keep-all}
-html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-copy p{font-size:13px;line-height:1.6;margin:0;max-width:none;color:var(--noa-muted)}
-html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;order:3;margin-top:auto;width:100%}
+html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-copy{grid-area:feature;align-self:end;position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:'intro picks' 'actions picks';align-items:end;gap:20px 40px;min-width:0;min-height:0;width:100%;height:auto;padding:64px 32px 32px;overflow:visible;background:linear-gradient(0deg,#11151bf5 0%,#11151bd9 65%,#11151b00 100%);color:#fff;text-shadow:none;pointer-events:none}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-intro{grid-area:intro;display:grid;gap:8px}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-intro .noa-eyebrow{font-size:10px;line-height:1.4;letter-spacing:.12em;color:#e3d4ae}
+html.noa-shell-wide .noa-hero[data-home-section=hero] h1{font-size:clamp(26px,2.5vw,36px);line-height:1.35;letter-spacing:-.03em;font-weight:600;margin:0;word-break:keep-all;color:#fff}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-copy p{font-size:13px;line-height:1.7;margin:0;max-width:36em;color:#e6e8eb}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-actions{grid-area:actions;display:grid;grid-template-columns:1fr 1fr;gap:8px;order:initial;margin:0;width:100%;pointer-events:auto}
 html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-services{display:flex;margin:0;min-width:0}
-html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-actions .noa-button{display:flex;flex-direction:row;justify-content:center;align-items:center;gap:8px;min-width:0;width:100%;min-height:44px;margin:0;padding:8px 10px;font-size:12px;white-space:normal;border-radius:4px;line-height:1.5}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-actions .noa-button{display:flex;flex-direction:row;justify-content:center;align-items:center;gap:8px;min-width:0;width:100%;min-height:44px;margin:0;padding:8px 10px;font-size:12px;white-space:normal;border-radius:4px;line-height:1.5;background:#ffffff0d;border-color:#ffffff66;color:#fff}
+html.noa-shell-wide[data-noa-theme] body .noa-hero[data-home-section=hero] .noa-hero-actions .noa-button.primary{background:#fff;border-color:#fff;color:#30343b}
 html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-actions svg{width:18px;height:18px;flex:none}
-html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-discover{display:grid;gap:8px;order:2;flex:none;min-height:0;overflow:visible}
-html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-discover h2{margin:0;font-size:11px;line-height:1.5;font-weight:500;color:var(--noa-muted)}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-discover{grid-area:picks;display:grid;gap:8px;order:initial;flex:none;min-height:0;overflow:visible;pointer-events:auto}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-discover h2{margin:0;font-size:11px;line-height:1.5;font-weight:500;color:#d9dde2}
 html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-picks{display:grid;gap:0;min-width:0}
-html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-pick{display:flex;gap:12px;align-items:center;min-width:0;min-height:48px;padding:6px 0;text-decoration:none;border-top:1px solid var(--noa-line);color:var(--noa-text);text-shadow:none}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-pick{display:flex;gap:12px;align-items:center;min-width:0;min-height:48px;padding:6px 0;text-decoration:none;border-top:1px solid #ffffff38;color:#fff;text-shadow:none}
 html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-pick img{position:static;width:52px;height:36px;flex:none;object-fit:cover;aspect-ratio:auto;border-radius:2px}
 html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-pick span{display:block;min-width:0}
 html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-pick strong{display:block;margin:0;font-size:12px;line-height:1.6;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-pick small{display:none}
-html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-play{position:absolute;inset:auto 16px 16px auto;z-index:2;min-height:44px}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-play{position:absolute;inset:20px 20px auto auto;z-index:2;min-height:44px}
 html.noa-shell-wide .noa-hero[data-home-section=hero] #noa-hero-status:not(:empty){position:absolute;inset:16px 16px auto;z-index:2;font-size:12px;line-height:1.6}
 /* The studio details are reachable at the end of every page as well as inside the drawer. */
 html.noa-shell-wide[data-noa-style] .noa-mobile-footer{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:24px;margin:32px 0 0;padding:24px 0;border-top:1px solid var(--noa-line)}
@@ -632,7 +633,7 @@ html.noa-shell-wide .noa-mobile-footer+.noa-footer{display:none}
  html.noa-shell-wide #noa-account-bar :is(#noa-nav-all,#noa-nav-account){flex-direction:column;gap:2px;font-size:9px;padding:4px}
  html.noa-shell-wide #noa-account-bar #noa-menu-find{display:none}
  html.noa-shell-wide[data-noa-precision] .noa-main{padding:16px 16px calc(var(--noa-dock,72px) + var(--noa-player-space,0px) + 24px);gap:24px}
- html.noa-shell-wide[data-noa-theme] body .noa-theme-scene{min-height:352px}
+ html.noa-shell-wide[data-noa-theme] body .noa-theme-scene{min-height:280px}
  html.noa-shell-wide[data-noa-theme] .noa-theme-scene .noa-theme-story{padding:28px 24px;width:100%;max-width:480px;align-self:start}
  html.noa-shell-wide[data-noa-theme] .noa-theme-scene h2{font-size:30px;max-width:10em}
  html.noa-shell-wide[data-noa-theme] .noa-theme-scene .noa-theme-caption{font-size:12px;max-width:24em}
@@ -644,9 +645,16 @@ html.noa-shell-wide .noa-mobile-footer+.noa-footer{display:none}
  html.noa-shell-wide .noa-scene-actions .noa-button{min-height:44px;padding:10px 16px;font-size:12px}
  html.noa-shell-wide .noa-scene-link{font-size:12px;gap:8px;min-height:44px}
  html.noa-shell-wide .noa-scene-signature{margin-top:20px;font-size:8px}
- html.noa-shell-wide .noa-hero[data-home-section=hero]{grid-template-columns:minmax(0,1fr);grid-template-areas:'media' 'copy';grid-template-rows:auto auto}
- html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-art{aspect-ratio:16/9;height:auto;min-height:0;contain:none}
- html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-copy{padding:20px;gap:16px;align-self:stretch}
+ html.noa-shell-wide .noa-hero[data-home-section=hero]{grid-template-columns:minmax(0,1fr);grid-template-areas:'media' 'copy';grid-template-rows:auto auto;min-height:0;block-size:auto;background:var(--noa-surface)}
+ html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-art{grid-area:media;position:relative;inset:auto;aspect-ratio:16/9;height:auto;min-height:0;contain:none}
+ html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-copy{grid-area:copy;display:flex;flex-direction:column;padding:20px;gap:16px;align-self:stretch;background:var(--noa-surface);color:var(--noa-text)}
+ html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-copy :is(h1,.noa-hero-pick){color:var(--noa-text)}
+ html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-copy :is(p,.noa-hero-discover h2){color:var(--noa-muted)}
+ html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-pick{border-color:var(--noa-line)}
+ html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-actions{order:3}
+ html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-discover{order:2}
+ html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-actions .noa-button{color:var(--noa-text);background:var(--noa-raised);border-color:var(--noa-line)}
+ html.noa-shell-wide[data-noa-theme] body .noa-hero[data-home-section=hero] .noa-hero-actions .noa-button.primary{background:var(--noa-accent);border-color:var(--noa-accent);color:var(--noa-accentText)}
  html.noa-shell-wide .noa-hero[data-home-section=hero] h1{font-size:23px}
  html.noa-shell-wide .noa-main .noa-section-head h2{font-size:18px}
  html.noa-shell-wide .noa-main :is(.noa-notice-list,.noa-community-feed){padding:12px 16px}
@@ -736,25 +744,42 @@ html.noa-shell-wide[data-noa-theme] .ne-hero-caption{color:var(--noa-text);opaci
 /* The original left-hand navigation stays at the screen edge on wide displays.
    Keep the legacy rail at zero: body padding also works for native board/shop wrappers. */
 .noa-location-label{display:none}
-html.noa-shell-wide.noa-menu-pinned{--noa-pinned-width:248px}
+html.noa-shell-wide.noa-menu-pinned{--noa-pinned-width:220px}
 html.noa-shell-wide.noa-menu-pinned body{padding-inline-start:var(--noa-pinned-width);box-sizing:border-box}
-html.noa-shell-wide.noa-menu-pinned .noa-menu-drawer[open]{width:var(--noa-pinned-width);padding:24px 20px;gap:20px;border-radius:0;box-shadow:none;z-index:75;scrollbar-width:thin;scrollbar-color:var(--noa-line) transparent}
+html.noa-shell-wide.noa-menu-pinned .noa-menu-drawer[open]{width:var(--noa-pinned-width);padding:28px 20px 20px;gap:24px;border-radius:0;box-shadow:none;z-index:75;scrollbar-width:thin;scrollbar-color:var(--noa-line) transparent}
 html.noa-shell-wide.noa-menu-pinned .noa-drawer-close{display:none}
-html.noa-shell-wide.noa-menu-pinned .noa-drawer-head{min-height:52px}
-html.noa-shell-wide.noa-menu-pinned .noa-drawer-head .noa-logo{font-size:14px;letter-spacing:.06em}
-html.noa-shell-wide.noa-menu-pinned .noa-drawer-profile{padding:16px}
+html.noa-shell-wide.noa-menu-pinned .noa-drawer-head{min-height:112px;flex:none}
+html.noa-shell-wide.noa-menu-pinned .noa-drawer-head .noa-logo{flex-direction:column;align-items:flex-start;gap:12px;font-size:18px;letter-spacing:.09em}
+html.noa-shell-wide.noa-menu-pinned .noa-drawer-head .noa-brand-mark{width:56px;height:56px}
+html.noa-shell-wide.noa-menu-pinned .noa-drawer-profile{display:none}
 html.noa-shell-wide.noa-menu-pinned .noa-drawer-profile strong{font-size:13px}
 html.noa-shell-wide.noa-menu-pinned .noa-drawer-profile p{display:none}
 html.noa-shell-wide.noa-menu-pinned .noa-drawer-profile .noa-button{margin-top:12px;font-size:12px}
 html.noa-shell-wide.noa-menu-pinned .noa-drawer-search{gap:8px}
 html.noa-shell-wide.noa-menu-pinned .noa-drawer-search input{height:44px;font-size:12px}
-html.noa-shell-wide.noa-menu-pinned .noa-menu a{min-height:48px;padding:12px;font-size:14px}
+html.noa-shell-wide.noa-menu-pinned .noa-menu a{min-height:52px;padding:12px;font-size:15px}
 html.noa-shell-wide.noa-menu-pinned .noa-drawer-secondary{gap:16px;padding-top:20px}
 html.noa-shell-wide.noa-menu-pinned .noa-drawer-secondary a{font-size:12px;padding-inline:10px}
+.noa-drawer-expand{display:none}
+html.noa-shell-wide.noa-menu-pinned .noa-drawer-expand{display:flex;align-items:center;justify-content:space-between;flex:none;min-height:44px;padding:10px 12px;margin-top:-16px;border:0;border-radius:4px;background:transparent;color:var(--noa-muted);font-size:12px;text-align:left}
+html.noa-shell-wide.noa-menu-pinned .noa-drawer-expand:hover{background:var(--noa-raised);color:var(--noa-text)}
+html.noa-shell-wide.noa-menu-pinned .noa-menu-drawer:not(.noa-drawer-expanded) :is(.noa-drawer-search,.noa-drawer-secondary,.noa-menu-empty){display:none}
+html.noa-shell-wide.noa-menu-pinned .noa-menu-drawer .noa-sidebar-bottom{margin-top:auto;gap:12px;padding-top:16px}
+html.noa-shell-wide.noa-menu-pinned .noa-sidebar-signature strong{display:none}
+html.noa-shell-wide.noa-menu-pinned .noa-sidebar-legal{grid-template-columns:1fr auto;column-gap:12px}
+html.noa-shell-wide.noa-menu-pinned .noa-sidebar-legal a{font-size:11px;min-height:36px}
+html.noa-shell-wide.noa-menu-pinned .noa-sidebar-legal a:nth-child(n+3){grid-column:1/-1}
+html.noa-shell-wide.noa-menu-pinned .noa-menu-drawer .noa-sidebar-visitors{display:block;padding-top:12px}
+html.noa-shell-wide.noa-menu-pinned .noa-sidebar-visitors p{display:none}
+html.noa-shell-wide.noa-menu-pinned .noa-sidebar-bottom>.noa-display-settings{min-height:44px;margin:0;font-size:12px}
+html.noa-shell-wide.noa-menu-pinned #noa-account-bar :is(#noa-nav-back,#noa-nav-top,#noa-referral-share){display:inline-flex}
+html.noa-shell-wide.noa-menu-pinned #noa-account-bar #noa-nav-back{margin-right:auto}
+html.noa-shell-wide.noa-menu-pinned #noa-account-bar #noa-menu-find{display:none}
+
 html.noa-shell-wide.noa-menu-pinned[data-noa-theme] body #noa-account-bar{padding:12px 32px;min-height:76px;gap:16px}
 html.noa-shell-wide.noa-menu-pinned[data-noa-theme] body #noa-account-bar :is(.noa-account-brand,.noa-primary-nav){display:none}
 html.noa-shell-wide.noa-menu-pinned #noa-account-bar .noa-account-shortcuts{margin-left:auto}
-html.noa-shell-wide.noa-menu-pinned .noa-location-label{display:block;min-width:0;font-size:13px;letter-spacing:.02em;color:var(--noa-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html.noa-shell-wide.noa-menu-pinned .noa-location-label{display:none;min-width:0;font-size:13px;letter-spacing:.02em;color:var(--noa-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html.noa-shell-wide.noa-menu-pinned[data-noa-theme] body .noa-transport{left:var(--noa-pinned-width)}
 html.noa-shell-wide.noa-menu-pinned #noa-shell-view{left:var(--noa-pinned-width);width:calc(100% - var(--noa-pinned-width))}
 html.noa-shell-wide[data-noa-shell-child] body{padding-inline-start:0}

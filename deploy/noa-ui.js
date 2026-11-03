@@ -104,25 +104,28 @@ function wideShell(side){
   ['음악과 이야기', [['NOA WORLD · 음악 세계관','/noa-world.php'],['나의 재생목록','/noa-my.php'],['사연곡 신청','/noa-lounge.php?category=story&view=list#ec-content']]],
   ['별무리와 함께', [['공지사항','/bbs/board.php?bo_table=notice'],['CREATOR LAB · 창작 작업실','/noa-creator-lab.php'],['VIP 이용권','/noa-vip.php'],['전체 서비스 안내','/noa-sitemap.php']]]
  ]){const group=document.createElement('section'),h=document.createElement('h2');h.textContent=title;group.append(h);for(const [label,href]of links){const a=document.createElement('a');a.href=href;a.textContent=label;group.append(a);}secondary.append(group);}
- side.querySelector('.noa-menu').after(secondary);
+ const expand=document.createElement('button');expand.type='button';expand.className='noa-drawer-expand';expand.setAttribute('aria-controls','noa-drawer-secondary');secondary.id='noa-drawer-secondary';side.querySelector('.noa-menu').after(expand,secondary);
+ const setExpanded=value=>{side.classList.toggle('noa-drawer-expanded',value);expand.setAttribute('aria-expanded',String(value));expand.innerHTML='<span>'+ (value?'메뉴 접기':'전체 메뉴') +'</span><span aria-hidden="true">'+(value?'−':'+')+'</span>';if(!value){search.value='';search.dispatchEvent(new Event('input'));}syncMenuState();};
+ expand.onclick=()=>setExpanded(!side.classList.contains('noa-drawer-expanded'));
  const empty=document.createElement('p');empty.className='noa-menu-empty';empty.textContent='일치하는 메뉴가 없어요.';empty.setAttribute('role','status');empty.hidden=true;secondary.after(empty);
  const search=searchBox.querySelector('input');search.addEventListener('input',()=>{const q=search.value.trim().toLocaleLowerCase();let found=0;for(const a of side.querySelectorAll('.noa-menu a,.noa-drawer-secondary a')){a.hidden=!a.textContent.toLocaleLowerCase().includes(q);if(!a.hidden)found++;}for(const group of secondary.children)group.hidden=![...group.querySelectorAll('a')].some(a=>!a.hidden);empty.hidden=found>0;});
  const wide=matchMedia('(min-width:1200px) and (orientation:landscape)');
- const syncMenuState=()=>{const all=document.getElementById('noa-nav-all');all?.setAttribute('aria-expanded',String(side.open));if(wide.matches)all?.removeAttribute('aria-haspopup');else all?.setAttribute('aria-haspopup','dialog');root.classList.toggle('noa-menu-open',side.matches(':modal'));};
+ const syncMenuState=()=>{const all=document.getElementById('noa-nav-all');all?.setAttribute('aria-expanded',String(wide.matches?side.classList.contains('noa-drawer-expanded'):side.open));if(wide.matches)all?.removeAttribute('aria-haspopup');else all?.setAttribute('aria-haspopup','dialog');root.classList.toggle('noa-menu-open',side.matches(':modal'));};
  const syncDock=()=>{
   const previous=document.activeElement,wasInside=side.contains(previous);
   if(side.open)side.close();
-  root.classList.toggle('noa-menu-pinned',wide.matches);
+  root.classList.toggle('noa-menu-pinned',wide.matches);if(wide.matches)setExpanded(Boolean(search.value));
   if(wide.matches){side.setAttribute('role','complementary');side.show();if(previous===document.body)document.activeElement?.blur();else previous?.focus({preventScroll:true});}
   else{side.removeAttribute('role');if(wasInside)document.getElementById('noa-nav-all')?.focus({preventScroll:true});}
   syncMenuState();window.dispatchEvent(new Event('noa-shell-layout'));
  };
  wide.addEventListener('change',syncDock);
- const open=focusSearch=>{if(!side.open)side.showModal();syncMenuState();if(focusSearch||wide.matches)search.focus();else close.focus();};
+ const open=focusSearch=>{if(wide.matches)setExpanded(true);else if(!side.open)side.showModal();syncMenuState();if(focusSearch||wide.matches)search.focus();else close.focus();};
  side.addEventListener('close',syncMenuState);
  side.addEventListener('cancel',event=>{if(wide.matches)event.preventDefault();});
+ side.addEventListener('keydown',event=>{if(wide.matches&&event.key==='Escape'){event.preventDefault();setExpanded(false);document.getElementById('noa-nav-all')?.focus();}});
  side.addEventListener('click',e=>{if(wide.matches)return;if(e.target===side){const r=side.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)side.close();}if(e.target.closest('[data-noa-display-settings]'))side.close();});
- syncDock();
+ setExpanded(false);syncDock();
  const installHeader=()=>{const bar=document.getElementById('noa-account-bar');if(!bar)return false;if(bar.dataset.noaWide)return true;bar.dataset.noaWide='true';
   const nav=document.createElement('nav');nav.className='noa-primary-nav';nav.setAttribute('aria-label','주요 메뉴');bar.querySelector('.noa-account-brand').after(nav);
   const all=document.getElementById('noa-nav-all');all.setAttribute('aria-haspopup','dialog');all.setAttribute('aria-controls',side.id);all.setAttribute('aria-expanded',String(side.open));all.addEventListener('click',e=>{if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();open(false);});
