@@ -880,7 +880,11 @@ html.noa-shell-wide.noa-menu-pinned[data-noa-theme] body #noa-account-bar #noa-n
 
 /* One spacing rhythm, without adding margins on top of the home grid gap. */
 html.noa-shell-wide[data-noa-theme][data-noa-precision] .noa-main{row-gap:var(--noa-stack-gap)}
-html.noa-shell-wide[data-noa-theme] body .noa-main>:is(#noa-referral-banner,.noa-monthly-benefits,.noa-home-banner){margin-block:0}
+html.noa-shell-wide[data-noa-theme] body .noa-main>:is(#noa-referral-banner,#noa-listening,.noa-monthly-benefits,.noa-home-banner){margin-block:0}
+html.noa-shell-wide[data-noa-theme] body #noa-listening{padding:var(--noa-panel-padding);border-radius:var(--noa-card-radius)}
+html.noa-shell-wide[data-noa-theme] body #noa-listening .nl-primary{color:var(--noa-accentText)}
+html.noa-shell-wide[data-noa-theme] body #noa-listening .nl-track img{border-radius:var(--noa-control-radius)}
+html.noa-shell-wide[data-noa-theme] body .nl-dialog{padding:var(--noa-panel-padding);border-radius:var(--noa-card-radius)}
 html.noa-shell-wide[data-noa-theme] body>.noa-mobile-footer{max-width:1488px;box-sizing:border-box}
 html.noa-shell-wide[data-noa-theme] .noa-room-page>section{scroll-margin-top:calc(var(--noa-header-height,120px) + 16px)}
 html.noa-shell-wide[data-noa-theme] body :is(.noa-community-actions,.noa-install-actions,.noa-action-group){gap:12px}
