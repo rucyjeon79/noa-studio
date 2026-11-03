@@ -21,7 +21,35 @@ try{
   await page.goto(base+(live?'/':'/noa-music.php'),{waitUntil:'domcontentloaded',timeout:90000});await page.locator('#noa-listening .nl-primary').waitFor();await page.waitForFunction(()=>document.querySelector('#noa-listening .nl-primary')?.disabled===false);await page.locator('#noa-listening').scrollIntoViewIfNeeded();
   assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1));
   if(!live){
-   await page.getByRole('button',{name:'추천 설정',exact:true}).click();assert(await page.getByRole('dialog').isVisible());await page.locator('.nl-consent input').uncheck();assert(!await page.locator('.nl-birth').isVisible());await page.locator('.nl-consent input').check();await page.locator('[name=birthDate]').fill('1990-06-15');await page.locator('[name=birthTime]').fill('09:30');await page.screenshot({path:out+'/settings-'+width+'.png'});await page.getByRole('button',{name:'저장',exact:true}).click();await page.getByRole('dialog').waitFor({state:'detached'});
+   const birthCases=[
+    {calendar:'solar',raw:'19900615',expected:'1990-06-15',time:'09:30',leap:'no'},
+    {calendar:'lunar',raw:'19900615',expected:'1990-06-15',time:'',leap:'no'},
+    {calendar:'lunar',raw:'20240230',expected:'2024-02-30',time:'11:45',leap:'no'},
+    {calendar:'lunar',raw:'2023.2.1',expected:'2023-02-01',time:'16:30',leap:'yes'},
+   ];
+   report.birthInputs??=[];
+   for(const input of birthCases){
+    await page.getByRole('button',{name:'추천 설정',exact:true}).click();
+    const dialog=page.getByRole('dialog');assert(await dialog.isVisible());await page.locator('.nl-consent input').uncheck();assert(!await page.locator('.nl-birth').isVisible());await page.locator('.nl-consent input').check();
+    await page.locator('[name=calendar]').selectOption(input.calendar);if(input.calendar==='lunar')await page.locator('[name=leap]').selectOption(input.leap);
+    await page.locator('[name=birthDate]').fill(input.raw);await page.locator('[name=birthTime]').fill(input.time);
+    if(input.raw==='20240230')await page.screenshot({path:out+'/settings-'+width+'.png'});
+    const saved=page.waitForResponse(r=>r.url()===base+'/noa-bridge/listening.php'&&r.request().method()==='POST');
+    await page.getByRole('button',{name:'저장',exact:true}).click();const response=await saved;assert.equal(response.status(),200);const savedState=await response.json();
+    assert.equal(savedState.profile.birthDate,input.expected);assert.equal(savedState.profile.calendar,input.calendar);assert.equal(savedState.profile.birthTime,input.time);assert.equal(savedState.profile.leap,input.leap==='yes');
+    await dialog.waitFor({state:'detached'});
+    await page.getByRole('button',{name:'추천 설정',exact:true}).click();assert.equal(await page.locator('[name=birthDate]').inputValue(),input.expected);assert.equal(await page.locator('[name=birthTime]').inputValue(),input.time);await page.getByRole('dialog').getByRole('button',{name:'닫기',exact:true}).click();
+    report.birthInputs.push({width,calendar:input.calendar,input:input.raw,stored:input.expected,reopened:true});
+   }
+   if(width===390){
+    await page.getByRole('button',{name:'추천 설정',exact:true}).click();await page.locator('[name=birthDate]').fill('1990xx0615');await page.getByRole('button',{name:'저장',exact:true}).click();
+    assert((await page.locator('[name=birthDate]').evaluate(input=>input.validationMessage)).includes('숫자 8자리'));
+    for(const calendar of ['solar','lunar']){
+     await page.locator('[name=calendar]').selectOption(calendar);if(calendar==='lunar')await page.locator('[name=leap]').selectOption('no');await page.locator('[name=birthDate]').fill('20240231');
+     const rejected=page.waitForResponse(r=>r.url()===base+'/noa-bridge/listening.php'&&r.request().method()==='POST');await page.getByRole('button',{name:'저장',exact:true}).click();assert.equal((await rejected).status(),400);assert(await page.getByRole('dialog').isVisible());
+    }
+    await page.locator('[name=birthDate]').fill('invalid');await page.locator('.nl-consent input').uncheck();const removed=page.waitForResponse(r=>r.url()===base+'/noa-bridge/listening.php'&&r.request().method()==='POST');await page.getByRole('button',{name:'저장',exact:true}).click();const response=await removed;assert.equal(response.status(),200);const cleared=(await response.json()).profile;assert.equal(cleared.consent,false);assert(!Object.hasOwn(cleared,'birthDate'));await page.getByRole('dialog').waitFor({state:'detached'});report.invalidDatesRejectedAndConsentCleared=true;
+   }
    await page.locator('.nl-primary').click();await page.waitForFunction(()=>{const a=document.getElementById('sound-player');return a&&!a.paused&&a.currentTime>0;});
    const playing=await page.evaluate(()=>({key:document.querySelector('.song.selected')?.dataset.key,src:document.getElementById('sound-player').getAttribute('src')}));assert(playing.key.startsWith('single:kpop-original:'));report.cases.push({width,...playing,oneClickActualAudio:true});
    await page.evaluate(()=>document.getElementById('sound-player').pause());await page.locator('[data-mode=albums]').click();await page.locator('.nl-album').first().click();await page.waitForFunction(()=>document.querySelector('.song.selected')?.dataset.ep==='1');
