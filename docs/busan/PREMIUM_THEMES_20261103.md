@@ -33,8 +33,18 @@ Prompt set (photorealistic-natural, panoramic website background, no text/logos/
 3. Nature dark: serene pine-covered coastal mountain ridge and tranquil sea under a modest starry night, silver reflected water, distant coastal lights, no people, left 60% uncluttered dark sky/sea, calm realistic night exposure.
 4. Nature light: luminous pine woodland coastal trail overlooking blue Busan sea, natural late morning sun, inviting path on right, no people, left 60% soft low-detail pale foliage/sky/sea. Balanced ocean blue, pine green and sunlight gold.
 
-## 検証
+## 검증
 
 - Node syntax check, jsdom test: Seoul 09/18 exact boundaries, weekend schedule, live timer switch, auto default, manual persistence, BFCache/pageshow/storage, image source switching, editor theme, keyboard Escape and storage unavailable fallback passed locally.
 - CI PHP checks: main slider actual rendering, preserved links/new admin slides/mixed content, unsafe title escaping and theme image pairs.
 - Deployment and live visual verification tracked in Actions. Do not treat generated art alone as deployment completion.
+
+## 최종 운영 확인
+
+- v20261103-2 배포 run41594775437 / job125779453878 성공. PHP 렌더링·Node 테마 테스트 통과, 운영 10개 파일 무결성 및 새 WebP 4개 실제 HTTP 응답 대조 성공.
+- 브라우저에서 자동(라이트) 기본값, 수동 다크 전환, 테마별 문구·이미지 로드, 수동 선택 재방문 유지, 자동으로 복원 확인.
+- 기존 :root.darkMode보다 높은 우선순위로 토큰을 적용해 헤더/내비/본문/카드/검색 버튼의 이전 보라색 스타일을 달빛 골드로 일관화.
+- 최종 다크 header rgb(18,31,49), prime #dcc997. 라이트/다크 페이지 가로 넘침 없음(1363px 데스크톱). 다크 로고 글자 표시 확인.
+- 챗비서 다크 dialog 배경 rgb(17,27,43), 글자 rgb(240,245,251) 확인. AI 호출·포인트 사용 없이 표시만 점검.
+- 권리 노트는 비회원 열람 제한과 로그인 이동 유지. 로그인된 게시판의 실제 시각 검증은 미실시, PHP 템플릿·이미지 로드는 자동 검증 완료.
+- 모바일 media CSS 포함. 현재 브라우저는 데스크톱 뷰포트여서 실제 휴대폰 시각 확인은 별도 필요.
