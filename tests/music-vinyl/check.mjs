@@ -195,6 +195,12 @@ try{for(const width of [320,390,1280]){
       const controls=panel.locator('.noa-publish-panel');
       const options=await controls.locator('summary').boundingBox(),generate=await controls.locator(':scope>button').boundingBox();
       assert(Math.abs(options.y-generate.y)<2 && options.x+options.width<=generate.x);
+      const stacked=await field.locator('button span').evaluateAll(labels=>labels.filter(label=>{
+       const range=document.createRange();range.selectNodeContents(label);
+       return range.getClientRects().length>1 || label.scrollWidth>label.clientWidth+1;
+      }).map(label=>label.textContent));
+      assert.deepEqual(stacked,[],'action captions must fit on one line');
+      await field.screenshot({path:'music-vinyl-proof/field-captions-'+width+'.png'});
       assert.equal(await panel.locator('[data-record-field]:not(:has(.noa-edit-copy))').count(),0);
       await panel.getByRole('button',{name:'곡정보창 접기'}).click();
       assert(!await field.isVisible());await panel.getByRole('button',{name:'곡정보창 펼치기'}).click();
