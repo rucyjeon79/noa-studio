@@ -7,3 +7,10 @@ if(in_array($ny_path,['/shop/orderformupdate.php','/mobile/shop/orderformupdate.
 if(in_array($ny_path,['/shop/orderinquiryview.php','/mobile/shop/orderinquiryview.php'],true)&&!empty($member['mb_id'])&&is_string($_GET['od_id']??null)){
  require_once G5_PATH.'/noa-bridge/youngcart-core.php';try{ny_fulfill((string)$member['mb_id'],$_GET['od_id']);}catch(Throwable $e){error_log('NOA Youngcart fulfillment requires review: '.get_class($e));}
 }
+
+// Presentation only. Keep native cart, order and payment handlers intact.
+if(preg_match('~^/(?:mobile/)?shop/[^/]+\.php$~D',(string)$ny_path)){
+ add_stylesheet('<link rel="stylesheet" href="/noa-ui.css">',90);
+ add_stylesheet('<link rel="stylesheet" href="/noa-youngcart-premium.css?v=20261103">',100);
+ add_javascript('<script src="/noa-youngcart-premium.js?v=20261103" defer></script>',100);
+}
