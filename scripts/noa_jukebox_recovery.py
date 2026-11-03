@@ -28,6 +28,14 @@ def signed_service(key,sleep=time.sleep):
                 return result['result']
             except urllib.error.HTTPError as error:
                 status=error.code;reason='http_'+str(status);retryable=status in (408,429,500,502,503,504)
+                # Preserve only explicitly known machine codes, never error bodies.
+                safe_code=error.headers.get('X-NOA-Error-Code','')
+                if status==409 and safe_code in {
+                    'source_changed','unknown_song','upload_lease_changed',
+                    'verification_stage_required','upload_result_identity_mismatch',
+                    'private_output_missing','cover_copy_conflict',
+                    'file_verification_failed','audio_analysis_invalid','confirmed_audio_changed'
+                }:reason+='_'+safe_code
                 retry_after=error.headers.get('Retry-After','')
                 if retry_after.isdigit():delay=min(30,int(retry_after))
             except ServiceError as error:reason=str(error)
