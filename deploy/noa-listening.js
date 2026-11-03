@@ -39,7 +39,9 @@ function connect(){
  if(window.NoaMusic){musicWindow=window;records=window.NoaMusic.catalog();render();return;}
  try{if(window.parent!==window&&window.parent.NoaMusic){musicWindow=window.parent;records=musicWindow.NoaMusic.catalog();render();return;}}catch{}
  if(!home||!state.member)return;
- if(!frame){frame=el('iframe','nl-play-shell');frame.title='NOA STUDIO 음악 재생';frame.hidden=true;frame.allow='autoplay';frame.src='/noa-music.php?listenHost=1';frame.addEventListener('load',()=>{try{if(!frame.contentWindow.NoaMusic)throw Error();musicWindow=frame.contentWindow;records=musicWindow.NoaMusic.catalog();render();}catch{status.textContent='음원 연결을 불러오지 못했어요. 전체 음원에서 다시 열어 주세요.';listen.disabled=true;}});document.body.append(frame);}
+ if(!frame){frame=el('iframe','nl-play-shell');frame.title='NOA STUDIO 음악 재생';frame.hidden=true;frame.allow='autoplay';frame.src='/noa-music.php?listenHost=1';frame.addEventListener('load',()=>{try{if(!frame.contentWindow.NoaMusic)throw Error();musicWindow=frame.contentWindow;records=musicWindow.NoaMusic.catalog();
+ frame.contentDocument.addEventListener('click',event=>{const link=event.target.closest?.('a[href]');if(event.defaultPrevented||!link||link.hasAttribute('download')||link.target==='_blank'||link.getAttribute('href').startsWith('#'))return;const url=new URL(link.href);if(url.origin!==location.origin)return;event.preventDefault();location.assign(url.href);});
+ render();}catch{status.textContent='음원 연결을 불러오지 못했어요. 전체 음원에서 다시 열어 주세요.';listen.disabled=true;}});document.body.append(frame);}
 }
 window.addEventListener('popstate',()=>{if(frame&&!history.state?.noaListeningHost){frame.hidden=true;document.documentElement.classList.remove('nl-host-open');musicWindow?.document.getElementById('sound-player')?.pause();}});
 genres.onchange=()=>{genre=genres.value;try{sessionStorage.setItem('noa-listening-genre',genre);}catch{}render();};
