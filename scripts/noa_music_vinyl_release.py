@@ -7,6 +7,7 @@ release.FILES['noa-playcount.js']='deploy/noa-playcount.js'
 release.FILES['noa-bridge/support.php']='bridge/support.php'
 release.FILES['noa-ui.js']='deploy/noa-ui.js'
 release.FILES['noa-ui.css']='deploy/noa-ui.css'
+release.FILES['noa-browse.js']='deploy/noa-browse.js'
 release.FILES['noa-browse-edit.js']='deploy/noa-browse-edit.js'
 release.NEW=set(release.FILES)
 if __name__=='__main__':

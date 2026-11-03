@@ -489,3 +489,6 @@ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline
  padding:clamp(12px,2vw,20px);border:1px solid var(--noa-line,#35393d);
  border-radius:8px;background:var(--noa-surface,#1a1d20);
 }
+
+/* The audio-location field delegates to these existing server-authorized actions. */
+#songs .song .jukebox-actions > :is(.sound-upload,.jukebox-replace){display:none!important}

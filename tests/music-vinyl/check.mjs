@@ -124,10 +124,10 @@ try{for(const width of [320,390,1280]){
     const geometry=await list.evaluate(list=>{
      const row=list.querySelector('.noa-inline-song-row');
      for(let parent=row;parent;parent=parent.parentElement)parent.hidden=false;
-     row.style.setProperty('--tool-count','4');
+     row.style.setProperty('--tool-count','3');
      const actions=row.querySelector('.noa-song-actions');
      actions.replaceChildren();
-     const tools=['수정','담기','다운로드','교체'].map((label,index)=>{
+     const tools=['수정','담기','다운로드'].map((label,index)=>{
       const button=document.createElement('button');
       button.className='noa-direct-action'+(index?' noa-song-action':' noa-edit-edit');
       button.textContent=label;
@@ -152,6 +152,13 @@ try{for(const width of [320,390,1280]){
     assert.equal(geometry.corner,'none');
     const sorted=geometry.rects.sort((a,b)=>a.x-b.x);
     assert(sorted.every((r,i)=>r.width>0 && r.height>=44 && Math.abs(r.y-sorted[0].y)<1 && (!i || r.x>=sorted[i-1].right-1)),JSON.stringify(geometry));
+    await mismatchPage.evaluate(()=>{
+     const track=document.createElement('div');track.className='song';track.dataset.key='cover';track.dataset.jukeboxKey='cover';
+     const native=document.createElement('div');native.className='jukebox-actions';
+     const file=document.createElement('input');file.type='file';file.hidden=true;
+     const upload=document.createElement('button');upload.type='button';upload.className='sound-upload';upload.onclick=()=>file.click();
+     native.append(upload,file);track.append(native);document.querySelector('#songs').append(track);
+    });
     await mismatchPage.addScriptTag({url:'/noa-browse-edit.js'});
     await list.evaluate(list=>{
      const card=list.querySelector('.noa-inline-song-row');
@@ -222,20 +229,33 @@ try{for(const width of [320,390,1280]){
        assert(await label.evaluate(el=>{const r=document.createRange();r.selectNodeContents(el.childNodes[1]);return r.getClientRects().length===1;}));
       }
       const source=panel.locator('[data-source-field=ep]');
-      const number=await source.locator('.noa-source-value').boundingBox(),copy=await source.locator('button').boundingBox();
-      assert(number.x+number.width<=copy.x+1 && number.y<copy.y+copy.height);
+      assert(await source.locator('.noa-source-value').isVisible());
+      assert.equal(await panel.locator('.noa-source-item .noa-edit-copy,[data-record-section=media] .noa-edit-copy').count(),0);
+      assert.equal(await controls.locator('summary').innerText(),'AI 생성목록');
+      assert.equal(await controls.locator(':scope>button').innerText(),'AI 생성 묶음');
+      const media=panel.locator('[data-record-field=audioFileLocation]');
+      assert(await media.locator('.noa-input-guard').isDisabled());
+      assert.equal(await card.getByRole('button',{name:/업로드$|교체$/}).count(),0);
+      const native=mismatchPage.locator('#songs [data-key="cover"] .jukebox-actions>button');
+      for(const [css,name] of [['sound-upload','음원 업로드'],['jukebox-replace','음원 교체']]){
+       await native.evaluate((el,cls)=>el.className=cls,css);
+       const picker=media.getByRole('button',{name,exact:true});
+       const [chooser]=await Promise.all([mismatchPage.waitForEvent('filechooser'),picker.click()]);
+       assert.equal(await chooser.element().evaluate(el=>el.closest('.song').dataset.key),'cover');
+      }
+      await native.evaluate(el=>el.remove());await media.locator('.noa-edit-upload').waitFor({state:'hidden'});
       await controls.screenshot({path:'music-vinyl-proof/ep-publish-options-'+width+'.png'});
       await controls.locator('summary').click();
       const commands=panel.locator('button.noa-action:visible,summary.noa-edit-options');
       assert(await commands.count()>=8);
       for(const command of await commands.all()){
-       assert.equal((await command.innerText()).trim(),'');
+       if(!await command.evaluate(el=>Boolean(el.closest('.noa-publish-panel'))))assert.equal((await command.innerText()).trim(),'');
        assert(await command.getAttribute('aria-label'));
        const svg=await command.locator('svg').boundingBox(),target=await command.boundingBox();
        assert(svg?.width>0 && target.width>=44 && target.height>=44);
       }
       await field.screenshot({path:'music-vinyl-proof/field-captions-'+width+'.png'});
-      assert.equal(await panel.locator('[data-record-field]:not(:has(.noa-edit-copy))').count(),0);
+      assert.equal(await panel.locator('[data-record-section]:not([data-record-section=media]) [data-record-field]:not(:has(.noa-edit-copy))').count(),0);
       await panel.getByRole('button',{name:'곡정보창 접기'}).click();
       assert(!await field.isVisible());await panel.getByRole('button',{name:'곡정보창 펼치기'}).click();
      }
