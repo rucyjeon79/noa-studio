@@ -1,0 +1,66 @@
+name: NOA branded login presentation
+on:
+  pull_request:
+    paths: ['deploy/noa-login.php','deploy/noa-login.css','deploy/noa-assets/google-login-g.png','scripts/noa_login_presentation_release.py','scripts/qa/noa-login-presentation.mjs','tests/login-presentation/**','.github/workflows/noa-login-presentation.yml']
+  push:
+    branches: [main]
+    paths: ['deploy/noa-login.php','deploy/noa-login.css','deploy/noa-assets/google-login-g.png','scripts/noa_login_presentation_release.py','scripts/qa/noa-login-presentation.mjs','tests/login-presentation/**','.github/workflows/noa-login-presentation.yml']
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - run: |
+          php -l deploy/noa-login.php
+          php tests/membership/social.php
+          php tests/login-presentation/render.php
+          python scripts/qa/noa-qa-font.py
+          npm install --prefix "$RUNNER_TEMP/login" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-login-presentation.mjs "$RUNNER_TEMP/login/check.mjs"
+          node "$RUNNER_TEMP/login/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: login-candidate, path: login-proof/candidate/, retention-days: 7}
+  deploy:
+    if: github.event_name == 'push'
+    needs: verify
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+      NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - run: |
+          python -m pip install 'paramiko>=3,<5'
+          python scripts/qa/noa-qa-font.py
+          npm install --prefix "$RUNNER_TEMP/login" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-login-presentation.mjs "$RUNNER_TEMP/login/check.mjs"
+      - name: Activate login presentation only
+        id: activate
+        run: python scripts/noa_login_presentation_release.py
+      - name: Verify the deployed login page
+        id: live
+        run: NOA_LOGIN_LIVE=1 node "$RUNNER_TEMP/login/check.mjs"
+      - name: Restore owned presentation files if activation or live verification fails
+        if: failure() && (steps.activate.outcome == 'failure' || steps.live.outcome == 'failure')
+        run: |
+          if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then python scripts/noa_login_presentation_release.py rollback; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: login-live
+          path: |
+            ainoa-proof/deployment.json
+            login-proof/live/
+          retention-days: 7
