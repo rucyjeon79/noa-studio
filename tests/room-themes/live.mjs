@@ -21,7 +21,7 @@ if(phase==='live'){
 try{for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])await Promise.all(sizes.map(async([width,height])=>{
  const context=await browser.newContext({viewport:{width,height},timezoneId:'Asia/Seoul',serviceWorkers:'block'}),p=await context.newPage();
  const errors=[];p.on('pageerror',e=>errors.push(e.message));
- if(phase==='candidate')for(const name of ['noa-account.js','noa-design.json','noa-starlight.css','noa-ui.js','noa-home.js','noa-desktop.js','noa-voice.js','noa-ainoa.css','noa-amt-fan.js','noa-amt-fan.css']){
+ if(phase==='candidate')for(const name of ['noa-account.js','noa-youngcart-premium.css','noa-design.json','noa-starlight.css','noa-ui.js','noa-home.js','noa-desktop.js','noa-voice.js','noa-ainoa.css','noa-amt-fan.js','noa-amt-fan.css']){
   await context.route('**/'+name+'*',route=>route.fulfill({body:readFileSync(source+'/deploy/'+name),contentType:name.endsWith('.css')?'text/css':name.endsWith('.js')?'text/javascript':'application/json'}));
  }
  if(phase==='candidate')await context.route('**/noa-assets/theme-*.webp*',route=>{
@@ -170,7 +170,7 @@ try{for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]
 async function verifyAutomaticClock(){
  const context=await browser.newContext({viewport:{width:390,height:900},timezoneId:'Asia/Seoul',serviceWorkers:'block'}),p=await context.newPage();
  const posts=[];p.on('request',r=>{if(r.url().includes('/ui-preferences.php')&&r.method()==='POST')posts.push(r.url());});
- if(phase==='candidate')for(const name of ['noa-account.js','noa-design.json','noa-starlight.css','noa-ui.js','noa-home.js','noa-desktop.js'])await context.route('**/'+name+'*',r=>r.fulfill({body:readFileSync(source+'/deploy/'+name),contentType:name.endsWith('.css')?'text/css':name.endsWith('.js')?'text/javascript':'application/json'}));
+ if(phase==='candidate')for(const name of ['noa-account.js','noa-youngcart-premium.css','noa-design.json','noa-starlight.css','noa-ui.js','noa-home.js','noa-desktop.js'])await context.route('**/'+name+'*',r=>r.fulfill({body:readFileSync(source+'/deploy/'+name),contentType:name.endsWith('.css')?'text/css':name.endsWith('.js')?'text/javascript':'application/json'}));
  await p.clock.install({time:new Date('2026-11-03T08:55:00+09:00')});
  await p.goto('https://noastudio.ai.kr/noa-login.php');
  await p.waitForFunction(()=>document.documentElement.dataset.noaThemePreference==='auto'&&document.documentElement.dataset.noaTheme==='noa-studio');
@@ -301,12 +301,12 @@ async function verifyHeader(p,width,height){
  const pinned=width>=1200&&width>height;
  const state=await p.evaluate(()=>{
   const bar=document.querySelector('#noa-account-bar'),rect=e=>{const r=e.getBoundingClientRect();return{id:e.id,x:r.x,y:r.y,width:r.width,height:r.height,text:e.textContent.trim(),radius:getComputedStyle(e).borderRadius};};
-  return {bar:rect(bar),info:rect(document.getElementById('noa-info-bar')),lower:rect(bar.querySelector('.noa-navigation-bar')),upper:[...bar.querySelector('.noa-info-actions').children].map(rect),left:[...bar.querySelector('.noa-account-utilities').children].map(rect),right:[...bar.querySelector('.noa-account-shortcuts').children].filter(e=>e.getBoundingClientRect().width).map(rect),overflow:bar.scrollWidth-bar.clientWidth};
+  return {viewport:document.documentElement.clientWidth,bar:rect(bar),info:rect(document.getElementById('noa-info-bar')),lower:rect(bar.querySelector('.noa-navigation-bar')),upper:[...bar.querySelector('.noa-info-actions').children].map(rect),left:[...bar.querySelector('.noa-account-utilities').children].map(rect),right:[...bar.querySelector('.noa-account-shortcuts').children].filter(e=>e.getBoundingClientRect().width).map(rect),overflow:bar.scrollWidth-bar.clientWidth};
  });
  assert.deepEqual(state.upper.map(a=>a.id),['noa-nav-install','noa-nav-favorite','noa-referral-share']);
  assert.deepEqual(state.left.map(a=>a.id),['noa-nav-back','noa-nav-top']);
  assert.deepEqual(state.right.map(a=>a.id),pinned?['noa-menu-find','','noa-nav-account']:['noa-menu-find','','noa-nav-all','noa-nav-account']);
- assert(state.overflow<=1,JSON.stringify(state));assert(Math.abs(state.info.x)<1,'top frame spans the whole viewport');assert(Math.abs(state.info.width-width)<2,'top frame uses the whole viewport');
+ assert(state.overflow<=1,JSON.stringify(state));assert(Math.abs(state.info.x)<1,'top frame spans the whole viewport');assert(Math.abs(state.info.width-state.viewport)<2,'top frame uses the whole viewport');
  assert(state.lower.y>=state.info.y+state.info.height,'navigation follows information frame');
  for(const group of [state.upper,state.left,state.right])for(const [i,a]of group.entries()){
   assert(a.width>=44&&a.height>=44&&a.x>=0&&a.x+a.width<=width+1,JSON.stringify(a));assert.equal(a.radius,'4px');

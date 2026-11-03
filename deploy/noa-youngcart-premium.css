@@ -30,15 +30,15 @@
 @media(max-width:900px){.ny-store .noa-point-packs{grid-template-columns:repeat(2,minmax(0,1fr))}.ny-store-tools{align-items:flex-start;flex-direction:column}.ny-native #wrapper{padding:0 16px 32px!important}.ny-native-nav{padding:72px 16px 16px}.ny-native table :is(th,td){padding:12px 8px!important}.ny-native #sod_bsk table{min-width:640px}.ny-native #sod_bsk_list{overflow-x:auto}.ny-native #sod_bsk_tot{margin-top:16px!important}}
 @media(max-width:480px){.ny-store main.noa-points-page{padding-top:16px}.ny-store .noa-point-packs{gap:12px}.ny-store .np-pack-copy{padding:12px}.ny-store .np-pack-copy h3{font-size:14px;min-height:42px}.ny-store .np-pack-copy>strong{font-size:16px}.ny-store .ny-description{font-size:11px;min-height:54px}.ny-store-header h1{font-size:26px}.ny-native-nav{gap:8px}.ny-native-nav a:first-child{flex-basis:100%;min-height:32px}.ny-native-nav a{flex:1;justify-content:center;padding:8px}.ny-native #wrapper_title{font-size:24px!important}}
 
-.ny-native #noa-account-bar{left:0!important;width:100%!important}.ny-native #noa-account-bar a,.ny-native #noa-account-bar button{color:var(--noa-text)}
+.ny-native #noa-account-bar a,.ny-native #noa-account-bar button{color:var(--noa-text)}
 
 /* Shared chrome hides generic headers; the store section heading stays visible. */
 .ny-store .ny-store-header{display:block!important}
-.ny-native #noa-account-bar{margin:0!important;max-width:100%!important}
+
 .ny-native .ny-native-nav{padding-top:24px}
 .ny-native #sod_bsk .btn_cart_del{display:flex;gap:8px;padding:16px;border-top:1px solid var(--noa-line)}
 .ny-native #sod_bsk button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border:1px solid var(--noa-line);border-radius:4px;background:var(--noa-surface);color:var(--noa-text);font-size:13px;line-height:1.5;box-shadow:none}
-@media(max-width:760px){.ny-native #noa-account-bar{padding-inline:12px!important}}
+
 
 /* The installed mobile theme has no wrapper; use the same content origin. */
 .ny-native body>#container{max-width:1280px!important;margin:0 auto!important;padding:0 24px 40px!important}
