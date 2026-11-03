@@ -909,3 +909,10 @@ html.noa-shell-wide.noa-menu-pinned[data-noa-theme] body #noa-account-bar .noa-a
 html.noa-shell-wide[data-noa-theme] body #noa-account-bar #noa-referral-share{flex:none;width:auto;min-width:44px;height:44px;min-height:44px;gap:8px;padding:8px 12px;border-radius:var(--noa-control-radius);color:var(--noa-text);font:inherit;font-size:12px;line-height:1.4}
 html.noa-shell-wide[data-noa-theme] body #noa-account-bar #noa-menu-find{display:none}
 @media(max-width:760px){html.noa-shell-wide[data-noa-theme] body #noa-account-bar #noa-referral-share{gap:6px;padding:8px 4px;font-size:11px}}
+
+/* Remaining account and gift controls share the rectangular component rules;
+   rank crests, avatars, LPs and small status badges keep their intended shapes. */
+html.noa-shell-wide[data-noa-theme] body :is(.noa-my-signout,.noa-my-creator-apply,.noa-channel-menu,.noa-channel-menu nav>a,.noa-channel-menu nav>span,.noa-special-letter,#special-invite-share,#special-invite-issue button),html.noa-shell-wide[data-noa-theme] body .noa-gifts :is(article,section){border-radius:var(--noa-control-radius)}
+html.noa-shell-wide[data-noa-theme] body .noa-channel-menu nav{gap:12px}
+html.noa-shell-wide[data-noa-theme] body .noa-gifts :is(nav,form){gap:12px}
+html.noa-shell-wide[data-noa-theme] body .noa-gifts :is(article,section){padding:var(--noa-panel-padding);margin-block:16px}
