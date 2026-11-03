@@ -26,6 +26,9 @@ jobs:
           node --check deploy/noa-ui.js
           node --check deploy/noa-home.js
           node --check deploy/noa-desktop.js
+          node --check deploy/noa-voice.js
+          node --check deploy/noa-amt-fan.js
+          node --test tests/voice/composer_test.cjs
           node --check tests/room-themes/member.mjs
           node --check tests/room-themes/forms.mjs
           php -l bridge/ui-preferences.php
@@ -46,6 +49,10 @@ jobs:
           cp tests/room-themes/member.mjs "$RUNNER_TEMP/noa-light/member.mjs"
           cp tests/room-themes/forms.mjs "$RUNNER_TEMP/noa-light/forms.mjs"
           cp tests/room-themes/player.mjs "$RUNNER_TEMP/noa-light/player.mjs"
+          cp tests/room-themes/overlays.mjs "$RUNNER_TEMP/noa-light/overlays.mjs"
+      - name: Verify first-visit popups, readable greetings and modal feedback before activation
+        env: {NOA_THEME_PHASE: candidate, NOA_SOURCE_ROOT: '${{ github.workspace }}'}
+        run: node "$RUNNER_TEMP/noa-light/overlays.mjs"
       - name: Verify member pages, writing forms and uninterrupted playback in isolation
         if: ${{ !contains(github.event.head_commit.message, '[design-review]') }}
         run: |
@@ -55,7 +62,8 @@ jobs:
           node "$RUNNER_TEMP/noa-light/player.mjs"
       - name: Verify candidate themes before activation
         env: {NOA_THEME_PHASE: candidate, NOA_SOURCE_ROOT: '${{ github.workspace }}', NOA_VISUAL_REVIEW: '${{ contains(github.event.head_commit.message, ''[design-review]'') }}'}
-        run: node "$RUNNER_TEMP/noa-light/check.mjs"
+        run: |
+          node "$RUNNER_TEMP/noa-light/check.mjs"
       - name: Activate theme assets and preferences with public hash verification
         id: activate
         if: ${{ !contains(github.event.head_commit.message, '[design-review]') }}
@@ -64,7 +72,9 @@ jobs:
         id: live
         if: steps.activate.outcome == 'success'
         env: {NOA_THEME_PHASE: live, NOA_SOURCE_ROOT: '${{ github.workspace }}'}
-        run: node "$RUNNER_TEMP/noa-light/check.mjs"
+        run: |
+          node "$RUNNER_TEMP/noa-light/overlays.mjs"
+          node "$RUNNER_TEMP/noa-light/check.mjs"
       - name: Restore release-owned assets when live acceptance fails
         if: failure() && steps.live.outcome == 'failure'
         run: python scripts/noa_light_theme_release.py rollback

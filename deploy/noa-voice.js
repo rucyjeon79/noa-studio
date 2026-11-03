@@ -20,7 +20,7 @@ if(typeof module==='object'&&module.exports)module.exports={compose,emptyStatus,
 if(!scope.document||scope.NoaVoice)return;
 const parentVoice=(()=>{try{return scope.parent!==scope?scope.parent.NoaVoice:null;}catch{return null;}})();
 const doc=scope.document,read=k=>{try{return sessionStorage.getItem(k);}catch{return null;}},write=(k,v)=>{try{sessionStorage.setItem(k,v);}catch{}};
-let counter=Number(read('noa-voice-sequence')||0),account=null,currentTrack=null,active=null,queue=[],timer=null,mounted=false,ownChange=false;
+let counter=Number(read('noa-voice-sequence')||0),account=null,currentTrack=null,active=null,queue=[],timer=null,mounted=false,ownChange=false,suspended=false,remaining=0,started=0,speechTip=null;
 const recent=new Map();
 function readable(text){return String(text||'').trim().replace(/했습니다\./g,'했어요.').replace(/되었습니다\./g,'됐어요.').replace(/합니다\./g,'해요.').replace(/됩니다\./g,'돼요.').replace(/있습니다\./g,'있어요.').replace(/없습니다\./g,'없어요.');}
 function say(text,options={}){
@@ -31,16 +31,27 @@ function say(text,options={}){
  const item={text,options};if(options.key){const i=queue.findIndex(x=>x.options.key===options.key);if(i>=0)queue.splice(i,1);}
  if(options.priority&&active){if(active.options.requireAcknowledgement&&active.options.key!==options.key)queue.unshift(active);queue.unshift(item);close(false);}else{queue.push(item);render();}
 }
-function close(next=true,ack=false){if(ack)try{sessionStorage.removeItem('noa-voice-redirect');}catch{}clearTimeout(timer);active=null;const tip=doc.querySelector('.ainoa-tip');if(tip)tip.hidden=true;if(next||queue.length)render();}
-function place(){
- const root=doc.getElementById('noa-ainoa');if(!root)return;const modal=[...doc.querySelectorAll('dialog:modal')].at(-1),dock=doc.documentElement.hasAttribute('data-noa-desktop')?doc.getElementById('noa-desktop-ainoa'):null,tip=doc.querySelector('.ainoa-tip');let proxy=doc.getElementById('noa-voice-modal');
- if(dock){if(root.parentElement!==dock)dock.prepend(root);if(modal&&tip){if(!proxy){proxy=doc.createElement('aside');proxy.id='noa-voice-modal';proxy.setAttribute('aria-label','AInoa 안내');}if(proxy.parentElement!==modal)modal.append(proxy);if(tip.parentElement!==proxy)proxy.append(tip);}else if(tip&&tip.parentElement!==root)root.insertBefore(tip,root.querySelector('.ainoa-panel'));}
- else{if(tip&&tip.parentElement!==root)root.insertBefore(tip,root.querySelector('.ainoa-panel'));if(root.parentElement!==(modal||doc.body))(modal||doc.body).append(root);}
+function pause(){clearTimeout(timer);timer=null;if(started)remaining=Math.max(0,remaining-(Date.now()-started));started=0;}
+function resume(){if(active&&!active.options.requireAcknowledgement&&!timer){started=Date.now();timer=setTimeout(()=>close(),Math.max(1,remaining));}}
+function bubble(){speechTip=doc.querySelector('.ainoa-tip')||speechTip;return speechTip;}
+function close(next=true,ack=false){if(ack)try{sessionStorage.removeItem('noa-voice-redirect');}catch{}pause();active=null;suspended=false;remaining=0;const tip=bubble();if(tip)tip.hidden=true;if(next||queue.length)render();}
+function routine(item){return ['welcome','welcome-error'].includes(item.options.key)||item.options.kind==='song';}
+function place(item,modal){
+ const root=doc.getElementById('noa-ainoa');if(!root)return;const dock=doc.documentElement.hasAttribute('data-noa-desktop')?doc.getElementById('noa-desktop-ainoa'):null,tip=bubble();let proxy=doc.getElementById('noa-voice-modal');
+ // The search widget stays in its own shell. Only an operational message belongs in a modal.
+ if(root.parentElement!==(dock||doc.body))(dock||doc.body).append(root);
+ if(modal&&item&&tip){if(!proxy){proxy=doc.createElement('aside');proxy.id='noa-voice-modal';proxy.setAttribute('aria-label','AInoa 안내');}if(proxy.parentElement!==modal)modal.append(proxy);if(tip.parentElement!==proxy)proxy.append(tip);}
+ else if(tip&&tip.parentElement!==root)root.insertBefore(tip,root.querySelector('.ainoa-panel'));
  if(proxy&&!proxy.childElementCount)proxy.remove();
 }
 function render(){
- place();if(active||!queue.length||doc.hidden)return;const tip=doc.querySelector('.ainoa-tip');if(!tip)return;
- active=queue.shift();ownChange=true;tip.replaceChildren();tip.classList.add('ainoa-message');tip.setAttribute('aria-live','polite');tip.setAttribute('aria-atomic','true');
+ const modal=[...doc.querySelectorAll('dialog:modal')].at(-1),tip=bubble();if(!tip)return;
+ // An automatic greeting must neither cover a dialog nor expire behind it.
+ if(active&&modal&&routine(active)){pause();suspended=true;tip.hidden=true;place(null,modal);return;}
+ if(active){place(active,modal);if(suspended){suspended=false;tip.hidden=false;resume();}return;}
+ const next=queue.findIndex(item=>!modal||!routine(item));
+ if(next<0||doc.hidden){place(null,modal);return;}
+ active=queue.splice(next,1)[0];place(active,modal);ownChange=true;tip.replaceChildren();tip.classList.add('ainoa-message');tip.setAttribute('aria-live','polite');tip.setAttribute('aria-atomic','true');
  const label=doc.createElement('strong');label.textContent='AInoa';const text=doc.createElement('p');
  text.textContent=compose(active.text,{index:counter++,name:active.options.name||'',title:currentTrack?.title||'',kind:active.options.kind||'',practical:active.options.key!=='welcome'&&active.options.kind!=='song'});write('noa-voice-sequence',String(counter));
  const actions=doc.createElement('div');actions.className='ainoa-message-actions';
@@ -49,7 +60,8 @@ function render(){
  if(active.options.requireAcknowledgement){button.textContent='확인했어요';actions.append(button);}else{button.textContent='×';button.className='ainoa-message-dismiss';tip.append(button);}
  tip.append(label,text);if(actions.childElementCount)tip.append(actions);tip.hidden=false;ownChange=false;
  // Only explicit operational acknowledgement stays open. Greetings and notices expire.
- if(!active.options.requireAcknowledgement)timer=setTimeout(()=>close(),Math.max(8000,Math.min(22000,text.textContent.length*65)));
+ remaining=Math.max(8000,Math.min(22000,text.textContent.length*65));resume();
+ if(modal)requestAnimationFrame(()=>{if(tip.isConnected&&!tip.hidden)tip.scrollIntoView({block:'nearest'});});
 }
 function condition(node){say(node.dataset.noaCondition,{priority:true,sticky:true,force:true,key:'access-condition',href:/로그인/.test(node.dataset.noaCondition)?'/noa-login.php':'/noa-my.php',linkLabel:/로그인/.test(node.dataset.noaCondition)?'로그인':'MY에서 확인'});}
 doc.addEventListener('click',e=>{const node=e.target.closest?.('[data-noa-condition]');if(!node)return;e.preventDefault();e.stopImmediatePropagation();condition(node);},true);
@@ -90,11 +102,11 @@ async function welcome(){
  }catch{if(!read('noa-welcome-failed')){write('noa-welcome-failed','1');say('계정 정보를 잠시 불러오지 못했어요. 구독 상태·잔여일·포인트는 MY에서 다시 확인해 주세요.',{sticky:true,key:'welcome-error'});}}
 }
 function boot(){if(mounted)return;mounted=true;if(location.pathname.startsWith('/adm/'))doc.documentElement.dataset.noaVoiceAdmin='true';if(parentVoice)doc.documentElement.dataset.noaVoiceEmbedded='true';
- new MutationObserver(records=>{if(ownChange)return;if(records.some(r=>!r.target.closest?.('.ainoa-tip')))schedule();}).observe(doc.body,{subtree:true,childList:true,characterData:true});
+ new MutationObserver(records=>{if(ownChange)return;if(records.some(r=>!r.target.closest?.('.ainoa-tip')))schedule();}).observe(doc.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['open']});
  try{const carried=JSON.parse(read('noa-voice-redirect')||'null');sessionStorage.removeItem('noa-voice-redirect');if(carried&&Date.now()-carried.at<30000)say(carried.text,{sticky:true,priority:true,key:'pending-alert'});}catch{}
  schedule();if(!parentVoice)void welcome();
 }
-doc.addEventListener('close',e=>{if(e.target.matches?.('dialog')){place();render();}},true);
+doc.addEventListener('close',e=>{if(e.target.matches?.('dialog'))render();},true);
 doc.addEventListener('invalid',e=>{if(e.target.validationMessage){e.preventDefault();say(e.target.validationMessage,{priority:true,requireAcknowledgement:true,key:'form-validation'});}},true);
 scope.addEventListener('pageshow',e=>{if(e.persisted){close(false);void welcome();}});
 scope.NoaVoice={say,compose,getAccount:()=>parentVoice?parentVoice.getAccount():account};if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',boot,{once:true});else boot();

@@ -18,13 +18,13 @@
 :is(#noa-ainoa,#noa-voice-modal) form button{border-radius:22px}
 :is(#noa-ainoa,#noa-voice-modal) .ainoa-result{display:block;color:var(--noa-text);text-decoration:none;border-top:1px solid var(--noa-line);padding:12px 0;overflow-wrap:anywhere}
 :is(#noa-ainoa,#noa-voice-modal) small,:is(#noa-ainoa,#noa-voice-modal) .ainoa-note{display:block;color:var(--noa-muted);font-size:13px}
-:is(#noa-ainoa,#noa-voice-modal) p{white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0}
+:is(#noa-ainoa,#noa-voice-modal) p{white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0;color:var(--noa-text)}
 :is(#noa-ainoa,#noa-voice-modal) .ainoa-chat-toggle{width:100%;margin-top:12px;border-radius:22px}
 :is(#noa-ainoa,#noa-voice-modal) :focus-visible{outline:2px solid var(--noa-accent,currentColor);outline-offset:3px}
 :is(#noa-ainoa,#noa-voice-modal) .ainoa-search button{min-width:76px;white-space:nowrap;flex-shrink:0}
 @media(prefers-reduced-motion:reduce){:is(#noa-ainoa,#noa-voice-modal) .ainoa-symbol{transition:none}}
 
-:is(#noa-ainoa,#noa-voice-modal) .ainoa-tip{position:absolute;right:0;bottom:calc(var(--ainoa-size) + 12px);width:min(290px,calc(100vw - 32px));padding:14px 16px;border:1px solid var(--noa-line);border-radius:18px;background:var(--noa-raised);color:var(--noa-text);box-shadow:0 8px 30px #0003;font-size:14px;line-height:1.55;overflow-wrap:anywhere}
+:is(#noa-ainoa,#noa-voice-modal) .ainoa-tip{position:absolute;right:0;bottom:calc(var(--ainoa-size) + 12px);width:min(290px,calc(100vw - 32px));padding:16px;border:1px solid var(--noa-line);border-radius:var(--noa-card-radius,8px);background:var(--noa-raised);color:var(--noa-text);box-shadow:0 8px 30px #0003;font-size:14px;line-height:1.55;overflow-wrap:anywhere}
 :is(#noa-ainoa,#noa-voice-modal) .ainoa-tip::after{content:"";position:absolute;right:24px;top:100%;border:8px solid transparent;border-top-color:var(--noa-raised)}
 :is(#noa-ainoa,#noa-voice-modal) [hidden]{display:none!important}
 
@@ -53,7 +53,7 @@
 /* Shared readable speech bubble, above menus/player without blocking their controls. */
 :is(#noa-ainoa,#noa-voice-modal) .ainoa-message{pointer-events:auto;box-sizing:border-box;width:min(360px,calc(100vw - 32px));max-height:min(58dvh,calc(100dvh - var(--ainoa-bottom) - 96px));overflow:auto;overscroll-behavior:contain;z-index:3}
 :is(#noa-ainoa,#noa-voice-modal) .ainoa-message>strong{color:var(--noa-accent);font-size:13px}
-:is(#noa-ainoa,#noa-voice-modal) .ainoa-message p{white-space:pre-line;margin:8px 0 12px;font-size:14px;line-height:1.65}
+:is(#noa-ainoa,#noa-voice-modal) .ainoa-message p{white-space:pre-line;margin:8px 0 12px;font-size:14px;line-height:1.65;color:var(--noa-text);opacity:1}
 :is(#noa-ainoa,#noa-voice-modal) .ainoa-message-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 :is(#noa-ainoa,#noa-voice-modal) .ainoa-message-actions a{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;color:var(--noa-accent)}
 :is(#noa-ainoa,#noa-voice-modal) .ainoa-message-actions button{padding:8px 12px;font-size:13px}
@@ -73,3 +73,8 @@ html[data-noa-voice-admin] :is(#noa-ainoa,#noa-voice-modal){--noa-bg:#fff;--noa-
 :is(#noa-ainoa,#noa-voice-modal) .ainoa-message p{margin-bottom:4px}
 :is(#noa-ainoa,#noa-voice-modal) .ainoa-message-actions{margin-top:8px}
 @media(max-width:760px){:is(#noa-ainoa,#noa-voice-modal){--ainoa-size:52px;right:max(12px,env(safe-area-inset-right));--ainoa-bottom:calc(var(--noa-nav-space,0px) + var(--noa-player-space,0px) + var(--noa-transfer-space,0px) + 12px)}}
+
+/* Operational feedback participates in the dialog's flow; it never covers its controls. */
+html body #noa-voice-modal{position:relative;inset:auto;display:block;grid-column:1/-1;flex:0 0 auto;width:100%;height:auto;max-width:100%;margin:16px 0 0;--ainoa-size:0px;--ainoa-gap:0px;--ainoa-bottom:0px;z-index:auto;box-sizing:border-box}
+html body #noa-voice-modal .ainoa-tip.ainoa-message{position:relative;inset:auto;transform:none;width:100%;max-width:100%;max-height:none;margin:0;background:var(--noa-raised);color:var(--noa-text);box-shadow:none}
+html body #noa-voice-modal .ainoa-tip::after{display:none}

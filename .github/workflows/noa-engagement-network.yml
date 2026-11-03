@@ -12,7 +12,7 @@ jobs:
         with: {persist-credentials: false}
       - run: node --check deploy/noa-engagement.js && node --test tests/engagement/network_test.mjs tests/voice/composer_test.cjs
   deploy:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[light-theme-release]')
     needs: verify
     runs-on: ubuntu-latest
     environment: production
