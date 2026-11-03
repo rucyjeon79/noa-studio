@@ -1,0 +1,46 @@
+name: Busan content page inspection
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/busan-content-pages.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: busan-readonly-sftp, cancel-in-progress: false}
+jobs:
+  content-pages:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    environment: busan-readonly
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python3 -m pip install paramiko==3.5.1
+      - name: Inspect native content rendering without writes
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: |
+          cd scripts
+          python3 - <<'PY'
+          import os,socket,hmac,json,stat
+          import paramiko
+          from busan_readonly_check import configuration,fingerprint,PORT,ROOT
+          host,user,password,pin=configuration(os.environ)
+          names=['bbs/content.php','skin/content/basic/content.skin.php','mobile/skin/content/basic/content.skin.php','theme/UXC_Flarumix/skin/content/basic/content.skin.php','theme/UXC_Flarumix/content.php','theme/UXC_Flarumix/mobile/content.php']
+          with socket.create_connection((host,PORT),timeout=15) as sock:
+           with paramiko.Transport(sock) as t:
+            t.banner_timeout=15;t.auth_timeout=15;t.get_security_options().key_types=('ssh-ed25519',)
+            t.start_client(timeout=20)
+            assert hmac.compare_digest(fingerprint(t.get_remote_server_key()),pin)
+            t.auth_password(user,password,fallback=False)
+            with paramiko.SFTPClient.from_transport(t) as s:
+             for n in names:
+              p=ROOT+'/'+n
+              try:
+               assert stat.S_ISREG(s.lstat(p).st_mode) and s.normalize(p)==p
+               with s.open(p,'rb') as f:data=f.read(100000)
+               print('CONTENT_SOURCE '+json.dumps({'path':n,'source':data.decode('utf-8')},ensure_ascii=False))
+              except FileNotFoundError:print('CONTENT_MISSING '+n)
+          PY
