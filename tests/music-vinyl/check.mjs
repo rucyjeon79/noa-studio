@@ -159,7 +159,7 @@ try{for(const width of [320,390,1280]){
      card.querySelector('.noa-edit-edit')?.remove();
      window.NoaBrowseEdit.mount({host:list,rows:[{key:card.dataset.inlineKey,title:'곡 정보 검수'}]});
     });
-    let metadata={ok:true,writeKey:'cover',kind:'single',packageType:'ep',revision:1,original:{status:'linked',ep:'32',title:'작은 떨림',lyrics:'[Intro]\n(oh, 괜찮아요...)'},context:{genre:'pop-original',ep:'32'},fields:{title:'편집 전',lyrics:'가사',geminiPrompt:'prompt',youtubeTitle:'제목',description:'설명',communityPost:'글'}};
+    let metadata={ok:true,writeKey:'cover',kind:'single',packageType:'ep',revision:1,original:{status:'linked',ep:'32',title:'작은 떨림',lyrics:'[Intro]\n(oh, 괜찮아요...)'},context:{genre:'pop-original',ep:'32'},fields:{title:'편집 전',lyrics:'가사',cast:'male',geminiPrompt:'prompt',youtubeTitle:'제목',description:'설명',communityPost:'글'}};
     let savedPatch=null, failSave=true;
     await mismatchPage.route('**/noa-inline-edit.php*',async route=>{
      if(route.request().method()==='POST'){
@@ -184,7 +184,13 @@ try{for(const width of [320,390,1280]){
      const field=panel.locator('[data-record-field=title]'),input=field.locator('input');
      await field.getByRole('button',{name:'곡 제목 수정',exact:true}).waitFor();
      assert(await input.evaluate(e=>e.readOnly));
+     const vocal=panel.locator('[data-record-field=vocal]');
+     const titlePreview=field.locator('.noa-locked-preview'), vocalPreview=vocal.locator('.noa-locked-preview');
+     assert(await titlePreview.isVisible() && await input.isHidden() && await input.isDisabled());
+     assert.equal(await vocalPreview.textContent(),mode==='album'?'남자솔로':'남녀듀엣');
      if(mode==='album'){
+      const line=await titlePreview.boundingBox(), vocalLine=await vocalPreview.boundingBox();
+      assert(Math.abs(line.x-vocalLine.x)<1 && Math.abs(line.width-vocalLine.width)<1);
       await field.getByRole('button',{name:'곡 제목 수정',exact:true}).click();
       await input.fill('개별 저장 확인');
       const commit=field.getByRole('button',{name:'곡 제목 저장',exact:true});
@@ -192,6 +198,18 @@ try{for(const width of [320,390,1280]){
       assert.equal(await input.inputValue(),'개별 저장 확인');
       await commit.click();await field.getByRole('button',{name:'곡 제목 수정',exact:true}).waitFor();
       assert.deepEqual(savedPatch,{title:'개별 저장 확인'});assert(await input.evaluate(e=>e.readOnly));
+      assert.equal(await vocalPreview.textContent(),'남자솔로','editing another field must preserve cast-only vocals');
+      const vocalEdit=vocal.getByRole('button',{name:'보컬 정보 수정',exact:true});
+      await vocalEdit.click();
+      assert(await titlePreview.isVisible() && await vocalPreview.isHidden());
+      for(const choice of ['여자솔로','남자솔로','남녀듀엣']){
+       const radio=vocal.getByRole('radio',{name:choice,exact:true});
+       await radio.click();assert(await radio.isChecked());assert.equal(await vocal.locator('select').inputValue(),choice);
+      }
+      await vocal.getByRole('button',{name:'보컬 정보 저장',exact:true}).click();
+      await vocalEdit.waitFor();assert.deepEqual(savedPatch,{vocal:'남녀듀엣'});
+      assert(await vocalPreview.isVisible() && await vocal.locator('select').isDisabled() && await vocal.getByRole('radiogroup').count()===0);
+      assert.equal(await vocalPreview.textContent(),'남녀듀엣');
       const controls=panel.locator('.noa-publish-panel');
       const options=await controls.locator('summary').boundingBox(),generate=await controls.locator(':scope>button').boundingBox();
       assert(Math.abs(options.y-generate.y)<2 && options.x+options.width<=generate.x);
