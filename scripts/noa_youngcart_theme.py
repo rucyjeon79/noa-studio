@@ -22,7 +22,7 @@ def main():
      with s.open(ROOT+'/'+a,'rb') as f:data=f.read()
      with s.open(ROOT+'/'+b,'wx') as f:f.write(data)
      added.append(b)
-   for p in ['head.sub.php','tail.sub.php','css','js','img','skin/outlogin/shop_side','skin/outlogin/shop_basic','skin/latest/notice','skin/visit/shop_basic','mobile/skin/outlogin/shop_basic','mobile/skin/latest/notice','mobile/skin/visit/shop_basic']:
+   for p in ['head.sub.php','tail.sub.php','css','js','img','mobile/head.sub.php','mobile/tail.sub.php','mobile/css','mobile/js','mobile/img','skin/outlogin/shop_side','skin/outlogin/shop_basic','skin/latest/notice','skin/visit/shop_basic','mobile/skin/outlogin/shop_basic','mobile/skin/latest/notice','mobile/skin/visit/shop_basic']:
     try:s.stat(ROOT+'/theme/basic/'+p)
     except FileNotFoundError:continue
     cp('theme/basic/'+p,'theme/noa_studio/'+p)
