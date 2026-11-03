@@ -39,6 +39,8 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
  .noa-edit-form .noa-publish-panel>[role=status]{margin:10px 0 0;line-height:1.5;font-variant-numeric:tabular-nums}
  .noa-publish-panel>[role=status]:empty{display:none}
 
+ #music-browse .noa-inline-songs>.noa-edit-form{contain:inline-size;min-inline-size:0;max-inline-size:100%;overflow-wrap:anywhere}
+ #music-browse .noa-inline-songs>.noa-edit-form :is(fieldset,input,textarea,select){box-sizing:border-box;min-inline-size:0;max-inline-size:100%}
  .noa-edit-form .noa-publish-panel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:8px}
  .noa-edit-form .noa-publish-panel>.noa-publish-options{margin:0;border:0}
  .noa-edit-form .noa-publish-options>summary,.noa-edit-form .noa-publish-panel>.noa-action{box-sizing:border-box;min-height:48px;width:100%;margin:0;padding:6px;justify-content:center;font-size:13px}

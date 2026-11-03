@@ -173,13 +173,14 @@ try{for(const width of [320,390,1280]){
      await mismatchPage.locator('.lp-view-switch [data-mode='+mode+']').first().evaluate(b=>b.click());
      await mismatchPage.waitForFunction(mode=>document.querySelector('.noa-inline-songs').dataset.trackView===mode,mode);
      const card=list.locator(':scope>.noa-inline-song-row').first();
-     const before=await card.boundingBox();
+     const documentBox=el=>el.evaluate(n=>{const r=n.getBoundingClientRect();return {width:r.width,height:r.height,y:r.y+scrollY};});
+     const before=await documentBox(card);
      await card.locator(':scope>.noa-edit-edit').evaluate(b=>b.click());
      const panel=list.locator(':scope>form.noa-edit-form');await panel.waitFor();
-     const after=await card.boundingBox(), box=await panel.boundingBox();
-     assert(Math.abs(before.width-after.width)<1 && Math.abs(before.height-after.height)<1 && Math.abs(before.y-after.y)<1);
+     const after=await documentBox(card), box=await documentBox(panel);
+     assert(Math.abs(before.width-after.width)<1 && Math.abs(before.height-after.height)<1 && Math.abs(before.y-after.y)<1,JSON.stringify({width,mode,before,after,box}));
      assert(box.width>=(await list.boundingBox()).width*.8 && box.y>=after.y+after.height-1);
-     if(mode==='album')assert(Math.abs((await list.locator(':scope>.noa-inline-song-row').nth(1).boundingBox()).y-after.y)<1);
+     if(mode==='album')assert(Math.abs((await documentBox(list.locator(':scope>.noa-inline-song-row').nth(1))).y-after.y)<1);
      const field=panel.locator('[data-record-field=title]'),input=field.locator('input');
      await field.getByRole('button',{name:'곡 제목 수정',exact:true}).waitFor();
      assert(await input.evaluate(e=>e.readOnly));
