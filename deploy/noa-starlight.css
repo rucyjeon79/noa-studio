@@ -576,9 +576,9 @@ html.noa-shell-wide .noa-scene-link{display:inline-flex;align-items:center;gap:1
 html.noa-shell-wide .noa-scene-signature{display:none}
 html.noa-shell-wide .noa-hero[data-home-section=hero]{position:relative;display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:'feature';grid-template-rows:minmax(0,1fr);gap:0;aspect-ratio:auto;min-height:480px;block-size:clamp(480px,42vw,620px);border:1px solid var(--noa-line);border-radius:4px;overflow:hidden;align-items:stretch;background:#17191c;isolation:isolate}
 html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-art{grid-area:feature;position:absolute;inset:0;min-width:0;min-height:0;width:100%;height:100%;margin:0;overflow:hidden;aspect-ratio:auto;contain:size;align-self:stretch;z-index:0}
-html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-art>:is(picture,video){position:absolute;inset:0;display:block;width:100%;height:100%;max-height:none;object-fit:cover;object-position:center 30%;aspect-ratio:auto;transform:none;animation:none}
-html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-art picture img{display:block;width:100%;height:100%;max-height:none;object-fit:cover;object-position:center 30%;transform:none;aspect-ratio:auto}
-html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-art::before{content:none}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-art>:is(picture,video){position:absolute;inset:0;display:block;width:100%;height:100%;max-height:none;object-fit:contain;object-position:center;aspect-ratio:auto;transform:none;animation:none}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-art picture img{display:block;width:100%;height:100%;max-height:none;object-fit:contain;object-position:center;transform:none;aspect-ratio:auto}
+html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-art::before{content:'';position:absolute;inset:-24px;z-index:0;background-image:var(--noa-hero-backdrop);background-size:cover;background-position:center;filter:blur(24px) brightness(.6);opacity:1;pointer-events:none}
 html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-copy{grid-area:feature;align-self:end;position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:'intro picks' 'actions picks';align-items:end;gap:20px 40px;min-width:0;min-height:0;width:100%;height:auto;padding:64px 32px 32px;overflow:visible;background:linear-gradient(0deg,#11151bf5 0%,#11151bd9 65%,#11151b00 100%);color:#fff;text-shadow:none;pointer-events:none}
 html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-intro{grid-area:intro;display:grid;gap:8px}
 html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-intro .noa-eyebrow{font-size:10px;line-height:1.4;letter-spacing:.12em;color:#e3d4ae}
@@ -646,9 +646,9 @@ html.noa-shell-wide .noa-mobile-footer+.noa-footer{display:none}
  html.noa-shell-wide .noa-scene-link{font-size:12px;gap:8px;min-height:44px}
  html.noa-shell-wide .noa-scene-signature{margin-top:20px;font-size:8px}
  html.noa-shell-wide .noa-hero[data-home-section=hero]{grid-template-columns:minmax(0,1fr);grid-template-areas:'media' 'copy';grid-template-rows:auto auto;min-height:0;block-size:auto;background:var(--noa-surface)}
- html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-art{grid-area:media;position:relative;inset:auto;aspect-ratio:16/9;height:auto;min-height:0;contain:none}
- html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-copy{grid-area:copy;display:flex;flex-direction:column;padding:20px;gap:16px;align-self:stretch;background:var(--noa-surface);color:var(--noa-text)}
- html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-copy :is(h1,.noa-hero-pick){color:var(--noa-text)}
+ html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-art{grid-area:media;position:relative;inset:auto;aspect-ratio:4/5;height:auto;min-height:0;contain:none}
+ html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-copy{grid-area:copy;display:flex;flex-direction:column;align-items:stretch;padding:20px;gap:16px;align-self:stretch;background:var(--noa-surface);color:var(--noa-text)}
+ html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-copy :is(h1,.noa-hero-pick){color:var(--noa-text);text-align:left}
  html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-copy :is(p,.noa-hero-discover h2){color:var(--noa-muted)}
  html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-pick{border-color:var(--noa-line)}
  html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-actions{order:3}

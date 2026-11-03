@@ -79,7 +79,7 @@ function decorate(){
  for(const el of document.querySelectorAll('#my-recent a,#my-recent-youtube a'))if(!el.querySelector('svg'))el.dataset.noaIcon=el.closest('#my-recent-youtube')?'youtube':'play';
  // Existing nodes/URLs/listeners are retained. Exclude card links, document-body citations and native navigation.
  for(const el of document.querySelectorAll('main a,main summary,main button:is(.noa-button.primary,#my-new,#my-add,#my-save,#my-play,#act-play,#lab-text-submit,#noa-settings-save),.noa-g5 .btn_bo_user a,.noa-g5 .btn_bo_user button,.noa-g5 .btn_confirm a,.noa-g5 .btn_confirm button,.noa-g5 .bo_v_nb a,.noa-g5 .bo_v_com a')){
-  if(el.matches('[data-noa-icon],.noa-action,.noa-logo,.brand,.noa-music-card,.noa-genre,.noa-world-act,.noa-personal-card,.noa-browse-card,.catalog-card')||el.closest('nav,footer,.noa-world-text,[data-noa-document-link],#bo_list table,#bo_list .bo_list,#bo_list .bo_tit,#bo_list .td_subject,#bo_v_con,#bo_vc article')||el.querySelector('img,svg')||!el.textContent.trim())continue;
+  if(el.matches('[data-noa-icon],.noa-action,.noa-logo,.brand,.noa-music-card,.noa-genre,.noa-world-act,.noa-personal-card,.noa-browse-card,.catalog-card,.noa-feed-row')||el.closest('nav,footer,.noa-world-text,[data-noa-document-link],#bo_list table,#bo_list .bo_list,#bo_list .bo_tit,#bo_list .td_subject,#bo_v_con,#bo_vc article')||el.querySelector('img,svg')||!el.textContent.trim())continue;
   el.dataset.noaIcon=actionIcon(el);
  }
  if(document.querySelector('.lab-tabs'))for(const a of document.querySelectorAll('.lab-tabs a')){const keys={'#lab-text':'settings','#lab-create':'music','#lab-jobs':'library','#lab-growth':'youtube'};if(keys[a.getAttribute('href')])a.dataset.noaIcon=keys[a.getAttribute('href')];}
@@ -93,6 +93,8 @@ function shell(){if(themeOnly||admin||document.querySelector('.noa-sidebar'))ret
 
 /* One navigation: pinned on wide landscape screens, modal on compact screens. */
 function wideShell(side){
+ // Original genre films are portrait: retain every pixel and fill the surrounding stage with their own soft backdrop.
+ const poster=document.getElementById('noa-hero-poster');if(poster){const art=poster.closest('.noa-hero-art');const backdrop=()=>art?.style.setProperty('--noa-hero-backdrop','url('+JSON.stringify(poster.src)+')');backdrop();new MutationObserver(backdrop).observe(poster,{attributes:true,attributeFilter:['src']});}
  const head=document.createElement('header');head.className='noa-drawer-head';head.append(side.querySelector('.noa-logo'));
  const close=document.createElement('button');close.type='button';close.className='noa-drawer-close';close.setAttribute('aria-label','전체 메뉴 닫기');close.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 6 12 12M18 6 6 18"/></svg>';close.onclick=()=>side.close();head.append(close);side.prepend(head);
  const profile=document.createElement('section');profile.className='noa-drawer-profile';profile.setAttribute('aria-label','내 계정');

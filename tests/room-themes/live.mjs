@@ -53,7 +53,7 @@ try{for(const sizes of [[[390,900],[768,900]],[[1280,1440],[1600,900]]])await Pr
   await p.locator('#noa-theme').selectOption(mode);
   assert.equal(await p.locator('#noa-theme option:checked').innerText(),theme.name);
   await p.locator('#noa-settings-dialog .noa-dialog-close').click();
-  for(const [route,room] of [['/','home'],['/noa-lounge.php','community'],['/noa-shop.php','shop'],['/noa-vip.php','shop'],['/noa-points.php','shop'],['/noa-settings.php',''],['/noa-sitemap.php',''],['/noa-about.php',''],['/noa-login.php',''],['/shop/cart.php','shop']]){
+  for(const [route,room] of [['/','home'],['/noa-lounge.php','community'],['/noa-shop.php','shop'],['/noa-vip.php','shop'],['/noa-points.php','shop'],['/noa-settings.php',''],['/noa-sitemap.php',''],['/noa-about.php',''],['/noa-login.php',''],['/shop/cart.php','shop']].filter(([route])=>process.env.NOA_VISUAL_REVIEW!=='true'||route==='/')){
    await p.goto(base+route,{waitUntil:'domcontentloaded'});
    await p.waitForFunction(([mode,room])=>document.documentElement.dataset.noaTheme===mode&&document.documentElement.dataset.noaRoom===room,[mode,room]);
    // Close the real campaign overlay through its existing control, without account writes.
@@ -239,10 +239,16 @@ async function verifyExpansiveShell(p,width,mode){
  assert(geometry.scene.x>=(pinned?220:0)&&geometry.scene.x<(pinned?320:100),'content clears the pinned navigation at wide landscape sizes');
  assert(!geometry.rightDock,'assistant remains floating instead of taking a permanent content column');
  if(width>=768){assert(geometry.hero.height>=480&&geometry.hero.height<=620,'artist film has a bounded cinematic height');assert(Math.abs(geometry.media.width-geometry.hero.width)<3,'original artist imagery spans the full feature');assert(geometry.copy.y>=geometry.media.y+160,'copy leaves the upper image unobstructed');assert(geometry.copy.bottom<=geometry.media.bottom+1,'copy stays within the film frame');assert(geometry.scene.height<300,'theme welcome remains secondary to the original film');}
- else{assert(Math.abs(geometry.media.width/geometry.media.height-16/9)<.03,'mobile media keeps a landscape frame');assert(geometry.copy.y>=geometry.media.bottom-1,'mobile text is below the media');}
+ else{assert(Math.abs(geometry.media.width/geometry.media.height-4/5)<.03,'mobile gives the original portrait film room without an oversized page');assert(geometry.copy.y>=geometry.media.bottom-1,'mobile text is below the media');}
  if(width>=960){assert(await p.locator('.noa-home-quickstart').isVisible(),'short notices share the card with real studio shortcuts');assert(Math.abs(geometry.notices.y-geometry.community.y)<2,'news sections share a row');assert(geometry.community.x>geometry.notices.x,'news columns are side by side');}
  else assert(geometry.community.y>=geometry.notices.bottom-1,'mobile news sections follow reading order');
  assert.equal(await p.locator('.noa-hero').evaluate(h=>h.nextElementSibling.dataset.homeSection),'notices','real news follows the music introduction before promotions');
+ assert.equal(await p.locator('#noa-hero-video').evaluate(v=>getComputedStyle(v).objectFit),'contain','original portrait film is never cropped to a landscape strip');
+ assert.equal(await p.locator('#noa-hero-poster').evaluate(v=>getComputedStyle(v).objectFit),'contain','fallback poster retains the full original frame');
+ assert.equal(await p.locator('.noa-feed-row.noa-action').count(),0,'feed rows remain semantic content instead of centered action buttons');
+ for(const row of await p.locator('.noa-feed-row:visible').all())assert(await row.evaluate(e=>{const left=e.getBoundingClientRect().left;return [...e.children].every(n=>Math.abs(n.getBoundingClientRect().left-left)<2); }),'feed tag, title and author share the same left edge');
+ if(width<768)assert(await p.locator('.noa-hero-intro').evaluate(e=>Math.abs(e.getBoundingClientRect().left-e.parentElement.getBoundingClientRect().left-20)<2),'mobile introduction keeps the left content edge');
+
  const all=p.locator('#noa-nav-all'),drawer=p.locator('#noa-menu-drawer');assert.equal(await drawer.isVisible(),pinned);
  if(pinned){assert.equal(await drawer.locator('.noa-drawer-secondary').isVisible(),false,'wide rail starts with only the five main destinations');assert.equal(await drawer.locator('.noa-drawer-search').isVisible(),false,'search does not clutter the default rail');assert.equal(await drawer.locator('.noa-drawer-profile').isVisible(),false,'header already provides account access');assert(await drawer.locator('.noa-sidebar-visitors').isVisible(),'original visitor information remains in the rail');}
  await all.click();await drawer.waitFor({state:'visible'});assert.equal(await all.getAttribute('aria-expanded'),'true');

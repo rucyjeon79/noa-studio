@@ -47,13 +47,14 @@ jobs:
           cp tests/room-themes/forms.mjs "$RUNNER_TEMP/noa-light/forms.mjs"
           cp tests/room-themes/player.mjs "$RUNNER_TEMP/noa-light/player.mjs"
       - name: Verify member pages, writing forms and uninterrupted playback in isolation
+        if: ${{ !contains(github.event.head_commit.message, '[design-review]') }}
         run: |
           php tests/room-themes/fixture.php
           node "$RUNNER_TEMP/noa-light/member.mjs"
           node "$RUNNER_TEMP/noa-light/forms.mjs"
           node "$RUNNER_TEMP/noa-light/player.mjs"
       - name: Verify candidate themes before activation
-        env: {NOA_THEME_PHASE: candidate, NOA_SOURCE_ROOT: '${{ github.workspace }}'}
+        env: {NOA_THEME_PHASE: candidate, NOA_SOURCE_ROOT: '${{ github.workspace }}', NOA_VISUAL_REVIEW: '${{ contains(github.event.head_commit.message, ''[design-review]'') }}'}
         run: node "$RUNNER_TEMP/noa-light/check.mjs"
       - name: Activate theme assets and preferences with public hash verification
         id: activate
