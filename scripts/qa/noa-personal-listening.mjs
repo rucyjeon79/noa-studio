@@ -29,7 +29,13 @@ try{
    await browse.locator('[data-browse-level="4"] .noa-inline-song').first().click();await page.waitForFunction(()=>!document.getElementById('sound-player').paused&&document.getElementById('sound-player').currentTime>0);
    const before=await page.locator('#sound-player').evaluate(a=>({src:a.getAttribute('src'),time:a.currentTime}));await browse.locator('.noa-browse-crumbs button').first().click();
    assert.equal(await browse.locator('[data-browse-level="1"] .noa-browse-card').count(),4);assert(await page.locator('#sound-player').evaluate((a,b)=>!a.paused&&a.getAttribute('src')===b.src&&a.currentTime>=b.time,before));
-   report.categoryBrowsing??=[];report.categoryBrowsing.push({width,defaultCategories:4,genreCards:4,actTracks:3,browsingKeepsAudio:true});
+   for(const [index,expectedGenre] of [[1,'groovy-airy-pop'],[2,'your-story'],[3,'cover-reborn']]){
+    await browse.locator('[data-browse-level="1"] .noa-browse-card').nth(index).click();
+    if(index===1){await browse.locator('[data-browse-level="2"] .noa-browse-card').nth(2).click();assert.equal(await browse.locator('[data-act-number]').count(),2);await browse.locator('[data-act-number="1"]>.noa-browse-card').click();}
+    await browse.locator('[data-browse-level="4"] .noa-inline-song').first().click();await page.waitForFunction(()=>!document.getElementById('sound-player').paused);
+    assert.equal(await page.locator('.song.selected').getAttribute('data-genre'),expectedGenre);await browse.locator('.noa-browse-crumbs button').first().click();
+   }
+   report.categoryBrowsing??=[];report.categoryBrowsing.push({width,defaultCategories:4,genreCards:4,actTracks:3,allFourCategoriesPlayable:true,browsingKeepsAudio:true});
    await page.locator('.nl-music-discovery>summary').click();
   }
   await page.locator('#noa-listening .nl-primary').waitFor();await page.waitForFunction(()=>document.querySelector('#noa-listening .nl-primary')?.disabled===false);await page.locator('#noa-listening').scrollIntoViewIfNeeded();
