@@ -34,6 +34,11 @@ try {
       const buttons=[...document.querySelectorAll('#noa-login .noa-social-provider')];
       return {buttons:buttons.map(n=>({box:b(n),bg:getComputedStyle(n).backgroundColor,color:getComputedStyle(n).color,disabled:n.disabled||false,icons:n.querySelectorAll('img,svg').length,outline:getComputedStyle(n).outlineStyle})),main:b(document.querySelector('#noa-login')),rail:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--noa-rail')),form:b(document.querySelector('.noa-login-form')),overflow:document.documentElement.scrollWidth>innerWidth+1};
     });
+    if(audit.overflow){
+      const overflow=await page.evaluate(()=>[...document.body.querySelectorAll('*')].filter(n=>n.getBoundingClientRect().right>innerWidth+1).map(n=>({tag:n.tagName,id:n.id,cls:n.className,width:getComputedStyle(n).width,max:getComputedStyle(n).maxWidth,left:n.getBoundingClientRect().left,right:n.getBoundingClientRect().right})).slice(0,20));
+      await page.screenshot({path:out+'/overflow-'+width+'.png',fullPage:true});
+      console.log('LOGIN_OVERFLOW',JSON.stringify({width,state,audit,overflow}));
+    }
     assert.equal(audit.buttons.length,2);assert(!audit.overflow);
     assert.equal(audit.buttons[0].bg,'rgb(255, 255, 255)');assert.equal(audit.buttons[1].bg,'rgb(254, 229, 0)');
     const [g,k]=audit.buttons;assert.equal(g.box.width,k.box.width);assert.equal(g.box.x,k.box.x);assert.equal(g.box.height,k.box.height);
