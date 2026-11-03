@@ -19,6 +19,10 @@
   if(pieces.length)jacket.append(...pieces);
   else{jacket.textContent='♪';jacket.setAttribute('aria-hidden','true');}
   holder.append(disc,jacket);
+  if(parent.matches('.noa-inline-song')){
+   const meter=make('lp-album-meter');meter.setAttribute('aria-hidden','true');
+   meter.append(make(''),make(''),make(''));holder.append(meter);
+  }
   return holder;
  }
  const dockArt=wrapArt(cover.parentElement,[cover,blank]);

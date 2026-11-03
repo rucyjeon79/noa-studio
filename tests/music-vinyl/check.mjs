@@ -147,18 +147,6 @@ try{for(const width of [320,390,1280]){
      return {credit:getComputedStyle(art,'::before').content,disc:getComputedStyle(art.querySelector('.lp-spindle')).display,
       widthDifference:Math.abs(rect.width-jacket.width),ribbonOffset:Math.abs(rect.top-badge.getBoundingClientRect().top)};
     });
-    const meter=list.locator('.lp-track-art').first();
-    await mismatchPage.emulateMedia({reducedMotion:'no-preference'});
-    assert(await meter.evaluate(n=>{
-     n.classList.add('lp-running');
-     const style=getComputedStyle(n,'::before');
-     if(style.animationName!=='noa-album-meter')return false;
-     const motion=n.getAnimations({subtree:true}).find(a=>a.animationName==='noa-album-meter');
-     motion.pause();motion.currentTime=0;const before=style.backgroundSize;
-     motion.currentTime=240;return before!==style.backgroundSize;
-    }),'playing album bars change height');
-    await mismatchPage.emulateMedia({reducedMotion:'reduce'});
-    assert.equal(await meter.evaluate(n=>getComputedStyle(n,'::before').animationName),'none');
     assert(playing.credit.includes('재생 중') && playing.disc==='none' && playing.widthDifference<=1 && playing.ribbonOffset<=1,JSON.stringify(playing));
     assert.equal(geometry.frame,'none');
     assert.equal(geometry.corner,'none');
@@ -233,6 +221,19 @@ try{for(const width of [320,390,1280]){
  const pausedAt=await p.locator('audio').evaluate(n=>n.currentTime);
  await transport.click();await p.waitForFunction(()=>!document.querySelector('audio').paused);
  assert(await p.locator('audio').evaluate(n=>n.currentTime)>=pausedAt,'Resume preserves playback position');
+ await p.locator('#sleeve-transport-test').evaluate(row=>{
+  const album=document.createElement('div');album.dataset.trackView='album';row.before(album);album.append(row);
+ });
+ const meter=p.locator('#sleeve-transport-test .lp-album-meter');
+ await meter.waitFor();
+ const firstFrame=await meter.screenshot();
+ await p.waitForTimeout(180);
+ assert(!firstFrame.equals(await meter.screenshot()),'Playing album meter must paint different frames in real time');
+ await p.emulateMedia({reducedMotion:'reduce'});
+ assert.equal(await meter.locator('span').first().evaluate(n=>getComputedStyle(n).animationName),'none');
+ await p.emulateMedia({reducedMotion:'no-preference'});
+ await transport.click();await meter.waitFor({state:'hidden'});
+ await transport.click();await meter.waitFor();
  await p.locator('#sleeve-transport-test').evaluate(n=>n.remove());
  if(width===390){
   await p.evaluate(()=>{
