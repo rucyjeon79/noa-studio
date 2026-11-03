@@ -113,6 +113,29 @@ function refreshAutomaticTheme(){
  if(root.dataset.noaTheme!==resolvedTheme('auto'))apply(state);else scheduleTheme();
 }
 function themeArtwork(){return '<div class="noa-theme-visual" aria-hidden="true"><div class="noa-theme-art"><span class="noa-theme-celestial"></span><span class="noa-theme-stars"><i></i><i></i><i></i><i></i><i></i></span><span class="noa-theme-mountains"></span><span class="noa-theme-sea"></span></div></div>';}
+// Theme scenes belong to editorial banners; artist artwork and real product photos stay untouched.
+function themeImages(theme){
+ const images=theme.images;if(!images)return;
+ for(const [role,url]of Object.entries(images))root.style.setProperty('--noa-image-'+role,'url("'+url+'")');
+ const scene=document.querySelector('#noa-theme-scene .noa-theme-visual');
+ if(scene&&!scene.querySelector('.noa-theme-cover')){
+  const cover=document.createElement('img');cover.className='noa-theme-cover';cover.alt='';cover.decoding='async';cover.fetchPriority='high';cover.width=1672;cover.height=941;scene.append(cover);
+ }
+ const slots=[
+  ['#noa-theme-scene .noa-theme-cover','coast'],
+  ['.noa-story-entrance>img','journey'],
+  ['.noa-monthly-intro>img','music'],
+  ['[data-home-banner="youtube"]>.noa-home-banner-photo','music'],
+  ['[data-home-banner="amt"]>.noa-home-banner-photo','journey'],
+  ['#ecosystem[data-space="lounge"]>.ec-hero>img','coast'],
+  ['#ecosystem[data-space="lab"]>.ec-hero>img','music']
+ ];
+ for(const [selector,role]of slots)for(const img of document.querySelectorAll(selector)){
+  img.dataset.noaThemeImage=role;img.alt='';
+  if(!img.classList.contains('noa-theme-cover')){img.loading='lazy';img.decoding='async';}
+  if(img.getAttribute('src')!==images[role])img.src=images[role];
+ }
+}
 function themePresentation(theme){
  if(themeOnly||admin||!theme.concept)return;
  const concept=theme.concept,hero=document.querySelector('.noa-hero[data-home-section="hero"]');
@@ -141,7 +164,7 @@ function apply(next){
  // Older open tabs normalize unknown themes to dark. Do not feed auto into their legacy key.
  if(choice!=='auto')safeWrite('noa-ui-selection',JSON.stringify(state));
  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',theme.tokens.bg);
- themePresentation(theme);scheduleTheme();markLabels();window.dispatchEvent(new Event('noa-theme'));
+ themePresentation(theme);themeImages(theme);scheduleTheme();markLabels();window.dispatchEvent(new Event('noa-theme'));
 }
 window.addEventListener('focus',refreshAutomaticTheme);
 window.addEventListener('pageshow',refreshAutomaticTheme);

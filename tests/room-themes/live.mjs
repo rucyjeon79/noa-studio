@@ -1,5 +1,6 @@
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {mkdirSync,readFileSync,writeFileSync} from 'node:fs';
 const source=process.env.NOA_SOURCE_ROOT||process.cwd();
@@ -15,6 +16,10 @@ try{for(const width of [390,768,1280]){
  if(phase==='candidate')for(const name of ['noa-design.json','noa-starlight.css','noa-ui.js']){
   await context.route('**/'+name+'*',route=>route.fulfill({body:readFileSync(source+'/deploy/'+name),contentType:name.endsWith('.css')?'text/css':name.endsWith('.js')?'text/javascript':'application/json'}));
  }
+ if(phase==='candidate')await context.route('**/noa-assets/theme-*.webp*',route=>{
+  const name=new URL(route.request().url()).pathname.split('/').at(-1).replace(/^theme-/,'');
+  return route.fulfill({body:readFileSync(source+'/public/noa-theme-scenes/'+name),contentType:'image/webp'});
+ });
  if(phase==='candidate')await context.route('https://noastudio.ai.kr/',async route=>{
   const response=await route.fetch(),html=await response.text();
   const fragment=readFileSync(source+'/deploy/noa-app/home.php','utf8').match(/<!-- noa-theme-scene:start -->[\s\S]*?<!-- noa-theme-scene:end -->/)[0];
@@ -56,13 +61,28 @@ try{for(const width of [390,768,1280]){
    assert.deepEqual(errors,[],'uncaught browser errors: '+route);
    const selected=p.locator('#noa-section-navigation a[aria-current=page]');
    if(mode==='noa-ivory'&&await selected.count())assert.equal(await selected.evaluate(el=>getComputedStyle(el).color),'rgb(255, 255, 255)','active section label remains readable: '+route);
-   if(room==='home'){assert(await p.locator('#noa-theme-scene').evaluate(el=>el.getBoundingClientRect().top>=0),'home theme introduction stays above the fold');assert.equal(await p.locator('#noa-theme-scene h2').innerText(),theme.concept.title);assert.doesNotMatch(await p.locator('#noa-theme-scene').innerText(),/\d{1,2}:\d{2}|12시/,'theme artwork does not imply a live clock');assert(await p.locator('#noa-theme-scene .noa-theme-art').isVisible(),'theme artwork is visible');assert.equal(await p.locator('#noa-theme-scene .noa-theme-stars').isVisible(),mode==='noa-studio');assert.equal(await p.locator('#noa-theme-scene .noa-theme-mountains').isVisible(),mode==='noa-ivory');}
+   if(room==='home'){assert(await p.locator('#noa-theme-scene').evaluate(el=>el.getBoundingClientRect().top>=0),'home theme introduction stays above the fold');assert.equal(await p.locator('#noa-theme-scene h2').innerText(),theme.concept.title);assert.doesNotMatch(await p.locator('#noa-theme-scene').innerText(),/\d{1,2}:\d{2}|12시/,'theme artwork does not imply a live clock');assert(await p.locator('#noa-theme-scene .noa-theme-cover').isVisible(),'theme landscape is visible');}
    if(room==='shop')await p.locator('.ec-grid .ec-card').first().waitFor();
    if(room==='community')await p.locator('.ec-write-invite').first().waitFor();
    if(mode==='noa-ivory')for(const primary of await p.locator('.ec-primary:visible').all()){
     const paint=await primary.evaluate(el=>({color:getComputedStyle(el).color,background:getComputedStyle(el).backgroundColor}));
     assert.deepEqual(paint,{color:'rgb(255, 255, 255)',background:'rgb(37, 103, 125)'},'primary control remains readable: '+route);
    }
+   const photos=await p.locator('[data-noa-theme-image]').all();
+   if(room==='home')assert(photos.length>=5,'home uses coast, story, benefit and promotional theme imagery');
+   for(const photo of photos){
+    const role=await photo.getAttribute('data-noa-theme-image');assert.equal(await photo.getAttribute('src'),theme.images[role],'image follows active palette');
+    await photo.scrollIntoViewIfNeeded();await photo.evaluate(img=>img.decode());
+    assert(await photo.evaluate(img=>img.naturalWidth>500),'real generated asset loaded');
+   }
+   if(room==='home'){
+    assert.equal(await p.locator('#noa-hero-poster').getAttribute('data-noa-theme-image'),null,'artist posters stay original');
+    assert.equal(await p.locator('[data-home-banner="goods"]>img').getAttribute('data-noa-theme-image'),null,'actual goods photography stays original');
+    for(const [name,selector]of [['story','.noa-story-entrance'],['youtube','[data-home-banner="youtube"]'],['invite','#noa-referral-banner']]){
+     const banner=p.locator(selector);if(await banner.count())await banner.screenshot({path:output+'/'+name+'-'+mode+'-'+width+'.png'});
+    }
+   }
+   await p.evaluate(()=>scrollTo(0,0));
    await p.screenshot({path:output+'/'+(room||'settings')+'-'+mode+'-'+width+'.png'});
   }
   await p.locator('[data-noa-display-settings]:visible').first().click();
@@ -75,6 +95,7 @@ try{for(const width of [390,768,1280]){
  await context.close();
 }
  await verifyAutomaticClock();
+ console.log('PREMIUM_THEME_IMAGES_LOADED_MATCH_PALETTE_AND_PRESERVE_ARTIST_AND_PRODUCT_PHOTOS_OK');
  console.log('PREMIUM_THEMES_AUTOMATIC_BOUNDARIES_CONTRAST_LAYOUT_AND_RELOAD_OK');
 }finally{
  writeFileSync(output+'/results.json',JSON.stringify(results,null,2));
@@ -116,6 +137,12 @@ async function verifyAutomaticClock(){
  await legacy.close();
  assert.deepEqual(posts,[],'clock changes never write account preferences');
  if(phase==='live'){
+  for(const theme of config.themes)for(const url of Object.values(theme.images)){
+   const asset=await context.request.get('https://noastudio.ai.kr'+url);assert.equal(asset.status(),200);
+   const name=url.split('/').at(-1).replace(/^theme-/,'');
+   const expected=createHash('sha256').update(readFileSync(source+'/public/noa-theme-scenes/'+name)).digest('hex');
+   assert.equal(createHash('sha256').update(await asset.body()).digest('hex'),expected,'deployed image matches the reviewed asset');
+  }
   const response=await context.request.get('https://noastudio.ai.kr/noa-bridge/ui-preferences.php');assert.equal(response.status(),200);
   const prefs=await response.json();assert.equal(prefs.defaults.theme,'auto');assert(prefs.defaults.enabled.includes('auto'));assert.equal(prefs.member,false);
  }

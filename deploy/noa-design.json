@@ -37,6 +37,11 @@
         "description": "일상을 마친 별 하나, 별무리가 되어 밤하늘을 밝히다.",
         "signature": "별빛이 모이는 밤.",
         "name": "별빛과 달빛"
+      },
+      "images": {
+        "coast": "/noa-assets/theme-night-coast-v1.webp",
+        "journey": "/noa-assets/theme-night-journey-v1.webp",
+        "music": "/noa-assets/theme-night-music-v1.webp"
       }
     },
     {
@@ -74,6 +79,11 @@
         "description": "생동감 있는 일상부터 바다와 산으로 떠나는 별무리의 휴가까지.",
         "signature": "햇살 따라, 음악 따라.",
         "name": "햇빛, 바다와 산"
+      },
+      "images": {
+        "coast": "/noa-assets/theme-day-coast-v1.webp",
+        "journey": "/noa-assets/theme-day-journey-v1.webp",
+        "music": "/noa-assets/theme-day-music-v1.webp"
       }
     }
   ],

@@ -454,3 +454,47 @@ html[data-noa-theme] .ec-primary{background:var(--noa-accent)!important;color:va
  }
  @media(prefers-reduced-motion:no-preference){html[data-noa-theme] :is(.noa-theme-scene,.noa-menu a,.noa-section-navigation a){transition:background-color .2s,color .2s,border-color .2s}}
 }
+
+/* Editorial day/night photography: fixed geometry, readable copy, original music/product artwork retained. */
+@media all {
+ html[data-noa-theme] body .noa-theme-scene{grid-template-columns:minmax(0,1.1fr) minmax(220px,.9fr);gap:0;padding:0;min-height:216px}
+ html[data-noa-theme] .noa-theme-scene .noa-theme-story{padding:28px 32px}
+ html[data-noa-theme] .noa-theme-scene .noa-theme-visual{padding:0;border:0;align-self:stretch;position:relative;min-height:216px;overflow:hidden}
+ html[data-noa-theme] .noa-theme-scene .noa-theme-art{display:none}
+ html[data-noa-theme] .noa-theme-cover{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:76% 50%}
+ html[data-noa-theme] .noa-theme-scene .noa-theme-caption{max-width:46ch}
+ html[data-noa-theme] body a.noa-home-banner[data-home-banner]{grid-template-columns:minmax(160px,34%) minmax(0,1fr);gap:24px;overflow:hidden;padding:0;border:1px solid var(--noa-line);border-radius:4px;background:var(--noa-surface)}
+ html[data-noa-theme] body a.noa-home-banner[data-home-banner]>.noa-home-banner-photo{height:184px;align-self:stretch;object-fit:cover;object-position:center;border-radius:0}
+ html[data-noa-theme] body a.noa-home-banner[data-home-banner]>.noa-home-banner-copy{padding:20px 24px 20px 0;gap:8px}
+ html[data-noa-theme] body a.noa-home-banner[data-home-banner] .noa-home-banner-copy>b{color:var(--noa-accent)}
+ html[data-noa-theme] body .noa-monthly-intro img{height:88px;width:clamp(88px,12vw,144px);object-position:76% 65%;border-radius:2px}
+ html[data-noa-theme] .noa-story-entrance>img{object-position:65% center}
+ html[data-noa-theme] body #noa-referral-banner{background-image:linear-gradient(90deg,#10151ff5 0%,#10151fe8 45%,#10151f55 100%),var(--noa-image-coast);background-size:cover;background-position:center 58%;border-color:var(--noa-line);min-height:168px}
+ html[data-noa-theme] #noa-referral-banner .nrf-invite-photo{opacity:.8;width:29%;right:4%}
+ html[data-noa-theme] #noa-referral-banner .nrf-banner-copy{max-width:68%}
+ html[data-noa-theme=noa-studio] #noa-referral-banner :is(strong,.nrf-banner-action,.nrf-banner-copy){color:var(--noa-text)}
+ html[data-noa-theme=noa-studio] #noa-referral-banner :is(small,em){color:var(--noa-accent)}
+ html[data-noa-theme=noa-ivory] body #noa-referral-banner{background-image:linear-gradient(90deg,#fffffff5 0%,#fffffff0 45%,#ffffff55 100%),var(--noa-image-coast);color:var(--noa-text)}
+ html[data-noa-theme=noa-ivory] #noa-referral-banner :is(strong,.nrf-banner-action,.nrf-banner-copy){color:var(--noa-text)}
+ html[data-noa-theme=noa-ivory] #noa-referral-banner :is(small,em,.nrf-banner-copy>span){color:var(--noa-sea)}
+ html[data-noa-theme] #ecosystem[data-space="shop"]>.ec-hero{position:relative;isolation:isolate;border:1px solid var(--noa-line);border-radius:4px;padding:28px;margin-top:24px;overflow:hidden}
+ html[data-noa-theme] #ecosystem[data-space="shop"]>.ec-hero::before{content:'';position:absolute;inset:0;z-index:-1;background-image:linear-gradient(90deg,#10151ffa,#10151fe8 50%,#10151faa),var(--noa-image-music);background-size:cover;background-position:center}
+ html[data-noa-theme=noa-ivory] #ecosystem[data-space="shop"]>.ec-hero::before{background-image:linear-gradient(90deg,#fffffff5,#fffffff0 50%,#ffffffb8),var(--noa-image-music)}
+ @media(max-width:760px){
+  html[data-noa-theme] body .noa-theme-scene{grid-template-columns:1fr;min-height:0}
+  html[data-noa-theme] .noa-theme-scene .noa-theme-story{padding:20px}
+  html[data-noa-theme] .noa-theme-scene .noa-theme-visual{min-height:124px;grid-row:2}
+  html[data-noa-theme] .noa-theme-cover{object-position:65% 52%}
+  html[data-noa-theme] body a.noa-home-banner[data-home-banner]{grid-template-columns:104px minmax(0,1fr);gap:16px}
+  html[data-noa-theme] body a.noa-home-banner[data-home-banner]>.noa-home-banner-photo{height:100%;min-height:164px;object-position:70% center}
+  html[data-noa-theme] body a.noa-home-banner[data-home-banner]>.noa-home-banner-copy{padding:16px 16px 16px 0;gap:6px}
+  html[data-noa-theme] .noa-home-banner-copy>strong{font-size:18px}
+  html[data-noa-theme] .noa-home-banner-copy>span{font-size:12px}
+  html[data-noa-theme] body .noa-monthly-intro img{width:88px;height:72px}
+  html[data-noa-theme] #ecosystem[data-space="lounge"]>.ec-hero>img{display:block;height:132px;object-position:70% 50%}
+  html[data-noa-theme] #ecosystem[data-space="shop"]>.ec-hero{padding:20px;margin-top:16px;min-height:164px;display:flex;align-items:center}
+  html[data-noa-theme] #ecosystem[data-space="shop"]>.ec-hero::before{background-position:70% center}
+ }
+}
+
+html[data-noa-theme] body a.noa-home-banner[data-home-banner="goods"]>.noa-home-banner-photo{object-fit:contain;background:var(--noa-raised)}

@@ -1,0 +1,42 @@
+{
+  "generation": "Built-in image_gen",
+  "format": "WebP, quality 82; original dimensions and composition preserved",
+  "assets": [
+    {
+      "source": "public/noa-theme-scenes/night-coast-v1.webp",
+      "deployed": "/noa-assets/theme-night-coast-v1.webp",
+      "prompt": "Use case: ads-marketing. Create one premium cinematic photographic website banner asset for Korean music platform NOA STUDIO’s DARK theme, wide landscape 3:2 or 16:9. Concept: a single star finishes the everyday day and becomes a constellation over the midnight sea. A tranquil deep navy midnight coastal horizon, distant dark mountain silhouettes, a beautifully delicate constellation of small authentic stars and a slender silver crescent above the right half; very restrained champagne starlight glints reflected on the sea. Real refined editorial landscape photography with subtle film texture, atmospheric, elegant and spacious. The left 45 percent should be darker quiet sky and subtle sea with no focal subject to allow live white UI text; rich detailed scenery primarily right side. No typography, no letters, no clocks, no numbers, no logos, no watermark, no people, no gigantic planets, no purple neon, no generic glowing sci-fi blobs. This is a production website background, not a website mockup. Broad composition survives mobile cropping.",
+      "bytes": 46078
+    },
+    {
+      "source": "public/noa-theme-scenes/day-coast-v1.webp",
+      "deployed": "/noa-assets/theme-day-coast-v1.webp",
+      "prompt": "Use case: ads-marketing. One premium photographic wide landscape website banner for Korean music platform NOA STUDIO LIGHT theme. Glorious clear noon on a pristine turquoise coast, sunlight sparkling gently on the sea, rich green mountains along the far right coastline, pale white sand, very fine wispy clouds in bright pale blue sky. Bright lively holiday feeling, sophisticated editorial travel photography, clean white and light gray tonal balance with restrained sea blue, mountain green and sunlight gold. Composition: left 45 percent calm bright open sky and pale sea for a dark-gray live text overlay; main coastal cliffs and greenery on right. Natural realistic textures, refined and airy. Aspect ratio 16:9. No text, no letters, no time or clock, no logos, no watermark, no website UI, no people, no orange sunset. Works with mobile crop.",
+      "bytes": 113744
+    },
+    {
+      "source": "public/noa-theme-scenes/night-journey-v1.webp",
+      "deployed": "/noa-assets/theme-night-journey-v1.webp",
+      "prompt": "Use case: ads-marketing. One premium cinematic editorial photographic landscape banner, 16:9, for a music storytelling page in a dark midnight theme. A quiet narrow coastal walking path winds from lower center into the far right distance through dark pines and low mountain foothills beside a still ocean. A handful of delicate warm path lights guide the journey, a beautiful refined star-filled navy sky with a subtle small constellation and silver crescent high above. Sense of stories continuing after a long day, peaceful companionship without people, sophisticated music brand. Layered dark blue, charcoal, silver and tiny champagne highlights, realistic stone and foliage, no oversaturation. Entire scenic composition, enough sky and distant horizon. No words, no logos, no clock, no UI mockup, no giant moon, no neon, no galaxies dominating.",
+      "bytes": 143456
+    },
+    {
+      "source": "public/noa-theme-scenes/day-journey-v1.webp",
+      "deployed": "/noa-assets/theme-day-journey-v1.webp",
+      "prompt": "Use case: ads-marketing. Create one wide 16:9 premium editorial travel photograph for a music storytelling banner in a white light theme. At clear NOON a beautiful white-stone coastal footpath curves through fresh green pine slopes toward a turquoise sea and distant forested mountains. The sunny path guides the eye into the right distance like a musical story. Airy and inviting, refined natural realistic textures, sunlight sparkling, white clouds and very light sky, Mediterranean-like calm but no specific landmark. Palette white stone, pale warm sunlight, fresh mountain green and ocean blue. No people, no writing or typography, no logos, no clock, no UI, no sunset. Balanced photographic composition that remains beautiful in a square crop.",
+      "bytes": 328796
+    },
+    {
+      "source": "public/noa-theme-scenes/night-music-v1.webp",
+      "deployed": "/noa-assets/theme-night-music-v1.webp",
+      "prompt": "Use case: ads-marketing. One elegant wide 16:9 editorial photographic banner for NOA STUDIO dark music theme. A refined dark walnut turntable with a black vinyl record, matte charcoal over-ear headphones beside it, and a tiny warm table lamp on an open apartment balcony after work. Objects occupy right 60 percent, open breathing room left. Beyond the balcony a calm coastal city has sparse warm lights, deep navy midnight sky, a subtle scatter of stars and moonlight over sea. Emotional end-of-day listening ritual, highly realistic materials, premium understated photography. Palette charcoal, dark blue, pale silver moonlight, restrained warm champagne. No people, no product brand, no label words, no readable text, no logo, no watermark, no clock or time, no UI. Do not make it look like a product available for sale: an atmospheric music lifestyle scene.",
+      "bytes": 66576
+    },
+    {
+      "source": "public/noa-theme-scenes/day-music-v1.webp",
+      "deployed": "/noa-assets/theme-day-music-v1.webp",
+      "prompt": "Use case: ads-marketing. One premium wide 16:9 editorial music-and-holiday lifestyle photo for NOA STUDIO light theme. On a sunlit white stone terrace overlooking a crystalline blue sea and distant green mountains at bright noon: silver-white over-ear headphones, a closed neutral linen notebook without lettering and a clear glass of sparkling citrus water on a pale table with a soft cream linen cloth. Relaxed travel listening moment, natural realistic shadows, sophisticated light clean composition. Objects on the right 60 percent, quiet sea and bright light space on the left. Fine material texture, lively clear daylight, a little greenery at the edge. Palette white, light gray, sunlight gold, sea blue, pine green. No people, no logos, no letters, no text, no watermark, no clock, no UI mockup, no sunset. Beautiful square crop remains usable. Atmospheric editorial banner, not a catalog product listing.",
+      "bytes": 154378
+    }
+  ]
+}

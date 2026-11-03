@@ -24,9 +24,9 @@ test('new visitors default to automatic even during a rolling server release',as
 });
 test('09:00 and 21:00 switch an open page without persisting a manual choice or writing to an account',async()=>{
  const h=await harness({hour:8,minute:59,second:59});assert.equal(h.root.dataset.noaTheme,'noa-studio');assert.equal([...h.timers.values()][0].delay,1000);
- h.setTime(9);h.tick();assert.equal(h.root.dataset.noaTheme,'noa-ivory');
+ h.setTime(9);h.tick();assert.equal(h.root.dataset.noaTheme,'noa-ivory');assert.match(h.root.style['--noa-image-coast'],/theme-day-coast-v1/);
  h.setTime(20,59,59);h.tick();assert.equal(h.root.dataset.noaTheme,'noa-ivory');assert.equal([...h.timers.values()][0].delay,1000);
- h.setTime(21);h.tick();assert.equal(h.root.dataset.noaTheme,'noa-studio');assert.equal(h.meta.content,config.themes[0].tokens.bg);
+ h.setTime(21);h.tick();assert.equal(h.root.dataset.noaTheme,'noa-studio');assert.match(h.root.style['--noa-image-coast'],/theme-night-coast-v1/);assert.equal(h.meta.content,config.themes[0].tokens.bg);
  assert.equal(JSON.parse(h.values.get('noa-ui-selection-v2')).theme,'auto');assert.equal(h.writes.length,0);assert.equal(h.timers.size,1);
 });
 test('wake, restored page and timezone/clock changes refresh automatic mode',async()=>{
