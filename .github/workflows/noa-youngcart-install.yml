@@ -39,7 +39,8 @@ jobs:
               print('TABLES',re.findall(r'CREATE TABLE[^\n]+',raw))
               print('INSERTS',raw[raw.find('INSERT INTO'):][:24000] if 'INSERT INTO' in raw else 'none')
              elif p=='install/install_db.php':
-              lines=raw.splitlines()
+              print(raw)
+              lines=[]
               for i,line in enumerate(lines):
                if 'g5_shop_default_table' in line or 'gnuboard5shop.sql' in line or 'shop_default' in line:
                 print('\n'.join(lines[max(0,i-5):i+25]))
