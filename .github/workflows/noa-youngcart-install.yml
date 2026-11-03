@@ -1,7 +1,10 @@
 name: NOA Youngcart installation audit
 on:
   pull_request:
-    paths: ['.github/workflows/noa-youngcart-install.yml']
+    paths: ['.github/workflows/noa-youngcart-install.yml','scripts/noa_youngcart_install.py']
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-youngcart-install.yml','scripts/noa_youngcart_install.py']
 permissions: {contents: read}
 jobs:
   audit:
@@ -47,3 +50,27 @@ jobs:
              else:print(raw[:16000])
           finally:t.close()
           PY
+
+  install:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    env:
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - run: python -m pip install 'paramiko>=3,<5'
+      - name: Verify installer syntax
+        run: |
+          python -m py_compile scripts/noa_youngcart_install.py
+          PYTHONPATH=scripts python -c 'from noa_youngcart_install import PHP; print(PHP)' > /tmp/youngcart-install.php
+          php -l /tmp/youngcart-install.php
+      - name: Add native shop tables then enable shop
+        run: python scripts/noa_youngcart_install.py
