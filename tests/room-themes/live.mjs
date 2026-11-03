@@ -15,14 +15,18 @@ try{for(const width of [390,768,1280]){
   await context.route('**/'+name+'*',route=>route.fulfill({body:readFileSync(source+'/deploy/'+name),contentType:name.endsWith('.css')?'text/css':'application/json'}));
  }
  const base='https://noastudio.ai.kr';
- await p.goto(base+'/noa-settings.php');
+ await p.goto(base+'/');
+ await p.waitForFunction(()=>document.documentElement.dataset.noaTheme==='noa-studio');
+ const campaign=p.locator('#noa-amt-fan .amt-close');if(await campaign.isVisible())await campaign.click();
+ await p.locator('[data-noa-display-settings]:visible').first().click();
  await p.locator('#noa-theme').waitFor();
  assert.equal(await p.locator('#noa-theme').inputValue(),'noa-studio','fresh visitor defaults to dark');
  for(const mode of ['noa-ivory','noa-studio']){
   const theme=config.themes.find(t=>t.id===mode);
   await p.locator('#noa-theme').selectOption(mode);
   assert.equal(await p.locator('#noa-theme option:checked').innerText(),theme.name);
-  for(const [route,room] of [['/','home'],['/noa-lounge.php','community'],['/noa-shop.php','shop'],['/noa-settings.php','']]){
+  await p.locator('#noa-settings-dialog .noa-dialog-close').click();
+  for(const [route,room] of [['/','home'],['/noa-lounge.php','community'],['/noa-shop.php','shop'],['/noa-login.php','']]){
    await p.goto(base+route,{waitUntil:'domcontentloaded'});
    await p.waitForFunction(([mode,room])=>document.documentElement.dataset.noaTheme===mode&&document.documentElement.dataset.noaRoom===room,[mode,room]);
    // Close the real campaign overlay through its existing control, without account writes.
@@ -35,7 +39,7 @@ try{for(const width of [390,768,1280]){
     const root=document.documentElement,style=getComputedStyle(root);
     return {bg:style.getPropertyValue('--noa-bg').trim().toLowerCase(),shared:style.getPropertyValue('--noa-darkGray').trim().toLowerCase(),scheme:style.colorScheme,overflow:root.scrollWidth-innerWidth,text:document.querySelector('main')?.innerText.length||0};
    });
-   results.push({width,mode,route,...metrics});
+   results.push({width,mode,route,...metrics});console.log(JSON.stringify(results.at(-1)));
    assert.equal(metrics.bg,theme.tokens.bg.toLowerCase());
    assert.equal(metrics.shared,'#30343b');
    assert.equal(metrics.scheme,mode==='noa-ivory'?'light':'dark');
@@ -44,8 +48,11 @@ try{for(const width of [390,768,1280]){
    assert.deepEqual(errors,[],'uncaught browser errors: '+route);
    await p.screenshot({path:output+'/'+(room||'settings')+'-'+mode+'-'+width+'.png'});
   }
+  await p.locator('[data-noa-display-settings]:visible').first().click();
   assert.equal(await p.locator('#noa-theme').inputValue(),mode,'theme survives navigation');
-  await p.reload();await p.locator('#noa-theme').waitFor();
+  await p.reload();
+  await p.locator('[data-noa-display-settings]:visible').first().click();
+  await p.locator('#noa-theme').waitFor();
   assert.equal(await p.locator('#noa-theme').inputValue(),mode,'theme survives reload');
  }
  await context.close();
