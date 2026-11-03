@@ -29,7 +29,7 @@ try{
  if(!sql_query('INSERT INTO `g5_shop_default` SET '.implode(',',$sets),false))throw new RuntimeException('defaults_insert_failed');
  foreach($counts as $k=>$n){$r=sql_fetch('SELECT COUNT(*) AS n FROM `'.$g5[$k].'`');if((int)$r['n']!==$n)throw new RuntimeException('existing_data_count_changed');}
  echo json_encode(['ok'=>true,'tables'=>count($tables),'preservedCounts'=>$counts,'paymentMode'=>'test']);
-}catch(Throwable $e){http_response_code(409);echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);}
+}catch(Throwable $e){echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);}
 '''
 def main():
  token=secrets.token_hex(32);name='yc-install-'+secrets.token_hex(12)+'.php';remote=ROOT+'/noa-bridge/'+name
@@ -89,7 +89,8 @@ def main():
      with urllib.request.urlopen(req,timeout=60) as r:result=json.load(r)
     except urllib.error.HTTPError as e:
      print('INSTALL_RESPONSE',e.read().decode()[:1000]);raise
-    if not result.get('ok'):raise RuntimeError('installation_not_confirmed')
+    if not result.get('ok'):
+     print('INSTALL_GUARD',json.dumps(result));raise RuntimeError('installation_not_confirmed')
     for d in ['banner','common','event','item']:
      try:s.stat(ROOT+'/data/'+d)
      except FileNotFoundError:s.mkdir(ROOT+'/data/'+d,0o755)
