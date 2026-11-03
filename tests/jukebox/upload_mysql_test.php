@@ -31,6 +31,33 @@ check($db->query('SELECT payload FROM noa_documents')->fetchColumn()===$stored,'
 $newBytes=file_get_contents('/tmp/noa-jukebox-fixture/replacement.wav');$next=nu_initialize($db,array_merge($b,['filename'=>'교체.wav','bytes'=>strlen($newBytes),'fingerprint'=>hash('sha256',$newBytes)]),'admin');foreach(str_split($newBytes,NU_CHUNK) as $i=>$chunk)nu_chunk($db,$next['id'],$i,$chunk);nu_finish($db,$next['id']);check(nj_verified(nj_find($db,$key),'audio'),'old edition remains playable while replacement queued');$claim=nj_operation($db,'upload_claim')['uploads'][0];$auth=['id'=>$next['id'],'lease'=>$claim['lease'],'job_id'=>$claim['job_id']];$new=json_decode(file_get_contents('/tmp/noa-jukebox-fixture/replacement.json'),true);nj_operation($db,'upload_state',$auth+['status'=>'processing','source_analysis'=>$new['source_analysis']]);$nextDir=nj_private().'/media/K-POP/EP.01 업로드 검증곡 [v-replacement]';mkdir($nextDir,0700,true);copy('/tmp/noa-jukebox-fixture/replacement.mp3',$nextDir.'/원본제목.mp3');$newResult=array_merge($r,$new,['audio_path'=>'K-POP/EP.01 업로드 검증곡 [v-replacement]/원본제목.mp3']);nj_operation($db,'upload_state',$auth+['status'=>'verifying']);nj_operation($db,'upload_commit',$auth+['result'=>$newResult]);nj_operation($db,'upload_cleanup',['id'=>$next['id']]);$latest=nj_find($db,$key);check($latest['audio_sha256']===$new['audio_sha256']&&is_file($dir.'/원본제목.mp3')&&hash_file('sha256',$dir.'/원본제목.mp3')===$fixture['audio_sha256'],'verified replacement publishes new edition and retains old bytes');check(dirname(nj_file($latest['cover_path']))===dirname(nj_file($latest['audio_path'])),'replacement cover stays beside MP3');
 echo "PASS MySQL upload/resume, chunk integrity, duplicate prevention, worker leases, analyzed publication, invalid replacement preservation and verified original cleanup\n";
 
+
+// First-link enrichment after transfer must not be mistaken for source replacement.
+foreach(['first-link','changed-link'] as $scenario){
+ $lk='single:link-race:'.$scenario;$ld=$doc;
+ if($scenario==='first-link')$ld['body']['sunoUrl']='';
+ $db->prepare('INSERT INTO noa_documents VALUES(?,?,?,1,?)')->execute([$lk,'single',json_encode($ld),'fixture']);
+ $lu=nu_initialize($db,array_merge($b,['key'=>$lk]),'admin');
+ foreach(str_split($bytes,NU_CHUNK) as $i=>$chunk)nu_chunk($db,$lu['id'],$i,$chunk);
+ nu_finish($db,$lu['id']);$lj=nj_operation($db,'upload_claim')['uploads'][0];
+ $la=['id'=>$lu['id'],'job_id'=>$lj['job_id'],'lease'=>$lj['lease']];
+ nj_operation($db,'upload_state',$la+['status'=>'processing','source_analysis'=>$fixture['source_analysis']]);
+ nj_operation($db,'upload_state',$la+['status'=>'verifying']);
+ $ld['body']['sunoUrl']='https://suno.com/s/firstLinkAdded';
+ $db->prepare('UPDATE noa_documents SET payload=? WHERE doc_key=?')->execute([json_encode($ld),$lk]);
+ $lr=array_merge($r,['song_key'=>$lk,'source_url'=>$scenario==='first-link'?'':$doc['body']['sunoUrl']]);
+ if($scenario==='first-link'){
+  check(nj_operation($db,'upload_commit',$la+['result'=>$lr])['ready'],'first link added during upload publishes verified local audio');
+  check(nj_find($db,$lk)['source_url']===$ld['body']['sunoUrl'],'published asset uses current first link');
+  check(nr_reconcile($db,$lk,$lu['id'])['source_matches_final'],'original byte identity retained');
+ }else{
+  rejects(fn()=>nj_operation($db,'upload_commit',$la+['result'=>$lr]),'source_changed');
+  check(!nj_verified(nj_find($db,$lk),'audio'),'changed existing source never publishes');
+  nj_operation($db,'upload_fail',$la+['error'=>'source_changed']);
+ }
+}
+echo "PASS first Suno link enrichment and existing-source conflict protection\n";
+
 // Finish B,C,A despite creating A,B,C: queue IDs follow completed transfers.
 $ids=[];foreach(['A','B','C'] as $label){$k='single:fifo:'.$label;$db->prepare('INSERT INTO noa_documents VALUES(?,?,?,1,?)')->execute([$k,'single',$raw,'fixture']);$uu=nu_initialize($db,array_merge($b,['key'=>$k,'fingerprint'=>hash('sha256',$label)]),'admin');foreach(str_split($bytes,NU_CHUNK) as $i=>$chunk)nu_chunk($db,$uu['id'],$i,$chunk);$ids[$label]=$uu['id'];}
 foreach(['B','C','A'] as $label)nu_finish($db,$ids[$label]);
