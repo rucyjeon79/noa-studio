@@ -1,4 +1,4 @@
-"""Publish verified utility navigation, footer controls, store coverage and personal listening spacing."""
+"""Publish the current pinned/drawer navigation, footer controls, store coverage and listening spacing."""
 import os
 import sys
 from pathlib import Path

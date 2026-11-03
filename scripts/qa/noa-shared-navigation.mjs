@@ -20,10 +20,12 @@ try{for(const [width,height] of [[320,900],[390,900],[768,720],[1920,900]]){
  await page.locator('#noa-nav-back').click();await page.waitForURL(base+'/');
  await page.evaluate(()=>scrollTo(0,1800));assert((await page.locator('#noa-account-bar').boundingBox()).y===0);
  await page.locator('#noa-nav-top').click();await page.waitForFunction(()=>scrollY===0);
- assert(await page.locator(width<=760?'.noa-mobile-nav':'.noa-sidebar').isVisible());
- if(width>760){
+ const pinned=width>=1200&&width>height;
+ assert.equal(await page.locator('#noa-menu-drawer').isVisible(),pinned,'only wide landscape screens pin the menu');
+ if(width<=760)assert(await page.locator('.noa-mobile-nav').isVisible());
+ if(pinned){
   assert.equal(await page.locator('.noa-sidebar [data-visit="total"]').textContent(),'123,456');
-  for(const link of await page.locator('.noa-sidebar .noa-sidebar-legal a').all())assert((await link.boundingBox()).height>=44);
+  for(const link of await page.locator('.noa-sidebar .noa-sidebar-legal a').all())assert((await link.boundingBox()).height>=36,'desktop legal links retain their compact target size');
   const sidebar=await page.locator('.noa-sidebar').boundingBox(),footer=await page.locator('.noa-sidebar>.noa-sidebar-bottom').boundingBox();
   assert(footer.y+footer.height<=sidebar.y+sidebar.height);assert(await page.locator('.noa-menu').isVisible());
  }
@@ -43,8 +45,11 @@ try{for(const [width,height] of [[320,900],[390,900],[768,720],[1920,900]]){
   assert.equal(boxes[0].y,boxes[1].y);assert.equal(boxes[2].y,boxes[3].y);assert(boxes[2].y>boxes[0].y);
   assert(counter.y>=56);assert(counter.y+counter.height<=dock.y);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await page.screenshot({path:'starlight-proof/mobile-footer-'+width+'.png'});
- }else assert(!(await page.locator('.noa-mobile-footer').isVisible()));
- await page.locator('#noa-nav-all').click();await page.waitForURL(base+'/noa-sitemap.php');
+ }else assert(await page.locator('.noa-mobile-footer').isVisible(),'shared page footer remains available on larger screens');
+ await page.locator('#noa-nav-all').click();
+ assert.equal(await page.locator('#noa-nav-all').getAttribute('aria-expanded'),'true');
+ assert(await page.locator('#noa-menu-drawer').isVisible(),'all-menu control opens the navigation drawer');
+ await page.locator('#noa-menu-drawer').getByRole('link',{name:'전체 서비스 안내',exact:true}).click();await page.waitForURL(base+'/noa-sitemap.php');
  await page.screenshot({path:'starlight-proof/navigation-'+width+'.png'});assert.deepEqual(errors,[]);
  await page.goto(base+'/bbs/board.php');await page.locator('#noa-nav-all').waitFor();
  for(const link of await page.locator('#bo_list thead a').all()){
