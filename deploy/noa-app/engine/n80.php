@@ -5,6 +5,7 @@ declare(strict_types=1);
  * single read-only integration entrypoint, not a new worker or API endpoint.
  */
 require_once __DIR__.'/identity.php';
+require_once __DIR__.'/personal-listening.php';
 require_once __DIR__.'/integration-audit.php';
 require_once __DIR__.'/durable-store.php';
 require_once __DIR__.'/lease-inbox.php';

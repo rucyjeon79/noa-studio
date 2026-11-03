@@ -1,0 +1,41 @@
+/* Scoped to personal listening; reuse the site's gold, surfaces and type. */
+html body #noa-listening{--nl-gold:var(--noa-accent,#c9b47b);--nl-muted:var(--noa-muted,#a9adb1);--nl-line:var(--noa-line,#353a40);--nl-surface:var(--noa-surface,#191d21);margin:32px 0;padding:28px;border:1px solid var(--nl-line);border-radius:var(--noa-radius,8px);background:var(--nl-surface);color:var(--noa-text,#f2f1eb);min-width:0}
+#noa-listening *, .nl-dialog *{box-sizing:border-box}
+html body #noa-listening .nl-icon,html body .nl-dialog .nl-icon{width:20px;height:20px;flex:none;display:block}
+html body #noa-listening .nl-kicker{font-size:11px;letter-spacing:.16em;color:var(--nl-gold);margin:0 0 8px}
+html body #noa-listening h2{font-size:clamp(22px,3vw,32px);line-height:1.3;margin:0 0 24px}
+html body #noa-listening .nl-controls{display:flex;align-items:end;gap:12px;margin-bottom:16px}
+html body #noa-listening .nl-genre-label{display:grid;gap:8px;flex:1;min-width:0;font-size:12px;color:var(--nl-muted)}
+html body #noa-listening select,html body .nl-dialog :is(input:not([type=checkbox]),select){width:100%;min-height:48px;min-width:0;border:1px solid var(--nl-line,#464b53);border-radius:var(--noa-control-radius,8px);padding:10px 12px;background:var(--noa-bg,#111315);color:var(--noa-text,#f2f1eb);font:inherit}
+html body #noa-listening button,html body .nl-dialog button{font:inherit;cursor:pointer;min-height:44px;max-width:100%;border:1px solid var(--nl-line,#464b53);border-radius:var(--noa-control-radius,8px);background:transparent;color:inherit;padding:10px 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;text-decoration:none;box-shadow:none;line-height:1.3}
+html body #noa-listening button:disabled,html body .nl-dialog button:disabled{opacity:.45;cursor:default}
+html body #noa-listening button:focus-visible,html body .nl-dialog :is(button,input,select):focus-visible{outline:2px solid var(--nl-gold,#c9b47b);outline-offset:3px}
+html body #noa-listening :is(.nl-moods,.nl-tabs){display:flex;gap:8px;overflow-x:auto;padding:3px 0 8px;scrollbar-width:thin}
+html body #noa-listening .nl-moods button{font-size:13px;flex:none}
+html body #noa-listening button[aria-pressed=true]{border-color:var(--nl-gold);color:var(--nl-gold);background:color-mix(in srgb,var(--nl-gold) 8%,transparent)}
+html body #noa-listening .nl-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:12px}
+html body #noa-listening .nl-reason{margin:0;color:var(--nl-muted);font-size:14px;line-height:1.6}
+html body #noa-listening .nl-primary{background:var(--nl-gold);color:#151719;border-color:var(--nl-gold);min-width:152px;font-weight:700;min-height:52px;flex:none}
+html body #noa-listening .nl-status{font-size:12px;color:var(--nl-muted);line-height:1.6;margin:12px 0 20px;min-height:20px}
+html body #noa-listening .nl-tabs{border-bottom:1px solid var(--nl-line);margin-bottom:16px;gap:4px}
+html body #noa-listening .nl-tabs button{font-size:13px;border:0;border-radius:0;background:none;padding:10px 12px;flex:none}
+html body #noa-listening .nl-tabs button[aria-pressed=true]{box-shadow:inset 0 -2px var(--nl-gold)}
+html body #noa-listening .nl-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+html body #noa-listening .nl-track{display:flex;justify-content:start;padding:10px;text-align:left;gap:12px;min-width:0;white-space:normal;border-color:transparent;background:var(--noa-bg,#111315)}
+html body #noa-listening .nl-track img{width:48px;height:48px;flex:none;object-fit:cover;border-radius:6px}
+html body #noa-listening .nl-track-copy{display:grid;gap:5px;min-width:0;flex:1;text-align:left}
+html body #noa-listening .nl-track strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:600}
+html body #noa-listening .nl-track small{font-size:11px;color:var(--nl-muted)}
+html body #noa-listening .nl-track>span:last-child{color:var(--nl-gold);flex:none}
+html body #noa-listening .nl-catalog{display:inline-flex;margin-top:20px;min-height:44px;align-items:center;color:var(--nl-gold);font-size:13px;text-decoration:none}
+html body #noa-listening .nl-basis{border:0;background:transparent;padding:0;margin-top:8px;color:var(--nl-muted);font-size:12px;line-height:1.7}
+html body #noa-listening .nl-basis summary{min-height:32px;cursor:pointer;padding:4px 0;background:none}
+html body .nl-dialog{--nl-line:var(--noa-line,#464b53);--nl-gold:var(--noa-accent,#c9b47b);width:min(560px,calc(100% - 24px));max-height:calc(100dvh - 40px);margin:auto;padding:24px;border:1px solid var(--nl-gold);border-radius:var(--noa-radius,8px);background:var(--noa-surface,#191d21);color:var(--noa-text,#f2f1eb);overflow:auto}
+.nl-dialog::backdrop{background:#000b;backdrop-filter:blur(4px)}
+.nl-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.nl-dialog-head h2{font-size:22px;margin:0}
+.nl-note{font-size:12px;color:var(--noa-muted,#a9adb1);line-height:1.7;margin:16px 0}
+.nl-field{display:grid;gap:8px;font-size:13px;margin:16px 0;min-width:0}.nl-consent{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.7;margin:24px 0}.nl-consent input{width:20px;height:20px;flex:none;accent-color:var(--nl-gold)}
+.nl-birth{border:1px solid var(--nl-line);border-radius:var(--noa-control-radius,8px);padding:8px 16px}.nl-birth legend{padding:0 8px;font-size:13px}.nl-dialog-actions{display:flex;justify-content:space-between;gap:12px;margin-top:20px}
+html body .nl-play-shell{position:fixed;inset:0;width:100%;height:100dvh;border:0;background:var(--noa-bg,#111315);z-index:2147483000}html body .nl-play-shell[hidden]{display:none!important}html.nl-host-open{overflow:hidden}
+@media(max-width:1000px){html body #noa-listening .nl-results{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){html body #noa-listening{padding:20px 16px;margin:24px 0;border-radius:var(--noa-radius,8px)}html body #noa-listening .nl-controls{gap:8px}html body #noa-listening .nl-controls button{padding-inline:10px;font-size:12px;min-height:48px}html body #noa-listening .nl-summary{align-items:stretch;flex-direction:column;gap:12px}html body #noa-listening .nl-results{grid-template-columns:minmax(0,1fr);gap:8px}html body #noa-listening .nl-moods button{padding-inline:10px}html body .nl-dialog{padding:20px 16px}}

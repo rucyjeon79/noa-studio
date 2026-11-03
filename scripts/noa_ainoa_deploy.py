@@ -5,6 +5,7 @@ import paramiko
 from noa_full_inventory import connect,ROOT
 from noa_release_freshness import require_current_candidate
 UNRELATED_PATH_PREFIXES=()
+EXTRA_KNOWN={}  # Optional pinned build artifacts supplied by a scoped release.
 FILES={'noa-app/engine/ai-automation.php':'deploy/noa-app/engine/ai-automation.php','noa-work-status.php':'deploy/noa-work-status.php','noa-bridge/lab-worker.php':'bridge/lab-worker.php','noa-bridge/ainoa-automation.php':'bridge/ainoa-automation.php','noa-ainoa-admin.js':'deploy/noa-ainoa-admin.js','noa-bridge/category-order-store.php':'bridge/category-order-store.php','noa-category-order.php':'deploy/noa-category-order.php','noa-category-order-admin.php':'deploy/noa-category-order-admin.php','noa-creator.css':'deploy/noa-creator.css','noa-bridge/lab-core.php':'bridge/lab-core.php','noa-bridge/index.php':'bridge/index.php','noa-bridge/ainoa-generation.php':'bridge/ainoa-generation.php','noa-youtube.php':'deploy/noa-youtube.php','noa-creator.php':'deploy/noa-creator.php','noa-editor.php':'deploy/noa-editor.php','noa-bridge/ainoa-points.php':'bridge/ainoa-points.php','noa-bridge/subscription-core.php':'bridge/subscription-core.php','noa-bridge/youtube-catalog.php':'bridge/youtube-catalog.php','noa-browse-order.js':'deploy/noa-browse-order.js','noa-bridge/lab-api.php':'bridge/lab-api.php','noa-ai-lab.php':'deploy/noa-ai-lab.php','noa-ai-lab.js':'deploy/noa-ai-lab.js','noa-assets/ainoa-symbol.png':'public/ainoa/ainoa-symbol.png','noa-launch.js':'deploy/noa-launch.js','noa-manifest.json':'deploy/noa-manifest.json','noa-sw.js':'deploy/noa-sw.js','noa-bridge/subscription-access.php':'bridge/subscription-access.php','extend/noa.access.php':'deploy/noa-access.extend.php','noa-bridge/ainoa-core.php':'bridge/ainoa-core.php','noa-ainoa.php':'deploy/noa-ainoa.php','noa-ainoa.css':'deploy/noa-ainoa.css','noa-ainoa.js':'deploy/noa-ainoa.js','noa-bridge/package-record.php':'bridge/package-record.php','noa-browse-edit.js':'deploy/noa-browse-edit.js','noa-browse.js':'deploy/noa-browse.js','extend/noa.design.php':'deploy/noa-design.extend.php'}
 # Install shared dependencies before callers; every activation keeps preimage guards.
 _priorities=['noa-bridge/ainoa-automation.php','noa-app/engine/ai-automation.php','noa-ainoa-admin.js','noa-bridge/category-order-store.php','noa-bridge/package-record.php','noa-bridge/ainoa-generation.php','noa-bridge/ainoa-core.php']
@@ -22,7 +23,7 @@ def main():
  out=Path('ainoa-proof');out.mkdir(exist_ok=True);desired={p:Path(v).read_bytes()for p,v in FILES.items()};rollback='rollback'in sys.argv
  if not rollback:
   check_current_candidate()
- known={p:{sha(subprocess.check_output(['git','show',c+':'+v]))for c in subprocess.check_output(['git','log','--format=%H','--',v],text=True).splitlines()}for p,v in FILES.items()};t=connect()
+ known={p:{sha(subprocess.check_output(['git','show',c+':'+v]))for c in subprocess.check_output(['git','log','--format=%H','--',v],text=True).splitlines()}for p,v in FILES.items()};known={p:values|set(EXTRA_KNOWN.get(p,[]))for p,values in known.items()};t=connect()
  try:
   with paramiko.SFTPClient.from_transport(t,window_size=8388608)as s:
    s.get_channel().settimeout(45)
