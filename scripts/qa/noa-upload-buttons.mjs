@@ -21,6 +21,10 @@ async function checkEditorProgress(width){
    const key=new URL(r.request().url()).searchParams.get('key');
    return r.fulfill({json:{ok:true,kind:'single',writeKey:key,packageType:'song',revision:1,context:{},fields:{title:key}}});
   });
+  await page.route('**/noa-bridge/engagement.php?*',r=>{
+   const targets=JSON.parse(new URL(r.request().url()).searchParams.get('targets')||'[]');
+   return r.fulfill({json:{ok:true,items:targets.map(t=>({...t,likes:0,comments:0,reactionScore:0,score:0,liked:false}))}});
+  });
   await page.route('**/noa-gpt.php?*',r=>r.fulfill({json:{ok:true,workerConfigured:true}}));
   await page.route('**/noa-app/jukebox/upload.php?*',async r=>{
    const action=new URL(r.request().url()).searchParams.get('action');
@@ -35,7 +39,7 @@ async function checkEditorProgress(width){
    return r.fulfill({json:{key,status,ready:status==='ready',audio:status==='ready'?'/fixture.mp3':'',audio_sha256:status==='ready'?'verified':'',job,upload:{id:job?.upload_id||'a'.repeat(32)}}});
   });
   await page.goto(base+'/editor-progress-fixture?group=original&genre=pop-original&act=4');
-  for(const path of ['noa-ui.css','noa-starlight.css','noa-engagement.css','noa-music-vinyl.css','noa-record-form.css','noa-app/jukebox/upload.css','noa-browse.js','noa-music-vinyl.js','noa-record-form.js','noa-browse-edit.js','noa-premium.js','noa-app/jukebox/upload-transport.js','noa-app/jukebox/upload.js']){
+  for(const path of ['noa-ui.css','noa-starlight.css','noa-engagement.css','noa-music-vinyl.css','noa-record-form.css','noa-app/jukebox/upload.css','noa-browse.js','noa-music-vinyl.js','noa-engagement.js','noa-record-form.js','noa-browse-edit.js','noa-premium.js','noa-app/jukebox/upload-transport.js','noa-app/jukebox/upload.js']){
    const content=process.env.NOA_BUTTONS_LIVE?await(await page.request.get(base+'/'+path+'?progress='+Date.now())).text():readFileSync('deploy/'+path,'utf8');
    if(path.endsWith('.css'))await page.addStyleTag({content});else await page.addScriptTag({content});
   }
@@ -47,6 +51,7 @@ async function checkEditorProgress(width){
   const list=page.locator('.noa-inline-songs').first();
   await list.locator('.lp-track-art').first().waitFor();
   await page.locator('.lp-view-switch [data-mode=album]').first().click();
+  await list.locator('.noa-direct-action').first().waitFor();
   const baseline=await list.locator(':scope>.noa-inline-song-row').evaluateAll(nodes=>nodes.map(n=>n.getBoundingClientRect().height));
   const card=page.locator('.noa-inline-song-row').nth(1),other=page.locator('.noa-inline-song-row').nth(2);
   await card.locator('.noa-edit-edit').click();
@@ -121,7 +126,7 @@ async function checkEditorProgress(width){
   await page.getByRole('button',{name:'정보 수정 취소',exact:true}).click();
   for(const job of serverJobs)job.status='ready';
   await page.evaluate(()=>window.dispatchEvent(new Event('online')));
-  await list.locator('.noa-track-processing').waitFor({state:'detached'});
+  await list.locator('.noa-track-processing').first().waitFor({state:'detached'});assert.equal(await list.locator('.noa-track-processing').count(),0);
   assert(await page.locator('#jukebox-transfer-dock').isHidden());
   assert.deepEqual(errors,[]);
   console.log('EDITOR_UPLOAD_PROGRESS_OK',JSON.stringify({width,isReplace}));
