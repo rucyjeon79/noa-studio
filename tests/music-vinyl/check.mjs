@@ -111,6 +111,29 @@ try{for(const width of [320,390,1280]){
     await mismatchPage.waitForSelector('.noa-inline-songs[data-track-view=list]',{state:'attached'});
     await mismatchPage.locator('.lp-view-switch [data-mode=album]').first().evaluate(b=>b.click());
     await mismatchPage.waitForSelector('.noa-inline-songs[data-track-view=album]',{state:'attached'});
+    const geometry=await list.evaluate(list=>{
+     const row=list.querySelector('.noa-inline-song-row');
+     for(let parent=row;parent;parent=parent.parentElement)parent.hidden=false;
+     row.style.setProperty('--tool-count','4');
+     const actions=row.querySelector('.noa-song-actions');
+     actions.replaceChildren();
+     const tools=['수정','담기','다운로드','교체'].map((label,index)=>{
+      const button=document.createElement('button');
+      button.className='noa-direct-action'+(index?' noa-song-action':' noa-edit-edit');
+      button.textContent=label;
+      (index?actions:row).append(button);
+      return button;
+     });
+     const title=row.querySelector('.noa-inline-title');
+     if(!title.querySelector('.noa-premium-badge')){
+      const badge=document.createElement('span');badge.className='noa-premium-badge';title.append(badge);
+     }
+     return {rects:tools.map(b=>b.getBoundingClientRect().toJSON()),frame:getComputedStyle(row).boxShadow,corner:getComputedStyle(row,'::after').content};
+    });
+    assert.equal(geometry.frame,'none');
+    assert.equal(geometry.corner,'none');
+    const sorted=geometry.rects.sort((a,b)=>a.x-b.x);
+    assert(sorted.every((r,i)=>r.width>0 && r.height>=44 && Math.abs(r.y-sorted[0].y)<1 && (!i || r.x>=sorted[i-1].right-1)),JSON.stringify(geometry));
    }
   }
  }finally{await mismatchPage.close();}
