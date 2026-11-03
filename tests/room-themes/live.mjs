@@ -138,7 +138,7 @@ try{for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]
     assert.equal(await p.locator('#noa-menu-search').count(),1,'directory and drawer searches have independent IDs');
     await p.locator('#noa-menu-search').fill('포인트');assert(await p.locator('.noa-site-map-link:visible').count()>0);await p.locator('#noa-menu-search').fill('');
    }
-   if(room==='home'){await verifyMusicShelves(p,width,mode,theme);await verifyExpansiveShell(p,width,mode);await verifyUtilityActions(p,width,mode);}
+   if(room==='home'){await verifyMusicShelves(p,width,mode,theme);await verifyExpansiveShell(p,width,height,mode);await verifyUtilityActions(p,width,mode);}
   }
   await p.locator('[data-noa-display-settings]:visible').first().click();
   assert.equal(await p.locator('#noa-theme').inputValue(),mode,'theme survives navigation');
@@ -264,7 +264,7 @@ async function verifyMusicShelves(p,width,mode,theme){
  await p.evaluate(()=>scrollTo(0,0));
 }
 
-async function verifyExpansiveShell(p,width,mode){
+async function verifyExpansiveShell(p,width,height,mode){
  const pinned=await p.locator('html').evaluate(el=>el.classList.contains('noa-menu-pinned'));
  assert(await p.locator(pinned?'#noa-menu-drawer .noa-logo':'#noa-nav-favorite').isVisible(),'studio home shortcut remains visible');
  const geometry=await p.evaluate(()=>{const box=s=>{const r=document.querySelector(s).getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom};};return {hero:box('.noa-hero'),media:box('.noa-hero-art'),copy:box('.noa-hero-copy'),scene:box('#noa-theme-scene'),notices:box('[data-home-section=notices]'),community:box('[data-home-section=community]'),rightDock:document.documentElement.hasAttribute('data-noa-desktop')};});

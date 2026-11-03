@@ -1,4 +1,4 @@
-"""Publish the two-frame header, shared navigation, language, clock and verified location weather with the requested compact home shortcut and keyboard search across native store pages."""
+"""Publish the two-frame header, shared navigation, language, clock and verified location weather across native store pages, including portrait/landscape navigation checks."""
 import os
 import sys
 from pathlib import Path
