@@ -312,7 +312,7 @@ async function verifyHeader(p,width,height){
  if(!(width>=1200&&width>height))assert(Math.max(...state.actions.map(a=>a.width))-Math.min(...state.actions.map(a=>a.width))<1,'compact utilities have equal width');
  assert.equal(await p.locator('#noa-nav-install').getAttribute('href'),'/noa-install.php');
  assert.equal(await p.locator('#noa-menu-find').isVisible(),false,'menu search stays inside the drawer');
- if(!(width>=1200&&width>height)){const brand=p.locator('#noa-account-bar .noa-account-brand');assert(await brand.locator('span').isVisible());assert(await brand.evaluate(e=>e.scrollWidth<=e.clientWidth+1),'brand is not squeezed by utilities');}
+ if(!(width>=1200&&width>height)){const brand=p.locator('#noa-account-bar .noa-account-brand');assert(await brand.locator('span').isVisible());assert(await brand.evaluate(e=>e.scrollWidth<=e.clientWidth+1),'brand is not squeezed by utilities');assert(await brand.evaluate(e=>Math.abs(e.querySelector('img').getBoundingClientRect().left-e.getBoundingClientRect().left)<1),'brand aligns with the header gutter');}
 }
 async function verifyUtilityActions(p,width,mode){
  await p.evaluate(()=>scrollTo(0,1200));await p.locator('#noa-nav-top').click();await p.waitForFunction(()=>scrollY===0);

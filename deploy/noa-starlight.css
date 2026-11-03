@@ -851,7 +851,7 @@ html.noa-shell-wide[data-noa-theme] .ec-dialog form.ec-form button.ec-primary:di
 html.noa-shell-wide[data-noa-theme]{--noa-control-radius:4px;--noa-card-radius:4px;--noa-panel-padding:24px;--noa-stack-gap:32px;--noa-header-inset:max(32px,calc((100vw - var(--noa-pinned-width,0px) - 1488px)/2 + 32px));scroll-padding-top:calc(var(--noa-header-height,120px) + 16px)}
 html.noa-shell-wide[data-noa-theme] body #noa-account-bar{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px var(--noa-header-inset);min-height:0;box-sizing:border-box}
 html.noa-shell-wide[data-noa-theme] body #noa-account-bar :is(.noa-primary-nav,#noa-menu-find){display:none}
-html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-account-brand{grid-column:1;grid-row:1;min-width:0;gap:8px;margin:0;font-size:13px;letter-spacing:.03em}
+html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-account-brand{grid-column:1;grid-row:1;justify-content:flex-start;min-width:0;gap:8px;margin:0;font-size:13px;letter-spacing:.03em}
 html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-account-brand img{display:block;width:32px;height:32px}
 html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-account-brand span{display:block}
 html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-account-shortcuts{grid-column:2;grid-row:1;gap:4px;margin:0;align-items:center}
@@ -874,7 +874,6 @@ html.noa-shell-wide.noa-menu-pinned[data-noa-theme] body #noa-account-bar #noa-n
  html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-account-utilities>.noa-account-shortcut{gap:6px;padding:8px 4px;font-size:11px}
 }
 @media(max-width:359px){
- html.noa-shell-wide[data-noa-theme]{--noa-header-inset:12px}
  html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-account-brand{font-size:11px;gap:6px}
  html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-account-brand img{width:28px;height:28px}
 }
