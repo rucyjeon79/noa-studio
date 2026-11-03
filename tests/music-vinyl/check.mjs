@@ -135,6 +135,14 @@ try{for(const width of [320,390,1280]){
      }
      return {rects:tools.map(b=>b.getBoundingClientRect().toJSON()),frame:getComputedStyle(row).boxShadow,corner:getComputedStyle(row,'::after').content};
     });
+    const playing=await list.evaluate(list=>{
+     const art=list.querySelector('.lp-track-art'), badge=list.querySelector('.noa-premium-badge');
+     art.classList.add('lp-running','lp-on-record');
+     const rect=art.getBoundingClientRect(), jacket=art.querySelector('.lp-track-jacket').getBoundingClientRect();
+     return {credit:getComputedStyle(art,'::before').content,disc:getComputedStyle(art.querySelector('.lp-spindle')).display,
+      widthDifference:Math.abs(rect.width-jacket.width),ribbonOffset:Math.abs(rect.top-badge.getBoundingClientRect().top)};
+    });
+    assert(playing.credit.includes('재생 중') && playing.disc==='none' && playing.widthDifference<=1 && playing.ribbonOffset<=1,JSON.stringify(playing));
     assert.equal(geometry.frame,'none');
     assert.equal(geometry.corner,'none');
     const sorted=geometry.rects.sort((a,b)=>a.x-b.x);
