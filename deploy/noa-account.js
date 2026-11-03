@@ -6,6 +6,9 @@
  const link=(text,href)=>{const a=document.createElement('a');a.textContent=text;a.href=href;return a;};
  const brand=link('','/');brand.className='noa-account-brand';brand.setAttribute('aria-label','NOA STUDIO 홈');
  const mark=document.createElement('img');mark.src='/noa-assets/papa-logo.png';mark.alt='';mark.width=36;mark.height=36;mark.decoding='async';const name=document.createElement('span');name.textContent='NOA STUDIO';brand.append(mark,name);bar.append(brand,shortcuts,utilities);
+ const wideUtilities=matchMedia('(min-width:1200px) and (orientation:landscape)');
+ const placeUtilities=()=>{if(wideUtilities.matches)shortcuts.before(utilities);else shortcuts.after(utilities);};
+ placeUtilities();wideUtilities.addEventListener('change',placeUtilities);
  const control=(label,path,run)=>{const button=document.createElement('button');button.type='button';button.className='noa-account-shortcut';button.setAttribute('aria-label',label);button.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="'+path+'"/></svg><span>'+label+'</span>';button.onclick=run;return button;};
  function hasInternalPrevious(referrer,origin,length){try{return length>1&&new URL(referrer).origin===origin;}catch{return false;}}
  const back=control('이전','M15 6l-6 6 6 6',()=>{if(document.getElementById('noa-shell-view')||hasInternalPrevious(document.referrer,location.origin,history.length))history.back();else location.assign('/');});back.id='noa-nav-back';utilities.append(back);

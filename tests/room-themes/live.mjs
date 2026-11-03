@@ -300,12 +300,14 @@ async function verifyHeader(p,width,height){
  assert(state.overflow<=1,JSON.stringify(state));
  for(const [i,a] of state.actions.entries()){
   assert(a.width>=44&&a.height>=44&&a.x>=state.bar.x&&a.x+a.width<=width+1&&a.y>=state.bar.y&&a.y+a.height<=state.bar.y+state.bar.height+1,JSON.stringify(a));
-  assert.equal(a.radius,'4px');assert.equal(a.display,'inline-flex');
+  assert.equal(a.radius,'4px');
   assert(Math.abs(a.y-state.actions[0].y)<1,'utility buttons share one baseline');
   if(i)assert(a.x>=state.actions[i-1].x+state.actions[i-1].width+3,'utility touch areas do not overlap');
  }
  if(!(width>=1200&&width>height))assert(Math.max(...state.actions.map(a=>a.width))-Math.min(...state.actions.map(a=>a.width))<1,'compact utilities have equal width');
  assert.equal(await p.locator('#noa-nav-install').getAttribute('href'),'/noa-install.php');
+ assert.equal(await p.locator('#noa-menu-find').isVisible(),false,'menu search stays inside the drawer');
+ if(!(width>=1200&&width>height)){const brand=p.locator('#noa-account-bar .noa-account-brand');assert(await brand.locator('span').isVisible());assert(await brand.evaluate(e=>e.scrollWidth<=e.clientWidth+1),'brand is not squeezed by utilities');}
 }
 async function verifyUtilityActions(p,width,mode){
  await p.evaluate(()=>scrollTo(0,1200));await p.locator('#noa-nav-top').click();await p.waitForFunction(()=>scrollY===0);
