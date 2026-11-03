@@ -16,12 +16,12 @@ function sectionFor(path){
  if(/^\/noa-(?:youtube|world)[.]php$/.test(path))return 'youtube';
  if(/^\/noa-(?:music|catalog|my)[.]php$/.test(path))return 'music';
  if(/^\/noa-(?:lounge|community|creator-lab)[.]php$/.test(path)||/^\/bbs\/(?:board|write|new|search)[.]php$/.test(path))return 'community';
- if(/^\/noa-(?:shop|vip|points|membership)[.]php$/.test(path))return 'shop';
+ if(/^\/noa-(?:shop|vip|points|membership)[.]php$/.test(path)||/^\/(?:mobile\/)?shop\//.test(path))return 'shop';
  return ['/','/index.php'].includes(path)?'home':'';
 }
 function sectionNavigation(){
  const section=sectionFor(location.pathname);root.dataset.noaArea=section||'account';
- if(!section||section==='home')return;
+ if(!section||section==='home'||/^\/(?:mobile\/)?shop\//.test(location.pathname))return;
  const host=document.querySelector('main')||document.querySelector('#container');if(!host||document.getElementById('noa-section-navigation'))return;
  const routes={youtube:[['영상','/noa-youtube.php'],['세계관 · MV','/noa-world.php'],['음원 듣기','/noa-music.php']],music:[['음원','/noa-music.php'],['나의 재생목록','/noa-my.php'],['사연곡 신청','/noa-lounge.php?category=story&view=list#ec-content'],['음악 이야기','/noa-lounge.php?category=music']],community:[['별무리 라운지','/noa-lounge.php'],['게시판 모아보기','/noa-lounge.php#community-boards'],['CREATOR LAB','/noa-creator-lab.php']],shop:[['굿즈','/noa-shop.php'],['VIP 이용권','/noa-vip.php'],['포인트 충전','/noa-points.php'],['보관한 상품','/noa-shop.php?view=cart']]};
  const nav=document.createElement('nav');nav.id='noa-section-navigation';nav.className='noa-section-navigation';nav.setAttribute('aria-label',tr(menu().find(x=>x[0]===section)[1])+' 관련 메뉴');

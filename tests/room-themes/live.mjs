@@ -28,6 +28,12 @@ try{for(const [width,height] of [[390,900],[768,900],[1280,1440],[1600,900]]){
   for(const id of ['noa-home-action-layout','noa-home-hero-size']){const tag=id==='noa-home-action-layout'?'style':'script';const pattern=new RegExp('<'+tag+' id="'+id+'">[\\s\\S]*?<\/'+tag+'>');body=body.replace(pattern,homeSource.match(pattern)[0]);}
   await route.fulfill({response,body});
  });
+ if(phase==='candidate')await context.route('https://noastudio.ai.kr/shop/cart.php',async route=>{
+  const response=await route.fetch();let body=await response.text();
+  // Mirror the newly shared native commerce assets without touching cart data or handlers.
+  if(!body.includes('src="/noa-ui.js'))body=body.replace('</head>','<script src="/noa-brand.js" defer></script><script src="/noa-ui.js" defer></script><link rel="stylesheet" href="/noa-starlight.css"></head>');
+  await route.fulfill({response,body});
+ });
  const base='https://noastudio.ai.kr';
  await p.clock.setFixedTime(new Date('2026-11-03T12:00:00+09:00'));
  await p.goto(base+'/');
@@ -41,7 +47,7 @@ try{for(const [width,height] of [[390,900],[768,900],[1280,1440],[1600,900]]){
   await p.locator('#noa-theme').selectOption(mode);
   assert.equal(await p.locator('#noa-theme option:checked').innerText(),theme.name);
   await p.locator('#noa-settings-dialog .noa-dialog-close').click();
-  for(const [route,room] of [['/','home'],['/noa-lounge.php','community'],['/noa-shop.php','shop'],['/noa-vip.php','shop'],['/noa-points.php','shop'],['/noa-settings.php',''],['/noa-sitemap.php',''],['/noa-about.php',''],['/noa-login.php','']]){
+  for(const [route,room] of [['/','home'],['/noa-lounge.php','community'],['/noa-shop.php','shop'],['/noa-vip.php','shop'],['/noa-points.php','shop'],['/noa-settings.php',''],['/noa-sitemap.php',''],['/noa-about.php',''],['/noa-login.php',''],['/shop/cart.php','shop']]){
    await p.goto(base+route,{waitUntil:'domcontentloaded'});
    await p.waitForFunction(([mode,room])=>document.documentElement.dataset.noaTheme===mode&&document.documentElement.dataset.noaRoom===room,[mode,room]);
    // Close the real campaign overlay through its existing control, without account writes.
@@ -52,7 +58,7 @@ try{for(const [width,height] of [[390,900],[768,900],[1280,1440],[1600,900]]){
    await p.evaluate(()=>document.fonts.ready);
    const metrics=await p.evaluate(()=>{
     const root=document.documentElement,style=getComputedStyle(root);
-    return {bg:style.getPropertyValue('--noa-bg').trim().toLowerCase(),shared:style.getPropertyValue('--noa-darkGray').trim().toLowerCase(),scheme:style.colorScheme,overflow:root.scrollWidth-innerWidth,text:document.querySelector('main')?.innerText.length||0};
+    return {bg:style.getPropertyValue('--noa-bg').trim().toLowerCase(),shared:style.getPropertyValue('--noa-darkGray').trim().toLowerCase(),scheme:style.colorScheme,overflow:root.scrollWidth-innerWidth,text:(document.querySelector('main')||document.querySelector('#container'))?.innerText.length||0};
    });
    results.push({width,mode,route,...metrics});console.log(JSON.stringify(results.at(-1)));
    assert.equal(metrics.bg,theme.tokens.bg.toLowerCase());
@@ -60,6 +66,11 @@ try{for(const [width,height] of [[390,900],[768,900],[1280,1440],[1600,900]]){
    assert.equal(metrics.scheme,mode==='noa-ivory'?'light':'dark');
    assert(metrics.overflow<=1,JSON.stringify(results.at(-1)));
    assert(metrics.text>20,'visible content: '+route);
+   if(width>=1200&&width>height){
+    assert(await p.locator('#noa-menu-drawer').isVisible(),'left menu is always visible: '+route);
+    assert(await p.evaluate(()=>{const host=document.querySelector('main')||document.querySelector('#container');return host.getBoundingClientRect().left>=248;}),'content clears pinned navigation: '+route);
+   }
+   if(route==='/shop/cart.php')assert(await p.locator('.ny-native-nav').isVisible(),'native store/order navigation is preserved');
    assert.deepEqual(errors,[],'uncaught browser errors: '+route);
    const selected=p.locator('#noa-section-navigation a[aria-current=page]');
    if(mode==='noa-ivory'&&await selected.count())assert.equal(await selected.evaluate(el=>getComputedStyle(el).color),'rgb(255, 255, 255)','active section label remains readable: '+route);

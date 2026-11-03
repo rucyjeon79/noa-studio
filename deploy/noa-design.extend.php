@@ -41,7 +41,8 @@ function noa_design_assets(){
   &&($_SERVER['REQUEST_METHOD']??'GET')==='GET'
   &&is_string($_GET['co_id']??null)
   &&in_array($_GET['co_id'],['privacy','provision'],true);
- $native=preg_match('~^/(?:bbs|adm)/~',$path)&&!$legacy_document;
+ $commerce=(bool)preg_match('~^/(?:mobile/)?shop/[^/]+[.]php$~D',$path);
+ $native=($commerce||preg_match('~^/(?:bbs|adm)/~',$path))&&!$legacy_document;
  $workspace=preg_match('~^/noa-app/(?:database|taxonomy|jukebox)/(?:index[.]php)?$~',$path);
  $public=in_array($path,['/','/index.php'],true)||preg_match('~^/noa-(?:music|youtube|world|my|settings|sitemap|notifications|catalog|ai-lab|library|editor|download|install|theme-admin|creator|channel|subscription|login|membership|quality)(?:-admin)?[.]php$~',$path);
  // All application HTML pages share the same voice; JSON responses are untouched.
@@ -91,6 +92,12 @@ function noa_design_assets(){
  if(str_starts_with($path,'/adm/')){
   add_javascript('<script src="/noa-brand.js?v=20261021-brand1" defer></script>',99);
   add_stylesheet('<link rel="stylesheet" href="/noa-admin.css?v='.hash_file('sha256',dirname(__DIR__).'/noa-admin.css').'">',99);
+  return;
+ }
+ // Commerce keeps its existing cart/order stylesheet and handlers; only share the site shell and theme.
+ if($commerce){
+  add_stylesheet('<link rel="stylesheet" href="/noa-ui.css?v=20261022-recovery2">',99);
+  add_javascript('<script src="/noa-brand.js?v=20261021-brand1" defer></script><script src="/noa-ui.js?v=20261022-recovery1" defer></script>',99);
   return;
  }
  // Native skin colors follow the selected palette; version the actual deployed CSS.

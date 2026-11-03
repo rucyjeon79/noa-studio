@@ -30,6 +30,7 @@ jobs:
           node --check tests/room-themes/forms.mjs
           php -l bridge/ui-preferences.php
           php -l deploy/noa-theme-admin.php
+          php -l deploy/noa-design.extend.php
           php -l deploy/noa-app/home.php
           php tests/catalog/home_test.php
           php tests/catalog/home_uiux_test.php
