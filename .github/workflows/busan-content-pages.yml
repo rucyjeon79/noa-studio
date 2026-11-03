@@ -20,8 +20,8 @@ jobs:
         run: |
           python3 - <<'PY'
           import base64,zipfile,io,hashlib
-          data=base64.b64decode(open('deploy/busan/content-union-20261103.zip.b64').read())
-          assert hashlib.sha256(data).hexdigest()=='e1874e54accd0630895233feed50a95526a2b247f53fb77529a10db046231e11'
+          data=base64.b64decode(open('deploy/busan/content-sections-20261103.zip.b64').read())
+          assert hashlib.sha256(data).hexdigest()=='10c2ac8b2ed2792d402ec9c076c6ea7816f7da9bdd62dd72dc94fcc49ee08792'
           open('/tmp/busan-content-pages.zip','wb').write(data)
           zipfile.ZipFile(io.BytesIO(data)).extractall('/tmp/busan-content-pages')
           PY
@@ -44,8 +44,8 @@ jobs:
           private='/hosting/rucyjeon79/busan-assistant-private'
           z=zipfile.ZipFile('/tmp/busan-content-pages.zip')
           files={n:z.read(n) for n in z.namelist() if not n.startswith('tests/')}
-          assert set(files)=={'busan-assistant/content-pages/render.php','busan-assistant/content-pages/content-pages.css','extend/busan-content.extend.php','skin/content/basic/content.skin.php','mobile/skin/content/basic/content.skin.php','theme/UXC_Flarumix/skin/content/basic/content.skin.php','busan-assistant/content-pages/assets/busan-union-light-20261103.webp','busan-assistant/content-pages/assets/busan-union-dark-20261103.webp'}
-          expected={"busan-assistant/content-pages/content-pages.css":"55acb23bd0b3a6799071c8abc685f415823ae91cb9a75197c8551b6dc7ad4a7d","busan-assistant/content-pages/render.php":"2dfb5fb8208bca40eaa1c5de30e06ca4264ffc6f885314d34c08feae69171261","extend/busan-content.extend.php":"dc39718aa98b6d127e272acbfb1220a3e52503ea9e960c1c449b36a2d09da8eb","mobile/skin/content/basic/content.skin.php":"fb0b5ec548e92545e58abe73a16218ca7d7ae3daaec936fcd652e5acb5c415f6","skin/content/basic/content.skin.php":"3687763a1eb3b4fb400b4321e6d9b10a8074c397a615284f4d1a8fd6c7b8ad0e","theme/UXC_Flarumix/skin/content/basic/content.skin.php":"ad1df5a7ec305900b139c4c869dffe0fe8eb423c4b4327959585042d30782d79"}
+          assert set(files)=={'busan-assistant/content-pages/render.php','busan-assistant/content-pages/content-pages.css','extend/busan-content.extend.php','skin/content/basic/content.skin.php','mobile/skin/content/basic/content.skin.php','theme/UXC_Flarumix/skin/content/basic/content.skin.php','busan-assistant/content-pages/assets/busan-union-light-20261103.webp','busan-assistant/content-pages/assets/busan-union-dark-20261103.webp','busan-assistant/content-pages/assets/busan-field-20261103.webp','busan-assistant/content-pages/assets/busan-dignity-20261103.webp','busan-assistant/content-pages/assets/busan-unity-20261103.webp','busan-assistant/content-pages/assets/busan-meeting-20261103.webp'}
+          expected={"busan-assistant/content-pages/content-pages.css":"82f89ea191c6dd9e6ae73b8f0144520243d31562ff5d7e2aa425a21f131a0463","busan-assistant/content-pages/render.php":"3fd459ae3f9913bef23f4635083d3c241538fc21488d7b76acfced52a45dab58","extend/busan-content.extend.php":"92165b9d67c8e79788e2b6fd7e51add2cfd07235fb2fbab6c126d7ac74db7dc6","mobile/skin/content/basic/content.skin.php":"fb0b5ec548e92545e58abe73a16218ca7d7ae3daaec936fcd652e5acb5c415f6","skin/content/basic/content.skin.php":"3687763a1eb3b4fb400b4321e6d9b10a8074c397a615284f4d1a8fd6c7b8ad0e","theme/UXC_Flarumix/skin/content/basic/content.skin.php":"ad1df5a7ec305900b139c4c869dffe0fe8eb423c4b4327959585042d30782d79","busan-assistant/content-pages/assets/busan-union-dark-20261103.webp":"5ed446d1b150ca60d438de77785ece108c904ece43db0bdeabdc43d2e33ea18d","busan-assistant/content-pages/assets/busan-union-light-20261103.webp":"8cd174abb195af34ee1b3479aea74d4658a6813d1c7847c0d05689cd9bb4f093"}
           with socket.create_connection((host,PORT),timeout=15) as sock:
            with paramiko.Transport(sock) as t:
             t.banner_timeout=15;t.auth_timeout=15;t.get_security_options().key_types=('ssh-ed25519',)
@@ -92,13 +92,18 @@ jobs:
            with urllib.request.urlopen(address,timeout=35) as r:
             page=r.read(2000000)
             assert r.status==200 and b'busan-content-page' in page,'page_render_missing: '+content_id
-           assert b'content-pages.css?v=20261103-5' in page,'content_css_missing: '+content_id
+           assert b'content-pages.css?v=20261103-6' in page,'content_css_missing: '+content_id
            assert b'aria-current="page"' in page,'content_theme_missing: '+content_id
            import re
            article=page.split(b'<article class="busan-content-page',1)[1].split(b'</article>',1)[0]
            assert b'/data/editor/' not in article,'old_poster_restored'
            if content_id in ['company','slogan']:
+            assert article.count(b'data-busan-section-image=')==9,'body_image_pairs_missing'
             assert article.count(b'class="bp-union-photo"')==1 and b'data-busan-dark-src=' in article,'union_visual_missing'
+            for key in ['field','dignity','unity','meeting']:
+             with urllib.request.urlopen('https://skhnslu-busan.com/busan-assistant/content-pages/assets/busan-'+key+'-20261103.webp',timeout=30) as r:
+              assert r.status==200 and r.read(12).startswith(b'RIFF'),'section_asset_missing'
+            print('PASS nine body image and explanation pairs '+content_id)
             for theme in ['light','dark']:
              with urllib.request.urlopen('https://skhnslu-busan.com/busan-assistant/content-pages/assets/busan-union-'+theme+'-20261103.webp',timeout=30) as r:
               assert r.status==200 and r.headers.get('Content-Type','').startswith('image/'),'union_asset_missing'
