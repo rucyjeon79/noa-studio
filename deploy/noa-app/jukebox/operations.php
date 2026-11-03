@@ -103,6 +103,14 @@ function nj_operation(PDO $db,string $action,array $input=[]):array{
   }
   if($job['status']!=='verifying')throw new DomainException('verification_stage_required');
   $r=$input['result']??[];if(($r['song_key']??'')!==$u['song_key']||($r['source_url']??null)!==$u['source_url']||($r['source_analysis']['sha256']??'')!==$u['sha256'])throw new DomainException('upload_result_identity_mismatch');
+  // A local upload may precede the first Suno link entered for this song.
+  // The upload ID, song key and original-byte SHA were checked above; only
+  // enrich an empty source. Replacing a nonempty source remains a conflict.
+  if($u['source_url']===''){
+   $current=nj_document($db,$u['song_key']);
+   if(!$current)throw new DomainException('unknown_song');
+   $r['source_url']=noa_sound_suno($current['body']??[]);
+  }
   $path=nj_file((string)($r['audio_path']??''));$root=realpath(nj_private().'/media');if(!$root||!$path||!str_starts_with($path,$root.'/'))throw new DomainException('private_output_missing');
   $a=nj_find($db,$u['song_key']);$cover=nj_verified($a,'cover')?nj_file($a['cover_path']):null;
   if($cover){$target=dirname($path).'/cover.webp';if(!is_file($target)){if(!copy($cover,$target))throw new RuntimeException('cover_copy_failed');chmod($target,0600);}if(!hash_equals($a['cover_sha256'],hash_file('sha256',$target)))throw new DomainException('cover_copy_conflict');$r['cover_path']=dirname($r['audio_path']).'/cover.webp';$r['cover_bytes']=filesize($target);$r['cover_sha256']=hash_file('sha256',$target);}
