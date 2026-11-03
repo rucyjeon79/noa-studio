@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';import test from 'node:test';import '../../deploy/noa-listening-model.js';const model=globalThis.NoaListeningModel;
+test('birth input accepts mobile digits and common date separators',()=>{for(const value of ['19900615','1990-06-15','1990.6.15','1990/6/15','1990년 6월 15일','１９９００６１５',' 1990-6-15 '])assert.equal(model.normalizeBirthDate(value),'1990-06-15');});
+test('normalization preserves lunar-only days for server validation and rejects malformed input',()=>{assert.equal(model.normalizeBirthDate('20240230'),'2024-02-30');for(const value of ['',null,'900615','19901315','19900600','19900632','1990-06-15abc'])assert.equal(model.normalizeBirthDate(value),'');});
 const rows=[{key:'k2',genre:'k',audio:'/a',ep:'2',registeredAt:20,moodTags:['calm']},{key:'j1',genre:'j',audio:'/a',moodTags:['calm']},{key:'k1',genre:'k',audio:'/a',ep:'1',registeredAt:10,moodTags:['energy']},{key:'pending',genre:'k',audio:'',moodTags:['calm']},{key:'whole',genre:'k',audio:'/a',kind:'playlist'},{key:'alias',genre:'k',audio:'/a',orderKey:'k1'}];
 test('genre and verified audio remain hard boundaries',()=>assert.deepEqual(model.select(rows,{genre:'k',mood:'calm'}).rows.map(r=>r.key),['k2']));
 test('explicit mood does not silently fall back',()=>assert.equal(model.select(rows,{genre:'k',mood:'focus'}).rows.length,0));

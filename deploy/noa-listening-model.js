@@ -1,5 +1,12 @@
 /* Shared deterministic selection. Genre is a boundary, never a ranking hint. */
 (function(root){'use strict';
+function normalizeBirthDate(value){
+ if(typeof value!=='string')return '';
+ const text=value.normalize('NFKC').trim(),parts=text.match(/^(\d{4})(\d{2})(\d{2})$/)||text.match(/^(\d{4})\s*[-./년]\s*(\d{1,2})\s*[-./월]\s*(\d{1,2})(?:\s*일|\.)?$/);
+ if(!parts||Number(parts[1])<1900||Number(parts[1])>2099||Number(parts[2])<1||Number(parts[2])>12||Number(parts[3])<1||Number(parts[3])>31)return '';
+ // Keep lunar dates intact; the server validates them against the selected calendar.
+ return parts[1]+'-'+parts[2].padStart(2,'0')+'-'+parts[3].padStart(2,'0');
+}
 function catalog(records,genre){const seen=new Set();return records.filter(r=>{if(r.genre!==genre||!r.audio||r.kind==='playlist'||r.video)return false;const id=r.browseIdentity||r.canonicalRecordKey||r.orderKey||r.key;if(seen.has(id))return false;seen.add(id);return true;});}
 function select(records,{genre,mood='auto',mode='now',theme={},popular={},library=[]}){
  const rows=catalog(records,genre),chosen=mood==='auto'?theme.mood:mood;let result=[...rows],fallback=false;
@@ -15,5 +22,5 @@ function select(records,{genre,mood='auto',mode='now',theme={},popular={},librar
  return {rows:result.slice(0,40),fallback,mood:chosen};
 }
 function albums(records,genre,{mood='auto',theme={}}={}){const groups=new Map();for(const r of catalog(records,genre)){const ep=Number(r.ep),act=Number(r.act)||(ep>0?Math.ceil(ep/10):0);if(!act)continue;if(!groups.has(act))groups.set(act,[]);groups.get(act).push(r);}const chosen=mood==='auto'?theme.mood:mood;return [...groups].map(([act,rows])=>({act,matches:rows.filter(r=>(r.moodTags||[]).includes(chosen)).length,rows:rows.sort((a,b)=>Number(a.ep)-Number(b.ep)||a.key.localeCompare(b.key))})).sort((a,b)=>b.matches/ b.rows.length-a.matches/a.rows.length||a.act-b.act);}
-const api={catalog,select,albums};if(typeof module==='object')module.exports=api;else root.NoaListeningModel=api;
+const api={catalog,select,albums,normalizeBirthDate};if(typeof module==='object')module.exports=api;else root.NoaListeningModel=api;
 })(typeof window==='undefined'?globalThis:window);
