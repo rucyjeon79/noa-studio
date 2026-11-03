@@ -77,6 +77,11 @@ try{for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]
     assert(await p.evaluate(()=>{const host=document.querySelector('main')||document.querySelector('#container');return host.getBoundingClientRect().left>=220;}),'content clears pinned navigation: '+route);
    }
    await verifyHeader(p,width,height);
+   if(route==='/noa-login.php'){
+    const providers=await p.locator('.noa-social-provider').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect(),s=getComputedStyle(el);return {radius:s.borderRadius,x:r.x,width:r.width,height:r.height,overflow:el.scrollWidth-el.clientWidth};}));
+    assert(providers.length>=2,'existing social login providers remain available');
+    for(const provider of providers){assert.equal(provider.radius,'4px','provider controls share the page corner radius');assert(provider.height>=44&&provider.overflow<=1,'provider label and touch area fit');assert(Math.abs(provider.x-providers[0].x)<1&&Math.abs(provider.width-providers[0].width)<1,'provider controls align');}
+   }
    if(route==='/shop/cart.php')assert(await p.locator('.ny-native-nav').isVisible(),'native store/order navigation is preserved');
    assert.deepEqual(errors,[],'uncaught browser errors: '+route);
    const selected=p.locator('#noa-section-navigation a[aria-current=page]');

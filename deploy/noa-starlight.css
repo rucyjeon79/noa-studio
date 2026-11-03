@@ -885,7 +885,8 @@ html.noa-shell-wide[data-noa-theme] body .noa-main>:is(#noa-referral-banner,.noa
 html.noa-shell-wide[data-noa-theme] body>.noa-mobile-footer{max-width:1488px;box-sizing:border-box}
 html.noa-shell-wide[data-noa-theme] .noa-room-page>section{scroll-margin-top:calc(var(--noa-header-height,120px) + 16px)}
 html.noa-shell-wide[data-noa-theme] body :is(.noa-community-actions,.noa-install-actions,.noa-action-group){gap:12px}
-html.noa-shell-wide[data-noa-theme] body :is(.noa-community-actions a,.noa-community-write,.noa-reply-form button[type=submit],.noa-social-options>a,.noa-social-options>button,.nnt-entry,.nnt-settings,.nnt-page button,.nnt-primary,.noa-reply-music,.noa-reply-music-play img,.noa-collection-option){border-radius:var(--noa-control-radius);box-shadow:none}
+html.noa-shell-wide[data-noa-theme] body :is(.noa-community-actions a,.noa-community-write,.noa-reply-form button[type=submit],.nnt-entry,.nnt-settings,.nnt-page button,.nnt-primary,.noa-reply-music,.noa-reply-music-play img,.noa-collection-option){border-radius:var(--noa-control-radius);box-shadow:none}
+html.noa-shell-wide[data-noa-theme] body #noa-login .noa-social-provider{border-radius:var(--noa-control-radius);box-shadow:none}
 html.noa-shell-wide[data-noa-theme] body :is(.noa-community-actions a,.noa-reply-form button[type=submit]){min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:8px 16px}
 html.noa-shell-wide[data-noa-theme] body :is(.noa-record-field,.noa-login-form) :is(input,select,textarea){margin-top:8px}
 
