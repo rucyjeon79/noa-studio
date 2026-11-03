@@ -31,6 +31,7 @@ jobs:
           php tests/catalog/home_test.php
           php tests/catalog/home_uiux_test.php
           python -m py_compile scripts/noa_light_theme_release.py
+          python tests/room-themes/release_freshness_test.py
       - name: Prepare visual verification
         run: |
           python -m pip install 'paramiko>=3,<5'
