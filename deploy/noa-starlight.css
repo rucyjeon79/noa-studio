@@ -813,3 +813,11 @@ html.noa-shell-wide[data-noa-theme] .ec-dialog form{gap:16px}
 
 /* Keep member and personal-library panels on the same precise corner system. */
 html.noa-shell-wide[data-noa-theme] body :is(#noa-my-account,.noa-personal-card,.noa-my-gift-actions>a,.noa-empty){border-radius:4px}
+/* The body-mounted composer must follow the active theme, including its labels
+   and native date picker; legacy editor colors were fixed to the dark palette. */
+html.noa-shell-wide[data-noa-theme] dialog.ec-dialog{background:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line);color-scheme:inherit;--ec-line:var(--noa-line);--ec-accent:var(--noa-accent)}
+html.noa-shell-wide[data-noa-theme] .ec-dialog form.ec-form label{color:var(--noa-text)}
+html.noa-shell-wide[data-noa-theme] .ec-dialog form.ec-form :is(input:not([type=checkbox]),select,textarea){background:var(--noa-bg);color:var(--noa-text);border-color:var(--noa-line);border-radius:4px}
+html.noa-shell-wide[data-noa-theme] .ec-dialog form.ec-form :is(input,select,textarea):focus-visible{border-color:var(--noa-accent);outline:2px solid var(--noa-accent);outline-offset:3px}
+html.noa-shell-wide[data-noa-theme] .ec-dialog form.ec-form button.ec-primary{background:var(--noa-accent);border-color:var(--noa-accent);color:var(--noa-accentText)}
+html.noa-shell-wide[data-noa-theme] .ec-dialog form.ec-form button.ec-primary:disabled{background:var(--noa-raised);border-color:var(--noa-line);color:var(--noa-muted)}

@@ -6,7 +6,7 @@ const base='https://fixture.test';
 const themes=JSON.parse(fs.readFileSync('deploy/noa-design.json','utf8')).themes;
 const out='room-theme-proof/forms';fs.mkdirSync(out,{recursive:true});
 async function paint(page,theme){
- await page.evaluate(theme=>{const r=document.documentElement;r.classList.add('noa-shell-wide');r.dataset.noaTheme=theme.id;r.dataset.noaStyle='starlight';r.dataset.noaPrecision='true';for(const [key,value]of Object.entries(theme.tokens))r.style.setProperty('--noa-'+key,value);},theme);
+ await page.evaluate(theme=>{const r=document.documentElement;r.classList.add('noa-shell-wide');r.dataset.noaTheme=theme.id;r.dataset.noaStyle='starlight';r.dataset.noaPrecision='true';r.style.colorScheme=theme.id==='noa-ivory'?'light':'dark';for(const [key,value]of Object.entries(theme.tokens))r.style.setProperty('--noa-'+key,value);},theme);
  await page.addStyleTag({content:fs.readFileSync('deploy/noa-starlight.css','utf8')});
 }
 
@@ -42,6 +42,11 @@ try {
       await dialog.locator('summary').filter({hasText:'음악·영상·이미지 연결'}).click();
       const geometry=await dialog.evaluate(el=>({left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,overflow:el.scrollWidth-el.clientWidth}));
       assert(geometry.left>=0&&geometry.right<=width+1&&geometry.overflow<=1,JSON.stringify({width,geometry}));
+      const labelColors=await dialog.locator('form.ec-form label').evaluateAll(labels=>[...new Set(labels.map(l=>getComputedStyle(l).color))]);
+      const hex=theme.tokens.text.slice(1),expected='rgb('+[0,2,4].map(i=>parseInt(hex.slice(i,i+2),16)).join(', ')+')';
+      assert.deepEqual(labelColors,[expected],'every composer field label follows the readable theme text');
+      assert.equal(await dialog.evaluate(el=>getComputedStyle(el).colorScheme),theme.id==='noa-ivory'?'light':'dark','native date controls follow the selected theme');
+      await dialog.evaluate(el=>el.scrollTop=0);
       await dialog.screenshot({path:out+'/'+theme.id+'-'+width+'-'+(editing?'edit':'compose')+'.png'});
       await dialog.getByRole('button',{name:editing?'수정 저장':'게시하기',exact:true}).click();
       await dialog.waitFor({state:'detached'});

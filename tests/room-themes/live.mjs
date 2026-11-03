@@ -10,7 +10,7 @@ const config=JSON.parse(readFileSync(source+'/deploy/noa-design.json','utf8'));
 const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
 mkdirSync(output,{recursive:true});
 const results=[];
-try{for(const [width,height] of [[390,900],[768,900],[1280,1440],[1600,900]]){
+try{for(const sizes of [[[390,900],[768,900]],[[1280,1440],[1600,900]]])await Promise.all(sizes.map(async([width,height])=>{
  const context=await browser.newContext({viewport:{width,height},timezoneId:'Asia/Seoul',serviceWorkers:'block'}),p=await context.newPage();
  const errors=[];p.on('pageerror',e=>errors.push(e.message));
  if(phase==='candidate')for(const name of ['noa-design.json','noa-starlight.css','noa-ui.js','noa-home.js','noa-desktop.js']){
@@ -134,7 +134,7 @@ try{for(const [width,height] of [[390,900],[768,900],[1280,1440],[1600,900]]){
   assert.equal(await p.locator('#noa-theme').inputValue(),mode,'theme survives reload');
  }
  await context.close();
-}
+}));
  await verifyAutomaticClock();
  console.log('PINNED_LANDSCAPE_MENU_COMPACT_MODAL_SEARCH_RESIZE_FOCUS_AND_TALL_DESKTOP_LAYOUT_OK');
  console.log('PREMIUM_THEME_IMAGES_LOADED_MATCH_PALETTE_AND_PRESERVE_ARTIST_AND_PRODUCT_PHOTOS_OK');
