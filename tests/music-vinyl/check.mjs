@@ -208,11 +208,14 @@ try{for(const width of [320,390,1280]){
       assert(number.x+number.width<=copy.x+1 && number.y<copy.y+copy.height);
       await controls.screenshot({path:'music-vinyl-proof/ep-publish-options-'+width+'.png'});
       await controls.locator('summary').click();
-      const stacked=await field.locator('button span').evaluateAll(labels=>labels.filter(label=>{
-       const range=document.createRange();range.selectNodeContents(label);
-       return range.getClientRects().length>1 || label.scrollWidth>label.clientWidth+1;
-      }).map(label=>label.textContent));
-      assert.deepEqual(stacked,[],'action captions must fit on one line');
+      const commands=panel.locator('button.noa-action:visible,summary.noa-edit-options');
+      assert(await commands.count()>=8);
+      for(const command of await commands.all()){
+       assert.equal((await command.innerText()).trim(),'');
+       assert(await command.getAttribute('aria-label'));
+       const svg=await command.locator('svg').boundingBox(),target=await command.boundingBox();
+       assert(svg?.width>0 && target.width>=44 && target.height>=44);
+      }
       await field.screenshot({path:'music-vinyl-proof/field-captions-'+width+'.png'});
       assert.equal(await panel.locator('[data-record-field]:not(:has(.noa-edit-copy))').count(),0);
       await panel.getByRole('button',{name:'곡정보창 접기'}).click();
