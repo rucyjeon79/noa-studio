@@ -1,5 +1,5 @@
 """Repair the verified empty-to-first-link upload race, with exact source CAS."""
-import hashlib,json,os,secrets,stat,urllib.request
+import hashlib,json,os,secrets,stat,time,urllib.request
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
@@ -55,6 +55,10 @@ def main():
                 result=process_uploads(s,call,mkdir,worker_identity={'run_id':os.environ['GITHUB_RUN_ID'],'source_commit':os.environ['GITHUB_SHA'],'keepalive_seconds':0})
                 print('UPLOAD_RECOVERY_WORKER',json.dumps(result),flush=True)
                 final=probe()
+                deadline=time.monotonic()+240
+                while final['upload']['status'] in ('queued','retrying','analyzing','processing','verifying') and time.monotonic()<deadline:
+                    time.sleep(5)
+                    final=probe()
                 if final['upload']['status']!='ready' or final['asset']['status']!='ready':raise RuntimeError('recovery_not_ready')
                 a=final['asset'];source=json.loads(a['source_analysis'])
                 if source['sha256']!=final['upload']['sha256']:raise RuntimeError('source_identity_mismatch')
