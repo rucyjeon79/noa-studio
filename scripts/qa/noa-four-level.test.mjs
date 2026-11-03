@@ -39,7 +39,13 @@ for(const kind of ['곡','영상'])test(kind+': four persistent levels, genre is
  f.cards(3)[1].click();assert.match(text(f.level(4)),/Loose/);
  assert.equal(all(f.host,x=>x.dataset.unclassified==='true').length,1);
  f.cards(2)[1].click();assert.equal(f.level(4),undefined);assert.equal(f.cards(3).length,1);assert.equal(all(f.host,x=>x.dataset.unclassified==='true').length,0);f.cards(3)[0].click();assert.match(text(f.level(4)),/Foreign/);
- for(const i of [2,3]){f.cards(1)[i].click();assert.equal(f.cards(2).length,1);assert.equal(f.level(3),undefined);f.cards(2)[0].click();assert.match(text(f.level(3)),i===2?/Story/:/Cover/);}
+ for(const i of [2,3]){
+  f.cards(1)[i].click();assert.equal(f.cards(2).length,1);
+  assert.equal(f.level(3).attrs['aria-label'],'곡 묶음','a category with one genre opens its songs immediately');
+  assert.equal(f.cards(3).length,0);assert.match(text(f.level(4)),i===2?/Story/:/Cover/);
+  assert.doesNotMatch(text(f.level(4)),i===2?/Cover/:/Story/,'single-genre categories remain isolated');
+  f.cards(2)[0].click();assert.match(text(f.level(4)),i===2?/Story/:/Cover/);
+ }
 });
 test('deep links expand ACT while custom queue ordering is preserved',()=>{const f=fixture('곡','?genre=kpop-original&act=1');assert(f.level(4));const ordered=[f.rows[0],f.rows[1]];assert.deepEqual(Array.from(f.model.apply(ordered,true).queue,r=>r.key),['ten','two']);});
 

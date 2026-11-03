@@ -1,4 +1,4 @@
-"""Publish aligned utility navigation, social sign-in, dialogs and personal listening spacing on the current home layout."""
+"""Publish verified utility navigation, footer controls, store coverage and personal listening spacing."""
 import os
 import sys
 from pathlib import Path
