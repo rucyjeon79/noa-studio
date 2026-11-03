@@ -32,12 +32,13 @@ try {
     const audit=await page.evaluate(()=>{
       const b=n=>{const r=n.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom};};
       const buttons=[...document.querySelectorAll('#noa-login .noa-social-provider')];
-      return {buttons:buttons.map(n=>({box:b(n),bg:getComputedStyle(n).backgroundColor,color:getComputedStyle(n).color,disabled:n.disabled||false,icons:n.querySelectorAll('img,svg').length,outline:getComputedStyle(n).outlineStyle})),form:b(document.querySelector('.noa-login-form')),overflow:document.documentElement.scrollWidth>innerWidth+1};
+      return {buttons:buttons.map(n=>({box:b(n),bg:getComputedStyle(n).backgroundColor,color:getComputedStyle(n).color,disabled:n.disabled||false,icons:n.querySelectorAll('img,svg').length,outline:getComputedStyle(n).outlineStyle})),main:b(document.querySelector('#noa-login')),rail:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--noa-rail')),form:b(document.querySelector('.noa-login-form')),overflow:document.documentElement.scrollWidth>innerWidth+1};
     });
     assert.equal(audit.buttons.length,2);assert(!audit.overflow);
     assert.equal(audit.buttons[0].bg,'rgb(255, 255, 255)');assert.equal(audit.buttons[1].bg,'rgb(254, 229, 0)');
     const [g,k]=audit.buttons;assert.equal(g.box.width,k.box.width);assert.equal(g.box.x,k.box.x);assert.equal(g.box.height,k.box.height);
     assert(g.box.height>=52);assert(k.box.y-g.box.bottom>=11);assert(k.box.bottom<audit.form.y);assert(k.box.bottom<900);
+    assert(audit.main.width<=560);if(width>760)assert(Math.abs((g.box.x-audit.rail)-(width-g.box.x-g.box.width))<2,'login not centered beside navigation');
     assert(audit.buttons.every(b=>b.icons===1&&b.disabled===(state==='disabled')));
     assert.equal(await page.locator('form[name=flogin]').getAttribute('action'),'/bbs/login_check.php');
     assert.equal(await page.locator('form[name=flogin]').getAttribute('method'),'post');

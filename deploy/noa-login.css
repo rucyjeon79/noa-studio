@@ -6,6 +6,13 @@
   --noa-kakao-bg: #fee500;
   --noa-kakao-text: rgb(0 0 0 / .85);
 }
+html body main#noa-login { width: 100%; max-width: 560px; margin-inline: auto; padding-inline: 20px; }
+@media(min-width:761px) {
+  html body main#noa-login {
+    width: calc(100% - var(--noa-rail,224px)); padding-inline: 24px;
+    margin-left: calc(var(--noa-rail,224px) + (100% - var(--noa-rail,224px) - min(560px,100% - var(--noa-rail,224px)))/2);
+  }
+}
 html body main#noa-login > h1 { font-size: 30px; margin: 8px 0; }
 #noa-login .noa-eyebrow { margin: 0 0 8px; }
 #noa-login .noa-login-welcome { color: var(--noa-muted); margin: 0 0 24px; font-size: 14px; }
