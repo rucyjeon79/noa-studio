@@ -1,4 +1,4 @@
-"""Release music-first home shelves with four-card paging, aligned collection pairs and day/night community invitations and studio introduction; retain candidate checks, public hashes and rollback guards."""
+"""Release persistent left navigation on wide landscape screens, preserve compact modal access and refine internal page introductions/store surfaces; retain candidate checks, public hashes and rollback guards."""
 import os
 import sys
 from pathlib import Path

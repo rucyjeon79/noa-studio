@@ -732,3 +732,79 @@ html.noa-shell-wide[data-noa-theme] .ne-hero-caption{color:var(--noa-text);opaci
  html.noa-shell-wide[data-noa-theme] body :is(.noa-feed-invite,.ec-story-offer) .noa-banner-lines{max-width:85%}
  html.noa-shell-wide[data-noa-theme] body :is(.noa-feed-invite,.ec-story-offer) .noa-banner-lines>strong{font-size:19px}
 }
+
+/* The original left-hand navigation stays at the screen edge on wide displays.
+   Keep the legacy rail at zero: body padding also works for native board/shop wrappers. */
+.noa-location-label{display:none}
+html.noa-shell-wide.noa-menu-pinned{--noa-pinned-width:248px}
+html.noa-shell-wide.noa-menu-pinned body{padding-inline-start:var(--noa-pinned-width);box-sizing:border-box}
+html.noa-shell-wide.noa-menu-pinned .noa-menu-drawer[open]{width:var(--noa-pinned-width);padding:24px 20px;gap:20px;border-radius:0;box-shadow:none;z-index:75;scrollbar-width:thin;scrollbar-color:var(--noa-line) transparent}
+html.noa-shell-wide.noa-menu-pinned .noa-drawer-close{display:none}
+html.noa-shell-wide.noa-menu-pinned .noa-drawer-head{min-height:52px}
+html.noa-shell-wide.noa-menu-pinned .noa-drawer-head .noa-logo{font-size:14px;letter-spacing:.06em}
+html.noa-shell-wide.noa-menu-pinned .noa-drawer-profile{padding:16px}
+html.noa-shell-wide.noa-menu-pinned .noa-drawer-profile strong{font-size:13px}
+html.noa-shell-wide.noa-menu-pinned .noa-drawer-profile p{display:none}
+html.noa-shell-wide.noa-menu-pinned .noa-drawer-profile .noa-button{margin-top:12px;font-size:12px}
+html.noa-shell-wide.noa-menu-pinned .noa-drawer-search{gap:8px}
+html.noa-shell-wide.noa-menu-pinned .noa-drawer-search input{height:44px;font-size:12px}
+html.noa-shell-wide.noa-menu-pinned .noa-menu a{min-height:48px;padding:12px;font-size:14px}
+html.noa-shell-wide.noa-menu-pinned .noa-drawer-secondary{gap:16px;padding-top:20px}
+html.noa-shell-wide.noa-menu-pinned .noa-drawer-secondary a{font-size:12px;padding-inline:10px}
+html.noa-shell-wide.noa-menu-pinned[data-noa-theme] body #noa-account-bar{padding:12px 32px;min-height:76px;gap:16px}
+html.noa-shell-wide.noa-menu-pinned[data-noa-theme] body #noa-account-bar :is(.noa-account-brand,.noa-primary-nav){display:none}
+html.noa-shell-wide.noa-menu-pinned #noa-account-bar .noa-account-shortcuts{margin-left:auto}
+html.noa-shell-wide.noa-menu-pinned .noa-location-label{display:block;min-width:0;font-size:13px;letter-spacing:.02em;color:var(--noa-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html.noa-shell-wide.noa-menu-pinned .noa-transport{left:var(--noa-pinned-width)}
+html.noa-shell-wide :is(.noa-menu a,.noa-drawer-secondary a,.noa-drawer-search):focus-within{outline:2px solid var(--noa-accent);outline-offset:3px}
+
+/* A shared introduction for MY, settings, music, video and service directories.
+   Product photography, playing media and original form nodes remain untouched. */
+html.noa-shell-wide[data-noa-theme] body.noa-page main.noa-room-page{max-width:1488px;margin-inline:auto;padding:24px 32px 64px}
+html.noa-shell-wide[data-noa-theme] body.noa-page main :is(.noa-room-heading,.np-header){display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:12px;isolation:isolate;position:relative;min-height:216px;padding:32px;margin:0 0 32px;border:1px solid var(--noa-line);border-radius:4px;overflow:hidden;background:var(--noa-surface);color:var(--noa-text)}
+html.noa-shell-wide[data-noa-theme] :is(.noa-room-heading,.np-header)::before{content:'';position:absolute;inset:0;z-index:-1;background-image:var(--noa-invite-shade),var(--noa-image-music);background-size:cover;background-position:center 55%}
+html.noa-shell-wide[data-noa-theme] .noa-room-heading :is(h1,p){margin:0;max-width:42rem;color:var(--noa-text)}
+html.noa-shell-wide[data-noa-theme] body .noa-room-heading h1{display:flex;align-items:center;gap:12px;font-size:clamp(28px,3vw,38px);font-weight:600;line-height:1.3;letter-spacing:-.035em}
+html.noa-shell-wide[data-noa-theme] .noa-room-heading h1>svg{width:28px;height:28px;flex:none}
+html.noa-shell-wide[data-noa-theme] .noa-room-heading p{font-size:13px;line-height:1.8}
+html.noa-shell-wide[data-noa-theme] .noa-room-heading .noa-eyebrow{font-size:10px;letter-spacing:.15em;color:var(--noa-accent)}
+html.noa-shell-wide[data-noa-theme] main.noa-room-page>#noa-section-navigation{margin-bottom:24px}
+html.noa-shell-wide[data-noa-theme] main.noa-points-page>#noa-section-navigation~.nv-store-nav{display:none}
+html.noa-shell-wide[data-noa-theme] body.noa-page main.noa-points-page>.np-header{flex-direction:row;align-items:center;justify-content:space-between;gap:32px;min-height:248px;margin-top:24px}
+html.noa-shell-wide[data-noa-theme] .np-header::before{background-image:var(--noa-invite-shade),var(--noa-image-journey)}
+html.noa-shell-wide[data-noa-theme] body .np-header h1{font-size:clamp(28px,3vw,40px);line-height:1.35;letter-spacing:-.035em;margin:0;font-weight:600;color:var(--noa-text)}
+html.noa-shell-wide[data-noa-theme] .np-header .np-eyebrow{font-size:10px;line-height:1.6;letter-spacing:.12em;margin:0 0 16px;color:var(--noa-accent)}
+html.noa-shell-wide[data-noa-theme] .np-header .np-intro{font-size:13px;line-height:1.8;margin:16px 0 0;color:var(--noa-text)}
+html.noa-shell-wide[data-noa-theme] .np-header-side{align-self:flex-end;flex:none;min-width:176px;padding:16px;background:var(--noa-surface);border:1px solid var(--noa-line);border-radius:4px;text-align:left}
+html.noa-shell-wide[data-noa-theme] .np-header-side p{margin:0 0 8px;font-size:12px;color:var(--noa-muted)}
+html.noa-shell-wide[data-noa-theme] .np-header-side .np-cart-link{min-height:44px;justify-content:space-between;font-size:13px}
+html.noa-shell-wide[data-noa-theme] .np-store-layout{gap:24px;align-items:start}
+html.noa-shell-wide[data-noa-theme] :is(.np-announcement,.noa-point-pack,.noa-point-checkout,.wallet-overview,.wallet-actions>a,.wallet-guide,.noa-membership-card,.noa-my-panel,.noa-site-map-link){border-radius:4px;box-shadow:none}
+html.noa-shell-wide[data-noa-theme] .np-announcement{padding:16px 20px;background:var(--noa-raised);border:1px solid var(--noa-line)}
+html.noa-shell-wide[data-noa-theme] .np-pack-copy{padding:20px;display:flex;flex-direction:column}
+html.noa-shell-wide[data-noa-theme] .nv-pack .np-pack-copy h3{font-size:17px;line-height:26px;min-height:52px}
+html.noa-shell-wide[data-noa-theme] .np-pack-copy :is(button[data-add],.np-pack-gift){min-height:44px;border-radius:4px}
+html.noa-shell-wide[data-noa-theme] .np-pack-gift{display:flex;align-items:center;justify-content:center;margin-top:8px;font-size:12px}
+html.noa-shell-wide[data-noa-theme] .noa-point-checkout{padding:24px;border-top:2px solid var(--noa-accent)}
+html.noa-shell-wide[data-noa-theme] :is(.np-history,.wallet-guide){margin-top:32px}
+html.noa-shell-wide[data-noa-theme] .noa-room-page>section{scroll-margin-top:100px}
+html.noa-shell-wide[data-noa-theme] :is(.noa-settings-form,.noa-gifts form){gap:16px}
+html.noa-shell-wide[data-noa-theme] :is(.ec-dialog,.noa-dialog){border-radius:4px;border:1px solid var(--noa-line)}
+html.noa-shell-wide[data-noa-theme] .ec-dialog form{gap:16px}
+@media(min-width:1200px) and (max-width:1439px) and (orientation:landscape){
+ html.noa-shell-wide.noa-menu-pinned .np-store-layout{grid-template-columns:minmax(0,1fr) 280px;gap:20px}
+ html.noa-shell-wide.noa-menu-pinned :is(.np-pack-copy,.noa-point-checkout){padding:16px}
+}
+@media(max-width:760px){
+ html.noa-shell-wide[data-noa-theme] body.noa-page main.noa-room-page{padding:16px 16px calc(var(--noa-dock,72px) + var(--noa-player-space,0px) + 32px)}
+ html.noa-shell-wide[data-noa-theme] body.noa-page main :is(.noa-room-heading,.np-header){min-height:180px;padding:24px;margin-bottom:24px;gap:12px}
+ html.noa-shell-wide[data-noa-theme] body .noa-room-heading h1{font-size:28px}
+ html.noa-shell-wide[data-noa-theme] body.noa-page main.noa-points-page>.np-header{display:flex;flex-direction:column;align-items:stretch;gap:24px;min-height:0;margin-top:16px}
+ html.noa-shell-wide[data-noa-theme] .np-header-side{display:flex;align-self:stretch;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;margin:0;min-width:0}
+ html.noa-shell-wide[data-noa-theme] .np-header-side p{margin:0;max-width:none;font-size:11px}
+ html.noa-shell-wide[data-noa-theme] .np-header .np-eyebrow{font-size:9px;margin-bottom:12px}
+ html.noa-shell-wide[data-noa-theme] .np-pack-copy{padding:14px 12px}
+ html.noa-shell-wide[data-noa-theme] .nv-pack .np-pack-copy h3{font-size:14px;line-height:23px;min-height:69px}
+ html.noa-shell-wide[data-noa-theme] .noa-point-checkout{padding:20px}
+ html.noa-shell-wide[data-noa-theme] .np-announcement{padding:12px 16px}
+}

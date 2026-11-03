@@ -9,7 +9,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     environment: production
-    timeout-minutes: 20
+    timeout-minutes: 30
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     env:
       GH_TOKEN: ${{ github.token }}
@@ -26,6 +26,8 @@ jobs:
           node --check deploy/noa-ui.js
           node --check deploy/noa-home.js
           node --check deploy/noa-desktop.js
+          node --check tests/room-themes/member.mjs
+          node --check tests/room-themes/forms.mjs
           php -l bridge/ui-preferences.php
           php -l deploy/noa-theme-admin.php
           php -l deploy/noa-app/home.php
@@ -39,6 +41,13 @@ jobs:
           python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/noa-light" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp tests/room-themes/live.mjs "$RUNNER_TEMP/noa-light/check.mjs"
+          cp tests/room-themes/member.mjs "$RUNNER_TEMP/noa-light/member.mjs"
+          cp tests/room-themes/forms.mjs "$RUNNER_TEMP/noa-light/forms.mjs"
+      - name: Verify member pages and writing forms in an isolated fixture
+        run: |
+          php tests/room-themes/fixture.php
+          node "$RUNNER_TEMP/noa-light/member.mjs"
+          node "$RUNNER_TEMP/noa-light/forms.mjs"
       - name: Verify candidate themes before activation
         env: {NOA_THEME_PHASE: candidate, NOA_SOURCE_ROOT: '${{ github.workspace }}'}
         run: node "$RUNNER_TEMP/noa-light/check.mjs"
