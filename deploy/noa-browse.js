@@ -268,7 +268,39 @@ function mount({host,rows,onChange,onSelect=null,adminControls=true,search=null,
  if(kind==='영상' && host.id==='youtube-browse')window.NoaCinema?.mount(host,rows,findSong);
  return {apply,matches,focusTrack:findSong,reveal(r){activeSavedPlaylist='';stage='songs';selectedGenre=r.genre;selectedGroup=groupFor(r.genre)||'';selectedAct=actFor(r)||0;page=0;sync();},reset(){page=0;},getStage:()=>stage};
 }
-window.NoaBrowse={displayTitle,groups,names,genreArt,groupFor,actFor,slicePage,canonicalBrowseRows,collectionRows,recordKeys,classification,renderPath,loadClassification,mount};
+// Song information and transfer panels share full-width rows below their songs.
+const songPanelLayouts=new WeakMap();
+function placeSongPanel(panel,card){
+ const list=card.parentElement;
+ if(!list?.matches('.noa-inline-songs'))return;
+ panel.dataset.songPanelKey=card.dataset.inlineKey;
+ panel.style.gridColumn='1 / -1';
+ if(panel.parentElement!==list)card.after(panel);
+ let layout=songPanelLayouts.get(list);
+ if(!layout){
+  const place=()=>{
+   const cards=[...list.querySelectorAll(':scope > .noa-inline-song-row')];
+   const panels=[...list.querySelectorAll(':scope > [data-song-panel-key]')];
+   if(!panels.length){resize.disconnect();changes.disconnect();songPanelLayouts.delete(list);return;}
+   const columns=list.dataset.trackView==='album'?getComputedStyle(list).gridTemplateColumns.split(/\s+/).length:1;
+   const positions=new Map();
+   cards.forEach((card,index)=>{if(!positions.has(card.dataset.inlineKey))positions.set(card.dataset.inlineKey,index);});
+   panels.sort((a,b)=>(positions.get(a.dataset.songPanelKey)??cards.length)-(positions.get(b.dataset.songPanelKey)??cards.length));
+   panels.forEach((item,offset)=>{
+    const index=positions.get(item.dataset.songPanelKey);
+    if(index===undefined){item.remove();return;}
+    item.style.gridRowStart=String(Math.floor(index/columns)+2+offset);
+   });
+  };
+  const resize=new ResizeObserver(place);
+  const changes=new MutationObserver(place);
+  resize.observe(list);
+  changes.observe(list,{childList:true,attributes:true,attributeFilter:['data-track-view']});
+  layout=place;songPanelLayouts.set(list,layout);
+ }
+ layout();
+}
+window.NoaBrowse={placeSongPanel,displayTitle,groups,names,genreArt,groupFor,actFor,slicePage,canonicalBrowseRows,collectionRows,recordKeys,classification,renderPath,loadClassification,mount};
 })();
 
 

@@ -107,7 +107,20 @@ function progressTarget(key){
  const field=document.querySelector('[data-audio-progress-key="'+value+'"]');
  if(field?.closest('.noa-edit-form')?.getClientRects().length)return field;
  const visible=selector=>[...document.querySelectorAll(selector)].find(n=>n.getClientRects().length);
- return visible('.noa-inline-song-row[data-inline-key="'+value+'"]')||visible('[data-jukebox-key="'+value+'"]');
+ const row=visible('.noa-inline-song-row[data-inline-key="'+value+'"]');
+ if(row&&window.NoaBrowse?.placeSongPanel){
+  const list=row.parentElement;
+  let host=list.querySelector(':scope > .noa-track-processing[data-song-panel-key="'+value+'"]');
+  if(!host){
+   host=document.createElement('section');host.className='noa-track-processing';
+   host.setAttribute('aria-label','음원 처리 진행');
+   const title=document.createElement('strong');title.className='noa-track-processing-title';
+   title.textContent=row.querySelector('.noa-track-name')?.textContent||cards().find(c=>c.dataset.jukeboxKey===key)?.dataset.title||'음원 처리';
+   host.append(title);window.NoaBrowse.placeSongPanel(host,row);
+  }
+  return host;
+ }
+ return visible('[data-jukebox-key="'+value+'"]');
 }
 function readAnalysis(v){if(typeof v==='string'){try{return JSON.parse(v);}catch{return null;}}return v||null;}
 function renderTrackProgress(){
@@ -116,8 +129,10 @@ function renderTrackProgress(){
  for(const card of cards()){
   const key=card.dataset.jukeboxKey,r=visible.findLast(row=>row.key===key&&row.state!=='replaced'),j=jobs.get(key),d=progressStates.get(key);
   const previous=previousProgressTargets.get(key);
-  if(!r&&!j&&!busy.includes(card.dataset.jukeboxStatus)){
+  const status=r&&isUnsent(r)?r.state:j?.status||d?.status||card.dataset.jukeboxStatus;
+  if(status==='ready'||!r&&!j&&!busy.includes(card.dataset.jukeboxStatus)){
    previous?.querySelectorAll(trackControls).forEach(el=>el.remove());
+   if(previous?.matches('.noa-track-processing'))previous.remove();
    previousProgressTargets.delete(key);
    continue;
   }
@@ -126,10 +141,10 @@ function renderTrackProgress(){
    for(const control of previous.querySelectorAll(trackControls)){
     if(target)target.append(control);else control.remove();
    }
+   if(previous.matches('.noa-track-processing'))previous.remove();
    previousProgressTargets.delete(key);
   }
   if(!target)continue;
-  const status=r&&isUnsent(r)?r.state:j?.status||d?.status||card.dataset.jukeboxStatus;
   const u=d?.upload;
   window.NoaPremium.progress(target,{status,percent:r?.percent,source:u?readAnalysis(u.source_analysis):d?.analysis?.source,final:status==='ready'?(readAnalysis(u?.final_analysis)||d?.analysis?.final):null,correction:status==='ready'?(readAnalysis(u?.correction)||d?.analysis?.correction):null,stale:!!queueError,note:r?.state==='needs_file'?'페이지가 다시 열려 원본 파일을 다시 선택해야 합니다. 이미 전송된 부분은 확인 후 이어갑니다.':r?.error?message(r.error):''});
   let cancel=target.querySelector(':scope > .jukebox-cancel-job');
@@ -153,6 +168,7 @@ function placeProgress(now){
  renderTrackProgress();
  const target=now?progressTarget(now.key||now.song_key):null;
  if(target&&panel.parentElement!==target)target.append(panel);
+ if(!target&&!panel.isConnected)document.body.append(panel);
  panel.hidden=panel.hidden||!target;
 }
 const progressAnchor='.noa-inline-song-row,[data-audio-progress-key]';

@@ -138,16 +138,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
   const titlebar=node.querySelector(':scope>.noa-inline-titlebar')||(['act','playlist'].includes(selector.type)?node.querySelector(':scope>.noa-collection-tools,:scope>.noa-act-edit'):null);if(node.matches('.noa-inline-songs>.noa-inline-song-row'))node.after(form);else if(titlebar)titlebar.after(form);else node.append(form);button.setAttribute('aria-expanded','true');
   const state={node,button,form,status,selector,busy:false,dirty:false,requestId:null,signature:null};active=state;
   if(form.parentElement===node.parentElement && node.matches('.noa-inline-song-row')){
-   const list=node.parentElement;
-   const place=()=>{
-    const columns=list.dataset.trackView==='album'?getComputedStyle(list).gridTemplateColumns.split(/\s+/).length:1;
-    const index=Array.from(list.querySelectorAll(':scope>.noa-inline-song-row')).indexOf(node);
-    form.style.gridRowStart=String(Math.floor(index/columns)+2);
-   };
-   place();
-   const resize=new ResizeObserver(place);resize.observe(list);
-   const mode=new MutationObserver(place);mode.observe(list,{attributes:true,attributeFilter:['data-track-view']});
-   state.stopLayout=()=>{resize.disconnect();mode.disconnect();};
+   window.NoaBrowse.placeSongPanel(form,node);
   }
   const cancel=iconCommand('button','cancel','정보 수정 취소');cancel.onclick=close;form.append(cancel);
   try{await formReady;const response=await fetch('/noa-inline-edit.php?'+new URLSearchParams(selector),{credentials:'same-origin',cache:'no-store'});let data=null;try{data=await response.json();}catch{}if(!response.ok||!data?.ok||!data.writeKey)throw Error(fieldErrors[data?.error]||'세부정보를 불러오지 못했습니다. 로그인 상태와 곡 연결을 확인해 주세요.');if(active!==state)return;

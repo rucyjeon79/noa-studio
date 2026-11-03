@@ -55,3 +55,18 @@ html body #jukebox-transfer-dock[hidden]{display:none!important}
 @media(prefers-reduced-motion:reduce){.noa-master-level:after{animation:none!important;transition:none}}
 
 #jukebox-transfer-dock>.jukebox-transfer-head .jukebox-transfer-now,#jukebox-transfer-dock>progress{display:none}#jukebox-transfer-dock>.jukebox-transfer-head{justify-content:flex-end}#jukebox-transfer-dock>.jukebox-transfer-head>button{font-size:12px;width:auto;min-width:80px}html body #jukebox-transfer-dock{border:0;padding:0;background:transparent;margin:0}.creator-row:has(.noa-track-progress){flex-wrap:wrap}.creator-row>.noa-track-progress{flex-basis:100%;box-sizing:border-box}
+
+/* Pending work occupies its own row, so an album card never grows with it. */
+.noa-inline-songs > .noa-track-processing{
+ display:flex;flex-wrap:wrap;align-items:center;gap:12px;grid-column:1/-1;order:0;
+ box-sizing:border-box;min-width:0;width:100%;padding:12px;
+ border:1px solid var(--noa-line);border-radius:8px;background:var(--noa-surface);color:var(--noa-text);
+}
+.noa-track-processing > .noa-track-processing-title{
+ flex-basis:100%;min-width:0;overflow-wrap:anywhere;font-size:14px;line-height:1.5;
+}
+.noa-track-processing > .noa-track-progress{flex-basis:100%;box-sizing:border-box;padding:0;margin:0;border:0;background:transparent}
+.noa-track-processing > .jukebox-source-actions{flex-basis:100%;margin:0}
+.noa-track-processing > .jukebox-cancel-job{margin:0;min-height:44px}
+html body .noa-track-processing > #jukebox-transfer-dock{flex:1;min-width:0;width:auto;margin:0}
+html body .noa-track-processing > #jukebox-transfer-dock:has([aria-expanded=true]){flex-basis:100%}

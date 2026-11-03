@@ -18,6 +18,9 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/buttons" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-upload-buttons.mjs "$RUNNER_TEMP/buttons/check.mjs"
           node "$RUNNER_TEMP/buttons/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'upload-layout-candidate', path: upload-buttons-proof/, retention-days: 7}
   deploy:
     if: github.event_name == 'push'
     needs: verify
@@ -41,4 +44,9 @@ jobs:
           NOA_BUTTONS_LIVE=1 node "$RUNNER_TEMP/buttons/check.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
-        with: {name: 'upload-buttons-live-${{ github.run_id }}', path: ainoa-proof/deployment.json, retention-days: 7}
+        with:
+          name: 'upload-buttons-live-${{ github.run_id }}'
+          path: |
+            ainoa-proof/deployment.json
+            upload-buttons-proof/
+          retention-days: 7
