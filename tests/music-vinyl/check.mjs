@@ -234,7 +234,13 @@ try{for(const width of [320,390,1280]){
       assert.equal(await controls.locator('summary').innerText(),'AI 생성목록');
       assert.equal(await controls.locator(':scope>button').innerText(),'AI 생성 묶음');
       const media=panel.locator('[data-record-field=audioFileLocation]');
-      assert(await media.locator('.noa-input-guard').isDisabled());
+      const locationInput=media.locator('input,textarea').first();
+      assert(await media.locator('fieldset').evaluate(el=>el.disabled));
+      assert(await locationInput.isDisabled() && await locationInput.isHidden());
+      await media.getByRole('button',{name:/ 수정$/}).click();
+      assert(await locationInput.isEditable() && await locationInput.isVisible());
+      await media.getByRole('button',{name:/ 저장$/}).click();
+      assert(await locationInput.isDisabled() && await locationInput.isHidden());
       assert.equal(await card.getByRole('button',{name:/업로드$|교체$/}).count(),0);
       const native=mismatchPage.locator('#songs [data-key="cover"] .jukebox-actions>button');
       for(const [css,name] of [['sound-upload','음원 업로드'],['jukebox-replace','음원 교체']]){
