@@ -1,5 +1,6 @@
 name: N80 personal listening
 on:
+  workflow_dispatch: {}
   push:
     branches: [main, codex/n80-personal-listening]
     paths: ['deploy/noa-listening*','deploy/noa-app/engine/personal-*','bridge/listening.php','scripts/noa_personal*','scripts/qa/noa-personal-listening.mjs','tests/listening/**','.github/workflows/noa-personal-listening.yml']
@@ -43,7 +44,7 @@ jobs:
         if: always()
         with: {name: listening-candidate, path: listening-proof/candidate/, retention-days: 7}
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     needs: verify
     environment: production
     runs-on: ubuntu-latest
