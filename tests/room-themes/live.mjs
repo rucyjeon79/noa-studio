@@ -50,6 +50,10 @@ try{for(const width of [390,768,1280]){
    if(mode==='noa-ivory'&&await selected.count())assert.equal(await selected.evaluate(el=>getComputedStyle(el).color),'rgb(255, 255, 255)','active section label remains readable: '+route);
    if(room==='shop')await p.locator('.ec-grid .ec-card').first().waitFor();
    if(room==='community')await p.locator('.ec-write-invite').first().waitFor();
+   if(mode==='noa-ivory')for(const primary of await p.locator('.ec-primary:visible').all()){
+    const paint=await primary.evaluate(el=>({color:getComputedStyle(el).color,background:getComputedStyle(el).backgroundColor}));
+    assert.deepEqual(paint,{color:'rgb(255, 255, 255)',background:'rgb(48, 52, 59)'},'primary control remains readable: '+route);
+   }
    await p.screenshot({path:output+'/'+(room||'settings')+'-'+mode+'-'+width+'.png'});
   }
   await p.locator('[data-noa-display-settings]:visible').first().click();

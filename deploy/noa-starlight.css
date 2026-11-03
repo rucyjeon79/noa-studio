@@ -382,3 +382,5 @@ html[data-noa-theme=noa-ivory] #noa-referral-banner small{color:#D5D8DE}
 
 /* Section links inside #ecosystem must outrank its inherited link color. */
 html[data-noa-theme=noa-ivory][data-noa-area]{--noa-section-accent:var(--noa-darkGray)}
+/* The legacy ecosystem primary control uses important paint declarations. */
+html[data-noa-theme=noa-ivory] .ec-primary{background:var(--noa-darkGray)!important;color:#FFFFFF!important;border-color:var(--noa-darkGray)!important}
