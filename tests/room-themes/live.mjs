@@ -139,7 +139,16 @@ try{for(const sizes of [[[390,900],[768,900]],[[1280,1440],[1600,900]]])await Pr
  console.log('PINNED_LANDSCAPE_MENU_COMPACT_MODAL_SEARCH_RESIZE_FOCUS_AND_TALL_DESKTOP_LAYOUT_OK');
  console.log('PREMIUM_THEME_IMAGES_LOADED_MATCH_PALETTE_AND_PRESERVE_ARTIST_AND_PRODUCT_PHOTOS_OK');
  console.log('PREMIUM_THEMES_AUTOMATIC_BOUNDARIES_CONTRAST_LAYOUT_AND_RELOAD_OK');
-}catch(e){for(const c of browser.contexts())for(const p of c.pages()){await p.screenshot({path:output+'/failure.png',fullPage:true});writeFileSync(output+'/failure.html',await p.content());}throw e;}finally{
+}catch(e){
+ console.error('PUBLIC_THEME_CHECK_FAILED',e);
+ let pageIndex=0;
+ for(const c of browser.contexts())for(const p of c.pages()){
+  const failure=output+'/failure-'+pageIndex++;
+  try{await p.screenshot({path:failure+'.png',fullPage:true,timeout:10000});}catch(proofError){console.error('Failure screenshot unavailable:',proofError.message);}
+  try{writeFileSync(failure+'.html',await p.content());}catch(proofError){console.error('Failure HTML unavailable:',proofError.message);}
+ }
+ throw e;
+}finally{
  writeFileSync(output+'/results.json',JSON.stringify(results,null,2));
  await browser.close();
 }

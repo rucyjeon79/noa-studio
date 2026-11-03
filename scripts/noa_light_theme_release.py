@@ -1,4 +1,4 @@
-"""Move the existing home banners to their requested positions without replacing artwork, text, or interactive nodes; retain public hashes and rollback guards."""
+"""Keep all four requested home banner positions stable through asynchronous referral loading; preserve interactive nodes, public hashes, and rollback guards."""
 import os
 import sys
 from pathlib import Path

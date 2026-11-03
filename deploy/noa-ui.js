@@ -146,12 +146,13 @@ function wideShell(side){
  if(main&&community){
   for(const grid of main.querySelectorAll('section>.noa-card-grid'))grid.parentElement.classList.add('noa-home-shelf');
   const arrangeHome=()=>{
+   const referral=main.querySelector('#noa-referral-banner');if(referral&&referral.parentElement!==main)main.append(referral);
    const goods=main.querySelector('[data-home-banner=goods]');if(goods&&goods.parentElement!==notices)notices.append(goods);
    const selectors=['#noa-theme-scene','.noa-monthly-benefits','[data-home-section=hero]','#noa-referral-banner','[data-home-section=notices]','[data-home-section=community]','[data-home-section=recommendations]','[data-home-section=ep]','[data-home-section=stories]','[data-home-section=world]','[data-home-section=covers]','[data-home-section=playlists]','#noa-playlist-basis','[data-home-banner=youtube]','[data-home-section=collections]','[data-home-banner=amt]'];
    let previous=main.querySelector(':scope>.noa-topbar');
    for(const selector of selectors){const node=main.querySelector(':scope>'+selector);if(!node)continue;if(previous&&node.previousElementSibling!==previous)previous.after(node);previous=node;}
   };
-  arrangeHome();new MutationObserver(arrangeHome).observe(main,{childList:true});
+  arrangeHome();const homeOrder=new MutationObserver(arrangeHome);homeOrder.observe(main,{childList:true});homeOrder.observe(notices,{childList:true});
  }
 
  window.dispatchEvent(new Event('noa-shell-ready'));
