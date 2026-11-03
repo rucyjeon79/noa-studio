@@ -36,7 +36,7 @@ function ny_fulfill(string $owner,string $id):array{
  $k='youngcart:receipt:'.$id;$r=ns_doc($k,true);if($r)return $r['data'];$b=$s['benefits'];$rows=[];$q=ns_q('SELECT it_id,ct_qty,ct_price FROM '.ns_table('g5_shop_cart_table').' WHERE od_id='.ns_e($id));while($v=sql_fetch_array($q))$rows[]=['id'=>$v['it_id'],'quantity'=>(int)$v['ct_qty'],'price'=>(int)$v['ct_price']];$expected=$b['items'];usort($rows,fn($a,$c)=>strcmp($a['id'],$c['id']));usort($expected,fn($a,$c)=>strcmp($a['id'],$c['id']));if($rows!==$expected)throw new DomainException('order_items_changed');
  $providerRef=$s['mode']==='points'?'native-points:'.$id:$o['od_tno'];$tk='youngcart:transaction:'.hash('sha256',$providerRef);$tr=ns_doc($tk,true);if($tr&&$tr['data']['order']!==$id)throw new DomainException('transaction_reused');if(!$tr)ns_put($tk,'youngcart_transaction',['order'=>$id],0,$owner);
  $d=['state'=>'fulfilled','order'=>$id,'owner'=>$owner,'transaction'=>$providerRef,'creditedPoints'=>$b['points'],'days'=>$b['days'],'at'=>time()];
- if($b['points']>0&&insert_point($owner,$b['points'],'NOA 영카트 포인트 충전','noa_youngcart',$id,'paid')!==1)throw new RuntimeException('points_credit_failed');
+ if($b['points']>0&&insert_point($owner,$b['points'],'NOA 포인트 충전','noa_youngcart',$id,'paid')!==1)throw new RuntimeException('points_credit_failed');
  if($b['plan']!==null){$m=nr_member($owner);if(!in_array((int)$m['mb_level'],$b['plan']==='vip'?[2,3,4]:[7,8],true))throw new DomainException('membership_level_required');$g=ns_grant(['ownerId'=>$owner,'id'=>'youngcart:'.$id,'plan'=>$b['plan'],'durationDays'=>$b['days'],'method'=>'kcp'],$owner,time());$d['until']=$g['until'];nr_sync_member($owner,time());}ns_put($k,'youngcart_receipt',$d,0,$owner);return $d;});
 }
 function ny_sync_catalog():array{
