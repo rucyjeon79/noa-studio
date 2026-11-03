@@ -63,7 +63,11 @@ def main():
    # Every theme shim is a copy of the installed native basic shop theme; never overwrite a file.
    def copy_missing(src,dst):
     try:s.stat(ROOT+'/'+dst)
-    except FileNotFoundError:s.mkdir(ROOT+'/'+dst,0o755)
+    except FileNotFoundError:
+     parent=dst.rsplit('/',1)[0]
+     try:s.stat(ROOT+'/'+parent)
+     except FileNotFoundError:s.mkdir(ROOT+'/'+parent,0o755)
+     s.mkdir(ROOT+'/'+dst,0o755)
     for item in s.listdir_attr(ROOT+'/'+src):
      a=src+'/'+item.filename;b=dst+'/'+item.filename
      if stat.S_ISDIR(item.st_mode):copy_missing(a,b)
