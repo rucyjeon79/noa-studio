@@ -1,4 +1,4 @@
-"""Release the premium day/night palettes and scheduled preferences with existing hash/rollback guards."""
+"""Release the premium day/night palettes and versioned scheduled preferences with existing hash/rollback guards."""
 import os
 import sys
 from pathlib import Path

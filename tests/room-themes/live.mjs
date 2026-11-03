@@ -1,5 +1,6 @@
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
 import {mkdirSync,readFileSync,writeFileSync} from 'node:fs';
 const source=process.env.NOA_SOURCE_ROOT||process.cwd();
 const phase=process.env.NOA_THEME_PHASE||'live';
@@ -104,10 +105,19 @@ async function verifyAutomaticClock(){
  await p.reload();await p.locator('[data-noa-display-settings]:visible').first().click();await p.locator('#noa-theme').waitFor();
  assert.equal(await p.locator('#noa-theme').inputValue(),'auto','automatic preference survives reload');
  assert.equal(await p.locator('html').getAttribute('data-noa-theme'),'noa-studio');
+ const legacy=await context.newPage();
+ const legacyScript=execFileSync('git',['show','71b05701e8b74a908ad0ef4d942a943285e259f2:deploy/noa-ui.js'],{cwd:source});
+ await legacy.route('**/noa-ui.js*',route=>route.fulfill({body:legacyScript,contentType:'text/javascript'}));
+ await legacy.goto('https://noastudio.ai.kr/noa-login.php');
+ await legacy.locator('[data-noa-display-settings]:visible').first().click();await legacy.locator('#noa-theme').waitFor();
+ await legacy.locator('#noa-theme').selectOption('noa-studio');
+ await p.waitForTimeout(150);
+ assert.equal(await p.locator('#noa-theme').inputValue(),'auto','an older open tab cannot overwrite automatic preference');
+ await legacy.close();
  assert.deepEqual(posts,[],'clock changes never write account preferences');
  if(phase==='live'){
   const response=await context.request.get('https://noastudio.ai.kr/noa-bridge/ui-preferences.php');assert.equal(response.status(),200);
   const prefs=await response.json();assert.equal(prefs.defaults.theme,'auto');assert(prefs.defaults.enabled.includes('auto'));assert.equal(prefs.member,false);
  }
- console.log('AUTOMATIC_0900_2100_MANUAL_OVERRIDE_RELOAD_NO_ACCOUNT_WRITES_OK');await context.close();
+ console.log('AUTOMATIC_0900_2100_MANUAL_OVERRIDE_RELOAD_OLD_TAB_COMPATIBILITY_NO_ACCOUNT_WRITES_OK');await context.close();
 }

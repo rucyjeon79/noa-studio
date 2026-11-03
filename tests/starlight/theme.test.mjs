@@ -27,7 +27,7 @@ test('09:00 and 21:00 switch an open page without persisting a manual choice or 
  h.setTime(9);h.tick();assert.equal(h.root.dataset.noaTheme,'noa-ivory');
  h.setTime(20,59,59);h.tick();assert.equal(h.root.dataset.noaTheme,'noa-ivory');assert.equal([...h.timers.values()][0].delay,1000);
  h.setTime(21);h.tick();assert.equal(h.root.dataset.noaTheme,'noa-studio');assert.equal(h.meta.content,config.themes[0].tokens.bg);
- assert.equal(JSON.parse(h.values.get('noa-ui-selection')).theme,'auto');assert.equal(h.writes.length,0);assert.equal(h.timers.size,1);
+ assert.equal(JSON.parse(h.values.get('noa-ui-selection-v2')).theme,'auto');assert.equal(h.writes.length,0);assert.equal(h.timers.size,1);
 });
 test('wake, restored page and timezone/clock changes refresh automatic mode',async()=>{
  const h=await harness({hour:8});h.setTime(12);h.events.focus();assert.equal(h.root.dataset.noaTheme,'noa-ivory');
@@ -44,8 +44,8 @@ test('manual choices cancel automatic switching and survive old local and accoun
 });
 test('stored automatic account selection and cross-tab changes retain preference semantics',async()=>{
  const h=await harness({hour:23,account:{theme:'auto',language:'ko'}});assert.equal(h.window.NoaUI.getState().theme,'auto');assert.equal(h.root.dataset.noaTheme,'noa-studio');
- h.events.storage({key:'noa-ui-selection',newValue:JSON.stringify({theme:'noa-ivory',language:'ja'})});assert.equal(h.root.dataset.noaTheme,'noa-ivory');assert.equal(h.timers.size,0);
- h.events.storage({key:'noa-ui-selection',newValue:JSON.stringify({theme:'auto',language:'ja'})});assert.equal(h.root.dataset.noaTheme,'noa-studio');assert.equal(h.window.NoaUI.getState().language,'ja');assert.equal(h.timers.size,1);
+ h.events.storage({key:'noa-ui-selection-v2',newValue:JSON.stringify({theme:'noa-ivory',language:'ja'})});assert.equal(h.root.dataset.noaTheme,'noa-ivory');assert.equal(h.timers.size,0);
+ h.events.storage({key:'noa-ui-selection-v2',newValue:JSON.stringify({theme:'auto',language:'ja'})});assert.equal(h.root.dataset.noaTheme,'noa-studio');assert.equal(h.window.NoaUI.getState().language,'ja');assert.equal(h.timers.size,1);
 });
 test('automatic mode still works when account preferences are unavailable or local choice is invalid',async()=>{
  const h=await harness({hour:12,local:{theme:'retired'},unavailable:true});assert.equal(h.window.NoaUI.getState().theme,'auto');assert.equal(h.root.dataset.noaTheme,'noa-ivory');
@@ -58,4 +58,12 @@ test('premium palettes retain neutral surfaces and accessible text and primary c
  const luminance=hex=>{const c=hex.slice(1).match(/../g).map(x=>parseInt(x,16)/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4);return c[0]*.2126+c[1]*.7152+c[2]*.0722;};
  const contrast=(a,b)=>{a=luminance(a);b=luminance(b);return (Math.max(a,b)+.05)/(Math.min(a,b)+.05);};
  for(const theme of config.themes){for(const ink of ['text','muted','accent','sun','sea','forest'])for(const bg of ['bg','surface','raised'])assert.ok(contrast(theme.tokens[ink],theme.tokens[bg])>=4.5,`${theme.id}/${ink}/${bg}`);assert.ok(contrast(theme.tokens.accent,theme.tokens.accentText)>=4.5);}
+});
+
+test('an older open tab cannot normalize the new automatic preference back to dark',async()=>{
+ const h=await harness({hour:12});
+ assert.equal(h.values.has('noa-ui-selection'),false,'automatic choices are not written into the old-client key');
+ h.events.storage({key:'noa-ui-selection',newValue:JSON.stringify({theme:'noa-studio',language:'ko'})});
+ assert.equal(h.window.NoaUI.getState().theme,'auto');assert.equal(h.root.dataset.noaTheme,'noa-ivory');
+ assert.equal(JSON.parse(h.values.get('noa-ui-selection-v2')).theme,'auto');
 });
