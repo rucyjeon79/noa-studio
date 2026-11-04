@@ -49,13 +49,21 @@ function startManual(rows){
  if(manualGenre)genre=manualGenre;
  mood=manualMood;scope=manualGenre?'genre':'catalogMood';mode='now';play(rows,false);
 }
+function trackCopy(row,button,showEpisode=false){
+ const genre=musicWindow?.NoaBrowse?.genreName?.(row.genre,state.genres)??(Object.hasOwn(state.genres,row.genre)?state.genres[row.genre]:'미분류');
+ const copy=el('span','nl-track-copy'),meta=el('small','nl-track-genre',genre);
+ if(showEpisode&&row.ep)meta.append(document.createTextNode(' · EP.'+String(row.ep).padStart(2,'0')));
+ copy.append(el('strong','nl-track-title',row.title),meta);
+ button.setAttribute('aria-description',meta.textContent);
+ return copy;
+}
 function preview(target,rows,onPlay,note=''){
  target.replaceChildren();if(!rows.length){if(note)target.append(el('small','nl-note',note));return;}
  const shown=rows.slice(0,10),list=el('div','nl-preview-tracks');
  target.append(el('h4','','곡 미리보기 · '+shown.length+'곡'),list);
  for(const [index,row] of shown.entries()){
   const b=el('button','nl-preview-track');b.type='button';b.setAttribute('aria-label',row.title+'부터 듣기');
-  b.append(el('small','',String(index+1).padStart(2,'0')),el('span','',row.title),icon('play'));
+  b.append(el('small','',String(index+1).padStart(2,'0')),trackCopy(row,b),icon('play'));
   b.onclick=()=>onPlay([row,...rows.filter(r=>r.key!==row.key)]);list.append(b);
  }
  if(note)target.append(el('small','nl-note',note));
@@ -123,7 +131,7 @@ const results=el('div','nl-results');browse.append(results);
 const more=el('a','nl-catalog','카테고리별 음원 찾기 →');more.href=home?'/noa-music.php#music-browse':'#music-browse';if(!home)more.onclick=()=>{const panel=host.closest('.nl-music-discovery');if(panel)panel.open=false;window.NoaMusic?.showCategories();};browse.append(more);
 const info=el('details','nl-basis');info.append(el('summary','','추천 기준'));const infoText=el('p');info.append(infoText);host.append(info);
 function isRecommendedGenreMix(){return scope==='recommendedGenre'&&mode==='now'&&mood==='auto'&&state?.theme?.personal===true;}
-function songButton(row,onPlay){const b=el('button','nl-track');b.type='button';const art=el('img');art.alt='';art.loading='lazy';if(row.thumb)art.src=row.thumb;else art.hidden=true;const copy=el('span','nl-track-copy');copy.append(el('strong','',row.title),el('small','',row.ep?'EP.'+String(row.ep).padStart(2,'0'):state.genres[row.genre]));b.append(art,copy,icon('play'));b.setAttribute('aria-label',row.title+' 재생');b.onclick=onPlay;return b;}
+function songButton(row,onPlay){const b=el('button','nl-track');b.type='button';const art=el('img');art.alt='';art.loading='lazy';if(row.thumb)art.src=row.thumb;else art.hidden=true;b.append(art,trackCopy(row,b,true),icon('play'));b.setAttribute('aria-label',row.title+' 재생');b.onclick=onPlay;return b;}
 const fortuneIntro='생년월일을 입력하면 나에게 맞는 음악과 오늘의 운세를 볼 수 있어요. 원하면 매일 오전 8시(한국 시간)에 운세 알림도 받을 수 있어요.';
 const fortuneSetupUrl='/?setup=fortune#noa-daily-fortune';
 const fortuneCard=home?document.getElementById('noa-daily-fortune'):null;let lastFortune='',anchorHandled=false;

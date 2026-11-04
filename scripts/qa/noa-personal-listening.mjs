@@ -162,7 +162,7 @@ try{
    const offered=await choices.evaluateAll(nodes=>nodes.map(n=>n.dataset.genreChoice));assert.equal(new Set(offered).size,3);
    await page.locator('[data-listening-lane=suggested]').screenshot({path:out+'/saju-genre-choices-'+width+'.png'});
    for(const genre of offered){
-    const choice=page.locator('[data-genre-choice="'+genre+'"]');const firstTitle=await choice.locator('..').locator('.nl-preview-track span').first().innerText();
+    const choice=page.locator('[data-genre-choice="'+genre+'"]');const firstTitle=await choice.locator('..').locator('.nl-preview-track .nl-track-title').first().innerText();
     await choice.click();await player.waitForFunction(g=>{
      const active=document.querySelector('.song.selected'),audio=document.querySelector('#sound-player');
      return active?.dataset.genre===g&&!audio.paused&&audio.currentTime>0;
@@ -216,6 +216,7 @@ try{
    },theme);
    assert.deepEqual(paint,[false,true,true,'1'],'enabled mix uses solid theme colors: '+theme.id);
   }
+  const genresByTrack=await player.evaluate(()=>queue().slice(0,10).map(b=>NoaBrowse.genreName(b.dataset.genre)));
   const wholeQueue=await readQueue();assert.match(wholeQueue.source,/오늘의 공감 추천 · 100곡/);
   assert.equal(new URL(wholeQueue.src,base).searchParams.get('record'),wholeQueue.keys[0]);
   const heads=new Map();
@@ -225,6 +226,9 @@ try{
   assert.deepEqual((await readQueue()).keys,wholeQueue.keys);assert.equal((await readQueue()).source,wholeQueue.source);
   await player.evaluate(()=>{select(queue()[98],true);move(1,true);});assert(await player.evaluate(()=>selected===queue()[99]));await player.evaluate(()=>move(1,true));assert(await player.evaluate(()=>selected===queue()[99]));
   await page.goBack();const cards=page.locator('[data-genre-choice]');assert.equal(await cards.count(),3);
+  const previews=page.locator('[data-listening-lane=whole] .nl-track-genre');
+  assert.deepEqual(await previews.allTextContents(),genresByTrack);
+  assert(await previews.evaluateAll(nodes=>nodes.every(n=>getComputedStyle(n).fontSize==='12px'&&n.getBoundingClientRect().top>=n.previousElementSibling.getBoundingClientRect().bottom-1)));
   const offered=await cards.evaluateAll(nodes=>nodes.map(b=>b.dataset.genreChoice));
   for(const genre of offered){
    const card=page.locator('[data-genre-choice="'+genre+'"]');assert.match(await card.getAttribute('aria-label'),/10곡 듣기/);await card.click();

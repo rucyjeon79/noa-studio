@@ -30,7 +30,7 @@ release.FILES={
 }
 release.NEW=set(release.FILES)-{'noa-app/p0-player.js','noa-launch.js','noa-account.js','noa-app/engine/n80.php','noa-music.php','noa-app/home.php','noa-ui.js','noa-browse.js','noa-bridge/notifications-inline.php','noa-bridge/notifications-sources.php','noa-bridge/notifications-core.php','noa-bridge/notification-worker.php'}
 if os.environ.get('NOA_LISTENING_COPY') == 'true':
-    names = ('noa-interface-labels.json', 'noa-listening.js', 'noa-music.php', 'noa-ui.js')
+    names = ('noa-interface-labels.json', 'noa-browse.js', 'noa-listening.css', 'noa-listening.js', 'noa-music.php', 'noa-ui.js')
     release.FILES = {name: 'deploy/' + name for name in names}
     release.NEW = set()
 release.PROTECTED=[p for p in release.PROTECTED if p not in release.FILES]

@@ -97,9 +97,15 @@ html body #noa-listening .nl-play-action:disabled{opacity:.48;cursor:default}
 #noa-listening .nl-genre-option>h4{margin:0 0 8px}
 #noa-listening .nl-preview-tracks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:16px}
 #noa-listening .nl-genre-option .nl-preview-tracks{grid-template-columns:minmax(0,1fr)}
-html body #noa-listening .nl-preview-track{display:grid;grid-template-columns:2ch minmax(0,1fr) 16px;align-items:center;gap:8px;width:100%;min-width:0;min-height:40px;padding:5px 0;border:0;border-bottom:1px solid var(--nl-line);background:transparent;color:var(--noa-text);font:inherit;font-size:.86rem;text-align:start;cursor:pointer}
-.nl-preview-track small,.nl-preview-track svg{color:var(--nl-gold);font-variant-numeric:tabular-nums}
-.nl-preview-track span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body #noa-listening .nl-preview-track{display:grid;grid-template-columns:2ch minmax(0,1fr) 16px;align-items:center;gap:8px;width:100%;min-width:0;min-height:48px;padding:6px 0;border:0;border-bottom:1px solid var(--nl-line);background:transparent;color:var(--noa-text);font:inherit;font-size:.86rem;text-align:start;cursor:pointer}
+.nl-preview-track>small,.nl-preview-track>svg{color:var(--nl-gold);font-variant-numeric:tabular-nums}
+#noa-listening .nl-preview-track .nl-track-copy{grid-template-columns:minmax(0,1fr);gap:2px}
+#noa-listening .nl-preview-track .nl-track-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+#noa-listening .nl-track-copy .nl-track-genre,#music-browse .noa-inline-title>.noa-track-genre,#dock-queue .noa-queue-title>.noa-track-genre{display:block;min-width:0;max-width:100%;color:var(--noa-muted,#a9adb1);font-size:12px;font-weight:400;line-height:1.4;white-space:normal;overflow-wrap:anywhere}
+#music-browse .noa-inline-title>.noa-track-genre{grid-column:1;grid-row:2}
+html body.noa-record-room #music-browse .noa-inline-title:has(>.noa-track-genre)>.noa-original-title{grid-row:3}
+html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .noa-inline-title:has(>.noa-track-genre)>.noa-amt-award{grid-row:4}
+#dock-queue .noa-queue-title>.noa-track-genre{margin-block-start:2px}
 #noa-listening .nl-preview-track .nl-icon{width:15px;height:15px}
 #noa-listening .nl-status:empty,#noa-listening .nl-note:empty{display:none}
 @media(max-width:620px){#noa-listening .nl-preview-tracks{grid-template-columns:minmax(0,1fr)}#noa-listening .nl-genre-option{padding-block:10px}}
