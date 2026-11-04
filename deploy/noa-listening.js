@@ -149,13 +149,23 @@ window.addEventListener('popstate',()=>{if(frame&&!history.state?.noaListeningHo
 function chooseGenre(value,source){if(!value)return;scope=source;genre=value;try{sessionStorage.setItem('noa-listening-genre',genre);}catch{}render();}
 genres.onchange=()=>chooseGenre(genres.value,'genre');
 async function load(){const sequence=++loadSequence;try{const response=await fetch('/noa-bridge/listening.php',{credentials:'same-origin',cache:'no-store'});if(!response.ok)throw Error();const data=await response.json();if(sequence!==loadSequence)return;state=data;const oldGenre=genres.value;genres.replaceChildren();const placeholder=el('option','','직접 들을 장르 선택');placeholder.value='';placeholder.disabled=true;genres.append(placeholder);for(const [key,label]of Object.entries(state.genres)){const o=el('option','',label);o.value=key;genres.append(o);}let saved='';try{saved=sessionStorage.getItem('noa-listening-genre')||'';}catch{}const query=new URLSearchParams(location.search).get('genre');if(!oldGenre&&query&&state.genres[query])scope='genre';genre=[query,oldGenre,saved,state.profile?.genre,'kpop-original'].find(g=>state.genres[g])||'kpop-original';render();connect();
- if(home&&!anchorHandled&&new URLSearchParams(location.search).get('setup')==='fortune'){
-  anchorHandled=true;
-  if(state.member){const clean=new URL(location.href);clean.searchParams.delete('setup');history.replaceState(history.state,'',clean);openSettings(true);}
-  else location.replace('/bbs/login.php?url='+encodeURIComponent(fortuneSetupUrl));
+ if(home&&!anchorHandled){
+  const requested=new URLSearchParams(location.search).get('setup')==='fortune';
+  let pending=0;try{pending=Number(sessionStorage.getItem('noa-fortune-setup-until'));}catch{}
+  if(state.member&&(requested||pending>Date.now())){
+   anchorHandled=true;try{sessionStorage.removeItem('noa-fortune-setup-until');}catch{}
+   if(requested){const clean=new URL(location.href);clean.searchParams.delete('setup');history.replaceState(history.state,'',clean);}
+   openSettings(true);
+  }else if(requested){anchorHandled=true;signInForFortune();}
  }
  }catch{status.textContent='추천을 불러오지 못했어요. 전체 음원은 계속 이용할 수 있습니다.';listen.disabled=true;settings.disabled=true;}}
-function openSettings(fortuneSetup=false){const trigger=document.activeElement;if(!state?.member){location.href='/bbs/login.php?url='+encodeURIComponent(fortuneSetup?fortuneSetupUrl:'/noa-music.php#noa-listening');return;}
+function signInForFortune(){
+ try{sessionStorage.setItem('noa-fortune-setup-until',String(Date.now()+15*60*1000));}catch{}
+ location.replace('/bbs/login.php?url='+encodeURIComponent(fortuneSetupUrl));
+}
+function openSettings(fortuneSetup=false){const trigger=document.activeElement;if(!state?.member){
+ if(fortuneSetup)signInForFortune();else location.href='/bbs/login.php?url='+encodeURIComponent('/noa-music.php#noa-listening');return;
+}
  const dialog=el('dialog','nl-dialog');dialog.setAttribute('aria-label','개인 추천 설정');const form=el('form');const header=el('div','nl-dialog-head');header.append(el('h2','','개인 추천 설정'),button('닫기','close',()=>dialog.close()));form.append(header,el('p','nl-note',fortuneIntro));
  const p=state.profile||{};
  function field(label,name,type,value,options){const wrap=el('label','nl-field',label);let input;if(options){input=el('select');for(const [v,t]of Object.entries(options)){const o=el('option','',t);o.value=v;input.append(o);}}else{input=el('input');input.type=type;}input.name=name;input.value=value??'';wrap.append(input);return {wrap,input};}

@@ -89,6 +89,17 @@ try{
  }
  if(!live){const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block'}),page=await c.newPage();activePage=page;page.setDefaultTimeout(20000);await page.goto(base);assert.equal(await page.locator('.nl-catalog').getAttribute('href'),'/noa-music.php#music-browse');await page.waitForFunction(()=>!document.querySelector('.nl-primary').disabled);await page.getByRole('link',{name:'내 음악 바로 듣기',exact:true}).click();const f=page.frames().find(f=>f.url().includes('listenHost'));assert(f);await f.waitForFunction(()=>!document.getElementById('sound-player').paused&&document.getElementById('sound-player').currentTime>0);assert.equal(await f.locator('#music-browse [data-browse-level="1"] .noa-browse-card').count(),4);assert.equal(await page.locator('.nl-play-shell').isVisible(),true);await page.screenshot({path:out+'/home-one-click.png'});await page.goBack();assert(!await page.locator('.nl-play-shell').isVisible());report.homeOneClickActualAudio=true;await page.getByRole('link',{name:'내 음악 바로 듣기',exact:true}).click();await f.locator('.noa-mobile-nav a[data-noa-nav=home]').click();await page.waitForURL(base+'/');assert.equal(new URL(page.url()).pathname,'/');report.homeNavigationLeavesPlayer=true;await c.close();}
  if(!live){
+  // The studio sign-in flow can return to the plain homepage. Restore only this tab's setup intent.
+  const setupContext=await browser.newContext({viewport:{width:390,height:900},extraHTTPHeaders:{'X-QA-User':'guest'}});
+  const setupPage=await setupContext.newPage();
+  await setupPage.route('**/bbs/login.php?*',r=>r.fulfill({contentType:'text/html',body:'<title>Sign in</title>'}));
+  await setupPage.goto(base+'/');await setupPage.getByRole('button',{name:'생년월일 설정하기'}).click();
+  await setupPage.waitForURL('**/bbs/login.php?*');
+  await setupContext.setExtraHTTPHeaders({'X-QA-User':'returning-member'});await setupPage.goto(base+'/');
+  await setupPage.getByRole('dialog',{name:'개인 추천 설정'}).waitFor();
+  await setupPage.getByRole('button',{name:'닫기',exact:true}).click();await setupPage.reload();
+  await setupPage.getByRole('button',{name:'생년월일 설정하기'}).waitFor();assert.equal(await setupPage.locator('.nl-dialog').count(),0);
+  await setupContext.close();report.fortuneSetupSurvivesHomeLoginReturn=true;
   for(const width of [390,1280]){
    const c=await browser.newContext({viewport:{width,height:900},serviceWorkers:'block',extraHTTPHeaders:{'X-QA-User':'fortuneuser'}}),page=await c.newPage();activePage=page;page.on('pageerror',e=>report.errors.push(e.message));await page.goto(base);const card=page.locator('#noa-daily-fortune');
    await page.waitForFunction(()=>document.querySelector('.nl-primary')?.disabled===false);assert(await card.isVisible());assert(await card.getByRole('button',{name:'생년월일 설정하기'}).isVisible());

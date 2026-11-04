@@ -18,7 +18,8 @@ if(phase==='live'){
  }finally{await probe.close();}
 }
 
-try{for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])await Promise.all(sizes.map(async([width,height])=>{
+try{await verifyFirstPaint();
+for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])await Promise.all(sizes.map(async([width,height])=>{
  const context=await browser.newContext({viewport:{width,height},timezoneId:'Asia/Seoul',serviceWorkers:'block'}),p=await context.newPage();
  const errors=[];p.on('pageerror',e=>errors.push(e.message));
  if(phase==='candidate')for(const name of ['noa-account.js','noa-interface-labels.json','noa-youngcart-premium.css','noa-design.json','noa-starlight.css','noa-ui.js','noa-hero.js','noa-listening-model.js','noa-listening.js','noa-listening.css','noa-home.js','noa-desktop.js','noa-voice.js','noa-ainoa.css','noa-amt-fan.js','noa-amt-fan.css']){
@@ -160,7 +161,6 @@ try{for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]
  await context.close();
 }));
  await verifyAutomaticClock();
- await verifyFirstPaint();
  console.log('PINNED_LANDSCAPE_MENU_COMPACT_MODAL_SEARCH_RESIZE_FOCUS_AND_TALL_DESKTOP_LAYOUT_OK');
  console.log('PREMIUM_THEME_IMAGES_LOADED_MATCH_PALETTE_AND_PRESERVE_ARTIST_AND_PRODUCT_PHOTOS_OK');
  console.log('PREMIUM_THEMES_AUTOMATIC_BOUNDARIES_CONTRAST_LAYOUT_AND_RELOAD_OK');
@@ -183,8 +183,7 @@ async function verifyFirstPaint(){
   const ctx=await browser.newContext({timezoneId:'Asia/Seoul',serviceWorkers:'block'});
   await ctx.addInitScript(choice=>localStorage.setItem('noa-ui-selection-v2',JSON.stringify({theme:choice})),choice);
   if(phase==='candidate'){
-   const php=readFileSync(source+'/deploy/noa-design.extend.php','utf8');
-   const bootstrap=php.match(/<script id="noa-first-paint">[\s\S]*?<\/script>/)[0];
+   const bootstrap=execFileSync('php',['-r','define("_GNUBOARD_",true);require $argv[1];echo noa_first_paint_theme("<head></head>");',source+'/deploy/noa-design.extend.php'],{encoding:'utf8'}).replace(/^<head>|<\/head>$/g,'');
    await ctx.route('https://noastudio.ai.kr/**',async r=>{
     if(!r.request().isNavigationRequest())return r.continue();
     const response=await r.fetch(),html=await response.text();
