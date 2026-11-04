@@ -7,6 +7,8 @@ import hashlib
 import json
 import os
 import re
+import argparse
+from pathlib import Path
 import urllib.parse as url
 import urllib.request as http
 from xml.etree import ElementTree as ET
@@ -82,7 +84,11 @@ def feed(rank, address, name=''):
         title=n.findtext('title','')
         if publisher and title.endswith(' - '+publisher):
             title=title[:-len(publisher)-3]
-        items.append(row(rank,title,publisher,n.findtext('link',''),dated,stamp.isoformat() if stamp else None))
+        item=row(rank,title,publisher,n.findtext('link',''),dated,stamp.isoformat() if stamp else None)
+        source=n.find('source')
+        if item and source is not None and source.get('url'):
+            item['publisher_host']=url.urlsplit(source.get('url')).hostname or ''
+        items.append(item)
     return [i for i in items if i]
 
 
@@ -120,7 +126,7 @@ def api(method='GET', payload=None):
     with http.urlopen(req,timeout=20) as r:return json.load(r)
 
 
-def main():
+def main(output=None):
     calls=[('portal-'+str(i),google,(i,q)) for i,q in enumerate(QUERIES,1)]
     calls.extend([('international',google,(7,'(ILO OR ITUC OR "trade union") (employment OR labour OR wages OR strike)',True)),
                   ('SKB',skb,()),('SKT',feed,(3,'https://news.sktelecom.com/category/press-center/feed','SK텔레콤 뉴스룸')),
@@ -136,9 +142,8 @@ def main():
                 print(jobs[job],'unavailable',type(e).__name__)
     if not healthy:
         raise RuntimeError('All news sources unavailable; previous inbox kept')
-    existing=api()
-    previous=json.loads(base64.b64decode(existing['content']))
-    old=previous.get('items',[])
+    existing=api() if output is None else None
+    old=json.loads(base64.b64decode(existing['content'])).get('items',[]) if existing else []
     combined={}
     for item in [*old,*fresh]:
         if item['date']<(NOW.date()-dt.timedelta(days=31)).isoformat():continue
@@ -146,12 +151,15 @@ def main():
         if not rank:continue
         item=dict(item,topic=rank)
         key=identity(item)
-        if key not in combined or item['topic']<combined[key]['topic'] or (item['topic']==combined[key]['topic'] and item.get('published_at','')>combined[key].get('published_at','')):
+        if key not in combined or item['topic']<combined[key]['topic'] or (item['topic']==combined[key]['topic'] and (item.get('published_at',''),bool(item.get('publisher_host')))>(combined[key].get('published_at',''),bool(combined[key].get('publisher_host')))):
             combined[key]=item
     items=[]
     for rank in range(1,8):
         group=sorted((i for i in combined.values() if i['topic']==rank),key=lambda i:(i.get('published_at') or i['date'],i['title'],i['url']),reverse=True)
         items.extend(group[:8])
+    if output is not None:
+        output.write_text(json.dumps({'items':items},ensure_ascii=False),encoding='utf-8')
+        return
     if items==old or not items:
         print('No new shortlist');return
     content=json.dumps({'items':items},ensure_ascii=False,indent=2)+'\n'
@@ -160,4 +168,6 @@ def main():
 
 
 if __name__=='__main__':
-    main()
+    options=argparse.ArgumentParser()
+    options.add_argument('--output',type=Path)
+    main(options.parse_args().output)

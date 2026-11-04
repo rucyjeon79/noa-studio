@@ -28,6 +28,7 @@ jobs:
           php -l deploy/busan/newsroom/news.extend.php
           php -l deploy/busan/newsroom/recent.php
           php -l scripts/busan_news/publish.php
+          php -l deploy/busan/newsroom/account.php
           node --check deploy/busan/newsroom/ticker.js
           python -m pip install -q paramiko==3.5.1
       - name: Publish only Busan news and register its native menu

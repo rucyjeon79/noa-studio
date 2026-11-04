@@ -21,6 +21,8 @@ ASSETS = Path('deploy/busan/newsroom')
 MODULE = 'busan-assistant/newsroom'
 FILES = {MODULE+'/'+name: ASSETS/name for name in ['news.css', 'ticker.js', 'recent.php']}
 FILES['extend/busan-news.extend.php'] = ASSETS/'news.extend.php'
+FILES['busan-assistant/newsroom-account-import.php'] = Path('scripts/busan_news/publish.php')
+FILES['busan-assistant/newsroom-account.php'] = ASSETS/'account.php'
 
 
 def read(s, path, limit):

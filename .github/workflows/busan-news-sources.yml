@@ -1,8 +1,6 @@
 name: Busan reporter source watch
 on:
-  schedule:
-    # UTC hours for 00:00, 04:00, 08:00, 12:00, 16:00 and 20:00 in Korea.
-    - cron: '0 3,7,11,15,19,23 * * *'
+  # Regular collection runs before generation in the private newsroom worker.
   workflow_dispatch:
 permissions: {contents: write}
 concurrency: {group: busan-news-source-watch, cancel-in-progress: false}

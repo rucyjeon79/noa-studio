@@ -1,6 +1,6 @@
 <?php
-// Installed only for the duration of a release, with a fresh one-time token hash.
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !hash_equals('__TOKEN_HASH__', hash('sha256', $_SERVER['HTTP_X_BUSAN_NEWS'] ?? ''))) { http_response_code(404); exit; }
+// Authorize either a one-time deployment import or a verified newsroom identity.
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (!defined('BUSAN_ACCOUNT_NEWS') && !hash_equals('__TOKEN_HASH__', hash('sha256', $_SERVER['HTTP_X_BUSAN_NEWS'] ?? '')))) { http_response_code(404); exit; }
 ini_set('display_errors','0');
 require_once dirname(__DIR__) . '/common.php';
 header('Content-Type: application/json; charset=utf-8');
@@ -93,9 +93,13 @@ try{
     $input=json_decode(file_get_contents('php://input',false,null,0,500000),true,32,JSON_THROW_ON_ERROR);
     if(!is_array($input)||count($input)>100)throw new RuntimeException('invalid batch');
     foreach($input as $a)bnvalidate($a);
+    if (defined('BUSAN_ACCOUNT_NEWS')) {
+        if (!array_is_list($input) || count($input)>7) throw new RuntimeException('edition size');
+        foreach ($input as $a) if ($a['date']<date('Y-m-d',strtotime(G5_TIME_YMD.' -1 month'))) throw new RuntimeException('expired article');
+    }
     $stage='lock'; $lock=sql_fetch("SELECT GET_LOCK('busan_news_publish_v1',15) AS ok",false);
     if((int)($lock['ok']??0)!==1)throw new RuntimeException('publisher busy');
-    $stage='setup';bnsetup();
+    $stage='setup';if (!defined('BUSAN_ACCOUNT_NEWS')) bnsetup();
     $actor=get_member('busanjibuon');if(empty($actor['mb_id']))throw new RuntimeException('reporter account missing');
     $stage='publish';$rows=[];foreach($input as $a)$rows[]=bnpublish($a);
     bnq("UPDATE {$g5['board_table']} SET bo_count_write=(SELECT COUNT(*) FROM `{$g5['write_prefix']}busan_news` WHERE wr_is_comment=0) WHERE bo_table='busan_news'");
