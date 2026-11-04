@@ -304,13 +304,16 @@ function showShell(){
 }
 document.querySelector('[data-noa-listen-now]')?.addEventListener('click',event=>{event.preventDefault();if(!state){host.scrollIntoView({block:'center'});return;}if(state.theme?.personal&&!mixButton.disabled){playWholeCatalog();return;}if(!state.canPlay||musicWindow){scope='genre';mode='now';mood='auto';play(model.select(records,{genre,mood,mode,theme:state.theme}).rows,false);}else host.scrollIntoView({block:'start'});});
 let videoNoticeAccepted=false,sourceDialog=null;
+const qualityNoticeKey='noa-public-audio-notice-v1';
+try{videoNoticeAccepted=sessionStorage.getItem(qualityNoticeKey)==='seen';}catch{}
 function requestVideoPlayback(rows){
  if(videoNoticeAccepted){playPublicVideos(rows);return;}
  if(sourceDialog?.open)return;
  const dialog=el('dialog','nl-dialog');sourceDialog=dialog;dialog.setAttribute('aria-label','공개 유튜브 재생 안내');
  const start=button('알겠어요 · 유튜브로 듣기','play',()=>{
   if(!usesVideo())return dialog.close();
-  videoNoticeAccepted=true;dialog.close();playPublicVideos(rows);
+  videoNoticeAccepted=true;try{sessionStorage.setItem(qualityNoticeKey,'seen');}catch{}
+  dialog.close();playPublicVideos(rows);
  });
  const actions=el('div','nl-weather-choices');actions.append(start,button('돌아가기','close',()=>dialog.close()));
  dialog.append(sourceNotice(),actions);document.body.append(dialog);

@@ -7,7 +7,7 @@ header('Cache-Control: private, no-store');
 header('X-Content-Type-Options: nosniff');
 $access=nam_access((array)($member??[]),(string)($is_admin??''));
 if(empty($is_member)){http_response_code(401);echo '{"error":"login_required"}';exit;}
-if($access['level']<=3||!$access['music']){http_response_code(403);echo '{"error":"vip_required"}';exit;}
+if(!$access['weatherVip']){http_response_code(403);echo '{"error":"vip_required"}';exit;}
 if(($_SERVER['REQUEST_METHOD']??'')!=='GET'){http_response_code(405);header('Allow: GET');exit;}
 if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 // Editorial sequences prepared by AInoa. These are published music choices, never a live chat reply.

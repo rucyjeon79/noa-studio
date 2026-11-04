@@ -77,11 +77,12 @@ function listeningSelection(){
  const owner=recommendationQueue||collectionQueue;
  return !activeQueue&&owner&&owner===listeningTracks?listeningSource:null;
 }
+const weatherVip=<?=json_encode(!empty($musicAccess['weatherVip']))?>;
 const musicMoodLabels={calm:'휴식',focus:'집중',comfort:'위로',energy:'활동',cruise:'편안한 운전',drive:'다이나믹 드라이빙',walk:'산책',sleep:'수면'};
 function setListeningSource(scope,genre='',options={}){
  const types={weather:'내 마음 날씨',all:'오늘의 공감 추천',recommendedGenre:'추천 장르',genre:'직접 선택',catalogMood:'전체 장르 · '+(musicMoodLabels[options.mood]||'분위기 추천')};
  const owner=recommendationQueue||collectionQueue;
- if(!Object.hasOwn(types,scope)||!owner)return;
+ if(!Object.hasOwn(types,scope)||!owner||(scope==='weather'&&!weatherVip))return;
  const label=[types[scope],owner.length+'곡',window.NoaBrowse?.names?.[genre]||genre].filter(Boolean).join(' · ');
  listeningSource={scope,genre,mode:options.mode||'now',mood:options.mood||'auto',label};
  listeningTracks=owner;
@@ -204,6 +205,7 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('/noa-sw.js').c
 
 // A synchronous user-gesture entrypoint shared with home. Never accept media URLs.
 function startListeningQueue(keys,scope,genre='',options={}){
+ if(scope==='weather'&&!weatherVip)return false;
  const acrossGenres=scope==='all'||scope==='catalogMood'||scope==='weather';
  const recommendationLimit=acrossGenres?100:scope==='recommendedGenre'?10:0;
  if(!Array.isArray(keys)||!keys.length)return false;
@@ -243,7 +245,7 @@ weatherFeedback.querySelector('[data-weather-gentler]').onclick=()=>changeWeathe
 
 window.NoaMusic={
  playWeather:(keys,path)=>{
-  if(!Array.isArray(path)||!path.length||!path.every(m=>Object.hasOwn(musicMoodLabels,m)))return false;
+  if(!weatherVip||!Array.isArray(path)||!path.length||!path.every(m=>Object.hasOwn(musicMoodLabels,m)))return false;
   weatherPath=path.slice();weatherFeedback.querySelector('[role=status]').textContent='';
   return startListeningQueue(keys,'weather','',{mood:path[0]});
  },
