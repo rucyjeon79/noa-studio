@@ -33,3 +33,17 @@ foreach ($files as $path) {
 }
 check(count($files)>0 && min($counts)>0,'all four moods found in story collection');
 echo 'STORY_WORD_MATCHES '.json_encode(['songs'=>count($files),'matches'=>$counts])."\n";
+
+// Unlabelled tracks can acquire an affinity from words shared with labelled recordings.
+require_once dirname(__DIR__,2).'/deploy/noa-app/engine/personal-genre-model.php';
+$training=[];
+foreach ([
+    ['c1','calm','은빛 물결 오솔길'],['c2','calm','은빛 물결 강가'],
+    ['e1','energy','함성 무대 도시'],['e2','energy','함성 무대 거리'],
+    ['new','','은빛 물결 창가'],['unrelated','','초록 모퉁이'],
+] as [$key,$label,$lyric]) {
+    $training[]=['key'=>$key,'kind'=>'single','title'=>'','lyrics'=>$lyric,'moodTags'=>$label?[$label]:[]];
+}
+n80_genre_model($training);
+check(($training[4]['moodAffinity']['calm']??0)>0 && !isset($training[4]['moodAffinity']['energy']),'learn shared words for unseen song');
+check(empty($training[5]['moodAffinity']),'do not invent textual confidence');

@@ -42,3 +42,22 @@ test('personal now uses the next chart mood with audio inside the chosen genre',
  const unmatched=model.select(tracks,{genre:'k',theme:{...theme,rankedMoods:['focus','comfort']}});
  assert(unmatched.fallback);assert(unmatched.rows.every(r=>r.genre==='k'));
 });
+test('saju recommendations offer three playable genres and a genre-local queue per card',()=>{
+ const theme={personal:true,mood:'calm',rankedMoods:['calm','focus']};
+ const tracks=[
+  {key:'c1',genre:'c',audio:'/c',moodScores:{calm:6}},
+  {key:'a1',genre:'a',audio:'/a',moodScores:{calm:8}},
+  {key:'a2',genre:'a',audio:'/a2',moodAffinity:{calm:.8}},
+  {key:'b1',genre:'b',audio:'/b',moodAffinity:{calm:.9}},
+  {key:'d1',genre:'d',audio:'/d',moodScores:{energy:10}},
+  {key:'silent',genre:'none',audio:'',moodScores:{calm:20}},
+ ];
+ const genres={a:'a',b:'b',c:'c',d:'d',none:'none'};
+ const picks=model.genreSuggestions(tracks,theme,genres,'a');
+ assert.equal(picks.length,3);assert.deepEqual(new Set(picks.map(p=>p.genre)),new Set(['a','b','c']));
+ for(const pick of picks)assert(pick.selection.rows.every(r=>r.genre===pick.genre&&r.audio));
+ const energetic=model.genreSuggestions(tracks,{personal:true,mood:'energy',rankedMoods:['energy','comfort']},genres,'a');
+ assert.equal(energetic[0].genre,'d');assert.deepEqual(model.genreSuggestions(tracks,{personal:false},genres),[]);
+ assert.equal(model.genreSuggestions(tracks,theme,{b:'b',none:'none'}).length,1);
+ const manual=model.select(tracks,{genre:'b',theme,mood:'calm'});assert(manual.fallback);
+});

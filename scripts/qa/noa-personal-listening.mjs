@@ -99,7 +99,22 @@ try{
    const saju=(await (await c.request.get(base+'/noa-bridge/listening.php')).json()).theme;
    assert(saju.personal&&saju.rankedMoods.length===2);assert((await page.locator('.nl-reason').innerText()).includes('내 사주 추천 · '+saju.label));
    await page.locator('[data-mood=focus]').click();assert(!(await page.locator('.nl-reason').innerText()).includes('사주'));await page.locator('[data-mood=auto]').click();assert.equal(await page.locator('[data-mood=auto]').getAttribute('aria-pressed'),'true');
-   assert((await page.locator('.nl-reason').innerText()).includes(saju.label));assert(await card.evaluate(n=>n.previousElementSibling.id==='noa-listening'));assert(await card.getByRole('link',{name:'이 기기 알림 연결'}).isVisible());await card.scrollIntoViewIfNeeded();await card.screenshot({path:out+'/fortune-'+width+'.png'});
+   assert((await page.locator('.nl-reason').innerText()).includes(saju.label));
+   const choices=page.locator('[data-genre-choice]');assert.equal(await choices.count(),3);
+   const offered=await choices.evaluateAll(nodes=>nodes.map(n=>n.dataset.genreChoice));assert.equal(new Set(offered).size,3);
+   await page.locator('.nl-genre-choices').screenshot({path:out+'/saju-genre-choices-'+width+'.png'});
+   for(const genre of offered){
+    const choice=page.locator('[data-genre-choice="'+genre+'"]');const firstTitle=await choice.locator('small').innerText();
+    await choice.click();await player.waitForFunction(g=>{
+     const active=document.querySelector('.song.selected'),audio=document.querySelector('#sound-player');
+     return active?.dataset.genre===g&&!audio.paused&&audio.currentTime>0;
+    },genre);
+    assert(firstTitle.endsWith(await player.locator('.song.selected').getAttribute('data-title')));
+    const keys=await player.evaluate(()=>collectionQueue.map(k=>[k,lookup.get(k)?.genre]));
+    assert(keys.length&&keys.every(([,g])=>g===genre));await page.goBack();
+   }
+   report.sajuGenreSelectors??=[];report.sajuGenreSelectors.push({width,distinct:offered.length,allThreeStartMatchingAudio:true});
+   assert(await card.evaluate(n=>n.previousElementSibling.id==='noa-listening'));assert(await card.getByRole('link',{name:'이 기기 알림 연결'}).isVisible());await card.scrollIntoViewIfNeeded();await card.screenshot({path:out+'/fortune-'+width+'.png'});
    const headline=await card.locator('h3').innerText();await page.reload();await card.waitFor();assert.equal(await card.locator('h3').innerText(),headline);await card.getByRole('button').click();await page.locator('.nl-consent input').uncheck();await page.getByRole('button',{name:'저장',exact:true}).click();await card.waitFor({state:'hidden'});assert(!(await page.locator('.nl-reason').innerText()).includes('내 사주 추천'));await c.close();
   }report.fortuneAndMoodFallback=true;
  }

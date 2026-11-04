@@ -15,6 +15,27 @@ const moods=el('div','nl-moods');moods.setAttribute('role','group');moods.setAtt
  mood=key;mode='now';render();
  if(key==='auto'&&!state.theme?.personal)openSettings();
 });b.dataset.mood=key;moods.append(b);}host.insertBefore(moods,status);
+const genrePanel=el('section','nl-genre-choices');genrePanel.hidden=true;
+genrePanel.setAttribute('aria-labelledby','nl-genre-choice-title');
+const genreHeading=el('h3','','내 사주로 고른 AI 추천 장르');genreHeading.id='nl-genre-choice-title';
+const genreHint=el('p','nl-note'),genreCards=el('div','nl-genre-cards');
+genrePanel.append(genreHeading,genreHint,genreCards);host.insertBefore(genrePanel,status);
+function renderGenreChoices(){
+ const visible=mode==='now'&&mood==='auto'&&state?.theme?.personal&&musicWindow;
+ genrePanel.hidden=!visible;if(!visible)return;
+ const choices=model.genreSuggestions(records,state.theme,state.genres,state.profile?.genre);
+ genrePanel.hidden=!choices.length;genreCards.replaceChildren();
+ genreHint.textContent=(choices.length===3?'재생 가능한 장르 3개를 골랐어요.':'현재 재생 가능한 장르는 '+choices.length+'개예요.')+(state.canPlay?' 장르를 누르면 추천곡부터 재생해요.':' VIP 이용권으로 들을 수 있어요.');
+ for(const {genre:choice,selection} of choices){
+  const card=el('button','nl-genre-card');card.type='button';card.dataset.genreChoice=choice;
+  card.setAttribute('aria-label',state.genres[choice]+' 추천곡 듣기');
+  const copy=el('span','nl-genre-copy');
+  copy.append(el('strong','',state.genres[choice]),el('small','',(selection.fallback?'장르 이어듣기':labels[selection.mood])+' · '+selection.rows[0].title));
+  card.append(copy,icon('play'));
+  card.onclick=()=>{genres.value=choice;genres.onchange();play(selection.rows);};
+  genreCards.append(card);
+ }
+}
 const listen=button('지금 듣기','play',()=>play(current().rows));listen.classList.add('nl-primary');listen.disabled=true;
 const summary=el('div','nl-summary');summary.append(el('p','nl-reason',''),listen);host.insertBefore(summary,status);
 const tabs=el('div','nl-tabs');tabs.setAttribute('role','group');tabs.setAttribute('aria-label','선곡 방식');for(const [key,label]of Object.entries({now:'빠른 선곡',popular:'인기곡',latest:'최신 음원',albums:'추천 앨범',library:'내 보관함'})){const b=el('button','',label);b.type='button';b.dataset.mode=key;b.onclick=()=>{mode=key;render();};tabs.append(b);}host.append(tabs);
@@ -33,7 +54,7 @@ function renderFortune(){
  fortuneCard.append(head,el('h3','',f.headline),el('p','',f.body),el('p','nl-fortune-tip','오늘의 제안 · '+f.tip),el('small','','태어난 날과 오늘의 일간을 바탕으로 가볍게 즐기는 운세예요.'),foot);
  if(!anchorHandled&&location.hash==='#noa-daily-fortune'){anchorHandled=true;requestAnimationFrame(()=>fortuneCard.scrollIntoView());}
 }
-function render(){if(!state)return;renderFortune();genres.value=genre;for(const b of moods.children)b.setAttribute('aria-pressed',String(b.dataset.mood===mood&&(mood!=='auto'||state.theme?.personal===true)));for(const b of tabs.children)b.setAttribute('aria-pressed',String(b.dataset.mode===mode));results.replaceChildren();
+function render(){if(!state)return;renderFortune();renderGenreChoices();genres.value=genre;for(const b of moods.children)b.setAttribute('aria-pressed',String(b.dataset.mood===mood&&(mood!=='auto'||state.theme?.personal===true)));for(const b of tabs.children)b.setAttribute('aria-pressed',String(b.dataset.mode===mode));results.replaceChildren();
  const selected=current(),theme=state.theme||{},autoNow=mode==='now'&&mood==='auto';
  let basis=labels[mood]||theme.label;
  if(autoNow){
@@ -44,7 +65,7 @@ function render(){if(!state)return;renderFortune();genres.value=genre;for(const 
   basis=tabs.querySelector('[aria-pressed="true"]').textContent;
  }
  host.querySelector('.nl-reason').textContent=[theme.period,state.genres[genre],basis].filter(Boolean).join(' · ');
- infoText.textContent=(theme.personal?'태어난 날과 오늘의 오행을 비교해 어울리는 분위기를 고르고, 사주의 오행 구성과 바이오리듬, 현재 시간대를 함께 살펴요.':'추천 설정에 생년월일을 저장하면 내 사주에 맞춰 선곡해요.')+' 곡 제목과 가사에서 관련 표현을 찾고, 스타일과 설명도 함께 살펴요.';
+ infoText.textContent=(theme.personal?'태어난 날과 오늘의 오행을 비교해 어울리는 분위기를 고르고, 사주의 오행 구성과 바이오리듬, 현재 시간대를 함께 살펴요.':'추천 설정에 생년월일을 저장하면 내 사주에 맞춰 선곡해요.')+' 곡 제목과 가사에서 관련 표현을 찾고, 스타일과 설명도 함께 살펴요. AI 장르 추천은 NOA 곡들에서 함께 나타나는 표현도 참고해요.';
  listen.onclick=()=>play(current().rows);listen.disabled=false;listen.replaceChildren(icon('play'),document.createTextNode(!state.member?'로그인하고 듣기':!state.canPlay?'VIP 이용권 확인':mode==='albums'?'ACT 선택하기':'지금 듣기'));
  if(!state.member){status.textContent='로그인하면 원하는 장르를 바로 듣고 개인 추천을 설정할 수 있어요.';results.hidden=true;return;}
  results.hidden=false;
