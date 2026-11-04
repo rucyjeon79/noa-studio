@@ -22,7 +22,7 @@ const mixButton=button('공감 추천 듣기','play',playWholeCatalog);mixButton
 const wholePreview=el('div','nl-preview');wholeLane.append(mixButton,wholePreview);
 const genrePanel=lane('suggested','오늘 나에게 어울리는 장르','추천 장르를 고르면 해당 장르의 곡을 최대 10곡 들어요.');
 const genreHint=el('p','nl-note'),genreCards=el('div','nl-genre-cards');genrePanel.append(genreHint,genreCards);
-const manual=lane('manual','지금 내 기분','지금 끌리는 분위기를 고르면 최대 100곡을 바로 들어요. 장르도 고르면 그 안에서 추천해요.');
+const manual=lane('manual','지금 내 기분','각 곡은 가장 잘 맞는 분위기 한 곳에서만 추천해요. 장르를 고르면 그 안에서 최대 100곡을 들어요.');
 const controls=el('div','nl-controls'),genreLabel=el('label','nl-genre-label','장르'),genres=el('select','nl-genres');
 genres.setAttribute('aria-label','듣고 싶은 장르');genreLabel.append(genres);controls.append(genreLabel);
 let manualGenre='',manualMood='';
@@ -41,16 +41,15 @@ function playWholeCatalog(){
  if(!state.theme?.personal){openSettings(true);return;}
  scope='all';mode='now';mood='auto';play(listeningPlan().whole.rows,true);
 }
-let cachedMoodRows,cachedMoodPeriod,moodMixes=new Map();
+let cachedMoodRows,cachedMoodPeriod,moodCollection;
 function manualSelection(){
  if(!manualMood||!catalogReady())return {rows:[]};
- if(!manualGenre){
-  const period=state.theme.localDate+'|'+state.theme.period;
-  if(cachedMoodRows!==records||cachedMoodPeriod!==period){moodMixes.clear();cachedMoodRows=records;cachedMoodPeriod=period;}
-  if(!moodMixes.has(manualMood))moodMixes.set(manualMood,model.wholeMoodMix(records,manualMood,state.theme));
-  return moodMixes.get(manualMood);
+ const period=state.theme.localDate+'|'+state.theme.period;
+ if(cachedMoodRows!==records||cachedMoodPeriod!==period){
+  moodCollection=model.moodCollections(records,state.theme,(musicWindow||window).NoaBrowse?.orderFor);
+  cachedMoodRows=records;cachedMoodPeriod=period;
  }
- return model.manualGenre(records,manualGenre,(musicWindow||window).NoaBrowse?.orderFor,manualMood);
+ return moodCollection(manualMood,manualGenre);
 }
 function manualRows(){return manualSelection().rows;}
 function startManual(rows){
@@ -82,12 +81,7 @@ function renderManual(){
  for(const b of moods.children)b.setAttribute('aria-pressed',String(b.dataset.mood===manualMood));
  const selected=manualSelection();manualPlay.disabled=!manualMood||!selected.rows.length;
  manualPlay.lastChild.textContent=selected.rows.length?labels[manualMood]+' '+selected.rows.length+'곡 듣기':'곡 듣기';
- let note='';
- if(manualMood&&catalogReady()){
-  if(!selected.rows.length)note='재생 가능한 곡이 없어요.';
-  else if(manualGenre&&selected.fallback)note='해당 분위기의 곡이 부족해 선택한 장르의 곡을 보여드려요.';
-  else if(!manualGenre&&selected.matched<selected.rows.length)note='제목·가사에서 분위기가 맞는 곡을 먼저 고르고, 나머지는 장르별 어울림을 참고해 채웠어요.';
- }
+ const note=manualMood&&catalogReady()&&!selected.rows.length?'이 조건에 맞는 곡이 아직 없어요. 다른 분위기나 장르를 선택해 주세요.':'';
  preview(manualPreview,selected.rows,startManual,note);
  return selected;
 }

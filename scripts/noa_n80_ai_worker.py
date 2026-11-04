@@ -1,5 +1,5 @@
 """Run at most three N80 text tasks. No provider credentials or conversation bodies leave the host."""
-import hashlib,hmac,json,os,secrets,stat,sys,time,urllib.request
+import hashlib,hmac,json,os,secrets,stat,subprocess,sys,time,urllib.request
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect
@@ -28,9 +28,14 @@ def signed_tick(key,action,body=b'{}'):
 
 def refresh_index(verify):
     key=worker_key()
-    result=signed_tick(key,'n80_listening_index',b'{"verifyCatalog":true}' if verify else b'{}')
+    audit=verify and os.getenv('NOA_MOOD_COLLECTIONS')=='true'
+    options={'verifyCatalog':verify,'verifyMoods':audit}
+    result=signed_tick(key,'n80_listening_index',json.dumps(options).encode())
     print('N80_LISTENING_INDEX',json.dumps({k:result[k] for k in ('indexed','analyzed','reused','written','removed','publicVideos') if k in result}))
     if verify and (result['indexed']<1 or result['publicVideos']<1):raise RuntimeError('no_playable_listening_catalog')
+
+    if audit:
+        subprocess.run(['node','scripts/qa/noa-mood-queue-audit.cjs'],input=json.dumps(result['moodCatalog']),text=True,check=True)
 
 def main():
     with urllib.request.urlopen(ORIGIN+'/noa-ainoa.php?action=status',timeout=20) as r:

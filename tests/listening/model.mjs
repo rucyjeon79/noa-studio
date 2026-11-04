@@ -129,3 +129,31 @@ test('gentle driving, dynamic driving and sleep prioritize different indexed son
   assert.equal(model.wholeMoodMix(rows,'sleep').rows.at(-1).key,'rhythm');
  }
 });
+
+test('manual moods select one evidence-backed home per recording across aliases, genres and playback sources',()=>{
+ const records=[
+  {key:'coast',genre:'pop',audio:'/coast',moodScores:{calm:1,cruise:5}},
+  {key:'road',genre:'rock',audio:'/road',audioSha:'shared',moodScores:{energy:1,drive:4}},
+  {key:'road-alias',genre:'pop',audio:'/alias',audioSha:'shared',moodScores:{energy:2}},
+  {key:'learned',genre:'pop',audio:'/sleep',moodAffinity:{sleep:.76,calm:.52}},
+  {key:'ambiguous',genre:'pop',audio:'/same',moodAffinity:{sleep:.63,calm:.61}},
+  {key:'weak',genre:'pop',audio:'/weak',moodAffinity:{sleep:.42}},
+  {key:'unclassified',genre:'pop',audio:'/other'},
+  {key:'lyrics',canonicalRecordKey:'duet',moodScores:{comfort:5}},
+  {key:'duet-file',genre:'pop',audio:'/duet',canonicalRecordKey:'duet'},
+  {key:'walk',genre:'pop',publicVideoId:'abcdef12345',moodScores:{walk:4}},
+  {key:'walk-copy',genre:'rock',publicVideoId:'abcdef12345',moodScores:{energy:1}},
+ ];
+ const pick=model.moodCollections(records);
+ for(const [mood,keys] of Object.entries({calm:[],energy:[],focus:[],drive:['road'],cruise:['coast'],comfort:['duet-file'],sleep:['learned'],walk:['walk']})){
+  assert.deepEqual(pick(mood).rows.map(r=>r.key),keys);
+ }
+ assert.deepEqual(pick('drive','pop').rows.map(r=>r.key),['road-alias']);
+ assert.deepEqual(pick('walk','rock').rows.map(r=>r.key),['walk-copy']);
+ assert.deepEqual(pick('sleep','rock').rows,[]);
+});
+test('100 is a ceiling per mood and genre selection considers all eligible tracks before the cap',()=>{
+ const records=Array.from({length:115},(_,i)=>({key:'r'+i,genre:i<110?'a':'b',audio:'/a/'+i,moodScores:{focus:125-i}}));
+ const pick=model.moodCollections(records);assert.equal(pick('focus').rows.length,100);
+ assert.equal(pick('focus','b').rows.length,5);assert.equal(pick('calm').rows.length,0);
+});

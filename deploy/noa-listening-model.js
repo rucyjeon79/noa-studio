@@ -108,6 +108,55 @@ function wholeMoodMix(records,mood,theme={}){
  return rankMix(catalog(records,null,true),theme,wholeMixLimit,mood);
 }
 function recordingId(row){return row.audioSha||row.browseIdentity||row.canonicalRecordKey||row.orderKey||row.key;}
+// Each playable recording has one home among the eight user-selected moods.
+function moodCollections(records,theme={},orderFor){
+ const groups=new Set(),identities=new Map();
+ for(const row of records){
+  if(row.kind==='playlist'||row.video)continue;
+  const canonical=row.browseIdentity||row.canonicalRecordKey||row.orderKey||row.key;
+  const ids=['key:'+canonical];
+  if(row.audioSha)ids.push('sha:'+row.audioSha);
+  const videoId=/^[A-Za-z0-9_-]{11}$/.test(row.publicVideoId||'')?row.publicVideoId:'';
+  if(videoId)ids.push('video:'+videoId);
+  if(row.audio)ids.push('audio:'+row.audio);
+  const known=[...new Set(ids.map(id=>identities.get(id)).filter(Boolean))];
+  const group=known[0]||{ids:new Set(),rows:[]};
+  groups.add(group);
+  for(const other of known.slice(1)){
+   for(const id of other.ids){group.ids.add(id);identities.set(id,group);}
+   group.rows.push(...other.rows);groups.delete(other);
+  }
+  for(const id of ids){group.ids.add(id);identities.set(id,group);}
+  group.rows.push(row);
+ }
+ const collections=Object.fromEntries(moodKeys.map(m=>[m,[]]));
+ const scenes=new Set(['cruise','drive','walk','sleep']);
+ const rotation=(theme.localDate||'')+(theme.period||'');
+ function hash(text){let h=2166136261;for(const c of text)h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0;}
+ for(const group of groups){
+  const playable=group.rows.filter(r=>r.audio||/^[A-Za-z0-9_-]{11}$/.test(r.publicVideoId||''));
+  if(!playable.length)continue;
+  const key=group.rows.map(r=>r.canonicalRecordKey||r.orderKey||r.key).sort()[0];
+  const fits=moodKeys.map(mood=>{
+   const direct=Math.max(0,...group.rows.map(r=>moodScore(r,mood)));
+   const affinity=Math.max(0,...group.rows.map(r=>Math.min(1,r.moodAffinity?.[mood]||0)));
+   return {mood,direct,affinity,tie:hash(mood+'|'+key)};
+  }).sort((a,b)=>b.direct-a.direct||b.affinity-a.affinity||Number(scenes.has(b.mood))-Number(scenes.has(a.mood))||a.tie-b.tie);
+  const [best,next]=fits;
+  // In the absence of explicit cues require a strong, distinctive learned match.
+  if(!best.direct&&(best.affinity<.60||best.affinity-next.affinity<.12))continue;
+  collections[best.mood].push({playable,score:best.direct+best.affinity*.75,order:hash(rotation+'|'+key)});
+ }
+ return function selection(mood,genre){
+  const items=[];
+  for(const item of collections[mood]||[]){
+   const row=genre?item.playable.find(r=>r.genre===genre):item.playable[0];
+   if(row)items.push({row,score:item.score,order:item.order});
+  }
+  items.sort((a,b)=>b.score-a.score||(genre&&orderFor?orderFor(a.row,b.row):0)||a.order-b.order||a.row.key.localeCompare(b.row.key));
+  return {rows:items.slice(0,wholeMixLimit).map(item=>item.row)};
+ };
+}
 function manualGenre(records,genre,orderFor,mood){
  const rows=catalog(records,genre);
  if(orderFor)rows.sort(orderFor);
@@ -160,5 +209,5 @@ function genreSuggestions(records,theme,genres,preferred,orderFor){
  choices.sort((a,b)=>b.score-a.score||Number(b.genre===preferred)-Number(a.genre===preferred)||a.genre.localeCompare(b.genre));
  return choices.slice(0,3);
 }
-const api={catalog,manualGenre,recordingId,select,albums,wholeMoodMix,wholeCatalogMix,recommendedGenreMix,wholeMixLimit,genreMixLimit,genreSuggestions,normalizeBirthDate};if(typeof module==='object')module.exports=api;else root.NoaListeningModel=api;
+const api={catalog,moodCollections,manualGenre,recordingId,select,albums,wholeMoodMix,wholeCatalogMix,recommendedGenreMix,wholeMixLimit,genreMixLimit,genreSuggestions,normalizeBirthDate};if(typeof module==='object')module.exports=api;else root.NoaListeningModel=api;
 })(typeof window==='undefined'?globalThis:window);
