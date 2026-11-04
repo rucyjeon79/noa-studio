@@ -1,11 +1,30 @@
 name: NOA home section placement
 on:
+  pull_request:
+    paths: ['.github/workflows/noa-home-notice-placement.yml', 'scripts/qa/noa-home-banner-order.mjs']
   push:
     branches: [main]
     paths: ['.github/workflows/noa-home-notice-placement.yml']
 permissions: {contents: read}
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Check the initial and interactive homepage
+        run: |
+          php -l deploy/noa-app/home.php
+          node --check deploy/noa-ui.js
+          python tests/sitemap/home_patch_test.py
+          php -r 'define("_GNUBOARD_", true); function nmb_rules(){return true;} include "deploy/noa-app/home.php";' > "$RUNNER_TEMP/home.html"
+          npm install --prefix "$RUNNER_TEMP/banners" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-home-banner-order.mjs "$RUNNER_TEMP/banners/check.mjs"
+          NOA_BANNER_CANDIDATE="$RUNNER_TEMP/home.html" node "$RUNNER_TEMP/banners/check.mjs"
   publish:
+    if: github.event_name == 'push'
+    needs: verify
     runs-on: ubuntu-latest
     environment: production
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
@@ -25,7 +44,7 @@ jobs:
           PYTHONPATH=scripts python - <<'PY'
           import sys
           import noa_ainoa_deploy as release
-          release.FILES={'noa-app/home.php':'deploy/noa-app/home.php'}
+          release.FILES={'noa-app/home.php':'deploy/noa-app/home.php','noa-ui.js':'deploy/noa-ui.js'}
           release.NEW=set()
           try:
               release.main()
@@ -46,3 +65,19 @@ jobs:
           assert 'id="noa-ranking-status"' in section and html.count('id="noa-ranking-status"') == 1
           assert '/noa-amt-fan.js' in html
           PY
+      - name: Verify the three banner positions on the operating homepage
+        id: banners
+        run: |
+          npm install --prefix "$RUNNER_TEMP/banners" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-home-banner-order.mjs "$RUNNER_TEMP/banners/check.mjs"
+          node "$RUNNER_TEMP/banners/check.mjs"
+      - name: Restore the two homepage files if verification fails
+        if: failure() && steps.banners.outcome == 'failure'
+        run: |
+          PYTHONPATH=scripts python - <<'PYTHON'
+          import sys
+          import noa_ainoa_deploy as release
+          release.FILES={'noa-app/home.php':'deploy/noa-app/home.php','noa-ui.js':'deploy/noa-ui.js'}
+          sys.argv.append('rollback')
+          release.main()
+          PYTHON
