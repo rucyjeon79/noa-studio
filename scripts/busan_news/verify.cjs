@@ -24,7 +24,9 @@ async function assertMoves(page) {
       const strip=page.locator('#contentsWrap > .kvWrap + #bn-news-strip');
       await strip.waitFor({state:'visible'});
       const feed=await (await page.request.get(await strip.getAttribute('data-feed'))).json();
-      assert(await page.locator('.sideGnb a').filter({hasText:'챗지기자 뉴스'}).count(),'news menu missing');
+      const boardMenu=page.locator('.sideGnb a[href*="bo_table=busan_news"]').filter({hasText:'OpenAI 뉴스룸'}).first();
+      assert(await boardMenu.count(),'renamed news menu missing');
+      const boardURL=await boardMenu.evaluate(a=>a.href);
       assert(!(await strip.innerText()).includes('챗지기자'),'fixed reporter caption');
       const fits=await strip.evaluate(el=>el.getBoundingClientRect().right<=innerWidth+1 &&
         el.parentElement.querySelector('.grid-container')?.getBoundingClientRect().top>=el.getBoundingClientRect().bottom-1);
@@ -76,6 +78,7 @@ async function assertMoves(page) {
         }
         const link=article.url;
         await page.goto(link,{waitUntil:'domcontentloaded'});
+        await page.getByRole('heading',{name:'OpenAI 뉴스룸',exact:true}).first().waitFor({state:'visible'});
         const card=page.locator('#bo_v_con a.bn-source-card');
         await card.waitFor({state:'visible'});
         assert.equal(await card.count(),1);
@@ -91,6 +94,10 @@ async function assertMoves(page) {
       } else {
         await strip.getByText('최근 한 달 새 소식이 없습니다').waitFor();
       }
+      await page.goto(boardURL,{waitUntil:'domcontentloaded'});
+      await page.getByRole('heading',{name:'OpenAI 뉴스룸',exact:true}).first().waitFor({state:'visible'});
+      assert((await page.title()).includes('OpenAI 뉴스룸'));
+      console.log('PASS newsroom menu and board title',width,boardURL);
       await page.close();
     }
   } finally {await browser.close();}
