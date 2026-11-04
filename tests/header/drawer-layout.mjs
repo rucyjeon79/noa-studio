@@ -14,9 +14,13 @@ async function checkFooter(page,width,theme,home=false){
  const scene=footer.locator('.noa-footer-scene'),image=scene.locator('.noa-footer-landscape');
  await image.evaluate(img=>img.decode());
  assert((await image.getAttribute('src')).includes(theme==='noa-studio'?'night-coast':'day-coast'));
- const row=await heading.boundingBox(),choices=await picker.boundingBox(),caption=await heading.locator('.noa-sidebar-signature').boundingBox();
+ const header=await heading.evaluate(el=>{
+  const r=e=>{const b=e.getBoundingClientRect();return {x:b.x,y:b.y,width:b.width,height:b.height};};
+  return {row:r(el),choices:r(el.querySelector('.noa-footer-themes')),caption:r(el.querySelector('.noa-sidebar-signature'))};
+ });
+ const {row,choices,caption}=header;
  assert(Math.abs(row.x+row.width-choices.x-choices.width)<2&&caption.x+caption.width<=choices.x+1);
- assert(caption.y+caption.height>=choices.y && choices.y+choices.height>=caption.y);
+ assert(caption.y+caption.height>=choices.y && choices.y+choices.height>=caption.y,JSON.stringify({width,theme,header}));
  const links=scene.locator('nav a');
  assert.deepEqual(await links.allTextContents(),['회사소개','세계관','약관','이용방침']);
  assert.equal(await footer.locator('.noa-sidebar-legal').count(),1);
