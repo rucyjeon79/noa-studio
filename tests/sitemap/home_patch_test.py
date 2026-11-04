@@ -4,15 +4,16 @@ Notice content and disclosure geometry are checked by the native and browser sui
 import argparse,re,subprocess
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
-# Approved hero-first home, partner banner positions and personal listening and optional daily fortune integration (#355).
+# Home immediately before repositioning the three existing banners.
 # Preserve the current accepted page instead of comparing against the superseded layout.
-BASE_COMMIT='65358d83440a78fbceff4c8078f33ff0f7dbb3d2'
+BASE_COMMIT='61a9eaaee11983cecef4c3948ee9a76495a8c7c9'
 parser=argparse.ArgumentParser();parser.add_argument('--host-source',type=Path);args=parser.parse_args()
 candidate=(ROOT/'deploy/noa-app/home.php').read_bytes()
 baseline=args.host_source.read_bytes()if args.host_source else subprocess.check_output(['git','show',BASE_COMMIT+':deploy/noa-app/home.php'],cwd=ROOT)
 # Exact user-authorized banner include; every other non-hero byte remains guarded.
 MONTHLY_INCLUDE=b"<?php if(is_file(__DIR__.'/monthly-banner.php'))require __DIR__.'/monthly-banner.php';?>\n"
 def outside_approved_hero(source):
+ source=source.replace(b'</section>\n'+MONTHLY_INCLUDE+b'<section id="noa-daily-fortune"',b'</section><section id="noa-daily-fortune"')
  source=source.replace(MONTHLY_INCLUDE,b'')
  # Approved ownership verification tags (#270 and Google registration), not layout.
  # Strip only the exact registered values; arbitrary tags or content still fail.
@@ -45,7 +46,10 @@ addition=re.findall(rb"<\?php if\(is_file\(dirname\(__DIR__\)\.'/noa-sitemap[.]p
 assert len(addition)==1 and hero_start<candidate.index(addition[0])<hero_end,'guarded sitemap must remain inside hero'
 community=re.findall(rb'<section class="noa-section noa-home-community" data-home-section="community"[^>]*>[^\n]*</section>\n',candidate)
 assert candidate.count(MONTHLY_INCLUDE)==1,'one guarded monthly banner include required'
-assert len(community)==1 and candidate[hero_end+len(b'</section>'):].startswith(b'\n'+MONTHLY_INCLUDE+b'<section class="noa-section noa-notices"'),'monthly benefits must follow hero, then native notices'
+assert len(community)==1 and candidate[hero_end+len(b'</section>'):].startswith(b'\n<section class="noa-section noa-notices"'),'native notices follow the hero in the initial HTML'
+assert MONTHLY_INCLUDE+b'<section id="noa-daily-fortune"' in candidate
+assert b"<?php noa_home_banner('youtube');?>\n<section class=\"noa-section noa-story-entrance\"" in candidate
+assert b"<?php noa_home_banner('amt');?>\n<section class=\"noa-section\" data-home-section=\"collections\"" in candidate
 assert candidate.index(b"<?php noa_home_banner('amt');?>")<candidate.index(community[0]),'community must follow the AMT banner'
 assert candidate.count(b'data-noa-community-home')==1,'one native per-board title projection required'
 assert not re.search(rb'TOP\s*10',candidate,re.I),'removed TOP 10 labels returned'

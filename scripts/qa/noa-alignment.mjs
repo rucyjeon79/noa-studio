@@ -55,8 +55,8 @@ try{
    }));
    assert.equal(cards.length,10);
    for(const c of cards){assert.equal(c.titleHeight,20);assert(c.gap>=0&&c.gap<=5,JSON.stringify(c));assert(Math.abs(c.heartX-c.titleX)<1,JSON.stringify(c));const peer=cards.find(p=>Math.abs(p.top-c.top)<1);assert(Math.abs(peer.heartY-c.heartY)<1,JSON.stringify({peer,c}));}
-   const banners=await page.locator('[data-home-banner]').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return{kind:e.dataset.homeBanner,after:e.previousElementSibling?.dataset.homeSection,url:e.href,target:e.target,rel:e.rel,x:r.x,width:r.width,height:r.height,icon:!!e.querySelector('svg'),overflow:e.scrollWidth>e.clientWidth};}));
-   assert.deepEqual(banners.map(b=>[b.kind,b.after]),[['goods','notices'],['youtube','world'],['amt','collections']]);
+   const banners=await page.locator('[data-home-banner]').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return{kind:e.dataset.homeBanner,after:e.closest('[data-home-section]')?.dataset.homeSection||e.previousElementSibling?.dataset.homeSection,before:e.nextElementSibling?.dataset.homeSection,url:e.href,target:e.target,rel:e.rel,x:r.x,width:r.width,height:r.height,icon:!!e.querySelector('svg'),overflow:e.scrollWidth>e.clientWidth};}));
+   assert.deepEqual(banners.map(b=>[b.kind,b.kind==='goods'?b.after:b.before]),[['goods','notices'],['youtube','world'],['amt','collections']]);
    assert.equal(banners[0].url,'https://marpple.shop/kr/jr_lifestyle');assert.equal(banners[1].url,'https://youtube.com/@ainoa_ramjunpapa?sub_confirmation=1');assert.equal(banners[2].url,'https://www.aimusictown.com/creators/ainoa');
    for(const b of banners){assert(b.icon&&!b.overflow&&b.target==='_blank'&&b.rel.includes('noopener'));assert(Math.abs(b.x-banners[0].x)<1&&Math.abs(b.width-banners[0].width)<1&&Math.abs(b.height-banners[0].height)<1,JSON.stringify(banners));}
    if(await page.locator('.ainoa-message').isVisible())await page.locator('.ainoa-message').waitFor({state:'hidden',timeout:16000});

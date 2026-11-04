@@ -58,7 +58,7 @@ jobs:
             voice-proof/
           retention-days: 7
   deploy:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[home-banner-order]')
     needs: verify
     runs-on: ubuntu-latest
     environment: production
@@ -87,11 +87,11 @@ jobs:
           import urllib.request,urllib.error
           from pathlib import Path
           with urllib.request.urlopen('https://noastudio.ai.kr/?monthly-audit=20261028') as r:html=r.read().decode()
-          assert html.index('data-home-section="hero"') < html.index('data-home-section="monthly-benefits"') < html.index('data-home-section="notices"')
+          assert html.index('id="noa-listening"') < html.index('data-home-section="monthly-benefits"') < html.index('id="noa-daily-fortune"')
           assert all(x in html for x in ['매월 쏟아지는 10배의 혜택.','1,000P','500P','300P','100P'])
           try:urllib.request.urlopen('https://noastudio.ai.kr/noa-app/monthly-banner.php');raise AssertionError('include_public')
           except urllib.error.HTTPError as e:assert e.code==403
-          Path('ainoa-proof/monthly-public.json').write_text('{"bannerAfterHero":true,"directIncludeDenied":true}')
+          Path('ainoa-proof/monthly-public.json').write_text('{"bannerBeforeFortune":true,"directIncludeDenied":true}')
           print('MONTHLY_LIVE_BANNER_AND_DIRECT_INCLUDE_OK')
           PY
       - uses: actions/upload-artifact@v4
