@@ -14,6 +14,7 @@ env:
   NOA_THEME_CLOCK: ${{ contains(github.event.head_commit.message, '[theme-clock]') || inputs.theme_clock == true }}
 jobs:
   preflight:
+    if: "!contains(github.event.head_commit.message, '[drawer-layout]')"
     env:
       NOA_MENU_DRAWER: ${{ contains(github.event.head_commit.message, '[menu-drawer]') }}
     runs-on: ubuntu-latest

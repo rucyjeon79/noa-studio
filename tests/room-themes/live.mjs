@@ -374,9 +374,9 @@ async function verifyExpansiveShell(p,width,height,mode){
  assert.equal(await drawer.isVisible(),pinned);await all.click();assert.equal(await all.getAttribute('aria-expanded'),'true');
  const search=p.locator('#noa-drawer-search');await search.fill('공지');assert.equal(await drawer.locator('.noa-drawer-secondary a:visible').count(),1);
  await search.fill('없는메뉴xyz');assert(await drawer.locator('.noa-menu-empty').isVisible());await search.fill('');
- assert.equal(await drawer.locator('.noa-menu a:visible').count(),5);assert.equal(await drawer.locator('[data-noa-nav=music]').getAttribute('aria-disabled'),'true');
+ assert.equal(await drawer.locator('.noa-drawer-category>a:visible').count(),6);assert.equal(await drawer.locator('[data-noa-nav=music]').getAttribute('aria-disabled'),'true');
  await drawer.screenshot({path:output+'/menu-'+mode+'-'+width+'.png'});
- const box=await drawer.boundingBox();if(pinned){assert(box.width>=220&&box.width<300);}else assert(Math.abs(box.width-width*.7)<2&&Math.abs(box.x)<2);
+ const box=await drawer.boundingBox();if(pinned){assert(box.width>=220&&box.width<300);}else assert(Math.abs(box.width-width*.7)<2&&Math.abs(box.x-8)<2);
  await p.keyboard.press('Escape');if(pinned)assert(await drawer.isVisible());else await drawer.waitFor({state:'hidden'});
  console.log('EXPANSIVE_GEOMETRY',JSON.stringify({width,mode,...geometry}));
 }

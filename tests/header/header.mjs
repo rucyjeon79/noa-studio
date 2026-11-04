@@ -53,7 +53,7 @@ try{for(const [width,height]of [[320,900],[390,900],[768,900],[1600,900],[2300,9
   assert(!await drawer.evaluate(d=>d.matches(':modal')));assert(Math.abs(frame.x-Math.max(0,(width-height*16/9)/2))<=1);assert(frame.width>=220&&frame.width<300);
   await p.keyboard.press('Escape');assert(await drawer.isVisible());
  }else{
-  assert(Math.abs(frame.width-width*.7)<=1&&Math.abs(frame.x)<=1);assert(await p.locator('#noa-account-bar').evaluate(e=>e.getBoundingClientRect().bottom<=1));
+  assert(Math.abs(frame.width-width*.7)<=1&&Math.abs(frame.x-8)<=1);assert(await p.locator('#noa-account-bar').evaluate(e=>e.getBoundingClientRect().bottom<=1));
   assert.equal(await drawer.evaluate(e=>getComputedStyle(e).animationDuration),'1s');await p.mouse.click(width-4,120);await drawer.waitFor({state:'hidden'});assert(await trigger.evaluate(el=>el===document.activeElement));
  }
  await p.locator('[data-footer-theme=noa-ivory]').click();assert.equal(await p.locator('dialog:modal').count(),0);assert.equal(await p.locator('html').getAttribute('data-noa-theme'),'noa-ivory');
