@@ -25,10 +25,25 @@ foreach(['guest'=>1,'member'=>3,'admin'=>10,'two'=>2,'four'=>4,'five'=>5,'six'=>
     foreach($groups as $id=>$group){
         must((bool)$group['routes'],'empty category');
         $html.='<section class="noa-site-map"><h2 id="map-'.$esc($id).'">'.$esc($group['title']).'</h2>';
+        $last=-1;$ranks=[];
         foreach($group['routes'] as $r){
             must($r[6]==='','denied route returned');$labels[$r[0]]=$r[7];
-            $html.='<a class="noa-site-map-link" data-noa-route="'.$esc($r[0]).'" href="'.$esc($r[3]).'" data-noa-access-label="'.$esc($r[7]).'"><strong>'.$esc($r[1]).'</strong><small>'.$esc($r[2]).'</small></a>';
+            must($r[8]>=$last,'higher requirement must follow lower requirements in '.$id);$last=$r[8];$ranks[$r[0]]=$r[8];
+            if($r[7]!==''){
+                $badge=noa_sitemap_access_icon($r[8],$r[7]);
+                must(str_contains($badge,'role="img"')&&str_contains($badge,'aria-label="'.$esc($r[7]).'"'),'icon needs accessible restrictions');
+                must(trim(strip_tags($badge))==='','grade badge must be an icon, not text');
+            }
+            $html.='<a class="noa-site-map-link" data-noa-route="'.$esc($r[0]).'" href="'.$esc($r[3]).'" data-noa-access-label="'.$esc($r[7]).'" data-noa-access-rank="'.$r[8].'"><strong>'.$esc($r[1]).'</strong>'.noa_sitemap_access_icon($r[8],$r[7]).'<small>'.$esc($r[2]).'</small></a>';
         }
+        $original=array_values(array_filter(noa_sitemap_registry()[$id]['routes']??[],fn($r)=>isset($ranks[$r[0]])));
+        foreach(array_unique($ranks) as $rank){
+            $before=array_column(array_values(array_filter($original,fn($r)=>$ranks[$r[0]]===$rank)),0);
+            $after=array_values(array_filter(array_keys($ranks),fn($key)=>$ranks[$key]===$rank&&!str_starts_with($key,'board-')));
+            if($original)must($before===$after,'same-grade routes changed order');
+        }
+        if($id==='collections'&&isset($ranks['weatherCare']))must(array_key_last($ranks)==='weatherCare','VIP weather must be below the other music entries');
+        if($id==='account'&&isset($ranks['creatorAI']))must(array_key_last($ranks)==='creatorAI','AI creation must be below member and creator entries');
         $html.='</section>';
     }
     foreach(['creatorApply'=>$level<=4,'storyRequest'=>$access['write'],'my'=>$level>=2,'weatherCare'=>in_array($level,[4,5,6,8,9,10],true),'catalog'=>$access['music'],'playlists'=>$access['music'],'creator'=>$access['creator'],'creatorAI'=>$access['creatorAI'],'libraryAdmin'=>$super,'login'=>!$member,'board-fixture_board'=>$super||$role==='five'] as $id=>$allowed){
@@ -39,13 +54,19 @@ foreach(['guest'=>1,'member'=>3,'admin'=>10,'two'=>2,'four'=>4,'five'=>5,'six'=>
     if(isset($labels['board-fixture_board']))must($labels['board-fixture_board']==='Lv.5 이상 · 그룹 승인','board restrictions');
     if(isset($labels['weatherCare']))must($labels['weatherCare']==='Lv.4·5·6·8·9·10','weather levels');
     if(isset($labels['creatorAI']))must($labels['creatorAI']==='Lv.8 / 최고관리자','creator AI levels');
-    if(in_array($role,['guest','member','admin'],true)){
+    if(in_array($role,['guest','member','eight','admin'],true)){
         file_put_contents($out.'/drawer-'.$role.'.html',$html.'</main>');
         file_put_contents($out.'/drawer-'.$role.'-access.json',json_encode($access,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR));
     }
 }
+// A lower read requirement on the native request board must not erase the write grade.
+$request=['bo_table'=>'song_request','bo_list_level'=>1,'bo_read_level'=>1,'bo_use_cert'=>'','gr_use_access'=>0];
+$access=nam_access(['mb_id'=>'writer','mb_level'=>3]);$GLOBALS['noa_access']=$access;
+$groups=noa_sitemap_member_directory(noa_sitemap_visible_groups($root,'member',[$request]),$access,[$request]);
+$requestRows=array_column($groups['collections']['routes'],null,0);
+must($requestRows['storyRequest'][8]===3&&$requestRows['storyRequest'][7]==='Lv.3 이상','request write grade lost');
 foreach([3=>4,7=>8] as $base=>$paid){
     $now=time();$grant=['baseLevel'=>$base,'status'=>'active','until'=>$now];$effective=ns_effective_level($paid,$grant,$now);
     must($effective===$base&&!nam_access(['mb_id'=>'expired','mb_level'=>$effective])['weatherVip'],'expired VIP remains visible');
 }
-echo "DRAWER_ACCESS_OK levels 1-10, administrator identity, board conditions and expired grants\n";
+echo "DRAWER_ACCESS_OK levels 1-10, stable grade order, icon-only badges, board conditions and expired grants\n";

@@ -55,7 +55,7 @@ try{
     // Use consistent member data for every UI that shares the session. No real credentials.
     if(member){
      const admin=width===1440;
-     const caps=JSON.parse(readFileSync(fileURLToPath(new URL('./drawer-'+(admin?'admin':'member')+'-access.json',import.meta.url)),'utf8'));
+     const caps=JSON.parse(readFileSync(fileURLToPath(new URL('./drawer-'+(admin?'admin':width===390?'eight':'member')+'-access.json',import.meta.url)),'utf8'));
      await page.route('**/noa-shop.php',async route=>{
       const upstream=await route.fetch();
       const html=(await upstream.text()).replace(/(<script[^>]*id="noa-access"[^>]*>)([^<]*)(<\/script>)/,(_m,a,data,b)=>a+JSON.stringify({...JSON.parse(data),...caps})+b);
@@ -68,7 +68,7 @@ try{
      });
      await page.route('**/noa-ainoa.php?action=welcome',r=>r.fulfill({json:{ok:true,member:true,displayName:'별무리',capabilities:caps,accountKey:'drawer-fixture'}}));
     }else await page.unrouteAll({behavior:'wait'});
-    const fixtureRole=member?(width===1440?'admin':'member'):'guest';
+    const fixtureRole=member?(width===1440?'admin':width===390?'eight':'member'):'guest';
     const fixture=readFileSync(fileURLToPath(new URL('./drawer-'+fixtureRole+'.html',import.meta.url)),'utf8');
     if(phase==='candidate'||member)await page.route('**/noa-sitemap.php?view=mine',r=>r.fulfill({contentType:'text/html; charset=utf-8',body:fixture}));
     await page.goto('https://noastudio.ai.kr'+path,{waitUntil:'domcontentloaded'});
@@ -120,11 +120,17 @@ try{
     assert.equal(await map.locator('.noa-drawer-map-link').getAttribute('href'),minePath);
     const expected=await page.evaluate(markup=>{
      const t=document.createElement('template');t.innerHTML=markup;
-     return [...t.content.querySelectorAll('main[data-noa-member-directory] .noa-site-map')].map(g=>[g.querySelector('h2').id,...[...g.querySelectorAll('[data-noa-route]')].map(a=>[a.dataset.noaRoute,a.getAttribute('href'),a.dataset.noaAccessLabel||''])]);
+     return [...t.content.querySelectorAll('main[data-noa-member-directory] .noa-site-map')].map(g=>[g.querySelector('h2').id,...[...g.querySelectorAll('[data-noa-route]')].map(a=>[a.dataset.noaRoute,a.getAttribute('href'),a.dataset.noaAccessLabel||'',Number(a.dataset.noaAccessRank)||0])]);
     },markup);
     assert(expected.length>0);
-    const actual=await map.locator('.noa-drawer-category').evaluateAll(gs=>gs.map(g=>[g.dataset.mapGroup,...[...g.querySelectorAll('a')].map(a=>[a.dataset.drawerRoute,a.getAttribute('href'),a.querySelector('.noa-route-level')?.textContent||''])]));
+    const actual=await map.locator('.noa-drawer-category').evaluateAll(gs=>gs.map(g=>[g.dataset.mapGroup,...[...g.querySelectorAll('a')].map(a=>[a.dataset.drawerRoute,a.getAttribute('href'),a.querySelector('.noa-route-level')?.getAttribute('aria-label')||'',Number(a.dataset.accessRank)||0])]));
     assert.deepEqual(actual,expected);
+    for(const [, ...routes] of actual){const ranks=routes.map(r=>r[3]);assert.deepEqual(ranks,[...ranks].sort((a,b)=>a-b),'high-grade menus must follow low-grade menus');}
+    const badges=await map.locator('.noa-route-level').evaluateAll(nodes=>nodes.map(el=>{
+     const box=el.getBoundingClientRect(),row=el.closest('a').getBoundingClientRect(),frame=el.querySelector('.noa-rank-badge'),mark=frame.firstElementChild;
+     return {text:el.textContent,role:el.getAttribute('role'),label:el.getAttribute('aria-label'),title:el.title,icon:!!mark.querySelector('svg')||getComputedStyle(mark).backgroundImage!=='none',width:box.width,height:box.height,aligned:box.right<=row.right+1&&box.left>=row.left&&box.top>=row.top&&box.bottom<=row.bottom+1};
+    }));
+    for(const b of badges){assert.equal(b.text,'');assert.equal(b.role,'img');assert(b.label&&b.title===b.label&&b.icon&&b.width===22&&b.height===24&&b.aligned,JSON.stringify(b));}
     for(const group of await map.locator('.noa-drawer-category').all()){
      const icon=group.locator('h3 svg');assert(await icon.isVisible());
      const marker=await icon.boundingBox(),rows=await group.locator('.noa-drawer-secondary a').evaluateAll(anchors=>anchors.map(a=>{
@@ -138,8 +144,8 @@ try{
     }
     assert.equal(await map.locator('a[aria-disabled=true],[data-noa-condition]').count(),0);
     assert.equal(await map.locator('[data-drawer-route=my]').count(),member?1:0);
-    assert.equal(await map.locator('[data-drawer-route=creatorAI]').count(),fixtureRole==='admin'?1:0);
-    if(member)assert.equal(await map.locator('[data-drawer-route=my] .noa-route-level').textContent(),'Lv.2 이상');
+    assert.equal(await map.locator('[data-drawer-route=creatorAI]').count(),['admin','eight'].includes(fixtureRole)?1:0);
+    if(member)assert.equal(await map.locator('[data-drawer-route=my] .noa-route-level').getAttribute('aria-label'),'Lv.2 이상');
     assert.equal(await drawer.locator('footer .noa-sidebar-legal,footer a[href="/noa-world.php"]').count(),0);
     assert(await drawer.locator('footer .noa-sidebar-visitors').isVisible());
     const index=map.getByRole('combobox',{name:'분류 바로가기'});assert.equal(await index.locator('option').count(),expected.length+1);
@@ -151,6 +157,7 @@ try{
     await search.fill('없는메뉴xyz');assert(await drawer.locator('.noa-menu-empty').isVisible());await search.fill('');
     await drawer.locator('#noa-header-language').click();assert(await drawer.locator('#noa-language-options').isVisible());await drawer.locator('#noa-language-options button[data-language=ko]').click();
     if(width===390){await map.scrollIntoViewIfNeeded();await map.locator('h2').evaluate(e=>e.scrollIntoView({block:'start',behavior:'instant'}));await page.screenshot({path:out+'/directory-'+theme+'.png'});}
+    if(width===390&&member){const account=map.locator('[data-map-group=map-account]');await account.evaluate(e=>e.scrollIntoView({block:'start',behavior:'instant'}));await page.screenshot({path:out+'/grade-order-'+theme+'.png'});}
     assert.equal(await drawer.evaluate(e=>e.scrollWidth>e.clientWidth+1),false);
     if(width===390){await drawer.evaluate(e=>e.scrollTop=0);await page.screenshot({path:out+'/menu-'+theme+'.png'});}
     console.log('DRAWER_LAYOUT_OK',phase,width,theme,path);
