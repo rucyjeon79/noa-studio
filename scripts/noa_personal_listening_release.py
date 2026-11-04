@@ -1,5 +1,6 @@
 """Activate the personal listening module after isolated PHP/DB/browser verification."""
 import hashlib
+import os
 from pathlib import Path
 import noa_ainoa_deploy as release
 from noa_release_freshness import BUSAN_ONLY_PATH_PREFIXES
@@ -28,6 +29,10 @@ release.FILES={
  'noa-app/home.php':'deploy/noa-app/home.php',
 }
 release.NEW=set(release.FILES)-{'noa-app/p0-player.js','noa-launch.js','noa-account.js','noa-app/engine/n80.php','noa-music.php','noa-app/home.php','noa-ui.js','noa-browse.js','noa-bridge/notifications-inline.php','noa-bridge/notifications-sources.php','noa-bridge/notifications-core.php','noa-bridge/notification-worker.php'}
+if os.environ.get('NOA_LISTENING_COPY') == 'true':
+    names = ('noa-interface-labels.json', 'noa-listening.js', 'noa-music.php', 'noa-ui.js')
+    release.FILES = {name: 'deploy/' + name for name in names}
+    release.NEW = set()
 release.PROTECTED=[p for p in release.PROTECTED if p not in release.FILES]
 release.EXTRA_KNOWN={p:{hashlib.sha256(Path(local).read_bytes()).hexdigest()} for p,local in release.FILES.items() if 'calendar-vendor' in p or 'korean-months' in p or 'calendar-LICENSE' in p}
 if __name__=='__main__':release.main()

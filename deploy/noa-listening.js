@@ -14,12 +14,12 @@ function lane(key,title,note){
  const h=el('h3','',title);h.id='nl-lane-'+key;section.setAttribute('aria-labelledby',h.id);
  section.append(h,el('p','nl-lane-note',note));host.insertBefore(section,status);return section;
 }
-const wholeLane=lane('whole','생일 맞춤 추천','생년월일과 오늘의 리듬을 참고해 장르 구분 없이 최대 100곡을 골라요.');
-const mixButton=button('맞춤 추천 듣기','play',playWholeCatalog);mixButton.disabled=true;mixButton.dataset.allGenreMix='';mixButton.dataset.mood='auto';mixButton.classList.add('nl-play-action');if(home)mixButton.classList.add('nl-primary');
+const wholeLane=lane('whole','오늘의 공감 추천','오늘의 리듬에 어울리는 곡을 장르 구분 없이 최대 100곡 추천해요.');
+const mixButton=button('공감 추천 듣기','play',playWholeCatalog);mixButton.disabled=true;mixButton.dataset.allGenreMix='';mixButton.dataset.mood='auto';mixButton.classList.add('nl-play-action');if(home)mixButton.classList.add('nl-primary');
 const wholePreview=el('div','nl-preview');wholeLane.append(mixButton,wholePreview);
 const genrePanel=lane('suggested','오늘 나에게 어울리는 장르','추천 장르를 고르면 해당 장르의 곡을 최대 10곡 들어요.');
 const genreHint=el('p','nl-note'),genreCards=el('div','nl-genre-cards');genrePanel.append(genreHint,genreCards);
-const manual=lane('manual','내가 고른 장르와 분위기','분위기를 누르면 전체 음원에서 최대 100곡을 바로 들어요. 장르를 고르면 그 장르 안에서 찾아요.');
+const manual=lane('manual','지금 내 기분','지금 끌리는 분위기를 고르면 최대 100곡을 바로 들어요. 장르도 고르면 그 안에서 추천해요.');
 const controls=el('div','nl-controls'),genreLabel=el('label','nl-genre-label','장르'),genres=el('select','nl-genres');
 genres.setAttribute('aria-label','듣고 싶은 장르');genreLabel.append(genres);controls.append(genreLabel);
 let manualGenre='',manualMood='';
@@ -96,13 +96,13 @@ function renderGenreChoices(){
  const plan=personal&&ready?listeningPlan():null,rows=plan?.whole.rows||[];
  mixButton.disabled=!!personal&&(!ready||!rows.length);
  mixButton.setAttribute('aria-pressed',String(isGlobalMix()));
- mixButton.lastChild.textContent=personal?(ready?'추천 '+rows.length+'곡 듣기':'추천곡 준비 중'):(state.member?'생일 맞춤 설정':'로그인하고 추천받기');
+ mixButton.lastChild.textContent=personal?(ready?'추천 '+rows.length+'곡 듣기':'추천곡 준비 중'):(state.member?'공감 추천 설정':'로그인하고 추천받기');
  for(const pick of genreCards.querySelectorAll('[data-genre-choice]'))pick.setAttribute('aria-pressed',String(isRecommendedGenreMix()&&genre===pick.dataset.genreChoice));
  if(plan&&renderedPlan===plan)return;
  renderedPlan=plan;
  preview(wholePreview,rows,queue=>{scope='all';mode='now';mood='auto';play(queue,true);});
  genreCards.replaceChildren();
- genreHint.textContent=!personal?'생년월일을 설정하면 추천 장르를 볼 수 있어요.':plan&&!plan.choices.length?'재생 가능한 추천 장르가 없어요.':'';
+ genreHint.textContent=!personal?'추천 설정을 마치면 오늘 어울리는 장르를 볼 수 있어요.':plan&&!plan.choices.length?'재생 가능한 추천 장르가 없어요.':'';
  for(const {genre:g,selection} of plan?.choices||[]){
   const item=el('article','nl-genre-option'),title=el('h4','',state.genres[g]);
   const go=button(selection.rows.length+'곡 듣기','play',()=>startChoice(g,selection.rows));go.classList.add('nl-play-action');go.dataset.genreChoice=g;
@@ -111,7 +111,7 @@ function renderGenreChoices(){
   item.append(title,go,tracks);genreCards.append(item);
  }
 }
-const listen=button('맞춤 추천 듣기','play',playWholeCatalog);listen.classList.add('nl-primary');listen.disabled=true;
+const listen=button('공감 추천 듣기','play',playWholeCatalog);listen.classList.add('nl-primary');listen.disabled=true;
 if(!home){
  const discovery=host.closest('.nl-music-discovery');
  if(discovery){const toggle=discovery.querySelector('summary');toggle.replaceChildren(el('span','nl-discovery-title',toggle.textContent.trim()));
@@ -147,7 +147,7 @@ function render(){if(!state)return;
  renderFortune();renderGenreChoices();renderManual();listen.disabled=mixButton.disabled;
  for(const b of tabs.children)b.setAttribute('aria-pressed',String(b.dataset.mode===mode));
  browse.hidden=!state.member;results.replaceChildren();
- infoText.textContent='곡의 제목과 가사, 분위기를 살펴 추천해요. 생년월일을 설정하면 생일 정보와 오늘의 리듬도 반영해요.';
+ infoText.textContent='곡의 제목과 가사, 분위기를 살펴 추천해요. 개인 추천을 켜면 입력한 출생 정보와 시간대도 선곡에 참고해요.';
  if(!state.member){status.textContent='로그인하면 음원을 들을 수 있어요.';return;}
  if(!musicWindow){status.textContent='음원 목록을 연결하고 있어요.';return;}
  const browseGenre=manualGenre||genre,options={genre:browseGenre,mood:manualMood||'auto',mode,theme:state.theme,popular:state.popular,library:state.library};
@@ -256,8 +256,8 @@ function openSettings(fortuneSetup=false){const trigger=document.activeElement;i
  const gf=field('기본 장르','genre','',p.genre||genre,state.genres);form.append(gf.wrap);
  const zones={'Asia/Seoul':'한국 · 서울','Asia/Tokyo':'일본 · 도쿄','Asia/Shanghai':'중국 · 상하이','Asia/Bangkok':'태국 · 방콕','America/Los_Angeles':'미국 · 로스앤젤레스','America/New_York':'미국 · 뉴욕','Europe/London':'영국 · 런던','Australia/Sydney':'호주 · 시드니'};let detected='Asia/Seoul';try{detected=Intl.DateTimeFormat().resolvedOptions().timeZone;}catch{}for(const z of [detected,p.timezone,p.birthTimezone].filter(Boolean))if(!zones[z])zones[z]=z;
  const tz=field('현재 생활 시간대','timezone','',p.timezone||detected,zones);form.append(tz.wrap);
- const agree=el('label','nl-consent'),consent=el('input');consent.type='checkbox';consent.checked=!!p.consent;agree.append(consent,document.createTextNode('생년월일·출생시간을 저장해 생일 맞춤 음악 추천과 오늘의 운세에 사용하는 데 동의합니다.'));form.append(agree);
- const birth=el('fieldset','nl-birth');birth.append(el('legend','','생일 맞춤 설정'));const calendar=field('생일 기준','calendar','',p.calendar||'solar',{solar:'양력',lunar:'한국 음력'});const date=field('생년월일','birthDate','text',p.birthDate);date.input.inputMode='numeric';date.input.placeholder='예: 19900615';date.input.autocomplete='off';const dateHint=el('small','nl-note','숫자 8자리로 입력해 주세요. 예: 19900615 또는 1990-06-15');dateHint.id='nl-birth-date-hint';date.input.setAttribute('aria-describedby',dateHint.id);date.wrap.append(dateHint);date.input.oninput=()=>date.input.setCustomValidity('');date.input.onblur=()=>{const normalized=model.normalizeBirthDate(date.input.value);if(normalized)date.input.value=normalized;};const leap=field('윤달','leap','',p.leap?'yes':'no',{no:'평달',yes:'윤달'});const time=field('태어난 시간 · 모르면 비워두세요','birthTime','time',p.birthTime);const bz=field('출생지 시간대','birthTimezone','',p.birthTimezone||'Asia/Seoul',zones);
+ const agree=el('label','nl-consent'),consent=el('input');consent.type='checkbox';consent.checked=!!p.consent;agree.append(consent,document.createTextNode('생년월일과 출생시간을 저장해 음악 추천과 오늘의 운세에 사용하는 데 동의합니다.'));form.append(agree);
+ const birth=el('fieldset','nl-birth');birth.append(el('legend','','출생 정보'));const calendar=field('생일 기준','calendar','',p.calendar||'solar',{solar:'양력',lunar:'한국 음력'});const date=field('생년월일','birthDate','text',p.birthDate);date.input.inputMode='numeric';date.input.placeholder='예: 19900615';date.input.autocomplete='off';const dateHint=el('small','nl-note','숫자 8자리로 입력해 주세요. 예: 19900615 또는 1990-06-15');dateHint.id='nl-birth-date-hint';date.input.setAttribute('aria-describedby',dateHint.id);date.wrap.append(dateHint);date.input.oninput=()=>date.input.setCustomValidity('');date.input.onblur=()=>{const normalized=model.normalizeBirthDate(date.input.value);if(normalized)date.input.value=normalized;};const leap=field('윤달','leap','',p.leap?'yes':'no',{no:'평달',yes:'윤달'});const time=field('태어난 시간 · 모르면 비워두세요','birthTime','time',p.birthTime);const bz=field('출생지 시간대','birthTimezone','',p.birthTimezone||'Asia/Seoul',zones);
  birth.append(calendar.wrap,date.wrap,leap.wrap,time.wrap,bz.wrap,el('p','nl-note','한국 음력은 1900~2050년을 지원합니다. 출생지 표준시를 사용하며, 시간을 모르면 시주는 제외합니다.'));const alertLabel=el('label','nl-fortune-opt'),alerts=el('input');alerts.type='checkbox';alerts.name='fortuneAlerts';alerts.checked=p.fortuneAlerts===true;alertLabel.append(alerts,document.createTextNode('매일 오전 8시(한국 시간)에 오늘의 운세 한 줄 받기'));birth.append(alertLabel,el('small','nl-note','알림함에 도착하며, 휴대폰에서도 받으려면 저장 후 홈의 ‘이 기기 알림 연결’에서 알림을 켜 주세요.'));form.append(birth);
  const toggle=()=>{date.input.setCustomValidity('');birth.disabled=!consent.checked;birth.hidden=!consent.checked;date.input.required=consent.checked;leap.input.disabled=calendar.input.value!=='lunar';if(calendar.input.value==='solar')leap.input.value='no';};consent.onchange=toggle;calendar.input.onchange=toggle;toggle();
  form.append(el('p','nl-note',state.theme.notice));const message=el('p','nl-status');message.setAttribute('role','status');form.append(message);const actions=el('div','nl-dialog-actions'),save=button('저장','save',()=>{}),remove=button('추천 설정 삭제','trash',()=>submit('DELETE'));save.type='submit';actions.append(remove,save);form.append(actions);

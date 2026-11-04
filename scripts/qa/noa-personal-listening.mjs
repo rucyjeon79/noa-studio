@@ -39,6 +39,8 @@ try{
    await page.locator('.nl-music-discovery>summary').click();
   }
   await page.locator('.nl-primary').waitFor();await page.waitForFunction(()=>document.querySelector('.nl-primary')?.disabled===false);await page.locator('#noa-listening').scrollIntoViewIfNeeded();
+  assert.equal(await page.locator('#nl-lane-whole').innerText(),'오늘의 공감 추천');
+  assert.equal(await page.locator('#nl-lane-manual').innerText(),'지금 내 기분');
   const overflow=await page.evaluate(()=>{const width=document.documentElement.scrollWidth;if(width<=innerWidth+1)return null;
    return {width,viewport:innerWidth,scrollX,edges:[...document.querySelectorAll('body *')].filter(e=>!e.closest('.nl-moods,.nl-tabs')&&e.getBoundingClientRect().right+scrollX>innerWidth+1).map(e=>[e.tagName,e.id,e.className?.toString().slice(0,70),Math.round(e.getBoundingClientRect().right+scrollX)]).slice(-30)};});assert.equal(overflow,null,JSON.stringify(overflow));
   if(!live){
@@ -214,7 +216,7 @@ try{
    },theme);
    assert.deepEqual(paint,[false,true,true,'1'],'enabled mix uses solid theme colors: '+theme.id);
   }
-  const wholeQueue=await readQueue();assert.match(wholeQueue.source,/생일 맞춤 추천 · 100곡/);
+  const wholeQueue=await readQueue();assert.match(wholeQueue.source,/오늘의 공감 추천 · 100곡/);
   assert.equal(new URL(wholeQueue.src,base).searchParams.get('record'),wholeQueue.keys[0]);
   const heads=new Map();
   const stats=await player.evaluate(()=>({unique:new Set(queue().map(b=>b.dataset.key)).size,genres:new Set(queue().map(b=>b.dataset.genre)).size}));assert.equal(stats.unique,100);assert(stats.genres>1);
@@ -231,7 +233,7 @@ try{
    assert.equal(new URL(recommended.src,base).searchParams.get('record'),recommended.keys[0]);
    await player.locator('.nl-music-discovery>summary').click();
    assert.equal(await player.locator('[data-genre-choice="'+genre+'"]').getAttribute('aria-pressed'),'true');
-   assert.equal(await player.locator('.nl-listen-row>.nl-primary').innerText(),'맞춤 추천 듣기');await player.locator('.nl-listen-row>.nl-primary').click();assert.deepEqual((await readQueue()).keys,wholeQueue.keys);await player.locator('[data-genre-choice="'+genre+'"]').click();assert.deepEqual((await readQueue()).keys,recommended.keys);
+   assert.equal(await player.locator('.nl-listen-row>.nl-primary').innerText(),'공감 추천 듣기');await player.locator('.nl-listen-row>.nl-primary').click();assert.deepEqual((await readQueue()).keys,wholeQueue.keys);await player.locator('[data-genre-choice="'+genre+'"]').click();assert.deepEqual((await readQueue()).keys,recommended.keys);
    await player.locator('.nl-music-discovery>summary').click();await player.locator('#next').click();
    assert.equal((await readQueue()).selected,recommended.keys[1]);
    assert.equal(await player.evaluate(()=>new Set(queue().map(b=>b.dataset.key)).size),10);

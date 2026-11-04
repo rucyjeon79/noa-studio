@@ -81,7 +81,7 @@ function listeningSelection(){
 }
 const musicMoodLabels={calm:'휴식',focus:'집중',comfort:'위로',energy:'활동',drive:'운전',walk:'산책'};
 function setListeningSource(scope,genre='',options={}){
- const types={all:'생일 맞춤 추천',recommendedGenre:'추천 장르',genre:'직접 선택',catalogMood:'전체 장르 · '+(musicMoodLabels[options.mood]||'분위기 추천')};
+ const types={all:'오늘의 공감 추천',recommendedGenre:'추천 장르',genre:'직접 선택',catalogMood:'전체 장르 · '+(musicMoodLabels[options.mood]||'분위기 추천')};
  const owner=recommendationQueue||collectionQueue;
  if(!Object.hasOwn(types,scope)||!owner)return;
  const label=[types[scope],owner.length+'곡',window.NoaBrowse?.names?.[genre]||genre].filter(Boolean).join(' · ');

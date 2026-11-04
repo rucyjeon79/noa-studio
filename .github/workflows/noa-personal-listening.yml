@@ -49,13 +49,14 @@ jobs:
         if: always()
         with: {name: listening-candidate, path: listening-proof/candidate/, retention-days: 7}
   deploy:
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[unified-shell-release]')
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && (!contains(github.event.head_commit.message, '[unified-shell-release]') || contains(github.event.head_commit.message, '[listening-copy]'))
     needs: verify
     environment: production
     runs-on: ubuntu-latest
     timeout-minutes: 15
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     env:
+      NOA_LISTENING_COPY: ${{ contains(github.event.head_commit.message, '[listening-copy]') }}
       GH_TOKEN: ${{ github.token }}
       NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
       NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
