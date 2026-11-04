@@ -32,7 +32,9 @@ async function checkFooter(page,width,theme,home=false){
  assert(art.y+art.height-choices.y-choices.height<=25,'theme choices stay at image bottom');
  for(const button of geometry.buttons)assert(button.width>=44&&button.height>=44);
  assert.equal(await scene.locator('[data-footer-theme] svg').count(),3);
- assert(await scene.locator('[data-footer-theme]').evaluateAll(buttons=>buttons.every(el=>{const r=el.getBoundingClientRect();return [[r.x+4,r.y+4],[r.right-4,r.bottom-4]].every(([x,y])=>el.contains(document.elementFromPoint(x,y)));})),'floating controls must not cover the theme choices');
+ const blocked=await scene.locator('[data-footer-theme]').evaluateAll(buttons=>buttons.flatMap(el=>{const r=el.getBoundingClientRect();return [[r.x+4,r.y+4],[r.right-4,r.bottom-4]].flatMap(([x,y])=>{const hit=document.elementFromPoint(x,y);return el.contains(hit)?[]:[{choice:el.dataset.footerTheme,x,y,hit:hit?.id||hit?.className||hit?.tagName}];});}));
+ if(blocked.length)await page.screenshot({path:out+'/blocked-footer-'+width+'.png'});
+ assert.deepEqual(blocked,[],'theme choices obstructed: '+JSON.stringify({width,path:page.url(),blocked}));
  assert(await scene.locator('.noa-footer-theme-label').isVisible());
  assert(await scene.locator('.noa-sidebar-signature>span').evaluate(el=>parseFloat(getComputedStyle(el).fontSize)>=18),'theme topic must have a readable hierarchy');
  for(let i=0;i<4;i++){
