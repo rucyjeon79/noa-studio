@@ -39,7 +39,7 @@ function bn_identity(string $token, string $body): bool {
     $ch=curl_init($issuer.'/.well-known/jwks');
     curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>8,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS]);
     $body=curl_exec($ch); $code=curl_getinfo($ch,CURLINFO_RESPONSE_CODE);
-    if ($code!==200 || !is_string($body) || strlen($body)>100000) throw new RuntimeException('key discovery');
+    if ($code!==200 || !is_string($body) || strlen($body)>100000) throw new UnexpectedValueException('key discovery');
     foreach (json_decode($body,true,10,JSON_THROW_ON_ERROR)['keys'] as $key) {
         if (($key['kid']??null)===$header['kid'] && ($key['kty']??'')==='RSA')
             return openssl_verify($a.'.'.$b,bn64($c),bn_rsa($key),OPENSSL_ALGO_SHA256)===1;
@@ -50,8 +50,9 @@ if ($_SERVER['REQUEST_METHOD']!=='POST') {http_response_code(405); exit;}
 try {
     $requestBody=file_get_contents('php://input',false,null,0,60001);
     if (strlen($requestBody)>60000 || !bn_identity($_SERVER['HTTP_X_BUSAN_RUN']??'', $requestBody)) {
-        http_response_code(403); exit;
+        header('X-Busan-News-Status: identity'); http_response_code(403); exit;
     }
-} catch (Throwable $e) {http_response_code(403); exit;}
+} catch (UnexpectedValueException $e) {header('X-Busan-News-Status: provider'); http_response_code(503); exit;}
+catch (Throwable $e) {header('X-Busan-News-Status: token'); http_response_code(403); exit;}
 define('BUSAN_ACCOUNT_NEWS',true);
 require __DIR__.'/newsroom-account-import.php';
