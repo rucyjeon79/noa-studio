@@ -146,9 +146,9 @@ test('manual moods select one evidence-backed home per recording across aliases,
  ];
  const pick=model.moodCollections(records);
  for(const [mood,keys] of Object.entries({calm:[],energy:[],focus:[],drive:['road'],cruise:['coast'],comfort:['duet-file'],sleep:['learned'],walk:['walk']})){
-  assert.deepEqual(pick(mood).rows.map(r=>r.key),keys);
+  const result=pick(mood);assert.deepEqual(result.rows.slice(0,result.tiers[0].count).map(r=>r.key),keys);
  }
- assert.deepEqual(pick('drive','pop').rows.map(r=>r.key),['road-alias']);
+ assert.deepEqual(pick('drive','pop').rows.map(r=>r.key),['road-alias','coast']);
  assert.deepEqual(pick('walk','rock').rows.map(r=>r.key),['walk-copy']);
  assert.deepEqual(pick('sleep','rock').rows,[]);
 });
@@ -156,4 +156,30 @@ test('100 is a ceiling per mood and genre selection considers all eligible track
  const records=Array.from({length:115},(_,i)=>({key:'r'+i,genre:i<110?'a':'b',audio:'/a/'+i,moodScores:{focus:125-i}}));
  const pick=model.moodCollections(records);assert.equal(pick('focus').rows.length,100);
  assert.equal(pick('focus','b').rows.length,5);assert.equal(pick('calm').rows.length,0);
+});
+
+test('sleep plays its own tracks, then the closest rest tracks, then comfort, up to 100 total',()=>{
+ const make=(mood,count,values={})=>Array.from({length:count},(_,i)=>({
+  key:mood+i,audio:'/audio/'+mood+i,genre:i%2?'a':'b',moodScores:{[mood]:8,...values}
+ }));
+ const records=[...make('sleep',18),...make('calm',45),...make('comfort',54),...make('drive',110)];
+ records.push({...records[0],key:'sleep-alias'}, {...records[18],key:'calm-alias'});
+ const pick=model.moodCollections(records);
+ const full=pick('sleep');
+ assert.deepEqual(full.tiers.map(t=>[t.mood,t.count]),[['sleep',18],['calm',45],['comfort',37]]);
+ assert.equal(new Set(full.rows.map(r=>r.audio)).size,100);
+ assert(full.rows.slice(0,18).every(r=>r.moodScores.sleep));
+ assert(full.rows.slice(18,63).every(r=>r.moodScores.calm));
+ assert(full.rows.slice(63).every(r=>r.moodScores.comfort));
+ const narrow=pick('sleep','a');assert.deepEqual(narrow.tiers.map(t=>t.count),[9,22,27]);
+ assert(narrow.rows.every(r=>r.genre==='a'));assert.equal(narrow.rows.length,58);
+ assert.deepEqual(pick('drive').tiers.map(t=>t.count),[100]);
+ const secondary=model.moodCollections([...make('sleep',40),...make('calm',80),...make('comfort',50)])('sleep');
+ assert.deepEqual(secondary.tiers.map(t=>t.count),[40,60]);
+ assert.deepEqual(model.moodCollections(make('energy',120))('sleep').rows,[]);
+});
+test('within the same supporting mood, borrow tracks with the strongest evidence for the requested mood first',()=>{
+ const rows=[{key:'plain',genre:'g',audio:'/p',moodScores:{calm:10}},
+             {key:'bedtime',genre:'g',audio:'/b',moodScores:{calm:6,sleep:3}}];
+ assert.deepEqual(model.moodCollections(rows)('sleep').rows.map(r=>r.key),['bedtime','plain']);
 });

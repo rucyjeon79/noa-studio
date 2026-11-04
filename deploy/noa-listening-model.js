@@ -108,7 +108,11 @@ function wholeMoodMix(records,mood,theme={}){
  return rankMix(catalog(records,null,true),theme,wholeMixLimit,mood);
 }
 function recordingId(row){return row.audioSha||row.browseIdentity||row.canonicalRecordKey||row.orderKey||row.key;}
-// Each playable recording has one home among the eight user-selected moods.
+// A recording belongs to one primary mood. Only these two neighbors may fill its queue.
+const moodNeighbors={
+ calm:['comfort','sleep'], focus:['calm','cruise'], comfort:['calm','walk'], energy:['drive','walk'],
+ cruise:['calm','walk'], drive:['energy','cruise'], walk:['cruise','energy'], sleep:['calm','comfort']
+};
 function moodCollections(records,theme={},orderFor){
  const groups=new Set(),identities=new Map();
  for(const row of records){
@@ -145,16 +149,26 @@ function moodCollections(records,theme={},orderFor){
   const [best,next]=fits;
   // In the absence of explicit cues require a strong, distinctive learned match.
   if(!best.direct&&(best.affinity<.60||best.affinity-next.affinity<.12))continue;
-  collections[best.mood].push({playable,score:best.direct+best.affinity*.75,order:hash(rotation+'|'+key)});
+  const scores=Object.fromEntries(fits.map(fit=>[fit.mood,fit.direct+fit.affinity*.75]));
+  collections[best.mood].push({playable,scores,key});
  }
  return function selection(mood,genre){
-  const items=[];
-  for(const item of collections[mood]||[]){
-   const row=genre?item.playable.find(r=>r.genre===genre):item.playable[0];
-   if(row)items.push({row,score:item.score,order:item.order});
+  const rows=[],tiers=[];
+  if(!Object.hasOwn(moodNeighbors,mood))return {rows,tiers};
+  for(const source of [mood,...moodNeighbors[mood]]){
+   const items=[];
+   for(const item of collections[source]){
+    const row=genre?item.playable.find(r=>r.genre===genre):item.playable[0];
+    if(row)items.push({row,fit:item.scores[mood],sourceFit:item.scores[source],order:hash(rotation+'|'+mood+'|'+item.key)});
+   }
+   // Keep the chosen mood first. Among borrowed tracks, favor evidence for the listener's actual choice.
+   items.sort((a,b)=>b.fit-a.fit||b.sourceFit-a.sourceFit||(genre&&orderFor?orderFor(a.row,b.row):0)||a.order-b.order||a.row.key.localeCompare(b.row.key));
+   const batch=items.slice(0,wholeMixLimit-rows.length);
+   tiers.push({mood:source,count:batch.length});
+   rows.push(...batch.map(item=>item.row));
+   if(rows.length===wholeMixLimit)break;
   }
-  items.sort((a,b)=>b.score-a.score||(genre&&orderFor?orderFor(a.row,b.row):0)||a.order-b.order||a.row.key.localeCompare(b.row.key));
-  return {rows:items.slice(0,wholeMixLimit).map(item=>item.row)};
+  return {rows,tiers};
  };
 }
 function manualGenre(records,genre,orderFor,mood){

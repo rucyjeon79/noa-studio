@@ -22,7 +22,7 @@ const mixButton=button('공감 추천 듣기','play',playWholeCatalog);mixButton
 const wholePreview=el('div','nl-preview');wholeLane.append(mixButton,wholePreview);
 const genrePanel=lane('suggested','오늘 나에게 어울리는 장르','추천 장르를 고르면 해당 장르의 곡을 최대 10곡 들어요.');
 const genreHint=el('p','nl-note'),genreCards=el('div','nl-genre-cards');genrePanel.append(genreHint,genreCards);
-const manual=lane('manual','지금 내 기분','각 곡은 가장 잘 맞는 분위기 한 곳에서만 추천해요. 장르를 고르면 그 안에서 최대 100곡을 들어요.');
+const manual=lane('manual','지금 내 기분','고른 분위기부터 최대 100곡을 들어요. 모자라면 가까운 두 분위기에서 차례로 채워요. 장르를 선택하면 그 안에서만 골라요.');
 const controls=el('div','nl-controls'),genreLabel=el('label','nl-genre-label','장르'),genres=el('select','nl-genres');
 genres.setAttribute('aria-label','듣고 싶은 장르');genreLabel.append(genres);controls.append(genreLabel);
 let manualGenre='',manualMood='';
@@ -83,6 +83,14 @@ function renderManual(){
  manualPlay.lastChild.textContent=selected.rows.length?labels[manualMood]+' '+selected.rows.length+'곡 듣기':'곡 듣기';
  const note=manualMood&&catalogReady()&&!selected.rows.length?'이 조건에 맞는 곡이 아직 없어요. 다른 분위기나 장르를 선택해 주세요.':'';
  preview(manualPreview,selected.rows,startManual,note);
+ if(selected.tiers?.slice(1).some(tier=>tier.count)){
+  const breakdown=el('small','nl-note');breakdown.append(el('span','','선곡 구성'),' · ');
+  for(const [index,tier] of selected.tiers.filter(t=>t.count>0).entries()){
+   if(index)breakdown.append(' + ');
+   breakdown.append(el('span','',labels[tier.mood]),' '+tier.count);
+  }
+  manualPreview.prepend(breakdown);
+ }
  return selected;
 }
 let plan=null;
