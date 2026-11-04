@@ -102,7 +102,12 @@ async function welcome(){
  }catch{if(!read('noa-welcome-failed')){write('noa-welcome-failed','1');say('계정 정보를 잠시 불러오지 못했어요. 구독 상태·잔여일·포인트는 MY에서 다시 확인해 주세요.',{sticky:true,key:'welcome-error'});}}
 }
 function boot(){if(mounted)return;mounted=true;if(location.pathname.startsWith('/adm/'))doc.documentElement.dataset.noaVoiceAdmin='true';if(parentVoice)doc.documentElement.dataset.noaVoiceEmbedded='true';
- new MutationObserver(records=>{if(ownChange)return;if(records.some(r=>!r.target.closest?.('.ainoa-tip')))schedule();}).observe(doc.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['open']});
+ new MutationObserver(records=>{
+  if(ownChange)return;
+  // A removed dialog may still own the active feedback node. Reattach it before the next paint.
+  if(active&&speechTip&&!speechTip.isConnected)render();
+  if(records.some(r=>!r.target.closest?.('.ainoa-tip,#noa-header-clock,#dock-current,#dock-duration,#seek-clock')))schedule();
+ }).observe(doc.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['open']});
  try{const carried=JSON.parse(read('noa-voice-redirect')||'null');sessionStorage.removeItem('noa-voice-redirect');if(carried&&Date.now()-carried.at<30000)say(carried.text,{sticky:true,priority:true,key:'pending-alert'});}catch{}
  schedule();if(!parentVoice)void welcome();
 }

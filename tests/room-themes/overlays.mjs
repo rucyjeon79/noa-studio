@@ -53,7 +53,7 @@ try{
   await p.getByLabel('검증 제목',{exact:true}).fill('입력 유지 확인');assert.equal(await p.getByLabel('검증 제목',{exact:true}).inputValue(),'입력 유지 확인');
   await p.screenshot({path:out+'/validation-'+mode+'-'+width+'.png'});
   await p.evaluate(()=>document.getElementById('overlay-validation').remove());
-  await p.clock.runFor(100);
+  await p.clock.runFor(300);
   await p.locator('#noa-ainoa .ainoa-message:not([hidden])').waitFor({state:'visible'});
   await p.locator('.ainoa-message').getByRole('button',{name:'AInoa 말풍선 닫기'}).click();
   assert.equal(await p.locator('#noa-ainoa').count(),1);assert.equal(await p.locator('.ainoa-tip').count(),1);assert.deepEqual(errors,[]);assert.deepEqual(writes,[],'presentation checks do not write account data');

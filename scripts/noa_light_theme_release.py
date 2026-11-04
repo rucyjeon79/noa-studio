@@ -1,4 +1,4 @@
-"""Publish the centered studio shell, direct theme controls and three personal listening choices."""
+"""Publish the centered studio shell, responsive navigation and direct theme controls and three personal listening choices."""
 import os
 import sys
 from pathlib import Path

@@ -201,8 +201,8 @@ async function verifyFirstPaint(){
    const bootstrap=execFileSync('php',['-r','define("_GNUBOARD_",true);require $argv[1];echo noa_first_paint_theme("<head></head>");',source+'/deploy/noa-design.extend.php'],{encoding:'utf8'}).replace(/^<head>|<\/head>$/g,'');
    await ctx.route('https://noastudio.ai.kr/**',async r=>{
     if(!r.request().isNavigationRequest())return r.continue();
-    const response=await r.fetch(),html=await response.text();
-    await r.fulfill({response,body:html.includes('id="noa-first-paint"')?html:html.replace(/<head\b[^>]*>/i,head=>head+bootstrap)});
+    const response=await r.fetch({maxRetries:2,timeout:45000}),html=await response.text();
+    await r.fulfill({response,body:html.includes('id="noa-first-paint"')?html.replace(/<script id="noa-first-paint">[\s\S]*?<\/script>/,()=>bootstrap):html.replace(/<head\b[^>]*>/i,head=>head+bootstrap)});
    });
    await ctx.route('**/noa-starlight.css*',r=>r.fulfill({body:readFileSync(source+'/deploy/noa-starlight.css'),contentType:'text/css'}));
   }
