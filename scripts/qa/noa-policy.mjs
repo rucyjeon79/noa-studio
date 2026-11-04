@@ -80,7 +80,7 @@ try{
       return {position:getComputedStyle(el).position,inside:dock.x>=row.x-1&&dock.right<=row.right+1&&dock.bottom<=row.bottom+1,following:last.y>=dock.bottom-1};
      });
      assert.equal(bounds.position,'static');assert(bounds.inside&&bounds.following,'inline upload details stay in their track and ahead of the final action');
-     await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+     await page.locator('#last-action').evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
      assert(await page.locator('#last-action').evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return el===hit||el.contains(hit)}),'Final action covered by dock');
     }
    }
