@@ -427,7 +427,15 @@ if(home&&window===window.top){
 function showShell(){
  if(frame&&musicWindow?.NoaPlayerShell)musicWindow.NoaPlayerShell.open('/noa-music.php?from=home');
 }
-document.querySelector('[data-noa-listen-now]')?.addEventListener('click',event=>{event.preventDefault();if(!state){host.scrollIntoView({block:'center'});return;}if(state.theme?.personal&&!mixButton.disabled){playWholeCatalog();return;}if(!state.canPlay||musicWindow){scope='genre';mode='now';mood='auto';startMix('now/'+genre,model.select(records,{genre,mood,mode,theme:state.theme}).rows,false);}else host.scrollIntoView({block:'start'});});
+document.querySelector('[data-noa-listen-now]')?.addEventListener('click',event=>{
+ event.preventDefault();
+ if(!state){host.scrollIntoView({block:'center'});return;}
+ if(homeDock&&musicWindow?.document.querySelector('.noa-two-line:not([hidden])')){showShell();return;}
+ if(state.theme?.personal&&!mixButton.disabled){playWholeCatalog();return;}
+ if(!state.canPlay||musicWindow){
+  scope='genre';mode='now';mood='auto';startMix('now/'+genre,model.select(records,{genre,mood,mode,theme:state.theme}).rows,false);
+ }else host.scrollIntoView({block:'start'});
+});
 let videoNoticeAccepted=false,sourceDialog=null;
 const qualityNoticeKey='noa-public-audio-notice-v1';
 try{videoNoticeAccepted=sessionStorage.getItem(qualityNoticeKey)==='seen';}catch{}
