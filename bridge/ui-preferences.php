@@ -8,6 +8,8 @@ $design=json_decode(file_get_contents(dirname(__DIR__).'/noa-design.json'),true,
 $ids=array_column($design['themes'],'id');if(($design['automaticTheme']['id']??null)==='auto')array_unshift($ids,'auto');$method=$_SERVER['REQUEST_METHOD']??'GET';$logged=!empty($is_member)&&!empty($member['mb_id']);$admin=$logged&&($is_admin??'')==='super';
 if(!in_array($method,['GET','POST'],true))noa_ui_reply(405,['error'=>'method_not_allowed']);
 if(empty($_SESSION['noa_ui_token']))$_SESSION['noa_ui_token']=bin2hex(random_bytes(32));
+// Let the next navigation use this session while read-only database queries finish.
+if($method==='GET'&&session_status()===PHP_SESSION_ACTIVE)session_write_close();
 try{
  $db=noa_bridge_pdo();$defaults=['theme'=>$design['defaultTheme'],'enabled'=>$ids];$policyRevision=0;
  $q=$db->prepare("SELECT payload,revision FROM noa_documents WHERE doc_key=? AND kind='prefs'");$q->execute(['ui:policy']);$policy=$q->fetch(PDO::FETCH_ASSOC);

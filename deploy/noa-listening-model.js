@@ -92,9 +92,13 @@ function sajuMix(candidates,theme,limit){
  return {rows:batch.map(item=>item.row),fallback:!!batch.length&&!matched,matched,mood};
 }
 function recordingId(row){return row.audioSha||row.browseIdentity||row.canonicalRecordKey||row.orderKey||row.key;}
-function manualGenre(records,genre,orderFor){
+function manualGenre(records,genre,orderFor,mood){
  const rows=catalog(records,genre);
  if(orderFor)rows.sort(orderFor);
+ if(moodKeys.includes(mood)){
+  const matches=rows.filter(row=>trackFit(row,mood,false)>0);
+  return {rows:matches.length?matches:rows,fallback:!matches.length&&rows.length>0};
+ }
  return {rows,fallback:false};
 }
 function chooseOpener(rows,avoid){

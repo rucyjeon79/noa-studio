@@ -40,8 +40,8 @@ try{
   const bubble=await tip.boundingBox(),nav=await p.locator('.noa-mobile-nav').boundingBox();assert(bubble.x>=0&&bubble.x+bubble.width<=width+1&&bubble.y>=0&&bubble.y+bubble.height<=height,'welcome remains within the viewport');if(nav?.height)assert(bubble.y+bubble.height<=nav.y-8,'welcome clears the bottom navigation');
   await p.screenshot({path:out+'/welcome-'+mode+'-'+width+'.png'});
   // Reopening a pre-existing dialog (only its open attribute changes) pauses an already visible greeting.
-  await p.locator('[data-noa-display-settings]:visible').first().click();await p.waitForFunction(()=>document.querySelector('.ainoa-tip').hidden);
-  await p.clock.fastForward(30000);await p.locator('#noa-settings-dialog .noa-dialog-close').click();await tip.waitFor({state:'visible'});
+  await p.locator('#noa-menu-find').click();await p.waitForFunction(()=>document.querySelector('.ainoa-tip').hidden);
+  await p.clock.fastForward(30000);await p.keyboard.press('Escape');await tip.waitFor({state:'visible'});
   assert((await tip.innerText()).includes(member?'1,234P':'비로그인'),'paused greeting survives longer than its original lifetime');
   await tip.locator('.ainoa-message-dismiss').click();
   await p.evaluate(()=>{const d=document.createElement('dialog');d.id='overlay-validation';d.style.cssText='box-sizing:border-box;width:min(420px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;padding:20px';d.innerHTML='<h2>입력 확인</h2><form><label>제목<input aria-label="검증 제목" required></label><button type="submit">저장</button></form>';d.querySelector('form').onsubmit=e=>e.preventDefault();document.body.append(d);d.showModal();});

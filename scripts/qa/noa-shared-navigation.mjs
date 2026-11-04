@@ -38,7 +38,7 @@ try{for(const [width,height] of [[320,900],[390,900],[768,720],[1920,900]]){
   await page.evaluate(()=>scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'}));
   const counter=await page.locator('.noa-mobile-footer .noa-sidebar-visitors').boundingBox(),dock=await page.locator('.noa-mobile-nav').boundingBox();
   const footer=await page.locator('.noa-mobile-footer').boundingBox(),main=await page.locator('main').boundingBox();
-  const theme=await page.locator('.noa-mobile-footer .noa-display-settings').boundingBox();
+  const theme=await page.locator('.noa-mobile-footer .noa-footer-themes').boundingBox();
   assert(theme&&theme.height>=44,'footer theme control remains touch accessible');
   assert(theme.y+theme.height<=counter.y,'visitor counts do not overlap the footer theme control');
   assert(footer.y-(main.y+main.height)<=25);assert(dock.y-(counter.y+counter.height)<=34,'last footer control keeps the shared dock gap');

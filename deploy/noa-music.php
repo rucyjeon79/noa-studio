@@ -14,7 +14,9 @@ header('Content-Type: text/html; charset=utf-8');
 header('Cache-Control: private, no-store');
 header('X-Content-Type-Options: nosniff');
 function noa_music_e(string $v): string { return htmlspecialchars($v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8'); }
-$admin=!empty($is_member)&&($is_admin??'')==='super';if($admin&&empty($_SESSION['noa_jukebox_csrf']))$_SESSION['noa_jukebox_csrf']=bin2hex(random_bytes(32));$uploadStates=[];$songs=[];$collections=[];$genres=array_fill_keys(['kpop-original','jpop-original','pop-original','thai-original','joseon-ballad','echoes-of-joseon','groovy-airy-pop','narrative-piano-indie','dreamy-deep-house','fantasy-ambient-edm','edm-kpop-club','latin-afrobeats-edm','panpop','your-story','cover-reborn'],0);$error=false;
+$admin=!empty($is_member)&&($is_admin??'')==='super';if($admin&&empty($_SESSION['noa_jukebox_csrf']))$_SESSION['noa_jukebox_csrf']=bin2hex(random_bytes(32));// All session tokens needed by this read-only page have now been initialized.
+if(($_SERVER['REQUEST_METHOD']??'GET')==='GET'&&session_status()===PHP_SESSION_ACTIVE)session_write_close();
+$uploadStates=[];$songs=[];$collections=[];$genres=array_fill_keys(['kpop-original','jpop-original','pop-original','thai-original','joseon-ballad','echoes-of-joseon','groovy-airy-pop','narrative-piano-indie','dreamy-deep-house','fantasy-ambient-edm','edm-kpop-club','latin-afrobeats-edm','panpop','your-story','cover-reborn'],0);$error=false;
 try {
     $browseSources=[];$db=noa_bridge_pdo();$jukebox=nj_assets($db);if($admin){try{foreach($db->query('SELECT song_key,status,context FROM noa_jukebox_uploads ORDER BY sequence') as $u)$uploadStates[$u['song_key']]=$u;}catch(PDOException $e){}}
     $rows=$db->query("SELECT d.doc_key,d.kind,d.payload,UNIX_TIMESTAMP(h.changed_at) AS registered_at FROM noa_documents d LEFT JOIN noa_document_history h ON h.doc_key=d.doc_key AND h.revision=1 WHERE d.kind IN ('single','playlist','story'".(($admin&&isset($_GET['qa']))?",'jukebox_qa'":"").") ORDER BY d.doc_key");

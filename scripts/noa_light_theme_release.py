@@ -15,7 +15,7 @@ release.FILES.update({name: 'deploy/' + name for name in ('noa-account.js', 'noa
 release.FILES = {'noa-interface-labels.json':'deploy/noa-interface-labels.json','noa-bridge/weather.php':'bridge/weather.php', **release.FILES}
 release.FILES.update({'noa-youngcart.php':'deploy/noa-youngcart.php','extend/zz.noa-youngcart.php':'deploy/noa-youngcart.extend.php'})
 release.FILES.update({name:'deploy/'+name for name in ('noa-hero.js','noa-listening-model.js','noa-listening.js','noa-listening.css','noa-music.php','noa-music-vinyl.css')})
-release.FILES.update({'noa-bridge/home.php':'bridge/home.php','noa-bridge/home-core.php':'bridge/home-core.php'})
+release.FILES.update({'noa-bridge/listening.php':'bridge/listening.php','noa-bridge/home.php':'bridge/home.php','noa-bridge/home-core.php':'bridge/home-core.php'})
 # These two items are owned and checked byte-for-byte by this coordinated release.
 release.PROTECTED = [name for name in release.PROTECTED if name not in ('noa-hero.js','noa-music.php')]
 release.NEW = set(theme_assets) | {'noa-bridge/weather.php','noa-interface-labels.json'}

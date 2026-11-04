@@ -8,7 +8,7 @@ function noa_first_paint_theme($html){
  $file=dirname(__DIR__).'/noa-design.json';
  if(!is_file($file))$file=__DIR__.'/noa-design.json';
  $design=is_file($file)?json_decode(file_get_contents($file),true):[];
- $palettes=array_column($design['themes']??[],'tokens','id');
+
  $script=<<<'NOA'
 <script id="noa-first-paint">(()=>{
  const root=document.documentElement;
@@ -17,13 +17,15 @@ function noa_first_paint_theme($html){
  const hour=new Date().getHours(),light=choice==='auto'?hour>=9&&hour<21:choice==='noa-ivory';
  root.dataset.noaTheme=light?'noa-ivory':'noa-studio';root.dataset.noaThemePreference=choice;
  root.style.colorScheme=light?'light':'dark';
- const palettes=__NOA_FIRST_PALETTES__;
+ const design=__NOA_PAGE_DESIGN__;
+ if(design?.themes?.length)window.NoaPageDesign=design;
+ const palettes=Object.fromEntries((design?.themes||[]).map(theme=>[theme.id,theme.tokens]));
  const tokens=palettes[root.dataset.noaTheme]||{bg:light?'#FFFFFF':'#10151F'};
  for(const [name,value] of Object.entries(tokens))root.style.setProperty('--noa-'+name,value,'important');
  root.style.backgroundColor=tokens.bg;
 })();</script>
 NOA;
- $script=str_replace('__NOA_FIRST_PALETTES__',json_encode((object)$palettes,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT),$script);
+ $script=str_replace('__NOA_PAGE_DESIGN__',json_encode((object)$design,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT),$script);
  return preg_replace_callback('~<head\b[^>]*>~i',static fn($match)=>$match[0].$script,$html,1);
 }
 function noa_policy_script_revision($html){
@@ -40,8 +42,13 @@ function noa_policy_script_revision($html){
  $html=preg_replace("~(<link\\b[^>]*\\bhref=[\"'])/noa-ui[.]css(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.css?v='.$css_revision.'$2',$html);
  $ui=dirname(__DIR__).'/noa-ui.js';$ui_revision=is_file($ui)?hash_file('sha256',$ui):'20261025-member-access';
  $html=preg_replace("~(<script\\b[^>]*\\bsrc=[\"'])/noa-ui[.]js(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.js?v='.$ui_revision.'$2',$html);
- $listening=dirname(__DIR__).'/noa-listening.js';
- if(str_contains($html,'/noa-listening.js')&&is_file($listening))$html=preg_replace("~(/noa-listening[.]js)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$listening),$html);
+ foreach(['noa-listening.js','noa-listening-model.js','noa-listening.css'] as $name){
+  $file=dirname(__DIR__).'/'.$name;
+  if(str_contains($html,'/'.$name)&&is_file($file)){
+   $pattern="~(/".preg_quote($name,'~').")(?:[?][^\"']*)?~i";
+   $html=preg_replace($pattern,'$1?v='.hash_file('sha256',$file),$html);
+  }
+ }
  $brand=dirname(__DIR__).'/noa-brand.js';if(str_contains($html,'/noa-brand.js')&&is_file($brand))$html=preg_replace("~(/noa-brand[.]js)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$brand),$html);
  $home_js=dirname(__DIR__).'/noa-home.js';if(str_contains($html,'/noa-home.js')&&is_file($home_js))$html=preg_replace("~(/noa-home[.]js)(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$home_js),$html);
  foreach(['css','js'] as $kind){$f=dirname(__DIR__).'/noa-community.'.$kind;if(str_contains($html,'/noa-community.'.$kind)&&is_file($f))$html=preg_replace("~(/noa-community[.]".$kind.")(?:[?][^\"']*)?~i",'$1?v='.hash_file('sha256',$f),$html);}

@@ -71,7 +71,7 @@ try{
     }
     await page.locator('[name=birthDate]').fill('invalid');await page.locator('.nl-consent input').uncheck();const removed=page.waitForResponse(r=>r.url()===base+'/noa-bridge/listening.php'&&r.request().method()==='POST');await page.getByRole('button',{name:'저장',exact:true}).click();const response=await removed;assert.equal(response.status(),200);const cleared=(await response.json()).profile;assert.equal(cleared.consent,false);assert(!Object.hasOwn(cleared,'birthDate'));await page.getByRole('dialog').waitFor({state:'detached'});report.invalidDatesRejectedAndConsentCleared=true;
    }
-   await page.locator('.nl-genres').selectOption('kpop-original');await page.locator('.nl-primary').click();await page.waitForFunction(()=>{const a=document.getElementById('sound-player');return a&&!a.paused&&a.currentTime>0;});
+   assert(await page.locator('[data-manual-play]').isDisabled());await page.locator('.nl-genres').selectOption('kpop-original');assert(await page.locator('[data-manual-play]').isDisabled());await page.locator('[data-mood=calm]').click();await page.locator('[data-manual-play]').click();await page.waitForFunction(()=>{const a=document.getElementById('sound-player');return a&&!a.paused&&a.currentTime>0;});
    const playing=await page.evaluate(()=>({key:document.querySelector('.song.selected')?.dataset.key,src:document.getElementById('sound-player').getAttribute('src')}));assert(playing.key.startsWith('single:kpop-original:'));report.cases.push({width,...playing,oneClickActualAudio:true});
    assert.equal(await page.locator('#music-browse [data-browse-level="1"] .noa-browse-card').count(),4);
    const beforeBrowse=await page.locator('#sound-player').evaluate(a=>a.currentTime);await page.locator('#noa-listening .nl-catalog').click();
@@ -84,7 +84,7 @@ try{
    await page.evaluate(()=>document.getElementById('sound-player').pause());await page.locator('[data-mode=albums]').click();await page.locator('.nl-album').first().click();await page.waitForFunction(()=>document.querySelector('.song.selected')?.dataset.ep==='1');
    await page.locator('#next').click();assert.equal(await page.locator('.song.selected').getAttribute('data-ep'),'2');await page.evaluate(()=>document.getElementById('sound-player').pause());
    await page.locator('[data-mode=now]').click();
-  }else{assert((await page.locator('.nl-primary').innerText()).includes('로그인하고 듣기'));report.cases.push({width,guestGate:true});}
+  }else{assert((await page.locator('.nl-primary').innerText()).includes('로그인하고 추천받기'));report.cases.push({width,guestGate:true});}
   await page.locator('#noa-listening').screenshot({path:out+'/listening-'+width+'.png'});await c.close();
  }
  if(!live){const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block'}),page=await c.newPage();activePage=page;page.setDefaultTimeout(20000);await page.goto(base);assert.equal(await page.locator('.nl-catalog').getAttribute('href'),'/noa-music.php#music-browse');await page.waitForFunction(()=>!document.querySelector('.nl-primary').disabled);await page.getByRole('link',{name:'내 음악 바로 듣기',exact:true}).click();const f=page.frames().find(f=>f.url().includes('listenHost'));assert(f);await f.waitForFunction(()=>!document.getElementById('sound-player').paused&&document.getElementById('sound-player').currentTime>0);assert.equal(await f.locator('#music-browse [data-browse-level="1"] .noa-browse-card').count(),4);assert.equal(await page.locator('.nl-play-shell').isVisible(),true);await page.screenshot({path:out+'/home-one-click.png'});await page.goBack();assert(!await page.locator('.nl-play-shell').isVisible());report.homeOneClickActualAudio=true;await page.getByRole('link',{name:'내 음악 바로 듣기',exact:true}).click();await f.locator('.noa-mobile-nav a[data-noa-nav=home]').click();await page.waitForURL(base+'/');assert.equal(new URL(page.url()).pathname,'/');report.homeNavigationLeavesPlayer=true;await c.close();}
@@ -103,24 +103,24 @@ try{
   for(const width of [390,1280]){
    const c=await browser.newContext({viewport:{width,height:900},serviceWorkers:'block',extraHTTPHeaders:{'X-QA-User':'fortuneuser'}}),page=await c.newPage();activePage=page;page.on('pageerror',e=>report.errors.push(e.message));await page.goto(base);const card=page.locator('#noa-daily-fortune');
    await page.waitForFunction(()=>document.querySelector('.nl-primary')?.disabled===false);assert(await card.isVisible());assert(await card.getByRole('button',{name:'생년월일 설정하기'}).isVisible());
-   await page.locator('.nl-genres').selectOption('your-story');await page.locator('[data-mood=focus]').click();assert((await page.locator('.nl-status').innerText()).includes('관련된 곡을 찾지 못해'));
-   for(const mood of ['comfort','calm']){await page.locator('[data-mood='+mood+']').click();assert(!(await page.locator('.nl-status').innerText()).includes('찾지 못해'));assert.match(await page.locator('.nl-results').innerText(),/당신의 하루/);}await page.locator('.nl-primary').click();
+   await page.locator('.nl-genres').selectOption('your-story');await page.locator('[data-mood=focus]').click();assert((await page.locator('[data-listening-lane=manual] .nl-preview').innerText()).includes('분위기의 곡이 부족해'));
+   for(const mood of ['comfort','calm']){await page.locator('[data-mood='+mood+']').click();assert(!(await page.locator('[data-listening-lane=manual] .nl-preview').innerText()).includes('분위기의 곡이 부족해'));assert.match(await page.locator('[data-listening-lane=manual] .nl-preview').innerText(),/당신의 하루/);}await page.locator('[data-manual-play]').click();
    const player=page.frames().find(f=>f.url().includes('listenHost'));await player.waitForFunction(()=>document.querySelector('.song.selected')?.dataset.genre==='your-story'&&!document.getElementById('sound-player').paused&&document.getElementById('sound-player').currentTime>0);await page.goBack();
-   await page.locator('.nl-genres').selectOption('thai-original');assert((await page.locator('.nl-status').innerText()).includes('재생할 수 있는 음원이 없어요'));await page.getByRole('button',{name:'K-POP Original 듣기',exact:true}).click();await player.waitForFunction(()=>document.querySelector('.song.selected')?.dataset.genre==='kpop-original'&&!document.getElementById('sound-player').paused);await page.goBack();
+   await page.locator('.nl-genres').selectOption('thai-original');assert(await page.locator('[data-manual-play]').isDisabled());await page.locator('.nl-genres').selectOption('kpop-original');await page.locator('[data-manual-play]').click();await player.waitForFunction(()=>document.querySelector('.song.selected')?.dataset.genre==='kpop-original'&&!document.getElementById('sound-player').paused);await page.goBack();
    await card.getByRole('button',{name:'생년월일 설정하기'}).click();await page.getByRole('dialog').getByRole('button',{name:'닫기',exact:true}).click();await page.locator('[data-mood=auto]').click();await page.locator('.nl-consent input').check();await page.locator('[name=birthDate]').fill('19900615');await page.locator('[name=fortuneAlerts]').check();await page.getByRole('button',{name:'저장',exact:true}).click();await card.getByRole('link',{name:'이 기기 알림 연결'}).waitFor();
    const saju=(await (await c.request.get(base+'/noa-bridge/listening.php')).json()).theme;
-   assert(saju.personal&&saju.rankedMoods.length===2);assert((await page.locator('.nl-reason').innerText()).includes('내 사주 추천 · '+saju.label));
-   await page.locator('[data-mood=focus]').click();assert(!(await page.locator('.nl-reason').innerText()).includes('사주'));await page.locator('[data-mood=auto]').click();
+   assert(saju.personal&&saju.rankedMoods.length===2);assert(await page.locator('[data-listening-lane=whole] .nl-preview-track').count()>0);
+   await page.locator('[data-mood=focus]').click();assert.equal(await page.locator('[data-mood=focus]').getAttribute('aria-pressed'),'true');await page.locator('[data-mood=auto]').click();
    await player.waitForFunction(()=>!document.getElementById('sound-player').paused&&document.getElementById('sound-player').currentTime>0);
    const whole=await player.evaluate(()=>queue().map(b=>b.dataset.genre));assert(new Set(whole).size>1);
    await player.locator('#next').click();assert.equal(await player.locator('.song.selected').getAttribute('data-genre'),whole[1]);await page.goBack();
-   assert.equal(await page.locator('[data-mood=auto]').getAttribute('aria-pressed'),'true');assert.equal(await page.locator('.nl-genres').inputValue(),'');
-   assert((await page.locator('.nl-reason').innerText()).includes(saju.label));
+   assert.equal(await page.locator('[data-mood=auto]').getAttribute('aria-pressed'),'true');assert.equal(await page.locator('.nl-genres').inputValue(),'kpop-original');
+   assert(await page.locator('[data-all-genre-mix]').isVisible());
    const choices=page.locator('[data-genre-choice]');assert.equal(await choices.count(),3);
    const offered=await choices.evaluateAll(nodes=>nodes.map(n=>n.dataset.genreChoice));assert.equal(new Set(offered).size,3);
-   await page.locator('.nl-genre-choices').screenshot({path:out+'/saju-genre-choices-'+width+'.png'});
+   await page.locator('[data-listening-lane=suggested]').screenshot({path:out+'/saju-genre-choices-'+width+'.png'});
    for(const genre of offered){
-    const choice=page.locator('[data-genre-choice="'+genre+'"]');const firstTitle=await choice.locator('small').innerText();
+    const choice=page.locator('[data-genre-choice="'+genre+'"]');const firstTitle=await choice.locator('..').locator('.nl-preview-track span').first().innerText();
     await choice.click();await player.waitForFunction(g=>{
      const active=document.querySelector('.song.selected'),audio=document.querySelector('#sound-player');
      return active?.dataset.genre===g&&!audio.paused&&audio.currentTime>0;
@@ -129,7 +129,7 @@ try{
     const keys=await player.evaluate(()=>queue().map(b=>[b.dataset.key,b.dataset.genre]));
     assert(keys.length&&keys.every(([,g])=>g===genre));await page.goBack();
    }
-   await page.locator('.nl-genres').selectOption('your-story');await page.locator('.nl-primary').click();
+   await page.locator('.nl-genres').selectOption('your-story');await page.locator('[data-mood=calm]').click();await page.locator('[data-manual-play]').click();
    await player.waitForFunction(()=>document.querySelector('.song.selected')?.dataset.genre==='your-story'&&!document.getElementById('sound-player').paused);
    assert(await player.evaluate(()=>queue().every(b=>b.dataset.genre==='your-story')));await page.goBack();
    await page.locator('[data-all-genre-mix]').click();await player.waitForFunction(()=>!document.getElementById('sound-player').paused);
@@ -137,14 +137,14 @@ try{
    report.allCatalogAndManualPlayback=true;
    report.sajuGenreSelectors??=[];report.sajuGenreSelectors.push({width,distinct:offered.length,allThreeStartMatchingAudio:true});
    assert(await card.evaluate(n=>n.previousElementSibling.id==='noa-listening'));assert(await card.getByRole('link',{name:'이 기기 알림 연결'}).isVisible());await card.scrollIntoViewIfNeeded();await card.screenshot({path:out+'/fortune-'+width+'.png'});
-   const headline=await card.locator('h3').innerText();await page.reload();await card.waitFor();assert.equal(await card.locator('h3').innerText(),headline);await card.getByRole('button').click();await page.locator('.nl-consent input').uncheck();await page.getByRole('button',{name:'저장',exact:true}).click();await card.getByRole('button',{name:'생년월일 설정하기'}).waitFor();assert(!(await page.locator('.nl-reason').innerText()).includes('내 사주 추천'));await c.close();
+   const headline=await card.locator('h3').innerText();await page.reload();await card.waitFor();assert.equal(await card.locator('h3').innerText(),headline);await card.getByRole('button').click();await page.locator('.nl-consent input').uncheck();await page.getByRole('button',{name:'저장',exact:true}).click();await card.getByRole('button',{name:'생년월일 설정하기'}).waitFor();assert.equal(await page.locator('[data-listening-lane=whole] .nl-preview-track').count(),0);await c.close();
   }report.fortuneAndMoodFallback=true;
  }
  if(!live){
   const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block',extraHTTPHeaders:{'X-QA-User':'queue-count','X-QA-Catalog':'large'}});
   const before=await(await c.request.get(base+'/noa-bridge/listening.php')).json();
   const save=await c.request.post(base+'/noa-bridge/listening.php',{headers:{Origin:base,'X-NOA-CSRF':before.csrf},data:{revision:before.revision,profile:{genre:'kpop-original',timezone:'Asia/Seoul',consent:true,birthDate:'1990-06-15'}}});assert.equal(save.status(),200);
-  const page=await c.newPage();activePage=page;await page.goto(base);await page.getByRole('button',{name:'전체 음원 AI 추천 100곡 듣기'}).click();
+  const page=await c.newPage();activePage=page;await page.goto(base);await page.locator('[data-listening-lane=whole] .nl-preview-track').nth(9).waitFor();await page.getByRole('button',{name:'추천 100곡 듣기',exact:true}).click();
   const player=page.frames().find(f=>f.url().includes('listenHost'));assert(player);await player.waitForFunction(()=>queue().length===100&&!player.paused&&player.currentTime>0);
   const readQueue=()=>player.evaluate(()=>({keys:queue().map(b=>b.dataset.key),source:document.getElementById('dock-listening-source').textContent,src:player.getAttribute('src'),selected:selected.dataset.key}));
   const wholeQueue=await readQueue();assert.match(wholeQueue.source,/전체 사주 추천 · 100곡/);
@@ -164,14 +164,14 @@ try{
    assert.equal(new URL(recommended.src,base).searchParams.get('record'),recommended.keys[0]);
    await player.locator('.nl-music-discovery>summary').click();
    assert.equal(await player.locator('[data-genre-choice="'+genre+'"]').getAttribute('aria-pressed'),'true');
-   await player.locator('.nl-listen-row>.nl-primary').click();assert.deepEqual((await readQueue()).keys,recommended.keys);
+   assert.equal(await player.locator('.nl-listen-row>.nl-primary').innerText(),'사주 추천 듣기');await player.locator('.nl-listen-row>.nl-primary').click();assert.deepEqual((await readQueue()).keys,wholeQueue.keys);await player.locator('[data-genre-choice="'+genre+'"]').click();assert.deepEqual((await readQueue()).keys,recommended.keys);
    await player.locator('.nl-music-discovery>summary').click();await player.locator('#next').click();
    assert.equal((await readQueue()).selected,recommended.keys[1]);
    assert.equal(await player.evaluate(()=>new Set(queue().map(b=>b.dataset.key)).size),10);
    await player.evaluate(()=>{select(queue()[9],true);move(1,true);});assert(await player.evaluate(()=>selected===queue()[9]));await page.goBack();
   }
   for(const genre of offered){
-   await page.locator('.nl-genres').selectOption(genre);await page.locator('.nl-primary').click();
+   await page.locator('.nl-genres').selectOption(genre);await page.locator('[data-mood=calm]').click();await page.locator('[data-manual-play]').click();
    await player.waitForFunction(g=>queue().length===42&&queue().every(b=>b.dataset.genre===g)&&!player.paused&&player.currentTime>0,genre);
    const manual=await readQueue();assert.match(manual.source,/직접 선택 · 42곡/);assert.equal(manual.keys[0],'single:'+genre+':1');
    assert.equal(new URL(manual.src,base).searchParams.get('record'),manual.keys[0]);

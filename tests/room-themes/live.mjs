@@ -56,14 +56,13 @@ for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])aw
  await p.goto(base+'/');
  await p.waitForFunction(()=>document.documentElement.dataset.noaTheme==='noa-ivory'&&document.documentElement.dataset.noaThemePreference==='auto');
  const campaign=p.locator('#noa-amt-fan .amt-close');if(await campaign.isVisible())await campaign.click();
- await p.locator('[data-noa-display-settings]:visible').first().click();
- await p.locator('#noa-theme').waitFor();
- assert.equal(await p.locator('#noa-theme').inputValue(),'auto','fresh visitor defaults to scheduled automatic mode');
+ await p.locator('[data-footer-theme][aria-pressed=true]').waitFor();
+ assert.equal(await p.locator('[data-footer-theme][aria-pressed=true]').getAttribute('data-footer-theme'),'auto','fresh visitor defaults to scheduled automatic mode');
  for(const mode of ['noa-ivory','noa-studio']){
   const theme=config.themes.find(t=>t.id===mode);
-  await p.locator('#noa-theme').selectOption(mode);
-  assert.equal(await p.locator('#noa-theme option:checked').innerText(),theme.name);
-  await p.locator('#noa-settings-dialog .noa-dialog-close').click();
+  await p.locator('[data-footer-theme="'+mode+'"]').click();
+  assert.equal(await p.locator('[data-footer-theme="'+mode+'"]').getAttribute('aria-pressed'),'true');
+  assert.equal(await p.locator('#noa-settings-dialog[open]').count(),0);
   for(const [route,room] of [['/','home'],['/noa-lounge.php','community'],['/noa-shop.php','shop'],['/noa-vip.php','shop'],['/noa-points.php','shop'],['/noa-settings.php',''],['/noa-sitemap.php',''],['/noa-about.php',''],['/noa-login.php',''],['/noa-install.php',''],['/shop/cart.php','shop']].filter(([route])=>process.env.NOA_VISUAL_REVIEW!=='true'||route==='/')){
    await p.goto(base+route,{waitUntil:'domcontentloaded'});
    await p.waitForFunction(([mode,room])=>document.documentElement.dataset.noaTheme===mode&&document.documentElement.dataset.noaRoom===room,[mode,room]);
@@ -75,14 +74,15 @@ for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])aw
    await p.evaluate(()=>document.fonts.ready);
    const metrics=await p.evaluate(()=>{
     const root=document.documentElement,style=getComputedStyle(root);
-    return {bg:style.getPropertyValue('--noa-bg').trim().toLowerCase(),shared:style.getPropertyValue('--noa-darkGray').trim().toLowerCase(),scheme:style.colorScheme,overflow:root.scrollWidth-innerWidth,text:(document.querySelector('main')||document.querySelector('#container'))?.innerText.length||0};
+    const nav=performance.getEntriesByType('navigation')[0];const frame=document.querySelector('main')||document.querySelector('#container');
+    return {domMs:Math.round(nav.domContentLoadedEventEnd||nav.domInteractive),firstByteMs:Math.round(nav.responseStart),alignment:frame&&getComputedStyle(frame).textAlign,bg:style.getPropertyValue('--noa-bg').trim().toLowerCase(),shared:style.getPropertyValue('--noa-darkGray').trim().toLowerCase(),scheme:style.colorScheme,overflow:root.scrollWidth-innerWidth,text:(document.querySelector('main')||document.querySelector('#container'))?.innerText.length||0};
    });
    results.push({width,mode,route,...metrics});console.log(JSON.stringify(results.at(-1)));
    assert.equal(metrics.bg,theme.tokens.bg.toLowerCase());
    assert.equal(metrics.shared,'#30343b');
    assert.equal(metrics.scheme,mode==='noa-ivory'?'light':'dark');
    assert(metrics.overflow<=1,JSON.stringify(results.at(-1)));
-   assert(metrics.text>20,'visible content: '+route);
+   assert(metrics.text>20,'visible content: '+route);assert(['left','start'].includes(metrics.alignment),'reading alignment: '+route);
    if(width>=1200&&width>height){
     assert(await p.locator('#noa-menu-drawer').isVisible(),'left menu is always visible: '+route);
     assert(await p.evaluate(()=>{const host=document.querySelector('main')||document.querySelector('#container');return host.getBoundingClientRect().left>=220;}),'content clears pinned navigation: '+route);
@@ -111,7 +111,7 @@ for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])aw
    if(room==='home'){
     const footerArt=p.locator('.noa-mobile-footer .noa-footer-landscape');
     assert.equal(await footerArt.getAttribute('src'),theme.images.coast);
-    assert(await footerArt.evaluate(img=>img.nextElementSibling?.matches('[data-noa-display-settings]')));
+    assert(await footerArt.evaluate(img=>img.nextElementSibling?.matches('.noa-footer-themes')));
    }
    if(mode==='noa-ivory')for(const primary of await p.locator('.ec-primary:visible').all()){
     const paint=await primary.evaluate(el=>({color:getComputedStyle(el).color,background:getComputedStyle(el).backgroundColor}));
@@ -163,12 +163,11 @@ for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])aw
    }
    if(room==='home'){await verifyMusicShelves(p,width,mode,theme);await verifyExpansiveShell(p,width,height,mode);await verifyUtilityActions(p,width,mode);}
   }
-  await p.locator('[data-noa-display-settings]:visible').first().click();
-  assert.equal(await p.locator('#noa-theme').inputValue(),mode,'theme survives navigation');
+  await p.locator('[data-footer-theme][aria-pressed=true]').waitFor();
+  assert.equal(await p.locator('[data-footer-theme][aria-pressed=true]').getAttribute('data-footer-theme'),mode,'theme survives navigation');
   await p.reload({waitUntil:'domcontentloaded'});
-  await p.locator('[data-noa-display-settings]:visible').first().click();
-  await p.locator('#noa-theme').waitFor();
-  assert.equal(await p.locator('#noa-theme').inputValue(),mode,'theme survives reload');
+  await p.locator('[data-footer-theme][aria-pressed=true]').waitFor();
+  assert.equal(await p.locator('[data-footer-theme][aria-pressed=true]').getAttribute('data-footer-theme'),mode,'theme survives reload');
  }
  await context.close();
 }));
@@ -222,22 +221,22 @@ async function verifyAutomaticClock(){
  await p.clock.install({time:new Date('2026-11-03T08:55:00+09:00')});
  await p.goto('https://noastudio.ai.kr/noa-login.php');
  await p.waitForFunction(()=>document.documentElement.dataset.noaThemePreference==='auto'&&document.documentElement.dataset.noaTheme==='noa-studio');
- await p.locator('[data-noa-display-settings]:visible').first().click();await p.locator('#noa-theme').waitFor();
- assert.equal(await p.locator('#noa-theme').inputValue(),'auto');
+ await p.locator('[data-footer-theme][aria-pressed=true]').waitFor();
+ assert.equal(await p.locator('[data-footer-theme][aria-pressed=true]').getAttribute('data-footer-theme'),'auto');
  await p.clock.pauseAt(new Date('2026-11-03T08:59:59+09:00'));
  await p.clock.runFor(1000);
  assert.equal(await p.locator('html').getAttribute('data-noa-theme'),'noa-ivory','09:00 changes an open page to light');
- assert.equal(await p.locator('#noa-theme').inputValue(),'auto');
+ assert.equal(await p.locator('[data-footer-theme][aria-pressed=true]').getAttribute('data-footer-theme'),'auto');
  await p.clock.pauseAt(new Date('2026-11-03T20:59:59+09:00'));await p.clock.runFor(1000);
  assert.equal(await p.locator('html').getAttribute('data-noa-theme'),'noa-studio','21:00 changes an open page to dark');
- assert.equal(await p.locator('#noa-theme').inputValue(),'auto');
- await p.clock.resume();await p.locator('#noa-theme').selectOption('noa-ivory');
+ assert.equal(await p.locator('[data-footer-theme][aria-pressed=true]').getAttribute('data-footer-theme'),'auto');
+ await p.clock.resume();await p.locator('[data-footer-theme=noa-ivory]').click();
  await p.clock.pauseAt(new Date('2026-11-03T23:00:00+09:00'));
  assert.equal(await p.locator('html').getAttribute('data-noa-theme'),'noa-ivory','manual light remains after the automatic boundary');
- await p.clock.resume();await p.locator('#noa-theme').selectOption('auto');
+ await p.clock.resume();await p.locator('[data-footer-theme=auto]').click();
  await p.screenshot({path:output+'/automatic-settings-390.png'});
- await p.reload({waitUntil:'domcontentloaded'});await p.locator('[data-noa-display-settings]:visible').first().click();await p.locator('#noa-theme').waitFor();
- assert.equal(await p.locator('#noa-theme').inputValue(),'auto','automatic preference survives reload');
+ await p.reload({waitUntil:'domcontentloaded'});await p.locator('[data-footer-theme][aria-pressed=true]').waitFor();
+ assert.equal(await p.locator('[data-footer-theme][aria-pressed=true]').getAttribute('data-footer-theme'),'auto','automatic preference survives reload');
  assert.equal(await p.locator('html').getAttribute('data-noa-theme'),'noa-studio');
  const legacy=await context.newPage();
  const legacyScript=execFileSync('git',['show','71b05701e8b74a908ad0ef4d942a943285e259f2:deploy/noa-ui.js'],{cwd:source});
@@ -246,7 +245,7 @@ async function verifyAutomaticClock(){
  await legacy.locator('[data-noa-display-settings]:visible').first().click();await legacy.locator('#noa-theme').waitFor();
  await legacy.locator('#noa-theme').selectOption('noa-studio');
  await p.waitForTimeout(150);
- assert.equal(await p.locator('#noa-theme').inputValue(),'auto','an older open tab cannot overwrite automatic preference');
+ assert.equal(await p.locator('[data-footer-theme][aria-pressed=true]').getAttribute('data-footer-theme'),'auto','an older open tab cannot overwrite automatic preference');
  await legacy.close();
  assert.deepEqual(posts,[],'clock changes never write account preferences');
  if(phase==='live'){
@@ -378,7 +377,7 @@ async function verifyHeader(p,width,height){
  }
  assert(state.left.at(-1).x+state.left.at(-1).width<=state.right[0].x-3,'left and right controls remain separate');
  assert.equal(await p.locator('#noa-nav-favorite').count(),0);assert.equal(await p.locator('#noa-nav-install').getAttribute('href'),'/noa-install.php');
- assert(await p.locator('#noa-menu-find').isVisible());assert.equal(await p.locator('#noa-account-bar .noa-display-settings').count(),0);assert(await p.locator('.noa-mobile-footer .noa-display-settings').isVisible());assert.equal(await p.locator('#noa-nav-all').isVisible(),!pinned);
+ assert(await p.locator('#noa-menu-find').isVisible());assert.equal(await p.locator('#noa-account-bar .noa-display-settings').count(),0);assert(await p.locator('.noa-mobile-footer .noa-footer-themes').isVisible());assert.equal(await p.locator('#noa-nav-all').isVisible(),!pinned);
  assert(await p.locator('#noa-header-language').isVisible());assert.equal(await p.locator('#noa-header-weather').isVisible(),width>760);assert.equal(await p.locator('#noa-header-clock').isVisible(),width>760);if(width>760)assert.match(await p.locator('#noa-header-clock').innerText(),/[0-9]{2}:[0-9]{2}:[0-9]{2}/);
  if(width<=760){assert(await p.locator('#noa-info-bar .noa-account-brand').isVisible());assert.equal(await p.locator('#noa-header-language>span').isVisible(),false);}
  else{const date=await p.locator('#noa-header-clock span').boundingBox(),time=await p.locator('#noa-header-clock strong').boundingBox(),weather=await p.locator('#noa-header-weather').boundingBox();assert(date.x<time.x&&time.x<weather.x&&weather.x<state.upper[0].x);}

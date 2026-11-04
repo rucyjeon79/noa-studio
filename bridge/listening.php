@@ -7,6 +7,8 @@ $method=$_SERVER['REQUEST_METHOD']??'GET';if(!in_array($method,['GET','POST','DE
 $logged=!empty($is_member)&&!empty($member['mb_id']);$access=nam_access((array)($member??[]),(string)($is_admin??''));
 if(!$logged){if($method!=='GET')nlp_reply(401,['error'=>'login_required']);nlp_reply(200,['member'=>false,'canPlay'=>false,'genres'=>n80_listening_genres(),'profile'=>null,'theme'=>n80_listening_theme([])]);}
 $_SESSION['noa_listening_csrf']??=bin2hex(random_bytes(32));
+// Let the next navigation use this session while read-only database queries finish.
+if($method==='GET'&&session_status()===PHP_SESSION_ACTIVE)session_write_close();
 if($method!=='GET'&&((string)($_SERVER['HTTP_ORIGIN']??'')!=='https://noastudio.ai.kr'||!hash_equals($_SESSION['noa_listening_csrf'],(string)($_SERVER['HTTP_X_NOA_CSRF']??''))))nlp_reply(403,['error'=>'request_verification_failed']);
 try{
  $db=noa_bridge_pdo();$owner=(string)$member['mb_id'];$key='listening:user:'.hash('sha256',$owner);$q=$db->prepare("SELECT payload,revision FROM noa_documents WHERE doc_key=? AND kind='prefs'");$q->execute([$key]);$row=$q->fetch(PDO::FETCH_ASSOC);$profile=$row?json_decode($row['payload'],true,512,JSON_THROW_ON_ERROR):null;$revision=(int)($row['revision']??0);
