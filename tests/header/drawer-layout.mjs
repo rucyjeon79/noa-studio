@@ -31,6 +31,14 @@ async function checkFooter(page,width,theme,home=false){
  assert(caption.x-art.x<=25&&art.x+art.width-choices.x-choices.width<=25,'caption left, theme choices right');
  assert(art.y+art.height-choices.y-choices.height<=25,'theme choices stay at image bottom');
  for(const button of geometry.buttons)assert(button.width>=44&&button.height>=44);
+ assert.equal(await scene.locator('[data-footer-theme] svg').count(),3);
+ const greeting=page.locator('#noa-ainoa .ainoa-message-dismiss');if(await greeting.isVisible())await greeting.click();
+ await footer.scrollIntoViewIfNeeded();
+ const blocked=await scene.locator('[data-footer-theme]').evaluateAll(buttons=>buttons.flatMap(el=>{const r=el.getBoundingClientRect();return [[r.x+4,r.y+4],[r.right-4,r.bottom-4]].flatMap(([x,y])=>{const hit=document.elementFromPoint(x,y);return el.contains(hit)?[]:[{choice:el.dataset.footerTheme,x,y,hit:hit?.id||hit?.className||hit?.tagName}];});}));
+ if(blocked.length)await page.screenshot({path:out+'/blocked-footer-'+width+'.png'});
+ assert.deepEqual(blocked,[],'theme choices obstructed: '+JSON.stringify({width,path:page.url(),blocked}));
+ assert(await scene.locator('.noa-footer-theme-label').isVisible());
+ assert(await scene.locator('.noa-sidebar-signature>span').evaluate(el=>parseFloat(getComputedStyle(el).fontSize)>=18),'theme topic must have a readable hierarchy');
  for(let i=0;i<4;i++){
   const link=links.nth(i),box=geometry.links[i];
   assert(box.width>=44&&box.height>=44&&inside(box)&&box.y<art.y+art.height/3,JSON.stringify({width,theme,geometry}));
@@ -125,7 +133,7 @@ try{
     const expected=await page.evaluate(({markup,member,admin})=>{
      const t=document.createElement('template');t.innerHTML=markup;
      const shortcuts=new Set(['download','login',...(member?['my','profile','membership',...(admin?['libraryAdmin']:[])]:[])]);
-     return [...t.content.querySelectorAll('main[data-noa-member-directory] .noa-site-map')].map(g=>[g.querySelector('h2').id,...[...g.querySelectorAll('[data-noa-route]')].filter(a=>!shortcuts.has(a.dataset.noaRoute)).map(a=>[a.dataset.noaRoute,a.getAttribute('href'),a.dataset.noaAccessLabel||'',Number(a.dataset.noaAccessRank)||0])]).filter(g=>g.length>1);
+     return [...t.content.querySelectorAll('main[data-noa-member-directory] .noa-site-map')].map(g=>[g.querySelector('h2').id,...[...g.querySelectorAll('[data-noa-route]')].filter(a=>!shortcuts.has(a.dataset.noaRoute)).map(a=>[a.dataset.noaRoute,a.getAttribute('href'),Number(a.dataset.noaAccessRank)>=4?(a.dataset.noaAccessLabel||''):'',Number(a.dataset.noaAccessRank)||0])]).filter(g=>g.length>1);
     },{markup,member,admin:fixtureRole==='admin'});
     assert(expected.length>0);
     const actual=await map.locator('.noa-drawer-category').evaluateAll(gs=>gs.map(g=>[g.dataset.mapGroup,...[...g.querySelectorAll('a')].map(a=>[a.dataset.drawerRoute,a.getAttribute('href'),a.querySelector('.noa-route-level')?.getAttribute('aria-label')||'',Number(a.dataset.accessRank)||0])]));
@@ -152,7 +160,7 @@ try{
     for(const key of ['my','profile','membership','download','login','libraryAdmin'])assert.equal(await map.locator('[data-drawer-route='+key+']').count(),0,'shortcut duplicated in categories: '+key);
     const destinations=await links.evaluateAll(xs=>xs.map(a=>a.getAttribute('href')));assert.equal(new Set(destinations).size,destinations.length,'duplicate category destination');
     assert.equal(await map.locator('[data-drawer-route=creatorAI]').count(),['admin','eight'].includes(fixtureRole)?1:0);
-    if(member)assert.equal(await map.locator('[data-drawer-route=notifications] .noa-route-level').getAttribute('aria-label'),'Lv.2 이상');
+    assert.equal(await map.locator('a[data-access-rank="0"] .noa-route-level,a[data-access-rank="1"] .noa-route-level,a[data-access-rank="2"] .noa-route-level,a[data-access-rank="3"] .noa-route-level').count(),0,'levels 3 and below have no grade icon');
     assert.equal(await drawer.locator('footer .noa-sidebar-legal,footer a[href="/noa-world.php"]').count(),0);
     assert(await drawer.locator('footer .noa-sidebar-visitors').isVisible());
     const index=map.getByRole('combobox',{name:'분류 바로가기'});assert.equal(await index.locator('option').count(),expected.length+1);
