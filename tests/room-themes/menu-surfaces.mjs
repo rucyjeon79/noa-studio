@@ -10,6 +10,7 @@ const source="define('NOA_SITEMAP_REGISTRY_ONLY',true);require 'deploy/noa-sitem
 const groups=JSON.parse(execFileSync('php',['-r',source],{encoding:'utf8'}));
 const registry=Object.values(groups).flatMap(g=>g.routes.map(r=>({section:g.title,label:r[1],href:r[3],role:r[5]})));
 const publicLinks=[...new Set([...registry.filter(r=>['public','guest'].includes(r.role)).map(r=>r.href),'/noa-sitemap.php','/shop/cart.php'])];
+const candidate=process.env.NOA_MENU_CANDIDATE==='true';
 const results=[],errors=[];
 writeFileSync(out+'/registry.json',JSON.stringify(registry,null,2));
 const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
@@ -22,7 +23,11 @@ try{
     const alerts=[];page.on('dialog',async d=>{alerts.push(d.message());await d.dismiss();});
     try{
      let chosen='noa-ivory';
-     await page.route('**/*',route=>['media'].includes(route.request().resourceType())?route.abort():route.continue());
+     await page.route('**/*',route=>{
+      const request=route.request(),url=new URL(request.url());
+      if(candidate&&url.origin===base&&url.pathname==='/noa-starlight.css')return route.fulfill({path:'deploy/noa-starlight.css',contentType:'text/css'});
+      return request.resourceType()==='media'?route.abort():route.continue();
+     });
      await page.addInitScript(()=>{localStorage.setItem('noa-ui-selection-v2',JSON.stringify({theme:sessionStorage.getItem('noa-menu-audit')||'noa-ivory'}));});
      for(const theme of ['noa-ivory','noa-studio']){
       const requested=new URL(href,base);assert.equal(requested.origin,base);
@@ -39,6 +44,11 @@ try{
        return {theme:root.dataset.noaTheme,scheme:style.colorScheme,overflow:root.scrollWidth-root.clientWidth,heading:main.querySelector('h1,h2')?.textContent?.trim().slice(0,100),fields:main.querySelectorAll('input:not([type=hidden]),select,textarea').length};
       });
       assert.equal(shape.scheme,theme==='noa-ivory'?'light':'dark');assert(shape.overflow<=1,'horizontal overflow '+shape.overflow);
+      if(requested.pathname==='/noa-privacy.php'&&width<480){
+       const table=page.locator('.ne-table-wrap').first();
+       const travel=await table.evaluate(node=>{node.scrollLeft=node.scrollWidth;const distance=node.scrollLeft;node.scrollLeft=0;return distance;});
+       assert(travel>0,'all privacy table columns can be reached inside the table');
+      }
       results.push({width,href,actual:actual.pathname,status,access:'screen',...shape});
      }
     }catch(error){errors.push({width,href,message:String(error).slice(0,350)});console.log('MENU_REVIEW',width,href,errors.at(-1).message);}
@@ -48,7 +58,7 @@ try{
  }));
 }finally{
  await browser.close();
- writeFileSync(out+'/results.json',JSON.stringify({registry:registry.length,publicLinks:publicLinks.length,results,errors},null,2));
- console.log('MENU_SURFACES',JSON.stringify({registry:registry.length,publicLinks:publicLinks.length,screens:results.filter(r=>r.access==='screen').length,gates:results.filter(r=>r.access==='gate').length,errors}));
+ writeFileSync(out+'/results.json',JSON.stringify({candidate,registry:registry.length,publicLinks:publicLinks.length,results,errors},null,2));
+ console.log('MENU_SURFACES',JSON.stringify({candidate,registry:registry.length,publicLinks:publicLinks.length,screens:results.filter(r=>r.access==='screen').length,gates:results.filter(r=>r.access==='gate').length,errors}));
 }
 assert.equal(errors.length,0,'review menu-surface results');

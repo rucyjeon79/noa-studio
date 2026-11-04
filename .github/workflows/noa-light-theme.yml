@@ -34,6 +34,7 @@ jobs:
           node --test tests/voice/composer_test.cjs
           node --check tests/room-themes/member.mjs
           node --check tests/room-themes/forms.mjs
+          node --check tests/room-themes/menu-surfaces.mjs
           php -l bridge/weather.php
           php -l deploy/noa-youngcart.php
           php -l deploy/noa-youngcart.extend.php
@@ -118,3 +119,4 @@ jobs:
     needs: publish
     if: success() && !contains(github.event.head_commit.message, '[design-review]')
     uses: ./.github/workflows/noa-menu-audit.yml
+    with: {deployed: true}

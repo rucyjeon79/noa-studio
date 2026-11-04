@@ -1022,3 +1022,6 @@ html[data-noa-theme] body :is(#bo_list,.noa-gifts,.noa-record-editor,.lab-main,.
  html[data-noa-theme] body :is(.noa-record-section,.noa-record-classification,.ncea-section,.ncea-result,.ncea-review){padding:16px}
  html[data-noa-theme] body :is(.ec-form,.creator-form,.ncea-form,.noa-record-field,#bo_w,#bo_vc_w) :is(input:not([type]),input[type=text],select,textarea){font-size:16px}
 }
+
+/* Let the wide policy table scroll within the article on narrow screens. */
+.ne-legal-layout > .ne-document{min-inline-size:0}

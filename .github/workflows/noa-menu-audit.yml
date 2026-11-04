@@ -1,6 +1,8 @@
 name: NOA public menu surface audit
 on:
   workflow_call:
+    inputs:
+      deployed: {type: boolean, default: false}
   workflow_dispatch:
   push:
     branches: [main]
@@ -14,6 +16,8 @@ jobs:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
       - name: Check public menu destinations and record access gates
+        env:
+          NOA_MENU_CANDIDATE: ${{ github.event_name == 'push' && !inputs.deployed }}
         run: |
           npm install --prefix "$RUNNER_TEMP/noa-menu-surfaces" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp tests/room-themes/menu-surfaces.mjs "$RUNNER_TEMP/noa-menu-surfaces/check.mjs"
