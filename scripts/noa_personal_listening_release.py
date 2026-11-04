@@ -14,6 +14,10 @@ release.FILES={
  'noa-app/engine/personal-song-index.php':'deploy/noa-app/engine/personal-song-index.php',
  'noa-bridge/youtube-catalog.php':'bridge/youtube-catalog.php',
  'noa-bridge/listening-video-catalog.php':'bridge/listening-video-catalog.php',
+ 'noa-bridge/listening-weather-editions.php':'bridge/listening-weather-editions.php',
+ 'noa-bridge/listening-care-core.php':'bridge/listening-care-core.php',
+ 'noa-app/engine/song-generation.php':'deploy/noa-app/engine/song-generation.php',
+ 'noa-bridge/listening-care.php':'bridge/listening-care.php',
  'noa-bridge/listening-weather.php':'bridge/listening-weather.php',
  'noa-bridge/listening-videos.php':'bridge/listening-videos.php',
  'noa-bridge/lab-worker.php':'bridge/lab-worker.php',
@@ -44,6 +48,10 @@ if os.environ.get('NOA_MIND_WEATHER') == 'true':
     paths = ['noa-bridge/member-access.php','noa-bridge/listening-weather.php','noa-bridge/listening.php','noa-listening.css','noa-listening.js','noa-music.php','noa-app/home.php']
     release.FILES = {p:('bridge/'+p.split('/')[-1] if p.startswith('noa-bridge/') else 'deploy/'+p) for p in paths}
     release.NEW = {'noa-bridge/listening-weather.php'}
+if os.environ.get('NOA_VIP_CARE') == 'true':
+    paths = ['noa-bridge/listening-weather-editions.php','noa-bridge/listening-care-core.php','noa-app/engine/song-generation.php','noa-bridge/listening-care.php','noa-bridge/listening-weather.php','noa-listening.css','noa-listening.js','noa-music.php','noa-app/home.php']
+    release.FILES = {p:('bridge/'+p.split('/')[-1] if p.startswith('noa-bridge/') else 'deploy/'+p) for p in paths}
+    release.NEW = set(paths[:2]+['noa-bridge/listening-care.php'])
 release.PROTECTED=[p for p in release.PROTECTED if p not in release.FILES]
 release.EXTRA_KNOWN={p:{hashlib.sha256(Path(local).read_bytes()).hexdigest()} for p,local in release.FILES.items() if 'calendar-vendor' in p or 'korean-months' in p or 'calendar-LICENSE' in p}
 if __name__=='__main__':release.main()

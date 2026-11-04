@@ -49,6 +49,8 @@ jobs:
           python scripts/noa_personal_dependencies.py
           php -l deploy/noa-app/engine/personal-calendar-vendor.php
           php -l deploy/noa-app/engine/personal-listening.php
+          php -l bridge/listening-care.php
+          php tests/listening/care.php
           php -l bridge/listening-weather.php
           php -l bridge/listening.php
           php -l deploy/noa-music.php
@@ -78,6 +80,7 @@ jobs:
     timeout-minutes: 15
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     env:
+      NOA_VIP_CARE: ${{ contains(github.event.head_commit.message, '[vip-care]') }}
       NOA_MIND_WEATHER: ${{ contains(github.event.head_commit.message, '[mind-weather]') }}
       NOA_LISTENING_COPY: ${{ contains(github.event.head_commit.message, '[listening-copy]') }}
       GH_TOKEN: ${{ github.token }}

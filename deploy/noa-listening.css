@@ -152,3 +152,5 @@ html body .nl-video-dialog{width:min(760px,94vw);max-width:94vw}
 .nl-weather-tracks small{grid-column:1}.nl-weather-tracks button{grid-column:2;grid-row:1/3}
 .nl-weather-status:empty,.nl-source-notice[hidden],#dock-weather-feedback[hidden]{display:none!important}
 #dock-weather-feedback [role=status]{flex-basis:100%}
+
+.nl-care{display:grid;gap:10px;margin-block:16px;min-width:0}.nl-care textarea{display:block;background:var(--noa-surface,transparent);color:inherit;border:1px solid var(--noa-line,currentColor);border-radius:var(--noa-control-radius,8px);font:inherit;padding:10px;margin-top:6px;width:100%;box-sizing:border-box;resize:vertical}.nl-care-consent{display:flex;align-items:center;gap:8px;min-height:44px}.nl-care-consent input{width:18px;height:18px;flex:none}.nl-care>button{justify-self:start}.nl-care-answer:empty{display:none}

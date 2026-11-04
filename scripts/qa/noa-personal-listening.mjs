@@ -40,6 +40,9 @@ try{
    const guide=await matrix.request.get(base+'/noa-bridge/listening-weather.php',{headers});
    assert.equal(guide.status(),eligible?200:level===1?401:403);
    assert.equal(Object.hasOwn(await guide.json(),'weather'),eligible);
+   const care=await matrix.request.post(base+'/noa-bridge/listening-care.php',{headers,data:{}});
+   assert.equal(care.status(),level===1?401:403);
+   assert.equal((await care.json()).error,eligible?'verification':level===1?'login_required':'vip_required');
   }
   await matrix.close();report.vipOnlyRoles=[4,8];
   const request=await browser.newContext({extraHTTPHeaders:{'X-QA-User':'alice'}});let r=await request.request.get(base+'/noa-bridge/listening.php'),s=await r.json();assert(s.member&&s.canPlay);assert.equal(s.library.length,1);assert.equal(s.library[0].title,'내 음악');
@@ -197,7 +200,14 @@ try{
   const ctx=await browser.newContext({viewport:{width:390,height:844}}),page=await ctx.newPage();
   await page.goto(base+'/');const box=page.locator('#noa-mind-weather');await box.getByRole('button',{name:'내 마음 날씨 고르기'}).click();
   await box.getByRole('button',{name:'천둥번개'}).click();await box.getByRole('button',{name:'천천히 가라앉고 싶어'}).click();
-  await box.locator('li button').first().click();const f=page.frames().find(frame=>frame.url().includes('listenHost'));
+  const send=box.getByRole('button',{name:'AInoa에게 선곡 부탁하기'});assert(await send.isDisabled());
+  let careInput;await page.route('**/noa-bridge/listening-care.php*',async route=>{
+   if(route.request().method()==='POST'){careInput=route.request().postDataJSON();return route.fulfill({json:{state:'queued',id:careInput.id}});}
+   return route.fulfill({json:{state:'ready',message:'요청한 방향의 곡을 골랐어요.',keys:[careInput.keys[0]]}});
+  });
+  await box.locator('textarea').fill('조용히 걷고 싶어');await box.locator('.nl-care-consent input').check();await send.click();
+  await box.getByText('요청한 방향의 곡을 골랐어요.').waitFor();assert(careInput.consent&&careInput.keys.length>0);assert.equal(careInput.note,'조용히 걷고 싶어');
+  await box.locator('.nl-care .nl-weather-choices button').first().click();const f=page.frames().find(frame=>frame.url().includes('listenHost'));
   await f.waitForFunction(()=>NoaMusic.listeningSelection()?.scope==='weather'&&!player.paused&&player.currentTime>0);
   const before=await f.evaluate(()=>[selected.dataset.key,player.currentTime,player.currentSrc]);
   await f.locator('#dock-list').evaluate(b=>b.click());await f.getByRole('button',{name:'다음 곡은 더 잔잔하게'}).click();
@@ -339,7 +349,7 @@ try{
   const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block',extraHTTPHeaders:{'X-QA-User':'video-member'}});
   const profile=(await(await c.request.get(base+'/noa-bridge/listening.php')).json());
   assert(profile.member&&!profile.canPlay);
-  const page=await c.newPage();activePage=page;const weatherCalls=[];page.on('request',r=>{if(r.url().includes('listening-weather.php'))weatherCalls.push(r.url());});const premium=[];page.on('request',r=>{if(/listenHost=1|fixture[.]wav|jukebox\/stream|noa-vip[.]php/.test(r.url()))premium.push(r.url());});
+  const page=await c.newPage();activePage=page;const weatherCalls=[];page.on('request',r=>{if(/listening-(weather|care)[.]php/.test(r.url()))weatherCalls.push(r.url());});const premium=[];page.on('request',r=>{if(/listenHost=1|fixture[.]wav|jukebox\/stream|noa-vip[.]php/.test(r.url()))premium.push(r.url());});
   const videos=Array.from({length:120},(_,i)=>({key:'song'+i,title:'공개곡 '+i,genre:['kpop-original','your-story','jpop-original'][i%3],ep:i+1,kind:'single',publicVideoId:'v'+String(i).padStart(10,'0'),moodScores:{calm:1}}));
   await page.route('**/noa-bridge/listening-videos.php',r=>r.fulfill({json:{videos}}));
   await page.route('https://www.youtube.com/embed/**',r=>r.fulfill({contentType:'text/html',body:'<title>Player fixture</title>'}));

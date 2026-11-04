@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-function n80_song_dispatch(string $taskId, string $dispatchToken): int {
-    if (!preg_match('/^[a-f0-9]{32}$/D', $taskId) || $dispatchToken === '') return 0;
-    $request = curl_init('https://api.github.com/repos/rucyjeon79/noa-private-worker/actions/workflows/noa-worker.yml/dispatches');
+function n80_song_dispatch(string $taskId, string $dispatchToken,string $workflow='noa-worker.yml'): int {
+    if (!preg_match('/^[a-f0-9]{32}$/D', $taskId) || $dispatchToken === '' || !in_array($workflow,['noa-worker.yml','noa-vip-weather.yml'],true)) return 0;
+    $request = curl_init('https://api.github.com/repos/rucyjeon79/noa-private-worker/actions/workflows/'.$workflow.'/dispatches');
     curl_setopt_array($request, [
         CURLOPT_POST=>true, CURLOPT_RETURNTRANSFER=>true, CURLOPT_TIMEOUT=>12,
         CURLOPT_HTTPHEADER=>['User-Agent: NOA-STUDIO','Accept: application/vnd.github+json',

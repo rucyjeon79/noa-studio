@@ -163,7 +163,7 @@ function updateWeather(){
  if(fortuneCard){if(weatherBox.parentElement!==fortuneCard)fortuneCard.append(weatherBox);}
  else if(!weatherBox.isConnected)host.insertBefore(weatherBox,wholeLane);
  if(access===weatherAccess){if(access==='vip'&&selectedIntent>=0&&weatherRows.length===0&&catalogReady()&&records.length)showWeatherChoice();return;}
- weatherAccess=access;++weatherRequest;editions=null;selectedSky='';selectedIntent=-1;weatherRows=[];weatherSequence=[];weatherStatus.textContent='';
+ clearCare();weatherAccess=access;++weatherRequest;editions=null;selectedSky='';selectedIntent=-1;weatherRows=[];weatherSequence=[];weatherStatus.textContent='';
  weatherBox.replaceChildren(el('h3','','내 마음 날씨'));
  if(access!=='vip'){
   weatherBox.append(el('p','',access==='guest'?'오늘 기분을 날씨로 고르고 듣고 싶은 방향을 선택하는 VIP 음악 서비스예요. 로그인하면 이용 가능한 재생 방식을 확인할 수 있어요.':'마음 날씨 맞춤 선곡은 VIP 회원이 이용할 수 있어요.'));
@@ -192,15 +192,93 @@ function weatherPicks(sequence,count,omit=[]){
  }
  return picked;
 }
+let careVersion=0,careTimer=0,careController=null,careContext='',careResponse=null;
+function clearCare(){
+ ++careVersion;clearTimeout(careTimer);careController?.abort();careController=null;careContext='';careResponse=null;
+}
+const careMessages={
+ quota:'이번 계정 이용 한도를 모두 사용했어요. 한도가 회복되면 다시 들려주세요.',
+ unverified_credits:'구독에 포함된 한도만 사용하도록 실시간 답장을 잠시 쉬고 있어요.',
+ unavailable:'지금은 이용 한도를 확인할 수 없어 답장을 잠시 쉬고 있어요.',
+ pending:'다른 선곡 요청이 진행 중이에요. 그 답장이 끝난 뒤 새로 요청해 주세요.',
+ slow_down:'앞선 요청을 처리하고 있어요. 잠시 후 다시 시도해 주세요.',
+ missing:'요청 보관 시간이 지났어요. 원하면 새로 요청해 주세요.',
+ no_tracks:'지금 연결된 곡으로는 AI 선곡을 만들 수 없어요.',
+ vip_required:'현재 VIP 자격으로만 받을 수 있는 답장이에요.',
+ login_required:'로그인 상태를 확인해 주세요.'
+};
+function appendCare(){
+ const context=selectedSky+'/'+selectedIntent;
+ if(context!==careContext){clearCare();careContext=context;}
+ const area=el('div','nl-care'),label=el('label','','AInoa에게 지금 마음을 한 줄로 들려주세요 (선택)');
+ const field=el('textarea');field.maxLength=180;field.rows=2;field.placeholder='예: 오늘은 울고 싶지만 마지막엔 가볍게 걷고 싶어.';label.append(field);
+ const consent=el('label','nl-care-consent'),agree=el('input');agree.type='checkbox';consent.append(agree,document.createTextNode('선택한 날씨·방향과 한 줄을 AI 선곡에 보내는 데 동의해요.'));
+ const answer=el('p','nl-care-answer');answer.setAttribute('role','status');
+ const send=weatherButton('AInoa에게 선곡 부탁하기',submit);send.disabled=true;
+ agree.onchange=()=>{send.disabled=!agree.checked;};
+ area.append(label,consent,send,answer);weatherBox.append(area);
+ const existing=careResponse;
+ if(existing)showResult(existing);
+ function showResult(data){
+  const rowsByKey=new Map(records.filter(r=>r.audio).map(r=>[r.key,r]));
+  const picks=(data.keys||[]).map(k=>rowsByKey.get(k)).filter(Boolean);
+  answer.textContent=data.message;const result=el('div','nl-weather-choices');
+  for(const [i,row] of picks.entries()){
+   const b=weatherButton(row.title+'부터 듣기',()=>{
+    if(weatherAccess!=='vip')return;
+    if(musicWindow?.NoaMusic?.playWeather(picks.slice(i).map(r=>r.key),weatherSequence.slice(i))){
+     if(home&&frame)musicWindow.NoaPlayerShell?.open(originalHome.href,false);
+     weatherStatus.textContent=row.title+'부터 재생합니다.';
+    }
+   });result.append(b);
+  }
+  area.querySelector('.nl-weather-choices')?.remove();area.append(result);
+ }
+ async function submit(){
+  if(weatherAccess!=='vip'||!agree.checked||send.disabled)return;
+  send.disabled=true;field.disabled=true;agree.disabled=true;answer.textContent='AInoa가 사연에 맞는 곡을 고르고 있어요. 잠시 기다려 주세요.';
+  const version=++careVersion;careController?.abort();careController=new AbortController();
+  const valid=()=>careVersion===version&&weatherAccess==='vip'&&area.isConnected;
+  const seen=new Set(),pool=[],ranked=new Map();
+  for(const m of new Set(weatherSequence))ranked.set(m,model.wholeMoodMix(records,m,state.theme).rows);
+  for(let i=0;i<4;i++)for(const m of weatherSequence){
+   const row=ranked.get(m).find(r=>r.audio&&!seen.has(r.key));
+   if(row){seen.add(row.key);pool.push(row.key);}
+  }
+  const id=Array.from(crypto.getRandomValues(new Uint8Array(16)),v=>v.toString(16).padStart(2,'0')).join('');
+  const endpoint='/noa-bridge/listening-care.php',deadline=Date.now()+15*60000;
+  const options={credentials:'same-origin',cache:'no-store',signal:careController.signal};
+  function finish(message){if(!valid())return;answer.textContent=message;send.disabled=false;field.disabled=false;agree.disabled=false;}
+  async function poll(jobId,tries=0){
+   if(!valid())return;
+   if(Date.now()>deadline){finish(careMessages.missing);return;}
+   try{
+    const r=await fetch(endpoint+'?id='+encodeURIComponent(jobId),options);const d=await r.json();if(!valid())return;
+    if(!r.ok){if(r.status>=500)throw Error();finish(careMessages[d.error]||'답장을 확인하지 못했어요.');return;}
+    if(d.state==='ready'){careResponse=d;finish('');showResult(d);return;}
+    if(!['queued','working'].includes(d.state)){finish(careMessages[d.state]||'답장을 마치지 못했어요. 잠시 후 다시 시도해 주세요.');return;}
+    answer.textContent=d.state==='working'?'AInoa가 선곡과 답장을 작성하고 있어요.':'요청을 받았어요. 앞선 작업이 끝나는 대로 선곡을 시작해요.';
+    careTimer=setTimeout(()=>poll(jobId),3000);
+   }catch{if(valid()&&tries<4)careTimer=setTimeout(()=>poll(jobId,tries+1),4000);else finish('연결이 끊겨 답장을 확인하지 못했어요.');}
+  }
+  try{
+   const r=await fetch(endpoint,{...options,method:'POST',headers:{'Content-Type':'application/json','X-NOA-CSRF':state.csrf},body:JSON.stringify({action:'start',id,sky:selectedSky,intent:selectedIntent,note:field.value.trim(),keys:pool,consent:true})});const d=await r.json();
+   if(!valid())return;
+   if(!r.ok&&!(d.error==='dispatch_unconfirmed'&&d.id)){finish(careMessages[d.error]||'지금은 실시간 선곡을 시작할 수 없어요.');return;}
+   await poll(d.id);
+  }catch{if(valid())await poll(id);}
+ }
+}
+
 function showWeatherChoice(){
  if(!editions||weatherAccess!=='vip')return;
  const skyGroup=el('div','nl-weather-choices');skyGroup.setAttribute('role','group');skyGroup.setAttribute('aria-label','마음 날씨');
- for(const [key,[symbol,label]]of Object.entries(editions))skyGroup.append(weatherButton(symbol+' '+label,()=>{selectedSky=key;selectedIntent=-1;weatherRows=[];weatherStatus.textContent='';showWeatherChoice();},selectedSky===key));
+ for(const [key,[symbol,label]]of Object.entries(editions))skyGroup.append(weatherButton(symbol+' '+label,()=>{clearCare();selectedSky=key;selectedIntent=-1;weatherRows=[];weatherStatus.textContent='';showWeatherChoice();},selectedSky===key));
  weatherBox.replaceChildren(el('h3','','내 마음 날씨'),el('p','','오늘 내 마음은 어떤 날씨인가요?'),skyGroup);
  if(!selectedSky){weatherBox.append(weatherStatus);return;}
  const choices=editions[selectedSky][2],direction=el('div','nl-weather-choices');
  direction.setAttribute('role','group');direction.setAttribute('aria-label','음악에 바라는 것');
- choices.forEach(([title],index)=>direction.append(weatherButton(title,()=>{selectedIntent=index;weatherStatus.textContent='';showWeatherChoice();},selectedIntent===index)));
+ choices.forEach(([title],index)=>direction.append(weatherButton(title,()=>{if(selectedIntent===index)return;selectedIntent=index;weatherStatus.textContent='';showWeatherChoice();},selectedIntent===index)));
  weatherBox.append(el('p','','음악이 어떻게 곁에 있어 주면 좋겠어요?'),direction);
  if(selectedIntent>=0){
   const [,copy,sequence]=choices[selectedIntent];weatherSequence=sequence;weatherRows=weatherPicks(sequence,3);
@@ -208,7 +286,7 @@ function showWeatherChoice(){
   if(weatherRows.length){
    const list=el('ol','nl-weather-tracks');
    weatherRows.forEach((row,i)=>{const li=el('li');li.append(el('span','',row.title),el('small','',state.genres[row.genre]||row.genre));const b=weatherButton('이 곡부터 듣기',()=>startWeather(i));b.setAttribute('aria-label',row.title+'부터 듣기');li.append(b);list.append(li);});
-   weatherBox.append(list);
+   weatherBox.append(list);appendCare();
   }else weatherBox.append(el('p','',catalogReady()?'지금 이용할 수 있는 프리미엄 곡이 없어요.':'프리미엄 음원을 연결하고 있어요.'));
  }
  weatherBox.append(weatherStatus);
