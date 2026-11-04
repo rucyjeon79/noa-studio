@@ -22,7 +22,7 @@ function catalog(records,genre,acrossGenres=false){
    const affinity=row.moodAffinity?.[mood];
    if(Number.isFinite(affinity)&&affinity>(recording.affinity[mood]||0))recording.affinity[mood]=affinity;
   }
-  if(!recording.track&&row.audio){
+  if(!recording.track&&(row.audio||/^[A-Za-z0-9_-]{11}$/.test(row.publicVideoId||''))){
    recording.track={...row,moodScores:recording.scores,moodAffinity:recording.affinity};
    playable.push(recording.track);
   }

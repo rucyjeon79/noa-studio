@@ -257,5 +257,32 @@ try{
   report.catalogMood={withoutBirthSettings:true,moods:4,unique:100,homeAfterClearingGenre:true};
   report.queueSizes={all:stats.unique,genreCards:offered.length,perGenre:10,manual:42,distinctAudio:true,finite:true,homeAndPlayerInSync:true};await c.close();
  }
+ if(!live){
+  const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block',extraHTTPHeaders:{'X-QA-User':'video-member'}});
+  const profile=(await(await c.request.get(base+'/noa-bridge/listening.php')).json());
+  assert(profile.member&&!profile.canPlay);
+  const page=await c.newPage();activePage=page;const premium=[];page.on('request',r=>{if(/listenHost=1|fixture[.]wav|jukebox\/stream|noa-vip[.]php/.test(r.url()))premium.push(r.url());});
+  const videos=Array.from({length:120},(_,i)=>({key:'song'+i,title:'공개곡 '+i,genre:['kpop-original','your-story','jpop-original'][i%3],ep:i+1,kind:'single',publicVideoId:'v'+String(i).padStart(10,'0'),moodScores:{calm:1}}));
+  await page.route('**/noa-bridge/listening-videos.php',r=>r.fulfill({json:{videos}}));
+  await page.route('https://www.youtube.com/embed/**',r=>r.fulfill({contentType:'text/html',body:'<title>Player fixture</title>'}));
+  await page.goto(base);await page.getByText('추천곡은 공개 유튜브 영상으로 재생돼요.').waitFor();
+  const player=page.locator('.nl-video-dialog iframe');
+  async function checkVideos(count,genre){
+   await player.waitFor();const url=new URL(await player.getAttribute('src'));assert.equal(url.origin,'https://www.youtube.com');
+   const ids=[url.pathname.split('/').pop(),...(url.searchParams.get('playlist')||'').split(',').filter(Boolean)];
+   assert.equal(new Set(ids).size,count);assert.equal(ids.length,count);
+   if(genre)assert(ids.every(id=>videos.find(v=>v.publicVideoId===id)?.genre===genre));
+   await page.locator('.nl-video-dialog').getByRole('button',{name:'닫기'}).click();await player.waitFor({state:'detached'});
+  }
+  await page.locator('[data-mood=comfort]').click();await checkVideos(100);
+  await page.locator('.nl-genres').selectOption('your-story');await page.locator('[data-mood=calm]').click();await page.locator('[data-manual-play]').click();await checkVideos(40,'your-story');
+  const response=await c.request.post(base+'/noa-bridge/listening.php',{headers:{Origin:base,'X-NOA-CSRF':profile.csrf},data:{revision:profile.revision,profile:{genre:'kpop-original',timezone:'Asia/Seoul',consent:true,birthDate:'1990-06-15'}}});assert.equal(response.status(),200);
+  await page.reload();await page.locator('[data-genre-choice]').first().waitFor();assert.equal(await page.locator('[data-genre-choice]').count(),3);
+  await page.locator('[data-all-genre-mix]').click();await checkVideos(100);
+  const card=page.locator('[data-genre-choice]').first(),genre=await card.getAttribute('data-genre-choice');await card.click();await checkVideos(10,genre);
+  assert.deepEqual(premium,[]);await c.close();report.memberPublicVideoQueues=true;
+ }else{
+  const response=await browser.newContext();assert.equal((await response.request.get(base+'/noa-bridge/listening-videos.php')).status(),401);await response.close();
+ }
  assert.deepEqual(report.errors,[]);report.ok=true;
 }catch(error){report.failure=String(error);if(activePage&&!activePage.isClosed()){await activePage.screenshot({path:out+'/failure.png'}).catch(()=>{});writeFileSync(out+'/failure.html',await activePage.content().catch(()=>''));}throw error;}finally{if(server)writeFileSync(out+'/server.log',serverLog);writeFileSync(out+'/report.json',JSON.stringify(report,null,2));await browser.close();server?.kill();}console.log('N80_PERSONAL_LISTENING_OK');
