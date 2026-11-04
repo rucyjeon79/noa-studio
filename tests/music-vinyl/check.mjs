@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync,mkdirSync} from 'node:fs';
 import {createServer} from 'node:http';
 const wav=Buffer.alloc(44+16000*5);wav.write('RIFF');wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(8000,24);wav.writeUInt32LE(16000,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(wav.length-44,40);
-const html='<!doctype html><html lang="ko" data-noa-style="starlight" data-noa-precision="1"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-music-vinyl.css"><body class="noa-page"><main><h1>음원</h1><section id="music-browse"></section><audio id="sound-player" src="/tone.wav"></audio><div id="songs"><div class="song selected" data-key="a"><button class="song-select"><span class="cover">♫</span>첫 곡</button></div></div><div class="noa-two-line"><img id="dock-cover" hidden><span id="dock-cover-empty">♫</span></div></main><script src="/noa-browse.js"></script><script src="/noa-music-vinyl.js"></script><script>const tree=NoaBrowse.mount({host:document.querySelector("#music-browse"),rows:[],onChange:()=>tree.apply([])});tree.apply([]);</script></body></html>';
+const html='<!doctype html><html lang="ko" data-noa-style="starlight" data-noa-precision="1"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-listening.css"><link rel="stylesheet" href="/noa-music-vinyl.css"><body class="noa-page"><main><h1>음원</h1><section id="music-browse"></section><audio id="sound-player" src="/tone.wav"></audio><div id="songs"><div class="song selected" data-key="a"><button class="song-select"><span class="cover">♫</span>첫 곡</button></div></div><div class="noa-two-line"><img id="dock-cover" hidden><span id="dock-cover-empty">♫</span></div></main><script src="/noa-browse.js"></script><script src="/noa-music-vinyl.js"></script><script>const tree=NoaBrowse.mount({host:document.querySelector("#music-browse"),rows:[],onChange:()=>tree.apply([])});tree.apply([]);</script></body></html>';
 const server=createServer((req,res)=>{
  const path=new URL(req.url,'http://localhost').pathname;
  if(path==='/tone.wav'){res.writeHead(200,{'Content-Type':'audio/wav'});return res.end(wav);}
@@ -79,10 +79,10 @@ try{for(const width of [320,390,1280]){
   await trackName.evaluate(n=>n.textContent='줄바꿈 없이 지나가는 긴 제목 '.repeat(12));
   await title.locator('.lp-title-overflow>.lp-title-text').waitFor();
   assert(await trackName.evaluate(n=>{
-   const box=n.getBoundingClientRect(),credit=n.parentElement.querySelector('.noa-original-title').getBoundingClientRect();
-   return box.height===24 && Math.abs(box.left-credit.left)<1 && credit.top>=box.bottom && credit.top-box.bottom<=6
+   const box=n.getBoundingClientRect(),genre=n.parentElement.querySelector('.noa-track-genre').getBoundingClientRect(),credit=n.parentElement.querySelector('.noa-original-title').getBoundingClientRect();
+   return box.height===24 && Math.abs(box.left-genre.left)<1 && Math.abs(box.left-credit.left)<1 && genre.top>=box.bottom && genre.top-box.bottom<=6 && credit.top>=genre.bottom && credit.top-genre.bottom<=6
     && getComputedStyle(n.firstElementChild).animationName==='noa-title-pan';
-  }),'Long title pans on one line above its aligned credit');
+  }),'Long title pans on one line with the genre and original credit aligned below it');
   const movingTitle=trackName.locator('.lp-title-text');
   const viewSwitch=trackName.locator('xpath=ancestor::*[contains(@class,"noa-inline-songs")][1]/preceding-sibling::*[1]');
   await viewSwitch.locator('[data-mode=album]').click();
