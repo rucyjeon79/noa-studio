@@ -1031,8 +1031,8 @@ html.noa-shell-wide[data-noa-theme] body #noa-account-bar{position:sticky;top:0;
 html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-navigation-bar{width:100%;margin:0;gap:8px;min-height:56px;padding:6px max(clamp(8px,2vw,32px),env(safe-area-inset-right)) 6px max(clamp(8px,2vw,32px),env(safe-area-inset-left))}
 html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-account-utilities{min-width:0;flex:0 1 auto;gap:4px}
 html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-account-brand{position:static;display:inline-flex;align-items:center;gap:8px;width:auto;min-width:0;padding:0;color:var(--noa-text);text-decoration:none}
-#noa-account-bar .noa-account-brand span{display:inline;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(11px,2.8vw,15px);font-weight:700}
-#noa-account-bar .noa-account-brand img{width:30px;height:30px;border-radius:50%}
+html.noa-shell-wide #noa-account-bar .noa-account-brand span{display:inline;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(11px,2.8vw,15px);font-weight:700}
+html.noa-shell-wide #noa-account-bar .noa-account-brand img{display:block;width:30px;height:30px;border-radius:50%}
 html.noa-shell-wide[data-noa-theme] body #noa-account-bar #noa-nav-all{display:grid;place-items:center;width:44px;height:44px;padding:0}
 #noa-account-bar #noa-nav-all span{display:none}
 html.noa-menu-open #noa-account-bar{transform:translateY(-105%)}

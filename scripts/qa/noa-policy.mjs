@@ -21,7 +21,7 @@ for(const[name,file]of definitions){
  if(name==='taxonomy')html=html.replace('id="counts" class="cards"></div>','id="counts" class="cards"><div class="metric"><strong>10</strong>분류 항목</div></div>');
  fixtures.set('/noa-app/'+name+'/',html);
 }
-fixtures.set('/noa-policy-dock-fixture','<!doctype html><html lang="ko"><head><meta name="viewport" content="width=device-width,initial-scale=1">'+common+'<link rel="stylesheet" href="/noa-app/jukebox/upload.css">'+policy+shared+'</head><body class="noa-page noa-sound-page noa-processing-dock"><main><h1>표시 전용 검증</h1><div style="min-height:900px"></div><button id="last-action">마지막 조작</button></main><section id="jukebox-transfer-dock"><div class="jukebox-transfer-head"><strong>업로드 진행 상태</strong><button type="button" id="details-toggle" onclick="document.getElementById(\'jukebox-transfer-details\').hidden=!document.getElementById(\'jukebox-transfer-details\').hidden">자세히</button></div><div id="jukebox-transfer-details" hidden><p>완료된 파일만 게시합니다.</p><p>현재 작업과 대기 목록을 보존합니다.</p></div></section></body></html>');
+fixtures.set('/noa-policy-dock-fixture','<!doctype html><html lang="ko"><head><meta name="viewport" content="width=device-width,initial-scale=1">'+common+'<link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-app/jukebox/upload.css">'+policy+shared+'</head><body class="noa-page noa-sound-page noa-processing-dock"><main><h1>표시 전용 검증</h1><div style="min-height:900px"></div><section class="noa-track-processing"><strong class="noa-track-processing-title">음원 처리</strong><section id="jukebox-transfer-dock"><div class="jukebox-transfer-head"><strong>업로드 진행 상태</strong><button type="button" id="details-toggle" onclick="document.getElementById(\'jukebox-transfer-details\').hidden=!document.getElementById(\'jukebox-transfer-details\').hidden">자세히</button></div><div id="jukebox-transfer-details" hidden><p>완료된 파일만 게시합니다.</p><p>현재 작업과 대기 목록을 보존합니다.</p></div></section></section><button id="last-action">마지막 조작</button></main></body></html>');
 const browser=await chromium.launch({headless:true,executablePath:process.env.NOAC_CHROME||'/usr/bin/google-chrome',args:['--no-sandbox']});
 const report={phase,rows:[],runtimeWrites:0,privateViews:'in-memory source fixtures; not authenticated production',errors:[]};
 let activePage;
@@ -34,7 +34,7 @@ try{
    if(!['GET','HEAD'].includes(req.method())){report.errors.push('Unexpected mutation: '+u.pathname);return route.abort();}
    if(u.origin===base){
     if(req.isNavigationRequest()&&fixtures.has(u.pathname))return route.fulfill({status:200,contentType:'text/html; charset=utf-8',body:fixtures.get(u.pathname)});
-    if(phase==='candidate'&&['/noa-ui.js','/noa-policy-20261024.css'].includes(u.pathname))return route.fulfill({path:path.join(root,'deploy',u.pathname),contentType:u.pathname.endsWith('.js')?'application/javascript':'text/css'});
+    if(phase==='candidate'&&['/noa-ui.js','/noa-account.js','/noa-starlight.css','/noa-policy-20261024.css'].includes(u.pathname))return route.fulfill({path:path.join(root,'deploy',u.pathname),contentType:u.pathname.endsWith('.js')?'application/javascript':'text/css'});
     if(phase==='candidate'&&req.isNavigationRequest()&&['/','/bbs/login.php','/noa-settings.php','/noa-music.php'].includes(u.pathname)){
      try{const response=await route.fetch({maxRetries:2});let html=await response.text();html=html.replace('</head>',policy+'</head>');return route.fulfill({response,body:html});}
      catch(e){report.errors.push('Candidate HTML transport failed: '+u.pathname);await route.abort();return;}
@@ -74,8 +74,12 @@ try{
     for(const expanded of [false,true]){
      if(expanded)await page.locator('#details-toggle').click();
      await page.waitForFunction(()=>Math.abs(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--noa-transfer-space'))-document.getElementById('jukebox-transfer-dock').getBoundingClientRect().height)<2);
-     const boxes=await page.evaluate(()=>{const d=document.getElementById('jukebox-transfer-dock').getBoundingClientRect(),n=document.querySelector('.noa-mobile-nav'),s=document.querySelector('.noa-sidebar');return{dock:{left:d.left,bottom:d.bottom},navTop:n&&getComputedStyle(n).display!=='none'?n.getBoundingClientRect().top:innerHeight,sidebarRight:s&&getComputedStyle(s).display!=='none'?s.getBoundingClientRect().right:0};});
-     assert(boxes.dock.bottom<=boxes.navTop+1,'Upload dock covers mobile navigation');assert(boxes.dock.left>=boxes.sidebarRight-1,'Upload dock covers desktop sidebar');
+     const panel=page.locator('#jukebox-transfer-dock');await panel.scrollIntoViewIfNeeded();
+     const bounds=await panel.evaluate(el=>{
+      const dock=el.getBoundingClientRect(),row=el.parentElement.getBoundingClientRect(),last=document.getElementById('last-action').getBoundingClientRect();
+      return {position:getComputedStyle(el).position,inside:dock.x>=row.x-1&&dock.right<=row.right+1&&dock.bottom<=row.bottom+1,following:last.y>=dock.bottom-1};
+     });
+     assert.equal(bounds.position,'static');assert(bounds.inside&&bounds.following,'inline upload details stay in their track and ahead of the final action');
      await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
      assert(await page.locator('#last-action').evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return el===hit||el.contains(hit)}),'Final action covered by dock');
     }

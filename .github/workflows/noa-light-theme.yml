@@ -2,7 +2,7 @@ name: NOA premium day and night theme release
 on:
   push:
     branches: [main]
-    paths: ['scripts/noa_light_theme_release.py', '.github/workflows/noa-light-theme.yml', 'tests/room-themes/live.mjs']
+    paths: ['scripts/noa_light_theme_release.py', '.github/workflows/noa-light-theme.yml', 'tests/room-themes/live.mjs', 'tests/header/drawer-live.mjs']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
@@ -56,6 +56,10 @@ jobs:
           cp tests/room-themes/forms.mjs "$RUNNER_TEMP/noa-light/forms.mjs"
           cp tests/room-themes/player.mjs "$RUNNER_TEMP/noa-light/player.mjs"
           cp tests/room-themes/overlays.mjs "$RUNNER_TEMP/noa-light/overlays.mjs"
+      - name: Exercise the new drawer on operating pages before running member fixtures
+        if: env.NOA_MENU_DRAWER == 'true'
+        env: {NOA_THEME_PHASE: candidate}
+        run: node "$RUNNER_TEMP/noa-light/check.mjs"
       - name: Verify first-visit popups, readable greetings and modal feedback before activation
         env: {NOA_THEME_PHASE: candidate, NOA_SOURCE_ROOT: '${{ github.workspace }}'}
         run: node "$RUNNER_TEMP/noa-light/overlays.mjs"
@@ -68,6 +72,7 @@ jobs:
           node "$RUNNER_TEMP/noa-light/surface-controls.mjs"
           node "$RUNNER_TEMP/noa-light/player.mjs"
       - name: Verify candidate themes before activation
+        if: env.NOA_MENU_DRAWER != 'true'
         env: {NOA_THEME_PHASE: candidate, NOA_SOURCE_ROOT: '${{ github.workspace }}', NOA_VISUAL_REVIEW: '${{ contains(github.event.head_commit.message, ''[design-review]'') }}'}
         run: |
           node "$RUNNER_TEMP/noa-light/check.mjs"
