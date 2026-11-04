@@ -31,33 +31,67 @@
  let started=!audio.paused&&!audio.ended&&audio.readyState>=3;
  let running=started;
  let pending=false;
- let idleTimer;
- let lastBrowse=-Infinity;
- let followedKey='';
- function followTrack(){
-  if(!key||!running||audio.paused||document.hidden||document.querySelector('dialog[open],[aria-modal="true"]:not([hidden])')||document.activeElement?.matches('input,textarea,select,[contenteditable="true"]'))return;
-  const playingCover=()=>Array.from(document.querySelectorAll('#music-browse .lp-running,#songs .lp-running')).find(el=>el.getClientRects().length);
-  function center(){
-   const el=playingCover();
-   if(!el)return false;
-   const rect=el.getBoundingClientRect();
-   if(rect.top<80||rect.bottom>innerHeight-160)el.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
-   return true;
-  }
-  if(!center()){
-   window.dispatchEvent(new CustomEvent('noa-find-song',{detail:{key}}));
-   requestAnimationFrame(()=>{sync();center();});
-  }
+ const idleDelay=10000;
+ let idleTimer,lastInput=-Infinity,ignoreAutoScrollUntil=-Infinity;
+ const modalClose=new MutationObserver(()=>{modalClose.disconnect();scheduleFollow();});
+ function activeModal(){
+  return document.querySelector('dialog:modal')||Array.from(document.querySelectorAll('[aria-modal="true"]:not([hidden])')).find(el=>el.getClientRects().length);
  }
- function activity(){
-  lastBrowse=performance.now();
+ function musicPageVisible(){
+  return !document.body.classList.contains('noa-shell-open')&&!document.documentElement.classList.contains('nl-home-docked')&&!window.frameElement?.hidden;
+ }
+ function editing(){return Array.from(browse.querySelectorAll('.noa-edit-form')).some(form=>form.getClientRects().length);}
+ function scheduleFollow(){
   clearTimeout(idleTimer);
-  if(running)idleTimer=setTimeout(followTrack,10000);
+  if(running&&key&&!document.hidden)idleTimer=setTimeout(followTrack,Math.max(0,idleDelay-(performance.now()-lastInput)));
  }
- for(const type of ['pointerdown','pointermove','touchmove','wheel','scroll','keydown','input']){
+ function autoScroll(target,block){
+  ignoreAutoScrollUntil=performance.now()+1500;
+  target.scrollIntoView({block,behavior:reducedMotion.matches?'instant':'smooth'});
+ }
+ const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+ function centerIfNeeded(target){
+  const rect=target.getBoundingClientRect();
+  const header=document.getElementById('noa-account-bar'),dock=document.querySelector('.noa-transport:not([hidden])');
+  const top=Math.max(0,header?.getBoundingClientRect().bottom||0)+8;
+  const bottom=Math.min(innerHeight,dock?.getBoundingClientRect().top??innerHeight)-8;
+  if(rect.top<top||rect.bottom>bottom)autoScroll(target,'center');
+ }
+ function followTrack(){
+  if(!key||!running||audio.paused||document.hidden)return;
+  if(performance.now()-lastInput<idleDelay){scheduleFollow();return;}
+  const modal=activeModal();
+  if(modal){
+   if(modal.id==='dock-queue'){
+    const item=modal.querySelector('.noa-queue-track[aria-current="true"]');
+    if(item){const r=item.getBoundingClientRect(),panel=modal.getBoundingClientRect();if(r.top<panel.top||r.bottom>panel.bottom)autoScroll(item,'nearest');}
+   }
+   if(modal.matches('dialog'))modalClose.observe(modal,{attributes:true,attributeFilter:['open']});
+   else idleTimer=setTimeout(followTrack,1000);
+   return;
+  }
+  if(!musicPageVisible()||editing())return;
+  const playingRow=Array.from(document.querySelectorAll('#music-browse .noa-inline-song[data-inline-key],#songs .song[data-key]'))
+   .find(el=>(el.dataset.inlineKey||el.dataset.key)===key&&el.getClientRects().length);
+  if(playingRow){
+   centerIfNeeded(playingRow.querySelector('.lp-track-art')||playingRow);
+   return;
+  }
+  // Classification may still be loading. A deferred reveal must respect newer input and track changes.
+  const requested=key;
+  const allow=()=>key===requested&&running&&!audio.paused&&!document.hidden&&musicPageVisible()&&!activeModal()&&!editing()&&performance.now()-lastInput>=idleDelay;
+  window.dispatchEvent(new CustomEvent('noa-find-song',{detail:{key,allow,scroll:centerIfNeeded}}));
+ }
+ function activity(){ignoreAutoScrollUntil=-Infinity;lastInput=performance.now();scheduleFollow();}
+ for(const type of ['pointerdown','pointerup','touchstart','touchmove','touchend','wheel','keydown','input','click']){
   window.addEventListener(type,activity,{passive:true,capture:true});
  }
- document.addEventListener('visibilitychange',()=>{if(!document.hidden)activity();});
+ window.addEventListener('pointermove',e=>{if(e.movementX||e.movementY)activity();},{passive:true,capture:true});
+ window.addEventListener('scroll',()=>{if(performance.now()>=ignoreAutoScrollUntil)activity();},{passive:true,capture:true});
+ document.addEventListener('close',scheduleFollow,true);
+ document.addEventListener('visibilitychange',scheduleFollow);
+ window.addEventListener('noa-player-route',scheduleFollow);
+ window.addEventListener('pageshow',scheduleFollow);
 
  const songAwards=new Map([
   ['story:your-story:4e75f1a6f5919a67c7b9cbb7','예선 1위'],
@@ -304,11 +338,7 @@
   }
   dockArt.classList.toggle('lp-on-record',started);
   dockArt.classList.toggle('lp-running',running);
-  if(running&&key&&followedKey!==key){
-   followedKey=key;
-   clearTimeout(idleTimer);
-   idleTimer=setTimeout(followTrack,Math.max(0,10000-(performance.now()-lastBrowse)));
-  }
+
  }
  function schedule(){if(!pending){pending=true;requestAnimationFrame(sync);}}
  browse.addEventListener('click',event=>{
@@ -321,14 +351,23 @@
  },true);
  window.addEventListener('noa-track-selected',event=>{
   const next=event.detail?.record?.key||document.querySelector('#songs .song.selected')?.dataset.key||'';
-  if(next!==key){followedKey='';key=next;started=false;running=false;schedule();}
+  if(next!==key){
+   key=next;started=false;running=false;scheduleFollow();schedule();
+   for(const item of document.querySelectorAll('#dock-queue[open] .noa-queue-track[data-queue-key]')){
+    const current=item.dataset.queueKey===key;
+    if(item.getAttribute('aria-current')!==String(current)){item.setAttribute('aria-current',String(current));item.querySelector('.noa-queue-state').textContent=current?'현재 곡':'재생';}
+   }
+  }
  });
- audio.addEventListener('playing',()=>{running=!audio.paused&&!audio.ended;started=started||running;schedule();});
+ audio.addEventListener('playing',()=>{running=!audio.paused&&!audio.ended;started=started||running;schedule();scheduleFollow();});
  for(const event of ['waiting','pause','seeking','ended','error','emptied','loadstart']){
-  audio.addEventListener(event,()=>{running=false;schedule();});
+  audio.addEventListener(event,()=>{running=false;scheduleFollow();schedule();});
  }
- new MutationObserver(schedule).observe(browse,{subtree:true,childList:true});
+ new MutationObserver(changes=>{
+  schedule();
+  if(changes.some(change=>[...change.removedNodes].some(n=>n.nodeType===1&&(n.matches('.noa-edit-form')||n.querySelector('.noa-edit-form')))))scheduleFollow();
+ }).observe(browse,{subtree:true,childList:true});
  const songs=document.getElementById('songs');
  if(songs)new MutationObserver(schedule).observe(songs,{subtree:true,childList:true,attributes:true,attributeFilter:['data-audio','data-audio-sha']});
- sync();
+ sync();scheduleFollow();
 })();

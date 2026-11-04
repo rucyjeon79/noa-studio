@@ -234,22 +234,24 @@ function mount({host,rows,onChange,onSelect=null,adminControls=true,search=null,
  if(genre)genre.addEventListener('change',()=>{page=0;selectedGenre=genre.value;selectedGroup=groupFor(selectedGenre)||'';selectedAct=0;stage=selectedGenre?'acts':'groups';onChange();});
  if(type)type.addEventListener('change',()=>{page=0;if(type.value==='playlist')navigate(selectedGenre?'acts':selectedGroup?'genres':'groups',selectedGroup,selectedGenre);else{stage='songs';onChange();}});
  function findSong(key,options={}){
+  if(options.allow&&!options.allow())return;
   if(!orderReady){pendingFocus={key,options};return;}
   const canonical=String(key||'').replace(/^catalog:/,''),source=rows.find(r=>String(r.key)===String(key)&&!r.customPlaylistId)||rows.find(r=>recordKeys(r).includes(canonical));if(!source)return;
   const r=treeRows.find(r=>browseIdentity(r)===browseIdentity(source))||source;
   selectedGenre=r.genre;selectedGroup=groupFor(r.genre)||'';selectedAct=actFor(r)||0;expandedAct=selectedAct||-1;stage='acts';page=0;initialLevel=0;
   const playlist=(manualOrder.playlists||[]).find(p=>p.group===selectedGroup&&(r.customPlaylistId===p.id||(!selectedAct&&inPlaylist(r,p))));
   expandedPlaylist=playlist?.id||'';activeSavedPlaylist=playlist?.id||'';if(search)search.value='';if(type)type.value='';sync();
-  const url=new URL(location.href);for(const name of ['view','page','type','noa-find','act'])url.searchParams.delete(name);url.searchParams.set('genre',selectedGenre);if(selectedGroup)url.searchParams.set('group',selectedGroup);if(selectedAct)url.searchParams.set('act',String(selectedAct));url.searchParams.set('track',String(r.key));if(options.play)url.searchParams.set('play','1');else url.searchParams.delete('play');history.replaceState(null,'',url);
+  const url=new URL(location.href);for(const name of ['view','page','type','noa-find','act'])url.searchParams.delete(name);url.searchParams.set('genre',selectedGenre);if(selectedGroup)url.searchParams.set('group',selectedGroup);if(selectedAct)url.searchParams.set('act',String(selectedAct));url.searchParams.set('track',String(r.key));if(options.play)url.searchParams.set('play','1');else url.searchParams.delete('play');history.replaceState(history.state,'',url);
   onChange();window.requestAnimationFrame?.(()=>{
+   if(options.allow&&!options.allow())return;
    const candidates=[...host.querySelectorAll('.noa-inline-song,[data-act-video-key]')].filter(n=>n.dataset.inlineKey===String(r.key));
    const target=candidates.find(n=>!n.closest('[hidden]')&&(n.closest('.noa-user-playlist')?.dataset.playlistId||'')===(playlist?.id||''))||candidates.find(n=>!n.closest('[hidden]'));if(!target)return;
-   for(const row of host.querySelectorAll('[data-noa-focus]')){delete row.dataset.noaFocus;row.removeAttribute('aria-current');}target.dataset.noaFocus='true';target.setAttribute('aria-current','true');target.focus?.({preventScroll:true});
-   if(kind==='영상'&&options.play)playInline(target,r,'center');else target.scrollIntoView({block:'center',behavior:'instant'});
+   for(const row of host.querySelectorAll('[data-noa-focus]')){delete row.dataset.noaFocus;row.removeAttribute('aria-current');}target.dataset.noaFocus='true';target.setAttribute('aria-current','true');if(!options.allow)target.focus?.({preventScroll:true});
+   if(options.scroll)options.scroll(target);else if(kind==='영상'&&options.play)playInline(target,r,'center');else target.scrollIntoView({block:'center',behavior:'instant'});
   });
  }
 
- window.addEventListener('noa-find-song',event=>findSong(event.detail?.key));const findKey=new URLSearchParams(location.search).get('noa-find');if(findKey)setTimeout(()=>findSong(findKey),300);
+ window.addEventListener('noa-find-song',event=>findSong(event.detail?.key,{allow:event.detail?.allow,scroll:event.detail?.scroll}));const findKey=new URLSearchParams(location.search).get('noa-find');if(findKey)setTimeout(()=>findSong(findKey),300);
  // Theme colours are CSS tokens; redrawing the hierarchy would detach/reload its iframe.
  // Only translated labels require a structural refresh, including when preferences arrive late.
  let renderedLanguage=document.documentElement?.lang||'ko';

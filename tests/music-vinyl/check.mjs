@@ -4,8 +4,15 @@ import {readFileSync,mkdirSync} from 'node:fs';
 import {createServer} from 'node:http';
 const wav=Buffer.alloc(44+16000*5);wav.write('RIFF');wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(8000,24);wav.writeUInt32LE(16000,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(wav.length-44,40);
 const html='<!doctype html><html lang="ko" data-noa-style="starlight" data-noa-precision="1"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-listening.css"><link rel="stylesheet" href="/noa-music-vinyl.css"><body class="noa-page"><main><h1>음원</h1><section id="music-browse"></section><audio id="sound-player" src="/tone.wav"></audio><div id="songs"><div class="song selected" data-key="a"><button class="song-select"><span class="cover">♫</span>첫 곡</button></div></div><div class="noa-two-line"><img id="dock-cover" hidden><span id="dock-cover-empty">♫</span></div></main><script src="/noa-browse.js"></script><script src="/noa-music-vinyl.js"></script><script>const tree=NoaBrowse.mount({host:document.querySelector("#music-browse"),rows:[],onChange:()=>tree.apply([])});tree.apply([]);</script></body></html>';
+// Exercise the installed scripts with an isolated audio file; no member session or writes are needed.
+const operating=process.env.NOA_FOLLOW_LIVE==='1',assets=new Map();
+if(operating)for(const name of ['noa-music-vinyl.js','noa-browse.js']){
+ const response=await fetch('https://noastudio.ai.kr/'+name+'?verify='+process.env.GITHUB_SHA,{cache:'no-store',signal:AbortSignal.timeout(20000)});
+ assert(response.ok);const bytes=Buffer.from(await response.arrayBuffer());assert(bytes.equals(readFileSync('deploy/'+name)));assets.set('/'+name,bytes);
+}
 const server=createServer((req,res)=>{
  const path=new URL(req.url,'http://localhost').pathname;
+ if(assets.has(path)){res.writeHead(200,{'Content-Type':'application/javascript;charset=utf-8'});return res.end(assets.get(path));}
  if(path==='/tone.wav'){res.writeHead(200,{'Content-Type':'audio/wav'});return res.end(wav);}
  if(path==='/'){res.writeHead(200,{'Content-Type':'text/html;charset=utf-8'});return res.end(html);}
  const file=path.startsWith('/noa-assets/editorial-')?'deploy/noa-assets/editorial/'+path.split('editorial-')[1]:path.startsWith('/noa-assets/splash/')?'public/splash/'+path.split('/').pop():'deploy'+path;
@@ -13,8 +20,49 @@ const server=createServer((req,res)=>{
 });
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox','--autoplay-policy=no-user-gesture-required']});mkdirSync('music-vinyl-proof',{recursive:true});
-try{for(const width of [320,390,1280]){
+try{for(const width of (operating?[1280]:[320,390,1280])){
  const p=await browser.newPage({viewport:{width,height:880}});await p.goto('http://127.0.0.1:'+server.address().port+'/');
+ if(width===1280){
+  const f=await browser.newPage({viewport:{width,height:880},reducedMotion:'reduce'});
+  try{
+   await f.clock.install({time:new Date('2026-11-04T01:00:00Z')});await f.clock.pauseAt(new Date('2026-11-04T01:00:01Z'));
+   await f.goto('http://127.0.0.1:'+server.address().port+'/');
+   await f.evaluate(async()=>{
+    document.body.style.minHeight='650vh';
+    const rail=document.createElement('dialog');rail.id='noa-menu-drawer';rail.setAttribute('role','navigation');document.body.append(rail);rail.show();
+    const songs=document.querySelector('#songs'),first=songs.querySelector('.song'),second=first.cloneNode(true);
+    second.classList.remove('selected');second.dataset.key='b';songs.append(second);
+    first.style.cssText='position:absolute;top:200vh';second.style.cssText='position:absolute;top:420vh';
+    const audio=document.getElementById('sound-player');audio.loop=true;
+    window.dispatchEvent(new Event('wheel'));await audio.play();
+   });
+   const seen=key=>f.locator('#songs .song[data-key="'+key+'"]').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;});
+   await f.clock.fastForward(6500);await f.keyboard.press('Shift');await f.clock.fastForward(9500);
+   assert(!await seen('a'),'continue browsing for ten seconds after the most recent input');
+   await f.clock.fastForward(550);await f.clock.runFor(64);assert(await seen('a'),'a pinned navigation dialog permits follow');
+   // A natural track change after the idle period follows immediately.
+   await f.evaluate(async()=>{const audio=document.getElementById('sound-player');audio.pause();window.dispatchEvent(new CustomEvent('noa-track-selected',{detail:{record:{key:'b'}}}));await audio.play();});
+   await f.clock.runFor(120);assert(await seen('b'),'idle listeners see the new playing track');
+   const waitForPageScroll=()=>f.evaluate(()=>new Promise(resolve=>window.addEventListener('scroll',()=>resolve(),{once:true})));
+   const modalScroll=waitForPageScroll();await f.evaluate(()=>{const modal=document.createElement('dialog');modal.id='follow-test-modal';document.body.append(modal);modal.showModal();scrollTo(0,0);window.dispatchEvent(new Event('wheel'));});
+   await modalScroll;await f.clock.fastForward(10100);assert(!await seen('b'),'a real modal is left alone');
+   await f.evaluate(()=>document.getElementById('follow-test-modal').close());await f.clock.runFor(120);assert(await seen('b'),'closing a modal resumes an overdue follow');
+   const pausedScroll=waitForPageScroll();await f.evaluate(()=>{document.getElementById('sound-player').pause();scrollTo(0,0);});await pausedScroll;
+   await f.clock.fastForward(10500);assert(!await seen('b'),'paused audio does not move the page');
+   await f.evaluate(()=>document.getElementById('sound-player').play());await f.clock.runFor(120);assert(await seen('b'),'resuming the same track re-arms follow');
+   await f.evaluate(async()=>{
+    const q=document.createElement('dialog');q.id='dock-queue';q.style.cssText='height:140px;overflow:auto';
+    for(let i=0;i<22;i++){const item=document.createElement('button');item.className='noa-queue-track';item.style.cssText='display:block;height:44px';item.dataset.queueKey=i===21?'a':i===0?'b':'other'+i;item.innerHTML='<span class="noa-queue-state">재생</span>';item.setAttribute('aria-current',String(i===0));q.append(item);}
+    document.body.append(q);q.showModal();window.dispatchEvent(new Event('wheel'));
+    const audio=document.getElementById('sound-player');audio.pause();window.dispatchEvent(new CustomEvent('noa-track-selected',{detail:{record:{key:'a'}}}));await audio.play();
+   });
+   await f.clock.runFor(60);assert.equal(await f.locator('#dock-queue [aria-current=true]').getAttribute('data-queue-key'),'a');
+   assert.equal(await f.locator('#dock-queue').evaluate(q=>q.scrollTop),0);
+   await f.clock.fastForward(10100);await f.clock.runFor(64);assert(await f.locator('#dock-queue').evaluate(q=>q.scrollTop>0));
+   console.log('FOLLOW_PINNED_MENU_LAST_INPUT_NEXT_TRACK_MODAL_RESUME_AND_QUEUE_OK',operating?'operating':'candidate');
+  }finally{await f.close();}
+ }
+ if(operating){await p.close();continue;}
  if(width===390){
   const genrePage=await browser.newPage({viewport:{width,height:880}});
   const rows=Array.from({length:41},(_,i)=>({key:'qa-'+i,title:'Track '+i,genre:i<40?'kpop-original':'jpop-original',ep:i%40+1}));
