@@ -36,19 +36,19 @@ function noa_sitemap_registry():array{
             ['creatorAI','채널 AI 제작실','8레벨 크레이터 VIP회원 · 최고 관리자','/noa-creator-ai.php','mic','member'],
             ['password','아이디·비밀번호 찾기','계정 접근 복구','/bbs/password_lost.php','settings','guest'],
             ['playlists','내 재생목록','나만의 목록 만들기와 편집','/noa-music.php#my-playlists','playlists','member'],
-            ['subscription','월 구독 · 포인트','이용 기간과 구독 구매 내역','/noa-subscription.php','user','member'],
+            ['subscription','구독 신청·내역','월 구독 신청과 결제·이용 기간 확인','/noa-subscription.php','user','member'],
             ['giftBox','선물함','받은 선물 사용·연장 및 보낸 선물 현황','/noa-gifts.php','user','member'],
             ['vipStore','VIP 이용권','별무리·크레이터 30일·365일 이용권','/noa-vip.php','user','public'],
             ['points','포인트권 구매','카드·카카오페이 · 10,000P부터 10% 추가','/noa-points.php','user','public'],
-            ['membership','포인트 · VIP 이용권','포인트 잔액·적립·이용 기간 확인','/noa-membership.php','user','member'],
+            ['membership','나의 포인트·이용권','포인트 잔액·적립·이용 기간 확인','/noa-membership.php','user','member'],
             ['support','받은 후원 · 정산','후원 내역과 개인·사업자 정산 신청','/noa-support.php','user','member'],
-            ['creator','내 채널 · 음원','내 채널과 업로드한 음악 관리','/noa-creator.php','music','member'],
+            ['creator','채널 프로필·음원 관리','내 채널 소개와 업로드한 음악 수정','/noa-creator.php','music','member'],
             ['profile','회원정보','내 계정 정보 확인과 수정','/bbs/member_confirm.php?url=register_form.php','user','member'],
             ['notifications','내 활동 알림','AInoa의 소식과 알림 설정','/noa-notifications.php','mail','member'],
         ]],
         'community'=>['title'=>'커뮤니티·창작·SHOP','routes'=>[
-            ['shop','NOA SHOP','굿즈 탐색·찜·공식 구매','/noa-shop.php','disc','public'],
-            ['store','통합 스토어','포인트·VIP 이용권·굿즈 함께 구매','/noa-youngcart.php','disc','public'],
+            ['shop','공식 굿즈','굿즈 탐색·찜·비교','/noa-shop.php','disc','public'],
+            ['store','통합 구매','포인트·VIP 이용권·굿즈 함께 주문','/noa-youngcart.php','disc','public'],
             ['lounge','별무리 라운지','음악과 일상을 나누는 팬 커뮤니티','/noa-lounge.php','community','public'],
             ['loungeDiscovery','라운지 글 찾기','공개 글과 댓글을 검색하고 인기 글을 확인해요','/noa-lounge-discovery.php','community','public'],
             ['creatorLab','CREATOR LAB','피드백·작품 성장 기록·협업','/noa-creator-lab.php','mic','public'],
@@ -193,6 +193,35 @@ function noa_sitemap_access_icon(int $rank,string $label):string{
     return '<span class="noa-directory-access" role="img" aria-label="'.$safe.'" title="'.$safe.'"><span class="noa-rank-badge noa-rank-'.$rank.(in_array($rank,[4,5,6,8],true)?' noa-rank-premium':'').'" aria-hidden="true"><span>'.($symbol?noa_sitemap_icon($symbol):'').'</span></span></span>';
 }
 
+/** Compare actual destinations, including known native/modern aliases. Keep distinct filters and anchors. */
+function noa_sitemap_destination(string $href):string{
+    $parts=parse_url($href);$path=$parts['path']??'/';parse_str($parts['query']??'',$query);$hash=$parts['fragment']??'';
+    if($path==='/index.php')$path='/';
+    if($path==='/bbs/content.php'&&isset(['privacy'=>1,'provision'=>1][$query['co_id']??''])){
+        return ($query['co_id']==='privacy'?'/noa-privacy.php':'/noa-terms.php');
+    }
+    if($path==='/bbs/board.php'&&isset($query['bo_table'])&&!isset($query['wr_id'])){
+        $path='/noa-lounge.php';$query=['board'=>$query['bo_table']];$hash='ec-content';
+    }
+    if($path==='/noa-lounge.php'&&($query['category']??'')==='story'&&in_array($query['view']??'list',['','list'],true)){
+        unset($query['category'],$query['view']);$query['board']='song_request';$hash='ec-content';
+    }
+    ksort($query);return $path.($query?'?'.http_build_query($query):'').($hash!==''?'#'.$hash:'');
+}
+
+function noa_sitemap_unique_groups(array $groups):array{
+    $chosen=[];
+    foreach($groups as $key=>$group)foreach($group['routes'] as $i=>$row){
+        $destination=noa_sitemap_destination($row[3]);
+        if(!isset($chosen[$destination])||($chosen[$destination][2]!==''&&($row[6]??'')===''))$chosen[$destination]=[$key,$i,$row[6]??''];
+    }
+    foreach($groups as $key=>$group){
+        $routes=[];foreach($group['routes'] as $i=>$row){$pick=$chosen[noa_sitemap_destination($row[3])];if($pick[0]===$key&&$pick[1]===$i)$routes[]=$row;}
+        if($routes)$groups[$key]['routes']=$routes;else unset($groups[$key]);
+    }
+    return $groups;
+}
+
 function noa_sitemap_visible_groups(string $root,string $role,array $boards=[],array $contents=[]):array{
     $groups=noa_sitemap_registry();
     if($role==='admin'&&is_file(__DIR__.'/noa-workspace.php')){require_once __DIR__.'/noa-workspace.php';$groups['admin']=['title'=>'홈페이지 관리','routes'=>[['libraryAdmin','홈페이지 관리','회원·화면·시스템 운영','/noa-library.php','settings','admin']]];foreach(noa_workspace_groups() as $id=>$group){$groups['admin-'.$id]=['title'=>in_array($id,['content','creation'],true)?'내 채널 · '.$group['title']:$group['title'],'routes'=>array_map(fn($r)=>array_merge($r,['admin']),$group['routes'])];}}
@@ -223,7 +252,7 @@ function noa_sitemap_visible_groups(string $root,string $role,array $boards=[],a
         if(!$group['routes'])unset($groups[$name]);
     }
     unset($group);
-    return $groups;
+    return noa_sitemap_unique_groups($groups);
 }
 
 function noa_sitemap_native_content(array $g5,array $account,bool $member,bool $super):array{

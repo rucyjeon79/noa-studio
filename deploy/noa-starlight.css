@@ -1205,9 +1205,9 @@ html.noa-shell-wide:not(.noa-wide-rail) #noa-menu-drawer[open]{
 #noa-menu-drawer .noa-drawer-secondary{display:flex;flex-direction:column;gap:0;margin:3px 0 0 10px;padding:0 0 0 18px;border:0;border-inline-start:1px solid var(--noa-line);border-radius:0;background:transparent}
 #noa-menu-drawer .noa-drawer-secondary a{display:flex;align-items:center;min-width:0;min-height:44px;margin:0;padding:5px 0;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--noa-text);font-size:13px;font-weight:450;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere;text-decoration:none}
 #noa-menu-drawer .noa-drawer-secondary a{flex-wrap:nowrap;justify-content:flex-start;gap:8px;align-content:center}
-#noa-menu-drawer .noa-route-name{flex:1;min-width:0;white-space:normal;overflow:visible;text-overflow:clip}
+#noa-menu-drawer .noa-route-name{flex:0 1 auto;min-width:0;white-space:normal;overflow:visible;text-overflow:clip}
 #noa-menu-drawer .noa-route-level,.noa-site-map .noa-directory-access{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:24px}
-#noa-menu-drawer .noa-route-level{margin-inline-start:auto}
+#noa-menu-drawer .noa-route-level{margin-inline-start:0}
 :is(#noa-menu-drawer .noa-route-level,.noa-site-map .noa-directory-access) .noa-rank-badge{width:22px;height:24px;margin:0}
 :is(#noa-menu-drawer .noa-route-level,.noa-site-map .noa-directory-access) .noa-rank-badge>span>svg{display:block;width:14px;height:16px;color:inherit}
 #noa-menu-drawer .noa-drawer-secondary a:is(:hover,:focus-visible,[aria-current=page]){background:transparent;color:var(--noa-accent);box-shadow:none;text-decoration:underline;text-underline-offset:3px}
@@ -1217,21 +1217,22 @@ html.noa-shell-wide #noa-menu-drawer .noa-sidebar-visitors{display:block;margin:
 #noa-menu-drawer .noa-sidebar-visitors dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:0}
 #noa-menu-drawer .noa-sidebar-visitors dl>div{display:grid;grid-column:auto;gap:2px;min-width:0}
 #noa-menu-drawer .noa-sidebar-visitors dd{margin:0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
-/* The controls follow the theme caption; service links belong to the landscape. */
-html.noa-shell-wide[data-noa-style] .noa-mobile-footer{grid-template-columns:minmax(0,1fr);align-items:start;gap:12px}
-.noa-mobile-footer .noa-footer-heading{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
-html.noa-shell-wide .noa-footer-heading .noa-sidebar-signature{flex:1;min-width:0;gap:3px}
-html.noa-shell-wide .noa-footer-heading .noa-sidebar-signature>span{white-space:normal;line-height:1.4;overflow-wrap:anywhere}
-html.noa-shell-wide[data-noa-theme] .noa-footer-heading .noa-footer-themes{flex:none;margin-inline-start:auto}
-.noa-footer-heading .noa-footer-themes button{min-width:44px;min-height:44px;padding:5px 7px}
-.noa-mobile-footer .noa-footer-scene{position:relative;isolation:isolate;display:grid;align-items:end;min-width:0;min-height:clamp(122px,18vw,190px);border-radius:var(--noa-card-radius);overflow:hidden;background:#112232}
+/* One shared image footer: service links above, theme caption and choices below. */
+html.noa-shell-wide[data-noa-style] .noa-mobile-footer{grid-template-columns:minmax(0,1fr);align-items:start;gap:0}
+.noa-mobile-footer .noa-footer-scene{position:relative;isolation:isolate;display:grid;grid-template-rows:auto minmax(64px,1fr) auto;min-width:0;min-height:clamp(200px,22vw,280px);border-radius:var(--noa-card-radius);overflow:hidden;background:#112232}
 html.noa-shell-wide .noa-footer-scene .noa-footer-landscape{position:absolute;inset:0;z-index:-2;width:100%;height:100%;max-width:none;object-fit:cover;object-position:center;border-radius:0}
-.noa-footer-scene::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,transparent 22%,rgba(8,17,28,.32) 52%,rgba(8,17,28,.94) 100%);pointer-events:none}
-html.noa-shell-wide[data-noa-style] .noa-footer-scene .noa-sidebar-legal{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;gap:0;margin:0;padding:3px 5px;border:0;background:rgba(8,17,28,.48)}
-html.noa-shell-wide[data-noa-style] .noa-footer-scene .noa-sidebar-legal a{display:grid;place-items:center;grid-column:auto;grid-row:auto;min-width:0;min-height:44px;padding:5px 2px;margin:0;color:#fff;font-size:12px;font-weight:550;text-align:center;text-decoration:none;line-height:1.4;overflow-wrap:anywhere}
+.noa-footer-scene::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(8,17,28,.8),rgba(8,17,28,.08) 42%,rgba(8,17,28,.2) 55%,rgba(8,17,28,.92));pointer-events:none}
+html.noa-shell-wide[data-noa-style] .noa-footer-scene .noa-sidebar-legal{grid-row:1;display:flex;justify-content:space-between;align-items:stretch;gap:4px;margin:0;padding:4px 12px;border:0;background:transparent}
+html.noa-shell-wide[data-noa-style] .noa-footer-scene .noa-sidebar-legal a{display:grid;place-items:center;flex:0 1 auto;min-width:44px;min-height:44px;padding:4px 0;margin:0;color:#fff;font-size:12px;font-weight:550;text-align:center;text-decoration:none;line-height:1.4;word-break:keep-all}
 html.noa-shell-wide[data-noa-style] .noa-footer-scene .noa-sidebar-legal a:is(:hover,:focus-visible){text-decoration:underline;text-underline-offset:3px}
 html.noa-shell-wide[data-noa-style] .noa-footer-scene .noa-sidebar-legal a:focus-visible{outline:2px solid #fff;outline-offset:-3px}
+.noa-mobile-footer .noa-footer-heading{grid-row:3;display:flex;align-items:flex-end;justify-content:space-between;gap:8px;min-width:0;padding:12px}
+html.noa-shell-wide .noa-footer-heading .noa-sidebar-signature{flex:1;min-width:0;gap:0;align-self:center}
+html.noa-shell-wide .noa-footer-heading .noa-sidebar-signature>span{color:#fff;font-size:12px;font-weight:550;white-space:normal;line-height:1.5;overflow-wrap:anywhere}
+html.noa-shell-wide[data-noa-theme] body .noa-footer-heading .noa-footer-themes{flex:none;margin:0;padding:2px;border-color:rgba(255,255,255,.35);background:rgba(8,17,28,.65)}
+.noa-footer-heading .noa-footer-themes button{min-width:44px;min-height:44px;padding:5px 6px;color:#fff;font-size:11px}
 @media(min-width:900px){
- html.noa-shell-wide[data-noa-style] .noa-mobile-footer:not(.noa-home-footer){grid-template-columns:minmax(0,3fr) minmax(185px,1fr)}
- html.noa-shell-wide[data-noa-style] .noa-mobile-footer>.noa-sidebar-visitors{grid-row:auto}
+ html.noa-shell-wide[data-noa-style] .noa-footer-scene .noa-sidebar-legal{justify-content:flex-start;gap:28px;padding:8px 24px}
+ .noa-mobile-footer .noa-footer-heading{padding:20px 24px}
+ html.noa-shell-wide .noa-footer-heading .noa-sidebar-signature>span{font-size:16px}
 }

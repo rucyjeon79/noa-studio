@@ -21,13 +21,14 @@ foreach(['guest'=>1,'member'=>3,'admin'=>10,'two'=>2,'four'=>4,'five'=>5,'six'=>
     $board=['bo_table'=>'fixture_board','bo_subject'=>'전용 게시판','bo_list_level'=>4,'bo_read_level'=>5,'gr_use_access'=>1,'group_allowed'=>$role==='five','bo_use_cert'=>''];
     $board['noa_condition']=noa_sitemap_board_allowed($board,$level,!!$member,$super,$member)?'':'이용 조건 미충족';
     $boards=[$board];$groups=noa_sitemap_visible_groups($root,noa_sitemap_role(!!$member,$super?'super':''),$boards);
-    $groups=noa_sitemap_member_directory($groups,$access,$boards);$labels=[];$html='<main data-noa-member-directory>';
+    $groups=noa_sitemap_member_directory($groups,$access,$boards);$labels=[];$destinations=[];$html='<main data-noa-member-directory>';
     foreach($groups as $id=>$group){
         must((bool)$group['routes'],'empty category');
         $html.='<section class="noa-site-map"><h2 id="map-'.$esc($id).'">'.$esc($group['title']).'</h2>';
         $last=-1;$ranks=[];
         foreach($group['routes'] as $r){
             must($r[6]==='','denied route returned');$labels[$r[0]]=$r[7];
+            $destination=noa_sitemap_destination($r[3]);must(!isset($destinations[$destination]),'duplicate destination for '.$role);$destinations[$destination]=true;
             must($r[8]>=$last,'higher requirement must follow lower requirements in '.$id);$last=$r[8];$ranks[$r[0]]=$r[8];
             if($r[7]!==''){
                 $badge=noa_sitemap_access_icon($r[8],$r[7]);

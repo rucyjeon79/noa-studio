@@ -26,19 +26,20 @@ try{for(const [width,height] of [[320,900],[390,900],[768,720],[1920,900]]){
  if(width<=760)assert(await page.locator('.noa-mobile-nav').isVisible());
  if(width<=760){
   await page.locator('.noa-mobile-footer').scrollIntoViewIfNeeded();
-  assert.equal(await page.locator('.noa-mobile-footer [data-visit="total"]').textContent(),'123,456');
+  assert.equal(await page.locator('.noa-mobile-footer .noa-sidebar-visitors').count(),0);
+  assert.equal(await page.locator('#noa-menu-drawer [data-visit="total"]').textContent(),'123,456');
   for(const link of await page.locator('.noa-mobile-footer .noa-sidebar-legal a').all())assert((await link.boundingBox()).height>=44);
   await page.evaluate(()=>scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'}));
-  const counter=await page.locator('.noa-mobile-footer .noa-sidebar-visitors').boundingBox(),dock=await page.locator('.noa-mobile-nav').boundingBox();
+  const scene=await page.locator('.noa-footer-scene').boundingBox(),dock=await page.locator('.noa-mobile-nav').boundingBox();
   const footer=await page.locator('.noa-mobile-footer').boundingBox(),main=await page.locator('main').boundingBox();
   const theme=await page.locator('.noa-mobile-footer .noa-footer-themes').boundingBox();
   assert(theme&&theme.height>=44,'footer theme control remains touch accessible');
-  assert(theme.y+theme.height<=counter.y,'visitor counts do not overlap the footer theme control');
-  assert(footer.y-(main.y+main.height)<=25);assert(dock.y-(counter.y+counter.height)<=34,'last footer control keeps the shared dock gap');
+  assert(theme.y>=scene.y&&theme.y+theme.height<=scene.y+scene.height,'theme control belongs inside the footer image');
+  assert(footer.y-(main.y+main.height)<=25);assert(dock.y-(scene.y+scene.height)<=34,'last footer control keeps the shared dock gap');
   assert(theme.y+theme.height<=dock.y,'footer theme control is not covered by the dock');
   const cards=await page.locator('#noa-featured>.noa-music-card').all();const boxes=await Promise.all(cards.map(c=>c.boundingBox()));
   assert.equal(boxes[0].y,boxes[1].y);assert.equal(boxes[2].y,boxes[3].y);assert(boxes[2].y>boxes[0].y);
-  assert(counter.y>=56);assert(counter.y+counter.height<=dock.y);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  assert(scene.y>=56);assert(scene.y+scene.height<=dock.y);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await page.screenshot({path:'starlight-proof/mobile-footer-'+width+'.png'});
  }else assert(await page.locator('.noa-mobile-footer').isVisible(),'shared page footer remains available on larger screens');
  await page.locator('#noa-nav-all').click();assert.equal(await page.locator('#noa-nav-all').getAttribute('aria-expanded'),'true');await page.locator('#noa-menu-drawer').getByRole('link',{name:'사이트맵 열기',exact:true}).click();
