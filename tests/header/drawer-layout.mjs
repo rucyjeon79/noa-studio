@@ -14,6 +14,8 @@ try{
     await context.route('**/'+file+'*',r=>r.fulfill({body:readFileSync('deploy/'+file),contentType:file.endsWith('.css')?'text/css':'application/javascript'}));
    }
    const page=await context.newPage();
+   const campaign=page.locator('#noa-amt-fan .amt-close');
+   await page.addLocatorHandler(campaign,()=>campaign.click());
    page.on('pageerror',error=>console.log('PAGE_ERROR',width,error.message));
    for(const [theme,path] of [['noa-studio','/noa-shop.php'],['noa-ivory','/noa-login.php']]){
     await page.goto('https://noastudio.ai.kr'+path,{waitUntil:'domcontentloaded'});
@@ -22,6 +24,7 @@ try{
     await page.locator('[data-footer-theme="'+theme+'"]').evaluate(b=>b.click());
     await page.waitForFunction(t=>document.documentElement.dataset.noaTheme===t&&!document.querySelector('#noa-header-language')?.disabled,theme);
 
+    if(await campaign.isVisible())await campaign.click();
     if(width<1200)await page.locator('#noa-nav-all').click();
     const logo=drawer.locator('.noa-brand-mark');
     await logo.evaluate(img=>img.decode());
