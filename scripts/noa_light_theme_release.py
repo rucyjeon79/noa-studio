@@ -1,4 +1,4 @@
-"""Publish the two-frame header, shared navigation, language, clock and verified location weather across native store pages, including portrait/landscape navigation checks."""
+"""Publish the two-frame header and verified location weather, including content-versioned native store styles for returning visitors."""
 import os
 import sys
 from pathlib import Path
@@ -12,6 +12,7 @@ release.FILES = {**theme_assets, 'noa-bridge/ui-preferences.php': 'bridge/ui-pre
 release.FILES['extend/noa.design.php'] = 'deploy/noa-design.extend.php'
 release.FILES.update({name: 'deploy/' + name for name in ('noa-account.js', 'noa-youngcart-premium.css', 'noa-voice.js', 'noa-ainoa.css', 'noa-amt-fan.js', 'noa-amt-fan.css', 'noa-sitemap.php')})
 release.FILES = {'noa-bridge/weather.php':'bridge/weather.php', **release.FILES}
+release.FILES.update({'noa-youngcart.php':'deploy/noa-youngcart.php','extend/zz.noa-youngcart.php':'deploy/noa-youngcart.extend.php'})
 release.NEW = set(theme_assets) | {'noa-bridge/weather.php'}
 release.BACKUP = Path(os.environ.get('RUNNER_TEMP', '/tmp')) / 'noa-light-theme-before.json'
 

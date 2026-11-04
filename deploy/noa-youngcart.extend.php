@@ -11,6 +11,7 @@ if(in_array($ny_path,['/shop/orderinquiryview.php','/mobile/shop/orderinquiryvie
 // Presentation only. Keep native cart, order and payment handlers intact.
 if(preg_match('~^/(?:mobile/)?shop/[^/]+\.php$~D',(string)$ny_path)){
  add_stylesheet('<link rel="stylesheet" href="/noa-ui.css">',90);
- add_stylesheet('<link rel="stylesheet" href="/noa-youngcart-premium.css?v=20261103">',100);
+ $ny_style_version=@hash_file('sha256',G5_PATH.'/noa-youngcart-premium.css')?:'20261104';
+ add_stylesheet('<link rel="stylesheet" href="/noa-youngcart-premium.css?v='.$ny_style_version.'">',100);
  add_javascript('<script src="/noa-youngcart-premium.js?v=20261103" defer></script>',100);
 }

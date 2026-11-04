@@ -90,7 +90,10 @@ try{for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]
     assert(providers.length>=2,'existing social login providers remain available');
     for(const provider of providers){assert.equal(provider.radius,'4px','provider controls share the page corner radius');assert(provider.height>=44&&provider.overflow<=1,'provider label and touch area fit');assert(Math.abs(provider.x-providers[0].x)<1&&Math.abs(provider.width-providers[0].width)<1,'provider controls align');}
    }
-   if(route==='/shop/cart.php')assert(await p.locator('.ny-native-nav').isVisible(),'native store/order navigation is preserved');
+   if(route==='/shop/cart.php'){
+    assert(await p.locator('.ny-native-nav').isVisible(),'native store/order navigation is preserved');
+    if(phase==='live')assert.match(await p.locator('link[href*="noa-youngcart-premium.css"]').getAttribute('href'),/\?v=[a-f0-9]{64}$/,'returning visitors receive the current store styles');
+   }
    assert.deepEqual(errors,[],'uncaught browser errors: '+route);
    const selected=p.locator('#noa-section-navigation a[aria-current=page]');
    if(mode==='noa-ivory'&&await selected.count())assert.equal(await selected.evaluate(el=>getComputedStyle(el).color),'rgb(255, 255, 255)','active section label remains readable: '+route);
@@ -215,7 +218,7 @@ async function verifyAutomaticClock(){
 }
 
 async function verifyMusicShelves(p,width,mode,theme){
- await p.waitForFunction(()=>document.body.dataset.noaHomeReady==='true'&&[...document.querySelectorAll('.noa-home-shelf')].length===5&&[...document.querySelectorAll('.noa-home-shelf>.noa-card-grid')].every(g=>g.querySelectorAll('.noa-music-card').length<=4));
+ await p.waitForFunction(()=>document.body.dataset.noaHomeReady==='true'&&[...document.querySelectorAll('.noa-home-shelf')].length===5&&[...document.querySelectorAll('.noa-home-shelf>.noa-card-grid')].every(g=>g.querySelectorAll('.noa-music-card').length===4&&Number(g.dataset.noaColumns)>0));
  await p.locator('#noa-home-community .noa-feed-invite').waitFor();
  const layout=await p.evaluate(()=>{
   const box=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom};};
