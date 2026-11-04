@@ -192,7 +192,7 @@ function wideShell(side){
  const searchBox=document.createElement('form');searchBox.className='noa-drawer-search';searchBox.setAttribute('role','search');searchBox.setAttribute('aria-label','메뉴 찾기');
  searchBox.innerHTML='<label class="noa-sr-only" for="noa-drawer-search">메뉴 찾기</label><input id="noa-drawer-search" type="search" placeholder="메뉴 찾기" autocomplete="off"><button type="submit" aria-label="검색">'+icon('search')+'</button>';profile.after(searchBox);
  const nav=side.querySelector('.noa-menu');
- const mapLink=document.createElement('a');mapLink.className='noa-drawer-map-link';mapLink.href='/noa-sitemap.php';mapLink.textContent='사이트맵 열기';
+ const mapLink=document.createElement('a');mapLink.className='noa-drawer-map-link';mapLink.href='/noa-sitemap.php?view=mine';mapLink.textContent='사이트맵 열기';
  const mapHead=document.createElement('div');mapHead.className='noa-drawer-map-head';
  const title=document.createElement('h2');title.textContent='전체 서비스';mapHead.append(title,mapLink);nav.append(mapHead);
  const index=document.createElement('select');index.className='noa-drawer-index';index.setAttribute('aria-label','분류 바로가기');index.hidden=true;nav.append(index);
@@ -223,8 +223,8 @@ function wideShell(side){
  };
  function drawMap(source){
   const groups=document.createDocumentFragment(),jumps=document.createDocumentFragment();
-  for(const section of source.querySelectorAll('main .noa-site-map')){
-   const heading=section.querySelector('h2'),items=section.querySelectorAll('.noa-site-map-link[data-noa-route]');
+  for(const section of source.querySelectorAll('main[data-noa-member-directory] .noa-site-map')){
+   const heading=section.querySelector('h2'),items=section.querySelectorAll('.noa-site-map-link[data-noa-route][href]:not([aria-disabled=true]):not([data-noa-condition])');
    if(!heading||!items.length)continue;
    const group=document.createElement('section');group.className='noa-drawer-category';group.dataset.mapGroup=heading.id;
    const h=document.createElement('h3');h.textContent=tr(heading.textContent.trim());h.tabIndex=-1;group.append(h);
@@ -233,15 +233,18 @@ function wideShell(side){
    const count=document.createElement('span');count.className='noa-drawer-route-count';count.textContent=String(items.length);h.append(count);
    const list=document.createElement('div');list.className='noa-drawer-secondary';
    for(const item of items){
-    const key=item.dataset.noaRoute,label=item.querySelector('strong').textContent.trim(),reason=item.dataset.noaCondition;
+    const key=item.dataset.noaRoute,label=item.querySelector('strong').textContent.trim();
     const link=document.createElement('a');link.dataset.drawerRoute=key;
     if(['home','youtube','world','music','lounge','shop'].includes(key))link.dataset.noaNav=key==='lounge'?'community':key;
     link.textContent=tr(({world:'NOA WORLD · 세계관',music:'음원',youtube:'유튜브'})[key]||label);
     link.dataset.search=label+' '+(item.querySelector('small')?.textContent||'');
     const href=item.getAttribute('href');
-    if(reason||!href||!href.startsWith('/')||href.startsWith('//')){
-     link.setAttribute('role','button');link.tabIndex=0;link.setAttribute('aria-disabled','true');link.dataset.noaCondition=reason||'지금은 열 수 없는 메뉴예요.';
-    }else{link.href=href;if(href===location.pathname+location.search+location.hash)link.setAttribute('aria-current','page');}
+    if(!href.startsWith('/')||href.startsWith('//'))continue;
+    link.href=href;if(href===location.pathname+location.search+location.hash)link.setAttribute('aria-current','page');
+    if(item.dataset.noaAccessLabel){
+     const badge=document.createElement('small');badge.className='noa-route-level';badge.textContent=item.dataset.noaAccessLabel;
+     link.append(badge);
+    }
     list.append(link);
    }
    group.append(list);groups.append(group);
@@ -255,7 +258,7 @@ function wideShell(side){
   const controller=new AbortController();request=controller;
   empty.textContent='전체 메뉴를 불러오는 중이에요.';empty.hidden=false;
   try{
-   const response=await fetch('/noa-sitemap.php',{credentials:'same-origin',cache:'no-store',signal:controller.signal});
+   const response=await fetch('/noa-sitemap.php?view=mine',{credentials:'same-origin',cache:'no-store',signal:controller.signal});
    if(!response.ok)throw Error('sitemap unavailable');
    const markup=await response.text();if(request!==controller)return;
    // A detached template keeps scripts and assets inert. Only route text and local links enter the drawer.
@@ -312,7 +315,7 @@ function wideShell(side){
   trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-controls',side.id);trigger.setAttribute('aria-expanded','false');
   trigger.addEventListener('click',e=>{
    if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
-   e.preventDefault();if(isWide()){loadMap();search.focus();return;}if(side.open)return;side.showModal();loadMap();side.scrollTop=0;
+   e.preventDefault();if(isWide()){resetMap();search.focus();return;}if(side.open)return;side.showModal();resetMap();side.scrollTop=0;
    root.classList.add('noa-menu-open');trigger.setAttribute('aria-expanded','true');close.focus({preventScroll:true});
   });
   searchBox.after(tools);tools.hidden=false;

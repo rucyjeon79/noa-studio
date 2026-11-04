@@ -41,6 +41,8 @@ jobs:
           node --test tests/starlight/navigation.test.mjs
           python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/drawer" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          php -l deploy/noa-sitemap.php
+          php tests/sitemap/drawer_access.php "$RUNNER_TEMP/drawer"
           cp tests/header/drawer-layout.mjs "$RUNNER_TEMP/drawer/check.mjs"
           node "$RUNNER_TEMP/drawer/check.mjs"
       - uses: actions/upload-artifact@v4
@@ -60,6 +62,8 @@ jobs:
           python -m pip install 'paramiko>=3,<5'
           python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/drawer" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          php -l deploy/noa-sitemap.php
+          php tests/sitemap/drawer_access.php "$RUNNER_TEMP/drawer"
           cp tests/header/drawer-layout.mjs "$RUNNER_TEMP/drawer/check.mjs"
       - name: Publish and verify the three menu assets
         env:

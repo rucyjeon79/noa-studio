@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import {mkdirSync,readFileSync} from 'node:fs';
 import {chromium} from 'playwright';
+import {fileURLToPath} from 'node:url';
+const minePath='/noa-sitemap.php?view=mine';
 import {createHash} from 'node:crypto';
 
 const phase=process.env.NOA_THEME_PHASE||'candidate';
@@ -58,6 +60,9 @@ try{
      });
      await page.route('**/noa-ainoa.php?action=welcome',r=>r.fulfill({json:{ok:true,member:true,displayName:'별무리',capabilities:caps,accountKey:'drawer-fixture'}}));
     }else await page.unrouteAll({behavior:'wait'});
+    const fixtureRole=member?(width===1440?'admin':'member'):'guest';
+    const fixture=readFileSync(fileURLToPath(new URL('./drawer-'+fixtureRole+'.html',import.meta.url)),'utf8');
+    if(phase==='candidate'||member)await page.route('**/noa-sitemap.php?view=mine',r=>r.fulfill({contentType:'text/html; charset=utf-8',body:fixture}));
     await page.goto('https://noastudio.ai.kr'+path,{waitUntil:'domcontentloaded'});
     const drawer=page.locator('#noa-menu-drawer');
     await page.waitForFunction(()=>!document.querySelector('[data-footer-theme]')?.disabled && !!document.querySelector('#noa-menu-drawer #noa-drawer-tools'));
@@ -103,13 +108,14 @@ try{
     for(const [i,[x,y,w,h,lw,lh,sw]] of boxes.entries()){assert(w>=44&&h>=44&&lw>0&&lh>0&&sw>0);if(i)assert(x>=boxes[i-1][0]+boxes[i-1][2]-1&&Math.abs(y-boxes[0][1])<=1);}
     const map=drawer.locator('.noa-menu'),links=map.locator('[data-drawer-route]');
     await links.first().waitFor();
-    const sitemap=await page.request.get('https://noastudio.ai.kr/noa-sitemap.php');
+    const markup=phase==='candidate'||member?fixture:await (await page.request.get('https://noastudio.ai.kr'+minePath)).text();
+    assert.equal(await map.locator('.noa-drawer-map-link').getAttribute('href'),minePath);
     const expected=await page.evaluate(markup=>{
      const t=document.createElement('template');t.innerHTML=markup;
-     return [...t.content.querySelectorAll('main .noa-site-map')].map(g=>[g.querySelector('h2').id,...[...g.querySelectorAll('[data-noa-route]')].map(a=>[a.dataset.noaRoute,a.getAttribute('href'),a.dataset.noaCondition||''])]);
-    },await sitemap.text());
-    assert(expected.length>=6);
-    const actual=await map.locator('.noa-drawer-category').evaluateAll(gs=>gs.map(g=>[g.dataset.mapGroup,...[...g.querySelectorAll('a')].map(a=>[a.dataset.drawerRoute,a.getAttribute('href'),a.dataset.noaCondition||''])]));
+     return [...t.content.querySelectorAll('main[data-noa-member-directory] .noa-site-map')].map(g=>[g.querySelector('h2').id,...[...g.querySelectorAll('[data-noa-route]')].map(a=>[a.dataset.noaRoute,a.getAttribute('href'),a.dataset.noaAccessLabel||''])]);
+    },markup);
+    assert(expected.length>0);
+    const actual=await map.locator('.noa-drawer-category').evaluateAll(gs=>gs.map(g=>[g.dataset.mapGroup,...[...g.querySelectorAll('a')].map(a=>[a.dataset.drawerRoute,a.getAttribute('href'),a.querySelector('.noa-route-level')?.textContent||''])]));
     assert.deepEqual(actual,expected);
     for(const group of await map.locator('.noa-drawer-category').all()){
      const icon=group.locator('h3 svg');assert(await icon.isVisible());
@@ -122,14 +128,17 @@ try{
       assert.equal(color,'rgba(0, 0, 0, 0)');assert.equal(border,'0px');
      }
     }
-    if(phase==='live')assert.equal(await links.filter({hasText:'사연곡 신청'}).count(),1);
+    assert.equal(await map.locator('a[aria-disabled=true],[data-noa-condition]').count(),0);
+    assert.equal(await map.locator('[data-drawer-route=my]').count(),member?1:0);
+    assert.equal(await map.locator('[data-drawer-route=creatorAI]').count(),fixtureRole==='admin'?1:0);
+    if(member)assert.equal(await map.locator('[data-drawer-route=my] .noa-route-level').textContent(),'Lv.2 이상');
     assert.equal(await drawer.locator('footer .noa-sidebar-legal,footer a[href="/noa-world.php"]').count(),0);
     assert(await drawer.locator('footer .noa-sidebar-visitors').isVisible());
     const index=map.getByRole('combobox',{name:'분류 바로가기'});assert.equal(await index.locator('option').count(),expected.length+1);
     const choices=map.locator('.noa-drawer-category').nth(1);await index.selectOption({index:2});
     assert(await choices.locator('h3').evaluate(el=>el===document.activeElement));
     const search=drawer.locator('#noa-drawer-search');
-    await search.fill('오리지널송');const choice=map.locator('[data-drawer-route=original]');assert(await choice.isVisible());assert(await map.locator('[data-drawer-route=giftBox]').isHidden());
+    await search.fill('앱 설치');const choice=map.locator('[data-drawer-route=download]');assert(await choice.isVisible());assert(await map.locator('[data-drawer-route=giftBox]').isHidden());
     await drawer.locator('.noa-drawer-search button').click();assert(await choice.evaluate(e=>e===document.activeElement));
     await search.fill('없는메뉴xyz');assert(await drawer.locator('.noa-menu-empty').isVisible());await search.fill('');
     await drawer.locator('#noa-header-language').click();assert(await drawer.locator('#noa-language-options').isVisible());await drawer.locator('#noa-language-options button[data-language=ko]').click();
