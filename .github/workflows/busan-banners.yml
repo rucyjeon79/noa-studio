@@ -58,7 +58,7 @@ jobs:
           layout='busan-assistant/banner-assets/busan-layout.css'
           hook='extend/busan-layout.extend.php'
           layout_dir=Path('../deploy/busan')
-          expected[layout]='723b17c64a34b559d0fe23dad655360f88db872c928feb0d83e37d8bfba3b4f6'
+          expected[layout]='01499a529dc98325ac29887ab977cf0c44a50fc1ad06fdd9175962d49e8b96c8'
           files[layout]=(layout_dir/'busan-layout.css').read_bytes()
           files[hook]=(layout_dir/'busan-layout.extend.php').read_bytes()
           unchanged=set()
@@ -124,3 +124,9 @@ jobs:
         env:
           NODE_PATH: /tmp/busan-theme-deps/node_modules
         run: node scripts/qa/busan-layout.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: busan-mobile-home-banner
+          path: ${{ runner.temp }}/busan-hero-390-*.jpg
+          retention-days: 3
+          if-no-files-found: error

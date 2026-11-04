@@ -204,3 +204,28 @@
   #hd_pop .hd_pops_con { height: auto !important; }
   #hd_pop .hd_pops_con img { max-width: 100%; height: auto; }
 }
+
+/* 모바일 홈 배너 사진의 하늘과 문구 배경을 부드럽게 연결한다. */
+@media (max-width: 768px) {
+  #contentsWrap .busan-banner--hero {
+    --bu-hero-sky: 248 252 252;
+    background-color: rgb(var(--bu-hero-sky));
+  }
+  [data-busan-theme="dark"] #contentsWrap .busan-banner--hero { --bu-hero-sky: 8 20 38; }
+  #contentsWrap .busan-banner--hero .busan-banner__image {
+    height: 68%;
+    object-position: 94% bottom;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 38%);
+    mask-image: linear-gradient(to bottom, transparent 0%, #000 38%);
+  }
+  #contentsWrap .busan-banner--hero .busan-banner__shade {
+    background:
+      linear-gradient(to top, rgb(8 23 33 / 65%), transparent 17%),
+      linear-gradient(to bottom, rgb(var(--bu-hero-sky) / 70%) 24%, rgb(var(--bu-hero-sky) / 50%) 46%, transparent 76%);
+  }
+  #contentsWrap .busan-banner--hero .busan-banner__signature {
+    color: #fff;
+    border-color: rgb(255 255 255 / 36%);
+    text-shadow: 0 1px 2px rgb(8 23 33 / 65%);
+  }
+}

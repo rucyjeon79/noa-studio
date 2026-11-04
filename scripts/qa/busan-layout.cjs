@@ -56,6 +56,39 @@ async function checkBoardFormLayout(page, width) {
   assert.equal(geometry.columns, width <= 600 ? 2 : 4);
 }
 
+async function checkMobileHero(page, width) {
+  const hero = page.locator('#contentsWrap .busan-banner--hero').first();
+  const close = page.locator('#hd_pop .hd_pops_close:visible');
+  while (await close.count()) await close.first().click();
+
+  for (const theme of ['light', 'dark']) {
+    await page.locator('#busan-theme-trigger').click();
+    await page.locator('[data-busan-mode="' + theme + '"]').click();
+    const result = await hero.evaluate(async (banner, theme) => {
+      const image = banner.querySelector('.busan-banner__image');
+      await image.decode();
+      const frame = banner.getBoundingClientRect();
+      const photo = image.getBoundingClientRect();
+      const mask = getComputedStyle(image).maskImage;
+      return {
+        themedImage: image.currentSrc === image.getAttribute('data-busan-' + theme + '-src'),
+        fadesFromTransparent: mask.startsWith('linear-gradient(') && /transparent|rgba\(0, 0, 0, 0\)/.test(mask),
+        coverage: photo.height / frame.height,
+        bottomGap: Math.abs(photo.bottom - frame.bottom),
+      };
+    }, theme);
+    assert(result.themedImage && result.fadesFromTransparent, theme + ' mobile hero edge');
+    assert(result.coverage >= 0.65 && result.bottomGap <= 2);
+    if (width === 390 && process.env.RUNNER_TEMP) {
+      await hero.screenshot({
+        path: process.env.RUNNER_TEMP + '/busan-hero-390-' + theme + '.jpg',
+        type: 'jpeg', quality: 90, animations: 'disabled',
+        style: '#busan-on-assistant { visibility: hidden !important; }',
+      });
+    }
+  }
+}
+
 async function inspect(page, path, selector, width) {
   await page.goto(origin + path, { waitUntil: 'domcontentloaded' });
   const region = page.locator(selector);
@@ -79,6 +112,7 @@ async function inspect(page, path, selector, width) {
       const bounds = await popup.boundingBox();
       assert(bounds.x >= -1 && bounds.x + bounds.width <= width + 1, 'popup outside viewport');
     }
+    if (width <= 768) await checkMobileHero(page, width);
   }
 
   if (selector === '#busan-content-page') {
