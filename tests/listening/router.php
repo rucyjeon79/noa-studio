@@ -24,7 +24,7 @@ if($path==='/noa-music.php'){
  if(($_SERVER['HTTP_X_QA_CATALOG']??'')==='large'){
   $template=$songs[0];$songs=[];
   foreach(['kpop-original','jpop-original','pop-original'] as $genre){
-   for($n=1;$n<=42;$n++){$r=$template;$r['key']='single:'.$genre.':'.$n;$r['genre']=$genre;$r['title']=$genre.' '.$n;$r['ep']=(string)$n;$songs[]=$r;}
+   for($n=1;$n<=42;$n++){$r=$template;$r['key']='single:'.$genre.':'.$n;$r['genre']=$genre;$r['title']=$genre.' '.$n;$r['ep']=(string)$n;$r['audio']='/fixture.wav?record='.rawurlencode($r['key']);$songs[]=$r;}
   }
  }
  $src=str_replace('__DIR__',var_export($root.'/deploy',true),file_get_contents($root.'/deploy/noa-music.php'));

@@ -85,3 +85,20 @@ test('100 across the catalog and 10 per suggested genre, unique and playable eve
  for(const pick of picks){assert.equal(pick.selection.rows.length,10);assert(pick.selection.rows.every(x=>x.genre===pick.genre));assert.equal(pick.selection.matched,2);}
  const few=tracks.slice(0,5);assert.equal(model.wholeCatalogMix(few,theme).rows.length,5);assert.equal(model.recommendedGenreMix(few,'a',theme).rows.length,2);
 });
+test('manual listing ignores saju rankings and has no cap; offered mixes reserve different opening recordings',()=>{
+ const theme={personal:true,mood:'calm',rankedMoods:['calm','energy']};
+ const tracks=Array.from({length:126},(_,i)=>({key:'song'+i,audio:'/stream/'+i,genre:['k','j','p'][i%3],ep:Math.floor(i/3)+1,moodScores:{calm:126-i}})).reverse();
+ const order=(a,b)=>a.ep-b.ep;
+ const picks=model.genreSuggestions(tracks,theme,{k:'K',j:'J',p:'P'},'k',order);
+ const reserved=new Set();
+ for(const {genre,selection} of picks){
+  const manual=model.manualGenre(tracks,genre,order).rows;
+  assert.equal(manual.length,42);assert.deepEqual(manual.slice(0,3).map(r=>r.ep),[1,2,3]);
+  assert.equal(selection.rows.length,10);assert.notEqual(selection.rows[0].audio,manual[0].audio);
+  reserved.add(model.recordingId(manual[0]));reserved.add(model.recordingId(selection.rows[0]));
+ }
+ const whole=model.wholeCatalogMix(tracks,theme,reserved);
+ assert.equal(whole.rows.length,100);assert(!reserved.has(model.recordingId(whole.rows[0])));
+ assert(new Set(whole.rows.slice(0,4).map(r=>r.genre)).size>1);
+ assert.deepEqual(model.wholeCatalogMix(tracks.slice(0,1),theme,new Set([tracks[0].key])).rows.map(r=>r.key),[tracks[0].key]);
+});

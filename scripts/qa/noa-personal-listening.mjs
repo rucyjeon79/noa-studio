@@ -146,20 +146,39 @@ try{
   const save=await c.request.post(base+'/noa-bridge/listening.php',{headers:{Origin:base,'X-NOA-CSRF':before.csrf},data:{revision:before.revision,profile:{genre:'kpop-original',timezone:'Asia/Seoul',consent:true,birthDate:'1990-06-15'}}});assert.equal(save.status(),200);
   const page=await c.newPage();activePage=page;await page.goto(base);await page.getByRole('button',{name:'전체 음원 AI 추천 100곡 듣기'}).click();
   const player=page.frames().find(f=>f.url().includes('listenHost'));assert(player);await player.waitForFunction(()=>queue().length===100&&!player.paused&&player.currentTime>0);
+  const readQueue=()=>player.evaluate(()=>({keys:queue().map(b=>b.dataset.key),source:document.getElementById('dock-listening-source').textContent,src:player.getAttribute('src'),selected:selected.dataset.key}));
+  const wholeQueue=await readQueue();assert.match(wholeQueue.source,/전체 사주 추천 · 100곡/);
+  assert.equal(new URL(wholeQueue.src,base).searchParams.get('record'),wholeQueue.keys[0]);
+  const heads=new Map();
   const stats=await player.evaluate(()=>({unique:new Set(queue().map(b=>b.dataset.key)).size,genres:new Set(queue().map(b=>b.dataset.genre)).size}));assert.equal(stats.unique,100);assert(stats.genres>1);
   await player.evaluate(()=>player.pause());await Promise.all([player.waitForNavigation({waitUntil:'domcontentloaded'}),player.evaluate(()=>location.reload())]);
   await player.waitForFunction(()=>queue().length===100&&recommendationQueue?.length===100);
+  assert.deepEqual((await readQueue()).keys,wholeQueue.keys);assert.equal((await readQueue()).source,wholeQueue.source);
   await player.evaluate(()=>{select(queue()[98],true);move(1,true);});assert(await player.evaluate(()=>selected===queue()[99]));await player.evaluate(()=>move(1,true));assert(await player.evaluate(()=>selected===queue()[99]));
   await page.goBack();const cards=page.locator('[data-genre-choice]');assert.equal(await cards.count(),3);
   const offered=await cards.evaluateAll(nodes=>nodes.map(b=>b.dataset.genreChoice));
   for(const genre of offered){
    const card=page.locator('[data-genre-choice="'+genre+'"]');assert.match(await card.getAttribute('aria-label'),/10곡 듣기/);await card.click();
    await player.waitForFunction(g=>queue().length===10&&queue().every(b=>b.dataset.genre===g)&&!player.paused&&player.currentTime>0,genre);
+   const recommended=await readQueue();assert.match(recommended.source,/추천 장르 · 10곡/);assert.notEqual(recommended.src,wholeQueue.src);heads.set(genre,recommended.src);
+   assert.equal(new URL(recommended.src,base).searchParams.get('record'),recommended.keys[0]);
+   await player.locator('.nl-music-discovery>summary').click();
+   assert.equal(await player.locator('[data-genre-choice="'+genre+'"]').getAttribute('aria-pressed'),'true');
+   await player.locator('.nl-listen-row>.nl-primary').click();assert.deepEqual((await readQueue()).keys,recommended.keys);
+   await player.locator('.nl-music-discovery>summary').click();await player.locator('#next').click();
+   assert.equal((await readQueue()).selected,recommended.keys[1]);
    assert.equal(await player.evaluate(()=>new Set(queue().map(b=>b.dataset.key)).size),10);
    await player.evaluate(()=>{select(queue()[9],true);move(1,true);});assert(await player.evaluate(()=>selected===queue()[9]));await page.goBack();
   }
-  await page.locator('.nl-genres').selectOption('kpop-original');await page.locator('.nl-primary').click();
-  await player.waitForFunction(()=>queue().length>10&&queue().every(b=>b.dataset.genre==='kpop-original')&&!player.paused);report.queueSizes={all:stats.unique,genreCards:offered.length,perGenre:10,finite:true,manualIndependent:true};await c.close();
+  for(const genre of offered){
+   await page.locator('.nl-genres').selectOption(genre);await page.locator('.nl-primary').click();
+   await player.waitForFunction(g=>queue().length===42&&queue().every(b=>b.dataset.genre===g)&&!player.paused&&player.currentTime>0,genre);
+   const manual=await readQueue();assert.match(manual.source,/직접 선택 · 42곡/);assert.equal(manual.keys[0],'single:'+genre+':1');
+   assert.equal(new URL(manual.src,base).searchParams.get('record'),manual.keys[0]);
+   assert.notEqual(manual.src,wholeQueue.src);assert.notEqual(manual.src,heads.get(genre));
+   await player.locator('#next').click();assert.equal((await readQueue()).selected,manual.keys[1]);await page.goBack();
+  }
+  report.queueSizes={all:stats.unique,genreCards:offered.length,perGenre:10,manual:42,distinctAudio:true,finite:true,homeAndPlayerInSync:true};await c.close();
  }
  assert.deepEqual(report.errors,[]);report.ok=true;
 }catch(error){report.failure=String(error);if(activePage&&!activePage.isClosed()){await activePage.screenshot({path:out+'/failure.png'}).catch(()=>{});writeFileSync(out+'/failure.html',await activePage.content().catch(()=>''));}throw error;}finally{if(server)writeFileSync(out+'/server.log',serverLog);writeFileSync(out+'/report.json',JSON.stringify(report,null,2));await browser.close();server?.kill();}console.log('N80_PERSONAL_LISTENING_OK');
