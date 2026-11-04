@@ -144,6 +144,83 @@ function songButton(row,onPlay){const b=el('button','nl-track');b.type='button';
 const fortuneIntro='생년월일을 입력하면 나에게 맞는 음악과 오늘의 운세를 볼 수 있어요. 원하면 매일 오전 8시(한국 시간)에 운세 알림도 받을 수 있어요.';
 const fortuneSetupUrl='/?setup=fortune#noa-daily-fortune';
 const fortuneCard=home?document.getElementById('noa-daily-fortune'):null;let lastFortune='',anchorHandled=false;
+const audioNotice='공개 유튜브 영상의 소리로 재생됩니다. 영상에 따라 음량과 음질이 스튜디오 원음과 다를 수 있는 점 양해 부탁드립니다. VIP는 NOA가 마스터링한 프리미엄 음원으로, 곡의 세기와 분위기가 이어지도록 구성한 마음 날씨 선곡을 들을 수 있어요.';
+function sourceNotice(){
+ const box=el('aside','nl-source-notice');box.setAttribute('aria-label','재생 음질 안내');
+ box.append(el('strong','','공개 유튜브로 듣는 회원 안내'),el('p','',audioNotice));return box;
+}
+const catalogNotice=sourceNotice();catalogNotice.hidden=true;heading.after(catalogNotice);
+const weatherBox=el('section','nl-weather');weatherBox.setAttribute('aria-label','내 마음 날씨');weatherBox.id='noa-mind-weather';
+let weatherAccess='',editions=null,selectedSky='',selectedIntent=-1,weatherRequest=0,weatherRows=[],weatherSequence=[];
+const weatherStatus=el('p','nl-weather-status');weatherStatus.setAttribute('role','status');
+function weatherButton(label,action,pressed){
+ const b=el('button','',label);b.type='button';b.onclick=action;
+ if(pressed!==undefined)b.setAttribute('aria-pressed',String(pressed));return b;
+}
+function updateWeather(){
+ const access=!state.member?'guest':state.weatherVip?'vip':usesVideo()?'video':'basic';
+ catalogNotice.hidden=!usesVideo();
+ if(fortuneCard){if(weatherBox.parentElement!==fortuneCard)fortuneCard.append(weatherBox);}
+ else if(!weatherBox.isConnected)host.insertBefore(weatherBox,wholeLane);
+ if(access===weatherAccess){if(access==='vip'&&selectedIntent>=0&&weatherRows.length===0&&catalogReady()&&records.length)showWeatherChoice();return;}
+ weatherAccess=access;++weatherRequest;editions=null;selectedSky='';selectedIntent=-1;weatherRows=[];weatherSequence=[];weatherStatus.textContent='';
+ weatherBox.replaceChildren(el('h3','','내 마음 날씨'));
+ if(access!=='vip'){
+  weatherBox.append(el('p','',access==='guest'?'오늘 기분을 날씨로 고르고 듣고 싶은 방향을 선택하는 VIP 음악 서비스예요. 로그인하면 이용 가능한 재생 방식을 확인할 수 있어요.':'마음 날씨 맞춤 선곡은 VIP 회원이 이용할 수 있어요.'));
+  if(access==='video')weatherBox.append(sourceNotice());
+  const link=el('a','',access==='guest'?'로그인':'VIP 이용 안내');link.href=access==='guest'?'/bbs/login.php?url=%2F%23noa-daily-fortune':'/noa-subscription.php';weatherBox.append(link);return;
+ }
+ weatherBox.append(el('p','','오늘 내 마음은 어떤 날씨인가요? AInoa가 준비한 선곡에서 지금 듣고 싶은 방향을 골라 보세요.'),weatherButton('내 마음 날씨 고르기',loadWeather),weatherStatus);
+}
+async function loadWeather(){
+ if(weatherAccess!=='vip')return;const request=++weatherRequest;
+ const b=weatherBox.querySelector('button');b.disabled=true;weatherStatus.textContent='마음 날씨를 열고 있어요.';
+ try{
+  const response=await fetch('/noa-bridge/listening-weather.php',{credentials:'same-origin',cache:'no-store'});
+  if(!response.ok)throw Error();const data=await response.json();
+  if(request!==weatherRequest||weatherAccess!=='vip')return;
+  if(data.source!=='studio-edition'||!Object.keys(data.weather||{}).length)throw Error();
+  editions=data.weather;weatherStatus.textContent='';showWeatherChoice();
+ }catch{if(request===weatherRequest){b.disabled=false;weatherStatus.textContent='마음 날씨를 열지 못했어요. 다시 눌러 주세요.';}}
+}
+function weatherPicks(sequence,count,omit=[]){
+ const excluded=new Set(omit.map(row=>model.recordingId(row)));const picked=[];
+ for(let i=0;i<count;i++){
+  const matches=model.wholeMoodMix(records,sequence[i%sequence.length],state.theme).rows;
+  const row=matches.find(r=>r.audio&&!excluded.has(model.recordingId(r)));
+  if(row){picked.push(row);excluded.add(model.recordingId(row));}
+ }
+ return picked;
+}
+function showWeatherChoice(){
+ if(!editions||weatherAccess!=='vip')return;
+ const skyGroup=el('div','nl-weather-choices');skyGroup.setAttribute('role','group');skyGroup.setAttribute('aria-label','마음 날씨');
+ for(const [key,[symbol,label]]of Object.entries(editions))skyGroup.append(weatherButton(symbol+' '+label,()=>{selectedSky=key;selectedIntent=-1;weatherRows=[];weatherStatus.textContent='';showWeatherChoice();},selectedSky===key));
+ weatherBox.replaceChildren(el('h3','','내 마음 날씨'),el('p','','오늘 내 마음은 어떤 날씨인가요?'),skyGroup);
+ if(!selectedSky){weatherBox.append(weatherStatus);return;}
+ const choices=editions[selectedSky][2],direction=el('div','nl-weather-choices');
+ direction.setAttribute('role','group');direction.setAttribute('aria-label','음악에 바라는 것');
+ choices.forEach(([title],index)=>direction.append(weatherButton(title,()=>{selectedIntent=index;weatherStatus.textContent='';showWeatherChoice();},selectedIntent===index)));
+ weatherBox.append(el('p','','음악이 어떻게 곁에 있어 주면 좋겠어요?'),direction);
+ if(selectedIntent>=0){
+  const [,copy,sequence]=choices[selectedIntent];weatherSequence=sequence;weatherRows=weatherPicks(sequence,3);
+  weatherBox.append(el('small','','AInoa가 준비한 선곡 가이드'),el('p','nl-weather-guide',copy));
+  if(weatherRows.length){
+   const list=el('ol','nl-weather-tracks');
+   weatherRows.forEach((row,i)=>{const li=el('li');li.append(el('span','',row.title),el('small','',state.genres[row.genre]||row.genre));const b=weatherButton('이 곡부터 듣기',()=>startWeather(i));b.setAttribute('aria-label',row.title+'부터 듣기');li.append(b);list.append(li);});
+   weatherBox.append(list);
+  }else weatherBox.append(el('p','',catalogReady()?'지금 이용할 수 있는 프리미엄 곡이 없어요.':'프리미엄 음원을 연결하고 있어요.'));
+ }
+ weatherBox.append(weatherStatus);
+}
+function startWeather(index){
+ if(weatherAccess!=='vip'||!musicWindow?.NoaMusic)return;
+ const rows=weatherRows.slice(index);
+ if(!musicWindow.NoaMusic.playWeather(rows.map(r=>r.key),weatherSequence.slice(index)))return;
+ if(home&&frame)musicWindow.NoaPlayerShell?.open(originalHome.href,false);
+ weatherStatus.textContent=rows[0].title+'부터 재생합니다. 재생목록에서 다음 곡의 분위기를 바꿀 수 있어요.';
+}
+
 function renderFortune(){
  if(!fortuneCard)return;const f=state?.fortune,p=state?.profile,signature=JSON.stringify([f,!!p?.fortuneAlerts]);
  if(signature===lastFortune)return;lastFortune=signature;fortuneCard.replaceChildren();fortuneCard.hidden=false;
@@ -161,7 +238,7 @@ function renderFortune(){
  if(!anchorHandled&&!new URLSearchParams(location.search).has('setup')&&location.hash==='#noa-daily-fortune'){anchorHandled=true;requestAnimationFrame(()=>fortuneCard.scrollIntoView());}
 }
 function render(){if(!state)return;
- renderFortune();renderGenreChoices();renderManual();listen.disabled=mixButton.disabled;
+ renderFortune();updateWeather();renderGenreChoices();renderManual();listen.disabled=mixButton.disabled;
  for(const b of tabs.children)b.setAttribute('aria-pressed',String(b.dataset.mode===mode));
  browse.hidden=!state.member;results.replaceChildren();
  infoText.textContent='곡의 제목과 가사, 분위기를 살펴 추천해요. 개인 추천을 켜면 입력한 출생 정보와 시간대도 선곡에 참고해요.';
@@ -226,6 +303,19 @@ function showShell(){
  if(frame&&musicWindow?.NoaPlayerShell)musicWindow.NoaPlayerShell.open('/noa-music.php?from=home');
 }
 document.querySelector('[data-noa-listen-now]')?.addEventListener('click',event=>{event.preventDefault();if(!state){host.scrollIntoView({block:'center'});return;}if(state.theme?.personal&&!mixButton.disabled){playWholeCatalog();return;}if(!state.canPlay||musicWindow){scope='genre';mode='now';mood='auto';play(model.select(records,{genre,mood,mode,theme:state.theme}).rows,false);}else host.scrollIntoView({block:'start'});});
+let videoNoticeAccepted=false,sourceDialog=null;
+function requestVideoPlayback(rows){
+ if(videoNoticeAccepted){playPublicVideos(rows);return;}
+ if(sourceDialog?.open)return;
+ const dialog=el('dialog','nl-dialog');sourceDialog=dialog;dialog.setAttribute('aria-label','공개 유튜브 재생 안내');
+ const start=button('알겠어요 · 유튜브로 듣기','play',()=>{
+  if(!usesVideo())return dialog.close();
+  videoNoticeAccepted=true;dialog.close();playPublicVideos(rows);
+ });
+ const actions=el('div','nl-weather-choices');actions.append(start,button('돌아가기','close',()=>dialog.close()));
+ dialog.append(sourceNotice(),actions);document.body.append(dialog);
+ dialog.addEventListener('close',()=>{dialog.remove();if(sourceDialog===dialog)sourceDialog=null;},{once:true});dialog.showModal();
+}
 function playPublicVideos(rows){
  const ids=[...new Set(rows.map(row=>row.publicVideoId).filter(id=>/^[A-Za-z0-9_-]{11}$/.test(id)))];
  if(!ids.length){status.textContent='이 선택으로 들을 수 있는 공개 유튜브 영상이 없어요.';return;}
@@ -238,12 +328,12 @@ function playPublicVideos(rows){
  if(ids.length>1)url.searchParams.set('playlist',ids.slice(1).join(','));
  embed.src=url.href;
  const original=el('a','','첫 곡을 YouTube에서 열기');original.href='https://www.youtube.com/watch?v='+ids[0];original.target='_blank';original.rel='noopener noreferrer';
- dialog.append(head,embed,original);document.body.append(dialog);
+ dialog.append(head,sourceNotice(),embed,original);document.body.append(dialog);
  dialog.addEventListener('close',()=>{dialog.remove();if(videoDialog===dialog)videoDialog=null;},{once:true});
  window.dispatchEvent(new CustomEvent('noa-media-activity',{detail:{type:'youtube',key:ids[0]}}));
  dialog.showModal();status.textContent=label;
 }
-function play(rows,acrossGenres=isGlobalMix()){if(!state?.member){location.href='/bbs/login.php?url='+encodeURIComponent('/noa-music.php#noa-listening');return;}if(usesVideo()){playPublicVideos(rows);return;}if(!rows.length||!musicWindow?.NoaMusic)return;showShell();try{const keys=rows.map(r=>r.key);const music=musicWindow.NoaMusic;const ok=scope==='catalogMood'?music.playMoodMix(keys,mood):acrossGenres?music.playRecommendedMix(keys):isRecommendedGenreMix()?music.playRecommendedGenre(keys,genre):music.playQueue(keys,genre,{mood,mode});status.textContent=ok?music.listeningSelection().label+' · 재생을 시작합니다.':'재생 가능한 음원을 다시 확인해 주세요.';}catch{status.textContent='재생 연결이 끊겼습니다. 새로고침 후 다시 시도해 주세요.';}}
+function play(rows,acrossGenres=isGlobalMix()){if(!state?.member){location.href='/bbs/login.php?url='+encodeURIComponent('/noa-music.php#noa-listening');return;}if(usesVideo()){requestVideoPlayback(rows);return;}if(!rows.length||!musicWindow?.NoaMusic)return;showShell();try{const keys=rows.map(r=>r.key);const music=musicWindow.NoaMusic;const ok=scope==='catalogMood'?music.playMoodMix(keys,mood):acrossGenres?music.playRecommendedMix(keys):isRecommendedGenreMix()?music.playRecommendedGenre(keys,genre):music.playQueue(keys,genre,{mood,mode});status.textContent=ok?music.listeningSelection().label+' · 재생을 시작합니다.':'재생 가능한 음원을 다시 확인해 주세요.';}catch{status.textContent='재생 연결이 끊겼습니다. 새로고침 후 다시 시도해 주세요.';}}
 function attachPlayer(win){
  musicWindow=win;
  win.removeEventListener('noa-listening-selection',syncSelection);

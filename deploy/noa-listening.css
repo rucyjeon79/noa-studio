@@ -123,3 +123,20 @@ html:has(.nl-play-shell):not(.nl-host-open) body::after{content:'';display:block
 
 html body .nl-video-dialog{width:min(760px,94vw);max-width:94vw}
 .nl-video-dialog iframe{display:block;width:100%;aspect-ratio:16/9;min-height:200px;border:0;margin:12px 0}
+
+/* Mind weather and playback source, including system themes. */
+.nl-source-notice,.nl-weather{line-height:1.65;overflow-wrap:anywhere;text-align:start;color:var(--noa-text,inherit)}
+.nl-source-notice{margin:12px 0 20px;padding:12px 14px;border-inline-start:3px solid var(--noa-accent,currentColor);background:var(--noa-surface,transparent)}
+.nl-source-notice p{margin:4px 0 0;font-size:.91rem}
+.nl-weather{margin:22px 0 8px;padding:18px 0 0;border-top:1px solid var(--noa-line,#92979b)}
+.nl-weather h3,.nl-weather p{margin:0 0 12px}
+.nl-weather-choices{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:6px 0 14px}
+.nl-weather button,#dock-weather-feedback button,.nl-weather a{font:inherit;min-height:44px;padding:8px 12px;border:1px solid var(--noa-line,#92979b);border-radius:var(--noa-control-radius,8px);background:var(--noa-surface,transparent);color:inherit;cursor:pointer}
+.nl-weather a{display:inline-flex;align-items:center;text-decoration:none}
+.nl-weather button[aria-pressed=true]{border-color:var(--noa-accent,currentColor);box-shadow:inset 0 0 0 1px var(--noa-accent,currentColor);font-weight:700}
+.nl-weather :is(button,a):focus-visible,#dock-weather-feedback button:focus-visible{outline:2px solid var(--noa-accent,currentColor);outline-offset:2px}
+.nl-weather button:disabled{opacity:.55;cursor:wait}
+.nl-weather-tracks{padding:0;list-style:none;margin:8px 0}.nl-weather-tracks li{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:12px;padding:10px 0;border-bottom:1px solid var(--noa-line,#92979b)}
+.nl-weather-tracks small{grid-column:1}.nl-weather-tracks button{grid-column:2;grid-row:1/3}
+.nl-weather-status:empty,.nl-source-notice[hidden],#dock-weather-feedback[hidden]{display:none!important}
+#dock-weather-feedback [role=status]{flex-basis:100%}

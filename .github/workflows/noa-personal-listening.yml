@@ -49,6 +49,7 @@ jobs:
           python scripts/noa_personal_dependencies.py
           php -l deploy/noa-app/engine/personal-calendar-vendor.php
           php -l deploy/noa-app/engine/personal-listening.php
+          php -l bridge/listening-weather.php
           php -l bridge/listening.php
           php -l deploy/noa-music.php
           php -l deploy/noa-app/home.php
@@ -77,6 +78,7 @@ jobs:
     timeout-minutes: 15
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     env:
+      NOA_MIND_WEATHER: ${{ contains(github.event.head_commit.message, '[mind-weather]') }}
       NOA_LISTENING_COPY: ${{ contains(github.event.head_commit.message, '[listening-copy]') }}
       GH_TOKEN: ${{ github.token }}
       NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
@@ -96,7 +98,7 @@ jobs:
         id: activate
         run: |
           python scripts/noa_personal_listening_release.py
-          python scripts/noa_n80_ai_worker.py --listening-index --verify-catalog
+          if [ "$NOA_MIND_WEATHER" != "true" ]; then python scripts/noa_n80_ai_worker.py --listening-index --verify-catalog; fi
       - name: Verify live homepage and guest access
         id: live
         run: NOA_LISTENING_LIVE=1 node "$RUNNER_TEMP/listening/check.mjs"

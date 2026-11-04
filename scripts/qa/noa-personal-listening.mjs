@@ -134,6 +134,21 @@ try{
  }
 
  if(!live){
+  const ctx=await browser.newContext({viewport:{width:390,height:844}}),page=await ctx.newPage();
+  await page.goto(base+'/');const box=page.locator('#noa-mind-weather');await box.getByRole('button',{name:'내 마음 날씨 고르기'}).click();
+  await box.getByRole('button',{name:'천둥번개'}).click();await box.getByRole('button',{name:'천천히 가라앉고 싶어'}).click();
+  await box.locator('li button').first().click();const f=page.frames().find(frame=>frame.url().includes('listenHost'));
+  await f.waitForFunction(()=>NoaMusic.listeningSelection()?.scope==='weather'&&!player.paused&&player.currentTime>0);
+  const before=await f.evaluate(()=>[selected.dataset.key,player.currentTime,player.currentSrc]);
+  await f.locator('#dock-list').evaluate(b=>b.click());await f.getByRole('button',{name:'다음 곡은 더 잔잔하게'}).click();
+  assert.match(await f.locator('#dock-weather-feedback [role=status]').innerText(),/다음 곡은/);
+  const after=await f.evaluate(()=>[selected.dataset.key,player.currentTime,player.currentSrc]);
+  assert.equal(after[0],before[0]);assert(after[1]>=before[1]);assert.equal(after[2],before[2]);
+  await ctx.close();report.vipMindWeatherAndQueue=true;
+ }else{
+  assert.equal((await browser.newContext().then(async ctx=>{try{return(await ctx.request.get(base+'/noa-bridge/listening-weather.php')).status();}finally{await ctx.close();}})),401);
+ }
+ if(!live){
   // The studio sign-in flow can return to the plain homepage. Restore only this tab's setup intent.
   const setupContext=await browser.newContext({viewport:{width:390,height:900},extraHTTPHeaders:{'X-QA-User':'guest'}});
   const setupPage=await setupContext.newPage();
@@ -182,7 +197,7 @@ try{
    report.allCatalogAndManualPlayback=true;
    report.sajuGenreSelectors??=[];report.sajuGenreSelectors.push({width,distinct:offered.length,allThreeStartMatchingAudio:true});
    assert(await card.evaluate(n=>n.previousElementSibling.id==='noa-listening'));assert(await card.getByRole('link',{name:'이 기기 알림 연결'}).isVisible());await card.scrollIntoViewIfNeeded();await card.screenshot({path:out+'/fortune-'+width+'.png'});
-   const headline=await card.locator('h3').innerText();await page.reload();await card.waitFor();assert.equal(await card.locator('h3').innerText(),headline);await card.getByRole('button').click();await page.locator('.nl-consent input').uncheck();await page.getByRole('button',{name:'저장',exact:true}).click();await card.getByRole('button',{name:'생년월일 설정하기'}).waitFor();assert.equal(await page.locator('[data-listening-lane=whole] .nl-preview-track').count(),0);await c.close();
+   const headline=await card.locator(':scope>h3').innerText();await page.reload();await card.waitFor();assert.equal(await card.locator(':scope>h3').innerText(),headline);await card.getByRole('button',{name:'오전 8시 알림 설정'}).click();await page.locator('.nl-consent input').uncheck();await page.getByRole('button',{name:'저장',exact:true}).click();await card.getByRole('button',{name:'생년월일 설정하기'}).waitFor();assert.equal(await page.locator('[data-listening-lane=whole] .nl-preview-track').count(),0);await c.close();
   }report.fortuneAndMoodFallback=true;
  }
  if(!live){
@@ -264,13 +279,20 @@ try{
   const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block',extraHTTPHeaders:{'X-QA-User':'video-member'}});
   const profile=(await(await c.request.get(base+'/noa-bridge/listening.php')).json());
   assert(profile.member&&!profile.canPlay);
-  const page=await c.newPage();activePage=page;const premium=[];page.on('request',r=>{if(/listenHost=1|fixture[.]wav|jukebox\/stream|noa-vip[.]php/.test(r.url()))premium.push(r.url());});
+  const page=await c.newPage();activePage=page;const weatherCalls=[];page.on('request',r=>{if(r.url().includes('listening-weather.php'))weatherCalls.push(r.url());});const premium=[];page.on('request',r=>{if(/listenHost=1|fixture[.]wav|jukebox\/stream|noa-vip[.]php/.test(r.url()))premium.push(r.url());});
   const videos=Array.from({length:120},(_,i)=>({key:'song'+i,title:'공개곡 '+i,genre:['kpop-original','your-story','jpop-original'][i%3],ep:i+1,kind:'single',publicVideoId:'v'+String(i).padStart(10,'0'),moodScores:{calm:1}}));
   await page.route('**/noa-bridge/listening-videos.php',r=>r.fulfill({json:{videos}}));
   await page.route('https://www.youtube.com/embed/**',r=>r.fulfill({contentType:'text/html',body:'<title>Player fixture</title>'}));
   await page.goto(base);await page.getByText('추천곡은 공개 유튜브 영상으로 재생돼요.').waitFor();
+  assert.equal(profile.weatherVip,false);
+  assert(await page.locator('#noa-mind-weather').getByText('공개 유튜브로 듣는 회원 안내').isVisible());
+  assert.equal(await page.locator('#noa-mind-weather button').count(),0);
+  assert.equal((await c.request.get(base+'/noa-bridge/listening-weather.php')).status(),403);
   const player=page.locator('.nl-video-dialog iframe');
+  let firstPlayback=true;
   async function checkVideos(count,genre){
+   if(firstPlayback){firstPlayback=false;const notice=page.getByRole('dialog',{name:'공개 유튜브 재생 안내'});await notice.waitFor();assert.equal(await player.count(),0);await notice.getByRole('button',{name:'알겠어요 · 유튜브로 듣기'}).click();}
+   assert.equal(weatherCalls.length,0);
    await player.waitFor();const url=new URL(await player.getAttribute('src'));assert.equal(url.origin,'https://www.youtube.com');
    const ids=[url.pathname.split('/').pop(),...(url.searchParams.get('playlist')||'').split(',').filter(Boolean)];
    assert.equal(new Set(ids).size,count);assert.equal(ids.length,count);
