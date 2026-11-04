@@ -6,23 +6,17 @@
   const strip = document.getElementById('bn-news-strip');
   const track = strip.querySelector('.bn-news-track');
   const button = strip.querySelector('button');
-  const motion = matchMedia('(prefers-reduced-motion: reduce)');
   const viewport = strip.querySelector('.bn-news-window');
   let signature, loading = false, animation, distance = 0;
   let hovering = false, keyboard = false, tabbing = false;
 
-  function prefersStill() {
-    try { return motion.matches && localStorage.getItem('bn-reduced-motion-play') !== 'yes'; }
-    catch (_) { return motion.matches; }
-  }
-  let still = prefersStill(), paused = still;
+  let paused = false;
 
   function setMode() {
-    const staticList = still || keyboard;
-    strip.classList.toggle('bn-still', staticList);
+    strip.classList.toggle('bn-still', keyboard);
     if (animation) {
-      if (staticList) animation.currentTime = 0;
-      if (paused || hovering || staticList || document.hidden) animation.pause();
+      if (keyboard) animation.currentTime = 0;
+      if (paused || hovering || keyboard || document.hidden) animation.pause();
       else animation.play();
     }
     button.textContent = paused ? '▶' : 'Ⅱ';
@@ -86,19 +80,9 @@
 
   button.addEventListener('click', () => {
     paused = !paused;
-    if (motion.matches) {
-      still = paused;
-      try {
-        if (paused) localStorage.removeItem('bn-reduced-motion-play');
-        else localStorage.setItem('bn-reduced-motion-play', 'yes');
-      } catch (_) { /* The choice still applies for this visit. */ }
-    }
     if (!paused) viewport.scrollLeft = 0;
     setMode();
   });
-  const onMotionChange = () => { still = prefersStill(); paused = still; setMode(); };
-  if (motion.addEventListener) motion.addEventListener('change', onMotionChange);
-  else motion.addListener(onMotionChange);
 
   viewport.addEventListener('pointerenter', event => {
     hovering = event.pointerType === 'mouse' && matchMedia('(hover: hover) and (pointer: fine)').matches;
