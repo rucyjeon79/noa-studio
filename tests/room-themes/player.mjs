@@ -25,9 +25,13 @@ try{
   await page.waitForFunction(()=>document.querySelector('audio').currentTime>0.2);
   await page.evaluate(()=>window.originalAudio=document.querySelector('audio'));
   const musicUrl=page.url();
+  assert(await page.evaluate(()=>NoaMusic.playRecommendedMix(['two','one'])));
+  await page.waitForFunction(()=>document.querySelector('.song.selected')?.dataset.key==='two'&&!document.querySelector('audio').paused);
+
   await page.goBack();await page.waitForURL('**/noa-lounge.php');
   await page.waitForFunction(()=>window.originalAudio===document.querySelector('audio')&&!window.originalAudio.paused&&document.querySelector('#noa-shell-view')?.contentDocument?.location.pathname==='/noa-lounge.php');
   await page.goForward();await page.waitForURL(musicUrl);await page.waitForFunction(()=>!document.querySelector('#noa-shell-view'));
+  assert(await page.evaluate(()=>document.querySelector('.song.selected').dataset.key==='two'&&!originalAudio.paused),'history does not reselect the original song link');
   const nav=width<760?'.noa-mobile-nav':'.noa-menu';
   for(const path of ['/noa-lounge.php','/noa-shop.php','/']){
    const before=await page.locator('audio').evaluate(a=>a.currentTime);

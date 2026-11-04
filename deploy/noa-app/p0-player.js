@@ -45,7 +45,13 @@ let frame=null,home=location.href;const baseTitle=document.title;
 const publicPath=()=>{const u=outer?new URL(outer.href()):location;return u.pathname+u.search+u.hash;};
 function checkpoint(){window.dispatchEvent(new Event('noa-player-route'));}
 function highlight(url){for(const a of document.querySelectorAll('.noa-menu a,.noa-mobile-nav a')){if(a.hasAttribute('href')&&new URL(a.getAttribute('href'),location.href).pathname===url.pathname)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');}}
-function showMusic(url){if(frame){frame.remove();frame=null;}document.body.classList.remove('noa-shell-open');document.title=baseTitle;highlight(new URL(url));window.dispatchEvent(new Event('hashchange'));const key=new URL(url).searchParams.get('track');if(key)window.dispatchEvent(new CustomEvent('noa-shell-track',{detail:{key,play:new URL(url).searchParams.get('play')==='1'}}));}
+function showMusic(url,followTrack=false){
+ if(frame){frame.remove();frame=null;}
+ document.body.classList.remove('noa-shell-open');document.title=baseTitle;
+ highlight(new URL(url));window.dispatchEvent(new Event('hashchange'));
+ const target=new URL(url),key=target.searchParams.get('track');
+ if(followTrack&&key)window.dispatchEvent(new CustomEvent('noa-shell-track',{detail:{key,play:target.searchParams.get('play')==='1'}}));
+}
 function bind(doc){
  doc.addEventListener('click',e=>{
   if(e.defaultPrevented||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
@@ -65,7 +71,7 @@ function navigate(url,push){
  if(!routes.has(url.pathname)||url.origin!==location.origin)return false;
  const onOriginalHome=outer?.visit(url.href,push);
  if(!outer&&push&&url.href!==location.href)history.pushState({noaMusicShell:true},'',url);
- if(onOriginalHome||url.pathname==='/noa-music.php'){showMusic(url.href);checkpoint();return true;}
+ if(onOriginalHome||url.pathname==='/noa-music.php'){showMusic(url.href,push&&!onOriginalHome);checkpoint();return true;}
  highlight(url);document.body.classList.add('noa-shell-open');if(!frame){frame=document.createElement('iframe');frame.id='noa-shell-view';frame.style.height='calc(100dvh - var(--noa-nav-space,0px) - var(--noa-player-space,0px))';frame.title='NOA STUDIO 콘텐츠';frame.addEventListener('load',()=>{try{const doc=frame.contentDocument;if(!doc||new URL(doc.URL).origin!==location.origin)return;doc.documentElement.dataset.noaShellChild='';const style=doc.createElement('style');style.textContent='html[data-noa-shell-child] body :is(.noa-sidebar,.noa-mobile-nav,.noa-g5-top){display:none!important}html{--noa-rail:0px!important;--noa-nav-space:0px!important}body.noa-page{margin:0!important}body.noa-page main{margin-left:0!important;padding-bottom:24px!important}';doc.head.append(style);doc.defaultView.addEventListener('noa-media-activity',e=>{if(e.detail?.type==='youtube')audio.pause();});bind(doc);document.title=doc.title+' · NOA STUDIO';}catch{showMusic(home);}});frame.src=url.href;document.body.append(frame);}else{frame.contentWindow.location.replace(url.href);}checkpoint();return true;}
 audio.addEventListener('play',()=>{try{const win=frame?.contentWindow;if(win)win.dispatchEvent(new win.Event('noa-background'));}catch{}});
 try{const returned=JSON.parse(sessionStorage.getItem('noa-playback-return')||'null');sessionStorage.removeItem('noa-playback-return');if(returned&&Date.now()-returned.at>=0&&Date.now()-returned.at<30000){const url=new URL(returned.path,location.origin);if(url.origin===location.origin&&routes.has(url.pathname)&&url.pathname!=='/noa-music.php'&&audio.getAttribute('src')){history.replaceState({noaMusicShell:true},'',url);navigate(url,false);}}}catch{}
