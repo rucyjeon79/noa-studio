@@ -5,9 +5,9 @@ on:
     - cron: '12,27,42,57 * * * *'
   push:
     branches: [main, codex/n80-personal-listening]
-    paths: ['deploy/noa-app/p0-player.js','tests/room-themes/player.mjs','deploy/noa-listening*','deploy/noa-app/engine/personal-*','bridge/listening*.php','scripts/noa_personal*','scripts/qa/noa-personal-listening.mjs','tests/listening/**','.github/workflows/noa-personal-listening.yml']
+    paths: ['deploy/noa-app/p0-player.js','tests/room-themes/player.mjs','deploy/noa-listening*','deploy/noa-app/engine/personal-*','bridge/listening*.php','scripts/noa_personal*','scripts/qa/noa-personal-listening.mjs','scripts/qa/noa-mood-queue-audit.cjs','tests/listening/**','.github/workflows/noa-personal-listening.yml']
   pull_request:
-    paths: ['deploy/noa-app/p0-player.js','tests/room-themes/player.mjs','deploy/noa-listening*','deploy/noa-app/engine/personal-*','bridge/listening*.php','scripts/noa_personal*','scripts/qa/noa-personal-listening.mjs','tests/listening/**']
+    paths: ['deploy/noa-app/p0-player.js','tests/room-themes/player.mjs','deploy/noa-listening*','deploy/noa-app/engine/personal-*','bridge/listening*.php','scripts/noa_personal*','scripts/qa/noa-personal-listening.mjs','scripts/qa/noa-mood-queue-audit.cjs','tests/listening/**']
 permissions: {contents: read}
 jobs:
   song-index:
@@ -63,6 +63,7 @@ jobs:
           node --check deploy/noa-browse.js
           node --test scripts/qa/noa-browse.test.mjs
           node --test tests/listening/model.mjs
+          echo '[{"key":"audit","publicVideoId":"00000000001","moodScores":{"sleep":4}}]' | node scripts/qa/noa-mood-queue-audit.cjs
           python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/listening" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-personal-listening.mjs "$RUNNER_TEMP/listening/check.mjs"
