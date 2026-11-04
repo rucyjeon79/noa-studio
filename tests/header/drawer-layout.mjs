@@ -20,10 +20,14 @@ async function checkFooter(page,width,theme,home=false){
  const links=scene.locator('nav a');
  assert.deepEqual(await links.allTextContents(),['회사소개','세계관','약관','이용방침']);
  assert.equal(await footer.locator('.noa-sidebar-legal').count(),1);
- const art=await image.boundingBox();
+ const geometry=await scene.evaluate(el=>{
+  const r=e=>{const b=e.getBoundingClientRect();return {x:b.x,y:b.y,width:b.width,height:b.height};};
+  return {art:r(el.querySelector('img')),links:[...el.querySelectorAll('nav a')].map(r)};
+ });
+ const {art}=geometry;
  for(let i=0;i<4;i++){
-  const link=links.nth(i),box=await link.boundingBox();
-  assert(box.width>=44&&box.height>=44&&box.x>=art.x-1&&box.y>=art.y-1&&box.x+box.width<=art.x+art.width+1&&box.y+box.height<=art.y+art.height+1);
+  const link=links.nth(i),box=geometry.links[i];
+  assert(box.width>=44&&box.height>=44&&box.x>=art.x-1&&box.y>=art.y-1&&box.x+box.width<=art.x+art.width+1&&box.y+box.height<=art.y+art.height+1,JSON.stringify({width,theme,geometry}));
   const href=await link.getAttribute('href');
   if(!href&&i===1)assert.equal(await link.getAttribute('aria-disabled'),'true');
   else assert.equal(href,['/noa-about.php','/noa-world.php','/noa-terms.php','/noa-privacy.php'][i]);
