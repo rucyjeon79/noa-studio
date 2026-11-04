@@ -18,6 +18,18 @@ try{
    await page.addLocatorHandler(campaign,()=>campaign.click());
    page.on('pageerror',error=>console.log('PAGE_ERROR',width,error.message));
    for(const [theme,path] of [['noa-studio','/noa-shop.php'],['noa-ivory','/noa-login.php']]){
+    const member=theme==='noa-studio';
+    // Use consistent member data for every UI that shares the session. No real credentials.
+    if(member){
+     const caps={member:true,name:'별무리 회원',level:3};
+     await page.route('**/noa-shop.php',async route=>{
+      const upstream=await route.fetch();
+      const html=(await upstream.text()).replace(/(<script[^>]*id="noa-access"[^>]*>)([^<]*)(<\/script>)/,(_m,a,data,b)=>a+JSON.stringify({...JSON.parse(data),...caps})+b);
+      await route.fulfill({response:upstream,body:html});
+     });
+     await page.route('**/noa-bridge/membership.php?action=summary',r=>r.fulfill({json:{ok:true,member:true,balance:0,remainingDays:0}}));
+     await page.route('**/noa-ainoa.php?action=welcome',r=>r.fulfill({json:{ok:true,member:true,displayName:'별무리',capabilities:caps,accountKey:'drawer-fixture'}}));
+    }else await page.unrouteAll({behavior:'wait'});
     await page.goto('https://noastudio.ai.kr'+path,{waitUntil:'domcontentloaded'});
     const drawer=page.locator('#noa-menu-drawer');
     await page.waitForFunction(()=>!document.querySelector('[data-footer-theme]')?.disabled && !!document.querySelector('#noa-menu-drawer #noa-drawer-tools'));
@@ -32,8 +44,9 @@ try{
     const parts=await drawer.locator(':scope > *').evaluateAll(nodes=>nodes.slice(0,5).map(e=>e.id||e.className));
     assert.deepEqual(parts,['noa-drawer-head','noa-drawer-profile','noa-drawer-search','noa-drawer-tools','noa-menu']);
     const form=drawer.locator('.noa-drawer-login'),entry=drawer.locator('.noa-drawer-my');
-    assert(await form.isVisible());assert.equal(await form.getAttribute('method'),'post');assert.equal(await form.getAttribute('action'),'/bbs/login_check.php');
-    assert(await form.locator('[autocomplete=current-password]').isVisible());assert(await entry.isHidden());
+    assert.equal(await form.isVisible(),!member);assert.equal(await form.getAttribute('method'),'post');assert.equal(await form.getAttribute('action'),'/bbs/login_check.php');
+    if(member){assert(await entry.isVisible());assert.equal(await entry.getAttribute('href'),'/noa-my.php');}
+    else{assert(await form.locator('[autocomplete=current-password]').isVisible());assert(await entry.isHidden());}
     const tools=drawer.locator('.noa-info-actions');
     const buttons=tools.locator(':scope > a,:scope > button,#noa-header-language');
     assert.deepEqual(await buttons.allTextContents(),['앱 설치','공유','언어 선택']);
@@ -45,9 +58,7 @@ try{
     const legal=await drawer.locator('.noa-sidebar-legal a').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().x));assert(Math.max(...legal)-Math.min(...legal)<1);
     await drawer.locator('#noa-drawer-search').fill('세계관');assert(await world.isVisible());await music.waitFor({state:'hidden',timeout:5000});await drawer.locator('#noa-drawer-search').fill('');
     await drawer.locator('#noa-header-language').click();assert(await drawer.locator('#noa-language-options').isVisible());await drawer.locator('#noa-language-options button[data-language=ko]').click();
-    // Exercise the signed-in view without a real login or account changes.
-    await page.evaluate(()=>window.dispatchEvent(new CustomEvent('noa-membership-status',{detail:{member:true}})));
-    assert(await form.isHidden());assert(await entry.isVisible());assert.equal(await entry.getAttribute('href'),'/noa-my.php');assert.equal(await world.getAttribute('href'),'/noa-world.php');
+    if(member)assert.equal(await world.getAttribute('href'),'/noa-world.php');
     assert.equal(await drawer.evaluate(e=>e.scrollWidth>e.clientWidth+1),false);
     if(width===390){await drawer.evaluate(e=>e.scrollTop=0);await page.screenshot({path:out+'/menu-'+theme+'.png'});}
     console.log('DRAWER_LAYOUT_OK',phase,width,theme,path);
