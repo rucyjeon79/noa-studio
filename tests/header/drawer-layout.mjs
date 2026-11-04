@@ -113,7 +113,10 @@ try{
    const panel=homeDrawer.locator('footer .noa-sidebar-visitors');assert(await panel.isVisible());
    assert.equal(await page.locator('.noa-mobile-footer .noa-sidebar-visitors').count(),0);
    const current=JSON.parse(counts);for(const key of ['today','yesterday','total'])assert.equal((await panel.locator('[data-visit='+key+']').textContent()).replaceAll(',',''),String(current[key]));
-   if(width===390){await panel.scrollIntoViewIfNeeded();await page.screenshot({path:out+'/visitor-panel.png'});}
+   await homeDrawer.locator('.noa-drawer-groups [data-drawer-route]').first().waitFor();
+   await panel.evaluate(el=>el.scrollIntoView({block:'end',behavior:'instant'}));
+   assert(await panel.evaluate(el=>{const box=el.getBoundingClientRect(),rail=el.closest('dialog').getBoundingClientRect();return box.top>=rail.top-1&&box.bottom<=rail.bottom+1;}));
+   if(width===390)await panel.screenshot({path:out+'/visitor-panel.png'});
    console.log('DRAWER_HOME_COUNTER_OK',phase,width);
   }catch(error){
    const page=context.pages()[0];if(page)console.error('DRAWER_STATE',width,await page.evaluate(()=>({url:location.pathname,theme:document.documentElement.dataset.noaTheme,controls:[...document.querySelectorAll('.noa-drawer-head,#noa-drawer-tools,#noa-header-language,[data-footer-theme]')].map(e=>[e.id||e.className,e.disabled,e.parentElement?.id]),query:document.querySelector('#noa-drawer-search')?.value,rows:[...document.querySelectorAll('.noa-menu a')].map(e=>[e.textContent,e.hidden,getComputedStyle(e).display])})));
