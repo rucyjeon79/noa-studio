@@ -122,7 +122,7 @@ try{
    await player.waitForFunction(()=>document.querySelector('.song.selected')?.dataset.genre==='your-story'&&!document.getElementById('sound-player').paused);
    assert(await player.evaluate(()=>queue().every(b=>b.dataset.genre==='your-story')));await page.goBack();
    await page.locator('[data-all-genre-mix]').click();await player.waitForFunction(()=>!document.getElementById('sound-player').paused);
-   assert(await player.evaluate(()=>new Set(collectionQueue.map(k=>lookup.get(k)?.genre)).size>1));await page.goBack();
+   assert(await player.evaluate(()=>new Set(queue().map(b=>b.dataset.genre)).size>1));await page.goBack();
    report.allCatalogAndManualPlayback=true;
    report.sajuGenreSelectors??=[];report.sajuGenreSelectors.push({width,distinct:offered.length,allThreeStartMatchingAudio:true});
    assert(await card.evaluate(n=>n.previousElementSibling.id==='noa-listening'));assert(await card.getByRole('link',{name:'이 기기 알림 연결'}).isVisible());await card.scrollIntoViewIfNeeded();await card.screenshot({path:out+'/fortune-'+width+'.png'});
@@ -136,6 +136,8 @@ try{
   const page=await c.newPage();activePage=page;await page.goto(base);await page.getByRole('button',{name:'전체 음원 AI 추천 100곡 듣기'}).click();
   const player=page.frames().find(f=>f.url().includes('listenHost'));assert(player);await player.waitForFunction(()=>queue().length===100&&!player.paused&&player.currentTime>0);
   const stats=await player.evaluate(()=>({unique:new Set(queue().map(b=>b.dataset.key)).size,genres:new Set(queue().map(b=>b.dataset.genre)).size}));assert.equal(stats.unique,100);assert(stats.genres>1);
+  await player.evaluate(()=>player.pause());await Promise.all([player.waitForNavigation({waitUntil:'domcontentloaded'}),player.evaluate(()=>location.reload())]);
+  await player.waitForFunction(()=>queue().length===100&&recommendationQueue?.length===100);
   await player.evaluate(()=>{select(queue()[98],true);move(1,true);});assert(await player.evaluate(()=>selected===queue()[99]));await player.evaluate(()=>move(1,true));assert(await player.evaluate(()=>selected===queue()[99]));
   await page.goBack();const cards=page.locator('[data-genre-choice]');assert.equal(await cards.count(),3);
   const offered=await cards.evaluateAll(nodes=>nodes.map(b=>b.dataset.genreChoice));

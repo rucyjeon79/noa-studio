@@ -121,6 +121,9 @@ function render(){if(!state)return;renderFortune();renderGenreChoices();genres.v
    status.textContent+=' · 내 사주로 들으려면 ‘지금 추천’에서 생년월일을 설정하세요.';
   }
  }
+ if((isGlobalMix()||isRecommendedGenreMix())&&selected.matched>0&&selected.matched<selected.rows.length){
+  status.textContent+=' · 분위기가 잘 맞는 '+selected.matched+'곡부터 재생해요.';
+ }
  if(mode==='now'&&!isGlobalMix()&&state.canPlay&&!selected.rows.length){
   const alternatives=Object.keys(state.genres).filter(g=>g!==genre&&model.catalog(records,g).length);
   if(alternatives.length){
