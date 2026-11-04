@@ -18,10 +18,17 @@ function nld_plain(string $value): string {
     return trim(preg_replace('/\s+/u',' ',html_entity_decode(strip_tags($value),ENT_QUOTES|ENT_HTML5,'UTF-8'))??'');
 }
 /** Public discovery is the same for administrators, members and guests. Personal filters only narrow it. */
-function nld_read(PDO $db,array $g5,string $view,string $viewer,int $now): array {
+function nld_read(PDO $db,array $g5,string $view,string $viewer,int $now,string $query='',string $by='all'): array {
     if (!isset(nld_views()[$view])) throw new InvalidArgumentException('unknown_view');
     $own=in_array($view,['mine','replies'],true);
     if ($own && $viewer==='') throw new DomainException('login_required');
+    if (!in_array($by,['all','title','body','name'],true) || !mb_check_encoding($query,'UTF-8') || mb_strlen($query)>80) throw new InvalidArgumentException('invalid_search');
+    // Literal text search. %, _ and quotes are characters, not wildcard or SQL syntax.
+    $search=static function(string $title,string $body,string $name) use($query,$by):string {
+        if ($query==='') return '';
+        $column=['all'=>"CONCAT_WS(' ',$title,$body)",'title'=>$title,'body'=>$body,'name'=>$name][$by];
+        return " AND LOCATE(LOWER(?),LOWER($column))>0";
+    };
     $comment=in_array($view,['comments','replies'],true);
     $days=['week'=>7,'month'=>30][$view]??0;
     $ranking=$days>0||$view==='likes';
@@ -44,6 +51,9 @@ function nld_read(PDO $db,array $g5,string $view,string $viewer,int $now): array
     if ($days) {$where.=" AND $stamp BETWEEN ? AND ?";array_push($args,$cutoff,$now);}
     if ($view==='likes') $where.=" AND $likes>0";
     if ($own) {$where.=' AND '.$json($comment?'c':'p','owner').'=?';$args[]=$viewer;}
+    $textAlias=$comment?'c':'p';
+    $where.=$search($field('title'),$json($textAlias,'body'),$json($textAlias,'name'));
+    if ($query!=='') $args[]=$query;
     $from='noa_documents p'.($comment?" JOIN noa_documents c ON $link AND $commentAcl":'');
     $excerpt=$comment?$json('c','body'):"''";
     $id=$comment?'c.doc_key':'p.doc_key';
@@ -68,6 +78,8 @@ function nld_read(PDO $db,array $g5,string $view,string $viewer,int $now): array
         $args=[$board.':',$board==='free'?'별무리 이야기':'공지사항',$board];
         if ($days) {$where.=" AND p.wr_datetime BETWEEN ? AND ?";array_push($args,$kst($cutoff),$kst($now));}
         if ($own) {$where.=" AND $alias.mb_id=?";$args[]=$viewer;}
+        $where.=$search('p.wr_subject',"$alias.wr_content","$alias.wr_name");
+        if ($query!=='') $args[]=$query;
         $native=nld_fetch($db,"SELECT CONCAT(?, $alias.wr_id) item_key,p.wr_id post_id,p.wr_subject title,$excerpt excerpt,
             TIMESTAMPDIFF(SECOND,'1970-01-01 09:00:00',$alias.wr_datetime) stamp,$score score,? board_name,? board FROM $from WHERE $where $engaged ORDER BY $order LIMIT 10",$args);
         array_push($rows,...$native);

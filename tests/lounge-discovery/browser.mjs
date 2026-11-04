@@ -11,6 +11,11 @@ try{
    assert.equal(new URL(page.url()).searchParams.get('view'),view);await page.getByRole('heading',{name:label,exact:true}).waitFor();
    if(!live){const first=page.locator('.nld-list a').first();assert.match(await first.getAttribute('href'),/^\/noa-lounge\.php\?/);}
   }
+  if(!live){
+   await page.getByRole('link',{name:'최근 댓글',exact:true}).click();await page.getByLabel('검색 범위').selectOption('body');await page.getByLabel('검색어',{exact:true}).fill('따뜻한');
+   await page.getByRole('button',{name:'검색',exact:true}).click();assert.equal(await page.locator('.nld-list li').count(),1);assert.match(await page.locator('.nld-list').innerText(),/따뜻한 노래/);
+   await page.getByRole('link',{name:'검색 해제'}).click();assert.equal(await page.locator('.nld-list li').count(),3);
+  }
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await page.goto(base+'/noa-lounge-discovery.php?view=replies');await page.getByRole('link',{name:'로그인하고 보기'}).waitFor();assert.equal(await page.locator('.nld-list li').count(),0);
   await page.close();
