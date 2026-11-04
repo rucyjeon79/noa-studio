@@ -8,7 +8,7 @@ try{
  $key=$_GET['key']??'';$type=$_GET['type']??'audio';if(!is_string($key)||strlen($key)>191||!in_array($type,['cover','audio'],true)){http_response_code(404);exit;}
  $db=noa_bridge_pdo();$doc=nj_document($db,$key);
  if(!$doc){http_response_code(404);exit;}
- $access=nam_access((array)($member??[]),(string)($is_admin??''));$admin=$access['admin'];$owner=$access['creator']&&nam_owner($doc,(array)($member??[]));if(($type==='audio'&&!$access['music']&&!$owner)||(!noa_sound_visible($doc,$admin)&&!$owner)){http_response_code(403);exit;}
+ $access=nam_access((array)($member??[]),(string)($is_admin??''));$admin=$access['admin'];$owner=$access['creator']&&nam_owner($doc,(array)($member??[]));if(($type==='audio'&&!$access['premiumPlayback']&&!$owner)||(!noa_sound_visible($doc,$admin)&&!$owner)){http_response_code(403);exit;}
  $asset=nj_find($db,$key);if(!$asset||!hash_equals(nj_asset_source($asset,$type),noa_sound_suno($doc['body']??[]))||!nj_verified($asset,$type)){http_response_code(404);exit;}
  $path=nj_file($asset[$type.'_path']);$file=fopen($path,'rb');if(!$file){http_response_code(404);exit;}$size=fstat($file)['size'];
  try{[$start,$end,$code]=nj_range($_SERVER['HTTP_RANGE']??null,$size);}catch(InvalidArgumentException $e){fclose($file);http_response_code(416);header('Content-Range: bytes */'.$size);exit;}

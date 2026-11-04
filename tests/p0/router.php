@@ -17,7 +17,7 @@ if($path==='/noa-work-status.php'){
 if($path==='/noa-sw.js'){http_response_code(404);return;}
 if($path==='/fixture.wav'){header('Content-Type: audio/wav');$data='';for($i=0;$i<16000*90;$i++)$data.=pack('v',(int)(sin($i*440*2*pi()/16000)*8000)&65535);echo 'RIFF'.pack('V',36+strlen($data)).'WAVEfmt '.pack('VvvVVvv',16,1,1,16000,32000,2,16).'data'.pack('V',strlen($data)).$data;return;}
 if(in_array($path,['/noa-music.php','/noa-youtube.php'])){
- define('_GNUBOARD_',true);$admin=false;$is_member=false;$is_admin='';$error=false;$playlistUnavailable=false;$run=null;$collections=[];$jukebox=[];$genres=[];$musicAccess=['music'=>true];
+ define('_GNUBOARD_',true);$admin=false;$is_member=false;$is_admin='';$error=false;$playlistUnavailable=false;$run=null;$collections=[];$jukebox=[];$genres=[];$musicAccess=['music'=>true,'premiumPlayback'=>true];
  require_once $root.'/bridge/music-readmodel.php';
  function noa_music_e(string $v):string{return htmlspecialchars($v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
  $songs=[];foreach(['one','two'] as $i=>$key)$songs[]=['key'=>$key,'title'=>$i?'A very long title repeated for marquee testing across small and large screens':'하루의 끝에','genre'=>'kpop-original','video'=>'','suno'=>'','audio'=>'/fixture.wav','audioStatus'=>'ready','audioSha'=>'','audioBytes'=>0,'confirmed'=>true,'ep'=>(string)($i+1),'act'=>'','kind'=>'single','lyrics'=>'display lyrics','rawLyrics'=>"[Verse 1]\n원문 줄\n\n[Chorus]\n후렴",'description'=>$i?'':"곡 이야기\n둘째 줄",'cast'=>'female','thumb'=>'','tracklist'=>'','originalArtist'=>''];

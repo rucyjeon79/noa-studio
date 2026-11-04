@@ -38,10 +38,12 @@ async function checkMoodLayout(page,width){
 try{
  if(!live){
   const matrix=await browser.newContext();
+  const weatherLevels=[4,5,6,8,9,10];
   for(const level of [1,2,3,4,5,6,7,8,9,10]){
    const headers={'X-QA-User':level===1?'guest':'level-'+level};
    const settings=await (await matrix.request.get(base+'/noa-bridge/listening.php',{headers})).json();
-   const eligible=[4,8].includes(level);assert.equal(!!settings.weatherVip,eligible);
+   const eligible=weatherLevels.includes(level);assert.equal(!!settings.weatherVip,eligible);
+   assert.equal(settings.canPlay,eligible);
    const guide=await matrix.request.get(base+'/noa-bridge/listening-weather.php',{headers});
    assert.equal(guide.status(),eligible?200:level===1?401:403);
    assert.equal(Object.hasOwn(await guide.json(),'weather'),eligible);
@@ -49,7 +51,7 @@ try{
    assert.equal(care.status(),level===1?401:403);
    assert.equal((await care.json()).error,eligible?'verification':level===1?'login_required':'vip_required');
   }
-  await matrix.close();report.vipOnlyRoles=[4,8];
+  await matrix.close();report.mindWeatherLevels=weatherLevels;
   const request=await browser.newContext({extraHTTPHeaders:{'X-QA-User':'alice'}});let r=await request.request.get(base+'/noa-bridge/listening.php'),s=await r.json();assert(s.member&&s.canPlay);assert.equal(s.library.length,1);assert.equal(s.library[0].title,'내 음악');
   const profile={genre:'jpop-original',timezone:'Asia/Seoul',consent:true,birthDate:'1990-06-15',calendar:'solar',birthTime:'09:30',birthTimezone:'Asia/Seoul'};const body={revision:s.revision,profile};
   assert.equal((await request.request.post(base+'/noa-bridge/listening.php',{data:body})).status(),403);

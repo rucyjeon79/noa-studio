@@ -200,7 +200,7 @@ function updateWeather(){
  clearCare();weatherAccess=access;++weatherRequest;editions=null;selectedSky='';selectedIntent=-1;weatherRows=[];weatherSequence=[];weatherStatus.textContent='';
  weatherBox.replaceChildren(el('h3','','내 마음 날씨'));
  if(access!=='vip'){
-  weatherBox.append(el('p','',access==='guest'?'오늘 기분을 날씨로 고르고 듣고 싶은 방향을 선택하는 VIP 음악 서비스예요. 로그인하면 이용 가능한 재생 방식을 확인할 수 있어요.':'마음 날씨 맞춤 선곡은 VIP 회원이 이용할 수 있어요.'));
+  weatherBox.append(el('p','',access==='guest'?'오늘 기분을 날씨로 고르면 AInoa가 어울리는 곡을 추천해요. 로그인하면 이용 가능한 서비스를 확인할 수 있어요.':'마음 날씨 AI 선곡은 유료 VIP(4·8레벨), 임원(5·6레벨), 관리자(9·10레벨)가 이용할 수 있어요.'));
   if(access==='video')weatherBox.append(sourceNotice());
   const link=el('a','',access==='guest'?'로그인':'VIP 이용 안내');link.href=access==='guest'?'/bbs/login.php?url=%2F%23noa-daily-fortune':'/noa-subscription.php';weatherBox.append(link);return;
  }
@@ -238,7 +238,7 @@ const careMessages={
  slow_down:'앞선 요청을 처리하고 있어요. 잠시 후 다시 시도해 주세요.',
  missing:'요청 보관 시간이 지났어요. 원하면 새로 요청해 주세요.',
  no_tracks:'지금 연결된 곡으로는 AI 선곡을 만들 수 없어요.',
- vip_required:'현재 VIP 자격으로만 받을 수 있는 답장이에요.',
+ vip_required:'현재 회원 등급에서는 마음 날씨 AI 답장을 받을 수 없어요.',
  login_required:'로그인 상태를 확인해 주세요.'
 };
 function appendCare(){

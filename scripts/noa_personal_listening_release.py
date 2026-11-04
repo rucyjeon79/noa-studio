@@ -45,7 +45,7 @@ if os.environ.get('NOA_LISTENING_COPY') == 'true':
     release.FILES = {name: 'deploy/' + name for name in names}
     release.NEW = set()
 if os.environ.get('NOA_MIND_WEATHER') == 'true':
-    paths = ['noa-bridge/member-access.php','noa-bridge/listening-weather.php','noa-bridge/listening.php','noa-listening.css','noa-listening.js','noa-music.php','noa-app/home.php']
+    paths = ['noa-bridge/member-access.php','noa-bridge/legacy-audio.php','noa-app/jukebox/stream.php','noa-bridge/listening-weather.php','noa-bridge/listening.php','noa-listening.css','noa-listening.js','noa-music.php','noa-app/home.php']
     release.FILES = {p:('bridge/'+p.split('/')[-1] if p.startswith('noa-bridge/') else 'deploy/'+p) for p in paths}
     release.NEW = {'noa-bridge/listening-weather.php'}
 if os.environ.get('NOA_VIP_CARE') == 'true':
