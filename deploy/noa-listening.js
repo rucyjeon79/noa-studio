@@ -214,11 +214,16 @@ function appendCare(){
  const field=el('textarea');field.maxLength=180;field.rows=2;field.placeholder='예: 오늘은 울고 싶지만 마지막엔 가볍게 걷고 싶어.';label.append(field);
  const consent=el('label','nl-care-consent'),agree=el('input');agree.type='checkbox';consent.append(agree,document.createTextNode('선택한 날씨·방향과 한 줄을 AI 선곡에 보내는 데 동의해요.'));
  const answer=el('p','nl-care-answer');answer.setAttribute('role','status');
- const send=weatherButton('AInoa에게 선곡 부탁하기',submit);send.disabled=true;
+ const send=weatherButton('AInoa에게 선곡 부탁하기',()=>submit(null));send.disabled=true;
  agree.onchange=()=>{send.disabled=!agree.checked;};
  area.append(label,consent,send,answer);weatherBox.append(area);
  const existing=careResponse;
+ const resumeKey='noa-vip-music-reply';
  if(existing)showResult(existing);
+ else try{
+  const saved=JSON.parse(sessionStorage.getItem(resumeKey));
+  if(saved?.context===context&&Date.now()<saved.until&&/^[a-f0-9]{32}$/.test(saved.id))submit(saved.id);
+ }catch{}
  function showResult(data){
   const rowsByKey=new Map(records.filter(r=>r.audio).map(r=>[r.key,r]));
   const picks=(data.keys||[]).map(k=>rowsByKey.get(k)).filter(Boolean);
@@ -234,8 +239,8 @@ function appendCare(){
   }
   area.querySelector('.nl-weather-choices')?.remove();area.append(result);
  }
- async function submit(){
-  if(weatherAccess!=='vip'||!agree.checked||send.disabled)return;
+ async function submit(resumeId){
+  if(weatherAccess!=='vip'||(!resumeId&&(!agree.checked||send.disabled)))return;
   send.disabled=true;field.disabled=true;agree.disabled=true;answer.textContent='AInoa가 사연에 맞는 곡을 고르고 있어요. 잠시 기다려 주세요.';
   const version=++careVersion;careController?.abort();careController=new AbortController();
   const valid=()=>careVersion===version&&weatherAccess==='vip'&&area.isConnected;
@@ -245,10 +250,10 @@ function appendCare(){
    const row=ranked.get(m).find(r=>r.audio&&!seen.has(r.key));
    if(row){seen.add(row.key);pool.push(row.key);}
   }
-  const id=Array.from(crypto.getRandomValues(new Uint8Array(16)),v=>v.toString(16).padStart(2,'0')).join('');
+  const id=resumeId||Array.from(crypto.getRandomValues(new Uint8Array(16)),v=>v.toString(16).padStart(2,'0')).join('');
   const endpoint='/noa-bridge/listening-care.php',deadline=Date.now()+15*60000;
   const options={credentials:'same-origin',cache:'no-store',signal:careController.signal};
-  function finish(message){if(!valid())return;answer.textContent=message;send.disabled=false;field.disabled=false;agree.disabled=false;}
+  function finish(message){if(!valid())return;answer.textContent=message;send.disabled=!agree.checked;field.disabled=false;agree.disabled=false;}
   async function poll(jobId,tries=0){
    if(!valid())return;
    if(Date.now()>deadline){finish(careMessages.missing);return;}
@@ -261,10 +266,12 @@ function appendCare(){
     careTimer=setTimeout(()=>poll(jobId),3000);
    }catch{if(valid()&&tries<4)careTimer=setTimeout(()=>poll(jobId,tries+1),4000);else finish('연결이 끊겨 답장을 확인하지 못했어요.');}
   }
+  if(resumeId){await poll(resumeId);return;}
   try{
    const r=await fetch(endpoint,{...options,method:'POST',headers:{'Content-Type':'application/json','X-NOA-CSRF':state.csrf},body:JSON.stringify({action:'start',id,sky:selectedSky,intent:selectedIntent,note:field.value.trim(),keys:pool,consent:true})});const d=await r.json();
    if(!valid())return;
    if(!r.ok&&!(d.error==='dispatch_unconfirmed'&&d.id)){finish(careMessages[d.error]||'지금은 실시간 선곡을 시작할 수 없어요.');return;}
+   try{sessionStorage.setItem(resumeKey,JSON.stringify({id:d.id,context,until:deadline}));}catch{}
    await poll(d.id);
   }catch{if(valid())await poll(id);}
  }

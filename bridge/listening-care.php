@@ -29,8 +29,28 @@ try{
  if($worker){
   $key=(string)$_SERVER['HTTP_X_NOA_ACTION_KEY'];
   if(!preg_match('/^[a-f0-9]{64}$/D',$key)||!hash_equals($cfg['workerHash'],hash('sha256',$key)))nwc_reply(403,['error'=>'worker_required']);
-  if(!in_array($action,['claim','save','fail','check'],true))nwc_reply(400,['error'=>'invalid']);
-  if($action==='check')nwc_reply(200,['ok'=>true,'version'=>1]);
+  if(!in_array($action,['claim','save','fail','check','checkResult'],true))nwc_reply(400,['error'=>'invalid']);
+  // The private release runner can test the complete route without signing in as a listener.
+  if($action==='checkResult'){
+   $result=nwc_store($dir,static function(&$s)use($id){
+    $j=$s['jobs'][$id]??[];return ($j['probe']??false)&&$j['owner']===''?['state'=>$j['state'],'count'=>count($j['keys']??[])]:null;
+   });nwc_reply($result?200:404,$result??['error'=>'missing']);
+  }
+  if($action==='check'){
+   if(($b['roundTrip']??false)!==true)nwc_reply(200,['ok'=>true,'version'=>1]);
+   $token=trim((string)getenv('NOA_GITHUB_DISPATCH_TOKEN'))?:($cfg['dispatchToken']??'');
+   if(!$token)nwc_reply(503,['error'=>'worker_unavailable']);
+   $created=nwc_store($dir,static function(&$s)use($id){
+    if(isset($s['jobs'][$id]))return false;
+    $probe=['weather'=>'비','intent'=>'기분을 바꿔 보고 싶어','note'=>'테스트 선곡 요청','tracks'=>[
+     ['key'=>'probe-one','title'=>'작은 떨림','genre'=>'pop'],['key'=>'probe-two','title'=>'비상','genre'=>'rock']]];
+    [$new]=nwc_enqueue($s,$id,'',$probe);$s['jobs'][$id]['probe']=true;return $new;
+   });
+   if(!$created)nwc_reply(409,['error'=>'already_checked']);
+   require_once dirname(__DIR__).'/noa-app/engine/song-generation.php';
+   $status=n80_song_dispatch($id,$token,'noa-vip-weather.yml');
+   nwc_reply($status>=200&&$status<300?200:502,['ok'=>$status>=200&&$status<300]);
+  }
   require_once __DIR__.'/subscription-access.php';
   $eligible=static function($owner){$m=get_member($owner);return !empty($m['mb_id'])&&nam_access(ns_apply_native_member($m,time()))['weatherVip'];};
   $r=nwc_store($dir,static function(&$s)use($id,$action,$b,$eligible){return nwc_worker($s,$id,$action,$b,$eligible);});nwc_reply(200,$r);

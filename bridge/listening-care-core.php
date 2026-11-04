@@ -52,7 +52,8 @@ function nwc_worker(array &$s,string $id,string $action,array $body,callable $el
  $job=&$s['jobs'][$id];
  if($action==='claim'){
   if($job['state']!=='queued')return ['ok'=>true];
-  if(!$eligible($job['owner'])){unset($s['jobs'][$id]);return ['ok'=>true];}
+  $studioProbe=$job['owner']===''&&($job['probe']??false)===true;
+  if(!$studioProbe&&!$eligible($job['owner'])){unset($s['jobs'][$id]);return ['ok'=>true];}
   $job['state']='working';$payload=$job['payload'];
   // The runner sees anonymous music choices, never the account name or local record keys.
   $job['candidates']=array_column($payload['tracks'],'key');unset($job['payload']);
@@ -73,5 +74,5 @@ function nwc_worker(array &$s,string $id,string $action,array $body,callable $el
   $why=$body['reason']??'failed';$job['state']=in_array($why,['quota','unverified_credits','unavailable'],true)?$why:'failed';
   if($why==='quota')$s['pausedUntil']=time()+300;
  }
- unset($job['candidates']);return ['ok'=>true];
+ unset($job['candidates']);return ['ok'=>true,'studioCheck'=>($job['probe']??false)===true];
 }
