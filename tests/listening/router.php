@@ -21,6 +21,12 @@ if($path==='/noa-music.php'){
   $song['moodTags'] = array_keys($song['moodScores']);
  }
  unset($song);
+ if(($_SERVER['HTTP_X_QA_CATALOG']??'')==='large'){
+  $template=$songs[0];$songs=[];
+  foreach(['kpop-original','jpop-original','pop-original'] as $genre){
+   for($n=1;$n<=42;$n++){$r=$template;$r['key']='single:'.$genre.':'.$n;$r['genre']=$genre;$r['title']=$genre.' '.$n;$r['ep']=(string)$n;$songs[]=$r;}
+  }
+ }
  $src=str_replace('__DIR__',var_export($root.'/deploy',true),file_get_contents($root.'/deploy/noa-music.php'));
  $src=str_replace('</head>','<link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-policy-20261024.css"><script defer src="/noa-app/p0-player.js"></script></head>',$src);eval(substr($src,strpos($src,'?><!doctype html>')));return;
 }

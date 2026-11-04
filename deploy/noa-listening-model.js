@@ -58,10 +58,9 @@ function select(records,{genre,mood='auto',mode='now',theme={},popular={},librar
  return {rows:result.slice(0,40),fallback,mood:chosen};
 }
 function albums(records,genre,{mood='auto',theme={}}={}){const groups=new Map();for(const r of catalog(records,genre)){const ep=Number(r.ep),act=Number(r.act)||(ep>0?Math.ceil(ep/10):0);if(!act)continue;if(!groups.has(act))groups.set(act,[]);groups.get(act).push(r);}const chosen=availableMood([...groups.values()].flat(),mood,theme);return [...groups].map(([act,rows])=>({act,matches:rows.reduce((total,r)=>total+trackFit(r,chosen,mood==='auto'&&theme.personal),0),rows:rows.sort((a,b)=>Number(a.ep)-Number(b.ep)||a.key.localeCompare(b.key))})).sort((a,b)=>b.matches/ b.rows.length-a.matches/a.rows.length||a.act-b.act);}
-// A separate entry point allows only this explicit choice to mix genres.
-function wholeCatalogMix(records,theme){
- if(!theme?.personal||!theme.rankedMoods?.length)return {rows:[],fallback:false};
- const candidates=catalog(records,null,true);
+const wholeMixLimit=100,genreMixLimit=10;
+function sajuMix(candidates,theme,limit){
+ if(!theme?.personal||!theme.rankedMoods?.length)return {rows:[],fallback:false,matched:0};
  const [first,second]=theme.rankedMoods;
  const score=row=>{
   const main=trackFit(row,first,true),next=trackFit(row,second,true)*0.7;
@@ -74,16 +73,31 @@ function wholeCatalogMix(records,theme){
   return hash>>>0;
  };
  const scored=candidates.map(row=>({row,score:score(row),order:dailyOrder(row.key)}));
- const matched=scored.filter(item=>item.score>0),fallback=!matched.length&&candidates.length>0;
- const sorted=matched.length?matched:scored;
- sorted.sort((a,b)=>b.score-a.score||a.order-b.order||a.row.key.localeCompare(b.row.key));
- return {rows:sorted.slice(0,40).map(item=>item.row),fallback,mood:first};
+ // For songs with sparse text, use the genre's observed fit as a tie breaker.
+ const genreTotals=new Map();
+ for(const item of scored){
+  const sum=genreTotals.get(item.row.genre)||{value:0,count:0};
+  sum.value+=item.score;sum.count++;genreTotals.set(item.row.genre,sum);
+ }
+ const genreAverage=item=>{const sum=genreTotals.get(item.row.genre);return sum.value/sum.count;};
+ scored.sort((a,b)=>b.score-a.score||genreAverage(b)-genreAverage(a)||a.order-b.order||a.row.key.localeCompare(b.row.key));
+ const batch=scored.slice(0,limit),matched=batch.filter(item=>item.score>0).length;
+ const top=batch[0]?.row;
+ const mood=top&&trackFit(top,second,true)*0.7>trackFit(top,first,true)?second:first;
+ return {rows:batch.map(item=>item.row),fallback:!!batch.length&&!matched,matched,mood};
+}
+function wholeCatalogMix(records,theme){
+ const mix=sajuMix(catalog(records,null,true),theme,wholeMixLimit);
+ return {...mix,mood:theme?.mood};
+}
+function recommendedGenreMix(records,genre,theme){
+ return sajuMix(catalog(records,genre),theme,genreMixLimit);
 }
 function genreSuggestions(records,theme,genres,preferred){
  if(!theme?.personal||!theme.rankedMoods?.length)return [];
  const choices=[];
  for(const genre of Object.keys(genres)){
-  const selection=select(records,{genre,theme});
+  const selection=recommendedGenreMix(records,genre,theme);
   if(!selection.rows.length)continue;
   const best=selection.rows.slice(0,3).map(row=>trackFit(row,selection.mood,true));
   const priority=theme.mood===selection.mood?1:0.7;
@@ -93,5 +107,5 @@ function genreSuggestions(records,theme,genres,preferred){
  choices.sort((a,b)=>b.score-a.score||Number(b.genre===preferred)-Number(a.genre===preferred)||a.genre.localeCompare(b.genre));
  return choices.slice(0,3);
 }
-const api={catalog,select,albums,wholeCatalogMix,genreSuggestions,normalizeBirthDate};if(typeof module==='object')module.exports=api;else root.NoaListeningModel=api;
+const api={catalog,select,albums,wholeCatalogMix,recommendedGenreMix,wholeMixLimit,genreMixLimit,genreSuggestions,normalizeBirthDate};if(typeof module==='object')module.exports=api;else root.NoaListeningModel=api;
 })(typeof window==='undefined'?globalThis:window);

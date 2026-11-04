@@ -75,3 +75,13 @@ test('explicit whole-catalog saju considers all eligible genres independently of
  assert.deepEqual(model.select(rows,{genre:'pop',theme}).rows.map(x=>x.key),['pop']);
  assert.deepEqual(model.wholeCatalogMix(rows,{personal:false}).rows,[]);
 });
+test('100 across the catalog and 10 per suggested genre, unique and playable even with sparse matches',()=>{
+ const theme={personal:true,mood:'calm',rankedMoods:['calm','focus'],localDate:'2026-11-04'};
+ const tracks=Array.from({length:135},(_,i)=>({key:'song-'+i,genre:['a','b','c'][i%3],audio:'/stream/'+i,moodScores:i<6?{calm:1}:{}}));
+ tracks.push({...tracks[0],key:'alias',canonicalRecordKey:'song-0'}, {key:'silent',genre:'a',audio:''},{key:'album',genre:'a',audio:'/list',kind:'playlist'});
+ const whole=model.wholeCatalogMix(tracks,theme);assert.equal(whole.rows.length,100);assert.equal(new Set(whole.rows.map(x=>x.key)).size,100);assert.equal(whole.matched,6);
+ assert(whole.rows.slice(0,6).every(row=>row.moodScores.calm));assert(!whole.rows.some(row=>['silent','alias','album'].includes(row.key)));
+ const picks=model.genreSuggestions(tracks,theme,{a:'a',b:'b',c:'c'});assert.equal(picks.length,3);
+ for(const pick of picks){assert.equal(pick.selection.rows.length,10);assert(pick.selection.rows.every(x=>x.genre===pick.genre));assert.equal(pick.selection.matched,2);}
+ const few=tracks.slice(0,5);assert.equal(model.wholeCatalogMix(few,theme).rows.length,5);assert.equal(model.recommendedGenreMix(few,'a',theme).rows.length,2);
+});
