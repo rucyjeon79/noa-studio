@@ -29,12 +29,19 @@ function bnsetup() {
           'bo_notice'=>'','bo_admin'=>'','bo_count_write'=>0,'bo_count_comment'=>0,'bo_list_level'=>1,'bo_read_level'=>1,'bo_write_level'=>10,'bo_reply_level'=>10,'bo_comment_level'=>3,
           'bo_read_point'=>0,'bo_write_point'=>0,'bo_comment_point'=>0,'bo_download_point'=>0,'bo_use_cert'=>'','bo_use_secret'=>0,'bo_use_search'=>1,'bo_use_category'=>1,
           'bo_category_list'=>implode('|',BN_TOPICS),'bo_device'=>'both','bo_use_sns'=>0,'bo_use_email'=>0,'bo_use_good'=>0,'bo_use_nogood'=>0,
-          'bo_content_head'=>'','bo_mobile_content_head'=>'','bo_content_tail'=>'','bo_mobile_content_tail'=>'','bo_include_head'=>'','bo_include_tail'=>'','bo_insert_content'=>''];
+          'bo_content_head'=>'','bo_mobile_content_head'=>'','bo_content_tail'=>'','bo_mobile_content_tail'=>'','bo_insert_content'=>''];
         foreach($template as $k=>&$v){if(preg_match('/^bo_(?:[1-9]|10)(?:_subj)?$/D',$k))$v='';}unset($v);
         $row=array_replace($template,array_intersect_key($settings,$template));
         $orphan=sql_fetch("SHOW TABLES LIKE ".bnvalue(strtr($wt,['_'=>'\\_','%'=>'\\%'])),false);
         if($orphan)throw new RuntimeException('unclaimed news write table');
         bnq("INSERT INTO $bt SET ".bnset($row));
+    }
+    if($board){
+        // On the launch edition these two native wrapper paths were empty.
+        $layout=[];
+        foreach(['bo_include_head','bo_include_tail'] as $field)
+            if(isset($template[$field]) && trim($template[$field])!=='' && trim($board[$field])==='')$layout[$field]=$template[$field];
+        if($layout)bnq("UPDATE $bt SET ".bnset($layout)." WHERE bo_table='busan_news' AND bo_10='".BN_MARK."'");
     }
     bnq("CREATE TABLE IF NOT EXISTS `$wt` LIKE `{$g5['write_prefix']}notice`");
     $prefix=$parent['me_code'];$url='https://skhnslu-busan.com/bbs/board.php?bo_table=busan_news';
