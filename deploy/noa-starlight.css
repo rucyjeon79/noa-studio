@@ -1141,3 +1141,10 @@ html[data-noa-theme] #bo_w .btn_confirm :is(.btn_submit,button[type=submit]):ena
  html.ny-native[data-noa-theme] #sod_bsk_list:has(.td_prd) .td_prd{min-width:8em;overflow-wrap:anywhere}
  html.ny-native[data-noa-theme] #sod_bsk_list:has(.td_prd){max-width:100%;overflow-x:auto}
 }
+
+/* Store checkout follows its actual column width, including beside the pinned menu. */
+html[data-noa-theme] main.noa-points-page{container-type:inline-size}
+html[data-noa-theme] .np-store-layout>:is(#vip-form,#points-form),html[data-noa-theme] :is(#vip-cart,#points-cart){box-sizing:border-box;min-width:0;width:100%;max-width:100%}
+html[data-noa-theme] :is(#vip-cart,#points-cart) :is(.np-cart-copy,.np-cart-item>div,.np-cart-row>div){min-width:0;overflow-wrap:anywhere}
+html[data-noa-theme] :is(#vip-cart,#points-cart) .np-quantity{display:inline-flex;align-items:center;flex-wrap:nowrap}
+@container(max-width:860px){html.noa-shell-wide[data-noa-theme] .np-store-layout{grid-template-columns:minmax(0,1fr)}}

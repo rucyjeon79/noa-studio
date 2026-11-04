@@ -342,7 +342,9 @@ async function verifyMusicShelves(p,width,mode,theme){
 async function verifyExpansiveShell(p,width,height,mode){
  assert(await p.locator('#noa-account-bar .noa-account-brand').isVisible());
  const geometry=await p.evaluate(()=>{const box=s=>{const r=document.querySelector(s).getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom};};return {hero:box('.noa-hero'),media:box('.noa-hero-art'),copy:box('.noa-hero-copy'),scene:box('#noa-theme-scene'),notices:box('[data-home-section=notices]'),community:box('[data-home-section=community]'),rightDock:document.documentElement.hasAttribute('data-noa-desktop')};});
- assert(geometry.scene.x>=0&&geometry.scene.x<Math.max(100,(width-1440)/2+40),'content uses the centered reading area');
+ const rail=p.locator('html.noa-wide-rail #noa-menu-drawer'),pinned=await rail.count()>0;
+ const start=pinned?await rail.evaluate(e=>e.getBoundingClientRect().right):0;
+ assert(geometry.scene.x>=start-1&&geometry.scene.x-start<Math.max(100,(width-1440)/2+40),'content uses the centered reading area');
  assert(!geometry.rightDock,'assistant remains floating instead of taking a permanent content column');
  if(width>=768){assert(geometry.hero.height>=480&&geometry.hero.height<=620,'artist film has a bounded cinematic height');assert(Math.abs(geometry.media.width/geometry.media.height-9/16)<.01,'desktop film keeps its original portrait frame');assert(geometry.copy.x>=geometry.media.x+geometry.media.width-1,'recommendations have their own space beside the film');assert(geometry.copy.bottom<=geometry.media.bottom+1,'copy stays within the feature');assert(geometry.scene.height<300,'theme welcome remains secondary to the original film');}
  else{assert(Math.abs(geometry.media.width/geometry.media.height-9/16)<.03,'mobile retains the complete portrait film');assert(geometry.copy.y>=geometry.media.bottom-1,'mobile text is below the media');}
@@ -356,13 +358,13 @@ async function verifyExpansiveShell(p,width,height,mode){
  if(width<768)assert(await p.locator('.noa-hero-intro').evaluate(e=>Math.abs(e.getBoundingClientRect().left-e.parentElement.getBoundingClientRect().left-20)<2),'mobile introduction keeps the left content edge');
 
  const all=p.locator('#noa-nav-all'),drawer=p.locator('#noa-menu-drawer');
- assert.equal(await drawer.isVisible(),false);await all.click();assert.equal(await all.getAttribute('aria-expanded'),'true');
+ assert.equal(await drawer.isVisible(),pinned);await all.click();assert.equal(await all.getAttribute('aria-expanded'),'true');
  const search=p.locator('#noa-drawer-search');await search.fill('공지');assert.equal(await drawer.locator('.noa-drawer-secondary a:visible').count(),1);
  await search.fill('없는메뉴xyz');assert(await drawer.locator('.noa-menu-empty').isVisible());await search.fill('');
  assert.equal(await drawer.locator('.noa-menu a:visible').count(),5);assert.equal(await drawer.locator('[data-noa-nav=music]').getAttribute('aria-disabled'),'true');
  await drawer.screenshot({path:output+'/menu-'+mode+'-'+width+'.png'});
- const box=await drawer.boundingBox();assert(Math.abs(box.width-width*.7)<2&&Math.abs(box.x)<2);
- await p.keyboard.press('Escape');await drawer.waitFor({state:'hidden'});
+ const box=await drawer.boundingBox();if(pinned){assert(box.width>=220&&box.width<300);}else assert(Math.abs(box.width-width*.7)<2&&Math.abs(box.x)<2);
+ await p.keyboard.press('Escape');if(pinned)assert(await drawer.isVisible());else await drawer.waitFor({state:'hidden'});
  console.log('EXPANSIVE_GEOMETRY',JSON.stringify({width,mode,...geometry}));
 }
 
@@ -372,7 +374,7 @@ async function verifyHeader(p,width,height){
   const rect=e=>{const r=e.getBoundingClientRect();return {id:e.id,x:r.x,y:r.y,w:r.width,h:r.height};};
   return {bar:rect(bar),viewport:document.documentElement.clientWidth,items:[...bar.querySelectorAll('.noa-navigation-bar a,.noa-navigation-bar button')].map(rect)};
  });
- assert(Math.abs(row.bar.x)<1&&Math.abs(row.bar.w-row.viewport)<2);
+ const rail=p.locator('html.noa-wide-rail #noa-menu-drawer');if(await rail.count()){const r=await rail.boundingBox();assert(Math.abs(row.bar.x-r.x-r.width)<2&&Math.abs(row.bar.x+row.bar.w+r.x-row.viewport)<2);}else assert(Math.abs(row.bar.x)<1&&Math.abs(row.bar.w-row.viewport)<2);
  assert.deepEqual(row.items.map(e=>e.id),['noa-nav-all','','noa-nav-back','noa-nav-top','noa-nav-account']);
  row.items.forEach((e,i)=>{assert(e.h>=44&&e.w>=44&&e.x>=0&&e.x+e.w<=width+1,JSON.stringify(row));if(i){const prev=row.items[i-1];assert(e.x>=prev.x+prev.w-1&&Math.abs(e.y-prev.y)<=1,JSON.stringify(row));}});
  assert.equal(await p.locator('#noa-nav-all span').isVisible(),false);

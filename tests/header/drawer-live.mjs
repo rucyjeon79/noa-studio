@@ -13,12 +13,13 @@ try{
    if(phase==='candidate')for(const name of ['noa-starlight.css','noa-account.js','noa-ui.js','noa-listening.js','noa-listening-model.js']){
     await context.route('**/'+name+'*',route=>route.fulfill({body:readFileSync('deploy/'+name),contentType:name.endsWith('.css')?'text/css':'text/javascript'}));
    }
+   if(phase==='candidate')await context.addInitScript({content:"document.addEventListener('DOMContentLoaded',()=>{"+readFileSync('deploy/noa-page-progress.js','utf8')+"},{once:true})"});
    const p=await context.newPage(),bar=p.locator('#noa-account-bar'),drawer=p.locator('#noa-menu-drawer'),trigger=p.locator('#noa-nav-all');
    const settle=async()=>{await drawer.evaluate(async el=>{await Promise.allSettled(el.getAnimations().map(a=>a.finished));});};
    for(const theme of ['noa-ivory','noa-studio']){
     await p.goto(base+'/noa-login.php',{waitUntil:'domcontentloaded'});
     await p.locator('[data-footer-theme="'+theme+'"]').click();
-    for(const path of ['/','/noa-lounge.php','/noa-shop.php','/shop/cart.php']){
+    for(const path of ['/','/noa-lounge.php','/noa-shop.php','/noa-vip.php','/noa-points.php','/shop/cart.php']){
      const started=Date.now();await p.goto(base+path,{waitUntil:'domcontentloaded'});
      const navigationMs=Date.now()-started;
      await p.waitForFunction(t=>document.documentElement.dataset.noaTheme===t&&document.querySelector('#noa-drawer-tools')?.closest('dialog'),theme);
@@ -49,7 +50,22 @@ try{
       assert.deepEqual(await p.locator('.nl-moods button').allTextContents(),['휴식','집중','위로','활동','운전','산책']);
       if(pinned){const tops=await p.locator('.noa-mobile-footer > :is(.noa-sidebar-signature,.noa-sidebar-legal,.noa-sidebar-visitors)').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().top));assert(Math.max(...tops)-Math.min(...tops)<=1);}
      }
-     if(phase==='live'){await p.evaluate(()=>scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'}));await p.waitForFunction(()=>{const r=document.scrollingElement;return r.scrollHeight<=r.clientHeight||+document.getElementById('noa-page-progress')?.getAttribute('aria-valuenow')>=99;});}
+     if(['/noa-vip.php','/noa-points.php'].includes(path)){
+      const cart=p.locator('#vip-cart,#points-cart');const rect=await cart.boundingBox();assert(rect&&rect.width>0&&rect.x>=0&&rect.x+rect.width<=width+1,JSON.stringify({path,width,rect}));
+     }
+     // A live feed can append stories and load artwork after the initial scroll.
+     // Validate the bar against the current scroll range before asserting either endpoint.
+     const progress=p.locator('#noa-page-progress');await progress.waitFor({state:'attached'});
+     for(const fraction of [0,.5,1]){
+      try{await p.waitForFunction(fraction=>{
+       const scroller=document.scrollingElement,bar=document.getElementById('noa-page-progress'),range=scroller.scrollHeight-scroller.clientHeight;
+       const target=range*fraction;if(Math.abs(scroller.scrollTop-target)>1){scrollTo({top:target,behavior:'instant'});return false;}
+       const percent=range>0?Math.round(scroller.scrollTop/range*100):0;
+       return bar?.dataset.mode==='scroll'&&Math.abs(Number(bar.getAttribute('aria-valuenow'))-percent)<=1;
+      },fraction,{timeout:12000});}catch(error){
+       console.error('PAGE_PROGRESS',JSON.stringify({path,width,fraction,phase,state:await p.evaluate(()=>({range:document.scrollingElement.scrollHeight-document.scrollingElement.clientHeight,scroll:scrollY,line:document.querySelector('#noa-page-progress')?.outerHTML,task:window.NoaPageProgress?.status(),busy:[...document.querySelectorAll('[aria-busy=true]')].map(e=>e.id),focus:document.activeElement.id}))}));throw error;
+      }
+     }
      const overflow=await p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);assert(overflow<=1);
      results.push({width,mode:theme,route:path,navigationMs,overflow,drawerWidth:panel.width});
     }
