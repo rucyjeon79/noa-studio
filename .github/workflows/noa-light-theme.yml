@@ -21,7 +21,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
+      - name: Validate the five files in a clock-only release
+        if: env.NOA_THEME_CLOCK == 'true'
+        run: |
+          node --test tests/starlight/theme.test.mjs
+          node --check deploy/noa-ui.js
+          php -l deploy/noa-design.extend.php
+          php -l deploy/noa-theme-admin.php
+          node -e "for(const p of ['noa-design','noa-interface-labels']) JSON.parse(require('fs').readFileSync('deploy/'+p+'.json','utf8'))"
+          python tests/room-themes/release_freshness_test.py
       - name: Validate saved preferences, default theme and contrast
+        if: env.NOA_THEME_CLOCK != 'true'
         run: |
           node --test tests/starlight/theme.test.mjs tests/starlight/sections.test.mjs scripts/qa/noa-precision.test.mjs scripts/qa/noa-card-balance.test.mjs
           node --check deploy/noa-ui.js
@@ -56,7 +66,7 @@ jobs:
           python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/noa-light" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp tests/header/header.mjs "$RUNNER_TEMP/noa-light/header.mjs"
-          node "$RUNNER_TEMP/noa-light/header.mjs"
+          if [ "$NOA_THEME_CLOCK" != true ]; then node "$RUNNER_TEMP/noa-light/header.mjs"; fi
           if [ "$NOA_MENU_DRAWER" = true ]; then cp tests/header/drawer-live.mjs "$RUNNER_TEMP/noa-light/check.mjs"; else cp tests/room-themes/live.mjs "$RUNNER_TEMP/noa-light/check.mjs"; fi
           cp tests/room-themes/member.mjs "$RUNNER_TEMP/noa-light/member.mjs"
           cp tests/room-themes/surface-controls.mjs "$RUNNER_TEMP/noa-light/surface-controls.mjs"
@@ -68,10 +78,11 @@ jobs:
         env: {NOA_THEME_PHASE: candidate}
         run: node "$RUNNER_TEMP/noa-light/check.mjs"
       - name: Verify first-visit popups, readable greetings and modal feedback before activation
+        if: env.NOA_THEME_CLOCK != 'true'
         env: {NOA_THEME_PHASE: candidate, NOA_SOURCE_ROOT: '${{ github.workspace }}'}
         run: node "$RUNNER_TEMP/noa-light/overlays.mjs"
       - name: Verify member pages, writing forms and uninterrupted playback in isolation
-        if: ${{ !contains(github.event.head_commit.message, '[design-review]') }}
+        if: env.NOA_THEME_CLOCK != 'true' && !contains(github.event.head_commit.message, '[design-review]')
         run: |
           php tests/room-themes/fixture.php
           node "$RUNNER_TEMP/noa-light/member.mjs"
@@ -125,7 +136,7 @@ jobs:
         if: steps.activate.outcome == 'success'
         env: {NOA_THEME_PHASE: live, NOA_SOURCE_ROOT: '${{ github.workspace }}'}
         run: |
-          node "$RUNNER_TEMP/noa-light/overlays.mjs"
+          if [ "$NOA_THEME_CLOCK" != true ]; then node "$RUNNER_TEMP/noa-light/overlays.mjs"; fi
           node "$RUNNER_TEMP/noa-light/check.mjs"
       - name: Summarize verified page navigation
         if: steps.live.outcome == 'success'
