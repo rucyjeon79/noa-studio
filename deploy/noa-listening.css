@@ -60,7 +60,7 @@ html body #noa-daily-fortune[hidden]{display:none!important}
 /* The arrow opens the panel. The adjacent play button also works while it is closed. */
 .nl-listen-row{position:relative;margin:24px 0;--nl-play-width:clamp(108px,19vw,156px)}
 html body .nl-listen-row>.nl-music-discovery{position:relative;margin:0}
-html body .nl-listen-row>.nl-music-discovery>summary{position:static;min-height:58px;margin-inline-start:auto;padding:0;width:44px;box-sizing:border-box}
+html body .nl-listen-row>.nl-music-discovery>summary{position:static;min-height:58px;margin:0 0 0 auto;padding:0;width:44px;box-sizing:border-box}
 html body .nl-listen-row .nl-discovery-title{position:absolute;inset:0 calc(var(--nl-play-width) + 50px) auto 14px;display:flex;align-items:center;min-height:58px;line-height:1.3;word-break:keep-all}
 html body .nl-listen-row summary>svg{display:none}
 html body .nl-listen-row>.nl-music-discovery>summary::after{position:absolute;right:19px;top:24px}

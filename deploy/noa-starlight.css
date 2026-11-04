@@ -631,7 +631,7 @@ html.noa-shell-wide .noa-mobile-footer+.noa-footer{display:none}
  html.noa-shell-wide .noa-hero[data-home-section=hero] h1{font-size:23px}
  html.noa-shell-wide .noa-main .noa-section-head h2{font-size:18px}
  html.noa-shell-wide .noa-main :is(.noa-notice-list,.noa-community-feed){padding:12px 16px}
- html.noa-shell-wide[data-noa-style] .noa-mobile-footer{grid-template-columns:1fr;gap:20px;margin-top:8px;padding:24px 0}
+ html.noa-shell-wide[data-noa-style] .noa-mobile-footer{grid-template-columns:minmax(0,1fr);gap:20px;margin-top:8px;padding:24px 0}
  html.noa-shell-wide[data-noa-style] body>.noa-mobile-footer{margin-inline:16px;padding:24px 0 calc(var(--noa-dock,72px) + var(--noa-player-space,0px) + 24px)}
  html.noa-shell-wide .noa-menu-drawer[open]{padding:20px;gap:20px}
 }
@@ -928,7 +928,7 @@ html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-info-actions{marg
 html.noa-shell-wide[data-noa-theme] body #noa-header-clock{flex-direction:row;align-items:center}
 html.noa-shell-wide .noa-mobile-footer .noa-footer-landscape{display:block;width:100%;max-width:420px;height:clamp(80px,10vw,132px);object-fit:cover;border-radius:var(--noa-card-radius)}
 html.noa-shell-wide .noa-mobile-footer .noa-display-settings{display:inline-flex;align-items:center;justify-self:start;min-height:44px;gap:8px;margin:0}
-html.noa-shell-wide .noa-mobile-footer .noa-sidebar-signature{align-content:start;gap:10px}
+html.noa-shell-wide .noa-mobile-footer .noa-sidebar-signature{grid-template-columns:minmax(0,1fr);min-width:0;align-content:start;gap:10px}
 @media(max-width:760px), (hover:none) and (pointer:coarse) and (max-height:600px) and (max-width:1024px){
  html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-info-context{display:none}
  html.noa-shell-wide[data-noa-theme] body #noa-info-bar .noa-account-brand{display:inline-flex;position:static;align-items:center;gap:8px;margin:0;min-height:44px;flex:none;width:auto;padding:0;text-decoration:none;color:var(--noa-text)}
