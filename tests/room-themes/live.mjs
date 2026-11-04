@@ -114,7 +114,8 @@ if(!clockOnly)for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[
    if(room==='home'){
     const footerArt=p.locator('.noa-mobile-footer .noa-footer-landscape');
     assert.equal(await footerArt.getAttribute('src'),theme.images.coast);
-    assert(await footerArt.evaluate(img=>img.nextElementSibling?.matches('.noa-footer-themes')));
+    assert(await footerArt.evaluate(img=>img.nextElementSibling?.matches('.noa-sidebar-legal')));
+    assert(await p.locator('.noa-footer-heading .noa-footer-themes').isVisible());
    }
    if(mode==='noa-ivory')for(const primary of await p.locator('.ec-primary:visible').all()){
     const paint=await primary.evaluate(el=>({color:getComputedStyle(el).color,background:getComputedStyle(el).backgroundColor}));
@@ -374,7 +375,7 @@ async function verifyExpansiveShell(p,width,height,mode){
  assert.equal(await drawer.isVisible(),pinned);await all.click();assert.equal(await all.getAttribute('aria-expanded'),'true');
  const search=p.locator('#noa-drawer-search');await search.fill('공지');await drawer.locator('[data-drawer-route=board-notice]').waitFor();
  await search.fill('없는메뉴xyz');assert(await drawer.locator('.noa-menu-empty').isVisible());await search.fill('');
- assert(await drawer.locator('.noa-drawer-secondary a:visible').count()>6);assert.equal(await drawer.locator('[data-noa-nav=music]').getAttribute('aria-disabled'),'true');
+ assert(await drawer.locator('.noa-drawer-secondary a:visible').count()>6);assert.equal(await drawer.locator('[data-noa-nav=music]').count(),0);
  await drawer.screenshot({path:output+'/menu-'+mode+'-'+width+'.png'});
  const box=await drawer.boundingBox();if(pinned){assert(box.width>=220&&box.width<300);}else assert(Math.abs(box.width-width*.7)<2&&Math.abs(box.x-8)<2);
  await p.keyboard.press('Escape');if(pinned)assert(await drawer.isVisible());else await drawer.waitFor({state:'hidden'});

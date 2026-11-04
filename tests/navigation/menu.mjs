@@ -10,7 +10,7 @@ try{
    const nav=p.locator(width<=760?'.noa-mobile-nav':'.noa-menu');assert.deepEqual(await nav.locator('a span').allTextContents(),['유튜브','음원','홈','커뮤니티','SHOP']);assert.equal(await nav.locator('[data-noa-account-nav]').count(),0);if(width<=760){const home=nav.locator('[data-noa-nav=home]');assert.equal(await home.innerText(),'');assert.equal(await home.getAttribute('aria-label'),'홈');const box=await home.boundingBox();assert(Math.abs(box.width-box.height)<2,'home emphasis stays circular');}
    const account=p.locator('#noa-nav-account');assert.equal(await account.innerText(),role==='guest'?'로그인':'MY');assert.equal(await account.getAttribute('href'),role==='guest'?'/bbs/login.php?url=%2Fnoa-my.php':'/noa-my.php');
    const a=await account.boundingBox(),all=await p.locator('#noa-nav-all').boundingBox();assert(a.x>=all.x+all.width-1&&Math.abs(a.y-all.y)<2,'account follows whole menu');assert(a.height>=44&&a.width>=44);
-   const footer=p.locator(width<=760?'.noa-mobile-footer':'.noa-sidebar');const about=await footer.locator('.noa-sidebar-legal a').first().boundingBox(),world=await footer.locator('.noa-footer-world').boundingBox();assert(Math.abs(about.y-world.y)<2&&world.x>=about.x+about.width-1,'world next to company');
+   const footer=p.locator('.noa-mobile-footer .noa-footer-scene');const about=await footer.locator('.noa-sidebar-legal a').first().boundingBox(),world=await footer.locator('.noa-footer-world').boundingBox();assert(Math.abs(about.y-world.y)<2&&world.x>=about.x+about.width-1,'world next to company');
    assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal overflow');
    if(path==='/'){
     await p.waitForFunction(()=>document.body.dataset.noaHomeReady==='true');

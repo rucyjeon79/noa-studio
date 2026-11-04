@@ -48,7 +48,7 @@ try{
       const heading=p.locator('#noa-listening .nl-heading'),settings=heading.locator('button');await settings.waitFor({state:'attached'});
       const title=await heading.locator('h2').boundingBox(),control=await settings.boundingBox();assert(title.x+title.width<=control.x+1);
       assert.deepEqual(await p.locator('.nl-moods button').allTextContents(),['휴식','집중','위로','활동','운전','산책']);
-      if(pinned){const tops=await p.locator('.noa-mobile-footer > :is(.noa-sidebar-signature,.noa-sidebar-legal,.noa-sidebar-visitors)').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().top));assert(Math.max(...tops)-Math.min(...tops)<=1);}
+      if(pinned)assert(await p.locator('.noa-mobile-footer .noa-footer-scene .noa-sidebar-legal').isVisible());
      }
      if(['/noa-vip.php','/noa-points.php'].includes(path)){
       const cart=p.locator('#vip-cart,#points-cart');const rect=await cart.boundingBox();assert(rect&&rect.width>0&&rect.x>=0&&rect.x+rect.width<=width+1,JSON.stringify({path,width,rect}));
