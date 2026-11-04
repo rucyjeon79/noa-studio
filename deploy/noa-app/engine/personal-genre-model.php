@@ -15,7 +15,7 @@ function n80_genre_terms(array $song):array{
  * recordings. A genre name is never a training label. No remote model or stored profile is used.
  */
 function n80_genre_model(array &$songs):void{
-    $moods=['calm','focus','energy','comfort','drive','walk'];
+    $moods=['calm','focus','energy','comfort','cruise','drive','walk','sleep'];
     $documents=0;$frequency=[];$classSize=array_fill_keys($moods,0);$within=[];$seen=[];
     foreach ($songs as $song) {
         if (($song['kind'] ?? '')==='playlist' || !empty($song['video'])) continue;

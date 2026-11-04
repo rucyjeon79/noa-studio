@@ -66,7 +66,7 @@ function n80_listening_theme(array $profile,?DateTimeImmutable $now=null):array{
 }
 function n80_listening_tags(array $body):array{
  $text=implode(' ',array_filter(array_map(static fn($key)=>is_string($body[$key]??null)?$body[$key]:'',['sunoStyle','sunoStylePrompt','stylePrompt','sunoPrompt','style','mood','songDescription','descriptionBlock'])));
- $rules=['calm'=>'calm|relax|ambient|gentle|soft piano|휴식|잔잔|차분|명상','energy'=>'energetic|upbeat|dance|driving beat|high energy|활기|신나는|댄스|경쾌','focus'=>'instrumental|minimal|lo-fi|lofi|piano solo|집중|연주곡|미니멀','drive'=>'road trip|night drive|cruising|드라이브|운전','walk'=>'walking|stroll|산책|발걸음','comfort'=>'warm|comfort|healing|tender|emotional ballad|위로|따뜻|포근|치유'];$tags=[];
+ $rules=['calm'=>'calm|relax|ambient|gentle|soft piano|휴식|잔잔|차분|명상','energy'=>'energetic|upbeat|dance|driving beat|high energy|활기|신나는|댄스|경쾌','focus'=>'instrumental|minimal|lo-fi|lofi|piano solo|집중|연주곡|미니멀','road'=>'road trip|night drive|highway|드라이브|드라이빙|운전','cruise'=>'편안한 운전|여유로운 드라이브|해안 드라이브|easy driving|laid.back cruise|scenic drive|cruising','drive'=>'다(?:이내|이나)믹 드라이빙|신나는 드라이브|질주|driving beat|driving bass|high.octane|power drive','sleep'=>'수면|자장가|오르골|lullaby|sleep music|bedtime|white noise|music box|子守唄|เพลงกล่อมเด็ก','walk'=>'walking|stroll|산책|발걸음','comfort'=>'warm|comfort|healing|tender|emotional ballad|위로|따뜻|포근|치유'];$tags=[];
  foreach($rules as $tag=>$pattern)if(preg_match('/'.$pattern.'/iu',$text))$tags[]=$tag;
  return $tags;
 }
@@ -104,7 +104,13 @@ function n80_listening_mood_scores(array $song,array $body):array{
             '~다시\s*(?:일어나|일어서|달려|뛰어)|힘껏\s*(?:달|뛰)|끝까지\s*달|달려(?:가|보자)|뛰어(?:올라|가)|다시\s*(?:시작|살아가)|\b(?:rise again|get back up|run wild|keep running)\b|立ち上が|走り出|ลุกขึ้นอีกครั้ง~iu',
             '~춤(?:을|춰)\s*(?:추|춰|봐)?|소리\s*질러|더\s*소리쳐|더\s*크게\s*외쳐|심장(?:이|은)\s*뛰|\b(?:dance|dancing|turn it up|jump higher|hands up)\b|踊ろう|踊れ|เต้นรำ~iu',
         ],
-        'drive' => ['~드라이브|운전|고속도로|해안도로|차창|밤거리|\b(?:driving|night drive|highway|road trip|dashboard|cruising)\b|ドライブ|ขับรถ~iu'],
+        'road' => ['~드라이브|드라이빙|운전|고속도로|해안도로|차창|\b(?:night drive|highway|road trip|dashboard)\b|ドライブ|ขับรถ~iu'],
+        'cruise' => ['~편안한\s*운전|여유로운\s*드라이브|해안도로를\s*따라|차창\s*(?:밖|너머).{0,14}(?:바람|노을)|\b(?:scenic drive|slow cruise|cruising|coastal drive)\b|海沿いのドライブ|ขับรถชิล~iu'],
+        'drive' => ['~다(?:이내|이나)믹\s*드라이빙|신나는\s*드라이브|질주|엔진.{0,6}(?:박동|포효)|\b(?:power drive|full throttle|high.octane|driving beat)\b|疾走|เร้าใจบนถนน~iu'],
+        'sleep' => [
+            '~자장가|수면\s*음악|잘\s*자요|잘\s*자[,\s]|편히\s*(?:잠|자)|잠이\s*들(?:어|면)|\b(?:lullaby|bedtime|sleep tight|sleep gently|drift off to sleep)\b|子守[歌唄]|おやすみ|กล่อมนอน|ฝันดี~iu',
+            '~오르골|백색\s*소음|\b(?:music box|white noise|sleep sounds)\b|オルゴール|กล่องดนตรี~iu',
+        ],
         'walk' => ['~산책|발걸음|골목길|걸어가|나란히 걸|\b(?:stroll|footsteps|walking|take a walk)\b|散歩|เดินเล่น~iu'],
         'comfort' => [
             '~^위로$|(?:작은|따뜻한|오늘의|너를 위한)\s*위로|위로(?:가|를|해|의|받|하[는고며]|하고\s*싶)|토닥|다독|\b(?:comfort(?:ing)?|console you)\b|慰め|ปลอบใจ~iu',
@@ -117,6 +123,13 @@ function n80_listening_mood_scores(array $song,array $body):array{
             $points = 3 * preg_match($pattern,$title) + 2 * preg_match($pattern,$lyrics);
             if ($points > 0) $scores[$mood] = ($scores[$mood] ?? 0) + $points;
         }
+    }
+    // A road reference alone does not tell us whether a recording is mellow or energetic.
+    if (isset($scores['road'])) {
+        $weight=$scores['road'];unset($scores['road']);
+        $calm=$scores['calm']??0;$energy=$scores['energy']??0;
+        if($calm>$energy)$scores['cruise']=($scores['cruise']??0)+$weight;
+        if($energy>$calm)$scores['drive']=($scores['drive']??0)+$weight;
     }
     return $scores;
 }

@@ -101,6 +101,9 @@ try{
    assert(await page.locator('[data-manual-play]').isDisabled());
    assert.equal(await page.locator('.nl-genres option:checked').innerText(),'전체 장르');
    assert(await page.locator('[data-listening-lane=manual]').innerText().then(s=>s.includes('최대 100곡')));
+   const moods=page.getByRole('group',{name:'음악 분위기'});
+   for(const name of ['편안한 운전','다이나믹 드라이빙','수면'])assert(await moods.getByRole('button',{name,exact:true}).isVisible());
+   assert.equal(await moods.getByRole('button',{name:'운전',exact:true}).count(),0);
    report.cases.push({width,guestGate:true,buttonColorsInBothThemes:true});
   }
   await page.locator('#noa-listening').screenshot({path:out+'/listening-'+width+'.png'});await c.close();
@@ -184,13 +187,13 @@ try{
  }
  if(!live){
   const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block',extraHTTPHeaders:{'X-QA-User':'queue-count','X-QA-Catalog':'large'}});
-  // A listener without birth settings can start six cross-genre queues with a single tap.
+  // A listener without birth settings can start eight cross-genre queues with a single tap.
   const noChart=await c.newPage();activePage=noChart;await noChart.goto(base+'/noa-music.php');
   await noChart.locator('.nl-music-discovery>summary').click();
   await noChart.locator('.nl-genres option[value="kpop-original"]').waitFor({state:'attached'});
   assert.equal(await noChart.locator('.nl-genres').inputValue(),'');
   const moodOrders=[];
-  for(const [mood,label] of Object.entries({calm:'휴식',focus:'집중',comfort:'위로',energy:'활동',drive:'운전',walk:'산책'})){
+  for(const [mood,label] of Object.entries({calm:'휴식',focus:'집중',comfort:'위로',energy:'활동',cruise:'편안한 운전',drive:'다이나믹 드라이빙',walk:'산책',sleep:'수면'})){
    await noChart.locator('[data-mood='+mood+']').click();
    await noChart.waitForFunction(m=>NoaMusic.listeningSelection()?.mood===m&&queue().length===100&&!player.paused&&player.currentTime>0,mood);
    const keys=await noChart.evaluate(()=>queue().map(b=>b.dataset.key));assert.equal(new Set(keys).size,100);
@@ -200,7 +203,7 @@ try{
    await noChart.locator('#next').click();assert.equal(await noChart.locator('.song.selected').getAttribute('data-key'),keys[1]);
    moodOrders.push(keys.join(','));
   }
-  assert.equal(new Set(moodOrders).size,6);await noChart.close();
+  assert.equal(new Set(moodOrders).size,8);await noChart.close();
   const before=await(await c.request.get(base+'/noa-bridge/listening.php')).json();
   const save=await c.request.post(base+'/noa-bridge/listening.php',{headers:{Origin:base,'X-NOA-CSRF':before.csrf},data:{revision:before.revision,profile:{genre:'kpop-original',timezone:'Asia/Seoul',consent:true,birthDate:'1990-06-15'}}});assert.equal(save.status(),200);
   const page=await c.newPage();activePage=page;await page.goto(base);await page.locator('[data-listening-lane=whole] .nl-preview-track').nth(9).waitFor();await page.getByRole('button',{name:'추천 100곡 듣기',exact:true}).click();
@@ -254,7 +257,7 @@ try{
   await page.locator('.nl-genres').selectOption('');await page.locator('[data-mood=focus]').click();
   await player.waitForFunction(()=>NoaMusic.listeningSelection()?.scope==='catalogMood'&&queue().length===100&&!player.paused&&player.currentTime>0);
   assert.match((await readQueue()).source,/전체 장르 · 집중 · 100곡/);
-  report.catalogMood={withoutBirthSettings:true,moods:4,unique:100,homeAfterClearingGenre:true};
+  report.catalogMood={withoutBirthSettings:true,moods:8,unique:100,homeAfterClearingGenre:true};
   report.queueSizes={all:stats.unique,genreCards:offered.length,perGenre:10,manual:42,distinctAudio:true,finite:true,homeAndPlayerInSync:true};await c.close();
  }
  if(!live){
@@ -274,7 +277,7 @@ try{
    if(genre)assert(ids.every(id=>videos.find(v=>v.publicVideoId===id)?.genre===genre));
    await page.locator('.nl-video-dialog').getByRole('button',{name:'닫기'}).click();await player.waitFor({state:'detached'});
   }
-  await page.locator('[data-mood=comfort]').click();await checkVideos(100);
+  for(const mood of ['comfort','cruise','drive','sleep']){await page.locator('[data-mood='+mood+']').click();await checkVideos(100);}
   await page.locator('.nl-genres').selectOption('your-story');await page.locator('[data-mood=calm]').click();await page.locator('[data-manual-play]').click();await checkVideos(40,'your-story');
   const response=await c.request.post(base+'/noa-bridge/listening.php',{headers:{Origin:base,'X-NOA-CSRF':profile.csrf},data:{revision:profile.revision,profile:{genre:'kpop-original',timezone:'Asia/Seoul',consent:true,birthDate:'1990-06-15'}}});assert.equal(response.status(),200);
   await page.reload();await page.locator('[data-genre-choice]').first().waitFor();assert.equal(await page.locator('[data-genre-choice]').count(),3);

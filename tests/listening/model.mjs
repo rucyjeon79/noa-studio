@@ -117,3 +117,15 @@ test('mood-only radio ranks the whole playable catalog without a chart and fills
  assert.equal(model.wholeMoodMix(rows.slice(0,3),'energy').rows.length,3);
  assert.deepEqual(model.wholeMoodMix(rows,'auto').rows,[]);
 });
+
+test('gentle driving, dynamic driving and sleep prioritize different indexed songs on each playback source',()=>{
+ const profiles={coast:{cruise:4,calm:1},rhythm:{drive:4,energy:2},lullaby:{sleep:5,calm:2},dance:{energy:1}};
+ for(const video of [false,true]){
+  const rows=Object.entries(profiles).map(([key,moodScores],i)=>({key,genre:'pop',moodScores,...(video?{publicVideoId:'v'+String(i).padStart(10,'0')}:{audio:'/song/'+key})}));
+  for(const [mood,first] of Object.entries({cruise:'coast',drive:'rhythm',sleep:'lullaby'})){
+   assert.equal(model.wholeMoodMix(rows,mood).rows[0].key,first);
+   assert(model.manualGenre(rows,'pop',null,mood).rows.some(r=>r.key===first));
+  }
+  assert.equal(model.wholeMoodMix(rows,'sleep').rows.at(-1).key,'rhythm');
+ }
+});
