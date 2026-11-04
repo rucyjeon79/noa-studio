@@ -237,6 +237,7 @@ try{
    for(const mood of ['focus','comfort']){
     await page.locator('[data-mood='+mood+']').click();assert(await page.locator('[data-manual-play]').isDisabled());
     assert.match(await page.locator('[data-listening-lane=manual] .nl-preview').innerText(),/이 조건에 맞는 곡이 아직 없어요/);
+    assert.equal(await page.locator('.nl-results .nl-track').count(),0);
    }
    await page.locator('[data-mood=calm]').click();assert.match(await page.locator('[data-listening-lane=manual] .nl-preview').innerText(),/당신의 하루/);
    await page.locator('[data-manual-play]').click();

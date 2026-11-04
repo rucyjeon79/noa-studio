@@ -29,8 +29,8 @@ let manualGenre='',manualMood='';
 const moods=el('div','nl-moods');moods.setAttribute('role','group');moods.setAttribute('aria-label','음악 분위기');
 for(const [key,label] of Object.entries(labels).filter(([key])=>key!=='auto')){
  const b=button(label,key,()=>{
-  manualMood=key;const selection=renderManual();
-  if(!manualGenre&&state?.member&&selection.rows.length)startManual(selection.rows);
+  manualMood=key;render();
+  if(!manualGenre&&state?.member)startManual(manualRows());
  });b.dataset.mood=key;moods.append(b);
 }
 const manualPlay=button('곡 듣기','play',()=>startManual(manualRows()));manualPlay.dataset.manualPlay='';manualPlay.classList.add('nl-play-action');manualPlay.disabled=true;
@@ -332,9 +332,14 @@ function render(){if(!state)return;
   for(const album of model.albums(records,browseGenre,options))results.append(button('ACT '+album.act+' · '+album.rows.length+'곡 듣기','play',()=>{scope='genre';genre=browseGenre;play(album.rows,false);}));
   for(const item of results.children)item.classList.add('nl-album');
  }else{
-  const selection=model.select(records,options);
+  const manualQuickPick=mode==='now'&&!!manualMood;
+  const selection=manualQuickPick?manualSelection():model.select(records,options);
   for(const row of selection.rows.slice(0,10)){
-   results.append(songButton(row,()=>{scope='genre';genre=browseGenre;mood=options.mood;play([row,...selection.rows.filter(r=>r.key!==row.key)],false);}));
+   results.append(songButton(row,()=>{
+    const rows=[row,...selection.rows.filter(r=>r.key!==row.key)];
+    if(manualQuickPick){startManual(rows);return;}
+    scope='genre';genre=browseGenre;mood=options.mood;play(rows,false);
+   }));
   }
  }
  status.textContent=usesVideo()?(records.length?'추천곡은 공개 유튜브 영상으로 재생돼요.':'현재 재생할 수 있는 공개 유튜브 영상이 없어요.') : '';
