@@ -61,8 +61,9 @@ try{
     }else{
      const guest=drawer.locator('.noa-drawer-guest');
      assert(await guest.isVisible());assert(await entry.isHidden());
-     assert.equal(await guest.getByRole('link',{name:'회원가입'}).getAttribute('href'),'/bbs/register.php');
+     assert.equal(await guest.getByRole('link',{name:'회원가입'}).getAttribute('href'),'/noa-login.php#noa-login');
      await guest.locator('img').evaluate(i=>i.decode());
+     assert.equal(await page.locator('#noa-login .noa-social-options').count(),1);
      await guest.getByRole('button',{name:'로그인',exact:true}).click();assert(await form.locator('[autocomplete=current-password]').isVisible());
      await guest.locator('[aria-controls=noa-drawer-signin]').click();assert(await form.isHidden());
     }
@@ -80,7 +81,7 @@ try{
     await search.fill('사연곡');
     assert(await music.isVisible());assert(await world.isHidden());
     const songRequest=drawer.locator('.noa-drawer-secondary a:visible');assert.equal(await songRequest.count(),1);
-    await drawer.locator('.noa-drawer-search button').click();assert(await music.evaluate(e=>e===document.activeElement));
+    await drawer.locator('.noa-drawer-search button').click();assert(await songRequest.evaluate(e=>e===document.activeElement));
     await search.fill('없는메뉴xyz');assert(await drawer.locator('.noa-menu-empty').isVisible());await search.fill('');
     assert(await drawer.locator('.noa-menu h2').isVisible());
     const group=music.locator('..'),branch=group.locator('.noa-drawer-secondary');

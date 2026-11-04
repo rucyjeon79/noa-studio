@@ -1172,6 +1172,7 @@ html[data-noa-theme="noa-ivory"] #noa-menu-drawer .noa-drawer-stage{background-i
 #noa-menu-drawer .noa-drawer-stage span{padding:2px 7px;border-radius:3px;background:var(--noa-bg);color:var(--noa-text);font-size:9px;font-weight:650;letter-spacing:.1em}
 #noa-menu-drawer :is(.noa-drawer-guest-actions,.noa-drawer-links){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:4px}
 #noa-menu-drawer :is(.noa-drawer-guest-actions,.noa-drawer-links)>:is(a,button){display:flex;align-items:center;gap:5px;min-height:44px;min-width:0;padding:5px 2px;border:0;background:transparent;color:var(--noa-text);font:inherit;font-size:12px;text-align:start;text-decoration:none;line-height:1.35;word-break:keep-all;cursor:pointer}
+#noa-menu-drawer .noa-drawer-links{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}
 #noa-menu-drawer .noa-drawer-guest-actions>:is(a,button){justify-content:center;font-weight:650}
 #noa-menu-drawer :is(.noa-drawer-guest-actions,.noa-drawer-links) svg{width:16px;height:16px;flex:none;color:var(--noa-muted)}
 #noa-menu-drawer :is(.noa-drawer-links,.noa-drawer-guest-actions)>:is(a,button):is(:hover,:focus-visible){color:var(--noa-accent);background:var(--noa-bg);border-radius:5px}

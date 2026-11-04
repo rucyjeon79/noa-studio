@@ -166,7 +166,7 @@ function wideShell(side){
  const close=document.createElement('button');close.type='button';close.className='noa-drawer-close';close.setAttribute('aria-label','전체 메뉴 닫기');close.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 6 12 12M18 6 6 18"/></svg>';close.onclick=()=>dismiss();head.append(close);side.prepend(head);
  const profile=document.createElement('section');profile.className='noa-drawer-profile';profile.setAttribute('aria-label','내 계정');
  const guest=document.createElement('div');guest.className='noa-drawer-guest';
- guest.innerHTML='<div class="noa-drawer-greeting"><small>MY STUDIO</small><strong>별무리, 반가워요!</strong></div><div class="noa-drawer-stage"><img src="/noa-assets/ainoa-symbol.png" alt="AInoa" width="82" height="82" loading="lazy" decoding="async"><span>AI ARTIST NOA</span></div><div class="noa-drawer-guest-actions"><button type="button" aria-expanded="false" aria-controls="noa-drawer-signin">'+icon('login')+'<span>로그인</span></button><a href="/bbs/register.php">'+icon('user')+'<span>회원가입</span></a></div>';
+ guest.innerHTML='<div class="noa-drawer-greeting"><small>MY STUDIO</small><strong>별무리, 반가워요!</strong></div><div class="noa-drawer-stage"><img src="/noa-assets/ainoa-symbol.png" alt="AInoa" width="82" height="82" loading="lazy" decoding="async"><span>AI ARTIST NOA</span></div><div class="noa-drawer-guest-actions"><button type="button" aria-expanded="false" aria-controls="noa-drawer-signin">'+icon('login')+'<span>로그인</span></button><a href="/noa-login.php#noa-login" title="소셜 계정으로 회원가입">'+icon('user')+'<span>회원가입</span></a></div>';
  const login=document.createElement('form');login.id='noa-drawer-signin';login.className='noa-drawer-login';login.action='/bbs/login_check.php';login.method='post';login.hidden=true;
  login.innerHTML='<input type="hidden" name="url" value="/"><label class="noa-sr-only" for="noa-drawer-login-id">아이디 또는 이메일</label><input id="noa-drawer-login-id" name="mb_id" autocomplete="username" autocapitalize="none" maxlength="254" placeholder="아이디 또는 이메일" required><label class="noa-sr-only" for="noa-drawer-login-pw">비밀번호</label><input id="noa-drawer-login-pw" name="mb_password" type="password" autocomplete="current-password" placeholder="비밀번호" required><button type="submit" class="noa-button">로그인</button><a href="/noa-login.php">다른 방법으로 로그인</a>';
  const signIn=guest.querySelector('button');
@@ -223,7 +223,12 @@ function wideShell(side){
   empty.hidden=found;
  }
  search.addEventListener('input',filterMenu);
- searchBox.onsubmit=e=>{e.preventDefault();filterMenu();if(search.value.trim())(nav.querySelector('.noa-drawer-category:not([hidden]) a')||search).focus();else search.focus();};
+ searchBox.onsubmit=e=>{
+  e.preventDefault();filterMenu();
+  const q=search.value.trim().toLocaleLowerCase();
+  const match=q&&[...nav.querySelectorAll('.noa-drawer-category:not([hidden]) a:not([hidden])')].find(a=>a.textContent.toLocaleLowerCase().includes(q));
+  (match||search).focus();
+ };
  let trigger;
  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
  const wide=matchMedia('(min-width:1200px) and (min-height:640px) and (min-aspect-ratio:4/3)');
