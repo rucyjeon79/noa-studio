@@ -1,4 +1,4 @@
-"""Publish the centered studio shell, responsive navigation and direct theme controls and three personal listening choices."""
+"""Publish the verified public, member, writing and administration theme surfaces."""
 import os
 import sys
 from pathlib import Path
@@ -21,6 +21,14 @@ release.FILES.update({'noa-bridge/listening.php':'bridge/listening.php','noa-bri
 release.PROTECTED = [name for name in release.PROTECTED if name not in ('noa-hero.js','noa-music.php')]
 release.NEW = set(theme_assets) | {'noa-bridge/weather.php','noa-interface-labels.json'}
 release.BACKUP = Path(os.environ.get('RUNNER_TEMP', '/tmp')) / 'noa-light-theme-before.json'
+
+# A form and palette release owns only its presentation files, including rollback.
+if os.environ.get('NOA_SURFACE_POLISH') == 'true':
+    surface_files = ('noa-starlight.css','noa-ui.js','noa-admin.css','noa-ecosystem.css',
+                     'noa-gnuboard.css','noa-member-badges.css','noa-support.css','noa-gifts.css','extend/noa.design.php')
+    release.FILES = {name:release.FILES[name] for name in surface_files}
+    release.NEW = set()
+    release.PROTECTED = [*release.PROTECTED,'noa-hero.js','noa-music.php']
 
 if __name__ == '__main__':
     try:

@@ -13,6 +13,7 @@ jobs:
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     env:
       GH_TOKEN: ${{ github.token }}
+      NOA_SURFACE_POLISH: ${{ contains(github.event.head_commit.message, '[surface-polish]') }}
       NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
       NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
       NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}

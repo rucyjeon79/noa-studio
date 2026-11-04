@@ -23,6 +23,7 @@ try{
   const writer=readFileSync('deploy/noa-ui.js','utf8').split('/* Match the writing canvas')[1];
   await p.addScriptTag({content:writer.slice(writer.indexOf('*/')+2)});
   const editable=p.frameLocator('#bo_w iframe').locator('body');const stored=await editable.innerHTML();
+  await editable.evaluate(body=>{const old=body.ownerDocument.createElement('style');old.textContent='html body[contenteditable]{background-color:white;color:black}';body.ownerDocument.head.append(old);});
   for(const theme of themes){
    await p.evaluate(theme=>{const r=document.documentElement;r.className='noa-shell-wide noa-g5';r.dataset.noaStyle='starlight';r.dataset.noaTheme=theme.id;r.dataset.noaPrecision='true';r.style.colorScheme=theme.id==='noa-ivory'?'light':'dark';for(const [k,v] of Object.entries(theme.tokens))r.style.setProperty('--noa-'+k,v,'important');window.dispatchEvent(new Event('noa-theme'));},theme);
    const rows=await p.evaluate(()=>{

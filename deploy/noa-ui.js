@@ -501,13 +501,14 @@ window.NoaGlass={refresh};refresh();
   if(!doc?.body||!doc.head)return;
   if(!watched.has(doc)){
    watched.add(doc);
+   new MutationObserver(()=>paint(frame)).observe(doc.body,{attributes:true,attributeFilter:['class','contenteditable']});
    doc.addEventListener('load',event=>{if(event.target.tagName==='IFRAME')paint(event.target);},true);
   }
   if(doc.designMode==='on'||doc.body.isContentEditable||doc.body.matches('.se2_inputarea,.cke_editable')){
    const palette=getComputedStyle(document.documentElement);
    let style=doc.getElementById('noa-writing-palette');
    if(!style){style=doc.createElement('style');style.id='noa-writing-palette';doc.head.append(style);}
-   style.textContent=':root{color-scheme:'+palette.colorScheme+'}body{background-color:'+palette.getPropertyValue('--noa-bg')+';color:'+palette.getPropertyValue('--noa-text')+';caret-color:'+palette.getPropertyValue('--noa-accent')+'}';
+   style.textContent=':root{color-scheme:'+palette.colorScheme+'}body{background-color:'+palette.getPropertyValue('--noa-bg')+'!important;color:'+palette.getPropertyValue('--noa-text')+'!important;caret-color:'+palette.getPropertyValue('--noa-accent')+'}';
    return;
   }
   doc.querySelectorAll('iframe').forEach(paint);
