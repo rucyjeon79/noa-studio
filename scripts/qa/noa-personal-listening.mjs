@@ -234,7 +234,7 @@ try{
    const c=await browser.newContext({viewport:{width,height:900},serviceWorkers:'block',extraHTTPHeaders:{'X-QA-User':'fortuneuser'}}),page=await c.newPage();activePage=page;page.on('pageerror',e=>report.errors.push(e.message));await page.goto(base);const card=page.locator('#noa-daily-fortune');
    await page.waitForFunction(()=>document.querySelector('.nl-primary')?.disabled===false);assert(await card.isVisible());assert(await card.getByRole('button',{name:'생년월일 설정하기'}).isVisible());
    await page.locator('.nl-genres').selectOption('your-story');
-   for(const mood of ['focus','comfort']){
+   for(const mood of ['energy','drive']){
     await page.locator('[data-mood='+mood+']').click();assert(await page.locator('[data-manual-play]').isDisabled());
     assert.match(await page.locator('[data-listening-lane=manual] .nl-preview').innerText(),/이 조건에 맞는 곡이 아직 없어요/);
     assert.equal(await page.locator('.nl-results .nl-track').count(),0);
@@ -286,16 +286,21 @@ try{
   const moodOrders=new Set();
   for(const [mood,label] of Object.entries({calm:'휴식',focus:'집중',comfort:'위로',energy:'활동',cruise:'편안한 운전',drive:'다이나믹 드라이빙',walk:'산책',sleep:'수면'})){
    await noChart.locator('[data-mood='+mood+']').click();
-   const count=['calm','focus'].includes(mood)?18:15;
+   const count=100;
    await noChart.waitForFunction(m=>NoaMusic.listeningSelection()?.mood===m&&queue().length>0&&!player.paused&&player.currentTime>0,mood);
    const keys=await noChart.evaluate(()=>queue().map(b=>b.dataset.key));assert.equal(new Set(keys).size,count);
    assert((await noChart.locator('#dock-listening-source').innerText()).includes('전체 장르 · '+label+' · '+count+'곡'));
    assert(await noChart.evaluate(()=>new Set(queue().map(b=>b.dataset.genre)).size>1));
    assert.equal(await noChart.locator('[data-manual-play]').innerText(),label+' '+count+'곡 듣기');
    await noChart.locator('#next').click();assert.equal(await noChart.locator('.song.selected').getAttribute('data-key'),keys[1]);
-   for(const key of keys){assert(!moodOrders.has(key),'cross-mood recording '+key);moodOrders.add(key);}
+   assert.equal(keys.length,count);
+   assert(await noChart.getByText('선곡 구성',{exact:true}).isVisible());
+   for(const key of keys.slice(0,36)){
+    assert.equal(['calm','focus','energy','comfort','cruise','drive','walk','sleep'][(Number(key.split(':').pop())-1)%8],mood);
+    assert(!moodOrders.has(key),'primary track reused across moods');moodOrders.add(key);
+   }
   }
-  assert.equal(moodOrders.size,126);await noChart.close();
+  assert.equal(moodOrders.size,288);await noChart.close();
   const before=await(await c.request.get(base+'/noa-bridge/listening.php')).json();
   const save=await c.request.post(base+'/noa-bridge/listening.php',{headers:{Origin:base,'X-NOA-CSRF':before.csrf},data:{revision:before.revision,profile:{genre:'kpop-original',timezone:'Asia/Seoul',consent:true,birthDate:'1990-06-15'}}});assert.equal(save.status(),200);
   const page=await c.newPage();activePage=page;await page.goto(base);await page.locator('[data-listening-lane=whole] .nl-preview-track').nth(9).waitFor();await page.getByRole('button',{name:'추천 100곡 듣기',exact:true}).click();
@@ -340,17 +345,17 @@ try{
   }
   for(const genre of offered){
    await page.locator('.nl-genres').selectOption(genre);await page.locator('[data-mood=calm]').click();await page.locator('[data-manual-play]').click();
-   await player.waitForFunction(g=>queue().length===6&&queue().every(b=>b.dataset.genre===g)&&!player.paused&&player.currentTime>0,genre);
-   const manual=await readQueue();assert.match(manual.source,/직접 선택 · 6곡/);assert.equal(manual.keys[0],'single:'+genre+':1');
+   await player.waitForFunction(g=>queue().length===36&&queue().every(b=>b.dataset.genre===g)&&!player.paused&&player.currentTime>0,genre);
+   const manual=await readQueue();assert.match(manual.source,/직접 선택 · 36곡/);assert.equal(manual.keys[0],'single:'+genre+':1');
    assert.equal(new URL(manual.src,base).searchParams.get('record'),manual.keys[0]);
    assert.notEqual(manual.src,wholeQueue.src);assert.notEqual(manual.src,heads.get(genre));
    await player.locator('#next').click();assert.equal((await readQueue()).selected,manual.keys[1]);await page.goBack();
   }
   await page.locator('.nl-genres').selectOption('');await page.locator('[data-mood=focus]').click();
-  await player.waitForFunction(()=>NoaMusic.listeningSelection()?.scope==='catalogMood'&&queue().length===18&&!player.paused&&player.currentTime>0);
-  assert.match((await readQueue()).source,/전체 장르 · 집중 · 18곡/);
-  report.catalogMood={withoutBirthSettings:true,moods:8,unique:moodOrders.size,crossMoodDuplicates:0,homeAfterClearingGenre:true};
-  report.queueSizes={all:stats.unique,genreCards:offered.length,perGenre:10,manual:6,distinctAudio:true,finite:true,homeAndPlayerInSync:true};await c.close();
+  await player.waitForFunction(()=>NoaMusic.listeningSelection()?.scope==='catalogMood'&&queue().length===100&&!player.paused&&player.currentTime>0);
+  assert.match((await readQueue()).source,/전체 장르 · 집중 · 100곡/);
+  report.catalogMood={withoutBirthSettings:true,moods:8,uniquePrimary:moodOrders.size,perMood:100,withinQueueDuplicates:0,homeAfterClearingGenre:true};
+  report.queueSizes={all:stats.unique,genreCards:offered.length,perGenre:10,manual:36,distinctAudio:true,finite:true,homeAndPlayerInSync:true};await c.close();
  }
  if(!live){
   const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block',extraHTTPHeaders:{'X-QA-User':'video-member'}});
@@ -358,7 +363,7 @@ try{
   assert(profile.member&&!profile.canPlay);
   const page=await c.newPage();activePage=page;const weatherCalls=[];page.on('request',r=>{if(/listening-(weather|care)[.]php/.test(r.url()))weatherCalls.push(r.url());});const premium=[];page.on('request',r=>{if(/listenHost=1|fixture[.]wav|jukebox\/stream|noa-vip[.]php/.test(r.url()))premium.push(r.url());});
   const videoMoods=['calm','focus','energy','comfort','cruise','drive','walk','sleep'];
-  const videos=Array.from({length:120},(_,i)=>({key:'song'+i,title:'공개곡 '+i,genre:['kpop-original','your-story','jpop-original'][i%3],ep:i+1,kind:'single',publicVideoId:'v'+String(i).padStart(10,'0'),moodScores:{[videoMoods[i%8]]:5}}));
+  const videos=Array.from({length:312},(_,i)=>({key:'song'+i,title:'공개곡 '+i,genre:['kpop-original','your-story','jpop-original'][i%3],ep:i+1,kind:'single',publicVideoId:'v'+String(i).padStart(10,'0'),moodScores:{[videoMoods[i%8]]:5}}));
   await page.route('**/noa-bridge/listening-videos.php',r=>r.fulfill({json:{videos}}));
   await page.route('https://www.youtube.com/embed/**',r=>r.fulfill({contentType:'text/html',body:'<title>Player fixture</title>'}));
   await page.goto(base);await page.getByText('추천곡은 공개 유튜브 영상으로 재생돼요.').waitFor();
@@ -380,10 +385,11 @@ try{
   const playedVideos=new Set();
   for(const mood of videoMoods){
    await page.locator('[data-mood='+mood+']').click();
-   for(const id of await checkVideos(15)){assert(!playedVideos.has(id),'cross-mood video '+id);playedVideos.add(id);}
+   const ids=await checkVideos(100);
+   for(const id of ids.slice(0,39)){assert.equal(videoMoods[Number(id.slice(1))%8],mood);assert(!playedVideos.has(id));playedVideos.add(id);}
   }
-  assert.equal(playedVideos.size,120);
-  await page.locator('.nl-genres').selectOption('your-story');await page.locator('[data-mood=calm]').click();await page.locator('[data-manual-play]').click();await checkVideos(5,'your-story');
+  assert.equal(playedVideos.size,312);
+  await page.locator('.nl-genres').selectOption('your-story');await page.locator('[data-mood=calm]').click();await page.locator('[data-manual-play]').click();await checkVideos(39,'your-story');
   const response=await c.request.post(base+'/noa-bridge/listening.php',{headers:{Origin:base,'X-NOA-CSRF':profile.csrf},data:{revision:profile.revision,profile:{genre:'kpop-original',timezone:'Asia/Seoul',consent:true,birthDate:'1990-06-15'}}});assert.equal(response.status(),200);
   await page.reload();await page.locator('[data-genre-choice]').first().waitFor();assert.equal(await page.locator('[data-genre-choice]').count(),3);
   await page.locator('[data-all-genre-mix]').click();await checkVideos(100);
