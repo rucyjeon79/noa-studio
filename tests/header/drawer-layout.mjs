@@ -14,11 +14,14 @@ try{
     await context.route('**/'+file+'*',r=>r.fulfill({body:readFileSync('deploy/'+file),contentType:file.endsWith('.css')?'text/css':'application/javascript'}));
    }
    const page=await context.newPage();
+   page.on('pageerror',error=>console.log('PAGE_ERROR',width,error.message));
    for(const [theme,path] of [['noa-studio','/noa-shop.php'],['noa-ivory','/noa-login.php']]){
-    await page.addInitScript(t=>localStorage.setItem('noa-device-theme',t),theme);
     await page.goto('https://noastudio.ai.kr'+path,{waitUntil:'domcontentloaded'});
     const drawer=page.locator('#noa-menu-drawer');
-    await page.waitForFunction(t=>document.documentElement.dataset.noaTheme===t&&document.querySelector('#noa-menu-drawer #noa-drawer-tools')&&!document.querySelector('#noa-header-language')?.disabled,theme);
+    await page.waitForFunction(()=>!document.querySelector('[data-footer-theme]')?.disabled && !!document.querySelector('#noa-menu-drawer #noa-drawer-tools'));
+    await page.locator('[data-footer-theme="'+theme+'"]').evaluate(b=>b.click());
+    await page.waitForFunction(t=>document.documentElement.dataset.noaTheme===t&&!document.querySelector('#noa-header-language')?.disabled,theme);
+
     if(width<1200)await page.locator('#noa-nav-all').click();
     const logo=drawer.locator('.noa-brand-mark');
     await logo.evaluate(img=>img.decode());
@@ -46,6 +49,9 @@ try{
     if(width===390){await drawer.evaluate(e=>e.scrollTop=0);await page.screenshot({path:out+'/menu-'+theme+'.png'});}
     console.log('DRAWER_LAYOUT_OK',phase,width,theme,path);
    }
+  }catch(error){
+   const page=context.pages()[0];if(page)console.error('DRAWER_STATE',width,await page.evaluate(()=>({url:location.pathname,theme:document.documentElement.dataset.noaTheme,controls:[...document.querySelectorAll('.noa-drawer-head,#noa-drawer-tools,#noa-header-language,[data-footer-theme]')].map(e=>[e.id||e.className,e.disabled,e.parentElement?.id]),rows:[...document.querySelectorAll('.noa-menu a')].map(e=>e.textContent)})));
+   throw error;
   }finally{await context.close();}
  }));
 }finally{await browser.close();}
