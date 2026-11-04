@@ -11,6 +11,7 @@ html body #noa-listening button,html body .nl-dialog button{font:inherit;cursor:
 html body #noa-listening button:disabled,html body .nl-dialog button:disabled{opacity:.45;cursor:default}
 html body #noa-listening button:focus-visible,html body .nl-dialog :is(button,input,select):focus-visible{outline:2px solid var(--nl-gold,#c9b47b);outline-offset:3px}
 html body #noa-listening :is(.nl-moods,.nl-tabs){display:flex;gap:8px;overflow-x:auto;padding:3px 0 8px;scrollbar-width:thin}
+html body #noa-listening .nl-moods{flex-wrap:wrap}
 html body #noa-listening .nl-moods button{font-size:13px;flex:none}
 html body #noa-listening button[aria-pressed=true]{border-color:var(--nl-gold);color:var(--nl-gold);background:color-mix(in srgb,var(--nl-gold) 8%,transparent)}
 html body #noa-listening .nl-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:12px}

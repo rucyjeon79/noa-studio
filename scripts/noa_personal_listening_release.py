@@ -25,6 +25,7 @@ release.FILES={
  'noa-listening.js':'deploy/noa-listening.js',
  'noa-browse.js':'deploy/noa-browse.js',
  'noa-listening.css':'deploy/noa-listening.css',
+ 'noa-interface-labels.json':'deploy/noa-interface-labels.json',
  'noa-ui.js':'deploy/noa-ui.js',
  'noa-app/engine/n80.php':'deploy/noa-app/engine/n80.php',
  'noa-music.php':'deploy/noa-music.php',
@@ -33,7 +34,7 @@ release.FILES={
  'noa-account.js':'deploy/noa-account.js',
  'noa-app/home.php':'deploy/noa-app/home.php',
 }
-release.NEW=set(release.FILES)-{'noa-bridge/youtube-catalog.php','noa-bridge/lab-worker.php','noa-app/p0-player.js','noa-launch.js','noa-account.js','noa-app/engine/n80.php','noa-music.php','noa-app/home.php','noa-ui.js','noa-browse.js','noa-bridge/notifications-inline.php','noa-bridge/notifications-sources.php','noa-bridge/notifications-core.php','noa-bridge/notification-worker.php'}
+release.NEW=set(release.FILES)-{'noa-interface-labels.json','noa-bridge/youtube-catalog.php','noa-bridge/lab-worker.php','noa-app/p0-player.js','noa-launch.js','noa-account.js','noa-app/engine/n80.php','noa-music.php','noa-app/home.php','noa-ui.js','noa-browse.js','noa-bridge/notifications-inline.php','noa-bridge/notifications-sources.php','noa-bridge/notifications-core.php','noa-bridge/notification-worker.php'}
 if os.environ.get('NOA_LISTENING_COPY') == 'true':
     names = ('noa-interface-labels.json', 'noa-browse.js', 'noa-listening.css', 'noa-listening.js', 'noa-music.php', 'noa-ui.js')
     release.FILES = {name: 'deploy/' + name for name in names}

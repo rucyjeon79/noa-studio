@@ -23,13 +23,21 @@ check(song_moods('',"(네 곁에 있을게)")['comfort']>0,'sung parenthetical c
 foreach (['comfort'=>['By Your Side','ひとりじゃない','ไม่เป็นไร'],'calm'=>['静かな夜'],'focus'=>['Clear My Mind'],'energy'=>['ลุกขึ้นอีกครั้ง']] as $mood=>$lines)
     foreach ($lines as $line) check((song_moods('',$line)[$mood]??0)>0,'multilingual motif: '.$mood);
 
+$easy=song_moods('해안도로를 따라','차창 밖 노을',['style'=>'gentle acoustic guitar']);
+$dynamic=song_moods('다이나믹 드라이빙','심장이 뛰는 고속도로',['style'=>'upbeat driving bass']);
+$bedtime=song_moods('자장가','편히 잠들어',['style'=>'soft piano music box']);
+check(($easy['cruise']??0)>0&&!isset($easy['drive']),'mellow road imagery');
+check(($dynamic['drive']??0)>0&&!isset($dynamic['cruise']),'energetic drive');
+check(($bedtime['sleep']??0)>0&&!isset($bedtime['drive']),'bedtime imagery');
+check(!isset(song_moods('Highway','')['drive']),'a road name alone does not imply dynamic driving');
+
 // Exercise legacy source packages using only song words, without style metadata.
 $folder=dirname(__DIR__,2).'/deploy/noastudio/noa/data/live/곡/your-story/기본';
 $counts=array_fill_keys(array_keys($examples),0);$files=glob($folder.'/*.json');
 foreach ($files as $path) {
     $record=json_decode(file_get_contents($path),true,512,JSON_THROW_ON_ERROR);
     $pkg=$record['pkg'];$scores=song_moods($record['title'],$pkg['lyricsBlock']??'');
-    foreach (array_keys($scores) as $mood) $counts[$mood]++;
+    foreach (array_intersect_key($scores,$counts) as $mood=>$score) $counts[$mood]++;
 }
 check(count($files)>0 && min($counts)>0,'all four moods found in story collection');
 echo 'STORY_WORD_MATCHES '.json_encode(['songs'=>count($files),'matches'=>$counts])."\n";
