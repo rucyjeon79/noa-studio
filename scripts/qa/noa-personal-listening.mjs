@@ -39,7 +39,8 @@ try{
    await page.locator('.nl-music-discovery>summary').click();
   }
   await page.locator('.nl-primary').waitFor();await page.waitForFunction(()=>document.querySelector('.nl-primary')?.disabled===false);await page.locator('#noa-listening').scrollIntoViewIfNeeded();
-  assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1));
+  const overflow=await page.evaluate(()=>{const width=document.documentElement.scrollWidth;if(width<=innerWidth+1)return null;
+   return {width,viewport:innerWidth,scrollX,edges:[...document.querySelectorAll('body *')].filter(e=>!e.closest('.nl-moods,.nl-tabs')&&e.getBoundingClientRect().right+scrollX>innerWidth+1).map(e=>[e.tagName,e.id,e.className?.toString().slice(0,70),Math.round(e.getBoundingClientRect().right+scrollX)]).slice(-30)};});assert.equal(overflow,null,JSON.stringify(overflow));
   if(!live){
    const birthCases=[
     {calendar:'solar',raw:'19900615',expected:'1990-06-15',time:'09:30',leap:'no'},
