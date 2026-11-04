@@ -21,13 +21,18 @@ try{
     const member=theme==='noa-studio';
     // Use consistent member data for every UI that shares the session. No real credentials.
     if(member){
-     const caps={member:true,name:'별무리 회원',level:3};
+     const admin=width===1440;
+     const caps={member:true,name:admin?'최고 관리자':'별무리 회원',level:admin?10:3,admin};
      await page.route('**/noa-shop.php',async route=>{
       const upstream=await route.fetch();
       const html=(await upstream.text()).replace(/(<script[^>]*id="noa-access"[^>]*>)([^<]*)(<\/script>)/,(_m,a,data,b)=>a+JSON.stringify({...JSON.parse(data),...caps})+b);
       await route.fulfill({response:upstream,body:html});
      });
-     await page.route('**/noa-bridge/membership.php?action=summary',r=>r.fulfill({json:{ok:true,member:true,balance:0,remainingDays:0}}));
+     await page.route('**/noa-bridge/membership.php?action=summary',r=>r.fulfill({json:{ok:true,member:true,balance:width===320?123456789:13700,remainingDays:0,name:caps.name,admin}}));
+     await page.route('**/noa-bridge/ui-preferences.php',async r=>{
+      const response=await r.fetch();
+      await r.fulfill({response,json:{...await response.json(),member:true,displayName:width===320?'아주긴별무리이름테스트':'별무리'}});
+     });
      await page.route('**/noa-ainoa.php?action=welcome',r=>r.fulfill({json:{ok:true,member:true,displayName:'별무리',capabilities:caps,accountKey:'drawer-fixture'}}));
     }else await page.unrouteAll({behavior:'wait'});
     await page.goto('https://noastudio.ai.kr'+path,{waitUntil:'domcontentloaded'});
@@ -44,9 +49,23 @@ try{
     const parts=await drawer.locator(':scope > *').evaluateAll(nodes=>nodes.slice(0,5).map(e=>e.id||e.className));
     assert.deepEqual(parts,['noa-drawer-head','noa-drawer-profile','noa-drawer-search','noa-drawer-tools','noa-menu']);
     const form=drawer.locator('.noa-drawer-login'),entry=drawer.locator('.noa-drawer-my');
-    assert.equal(await form.isVisible(),!member);assert.equal(await form.getAttribute('method'),'post');assert.equal(await form.getAttribute('action'),'/bbs/login_check.php');
-    if(member){assert(await entry.isVisible());assert.equal(await entry.getAttribute('href'),'/noa-my.php');}
-    else{assert(await form.locator('[autocomplete=current-password]').isVisible());assert(await entry.isHidden());}
+    assert(await form.isHidden());assert.equal(await form.getAttribute('method'),'post');assert.equal(await form.getAttribute('action'),'/bbs/login_check.php');
+    if(member){
+     assert(await entry.isVisible());assert.equal(await entry.getAttribute('href'),'/noa-my.php');
+     const actions=drawer.locator('.noa-drawer-links');
+     await actions.getByText(width===320?'123,456,789P':'13,700P',{exact:true}).waitFor();
+     await drawer.locator('.noa-drawer-id strong').filter({hasText:width===320?'아주긴별무리이름테스트':'별무리'}).waitFor();
+     assert.equal(await actions.locator('[data-drawer-action=admin]').isVisible(),width===1440);
+     const grid=await actions.locator('a:visible').evaluateAll(links=>links.slice(0,6).map(link=>{const r=link.getBoundingClientRect();return [r.x,r.y,r.height];}));
+     for(let i=0;i<6;i++){assert(grid[i][2]>=44);assert.equal(grid[i][0],grid[i%2][0]);assert.equal(grid[i][1],grid[i-i%2][1]);}
+    }else{
+     const guest=drawer.locator('.noa-drawer-guest');
+     assert(await guest.isVisible());assert(await entry.isHidden());
+     assert.equal(await guest.getByRole('link',{name:'회원가입'}).getAttribute('href'),'/bbs/register.php');
+     await guest.locator('img').evaluate(i=>i.decode());
+     await guest.getByRole('button',{name:'로그인',exact:true}).click();assert(await form.locator('[autocomplete=current-password]').isVisible());
+     await guest.locator('[aria-controls=noa-drawer-signin]').click();assert(await form.isHidden());
+    }
     const tools=drawer.locator('.noa-info-actions');
     const buttons=tools.locator(':scope > a,:scope > button,#noa-header-language');
     assert.deepEqual(await buttons.allTextContents(),['앱 설치','공유','언어 선택']);
@@ -57,6 +76,15 @@ try{
     assert.equal(await drawer.locator('.noa-drawer-secondary a[href="/noa-world.php"]').count(),0);
     const legal=await drawer.locator('.noa-sidebar-legal a').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().x));assert(Math.max(...legal)-Math.min(...legal)<1);
     await drawer.locator('#noa-drawer-search').fill('세계관');assert(await world.isVisible());await music.waitFor({state:'hidden',timeout:5000});await drawer.locator('#noa-drawer-search').fill('');
+    const search=drawer.locator('#noa-drawer-search');
+    await search.fill('사연곡');
+    assert(await music.isVisible());assert(await world.isHidden());
+    const songRequest=drawer.locator('.noa-drawer-secondary a:visible');assert.equal(await songRequest.count(),1);
+    await drawer.locator('.noa-drawer-search button').click();assert(await music.evaluate(e=>e===document.activeElement));
+    await search.fill('없는메뉴xyz');assert(await drawer.locator('.noa-menu-empty').isVisible());await search.fill('');
+    assert(await drawer.locator('.noa-menu h2').isVisible());
+    const group=music.locator('..'),branch=group.locator('.noa-drawer-secondary');
+    assert((await branch.boundingBox()).x>(await music.boundingBox()).x);
     await drawer.locator('#noa-header-language').click();assert(await drawer.locator('#noa-language-options').isVisible());await drawer.locator('#noa-language-options button[data-language=ko]').click();
     if(member)assert.equal(await world.getAttribute('href'),'/noa-world.php');
     assert.equal(await drawer.evaluate(e=>e.scrollWidth>e.clientWidth+1),false);

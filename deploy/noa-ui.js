@@ -32,8 +32,31 @@ function drawerMenu(){
  items.splice(items.findIndex(item=>item[0]==='youtube')+1,0,['world','세계관','/noa-world.php']);
  return [menu().find(item=>item[0]==='home'),...items];
 }
-function refreshNavigation(){document.querySelectorAll('.noa-menu,.noa-primary-nav,.noa-mobile-nav').forEach(nav=>{const items=nav.matches('.noa-menu')?drawerMenu():nav.matches('.noa-mobile-nav')?menu():[...menu().filter(x=>x[0]==='home'),...menu().filter(x=>x[0]!=='home')];nav.replaceChildren(...items.map(item=>navItem(item,nav.matches('.noa-menu'))));});document.getElementById('noa-drawer-search')?.dispatchEvent(new Event('input'));}
-window.addEventListener('noa-membership-status',event=>{const logged=!!event.detail?.member;if(access.member!==logged){access.member=logged;if(!logged)access.music=false;refreshNavigation();}});
+const drawerChildren={
+ home:[['전체 서비스 안내','/noa-sitemap.php']],
+ music:[['나의 재생목록','/noa-my.php'],['사연곡 신청','/noa-lounge.php?category=story&view=list#ec-content']],
+ community:[['공지사항','/bbs/board.php?bo_table=notice'],['CREATOR LAB · 창작 작업실','/noa-creator-lab.php']],
+ shop:[['VIP 이용권','/noa-vip.php']]
+};
+function buildDrawerNav(nav){
+ const title=document.createElement('h2');title.textContent=tr('카테고리');
+ nav.replaceChildren(title);
+ for(const item of drawerMenu()){
+  const group=document.createElement('div');group.className='noa-drawer-category';
+  group.append(navItem(item,true));
+  if(drawerChildren[item[0]]){
+   const sub=document.createElement('div');sub.className='noa-drawer-secondary';
+   for(const [label,href] of drawerChildren[item[0]]){
+    const link=document.createElement('a');link.href=href;link.textContent=tr(label);sub.append(link);
+   }
+   group.append(sub);
+  }
+  nav.append(group);
+ }
+}
+let drawerMember=null;
+function refreshNavigation(){document.querySelectorAll('.noa-menu,.noa-primary-nav,.noa-mobile-nav').forEach(nav=>{if(nav.matches('.noa-menu')){buildDrawerNav(nav);return;}const items=nav.matches('.noa-mobile-nav')?menu():[...menu().filter(x=>x[0]==='home'),...menu().filter(x=>x[0]!=='home')];nav.replaceChildren(...items.map(item=>navItem(item)));});document.getElementById('noa-drawer-search')?.dispatchEvent(new Event('input'));}
+window.addEventListener('noa-membership-status',event=>{const logged=!!event.detail?.member;drawerMember=logged?{balance:event.detail.balance,rank:event.detail.name,admin:event.detail.admin}:null;if(access.member!==logged){access.member=logged;if(!logged)access.music=false;refreshNavigation();}});
 const words=Object.create(null);
 const interfaceWords=Object.create(null),bindings=new WeakMap();
 const protectedUi='script,style,noscript,svg,code,pre,textarea,[contenteditable]:not([contenteditable=false]),[translate=no],.notranslate,#noa-header-clock,.noa-card-heading,.noa-hero-pick strong,.catalog-card h3,.noa-notice-summary strong,.noa-notice-excerpt,.noa-notice-body p,.noa-feed-row strong,.noa-feed-row small,#bo_v_con,.bo_v_con,.bo_vc_w,.sv_member,.member,.sound-title,.song-title,#lyrics,.lyrics,[data-song-title],[data-user-content]';
@@ -122,7 +145,7 @@ function decorate(){
  document.querySelectorAll('main>h1,.lab-heading h1,.lab-panel>h2,.lab-section>h2,.noa-section h2,.noa-section-head h2,.noa-world-prose>h2,.noa-world-heading>h2,#youtube-playlists>h2').forEach(el=>{if(el.dataset.noaHeading)return;el.dataset.noaHeading='true';const text=el.textContent;let key=/공지/.test(text)?'notice':/사이트맵|전체 서비스/.test(text)?'sitemap':/NOA WORLD|세계관|프롤로그|에필로그|챕터/.test(text)?'book':/사연|당신의 이야기/.test(text)?'mail':/커버/.test(text)?'mic':/EP|컬렉션/.test(text)?'disc':/목록|플레이리스트|보관함/.test(text)?'playlists':/MY|최근|계정/.test(text)?'user':/관리|작업실|설정/.test(text)?'settings':'music';const label=document.createElement('span');while(el.firstChild)label.append(el.firstChild);if(el.dataset.noaI18n){label.dataset.noaI18n=el.dataset.noaI18n;delete el.dataset.noaI18n;}el.insertAdjacentHTML('afterbegin',icon(key));el.append(label);});
 }
 function navItem(item,drawer=false){const a=document.createElement('a');a.href=item[2];a.dataset.noaNav=item[0];a.setAttribute('aria-label',tr(item[1]));const need=['music','youtube','world'].includes(item[0])?'member':null;if(need&&!access[need]){a.removeAttribute('href');a.tabIndex=0;a.setAttribute('role','button');a.setAttribute('aria-disabled','true');a.dataset.noaCondition=need==='music'?'음원은 이용 기간이 남은 VIP회원·VIP 크리에이터가 들을 수 있어요. MY에서 이용권과 잔여 기간을 확인해 주세요.':'로그인한 회원에게 열리는 메뉴예요. 로그인 후 다시 만나 주세요.';}if(item[0]==='settings'&&location.pathname!=='/noa-settings.php')a.onclick=e=>{e.preventDefault();openSettings();};a.innerHTML=icon(item[0]);const t=document.createElement('span');t.dataset.noaI18n=item[1];t.textContent=tr(item[1]);a.append(t);const target=new URL(item[2],location.origin);const active=drawer&&location.pathname==='/noa-world.php'?'world':sectionFor(location.pathname);if(item[0]==='user'||item[0]==='login')a.dataset.noaAccountNav=item[0];if(item[0]===active)a.setAttribute('aria-current','page');return a;}
-function shell(){if(themeOnly||admin||document.querySelector('.noa-sidebar'))return;const side=document.createElement('dialog');side.id='noa-menu-drawer';side.className='noa-sidebar noa-menu-drawer';side.setAttribute('aria-label','전체 메뉴');side.innerHTML='<a href="/" class="noa-logo" aria-label="NOA STUDIO 홈"><img class="noa-brand-mark" src="/noa-assets/papa-logo.png" alt="" width="48" height="48"><span class="noa-brand-copy">NOA STUDIO<small>AI ARTIST NOA</small></span></a>';const nav=document.createElement('nav');nav.className='noa-menu';nav.setAttribute('aria-label','NOA STUDIO');drawerMenu().forEach(item=>nav.append(navItem(item,true)));side.append(nav);const bottom=document.createElement('footer');bottom.className='noa-sidebar-bottom';bottom.setAttribute('aria-label','스튜디오 안내');bottom.innerHTML='<div class="noa-sidebar-signature"><strong>NOA STUDIO</strong><span>Music. Stories. Starlight.</span></div><nav class="noa-sidebar-legal" aria-label="회사 및 이용 안내"><a href="/noa-about.php">회사소개 <span>· 제이알</span></a><a href="/noa-world.php" class="noa-footer-world">세계관</a><a href="/noa-privacy.php">개인정보처리방침</a><a href="/noa-terms.php">이용약관</a></nav><section class="noa-sidebar-visitors" aria-label="방문자 집계"><p>방문자</p><dl><div><dt>오늘</dt><dd data-visit="today">—</dd></div><div><dt>어제</dt><dd data-visit="yesterday">—</dd></div><div><dt>전체</dt><dd data-visit="total">—</dd></div></dl></section>';let counts=null;try{counts=JSON.parse(document.getElementById('noa-visitor-counts')?.textContent||'null');}catch{}bottom.querySelectorAll('[data-visit]').forEach(el=>{const value=counts?.[el.dataset.visit];if(/^\d+$/.test(String(value)))el.textContent=BigInt(value).toLocaleString('ko-KR');else el.setAttribute('aria-label','집계 정보 없음');});root.classList.add('noa-has-sidebar','noa-shell-wide');side.append(bottom);document.body.prepend(side);const mobile=document.createElement('nav');mobile.className='noa-mobile-nav';mobile.setAttribute('aria-label','NOA STUDIO mobile');menu().forEach(item=>mobile.append(navItem(item)));document.body.append(mobile);if(g5){const top=document.createElement('header');top.className='noa-g5-top';top.innerHTML='<a class="noa-logo" href="/">NOA STUDIO</a><a data-noa-login href="/bbs/login.php">'+tr('로그인')+'</a>';document.body.insertBefore(top,side.nextSibling);const footer=document.createElement('footer');footer.className='noa-footer';footer.innerHTML='<span>NOA STUDIO · Music. Stories. Starlight.</span><a href="/bbs/content.php?co_id=privacy" data-noa-i18n="개인정보처리방침">개인정보처리방침</a><a href="/bbs/content.php?co_id=provision" data-noa-i18n="이용약관">이용약관</a>';document.body.append(footer);}const mobileFooter=bottom.cloneNode(true);
+function shell(){if(themeOnly||admin||document.querySelector('.noa-sidebar'))return;const side=document.createElement('dialog');side.id='noa-menu-drawer';side.className='noa-sidebar noa-menu-drawer';side.setAttribute('aria-label','전체 메뉴');side.innerHTML='<a href="/" class="noa-logo" aria-label="NOA STUDIO 홈"><img class="noa-brand-mark" src="/noa-assets/papa-logo.png" alt="" width="48" height="48"><span class="noa-brand-copy">NOA STUDIO<small>AI ARTIST NOA</small></span></a>';const nav=document.createElement('nav');nav.className='noa-menu';nav.setAttribute('aria-label','NOA STUDIO');buildDrawerNav(nav);side.append(nav);const bottom=document.createElement('footer');bottom.className='noa-sidebar-bottom';bottom.setAttribute('aria-label','스튜디오 안내');bottom.innerHTML='<div class="noa-sidebar-signature"><strong>NOA STUDIO</strong><span>Music. Stories. Starlight.</span></div><nav class="noa-sidebar-legal" aria-label="회사 및 이용 안내"><a href="/noa-about.php">회사소개 <span>· 제이알</span></a><a href="/noa-world.php" class="noa-footer-world">세계관</a><a href="/noa-privacy.php">개인정보처리방침</a><a href="/noa-terms.php">이용약관</a></nav><section class="noa-sidebar-visitors" aria-label="방문자 집계"><p>방문자</p><dl><div><dt>오늘</dt><dd data-visit="today">—</dd></div><div><dt>어제</dt><dd data-visit="yesterday">—</dd></div><div><dt>전체</dt><dd data-visit="total">—</dd></div></dl></section>';let counts=null;try{counts=JSON.parse(document.getElementById('noa-visitor-counts')?.textContent||'null');}catch{}bottom.querySelectorAll('[data-visit]').forEach(el=>{const value=counts?.[el.dataset.visit];if(/^\d+$/.test(String(value)))el.textContent=BigInt(value).toLocaleString('ko-KR');else el.setAttribute('aria-label','집계 정보 없음');});root.classList.add('noa-has-sidebar','noa-shell-wide');side.append(bottom);document.body.prepend(side);const mobile=document.createElement('nav');mobile.className='noa-mobile-nav';mobile.setAttribute('aria-label','NOA STUDIO mobile');menu().forEach(item=>mobile.append(navItem(item)));document.body.append(mobile);if(g5){const top=document.createElement('header');top.className='noa-g5-top';top.innerHTML='<a class="noa-logo" href="/">NOA STUDIO</a><a data-noa-login href="/bbs/login.php">'+tr('로그인')+'</a>';document.body.insertBefore(top,side.nextSibling);const footer=document.createElement('footer');footer.className='noa-footer';footer.innerHTML='<span>NOA STUDIO · Music. Stories. Starlight.</span><a href="/bbs/content.php?co_id=privacy" data-noa-i18n="개인정보처리방침">개인정보처리방침</a><a href="/bbs/content.php?co_id=provision" data-noa-i18n="이용약관">이용약관</a>';document.body.append(footer);}const mobileFooter=bottom.cloneNode(true);
  mobileFooter.classList.add('noa-mobile-footer');
  const signature=mobileFooter.querySelector('.noa-sidebar-signature');
  const landscape=document.createElement('img');landscape.className='noa-footer-landscape';landscape.alt='';landscape.width=640;landscape.height=160;
@@ -142,27 +165,65 @@ function wideShell(side){
  const head=document.createElement('header');head.className='noa-drawer-head';head.append(side.querySelector('.noa-logo'));
  const close=document.createElement('button');close.type='button';close.className='noa-drawer-close';close.setAttribute('aria-label','전체 메뉴 닫기');close.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 6 12 12M18 6 6 18"/></svg>';close.onclick=()=>dismiss();head.append(close);side.prepend(head);
  const profile=document.createElement('section');profile.className='noa-drawer-profile';profile.setAttribute('aria-label','내 계정');
- profile.innerHTML='<div class="noa-drawer-id">'+icon('user')+'<div><small>MY STUDIO</small><strong></strong></div></div><form class="noa-drawer-login" action="/bbs/login_check.php" method="post"><input type="hidden" name="url" value="/"><label class="noa-sr-only" for="noa-drawer-login-id">아이디 또는 이메일</label><input id="noa-drawer-login-id" name="mb_id" autocomplete="username" autocapitalize="none" maxlength="254" placeholder="아이디 또는 이메일" required><label class="noa-sr-only" for="noa-drawer-login-pw">비밀번호</label><input id="noa-drawer-login-pw" name="mb_password" type="password" autocomplete="current-password" placeholder="비밀번호" required><button type="submit" class="noa-button">로그인</button><a href="/noa-login.php">다른 방법으로 로그인</a></form><a href="/noa-my.php" class="noa-button noa-drawer-my">MY 스튜디오 열기</a>';
- const login=profile.querySelector('form'),entry=profile.querySelector('.noa-drawer-my'),identity=profile.querySelector('strong');
+ const guest=document.createElement('div');guest.className='noa-drawer-guest';
+ guest.innerHTML='<div class="noa-drawer-greeting"><small>MY STUDIO</small><strong>별무리, 반가워요!</strong></div><div class="noa-drawer-stage"><img src="/noa-assets/ainoa-symbol.png" alt="AInoa" width="82" height="82" loading="lazy" decoding="async"><span>AI ARTIST NOA</span></div><div class="noa-drawer-guest-actions"><button type="button" aria-expanded="false" aria-controls="noa-drawer-signin">'+icon('login')+'<span>로그인</span></button><a href="/bbs/register.php">'+icon('user')+'<span>회원가입</span></a></div>';
+ const login=document.createElement('form');login.id='noa-drawer-signin';login.className='noa-drawer-login';login.action='/bbs/login_check.php';login.method='post';login.hidden=true;
+ login.innerHTML='<input type="hidden" name="url" value="/"><label class="noa-sr-only" for="noa-drawer-login-id">아이디 또는 이메일</label><input id="noa-drawer-login-id" name="mb_id" autocomplete="username" autocapitalize="none" maxlength="254" placeholder="아이디 또는 이메일" required><label class="noa-sr-only" for="noa-drawer-login-pw">비밀번호</label><input id="noa-drawer-login-pw" name="mb_password" type="password" autocomplete="current-password" placeholder="비밀번호" required><button type="submit" class="noa-button">로그인</button><a href="/noa-login.php">다른 방법으로 로그인</a>';
+ const signIn=guest.querySelector('button');
+ signIn.onclick=()=>{login.hidden=!login.hidden;signIn.setAttribute('aria-expanded',String(!login.hidden));if(!login.hidden)login.elements.mb_id.focus();else login.reset();};
+ guest.append(login);
+ const memberBox=document.createElement('div');memberBox.className='noa-drawer-member';
+ memberBox.innerHTML='<div class="noa-drawer-id"><span class="noa-drawer-avatar" aria-hidden="true"></span><div><small>MY STUDIO</small><strong translate="no"></strong><span class="noa-drawer-rank"></span></div></div><div class="noa-drawer-links"></div>';
+ const grid=memberBox.querySelector('.noa-drawer-links');
+ for(const [key,label,href,mark] of [
+  ['edit','정보 수정','/bbs/member_confirm.php?url=register_form.php','edit'],
+  ['my','MY 스튜디오 열기','/noa-my.php','user'],
+  ['points','포인트','/noa-membership.php#points','disc'],
+  ['memo','쪽지','/bbs/memo.php','mail'],
+  ['scrap','스크랩','/bbs/scrap.php','book'],
+  ['logout','로그아웃','/bbs/logout.php?url=%2F','login'],
+  ['admin','관리자','/noa-library.php','settings']
+ ]){
+  const link=document.createElement('a');link.dataset.drawerAction=key;link.href=href;link.innerHTML=icon(mark);
+  const text=document.createElement('span');text.textContent=label;link.append(text);
+  if(key==='my')link.className='noa-drawer-my';
+  if(key==='points'){const value=document.createElement('b');link.append(value);}
+  grid.append(link);
+ }
+ const identity=memberBox.querySelector('strong'),rank=memberBox.querySelector('.noa-drawer-rank'),avatar=memberBox.querySelector('.noa-drawer-avatar');
  const updateAccount=()=>{
   const member=!!access.member;
-  identity.textContent=member?((remote?.member&&remote.displayName)||access.name||'나의 계정'):'로그인';
-  identity.setAttribute('translate',member?'no':'yes');
-  login.hidden=member;login.querySelectorAll('input,button').forEach(control=>control.disabled=member);
-  if(member)login.reset();
-  entry.hidden=!member;
+  guest.hidden=member;memberBox.hidden=!member;
+  if(!member)return;
+  if(!login.hidden){login.reset();login.hidden=true;signIn.setAttribute('aria-expanded','false');}
+  const name=remote?.member&&remote.displayName;
+  identity.textContent=name||'나의 계정';avatar.textContent=name?Array.from(name)[0]:'MY';
+  rank.textContent=drawerMember?.rank||access.name||'회원';
+  const points=grid.querySelector('[data-drawer-action=points] b');
+  points.textContent=Number.isSafeInteger(drawerMember?.balance)?drawerMember.balance.toLocaleString('ko-KR')+'P':'';
+  grid.querySelector('[data-drawer-action=admin]').hidden=!(drawerMember?.admin??access.admin);
  };
- updateAccount();head.after(profile);window.addEventListener('noa-membership-status',updateAccount);
- window.addEventListener('noa-drawer-identity',updateAccount);
- const searchBox=document.createElement('label');searchBox.className='noa-drawer-search';searchBox.innerHTML=icon('search')+'<span class="noa-sr-only">메뉴 검색</span><input id="noa-drawer-search" type="search" placeholder="메뉴를 찾아보세요" autocomplete="off">';profile.after(searchBox);
- const secondary=document.createElement('nav');secondary.className='noa-drawer-secondary';secondary.setAttribute('aria-label','스튜디오 둘러보기');
- for(const [title,links]of [
-  ['음악과 이야기', [['나의 재생목록','/noa-my.php'],['사연곡 신청','/noa-lounge.php?category=story&view=list#ec-content']]],
-  ['별무리와 함께', [['공지사항','/bbs/board.php?bo_table=notice'],['CREATOR LAB · 창작 작업실','/noa-creator-lab.php'],['VIP 이용권','/noa-vip.php'],['전체 서비스 안내','/noa-sitemap.php']]]
- ]){const group=document.createElement('section'),h=document.createElement('h2');h.textContent=title;group.append(h);for(const [label,href]of links){const a=document.createElement('a');a.href=href;a.textContent=label;group.append(a);}secondary.append(group);}
- secondary.id='noa-drawer-secondary';side.querySelector('.noa-menu').after(secondary);
- const empty=document.createElement('p');empty.className='noa-menu-empty';empty.textContent='일치하는 메뉴가 없어요.';empty.setAttribute('role','status');empty.hidden=true;secondary.after(empty);
- const search=searchBox.querySelector('input');search.addEventListener('input',()=>{const q=search.value.trim().toLocaleLowerCase();let found=0;for(const a of side.querySelectorAll('.noa-menu a,.noa-drawer-secondary a')){a.hidden=!a.textContent.toLocaleLowerCase().includes(q);if(!a.hidden)found++;}for(const group of secondary.children)group.hidden=![...group.querySelectorAll('a')].some(a=>!a.hidden);empty.hidden=found>0;});
+ profile.append(guest,memberBox);updateAccount();head.after(profile);
+ window.addEventListener('noa-membership-status',updateAccount);window.addEventListener('noa-drawer-identity',updateAccount);
+ const searchBox=document.createElement('form');searchBox.className='noa-drawer-search';searchBox.setAttribute('role','search');searchBox.setAttribute('aria-label','메뉴 찾기');
+ searchBox.innerHTML='<label class="noa-sr-only" for="noa-drawer-search">메뉴 찾기</label><input id="noa-drawer-search" type="search" placeholder="메뉴 찾기" autocomplete="off"><button type="submit" aria-label="검색">'+icon('search')+'</button>';profile.after(searchBox);
+ const nav=side.querySelector('.noa-menu');
+ const empty=document.createElement('p');empty.className='noa-menu-empty';empty.textContent='일치하는 메뉴가 없어요.';empty.setAttribute('role','status');empty.hidden=true;nav.after(empty);
+ const search=searchBox.querySelector('input');
+ function filterMenu(){
+  const q=search.value.trim().toLocaleLowerCase();let found=false;
+  for(const group of nav.querySelectorAll('.noa-drawer-category')){
+   const parentMatch=group.firstElementChild.textContent.toLocaleLowerCase().includes(q);
+   let match=parentMatch;
+   for(const link of group.querySelectorAll('.noa-drawer-secondary a')){
+    link.hidden=!parentMatch&&!link.textContent.toLocaleLowerCase().includes(q);if(!link.hidden)match=true;
+   }
+   group.hidden=!match;if(match)found=true;
+  }
+  empty.hidden=found;
+ }
+ search.addEventListener('input',filterMenu);
+ searchBox.onsubmit=e=>{e.preventDefault();filterMenu();if(search.value.trim())(nav.querySelector('.noa-drawer-category:not([hidden]) a')||search).focus();else search.focus();};
  let trigger;
  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
  const wide=matchMedia('(min-width:1200px) and (min-height:640px) and (min-aspect-ratio:4/3)');
