@@ -1148,3 +1148,23 @@ html[data-noa-theme] .np-store-layout>:is(#vip-form,#points-form),html[data-noa-
 html[data-noa-theme] :is(#vip-cart,#points-cart) :is(.np-cart-copy,.np-cart-item>div,.np-cart-row>div){min-width:0;overflow-wrap:anywhere}
 html[data-noa-theme] :is(#vip-cart,#points-cart) .np-quantity{display:inline-flex;align-items:center;flex-wrap:nowrap}
 @container(max-width:860px){html.noa-shell-wide[data-noa-theme] .np-store-layout{grid-template-columns:minmax(0,1fr)}}
+
+/* Shared menu identity, account skin and three labeled shortcuts. */
+#noa-menu-drawer .noa-drawer-head .noa-logo{display:flex;align-items:center;gap:10px;min-width:0;text-decoration:none}
+#noa-menu-drawer .noa-brand-mark{display:block;flex:0 0 44px;width:44px;height:44px;object-fit:contain}
+#noa-menu-drawer .noa-brand-copy{display:grid;min-width:0;gap:3px;line-height:1.2}
+#noa-menu-drawer .noa-brand-copy small{margin:0;font-size:9px;letter-spacing:.12em}
+#noa-menu-drawer .noa-drawer-profile{display:grid;gap:10px;padding:12px;background:var(--noa-surface);border:1px solid var(--noa-line);border-radius:4px}
+#noa-menu-drawer .noa-drawer-id{display:flex;align-items:center;gap:10px;min-width:0}
+#noa-menu-drawer .noa-drawer-id svg{width:22px;height:22px;flex:none;color:var(--noa-accent)}
+#noa-menu-drawer .noa-drawer-id div{min-width:0}
+#noa-menu-drawer .noa-drawer-id small{display:block;color:var(--noa-muted);font-size:10px;letter-spacing:.1em}
+#noa-menu-drawer .noa-drawer-id strong{display:block;overflow-wrap:anywhere;font-size:15px}
+#noa-menu-drawer .noa-drawer-login{display:grid;gap:6px;margin:0}
+#noa-menu-drawer .noa-drawer-login input:not([type=hidden]){box-sizing:border-box;min-width:0;width:100%;min-height:44px;padding:8px;border:1px solid var(--noa-line);border-radius:4px;background:var(--noa-bg);color:var(--noa-text);font:inherit;font-size:16px}
+#noa-menu-drawer .noa-drawer-login>a{display:grid;place-items:center;min-height:44px;color:var(--noa-muted);font-size:12px}
+#noa-menu-drawer .noa-drawer-profile .noa-button{box-sizing:border-box;width:100%;justify-content:center}
+#noa-drawer-tools .noa-info-actions :is(.noa-account-shortcut,#noa-header-language){flex-direction:column;gap:3px;font-size:11px}
+#noa-drawer-tools #noa-header-language span{display:block}
+#noa-menu-drawer .noa-sidebar-legal{grid-template-columns:minmax(0,1fr)}
+#noa-menu-drawer .noa-sidebar-legal a,html[data-noa-style] .noa-mobile-footer .noa-sidebar-legal .noa-footer-world{grid-column:auto;grid-row:auto}
