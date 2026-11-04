@@ -11,7 +11,8 @@ mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
 async function checkFooter(page,width,theme,home=false){
  const footer=page.locator('.noa-mobile-footer'),scene=footer.locator('.noa-footer-scene'),image=scene.locator('.noa-footer-landscape');
- await image.evaluate(img=>img.decode());
+ await footer.scrollIntoViewIfNeeded();
+ await page.waitForFunction(()=>{const img=document.querySelector('.noa-footer-landscape');return img?.complete&&img.naturalWidth>0;});
  assert((await image.getAttribute('src')).includes(theme==='noa-studio'?'night-coast':'day-coast'));
  assert.equal(await page.locator('.noa-sidebar-visitors').count(),1,'one visitor counter per page');
  assert.equal(await page.locator('#noa-menu-drawer footer .noa-sidebar-visitors').count(),1);
