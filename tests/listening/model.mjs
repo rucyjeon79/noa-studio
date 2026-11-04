@@ -102,3 +102,18 @@ test('manual listing ignores saju rankings and has no cap; offered mixes reserve
  assert(new Set(whole.rows.slice(0,4).map(r=>r.genre)).size>1);
  assert.deepEqual(model.wholeCatalogMix(tracks.slice(0,1),theme,new Set([tracks[0].key])).rows.map(r=>r.key),[tracks[0].key]);
 });
+
+test('mood-only radio ranks the whole playable catalog without a chart and fills up to 100 unique recordings',()=>{
+ const moods=['calm','focus','energy','comfort'];
+ const rows=Array.from({length:132},(_,i)=>({key:'t'+i,genre:'g'+i%3,audio:'/audio/'+i,audioSha:'sha'+i,moodScores:{[moods[i%4]]:8},moodAffinity:{[moods[(i+1)%4]]:.75}}));
+ const catalog=[...rows,{...rows[0],key:'duplicate'}, {...rows[1],key:'unavailable',audio:''},{...rows[2],key:'video',video:'video'},{...rows[3],key:'album',kind:'playlist'}];
+ for(const mood of moods){
+  const mix=model.wholeMoodMix(catalog,mood,{personal:false,localDate:'2026-11-04'});
+  assert.equal(mix.rows.length,100);assert.equal(new Set(mix.rows.map(row=>row.audioSha)).size,100);
+  assert.equal(mix.matched,66);assert(mix.rows.slice(0,33).every(row=>row.moodScores[mood]===8));
+  assert(mix.rows.slice(33,66).every(row=>row.moodAffinity[mood]===.75));
+  assert.equal(new Set(mix.rows.map(row=>row.genre)).size,3);
+ }
+ assert.equal(model.wholeMoodMix(rows.slice(0,3),'energy').rows.length,3);
+ assert.deepEqual(model.wholeMoodMix(rows,'auto').rows,[]);
+});
