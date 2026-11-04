@@ -12,7 +12,7 @@ const origin = 'https://skhnslu-busan.com';
       await page.waitForFunction(()=>document.querySelector('.bn-news-link')?.href.includes('wr_id='));
       assert(await page.locator('.sideGnb a').filter({hasText:'챗지기자 뉴스'}).count(), 'news menu missing');
       const boxes=await strip.evaluate(el=>({w:el.getBoundingClientRect().width,end:el.getBoundingClientRect().right,
-        after:el.nextElementSibling?.classList.contains('grid-container')}));
+        after:el.parentElement.querySelector('.grid-container')?.getBoundingClientRect().top >= el.getBoundingClientRect().bottom - 1}));
       assert(boxes.after && boxes.end<=width+1 && boxes.w>0, 'home strip alignment');
       const link=await strip.locator('.bn-news-link').getAttribute('href');
       await page.goto(link,{waitUntil:'domcontentloaded'});
