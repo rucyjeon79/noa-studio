@@ -50,6 +50,54 @@ function n80_listening_tags(array $body):array{
  return $tags;
 }
 
+/**
+ * Match distinct motifs, so a repeated chorus cannot outweigh a closer match.
+ * The genre, playable audio, and album order are handled by the listening model.
+ */
+function n80_listening_mood_scores(array $song,array $body):array{
+    $title = trim((string)($song['title'] ?? ''));
+    $lyrics = (string)($song['lyrics'] ?? '');
+    // Keep sung parentheticals, but omit arrangement notes even when inline.
+    $lyrics = preg_replace('~[\[(][^\]()\n]*(?:vocal|verse|chorus|intro|outro|bridge|hook|solo|piano|guitar|drum|synth|instrumental|보컬|연주|후렴)[^\]()\n]*[\])]~iu', ' ', $lyrics) ?? $lyrics;
+    $lyrics = str_replace(['’','‘'], "'", $lyrics);
+    $title = str_replace(['’','‘'], "'", $title);
+    // Use the visible, edited description when present, just as we use the current title and lyrics.
+    if (array_key_exists('description',$song)) {
+        unset($body['descriptionBlock']);
+        $body['songDescription'] = $song['description'];
+    }
+    $scores = array_fill_keys(n80_listening_tags($body),1);
+    static $motifs = [
+        'calm' => [
+            '~휴식|안식|쉼표|쉬어\s*(?:가|도|갈|요)|잠시\s*쉬|편히\s*(?:쉬|잠)|\b(?:calm|rest easy|unwind|take a break|relax(?:ing)?)\b|ひと休み|พักผ่อน~iu',
+            '~숨(?:을|부터)?\s*(?:고르|고른|고를|고르면|돌리|돌려)|눈을\s*감고|\b(?:breathe slowly|slow down|take a breath)\b|深呼吸|หายใจช้า~iu',
+            '~잔잔한|고요한|평온|차분한|자장가|\b(?:still waters|quiet night|gentle breeze|lullaby|peaceful)\b|穏やか|静かな夜|เงียบสงบ~iu',
+        ],
+        'focus' => [
+            '~집중(?!하지\s*못)|몰입|한\s*가지에|\b(?:focus(?:ed)?|concentrate|one thing at a time)\b|集中|จดจ่อ|สมาธิ~iu',
+            '~잡념을\s*(?:비우|비워|놓)|생각을\s*정리|마음을\s*가다듬|\b(?:clear my mind|tune out the noise|clear your mind)\b|心を整え|ตั้งสติ~iu',
+            '~호흡에\s*맞춰|숨을\s*(?:하나씩\s*)?세[고며어]|한\s*음씩|박자(?:를|에)\s*(?:세며|집중)|\b(?:count the beats|one note at a time|steady rhythm)\b|一音ずつ|ทีละจังหวะ~iu',
+        ],
+        'energy' => [
+            '~활력|활기|힘차게|힘을\s*내|\b(?:energy|energized|power up)\b|元気いっぱい|มีพลัง~iu',
+            '~다시\s*(?:일어나|일어서|달려|뛰어)|힘껏\s*(?:달|뛰)|끝까지\s*달|\b(?:rise again|get back up|run wild|keep running)\b|立ち上が|走り出|ลุกขึ้นอีกครั้ง~iu',
+            '~춤(?:을|춰)\s*(?:추|춰|봐)?|소리\s*질러|더\s*크게\s*외쳐|심장(?:이|은)\s*뛰|\b(?:dance|dancing|turn it up|jump higher|hands up)\b|踊ろう|踊れ|เต้นรำ~iu',
+        ],
+        'comfort' => [
+            '~^위로$|(?:작은|따뜻한|오늘의|너를 위한)\s*위로|위로(?:가|를|해|의|받|하[는고며]|하고\s*싶)|토닥|다독|\b(?:comfort(?:ing)?|console you)\b|慰め|ปลอบใจ~iu',
+            '~(?:네|너의|내가)\s*곁에\s*(?:있을게|머물|서서)|혼자(?:가)?\s*아니|\b(?:by your side|not alone|here for you)\b|そばにいる|ひとりじゃない|ไม่โดดเดี่ยว|อยู่ข้างเธอ~iu',
+            '~기대도\s*(?:돼|되|될)|잘\s*버텼|수고했|괜찮아(?:질|져|요|\b)|안아\s*줄게|\b(?:lean on me|it.s (?:okay|ok)|hold your hand)\b|大丈夫|寄り添|ไม่เป็นไร~iu',
+        ],
+    ];
+    foreach ($motifs as $mood => $patterns) {
+        foreach ($patterns as $pattern) {
+            $points = 3 * preg_match($pattern,$title) + 2 * preg_match($pattern,$lyrics);
+            if ($points > 0) $scores[$mood] = ($scores[$mood] ?? 0) + $points;
+        }
+    }
+    return $scores;
+}
+
 /** A light reading of the relationship between the natal and today's day stems.
  * Use the Korean calendar day, independent of device clock or listening timezone.
  * Only the reading, never the natal chart or birthday, belongs in a push payload. */

@@ -11,5 +11,6 @@ $p=n80_listening_profile(array_merge($base,['birthDate'=>'2023-02-01','calendar'
 foreach([['birthDate'=>'2024-02-30'],['birthDate'=>'2023-01-01','calendar'=>'lunar','leap'=>true],['birthDate'=>'2099-01-01'],['timezone'=>'bad'],['birthTime'=>'25:00'],['genre'=>'all']] as $bad){try{n80_listening_profile(array_merge($base,$bad),$now);throw new RuntimeException('accepted invalid input');}catch(DomainException $e){}}
 $p=n80_listening_profile(array_merge($base,['consent'=>false]),$now);check(!isset($p['birthDate'])&&!isset($p['solarDate']),'consent off erases birth information');check(!n80_listening_theme($p,$now)['personal'],'no consent means time-only');
 check(n80_listening_theme(['timezone'=>'America/Los_Angeles'],$now)['localDate']==='2026-11-02','timezone date boundary');
-check(n80_listening_tags(['sunoStyle'=>'warm instrumental piano solo'])===['focus','comfort'],'metadata tags');check(n80_listening_tags(['confirmedTitle'=>'warm love'])===[],'title is not mood evidence');
+check(n80_listening_tags(['sunoStyle'=>'warm instrumental piano solo'])===['focus','comfort'],'style metadata fallback');
+require __DIR__.'/moods.php';
 echo "N80_LISTENING_CORE_OK\n";

@@ -12,3 +12,13 @@ test('library cannot cross genres',()=>assert.deepEqual(model.select(rows,{genre
 
 test('recommended albums rank matching moods while keeping story order',()=>{const albums=model.albums([...rows,{key:'k11',genre:'k',audio:'/a',ep:'11',moodTags:['calm']}],'k',{mood:'calm'});assert.deepEqual(albums.map(a=>a.act),[2,1]);assert.deepEqual(albums[1].rows.map(r=>r.ep),['1','2']);});
 test('popular counts include canonical aliases without counting a key twice',()=>{const r=[{...rows[0],browseKeys:['k2','oldk2']},rows[2]];assert.equal(model.select(r,{genre:'k',mode:'popular',popular:{oldk2:4,k1:3}}).rows[0].key,'k2');});
+test('stronger word evidence leads inside the selected genre before daily tie breaking',()=>{
+ const tracks=[
+  {key:'a',genre:'story',audio:'/a',moodTags:['comfort']},
+  {key:'b',genre:'story',audio:'/b',moodScores:{comfort:2}},
+  {key:'c',genre:'story',audio:'/c',moodScores:{comfort:5}},
+  {key:'outside',genre:'pop',audio:'/p',moodScores:{comfort:12}},
+  {key:'silent',genre:'story',audio:'',moodScores:{comfort:12}},
+ ];
+ for(const mood of ['comfort','auto'])assert.deepEqual(model.select(tracks,{genre:'story',mood,theme:{mood:'comfort',localDate:'2026-11-04'}}).rows.map(x=>x.key),['c','b','a']);
+});

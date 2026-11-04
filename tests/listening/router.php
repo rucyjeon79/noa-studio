@@ -12,6 +12,15 @@ if($path==='/noa-music.php'){
  define('_GNUBOARD_',true);$admin=false;$is_member=true;$is_admin='';$error=false;$collections=[];$jukebox=[];$genres=[];$musicAccess=['music'=>true];require_once $root.'/bridge/music-readmodel.php';
  function noa_music_e(string $v):string{return htmlspecialchars($v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
  $fixtures=[['하루의 끝에','kpop-original',1],['작은 떨림','kpop-original',2],['마음결','kpop-original',3],['다른 장르','jpop-original',1],['달빛의 흐름','groovy-airy-pop',1],['새로운 밤','groovy-airy-pop',11],['당신의 하루','your-story',''],['다시 부르는 노래','cover-reborn','']];$songs=[];foreach($fixtures as $i=>[$title,$g,$ep]){$songs[]=['key'=>'single:'.$g.':'.sprintf('%02d',$i===3?1:$i+1),'title'=>$title,'genre'=>$g,'video'=>'','suno'=>'','audio'=>'/fixture.wav','audioStatus'=>'ready','audioSha'=>'','audioBytes'=>0,'confirmed'=>true,'ep'=>(string)$ep,'act'=>'','kind'=>'single','rawLyrics'=>'','lyrics'=>'','description'=>'','cast'=>'female','vocal'=>'여자솔로','thumb'=>'/noa-assets/splash/kpop-original-g2-a.jpg','tracklist'=>'','originalArtist'=>'','moodTags'=>$g==='your-story'?[]:['calm','energy','focus','comfort'],'registeredAt'=>1700000000+$i];}
+ // A story with no mood metadata must be discoverable by its sung words.
+ require_once $root.'/deploy/noa-app/engine/personal-listening.php';
+ foreach ($songs as &$song) {
+  if ($song['genre'] !== 'your-story') continue;
+  $song['lyrics'] = '눈을 감고 잠시 쉬어 가. 오늘은 네 곁에 있을게.';
+  $song['moodScores'] = n80_listening_mood_scores($song,[]);
+  $song['moodTags'] = array_keys($song['moodScores']);
+ }
+ unset($song);
  $src=str_replace('__DIR__',var_export($root.'/deploy',true),file_get_contents($root.'/deploy/noa-music.php'));
  $src=str_replace('</head>','<link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-policy-20261024.css"><script defer src="/noa-app/p0-player.js"></script></head>',$src);eval(substr($src,strpos($src,'?><!doctype html>')));return;
 }

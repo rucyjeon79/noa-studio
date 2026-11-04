@@ -31,7 +31,7 @@ function renderFortune(){
 }
 function render(){if(!state)return;renderFortune();genres.value=genre;for(const b of moods.children)b.setAttribute('aria-pressed',String(b.dataset.mood===mood));for(const b of tabs.children)b.setAttribute('aria-pressed',String(b.dataset.mode===mode));results.replaceChildren();
  const selected=current(),theme=state.theme||{};host.querySelector('.nl-reason').textContent=(theme.period||'지금')+' · '+state.genres[genre]+' · '+(mood==='auto'?(selected.fallback?'장르 이어듣기':(theme.label||'추천')):labels[mood]);
- infoText.textContent=(theme.personal?'개인 추천 사용 중 · ':'시간대 추천 사용 중 · ')+(theme.notice||'선택한 장르 안에서 추천합니다.')+' 곡 분위기는 등록된 스타일·설명에서 확인한 태그를 사용합니다. 생년정보는 추천 설정에서 삭제할 수 있습니다.';
+ infoText.textContent=(theme.personal?'개인 추천 사용 중 · ':'시간대 추천 사용 중 · ')+(theme.notice||'선택한 장르 안에서 추천합니다.')+' 곡 제목과 가사에서 선택한 분위기를 떠올리는 표현을 찾고, 곡의 스타일과 설명도 함께 살펴요. 생년정보는 추천 설정에서 삭제할 수 있습니다.';
  listen.onclick=()=>play(current().rows);listen.disabled=false;listen.replaceChildren(icon('play'),document.createTextNode(!state.member?'로그인하고 듣기':!state.canPlay?'VIP 이용권 확인':mode==='albums'?'ACT 선택하기':'지금 듣기'));
  if(!state.member){status.textContent='로그인하면 원하는 장르를 바로 듣고 개인 추천을 설정할 수 있어요.';results.hidden=true;return;}
  results.hidden=false;
@@ -41,7 +41,7 @@ function render(){if(!state)return;renderFortune();genres.value=genre;for(const 
  }
  for(const row of selected.rows.slice(0,home?3:6))results.append(songButton(row,selected.rows));
  listen.disabled=state.canPlay&&!selected.rows.length;
- status.textContent=selected.rows.length?(mode==='popular'?'음원 감상 횟수 기준 · ':mode==='latest'?'등록일이 확인된 음원 기준 · ':selected.fallback?'해당 분위기 태그가 없어 선택한 장르의 곡으로 이어 들어요. ':'')+selected.rows.length+'곡 이어듣기':mode==='library'?'이 장르의 보관함 곡이 없습니다. 곡 카드의 담기로 추가해 주세요.':mode==='popular'?'이 장르의 감상 기록이 아직 없습니다.':mode==='latest'?'등록일이 확인된 음원이 아직 없습니다.':'이 장르에는 아직 재생할 수 있는 음원이 없어요.';
+ status.textContent=selected.rows.length?(mode==='popular'?'음원 감상 횟수 기준 · ':mode==='latest'?'등록일이 확인된 음원 기준 · ':selected.fallback?'이 분위기와 관련된 곡을 찾지 못해 선택한 장르의 곡으로 이어 들어요. ':'')+selected.rows.length+'곡 이어듣기':mode==='library'?'이 장르의 보관함 곡이 없습니다. 곡 카드의 담기로 추가해 주세요.':mode==='popular'?'이 장르의 감상 기록이 아직 없습니다.':mode==='latest'?'등록일이 확인된 음원이 아직 없습니다.':'이 장르에는 아직 재생할 수 있는 음원이 없어요.';
  if(mode==='now'&&state.canPlay&&!selected.rows.length){
   const alternatives=Object.keys(state.genres).filter(g=>g!==genre&&model.catalog(records,g).length);
   if(alternatives.length){
