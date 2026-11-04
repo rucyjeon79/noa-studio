@@ -35,6 +35,12 @@ foreach (['cruise'=>'mellow city pop','drive'=>'propulsive synthwave','walk'=>'b
     check((song_moods('','',['style'=>$style])[$mood]??0)>0,'indexed arrangement for '.$mood);
 }
 
+$groove=song_moods('창밖','',['sunoStyle'=>'Laid-back groove. Slight swing, behind-the-beat feel.']);
+$beat=song_moods('불빛','',['sunoStyle'=>'Bass-dominant festival remix. Heavy kick and an explosive drop.']);
+check(($groove['cruise']??0)>=3&&!isset($groove['drive']),'relaxed steady arrangement without road words');
+check(($beat['drive']??0)>=3&&!isset($beat['cruise']),'propulsive arrangement without road words');
+check(!isset(song_moods('','',['sunoStyle'=>'Piano. Avoid festival remix and heavy kick.'])['drive']),'negated arrangement is not positive evidence');
+check(!isset(song_moods('','',['sunoStyle'=>'120 BPM'])['drive']),'tempo alone does not choose driving');
 // Exercise legacy source packages using only song words, without style metadata.
 $folder=dirname(__DIR__,2).'/deploy/noastudio/noa/data/live/곡/your-story/기본';
 $counts=array_fill_keys(array_keys($examples),0);$files=glob($folder.'/*.json');

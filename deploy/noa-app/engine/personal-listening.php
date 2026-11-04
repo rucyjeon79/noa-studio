@@ -88,6 +88,16 @@ function n80_listening_mood_scores(array $song,array $body):array{
         $body['songDescription'] = $song['description'];
     }
     $scores = array_fill_keys(n80_listening_tags($body),1);
+    // An arrangement can suit a drive even when the sung story never names a road.
+    // Use two independent musical cues from the production brief, excluding prohibited sounds.
+    $arrangement = implode(' ',array_filter(array_map(static fn($k)=>is_string($body[$k]??null)?$body[$k]:'',['sunoStyle','sunoStylePrompt','stylePrompt','style'])));
+    $arrangement = preg_replace('~\b(?:avoid|without|never|no|not)\s+[^.;\n]{1,140}~iu',' ',$arrangement) ?? '';
+    $groove = preg_match('~behind.the.beat|laid.back|soft slow pulse|느긋한 그루브|여유로운 박자~iu',$arrangement)
+        && preg_match('~swing|groove|deep house|steady bass|리듬|그루브~iu',$arrangement);
+    $propulsion = preg_match('~driving (?:rhythm|groove)|bass.dominant|four.on.the.floor|festival remix|afrobeat groove|질주하는 리듬|강렬한 킥~iu',$arrangement)
+        && preg_match('~build.{0,15}drop|explosive|heavy kick|bass.{0,40}punchy|punchy.{0,24}(?:kick|bass|drop)|폭발적인 드롭|묵직한 베이스~iu',$arrangement);
+    if ($groove && !$propulsion) $scores['cruise']=($scores['cruise']??0)+3;
+    if ($propulsion && !$groove) $scores['drive']=($scores['drive']??0)+3;
     static $motifs = [
         'calm' => [
             '~휴식|안식|쉼표|쉬어\s*(?:가|도|갈|요)|잠시\s*쉬|잠(?:시|깐)\s*멈춰|편히\s*(?:쉬|잠)|\b(?:calm|rest easy|unwind|take a break|relax(?:ing)?)\b|ひと休み|พักผ่อน~iu',
