@@ -7,20 +7,43 @@ function normalizeBirthDate(value){
  // Keep lunar dates intact; the server validates them against the selected calendar.
  return parts[1]+'-'+parts[2].padStart(2,'0')+'-'+parts[3].padStart(2,'0');
 }
-function catalog(records,genre){const seen=new Set();return records.filter(r=>{if(r.genre!==genre||!r.audio||r.kind==='playlist'||r.video)return false;const id=r.browseIdentity||r.canonicalRecordKey||r.orderKey||r.key;if(seen.has(id))return false;seen.add(id);return true;});}
+const moodKeys=['calm','focus','energy','comfort'];
+function catalog(records,genre){
+ const recordings=new Map(),playable=[];
+ for(const row of records){
+  if(row.genre!==genre||row.kind==='playlist'||row.video)continue;
+  const id=row.browseIdentity||row.canonicalRecordKey||row.orderKey||row.key;
+  let recording=recordings.get(id);
+  if(!recording){recording={scores:{},track:null};recordings.set(id,recording);}
+  // The matching lyrics and playable file can live on different aliases of the same recording.
+  for(const mood of moodKeys){
+   const score=moodScore(row,mood);
+   if(score>(recording.scores[mood]||0))recording.scores[mood]=score;
+  }
+  if(!recording.track&&row.audio){
+   recording.track={...row,moodScores:recording.scores};
+   playable.push(recording.track);
+  }
+ }
+ return playable;
+}
+function moodScore(track,mood){
+ const score=track.moodScores?.[mood];
+ return Number.isFinite(score)?score:(track.moodTags||[]).includes(mood)?1:0;
+}
 function select(records,{genre,mood='auto',mode='now',theme={},popular={},library=[]}){
  const rows=catalog(records,genre),chosen=mood==='auto'?theme.mood:mood;let result=[...rows],fallback=false;
  if(mode==='popular'){const score=r=>[...new Set([r.key,...(r.browseKeys||[])])].reduce((n,key)=>n+Number(popular[key]||0),0);result=result.filter(r=>score(r)>0).sort((a,b)=>score(b)-score(a)||a.key.localeCompare(b.key));}
  else if(mode==='latest')result=result.filter(r=>Number(r.registeredAt)>0).sort((a,b)=>b.registeredAt-a.registeredAt||a.key.localeCompare(b.key));
  else if(mode==='library'){const keys=new Set(library.flatMap(p=>p.tracks||[]));result=result.filter(r=>keys.has(r.key)||(r.browseKeys||[]).some(k=>keys.has(k)));}
  else if(mode==='now'){
-  const matching=result.filter(r=>(r.moodTags||[]).includes(chosen));
+  const matching=result.filter(r=>moodScore(r,chosen)>0);
   if(matching.length)result=matching;else fallback=result.length>0;
   // Stable daily rotation only within the matching genre/mood. No random cross-genre filler.
-  const seed=String(theme.localDate||'')+String(theme.period||'');const hash=s=>{let h=0;for(const c of seed+s)h=(Math.imul(31,h)+c.charCodeAt(0))>>>0;return h;};result.sort((a,b)=>hash(a.key)-hash(b.key));
+  const seed=String(theme.localDate||'')+String(theme.period||'');const hash=s=>{let h=0;for(const c of seed+s)h=(Math.imul(31,h)+c.charCodeAt(0))>>>0;return h;};result.sort((a,b)=>moodScore(b,chosen)-moodScore(a,chosen)||hash(a.key)-hash(b.key));
  }
  return {rows:result.slice(0,40),fallback,mood:chosen};
 }
-function albums(records,genre,{mood='auto',theme={}}={}){const groups=new Map();for(const r of catalog(records,genre)){const ep=Number(r.ep),act=Number(r.act)||(ep>0?Math.ceil(ep/10):0);if(!act)continue;if(!groups.has(act))groups.set(act,[]);groups.get(act).push(r);}const chosen=mood==='auto'?theme.mood:mood;return [...groups].map(([act,rows])=>({act,matches:rows.filter(r=>(r.moodTags||[]).includes(chosen)).length,rows:rows.sort((a,b)=>Number(a.ep)-Number(b.ep)||a.key.localeCompare(b.key))})).sort((a,b)=>b.matches/ b.rows.length-a.matches/a.rows.length||a.act-b.act);}
+function albums(records,genre,{mood='auto',theme={}}={}){const groups=new Map();for(const r of catalog(records,genre)){const ep=Number(r.ep),act=Number(r.act)||(ep>0?Math.ceil(ep/10):0);if(!act)continue;if(!groups.has(act))groups.set(act,[]);groups.get(act).push(r);}const chosen=mood==='auto'?theme.mood:mood;return [...groups].map(([act,rows])=>({act,matches:rows.reduce((total,r)=>total+moodScore(r,chosen),0),rows:rows.sort((a,b)=>Number(a.ep)-Number(b.ep)||a.key.localeCompare(b.key))})).sort((a,b)=>b.matches/ b.rows.length-a.matches/a.rows.length||a.act-b.act);}
 const api={catalog,select,albums,normalizeBirthDate};if(typeof module==='object')module.exports=api;else root.NoaListeningModel=api;
 })(typeof window==='undefined'?globalThis:window);
