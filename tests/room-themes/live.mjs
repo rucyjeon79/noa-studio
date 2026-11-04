@@ -64,7 +64,9 @@ for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])aw
   assert.equal(await p.locator('[data-footer-theme="'+mode+'"]').getAttribute('aria-pressed'),'true');
   assert.equal(await p.locator('#noa-settings-dialog[open]').count(),0);
   for(const [route,room] of [['/','home'],['/noa-lounge.php','community'],['/noa-shop.php','shop'],['/noa-vip.php','shop'],['/noa-points.php','shop'],['/noa-settings.php',''],['/noa-sitemap.php',''],['/noa-about.php',''],['/noa-login.php',''],['/noa-install.php',''],['/shop/cart.php','shop']].filter(([route])=>process.env.NOA_VISUAL_REVIEW!=='true'||route==='/')){
+   const started=performance.now();
    await p.goto(base+route,{waitUntil:'domcontentloaded'});
+   const navigationMs=Math.round(performance.now()-started);
    await p.waitForFunction(([mode,room])=>document.documentElement.dataset.noaTheme===mode&&document.documentElement.dataset.noaRoom===room,[mode,room]);
    // Close the real campaign overlay through its existing control, without account writes.
    if(room==='home'){
@@ -74,14 +76,14 @@ for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])aw
    await p.evaluate(()=>document.fonts.ready);
    const metrics=await p.evaluate(()=>{
     const root=document.documentElement,style=getComputedStyle(root);
-    const nav=performance.getEntriesByType('navigation')[0];const frame=document.querySelector('main')||document.querySelector('#container');
+    const frame=document.querySelector('main')||document.querySelector('#container');
     const rect=frame.getBoundingClientRect(),parent=frame.parentElement,parentRect=parent.getBoundingClientRect(),cs=getComputedStyle(parent);
     const inset=name=>parseFloat(cs[name])||0;
     const left=rect.left-parentRect.left-inset('paddingLeft')-inset('borderLeftWidth');
     const right=parentRect.right-rect.right-inset('paddingRight')-inset('borderRightWidth');
-    return {centerDelta:Math.round(left-right),domMs:Math.round(nav.domContentLoadedEventEnd||nav.domInteractive),firstByteMs:Math.round(nav.responseStart),alignment:frame&&getComputedStyle(frame).textAlign,bg:style.getPropertyValue('--noa-bg').trim().toLowerCase(),shared:style.getPropertyValue('--noa-darkGray').trim().toLowerCase(),scheme:style.colorScheme,overflow:root.scrollWidth-innerWidth,text:(document.querySelector('main')||document.querySelector('#container'))?.innerText.length||0};
+    return {centerDelta:Math.round(left-right),alignment:frame&&getComputedStyle(frame).textAlign,bg:style.getPropertyValue('--noa-bg').trim().toLowerCase(),shared:style.getPropertyValue('--noa-darkGray').trim().toLowerCase(),scheme:style.colorScheme,overflow:root.scrollWidth-innerWidth,text:(document.querySelector('main')||document.querySelector('#container'))?.innerText.length||0};
    });
-   results.push({width,mode,route,...metrics});console.log(JSON.stringify(results.at(-1)));
+   results.push({width,mode,route,navigationMs,...metrics});console.log(JSON.stringify(results.at(-1)));
    assert.equal(metrics.bg,theme.tokens.bg.toLowerCase());
    assert.equal(metrics.shared,'#30343b');
    assert.equal(metrics.scheme,mode==='noa-ivory'?'light':'dark');

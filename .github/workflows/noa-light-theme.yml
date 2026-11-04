@@ -85,6 +85,19 @@ jobs:
         run: |
           node "$RUNNER_TEMP/noa-light/overlays.mjs"
           node "$RUNNER_TEMP/noa-light/check.mjs"
+      - name: Summarize verified page navigation
+        if: steps.live.outcome == 'success'
+        run: |
+          python - <<'PYTHON'
+          import json, os, statistics
+          from pathlib import Path
+          rows = json.loads(Path('room-theme-proof/live/results.json').read_text())
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as report:
+              print('| 페이지 | 탐색 시작부터 본문 로드까지 중앙값 |', '|---|---:|', sep='\n', file=report)
+              for route in dict.fromkeys(row['route'] for row in rows):
+                  times = [row['navigationMs'] for row in rows if row['route'] == route]
+                  print(f'| {route} | {statistics.median(times):.0f} ms |', file=report)
+          PYTHON
       - name: Restore release-owned assets when live acceptance fails
         if: failure() && steps.live.outcome == 'failure'
         run: python scripts/noa_light_theme_release.py rollback
