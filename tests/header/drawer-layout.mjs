@@ -33,6 +33,7 @@ async function checkFooter(page,width,theme,home=false){
  for(const button of geometry.buttons)assert(button.width>=44&&button.height>=44);
  assert.equal(await scene.locator('[data-footer-theme] svg').count(),3);
  const greeting=page.locator('#noa-ainoa .ainoa-message-dismiss');if(await greeting.isVisible())await greeting.click();
+ await footer.scrollIntoViewIfNeeded();
  const blocked=await scene.locator('[data-footer-theme]').evaluateAll(buttons=>buttons.flatMap(el=>{const r=el.getBoundingClientRect();return [[r.x+4,r.y+4],[r.right-4,r.bottom-4]].flatMap(([x,y])=>{const hit=document.elementFromPoint(x,y);return el.contains(hit)?[]:[{choice:el.dataset.footerTheme,x,y,hit:hit?.id||hit?.className||hit?.tagName}];});}));
  if(blocked.length)await page.screenshot({path:out+'/blocked-footer-'+width+'.png'});
  assert.deepEqual(blocked,[],'theme choices obstructed: '+JSON.stringify({width,path:page.url(),blocked}));
