@@ -1205,7 +1205,7 @@ html.noa-shell-wide:not(.noa-wide-rail) #noa-menu-drawer[open]{
 #noa-menu-drawer .noa-drawer-secondary{display:flex;flex-direction:column;gap:0;margin:3px 0 0 10px;padding:0 0 0 18px;border:0;border-inline-start:1px solid var(--noa-line);border-radius:0;background:transparent}
 #noa-menu-drawer .noa-drawer-secondary a{display:flex;align-items:center;min-width:0;min-height:44px;margin:0;padding:5px 0;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--noa-text);font-size:13px;font-weight:450;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere;text-decoration:none}
 #noa-menu-drawer .noa-drawer-secondary a{flex-wrap:nowrap;justify-content:flex-start;gap:8px;align-content:center}
-#noa-menu-drawer .noa-route-name{flex:1;min-width:0}
+#noa-menu-drawer .noa-route-name{flex:1;min-width:0;white-space:normal;overflow:visible;text-overflow:clip}
 #noa-menu-drawer .noa-route-level,.noa-site-map .noa-directory-access{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:24px}
 #noa-menu-drawer .noa-route-level{margin-inline-start:auto}
 :is(#noa-menu-drawer .noa-route-level,.noa-site-map .noa-directory-access) .noa-rank-badge{width:22px;height:24px;margin:0}

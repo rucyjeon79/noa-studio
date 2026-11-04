@@ -131,6 +131,7 @@ try{
      return {text:el.textContent,role:el.getAttribute('role'),label:el.getAttribute('aria-label'),title:el.title,icon:!!mark.querySelector('svg')||getComputedStyle(mark).backgroundImage!=='none',width:box.width,height:box.height,aligned:box.right<=row.right+1&&box.left>=row.left&&box.top>=row.top&&box.bottom<=row.bottom+1};
     }));
     for(const b of badges){assert.equal(b.text,'');assert.equal(b.role,'img');assert(b.label&&b.title===b.label&&b.icon&&b.width===22&&b.height===24&&b.aligned,JSON.stringify(b));}
+    assert(await map.locator('.noa-route-name').evaluateAll(names=>names.every(n=>getComputedStyle(n).whiteSpace==='normal'&&n.scrollWidth<=n.clientWidth+1)),'menu names must wrap without clipping');
     for(const group of await map.locator('.noa-drawer-category').all()){
      const icon=group.locator('h3 svg');assert(await icon.isVisible());
      const marker=await icon.boundingBox(),rows=await group.locator('.noa-drawer-secondary a').evaluateAll(anchors=>anchors.map(a=>{
