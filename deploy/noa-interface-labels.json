@@ -2314,10 +2314,10 @@
   "今の気分",
   "อารมณ์ของฉันตอนนี้"
  ],
- "고른 분위기부터 최대 100곡을 들어요. 모자라면 가까운 두 분위기에서 차례로 채워요. 장르를 선택하면 그 안에서만 골라요.": [
-  "Hear your chosen mood first. If there are fewer than 100 songs, we add tracks from the two closest moods in order. A selected genre applies to every track.",
-  "選んだ気分の曲を先に再生します。100曲に満たない場合は、近い二つの気分から順に補います。ジャンルを選ぶと、その中から選曲します。",
-  "ฟังเพลงตามอารมณ์ที่เลือกก่อน หากยังไม่ถึง 100 เพลง จะเติมจากสองอารมณ์ที่ใกล้เคียงตามลำดับ เมื่อเลือกแนวเพลง ระบบจะใช้เฉพาะแนวนั้น"
+ "고른 분위기의 곡을 우선 담고, 부족하면 가까운 두 분위기에서 최대 100곡까지 채워요. 장르를 고르면 그 안에서만 골라요. 들을 때마다 곡 순서는 새로 섞어요.": [
+  "We select your mood first, then add songs from two related moods for up to 100 tracks. Choose a genre to narrow the selection. Each new play shuffles the mix.",
+  "選んだ気分の曲を優先し、足りない分は近い二つの気分から最大100曲まで補います。ジャンルを選ぶと、その中から選曲します。再生を始めるたびに曲順が変わります。",
+  "เลือกเพลงตามอารมณ์ที่เลือกก่อน แล้วเติมจากสองอารมณ์ใกล้เคียงจนครบสูงสุด 100 เพลง หากเลือกแนวเพลงจะใช้เฉพาะแนวนั้น และจะสุ่มลำดับใหม่ทุกครั้งที่เริ่มฟัง"
  ],
  "이 조건에 맞는 곡이 아직 없어요. 다른 분위기나 장르를 선택해 주세요.": [
   "No songs match this selection yet. Try a different mood or genre.",
