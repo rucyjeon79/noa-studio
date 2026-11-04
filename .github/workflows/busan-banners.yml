@@ -58,7 +58,7 @@ jobs:
           layout='busan-assistant/banner-assets/busan-layout.css'
           hook='extend/busan-layout.extend.php'
           layout_dir=Path('../deploy/busan')
-          expected[layout]='dc86fc6d452a9a7404b51a654f44d53707e22b10a08a885de8ac148e4c9b35d4'
+          expected[layout]='723b17c64a34b559d0fe23dad655360f88db872c928feb0d83e37d8bfba3b4f6'
           files[layout]=(layout_dir/'busan-layout.css').read_bytes()
           files[hook]=(layout_dir/'busan-layout.extend.php').read_bytes()
           unchanged=set()

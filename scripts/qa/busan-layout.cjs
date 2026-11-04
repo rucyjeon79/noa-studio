@@ -28,11 +28,17 @@ async function checkBoardFormLayout(page, width) {
       tile.className = 'file-slot';
       slots.append(tile);
     }
+    const drop = document.createElement('div');
+    drop.className = 'multi-drop-box';
+    slots.append(drop);
     main.append(fixture);
     try {
       const [submit, cancel] = Array.from(fixture.querySelectorAll('.btnWrap > *'),
         el => el.getBoundingClientRect());
       return {
+        dropWidth: drop.getBoundingClientRect().width,
+        rowWidth: slots.lastElementChild.previousElementSibling.getBoundingClientRect().right
+          - slots.firstElementChild.getBoundingClientRect().left,
         actionHeights: [submit.height, cancel.height],
         actionWidthDifference: Math.abs(submit.width - cancel.width),
         gap: cancel.left - submit.right,
@@ -43,6 +49,7 @@ async function checkBoardFormLayout(page, width) {
       fixture.remove();
     }
   });
+  assert(Math.abs(geometry.dropWidth - geometry.rowWidth) <= 1);
   assert(geometry.actionHeights.every(height => height >= 44));
   assert(geometry.actionWidthDifference <= 1 && geometry.gap === 8);
   assert.equal(geometry.bottom, width <= 768 ? 24 : 32);
