@@ -1,4 +1,4 @@
-"""Publish the two-frame header and verified location weather, with the four-language interface catalog and compact mobile controls."""
+"""Publish the two-frame header and verified location weather, with the four-language controls, first-paint palette and independent listening actions."""
 import os
 import sys
 from pathlib import Path

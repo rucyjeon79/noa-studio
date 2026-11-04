@@ -17,6 +17,9 @@ const summary=el('div','nl-summary');summary.append(el('p','nl-reason',''),liste
 if(!home){
  const discovery=host.closest('.nl-music-discovery');
  if(discovery){
+  const toggle=discovery.querySelector('summary');
+  const label=el('span','nl-discovery-title',toggle.textContent.trim());
+  toggle.replaceChildren(label);
   const row=el('div','nl-listen-row');discovery.before(row);row.append(discovery,listen);
  }
 }

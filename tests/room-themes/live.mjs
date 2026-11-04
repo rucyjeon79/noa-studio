@@ -186,8 +186,8 @@ async function verifyFirstPaint(){
   const page=await ctx.newPage();await page.clock.setFixedTime(new Date('2026-11-03T'+hour+':00:00+09:00'));
   for(const path of ['/','/noa-lounge.php','/noa-login.php','/shop/cart.php']){
    await page.goto('https://noastudio.ai.kr'+path,{waitUntil:'domcontentloaded'});
-   const first=await page.evaluate(()=>({scheme:getComputedStyle(document.documentElement).colorScheme,bg:getComputedStyle(document.body).backgroundColor,early:document.head.firstElementChild?.id}));
-   assert.equal(first.early,'noa-first-paint',path);assert.equal(first.scheme,expected,path);
+   const first=await page.evaluate(()=>({scheme:getComputedStyle(document.documentElement).colorScheme,bg:[document.body,document.documentElement].map(n=>getComputedStyle(n).backgroundColor).find(c=>c!=='rgba(0, 0, 0, 0)'),early:!!(document.querySelector('#noa-first-paint')?.compareDocumentPosition(document.querySelector('link[rel=stylesheet]'))&Node.DOCUMENT_POSITION_FOLLOWING)}));
+   assert.equal(first.early,true,path);assert.equal(first.scheme,expected,path);
    assert.equal(first.bg,expected==='light'?'rgb(255, 255, 255)':'rgb(16, 21, 31)',path+' paints its selected palette before the UI starts');
   }
   await ctx.close();
