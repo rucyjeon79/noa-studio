@@ -43,8 +43,9 @@ try{
    assert(await page.locator('.noa-two-line').isVisible());
    await page.waitForFunction(()=>document.querySelector('#noa-shell-view')?.contentDocument?.documentElement.hasAttribute('data-noa-shell-child'));
    const frameBox=await page.locator('#noa-shell-view').boundingBox(),dockBox=await page.locator('.noa-two-line').boundingBox();
-   assert.equal(Math.round(frameBox.x),0,'retained page uses the full viewport');
-   assert.equal(Math.round(dockBox.x),0,'player uses the full viewport');
+   const left=width>=1200?Math.round((await page.locator('#noa-menu-drawer').boundingBox()).width):0;
+   assert.equal(Math.round(frameBox.x),left,'retained page uses the full viewport');
+   assert.equal(Math.round(dockBox.x),left,'player uses the full viewport');
    assert(frameBox.x+frameBox.width<=width+1);
    const childPadding=await page.frameLocator('#noa-shell-view').locator('body').evaluate(b=>parseFloat(getComputedStyle(b).paddingLeft));assert.equal(childPadding,0,'embedded pages do not reserve a second sidebar');
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));

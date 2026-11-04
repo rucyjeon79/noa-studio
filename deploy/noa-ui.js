@@ -132,7 +132,7 @@ function shell(){if(themeOnly||admin||document.querySelector('.noa-sidebar'))ret
  signature.append(landscape,appearance);
  const oldFooter=document.querySelector('.noa-footer,.ne-footer');if(oldFooter)oldFooter.before(mobileFooter);else if(document.querySelector('main'))document.querySelector('main').after(mobileFooter);else document.body.append(mobileFooter);wideShell(side);window.NoaBrand?.apply();markLabels();}
 
-/* A single modal drawer owns menu search and app utilities at every width. */
+/* Use one menu for both a wide navigation rail and a compact modal. */
 function wideShell(side){
  const head=document.createElement('header');head.className='noa-drawer-head';head.append(side.querySelector('.noa-logo'));
  const close=document.createElement('button');close.type='button';close.className='noa-drawer-close';close.setAttribute('aria-label','전체 메뉴 닫기');close.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 6 12 12M18 6 6 18"/></svg>';close.onclick=()=>dismiss();head.append(close);side.prepend(head);
@@ -150,7 +150,21 @@ function wideShell(side){
  const search=searchBox.querySelector('input');search.addEventListener('input',()=>{const q=search.value.trim().toLocaleLowerCase();let found=0;for(const a of side.querySelectorAll('.noa-menu a,.noa-drawer-secondary a')){a.hidden=!a.textContent.toLocaleLowerCase().includes(q);if(!a.hidden)found++;}for(const group of secondary.children)group.hidden=![...group.querySelectorAll('a')].some(a=>!a.hidden);empty.hidden=found>0;});
  let trigger;
  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+ const wide=matchMedia('(min-width:1200px) and (min-height:640px) and (min-aspect-ratio:4/3)');
+ const isWide=()=>wide.matches&&!root.hasAttribute('data-noa-shell-child')&&window.frameElement?.id!=='noa-shell-view';
+ function placeMenu(){
+  const pinned=isWide(),wasModal=side.matches(':modal'),oldFocus=document.activeElement;
+  side.removeAttribute('data-closing');root.classList.remove('noa-menu-open','noa-menu-leaving');
+  if(side.open)side.close();
+  root.classList.toggle('noa-wide-rail',pinned);
+  if(pinned){side.setAttribute('role','navigation');side.show();if(oldFocus&&oldFocus!==document.body)oldFocus.focus({preventScroll:true});else document.activeElement?.blur();}
+  else{side.removeAttribute('role');if(wasModal)trigger?.focus({preventScroll:true});}
+  trigger?.setAttribute('aria-expanded',String(pinned));
+ }
+ wide.addEventListener('change',placeMenu);
+ window.addEventListener('pageshow',()=>{if(isWide()&&!side.open)placeMenu();});
  function dismiss(){
+  if(isWide())return;
   if(!side.open||side.hasAttribute('data-closing'))return;
   if(reduced.matches){side.close();return;}
   side.setAttribute('data-closing','');root.classList.add('noa-menu-leaving');
@@ -159,11 +173,13 @@ function wideShell(side){
  }
  side.addEventListener('cancel',e=>{e.preventDefault();dismiss();});
  side.addEventListener('close',()=>{
+  if(side.open)return;
   side.removeAttribute('data-closing');root.classList.remove('noa-menu-open','noa-menu-leaving');
   trigger?.setAttribute('aria-expanded','false');search.value='';search.dispatchEvent(new Event('input'));
   if(!document.querySelector('dialog:modal'))trigger?.focus({preventScroll:true});
  });
  side.addEventListener('click',e=>{
+  if(isWide())return;
   if(e.target===side){const r=side.getBoundingClientRect();if(e.clientX<r.left||e.clientX>=r.right||e.clientY<r.top||e.clientY>=r.bottom)dismiss();}
   else if(e.target.closest('a[href],[data-noa-display-settings]')&&side.open)side.close();
  });
@@ -175,13 +191,23 @@ function wideShell(side){
   trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-controls',side.id);trigger.setAttribute('aria-expanded','false');
   trigger.addEventListener('click',e=>{
    if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
-   e.preventDefault();if(side.open)return;side.showModal();side.scrollTop=0;
+   e.preventDefault();if(isWide()){search.focus();return;}if(side.open)return;side.showModal();side.scrollTop=0;
    root.classList.add('noa-menu-open');trigger.setAttribute('aria-expanded','true');close.focus({preventScroll:true});
   });
   head.after(tools,searchBox);tools.hidden=false;
-  refreshNavigation();return true;
+  placeMenu();refreshNavigation();return true;
  };
  if(!installHeader()){const watch=new MutationObserver(()=>{if(installHeader())watch.disconnect();});watch.observe(document.body,{childList:true,subtree:true});}
+ let glintTimer;
+ function scheduleGlint(){
+  clearTimeout(glintTimer);if(reduced.matches||document.hidden)return;
+  glintTimer=setTimeout(()=>{
+   const star=document.querySelector('.noa-mobile-nav [data-noa-nav=home]:not(.has-ainoa-alert):not(.is-ainoa-open)>svg');
+   if(star?.getClientRects().length)star.animate([{filter:'none'},{filter:'drop-shadow(0 0 4px currentColor)',transform:'scale(1.10)',offset:.42},{filter:'none'}],{duration:850,easing:'ease-in-out'});
+   scheduleGlint();
+  },4500+Math.random()*10500);
+ }
+ scheduleGlint();reduced.addEventListener('change',scheduleGlint);document.addEventListener('visibilitychange',scheduleGlint);
  // Move the real feed node so visual order, keyboard order and its existing event handlers agree.
  const notices=document.querySelector('[data-home-section="notices"]'),community=document.querySelector('[data-home-section="community"]');if(notices&&community){const hero=document.querySelector('[data-home-section=hero]');if(hero)hero.after(notices,community);else notices.after(community);}
  const noticeCard=notices?.querySelector('.noa-notice-list');if(noticeCard){const quick=document.createElement('nav');quick.className='noa-home-quickstart';quick.setAttribute('aria-label','스튜디오 빠른 시작');quick.innerHTML='<h3>스튜디오 빠른 시작</h3>';for(const [label,href]of [['음악 영상 둘러보기','/noa-youtube.php'],['내 사연을 노래로','/noa-lounge.php?category=story&view=list#ec-content'],['VIP 이용권 알아보기','/noa-vip.php']]){const a=document.createElement('a');a.href=href;a.dataset.noaDocumentLink='';const text=document.createElement('span');text.textContent=label;const arrow=document.createElement('span');arrow.textContent='↗';arrow.setAttribute('aria-hidden','true');a.append(text,arrow);quick.append(a);}noticeCard.append(quick);}

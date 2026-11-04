@@ -1,8 +1,8 @@
 (()=>{'use strict';
 const host=document.querySelector('[data-noa-listening]');if(!host||!window.NoaListeningModel)return;
 const model=window.NoaListeningModel;const home=host.dataset.noaListening==='home';let state,records=[],musicWindow=null,frame=null,mode='now',mood='auto',scope='all',genre='kpop-original',loadSequence=0;
-const labels={auto:'지금 추천',calm:'휴식',focus:'집중',energy:'활력',comfort:'위로'};
-const iconPaths={play:'m8 5 11 7-11 7V5Z',settings:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8 M9 3h6l1 3 3 1 2 5-2 5-3 1-1 3H9l-1-3-3-1-2-5 2-5 3-1z',close:'m6 6 12 12M6 18 18 6',save:'m5 12 4 4L19 6',trash:'M3 6h18 M8 6V4h8v2 M5 6l1 15h12l1-15 M10 10v7 M14 10v7',music:'M9 18V5l12-2v13 M9 8l12-2 M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6 M18 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6',star:'m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9Z'};
+const labels={auto:'지금 추천',calm:'휴식',focus:'집중',comfort:'위로',energy:'활동',drive:'운전',walk:'산책'};
+const iconPaths={calm:'M20 4C10 3 4 7 5 14c1 4 6 5 10 2 4-3 5-7 5-12z M4 21l11-12',focus:'M8 3H3v5 M16 3h5v5 M3 16v5h5 M21 16v5h-5 M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0',comfort:'M12 20 4 12C-1 5 7 1 12 7c5-6 13-2 8 5z',energy:'m14 2-9 12h6l-1 8 9-13h-6z',drive:'M3 16v-5l2-6h14l2 6v5H3z M3 10h18 M6 16v3 M18 16v3 M6 13h2 M16 13h2',walk:'M15 5a2 2 0 1 1-4 0 2 2 0 0 1 4 0 M6 13l3-4 4-1 3 5 4 1 M12 9l-2 7-5 5 M11 14l4 3 2 5',play:'m8 5 11 7-11 7V5Z',settings:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8 M9 3h6l1 3 3 1 2 5-2 5-3 1-1 3H9l-1-3-3-1-2-5 2-5 3-1z',close:'m6 6 12 12M6 18 18 6',save:'m5 12 4 4L19 6',trash:'M3 6h18 M8 6V4h8v2 M5 6l1 15h12l1-15 M10 10v7 M14 10v7',music:'M9 18V5l12-2v13 M9 8l12-2 M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6 M18 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6',star:'m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9Z'};
 const icon=(name)=>{const svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),path=document.createElementNS(svg.namespaceURI,'path');svg.classList.add('nl-icon');svg.setAttribute('aria-hidden','true');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.5');svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');path.setAttribute('d',iconPaths[name]||iconPaths.star);svg.append(path);return svg;};
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 const button=(text,name,fn)=>{const b=el('button','nl-button');b.type='button';b.append(icon(name),document.createTextNode(text));b.onclick=fn;return b;};
@@ -14,10 +14,10 @@ function lane(key,title,note){
  const h=el('h3','',title);h.id='nl-lane-'+key;section.setAttribute('aria-labelledby',h.id);
  section.append(h,el('p','nl-lane-note',note));host.insertBefore(section,status);return section;
 }
-const wholeLane=lane('whole','전체 음원 사주 추천','오늘의 사주에 맞춰 장르 구분 없이 최대 100곡을 골라요.');
-const mixButton=button('사주 추천 듣기','play',playWholeCatalog);mixButton.disabled=true;mixButton.dataset.allGenreMix='';mixButton.dataset.mood='auto';mixButton.classList.add('nl-play-action');if(home)mixButton.classList.add('nl-primary');
+const wholeLane=lane('whole','생일 맞춤 추천','생년월일과 오늘의 리듬을 참고해 장르 구분 없이 최대 100곡을 골라요.');
+const mixButton=button('맞춤 추천 듣기','play',playWholeCatalog);mixButton.disabled=true;mixButton.dataset.allGenreMix='';mixButton.dataset.mood='auto';mixButton.classList.add('nl-play-action');if(home)mixButton.classList.add('nl-primary');
 const wholePreview=el('div','nl-preview');wholeLane.append(mixButton,wholePreview);
-const genrePanel=lane('suggested','내 사주로 고른 장르','추천 장르를 고르면 해당 장르의 곡을 최대 10곡 들어요.');
+const genrePanel=lane('suggested','오늘 나에게 어울리는 장르','추천 장르를 고르면 해당 장르의 곡을 최대 10곡 들어요.');
 const genreHint=el('p','nl-note'),genreCards=el('div','nl-genre-cards');genrePanel.append(genreHint,genreCards);
 const manual=lane('manual','내가 고른 장르와 분위기','분위기를 누르면 전체 음원에서 최대 100곡을 바로 들어요. 장르를 고르면 그 장르 안에서 찾아요.');
 const controls=el('div','nl-controls'),genreLabel=el('label','nl-genre-label','장르'),genres=el('select','nl-genres');
@@ -25,7 +25,7 @@ genres.setAttribute('aria-label','듣고 싶은 장르');genreLabel.append(genre
 let manualGenre='',manualMood='';
 const moods=el('div','nl-moods');moods.setAttribute('role','group');moods.setAttribute('aria-label','음악 분위기');
 for(const [key,label] of Object.entries(labels).filter(([key])=>key!=='auto')){
- const b=button(label,'star',()=>{
+ const b=button(label,key,()=>{
   manualMood=key;const selection=renderManual();
   if(!manualGenre&&state?.canPlay&&selection.rows.length)startManual(selection.rows);
  });b.dataset.mood=key;moods.append(b);
@@ -96,7 +96,7 @@ function renderGenreChoices(){
  const plan=personal&&ready?listeningPlan():null,rows=plan?.whole.rows||[];
  mixButton.disabled=!!personal&&(!ready||!rows.length);
  mixButton.setAttribute('aria-pressed',String(isGlobalMix()));
- mixButton.lastChild.textContent=personal?(ready?'추천 '+rows.length+'곡 듣기':'추천곡 준비 중'):(state.member?'사주 추천 설정':'로그인하고 추천받기');
+ mixButton.lastChild.textContent=personal?(ready?'추천 '+rows.length+'곡 듣기':'추천곡 준비 중'):(state.member?'생일 맞춤 설정':'로그인하고 추천받기');
  for(const pick of genreCards.querySelectorAll('[data-genre-choice]'))pick.setAttribute('aria-pressed',String(isRecommendedGenreMix()&&genre===pick.dataset.genreChoice));
  if(plan&&renderedPlan===plan)return;
  renderedPlan=plan;
@@ -111,7 +111,7 @@ function renderGenreChoices(){
   item.append(title,go,tracks);genreCards.append(item);
  }
 }
-const listen=button('사주 추천 듣기','play',playWholeCatalog);listen.classList.add('nl-primary');listen.disabled=true;
+const listen=button('맞춤 추천 듣기','play',playWholeCatalog);listen.classList.add('nl-primary');listen.disabled=true;
 if(!home){
  const discovery=host.closest('.nl-music-discovery');
  if(discovery){const toggle=discovery.querySelector('summary');toggle.replaceChildren(el('span','nl-discovery-title',toggle.textContent.trim()));
@@ -147,7 +147,7 @@ function render(){if(!state)return;
  renderFortune();renderGenreChoices();renderManual();listen.disabled=mixButton.disabled;
  for(const b of tabs.children)b.setAttribute('aria-pressed',String(b.dataset.mode===mode));
  browse.hidden=!state.member;results.replaceChildren();
- infoText.textContent='곡의 제목과 가사, 분위기를 살펴 추천해요. 생년월일을 설정하면 오늘의 사주도 반영됩니다.';
+ infoText.textContent='곡의 제목과 가사, 분위기를 살펴 추천해요. 생년월일을 설정하면 생일 정보와 오늘의 리듬도 반영해요.';
  if(!state.member){status.textContent='로그인하면 음원을 들을 수 있어요.';return;}
  if(!musicWindow){status.textContent='음원 목록을 연결하고 있어요.';return;}
  const browseGenre=manualGenre||genre,options={genre:browseGenre,mood:manualMood||'auto',mode,theme:state.theme,popular:state.popular,library:state.library};
@@ -256,8 +256,8 @@ function openSettings(fortuneSetup=false){const trigger=document.activeElement;i
  const gf=field('기본 장르','genre','',p.genre||genre,state.genres);form.append(gf.wrap);
  const zones={'Asia/Seoul':'한국 · 서울','Asia/Tokyo':'일본 · 도쿄','Asia/Shanghai':'중국 · 상하이','Asia/Bangkok':'태국 · 방콕','America/Los_Angeles':'미국 · 로스앤젤레스','America/New_York':'미국 · 뉴욕','Europe/London':'영국 · 런던','Australia/Sydney':'호주 · 시드니'};let detected='Asia/Seoul';try{detected=Intl.DateTimeFormat().resolvedOptions().timeZone;}catch{}for(const z of [detected,p.timezone,p.birthTimezone].filter(Boolean))if(!zones[z])zones[z]=z;
  const tz=field('현재 생활 시간대','timezone','',p.timezone||detected,zones);form.append(tz.wrap);
- const agree=el('label','nl-consent'),consent=el('input');consent.type='checkbox';consent.checked=!!p.consent;agree.append(consent,document.createTextNode('생년월일·출생시간을 저장해 사주·바이오리듬 음악 추천과 오늘의 운세에 사용하는 데 동의합니다.'));form.append(agree);
- const birth=el('fieldset','nl-birth');birth.append(el('legend','','사주·바이오리듬 설정'));const calendar=field('생일 기준','calendar','',p.calendar||'solar',{solar:'양력',lunar:'한국 음력'});const date=field('생년월일','birthDate','text',p.birthDate);date.input.inputMode='numeric';date.input.placeholder='예: 19900615';date.input.autocomplete='off';const dateHint=el('small','nl-note','숫자 8자리로 입력해 주세요. 예: 19900615 또는 1990-06-15');dateHint.id='nl-birth-date-hint';date.input.setAttribute('aria-describedby',dateHint.id);date.wrap.append(dateHint);date.input.oninput=()=>date.input.setCustomValidity('');date.input.onblur=()=>{const normalized=model.normalizeBirthDate(date.input.value);if(normalized)date.input.value=normalized;};const leap=field('윤달','leap','',p.leap?'yes':'no',{no:'평달',yes:'윤달'});const time=field('태어난 시간 · 모르면 비워두세요','birthTime','time',p.birthTime);const bz=field('출생지 시간대','birthTimezone','',p.birthTimezone||'Asia/Seoul',zones);
+ const agree=el('label','nl-consent'),consent=el('input');consent.type='checkbox';consent.checked=!!p.consent;agree.append(consent,document.createTextNode('생년월일·출생시간을 저장해 생일 맞춤 음악 추천과 오늘의 운세에 사용하는 데 동의합니다.'));form.append(agree);
+ const birth=el('fieldset','nl-birth');birth.append(el('legend','','생일 맞춤 설정'));const calendar=field('생일 기준','calendar','',p.calendar||'solar',{solar:'양력',lunar:'한국 음력'});const date=field('생년월일','birthDate','text',p.birthDate);date.input.inputMode='numeric';date.input.placeholder='예: 19900615';date.input.autocomplete='off';const dateHint=el('small','nl-note','숫자 8자리로 입력해 주세요. 예: 19900615 또는 1990-06-15');dateHint.id='nl-birth-date-hint';date.input.setAttribute('aria-describedby',dateHint.id);date.wrap.append(dateHint);date.input.oninput=()=>date.input.setCustomValidity('');date.input.onblur=()=>{const normalized=model.normalizeBirthDate(date.input.value);if(normalized)date.input.value=normalized;};const leap=field('윤달','leap','',p.leap?'yes':'no',{no:'평달',yes:'윤달'});const time=field('태어난 시간 · 모르면 비워두세요','birthTime','time',p.birthTime);const bz=field('출생지 시간대','birthTimezone','',p.birthTimezone||'Asia/Seoul',zones);
  birth.append(calendar.wrap,date.wrap,leap.wrap,time.wrap,bz.wrap,el('p','nl-note','한국 음력은 1900~2050년을 지원합니다. 출생지 표준시를 사용하며, 시간을 모르면 시주는 제외합니다.'));const alertLabel=el('label','nl-fortune-opt'),alerts=el('input');alerts.type='checkbox';alerts.name='fortuneAlerts';alerts.checked=p.fortuneAlerts===true;alertLabel.append(alerts,document.createTextNode('매일 오전 8시(한국 시간)에 오늘의 운세 한 줄 받기'));birth.append(alertLabel,el('small','nl-note','알림함에 도착하며, 휴대폰에서도 받으려면 저장 후 홈의 ‘이 기기 알림 연결’에서 알림을 켜 주세요.'));form.append(birth);
  const toggle=()=>{date.input.setCustomValidity('');birth.disabled=!consent.checked;birth.hidden=!consent.checked;date.input.required=consent.checked;leap.input.disabled=calendar.input.value!=='lunar';if(calendar.input.value==='solar')leap.input.value='no';};consent.onchange=toggle;calendar.input.onchange=toggle;toggle();
  form.append(el('p','nl-note',state.theme.notice));const message=el('p','nl-status');message.setAttribute('role','status');form.append(message);const actions=el('div','nl-dialog-actions'),save=button('저장','save',()=>{}),remove=button('추천 설정 삭제','trash',()=>submit('DELETE'));save.type='submit';actions.append(remove,save);form.append(actions);

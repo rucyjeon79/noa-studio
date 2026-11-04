@@ -93,6 +93,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       NOA_MENU_DRAWER: ${{ contains(github.event.head_commit.message, '[menu-drawer]') }}
+      NOA_PANORAMA: ${{ contains(github.event.head_commit.message, '[panorama]') }}
       NOA_SURFACE_POLISH: ${{ contains(github.event.head_commit.message, '[surface-polish]') }}
       NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
       NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}

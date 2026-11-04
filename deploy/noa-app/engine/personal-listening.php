@@ -62,11 +62,11 @@ function n80_listening_theme(array $profile,?DateTimeImmutable $now=null):array{
  }
  $nextKoreanDay=$now->setTimezone(new DateTimeZone('Asia/Seoul'))->modify('tomorrow midnight');
  $labels=['calm'=>'휴식','energy'=>'활력','focus'=>'집중','comfort'=>'위로'];
- return ['mood'=>$mood,'rankedMoods'=>$rankedMoods,'reading'=>$reading,'label'=>$labels[$mood],'period'=>$period,'localDate'=>$local->format('Y-m-d'),'timezone'=>$local->getTimezone()->getName(),'personal'=>!!$pillars,'pillars'=>$pillars,'birthTimeKnown'=>isset($pillars['hour']),'rhythms'=>$rhythms,'validUntil'=>min($now->modify('+15 minutes')->getTimestamp(),$nextKoreanDay->getTimestamp()),'basis'=>$pillars?'사주 해석 · 바이오리듬 주기 · 시간대':'시간대','notice'=>'사주와 바이오리듬은 음악을 고르는 해석적 테마이며 실제 감정·건강의 측정값이 아닙니다. 직접 고른 분위기가 우선합니다.'];
+ return ['mood'=>$mood,'rankedMoods'=>$rankedMoods,'reading'=>$reading,'label'=>$labels[$mood],'period'=>$period,'localDate'=>$local->format('Y-m-d'),'timezone'=>$local->getTimezone()->getName(),'personal'=>!!$pillars,'pillars'=>$pillars,'birthTimeKnown'=>isset($pillars['hour']),'rhythms'=>$rhythms,'validUntil'=>min($now->modify('+15 minutes')->getTimestamp(),$nextKoreanDay->getTimestamp()),'basis'=>$pillars?'생년월일 · 바이오리듬 · 시간대':'시간대','notice'=>'생년월일·출생시간의 전통 달력 해석과 바이오리듬 주기를 선곡에 참고해요. 직접 고른 분위기가 우선합니다.'];
 }
 function n80_listening_tags(array $body):array{
  $text=implode(' ',array_filter(array_map(static fn($key)=>is_string($body[$key]??null)?$body[$key]:'',['sunoStyle','sunoStylePrompt','stylePrompt','sunoPrompt','style','mood','songDescription','descriptionBlock'])));
- $rules=['calm'=>'calm|relax|ambient|gentle|soft piano|휴식|잔잔|차분|명상','energy'=>'energetic|upbeat|dance|driving beat|high energy|활기|신나는|댄스|경쾌','focus'=>'instrumental|minimal|lo-fi|lofi|piano solo|집중|연주곡|미니멀','comfort'=>'warm|comfort|healing|tender|emotional ballad|위로|따뜻|포근|치유'];$tags=[];
+ $rules=['calm'=>'calm|relax|ambient|gentle|soft piano|휴식|잔잔|차분|명상','energy'=>'energetic|upbeat|dance|driving beat|high energy|활기|신나는|댄스|경쾌','focus'=>'instrumental|minimal|lo-fi|lofi|piano solo|집중|연주곡|미니멀','drive'=>'road trip|night drive|cruising|드라이브|운전','walk'=>'walking|stroll|산책|발걸음','comfort'=>'warm|comfort|healing|tender|emotional ballad|위로|따뜻|포근|치유'];$tags=[];
  foreach($rules as $tag=>$pattern)if(preg_match('/'.$pattern.'/iu',$text))$tags[]=$tag;
  return $tags;
 }
@@ -104,6 +104,8 @@ function n80_listening_mood_scores(array $song,array $body):array{
             '~다시\s*(?:일어나|일어서|달려|뛰어)|힘껏\s*(?:달|뛰)|끝까지\s*달|달려(?:가|보자)|뛰어(?:올라|가)|다시\s*(?:시작|살아가)|\b(?:rise again|get back up|run wild|keep running)\b|立ち上が|走り出|ลุกขึ้นอีกครั้ง~iu',
             '~춤(?:을|춰)\s*(?:추|춰|봐)?|소리\s*질러|더\s*소리쳐|더\s*크게\s*외쳐|심장(?:이|은)\s*뛰|\b(?:dance|dancing|turn it up|jump higher|hands up)\b|踊ろう|踊れ|เต้นรำ~iu',
         ],
+        'drive' => ['~드라이브|운전|고속도로|해안도로|차창|밤거리|\b(?:driving|night drive|highway|road trip|dashboard|cruising)\b|ドライブ|ขับรถ~iu'],
+        'walk' => ['~산책|발걸음|골목길|걸어가|나란히 걸|\b(?:stroll|footsteps|walking|take a walk)\b|散歩|เดินเล่น~iu'],
         'comfort' => [
             '~^위로$|(?:작은|따뜻한|오늘의|너를 위한)\s*위로|위로(?:가|를|해|의|받|하[는고며]|하고\s*싶)|토닥|다독|\b(?:comfort(?:ing)?|console you)\b|慰め|ปลอบใจ~iu',
             '~(?:네|너의|내가)\s*곁에\s*(?:있을게|머물|서서)|혼자(?:가)?\s*아니|\b(?:by your side|not alone|here for you)\b|そばにいる|ひとりじゃない|ไม่โดดเดี่ยว|อยู่ข้างเธอ~iu',

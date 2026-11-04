@@ -3,7 +3,7 @@ import {readFileSync,mkdirSync} from 'node:fs';
 import assert from 'node:assert/strict';
 const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
 const base='https://noastudio.ai.kr';mkdirSync('room-theme-proof/header',{recursive:true});
-try{for(const [width,height]of [[320,900],[390,900],[768,900],[1600,900]]){
+try{for(const [width,height]of [[320,900],[390,900],[768,900],[1600,900],[2300,900]]){
  const c=await browser.newContext({viewport:{width,height},timezoneId:'Asia/Seoul'});let requests=0;
  await c.addInitScript(()=>{window.__geoCalls=0;Object.defineProperty(navigator,'geolocation',{value:{getCurrentPosition(success,error){window.__geoCalls++;if(window.__geoDenied)error({code:1});else success({coords:{latitude:35.1795543,longitude:129.0756416}});}}});});
  await c.route(base+'/**',async r=>{
@@ -13,7 +13,7 @@ try{for(const [width,height]of [[320,900],[390,900],[768,900],[1600,900]]){
   if(path==='/noa-bridge/ui-preferences.php')return r.fulfill({json:{member:false,settings:null,revision:0,defaults:{enabled:['noa-studio','noa-ivory']}}});
   if(path.endsWith('.json')||path.endsWith('.js')||path.endsWith('.css')){try{return r.fulfill({body:readFileSync('deploy'+path),contentType:path.endsWith('.json')?'application/json':path.endsWith('.js')?'text/javascript; charset=utf-8':'text/css; charset=utf-8'});}catch{return r.fulfill({status:404,body:''});}}
   if(path.startsWith('/noa-assets/'))return r.fulfill({status:204,body:''});
-  const native=path.startsWith('/shop/');return r.fulfill({contentType:'text/html; charset=utf-8',body:'<!doctype html><html lang="ko" class="'+(native?'ny-native':'')+'"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-account.css"><link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-youngcart-premium.css"><link rel="stylesheet" href="/noa-referral.css"><body class="'+(native?'ny-native-page':'noa-page')+'"><main><h1>NOA STUDIO</h1><p id="fixture-copy">지금, 나에게 맞는 음악</p><strong class="noa-card-heading">공지사항</strong><input id="fixture-input" value="찾기"></main><script src="/noa-account.js"></script><script src="/noa-ui.js"></script></body></html>'});
+  const native=path.startsWith('/shop/');return r.fulfill({contentType:'text/html; charset=utf-8',body:'<!doctype html><html lang="ko" class="'+(native?'ny-native':'')+'"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-account.css"><link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-youngcart-premium.css"><link rel="stylesheet" href="/noa-referral.css"><body class="'+(native?'ny-native-page':'noa-page')+'"><main><h1>NOA STUDIO</h1><p id="fixture-copy">지금, 나에게 맞는 음악</p><strong class="noa-card-heading">공지사항</strong><input id="fixture-input" value="찾기"></main><script src="/noa-page-progress.js" defer></script><script src="/noa-account.js"></script><script src="/noa-ui.js"></script></body></html>'});
  });
  const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto(base+'/');await p.waitForFunction(()=>window.NoaUI?.getState());
  assert.equal(await p.evaluate(()=>window.__geoCalls),0,'no unsolicited location request');assert.equal(requests,0,'no weather call before location consent');
@@ -48,12 +48,20 @@ try{for(const [width,height]of [[320,900],[390,900],[768,900],[1600,900]]){
  await p.locator('#noa-header-weather').click();await p.evaluate(()=>{window.__geoDenied=true;});await p.locator('[data-weather-locate]').click();await p.getByText('위치 사용이 꺼져 있어요.',{exact:false}).waitFor();assert.equal(requests,1);assert.match(await p.locator('#noa-header-weather').innerText(),/내 위치/);await p.getByRole('button',{name:'날씨 닫기',exact:true}).click();
  }
  await enter();const search=p.locator('#noa-drawer-search');await search.fill('공지');assert.equal(await drawer.locator('.noa-drawer-secondary a:visible').count(),1);await search.fill('없는메뉴xyz');assert(await drawer.locator('.noa-menu-empty').isVisible());await search.fill('');
- const frame=await drawer.boundingBox();assert(Math.abs(frame.width-width*.7)<=1&&Math.abs(frame.x)<=1);
- assert(await p.locator('#noa-account-bar').evaluate(e=>e.getBoundingClientRect().bottom<=1));
- const animation=await drawer.evaluate(e=>getComputedStyle(e).animationDuration);assert.equal(animation,'1s');
- await p.screenshot({path:'room-theme-proof/header/menu-open-'+width+'.png'});
- await p.mouse.click(width-4,120);await drawer.waitFor({state:'hidden'});assert(await trigger.evaluate(el=>el===document.activeElement));
+ const pinned=width>=1200,frame=await drawer.boundingBox();
+ if(pinned){
+  assert(!await drawer.evaluate(d=>d.matches(':modal')));assert(Math.abs(frame.x-Math.max(0,(width-height*16/9)/2))<=1);assert(frame.width>=220&&frame.width<300);
+  await p.keyboard.press('Escape');assert(await drawer.isVisible());
+ }else{
+  assert(Math.abs(frame.width-width*.7)<=1&&Math.abs(frame.x)<=1);assert(await p.locator('#noa-account-bar').evaluate(e=>e.getBoundingClientRect().bottom<=1));
+  assert.equal(await drawer.evaluate(e=>getComputedStyle(e).animationDuration),'1s');await p.mouse.click(width-4,120);await drawer.waitFor({state:'hidden'});assert(await trigger.evaluate(el=>el===document.activeElement));
+ }
  await p.locator('[data-footer-theme=noa-ivory]').click();assert.equal(await p.locator('dialog:modal').count(),0);assert.equal(await p.locator('html').getAttribute('data-noa-theme'),'noa-ivory');
  await p.screenshot({path:'room-theme-proof/header/header-light-'+width+'.png'});await p.locator('[data-footer-theme=noa-studio]').click();assert.equal(await p.locator('dialog:modal').count(),0);assert.equal(await p.locator('html').getAttribute('data-noa-theme'),'noa-studio');await p.screenshot({path:'room-theme-proof/header/header-dark-'+width+'.png'});
- assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.goto(base+'/shop/cart.php');await p.waitForFunction(()=>window.NoaUI?.getState());const bounds=await p.locator('#noa-account-bar').boundingBox();assert(Math.abs(bounds.x)<1,'native cart keeps the top frame at the screen edge');assert(Math.abs(bounds.width-await p.evaluate(()=>document.documentElement.clientWidth))<2,'native cart keeps the full top-frame width');assert.deepEqual(errors,[]);await c.close();console.log('HEADER_LANGUAGE_WEATHER_SEARCH_THEME_OK',width);
+ assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.goto(base+'/shop/cart.php');await p.waitForFunction(()=>window.NoaUI?.getState());const bounds=await p.locator('#noa-account-bar').boundingBox();const edge=Math.max(0,(width-height*16/9)/2),rail=pinned?frame.width:0;assert(Math.abs(bounds.x-edge-rail)<=1);assert(Math.abs(bounds.width+rail+2*edge-width)<=2);
+ const line=p.locator('#noa-page-progress');await p.evaluate(()=>{document.body.style.minHeight='360vh';scrollTo(0,document.documentElement.scrollHeight);});await p.waitForFunction(()=>document.getElementById('noa-page-progress').getAttribute('aria-valuenow')==='100');
+ await p.evaluate(()=>{const dock=document.createElement('div');dock.id='jukebox-transfer-dock';dock.innerHTML='<progress max="100" value="37"></progress>';document.body.append(dock);});
+ await p.waitForFunction(()=>document.getElementById('noa-page-progress').dataset.mode==='task');assert.equal(await line.getAttribute('aria-valuenow'),'37');
+ await p.evaluate(()=>document.getElementById('jukebox-transfer-dock').remove());await p.waitForFunction(()=>document.getElementById('noa-page-progress').dataset.mode==='scroll');
+ assert.deepEqual(errors,[]);await c.close();console.log('HEADER_LANGUAGE_WEATHER_SEARCH_THEME_OK',width);
 }}finally{await browser.close();}

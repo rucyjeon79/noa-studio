@@ -88,6 +88,7 @@ function noa_design_assets(){
  $form_post=$method==='POST'&&($workspace||in_array($path,['/noa-gifts.php','/noa-special-invite.php','/noa-payment-settings.php','/noa-quality.php','/noa-catalog-admin.php','/noa-recovery.php'],true));
  if(!$native&&$method!=='GET'&&!$form_post)return;
  $launch=dirname(__DIR__).'/noa-launch.js';$ainoa=is_file($launch)?'<script src="/noa-launch.js?v='.hash_file('sha256',$launch).'"></script>':'';
+ $progress=dirname(__DIR__).'/noa-page-progress.js';if(is_file($progress))$ainoa.='<script src="/noa-page-progress.js?v='.hash_file('sha256',$progress).'" defer></script>';
  $voice=dirname(__DIR__).'/noa-voice.js';if(is_file($voice))$ainoa.='<script src="/noa-voice.js?v='.hash_file('sha256',$voice).'" defer></script>';
  foreach(['css','js'] as $kind){$asset=dirname(__DIR__).'/noa-ainoa.'.$kind;if(is_file($asset)){$url='/noa-ainoa.'.$kind.'?v='.hash_file('sha256',$asset);$ainoa.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'" defer></script>';}}
  foreach(['css','js']as $kind){$file=dirname(__DIR__).'/noa-install.'.$kind;if(is_file($file)){$url='/noa-install.'.$kind.'?v='.hash_file('sha256',$file);$ainoa.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'" defer></script>';}}

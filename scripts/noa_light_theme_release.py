@@ -35,6 +35,14 @@ if os.environ.get('NOA_MENU_DRAWER') == 'true':
     release.NEW = set()
     release.PROTECTED = list(dict.fromkeys([*release.PROTECTED,'noa-hero.js','noa-music.php']))
 
+if os.environ.get('NOA_PANORAMA') == 'true':
+    names = ('noa-page-progress.js','noa-app/engine/personal-listening.php','noa-listening-model.js',
+             'noa-music.php','noa-listening.js','noa-interface-labels.json','noa-starlight.css','noa-ui.js')
+    release.FILES = {name:'deploy/'+name for name in names}
+    release.FILES['extend/noa.design.php'] = 'deploy/noa-design.extend.php'
+    release.NEW = {'noa-page-progress.js'}
+    release.PROTECTED = [name for name in release.PROTECTED if name != 'noa-music.php']
+
 if __name__ == '__main__':
     try:
         release.main()

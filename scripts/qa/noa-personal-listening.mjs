@@ -182,13 +182,13 @@ try{
  }
  if(!live){
   const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block',extraHTTPHeaders:{'X-QA-User':'queue-count','X-QA-Catalog':'large'}});
-  // A listener without birth settings can start four cross-genre queues with a single tap.
+  // A listener without birth settings can start six cross-genre queues with a single tap.
   const noChart=await c.newPage();activePage=noChart;await noChart.goto(base+'/noa-music.php');
   await noChart.locator('.nl-music-discovery>summary').click();
   await noChart.locator('.nl-genres option[value="kpop-original"]').waitFor({state:'attached'});
   assert.equal(await noChart.locator('.nl-genres').inputValue(),'');
   const moodOrders=[];
-  for(const [mood,label] of Object.entries({calm:'휴식',focus:'집중',energy:'활력',comfort:'위로'})){
+  for(const [mood,label] of Object.entries({calm:'휴식',focus:'집중',comfort:'위로',energy:'활동',drive:'운전',walk:'산책'})){
    await noChart.locator('[data-mood='+mood+']').click();
    await noChart.waitForFunction(m=>NoaMusic.listeningSelection()?.mood===m&&queue().length===100&&!player.paused&&player.currentTime>0,mood);
    const keys=await noChart.evaluate(()=>queue().map(b=>b.dataset.key));assert.equal(new Set(keys).size,100);
@@ -198,7 +198,7 @@ try{
    await noChart.locator('#next').click();assert.equal(await noChart.locator('.song.selected').getAttribute('data-key'),keys[1]);
    moodOrders.push(keys.join(','));
   }
-  assert.equal(new Set(moodOrders).size,4);await noChart.close();
+  assert.equal(new Set(moodOrders).size,6);await noChart.close();
   const before=await(await c.request.get(base+'/noa-bridge/listening.php')).json();
   const save=await c.request.post(base+'/noa-bridge/listening.php',{headers:{Origin:base,'X-NOA-CSRF':before.csrf},data:{revision:before.revision,profile:{genre:'kpop-original',timezone:'Asia/Seoul',consent:true,birthDate:'1990-06-15'}}});assert.equal(save.status(),200);
   const page=await c.newPage();activePage=page;await page.goto(base);await page.locator('[data-listening-lane=whole] .nl-preview-track').nth(9).waitFor();await page.getByRole('button',{name:'추천 100곡 듣기',exact:true}).click();
@@ -214,7 +214,7 @@ try{
    },theme);
    assert.deepEqual(paint,[false,true,true,'1'],'enabled mix uses solid theme colors: '+theme.id);
   }
-  const wholeQueue=await readQueue();assert.match(wholeQueue.source,/전체 사주 추천 · 100곡/);
+  const wholeQueue=await readQueue();assert.match(wholeQueue.source,/생일 맞춤 추천 · 100곡/);
   assert.equal(new URL(wholeQueue.src,base).searchParams.get('record'),wholeQueue.keys[0]);
   const heads=new Map();
   const stats=await player.evaluate(()=>({unique:new Set(queue().map(b=>b.dataset.key)).size,genres:new Set(queue().map(b=>b.dataset.genre)).size}));assert.equal(stats.unique,100);assert(stats.genres>1);
@@ -231,7 +231,7 @@ try{
    assert.equal(new URL(recommended.src,base).searchParams.get('record'),recommended.keys[0]);
    await player.locator('.nl-music-discovery>summary').click();
    assert.equal(await player.locator('[data-genre-choice="'+genre+'"]').getAttribute('aria-pressed'),'true');
-   assert.equal(await player.locator('.nl-listen-row>.nl-primary').innerText(),'사주 추천 듣기');await player.locator('.nl-listen-row>.nl-primary').click();assert.deepEqual((await readQueue()).keys,wholeQueue.keys);await player.locator('[data-genre-choice="'+genre+'"]').click();assert.deepEqual((await readQueue()).keys,recommended.keys);
+   assert.equal(await player.locator('.nl-listen-row>.nl-primary').innerText(),'맞춤 추천 듣기');await player.locator('.nl-listen-row>.nl-primary').click();assert.deepEqual((await readQueue()).keys,wholeQueue.keys);await player.locator('[data-genre-choice="'+genre+'"]').click();assert.deepEqual((await readQueue()).keys,recommended.keys);
    await player.locator('.nl-music-discovery>summary').click();await player.locator('#next').click();
    assert.equal((await readQueue()).selected,recommended.keys[1]);
    assert.equal(await player.evaluate(()=>new Set(queue().map(b=>b.dataset.key)).size),10);

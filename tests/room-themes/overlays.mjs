@@ -40,7 +40,7 @@ try{
   const bubble=await tip.boundingBox(),nav=await p.locator('.noa-mobile-nav').boundingBox();assert(bubble.x>=0&&bubble.x+bubble.width<=width+1&&bubble.y>=0&&bubble.y+bubble.height<=height,'welcome remains within the viewport');if(nav?.height)assert(bubble.y+bubble.height<=nav.y-8,'welcome clears the bottom navigation');
   await p.screenshot({path:out+'/welcome-'+mode+'-'+width+'.png'});
   // Reopening a pre-existing dialog (only its open attribute changes) pauses an already visible greeting.
-  await p.locator('#noa-nav-all').click();await p.waitForFunction(()=>document.querySelector('.ainoa-tip').hidden);
+  await p.locator(width>=1200?'#noa-header-weather':'#noa-nav-all').click();await p.waitForFunction(()=>document.querySelector('.ainoa-tip').hidden);
   await p.clock.fastForward(30000);await p.keyboard.press('Escape');await tip.waitFor({state:'visible'});
   assert((await tip.innerText()).includes(member?'1,234P':'비로그인'),'paused greeting survives longer than its original lifetime');
   await tip.locator('.ainoa-message-dismiss').click();

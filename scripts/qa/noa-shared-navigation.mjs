@@ -16,12 +16,12 @@ try{for(const [width,height] of [[320,900],[390,900],[768,720],[1920,900]]){
  await page.goto(base+'/');await page.locator('#noa-nav-top').waitFor();
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  for(const id of ['noa-nav-back','noa-nav-top','noa-nav-all','noa-nav-account']){const box=await page.locator('#'+id).boundingBox();assert(box.height>=44&&box.width>=44);}
- await page.locator('#noa-nav-all').click();await page.locator('#noa-drawer-search').fill('공지');assert.equal(await page.locator('.noa-drawer-secondary a:visible').count(),1);await page.getByRole('button',{name:'전체 메뉴 닫기',exact:true}).click();
+ await page.locator('#noa-nav-all').click();await page.locator('#noa-drawer-search').fill('공지');assert.equal(await page.locator('.noa-drawer-secondary a:visible').count(),1);if(width<1200)await page.getByRole('button',{name:'전체 메뉴 닫기',exact:true}).click();else await page.locator('#noa-drawer-search').fill('');
  await page.getByRole('link',{name:'다음 화면',exact:true}).click();assert(page.url().endsWith('/second'));
  await page.locator('#noa-nav-back').click();await page.waitForURL(base+'/');
  await page.evaluate(()=>scrollTo(0,1800));assert((await page.locator('#noa-account-bar').boundingBox()).y===0);
  await page.locator('#noa-nav-top').click();await page.waitForFunction(()=>scrollY===0);
- assert.equal(await page.locator('#noa-menu-drawer').isVisible(),false);
+ assert.equal(await page.locator('#noa-menu-drawer').isVisible(),width>=1200);
  if(width<=760)assert(await page.locator('.noa-mobile-nav').isVisible());
  if(width<=760){
   await page.locator('.noa-mobile-footer').scrollIntoViewIfNeeded();

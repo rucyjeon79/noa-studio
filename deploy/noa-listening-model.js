@@ -7,7 +7,7 @@ function normalizeBirthDate(value){
  // Keep lunar dates intact; the server validates them against the selected calendar.
  return parts[1]+'-'+parts[2].padStart(2,'0')+'-'+parts[3].padStart(2,'0');
 }
-const moodKeys=['calm','focus','energy','comfort'];
+const moodKeys=['calm','focus','energy','comfort','drive','walk'];
 function catalog(records,genre,acrossGenres=false){
  const recordings=new Map(),playable=[];
  for(const row of records){
@@ -41,7 +41,10 @@ function moodScore(track,mood){
 function trackFit(row,mood,personal){
  const direct=moodScore(row,mood);
  const similarity=personal?Math.min(1,row.moodAffinity?.[mood]||0):0;
- return direct+similarity;
+ // Scene cues rank first. With sparse metadata, blend existing musical moods.
+ const blend=mood==='drive'?0.24*moodScore(row,'energy')+0.13*moodScore(row,'focus'):
+             mood==='walk'?0.21*moodScore(row,'calm')+0.14*moodScore(row,'energy'):0;
+ return direct+similarity+Math.min(.9,blend);
 }
 function availableMood(rows,mood,theme){
  if(mood!=='auto')return mood;
