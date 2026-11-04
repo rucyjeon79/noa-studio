@@ -34,6 +34,7 @@ jobs:
           php -l deploy/noa-app/home.php
           php tests/listening/core.php
           php tests/listening/setup.php
+          php tests/listening/fortune-dispatch.php
           node --check deploy/noa-listening.js
           node --check deploy/noa-browse.js
           node --test scripts/qa/noa-browse.test.mjs

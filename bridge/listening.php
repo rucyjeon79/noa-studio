@@ -15,7 +15,9 @@ try{
   $raw=file_get_contents('php://input',false,null,0,4097);if($raw===false||strlen($raw)>4096)nlp_reply(413,['error'=>'too_large']);$data=json_decode($raw,true);
   if(!is_array($data)||!is_int($data['revision']??null)||$data['revision']<0)nlp_reply(400,['error'=>'invalid_revision']);
   if($method==='POST'&&!is_array($data['profile']??null))nlp_reply(400,['error'=>'invalid_preference']);
-  $next=$method==='DELETE'?null:n80_listening_profile(is_array($data['profile']??null)?$data['profile']:[]);$encoded=json_encode($next,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
+  $next=$method==='DELETE'?null:n80_listening_profile(is_array($data['profile']??null)?$data['profile']:[]);
+  if(!empty($next['fortuneAlerts']))$next['fortuneAlertsSince']=!empty($profile['fortuneAlerts'])?(int)($profile['fortuneAlertsSince']??time()):time();
+  $encoded=json_encode($next,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
   $db->beginTransaction();$q=$db->prepare("INSERT IGNORE INTO noa_documents(doc_key,kind,payload,revision,updated_by) VALUES(?,'prefs','null',0,?)");$q->execute([$key,$owner]);
   $q=$db->prepare('SELECT kind,revision FROM noa_documents WHERE doc_key=? FOR UPDATE');$q->execute([$key]);$current=$q->fetch(PDO::FETCH_ASSOC);
   if(!$current||$current['kind']!=='prefs'||(int)$current['revision']!==$data['revision']){$db->rollBack();nlp_reply(409,['error'=>'revision_conflict']);}
@@ -24,5 +26,6 @@ try{
  }
  $library=[];if($access['music']){try{$q=$db->prepare('SELECT playlist_id,title,tracks FROM noa_user_playlists WHERE owner_id=? ORDER BY created_at DESC LIMIT 50');$q->execute([$owner]);foreach($q as $r){$r['tracks']=json_decode($r['tracks'],true,512,JSON_THROW_ON_ERROR);$library[]=$r;}}catch(PDOException $e){error_log('[listening-library] unavailable');}}
  $popular=[];try{foreach($db->query('SELECT s.song_key,COUNT(*) AS plays FROM noa_valid_plays v JOIN noa_play_sessions s ON s.token=v.token GROUP BY s.song_key') as $r)$popular[$r['song_key']]=(int)$r['plays'];}catch(PDOException $e){error_log('[listening-popularity] unavailable');}
- nlp_reply(200,['member'=>true,'canPlay'=>$access['music'],'profile'=>$profile,'revision'=>$revision,'csrf'=>$_SESSION['noa_listening_csrf'],'genres'=>n80_listening_genres(),'theme'=>n80_listening_theme($profile??[]),'library'=>$library,'popular'=>$popular]);
+ $now=new DateTimeImmutable('now');$theme=n80_listening_theme($profile??[],$now);
+ nlp_reply(200,['member'=>true,'canPlay'=>$access['music'],'profile'=>$profile,'revision'=>$revision,'csrf'=>$_SESSION['noa_listening_csrf'],'genres'=>n80_listening_genres(),'theme'=>$theme,'fortune'=>n80_daily_fortune($theme['pillars'],$now),'library'=>$library,'popular'=>$popular]);
 }catch(DomainException $e){if(isset($db)&&$db->inTransaction())$db->rollBack();nlp_reply(400,['error'=>$e->getMessage()]);}catch(Throwable $e){if(isset($db)&&$db->inTransaction())$db->rollBack();error_log('[listening] '.get_class($e));nlp_reply(503,['error'=>'listening_unavailable']);}

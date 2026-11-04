@@ -157,7 +157,7 @@ function wideShell(side){
   const arrangeHome=()=>{
    const referral=main.querySelector('#noa-referral-banner');if(referral&&referral.parentElement!==main)main.append(referral);
    const goods=main.querySelector('[data-home-banner=goods]');if(goods&&goods.parentElement!==notices)notices.append(goods);
-   const selectors=['[data-home-section=hero]','#noa-referral-banner','#noa-listening','#noa-theme-scene','.noa-monthly-benefits','[data-home-section=notices]','[data-home-section=community]','[data-home-section=recommendations]','[data-home-section=ep]','[data-home-section=stories]','[data-home-section=world]','[data-home-section=covers]','[data-home-section=playlists]','#noa-playlist-basis','[data-home-banner=youtube]','[data-home-section=collections]','[data-home-banner=amt]'];
+   const selectors=['[data-home-section=hero]','#noa-referral-banner','#noa-listening','#noa-daily-fortune','#noa-theme-scene','.noa-monthly-benefits','[data-home-section=notices]','[data-home-section=community]','[data-home-section=recommendations]','[data-home-section=ep]','[data-home-section=stories]','[data-home-section=world]','[data-home-section=covers]','[data-home-section=playlists]','#noa-playlist-basis','[data-home-banner=youtube]','[data-home-section=collections]','[data-home-banner=amt]'];
    let previous=main.querySelector(':scope>.noa-topbar');
    for(const selector of selectors){const node=main.querySelector(':scope>'+selector);if(!node)continue;if(previous){if(node.previousElementSibling!==previous)previous.after(node);}else if(main.firstElementChild!==node)main.prepend(node);previous=node;}
   };

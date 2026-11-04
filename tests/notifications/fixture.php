@@ -24,6 +24,7 @@ $db=new PDO('mysql:host=127.0.0.1;dbname=noa_community;charset=utf8mb4','root','
 $db->exec("SET SESSION sql_mode=''");
 $db->exec("ALTER TABLE g5_member ADD mb_level INT DEFAULT 4,ADD mb_leave_date VARCHAR(8) DEFAULT '',ADD mb_intercept_date VARCHAR(8) DEFAULT ''");$db->exec("UPDATE g5_member SET mb_level=10 WHERE mb_id='qa_admin'");$db->exec('ALTER TABLE g5_board_good ADD bg_id INT PRIMARY KEY AUTO_INCREMENT');
 $db->exec("UPDATE g5_write_free SET mb_id='qa_a'");
+$db->exec("ALTER TABLE noa_documents ADD updated_by VARCHAR(20) NOT NULL DEFAULT ''");
 $db->exec("UPDATE noa_documents SET payload=JSON_SET(payload,'$.ownerId','qa_a') WHERE doc_key='fixture-song'");
 @mkdir('/tmp/noa-notifications-private',0700,true);$key=openssl_pkey_new(['private_key_type'=>OPENSSL_KEYTYPE_EC,'curve_name'=>'prime256v1']);openssl_pkey_export($key,$pem);$details=openssl_pkey_get_details($key);$pub="\x04".str_pad($details['ec']['x'],32,"\0",STR_PAD_LEFT).str_pad($details['ec']['y'],32,"\0",STR_PAD_LEFT);
 $cfg=['inlineDispatch'=>false,'version'=>1,'workerToken'=>str_repeat('f',64),'privateKey'=>$pem,'publicKey'=>rtrim(strtr(base64_encode($pub),'+/','-_'),'=')];file_put_contents('/tmp/noa-notifications-private/config.json',json_encode($cfg));chmod('/tmp/noa-notifications-private/config.json',0600);

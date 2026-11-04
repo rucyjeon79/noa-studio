@@ -25,7 +25,7 @@ function nnt_push_request(array $job,array $cfg,int $now,?OpenSSLAsymmetricKey $
  $rlen=ord($der[3]);$offset=4+$rlen;if(!isset($der[$offset+1])||ord($der[$offset])!==2)throw new RuntimeException('push_signature');
  $r=ltrim(substr($der,4,$rlen),"\0");$s=ltrim(substr($der,$offset+2,ord($der[$offset+1])),"\0");if(strlen($r)>32||strlen($s)>32)throw new RuntimeException('push_signature');
  $jwt.='.'.nnt_b64(str_pad($r,32,"\0",STR_PAD_LEFT).str_pad($s,32,"\0",STR_PAD_LEFT));
- return ['url'=>$sub['endpoint'],'body'=>$body,'headers'=>['TTL: 86400','Urgency: high','Content-Type: application/octet-stream','Content-Encoding: aes128gcm','Authorization: vapid t='.$jwt.', k='.$cfg['publicKey']]];
+ return ['url'=>$sub['endpoint'],'body'=>$body,'headers'=>['TTL: '.(isset($job['expiresAt'])?max(0,min(86400,$job['expiresAt']-$now)):86400),'Urgency: high','Content-Type: application/octet-stream','Content-Encoding: aes128gcm','Authorization: vapid t='.$jwt.', k='.$cfg['publicKey']]];
 }
 function nnt_inline_send(array $job,array $cfg):int{
  $request=nnt_push_request($job,$cfg,time());$curl=curl_init($request['url']);

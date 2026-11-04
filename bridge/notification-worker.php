@@ -10,7 +10,7 @@ try{
  $db=noa_bridge_pdo();if(!nnt_ready($db))throw new RuntimeException('not_ready');
  if(!nnt_exec($db,'INSERT IGNORE INTO noa_notification_cursor VALUES (?,?)',['nonce:'.$nonce,time()])){http_response_code(409);$result=['ok'=>false,'error'=>'replayed_request'];}
  else{$b=json_decode($raw,true,12,JSON_THROW_ON_ERROR);$action=$b['action']??'';
-  if($action==='claim'){$scanned=nnt_collect($db,time());nnt_prune($db,time());$result=['ok'=>true,'scanned'=>$scanned,'jobs'=>nnt_claim($db,time())];}
+  if($action==='claim'){$scanned=nnt_collect($db,time());$scanned['fortune']=nnt_fortune_morning($db,time());nnt_prune($db,time());$result=['ok'=>true,'scanned'=>$scanned,'jobs'=>nnt_claim($db,time())];}
   elseif($action==='ack'&&is_array($b['results']??null))$result=['ok'=>true,'acknowledged'=>nnt_ack($db,$b['results'],time())];
   elseif($action==='health')$result=['ok'=>true,'ready'=>true,'inlineCapable'=>nnt_inline_capable(),'oldestDueAge'=>(int)nnt_one($db,"SELECT COALESCE(MAX(GREATEST(0,?-next_at)),0) age FROM noa_notification_delivery WHERE state='pending' AND next_at<=?",[time(),time()])['age'],'subscriptions'=>(int)nnt_one($db,'SELECT COUNT(*) n FROM noa_push_subscriptions WHERE active=1')['n'],'pending'=>(int)nnt_one($db,"SELECT COUNT(*) n FROM noa_notification_delivery WHERE state IN ('pending','leased')")['n'],'accepted'=>(int)nnt_one($db,'SELECT COUNT(*) n FROM noa_notification_delivery WHERE sent_at IS NOT NULL')['n'],'received'=>(int)nnt_one($db,'SELECT COUNT(*) n FROM noa_notification_delivery WHERE received_at IS NOT NULL')['n']];
   else throw new DomainException('invalid_action');

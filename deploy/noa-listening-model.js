@@ -15,7 +15,7 @@ function select(records,{genre,mood='auto',mode='now',theme={},popular={},librar
  else if(mode==='library'){const keys=new Set(library.flatMap(p=>p.tracks||[]));result=result.filter(r=>keys.has(r.key)||(r.browseKeys||[]).some(k=>keys.has(k)));}
  else if(mode==='now'){
   const matching=result.filter(r=>(r.moodTags||[]).includes(chosen));
-  if(matching.length)result=matching;else if(mood==='auto')fallback=true;else result=[];
+  if(matching.length)result=matching;else fallback=result.length>0;
   // Stable daily rotation only within the matching genre/mood. No random cross-genre filler.
   const seed=String(theme.localDate||'')+String(theme.period||'');const hash=s=>{let h=0;for(const c of seed+s)h=(Math.imul(31,h)+c.charCodeAt(0))>>>0;return h;};result.sort((a,b)=>hash(a.key)-hash(b.key));
  }

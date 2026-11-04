@@ -7,6 +7,10 @@ release.FILES={
  'noa-app/engine/personal-korean-months.json':'deploy/noa-app/engine/personal-korean-months.json',
  'noa-app/engine/personal-calendar-LICENSE.txt':'deploy/noa-app/engine/personal-calendar-LICENSE.txt',
  'noa-app/engine/personal-listening.php':'deploy/noa-app/engine/personal-listening.php',
+ 'noa-bridge/notifications-inline.php':'bridge/notifications-inline.php',
+ 'noa-bridge/notifications-sources.php':'bridge/notifications-sources.php',
+ 'noa-bridge/notifications-core.php':'bridge/notifications-core.php',
+ 'noa-bridge/notification-worker.php':'bridge/notification-worker.php',
  'noa-bridge/listening.php':'bridge/listening.php',
  'noa-listening-model.js':'deploy/noa-listening-model.js',
  'noa-listening.js':'deploy/noa-listening.js',
@@ -17,7 +21,7 @@ release.FILES={
  'noa-music.php':'deploy/noa-music.php',
  'noa-app/home.php':'deploy/noa-app/home.php',
 }
-release.NEW=set(release.FILES)-{'noa-app/engine/n80.php','noa-music.php','noa-app/home.php','noa-ui.js','noa-browse.js'}
+release.NEW=set(release.FILES)-{'noa-app/engine/n80.php','noa-music.php','noa-app/home.php','noa-ui.js','noa-browse.js','noa-bridge/notifications-inline.php','noa-bridge/notifications-sources.php','noa-bridge/notifications-core.php','noa-bridge/notification-worker.php'}
 release.PROTECTED=[p for p in release.PROTECTED if p not in release.FILES]
 release.EXTRA_KNOWN={p:{hashlib.sha256(Path(local).read_bytes()).hexdigest()} for p,local in release.FILES.items() if 'calendar-vendor' in p or 'korean-months' in p or 'calendar-LICENSE' in p}
 if __name__=='__main__':release.main()

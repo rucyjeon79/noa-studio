@@ -80,7 +80,7 @@ def deliver(job,keyfile):
     subscription=job['subscription']
     if not safe_endpoint(subscription.get('endpoint')):return 410
     try:
-        response=webpush(subscription_info=subscription,data=json.dumps(job['payload'],ensure_ascii=False,separators=(',',':')),vapid_private_key=keyfile,vapid_claims={'sub':ORIGIN},ttl=86400,timeout=8,headers={'Urgency':'normal'},requests_session=NoRedirectSession())
+        response=webpush(subscription_info=subscription,data=json.dumps(job['payload'],ensure_ascii=False,separators=(',',':')),vapid_private_key=keyfile,vapid_claims={'sub':ORIGIN},ttl=max(0,min(86400,int(job["expiresAt"])-int(time.time()))) if job.get("expiresAt") else 86400,timeout=8,headers={'Urgency':'normal'},requests_session=NoRedirectSession())
         return response.status_code
     except WebPushException as error:
         # Exceptions can contain endpoint/body details; record only the numeric status.
