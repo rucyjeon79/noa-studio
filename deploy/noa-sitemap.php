@@ -48,6 +48,7 @@ function noa_sitemap_registry():array{
             ['shop','NOA SHOP','굿즈 탐색·찜·공식 구매','/noa-shop.php','disc','public'],
             ['store','통합 스토어','포인트·VIP 이용권·굿즈 함께 구매','/noa-youngcart.php','disc','public'],
             ['lounge','별무리 라운지','음악과 일상을 나누는 팬 커뮤니티','/noa-lounge.php','community','public'],
+            ['loungeDiscovery','라운지 글 찾기','공개 글과 댓글을 검색하고 인기 글을 확인해요','/noa-lounge-discovery.php','community','public'],
             ['creatorLab','CREATOR LAB','피드백·작품 성장 기록·협업','/noa-creator-lab.php','mic','public'],
             ['search','게시판 검색','공개된 게시글 찾기','/bbs/search.php','search','public'],
         ]],

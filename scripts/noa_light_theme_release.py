@@ -1,4 +1,4 @@
-"""Publish the two-frame header and verified location weather, with four-language controls, a first-paint palette shared with section styles and five genre recommendations with member and guest checks at all screen widths."""
+"""Publish the two-frame header and verified location weather, with four-language controls, a first-paint palette shared with section styles and five genre recommendations, including the updated lounge directory."""
 import os
 import sys
 from pathlib import Path
