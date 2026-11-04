@@ -21,7 +21,7 @@ if(phase==='live'){
 try{for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])await Promise.all(sizes.map(async([width,height])=>{
  const context=await browser.newContext({viewport:{width,height},timezoneId:'Asia/Seoul',serviceWorkers:'block'}),p=await context.newPage();
  const errors=[];p.on('pageerror',e=>errors.push(e.message));
- if(phase==='candidate')for(const name of ['noa-account.js','noa-interface-labels.json','noa-youngcart-premium.css','noa-design.json','noa-starlight.css','noa-ui.js','noa-hero.js','noa-listening.js','noa-listening.css','noa-home.js','noa-desktop.js','noa-voice.js','noa-ainoa.css','noa-amt-fan.js','noa-amt-fan.css']){
+ if(phase==='candidate')for(const name of ['noa-account.js','noa-interface-labels.json','noa-youngcart-premium.css','noa-design.json','noa-starlight.css','noa-ui.js','noa-hero.js','noa-listening-model.js','noa-listening.js','noa-listening.css','noa-home.js','noa-desktop.js','noa-voice.js','noa-ainoa.css','noa-amt-fan.js','noa-amt-fan.css']){
   await context.route('**/'+name+'*',route=>route.fulfill({body:readFileSync(source+'/deploy/'+name),contentType:name.endsWith('.css')?'text/css':name.endsWith('.js')?'text/javascript':'application/json'}));
  }
  if(phase==='candidate')await context.route('**/noa-assets/theme-*.webp*',route=>{
@@ -160,7 +160,7 @@ try{for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]
  await context.close();
 }));
  await verifyAutomaticClock();
- if(phase==='live')await verifyFirstPaint();
+ await verifyFirstPaint();
  console.log('PINNED_LANDSCAPE_MENU_COMPACT_MODAL_SEARCH_RESIZE_FOCUS_AND_TALL_DESKTOP_LAYOUT_OK');
  console.log('PREMIUM_THEME_IMAGES_LOADED_MATCH_PALETTE_AND_PRESERVE_ARTIST_AND_PRODUCT_PHOTOS_OK');
  console.log('PREMIUM_THEMES_AUTOMATIC_BOUNDARIES_CONTRAST_LAYOUT_AND_RELOAD_OK');
@@ -182,6 +182,16 @@ async function verifyFirstPaint(){
  for(const [choice,hour,expected]of [['noa-ivory',23,'light'],['noa-studio',12,'dark'],['auto',12,'light'],['auto',23,'dark']]){
   const ctx=await browser.newContext({timezoneId:'Asia/Seoul',serviceWorkers:'block'});
   await ctx.addInitScript(choice=>localStorage.setItem('noa-ui-selection-v2',JSON.stringify({theme:choice})),choice);
+  if(phase==='candidate'){
+   const php=readFileSync(source+'/deploy/noa-design.extend.php','utf8');
+   const bootstrap=php.match(/<script id="noa-first-paint">[\s\S]*?<\/script>/)[0];
+   await ctx.route('https://noastudio.ai.kr/**',async r=>{
+    if(!r.request().isNavigationRequest())return r.continue();
+    const response=await r.fetch(),html=await response.text();
+    await r.fulfill({response,body:html.includes('id="noa-first-paint"')?html:html.replace(/<head\b[^>]*>/i,head=>head+bootstrap)});
+   });
+   await ctx.route('**/noa-starlight.css*',r=>r.fulfill({body:readFileSync(source+'/deploy/noa-starlight.css'),contentType:'text/css'}));
+  }
   await ctx.route('**/noa-ui.js*',r=>r.abort());
   const page=await ctx.newPage();await page.clock.setFixedTime(new Date('2026-11-03T'+hour+':00:00+09:00'));
   for(const path of ['/','/noa-lounge.php','/noa-login.php','/shop/cart.php']){
@@ -197,7 +207,7 @@ async function verifyFirstPaint(){
 async function verifyAutomaticClock(){
  const context=await browser.newContext({viewport:{width:390,height:900},timezoneId:'Asia/Seoul',serviceWorkers:'block'}),p=await context.newPage();
  const posts=[];p.on('request',r=>{if(r.url().includes('/ui-preferences.php')&&r.method()==='POST')posts.push(r.url());});
- if(phase==='candidate')for(const name of ['noa-account.js','noa-interface-labels.json','noa-youngcart-premium.css','noa-design.json','noa-starlight.css','noa-ui.js','noa-hero.js','noa-listening.js','noa-listening.css','noa-home.js','noa-desktop.js'])await context.route('**/'+name+'*',r=>r.fulfill({body:readFileSync(source+'/deploy/'+name),contentType:name.endsWith('.css')?'text/css':name.endsWith('.js')?'text/javascript':'application/json'}));
+ if(phase==='candidate')for(const name of ['noa-account.js','noa-interface-labels.json','noa-youngcart-premium.css','noa-design.json','noa-starlight.css','noa-ui.js','noa-hero.js','noa-listening-model.js','noa-listening.js','noa-listening.css','noa-home.js','noa-desktop.js'])await context.route('**/'+name+'*',r=>r.fulfill({body:readFileSync(source+'/deploy/'+name),contentType:name.endsWith('.css')?'text/css':name.endsWith('.js')?'text/javascript':'application/json'}));
  await p.clock.install({time:new Date('2026-11-03T08:55:00+09:00')});
  await p.goto('https://noastudio.ai.kr/noa-login.php');
  await p.waitForFunction(()=>document.documentElement.dataset.noaThemePreference==='auto'&&document.documentElement.dataset.noaTheme==='noa-studio');
@@ -259,6 +269,16 @@ async function verifyMusicShelves(p,width,mode,theme){
   assert(Math.abs(left.grid.y-right.grid.y)<2,'paired artwork starts on the same line: '+pair);
   assert(Math.abs(left.bottom-right.bottom)<2,'paired shelves finish on the same line: '+pair);
   if(left.pager&&right.pager)assert(Math.abs(left.pager.y-right.pager.y)<2,'paired page controls align: '+pair);
+ }
+ if(phase==='live'){
+  const picks=await p.evaluate(async()=>{
+   const data=await window.NoaHomeSnapshot,genre=document.querySelector('.noa-hero-art').dataset.genre;
+   const available=data.genreFeatured[genre]?.length||0;
+   const visible=[...document.querySelectorAll('#noa-hero-picks a')].filter(a=>a.getBoundingClientRect().height>0);
+   return {available,visible:visible.length,capacity:document.querySelector('.noa-hero').clientWidth>=720?5:2};
+  });
+  assert.equal(picks.visible,Math.min(picks.capacity,picks.available||1));
+  console.log('VISIBLE_GENRE_VIDEO_COUNT',width,mode,picks);
  }
  const placements=await p.locator('.noa-main').evaluate(main=>{
   const hero=main.querySelector('[data-home-section=hero]'),scene=main.querySelector('#noa-theme-scene'),notice=main.querySelector('[data-home-section=notices]'),goods=main.querySelector('[data-home-banner=goods]'),youtube=main.querySelector('[data-home-banner=youtube]'),benefits=main.querySelector('.noa-monthly-benefits'),referral=main.querySelector('#noa-referral-banner'),listening=main.querySelector('#noa-listening');

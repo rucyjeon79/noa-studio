@@ -1,4 +1,4 @@
-"""Publish the two-frame header and verified location weather, with the four-language controls, first-paint palette, responsive footer art and independent listening actions."""
+"""Publish the two-frame header and verified location weather, with four-language controls, a first-paint palette and the current personal-listening interface."""
 import os
 import sys
 from pathlib import Path
