@@ -47,7 +47,7 @@ jobs:
         if: always()
         with: {name: listening-candidate, path: listening-proof/candidate/, retention-days: 7}
   deploy:
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[unified-shell-release]')
     needs: verify
     environment: production
     runs-on: ubuntu-latest

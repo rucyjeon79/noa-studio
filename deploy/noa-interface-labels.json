@@ -2263,5 +2263,15 @@
   "I agree to store my birth date and time for personalized music recommendations and daily fortunes.",
   "生年月日と出生時刻を保存し、四柱推命・バイオリズムに基づく音楽のおすすめと今日の運勢に使うことに同意します。",
   "ฉันยินยอมให้บันทึกวันและเวลาเกิดเพื่อใช้แนะนำเพลงตามดวงชะตาและจังหวะชีวภาพ รวมทั้งดูดวงรายวัน"
+ ],
+ "생년월일을 입력하면 나에게 맞는 음악과 오늘의 운세를 볼 수 있어요. 원하면 매일 오전 8시(한국 시간)에 운세 알림도 받을 수 있어요.": [
+  "Enter your date of birth for music recommendations and your daily fortune. You can also choose a daily fortune notification at 8 am (Korea time).",
+  "生年月日を登録すると、おすすめの音楽と今日の運勢が見られます。希望すると毎朝8時（韓国時間）に運勢の通知も受け取れます。",
+  "กรอกวันเกิดเพื่อดูเพลงแนะนำและดวงประจำวัน คุณเลือกรับการแจ้งเตือนดวงทุกเช้าเวลา 8 โมง (เวลาเกาหลี) ได้ด้วย"
+ ],
+ "생년월일 설정하기": [
+  "Set date of birth",
+  "生年月日を設定",
+  "ตั้งค่าวันเกิด"
  ]
 }

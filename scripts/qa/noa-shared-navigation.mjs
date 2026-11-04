@@ -15,7 +15,7 @@ try{for(const [width,height] of [[320,900],[390,900],[768,720],[1920,900]]){
  const page=await browser.newPage({viewport:{width,height},reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base+'/');await page.locator('#noa-nav-top').waitFor();
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
- for(const id of ['noa-nav-back','noa-nav-top','noa-menu-find','noa-nav-favorite']){const box=await page.locator('#'+id).boundingBox();assert(box.height>=44&&box.width>=44);}
+ for(const id of ['noa-nav-back','noa-nav-top','noa-menu-find','noa-nav-install']){const box=await page.locator('#'+id).boundingBox();assert(box.height>=44&&box.width>=44);}
  await page.locator('#noa-menu-find').click();await page.locator('#noa-global-search').fill('공지');assert.equal(await page.locator('#noa-find-dialog nav>a:visible').count(),1);await page.getByRole('button',{name:'찾기 닫기',exact:true}).click();
  await page.getByRole('link',{name:'다음 화면',exact:true}).click();assert(page.url().endsWith('/second'));
  await page.locator('#noa-nav-back').click();await page.waitForURL(base+'/');
@@ -40,18 +40,17 @@ try{for(const [width,height] of [[320,900],[390,900],[768,720],[1920,900]]){
   const footer=await page.locator('.noa-mobile-footer').boundingBox(),main=await page.locator('main').boundingBox();
   const theme=await page.locator('.noa-mobile-footer .noa-display-settings').boundingBox();
   assert(theme&&theme.height>=44,'footer theme control remains touch accessible');
-  assert(counter.y+counter.height<=theme.y,'visitor counts do not overlap the footer theme control');
-  assert(footer.y-(main.y+main.height)<=25);assert(dock.y-(theme.y+theme.height)<=34,'last footer control keeps the shared dock gap');
+  assert(theme.y+theme.height<=counter.y,'visitor counts do not overlap the footer theme control');
+  assert(footer.y-(main.y+main.height)<=25);assert(dock.y-(counter.y+counter.height)<=34,'last footer control keeps the shared dock gap');
   assert(theme.y+theme.height<=dock.y,'footer theme control is not covered by the dock');
   const cards=await page.locator('#noa-featured>.noa-music-card').all();const boxes=await Promise.all(cards.map(c=>c.boundingBox()));
   assert.equal(boxes[0].y,boxes[1].y);assert.equal(boxes[2].y,boxes[3].y);assert(boxes[2].y>boxes[0].y);
   assert(counter.y>=56);assert(counter.y+counter.height<=dock.y);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await page.screenshot({path:'starlight-proof/mobile-footer-'+width+'.png'});
  }else assert(await page.locator('.noa-mobile-footer').isVisible(),'shared page footer remains available on larger screens');
- if(pinned)await page.locator('.noa-drawer-expand').click();else await page.locator('#noa-nav-all').click();
- assert.equal(await page.locator('#noa-nav-all').getAttribute('aria-expanded'),'true');
- assert(await page.locator('#noa-menu-drawer').isVisible(),'all-menu control opens the navigation drawer');
- await page.locator('#noa-menu-drawer').getByRole('link',{name:'전체 서비스 안내',exact:true}).click();await page.waitForURL(base+'/noa-sitemap.php');
+ if(pinned){assert.equal(await page.locator('.noa-drawer-expand').count(),0);await page.locator('#noa-menu-find').click();await page.locator('#noa-find-dialog').getByRole('link',{name:'전체 서비스 안내',exact:true}).click();}
+ else{await page.locator('#noa-nav-all').click();assert.equal(await page.locator('#noa-nav-all').getAttribute('aria-expanded'),'true');await page.locator('#noa-menu-drawer').getByRole('link',{name:'전체 서비스 안내',exact:true}).click();}
+ await page.waitForURL(base+'/noa-sitemap.php');
  await page.screenshot({path:'starlight-proof/navigation-'+width+'.png'});assert.deepEqual(errors,[]);
  await page.goto(base+'/bbs/board.php');await page.locator('#noa-nav-top').waitFor();
  for(const link of await page.locator('#bo_list thead a').all()){

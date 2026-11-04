@@ -34,6 +34,7 @@ $conflict=$cover;$conflict['snippet']['title'].=' 사연곡';$c=nh_build([$confl
 $dupes=nh_build([$story,$story],[],[],[],$channel);check(count($dupes['stories'])===0,'duplicate video ranked twice');
 echo "PASS recovered category provenance, missing metrics, rejected/ambiguous identity, translated originals, compilation types and deduplication\n";
 
+check(array_column($a['genreFeatured']['kpop-original'],'views')===[19,18,17,16,15],'hero returns the top five verified genre videos');
 $registeredOnly=nh_build([],$songs,[],[],$channel);check($registeredOnly['diagnostics']['stories']['emptyReason']==='catalog_video_mapping_missing'&&$registeredOnly['diagnostics']['stories']['catalogSongsWithoutCollectedVideo']===1,'registered song with missing video relationship must be distinct from no data');
 echo "PASS registered-but-unmapped versus absent data diagnostics\n";
 

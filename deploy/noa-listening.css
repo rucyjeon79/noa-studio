@@ -56,3 +56,12 @@ html body #noa-daily-fortune[hidden]{display:none!important}
 #noa-daily-fortune .nl-fortune-tip{padding-left:12px;border-left:2px solid var(--noa-accent,#c9b47b);margin:14px 0}
 .nl-fortune-actions{margin-top:12px}.nl-fortune-actions :is(button,a){display:inline-flex;align-items:center;gap:6px;color:inherit;min-height:44px;font:inherit;cursor:pointer}.nl-fortune-actions button{padding:6px 12px;background:transparent;border:1px solid var(--noa-line,#54575d);border-radius:var(--noa-control-radius,8px)}.nl-fortune-actions svg{width:18px;height:18px}
 .nl-fortune-opt{display:flex;align-items:center;gap:10px;min-height:44px;font-size:.9rem}.nl-fortune-opt input{width:20px;height:20px;flex:none}
+
+/* The arrow opens the panel. The adjacent play button also works while it is closed. */
+.nl-listen-row{position:relative;margin:24px 0;--nl-play-width:clamp(108px,19vw,156px)}
+html body .nl-listen-row>.nl-music-discovery{margin:0}
+html body .nl-listen-row>.nl-music-discovery>summary{position:relative;min-height:60px;padding-right:calc(var(--nl-play-width) + 54px);width:100%;box-sizing:border-box}
+html body .nl-listen-row>.nl-music-discovery>summary::after{position:absolute;right:19px;top:24px}
+html body .nl-listen-row>.nl-primary{position:absolute;top:8px;right:42px;display:inline-flex;align-items:center;justify-content:center;gap:6px;width:var(--nl-play-width);min-height:44px;padding:5px 8px;border:1px solid var(--noa-accent);border-radius:var(--noa-control-radius);color:var(--noa-accentText);background:var(--noa-accent);font:inherit;font-size:13px;font-weight:600;line-height:1.35;cursor:pointer}
+.nl-listen-row>.nl-primary .nl-icon{width:17px;height:17px;flex:none}
+.nl-listen-row>.nl-primary:disabled{opacity:.65;cursor:default}

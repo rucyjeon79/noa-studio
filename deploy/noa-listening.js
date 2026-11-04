@@ -13,21 +13,37 @@ const settings=button('추천 설정','settings',()=>openSettings());controls.ap
 const moods=el('div','nl-moods');moods.setAttribute('role','group');moods.setAttribute('aria-label','음악 분위기');for(const [key,label] of Object.entries(labels)){const b=button(label,key==='auto'?'music':'star',()=>{mood=key;mode='now';render();});b.dataset.mood=key;moods.append(b);}host.insertBefore(moods,status);
 const listen=button('지금 듣기','play',()=>play(current().rows));listen.classList.add('nl-primary');listen.disabled=true;
 const summary=el('div','nl-summary');summary.append(el('p','nl-reason',''),listen);host.insertBefore(summary,status);
+// Keep playback independent from expanding or collapsing the recommendations.
+if(!home){
+ const discovery=host.closest('.nl-music-discovery');
+ if(discovery){
+  const row=el('div','nl-listen-row');discovery.before(row);row.append(discovery,listen);
+ }
+}
 const tabs=el('div','nl-tabs');tabs.setAttribute('role','group');tabs.setAttribute('aria-label','선곡 방식');for(const [key,label]of Object.entries({now:'빠른 선곡',popular:'인기곡',latest:'최신 음원',albums:'추천 앨범',library:'내 보관함'})){const b=el('button','',label);b.type='button';b.dataset.mode=key;b.onclick=()=>{mode=key;render();};tabs.append(b);}host.append(tabs);
 const results=el('div','nl-results');host.append(results);
 const more=el('a','nl-catalog','카테고리별 음원 찾기 →');more.href=home?'/noa-music.php#music-browse':'#music-browse';if(!home)more.onclick=()=>{const panel=host.closest('.nl-music-discovery');if(panel)panel.open=false;window.NoaMusic?.showCategories();};host.append(more);
 const info=el('details','nl-basis');info.append(el('summary','','추천 기준'));const infoText=el('p');info.append(infoText);host.append(info);
 function current(){return model.select(records,{genre,mood,mode,theme:state?.theme,popular:state?.popular,library:state?.library});}
 function songButton(row,queue){const b=el('button','nl-track');b.type='button';const art=el('img');art.alt='';art.loading='lazy';if(row.thumb)art.src=row.thumb;else art.hidden=true;const copy=el('span','nl-track-copy');copy.append(el('strong','',row.title),el('small','',row.ep?'EP.'+String(row.ep).padStart(2,'0'):state.genres[genre]));b.append(art,copy,icon('play'));b.setAttribute('aria-label',row.title+' 재생');b.onclick=()=>play([row,...queue.filter(r=>r.key!==row.key)]);return b;}
+const fortuneIntro='생년월일을 입력하면 나에게 맞는 음악과 오늘의 운세를 볼 수 있어요. 원하면 매일 오전 8시(한국 시간)에 운세 알림도 받을 수 있어요.';
+const fortuneSetupUrl='/?setup=fortune#noa-daily-fortune';
 const fortuneCard=home?document.getElementById('noa-daily-fortune'):null;let lastFortune='',anchorHandled=false;
 function renderFortune(){
  if(!fortuneCard)return;const f=state?.fortune,p=state?.profile,signature=JSON.stringify([f,!!p?.fortuneAlerts]);
- if(signature===lastFortune)return;lastFortune=signature;fortuneCard.replaceChildren();fortuneCard.hidden=!f;if(!f)return;
+ if(signature===lastFortune)return;lastFortune=signature;fortuneCard.replaceChildren();fortuneCard.hidden=false;
+ if(!f){
+  const title=el('h2','','오늘의 운세');title.id='nl-fortune-heading';
+  const actions=el('div','nl-fortune-actions');
+  actions.append(button('생년월일 설정하기','settings',()=>openSettings(true)));
+  fortuneCard.append(title,el('p','',fortuneIntro),actions);
+  return;
+ }
  const h=el('h2','','오늘의 운세');h.id='nl-fortune-heading';const date=el('time','nl-fortune-date',f.date.replace(/-/g,'. ')+' · 한국 기준');date.dateTime=f.date;
- const head=el('div','nl-fortune-head');head.append(h,date);const action=button(p.fortuneAlerts?'오전 8시 알림 설정':'오전 8시 알림 받기','settings',openSettings);
+ const head=el('div','nl-fortune-head');head.append(h,date);const action=button(p.fortuneAlerts?'오전 8시 알림 설정':'오전 8시 알림 받기','settings',()=>openSettings(true));
  const foot=el('div','nl-fortune-actions');foot.append(action);if(p.fortuneAlerts){const a=el('a','','이 기기 알림 연결');a.href='/noa-notifications.php#nnt-phone-title';foot.append(a);}
  fortuneCard.append(head,el('h3','',f.headline),el('p','',f.body),el('p','nl-fortune-tip','오늘의 제안 · '+f.tip),el('small','','태어난 날과 오늘의 일간을 바탕으로 가볍게 즐기는 운세예요.'),foot);
- if(!anchorHandled&&location.hash==='#noa-daily-fortune'){anchorHandled=true;requestAnimationFrame(()=>fortuneCard.scrollIntoView());}
+ if(!anchorHandled&&!new URLSearchParams(location.search).has('setup')&&location.hash==='#noa-daily-fortune'){anchorHandled=true;requestAnimationFrame(()=>fortuneCard.scrollIntoView());}
 }
 function render(){if(!state)return;renderFortune();genres.value=genre;for(const b of moods.children)b.setAttribute('aria-pressed',String(b.dataset.mood===mood));for(const b of tabs.children)b.setAttribute('aria-pressed',String(b.dataset.mode===mode));results.replaceChildren();
  const selected=current(),theme=state.theme||{};host.querySelector('.nl-reason').textContent=(theme.period||'지금')+' · '+state.genres[genre]+' · '+(mood==='auto'?(selected.fallback?'장르 이어듣기':(theme.label||'추천')):labels[mood]);
@@ -65,9 +81,15 @@ function connect(){
 }
 window.addEventListener('popstate',()=>{if(frame&&!history.state?.noaListeningHost){frame.hidden=true;document.documentElement.classList.remove('nl-host-open');musicWindow?.document.getElementById('sound-player')?.pause();}});
 genres.onchange=()=>{genre=genres.value;try{sessionStorage.setItem('noa-listening-genre',genre);}catch{}render();};
-async function load(){const sequence=++loadSequence;try{const response=await fetch('/noa-bridge/listening.php',{credentials:'same-origin',cache:'no-store'});if(!response.ok)throw Error();const data=await response.json();if(sequence!==loadSequence)return;state=data;const oldGenre=genres.value;genres.replaceChildren();for(const [key,label]of Object.entries(state.genres)){const o=el('option','',label);o.value=key;genres.append(o);}let saved='';try{saved=sessionStorage.getItem('noa-listening-genre')||'';}catch{}const query=new URLSearchParams(location.search).get('genre');genre=[query,oldGenre,saved,state.profile?.genre,'kpop-original'].find(g=>state.genres[g])||'kpop-original';render();connect();}catch{status.textContent='추천을 불러오지 못했어요. 전체 음원은 계속 이용할 수 있습니다.';listen.disabled=true;settings.disabled=true;}}
-function openSettings(){if(!state?.member){location.href='/bbs/login.php?url='+encodeURIComponent('/noa-music.php#noa-listening');return;}
- const dialog=el('dialog','nl-dialog');dialog.setAttribute('aria-label','개인 추천 설정');const form=el('form');const header=el('div','nl-dialog-head');header.append(el('h2','','개인 추천 설정'),button('닫기','close',()=>dialog.close()));form.append(header,el('p','nl-note','선호 장르와 시간대만으로도 추천받을 수 있어요. 사주·바이오리듬 테마는 선택 사항입니다.'));
+async function load(){const sequence=++loadSequence;try{const response=await fetch('/noa-bridge/listening.php',{credentials:'same-origin',cache:'no-store'});if(!response.ok)throw Error();const data=await response.json();if(sequence!==loadSequence)return;state=data;const oldGenre=genres.value;genres.replaceChildren();for(const [key,label]of Object.entries(state.genres)){const o=el('option','',label);o.value=key;genres.append(o);}let saved='';try{saved=sessionStorage.getItem('noa-listening-genre')||'';}catch{}const query=new URLSearchParams(location.search).get('genre');genre=[query,oldGenre,saved,state.profile?.genre,'kpop-original'].find(g=>state.genres[g])||'kpop-original';render();connect();
+ if(home&&!anchorHandled&&new URLSearchParams(location.search).get('setup')==='fortune'){
+  anchorHandled=true;
+  if(state.member){const clean=new URL(location.href);clean.searchParams.delete('setup');history.replaceState(history.state,'',clean);openSettings(true);}
+  else location.replace('/bbs/login.php?url='+encodeURIComponent(fortuneSetupUrl));
+ }
+ }catch{status.textContent='추천을 불러오지 못했어요. 전체 음원은 계속 이용할 수 있습니다.';listen.disabled=true;settings.disabled=true;}}
+function openSettings(fortuneSetup=false){const trigger=document.activeElement;if(!state?.member){location.href='/bbs/login.php?url='+encodeURIComponent(fortuneSetup?fortuneSetupUrl:'/noa-music.php#noa-listening');return;}
+ const dialog=el('dialog','nl-dialog');dialog.setAttribute('aria-label','개인 추천 설정');const form=el('form');const header=el('div','nl-dialog-head');header.append(el('h2','','개인 추천 설정'),button('닫기','close',()=>dialog.close()));form.append(header,el('p','nl-note',fortuneIntro));
  const p=state.profile||{};
  function field(label,name,type,value,options){const wrap=el('label','nl-field',label);let input;if(options){input=el('select');for(const [v,t]of Object.entries(options)){const o=el('option','',t);o.value=v;input.append(o);}}else{input=el('input');input.type=type;}input.name=name;input.value=value??'';wrap.append(input);return {wrap,input};}
  const gf=field('기본 장르','genre','',p.genre||genre,state.genres);form.append(gf.wrap);
@@ -79,7 +101,7 @@ function openSettings(){if(!state?.member){location.href='/bbs/login.php?url='+e
  const toggle=()=>{date.input.setCustomValidity('');birth.disabled=!consent.checked;birth.hidden=!consent.checked;date.input.required=consent.checked;leap.input.disabled=calendar.input.value!=='lunar';if(calendar.input.value==='solar')leap.input.value='no';};consent.onchange=toggle;calendar.input.onchange=toggle;toggle();
  form.append(el('p','nl-note',state.theme.notice));const message=el('p','nl-status');message.setAttribute('role','status');form.append(message);const actions=el('div','nl-dialog-actions'),save=button('저장','save',()=>{}),remove=button('추천 설정 삭제','trash',()=>submit('DELETE'));save.type='submit';actions.append(remove,save);form.append(actions);
  async function submit(method){if(method==='POST'){date.input.setCustomValidity('');if(consent.checked){const normalized=model.normalizeBirthDate(date.input.value);if(normalized)date.input.value=normalized;else date.input.setCustomValidity('생년월일을 숫자 8자리로 입력해 주세요. 예: 19900615');}if(!form.reportValidity())return;}save.disabled=remove.disabled=true;message.textContent='저장하고 있어요.';try{const profile={genre:gf.input.value,timezone:tz.input.value,consent:consent.checked,fortuneAlerts:consent.checked&&alerts.checked,birthDate:date.input.value,calendar:calendar.input.value,leap:leap.input.value==='yes',birthTime:time.input.value,birthTimezone:bz.input.value};const r=await fetch('/noa-bridge/listening.php',{method,credentials:'same-origin',headers:{'Content-Type':'application/json','X-NOA-CSRF':state.csrf},body:JSON.stringify({revision:state.revision,profile})});const data=await r.json();if(!r.ok)throw Error(data.error);state=data;genre=data.profile?.genre||genre;try{sessionStorage.setItem('noa-listening-genre',genre);}catch{}render();dialog.close();status.textContent=method==='DELETE'?'저장된 생년정보와 개인 추천 설정을 삭제했습니다.':'개인 추천 설정을 저장했습니다.';}catch(e){message.textContent=({invalid_birth:'생년월일과 출생시간을 확인해 주세요.',invalid_lunar_date:'음력 날짜와 윤달 여부를 확인해 주세요.',future_birth:'미래 생일은 입력할 수 없습니다.',revision_conflict:'다른 창에서 설정이 바뀌었습니다. 창을 닫고 다시 열어 주세요.'})[e.message]||'설정을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.';if(e.message==='revision_conflict')load();}finally{save.disabled=remove.disabled=false;}}
- form.onsubmit=e=>{e.preventDefault();submit('POST');};dialog.append(form);document.body.append(dialog);dialog.addEventListener('close',()=>{dialog.remove();settings.focus();},{once:true});dialog.showModal();
+ form.onsubmit=e=>{e.preventDefault();submit('POST');};dialog.append(form);document.body.append(dialog);dialog.addEventListener('close',()=>{dialog.remove();(trigger?.isConnected?trigger:settings).focus();},{once:true});dialog.showModal();
 }
 setInterval(()=>{if(!document.hidden&&!document.querySelector('.nl-dialog')&&state?.theme?.validUntil*1000<Date.now())load();},60000);
 load();document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state?.theme?.validUntil*1000<Date.now())load();});

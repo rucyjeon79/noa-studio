@@ -5,13 +5,13 @@
  const utilities=document.createElement('nav');utilities.className='noa-account-utilities';utilities.setAttribute('aria-label','화면 바로가기');
  const link=(text,href)=>{const a=document.createElement('a');a.textContent=text;a.href=href;return a;};
  const brand=link('','/');brand.className='noa-account-brand';brand.setAttribute('aria-label','NOA STUDIO 홈');
- const mark=document.createElement('img');mark.src='/noa-assets/papa-logo.png';mark.alt='';mark.width=36;mark.height=36;mark.decoding='async';const name=document.createElement('span');name.textContent='NOA STUDIO';brand.append(mark,name);const navigation=document.createElement('div');navigation.className='noa-navigation-bar';navigation.append(brand,utilities,shortcuts);bar.append(navigation);
+ const mark=document.createElement('img');mark.src='/noa-assets/papa-logo.png';mark.alt='';mark.width=36;mark.height=36;mark.decoding='async';const name=document.createElement('span');name.textContent='NOA STUDIO';brand.append(mark,name);const navigation=document.createElement('div');navigation.className='noa-navigation-bar';navigation.append(utilities,shortcuts);bar.append(navigation);
  const control=(label,path,run)=>{const button=document.createElement('button');button.type='button';button.className='noa-account-shortcut';button.setAttribute('aria-label',label);button.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="'+path+'"/></svg><span>'+label+'</span>';button.onclick=run;return button;};
  function hasInternalPrevious(referrer,origin,length){try{return length>1&&new URL(referrer).origin===origin;}catch{return false;}}
  const back=control('이전','M15 6l-6 6 6 6',()=>{if(document.getElementById('noa-shell-view')||hasInternalPrevious(document.referrer,location.origin,history.length))history.back();else location.assign('/');});back.id='noa-nav-back';utilities.append(back);
  const top=control('맨 위','M6 14l6-6 6 6 M5 4h14',()=>{const view=document.getElementById('noa-shell-view')?.contentWindow||window;view.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});});top.id='noa-nav-top';utilities.append(top);
- const info=document.createElement('div');info.id='noa-info-bar';info.setAttribute('aria-label','설치 · 공유 · 시간 · 날씨');
- const infoActions=document.createElement('nav');infoActions.className='noa-info-actions';infoActions.setAttribute('aria-label','앱 바로가기');info.append(infoActions);bar.prepend(info);
+ const info=document.createElement('div');info.id='noa-info-bar';info.setAttribute('aria-label','NOA STUDIO');
+ const infoActions=document.createElement('nav');infoActions.className='noa-info-actions';infoActions.setAttribute('aria-label','앱 바로가기');info.append(brand,infoActions);bar.prepend(info);
  const install=link('','/noa-install.php');install.id='noa-nav-install';install.className='noa-account-shortcut';install.setAttribute('aria-label','앱 설치');install.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-4-4 4 4 4-4M5 16v5h14v-5"/></svg><span>앱 설치</span>';infoActions.append(install);
  const all=link('전체 메뉴','/noa-sitemap.php');all.className='noa-account-shortcut';all.id='noa-nav-all';all.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>전체 메뉴</span>';if(location.pathname==='/noa-sitemap.php')all.setAttribute('aria-current','page');shortcuts.append(all);
  const account=link('','/bbs/login.php?url=%2Fnoa-my.php');account.className='noa-account-shortcut';account.id='noa-nav-account';
@@ -19,7 +19,6 @@
  function accountState(member){account.href=member?'/noa-my.php':'/bbs/login.php?url=%2Fnoa-my.php';accountLabel.textContent=member?'MY':'로그인';account.dataset.noaAccountNav=member?'user':'login';account.setAttribute('aria-label',member?'MY':'로그인');if(member&&location.pathname==='/noa-my.php')account.setAttribute('aria-current','page');else account.removeAttribute('aria-current');}
  let initialMember=false;try{initialMember=!!JSON.parse(document.getElementById('noa-access')?.textContent||'null')?.member;}catch{}accountState(initialMember);
  window.addEventListener('noa-membership-status',event=>accountState(!!event.detail?.member));
- const favorite=link('','/');favorite.id='noa-nav-favorite';favorite.className='noa-account-shortcut';favorite.setAttribute('aria-label','즐겨찾기 · 홈에 바로가기');favorite.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="m12 3 2.8 5.7 6.3.9-4.5 4.4 1.1 6.2-5.7-3-5.7 3 1.1-6.2L3.2 9.6l6.3-.9z"/></svg><span>즐겨찾기</span>';infoActions.append(favorite);
  // Share the public installation guide, never an account-specific URL.
  const installUrl='https://noastudio.ai.kr/noa-install.php',shareText='NOA STUDIO에서 노아의 음악을 만나보세요. 아래 링크에서 앱을 설치할 수 있어요.';
  const share=document.createElement('button');share.id='noa-nav-share';share.type='button';share.className='noa-account-shortcut';share.setAttribute('aria-label','공유하기');share.setAttribute('aria-haspopup','dialog');share.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3m-4 4 4-4 4 4M5 12v9h14v-9"/></svg><span>공유</span>';infoActions.append(share);
@@ -41,14 +40,14 @@
  document.querySelector('.noa-topbar .noa-account')?.closest('.noa-topbar').remove();document.querySelector('.noa-g5-top')?.remove();document.body.prepend(bar);
  // The invitation module arrives asynchronously. Move its real control, retaining
  // the member's existing invitation action and a visible label at every width.
- const attachInvitation=()=>{const invitation=bar.querySelector('#noa-referral-share');if(!invitation||invitation.parentElement===infoActions)return;invitation.classList.add('noa-account-shortcut');if(!invitation.querySelector('span')){const label=document.createElement('span');label.textContent='공유';invitation.append(label);}share.remove();infoActions.append(invitation);};
+ const attachInvitation=()=>{const invitation=bar.querySelector('#noa-referral-share');if(!invitation||invitation.parentElement===infoActions)return;invitation.classList.add('noa-account-shortcut');if(!invitation.querySelector('span')){const label=document.createElement('span');label.textContent='공유';invitation.append(label);}share.replaceWith(invitation);};
  attachInvitation();new MutationObserver(attachInvitation).observe(shortcuts,{childList:true});
  // Anchor links clear the actual one- or two-row header, including text zoom.
  if(window.ResizeObserver)new ResizeObserver(()=>document.documentElement.style.setProperty('--noa-header-height',Math.ceil(bar.getBoundingClientRect().height)+'px')).observe(bar);
  if(window.ResizeObserver)new ResizeObserver(()=>document.documentElement.style.setProperty('--noa-info-height',Math.ceil(info.getBoundingClientRect().height)+'px')).observe(info);
  // Time follows the visitor's device; the language picker shares the existing preference.
- const clock=document.createElement('time');clock.id='noa-header-clock';clock.innerHTML='<strong></strong><span></span>';info.append(clock);
- const context=document.createElement('div');context.className='noa-info-context';info.append(context);
+ const clock=document.createElement('time');clock.id='noa-header-clock';clock.innerHTML='<span></span><strong></strong>';
+ const context=document.createElement('div');context.className='noa-info-context';info.insertBefore(context,infoActions);context.append(clock);
  const weather=control('내 위치 · 날씨','M12 22s8-7 8-13a8 8 0 1 0-16 0c0 6 8 13 8 13z M15 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0',openWeather);weather.id='noa-header-weather';weather.setAttribute('aria-haspopup','dialog');context.append(weather);
  const compact=matchMedia('(max-width:760px), (hover:none) and (pointer:coarse) and (max-height:600px) and (max-width:1024px)');
  const languages={ko:'한국어',en:'English',ja:'日本語',th:'ไทย'};
@@ -70,10 +69,10 @@
  language.onclick=()=>{if(!choices.hidden){closeChoices(true);return;}choices.hidden=false;language.setAttribute('aria-expanded','true');buttons.find(b=>b.dataset.language===activeLanguage).focus();};
  picker.addEventListener('keydown',e=>{if(e.key==='Escape'&&!choices.hidden){e.preventDefault();e.stopPropagation();closeChoices(true);}else if(!choices.hidden&&['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();const i=buttons.indexOf(document.activeElement);buttons[e.key==='Home'?0:e.key==='End'?3:(i+(e.key==='ArrowDown'?1:3))%4].focus();}});
  document.addEventListener('pointerdown',e=>{if(!choices.hidden&&!picker.contains(e.target))closeChoices();});picker.addEventListener('focusout',e=>{if(e.relatedTarget&&!picker.contains(e.relatedTarget))closeChoices();});
- picker.append(language,choices);context.append(picker);
+ picker.append(language,choices);infoActions.append(picker);
  const locale=()=>({ko:'ko-KR',ja:'ja-JP',en:'en-GB',th:'th-TH'}[activeLanguage]);
  let timeFmt,dateFmt,clockTimer;
- function tick(){if(compact.matches||document.hidden)return;const now=new Date();clock.dateTime=now.toISOString();const time=timeFmt.format(now),date=dateFmt.format(now);if(clock.firstChild.textContent!==time)clock.firstChild.textContent=time;if(clock.lastChild.textContent!==date)clock.lastChild.textContent=date;}
+ function tick(){if(compact.matches||document.hidden)return;const now=new Date();clock.dateTime=now.toISOString();const time=timeFmt.format(now),date=dateFmt.format(now);if(clock.firstChild.textContent!==date)clock.firstChild.textContent=date;if(clock.lastChild.textContent!==time)clock.lastChild.textContent=time;}
  function clockActivity(){clearInterval(clockTimer);if(!compact.matches&&!document.hidden){tick();clockTimer=setInterval(tick,1000);}}
  function syncLanguage(){const state=window.NoaUI?.getState();activeLanguage=Object.hasOwn(languages,state?.language)?state.language:'ko';language.disabled=!state;language.dataset.language=activeLanguage;language.setAttribute('aria-label',(window.NoaUI?.translate('언어 선택')||'언어 선택')+' · '+languages[activeLanguage]);language.innerHTML=flag(activeLanguage)+'<span lang="'+activeLanguage+'" translate="no">'+languages[activeLanguage]+'</span><i aria-hidden="true"></i>';for(const b of buttons)b.setAttribute('aria-pressed',String(b.dataset.language===activeLanguage));timeFmt=new Intl.DateTimeFormat(locale(),{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});dateFmt=new Intl.DateTimeFormat(locale(),{year:'numeric',month:'2-digit',day:'2-digit',weekday:'short'});tick();}
  window.addEventListener('noa-theme',syncLanguage);syncLanguage();clockActivity();document.addEventListener('visibilitychange',clockActivity);
