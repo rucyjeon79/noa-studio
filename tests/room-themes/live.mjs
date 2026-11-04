@@ -34,7 +34,9 @@ for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])aw
   const fragment=readFileSync(source+'/deploy/noa-app/home.php','utf8').match(/<!-- noa-theme-scene:start -->[\s\S]*?<!-- noa-theme-scene:end -->/)[0];
   let body=html.includes('<!-- noa-theme-scene:start -->')?html.replace(/<!-- noa-theme-scene:start -->[\s\S]*?<!-- noa-theme-scene:end -->/,fragment):html.replace('<section class="noa-hero" data-home-section="hero">',fragment+'<section class="noa-hero" data-home-section="hero">');
   const homeSource=readFileSync(source+'/deploy/noa-app/home.php','utf8');
-  for(const id of ['noa-home-action-layout','noa-home-hero-size']){const tag=id==='noa-home-action-layout'?'style':'script';const pattern=new RegExp('<'+tag+' id="'+id+'">[\\s\\S]*?<\/'+tag+'>');body=body.replace(pattern,homeSource.match(pattern)[0]);}
+  const actionLayout=/<style id="noa-home-action-layout">[\s\S]*?<\/style>/;
+  body=body.replace(actionLayout,homeSource.match(actionLayout)[0]);
+  body=body.replace(/<script id="noa-home-hero-size">[\s\S]*?<\/script>/,'');
   await route.fulfill({response,body});
  });
  if(phase==='candidate')await context.route('https://noastudio.ai.kr/noa-vip.php',async route=>{
@@ -269,16 +271,15 @@ async function verifyMusicShelves(p,width,mode,theme){
   assert(Math.abs(left.bottom-right.bottom)<2,'paired shelves finish on the same line: '+pair);
   if(left.pager&&right.pager)assert(Math.abs(left.pager.y-right.pager.y)<2,'paired page controls align: '+pair);
  }
- if(phase==='live'){
-  const picks=await p.evaluate(async()=>{
-   const data=await window.NoaHomeSnapshot,genre=document.querySelector('.noa-hero-art').dataset.genre;
-   const available=data.genreFeatured[genre]?.length||0;
-   const visible=[...document.querySelectorAll('#noa-hero-picks a')].filter(a=>a.getBoundingClientRect().height>0);
-   return {available,visible:visible.length,capacity:document.querySelector('.noa-hero').clientWidth>=720?5:2};
-  });
-  assert.equal(picks.visible,Math.min(picks.capacity,picks.available||1));
-  console.log('VISIBLE_GENRE_VIDEO_COUNT',width,mode,picks);
- }
+ const picks=await p.evaluate(async()=>{
+  const data=await window.NoaHomeSnapshot,genre=document.querySelector('.noa-hero-art').dataset.genre;
+  const available=data.genreFeatured[genre]?.length||0;
+  const visible=[...document.querySelectorAll('#noa-hero-picks a')].filter(a=>a.getBoundingClientRect().height>0);
+  return {available,visible:visible.length};
+ });
+ assert.equal(picks.visible,Math.min(5,picks.available||1));
+ if(picks.visible===5)await p.locator('#noa-hero-picks a').nth(4).click({trial:true});
+ console.log('VISIBLE_GENRE_VIDEO_COUNT',width,mode,picks);
  const placements=await p.locator('.noa-main').evaluate(main=>{
   const hero=main.querySelector('[data-home-section=hero]'),scene=main.querySelector('#noa-theme-scene'),notice=main.querySelector('[data-home-section=notices]'),goods=main.querySelector('[data-home-banner=goods]'),youtube=main.querySelector('[data-home-banner=youtube]'),benefits=main.querySelector('.noa-monthly-benefits'),referral=main.querySelector('#noa-referral-banner'),listening=main.querySelector('#noa-listening');
   const box=el=>{const r=el.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,bottom:r.bottom};};

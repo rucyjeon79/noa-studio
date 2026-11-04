@@ -25,9 +25,11 @@ def outside_approved_hero(source):
   source=source.replace(b"<?php noa_home_banner('"+kind+b"');?>\n",b'')
  source=re.sub(rb'if\(is_file\(dirname\(__DIR__\).*?/noa-bridge/notices[.]php.*?\$noa_notices=.*?;\n',b'',source,flags=re.S)
  source=re.sub(rb'<section class="noa-section noa-notices".*?</section>\n',b'',source,flags=re.S)
- for pattern in [rb'<style id="noa-home-action-layout">.*?</style>',rb'<section class="noa-hero".*?</section>',rb'<script id="noa-home-hero-size">.*?</script>']:
+ for pattern in [rb'<style id="noa-home-action-layout">.*?</style>',rb'<section class="noa-hero".*?</section>']:
   source,count=re.subn(pattern,b'',source,flags=re.S)
   assert count==1,'one approved hero scope required'
+ # Older home versions had an inline script that hid recommendations on smaller screens.
+ source=re.sub(rb'<script id="noa-home-hero-size">.*?</script>',b'',source,flags=re.S)
  source=re.sub(rb'/noa-hero[.]js[?]v=[^"\s]+',b'/noa-hero.js?v=APPROVED_RUNTIME',source)
  source=re.sub(rb'/noa-ui[.](css|js)[?]v=[^"\s]+',lambda m:b'/noa-ui.'+m[1]+b'?v=APPROVED_UI',source)
  # The home fortune invitation is visible before setup. Guard the neighboring content.

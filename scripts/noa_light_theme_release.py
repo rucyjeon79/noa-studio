@@ -1,4 +1,4 @@
-"""Publish the two-frame header and verified location weather, with four-language controls, a first-paint palette shared with section styles and the current personal-listening interface."""
+"""Publish the two-frame header and verified location weather, with four-language controls, a first-paint palette shared with section styles and five genre recommendations at all screen widths."""
 import os
 import sys
 from pathlib import Path
