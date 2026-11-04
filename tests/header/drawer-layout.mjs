@@ -51,7 +51,7 @@ try{
     // Use consistent member data for every UI that shares the session. No real credentials.
     if(member){
      const admin=width===1440;
-     const caps={member:true,name:admin?'최고 관리자':'별무리 회원',level:admin?10:3,admin};
+     const caps=JSON.parse(readFileSync(fileURLToPath(new URL('./drawer-'+(admin?'admin':'member')+'-access.json',import.meta.url)),'utf8'));
      await page.route('**/noa-shop.php',async route=>{
       const upstream=await route.fetch();
       const html=(await upstream.text()).replace(/(<script[^>]*id="noa-access"[^>]*>)([^<]*)(<\/script>)/,(_m,a,data,b)=>a+JSON.stringify({...JSON.parse(data),...caps})+b);

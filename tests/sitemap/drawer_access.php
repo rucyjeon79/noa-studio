@@ -39,7 +39,10 @@ foreach(['guest'=>1,'member'=>3,'admin'=>10,'two'=>2,'four'=>4,'five'=>5,'six'=>
     if(isset($labels['board-fixture_board']))must($labels['board-fixture_board']==='Lv.5 이상 · 그룹 승인','board restrictions');
     if(isset($labels['weatherCare']))must($labels['weatherCare']==='Lv.4·5·6·8·9·10','weather levels');
     if(isset($labels['creatorAI']))must($labels['creatorAI']==='Lv.8 / 최고관리자','creator AI levels');
-    if(in_array($role,['guest','member','admin'],true))file_put_contents($out.'/drawer-'.$role.'.html',$html.'</main>');
+    if(in_array($role,['guest','member','admin'],true)){
+        file_put_contents($out.'/drawer-'.$role.'.html',$html.'</main>');
+        file_put_contents($out.'/drawer-'.$role.'-access.json',json_encode($access,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR));
+    }
 }
 foreach([3=>4,7=>8] as $base=>$paid){
     $now=time();$grant=['baseLevel'=>$base,'status'=>'active','until'=>$now];$effective=ns_effective_level($paid,$grant,$now);
