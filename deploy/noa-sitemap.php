@@ -187,9 +187,9 @@ function noa_sitemap_member_directory(array $groups,array $access,array $boards)
 
 /** Reuse the member insignia frame and court symbols, with pictograms instead of letters. */
 function noa_sitemap_access_icon(int $rank,string $label):string{
-    if($rank<1||$rank>10||$label==='')return '';
+    if($rank<4||$rank>10||$label==='')return '';
     $safe=htmlspecialchars($label,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
-    $symbol=[1=>'user',2=>'user',3=>'community',4=>'star',7=>'mic',8=>'mic'][$rank]??null;
+    $symbol=[4=>'star',7=>'mic',8=>'mic'][$rank]??null;
     return '<span class="noa-directory-access" role="img" aria-label="'.$safe.'" title="'.$safe.'"><span class="noa-rank-badge noa-rank-'.$rank.(in_array($rank,[4,5,6,8],true)?' noa-rank-premium':'').'" aria-hidden="true"><span>'.($symbol?noa_sitemap_icon($symbol):'').'</span></span></span>';
 }
 

@@ -30,7 +30,9 @@ foreach(['guest'=>1,'member'=>3,'admin'=>10,'two'=>2,'four'=>4,'five'=>5,'six'=>
             must($r[6]==='','denied route returned');$labels[$r[0]]=$r[7];
             $destination=noa_sitemap_destination($r[3]);must(!isset($destinations[$destination]),'duplicate destination for '.$role);$destinations[$destination]=true;
             must($r[8]>=$last,'higher requirement must follow lower requirements in '.$id);$last=$r[8];$ranks[$r[0]]=$r[8];
-            if($r[7]!==''){
+            if($r[8]<4){
+                must(noa_sitemap_access_icon($r[8],$r[7])==='','ordinary member routes must not carry grade badges');
+            }elseif($r[7]!==''){
                 $badge=noa_sitemap_access_icon($r[8],$r[7]);
                 must(str_contains($badge,'role="img"')&&str_contains($badge,'aria-label="'.$esc($r[7]).'"'),'icon needs accessible restrictions');
                 must(trim(strip_tags($badge))==='','grade badge must be an icon, not text');

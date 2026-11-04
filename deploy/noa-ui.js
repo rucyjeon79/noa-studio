@@ -128,16 +128,20 @@ function shell(){if(themeOnly||admin||document.querySelector('.noa-sidebar'))ret
  const signature=mobileFooter.querySelector('.noa-sidebar-signature');signature.querySelector('strong').remove();
  const landscape=document.createElement('img');landscape.className='noa-footer-landscape';landscape.alt='';landscape.width=640;landscape.height=160;
  const appearance=document.createElement('div');appearance.className='noa-footer-themes';appearance.setAttribute('role','group');appearance.setAttribute('aria-label','테마 선택');
+ const themeSymbols={auto:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z M12 3v18 M12 8h7 M12 12h9 M12 16h7','noa-ivory':'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z M12 2v2 M12 20v2 M2 12h2 M20 12h2 M5 5l1.5 1.5 M17.5 17.5 19 19 M5 19l1.5-1.5 M17.5 6.5 19 5','noa-studio':'M20.8 13A9 9 0 0 1 11 3.2 9 9 0 1 0 20.8 13Z'};
  for(const [choice,label] of [['auto','자동'],['noa-ivory','라이트'],['noa-studio','다크']]){
-  const pick=document.createElement('button');pick.type='button';pick.dataset.footerTheme=choice;pick.textContent=label;
+  const pick=document.createElement('button');pick.type='button';pick.dataset.footerTheme=choice;
+  pick.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="'+themeSymbols[choice]+'"/></svg><span>'+label+'</span>';
   pick.disabled=!config;pick.onclick=()=>{
    if(!state)return;
    dirty=true;safeWrite('noa-device-theme',choice);apply({...state,theme:choice});settings();
   };appearance.append(pick);
  }
  const heading=document.createElement('div');heading.className='noa-footer-heading';
+ const themeControl=document.createElement('div');themeControl.className='noa-footer-theme-control';
+ const themeLabel=document.createElement('span');themeLabel.className='noa-footer-theme-label';themeLabel.textContent='테마 선택';themeLabel.setAttribute('aria-hidden','true');themeControl.append(themeLabel,appearance);
  const scene=document.createElement('div');scene.className='noa-footer-scene';
- heading.append(signature,appearance);scene.append(landscape,mobileFooter.querySelector('.noa-sidebar-legal'),heading);
+ heading.append(signature,themeControl);scene.append(landscape,mobileFooter.querySelector('.noa-sidebar-legal'),heading);
  mobileFooter.replaceChildren(scene);
  const oldFooter=document.querySelector('.noa-footer,.ne-footer');if(oldFooter)oldFooter.before(mobileFooter);else if(document.querySelector('main'))document.querySelector('main').after(mobileFooter);else document.body.append(mobileFooter);wideShell(side);window.NoaBrand?.apply();markLabels();}
 
@@ -245,11 +249,11 @@ function wideShell(side){
     if(!href.startsWith('/')||href.startsWith('//'))continue;
     link.href=href;if(href===location.pathname+location.search+location.hash)link.setAttribute('aria-current','page');
     const rank=Number(item.dataset.noaAccessRank)||0;link.dataset.accessRank=String(rank);
-    if(item.dataset.noaAccessLabel&&Number.isInteger(rank)&&rank>=1&&rank<=10){
+    if(item.dataset.noaAccessLabel&&Number.isInteger(rank)&&rank>=4&&rank<=10){
      const badge=document.createElement('span');badge.className='noa-route-level';
      badge.setAttribute('role','img');badge.setAttribute('aria-label',item.dataset.noaAccessLabel);badge.title=item.dataset.noaAccessLabel;
      const frame=document.createElement('span');frame.className='noa-rank-badge noa-rank-'+rank+([4,5,6,8].includes(rank)?' noa-rank-premium':'');frame.setAttribute('aria-hidden','true');
-     const mark=document.createElement('span'),symbol=({1:'user',2:'user',3:'community',4:'home',7:'mic',8:'mic'})[rank];
+     const mark=document.createElement('span'),symbol=({4:'home',7:'mic',8:'mic'})[rank];
      if(symbol)mark.innerHTML=icon(symbol);frame.append(mark);badge.append(frame);
      link.append(badge);
     }
