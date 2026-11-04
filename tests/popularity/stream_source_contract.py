@@ -9,7 +9,7 @@ old=old.replace('if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 # The approved member/owner ACL replaces only the old public-listener gate.
 # Every media identity, verifier, byte range, HEAD header and transfer invariant remains exact.
 old_acl="$admin=!empty($is_member)&&($is_admin??'')==='super';if(!noa_sound_visible($doc,$admin))"
-new_acl="$access=nam_access((array)($member??[]),(string)($is_admin??''));$admin=$access['admin'];$owner=$access['creator']&&nam_owner($doc,(array)($member??[]));if(($type==='audio'&&!$access['music']&&!$owner)||(!noa_sound_visible($doc,$admin)&&!$owner))"
+new_acl="$access=nam_access((array)($member??[]),(string)($is_admin??''));$admin=$access['admin'];$owner=$access['creator']&&nam_owner($doc,(array)($member??[]));if(($type==='audio'&&!$access['premiumPlayback']&&!$owner)||(!noa_sound_visible($doc,$admin)&&!$owner))"
 assert new_acl in new, 'approved VIP/owner authorization changed'
 compat=new.replace("require_once dirname(__DIR__,2).'/noa-bridge/member-access.php';\n",'',1).replace(new_acl,old_acl,1)
 # Cover-only provenance updates must never change the original audio identity.
