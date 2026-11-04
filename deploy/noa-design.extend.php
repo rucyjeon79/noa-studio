@@ -14,10 +14,11 @@ function noa_first_paint_theme($html){
  const root=document.documentElement;
  let choice='auto';
  try{const saved=JSON.parse(localStorage.getItem('noa-ui-selection-v2')||localStorage.getItem('noa-ui-selection')||'null');if(['noa-ivory','noa-studio'].includes(saved?.theme))choice=saved.theme;}catch{}
- const hour=new Date().getHours(),light=choice==='auto'?hour>=9&&hour<21:choice==='noa-ivory';
+ const design=__NOA_PAGE_DESIGN__;
+ const {startHour=7,endHour=19}=design?.automaticTheme||{};
+ const hour=new Date().getHours(),light=choice==='auto'?hour>=startHour&&hour<endHour:choice==='noa-ivory';
  root.dataset.noaTheme=light?'noa-ivory':'noa-studio';root.dataset.noaThemePreference=choice;
  root.style.colorScheme=light?'light':'dark';
- const design=__NOA_PAGE_DESIGN__;
  if(design?.themes?.length)window.NoaPageDesign=design;
  const palettes=Object.fromEntries((design?.themes||[]).map(theme=>[theme.id,theme.tokens]));
  const tokens=palettes[root.dataset.noaTheme]||{bg:light?'#FFFFFF':'#10151F'};

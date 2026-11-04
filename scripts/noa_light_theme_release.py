@@ -43,6 +43,12 @@ if os.environ.get('NOA_PANORAMA') == 'true':
     release.NEW = {'noa-page-progress.js'}
     release.PROTECTED = [name for name in release.PROTECTED if name != 'noa-music.php']
 
+if os.environ.get('NOA_THEME_CLOCK') == 'true':
+    clock_files = ('noa-design.json','extend/noa.design.php','noa-ui.js','noa-theme-admin.php','noa-interface-labels.json')
+    release.FILES = {name:release.FILES[name] for name in clock_files}
+    release.NEW = set()
+    release.PROTECTED = list(dict.fromkeys([*release.PROTECTED,'noa-hero.js','noa-music.php']))
+
 if __name__ == '__main__':
     try:
         release.main()

@@ -4,7 +4,14 @@ on:
     branches: [main]
     paths: ['scripts/noa_light_theme_release.py', '.github/workflows/noa-light-theme.yml', 'tests/room-themes/live.mjs', 'tests/header/drawer-live.mjs']
   workflow_dispatch:
+    inputs:
+      theme_clock:
+        description: Verify and publish only the automatic theme schedule
+        type: boolean
+        default: false
 permissions: {contents: read}
+env:
+  NOA_THEME_CLOCK: ${{ contains(github.event.head_commit.message, '[theme-clock]') || inputs.theme_clock == true }}
 jobs:
   preflight:
     env:
