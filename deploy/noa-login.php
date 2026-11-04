@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);require_once __DIR__.'/common.php';require_once __DIR__.'/noa-bridge/social-policy.php';
 header('Cache-Control: private, no-store');header('Content-Type: text/html; charset=utf-8');
-$return=nsp_return($_GET['url']??'/');$providers=nsp_status((array)$config);$esc=static fn($s)=>htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');
+$return='/';$providers=nsp_status((array)$config);$esc=static fn($s)=>htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');
 ?><!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>로그인 | NOA STUDIO</title><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-account.css?v=<?=hash_file('sha256',__DIR__.'/noa-account.css')?>"><link rel="stylesheet" href="/noa-login.css?v=<?=hash_file('sha256',__DIR__.'/noa-login.css')?>"><script src="/noa-brand.js" defer></script><script src="/noa-ui.js" defer></script></head><body class="noa-page"><main id="noa-login" class="noa-social-layout"><p class="noa-eyebrow">NOA STUDIO</p><h1>로그인</h1>
 <p class="noa-login-welcome">음악으로 이어지는 순간, 별무리와 함께하세요.</p>
 <section class="noa-social-signin" aria-label="소셜 계정으로 로그인">

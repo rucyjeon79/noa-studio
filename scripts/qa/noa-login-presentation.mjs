@@ -47,7 +47,7 @@ try {
     assert(audit.buttons.every(b=>b.icons===1&&b.disabled===(state==='disabled')));
     assert.equal(await page.locator('form[name=flogin]').getAttribute('action'),'/bbs/login_check.php');
     assert.equal(await page.locator('form[name=flogin]').getAttribute('method'),'post');
-    assert.equal(await page.locator('input[name=url]').inputValue(),returnTo);
+    assert.equal(await page.locator('input[name=url]').inputValue(),'/');
     assert.equal(await page.locator('#login_pw').getAttribute('autocomplete'),'current-password');
     if(state==='ready') {
       for(const provider of ['google','kakao']) {
@@ -55,7 +55,7 @@ try {
         await link.focus();assert.equal(await link.evaluate(n=>getComputedStyle(n).outlineStyle),'solid');
         const href=new URL(await link.getAttribute('href'),base);
         assert.equal(href.pathname,'/bbs/login.php');assert.equal(href.searchParams.get('provider').toLowerCase(),provider);
-        assert.equal(href.searchParams.get('redirect_to_idp'),'1');assert.equal(href.searchParams.get('url'),returnTo);
+        assert.equal(href.searchParams.get('redirect_to_idp'),'1');assert.equal(href.searchParams.get('url'),'/');
       }
     } else assert.equal(await page.locator('.noa-social-option [role=status]').count(),2);
     await page.evaluate(()=>{document.activeElement?.blur();scrollTo(0,0);});
