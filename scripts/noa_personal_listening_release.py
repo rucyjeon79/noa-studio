@@ -11,6 +11,11 @@ release.FILES={
  'noa-app/engine/personal-calendar-LICENSE.txt':'deploy/noa-app/engine/personal-calendar-LICENSE.txt',
  'noa-app/engine/personal-genre-model.php':'deploy/noa-app/engine/personal-genre-model.php',
  'noa-app/engine/personal-listening.php':'deploy/noa-app/engine/personal-listening.php',
+ 'noa-app/engine/personal-song-index.php':'deploy/noa-app/engine/personal-song-index.php',
+ 'noa-bridge/youtube-catalog.php':'bridge/youtube-catalog.php',
+ 'noa-bridge/listening-video-catalog.php':'bridge/listening-video-catalog.php',
+ 'noa-bridge/listening-videos.php':'bridge/listening-videos.php',
+ 'noa-bridge/lab-worker.php':'bridge/lab-worker.php',
  'noa-bridge/notifications-inline.php':'bridge/notifications-inline.php',
  'noa-bridge/notifications-sources.php':'bridge/notifications-sources.php',
  'noa-bridge/notifications-core.php':'bridge/notifications-core.php',
@@ -28,7 +33,7 @@ release.FILES={
  'noa-account.js':'deploy/noa-account.js',
  'noa-app/home.php':'deploy/noa-app/home.php',
 }
-release.NEW=set(release.FILES)-{'noa-app/p0-player.js','noa-launch.js','noa-account.js','noa-app/engine/n80.php','noa-music.php','noa-app/home.php','noa-ui.js','noa-browse.js','noa-bridge/notifications-inline.php','noa-bridge/notifications-sources.php','noa-bridge/notifications-core.php','noa-bridge/notification-worker.php'}
+release.NEW=set(release.FILES)-{'noa-bridge/youtube-catalog.php','noa-bridge/lab-worker.php','noa-app/p0-player.js','noa-launch.js','noa-account.js','noa-app/engine/n80.php','noa-music.php','noa-app/home.php','noa-ui.js','noa-browse.js','noa-bridge/notifications-inline.php','noa-bridge/notifications-sources.php','noa-bridge/notifications-core.php','noa-bridge/notification-worker.php'}
 if os.environ.get('NOA_LISTENING_COPY') == 'true':
     names = ('noa-interface-labels.json', 'noa-listening.js', 'noa-music.php', 'noa-ui.js')
     release.FILES = {name: 'deploy/' + name for name in names}

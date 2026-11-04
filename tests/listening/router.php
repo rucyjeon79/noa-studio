@@ -1,7 +1,7 @@
 <?php
 $root=dirname(__DIR__,2);$path=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);
 if($path==='/noa-bridge/listening.php'){
- session_start();define('_GNUBOARD_',true);$who=$_SERVER['HTTP_X_QA_USER']??'alice';$is_member=$who!=='guest';$member=$is_member?['mb_id'=>$who,'mb_level'=>4]:[];$is_admin='';
+ session_start();define('_GNUBOARD_',true);$who=$_SERVER['HTTP_X_QA_USER']??'alice';$is_member=$who!=='guest';$member=$is_member?['mb_id'=>$who,'mb_level'=>$who==='video-member'?3:4]:[];$is_admin='';
  // Only this isolated router uses a loopback origin; the production API keeps its exact HTTPS origin check.
  $src=file_get_contents($root.'/bridge/listening.php');$src=str_replace('https://noastudio.ai.kr','http://127.0.0.1:8137',$src);$src=str_replace("require_once dirname(__DIR__).'/common.php';",'',$src);$src=str_replace("dirname(__DIR__).'/noa-app/engine/personal-listening.php'",var_export($root.'/deploy/noa-app/engine/personal-listening.php',true),$src);$src=str_replace('__DIR__',var_export($root.'/bridge',true),$src);eval(substr($src,5));return;
 }

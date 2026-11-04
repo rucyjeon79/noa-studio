@@ -3,7 +3,7 @@ declare(strict_types=1);
 /** Metadata-only projection of the same visible documents used by MUSIC. No writes. */
 require_once __DIR__.'/sound-core.php';
 require_once __DIR__.'/music-readmodel.php';
-function ny_listener_catalog(PDO $db,bool $admin,array $edits=[]):array{
+function ny_listener_catalog(PDO $db,bool $admin,array $edits=[],?callable $visitSong=null):array{
  $documents=[];
  foreach($db->query("SELECT d.doc_key,d.kind,d.payload,UNIX_TIMESTAMP(h.changed_at) AS registered_at FROM noa_documents d LEFT JOIN noa_document_history h ON h.doc_key=d.doc_key AND h.revision=1 WHERE d.kind IN ('single','story','playlist') ORDER BY d.doc_key") as $r){$d=json_decode($r['payload'],true);if(is_array($d)){$d['_listenerKind']=$r['kind'];$d['_registeredAt']=(int)$r['registered_at'];$documents[$r['doc_key']]=$d;}}
  foreach(noa_music_recovered_catalog($db) as $key=>$d)if(!isset($documents[$key]))$documents[$key]=$d;
@@ -13,6 +13,7 @@ function ny_listener_catalog(PDO $db,bool $admin,array $edits=[]):array{
   if(!noa_sound_visible($d,$admin))continue;$b=$d['body']??[];$ids=array_unique($aliases[$key]??[]);$identity=str_starts_with($key,'catalog:')?substr($key,8):(count($ids)===1?array_values($ids)[0]:$key);
   $r=['registeredAt'=>(int)($d['_registeredAt']??0),'key'=>$key,'orderKey'=>$identity,'title'=>(string)(($b['confirmedTitle']??'')?:($d['title']??$key)),'genre'=>(string)($d['genreId']??'other'),'ep'=>(string)($d['ep']??''),'act'=>(string)($d['act']??''),'kind'=>($d['_listenerKind']??'')==='playlist'?'playlist':'video','browsePriority'=>(str_starts_with($key,'catalog:')?0:2)+(!empty($d['packageSchema'])?1:0)];
   $fields=function_exists('nie_fields')?nie_fields($edits,$r):[];foreach(['title','genre','collectionIds','canonicalRecordKey'] as $field)if(array_key_exists($field,$fields))$r[$field]=$fields[$field];$r['originalArtist']=noa_music_original_artist($b,(string)($fields['originalArtist']??''));$r['_browseSuno']=(string)($fields['sunoUrl']??(($b['sunoUrl']??'')?:($b['sunoShareUrl']??'')));$r['canonicalVideo']=ny_video_id((string)($fields['youtubeUrl']??$b['youtubeUrl']??''));if(!empty($d['customPlaylistId'])){if(!$r['canonicalVideo'])continue;$r['customPlaylistId']=(string)$d['customPlaylistId'];}$out[$identity]=$r;
+  if($visitSong&&$r['kind']!=='playlist')$visitSong($r,$b,$fields);
  }
  return $out;
 }

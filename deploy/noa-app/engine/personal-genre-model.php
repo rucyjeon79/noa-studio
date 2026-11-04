@@ -15,14 +15,14 @@ function n80_genre_terms(array $song):array{
  * recordings. A genre name is never a training label. No remote model or stored profile is used.
  */
 function n80_genre_model(array &$songs):void{
-    $moods=['calm','focus','energy','comfort'];
+    $moods=['calm','focus','energy','comfort','drive','walk'];
     $documents=0;$frequency=[];$classSize=array_fill_keys($moods,0);$within=[];$seen=[];
     foreach ($songs as $song) {
         if (($song['kind'] ?? '')==='playlist' || !empty($song['video'])) continue;
         $identity=($song['browseIdentity'] ?? '') ?: (($song['canonicalRecordKey'] ?? '') ?: (($song['orderKey'] ?? '') ?: $song['key']));
         $labels=array_intersect($song['moodTags'] ?? [],$moods);
         if (!$labels || isset($seen[$identity])) continue;
-        $terms=n80_genre_terms($song);
+        $terms=$song['keywords']??n80_genre_terms($song);
         if (!$terms) continue;
         $seen[$identity]=true;
         $documents++;
@@ -47,7 +47,7 @@ function n80_genre_model(array &$songs):void{
     }
     foreach ($songs as &$song) {
         if (($song['kind'] ?? '')==='playlist' || !empty($song['video'])) continue;
-        $words=array_fill_keys(n80_genre_terms($song),true);
+        $words=array_fill_keys($song['keywords']??n80_genre_terms($song),true);
         foreach ($weights as $mood=>$vocabulary) {
             $matches=array_intersect_key($vocabulary,$words);
             if (count($matches)<2) continue;

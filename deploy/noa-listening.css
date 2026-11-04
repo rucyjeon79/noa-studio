@@ -113,3 +113,6 @@ html body .nl-listen-row>button.nl-primary:disabled{background:var(--noa-surface
 /* In compact home mode, only the retained player is interactive inside the frame. */
 html.nl-home-docked body>:not(.noa-two-line,#noa-dock-popover,#dock-queue){visibility:hidden!important}
 html:has(.nl-play-shell):not(.nl-host-open) body::after{content:'';display:block;height:var(--nl-home-dock-space,0px)}
+
+html body .nl-video-dialog{width:min(760px,94vw);max-width:94vw}
+.nl-video-dialog iframe{display:block;width:100%;aspect-ratio:16/9;min-height:200px;border:0;margin:12px 0}
