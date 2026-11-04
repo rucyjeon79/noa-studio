@@ -1,4 +1,4 @@
-"""Publish the two-frame header and verified location weather, with four-language controls, a first-paint palette shared with section styles and five genre recommendations, including the updated lounge directory."""
+"""Publish the centered studio shell, direct theme controls and three personal listening choices."""
 import os
 import sys
 from pathlib import Path
