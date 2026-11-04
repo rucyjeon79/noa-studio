@@ -93,7 +93,8 @@ function renderQueueSource(){
   const tag=document.getElementById(id);tag.hidden=!source;tag.textContent=source?.label||'';
  }
 }
-function savePlayback(){if(changingTrack||leavingPage||!selected?.dataset.audio)return;try{sessionStorage.setItem(resumeKey,JSON.stringify({key:selected.dataset.key,seconds:Number.isFinite(player.currentTime)?player.currentTime:0,playing:!player.paused&&!player.ended,closed:document.querySelector('.noa-transport').hidden,volume:player.volume,repeat,shuffle,recommendation:!!recommendationQueue&&!activeQueue&&!collectionQueue,collectionLoop:!!collectionQueue&&!activeQueue,listening:listeningSelection(),queue:queue().map(b=>b.dataset.key),path:location.pathname+location.search+location.hash,at:Date.now()}));}catch{}}
+function savePlayback(){if(changingTrack||leavingPage||!selected?.dataset.audio)return;try{sessionStorage.setItem(resumeKey,JSON.stringify({key:selected.dataset.key,seconds:Number.isFinite(player.currentTime)?player.currentTime:0,playing:!player.paused&&!player.ended,closed:document.querySelector('.noa-transport').hidden,volume:player.volume,repeat,shuffle,recommendation:!!recommendationQueue&&!activeQueue&&!collectionQueue,collectionLoop:!!collectionQueue&&!activeQueue,listening:listeningSelection(),queue:queue().map(b=>b.dataset.key),path:window.NoaPlayerShell?.path()||(location.pathname+location.search+location.hash),at:Date.now()}));}catch{}}
+window.addEventListener('noa-player-route',savePlayback);
 window.addEventListener('pagehide',()=>{savePlayback();leavingPage=true;});
 window.addEventListener('pageshow',()=>{leavingPage=false;});
 for(const event of ['playing','pause','seeked','volumechange','ended'])player.addEventListener(event,savePlayback);

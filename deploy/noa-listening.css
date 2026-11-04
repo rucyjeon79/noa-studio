@@ -103,3 +103,13 @@ html body #noa-listening .nl-preview-track{display:grid;grid-template-columns:2c
 #noa-listening .nl-preview-track .nl-icon{width:15px;height:15px}
 #noa-listening .nl-status:empty,#noa-listening .nl-note:empty{display:none}
 @media(max-width:620px){#noa-listening .nl-preview-tracks{grid-template-columns:minmax(0,1fr)}#noa-listening .nl-genre-option{padding-block:10px}}
+
+/* Selection marks the queue source. Enabled playback always keeps the theme's solid action colors. */
+html body #noa-listening button.nl-play-action:enabled,
+html body .nl-listen-row>button.nl-primary:enabled{background:var(--noa-accent,#c9b47b);color:var(--noa-accentText,#151719);opacity:1;border-color:var(--noa-accent,#c9b47b);cursor:pointer}
+html body #noa-listening button.nl-play-action.nl-button:disabled,
+html body .nl-listen-row>button.nl-primary:disabled{background:var(--noa-surface,#30343b);color:var(--noa-muted,#8f959f);border:1px solid var(--noa-line,#54575d);opacity:.68;cursor:default}
+
+/* In compact home mode, only the retained player is interactive inside the frame. */
+html.nl-home-docked body>:not(.noa-two-line,#noa-dock-popover,#dock-queue){visibility:hidden!important}
+html:has(.nl-play-shell):not(.nl-host-open) body::after{content:'';display:block;height:var(--nl-home-dock-space,0px)}

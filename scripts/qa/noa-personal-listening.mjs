@@ -84,10 +84,48 @@ try{
    await page.evaluate(()=>document.getElementById('sound-player').pause());await page.locator('[data-mode=albums]').click();await page.locator('.nl-album').first().click();await page.waitForFunction(()=>document.querySelector('.song.selected')?.dataset.ep==='1');
    await page.locator('#next').click();assert.equal(await page.locator('.song.selected').getAttribute('data-ep'),'2');await page.evaluate(()=>document.getElementById('sound-player').pause());
    await page.locator('[data-mode=now]').click();
-  }else{assert((await page.locator('.nl-primary').innerText()).includes('로그인하고 추천받기'));report.cases.push({width,guestGate:true});}
+  }else{
+   const mix=page.locator('[data-all-genre-mix]');assert((await mix.innerText()).includes('로그인하고 추천받기'));
+   await page.waitForFunction(()=>window.NoaUI?.getState());
+   for(const theme of ['noa-ivory','noa-studio']){
+    await page.evaluate(theme=>window.NoaUI.apply({...window.NoaUI.getState(),theme}),theme);
+    const painted=await mix.evaluate(button=>{
+     const probe=button.cloneNode(true);probe.setAttribute('aria-pressed','true');button.after(probe);
+     const color=key=>{const i=document.createElement('i');i.style.color='var('+key+')';probe.after(i);const v=getComputedStyle(i).color;i.remove();return v;};
+     const css=getComputedStyle(probe);const match=css.backgroundColor===color('--noa-accent')&&css.color===color('--noa-accentText')&&css.opacity==='1';probe.remove();return match;
+    });
+    assert(painted,'selected play action keeps full contrast: '+theme);
+   }
+   assert(await page.locator('[data-manual-play]').isDisabled());
+   report.cases.push({width,guestGate:true,buttonColorsInBothThemes:true});
+  }
   await page.locator('#noa-listening').screenshot({path:out+'/listening-'+width+'.png'});await c.close();
  }
- if(!live){const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block'}),page=await c.newPage();activePage=page;page.setDefaultTimeout(20000);await page.goto(base);assert.equal(await page.locator('.nl-catalog').getAttribute('href'),'/noa-music.php#music-browse');await page.waitForFunction(()=>!document.querySelector('.nl-primary').disabled);await page.getByRole('link',{name:'내 음악 바로 듣기',exact:true}).click();const f=page.frames().find(f=>f.url().includes('listenHost'));assert(f);await f.waitForFunction(()=>!document.getElementById('sound-player').paused&&document.getElementById('sound-player').currentTime>0);assert.equal(await f.locator('#music-browse [data-browse-level="1"] .noa-browse-card').count(),4);assert.equal(await page.locator('.nl-play-shell').isVisible(),true);await page.screenshot({path:out+'/home-one-click.png'});await page.goBack();assert(!await page.locator('.nl-play-shell').isVisible());report.homeOneClickActualAudio=true;await page.getByRole('link',{name:'내 음악 바로 듣기',exact:true}).click();await f.locator('.noa-mobile-nav a[data-noa-nav=home]').click();await page.waitForURL(base+'/');assert.equal(new URL(page.url()).pathname,'/');report.homeNavigationLeavesPlayer=true;await c.close();}
+ if(!live){
+  const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block'}),page=await c.newPage();activePage=page;page.setDefaultTimeout(20000);
+  await page.goto(base);assert.equal(await page.locator('.nl-catalog').getAttribute('href'),'/noa-music.php#music-browse');
+  await page.waitForFunction(()=>!document.querySelector('.nl-primary').disabled&&document.querySelector('.nl-play-shell')?.contentWindow?.NoaMusic);
+  await page.getByRole('link',{name:'내 음악 바로 듣기',exact:true}).click();
+  const f=page.frames().find(frame=>frame.url().includes('listenHost'));assert(f);
+  await f.waitForFunction(()=>!document.querySelector('audio').paused&&document.querySelector('audio').currentTime>0);
+  const before=await f.evaluate(()=>{window.testAudio=document.querySelector('audio');return {time:testAudio.currentTime,keys:queue().map(b=>b.dataset.key)};});
+  assert.equal(await f.locator('#music-browse [data-browse-level="1"] .noa-browse-card').count(),4);await page.screenshot({path:out+'/home-one-click.png'});
+  const checkPlaying=async()=>{
+   await f.waitForFunction(t=>document.querySelector('audio')===window.testAudio&&!testAudio.paused&&testAudio.currentTime>t,before.time);
+   assert.deepEqual(await f.evaluate(()=>queue().map(b=>b.dataset.key)),before.keys);
+   assert(await f.locator('.noa-two-line').isVisible());
+  };
+  await page.goBack();await page.waitForURL(base+'/');await checkPlaying();
+  assert(await page.locator('.nl-play-shell').evaluate(el=>getComputedStyle(el).clipPath!=='none'),'real dock stays above the original home');
+  await page.getByRole('link',{name:'내 음악 바로 듣기',exact:true}).click();
+  await f.locator('.noa-mobile-nav a[data-noa-nav=community]').click();await page.waitForURL(base+'/noa-lounge.php');await checkPlaying();
+  await f.locator('.noa-mobile-nav a[data-noa-nav=home]').click();await page.waitForURL(base+'/');await checkPlaying();
+  await page.goBack();await page.waitForURL(base+'/noa-lounge.php');await checkPlaying();
+  await page.goForward();await page.waitForURL(base+'/');await checkPlaying();
+  await f.locator('#dock-close').click();await page.locator('.nl-play-shell').waitFor({state:'hidden'});assert(await f.evaluate(()=>testAudio.paused));
+  report.homeOneClickActualAudio=true;report.homeDockAcrossMenusBackForwardAndClose=true;await c.close();
+ }
+
  if(!live){
   // The studio sign-in flow can return to the plain homepage. Restore only this tab's setup intent.
   const setupContext=await browser.newContext({viewport:{width:390,height:900},extraHTTPHeaders:{'X-QA-User':'guest'}});
@@ -147,6 +185,16 @@ try{
   const page=await c.newPage();activePage=page;await page.goto(base);await page.locator('[data-listening-lane=whole] .nl-preview-track').nth(9).waitFor();await page.getByRole('button',{name:'추천 100곡 듣기',exact:true}).click();
   const player=page.frames().find(f=>f.url().includes('listenHost'));assert(player);await player.waitForFunction(()=>queue().length===100&&!player.paused&&player.currentTime>0);
   const readQueue=()=>player.evaluate(()=>({keys:queue().map(b=>b.dataset.key),source:document.getElementById('dock-listening-source').textContent,src:player.getAttribute('src'),selected:selected.dataset.key}));
+  const themeConfig=JSON.parse(await (await c.request.get(base+'/noa-design.json')).text());
+  for(const theme of themeConfig.themes){
+   const paint=await page.locator('[data-all-genre-mix]').evaluate((button,theme)=>{
+    const root=document.documentElement;root.dataset.noaTheme=theme.id;
+    for(const [name,value] of Object.entries(theme.tokens))root.style.setProperty('--noa-'+name,value);
+    const color=value=>{const node=document.createElement('i');node.style.color=value;document.body.append(node);const rgb=getComputedStyle(node).color;node.remove();return rgb;};
+    const css=getComputedStyle(button);return [button.disabled,css.backgroundColor===color(theme.tokens.accent),css.color===color(theme.tokens.accentText),css.opacity];
+   },theme);
+   assert.deepEqual(paint,[false,true,true,'1'],'enabled mix uses solid theme colors: '+theme.id);
+  }
   const wholeQueue=await readQueue();assert.match(wholeQueue.source,/전체 사주 추천 · 100곡/);
   assert.equal(new URL(wholeQueue.src,base).searchParams.get('record'),wholeQueue.keys[0]);
   const heads=new Map();

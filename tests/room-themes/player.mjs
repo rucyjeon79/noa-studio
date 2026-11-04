@@ -18,10 +18,16 @@ try{
    await route.fulfill({response,body:html.replace('</head>',shared+'</head>')});
   });
   const errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error('BROWSER_ERROR',e.message);});
-  await page.goto('http://127.0.0.1:8093/noa-music.php?track=one');
+  await page.goto('http://127.0.0.1:8093/noa-lounge.php');
+  const songLink=page.locator('main>a[href="/noa-music.php"]');
+  await songLink.evaluate(a=>a.search='?track=one');await page.locator('main>a[href$="?track=one"]').click();
   await page.locator('#pause-play').click();
   await page.waitForFunction(()=>document.querySelector('audio').currentTime>0.2);
   await page.evaluate(()=>window.originalAudio=document.querySelector('audio'));
+  const musicUrl=page.url();
+  await page.goBack();await page.waitForURL('**/noa-lounge.php');
+  await page.waitForFunction(()=>window.originalAudio===document.querySelector('audio')&&!window.originalAudio.paused&&document.querySelector('#noa-shell-view')?.contentDocument?.location.pathname==='/noa-lounge.php');
+  await page.goForward();await page.waitForURL(musicUrl);await page.waitForFunction(()=>!document.querySelector('#noa-shell-view'));
   const nav=width<760?'.noa-mobile-nav':'.noa-menu';
   for(const path of ['/noa-lounge.php','/noa-shop.php','/']){
    const before=await page.locator('audio').evaluate(a=>a.currentTime);
