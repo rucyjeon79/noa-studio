@@ -77,6 +77,10 @@ try{
   await page.locator('.nl-primary').waitFor();await page.waitForFunction(()=>document.querySelector('.nl-primary')?.disabled===false);await page.locator('#noa-listening').scrollIntoViewIfNeeded();
   assert.equal(await page.locator('#nl-lane-whole').innerText(),'오늘의 공감 추천');
   assert.equal(await page.locator('#nl-lane-manual').innerText(),'지금 내 기분');
+  if(live){
+   const campaign=page.locator('#noa-amt-fan .amt-close');
+   if(await campaign.isVisible())await campaign.click();
+  }
   await page.evaluate(()=>document.fonts.ready.then(()=>true));
   await checkMoodLayout(page,width);
   if(width===390){
@@ -85,7 +89,13 @@ try{
     await checkMoodLayout(page,mobile);
    }
    await page.setViewportSize({width,height:900});
-   await page.locator('[data-listening-lane=manual]').screenshot({path:out+'/mood-controls-390.png'});
+   for(const mood of ['cruise','drive'])await page.locator('[data-mood='+mood+']').click({trial:true});
+   const picker=page.locator('[data-listening-lane=manual] .nl-moods');
+   await picker.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
+   assert(await picker.locator('button').evaluateAll(buttons=>buttons.every(b=>{
+    const r=b.getBoundingClientRect();return b.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));
+   })),'all eight mobile buttons can receive a tap');
+   await picker.screenshot({path:out+'/mood-controls-390.png'});
   }
   if(width===320){
    const largerText=await page.addStyleTag({content:'#noa-listening .nl-moods button[data-mood]{font-size:20px!important}'});
