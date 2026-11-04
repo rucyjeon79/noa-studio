@@ -33,3 +33,12 @@ test('exact recording aliases can supply lyrics without admitting silent or unre
  const result=model.select(tracks,{genre:'story',mood:'focus'});
  assert.equal(result.fallback,false);assert.deepEqual(result.rows.map(r=>[r.key,r.moodScores.focus]),[['play',4]]);
 });
+test('personal now uses the next chart mood with audio inside the chosen genre',()=>{
+ const theme={personal:true,mood:'focus',rankedMoods:['focus','energy']};
+ const tracks=[...rows,{key:'silent-focus',genre:'k',audio:'',moodTags:['focus']},{key:'other-focus',genre:'j',audio:'/j',moodTags:['focus']}];
+ const chosen=model.select(tracks,{genre:'k',theme});
+ assert.equal(chosen.mood,'energy');assert(!chosen.fallback);assert.deepEqual(chosen.rows.map(r=>r.key),['k1']);
+ assert.deepEqual(model.select(tracks,{genre:'k',mood:'calm',theme}).rows.map(r=>r.key),['k2']);
+ const unmatched=model.select(tracks,{genre:'k',theme:{...theme,rankedMoods:['focus','comfort']}});
+ assert(unmatched.fallback);assert(unmatched.rows.every(r=>r.genre==='k'));
+});
