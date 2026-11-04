@@ -1,0 +1,43 @@
+name: Busan reporter newsroom
+on:
+  push:
+    branches: [main, busan/news-copy]
+    paths: ['deploy/busan/newsroom/**', 'scripts/busan_news/**', 'newsroom/editions/**', '.github/workflows/busan-news.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: busan-news-publisher, cancel-in-progress: false}
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main, persist-credentials: false}
+      - name: Read editorial data branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api "repos/$GITHUB_REPOSITORY/branches/busan%2Fnews-copy" --silent; then
+            git fetch --depth=1 origin refs/heads/busan/news-copy
+            mkdir editions-copy
+            git archive FETCH_HEAD newsroom/editions | tar -x -C editions-copy
+          fi
+      - name: Validate newsroom files
+        run: |
+          php -l deploy/busan/newsroom/news.extend.php
+          php -l deploy/busan/newsroom/recent.php
+          php -l scripts/busan_news/publish.php
+          node --check deploy/busan/newsroom/ticker.js
+          python -m pip install -q paramiko==3.5.1
+      - name: Publish only Busan news and register its native menu
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: python scripts/busan_news/release.py
+      - name: Verify public navigation and headlines
+        run: |
+          npm install --prefix /tmp/busan-news-qa --no-audit --no-fund --ignore-scripts playwright-core@1.56.1
+          NODE_PATH=/tmp/busan-news-qa/node_modules node scripts/busan_news/verify.cjs
