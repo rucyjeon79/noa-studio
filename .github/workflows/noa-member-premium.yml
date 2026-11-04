@@ -1,0 +1,25 @@
+name: NOA member experience refinement
+on:
+  pull_request:
+    paths: ['deploy/noa-member-surfaces.*','tests/member-premium/**','scripts/noa_member_surfaces_release.py','.github/workflows/noa-member-premium.yml']
+  push:
+    branches: [main]
+    paths: ['deploy/noa-member-surfaces.*','tests/member-premium/**','scripts/noa_member_surfaces_release.py','.github/workflows/noa-member-premium.yml']
+permissions: {contents: read}
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Prepare visual inspection
+        run: |
+          python scripts/qa/noa-qa-font.py
+          timeout 90s npm install --prefix "$RUNNER_TEMP/noa-member" --no-save --ignore-scripts --package-lock=false --no-audit --no-fund --fetch-timeout=20000 --fetch-retries=1 playwright@1.56.1
+          cp tests/member-premium/surfaces.mjs "$RUNNER_TEMP/noa-member/check.mjs"
+      - name: Inspect member entry points without transactions
+        run: NOA_MEMBER_PHASE=baseline node "$RUNNER_TEMP/noa-member/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'member-surfaces-candidate', path: 'member-surface-proof/', retention-days: 7}
