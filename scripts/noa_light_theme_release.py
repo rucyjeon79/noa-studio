@@ -1,4 +1,4 @@
-"""Publish the two-frame header and verified location weather, including content-versioned native store styles for returning visitors."""
+"""Publish the two-frame header and verified location weather, with the four-language interface catalog and compact mobile controls."""
 import os
 import sys
 from pathlib import Path

@@ -4,9 +4,9 @@ Notice content and disclosure geometry are checked by the native and browser sui
 import argparse,re,subprocess
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
-# Approved hero-first home, partner banner positions and personal listening integration.
+# Approved hero-first home, partner banner positions and personal listening and optional daily fortune integration (#355).
 # Preserve the current accepted page instead of comparing against the superseded layout.
-BASE_COMMIT='d7ec1994a89d23d47ba67d8c38c1f652de3100e1'
+BASE_COMMIT='8f026f7d7e7b15abfab021d25dc5f3a9e64bfa38'
 parser=argparse.ArgumentParser();parser.add_argument('--host-source',type=Path);args=parser.parse_args()
 candidate=(ROOT/'deploy/noa-app/home.php').read_bytes()
 baseline=args.host_source.read_bytes()if args.host_source else subprocess.check_output(['git','show',BASE_COMMIT+':deploy/noa-app/home.php'],cwd=ROOT)
