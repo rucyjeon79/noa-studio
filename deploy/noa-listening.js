@@ -10,17 +10,17 @@ host.innerHTML='<div class="nl-heading"><div><p class="nl-kicker">YOUR MUSIC, YO
 const heading=host.querySelector('.nl-heading'),status=host.querySelector('.nl-status');
 const controls=el('div','nl-controls'),genreLabel=el('label','nl-genre-label','장르 직접 선택'),genres=el('select','nl-genres');genres.setAttribute('aria-label','듣고 싶은 장르');genreLabel.append(genres);controls.append(genreLabel);
 const settings=button('추천 설정','settings',()=>openSettings());controls.append(settings);host.insertBefore(controls,status);
-const moods=el('div','nl-moods');moods.setAttribute('role','group');moods.setAttribute('aria-label','음악 분위기');for(const [key,label] of Object.entries(labels)){const b=button(label,key==='auto'?'music':'star',()=>{
+const manualHeading=el('h3','nl-manual-heading','③ 직접 고른 장르');host.insertBefore(manualHeading,controls);
+const moods=el('div','nl-moods');moods.setAttribute('role','group');moods.setAttribute('aria-label','음악 분위기');for(const [key,label] of Object.entries(labels).filter(([key])=>key!=='auto')){const b=button(label,'star',()=>{
  if(!state)return;
- if(key==='auto'){playWholeCatalog();return;}
  mood=key;mode='now';scope='genre';render();
 });b.dataset.mood=key;moods.append(b);}host.insertBefore(moods,status);
 const genrePanel=el('section','nl-genre-choices');genrePanel.hidden=true;
 genrePanel.setAttribute('aria-labelledby','nl-genre-choice-title');
-const genreHeading=el('h3','','사주로 음악 듣기');genreHeading.id='nl-genre-choice-title';
-const mixButton=button('전체 음원 AI 추천 최대 100곡 듣기','play',playWholeCatalog);mixButton.dataset.allGenreMix='';
-const genreSubtitle=el('h4','','AI 추천 장르'),genreHint=el('p','nl-note'),genreCards=el('div','nl-genre-cards');
-genrePanel.append(genreHeading,mixButton,genreSubtitle,genreHint,genreCards);host.insertBefore(genrePanel,controls);
+const genreHeading=el('h3','','① 전체 음원 · 내 사주 추천');genreHeading.id='nl-genre-choice-title';
+const mixButton=button('전체 음원 AI 추천 최대 100곡 듣기','play',playWholeCatalog);mixButton.dataset.allGenreMix='';mixButton.dataset.mood='auto';
+const genreSubtitle=el('h4','','② 내 사주로 고른 추천 장르'),genreHint=el('p','nl-note'),genreCards=el('div','nl-genre-cards');
+genrePanel.append(genreHeading,mixButton,genreSubtitle,genreHint,genreCards);host.insertBefore(genrePanel,manualHeading);
 function isGlobalMix(){return scope==='all'&&mode==='now'&&mood==='auto'&&state?.theme?.personal===true;}
 function playWholeCatalog(){
  if(!state)return;
@@ -28,21 +28,33 @@ function playWholeCatalog(){
  if(!state.theme?.personal){openSettings(true);return;}
  play(current().rows,true);
 }
+let plan=null;
+function listeningPlan(){
+ const orderFor=musicWindow?.NoaBrowse?.orderFor;
+ if(plan?.records===records&&plan.state===state&&plan.orderFor===orderFor)return plan;
+ const choices=model.genreSuggestions(records,state.theme,state.genres,state.profile?.genre,orderFor);
+ const reserved=new Set(choices.map(choice=>model.recordingId(choice.selection.rows[0])));
+ for(const g of Object.keys(state.genres)){
+  const first=model.manualGenre(records,g,orderFor).rows[0];
+  if(first)reserved.add(model.recordingId(first));
+ }
+ plan={records,state,orderFor,choices,whole:model.wholeCatalogMix(records,state.theme,reserved)};
+ return plan;
+}
 function renderGenreChoices(){
  genrePanel.hidden=false;
  const personal=state?.theme?.personal,ready=!!musicWindow;
- moods.querySelector('[data-mood=auto]').disabled=Boolean(personal&&!ready);
  mixButton.disabled=personal&&(!ready||!records.some(r=>r.audio&&!r.video&&r.kind!=='playlist'));
  mixButton.setAttribute('aria-pressed',String(isGlobalMix()));
- const count=personal&&ready?model.wholeCatalogMix(records,state.theme).rows.length:null;
+ const count=personal&&ready?listeningPlan().whole.rows.length:null;
  const mixLabel=count===null?'전체 음원 AI 추천 최대 100곡 듣기':'전체 음원 AI 추천 '+count+'곡 듣기';
  if(mixButton.lastChild.textContent!==mixLabel)mixButton.lastChild.textContent=mixLabel;
- const choices=personal&&ready?model.genreSuggestions(records,state.theme,state.genres,state.profile?.genre):[];
+ const choices=personal&&ready?listeningPlan().choices:[];
  genreSubtitle.hidden=!choices.length;genreCards.replaceChildren();
  if(!personal){genreHint.textContent='생년월일을 설정하면 전체 음원과 추천 장르에서 나에게 맞는 곡을 들을 수 있어요.';return;}
  genreHint.textContent=choices.length?(choices.length===3?'재생 가능한 장르 3개를 골랐어요.':'현재 재생 가능한 장르는 '+choices.length+'개예요.')+(state.canPlay?' 장르를 누르면 그 안에서 최대 10곡을 바로 들어요.':' VIP 이용권으로 들을 수 있어요.'):'';
  for(const {genre:choice,selection} of choices){
-  const card=el('button','nl-genre-card');card.type='button';card.dataset.genreChoice=choice;
+  const card=el('button','nl-genre-card');card.type='button';card.dataset.genreChoice=choice;card.setAttribute('aria-pressed',String(isRecommendedGenreMix()&&genre===choice));
   card.setAttribute('aria-label',state.genres[choice]+' 추천 '+selection.rows.length+'곡 듣기');
   const copy=el('span','nl-genre-copy');
   copy.append(el('strong','',state.genres[choice]),el('small','',selection.rows.length+'곡 · '+(selection.fallback?'장르 이어듣기':labels[selection.mood])+' · '+selection.rows[0].title));
@@ -63,12 +75,18 @@ if(!home){
   const row=el('div','nl-listen-row');discovery.before(row);row.append(discovery,listen);
  }
 }
-const tabs=el('div','nl-tabs');tabs.setAttribute('role','group');tabs.setAttribute('aria-label','선곡 방식');for(const [key,label]of Object.entries({now:'빠른 선곡',popular:'인기곡',latest:'최신 음원',albums:'추천 앨범',library:'내 보관함'})){const b=el('button','',label);b.type='button';b.dataset.mode=key;b.onclick=()=>{mode=key;render();};tabs.append(b);}host.append(tabs);
+const tabs=el('div','nl-tabs');tabs.setAttribute('role','group');tabs.setAttribute('aria-label','선곡 방식');for(const [key,label]of Object.entries({now:'빠른 선곡',popular:'인기곡',latest:'최신 음원',albums:'추천 앨범',library:'내 보관함'})){const b=el('button','',label);b.type='button';b.dataset.mode=key;b.onclick=()=>{mode=key;if(key!=='now')scope='genre';render();};tabs.append(b);}host.append(tabs);
 const results=el('div','nl-results');host.append(results);
 const more=el('a','nl-catalog','카테고리별 음원 찾기 →');more.href=home?'/noa-music.php#music-browse':'#music-browse';if(!home)more.onclick=()=>{const panel=host.closest('.nl-music-discovery');if(panel)panel.open=false;window.NoaMusic?.showCategories();};host.append(more);
 const info=el('details','nl-basis');info.append(el('summary','','추천 기준'));const infoText=el('p');info.append(infoText);host.append(info);
 function isRecommendedGenreMix(){return scope==='recommendedGenre'&&mode==='now'&&mood==='auto'&&state?.theme?.personal===true;}
-function current(){if(isGlobalMix())return model.wholeCatalogMix(records,state.theme);if(isRecommendedGenreMix())return model.recommendedGenreMix(records,genre,state.theme);return model.select(records,{genre,mood,mode,theme:state?.theme,popular:state?.popular,library:state?.library});}
+function isManualOrder(){return scope==='genre'&&mode==='now'&&mood==='auto';}
+function current(){
+ if(isGlobalMix())return listeningPlan().whole;
+ if(isRecommendedGenreMix())return listeningPlan().choices.find(choice=>choice.genre===genre)?.selection||model.recommendedGenreMix(records,genre,state.theme,musicWindow?.NoaBrowse?.orderFor);
+ if(isManualOrder())return model.manualGenre(records,genre,musicWindow?.NoaBrowse?.orderFor);
+ return model.select(records,{genre,mood,mode,theme:state?.theme,popular:state?.popular,library:state?.library});
+}
 function songButton(row,queue){const b=el('button','nl-track');b.type='button';const art=el('img');art.alt='';art.loading='lazy';if(row.thumb)art.src=row.thumb;else art.hidden=true;const copy=el('span','nl-track-copy');copy.append(el('strong','',row.title),el('small','',row.ep?'EP.'+String(row.ep).padStart(2,'0'):state.genres[row.genre]));b.append(art,copy,icon('play'));b.setAttribute('aria-label',row.title+' 재생');b.onclick=()=>play([row,...queue.filter(r=>r.key!==row.key)]);return b;}
 const fortuneIntro='생년월일을 입력하면 나에게 맞는 음악과 오늘의 운세를 볼 수 있어요. 원하면 매일 오전 8시(한국 시간)에 운세 알림도 받을 수 있어요.';
 const fortuneSetupUrl='/?setup=fortune#noa-daily-fortune';
@@ -92,16 +110,17 @@ function renderFortune(){
 function render(){if(!state)return;renderFortune();renderGenreChoices();genres.value=(isGlobalMix()||isRecommendedGenreMix())?'':genre;for(const b of moods.children)b.setAttribute('aria-pressed',String(b.dataset.mood===mood&&(mood!=='auto'||state.theme?.personal===true)));for(const b of tabs.children)b.setAttribute('aria-pressed',String(b.dataset.mode===mode));results.replaceChildren();
  const selected=current(),theme=state.theme||{},autoNow=mode==='now'&&mood==='auto';
  let basis=labels[mood]||theme.label;
- if(autoNow){
+ if(isManualOrder())basis='직접 선택 · 장르 목록 순서';
+ else if(autoNow){
   if(selected.fallback)basis=isGlobalMix()?'전체 곡 이어듣기':'장르 이어듣기';
   else if(theme.personal)basis='내 사주 추천 · '+(labels[selected.mood]||theme.label);
   else basis='시간대 추천 · '+theme.label;
  }else if(mode!=='now'){
   basis=tabs.querySelector('[aria-pressed="true"]').textContent;
  }
- host.querySelector('.nl-reason').textContent=[theme.period,isGlobalMix()?'전체 음원':state.genres[genre],basis].filter(Boolean).join(' · ');
+ host.querySelector('.nl-reason').textContent=[theme.period,isGlobalMix()?'전체 음원':state.genres[genre],isRecommendedGenreMix()?'추천 장르':null,basis].filter(Boolean).join(' · ');
  infoText.textContent=(theme.personal?'태어난 날과 오늘의 오행을 비교해 어울리는 분위기를 고르고, 사주의 오행 구성과 바이오리듬, 현재 시간대를 함께 살펴요.':'추천 설정에 생년월일을 저장하면 내 사주에 맞춰 선곡해요.')+' 곡 제목과 가사에서 관련 표현을 찾고, 스타일과 설명도 함께 살펴요. AI 장르 추천은 NOA 곡들에서 함께 나타나는 표현도 참고해요.';
- listen.onclick=()=>play(current().rows);listen.disabled=false;listen.replaceChildren(icon('play'),document.createTextNode(!state.member?'로그인하고 듣기':!state.canPlay?'VIP 이용권 확인':mode==='albums'?'ACT 선택하기':'지금 듣기'));
+ listen.onclick=()=>play(current().rows);listen.disabled=false;listen.replaceChildren(icon('play'),document.createTextNode(!state.member?'로그인하고 듣기':!state.canPlay?'VIP 이용권 확인':mode==='albums'?'ACT 선택하기':isGlobalMix()?'전체 '+selected.rows.length+'곡 듣기':isRecommendedGenreMix()?'추천 '+selected.rows.length+'곡 듣기':isManualOrder()?'장르 '+selected.rows.length+'곡 듣기':'지금 듣기'));
  if(!state.member){status.textContent='로그인하면 원하는 장르를 바로 듣고 개인 추천을 설정할 수 있어요.';results.hidden=true;return;}
  results.hidden=false;
  if(!musicWindow){listen.disabled=true;status.textContent='음원 목록을 연결하고 있어요.';return;}
@@ -113,7 +132,7 @@ function render(){if(!state)return;renderFortune();renderGenreChoices();genres.v
  status.textContent=selected.rows.length?(mode==='popular'?'음원 감상 횟수 기준 · ':mode==='latest'?'등록일이 확인된 음원 기준 · ':selected.fallback?'이 분위기와 관련된 곡을 찾지 못해 선택한 장르의 곡으로 이어 들어요. ':'')+selected.rows.length+'곡 이어듣기':mode==='library'?'이 장르의 보관함 곡이 없습니다. 곡 카드의 담기로 추가해 주세요.':mode==='popular'?'이 장르의 감상 기록이 아직 없습니다.':mode==='latest'?'등록일이 확인된 음원이 아직 없습니다.':'이 장르에는 아직 재생할 수 있는 음원이 없어요.';
  if(isGlobalMix()){
   status.textContent=selected.rows.length?(selected.fallback?'분위기 단서가 적어 전체 음원으로 이어 들어요.':(theme.reading||'오늘의 사주에 맞춰')+' 전체 음원에서 골랐어요.')+' '+selected.rows.length+'곡 이어듣기':'현재 재생 가능한 음원이 없어요.';
- }else if(autoNow&&selected.rows.length){
+ }else if(autoNow&&!isManualOrder()&&selected.rows.length){
   if(theme.personal&&!selected.fallback){
    const choice=selected.mood!==theme.mood?'이 장르에서 사주에 다음으로 어울리는 '+labels[selected.mood]+' 음악을 골랐어요.':(theme.reading||'오늘의 사주를 반영해')+' '+labels[selected.mood]+' 음악을 골랐어요.';
    status.textContent=choice+' '+selected.rows.length+'곡 이어듣기';
@@ -122,7 +141,7 @@ function render(){if(!state)return;renderFortune();renderGenreChoices();genres.v
   }
  }
  if((isGlobalMix()||isRecommendedGenreMix())&&selected.matched>0&&selected.matched<selected.rows.length){
-  status.textContent+=' · 분위기가 잘 맞는 '+selected.matched+'곡부터 재생해요.';
+  status.textContent+=' · 분위기가 잘 맞는 '+selected.matched+'곡이 포함돼 있어요.';
  }
  if(mode==='now'&&!isGlobalMix()&&state.canPlay&&!selected.rows.length){
   const alternatives=Object.keys(state.genres).filter(g=>g!==genre&&model.catalog(records,g).length);
@@ -135,20 +154,34 @@ function render(){if(!state)return;renderFortune();renderGenreChoices();genres.v
 }
 function showShell(){if(!frame)return;frame.hidden=false;document.documentElement.classList.add('nl-host-open');if(!history.state?.noaListeningHost)history.pushState({noaListeningHost:true},'', '/noa-music.php?from=home');}
 document.querySelector('[data-noa-listen-now]')?.addEventListener('click',event=>{event.preventDefault();if(!state){host.scrollIntoView({block:'center'});return;}if(listen.disabled){host.scrollIntoView({block:'center'});return;}if(current().rows.length||!state.canPlay)play(current().rows);else host.scrollIntoView({block:'center'});});
-function play(rows,acrossGenres=isGlobalMix()){if(!state?.member){location.href='/bbs/login.php?url='+encodeURIComponent('/noa-music.php#noa-listening');return;}if(!state.canPlay){location.href='/noa-vip.php';return;}if(!rows.length||!musicWindow?.NoaMusic)return;showShell();try{const keys=rows.map(r=>r.key);const music=musicWindow.NoaMusic;const ok=acrossGenres?music.playRecommendedMix(keys):isRecommendedGenreMix()?music.playRecommendedGenre(keys,genre):music.playQueue(keys,genre);status.textContent=ok?'선택한 음악을 준비하고 있어요.':'재생 가능한 음원을 다시 확인해 주세요.';}catch{status.textContent='재생 연결이 끊겼습니다. 새로고침 후 다시 시도해 주세요.';}}
+function play(rows,acrossGenres=isGlobalMix()){if(!state?.member){location.href='/bbs/login.php?url='+encodeURIComponent('/noa-music.php#noa-listening');return;}if(!state.canPlay){location.href='/noa-vip.php';return;}if(!rows.length||!musicWindow?.NoaMusic)return;showShell();try{const keys=rows.map(r=>r.key);const music=musicWindow.NoaMusic;const ok=acrossGenres?music.playRecommendedMix(keys):isRecommendedGenreMix()?music.playRecommendedGenre(keys,genre):music.playQueue(keys,genre,{mood,mode});status.textContent=ok?music.listeningSelection().label+' · 재생을 시작합니다.':'재생 가능한 음원을 다시 확인해 주세요.';}catch{status.textContent='재생 연결이 끊겼습니다. 새로고침 후 다시 시도해 주세요.';}}
+function attachPlayer(win){
+ musicWindow=win;
+ win.removeEventListener('noa-listening-selection',syncSelection);
+ win.addEventListener('noa-listening-selection',syncSelection);
+ records=win.NoaMusic.catalog();
+ syncSelection();
+}
+function syncSelection(){
+ const source=musicWindow?.NoaMusic?.listeningSelection();
+ if(source&&state&&(!source.genre||state.genres[source.genre])){
+  scope=source.scope;genre=source.genre||genre;mode=source.mode;mood=source.mood;
+ }
+ render();
+}
 function connect(){
- if(window.NoaMusic){musicWindow=window;records=window.NoaMusic.catalog();render();return;}
- try{if(window.parent!==window&&window.parent.NoaMusic){musicWindow=window.parent;records=musicWindow.NoaMusic.catalog();render();return;}}catch{}
+ if(window.NoaMusic){attachPlayer(window);return;}
+ try{if(window.parent!==window&&window.parent.NoaMusic){attachPlayer(window.parent);return;}}catch{}
  if(!home||!state.member)return;
- if(!frame){frame=el('iframe','nl-play-shell');frame.title='NOA STUDIO 음악 재생';frame.hidden=true;frame.allow='autoplay';frame.src='/noa-music.php?listenHost=1';frame.addEventListener('load',()=>{try{if(!frame.contentWindow.NoaMusic)throw Error();musicWindow=frame.contentWindow;records=musicWindow.NoaMusic.catalog();
+ if(!frame){frame=el('iframe','nl-play-shell');frame.title='NOA STUDIO 음악 재생';frame.hidden=true;frame.allow='autoplay';frame.src='/noa-music.php?listenHost=1';frame.addEventListener('load',()=>{try{if(!frame.contentWindow.NoaMusic)throw Error();attachPlayer(frame.contentWindow);
  // Run before the player's document-level navigation handler so a new page leaves the embedded player.
  frame.contentWindow.addEventListener('click',event=>{const link=event.target.closest?.('a[href]');if(event.defaultPrevented||!link||link.hasAttribute('download')||link.hasAttribute('data-noa-document-link')||link.target==='_blank'||link.getAttribute('href').startsWith('#'))return;const url=new URL(link.href);if(url.origin!==location.origin)return;event.preventDefault();event.stopImmediatePropagation();location.assign(url.href);},true);
  render();}catch{status.textContent='음원 연결을 불러오지 못했어요. 전체 음원에서 다시 열어 주세요.';listen.disabled=true;}});document.body.append(frame);}
 }
 window.addEventListener('popstate',()=>{if(frame&&!history.state?.noaListeningHost){frame.hidden=true;document.documentElement.classList.remove('nl-host-open');musicWindow?.document.getElementById('sound-player')?.pause();}});
 function chooseGenre(value,source){if(!value)return;scope=source;genre=value;try{sessionStorage.setItem('noa-listening-genre',genre);}catch{}render();}
-genres.onchange=()=>chooseGenre(genres.value,'genre');
-async function load(){const sequence=++loadSequence;try{const response=await fetch('/noa-bridge/listening.php',{credentials:'same-origin',cache:'no-store'});if(!response.ok)throw Error();const data=await response.json();if(sequence!==loadSequence)return;state=data;const oldGenre=genres.value;genres.replaceChildren();const placeholder=el('option','','직접 들을 장르 선택');placeholder.value='';placeholder.disabled=true;genres.append(placeholder);for(const [key,label]of Object.entries(state.genres)){const o=el('option','',label);o.value=key;genres.append(o);}let saved='';try{saved=sessionStorage.getItem('noa-listening-genre')||'';}catch{}const query=new URLSearchParams(location.search).get('genre');if(!oldGenre&&query&&state.genres[query])scope='genre';genre=[query,oldGenre,saved,state.profile?.genre,'kpop-original'].find(g=>state.genres[g])||'kpop-original';render();connect();
+genres.onchange=()=>{mode='now';mood='auto';chooseGenre(genres.value,'genre');};
+async function load(){const sequence=++loadSequence;try{const response=await fetch('/noa-bridge/listening.php',{credentials:'same-origin',cache:'no-store'});if(!response.ok)throw Error();const data=await response.json();if(sequence!==loadSequence)return;const initial=!state;state=data;const oldGenre=genre;genres.replaceChildren();const placeholder=el('option','','직접 들을 장르 선택');placeholder.value='';placeholder.disabled=true;genres.append(placeholder);for(const [key,label]of Object.entries(state.genres)){const o=el('option','',label);o.value=key;genres.append(o);}let saved='';try{saved=sessionStorage.getItem('noa-listening-genre')||'';}catch{}const query=new URLSearchParams(location.search).get('genre');if(initial&&query&&state.genres[query])scope='genre';genre=[initial&&query,!initial&&oldGenre,saved,state.profile?.genre,'kpop-original'].find(g=>state.genres[g])||'kpop-original';render();connect();
  if(home&&!anchorHandled){
   const requested=new URLSearchParams(location.search).get('setup')==='fortune';
   let pending=0;try{pending=Number(sessionStorage.getItem('noa-fortune-setup-until'));}catch{}

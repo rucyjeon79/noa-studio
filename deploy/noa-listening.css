@@ -80,3 +80,6 @@ html body #noa-listening .nl-genre-card{justify-content:space-between;min-width:
 @media(max-width:620px){#noa-listening .nl-genre-cards{grid-template-columns:minmax(0,1fr)}}
 html body #noa-listening [data-all-genre-mix]{margin:8px 0 12px;max-width:100%;color:var(--nl-gold);border-color:var(--nl-gold)}
 #noa-listening .nl-genre-choices h4{font:inherit;font-weight:650;margin:4px 0}
+html body #noa-listening .nl-manual-heading{font-size:1.05rem;margin:16px 0 8px}
+html body .noa-two-line #dock-listening-source{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--noa-accent);font-size:11px;line-height:1.4}
+#dock-listening-source:not([hidden])+#dock-artist{display:none!important}

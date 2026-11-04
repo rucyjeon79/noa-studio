@@ -300,7 +300,7 @@ function placeSongPanel(panel,card){
  }
  layout();
 }
-window.NoaBrowse={placeSongPanel,displayTitle,groups,names,genreArt,groupFor,actFor,slicePage,canonicalBrowseRows,collectionRows,recordKeys,classification,renderPath,loadClassification,mount};
+window.NoaBrowse={orderFor,placeSongPanel,displayTitle,groups,names,genreArt,groupFor,actFor,slicePage,canonicalBrowseRows,collectionRows,recordKeys,classification,renderPath,loadClassification,mount};
 })();
 
 
