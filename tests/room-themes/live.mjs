@@ -295,10 +295,18 @@ async function verifyMusicShelves(p,width,mode,theme){
  assert.equal(picks.visible,Math.min(5,picks.available||1));
  if(picks.visible===5){
   const fifth=p.locator('#noa-hero-picks a').nth(4);
-  if(await fifth.isEnabled())await fifth.click({trial:true});
-  else{
-   assert.match(await fifth.getAttribute('data-noa-condition')||'',/로그인/);
-   await fifth.hover({trial:true});
+  await fifth.hover({trial:true});
+  const state=await fifth.evaluate(a=>({locked:a.getAttribute('aria-disabled')==='true',href:a.getAttribute('href'),condition:a.dataset.noaCondition,role:a.getAttribute('role')}));
+  if(state.locked){
+   assert.equal(state.href,null);
+   assert.equal(state.role,'button');
+   assert.match(state.condition||'',/로그인/);
+  }else{
+   assert(state.href,'the available recommendation has a destination');
+   const target=new URL(state.href,p.url());
+   assert.equal(target.origin,new URL(p.url()).origin);
+   assert.equal(target.pathname,'/noa-youtube.php');
+   assert(target.searchParams.get('track'),'the recommendation opens its specific video');
   }
  }
  console.log('VISIBLE_GENRE_VIDEO_COUNT',width,mode,picks);

@@ -1,0 +1,23 @@
+name: NOA public menu surface audit
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['tests/room-themes/menu-surfaces.mjs', '.github/workflows/noa-menu-audit.yml']
+permissions: {contents: read}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Check public menu destinations and record access gates
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-menu-surfaces" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp tests/room-themes/menu-surfaces.mjs "$RUNNER_TEMP/noa-menu-surfaces/check.mjs"
+          node "$RUNNER_TEMP/noa-menu-surfaces/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-menu-surfaces-${{ github.run_id }}', path: room-theme-proof/menu-surfaces/, retention-days: 7}

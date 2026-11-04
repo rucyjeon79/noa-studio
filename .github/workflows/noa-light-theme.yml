@@ -2,7 +2,7 @@ name: NOA premium day and night theme release
 on:
   push:
     branches: [main]
-    paths: ['scripts/noa_light_theme_release.py', '.github/workflows/noa-light-theme.yml']
+    paths: ['scripts/noa_light_theme_release.py', '.github/workflows/noa-light-theme.yml', 'tests/room-themes/live.mjs']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
@@ -117,16 +117,4 @@ jobs:
   menu-surfaces:
     needs: publish
     if: success() && !contains(github.event.head_commit.message, '[design-review]')
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@v4
-        with: {persist-credentials: false}
-      - name: Check public menu destinations and record access gates
-        run: |
-          npm install --prefix "$RUNNER_TEMP/noa-menu-surfaces" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
-          cp tests/room-themes/menu-surfaces.mjs "$RUNNER_TEMP/noa-menu-surfaces/check.mjs"
-          node "$RUNNER_TEMP/noa-menu-surfaces/check.mjs"
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with: {name: 'noa-menu-surfaces-${{ github.run_id }}', path: room-theme-proof/menu-surfaces/, retention-days: 7}
+    uses: ./.github/workflows/noa-menu-audit.yml
