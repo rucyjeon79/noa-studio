@@ -33,3 +33,45 @@ test('exact recording aliases can supply lyrics without admitting silent or unre
  const result=model.select(tracks,{genre:'story',mood:'focus'});
  assert.equal(result.fallback,false);assert.deepEqual(result.rows.map(r=>[r.key,r.moodScores.focus]),[['play',4]]);
 });
+test('personal now uses the next chart mood with audio inside the chosen genre',()=>{
+ const theme={personal:true,mood:'focus',rankedMoods:['focus','energy']};
+ const tracks=[...rows,{key:'silent-focus',genre:'k',audio:'',moodTags:['focus']},{key:'other-focus',genre:'j',audio:'/j',moodTags:['focus']}];
+ const chosen=model.select(tracks,{genre:'k',theme});
+ assert.equal(chosen.mood,'energy');assert(!chosen.fallback);assert.deepEqual(chosen.rows.map(r=>r.key),['k1']);
+ assert.deepEqual(model.select(tracks,{genre:'k',mood:'calm',theme}).rows.map(r=>r.key),['k2']);
+ const unmatched=model.select(tracks,{genre:'k',theme:{...theme,rankedMoods:['focus','comfort']}});
+ assert(unmatched.fallback);assert(unmatched.rows.every(r=>r.genre==='k'));
+});
+test('saju recommendations offer three playable genres and a genre-local queue per card',()=>{
+ const theme={personal:true,mood:'calm',rankedMoods:['calm','focus']};
+ const tracks=[
+  {key:'c1',genre:'c',audio:'/c',moodScores:{calm:6}},
+  {key:'a1',genre:'a',audio:'/a',moodScores:{calm:8}},
+  {key:'a2',genre:'a',audio:'/a2',moodAffinity:{calm:.8}},
+  {key:'b1',genre:'b',audio:'/b',moodAffinity:{calm:.9}},
+  {key:'d1',genre:'d',audio:'/d',moodScores:{energy:10}},
+  {key:'silent',genre:'none',audio:'',moodScores:{calm:20}},
+ ];
+ const genres={a:'a',b:'b',c:'c',d:'d',none:'none'};
+ const picks=model.genreSuggestions(tracks,theme,genres,'a');
+ assert.equal(picks.length,3);assert.deepEqual(new Set(picks.map(p=>p.genre)),new Set(['a','b','c']));
+ for(const pick of picks)assert(pick.selection.rows.every(r=>r.genre===pick.genre&&r.audio));
+ const energetic=model.genreSuggestions(tracks,{personal:true,mood:'energy',rankedMoods:['energy','comfort']},genres,'a');
+ assert.equal(energetic[0].genre,'d');assert.deepEqual(model.genreSuggestions(tracks,{personal:false},genres),[]);
+ assert.equal(model.genreSuggestions(tracks,theme,{b:'b',none:'none'}).length,1);
+ const manual=model.select(tracks,{genre:'b',theme,mood:'calm'});assert(manual.fallback);
+});
+test('explicit whole-catalog saju considers all eligible genres independently of the manual selection',()=>{
+ const theme={personal:true,mood:'calm',rankedMoods:['calm','focus']};
+ const rows=[
+  {key:'pop',genre:'pop',audio:'/a',moodTags:['calm']},
+  {key:'story',genre:'story',audio:'/b',moodScores:{focus:3}},
+  {key:'ambient',genre:'other',audio:'/c',moodAffinity:{calm:.75}},
+  {key:'silent',genre:'pop',audio:'',moodScores:{calm:10}},
+  {key:'video',genre:'pop',video:'v',audio:'/v',moodScores:{calm:20}},
+  {key:'album',genre:'pop',kind:'playlist',audio:'/p',moodScores:{calm:20}},
+ ];
+ const mix=model.wholeCatalogMix(rows,theme);assert.deepEqual(mix.rows.map(x=>x.key),['story','pop','ambient']);
+ assert.deepEqual(model.select(rows,{genre:'pop',theme}).rows.map(x=>x.key),['pop']);
+ assert.deepEqual(model.wholeCatalogMix(rows,{personal:false}).rows,[]);
+});

@@ -6,6 +6,7 @@ release.FILES={
  'noa-app/engine/personal-calendar-vendor.php':'deploy/noa-app/engine/personal-calendar-vendor.php',
  'noa-app/engine/personal-korean-months.json':'deploy/noa-app/engine/personal-korean-months.json',
  'noa-app/engine/personal-calendar-LICENSE.txt':'deploy/noa-app/engine/personal-calendar-LICENSE.txt',
+ 'noa-app/engine/personal-genre-model.php':'deploy/noa-app/engine/personal-genre-model.php',
  'noa-app/engine/personal-listening.php':'deploy/noa-app/engine/personal-listening.php',
  'noa-bridge/notifications-inline.php':'bridge/notifications-inline.php',
  'noa-bridge/notifications-sources.php':'bridge/notifications-sources.php',

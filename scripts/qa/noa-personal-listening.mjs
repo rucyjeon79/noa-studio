@@ -39,7 +39,8 @@ try{
    await page.locator('.nl-music-discovery>summary').click();
   }
   await page.locator('.nl-primary').waitFor();await page.waitForFunction(()=>document.querySelector('.nl-primary')?.disabled===false);await page.locator('#noa-listening').scrollIntoViewIfNeeded();
-  assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1));
+  const overflow=await page.evaluate(()=>{const width=document.documentElement.scrollWidth;if(width<=innerWidth+1)return null;
+   return {width,viewport:innerWidth,scrollX,edges:[...document.querySelectorAll('body *')].filter(e=>!e.closest('.nl-moods,.nl-tabs')&&e.getBoundingClientRect().right+scrollX>innerWidth+1).map(e=>[e.tagName,e.id,e.className?.toString().slice(0,70),Math.round(e.getBoundingClientRect().right+scrollX)]).slice(-30)};});assert.equal(overflow,null,JSON.stringify(overflow));
   if(!live){
    const birthCases=[
     {calendar:'solar',raw:'19900615',expected:'1990-06-15',time:'09:30',leap:'no'},
@@ -70,7 +71,7 @@ try{
     }
     await page.locator('[name=birthDate]').fill('invalid');await page.locator('.nl-consent input').uncheck();const removed=page.waitForResponse(r=>r.url()===base+'/noa-bridge/listening.php'&&r.request().method()==='POST');await page.getByRole('button',{name:'저장',exact:true}).click();const response=await removed;assert.equal(response.status(),200);const cleared=(await response.json()).profile;assert.equal(cleared.consent,false);assert(!Object.hasOwn(cleared,'birthDate'));await page.getByRole('dialog').waitFor({state:'detached'});report.invalidDatesRejectedAndConsentCleared=true;
    }
-   await page.locator('.nl-primary').click();await page.waitForFunction(()=>{const a=document.getElementById('sound-player');return a&&!a.paused&&a.currentTime>0;});
+   await page.locator('.nl-genres').selectOption('kpop-original');await page.locator('.nl-primary').click();await page.waitForFunction(()=>{const a=document.getElementById('sound-player');return a&&!a.paused&&a.currentTime>0;});
    const playing=await page.evaluate(()=>({key:document.querySelector('.song.selected')?.dataset.key,src:document.getElementById('sound-player').getAttribute('src')}));assert(playing.key.startsWith('single:kpop-original:'));report.cases.push({width,...playing,oneClickActualAudio:true});
    assert.equal(await page.locator('#music-browse [data-browse-level="1"] .noa-browse-card').count(),4);
    const beforeBrowse=await page.locator('#sound-player').evaluate(a=>a.currentTime);await page.locator('#noa-listening .nl-catalog').click();
@@ -95,8 +96,37 @@ try{
    for(const mood of ['comfort','calm']){await page.locator('[data-mood='+mood+']').click();assert(!(await page.locator('.nl-status').innerText()).includes('찾지 못해'));assert.match(await page.locator('.nl-results').innerText(),/당신의 하루/);}await page.locator('.nl-primary').click();
    const player=page.frames().find(f=>f.url().includes('listenHost'));await player.waitForFunction(()=>document.querySelector('.song.selected')?.dataset.genre==='your-story'&&!document.getElementById('sound-player').paused&&document.getElementById('sound-player').currentTime>0);await page.goBack();
    await page.locator('.nl-genres').selectOption('thai-original');assert((await page.locator('.nl-status').innerText()).includes('재생할 수 있는 음원이 없어요'));await page.getByRole('button',{name:'K-POP Original 듣기',exact:true}).click();await player.waitForFunction(()=>document.querySelector('.song.selected')?.dataset.genre==='kpop-original'&&!document.getElementById('sound-player').paused);await page.goBack();
-   await card.getByRole('button',{name:'생년월일 설정하기'}).click();await page.locator('.nl-consent input').check();await page.locator('[name=birthDate]').fill('19900615');await page.locator('[name=fortuneAlerts]').check();await page.getByRole('button',{name:'저장',exact:true}).click();await card.getByText('오늘의 운세',{exact:true}).waitFor();assert(await card.evaluate(n=>n.previousElementSibling.id==='noa-listening'));assert(await card.getByRole('link',{name:'이 기기 알림 연결'}).isVisible());await card.scrollIntoViewIfNeeded();await card.screenshot({path:out+'/fortune-'+width+'.png'});
-   const headline=await card.locator('h3').innerText();await page.reload();await card.waitFor();assert.equal(await card.locator('h3').innerText(),headline);await card.getByRole('button').click();await page.locator('.nl-consent input').uncheck();await page.getByRole('button',{name:'저장',exact:true}).click();await card.getByRole('button',{name:'생년월일 설정하기'}).waitFor();await c.close();
+   await card.getByRole('button',{name:'생년월일 설정하기'}).click();await page.getByRole('dialog').getByRole('button',{name:'닫기',exact:true}).click();await page.locator('[data-mood=auto]').click();await page.locator('.nl-consent input').check();await page.locator('[name=birthDate]').fill('19900615');await page.locator('[name=fortuneAlerts]').check();await page.getByRole('button',{name:'저장',exact:true}).click();await card.getByRole('link',{name:'이 기기 알림 연결'}).waitFor();
+   const saju=(await (await c.request.get(base+'/noa-bridge/listening.php')).json()).theme;
+   assert(saju.personal&&saju.rankedMoods.length===2);assert((await page.locator('.nl-reason').innerText()).includes('내 사주 추천 · '+saju.label));
+   await page.locator('[data-mood=focus]').click();assert(!(await page.locator('.nl-reason').innerText()).includes('사주'));await page.locator('[data-mood=auto]').click();
+   await player.waitForFunction(()=>!document.getElementById('sound-player').paused&&document.getElementById('sound-player').currentTime>0);
+   const whole=await player.evaluate(()=>collectionQueue.map(k=>lookup.get(k).genre));assert(new Set(whole).size>1);
+   await player.locator('#next').click();assert.equal(await player.locator('.song.selected').getAttribute('data-genre'),whole[1]);await page.goBack();
+   assert.equal(await page.locator('[data-mood=auto]').getAttribute('aria-pressed'),'true');assert.equal(await page.locator('.nl-genres').inputValue(),'');
+   assert((await page.locator('.nl-reason').innerText()).includes(saju.label));
+   const choices=page.locator('[data-genre-choice]');assert.equal(await choices.count(),3);
+   const offered=await choices.evaluateAll(nodes=>nodes.map(n=>n.dataset.genreChoice));assert.equal(new Set(offered).size,3);
+   await page.locator('.nl-genre-choices').screenshot({path:out+'/saju-genre-choices-'+width+'.png'});
+   for(const genre of offered){
+    const choice=page.locator('[data-genre-choice="'+genre+'"]');const firstTitle=await choice.locator('small').innerText();
+    await choice.click();await player.waitForFunction(g=>{
+     const active=document.querySelector('.song.selected'),audio=document.querySelector('#sound-player');
+     return active?.dataset.genre===g&&!audio.paused&&audio.currentTime>0;
+    },genre);
+    assert(firstTitle.endsWith(await player.locator('.song.selected').getAttribute('data-title')));
+    const keys=await player.evaluate(()=>collectionQueue.map(k=>[k,lookup.get(k)?.genre]));
+    assert(keys.length&&keys.every(([,g])=>g===genre));await page.goBack();
+   }
+   await page.locator('.nl-genres').selectOption('your-story');await page.locator('.nl-primary').click();
+   await player.waitForFunction(()=>document.querySelector('.song.selected')?.dataset.genre==='your-story'&&!document.getElementById('sound-player').paused);
+   assert(await player.evaluate(()=>collectionQueue.every(k=>lookup.get(k)?.genre==='your-story')));await page.goBack();
+   await page.locator('[data-all-genre-mix]').click();await player.waitForFunction(()=>!document.getElementById('sound-player').paused);
+   assert(await player.evaluate(()=>new Set(collectionQueue.map(k=>lookup.get(k)?.genre)).size>1));await page.goBack();
+   report.allCatalogAndManualPlayback=true;
+   report.sajuGenreSelectors??=[];report.sajuGenreSelectors.push({width,distinct:offered.length,allThreeStartMatchingAudio:true});
+   assert(await card.evaluate(n=>n.previousElementSibling.id==='noa-listening'));assert(await card.getByRole('link',{name:'이 기기 알림 연결'}).isVisible());await card.scrollIntoViewIfNeeded();await card.screenshot({path:out+'/fortune-'+width+'.png'});
+   const headline=await card.locator('h3').innerText();await page.reload();await card.waitFor();assert.equal(await card.locator('h3').innerText(),headline);await card.getByRole('button').click();await page.locator('.nl-consent input').uncheck();await page.getByRole('button',{name:'저장',exact:true}).click();await card.getByRole('button',{name:'생년월일 설정하기'}).waitFor();assert(!(await page.locator('.nl-reason').innerText()).includes('내 사주 추천'));await c.close();
   }report.fortuneAndMoodFallback=true;
  }
  assert.deepEqual(report.errors,[]);report.ok=true;
