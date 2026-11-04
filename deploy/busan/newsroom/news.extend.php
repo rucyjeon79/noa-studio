@@ -13,7 +13,7 @@ function busan_news_home_strip() {
         <a class="bn-news-all" href="<?=htmlspecialchars($board_url, ENT_QUOTES)?>" aria-label="뉴스 전체보기">전체보기</a>
       </section>
     </template>
-    <script src="<?=htmlspecialchars($root.'/ticker.js?v=2', ENT_QUOTES)?>" defer></script>
+    <script src="<?=htmlspecialchars($root.'/ticker.js?v=3', ENT_QUOTES)?>" defer></script>
     <?php
 }
 
@@ -44,5 +44,5 @@ function busan_news_prepare_source_card($header, $board) {
 
 add_replace('board_content_head', 'busan_news_prepare_source_card', 10, 2);
 add_replace('board_mobile_content_head', 'busan_news_prepare_source_card', 10, 2);
-add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=2">', 115);
+add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=3">', 115);
 add_event('tail_sub', 'busan_news_home_strip');

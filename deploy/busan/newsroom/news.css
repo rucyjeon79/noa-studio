@@ -13,19 +13,14 @@
 #bn-news-strip .bn-news-track{display:flex;align-items:center}
 #bn-news-strip .bn-news-group {
   display:flex;align-items:center;flex:none;min-width:100%;box-sizing:border-box;
-  animation:bn-news-flow var(--bn-cycle,60s) linear infinite;
 }
-@keyframes bn-news-flow{to{transform:translateX(-100%)}}
 #bn-news-strip .bn-news-link {
   display:inline-flex;align-items:center;flex:none;min-height:44px;white-space:nowrap;
   color:inherit;font-size:14px;font-weight:600;text-decoration:none;
 }
 #bn-news-strip .bn-news-group a::after{content:"";width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.4;margin:0 20px}
-#bn-news-strip.bn-paused .bn-news-group{animation-play-state:paused}
-@media (hover:hover){#bn-news-strip .bn-news-window:hover .bn-news-group{animation-play-state:paused}}
-#bn-news-strip.bn-still .bn-news-window,#bn-news-strip .bn-news-window:has(:focus-visible){overflow-x:auto;scrollbar-width:thin}
-#bn-news-strip.bn-still .bn-news-group,#bn-news-strip .bn-news-window:has(:focus-visible) .bn-news-group{animation:none}
-#bn-news-strip.bn-still [aria-hidden],#bn-news-strip .bn-news-window:has(:focus-visible) [aria-hidden]{display:none}
+#bn-news-strip.bn-still .bn-news-window{overflow-x:auto;scrollbar-width:thin}
+#bn-news-strip.bn-still .bn-news-group[aria-hidden]{display:none}
 #bn-news-strip button{width:44px;border:0;background:transparent;cursor:pointer;font:inherit}
 #bn-news-strip button[hidden]{display:none}
 #bn-news-strip :is(a,button):focus-visible{outline:2px solid currentColor;outline-offset:-2px}
