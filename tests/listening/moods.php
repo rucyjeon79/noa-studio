@@ -31,6 +31,10 @@ check(($dynamic['drive']??0)>0&&!isset($dynamic['cruise']),'energetic drive');
 check(($bedtime['sleep']??0)>0&&!isset($bedtime['drive']),'bedtime imagery');
 check(!isset(song_moods('Highway','')['drive']),'a road name alone does not imply dynamic driving');
 
+foreach (['cruise'=>'mellow city pop','drive'=>'propulsive synthwave','walk'=>'breezy acoustic groove','sleep'=>'beatless ambient','focus'=>'study beats'] as $mood=>$style) {
+    check((song_moods('','',['style'=>$style])[$mood]??0)>0,'indexed arrangement for '.$mood);
+}
+
 // Exercise legacy source packages using only song words, without style metadata.
 $folder=dirname(__DIR__,2).'/deploy/noastudio/noa/data/live/곡/your-story/기본';
 $counts=array_fill_keys(array_keys($examples),0);$files=glob($folder.'/*.json');

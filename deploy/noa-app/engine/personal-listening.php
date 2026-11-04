@@ -66,7 +66,7 @@ function n80_listening_theme(array $profile,?DateTimeImmutable $now=null):array{
 }
 function n80_listening_tags(array $body):array{
  $text=implode(' ',array_filter(array_map(static fn($key)=>is_string($body[$key]??null)?$body[$key]:'',['sunoStyle','sunoStylePrompt','stylePrompt','sunoPrompt','style','mood','songDescription','descriptionBlock'])));
- $rules=['calm'=>'calm|relax|ambient|gentle|soft piano|휴식|잔잔|차분|명상','energy'=>'energetic|upbeat|dance|driving beat|high energy|활기|신나는|댄스|경쾌','focus'=>'instrumental|minimal|lo-fi|lofi|piano solo|집중|연주곡|미니멀','road'=>'road trip|night drive|highway|드라이브|드라이빙|운전','cruise'=>'편안한 운전|여유로운 드라이브|해안 드라이브|easy driving|laid.back cruise|scenic drive|cruising','drive'=>'다(?:이내|이나)믹 드라이빙|신나는 드라이브|질주|driving beat|driving bass|high.octane|power drive','sleep'=>'수면|자장가|오르골|lullaby|sleep music|bedtime|white noise|music box|子守唄|เพลงกล่อมเด็ก','walk'=>'walking|stroll|산책|발걸음','comfort'=>'warm|comfort|healing|tender|emotional ballad|위로|따뜻|포근|치유'];$tags=[];
+ $rules=['calm'=>'calm|relax|ambient|gentle|soft piano|휴식|잔잔|차분|명상','energy'=>'energetic|upbeat|dance|driving beat|high energy|활기|신나는|댄스|경쾌','focus'=>'instrumental|minimal|lo-fi|lofi|piano solo|study beats|steady instrumental loop|집중|연주곡|미니멀','road'=>'road trip|night drive|highway|드라이브|드라이빙|운전','cruise'=>'편안한 운전|여유로운 드라이브|해안 드라이브|easy driving|laid.back cruise|scenic drive|cruising|mellow city.?pop|laid.back road groove|coastal cruising|느긋한 도로|여유로운 시티팝','drive'=>'다(?:이내|이나)믹 드라이빙|신나는 드라이브|질주|driving beat|driving bass|high.octane|power drive|propulsive synthwave|pulsing road bass|질주하는 베이스','sleep'=>'수면|자장가|오르골|lullaby|sleep music|bedtime|white noise|music box|beatless ambient|sleep drone|무박 앰비언트|子守唄|เพลงกล่อมเด็ก','walk'=>'walking|stroll|산책|발걸음|breezy acoustic groove|light walking beat|사뿐한 리듬','comfort'=>'warm|comfort|healing|tender|emotional ballad|위로|따뜻|포근|치유'];$tags=[];
  foreach($rules as $tag=>$pattern)if(preg_match('/'.$pattern.'/iu',$text))$tags[]=$tag;
  return $tags;
 }
@@ -92,7 +92,7 @@ function n80_listening_mood_scores(array $song,array $body):array{
         'calm' => [
             '~휴식|안식|쉼표|쉬어\s*(?:가|도|갈|요)|잠시\s*쉬|잠(?:시|깐)\s*멈춰|편히\s*(?:쉬|잠)|\b(?:calm|rest easy|unwind|take a break|relax(?:ing)?)\b|ひと休み|พักผ่อน~iu',
             '~숨(?:을|부터)?\s*(?:고르|고른|고를|고르면|돌리|돌려)|눈을\s*(?:감고|감는|감아)|\b(?:breathe slowly|slow down|take a breath)\b|深呼吸|หายใจช้า~iu',
-            '~잔잔한|고요한|평온|차분한|자장가|\b(?:still waters|quiet night|gentle breeze|lullaby|peaceful)\b|穏やか|静かな夜|เงียบสงบ~iu',
+            '~잔잔한|고요한|평온|차분한|\b(?:still waters|quiet night|gentle breeze|peaceful)\b|穏やか|静かな夜|เงียบสงบ~iu',
         ],
         'focus' => [
             '~집중(?!하지\s*못)|몰입|한\s*가지에|\b(?:focus(?:ed)?|concentrate|one thing at a time)\b|集中|จดจ่อ|สมาธิ~iu',

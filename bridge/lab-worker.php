@@ -14,7 +14,15 @@ try {
   require_once __DIR__.'/listening-video-catalog.php';
   $db=noa_bridge_pdo();
   $result=n80_refresh_song_index($db,static fn($visit)=>ny_listener_catalog($db,false,nie_overrides($db),$visit));
-  if(!empty($b['verifyCatalog']))$result['publicVideos']=count(n80_read_listening_videos($db));
+  if(!empty($b['verifyCatalog'])){
+   $videos=n80_read_listening_videos($db);
+   $result['publicVideos']=count($videos);
+   if(!empty($b['verifyMoods'])){
+    // Only non-personal song identifiers and indexed scores are needed for the queue audit.
+    $fields=array_flip(['key','browseIdentity','publicVideoId','genre','moodScores','moodAffinity']);
+    $result['moodCatalog']=array_map(static fn($v)=>array_intersect_key($v,$fields),$videos);
+   }
+  }
   lab_json(200,['ok'=>true]+$result);
  }
  if($action==='n80_tick'){require_once __DIR__.'/ainoa-core.php';require_once __DIR__.'/ainoa-automation.php';if(empty(lab_read()['config']['workerEnabled']))lab_json(200,['ok'=>true,'processed'=>0,'state'=>'paused']);lab_json(200,['ok'=>true]+n80_ai_tick(noa_bridge_pdo(),(string)($config['cf_admin']??'')));}
