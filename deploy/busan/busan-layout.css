@@ -1,0 +1,161 @@
+/* 부산지부 방문 화면. 카드와 문서가 기존 테마의 색상·바깥 여백을 공유한다. */
+:root {
+  --bu-gap: 8px;
+  --bu-control: 44px;
+  --bu-panel: var(--bb-card-inset, 20px);
+  --bu-column: var(--bb-column-gap, 24px);
+  --bu-section: var(--bb-section-gap, 32px);
+  --bu-radius: var(--bb-radius, 16px);
+  --bu-edge: var(--bb-border, #dce5e8);
+}
+
+/* 홈과 공통 탐색 */
+#contentsWrap .widget-wrapper .widget-header {
+  min-height: var(--bu-control);
+  padding-bottom: var(--bu-gap);
+}
+#contentsWrap .widget-header .widget-more {
+  min-height: var(--bu-control);
+  gap: 4px;
+}
+#contentsWrap .widget-wrapper .item-content,
+#contentsWrap .widget-wrapper .member_info { min-width: 0; }
+#contentsWrap .widget-wrapper :is(.point_value, .lt_date, .date) {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+#contentsWrap .widget-wrapper .item-info { column-gap: var(--bu-gap); }
+#contentsWrap .widget-wrapper .ranking_item { gap: 12px; }
+.wrap .sideWrap .sideGnb > .nav { padding: var(--bu-panel); }
+.wrap .sideWrap .groupTitle { margin-bottom: 12px; }
+.wrap .footerWrap .footerContent { padding-block: var(--bu-section); gap: 16px; }
+.wrap .footerWrap .footerBar .link { align-items: center; flex-wrap: wrap; }
+.wrap .footerWrap .footerBar .link a {
+  box-sizing: border-box;
+  min-height: var(--bu-control);
+  padding: 8px 12px;
+  align-items: center;
+}
+.wrap .footerWrap .footerBar .link a:first-child { padding-inline-start: 0; }
+
+/* 그룹, 게시판 목록, 읽기, 댓글, 작성 */
+#contentsWrap > .boardTitle {
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 var(--bu-column);
+}
+#contentsWrap .boardTitle .titleBox { gap: var(--bu-gap); min-width: 0; }
+#contentsWrap .boardTitle .breadcrumbs { flex-wrap: wrap; row-gap: 4px; }
+#contentsWrap .groupHeader {
+  padding: var(--bu-column);
+  margin-bottom: var(--bu-section);
+  border-radius: var(--bu-radius);
+}
+#contentsWrap .groupStats { margin-top: 16px; gap: 12px; flex-wrap: wrap; }
+#contentsWrap .groupStats .stat { padding: 12px 16px; gap: var(--bu-gap); }
+#contentsWrap .boardGridWrap { gap: var(--bu-column); margin-bottom: var(--bu-section); }
+#contentsWrap .boardGridWrap > * { min-width: 0; }
+#contentsWrap .boardListWrap .toolBox {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bu-gap);
+  padding-block: 12px;
+}
+#contentsWrap .boardListWrap .toolBox .tools,
+#contentsWrap .boardViewHeader .btnGroupWrap {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bu-gap);
+}
+#contentsWrap .boardListWrap .toolBox .tools :is(button, a),
+#contentsWrap .boardListWrap .btnList button { min-height: var(--bu-control); }
+#contentsWrap .boardListWrap .listFooter { padding-block: var(--bu-column); }
+#contentsWrap .boardViewWrap .boardViewHeader { gap: 16px; flex-wrap: wrap; }
+#contentsWrap .boardViewBody .viewContent {
+  box-sizing: border-box;
+  padding: var(--bu-section) var(--bu-panel);
+}
+#contentsWrap .viewContent .viewContentBox { min-width: 0; overflow-wrap: anywhere; }
+#contentsWrap .viewContentBox #bo_v_img img { max-width: 100%; height: auto; }
+#contentsWrap .boardViewBody .commentWrap { margin-top: var(--bu-section); }
+#contentsWrap .boardWrite .boardWriteHeader { padding-block: 16px; }
+#contentsWrap .boardWrite .writeBox { padding-block: var(--bu-panel); gap: 16px; }
+#contentsWrap .boardWrite :is(.writeBox, .insertBox) > .item { min-width: 0; }
+#contentsWrap .boardWrite .writeBox .item.option { gap: var(--bu-gap); flex-wrap: wrap; }
+#contentsWrap .boardWrite .insertBox { gap: 12px; }
+#contentsWrap .boardWrite :is(.writeBox, .insertBox) :is(input:not([type=checkbox]):not([type=radio]), select, textarea) {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* 소개·비전, 약관, FAQ, 회원 화면 */
+#busan-content-page :is(.bp-values, .bp-steps, .bp-pillars) { gap: var(--bu-column); }
+#busan-content-page :is(.bp-value, .bp-pillar, .bp-steps > li) { min-width: 0; }
+#busan-content-page .bp-section-heading { margin-bottom: var(--bu-column); }
+#busan-content-page .bp-section-visual { border-radius: var(--bu-radius); }
+#busan-content-page .bp-actions { gap: var(--bu-gap); flex-wrap: wrap; }
+#busan-content-page .bp-actions .bp-link {
+  box-sizing: border-box;
+  min-height: var(--bu-control);
+  max-width: 100%;
+}
+#contentsWrap .faqListWrap :is(.searchBox, .emptyBox),
+#contentsWrap .registerWrap .agreeItem {
+  border-radius: var(--bu-radius);
+  border-color: var(--bu-edge);
+}
+#contentsWrap .faqListWrap :is(.searchBox, .catagory, .faqWrap) { margin-bottom: var(--bu-column); }
+#contentsWrap .faqListWrap .searchForm { gap: var(--bu-gap); }
+#contentsWrap .faqListWrap .searchInput { min-width: 0; }
+#contentsWrap .faqListWrap .searchForm :is(input, button),
+#contentsWrap .registerWrap .buttonArea .button,
+.loginBoxWrap .loginForm :is(.inputBox input, .buttonBox button) {
+  box-sizing: border-box;
+  min-height: var(--bu-control);
+}
+#contentsWrap .registerWrap .agreeBox { gap: 16px; margin-bottom: var(--bu-column); }
+#contentsWrap .registerWrap .agreeAll { margin-bottom: var(--bu-column); }
+#contentsWrap .registerWrap .buttonArea { gap: var(--bu-gap); flex-wrap: wrap; }
+.loginBoxWrap .loginWrap { border-radius: calc(var(--bu-radius) + 8px); }
+.loginBoxWrap .loginInfoBox { border-radius: var(--bu-radius); }
+:where(.wrap, .loginBoxWrap) :is(a, button, select):focus-visible {
+  outline: 2px solid var(--bb-accent, #176a80);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  :root { --bu-column: 16px; --bu-section: 24px; --bu-panel: 16px; }
+  #contentsWrap .groupHeader { padding: var(--bu-panel); }
+  #contentsWrap .groupStats { gap: var(--bu-gap); }
+  #contentsWrap .boardWrite .writeBox .item.catagory select { width: 100%; }
+  #contentsWrap .boardViewBody .viewContent { padding-inline: var(--bu-panel); }
+  #contentsWrap .boardWrite .insertBox input[type=file] { width: 100%; }
+  #contentsWrap .registerWrap .registerDesc { padding: 12px 16px; }
+  .wrap .footerWrap .footerBar { flex-wrap: wrap; row-gap: 0; }
+  .wrap .footerWrap .footerContent { flex-wrap: wrap; }
+  .wrap .footerWrap .footerCopyright { overflow-wrap: anywhere; }
+}
+
+/* 팝업의 사진을 스크롤해도 닫기 버튼은 화면 안에 남는다. */
+#hd_pop .hd_pops { max-width: calc(100vw - 32px); }
+#hd_pop .hd_pops_con {
+  box-sizing: border-box;
+  max-width: 100%;
+  max-height: calc(100dvh - 80px);
+  overflow: auto;
+}
+#hd_pop .hd_pops_footer {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+}
+#hd_pop .hd_pops_footer :is(.hd_pops_close, .hd_pops_reject) {
+  position: static;
+  min-height: var(--bu-control);
+  padding: 8px 12px;
+}
+@media (max-width: 768px) {
+  #hd_pop:not(:has(.hd_pops ~ .hd_pops)) .hd_pops { left: 50% !important; top: 16px !important; transform: translateX(-50%); }
+  #hd_pop .hd_pops_con { height: auto !important; }
+  #hd_pop .hd_pops_con img { max-width: 100%; height: auto; }
+}

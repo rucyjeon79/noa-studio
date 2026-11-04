@@ -2,7 +2,11 @@ name: Busan branch premium banner design
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/busan-banners.yml']
+    paths:
+      - '.github/workflows/busan-banners.yml'
+      - 'deploy/busan/busan-layout.css'
+      - 'deploy/busan/busan-layout.extend.php'
+      - 'scripts/qa/busan-layout.cjs'
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: busan-readonly-sftp, cancel-in-progress: false}
@@ -25,9 +29,10 @@ jobs:
           zipfile.ZipFile(io.BytesIO(data)).extractall('/tmp/busan-banners')
           PY
           find /tmp/busan-banners -name '*.php' -print0 | xargs -0 -n1 php -l
+          php -l deploy/busan/busan-layout.extend.php
           php /tmp/busan-banners/tests/banner-test.php
           node --check /tmp/busan-banners/busan-assistant/banner-assets/busan-theme.js
-          npm install --prefix /tmp/busan-theme-deps --no-audit --no-fund --ignore-scripts jsdom@26.1.0
+          npm install --prefix /tmp/busan-theme-deps --no-audit --no-fund --ignore-scripts jsdom@26.1.0 playwright-core@1.56.1
           NODE_PATH=/tmp/busan-theme-deps/node_modules node /tmp/busan-banners/tests/theme-test.cjs
       - run: python3 -m pip install paramiko==3.5.1
       - name: Deploy independent banner assets and activate extension last
@@ -40,6 +45,7 @@ jobs:
           cd scripts
           python3 - <<'PY'
           import os,socket,hmac,stat,hashlib,zipfile,urllib.request
+          from pathlib import Path
           import paramiko
           from busan_readonly_check import configuration,fingerprint,PORT,ROOT
           host,user,password,pin=configuration(os.environ)
@@ -49,6 +55,12 @@ jobs:
           files={n:z.read(n) for n in z.namelist() if not n.startswith('tests/')}
           assert set(files)=={'busan-assistant/banner-assets/busan-hero-dark-20261103.webp', 'busan-assistant/banner-assets/busan-theme.js', 'busan-assistant/banner-assets/busan-banners.css', 'extend/busan-banner.extend.php', 'busan-assistant/banner-assets/busan-solidarity-20261023.webp', 'theme/UXC_Flarumix/ui_module/ui_mainSlider/ui_mainSlider.php', 'busan-assistant/banner-assets/busan-nature-light-20261103.webp', 'busan-assistant/banner-assets/busan-hero-light-20261103.webp', 'busan-assistant/banner-assets/busan-nature-dark-20261103.webp', 'busan-assistant/banner-assets/busan-premium-theme.css'}
           expected={'busan-assistant/banner-assets/busan-banners.css': 'dd42d98026cb9e9fb892d04504789e089a20af067616e7d7d41b088e7b44808e', 'busan-assistant/banner-assets/busan-hero-dark-20261103.webp': 'e5457905b5798aa5a8a3bc31972c56edb1336bfba3c84e2a28e5ce01fc1303e0', 'busan-assistant/banner-assets/busan-hero-light-20261103.webp': '9b4513751917a26fea2978e7ea0c7cb0f6f9ff0492bead7e36afaa5650543f43', 'busan-assistant/banner-assets/busan-nature-dark-20261103.webp': '43d6d2f5f183456082966c106b84758b6d0599a5596e92fa173c1dd7f5a40f90', 'busan-assistant/banner-assets/busan-nature-light-20261103.webp': '32268fae83323c88ad91149b75b807a3c9a93cc7ae28c0b69cc97a0372e14928', 'busan-assistant/banner-assets/busan-premium-theme.css': 'c2ea465b2bc126f0f2ec8feb1cd0c9d93fe3802bd8a3c6eb72a3a4c07dc7e03f', 'busan-assistant/banner-assets/busan-solidarity-20261023.webp': '3d3807ee7e00ea2730e40dc5ce2672fb0c590a87c970679d16c33da55b58a814', 'busan-assistant/banner-assets/busan-theme.js': '66c7bb2bafd7033e68ef98adb07a6b370ae9183e707af5bf511a3c8326babb0f', 'extend/busan-banner.extend.php': 'e6f87c468a56773f4d82559691cb2481e139b83a97f50f75016cdfc4e4273137', 'theme/UXC_Flarumix/ui_module/ui_mainSlider/ui_mainSlider.php': '0064aa4598b486f68c4b431077814d71a484ee81bb69d91e9a3c2f7a9abd7a0d'}
+          layout='busan-assistant/banner-assets/busan-layout.css'
+          hook='extend/busan-layout.extend.php'
+          layout_dir=Path('../deploy/busan')
+          files[layout]=(layout_dir/'busan-layout.css').read_bytes()
+          files[hook]=(layout_dir/'busan-layout.extend.php').read_bytes()
+          unchanged=set()
           with socket.create_connection((host,PORT),timeout=15) as sock:
            with paramiko.Transport(sock) as t:
             t.banner_timeout=15;t.auth_timeout=15;t.get_security_options().key_types=('ssh-ed25519',)
@@ -63,13 +75,15 @@ jobs:
                target=ROOT+'/'+n
                assert stat.S_ISREG(s.lstat(target).st_mode) and s.normalize(target)==target
                with s.open(target,'rb') as f:old=f.read(2000000)
-               assert old==data or hashlib.sha256(old).hexdigest()==expected.get(n),'existing_file_conflict: '+n
+               if old==data:unchanged.add(n)
+               else:assert hashlib.sha256(old).hexdigest()==expected.get(n),'existing_file_conflict: '+n
               except FileNotFoundError:
                assert n!=theme,'missing_native_slider'
              directory=ROOT+'/busan-assistant/banner-assets'
              try:s.mkdir(directory,0o755)
              except OSError:assert stat.S_ISDIR(s.lstat(directory).st_mode) and s.normalize(directory)==directory
              for n in sorted(files,key=lambda n:(n.startswith('extend/'),n==theme,n)):
+              if n in unchanged:continue
               data=files[n];target=ROOT+'/'+n
               if n==theme:
                with s.open(target,'rb') as f:old=f.read(2000000)
@@ -91,10 +105,21 @@ jobs:
            assert b'busan-premium-theme.css?v=20261103-4' in page,'banner_styles_missing'
           assert b'busan-theme.js?v=20261103-4' in page,'theme_script_missing'
           assert b'data-busan-dark-src=' in page and b'data-busan-light-src=' in page,'theme_image_pair_missing'
+          import re
+          for path in ['/', '/bbs/group.php?gr_id=Busan', '/bbs/content.php?co_id=company', '/bbs/content.php?co_id=slogan', '/bbs/register.php', '/bbs/login.php', '/bbs/faq.php']:
+           with urllib.request.urlopen('https://skhnslu-busan.com'+path,timeout=30) as r:body=r.read(2000000)
+           match=re.search(rb'href="([^"]+/busan-layout[.]css[?]v=[0-9]+)"',body)
+           assert match,'layout_missing: '+path
+           if path=='/':
+            with urllib.request.urlopen(match.group(1).decode(),timeout=30) as r:assert r.read(100000)==files[layout]
+           print('PASS layout '+path)
           for scene in ['hero-dark','hero-light','nature-dark','nature-light']:
            asset='busan-assistant/banner-assets/busan-'+scene+'-20261103.webp'
            with urllib.request.urlopen('https://skhnslu-busan.com/'+asset,timeout=30) as r:
             photo=r.read(500000);assert photo[:4]==b'RIFF' and photo[8:12]==b'WEBP' and photo==files[asset]
           print('PASS live homepage theme bootstrap, versioned premium styles and all four WebP assets; no SQL changes')
           PY
-
+      - name: Verify public layouts at phone, tablet and desktop widths
+        env:
+          NODE_PATH: /tmp/busan-theme-deps/node_modules
+        run: node scripts/qa/busan-layout.cjs
