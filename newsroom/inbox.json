@@ -1,20 +1,6 @@
 {
   "items": [
     {
-      "topic": 1,
-      "date": "2026-10-20",
-      "title": "도움말의 제한 조건을 따로 읽는 대리 토토 사기 참고 안내",
-      "publisher": "Calgary Roughnecks",
-      "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxQZjlnRXQwOS1pQ3FUalE2aHhacHVIM2R3ekJlQlFHekxEZEx1SHhwNFBEU0Y1S1dsbUpMTGtqTE5CdUxSTFBEa2ozNm85TlAwWDFtNGtGbmdMbkpnNklvWWI1em9YcGl3VnhtMHRDc2xFOW5RZWdWazVmMUNRbXFYU29QNjhTNlZxZUxnNHVkTlZhN2U2YTlTZndQMFdMTHZqNmpZRklFRVMxX3BROFFDcWJCX1ItMUFDdVpXNHlYY0x1SE5SbVFvMXpaNC1uRFdoX2NQQmdxZy1yLXNPU0w2RkJRLWFHZWRWWjBmbw?oc=5"
-    },
-    {
-      "topic": 1,
-      "date": "2026-10-16",
-      "title": "[Who Is ?] 김성수 SK브로드밴드 대표이사 사장",
-      "publisher": "비즈니스포스트",
-      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE8wdVdrVkFHNmlFV3NZWmR6NnFNVndtYm1YVjhvLVNRUUxWVjdxYW51NFc0NFNWalMyNmZzNTBHS3Vva010YmFmaHgyX3N5LW52WlhsbThld3Zpc0RDMHlGNnR1eVF4MHlRd3Y4Yzc1VUh6OE0?oc=5"
-    },
-    {
       "topic": 2,
       "date": "2026-11-04",
       "title": "SKB, 데이터센터 분할 본격화…SKT '유·무선 통합' 발판되나",
@@ -52,6 +38,13 @@
     {
       "topic": 2,
       "date": "2026-10-28",
+      "title": "SK브로드밴드·LS마린, 해저케이블 긴급복구 MOU",
+      "publisher": "헤럴드경제",
+      "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE84bDlZOEZWNU4teWFKU0MtVWdYVk5vNmlDaEhzY1VxLUxlSGtaTVVnR0stRUhzSVc0aksxWjEzQnNkaFdwRDUyOWNKbkhMc20tOEFMMFZ3?oc=5"
+    },
+    {
+      "topic": 2,
+      "date": "2026-10-28",
       "title": "SK브로드밴드, LS마린솔루션과 해저케이블 안정성 높인다",
       "publisher": "서울경제TV",
       "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE5LdjVrMVlfbHpjYTQ2eUtzMV9oQ0pSQnlZN1ZFSnRXVy1PMjVPa1pWZUsxb0U0cnFfWm83TnZEYTFSYnJucFpRQkh6S1drcWd2RFduQUM4bzZsYU15MG1Yc1NEVXk?oc=5"
@@ -62,13 +55,6 @@
       "title": "SK브로드밴드, LS마린솔루션과 해저케이블 안정 운용 위한 업무협약",
       "publisher": "SK브로드밴드 뉴스룸",
       "url": "https://www.skbroadband.com/newsroom/51"
-    },
-    {
-      "topic": 2,
-      "date": "2026-10-28",
-      "title": "SK브로드밴드, LS마린솔루션과 해저케이블 안정 운용 위한 업무협약",
-      "publisher": "Chosunbiz",
-      "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxOWDFDVHZRbnRXUS1lTW9SNkpxM1B0YndHeDg2V0hzNEpBU0owc1hRUF9LMDFrV0c5ZFFBYnhSYXViS2tPY2tSRU1DeGJpVjVxeDB4OTU0Q3dIUUJveTdqRzZuN2VOTnQ3RmtMV2d0MXNUTFBRRDh1akM1NnpJN1dHR05B0gGWAUFVX3lxTFBIY0pZVU9US250d0VIU2o4c180d2RmQm1UM2FRQTBwcnJ0SDJjaWlUa21LRVA4ek9CQ2hmRnRaeHRtMDBPVnpwNWZjeE5UalpITFg0anhmSEJqSGRjeS1HckxZS05HeUVPcnY4ZjRSbkg4TVlhUTE2ekE0QV9TMGQxQVFkLUdxbkNIUlFfTDJxWWJFempaZw?oc=5"
     },
     {
       "topic": 3,
@@ -101,6 +87,13 @@
     {
       "topic": 3,
       "date": "2026-11-04",
+      "title": "SK텔레콤, 3분기 영업익 5523억원 전년比 11배 급증…해킹 충격 극복해 실적 정상화",
+      "publisher": "필드뉴스",
+      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFBjUHF3aVRGX0tsdUl0X2hiT05FTmIwZjZ6UC1ONXpxLXFSM3VpREtLekE4cFdtekJSY1V4Uzk0UVJGbnU0WFlCYmVUYXRHS3VQZWlTaS1EQ3FtTWJPVklkRk1sOWk1dnRR0gFsQVVfeXFMTVZLbnZfVkRtcWZJUHhycUt1d181YU5yR2xQT3dnT2FWSkxSeXBZNU5xNXgyT0lZZThPS1pQRG54NFo0dktfSGVtOFhRd21BTlVWYjBBMFFtVUFwa2JpQTh0ZzlISmhhTWYxc0Qy?oc=5"
+    },
+    {
+      "topic": 3,
+      "date": "2026-11-04",
       "title": "SK텔레콤, 3분기 영업익 5523억 원… 3개 분기 연속 5000억 대 달성",
       "publisher": "매일산업뉴스",
       "url": "https://news.google.com/rss/articles/CBMiY0FVX3lxTE5Jb0xJUWpSZE9KaTZQdkpOZmpaRE9PQkFaS0duS0stYURmVm9MeE9ScTFuenBfX2dDQ0hXNU5ISkhjMFhDR2x3OTlVeC01OU1QTzkxYUJvenQzRnNpNHoteWNSNA?oc=5"
@@ -118,13 +111,6 @@
       "title": "SK텔레콤, 3분기 영업이익 5523억원…통신 회복·AI 성장 '두 마리 토끼' 잡았다",
       "publisher": "리드경제",
       "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE5oc3JIdDRBY1d3VnZ1Vk1uMEVoXzJRMFo0d2Z5WjJCcmNhaFhYeUVtSGtDaTlsVU9iTGVZSGt3dmJENFNBbkJTcWZsaFNCaDN0RWZDMkprT3BoendVNWhvd0I3YldDSl9oZHNOZXBVRzA?oc=5"
-    },
-    {
-      "topic": 3,
-      "date": "2026-11-04",
-      "title": "SK텔레콤, 3분기 영업이익 5523억원…전년比 1040% 급증",
-      "publisher": "뉴스핌",
-      "url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE90djRLQi0tZU5fbl9JN0RZOG1CbXpROWdTLXBmMktlVXNXUXNabTF5d2NmT0JobHN5OERJU0hxOXpLeXVLNzZiOFFFMlFpeC1yWGtyVnhibkpIUE0x?oc=5"
     },
     {
       "topic": 4,
@@ -234,9 +220,23 @@
     {
       "topic": 5,
       "date": "2026-11-03",
-      "title": "삼성SDS, 성과급 개편 무산 후폭풍 온다 … 노조와 첫 단체교섭에 이목 쏠려",
-      "publisher": "뉴데일리",
-      "url": "https://news.google.com/rss/articles/CBMie0FVX3lxTFB4bVJ5SHV2ZjhQd2ZzNHMzZlM2UG10aE1TZV9OOWctRXlKaW10VUFRcXRpYmYzOUFRSkpkVkdWOU1ZUU4tYmlhbkVCVE1LOW0zalluSGY5eENJNDlmY3FWbjdrcDJqV1NkbmZURU1hVE9nLTVteWp0SVpOONIBgAFBVV95cUxOQ2dNWWZWVDJoYU1weTVDSVNNZFV0dDYxNjVSQ2FEc28xVU9BNUZxTU9YY2w5SzJJTllNVDZTM2pvelBmZldDVTBSb2xCd3dwLU1ESHY2S0k5RGhzdlR0di1vY0pYWDVxMk9VQmFWbklGMzRrNFpKVDlNNElfenp0WA?oc=5"
+      "title": "서울시설공단노동조합 “정당한 보상・복지・권리・안전, 진짜 사용자 오세훈이 해결하라” 투쟁 결의",
+      "publisher": "노동과세계",
+      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTFBPRk9kTGNkd1JOOGN5Z1pJa0NOaVJCUmhjeVlJSnNYcWtzVTFRSXJpX3RNdG9jOHdYYW1jMW9CY2x0VHQydWlmRFVGd29xV3RIOEtHMzV0Rk9vMVYyZmVQMVYwSmVETW5naTB5ZnBn0gFyQVVfeXFMUDRLendtQ0Q1OW9DNS1UOGlKTjI5Qk1kZ3RVQkdFTXhqYS1vbUFQUllPUFJuald0OUdUMmQzOElXQlZCOXBwNzNzeTdUYkdsTFlTbEVDb2o5VGpvVUdUOTdzalc5VVNqSjZ4MElGT1V1cS1B?oc=5"
+    },
+    {
+      "topic": 6,
+      "date": "2026-11-04",
+      "title": "공인노무사가 노동법 실무교육…강남구 '고용노동대학'",
+      "publisher": "더팩트",
+      "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE9idDY2UXVUY2x0a29fVV96LXdOakYxY1RHMlA3VkFjMWNLZ2dzMGRiVXJJR0ZkcjB4eE9DYWpoWm1mblpxQ2Q5R1R6ZEVTbnFPaXh1RUpB0gFQQVVfeXFMTjkwYmVqalE0Qllld1pFNFlSNEpsY1NXUXVIckpMdVEwUkFQWFlZZndCaTdQNEdvZTRjRld5WEZmWnlMWjBGYVhsMC1vOWYtN0Q?oc=5"
+    },
+    {
+      "topic": 6,
+      "date": "2026-11-02",
+      "title": "채용 공고에 AI 사용 여부를 의무적으로 표기하라 — 온타리오주 노동법 개정이 던지는 질문",
+      "publisher": "뉴스N연합",
+      "url": "https://news.google.com/rss/articles/CBMiSkFVX3lxTE9jS0FZNUxfVTFGZzdBdzIzbnhDQ2VzZ2NqMFNIMkpfRTF4WFJRYlpGenh6VThEVEkyWVhuQXd1UlZ0Wm9EbkZTbDNn?oc=5"
     },
     {
       "topic": 6,
@@ -244,6 +244,13 @@
       "title": "중요부위 만지거나 폭언…충북 ‘테스트테크’ 노동법 위반 16건 적발",
       "publisher": "JTBC",
       "url": "https://news.google.com/rss/articles/CBMiVEFVX3lxTE4taEhsbjRsRHJ4bjV3cDNKcnZKV3Q4Q0ZOdm1zWDNDRlZRZk1IRURQcGxJb0JheUQ5WG4xcFlLMnM5LWx3b3VyaV9OX19VWmQyVkdjVg?oc=5"
+    },
+    {
+      "topic": 6,
+      "date": "2026-10-31",
+      "title": "호치민시 노동자, 온라인 노동법 조회 채널 추가",
+      "publisher": "Laodong.vn",
+      "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxOc3N3aHRmVkQ3V2l5OUxGSHA5SlR3YkFDRjk5YWpQYXpuNGZscW5CRzhxZGNaMHB6UkpqZEx3WTVlVGVaSjJvRFJvU1Y1djktemVwMWZicjZRd2JYSDhvNTc2NlJISDhac3d6SWVaWlZsTFdRMkJWSzVRWXpNQzVHTzRSa1hNT09HVFl1TEVaY1VTaURGR2hfWHBsTjhaMmZvQUtvMkotSmtkMUREZWpNNzNvZw?oc=5"
     },
     {
       "topic": 6,
@@ -274,81 +281,60 @@
       "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE5tUlVBRDJiVUZiN092OWlBMk5ySElBTDFRYy14WlR3T3IxeGlsa2F3d0dBTkxEYXhYS0FXdW1jM0RKc0lBa2U0VkhSczh5Vk5fdGZ2NEpwYkpjZHV5T3VIY1NWSHNMWE92SDlj?oc=5"
     },
     {
-      "topic": 6,
-      "date": "2026-10-28",
-      "title": "노동법 피하려 ‘5인 미만’ 주장?…국감서 질타",
-      "publisher": "KBS 뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE5EYUV5Q2FqN2pmb1loSU8wYk5aSmpGR3JKNDZfMXhYVlNLQkY2bFR6cDM5UHNmLW5QYXhtQ1oxcEpLQ3hlUUtHYkIyVXF0ODZlQkhSd1FLM3ItV2c?oc=5"
+      "topic": 7,
+      "date": "2026-11-03",
+      "title": "Minister Yadav, ILO country director discuss expanding employment and skills services",
+      "publisher": "Nepalnews.com",
+      "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxOcnRaREMybEo4a21WbU1kRTdQZ2l4anJ0UC1jNS1DMGJXSE5xR1V1czFwQ3cxQlZmMzF4Nm1kYUlxVGM0UTU4clMzeVJ0Tzk1RmQ0UEZfb09IVWp0aEFrb2NfOXJPbG1OWk8yT09xUkVmeG1EbnBwNGpxTXNycEZmZGh3YkdabzhvbTROWkhjRHRsbkJkTTFGR09SV2ZmbXVUQXZYM2pFZmxsc04xTTJGNV83dDJBb0FQMG91RVJsRmJPc245VVE?oc=5"
     },
     {
-      "topic": 6,
-      "date": "2026-10-28",
-      "title": "“왜 우리는 노동자가 아닙니까?” 21개 단체, 가사노동연대 발족",
-      "publisher": "여성신문",
-      "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTFBlVElxdEYzQzNxcWtWdGh5Q3RQdWxlYkJsUFNqNzllRW5zLXpkN0hrb0NYeU1Bb25kU1RFaDBzVzBKd2c5UHNvQWFEU0F1TFdUWW1rNkE1anY2WFBEVDRLMU5CYTFCR2VKYWhwOGV0VdIBc0FVX3lxTE5vTzh1UGd6OXQ2MTVvanU3NzlUQkpVWm9QX0t5QUdfdTVGTE0xUzNYZlNpNHJwa05PemZSZEhYc2dsT05yWk9ieVdTY3laekVZaHYzMk9LaWdsYzFoa1duZHlRUXM5VmVOb1V3b2thRFZzTG8?oc=5"
+      "topic": 7,
+      "date": "2026-11-03",
+      "title": "ILO Türkiye convenes social partners on just transition ahead of COP31",
+      "publisher": "Mirage News",
+      "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxPQnJINkNyN0VjRG1oVW5XaUx2d0RaQ1d0cUtTLTIzaHpYQVd1ZUFNRUJsaXdmZTJfbGphU2FPU3FtR0JrZkZEZE5ydXVZN08yS0lRRmRtaTZ4bjZOUldBT3RLZmQ3dk1VM2JFbktZa1pyNEJUMGR3MVl3ME5HQ2VMV2xaaWpSdnM?oc=5"
     },
     {
-      "topic": 6,
-      "date": "2026-10-27",
-      "title": "여야, 초광역특구법 '주 52시간 예외' 공방…與 \"노동법 훼손\" 野 \"노조 눈치보기\"",
-      "publisher": "뉴시스",
-      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTFBfYTkwVTByMzhBdk9zems4NW9wQVBEMTFEVFNuMU1oQmVudWRhZUpkSG5wY1pQVjdlZk1hOENwTFdvbWUwSGl2Rm5iaU5FSVloT3JERUt6UDc4SDJmM0I1YtIBeEFVX3lxTE1SYVlkMENyWHZ2alRnNm5ER0ExbFIyX2hxbWhQY3BGdzRnRi1YT0xsaTgwc2hLQzZiNU5mdUc4d1dkZ2VhWFk5RmZLRjA4WE9fdC1oMDdYdF94elE4VnZoVFpONFhZR1U1aVVGYVBtRG8xQnV4YVhNXw?oc=5"
+      "topic": 7,
+      "date": "2026-11-03",
+      "title": "ILO Türkiye brings together high-level representatives of social partners to discuss just transition ahead of COP31",
+      "publisher": "International Labour Organization",
+      "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxNWU9Sb1RJZkk0dWhOc0IxV0V6c2pLYkdEWHBncTdxcTNtQ2lFa3FEQVV0Tl9Walo5eVdvaUR1aUVOUkxZaXdIcjhMZGZXQzMyY2trTzlLTExnd09vWjgxdWthelZYRG1mamEybTdRMXFObGMyeTg1WmtHOFpfRmZ6Vkd2MVh0and3M2pTUXNtOENCcmQ1bTVCOEQ0M3dNU01jcHQ5VV94Rk91M1FKT1E?oc=5"
+    },
+    {
+      "topic": 7,
+      "date": "2026-11-03",
+      "title": "ILO Country Director meets Labour Minister Yadav",
+      "publisher": "Khabarhub",
+      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE5hVTVvN2pveklwOVpGNEdVZ2pkNGVydGxrMHJJcXZ0RXlmTE9rU05aWC14RFo3d2NpbTBPNlVnY2ZJYWNldjQ1ZUxTeXFLR180UFM4WXg1b0c?oc=5"
     },
     {
       "topic": 7,
       "date": "2026-11-02",
-      "title": "美에서 홍콩 거쳐 북한으로…유령선 동원해 철강·무기 빼돌린 北의 ‘밀수’ 루트 [밀리터리노트]",
-      "publisher": "서울신문",
-      "url": "https://news.google.com/rss/articles/CBMiV0FVX3lxTE9FYW96WWJaTVBoUEJIaV9QZmRXVUpCWmkxbndBYllQZXBEZGpmME1mT25neUFBRzNHcmg2MVpnUmdBV0oyOTFJY1JZcGdfUDRQWnZBSUdkVQ?oc=5"
+      "title": "Usdaw welcomes a requirement on employers to prevent harassment & grant trade union access to workplaces",
+      "publisher": "Institute of Employment Rights",
+      "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxQUkRtbTFSSlU0THZkbFEwMVJMb0NKUWJmc253ejZJZC1jUDY2dUQxY3AtbkxRcGJZMjFzTU5fQUEzdk9wQ2dDdFhPcDRqcTFTdmxhS3g3UGkzSjZwbVhrRGtMakdxTmtKR3JoSGsxajYydHZSNWRBV18xdjBiSnMzTVRfMWJQSEZvNDRyd09DWnNBVk1TR3lORWtGUGVQa3BSeWgzV3I3RUZISEZ0Qk5Sc1dXa3ZnY2dKOUhad25VSl9oSDlxMVRyRlQzYw?oc=5"
+    },
+    {
+      "topic": 7,
+      "date": "2026-11-02",
+      "title": "Trade Union Officials meet today",
+      "publisher": "Midwest Radio",
+      "url": "https://news.google.com/rss/articles/CBMidEFVX3lxTFBaQVdibVdmMmZkWWZ3cF9vaEtSOVBlV2xEM1c1dFFpb203c3FpQU1FOElSeWtwZkM0RzJaNHhkQXByX0F4amxPV2Q5X3k0YnRCMklrcjRjamNTa1dDcVBFNm4yNmxHcy1HTFd0cjRTNXJvcHlR?oc=5"
+    },
+    {
+      "topic": 7,
+      "date": "2026-11-02",
+      "title": "Colombia solidarity mission and trade union challenges",
+      "publisher": "industriall-union",
+      "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxPVmNhdEZNM0lfbW01aGVGVi0xN29LZVZ6ZUVoSHhFdEZMLXlZM25ocjF3M2hMYUNhRFlyZFRidkI4TUM5UTY3c2hCdHVNUDJDM3lPdUVGUWZ5X0dkVGdfMUIybE5mU2xMUzh3ZTRuZFZLanVQMmYzdFItcmxySVY5T0FUN1lya1VY?oc=5"
     },
     {
       "topic": 7,
       "date": "2026-11-01",
-      "title": "12,800개 이상의 일자리가 있으며, 최고 연봉은 월 4천만 VND입니다.",
-      "publisher": "Vietnam.vn",
-      "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxPLWtrczBaXzBnOXRERWxFb2RDeXdKWlpBbjZyRnhjZ1M1R3R3ckRBS3dSRnZCSkt5RDJBNy1uc2Nramt0RnBaNXZlbTlMSWlwVWk2S1ZVdkR1V2tjRW5PanhkdFZDVUZuVXVscTJBcmQyQ3dURGZjSkplNlVtMWVzNERHOFhhSjVaN3dncGlJSlhEQ1c3aHc?oc=5"
-    },
-    {
-      "topic": 7,
-      "date": "2026-10-30",
-      "title": "ILO, 2040년까지 스리랑카·몰디브 열 스트레스 손실 수백억 달러 전망 - 뉴스 및 통계",
-      "publisher": "IndexBox",
-      "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNbWY4c2RFQVlIMl9kcE03c2xsOEQ1ZFBOVjVFdFhwVTg1VkpIM1RKWkpKbGthYUFUWDlGTE84YVBrNVl2WS0tZlNCbGdWQktuMDZJZkw2MlpGOGl2YkFFRl9xRkR6SDZGQzFKS1N2Ty05Sm5aV1RKV0h2akdpQS1jX3NNQklWWlp6dUhZZnRXbmFhS2dvZXJuM0tybXpEZmlFYTRPNDUxY0d0dw?oc=5"
-    },
-    {
-      "topic": 7,
-      "date": "2026-10-29",
-      "title": "월 소득 1,500만 동 이상 채용 목표 6,145개",
-      "publisher": "Laodong.vn",
-      "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxNdk9GQjFGbnM5YjdPYVZsZ2xzRGRZVEF2NTlfSWw3czIwQ0JqZHdMa1h4NmVwZ0czRGp2NVcwRllnbEtTaHY1b2k5LWFhUmpMazJjN09uakF1SFRldVhsODFkTFBiQm01bTh3TGVCbVF3VzMyZEJONGpOMXNjTTZYcHdzWS15aUc1UVNxSy1xSmxkZDJIUUhaeXp6RDhUZWNaakEyMmh1aUVWUjg?oc=5"
-    },
-    {
-      "topic": 7,
-      "date": "2026-10-28",
-      "title": "베트남 노동자 1,150만 명이 AI의 영향을 받을 수 있다.",
-      "publisher": "Vietnam.vn",
-      "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxNTnhvVFNoMjg2MV9ZbTVUbEE5ZS1CamVvTVJtVUc3ZE9FT1U2YkxMYVBIajFaNUZHTmNMMUNvdlU2aWtuMnVFWXV5di1qMDVKNjd2VERnTC1KcGxXVFRBdW9CQXVqdzUtTWJsbWxMdzk2YzdmY0F5cXZoNTk4bW14SjNzUjlXeUxf?oc=5"
-    },
-    {
-      "topic": 7,
-      "date": "2026-10-28",
-      "title": "돌아온 고국에서도 그들은 이방인이 된다 [한국이 빌려 쓴 청춘]",
-      "publisher": "시사IN",
-      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE9nZ3R6MUxLQlNDYXNsS18tUVRxcmxIM2M5d0I1NnkzMGZkQldGY2l6WmNScnI4S1NQQ3NHSF94TnYyczc3d0FWbmJxLVVlTzZ6WmxVT2hBelZHMDNFNkhVRDFZdm53NmgyZHc?oc=5"
-    },
-    {
-      "topic": 7,
-      "date": "2026-10-26",
-      "title": "\"AI發 경제성장과 청년 일자리 감소, 우연이라기엔 너무 뚜렷\"",
-      "publisher": "economychosun.com",
-      "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTE40bndjOTNIVFVmNVFBTGF2Y0ZQbnZxY0luSThWWUgxMGtvVElkOVlKeGNUbmExU0JGN1FNWDFZRkFDVEVHa09BaUlHczcyckRBdjJIV3hXcWRNaU1VVm5aWUJEQmRWa01EbXVRNDJtNThGTzJ1LXIxM3AtYUkxMlk?oc=5"
-    },
-    {
-      "topic": 7,
-      "date": "2026-10-22",
-      "title": "“월급날 전에도 내 돈 쓸 권리”…페이워치, 글로벌 기준 마련 참여",
-      "publisher": "더나은미래",
-      "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE1QWkhJUm42Q0laNHFDU0xOaHFvV0ZKdkpmTjBpQWpLMjhRVncyMUR1aXJYLVhLcWtMNDRUQWNqNmdETVFmXzhRa2xwVURRSDdHTFE?oc=5"
+      "title": "Ghana could lose 550,000 jobs to rising heat by 2040, ILO warns",
+      "publisher": "Pulse Ghana",
+      "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxOa3YzU2ptRE4tT3ZoWXlrY0V6dWFTbTZxbVlMb1BmSU02MXhDakQ0ZmMwQVZfcFd4ODE4ak5jSDJxR2oyMDBRa0NDTHIzVGs3TkVuVDI0bXppOVEzcEd4RTVjLXlJeGVPdS1VZVlmcEhMQkZEbVItQXpZc1JFSEdRdXctX2Q2TjVaSEZQTFhWOTRBMjc5?oc=5"
     }
   ]
 }
