@@ -1,0 +1,71 @@
+name: Login home destination
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-login-home.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - name: Check entrance and login destinations
+        run: |
+          node --test tests/pwa/launch_test.cjs
+          php tests/membership/social.php
+          php tests/login-presentation/render.php
+          python - <<'PY'
+          from pathlib import Path
+          html = Path('login-proof/fixture/ready.html').read_text()
+          assert 'name="url" value="/"' in html
+          assert html.count('redirect_to_idp=1&amp;url=%2F"') == 2
+          PY
+      - name: Update only the login return destination
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+        run: |
+          python -m pip install 'paramiko>=3,<5'
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          old = "$return=nsp_return($_GET['url']??'/');"
+          new = "$return='/';"
+          assert new in Path('deploy/noa-login.php').read_text()
+          Path('scripts/noa_plain_language_manifest.json').write_text(json.dumps({'files':[{'remote':'noa-login.php','changes':[{'old':old,'new':new}]}]}))
+          PY
+          python scripts/noa_plain_language_release.py
+      - name: Verify the public home and all three login return destinations
+        run: |
+          python - <<'PY'
+          from urllib.request import urlopen
+          from urllib.parse import urlsplit, parse_qs
+          from html.parser import HTMLParser
+          class Login(HTMLParser):
+              def handle_starttag(self, tag, attrs):
+                  a = dict(attrs)
+                  if tag == 'input' and a.get('name') == 'url':
+                      assert a['value'] == '/'
+                      verified.add('password')
+                  if tag == 'a':
+                      query = parse_qs(urlsplit(a.get('href', '')).query)
+                      provider = query.get('provider', [''])[0].lower()
+                      if provider in ('google','kakao'):
+                          assert query['url'] == ['/']
+                          verified.add(provider)
+          base = 'https://noastudio.ai.kr'
+          with urlopen(base+'/', timeout=30) as home:
+              assert urlsplit(home.url).path == '/' and 'noa-hero' in home.read().decode()
+          verified = set()
+          with urlopen(base+'/bbs/login.php?url=%2Fnoa-my.php', timeout=30) as response:
+              Login().feed(response.read().decode())
+          assert verified == {'password','google','kakao'}, verified
+          print('Home and all three login destinations verified.')
+          PY
