@@ -120,7 +120,39 @@ function nnt_collect(PDO $db,int $now):array{
   }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
  }$counts['giftArrivals']=nnt_gift_reminders($db,$now,true);$counts['gifts']=nnt_gift_reminders($db,$now);return $counts;
 }
-function nnt_source_alive(PDO $db,array $r):bool{
+/** Only Korean mornings; a delayed runner catches up without sending yesterday's reading. */
+function nnt_fortune_clock(int $now):DateTimeImmutable{return (new DateTimeImmutable('@'.$now))->setTimezone(new DateTimeZone('Asia/Seoul'));}
+function nnt_fortune_profile(PDO $db,string $owner,int $dayStart,bool $lock=false):?array{
+ $key='listening:user:'.hash('sha256',$owner);
+ $row=nnt_one($db,"SELECT payload FROM noa_documents WHERE doc_key=? AND kind='prefs' AND updated_by=?".($lock?' FOR UPDATE':''),[$key,$owner]);
+ $p=json_decode($row['payload']??'null',true);
+ return ($p['consent']??false)===true&&($p['fortuneAlerts']??false)===true&&!empty($p['solarDate'])&&($p['fortuneAlertsSince']??PHP_INT_MAX)<=$dayStart?$p:null;
+}
+function nnt_fortune_morning(PDO $db,int $now):int{
+ $local=nnt_fortune_clock($now);$start=$local->setTime(8,0)->getTimestamp();if($now<$start||$now>=$local->setTime(12,0)->getTimestamp())return 0;
+ $day=$local->format('Ymd');$event='daily-fortune:'.$day;
+ global $g5;$members=nnt_table($g5['member_table']);
+ $rows=nnt_rows($db,"SELECT d.updated_by owner FROM noa_documents d JOIN $members m ON m.mb_id=d.updated_by
+  WHERE d.doc_key LIKE 'listening:user:%' AND d.kind='prefs' AND d.doc_key=CONCAT('listening:user:',SHA2(d.updated_by,256))
+  AND m.mb_level>=2 AND COALESCE(m.mb_leave_date,'')='' AND COALESCE(m.mb_intercept_date,'')=''
+  AND JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.consent'))='true' AND JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.fortuneAlerts'))='true'
+  AND CAST(JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$.fortuneAlertsSince')) AS UNSIGNED)<=?
+  AND NOT EXISTS(SELECT 1 FROM noa_notifications n WHERE n.recipient=m.mb_id AND n.event_key=?)
+  ORDER BY d.doc_key LIMIT 100",[$start,hash('sha256',$event)]);
+ $count=0;foreach($rows as $row){$owner=$row['owner'];$db->beginTransaction();try{
+  if($p=nnt_fortune_profile($db,$owner,$start,true)){
+   if(!function_exists('n80_daily_fortune'))require_once dirname(__DIR__).'/noa-app/engine/personal-listening.php';
+   $f=n80_daily_fortune(n80_listening_theme($p,$local)['pillars'],$local);
+   if($f&&nnt_enqueue($db,$owner,$event,'daily_fortune',$f['headline'].' · '.$f['tip'],'','daily_fortune',(int)$day,'/#noa-daily-fortune',$now))$count++;
+  }
+  $db->commit();
+ }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}}
+ return $count;
+}
+function nnt_source_alive(PDO $db,array $r,?int $now=null):bool{
+ if($r['kind']==='daily_fortune'){
+  $local=nnt_fortune_clock($now??time());return $r['source']==='daily_fortune'&&(string)$r['source_id']===$local->format('Ymd')&&nnt_fortune_profile($db,$r['recipient'],$local->setTime(8,0)->getTimestamp())!==null;
+ }
  global $g5;if($r['source']==='test')return true;
  if($r['kind']==='gift_received'){
   if(!preg_match('/^(store:gift:[a-f0-9-]{36}):arrival$/D',$r['entity'],$parts))return false;
@@ -167,6 +199,7 @@ function nnt_thread(PDO $db,string $owner,int $id):array {
   if(preg_match('/^board:song_request:([1-9][0-9]*)$/D',$row['entity'],$m))return ['private'=>true,'id'=>(int)$m[1]];
   if(!nnt_target($db,$row['entity'],$owner))return ['nativeUrl'=>$row['url']];
  }
+ if($row['kind']==='daily_fortune')return ['nativeUrl'=>'/#noa-daily-fortune'];
  if($row['kind']==='test')return ['test'=>true];
  if($row['kind']==='request_reply'&&preg_match('/^board:song_request:([1-9][0-9]*)$/D',$row['entity'],$m))return ['private'=>true,'id'=>(int)$m[1]];
  $resolved=nnt_target($db,$row['entity'],$owner);if(!$resolved)throw new DomainException('post_not_available');$target=$resolved['target'];$focus=null;
@@ -178,6 +211,7 @@ function nnt_thread(PDO $db,string $owner,int $id):array {
 
 /** Resolve titles only for this recipient, with the same current read gates as the thread. */
 function nnt_preview(PDO $db,string $owner,array $row):array{
+ if($row['kind']==='daily_fortune')return ['postTitle'=>'오늘의 운세','excerpt'=>$row['entity']];
  if($row['kind']==='test')return [];
  if(preg_match('/^board:song_request:([1-9][0-9]*)$/D',$row['entity'],$m)){
   global $config,$g5;$r=nnt_one($db,'SELECT mb_id,wr_subject,wr_content FROM '.nnt_table($g5['write_prefix'].'song_request').' WHERE wr_id=? AND wr_is_comment=0',[(int)$m[1]]);

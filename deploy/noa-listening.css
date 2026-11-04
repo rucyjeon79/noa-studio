@@ -48,3 +48,11 @@ html body .nl-music-discovery:not([open])>#noa-listening{display:none!important}
 html body .nl-music-discovery>#noa-listening{margin:0;border:0;border-top:1px solid var(--noa-line,#353a40);border-radius:0;background:transparent}
 html body .nl-music-discovery>summary::after{content:"";width:8px;height:8px;flex:none;margin-left:auto;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg)}
 html body .nl-music-discovery[open]>summary::after{transform:rotate(225deg)}
+html body #noa-daily-fortune{margin:24px 0;padding:clamp(16px,3vw,28px);scroll-margin-top:140px;border:1px solid var(--noa-line,#353a40);border-radius:var(--noa-radius,8px);background:var(--noa-surface,#191d21);color:var(--noa-text,#f2f1eb);line-height:1.6}
+html body #noa-daily-fortune[hidden]{display:none!important}
+.nl-fortune-head,.nl-fortune-actions{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap}
+#noa-daily-fortune h2{font-size:1.3rem;margin:0}#noa-daily-fortune h3{font-size:1.12rem;margin:16px 0 6px}#noa-daily-fortune p{margin:6px 0}
+#noa-daily-fortune small,.nl-fortune-date{color:var(--noa-muted,#a9adb1);font-size:.8rem}
+#noa-daily-fortune .nl-fortune-tip{padding-left:12px;border-left:2px solid var(--noa-accent,#c9b47b);margin:14px 0}
+.nl-fortune-actions{margin-top:12px}.nl-fortune-actions :is(button,a){display:inline-flex;align-items:center;gap:6px;color:inherit;min-height:44px;font:inherit;cursor:pointer}.nl-fortune-actions button{padding:6px 12px;background:transparent;border:1px solid var(--noa-line,#54575d);border-radius:var(--noa-control-radius,8px)}.nl-fortune-actions svg{width:18px;height:18px}
+.nl-fortune-opt{display:flex;align-items:center;gap:10px;min-height:44px;font-size:.9rem}.nl-fortune-opt input{width:20px;height:20px;flex:none}
