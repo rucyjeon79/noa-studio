@@ -278,7 +278,14 @@ async function verifyMusicShelves(p,width,mode,theme){
   return {available,visible:visible.length};
  });
  assert.equal(picks.visible,Math.min(5,picks.available||1));
- if(picks.visible===5)await p.locator('#noa-hero-picks a').nth(4).click({trial:true});
+ if(picks.visible===5){
+  const fifth=p.locator('#noa-hero-picks a').nth(4);
+  if(await fifth.isEnabled())await fifth.click({trial:true});
+  else{
+   assert.match(await fifth.getAttribute('data-noa-condition')||'',/로그인/);
+   await fifth.hover({trial:true});
+  }
+ }
  console.log('VISIBLE_GENRE_VIDEO_COUNT',width,mode,picks);
  const placements=await p.locator('.noa-main').evaluate(main=>{
   const hero=main.querySelector('[data-home-section=hero]'),scene=main.querySelector('#noa-theme-scene'),notice=main.querySelector('[data-home-section=notices]'),goods=main.querySelector('[data-home-banner=goods]'),youtube=main.querySelector('[data-home-banner=youtube]'),benefits=main.querySelector('.noa-monthly-benefits'),referral=main.querySelector('#noa-referral-banner'),listening=main.querySelector('#noa-listening');
