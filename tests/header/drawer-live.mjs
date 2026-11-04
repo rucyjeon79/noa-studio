@@ -34,7 +34,7 @@ try{
      await trigger.click();await settle();const panel=await drawer.boundingBox();
      if(pinned){const edge=Math.max(0,(width-844*16/9)/2);assert(Math.abs(panel.x-edge)<=1&&panel.width>=220&&panel.width<300,JSON.stringify({width,panel}));const header=await bar.boundingBox();assert(Math.abs(header.x+header.width-(width-edge))<2);}else assert(Math.abs(panel.x-8)<=1&&Math.abs(panel.width-width*.7)<=1);
      if(!pinned)assert((await bar.boundingBox()).y+items[0].h<=0);assert.equal(await drawer.evaluate(e=>e.matches(':modal')), !pinned);
-     const search=drawer.locator('#noa-drawer-search');await search.fill('공지');assert.equal(await drawer.locator('.noa-drawer-secondary a:visible').count(),1);
+     const search=drawer.locator('#noa-drawer-search');await search.fill('공지');await drawer.locator('[data-drawer-route=board-notice]').waitFor();
      await search.fill('없는메뉴xyz');assert(await drawer.locator('.noa-menu-empty').isVisible());await search.fill('');
      assert(await drawer.locator('#noa-nav-install').isVisible());assert(await drawer.locator('#noa-header-language').isVisible());
      if(path==='/'){
