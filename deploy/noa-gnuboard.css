@@ -50,7 +50,7 @@ html.noa-g5 :is(#bo_list,#bo_v,#bo_w) :is(.btn_bo_user,.bo_fx,.bo_v_com,.btn_con
 html.noa-g5 :is(#bo_list,#bo_v,#bo_w) :is(.btn_bo_user,.bo_v_com,.btn_confirm)>li{float:none;margin:0;list-style:none}
 html.noa-g5 :is(#bo_list,#bo_v,#bo_w) :is(.btn_b01,.btn_b02,.btn_cancel,.btn_submit,.btn_frmline):not(.noa-glass-control){display:inline-flex;align-items:center;justify-content:center;min-block-size:44px;max-inline-size:100%;padding:10px 18px;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,8px);background:var(--noa-raised);color:var(--noa-text);font:550 14px/1.4 var(--noa-font)}
 html.noa-g5 :is(#bo_list,#bo_v,#bo_w) .btn_submit:not(.noa-glass-control){background:var(--noa-accent);border-color:var(--noa-accent);color:var(--noa-accentText)}
-html.noa-g5 :is(#bo_list,#bo_v,#bo_w) :is(input.frm_input,input.sch_input,select,textarea):not([type=checkbox]):not([type=radio]):not([type=hidden]){min-block-size:48px;max-inline-size:100%;padding:10px 12px;border:1px solid var(--noa-line);border-radius:8px;background:var(--noa-surface);color:var(--noa-text);font:inherit}
+html.noa-g5 :is(#bo_list,#bo_v,#bo_w) :is(input.frm_input,input.sch_input,select,textarea):not([type=checkbox]):not([type=radio]):not([type=hidden]){min-block-size:48px;max-inline-size:100%;padding:10px 12px;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,4px);background:var(--noa-bg);color:var(--noa-text);font:inherit}
 html.noa-g5 #bo_w :is(.write_div,.bo_w_info,.bo_w_tit,.bo_w_select,.bo_w_flie,.bo_w_link){margin-block:0 16px;min-inline-size:0}
 html.noa-g5 #bo_w :is(#wr_subject,#wr_content){inline-size:100%}
 html.noa-g5 #bo_w textarea#wr_content{min-block-size:240px;resize:vertical;line-height:1.75}
@@ -119,9 +119,9 @@ html.noa-g5 #bo_w :is(.cke,iframe,.autosave_wrapper) { max-inline-size: 100%; }
 
 html.noa-g5 #bo_w input#wr_subject { font-size: 18px; font-weight: 650; letter-spacing: -.02em; }
 html.noa-g5 #bo_w textarea#wr_content { font-size: 16px; line-height: 1.75; }
-html.noa-g5 #bo_w :is(input,textarea,select):focus-visible { outline: 2px solid #cfb783; outline-offset: 2px; }
+html.noa-g5 #bo_w :is(input,textarea,select):focus-visible { outline: 2px solid var(--noa-accent,#cfb783); outline-offset: 2px; }
 html.noa-g5 #bo_w .btn_confirm { border-top: 1px solid var(--noa-line,#383d44); padding-top: 16px; }
-html.noa-g5 #bo_w .btn_confirm .btn_submit { background: #dbc69b; color: #211c14; border-color: #dbc69b; font-weight: 700; }
+html.noa-g5 #bo_w .btn_confirm .btn_submit { background: var(--noa-accent,#dbc69b); color: var(--noa-accentText,#211c14); border-color: var(--noa-accent,#dbc69b); font-weight: 700; }
 
 html.noa-g5 #bo_vc_w textarea {
   display: block; box-sizing: border-box; inline-size: 100%; max-inline-size: 100%;

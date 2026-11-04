@@ -8,7 +8,7 @@
 #noa-my-account .noa-my-rank-heading h2{grid-column:1;grid-row:1;min-width:0;margin:0;line-height:1.25;overflow-wrap:anywhere}
 #noa-my-account .noa-my-signout,#noa-my-account .noa-my-gift-actions>a,#noa-my-account .noa-my-creator-apply{
  display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;min-height:44px;
- border:1px solid var(--noa-line,#444);border-radius:8px;text-decoration:none;
+ border:1px solid var(--noa-line,#444);border-radius:var(--noa-control-radius,4px);text-decoration:none;
 }
 #noa-my-account .noa-my-signout{
  grid-column:2;grid-row:1;justify-self:end;width:auto;padding:0 10px;background:var(--noa-surface,#202226);color:var(--noa-text);font-size:13px;white-space:nowrap;
@@ -22,11 +22,11 @@
 #noa-my-account .noa-my-gift-actions svg,#noa-my-account .noa-my-signout svg{color:var(--noa-accent,#d0b67c);flex:none}
 #noa-my-account .noa-my-creator-entry p{margin:14px 0 8px;font-size:14px;color:var(--noa-muted)}
 #noa-my-account .noa-my-creator-apply{
- width:100%;min-height:52px;padding:10px 12px;background:linear-gradient(110deg,#c0a16c,#eed9ae 58%,#d3b77e);
- border-color:#d6ba85;color:#272116;font-weight:700;
+ width:100%;min-height:52px;padding:10px 12px;background:var(--noa-accent,#d3b77e);
+ border-color:var(--noa-accent,#d6ba85);color:var(--noa-accentText,#272116);font-weight:700;
 }
 
-#noa-my-account .noa-gift-count{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 4px;box-sizing:border-box;border-radius:10px;background:#e2c48a;color:#201c15;font:700 11px/1 system-ui;font-variant-numeric:tabular-nums}
+#noa-my-account .noa-gift-count{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 4px;box-sizing:border-box;border-radius:10px;background:var(--noa-accent,#e2c48a);color:var(--noa-accentText,#201c15);font:700 11px/1 system-ui;font-variant-numeric:tabular-nums}
 
 .noa-my-insignia{display:grid;justify-items:center;align-content:center;gap:7px;flex:none}
 #special-invite-issue{margin:0}

@@ -4,8 +4,19 @@ body{background:var(--noa-bg,#111316);color:var(--noa-text,#F3F1EB);font-family:
 :is(.tbl_head01,.tbl_head02,.tbl_frm01,.tbl_wrap) :is(th,td,tr),.tmli_tit,.tmli_tit p,#theme_list .tmli_if,.local_desc p,.local_desc ol,.local_desc ul{background:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line)}
 :is(.tbl_head01,.tbl_head02) tbody tr:hover td{background:var(--noa-raised)}
 :is(a,#tnb a,#hd_top a,#gnb a,#lnb a){color:var(--noa-text)}
-:is(input:not([type=checkbox]):not([type=radio]),textarea,select,.frm_input,.tbl_frm01 textarea){background:var(--noa-surface);color:var(--noa-text);border:1px solid var(--noa-line);border-radius:6px}
-:is(.btn,.btn_01,.btn_02,.btn_03,.btn_submit,.btn_confirm a,.pg_page){background:var(--noa-raised);color:var(--noa-text);border-color:var(--noa-line);border-radius:6px}
+:is(input:not([type=checkbox]):not([type=radio]),textarea,select,.frm_input,.tbl_frm01 textarea){background:var(--noa-surface);color:var(--noa-text);border:1px solid var(--noa-line);border-radius:4px}
+:is(.btn,.btn_01,.btn_02,.btn_03,.btn_submit,.btn_confirm a,.pg_page){background:var(--noa-raised);color:var(--noa-text);border-color:var(--noa-line);border-radius:4px}
 :is(.btn_submit,.pg_current){background:var(--noa-accent);color:var(--noa-accentText)}
 :is(.frm_info,.local_ov01 .ov_txt,.td_datetime){color:var(--noa-muted)}
 a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--noa-info);outline-offset:3px}
+
+
+/* Keep native tables and pinned admin actions usable in both palettes. */
+html[data-noa-theme] :is(.tbl_frm01,.tbl_head01,.tbl_head02){border-block-start:1px solid var(--noa-line)}
+html[data-noa-theme] :is(.tbl_frm01,.tbl_head01,.tbl_head02) :is(th,td){padding:10px 12px;line-height:1.55}
+html[data-noa-theme] .tbl_frm01 th{text-align:start;font-weight:650}
+html[data-noa-theme] :is(.frm_input,select,textarea){box-sizing:border-box;max-width:100%;min-height:44px;padding:8px 12px;color:var(--noa-text);background:var(--noa-bg);border:1px solid var(--noa-line);border-radius:4px}
+html[data-noa-theme] .btn_fixed_top :is(.btn,a,button,input[type=submit]){min-height:44px;vertical-align:middle}
+html[data-noa-theme] :is(.btn_submit,.pg_current){background:var(--noa-accent);color:var(--noa-accentText);border-color:var(--noa-accent)}
+html[data-noa-theme] :is(button,input,select,textarea):disabled{background:var(--noa-raised);color:var(--noa-muted);border-color:var(--noa-line);opacity:1;cursor:not-allowed}
+html[data-noa-theme] :is(a,button,input,select,textarea):focus-visible{outline:2px solid var(--noa-accent);outline-offset:2px}

@@ -3,7 +3,7 @@
 if(!defined('_GNUBOARD_'))exit;
 /** Resolve the visitor's palette in the head, before styles or body content can paint. */
 function noa_first_paint_theme($html){
- if(str_starts_with($_SERVER['REQUEST_URI']??'', '/adm/')||str_contains($html,'id="noa-first-paint"'))return $html;
+ if(str_contains($html,'id="noa-first-paint"'))return $html;
  // Use the same tokens as the running interface, including when older section CSS loads last.
  $file=dirname(__DIR__).'/noa-design.json';
  if(!is_file($file))$file=__DIR__.'/noa-design.json';
@@ -42,7 +42,7 @@ function noa_policy_script_revision($html){
  $html=preg_replace("~(<link\\b[^>]*\\bhref=[\"'])/noa-ui[.]css(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.css?v='.$css_revision.'$2',$html);
  $ui=dirname(__DIR__).'/noa-ui.js';$ui_revision=is_file($ui)?hash_file('sha256',$ui):'20261025-member-access';
  $html=preg_replace("~(<script\\b[^>]*\\bsrc=[\"'])/noa-ui[.]js(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.js?v='.$ui_revision.'$2',$html);
- foreach(['noa-listening.js','noa-listening-model.js','noa-listening.css'] as $name){
+ foreach(['noa-listening.js','noa-listening-model.js','noa-listening.css','noa-gnuboard.css','noa-member-badges.css','noa-support.css','noa-gifts.css'] as $name){
   $file=dirname(__DIR__).'/'.$name;
   if(str_contains($html,'/'.$name)&&is_file($file)){
    $pattern="~(/".preg_quote($name,'~').")(?:[?][^\"']*)?~i";
@@ -78,12 +78,15 @@ function noa_design_assets(){
   &&in_array($_GET['co_id'],['privacy','provision'],true);
  $commerce=(bool)preg_match('~^/(?:mobile/)?shop/[^/]+[.]php$~D',$path);
  $native=($commerce||preg_match('~^/(?:bbs|adm)/~',$path))&&!$legacy_document;
- $workspace=preg_match('~^/noa-app/(?:database|taxonomy|jukebox)/(?:index[.]php)?$~',$path);
+ $workspace=preg_match('~^/noa-app/(?:database|taxonomy|jukebox|popularity)/(?:index[.]php)?$~',$path);
  $public=in_array($path,['/','/index.php'],true)||preg_match('~^/noa-(?:music|youtube|world|my|settings|sitemap|notifications|catalog|ai-lab|library|editor|download|install|theme-admin|creator|channel|subscription|login|membership|quality)(?:-admin)?[.]php$~',$path);
  // All application HTML pages share the same voice; JSON responses are untouched.
  $public=$public||(bool)preg_match('~^/noa-[a-z0-9-]+[.]php$~D',$path);
  if(!$native&&!$workspace&&!$public&&!$legacy_document)return;
- if(!$native&&($_SERVER['REQUEST_METHOD']??'GET')!=='GET')return;
+ $method=$_SERVER['REQUEST_METHOD']??'GET';
+ // These handlers can return the same HTML form after a submit or validation error.
+ $form_post=$method==='POST'&&($workspace||in_array($path,['/noa-gifts.php','/noa-special-invite.php','/noa-payment-settings.php','/noa-quality.php','/noa-catalog-admin.php','/noa-recovery.php'],true));
+ if(!$native&&$method!=='GET'&&!$form_post)return;
  $launch=dirname(__DIR__).'/noa-launch.js';$ainoa=is_file($launch)?'<script src="/noa-launch.js?v='.hash_file('sha256',$launch).'"></script>':'';
  $voice=dirname(__DIR__).'/noa-voice.js';if(is_file($voice))$ainoa.='<script src="/noa-voice.js?v='.hash_file('sha256',$voice).'" defer></script>';
  foreach(['css','js'] as $kind){$asset=dirname(__DIR__).'/noa-ainoa.'.$kind;if(is_file($asset)){$url='/noa-ainoa.'.$kind.'?v='.hash_file('sha256',$asset);$ainoa.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'" defer></script>';}}
@@ -96,11 +99,12 @@ function noa_design_assets(){
  if(!$native){
   $assets=$ainoa.'<link rel="stylesheet" href="/noa-policy-20261024.css?v=20261024-approved-ui">';
   if($workspace){
-   if(!str_starts_with($path,'/noa-app/jukebox/'))$assets=$ainoa.'<link rel="stylesheet" href="/noa-ui.css?v=20261022-recovery2">'.$assets;
+   if(!str_starts_with($path,'/noa-app/jukebox/'))$assets='<link rel="stylesheet" href="/noa-ui.css?v=20261022-recovery2">'.$assets;
    $assets.='<script src="/noa-ui.js?v=20261024-approved-ui" data-noa-theme-only defer></script>';
   }
   ob_start(static function($html)use($assets,$path,$starlight){
-   if(http_response_code()>=300||stripos($html,'</head>')===false)return $html;
+   $code=http_response_code();
+   if(($code>=300&&$code<400)||stripos($html,'</head>')===false||!preg_match('~^\s*(?:<!doctype\s+html\b|<html\b)~i',$html))return $html;
    $html=noa_policy_script_revision($html);
    if(in_array($path,['/noa-youtube.php','/noa-music.php'],true)&&!str_contains($html,'data-noa-community=')){
     $board=$path==='/noa-music.php'?'song_request':'free';$id=$board==='song_request'?'noa-song-requests':'noa-free-board';$title=$board==='song_request'?'당신의 이야기, 우리의 음악':'별무리 이야기';
@@ -123,7 +127,7 @@ function noa_design_assets(){
  // Native skins use GnuBoard's ordered asset registration.
  if(!str_starts_with($path,'/adm/'))add_stylesheet('<link rel="stylesheet" href="/noa-policy-20261024.css?v=20261024-approved-ui">',999);
  $config['cf_title']='NOA STUDIO';
- // The core admin uses light panels; consumer theme tokens must not leak into it.
+ // The native administrator shell uses its own stylesheet and the shared first-paint palette.
  if(str_starts_with($path,'/adm/')){
   add_javascript('<script src="/noa-brand.js?v=20261021-brand1" defer></script>',99);
   add_stylesheet('<link rel="stylesheet" href="/noa-admin.css?v='.hash_file('sha256',dirname(__DIR__).'/noa-admin.css').'">',99);

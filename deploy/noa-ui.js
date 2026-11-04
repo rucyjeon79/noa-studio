@@ -330,7 +330,7 @@ window.addEventListener('storage',e=>{if((e.key===themeStorageKey||(e.key==='noa
 })();
 /* Count-aware card layout: presentation only. Keep nodes, handlers and source order intact. */
 (()=>{'use strict';
-if(/^\/noa-app\/(?:jukebox|taxonomy|database)(?:\/|$)/.test(location.pathname))return;
+if(/^\/noa-app\/(?:jukebox|taxonomy|database|popularity)(?:\/|$)/.test(location.pathname))return;
 // Display titles are derived from explicit metadata or separated source title fields, never written back.
 function presentTitle(original,meta={}){
  const raw=String(original||'').trim(),parts=raw.split(/\s*[|｜]\s*/).filter(Boolean);
@@ -430,7 +430,7 @@ window.NoaCardLayout={plan,presentTitle,movement,prepare,setMovement,refresh:sch
 })();
 /* Semi-Gloss Sculpted Glass: preserve action nodes, handlers, labels and permissions. */
 (()=>{'use strict';
-if(window.NoaGlass||/^\/noa-app\/(?:jukebox|taxonomy|database)(?:\/|$)/.test(location.pathname))return;
+if(window.NoaGlass||/^\/noa-app\/(?:jukebox|taxonomy|database|popularity)(?:\/|$)/.test(location.pathname))return;
 const selector='.noa-button.primary,button[type="submit"].noa-button,.btn_submit,#noa-settings-save,#lab-text-submit,.lab-actions .lab-icon-button:not([aria-label="작업 취소"]),a.noa-button[href*="lab-file.php"][href*="download=1"],.lab-editor-link[href*="download=1"],.noa-transport .controls button,.sound-play,.sound-upload,.jukebox-replace,.jukebox-download,.jukebox-busy,.jukebox-reserve,#my-new,#my-add,#my-save,#my-play,#act-play,.noa-workspace>a[href="/noa-library.php"],.noa-workspace>a[href="/noa-ai-lab.php"]';
 const labels={previous:'이전',next:'다음',repeat:'반복',shuffle:'셔플','dock-more':'더보기'};
 function labelFor(el){
@@ -490,4 +490,29 @@ window.NoaGlass={refresh};refresh();
  close.addEventListener('click',()=>collapse(active));document.addEventListener('click',e=>{const button=e.target.closest('[data-noa-collapse]');if(button)collapse(button.closest('details'));});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.querySelector('dialog[open]'))collapse(active?.open?active:[...document.querySelectorAll('main details[open]')].filter(eligible).at(-1));});
  select([...document.querySelectorAll('main details[open]')].filter(eligible).at(-1)||null);
+})();
+
+/* Match the writing canvas to the site without changing the HTML that the editor saves. */
+(()=>{
+ const writer=document.querySelector('#bo_w');if(!writer)return;
+ const watched=new WeakSet();
+ function paint(frame){
+  let doc;try{doc=frame.contentDocument;}catch{return;}
+  if(!doc?.body||!doc.head)return;
+  if(!watched.has(doc)){
+   watched.add(doc);
+   doc.addEventListener('load',event=>{if(event.target.tagName==='IFRAME')paint(event.target);},true);
+  }
+  if(doc.designMode==='on'||doc.body.isContentEditable||doc.body.matches('.se2_inputarea,.cke_editable')){
+   const palette=getComputedStyle(document.documentElement);
+   let style=doc.getElementById('noa-writing-palette');
+   if(!style){style=doc.createElement('style');style.id='noa-writing-palette';doc.head.append(style);}
+   style.textContent=':root{color-scheme:'+palette.colorScheme+'}body{background-color:'+palette.getPropertyValue('--noa-bg')+';color:'+palette.getPropertyValue('--noa-text')+';caret-color:'+palette.getPropertyValue('--noa-accent')+'}';
+   return;
+  }
+  doc.querySelectorAll('iframe').forEach(paint);
+ }
+ const refresh=()=>writer.querySelectorAll('iframe').forEach(paint);
+ writer.addEventListener('load',event=>{if(event.target.tagName==='IFRAME')paint(event.target);},true);
+ window.addEventListener('noa-theme',refresh);refresh();
 })();

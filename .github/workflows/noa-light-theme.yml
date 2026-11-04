@@ -48,6 +48,7 @@ jobs:
           python tests/sitemap/home_patch_test.py
           python -m py_compile scripts/noa_light_theme_release.py
           python tests/room-themes/release_freshness_test.py
+          php tests/room-themes/surface-policy.php
       - name: Prepare visual verification
         run: |
           python -m pip install 'paramiko>=3,<5'
@@ -57,6 +58,7 @@ jobs:
           node "$RUNNER_TEMP/noa-light/header.mjs"
           cp tests/room-themes/live.mjs "$RUNNER_TEMP/noa-light/check.mjs"
           cp tests/room-themes/member.mjs "$RUNNER_TEMP/noa-light/member.mjs"
+          cp tests/room-themes/surface-controls.mjs "$RUNNER_TEMP/noa-light/surface-controls.mjs"
           cp tests/room-themes/forms.mjs "$RUNNER_TEMP/noa-light/forms.mjs"
           cp tests/room-themes/player.mjs "$RUNNER_TEMP/noa-light/player.mjs"
           cp tests/room-themes/overlays.mjs "$RUNNER_TEMP/noa-light/overlays.mjs"
@@ -69,6 +71,7 @@ jobs:
           php tests/room-themes/fixture.php
           node "$RUNNER_TEMP/noa-light/member.mjs"
           node "$RUNNER_TEMP/noa-light/forms.mjs"
+          node "$RUNNER_TEMP/noa-light/surface-controls.mjs"
           node "$RUNNER_TEMP/noa-light/player.mjs"
       - name: Verify candidate themes before activation
         env: {NOA_THEME_PHASE: candidate, NOA_SOURCE_ROOT: '${{ github.workspace }}', NOA_VISUAL_REVIEW: '${{ contains(github.event.head_commit.message, ''[design-review]'') }}'}
@@ -109,3 +112,20 @@ jobs:
             room-theme-proof/
             ainoa-proof/deployment.json
           retention-days: 7
+
+  menu-surfaces:
+    needs: publish
+    if: success() && !contains(github.event.head_commit.message, '[design-review]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Check public menu destinations and record access gates
+        run: |
+          npm install --prefix "$RUNNER_TEMP/noa-menu-surfaces" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp tests/room-themes/menu-surfaces.mjs "$RUNNER_TEMP/noa-menu-surfaces/check.mjs"
+          node "$RUNNER_TEMP/noa-menu-surfaces/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'noa-menu-surfaces-${{ github.run_id }}', path: room-theme-proof/menu-surfaces/, retention-days: 7}
