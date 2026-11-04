@@ -1246,6 +1246,7 @@ html.noa-shell-wide[data-noa-theme] body .noa-footer-heading .noa-footer-themes 
  html.noa-shell-wide[data-noa-style] .noa-footer-scene .noa-sidebar-legal a{font-size:11px}
 }
 @media(min-width:900px){
+ html.noa-shell-wide[data-noa-style] .noa-mobile-footer{padding-bottom:calc(100px + var(--noa-player-space,0px) + var(--noa-transfer-space,0px))}
  .noa-mobile-footer .noa-footer-scene{min-height:340px}
  html.noa-shell-wide[data-noa-style] .noa-footer-scene .noa-sidebar-legal{justify-content:flex-start;gap:32px;margin-inline:24px;padding:12px 0}
  html.noa-shell-wide[data-noa-style] .noa-footer-scene .noa-sidebar-legal a{font-size:13px}

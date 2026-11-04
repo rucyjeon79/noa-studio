@@ -32,6 +32,7 @@ async function checkFooter(page,width,theme,home=false){
  assert(art.y+art.height-choices.y-choices.height<=25,'theme choices stay at image bottom');
  for(const button of geometry.buttons)assert(button.width>=44&&button.height>=44);
  assert.equal(await scene.locator('[data-footer-theme] svg').count(),3);
+ assert(await scene.locator('[data-footer-theme]').evaluateAll(buttons=>buttons.every(el=>{const r=el.getBoundingClientRect();return [[r.x+4,r.y+4],[r.right-4,r.bottom-4]].every(([x,y])=>el.contains(document.elementFromPoint(x,y)));})),'floating controls must not cover the theme choices');
  assert(await scene.locator('.noa-footer-theme-label').isVisible());
  assert(await scene.locator('.noa-sidebar-signature>span').evaluate(el=>parseFloat(getComputedStyle(el).fontSize)>=18),'theme topic must have a readable hierarchy');
  for(let i=0;i<4;i++){
