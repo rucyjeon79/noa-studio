@@ -11,7 +11,7 @@ function nam_access(array $member=[],string $admin=''):array{
  $logged=!empty($member['mb_id']);$level=$logged?max(1,min(10,(int)($member['mb_level']??2))):1;$super=$logged&&$admin==='super';
  $base=$logged&&$level>=2;$write=$logged&&$level>=3;$vip=$logged&&in_array($level,[4,5,6,8],true);$creator=$logged&&in_array($level,[7,8],true);
 
- return ['level'=>$level,'name'=>$super?'최고 관리자':NOA_MEMBER_TITLES[$level],'home'=>true,'member'=>$base||$super,'write'=>$write||$super,'music'=>$vip||$super||(function_exists('nmr_current')&&nmr_current()),'creator'=>$creator||$super,'creatorAI'=>($logged&&$level===8)||$super,'ownDownload'=>$base||$super,'admin'=>$super];
+ return ['level'=>$level,'name'=>$super?'최고 관리자':NOA_MEMBER_TITLES[$level],'home'=>true,'member'=>$base||$super,'write'=>$write||$super,'weatherVip'=>$logged&&in_array($level,[4,8],true),'music'=>$vip||$super||(function_exists('nmr_current')&&nmr_current()),'creator'=>$creator||$super,'creatorAI'=>($logged&&$level===8)||$super,'ownDownload'=>$base||$super,'admin'=>$super];
 }
 function nam_owner(array $document,array $member):bool{
  return !empty($member['mb_id'])&&is_string($document['ownerId']??null)&&hash_equals($document['ownerId'],(string)$member['mb_id']);
