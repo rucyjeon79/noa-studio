@@ -52,7 +52,7 @@ def editorial_rank(rank, title):
     return rank
 
 
-def row(rank, title, name, link, date):
+def row(rank, title, name, link, date, published_at=None):
     title=' '.join(title.split())[:280]
     rank=editorial_rank(rank, title)
     if not rank or not title or not link.startswith('https://') or len(link)>1800:
@@ -60,7 +60,8 @@ def row(rank, title, name, link, date):
     if date>NOW.date() or date<NOW.date()-dt.timedelta(days=31):
         return None
     name=' '.join(name.split())[:100]
-    return {'topic':rank,'date':date.isoformat(),'title':title,'publisher':name,'url':link}
+    return {'topic':rank,'date':date.isoformat(),'title':title,'publisher':name,'url':link,
+            'published_at':published_at or date.isoformat()+'T00:00:00+09:00'}
 
 
 def feed(rank, address, name=''):
@@ -70,8 +71,10 @@ def feed(rank, address, name=''):
     items=[]
     for n in root.findall('.//item')[:80]:
         pub=n.findtext('pubDate','')
+        stamp=None
         try:
-            dated=email.utils.parsedate_to_datetime(pub).astimezone(KST).date()
+            stamp=email.utils.parsedate_to_datetime(pub).astimezone(KST)
+            dated=stamp.date()
         except (ValueError,TypeError,AttributeError):
             try: dated=dt.date.fromisoformat(pub[:10])
             except ValueError: continue
@@ -79,7 +82,7 @@ def feed(rank, address, name=''):
         title=n.findtext('title','')
         if publisher and title.endswith(' - '+publisher):
             title=title[:-len(publisher)-3]
-        items.append(row(rank,title,publisher,n.findtext('link',''),dated))
+        items.append(row(rank,title,publisher,n.findtext('link',''),dated,stamp.isoformat() if stamp else None))
     return [i for i in items if i]
 
 
@@ -143,11 +146,11 @@ def main():
         if not rank:continue
         item=dict(item,topic=rank)
         key=identity(item)
-        if key not in combined or item['topic']<combined[key]['topic']:
+        if key not in combined or item['topic']<combined[key]['topic'] or (item['topic']==combined[key]['topic'] and item.get('published_at','')>combined[key].get('published_at','')):
             combined[key]=item
     items=[]
     for rank in range(1,8):
-        group=sorted((i for i in combined.values() if i['topic']==rank),key=lambda i:(i['date'],i['title'],i['url']),reverse=True)
+        group=sorted((i for i in combined.values() if i['topic']==rank),key=lambda i:(i.get('published_at') or i['date'],i['title'],i['url']),reverse=True)
         items.extend(group[:8])
     if items==old or not items:
         print('No new shortlist');return
