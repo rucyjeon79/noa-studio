@@ -35,17 +35,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
-      - run: |
+      - name: Validate navigation source and permission rules
+        run: |
           node --check deploy/noa-account.js
           node --check deploy/noa-ui.js
           node --test tests/starlight/navigation.test.mjs
-          python scripts/qa/noa-qa-font.py
-          npm install --prefix "$RUNNER_TEMP/drawer" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           php -l deploy/noa-sitemap.php
           php tests/sitemap/registry_test.php
+      - name: Prepare browser checks
+        run: |
+          python scripts/qa/noa-qa-font.py
+          npm install --prefix "$RUNNER_TEMP/drawer" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           php tests/sitemap/drawer_access.php "$RUNNER_TEMP/drawer"
           cp tests/header/drawer-layout.mjs "$RUNNER_TEMP/drawer/check.mjs"
-          node "$RUNNER_TEMP/drawer/check.mjs"
+      - name: Check menu and footer at every viewport
+        run: timeout 180s node "$RUNNER_TEMP/drawer/check.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: drawer-candidate, path: room-theme-proof/drawer-candidate/, retention-days: 7}
