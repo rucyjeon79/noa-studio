@@ -49,6 +49,11 @@ try {
       const hex=theme.tokens.text.slice(1),expected='rgb('+[0,2,4].map(i=>parseInt(hex.slice(i,i+2),16)).join(', ')+')';
       assert.deepEqual(labelColors,[expected],'every composer field label follows the readable theme text');
       assert.equal(await dialog.evaluate(el=>getComputedStyle(el).colorScheme),theme.id==='noa-ivory'?'light':'dark','native date controls follow the selected theme');
+      assert(await dialog.evaluate(d=>{
+        const header=d.querySelector('header'),line=document.createElement('i');
+        line.style.color='var(--noa-line)';d.append(line);
+        const same=getComputedStyle(header).borderBottomColor===getComputedStyle(line).color;line.remove();return same;
+      }),'editor heading divider uses the active theme');
       await dialog.evaluate(el=>el.scrollTop=0);
       await dialog.screenshot({path:out+'/'+theme.id+'-'+width+'-'+(editing?'edit':'compose')+'.png'});
       await dialog.getByRole('button',{name:editing?'수정 저장':'게시하기',exact:true}).click();

@@ -20,3 +20,8 @@ html[data-noa-theme] .btn_fixed_top :is(.btn,a,button,input[type=submit]){min-he
 html[data-noa-theme] :is(.btn_submit,.pg_current){background:var(--noa-accent);color:var(--noa-accentText);border-color:var(--noa-accent)}
 html[data-noa-theme] :is(button,input,select,textarea):disabled{background:var(--noa-raised);color:var(--noa-muted);border-color:var(--noa-line);opacity:1;cursor:not-allowed}
 html[data-noa-theme] :is(a,button,input,select,textarea):focus-visible{outline:2px solid var(--noa-accent);outline-offset:2px}
+
+@media(max-width:760px){
+ html[data-noa-theme] :is(.tbl_head01,.tbl_head02,.tbl_frm01){max-inline-size:100%;overflow-x:auto;overscroll-behavior-x:contain}
+ html[data-noa-theme] :is(.tbl_head01,.tbl_head02,.tbl_frm01) :is(th,td){padding:8px}
+}
