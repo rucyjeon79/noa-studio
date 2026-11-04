@@ -10,33 +10,35 @@ const out='room-theme-proof/drawer-'+phase;
 mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
 async function checkFooter(page,width,theme,home=false){
- const footer=page.locator('.noa-mobile-footer'),heading=footer.locator('.noa-footer-heading'),picker=heading.getByRole('group',{name:'테마 선택'});
- const scene=footer.locator('.noa-footer-scene'),image=scene.locator('.noa-footer-landscape');
+ const footer=page.locator('.noa-mobile-footer'),scene=footer.locator('.noa-footer-scene'),image=scene.locator('.noa-footer-landscape');
  await image.evaluate(img=>img.decode());
  assert((await image.getAttribute('src')).includes(theme==='noa-studio'?'night-coast':'day-coast'));
- const header=await heading.evaluate(el=>{
-  const r=e=>{const b=e.getBoundingClientRect();return {x:b.x,y:b.y,width:b.width,height:b.height};};
-  return {row:r(el),choices:r(el.querySelector('.noa-footer-themes')),caption:r(el.querySelector('.noa-sidebar-signature'))};
- });
- const {row,choices,caption}=header;
- assert(Math.abs(row.x+row.width-choices.x-choices.width)<2&&caption.x+caption.width<=choices.x+1);
- assert(caption.y+caption.height>=choices.y && choices.y+choices.height>=caption.y,JSON.stringify({width,theme,header}));
+ assert.equal(await page.locator('.noa-sidebar-visitors').count(),1,'one visitor counter per page');
+ assert.equal(await page.locator('#noa-menu-drawer footer .noa-sidebar-visitors').count(),1);
+ assert.equal(await footer.locator('.noa-sidebar-visitors').count(),0,'no page footer may retain the counter');
  const links=scene.locator('nav a');
- assert.deepEqual(await links.allTextContents(),['회사소개','세계관','약관','이용방침']);
+ assert.deepEqual(await links.allTextContents(),['제이알','세계관','이용약관','개인정보처리방침']);
+ assert.equal(await footer.locator(':scope > .noa-footer-scene').count(),1);
  assert.equal(await footer.locator('.noa-sidebar-legal').count(),1);
  const geometry=await scene.evaluate(el=>{
   const r=e=>{const b=e.getBoundingClientRect();return {x:b.x,y:b.y,width:b.width,height:b.height};};
-  return {art:r(el.querySelector('img')),links:[...el.querySelectorAll('nav a')].map(r)};
+  return {art:r(el.querySelector('img')),links:[...el.querySelectorAll('nav a')].map(r),caption:r(el.querySelector('.noa-sidebar-signature')),choices:r(el.querySelector('.noa-footer-themes')),buttons:[...el.querySelectorAll('[data-footer-theme]')].map(r)};
  });
- const {art}=geometry;
+ const {art,caption,choices}=geometry;
+ const inside=box=>box.x>=art.x-1&&box.y>=art.y-1&&box.x+box.width<=art.x+art.width+1&&box.y+box.height<=art.y+art.height+1;
+ assert(inside(caption)&&inside(choices)&&caption.x+caption.width<=choices.x&&caption.y>art.y+art.height/2&&choices.y>art.y+art.height/2,JSON.stringify({width,theme,geometry}));
+ assert(caption.x-art.x<=25&&art.x+art.width-choices.x-choices.width<=25,'caption left, theme choices right');
+ assert(art.y+art.height-choices.y-choices.height<=25,'theme choices stay at image bottom');
+ for(const button of geometry.buttons)assert(button.width>=44&&button.height>=44);
  for(let i=0;i<4;i++){
   const link=links.nth(i),box=geometry.links[i];
-  assert(box.width>=44&&box.height>=44&&box.x>=art.x-1&&box.y>=art.y-1&&box.x+box.width<=art.x+art.width+1&&box.y+box.height<=art.y+art.height+1,JSON.stringify({width,theme,geometry}));
+  assert(box.width>=44&&box.height>=44&&inside(box)&&box.y<art.y+art.height/3,JSON.stringify({width,theme,geometry}));
+  assert(box.y+box.height<Math.min(caption.y,choices.y),'legal links must be above the theme row');
   const href=await link.getAttribute('href');
   if(!href&&i===1)assert.equal(await link.getAttribute('aria-disabled'),'true');
   else assert.equal(href,['/noa-about.php','/noa-world.php','/noa-terms.php','/noa-privacy.php'][i]);
  }
- if(home&&width===390){await footer.scrollIntoViewIfNeeded();await footer.screenshot({path:out+'/footer-'+theme+'.png'});}
+ if(home&&width>=390){await footer.scrollIntoViewIfNeeded();await footer.screenshot({path:out+'/footer-'+theme+'-'+width+'.png'});}
 }
 try{
  await Promise.all([320,390,1440].map(async width=>{
@@ -118,19 +120,20 @@ try{
     await links.first().waitFor();
     const markup=phase==='candidate'||member?fixture:await (await page.request.get('https://noastudio.ai.kr'+minePath)).text();
     assert.equal(await map.locator('.noa-drawer-map-link').getAttribute('href'),minePath);
-    const expected=await page.evaluate(markup=>{
+    const expected=await page.evaluate(({markup,member,admin})=>{
      const t=document.createElement('template');t.innerHTML=markup;
-     return [...t.content.querySelectorAll('main[data-noa-member-directory] .noa-site-map')].map(g=>[g.querySelector('h2').id,...[...g.querySelectorAll('[data-noa-route]')].map(a=>[a.dataset.noaRoute,a.getAttribute('href'),a.dataset.noaAccessLabel||'',Number(a.dataset.noaAccessRank)||0])]);
-    },markup);
+     const shortcuts=new Set(['download','login',...(member?['my','profile','membership',...(admin?['libraryAdmin']:[])]:[])]);
+     return [...t.content.querySelectorAll('main[data-noa-member-directory] .noa-site-map')].map(g=>[g.querySelector('h2').id,...[...g.querySelectorAll('[data-noa-route]')].filter(a=>!shortcuts.has(a.dataset.noaRoute)).map(a=>[a.dataset.noaRoute,a.getAttribute('href'),a.dataset.noaAccessLabel||'',Number(a.dataset.noaAccessRank)||0])]).filter(g=>g.length>1);
+    },{markup,member,admin:fixtureRole==='admin'});
     assert(expected.length>0);
     const actual=await map.locator('.noa-drawer-category').evaluateAll(gs=>gs.map(g=>[g.dataset.mapGroup,...[...g.querySelectorAll('a')].map(a=>[a.dataset.drawerRoute,a.getAttribute('href'),a.querySelector('.noa-route-level')?.getAttribute('aria-label')||'',Number(a.dataset.accessRank)||0])]));
     assert.deepEqual(actual,expected);
     for(const [, ...routes] of actual){const ranks=routes.map(r=>r[3]);assert.deepEqual(ranks,[...ranks].sort((a,b)=>a-b),'high-grade menus must follow low-grade menus');}
     const badges=await map.locator('.noa-route-level').evaluateAll(nodes=>nodes.map(el=>{
-     const box=el.getBoundingClientRect(),row=el.closest('a').getBoundingClientRect(),frame=el.querySelector('.noa-rank-badge'),mark=frame.firstElementChild;
-     return {text:el.textContent,role:el.getAttribute('role'),label:el.getAttribute('aria-label'),title:el.title,icon:!!mark.querySelector('svg')||getComputedStyle(mark).backgroundImage!=='none',width:box.width,height:box.height,aligned:box.right<=row.right+1&&box.left>=row.left&&box.top>=row.top&&box.bottom<=row.bottom+1};
+     const box=el.getBoundingClientRect(),row=el.closest('a').getBoundingClientRect(),name=el.closest('a').querySelector('.noa-route-name').getBoundingClientRect(),frame=el.querySelector('.noa-rank-badge'),mark=frame.firstElementChild;
+     return {text:el.textContent,role:el.getAttribute('role'),label:el.getAttribute('aria-label'),title:el.title,icon:!!mark.querySelector('svg')||getComputedStyle(mark).backgroundImage!=='none',width:box.width,height:box.height,adjacent:box.left-name.right,aligned:box.right<=row.right+1&&box.left>=row.left&&box.top>=row.top&&box.bottom<=row.bottom+1};
     }));
-    for(const b of badges){assert.equal(b.text,'');assert.equal(b.role,'img');assert(b.label&&b.title===b.label&&b.icon&&b.width===22&&b.height===24&&b.aligned,JSON.stringify(b));}
+    for(const b of badges){assert.equal(b.text,'');assert.equal(b.role,'img');assert(b.label&&b.title===b.label&&b.icon&&b.width===22&&b.height===24&&b.aligned&&b.adjacent>=4&&b.adjacent<=9,JSON.stringify(b));}
     assert(await map.locator('.noa-route-name').evaluateAll(names=>names.every(n=>getComputedStyle(n).whiteSpace==='normal'&&n.scrollWidth<=n.clientWidth+1)),'menu names must wrap without clipping');
     for(const group of await map.locator('.noa-drawer-category').all()){
      const icon=group.locator('h3 svg');assert(await icon.isVisible());
@@ -144,16 +147,17 @@ try{
      }
     }
     assert.equal(await map.locator('a[aria-disabled=true],[data-noa-condition]').count(),0);
-    assert.equal(await map.locator('[data-drawer-route=my]').count(),member?1:0);
+    for(const key of ['my','profile','membership','download','login','libraryAdmin'])assert.equal(await map.locator('[data-drawer-route='+key+']').count(),0,'shortcut duplicated in categories: '+key);
+    const destinations=await links.evaluateAll(xs=>xs.map(a=>a.getAttribute('href')));assert.equal(new Set(destinations).size,destinations.length,'duplicate category destination');
     assert.equal(await map.locator('[data-drawer-route=creatorAI]').count(),['admin','eight'].includes(fixtureRole)?1:0);
-    if(member)assert.equal(await map.locator('[data-drawer-route=my] .noa-route-level').getAttribute('aria-label'),'Lv.2 이상');
+    if(member)assert.equal(await map.locator('[data-drawer-route=notifications] .noa-route-level').getAttribute('aria-label'),'Lv.2 이상');
     assert.equal(await drawer.locator('footer .noa-sidebar-legal,footer a[href="/noa-world.php"]').count(),0);
     assert(await drawer.locator('footer .noa-sidebar-visitors').isVisible());
     const index=map.getByRole('combobox',{name:'분류 바로가기'});assert.equal(await index.locator('option').count(),expected.length+1);
     const choices=map.locator('.noa-drawer-category').nth(1);await index.selectOption({index:2});
     assert(await choices.locator('h3').evaluate(el=>el===document.activeElement));
     const search=drawer.locator('#noa-drawer-search');
-    await search.fill('앱 설치');const choice=map.locator('[data-drawer-route=download]');assert(await choice.isVisible());assert(await map.locator('[data-drawer-route=giftBox]').isHidden());
+    await search.fill('앱 설치');const choice=drawer.locator('#noa-nav-install');assert(await choice.isVisible());assert(await map.locator('[data-drawer-route=giftBox]').isHidden());
     await drawer.locator('.noa-drawer-search button').click();assert(await choice.evaluate(e=>e===document.activeElement));
     await search.fill('없는메뉴xyz');assert(await drawer.locator('.noa-menu-empty').isVisible());await search.fill('');
     await drawer.locator('#noa-header-language').click();assert(await drawer.locator('#noa-language-options').isVisible());await drawer.locator('#noa-language-options button[data-language=ko]').click();
@@ -182,6 +186,12 @@ try{
    assert(await panel.evaluate(el=>{const box=el.getBoundingClientRect(),rail=el.closest('dialog').getBoundingClientRect();return box.top>=rail.top-1&&box.bottom<=rail.bottom+1;}));
    if(width===390)await panel.screenshot({path:out+'/visitor-panel.png'});
    console.log('DRAWER_HOME_COUNTER_OK',phase,width);
+   if(width===390)for(const path of ['/noa-about.php','/noa-lounge.php','/noa-vip.php','/bbs/login.php']){
+    await page.goto('https://noastudio.ai.kr'+path,{waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>!!document.querySelector('.noa-footer-heading')&&!document.querySelector('[data-footer-theme]')?.disabled);
+    await checkFooter(page,width,await page.locator('html').getAttribute('data-noa-theme'));
+    console.log('DRAWER_ALL_PAGE_FOOTER_OK',phase,path);
+   }
   }catch(error){
    const page=context.pages()[0];if(page)console.error('DRAWER_STATE',width,await page.evaluate(()=>({url:location.pathname,theme:document.documentElement.dataset.noaTheme,controls:[...document.querySelectorAll('.noa-drawer-head,#noa-drawer-tools,#noa-header-language,[data-footer-theme]')].map(e=>[e.id||e.className,e.disabled,e.parentElement?.id]),query:document.querySelector('#noa-drawer-search')?.value,rows:[...document.querySelectorAll('.noa-menu a')].map(e=>[e.textContent,e.hidden,getComputedStyle(e).display])})));
    throw error;

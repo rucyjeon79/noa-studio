@@ -43,7 +43,12 @@ try{
  $private=array_replace($board,['gr_use_access'=>1]);check(!noa_sitemap_board_allowed($private,10,true,false)&&noa_sitemap_board_allowed($private+['group_allowed'=>true],2,true,false),'restricted board group membership');
  $cert=array_replace($board,['bo_use_cert'=>'hp-adult']);check(!noa_sitemap_board_allowed($cert,2,true,false,['mb_certify'=>'ipin','mb_adult'=>1])&&noa_sitemap_board_allowed($cert,2,true,false,['mb_certify'=>'hp','mb_adult'=>1]),'native certification preserved');
  check(!noa_sitemap_board_allowed(array_replace($board,['bo_table'=>'../../secret']),10,true,true),'invalid board identifiers rejected');
- $groups=noa_sitemap_visible_groups($root,'guest',[$board],['privacy']);check(in_array('board-free',$ids($groups),true)&&in_array('legal-privacy',$ids($groups),true)&&!in_array('legal-provision',$ids($groups),true),'only existing readable board/content rows');
+ $groups=noa_sitemap_visible_groups($root,'guest',[$board],['privacy']);check(in_array('board-free',$ids($groups),true)&&in_array('privacy-page',$ids($groups),true)&&!in_array('legal-privacy',$ids($groups),true),'native privacy alias must not duplicate the current privacy page');
+ foreach([$guest,$member,$admin,$groups] as $list){$destinations=[];foreach($list as $g)foreach($g['routes'] as $r)$destinations[]=noa_sitemap_destination($r[3]);check(count($destinations)===count(array_unique($destinations)),'duplicate function across categories');}
+ check(noa_sitemap_destination('/noa-music.php?group=original')!==noa_sitemap_destination('/noa-music.php?group=ep'),'different music collections remain separate');
+ check(noa_sitemap_destination('/noa-ai-lab.php')!==noa_sitemap_destination('/noa-ai-lab.php#settings'),'separate settings anchor remains available');
+ check(noa_sitemap_destination('/noa-lounge.php?category=story&view=list#ec-content')===noa_sitemap_destination('/noa-lounge.php?board=song_request#ec-content'),'story request aliases share one entry');
+ unlink($root.'/noa-privacy.php');$fallback=noa_sitemap_visible_groups($root,'guest',[],['privacy']);check(in_array('legal-privacy',$ids($fallback),true),'available native route must survive when modern page is unavailable');file_put_contents($root.'/noa-privacy.php','<?php ');
  check(!in_array('board-free',$ids($guest),true)&&!isset($guest['legal']),'unknown native records not fabricated');
  file_put_contents($root.'/noa-new-feature.php','<?php ?><!doctype html><html lang="ko">');
  file_put_contents($root.'/noa-sample-api.php','<?php header("Content-Type: application/json");');
