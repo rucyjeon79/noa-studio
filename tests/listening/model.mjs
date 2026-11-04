@@ -22,3 +22,14 @@ test('stronger word evidence leads inside the selected genre before daily tie br
  ];
  for(const mood of ['comfort','auto'])assert.deepEqual(model.select(tracks,{genre:'story',mood,theme:{mood:'comfort',localDate:'2026-11-04'}}).rows.map(x=>x.key),['c','b','a']);
 });
+test('exact recording aliases can supply lyrics without admitting silent or unrelated tracks',()=>{
+ const tracks=[
+  {key:'word-copy',browseIdentity:'song1',genre:'story',audio:'',moodScores:{focus:4}},
+  {key:'play',browseIdentity:'song1',genre:'story',audio:'/s',title:'같은 제목'},
+  {key:'duplicate',browseIdentity:'song1',genre:'story',audio:'/s',moodScores:{focus:2}},
+  {key:'namesake',genre:'story',audio:'/other',title:'같은 제목'},
+  {key:'unlinked',genre:'story',audio:'',moodScores:{focus:10}},
+ ];
+ const result=model.select(tracks,{genre:'story',mood:'focus'});
+ assert.equal(result.fallback,false);assert.deepEqual(result.rows.map(r=>[r.key,r.moodScores.focus]),[['play',4]]);
+});

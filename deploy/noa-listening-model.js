@@ -7,7 +7,26 @@ function normalizeBirthDate(value){
  // Keep lunar dates intact; the server validates them against the selected calendar.
  return parts[1]+'-'+parts[2].padStart(2,'0')+'-'+parts[3].padStart(2,'0');
 }
-function catalog(records,genre){const seen=new Set();return records.filter(r=>{if(r.genre!==genre||!r.audio||r.kind==='playlist'||r.video)return false;const id=r.browseIdentity||r.canonicalRecordKey||r.orderKey||r.key;if(seen.has(id))return false;seen.add(id);return true;});}
+const moodKeys=['calm','focus','energy','comfort'];
+function catalog(records,genre){
+ const recordings=new Map(),playable=[];
+ for(const row of records){
+  if(row.genre!==genre||row.kind==='playlist'||row.video)continue;
+  const id=row.browseIdentity||row.canonicalRecordKey||row.orderKey||row.key;
+  let recording=recordings.get(id);
+  if(!recording){recording={scores:{},track:null};recordings.set(id,recording);}
+  // The matching lyrics and playable file can live on different aliases of the same recording.
+  for(const mood of moodKeys){
+   const score=moodScore(row,mood);
+   if(score>(recording.scores[mood]||0))recording.scores[mood]=score;
+  }
+  if(!recording.track&&row.audio){
+   recording.track={...row,moodScores:recording.scores};
+   playable.push(recording.track);
+  }
+ }
+ return playable;
+}
 function moodScore(track,mood){
  const score=track.moodScores?.[mood];
  return Number.isFinite(score)?score:(track.moodTags||[]).includes(mood)?1:0;
