@@ -43,6 +43,7 @@ async function checkFooter(page,width,theme,home=false){
 try{
  await Promise.all([320,390,1440].map(async width=>{
   const context=await browser.newContext({viewport:{width,height:900},locale:'ko-KR',serviceWorkers:'block',reducedMotion:'reduce'});
+  context.setDefaultTimeout(20000);context.setDefaultNavigationTimeout(30000);
   try{
    if(phase==='candidate')for(const file of ['noa-ui.js','noa-starlight.css','noa-account.js']){
     await context.route('**/'+file+'*',r=>r.fulfill({body:readFileSync('deploy/'+file),contentType:file.endsWith('.css')?'text/css':'application/javascript'}));
