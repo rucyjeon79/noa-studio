@@ -40,7 +40,7 @@ try{
     const a=await world.boundingBox(),b=await music.boundingBox();assert(a&&b&&Math.abs(a.x-b.x)<1&&Math.abs(a.width-b.width)<1&&Math.abs(a.height-b.height)<2);
     assert.equal(await drawer.locator('.noa-drawer-secondary a[href="/noa-world.php"]').count(),0);
     const legal=await drawer.locator('.noa-sidebar-legal a').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().x));assert(Math.max(...legal)-Math.min(...legal)<1);
-    await drawer.locator('#noa-drawer-search').fill('세계관');assert(await world.isVisible());assert(await music.isHidden());await drawer.locator('#noa-drawer-search').fill('');
+    await drawer.locator('#noa-drawer-search').fill('세계관');assert(await world.isVisible());await music.waitFor({state:'hidden',timeout:5000});await drawer.locator('#noa-drawer-search').fill('');
     await drawer.locator('#noa-header-language').click();assert(await drawer.locator('#noa-language-options').isVisible());await drawer.locator('#noa-language-options button[data-language=ko]').click();
     // Exercise the signed-in view without a real login or account changes.
     await page.evaluate(()=>window.dispatchEvent(new CustomEvent('noa-membership-status',{detail:{member:true}})));
@@ -50,7 +50,7 @@ try{
     console.log('DRAWER_LAYOUT_OK',phase,width,theme,path);
    }
   }catch(error){
-   const page=context.pages()[0];if(page)console.error('DRAWER_STATE',width,await page.evaluate(()=>({url:location.pathname,theme:document.documentElement.dataset.noaTheme,controls:[...document.querySelectorAll('.noa-drawer-head,#noa-drawer-tools,#noa-header-language,[data-footer-theme]')].map(e=>[e.id||e.className,e.disabled,e.parentElement?.id]),rows:[...document.querySelectorAll('.noa-menu a')].map(e=>e.textContent)})));
+   const page=context.pages()[0];if(page)console.error('DRAWER_STATE',width,await page.evaluate(()=>({url:location.pathname,theme:document.documentElement.dataset.noaTheme,controls:[...document.querySelectorAll('.noa-drawer-head,#noa-drawer-tools,#noa-header-language,[data-footer-theme]')].map(e=>[e.id||e.className,e.disabled,e.parentElement?.id]),query:document.querySelector('#noa-drawer-search')?.value,rows:[...document.querySelectorAll('.noa-menu a')].map(e=>[e.textContent,e.hidden,getComputedStyle(e).display])})));
    throw error;
   }finally{await context.close();}
  }));
