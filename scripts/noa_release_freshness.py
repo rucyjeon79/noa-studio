@@ -2,6 +2,8 @@
 import re
 import subprocess
 
+BUSAN_ONLY_PATH_PREFIXES = ('scripts/busan_', 'scripts/qa/busan-', '.github/workflows/busan-', 'docs/busan/', 'deploy/busan/')
+
 
 def require_current_candidate(head, candidate, unrelated_prefixes=(), cwd=None):
     if not all(re.fullmatch(r'[0-9a-f]{40}', sha or '') for sha in (head, candidate)):

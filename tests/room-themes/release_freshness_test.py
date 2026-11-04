@@ -9,7 +9,6 @@ ROOT = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location('freshness', ROOT / 'scripts/noa_release_freshness.py')
 freshness = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(freshness)
-UNRELATED = ('scripts/busan_', 'scripts/qa/busan-', '.github/workflows/busan-', 'docs/busan/', 'deploy/busan/')
 
 
 class FreshnessTest(unittest.TestCase):
@@ -33,7 +32,7 @@ class FreshnessTest(unittest.TestCase):
         self.git('commit', '-qm', 'fixture')
         return self.git('rev-parse', 'HEAD')
 
-    def check(self, head, candidate=None, prefixes=UNRELATED):
+    def check(self, head, candidate=None, prefixes=freshness.BUSAN_ONLY_PATH_PREFIXES):
         freshness.require_current_candidate(head, candidate or self.base, prefixes, cwd=self.root)
 
     def test_current_commit(self):

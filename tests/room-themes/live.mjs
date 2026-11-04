@@ -102,7 +102,17 @@ for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])aw
    if(mode==='noa-ivory'&&await selected.count())assert.equal(await selected.evaluate(el=>getComputedStyle(el).color),'rgb(255, 255, 255)','active section label remains readable: '+route);
    if(room==='home'){assert(await p.locator('.noa-hero').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.top<innerHeight/2;}),'original hero is visible first below the header');assert.equal(await p.locator('#noa-theme-scene h2').innerText(),theme.concept.title);assert.doesNotMatch(await p.locator('#noa-theme-scene').innerText(),/\d{1,2}:\d{2}|12시/,'theme artwork does not imply a live clock');assert(await p.locator('#noa-theme-scene .noa-theme-cover').isVisible(),'theme landscape is visible');}
    if(route==='/noa-shop.php')await p.locator('.ec-grid .ec-card').first().waitFor();
-   if(room==='community')await p.locator('.ec-write-invite').first().waitFor();
+   if(room==='community'){
+    await p.locator('.ec-write-invite').first().waitFor();
+    const tabs=p.locator('#noa-section-navigation');
+    assert.equal(await tabs.locator('a[href="/noa-lounge.php"]').count(),1);
+    assert.equal(await tabs.locator('a[href$="#community-boards"]').count(),0);
+   }
+   if(room==='home'){
+    const footerArt=p.locator('.noa-mobile-footer .noa-footer-landscape');
+    assert.equal(await footerArt.getAttribute('src'),theme.images.coast);
+    assert(await footerArt.evaluate(img=>img.nextElementSibling?.matches('[data-noa-display-settings]')));
+   }
    if(mode==='noa-ivory')for(const primary of await p.locator('.ec-primary:visible').all()){
     const paint=await primary.evaluate(el=>({color:getComputedStyle(el).color,background:getComputedStyle(el).backgroundColor}));
     assert.deepEqual(paint,{color:'rgb(255, 255, 255)',background:'rgb(37, 103, 125)'},'primary control remains readable: '+route);
@@ -155,7 +165,7 @@ for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])aw
   }
   await p.locator('[data-noa-display-settings]:visible').first().click();
   assert.equal(await p.locator('#noa-theme').inputValue(),mode,'theme survives navigation');
-  await p.reload();
+  await p.reload({waitUntil:'domcontentloaded'});
   await p.locator('[data-noa-display-settings]:visible').first().click();
   await p.locator('#noa-theme').waitFor();
   assert.equal(await p.locator('#noa-theme').inputValue(),mode,'theme survives reload');
@@ -226,7 +236,7 @@ async function verifyAutomaticClock(){
  assert.equal(await p.locator('html').getAttribute('data-noa-theme'),'noa-ivory','manual light remains after the automatic boundary');
  await p.clock.resume();await p.locator('#noa-theme').selectOption('auto');
  await p.screenshot({path:output+'/automatic-settings-390.png'});
- await p.reload();await p.locator('[data-noa-display-settings]:visible').first().click();await p.locator('#noa-theme').waitFor();
+ await p.reload({waitUntil:'domcontentloaded'});await p.locator('[data-noa-display-settings]:visible').first().click();await p.locator('#noa-theme').waitFor();
  assert.equal(await p.locator('#noa-theme').inputValue(),'auto','automatic preference survives reload');
  assert.equal(await p.locator('html').getAttribute('data-noa-theme'),'noa-studio');
  const legacy=await context.newPage();
