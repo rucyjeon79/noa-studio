@@ -18,6 +18,7 @@ function noa_sitemap_registry():array{
             ['original','오리지널송','K-POP · J-POP · POP · Thai','/noa-music.php?group=original','disc','public'],
             ['ep','EP 컬렉션','장르별 ACT와 EP 수록곡','/noa-music.php?group=ep','playlists','public'],
             ['story','당신의 이야기, 우리의 음악','사연을 담은 음악','/noa-music.php?group=story','mail','public'],
+            ['storyRequest','사연곡 신청','나의 이야기를 음악으로 신청','/noa-lounge.php?category=story&view=list#ec-content','mail','public'],
             ['cover','AInoa의 유명곡 커버','익숙한 노래의 새로운 목소리','/noa-music.php?group=cover','mic','public'],
         ]],
         'world'=>['title'=>'ACT 세계관','routes'=>[

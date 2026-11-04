@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 // Exercise the shipped header and styles without live accounts or external writes.
 const server=createServer((req,res)=>{
  if(req.url.startsWith('/noa-bridge/membership.php')){res.setHeader('Content-Type','application/json');return res.end(JSON.stringify({ok:true,member:false}));}
+ if(req.url==='/noa-sitemap.php'){res.setHeader('Content-Type','text/html; charset=utf-8');return res.end('<main><section class="noa-site-map"><h2 id="map-community">커뮤니티</h2><a class="noa-site-map-link" data-noa-route="board-notice" href="/bbs/board.php?bo_table=notice"><strong>공지사항</strong><small>게시판</small></a></section></main>');}
  if(req.url.startsWith('/noa-assets/')){res.writeHead(204);return res.end();}
  if(['/noa-ui.js','/noa-account.js','/noa-account.css','/noa-ui.css','/noa-starlight.css','/noa-gnuboard.css'].includes(req.url)){res.setHeader('Content-Type',req.url.endsWith('.js')?'text/javascript':'text/css');return res.end(readFileSync('deploy'+req.url));}
  res.setHeader('Content-Type','text/html; charset=utf-8');res.end('<!doctype html><html lang="ko" data-noa-style="starlight"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-account.css"><link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-gnuboard.css"><style>#bo_btn_top::after{content:"";display:block;clear:both}</style><body><script type="application/json" id="noa-visitor-counts">{"today":"123","yesterday":"45","total":"123456"}</script><main class="noa-layout" style="padding:24px;min-height:2400px"><h1>이동 검증</h1><a href="/second">다음 화면</a><section id="bo_list"><div id="bo_btn_top"><div id="bo_list_total">Total 1건</div><ul class="btn_bo_user"><li><a href="/bbs/write.php">글쓰기</a></li></ul></div><table><thead><tr><th><a href="?sst=wr_hit">조회</a></th><th><a href="?sst=wr_datetime">날짜</a></th></tr></thead><tbody><tr><td colspan="2">게시판</td></tr></tbody></table></section><div style="height:2200px"></div><section data-home-section="recommendations"><div class="noa-card-grid" id="noa-featured"><article class="noa-music-card">Track A</article><article class="noa-music-card">Track B</article><article class="noa-music-card">Track C</article><article class="noa-music-card">Track D</article></div></section></main><script src="/noa-ui.js"></script><script src="/noa-account.js"></script></body></html>');
@@ -16,7 +17,7 @@ try{for(const [width,height] of [[320,900],[390,900],[768,720],[1920,900]]){
  await page.goto(base+'/');await page.locator('#noa-nav-top').waitFor();
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  for(const id of ['noa-nav-back','noa-nav-top','noa-nav-all','noa-nav-account']){const box=await page.locator('#'+id).boundingBox();assert(box.height>=44&&box.width>=44);}
- await page.locator('#noa-nav-all').click();await page.locator('#noa-drawer-search').fill('공지');assert.equal(await page.locator('.noa-drawer-secondary a:visible').count(),1);if(width<1200)await page.getByRole('button',{name:'전체 메뉴 닫기',exact:true}).click();else await page.locator('#noa-drawer-search').fill('');
+ await page.locator('#noa-nav-all').click();await page.locator('#noa-drawer-search').fill('공지');await page.locator('[data-drawer-route=board-notice]').waitFor();if(width<1200)await page.getByRole('button',{name:'전체 메뉴 닫기',exact:true}).click();else await page.locator('#noa-drawer-search').fill('');
  await page.getByRole('link',{name:'다음 화면',exact:true}).click();assert(page.url().endsWith('/second'));
  await page.locator('#noa-nav-back').click();await page.waitForURL(base+'/');
  await page.evaluate(()=>scrollTo(0,1800));assert((await page.locator('#noa-account-bar').boundingBox()).y===0);
@@ -40,7 +41,7 @@ try{for(const [width,height] of [[320,900],[390,900],[768,720],[1920,900]]){
   assert(counter.y>=56);assert(counter.y+counter.height<=dock.y);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await page.screenshot({path:'starlight-proof/mobile-footer-'+width+'.png'});
  }else assert(await page.locator('.noa-mobile-footer').isVisible(),'shared page footer remains available on larger screens');
- await page.locator('#noa-nav-all').click();assert.equal(await page.locator('#noa-nav-all').getAttribute('aria-expanded'),'true');await page.locator('#noa-menu-drawer').getByRole('link',{name:'전체 서비스 안내',exact:true}).click();
+ await page.locator('#noa-nav-all').click();assert.equal(await page.locator('#noa-nav-all').getAttribute('aria-expanded'),'true');await page.locator('#noa-menu-drawer').getByRole('link',{name:'사이트맵 열기',exact:true}).click();
  await page.waitForURL(base+'/noa-sitemap.php');
  await page.screenshot({path:'starlight-proof/navigation-'+width+'.png'});assert.deepEqual(errors,[]);
  await page.goto(base+'/bbs/board.php');await page.locator('#noa-nav-top').waitFor();

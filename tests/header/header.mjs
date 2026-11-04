@@ -47,7 +47,7 @@ try{for(const [width,height]of [[320,900],[390,900],[768,900],[1600,900],[2300,9
  await p.reload();await p.waitForFunction(()=>window.NoaUI?.getState());await enter();assert.match(await p.locator('#noa-header-weather').innerText(),/부산광역시/);assert.equal(requests,1,'weather is reused within its short lifetime');
  await p.locator('#noa-header-weather').click();await p.evaluate(()=>{window.__geoDenied=true;});await p.locator('[data-weather-locate]').click();await p.getByText('위치 사용이 꺼져 있어요.',{exact:false}).waitFor();assert.equal(requests,1);assert.match(await p.locator('#noa-header-weather').innerText(),/내 위치/);await p.getByRole('button',{name:'날씨 닫기',exact:true}).click();
  }
- await enter();const search=p.locator('#noa-drawer-search');await search.fill('공지');assert.equal(await drawer.locator('.noa-drawer-secondary a:visible').count(),1);await search.fill('없는메뉴xyz');assert(await drawer.locator('.noa-menu-empty').isVisible());await search.fill('');
+ await enter();const search=p.locator('#noa-drawer-search');await search.fill('공지');await drawer.locator('[data-drawer-route=board-notice]').waitFor();await search.fill('없는메뉴xyz');assert(await drawer.locator('.noa-menu-empty').isVisible());await search.fill('');
  const pinned=width>=1200,frame=await drawer.boundingBox();
  if(pinned){
   assert(!await drawer.evaluate(d=>d.matches(':modal')));assert(Math.abs(frame.x-Math.max(0,(width-height*16/9)/2))<=1);assert(frame.width>=220&&frame.width<300);
