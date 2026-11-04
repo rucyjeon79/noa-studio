@@ -109,7 +109,7 @@
     "name": "자동 테마",
     "light": "noa-ivory",
     "dark": "noa-studio",
-    "startHour": 9,
-    "endHour": 21
+    "startHour": 7,
+    "endHour": 19
   }
 }
