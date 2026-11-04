@@ -1204,9 +1204,12 @@ html.noa-shell-wide:not(.noa-wide-rail) #noa-menu-drawer[open]{
 #noa-menu-drawer .noa-drawer-route-count{margin-inline-start:auto;color:var(--noa-muted);font-size:11px;font-weight:400;font-variant-numeric:tabular-nums}
 #noa-menu-drawer .noa-drawer-secondary{display:flex;flex-direction:column;gap:0;margin:3px 0 0 10px;padding:0 0 0 18px;border:0;border-inline-start:1px solid var(--noa-line);border-radius:0;background:transparent}
 #noa-menu-drawer .noa-drawer-secondary a{display:flex;align-items:center;min-width:0;min-height:44px;margin:0;padding:5px 0;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--noa-text);font-size:13px;font-weight:450;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere;text-decoration:none}
-#noa-menu-drawer .noa-drawer-secondary a{flex-wrap:wrap;justify-content:flex-start;column-gap:8px;row-gap:2px;align-content:center}
-#noa-menu-drawer .noa-drawer-secondary .noa-route-level,.noa-site-map .noa-directory-access{display:inline-block;width:auto;height:auto;max-width:100%;color:var(--noa-accent);font-size:10px;font-weight:650;line-height:1.4;letter-spacing:.01em}
-#noa-menu-drawer .noa-route-level{margin-inline-start:auto;text-align:end}
+#noa-menu-drawer .noa-drawer-secondary a{flex-wrap:nowrap;justify-content:flex-start;gap:8px;align-content:center}
+#noa-menu-drawer .noa-route-name{flex:1;min-width:0;white-space:normal;overflow:visible;text-overflow:clip}
+#noa-menu-drawer .noa-route-level,.noa-site-map .noa-directory-access{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:24px}
+#noa-menu-drawer .noa-route-level{margin-inline-start:auto}
+:is(#noa-menu-drawer .noa-route-level,.noa-site-map .noa-directory-access) .noa-rank-badge{width:22px;height:24px;margin:0}
+:is(#noa-menu-drawer .noa-route-level,.noa-site-map .noa-directory-access) .noa-rank-badge>span>svg{display:block;width:14px;height:16px;color:inherit}
 #noa-menu-drawer .noa-drawer-secondary a:is(:hover,:focus-visible,[aria-current=page]){background:transparent;color:var(--noa-accent);box-shadow:none;text-decoration:underline;text-underline-offset:3px}
 #noa-menu-drawer .noa-drawer-secondary a:focus-visible{outline:2px solid var(--noa-accent);outline-offset:1px}
 html.noa-shell-wide #noa-menu-drawer .noa-sidebar-visitors{display:block;margin:0}

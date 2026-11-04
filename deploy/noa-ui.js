@@ -236,13 +236,18 @@ function wideShell(side){
     const key=item.dataset.noaRoute,label=item.querySelector('strong').textContent.trim();
     const link=document.createElement('a');link.dataset.drawerRoute=key;
     if(['home','youtube','world','music','lounge','shop'].includes(key))link.dataset.noaNav=key==='lounge'?'community':key;
-    link.textContent=tr(({world:'NOA WORLD · 세계관',music:'음원',youtube:'유튜브'})[key]||label);
+    const name=document.createElement('span');name.className='noa-route-name';name.textContent=tr(({world:'NOA WORLD · 세계관',music:'음원',youtube:'유튜브'})[key]||label);link.append(name);
     link.dataset.search=label+' '+(item.querySelector('small')?.textContent||'');
     const href=item.getAttribute('href');
     if(!href.startsWith('/')||href.startsWith('//'))continue;
     link.href=href;if(href===location.pathname+location.search+location.hash)link.setAttribute('aria-current','page');
-    if(item.dataset.noaAccessLabel){
-     const badge=document.createElement('small');badge.className='noa-route-level';badge.textContent=item.dataset.noaAccessLabel;
+    const rank=Number(item.dataset.noaAccessRank)||0;link.dataset.accessRank=String(rank);
+    if(item.dataset.noaAccessLabel&&Number.isInteger(rank)&&rank>=1&&rank<=10){
+     const badge=document.createElement('span');badge.className='noa-route-level';
+     badge.setAttribute('role','img');badge.setAttribute('aria-label',item.dataset.noaAccessLabel);badge.title=item.dataset.noaAccessLabel;
+     const frame=document.createElement('span');frame.className='noa-rank-badge noa-rank-'+rank+([4,5,6,8].includes(rank)?' noa-rank-premium':'');frame.setAttribute('aria-hidden','true');
+     const mark=document.createElement('span'),symbol=({1:'user',2:'user',3:'community',4:'home',7:'mic',8:'mic'})[rank];
+     if(symbol)mark.innerHTML=icon(symbol);frame.append(mark);badge.append(frame);
      link.append(badge);
     }
     list.append(link);
