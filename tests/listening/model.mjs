@@ -183,3 +183,24 @@ test('within the same supporting mood, borrow tracks with the strongest evidence
              {key:'bedtime',genre:'g',audio:'/b',moodScores:{calm:6,sleep:3}}];
  assert.deepEqual(model.moodCollections(rows)('sleep').rows.map(r=>r.key),['bedtime','plain']);
 });
+
+test('fresh playback shuffles primary and borrowed tracks without changing selection, and honors an explicit first track',()=>{
+ const rows=Array.from({length:100},(_,i)=>({key:'r'+i,audio:'/s/'+i,audioSha:'sha'+i,tier:i<40?1:i<80?2:3}));
+ const source=rows.map(row=>row.key);
+ const first=model.shuffledPlayback(rows,'','sha0','sha1');
+ assert(!['sha0','sha1'].includes(first[0].audioSha));
+ const again=model.shuffledPlayback(rows,'',first[0].audioSha);
+ assert.notEqual(again[0].key,first[0].key);
+ for(const list of [first,again])assert.deepEqual(list.map(row=>row.key).sort(),[...source].sort());
+ const pinned=model.shuffledPlayback(rows,'r93','sha93');
+ assert.equal(pinned[0].tier,3);assert.equal(pinned[0].key,'r93');assert.deepEqual(rows.map(r=>r.key),source);
+ assert.equal(model.shuffledPlayback(rows.slice(0,2),'','sha0','sha1')[0],rows[1]);
+ assert.deepEqual(model.shuffledPlayback(rows.slice(0,1),'','sha0'),[rows[0]]);
+ assert.deepEqual(model.shuffledPlayback([]),[]);
+});
+
+test('an ordinary play can open with a third-tier song',t=>{
+ t.mock.method(Math,'random',()=>.99);
+ const rows=[{key:'sleep'},{key:'calm'},{key:'comfort'}];
+ assert.equal(model.shuffledPlayback(rows)[0].key,'comfort');
+});

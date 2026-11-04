@@ -340,7 +340,7 @@ function settings(){const host=document.getElementById('noa-settings-controls');
 async function init(){shell();if(!themeOnly&&!admin){sectionNavigation();roomIntroductions();}let early=null;try{early=JSON.parse(safeRead(themeStorageKey)||safeRead('noa-ui-selection')||'null')}catch{}const initial=['auto','noa-studio','noa-ivory'].includes(early?.theme)?early.theme:'auto';root.dataset.noaTheme=resolvedTheme(initial);root.dataset.noaThemePreference=initial;root.style.colorScheme=root.dataset.noaTheme==='noa-ivory'?'light':'dark';try{const preferences=fetch('/noa-bridge/ui-preferences.php',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).catch(()=>null);
  const translations=Promise.all([
   fetch('/noa-ui-words.json').then(r=>r.ok?r.json():null).catch(()=>null),
-  fetch('/noa-interface-labels.json?v=f28b58e3d70daa1e').then(r=>r.ok?r.json():null).catch(()=>null)
+  fetch('/noa-interface-labels.json?v=51e089c7fe146008').then(r=>r.ok?r.json():null).catch(()=>null)
  ]);
  config=window.NoaPageDesign||await fetch('/noa-design.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw Error();return r.json();});
  translations.then(([dictionary,labels])=>{

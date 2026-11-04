@@ -12,6 +12,12 @@ const moods = ['calm','focus','comfort','energy','cruise','drive','walk','sleep'
 for (const mood of moods) {
   const {rows,tiers} = pick(mood);
   const ids = rows.map(row=>row.publicVideoId);
+  if(rows.length>1){
+    const first=model.shuffledPlayback(rows);
+    const replay=model.shuffledPlayback(rows,'',model.recordingId(first[0]));
+    assert.notEqual(first[0].publicVideoId,replay[0].publicVideoId);
+    for(const order of [first,replay])assert.deepEqual([...order].map(row=>row.publicVideoId).sort(),[...ids].sort());
+  }
   assert.equal(new Set(ids).size, ids.length, 'video repeated within '+mood);
   assert.equal(tiers[0].mood, mood);
   assert.equal(tiers.reduce((sum,tier)=>sum+tier.count,0), ids.length);
@@ -33,4 +39,4 @@ for (const mood of moods) {
   if(remaining)assert.equal(stages[mood].length,3);
 }
 assert(heard.size>0,'no public mood recommendations');
-console.log('N80_PUBLIC_MOOD_QUEUES',JSON.stringify({available:records.length,counts,stages,unique:heard.size,withinQueueDuplicates:0}));
+console.log('N80_PUBLIC_MOOD_QUEUES',JSON.stringify({available:records.length,counts,stages,unique:heard.size,withinQueueDuplicates:0,shuffledReplayVerified:true}));

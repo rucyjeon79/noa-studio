@@ -180,6 +180,23 @@ function manualGenre(records,genre,orderFor,mood){
  }
  return {rows,fallback:false};
 }
+// Shuffle a fresh queue once; the player can then step forward, back, or resume in this order.
+function shuffledPlayback(rows,firstKey,previous='',last=''){
+ if(rows.length<2)return rows.slice();
+ let first=firstKey&&rows.find(row=>row.key===firstKey);
+ if(!first){
+  const eligible=rows.filter(row=>recordingId(row)!==previous&&recordingId(row)!==last);
+  const choices=eligible.length?eligible:rows.filter(row=>recordingId(row)!==previous);
+  const pool=choices.length?choices:rows;
+  first=pool[Math.floor(Math.random()*pool.length)];
+ }
+ const rest=rows.filter(row=>row!==first);
+ for(let i=rest.length-1;i>0;i--){
+  const j=Math.floor(Math.random()*(i+1));
+  [rest[i],rest[j]]=[rest[j],rest[i]];
+ }
+ return [first,...rest];
+}
 function chooseOpener(rows,avoid){
  if(!rows.length||!avoid.has(recordingId(rows[0])))return;
  const index=rows.findIndex(row=>!avoid.has(recordingId(row)));
@@ -223,5 +240,5 @@ function genreSuggestions(records,theme,genres,preferred,orderFor){
  choices.sort((a,b)=>b.score-a.score||Number(b.genre===preferred)-Number(a.genre===preferred)||a.genre.localeCompare(b.genre));
  return choices.slice(0,3);
 }
-const api={catalog,moodCollections,manualGenre,recordingId,select,albums,wholeMoodMix,wholeCatalogMix,recommendedGenreMix,wholeMixLimit,genreMixLimit,genreSuggestions,normalizeBirthDate};if(typeof module==='object')module.exports=api;else root.NoaListeningModel=api;
+const api={catalog,shuffledPlayback,moodCollections,manualGenre,recordingId,select,albums,wholeMoodMix,wholeCatalogMix,recommendedGenreMix,wholeMixLimit,genreMixLimit,genreSuggestions,normalizeBirthDate};if(typeof module==='object')module.exports=api;else root.NoaListeningModel=api;
 })(typeof window==='undefined'?globalThis:window);
