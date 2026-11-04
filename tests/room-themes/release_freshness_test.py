@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location('freshness', ROOT / 'scripts/noa_release_freshness.py')
 freshness = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(freshness)
-UNRELATED = ('scripts/busan_', '.github/workflows/busan-', 'docs/busan/', 'deploy/busan/')
+UNRELATED = ('scripts/busan_', 'scripts/qa/busan-', '.github/workflows/busan-', 'docs/busan/', 'deploy/busan/')
 
 
 class FreshnessTest(unittest.TestCase):
@@ -40,7 +40,7 @@ class FreshnessTest(unittest.TestCase):
         self.check(self.base)
 
     def test_unrelated_bus_dev_does_not_starve_release(self):
-        for path in ['scripts/busan_push.py', '.github/workflows/busan-widget.yml', 'docs/busan/result.md', 'deploy/busan/theme.zip.b64']:
+        for path in ['scripts/busan_push.py', 'scripts/qa/busan-layout.cjs', '.github/workflows/busan-widget.yml', 'docs/busan/result.md', 'deploy/busan/theme.zip.b64']:
             self.check(self.commit(path, 'separate host'))
 
     def test_other_releases_stay_strict(self):
@@ -49,7 +49,7 @@ class FreshnessTest(unittest.TestCase):
 
     def test_noa_source_dependency_and_gate_changes_require_retest(self):
         for path in ['deploy/noa-browse.js', 'bridge/library-records.php', 'scripts/noa_ainoa_deploy.py',
-                     'tests/workspace/fixture.php', '.github/workflows/noa-workspace.yml', 'package.json',
+                     'tests/workspace/fixture.php', 'scripts/qa/noa-hero.test.mjs', '.github/workflows/noa-workspace.yml', 'package.json',
                      'deploy/noa-ui.js', 'deploy/noa-starlight.css', 'deploy/busan-noa-ui.js']:
             with self.subTest(path=path):
                 with self.assertRaisesRegex(RuntimeError, 'obsolete_candidate'):
