@@ -1,0 +1,43 @@
+name: N80 chat panel layout
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-chat-layout.yml','scripts/qa/noa-chat-layout.mjs']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - name: Check chat controls at three screen widths
+        run: |
+          node --check deploy/noa-ainoa-admin.js
+          npm install --prefix "$RUNNER_TEMP/chat" --no-save playwright@1.56.1
+          cp scripts/qa/noa-chat-layout.mjs "$RUNNER_TEMP/chat/check.mjs"
+          node "$RUNNER_TEMP/chat/check.mjs"
+      - name: Publish and verify both chat assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+        run: |
+          python -m pip install 'paramiko>=3,<5'
+          PYTHONPATH=scripts python - <<'PY'
+          import sys
+          import noa_ainoa_deploy as release
+          release.FILES={p:'deploy/'+p for p in ('noa-ainoa.css','noa-ainoa-admin.js')}
+          release.NEW=set()
+          try:
+              release.main()
+          except Exception:
+              if release.BACKUP.exists():
+                  sys.argv.append('rollback')
+                  release.main()
+              raise
+          PY
