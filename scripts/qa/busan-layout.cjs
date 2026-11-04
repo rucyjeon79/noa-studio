@@ -12,6 +12,43 @@ const pages = [
   ['/bbs/faq.php', '.faqListWrap'],
 ];
 
+// A temporary form in this browser tab exercises the shared CSS without submitting a post.
+async function checkBoardFormLayout(page, width) {
+  const geometry = await page.locator('#contentsWrap').evaluate(main => {
+    const fixture = document.createElement('div');
+    fixture.className = 'boardWriteWrap';
+    fixture.innerHTML = `<div class="boardWrite"><div class="boardWriteBody">
+      <div class="writeBox"><input name="wr_subject"></div>
+      <div class="insertBox"><div class="file-slot-container"></div>
+      <div class="btnWrap"><button class="button" type="button">등록완료</button>
+      <a class="button">취소</a></div></div></div></div>`;
+    const slots = fixture.querySelector('.file-slot-container');
+    for (let i = 0; i < 8; i++) {
+      const tile = document.createElement('div');
+      tile.className = 'file-slot';
+      slots.append(tile);
+    }
+    main.append(fixture);
+    try {
+      const [submit, cancel] = Array.from(fixture.querySelectorAll('.btnWrap > *'),
+        el => el.getBoundingClientRect());
+      return {
+        actionHeights: [submit.height, cancel.height],
+        actionWidthDifference: Math.abs(submit.width - cancel.width),
+        gap: cancel.left - submit.right,
+        bottom: parseFloat(getComputedStyle(fixture.querySelector('.insertBox')).paddingBottom),
+        columns: getComputedStyle(slots).gridTemplateColumns.split(' ').length,
+      };
+    } finally {
+      fixture.remove();
+    }
+  });
+  assert(geometry.actionHeights.every(height => height >= 44));
+  assert(geometry.actionWidthDifference <= 1 && geometry.gap === 8);
+  assert.equal(geometry.bottom, width <= 768 ? 24 : 32);
+  assert.equal(geometry.columns, width <= 600 ? 2 : 4);
+}
+
 async function inspect(page, path, selector, width) {
   await page.goto(origin + path, { waitUntil: 'domcontentloaded' });
   const region = page.locator(selector);
@@ -62,6 +99,7 @@ async function inspect(page, path, selector, width) {
       const photos = new Set();
       for (const [path, selector] of pages) {
         const sources = await inspect(page, path, selector, width);
+        if (path === '/') await checkBoardFormLayout(page, width);
         if (sources) for (const source of sources) photos.add(source);
         console.log('PASS', width, path);
       }
