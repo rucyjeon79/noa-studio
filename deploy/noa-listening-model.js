@@ -8,10 +8,10 @@ function normalizeBirthDate(value){
  return parts[1]+'-'+parts[2].padStart(2,'0')+'-'+parts[3].padStart(2,'0');
 }
 const moodKeys=['calm','focus','energy','comfort'];
-function catalog(records,genre){
+function catalog(records,genre,acrossGenres=false){
  const recordings=new Map(),playable=[];
  for(const row of records){
-  if(row.genre!==genre||row.kind==='playlist'||row.video)continue;
+  if((!acrossGenres&&row.genre!==genre)||row.kind==='playlist'||row.video)continue;
   const id=row.browseIdentity||row.canonicalRecordKey||row.orderKey||row.key;
   let recording=recordings.get(id);
   if(!recording){recording={scores:{},affinity:{},track:null};recordings.set(id,recording);}
@@ -58,6 +58,27 @@ function select(records,{genre,mood='auto',mode='now',theme={},popular={},librar
  return {rows:result.slice(0,40),fallback,mood:chosen};
 }
 function albums(records,genre,{mood='auto',theme={}}={}){const groups=new Map();for(const r of catalog(records,genre)){const ep=Number(r.ep),act=Number(r.act)||(ep>0?Math.ceil(ep/10):0);if(!act)continue;if(!groups.has(act))groups.set(act,[]);groups.get(act).push(r);}const chosen=availableMood([...groups.values()].flat(),mood,theme);return [...groups].map(([act,rows])=>({act,matches:rows.reduce((total,r)=>total+trackFit(r,chosen,mood==='auto'&&theme.personal),0),rows:rows.sort((a,b)=>Number(a.ep)-Number(b.ep)||a.key.localeCompare(b.key))})).sort((a,b)=>b.matches/ b.rows.length-a.matches/a.rows.length||a.act-b.act);}
+// A separate entry point allows only this explicit choice to mix genres.
+function wholeCatalogMix(records,theme){
+ if(!theme?.personal||!theme.rankedMoods?.length)return {rows:[],fallback:false};
+ const candidates=catalog(records,null,true);
+ const [first,second]=theme.rankedMoods;
+ const score=row=>{
+  const main=trackFit(row,first,true),next=trackFit(row,second,true)*0.7;
+  return Math.max(main,next)+0.15*Math.min(main,next);
+ };
+ // Equal matches rotate without giving a particular genre's key prefix priority.
+ const dailyOrder=key=>{
+  let hash=2166136261;
+  for(const char of (theme.localDate||'')+(theme.period||'')+key)hash=Math.imul(hash^char.charCodeAt(0),16777619);
+  return hash>>>0;
+ };
+ const scored=candidates.map(row=>({row,score:score(row),order:dailyOrder(row.key)}));
+ const matched=scored.filter(item=>item.score>0),fallback=!matched.length&&candidates.length>0;
+ const sorted=matched.length?matched:scored;
+ sorted.sort((a,b)=>b.score-a.score||a.order-b.order||a.row.key.localeCompare(b.row.key));
+ return {rows:sorted.slice(0,40).map(item=>item.row),fallback,mood:first};
+}
 function genreSuggestions(records,theme,genres,preferred){
  if(!theme?.personal||!theme.rankedMoods?.length)return [];
  const choices=[];
@@ -72,5 +93,5 @@ function genreSuggestions(records,theme,genres,preferred){
  choices.sort((a,b)=>b.score-a.score||Number(b.genre===preferred)-Number(a.genre===preferred)||a.genre.localeCompare(b.genre));
  return choices.slice(0,3);
 }
-const api={catalog,select,albums,genreSuggestions,normalizeBirthDate};if(typeof module==='object')module.exports=api;else root.NoaListeningModel=api;
+const api={catalog,select,albums,wholeCatalogMix,genreSuggestions,normalizeBirthDate};if(typeof module==='object')module.exports=api;else root.NoaListeningModel=api;
 })(typeof window==='undefined'?globalThis:window);

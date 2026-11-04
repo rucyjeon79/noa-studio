@@ -61,3 +61,17 @@ test('saju recommendations offer three playable genres and a genre-local queue p
  assert.equal(model.genreSuggestions(tracks,theme,{b:'b',none:'none'}).length,1);
  const manual=model.select(tracks,{genre:'b',theme,mood:'calm'});assert(manual.fallback);
 });
+test('explicit whole-catalog saju considers all eligible genres independently of the manual selection',()=>{
+ const theme={personal:true,mood:'calm',rankedMoods:['calm','focus']};
+ const rows=[
+  {key:'pop',genre:'pop',audio:'/a',moodTags:['calm']},
+  {key:'story',genre:'story',audio:'/b',moodScores:{focus:3}},
+  {key:'ambient',genre:'other',audio:'/c',moodAffinity:{calm:.75}},
+  {key:'silent',genre:'pop',audio:'',moodScores:{calm:10}},
+  {key:'video',genre:'pop',video:'v',audio:'/v',moodScores:{calm:20}},
+  {key:'album',genre:'pop',kind:'playlist',audio:'/p',moodScores:{calm:20}},
+ ];
+ const mix=model.wholeCatalogMix(rows,theme);assert.deepEqual(mix.rows.map(x=>x.key),['story','pop','ambient']);
+ assert.deepEqual(model.select(rows,{genre:'pop',theme}).rows.map(x=>x.key),['pop']);
+ assert.deepEqual(model.wholeCatalogMix(rows,{personal:false}).rows,[]);
+});

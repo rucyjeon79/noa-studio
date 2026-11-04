@@ -179,19 +179,25 @@ window.addEventListener('DOMContentLoaded',()=>{browse=window.NoaBrowse.mount({h
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/noa-sw.js').catch(()=>{});
 
 // A synchronous user-gesture entrypoint shared with home. Never accept media URLs.
-window.NoaMusic={catalog:()=>records.map(r=>({...r})),showCategories:()=>{
- if(activeQueue){collectionQueue=activeQueue;activeQueue=null;}
- browse?.showCategories();
-},playQueue:(keys,selectedGenre)=>{
- if(!Array.isArray(keys)||!keys.length||typeof selectedGenre!=='string')return false;
- const accepted=[...new Set(keys)].map(k=>lookup.get(k)).filter(r=>r&&r.genre===selectedGenre&&r.audio&&r.kind!=='playlist');
+function startListeningQueue(keys,accept){
+ if(!Array.isArray(keys)||!keys.length)return false;
+ const accepted=[...new Set(keys)].map(k=>lookup.get(k)).filter(r=>r&&r.audio&&!r.video&&r.kind!=='playlist'&&accept(r));
  if(!accepted.length)return false;
  collectionQueue=accepted.map(r=>r.key);activeQueue=null;repeat=false;shuffle=false;
  for(const id of ['repeat','shuffle'])document.getElementById(id).setAttribute('aria-pressed','false');
  document.getElementById('sequential').setAttribute('aria-pressed','true');
  const b=buttonsByKey.get(accepted[0].key);if(!b)return false;
  select(b,true);return true;
-}};
+}
+window.NoaMusic={
+ catalog:()=>records.map(r=>({...r})),
+ showCategories:()=>{
+  if(activeQueue){collectionQueue=activeQueue;activeQueue=null;}
+  browse?.showCategories();
+ },
+ playQueue:(keys,selectedGenre)=>typeof selectedGenre==='string'&&startListeningQueue(keys,r=>r.genre===selectedGenre),
+ playRecommendedMix:keys=>startListeningQueue(keys,()=>true)
+};
 
 let installPrompt;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;document.getElementById('install').hidden=false});document.getElementById('install').onclick=async()=>{if(installPrompt){await installPrompt.prompt();installPrompt=null;document.getElementById('install').hidden=true}};
 </script><script src="/noa-app/playback-recovery.js?v=20261031-1" defer></script><script src="/noa-app/p0-player.js?v=<?=hash_file('sha256',__DIR__.'/noa-app/p0-player.js')?>" defer></script><script src="/noa-playcount.js?v=20261024-verified-stream" defer></script><script src="/noa-playlists.js?v=20261025-row-actions-1" defer></script><?php if($admin):?><script src="/noa-app/jukebox/upload-transport.js?v=3" defer></script><script src="/noa-app/jukebox/upload.js?v=<?=hash_file('sha256',__DIR__.'/noa-app/jukebox/upload.js')?>" defer></script><?php endif;?><?php if($admin&&isset($_GET['qa'])):?><output id="jukebox-qa-signal" aria-live="polite">검증 전용 · 재생 대기</output><script>(()=>{const audio=document.getElementById('sound-player'),out=document.getElementById('jukebox-qa-signal');let ctx,analyser,data;audio.addEventListener('play',()=>{try{if(!ctx){ctx=new AudioContext();analyser=ctx.createAnalyser();analyser.fftSize=2048;data=new Float32Array(analyser.fftSize);ctx.createMediaElementSource(audio).connect(analyser);analyser.connect(ctx.destination);}ctx.resume();}catch{out.textContent='출력 신호 측정 불가';}});setInterval(()=>{if(!analyser||audio.paused)return;analyser.getFloatTimeDomainData(data);const rms=Math.sqrt(data.reduce((a,x)=>a+x*x,0)/data.length);out.textContent='검증 전용 · '+(rms>.00001?'오디오 출력 신호 확인':'무음 구간')+' · RMS '+rms.toFixed(6)+' · '+audio.currentTime.toFixed(1)+'초';},500);})();</script><?php endif;?></main></body></html>

@@ -19,7 +19,7 @@ function n80_genre_model(array &$songs):void{
     $documents=0;$frequency=[];$classSize=array_fill_keys($moods,0);$within=[];$seen=[];
     foreach ($songs as $song) {
         if (($song['kind'] ?? '')==='playlist' || !empty($song['video'])) continue;
-        $identity=$song['browseIdentity'] ?? $song['canonicalRecordKey'] ?? $song['orderKey'] ?? $song['key'];
+        $identity=($song['browseIdentity'] ?? '') ?: (($song['canonicalRecordKey'] ?? '') ?: (($song['orderKey'] ?? '') ?: $song['key']));
         $labels=array_intersect($song['moodTags'] ?? [],$moods);
         if (!$labels || isset($seen[$identity])) continue;
         $terms=n80_genre_terms($song);

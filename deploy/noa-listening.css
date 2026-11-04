@@ -78,3 +78,5 @@ html body #noa-listening .nl-genre-card{justify-content:space-between;min-width:
 #noa-listening .nl-genre-copy strong,#noa-listening .nl-genre-copy small{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 #noa-listening .nl-genre-copy small{color:var(--nl-muted);font-size:.75rem}
 @media(max-width:620px){#noa-listening .nl-genre-cards{grid-template-columns:minmax(0,1fr)}}
+html body #noa-listening [data-all-genre-mix]{margin:8px 0 12px;max-width:100%;color:var(--nl-gold);border-color:var(--nl-gold)}
+#noa-listening .nl-genre-choices h4{font:inherit;font-weight:650;margin:4px 0}
