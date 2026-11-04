@@ -30,6 +30,11 @@ if os.environ.get('NOA_SURFACE_POLISH') == 'true':
     release.NEW = set()
     release.PROTECTED = [*release.PROTECTED,'noa-hero.js','noa-music.php']
 
+if os.environ.get('NOA_MENU_DRAWER') == 'true':
+    release.FILES = {name:'deploy/'+name for name in ('noa-starlight.css','noa-account.js','noa-ui.js')}
+    release.NEW = set()
+    release.PROTECTED = list(dict.fromkeys([*release.PROTECTED,'noa-hero.js','noa-music.php']))
+
 if __name__ == '__main__':
     try:
         release.main()

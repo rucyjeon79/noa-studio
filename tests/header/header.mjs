@@ -18,23 +18,41 @@ try{for(const [width,height]of [[320,900],[390,900],[768,900],[1600,900]]){
  const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto(base+'/');await p.waitForFunction(()=>window.NoaUI?.getState());
  assert.equal(await p.evaluate(()=>window.__geoCalls),0,'no unsolicited location request');assert.equal(requests,0,'no weather call before location consent');
  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no overflow');
- const choose=async code=>{await p.locator('#noa-header-language').click();await p.locator('#noa-language-options [data-language='+code+']').click();};
+ if(width<=760){
+  const home=p.locator('.noa-mobile-nav [data-noa-nav=home]');
+  for(const active of [false,true])for(const alert of [false,true]){
+   await home.evaluate((el,[active,alert])=>{if(active)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');el.classList.toggle('has-ainoa-alert',alert);},[active,alert]);
+   const shape=await home.evaluate(el=>{const b=el.getBoundingClientRect();return [b.width,b.height,getComputedStyle(el).borderRadius];});
+   assert.equal(shape[0],shape[1]);assert.equal(shape[2],'50%');
+  }
+ }
+
+ const drawer=p.locator('#noa-menu-drawer'),trigger=p.locator('#noa-nav-all');
+ const enter=async()=>{if(!await drawer.isVisible())await trigger.click();};
+ const leave=async()=>{await p.keyboard.press('Escape');await drawer.waitFor({state:'hidden'});};
+ await enter();
+ const choose=async code=>{await enter();await p.locator('#noa-header-language').click();await p.locator('#noa-language-options [data-language='+code+']').click();};
  for(const [code,find,heading] of [['en','Find','Music for you right now'],['ja','検索','今のあなたに合う音楽'],['th','ค้นหา','เพลงที่ใช่สำหรับคุณตอนนี้'],['ko','찾기','지금, 나에게 맞는 음악']]){
-  await choose(code);assert.equal(await p.locator('html').getAttribute('lang'),code);assert.equal(await p.locator('#noa-menu-find span').innerText(),find);assert.equal(await p.locator('#fixture-copy').innerText(),heading);
+  await choose(code);assert.equal(await p.locator('html').getAttribute('lang'),code);assert.equal(await p.locator('#noa-drawer-search').count(),1);assert.equal(await p.locator('#fixture-copy').innerText(),heading);
   assert.equal(await p.locator('#noa-header-language svg').getAttribute('data-flag'),code);assert.equal(await p.locator('#noa-language-options button svg').count(),4);assert.equal(await p.locator('.noa-card-heading').innerText(),'공지사항');assert.equal(await p.locator('#fixture-input').inputValue(),'찾기');
  }
  await choose('en');await p.reload();await p.waitForFunction(()=>window.NoaUI?.getState());assert.equal(await p.locator('#noa-header-language').getAttribute('data-language'),'en');assert.equal(await p.locator('#fixture-copy').innerText(),'Music for you right now');
  await p.evaluate(()=>{const label=document.createElement('button');label.id='late-copy';label.textContent='찾기';document.querySelector('main').append(label);});await p.waitForFunction(()=>document.getElementById('late-copy').textContent==='Find');
  await choose('ko');assert.equal(await p.locator('#late-copy').innerText(),'찾기');
  assert.equal(await p.locator('#noa-header-clock').isVisible(),width>760);assert.equal(await p.locator('#noa-header-weather').isVisible(),width>760);
- if(width<=760){assert((await p.locator('#noa-info-bar').boundingBox()).height<=58);assert.equal(requests,0);}
+ if(width<=760){assert((await p.locator('#noa-account-bar').boundingBox()).height<=58);assert.equal(requests,0);}
  if(width>760){await p.locator('#noa-header-weather').click();await p.locator('[data-weather-locate]').click();try{await p.waitForFunction(()=>document.querySelector('#noa-header-weather').textContent.includes('14°'),null,{timeout:20000});}catch(e){console.log('HEADER_WEATHER_DIAGNOSTIC',JSON.stringify({requests,errors,ui:await p.evaluate(()=>({geoCalls:window.__geoCalls,weather:document.querySelector('#noa-header-weather').outerHTML,status:document.querySelector('[data-weather-status]')?.textContent,now:new Date().toISOString()}))}));await p.screenshot({path:'room-theme-proof/header/weather-failure-'+width+'.png'});throw e;}
  assert.equal(requests,1);assert.match(await p.locator('#noa-header-weather').innerText(),/부산광역시 연제구/);await p.getByRole('button',{name:'날씨 닫기',exact:true}).click();
- await p.reload();await p.waitForFunction(()=>window.NoaUI?.getState());assert.match(await p.locator('#noa-header-weather').innerText(),/부산광역시/);assert.equal(requests,1,'weather is reused within its short lifetime');
+ await p.reload();await p.waitForFunction(()=>window.NoaUI?.getState());await enter();assert.match(await p.locator('#noa-header-weather').innerText(),/부산광역시/);assert.equal(requests,1,'weather is reused within its short lifetime');
  await p.locator('#noa-header-weather').click();await p.evaluate(()=>{window.__geoDenied=true;});await p.locator('[data-weather-locate]').click();await p.getByText('위치 사용이 꺼져 있어요.',{exact:false}).waitFor();assert.equal(requests,1);assert.match(await p.locator('#noa-header-weather').innerText(),/내 위치/);await p.getByRole('button',{name:'날씨 닫기',exact:true}).click();
  }
- await p.locator('#noa-menu-find').click();await p.locator('#noa-global-search').fill('공지');assert.equal(await p.locator('#noa-find-dialog nav>a:visible').count(),1);await p.locator('#noa-global-search').fill('없는메뉴xyz');await p.keyboard.press('Escape');await p.locator('#noa-find-dialog').waitFor({state:'hidden'});
+ await enter();const search=p.locator('#noa-drawer-search');await search.fill('공지');assert.equal(await drawer.locator('.noa-drawer-secondary a:visible').count(),1);await search.fill('없는메뉴xyz');assert(await drawer.locator('.noa-menu-empty').isVisible());await search.fill('');
+ const frame=await drawer.boundingBox();assert(Math.abs(frame.width-width*.7)<=1&&Math.abs(frame.x)<=1);
+ assert(await p.locator('#noa-account-bar').evaluate(e=>e.getBoundingClientRect().bottom<=1));
+ const animation=await drawer.evaluate(e=>getComputedStyle(e).animationDuration);assert.equal(animation,'1s');
+ await p.screenshot({path:'room-theme-proof/header/menu-open-'+width+'.png'});
+ await p.mouse.click(width-4,120);await drawer.waitFor({state:'hidden'});assert(await trigger.evaluate(el=>el===document.activeElement));
  await p.locator('[data-footer-theme=noa-ivory]').click();assert.equal(await p.locator('dialog:modal').count(),0);assert.equal(await p.locator('html').getAttribute('data-noa-theme'),'noa-ivory');
  await p.screenshot({path:'room-theme-proof/header/header-light-'+width+'.png'});await p.locator('[data-footer-theme=noa-studio]').click();assert.equal(await p.locator('dialog:modal').count(),0);assert.equal(await p.locator('html').getAttribute('data-noa-theme'),'noa-studio');await p.screenshot({path:'room-theme-proof/header/header-dark-'+width+'.png'});
- assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.goto(base+'/shop/cart.php');await p.waitForFunction(()=>window.NoaUI?.getState());const bounds=await p.locator('#noa-info-bar').boundingBox();assert(Math.abs(bounds.x)<1,'native cart keeps the top frame at the screen edge');assert(Math.abs(bounds.width-await p.evaluate(()=>document.documentElement.clientWidth))<2,'native cart keeps the full top-frame width');assert.deepEqual(errors,[]);await c.close();console.log('HEADER_LANGUAGE_WEATHER_SEARCH_THEME_OK',width);
+ assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.goto(base+'/shop/cart.php');await p.waitForFunction(()=>window.NoaUI?.getState());const bounds=await p.locator('#noa-account-bar').boundingBox();assert(Math.abs(bounds.x)<1,'native cart keeps the top frame at the screen edge');assert(Math.abs(bounds.width-await p.evaluate(()=>document.documentElement.clientWidth))<2,'native cart keeps the full top-frame width');assert.deepEqual(errors,[]);await c.close();console.log('HEADER_LANGUAGE_WEATHER_SEARCH_THEME_OK',width);
 }}finally{await browser.close();}

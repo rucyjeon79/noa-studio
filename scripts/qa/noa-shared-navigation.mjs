@@ -15,22 +15,14 @@ try{for(const [width,height] of [[320,900],[390,900],[768,720],[1920,900]]){
  const page=await browser.newPage({viewport:{width,height},reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base+'/');await page.locator('#noa-nav-top').waitFor();
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
- for(const id of ['noa-nav-back','noa-nav-top','noa-menu-find','noa-nav-install']){const box=await page.locator('#'+id).boundingBox();assert(box.height>=44&&box.width>=44);}
- await page.locator('#noa-menu-find').click();await page.locator('#noa-global-search').fill('공지');assert.equal(await page.locator('#noa-find-dialog nav>a:visible').count(),1);await page.getByRole('button',{name:'찾기 닫기',exact:true}).click();
+ for(const id of ['noa-nav-back','noa-nav-top','noa-nav-all','noa-nav-account']){const box=await page.locator('#'+id).boundingBox();assert(box.height>=44&&box.width>=44);}
+ await page.locator('#noa-nav-all').click();await page.locator('#noa-drawer-search').fill('공지');assert.equal(await page.locator('.noa-drawer-secondary a:visible').count(),1);await page.getByRole('button',{name:'전체 메뉴 닫기',exact:true}).click();
  await page.getByRole('link',{name:'다음 화면',exact:true}).click();assert(page.url().endsWith('/second'));
  await page.locator('#noa-nav-back').click();await page.waitForURL(base+'/');
  await page.evaluate(()=>scrollTo(0,1800));assert((await page.locator('#noa-account-bar').boundingBox()).y===0);
  await page.locator('#noa-nav-top').click();await page.waitForFunction(()=>scrollY===0);
- const pinned=width>=1200&&width>height;
- assert.equal(await page.locator('#noa-menu-drawer').isVisible(),pinned,'only wide landscape screens pin the menu');
+ assert.equal(await page.locator('#noa-menu-drawer').isVisible(),false);
  if(width<=760)assert(await page.locator('.noa-mobile-nav').isVisible());
- if(pinned){
-  assert.equal(await page.locator('#noa-nav-all').isVisible(),false);assert.equal(await page.locator('.noa-sidebar .noa-display-settings').isVisible(),false);assert.equal(await page.locator('.noa-drawer-search').isVisible(),false);
-  assert.equal(await page.locator('.noa-sidebar [data-visit="total"]').textContent(),'123,456');
-  for(const link of await page.locator('.noa-sidebar .noa-sidebar-legal a').all())assert((await link.boundingBox()).height>=36,'desktop legal links retain their compact target size');
-  const sidebar=await page.locator('.noa-sidebar').boundingBox(),footer=await page.locator('.noa-sidebar>.noa-sidebar-bottom').boundingBox();
-  assert(footer.y+footer.height<=sidebar.y+sidebar.height);assert(await page.locator('.noa-menu').isVisible());
- }
  if(width<=760){
   await page.locator('.noa-mobile-footer').scrollIntoViewIfNeeded();
   assert.equal(await page.locator('.noa-mobile-footer [data-visit="total"]').textContent(),'123,456');
@@ -48,8 +40,7 @@ try{for(const [width,height] of [[320,900],[390,900],[768,720],[1920,900]]){
   assert(counter.y>=56);assert(counter.y+counter.height<=dock.y);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await page.screenshot({path:'starlight-proof/mobile-footer-'+width+'.png'});
  }else assert(await page.locator('.noa-mobile-footer').isVisible(),'shared page footer remains available on larger screens');
- if(pinned){assert.equal(await page.locator('.noa-drawer-expand').count(),0);await page.locator('#noa-menu-find').click();await page.locator('#noa-find-dialog').getByRole('link',{name:'전체 서비스 안내',exact:true}).click();}
- else{await page.locator('#noa-nav-all').click();assert.equal(await page.locator('#noa-nav-all').getAttribute('aria-expanded'),'true');await page.locator('#noa-menu-drawer').getByRole('link',{name:'전체 서비스 안내',exact:true}).click();}
+ await page.locator('#noa-nav-all').click();assert.equal(await page.locator('#noa-nav-all').getAttribute('aria-expanded'),'true');await page.locator('#noa-menu-drawer').getByRole('link',{name:'전체 서비스 안내',exact:true}).click();
  await page.waitForURL(base+'/noa-sitemap.php');
  await page.screenshot({path:'starlight-proof/navigation-'+width+'.png'});assert.deepEqual(errors,[]);
  await page.goto(base+'/bbs/board.php');await page.locator('#noa-nav-top').waitFor();

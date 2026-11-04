@@ -89,10 +89,6 @@ for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])aw
    assert.equal(metrics.scheme,mode==='noa-ivory'?'light':'dark');
    assert(metrics.overflow<=1,JSON.stringify(results.at(-1)));
    assert(metrics.text>20,'visible content: '+route);assert(['left','start'].includes(metrics.alignment),'reading alignment: '+route);
-   if(width>=1200&&width>height){
-    assert(await p.locator('#noa-menu-drawer').isVisible(),'left menu is always visible: '+route);
-    assert(await p.evaluate(()=>{const host=document.querySelector('main')||document.querySelector('#container');return host.getBoundingClientRect().left>=220;}),'content clears pinned navigation: '+route);
-   }
    await verifyHeader(p,width,height);
    if(route==='/noa-login.php'){
     const providers=await p.locator('.noa-social-provider').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect(),s=getComputedStyle(el);return {radius:s.borderRadius,x:r.x,width:r.width,height:r.height,overflow:el.scrollWidth-el.clientWidth};}));
@@ -141,7 +137,7 @@ for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])aw
    if(route==='/noa-about.php'){
     assert.equal(await p.locator('.ne-hero>img').getAttribute('src'),theme.images.music,'studio introduction follows the active scene');
     assert.equal(await p.locator('.ne-masthead').isVisible(),false,'one global brand header');
-    assert(await p.locator(width<=760?'.noa-info-actions':width>=1200&&width>height?'#noa-menu-drawer .noa-logo':'#noa-nav-install').isVisible());
+    assert(await p.locator('#noa-account-bar .noa-account-brand').isVisible());
     assert.deepEqual(await p.locator('.ne-artist img').evaluateAll(images=>images.map(img=>img.getAttribute('src'))),['/noa-assets/editorial-noa-portrait.webp','/noa-assets/editorial-noel-portrait.webp'],'artist portraits remain original');
    }
    await p.screenshot({path:output+'/'+(route==='/'?'home':route.replace('/noa-','').replace('.php',''))+'-'+mode+'-'+width+'.png'});
@@ -161,10 +157,12 @@ for(const sizes of [[[320,720],[390,900],[768,900]],[[1280,1440],[1600,900]]])aw
     await p.locator('#noa-menu-search').fill('포인트');assert(await p.locator('.noa-site-map-link:visible').count()>0);await p.locator('#noa-menu-search').fill('');
    }
    if(width===390&&mode==='noa-ivory'&&['/','/noa-login.php','/shop/cart.php'].includes(route)){
+    await p.locator('#noa-nav-all').click();
     for(const [code,find,section]of [['en','Find','Music for you right now'],['ja','検索','今のあなたに合う音楽'],['th','ค้นหา','เพลงที่ใช่สำหรับคุณตอนนี้'],['ko','찾기','지금, 나에게 맞는 음악']]){
-     await p.locator('#noa-header-language').click();await p.locator('#noa-language-options button[data-language='+code+']').click();assert.equal(await p.locator('#noa-menu-find span').innerText(),find);assert.equal(await p.locator('#noa-header-language svg').getAttribute('data-flag'),code);
+     await p.locator('#noa-header-language').click();await p.locator('#noa-language-options button[data-language='+code+']').click();assert.equal(await p.locator('#noa-header-language svg').getAttribute('data-flag'),code);
      if(route==='/'){assert.equal(await p.locator('#noa-listening h2').first().innerText(),section);}if(route==='/noa-login.php'&&code==='en')assert.equal(await p.locator('#login_id').getAttribute('placeholder'),'ID or email');
     }
+    await p.keyboard.press('Escape');await p.locator('#noa-menu-drawer').waitFor({state:'hidden'});
     console.log('ACTUAL_INTERFACE_LANGUAGE_AND_MOBILE_HEADER_OK',phase,route);
    }
    if(room==='home'){await verifyMusicShelves(p,width,mode,theme);await verifyExpansiveShell(p,width,height,mode);await verifyUtilityActions(p,width,mode);}
@@ -342,10 +340,9 @@ async function verifyMusicShelves(p,width,mode,theme){
 }
 
 async function verifyExpansiveShell(p,width,height,mode){
- const pinned=await p.locator('html').evaluate(el=>el.classList.contains('noa-menu-pinned'));
- assert(await p.locator(pinned?'#noa-menu-drawer .noa-logo':width<=760?'#noa-info-bar .noa-account-brand':'#noa-nav-install').isVisible(),'studio home shortcut remains visible');
+ assert(await p.locator('#noa-account-bar .noa-account-brand').isVisible());
  const geometry=await p.evaluate(()=>{const box=s=>{const r=document.querySelector(s).getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom};};return {hero:box('.noa-hero'),media:box('.noa-hero-art'),copy:box('.noa-hero-copy'),scene:box('#noa-theme-scene'),notices:box('[data-home-section=notices]'),community:box('[data-home-section=community]'),rightDock:document.documentElement.hasAttribute('data-noa-desktop')};});
- assert(geometry.scene.x>=(pinned?220:0)&&geometry.scene.x<(pinned?320:100),'content clears the pinned navigation at wide landscape sizes');
+ assert(geometry.scene.x>=0&&geometry.scene.x<Math.max(100,(width-1440)/2+40),'content uses the centered reading area');
  assert(!geometry.rightDock,'assistant remains floating instead of taking a permanent content column');
  if(width>=768){assert(geometry.hero.height>=480&&geometry.hero.height<=620,'artist film has a bounded cinematic height');assert(Math.abs(geometry.media.width/geometry.media.height-9/16)<.01,'desktop film keeps its original portrait frame');assert(geometry.copy.x>=geometry.media.x+geometry.media.width-1,'recommendations have their own space beside the film');assert(geometry.copy.bottom<=geometry.media.bottom+1,'copy stays within the feature');assert(geometry.scene.height<300,'theme welcome remains secondary to the original film');}
  else{assert(Math.abs(geometry.media.width/geometry.media.height-9/16)<.03,'mobile retains the complete portrait film');assert(geometry.copy.y>=geometry.media.bottom-1,'mobile text is below the media');}
@@ -358,48 +355,34 @@ async function verifyExpansiveShell(p,width,height,mode){
  for(const row of await p.locator('.noa-feed-row:visible').all())assert(await row.evaluate(e=>{const left=e.getBoundingClientRect().left;return [...e.children].every(n=>Math.abs(n.getBoundingClientRect().left-left)<2); }),'feed tag, title and author share the same left edge');
  if(width<768)assert(await p.locator('.noa-hero-intro').evaluate(e=>Math.abs(e.getBoundingClientRect().left-e.parentElement.getBoundingClientRect().left-20)<2),'mobile introduction keeps the left content edge');
 
- const all=p.locator('#noa-nav-all'),drawer=p.locator('#noa-menu-drawer');assert.equal(await drawer.isVisible(),pinned);
- if(pinned){assert.equal(await drawer.locator('.noa-drawer-secondary').isVisible(),false,'wide rail starts with only the five main destinations');assert.equal(await drawer.locator('.noa-drawer-search').isVisible(),false,'search does not clutter the default rail');assert.equal(await drawer.locator('.noa-drawer-profile').isVisible(),false,'header already provides account access');assert(await drawer.locator('.noa-sidebar-visitors').isVisible(),'original visitor information remains in the rail');}
- assert.equal(await drawer.locator('.noa-drawer-expand').count(),0);if(!pinned){await all.click();assert.equal(await all.getAttribute('aria-expanded'),'true');}await drawer.waitFor({state:'visible'});
- assert.equal(await drawer.evaluate(d=>d.matches(':modal')),!pinned,'only compact menu is modal');
- if(!pinned){const search=p.locator('#noa-drawer-search');await search.fill('공지');assert.equal(await drawer.locator('.noa-drawer-secondary a:visible').count(),1);await search.fill('');}
+ const all=p.locator('#noa-nav-all'),drawer=p.locator('#noa-menu-drawer');
+ assert.equal(await drawer.isVisible(),false);await all.click();assert.equal(await all.getAttribute('aria-expanded'),'true');
+ const search=p.locator('#noa-drawer-search');await search.fill('공지');assert.equal(await drawer.locator('.noa-drawer-secondary a:visible').count(),1);
+ await search.fill('없는메뉴xyz');assert(await drawer.locator('.noa-menu-empty').isVisible());await search.fill('');
  assert.equal(await drawer.locator('.noa-menu a:visible').count(),5);assert.equal(await drawer.locator('[data-noa-nav=music]').getAttribute('aria-disabled'),'true');
  await drawer.screenshot({path:output+'/menu-'+mode+'-'+width+'.png'});
- await p.keyboard.press('Escape');
- if(pinned){assert(await drawer.isVisible());assert.equal(await drawer.locator('.noa-drawer-secondary').isVisible(),false);const before=await drawer.boundingBox();await p.evaluate(()=>scrollTo(0,600));const after=await drawer.boundingBox();assert.equal(after.x,0);assert.equal(after.y,before.y);await p.evaluate(()=>scrollTo(0,0));}
- else await drawer.waitFor({state:'hidden'});
- await p.locator('#noa-menu-find').click();const find=p.locator('#noa-global-search');await find.fill('공지');assert.equal(await p.locator('#noa-find-dialog nav>a:visible').count(),1);await find.fill('없는메뉴xyz');assert(await p.locator('#noa-find-dialog [role=status]').isVisible());await p.keyboard.press('Escape');
- if(pinned){await p.setViewportSize({width:390,height:900});await drawer.waitFor({state:'hidden'});assert(await all.isVisible());await all.click();await p.setViewportSize({width,height});await p.waitForFunction(()=>document.documentElement.classList.contains('noa-menu-pinned'));assert.equal(await drawer.evaluate(d=>d.matches(':modal')),false);assert.equal(await all.isVisible(),false);assert.equal(await drawer.locator('.noa-drawer-search').isVisible(),false);}
+ const box=await drawer.boundingBox();assert(Math.abs(box.width-width*.7)<2&&Math.abs(box.x)<2);
+ await p.keyboard.press('Escape');await drawer.waitFor({state:'hidden'});
  console.log('EXPANSIVE_GEOMETRY',JSON.stringify({width,mode,...geometry}));
 }
 
 
 async function verifyHeader(p,width,height){
- const pinned=width>=1200&&width>height;
- const state=await p.evaluate(()=>{
-  const bar=document.querySelector('#noa-account-bar'),rect=e=>{const r=e.getBoundingClientRect();return{id:e.id,x:r.x,y:r.y,width:r.width,height:r.height,text:e.textContent.trim(),radius:getComputedStyle(e).borderRadius};};
-  return {viewport:document.documentElement.clientWidth,bar:rect(bar),info:rect(document.getElementById('noa-info-bar')),lower:rect(bar.querySelector('.noa-navigation-bar')),upper:[...bar.querySelectorAll('.noa-info-actions > :is(a,button),#noa-header-language')].map(rect),left:[...bar.querySelector('.noa-account-utilities').children].map(rect),right:[...bar.querySelector('.noa-account-shortcuts').children].filter(e=>e.getBoundingClientRect().width).map(rect),overflow:bar.scrollWidth-bar.clientWidth};
+ const row=await p.locator('#noa-account-bar').evaluate(bar=>{
+  const rect=e=>{const r=e.getBoundingClientRect();return {id:e.id,x:r.x,y:r.y,w:r.width,h:r.height};};
+  return {bar:rect(bar),viewport:document.documentElement.clientWidth,items:[...bar.querySelectorAll('.noa-navigation-bar a,.noa-navigation-bar button')].map(rect)};
  });
- assert.deepEqual(state.upper.map(a=>a.id),['noa-nav-install','noa-referral-share','noa-header-language']);
- assert.deepEqual(state.left.map(a=>a.id),['noa-nav-back','noa-nav-top']);
- assert.deepEqual(state.right.map(a=>a.id),pinned?['noa-menu-find','noa-nav-account']:['noa-menu-find','noa-nav-all','noa-nav-account']);
- assert(state.overflow<=1,JSON.stringify(state));assert(Math.abs(state.info.x)<1,'top frame spans the whole viewport');assert(Math.abs(state.info.width-state.viewport)<2,'top frame uses the whole viewport');
- assert(state.lower.y>=state.info.y+state.info.height,'navigation follows information frame');
- for(const group of [state.upper,state.left,state.right])for(const [i,a]of group.entries()){
-  assert(a.width>=44&&a.height>=44&&a.x>=0&&a.x+a.width<=width+1,JSON.stringify(a));assert.equal(a.radius,'4px');
-  assert(Math.abs(a.y-group[0].y)<1,'group buttons align');if(i)assert(a.x>=group[i-1].x+group[i-1].width+3,'touch areas do not overlap');
- }
- assert(state.left.at(-1).x+state.left.at(-1).width<=state.right[0].x-3,'left and right controls remain separate');
- assert.equal(await p.locator('#noa-nav-favorite').count(),0);assert.equal(await p.locator('#noa-nav-install').getAttribute('href'),'/noa-install.php');
- assert(await p.locator('#noa-menu-find').isVisible());assert.equal(await p.locator('#noa-account-bar .noa-display-settings').count(),0);assert(await p.locator('.noa-mobile-footer .noa-footer-themes').isVisible());assert.equal(await p.locator('#noa-nav-all').isVisible(),!pinned);
- assert(await p.locator('#noa-header-language').isVisible());assert.equal(await p.locator('#noa-header-weather').isVisible(),width>760);assert.equal(await p.locator('#noa-header-clock').isVisible(),width>760);if(width>760)assert.match(await p.locator('#noa-header-clock').innerText(),/[0-9]{2}:[0-9]{2}:[0-9]{2}/);
- if(width<=760){assert(await p.locator('#noa-info-bar .noa-account-brand').isVisible());assert.equal(await p.locator('#noa-header-language>span').isVisible(),false);}
- else{const date=await p.locator('#noa-header-clock span').boundingBox(),time=await p.locator('#noa-header-clock strong').boundingBox(),weather=await p.locator('#noa-header-weather').boundingBox();assert(date.x<time.x&&time.x<weather.x&&weather.x<state.upper[0].x);}
- if(pinned){assert.equal(await p.locator('.noa-sidebar .noa-display-settings').isVisible(),false);assert.equal(await p.locator('.noa-drawer-search').isVisible(),false);}
+ assert(Math.abs(row.bar.x)<1&&Math.abs(row.bar.w-row.viewport)<2);
+ assert.deepEqual(row.items.map(e=>e.id),['noa-nav-all','','noa-nav-back','noa-nav-top','noa-nav-account']);
+ row.items.forEach((e,i)=>{assert(e.h>=44&&e.w>=44&&e.x>=0&&e.x+e.w<=width+1,JSON.stringify(row));if(i){const prev=row.items[i-1];assert(e.x>=prev.x+prev.w-1&&Math.abs(e.y-prev.y)<=1,JSON.stringify(row));}});
+ assert.equal(await p.locator('#noa-nav-all span').isVisible(),false);
+ assert.equal(await p.locator('#noa-menu-find,#noa-find-dialog').count(),0);
+ assert.equal(await p.locator('#noa-menu-drawer #noa-nav-install').getAttribute('href'),'/noa-install.php');
+ assert(await p.locator('.noa-mobile-footer .noa-footer-themes').isVisible());
 }
 async function verifyUtilityActions(p,width,mode){
  await p.evaluate(()=>scrollTo(0,1200));await p.locator('#noa-nav-top').click();await p.waitForFunction(()=>scrollY===0);
- await p.locator('#noa-referral-share').click();const dialog=p.locator('#noa-referral-dialog');await dialog.waitFor();
+ await p.locator('#noa-nav-all').click();await p.locator('#noa-referral-share').click();const dialog=p.locator('#noa-referral-dialog');await dialog.waitFor();
  await dialog.locator('.nrf-primary').waitFor();
  const colors=await dialog.evaluate(d=>({bg:getComputedStyle(d).backgroundColor,surface:getComputedStyle(document.documentElement).getPropertyValue('--noa-surface').trim(),radius:getComputedStyle(d).borderRadius,overflow:d.scrollWidth-d.clientWidth}));
  assert.equal(colors.radius,'4px');assert(colors.overflow<=1);assert.equal(colors.bg,mode==='noa-ivory'?'rgb(245, 246, 248)':'rgb(25, 34, 47)');

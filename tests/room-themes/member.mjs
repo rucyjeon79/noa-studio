@@ -22,10 +22,9 @@ try{
   assert(await p.locator('#noa-my-account').isVisible());
   assert((await p.locator('.noa-level-line').innerText()).includes(role==='vip'?'LEVEL 4':'LEVEL 3'),'the isolated entitlement reader renders the correct member level');
   assert(await p.locator('.noa-my-gift-actions').isVisible(),'existing gift shortcuts remain available');
-  const pinned=width>=1200;
   const g=await p.evaluate(()=>{const r=document.querySelector('main').getBoundingClientRect();return {x:r.x,contentWidth:r.width,overflow:document.documentElement.scrollWidth-innerWidth};});
-  assert(g.overflow<=1&&g.x>=(pinned?220:0),JSON.stringify({width,theme,role,g}));
-  assert.equal(await p.locator('#noa-menu-drawer').isVisible(),pinned);
+  assert(g.overflow<=1&&g.x>=0,JSON.stringify({width,theme,role,g}));
+  assert.equal(await p.locator('#noa-menu-drawer').isVisible(),false);
   assert.equal(await p.locator('#noa-menu-drawer [data-noa-nav=music]').getAttribute('aria-disabled'),null,'member navigation remains enabled');
   assert.deepEqual(errors,[]);
   await p.screenshot({path:out+'/my-'+role+'-'+theme+'-'+width+'.png'});

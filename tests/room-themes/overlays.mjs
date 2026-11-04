@@ -11,7 +11,7 @@ try{
   const c=await browser.newContext({viewport:{width,height},timezoneId:'Asia/Seoul',serviceWorkers:'block',reducedMotion:'reduce'}),p=await c.newPage(),errors=[],writes=[];
   p.on('pageerror',e=>errors.push(e.message));p.on('request',r=>{if(r.method()!=='GET'&&new URL(r.url()).origin===base)writes.push(new URL(r.url()).pathname);});
   await c.addInitScript(theme=>localStorage.setItem('noa-ui-selection-v2',JSON.stringify({theme})),mode);
-  if(phase==='candidate')for(const name of ['noa-account.js','noa-starlight.css','noa-voice.js','noa-ainoa.css','noa-amt-fan.js','noa-amt-fan.css'])await c.route('**/'+name+'*',r=>r.fulfill({body:readFileSync(source+'/deploy/'+name),contentType:name.endsWith('.js')?'text/javascript':'text/css'}));
+  if(phase==='candidate')for(const name of ['noa-ui.js','noa-account.js','noa-starlight.css','noa-voice.js','noa-ainoa.css','noa-amt-fan.js','noa-amt-fan.css'])await c.route('**/'+name+'*',r=>r.fulfill({body:readFileSync(source+'/deploy/'+name),contentType:name.endsWith('.js')?'text/javascript':'text/css'}));
   // Isolated account facts reproduce the signed-in screenshot without any sign-in or account writes.
   const member=width===390||width===1600;
   await c.route('**/noa-ainoa.php?action=welcome',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({ok:true,member,accountKey:'overlay-fixture',displayName:member?'검증회원':'방문자',subscription:width===390?'관리자 이용':'일반회원',remainingDays:null,balance:member?1234:null})}));
@@ -40,7 +40,7 @@ try{
   const bubble=await tip.boundingBox(),nav=await p.locator('.noa-mobile-nav').boundingBox();assert(bubble.x>=0&&bubble.x+bubble.width<=width+1&&bubble.y>=0&&bubble.y+bubble.height<=height,'welcome remains within the viewport');if(nav?.height)assert(bubble.y+bubble.height<=nav.y-8,'welcome clears the bottom navigation');
   await p.screenshot({path:out+'/welcome-'+mode+'-'+width+'.png'});
   // Reopening a pre-existing dialog (only its open attribute changes) pauses an already visible greeting.
-  await p.locator('#noa-menu-find').click();await p.waitForFunction(()=>document.querySelector('.ainoa-tip').hidden);
+  await p.locator('#noa-nav-all').click();await p.waitForFunction(()=>document.querySelector('.ainoa-tip').hidden);
   await p.clock.fastForward(30000);await p.keyboard.press('Escape');await tip.waitFor({state:'visible'});
   assert((await tip.innerText()).includes(member?'1,234P':'비로그인'),'paused greeting survives longer than its original lifetime');
   await tip.locator('.ainoa-message-dismiss').click();

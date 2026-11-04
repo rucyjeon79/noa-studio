@@ -58,12 +58,6 @@ function renderUi(scope){
  }
  visit(scope);
 }
-function restoreClone(source,copy){
- const slots=bindings.get(source);
- if(slots)for(const [key,b]of Object.entries(slots)){if(key==='text')copy.nodeValue=b.source;else copy.setAttribute(key,b.source);}
- for(let i=0;i<source.childNodes.length;i++)restoreClone(source.childNodes[i],copy.childNodes[i]);
-}
-
 let catalogReady=false;const langIndex={en:0,ja:1,th:2};let config=null,state=null,revision=0,remote=null,dirty=false;
 const themeStorageKey='noa-ui-selection-v2';
 const safeRead=k=>{try{return localStorage.getItem(k)}catch{return null}};const safeWrite=(k,v)=>{try{localStorage.setItem(k,v)}catch{}};
@@ -138,10 +132,10 @@ function shell(){if(themeOnly||admin||document.querySelector('.noa-sidebar'))ret
  signature.append(landscape,appearance);
  const oldFooter=document.querySelector('.noa-footer,.ne-footer');if(oldFooter)oldFooter.before(mobileFooter);else if(document.querySelector('main'))document.querySelector('main').after(mobileFooter);else document.body.append(mobileFooter);wideShell(side);window.NoaBrand?.apply();markLabels();}
 
-/* One navigation: pinned on wide landscape screens, modal on compact screens. */
+/* A single modal drawer owns menu search and app utilities at every width. */
 function wideShell(side){
  const head=document.createElement('header');head.className='noa-drawer-head';head.append(side.querySelector('.noa-logo'));
- const close=document.createElement('button');close.type='button';close.className='noa-drawer-close';close.setAttribute('aria-label','전체 메뉴 닫기');close.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 6 12 12M18 6 6 18"/></svg>';close.onclick=()=>side.close();head.append(close);side.prepend(head);
+ const close=document.createElement('button');close.type='button';close.className='noa-drawer-close';close.setAttribute('aria-label','전체 메뉴 닫기');close.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 6 12 12M18 6 6 18"/></svg>';close.onclick=()=>dismiss();head.append(close);side.prepend(head);
  const profile=document.createElement('section');profile.className='noa-drawer-profile';profile.setAttribute('aria-label','내 계정');
  const identity=document.createElement('strong'),welcome=document.createElement('p'),account=document.createElement('a');account.className='noa-button';profile.append(identity,welcome,account);head.after(profile);
  const updateAccount=()=>{identity.textContent=access.member?'반가워요, 별무리':'음악으로 이어지는 우리';welcome.textContent=access.member?'나의 음악과 이용 내역을 한곳에서 만나세요.':'로그인하고 노아의 음악과 이야기를 만나세요.';account.href=access.member?'/noa-my.php':'/bbs/login.php';account.textContent=access.member?'MY 스튜디오 열기':'로그인 · 시작하기';};updateAccount();window.addEventListener('noa-membership-status',updateAccount);
@@ -154,38 +148,38 @@ function wideShell(side){
  secondary.id='noa-drawer-secondary';side.querySelector('.noa-menu').after(secondary);
  const empty=document.createElement('p');empty.className='noa-menu-empty';empty.textContent='일치하는 메뉴가 없어요.';empty.setAttribute('role','status');empty.hidden=true;secondary.after(empty);
  const search=searchBox.querySelector('input');search.addEventListener('input',()=>{const q=search.value.trim().toLocaleLowerCase();let found=0;for(const a of side.querySelectorAll('.noa-menu a,.noa-drawer-secondary a')){a.hidden=!a.textContent.toLocaleLowerCase().includes(q);if(!a.hidden)found++;}for(const group of secondary.children)group.hidden=![...group.querySelectorAll('a')].some(a=>!a.hidden);empty.hidden=found>0;});
- const wide=matchMedia('(min-width:1200px) and (orientation:landscape)');
- const syncMenuState=()=>{const all=document.getElementById('noa-nav-all');all?.setAttribute('aria-expanded',String(!wide.matches&&side.open));if(wide.matches)all?.removeAttribute('aria-haspopup');else all?.setAttribute('aria-haspopup','dialog');root.classList.toggle('noa-menu-open',side.matches(':modal'));};
- const syncDock=()=>{
-  const previous=document.activeElement,wasInside=side.contains(previous);
-  if(side.open)side.close();
-  root.classList.toggle('noa-menu-pinned',wide.matches);search.value='';search.dispatchEvent(new Event('input'));
-  if(wide.matches){side.setAttribute('role','complementary');side.show();if(previous===document.body)document.activeElement?.blur();else previous?.focus({preventScroll:true});}
-  else{side.removeAttribute('role');if(wasInside)document.getElementById('noa-nav-all')?.focus({preventScroll:true});}
-  syncMenuState();window.dispatchEvent(new Event('noa-shell-layout'));
- };
- wide.addEventListener('change',syncDock);
- const open=()=>{if(wide.matches)return;if(!side.open)side.showModal();syncMenuState();close.focus();};
- side.addEventListener('close',syncMenuState);
- side.addEventListener('cancel',event=>{if(wide.matches)event.preventDefault();});
- side.addEventListener('click',e=>{if(wide.matches)return;if(e.target===side){const r=side.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)side.close();}if(e.target.closest('[data-noa-display-settings]'))side.close();});
- syncDock();
- const installHeader=()=>{const bar=document.getElementById('noa-account-bar');if(!bar)return false;if(bar.dataset.noaWide)return true;bar.dataset.noaWide='true';
-  const nav=document.createElement('nav');nav.className='noa-primary-nav';nav.setAttribute('aria-label','주요 메뉴');bar.querySelector('.noa-navigation-bar').prepend(nav);
-  const all=document.getElementById('noa-nav-all');all.setAttribute('aria-haspopup','dialog');all.setAttribute('aria-controls',side.id);all.setAttribute('aria-expanded',String(side.open));all.addEventListener('click',e=>{if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();open(false);});
-  const find=document.createElement('button');find.type='button';find.id='noa-menu-find';find.className='noa-header-control';find.setAttribute('aria-label','찾기');find.setAttribute('aria-haspopup','dialog');find.innerHTML=icon('search')+'<span>찾기</span>';find.onclick=()=>{
-   let dialog=document.getElementById('noa-find-dialog');if(dialog){dialog.showModal();dialog.querySelector('input').focus();return;}
-   dialog=document.createElement('dialog');dialog.id='noa-find-dialog';dialog.className='noa-header-dialog';dialog.setAttribute('aria-labelledby','noa-find-title');
-   dialog.innerHTML='<form method="dialog"><button aria-label="찾기 닫기" class="noa-dialog-close">×</button></form><h2 id="noa-find-title">찾기</h2><label for="noa-global-search">원하는 메뉴를 찾아보세요</label><input id="noa-global-search" type="search" placeholder="음원, 공지사항, 이용권…" autocomplete="off"><nav aria-label="찾기 결과"></nav><p role="status" hidden>일치하는 메뉴가 없어요.</p>';
-   const list=dialog.querySelector('nav'),input=dialog.querySelector('input'),empty=dialog.querySelector('[role=status]');
-   for(const a of side.querySelectorAll('.noa-menu a,.noa-drawer-secondary a')){const copy=a.cloneNode(true);restoreClone(a,copy);copy.hidden=false;copy.removeAttribute('aria-current');list.append(copy);}
-   input.oninput=()=>{let count=0;const q=input.value.trim().toLocaleLowerCase();for(const a of list.children){a.hidden=!a.textContent.toLocaleLowerCase().includes(q);if(!a.hidden)count++;}empty.hidden=count>0;};
-   dialog.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();dialog.close();}});list.addEventListener('click',e=>{if(e.target.closest('a[href]'))dialog.close();});
-   dialog.addEventListener('close',()=>find.focus());document.body.append(dialog);dialog.showModal();input.focus();
-  };
-  all.before(find);
-  const locationLabel=document.createElement('span');locationLabel.className='noa-location-label';const section=sectionFor(location.pathname);locationLabel.textContent=section==='home'?'음악과 이야기가 만나는 곳':(menu().find(item=>item[0]===section)?.[1]||document.querySelector('main h1')?.textContent||'NOA STUDIO');bar.prepend(locationLabel);
-  refreshNavigation();syncMenuState();return true;
+ let trigger;
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+ function dismiss(){
+  if(!side.open||side.hasAttribute('data-closing'))return;
+  if(reduced.matches){side.close();return;}
+  side.setAttribute('data-closing','');root.classList.add('noa-menu-leaving');
+  const motion=side.getAnimations().find(a=>a.animationName==='noa-drawer-out');
+  if(motion)motion.finished.then(()=>{if(side.open&&side.hasAttribute('data-closing'))side.close();},()=>{if(side.hasAttribute('data-closing'))side.close();});else side.close();
+ }
+ side.addEventListener('cancel',e=>{e.preventDefault();dismiss();});
+ side.addEventListener('close',()=>{
+  side.removeAttribute('data-closing');root.classList.remove('noa-menu-open','noa-menu-leaving');
+  trigger?.setAttribute('aria-expanded','false');search.value='';search.dispatchEvent(new Event('input'));
+  if(!document.querySelector('dialog:modal'))trigger?.focus({preventScroll:true});
+ });
+ side.addEventListener('click',e=>{
+  if(e.target===side){const r=side.getBoundingClientRect();if(e.clientX<r.left||e.clientX>=r.right||e.clientY<r.top||e.clientY>=r.bottom)dismiss();}
+  else if(e.target.closest('a[href],[data-noa-display-settings]')&&side.open)side.close();
+ });
+ window.addEventListener('pagehide',()=>{if(side.open)side.close();});
+ const installHeader=()=>{
+  const bar=document.getElementById('noa-account-bar'),tools=document.getElementById('noa-drawer-tools');
+  if(!bar||!tools)return false;
+  trigger=document.getElementById('noa-nav-all');
+  trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-controls',side.id);trigger.setAttribute('aria-expanded','false');
+  trigger.addEventListener('click',e=>{
+   if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+   e.preventDefault();if(side.open)return;side.showModal();side.scrollTop=0;
+   root.classList.add('noa-menu-open');trigger.setAttribute('aria-expanded','true');close.focus({preventScroll:true});
+  });
+  head.after(tools,searchBox);tools.hidden=false;
+  refreshNavigation();return true;
  };
  if(!installHeader()){const watch=new MutationObserver(()=>{if(installHeader())watch.disconnect();});watch.observe(document.body,{childList:true,subtree:true});}
  // Move the real feed node so visual order, keyboard order and its existing event handlers agree.

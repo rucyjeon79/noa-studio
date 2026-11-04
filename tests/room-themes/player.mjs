@@ -35,6 +35,7 @@ try{
   const nav=width<760?'.noa-mobile-nav':'.noa-menu';
   for(const path of ['/noa-lounge.php','/noa-shop.php','/']){
    const before=await page.locator('audio').evaluate(a=>a.currentTime);
+   if(width>=760)await page.locator('#noa-nav-all').click();
    await page.locator(nav+' a[href="'+path+'"]').click();
    await page.waitForFunction(path=>document.querySelector('#noa-shell-view')?.contentDocument?.location.pathname===path,path);
    await page.waitForFunction(t=>window.originalAudio===document.querySelector('audio')&&!window.originalAudio.paused&&window.originalAudio.currentTime>t+0.2,before);
@@ -42,8 +43,8 @@ try{
    assert(await page.locator('.noa-two-line').isVisible());
    await page.waitForFunction(()=>document.querySelector('#noa-shell-view')?.contentDocument?.documentElement.hasAttribute('data-noa-shell-child'));
    const frameBox=await page.locator('#noa-shell-view').boundingBox(),dockBox=await page.locator('.noa-two-line').boundingBox();
-   assert.equal(Math.round(frameBox.x),width>=1200?220:0,'retained page clears pinned menu');
-   assert.equal(Math.round(dockBox.x),width>=1200?220:0,'player clears pinned menu');
+   assert.equal(Math.round(frameBox.x),0,'retained page uses the full viewport');
+   assert.equal(Math.round(dockBox.x),0,'player uses the full viewport');
    assert(frameBox.x+frameBox.width<=width+1);
    const childPadding=await page.frameLocator('#noa-shell-view').locator('body').evaluate(b=>parseFloat(getComputedStyle(b).paddingLeft));assert.equal(childPadding,0,'embedded pages do not reserve a second sidebar');
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));

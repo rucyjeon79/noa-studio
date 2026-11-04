@@ -7,6 +7,8 @@ on:
 permissions: {contents: read}
 jobs:
   preflight:
+    env:
+      NOA_MENU_DRAWER: ${{ contains(github.event.head_commit.message, '[menu-drawer]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -48,7 +50,7 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/noa-light" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp tests/header/header.mjs "$RUNNER_TEMP/noa-light/header.mjs"
           node "$RUNNER_TEMP/noa-light/header.mjs"
-          cp tests/room-themes/live.mjs "$RUNNER_TEMP/noa-light/check.mjs"
+          if [ "$NOA_MENU_DRAWER" = true ]; then cp tests/header/drawer-live.mjs "$RUNNER_TEMP/noa-light/check.mjs"; else cp tests/room-themes/live.mjs "$RUNNER_TEMP/noa-light/check.mjs"; fi
           cp tests/room-themes/member.mjs "$RUNNER_TEMP/noa-light/member.mjs"
           cp tests/room-themes/surface-controls.mjs "$RUNNER_TEMP/noa-light/surface-controls.mjs"
           cp tests/room-themes/forms.mjs "$RUNNER_TEMP/noa-light/forms.mjs"
@@ -85,6 +87,7 @@ jobs:
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     env:
       GH_TOKEN: ${{ github.token }}
+      NOA_MENU_DRAWER: ${{ contains(github.event.head_commit.message, '[menu-drawer]') }}
       NOA_SURFACE_POLISH: ${{ contains(github.event.head_commit.message, '[surface-polish]') }}
       NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
       NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
@@ -98,7 +101,7 @@ jobs:
           python -m pip install 'paramiko>=3,<5'
           python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/noa-light" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
-          cp tests/room-themes/live.mjs "$RUNNER_TEMP/noa-light/check.mjs"
+          if [ "$NOA_MENU_DRAWER" = true ]; then cp tests/header/drawer-live.mjs "$RUNNER_TEMP/noa-light/check.mjs"; else cp tests/room-themes/live.mjs "$RUNNER_TEMP/noa-light/check.mjs"; fi
           cp tests/room-themes/overlays.mjs "$RUNNER_TEMP/noa-light/overlays.mjs"
       - name: Activate theme assets and preferences with public hash verification
         id: activate
