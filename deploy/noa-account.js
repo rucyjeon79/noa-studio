@@ -50,22 +50,43 @@
  const clock=document.createElement('time');clock.id='noa-header-clock';clock.innerHTML='<strong></strong><span></span>';info.append(clock);
  const context=document.createElement('div');context.className='noa-info-context';info.append(context);
  const weather=control('내 위치 · 날씨','M12 22s8-7 8-13a8 8 0 1 0-16 0c0 6 8 13 8 13z M15 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0',openWeather);weather.id='noa-header-weather';weather.setAttribute('aria-haspopup','dialog');context.append(weather);
- const language=document.createElement('select');language.id='noa-header-language';language.setAttribute('aria-label','언어 선택');for(const [value,label]of [['ko','한국어'],['ja','日本語'],['en','English'],['th','ไทย']]){const option=document.createElement('option');option.value=value;option.textContent=label;language.append(option);}context.append(language);
- const locale=()=>({ko:'ko-KR',ja:'ja-JP',en:'en-GB',th:'th-TH'}[language.value]||'ko-KR');
- function tick(){const now=new Date();clock.dateTime=now.toISOString();const time=new Intl.DateTimeFormat(locale(),{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(now),date=new Intl.DateTimeFormat(locale(),{year:'numeric',month:'2-digit',day:'2-digit',weekday:'short'}).format(now);if(clock.querySelector('strong').textContent!==time)clock.querySelector('strong').textContent=time;if(clock.querySelector('span').textContent!==date)clock.querySelector('span').textContent=date;}
- function syncLanguage(){const value=window.NoaUI?.getState()?.language;language.value=['ko','ja','en','th'].includes(value)?value:'ko';tick();}
- language.onchange=()=>{window.NoaUI?.setLanguage(language.value);tick();};window.addEventListener('noa-theme',syncLanguage);syncLanguage();
- setInterval(()=>{if(!document.hidden)tick();},1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick();});
+ const compact=matchMedia('(max-width:760px), (hover:none) and (pointer:coarse) and (max-height:600px) and (max-width:1024px)');
+ const languages={ko:'한국어',en:'English',ja:'日本語',th:'ไทย'};
+ // Inline vectors work in browsers without a regional-indicator emoji font.
+ const trigram=(x,y,angle,breaks)=>'<g transform="translate('+x+' '+y+') rotate('+angle+')" fill="#171717">'+[0,1,2].map((n)=>breaks[n]?'<path d="M-2.7 '+(n-1)+'h2.38v.64H-2.7zM.32 '+(n-1)+'H2.7v.64H.32z"/>':'<rect x="-2.7" y="'+(n-1)+'" width="5.4" height=".64"/>').join('')+'</g>';
+ const flagArt={
+ ko:'<path fill="#fff" d="M0 0h30v20H0z"/><g transform="translate(15 10) rotate(34)"><circle r="5" fill="#cd2e3a"/><path d="M-5 0a2.5 2.5 0 0 0 5 0a2.5 2.5 0 0 1 5 0a5 5 0 0 1-10 0" fill="#0047a0"/></g>'+trigram(6.2,4.2,-56,[0,0,0])+trigram(23.8,15.5,-56,[1,1,1])+trigram(23.8,4.2,56,[1,0,1])+trigram(6.2,15.5,56,[0,1,0]),
+ ja:'<path fill="#fff" d="M0 0h30v20H0z"/><circle fill="#bc002d" cx="15" cy="10" r="6"/>',
+ th:'<path fill="#a51931" d="M0 0h30v20H0z"/><path fill="#fff" d="M0 3.33h30v13.34H0z"/><path fill="#2d2a4a" d="M0 6.67h30v6.66H0z"/>',
+ en:'<g transform="scale(.5 .666667)"><path fill="#012169" d="M0 0h60v30H0z"/><path d="m0 0 60 30m0-30L0 30" stroke="white" stroke-width="6"/><path fill="#c8102e" d="M0 0v2.24L25.5 15H30zM60 30v-2.24L34.5 15H30zM60 0h-4.47L30 12.76V15zM0 30h4.47L30 17.24V15z"/><path stroke="white" stroke-width="10" d="M30 0v30M0 15h60"/><path stroke="#c8102e" stroke-width="6" d="M30 0v30M0 15h60"/></g>'
+ };
+ const flag=code=>'<svg class="noa-lang-flag" data-flag="'+code+'" viewBox="0 0 30 20" aria-hidden="true" focusable="false">'+flagArt[code]+'</svg>';
+ const picker=document.createElement('div');picker.className='noa-language-picker';
+ const language=document.createElement('button');language.type='button';language.id='noa-header-language';language.setAttribute('aria-haspopup','dialog');language.setAttribute('aria-controls','noa-language-options');language.setAttribute('aria-expanded','false');language.disabled=true;
+ const choices=document.createElement('div');choices.id='noa-language-options';choices.hidden=true;choices.setAttribute('role','dialog');choices.setAttribute('aria-label','언어 선택');
+ let activeLanguage='ko';const buttons=[];
+ function closeChoices(focus=false){choices.hidden=true;language.setAttribute('aria-expanded','false');if(focus)language.focus();}
+ for(const code of Object.keys(languages)){const b=document.createElement('button');b.type='button';b.dataset.language=code;b.lang=code;b.setAttribute('translate','no');b.innerHTML=flag(code)+'<span>'+languages[code]+'</span>';b.onclick=()=>{window.NoaUI.setLanguage(code);closeChoices(true);};buttons.push(b);choices.append(b);}
+ language.onclick=()=>{if(!choices.hidden){closeChoices(true);return;}choices.hidden=false;language.setAttribute('aria-expanded','true');buttons.find(b=>b.dataset.language===activeLanguage).focus();};
+ picker.addEventListener('keydown',e=>{if(e.key==='Escape'&&!choices.hidden){e.preventDefault();e.stopPropagation();closeChoices(true);}else if(!choices.hidden&&['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();const i=buttons.indexOf(document.activeElement);buttons[e.key==='Home'?0:e.key==='End'?3:(i+(e.key==='ArrowDown'?1:3))%4].focus();}});
+ document.addEventListener('pointerdown',e=>{if(!choices.hidden&&!picker.contains(e.target))closeChoices();});picker.addEventListener('focusout',e=>{if(e.relatedTarget&&!picker.contains(e.relatedTarget))closeChoices();});
+ picker.append(language,choices);context.append(picker);
+ const locale=()=>({ko:'ko-KR',ja:'ja-JP',en:'en-GB',th:'th-TH'}[activeLanguage]);
+ let timeFmt,dateFmt,clockTimer;
+ function tick(){if(compact.matches||document.hidden)return;const now=new Date();clock.dateTime=now.toISOString();const time=timeFmt.format(now),date=dateFmt.format(now);if(clock.firstChild.textContent!==time)clock.firstChild.textContent=time;if(clock.lastChild.textContent!==date)clock.lastChild.textContent=date;}
+ function clockActivity(){clearInterval(clockTimer);if(!compact.matches&&!document.hidden){tick();clockTimer=setInterval(tick,1000);}}
+ function syncLanguage(){const state=window.NoaUI?.getState();activeLanguage=Object.hasOwn(languages,state?.language)?state.language:'ko';language.disabled=!state;language.dataset.language=activeLanguage;language.setAttribute('aria-label',(window.NoaUI?.translate('언어 선택')||'언어 선택')+' · '+languages[activeLanguage]);language.innerHTML=flag(activeLanguage)+'<span lang="'+activeLanguage+'" translate="no">'+languages[activeLanguage]+'</span><i aria-hidden="true"></i>';for(const b of buttons)b.setAttribute('aria-pressed',String(b.dataset.language===activeLanguage));timeFmt=new Intl.DateTimeFormat(locale(),{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});dateFmt=new Intl.DateTimeFormat(locale(),{year:'numeric',month:'2-digit',day:'2-digit',weekday:'short'});tick();}
+ window.addEventListener('noa-theme',syncLanguage);syncLanguage();clockActivity();document.addEventListener('visibilitychange',clockActivity);
  let weatherData=null,weatherBusy=false,weatherRefresh=null;
  const readWeather=()=>{try{return JSON.parse(sessionStorage.getItem('noa-header-weather')||'null');}catch{return null;}};
  const weatherFresh=data=>data&&Number.isFinite(data.temperature)&&Date.parse(data.validUntil)>Date.now()&&Date.parse(data.forecastAt)>Date.now()-7200000;
- function paintWeather(){const label=weather.querySelector('span');if(weatherFresh(weatherData)){label.textContent=weatherData.location+' · '+Math.round(weatherData.temperature)+'° '+weatherData.condition;weather.title=weatherData.location+' 부근 · '+weatherData.condition+' · '+weatherData.temperature+'°C';}else{weatherData=null;label.textContent='내 위치 · 날씨';weather.removeAttribute('title');}weather.setAttribute('aria-label',label.textContent);}
+ function paintWeather(){const label=weather.querySelector('span');if(weatherFresh(weatherData)){label.textContent=weatherData.location+' · '+Math.round(weatherData.temperature)+'° '+(window.NoaUI?.translate(weatherData.condition)||weatherData.condition);weather.title=weatherData.location+' 부근 · '+weatherData.condition+' · '+weatherData.temperature+'°C';}else{weatherData=null;label.textContent='내 위치 · 날씨';weather.removeAttribute('title');}weather.setAttribute('aria-label',label.textContent);}
  function openWeather(){let dialog=document.getElementById('noa-weather-dialog');if(dialog){dialog.showModal();return;}
   dialog=document.createElement('dialog');dialog.id='noa-weather-dialog';dialog.className='noa-header-dialog';dialog.setAttribute('aria-labelledby','noa-weather-title');dialog.innerHTML='<form method="dialog"><button class="noa-dialog-close" aria-label="날씨 닫기">×</button></form><h2 id="noa-weather-title">현재 위치의 날씨</h2><p class="noa-weather-summary"></p><p>위치를 허용하면 지금 머무는 지역의 날씨를 보여드려요. 약 1km 단위의 대략적인 위치만 지역명과 날씨 조회에 사용합니다.</p><button type="button" class="noa-button" data-weather-locate>내 위치로 날씨 보기</button><p role="status" data-weather-status></p><small>날씨: <a href="https://api.met.no/" target="_blank" rel="noopener noreferrer">MET Norway</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a><br>지역명: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap 기여자</a><br>현재 시각에 가까운 예보를 요약해 표시합니다.</small>';
   dialog.querySelector('[data-weather-locate]').onclick=()=>locateWeather();dialog.addEventListener('close',()=>{dialog.remove();weather.focus();},{once:true});document.body.append(dialog);updateWeatherDialog();dialog.showModal();
  }
  function updateWeatherDialog(message=''){const dialog=document.getElementById('noa-weather-dialog');if(!dialog)return;const summary=dialog.querySelector('.noa-weather-summary');summary.textContent=weatherFresh(weatherData)?weatherData.location+' · '+weatherData.condition+' · '+weatherData.temperature+'°C':'';summary.hidden=!summary.textContent;dialog.querySelector('[data-weather-status]').textContent=message;dialog.querySelector('[data-weather-locate]').disabled=weatherBusy;}
- async function locateWeather(){if(weatherBusy)return;if(!navigator.geolocation){updateWeatherDialog('이 브라우저에서는 위치를 확인할 수 없어요.');return;}
+ async function locateWeather(){if(compact.matches||weatherBusy)return;if(!navigator.geolocation){updateWeatherDialog('이 브라우저에서는 위치를 확인할 수 없어요.');return;}
   weatherBusy=true;weather.setAttribute('aria-busy','true');updateWeatherDialog('현재 위치와 날씨를 확인하고 있어요.');
   try{
    const position=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:false,timeout:12000,maximumAge:300000}));
@@ -78,10 +99,10 @@
   }catch(error){weatherData=null;try{sessionStorage.removeItem('noa-header-weather');}catch{}paintWeather();const denied=error.code===1;updateWeatherDialog(denied?'위치 사용이 꺼져 있어요. 브라우저의 사이트 설정에서 위치를 허용해 주세요.':'지금은 날씨를 확인하지 못했어요. 잠시 후 다시 눌러 주세요.');}
   finally{weatherBusy=false;weather.removeAttribute('aria-busy');const button=document.querySelector('[data-weather-locate]');if(button)button.disabled=false;scheduleWeather();}
  }
- function scheduleWeather(){clearTimeout(weatherRefresh);weatherRefresh=setTimeout(async()=>{paintWeather();if(document.hidden)return;try{if(localStorage.getItem('noa-weather-enabled')==='1'&&(await navigator.permissions.query({name:'geolocation'})).state==='granted')locateWeather();}catch{}},weatherData?Math.max(60000,Date.parse(weatherData.validUntil)-Date.now()):900000);}
- weatherData=readWeather();paintWeather();scheduleWeather();
- async function resumeWeather(){paintWeather();try{if(!weatherData&&localStorage.getItem('noa-weather-enabled')==='1'&&(await navigator.permissions.query({name:'geolocation'})).state==='granted')locateWeather();}catch{}}
- document.addEventListener('visibilitychange',()=>{if(!document.hidden)resumeWeather();});resumeWeather();
+ function scheduleWeather(){clearTimeout(weatherRefresh);if(compact.matches)return;weatherRefresh=setTimeout(async()=>{paintWeather();if(document.hidden)return;try{if(localStorage.getItem('noa-weather-enabled')==='1'&&(await navigator.permissions.query({name:'geolocation'})).state==='granted')locateWeather();}catch{}},weatherData?Math.max(60000,Date.parse(weatherData.validUntil)-Date.now()):900000);}
+ weatherData=readWeather();paintWeather();scheduleWeather();window.addEventListener('noa-theme',paintWeather);
+ async function resumeWeather(){if(compact.matches)return;paintWeather();try{if(!weatherData&&localStorage.getItem('noa-weather-enabled')==='1'&&(await navigator.permissions.query({name:'geolocation'})).state==='granted')locateWeather();}catch{}}
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)resumeWeather();});compact.addEventListener('change',()=>{clockActivity();scheduleWeather();if(compact.matches)document.getElementById('noa-weather-dialog')?.close();else resumeWeather();});resumeWeather();
 
  const summary=document.getElementById('noa-my-account'),status=document.getElementById('noa-my-account-status');
  const write=(id,value)=>{const node=document.getElementById(id);if(node)node.textContent=value;};
