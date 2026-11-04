@@ -42,11 +42,12 @@ jobs:
           node --test tests/starlight/navigation.test.mjs
           php -l deploy/noa-sitemap.php
           php tests/sitemap/registry_test.php
+          mkdir -p "$RUNNER_TEMP/drawer"
+          php tests/sitemap/drawer_access.php "$RUNNER_TEMP/drawer"
       - name: Prepare browser checks
         run: |
           python scripts/qa/noa-qa-font.py
-          npm install --prefix "$RUNNER_TEMP/drawer" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
-          php tests/sitemap/drawer_access.php "$RUNNER_TEMP/drawer"
+          timeout 90s npm install --prefix "$RUNNER_TEMP/drawer" --no-save --ignore-scripts --package-lock=false --no-audit --no-fund --fetch-timeout=20000 --fetch-retries=1 playwright@1.56.1
           cp tests/header/drawer-layout.mjs "$RUNNER_TEMP/drawer/check.mjs"
       - name: Check menu and footer at every viewport
         run: timeout 180s node "$RUNNER_TEMP/drawer/check.mjs"
@@ -66,7 +67,7 @@ jobs:
       - run: |
           python -m pip install 'paramiko>=3,<5'
           python scripts/qa/noa-qa-font.py
-          npm install --prefix "$RUNNER_TEMP/drawer" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          timeout 90s npm install --prefix "$RUNNER_TEMP/drawer" --no-save --ignore-scripts --package-lock=false --no-audit --no-fund --fetch-timeout=20000 --fetch-retries=1 playwright@1.56.1
           php -l deploy/noa-sitemap.php
           php tests/sitemap/registry_test.php
           php tests/sitemap/drawer_access.php "$RUNNER_TEMP/drawer"
