@@ -15,7 +15,7 @@ async function assertMoves(page) {
   const browser = await chromium.launch({channel:'chrome',headless:true});
   try {
     for (const options of [
-      {...devices['Pixel 7'], viewport:{width:390,height:844}},
+      {...devices['Pixel 7'], reducedMotion:'reduce', viewport:{width:390,height:844}},
       {viewport:{width:1440,height:920}}
     ]) {
       const width=options.viewport.width, touch=!!options.hasTouch;
@@ -34,6 +34,8 @@ async function assertMoves(page) {
         await links.first().waitFor({state:'visible'});
         assert.deepEqual(await links.allTextContents(),feed.map(x=>x.title));
         assert.deepEqual(await links.evaluateAll(nodes=>nodes.map(a=>a.href)),feed.map(x=>x.url));
+        // Autoplay must start in a fresh browser before any tap, even with reduced motion.
+        await assertMoves(page);
         for (const close of await page.locator('#hd_pop .hd_pops_reject:visible').all()) await close.click();
         await strip.scrollIntoViewIfNeeded();
         await assertMoves(page);
@@ -64,13 +66,12 @@ async function assertMoves(page) {
         await pause.click();
         await play.waitFor({state:'visible'});
         await page.waitForFunction(()=>document.querySelector('.bn-news-track').getAnimations()[0]?.playState==='paused');
-        await page.emulateMedia({reducedMotion:'reduce'});
-        await page.waitForFunction(()=>document.querySelector('#bn-news-strip').classList.contains('bn-still'));
-        assert.equal(await strip.locator('.bn-news-group[aria-hidden]').isVisible(),false);
-        if (touch) await play.tap(); else await play.click();
-        await assertMoves(page);
         if (touch) {
+          // A fresh home load must start even if the previous visit was paused.
           await page.reload({waitUntil:'domcontentloaded'});
+          await assertMoves(page);
+        } else {
+          await play.click();
           await assertMoves(page);
         }
         const link=article.url;

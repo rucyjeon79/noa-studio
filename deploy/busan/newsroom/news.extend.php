@@ -13,7 +13,7 @@ function busan_news_home_strip() {
         <a class="bn-news-all" href="<?=htmlspecialchars($board_url, ENT_QUOTES)?>" aria-label="뉴스 전체보기">전체보기</a>
       </section>
     </template>
-    <script src="<?=htmlspecialchars($root.'/ticker.js?v=3', ENT_QUOTES)?>" defer></script>
+    <script src="<?=htmlspecialchars($root.'/ticker.js?v=4', ENT_QUOTES)?>" defer></script>
     <?php
 }
 
