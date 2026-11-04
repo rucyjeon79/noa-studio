@@ -1,11 +1,25 @@
 const assert = require('node:assert/strict');
-const { chromium } = require('playwright-core');
+const { chromium, devices } = require('playwright-core');
 const origin = 'https://skhnslu-busan.com';
+// Read physical positions so a running timer or an animation name cannot pass a frozen ticker.
+async function assertMoves(page) {
+  const selector = '.bn-news-group a';
+  const x = await page.locator(selector).first().evaluate(a => a.getBoundingClientRect().left);
+  await page.waitForFunction(({selector,x}) => {
+    const a = document.querySelector(selector);
+    return a && Math.abs(a.getBoundingClientRect().left-x)>12;
+  }, {selector,x}, {timeout:6000});
+}
+
 (async()=>{
   const browser = await chromium.launch({channel:'chrome',headless:true});
   try {
-    for (const width of [390, 1440]) {
-      const page=await browser.newPage({viewport:{width,height:920}});
+    for (const options of [
+      {...devices['Pixel 7'], viewport:{width:390,height:844}},
+      {viewport:{width:1440,height:920}}
+    ]) {
+      const width=options.viewport.width, touch=!!options.hasTouch;
+      const page=await browser.newPage(options);
       await page.goto(origin+'/',{waitUntil:'domcontentloaded'});
       const strip=page.locator('#contentsWrap > .kvWrap + #bn-news-strip');
       await strip.waitFor({state:'visible'});
@@ -20,21 +34,52 @@ const origin = 'https://skhnslu-busan.com';
         await links.first().waitFor({state:'visible'});
         assert.deepEqual(await links.allTextContents(),feed.map(x=>x.title));
         assert.deepEqual(await links.evaluateAll(nodes=>nodes.map(a=>a.href)),feed.map(x=>x.url));
-        const start=await links.first().evaluate(el=>el.getBoundingClientRect().x);
-        await page.waitForFunction(x=>document.querySelector('.bn-news-group a').getBoundingClientRect().x<x-3,start);
+        for (const close of await page.locator('#hd_pop .hd_pops_reject:visible').all()) await close.click();
+        await strip.scrollIntoViewIfNeeded();
+        await assertMoves(page);
         const pause=strip.getByRole('button',{name:'뉴스 흐름 일시정지'});
-        await pause.evaluate(el=>el.click());
-        assert.equal(await links.first().evaluate(el=>getComputedStyle(el.parentElement).animationPlayState),'paused');
+        const play=strip.getByRole('button',{name:'뉴스 흐름 재생'});
+        let article=feed[0];
+        if (touch) {
+          assert(await page.evaluate(()=>navigator.maxTouchPoints>0 && matchMedia('(pointer:coarse)').matches));
+          // The second title must actually enter the visible window on its own.
+          if (feed.length>1) await page.waitForFunction(()=>{
+            const box=document.querySelector('.bn-news-window').getBoundingClientRect();
+            const second=document.querySelectorAll('.bn-news-group:first-child a')[1].getBoundingClientRect();
+            return second.left<box.left+box.width*.55 && second.right>box.left;
+          },null,{timeout:45000});
+          await pause.tap();
+          const target=await strip.locator('.bn-news-window').evaluate(el=>{
+            const rect=el.getBoundingClientRect(), x=rect.left+rect.width*.7, y=rect.top+rect.height/2;
+            return {x,y,url:document.elementFromPoint(x,y)?.closest('a')?.href};
+          });
+          article=feed.find(x=>x.url===target.url);
+          assert(article,'a visible headline must be tappable');
+          await play.tap();
+          await page.touchscreen.tap(target.x,target.y);
+          await page.waitForURL(article.url,{timeout:10000});
+          await page.goBack({waitUntil:'domcontentloaded'});
+          await assertMoves(page);
+        }
+        await pause.click();
+        await play.waitFor({state:'visible'});
+        await page.waitForFunction(()=>document.querySelector('.bn-news-track').getAnimations()[0]?.playState==='paused');
         await page.emulateMedia({reducedMotion:'reduce'});
-        await page.waitForFunction(()=>getComputedStyle(document.querySelector('.bn-news-group')).animationName==='none');
+        await page.waitForFunction(()=>document.querySelector('#bn-news-strip').classList.contains('bn-still'));
         assert.equal(await strip.locator('.bn-news-group[aria-hidden]').isVisible(),false);
-        const link=await links.first().getAttribute('href');
+        if (touch) await play.tap(); else await play.click();
+        await assertMoves(page);
+        if (touch) {
+          await page.reload({waitUntil:'domcontentloaded'});
+          await assertMoves(page);
+        }
+        const link=article.url;
         await page.goto(link,{waitUntil:'domcontentloaded'});
         const card=page.locator('#bo_v_con a.bn-source-card');
         await card.waitFor({state:'visible'});
         assert.equal(await card.count(),1);
         assert.match(await card.locator('.bn-source-meta').innerText(),/\d{4}-\d{2}-\d{2}/);
-        assert.equal(await card.locator('.bn-source-title').innerText(),feed[0].title);
+        assert.equal(await card.locator('.bn-source-title').innerText(),article.title);
         const url=new URL(await card.getAttribute('href'));
         assert.equal(url.protocol,'https:');
         assert((await card.innerText()).includes(url.hostname));

@@ -7,20 +7,42 @@
   const track = strip.querySelector('.bn-news-track');
   const button = strip.querySelector('button');
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
-  let signature, paused = false, loading = false;
+  const viewport = strip.querySelector('.bn-news-window');
+  let signature, loading = false, animation, distance = 0;
+  let hovering = false, keyboard = false, tabbing = false;
+
+  function prefersStill() {
+    try { return motion.matches && localStorage.getItem('bn-reduced-motion-play') !== 'yes'; }
+    catch (_) { return motion.matches; }
+  }
+  let still = prefersStill(), paused = still;
 
   function setMode() {
-    strip.classList.toggle('bn-still', motion.matches);
-    strip.classList.toggle('bn-paused', paused);
+    const staticList = still || keyboard;
+    strip.classList.toggle('bn-still', staticList);
+    if (animation) {
+      if (staticList) animation.currentTime = 0;
+      if (paused || hovering || staticList || document.hidden) animation.pause();
+      else animation.play();
+    }
     button.textContent = paused ? '▶' : 'Ⅱ';
     button.title = paused ? '뉴스 흐름 재생' : '뉴스 흐름 일시정지';
     button.setAttribute('aria-label', button.title);
-    button.hidden = motion.matches || !track.querySelector('.bn-news-group');
+    button.hidden = !track.querySelector('.bn-news-group');
   }
 
   function setSpeed() {
     const group = track.querySelector('.bn-news-group');
-    if (group) track.style.setProperty('--bn-cycle', Math.max(1, group.offsetWidth / 40) + 's');
+    const width = group ? group.getBoundingClientRect().width : 0;
+    if (width === distance) return;
+    const time = animation ? Number(animation.currentTime) : 0;
+    if (animation) animation.cancel();
+    distance = width;
+    animation = width ? track.animate([
+      {transform:'translate3d(0,0,0)'}, {transform:'translate3d(-' + width + 'px,0,0)'}
+    ], {duration:width * 25, iterations:Infinity, easing:'linear'}) : null;
+    if (animation) animation.currentTime = time % (width * 25);
+    setMode();
   }
 
   function render(items) {
@@ -38,10 +60,10 @@
       copy.setAttribute('aria-hidden', 'true');
       for (const link of copy.children) link.tabIndex = -1;
       track.replaceChildren(group, copy);
-      setSpeed();
     } else {
       track.textContent = '최근 한 달 새 소식이 없습니다';
     }
+    setSpeed();
     setMode();
   }
 
@@ -62,11 +84,49 @@
     finally { loading = false; }
   }
 
-  button.addEventListener('click', () => { paused = !paused; setMode(); });
-  motion.addEventListener('change', setMode);
-  new ResizeObserver(setSpeed).observe(strip.querySelector('.bn-news-window'));
-  document.fonts.ready.then(setSpeed);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+  button.addEventListener('click', () => {
+    paused = !paused;
+    if (motion.matches) {
+      still = paused;
+      try {
+        if (paused) localStorage.removeItem('bn-reduced-motion-play');
+        else localStorage.setItem('bn-reduced-motion-play', 'yes');
+      } catch (_) { /* The choice still applies for this visit. */ }
+    }
+    if (!paused) viewport.scrollLeft = 0;
+    setMode();
+  });
+  const onMotionChange = () => { still = prefersStill(); paused = still; setMode(); };
+  if (motion.addEventListener) motion.addEventListener('change', onMotionChange);
+  else motion.addListener(onMotionChange);
+
+  viewport.addEventListener('pointerenter', event => {
+    hovering = event.pointerType === 'mouse' && matchMedia('(hover: hover) and (pointer: fine)').matches;
+    setMode();
+  });
+  viewport.addEventListener('pointerleave', () => { hovering = false; setMode(); });
+  viewport.addEventListener('pointerdown', () => { keyboard = false; hovering = false; setMode(); });
+  viewport.addEventListener('focusin', () => {
+    keyboard = tabbing;
+    setMode();
+  });
+  viewport.addEventListener('focusout', event => {
+    if (!viewport.contains(event.relatedTarget) && keyboard) {
+      keyboard = false;
+      viewport.scrollLeft = 0;
+      setMode();
+    }
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Tab') tabbing = true;
+  });
+  document.addEventListener('pointerdown', () => { tabbing = false; }, true);
+
+  if ('ResizeObserver' in window) new ResizeObserver(setSpeed).observe(viewport);
+  else window.addEventListener('resize', setSpeed);
+  if (document.fonts) document.fonts.ready.then(setSpeed);
+  document.addEventListener('visibilitychange', () => { setMode(); if (!document.hidden) refresh(); });
+  window.addEventListener('pageshow', () => { hovering = false; setSpeed(); setMode(); refresh(); });
   refresh();
   setInterval(() => { if (!document.hidden) refresh(); }, 60000);
 })();
