@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
 # Approved hero-first home, partner banner positions and personal listening and optional daily fortune integration (#355).
 # Preserve the current accepted page instead of comparing against the superseded layout.
-BASE_COMMIT='8f026f7d7e7b15abfab021d25dc5f3a9e64bfa38'
+BASE_COMMIT='65358d83440a78fbceff4c8078f33ff0f7dbb3d2'
 parser=argparse.ArgumentParser();parser.add_argument('--host-source',type=Path);args=parser.parse_args()
 candidate=(ROOT/'deploy/noa-app/home.php').read_bytes()
 baseline=args.host_source.read_bytes()if args.host_source else subprocess.check_output(['git','show',BASE_COMMIT+':deploy/noa-app/home.php'],cwd=ROOT)
@@ -30,6 +30,10 @@ def outside_approved_hero(source):
   assert count==1,'one approved hero scope required'
  source=re.sub(rb'/noa-hero[.]js[?]v=[^"\s]+',b'/noa-hero.js?v=APPROVED_RUNTIME',source)
  source=re.sub(rb'/noa-ui[.](css|js)[?]v=[^"\s]+',lambda m:b'/noa-ui.'+m[1]+b'?v=APPROVED_UI',source)
+ # The home fortune invitation is visible before setup. Guard the neighboring content.
+ source,n=re.subn(rb'<section id="noa-daily-fortune"[^>]*>.*?</section>',b'<section id="noa-daily-fortune"></section>',source,flags=re.S)
+ assert n==1,'one daily fortune card expected'
+ source=re.sub(rb'(/noa-listening[.]css)[?]v=[^"\s]+',rb'\1?v=APPROVED_LISTENING',source)
  # Listening fixes may advance cache versions without changing HOME content or geometry.
  source=re.sub(rb'(/noa-listening(?:-model)?[.]js)[?]v=[^"\s]+',rb'\1?v=APPROVED_LISTENING',source)
  return source

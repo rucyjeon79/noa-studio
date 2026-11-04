@@ -824,7 +824,7 @@ html.noa-shell-wide[data-noa-theme]{--noa-control-radius:4px;--noa-card-radius:4
 
 /* One spacing rhythm, without adding margins on top of the home grid gap. */
 html.noa-shell-wide[data-noa-theme][data-noa-precision] .noa-main{row-gap:var(--noa-stack-gap)}
-html.noa-shell-wide[data-noa-theme] body .noa-main>:is(#noa-referral-banner,#noa-listening,.noa-monthly-benefits,.noa-home-banner){margin-block:0}
+html.noa-shell-wide[data-noa-theme] body .noa-main>:is(#noa-referral-banner,#noa-listening,#noa-daily-fortune,.noa-monthly-benefits,.noa-home-banner){margin-block:0}
 html.noa-shell-wide[data-noa-theme] body #noa-listening{padding:var(--noa-panel-padding);border-radius:var(--noa-card-radius)}
 html.noa-shell-wide[data-noa-theme] body #noa-listening .nl-primary{color:var(--noa-accentText)}
 html.noa-shell-wide[data-noa-theme] body #noa-listening .nl-track img{border-radius:var(--noa-control-radius)}
@@ -921,3 +921,26 @@ html.noa-shell-wide[data-noa-theme] .noa-header-dialog{box-sizing:border-box;wid
 @media(hover:none) and (pointer:coarse) and (max-height:600px) and (max-width:1024px){
  #noa-account-bar #noa-header-clock,#noa-account-bar #noa-header-weather{display:none!important}
 }
+
+/* Keep the top frame in reading order on both sides of the desktop rail. */
+html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-info-context{margin:0;justify-content:flex-start}
+html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-info-actions{margin-inline-start:auto}
+html.noa-shell-wide[data-noa-theme] body #noa-header-clock{flex-direction:row;align-items:center}
+html.noa-shell-wide .noa-mobile-footer .noa-footer-landscape{display:block;width:100%;max-width:420px;height:clamp(80px,10vw,132px);object-fit:cover;border-radius:var(--noa-card-radius)}
+html.noa-shell-wide .noa-mobile-footer .noa-display-settings{display:inline-flex;align-items:center;justify-self:start;min-height:44px;gap:8px;margin:0}
+html.noa-shell-wide .noa-mobile-footer .noa-sidebar-signature{align-content:start;gap:10px}
+@media(max-width:760px), (hover:none) and (pointer:coarse) and (max-height:600px) and (max-width:1024px){
+ html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-info-context{display:none}
+ html.noa-shell-wide[data-noa-theme] body #noa-info-bar .noa-account-brand{display:inline-flex;position:static;align-items:center;gap:8px;margin:0;min-height:44px;flex:none;width:auto;padding:0;text-decoration:none;color:var(--noa-text)}
+ html.noa-shell-wide[data-noa-theme] body #noa-info-bar .noa-account-brand img{display:block;width:30px;height:30px;object-fit:contain}
+ html.noa-shell-wide[data-noa-theme] body #noa-info-bar .noa-account-brand span{display:inline;font-size:12px;font-weight:700;letter-spacing:.08em;white-space:nowrap}
+ html.noa-shell-wide[data-noa-theme] body #noa-header-language{display:flex;justify-content:center;width:44px;min-width:44px;height:44px;padding:0}
+ #noa-account-bar #noa-header-language :is(span,i){display:none}
+}
+@media(min-width:761px){
+ html.noa-shell-wide .noa-hero[data-home-section=hero]>.noa-hero-copy{padding-block:18px;gap:12px}
+ html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-pick{min-height:48px;padding-block:4px}
+ html.noa-shell-wide .noa-hero[data-home-section=hero] .noa-hero-pick img{width:64px;height:38px}
+}
+
+#noa-hero-picks .noa-hero-pick[hidden]{display:none!important}

@@ -1,7 +1,24 @@
 <?php
 /** Additive common styles: preserve active theme, skins, forms and all GnuBoard core files. */
 if(!defined('_GNUBOARD_'))exit;
+/** Resolve the visitor's palette in the head, before styles or body content can paint. */
+function noa_first_paint_theme($html){
+ if(str_starts_with($_SERVER['REQUEST_URI']??'', '/adm/')||str_contains($html,'id="noa-first-paint"'))return $html;
+ $script=<<<'NOA'
+<script id="noa-first-paint">(()=>{
+ const root=document.documentElement;
+ let choice='auto';
+ try{const saved=JSON.parse(localStorage.getItem('noa-ui-selection-v2')||localStorage.getItem('noa-ui-selection')||'null');if(['noa-ivory','noa-studio'].includes(saved?.theme))choice=saved.theme;}catch{}
+ const hour=new Date().getHours(),light=choice==='auto'?hour>=9&&hour<21:choice==='noa-ivory';
+ root.dataset.noaTheme=light?'noa-ivory':'noa-studio';root.dataset.noaThemePreference=choice;
+ root.style.colorScheme=light?'light':'dark';
+ root.style.backgroundColor=light?'#FFFFFF':'#10151F';
+})();</script>
+NOA;
+ return preg_replace_callback('~<head\b[^>]*>~i',static fn($match)=>$match[0].$script,$html,1);
+}
 function noa_policy_script_revision($html){
+ $html=noa_first_paint_theme($html);
  $html=preg_replace('~<html\b(?![^>]*data-noa-style)~i','<html data-noa-style="starlight"',$html,1);
  // The installed extension lives under /extend; version the actual deployed script.
  $browse=dirname(__DIR__).'/noa-browse.js';
@@ -55,7 +72,7 @@ function noa_design_assets(){
  foreach(['css','js']as $kind){$file=dirname(__DIR__).'/noa-install.'.$kind;if(is_file($file)){$url='/noa-install.'.$kind.'?v='.hash_file('sha256',$file);$ainoa.=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'" defer></script>';}}
  $ainoa.='<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="NOA STUDIO"><link rel="apple-touch-icon" href="/noa-assets/icon-180.png?v=original-symbol-1">';
  $starlight_file=dirname(__DIR__).'/noa-starlight.css';
- $starlight=is_file($starlight_file)?'<meta name="color-scheme" content="dark"><link rel="stylesheet" href="/noa-starlight.css?v='.hash_file('sha256',$starlight_file).'">':'';
+ $starlight=is_file($starlight_file)?'<meta name="color-scheme" content="light dark"><link rel="stylesheet" href="/noa-starlight.css?v='.hash_file('sha256',$starlight_file).'">':'';
  // MY stays in primary navigation; AInoa keeps its existing floating control.
  // Standalone views do not call GnuBoard html_end(); inject only completed HTML.
  if(!$native){
