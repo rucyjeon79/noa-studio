@@ -4,6 +4,32 @@ const server=live?null:spawn('php',['-S','127.0.0.1:8137','tests/listening/route
 let serverLog='';server?.stderr.on('data',chunk=>{serverLog+=chunk.toString();});
 if(server)for(let i=0;i<60;i++){try{await fetch(base);break;}catch{await new Promise(r=>setTimeout(r,100));}}
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});const report={live,cases:[],errors:[]};let activePage=null;
+async function checkMoodLayout(page,width){
+ const group=page.getByRole('group',{name:'음악 분위기'});
+ const buttons=group.locator('button[data-mood]');
+ assert.equal(await buttons.count(),8);
+ const layout=await group.evaluate(group=>{
+  const buttons=[...group.querySelectorAll('button[data-mood]')],bounds=group.getBoundingClientRect();
+  const rowTop=buttons[0].getBoundingClientRect().top,errors=[];
+  for(const button of buttons){
+   const box=button.getBoundingClientRect(),icon=button.querySelector('svg').getBoundingClientRect();
+   const walker=document.createTreeWalker(button,NodeFilter.SHOW_TEXT);
+   let lines=0;
+   for(let node=walker.nextNode();node;node=walker.nextNode()){
+    if(!node.textContent.trim()||node.parentElement.closest('svg'))continue;
+    const range=document.createRange();range.selectNodeContents(node);
+    for(const line of range.getClientRects()){
+     lines++;
+     if(line.left<icon.right+2||line.right>box.right-2||line.top<box.top||line.bottom>box.bottom)errors.push(button.textContent);
+    }
+   }
+   if(!lines||icon.left<box.left+2||icon.right>box.right-2||box.left<bounds.left-1||box.right>bounds.right+1||box.height<44)errors.push(button.textContent);
+  }
+  return {columns:buttons.filter(b=>Math.abs(b.getBoundingClientRect().top-rowTop)<1).length,errors};
+ });
+ assert.deepEqual(layout.errors,[],'mood labels and icons must fit inside their own buttons at '+width+'px');
+ if(width<=412)assert.equal(layout.columns,2,'two mood buttons per row at '+width+'px');
+}
 try{
  if(!live){
   const matrix=await browser.newContext();
@@ -51,6 +77,20 @@ try{
   await page.locator('.nl-primary').waitFor();await page.waitForFunction(()=>document.querySelector('.nl-primary')?.disabled===false);await page.locator('#noa-listening').scrollIntoViewIfNeeded();
   assert.equal(await page.locator('#nl-lane-whole').innerText(),'오늘의 공감 추천');
   assert.equal(await page.locator('#nl-lane-manual').innerText(),'지금 내 기분');
+  await page.evaluate(()=>document.fonts.ready.then(()=>true));
+  await checkMoodLayout(page,width);
+  if(width===390){
+   for(const mobile of [360,412]){
+    await page.setViewportSize({width:mobile,height:900});
+    await checkMoodLayout(page,mobile);
+   }
+   await page.setViewportSize({width,height:900});
+   await page.locator('[data-listening-lane=manual]').screenshot({path:out+'/mood-controls-390.png'});
+  }
+  if(width===320){
+   const largerText=await page.addStyleTag({content:'#noa-listening .nl-moods button[data-mood]{font-size:20px!important}'});
+   await checkMoodLayout(page,width);await largerText.evaluate(s=>s.remove());
+  }
   const overflow=await page.evaluate(()=>{const width=document.documentElement.scrollWidth;if(width<=innerWidth+1)return null;
    return {width,viewport:innerWidth,scrollX,edges:[...document.querySelectorAll('body *')].filter(e=>!e.closest('.nl-moods,.nl-tabs')&&e.getBoundingClientRect().right+scrollX>innerWidth+1).map(e=>[e.tagName,e.id,e.className?.toString().slice(0,70),Math.round(e.getBoundingClientRect().right+scrollX)]).slice(-30)};});assert.equal(overflow,null,JSON.stringify(overflow));
   if(!live){

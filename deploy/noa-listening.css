@@ -11,8 +11,20 @@ html body #noa-listening button,html body .nl-dialog button{font:inherit;cursor:
 html body #noa-listening button:disabled,html body .nl-dialog button:disabled{opacity:.45;cursor:default}
 html body #noa-listening button:focus-visible,html body .nl-dialog :is(button,input,select):focus-visible{outline:2px solid var(--nl-gold,#c9b47b);outline-offset:3px}
 html body #noa-listening :is(.nl-moods,.nl-tabs){display:flex;gap:8px;overflow-x:auto;padding:3px 0 8px;scrollbar-width:thin}
-html body #noa-listening .nl-moods{flex-wrap:wrap}
-html body #noa-listening .nl-moods button{font-size:13px;flex:none}
+/* Size the mood grid to the recommendation panel on both home and MUSIC. */
+#noa-listening [data-listening-lane="manual"]{container:mood-picker / inline-size}
+html body #noa-listening [data-listening-lane="manual"] .nl-moods{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:8px;overflow:visible
+}
+html body #noa-listening .nl-moods button[data-mood]{
+ min-width:0;min-height:44px;padding:8px;gap:6px;white-space:normal;word-break:keep-all;overflow-wrap:anywhere;font-size:13px
+}
+@container mood-picker (min-width:38rem){
+ html body #noa-listening [data-listening-lane="manual"] .nl-moods{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@container mood-picker (min-width:78rem){
+ html body #noa-listening [data-listening-lane="manual"] .nl-moods{grid-template-columns:repeat(8,minmax(0,1fr))}
+}
 html body #noa-listening button[aria-pressed=true]{border-color:var(--nl-gold);color:var(--nl-gold);background:color-mix(in srgb,var(--nl-gold) 8%,transparent)}
 html body #noa-listening .nl-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:12px}
 html body #noa-listening .nl-reason{margin:0;color:var(--nl-muted);font-size:14px;line-height:1.6}
@@ -39,7 +51,7 @@ html body .nl-dialog{--nl-line:var(--noa-line,#464b53);--nl-gold:var(--noa-accen
 .nl-birth{border:1px solid var(--nl-line);border-radius:var(--noa-control-radius,8px);padding:8px 16px}.nl-birth legend{padding:0 8px;font-size:13px}.nl-dialog-actions{display:flex;justify-content:space-between;gap:12px;margin-top:20px}
 html body .nl-play-shell{position:fixed;inset:0;width:100%;height:100dvh;border:0;background:var(--noa-bg,#111315);z-index:2147483000}html body .nl-play-shell[hidden]{display:none!important}html.nl-host-open{overflow:hidden}
 @media(max-width:1000px){html body #noa-listening .nl-results{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){html body #noa-listening{padding:20px 16px;margin:24px 0;border-radius:var(--noa-radius,8px)}html body #noa-listening .nl-controls{gap:8px}html body #noa-listening .nl-controls button{padding-inline:10px;font-size:12px;min-height:48px}html body #noa-listening .nl-summary{align-items:stretch;flex-direction:column;gap:12px}html body #noa-listening .nl-results{grid-template-columns:minmax(0,1fr);gap:8px}html body #noa-listening .nl-moods button{padding-inline:10px}html body .nl-dialog{padding:20px 16px}}
+@media(max-width:600px){html body #noa-listening{padding:20px 16px;margin:24px 0;border-radius:var(--noa-radius,8px)}html body #noa-listening .nl-controls{gap:8px}html body #noa-listening .nl-controls button{padding-inline:10px;font-size:12px;min-height:48px}html body #noa-listening .nl-summary{align-items:stretch;flex-direction:column;gap:12px}html body #noa-listening .nl-results{grid-template-columns:minmax(0,1fr);gap:8px}html body .nl-dialog{padding:20px 16px}}
 
 /* Keep category browsing first; recommendations are an optional expansion. */
 html body .nl-music-discovery{margin:24px 0;padding:0;border:1px solid var(--noa-line,#353a40);border-radius:var(--noa-control-radius,8px);background:var(--noa-surface,#191d21);color:var(--noa-text,#f2f1eb)}
