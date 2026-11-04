@@ -137,6 +137,7 @@ function noa_sitemap_board_allowed(array $board,int $level,bool $member,bool $su
 function noa_sitemap_route_need(array $route):?string{
     if($route[5]==='admin')return 'admin';
     if($route[0]==='weatherCare')return 'weatherVip';
+    if($route[0]==='storyRequest')return 'write';
     if($route[0]==='playlists')return nam_requirement('/noa-bridge/user-playlists.php');
     parse_str((string)parse_url($route[3],PHP_URL_QUERY),$query);
     return nam_requirement(parse_url($route[3],PHP_URL_PATH)?:'/','GET',$query)??($route[5]==='member'?'member':null);
@@ -154,6 +155,10 @@ function noa_sitemap_member_directory(array $groups,array $access,array $boards)
             $need=noa_sitemap_route_need($row);
             if(!nam_allowed($access,$need))continue;
             $badge=$labels[$need??'']??($row[5]==='guest'?'비로그인':'');
+            if($row[0]==='creatorApply'){
+                if($access['member']&&!in_array($access['level'],[2,3,4],true))continue;
+                $badge='신규 가입 / Lv.2·3·4 전환';
+            }
             $board=str_starts_with($row[0],'board-')?($byBoard[substr($row[0],6)]??null):null;
             if($row[0]==='storyRequest')$board=$byBoard['song_request']??null;
             if($board){

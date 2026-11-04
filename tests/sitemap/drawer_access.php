@@ -31,7 +31,7 @@ foreach(['guest'=>1,'member'=>3,'admin'=>10,'two'=>2,'four'=>4,'five'=>5,'six'=>
         }
         $html.='</section>';
     }
-    foreach(['my'=>$level>=2,'weatherCare'=>in_array($level,[4,5,6,8,9,10],true),'catalog'=>$access['music'],'playlists'=>$access['music'],'creator'=>$access['creator'],'creatorAI'=>$access['creatorAI'],'libraryAdmin'=>$super,'login'=>!$member,'board-fixture_board'=>$super||$role==='five'] as $id=>$allowed){
+    foreach(['creatorApply'=>$level<=4,'storyRequest'=>$access['write'],'my'=>$level>=2,'weatherCare'=>in_array($level,[4,5,6,8,9,10],true),'catalog'=>$access['music'],'playlists'=>$access['music'],'creator'=>$access['creator'],'creatorAI'=>$access['creatorAI'],'libraryAdmin'=>$super,'login'=>!$member,'board-fixture_board'=>$super||$role==='five'] as $id=>$allowed){
         must(array_key_exists($id,$labels)===$allowed,$role.' '.$id);
         if($allowed)must($labels[$id]!=='',$role.' unlabeled '.$id);
     }
