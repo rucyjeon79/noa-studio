@@ -82,7 +82,40 @@
 #contentsWrap .boardWrite .writeBox { padding-block: var(--bu-panel); gap: 16px; }
 #contentsWrap .boardWrite :is(.writeBox, .insertBox) > .item { min-width: 0; }
 #contentsWrap .boardWrite .writeBox .item.option { gap: var(--bu-gap); flex-wrap: wrap; }
-#contentsWrap .boardWrite .insertBox { gap: 12px; }
+#contentsWrap .boardWrite .insertBox {
+  gap: 12px;
+  padding-bottom: var(--bu-section);
+}
+#contentsWrap .boardWrite .btnWrap {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--bu-gap);
+  margin-top: 12px;
+}
+#contentsWrap .boardWrite .btnWrap > .button,
+#contentsWrap .boardWrite :is(input[name="wr_subject"], .item.link input) {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--bu-control);
+}
+#contentsWrap .boardWrite .file-slot-container {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--bu-gap);
+  padding: 12px;
+}
+#contentsWrap .boardWrite .file-slot {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  #contentsWrap .boardWrite .file-slot-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: var(--bu-gap);
+  }
+}
 #contentsWrap .boardWrite :is(.writeBox, .insertBox) :is(input:not([type=checkbox]):not([type=radio]), select, textarea) {
   box-sizing: border-box;
   max-width: 100%;
