@@ -6,6 +6,7 @@ require_once dirname(__DIR__) . '/common.php';
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 const BN_BOARD='busan_news';
+const BN_TITLE='OpenAI 뉴스룸';
 const BN_MARK='busan-reporter-v1';
 const BN_TOPICS=['홈앤서비스','SK브로드밴드','SK텔레콤','SK그룹','노동조합','노동법','노동관련 세계동향'];
 function bnq($s) { $r=sql_query($s,false); if (!$r) throw new RuntimeException('database operation failed'); return $r; }
@@ -25,7 +26,7 @@ function bnsetup() {
     if(empty($join['gr_id']))throw new RuntimeException('board group missing');
     $group=get_group($join['gr_id']);if(empty($group)||!empty($group['gr_use_access']))throw new RuntimeException('news group restricts public reading');
     if(!$board){
-        $settings=['bo_table'=>BN_BOARD,'gr_id'=>$join['gr_id'],'bo_subject'=>'챗지기자 뉴스','bo_mobile_subject'=>'챗지기자 뉴스','bo_10'=>BN_MARK,
+        $settings=['bo_table'=>BN_BOARD,'gr_id'=>$join['gr_id'],'bo_subject'=>BN_TITLE,'bo_mobile_subject'=>BN_TITLE,'bo_10'=>BN_MARK,
           'bo_notice'=>'','bo_admin'=>'','bo_count_write'=>0,'bo_count_comment'=>0,'bo_list_level'=>1,'bo_read_level'=>1,'bo_write_level'=>10,'bo_reply_level'=>10,'bo_comment_level'=>3,
           'bo_read_point'=>0,'bo_write_point'=>0,'bo_comment_point'=>0,'bo_download_point'=>0,'bo_use_cert'=>'','bo_use_secret'=>0,'bo_use_search'=>1,'bo_use_category'=>1,
           'bo_category_list'=>implode('|',BN_TOPICS),'bo_device'=>'both','bo_use_sns'=>0,'bo_use_email'=>0,'bo_use_good'=>0,'bo_use_nogood'=>0,
@@ -37,22 +38,28 @@ function bnsetup() {
         bnq("INSERT INTO $bt SET ".bnset($row));
     }
     if($board){
+        $updates=[];
+        foreach(['bo_subject','bo_mobile_subject'] as $field)
+            if($board[$field]==='챗지기자 뉴스')$updates[$field]=BN_TITLE;
         // On the launch edition these two native wrapper paths were empty.
-        $layout=[];
         foreach(['bo_include_head','bo_include_tail'] as $field)
-            if(isset($template[$field]) && trim($template[$field])!=='' && trim($board[$field])==='')$layout[$field]=$template[$field];
-        if($layout)bnq("UPDATE $bt SET ".bnset($layout)." WHERE bo_table='busan_news' AND bo_10='".BN_MARK."'");
+            if(isset($template[$field]) && trim($template[$field])!=='' && trim($board[$field])==='')$updates[$field]=$template[$field];
+        if($updates)bnq("UPDATE $bt SET ".bnset($updates)." WHERE bo_table='busan_news' AND bo_10='".BN_MARK."'");
     }
     bnq("CREATE TABLE IF NOT EXISTS `$wt` LIKE `{$g5['write_prefix']}notice`");
     $prefix=$parent['me_code'];$url='https://skhnslu-busan.com/bbs/board.php?bo_table=busan_news';
-    $existing=sql_fetch("SELECT me_id FROM $mt WHERE LEFT(me_code,2)=".bnvalue($prefix)." AND me_link=".bnvalue($url),false);
+    $existing=sql_fetch("SELECT me_id,me_name FROM $mt WHERE LEFT(me_code,2)=".bnvalue($prefix)." AND me_link=".bnvalue($url),false);
     if(empty($existing['me_id'])){
         $last=sql_fetch("SELECT MAX(RIGHT(me_code,2)) AS code,MAX(me_order) AS ord FROM $mt WHERE LENGTH(me_code)=4 AND LEFT(me_code,2)=".bnvalue($prefix),false);
         $suffix=base_convert((int)base_convert($last['code']?:'00',36,10)+36,10,36);
         if(strlen($suffix)!==2)throw new RuntimeException('menu group full');
-        bnq("INSERT INTO $mt SET ".bnset(['me_code'=>$prefix.$suffix,'me_name'=>'챗지기자 뉴스','me_link'=>$url,'me_target'=>'self','me_order'=>(int)$last['ord']+1,'me_use'=>1,'me_mobile_use'=>1]));
-        if(function_exists('run_event'))run_event('admin_menu_list_update');
+        bnq("INSERT INTO $mt SET ".bnset(['me_code'=>$prefix.$suffix,'me_name'=>BN_TITLE,'me_link'=>$url,'me_target'=>'self','me_order'=>(int)$last['ord']+1,'me_use'=>1,'me_mobile_use'=>1]));
+    }elseif($existing['me_name']==='챗지기자 뉴스'){
+        bnq("UPDATE $mt SET me_name=".bnvalue(BN_TITLE)." WHERE me_id=".(int)$existing['me_id']." AND me_name=".bnvalue($existing['me_name']));
+    }else{
+        return;
     }
+    if(function_exists('run_event'))run_event('admin_menu_list_update');
 }
 function bnvalidate($a){
     if(!is_array($a)||!in_array($a['topic']??0,range(1,7),true)||!is_array($a['body']??null)||count($a['body'])<2||count($a['body'])>5)throw new RuntimeException('invalid article');
