@@ -466,7 +466,7 @@ html.noa-member-ui{--noa-motion-press:150ms;--noa-motion-enter:240ms;--noa-motio
 @media(prefers-reduced-motion:no-preference){
  @view-transition{navigation:auto}
  ::view-transition-old(root),::view-transition-new(root){animation-duration:180ms}
- #ainoa-conversation :is(.ainoa-conversation-message,.ainoa-conversation-content>*){animation:noa-member-content-in 200ms var(--noa-motion-ease) both}
+ #ainoa-conversation :is(.ainoa-conversation-message,.ainoa-conversation-content>*),html.noa-member-ui #noa-listening .nl-results>*{animation:noa-member-content-in 200ms var(--noa-motion-ease) both}
  html.noa-member-ui :is(button,[role=button],a.noa-button,summary){transition:background-color var(--noa-motion-press) ease,color var(--noa-motion-press) ease,border-color var(--noa-motion-press) ease,box-shadow var(--noa-motion-press) ease,scale var(--noa-motion-press) var(--noa-motion-ease)}
  html.noa-member-ui :is(button,[role=button],a.noa-button,summary):active:not(:disabled){scale:.96}
  html.noa-member-ui :is(input,textarea,select){transition:border-color var(--noa-motion-press) ease,box-shadow var(--noa-motion-press) ease,background-color var(--noa-motion-enter) ease}
