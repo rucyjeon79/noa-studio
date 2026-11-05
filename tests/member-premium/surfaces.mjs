@@ -5,12 +5,13 @@ import {verifyFixtures} from './fixtures.mjs';
 import {verifyComposer} from './composer.mjs';
 const phase=process.env.NOA_MEMBER_PHASE||'baseline',base='https://noastudio.ai.kr',out='member-surface-proof/'+phase;
 mkdirSync(out,{recursive:true});
-const paths=['/','/noa-music.php','/noa-youtube.php','/noa-world.php','/noa-lounge.php','/noa-lounge.php?board=free','/noa-creator-lab.php','/noa-shop.php','/noa-youngcart.php','/noa-points.php','/noa-vip.php','/noa-membership.php','/noa-my.php','/noa-creator.php','/noa-gifts.php','/noa-subscription.php','/noa-notifications.php','/noa-settings.php','/noa-login.php','/noa-about.php','/noa-terms.php','/noa-privacy.php','/bbs/login.php?legacy=1','/bbs/register.php','/bbs/password_lost.php','/bbs/search.php','/bbs/faq.php','/bbs/board.php?bo_table=free','/bbs/write.php?bo_table=free','/shop/cart.php','/shop/orderinquiry.php','/shop/orderform.php'];
+const paths=[...new Set([...(existsSync('/tmp/noa-member-native/routes.json')?JSON.parse(readFileSync('/tmp/noa-member-native/routes.json','utf8')):[]),'/','/noa-music.php','/noa-youtube.php','/noa-world.php','/noa-lounge.php','/noa-lounge.php?board=free','/noa-creator-lab.php','/noa-shop.php','/noa-youngcart.php','/noa-points.php','/noa-vip.php','/noa-membership.php','/noa-my.php','/noa-creator.php','/noa-gifts.php','/noa-subscription.php','/noa-notifications.php','/noa-settings.php','/noa-login.php','/noa-about.php','/noa-terms.php','/noa-privacy.php','/bbs/login.php?legacy=1','/bbs/register.php','/bbs/password_lost.php','/bbs/search.php','/bbs/faq.php','/bbs/board.php?bo_table=free','/bbs/write.php?bo_table=free','/shop/cart.php','/shop/orderinquiry.php','/shop/orderform.php'])];
 const chosen=new Set(['/noa-youngcart.php','/noa-shop.php','/noa-lounge.php','/noa-login.php','/bbs/register.php','/bbs/password_lost.php','/shop/cart.php','/shop/orderinquiry.php','/bbs/search.php']);
 const report={phase,public:[],fixtures:[],errors:[],writes:0};
 const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
 
 try{
+ if(phase!=='baseline'){await verifyFixtures(browser,phase,out,report);await verifyComposer(browser,out,report);}
  await Promise.all([390,1440].map(async width=>{
   const context=await browser.newContext({viewport:{width,height:900},locale:'ko-KR',serviceWorkers:'block',reducedMotion:'reduce'});
   context.setDefaultTimeout(15000);context.setDefaultNavigationTimeout(30000);
@@ -53,9 +54,8 @@ try{
   }
   await context.close();
  }));
- if(phase!=='baseline'){await verifyFixtures(browser,phase,out,report);await verifyComposer(browser,out,report);}
 }finally{
  writeFileSync(out+'/report.json',JSON.stringify(report,null,2));await browser.close();
 }
 console.log('MEMBER_SURFACE_RESULT',JSON.stringify({phase,cases:report.public.length,errors:report.errors,overflow:report.public.filter(x=>x.documentOverflow).map(x=>[x.width,x.path,x.overflow])}));
-if(phase!=='baseline'){assert.equal(report.errors.length,0);assert.equal(report.public.filter(x=>x.documentOverflow).length,0);}
+if(phase!=='baseline'){assert.equal(report.errors.length,0);assert.equal(report.public.filter(x=>x.documentOverflow).length,0);assert.equal(report.public.filter(x=>!x.memberAssets).length,0,'shared member assets missing');assert.equal(report.public.filter(x=>x.pageErrors.length).length,0,'browser runtime errors');}

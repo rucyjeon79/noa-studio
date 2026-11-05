@@ -12,7 +12,7 @@ export async function verifyFixtures(browser,phase,out,report){
   await context.route('**/*',r=>{const u=new URL(r.request().url());if(u.origin!=='https://member.fixture')return r.abort();if(u.pathname.startsWith('/noa-')&&/\.(css|js)$/.test(u.pathname)){return r.fulfill({body:readFileSync('deploy'+u.pathname),contentType:u.pathname.endsWith('.css')?'text/css':'text/javascript'});}return r.fulfill({body:'<!doctype html><html><body></body></html>',contentType:'text/html'});});
   const page=await context.newPage();await page.goto('https://member.fixture/');
   const variants={board_list:readFileSync(nativeRoot+'/list.html','utf8'),board_read:readFileSync(nativeRoot+'/read.html','utf8'),board_write:readFileSync(nativeRoot+'/write.html','utf8'),cart,checkout,register,creator};
-  for(const [key,markup] of Object.entries(variants))for(const theme of design.themes){
+  for(const [key,markup] of Object.entries(variants))for(const theme of design.themes){try{
    const body=markup.includes('<body>')?markup.split('<body>')[1].split('</body>')[0]:`<main>${markup}</main>`;
    const native=['cart','checkout'].includes(key);const tokens=Object.entries(theme.tokens).map(([k,v])=>'--noa-'+k+':'+v).join(';');
    await page.setContent(`<!doctype html><html lang="ko" class="${native?'ny-native':'noa-g5'}" data-noa-style="starlight" data-noa-theme="${theme.id}" style="${tokens}"><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-gnuboard.css"><link rel="stylesheet" href="/noa-youngcart-premium.css"><link rel="stylesheet" href="/noa-creator.css"><style>body{margin:0;padding:24px 16px}body>main,body>#wrapper{max-width:900px!important;width:100%!important;margin:0 auto!important;padding:0!important}h1{font-size:28px;margin:0 0 24px}ul{list-style:none;padding:0}#bo_w form{max-width:100%}</style></head><body>${body}</body></html>`);
@@ -22,9 +22,9 @@ export async function verifyFixtures(browser,phase,out,report){
    await page.evaluate(()=>{delete window.NoaMemberSurfaces;});await page.addScriptTag({content:readFileSync('deploy/noa-member-surfaces.js','utf8')});
    await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
    assert.deepEqual(await contract(),before,'native form contract changed: '+key);
-   const geometry=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth+1,fields:[...document.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea')].filter(e=>e.getBoundingClientRect().width).map(e=>({id:e.id,name:e.name,h:e.getBoundingClientRect().height,x:e.getBoundingClientRect().x,right:e.getBoundingClientRect().right,font:parseFloat(getComputedStyle(e).fontSize)}))}));
+   const geometry=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth+1,fields:[...document.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea')].filter(e=>e.getBoundingClientRect().width).map(e=>({id:e.id,name:e.name,h:e.getBoundingClientRect().height,x:e.getBoundingClientRect().x,right:e.getBoundingClientRect().right,font:parseFloat(getComputedStyle(e).fontSize),color:getComputedStyle(e).color,bg:getComputedStyle(e).backgroundColor}))}));
    assert(!geometry.overflow,JSON.stringify({key,width,geometry}));
-   for(const f of geometry.fields){assert(f.h>=48&&f.font>=16,JSON.stringify({key,width,field:f}));assert(f.x>=0&&f.right<=width+1,JSON.stringify({key,width,field:f}));}
+   for(const f of geometry.fields){const luminance=c=>{const a=c.match(/[\d.]+/g).slice(0,3).map(Number).map(x=>{x/=255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4});return a[0]*.2126+a[1]*.7152+a[2]*.0722};const a=luminance(f.color),b=luminance(f.bg);assert((Math.max(a,b)+.05)/(Math.min(a,b)+.05)>=4.5,'field contrast '+key);assert(f.h>=48&&f.font>=16,JSON.stringify({key,width,field:f}));assert(f.x>=0&&f.right<=width+1,JSON.stringify({key,width,field:f}));}
    if(key==='cart'&&width<=760){assert.equal(await page.locator('.noa-native-order-table').count(),1);assert.equal(await page.locator('[data-noa-column="소계"]').textContent(),'70,000원');await page.getByRole('spinbutton',{name:'수량'}).fill('3');assert.equal(await page.getByRole('spinbutton',{name:'수량'}).inputValue(),'3');}
    if(key==='checkout'){await page.getByLabel('상세 주소').fill('상세 주소 입력 유지');await page.getByLabel('계좌이체',{exact:true}).check();assert(await page.getByLabel('계좌이체',{exact:true}).isChecked());}
    if(key==='board_write'){await page.locator('#wr_subject').fill('긴 제목 '.repeat(12));await page.locator('#wr_content').fill('작성하던 본문을 유지합니다.');await page.locator('input[type=file]').setInputFiles({name:'긴첨부파일이름'.repeat(15)+'.txt',mimeType:'text/plain',buffer:Buffer.from('isolated')});assert.equal(await page.locator('#wr_content').inputValue(),'작성하던 본문을 유지합니다.');}
@@ -32,7 +32,7 @@ export async function verifyFixtures(browser,phase,out,report){
    await page.evaluate(()=>window.NoaMemberSurfaces.refresh());await page.evaluate(()=>new Promise(r=>requestAnimationFrame(r)));
    report.fixtures.push({key,width,theme:theme.id,contractPreserved:true,...geometry});
    if([390,1440].includes(width))await page.screenshot({path:out+'/fixture-'+key+'-'+width+'-'+theme.id+'.jpg',type:'jpeg',quality:86,fullPage:true});
-  }
+  }catch(error){await page.screenshot({path:out+'/fixture-failure-'+key+'-'+width+'.png',fullPage:true});throw error;}}
   // Dynamic native rows receive metadata without replacing controls or losing focus.
   await context.close();
  }

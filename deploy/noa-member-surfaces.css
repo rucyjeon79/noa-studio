@@ -131,3 +131,12 @@ html.noa-member-ui.noa-g5 #find_info #captcha_key{width:100px;min-width:0}
 html.noa-member-ui.noa-g5 #find_info #captcha_info{flex-basis:100%;margin:0;font-size:12px;line-height:1.6}
 html.noa-member-ui.noa-g5 #find_info .btn_submit{min-height:48px;padding:12px 16px;border-radius:4px;background:var(--noa-accent);color:var(--noa-accentText)}
 @media(max-width:760px){html.noa-member-ui .ncea-fields{gap:16px}html.noa-member-ui .ncea-section{padding:16px}html.noa-member-ui.noa-g5 #find_info .new_win_con{padding:16px}}
+/* Supporting member dialogs share the same frame and focus treatment. */
+html.noa-member-ui body :is(.noa-support-dialog,#noa-share-dialog){border-radius:4px;padding:24px;border-color:var(--noa-line)}
+html.noa-member-ui body :is(.noa-support-dialog,#noa-share-dialog) :is(input:not([type=checkbox]),textarea){border-radius:4px;font-size:16px;min-height:48px}
+html.noa-member-ui body :is(.noa-support-dialog,#noa-share-dialog) :is(button,.noa-share-actions>a){border-radius:4px;min-height:44px}
+html.noa-member-ui body .noa-support-dialog textarea{min-height:112px}
+html.noa-member-ui.ny-native .ny-native-nav>a:first-child{display:none}
+html.noa-member-ui.ny-native .ny-native-nav{justify-content:flex-start;gap:8px}
+@media(max-width:760px){html.noa-member-ui body :is(.noa-support-dialog,#noa-share-dialog){padding:16px}}
+html.noa-member-ui .ec-dialog textarea[maxlength="20000"]{min-height:clamp(200px,32vh,320px);font-size:16px;line-height:1.8}
