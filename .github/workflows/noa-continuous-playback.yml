@@ -1,0 +1,40 @@
+name: Jukebox continuous playback
+on:
+  push:
+    branches: [main]
+    paths: ['scripts/noa_continuous_playback_manifest.json','.github/workflows/noa-continuous-playback.yml']
+permissions: {contents: read}
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - name: Check continuous playback and deliberate pause
+        run: |
+          php -l deploy/noa-music.php
+          node --check deploy/noa-app/p0-player.js
+          node --test tests/jukebox/playback_recovery.test.cjs
+      - name: Apply current production source with conflict checks
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+        run: |
+          python -m pip install 'paramiko>=3,<5'
+          cp scripts/noa_continuous_playback_manifest.json scripts/noa_plain_language_manifest.json
+          python scripts/noa_plain_language_release.py
+          python - <<'PY'
+          import json
+          proof=json.load(open('plain-language-proof/deployment.json'))
+          assert not proof['notInstalled']
+          assert all(not f['notPresentInLiveVersion'] for f in proof['files'])
+          assert proof['ok']
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: continuous-playback-proof, path: plain-language-proof/, retention-days: 7}

@@ -16,8 +16,7 @@ function attach(audio,{wanted,key,status,now=()=>Date.now(),later=setTimeout,can
  }
  function retry(){
   if(!eligible())return;
-  if(attempts>=3){stop();status('연결이 불안정해 재생을 멈췄어요. 재생 버튼을 누르면 듣던 위치에서 다시 시도합니다.');return;}
-  attempts++;clear();detachMetadata();const token=++version,track=key();
+  attempts=Math.min(attempts+1,9);clear();detachMetadata();const token=++version,track=key();
   const resume=Number.isFinite(audio.currentTime)&&audio.currentTime>0?audio.currentTime:position;
   position=resume;reloading=true;stableSince=lastProgress=now();
   status('음원 연결을 다시 시도하고 있어요. 듣던 위치에서 이어집니다.');
@@ -36,7 +35,7 @@ function attach(audio,{wanted,key,status,now=()=>Date.now(),later=setTimeout,can
   audio.load();schedule(12000+attempts*2000);
  }
  audio.addEventListener('play',()=>{if(!reloading){if(blocked)reset();blocked=false;lastProgress=now();}});
- audio.addEventListener('pause',()=>{if(!reloading&&!audio.error)stop();});
+ audio.addEventListener('pause',()=>{if(reloading)return;if(wanted())schedule(2000);else stop();});
  audio.addEventListener('ended',stop);
  audio.addEventListener('timeupdate',()=>{
   if(key()!==identity)reset();
