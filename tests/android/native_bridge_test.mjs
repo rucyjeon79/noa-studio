@@ -3,14 +3,14 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 const script=readFileSync(new URL('../../android/app/src/main/assets/noa-native-bridge.js',import.meta.url),'utf8');
-function app(readyState='complete'){
+function app(readyState='complete',options={}){
  const messages=[],events=[];
  class Media{constructor(id){this.id=id;this.muted=false;this.webStarts=0;}play(){this.webStarts++;return Promise.resolve('web');}dispatchEvent(e){events.push(e.type);}}
  const audio=new Media('sound-player'),dock={hidden:true},controls={};
  const rows=['single:jpop:02','single:jpop:01'].map(key=>({dataset:{key}}));
- const window={NoaAndroid:{postMessage(raw){messages.push(JSON.parse(raw));}},addEventListener(){},setInterval(fn){this.uploadTick=fn;}};window.top=window;
+ const window={NoaAndroid:{postMessage(raw){messages.push(JSON.parse(raw));}},addEventListener(){},setInterval(fn){this.uploadTick=fn;}};window.top=options.parent?.window||window;window.parent=window.top;window.frameElement=options.parent?{matches:()=>options.allowed!==false}:null;window.location={href:'https://noastudio.ai.kr/noa-music.php',origin:'https://noastudio.ai.kr',pathname:'/noa-music.php'};
  const lookup=new Map(rows.map(r=>[r.dataset.key,{key:r.dataset.key,title:'Song',audio:'/noa-app/jukebox/stream.php?key='+encodeURIComponent(r.dataset.key)+'&type=audio',thumb:''}]));
- const context={window,lookup,URL,location:{href:'https://noastudio.ai.kr/noa-music.php'},HTMLMediaElement:Media,Event:class{constructor(type){this.type=type;}},selected:rows[0],buttons:rows,queue:()=>rows,repeat:false,shuffle:false,queueMicrotask:fn=>fn(),document:{readyState,getElementById:id=>id==='sound-player'?audio:controls[id]||null,querySelector:()=>dock,addEventListener(name,fn){if(name==='DOMContentLoaded')this.onReady=fn;}}};
+ const context={window,lookup,URL,location:window.location,HTMLMediaElement:Media,Event:class{constructor(type){this.type=type;}},selected:rows[0],buttons:rows,queue:()=>rows,repeat:false,shuffle:false,queueMicrotask:fn=>fn(),document:{readyState,getElementById:id=>id==='sound-player'?(options.noAudio?null:audio):controls[id]||null,querySelector:selector=>selector==='iframe.nl-play-shell'?options.frame||null:dock,addEventListener(name,fn){if(name==='DOMContentLoaded')this.onReady=fn;}}};
  context.select=(row)=>{context.selected=row;audio.pause();audio.load();};vm.runInNewContext(script,context);messages.length=0;
  const state=more=>window.NoaNativeBridge.state({key:rows[0].dataset.key,queue:rows.map(r=>r.dataset.key),position:12,duration:180,paused:false,playing:true,ended:false,volume:.7,closed:false,repeat:false,shuffle:false,error:false,...more});
  return {messages,events,audio,rows,window,context,Media,state,dock};
@@ -31,3 +31,18 @@ test('document initialization cannot mount early or start a second browser playe
 
 test('play uses the authenticated PWA rows without a second catalog request',async()=>{const a=app();await a.audio.play();assert.equal(a.messages[0].tracks.length,2);assert.equal(a.messages[0].tracks[0].key,a.rows[0].dataset.key);assert.match(a.messages[0].tracks[0].audioUrl,/^https:\/\/noastudio[.]ai[.]kr\/noa-app\/jukebox\/stream[.]php/);assert.doesNotMatch(script,/fetch\(/);});
 test('collection looping follows the PWA and explicit playlists stay separate',async()=>{const a=app();a.context.collectionQueue=a.rows.map(r=>r.dataset.key);a.context.activeQueue=null;await a.audio.play();assert.equal(a.messages[0].collectionLoop,true);a.context.activeQueue=[a.rows[0].dataset.key];await a.audio.play();assert.equal(a.messages[1].collectionLoop,false);});
+
+test('home PWA music frame uses the same native engine and receives state',async()=>{
+ const frame={};const parent=app('complete',{noAudio:true,frame});
+ const child=app('complete',{parent});frame.contentWindow=child.window;
+ parent.messages.length=0;await child.audio.play();
+ assert.equal(child.audio.webStarts,0);assert.equal(parent.messages[0].type,'play');
+ parent.window.NoaNativeBridge.state({key:child.rows[0].dataset.key,position:21,duration:180,paused:false,playing:true,closed:false});
+ assert.equal(child.audio.currentTime,21);assert.equal(child.audio.paused,false);
+ parent.messages.length=0;parent.window.NoaNativeBridge.command({}, {type:'play'});assert.equal(parent.messages.length,0);
+ parent.window.NoaNativeBridge.command(child.window,{type:'appearance',color:'#ffffff'});assert.equal(parent.messages.length,0);
+});
+test('unrelated frames keep browser audio and cannot install the native facade',async()=>{
+ const parent=app();const child=app('complete',{parent,allowed:false});
+ assert.equal(child.window.NoaNativeBridge,undefined);await child.audio.play();assert.equal(child.audio.webStarts,1);
+});

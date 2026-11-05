@@ -2,7 +2,7 @@ name: NOA STUDIO Android
 # Production PWA owns navigation and layout; Android provides background media only.
 on:
   push:
-    branches: [main, work/android-background-20261022, work/n80-release-final-20261029, work/android-live-failures-20261030, work/android-live-pwa-only-20261030]
+    branches: [main, work/android-background-20261022, work/n80-release-final-20261029, work/android-live-failures-20261030, work/android-live-pwa-only-20261030, work/android-pwa-parity-20261105]
     paths: ['.github/workflows/noa-android.yml', 'android/**', 'scripts/noa_android_*.py', 'scripts/noa_apk_*.py', 'tests/android/**', 'tests/n80/android_update_test.php', 'public/icon-512.png']
   workflow_dispatch:
     inputs:
@@ -59,6 +59,11 @@ jobs:
             release-artifact/noa-studio-release.aab
             release-artifact/verification.json
           retention-days: 14
+      - name: Prepare independent Chrome comparison
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y fonts-noto-cjk
+          npm install --prefix "$RUNNER_TEMP/noa-browser-qa" --no-audit --no-fund playwright@1.56.1
       - name: Prepare isolated live music member
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
@@ -77,31 +82,37 @@ jobs:
       - name: Install and launch on Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
+          # Use modern ANGLE software rendering; legacy GLES SwiftShader segfaulted on the live homepage.
           api-level: 35
           target: google_apis
           arch: x86_64
           profile: pixel_2
           ram-size: 2048M
           cores: 2
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none -feature -Vulkan,-HardwareDecoder
+          emulator-options: -no-window -gpu swangle -no-snapshot -noaudio -no-boot-anim -camera-back none -feature -HardwareDecoder
+          pre-emulator-launch-script: python3 scripts/qa/noa-emulator-trace.py
           disable-animations: true
           script: |
             adb logcat -c
-            adb logcat -v threadtime AndroidRuntime:E NoaApi:E TestRunner:I chromium:E '*:S' > android/noa-device-log.txt &
+            adb logcat -v threadtime '*:E' TestRunner:I > android/noa-device-log.txt &
             adb shell svc wifi enable
             adb push "$RUNNER_TEMP/noa-android-qa-cookie.txt" /data/local/tmp/noa-android-qa-cookie.txt
             adb shell chmod 600 /data/local/tmp/noa-android-qa-cookie.txt
             adb install release-artifact/noa-studio-release.apk
             adb shell am force-stop com.google.android.apps.nexuslauncher
             adb install release-artifact/noa-studio-test.apk
-            adb shell am instrument -w -e class kr.ai.noastudio.MediaPolicyTest,kr.ai.noastudio.AppUpdateTest,kr.ai.noastudio.NativeSessionTest,kr.ai.noastudio.WebParityTest kr.ai.noastudio.test/androidx.test.runner.AndroidJUnitRunner > android/noa-instrumentation.txt
+            adb shell am instrument -w -e class kr.ai.noastudio.PwaRenderingTest,kr.ai.noastudio.MediaPolicyTest,kr.ai.noastudio.AppUpdateTest,kr.ai.noastudio.NativeSessionTest,kr.ai.noastudio.WebParityTest kr.ai.noastudio.test/androidx.test.runner.AndroidJUnitRunner > android/noa-instrumentation.txt
             cat android/noa-instrumentation.txt
             adb shell am force-stop kr.ai.noastudio
             adb shell am instrument -w -e class kr.ai.noastudio.WebPlaybackRestoreTest kr.ai.noastudio.test/androidx.test.runner.AndroidJUnitRunner > android/noa-restore-instrumentation.txt
             cat android/noa-restore-instrumentation.txt
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/ android/device-proof/ || true
             adb logcat -d -s AndroidRuntime:E NoaApi:E > android/noa-runtime-errors.txt
-            python3 -c "from pathlib import Path; import json; assert 'OK (6 tests)' in Path('android/noa-instrumentation.txt').read_text(); assert 'OK (1 test)' in Path('android/noa-restore-instrumentation.txt').read_text(); p=next(Path('android/device-proof').rglob('noa-pwa-proof.json')); proof=json.loads(p.read_text()); assert proof['completed'] and proof['livePwaLayoutAndOrderMatch'] and proof['backgroundAndScreenOff']; assert 'FATAL EXCEPTION' not in Path('android/noa-runtime-errors.txt').read_text(); print(proof)"
+            python3 -c "from pathlib import Path; import json; assert 'OK (7 tests)' in Path('android/noa-instrumentation.txt').read_text(); assert 'OK (1 test)' in Path('android/noa-restore-instrumentation.txt').read_text(); p=next(Path('android/device-proof').rglob('noa-pwa-proof.json')); proof=json.loads(p.read_text()); assert proof['completed'] and proof['livePwaDocumentLoaded'] and proof['backgroundAndScreenOff']; assert 'FATAL EXCEPTION' not in Path('android/noa-runtime-errors.txt').read_text(); print(proof)"
+      - name: Compare actual APK screens with independent mobile Chrome
+        env:
+          NOA_BROWSER_MODULES: ${{ runner.temp }}/noa-browser-qa
+        run: node tests/android/chrome_parity.mjs
       - name: Record emulator host diagnostics
         if: always()
         run: |
@@ -128,11 +139,13 @@ jobs:
           overwrite: true
           path: |
             android/device-proof/
+            android/chrome-proof/
             android/noa-instrumentation.txt
             android/noa-runtime-errors.txt
             android/noa-device-log.txt
             android/noa-host-memory.txt
             android/noa-host-kernel.txt
+            android/noa-emulator-host.log
             android/noa-restore-instrumentation.txt
             android/app/build/reports/lint-results-release.html
           retention-days: 14

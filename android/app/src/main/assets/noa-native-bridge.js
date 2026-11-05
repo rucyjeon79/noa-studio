@@ -1,7 +1,18 @@
 /* Keep the PWA DOM, category order and controls. Replace only its audio backend. */
 (()=>{'use strict';
- if(window!==window.top||!window.NoaAndroid||window.NoaNativeBridge)return;
- const send=value=>{try{window.NoaAndroid.postMessage(JSON.stringify(value));}catch{}};
+ if(window.NoaNativeBridge)return;
+ const topLevel=window===window.top;
+ function hosted(){try{return !topLevel&&window.parent===window.top&&location.origin==='https://noastudio.ai.kr'&&location.pathname==='/noa-music.php'&&window.frameElement?.matches('iframe.nl-play-shell')&&window.parent.location.origin===location.origin;}catch{return false;}}
+ if(topLevel?!window.NoaAndroid:!hosted())return;
+ // Only the PWA's own same-origin home music frame may relay through the trusted top page.
+ const send=value=>{try{if(topLevel)window.NoaAndroid.postMessage(JSON.stringify(value));else window.parent.NoaNativeBridge?.command(window,value);}catch{}};
+ function child(){try{if(!topLevel)return null;const frame=document.querySelector('iframe.nl-play-shell');const win=frame?.contentWindow;if(win&&win.location.origin==='https://noastudio.ai.kr'&&win.location.pathname==='/noa-music.php')return win;}catch{}return null;}
+ function appearance(){
+  if(!topLevel)return;
+  const color=document.querySelector('meta[name="theme-color"]')?.content;
+  if(/^#[a-f0-9]{6}$/i.test(color||''))send({type:'appearance',color});
+ }
+ window.addEventListener('noa-theme',appearance);
  function uploadState(){
   let active=!!document.body?.classList.contains('noa-upload-active');
   try{const state=JSON.parse(localStorage.getItem('noa-jukebox-transferring-v1')||'null');active=active||Object.values(state?.owners||{}).some(at=>Date.now()-at>=0&&Date.now()-at<15000);}catch{}
@@ -47,8 +58,9 @@
   return originalPlay.call(this);
  };
  window.NoaNativeBridge={
+  command(source,value){if(topLevel&&source===child()&&value&&typeof value==='object'&&!['appearance','update','musicFolder'].includes(value.type))send(value);},
   state(next){
-   mount();if(!audio)return;
+   mount();if(!audio){child()?.NoaNativeBridge?.state(next);return;}
    if(pendingKey&&next.key!==pendingKey&&!next.error)return;
    if(next.key===pendingKey)pendingKey='';
    const previous=snapshot;applying=true;
@@ -75,7 +87,7 @@
     event('timeupdate');
    }finally{applying=false;}
   },
-  error(message){pendingKey='';snapshot.paused=true;event('error');const status=document.getElementById('player-status');if(status)status.textContent=message;},
+  error(message){if(!audio){child()?.NoaNativeBridge?.error(message);return;}pendingKey='';snapshot.paused=true;event('error');const status=document.getElementById('player-status');if(status)status.textContent=message;},
   ready:()=>!!audio
  };
  document.addEventListener('click',e=>{
@@ -84,6 +96,6 @@
  });
  window.addEventListener('noa-media-activity',e=>{if(e.detail?.type==='youtube')send({type:'video'});});
  window.addEventListener('noa-app-update',()=>send({type:'update'}));
- const boot=()=>{domReady=true;mount();uploadState();if(document.body&&typeof MutationObserver!=='undefined')new MutationObserver(uploadState).observe(document.body,{attributes:true,attributeFilter:['class']});};
+ const boot=()=>{domReady=true;mount();uploadState();appearance();if(document.body&&typeof MutationObserver!=='undefined')new MutationObserver(uploadState).observe(document.body,{attributes:true,attributeFilter:['class']});};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
