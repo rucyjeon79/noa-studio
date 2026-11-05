@@ -88,10 +88,11 @@ jobs:
           ram-size: 2048M
           cores: 2
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none -feature -Vulkan,-HardwareDecoder
+          pre-emulator-launch-script: python3 scripts/qa/noa-emulator-trace.py
           disable-animations: true
           script: |
             adb logcat -c
-            adb logcat -v threadtime AndroidRuntime:E NoaApi:E TestRunner:I chromium:E '*:S' > android/noa-device-log.txt &
+            adb logcat -v threadtime '*:E' TestRunner:I > android/noa-device-log.txt &
             adb shell svc wifi enable
             adb push "$RUNNER_TEMP/noa-android-qa-cookie.txt" /data/local/tmp/noa-android-qa-cookie.txt
             adb shell chmod 600 /data/local/tmp/noa-android-qa-cookie.txt
@@ -142,6 +143,7 @@ jobs:
             android/noa-device-log.txt
             android/noa-host-memory.txt
             android/noa-host-kernel.txt
+            android/noa-emulator-host.log
             android/noa-restore-instrumentation.txt
             android/app/build/reports/lint-results-release.html
           retention-days: 14

@@ -31,7 +31,7 @@ public class PwaRenderingTest {
   WebParityTest.main(()->{assertTrue(w.getSettings().getUseWideViewPort());assertTrue(w.getSettings().getLoadWithOverviewMode());});
   for(String route:new String[]{"/","/noa-music.php"})for(String theme:new String[]{"noa-ivory","noa-studio"}){
    android.util.Log.i("TestRunner","Capturing "+route+" "+theme);
-   WebParityTest.main(()->w.loadUrl("https://noastudio.ai.kr"+route));
+   if(!route.equals("/")||!theme.equals("noa-ivory"))WebParityTest.main(()->w.loadUrl("https://noastudio.ai.kr"+route));
    WebParityTest.until(w,"document.readyState==='complete'&&window.NoaUI?.getState()&&document.fonts.status==='loaded'&&document.querySelector('.noa-mobile-nav a')");
    // Wait for authenticated theme preferences, then exercise the PWA's own theme control.
    SystemClock.sleep(1500);
