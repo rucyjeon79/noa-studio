@@ -90,7 +90,7 @@ function setListeningSource(scope,genre='',options={}){
 function renderQueueSource(){
  const source=listeningSelection();document.getElementById('dock-weather-feedback').hidden=source?.scope!=='weather';
  for(const id of ['dock-listening-source','dock-queue-source']){
-  const tag=document.getElementById(id);tag.hidden=!source;tag.textContent=source?.label||'';
+  const tag=document.getElementById(id);tag.hidden=!source||id==='dock-listening-source';tag.textContent=source?.label||'';
  }
 }
 function savePlayback(){if(changingTrack||leavingPage||!selected?.dataset.audio)return;try{sessionStorage.setItem(resumeKey,JSON.stringify({key:selected.dataset.key,seconds:Number.isFinite(player.currentTime)?player.currentTime:0,playing:!player.paused&&!player.ended,closed:document.querySelector('.noa-transport').hidden,volume:player.volume,repeat,shuffle,recommendation:!!recommendationQueue&&!activeQueue&&!collectionQueue,collectionLoop:!!collectionQueue&&!activeQueue,listening:listeningSelection(),queue:queue().map(b=>b.dataset.key),path:window.NoaPlayerShell?.path()||(location.pathname+location.search+location.hash),at:Date.now()}));}catch{}}
@@ -131,7 +131,7 @@ function renderVocal(r){
  const legacy={female:'여자솔로',male:'남자솔로',duet:'남녀듀엣'};
  const label=vocal||legacy[r.cast]||'보컬 정보 미등록';
  document.getElementById('detail-cast').textContent=label;
- document.getElementById('dock-artist').textContent=label;
+ document.getElementById('dock-artist').textContent=window.NoaBrowse?.genreName?.(r.genre)||'미분류';
  document.getElementById('cast-noa').hidden=!['female','duet'].includes(r.cast);
  document.getElementById('cast-noel').hidden=!['male','duet'].includes(r.cast);
  if(navigator.mediaSession?.metadata)navigator.mediaSession.metadata.artist=label;

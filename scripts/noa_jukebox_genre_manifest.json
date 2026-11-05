@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "remote": "noa-music.php",
+      "source": "deploy/noa-music.php",
+      "changes": [
+        {
+          "old": "document.getElementById('dock-artist').textContent=label;",
+          "new": "document.getElementById('dock-artist').textContent=window.NoaBrowse?.genreName?.(r.genre)||'미분류';"
+        },
+        {
+          "old": "const tag=document.getElementById(id);tag.hidden=!source;tag.textContent=source?.label||'';",
+          "new": "const tag=document.getElementById(id);tag.hidden=!source||id==='dock-listening-source';tag.textContent=source?.label||'';"
+        }
+      ]
+    },
+    {
+      "remote": "noa-app/p0-player.js",
+      "source": "deploy/noa-app/p0-player.js",
+      "changes": [
+        {
+          "old": "if(artist)artist.textContent=document.getElementById('detail-cast')?.textContent||'';",
+          "new": "if(artist)artist.textContent=window.NoaBrowse?.genreName?.(r.genre)||'미분류';"
+        }
+      ]
+    }
+  ]
+}

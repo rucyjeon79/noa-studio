@@ -1,6 +1,11 @@
 <?php
 // Isolated PHP-rendered fixture. Never uploaded to the operating site.
 $root=dirname(__DIR__,2);$path=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);
+if($path==='/noa-sitemap.php'){
+ echo '<!doctype html><main data-noa-member-directory><section class="noa-site-map"><h2 id="map-explore">둘러보기</h2>';
+ foreach(['home'=>['/','홈'],'music'=>['/noa-music.php','음원'],'lounge'=>['/noa-lounge.php','커뮤니티'],'shop'=>['/noa-shop.php','SHOP']] as $key=>[$href,$label])echo '<a class="noa-site-map-link" data-noa-route="'.$key.'" href="'.$href.'"><strong>'.$label.'</strong></a>';
+ echo '</section></main>';return;
+}
 if($path==='/noa-bridge/ui-preferences.php'){header('Content-Type: application/json');echo json_encode(['revision'=>0,'member'=>false,'admin'=>false,'settings'=>null,'defaults'=>['enabled'=>['noa-studio','noa-ivory'],'theme'=>'noa-studio']]);return;}
 if($path==='/noa-bridge/user-playlists.php'){http_response_code(401);header('Content-Type: application/json');echo '{}';return;}
 if($path==='/noa-music-detail.php'){header('Content-Type: application/json');$key=$_GET['key']??'';if(!in_array($key,['one','two'],true)){http_response_code(404);echo '{}';return;}echo json_encode(['key'=>$key,'rawLyrics'=>"[Verse 1]\n원문 줄\n\n[Chorus]\n후렴",'description'=>$key==='one'?"곡 이야기\n둘째 줄":''],JSON_UNESCAPED_UNICODE);return;}
