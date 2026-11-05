@@ -17,13 +17,18 @@ try{for(const file of files){
  await context.addCookies([{name:'PHPSESSID',value:cookie.slice(10),domain:'noastudio.ai.kr',path:'/',secure:true,httpOnly:true}]);
  await context.addInitScript(theme=>{localStorage.setItem('noa-device-theme',theme);sessionStorage.setItem('noa-amt2-fan-2026','1');},expected.theme);
  const page=await context.newPage();page.setDefaultTimeout(45000);
- await page.goto(expected.url,{waitUntil:'load'});
+ await page.goto('https://noastudio.ai.kr/',{waitUntil:'load'});
+ if(new URL(expected.url).pathname==='/noa-music.php'){
+  await page.waitForFunction(()=>document.querySelector('.noa-mobile-nav a[href="/noa-music.php"]'));
+  await page.evaluate(()=>document.querySelector('.noa-mobile-nav a[href="/noa-music.php"]').click());
+  await page.waitForURL(expected.url,{waitUntil:'load'});
+ }
  await page.waitForFunction(()=>window.NoaUI?.getState()&&document.fonts.status==='loaded'&&document.querySelectorAll('.noa-mobile-nav a').length===5);
  await page.waitForTimeout(1500);
  await page.evaluate(theme=>{NoaUI.apply({...NoaUI.getState(),theme});document.querySelector('#noa-amt-fan button[aria-label]')?.click();document.querySelector('[aria-label="AInoa 말풍선 닫기"]')?.click();scrollTo(0,0);},expected.theme);
  await page.waitForTimeout(1000);
  const actual=await page.evaluate(probe);writeFileSync(path.join(out,name+'.json'),JSON.stringify(actual,null,2));await page.screenshot({path:path.join(out,name+'.png')});
- assert.equal(actual.theme,expected.theme,name+' theme');assert.equal(actual.overflow,false,name+' overflow');
+ assert.equal(actual.url,expected.url,name+' route');assert.equal(actual.theme,expected.theme,name+' theme');assert.equal(actual.overflow,false,name+' overflow');
  assert.deepEqual(actual.assets,expected.assets,name+' must use identical live web assets');
  for(const [selector,nodes]of Object.entries(expected.nodes)){
   assert.equal(actual.nodes[selector].length,nodes.length,name+' '+selector+' count');

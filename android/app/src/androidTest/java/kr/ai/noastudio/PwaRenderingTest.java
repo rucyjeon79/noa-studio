@@ -23,7 +23,8 @@ import static org.junit.Assert.*;
 public class PwaRenderingTest {
  private static void navigate(WebView w,String route)throws Exception{
   WebParityTest.js(w,"window.__noaQaPreviousDocument=true;return true;");
-  WebParityTest.main(()->w.loadUrl("https://noastudio.ai.kr"+route));
+  if(route.equals("/noa-music.php"))WebParityTest.js(w,"document.querySelector('.noa-mobile-nav a[href=\"/noa-music.php\"]').click();return true;");
+  else WebParityTest.js(w,"location.assign("+JSONObject.quote(route)+");return true;");
   WebParityTest.until(w,"!window.__noaQaPreviousDocument&&location.pathname==="+JSONObject.quote(route)+"&&document.readyState==='complete'");
  }
  @Test public void liveScreensAndHomeRecommendation()throws Exception{
