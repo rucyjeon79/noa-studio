@@ -122,7 +122,7 @@ public class MainActivity extends Activity {
   }
   return valid;
  }
- private int repeatMode(JSONObject message){return message.optBoolean("repeat")?Player.REPEAT_MODE_ONE:message.optBoolean("collectionLoop")?Player.REPEAT_MODE_ALL:Player.REPEAT_MODE_OFF;}
+ private int repeatMode(JSONObject message){return message.optBoolean("repeat")?Player.REPEAT_MODE_ONE:Player.REPEAT_MODE_ALL;}
  private void nativeMessage(JSONObject message){
   String type=message.optString("type");
   if(type.equals("musicFolder")&&"/noa-music-download.php".equals(Uri.parse(browser.getUrl()).getPath())&&musicUrl==null){pickMusicFolder();return;}
