@@ -108,7 +108,7 @@ window.addEventListener('noa-track-selected',e=>{const r=e.detail?.record;if(!r|
  window.addEventListener('pagehide',()=>recovery.stop());
 })();
 
-/* Follow recommendation playback in the visible music list and open queue. */
+/* Always follow jukebox playback in the visible music list and open queue. */
 (() => {
  const audio = document.getElementById('sound-player');
  const queueDialog = document.getElementById('dock-queue');
@@ -123,7 +123,7 @@ window.addEventListener('noa-track-selected',e=>{const r=e.detail?.record;if(!r|
  }
 
  function followSong() {
-  if (!currentKey || !window.NoaMusic?.listeningSelection() || document.hidden) return;
+  if (!currentKey || document.hidden) return;
   if (queueDialog.open) { followQueue(); return; }
   if (document.body.classList.contains('noa-shell-open')) return;
   try {
@@ -132,12 +132,11 @@ window.addEventListener('noa-track-selected',e=>{const r=e.detail?.record;if(!r|
   } catch { return; }
   if (followedKey === currentKey) return;
   const key = currentKey;
-  followedKey = key;
   window.dispatchEvent(new CustomEvent('noa-find-song', {detail:{
    key,
    allow:() => currentKey === key && !document.hidden &&
      !document.body.classList.contains('noa-shell-open') && !queueDialog.open,
-   scroll:node => node.scrollIntoView({block:'center', behavior:'instant'})
+   scroll:node => { followedKey = key; node.scrollIntoView({block:'center', behavior:'instant'}); }
   }}));
  }
 
@@ -150,5 +149,12 @@ window.addEventListener('noa-track-selected',e=>{const r=e.detail?.record;if(!r|
   }
  });
  audio.addEventListener('playing', followSong);
+ function restoreFollow() {
+  if (audio.paused || document.hidden) return;
+  followedKey = '';
+  followSong();
+ }
+ document.addEventListener('visibilitychange', restoreFollow);
+ window.addEventListener('noa-player-route', restoreFollow);
  document.getElementById('dock-list')?.addEventListener('click', () => requestAnimationFrame(followQueue));
 })();
