@@ -44,6 +44,7 @@ try{
   writeFileSync(out+'/'+width+'.cpuprofile',JSON.stringify(profile));
   const hot=profile.nodes.filter(n=>n.hitCount).sort((a,b)=>b.hitCount-a.hitCount).slice(0,20).map(n=>({function:n.callFrame.functionName,url:n.callFrame.url.split('?')[0],line:n.callFrame.lineNumber+1,hits:n.hitCount}));
   const timing=await page.evaluate(()=>({navigation:performance.getEntriesByType('navigation')[0].toJSON(),paints:performance.getEntriesByType('paint').map(e=>e.toJSON()),resources:performance.getEntriesByType('resource').map(e=>({path:new URL(e.name).pathname,duration:e.duration,size:e.encodedBodySize})),longTasks:window.qaLongTasks,nodes:document.querySelectorAll('*').length}));
+  const initialRequests=requests.slice();
   const idle=Object.fromEntries(['TaskDuration','ScriptDuration','LayoutDuration','RecalcStyleDuration','LayoutCount','RecalcStyleCount'].map(k=>[k,after[k]-before[k]]));
   let transport=[];
   if(phase!=='baseline'){
@@ -59,6 +60,8 @@ try{
    }
    const invalidBase=phase==='candidate'?'http://127.0.0.1:8097':'https://noastudio.ai.kr';
    assert.equal((await fetch(invalidBase+'/noa-home-assets.php?files=common.php')).status,400);
+   const stale=await fetch(invalidBase+'/noa-home-assets.php?files=noa-brand.js&v=old',{headers:{'Accept-Encoding':'gzip;q=0'}});
+   assert.equal(stale.status,200);assert.equal(stale.headers.get('cache-control'),'no-store');assert.equal(stale.headers.get('content-encoding'),null);
    assert(await page.evaluate(()=>!!window.NoaUI&&!!window.NoaCardLayout&&!!window.NoaVoice&&!!window.NoaMemberSurfaces));
    assert.equal(await page.locator('.nl-moods button').count(),8);
    assert.equal(await page.locator('#noa-daily-fortune h2').textContent(),'오늘의 운세');
@@ -81,9 +84,15 @@ try{
    assert.deepEqual(errors,[]);
    assert(transport.reduce((sum,r)=>sum+r.encoded,0)<transport.reduce((sum,r)=>sum+r.decoded,0)*.4,'asset compression regressed');
   }
-  const report={phase,width,errors,requests,timing,idle,hot,transport};
+  let warm=null;
+  if(phase==='live'){
+   await page.reload({waitUntil:'domcontentloaded'});
+   warm=await page.evaluate(()=>({navigation:performance.getEntriesByType('navigation')[0].toJSON(),bundles:performance.getEntriesByType('resource').filter(e=>e.name.includes('/noa-home-assets.php?')).map(e=>({transfer:e.transferSize,encoded:e.encodedBodySize,duration:e.duration}))}));
+   assert.equal(warm.bundles.length,transport.length);assert(warm.bundles.every(r=>r.transfer===0),'unchanged bundles must come from the browser cache');
+  }
+  const report={phase,width,errors,requests:initialRequests,timing,idle,hot,transport,warm};
   writeFileSync(out+'/'+width+'.json',JSON.stringify(report,null,2));
-  console.log('HOME_RUNTIME',JSON.stringify({...report,requests:requests.length,timing:{...timing,resources:timing.resources.sort((a,b)=>b.duration-a.duration).slice(0,15),longTasks:timing.longTasks.slice(-10)}}));
+  console.log('HOME_RUNTIME',JSON.stringify({...report,requests:initialRequests.length,timing:{...timing,resources:timing.resources.sort((a,b)=>b.duration-a.duration).slice(0,15),longTasks:timing.longTasks.slice(-10)}}));
   await page.screenshot({path:out+'/'+width+'.png'});
   await context.close();
  }
