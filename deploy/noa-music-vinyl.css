@@ -505,6 +505,7 @@ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline
 
 /* Keep the edition frame; align the sleeve and transport to the actual content height. */
 @media screen {
+ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .lp-cover-toggle>svg{color:inherit}
  html[data-noa-theme] body.noa-record-room .noa-original-title{color:var(--noa-muted);-webkit-text-fill-color:currentColor;border-color:var(--noa-line);background:var(--noa-surface)}
  html[data-noa-theme][data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view=list] .noa-inline-song-row{
   --tool-width:44px;--sleeve-bottom:0px;padding:44px 12px 12px;column-gap:12px;row-gap:4px;
