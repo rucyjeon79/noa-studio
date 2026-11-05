@@ -5,7 +5,7 @@ import {verifyFixtures} from './fixtures.mjs';
 import {verifyDrawerPoints} from './drawer-points.mjs';
 import {verifyComposer} from './composer.mjs';
 import {verifyExperience} from './experience.mjs';
-import {verifyRelationships,auditRelationships,verifyFooterClearance} from './relationships.mjs';
+import {verifyRelationships,auditRelationships,verifyFooterClearance,verifyMusicFooter} from './relationships.mjs';
 const phase=process.env.NOA_MEMBER_PHASE||'baseline',base='https://noastudio.ai.kr',out='member-surface-proof/'+phase;
 mkdirSync(out,{recursive:true});
 const paths=[...new Set([...(existsSync('/tmp/noa-member-native/routes.json')?JSON.parse(readFileSync('/tmp/noa-member-native/routes.json','utf8')):[]),'/','/noa-music.php','/noa-youtube.php','/noa-world.php','/noa-lounge.php','/noa-lounge.php?board=free','/noa-creator-lab.php','/noa-shop.php','/noa-youngcart.php','/noa-points.php','/noa-vip.php','/noa-membership.php','/noa-my.php','/noa-creator.php','/noa-gifts.php','/noa-subscription.php','/noa-notifications.php','/noa-settings.php','/noa-login.php','/noa-about.php','/noa-terms.php','/noa-privacy.php','/bbs/login.php?legacy=1','/bbs/register.php','/bbs/password_lost.php','/bbs/search.php','/bbs/faq.php','/bbs/board.php?bo_table=free','/bbs/write.php?bo_table=free','/shop/cart.php','/shop/orderinquiry.php','/shop/orderform.php'])];
@@ -14,7 +14,7 @@ const report={phase,public:[],fixtures:[],errors:[],writes:0};
 const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
 
 try{
- if(phase!=='baseline'){await verifyDrawerPoints(browser,out,report);await verifyExperience(browser,phase,out,report);await verifyFixtures(browser,phase,out,report);await verifyComposer(browser,out,report);await verifyRelationships(browser,out,report);}
+ if(phase!=='baseline'){await verifyDrawerPoints(browser,out,report);await verifyMusicFooter(browser,out,report);await verifyExperience(browser,phase,out,report);await verifyFixtures(browser,phase,out,report);await verifyComposer(browser,out,report);await verifyRelationships(browser,out,report);}
  await Promise.all([390,1440].map(async width=>{
   const context=await browser.newContext({viewport:{width,height:900},locale:'ko-KR',serviceWorkers:'block',reducedMotion:'reduce'});
   context.setDefaultTimeout(15000);context.setDefaultNavigationTimeout(30000);
@@ -57,8 +57,8 @@ try{
      if(chosen.has(path))await page.screenshot({path:out+'/'+width+'-'+theme+'-'+path.replace(/[^a-z0-9]/gi,'_')+'.jpg',type:'jpeg',quality:82});
      if(['/','/noa-music.php','/noa-youtube.php','/noa-lounge.php','/noa-shop.php'].includes(path)&&await page.locator('.noa-footer-scene').isVisible()){
       const greeting=page.locator('#noa-ainoa .ainoa-message-dismiss');if(await greeting.isVisible())await greeting.click();
-      await page.waitForFunction(()=>{const img=document.querySelector('.noa-footer-landscape');return !img||img.complete;});
       await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+      await page.waitForFunction(()=>{const img=document.querySelector('.noa-footer-landscape');return !img||(img.complete&&img.naturalWidth>0);});
       const blocked=await page.locator('.noa-footer-scene [data-footer-theme]').evaluateAll(nodes=>nodes.flatMap(e=>{const r=e.getBoundingClientRect();return [[r.left+4,r.top+4],[r.right-4,r.bottom-4]].filter(([x,y])=>!e.contains(document.elementFromPoint(x,y))).map(([x,y])=>({choice:e.dataset.footerTheme,x,y}));}));
       assert.deepEqual(blocked,[],'footer choices obstructed: '+JSON.stringify({path,width,theme,blocked}));
       await page.screenshot({path:out+'/footer-'+width+'-'+theme+'-'+path.replace(/[^a-z0-9]/gi,'_')+'.jpg',type:'jpeg',quality:85});

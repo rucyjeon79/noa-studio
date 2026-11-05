@@ -93,3 +93,28 @@ export async function verifyFooterClearance(page,entry,report){
  for(const item of measurements){assert.equal(item.mainEnd,0);assert(item.gap>=23.5&&item.gap<=32.5,JSON.stringify({...entry,...item}));assert.equal(item.footerEnd,item.values.reduce((a,b)=>a+b,24));}
  (report.clearance??=[]).push({...entry,measurements});
 }
+
+// Public music redirects guests home. Cover the signed-in music footer topology
+// with the actual music stylesheet and cross-link mounting code, without audio.
+export async function verifyMusicFooter(browser,out,report){
+ const music=readFileSync('deploy/noa-music.php','utf8');
+ const inline=[...music.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m=>m[1]).join('\n');
+ const themes=JSON.parse(readFileSync('deploy/noa-design.json','utf8')).themes;
+ for(const width of [320,390,768,1440])for(const theme of themes){
+  const context=await browser.newContext({viewport:{width,height:900},serviceWorkers:'block',reducedMotion:'reduce'});
+  await context.route('**/*',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><html><body></body></html>'}));
+  const page=await context.newPage();await page.goto('https://music.fixture/noa-music.php');
+  const tokens=Object.entries(theme.tokens).map(([k,v])=>'--noa-'+k+':'+v).join(';');
+  await page.setContent('<!doctype html><html lang="ko" class="noa-shell-wide noa-member-ui" data-noa-precision="true" data-noa-style="starlight" data-noa-theme="'+theme.id+'" style="'+tokens+'"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body class="noa-page noa-sound-page noa-record-room"><main><section><h1>당신의 이야기, 우리의 음악</h1><p>사연 남기기 → 창작자의 곡 답변 → 카드로 바로 듣기.</p><details><summary>내 삶의 가장 따뜻한 선물</summary><p>사연곡</p></details><details><summary>봄내음 보다 너를</summary><p>사연곡</p></details></section><audio id="sound-player"></audio></main><footer class="noa-sidebar-bottom noa-mobile-footer"><section class="noa-footer-scene" aria-label="스튜디오 안내"></section></footer></body></html>');
+  await page.addStyleTag({content:inline});
+  for(const file of ['noa-ui.css','noa-starlight.css','noa-music-vinyl.css','noa-member-surfaces.css'])await page.addStyleTag({content:readFileSync('deploy/'+file,'utf8')});
+  await page.addScriptTag({content:readFileSync('deploy/noa-ecosystem-links.js','utf8')});
+  await page.locator('#noa-ecosystem-links').waitFor();
+  await verifyFooterClearance(page,{path:'signed-in-music-fixture',width,theme:theme.id},report);
+  const gap=await page.evaluate(()=>{const links=document.querySelector('#noa-ecosystem-links');return document.querySelector('.noa-mobile-footer').getBoundingClientRect().top-links.getBoundingClientRect().bottom;});
+  assert.equal(gap,24);
+  report.fixtures.push({key:'music-footer',width,theme:theme.id,gap,actualMusicStyles:true,actualCrossLinks:true});
+  await context.close();
+ }
+ console.log('MEMBER_MUSIC_FOOTER_OK');
+}

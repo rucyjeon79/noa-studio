@@ -363,7 +363,10 @@ html.noa-shell-wide[data-noa-style] body .noa-mobile-footer{padding-block:0;bord
 html.noa-shell-wide[data-noa-theme] body .noa-main>.noa-mobile-footer{margin:0}
 /* Legacy precision :is(...,#wrapper) carries ID specificity onto every main.
    In this topology only the following footer owns dock/player clearance. */
-html.noa-shell-wide[data-noa-precision] body>main:has(+.noa-mobile-footer){padding-block-end:0!important;min-height:0}
+html.noa-shell-wide[data-noa-precision] body>main:has(+.noa-mobile-footer),
+html.noa-shell-wide[data-noa-precision] body>#noa-notification-page:has(+.noa-mobile-footer){padding-block-end:0!important;min-height:0}
+html.noa-member-ui :is(#points-orders,#vip-orders)>p:last-child{margin-block-end:0}
+html.noa-member-ui body>main:has(+.noa-mobile-footer)>#noa-ecosystem-links{margin-block-end:0!important;padding-block-end:0!important}
 html.noa-shell-wide[data-noa-style] body>.noa-mobile-footer{padding-bottom:calc(var(--noa-nav-space,0px) + var(--noa-player-space,0px) + var(--noa-transfer-space,0px) + 24px)}
 html.noa-shell-wide[data-noa-precision].noa-g5 body:has(>.mbskin):has(>.noa-mobile-footer){padding-bottom:0}
 html.noa-shell-wide[data-noa-style] .noa-mobile-footer+:is(.noa-footer,.ne-footer){display:none}
