@@ -149,3 +149,11 @@ html.noa-member-ui.noa-g5 #bo_vc_w textarea#wr_content{min-block-size:144px}
 
 html.noa-member-ui.ny-native :is(#sod_bsk,#sod_frm,#sod_inquiry) :is(.btn_submit,.btn01,.btn02,.btn_frmline){min-height:48px}
 html.noa-member-ui.ny-native #sod_frm textarea{min-height:144px!important}
+/* Keep the reading column clean; the row and outer account panel own the surface. */
+html.noa-member-ui.noa-g5 #bo_list .bo_tit{background:transparent}
+html.noa-member-ui.noa-g5 #bo_list tbody tr{border-bottom:1px solid var(--noa-line)}
+html.noa-member-ui.noa-g5 .mbskin :is(#fregister,#fregisterform) section{padding:0;border:0;background:transparent}
+html.noa-member-ui.noa-g5 .mbskin :is(#fregister,#fregisterform) section+section{padding-top:24px;border-top:1px solid var(--noa-line)}
+html.noa-member-ui.noa-g5 :is(.mbskin,.new_win) .btn_confirm{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:24px}
+html.noa-member-ui.noa-g5 :is(.mbskin,.new_win) :is(.btn_submit,.btn_cancel,.btn01,.btn02,.btn_frmline){display:inline-flex;align-items:center;justify-content:center;min-height:48px;border-radius:4px;padding:12px 16px;line-height:1.5}
+@media(max-width:760px){html.noa-member-ui.noa-g5 .mbskin .btn_confirm>*{flex:1;min-width:0;text-align:center}}

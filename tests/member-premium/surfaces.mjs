@@ -58,4 +58,4 @@ try{
  writeFileSync(out+'/report.json',JSON.stringify(report,null,2));await browser.close();
 }
 console.log('MEMBER_SURFACE_RESULT',JSON.stringify({phase,cases:report.public.length,errors:report.errors,overflow:report.public.filter(x=>x.documentOverflow).map(x=>[x.width,x.path,x.overflow])}));
-if(phase!=='baseline'){assert.equal(report.errors.length,0);assert.equal(report.public.filter(x=>x.documentOverflow).length,0);assert.equal(report.public.filter(x=>!x.memberAssets).length,0,'shared member assets missing');assert.equal(report.public.filter(x=>x.pageErrors.length).length,0,'browser runtime errors');}
+if(phase!=='baseline'){assert.equal(report.errors.length,0);assert.deepEqual(report.public.filter(x=>x.status>=400).map(x=>[x.path,x.status]),[],'member route HTTP errors');assert.equal(report.public.filter(x=>x.documentOverflow).length,0);assert.equal(report.public.filter(x=>!x.memberAssets).length,0,'shared member assets missing');assert.equal(report.public.filter(x=>x.pageErrors.length).length,0,'browser runtime errors');}
