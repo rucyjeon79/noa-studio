@@ -12,6 +12,9 @@ icons.shop='M4 8h16l1 13H3L4 8Z M8 8V6a4 4 0 0 1 8 0v2';
 icons.youtube='M3 5h18v14H3z M10 9l6 3-6 3z';
 // One silhouette per operation; branding and membership symbols stay separate.
 Object.assign(icons,{
+ heart:'M12 21 3.5 12.5A5.5 5.5 0 0 1 12 5.5a5.5 5.5 0 0 1 8.5 7L12 21Z',
+ flag:'M4 22V3 M4 3c5-4 11 4 16 0v11c-5 4-11-4-16 0',
+ compare:'M4 4h6v16H4z M14 4h6v16h-6z',
  save:'M5 3h12l4 4v14H3V3h2Z M7 3v6h10V3 M7 21v-8h10v8',
  upload:'M12 16V3m-5 5 5-5 5 5 M4 17v4h16v-4',
  share:'M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6 M6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6 M18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6 M9 10.5l6-4 M9 13.5l6 4',
@@ -99,23 +102,24 @@ function actionIcon(el){
  const text=(el.getAttribute('aria-label')||el.textContent||el.title||'').trim(),href=el.getAttribute('href')||'';
  // Actions take priority over subject words: saving a song is still a save action.
  const rules=[
-  [/삭제|지우기|비우기|\bdelete\b/i,'trash'],[/닫기|취소|\b(close|cancel)\b/i,'close'],
+  [/삭제|지우기|비우기|\bdelete\b/i,'trash'],[/닫기|취소|철회|거절|연결 해제|첨부 제외|\b(close|cancel)\b/i,'close'],
   [/일시[ ]?정지|\bpause\b/i,'pause'],[/복사|\bcopy\b/i,'copy'],[/공유|\bshare\b/i,'share'],
   [/다운로드|설치 파일|내려받|다운받|\bdownload\b/i,'download'],[/업로드|올리기|파일 교체|\bupload\b/i,'upload'],
   [/장바구니|카트|\bcart\b/i,'cart'],[/선물|후원|\bgift\b/i,'gift'],
   [/충전|포인트|\bwallet\b/i,'wallet'],[/구매|결제|주문|\b(checkout|payment|buy)\b/i,'card'],
-  [/저장한|보관한|스크랩|찜|북마크|\bbookmark\b/i,'bookmark'],
-  [/저장|\bsave\b/i,'save'],[/글쓰기|작성|수정|편집|\bedit\b/i,'edit'],
-  [/게시하기|발행|등록|신청|적용|확인|완료/,'check'],[/검색|찾기|\bsearch\b/i,'search'],
+  [/저장한|보관한|상품 보관|스크랩|찜|북마크|\bbookmark\b/i,'bookmark'],
+  [/저장|\bsave\b/i,'save'],[/글쓰기|이야기 쓰기|음악 이야기 쓰기|작성|수정|편집|\bedit\b/i,'edit'],
+  [/게시하기|발행|등록|신청|수락|적용|확인|완료/,'check'],[/검색|찾기|\bsearch\b/i,'search'],
   [/로그아웃|\blog[ -]?out\b/i,'logout'],[/로그인|\blog[ -]?in\b/i,'login'],
-  [/새로고침|다시 불러|\brefresh\b/i,'refresh'],[/이전|돌아가기|뒤로|\bback\b/i,'back'],
+  [/새로고침|다시 시도|다시 불러|\brefresh\b/i,'refresh'],[/이전|돌아가기|뒤로|\bback\b/i,'back'],
   [/다음|계속|더[ ]?보기|전체[ ]?보기|바로가기|\bnext\b/i,'forward'],
   [/새[ ]?목록|추가|만들기|생성|\badd\b/i,'plus'],
   [/재생|듣기|\bplay\b/i,'play'],[/음악.*담기|곡.*담기|재생목록|플레이리스트/,'playlists'],
   [/앨범|컬렉션/,'disc'],[/목록|리스트/,'list'],[/보내|발송|쪽지|메일/,'mail'],
+  [/좋아요|응원/,'heart'],[/신고/,'flag'],[/비교/,'compare'],
   [/알림|도착한 소식|내 활동/,'bell'],[/공지/,'notice'],[/도움|문의|자주 묻|FAQ/i,'help'],
   [/사이트맵|전체 서비스|전체 메뉴/,'sitemap'],[/세계관|NOA WORLD/i,'world'],
-  [/설명|정보|안내/,'info'],[/커뮤니티|이야기|댓글|답글|라운지/,'community'],
+  [/약관|개인정보|정책/,'document'],[/설명|정보|안내/,'info'],[/커뮤니티|이야기|댓글|답글|라운지/,'community'],
   [/youtube|영상|\bMV\b/i,'youtube'],[/관리|설정|옵션/,'settings'],
   [/캐릭터|회원|계정|프로필/,'user'],[/음악|음원|곡|suno/i,'music'],
   [/라이브러리|보관함|자료실/,'library'],[/약관|개인정보|정책/,'document'],[/SHOP|굿즈|상품/i,'shop']
@@ -132,7 +136,7 @@ function headingIcon(text){
 // Action footers, forms and storefront controls may render after the page shell.
 const actionScopes=[
  '#ecosystem .ec-actions button','#ecosystem .ec-shop-secondary button','#ecosystem .ec-buy',
- '.ec-dialog form button','.noa-gifts button','.noa-membership-layout form button',
+ '.ec-dialog button','.noa-gifts button','.noa-membership-layout form button',
  '.noa-points-page button[data-add]','.noa-point-packs button','.noa-point-checkout button[type=submit]',
  '.noa-login-form button','.noa-g5 .btn_confirm button','.noa-g5 #bo_sch button',
  '.noa-page button.noa-button','.lp-view-switch button',
