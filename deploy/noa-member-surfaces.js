@@ -23,9 +23,32 @@ function fieldLabel(id,text){
  const row=field.closest('#autosave_wrapper,.bo_w_tit,.bo_w_link,.write_div')||field;
  row.before(label);
 }
+function memberPresentation(){
+ // Reuse the native introduction and label. No fields or form handlers move.
+ const recovery=document.querySelector('#find_info form');
+ if(recovery&&!recovery.querySelector('.noa-account-intro')){
+  const heading=recovery.querySelector(':scope>h3'),description=recovery.querySelector('#info_fs>p');
+  if(heading&&description){
+   const intro=document.createElement('div');intro.className='noa-account-intro';
+   const kicker=document.createElement('span');kicker.className='noa-member-kicker';kicker.textContent='MY STUDIO';
+   recovery.prepend(intro);intro.append(kicker,heading,description);
+  }
+ }
+ const empty=document.querySelector('#sod_bsk.noa-cart-empty :is(.empty_table,.empty_list)');
+ if(empty&&!empty.querySelector('.noa-cart-empty-title')){
+  const title=document.createElement('strong');title.className='noa-cart-empty-title';title.textContent='취향을 담을 자리';
+  const note=document.createElement('span');note.className='noa-cart-empty-note';
+  while(empty.firstChild)note.append(empty.firstChild);empty.append(title,note);
+ }
+ // Counts are interface copy, not catalog data or prices.
+ document.querySelectorAll('.ny-section-title>span').forEach(el=>{
+  const match=el.textContent.trim().match(/^(\d+) PRODUCTS$/);if(match)el.textContent=match[1]+'개 상품';
+ });
+}
 function enhance(){
  document.querySelectorAll(tableScope).forEach(tableLabels);
  const cart=document.getElementById('sod_bsk');if(cart)cart.classList.toggle('noa-cart-empty',!!cart.querySelector('.empty_table,.empty_list')&&!cart.querySelector('input[name="ct_chk[]"],input[name="ct_id[]"]'));
+ memberPresentation();
  fieldLabel('wr_subject','제목');fieldLabel('wr_content','내용');fieldLabel('wr_link1','관련 링크 1');fieldLabel('wr_link2','관련 링크 2');
  // Label an overflow region without inserting wrappers into native table/form handlers.
  document.querySelectorAll('.ny-native :is(.tbl_head01,.tbl_head02,.tbl_head03),#bo_list .tbl_wrap').forEach(el=>{
