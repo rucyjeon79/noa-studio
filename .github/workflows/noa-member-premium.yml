@@ -25,6 +25,7 @@ jobs:
         run: |
           python scripts/qa/noa-qa-font.py
           timeout 90s npm install --prefix "$RUNNER_TEMP/noa-member" --no-save --ignore-scripts --package-lock=false --no-audit --no-fund --fetch-timeout=20000 --fetch-retries=1 playwright@1.56.1
+          cp tests/member-premium/composer.mjs "$RUNNER_TEMP/noa-member/composer.mjs"
           cp tests/member-premium/fixtures.mjs "$RUNNER_TEMP/noa-member/fixtures.mjs"
           cp tests/member-premium/surfaces.mjs "$RUNNER_TEMP/noa-member/check.mjs"
       - name: Inspect member entry points without transactions

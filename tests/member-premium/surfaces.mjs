@@ -2,6 +2,7 @@ import {chromium} from 'playwright';
 import {readFileSync,mkdirSync,writeFileSync,existsSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {verifyFixtures} from './fixtures.mjs';
+import {verifyComposer} from './composer.mjs';
 const phase=process.env.NOA_MEMBER_PHASE||'baseline',base='https://noastudio.ai.kr',out='member-surface-proof/'+phase;
 mkdirSync(out,{recursive:true});
 const paths=['/','/noa-music.php','/noa-youtube.php','/noa-world.php','/noa-lounge.php','/noa-lounge.php?board=free','/noa-creator-lab.php','/noa-shop.php','/noa-youngcart.php','/noa-points.php','/noa-vip.php','/noa-membership.php','/noa-my.php','/noa-creator.php','/noa-gifts.php','/noa-subscription.php','/noa-notifications.php','/noa-settings.php','/noa-login.php','/noa-about.php','/noa-terms.php','/noa-privacy.php','/bbs/login.php?legacy=1','/bbs/register.php','/bbs/password_lost.php','/bbs/search.php','/bbs/faq.php','/bbs/board.php?bo_table=free','/bbs/write.php?bo_table=free','/shop/cart.php','/shop/orderinquiry.php','/shop/orderform.php'];
@@ -30,6 +31,10 @@ try{
    try{
     pageErrors=[];const response=await page.goto(base+path,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>!!window.NoaUI?.getState(),null,{timeout:10000}).catch(()=>{});
+    if(phase==='candidate'&&!await page.locator('[src*="noa-member-surfaces.js"]').count()){
+     await page.addStyleTag({content:readFileSync('deploy/noa-member-surfaces.css','utf8')});
+     await page.addScriptTag({content:readFileSync('deploy/noa-member-surfaces.js','utf8')});
+    }
     for(const theme of ['noa-studio','noa-ivory']){
      await page.evaluate(t=>{if(window.NoaUI)window.NoaUI.apply({...window.NoaUI.getState(),theme:t});},theme);
      await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
@@ -38,9 +43,9 @@ try{
       const scope=document.querySelector('main,#container,.mbskin,.new_win')||document.body;
       const overflow=[...scope.querySelectorAll('*')].filter(e=>visible(e)&&!e.closest('dialog:not([open]),#noa-menu-drawer,#noa-ainoa')&&e.getBoundingClientRect().right>innerWidth+2).slice(0,12).map(e=>({tag:e.tagName,id:e.id,class:e.className,right:Math.round(e.getBoundingClientRect().right)}));
       const fields=[...scope.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea')].filter(visible).map(e=>({id:e.id,name:e.name,kind:e.type,h:e.getBoundingClientRect().height,font:getComputedStyle(e).fontSize,radius:getComputedStyle(e).borderRadius}));
-      return{title:document.title,theme:document.documentElement.dataset.noaTheme,heading:scope.querySelector('h1,h2,#container_title')?.textContent.trim(),documentOverflow:document.documentElement.scrollWidth>innerWidth+1,overflow,fields,forms:[...scope.querySelectorAll('form')].map(f=>({action:f.getAttribute('action'),method:f.method,fields:[...f.elements].map(e=>[e.name,e.type])})),memberAssets:!!document.querySelector('[src*="noa-member-surfaces.js"]'),text:scope.innerText.slice(0,180)};
+      return{title:document.title,theme:document.documentElement.dataset.noaTheme,heading:scope.querySelector('h1,h2,#container_title')?.textContent.trim(),documentOverflow:document.documentElement.scrollWidth>innerWidth+1,overflow,fields,forms:[...scope.querySelectorAll('form')].map(f=>({action:f.getAttribute('action'),method:f.method,fields:[...f.elements].map(e=>[e.name,e.type])})),memberAssets:!!window.NoaMemberSurfaces,captcha:document.querySelector('#captcha')?.outerHTML,text:scope.innerText.slice(0,180)};
      });
-     report.public.push({path,actual:new URL(page.url()).pathname,width,status:response?.status(),theme,...audit,pageErrors:[...pageErrors]});
+     report.public.push({requestedTheme:theme,path,actual:new URL(page.url()).pathname,width,status:response?.status(),theme,...audit,pageErrors:[...pageErrors]});
      if(chosen.has(path))await page.screenshot({path:out+'/'+width+'-'+theme+'-'+path.replace(/[^a-z0-9]/gi,'_')+'.jpg',type:'jpeg',quality:82});
     }
     console.log('MEMBER_SURFACE_OBSERVED',width,path,new URL(page.url()).pathname);
@@ -48,7 +53,7 @@ try{
   }
   await context.close();
  }));
- if(phase!=='baseline')await verifyFixtures(browser,phase,out,report);
+ if(phase!=='baseline'){await verifyFixtures(browser,phase,out,report);await verifyComposer(browser,out,report);}
 }finally{
  writeFileSync(out+'/report.json',JSON.stringify(report,null,2));await browser.close();
 }
