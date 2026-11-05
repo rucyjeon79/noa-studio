@@ -28,7 +28,10 @@ async function checkFooter(page,width,theme,home=false){
  const {art,caption,choices}=geometry;
  const inside=box=>box.x>=art.x-1&&box.y>=art.y-1&&box.x+box.width<=art.x+art.width+1&&box.y+box.height<=art.y+art.height+1;
  assert(inside(caption)&&inside(choices)&&caption.x+caption.width<=choices.x&&caption.y>art.y+art.height/2&&choices.y>art.y+art.height/2,JSON.stringify({width,theme,geometry}));
- assert(caption.x-art.x<=25&&art.x+art.width-choices.x-choices.width<=25,'caption left, theme choices right');
+ assert(caption.x-art.x<=25,'caption stays left');
+ const floating=await page.locator('#noa-ainoa>.ainoa-symbol').isVisible();
+ const rightInset=art.x+art.width-choices.x-choices.width;
+ assert(rightInset>=15&&rightInset<=(floating?97:25),'theme choices leave room for desktop AInoa');
  assert(art.y+art.height-choices.y-choices.height<=25,'theme choices stay at image bottom');
  for(const button of geometry.buttons)assert(button.width>=44&&button.height>=44);
  assert.equal(await scene.locator('[data-footer-theme] svg').count(),3);
@@ -54,7 +57,7 @@ try{
   const context=await browser.newContext({viewport:{width,height:900},locale:'ko-KR',serviceWorkers:'block',reducedMotion:'reduce'});
   context.setDefaultTimeout(20000);context.setDefaultNavigationTimeout(30000);
   try{
-   if(phase==='candidate')for(const file of ['noa-ui.js','noa-starlight.css','noa-account.js']){
+   if(phase==='candidate')for(const file of ['noa-ui.js','noa-starlight.css','noa-account.js','noa-member-surfaces.css','noa-member-surfaces.js']){
     await context.route('**/'+file+'*',r=>r.fulfill({body:readFileSync('deploy/'+file),contentType:file.endsWith('.css')?'text/css':'application/javascript'}));
    }
    if(phase==='candidate')await context.route('**/noa-assets/drawer-studio-session.jpg',route=>route.fulfill({body:readFileSync('public/drawer/studio-session.jpg'),contentType:'image/jpeg'}));

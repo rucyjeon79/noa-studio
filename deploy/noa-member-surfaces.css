@@ -380,6 +380,8 @@ html.noa-shell-wide[data-noa-theme] body .noa-footer-heading .noa-footer-themes{
 html.noa-shell-wide[data-noa-theme] body .noa-footer-heading .noa-footer-themes button{color:var(--noa-muted);border-radius:4px}
 html.noa-shell-wide[data-noa-theme] body .noa-footer-heading .noa-footer-themes button[aria-pressed=true]{background:var(--noa-accent);color:var(--noa-accentText);box-shadow:none}
 .noa-footer-theme-label{color:#fff}
+/* Desktop AInoa occupies the lower-right corner; keep theme controls beside it. */
+html.noa-member-ui:not([data-noa-home-ainoa]) body .noa-footer-scene .noa-footer-heading{padding-inline-end:96px}
 
 /* Shared interaction timing. No playback clocks, media transforms or form values change. */
 html.noa-member-ui{--noa-motion-press:150ms;--noa-motion-enter:240ms;--noa-motion-exit:160ms;--noa-motion-ease:cubic-bezier(.2,.8,.2,1)}

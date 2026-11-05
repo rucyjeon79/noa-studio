@@ -59,6 +59,8 @@ try{
       const greeting=page.locator('#noa-ainoa .ainoa-message-dismiss');if(await greeting.isVisible())await greeting.click();
       await page.waitForFunction(()=>{const img=document.querySelector('.noa-footer-landscape');return !img||img.complete;});
       await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+      const blocked=await page.locator('.noa-footer-scene [data-footer-theme]').evaluateAll(nodes=>nodes.flatMap(e=>{const r=e.getBoundingClientRect();return [[r.left+4,r.top+4],[r.right-4,r.bottom-4]].filter(([x,y])=>!e.contains(document.elementFromPoint(x,y))).map(([x,y])=>({choice:e.dataset.footerTheme,x,y}));}));
+      assert.deepEqual(blocked,[],'footer choices obstructed: '+JSON.stringify({path,width,theme,blocked}));
       await page.screenshot({path:out+'/footer-'+width+'-'+theme+'-'+path.replace(/[^a-z0-9]/gi,'_')+'.jpg',type:'jpeg',quality:85});
       await page.evaluate(()=>window.scrollTo(0,0));
      }
