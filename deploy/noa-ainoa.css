@@ -75,9 +75,10 @@ html[data-noa-voice-admin] :is(#noa-ainoa,#noa-voice-modal){--noa-bg:#fff;--noa-
 :is(#noa-ainoa,#noa-voice-modal) .ainoa-message-actions{margin-top:8px}
 @media(max-width:760px){:is(#noa-ainoa,#noa-voice-modal){--ainoa-size:52px;right:max(12px,env(safe-area-inset-right));--ainoa-bottom:calc(var(--noa-nav-space,0px) + var(--noa-player-space,0px) + var(--noa-transfer-space,0px) + 12px)}}
 
-/* Operational feedback participates in the dialog's flow; it never covers its controls. */
-html body #noa-voice-modal{position:relative;inset:auto;display:block;grid-column:1/-1;flex:0 0 auto;width:100%;height:auto;max-width:100%;margin:16px 0 0;--ainoa-size:0px;--ainoa-gap:0px;--ainoa-bottom:0px;z-index:auto;box-sizing:border-box}
-html body #noa-voice-modal .ainoa-tip.ainoa-message{position:relative;inset:auto;transform:none;width:100%;max-width:100%;max-height:none;margin:0;background:var(--noa-raised);color:var(--noa-text);box-shadow:none}
+/* Operational notices float independently without extending or scrolling the dialog. */
+html body #noa-voice-modal{position:fixed;inset:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) auto auto;display:block;width:min(360px,calc(100vw - 32px));height:auto;max-width:100%;margin:0;padding:0;border:0;background:transparent;overflow:visible;--ainoa-size:0px;--ainoa-gap:0px;--ainoa-bottom:0px;z-index:180;box-sizing:border-box}
+html body #noa-voice-modal .ainoa-tip.ainoa-message{position:relative;inset:auto;transform:none;width:100%;max-width:100%;max-height:min(58dvh,calc(100dvh - 32px));margin:0;background:var(--noa-raised);color:var(--noa-text);box-shadow:0 8px 24px var(--noa-line)}
+html body #noa-voice-modal::backdrop{background:transparent;pointer-events:none}
 html body #noa-voice-modal .ainoa-tip::after{display:none}
 
 /* The operator chat has its own controls inside the shared site and music dock. */

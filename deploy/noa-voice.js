@@ -38,9 +38,9 @@ function close(next=true,ack=false){if(ack)try{sessionStorage.removeItem('noa-vo
 function routine(item){return ['welcome','welcome-error'].includes(item.options.key)||item.options.kind==='song';}
 function place(item,modal){
  const root=doc.getElementById('noa-ainoa');if(!root)return;const dock=doc.documentElement.hasAttribute('data-noa-desktop')?doc.getElementById('noa-desktop-ainoa'):null,tip=bubble();let proxy=doc.getElementById('noa-voice-modal');
- // The search widget stays in its own shell. Only an operational message belongs in a modal.
+ // Keep feedback interactive with the modal, but display it in its own viewport overlay.
  if(root.parentElement!==(dock||doc.body))(dock||doc.body).append(root);
- if(modal&&item&&tip){if(!proxy){proxy=doc.createElement('aside');proxy.id='noa-voice-modal';proxy.setAttribute('aria-label','AInoa 안내');}if(proxy.parentElement!==modal)modal.append(proxy);if(tip.parentElement!==proxy)proxy.append(tip);}
+ if(modal&&item&&tip){if(!proxy){proxy=doc.createElement('aside');proxy.id='noa-voice-modal';proxy.setAttribute('aria-label','AInoa 안내');proxy.setAttribute('popover','manual');}if(proxy.parentElement!==modal)modal.append(proxy);if(tip.parentElement!==proxy)proxy.append(tip);if(typeof proxy.showPopover==='function'&&!proxy.matches(':popover-open'))proxy.showPopover();}
  else if(tip&&tip.parentElement!==root)root.insertBefore(tip,root.querySelector('.ainoa-panel'));
  if(proxy&&!proxy.childElementCount)proxy.remove();
 }
@@ -61,7 +61,6 @@ function render(){
  tip.append(label,text);if(actions.childElementCount)tip.append(actions);tip.hidden=false;ownChange=false;
  // Only explicit operational acknowledgement stays open. Greetings and notices expire.
  remaining=Math.max(8000,Math.min(22000,text.textContent.length*65));resume();
- if(modal)requestAnimationFrame(()=>{if(tip.isConnected&&!tip.hidden)tip.scrollIntoView({block:'nearest'});});
 }
 function condition(node){say(node.dataset.noaCondition,{priority:true,sticky:true,force:true,key:'access-condition',href:/로그인/.test(node.dataset.noaCondition)?'/noa-login.php':'/noa-my.php',linkLabel:/로그인/.test(node.dataset.noaCondition)?'로그인':'MY에서 확인'});}
 doc.addEventListener('click',e=>{const node=e.target.closest?.('[data-noa-condition]');if(!node)return;e.preventDefault();e.stopImmediatePropagation();condition(node);},true);
