@@ -37,9 +37,11 @@ try{
      await page.addStyleTag({content:readFileSync('deploy/noa-member-surfaces.css','utf8')});
      await page.addScriptTag({content:readFileSync('deploy/noa-member-surfaces.js','utf8')});
     }
+    if(await page.locator('#ec-content').count())await page.waitForFunction(()=>{const e=document.querySelector('#ec-content');return e.childElementCount>0&&!e.textContent.includes('불러오는 중입니다.');},null,{timeout:15000});
     for(const theme of ['noa-studio','noa-ivory']){
      await page.evaluate(t=>{if(window.NoaUI)window.NoaUI.apply({...window.NoaUI.getState(),theme:t});},theme);
      await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+     if(await close.isVisible())await close.click();
      const audit=await page.evaluate(()=>{
       const visible=e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(e).visibility!=='hidden'};
       const scope=document.querySelector('main,#container,.mbskin,.new_win')||document.body;
@@ -49,6 +51,7 @@ try{
      });
      report.public.push({requestedTheme:theme,path,actual:new URL(page.url()).pathname,width,status:response?.status(),theme,...audit,pageErrors:[...pageErrors]});
      if(phase!=='baseline')await auditRelationships(page,{path,width,theme},report);
+     if(path==='/'&&await page.locator('#noa-listening').isVisible())await page.locator('#noa-listening').screenshot({path:out+'/listening-'+width+'-'+theme+'.jpg',type:'jpeg',quality:85});
      if(chosen.has(path))await page.screenshot({path:out+'/'+width+'-'+theme+'-'+path.replace(/[^a-z0-9]/gi,'_')+'.jpg',type:'jpeg',quality:82});
     }
     console.log('MEMBER_SURFACE_OBSERVED',width,path,new URL(page.url()).pathname);

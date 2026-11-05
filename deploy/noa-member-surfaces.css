@@ -323,6 +323,7 @@ html.noa-member-ui.noa-shell-wide[data-noa-theme] body .noa-main>.noa-mobile-foo
 html.noa-member-ui .ny-store-tools+.ny-product-section{margin-top:24px}
 html.noa-member-ui.noa-shell-wide[data-noa-theme] body .noa-login-form :is(input,select,textarea){margin-block:0}
 html.noa-member-ui body :is(.noa-actions,.creator-actions,.ncea-actions,.noa-record-actions){display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+html.noa-member-ui .noa-section>h2+:is(nav,form,.noa-actions){margin-block-start:16px}
 html.noa-member-ui body :is(.noa-actions,.creator-actions,.ncea-actions,.noa-record-actions)>:is(a,button){margin:0;max-width:100%;min-width:0}
 html.noa-member-ui.noa-shell-wide[data-noa-theme] body #noa-listening .nl-heading{padding-block-end:24px;align-items:center}
 html.noa-member-ui body #noa-listening .nl-heading h2{margin-block:0}
