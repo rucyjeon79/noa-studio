@@ -31,7 +31,7 @@ NOA;
 }
 /** Native skins must select their NOA styles before deferred scripts run. */
 function noa_member_first_paint_markup($html,$path){
- if(!is_string($path))return $html;
+ if(!is_string($path)||!preg_match('~^\s*(?:<!doctype\s+html\b|<html\b)~i',$html)||stripos($html,'</head>')===false)return $html;
  $commerce=(bool)preg_match('~^/(?:mobile/)?shop/[^/]+[.]php$~D',$path);
  $board=str_starts_with($path,'/bbs/');
  if(!$commerce&&!$board)return $html;

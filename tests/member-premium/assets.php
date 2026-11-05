@@ -41,5 +41,7 @@ foreach(['/adm/index.php','/noa-bridge/index.php','/noa-app/jukebox/','/unrelate
  if(noa_member_first_paint_markup($html,$path)!==$html)throw new Exception('first paint escaped native scope');
 }
 if(noa_member_first_paint_markup('{"ok":true}','/bbs/ajax.php')!=='{"ok":true}')throw new Exception('first paint changed JSON');
+$json=json_encode(['html'=>'<html><head></head><body>응답 안의 HTML</body></html>']);
+if(noa_member_first_paint_markup($json,'/bbs/ajax.php')!==$json)throw new Exception('first paint changed embedded HTML in JSON');
 $target=sys_get_temp_dir().'/noa-member-native';@mkdir($target,0777,true);file_put_contents($target.'/first-paint.json',json_encode($proof,JSON_UNESCAPED_UNICODE));
 echo "MEMBER_NATIVE_FIRST_PAINT_CLASSES_AND_POST_VALUES_OK\n";
