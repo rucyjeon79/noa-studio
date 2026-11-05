@@ -19,6 +19,7 @@ jobs:
           php -l deploy/noa-music.php
           node --check deploy/noa-app/p0-player.js
           node --test scripts/qa/noa-browse.test.mjs tests/jukebox/playback_recovery.test.cjs
+          python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/genre" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp tests/room-themes/player.mjs "$RUNNER_TEMP/genre/player.mjs"
           node "$RUNNER_TEMP/genre/player.mjs"

@@ -7,6 +7,10 @@
         {
           "old": "document.getElementById('dock-artist').textContent=label;",
           "new": "document.getElementById('dock-artist').textContent=window.NoaBrowse?.genreName?.(r.genre)||'미분류';"
+        },
+        {
+          "old": "const tag=document.getElementById(id);tag.hidden=!source;tag.textContent=source?.label||'';",
+          "new": "const tag=document.getElementById(id);tag.hidden=!source||id==='dock-listening-source';tag.textContent=source?.label||'';"
         }
       ]
     },
