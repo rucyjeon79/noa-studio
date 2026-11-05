@@ -21,6 +21,11 @@ import static org.junit.Assert.*;
 @RunWith(AndroidJUnit4.class)
 @android.annotation.SuppressLint("UnsafeOptInUsageError")
 public class PwaRenderingTest {
+ private static void navigate(WebView w,String route)throws Exception{
+  WebParityTest.js(w,"window.__noaQaPreviousDocument=true;return true;");
+  WebParityTest.main(()->w.loadUrl("https://noastudio.ai.kr"+route));
+  WebParityTest.until(w,"!window.__noaQaPreviousDocument&&location.pathname==="+JSONObject.quote(route)+"&&document.readyState==='complete'");
+ }
  @Test public void liveScreensAndHomeRecommendation()throws Exception{
   MemberTestSession.install();Context c=InstrumentationRegistry.getInstrumentation().getTargetContext();
   c.startActivity(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
@@ -31,21 +36,21 @@ public class PwaRenderingTest {
   WebParityTest.main(()->{assertTrue(w.getSettings().getUseWideViewPort());assertTrue(w.getSettings().getLoadWithOverviewMode());});
   for(String route:new String[]{"/","/noa-music.php"})for(String theme:new String[]{"noa-ivory","noa-studio"}){
    android.util.Log.i("TestRunner","Capturing "+route+" "+theme);
-   if(!route.equals("/")||!theme.equals("noa-ivory"))WebParityTest.main(()->w.loadUrl("https://noastudio.ai.kr"+route));
+   if(route.equals("/noa-music.php")&&theme.equals("noa-ivory"))navigate(w,route);
    WebParityTest.until(w,"document.readyState==='complete'&&window.NoaUI?.getState()&&document.fonts.status==='loaded'&&document.querySelector('.noa-mobile-nav a')");
    // Wait for authenticated theme preferences, then exercise the PWA's own theme control.
    SystemClock.sleep(1500);
    WebParityTest.js(w,"localStorage.setItem('noa-device-theme',"+JSONObject.quote(theme)+");NoaUI.apply({...NoaUI.getState(),theme:"+JSONObject.quote(theme)+"});document.querySelector('#noa-amt-fan button[aria-label]')?.click();document.querySelector('[aria-label=\"AInoa 말풍선 닫기\"]')?.click();scrollTo(0,0);return true;");
    WebParityTest.until(w,"document.documentElement.dataset.noaTheme==="+JSONObject.quote(theme));
    WebParityTest.paint(w);SystemClock.sleep(700);
-   JSONObject data=(JSONObject)WebParityTest.js(w,"return "+probe+";");assertFalse(data.getBoolean("overflow"));
+   JSONObject data=(JSONObject)WebParityTest.js(w,"return "+probe+";");assertEquals("https://noastudio.ai.kr"+route,data.getString("url"));assertEquals(theme,data.getString("theme"));assertFalse(data.getBoolean("overflow"));
    assertEquals(5,data.getJSONObject("nodes").getJSONArray(".noa-mobile-nav a").length());
    String name=(route.equals("/")?"home":"music")+"-"+theme;
    try(FileWriter out=new FileWriter(new File(c.getExternalFilesDir(null),"layout-"+name+".json"))){out.write(data.toString());}
    assertTrue(device.takeScreenshot(new File(c.getExternalFilesDir(null),"layout-"+name+".png")));
   }
   // The actual production homepage hosts its recommendation player in a same-origin frame.
-  WebParityTest.main(()->w.loadUrl("https://noastudio.ai.kr/"));
+  navigate(w,"/");
   WebParityTest.until(w,"document.querySelector('iframe.nl-play-shell')?.contentWindow?.NoaNativeBridge?.ready()");
   AtomicReference<ListenableFuture<MediaController>> future=new AtomicReference<>();
   WebParityTest.main(()->future.set(new MediaController.Builder(c,new SessionToken(c,new ComponentName(c,PlaybackService.class))).buildAsync()));
