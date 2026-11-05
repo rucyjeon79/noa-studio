@@ -18,6 +18,7 @@ jobs:
           php -l deploy/noa-home-assets.php
           php -l deploy/noa-home-performance.extend.php
           php tests/home-runtime/assets.php
+          php tests/home-runtime/hook.php
           python scripts/qa/noa-qa-font.py
           timeout 90s npm install --prefix "$RUNNER_TEMP/noa-runtime" --no-save --ignore-scripts --package-lock=false --no-audit --no-fund playwright@1.56.1
           cp scripts/qa/noa-home-runtime.mjs "$RUNNER_TEMP/noa-runtime/check.mjs"
