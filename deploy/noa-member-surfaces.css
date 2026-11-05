@@ -333,9 +333,24 @@ html.noa-member-ui body #noa-listening .nl-lane>:is(h3,p,div,button){margin-bloc
 html.noa-member-ui body #noa-listening .nl-lane>button{justify-self:start}
 html.noa-member-ui body #noa-listening .nl-moods{padding:0}
 html.noa-member-ui body #noa-listening .nl-moods+.nl-play-action{margin-top:4px}
+/* Empty recommendation containers must not reserve a grid row or its gap. */
+html.noa-member-ui body #noa-listening :is(.nl-preview,.nl-genre-cards,.nl-note):empty{display:none}
+html.noa-member-ui body #noa-listening .nl-manual-hint{margin:0;font-size:12px;line-height:1.6;color:var(--noa-muted);text-wrap:pretty}
+html.noa-member-ui body #noa-listening .nl-manual-hint+.nl-play-action{margin-top:4px}
+html.noa-member-ui body #noa-listening .nl-moods button[data-mood]{justify-content:flex-start;text-align:start;min-height:48px;padding:10px 12px;gap:8px;line-height:1.45}
+html.noa-member-ui body #noa-listening .nl-moods button[data-mood][aria-pressed=true]{border-color:var(--noa-accent);background:var(--noa-raised);color:var(--noa-accent);box-shadow:inset 0 0 0 1px var(--noa-accent)}
+html.noa-member-ui body #noa-listening .nl-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin:0;padding:0;overflow:visible}
+html.noa-member-ui body #noa-listening .nl-tabs button{min-width:0;min-height:48px;padding:8px 2px;white-space:normal;word-break:keep-all;overflow-wrap:anywhere;font-size:13px;line-height:1.45}
+html.noa-member-ui body #noa-listening .nl-track{display:grid;grid-template-columns:48px minmax(0,1fr) 20px;align-items:center;gap:12px;padding:12px;min-height:76px;width:100%;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius);background:var(--noa-bg);color:var(--noa-text)}
+html.noa-member-ui body #noa-listening .nl-track-art{position:relative;display:grid;place-items:center;width:48px;height:48px;overflow:hidden;border-radius:var(--noa-control-radius);background:var(--noa-raised);color:var(--noa-muted)}
+html.noa-member-ui body #noa-listening .nl-track-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+html.noa-member-ui body #noa-listening .nl-track-copy{min-width:0;gap:4px}
+html.noa-member-ui body #noa-listening .nl-track strong{white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-height:1.45}
+html.noa-member-ui body #noa-listening .nl-track>.nl-icon{color:var(--noa-accent)}
+html.noa-member-ui body #noa-listening .nl-empty{grid-column:1/-1;margin:0;padding:16px;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius);color:var(--noa-muted);font-size:13px;line-height:1.65}
 html.noa-member-ui body #noa-listening .nl-status{margin:0 0 16px;min-height:0}
 html.noa-member-ui body #noa-listening .nl-basis{margin-top:0}
-html.noa-member-ui body #noa-listening .nl-catalog{margin-top:16px;justify-self:start}
+html.noa-member-ui body #noa-listening .nl-catalog{margin-top:0;justify-self:start}
 html.noa-member-ui #ecosystem #ec-tools:empty{display:none}
 html.noa-member-ui #ecosystem #ec-tools{padding-block:16px 24px}
 html.noa-member-ui #ecosystem .ec-lounge-nav{margin-block:24px 0}
@@ -451,7 +466,7 @@ html.noa-member-ui{--noa-motion-press:150ms;--noa-motion-enter:240ms;--noa-motio
 @media(prefers-reduced-motion:no-preference){
  @view-transition{navigation:auto}
  ::view-transition-old(root),::view-transition-new(root){animation-duration:180ms}
- #ainoa-conversation :is(.ainoa-conversation-message,.ainoa-conversation-content>*){animation:noa-member-content-in 200ms var(--noa-motion-ease) both}
+ #ainoa-conversation :is(.ainoa-conversation-message,.ainoa-conversation-content>*),html.noa-member-ui #noa-listening .nl-results>*{animation:noa-member-content-in 200ms var(--noa-motion-ease) both}
  html.noa-member-ui :is(button,[role=button],a.noa-button,summary){transition:background-color var(--noa-motion-press) ease,color var(--noa-motion-press) ease,border-color var(--noa-motion-press) ease,box-shadow var(--noa-motion-press) ease,scale var(--noa-motion-press) var(--noa-motion-ease)}
  html.noa-member-ui :is(button,[role=button],a.noa-button,summary):active:not(:disabled){scale:.96}
  html.noa-member-ui :is(input,textarea,select){transition:border-color var(--noa-motion-press) ease,box-shadow var(--noa-motion-press) ease,background-color var(--noa-motion-enter) ease}
