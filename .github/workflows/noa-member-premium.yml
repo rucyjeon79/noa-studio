@@ -27,11 +27,12 @@ jobs:
           node --check tests/member-premium/surfaces.mjs
           node --check tests/member-premium/fixtures.mjs
           node --check tests/member-premium/tables.mjs
+          node --check tests/member-premium/listening-layout.mjs
       - name: Prepare visual inspection
         run: |
           python scripts/qa/noa-qa-font.py
           timeout 90s npm install --prefix "$RUNNER_TEMP/noa-member" --no-save --ignore-scripts --package-lock=false --no-audit --no-fund --fetch-timeout=20000 --fetch-retries=1 playwright@1.56.1
-          cp tests/member-premium/experience.mjs tests/member-premium/composer.mjs tests/member-premium/relationships.mjs tests/member-premium/drawer-points.mjs tests/member-premium/tables.mjs "$RUNNER_TEMP/noa-member/"
+          cp tests/member-premium/experience.mjs tests/member-premium/composer.mjs tests/member-premium/relationships.mjs tests/member-premium/drawer-points.mjs tests/member-premium/tables.mjs tests/member-premium/listening-layout.mjs "$RUNNER_TEMP/noa-member/"
           cp tests/member-premium/fixtures.mjs "$RUNNER_TEMP/noa-member/fixtures.mjs"
           cp tests/member-premium/surfaces.mjs "$RUNNER_TEMP/noa-member/check.mjs"
       - name: Inspect member entry points without transactions
@@ -56,7 +57,7 @@ jobs:
           php tests/member-premium/assets.php
           php tests/member-premium/render.php
           timeout 90s npm install --prefix "$RUNNER_TEMP/noa-member" --no-save --ignore-scripts --package-lock=false --no-audit --no-fund --fetch-timeout=20000 --fetch-retries=1 playwright@1.56.1
-          cp tests/member-premium/experience.mjs tests/member-premium/fixtures.mjs tests/member-premium/composer.mjs tests/member-premium/relationships.mjs tests/member-premium/drawer-points.mjs tests/member-premium/tables.mjs "$RUNNER_TEMP/noa-member/"
+          cp tests/member-premium/experience.mjs tests/member-premium/fixtures.mjs tests/member-premium/composer.mjs tests/member-premium/relationships.mjs tests/member-premium/drawer-points.mjs tests/member-premium/tables.mjs tests/member-premium/listening-layout.mjs "$RUNNER_TEMP/noa-member/"
           cp tests/member-premium/surfaces.mjs "$RUNNER_TEMP/noa-member/check.mjs"
       - name: Publish presentation assets and inspect the operating pages
         env:

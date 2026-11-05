@@ -3,6 +3,7 @@ import {readFileSync,mkdirSync,writeFileSync,existsSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {verifyFixtures} from './fixtures.mjs';
 import {verifyTables} from './tables.mjs';
+import {verifyListeningLayout} from './listening-layout.mjs';
 import {verifyDrawerPoints} from './drawer-points.mjs';
 import {verifyComposer} from './composer.mjs';
 import {verifyExperience} from './experience.mjs';
@@ -15,7 +16,7 @@ const report={phase,public:[],fixtures:[],errors:[],writes:0,fontMode:'installed
 const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
 
 try{
- if(phase!=='baseline'){await verifyTables(browser,out,report);await verifyDrawerPoints(browser,out,report);await verifyMusicFooter(browser,out,report);await verifyExperience(browser,phase,out,report);await verifyFixtures(browser,phase,out,report);await verifyComposer(browser,out,report);await verifyRelationships(browser,out,report);}
+ if(phase!=='baseline'){await verifyListeningLayout(browser,out,report);await verifyTables(browser,out,report);await verifyDrawerPoints(browser,out,report);await verifyMusicFooter(browser,out,report);await verifyExperience(browser,phase,out,report);await verifyFixtures(browser,phase,out,report);await verifyComposer(browser,out,report);await verifyRelationships(browser,out,report);}
  await Promise.all([390,1440].map(async width=>{
   const context=await browser.newContext({viewport:{width,height:900},locale:'ko-KR',serviceWorkers:'block',reducedMotion:'reduce'});
   context.setDefaultTimeout(15000);context.setDefaultNavigationTimeout(30000);
