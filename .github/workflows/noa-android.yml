@@ -60,7 +60,10 @@ jobs:
             release-artifact/verification.json
           retention-days: 14
       - name: Prepare independent Chrome comparison
-        run: npm install --prefix "$RUNNER_TEMP/noa-browser-qa" --no-audit --no-fund playwright@1.56.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y fonts-noto-cjk
+          npm install --prefix "$RUNNER_TEMP/noa-browser-qa" --no-audit --no-fund playwright@1.56.1
       - name: Prepare isolated live music member
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
