@@ -43,7 +43,7 @@ export async function verifyMusicCards(browser,out,report){
    assert.equal(await list.locator('.noa-inline-song-row').count(),4);assert.equal(await list.locator('.noa-premium-badge').count(),2);assert.equal(await list.locator('.noa-original-title').count(),2);
    for(const mode of ['list','album']){
     await page.locator('.lp-view-switch [data-mode='+mode+']').first().click();await page.waitForFunction(mode=>document.querySelector('.noa-inline-songs')?.dataset.trackView===mode,mode);
-    await list.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+    await list.evaluate(async list=>{await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));await Promise.all(list.getAnimations({subtree:true}).filter(a=>a.effect.getTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})));});
     const geometry=await list.evaluate(list=>{
      const box=e=>{const r=e.getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom};};
      const lum=c=>{const rgb=c.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>(v/=255)<=.04045?v/12.92:((v+.055)/1.055)**2.4);return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;};
