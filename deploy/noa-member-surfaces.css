@@ -350,7 +350,7 @@ html.noa-member-ui body #noa-listening .nl-track>.nl-icon{color:var(--noa-accent
 html.noa-member-ui body #noa-listening .nl-empty{grid-column:1/-1;margin:0;padding:16px;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius);color:var(--noa-muted);font-size:13px;line-height:1.65}
 html.noa-member-ui body #noa-listening .nl-status{margin:0 0 16px;min-height:0}
 html.noa-member-ui body #noa-listening .nl-basis{margin-top:0}
-html.noa-member-ui body #noa-listening .nl-catalog{margin-top:16px;justify-self:start}
+html.noa-member-ui body #noa-listening .nl-catalog{margin-top:0;justify-self:start}
 html.noa-member-ui #ecosystem #ec-tools:empty{display:none}
 html.noa-member-ui #ecosystem #ec-tools{padding-block:16px 24px}
 html.noa-member-ui #ecosystem .ec-lounge-nav{margin-block:24px 0}
