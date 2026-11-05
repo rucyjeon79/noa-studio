@@ -1,7 +1,7 @@
 /* Member experience scale. The current NOA palette remains authoritative. */
 html.noa-member-ui{--member-unit:8px;--member-control:48px;--member-radius:4px;--member-panel:24px;--member-section:32px;--member-type:15px;--member-field:16px;--member-label:13px}
 html.noa-member-ui{--member-title:clamp(28px,3vw,38px);--member-display:clamp(24px,2.5vw,32px);--member-quiet:color-mix(in srgb,var(--noa-line) 65%,transparent);--member-tint:color-mix(in srgb,var(--noa-accent) 5%,var(--noa-bg));--member-inset:32px}
-html.noa-member-ui{--member-table-check:44px;--member-table-number:64px;--member-table-date:104px;--member-table-author:112px;--member-compare-label:64px;--member-compare-product:124px}
+html.noa-member-ui{--member-table-check:44px;--member-table-number:64px;--member-table-date:104px;--member-table-author:112px;--member-compare-label:80px;--member-compare-product:124px}
 html.noa-member-ui :is(main,#container,.mbskin,.new_win,.ec-dialog){min-inline-size:0}
 /* Form typography and geometry; exclude players, rich-text editor internals and authored content. */
 html.noa-member-ui :is(.mbskin,.new_win,#bo_w,#bo_sch,.bo_sch,#bo_vc_w,#sod_frm,#sod_bsk,#sod_inquiry,.noa-login-form,.creator-form,.ncea-form,.noa-gifts form,.ec-dialog form,.noa-community form) :is(input:not([type]),input[type=text],input[type=password],input[type=email],input[type=tel],input[type=url],input[type=number],input[type=search],input[type=date],select,textarea):not([hidden]){box-sizing:border-box;min-inline-size:0;max-inline-size:100%;min-block-size:var(--member-field-min,var(--member-control));height:auto;padding:11px 12px;border:1px solid var(--noa-line);border-radius:var(--member-radius);background:var(--noa-bg);color:var(--noa-text);font:400 var(--member-field)/1.5 var(--noa-font);box-shadow:none}
@@ -400,13 +400,13 @@ html.noa-member-ui .noa-member-list-table th[data-noa-kind=amount]{width:var(--m
 html.noa-member-ui :is(#bo_list,.new_win) .noa-member-list-table :is(td[data-noa-kind=title],.bo_tit,.bo_tit>a){min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
 html.noa-member-ui .noa-member-list-table td:is([data-noa-kind=amount],[data-noa-kind=number]){font-variant-numeric:tabular-nums}
 html.noa-member-ui .ne-table-wrap table{min-width:0;width:100%;table-layout:fixed}
-html.noa-member-ui .ne-table-wrap :is(th,td){min-width:0;overflow-wrap:anywhere;word-break:normal;line-height:1.7}
+html.noa-member-ui .ne-table-wrap :is(th,td){min-width:0;overflow-wrap:anywhere;word-break:keep-all;line-height:1.7}
 html.noa-member-ui .ne-table-wrap table:not(:has(thead :nth-child(3))) thead th:last-child{width:24%}
 html.noa-member-ui .noa-policy-table:has(thead :nth-child(3)) thead th:first-child{width:22%}
 html.noa-member-ui .noa-policy-table:has(thead :nth-child(3)) thead th:nth-child(2){width:44%}
 html.noa-member-ui .ec-product-compare{min-width:0;max-width:100%;overscroll-behavior-inline:contain;scrollbar-width:thin}
 html.noa-member-ui .ec-product-compare table{min-width:0;width:100%;border-collapse:separate;border-spacing:0}
-html.noa-member-ui .ec-product-compare :is(th,td){box-sizing:border-box;min-width:0;white-space:normal;overflow-wrap:anywhere}
+html.noa-member-ui .ec-product-compare :is(th,td){box-sizing:border-box;min-width:0;white-space:normal;overflow-wrap:anywhere;word-break:keep-all}
 html.noa-member-ui .ec-product-compare tr>th:first-child{width:var(--member-compare-label);position:sticky;left:0;z-index:1;background:var(--noa-surface);color:var(--noa-text);border-right:1px solid var(--noa-line)}
 html.noa-member-ui #ecosystem .ec-product-compare :is(button,.ec-link){width:100%;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere;font-size:13px;line-height:1.5;padding:8px;justify-content:center;text-align:center}
 html.noa-member-ui .ec-product-compare td>.ec-link+button{margin-top:8px}
@@ -418,6 +418,7 @@ html.noa-member-ui .ec-product-compare td>.ec-link+button{margin-top:8px}
 @media(max-width:760px){
  html.noa-member-ui :is(#bo_list,.new_win) .noa-member-list-table,
  html.noa-member-ui :is(#bo_list,.new_win) .noa-member-list-table :is(thead,tbody){display:block;width:100%;min-width:0}
+ html.noa-member-ui .noa-member-list-table>caption:not(.sound_only):not(.blind){display:block;width:100%;box-sizing:border-box}
  html.noa-member-ui :is(#bo_list,.new_win) .noa-member-list-table thead{position:relative}
  html.noa-member-ui :is(#bo_list,.new_win) .noa-member-list-table thead tr{display:flex;min-width:0}
  html.noa-member-ui :is(#bo_list,.new_win) .noa-member-list-table thead th:not(:has(input[type=checkbox])){position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
@@ -434,6 +435,7 @@ html.noa-member-ui .ec-product-compare td>.ec-link+button{margin-top:8px}
 }
 @media(max-width:600px){
  html.noa-member-ui .noa-policy-table:has(thead th:nth-child(3)){display:block}
+ html.noa-member-ui .noa-policy-table:has(thead th:nth-child(3))>caption{display:block;width:100%;box-sizing:border-box;font-size:12px}
  html.noa-member-ui .noa-policy-table:has(thead th:nth-child(3)) thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
  html.noa-member-ui .noa-policy-table:has(thead th:nth-child(3)) tbody{display:block}
  html.noa-member-ui .noa-policy-table:has(thead th:nth-child(3)) tbody tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 16px;padding:16px 0;border-bottom:1px solid var(--noa-line)}

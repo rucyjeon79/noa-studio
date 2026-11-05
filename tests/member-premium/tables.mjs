@@ -25,6 +25,7 @@ export async function verifyTables(browser,out,report){
    await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
    assert.deepEqual(await contract(),before,'table contents/controls changed '+key);
    const geometry=await page.locator('table').evaluateAll(tables=>tables.map(t=>({table:t.getBoundingClientRect().width,available:t.parentElement.clientWidth,scroll:t.parentElement.scrollWidth,bodyOverflow:document.documentElement.scrollWidth>innerWidth+1,cellOverflow:[...t.querySelectorAll('th,td')].filter(c=>c.getBoundingClientRect().width>2&&c.scrollWidth>c.clientWidth+2).map(c=>c.textContent)})));
+   const captions=await page.locator('table>caption').evaluateAll(nodes=>nodes.filter(e=>e.getBoundingClientRect().height>2&&getComputedStyle(e).fontSize!=='0px').map(e=>({width:e.getBoundingClientRect().width,table:e.parentElement.getBoundingClientRect().width})));assert(captions.every(c=>c.width>=c.table*.8),'visible captions must use the table width: '+JSON.stringify({key,width,captions}));
    assert(geometry.every(g=>!g.bodyOverflow),JSON.stringify({key,width,geometry}));
    if(key!=='compare3')assert(geometry.every(g=>g.scroll<=g.available+2),JSON.stringify({key,width,geometry}));
    assert(geometry.every(g=>g.cellOverflow.length===0),JSON.stringify({key,width,geometry}));
@@ -38,7 +39,7 @@ export async function verifyTables(browser,out,report){
    }
    if(key==='cart'){await page.getByRole('spinbutton',{name:'수량'}).fill('3');assert.equal(await page.getByRole('spinbutton',{name:'수량'}).inputValue(),'3');assert.equal(await page.locator('#cart-form').getAttribute('action'),'/shop/cartupdate.php');}
    if(key==='complex')assert.equal(await page.locator('.noa-native-order-table').count(),0,'merged headings must keep native structure');
-   if(key==='compare3'&&width<=760){assert(geometry[0].scroll<=Math.max(geometry[0].available,440),'comparison needlessly wide');await page.locator('.ec-product-compare').evaluate(e=>e.scrollLeft=e.scrollWidth);const pinned=await page.locator('.ec-product-compare').evaluate(e=>Math.abs(e.querySelector('tbody th').getBoundingClientRect().left-e.getBoundingClientRect().left)<2);assert(pinned,'comparison labels must stay visible while scrolling');await page.locator('.ec-product-compare').evaluate(e=>e.scrollLeft=0);}
+   if(key==='compare3'&&width<=760){assert(geometry[0].scroll<=Math.max(geometry[0].available,456),'comparison needlessly wide');await page.locator('.ec-product-compare').evaluate(e=>e.scrollLeft=e.scrollWidth);const pinned=await page.locator('.ec-product-compare').evaluate(e=>Math.abs(e.querySelector('tbody th').getBoundingClientRect().left-e.getBoundingClientRect().left)<2);assert(pinned,'comparison labels must stay visible while scrolling');await page.locator('.ec-product-compare').evaluate(e=>e.scrollLeft=0);}
    if([390,1440].includes(width))await page.screenshot({path:out+'/table-'+key+'-'+width+'-'+theme.id+'.jpg',type:'jpeg',quality:86,fullPage:true});
    report.fixtures.push({key:'table-'+key,width,theme:theme.id,contractPreserved:true,geometry});
   }
