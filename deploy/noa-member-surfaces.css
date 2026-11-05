@@ -189,11 +189,11 @@ html.noa-member-ui .ny-store .ny-store-header{display:grid!important;grid-templa
 html.noa-member-ui .ny-store-header .np-eyebrow{grid-column:1/-1}
 html.noa-member-ui .ny-store-header h1{font-size:var(--member-title);line-height:1.35;max-width:24ch;word-break:keep-all}
 html.noa-member-ui .ny-store .nv-store-nav{margin:0;border:0;justify-content:flex-end;gap:16px}
-html.noa-member-ui .ny-store .ny-store-tools{padding:20px 0;border:0;align-items:center}
+html.noa-member-ui .ny-store .ny-store-tools{padding:24px 0 0;border:0;align-items:center}
 html.noa-member-ui .ny-store #ny-import{background:transparent;border-color:var(--noa-line);font-size:12px;min-height:44px}
 html.noa-member-ui .ny-store-tools p{font-size:14px;line-height:1.7;color:var(--noa-text)}
-html.noa-member-ui .ny-store .ny-product-section{margin-top:40px}
-html.noa-member-ui .ny-store .ny-section-title{margin-bottom:20px;font-size:22px;letter-spacing:-.035em}
+html.noa-member-ui .ny-store .ny-product-section{margin-top:var(--member-section)}
+html.noa-member-ui .ny-store .ny-section-title{margin-bottom:16px;font-size:22px;letter-spacing:-.035em}
 html.noa-member-ui .ny-store .ny-section-title span{font-size:12px;letter-spacing:0;font-weight:400}
 html.noa-member-ui .ny-store .noa-point-packs{gap:24px}
 html.noa-member-ui .ny-store .noa-point-pack{border:1px solid var(--member-quiet);border-radius:4px;background:var(--noa-bg);overflow:hidden;box-shadow:none}
@@ -289,7 +289,7 @@ html.noa-member-ui.ny-native #sod_frm #sod_frm_pay label:has(input[type=radio]:c
  html.noa-member-ui{--member-inset:20px;--member-title:28px;--member-display:24px}
  html.noa-member-ui .ny-store .ny-store-header{padding:8px 0 24px;gap:12px}
  html.noa-member-ui .ny-store .ny-store-tools{align-items:flex-start;gap:12px}
- html.noa-member-ui .ny-store .ny-product-section{margin-top:28px}
+ html.noa-member-ui .ny-store .ny-product-section{margin-top:var(--member-section)}
  html.noa-member-ui .ny-store .ny-section-title{font-size:20px;margin-bottom:16px}
  html.noa-member-ui .ny-store .noa-point-packs{gap:16px 12px}
  html.noa-member-ui .ny-store .np-pack-copy{padding:16px 12px}
@@ -313,4 +313,43 @@ html.noa-member-ui.ny-native #sod_frm #sod_frm_pay label:has(input[type=radio]:c
  html.noa-member-ui.ny-native #sod_frm .tbl_frm01 th{padding:16px 0 0!important;border:0!important}
  html.noa-member-ui.ny-native #sod_frm .tbl_frm01 td{padding:8px 0 16px!important}
  html.noa-member-ui.ny-native #sod_frm .tbl_frm01 .btn_frmline{margin:0 0 12px}
+}
+
+/* Relationship spacing: one owner per gap; unrelated controls never share an edge. */
+html.noa-member-ui{--member-inline:8px;--member-related:12px;--member-group:16px}
+html.noa-member-ui body .noa-labelled-command{column-gap:8px}
+html.noa-member-ui body .noa-labelled-command>svg:first-child{margin-inline-end:0}
+html.noa-member-ui.noa-shell-wide[data-noa-theme] body .noa-main>.noa-mobile-footer{margin-block-start:0}
+html.noa-member-ui .ny-store-tools+.ny-product-section{margin-top:24px}
+html.noa-member-ui.noa-shell-wide[data-noa-theme] body .noa-login-form :is(input,select,textarea){margin-block:0}
+html.noa-member-ui body :is(.noa-actions,.creator-actions,.ncea-actions,.noa-record-actions){display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+html.noa-member-ui body :is(.noa-actions,.creator-actions,.ncea-actions,.noa-record-actions)>:is(a,button){margin:0;max-width:100%;min-width:0}
+html.noa-member-ui.noa-shell-wide[data-noa-theme] body #noa-listening .nl-heading{padding-block-end:24px;align-items:center}
+html.noa-member-ui body #noa-listening .nl-heading h2{margin-block:0}
+html.noa-member-ui body #noa-listening .nl-lane{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;padding-block:24px}
+html.noa-member-ui body #noa-listening .nl-lane>:is(h3,p,div,button){margin-block:0}
+html.noa-member-ui body #noa-listening .nl-lane>button{justify-self:start}
+html.noa-member-ui body #noa-listening .nl-moods{padding:0}
+html.noa-member-ui body #noa-listening .nl-moods+.nl-play-action{margin-top:4px}
+html.noa-member-ui body #noa-listening .nl-status{margin:0 0 16px;min-height:0}
+html.noa-member-ui body #noa-listening .nl-basis{margin-top:0}
+html.noa-member-ui body #noa-listening .nl-catalog{margin-top:16px;justify-self:start}
+html.noa-member-ui #ecosystem #ec-tools:empty{display:none}
+html.noa-member-ui #ecosystem #ec-tools{padding-block:16px 24px}
+html.noa-member-ui #ecosystem .ec-lounge-nav{margin-block:24px 0}
+html.noa-member-ui #ecosystem #community-boards{margin-block:var(--member-section) 0;padding-block:24px}
+html.noa-member-ui #ecosystem #community-boards>h2{margin:0 0 8px}
+html.noa-member-ui #ecosystem #community-boards>p{margin:0 0 16px}
+html.noa-member-ui #ecosystem .ec-crosslinks{margin-top:24px;padding-block:16px;gap:12px 24px}
+html.noa-member-ui body dialog.ec-dialog form.ec-form .ec-actions{margin-top:0;padding-top:16px;gap:12px}
+html.noa-member-ui.noa-g5 #bo_w .btn_confirm{display:flex;flex-wrap:wrap;gap:12px;margin-top:0;padding-top:24px}
+html.noa-member-ui.noa-g5 #bo_w .btn_confirm>*{margin:0}
+html.noa-member-ui.noa-g5 #bo_w .bo_w_tit .bo_w_tit{margin-bottom:0}
+html.noa-member-ui.noa-g5 #bo_vc_w .btn_confirm{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px}
+@media(max-width:760px){
+ html.noa-member-ui.noa-shell-wide[data-noa-theme] body #noa-listening .nl-heading{grid-template-columns:minmax(0,1fr);gap:16px}
+ html.noa-member-ui body #noa-listening .nl-heading>.nl-button{justify-self:start}
+ html.noa-member-ui body #noa-listening .nl-lane{padding-block:20px}
+ html.noa-member-ui .ny-store .ny-store-tools{padding-top:16px}
+ html.noa-member-ui #ecosystem #community-boards{padding-block:16px}
 }

@@ -2,6 +2,7 @@
 import sys
 import noa_ainoa_deploy as release
 release.FILES={
+ 'noa-ui.js':'deploy/noa-ui.js',
  'noa-member-surfaces.css':'deploy/noa-member-surfaces.css',
  'noa-member-surfaces.js':'deploy/noa-member-surfaces.js',
  'extend/noa.design.php':'deploy/noa-design.extend.php',
