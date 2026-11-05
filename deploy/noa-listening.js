@@ -326,20 +326,19 @@ function showWeatherChoice(){
  for(const [key,[symbol,label]]of Object.entries(editions))skyGroup.append(weatherButton(symbol+' '+label,()=>{
   clearCare();selectedSky=key;selectedIntent=-1;weatherRows=[];weatherRoom.add(label,'user');weatherRoom.add('음악이 어떻게 곁에 있어 주면 좋겠어요?');weatherRoom.status('');showWeatherChoice();
  },selectedSky===key));
- weatherStage.replaceChildren(skyGroup);
- if(!selectedSky)return;
+ weatherStage.replaceChildren();
+ if(!selectedSky){weatherStage.append(skyGroup);return;}
  const choices=editions[selectedSky][2],direction=el('div','nl-weather-choices');direction.setAttribute('role','group');direction.setAttribute('aria-label','음악에 바라는 것');
  choices.forEach(([title,copy],index)=>direction.append(weatherButton(title,()=>{
   if(selectedIntent===index)return;clearCare();selectedIntent=index;weatherRoom.add(title,'user');weatherRoom.add(copy);weatherRoom.status('');showWeatherChoice();
  },selectedIntent===index)));
- weatherStage.append(direction);
- if(selectedIntent<0)return;
+ if(selectedIntent<0){weatherStage.append(direction);return;}
  const [,copy,sequence]=choices[selectedIntent];weatherSequence=sequence;weatherRows=weatherPicks(sequence,3);
  if(!weatherRows.length){weatherRoom.status(catalogReady()?'지금 이용할 수 있는 프리미엄 곡이 없어요.':'프리미엄 음원을 연결하고 있어요. 연결되면 여기에서 안내할게요.');return;}
  const count=weatherQueue().length,list=el('ol','nl-weather-tracks');list.setAttribute('aria-label','선곡 미리보기');
  weatherRows.forEach(row=>{const li=el('li');li.append(el('span','',row.title),el('small','',state.genres[row.genre]||row.genre));list.append(li);});
  const play=weatherButton(count+'곡 이어 듣기',()=>startWeather(0));play.className='nl-weather-play';
- weatherStage.append(el('p','nl-weather-guide',count===100?'마음 날씨에 맞는 100곡을 준비했어요. 매번 새로운 순서로 이어져요.':'현재 이용 가능한 '+count+'곡을 준비했어요. 같은 음원을 중복해서 채우지 않아요.'),list,play);appendCare();
+ weatherStage.append(el('p','nl-weather-guide',count===100?'마음 날씨에 맞는 100곡을 준비했어요. 매번 새로운 순서로 이어져요.':'현재 이용 가능한 '+count+'곡을 준비했어요. 같은 음원을 중복해서 채우지 않아요.'),list,play,weatherButton('마음 날씨 다시 고르기',()=>{clearCare();selectedSky='';selectedIntent=-1;weatherRows=[];weatherRoom.add('마음 날씨를 다시 고를게요.','user');weatherRoom.add('지금 마음에 가까운 날씨를 골라 주세요.');showWeatherChoice();}));appendCare();
 }
 function weatherQueue(preferred=[]){
  const rows=[],seen=new Set(),add=row=>{if(!row?.audio||row.video||row.kind==='playlist'||rows.length>=100)return;const id=model.recordingId(row);if(!seen.has(id)){seen.add(id);rows.push(row);}};

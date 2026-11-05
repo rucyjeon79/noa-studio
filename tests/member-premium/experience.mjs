@@ -15,6 +15,7 @@ export async function verifyExperience(browser,phase,out,report){
    if(u.pathname==='/noa-bridge/listening.php')return json(state);
    if(u.pathname==='/noa-bridge/listening-weather.php')return json({source:'studio-edition',weather:{sun:['☀','맑음',[['차분하게 쉬기','오늘은 서두르지 말고 편안한 리듬을 따라가요.',['calm','comfort','sleep']]]]}});
    if(u.pathname==='/noa-ainoa.php')return json({ok:true,member:true,accountKey:'experience-fixture',conversation:false,capabilities:{member:true,music:true},balance:1234});
+   if(u.pathname==='/noa-assets/ainoa-symbol.png')return r.fulfill({body:readFileSync('public/ainoa/ainoa-symbol.png'),contentType:'image/png'});
    if(existsSync('deploy'+u.pathname)&&/\.(js|css|png|webp)$/.test(u.pathname))return r.fulfill({body:readFileSync('deploy'+u.pathname),contentType:u.pathname.endsWith('.js')?'text/javascript':u.pathname.endsWith('.css')?'text/css':u.pathname.endsWith('.png')?'image/png':'image/webp'});
    return r.fulfill({contentType:'text/html',body:'<!doctype html><html><body></body></html>'});
   });
@@ -27,6 +28,14 @@ export async function verifyExperience(browser,phase,out,report){
   const activityBox=await page.locator('#noa-my-activity').evaluate(e=>{const a=e.querySelector('nav').getBoundingClientRect(),b=e.querySelector('.nnt-entry').getBoundingClientRect();return {gap:b.top-a.bottom,icon:e.querySelector('.nnt-entry svg')?.dataset.noaSymbol,direct:!!e.querySelector('.nnt-entry>.nnt-entry-copy')};});
   assert.equal(activityBox.icon,'bell');assert(activityBox.direct);assert.equal(activityBox.gap,16);
   await page.locator('#noa-my-activity').screenshot({path:out+'/my-activity-'+width+'-'+theme.id+'.png'});
+  await page.evaluate(()=>{
+   document.body.classList.add('noa-record-room');const section=document.createElement('section');section.id='music-browse';
+   section.innerHTML='<div class="noa-inline-songs" data-track-view="list">'+[true,false].map((premium,i)=>'<div class="noa-inline-song-row" style="--tool-count:3"><button class="noa-inline-song"><span class="lp-track-art" style="--art-size:var(--noa-list-cover)"><img class="lp-track-jacket" src="/noa-assets/ainoa-symbol.png" alt="" style="width:var(--noa-list-cover)"></span><span class="noa-inline-title"><strong class="noa-track-name">EP.31 · First Glance</strong><small class="noa-track-genre">POP Original</small><span class="noa-original-title">원곡: 사랑이 스며든 날</span>'+(premium?'<span class="noa-premium-badge">PREMIUM</span>':'')+'</span></button><button class="noa-direct-action" style="--action-slot:2" aria-label="수정">✎</button><button class="noa-direct-action" style="--action-slot:1" aria-label="담기">+</button><button class="noa-direct-action" style="--action-slot:0" aria-label="다운로드">↓</button><div class="noa-engagement"><button>♡<small>0</small></button><button>☆<small>0</small></button><button>댓글<small>0</small></button></div></div>').join('')+'</div>';document.querySelector('main').append(section);
+  });
+  const cards=await page.locator('.noa-inline-song-row').evaluateAll(nodes=>nodes.map(e=>{const original=e.querySelector('.noa-original-title'),a=getComputedStyle(original),b=getComputedStyle(e);const lum=c=>{const x=c.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4});return x[0]*.2126+x[1]*.7152+x[2]*.0722;};const l=lum(a.color),r=lum(a.backgroundColor);return{contrast:(Math.max(l,r)+.05)/(Math.min(l,r)+.05),padding:b.padding,background:b.backgroundColor,tools:[...e.querySelectorAll('.noa-direct-action')].map(b=>{const r=b.getBoundingClientRect();return{x:r.x,right:r.right,h:r.height,w:r.width}})};}));
+  assert.deepEqual(cards.map(c=>c.padding),[cards[0].padding,cards[0].padding]);assert.equal(cards[0].background,cards[1].background);for(const c of cards){assert(c.contrast>=4.5);for(const b of c.tools)assert(b.h>=44&&b.w>=44&&b.x>=0&&b.right<=width+1);}
+  await page.locator('#music-browse').screenshot({path:out+'/music-cards-'+width+'-'+theme.id+'.png'});
+  await page.evaluate(()=>{document.querySelector('#music-browse').remove();document.body.classList.remove('noa-record-room');});
   await page.addScriptTag({content:readFileSync('deploy/noa-ainoa.js','utf8')});
   await page.addScriptTag({content:readFileSync('deploy/noa-voice.js','utf8')});
   await page.addScriptTag({content:readFileSync('deploy/noa-listening-model.js','utf8')});

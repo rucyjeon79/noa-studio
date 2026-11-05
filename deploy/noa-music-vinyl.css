@@ -509,8 +509,8 @@ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline
  html[data-noa-theme][data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view] .noa-inline-song-row:has(.noa-premium-badge)::before,
  html[data-noa-theme][data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view] .noa-inline-song-row:has(.noa-premium-badge)::after{display:none}
  html[data-noa-theme] body.noa-record-room .noa-original-title{color:var(--noa-muted);-webkit-text-fill-color:currentColor;border-color:var(--noa-line);background:var(--noa-surface)}
- html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row{--tool-width:44px;padding-top:52px;padding-bottom:12px;column-gap:12px;row-gap:8px;border-radius:4px}
- html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>button.noa-direct-action,
- html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row>.noa-song-actions>button.noa-song-action.noa-direct-action{height:44px;min-height:44px;width:44px}
- html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline-song-row .noa-premium-badge{top:12px;border-radius:0 4px 0 0}
+ html[data-noa-theme][data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view=list] .noa-inline-song-row{--tool-width:44px;padding-top:52px;padding-bottom:12px;column-gap:12px;row-gap:8px;border-radius:4px}
+ html[data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view=list] .noa-inline-song-row>button.noa-direct-action,
+ html[data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view=list] .noa-inline-song-row>.noa-song-actions>button.noa-song-action.noa-direct-action{height:44px;min-height:44px;width:44px}
+ html[data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view=list] .noa-inline-song-row .noa-premium-badge{top:12px;border-radius:0 4px 0 0}
 }

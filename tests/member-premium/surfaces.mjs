@@ -22,7 +22,7 @@ try{
    if(!['GET','HEAD'].includes(req.method()))return r.abort();
    if(phase==='candidate'&&u.origin===base&&['/noa-member-surfaces.css','/noa-member-surfaces.js','/noa-ui.js','/noa-starlight.css','/noa-ainoa.js','/noa-ainoa.css','/noa-voice.js','/noa-listening.js','/noa-music-vinyl.css'].includes(u.pathname))return r.fulfill({body:readFileSync('deploy'+u.pathname),contentType:u.pathname.endsWith('.css')?'text/css':'text/javascript'});
    if(phase==='candidate'&&u.origin===base&&req.isNavigationRequest()){
-    const res=await r.fetch({maxRedirects:0,timeout:30000});if(res.status()>=300&&res.status()<400)return r.fulfill({response:res});
+    let res;try{res=await r.fetch({maxRedirects:0,timeout:25000,maxRetries:2});}catch{return r.abort('failed');}if(res.status()>=300&&res.status()<400)return r.fulfill({response:res});
     let html=await res.text();if(html.includes('</head>'))html=html.replace('</head>','<link rel="stylesheet" href="/noa-member-surfaces.css"><script defer src="/noa-member-surfaces.js"></script></head>');return r.fulfill({response:res,body:html});
    }
    return r.continue();

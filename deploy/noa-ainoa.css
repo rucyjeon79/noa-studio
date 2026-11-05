@@ -147,3 +147,6 @@ html body #noa-voice-modal::after{content:"";position:absolute;bottom:49px;right
 #ainoa-conversation .nl-weather-tracks li{padding:8px 0}
 #ainoa-conversation .nl-weather-tracks small{display:block;color:var(--noa-muted);font-size:12px}
 #ainoa-conversation :focus-visible{outline:2px solid var(--noa-accent);outline-offset:3px}
+#noa-ainoa:has(>.ainoa-tip:not([hidden]))::after{content:"";position:absolute;right:24px;bottom:calc(var(--ainoa-size) - 4px);border:8px solid transparent;border-top-color:var(--noa-raised);pointer-events:none}
+html[data-noa-home-ainoa] #noa-ainoa:has(>.ainoa-tip:not([hidden]))::after{left:-8px;right:auto;top:0;bottom:auto}
+#noa-desktop #noa-ainoa::after{display:none}

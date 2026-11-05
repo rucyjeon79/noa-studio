@@ -86,6 +86,7 @@ sync();
 let currentRoom=null;
 window.NoaAInoa.openConversation=({title='AInoa',onClose}={})=>{
  if(currentRoom?.active())currentRoom.close();
+ document.querySelectorAll('#ainoa-conversation:not([open])').forEach(node=>node.remove());
  const trigger=document.activeElement,dialog=document.createElement('dialog');
  dialog.id='ainoa-conversation';dialog.className='ainoa-conversation';dialog.setAttribute('aria-labelledby','ainoa-conversation-title');
  const header=document.createElement('header'),portrait=document.createElement('img'),copy=document.createElement('div'),heading=document.createElement('h2'),caption=document.createElement('p'),dismiss=document.createElement('button');
@@ -99,10 +100,11 @@ window.NoaAInoa.openConversation=({title='AInoa',onClose}={})=>{
  scroll.append(log,content,status);dialog.append(header,scroll);document.body.append(dialog);
  const follow=()=>requestAnimationFrame(()=>{if(dialog.open)scroll.scrollTo({top:scroll.scrollHeight,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});});
  let closed=false;
+ const finish=()=>{if(closed)return;closed=true;if(currentRoom===room)currentRoom=null;onClose?.();const delay=matchMedia('(prefers-reduced-motion: reduce)').matches?0:180;setTimeout(()=>dialog.remove(),delay);if(trigger?.isConnected)trigger.focus({preventScroll:true});};
  const room={content,active:()=>dialog.open&&!closed,add(text,who='ainoa'){
   if(closed||!text)return;const row=document.createElement('p');row.className='ainoa-conversation-message';row.dataset.speaker=who;row.textContent=text;log.append(row);follow();
- },status(text){status.textContent=text||'';follow();},close(){if(!closed)dialog.close();},focus(){content.querySelector('button,input,textarea,a')?.focus({preventScroll:true});}};
- dialog.addEventListener('close',()=>{if(closed)return;closed=true;if(currentRoom===room)currentRoom=null;onClose?.();const delay=matchMedia('(prefers-reduced-motion: reduce)').matches?0:180;setTimeout(()=>dialog.remove(),delay);if(trigger?.isConnected)trigger.focus({preventScroll:true});},{once:true});
+ },status(text){status.textContent=text||'';follow();},close(){if(!closed){dialog.close();finish();}},focus(){content.querySelector('button,input,textarea,a')?.focus({preventScroll:true});}};
+ dialog.addEventListener('close',finish,{once:true});
  dismiss.onclick=()=>room.close();currentRoom=room;dialog.showModal();return room;
 };
 })();
