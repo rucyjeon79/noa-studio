@@ -1,0 +1,19 @@
+name: NOA home runtime performance
+on:
+  pull_request:
+    paths: ['scripts/qa/noa-home-runtime.mjs','.github/workflows/noa-home-runtime.yml']
+permissions: {contents: read}
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: |
+          timeout 90s npm install --prefix "$RUNNER_TEMP/noa-runtime" --no-save --ignore-scripts --package-lock=false --no-audit --no-fund playwright@1.56.1
+          cp scripts/qa/noa-home-runtime.mjs "$RUNNER_TEMP/noa-runtime/check.mjs"
+          node "$RUNNER_TEMP/noa-runtime/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'home-runtime-proof', path: 'home-runtime-proof/', retention-days: 7}
