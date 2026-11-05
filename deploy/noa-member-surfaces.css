@@ -361,6 +361,8 @@ html.noa-shell-wide[data-noa-style] body .noa-mobile-footer{padding-block:0;bord
 html.noa-shell-wide[data-noa-theme] body .noa-main>.noa-mobile-footer{margin:0}
 html.noa-shell-wide[data-noa-precision] body>main:has(+.noa-mobile-footer){padding-bottom:0;min-height:0}
 html.noa-shell-wide[data-noa-style] body>.noa-mobile-footer{padding-bottom:calc(var(--noa-nav-space,0px) + var(--noa-player-space,0px) + var(--noa-transfer-space,0px) + 24px)}
+html.noa-shell-wide[data-noa-precision].noa-g5 body:has(>.mbskin):has(>.noa-mobile-footer){padding-bottom:0}
+html.noa-shell-wide[data-noa-style] .noa-mobile-footer+:is(.noa-footer,.ne-footer){display:none}
 html.noa-member-ui #noa-my-activity>.noa-actions+.nnt-entry{margin-top:16px}
 html.noa-member-ui #noa-my-activity>.noa-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(140px,100%),1fr));gap:12px}
 html.noa-member-ui #noa-my-activity>.noa-actions>a{display:flex;justify-content:center;align-items:center;text-align:center;min-height:44px;padding:12px}

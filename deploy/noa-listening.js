@@ -322,6 +322,7 @@ function appendCare(){
 
 function showWeatherChoice(){
  if(!editions||weatherAccess!=='vip'||!weatherRoom?.active()||weatherPlaying)return;
+ weatherRoom.actions.replaceChildren();weatherRoom.actions.hidden=true;
  const skyGroup=el('div','nl-weather-choices');skyGroup.setAttribute('role','group');skyGroup.setAttribute('aria-label','마음 날씨');
  for(const [key,[symbol,label]]of Object.entries(editions))skyGroup.append(weatherButton(symbol+' '+label,()=>{
   clearCare();selectedSky=key;selectedIntent=-1;weatherRows=[];weatherRoom.add(label,'user');weatherRoom.add('음악이 어떻게 곁에 있어 주면 좋겠어요?');weatherRoom.status('');showWeatherChoice();
@@ -338,7 +339,8 @@ function showWeatherChoice(){
  const count=weatherQueue().length,list=el('ol','nl-weather-tracks');list.setAttribute('aria-label','선곡 미리보기');
  weatherRows.forEach(row=>{const li=el('li');li.append(el('span','',row.title),el('small','',state.genres[row.genre]||row.genre));list.append(li);});
  const play=weatherButton(count+'곡 이어 듣기',()=>startWeather(0));play.className='nl-weather-play';
- weatherStage.append(el('p','nl-weather-guide',count===100?'마음 날씨에 맞는 100곡을 준비했어요. 매번 새로운 순서로 이어져요.':'현재 이용 가능한 '+count+'곡을 준비했어요. 같은 음원을 중복해서 채우지 않아요.'),list,play,weatherButton('마음 날씨 다시 고르기',()=>{clearCare();selectedSky='';selectedIntent=-1;weatherRows=[];weatherRoom.add('마음 날씨를 다시 고를게요.','user');weatherRoom.add('지금 마음에 가까운 날씨를 골라 주세요.');showWeatherChoice();}));appendCare();
+ weatherStage.append(el('p','nl-weather-guide',count===100?'마음 날씨에 맞는 100곡을 준비했어요. 매번 새로운 순서로 이어져요.':'현재 이용 가능한 '+count+'곡을 준비했어요. 같은 음원을 중복해서 채우지 않아요.'),list);appendCare();
+ weatherRoom.actions.hidden=false;weatherRoom.actions.append(play,weatherButton('마음 날씨 다시 고르기',()=>{clearCare();selectedSky='';selectedIntent=-1;weatherRows=[];weatherRoom.add('마음 날씨를 다시 고를게요.','user');weatherRoom.add('지금 마음에 가까운 날씨를 골라 주세요.');showWeatherChoice();}));
 }
 function weatherQueue(preferred=[]){
  const rows=[],seen=new Set(),add=row=>{if(!row?.audio||row.video||row.kind==='playlist'||rows.length>=100)return;const id=model.recordingId(row);if(!seen.has(id)){seen.add(id);rows.push(row);}};
@@ -356,9 +358,10 @@ function startWeather(index=0,preferred=[]){
  const room=weatherRoom,win=musicWindow,keys=ordered.map(r=>r.key),path=ordered.map((_,i)=>weatherSequence[i%weatherSequence.length]);
  weatherPlaying=true;clearCare();room.add(ordered.length+'곡을 재생목록에 담고 첫 곡을 연결할게요.');room.status('첫 곡의 재생을 확인하고 있어요.');
  weatherStage.querySelectorAll('button').forEach(b=>b.disabled=true);
+ room.actions.querySelectorAll('button').forEach(b=>b.disabled=true);
  let timeout=0,finished=false;
  const cleanup=()=>{clearTimeout(timeout);win.removeEventListener('noa-media-activity',started);win.document.getElementById('sound-player')?.removeEventListener('error',failed);};
- const failed=()=>{if(finished)return;finished=true;cleanup();weatherPlaying=false;if(!room.active())return;room.status('재생이 아직 시작되지 않았어요. 연결 상태를 확인한 뒤 다시 눌러 주세요.');weatherStage.replaceChildren(weatherButton('다시 재생하기',()=>startWeather(index,preferred)));};
+ const failed=()=>{if(finished)return;finished=true;cleanup();weatherPlaying=false;if(!room.active())return;room.status('재생이 아직 시작되지 않았어요. 연결 상태를 확인한 뒤 다시 눌러 주세요.');room.actions.hidden=false;room.actions.replaceChildren(weatherButton('다시 재생하기',()=>startWeather(index,preferred)));};
  const started=event=>{
   if(finished||event.detail?.type!=='audio'||!keys.includes(event.detail.key)||win.NoaMusic.listeningSelection()?.scope!=='weather')return;
   finished=true;cleanup();const count=Number(win.NoaMusic.listeningSelection().label.match(/(\d+)곡/)?.[1])||ordered.length;

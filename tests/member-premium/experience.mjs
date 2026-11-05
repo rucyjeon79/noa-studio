@@ -23,7 +23,7 @@ export async function verifyExperience(browser,phase,out,report){
   const tokens=Object.entries(theme.tokens).map(([k,v])=>'--noa-'+k+':'+v).join(';');
   // Reuse the signed-in MY template. Only its server-side authorization and description are fixture values.
   const template=readFileSync('deploy/noa-my.php','utf8');let activity=template.match(/<section class="noa-section" id="noa-my-activity">[\s\S]*?<\/section>/)[0];activity=activity.replace(/<\?[\s\S]*?\?>/g,m=>m.startsWith('<?=')?'새 글과 댓글·답글, 반응을 확인하세요.':'');
-  await page.setContent(`<!doctype html><html lang="ko" class="noa-member-ui noa-shell-wide" data-noa-style="starlight" data-noa-precision="1" data-noa-theme="${theme.id}" style="${tokens}"><head><meta name="viewport" content="width=device-width,initial-scale=1">${['noa-ui.css','noa-starlight.css','noa-listening.css','noa-notifications.css','noa-music-vinyl.css','noa-ainoa.css','noa-member-surfaces.css'].map(n=>'<link rel="stylesheet" href="/'+n+'">').join('')}</head><body class="noa-page"><main class="noa-main">${activity}<section data-noa-listening="music" id="noa-listening"></section><audio id="sound-player"></audio></main></body></html>`);
+  await page.setContent(`<!doctype html><html lang="ko" class="noa-member-ui noa-shell-wide" data-noa-style="starlight" data-noa-precision="1" data-noa-theme="${theme.id}" style="${tokens}"><head><meta name="viewport" content="width=device-width,initial-scale=1">${['noa-ui.css','noa-starlight.css','noa-listening.css','noa-notifications.css','noa-engagement.css','noa-music-vinyl.css','noa-ainoa.css','noa-member-surfaces.css'].map(n=>'<link rel="stylesheet" href="/'+n+'">').join('')}</head><body class="noa-page"><main class="noa-main">${activity}<section data-noa-listening="music" id="noa-listening"></section><audio id="sound-player"></audio></main></body></html>`);
   await page.addScriptTag({content:'(()=>{const root=document.documentElement,g5=false;'+registry+decorators+';decorate();})();'});
   const activityBox=await page.locator('#noa-my-activity').evaluate(e=>{const a=e.querySelector('nav').getBoundingClientRect(),b=e.querySelector('.nnt-entry').getBoundingClientRect();return {gap:b.top-a.bottom,icon:e.querySelector('.nnt-entry svg')?.dataset.noaSymbol,direct:!!e.querySelector('.nnt-entry>.nnt-entry-copy')};});
   assert.equal(activityBox.icon,'bell');assert(activityBox.direct);assert.equal(activityBox.gap,16);
@@ -52,6 +52,7 @@ export async function verifyExperience(browser,phase,out,report){
   assert.equal(await room.evaluate(e=>e.scrollWidth<=e.clientWidth+1),true);
   const box=await room.boundingBox();assert(box.x>=11&&box.x+box.width<=width-11&&box.y>=15&&box.y+box.height<=900-15);
   const motion=await room.evaluate(e=>getComputedStyle(e).transitionDuration);assert.notEqual(motion,'0s');
+  const playBounds=await room.getByRole('button',{name:'100곡 이어 듣기',exact:true}).boundingBox();assert(playBounds.y>=box.y&&playBounds.y+playBounds.height<=box.y+box.height,'primary playback stays visible without scrolling');
   await page.screenshot({path:out+'/weather-chat-'+width+'-'+theme.id+'.png'});
   await room.getByRole('button',{name:'100곡 이어 듣기',exact:true}).click();
   assert(await room.isVisible(),'queued is not the same as playing');

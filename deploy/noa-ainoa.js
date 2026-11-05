@@ -97,11 +97,12 @@ window.NoaAInoa.openConversation=({title='AInoa',onClose}={})=>{
  const log=document.createElement('div');log.className='ainoa-conversation-log';log.setAttribute('role','log');log.setAttribute('aria-live','polite');log.setAttribute('aria-label','AInoa 대화');
  const content=document.createElement('div');content.className='ainoa-conversation-content';
  const status=document.createElement('p');status.className='ainoa-conversation-status';status.setAttribute('role','status');
- scroll.append(log,content,status);dialog.append(header,scroll);document.body.append(dialog);
+ const actions=document.createElement('footer');actions.className='ainoa-conversation-actions';actions.hidden=true;
+ scroll.append(log,content,status);dialog.append(header,scroll,actions);document.body.append(dialog);
  const follow=()=>requestAnimationFrame(()=>{if(dialog.open)scroll.scrollTo({top:scroll.scrollHeight,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});});
  let closed=false;
  const finish=()=>{if(closed)return;closed=true;if(currentRoom===room)currentRoom=null;onClose?.();const delay=matchMedia('(prefers-reduced-motion: reduce)').matches?0:180;setTimeout(()=>dialog.remove(),delay);if(trigger?.isConnected)trigger.focus({preventScroll:true});};
- const room={content,active:()=>dialog.open&&!closed,add(text,who='ainoa'){
+ const room={content,actions,active:()=>dialog.open&&!closed,add(text,who='ainoa'){
   if(closed||!text)return;const row=document.createElement('p');row.className='ainoa-conversation-message';row.dataset.speaker=who;row.textContent=text;log.append(row);follow();
  },status(text){status.textContent=text||'';follow();},close(){if(!closed){dialog.close();finish();}},focus(){content.querySelector('button,input,textarea,a')?.focus({preventScroll:true});}};
  dialog.addEventListener('close',finish,{once:true});

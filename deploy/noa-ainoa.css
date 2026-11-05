@@ -120,13 +120,16 @@ html body #noa-voice-modal::after{content:"";position:absolute;bottom:49px;right
 /* Theme-aware conversation: bubbles, responses and choices share one reading column. */
 #ainoa-conversation{box-sizing:border-box;width:min(460px,calc(100vw - 24px));height:min(720px,calc(100dvh - 32px));max-height:calc(100dvh - 32px);margin:auto;padding:0;border:1px solid var(--noa-line);border-radius:12px;background:var(--noa-bg);color:var(--noa-text);font:inherit;overflow:hidden}
 #ainoa-conversation::backdrop{background:#0008;backdrop-filter:blur(3px)}
+#ainoa-conversation[open]{display:grid;grid-template-rows:auto minmax(0,1fr) auto}
 #ainoa-conversation>header{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--noa-line);background:var(--noa-surface)}
 #ainoa-conversation header img{flex:none;border-radius:50%}
 #ainoa-conversation header>div{flex:1;min-width:0}
 #ainoa-conversation h2{font-size:18px;line-height:1.4;margin:0}
 #ainoa-conversation header p{font-size:12px;color:var(--noa-muted);margin:4px 0 0}
 #ainoa-conversation header button{border:0;background:transparent;color:var(--noa-muted);font-size:26px;width:44px;height:44px;flex:none}
-#ainoa-conversation .ainoa-conversation-scroll{box-sizing:border-box;height:calc(100% - 88px);overflow:auto;overscroll-behavior:contain;padding:20px 16px}
+#ainoa-conversation .ainoa-conversation-scroll{box-sizing:border-box;min-height:0;overflow:auto;overscroll-behavior:contain;padding:20px 16px}
+#ainoa-conversation .ainoa-conversation-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;padding:12px 16px;border-top:1px solid var(--noa-line);background:var(--noa-bg)}
+#ainoa-conversation .ainoa-conversation-actions>button:last-child:not(:first-child){border-color:transparent;background:transparent;color:var(--noa-muted);font-size:13px}
 #ainoa-conversation .ainoa-conversation-log{display:grid;gap:12px}
 #ainoa-conversation .ainoa-conversation-message{max-width:92%;width:fit-content;margin:0;padding:12px 16px;border-radius:4px 12px 12px;background:var(--noa-surface);color:var(--noa-text);font-size:14px;line-height:1.65;white-space:pre-line;overflow-wrap:anywhere}
 #ainoa-conversation .ainoa-conversation-message[data-speaker=user]{justify-self:end;border-radius:12px 4px 12px 12px;background:var(--noa-accent);color:var(--noa-accentText)}
