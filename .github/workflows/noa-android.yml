@@ -83,9 +83,11 @@ jobs:
           profile: pixel_2
           ram-size: 2048M
           cores: 2
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none -feature -Vulkan
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none -feature -Vulkan,-HardwareDecoder
           disable-animations: true
           script: |
+            adb logcat -c
+            adb logcat -v threadtime AndroidRuntime:E NoaApi:E TestRunner:I chromium:E '*:S' > android/noa-device-log.txt &
             adb shell svc wifi enable
             adb push "$RUNNER_TEMP/noa-android-qa-cookie.txt" /data/local/tmp/noa-android-qa-cookie.txt
             adb shell chmod 600 /data/local/tmp/noa-android-qa-cookie.txt
@@ -100,6 +102,11 @@ jobs:
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/ android/device-proof/ || true
             adb logcat -d -s AndroidRuntime:E NoaApi:E > android/noa-runtime-errors.txt
             python3 -c "from pathlib import Path; import json; assert 'OK (6 tests)' in Path('android/noa-instrumentation.txt').read_text(); assert 'OK (1 test)' in Path('android/noa-restore-instrumentation.txt').read_text(); p=next(Path('android/device-proof').rglob('noa-pwa-proof.json')); proof=json.loads(p.read_text()); assert proof['completed'] and proof['livePwaLayoutAndOrderMatch'] and proof['backgroundAndScreenOff']; assert 'FATAL EXCEPTION' not in Path('android/noa-runtime-errors.txt').read_text(); print(proof)"
+      - name: Record emulator host diagnostics
+        if: always()
+        run: |
+          free -m > android/noa-host-memory.txt
+          sudo dmesg --ctime | tail -150 > android/noa-host-kernel.txt
       - name: Clean isolated live music member
         if: always()
         env:
@@ -123,6 +130,9 @@ jobs:
             android/device-proof/
             android/noa-instrumentation.txt
             android/noa-runtime-errors.txt
+            android/noa-device-log.txt
+            android/noa-host-memory.txt
+            android/noa-host-kernel.txt
             android/noa-restore-instrumentation.txt
             android/app/build/reports/lint-results-release.html
           retention-days: 14
