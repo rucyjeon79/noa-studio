@@ -11,6 +11,10 @@
         {
           "old": "const tag=document.getElementById(id);tag.hidden=!source;tag.textContent=source?.label||'';",
           "new": "const tag=document.getElementById(id);tag.hidden=!source||id==='dock-listening-source';tag.textContent=source?.label||'';"
+        },
+        {
+          "old": "if(navigator.mediaSession?.metadata)navigator.mediaSession.metadata.artist=label;",
+          "new": "if(navigator.mediaSession?.metadata)navigator.mediaSession.metadata.artist=window.NoaBrowse?.genreName?.(r.genre)||'미분류';"
         }
       ]
     },
@@ -21,6 +25,10 @@
         {
           "old": "if(artist)artist.textContent=document.getElementById('detail-cast')?.textContent||'';",
           "new": "if(artist)artist.textContent=window.NoaBrowse?.genreName?.(r.genre)||'미분류';"
+        },
+        {
+          "old": "artist:document.getElementById('detail-cast')?.textContent||'AI Artist Noa'",
+          "new": "artist:window.NoaBrowse?.genreName?.(r.genre)||'미분류'"
         }
       ]
     }

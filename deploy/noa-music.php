@@ -134,7 +134,7 @@ function renderVocal(r){
  document.getElementById('dock-artist').textContent=window.NoaBrowse?.genreName?.(r.genre)||'미분류';
  document.getElementById('cast-noa').hidden=!['female','duet'].includes(r.cast);
  document.getElementById('cast-noel').hidden=!['male','duet'].includes(r.cast);
- if(navigator.mediaSession?.metadata)navigator.mediaSession.metadata.artist=label;
+ if(navigator.mediaSession?.metadata)navigator.mediaSession.metadata.artist=window.NoaBrowse?.genreName?.(r.genre)||'미분류';
 }
 function select(b,autoplay){
  if(selected===b&&ready){if(autoplay)requestPlayback();return;}
