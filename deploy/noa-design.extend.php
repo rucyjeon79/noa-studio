@@ -29,7 +29,32 @@ NOA;
  $script=str_replace('__NOA_PAGE_DESIGN__',json_encode((object)$design,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT),$script);
  return preg_replace_callback('~<head\b[^>]*>~i',static fn($match)=>$match[0].$script,$html,1);
 }
+/** Native skins must select their NOA styles before deferred scripts run. */
+function noa_member_first_paint_markup($html,$path){
+ if(!is_string($path))return $html;
+ $commerce=(bool)preg_match('~^/(?:mobile/)?shop/[^/]+[.]php$~D',$path);
+ $board=str_starts_with($path,'/bbs/');
+ if(!$commerce&&!$board)return $html;
+ $classes=[$commerce?'ny-native':'noa-g5'];
+ if(noa_member_surface_assets()['css']!=='')$classes[]='noa-member-ui';
+ return preg_replace_callback('~<html\b[^>]*>~i',static function($match)use($classes){
+  $tag=$match[0];
+  if(preg_match('~\sclass\s*=\s*(["\'])(.*?)\1~is',$tag,$attribute)){
+   $existing=preg_split('/\s+/',trim(html_entity_decode($attribute[2],ENT_QUOTES,'UTF-8')));
+   $missing=array_diff($classes,$existing);
+   if(!$missing)return $tag;
+   return str_replace($attribute[0],substr($attribute[0],0,-1).' '.implode(' ',$missing).$attribute[1],$tag);
+  }
+  if(preg_match('~\sclass\s*=\s*([^\s>"\']+)~i',$tag,$attribute)){
+   $existing=html_entity_decode($attribute[1],ENT_QUOTES,'UTF-8');
+   $value=htmlspecialchars(trim($existing.' '.implode(' ',array_diff($classes,preg_split('/\s+/',$existing)))),ENT_QUOTES,'UTF-8');
+   return str_replace($attribute[0],' class="'.$value.'"',$tag);
+  }
+  return substr($tag,0,-1).' class="'.implode(' ',$classes).'">';
+ },$html,1);
+}
 function noa_policy_script_revision($html){
+ $html=noa_member_first_paint_markup($html,parse_url($_SERVER['REQUEST_URI']??'',PHP_URL_PATH));
  $html=noa_first_paint_theme($html);
  $html=preg_replace('~<html\b(?![^>]*data-noa-style)~i','<html data-noa-style="starlight"',$html,1);
  // The installed extension lives under /extend; version the actual deployed script.
