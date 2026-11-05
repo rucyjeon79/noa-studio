@@ -29,6 +29,7 @@ export async function verifyListeningLayout(browser,out,report){
   await page.addScriptTag({content:readFileSync('deploy/noa-listening-model.js','utf8')});await page.addScriptTag({content:readFileSync('deploy/noa-listening.js','utf8')});
   try{
    await page.locator('.nl-results .nl-track').first().waitFor();
+   await page.locator('.nl-results').evaluate(e=>Promise.all(e.getAnimations({subtree:true}).map(a=>a.finished.catch(()=>{}))));
    assert(await page.locator('[data-manual-play]').isHidden(),'no unexplained disabled play button before a mood is chosen');assert(await page.locator('.nl-manual-hint').isVisible());
    const geometry=await page.evaluate(()=>{
     const box=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom};};
