@@ -79,15 +79,14 @@ jobs:
       - name: Install and launch on Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          # Pin the emulator host after repeat 37.2.13 process exits during live home rendering.
-          emulator-build: 14214601 # Google stable 36.2.12; Android image remains API 35.
+          # Use modern ANGLE software rendering; legacy GLES SwiftShader segfaulted on the live homepage.
           api-level: 35
           target: google_apis
           arch: x86_64
           profile: pixel_2
           ram-size: 2048M
           cores: 2
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none -feature -Vulkan,-HardwareDecoder
+          emulator-options: -no-window -gpu swangle -no-snapshot -noaudio -no-boot-anim -camera-back none -feature -HardwareDecoder
           pre-emulator-launch-script: python3 scripts/qa/noa-emulator-trace.py
           disable-animations: true
           script: |
