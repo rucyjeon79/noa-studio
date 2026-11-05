@@ -140,3 +140,4 @@ html.noa-member-ui.ny-native .ny-native-nav>a:first-child{display:none}
 html.noa-member-ui.ny-native .ny-native-nav{justify-content:flex-start;gap:8px}
 @media(max-width:760px){html.noa-member-ui body :is(.noa-support-dialog,#noa-share-dialog){padding:16px}}
 html.noa-member-ui .ec-dialog textarea[maxlength="20000"]{min-height:clamp(200px,32vh,320px);font-size:16px;line-height:1.8}
+html.noa-member-ui.noa-g5 #bo_list :is(#bo_sch,.bo_sch) :is(input,select){font-size:16px;line-height:1.5;min-height:48px}
