@@ -28,7 +28,7 @@ try{
   });
   const page=await context.newPage();let pageErrors=[];
   page.on('pageerror',e=>pageErrors.push(e.message));page.on('dialog',d=>d.dismiss());
-  const close=page.locator('#noa-amt-fan .amt-close');await page.addLocatorHandler(close,()=>close.click());
+  const close=page.locator('#noa-amt-fan .amt-close');
   for(const path of paths){
    try{
     pageErrors=[];const response=await page.goto(base+path,{waitUntil:'domcontentloaded'});
