@@ -146,3 +146,6 @@ html.noa-member-ui.noa-g5 #bo_list :is(#bo_sch,.bo_sch) :is(input,select){font-s
 html.noa-member-ui.noa-g5 :is(#bo_list,#bo_v,#bo_w) :is(input.frm_input,input.sch_input,select,textarea):not([type=checkbox]):not([type=radio]):not([type=hidden]){font-size:16px;line-height:1.75;min-block-size:var(--member-field-min,48px);border-radius:4px}
 html.noa-member-ui.noa-g5 #bo_w input#wr_subject{font-size:18px}
 html.noa-member-ui.noa-g5 #bo_vc_w textarea#wr_content{min-block-size:144px}
+
+html.noa-member-ui.ny-native :is(#sod_bsk,#sod_frm,#sod_inquiry) :is(.btn_submit,.btn01,.btn02,.btn_frmline){min-height:48px}
+html.noa-member-ui.ny-native #sod_frm textarea{min-height:144px!important}

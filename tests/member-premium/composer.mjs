@@ -7,12 +7,12 @@ export async function verifyComposer(browser,out,report){
   const source={id:'a'.repeat(32),space:'lounge',category:'chat',visibility:'public',mine:true,name:'검증 회원',title:'기존 제목',body:'기존 본문',images:[],options:[],at:1,revision:7};let saves=[];
   await context.route('**/*',async r=>{
    const u=new URL(r.request().url());if(u.origin!=='https://composer.fixture')return r.abort();
-   if(u.pathname==='/noa-lounge.php')return r.fulfill({contentType:'text/html',body:'<!doctype html><html data-noa-style="starlight"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-ecosystem.css"><link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-member-surfaces.css"><main id="ecosystem" data-space="lounge"><div id="ec-hero-actions"></div><div id="ec-tools"></div><div id="ec-content"></div><p id="ec-status"></p></main><script src="/noa-member-surfaces.js"></script><script src="/noa-ecosystem.js"></script></html>'});
+   if(u.pathname==='/noa-lounge.php')return r.fulfill({contentType:'text/html; charset=utf-8',body:'<!doctype html><html lang="ko" data-noa-style="starlight"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-ecosystem.css"><link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-member-surfaces.css"><main id="ecosystem" data-space="lounge"><div id="ec-hero-actions"></div><div id="ec-tools"></div><div id="ec-content"></div><p id="ec-status"></p></main><script src="/noa-member-surfaces.js"></script><script src="/noa-ecosystem.js"></script></html>'});
    if(u.pathname==='/noa-bridge/ecosystem.php'){
     const a=u.searchParams.get('action');if(a==='save')saves.push(r.request().postDataJSON());
     const d=a==='detail'?{post:source,comments:[],versions:[],applications:[]}:a==='session'?{member:true,level:8,admin:false,creator:true}:a==='list'?{items:[],total:0}:a==='save'?{id:source.id}:{items:[]};return r.fulfill({json:{ok:true,...d}});
    }
-   if(/\.(css|js)$/.test(u.pathname))return r.fulfill({body:readFileSync('deploy'+u.pathname),contentType:u.pathname.endsWith('.css')?'text/css':'text/javascript'});
+   if(/\.(css|js)$/.test(u.pathname))return r.fulfill({body:readFileSync('deploy'+u.pathname),contentType:u.pathname.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'});
    return r.fulfill({status:404,body:''});
   });
   const page=await context.newPage();let pageErrors=[];page.on('pageerror',e=>pageErrors.push(e.message));
