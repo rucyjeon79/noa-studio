@@ -10,7 +10,7 @@ const phase=process.env.NOA_MEMBER_PHASE||'baseline',base='https://noastudio.ai.
 mkdirSync(out,{recursive:true});
 const paths=[...new Set([...(existsSync('/tmp/noa-member-native/routes.json')?JSON.parse(readFileSync('/tmp/noa-member-native/routes.json','utf8')):[]),'/','/noa-music.php','/noa-youtube.php','/noa-world.php','/noa-lounge.php','/noa-lounge.php?board=free','/noa-creator-lab.php','/noa-shop.php','/noa-youngcart.php','/noa-points.php','/noa-vip.php','/noa-membership.php','/noa-my.php','/noa-creator.php','/noa-gifts.php','/noa-subscription.php','/noa-notifications.php','/noa-settings.php','/noa-login.php','/noa-about.php','/noa-terms.php','/noa-privacy.php','/bbs/login.php?legacy=1','/bbs/register.php','/bbs/password_lost.php','/bbs/search.php','/bbs/faq.php','/bbs/board.php?bo_table=free','/bbs/write.php?bo_table=free','/shop/cart.php','/shop/orderinquiry.php','/shop/orderform.php'])];
 const chosen=new Set(['/','/noa-my.php','/noa-youngcart.php','/noa-shop.php','/noa-lounge.php','/noa-login.php','/bbs/register.php','/bbs/password_lost.php','/shop/cart.php','/shop/orderinquiry.php','/bbs/search.php']);
-const report={phase,public:[],fixtures:[],errors:[],writes:0};
+const report={phase,public:[],fixtures:[],errors:[],writes:0,fontMode:'installed official Noto Sans KR; network fonts disabled'};
 const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
 
 try{
@@ -21,6 +21,9 @@ try{
   await context.route('**/*',async r=>{
    const req=r.request(),u=new URL(req.url());
    if(!['GET','HEAD'].includes(req.method()))return r.abort();
+   // The runner installs the pinned official Noto Sans KR face before this step.
+   // Avoid stalled third-party font downloads delaying every screenshot.
+   if(req.resourceType()==='font')return r.abort();
    if(phase==='candidate'&&u.origin===base&&['/noa-member-surfaces.css','/noa-member-surfaces.js','/noa-ui.js','/noa-starlight.css','/noa-ainoa.js','/noa-ainoa.css','/noa-voice.js','/noa-listening.js','/noa-music-vinyl.css'].includes(u.pathname))return r.fulfill({body:readFileSync('deploy'+u.pathname),contentType:u.pathname.endsWith('.css')?'text/css':'text/javascript'});
    if(phase==='candidate'&&u.origin===base&&req.isNavigationRequest()){
     let res;try{res=await r.fetch({maxRedirects:0,timeout:25000,maxRetries:2});}catch{return r.abort('failed');}if(res.status()>=300&&res.status()<400)return r.fulfill({response:res});
