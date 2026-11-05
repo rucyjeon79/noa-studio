@@ -10,6 +10,34 @@ icons.login='M14 3h7v18h-7 M3 12h12 M9 6l6 6-6 6';
 icons.sitemap='M9 3h6v5H9z M3 16h6v5H3z M15 16h6v5h-6z M12 8v4 M6 16v-4h12v4';icons.notice='M4 9h4l12-5v16l-12-5H4z M8 15l2 6h4l-2-5';
 icons.shop='M4 8h16l1 13H3L4 8Z M8 8V6a4 4 0 0 1 8 0v2';
 icons.youtube='M3 5h18v14H3z M10 9l6 3-6 3z';
+// One silhouette per operation; branding and membership symbols stay separate.
+Object.assign(icons,{
+ heart:'M12 21 3.5 12.5A5.5 5.5 0 0 1 12 5.5a5.5 5.5 0 0 1 8.5 7L12 21Z',
+ flag:'M4 22V3 M4 3c5-4 11 4 16 0v11c-5 4-11-4-16 0',
+ compare:'M4 4h6v16H4z M14 4h6v16h-6z',
+ save:'M5 3h12l4 4v14H3V3h2Z M7 3v6h10V3 M7 21v-8h10v8',
+ upload:'M12 16V3m-5 5 5-5 5 5 M4 17v4h16v-4',
+ share:'M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6 M6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6 M18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6 M9 10.5l6-4 M9 13.5l6 4',
+ copy:'M9 8h12v13H9z M15 5V3H3v13h3',
+ cart:'M2 3h3l3 13h11l3-9H6 M10 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2 M18 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2',
+ card:'M2 5h20v14H2z M2 10h20 M6 15h3',
+ wallet:'M20 8V4H5a3 3 0 0 0 0 6h17v11H5a3 3 0 0 1-3-3V7 M22 13h-6v5h6 M18 15.5h.01',
+ bookmark:'M6 3h12v18l-6-4-6 4V3Z',
+ gift:'M3 8h18v5H3z M5 13v8h14v-8 M12 8v13 M12 8H8a3 3 0 1 1 3-3l1 3Zm0 0h4a3 3 0 1 0-3-3l-1 3Z',
+ close:'M6 6l12 12 M18 6 6 18',
+ back:'M19 12H5 M11 6l-6 6 6 6',
+ forward:'M5 12h14 M13 6l6 6-6 6',
+ pause:'M7 4h3v16H7z M14 4h3v16h-3z',
+ info:'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0 M12 11v6 M12 7h.01',
+ help:'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0 M9 9a3 3 0 0 1 6 0c0 2-3 2-3 5 M12 17h.01',
+ bell:'M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9 M10 21h4',
+ list:'M8 5h13 M8 12h13 M8 19h13 M3 5h.01 M3 12h.01 M3 19h.01',
+ plus:'M12 5v14 M5 12h14',
+ check:'M5 12l4 4L19 6',
+ logout:'M10 3H3v18h7 M9 12h12 M15 6l6 6-6 6',
+ document:'M14 2H4v20h16V8l-6-6Z M14 2v6h6 M8 12h8 M8 16h8',
+ refresh:'M20 7V3l-4 4 M20 7a8 8 0 0 0-14-2 M4 17v4l4-4 M4 17a8 8 0 0 0 14 2'
+});
 let access={home:true,member:false,music:false,admin:false};try{access=JSON.parse(document.getElementById('noa-access')?.textContent||'null')||access;}catch{}
 function menu(){return [['youtube','유튜브','/noa-youtube.php'],['music','음원','/noa-music.php'],['home','홈','/'],['community','커뮤니티','/noa-lounge.php'],['shop','SHOP','/noa-shop.php']];}
 function sectionFor(path){
@@ -69,24 +97,65 @@ function translateFixedNodes(){document.querySelectorAll('#mb_login h2,#mb_login
 function markMetadata(){const names=window.NoaBrowse?.names;if(!names)return;for(const node of document.querySelectorAll('.catalog-card small,.catalog-meta,.noa-eyebrow,.noa-card-context')){if(node.children.length)continue;let text=node.textContent;for(const [key,label]of Object.entries(names))text=text.replaceAll(key,label);text=text.replace(/\b(?:unclassified|unknown)\b/g,'음악');if(text!==node.textContent)node.textContent=text;}}
 function markLabels(){if(themeOnly)return;decorate();markMetadata();translateFixedNodes();document.querySelectorAll('[data-noa-i18n]').forEach(el=>{const text=tr(el.dataset.noaI18n);if(el.textContent!==text)el.textContent=text});document.querySelectorAll('.controls button,#pause-play,#my-playlists h2,#lyrics-label,#player-status,#noa-settings-status,#act-play,#install,#genre option,#type option,#my-select option[value=""],#login_fs label,#login_info a,#login_info label,.noa-page main>p,.noa-footer a').forEach(updateLabel);document.querySelectorAll('#search,#my-title,#mb_login input[placeholder],#register_form input[placeholder]').forEach(el=>{const value=el.dataset.noaPlaceholder||el.getAttribute('placeholder');if(words[value]){el.dataset.noaPlaceholder=value;const next=tr(value);if(el.placeholder!==next)el.placeholder=next}});root.lang=language;}
 
-function icon(key){return '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="'+icons[key]+'"/></svg>'}
-function actionIcon(el){const href=el.getAttribute('href')||'',text=el.textContent.trim();return /사이트맵|전체 서비스|noa-sitemap/.test(text+' '+href)?'sitemap':/공지/.test(text)?'notice':/삭제/.test(text)?'trash':/검색/.test(text)?'search':/글쓰기|작성|수정/.test(text)?'edit':/옵션/.test(text)?'more':/다운로드|설치 파일|받기/.test(text)?'download':/캐릭터|회원|계정|로그인|로그아웃/.test(text)?'user':/설명|정보|세계관/.test(text)?'book':/커뮤니티|소식/.test(text)?'community':/youtube|영상|MV/.test(text+' '+href)?'youtube':/관리|설정/.test(text)?'settings':/곡|suno|재생|제작|생성/.test(text+' '+href)?'music':'library';}
+function icon(key){return icons[key]?'<svg aria-hidden="true" data-noa-symbol="'+key+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="'+icons[key]+'"/></svg>':''}
+function actionIcon(el){
+ const text=(el.getAttribute('aria-label')||el.textContent||el.title||'').trim(),href=el.getAttribute('href')||'';
+ // Actions take priority over subject words: saving a song is still a save action.
+ const rules=[
+  [/삭제|지우기|비우기|\bdelete\b/i,'trash'],[/닫기|취소|철회|거절|연결 해제|첨부 제외|\b(close|cancel)\b/i,'close'],
+  [/일시[ ]?정지|\bpause\b/i,'pause'],[/복사|\bcopy\b/i,'copy'],[/공유|\bshare\b/i,'share'],
+  [/다운로드|설치 파일|내려받|다운받|\bdownload\b/i,'download'],[/업로드|올리기|파일 교체|\bupload\b/i,'upload'],
+  [/장바구니|카트|\bcart\b/i,'cart'],[/선물|후원|\bgift\b/i,'gift'],
+  [/충전|포인트|\bwallet\b/i,'wallet'],[/구매|결제|주문|\b(checkout|payment|buy)\b/i,'card'],
+  [/저장한|보관한|상품 보관|스크랩|찜|북마크|\bbookmark\b/i,'bookmark'],
+  [/저장|\bsave\b/i,'save'],[/글쓰기|이야기 쓰기|음악 이야기 쓰기|작성|수정|편집|\bedit\b/i,'edit'],
+  [/게시하기|발행|등록|신청|수락|적용|확인|완료/,'check'],[/검색|찾기|\bsearch\b/i,'search'],
+  [/로그아웃|\blog[ -]?out\b/i,'logout'],[/로그인|\blog[ -]?in\b/i,'login'],
+  [/새로고침|다시 시도|다시 불러|\brefresh\b/i,'refresh'],[/이전|돌아가기|뒤로|\bback\b/i,'back'],
+  [/다음|계속|더[ ]?보기|전체[ ]?보기|바로가기|\bnext\b/i,'forward'],
+  [/새[ ]?목록|추가|만들기|생성|\badd\b/i,'plus'],
+  [/재생|듣기|\bplay\b/i,'play'],[/음악.*담기|곡.*담기|재생목록|플레이리스트/,'playlists'],
+  [/앨범|컬렉션/,'disc'],[/목록|리스트/,'list'],[/보내|발송|쪽지|메일/,'mail'],
+  [/좋아요|응원/,'heart'],[/신고/,'flag'],[/비교/,'compare'],
+  [/알림|도착한 소식|내 활동/,'bell'],[/공지/,'notice'],[/도움|문의|자주 묻|FAQ/i,'help'],
+  [/사이트맵|전체 서비스|전체 메뉴/,'sitemap'],[/세계관|NOA WORLD/i,'world'],
+  [/약관|개인정보|정책/,'document'],[/설명|정보|안내/,'info'],[/커뮤니티|이야기|댓글|답글|라운지/,'community'],
+  [/youtube|영상|\bMV\b/i,'youtube'],[/관리|설정|옵션/,'settings'],
+  [/캐릭터|회원|계정|프로필/,'user'],[/음악|음원|곡|suno/i,'music'],
+  [/라이브러리|보관함|자료실/,'library'],[/약관|개인정보|정책/,'document'],[/SHOP|굿즈|상품/i,'shop']
+ ];
+ for(const [match,key]of rules)if(match.test(text))return key;
+ // URL fallbacks identify destinations only; unknown labels receive no decorative icon.
+ for(const [match,key]of [[/noa-sitemap/,'sitemap'],[/noa-notifications/,'bell'],[/noa-music/,'music'],[/noa-world/,'world'],[/noa-lounge|board[.]php/,'community'],[/noa-shop|noa-youngcart/,'shop'],[/cart[.]php/,'cart'],[/login[.]php/,'login']])if(match.test(href))return key;
+ return '';
+}
+function headingIcon(text){
+ for(const [match,key]of [[/공지/,'notice'],[/알림|내 활동/,'bell'],[/사이트맵|전체 서비스/,'sitemap'],[/NOA WORLD|세계관|프롤로그|에필로그|챕터/i,'book'],[/사연|당신의 이야기/,'mail'],[/커버/,'mic'],[/EP|컬렉션|앨범/i,'disc'],[/재생목록|플레이리스트/,'playlists'],[/보관함|라이브러리/,'library'],[/커뮤니티|라운지|별무리 이야기|댓글/,'community'],[/포인트/,'wallet'],[/선물|후원/,'gift'],[/SHOP|굿즈|상품/i,'shop'],[/도움|문의|FAQ/i,'help'],[/MY|계정|프로필/i,'user'],[/관리|작업실|설정/,'settings'],[/음악|음원|추천곡/,'music'],[/YouTube|영상/i,'youtube'],[/최근 재생/,'play']])if(match.test(text))return key;
+ return '';
+}
 // Action footers, forms and storefront controls may render after the page shell.
 const actionScopes=[
  '#ecosystem .ec-actions button','#ecosystem .ec-shop-secondary button','#ecosystem .ec-buy',
- '.ec-dialog form button','.noa-gifts button','.noa-membership-layout form button',
+ '.ec-dialog button','.noa-gifts button','.noa-membership-layout form button',
  '.noa-points-page button[data-add]','.noa-point-packs button','.noa-point-checkout button[type=submit]',
  '.noa-login-form button','.noa-g5 .btn_confirm button','.noa-g5 #bo_sch button',
- '.noa-page button.noa-button','.lp-view-switch button'
+ '.noa-page button.noa-button','.lp-view-switch button',
+ '.noa-page .noa-actions button','.noa-page .creator-actions button',
+ '.noa-page .ncea-actions button','.noa-page .noa-record-actions button'
 ].join(',');
 function markAction(el){
  const name=el.textContent.trim();
- if(!name||/^[+−–0-9]+$/.test(name))return;
+ if(!name||/^[+−–0-9]+$/.test(name)||el.hasAttribute('data-noa-glass-label'))return;
  el.classList.add('noa-labelled-command');
- if(el.querySelector('svg,img,i')||el.hasAttribute('data-noa-glass-label'))return;
- const key=/카트|구매|결제|충전/.test(name)?'shop':/앨범/.test(name)?'disc':/목록|담기/.test(name)?'playlists':
-  /보내|선물|발송/.test(name)?'mail':/저장|변경|신청|작성|등록/.test(name)?'edit':actionIcon(el);
- el.insertAdjacentHTML('afterbegin',icon(key));
+ const owned=el.querySelector(':scope>svg[data-noa-command-icon]');
+ if(!owned&&el.querySelector('svg,img,i'))return;
+ const key=actionIcon(el);
+ if(owned){
+  if(!key){owned.remove();return;}
+  if(owned.dataset.noaSymbol!==key){owned.dataset.noaSymbol=key;owned.querySelector('path').setAttribute('d',icons[key]);}
+ }else if(key){
+  el.insertAdjacentHTML('afterbegin',icon(key));el.querySelector(':scope>svg').setAttribute('data-noa-command-icon','');
+ }
 }
 function watchActions(){
  const scan=node=>{
@@ -97,10 +166,11 @@ function watchActions(){
  scan(document.body);
  new MutationObserver(changes=>{
   for(const change of changes){
-   if(change.target.matches?.(actionScopes))markAction(change.target);
+   const command=(change.target.nodeType===1?change.target:change.target.parentElement)?.closest(actionScopes);
+   if(command)markAction(command);
    for(const node of change.addedNodes)scan(node);
   }
- }).observe(document.body,{childList:true,subtree:true});
+ }).observe(document.body,{childList:true,characterData:true,subtree:true});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watchActions);else watchActions();
 function decorate(){
@@ -109,13 +179,13 @@ function decorate(){
  // Existing nodes/URLs/listeners are retained. Exclude card links, document-body citations and native navigation.
  for(const el of document.querySelectorAll('main a,main summary,main button:is(.noa-button.primary,#my-new,#my-add,#my-save,#my-play,#act-play,#lab-text-submit,#noa-settings-save),.noa-g5 .btn_bo_user a,.noa-g5 .btn_bo_user button,.noa-g5 .btn_confirm a,.noa-g5 .btn_confirm button,.noa-g5 .bo_v_nb a,.noa-g5 .bo_v_com a')){
   if(el.matches('.nl-music-discovery>summary,[data-noa-icon],.noa-action,.noa-logo,.brand,.noa-music-card,.noa-genre,.noa-world-act,.noa-personal-card,.noa-browse-card,.catalog-card,.noa-feed-row')||el.closest('nav,footer,.noa-world-text,[data-noa-document-link],#bo_list table,#bo_list .bo_list,#bo_list .bo_tit,#bo_list .td_subject,#bo_v_con,#bo_vc article')||el.querySelector('img,svg')||!el.textContent.trim())continue;
-  el.dataset.noaIcon=actionIcon(el);
+  const key=actionIcon(el);if(key)el.dataset.noaIcon=key;
  }
  if(document.querySelector('.lab-tabs'))for(const a of document.querySelectorAll('.lab-tabs a')){const keys={'#lab-text':'settings','#lab-create':'music','#lab-jobs':'library','#lab-growth':'youtube'};if(keys[a.getAttribute('href')])a.dataset.noaIcon=keys[a.getAttribute('href')];}
  document.querySelectorAll('[data-noa-icon]').forEach(el=>{if(el.querySelector('svg')||!icons[el.dataset.noaIcon])return;const label=document.createElement('span');while(el.firstChild)label.append(el.firstChild);if(el.closest('.btn_bo_user,.btn_confirm,.bo_v_nb,.bo_v_com')&&root.classList.contains('noa-g5')){const name=el.getAttribute('aria-label')||el.title||label.textContent.trim();el.setAttribute('aria-label',name);label.textContent=({'게시판 검색':'검색','게시판 리스트 옵션':'옵션'})[name]||name;}if(el.dataset.noaI18n){label.dataset.noaI18n=el.dataset.noaI18n;delete el.dataset.noaI18n;}el.insertAdjacentHTML('afterbegin',icon(el.dataset.noaIcon));el.append(label);el.classList.add('noa-action');});
  // Explicit section chrome only: song controls and JUKEBOX DOM are never rewritten.
  if(location.pathname==='/noa-music.php')return;
- document.querySelectorAll('main>h1,.lab-heading h1,.lab-panel>h2,.lab-section>h2,.noa-section h2,.noa-section-head h2,.noa-world-prose>h2,.noa-world-heading>h2,#youtube-playlists>h2').forEach(el=>{if(el.dataset.noaHeading)return;el.dataset.noaHeading='true';const text=el.textContent;let key=/공지/.test(text)?'notice':/사이트맵|전체 서비스/.test(text)?'sitemap':/NOA WORLD|세계관|프롤로그|에필로그|챕터/.test(text)?'book':/사연|당신의 이야기/.test(text)?'mail':/커버/.test(text)?'mic':/EP|컬렉션/.test(text)?'disc':/목록|플레이리스트|보관함/.test(text)?'playlists':/MY|최근|계정/.test(text)?'user':/관리|작업실|설정/.test(text)?'settings':'music';const label=document.createElement('span');while(el.firstChild)label.append(el.firstChild);if(el.dataset.noaI18n){label.dataset.noaI18n=el.dataset.noaI18n;delete el.dataset.noaI18n;}el.insertAdjacentHTML('afterbegin',icon(key));el.append(label);});
+ document.querySelectorAll('main>h1,.lab-heading h1,.lab-panel>h2,.lab-section>h2,.noa-section h2,.noa-section-head h2,.noa-world-prose>h2,.noa-world-heading>h2,#youtube-playlists>h2').forEach(el=>{if(el.dataset.noaHeading||el.querySelector('svg,img'))return;const key=headingIcon(el.textContent);if(!key)return;el.dataset.noaHeading='true';const label=document.createElement('span');while(el.firstChild)label.append(el.firstChild);if(el.dataset.noaI18n){label.dataset.noaI18n=el.dataset.noaI18n;delete el.dataset.noaI18n;}el.insertAdjacentHTML('afterbegin',icon(key));el.append(label);});
 }
 function navItem(item,drawer=false){const a=document.createElement('a');a.href=item[2];a.dataset.noaNav=item[0];a.setAttribute('aria-label',tr(item[1]));const need=['music','youtube','world'].includes(item[0])?'member':null;if(need&&!access[need]){a.removeAttribute('href');a.tabIndex=0;a.setAttribute('role','button');a.setAttribute('aria-disabled','true');a.dataset.noaCondition=need==='music'?'음원은 이용 기간이 남은 VIP회원·VIP 크리에이터가 들을 수 있어요. MY에서 이용권과 잔여 기간을 확인해 주세요.':'로그인한 회원에게 열리는 메뉴예요. 로그인 후 다시 만나 주세요.';}if(item[0]==='settings'&&location.pathname!=='/noa-settings.php')a.onclick=e=>{e.preventDefault();openSettings();};a.innerHTML=icon(item[0]);const t=document.createElement('span');t.dataset.noaI18n=item[1];t.textContent=tr(item[1]);a.append(t);const target=new URL(item[2],location.origin);const active=drawer&&location.pathname==='/noa-world.php'?'world':sectionFor(location.pathname);if(item[0]==='user'||item[0]==='login')a.dataset.noaAccountNav=item[0];if(item[0]===active)a.setAttribute('aria-current','page');return a;}
 function shell(){if(themeOnly||admin||document.querySelector('.noa-sidebar'))return;const side=document.createElement('dialog');side.id='noa-menu-drawer';side.className='noa-sidebar noa-menu-drawer';side.setAttribute('aria-label','전체 메뉴');side.innerHTML='<a href="/" class="noa-logo" aria-label="NOA STUDIO 홈"><img class="noa-brand-mark" src="/noa-assets/papa-logo.png" alt="" width="48" height="48"><span class="noa-brand-copy">NOA STUDIO<small>AI ARTIST NOA</small></span></a>';const nav=document.createElement('nav');nav.className='noa-menu';nav.setAttribute('aria-label','NOA STUDIO');side.append(nav);const bottom=document.createElement('footer');bottom.className='noa-sidebar-bottom';bottom.setAttribute('aria-label','스튜디오 안내');bottom.innerHTML='<div class="noa-sidebar-signature"><strong>NOA STUDIO</strong><span>Music. Stories. Starlight.</span></div><nav class="noa-sidebar-legal" aria-label="회사 및 이용 안내"><a href="/noa-about.php">제이알</a><a href="/noa-world.php" class="noa-footer-world">세계관</a><a href="/noa-terms.php">이용약관</a><a href="/noa-privacy.php">개인정보처리방침</a></nav><section class="noa-sidebar-visitors" aria-label="방문자 집계"><p>방문자</p><dl><div><dt>오늘</dt><dd data-visit="today">—</dd></div><div><dt>어제</dt><dd data-visit="yesterday">—</dd></div><div><dt>전체</dt><dd data-visit="total">—</dd></div></dl></section>';let counts=null;try{counts=JSON.parse(document.getElementById('noa-visitor-counts')?.textContent||'null');}catch{}bottom.querySelectorAll('[data-visit]').forEach(el=>{const value=counts?.[el.dataset.visit];if(/^\d+$/.test(String(value)))el.textContent=BigInt(value).toLocaleString('ko-KR');else el.setAttribute('aria-label','집계 정보 없음');});root.classList.add('noa-has-sidebar','noa-shell-wide');side.append(bottom);document.body.prepend(side);const mobile=document.createElement('nav');mobile.className='noa-mobile-nav';mobile.setAttribute('aria-label','NOA STUDIO mobile');menu().forEach(item=>mobile.append(navItem(item)));document.body.append(mobile);if(g5){const top=document.createElement('header');top.className='noa-g5-top';top.innerHTML='<a class="noa-logo" href="/">NOA STUDIO</a><a data-noa-login href="/bbs/login.php">'+tr('로그인')+'</a>';document.body.insertBefore(top,side.nextSibling);const footer=document.createElement('footer');footer.className='noa-footer';footer.innerHTML='<span>NOA STUDIO · Music. Stories. Starlight.</span><a href="/bbs/content.php?co_id=privacy" data-noa-i18n="개인정보처리방침">개인정보처리방침</a><a href="/bbs/content.php?co_id=provision" data-noa-i18n="이용약관">이용약관</a>';document.body.append(footer);}const mobileFooter=bottom.cloneNode(true);

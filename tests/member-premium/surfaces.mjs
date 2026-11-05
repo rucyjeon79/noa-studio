@@ -3,22 +3,23 @@ import {readFileSync,mkdirSync,writeFileSync,existsSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {verifyFixtures} from './fixtures.mjs';
 import {verifyComposer} from './composer.mjs';
+import {verifyRelationships,auditRelationships} from './relationships.mjs';
 const phase=process.env.NOA_MEMBER_PHASE||'baseline',base='https://noastudio.ai.kr',out='member-surface-proof/'+phase;
 mkdirSync(out,{recursive:true});
 const paths=[...new Set([...(existsSync('/tmp/noa-member-native/routes.json')?JSON.parse(readFileSync('/tmp/noa-member-native/routes.json','utf8')):[]),'/','/noa-music.php','/noa-youtube.php','/noa-world.php','/noa-lounge.php','/noa-lounge.php?board=free','/noa-creator-lab.php','/noa-shop.php','/noa-youngcart.php','/noa-points.php','/noa-vip.php','/noa-membership.php','/noa-my.php','/noa-creator.php','/noa-gifts.php','/noa-subscription.php','/noa-notifications.php','/noa-settings.php','/noa-login.php','/noa-about.php','/noa-terms.php','/noa-privacy.php','/bbs/login.php?legacy=1','/bbs/register.php','/bbs/password_lost.php','/bbs/search.php','/bbs/faq.php','/bbs/board.php?bo_table=free','/bbs/write.php?bo_table=free','/shop/cart.php','/shop/orderinquiry.php','/shop/orderform.php'])];
-const chosen=new Set(['/noa-youngcart.php','/noa-shop.php','/noa-lounge.php','/noa-login.php','/bbs/register.php','/bbs/password_lost.php','/shop/cart.php','/shop/orderinquiry.php','/bbs/search.php']);
+const chosen=new Set(['/','/noa-my.php','/noa-youngcart.php','/noa-shop.php','/noa-lounge.php','/noa-login.php','/bbs/register.php','/bbs/password_lost.php','/shop/cart.php','/shop/orderinquiry.php','/bbs/search.php']);
 const report={phase,public:[],fixtures:[],errors:[],writes:0};
 const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
 
 try{
- if(phase!=='baseline'){await verifyFixtures(browser,phase,out,report);await verifyComposer(browser,out,report);}
+ if(phase!=='baseline'){await verifyFixtures(browser,phase,out,report);await verifyComposer(browser,out,report);await verifyRelationships(browser,out,report);}
  await Promise.all([390,1440].map(async width=>{
   const context=await browser.newContext({viewport:{width,height:900},locale:'ko-KR',serviceWorkers:'block',reducedMotion:'reduce'});
   context.setDefaultTimeout(15000);context.setDefaultNavigationTimeout(30000);
   await context.route('**/*',async r=>{
    const req=r.request(),u=new URL(req.url());
    if(!['GET','HEAD'].includes(req.method()))return r.abort();
-   if(phase==='candidate'&&u.origin===base&&['/noa-member-surfaces.css','/noa-member-surfaces.js'].includes(u.pathname))return r.fulfill({body:readFileSync('deploy'+u.pathname),contentType:u.pathname.endsWith('.css')?'text/css':'text/javascript'});
+   if(phase==='candidate'&&u.origin===base&&['/noa-member-surfaces.css','/noa-member-surfaces.js','/noa-ui.js'].includes(u.pathname))return r.fulfill({body:readFileSync('deploy'+u.pathname),contentType:u.pathname.endsWith('.css')?'text/css':'text/javascript'});
    if(phase==='candidate'&&u.origin===base&&req.isNavigationRequest()){
     const res=await r.fetch({maxRedirects:0});if(res.status()>=300&&res.status()<400)return r.fulfill({response:res});
     let html=await res.text();if(html.includes('</head>'))html=html.replace('</head>','<link rel="stylesheet" href="/noa-member-surfaces.css"><script defer src="/noa-member-surfaces.js"></script></head>');return r.fulfill({response:res,body:html});
@@ -27,7 +28,7 @@ try{
   });
   const page=await context.newPage();let pageErrors=[];
   page.on('pageerror',e=>pageErrors.push(e.message));page.on('dialog',d=>d.dismiss());
-  const close=page.locator('#noa-amt-fan .amt-close');await page.addLocatorHandler(close,()=>close.click());
+  const close=page.locator('#noa-amt-fan .amt-close');
   for(const path of paths){
    try{
     pageErrors=[];const response=await page.goto(base+path,{waitUntil:'domcontentloaded'});
@@ -36,9 +37,11 @@ try{
      await page.addStyleTag({content:readFileSync('deploy/noa-member-surfaces.css','utf8')});
      await page.addScriptTag({content:readFileSync('deploy/noa-member-surfaces.js','utf8')});
     }
+    if(await page.locator('#ec-content').count())await page.waitForFunction(()=>{const e=document.querySelector('#ec-content');return e.childElementCount>0&&!e.textContent.includes('불러오는 중입니다.');},null,{timeout:15000});
     for(const theme of ['noa-studio','noa-ivory']){
      await page.evaluate(t=>{if(window.NoaUI)window.NoaUI.apply({...window.NoaUI.getState(),theme:t});},theme);
      await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+     if(await close.isVisible())await close.click();
      const audit=await page.evaluate(()=>{
       const visible=e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(e).visibility!=='hidden'};
       const scope=document.querySelector('main,#container,.mbskin,.new_win')||document.body;
@@ -47,6 +50,8 @@ try{
       return{title:document.title,theme:document.documentElement.dataset.noaTheme,heading:scope.querySelector('h1,h2,#container_title')?.textContent.trim(),documentOverflow:document.documentElement.scrollWidth>innerWidth+1,overflow,fields,forms:[...scope.querySelectorAll('form')].map(f=>({action:f.getAttribute('action'),method:f.method,fields:[...f.elements].map(e=>[e.name,e.type])})),memberAssets:!!window.NoaMemberSurfaces,captcha:document.querySelector('#captcha')?.outerHTML,text:scope.innerText.slice(0,180)};
      });
      report.public.push({requestedTheme:theme,path,actual:new URL(page.url()).pathname,width,status:response?.status(),theme,...audit,pageErrors:[...pageErrors]});
+     if(phase!=='baseline')await auditRelationships(page,{path,width,theme},report);
+     if(path==='/'&&await page.locator('#noa-listening').isVisible())await page.locator('#noa-listening').screenshot({path:out+'/listening-'+width+'-'+theme+'.jpg',type:'jpeg',quality:85});
      if(chosen.has(path))await page.screenshot({path:out+'/'+width+'-'+theme+'-'+path.replace(/[^a-z0-9]/gi,'_')+'.jpg',type:'jpeg',quality:82});
     }
     console.log('MEMBER_SURFACE_OBSERVED',width,path,new URL(page.url()).pathname);
