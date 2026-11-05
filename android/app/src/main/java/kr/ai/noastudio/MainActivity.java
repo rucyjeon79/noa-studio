@@ -10,6 +10,7 @@ import android.webkit.CookieManager;
 import android.widget.Toast;
 import androidx.webkit.WebViewCompat;
 import androidx.webkit.WebViewFeature;
+import androidx.webkit.WebSettingsCompat;
 import androidx.media3.common.*;
 import androidx.media3.session.*;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -44,6 +45,10 @@ public class MainActivity extends Activity {
   getWindow().getDecorView().setOnApplyWindowInsetsListener((v,i)->{findViewById(android.R.id.content).setPadding(i.getSystemWindowInsetLeft(),i.getSystemWindowInsetTop(),i.getSystemWindowInsetRight(),i.getSystemWindowInsetBottom());return i.consumeSystemWindowInsets();});
   try(InputStream in=getAssets().open("noa-native-bridge.js")){bridge=read(in);}catch(IOException e){throw new IllegalStateException("Media bridge missing",e);}
   browser=new WebView(this);WebSettings settings=browser.getSettings();settings.setJavaScriptEnabled(true);settings.setCacheMode(WebSettings.LOAD_NO_CACHE);settings.setDomStorageEnabled(true);settings.setAllowFileAccess(false);settings.setAllowContentAccess(true);settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);settings.setMediaPlaybackRequiresUserGesture(true);
+  // Honor the live page's viewport and CSS rather than WebView defaults.
+  settings.setUseWideViewPort(true);settings.setLoadWithOverviewMode(true);
+  settings.setSupportZoom(true);settings.setBuiltInZoomControls(true);settings.setDisplayZoomControls(false);
+  if(WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING))WebSettingsCompat.setAlgorithmicDarkeningAllowed(settings,false);
   CookieManager.getInstance().setAcceptCookie(true);
   if(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)){
    WebViewCompat.addWebMessageListener(browser,"NoaAndroid",Collections.singleton(BASE),(view,message,origin,mainFrame,reply)->{
@@ -125,6 +130,14 @@ public class MainActivity extends Activity {
  private int repeatMode(JSONObject message){return message.optBoolean("repeat")?Player.REPEAT_MODE_ONE:Player.REPEAT_MODE_ALL;}
  private void nativeMessage(JSONObject message){
   String type=message.optString("type");
+  if(type.equals("appearance")){
+   String color=message.optString("color");if(!color.matches("#[a-fA-F0-9]{6}"))return;
+   int value=Color.parseColor(color);getWindow().setStatusBarColor(value);getWindow().setNavigationBarColor(value);
+   browser.setBackgroundColor(value);findViewById(android.R.id.content).setBackgroundColor(value);
+   int flags=getWindow().getDecorView().getSystemUiVisibility();
+   int light=android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+   getWindow().getDecorView().setSystemUiVisibility(message.optBoolean("light")?flags|light:flags&~light);return;
+  }
   if(type.equals("musicFolder")&&"/noa-music-download.php".equals(Uri.parse(browser.getUrl()).getPath())&&musicUrl==null){pickMusicFolder();return;}
   if(type.equals("ready")){syncSession();publishState();return;}
   if(type.equals("upload")){boolean active=message.optBoolean("active");playbackStore.upload(active);if(active&&controller!=null)controller.pause();return;}

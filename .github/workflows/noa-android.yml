@@ -2,7 +2,7 @@ name: NOA STUDIO Android
 # Production PWA owns navigation and layout; Android provides background media only.
 on:
   push:
-    branches: [main, work/android-background-20261022, work/n80-release-final-20261029, work/android-live-failures-20261030, work/android-live-pwa-only-20261030]
+    branches: [main, work/android-background-20261022, work/n80-release-final-20261029, work/android-live-failures-20261030, work/android-live-pwa-only-20261030, work/android-pwa-parity-20261105]
     paths: ['.github/workflows/noa-android.yml', 'android/**', 'scripts/noa_android_*.py', 'scripts/noa_apk_*.py', 'tests/android/**', 'tests/n80/android_update_test.php', 'public/icon-512.png']
   workflow_dispatch:
     inputs:
@@ -59,6 +59,8 @@ jobs:
             release-artifact/noa-studio-release.aab
             release-artifact/verification.json
           retention-days: 14
+      - name: Prepare independent Chrome comparison
+        run: npm install --prefix "$RUNNER_TEMP/noa-browser-qa" --no-audit --no-fund playwright@1.56.1
       - name: Prepare isolated live music member
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
@@ -94,14 +96,18 @@ jobs:
             adb install release-artifact/noa-studio-release.apk
             adb shell am force-stop com.google.android.apps.nexuslauncher
             adb install release-artifact/noa-studio-test.apk
-            adb shell am instrument -w -e class kr.ai.noastudio.MediaPolicyTest,kr.ai.noastudio.AppUpdateTest,kr.ai.noastudio.NativeSessionTest,kr.ai.noastudio.WebParityTest kr.ai.noastudio.test/androidx.test.runner.AndroidJUnitRunner > android/noa-instrumentation.txt
+            adb shell am instrument -w -e class kr.ai.noastudio.PwaRenderingTest,kr.ai.noastudio.MediaPolicyTest,kr.ai.noastudio.AppUpdateTest,kr.ai.noastudio.NativeSessionTest,kr.ai.noastudio.WebParityTest kr.ai.noastudio.test/androidx.test.runner.AndroidJUnitRunner > android/noa-instrumentation.txt
             cat android/noa-instrumentation.txt
             adb shell am force-stop kr.ai.noastudio
             adb shell am instrument -w -e class kr.ai.noastudio.WebPlaybackRestoreTest kr.ai.noastudio.test/androidx.test.runner.AndroidJUnitRunner > android/noa-restore-instrumentation.txt
             cat android/noa-restore-instrumentation.txt
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/ android/device-proof/ || true
             adb logcat -d -s AndroidRuntime:E NoaApi:E > android/noa-runtime-errors.txt
-            python3 -c "from pathlib import Path; import json; assert 'OK (6 tests)' in Path('android/noa-instrumentation.txt').read_text(); assert 'OK (1 test)' in Path('android/noa-restore-instrumentation.txt').read_text(); p=next(Path('android/device-proof').rglob('noa-pwa-proof.json')); proof=json.loads(p.read_text()); assert proof['completed'] and proof['livePwaLayoutAndOrderMatch'] and proof['backgroundAndScreenOff']; assert 'FATAL EXCEPTION' not in Path('android/noa-runtime-errors.txt').read_text(); print(proof)"
+            python3 -c "from pathlib import Path; import json; assert 'OK (7 tests)' in Path('android/noa-instrumentation.txt').read_text(); assert 'OK (1 test)' in Path('android/noa-restore-instrumentation.txt').read_text(); p=next(Path('android/device-proof').rglob('noa-pwa-proof.json')); proof=json.loads(p.read_text()); assert proof['completed'] and proof['livePwaDocumentLoaded'] and proof['backgroundAndScreenOff']; assert 'FATAL EXCEPTION' not in Path('android/noa-runtime-errors.txt').read_text(); print(proof)"
+      - name: Compare actual APK screens with independent mobile Chrome
+        env:
+          NOA_BROWSER_MODULES: ${{ runner.temp }}/noa-browser-qa
+        run: node tests/android/chrome_parity.mjs
       - name: Record emulator host diagnostics
         if: always()
         run: |
@@ -128,6 +134,7 @@ jobs:
           overwrite: true
           path: |
             android/device-proof/
+            android/chrome-proof/
             android/noa-instrumentation.txt
             android/noa-runtime-errors.txt
             android/noa-device-log.txt
