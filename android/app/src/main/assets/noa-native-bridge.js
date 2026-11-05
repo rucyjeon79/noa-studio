@@ -10,7 +10,7 @@
  function appearance(){
   if(!topLevel)return;
   const color=document.querySelector('meta[name="theme-color"]')?.content;
-  if(/^#[a-f0-9]{6}$/i.test(color||''))send({type:'appearance',color,light:document.documentElement.dataset.noaTheme==='noa-ivory'});
+  if(/^#[a-f0-9]{6}$/i.test(color||''))send({type:'appearance',color});
  }
  window.addEventListener('noa-theme',appearance);
  function uploadState(){

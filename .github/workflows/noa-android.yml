@@ -85,7 +85,7 @@ jobs:
           profile: pixel_2
           ram-size: 2048M
           cores: 2
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none -feature -Vulkan,-HardwareDecoder
+          emulator-options: -no-window -gpu swiftshader -no-snapshot -noaudio -no-boot-anim -camera-back none -feature -Vulkan,-HardwareDecoder
           disable-animations: true
           script: |
             adb logcat -c

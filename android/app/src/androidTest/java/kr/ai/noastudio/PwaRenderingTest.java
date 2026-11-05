@@ -30,6 +30,7 @@ public class PwaRenderingTest {
   String probe;try(InputStream in=InstrumentationRegistry.getInstrumentation().getContext().getAssets().open("pwa-layout-probe.js")){ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] block=new byte[4096];int count;while((count=in.read(block))!=-1)out.write(block,0,count);probe=out.toString(StandardCharsets.UTF_8.name());}
   WebParityTest.main(()->{assertTrue(w.getSettings().getUseWideViewPort());assertTrue(w.getSettings().getLoadWithOverviewMode());});
   for(String route:new String[]{"/","/noa-music.php"})for(String theme:new String[]{"noa-ivory","noa-studio"}){
+   android.util.Log.i("TestRunner","Capturing "+route+" "+theme);
    WebParityTest.main(()->w.loadUrl("https://noastudio.ai.kr"+route));
    WebParityTest.until(w,"document.readyState==='complete'&&window.NoaUI?.getState()&&document.fonts.status==='loaded'&&document.querySelector('.noa-mobile-nav a')");
    // Wait for authenticated theme preferences, then exercise the PWA's own theme control.

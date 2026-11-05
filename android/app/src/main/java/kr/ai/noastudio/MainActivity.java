@@ -136,7 +136,7 @@ public class MainActivity extends Activity {
    browser.setBackgroundColor(value);findViewById(android.R.id.content).setBackgroundColor(value);
    int flags=getWindow().getDecorView().getSystemUiVisibility();
    int light=android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-   getWindow().getDecorView().setSystemUiVisibility(message.optBoolean("light")?flags|light:flags&~light);return;
+   getWindow().getDecorView().setSystemUiVisibility((Color.red(value)*299+Color.green(value)*587+Color.blue(value)*114>=128000)?flags|light:flags&~light);return;
   }
   if(type.equals("musicFolder")&&"/noa-music-download.php".equals(Uri.parse(browser.getUrl()).getPath())&&musicUrl==null){pickMusicFolder();return;}
   if(type.equals("ready")){syncSession();publishState();return;}
