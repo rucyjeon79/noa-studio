@@ -44,6 +44,17 @@ export async function auditRelationships(page,entry,report){
   function gap(key,a,b,min,max){if(!visible(a)||!visible(b))return;const actual=b.getBoundingClientRect().top-a.getBoundingClientRect().bottom;gaps.push({key,actual,min,max,ok:actual>=min-.5&&actual<=max+.5});}
   gap('moods-to-play',document.querySelector('#noa-listening .nl-moods'),document.querySelector('#noa-listening [data-manual-play]'),16,20);
   const footer=document.querySelector('.noa-main>.noa-mobile-footer');if(footer){let prev=footer.previousElementSibling;while(prev&&!visible(prev))prev=prev.previousElementSibling;gap('home-to-footer',prev,footer,24,32);}
+  const siblingFooter=document.querySelector('body>main+.noa-mobile-footer');
+  if(siblingFooter){
+   const main=siblingFooter.previousElementSibling;
+   let last=main.lastElementChild;while(last&&!visible(last))last=last.previousElementSibling;
+   gap('content-to-footer',last,siblingFooter,24,32);
+   gaps.push({key:'main-dock-clearance',actual:parseFloat(getComputedStyle(main).paddingBlockEnd),min:0,max:0,ok:parseFloat(getComputedStyle(main).paddingBlockEnd)===0});
+  }
+  const shopActions=document.querySelector('#ecosystem[data-space=shop] #ec-content>:is(.ec-grid,.ec-empty)+.ec-actions');
+  if(shopActions)gap('products-to-store-link',shopActions.previousElementSibling,shopActions,24,24);
+  const directory=document.querySelector('#community-boards'),crosslinks=directory?.nextElementSibling;
+  if(crosslinks?.matches('.ec-crosslinks'))gap('directory-to-crosslinks',directory,crosslinks,0,0);
   const tools=document.querySelector('.ny-store-tools'),section=tools?.nextElementSibling;
   if(tools&&section?.matches('.ny-product-section'))gap('store-tools-to-products',tools,section,24,32);
   const touched=[];
@@ -64,4 +75,21 @@ export async function auditRelationships(page,entry,report){
  assert.equal(result.invalid,0,'invalid icon path');
  assert.deepEqual(result.gaps.filter(x=>!x.ok),[],JSON.stringify(entry));
  assert.deepEqual(result.touched,[],JSON.stringify(entry));
+}
+
+// Fixed controls must reserve space after the scene, never between content and scene.
+export async function verifyFooterClearance(page,entry,report){
+ if(!await page.locator('body>main+.noa-mobile-footer').count())return;
+ const measurements=await page.evaluate(()=>{
+  const root=document.documentElement,main=document.querySelector('body>main:has(+.noa-mobile-footer)'),footer=main.nextElementSibling;
+  const keys=['--noa-nav-space','--noa-player-space','--noa-transfer-space'];
+  const saved=keys.map(k=>[k,root.style.getPropertyValue(k),root.style.getPropertyPriority(k)]);
+  try{return [[0,0,0],[64,0,0],[64,80,56]].map(values=>{
+   keys.forEach((k,i)=>root.style.setProperty(k,values[i]+'px'));
+   const last=[...main.children].filter(e=>e.getBoundingClientRect().height>0).at(-1);
+   return {values,gap:footer.getBoundingClientRect().top-last.getBoundingClientRect().bottom,mainEnd:parseFloat(getComputedStyle(main).paddingBlockEnd),footerEnd:parseFloat(getComputedStyle(footer).paddingBottom)};
+  });}finally{for(const [k,v,p] of saved){if(v)root.style.setProperty(k,v,p);else root.style.removeProperty(k);}}
+ });
+ for(const item of measurements){assert.equal(item.mainEnd,0);assert(item.gap>=23.5&&item.gap<=32.5,JSON.stringify({...entry,...item}));assert.equal(item.footerEnd,item.values.reduce((a,b)=>a+b,24));}
+ (report.clearance??=[]).push({...entry,measurements});
 }

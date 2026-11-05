@@ -102,7 +102,8 @@ try{
     if(member){
      assert(await entry.isVisible());assert.equal(await entry.getAttribute('href'),'/noa-my.php');
      const actions=drawer.locator('.noa-drawer-links');
-     await actions.getByText(width===320?'123,456,789P':'13,700P',{exact:true}).waitFor();
+     assert.equal(await actions.locator('[data-drawer-action=points]').textContent(),'포인트·이용권');
+     assert.equal(await actions.locator('[data-drawer-action=points]').getAttribute('href'),'/noa-membership.php');
      await drawer.locator('.noa-drawer-id strong').filter({hasText:width===320?'아주긴별무리이름테스트':'별무리'}).waitFor();
      assert.equal(await actions.locator('[data-drawer-action=admin]').isVisible(),width===1440);
      const grid=await actions.locator('a:visible').evaluateAll(links=>links.slice(0,6).map(link=>{const r=link.getBoundingClientRect();return [r.x,r.y,r.height];}));
