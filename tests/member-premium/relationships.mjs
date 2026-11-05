@@ -44,6 +44,17 @@ export async function auditRelationships(page,entry,report){
   function gap(key,a,b,min,max){if(!visible(a)||!visible(b))return;const actual=b.getBoundingClientRect().top-a.getBoundingClientRect().bottom;gaps.push({key,actual,min,max,ok:actual>=min-.5&&actual<=max+.5});}
   gap('moods-to-play',document.querySelector('#noa-listening .nl-moods'),document.querySelector('#noa-listening [data-manual-play]'),16,20);
   const footer=document.querySelector('.noa-main>.noa-mobile-footer');if(footer){let prev=footer.previousElementSibling;while(prev&&!visible(prev))prev=prev.previousElementSibling;gap('home-to-footer',prev,footer,24,32);}
+  const siblingFooter=document.querySelector('body>main+.noa-mobile-footer');
+  if(siblingFooter){
+   const main=siblingFooter.previousElementSibling;
+   let last=main.lastElementChild;while(last&&!visible(last))last=last.previousElementSibling;
+   gap('content-to-footer',last,siblingFooter,24,32);
+   gaps.push({key:'main-dock-clearance',actual:parseFloat(getComputedStyle(main).paddingBlockEnd),min:0,max:0,ok:parseFloat(getComputedStyle(main).paddingBlockEnd)===0});
+  }
+  const shopActions=document.querySelector('#ecosystem[data-space=shop] #ec-content>:is(.ec-grid,.ec-empty)+.ec-actions');
+  if(shopActions)gap('products-to-store-link',shopActions.previousElementSibling,shopActions,24,24);
+  const directory=document.querySelector('#community-boards'),crosslinks=directory?.nextElementSibling;
+  if(crosslinks?.matches('.ec-crosslinks'))gap('directory-to-crosslinks',directory,crosslinks,0,0);
   const tools=document.querySelector('.ny-store-tools'),section=tools?.nextElementSibling;
   if(tools&&section?.matches('.ny-product-section'))gap('store-tools-to-products',tools,section,24,32);
   const touched=[];
@@ -57,11 +68,53 @@ export async function auditRelationships(page,entry,report){
    }
   }
   const invalid=[...document.querySelectorAll('svg[data-noa-symbol] path')].filter(p=>!p.getAttribute('d')||p.getAttribute('d')==='undefined').length;
-  const scene=document.querySelector('.noa-footer-scene');const ending=visible(scene)?document.documentElement.scrollHeight-(scene.getBoundingClientRect().bottom+scrollY):null;const root=getComputedStyle(document.documentElement);const footerClearance=(document.querySelector('.noa-mobile-nav')?.getBoundingClientRect().height||0)+['--noa-player-space','--noa-transfer-space'].reduce((sum,key)=>sum+(parseFloat(root.getPropertyValue(key))||0),0);return {gaps,touched,invalid,ending,footerClearance};
+  const scene=document.querySelector('.noa-footer-scene');const ending=visible(scene)?document.documentElement.scrollHeight-(scene.getBoundingClientRect().bottom+scrollY):null;const root=getComputedStyle(document.documentElement);const footerClearance=(document.querySelector('.noa-mobile-nav')?.getBoundingClientRect().height||0)+['--noa-player-space','--noa-transfer-space'].reduce((sum,key)=>sum+(parseFloat(root.getPropertyValue(key))||0),0);return {gaps,touched,invalid,ending,footerClearance,scrolls:document.documentElement.scrollHeight>innerHeight+1};
  });
  (report.relationships??=[]).push({...entry,...result});
- if(result.ending!==null)assert(result.ending<=result.footerClearance+48,'excess space after footer: '+JSON.stringify({...entry,...result}));
+ if(result.ending!==null&&result.scrolls)assert(result.ending<=result.footerClearance+48,'excess space after footer: '+JSON.stringify({...entry,...result}));
  assert.equal(result.invalid,0,'invalid icon path');
  assert.deepEqual(result.gaps.filter(x=>!x.ok),[],JSON.stringify(entry));
  assert.deepEqual(result.touched,[],JSON.stringify(entry));
+}
+
+// Fixed controls must reserve space after the scene, never between content and scene.
+export async function verifyFooterClearance(page,entry,report){
+ if(!await page.locator('body>main+.noa-mobile-footer').count())return;
+ const measurements=await page.evaluate(()=>{
+  const root=document.documentElement,main=document.querySelector('body>main:has(+.noa-mobile-footer)'),footer=main.nextElementSibling;
+  const keys=['--noa-nav-space','--noa-player-space','--noa-transfer-space'];
+  const saved=keys.map(k=>[k,root.style.getPropertyValue(k),root.style.getPropertyPriority(k)]);
+  try{return [[0,0,0],[64,0,0],[64,80,56]].map(values=>{
+   keys.forEach((k,i)=>root.style.setProperty(k,values[i]+'px'));
+   const last=[...main.children].filter(e=>e.getBoundingClientRect().height>0).at(-1);
+   return {values,gap:footer.getBoundingClientRect().top-last.getBoundingClientRect().bottom,mainEnd:parseFloat(getComputedStyle(main).paddingBlockEnd),footerEnd:parseFloat(getComputedStyle(footer).paddingBottom)};
+  });}finally{for(const [k,v,p] of saved){if(v)root.style.setProperty(k,v,p);else root.style.removeProperty(k);}}
+ });
+ for(const item of measurements){assert.equal(item.mainEnd,0);assert(item.gap>=23.5&&item.gap<=32.5,JSON.stringify({...entry,...item}));assert.equal(item.footerEnd,item.values.reduce((a,b)=>a+b,24));}
+ (report.clearance??=[]).push({...entry,measurements});
+}
+
+// Public music redirects guests home. Cover the signed-in music footer topology
+// with the actual music stylesheet and cross-link mounting code, without audio.
+export async function verifyMusicFooter(browser,out,report){
+ const music=readFileSync('deploy/noa-music.php','utf8');
+ const inline=[...music.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m=>m[1]).join('\n');
+ const themes=JSON.parse(readFileSync('deploy/noa-design.json','utf8')).themes;
+ for(const width of [320,390,768,1440])for(const theme of themes){
+  const context=await browser.newContext({viewport:{width,height:900},serviceWorkers:'block',reducedMotion:'reduce'});
+  await context.route('**/*',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><html><body></body></html>'}));
+  const page=await context.newPage();await page.goto('https://music.fixture/noa-music.php');
+  const tokens=Object.entries(theme.tokens).map(([k,v])=>'--noa-'+k+':'+v).join(';');
+  await page.setContent('<!doctype html><html lang="ko" class="noa-shell-wide noa-member-ui" data-noa-precision="true" data-noa-style="starlight" data-noa-theme="'+theme.id+'" style="'+tokens+'"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body class="noa-page noa-sound-page noa-record-room"><main><section><h1>당신의 이야기, 우리의 음악</h1><p>사연 남기기 → 창작자의 곡 답변 → 카드로 바로 듣기.</p><details><summary>내 삶의 가장 따뜻한 선물</summary><p>사연곡</p></details><details><summary>봄내음 보다 너를</summary><p>사연곡</p></details></section><audio id="sound-player"></audio></main><footer class="noa-sidebar-bottom noa-mobile-footer"><section class="noa-footer-scene" aria-label="스튜디오 안내"></section></footer></body></html>');
+  await page.addStyleTag({content:inline});
+  for(const file of ['noa-ui.css','noa-starlight.css','noa-music-vinyl.css','noa-member-surfaces.css'])await page.addStyleTag({content:readFileSync('deploy/'+file,'utf8')});
+  await page.addScriptTag({content:readFileSync('deploy/noa-ecosystem-links.js','utf8')});
+  await page.locator('#noa-ecosystem-links').waitFor();
+  await verifyFooterClearance(page,{path:'signed-in-music-fixture',width,theme:theme.id},report);
+  const gap=await page.evaluate(()=>{const links=document.querySelector('#noa-ecosystem-links');return document.querySelector('.noa-mobile-footer').getBoundingClientRect().top-links.getBoundingClientRect().bottom;});
+  assert.equal(gap,24);
+  report.fixtures.push({key:'music-footer',width,theme:theme.id,gap,actualMusicStyles:true,actualCrossLinks:true});
+  await context.close();
+ }
+ console.log('MEMBER_MUSIC_FOOTER_OK');
 }

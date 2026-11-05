@@ -341,7 +341,9 @@ html.noa-member-ui #ecosystem .ec-lounge-nav{margin-block:24px 0}
 html.noa-member-ui #ecosystem #community-boards{margin-block:var(--member-section) 0;padding-block:24px}
 html.noa-member-ui #ecosystem #community-boards>h2{margin:0 0 8px}
 html.noa-member-ui #ecosystem #community-boards>p{margin:0 0 16px}
-html.noa-member-ui #ecosystem .ec-crosslinks{margin-top:24px;padding-block:16px;gap:12px 24px}
+html.noa-member-ui #ecosystem .ec-crosslinks{margin-top:24px;padding-block:16px 0;gap:12px 24px}
+html.noa-member-ui #ecosystem #community-boards+.ec-crosslinks{margin-top:0;border-top:0}
+html.noa-member-ui #ecosystem[data-space=shop] #ec-content>:is(.ec-grid,.ec-empty)+.ec-actions{margin-top:24px}
 html.noa-member-ui body dialog.ec-dialog form.ec-form .ec-actions{margin-top:0;padding-top:16px;gap:12px}
 html.noa-member-ui.noa-g5 #bo_w .btn_confirm{display:flex;flex-wrap:wrap;gap:12px;margin-top:0;padding-top:24px}
 html.noa-member-ui.noa-g5 #bo_w .btn_confirm>*{margin:0}
@@ -359,7 +361,12 @@ html.noa-member-ui.noa-g5 #bo_vc_w .btn_confirm{display:flex;flex-wrap:wrap;alig
 html.noa-shell-wide[data-noa-precision] body :is(main.noa-main,main):has(>.noa-mobile-footer){padding-bottom:calc(var(--noa-nav-space,0px) + var(--noa-player-space,0px) + var(--noa-transfer-space,0px) + 24px)}
 html.noa-shell-wide[data-noa-style] body .noa-mobile-footer{padding-block:0;border:0;margin-block:24px 0;gap:0}
 html.noa-shell-wide[data-noa-theme] body .noa-main>.noa-mobile-footer{margin:0}
-html.noa-shell-wide[data-noa-precision] body>main:has(+.noa-mobile-footer){padding-bottom:0;min-height:0}
+/* Legacy precision :is(...,#wrapper) carries ID specificity onto every main.
+   In this topology only the following footer owns dock/player clearance. */
+html.noa-shell-wide[data-noa-precision] body>main:has(+.noa-mobile-footer),
+html.noa-shell-wide[data-noa-precision] body>#noa-notification-page:has(+.noa-mobile-footer){padding-block-end:0!important;min-height:0}
+html.noa-member-ui :is(#points-orders,#vip-orders)>p:last-child{margin-block-end:0}
+html.noa-member-ui body>main:has(+.noa-mobile-footer)>#noa-ecosystem-links{margin-block-end:0!important;padding-block-end:0!important}
 html.noa-shell-wide[data-noa-style] body>.noa-mobile-footer{padding-bottom:calc(var(--noa-nav-space,0px) + var(--noa-player-space,0px) + var(--noa-transfer-space,0px) + 24px)}
 html.noa-shell-wide[data-noa-precision].noa-g5 body:has(>.mbskin):has(>.noa-mobile-footer){padding-bottom:0}
 html.noa-shell-wide[data-noa-style] .noa-mobile-footer+:is(.noa-footer,.ne-footer){display:none}
@@ -376,6 +383,8 @@ html.noa-shell-wide[data-noa-theme] body .noa-footer-heading .noa-footer-themes{
 html.noa-shell-wide[data-noa-theme] body .noa-footer-heading .noa-footer-themes button{color:var(--noa-muted);border-radius:4px}
 html.noa-shell-wide[data-noa-theme] body .noa-footer-heading .noa-footer-themes button[aria-pressed=true]{background:var(--noa-accent);color:var(--noa-accentText);box-shadow:none}
 .noa-footer-theme-label{color:#fff}
+/* Desktop AInoa occupies the lower-right corner; keep theme controls beside it. */
+html.noa-member-ui:not([data-noa-home-ainoa]) body .noa-footer-scene .noa-footer-heading{padding-inline-end:96px}
 
 /* Shared interaction timing. No playback clocks, media transforms or form values change. */
 html.noa-member-ui{--noa-motion-press:150ms;--noa-motion-enter:240ms;--noa-motion-exit:160ms;--noa-motion-ease:cubic-bezier(.2,.8,.2,1)}

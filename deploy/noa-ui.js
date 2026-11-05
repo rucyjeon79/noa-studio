@@ -57,7 +57,7 @@ function sectionNavigation(){
 }
 let drawerMember=null;
 function refreshNavigation(){document.querySelectorAll('.noa-primary-nav,.noa-mobile-nav').forEach(nav=>{const items=nav.matches('.noa-mobile-nav')?menu():[...menu().filter(x=>x[0]==='home'),...menu().filter(x=>x[0]!=='home')];nav.replaceChildren(...items.map(item=>navItem(item)));});document.getElementById('noa-drawer-search')?.dispatchEvent(new Event('input'));}
-window.addEventListener('noa-membership-status',event=>{const logged=!!event.detail?.member;drawerMember=logged?{balance:event.detail.balance,rank:event.detail.name,admin:event.detail.admin}:null;if(access.member!==logged){access.member=logged;if(!logged)access.music=false;refreshNavigation();}});
+window.addEventListener('noa-membership-status',event=>{const logged=!!event.detail?.member;drawerMember=logged?{rank:event.detail.name,admin:event.detail.admin}:null;if(access.member!==logged){access.member=logged;if(!logged)access.music=false;refreshNavigation();}});
 const words=Object.create(null);
 const interfaceWords=Object.create(null),bindings=new WeakMap();
 const protectedUi='script,style,noscript,svg,code,pre,textarea,[contenteditable]:not([contenteditable=false]),[translate=no],.notranslate,#noa-header-clock,.noa-card-heading,.noa-hero-pick strong,.catalog-card h3,.noa-notice-summary strong,.noa-notice-excerpt,.noa-notice-body p,.noa-feed-row strong,.noa-feed-row small,#bo_v_con,.bo_v_con,.bo_vc_w,.sv_member,.member,.sound-title,.song-title,#lyrics,.lyrics,[data-song-title],[data-user-content]';
@@ -243,7 +243,6 @@ function wideShell(side){
   const link=document.createElement('a');link.dataset.drawerAction=key;link.href=href;link.innerHTML=icon(mark);
   const text=document.createElement('span');text.textContent=label;link.append(text);
   if(key==='my')link.className='noa-drawer-my';
-  if(key==='points'){const value=document.createElement('b');link.append(value);}
   grid.append(link);
  }
  const identity=memberBox.querySelector('strong'),rank=memberBox.querySelector('.noa-drawer-rank'),avatar=memberBox.querySelector('.noa-drawer-avatar');
@@ -255,8 +254,6 @@ function wideShell(side){
   const name=remote?.member&&remote.displayName;
   identity.textContent=name||'나의 계정';avatar.textContent=name?Array.from(name)[0]:'MY';
   rank.textContent=drawerMember?.rank||access.name||'회원';
-  const points=grid.querySelector('[data-drawer-action=points] b');
-  points.textContent=Number.isSafeInteger(drawerMember?.balance)?drawerMember.balance.toLocaleString('ko-KR')+'P':'';
   grid.querySelector('[data-drawer-action=admin]').hidden=!(drawerMember?.admin??access.admin);
  };
  profile.append(guest,memberBox);updateAccount();head.after(profile);
