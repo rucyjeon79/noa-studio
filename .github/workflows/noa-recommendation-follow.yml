@@ -1,0 +1,42 @@
+name: Recommendation current song follow
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-recommendation-follow.yml','scripts/qa/noa-recommendation-follow.mjs']
+permissions: {contents: read}
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - name: Verify song changes and queue scrolling
+        run: |
+          node --check deploy/noa-app/p0-player.js
+          npm install --prefix "$RUNNER_TEMP/follow" --no-save playwright@1.56.1
+          cp scripts/qa/noa-recommendation-follow.mjs "$RUNNER_TEMP/follow/check.mjs"
+          node "$RUNNER_TEMP/follow/check.mjs"
+      - name: Publish player behavior and verify production bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+        run: |
+          python -m pip install 'paramiko>=3,<5'
+          PYTHONPATH=scripts python - <<'PY'
+          import sys
+          import noa_ainoa_deploy as release
+          release.FILES={'noa-app/p0-player.js':'deploy/noa-app/p0-player.js'}
+          release.NEW=set()
+          try:
+              release.main()
+          except Exception:
+              if release.BACKUP.exists():
+                  sys.argv.append('rollback')
+                  release.main()
+              raise
+          PY

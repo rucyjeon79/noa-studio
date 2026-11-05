@@ -107,3 +107,48 @@ window.addEventListener('noa-track-selected',e=>{const r=e.detail?.record;if(!r|
  window.addEventListener('online',()=>recovery.online());
  window.addEventListener('pagehide',()=>recovery.stop());
 })();
+
+/* Follow recommendation playback in the visible music list and open queue. */
+(() => {
+ const audio = document.getElementById('sound-player');
+ const queueDialog = document.getElementById('dock-queue');
+ if (!audio || !queueDialog) return;
+ let currentKey = document.querySelector('.song.selected')?.dataset.key || '';
+
+ let followedKey = '';
+ function followQueue() {
+  if (!queueDialog.open) return;
+  const current = queueDialog.querySelector('[aria-current="true"]');
+  current?.scrollIntoView({block:'center', behavior:'instant'});
+ }
+
+ function followSong() {
+  if (!currentKey || !window.NoaMusic?.listeningSelection() || document.hidden) return;
+  if (queueDialog.open) { followQueue(); return; }
+  if (document.body.classList.contains('noa-shell-open')) return;
+  try {
+   if (window.frameElement?.classList.contains('nl-play-shell') &&
+       !window.parent.document.documentElement.classList.contains('nl-host-open')) return;
+  } catch { return; }
+  if (followedKey === currentKey) return;
+  const key = currentKey;
+  followedKey = key;
+  window.dispatchEvent(new CustomEvent('noa-find-song', {detail:{
+   key,
+   allow:() => currentKey === key && !document.hidden &&
+     !document.body.classList.contains('noa-shell-open') && !queueDialog.open,
+   scroll:node => node.scrollIntoView({block:'center', behavior:'instant'})
+  }}));
+ }
+
+ window.addEventListener('noa-track-selected', event => {
+  if (!event.detail?.record?.key) return;
+  currentKey = event.detail.record.key;
+  if (queueDialog.open && typeof drawDockQueue === 'function') {
+   drawDockQueue();
+   requestAnimationFrame(followQueue);
+  }
+ });
+ audio.addEventListener('playing', followSong);
+ document.getElementById('dock-list')?.addEventListener('click', () => requestAnimationFrame(followQueue));
+})();
