@@ -15,8 +15,8 @@ export async function verifyComposer(browser,out,report){
    if(/\.(css|js)$/.test(u.pathname))return r.fulfill({body:readFileSync('deploy'+u.pathname),contentType:u.pathname.endsWith('.css')?'text/css':'text/javascript'});
    return r.fulfill({status:404,body:''});
   });
-  const page=await context.newPage();
-  for(const theme of design.themes)for(const edit of [false,true]){
+  const page=await context.newPage();let pageErrors=[];page.on('pageerror',e=>pageErrors.push(e.message));
+  for(const theme of design.themes)for(const edit of [false,true]){try{
    await page.goto('https://composer.fixture/noa-lounge.php?'+(edit?'post='+source.id:'compose=chat'));
    await page.evaluate(theme=>{document.documentElement.dataset.noaTheme=theme.id;for(const [key,val] of Object.entries(theme.tokens))document.documentElement.style.setProperty('--noa-'+key,val)},theme);
    if(edit)await page.getByRole('button',{name:'글 수정',exact:true}).click();
@@ -29,7 +29,7 @@ export async function verifyComposer(browser,out,report){
    await dialog.getByRole('button',{name:edit?'수정 저장':'게시하기',exact:true}).click();await dialog.waitFor({state:'detached'});
    assert.equal(saves.at(-1).title,'회원 작성 화면 검수');assert.equal(saves.at(-1).revision,edit?7:0);
    report.fixtures.push({key:'actual-community-composer',width,theme:theme.id,edit,isolatedSave:true,productionWrites:0});
-  }
+  }catch(error){await page.screenshot({path:out+'/composer-failure-'+width+'.png',fullPage:true});console.log('COMPOSER_DIAGNOSTIC',JSON.stringify({width,edit,pageErrors,body:await page.locator('body').innerText(),dialogs:await page.locator('dialog').evaluateAll(ds=>ds.map(d=>d.outerHTML))}));throw error;}}
   await context.close();
  }
  console.log('MEMBER_ACTUAL_COMPOSER_CREATE_EDIT_OK');
