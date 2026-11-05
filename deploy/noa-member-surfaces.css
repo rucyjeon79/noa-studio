@@ -219,6 +219,7 @@ html.noa-member-ui.noa-g5 #find_info :is(#info_fs,#captcha,.win_btn){grid-column
 html.noa-member-ui.noa-g5 #find_info #info_fs label.sound_only{position:static!important;display:block;width:auto;height:auto;margin:0 0 8px;overflow:visible;clip:auto;clip-path:none;font-size:13px;line-height:1.6;font-weight:600;color:var(--noa-text)}
 html.noa-member-ui.noa-g5 #find_info #mb_email{margin:0;min-height:52px}
 html.noa-member-ui.noa-g5 #find_info #captcha{padding-top:0}
+html.noa-member-ui.noa-g5 #find_info #captcha #captcha_img{flex:none;width:160px;height:60px;max-width:100%;object-fit:contain}
 html.noa-member-ui.noa-g5 #find_info .win_btn{display:flex;justify-content:flex-end}
 html.noa-member-ui.noa-g5 #find_info .btn_submit{width:100%;font-size:14px;font-weight:650;min-height:52px}
 
@@ -227,6 +228,11 @@ html.noa-member-ui.noa-g5 #bo_w{padding:var(--member-inset);background:var(--noa
 html.noa-member-ui.noa-g5 #bo_w input#wr_subject{font-size:20px;line-height:1.5;padding:14px 16px;min-height:56px;font-weight:600}
 html.noa-member-ui.noa-g5 #bo_w textarea#wr_content{padding:20px;min-height:360px}
 html.noa-member-ui.noa-g5 #bo_w .file_wr{background:transparent;border-style:dashed;padding:12px 16px}
+html.noa-member-ui.noa-g5 #bo_w :is(.write_div,.bo_w_link,.bo_w_flie)>label:not(.sound_only):not(.lb_icon){display:block;margin:0 0 8px}
+html.noa-member-ui.noa-g5 #bo_w .bo_w_info:has(>label:not(.sound_only)){display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-bottom:24px}
+html.noa-member-ui.noa-g5 #bo_w .bo_w_info:has(>label:not(.sound_only)) .frm_input{width:min(100%,320px)}
+html.noa-member-ui.noa-g5 #bo_w .bo_w_link .frm_input{width:100%}
+html.noa-member-ui.noa-g5 #bo_w .bo_w_link:not(:has(.lb_icon)) .frm_input{padding-inline:12px}
 html.noa-member-ui.noa-g5 #bo_w :is(.btn_submit,.btn_cancel){min-width:128px}
 html.noa-member-ui.noa-g5 #bo_list .tbl_wrap{border-top:2px solid var(--noa-accent)}
 html.noa-member-ui.noa-g5 #bo_list .bo_tit a{font-size:16px;font-weight:550;letter-spacing:-.02em}
@@ -259,7 +265,7 @@ html.noa-member-ui.ny-native #sod_bsk.noa-cart-empty #sod_bsk_act{justify-conten
 html.noa-member-ui.ny-native #sod_bsk.noa-cart-empty :is(#sod_bsk_act a,.go_shopping){float:none;display:flex;align-items:center;justify-content:center;width:max-content;max-width:100%;min-width:176px;min-height:48px;margin:20px auto 0!important;background:var(--noa-accent)!important;color:var(--noa-accentText)!important;border-color:var(--noa-accent)!important;font-weight:600}
 html.noa-member-ui.ny-native #sod_bsk.noa-cart-empty #sod_bsk_act>a{margin:0!important;flex:none}
 html.noa-member-ui.ny-native :is(#sod_frm_orderer,#sod_frm_taker)>h2{font-size:22px;font-weight:600;letter-spacing:-.03em;padding-bottom:16px;margin-bottom:24px}
-html.noa-member-ui.ny-native #sod_frm .tbl_frm01{border:0;border-top:1px solid var(--noa-line);border-radius:0}
+html.noa-member-ui.ny-native #sod_frm .tbl_frm01{border:0;border-radius:0}
 html.noa-member-ui.ny-native #sod_frm .tbl_frm01 :is(table,th,td){background:transparent!important}
 html.noa-member-ui.ny-native #sod_frm .tbl_frm01 :is(th,td){padding-block:20px!important;border-bottom:1px solid var(--member-quiet)!important}
 html.noa-member-ui.ny-native #sod_frm .tbl_frm01 th{color:var(--noa-muted)!important;font-weight:500!important}
@@ -287,9 +293,9 @@ html.noa-member-ui.ny-native #sod_frm #sod_frm_pay label:has(input[type=radio]:c
  html.noa-member-ui .ny-store .ny-section-title{font-size:20px;margin-bottom:16px}
  html.noa-member-ui .ny-store .noa-point-packs{gap:16px 12px}
  html.noa-member-ui .ny-store .np-pack-copy{padding:16px 12px}
- html.noa-member-ui .ny-store .np-pack-copy h3{font-size:14px;min-height:63px;margin-bottom:12px;-webkit-line-clamp:3}
+ html.noa-member-ui .ny-store .np-pack-copy h3{font-size:14px;min-height:42px;margin-bottom:12px;-webkit-line-clamp:2}
  html.noa-member-ui .ny-store .np-pack-copy>strong{font-size:20px}
- html.noa-member-ui .ny-store .ny-description{min-height:58px;font-size:12px;margin-bottom:16px}
+ html.noa-member-ui .ny-store .ny-description{min-height:40px;font-size:12px;margin-bottom:16px}
  html.noa-member-ui .ny-store .np-pack-copy :is(.noa-button,.ny-pending){font-size:12px;padding:10px 6px}
  html.noa-member-ui.noa-g5 #find_info .new_win_con{padding:24px 20px}
  html.noa-member-ui.noa-g5 #find_info form{grid-template-columns:minmax(0,1fr);gap:24px}
@@ -306,4 +312,5 @@ html.noa-member-ui.ny-native #sod_frm #sod_frm_pay label:has(input[type=radio]:c
  html.noa-member-ui.ny-native #sod_frm #sod_frm_pay{padding:20px!important}
  html.noa-member-ui.ny-native #sod_frm .tbl_frm01 th{padding:16px 0 0!important;border:0!important}
  html.noa-member-ui.ny-native #sod_frm .tbl_frm01 td{padding:8px 0 16px!important}
+ html.noa-member-ui.ny-native #sod_frm .tbl_frm01 .btn_frmline{margin:0 0 12px}
 }
