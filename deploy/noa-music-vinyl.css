@@ -514,7 +514,7 @@ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline
   border-color:var(--press-edge);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--noa-surface) 45%,#bb974e),0 2px 6px #0000000d;
  }
  html[data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view=list] .noa-inline-song-row .lp-track-art{align-self:center;margin-block:0}
- html[data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view=list] .noa-inline-song-row .noa-inline-title{align-self:end;margin-block:0}
+ html[data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view=list] .noa-inline-song-row>.noa-inline-song>.noa-inline-title{align-self:end;margin-block:0}
  html[data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view=list] .noa-inline-song-row>.noa-song-actions>.noa-song-action[aria-label$=" 재생"]{align-self:center;margin-block:0}
  html[data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view=list] .noa-inline-song-row>button.noa-direct-action,
  html[data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view=list] .noa-inline-song-row>.noa-song-actions>button.noa-song-action.noa-direct-action{height:44px;min-height:44px;width:44px}
