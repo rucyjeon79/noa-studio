@@ -349,7 +349,8 @@ function weatherQueue(preferred=[]){
  return rows;
 }
 function startWeather(index=0,preferred=[]){
- if(weatherPlaying||weatherAccess!=='vip'||!weatherRoom?.active()||!musicWindow?.NoaMusic)return;
+ if(weatherPlaying||weatherAccess!=='vip'||!weatherRoom?.active())return;
+ if(!musicWindow?.NoaMusic){weatherRoom.status('음원 플레이어 연결을 기다리고 있어요. 잠시 후 다시 재생해 주세요.');return;}
  const rows=weatherQueue(preferred.length?preferred:[]),ordered=model.shuffledPlayback(rows,preferred[0]?.key||'');
  if(!ordered.length){weatherRoom.status('재생 가능한 음원을 다시 확인해 주세요.');return;}
  const room=weatherRoom,win=musicWindow,keys=ordered.map(r=>r.key),path=ordered.map((_,i)=>weatherSequence[i%weatherSequence.length]);

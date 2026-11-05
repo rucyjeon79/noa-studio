@@ -31,7 +31,8 @@ jobs:
           node "$RUNNER_TEMP/music-vinyl/check.mjs"
       - name: Publish and verify public asset hashes
         id: publish
-        if: ${{ !contains(github.event.head_commit.message, '[listening-copy]') }}
+        # Member UI releases publish the shared stylesheet with their verified asset set.
+        if: ${{ !contains(github.event.head_commit.message, '[listening-copy]') && !contains(github.event.head_commit.message, '[member-ui]') }}
         run: python scripts/noa_music_vinyl_release.py
       - name: Verify idle following with the installed browser scripts
         id: follow
