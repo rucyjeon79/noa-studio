@@ -27,13 +27,16 @@ public class PwaRenderingTest {
   else WebParityTest.js(w,"location.assign("+JSONObject.quote(route)+");return true;");
   WebParityTest.until(w,"!window.__noaQaPreviousDocument&&location.pathname==="+JSONObject.quote(route)+"&&document.readyState==='complete'");
  }
+ private static String asset(String name)throws Exception{
+  try(InputStream in=InstrumentationRegistry.getInstrumentation().getContext().getAssets().open(name)){ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] block=new byte[4096];int count;while((count=in.read(block))!=-1)out.write(block,0,count);return out.toString(StandardCharsets.UTF_8.name());}
+ }
  @Test public void liveScreensAndHomeRecommendation()throws Exception{
   MemberTestSession.install();Context c=InstrumentationRegistry.getInstrumentation().getTargetContext();
   c.startActivity(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
   for(int i=0;i<80&&WebParityTest.activity()==null;i++)SystemClock.sleep(250);
   MainActivity a=WebParityTest.activity();assertNotNull(a);WebView w=WebParityTest.web(a);
   UiDevice device=UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-  String probe;try(InputStream in=InstrumentationRegistry.getInstrumentation().getContext().getAssets().open("pwa-layout-probe.js")){ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] block=new byte[4096];int count;while((count=in.read(block))!=-1)out.write(block,0,count);probe=out.toString(StandardCharsets.UTF_8.name());}
+  String probe=asset("pwa-layout-probe.js"),imagesReady=asset("pwa-images-ready.js");
   WebParityTest.main(()->{assertTrue(w.getSettings().getUseWideViewPort());assertTrue(w.getSettings().getLoadWithOverviewMode());});
   for(String route:new String[]{"/","/noa-music.php"})for(String theme:new String[]{"noa-ivory","noa-studio"}){
    android.util.Log.i("TestRunner","Capturing "+route+" "+theme);
@@ -43,6 +46,8 @@ public class PwaRenderingTest {
    SystemClock.sleep(1500);
    WebParityTest.js(w,"localStorage.setItem('noa-device-theme',"+JSONObject.quote(theme)+");NoaUI.apply({...NoaUI.getState(),theme:"+JSONObject.quote(theme)+"});document.querySelector('#noa-amt-fan button[aria-label]')?.click();document.querySelector('[aria-label=\"AInoa 말풍선 닫기\"]')?.click();scrollTo(0,0);return true;");
    WebParityTest.until(w,"document.documentElement.dataset.noaTheme==="+JSONObject.quote(theme));
+   WebParityTest.js(w,"window.__noaQaImages=null;("+imagesReady+").then(()=>window.__noaQaImages=true,error=>window.__noaQaImages=String(error));return true;");
+   WebParityTest.until(w,"window.__noaQaImages!==null");assertEquals(Boolean.TRUE,WebParityTest.js(w,"return window.__noaQaImages;"));
    WebParityTest.paint(w);SystemClock.sleep(700);
    JSONObject data=(JSONObject)WebParityTest.js(w,"return "+probe+";");assertEquals("https://noastudio.ai.kr"+route,data.getString("url"));assertEquals(theme,data.getString("theme"));assertFalse(data.getBoolean("overflow"));
    assertEquals(5,data.getJSONObject("nodes").getJSONArray(".noa-mobile-nav a").length());

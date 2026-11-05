@@ -27,6 +27,7 @@ try{for(const file of files){
  await page.waitForTimeout(1500);
  await page.evaluate(theme=>{NoaUI.apply({...NoaUI.getState(),theme});document.querySelector('#noa-amt-fan button[aria-label]')?.click();document.querySelector('[aria-label="AInoa 말풍선 닫기"]')?.click();scrollTo(0,0);},expected.theme);
  await page.waitForTimeout(1000);
+ await page.evaluate(readFileSync('android/app/src/androidTest/assets/pwa-images-ready.js','utf8'));
  const actual=await page.evaluate(probe);writeFileSync(path.join(out,name+'.json'),JSON.stringify(actual,null,2));await page.screenshot({path:path.join(out,name+'.png')});
  assert.equal(actual.url,expected.url,name+' route');assert.equal(actual.theme,expected.theme,name+' theme');assert.equal(actual.overflow,false,name+' overflow');
  assert.deepEqual(actual.assets,expected.assets,name+' must use identical live web assets');
