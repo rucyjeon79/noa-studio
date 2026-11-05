@@ -29,7 +29,11 @@ foreach(['/shop/cart.php','/shop/orderform.php','/mobile/shop/orderform.php','/b
   $classes=preg_split('/\s+/',$root[1]??'');$expected=str_starts_with($path,'/bbs/')?'noa-g5':'ny-native';
   foreach([$expected,'noa-member-ui'] as $class)if(count(array_keys($classes,$class,true))!==1)throw new Exception('missing or duplicate first paint class '.$path);
   if($attribute!==''&&!in_array('existing',$classes,true))throw new Exception('existing class lost');
-  if($attribute==='')$proof[]=['path'=>$path,'html'=>$rendered,'class'=>$expected];
+  if($attribute===''){
+   $rendered=str_replace('</head>','<style>#captcha #captcha_key{background:#fff}</style></head>',$rendered);
+   $rendered=str_replace('</main>','<fieldset id="captcha"><label for="captcha_key">자동등록방지</label><input type="text" id="captcha_key" name="captcha_key"></fieldset></main>',$rendered);
+   $proof[]=['path'=>$path,'html'=>$rendered,'class'=>$expected];
+  }
  }
 }
 foreach(['/adm/index.php','/noa-bridge/index.php','/noa-app/jukebox/','/unrelated.php','/noa-youngcart.php'] as $path){

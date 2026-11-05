@@ -129,6 +129,8 @@ html.noa-member-ui.noa-g5 #find_info #mb_email{display:block;width:100%;margin:1
 html.noa-member-ui.noa-g5 #find_info #captcha{display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-width:0;max-width:100%;height:auto}
 html.noa-member-ui.noa-g5 #find_info #captcha :is(#captcha_img,#captcha_key,#captcha_mp3,#captcha_reload){position:static;float:none;margin:0;min-height:44px}
 html.noa-member-ui.noa-g5 #find_info #captcha_key{width:100px;min-width:0}
+/* Native captcha uses two IDs; match that specificity in both palettes. */
+html.noa-member-ui.noa-g5 #captcha #captcha_key{background:var(--noa-bg);color:var(--noa-text);border-color:var(--noa-line);font-size:16px;min-height:44px}
 html.noa-member-ui.noa-g5 #find_info #captcha_info{flex-basis:100%;margin:0;font-size:12px;line-height:1.6}
 html.noa-member-ui.noa-g5 #find_info .btn_submit{min-height:48px;padding:12px 16px;border-radius:4px;background:var(--noa-accent);color:var(--noa-accentText)}
 @media(max-width:760px){html.noa-member-ui .ncea-fields{gap:16px}html.noa-member-ui .ncea-section{padding:16px}html.noa-member-ui.noa-g5 #find_info .new_win_con{padding:16px}}

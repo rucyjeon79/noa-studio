@@ -22,6 +22,10 @@ export async function verifyFixtures(browser,phase,out,report){
    const field=fixture.class==='ny-native'?'#od_name':'#bo_w input';
    assert(await page.locator(field).evaluate(el=>el.getBoundingClientRect().height>=48&&parseFloat(getComputedStyle(el).fontSize)>=16),'native controls styled without JavaScript');
    if(fixture.class==='ny-native')assert.equal(await page.locator('#hd').isVisible(),false,'legacy shop chrome flashes before adapter');
+   if(fixture.class==='noa-g5')assert(await page.locator('#captcha_key').evaluate(el=>{
+    const s=getComputedStyle(el),l=c=>{const a=c.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4});return a[0]*.2126+a[1]*.7152+a[2]*.0722},a=l(s.color),b=l(s.backgroundColor);
+    return (Math.max(a,b)+.05)/(Math.min(a,b)+.05)>=4.5&&el.getBoundingClientRect().height>=44;
+   }),'native captcha has readable text in both palettes');
    report.fixtures.push({key:'native-first-paint',path:fixture.path,width,theme:theme.id,javaScriptDisabled:true,formValuePreserved:true});
   }
   await context.close();
