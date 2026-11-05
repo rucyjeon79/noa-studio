@@ -2,8 +2,8 @@
 html.noa-member-ui{--member-unit:8px;--member-control:48px;--member-radius:4px;--member-panel:24px;--member-section:32px;--member-type:15px;--member-field:16px;--member-label:13px}
 html.noa-member-ui :is(main,#container,.mbskin,.new_win,.ec-dialog){min-inline-size:0}
 /* Form typography and geometry; exclude players, rich-text editor internals and authored content. */
-html.noa-member-ui :is(.mbskin,.new_win,#bo_w,#bo_sch,.bo_sch,#bo_vc_w,#sod_frm,#sod_bsk,#sod_inquiry,.noa-login-form,.creator-form,.ncea-form,.noa-gifts form,.ec-dialog form,.noa-community form) :is(input:not([type]),input[type=text],input[type=password],input[type=email],input[type=tel],input[type=url],input[type=number],input[type=search],input[type=date],select,textarea):not([hidden]){box-sizing:border-box;min-inline-size:0;max-inline-size:100%;min-block-size:var(--member-control);height:auto;padding:11px 12px;border:1px solid var(--noa-line);border-radius:var(--member-radius);background:var(--noa-bg);color:var(--noa-text);font:400 var(--member-field)/1.5 var(--noa-font);box-shadow:none}
-html.noa-member-ui :is(.mbskin,.new_win,#bo_w,#bo_sch,.bo_sch,#bo_vc_w,#sod_frm,.noa-login-form,.creator-form,.ncea-form,.noa-gifts form,.ec-dialog form,.noa-community form) textarea{min-block-size:144px;resize:vertical;line-height:1.75}
+html.noa-member-ui :is(.mbskin,.new_win,#bo_w,#bo_sch,.bo_sch,#bo_vc_w,#sod_frm,#sod_bsk,#sod_inquiry,.noa-login-form,.creator-form,.ncea-form,.noa-gifts form,.ec-dialog form,.noa-community form) :is(input:not([type]),input[type=text],input[type=password],input[type=email],input[type=tel],input[type=url],input[type=number],input[type=search],input[type=date],select,textarea):not([hidden]){box-sizing:border-box;min-inline-size:0;max-inline-size:100%;min-block-size:var(--member-field-min,var(--member-control));height:auto;padding:11px 12px;border:1px solid var(--noa-line);border-radius:var(--member-radius);background:var(--noa-bg);color:var(--noa-text);font:400 var(--member-field)/1.5 var(--noa-font);box-shadow:none}
+html.noa-member-ui :is(.mbskin,.new_win,#bo_w,#bo_sch,.bo_sch,#bo_vc_w,#sod_frm,.noa-login-form,.creator-form,.ncea-form,.noa-gifts form,.ec-dialog form,.noa-community form) textarea{--member-field-min:144px;resize:vertical;line-height:1.75}
 html.noa-member-ui :is(.mbskin,.new_win,#bo_w,#bo_sch,.bo_sch,#bo_vc_w,#sod_frm,.creator-form,.ncea-form,.ec-dialog form) :is(input,textarea)::placeholder{color:var(--noa-muted);opacity:.8}
 html.noa-member-ui :is(.mbskin,.new_win,#bo_w,#bo_sch,.bo_sch,#bo_vc_w,#sod_frm,#sod_bsk,.noa-login-form,.creator-form,.ncea-form,.noa-gifts form,.ec-dialog form,.noa-community form) :is(input,select,textarea,button,a):focus-visible{outline:2px solid var(--noa-accent);outline-offset:3px}
 html.noa-member-ui :is(.mbskin,.new_win,#bo_w,#bo_sch,.bo_sch,#bo_vc_w,#sod_frm,.noa-login-form,.creator-form,.ncea-form,.ec-dialog form) :is(input,select,textarea):user-invalid{border-color:var(--noa-danger,#db6d6a)}
@@ -141,3 +141,8 @@ html.noa-member-ui.ny-native .ny-native-nav{justify-content:flex-start;gap:8px}
 @media(max-width:760px){html.noa-member-ui body :is(.noa-support-dialog,#noa-share-dialog){padding:16px}}
 html.noa-member-ui .ec-dialog textarea[maxlength="20000"]{min-height:clamp(200px,32vh,320px);font-size:16px;line-height:1.8}
 html.noa-member-ui.noa-g5 #bo_list :is(#bo_sch,.bo_sch) :is(input,select){font-size:16px;line-height:1.5;min-height:48px}
+
+/* Match the native skin's scoped field rules so inherited body type cannot win. */
+html.noa-member-ui.noa-g5 :is(#bo_list,#bo_v,#bo_w) :is(input.frm_input,input.sch_input,select,textarea):not([type=checkbox]):not([type=radio]):not([type=hidden]){font-size:16px;line-height:1.75;min-block-size:var(--member-field-min,48px);border-radius:4px}
+html.noa-member-ui.noa-g5 #bo_w input#wr_subject{font-size:18px}
+html.noa-member-ui.noa-g5 #bo_vc_w textarea#wr_content{min-block-size:144px}
