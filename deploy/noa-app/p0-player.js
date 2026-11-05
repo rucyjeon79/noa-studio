@@ -96,7 +96,7 @@ for(const [name,handler]of Object.entries(actions))try{session.setActionHandler(
 function position(){if(!session.setPositionState||!Number.isFinite(audio.duration)||audio.duration<=0)return;try{session.setPositionState({duration:audio.duration,playbackRate:audio.playbackRate,position:Math.min(audio.duration,Math.max(0,audio.currentTime))});}catch{}}
 let last=0;audio.addEventListener('timeupdate',()=>{const now=Date.now();if(now-last>500){last=now;position();}});audio.addEventListener('loadedmetadata',position);audio.addEventListener('seeked',position);
 audio.addEventListener('playing',()=>{session.playbackState='playing';position();});audio.addEventListener('pause',()=>{session.playbackState='paused';position();});
-window.addEventListener('noa-track-selected',e=>{const r=e.detail?.record;if(!r||!window.MediaMetadata)return;try{session.metadata=new MediaMetadata({title:window.NoaBrowse?.displayTitle?.(r)||r.title||'NOA STUDIO',artist:document.getElementById('detail-cast')?.textContent||'AI Artist Noa',album:'NOA STUDIO',artwork:r.thumb?[{src:new URL(r.thumb,location.href).href}]:[]});}catch{}});
+window.addEventListener('noa-track-selected',e=>{const r=e.detail?.record;if(!r||!window.MediaMetadata)return;try{session.metadata=new MediaMetadata({title:window.NoaBrowse?.displayTitle?.(r)||r.title||'NOA STUDIO',artist:window.NoaBrowse?.genreName?.(r.genre)||'미분류',album:'NOA STUDIO',artwork:r.thumb?[{src:new URL(r.thumb,location.href).href}]:[]});}catch{}});
 })();
 
 // The main player owns play intent; retry logic must not override pause/close/track changes.

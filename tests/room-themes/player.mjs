@@ -74,6 +74,7 @@ try{
   await page.locator('#pause-play').click();
   await page.waitForFunction(()=>!document.querySelector('audio').paused);
   assert.deepEqual(errors,[]);
+  console.log('PLAYER_MEDIA_METADATA',width,await page.evaluate(()=>({title:navigator.mediaSession?.metadata?.title,artist:navigator.mediaSession?.metadata?.artist,subtitle:document.getElementById('dock-artist')?.textContent,vocal:document.getElementById('detail-cast')?.textContent})));
   console.log('PLAYBACK_NAVIGATION_VERIFIED',width);
   await page.close();
  }
