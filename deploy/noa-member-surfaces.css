@@ -157,3 +157,9 @@ html.noa-member-ui.noa-g5 .mbskin :is(#fregister,#fregisterform) section+section
 html.noa-member-ui.noa-g5 :is(.mbskin,.new_win) .btn_confirm{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:24px}
 html.noa-member-ui.noa-g5 :is(.mbskin,.new_win) :is(.btn_submit,.btn_cancel,.btn01,.btn02,.btn_frmline){display:inline-flex;align-items:center;justify-content:center;min-height:48px;border-radius:4px;padding:12px 16px;line-height:1.5}
 @media(max-width:760px){html.noa-member-ui.noa-g5 .mbskin .btn_confirm>*{flex:1;min-width:0;text-align:center}}
+/* Keep the anti-bot label accessible without revealing the native hidden legend. */
+html.noa-member-ui.noa-g5 #find_info #captcha legend{position:absolute;inline-size:1px;block-size:1px;padding:0;margin:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+html.noa-member-ui #ecosystem .ec-tools select{font-size:16px!important}
+html.noa-member-ui .nld-search :is(input,select,button){min-height:48px;border-radius:4px}
+html.noa-member-ui .nld-search :is(input,select){font-size:16px;line-height:1.5}
+html.noa-member-ui .ec-dialog textarea[maxlength="20000"]{--member-field-min:clamp(200px,32vh,320px)}
