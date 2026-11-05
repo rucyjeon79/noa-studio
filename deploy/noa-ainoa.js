@@ -80,3 +80,29 @@ doc.addEventListener('click',e=>{if(html.hasAttribute('data-noa-home-ainoa')&&e.
 new MutationObserver(schedule).observe(doc.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
 sync();
 })();
+
+/* A single, accessible AInoa conversation surface for guided member tasks. */
+(()=>{'use strict';
+let currentRoom=null;
+window.NoaAInoa.openConversation=({title='AInoa',onClose}={})=>{
+ if(currentRoom?.active())currentRoom.close();
+ const trigger=document.activeElement,dialog=document.createElement('dialog');
+ dialog.id='ainoa-conversation';dialog.className='ainoa-conversation';dialog.setAttribute('aria-labelledby','ainoa-conversation-title');
+ const header=document.createElement('header'),portrait=document.createElement('img'),copy=document.createElement('div'),heading=document.createElement('h2'),caption=document.createElement('p'),dismiss=document.createElement('button');
+ portrait.src='/noa-assets/ainoa-symbol.png?v=20261026-portrait-1';portrait.alt='';portrait.width=44;portrait.height=44;
+ heading.id='ainoa-conversation-title';heading.textContent='AInoa';caption.textContent=title;copy.append(heading,caption);
+ dismiss.type='button';dismiss.setAttribute('aria-label','AInoa 대화 닫기');dismiss.textContent='×';header.append(portrait,copy,dismiss);
+ const scroll=document.createElement('div');scroll.className='ainoa-conversation-scroll';
+ const log=document.createElement('div');log.className='ainoa-conversation-log';log.setAttribute('role','log');log.setAttribute('aria-live','polite');log.setAttribute('aria-label','AInoa 대화');
+ const content=document.createElement('div');content.className='ainoa-conversation-content';
+ const status=document.createElement('p');status.className='ainoa-conversation-status';status.setAttribute('role','status');
+ scroll.append(log,content,status);dialog.append(header,scroll);document.body.append(dialog);
+ const follow=()=>requestAnimationFrame(()=>{if(dialog.open)scroll.scrollTo({top:scroll.scrollHeight,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});});
+ let closed=false;
+ const room={content,active:()=>dialog.open&&!closed,add(text,who='ainoa'){
+  if(closed||!text)return;const row=document.createElement('p');row.className='ainoa-conversation-message';row.dataset.speaker=who;row.textContent=text;log.append(row);follow();
+ },status(text){status.textContent=text||'';follow();},close(){if(!closed)dialog.close();},focus(){content.querySelector('button,input,textarea,a')?.focus({preventScroll:true});}};
+ dialog.addEventListener('close',()=>{if(closed)return;closed=true;if(currentRoom===room)currentRoom=null;onClose?.();const delay=matchMedia('(prefers-reduced-motion: reduce)').matches?0:180;setTimeout(()=>dialog.remove(),delay);if(trigger?.isConnected)trigger.focus({preventScroll:true});},{once:true});
+ dismiss.onclick=()=>room.close();currentRoom=room;dialog.showModal();return room;
+};
+})();

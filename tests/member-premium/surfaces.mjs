@@ -3,6 +3,7 @@ import {readFileSync,mkdirSync,writeFileSync,existsSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {verifyFixtures} from './fixtures.mjs';
 import {verifyComposer} from './composer.mjs';
+import {verifyExperience} from './experience.mjs';
 import {verifyRelationships,auditRelationships} from './relationships.mjs';
 const phase=process.env.NOA_MEMBER_PHASE||'baseline',base='https://noastudio.ai.kr',out='member-surface-proof/'+phase;
 mkdirSync(out,{recursive:true});
@@ -12,16 +13,16 @@ const report={phase,public:[],fixtures:[],errors:[],writes:0};
 const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
 
 try{
- if(phase!=='baseline'){await verifyFixtures(browser,phase,out,report);await verifyComposer(browser,out,report);await verifyRelationships(browser,out,report);}
+ if(phase!=='baseline'){await verifyExperience(browser,phase,out,report);await verifyFixtures(browser,phase,out,report);await verifyComposer(browser,out,report);await verifyRelationships(browser,out,report);}
  await Promise.all([390,1440].map(async width=>{
   const context=await browser.newContext({viewport:{width,height:900},locale:'ko-KR',serviceWorkers:'block',reducedMotion:'reduce'});
   context.setDefaultTimeout(15000);context.setDefaultNavigationTimeout(30000);
   await context.route('**/*',async r=>{
    const req=r.request(),u=new URL(req.url());
    if(!['GET','HEAD'].includes(req.method()))return r.abort();
-   if(phase==='candidate'&&u.origin===base&&['/noa-member-surfaces.css','/noa-member-surfaces.js','/noa-ui.js'].includes(u.pathname))return r.fulfill({body:readFileSync('deploy'+u.pathname),contentType:u.pathname.endsWith('.css')?'text/css':'text/javascript'});
+   if(phase==='candidate'&&u.origin===base&&['/noa-member-surfaces.css','/noa-member-surfaces.js','/noa-ui.js','/noa-starlight.css','/noa-ainoa.js','/noa-ainoa.css','/noa-voice.js','/noa-listening.js','/noa-music-vinyl.css'].includes(u.pathname))return r.fulfill({body:readFileSync('deploy'+u.pathname),contentType:u.pathname.endsWith('.css')?'text/css':'text/javascript'});
    if(phase==='candidate'&&u.origin===base&&req.isNavigationRequest()){
-    const res=await r.fetch({maxRedirects:0});if(res.status()>=300&&res.status()<400)return r.fulfill({response:res});
+    const res=await r.fetch({maxRedirects:0,timeout:30000});if(res.status()>=300&&res.status()<400)return r.fulfill({response:res});
     let html=await res.text();if(html.includes('</head>'))html=html.replace('</head>','<link rel="stylesheet" href="/noa-member-surfaces.css"><script defer src="/noa-member-surfaces.js"></script></head>');return r.fulfill({response:res,body:html});
    }
    return r.continue();

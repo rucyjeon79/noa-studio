@@ -38,18 +38,18 @@ function close(next=true,ack=false){if(ack)try{sessionStorage.removeItem('noa-vo
 function routine(item){return ['welcome','welcome-error'].includes(item.options.key)||item.options.kind==='song';}
 function place(item,modal){
  const root=doc.getElementById('noa-ainoa');if(!root)return;const dock=doc.documentElement.hasAttribute('data-noa-desktop')?doc.getElementById('noa-desktop-ainoa'):null,tip=bubble();let proxy=doc.getElementById('noa-voice-modal');
- // Keep feedback interactive with the modal, but display it in its own viewport overlay.
+ // Preserve the AInoa portrait and speech anchor even above a native modal.
  if(root.parentElement!==(dock||doc.body))(dock||doc.body).append(root);
- if(modal&&item&&tip){if(!proxy){proxy=doc.createElement('aside');proxy.id='noa-voice-modal';proxy.setAttribute('aria-label','AInoa 안내');proxy.setAttribute('popover','manual');}if(proxy.parentElement!==modal)modal.append(proxy);if(tip.parentElement!==proxy)proxy.append(tip);if(typeof proxy.showPopover==='function'&&!proxy.matches(':popover-open'))proxy.showPopover();}
+ if(modal&&item&&tip){if(!proxy){proxy=doc.createElement('aside');proxy.id='noa-voice-modal';proxy.setAttribute('aria-label','AInoa 안내');proxy.setAttribute('popover','manual');const portrait=doc.createElement('img');portrait.className='ainoa-notice-portrait';portrait.src='/noa-assets/ainoa-symbol.png?v=20261026-portrait-1';portrait.alt='';proxy.append(portrait);}if(proxy.parentElement!==modal)modal.append(proxy);if(tip.parentElement!==proxy)proxy.append(tip);if(typeof proxy.showPopover==='function'&&!proxy.matches(':popover-open'))proxy.showPopover();}
  else if(tip&&tip.parentElement!==root)root.insertBefore(tip,root.querySelector('.ainoa-panel'));
- if(proxy&&!proxy.childElementCount)proxy.remove();
+ if(proxy&&!proxy.querySelector('.ainoa-tip'))proxy.remove();
 }
 function render(){
  const modal=[...doc.querySelectorAll('dialog:modal')].at(-1),tip=bubble();if(!tip)return;
  // An automatic greeting must neither cover a dialog nor expire behind it.
- if(active&&modal&&routine(active)){pause();suspended=true;tip.hidden=true;place(null,modal);return;}
+ if(active&&modal&&(routine(active)||modal.id==='ainoa-conversation')){pause();suspended=true;tip.hidden=true;place(null,modal);return;}
  if(active){place(active,modal);if(suspended){suspended=false;tip.hidden=false;resume();}return;}
- const next=queue.findIndex(item=>!modal||!routine(item));
+ const next=queue.findIndex(item=>!modal||(modal.id!=='ainoa-conversation'&&!routine(item)));
  if(next<0||doc.hidden){place(null,modal);return;}
  active=queue.splice(next,1)[0];place(active,modal);ownChange=true;tip.replaceChildren();tip.classList.add('ainoa-message');tip.setAttribute('aria-live','polite');tip.setAttribute('aria-atomic','true');
  const label=doc.createElement('strong');label.textContent='AInoa';const text=doc.createElement('p');
@@ -79,8 +79,8 @@ function markAccess(){
  }
 }
 function scan(){scheduled=false;markAccess();render();for(const node of doc.querySelectorAll(statusSelector)){
- if(node.closest('.ainoa-tip,.ainoa-admin-dialog')||node.matches('.ainoa-answer')||node.closest('[hidden]'))continue;
- const text=node.textContent.trim();if(!text||emptyStatus(text)||routinePlaybackStatus(node.id,text)||text===seen.get(node)||!node.getClientRects().length)continue;seen.set(node,text);
+ if(node.closest('.ainoa-tip,.ainoa-admin-dialog,.ainoa-conversation')||node.matches('.ainoa-answer')||node.closest('[hidden]'))continue;
+ const text=node.textContent.trim();if(node.matches('.nl-status')&&/연결하고|찾고 있어|준비하고/.test(text))continue;if(!text||emptyStatus(text)||routinePlaybackStatus(node.id,text)||text===seen.get(node)||!node.getClientRects().length)continue;seen.set(node,text);
  // Dynamic operational notices only; progress numbers and empty-state copy are not repeated as alerts.
  if(node.matches('[role="alert"],.noa-toast,.toast,.alert-danger,.alert-success,.alert-warning')||/저장|실패|못했|오류|확인해|완료|차감|켜|껐|연결|전달|등록|삭제|필요|부족|지연/.test(text))say(text,{key:node.id||text,requireAcknowledgement:node.dataset.noaRequiredAck==='true'});
 }}

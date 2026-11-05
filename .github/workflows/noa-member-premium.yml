@@ -1,10 +1,10 @@
 name: NOA member experience refinement
 on:
   pull_request:
-    paths: ['deploy/noa-ui.js','deploy/noa-member-surfaces.*','deploy/noa-design.extend.php','tests/member-premium/**','scripts/noa_member_surfaces_release.py','.github/workflows/noa-member-premium.yml']
+    paths: ['deploy/noa-ui.js','deploy/noa-starlight.css','deploy/noa-ainoa.*','deploy/noa-voice.js','deploy/noa-listening.js','deploy/noa-music-vinyl.css','deploy/noa-member-surfaces.*','deploy/noa-design.extend.php','tests/member-premium/**','scripts/noa_member_surfaces_release.py','.github/workflows/noa-member-premium.yml']
   push:
     branches: [main]
-    paths: ['deploy/noa-ui.js','deploy/noa-member-surfaces.*','deploy/noa-design.extend.php','tests/member-premium/**','scripts/noa_member_surfaces_release.py','.github/workflows/noa-member-premium.yml']
+    paths: ['deploy/noa-ui.js','deploy/noa-starlight.css','deploy/noa-ainoa.*','deploy/noa-voice.js','deploy/noa-listening.js','deploy/noa-music-vinyl.css','deploy/noa-member-surfaces.*','deploy/noa-design.extend.php','tests/member-premium/**','scripts/noa_member_surfaces_release.py','.github/workflows/noa-member-premium.yml']
 permissions: {contents: read}
 jobs:
   candidate:
@@ -20,14 +20,17 @@ jobs:
           php tests/member-premium/render.php
           node --check deploy/noa-ui.js
           node --check deploy/noa-member-surfaces.js
-          node --test tests/member-premium/icons.test.mjs
+          node --test tests/member-premium/icons.test.mjs tests/listening/model.mjs tests/voice/composer_test.cjs
+          node --check deploy/noa-listening.js
+          node --check deploy/noa-ainoa.js
+          node --check deploy/noa-voice.js
           node --check tests/member-premium/surfaces.mjs
           node --check tests/member-premium/fixtures.mjs
       - name: Prepare visual inspection
         run: |
           python scripts/qa/noa-qa-font.py
           timeout 90s npm install --prefix "$RUNNER_TEMP/noa-member" --no-save --ignore-scripts --package-lock=false --no-audit --no-fund --fetch-timeout=20000 --fetch-retries=1 playwright@1.56.1
-          cp tests/member-premium/composer.mjs tests/member-premium/relationships.mjs "$RUNNER_TEMP/noa-member/"
+          cp tests/member-premium/experience.mjs tests/member-premium/composer.mjs tests/member-premium/relationships.mjs "$RUNNER_TEMP/noa-member/"
           cp tests/member-premium/fixtures.mjs "$RUNNER_TEMP/noa-member/fixtures.mjs"
           cp tests/member-premium/surfaces.mjs "$RUNNER_TEMP/noa-member/check.mjs"
       - name: Inspect member entry points without transactions
@@ -52,7 +55,7 @@ jobs:
           php tests/member-premium/assets.php
           php tests/member-premium/render.php
           timeout 90s npm install --prefix "$RUNNER_TEMP/noa-member" --no-save --ignore-scripts --package-lock=false --no-audit --no-fund --fetch-timeout=20000 --fetch-retries=1 playwright@1.56.1
-          cp tests/member-premium/fixtures.mjs tests/member-premium/composer.mjs tests/member-premium/relationships.mjs "$RUNNER_TEMP/noa-member/"
+          cp tests/member-premium/experience.mjs tests/member-premium/fixtures.mjs tests/member-premium/composer.mjs tests/member-premium/relationships.mjs "$RUNNER_TEMP/noa-member/"
           cp tests/member-premium/surfaces.mjs "$RUNNER_TEMP/noa-member/check.mjs"
       - name: Publish presentation assets and inspect the operating pages
         env:

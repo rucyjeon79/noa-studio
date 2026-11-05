@@ -3,6 +3,7 @@ import sys
 import noa_ainoa_deploy as release
 release.FILES={
  'noa-ui.js':'deploy/noa-ui.js',
+ **{name:'deploy/'+name for name in ['noa-starlight.css','noa-ainoa.js','noa-ainoa.css','noa-voice.js','noa-listening.js','noa-music-vinyl.css']},
  'noa-member-surfaces.css':'deploy/noa-member-surfaces.css',
  'noa-member-surfaces.js':'deploy/noa-member-surfaces.js',
  'extend/noa.design.php':'deploy/noa-design.extend.php',

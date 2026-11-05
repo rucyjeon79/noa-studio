@@ -75,11 +75,14 @@ html[data-noa-voice-admin] :is(#noa-ainoa,#noa-voice-modal){--noa-bg:#fff;--noa-
 :is(#noa-ainoa,#noa-voice-modal) .ainoa-message-actions{margin-top:8px}
 @media(max-width:760px){:is(#noa-ainoa,#noa-voice-modal){--ainoa-size:52px;right:max(12px,env(safe-area-inset-right));--ainoa-bottom:calc(var(--noa-nav-space,0px) + var(--noa-player-space,0px) + var(--noa-transfer-space,0px) + 12px)}}
 
-/* Operational notices float independently without extending or scrolling the dialog. */
-html body #noa-voice-modal{position:fixed;inset:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) auto auto;display:block;width:min(360px,calc(100vw - 32px));height:auto;max-width:100%;margin:0;padding:0;border:0;background:transparent;overflow:visible;--ainoa-size:0px;--ainoa-gap:0px;--ainoa-bottom:0px;z-index:180;box-sizing:border-box}
-html body #noa-voice-modal .ainoa-tip.ainoa-message{position:relative;inset:auto;transform:none;width:100%;max-width:100%;max-height:min(58dvh,calc(100dvh - 32px));margin:0;background:var(--noa-raised);color:var(--noa-text);box-shadow:0 8px 24px var(--noa-line)}
+/* Modal feedback stays attached to AInoa at the same bottom speech anchor. */
+html body #noa-voice-modal{position:fixed;inset:auto max(16px,env(safe-area-inset-right)) calc(var(--noa-nav-space,0px) + var(--noa-player-space,0px) + var(--noa-transfer-space,0px) + 12px) auto;display:block;width:52px;height:52px;margin:0;padding:0;border:0;background:transparent;overflow:visible;--ainoa-size:52px;--ainoa-bottom:calc(var(--noa-nav-space,0px) + var(--noa-player-space,0px) + 12px);z-index:180;box-sizing:border-box;pointer-events:none}
+html body #noa-voice-modal .ainoa-notice-portrait{display:block;width:52px;height:52px;object-fit:contain;border-radius:50%}
+html body #noa-voice-modal .ainoa-tip.ainoa-message{position:absolute;inset:auto 0 64px auto;transform:none;width:min(360px,calc(100vw - 32px));margin:0;background:var(--noa-raised);color:var(--noa-text);overflow:auto}
 html body #noa-voice-modal::backdrop{background:transparent;pointer-events:none}
-html body #noa-voice-modal .ainoa-tip::after{display:none}
+html body #noa-voice-modal::after{content:"";position:absolute;bottom:49px;right:18px;border:8px solid transparent;border-top-color:var(--noa-raised)}
+@media(max-width:1199px){html[data-noa-home-ainoa] body #noa-voice-modal{left:50%;right:auto;transform:translateX(-50%)}html[data-noa-home-ainoa] body #noa-voice-modal .ainoa-tip.ainoa-message{left:50%;right:auto;transform:translateX(-50%)}}
+
 
 /* The operator chat has its own controls inside the shared site and music dock. */
 #ainoa-admin-dialog {
@@ -113,3 +116,34 @@ html body #noa-voice-modal .ainoa-tip::after{display:none}
 #ainoa-admin-dialog .ainoa-admin-notice { font-size:14px; }
 #ainoa-admin-dialog .ainoa-admin-body > a { font-size:13px; }
 #noa-desktop #ainoa-admin-dialog { width:100%; max-height:none; border:0; padding:0; }
+
+/* Theme-aware conversation: bubbles, responses and choices share one reading column. */
+#ainoa-conversation{box-sizing:border-box;width:min(460px,calc(100vw - 24px));height:min(720px,calc(100dvh - 32px));max-height:calc(100dvh - 32px);margin:auto;padding:0;border:1px solid var(--noa-line);border-radius:12px;background:var(--noa-bg);color:var(--noa-text);font:inherit;overflow:hidden}
+#ainoa-conversation::backdrop{background:#0008;backdrop-filter:blur(3px)}
+#ainoa-conversation>header{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--noa-line);background:var(--noa-surface)}
+#ainoa-conversation header img{flex:none;border-radius:50%}
+#ainoa-conversation header>div{flex:1;min-width:0}
+#ainoa-conversation h2{font-size:18px;line-height:1.4;margin:0}
+#ainoa-conversation header p{font-size:12px;color:var(--noa-muted);margin:4px 0 0}
+#ainoa-conversation header button{border:0;background:transparent;color:var(--noa-muted);font-size:26px;width:44px;height:44px;flex:none}
+#ainoa-conversation .ainoa-conversation-scroll{box-sizing:border-box;height:calc(100% - 88px);overflow:auto;overscroll-behavior:contain;padding:20px 16px}
+#ainoa-conversation .ainoa-conversation-log{display:grid;gap:12px}
+#ainoa-conversation .ainoa-conversation-message{max-width:92%;width:fit-content;margin:0;padding:12px 16px;border-radius:4px 12px 12px;background:var(--noa-surface);color:var(--noa-text);font-size:14px;line-height:1.65;white-space:pre-line;overflow-wrap:anywhere}
+#ainoa-conversation .ainoa-conversation-message[data-speaker=user]{justify-self:end;border-radius:12px 4px 12px 12px;background:var(--noa-accent);color:var(--noa-accentText)}
+#ainoa-conversation .ainoa-conversation-content{display:grid;gap:16px;margin-top:16px;min-width:0}
+#ainoa-conversation :is(.nl-weather-choices,.nl-care){display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;border:0;background:transparent}
+#ainoa-conversation :is(button,a){box-sizing:border-box;min-height:44px;padding:10px 14px;border:1px solid var(--noa-line);border-radius:4px;background:var(--noa-surface);color:var(--noa-text);font:inherit;line-height:1.5;cursor:pointer}
+#ainoa-conversation :is(button[aria-pressed=true],.nl-weather-play){background:var(--noa-accent);color:var(--noa-accentText);border-color:var(--noa-accent)}
+#ainoa-conversation button:disabled{opacity:.55;cursor:default}
+#ainoa-conversation .nl-care{display:grid;gap:12px;padding-top:16px;border-top:1px solid var(--noa-line);width:100%}
+#ainoa-conversation .nl-care label{font-size:13px;line-height:1.6}
+#ainoa-conversation textarea{display:block;width:100%;min-height:88px;box-sizing:border-box;margin-top:8px;padding:12px;border:1px solid var(--noa-line);border-radius:4px;background:var(--noa-surface);color:var(--noa-text);font:inherit}
+#ainoa-conversation .nl-care-consent{display:flex;align-items:flex-start;gap:8px}
+#ainoa-conversation input[type=checkbox]{flex:none;width:20px;height:20px;margin:2px 0;accent-color:var(--noa-accent)}
+#ainoa-conversation :is(.nl-weather-guide,.nl-care-answer,.ainoa-conversation-status){font-size:14px;line-height:1.65;white-space:pre-line;overflow-wrap:anywhere;margin:0;color:var(--noa-text)}
+#ainoa-conversation .ainoa-conversation-status:not(:empty){margin-top:16px;padding:12px 16px;background:var(--noa-surface);border-inline-start:2px solid var(--noa-accent)}
+#ainoa-conversation :is(.ainoa-conversation-status,.nl-care-answer):empty{display:none}
+#ainoa-conversation .nl-weather-tracks{margin:0;padding-inline-start:24px;font-size:14px;line-height:1.5}
+#ainoa-conversation .nl-weather-tracks li{padding:8px 0}
+#ainoa-conversation .nl-weather-tracks small{display:block;color:var(--noa-muted);font-size:12px}
+#ainoa-conversation :focus-visible{outline:2px solid var(--noa-accent);outline-offset:3px}
