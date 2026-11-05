@@ -131,7 +131,7 @@ function renderVocal(r){
  const legacy={female:'여자솔로',male:'남자솔로',duet:'남녀듀엣'};
  const label=vocal||legacy[r.cast]||'보컬 정보 미등록';
  document.getElementById('detail-cast').textContent=label;
- document.getElementById('dock-artist').textContent=label;
+ document.getElementById('dock-artist').textContent=window.NoaBrowse?.genreName?.(r.genre)||'미분류';
  document.getElementById('cast-noa').hidden=!['female','duet'].includes(r.cast);
  document.getElementById('cast-noel').hidden=!['male','duet'].includes(r.cast);
  if(navigator.mediaSession?.metadata)navigator.mediaSession.metadata.artist=label;
