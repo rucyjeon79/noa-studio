@@ -99,7 +99,8 @@ function markLabels(){if(themeOnly)return;decorate();markMetadata();translateFix
 
 function icon(key){return icons[key]?'<svg aria-hidden="true" data-noa-symbol="'+key+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="'+icons[key]+'"/></svg>':''}
 function actionIcon(el){
- const text=(el.getAttribute('aria-label')||el.textContent||el.title||'').trim(),href=el.getAttribute('href')||'';
+ const primary=el.querySelector?.('.nnt-entry-title,strong,[data-command-label]');
+ const text=(el.getAttribute('aria-label')||primary?.textContent||el.textContent||el.title||'').trim(),href=el.getAttribute('href')||'';
  // Actions take priority over subject words: saving a song is still a save action.
  const rules=[
   [/삭제|지우기|비우기|\bdelete\b/i,'trash'],[/닫기|취소|철회|거절|연결 해제|첨부 제외|\b(close|cancel)\b/i,'close'],
@@ -182,7 +183,7 @@ function decorate(){
   const key=actionIcon(el);if(key)el.dataset.noaIcon=key;
  }
  if(document.querySelector('.lab-tabs'))for(const a of document.querySelectorAll('.lab-tabs a')){const keys={'#lab-text':'settings','#lab-create':'music','#lab-jobs':'library','#lab-growth':'youtube'};if(keys[a.getAttribute('href')])a.dataset.noaIcon=keys[a.getAttribute('href')];}
- document.querySelectorAll('[data-noa-icon]').forEach(el=>{if(el.querySelector('svg')||!icons[el.dataset.noaIcon])return;const label=document.createElement('span');while(el.firstChild)label.append(el.firstChild);if(el.closest('.btn_bo_user,.btn_confirm,.bo_v_nb,.bo_v_com')&&root.classList.contains('noa-g5')){const name=el.getAttribute('aria-label')||el.title||label.textContent.trim();el.setAttribute('aria-label',name);label.textContent=({'게시판 검색':'검색','게시판 리스트 옵션':'옵션'})[name]||name;}if(el.dataset.noaI18n){label.dataset.noaI18n=el.dataset.noaI18n;delete el.dataset.noaI18n;}el.insertAdjacentHTML('afterbegin',icon(el.dataset.noaIcon));el.append(label);el.classList.add('noa-action');});
+ document.querySelectorAll('[data-noa-icon]').forEach(el=>{if(el.querySelector('svg')||!icons[el.dataset.noaIcon])return;const label=document.createElement('span');while(el.firstChild)label.append(el.firstChild);if(el.closest('.btn_bo_user,.btn_confirm,.bo_v_nb,.bo_v_com')&&root.classList.contains('noa-g5')){const name=el.getAttribute('aria-label')||el.title||label.textContent.trim();el.setAttribute('aria-label',name);label.textContent=({'게시판 검색':'검색','게시판 리스트 옵션':'옵션'})[name]||name;}if(el.matches('.nnt-entry')){while(label.firstChild)el.append(label.firstChild);el.insertAdjacentHTML('afterbegin',icon(el.dataset.noaIcon));return;}if(el.dataset.noaI18n){label.dataset.noaI18n=el.dataset.noaI18n;delete el.dataset.noaI18n;}el.insertAdjacentHTML('afterbegin',icon(el.dataset.noaIcon));el.append(label);el.classList.add('noa-action');});
  // Explicit section chrome only: song controls and JUKEBOX DOM are never rewritten.
  if(location.pathname==='/noa-music.php')return;
  document.querySelectorAll('main>h1,.lab-heading h1,.lab-panel>h2,.lab-section>h2,.noa-section h2,.noa-section-head h2,.noa-world-prose>h2,.noa-world-heading>h2,#youtube-playlists>h2').forEach(el=>{if(el.dataset.noaHeading||el.querySelector('svg,img'))return;const key=headingIcon(el.textContent);if(!key)return;el.dataset.noaHeading='true';const label=document.createElement('span');while(el.firstChild)label.append(el.firstChild);if(el.dataset.noaI18n){label.dataset.noaI18n=el.dataset.noaI18n;delete el.dataset.noaI18n;}el.insertAdjacentHTML('afterbegin',icon(key));el.append(label);});

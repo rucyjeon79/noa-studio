@@ -57,9 +57,10 @@ export async function auditRelationships(page,entry,report){
    }
   }
   const invalid=[...document.querySelectorAll('svg[data-noa-symbol] path')].filter(p=>!p.getAttribute('d')||p.getAttribute('d')==='undefined').length;
-  return {gaps,touched,invalid};
+  const scene=document.querySelector('.noa-footer-scene');const ending=visible(scene)?document.documentElement.scrollHeight-(scene.getBoundingClientRect().bottom+scrollY):null;const root=getComputedStyle(document.documentElement);const footerClearance=(document.querySelector('.noa-mobile-nav')?.getBoundingClientRect().height||0)+['--noa-player-space','--noa-transfer-space'].reduce((sum,key)=>sum+(parseFloat(root.getPropertyValue(key))||0),0);return {gaps,touched,invalid,ending,footerClearance};
  });
  (report.relationships??=[]).push({...entry,...result});
+ if(result.ending!==null)assert(result.ending<=result.footerClearance+48,'excess space after footer: '+JSON.stringify({...entry,...result}));
  assert.equal(result.invalid,0,'invalid icon path');
  assert.deepEqual(result.gaps.filter(x=>!x.ok),[],JSON.stringify(entry));
  assert.deepEqual(result.touched,[],JSON.stringify(entry));

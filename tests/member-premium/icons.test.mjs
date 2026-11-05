@@ -19,3 +19,8 @@ test('unknown text does not inherit a bookshelf or music decoration',()=>{
  assert.equal(headingIcon('별무리 라운지'),'community');assert.equal(headingIcon('포인트 충전'),'wallet');
  assert.equal(actionIcon(control('','', '게시판 검색')),'search');
 });
+
+test('a composite notification card uses its primary label, not verbs in the description',()=>{
+ const card={...control('도착한 소식 새 글과 댓글·답글, 반응을 확인하세요.','/noa-notifications.php'),querySelector:()=>({textContent:'도착한 소식'})};
+ assert.equal(actionIcon(card),'bell');
+});

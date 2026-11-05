@@ -354,3 +354,45 @@ html.noa-member-ui.noa-g5 #bo_vc_w .btn_confirm{display:flex;flex-wrap:wrap;alig
  html.noa-member-ui .ny-store .ny-store-tools{padding-top:16px}
  html.noa-member-ui #ecosystem #community-boards{padding-block:16px}
 }
+
+/* Page rhythm: content owns its spacing, the page owns fixed-control clearance. */
+html.noa-shell-wide[data-noa-precision] body :is(main.noa-main,main):has(>.noa-mobile-footer){padding-bottom:calc(var(--noa-nav-space,0px) + var(--noa-player-space,0px) + var(--noa-transfer-space,0px) + 24px)}
+html.noa-shell-wide[data-noa-style] body .noa-mobile-footer{padding-block:0;border:0;margin-block:24px 0;gap:0}
+html.noa-shell-wide[data-noa-theme] body .noa-main>.noa-mobile-footer{margin:0}
+html.noa-shell-wide[data-noa-precision] body>main:has(+.noa-mobile-footer){padding-bottom:0;min-height:0}
+html.noa-shell-wide[data-noa-style] body>.noa-mobile-footer{padding-bottom:calc(var(--noa-nav-space,0px) + var(--noa-player-space,0px) + var(--noa-transfer-space,0px) + 24px)}
+html.noa-shell-wide[data-noa-precision].noa-g5 body:has(>.mbskin):has(>.noa-mobile-footer){padding-bottom:0}
+html.noa-shell-wide[data-noa-style] .noa-mobile-footer+:is(.noa-footer,.ne-footer){display:none}
+html.noa-member-ui #noa-my-activity>.noa-actions+.nnt-entry{margin-top:16px}
+html.noa-member-ui #noa-my-activity>.noa-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(140px,100%),1fr));gap:12px}
+html.noa-member-ui #noa-my-activity>.noa-actions>a{display:flex;justify-content:center;align-items:center;text-align:center;min-height:44px;padding:12px}
+html.noa-member-ui #noa-my-activity>.nnt-entry{display:flex;flex-direction:row;gap:16px;align-items:center;text-align:start}
+html.noa-member-ui #noa-my-activity>.nnt-entry>.nnt-entry-copy{display:grid;gap:4px;flex:1;min-width:0}
+html.noa-member-ui #noa-my-activity>.nnt-entry>svg{width:24px;height:24px;flex:none;color:var(--noa-accent)}
+html.noa-member-ui .noa-section:has(>#my-recent,>#my-recent-youtube)>h2{margin:0 0 16px}
+html.noa-member-ui .noa-section:has(>#my-recent,>#my-recent-youtube)>p{margin:12px 0 0}
+html.noa-member-ui :is(.nl-status,.nl-weather-status):empty{display:none}
+html.noa-shell-wide[data-noa-theme] body .noa-footer-heading .noa-footer-themes{background:var(--noa-surface);border-color:var(--noa-line);border-radius:4px;box-shadow:none}
+html.noa-shell-wide[data-noa-theme] body .noa-footer-heading .noa-footer-themes button{color:var(--noa-muted);border-radius:4px}
+html.noa-shell-wide[data-noa-theme] body .noa-footer-heading .noa-footer-themes button[aria-pressed=true]{background:var(--noa-accent);color:var(--noa-accentText);box-shadow:none}
+.noa-footer-theme-label{color:#fff}
+
+/* Shared interaction timing. No playback clocks, media transforms or form values change. */
+html.noa-member-ui{--noa-motion-press:150ms;--noa-motion-enter:240ms;--noa-motion-exit:160ms;--noa-motion-ease:cubic-bezier(.2,.8,.2,1)}
+@keyframes noa-member-content-in{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}
+@media(prefers-reduced-motion:no-preference){
+ @view-transition{navigation:auto}
+ ::view-transition-old(root),::view-transition-new(root){animation-duration:180ms}
+ #ainoa-conversation :is(.ainoa-conversation-message,.ainoa-conversation-content>*){animation:noa-member-content-in 200ms var(--noa-motion-ease) both}
+ html.noa-member-ui :is(button,[role=button],a.noa-button,summary){transition:background-color var(--noa-motion-press) ease,color var(--noa-motion-press) ease,border-color var(--noa-motion-press) ease,box-shadow var(--noa-motion-press) ease,scale var(--noa-motion-press) var(--noa-motion-ease)}
+ html.noa-member-ui :is(button,[role=button],a.noa-button,summary):active:not(:disabled){scale:.96}
+ html.noa-member-ui :is(input,textarea,select){transition:border-color var(--noa-motion-press) ease,box-shadow var(--noa-motion-press) ease,background-color var(--noa-motion-enter) ease}
+ html.noa-member-ui :is(dialog,.ainoa-panel,.ainoa-tip){transition:opacity var(--noa-motion-exit) ease,translate var(--noa-motion-exit) var(--noa-motion-ease),display var(--noa-motion-exit) allow-discrete,overlay var(--noa-motion-exit) allow-discrete;opacity:0;translate:0 12px}
+ html.noa-member-ui :is(dialog[open],.ainoa-panel:not([hidden]),.ainoa-tip:not([hidden])){opacity:1;translate:0 0;transition-duration:var(--noa-motion-enter)}
+ html.noa-member-ui dialog::backdrop{transition:opacity var(--noa-motion-exit) ease,display var(--noa-motion-exit) allow-discrete,overlay var(--noa-motion-exit) allow-discrete;opacity:0}
+ html.noa-member-ui dialog[open]::backdrop{opacity:1}
+ @starting-style{html.noa-member-ui :is(dialog[open],.ainoa-panel:not([hidden]),.ainoa-tip:not([hidden])){opacity:0;translate:0 12px}html.noa-member-ui dialog[open]::backdrop{opacity:0}}
+ html.noa-member-ui details::details-content{transition:content-visibility 200ms allow-discrete,opacity 200ms ease;opacity:0}
+ html.noa-member-ui details[open]::details-content{opacity:1}
+}
+@media(prefers-reduced-motion:reduce){html.noa-member-ui :is(dialog,button,a,input,select,textarea,summary,.ainoa-panel,.ainoa-tip,.ainoa-conversation-message,.ainoa-conversation-content>*){animation:none!important;transition:none!important;scroll-behavior:auto!important}}
