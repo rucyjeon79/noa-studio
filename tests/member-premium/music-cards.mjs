@@ -11,14 +11,16 @@ const rows=[
 const wav=Buffer.alloc(44+16000*10);wav.write('RIFF');wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(8000,24);wav.writeUInt32LE(16000,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(wav.length-44,40);
 
 // Run the production browse, premium, sleeve, engagement, support and editor renderers.
-// Only isolated GET fixtures and a silent WAV are used; no account or financial writes.
+// Isolated reads (including editor config POST) and silent WAV; no account or financial writes.
 export async function verifyMusicCards(browser,out,report){
  for(const width of [320,390,768,1440])for(const theme of themes)for(const admin of [false,true]){
   const context=await browser.newContext({viewport:{width,height:900},locale:'ko-KR',serviceWorkers:'block'});context.setDefaultTimeout(10000);
   const errors=[],writes=[];
   await context.route('**/*',r=>{
    const req=r.request(),u=new URL(req.url()),json=data=>r.fulfill({contentType:'application/json',body:JSON.stringify(data)});
-   if(req.method()!=='GET'){writes.push(u.pathname);return r.abort();}if(u.origin!=='https://cards.fixture')return r.abort();
+   if(u.origin!=='https://cards.fixture')return r.abort();
+   if(u.pathname==='/noa-gpt.php'&&u.searchParams.get('op')==='config'&&req.method()==='POST'){assert.deepEqual(req.postDataJSON(),{});return json({ok:true,worker:false,configured:false});}
+   if(req.method()!=='GET'){writes.push(u.pathname);return r.abort();}
    if(u.pathname==='/noa-bridge/engagement.php')return json({ok:true,items:JSON.parse(u.searchParams.get('targets')||'[]').map(t=>({...t,likes:0,comments:0,liked:false,reactionScore:0,score:null}))});
    if(u.pathname==='/noa-bridge/support.php')return json({ok:true,items:JSON.parse(u.searchParams.get('targets')||'[]').map(t=>({...t,count:0,available:true}))});
    if(u.pathname==='/noa-inline-edit.php')return json({ok:true,writeKey:'premium-credit',kind:'single',packageType:'ep',revision:1,context:{genre:'pop-original',ep:'31'},fields:{title:'First Glance',lyrics:'가사',cast:'male'}});
