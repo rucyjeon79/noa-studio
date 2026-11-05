@@ -393,6 +393,7 @@ html.noa-member-ui:not([data-noa-home-ainoa]) body .noa-footer-scene .noa-footer
 html.noa-member-ui :is(#bo_list,.new_win) .noa-member-list-table{width:100%;min-width:0;max-width:100%;table-layout:fixed;border-collapse:collapse}
 html.noa-member-ui :is(#bo_list,.new_win) .noa-member-list-table :is(th,td){box-sizing:border-box;min-width:0;white-space:normal;overflow-wrap:anywhere;word-break:normal}
 html.noa-member-ui .noa-member-list-table th[data-noa-kind=check]{width:var(--member-table-check)}
+html.noa-member-ui :is(#bo_list,.new_win) .noa-member-list-table th[data-noa-kind=check]{padding:8px}
 html.noa-member-ui .noa-member-list-table th[data-noa-kind=number]{width:var(--member-table-number)}
 html.noa-member-ui .noa-member-list-table th[data-noa-kind=date]{width:var(--member-table-date)}
 html.noa-member-ui .noa-member-list-table th[data-noa-kind=author]{width:var(--member-table-author)}
