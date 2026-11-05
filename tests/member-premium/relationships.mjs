@@ -114,6 +114,21 @@ export async function verifyMusicFooter(browser,out,report){
   const gap=await page.evaluate(()=>{const links=document.querySelector('#noa-ecosystem-links');return document.querySelector('.noa-mobile-footer').getBoundingClientRect().top-links.getBoundingClientRect().bottom;});
   assert.equal(gap,24);
   report.fixtures.push({key:'music-footer',width,theme:theme.id,gap,actualMusicStyles:true,actualCrossLinks:true});
+  // The initially empty history must end at the same spacing as the loaded state.
+  for(const file of ['noa-points.css','noa-vip.css'])await page.addStyleTag({content:readFileSync('deploy/'+file,'utf8')});
+  for(const kind of ['points','vip']){
+   const template=readFileSync('deploy/noa-'+kind+'.php','utf8').match(/<section[^>]*class="np-history"[^>]*>[\s\S]*?<\/section>/)[0];
+   for(const state of ['loading','loaded','admin']){
+    await page.evaluate(({template,kind,state})=>{
+     document.body.className='noa-page';const main=document.querySelector('main');main.className='noa-points-page';main.innerHTML=template;
+     const orders=document.getElementById(kind+'-orders');orders.replaceChildren();
+     if(state!=='loading'){const p=document.createElement('p');p.textContent='로그인 후 구매 내역을 확인할 수 있어요.';orders.append(p);}
+     if(state==='admin'){const link=document.createElement('p');link.className='np-admin-link';link.innerHTML='<a href="/noa-payment-settings.php">결제 연동 설정</a>';main.append(link);}
+    },{template,kind,state});
+    await verifyFooterClearance(page,{path:kind+'-'+state+'-fixture',width,theme:theme.id},report);
+   }
+  }
+  report.fixtures.push({key:'wallet-endings',width,theme:theme.id,states:['loading','loaded','admin'],stores:['points','vip']});
   await context.close();
  }
  console.log('MEMBER_MUSIC_FOOTER_OK');

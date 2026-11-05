@@ -366,6 +366,8 @@ html.noa-shell-wide[data-noa-theme] body .noa-main>.noa-mobile-footer{margin:0}
 html.noa-shell-wide[data-noa-precision] body>main:has(+.noa-mobile-footer),
 html.noa-shell-wide[data-noa-precision] body>#noa-notification-page:has(+.noa-mobile-footer){padding-block-end:0!important;min-height:0}
 html.noa-member-ui :is(#points-orders,#vip-orders)>p:last-child{margin-block-end:0}
+html.noa-member-ui .np-history:has(>:is(#points-orders,#vip-orders):empty)>.np-section-head{margin-block-end:0}
+html.noa-member-ui .noa-points-page>.np-admin-link{margin-block-end:0}
 html.noa-member-ui body>main:has(+.noa-mobile-footer)>#noa-ecosystem-links{margin-block-end:0!important;padding-block-end:0!important}
 html.noa-shell-wide[data-noa-style] body>.noa-mobile-footer{padding-bottom:calc(var(--noa-nav-space,0px) + var(--noa-player-space,0px) + var(--noa-transfer-space,0px) + 24px)}
 html.noa-shell-wide[data-noa-precision].noa-g5 body:has(>.mbskin):has(>.noa-mobile-footer){padding-bottom:0}
