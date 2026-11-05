@@ -3,7 +3,7 @@ html.noa-member-ui{--member-unit:8px;--member-control:48px;--member-radius:4px;-
 html.noa-member-ui :is(main,#container,.mbskin,.new_win,.ec-dialog){min-inline-size:0}
 /* Form typography and geometry; exclude players, rich-text editor internals and authored content. */
 html.noa-member-ui :is(.mbskin,.new_win,#bo_w,#bo_sch,.bo_sch,#bo_vc_w,#sod_frm,#sod_bsk,#sod_inquiry,.noa-login-form,.creator-form,.ncea-form,.noa-gifts form,.ec-dialog form,.noa-community form) :is(input:not([type]),input[type=text],input[type=password],input[type=email],input[type=tel],input[type=url],input[type=number],input[type=search],input[type=date],select,textarea):not([hidden]){box-sizing:border-box;min-inline-size:0;max-inline-size:100%;min-block-size:var(--member-field-min,var(--member-control));height:auto;padding:11px 12px;border:1px solid var(--noa-line);border-radius:var(--member-radius);background:var(--noa-bg);color:var(--noa-text);font:400 var(--member-field)/1.5 var(--noa-font);box-shadow:none}
-html.noa-member-ui :is(.mbskin,.new_win,#bo_w,#bo_sch,.bo_sch,#bo_vc_w,#sod_frm,.noa-login-form,.creator-form,.ncea-form,.noa-gifts form,.ec-dialog form,.noa-community form) textarea{--member-field-min:144px;resize:vertical;line-height:1.75}
+html.noa-member-ui :is(.mbskin,.new_win,#bo_w,#bo_sch,.bo_sch,#bo_vc_w,#sod_frm,.noa-login-form,.creator-form,.ncea-form,.noa-gifts form,.ec-dialog form,.noa-community form) textarea:not([maxlength="20000"]){--member-field-min:144px;resize:vertical;line-height:1.75}
 html.noa-member-ui :is(.mbskin,.new_win,#bo_w,#bo_sch,.bo_sch,#bo_vc_w,#sod_frm,.creator-form,.ncea-form,.ec-dialog form) :is(input,textarea)::placeholder{color:var(--noa-muted);opacity:.8}
 html.noa-member-ui :is(.mbskin,.new_win,#bo_w,#bo_sch,.bo_sch,#bo_vc_w,#sod_frm,#sod_bsk,.noa-login-form,.creator-form,.ncea-form,.noa-gifts form,.ec-dialog form,.noa-community form) :is(input,select,textarea,button,a):focus-visible{outline:2px solid var(--noa-accent);outline-offset:3px}
 html.noa-member-ui :is(.mbskin,.new_win,#bo_w,#bo_sch,.bo_sch,#bo_vc_w,#sod_frm,.noa-login-form,.creator-form,.ncea-form,.ec-dialog form) :is(input,select,textarea):user-invalid{border-color:var(--noa-danger,#db6d6a)}
@@ -163,3 +163,9 @@ html.noa-member-ui #ecosystem .ec-tools select{font-size:16px!important}
 html.noa-member-ui .nld-search :is(input,select,button){min-height:48px;border-radius:4px}
 html.noa-member-ui .nld-search :is(input,select){font-size:16px;line-height:1.5}
 html.noa-member-ui .ec-dialog textarea[maxlength="20000"]{--member-field-min:clamp(200px,32vh,320px)}
+
+html.noa-member-ui.ny-native #sod_frm .noa-native-form-table textarea{min-height:144px!important}
+@media(min-width:761px){
+ html.noa-member-ui.ny-native #sod_frm .noa-native-form-table td :is(input.frm_input,select,textarea){margin:0 8px 8px 0;vertical-align:middle}
+ html.noa-member-ui.ny-native #sod_frm .noa-native-form-table td :is(input.frm_input:not([name*="zip"]),select,textarea){display:block;width:min(calc(100% - 8px),520px)!important}
+}
