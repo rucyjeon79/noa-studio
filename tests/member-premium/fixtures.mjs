@@ -7,6 +7,29 @@ const checkout=`<h1>주문 · 결제</h1><form id="sod_frm" action="/shop/orderf
 const register=`<h1>회원정보 수정</h1><section class="mbskin"><form id="fregisterform" action="/bbs/register_form_update.php" method="post"><input type="hidden" name="token" value="kept-member-token"><section><h2>계정 정보</h2><div class="form_01"><ul><li><label class="frm_label" for="reg_nick">닉네임</label><input id="reg_nick" name="mb_nick" class="frm_input" required value="별무리"><span class="frm_info">다른 회원에게 표시되는 이름입니다.</span></li><li><label class="frm_label" for="reg_email">이메일</label><input id="reg_email" name="mb_email" type="email" class="frm_input" required value="fixture@example.test"></li><li><label class="frm_label" for="reg_pass">새 비밀번호</label><input id="reg_pass" name="mb_password" type="password" class="frm_input" autocomplete="new-password"></li></ul></div></section><div class="btn_confirm"><button type="submit" class="btn_submit">정보 저장</button></div></form></section>`;
 const creator=`<h1>내 채널 작업실</h1><form class="creator-form" action="/noa-bridge/creator.php" method="post"><label>채널 이름<input name="title" required value="별무리의 음악 스튜디오"></label><label>채널 소개<textarea name="description">일상에 음악을 더합니다.</textarea></label><label>프로필 사진<input name="symbol" type="file" accept="image/*"></label><label class="creator-check"><input type="checkbox" name="rightsConfirmed" checked>콘텐츠의 권리를 확인했습니다.</label><div class="creator-actions"><button type="submit" class="noa-button">채널 저장</button><button type="button" class="noa-button">미리보기</button></div></form>`;
 export async function verifyFixtures(browser,phase,out,report){
+ // The native page must already be themed when all JavaScript is unavailable.
+ const firstPaint=JSON.parse(readFileSync(nativeRoot+'/first-paint.json','utf8'));
+ for(const width of [390,1440])for(const theme of design.themes){
+  const context=await browser.newContext({viewport:{width,height:900},javaScriptEnabled:false,serviceWorkers:'block'});
+  await context.route('**/*',r=>{const u=new URL(r.request().url());if(u.origin==='https://first-paint.fixture'&&/\.css$/.test(u.pathname))return r.fulfill({body:readFileSync('deploy'+u.pathname),contentType:'text/css'});return r.fulfill({body:'<html><body></body></html>',contentType:'text/html'});});
+  const page=await context.newPage();await page.goto('https://first-paint.fixture/');
+  for(const fixture of firstPaint){
+   const tokens=Object.entries(theme.tokens).map(([k,v])=>'--noa-'+k+':'+v).join(';');
+   const css=['noa-ui','noa-gnuboard','noa-youngcart-premium','noa-member-surfaces'].map(name=>`<link rel="stylesheet" href="/${name}.css">`).join('');
+   await page.setContent(fixture.html.replace('<html ',`<html style="${tokens}" data-noa-theme="${theme.id}" `).replace('</head>',css+'</head>'));
+   assert(await page.locator('html').evaluate((el,cls)=>el.classList.contains(cls),fixture.class));
+   assert.equal(await page.locator('#od_name').inputValue(),'입력 유지');
+   const field=fixture.class==='ny-native'?'#od_name':'#bo_w input';
+   assert(await page.locator(field).evaluate(el=>el.getBoundingClientRect().height>=48&&parseFloat(getComputedStyle(el).fontSize)>=16),'native controls styled without JavaScript');
+   if(fixture.class==='ny-native')assert.equal(await page.locator('#hd').isVisible(),false,'legacy shop chrome flashes before adapter');
+   if(fixture.class==='noa-g5')assert(await page.locator('#captcha_key').evaluate(el=>{
+    const s=getComputedStyle(el),l=c=>{const a=c.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4});return a[0]*.2126+a[1]*.7152+a[2]*.0722},a=l(s.color),b=l(s.backgroundColor);
+    return (Math.max(a,b)+.05)/(Math.min(a,b)+.05)>=4.5&&el.getBoundingClientRect().height>=44;
+   }),'native captcha has readable text in both palettes');
+   report.fixtures.push({key:'native-first-paint',path:fixture.path,width,theme:theme.id,javaScriptDisabled:true,formValuePreserved:true});
+  }
+  await context.close();
+ }
  for(const width of [320,390,768,1440]){
   const context=await browser.newContext({viewport:{width,height:900},serviceWorkers:'block',locale:'ko-KR'});context.setDefaultTimeout(15000);
   await context.route('**/*',r=>{const u=new URL(r.request().url());if(u.origin!=='https://member.fixture')return r.abort();if(u.pathname.startsWith('/noa-')&&/\.(css|js)$/.test(u.pathname)){return r.fulfill({body:readFileSync('deploy'+u.pathname),contentType:u.pathname.endsWith('.css')?'text/css':'text/javascript'});}return r.fulfill({body:'<!doctype html><html><body></body></html>',contentType:'text/html'});});
