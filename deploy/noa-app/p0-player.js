@@ -101,7 +101,7 @@ window.addEventListener('noa-track-selected',e=>{const r=e.detail?.record;if(!r|
 
 // The main player owns play intent; retry logic must not override pause/close/track changes.
 (()=>{
- if(!window.NoaPlaybackRecovery||typeof player==='undefined')return;
+ if(window.NoaNativeBridge||!window.NoaPlaybackRecovery||typeof player==='undefined')return;
  const recovery=window.NoaPlaybackRecovery.attach(player,{wanted:()=>pendingAutoplay&&!leavingPage&&!changingTrack,key:()=>selected?.dataset.key||'',status:message=>{status.textContent=message;}});
  window.addEventListener('noa-track-selected',()=>recovery.reset());
  window.addEventListener('online',()=>recovery.online());
