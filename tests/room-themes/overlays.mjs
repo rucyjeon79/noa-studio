@@ -45,10 +45,14 @@ try{
   assert((await tip.innerText()).includes(member?'1,234P':'비로그인'),'paused greeting survives longer than its original lifetime');
   await tip.locator('.ainoa-message-dismiss').click();
   await p.evaluate(()=>{const d=document.createElement('dialog');d.id='overlay-validation';d.style.cssText='box-sizing:border-box;width:min(420px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;padding:20px';d.innerHTML='<h2>입력 확인</h2><form><label>제목<input aria-label="검증 제목" required></label><button type="submit">저장</button></form>';d.querySelector('form').onsubmit=e=>e.preventDefault();document.body.append(d);d.showModal();});
+  const formBefore=await p.locator('#overlay-validation').boundingBox();
   await p.locator('#overlay-validation').getByRole('button',{name:'저장',exact:true}).click();await p.locator('#noa-voice-modal .ainoa-message').waitFor();
   assert.equal(await p.locator('#noa-ainoa').evaluate(e=>e.parentElement===document.body),true);
-  assert.equal(await p.locator('#noa-voice-modal').evaluate(e=>getComputedStyle(e).position),'relative','required feedback is in the form flow');
-  const flow=await p.locator('#overlay-validation').evaluate(d=>({formBottom:d.querySelector('form').getBoundingClientRect().bottom,messageTop:d.querySelector('#noa-voice-modal').getBoundingClientRect().top}));assert(flow.messageTop>=flow.formBottom+15,'feedback does not cover form controls');
+  assert.equal(await p.locator('#noa-voice-modal').evaluate(e=>getComputedStyle(e).position),'fixed','required feedback is independent of the popup');
+  const formAfter=await p.locator('#overlay-validation').boundingBox(),notice=await p.locator('#noa-voice-modal').boundingBox();
+  assert.deepEqual(formAfter,formBefore,'feedback does not resize or reposition the form');
+  assert(notice.y>=15&&notice.y<32&&notice.x>=15&&notice.x+notice.width<=width-15,'notice stays at the top of the viewport');
+  assert(await p.locator('#noa-voice-modal').evaluate(e=>e.matches(':popover-open')),'feedback is visible above the modal');
   ratios.validation=await contrast(p.locator('#noa-voice-modal .ainoa-message p'),'#noa-voice-modal .ainoa-message');
   await p.getByLabel('검증 제목',{exact:true}).fill('입력 유지 확인');assert.equal(await p.getByLabel('검증 제목',{exact:true}).inputValue(),'입력 유지 확인');
   await p.screenshot({path:out+'/validation-'+mode+'-'+width+'.png'});
@@ -57,7 +61,7 @@ try{
   await p.locator('#noa-ainoa .ainoa-message:not([hidden])').waitFor({state:'visible'});
   await p.locator('.ainoa-message').getByRole('button',{name:'AInoa 말풍선 닫기'}).click();
   assert.equal(await p.locator('#noa-ainoa').count(),1);assert.equal(await p.locator('.ainoa-tip').count(),1);assert.deepEqual(errors,[]);assert.deepEqual(writes,[],'presentation checks do not write account data');
-  results.push({phase,width,height,mode,member,ratios,queuedWelcome:true,pauseResume:true,inlineValidation:true});console.log('OVERLAY_READING_AND_ORDER_OK',JSON.stringify(results.at(-1)));await c.close();
+  results.push({phase,width,height,mode,member,ratios,queuedWelcome:true,pauseResume:true,floatingValidation:true});console.log('OVERLAY_READING_AND_ORDER_OK',JSON.stringify(results.at(-1)));await c.close();
  }
 }catch(e){console.error('OVERLAY_CHECK_FAILED',e);let i=0;for(const c of browser.contexts())for(const p of c.pages()){try{await p.screenshot({path:out+'/failure-'+i+'.png',fullPage:true,timeout:10000});writeFileSync(out+'/failure-'+i+'.html',await p.content());}catch{}i++;}throw e;}
 finally{await browser.close();writeFileSync(out+'/results.json',JSON.stringify(results,null,2));}
