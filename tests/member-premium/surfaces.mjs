@@ -54,6 +54,11 @@ try{
      if(phase!=='baseline')await auditRelationships(page,{path,width,theme},report);
      if(path==='/'&&await page.locator('#noa-listening').isVisible())await page.locator('#noa-listening').screenshot({path:out+'/listening-'+width+'-'+theme+'.jpg',type:'jpeg',quality:85});
      if(chosen.has(path))await page.screenshot({path:out+'/'+width+'-'+theme+'-'+path.replace(/[^a-z0-9]/gi,'_')+'.jpg',type:'jpeg',quality:82});
+     if(['/','/noa-music.php','/noa-youtube.php'].includes(path)&&await page.locator('.noa-footer-scene').isVisible()){
+      await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+      await page.screenshot({path:out+'/footer-'+width+'-'+theme+'-'+path.replace(/[^a-z0-9]/gi,'_')+'.jpg',type:'jpeg',quality:85});
+      await page.evaluate(()=>window.scrollTo(0,0));
+     }
     }
     console.log('MEMBER_SURFACE_OBSERVED',width,path,new URL(page.url()).pathname);
    }catch(e){report.errors.push({path,width,error:String(e)});}

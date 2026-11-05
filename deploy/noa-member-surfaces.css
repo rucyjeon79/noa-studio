@@ -377,7 +377,11 @@ html.noa-shell-wide[data-noa-theme] body .noa-footer-heading .noa-footer-themes 
 
 /* Shared interaction timing. No playback clocks, media transforms or form values change. */
 html.noa-member-ui{--noa-motion-press:150ms;--noa-motion-enter:240ms;--noa-motion-exit:160ms;--noa-motion-ease:cubic-bezier(.2,.8,.2,1)}
+@keyframes noa-member-content-in{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}
 @media(prefers-reduced-motion:no-preference){
+ @view-transition{navigation:auto}
+ ::view-transition-old(root),::view-transition-new(root){animation-duration:180ms}
+ #ainoa-conversation :is(.ainoa-conversation-message,.ainoa-conversation-content>*){animation:noa-member-content-in 200ms var(--noa-motion-ease) both}
  html.noa-member-ui :is(button,[role=button],a.noa-button,summary){transition:background-color var(--noa-motion-press) ease,color var(--noa-motion-press) ease,border-color var(--noa-motion-press) ease,box-shadow var(--noa-motion-press) ease,scale var(--noa-motion-press) var(--noa-motion-ease)}
  html.noa-member-ui :is(button,[role=button],a.noa-button,summary):active:not(:disabled){scale:.96}
  html.noa-member-ui :is(input,textarea,select){transition:border-color var(--noa-motion-press) ease,box-shadow var(--noa-motion-press) ease,background-color var(--noa-motion-enter) ease}
@@ -389,4 +393,4 @@ html.noa-member-ui{--noa-motion-press:150ms;--noa-motion-enter:240ms;--noa-motio
  html.noa-member-ui details::details-content{transition:content-visibility 200ms allow-discrete,opacity 200ms ease;opacity:0}
  html.noa-member-ui details[open]::details-content{opacity:1}
 }
-@media(prefers-reduced-motion:reduce){html.noa-member-ui :is(dialog,button,a,input,select,textarea,summary,.ainoa-panel,.ainoa-tip){animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media(prefers-reduced-motion:reduce){html.noa-member-ui :is(dialog,button,a,input,select,textarea,summary,.ainoa-panel,.ainoa-tip,.ainoa-conversation-message,.ainoa-conversation-content>*){animation:none!important;transition:none!important;scroll-behavior:auto!important}}
