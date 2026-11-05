@@ -67,6 +67,16 @@ function noa_policy_script_revision($html){
  }
  return $html;
 }
+/** Presentation assets for member pages, loaded after each existing skin. */
+function noa_member_surface_assets():array{
+ $dir=dirname(__DIR__);if(!is_file($dir.'/noa-member-surfaces.css'))$dir=__DIR__;
+ $assets=['css'=>'','js'=>''];
+ foreach(['css','js'] as $kind){$name='noa-member-surfaces.'.$kind;$file=$dir.'/'.$name;if(!is_file($file))continue;
+  $url='/'.$name.'?v='.hash_file('sha256',$file);
+  $assets[$kind]=$kind==='css'?'<link rel="stylesheet" href="'.$url.'">':'<script src="'.$url.'" defer></script>';
+ }
+ return $assets;
+}
 function noa_design_assets(){
  global $config;
  $path=parse_url($_SERVER['REQUEST_URI']??'',PHP_URL_PATH);
@@ -96,6 +106,7 @@ function noa_design_assets(){
  $ainoa.='<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="NOA STUDIO"><link rel="apple-touch-icon" href="/noa-assets/icon-180.png?v=original-symbol-1">';
  $starlight_file=dirname(__DIR__).'/noa-starlight.css';
  $starlight=is_file($starlight_file)?'<meta name="color-scheme" content="light dark"><link rel="stylesheet" href="/noa-starlight.css?v='.hash_file('sha256',$starlight_file).'">':'';
+ $member_assets=(!$workspace&&!str_starts_with($path,'/adm/'))?noa_member_surface_assets():['css'=>'','js'=>''];
  // MY stays in primary navigation; AInoa keeps its existing floating control.
  // Standalone views do not call GnuBoard html_end(); inject only completed HTML.
  if(!$native){
@@ -104,7 +115,7 @@ function noa_design_assets(){
    if(!str_starts_with($path,'/noa-app/jukebox/'))$assets='<link rel="stylesheet" href="/noa-ui.css?v=20261022-recovery2">'.$assets;
    $assets.='<script src="/noa-ui.js?v=20261024-approved-ui" data-noa-theme-only defer></script>';
   }
-  ob_start(static function($html)use($assets,$path,$starlight){
+  ob_start(static function($html)use($assets,$path,$starlight,$member_assets){
    $code=http_response_code();
    if(($code>=300&&$code<400)||stripos($html,'</head>')===false||!preg_match('~^\s*(?:<!doctype\s+html\b|<html\b)~i',$html))return $html;
    $html=noa_policy_script_revision($html);
@@ -120,12 +131,14 @@ function noa_design_assets(){
     require_once dirname(__DIR__).'/noa-workspace.php';$help=null;foreach(noa_workspace_groups() as $group)foreach($group['routes'] as $route)if(parse_url($route[3],PHP_URL_PATH)===$path&&!str_contains($route[3],'#')&&!str_contains($route[3],'?'))$help=$route;
     if($help&&!in_array($path,['/noa-library.php','/noa-music.php','/noa-youtube.php'],true)){$guide='<aside class="noa-workspace-guide"><a href="/noa-library.php">← 최고관리자 작업실</a><p>'.htmlspecialchars($help[2],ENT_QUOTES,'UTF-8').'</p></aside>';$html=preg_replace('~(<main\b[^>]*>)~i','$1'.$guide,$html,1);}
    }
-   return str_ireplace('</head>',$assets.$starlight.'</head>',$html);
+   return str_ireplace('</head>',$assets.$starlight.$member_assets['css'].$member_assets['js'].'</head>',$html);
   });
   return;
  }
  add_javascript($ainoa,1001);
  if($starlight!=='')add_stylesheet($starlight,1100);
+ if($member_assets['css']!=='')add_stylesheet($member_assets['css'],1200);
+ if($member_assets['js']!=='')add_javascript($member_assets['js'],1100);
  // Native skins use GnuBoard's ordered asset registration.
  if(!str_starts_with($path,'/adm/'))add_stylesheet('<link rel="stylesheet" href="/noa-policy-20261024.css?v=20261024-approved-ui">',999);
  $config['cf_title']='NOA STUDIO';

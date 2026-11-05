@@ -1,13 +1,14 @@
 import {chromium} from 'playwright';
 import {readFileSync,mkdirSync,writeFileSync,existsSync} from 'node:fs';
 import assert from 'node:assert/strict';
+import {verifyFixtures} from './fixtures.mjs';
 const phase=process.env.NOA_MEMBER_PHASE||'baseline',base='https://noastudio.ai.kr',out='member-surface-proof/'+phase;
 mkdirSync(out,{recursive:true});
 const paths=['/','/noa-music.php','/noa-youtube.php','/noa-world.php','/noa-lounge.php','/noa-lounge.php?board=free','/noa-creator-lab.php','/noa-shop.php','/noa-youngcart.php','/noa-points.php','/noa-vip.php','/noa-membership.php','/noa-my.php','/noa-creator.php','/noa-gifts.php','/noa-subscription.php','/noa-notifications.php','/noa-settings.php','/noa-login.php','/noa-about.php','/noa-terms.php','/noa-privacy.php','/bbs/login.php?legacy=1','/bbs/register.php','/bbs/password_lost.php','/bbs/search.php','/bbs/faq.php','/bbs/board.php?bo_table=free','/bbs/write.php?bo_table=free','/shop/cart.php','/shop/orderinquiry.php','/shop/orderform.php'];
 const chosen=new Set(['/noa-youngcart.php','/noa-shop.php','/noa-lounge.php','/noa-login.php','/bbs/register.php','/bbs/password_lost.php','/shop/cart.php','/shop/orderinquiry.php','/bbs/search.php']);
 const report={phase,public:[],fixtures:[],errors:[],writes:0};
 const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
-export function dummy(){}
+
 try{
  await Promise.all([390,1440].map(async width=>{
   const context=await browser.newContext({viewport:{width,height:900},locale:'ko-KR',serviceWorkers:'block',reducedMotion:'reduce'});
@@ -47,6 +48,7 @@ try{
   }
   await context.close();
  }));
+ if(phase!=='baseline')await verifyFixtures(browser,phase,out,report);
 }finally{
  writeFileSync(out+'/report.json',JSON.stringify(report,null,2));await browser.close();
 }
