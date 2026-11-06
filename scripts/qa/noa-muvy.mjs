@@ -7,7 +7,7 @@ const server=spawn('php',['-S','127.0.0.1:8077','-t','/tmp/noa-muvy-fixture/html
 try{
  const contexts={};for(const role of ['guest','member','staff','admin']){contexts[role]=await browser.newContext({serviceWorkers:'block'});await contexts[role].addCookies([{name:'qa_role',value:role,url:base}]);}
  let ready=false;for(let i=0;i<50&&!ready;i++){try{ready=(await contexts.guest.request.get(api)).status()===403;}catch{}if(!ready)await new Promise(r=>setTimeout(r,100));}assert(ready);
- for(const role of ['guest','member','staff'])for(const path of ['/noa-ai-lab.php','/noa-bridge/muvy.php','/noa-muvy-panel.php']){const r=await contexts[role].request.get(base+path);assert.equal(r.status(),403);assert(!(await r.text()).includes('mu-key'));}
+ for(const role of ['guest','member','staff'])for(const path of ['/noa-ai-lab.php','/noa-bridge/muvy.php','/noa-muvy-panel.php']){const r=await contexts[role].request.get(base+path);const memberLab=role!=='guest'&&path==='/noa-ai-lab.php';assert.equal(r.status(),memberLab?200:403);const html=await r.text();assert(!html.includes('mu-key'));if(memberLab)assert(html.includes('lab-chat-open'));}
  const status=await(await contexts.admin.request.get(api)).json();assert.equal(status.config.configured,false);assert.equal(status.config.enabled,false);const csrf=status.csrf;
  const post=async data=>{const r=await contexts.admin.request.post(api,{headers:{Origin:base,'X-NOA-CSRF':csrf},data});return{status:r.status(),body:await r.json()};};
  assert.equal((await contexts.admin.request.post(api,{data:{action:'save'}})).status(),403);assert.equal((await contexts.admin.request.post(api,{headers:{Origin:'https://other.example','X-NOA-CSRF':csrf},data:{action:'save'}})).status(),403);
