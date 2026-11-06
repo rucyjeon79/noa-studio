@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {readFileSync, existsSync, mkdirSync} = require('node:fs');
+const {existsSync, mkdirSync} = require('node:fs');
 const path = require('node:path');
 const {chromium} = require('playwright');
 const fixture = process.argv[2];
@@ -19,10 +19,11 @@ async function main() {
         const module = url.pathname.match(/^\/noa-app\/(taxonomy|popularity|database|jukebox)\/$/)?.[1];
         if (module && route.request().method() === 'GET') return route.fulfill({path: path.join(fixture, module + '.html'), contentType: 'text/html; charset=utf-8'});
         if (module) {
-          const data = {ok: true, latest: null, policy: {revision: 1, values: {}}, categories: [], rules: [], history: [], productionRules: [], productionHistory: [], relations: [], review: [], logs: [], counts: [{name:'사연곡',songs:48}, {name:'커버곡',songs:37}]};
+          const data = {ok: true, latest: null, policy: {revision: 1, values: {}}, categories: [{category_id: 'story', name: '사연곡', enabled: 1}], rules: [], history: [], productionRules: [], productionHistory: [], relations: [], review: [], logs: [], counts: [{name:'사연곡',songs:48}, {name:'커버곡',songs:37}]};
           return route.fulfill({json: data});
         }
         if (url.pathname === '/noa-bridge/ui-preferences.php') return route.fulfill({json: {member: true, settings: {theme,language:'ko',design:'ios',radius:'soft'}, revision: 1}});
+        if (url.pathname === '/noa-assets/papa-logo.png') return route.fulfill({path: 'public/papa-logo.png'});
         const file = path.join('deploy', url.pathname);
         if (/\.(?:css|js|png|woff2|json)$/.test(file) && existsSync(file)) return route.fulfill({path: file});
         return route.fulfill({json: {member: true, ok: true}});
@@ -32,7 +33,7 @@ async function main() {
         await page.goto('https://noa.test/noa-app/' + module + '/');
         await page.waitForFunction(t => document.documentElement.dataset.noaTheme === t,theme);
         await page.locator('#noa-nav-account').waitFor();
-        if (module === 'taxonomy') await page.getByText('48곡', {exact:true}).waitFor();
+        if (module === 'taxonomy') await page.getByText('저장된 자료 연결 완료', {exact:true}).waitFor();
         for (const width of [320,360,390,430,768,1280]) {
           await page.setViewportSize({width,height:850});
           const state = await page.evaluate(() => {
@@ -61,6 +62,7 @@ async function main() {
               assert(b.height >= 44 && Math.abs(b.width-state.nav[0].width)<1,trace);
               if (i%2) assert(b.top === state.nav[i-1].top && b.left >= state.nav[i-1].right + 4,trace);
             }
+            assert(Math.abs(state.nav[0].left-state.actions[0].left)<1 && Math.abs(state.nav[1].right-state.actions.at(-1).right)<1,trace);
             const [a,b] = state.actions.slice(-2);
             assert(a.top === b.top && a.right < b.left && Math.abs(a.width-b.width)<1,trace);
             if (state.metrics.length) assert(Math.abs(state.metrics[0].width-state.metrics[1].width)<1 && state.metrics[0].top===state.metrics[1].top,trace);
