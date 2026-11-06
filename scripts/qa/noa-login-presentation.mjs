@@ -24,7 +24,7 @@ try {
     }
     // Exercise existing destinations without authenticating, creating accounts or submitting credentials.
     const destinations=[];
-    await context.route(base+'/bbs/login.php?provider=**',async route=>{destinations.push(route.request().url());await route.fulfill({contentType:'text/html',body:'<p>Provider destination verified</p>'});});
+    await context.route(base+'/bbs/login.php?provider=**',async route=>{destinations.push(route.request().url());await route.fulfill({status:204});});
     const returnTo='/noa-my.php?tab=gifts&from=login';
     await page.goto(base+'/noa-login.php?url='+encodeURIComponent(returnTo),{waitUntil:'networkidle'});
     await page.waitForFunction(()=>window.NoaUI?.getState()&&document.querySelector('#noa-account-bar'));
@@ -32,7 +32,8 @@ try {
     const audit=await page.evaluate(()=>{
       const b=n=>{const r=n.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom};};
       const buttons=[...document.querySelectorAll('#noa-login .noa-social-provider')];
-      return {buttons:buttons.map(n=>({box:b(n),bg:getComputedStyle(n).backgroundColor,color:getComputedStyle(n).color,disabled:n.disabled||false,icons:n.querySelectorAll('img,svg').length,outline:getComputedStyle(n).outlineStyle})),main:b(document.querySelector('#noa-login')),rail:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--noa-rail')),form:b(document.querySelector('.noa-login-form')),overflow:document.documentElement.scrollWidth>innerWidth+1};
+      const body=document.body.getBoundingClientRect(),style=getComputedStyle(document.body);
+      return {buttons:buttons.map(n=>({box:b(n),bg:getComputedStyle(n).backgroundColor,color:getComputedStyle(n).color,disabled:n.disabled||false,icons:n.querySelectorAll('img,svg').length,outline:getComputedStyle(n).outlineStyle})),main:b(document.querySelector('#noa-login')),contentLeft:body.left+parseFloat(style.paddingLeft),contentRight:body.right-parseFloat(style.paddingRight),form:b(document.querySelector('.noa-login-form')),overflow:document.documentElement.scrollWidth>innerWidth+1};
     });
     if(audit.overflow){
       const overflow=await page.evaluate(()=>[...document.body.querySelectorAll('*')].filter(n=>n.getBoundingClientRect().right>innerWidth+1).map(n=>({tag:n.tagName,id:n.id,cls:n.className,width:getComputedStyle(n).width,max:getComputedStyle(n).maxWidth,left:n.getBoundingClientRect().left,right:n.getBoundingClientRect().right})).slice(0,20));
@@ -43,11 +44,11 @@ try {
     assert.equal(audit.buttons[0].bg,'rgb(255, 255, 255)');assert.equal(audit.buttons[1].bg,'rgb(254, 229, 0)');
     const [g,k]=audit.buttons;assert.equal(g.box.width,k.box.width);assert.equal(g.box.x,k.box.x);assert.equal(g.box.height,k.box.height);
     assert(g.box.height>=52);assert(k.box.y-g.box.bottom>=11);assert(k.box.bottom<audit.form.y);assert(k.box.bottom<900);
-    assert(audit.main.width<=560);if(width>760)assert(Math.abs((g.box.x-audit.rail)-(width-g.box.x-g.box.width))<2,'login not centered beside navigation');
+    assert(audit.main.width<=560);if(width>760)assert(Math.abs((g.box.x-audit.contentLeft)-(audit.contentRight-g.box.x-g.box.width))<2,'login not centered beside navigation '+JSON.stringify(audit));
     assert(audit.buttons.every(b=>b.icons===1&&b.disabled===(state==='disabled')));
     assert.equal(await page.locator('form[name=flogin]').getAttribute('action'),'/bbs/login_check.php');
     assert.equal(await page.locator('form[name=flogin]').getAttribute('method'),'post');
-    assert.equal(await page.locator('input[name=url]').inputValue(),'/');
+    assert.equal(await page.locator('#noa-login form[name=flogin] input[name=url]').inputValue(),'/');
     assert.equal(await page.locator('#login_pw').getAttribute('autocomplete'),'current-password');
     if(state==='ready') {
       for(const provider of ['google','kakao']) {
@@ -62,8 +63,11 @@ try {
     await page.screenshot({path:out+'/'+state+'-'+width+'.png',fullPage:true});
     if(state==='ready') {
       for(const provider of ['google','kakao']) {
-        await page.locator('.noa-social-'+provider).click();await page.waitForURL('**/bbs/login.php?provider=**');
-        await page.goBack({waitUntil:'networkidle'});
+        const [request]=await Promise.all([
+          page.waitForRequest(r=>new URL(r.url()).pathname==='/bbs/login.php'&&r.isNavigationRequest()),
+          page.locator('#noa-login .noa-social-'+provider).click()
+        ]);
+        assert.equal(new URL(request.url()).searchParams.get('provider').toLowerCase(),provider);
       }
       assert.equal(destinations.length,2);
     }

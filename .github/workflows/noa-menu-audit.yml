@@ -40,6 +40,7 @@ jobs:
           node --check deploy/noa-account.js
           node --check deploy/noa-ui.js
           node --test tests/starlight/navigation.test.mjs
+          php tests/login-presentation/render.php
           php -l deploy/noa-sitemap.php
           php tests/sitemap/registry_test.php
           mkdir -p "$RUNNER_TEMP/drawer"
@@ -68,6 +69,7 @@ jobs:
           python -m pip install 'paramiko>=3,<5'
           python scripts/qa/noa-qa-font.py
           timeout 90s npm install --prefix "$RUNNER_TEMP/drawer" --no-save --ignore-scripts --package-lock=false --no-audit --no-fund --fetch-timeout=20000 --fetch-retries=1 playwright@1.56.1
+          php tests/login-presentation/render.php
           php -l deploy/noa-sitemap.php
           php tests/sitemap/registry_test.php
           php tests/sitemap/drawer_access.php "$RUNNER_TEMP/drawer"
