@@ -44,9 +44,16 @@ function nq_claim(PDO $db,?string $owner=null,bool $driveCapable=false):array{
 function nq_owned(PDO $db,array $input):array{
  $q=$db->prepare("SELECT * FROM noa_jukebox_audio_jobs WHERE id=? AND upload_id=? AND lease=? AND status IN ('analyzing','processing','verifying') FOR UPDATE");$q->execute([(int)($input['job_id']??0),(string)($input['id']??''),(string)($input['lease']??'')]);$j=$q->fetch(PDO::FETCH_ASSOC);if(!$j)throw new DomainException('upload_lease_changed');if(!$j['lease_until']||strtotime($j['lease_until'])<time()){$r=$db->query("SELECT owner,run_id FROM noa_jukebox_runtime WHERE id=1 AND state='running' AND last_seen>CURRENT_TIMESTAMP()-INTERVAL 2 MINUTE")->fetch(PDO::FETCH_ASSOC);if(!$r||empty($input['worker_owner'])||!$r['owner']||!hash_equals($r['owner'],$input['worker_owner'])||$r['run_id']!==$j['worker_run_id'])throw new DomainException('upload_lease_changed');$db->prepare("UPDATE noa_jukebox_audio_jobs SET lease_until=CURRENT_TIMESTAMP()+INTERVAL 10 MINUTE WHERE id=?")->execute([$j['id']]);$db->prepare("UPDATE noa_jukebox_uploads SET lease_until=CURRENT_TIMESTAMP()+INTERVAL 10 MINUTE WHERE id=?")->execute([$j['upload_id']]);}return $j;
 }
+/** Single and batch requests use the same limits and source/retry policy. */
+function nq_retry_problem(array $u, ?array $job): ?string {
+ if ($u['status'] !== 'failed' || !nu_source_exists($u)) return 'reselect_source_file';
+ if (!$job || (int)$job['attempt'] >= NQ_MAX_ATTEMPTS) return 'retry_limit_reselect_source';
+ $allowed = ['worker_lease_expired','upload_processing_failed','hosting_storage_insufficient','cover_copy_failed','processing_state_changed_or_network_error'];
+ return in_array($job['error'], $allowed, true) ? null : 'non_retryable_reselect_source';
+}
 function nq_retry(PDO $db,string $id):void{
- nq_atomic($db,function()use($db,$id){$u=nu_row($db,$id);$j=nq_latest($db,$id);if($u['status']!=='failed'||!nu_source_exists($u))throw new DomainException('reselect_source_file');if(!$j||(int)$j['attempt']>=NQ_MAX_ATTEMPTS)throw new DomainException('retry_limit_reselect_source');
-  if(!in_array($j['error'],['worker_lease_expired','upload_processing_failed','hosting_storage_insufficient','cover_copy_failed','processing_state_changed_or_network_error'],true))throw new DomainException('non_retryable_reselect_source');
+ nq_atomic($db,function()use($db,$id){$u=nu_row($db,$id);$j=nq_latest($db,$id);
+  $problem=nq_retry_problem($u,$j);if($problem!==null)throw new DomainException($problem);
   $q=$db->prepare("SELECT id FROM noa_jukebox_uploads WHERE song_key=? AND id<>? AND status IN ('uploading','queued','retrying','analyzing','processing','verifying') LIMIT 1");$q->execute([$u['song_key'],$id]);if($q->fetchColumn())throw new DomainException('another_upload_is_active');nq_insert($db,$u,'retrying',(int)$j['attempt']+1,(int)$j['id']);
  });
  nw_after_enqueue();

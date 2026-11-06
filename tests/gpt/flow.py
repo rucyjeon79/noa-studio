@@ -41,14 +41,37 @@ with tempfile.TemporaryDirectory() as tmp:
     (bridge/"taxonomy-store.php").write_text("""<?php
     function nt_effective_rules($db,$genre){return ['common'=>['layout'=>'common-layout'],'genre'=>['style'=>$genre.'-style'],'principleZero'=>[]];}
     """)
+    # SQLite lacks JSON_TABLE. Substitute columns from the small fixture relation;
+    # production MySQL exercises the full projection in the creator/browser suite.
+    fixture_core = Path("bridge/channel-batch-ai.php").read_text()
+    first = fixture_core.index('        $q = $db->prepare("SELECT $projection')
+    last = fixture_core.index('        $q->execute($chunk);', first)
+    fixture_core = fixture_core[:first] + """        $q=$db->prepare("SELECT k AS doc_key,'single' AS kind,revision,
+        owner AS owner_id,'kpop-original' AS genre,1 AS ep,NULL AS trash,title AS document_title,
+        NULL AS display_title,NULL AS confirmed_title, youtubeTitle<>'' AS has_youtubeTitle
+        FROM batch_song WHERE k IN ($params)");
+""" + fixture_core[last:]
+    (bridge/"channel-batch-ai.php").write_text(fixture_core)
     (bridge/"sound-core.php").touch()
     (bridge/"inline-edit.php").write_text("""<?php
     function nie_resolve($db,$q){$r=$db->query('SELECT title,revision FROM song')->fetch();
+    if(str_starts_with($q['key']??'','batch:')){
+        $st=$db->prepare('SELECT * FROM batch_song WHERE k=?');$st->execute([$q['key']]);$b=$st->fetch();
+        return ['writeKey'=>$b['k'],'revision'=>(int)$b['revision'],'kind'=>'single','context'=>['genre'=>'kpop-original'],
+            'payload'=>['ownerId'=>$b['owner']],'fields'=>['title'=>$b['title'],'youtubeTitle'=>$b['youtubeTitle']],'packageType'=>'original'];
+    }
     return ['writeKey'=>'song:1','fields'=>['title'=>$r['title'],'description'=>'Stale copy from another campaign'],'kind'=>'single','context'=>['genre'=>'your-story'],'payload'=>[],
     'revision'=>(int)$r['revision'],'packageType'=>(($q['key']??'')==='ep-test'?'ep':'original')];}
+    function nup_type($d,$kind){return 'original';}
+    function nup_text($d,$keys){foreach($keys as $k)if(!empty($d[$k]))return $d[$k];return '';}
     function nup_patch($old,$kind,$patch){return $patch;}
     function nup_validate_classification(...$args){}
-    function nup_store($db,$key,$kind,$p,$rev,$actor){$q=$db->prepare('UPDATE song SET title=COALESCE(?,title),revision=revision+1 WHERE revision=?');$q->execute([$p['title']??null,$rev]);if(!$q->rowCount())throw new DomainException('revision_conflict');return $rev+1;}
+    function nup_store($db,$key,$kind,$p,$rev,$actor){
+        if(str_starts_with($key,'batch:')){
+            $q=$db->prepare('UPDATE batch_song SET youtubeTitle=?,revision=revision+1 WHERE k=? AND revision=?');
+            $q->execute([$p['youtubeTitle'],$key,$rev]);if(!$q->rowCount())throw new DomainException('revision_conflict');return $rev+1;
+        }
+        $q=$db->prepare('UPDATE song SET title=COALESCE(?,title),revision=revision+1 WHERE revision=?');$q->execute([$p['title']??null,$rev]);if(!$q->rowCount())throw new DomainException('revision_conflict');return $rev+1;}
     function nup_snapshot(...$args){}
     """)
     with socket.socket() as s:
@@ -140,6 +163,55 @@ with tempfile.TemporaryDirectory() as tmp:
         call('save',{'id':genre_batch['id'],'text':json.dumps(values)},key=worker,status=409)
         values['geminiPrompt']='Render the main title “장르 제목”.'
         assert call('save',{'id':genre_batch['id'],'text':json.dumps(values)},key=worker)['revision']==6
+        import sqlite3
+        db = sqlite3.connect(Path(tmp)/'test.sqlite')
+        db.execute('CREATE TABLE noa_documents(doc_key,payload,kind)')
+        db.execute('CREATE TABLE batch_song(k TEXT PRIMARY KEY,owner,title,youtubeTitle,revision INTEGER)')
+        db.executemany("INSERT INTO batch_song VALUES (?,?,'Same title',?,1)", [
+            ('batch:a','test-owner',''),('batch:b','test-owner',''),('batch:c','test-owner','Protected'),
+            ('batch:x','somebody-else','')])
+        db.commit()
+        state_path = Path(tmp)/'noa-ai-lab/gpt-action/state.json'
+        def active():
+            return json.loads(state_path.read_text())['batch']['job']['id']
+        selection={'keys':['batch:a','batch:b','batch:c','batch:a'],'fields':['youtubeTitle'],'replace':False,'requestId':'1'*32}
+        call('batchStart',selection,status=403)
+        call('batchPreview',{**selection,'keys':['batch:a','batch:x']},admin=True,status=409)
+        preview=call('batchPreview',selection,admin=True)
+        assert (preview['eligible'],preview['skipped']) == (2,1)
+        assert call('batchStatus',{},admin=True)['batch'] is None
+        # Stub outbound dispatch, but run real callbacks and SQL commits.
+        target.write_text(target.read_text().replace('$dispatchStatus = n80_song_dispatch($dispatchBatch, $dispatchToken);','$dispatchStatus = 204;'))
+        receipt=call('batchStart',selection,admin=True)['batch']
+        assert [item['status'] for item in receipt['items']]==['queued','queued','skipped']
+        assert call('batchStart',selection,admin=True)['batch']==receipt
+        call('batchStart',{**selection,'fields':['geminiPrompt']},admin=True,status=409)
+        call('start',{**one_tap,'revision':6},admin=True,status=409)
+        first=active()
+        assert call('workerPoll',{'id':first},key=worker)['id']==first
+        assert call('batchStatus',{},admin=True)['batch']['items'][0]['status']=='running'
+        assert call('read',key=worker)['id']==first
+        call('workerFail',{'id':first},key=worker)
+        second=active()
+        assert second!=first
+        assert call('workerPoll',{'id':second},key=worker)['id']==second
+        result={'id':second,'text':'{"youtubeTitle":"새 제목"}'}
+        assert call('save',result,key=worker)['saved'] and call('save',result,key=worker)['saved']
+        assert [i['status'] for i in call('batchStatus',{},admin=True)['batch']['items']]==['failed','done','skipped']
+        repeated={'id':receipt['id'],'requestId':'2'*32}
+        call('batchRetry',repeated,admin=True)
+        retry_id=active()
+        assert retry_id!=first
+        call('batchRetry',repeated,admin=True)
+        assert active()==retry_id
+        call('workerPoll',{'id':retry_id},key=worker)
+        assert call('read',key=worker)['id']==retry_id
+        db.execute("UPDATE batch_song SET youtubeTitle='Edited manually',revision=2 WHERE k='batch:a'")
+        db.commit()
+        call('save',{**result,'id':retry_id},key=worker,status=409)
+        call('workerFail',{'id':retry_id},key=worker)
+        assert db.execute('SELECT k,youtubeTitle FROM batch_song ORDER BY k').fetchall()==[
+            ('batch:a','Edited manually'),('batch:b','새 제목'),('batch:c','Protected'),('batch:x','')]
         call('workerDisable',{},admin=True)
         call('workerPoll',{},key=worker,status=401)
         print('PASS: authenticated single-field save, overwrite consent, stale revision, idempotent retry and key revocation')

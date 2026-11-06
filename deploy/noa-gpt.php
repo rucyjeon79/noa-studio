@@ -28,8 +28,9 @@ try {
     $body = [];
     if ($method === 'POST') {
         if (strtolower(trim(explode(';', $_SERVER['CONTENT_TYPE'] ?? '')[0])) !== 'application/json') reply(415, ['error'=>'json_required']);
-        $raw = file_get_contents('php://input', false, null, 0, 64001);
-        if (strlen($raw) > 64000) reply(413, ['error'=>'too_large']);
+        $maxBytes = in_array($op, ['batchPreview','batchStart'], true) ? 600000 : 64000;
+        $raw = file_get_contents('php://input', false, null, 0, $maxBytes+1);
+        if (strlen($raw) > $maxBytes) reply(413, ['error'=>'too_large']);
         $body = json_decode($raw, true, 16, JSON_THROW_ON_ERROR);
         if (!is_array($body)) reply(400, ['error'=>'invalid_request']);
     }
@@ -58,14 +59,39 @@ try {
         reply(200,['ok'=>true]+noa_plugin_records($op,$body,$state['owner']));
     }
     $before = $state;
-    $job = $state['job'] ?? [];
-    $valid = ($job['expires'] ?? 0) > time();
     $out = [];
     $dispatchToken = trim((string)getenv('NOA_GITHUB_DISPATCH_TOKEN'));
     if ($dispatchToken === '') $dispatchToken = (string)($state['dispatchToken'] ?? '');
     $hosted = $dispatchToken !== '' && isset($state['workerHash']);
     $workerReady = $hosted || ($state['workerSeen'] ?? 0) > time()-45;
+    $batchApi = in_array($op, ['batchPreview','batchStart','batchStatus','batchRetry'], true);
+    $hasBatch = isset($state['batch']);
+    if ($batchApi || $hasBatch) require_once __DIR__.'/noa-bridge/channel-batch-ai.php';
+    $actor = (string)($member['mb_id'] ?? '');
+    if ($batchApi && ($config['cf_admin'] ?? '') !== $actor) reply(403, ['error'=>'admin_required']);
+    if ($batchApi && $hasBatch && $state['batch']['owner'] !== $actor) reply(403, ['error'=>'batch_owner']);
+    $batchJob = $state['batch']['job'] ?? [];
+    $batchWorker = $isWorker && $batchJob && ($op === 'read' || ($body['id'] ?? '') === $batchJob['id']);
+    $job = $batchWorker ? $batchJob : ($state['job'] ?? []);
+    $valid = ($job['expires'] ?? 0) > time();
+    $advance = false;
+    if ($batchJob && in_array($op, ['workerDisable','workerPair'], true)) reply(409,['error'=>'batch_busy']);
     switch ($op) {
+    case 'batchPreview':
+        $items = ncbai_items(noa_bridge_pdo(), $actor, ncbai_selection($body));
+        $eligible = count(array_filter($items, static fn($item)=>$item['status'] === 'queued'));
+        reply(200, ['ok'=>true, 'eligible'=>$eligible, 'skipped'=>count($items)-$eligible]);
+    case 'batchStatus':
+        if ($batchJob && $batchJob['expires'] <= time()) {
+            ncbai_recover_item($state['batch'], 'worker_timeout');
+            $advance = true;
+        }
+        break;
+    case 'batchStart':
+    case 'batchRetry':
+        ncbai_request($state, $op, $body, $actor, $hosted);
+        $advance = true;
+        break;
     case 'workerDisable':
         unset($state['workerHash'],$state['workerSeen']);
         if (!empty($job['worker'])) unset($state['job']);
@@ -83,6 +109,32 @@ try {
         $out = ['key'=>$key];
         break;
     case 'workerPoll':
+        if ($batchWorker) {
+            if (!$valid || isset($job['claimed'])) break;
+            // Re-check the canonical editor projection, including values promoted from legacy records.
+            $db = noa_bridge_pdo();
+            try {
+                $record = nie_resolve($db, $job['selector']);
+                if ($record['writeKey'] !== $job['key'] || !empty($record['payload']['_noaTrash'])
+                    || ($record['payload']['ownerId'] ?? null) !== $state['batch']['owner']) throw new DomainException('song_changed');
+                if ($record['revision'] !== $job['revision']) throw new DomainException('revision_conflict');
+                $rules = noa_generation_rules($db, (string)$record['context']['genre'], $state['batch']['owner']);
+                $targets = ncbai_targets($job['targets'], $state['batch']['replace'], $record['packageType'], $record['fields'], $rules);
+                if (!$targets) {
+                    ncbai_finish($state['batch'], 'skipped');
+                    $advance = true;
+                } else {
+                    $state['batch']['job']['targets'] = $targets;
+                    $state['batch']['job']['claimed'] = time();
+                    $state['batch']['items'][$state['batch']['index']]['status'] = 'running';
+                    $out = ['id'=>$job['id']];
+                }
+            } catch (DomainException $e) {
+                ncbai_finish($state['batch'], 'failed', $e->getMessage());
+                $advance = true;
+            }
+            break;
+        }
         $state['workerSeen'] = time();
         $pending = $valid && !empty($job['worker']) && !isset($job['saved']) && !isset($job['failed']);
         if ($pending && !empty($job['hosted']) && ($body['id'] ?? '') !== $job['id']) reply(409,['error'=>'task_replaced']);
@@ -92,6 +144,11 @@ try {
         }
         break;
     case 'workerFail':
+        if ($batchWorker) {
+            ncbai_recover_item($state['batch'], 'generation_failed');
+            $advance = true;
+            break;
+        }
         if (!$valid || empty($job['worker']) || ($body['id'] ?? '') !== $job['id']) reply(409,['error'=>'task_replaced']);
         if (!isset($job['saved'])) $state['job']['failed'] = true;
         break;
@@ -119,6 +176,7 @@ try {
         break;
     case 'start':
         $useWorker = ($body['worker'] ?? false) === true;
+        if ($useWorker && $batchJob) reply(409,['error'=>'batch_busy']);
         if ($useWorker && !$workerReady) reply(503,['error'=>'worker_offline']);
         if ((!$useWorker && empty($state['url']) && empty($state['pluginEnabled'])) || ($state['owner'] ?? '') !== $member['mb_id']) reply(409,['error'=>'setup_required']);
         $selector = $body['selector'] ?? [];
@@ -147,6 +205,15 @@ try {
         break;
     case 'read':
     case 'save':
+        if ($isWorker && $op === 'save' && $hasBatch && !$batchWorker) {
+            foreach ($state['batch']['items'] as $item) {
+                if ($item['status'] !== 'done' || ($item['task'] ?? '') !== ($body['id'] ?? null)) continue;
+                $receipt = ncbai_receipt(noa_bridge_pdo(), $item['task']);
+                $digest = hash('sha256', json_encode([$item['key'],'publishSet',$body['text'] ?? null], JSON_THROW_ON_ERROR));
+                if (!$receipt || $receipt['doc_key'] !== $item['key'] || !hash_equals($receipt['request_hash'],$digest)) reply(409,['error'=>'already_saved']);
+                reply(200, ['ok'=>true, 'saved'=>true, 'revision'=>(int)$receipt['revision'], 'field'=>'publishSet']);
+            }
+        }
         if (!$valid || ($op==='save' && ($body['id'] ?? '') !== $job['id'])) reply(409,['error'=>'select_song_again']);
         if ($isWorker !== !empty($job['worker'])) reply(409,['error'=>'wrong_worker']);
         if (!empty($job['worker']) && (!$isWorker || empty($job['claimed']) || isset($job['failed']))) reply(409,['error'=>'worker_required']);
@@ -154,6 +221,7 @@ try {
         if ($op==='save') $db->beginTransaction();
         $record = nie_resolve($db, $job['selector']);
         if ($record['writeKey'] !== $job['key'] || !empty($record['payload']['_noaTrash'])) reply(409,['error'=>'song_changed']);
+        if ($batchWorker && ($record['payload']['ownerId'] ?? null) !== $state['batch']['owner']) reply(409,['error'=>'song_changed']);
         if ($op==='save') {
             $text = $body['text'] ?? null;
             if (!is_string($text) || trim($text)==='' || strlen($text)>48000 || ($job['field']==='youtubeTitle' && mb_strlen($text)>100)) reply(400,['error'=>'invalid_text']);
@@ -183,7 +251,10 @@ try {
             }
             $db->commit();
             nup_snapshot($db,$job['key'],dirname(__DIR__).'/noa-ai-lab/packages/records');
-            $state['job']['saved'] = $next;
+            if ($batchWorker) {
+                ncbai_finish($state['batch'], 'done');
+                $advance = true;
+            } else $state['job']['saved'] = $next;
             $out = ['saved'=>true,'revision'=>$next,'field'=>$job['field']];
         } else {
             if ($record['revision'] !== $job['revision'] || isset($job['saved'])) reply(409,['error'=>'select_song_again']);
@@ -197,11 +268,28 @@ try {
         break;
     default: reply(404,['error'=>'unknown_operation']);
     }
+    $dispatchBatch = $advance ? ncbai_next($state['batch']) : null;
+    if ($batchApi) $out = ['batch'=>ncbai_public($state['batch'] ?? null)];
     if ($state !== $before) {
         $tmp = tempnam($dir, 'gpt-');
         $bytes = json_encode($state, JSON_THROW_ON_ERROR);
         try { if (!$tmp || file_put_contents($tmp,$bytes)!==strlen($bytes) || !rename($tmp,$file)) throw new RuntimeException('state_write'); }
         finally { if ($tmp && is_file($tmp)) unlink($tmp); }
+    }
+    if ($dispatchBatch !== null) {
+        // Forward progress belongs to the server even if the initiating request disappears.
+        ignore_user_abort(true);
+        flock($lock, LOCK_UN);
+        $dispatchStatus = n80_song_dispatch($dispatchBatch, $dispatchToken);
+        if ($dispatchStatus < 200 || $dispatchStatus >= 300) {
+            if (!flock($lock, LOCK_EX)) throw new RuntimeException('lock');
+            $latest = json_decode(file_get_contents($file), true, 32, JSON_THROW_ON_ERROR);
+            if (($latest['batch']['job']['id'] ?? '') === $dispatchBatch) {
+                ncbai_dispatch_error($latest['batch'], $dispatchBatch);
+                ncbai_write_state($dir, $file, $latest);
+                if ($batchApi) $out = ['batch'=>ncbai_public($latest['batch'])];
+            }
+        }
     }
     if ($op === 'start' && !empty($state['job']['hosted'])) {
         flock($lock, LOCK_UN);
