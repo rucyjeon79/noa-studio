@@ -13,8 +13,11 @@
 
 .noa-page .noa-collection-picker{margin-top:20px;min-width:0}.noa-page .noa-collection-heading{font-weight:600;margin:0 0 8px}.noa-page .noa-collection-picker .noa-collection-option{display:flex;align-items:center;gap:12px;min-height:48px;padding:8px 12px;margin:8px 0;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,8px);background:var(--noa-bg);color:var(--noa-text);cursor:pointer}.noa-page .noa-collection-option span{min-width:0;overflow-wrap:anywhere}.noa-page .noa-collection-option input[type=checkbox]{display:block;flex:0 0 20px;width:20px;height:20px;min-height:20px;margin:0;padding:0;accent-color:var(--noa-accent)}.noa-page .noa-collection-option:has(:checked){border-color:var(--noa-accent)}
 
-.noa-page .noa-suno-row{display:grid;grid-template-columns:clamp(48px,11vw,60px) minmax(0,1fr);align-items:center;gap:10px;min-width:0;margin-block-start:6px}
-.noa-page .noa-suno-row :is(input[name="sunoUrl"],.noa-input-guard,.noa-locked-preview){min-width:0;max-width:100%;margin:0;overflow-wrap:anywhere}
+.noa-page .noa-suno-row{display:grid;grid-template-columns:var(--noa-suno-side,44px) minmax(0,1fr);align-items:start;container-type:inline-size;gap:10px;min-width:0;margin-block-start:6px}
+.noa-page .noa-suno-row noa-suno-address{display:block;min-width:0}
+.noa-page .noa-record-field .noa-suno-row :is(input[name="sunoUrl"],.noa-input-guard,.noa-locked-preview){min-width:0;max-width:100%;margin:0;overflow-wrap:anywhere}
+.noa-page .noa-edit-form .noa-record-field[data-locked=false] .noa-suno-row .noa-input-guard>input{margin:0}
+.noa-page .noa-edit-form .noa-suno-row .noa-locked-preview{max-height:min(9em,max(44px,45cqi))}
 .noa-page .noa-suno-cover{width:100%;aspect-ratio:1;box-sizing:border-box;display:grid;place-items:center;overflow:hidden;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,8px);background:var(--noa-surface);color:var(--noa-muted)}
 .noa-suno-cover svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .noa-suno-cover img{display:block;width:100%;height:100%;min-height:0;object-fit:cover}

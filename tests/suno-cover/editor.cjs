@@ -15,18 +15,47 @@ const {chromium}=require('playwright');
   const selector={type:'song',source:'music',key:'story:cover-fixture'};
   const endpoint='/noa-inline-edit.php?'+new URLSearchParams(selector);
   await page.evaluate(url=>fetch(url+'&auth=admin'),endpoint);
-  const open=()=>page.evaluate(s=>editor.openRecord(s),selector);
+  const open=()=>page.evaluate(s=>{
+   document.querySelector('main').classList.add('noa-page');
+   return editor.openRecord(s);
+  },selector);
   await open();
   const field=page.locator('[data-record-field=sunoUrl]'),toggle=field.locator('button.noa-edit-edit');
+  async function aligned(){
+   const row=field.locator('.noa-suno-row');
+   await page.waitForFunction(()=>{
+    const row=document.querySelector('.noa-suno-row');
+    const control=row.querySelector('input:not([hidden]),.noa-locked-preview:not([hidden])');
+    const box=control.getBoundingClientRect(),cover=row.querySelector('.noa-suno-cover').getBoundingClientRect();
+    return box.height>0 && Math.abs(box.height-cover.width)<0.6 && Math.abs(box.top-cover.top)<0.6 && Math.abs(box.bottom-cover.bottom)<0.6;
+   },null,{timeout:4000});
+   const cover=await row.locator('.noa-suno-cover').boundingBox();
+   const control=await row.locator('input:visible,.noa-locked-preview:visible').boundingBox();
+   assert(Math.abs(cover.width-cover.height)<0.6);
+   assert(control.x-cover.x-cover.width>=9);
+   assert(control.x+control.width<=page.viewportSize().width);
+   return cover.height;
+  }
   async function save(source,ready){
-   await toggle.click();await field.locator('input').fill(source);await toggle.click();
+   await toggle.click();await aligned();await field.locator('input').fill(source);await toggle.click();
    await page.waitForFunction(()=>document.querySelector('[data-record-field=sunoUrl]').dataset.locked==='true');
    if(ready)await field.locator('.noa-suno-cover[data-status=ready] img').waitFor();
    else await field.locator('.noa-suno-cover[data-status=missing]').waitFor();
    const saved=await page.evaluate(async url=>(await fetch(url)).json(),endpoint);
    assert.equal(saved.fields.sunoUrl,source);assert.equal(Boolean(saved.sunoCover),ready);return saved;
   }
-  const first=await save('https://suno.com/s/first',true);
+  const emptyHeight=await aligned();
+  const first=await save('https://suno.com/s/3T0G9aGwwrsnYXPz',true);
+  await page.setViewportSize({width:320,height:800});
+  const wrappedHeight=await aligned();
+  assert(wrappedHeight>emptyHeight+8,'a wrapped URL must grow the square');
+  await page.setViewportSize({width:1024,height:800});
+  const wideHeight=await aligned();
+  assert(wideHeight<wrappedHeight,'unwrapping must shrink the square again');
+  await page.setViewportSize({width:390,height:800});
+  await page.addStyleTag({content:'.noa-page .noa-locked-preview{font-size:22px}'});
+  await aligned();
+  console.log('SUNO_ROW_HEIGHT',JSON.stringify({emptyHeight,wrappedHeight,wideHeight}));
   const next=await save('https://suno.com/s/replacement',true);
   assert.notEqual(first.sunoCover,next.sunoCover);assert.equal(first.revision+1,next.revision);
   await page.reload();await open();await field.locator('.noa-suno-cover img').waitFor();
