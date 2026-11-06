@@ -8,7 +8,7 @@ on:
 permissions: {contents: read}
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     services:
       mysql:
@@ -52,10 +52,11 @@ jobs:
     if: github.event_name == 'push'
     needs: verify
     environment: production
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     env:
+      NOA_PUSH_BASE: ${{ github.event.before }}
       GH_TOKEN: ${{ github.token }}
       NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
       NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
