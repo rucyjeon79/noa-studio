@@ -1,5 +1,5 @@
 """Temporary authenticated read-only owner and media projection receipt; removed in finally."""
-import hashlib,json,secrets,time,urllib.request
+import hashlib,json,secrets,time,urllib.error,urllib.request
 from pathlib import Path
 import paramiko
 from noa_full_inventory import ROOT,connect
@@ -16,7 +16,13 @@ def main():
     installed=True;s.chmod(remote,0o644)
     with s.open(remote,'rb') as f:assert f.read()==code
     req=urllib.request.Request('https://noastudio.ai.kr/noa-bridge/'+name,data=b'{}',headers={'Content-Type':'application/json','X-NOA-Control':token})
-    with urllib.request.build_opener(NoRedirect()).open(req,timeout=45) as r:data=json.load(r)
+    try:
+     with urllib.request.build_opener(NoRedirect()).open(req,timeout=45) as r:data=json.load(r)
+    except urllib.error.HTTPError as exc:
+     try: diagnostic=json.load(exc)
+     except (ValueError,UnicodeError): diagnostic={}
+     print('EXPLORER_AUDIT_FAILED',exc.code,{k:diagnostic.get(k) for k in ('stage','class','sqlstate')})
+     raise
     assert data['ok'] and data['counts']['emptyCovers']==0 and data['channelOwned'];(out/'ownership-covers.json').write_text(json.dumps(data,indent=2));print('EXPLORER_LIVE_READ_ONLY_OK',json.dumps(data))
    finally:
     if installed:s.remove(remote)

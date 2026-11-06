@@ -10,6 +10,14 @@ release.NEW={'noa-bridge/channel-batch-ai.php','noa-bridge/channel-batch-audio.p
 before=os.environ.get('NOA_PUSH_BASE')
 if before and before.strip('0'):
  changed=set(subprocess.check_output(['git','diff','--name-only','--no-renames',before,os.environ['GITHUB_SHA'],'--'],text=True).splitlines())
+ # A previous pending production job can be superseded by a later change to
+ # a single batch asset. Verify and reconcile the complete runtime together.
+ batch_triggers={'scripts/noa_explorer_release.py','deploy/noa-channel-batch.js',
+                 'bridge/channel-batch-ai.php','bridge/channel-batch-audio.php','bridge/channel-batch.php'}
+ if changed & batch_triggers:
+  changed.update(batch_triggers | {'bridge/lab-worker.php','deploy/noa-gpt.php',
+      'deploy/noa-app/jukebox/queue-core.php','deploy/noa-channel-explorer.js',
+      'deploy/noa-creator.php','deploy/noa-creator.js','deploy/noa-creator.css','deploy/noa-music.php'})
  scoped={remote:local for remote,local in release.FILES.items() if local in changed}
  release.FILES=scoped
 release.PROTECTED=[p for p in release.PROTECTED if p not in release.FILES]
