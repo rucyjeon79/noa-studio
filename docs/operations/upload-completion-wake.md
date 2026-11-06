@@ -1,40 +1,9 @@
-# Upload completion wake
+# Upload completion and optimization
 
-Both local and Drive uploads call `nq_enqueue`. After the queue transaction commits,
-request the existing `noa-jukebox.yml` workflow on `main`. Do not call GitHub inside
-the SQL transaction or set an upload to `processing` before the worker claims it.
-Existing FIFO, worker ownership, leases and source hash validation are unchanged.
+A new authorized upload reserves the source and asks the production JUKEBOX workflow to start while bytes are in transit. The final accepted chunk schedules server-side finalization for both hosting and Drive uploads. The browser may still send an explicit finish. Both paths lock the same upload, verify the complete source and enqueue the same SQL job exactly once. Manual retries also request the worker after committing. Only a worker holding the queue lease can report that analysis has started.
 
-A fixed HTTPS GitHub endpoint accepts no URL, branch or credential from a browser.
-The request has a two-second total timeout and does not follow redirects. Dispatch
-failure never invalidates an uploaded source. Duplicate requests are coalesced for
-60 seconds after acceptance and 10 seconds after failures. The existing scheduled
-worker remains the recovery mechanism. Dispatch bypasses redundant media validation
-on the execution path; PR/push validation remains enabled.
+The upload hook dispatches one fixed GitHub workflow on main. It first uses the private 0600 upload-wake-token installed from the production environment secret NOA_JUKEBOX_WAKE_TOKEN. In its absence the hook can use the site's existing server-side Actions credential if GitHub grants that credential access to this repository. A rejected request leaves the source and queue intact. The private wake receipt contains only time, acceptance and the HTTP status. Scheduled workers remain available for recovery.
 
-## Required before activation
+For a dedicated credential, restrict a fine-grained token to rucyjeon79/noa-studio with Actions write. Set the production environment secret NOA_JUKEBOX_WAKE_TOKEN and run the NOA upload completion wake verification workflow on main. Never use a workflow's temporary GITHUB_TOKEN as a hosted credential.
 
-Provision a dedicated fine-grained GitHub credential restricted to repository
-`rucyjeon79/noa-studio`, Actions write (and required metadata read), with expiration.
-Store the credential in the production environment GitHub Actions secret
-`NOA_JUKEBOX_WAKE_TOKEN`. Run the upload completion wake verification workflow on
-main to install or rotate it under the private directory with mode 0600. The
-workflow logs only its configuration state. If no new secret was supplied, it
-leaves an existing private credential untouched. A missing credential leaves the
-scheduled worker responsible for recovery. Never use a short-lived workflow token.
-
-The release installs the helper before the queue caller, using scoped preimage
-checks. An installed file alone does not prove GitHub accepted a dispatch.
-
-## Acceptance evidence
-
-Run `php tests/jukebox/wake_test.php` and existing upload queue integration tests.
-Then complete one authorized upload with no active worker and correlate its queue
-commit timestamp with a `workflow_dispatch` run and the same upload's claimed job.
-Confirm another completed upload preserves FIFO while a worker is busy. Confirm
-revoked credentials preserve uploads and scheduled recovery. Never announce
-production completion until this live evidence exists.
-
-GitHub runner provisioning can still take time: this triggers execution immediately,
-not a guarantee of zero-latency FFmpeg startup. A continuously running dedicated
-worker is required for strict real-time processing.
+The release submits a synthetic WAV to a private QA song using the normal upload functions and deliberately omits the browser's finish call. It checks the stored source hash, real worker run, queue timestamps, verified final MP3 and decode analysis. A rejected dispatch fails acceptance even when a scheduled worker later drains the queue. A cold GitHub runner may take time to start, and busy workers preserve FIFO.

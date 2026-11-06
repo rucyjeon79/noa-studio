@@ -49,18 +49,42 @@ function nu_initialize(PDO $db,array $b,string $actor):array{
   // No application-wide temporary storage quota; check only actual storage availability.
   $id=bin2hex(random_bytes(16));$dir=nu_dir($id);if(disk_free_space($dir)<($drive?1048576:$size*2+67108864))throw new DomainException('hosting_storage_insufficient');
   $db->prepare('INSERT INTO noa_jukebox_uploads(id,song_key,source_url,filename,extension,file_bytes,fingerprint,total_chunks,status,previous_sha256,context,requested_by) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)')->execute([$id,$key,noa_sound_suno($doc['body']??[]),$name,$ext,$size,$fp,(int)ceil($size/($drive?ND_CHUNK:NU_CHUNK)),'uploading',$asset['audio_sha256']??null,json_encode($context,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),$actor]);
-  return ['id'=>$id,'chunks'=>[],'status'=>'uploading','chunkSize'=>$drive?ND_CHUNK:NU_CHUNK,'storage'=>$drive?'google_drive':'hosting'];
  }finally{$db->query("SELECT RELEASE_LOCK('noa_jukebox_upload_quota')");}
+ // Start provisioning while the new file is in transit. SQL claiming still requires a complete source.
+ nw_after_enqueue();
+ return ['id'=>$id,'chunks'=>[],'status'=>'uploading','chunkSize'=>$drive?ND_CHUNK:NU_CHUNK,'storage'=>$drive?'google_drive':'hosting'];
 }
 function nu_chunk(PDO $db,string $id,int $index,string $raw):array{
  $r=nu_row($db,$id);if($r['status']!=='uploading'||$index<0||$index>=(int)$r['total_chunks'])throw new DomainException('upload_not_accepting_chunks');
- if(nd_is($r))return nd_chunk($db,$r,$index,$raw);
+ if(nd_is($r)){
+  $ack=nd_chunk($db,$r,$index,$raw);
+  if(!empty(nd_state($id)['complete']))nu_finish_after_response($db,$id);
+  return $ack;
+ }
  $expected=min(NU_CHUNK,(int)$r['file_bytes']-$index*NU_CHUNK);if(strlen($raw)!==$expected)throw new InvalidArgumentException('chunk_size_mismatch');
  $dir=nu_dir($id);$lock=fopen($dir.'/.lock','c');if(!$lock||!flock($lock,LOCK_EX))throw new RuntimeException('upload_lock_failed');
  try{if(nu_row($db,$id)['status']!=='uploading')throw new DomainException('upload_not_accepting_chunks');$file=$dir.'/chunk-'.$index;if(is_file($file)){if(!hash_equals(hash_file('sha256',$file),hash('sha256',$raw)))throw new DomainException('chunk_conflict');}
   else{if(disk_free_space($dir)<strlen($raw)+33554432)throw new DomainException('hosting_storage_insufficient');error_clear_last();if(@file_put_contents($file,$raw,LOCK_EX)!==strlen($raw))throw nu_storage_error();chmod($file,0600);}
-  $db->prepare('UPDATE noa_jukebox_uploads SET updated_at=CURRENT_TIMESTAMP WHERE id=?')->execute([$id]);return ['index'=>$index,'sha256'=>hash('sha256',$raw)];
+  $db->prepare('UPDATE noa_jukebox_uploads SET updated_at=CURRENT_TIMESTAMP WHERE id=?')->execute([$id]);
+  $last=(int)$r['total_chunks']-1;
+  $complete=is_file($dir.'/chunk-'.$last) && ($last===0 || count(nu_chunks($r))===$last+1);
  }finally{flock($lock,LOCK_UN);fclose($lock);}
+ if($complete)nu_finish_after_response($db,$id);
+ return ['index'=>$index,'sha256'=>hash('sha256',$raw)];
+}
+// Finish independently of the browser's final request. Both paths take the same per-upload lock.
+function nu_finish_after_response(PDO $db,string $id):void{
+ if(PHP_SAPI==='cli')return;
+ register_shutdown_function(static function()use($db,$id):void{
+  ignore_user_abort(true);
+  if(function_exists('fastcgi_finish_request'))fastcgi_finish_request();
+  try{
+   $result=nu_finish($db,$id);
+   if($result['status']==='ready')nu_cleanup_verified($db,$id);
+  }catch(Throwable $error){
+   error_log('[jukebox-upload] automatic finish: '.get_class($error));
+  }
+ });
 }
 function nu_finish(PDO $db,string $id):array{
  $r=nu_row($db,$id);if($r['status']==='failed'){if(in_array($r['error'],['actual_audio_format_mismatch','mp3_wav_size_or_identity_invalid'],true))throw new InvalidArgumentException($r['error']);throw new DomainException($r['error']?:'upload_failed_reselect_source');}if($r['status']!=='uploading')return nu_public($db,$r['song_key']);if(nd_is($r))return nd_finish($db,$r);$dir=nu_dir($id);$lock=fopen($dir.'/.lock','c');if(!$lock||!flock($lock,LOCK_EX))throw new RuntimeException('upload_lock_failed');
