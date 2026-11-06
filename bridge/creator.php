@@ -5,8 +5,17 @@ header('Content-Type: application/json; charset=utf-8');header('Cache-Control: p
 function nc_reply(int $code,array $value):never{http_response_code($code);echo json_encode($value,JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_THROW_ON_ERROR);exit;}
 $a=nam_access((array)($member??[]),(string)($is_admin??''));if(!$a['creator'])nc_reply(403,['error'=>'creator_required']);$actor=(string)$member['mb_id'];
 try{
- $db=noa_bridge_pdo();$action=(string)($_GET['action']??'list');$method=$_SERVER['REQUEST_METHOD']??'GET';
- if ($method === 'GET' && session_status() === PHP_SESSION_ACTIVE) session_write_close();
+ $action=(string)($_GET['action']??'list');$method=$_SERVER['REQUEST_METHOD']??'GET';
+ if ($method === 'POST') {
+  $token=$_SERVER['HTTP_X_NOA_CSRF']??'';if(!is_string($token)||empty($_SESSION['noa_creator_csrf'])||!hash_equals($_SESSION['noa_creator_csrf'],$token)||($_SERVER['HTTP_ORIGIN']??'')!=='https://noastudio.ai.kr')nc_reply(403,['error'=>'csrf_required']);
+ }
+ if (session_status() === PHP_SESSION_ACTIVE) session_write_close();
+ $db=noa_bridge_pdo();
+ if ($method === 'GET' && $action === 'workspaceHeader') {
+  $query=$db->prepare("SELECT JSON_UNQUOTE(JSON_EXTRACT(payload,'$.title')) AS title, JSON_UNQUOTE(JSON_EXTRACT(payload,'$.boardId')) AS boardId FROM noa_documents WHERE doc_key=? AND kind='prefs'");
+  $query->execute([nc_channel_key($actor)]);
+  nc_reply(200,['channel'=>$query->fetch(PDO::FETCH_ASSOC) ?: null]);
+ }
  if ($method === 'GET' && in_array($action, ['profile', 'summary', 'choices'], true)) {
   if ($action === 'choices') nc_reply(200, ['songs' => nc_song_index($db, $actor, $a['admin'], true)]);
   $channel = nc_row($db, nc_channel_key($actor));
@@ -29,9 +38,8 @@ try{
  }
  if($method==='GET'&&$action==='status'){$r=nc_own($db,(string)($_GET['key']??''),$member);$state=nu_public($db,$r['doc_key']);if(!$a['ownDownload'])$state['download']='';nc_reply(200,$state);}
  if($method!=='POST')nc_reply(405,['error'=>'method_not_allowed']);
- $token=$_SERVER['HTTP_X_NOA_CSRF']??'';if(!is_string($token)||empty($_SESSION['noa_creator_csrf'])||!hash_equals($_SESSION['noa_creator_csrf'],$token)||($_SERVER['HTTP_ORIGIN']??'')!=='https://noastudio.ai.kr')nc_reply(403,['error'=>'csrf_required']);
  if($action==='chunk'){
-  $u=nu_row($db,(string)($_GET['id']??''));nc_own($db,$u['song_key'],$member);if(!hash_equals($actor,$u['requested_by']))nc_reply(403,['error'=>'own_upload_required']);$index=filter_var($_GET['index']??'',FILTER_VALIDATE_INT);if($index===false)throw new InvalidArgumentException('invalid_chunk');session_write_close();nc_reply(200,nu_chunk($db,$u['id'],$index,file_get_contents('php://input',false,null,0,NU_CHUNK+1)));
+  $u=nu_row($db,(string)($_GET['id']??''));nc_own($db,$u['song_key'],$member);if(!hash_equals($actor,$u['requested_by']))nc_reply(403,['error'=>'own_upload_required']);$index=filter_var($_GET['index']??'',FILTER_VALIDATE_INT);if($index===false)throw new InvalidArgumentException('invalid_chunk');nc_reply(200,nu_chunk($db,$u['id'],$index,file_get_contents('php://input',false,null,0,NU_CHUNK+1)));
  }
  if($action==='symbol'){
   $previous=nc_row($db,nc_channel_key($actor));if(!$previous||!nam_owner($previous['document'],$member))throw new DomainException('create_channel_first');
@@ -55,10 +63,10 @@ try{
   nc_reply(200,['key'=>$key,'revision'=>$next,'coverReady'=>(bool)nsc_preview($d['body']['uploadedAsset']??null,$key,$source)]);
  }
  if($action==='init'){
-  $r=nc_own($db,(string)($b['key']??''),$member);$q=$db->prepare("SELECT COALESCE(SUM(a.audio_bytes),0) FROM noa_jukebox_assets a JOIN noa_documents d ON d.doc_key=a.song_key WHERE d.doc_key LIKE ?");$q->execute(['creator:'.hash('sha256',$actor).':%']);if((int)$q->fetchColumn()+(int)($b['bytes']??0)>1073741824)throw new DomainException('channel_storage_limit');session_write_close();nc_reply(200,nu_initialize($db,$b,$actor));
+  $r=nc_own($db,(string)($b['key']??''),$member);$q=$db->prepare("SELECT COALESCE(SUM(a.audio_bytes),0) FROM noa_jukebox_assets a JOIN noa_documents d ON d.doc_key=a.song_key WHERE d.doc_key LIKE ?");$q->execute(['creator:'.hash('sha256',$actor).':%']);if((int)$q->fetchColumn()+(int)($b['bytes']??0)>1073741824)throw new DomainException('channel_storage_limit');nc_reply(200,nu_initialize($db,$b,$actor));
  }
  if(in_array($action,['finish','cancel','retry'],true)){
-  $u=nu_row($db,(string)($b['id']??''));nc_own($db,$u['song_key'],$member);if(!hash_equals($actor,$u['requested_by']))nc_reply(403,['error'=>'own_upload_required']);session_write_close();
+  $u=nu_row($db,(string)($b['id']??''));nc_own($db,$u['song_key'],$member);if(!hash_equals($actor,$u['requested_by']))nc_reply(403,['error'=>'own_upload_required']);
   if($action==='finish')$out=nu_finish($db,$u['id']);elseif($action==='cancel')$out=nu_cancel_pending($db,$u['id']);else{nq_retry($db,$u['id']);$out=nu_public($db,$u['song_key']);}if(!$a['ownDownload'])$out['download']='';nc_reply(200,$out);
  }
  throw new InvalidArgumentException('unknown_action');

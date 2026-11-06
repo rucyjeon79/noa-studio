@@ -1,16 +1,13 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__.'/common.php';
-require_once __DIR__.'/noa-bridge/storage.php';
-require_once __DIR__.'/noa-bridge/creator-core.php';
+require_once __DIR__.'/noa-bridge/member-access.php';
 require_once __DIR__.'/noa-channel-menu.php';
 
 $access = nam_access((array)$member, (string)($is_admin ?? ''));
 if (!$access['creator']) { http_response_code(403); exit; }
 header('Cache-Control: private, no-store');
-$owner = (string)$member['mb_id'];
-$channel = nc_row(noa_bridge_pdo(), nc_channel_key($owner));
-$profile = $channel['document'] ?? [];
+if (session_status() === PHP_SESSION_ACTIVE) session_write_close();
 $escape = static fn($value) => htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 $tools = [
     ['/noa-creator.php', '곡·음원 관리', '곡 정보와 영상 링크 편집, 음원 업로드, 프로필 수정'],
@@ -30,11 +27,11 @@ $renderLinks = static function(array $items) use ($escape): void {
 <link rel="stylesheet" href="/noa-creator.css?v=<?=filemtime(__DIR__.'/noa-creator.css')?>">
 <script src="/noa-brand.js" defer></script><script src="/noa-ui.js" defer></script>
 </head><body class="noa-page"><main id="noa-my-channel">
-<h1><?=$escape($profile['title'] ?? '내 채널')?> 작업실</h1>
-<?php if ($channel): ?><nav class="creator-actions" aria-label="채널 바로가기">
-<a class="noa-button" href="/noa-channel.php?id=<?=hash('sha256', $owner)?>">내 채널 보기</a>
-<?php if (!empty($profile['boardId'])): ?><a class="noa-button" href="/bbs/board.php?bo_table=<?=$escape(rawurlencode($profile['boardId']))?>">채널 게시판</a><?php endif; ?>
-</nav><?php endif; ?>
+<h1 id="workspace-title">내 채널 작업실</h1>
+<nav id="workspace-shortcuts" class="creator-actions" aria-label="채널 바로가기" hidden>
+<a id="workspace-public" class="noa-button" href="/noa-channel.php?id=<?=hash('sha256',(string)$member['mb_id'])?>">내 채널 보기</a>
+<a id="workspace-board" class="noa-button" hidden>채널 게시판</a>
+</nav>
 <section class="noa-section"><h2>채널 관리</h2>
 <nav class="noa-workspace-grid" aria-label="채널 관리"><?php $renderLinks($tools); noa_channel_ai_button($access); ?></nav>
 <?php if (!$access['creatorAI']): ?><p class="noa-muted"><a href="/noa-subscription.php">크리에이터 구독 보기</a></p><?php endif; ?>
