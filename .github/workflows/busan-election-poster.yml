@@ -1,0 +1,65 @@
+name: Update the November Busan election popup
+on:
+  push:
+    branches: [ops/busan-election-poster-20261106]
+    paths: ['.github/workflows/busan-election-poster.yml', 'scripts/busan_popup/**']
+permissions:
+  contents: read
+concurrency:
+  group: busan-election-poster
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check the popup update
+        run: |
+          php -l scripts/busan_popup/apply.php
+          python -m pip install -q paramiko==3.5.1 pynacl
+          python -m py_compile scripts/busan_popup/deploy.py
+      - name: Prepare a one-time image transfer key
+        id: key
+        run: |
+          umask 077
+          python - <<'PY'
+          from nacl.public import PrivateKey
+          from pathlib import Path
+          import os
+          key = PrivateKey.generate()
+          tmp = Path(os.environ['RUNNER_TEMP'])
+          (tmp / 'poster-private').write_bytes(bytes(key))
+          (tmp / 'poster-public').write_text(bytes(key.public_key).hex())
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              print('public=' + bytes(key.public_key).hex(), file=out)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: poster-key-${{ steps.key.outputs.public }}
+          path: ${{ runner.temp }}/poster-public
+          retention-days: 1
+      - name: Receive the sealed poster
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in $(seq 1 100); do
+            if gh api "repos/$GITHUB_REPOSITORY/contents/transfer/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT.b64?ref=$GITHUB_REF_NAME" -H 'Accept: application/vnd.github.raw+json' > "$RUNNER_TEMP/encoded" 2>/dev/null; then
+              base64 -d "$RUNNER_TEMP/encoded" > "$RUNNER_TEMP/poster-sealed"
+              exit 0
+            fi
+            sleep 6
+          done
+          exit 1
+      - name: Install the verified poster and check both homepages
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: python scripts/busan_popup/deploy.py
+      - if: always()
+        run: rm -f "$RUNNER_TEMP/poster-private" "$RUNNER_TEMP/poster-sealed" "$RUNNER_TEMP/encoded"
