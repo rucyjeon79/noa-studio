@@ -46,6 +46,7 @@ try {
   assert.equal(ai.skipped,3);
   assert.equal(await page.locator('#batch-replace').isChecked(),false);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth > innerWidth+1),false);
+  assert(await page.locator('#noa-disclosure-close').isHidden(),'global close must not cover batch actions');
   await batch.screenshot({path:output+'/batch-mobile.png'});
   await page.setViewportSize({width:1280,height:900});
   await batch.screenshot({path:output+'/batch-desktop.png'});
