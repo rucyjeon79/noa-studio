@@ -49,7 +49,7 @@ try{
   foreach($targets as $field){
    $value=$data[$field]??null;
    if(!is_string($value)||trim($value)===''||mb_strlen($value)>($field==='youtubeTitle'?100:($field==='geminiPrompt'?1000:20000)))throw new DomainException('invalid_publish_set');
-   noa_check_prompt_language($field,$value);
+   noa_check_prompt_language($field,$value,(string)($data['title']??$ctx['fields']['title']));
   }
   return ['text'=>json_encode($data,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),'usage'=>$usage];
  });

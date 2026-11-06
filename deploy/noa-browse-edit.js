@@ -32,6 +32,20 @@ function control(icon,label,name){
 function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standalone=false}){
  const byKey=new Map();for(const r of rows){const key=String(r.key);if(!byKey.has(key)||(byKey.get(key).kind==='playlist'&&r.kind!=='playlist'))byKey.set(key,r);}let active=null;
  const style=document.getElementById('noa-inline-editor-style')||document.createElement('style');style.id='noa-inline-editor-style';style.textContent='html[data-noa-precision] .noa-page .noa-inline-act:is([data-act-number],[data-playlist-id]){position:relative}html[data-noa-precision] .noa-page .noa-inline-act:is([data-act-number],[data-playlist-id]):not(:has(>.noa-collection-tools))>.noa-browse-card{padding-inline-end:52px}.noa-inline-act>.noa-act-edit{position:absolute;right:0;top:10px}.noa-inline-titlebar{display:flex;align-items:center;gap:8px;min-width:0;width:100%}.noa-inline-titlebar>.noa-browse-card{flex:1;min-width:0}.noa-inline-titlebar>.noa-edit-edit{flex:none}.noa-page .noa-edit-edit,.noa-page .noa-edit-form .noa-action{min-width:44px;min-height:52px;padding:4px 6px}.noa-inline-video-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.noa-inline-video-row>.noa-inline-song{flex:1;min-width:0;width:auto}.noa-inline-song-row>.noa-inline-song{min-width:0}.noa-edit-form{flex-basis:100%;width:100%;min-width:0;padding:12px 0 20px;border-top:1px solid var(--noa-line);color:var(--noa-text)}.noa-edit-field-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}.noa-edit-field-heading>label{flex:1;min-width:0;word-break:keep-all;overflow-wrap:break-word}html[data-noa-precision] body:has(#noa-ainoa) .noa-page .noa-edit-field-heading{padding-inline-end:0}html[data-noa-precision] .noa-page .noa-edit-form .noa-edit-field-heading .noa-action{display:inline-flex;flex-direction:row;flex:0 0 auto;align-items:center;justify-content:center;width:44px;max-width:100%;height:44px;min-width:44px;min-height:44px;padding:8px;border-radius:8px}.noa-edit-form label{display:block;margin:10px 0;font-size:14px}.noa-edit-form :is(input,textarea,select){display:block;width:100%;box-sizing:border-box;min-height:44px;margin-top:4px;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,8px);padding:8px;background:var(--noa-bg);color:var(--noa-text);font:inherit}.noa-edit-form textarea{min-height:120px;resize:vertical}.noa-edit-form .noa-edit-readonly{color:var(--noa-muted);font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}.noa-edit-buttons{display:flex;gap:6px}.noa-edit-status{font-size:13px;min-height:1.5em;overflow-wrap:anywhere}.noa-inline-song-row:has(>.noa-edit-form),.song:has(>.noa-edit-form){flex-wrap:wrap}.noa-order-list .noa-edit-edit,.noa-create-list .noa-edit-edit{display:none}.noa-inline-video-row>.noa-inline-playback{flex-basis:100%;width:100%;order:1}.noa-edit-form{order:2}.noa-inline-titlebar>:is(h2,.song-select){flex:1;min-width:0}'+ 'html[data-noa-precision] .noa-page .noa-edit-form .noa-edit-ai,html[data-noa-precision] .noa-page .noa-edit-form .noa-edit-ai:hover,html[data-noa-precision] .noa-page .noa-edit-form .noa-edit-ai:focus-visible{color:var(--noa-creative);border-color:var(--noa-creative)}html[data-noa-precision] .noa-page .noa-edit-form .noa-edit-ai>svg{color:var(--noa-creative)}.noa-ai-feedback{margin:8px 0 16px;min-width:0}.noa-ai-feedback p{margin:6px 0;font-size:13px;overflow-wrap:anywhere}.noa-ai-feedback[data-error=true]{color:var(--noa-danger)}.noa-ai-feedback textarea{min-height:120px}.noa-ai-feedback-actions{display:flex;flex-wrap:wrap;gap:8px}.noa-ai-feedback-actions button{min-height:44px;padding:8px 12px}.noa-ai-feedback[hidden]{display:none}';style.textContent+=`
+ .noa-edit-form [data-generating] :is(.noa-locked-preview,input:not([hidden]),textarea:not([hidden])){
+  outline:2px solid var(--noa-creative,currentColor);outline-offset:-2px;
+ }
+ .noa-edit-form [data-generating] .noa-ai-feedback p{color:var(--noa-creative);font-weight:600;width:fit-content}
+ @media(prefers-reduced-motion:no-preference) and (forced-colors:none){
+  @supports(background-clip:text){
+   .noa-edit-form [data-generating] .noa-ai-feedback:not([data-error=true]) p{
+    background-image:linear-gradient(100deg,var(--noa-creative) 25%,var(--noa-text) 50%,var(--noa-creative) 75%);
+    background-size:220% 100%;background-clip:text;color:transparent;animation:noa-field-flow 2.4s linear infinite;
+   }
+  }
+ }
+ @keyframes noa-field-flow{from{background-position:220% 0}to{background-position:0 0}}
+
  .noa-edit-form .noa-publish-panel{margin:10px 0 18px;min-width:0}
  .noa-edit-form .noa-publish-options{border-block:1px solid var(--noa-line);margin:0 0 10px}
  .noa-edit-form .noa-publish-options>summary{display:flex;align-items:center;justify-content:space-between;min-height:44px;cursor:pointer;list-style:none}
@@ -147,7 +161,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
    const context=document.createElement('p');context.className='noa-edit-readonly';if(standalone)context.id='editor-classification';form.append(context);window.NoaBrowse.renderPath(context,{...data.context,key:data.writeKey,orderKey:byKey.get(selector.key)?.orderKey,title:data.fields.title},{base:kind==='영상'?'/noa-youtube.php':'/noa-music.php'});
    const inputs={};const classification=typeof data.fields.genre==='string'&&data.kind!=='playlist'&&selector.type!=='new'?window.NoaRecordForm.classificationEditor(form,{genre:data.fields.genre,ep:data.context.ep,inputs,collections:data.collections,selected:data.fields.collections||[]}):null;const sections=window.NoaRecordForm.sections(form);const aiFields=new Set(['title','lyrics','sunoPrompt','geminiPrompt','youtubeTitle','description','communityPost']);
    const lockedSong=selector.type==='song'&&!draftFields;
-   const locks=new Map(),previews=new Map();
+   const locks=new Map(),previews=new Map(),generationFields=new Map();
    const vocalFrom=fields=>fields.vocal||({female:'여자솔로',male:'남자솔로',duet:'남녀듀엣'}[fields.cast]||'');
    function refreshField(key,fields){
     window.NoaRecordForm.set(inputs[key],key==='vocal'?vocalFrom(fields):fields[key]);
@@ -234,6 +248,13 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
     if(aiFields.has(key)&&selector.type!=='new'){
      const ai=fieldAiButton(label);feedback=document.createElement('div');feedback.className='noa-ai-feedback';feedback.hidden=true;feedback.setAttribute('aria-live','polite');
      const tell=(text,error=false)=>{feedback.hidden=false;feedback.dataset.error=String(error);feedback.replaceChildren();const p=document.createElement('p');p.textContent=text;feedback.append(p);status.textContent=text;};
+     const pending=new Set();
+     function generating(source,on){
+      if(on)pending.add(source);else pending.delete(source);
+      wrap.toggleAttribute('data-generating',pending.size>0);
+      input.setAttribute('aria-busy',String(pending.size>0));
+     }
+     generationFields.set(key,{generating,feedback,tell});
      async function api(url,options={},timeout=40000){
       const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeout);
       try{const response=await fetch(url,{credentials:'same-origin',cache:'no-store',...options,signal:controller.signal});let result=null;try{result=await response.json();}catch{}if(!response.ok||!result?.ok){const code=result?.error||response.headers.get('X-NOA-Error-Code');const error=Error(result?.message||(code==='ai_not_configured'?'AI LAB에서 텍스트 AI 연결과 사용 한도를 먼저 설정해 주세요.':'AI 응답을 확인하지 못했습니다. 같은 버튼으로 결과를 다시 확인해 주세요.'));error.code=code;throw error;}return result;}
@@ -241,7 +262,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
      }
      ai.onclick=async()=>{
       if(state.busy){tell('다른 요청을 처리 중입니다. 잠시 기다려 주세요.');return;}
-      state.busy=true;ai.disabled=true;ai.setAttribute('aria-busy','true');tell(label+' AI 연결을 확인하고 있습니다.');const original=input.value;
+      state.busy=true;generating('api',true);ai.disabled=true;ai.setAttribute('aria-busy','true');tell(label+' AI 연결을 확인하고 있습니다.');const original=input.value;
       try{
        const fields=Object.fromEntries(Object.entries(inputs).filter(([k])=>aiFields.has(k)||['vocal','originalArtist'].includes(k)).map(([k,v])=>[k,v.value]));
        const payload={action:'generate',selector,field:key,fields,expectedRevision:state.data.revision};
@@ -260,7 +281,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
        const apply=iconCommand('button','apply','초안 적용');apply.onclick=()=>{if(state.busy)return;if(input.value!==original){tell('초안을 만드는 동안 입력이 바뀌었습니다. 현재 내용을 보존했습니다. 필요한 부분을 초안에서 복사해 주세요.',true);feedback.append(preview);return;}if(lockedSong){if(state.dirty&&state.editKey!==key){status.textContent='수정 중인 항목을 먼저 저장해 주세요.';return;}locks.get(state.editKey)?.(false);state.editKey=key;locks.get(key)?.(true);}input.value=result.text;input.dispatchEvent(new Event('input',{bubbles:true}));tell('초안을 적용했습니다. 확인 후 저장해 주세요.');input.focus();};
        const discard=iconCommand('button','cancel','초안 닫기');discard.onclick=()=>{tell('초안을 닫았습니다. 입력한 내용은 그대로 유지됩니다.');};actions.append(copyButton(label,()=>preview.value),apply,discard);feedback.append(preview,actions);
       }catch(e){tell(/[가-힣]/.test(e.message)?e.message:'네트워크 연결을 확인해 주세요. 입력 내용은 유지됩니다. 같은 버튼으로 결과를 다시 확인할 수 있습니다.',true);}
-      finally{state.busy=false;ai.disabled=false;ai.removeAttribute('aria-busy');}
+      finally{generating('api',false);state.busy=false;ai.disabled=false;ai.removeAttribute('aria-busy');}
       };if(selector.type!=='song')heading.append(ai);
      if(selector.type==='song'){
       const gpt=fieldAiButton(label);
@@ -284,7 +305,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
        const tab=state.privateWorker?null:window.open('about:blank','_blank');
        if(tab)tab.opener=null;
        let launched=false;
-       state.busy=true;gpt.disabled=true;
+       state.busy=true;gpt.disabled=true;generating('request',true);tell('생성을 요청하고 있어요.');
        try{
         const response=await fetch('/noa-gpt.php?op=start',{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify({selector,expectedKey:state.data.writeKey,field:key,revision:state.data.revision,replace,worker:state.privateWorker})});
         const result=await generationReply(response);
@@ -298,6 +319,8 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
         const taskId=result.id;
         const request='NOA STUDIO Assistant로 선택한 작업을 읽어줘. 작업 ID가 '+taskId+'일 때만 지정된 항목의 결과를 작성해 그 작업에 저장해줘.';
         if(state.gptFeedback && state.gptFeedback!==feedback){state.gptFeedback.hidden=true;state.gptFeedback.replaceChildren();}
+        if(state.gptTask)generationFields.get(state.gptField)?.generating(state.gptTask,false);
+        generating(taskId,true);
         state.gptTask=taskId;state.gptField=key;state.gptFeedback=feedback;
         const chat=new URL('https://chatgpt.com/');chat.searchParams.set('q',request);
         if(result.worker){tell('생성 중이에요. 완료되면 이 칸에 저장됩니다.');}else{tell('ChatGPT에서 요청을 보내면 여기에 저장됩니다.');
@@ -309,23 +332,23 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
         const until=Date.now()+3600000;
         async function refreshTask(){
          if(active!==state||state.gptTask!==taskId)return;
-         if(Date.now()>until){state.gptTask=null;tell('요청 시간이 지났습니다. 생성 버튼을 다시 눌러 주세요.');return;}
+         if(Date.now()>until){generating(taskId,false);state.gptTask=null;tell('요청 시간이 지났습니다. 생성 버튼을 다시 눌러 주세요.');return;}
          if(!document.hidden){
           try{
            const response=await fetch('/noa-gpt.php?op=progress',{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify({id:taskId})});
            if(active!==state||state.gptTask!==taskId)return;
-           if(response.status===409){state.gptTask=null;tell('다른 작업으로 바뀌었거나 작업 시간이 만료됐습니다.');return;}
+           if(response.status===409){generating(taskId,false);state.gptTask=null;tell('다른 작업으로 바뀌었거나 작업 시간이 만료됐습니다.');return;}
            const progress=await generationReply(response);
-           if(progress.failed){state.gptTask=null;tell('생성을 완료하지 못했어요. 다시 시도해 주세요.',true);return;}
+           if(progress.failed){generating(taskId,false);state.gptTask=null;tell('생성을 완료하지 못했어요. 다시 시도해 주세요.',true);return;}
            if(progress.saved){
-            if(state.dirty){state.gptTask=null;tell('결과가 저장됐어요. 현재 편집 내용은 유지됩니다. 편집기를 다시 열면 결과를 볼 수 있어요.');return;}
+            if(state.dirty){generating(taskId,false);state.gptTask=null;tell('결과가 저장됐어요. 현재 편집 내용은 유지됩니다. 편집기를 다시 열면 결과를 볼 수 있어요.');return;}
             const res=await fetch('/noa-inline-edit.php?'+new URLSearchParams(selector),{cache:'no-store',headers:{Accept:'application/json'}});
             const updated=await generationReply(res);
             if(active!==state||state.gptTask!==taskId)return;
             if(updated.ok&&updated.writeKey===state.data.writeKey&&!state.dirty){
              state.data=updated;
              for(const name of Object.keys(inputs))refreshField(name,updated.fields);
-             state.gptTask=null;tell('저장됨');return;
+             generating(taskId,false);state.gptTask=null;tell('저장됨');return;
             }
            }
           }catch(e){if(active===state&&state.gptTask===taskId)tell(/[가-힣]/.test(e.message)?e.message:'연결을 확인하고 있습니다.',true);}
@@ -333,7 +356,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
          setTimeout(refreshTask,5000);
         }
         setTimeout(refreshTask,1800);
-       }catch(e){tell(/[가-힣]/.test(e.message)?e.message:'서버에 연결할 수 없습니다. 곡 편집기를 다시 열어 주세요.',true);}finally{if(tab&&!launched&&!tab.closed)tab.close();state.busy=false;gpt.disabled=false;}
+       }catch(e){tell(/[가-힣]/.test(e.message)?e.message:'서버에 연결할 수 없습니다. 곡 편집기를 다시 열어 주세요.',true);}finally{generating('request',false);if(tab&&!launched&&!tab.closed)tab.close();state.busy=false;gpt.disabled=false;}
       };heading.append(gpt);
      }
     }
@@ -415,13 +438,20 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
      if(!targets.length){choices.open=true;info.textContent='빈 항목이 없습니다. 교체할 항목만 선택해 주세요.';return;}
      const revision=state.data.revision,job={selector,expectedKey:state.data.writeKey,revision,targets};
      state.busy=true;publish.disabled=true;const wasDisabled=[...form.querySelectorAll('input,textarea,button,select')].map(el=>[el,el.disabled]);for(const [el] of wasDisabled)el.disabled=true;
+     const marked=[];
+     function markBatch(keys){
+      for(const key of keys){
+       const field=generationFields.get(key);
+       if(field){field.generating('batch',true);field.tell('AI가 이 항목을 작성하고 있어요.');marked.push(field);}
+      }
+     }
      const began=Date.now();
      info.textContent='선택한 '+targets.length+'개 항목 · 연결 확인 중';
      try{
       const connection=await post('/noa-gpt.php?op=config',{});
       if(connection.workerConfigured){
        const started=await post('/noa-gpt.php?op=start',{...job,worker:true,field:'publishSet',replace:true});
-       info.textContent='요청 접수 · n80 실행 대기 중';
+       markBatch(started.targets);info.textContent='요청 접수 · n80 실행 대기 중';
        const deadline=Date.now()+1200000;
        while(Date.now()<deadline){
         await new Promise(resolve=>setTimeout(resolve,4000));
@@ -452,7 +482,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
        localStorage.setItem(creditMark,'yes');
       }
       info.textContent=config.eligible.map(k=>names[k]).join(' · ')+' 생성 중…';
-      const result=await post('/noa-publish-set.php',{...job,creditSetupConfirmed:config.keyId});
+      markBatch(config.eligible);const result=await post('/noa-publish-set.php',{...job,creditSetupConfirmed:config.keyId});
       const saveId=crypto.randomUUID();
       const saved=await post('/noa-inline-edit.php',{selector,expectedKey:state.data.writeKey,expectedRevision:revision,requestId:saveId,patch:result.patch});
       const r=await fetch('/noa-inline-edit.php?'+new URLSearchParams(selector),{cache:'no-store'}),fresh=await r.json();
@@ -461,7 +491,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
       info.textContent=Object.keys(result.patch).map(k=>names[k]).join(' · ')+' 저장 완료';
       onSaved({selector,record:displayRow||byKey.get(selector.key),data:fresh});
      }catch(e){info.textContent=({worker_failed:'n80 생성에 실패했습니다. 작업 현황을 확인해 주세요.',dispatch_failed:'자동 제작을 시작하지 못했습니다. 관리자 연결 설정을 확인해 주세요.',worker_offline:'n80 실행기 연결 설정을 확인해 주세요.',worker_timeout:'결과 대기 시간이 지났습니다. 곡을 다시 열어 확인해 주세요.',revision_conflict:'곡이 다른 곳에서 수정됐습니다. 다시 열어 최신 내용을 확인해 주세요.',ai_revision_changed:'곡이 변경되었습니다. 편집기를 다시 열어 주세요.',ai_provider_rate_limit:'AI 서비스 이용 한도와 잔액을 확인해 주세요.',ai_budget_exceeded:'AI LAB의 사용 한도에 도달했습니다.',no_enabled_fields:'선택한 항목은 장르 규칙에서 꺼져 있습니다.',readback:'저장 응답을 받았지만 다시 읽어 확인하지 못했습니다. 곡을 다시 열어 주세요.'})[e.message]||'게시 자료 생성을 확인하지 못했습니다. 곡을 다시 열어 저장 상태를 확인해 주세요.';}
-     finally{for(const [el,disabled]of wasDisabled)el.disabled=disabled;publish.disabled=false;state.busy=false;}
+     finally{for(const field of marked){field.generating('batch',false);field.feedback.hidden=true;}for(const [el,disabled]of wasDisabled)el.disabled=disabled;publish.disabled=false;state.busy=false;}
     };
    }
    const download=iconCommand('a','download','곡 정보 파일 저장');download.href='/noa-inline-edit.php?'+new URLSearchParams({...selector,download:'1'});download.download='';

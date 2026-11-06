@@ -27,12 +27,15 @@ function noa_field_guidance(string $field): string {
     if ($field === 'title') return $base.'Return only the song title. Follow the selected genre title mode and language. Use the linked original as source when adapting an EP.';
     if ($field === 'lyrics') return $base.'Return the complete lyrics for this song in the configured genre language, structure and vocal roles, following its adaptation rules. Use linked original lyrics as source when adapting an EP.';
     return $base.($field === 'geminiPrompt'
-        ? 'Write the Gemini image-generation prompt itself in English. Follow thumbnail composition, cast, character and typography rules. Preserve the exact original wording of requested on-image text, including the Korean song title, inside double quotes. Do not translate that lettering or add a Korean explanation.'
+        ? 'Write the Gemini image-generation prompt itself in English. Follow thumbnail composition, cast, character and typography rules. For the largest main lettering use the selected edition title (song.title or fields.title), exactly as written inside double quotes. If generating title in the same batch, use that new title. originalReadOnly is reference material only. Do not translate that lettering or add a Korean explanation.'
         : 'Use the configured language and format for this genre and target field.');
 }
 
-function noa_check_prompt_language(string $field, string $text): void {
+function noa_check_prompt_language(string $field, string $text, string $title = ''): void {
     if ($field !== 'geminiPrompt') return;
+    if ($title !== '' && !str_contains($text, '"'.$title.'"') && !str_contains($text, '“'.$title.'”')) {
+        throw new DomainException('gemini_requires_selected_title');
+    }
     $directions = preg_replace('/"[^"\n]*"|“[^”\n]*”/u', '', $text);
     if (!preg_match('/[A-Za-z]+\s+[A-Za-z]+/', $directions) || preg_match('/[가-힣ㄱ-ㅎㅏ-ㅣ]/u', $directions)) {
         throw new DomainException('gemini_requires_english_directions_quote_display_text');

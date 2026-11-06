@@ -108,7 +108,14 @@ function nup_complete(PDO $db,array $resolved):array{
  // The legacy editor's committed values are promoted when this complete record is saved.
  if(empty($resolved['document']['packageSchema']))foreach($resolved['fields'] as $name=>$value)if(in_array($name,NUP_FIELDS,true))$fields[$name]=$value;
  if($d['packageType']==='playlist')$fields['members']=nup_unique_members($fields['members']??[],nup_song_pool($db));
- $original=($d['genreId']??'')==='unclassified'?['status'=>'not_applicable']:nup_original($db,$d);$resolved['fields']=$fields;$resolved['writeKey']=$resolved['documentKey'];$resolved['revision']=$resolved['documentRevision'];$resolved['kind']=$kind;$resolved['payload']=$d;$resolved['packageType']=$d['packageType'];$resolved['original']=$original;
+ $original=($d['genreId']??'')==='unclassified'?['status'=>'not_applicable']:nup_original($db,$d);
+ if(($original['status']??'')==='linked' && !empty($original['title']) && $fields['title']!=='' && $fields['title']!==$original['title']){
+  // Older thumbnail instructions explicitly put the source title in the headline slot.
+  $source=preg_quote($original['title'],'~');
+  $headline='~(\b(?:largest|main title|headline)\s*[:=]?\s*)(?:"'.$source.'"|“'.$source.'”)~iu';
+  $fields['geminiPrompt']=preg_replace_callback($headline,fn($m)=>$m[1].'"'.$fields['title'].'"', $fields['geminiPrompt']);
+ }
+ $resolved['fields']=$fields;$resolved['writeKey']=$resolved['documentKey'];$resolved['revision']=$resolved['documentRevision'];$resolved['kind']=$kind;$resolved['payload']=$d;$resolved['packageType']=$d['packageType'];$resolved['original']=$original;
  if(in_array($d['packageType'],['act','playlist'],true)){
   $candidates=[];$q=$db->query("SELECT doc_key,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key");foreach($q as $r){$p=json_decode($r['payload'],true);if(!empty($p['_noaTrash'])||($p['genreId']??'')!==($d['genreId']??''))continue;$ep=(int)($p['ep']??0);if($d['packageType']==='act'&&($ep<$d['epRange']['from']||$ep>$d['epRange']['to']))continue;$candidates[]=['key'=>nie_identity($db,$r['doc_key']),'ep'=>$ep,'title'=>nup_fields($p)['title']];}usort($candidates,fn($a,$b)=>$a['ep']<=>$b['ep']);$resolved['candidates']=$candidates;
  }

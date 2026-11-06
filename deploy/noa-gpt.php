@@ -164,9 +164,9 @@ try {
                 foreach ($job['targets'] as $k) {
                     $v=$patch[$k]??null;
                     if (!is_string($v)||trim($v)===''||mb_strlen($v)>($k==='youtubeTitle'?100:($k==='geminiPrompt'?1000:20000))) reply(400,['error'=>'invalid_publish_set']);
-                    noa_check_prompt_language($k,$v);
+                    noa_check_prompt_language($k,$v,(string)($patch['title']??$record['fields']['title']));
                 }
-            } else noa_check_prompt_language($job['field'],$text);
+            } else noa_check_prompt_language($job['field'],$text,$record['fields']['title']);
             $digest = hash('sha256', json_encode([$job['key'],$job['field'],$text], JSON_THROW_ON_ERROR));
             $id = substr($job['id'],0,8).'-'.substr($job['id'],8,4).'-'.substr($job['id'],12,4).'-'.substr($job['id'],16,4).'-'.substr($job['id'],20);
             $check = $db->prepare('SELECT request_hash, revision FROM noa_request_log WHERE request_id=? FOR UPDATE');

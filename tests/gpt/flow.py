@@ -137,6 +137,8 @@ with tempfile.TemporaryDirectory() as tmp:
         call('workerPoll',{'id':genre_batch['id']},key=worker)
         values={k:'내용' for k in genre_batch['targets']}
         values.update(title='장르 제목',geminiPrompt='Create a cinematic portrait.')
+        call('save',{'id':genre_batch['id'],'text':json.dumps(values)},key=worker,status=409)
+        values['geminiPrompt']='Render the main title “장르 제목”.'
         assert call('save',{'id':genre_batch['id'],'text':json.dumps(values)},key=worker)['revision']==6
         call('workerDisable',{},admin=True)
         call('workerPoll',{},key=worker,status=401)
