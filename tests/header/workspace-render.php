@@ -1,6 +1,7 @@
 <?php
 // Render the shipped views with disposable data; never load an administrator session or database.
 declare(strict_types=1);
+define('NOA_SITEMAP_REGISTRY_ONLY', true);
 require __DIR__.'/../../deploy/noa-workspace.php';
 $out = $argv[1];
 if (!is_dir($out)) mkdir($out, 0700, true);
