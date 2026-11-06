@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once dirname(__DIR__).'/noa-app/engine/song-generation.php';
 
 /** The private worker accepts one task ID at a time and reads its claimed song by key. */
 function ncbai_selection(array $body): array {
@@ -87,16 +88,6 @@ function ncbai_public(?array $batch): ?array {
     return ['id'=>$batch['id'], 'items'=>array_map(static fn($item)=>array_intersect_key($item, $visible), $batch['items'])];
 }
 
-function ncbai_write_state(string $dir, string $file, array $state): void {
-    $bytes = json_encode($state, JSON_THROW_ON_ERROR);
-    $tmp = tempnam($dir, 'gpt-');
-    try {
-        if (!$tmp || file_put_contents($tmp, $bytes) !== strlen($bytes) || !rename($tmp, $file)) throw new RuntimeException('state_write');
-    } finally {
-        if ($tmp && is_file($tmp)) unlink($tmp);
-    }
-}
-
 function ncbai_request_id(array $body): string {
     $id = $body['requestId'] ?? null;
     if (!is_string($id) || !preg_match('/^[a-f0-9]{32}$/D', $id)) throw new InvalidArgumentException('invalid_request_id');
@@ -114,7 +105,7 @@ function ncbai_request(array &$state, string $op, array $body, string $owner, bo
     }
     if (!$hosted || ($state['owner'] ?? '') !== $owner) throw new DomainException('worker_offline');
     $single = $state['job'] ?? [];
-    if (!empty($single['worker']) && !isset($single['saved']) && empty($single['failed']) && ($single['expires'] ?? 0) > time()) {
+    if (!empty($single['worker']) && in_array(n80_engine_generation_state($single, time()), ['queued','running'], true)) {
         throw new DomainException('single_worker_busy');
     }
     $batch = $state['batch'] ?? null;
@@ -201,13 +192,13 @@ function ncbai_timeout(array &$batch): void {
 function ncbai_dispatch($lock, string $dir, string $file, string $task, string $token): ?array {
     ignore_user_abort(true);
     flock($lock, LOCK_UN);
-    $status = n80_song_dispatch($task, $token);
+    $status = n80_auto_dispatch($task, $token, "song_generation");
     if ($status >= 200 && $status < 300) return null;
     if (!flock($lock, LOCK_EX)) throw new RuntimeException('lock');
     $latest = json_decode(file_get_contents($file), true, 32, JSON_THROW_ON_ERROR);
     if (($latest['batch']['job']['id'] ?? '') === $task) {
         ncbai_dispatch_error($latest['batch'], $task);
-        ncbai_write_state($dir, $file, $latest);
+        n80_engine_write_state($dir, $file, $latest);
     }
     return $latest['batch'] ?? null;
 }
@@ -225,7 +216,7 @@ function ncbai_watchdog(string $dir, string $owner): void {
         if (!$job || $job['expires'] > time() || ($state['owner'] ?? '') !== $owner || ($state['batch']['owner'] ?? '') !== $owner) return;
         ncbai_timeout($state['batch']);
         $task = ncbai_next($state['batch']);
-        ncbai_write_state($dir, $file, $state);
+        n80_engine_write_state($dir, $file, $state);
         if ($task !== null) {
             $token = trim((string)getenv('NOA_GITHUB_DISPATCH_TOKEN')) ?: (string)($state['dispatchToken'] ?? '');
             ncbai_dispatch($lock, $dir, $file, $task, $token);

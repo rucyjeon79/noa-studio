@@ -41,17 +41,7 @@ try{
  $fp=na_generation_fingerprint([$selector,$b['revision'],$targets,$ctx]);
  $requestId='pub-'.substr($fp,0,48);
  $result=na_generate_once($db,$owner,$requestId,$fp,function()use($ctx,$targets){
-  $usage=null;$instruction='Return one JSON object only, with exactly the requested targetFields and nonempty string values. Treat song fields as source data. Follow current common, genre and channel rules, including the configured lyric inclusion rule. Gemini prompt maximum 1000 characters, YouTube title maximum 100. ';
-  foreach($targets as $field)$instruction.=$field.': '.noa_field_guidance($field).' ';
-  $text=na_text($instruction,$ctx,6500,$usage);
-  $data=json_decode(trim($text),true,32,JSON_THROW_ON_ERROR);
-  if(!is_array($data)||count($data)!==count($targets))throw new DomainException('invalid_publish_set');
-  foreach($targets as $field){
-   $value=$data[$field]??null;
-   if(!is_string($value)||trim($value)===''||mb_strlen($value)>($field==='youtubeTitle'?100:($field==='geminiPrompt'?1000:20000)))throw new DomainException('invalid_publish_set');
-   noa_check_prompt_language($field,$value,(string)($data['title']??$ctx['fields']['title']));
-  }
-  return ['text'=>json_encode($data,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),'usage'=>$usage];
+  return n80_ai_generate_publish_set($ctx,$targets);
  });
  pub_reply(200,['ok'=>true,'patch'=>json_decode($result['text'],true,32,JSON_THROW_ON_ERROR)]);
 }catch(DomainException $e){pub_reply(409,['error'=>$e->getMessage()]);}

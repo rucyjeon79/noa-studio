@@ -74,6 +74,8 @@ try {
     $batchWorker = $isWorker && $batchJob && ($op === 'read' || ($body['id'] ?? '') === $batchJob['id']);
     $job = $batchWorker ? $batchJob : ($state['job'] ?? []);
     $valid = ($job['expires'] ?? 0) > time();
+    $generationState = n80_engine_generation_state($job, time());
+    $singleTimedOut = !$batchWorker && $generationState === 'timed_out';
     $advance = false;
     if ($batchJob && in_array($op, ['workerDisable','workerPair'], true)) reply(409,['error'=>'batch_busy']);
     switch ($op) {
@@ -136,7 +138,7 @@ try {
             break;
         }
         $state['workerSeen'] = time();
-        $pending = $valid && !empty($job['worker']) && !isset($job['saved']) && !isset($job['failed']);
+        $pending = !$singleTimedOut && $valid && !empty($job['worker']) && !isset($job['saved']) && !isset($job['failed']);
         if ($pending && !empty($job['hosted']) && ($body['id'] ?? '') !== $job['id']) reply(409,['error'=>'task_replaced']);
         if ($pending && empty($job['claimed'])) {
             $state['job']['claimed'] = time();
@@ -150,7 +152,10 @@ try {
             break;
         }
         if (!$valid || empty($job['worker']) || ($body['id'] ?? '') !== $job['id']) reply(409,['error'=>'task_replaced']);
-        if (!isset($job['saved'])) $state['job']['failed'] = true;
+        if (!isset($job['saved']) && empty($job['failed'])) {
+            $state['job']['failed'] = true;
+            $state['job']['failureReason'] = 'generation_failed';
+        }
         break;
     case 'pluginToggle':
         if (!is_bool($body['enabled'] ?? null)) reply(400,['error'=>'invalid_request']);
@@ -172,7 +177,7 @@ try {
         break;
     case 'progress':
         if (!$valid || ($body['id'] ?? '') !== $job['id']) reply(409,['error'=>'task_replaced']);
-        $out=['claimed'=>!empty($job['claimed']),'revision'=>$job['saved']??null,'saved'=>isset($job['saved']), 'failed'=>!empty($job['failed']) || (!empty($job['worker']) && time() > $job['expires']-3600+(!empty($job['hosted']) ? 1200 : 360) && !isset($job['saved']))];
+        $out=['claimed'=>!empty($job['claimed']),'revision'=>$job['saved']??null,'saved'=>isset($job['saved']), 'stage'=>$generationState, 'failureReason'=>$generationState==='timed_out'?'worker_timeout':($job['failureReason']??null), 'failed'=>in_array($generationState,['failed','timed_out'],true)];
         break;
     case 'start':
         $useWorker = ($body['worker'] ?? false) === true;
@@ -215,6 +220,7 @@ try {
             }
         }
         if (!$valid || ($op==='save' && ($body['id'] ?? '') !== $job['id'])) reply(409,['error'=>'select_song_again']);
+        if ($singleTimedOut) reply(409,['error'=>'worker_timeout']);
         if ($isWorker !== !empty($job['worker'])) reply(409,['error'=>'wrong_worker']);
         if (!empty($job['worker']) && (!$isWorker || empty($job['claimed']) || isset($job['failed']))) reply(409,['error'=>'worker_required']);
         $db = noa_bridge_pdo();
@@ -228,12 +234,8 @@ try {
             $patch=[$job['field']=>$text];
             if ($job['field']==='publishSet') {
                 $patch=json_decode($text,true,16,JSON_THROW_ON_ERROR);
-                if (!is_array($patch)||count($patch)!==count($job['targets'])) reply(400,['error'=>'invalid_publish_set']);
-                foreach ($job['targets'] as $k) {
-                    $v=$patch[$k]??null;
-                    if (!is_string($v)||trim($v)===''||mb_strlen($v)>($k==='youtubeTitle'?100:($k==='geminiPrompt'?1000:20000))) reply(400,['error'=>'invalid_publish_set']);
-                    noa_check_prompt_language($k,$v,(string)($patch['title']??$record['fields']['title']));
-                }
+                try { n80_ai_validate_publish_set($patch,$job['targets'],$record['fields']['title']); }
+                catch (InvalidArgumentException $e) { reply(400,['error'=>'invalid_publish_set']); }
             } else noa_check_prompt_language($job['field'],$text,$record['fields']['title']);
             $digest = hash('sha256', json_encode([$job['key'],$job['field'],$text], JSON_THROW_ON_ERROR));
             $id = substr($job['id'],0,8).'-'.substr($job['id'],8,4).'-'.substr($job['id'],12,4).'-'.substr($job['id'],16,4).'-'.substr($job['id'],20);
@@ -271,19 +273,29 @@ try {
     $dispatchBatch = $advance ? ncbai_next($state['batch']) : null;
     if ($batchApi) $out = ['batch'=>ncbai_public($state['batch'] ?? null)];
     if ($state !== $before) {
-        $tmp = tempnam($dir, 'gpt-');
-        $bytes = json_encode($state, JSON_THROW_ON_ERROR);
-        try { if (!$tmp || file_put_contents($tmp,$bytes)!==strlen($bytes) || !rename($tmp,$file)) throw new RuntimeException('state_write'); }
-        finally { if ($tmp && is_file($tmp)) unlink($tmp); }
+        n80_engine_write_state($dir, $file, $state);
     }
     if ($dispatchBatch !== null) {
         $latestBatch = ncbai_dispatch($lock, $dir, $file, $dispatchBatch, $dispatchToken);
         if ($batchApi && $latestBatch !== null) $out = ['batch'=>ncbai_public($latestBatch)];
     }
     if ($op === 'start' && !empty($state['job']['hosted'])) {
+        ignore_user_abort(true);
         flock($lock, LOCK_UN);
-        $status = n80_song_dispatch($out['id'],$dispatchToken);
-        if ($status < 200 || $status >= 300) reply(502,['error'=>'dispatch_failed']);
+        $status = n80_auto_dispatch($out['id'],$dispatchToken,'song_generation');
+        if ($status < 200 || $status >= 300) {
+            // Delivery may have succeeded before a transport timeout. Respect a concurrent claim or save.
+            if (!flock($lock, LOCK_EX)) throw new RuntimeException('lock');
+            $latest = json_decode(file_get_contents($file), true, 32, JSON_THROW_ON_ERROR);
+            $current = $latest['job'] ?? [];
+            if (($current['id'] ?? '') !== $out['id']) reply(409,['error'=>'task_replaced']);
+            if (empty($current['claimed']) && !isset($current['saved'])) {
+                $latest['job']['failed'] = true;
+                $latest['job']['failureReason'] = 'dispatch_failed';
+                n80_engine_write_state($dir, $file, $latest);
+                reply(502,['error'=>'dispatch_failed']);
+            }
+        }
     }
     reply(200,['ok'=>true]+$out);
 } catch (InvalidArgumentException|JsonException $e) { reply(400,['error'=>'invalid_request']); }

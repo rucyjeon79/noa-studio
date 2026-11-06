@@ -17,7 +17,8 @@ with tempfile.TemporaryDirectory() as tmp:
     bridge.mkdir(parents=True)
     engine = root / 'noa-app/engine'
     engine.mkdir(parents=True)
-    shutil.copy('deploy/noa-app/engine/song-generation.php', engine)
+    for module in ('song-generation.php','generation-state.php','auto-dispatch.php'):
+        shutil.copy(Path('deploy/noa-app/engine')/module, engine)
     shutil.copy("deploy/noa-gpt.php", root)
     (root/"common.php").write_text("""<?php
     $config=['cf_admin'=>'test-owner'];$member=['mb_id'=>'test-owner'];
@@ -38,6 +39,7 @@ with tempfile.TemporaryDirectory() as tmp:
     shutil.copy("deploy/noa-plugin-records.php",root)
     target.write_text(bridge_src.replace(' WHERE request_id=? FOR UPDATE',' WHERE request_id=?'))
     shutil.copy("bridge/generation-rules.php",bridge)
+    shutil.copy("bridge/n80-ai-output.php",bridge)
     (bridge/"taxonomy-store.php").write_text("""<?php
     function nt_effective_rules($db,$genre){return ['common'=>['layout'=>'common-layout'],'genre'=>['style'=>$genre.'-style'],'principleZero'=>[]];}
     """)
@@ -138,9 +140,17 @@ with tempfile.TemporaryDirectory() as tmp:
         assert call('progress',{'id':queued['id']},admin=True)['saved']
         # Exercise a dispatched worker without outbound traffic or real credentials.
         hosted_src=target.read_text().replace("getenv('NOA_GITHUB_DISPATCH_TOKEN')","'fixture'")
-        start=hosted_src.index("        $status = n80_song_dispatch(")
+        start=hosted_src.index("        $status = n80_auto_dispatch(")
         end=hosted_src.index("        if ($status <", start)
         target.write_text(hosted_src[:start]+"        $status = 204;\n"+hosted_src[end:])
+        healthy_dispatch = target.read_text()
+        target.write_text(healthy_dispatch.replace('$status = 204;', '$status = 502;'))
+        call('start',{**one_tap,'revision':3},admin=True,status=502)
+        state_file = Path(tmp)/'noa-ai-lab/gpt-action/state.json'
+        failed_job = json.loads(state_file.read_text())['job']
+        assert call('progress',{'id':failed_job['id']},admin=True)['stage']=='failed'
+        assert 'id' not in call('workerPoll',{'id':failed_job['id']},key=worker)
+        target.write_text(healthy_dispatch)
         hosted=call('start',{**one_tap,'revision':3},admin=True)
         call('workerPoll',{'id':'a'*32},key=worker,status=409)
         assert call('workerPoll',{'id':hosted['id']},key=worker)['id']==hosted['id']
@@ -182,7 +192,14 @@ with tempfile.TemporaryDirectory() as tmp:
         assert call('batchStatus',{},admin=True)['batch'] is None
         # Stub outbound dispatch, but run real callbacks and SQL commits.
         core = bridge/'channel-batch-ai.php'
-        core.write_text(core.read_text().replace('$status = n80_song_dispatch($task, $token);','$status = 204;'))
+        core.write_text(core.read_text().replace('$status = n80_auto_dispatch($task, $token, "song_generation");','$status = 204;'))
+        # A legacy single worker job can time out before its one-hour record expires.
+        stalled=call('start',{**one_tap,'revision':6},admin=True)
+        state=json.loads(state_path.read_text())
+        state['job']['expires']=int(time.time())+1800
+        state_path.write_text(json.dumps(state))
+        assert call('progress',{'id':stalled['id']},admin=True)['stage']=='timed_out'
+        assert 'id' not in call('workerPoll',{'id':stalled['id']},key=worker)
         receipt=call('batchStart',selection,admin=True)['batch']
         assert [item['status'] for item in receipt['items']]==['queued','queued','skipped']
         assert call('batchStart',selection,admin=True)['batch']==receipt

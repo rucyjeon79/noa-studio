@@ -8,6 +8,12 @@ release.UNRELATED_PATH_PREFIXES = ("scripts/noa_music_save_release.py", "android
 release.FILES = {name: 'deploy/'+name for name in (
     'noa-publish-set.php','noa-plugin-records.php','noa-gpt.php','noa-gpt-schema.json','noa-gpt-setup.php','noa-browse-edit.js')}
 release.FILES = {'noa-bridge/channel-batch-ai.php':'bridge/channel-batch-ai.php','noa-bridge/lab-worker.php':'bridge/lab-worker.php','noa-app/engine/song-generation.php':'deploy/noa-app/engine/song-generation.php','noa-work-status.php':'deploy/noa-work-status.php','noa-bridge/generation-rules.php':'bridge/generation-rules.php',**release.FILES,'noa-bridge/ainoa-generation.php':'bridge/ainoa-generation.php'}
+release.FILES = {
+    'noa-app/engine/generation-state.php':'deploy/noa-app/engine/generation-state.php',
+    'noa-app/engine/auto-dispatch.php':'deploy/noa-app/engine/auto-dispatch.php',
+    'noa-bridge/n80-ai-output.php':'bridge/n80-ai-output.php',
+    **release.FILES,
+}
 release.FILES.update({'noa-bridge/package-record.php':'bridge/package-record.php','noa-bridge/inline-edit.php':'bridge/inline-edit.php'})
 release.FILES['noa-bridge/youtube-catalog.php']='bridge/youtube-catalog.php'
 for name in ('youtube-store.php','taxonomy-core.php','taxonomy-store.php'):
