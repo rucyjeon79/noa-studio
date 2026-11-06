@@ -8,7 +8,6 @@ if(!in_array($_SERVER['REQUEST_METHOD']??'GET',['GET','HEAD'],true)){http_respon
 try{
  $key=$_GET['key']??'';if(!is_string($key)||strlen($key)>191){http_response_code(404);exit;}$db=noa_bridge_pdo();$doc=nj_document($db,$key);$a=nj_find($db,$key);
  if(!$doc||(!noa_sound_visible($doc,$access['admin'])&&!nam_owner($doc,(array)($member??[])))){http_response_code(403);exit;}
- $current=$a;
  if(!$access['admin']){
   $receipt=$_GET['receipt']??'';if(!is_string($receipt)||$receipt===''){header('Location: /noa-music-download.php?key='.rawurlencode($key));exit;}
   $paid=nmd_receipt((string)$member['mb_id'],$receipt,$key);
@@ -16,10 +15,8 @@ try{
  }
  if(!$a||!hash_equals($a['source_url'],noa_sound_suno($doc['body']??[]))||!nj_verified($a,'audio')){http_response_code(404);exit;}
  $p=nj_file($a['audio_path']);$size=filesize($p);try{[$start,$end,$code]=nj_range($_SERVER['HTTP_RANGE']??null,$size);}catch(InvalidArgumentException $e){http_response_code(416);header('Content-Range: bytes */'.$size);exit;}
- $title=(string)(($doc['body']['confirmedTitle']??'')?:($doc['title']??$a['title']??'NOA'));
- $currentName=nmd_filename($db,$current??[],$title);
- $filename=isset($paid)?nmd_receipt_filename($paid,$current['audio_sha256']??'',$currentName):$currentName;
- $ascii=preg_replace('/[^A-Za-z0-9 ._()-]/','_',$filename);
+ $filename=nmd_filename($doc);
+ $ascii=preg_replace('/[^A-Za-z0-9 ._()\[\]-]/','_',$filename);
  if(($_SERVER['REQUEST_METHOD']??'GET')==='GET'&&$start===0)$db->prepare('INSERT INTO noa_jukebox_downloads(song_key,sha256,bytes,requested_by) VALUES(?,?,?,?)')->execute([$key,$a['audio_sha256'],$size,(string)$member['mb_id']]);
  $f=fopen($p,'rb');if(!$f)throw new RuntimeException('unreadable_audio');session_write_close();while(ob_get_level())ob_end_clean();http_response_code($code);
  header('Content-Type: audio/mpeg');header('Content-Disposition: attachment; filename="'.$ascii.'"; filename*=UTF-8\'\''.rawurlencode($filename));header('X-NOA-SHA256: '.$a['audio_sha256']);header('Accept-Ranges: bytes');header('Content-Length: '.($end-$start+1));if($code===206)header('Content-Range: bytes '.$start.'-'.$end.'/'.$size);
