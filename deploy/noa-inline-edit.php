@@ -5,7 +5,7 @@ header('Content-Type: application/json; charset=utf-8');header('Cache-Control: p
 function nie_reply(int $status,array $value):never{http_response_code($status);echo json_encode($value,JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR);exit;}
 if(empty($is_member)||($is_admin??'')!=='super')nie_reply(403,['ok'=>false,'error'=>'admin_required']);
 $method=$_SERVER['REQUEST_METHOD']??'GET';if(!in_array($method,['GET','POST'],true))nie_reply(405,['ok'=>false,'error'=>'method_not_allowed']);
-require_once __DIR__.'/noa-bridge/storage.php';require_once __DIR__.'/noa-bridge/sound-core.php';require_once __DIR__.'/noa-bridge/inline-edit.php';
+require_once __DIR__.'/noa-bridge/storage.php';require_once __DIR__.'/noa-bridge/sound-core.php';require_once __DIR__.'/noa-bridge/inline-edit.php';require_once __DIR__.'/noa-bridge/suno-cover.php';
 try{
  $db=noa_bridge_pdo();
  if($method==='GET'){
@@ -13,6 +13,11 @@ try{
   if(($_GET['download']??'')==='1'){
    header('Content-Disposition: attachment; filename="noa-record-'.substr(hash('sha256',$resolved['writeKey']),0,20).'.json"');
    nie_reply(200,['key'=>$resolved['writeKey'],'revision'=>$resolved['revision'],'record'=>$resolved['payload'],'original'=>$resolved['original']]);
+  }
+  $source=noa_sound_suno($resolved['payload']['body']??[]);
+  $resolved['sunoCover']='';
+  if($source && $resolved['kind']!=='playlist'){
+   try{$resolved['sunoCover']=nsc_preview(nj_find($db,$resolved['writeKey']),$resolved['writeKey'],$source);}catch(PDOException $e){error_log('[suno-cover] artwork lookup unavailable');}
   }
   nie_reply(200,$resolved);
  }
@@ -22,6 +27,11 @@ try{
  $request=json_decode($raw,true,512,JSON_THROW_ON_ERROR);$patch=$request['patch']??null;$expected=$request['expectedRevision']??null;$requestId=$request['requestId']??null;$selector=$request['selector']??null;
  if(!is_array($selector)||!is_array($patch)||array_is_list($patch)||!is_int($expected)||$expected<0||!is_string($requestId)||!preg_match('/^[a-f0-9-]{36}$/iD',$requestId))throw new InvalidArgumentException('invalid_write');
  $hashInput=[$selector,$patch,$expected];if(array_key_exists('collections',$patch))$hashInput[]=$request['collectionRevisions']??null;
+ $prepared=null;
+ if(is_string($patch['sunoUrl']??null)&&$patch['sunoUrl']!==''&&strlen($patch['sunoUrl'])<=2048){
+  $seen=$db->prepare('SELECT 1 FROM noa_request_log WHERE request_id=?');$seen->execute([$requestId]);
+  if(!$seen->fetchColumn())$prepared=nsc_prepare($db,(string)($request['expectedKey']??''),$patch['sunoUrl']);
+ }
  $hash=hash('sha256',json_encode($hashInput,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR));$db->beginTransaction();
  $q=$db->prepare('SELECT doc_key,request_hash,revision FROM noa_request_log WHERE request_id=? FOR UPDATE');$q->execute([$requestId]);$retry=$q->fetch(PDO::FETCH_ASSOC);
  if($retry){if(isset($request['expectedKey'])&&$request['expectedKey']!==$retry['doc_key'])throw new DomainException('song_changed');if(!hash_equals($retry['request_hash'],$hash))throw new DomainException('idempotency_reuse');$db->commit();if(array_key_exists('collections',$patch))foreach(nup_collections($db) as $list)if(isset($request['collectionRevisions'][$list['key']]))nup_snapshot($db,$list['key'],dirname(__DIR__).'/noa-ai-lab/packages/records');nup_snapshot($db,$retry['doc_key'],dirname(__DIR__).'/noa-ai-lab/packages/records');nie_reply(200,['ok'=>true,'revision'=>(int)$retry['revision'],'replayed'=>true]);}
@@ -35,6 +45,7 @@ try{
   $q=$db->query("SELECT doc_key,payload FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key FOR UPDATE");
   foreach($q as $r){$d=json_decode($r['payload'],true);if($r['doc_key']!==$key&&($d['genreId']??'')==='kpop-original'&&(int)($d['ep']??0)===(int)$payload['ep'])throw new DomainException('original_ep_conflict');}
  }
+ if($kind!=='playlist')$payload=nsc_attach($db,$key,$payload,$prepared);
  $next=nup_store($db,$key,$kind,$payload,$expected,(string)$member['mb_id']);
  if($payload['packageType']==='original'&&isset($patch['ep'])&&(int)$payload['ep']!==(int)($resolved['payload']['ep']??0)){
   $q=$db->query("SELECT doc_key,kind,payload,revision FROM noa_documents WHERE kind IN ('single','story') ORDER BY doc_key FOR UPDATE");$all=$q->fetchAll(PDO::FETCH_ASSOC);

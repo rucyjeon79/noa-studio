@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);ini_set('display_errors','0');
-require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/storage.php';require_once __DIR__.'/sound-core.php';require_once __DIR__.'/creator-core.php';require_once dirname(__DIR__).'/noa-app/jukebox/upload-core.php';
+require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/storage.php';require_once __DIR__.'/sound-core.php';require_once __DIR__.'/creator-core.php';require_once __DIR__.'/suno-cover.php';require_once dirname(__DIR__).'/noa-app/jukebox/upload-core.php';
 header('Content-Type: application/json; charset=utf-8');header('Cache-Control: private, no-store');header('X-Content-Type-Options: nosniff');
 function nc_reply(int $code,array $value):never{http_response_code($code);echo json_encode($value,JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_THROW_ON_ERROR);exit;}
 $a=nam_access((array)($member??[]),(string)($is_admin??''));if(!$a['creator'])nc_reply(403,['error'=>'creator_required']);$actor=(string)$member['mb_id'];
@@ -33,7 +33,12 @@ try{
   if(!$r){$q=$db->prepare("SELECT COUNT(*) FROM noa_documents WHERE kind='story' AND doc_key LIKE ?");$q->execute(['creator:'.hash('sha256',$actor).':%']);if((int)$q->fetchColumn()>=100)throw new DomainException('channel_song_limit');$key='creator:'.hash('sha256',$actor).':'.bin2hex(random_bytes(16));}
   $d=$r['document']??['ownerId'=>$actor,'title'=>'','genreId'=>'your-story','ep'=>'','act'=>'','visibility'=>'private','body'=>[]];$d=nc_patch($d,$b);$expected=$b['revision']??null;if(!is_int($expected)||$expected!==($r['revision']??0))throw new DomainException('revision_conflict');
   if($d['visibility']==='public'){$asset=nj_find($db,$key);if(!nj_verified($asset,'audio'))throw new DomainException('verified_audio_required');if(($b['rightsConfirmed']??false)!==true)throw new DomainException('rights_confirmation_required');}
-  $next=nc_store($db,$key,'story',$d,$expected,$actor);nc_reply(200,['key'=>$key,'revision'=>$next]);
+  $source=noa_sound_suno($d['body']);$before=noa_sound_suno($r['document']['body']??[]);
+  $prepared=$source!==''&&($source!==$before||($b['retryCover']??false)===true)?nsc_prepare($db,$key,$source):null;
+  $db->beginTransaction();
+  try{$d=nsc_attach($db,$key,$d,$prepared);$next=nup_store($db,$key,'story',$d,$expected,$actor);$db->commit();}
+  catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+  nc_reply(200,['key'=>$key,'revision'=>$next,'coverReady'=>(bool)nsc_preview($d['body']['uploadedAsset']??null,$key,$source)]);
  }
  if($action==='init'){
   $r=nc_own($db,(string)($b['key']??''),$member);$q=$db->prepare("SELECT COALESCE(SUM(a.audio_bytes),0) FROM noa_jukebox_assets a JOIN noa_documents d ON d.doc_key=a.song_key WHERE d.doc_key LIKE ?");$q->execute(['creator:'.hash('sha256',$actor).':%']);if((int)$q->fetchColumn()+(int)($b['bytes']??0)>1073741824)throw new DomainException('channel_storage_limit');session_write_close();nc_reply(200,nu_initialize($db,$b,$actor));

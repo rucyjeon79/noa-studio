@@ -4,6 +4,8 @@ from pathlib import Path
 root=Path(os.environ['RUNNER_TEMP'])/'noa-inline-edit-fixture'
 root.mkdir(exist_ok=True)
 (root/'noa-bridge').mkdir(exist_ok=True)
+(root/'noa-app/jukebox').mkdir(parents=True, exist_ok=True)
+shutil.copyfile('deploy/noa-app/jukebox/core.php',root/'noa-app/jukebox/core.php')
 for p in Path('bridge').glob('*.php'):shutil.copyfile(p,root/'noa-bridge'/p.name)
 shutil.copyfile('deploy/noa-ainoa-admin.js',root/'noa-ainoa-admin.js')
 shutil.copyfile('deploy/noa-inline-edit.php',root/'noa-inline-edit.php')

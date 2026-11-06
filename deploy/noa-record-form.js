@@ -6,9 +6,36 @@ const ownerKeys=['originalArtist','title','vocal','songDescription','lyrics','ly
 function describe(key,type){const [label,tag,group]=schema[key];return {key,label:key==='title'&&['act','playlist'].includes(type)?'플레이리스트 제목':key==='lyrics'&&type==='ep'?'장르 가사':label,tag,group};}
 function keys(type){const list=Object.keys(schema);return list.filter(k=>k!=='ep'||type==='original').filter(k=>k!=='originalArtist'||type==='cover').filter(k=>!['act','playlist'].includes(type)||!['lyrics','lyricsTranslation','sunoPrompt','productionPrompt','sunoUrl','cardImageLocation','audioFileLocation'].includes(k)).filter(k=>k!=='tracklist'||['act','playlist'].includes(type));}
 function sections(form){form.classList.add('noa-record-form');const map=new Map();for(const [key,label]of groups){const section=document.createElement('fieldset'),legend=document.createElement('legend');section.className='noa-record-section';section.dataset.recordSection=key;legend.textContent=label;section.append(legend);section.hidden=true;map.set(key,section);form.append(section);}return {add(key,node){const section=map.get(schema[key]?.[2]||key);if(!section)throw Error('Unknown record section');section.hidden=false;section.append(node);},get:key=>map.get(key)};}
+// Both editor modes keep the saved artwork paired with its exact source URL.
+function sunoField(input){
+ const row=document.createElement('div'), frame=document.createElement('span'), icon=document.createElementNS('http://www.w3.org/2000/svg','svg');
+ row.className='noa-suno-row';frame.className='noa-suno-cover';frame.setAttribute('role','img');
+ icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('aria-hidden','true');
+ icon.innerHTML='<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.5"/><path d="m4 17 5-5 4 4 3-3 5 5"/>';
+ input.before(row);row.append(frame,input);
+ let savedSource='',savedImage='',last='',image=null;
+ function paint(force=false){
+  const source=input.value.trim(),url=source===savedSource?savedImage:'';
+  const label=source&&source!==savedSource?'저장하면 표지를 가져옵니다':source?'표지를 가져오려면 URL을 다시 저장하세요':'Suno 카드 이미지';
+  if(!force && last===url+'|'+label)return;
+  last=url+'|'+label;
+  image=null;frame.replaceChildren(icon);frame.title=label;frame.setAttribute('aria-label',label);
+  frame.dataset.status=url?'loading':(source===savedSource&&source?'missing':'empty');
+  if(!url)return;
+  const img=new Image();image=img;img.alt='';img.decoding='async';
+  img.onload=()=>{if(image!==img)return;frame.replaceChildren(img);frame.dataset.status='ready';frame.title='Suno 카드 이미지';frame.setAttribute('aria-label',frame.title);};
+  img.onerror=()=>{if(image!==img)return;frame.dataset.status='missing';frame.title='표지를 가져오려면 URL을 다시 저장하세요';frame.setAttribute('aria-label',frame.title);};
+  img.src=url;
+ }
+ input.addEventListener('input',()=>paint());
+ input.setSavedCover=(source,url)=>{const failed=frame.dataset.status==='missing';savedSource=source||'';savedImage=url||'';paint(failed);};
+ input.coverMissing=()=>frame.dataset.status==='missing';
+ paint();
+}
 function createField(key,{type='song',value='',prefix='noa-edit-',readOnly=false}={}){const d=describe(key,type),wrap=document.createElement('div'),heading=document.createElement('div'),caption=document.createElement('label'),input=document.createElement(d.tag==='checkbox'?'input':d.tag);wrap.className='noa-record-field';wrap.dataset.recordField=key;heading.className='noa-edit-field-heading';caption.textContent=d.label;input.id=prefix+key;input.name=key;caption.htmlFor=input.id;heading.append(caption);input.readOnly=readOnly;
  if(key==='vocal'){const values=[['','미지정'],['여자솔로','여자솔로'],['남자솔로','남자솔로'],['남녀듀엣','남녀듀엣']];if(value&&!values.some(v=>v[0]===value))values.push([value,value]);for(const [v,label]of values){const o=document.createElement('option');o.value=v;o.textContent=label;input.append(o);}}
  if(d.tag==='checkbox'){input.type='checkbox';input.checked=value===true;caption.prepend(input);wrap.append(heading);}else{input.value=key==='creativeFields'?JSON.stringify(value||{},null,2):String(value??'');if(d.tag==='input')input.type='text';input.maxLength=key==='title'?500:key==='originalArtist'?200:200000;input.required=key==='title';wrap.append(heading,input);}
+ if(key==='sunoUrl')sunoField(input);
  return {wrap,heading,caption,input};}
 function value(input){if(input.type==='checkbox')return input.checked;if(['creativeFields','members','collections'].includes(input.name))return JSON.parse(input.value||'{}');return input.value;}
 function set(input,v){if(input.type==='checkbox')input.checked=v===true;else input.value=['creativeFields','members','collections'].includes(input.name)?JSON.stringify(v||{},null,2):String(v??'');}
@@ -32,5 +59,5 @@ function classificationEditor(form,{genre='unclassified',ep='',inputs,collection
  category.onchange=()=>{options('');numberState();drawCollections();};detail.onchange=()=>{numberState();drawCollections();};numberState();drawCollections();
  const note=document.createElement('p');note.className='noa-edit-readonly';note.textContent='저장하면 음원·YouTube·라이브러리의 분류가 함께 바뀝니다. 장르를 바꾸면 이전 장르의 묶음 선택이 해제됩니다.';section.append(note);form.append(section);return {category,detail,setBusy(busy){for(const control of section.querySelectorAll('input,select'))control.disabled=busy;}};
 }
-const link=document.createElement('link');link.rel='stylesheet';link.href='/noa-record-form.css?v=20261027-clear1';document.head.append(link);
+const link=document.createElement('link');link.rel='stylesheet';link.href='/noa-record-form.css?v=20261106-suno-cover';document.head.append(link);
 window.NoaRecordForm={schema,groups,ownerKeys,describe,keys,sections,createField,value,set,render,classificationEditor};})();
