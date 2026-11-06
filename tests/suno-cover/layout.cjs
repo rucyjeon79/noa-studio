@@ -16,6 +16,10 @@ const assert=require('node:assert/strict');
     document.querySelector('form').append(f.wrap);f.input.setSavedCover(source,image);
    },image);
    await page.waitForSelector('.noa-suno-cover[data-status=ready] img');
+   await page.waitForFunction(()=>{
+    const box=document.querySelector('input').getBoundingClientRect(),frame=document.querySelector('.noa-suno-cover').getBoundingClientRect();
+    return Math.abs(frame.top-box.top)<0.6 && Math.abs(frame.bottom-box.bottom)<0.6;
+   });
    const frame=await page.locator('.noa-suno-cover').boundingBox(),input=await page.locator('input').boundingBox();
    assert.equal(frame.height,frame.width);assert(input.x-frame.x-frame.width>=8);assert(input.x+input.width<=width);
    await page.locator('input').fill('https://suno.com/s/other');
