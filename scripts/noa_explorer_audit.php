@@ -42,6 +42,11 @@ try{
          'aiSkipped'=>count(array_filter($ai,static fn($r)=>$r['status']==='skipped')),
          'audio'=>array_intersect_key($audio,array_flip(['eligible','skipped','missing','processing']))];
  } finally { $db->rollBack(); }
+ $workerConfig=dirname(__DIR__,2).'/noa-ai-lab/gpt-action/state.json';
+ $worker=is_file($workerConfig)?json_decode(file_get_contents($workerConfig),true,32,JSON_THROW_ON_ERROR):[];
+ $batchCheck['n80Configured']=($worker['owner']??null)===$owner && !empty($worker['workerHash'])
+     && (trim((string)getenv('NOA_GITHUB_DISPATCH_TOKEN'))!=='' || !empty($worker['dispatchToken']));
+ unset($worker);
  $result=['ok'=>true,'channelOwned'=>true,'counts'=>$counts,'workspace'=>$timings,'batchPreview'=>$batchCheck,'databaseWrites'=>0,'memberRowsChanged'=>0,'pointDebits'=>0];
 }catch(Throwable $e){http_response_code(500);$result=['ok'=>false,'error'=>'explorer_audit_failed','class'=>get_class($e)];}
 while(ob_get_level()>$buffer)ob_end_clean();echo json_encode($result,JSON_THROW_ON_ERROR);

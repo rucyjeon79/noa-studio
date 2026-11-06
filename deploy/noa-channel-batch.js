@@ -39,6 +39,8 @@ const errors = {
     dispatch_failed:'n80 실행 요청이 전달되지 않았습니다.', setup_required:'n80 연결 설정이 필요합니다.',
     batch_active:'진행 중인 일괄 작업이 있습니다.', invalid_target:'이 곡에서 지원하지 않는 항목입니다.',
     own_song_required:'이 채널에서 편집할 수 있는 곡만 선택하세요.', csrf_required:'로그인 상태가 바뀌었습니다. 새로고침해 주세요.',
+    upload_file_changed:'다른 파일이 연결된 전송입니다. 파일을 다시 선택하세요.',
+    file_chunk_conflict:'이어올릴 원본 파일의 내용이 다릅니다. 처음 선택한 파일을 다시 지정하세요.',
     another_upload_is_active:'다른 파일이 이미 업로드 중입니다.', channel_storage_limit:'채널의 음원 저장 한도에 도달했습니다.',
     cover_original_artist_required:'커버 원곡 가수를 입력한 뒤 다시 전송하세요.', actual_audio_format_mismatch:'파일 형식을 확인하세요.',
     request_conflict:'실행 요청이 바뀌었습니다. 대상을 다시 선택하세요.', no_enabled_fields:'규칙에 따라 생성할 항목이 없습니다.',
@@ -282,15 +284,17 @@ function mount(panel, {renderTree, fingerprint}) {
     }
     async function uploadRows() {
         const outstanding=rows.filter(row=>!row.done);
+        // Reuse the receipt only for these same in-memory File objects. After returning
+        // to the page the upload service reconciles the selected file and its existing chunks.
         let batch=last.get('audio');
-        const canResume=batch?.type==='upload'&&outstanding.every(row=>batch.items.some(item=>item.key===row.key&&['missing','failed'].includes(item.status)));
-        if(!canResume)batch=(await call('audio','uploadStart',{keys:outstanding.map(row=>row.key),requestId})).batch;
+        const resume=batch?.type==='upload'&&outstanding.every(row=>row.batchId===batch.id&&row.batchKey===row.key);
+        if(!resume)batch=(await call('audio','uploadStart',{keys:outstanding.map(row=>row.key),requestId})).batch;
         storeBatch('audio',batch);
         if(!batch?.id)throw Error('파일 전송 준비를 확인할 수 없습니다.');
         sending=true;
         try {
             for(const row of outstanding){
-                const file=row.file;row.error='';row.percent=0;
+                const file=row.file;row.error='';row.percent=0;row.batchId=batch.id;row.batchKey=row.key;
                 try{
                     const params={batchId:batch.id,key:row.key,filename:file.name,bytes:file.size,fingerprint:await fingerprint(file)};
                     if(row.artist)params.originalArtist=row.artist;
@@ -299,7 +303,13 @@ function mount(panel, {renderTree, fingerprint}) {
                         if(!init.id||!Number.isInteger(init.chunkSize)||init.chunkSize<1)throw Error('전송 단위를 확인할 수 없습니다.');
                         const known=new Set(init.chunks||[]);
                         for(let offset=0,n=0;offset<file.size;offset+=init.chunkSize,n++){
-                            if(!known.has(n))await call('audio','uploadChunk',file.slice(offset,offset+init.chunkSize),{id:init.id,index:n},true);
+                            const part=file.slice(offset,offset+init.chunkSize);
+                            if(!known.has(n))await call('audio','uploadChunk',part,{id:init.id,index:n},true);
+                            else if(init.chunkHashes?.[n]){
+                                const bytes=await crypto.subtle.digest('SHA-256',await part.arrayBuffer());
+                                const digest=Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart(2,'0')).join('');
+                                if(digest!==init.chunkHashes[n])throw Error(errors.file_chunk_conflict);
+                            }
                             row.percent=Math.min(100,Math.round(100*(offset+init.chunkSize)/file.size));
                             report(file.name+' 전송 '+row.percent+'%');
                         }
