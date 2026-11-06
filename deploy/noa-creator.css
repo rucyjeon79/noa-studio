@@ -15,3 +15,26 @@
 .creator-actions{align-items:flex-start}
 
 #creator-symbol-preview{object-fit:contain;background:color-mix(in srgb,var(--noa-surface,#1e232a) var(--profile-opacity,0%),transparent)}.creator-opacity output{color:var(--noa-accent);font-weight:600}.creator-form input[type=range]{padding:0;min-height:44px;accent-color:var(--noa-accent);cursor:pointer}.creator-opacity small{color:var(--noa-muted);line-height:1.6}
+
+.creator-batch{margin:16px 0;border-block:1px solid var(--noa-line);scroll-margin-top:6rem}
+.creator-batch>summary{cursor:pointer;min-height:44px;align-content:center;font-weight:650}
+.batch-controls,.batch-controls fieldset,.batch-controls #batch-upload,.batch-controls #batch-match-editor{display:grid;gap:10px;min-width:0}
+.batch-controls{max-width:760px;padding:8px 0 16px}
+.batch-controls p,.batch-controls ul,.batch-controls h3{margin:0}
+.batch-controls select,.batch-controls input[type=file]{max-width:100%;min-width:0;min-height:44px;box-sizing:border-box;font:inherit;color:var(--noa-text);background:var(--noa-surface);border:1px solid var(--noa-line);border-radius:var(--noa-radius);padding:8px}
+.batch-controls label,.batch-controls legend{font-weight:600}
+.batch-controls small,.batch-controls #batch-preview,.batch-controls .batch-file-note{color:var(--noa-muted)}
+.batch-selection,.batch-fields,.batch-controls li{display:flex;gap:8px 14px;align-items:center;flex-wrap:wrap}
+.batch-selection{justify-content:space-between}.batch-selection a,.batch-controls button{min-height:44px;align-content:center}
+.batch-controls fieldset{margin:0;padding:12px;border:1px solid var(--noa-line);border-radius:var(--noa-radius)}
+.batch-fields label,.batch-replace,.creator-batch-check{display:inline-flex;align-items:center;min-height:44px;gap:7px;cursor:pointer}
+.batch-controls label input[type=checkbox],.creator-batch-check input{width:18px;height:18px;flex-shrink:0;accent-color:var(--noa-accent)}
+.creator-batch-check{flex:0 0 32px;justify-content:center}.creator-tree-line:has(.creator-batch-check) .creator-tree-leaf{display:none}
+#batch-file-map,#batch-history ul{list-style:none;padding:0;max-height:21rem;overflow-y:auto}
+.batch-controls li{border-bottom:1px solid var(--noa-line);padding:7px 0;overflow-wrap:anywhere}
+.batch-file-desc{flex:1 1 180px;min-width:0;display:grid}.batch-controls [aria-invalid=true]{color:var(--noa-danger)}
+.batch-controls button{justify-self:start}.batch-controls progress{width:100%;max-width:20rem}
+#batch-history:not(:empty){display:grid;gap:10px;padding-block-start:8px}
+#batch-history details>summary{cursor:pointer;min-height:44px;align-content:center;font-weight:600}
+#batch-history li>small{margin-inline-start:auto}#batch-back{margin-top:12px}
+@media(max-width:600px){.creator-tree-line:has(.creator-batch-check) .creator-tree-toggle{width:36px;flex-basis:36px}.creator-batch-check{flex-basis:26px}.batch-controls select,.batch-controls input[type=file]{width:100%}}

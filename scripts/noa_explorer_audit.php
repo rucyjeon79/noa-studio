@@ -25,6 +25,28 @@ try{
      'oldListMs'=>$oldMs,'newListMs'=>round((hrtime(true)-$start)/1e6,1)];
  $assets=nj_assets($db);$counts=['records'=>0,'songs'=>0,'collections'=>0,'verifiedCovers'=>0,'acquiredCovers'=>0,'channelFallback'=>0,'emptyCovers'=>0];
  foreach($records as $r){$d=json_decode($r['payload'],true);if(!empty($d['_noaTrash']))continue;$counts['records']++;if($r['kind']==='playlist'){$counts['collections']++;continue;}$counts['songs']++;$b=$d['body']??[];$s=noa_sound_suno($b);if(noa_music_asset_url($assets,$r['doc_key'],$s,'cover'))$counts['verifiedCovers']++;elseif(noa_sound_cover($b))$counts['acquiredCovers']++;else $counts['channelFallback']++;if(function_exists('noa_music_cover')&&noa_music_cover($assets,$r['doc_key'],$s,$b,$owner)==='')$counts['emptyCovers']++;}
- $result=['ok'=>true,'channelOwned'=>true,'counts'=>$counts,'workspace'=>$timings,'databaseWrites'=>0,'memberRowsChanged'=>0,'pointDebits'=>0];
+ // Exercise both production previews without creating a batch or waking either worker.
+ require_once __DIR__.'/generation-rules.php';
+ require_once __DIR__.'/channel-batch-ai.php';
+ require_once __DIR__.'/channel-batch-audio.php';
+ $sample=array_slice(array_column(array_filter($index,static fn($r)=>$r['kind']!=='playlist'),'key'),0,20);
+ if (!$sample) throw new RuntimeException('missing_batch_sample');
+ $db->exec('SET TRANSACTION READ ONLY'); $db->beginTransaction();
+ try {
+     $ai=ncbai_items($db,$owner,[$sample,['youtubeTitle'],false]);
+     $audio=ncb_preview($db,$sample,$owner,true);
+     if (array_column($ai,'key')!==$sample || array_column($audio['items'],'key')!==$sample
+         || $audio['eligible']+$audio['skipped']+$audio['missing']+$audio['processing']!==count($sample))
+         throw new RuntimeException('batch_selection_mismatch');
+     $batchCheck=['sample'=>count($sample),'aiEligible'=>count(array_filter($ai,static fn($r)=>$r['status']==='queued')),
+         'aiSkipped'=>count(array_filter($ai,static fn($r)=>$r['status']==='skipped')),
+         'audio'=>array_intersect_key($audio,array_flip(['eligible','skipped','missing','processing']))];
+ } finally { $db->rollBack(); }
+ $workerConfig=dirname(__DIR__,2).'/noa-ai-lab/gpt-action/state.json';
+ $worker=is_file($workerConfig)?json_decode(file_get_contents($workerConfig),true,32,JSON_THROW_ON_ERROR):[];
+ $batchCheck['n80Configured']=($worker['owner']??null)===$owner && !empty($worker['workerHash'])
+     && (trim((string)getenv('NOA_GITHUB_DISPATCH_TOKEN'))!=='' || !empty($worker['dispatchToken']));
+ unset($worker);
+ $result=['ok'=>true,'channelOwned'=>true,'counts'=>$counts,'workspace'=>$timings,'batchPreview'=>$batchCheck,'databaseWrites'=>0,'memberRowsChanged'=>0,'pointDebits'=>0];
 }catch(Throwable $e){http_response_code(500);$result=['ok'=>false,'error'=>'explorer_audit_failed','class'=>get_class($e)];}
 while(ob_get_level()>$buffer)ob_end_clean();echo json_encode($result,JSON_THROW_ON_ERROR);

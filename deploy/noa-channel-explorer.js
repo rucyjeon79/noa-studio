@@ -1,12 +1,12 @@
 /* Owner-scoped channel tree. Keys and explicit aliases identify songs, never titles. */
 ((root)=>{'use strict';
 const groups=[['original','오리지널송',['kpop-original','jpop-original','pop-original','thai-original']],['ep','EP 컬렉션',['joseon-ballad','echoes-of-joseon','groovy-airy-pop','narrative-piano-indie','dreamy-deep-house','fantasy-ambient-edm','edm-kpop-club','latin-afrobeats-edm','panpop']],['story','당신의 이야기, 우리의 음악',['your-story']],['cover','AInoa 유명곡 커버',['cover-reborn']]];
-function build(records,title='내 채널'){
+function build(records,title='내 채널',{groupActs=false}={}){
  const channel={id:'channel',type:'channel',label:title,children:[]},categories=new Map(),genres=new Map();
  const folder=(parent,id,label,type,extra={})=>{const n={id,label,type,children:[],...extra};parent.children.push(n);return n;};
  const genreNode=g=>{if(genres.has(g))return genres.get(g);const group=groups.find(v=>v[2].includes(g))||['unclassified','미분류',[]];let category=categories.get(group[0]);if(!category){category=folder(channel,'category:'+group[0],group[1],'category');categories.set(group[0],category);}const n=folder(category,'genre:'+g,g||'미지정 장르','genre',{genre:g});genres.set(g,n);return n;};
  const lists=records.filter(r=>r.kind==='playlist'),songs=records.filter(r=>r.kind!=='playlist'),buckets=new Map();
- const byGenre = new Map();
+ const byGenre = new Map(),declaredActs=new Set(lists.map(list=>(list.genre||'')+':'+Number(list.act)));
  for (const list of lists) {
   const genre = list.genre || '';
   let index = byGenre.get(genre);
@@ -32,27 +32,58 @@ function build(records,title='내 채널'){
   if (!matches.size && Number(song.ep)>0) {
    for (const listKey of index?.acts.get(Math.ceil(Number(song.ep)/10)) || []) matches.add(listKey);
   }
-  let targets=Array.from(matches,key=>buckets.get(key));if(!targets.length){const id=parent.id+':unclassified';let bucket=buckets.get(id);if(!bucket){bucket=folder(parent,id,'미분류곡','unclassified');buckets.set(id,bucket);}targets=[bucket];}
+  let targets=Array.from(matches,key=>buckets.get(key));
+  const act=Math.ceil(Number(song.ep)/10);
+  if(groupActs&&!targets.length&&act>0&&!['your-story','cover-reborn'].includes(song.genre)&&!declaredActs.has((song.genre||'')+':'+act)){
+   const id=parent.id+':act:'+act;
+   if(!buckets.has(id))buckets.set(id,folder(parent,id,'ACT '+act,'act',{act}));
+   targets=[buckets.get(id)];
+  }
+  if(!targets.length){const id=parent.id+':unclassified';let bucket=buckets.get(id);if(!bucket){bucket=folder(parent,id,'미분류곡','unclassified');buckets.set(id,bucket);}targets=[bucket];}
   for(const target of targets)target.children.push({id:target.id+':'+song.key,type:'song',label:song.title,record:song});
  }
  const order=new Map(groups.map((g,i)=>['category:'+g[0],i]));channel.children.sort((a,b)=>(order.get(a.id)??99)-(order.get(b.id)??99));
- for(const category of channel.children)for(const genre of category.children){genre.children.sort((a,b)=>a.type==='unclassified'?1:b.type==='unclassified'?-1:(Number(a.record?.act)||999)-(Number(b.record?.act)||999)||a.label.localeCompare(b.label,'ko'));for(const bucket of genre.children)bucket.children.sort((a,b)=>(Number(a.record.ep)||9999)-(Number(b.record.ep)||9999)||a.label.localeCompare(b.label,'ko'));}
+ for(const category of channel.children)for(const genre of category.children){genre.children.sort((a,b)=>a.type==='unclassified'?1:b.type==='unclassified'?-1:(Number(a.record?.act||a.act)||999)-(Number(b.record?.act||b.act)||999)||a.label.localeCompare(b.label,'ko'));for(const bucket of genre.children)bucket.children.sort((a,b)=>(Number(a.record.ep)||9999)-(Number(b.record.ep)||9999)||a.label.localeCompare(b.label,'ko'));}
  return channel;
 }
-function mount(host,{records,title,names={},onEdit,onChannel,onRules}){
+function songKeys(node){
+ if(!node.children)return [node.record.key];
+ return Array.from(new Set(node.children.flatMap(songKeys)));
+}
+function mount(host,{records,title,names={},onEdit,onChannel,onRules,selection=null}){
  const previous=new Set([...host.querySelectorAll('[data-node][aria-expanded="true"]')].map(b=>b.dataset.node));const first=!host.dataset.loaded;host.dataset.loaded='true';host.replaceChildren();
  const tools=document.createElement('div');tools.className='creator-tree-tools';const all=document.createElement('button'),none=document.createElement('button');all.type=none.type='button';all.textContent='모두 펼치기';none.textContent='모두 접기';tools.append(all,none);host.append(tools);
  const tree=document.createElement('ul');tree.className='creator-tree';tree.setAttribute('aria-label','내 채널 음원 탐색기');host.append(tree);let seq=0;
+ const checks=[];
+ function syncChecks(){
+  for(const {box,keys} of checks){
+   const count=keys.reduce((sum,key)=>sum+Number(selection.keys.has(key)),0);
+   box.checked=keys.length>0&&count===keys.length;
+   box.indeterminate=count>0&&count<keys.length;
+  }
+ }
+ function checkbox(line,node,label){
+  const keys=songKeys(node),wrapper=document.createElement('label'),box=document.createElement('input');
+  wrapper.className='creator-batch-check';box.type='checkbox';box.disabled=!keys.length;
+  box.setAttribute('aria-label',label.textContent+' 선택');box.dataset.batchNode=node.id;
+  wrapper.append(box);line.prepend(wrapper);checks.push({keys,box});
+  box.onchange=()=>{for(const key of keys){if(box.checked)selection.keys.add(key);else selection.keys.delete(key);}syncChecks();selection.changed();};
+  const count=keys.filter(key=>selection.keys.has(key)).length;box.checked=keys.length>0&&count===keys.length;box.indeterminate=count>0&&count<keys.length;
+  label.setAttribute('aria-label',label.textContent+(node.children?' 하위 목록 펼치기·접기':' 선택 전환'));
+  label.onclick=node.children?()=>line.querySelector('.creator-tree-toggle')?.click():()=>box.click();
+ }
+
  function draw(node,parent){const li=document.createElement('li'),line=document.createElement('div');line.className='creator-tree-line';li.append(line);parent.append(li);const label=document.createElement('button');label.type='button';label.className='creator-tree-label';label.textContent=node.type==='genre'?String(names[node.genre]||node.label).replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu,'').trim():node.label;label.title=label.textContent;
   if(node.children){const toggle=document.createElement('button'),branch=document.createElement('ul');branch.id='creator-tree-branch-'+(++seq);toggle.type='button';toggle.className='creator-tree-toggle';toggle.dataset.node=node.id;toggle.setAttribute('aria-controls',branch.id);const expanded=previous.has(node.id)||(first&&node.type==='channel');let drawn=false;
    function set(open){
     if(open&&!drawn){drawn=true;for(const child of node.children)draw(child,branch);}
     branch.hidden=!open;toggle.textContent=open?'−':'+';toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',label.textContent+' '+(open?'접기':'펼치기'));}toggle.onclick=()=>set(branch.hidden);set(expanded);line.append(toggle);li.append(branch);
-   if(node.type==='channel')label.onclick=onChannel;else if(node.record)label.onclick=()=>onEdit(node.record);else if(node.type==='unclassified')label.onclick=()=>set(branch.hidden);else label.onclick=()=>onRules(node.genre||'',node.id.replace('category:',''));
+   if(node.type==='channel')label.onclick=onChannel;else if(node.record)label.onclick=()=>onEdit(node.record);else if(node.type==='unclassified'||node.type==='act')label.onclick=()=>set(branch.hidden);else label.onclick=()=>onRules(node.genre||'',node.id.replace('category:',''));
    const count=document.createElement('small');count.textContent=node.children.length+'개';line.append(label,count);if(!node.children.length){const empty=document.createElement('li');empty.className='creator-tree-empty';empty.textContent='수록곡이 없습니다.';branch.append(empty);}
   }else{line.classList.add('creator-row');line.dataset.key=node.record.key;const dot=document.createElement('span');dot.className='creator-tree-leaf';dot.textContent='·';dot.setAttribute('aria-hidden','true');line.append(dot,label);label.onclick=()=>onEdit(node.record);label.setAttribute('aria-label',node.label+' 곡정보 수정');const note=document.createElement('small');note.textContent=node.record.visibility==='public'?'공개':'나만 보기';line.append(note);}
+  if(selection)checkbox(line,node,label);
  }
- draw(build(records,title),tree);const setAll=open=>{for(const toggle of tree.getElementsByClassName('creator-tree-toggle'))if((toggle.getAttribute('aria-expanded')==='true')!==open)toggle.click();};all.onclick=()=>setAll(true);none.onclick=()=>setAll(false);
+ draw(build(records,title,{groupActs:!!selection}),tree);const setAll=open=>{for(const toggle of tree.getElementsByClassName('creator-tree-toggle'))if((toggle.getAttribute('aria-expanded')==='true')!==open)toggle.click();};all.onclick=()=>setAll(true);none.onclick=()=>setAll(false);
 }
-root.NoaChannelExplorer={build,mount,groups};if(typeof module!=='undefined')module.exports=root.NoaChannelExplorer;
+root.NoaChannelExplorer={build,mount,groups,songKeys};if(typeof module!=='undefined')module.exports=root.NoaChannelExplorer;
 })(typeof window!=='undefined'?window:globalThis);
