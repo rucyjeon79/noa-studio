@@ -15,6 +15,7 @@ jobs:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
       - run: |
+          node --check deploy/noa-channel-batch.js
           node --check deploy/noa-browse-edit.js
           node --check deploy/noa-ainoa.js
           node --check deploy/noa-ainoa-admin.js
@@ -38,6 +39,7 @@ jobs:
           import sys
           import noa_ainoa_deploy as release
           release.FILES = {
+                  'noa-channel-batch.js': 'deploy/noa-channel-batch.js',
                   'noa-browse-edit.js': 'deploy/noa-browse-edit.js',
                   'noa-ainoa.js': 'deploy/noa-ainoa.js',
                   'noa-ainoa-admin.js': 'deploy/noa-ainoa-admin.js',
@@ -49,7 +51,7 @@ jobs:
                   'noa-quality.php': 'deploy/noa-quality.php',
                   'noa-bridge/ainoa-automation.php': 'bridge/ainoa-automation.php',
               }
-          release.NEW = set()
+          release.NEW = {'noa-channel-batch.js'}
           try:
               release.main()
           except Exception:

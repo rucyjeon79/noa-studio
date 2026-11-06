@@ -35,8 +35,8 @@ function matchFile(filename, songs) {
 }
 
 const errors = {
-    revision_conflict:'처리 중 곡 정보가 바뀌었습니다.', worker_offline:'n80 연결을 확인해 주세요.',
-    dispatch_failed:'n80 실행 요청이 전달되지 않았습니다.', setup_required:'n80 연결 설정이 필요합니다.',
+    revision_conflict:'처리 중 곡 정보가 바뀌었습니다.', worker_offline:'N80 Auto 연결을 확인해 주세요.',
+    dispatch_failed:'N80 Auto 실행 요청이 전달되지 않았습니다.', setup_required:'N80 Auto 연결 설정이 필요합니다.',
     batch_active:'진행 중인 일괄 작업이 있습니다.', invalid_target:'이 곡에서 지원하지 않는 항목입니다.',
     own_song_required:'이 채널에서 편집할 수 있는 곡만 선택하세요.', csrf_required:'로그인 상태가 바뀌었습니다. 새로고침해 주세요.',
     upload_file_changed:'다른 파일이 연결된 전송입니다. 파일을 다시 선택하세요.',
@@ -51,7 +51,7 @@ const reasons={
     retry_limit_reselect_source:'원본 파일을 다시 선택하세요.', non_retryable_reselect_source:'원본 파일을 다시 선택하세요.',
     source_replaced:'원본이 교체됨', song_changed:'곡 정보가 변경됨', ready:'최적화 완료', already_ready:'최적화 완료', source_required:'원본 파일 필요', no_source:'원본 파일 필요',
     upload_required:'원본 파일 필요', already_filled:'기존 내용 유지', no_empty_fields:'기존 내용 유지',
-    worker_failed:'AI 생성 실패', dispatch_failed:'n80 호출 실패', reselect_source_file:'원본 파일 다시 선택',
+    worker_failed:'AI 생성 실패', dispatch_failed:'N80 Auto 호출 실패', reselect_source_file:'원본 파일 다시 선택',
     waiting_for_upload:'파일 전송 대기', uploaded:'파일 전송 완료', in_progress:'서버에서 처리 중',
 };
 const reasonText = code => errors[code] || reasons[code] || (code && /[가-힣]/.test(code)?code:'');
