@@ -59,9 +59,13 @@ async function main() {
       for (const {art, title, like, comment, more, status, row} of samples) {
         assert(art.width > 0 && Math.abs(art.width * 9 / 16 - art.height) < 0.1, JSON.stringify(art));
         assert(art.right < title.left && art.right < like.left && like.right <= comment.left + 0.1);
-        assert(comment.right <= (status || more).left + 0.1);
-        if (status) assert(status.right <= more.left && status.top >= title.bottom);
-        assert(more.width >= 44 && more.right <= row.right && row.right <= width);
+        assert(comment.right <= more.left + 0.1);
+        if (status) {
+          const beside = status.left >= comment.right && status.right <= more.left && status.top >= title.bottom;
+          const below = status.top >= more.bottom && status.left >= title.left && status.right <= row.right;
+          assert(beside || below, JSON.stringify({width, title, comment, more, status, row}));
+        }
+        assert(more.width >= 44 && more.right <= row.right && row.right <= width, JSON.stringify({width, more, row}));
       }
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
       console.log(width, 'px viewport:', samples[0].art.width, 'x', samples[0].art.height);
