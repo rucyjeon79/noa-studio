@@ -100,7 +100,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
   box-sizing:border-box;width:100%;min-height:44px;margin:6px 0 0;border:1px solid var(--record-edge);border-radius:8px;padding:10px 12px;
  }
  .noa-page .noa-edit-form .noa-locked-preview{
-  position:relative;background:var(--noa-bg);padding-inline-end:38px;white-space:pre-wrap;line-height:1.6;overflow-wrap:anywhere;max-height:9em;overflow:auto;
+  position:relative;user-select:text;-webkit-user-select:text;background:var(--noa-bg);padding-inline-end:38px;white-space:pre-wrap;line-height:1.6;overflow-wrap:anywhere;max-height:9em;overflow:auto;
  }
  .noa-page .noa-edit-form .noa-locked-preview::after{
   content:"";position:absolute;top:12px;right:12px;width:14px;height:16px;background:var(--noa-muted,#b9b8b4);
@@ -156,7 +156,27 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
    }
    function copyButton(label,read){
     const b=iconCommand('button','copy',label+' 복사하기');
-    b.onclick=async()=>{try{await navigator.clipboard.writeText(read());status.textContent=label+' 복사 완료';}catch{status.textContent='복사 권한을 확인해 주세요.';}};
+    b.onclick=async event=>{
+     event.stopPropagation();
+     const text=read();
+     if(!text){status.textContent=label+'에 복사할 내용이 없습니다.';return;}
+     try{
+      await navigator.clipboard.writeText(text);
+     }catch{
+      // WebViews can deny the clipboard API while allowing a selected text control to copy.
+      const buffer=document.createElement('textarea');
+      buffer.value=text;buffer.readOnly=true;
+      buffer.style.cssText='position:fixed;top:0;left:-9999px';
+      form.append(buffer);
+      let copied=false;
+      try{
+       buffer.focus({preventScroll:true});buffer.select();
+       copied=document.execCommand('copy');
+      }catch{}finally{buffer.remove();b.focus({preventScroll:true});}
+      if(!copied){status.textContent=label+' 복사 실패 · 이 칸의 글자를 길게 눌러 복사해 주세요.';return;}
+     }
+     status.textContent=label+' 복사 완료';
+    };
     return b;
    }
    function editControl(key,label,heading,setLocked){
@@ -321,7 +341,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
      const guard=document.createElement('fieldset');guard.className='noa-input-guard';
      input.before(guard);guard.append(input);
      const preview=document.createElement('div');preview.className='noa-locked-preview';
-     preview.setAttribute('aria-label',label+' 미리보기');guard.append(preview);
+     preview.tabIndex=0;preview.setAttribute('aria-label',label+' 미리보기');guard.after(preview);
      const choices=key==='vocal'?document.createElement('div'):null;
      if(choices){
       choices.className='noa-vocal-choices';choices.setAttribute('role','radiogroup');choices.setAttribute('aria-label',label);
@@ -348,7 +368,13 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
      });
     }
     if(key==='audioFileLocation')attachAudioPicker(heading,wrap);
-    if(window.NoaRecordForm.describe(key,data.packageType).group!=='media')heading.append(copyButton(label,()=>input.tagName==='SELECT'?input.selectedOptions[0]?.textContent||'':input.value));
+    if(window.NoaRecordForm.describe(key,data.packageType).group!=='media'){
+     heading.append(copyButton(label,()=>{
+      const shown=wrap.querySelector('.noa-locked-preview:not([hidden])');
+      if(shown)return shown.dataset.empty==='true'?'':shown.textContent;
+      return input.tagName==='SELECT'?input.selectedOptions[0]?.textContent||'':input.value;
+     }));
+    }
     if(feedback)wrap.append(feedback);sections.add(key,wrap);inputs[key]=input;
    }
    const playlist=['act','playlist'].includes(data.packageType)||selector.type==='act';
