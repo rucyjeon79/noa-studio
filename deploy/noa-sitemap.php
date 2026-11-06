@@ -15,7 +15,6 @@ function noa_sitemap_registry():array{
             ['download','앱 설치','iPhone · iPad · Android · PC','/noa-install.php','download','public'],
         ]],
         'collections'=>['title'=>'음악 탐색','routes'=>[
-            ['weatherCare','내 마음 날씨','기분에 맞는 AI 선곡과 프리미엄 음원','/#noa-daily-fortune','music','member'],
             ['original','오리지널송','K-POP · J-POP · POP · Thai','/noa-music.php?group=original','disc','public'],
             ['ep','EP 컬렉션','장르별 ACT와 EP 수록곡','/noa-music.php?group=ep','playlists','public'],
             ['story','당신의 이야기, 우리의 음악','사연을 담은 음악','/noa-music.php?group=story','mail','public'],
@@ -33,7 +32,7 @@ function noa_sitemap_registry():array{
             ['creatorApply','크리에이터 가입·전환','본인인증과 승인 후 7레벨·채널 개설','/noa-creator-apply.php','user','public'],
             ['channelWorkspace','내 채널 작업실','소유한 콘텐츠·게시판·제작 관리','/noa-channel-workspace.php','music','member'],
             ['channelRules','카테고리·제작 규칙','내 채널 장르별 제작 원칙','/noa-channel-rules.php','playlists','member'],
-            ['creatorAI','채널 AI 제작실','8레벨 크레이터 VIP회원 · 최고 관리자','/noa-creator-ai.php','mic','member'],
+            ['aiLab','AI LAB','AI 대화 · 권한별 음악과 영상 제작','/noa-ai-lab.php','mic','member'],
             ['password','아이디·비밀번호 찾기','계정 접근 복구','/bbs/password_lost.php','settings','guest'],
             ['playlists','내 재생목록','나만의 목록 만들기와 편집','/noa-music.php#my-playlists','playlists','member'],
             ['subscription','구독 신청·내역','월 구독 신청과 결제·이용 기간 확인','/noa-subscription.php','user','member'],
@@ -71,8 +70,6 @@ function noa_sitemap_registry():array{
             ['recovery','원본 복구','보존된 원본과 복구 상태','/noa-recovery.php','book','admin'],
             ['youtubeAdmin','YouTube 관리','채널 수집과 분류 검토','/noa-youtube-admin.php','youtube','admin'],
             ['workStatus','N80 Engine 작업 현황','지시·단계·운영 검증 기록','/noa-work-status.php','settings','admin'],
-            ['assistantSetup','NOA STUDIO Assistant 연결','관리자 연결 상태와 권한 확인','/noa-gpt-setup.php','settings','admin'],
-            ['aiLab','AI LAB','영상 제작과 채널 성장','/noa-ai-lab.php','mic','admin'],
             ['themeAdmin','테마 정책','디자인 설정과 변경 이력','/noa-theme-admin.php','settings','admin'],
             ['database','자료 저장소 관리','운영 데이터 현황','/noa-app/database/','library','admin'],
             ['popularity','인기순위 관리','집계 상태와 유효 재생 정책','/noa-app/popularity/','playlists','admin'],
@@ -109,7 +106,7 @@ function noa_sitemap_role(bool $member,string $admin):string{
 /** Audit-only coverage check: new screen files need an explicit audience decision. */
 function noa_sitemap_unlisted_pages(string $root):array{
     // The deploy center has no verified production release yet and stays undiscoverable.
-    $known=['/noa-special-invite.php'=>true, /* private single-use link */ '/noa-sitemap.php'=>true,'/noa-deploy-center.php'=>true,'/noa-channel.php'=>true,'/noa-music-download.php'=>true,'/noa-download.php'=>true]; // Download is reached through the installation page; channel URLs require an owner ID.
+    $known=['/noa-lab-song.php'=>true,'/noa-lab-chat.php'=>true,'/noa-creator-ai.php'=>true,'/noa-gpt-setup.php'=>true,'/noa-special-invite.php'=>true, /* private single-use link */ '/noa-sitemap.php'=>true,'/noa-deploy-center.php'=>true,'/noa-channel.php'=>true,'/noa-music-download.php'=>true,'/noa-download.php'=>true]; // Download is reached through the installation page; channel URLs require an owner ID.
     foreach(noa_sitemap_registry() as $group)foreach($group['routes'] as $route)$known[(string)parse_url($route[3],PHP_URL_PATH)]=true;
     $missing=[];
     foreach(glob(rtrim($root,'/').'/noa-*.php')?:[] as $file){

@@ -26,7 +26,7 @@ try {
       if (response.status()>=400) console.log('batch error', (await response.text()).slice(0,160));
     }
   });
-  await page.goto(site+'/noa-creator.php?batch=1');
+  await page.goto(site+'/noa-ai-lab.php?tool=batch');
   const batch = page.locator('#creator-batch');
   assert(await batch.evaluate(node=>node.open));
   await page.locator('[data-batch-node="channel"]').waitFor();
@@ -34,13 +34,13 @@ try {
   const choose=id=>page.locator('input[data-batch-node="'+id+'"]');
   await choose('collection:playlist:batch-ui:1').check();
   await page.waitForFunction(()=>/10\s*곡/.test(document.querySelector('#batch-count').textContent));
+  const aiResponse = page.waitForResponse(r=>r.url().includes('op=batchPreview') && r.request().method()==='POST');
   await choose('collection:playlist:batch-ui:2').check();
   await page.waitForFunction(()=>/20\s*곡/.test(document.querySelector('#batch-count').textContent));
   assert(await choose('genre:groovy-airy-pop').isChecked());
   const panel = page.locator('#batch-preview');
   await panel.waitFor();
-  const aiResponse = page.waitForResponse(r=>r.url().includes('op=batchPreview') && r.request().method()==='POST');
-  await page.locator('#batch-mode').selectOption('ai');
+  assert.equal(await page.locator('#batch-mode').inputValue(),'ai');
   const ai = await (await aiResponse).json();
   assert.equal(ai.eligible,17);
   assert.equal(ai.skipped,3);
@@ -50,8 +50,11 @@ try {
   await batch.screenshot({path:output+'/batch-mobile.png'});
   await page.setViewportSize({width:1280,height:900});
   await batch.screenshot({path:output+'/batch-desktop.png'});
+  await page.goto(site+'/noa-creator.php?batch=1');
+  await page.getByRole('button',{name:'모두 펼치기',exact:true}).click();
+  await choose('collection:playlist:batch-ui:1').check();
   const audioResponse = page.waitForResponse(r=>r.url().includes('channel-batch.php?action=preview') && r.request().method()==='POST');
-  await page.locator('#batch-mode').selectOption('audio');
+  await choose('collection:playlist:batch-ui:2').check();
   const audio=await (await audioResponse).json();
   assert.equal(audio.missing,20);
   assert.equal(audio.eligible,0);

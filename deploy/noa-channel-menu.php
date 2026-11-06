@@ -3,7 +3,7 @@ if(!defined('_GNUBOARD_'))exit;
 function noa_channel_ai_button(array $access):void{
  static $loaded=false;static $count=0;$id='creator-ai-level-'.(++$count);
  if(!$loaded){$loaded=true;echo '<script src="/noa-channel-controls.js?v='.hash_file('sha256',__DIR__.'/noa-channel-controls.js').'" defer></script>';}
- if(!empty($access['creatorAI'])){echo '<a class="noa-button" href="'.(!empty($access['admin'])?'/noa-ai-lab.php':'/noa-creator-ai.php').'"><strong>AI 생성</strong><small>이용 권한 · 포인트 조건 확인</small></a>';return;}
+ if(!empty($access['creatorAI'])){echo '<a class="noa-button" href="/noa-ai-lab.php"><strong>AI LAB</strong><small>이용 권한 · 포인트 조건 확인</small></a>';return;}
  echo '<div class="creator-ai-access"><button class="noa-button" type="button" data-creator-ai-locked aria-describedby="'.$id.'"><strong>AI 생성</strong><small>8레벨 크레이터 VIP회원 전용 · 최고 관리자 이용 가능</small></button><p id="'.$id.'" role="status" aria-live="polite" hidden></p></div>';
 }
 function noa_channel_menu(array $access):void{

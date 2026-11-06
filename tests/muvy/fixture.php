@@ -10,7 +10,7 @@ require __DIR__.'/provider-fixture.php';
 if(str_ends_with($_SERVER['SCRIPT_FILENAME']??'','/muvy.php'))echo "\n<!-- isolated native bootstrap -->\n";
 COMMON;
 file_put_contents($root.'/common.php',$common);
-foreach(['lab-core.php','muvy-core.php','muvy-prompts.php','muvy-rules.php']as $file)copy('bridge/'.$file,$root.'/noa-bridge/'.$file);
+foreach(['member-access.php','lab-core.php','muvy-core.php','muvy-prompts.php','muvy-rules.php']as $file)copy('bridge/'.$file,$root.'/noa-bridge/'.$file);
 $api=str_replace('mu_provider($task)','mu_fixture_provider($task)',file_get_contents('bridge/muvy.php'));file_put_contents($root.'/noa-bridge/muvy.php',$api);
 foreach(['noa-ai-lab.php','noa-ai-lab.css','noa-ai-lab.js','noa-muvy-panel.php','noa-muvy.css','noa-muvy.js','noa-ui.css','noa-ui.js','noa-design.json','noa-ui-words.json','noa-brand.js']as $file)copy('deploy/'.$file,$root.'/'.$file);
 $provider= <<<'PROVIDER'

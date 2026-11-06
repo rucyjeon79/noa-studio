@@ -28,6 +28,9 @@ function nam_requirement(string $path,string $method='GET',array $query=[]):?str
  if(in_array($path,['/noa-subscription.php','/noa-bridge/subscription.php'],true))return 'member';
  if(in_array($path,['/noa-creator-review.php'],true))return 'admin';
  if(in_array($path,['/noa-channel-workspace.php'],true))return 'creator';
+ if($path==='/noa-ai-lab.php')return match($query['tool']??''){
+  'batch','song'=>'admin','channel'=>'creatorAI',default=>'member'
+ };
  if(in_array($path,['/noa-creator-ai.php','/noa-bridge/creator-ai.php'],true))return 'creatorAI';
  if($path==='/noa-channel-rules.php'||$path==='/noa-creator.php'||$path==='/noa-bridge/creator.php')return 'creator';
  if($path==='/noa-bridge/legacy-audio.php')return null;
@@ -36,7 +39,7 @@ function nam_requirement(string $path,string $method='GET',array $query=[]):?str
  if(in_array($path,['/noa-music.php','/noa-music-download.php'],true))return 'member';
  if($path==='/noa-catalog.php'||$path==='/noa-bridge/user-playlists.php'||$path==='/noa-bridge/music-detail.php')return 'music';
  if(in_array($path,['/noa-bridge/catalog.php','/noa-channel.php','/noa-youtube.php','/noa-world.php','/noa-my.php','/noa-settings.php','/noa-sitemap.php','/noa-download.php','/noa-bridge/world-story.php','/noa-bridge/world-mv.php'],true))return 'member';
- if(preg_match('~^/noa-(?:library|editor|ai-lab|recovery|theme-admin|catalog-admin|youtube-admin|category-order-admin)[.]php$~D',$path)||preg_match('~^/noa-app/(?:database|taxonomy|popularity|jukebox)/(?:index[.]php)?$~D',$path))return 'admin';
+ if(preg_match('~^/noa-(?:library|editor|recovery|theme-admin|catalog-admin|youtube-admin|category-order-admin)[.]php$~D',$path)||preg_match('~^/noa-app/(?:database|taxonomy|popularity|jukebox)/(?:index[.]php)?$~D',$path))return 'admin';
  if(str_starts_with($path,'/bbs/')){
   $file=basename($path);
   if(preg_match('/^(?:login|login_check|logout|register|register_form|register_form_update|password_lost|password_lost2|password_reset|email_certify|email_certify2|formmail_send)[.]php$/D',$file))return null;

@@ -264,7 +264,7 @@ function mount(panel, {renderTree, fingerprint}) {
     async function refreshHistory(){
         if(!visible()||pending||polling)return;
         polling=true;
-        const revision=historyVersion, kinds=admin?['audio','ai']:['audio'];
+        const revision=historyVersion, kinds=mode.querySelector('option[value="ai"]')?['ai']:['audio'];
         const results=await Promise.allSettled(kinds.map(kind=>call(kind,'status')));
         polling=false;
         if (revision===historyVersion&&visible()&&!pending){

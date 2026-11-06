@@ -13,7 +13,7 @@ function noa_workspace_groups():array{return [
  'creation'=>['title'=>'제작 작업실','intro'=>'가사·영상 제작과 완성 음원 업로드를 구분합니다.','routes'=>[
   ['jukebox','완성 음원 업로드','곡 선택 → MP3 업로드 → 최적화 완료 확인','/noa-app/jukebox/','music'],
   ['taxonomy','카테고리·제작 규칙','내 채널 분류·제작 원칙','/noa-channel-rules.php','playlists'],
-  ['aiLab','AI 가사·뮤비 제작','제작 종류 선택 → 초안 검토 → 곡정보에 저장','/noa-ai-lab.php','mic'],
+  ['aiLab','AI LAB','제작 종류 선택 → 초안 검토 → 곡정보에 저장','/noa-ai-lab.php','mic'],
   ['youtubeAdmin','YouTube 채널 관리','채널 수집 → 원곡 연결 검토 → 성과 확인','/noa-youtube-admin.php','youtube'],
  ]],
  'operation'=>['title'=>'운영 설정','intro'=>'회원·게시판·화면·연결 정보를 관리합니다.','routes'=>[
@@ -23,11 +23,9 @@ function noa_workspace_groups():array{return [
   ['subscriptions','구독·포인트 설정','이용 정책과 결제 내역 확인','/noa-subscription-admin.php','user'],
   ['themeAdmin','화면·테마 설정','공통 디자인과 테마 수정','/noa-theme-admin.php','settings'],
   ['social','Google·Kakao 가입 연결','신규 회원 가입용 인증 설정','/adm/config_form.php#anc_cf_sns','user'],
-  ['aiSettings','AI·YouTube 연결 설정','AI 서비스 연결·비용 한도·채널 소유자 확인','/noa-ai-lab.php#settings','settings'],
  ]],
  'advanced'=>['title'=>'고급 점검·데이터 복구','intro'=>'자료 연결에 문제가 있을 때 사용합니다. 일상적인 곡 수정은 콘텐츠 관리에서 합니다.','routes'=>[
   ['workStatus','N80 Engine 작업 현황','지시·단계·검증 결과 확인','/noa-work-status.php','settings'],
-  ['assistantSetup','NOA STUDIO Assistant 연결','관리자 연결 상태와 권한 확인','/noa-gpt-setup.php','settings'],
   ['catalogAdmin','원본 가져오기·통합 등록','이전 원본을 추가로 가져올 때 사용','/noa-catalog-admin.php','library'],
   ['documents','문서·변경 이력','문서 키와 저장 버전 확인','/noa-library.php?view=documents','book'],
   ['recovery','원본 복구','보존 자료와 복구 상태 확인','/noa-recovery.php','book'],
