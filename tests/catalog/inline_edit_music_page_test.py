@@ -7,7 +7,7 @@ class MusicInlineMetadata(unittest.TestCase):
   with tempfile.TemporaryDirectory(prefix='noa-inline-page-') as directory:
    web=Path(directory);(web/'noa-bridge').mkdir();(web/'noa-app/jukebox').mkdir(parents=True)
    for source,target in [('deploy/noa-app/p0-player.js','noa-app/p0-player.js'),('bridge/channel-ownership.php','noa-bridge/channel-ownership.php'),('bridge/member-access.php','noa-bridge/member-access.php'),('deploy/noa-premium.js','noa-premium.js'),('deploy/noa-app/jukebox/upload.css','noa-app/jukebox/upload.css'),('deploy/noa-browse.js','noa-browse.js'),('deploy/noa-music.php','noa-music.php'),('deploy/noa-app/jukebox/upload.js','noa-app/jukebox/upload.js'),('deploy/noa-browse-edit.js','noa-browse-edit.js'),('bridge/sound-core.php','noa-bridge/sound-core.php'),('bridge/inline-edit.php','noa-bridge/inline-edit.php'),('bridge/package-record.php','noa-bridge/package-record.php')]:shutil.copyfile(ROOT/source,web/target)
-   for relative in ('noa-app/engine/personal-listening.php','noa-ui.js','noa-listening-model.js','noa-listening.js'):
+   for relative in ('noa-app/engine/personal-listening.php','noa-app/engine/personal-song-index.php','noa-app/engine/personal-genre-model.php','noa-ui.js','noa-listening-model.js','noa-listening.js'):
     target=web/relative;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(ROOT/'deploy'/relative,target)
    (web/'common.php').write_text("<?php define('_GNUBOARD_',true);$_SESSION=[];$is_member=($_GET['auth']??'')==='admin';$is_admin=$is_member?'super':'';")
    (web/'noa-app/jukebox/core.php').write_text('<?php function nj_assets(PDO $db):array{return [];}')
