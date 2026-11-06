@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require dirname(__DIR__, 2).'/deploy/noa-home-assets-lib.php';
+require dirname(__DIR__, 2).'/deploy/noa-app/home-assets.php';
 function check(bool $ok, string $message): void { if (!$ok) throw new RuntimeException($message); }
 $root = dirname(__DIR__, 2).'/deploy';
 foreach (['../common.php','common.php','noa-ui.js,noa-ui.css','noa-ui.js,noa-ui.js','https://example.test/x.js',''] as $bad) check(nha_files($bad) === [], 'unsafe asset list accepted');

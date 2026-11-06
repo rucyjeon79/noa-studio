@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 $source = dirname(__DIR__, 2).'/deploy';
-$tmp = sys_get_temp_dir().'/noa-home-hook-'.bin2hex(random_bytes(8)); mkdir($tmp); mkdir($tmp.'/extend');
-$files = ['noa-home-assets.php','noa-home-assets-lib.php','noa-brand.js','noa-account.js','noa-account.css'];
+$tmp = sys_get_temp_dir().'/noa-home-hook-'.bin2hex(random_bytes(8)); mkdir($tmp); mkdir($tmp.'/extend'); mkdir($tmp.'/noa-app');
+$files = ['noa-home-assets.php','noa-app/home-assets.php','noa-brand.js','noa-account.js','noa-account.css'];
 foreach ($files as $file) copy($source.'/'.$file, $tmp.'/'.$file);
 copy($source.'/noa-home-performance.extend.php', $tmp.'/extend/00.noa-home-performance.php');
 define('_GNUBOARD_', true);
@@ -25,5 +25,5 @@ try {
     echo "HOME_EXTENSION_BUFFER_ORDER_AND_SCOPE_OK\n";
 } finally {
     foreach ($files as $file) unlink($tmp.'/'.$file);
-    unlink($tmp.'/extend/00.noa-home-performance.php'); rmdir($tmp.'/extend'); rmdir($tmp);
+    unlink($tmp.'/extend/00.noa-home-performance.php'); rmdir($tmp.'/extend'); rmdir($tmp.'/noa-app'); rmdir($tmp);
 }

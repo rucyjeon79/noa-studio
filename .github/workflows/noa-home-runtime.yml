@@ -1,7 +1,7 @@
 name: NOA home runtime performance
 on:
   pull_request:
-    paths: &paths ['deploy/noa-home-assets*.php','deploy/noa-home-performance.extend.php','tests/home-runtime/**','scripts/noa_home_runtime_release.py','scripts/qa/noa-home-runtime.mjs','.github/workflows/noa-home-runtime.yml']
+    paths: &paths ['deploy/noa-home-assets.php','deploy/noa-app/home-assets.php','deploy/noa-home-performance.extend.php','tests/home-runtime/**','scripts/noa_home_runtime_release.py','scripts/qa/noa-home-runtime.mjs','.github/workflows/noa-home-runtime.yml']
   push:
     branches: [main]
     paths: *paths
@@ -14,9 +14,10 @@ jobs:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
       - run: |
-          php -l deploy/noa-home-assets-lib.php
+          php -l deploy/noa-app/home-assets.php
           php -l deploy/noa-home-assets.php
           php -l deploy/noa-home-performance.extend.php
+          php tests/sitemap/registry_test.php
           php tests/home-runtime/assets.php
           php tests/home-runtime/hook.php
           python scripts/qa/noa-qa-font.py

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 // Deliberately independent of common.php: no sessions, database or personalized data.
-require __DIR__.'/noa-home-assets-lib.php';
+require __DIR__.'/noa-app/home-assets.php';
 header('X-Content-Type-Options: nosniff');
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $files = nha_files(is_string($_GET['files'] ?? null) ? $_GET['files'] : '');
