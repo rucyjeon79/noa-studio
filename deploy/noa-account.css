@@ -87,3 +87,30 @@ html[data-noa-style] #noa-genres .noa-collection-image{display:block;width:100%;
   margin: 0;
   min-block-size: 44px;
 }
+
+/* Standalone workspaces mount the account header without the full app shell. */
+html[data-noa-theme-only] #noa-account-bar > .noa-navigation-bar {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+html[data-noa-theme-only] #noa-account-bar :is(.noa-account-utilities,.noa-account-shortcuts) {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  min-width: 0;
+  gap: 4px;
+  padding: 0;
+  margin: 0;
+}
+html[data-noa-theme-only] #noa-account-bar .noa-account-utilities { justify-content: flex-start; }
+html[data-noa-theme-only] #noa-account-bar .noa-account-shortcuts { justify-content: flex-end; }
+html[data-noa-theme-only] #noa-account-bar :is(.noa-account-shortcut, #noa-nav-all) {
+  flex: none; min-width: 44px; width: auto; min-height: 44px;
+}
+html[data-noa-theme-only] #noa-account-bar .noa-account-brand span {
+  display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
