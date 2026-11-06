@@ -36,7 +36,7 @@
   async function newFile(folder, name) {
     const stem = name.replace(/\.mp3$/i,'');
     for (let n = 0; ; n++) {
-      const candidate = stem + (n ? ' (' + n + ')' : '') + '.mp3';
+      const candidate = stem + (n ? ' (' + n + ')' : '') + name.slice(stem.length);
       try { await folder.getFileHandle(candidate); }
       catch (error) {
         if (error.name === 'TypeMismatchError') continue;

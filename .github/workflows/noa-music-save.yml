@@ -16,6 +16,8 @@ jobs:
         with: {php-version: '8.2'}
       - run: |
           php -l deploy/noa-music-download.php
+          php -l deploy/noa-app/jukebox/download.php
+          php tests/download/filename.php
           node --test tests/download/music_save.test.cjs
   deploy:
     if: github.event_name == 'push'

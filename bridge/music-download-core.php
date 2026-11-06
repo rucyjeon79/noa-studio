@@ -12,13 +12,31 @@ function nmd_owner(PDO $db,array $doc,array $asset):string{
  $q=$db->prepare("SELECT requested_by FROM noa_jukebox_uploads WHERE id=? AND song_key=? AND source_url=? AND status='ready'");$q->execute([$id,$asset['song_key'],$asset['source_url']]);$owner=$q->fetchColumn();
  if(!is_string($owner)||$owner==='')throw new DomainException('song_owner_unresolved');return $owner;
 }
+function nmd_filename(PDO $db,array $asset,string $title):string{
+ $source=json_decode($asset['source_evidence']??'null',true);
+ $id=$source['upload_id']??null;
+ if(is_string($id)&&preg_match('/^[a-f0-9]{32}$/D',$id)){
+  $query=$db->prepare("SELECT filename FROM noa_jukebox_uploads WHERE id=? AND song_key=? AND status='ready'");
+  $query->execute([$id,$asset['song_key']]);
+  $name=basename(str_replace('\\','/',(string)$query->fetchColumn()));
+  if(preg_match('/^(.+)\.(mp3|wav)$/isuD',$name,$parts)){
+   $safe=nj_download_name($parts[1]);
+   return substr($safe,0,-4).'.'.(strtolower($parts[2])==='mp3'?$parts[2]:'mp3');
+  }
+ }
+ return nj_download_name($title);
+}
+function nmd_receipt_filename(array $receipt,string $currentSha,string $currentName):string{
+ return $receipt['filename']??(hash_equals($receipt['sha'],$currentSha)?$currentName:nj_download_name($receipt['title']));
+}
 function nmd_asset(PDO $db,string $key,array $member,bool $admin=false):array{
  if($key===''||strlen($key)>191)throw new DomainException('song_unavailable');
  $doc=nj_document($db,$key);$a=nj_find($db,$key);
  if(!$doc||!in_array($doc['_kind']??'',['single','story','playlist'],true)||(!noa_sound_visible($doc,$admin)&&!nam_owner($doc,$member)))throw new DomainException('song_unavailable');
  if(!$a||!hash_equals($a['source_url'],noa_sound_suno($doc['body']??[]))||!nj_verified($a,'audio'))throw new DomainException('audio_unavailable');
  $owner=$admin?'':nmd_owner($db,$doc,$a);
- return ['key'=>$key,'sha'=>$a['audio_sha256'],'path'=>$a['audio_path'],'bytes'=>(int)$a['audio_bytes'],'ownerId'=>$owner,'title'=>(string)(($doc['body']['confirmedTitle']??'')?:($doc['title']??$a['title']??'NOA'))];
+ $title=(string)(($doc['body']['confirmedTitle']??'')?:($doc['title']??$a['title']??'NOA'));
+ return ['key'=>$key,'sha'=>$a['audio_sha256'],'path'=>$a['audio_path'],'bytes'=>(int)$a['audio_bytes'],'ownerId'=>$owner,'title'=>$title,'filename'=>nmd_filename($db,$a,$title)];
 }
 function nmd_key(string $id):string{ns_order_key($id);return 'music:download:'.$id;}
 function nmd_point(string $owner,int $amount,string $id,string $action,string $title):void{
