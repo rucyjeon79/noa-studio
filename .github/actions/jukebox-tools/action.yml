@@ -1,0 +1,41 @@
+name: Prepare jukebox media tools
+description: Reuse signed Ubuntu packages for the current audio runner image.
+runs:
+  using: composite
+  steps:
+    - id: image
+      shell: bash
+      run: echo "version=${ImageVersion:?}" >> "$GITHUB_OUTPUT"
+    - uses: actions/cache@v4
+      with:
+        path: ~/.cache/noa-audio-debs
+        key: noa-audio-noble-${{ runner.arch }}-${{ steps.image.outputs.version }}-v1
+    - shell: bash
+      run: |
+        set -euo pipefail
+        if command -v ffmpeg >/dev/null && command -v ffprobe >/dev/null; then exit 0; fi
+        debs="$HOME/.cache/noa-audio-debs"
+        shopt -s nullglob
+        packages=("$debs"/*.deb)
+        if (( ${#packages[@]} )) && sudo apt-get -y --no-download --no-install-recommends install "${packages[@]}"; then
+          ffmpeg -version >/dev/null
+          ffprobe -version >/dev/null
+          exit 0
+        fi
+        mkdir -p "$debs"
+        # Retain the Ubuntu archive signatures and avoid the slow runner mirror.
+        sources="$RUNNER_TEMP/noa-audio-ubuntu.sources"
+        sed -e 's|mirror+file:/etc/apt/apt-mirrors-security.txt|https://security.ubuntu.com/ubuntu/|g' \
+            -e 's|mirror+file:/etc/apt/apt-mirrors.txt|https://archive.ubuntu.com/ubuntu/|g' \
+            -e 's|http://|https://|g' -e 's|azure.archive.ubuntu.com|archive.ubuntu.com|g' \
+            /etc/apt/sources.list.d/ubuntu.sources > "$sources"
+        apt_args=(-o "Dir::Etc::sourcelist=$sources" -o Dir::Etc::sourceparts=-
+                  -o Acquire::ForceIPv4=true -o Acquire::Retries=1 -o Acquire::https::Timeout=15)
+        timeout 120 sudo apt-get "${apt_args[@]}" update -qq
+        archives=$(mktemp -d "$RUNNER_TEMP/noa-audio-debs.XXXXXX")
+        chmod 755 "$archives"
+        timeout 180 sudo apt-get "${apt_args[@]}" -o "Dir::Cache::archives=$archives" -y --no-install-recommends --download-only install ffmpeg
+        sudo apt-get -y --no-download --no-install-recommends install "$archives"/*.deb
+        cp "$archives"/*.deb "$debs/"
+        ffmpeg -version >/dev/null
+        ffprobe -version >/dev/null
