@@ -60,6 +60,7 @@ try{
    if(phase==='candidate')for(const file of ['noa-ui.js','noa-starlight.css','noa-account.js','noa-member-surfaces.css','noa-member-surfaces.js']){
     await context.route('**/'+file+'*',r=>r.fulfill({body:readFileSync('deploy/'+file),contentType:file.endsWith('.css')?'text/css':'application/javascript'}));
    }
+   if(phase==='candidate')await context.route('**/noa-login.php?view=drawer',route=>route.fulfill({contentType:'text/html',body:readFileSync('login-proof/fixture/drawer-ready.html')}));
    if(phase==='candidate')await context.route('**/noa-assets/drawer-studio-session.jpg',route=>route.fulfill({body:readFileSync('public/drawer/studio-session.jpg'),contentType:'image/jpeg'}));
    const page=await context.newPage();
    const campaign=page.locator('#noa-amt-fan .amt-close');
@@ -101,7 +102,7 @@ try{
     const parts=await drawer.locator(':scope > *').evaluateAll(nodes=>nodes.slice(0,5).map(e=>e.id||e.className));
     assert.deepEqual(parts,['noa-drawer-head','noa-drawer-profile','noa-drawer-search','noa-drawer-tools','noa-menu']);
     const form=drawer.locator('.noa-drawer-login'),entry=drawer.locator('.noa-drawer-my');
-    assert(await form.isHidden());assert.equal(await form.getAttribute('method'),'post');assert.equal(await form.getAttribute('action'),'/bbs/login_check.php');
+    assert(await form.isHidden());assert.equal(await drawer.locator('form[action*="login_check"],input[name=mb_id],input[type=password]').count(),0);
     if(member){
      assert(await entry.isVisible());assert.equal(await entry.getAttribute('href'),'/noa-my.php');
      const actions=drawer.locator('.noa-drawer-links');
@@ -122,7 +123,21 @@ try{
       assert.equal(createHash('sha256').update(await image.body()).digest('hex'),createHash('sha256').update(readFileSync('public/drawer/studio-session.jpg')).digest('hex'));
      }
      assert.equal(await page.locator('#noa-login .noa-social-options').count(),1);
-     await guest.getByRole('button',{name:'로그인',exact:true}).click();assert(await form.locator('[autocomplete=current-password]').isVisible());
+     await guest.getByRole('button',{name:'로그인',exact:true}).click();
+     const links=form.getByRole('link');await links.nth(1).waitFor();
+     assert.deepEqual(await links.allTextContents(),['Google로 로그인','카카오 로그인']);
+     for(const [n,provider] of ['Google','Kakao'].entries()){
+      const link=links.nth(n),href=new URL(await link.getAttribute('href'),page.url());
+      assert.equal(href.origin,'https://noastudio.ai.kr');assert.equal(href.pathname,'/bbs/login.php');
+      assert.equal(href.searchParams.get('provider'),provider);assert.equal(href.searchParams.get('redirect_to_idp'),'1');assert.equal(href.searchParams.get('url'),'/');
+      assert.equal(await link.locator('img,svg').count(),1);
+     }
+     const [google,kakao]=await links.evaluateAll(items=>items.map(item=>{
+      const {x,y,width,height}=item.getBoundingClientRect();return {x,y,width,height,color:getComputedStyle(item).backgroundColor};
+     }));
+     assert.equal(google.color,'rgb(255, 255, 255)');assert.equal(kakao.color,'rgb(254, 229, 0)');
+     assert(google.height>=44&&google.height===kakao.height&&google.width===kakao.width&&google.x===kakao.x&&kakao.y-google.y-google.height>=7);
+     await form.screenshot({path:out+'/social-'+width+'.png'});
      await guest.locator('[aria-controls=noa-drawer-signin]').click();assert(await form.isHidden());
     }
     const tools=drawer.locator('.noa-info-actions');

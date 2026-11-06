@@ -2,26 +2,33 @@
 declare(strict_types=1);require_once __DIR__.'/common.php';require_once __DIR__.'/noa-bridge/social-policy.php';
 header('Cache-Control: private, no-store');header('Content-Type: text/html; charset=utf-8');
 $return='/';$providers=nsp_status((array)$config);$esc=static fn($s)=>htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');
-?><!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>로그인 | NOA STUDIO</title><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-account.css?v=<?=hash_file('sha256',__DIR__.'/noa-account.css')?>"><link rel="stylesheet" href="/noa-login.css?v=<?=hash_file('sha256',__DIR__.'/noa-login.css')?>"><script src="/noa-brand.js" defer></script><script src="/noa-ui.js" defer></script></head><body class="noa-page"><main id="noa-login" class="noa-social-layout"><p class="noa-eyebrow">NOA STUDIO</p><h1>로그인</h1>
-<p class="noa-login-welcome">음악으로 이어지는 순간, 별무리와 함께하세요.</p>
-<section class="noa-social-signin" aria-label="소셜 계정으로 로그인">
+function noa_login_options(array $providers,string $return,string $prefix='noa'):void { ?>
 <div class="noa-social-options">
 <?php foreach($providers as $provider=>$p): ?>
 <div class="noa-social-option">
 <?php if($p['ready']): ?>
 <a class="noa-social-provider noa-social-<?=$provider?>" href="/bbs/login.php?provider=<?=ucfirst($provider)?>&amp;redirect_to_idp=1&amp;url=<?=rawurlencode($return)?>">
 <?php else: ?>
-<button class="noa-social-provider noa-social-<?=$provider?>" type="button" disabled aria-describedby="noa-<?=$provider?>-status">
+<button class="noa-social-provider noa-social-<?=$provider?>" type="button" disabled aria-describedby="<?=$prefix?>-<?=$provider?>-status">
 <?php endif; ?>
 <?php if($provider==='google'): ?>
 <img class="noa-provider-icon" src="/noa-assets/google-login-g.png" width="20" height="20" alt=""><span>Google로 로그인</span>
 <?php else: ?>
 <svg class="noa-provider-icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="#000" d="M12 3C5.373 3 0 7.245 0 12.482c0 3.408 2.278 6.396 5.693 8.066-.251.937-.91 3.396-1.042 3.921-.163.652.238.644.502.469.207-.137 3.296-2.238 4.629-3.145.72.106 1.462.161 2.218.161 6.627 0 12-4.245 12-9.482C24 7.245 18.627 3 12 3Z" transform="translate(2 0) scale(.8333)"/></svg><span>카카오 로그인</span>
 <?php endif; ?>
-<?php if($p['ready']): ?></a><?php else: ?></button><p id="noa-<?=$provider?>-status" class="noa-muted" role="status"><?=$esc($p['label'])?> 로그인 연결 준비 중</p><?php endif; ?>
+<?php if($p['ready']): ?></a><?php else: ?></button><p id="<?=$prefix?>-<?=$provider?>-status" class="noa-muted" role="status"><?=htmlspecialchars($p['label'],ENT_QUOTES,'UTF-8')?> 로그인 연결 준비 중</p><?php endif; ?>
 </div>
 <?php endforeach; ?>
 </div>
+<?php }
+if(($_GET['view']??'')==='drawer'){
+ noa_login_options($providers,$return,'noa-drawer');
+ exit;
+}
+?><!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>로그인 | NOA STUDIO</title><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-account.css?v=<?=hash_file('sha256',__DIR__.'/noa-account.css')?>"><link rel="stylesheet" href="/noa-login.css?v=<?=hash_file('sha256',__DIR__.'/noa-login.css')?>"><script src="/noa-brand.js" defer></script><script src="/noa-ui.js" defer></script></head><body class="noa-page"><main id="noa-login" class="noa-social-layout"><p class="noa-eyebrow">NOA STUDIO</p><h1>로그인</h1>
+<p class="noa-login-welcome">음악으로 이어지는 순간, 별무리와 함께하세요.</p>
+<section class="noa-social-signin" aria-label="소셜 계정으로 로그인">
+<?php noa_login_options($providers,$return); ?>
 <p class="noa-social-note">처음 방문하셨나요? 소셜 계정으로 가입할 수 있어요.</p>
 </section>
 <div class="noa-login-divider"><span>또는 아이디로 로그인</span></div>

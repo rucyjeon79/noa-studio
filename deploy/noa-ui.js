@@ -223,10 +223,24 @@ function wideShell(side){
  const profile=document.createElement('section');profile.className='noa-drawer-profile';profile.setAttribute('aria-label','내 계정');
  const guest=document.createElement('div');guest.className='noa-drawer-guest';
  guest.innerHTML='<div class="noa-drawer-greeting"><small>MY STUDIO</small><strong>별무리, 반가워요!</strong></div><div class="noa-drawer-stage"><img src="/noa-assets/drawer-studio-session.jpg" alt="녹음실 마이크 앞의 노아" width="1536" height="861" loading="lazy" decoding="async"></div><div class="noa-drawer-guest-actions"><button type="button" aria-expanded="false" aria-controls="noa-drawer-signin">'+icon('login')+'<span>로그인</span></button><a href="/noa-login.php#noa-login" title="소셜 계정으로 회원가입">'+icon('user')+'<span>회원가입</span></a></div>';
- const login=document.createElement('form');login.id='noa-drawer-signin';login.className='noa-drawer-login';login.action='/bbs/login_check.php';login.method='post';login.hidden=true;
- login.innerHTML='<input type="hidden" name="url" value="/"><label class="noa-sr-only" for="noa-drawer-login-id">아이디 또는 이메일</label><input id="noa-drawer-login-id" name="mb_id" autocomplete="username" autocapitalize="none" maxlength="254" placeholder="아이디 또는 이메일" required><label class="noa-sr-only" for="noa-drawer-login-pw">비밀번호</label><input id="noa-drawer-login-pw" name="mb_password" type="password" autocomplete="current-password" placeholder="비밀번호" required><button type="submit" class="noa-button">로그인</button><a href="/noa-login.php">다른 방법으로 로그인</a>';
+ const login=document.createElement('div');login.id='noa-drawer-signin';login.className='noa-drawer-login';login.hidden=true;
+ login.setAttribute('role','group');login.setAttribute('aria-label','소셜 계정으로 로그인');
  const signIn=guest.querySelector('button');
- signIn.onclick=()=>{login.hidden=!login.hidden;signIn.setAttribute('aria-expanded',String(!login.hidden));if(!login.hidden)login.elements.mb_id.focus();else login.reset();};
+ async function loadSocialLogin(){
+  if(login.querySelector('.noa-social-options')||login.hasAttribute('aria-busy'))return;
+  login.setAttribute('aria-busy','true');login.textContent='로그인 방법을 불러오는 중입니다.';
+  try{
+   const response=await fetch('/noa-login.php?view=drawer',{credentials:'same-origin',cache:'no-store'});
+   if(!response.ok)throw Error();
+   const template=document.createElement('template');template.innerHTML=await response.text();
+   const options=template.content.firstElementChild;
+   if(!options?.matches('.noa-social-options'))throw Error();
+   login.replaceChildren(options);
+  }catch{
+   const link=document.createElement('a');link.href='/noa-login.php';link.textContent='로그인 페이지 열기';login.replaceChildren(link);
+  }finally{login.removeAttribute('aria-busy');}
+ }
+ signIn.onclick=()=>{login.hidden=!login.hidden;signIn.setAttribute('aria-expanded',String(!login.hidden));if(!login.hidden)loadSocialLogin();};
  guest.append(login);
  const memberBox=document.createElement('div');memberBox.className='noa-drawer-member';
  memberBox.innerHTML='<div class="noa-drawer-id"><span class="noa-drawer-avatar" aria-hidden="true"></span><div><small>MY STUDIO</small><strong translate="no"></strong><span class="noa-drawer-rank"></span></div></div><div class="noa-drawer-links"></div>';
@@ -250,7 +264,7 @@ function wideShell(side){
   const member=!!access.member;
   guest.hidden=member;memberBox.hidden=!member;
   if(!member)return;
-  if(!login.hidden){login.reset();login.hidden=true;signIn.setAttribute('aria-expanded','false');}
+  if(!login.hidden){login.hidden=true;signIn.setAttribute('aria-expanded','false');}
   const name=remote?.member&&remote.displayName;
   identity.textContent=name||'나의 계정';avatar.textContent=name?Array.from(name)[0]:'MY';
   rank.textContent=drawerMember?.rank||access.name||'회원';

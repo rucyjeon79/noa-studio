@@ -31,7 +31,7 @@ if os.environ.get('NOA_SURFACE_POLISH') == 'true':
     release.PROTECTED = [*release.PROTECTED,'noa-hero.js','noa-music.php']
 
 if os.environ.get('NOA_MENU_DRAWER') == 'true':
-    release.FILES = {name:'deploy/'+name for name in ('noa-sitemap.php','noa-starlight.css','noa-account.js','noa-ui.js')}
+    release.FILES = {name:'deploy/'+name for name in ('noa-login.php','noa-sitemap.php','noa-starlight.css','noa-account.js','noa-ui.js')}
     release.FILES['noa-assets/drawer-studio-session.jpg'] = 'public/drawer/studio-session.jpg'
     release.NEW = {'noa-assets/drawer-studio-session.jpg'}
     release.PROTECTED = list(dict.fromkeys([*release.PROTECTED,'noa-hero.js','noa-music.php']))
