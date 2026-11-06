@@ -27,7 +27,7 @@ foreach (['taxonomy','popularity','database','jukebox'] as $module) {
             $html = preg_replace('~(<main\b[^>]*>)~i', '$1'.$guide, $html, 1);
         }
     }
-    $assets = '<link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-policy-20261024.css">'
+    $assets = '<script type="application/json" id="noa-access">{"member":true}</script><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-policy-20261024.css">'
         .'<script src="/noa-ui.js" data-noa-theme-only defer></script><link rel="stylesheet" href="/noa-starlight.css">'
         .'<link rel="stylesheet" href="/noa-account.css"><script src="/noa-account.js" defer></script>';
     file_put_contents($out.'/'.$module.'.html',str_replace('</head>',$assets.'</head>',$html));

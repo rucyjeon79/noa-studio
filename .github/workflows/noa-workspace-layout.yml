@@ -1,7 +1,7 @@
 name: NOA admin workspace layout
 on:
   pull_request:
-    paths: &paths ['deploy/noa-account.css','deploy/noa-app/taxonomy/style.css','deploy/noa-app/taxonomy/index.php','deploy/noa-app/popularity/index.php','deploy/noa-app/database/style.css','deploy/noa-app/database/index.php','tests/header/workspace-*','.github/workflows/noa-workspace-layout.yml']
+    paths: &paths ['deploy/noa-account.css','deploy/noa-app/taxonomy/style.css','deploy/noa-app/taxonomy/index.php','deploy/noa-app/popularity/index.php','deploy/noa-app/database/style.css','deploy/noa-app/jukebox/upload.css','deploy/noa-app/database/index.php','tests/header/workspace-*','.github/workflows/noa-workspace-layout.yml']
   push:
     branches: [main]
     paths: *paths

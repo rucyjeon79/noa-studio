@@ -19,7 +19,7 @@ async function main() {
         const module = url.pathname.match(/^\/noa-app\/(taxonomy|popularity|database|jukebox)\/$/)?.[1];
         if (module && route.request().method() === 'GET') return route.fulfill({path: path.join(fixture, module + '.html'), contentType: 'text/html; charset=utf-8'});
         if (module) {
-          const data = {ok: true, latest: null, policy: {revision: 1, values: {}}, categories: [{category_id: 'story', name: '사연곡', enabled: 1}], rules: [], history: [], productionRules: [], productionHistory: [], relations: [], review: [], logs: [], counts: [{name:'사연곡',songs:48}, {name:'커버곡',songs:37}]};
+          const data = {ok: true, latest: null, connection: {connected:true,version:'8.0',readOnly:1,timeoutMs:3000}, tableCount:5, statistics:{}, policy: {revision: 1, values: {}}, categories: [{category_id: 'story', name: '사연곡', enabled: 1}], rules: [], history: [], productionRules: [], productionHistory: [], relations: [], review: [], logs: [], counts: [{name:'사연곡',songs:48}, {name:'커버곡',songs:37}]};
           return route.fulfill({json: data});
         }
         if (url.pathname === '/noa-bridge/ui-preferences.php') return route.fulfill({json: {member: true, settings: {theme,language:'ko',design:'ios',radius:'soft'}, revision: 1}});
@@ -32,7 +32,8 @@ async function main() {
       for (const module of ['taxonomy','popularity','database','jukebox']) {
         await page.goto('https://noa.test/noa-app/' + module + '/');
         await page.waitForFunction(t => document.documentElement.dataset.noaTheme === t,theme);
-        await page.locator('#noa-nav-account').waitFor();
+        await page.getByRole('link',{name:'MY',exact:true}).waitFor();
+        if (module === 'database') await page.getByText('자료 저장소 연결 상태 확인 완료',{exact:true}).waitFor();
         if (module === 'taxonomy') await page.getByText('저장된 자료 연결 완료', {exact:true}).waitFor();
         for (const width of [320,360,390,430,768,1280]) {
           await page.setViewportSize({width,height:850});
@@ -43,6 +44,7 @@ async function main() {
               header: rect(document.querySelector('#noa-account-bar')),
               buttons: ['#noa-nav-all','.noa-account-brand','#noa-nav-back','#noa-nav-top','#noa-nav-account'].map(s => rect(document.querySelector('#noa-account-bar '+s))),
               nav: rects('main.noa-admin-workspace>header nav a'), actions: rects('main.noa-admin-workspace>.actions>button'),
+              tools: rects('main>form.batch>button, main>.tabs>button'),
               metrics: rects('#counts>.metric'), guide: document.querySelector('main>.noa-workspace-guide') && getComputedStyle(document.querySelector('main>.noa-workspace-guide')).position,
               pageWidth: document.documentElement.scrollWidth
             };
@@ -66,6 +68,12 @@ async function main() {
             const [a,b] = state.actions.slice(-2);
             assert(a.top === b.top && a.right < b.left && Math.abs(a.width-b.width)<1,trace);
             if (state.metrics.length) assert(Math.abs(state.metrics[0].width-state.metrics[1].width)<1 && state.metrics[0].top===state.metrics[1].top,trace);
+          }
+          if (width <= 600 && state.tools.length) {
+            for (let i = 1; i < state.tools.length; i += 2) {
+              const left = state.tools[i-1], right = state.tools[i];
+              assert(left.height >= 44 && left.top === right.top && left.right < right.left && Math.abs(left.width-right.width)<1,trace);
+            }
           }
           if (width === 390) await page.screenshot({path: proof+'/'+module+'-'+theme+'.png'});
         }
