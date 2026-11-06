@@ -7,8 +7,10 @@ require_once dirname(__DIR__).'/noa-app/jukebox/core.php';
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: private, no-store');
 header('X-Content-Type-Options: nosniff');
+if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 try{
  $admin=!empty($is_member)&&($is_admin??'')==='super';$items=[];
+ $labChoices=$admin && ($_GET['view']??'')==='labChoices';
  $db=noa_bridge_pdo();$trash=noa_sound_trash_index($db);$jukebox=nj_assets($db);$availability=is_file(__DIR__.'/media-status.php')?require __DIR__.'/media-status.php':[];
  foreach($db->query("SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','playlist','story') ORDER BY doc_key") as $row){
   $p=json_decode($row['payload'],true,512,JSON_THROW_ON_ERROR);$b=$p['body']??[];
@@ -28,6 +30,7 @@ try{
   if(!$admin&&!$publicVideo)$id='';
   $suno=noa_sound_suno($b);$audio=nj_resolve($jukebox,$row['doc_key'],$suno,'audio')?:noa_sound_audio($b,dirname(__DIR__));$card=nj_resolve($jukebox,$row['doc_key'],$suno,'cover')?:noa_sound_cover($b);
   if(!$admin&&!$id&&!$audio&&!$suno&&$row['kind']!=='playlist')continue;
+  if($labChoices){$items[]=['key'=>$row['doc_key'],'kind'=>$row['kind'],'genre'=>$p['genreId']??'','ep'=>$p['ep']??'','title'=>($b['confirmedTitle']??'')?:($p['title']??''),'cast'=>$b['thumbCast']??'','audioUrl'=>$audio,'youtubeId'=>$id];continue;}
   $items[]=['key'=>$row['doc_key'],'kind'=>$row['kind'],'genre'=>$p['genreId']??'',
    'title'=>($b['confirmedTitle']??'')?:($p['title']??''),'ep'=>$p['ep']??'','act'=>$p['act']??'',
    'tracklist'=>$b['tracklist']??'','lyrics'=>noa_sound_lyrics((string)($b['lyricsBlock']??'')),'cast'=>$b['thumbCast']??'','thumbnail'=>$card?:($id?($b['thumbUrl']??''):''),'coverImageUrl'=>$card,'sunoUrl'=>$suno,'audioVerified'=>(bool)$audio,
@@ -38,7 +41,7 @@ try{
  try{
   $recovered=$db->query("SELECT s.song_id,s.identity_json,s.genre_id,s.ep,v.fields_json,v.public_verified FROM noa_catalog_songs s JOIN noa_catalog_versions v ON v.entity_id=s.song_id AND v.entity_type='song' WHERE v.batch_id=(SELECT batch_id FROM noa_catalog_batches WHERE status='applied' ORDER BY applied_at DESC,batch_id DESC LIMIT 1)");
   $seen=array_fill_keys(array_column($items,'youtubeId'),true);
-  foreach($recovered as $row){if(isset($trash['ids'][$row['song_id']]))continue;$item=noa_sound_recovered($row,$admin);if($item&&!isset($seen[$item['youtubeId']])){$local=nj_resolve($jukebox,$item['key'],$item['sunoUrl'],'audio');$cover=nj_resolve($jukebox,$item['key'],$item['sunoUrl'],'cover');if($local){$item['audioUrl']=$local;$item['audioVerified']=true;}if($cover){$item['coverImageUrl']=$cover;$item['thumbnail']=$cover;}$items[]=$item;$seen[$item['youtubeId']]=true;}}
+  foreach($recovered as $row){if(isset($trash['ids'][$row['song_id']]))continue;$item=noa_sound_recovered($row,$admin);if($item&&!isset($seen[$item['youtubeId']])){$local=nj_resolve($jukebox,$item['key'],$item['sunoUrl'],'audio');$cover=nj_resolve($jukebox,$item['key'],$item['sunoUrl'],'cover');if($local){$item['audioUrl']=$local;$item['audioVerified']=true;}if($cover){$item['coverImageUrl']=$cover;$item['thumbnail']=$cover;}if($labChoices)$item=array_intersect_key($item,array_flip(['key','kind','genre','ep','title','cast','audioUrl','youtubeId']));$items[]=$item;$seen[$item['youtubeId']]=true;}}
  }catch(PDOException $e){error_log('[noa-catalog-recovery-read] unavailable');}
  echo json_encode(['brand'=>'NOA STUDIO','access'=>$admin?'administrator':'public','items'=>$items],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
 }catch(Throwable $e){http_response_code(503);echo json_encode(['error'=>'목록을 불러오지 못했습니다.']);error_log('[noa-catalog] '.get_class($e));}

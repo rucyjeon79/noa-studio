@@ -3,8 +3,12 @@ declare(strict_types=1);
 require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/storage.php';require_once __DIR__.'/lab-core.php';require_once __DIR__.'/ainoa-core.php';require_once __DIR__.'/ainoa-generation.php';
 lab_admin();if(empty($_SESSION['noa_lab_csrf']))$_SESSION['noa_lab_csrf']=bin2hex(random_bytes(32));
 $method=$_SERVER['REQUEST_METHOD']??'GET';$action=(string)($_GET['action']??'status');
+if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 try {
- if($method==='GET'&&$action==='status')lab_json(200,lab_status()+['csrf'=>$_SESSION['noa_lab_csrf'],'generation'=>na_generation_status(),'textUsage'=>array_slice(lab_read()['ainoaRecentUsage']??[],-20)]);
+ if($method==='GET'&&$action==='status'){
+  $snapshot=lab_read();
+  lab_json(200,lab_status($snapshot)+['csrf'=>$_SESSION['noa_lab_csrf'],'generation'=>na_generation_status($snapshot),'textUsage'=>array_slice($snapshot['ainoaRecentUsage']??[],-20)]);
+ }
  if($method!=='POST')lab_json(405,['error'=>'method_not_allowed']);lab_csrf();$owner=(string)$member['mb_id'];
  if($action==='audio'){
   $id=lab_id((string)($_GET['id']??''));$role=(string)($_GET['role']??'main');if(!in_array($role,['main','female','male'],true))throw new InvalidArgumentException('invalid_audio_role');$part=filter_var($_GET['part']??'',FILTER_VALIDATE_INT);$total=filter_var($_GET['total']??'',FILTER_VALIDATE_INT);

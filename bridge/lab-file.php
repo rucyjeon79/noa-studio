@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/lab-core.php';lab_admin();
+if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 try{
  $id=lab_id((string)($_GET['id']??''));$format=(string)($_GET['format']??'');if(!in_array($format,['input','optimized','landscape','shorts'],true))throw new InvalidArgumentException();$s=lab_read();$job=$s['jobs'][$id]??null;
  $exists=$job&&($format==='input'?!empty($job['inputReady']):($format==='optimized'?!empty($job['mastering']):!!array_filter($job['outputs']??[],fn($o)=>$o['format']===$format)));if(!$exists)lab_json(404,['error'=>'output_missing']);

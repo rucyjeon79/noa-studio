@@ -29,9 +29,9 @@ function na_generate_once(PDO $db,string $owner,string $requestId,string $finger
  $q=$db->prepare('UPDATE noa_documents SET payload=?,revision=2 WHERE doc_key=? AND revision=1 AND payload=?');$q->execute([json_encode($receipt,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),$key,$raw]);if($q->rowCount()!==1)throw new DomainException('ai_result_unconfirmed');
  return na_generation_reply($receipt,false);
 }
-function na_generation_status():array{
+function na_generation_status(?array $s=null):array{
  try{
-  require_once __DIR__.'/lab-core.php';$s=lab_read();$c=$s['config'];$key=lab_unseal($s['secrets']??null);$missing=[];
+  require_once __DIR__.'/lab-core.php';$s??=lab_read();$c=$s['config'];$key=lab_unseal($s['secrets']??null);$missing=[];
   if(empty($key['openaiKey']))$missing[]='api_key';if(empty($c['textEnabled']))$missing[]='text_enabled';
   if(($c['maxJobUsd']??0)<.1)$missing[]='per_request_budget';if(($c['dailyBudgetUsd']??0)<.1)$missing[]='daily_budget';
   if(!in_array($c['model']??'',['gpt-5-mini','gpt-4.1-mini'],true))$missing[]='model';
