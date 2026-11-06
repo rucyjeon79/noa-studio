@@ -49,6 +49,7 @@ function nq_retry(PDO $db,string $id):void{
   if(!in_array($j['error'],['worker_lease_expired','upload_processing_failed','hosting_storage_insufficient','cover_copy_failed','processing_state_changed_or_network_error'],true))throw new DomainException('non_retryable_reselect_source');
   $q=$db->prepare("SELECT id FROM noa_jukebox_uploads WHERE song_key=? AND id<>? AND status IN ('uploading','queued','retrying','analyzing','processing','verifying') LIMIT 1");$q->execute([$u['song_key'],$id]);if($q->fetchColumn())throw new DomainException('another_upload_is_active');nq_insert($db,$u,'retrying',(int)$j['attempt']+1,(int)$j['id']);
  });
+ nw_after_enqueue();
 }
 function nq_snapshot(PDO $db,bool $qa=false):array{
  $filter=$qa?'1=1':"u.song_key NOT LIKE 'jukebox:qa:%'";$counts=[];foreach($db->query("SELECT status,COUNT(*) n FROM noa_jukebox_uploads u WHERE $filter GROUP BY status") as $r)$counts[$r['status']]=(int)$r['n'];

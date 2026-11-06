@@ -13,6 +13,7 @@ PRIVATE = '/hosting/noastudio/noa-jukebox-private'
 release.FILES = {
     'noa-app/jukebox/wake-core.php': 'deploy/noa-app/jukebox/wake-core.php',
     'noa-app/jukebox/queue-core.php': 'deploy/noa-app/jukebox/queue-core.php',
+    'noa-app/jukebox/upload-core.php': 'deploy/noa-app/jukebox/upload-core.php',
 }
 release.NEW = {'noa-app/jukebox/wake-core.php'}
 

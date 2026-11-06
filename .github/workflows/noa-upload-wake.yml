@@ -2,10 +2,10 @@ name: NOA upload completion wake verification
 on:
   workflow_dispatch:
   pull_request:
-    paths: ['deploy/noa-app/jukebox/wake-core.php', 'deploy/noa-app/jukebox/queue-core.php', 'tests/jukebox/wake_test.php', '.github/workflows/noa-upload-wake.yml', 'scripts/noa_upload_wake_release.py']
+    paths: ['deploy/noa-app/jukebox/wake-core.php', 'deploy/noa-app/jukebox/queue-core.php', 'deploy/noa-app/jukebox/upload-core.php', 'scripts/noa_upload_wake_acceptance.py', 'tests/jukebox/wake_test.php', '.github/workflows/noa-upload-wake.yml', 'scripts/noa_upload_wake_release.py']
   push:
     branches: [main]
-    paths: ['deploy/noa-app/jukebox/wake-core.php', 'deploy/noa-app/jukebox/queue-core.php', 'tests/jukebox/wake_test.php', '.github/workflows/noa-upload-wake.yml', 'scripts/noa_upload_wake_release.py']
+    paths: ['deploy/noa-app/jukebox/wake-core.php', 'deploy/noa-app/jukebox/queue-core.php', 'deploy/noa-app/jukebox/upload-core.php', 'scripts/noa_upload_wake_acceptance.py', 'tests/jukebox/wake_test.php', '.github/workflows/noa-upload-wake.yml', 'scripts/noa_upload_wake_release.py']
 permissions: {contents: read}
 jobs:
   verify:
@@ -18,7 +18,9 @@ jobs:
       - run: |
           php -l deploy/noa-app/jukebox/wake-core.php
           php -l deploy/noa-app/jukebox/queue-core.php
+          php -l deploy/noa-app/jukebox/upload-core.php
           php tests/jukebox/wake_test.php
+          python -m py_compile scripts/noa_upload_wake_acceptance.py
 
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
@@ -40,3 +42,11 @@ jobs:
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
           NOA_JUKEBOX_WAKE_TOKEN: ${{ secrets.NOA_JUKEBOX_WAKE_TOKEN }}
         run: python scripts/noa_upload_wake_release.py
+
+      - name: Verify a private synthetic upload completes without any browser finish request
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: python scripts/noa_upload_wake_acceptance.py

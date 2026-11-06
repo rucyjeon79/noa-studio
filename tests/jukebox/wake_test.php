@@ -11,14 +11,19 @@ try{
  check(nw_request($dir,$send,100),'requested');check($calls,1);
  check(nw_request($dir,$send,101),'already_requested');check($calls,1);
  check(nw_request($dir,fn($token)=>403,161),'recovery_pending');
- check(nw_request($dir,$send,162),'already_requested');
+ check(nw_request($dir,$send,162),'recovery_pending');
  check(nw_request($dir,$send,172),'requested');check($calls,2);
  check(nw_request($dir,fn($token)=>throw new RuntimeException('offline'),233),'recovery_pending');
- check(nw_request($dir,$send,234),'already_requested');check($calls,2);
+ check(nw_request($dir,$send,234),'recovery_pending');check($calls,2);
  check(nw_request($dir,$send,244),'requested');check($calls,3);
  check(nw_request($dir,fn($token)=>200,305),'requested');
  $lock=fopen($dir.'/upload-wake-state','c+');flock($lock,LOCK_EX);
  check(nw_request($dir,$send,400),'already_requested');check($calls,3);fclose($lock);
  check(str_contains(file_get_contents($dir.'/upload-wake-state'),str_repeat('a',40)),false);
+ unlink($dir.'/upload-wake-token');
+ putenv('NOA_GITHUB_DISPATCH_TOKEN='.str_repeat('b',40));
+ check(nw_request($dir,fn($token)=>$token===str_repeat('b',40)?204:403,500),'requested');
+ check(str_contains(file_get_contents($dir.'/upload-wake-state'),str_repeat('b',40)),false);
+ putenv('NOA_GITHUB_DISPATCH_TOKEN');
  echo "wake: dispatch, deduplication, failure fallback, lock and secret isolation passed\n";
 }finally{foreach(glob($dir.'/*')as $p)unlink($p);rmdir($dir);}
