@@ -70,7 +70,7 @@ function noa_sitemap_registry():array{
             ['catalogAdmin','원본 가져오기·통합 등록','이전 원본 수집과 등록','/noa-catalog-admin.php','library','admin'],
             ['recovery','원본 복구','보존된 원본과 복구 상태','/noa-recovery.php','book','admin'],
             ['youtubeAdmin','YouTube 관리','채널 수집과 분류 검토','/noa-youtube-admin.php','youtube','admin'],
-            ['workStatus','N80 작업 현황','지시·단계·운영 검증 기록','/noa-work-status.php','settings','admin'],
+            ['workStatus','N80 Engine 작업 현황','지시·단계·운영 검증 기록','/noa-work-status.php','settings','admin'],
             ['assistantSetup','NOA STUDIO Assistant 연결','관리자 연결 상태와 권한 확인','/noa-gpt-setup.php','settings','admin'],
             ['aiLab','AI LAB','영상 제작과 채널 성장','/noa-ai-lab.php','mic','admin'],
             ['themeAdmin','테마 정책','디자인 설정과 변경 이력','/noa-theme-admin.php','settings','admin'],

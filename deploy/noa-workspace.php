@@ -26,7 +26,7 @@ function noa_workspace_groups():array{return [
   ['aiSettings','AI·YouTube 연결 설정','AI 서비스 연결·비용 한도·채널 소유자 확인','/noa-ai-lab.php#settings','settings'],
  ]],
  'advanced'=>['title'=>'고급 점검·데이터 복구','intro'=>'자료 연결에 문제가 있을 때 사용합니다. 일상적인 곡 수정은 콘텐츠 관리에서 합니다.','routes'=>[
-  ['workStatus','N80 작업 현황','지시·단계·검증 결과 확인','/noa-work-status.php','settings'],
+  ['workStatus','N80 Engine 작업 현황','지시·단계·검증 결과 확인','/noa-work-status.php','settings'],
   ['assistantSetup','NOA STUDIO Assistant 연결','관리자 연결 상태와 권한 확인','/noa-gpt-setup.php','settings'],
   ['catalogAdmin','원본 가져오기·통합 등록','이전 원본을 추가로 가져올 때 사용','/noa-catalog-admin.php','library'],
   ['documents','문서·변경 이력','문서 키와 저장 버전 확인','/noa-library.php?view=documents','book'],

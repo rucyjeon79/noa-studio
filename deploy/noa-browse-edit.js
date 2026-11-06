@@ -451,7 +451,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
       const connection=await post('/noa-gpt.php?op=config',{});
       if(connection.workerConfigured){
        const started=await post('/noa-gpt.php?op=start',{...job,worker:true,field:'publishSet',replace:true});
-       markBatch(started.targets);info.textContent='요청 접수 · n80 실행 대기 중';
+       markBatch(started.targets);info.textContent='요청 접수 · N80 Auto 실행 대기 중';
        const deadline=Date.now()+1200000;
        while(Date.now()<deadline){
         await new Promise(resolve=>setTimeout(resolve,4000));
@@ -460,7 +460,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
         if(progress.failed)throw Error('worker_failed');
         if(!progress.saved){
          const seconds=Math.floor((Date.now()-began)/1000);
-         info.textContent=(progress.claimed?'n80 작업 수신 · '+started.targets.length+'개 항목 생성 중':'요청 접수 · n80 실행 대기 중')+' · '+Math.floor(seconds/60)+'분 '+seconds%60+'초 경과';
+         info.textContent=(progress.claimed?'N80 Auto 요청 접수 · '+started.targets.length+'개 항목 생성 중':'요청 접수 · N80 Auto 실행 대기 중')+' · '+Math.floor(seconds/60)+'분 '+seconds%60+'초 경과';
          continue;
         }
         info.textContent='생성 결과 저장됨 · 곡 정보 확인 중';
@@ -490,7 +490,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
       state.data=fresh;for(const k of Object.keys(result.patch)){refreshField(k,fresh.fields);options.get(k).checked=false;}
       info.textContent=Object.keys(result.patch).map(k=>names[k]).join(' · ')+' 저장 완료';
       onSaved({selector,record:displayRow||byKey.get(selector.key),data:fresh});
-     }catch(e){info.textContent=({worker_failed:'n80 생성에 실패했습니다. 작업 현황을 확인해 주세요.',dispatch_failed:'자동 제작을 시작하지 못했습니다. 관리자 연결 설정을 확인해 주세요.',worker_offline:'n80 실행기 연결 설정을 확인해 주세요.',worker_timeout:'결과 대기 시간이 지났습니다. 곡을 다시 열어 확인해 주세요.',revision_conflict:'곡이 다른 곳에서 수정됐습니다. 다시 열어 최신 내용을 확인해 주세요.',ai_revision_changed:'곡이 변경되었습니다. 편집기를 다시 열어 주세요.',ai_provider_rate_limit:'AI 서비스 이용 한도와 잔액을 확인해 주세요.',ai_budget_exceeded:'AI LAB의 사용 한도에 도달했습니다.',no_enabled_fields:'선택한 항목은 장르 규칙에서 꺼져 있습니다.',readback:'저장 응답을 받았지만 다시 읽어 확인하지 못했습니다. 곡을 다시 열어 주세요.'})[e.message]||'게시 자료 생성을 확인하지 못했습니다. 곡을 다시 열어 저장 상태를 확인해 주세요.';}
+     }catch(e){info.textContent=({worker_failed:'N80 Auto에서 생성을 완료하지 못했습니다. 작업 현황을 확인해 주세요.',dispatch_failed:'자동 제작을 시작하지 못했습니다. 관리자 연결 설정을 확인해 주세요.',worker_offline:'N80 Auto 연결 설정을 확인해 주세요.',worker_timeout:'결과 대기 시간이 지났습니다. 곡을 다시 열어 확인해 주세요.',revision_conflict:'곡이 다른 곳에서 수정됐습니다. 다시 열어 최신 내용을 확인해 주세요.',ai_revision_changed:'곡이 변경되었습니다. 편집기를 다시 열어 주세요.',ai_provider_rate_limit:'AI 서비스 이용 한도와 잔액을 확인해 주세요.',ai_budget_exceeded:'AI LAB의 사용 한도에 도달했습니다.',no_enabled_fields:'선택한 항목은 장르 규칙에서 꺼져 있습니다.',readback:'저장 응답을 받았지만 다시 읽어 확인하지 못했습니다. 곡을 다시 열어 주세요.'})[e.message]||'게시 자료 생성을 확인하지 못했습니다. 곡을 다시 열어 저장 상태를 확인해 주세요.';}
      finally{for(const field of marked){field.generating('batch',false);field.feedback.hidden=true;}for(const [el,disabled]of wasDisabled)el.disabled=disabled;publish.disabled=false;state.busy=false;}
     };
    }

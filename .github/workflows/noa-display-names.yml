@@ -1,0 +1,60 @@
+name: Verify and publish N80 display names
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-display-names.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  verify-and-publish:
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - run: |
+          node --check deploy/noa-browse-edit.js
+          node --check deploy/noa-ainoa.js
+          node --check deploy/noa-ainoa-admin.js
+          php -l deploy/noa-work-status.php
+          php -l deploy/noa-gpt-setup.php
+          php -l deploy/noa-ai-lab.php
+          php -l deploy/noa-workspace.php
+          php -l deploy/noa-sitemap.php
+          php -l deploy/noa-quality.php
+          php -l bridge/ainoa-automation.php
+          python -m pip install 'paramiko>=3,<5'
+      - name: Publish and verify display names
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+        run: |
+          PYTHONPATH=scripts python - <<'PY'
+          import sys
+          import noa_ainoa_deploy as release
+          release.FILES = {
+                  'noa-browse-edit.js': 'deploy/noa-browse-edit.js',
+                  'noa-ainoa.js': 'deploy/noa-ainoa.js',
+                  'noa-ainoa-admin.js': 'deploy/noa-ainoa-admin.js',
+                  'noa-work-status.php': 'deploy/noa-work-status.php',
+                  'noa-gpt-setup.php': 'deploy/noa-gpt-setup.php',
+                  'noa-ai-lab.php': 'deploy/noa-ai-lab.php',
+                  'noa-workspace.php': 'deploy/noa-workspace.php',
+                  'noa-sitemap.php': 'deploy/noa-sitemap.php',
+                  'noa-quality.php': 'deploy/noa-quality.php',
+                  'noa-bridge/ainoa-automation.php': 'bridge/ainoa-automation.php',
+              }
+          release.NEW = set()
+          try:
+              release.main()
+          except Exception:
+              if release.BACKUP.exists():
+                  sys.argv.append('rollback')
+                  release.main()
+              raise
+          PY

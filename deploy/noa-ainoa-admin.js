@@ -23,17 +23,17 @@ function render(){
   const item=el('details',undefined,'ainoa-admin-job');item.append(el('summary',(t.type==='chat'?'대화':fields[t.field]||'AI 생성')+' · '+t.title+' · '+states[t.state]));
   item.append(el('p',t.stage),el('small','작업 '+t.id.slice(-12)+' · '+new Date(t.updatedAt).toLocaleString()));
   if(t.error)item.append(el('p',errors[t.error]||'처리하지 못했습니다. 연결 설정과 요청 내용을 확인하세요.','ainoa-admin-error'));
-  if(t.result){const text=el('textarea');text.value=t.result;text.readOnly=true;text.rows=5;text.setAttribute('aria-label','N80 생성 결과');item.append(text,button('초안 복사',async()=>{try{await navigator.clipboard.writeText(t.result);notice('초안을 복사했습니다. 곡 편집 화면에서 검토 후 저장하세요.');}catch{notice('복사 권한이 없습니다. 결과 입력칸에서 텍스트를 선택해 복사하세요.');}}));}
+  if(t.result){const text=el('textarea');text.value=t.result;text.readOnly=true;text.rows=5;text.setAttribute('aria-label','N80 AI 생성 결과');item.append(text,button('초안 복사',async()=>{try{await navigator.clipboard.writeText(t.result);notice('초안을 복사했습니다. 곡 편집 화면에서 검토 후 저장하세요.');}catch{notice('복사 권한이 없습니다. 결과 입력칸에서 텍스트를 선택해 복사하세요.');}}));}
   if(t.state==='queued')item.append(button('대기 취소',async()=>{try{await client.api({action:'admin_cancel',taskId:t.id,expectedRevision:t.revision});await refresh();notice('대기 요청을 취소했습니다.');}catch(e){notice(e.message);}}));list.append(item);
  }
- if(!tasks.length)list.append(el('p','등록된 AI 작업이 없습니다.'));$('.ainoa-admin-job-count').textContent='최근 N80 작업 · '+tasks.length;
+ if(!tasks.length)list.append(el('p','등록된 AI 작업이 없습니다.'));$('.ainoa-admin-job-count').textContent='최근 N80 Auto 작업 · '+tasks.length;
 }
 async function refresh(){state=await workspace();render();}
-async function run(task){if(task.state!=='queued')return;if(!state.generation.ready){notice('요청을 보관했습니다. AI 연결 설정 후 자동으로 처리합니다.');return;}notice('N80이 요청을 처리하고 있습니다.');const result=await client.api({action:'admin_run',taskId:task.id});state.generation=result.generation;notice(result.task.result?'응답을 보관했습니다.':errors[result.task.error]||states[result.task.state]);}
+async function run(task){if(task.state!=='queued')return;if(!state.generation.ready){notice('요청을 보관했습니다. AI 연결 설정 후 자동으로 처리합니다.');return;}notice('N80 AI가 초안을 작성하고 있습니다.');const result=await client.api({action:'admin_run',taskId:task.id});state.generation=result.generation;notice(result.task.result?'응답을 보관했습니다.':errors[result.task.error]||states[result.task.state]);}
 async function send(e){e.preventDefault();if(busy)return;const text=$('.ainoa-admin-input').value.trim();if(!text)return;busy=true;render();
  try{
   if(!retry)retry={action:'admin_chat',requestId:crypto.randomUUID(),conversationId:thread||(thread=crypto.randomUUID()),question:text,trackKey:$('.ainoa-admin-song').checked&&activeTrack?activeTrack.key:''};
-  notice('요청을 N80에 저장하고 있습니다.');const result=await client.api(retry);retry=null;$('.ainoa-admin-input').value='';await refresh();await run(result.task);await refresh();
+  notice('N80 Auto에 요청을 등록하고 있습니다.');const result=await client.api(retry);retry=null;$('.ainoa-admin-input').value='';await refresh();await run(result.task);await refresh();
  }catch(e){notice(e.message+(retry?' 입력은 유지됩니다. 다시 보내면 같은 요청으로 확인합니다.':''));}
  finally{busy=false;render();$('.ainoa-admin-log').scrollTop=$('.ainoa-admin-log').scrollHeight;}
 }
@@ -43,7 +43,7 @@ async function generate(){if(busy||!activeTrack)return;busy=true;render();
 }
 function build(){
  dialog=el('dialog',undefined,'ainoa-admin-dialog');dialog.id='ainoa-admin-dialog';dialog.setAttribute('aria-labelledby','ainoa-admin-title');
- const head=el('header'),heading=el('div'),title=el('h2','제작 도우미');title.id='ainoa-admin-title';heading.append(el('small','ChatGPT · N80','ainoa-admin-brand'),title);head.append(heading,button('닫기',()=>dialog.close()));
+ const head=el('header'),heading=el('div'),title=el('h2','제작 도우미');title.id='ainoa-admin-title';heading.append(el('small','ChatGPT · N80 AI','ainoa-admin-brand'),title);head.append(heading,button('닫기',()=>dialog.close()));
  const status=el('p','연결 상태 확인 중','ainoa-admin-connection'),settings=el('a','AI 연결 설정');settings.href='/noa-ai-lab.php';
  const connections=el('details');connections.append(el('summary','AI 연결 설정'),status,settings);
  const subscription=el('details',undefined,'ainoa-admin-subscription');subscription.append(el('summary','ChatGPT 구독 한도 연결'),el('p','현재 대화는 별도로 연결한 OpenAI 서비스를 사용합니다. ChatGPT 구독 한도 연결은 온라인 앱 연결 승인 후 별도로 연결해야 하며, 현재 연결되지 않았습니다.'));const official=el('a','공식 연결 안내');official.href='https://developers.openai.com/siwc/quickstart';official.target='_blank';official.rel='noopener noreferrer';subscription.append(official);
@@ -51,8 +51,8 @@ function build(){
  const note=el('p','','ainoa-admin-notice');note.setAttribute('role','status');const log=el('section',undefined,'ainoa-admin-log');log.setAttribute('aria-label','관리자 대화 기록');log.setAttribute('role','log');
  const form=el('form'),input=el('textarea',undefined,'ainoa-admin-input');input.rows=3;input.maxLength=4000;input.required=true;input.placeholder='메시지를 입력하세요';input.setAttribute('aria-label','관리자 ChatGPT 질문');const sendButton=el('button','보내기','ainoa-admin-send');sendButton.type='submit';
  const label=el('label',undefined,'ainoa-admin-context'),check=el('input',undefined,'ainoa-admin-song');check.type='checkbox';check.checked=true;label.append(check,el('span','','ainoa-admin-song-label'));const caption=el('label','메시지','ainoa-admin-caption');input.id='ainoa-admin-message';caption.htmlFor=input.id;form.append(label,caption,input,sendButton);form.onsubmit=send;
- const automation=el('details',undefined,'ainoa-admin-automation');automation.append(el('summary','선택한 곡으로 초안 만들기'));const row=el('div',undefined,'ainoa-admin-toolbar'),field=el('select',undefined,'ainoa-admin-field');field.setAttribute('aria-label','AI 생성 항목');for(const [v,label]of Object.entries(fields)){const o=el('option',label);o.value=v;field.append(o);}const generateButton=button('초안 자동 생성',generate);generateButton.className='ainoa-admin-generate';row.append(field,generateButton);automation.append(row,el('p','N80이 대기 요청을 처리하고 초안을 보관합니다. 결과를 검토한 뒤 곡 편집 화면에서 저장하세요.'));
- const jobs=el('details');jobs.append(el('summary','N80 작업 기록','ainoa-admin-job-count'),el('div',undefined,'ainoa-admin-jobs'));const n80=el('a','N80 운영 상태');n80.href='/noa-work-status.php';
+ const automation=el('details',undefined,'ainoa-admin-automation');automation.append(el('summary','선택한 곡으로 초안 만들기'));const row=el('div',undefined,'ainoa-admin-toolbar'),field=el('select',undefined,'ainoa-admin-field');field.setAttribute('aria-label','AI 생성 항목');for(const [v,label]of Object.entries(fields)){const o=el('option',label);o.value=v;field.append(o);}const generateButton=button('초안 자동 생성',generate);generateButton.className='ainoa-admin-generate';row.append(field,generateButton);automation.append(row,el('p','N80 Auto가 요청을 순서대로 처리하고 N80 AI가 작성한 초안을 보관합니다. 결과를 검토한 뒤 곡 편집 화면에서 저장하세요.'));
+ const jobs=el('details');jobs.append(el('summary','N80 Auto 작업 기록','ainoa-admin-job-count'),el('div',undefined,'ainoa-admin-jobs'));const n80=el('a','N80 Engine 운영 상태');n80.href='/noa-work-status.php';
  connections.append(subscription);const body=el('div',undefined,'ainoa-admin-body');body.append(toolbar,log,form,note,automation,jobs,connections,n80);dialog.append(head,body);document.body.append(dialog);
  dialog.addEventListener('close',()=>{if(dialog.open)return;clearInterval(timer);timer=null;window.dispatchEvent(new Event('noa-ainoa-admin-close'));});
 }
