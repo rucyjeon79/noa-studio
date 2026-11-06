@@ -2,7 +2,7 @@ const {chromium}=require('playwright');
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
 (async()=>{
- const browser=await chromium.launch({executablePath:process.env.CHROMIUM_BIN||undefined,args:['--no-sandbox']});
+ const browser=await chromium.launch({channel:'chrome',executablePath:process.env.CHROMIUM_BIN||undefined,args:['--no-sandbox']});
  try{
   const page=await browser.newPage();
   for(const width of [320,390,1024]){
