@@ -130,7 +130,7 @@ function ncb_receipt(PDO $db,string $owner,?string $id=null,bool $lock=false): ?
 }
 
 function ncb_public_item(array $r): array {
-    return array_intersect_key($r,array_flip(['key','title','status','reason']));
+    return ['key'=>$r['key'], 'title'=>$r['title'], 'status'=>$r['status'], 'reason'=>$r['reason']??''];
 }
 
 function ncb_snapshot(PDO $db,?array $receipt): ?array {
