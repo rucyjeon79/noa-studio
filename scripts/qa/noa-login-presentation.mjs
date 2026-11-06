@@ -47,7 +47,7 @@ try {
     assert(audit.buttons.every(b=>b.icons===1&&b.disabled===(state==='disabled')));
     assert.equal(await page.locator('form[name=flogin]').getAttribute('action'),'/bbs/login_check.php');
     assert.equal(await page.locator('form[name=flogin]').getAttribute('method'),'post');
-    assert.equal(await page.locator('input[name=url]').inputValue(),'/');
+    assert.equal(await page.locator('#noa-login form[name=flogin] input[name=url]').inputValue(),'/');
     assert.equal(await page.locator('#login_pw').getAttribute('autocomplete'),'current-password');
     if(state==='ready') {
       for(const provider of ['google','kakao']) {

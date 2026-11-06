@@ -18,7 +18,7 @@ async function checkFooter(page,width,theme,home=false){
  assert.equal(await page.locator('#noa-menu-drawer footer .noa-sidebar-visitors').count(),1);
  assert.equal(await footer.locator('.noa-sidebar-visitors').count(),0,'no page footer may retain the counter');
  const links=scene.locator('nav a');
- assert.deepEqual(await links.allTextContents(),['제이알','세계관','이용약관','개인정보처리방침']);
+ assert.deepEqual((await links.allTextContents()).map(label=>label.trim()),['제이알','세계관','이용약관','개인정보처리방침']);
  assert.equal(await footer.locator(':scope > .noa-footer-scene').count(),1);
  assert.equal(await footer.locator('.noa-sidebar-legal').count(),1);
  const geometry=await scene.evaluate(el=>{
@@ -125,7 +125,7 @@ try{
      assert.equal(await page.locator('#noa-login .noa-social-options').count(),1);
      await guest.getByRole('button',{name:'로그인',exact:true}).click();
      const links=form.getByRole('link');await links.nth(1).waitFor();
-     assert.deepEqual(await links.allTextContents(),['Google로 로그인','카카오 로그인']);
+     assert.deepEqual((await links.allTextContents()).map(label=>label.trim()),['Google로 로그인','카카오 로그인']);
      for(const [n,provider] of ['Google','Kakao'].entries()){
       const link=links.nth(n),href=new URL(await link.getAttribute('href'),page.url());
       assert.equal(href.origin,'https://noastudio.ai.kr');assert.equal(href.pathname,'/bbs/login.php');
