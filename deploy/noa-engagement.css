@@ -129,6 +129,19 @@ html[data-noa-precision] body.noa-page .noa-inline-song-row.noa-mastered{backgro
 
 @media(max-width:359px){html[data-noa-precision] body.noa-page :is(.noa-inline-song-row,.noa-inline-video-row){--noa-row-cover:40px;--noa-row-gap:2px}}
 
+/* Video lists use landscape artwork and reserve only the controls they show. */
+html[data-noa-precision] body.noa-page .noa-inline-video-row{
+ grid-template-columns:clamp(64px,26%,112px) max-content minmax(0,1fr) 44px;
+ column-gap:clamp(4px,1vw,8px);
+}
+html[data-noa-precision] body.noa-page .noa-inline-video-row>.noa-inline-song>.noa-inline-cover{
+ width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;
+}
+html[data-noa-precision] body.noa-page .noa-inline-video-row>.noa-inline-song[data-coming-soon=true]>small{
+ grid-area:2/3;justify-self:end;max-width:100%;margin:0;white-space:normal;line-height:1.2;text-align:end;
+}
+html[data-noa-precision] body.noa-page .noa-inline-video-row>.noa-song-more{grid-column:4}
+
 /* Reply context stays readable without forcing mobile rows wider. */
 .noa-comments .noa-comment-post{max-height:30vh;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}
 .noa-comments .noa-reply-context,.noa-comments blockquote{margin:8px 0;padding:8px 12px;border-left:2px solid var(--noa-line);color:var(--noa-muted);overflow-wrap:anywhere}

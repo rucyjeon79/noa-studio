@@ -1,12 +1,23 @@
 name: NOA live design polish
 on:
+  pull_request:
+    paths: ['deploy/noa-engagement.css', 'tests/youtube/thumbnail-layout.cjs', '.github/workflows/noa-design-live.yml']
   push:
     branches: [main]
-    paths: ['scripts/noa_design_live_release.py', 'tests/engagement/counts.test.mjs', '.github/workflows/noa-design-live.yml']
+    paths: ['deploy/noa-engagement.css', 'tests/youtube/thumbnail-layout.cjs', 'scripts/noa_design_live_release.py', 'tests/engagement/counts.test.mjs', '.github/workflows/noa-design-live.yml']
 permissions: {contents: read}
-concurrency: {group: noa-production-sftp, cancel-in-progress: false}
 jobs:
+  thumbnails:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install --prefix "$RUNNER_TEMP/noa-layout" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+      - run: NODE_PATH="$RUNNER_TEMP/noa-layout/node_modules" node tests/youtube/thumbnail-layout.cjs
   publish:
+    if: github.event_name == 'push'
+    needs: thumbnails
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 12
