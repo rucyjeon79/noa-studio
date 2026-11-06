@@ -10,17 +10,29 @@ permissions: {contents: read}
 jobs:
   verify:
     runs-on: ubuntu-24.04
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: jukebox-test-only, MYSQL_DATABASE: jukebox_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -h localhost -pjukebox-test-only" --health-interval=5s --health-timeout=5s --health-retries=20
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
       - uses: shivammathur/setup-php@v2
-        with: {php-version: '8.2', extensions: 'curl,pdo_mysql'}
+        with: {php-version: '8.2', extensions: 'curl,pdo_mysql,mbstring'}
       - run: |
           php -l deploy/noa-app/jukebox/wake-core.php
           php -l deploy/noa-app/jukebox/queue-core.php
           php -l deploy/noa-app/jukebox/upload-core.php
           php tests/jukebox/wake_test.php
           python -m py_compile scripts/noa_upload_wake_acceptance.py
+          python -m pip install 'Pillow>=11,<12'
+          if ! command -v ffmpeg || ! command -v ffprobe; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
+          python tests/jukebox/make_fixture.py
+          mkdir -p deploy/noa-bridge
+          cp bridge/package-record.php bridge/channel-ownership.php deploy/noa-bridge/
+          php tests/jukebox/upload_mysql_test.php
 
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
