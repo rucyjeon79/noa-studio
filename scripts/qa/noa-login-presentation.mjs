@@ -24,7 +24,7 @@ try {
     }
     // Exercise existing destinations without authenticating, creating accounts or submitting credentials.
     const destinations=[];
-    await context.route(base+'/bbs/login.php?provider=**',async route=>{destinations.push(route.request().url());await route.fulfill({contentType:'text/html',body:'<!doctype html><style>@view-transition{navigation:auto}</style><p>Provider destination verified</p>'});});
+    await context.route(base+'/bbs/login.php?provider=**',async route=>{destinations.push(route.request().url());await route.fulfill({status:204});});
     const returnTo='/noa-my.php?tab=gifts&from=login';
     await page.goto(base+'/noa-login.php?url='+encodeURIComponent(returnTo),{waitUntil:'networkidle'});
     await page.waitForFunction(()=>window.NoaUI?.getState()&&document.querySelector('#noa-account-bar'));
@@ -63,8 +63,11 @@ try {
     await page.screenshot({path:out+'/'+state+'-'+width+'.png',fullPage:true});
     if(state==='ready') {
       for(const provider of ['google','kakao']) {
-        await page.locator('.noa-social-'+provider).click();await page.waitForURL('**/bbs/login.php?provider=**');
-        await page.goBack({waitUntil:'networkidle'});
+        const [request]=await Promise.all([
+          page.waitForRequest(r=>new URL(r.url()).pathname==='/bbs/login.php'&&r.isNavigationRequest()),
+          page.locator('#noa-login .noa-social-'+provider).click()
+        ]);
+        assert.equal(new URL(request.url()).searchParams.get('provider').toLowerCase(),provider);
       }
       assert.equal(destinations.length,2);
     }
