@@ -30,6 +30,7 @@ async function main() {
       await page.evaluate(() => {
         const thumb = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180"><rect width="320" height="180" fill="navy"/></svg>');
         const rows = [
+          {key: 'collection', kind: 'playlist', title: 'ACT 1', video: 'playlist001'},
           {key: 'first', ep: 1, title: '내 맘이 지나면', video: 'video000001'},
           {key: 'second', ep: 2, title: '내일도 우리 · 아주 긴 제목의 미공개 영상', comingSoon: true}
         ].map(row => ({...row, thumb, genre: 'kpop-original', act: 1}));
@@ -56,6 +57,9 @@ async function main() {
         };
       }));
       assert(samples[1].status);
+      const playlist = await page.locator('.noa-inline-act>.noa-browse-card>img').first().boundingBox();
+      assert(playlist && playlist.width >= 64 && Math.abs(playlist.width * 9 / 16 - playlist.height) < 0.1);
+
       for (const {art, title, like, comment, more, status, row} of samples) {
         assert(art.width > 0 && Math.abs(art.width * 9 / 16 - art.height) < 0.1, JSON.stringify(art));
         assert(art.right < title.left && art.right < like.left && like.right <= comment.left + 0.1);
