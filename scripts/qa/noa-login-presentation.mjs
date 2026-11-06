@@ -24,7 +24,7 @@ try {
     }
     // Exercise existing destinations without authenticating, creating accounts or submitting credentials.
     const destinations=[];
-    await context.route(base+'/bbs/login.php?provider=**',async route=>{destinations.push(route.request().url());await route.fulfill({contentType:'text/html',body:'<p>Provider destination verified</p>'});});
+    await context.route(base+'/bbs/login.php?provider=**',async route=>{destinations.push(route.request().url());await route.fulfill({contentType:'text/html',body:'<!doctype html><style>@view-transition{navigation:auto}</style><p>Provider destination verified</p>'});});
     const returnTo='/noa-my.php?tab=gifts&from=login';
     await page.goto(base+'/noa-login.php?url='+encodeURIComponent(returnTo),{waitUntil:'networkidle'});
     await page.waitForFunction(()=>window.NoaUI?.getState()&&document.querySelector('#noa-account-bar'));

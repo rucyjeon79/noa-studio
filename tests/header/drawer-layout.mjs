@@ -18,7 +18,7 @@ async function checkFooter(page,width,theme,home=false){
  assert.equal(await page.locator('#noa-menu-drawer footer .noa-sidebar-visitors').count(),1);
  assert.equal(await footer.locator('.noa-sidebar-visitors').count(),0,'no page footer may retain the counter');
  const links=scene.locator('nav a');
- assert.deepEqual((await links.allTextContents()).map(label=>label.trim()),['제이알','세계관','이용약관','개인정보처리방침']);
+ assert.deepEqual(await links.allTextContents(),['제이알','세계관','이용약관','개인정보처리방침']);
  assert.equal(await footer.locator(':scope > .noa-footer-scene').count(),1);
  assert.equal(await footer.locator('.noa-sidebar-legal').count(),1);
  const geometry=await scene.evaluate(el=>{
@@ -36,7 +36,7 @@ async function checkFooter(page,width,theme,home=false){
  for(const button of geometry.buttons)assert(button.width>=44&&button.height>=44);
  assert.equal(await scene.locator('[data-footer-theme] svg').count(),3);
  const greeting=page.locator('#noa-ainoa .ainoa-message-dismiss');if(await greeting.isVisible())await greeting.click();
- await footer.scrollIntoViewIfNeeded();
+ await scene.locator('[data-footer-theme]').nth(1).click({trial:true});
  const blocked=await scene.locator('[data-footer-theme]').evaluateAll(buttons=>buttons.flatMap(el=>{const r=el.getBoundingClientRect();return [[r.x+4,r.y+4],[r.right-4,r.bottom-4]].flatMap(([x,y])=>{const hit=document.elementFromPoint(x,y);return el.contains(hit)?[]:[{choice:el.dataset.footerTheme,x,y,hit:hit?.id||hit?.className||hit?.tagName}];});}));
  if(blocked.length)await page.screenshot({path:out+'/blocked-footer-'+width+'.png'});
  assert.deepEqual(blocked,[],'theme choices obstructed: '+JSON.stringify({width,path:page.url(),blocked}));
