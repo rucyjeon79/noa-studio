@@ -181,7 +181,8 @@ with tempfile.TemporaryDirectory() as tmp:
         assert (preview['eligible'],preview['skipped']) == (2,1)
         assert call('batchStatus',{},admin=True)['batch'] is None
         # Stub outbound dispatch, but run real callbacks and SQL commits.
-        target.write_text(target.read_text().replace('$dispatchStatus = n80_song_dispatch($dispatchBatch, $dispatchToken);','$dispatchStatus = 204;'))
+        core = bridge/'channel-batch-ai.php'
+        core.write_text(core.read_text().replace('$status = n80_song_dispatch($task, $token);','$status = 204;'))
         receipt=call('batchStart',selection,admin=True)['batch']
         assert [item['status'] for item in receipt['items']]==['queued','queued','skipped']
         assert call('batchStart',selection,admin=True)['batch']==receipt
@@ -212,6 +213,28 @@ with tempfile.TemporaryDirectory() as tmp:
         call('workerFail',{'id':retry_id},key=worker)
         assert db.execute('SELECT k,youtubeTitle FROM batch_song ORDER BY k').fetchall()==[
             ('batch:a','Edited manually'),('batch:b','새 제목'),('batch:c','Protected'),('batch:x','')]
+        # Retrying recomputes eligibility. The manually filled target is now skipped.
+        retried=call('batchRetry',{**repeated,'requestId':'3'*32},admin=True)['batch']
+        assert [i['status'] for i in retried['items']]==['skipped','done','skipped']
+        other={**selection,'replace':True,'requestId':'4'*32,'keys':['batch:a','batch:b']}
+        call('batchStart',other,admin=True)
+        old_id=active()
+        def expire():
+            store=json.loads(state_path.read_text());store['batch']['job']['expires']=1
+            state_path.write_text(json.dumps(store))
+        expire()
+        sweep=f"require '{core}'; ncbai_watchdog('{state_path.parent}', 'test-owner');"
+        subprocess.run(['php','-r',sweep],check=True)
+        assert active()!=old_id
+        assert 'id' not in call('workerPoll',{'id':old_id},key=worker)
+        expire()
+        status=call('batchStatus',{},admin=True)['batch']['items']
+        assert status[0]['status']=='failed' and status[0]['reason']=='worker_timeout'
+        # Failure to dispatch the next item remains retryable and never appears as a success.
+        core.write_text(core.read_text().replace('$status = 204;','$status = 502;'))
+        expire()
+        status=call('batchStatus',{},admin=True)['batch']['items']
+        assert status[1]['status']=='failed' and status[1]['reason']=='dispatch_failed'
         call('workerDisable',{},admin=True)
         call('workerPoll',{},key=worker,status=401)
         print('PASS: authenticated single-field save, overwrite consent, stale revision, idempotent retry and key revocation')

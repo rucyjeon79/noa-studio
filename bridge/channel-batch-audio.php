@@ -87,7 +87,15 @@ function ncb_plan(PDO $db,array $keys,string $owner,bool $admin): array {
         } elseif ($u && in_array($u['status'],[...NQ_WAIT,...NQ_ACTIVE],true)) {
             $r['upload']=$u['id']; $r['status']=in_array($u['status'],NQ_WAIT,true)?'queued':'running'; $r['reason']='already_processing';
             // Adopt old finalized uploads that predate the durable queue, once.
-            if (!$ready && empty($u['lease']) && !empty($u['sha256']) && !nq_latest($db,$u['id']) && nu_source_exists($u)) $r['action']='enqueue';
+            if (empty($u['lease']) && !nq_latest($db,$u['id'])) {
+                if ($ready && ($asset['source_sha256']??null)===($u['sha256']??'')) {
+                    unset($r['upload']); $r['status']='skipped'; $r['reason']='already_optimized';
+                } elseif (!empty($u['sha256']) && nu_source_exists($u)) {
+                    $r['action']='enqueue';
+                } else {
+                    unset($r['upload']); $r['status']='missing'; $r['reason']='source_required';
+                }
+            }
         } elseif ($ready && (!$u || $u['status']==='ready' || (!empty($u['sha256']) && $u['sha256']===($asset['source_sha256']??null)))) {
             $r['status']='skipped'; $r['reason']='already_optimized';
         } elseif ($u && $u['status']==='uploading' && ncb_complete_transfer($u)) {
@@ -96,7 +104,7 @@ function ncb_plan(PDO $db,array $keys,string $owner,bool $admin): array {
             $j=nq_latest($db,$u['id']);
             $problem=nq_retry_problem($u,$j);
             if ($problem===null && preg_match('/^[a-f0-9]{64}$/D',(string)$u['sha256'])) {
-                $r['status']='queued'; $r['reason']='retry'; $r['upload']=$u['id']; $r['action']='retry'; $r['previous']=$j['id']; $r['attempt']=(int)$j['attempt']+1;
+                $r['status']='queued'; $r['reason']='retry'; $r['upload']=$u['id']; $r['action']='retry';
             } else {
                 $r['reason']=$problem??'source_required';
             }
@@ -196,11 +204,18 @@ function ncb_start(PDO $db,array $body,string $owner,bool $admin,string $operati
                 if ($previous!==null && $u!==null && $u!==($retryIds[$item['key']]??'')) {
                     $item=['key'=>$item['key'],'title'=>$item['title'],'status'=>'skipped','reason'=>'source_replaced']; continue;
                 }
-                if (($item['action']??'')==='retry') nq_insert($db,['id'=>$u,'song_key'=>$item['key']],'retrying',$item['attempt'],$item['previous']);
+                if (($item['action']??'')==='retry') {
+                    try { nq_retry_locked($db,$u); }
+                    catch (DomainException $e) {
+                        unset($item['upload'],$item['action']);
+                        $item['status']='failed'; $item['reason']=$e->getMessage();
+                        continue;
+                    }
+                }
                 if (($item['action']??'')==='enqueue') nq_insert($db,['id'=>$u,'song_key'=>$item['key']]);
                 if (($item['action']??'')==='finish') $finish[]=$u;
                 if ($item['status']==='queued') $wake=true;
-                unset($item['attempt'],$item['previous'],$item['action']);
+                unset($item['action']);
             }
             unset($item);
         }

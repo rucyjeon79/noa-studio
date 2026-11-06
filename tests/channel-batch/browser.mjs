@@ -80,7 +80,13 @@ try {
   for(let n=0;n<120&&finished.size<3;n++)await page.waitForTimeout(250);
   assert.equal(finished.size,3,'three distinct WAV transfers finished and reached the server queue');
   await page.reload();
+  await page.locator('#batch-history details[data-kind="audio"] > summary').click();
   await page.waitForFunction(()=>document.querySelector('#batch-history')?.textContent.includes('같은 멜로디'));
+  await context.addCookies([{name:'qa_owner',value:'qa_five',domain:'noastudio.ai.kr',path:'/'}]);
+  await page.reload();
+  await page.locator('[data-batch-node="channel"]').waitFor();
+  assert.equal(await page.locator('#batch-mode option[value="ai"]').count(),0);
+  assert.equal(await page.locator('#batch-history').getByText('같은 멜로디').count(),0);
   assert.deepEqual(problems,[]);
   console.log('CHANNEL_BATCH_BROWSER_OK 2 ACT, 20 distinct songs, 3 preserved, 3 uploads, history after reload');
 } finally {await browser.close();}

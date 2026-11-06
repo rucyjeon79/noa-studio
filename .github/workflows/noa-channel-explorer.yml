@@ -29,6 +29,7 @@ jobs:
           for f in bridge/channel-batch*.php bridge/creator*.php bridge/member-access.php bridge/music-readmodel.php bridge/sound-core.php deploy/noa-channel*.php deploy/noa-creator.php deploy/noa-editor.php deploy/noa-music.php deploy/noa-workspace.php deploy/noa-sitemap.php deploy/noa-app/taxonomy/index.php scripts/noa_explorer_audit.php; do php -l "$f"; done
           for f in deploy/noa-channel*.js deploy/noa-creator.js deploy/noa-browse-edit.js; do node --check "$f"; done
           node tests/explorer/tree_test.cjs
+          node tests/explorer/batch_test.cjs
           php tests/explorer/cover_test.php
           php tests/member/access_test.php
           php tests/member/mysql_test.php

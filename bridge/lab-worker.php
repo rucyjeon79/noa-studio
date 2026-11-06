@@ -25,6 +25,13 @@ try {
   }
   lab_json(200,['ok'=>true]+$result);
  }
+ if ($action === 'n80_tick' && is_file(__DIR__.'/channel-batch-ai.php')) {
+  try {
+   require_once __DIR__.'/channel-batch-ai.php';
+   require_once dirname(__DIR__).'/noa-app/engine/song-generation.php';
+   ncbai_watchdog(lab_root().'/gpt-action', (string)($config['cf_admin'] ?? ''));
+  } catch (Throwable $error) { error_log('[n80-channel-batch] '.get_class($error)); }
+ }
  if($action==='n80_tick'){require_once __DIR__.'/ainoa-core.php';require_once __DIR__.'/ainoa-automation.php';if(empty(lab_read()['config']['workerEnabled']))lab_json(200,['ok'=>true,'processed'=>0,'state'=>'paused']);lab_json(200,['ok'=>true]+n80_ai_tick(noa_bridge_pdo(),(string)($config['cf_admin']??'')));}
  if($action==='health')lab_json(200,['ok'=>true,'privateStorage'=>is_writable(lab_root()),'curl'=>function_exists('curl_init'),'encryption'=>function_exists('openssl_encrypt'),'queued'=>count(array_filter(lab_read()['jobs'],fn($j)=>str_starts_with($j['state'],'queued_')))]);
  if($action==='claim'){

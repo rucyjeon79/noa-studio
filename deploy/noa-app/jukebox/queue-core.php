@@ -51,11 +51,16 @@ function nq_retry_problem(array $u, ?array $job): ?string {
  $allowed = ['worker_lease_expired','upload_processing_failed','hosting_storage_insufficient','cover_copy_failed','processing_state_changed_or_network_error'];
  return in_array($job['error'], $allowed, true) ? null : 'non_retryable_reselect_source';
 }
+/** Caller holds the queue control row lock. Recheck the source and active replacement. */
+function nq_retry_locked(PDO $db,string $id):void{
+ $u=nu_row($db,$id);$j=nq_latest($db,$id);
+ $problem=nq_retry_problem($u,$j);if($problem!==null)throw new DomainException($problem);
+ $q=$db->prepare("SELECT id FROM noa_jukebox_uploads WHERE song_key=? AND id<>? AND status IN ('uploading','queued','retrying','analyzing','processing','verifying') LIMIT 1");
+ $q->execute([$u['song_key'],$id]);if($q->fetchColumn())throw new DomainException('another_upload_is_active');
+ nq_insert($db,$u,'retrying',(int)$j['attempt']+1,(int)$j['id']);
+}
 function nq_retry(PDO $db,string $id):void{
- nq_atomic($db,function()use($db,$id){$u=nu_row($db,$id);$j=nq_latest($db,$id);
-  $problem=nq_retry_problem($u,$j);if($problem!==null)throw new DomainException($problem);
-  $q=$db->prepare("SELECT id FROM noa_jukebox_uploads WHERE song_key=? AND id<>? AND status IN ('uploading','queued','retrying','analyzing','processing','verifying') LIMIT 1");$q->execute([$u['song_key'],$id]);if($q->fetchColumn())throw new DomainException('another_upload_is_active');nq_insert($db,$u,'retrying',(int)$j['attempt']+1,(int)$j['id']);
- });
+ nq_atomic($db,function()use($db,$id){nq_retry_locked($db,$id);});
  nw_after_enqueue();
 }
 function nq_snapshot(PDO $db,bool $qa=false):array{

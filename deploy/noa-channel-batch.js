@@ -44,7 +44,10 @@ const errors = {
     request_conflict:'실행 요청이 바뀌었습니다. 대상을 다시 선택하세요.', no_enabled_fields:'규칙에 따라 생성할 항목이 없습니다.',
 };
 const reasons={
-    ready:'최적화 완료', already_ready:'최적화 완료', source_required:'원본 파일 필요', no_source:'원본 파일 필요',
+    already_optimized:'이미 최적화된 음원', already_processing:'처리 중', source_received:'원본 접수', retry:'재시도',
+    file_transfer_required:'파일 전송 필요', managed_song_requires_admin:'관리자 편집 필요', own_upload_required:'본인 업로드만 처리 가능',
+    retry_limit_reselect_source:'원본 파일을 다시 선택하세요.', non_retryable_reselect_source:'원본 파일을 다시 선택하세요.',
+    source_replaced:'원본이 교체됨', song_changed:'곡 정보가 변경됨', ready:'최적화 완료', already_ready:'최적화 완료', source_required:'원본 파일 필요', no_source:'원본 파일 필요',
     upload_required:'원본 파일 필요', already_filled:'기존 내용 유지', no_empty_fields:'기존 내용 유지',
     worker_failed:'AI 생성 실패', dispatch_failed:'n80 호출 실패', reselect_source_file:'원본 파일 다시 선택',
     waiting_for_upload:'파일 전송 대기', uploaded:'파일 전송 완료', in_progress:'서버에서 처리 중',
@@ -62,6 +65,7 @@ function mount(panel, {renderTree, fingerprint}) {
     const choice = byId('batch-song-choice'), history = byId('batch-history'), csrf = document.querySelector('meta[name=noa-creator-csrf]').content;
     const admin = panel.dataset.admin === '1', selected = new Set(), last = new Map(), historyLimit=new Map();
     let index = new Map(), rows = [], editing = null, pending = false, sending = false;
+    let runAllowed = false;
     let version = 0, previewTimer, pollTimer, previewData = null, requestId = '', historyVersion = 0, polling = false, locked = false;
     const fields = () => Array.from(panel.querySelectorAll('[name=batch-field]:checked'), input => input.value);
     const chosen = () => Array.from(selected,key => index.get(key)).filter(song => song && (admin || !song.managed));
@@ -79,7 +83,7 @@ function mount(panel, {renderTree, fingerprint}) {
     }
     function report(text) { feedback.hidden=!text;feedback.textContent=text; }
     function showPreview(text,label,enabled=false) {
-        preview.textContent=text;run.textContent=label;run.disabled=!enabled||pending||locked;
+        runAllowed=enabled;preview.textContent=text;run.textContent=label;run.disabled=!runAllowed||pending||locked;
     }
     function params() {
         return {keys:chosen().map(s=>s.key), fields:fields(), replace:!!byId('batch-replace')?.checked, requestId};
@@ -110,6 +114,7 @@ function mount(panel, {renderTree, fingerprint}) {
         byId('batch-count').textContent=selected.size+'곡 선택';
         byId('batch-back').hidden=!panel.open||!selected.size;
         if (!panel.open) return;
+        byId('batch-missing').hidden=true;byId('batch-missing').open=false;
         report('');
         if (byId('batch-fields')) byId('batch-fields').hidden=mode.value!=='ai';
         byId('batch-upload').hidden=mode.value!=='upload';
@@ -127,11 +132,26 @@ function mount(panel, {renderTree, fingerprint}) {
                 previewData=data;
                 const hiddenCount=selected.size-body.keys.length;
                 const counts=['처리 대상 '+data.eligible+'곡','건너뜀 '+(Number(data.skipped||0)+hiddenCount)+'곡'];
+                if (data.processing) counts.push('이미 처리 중 '+data.processing+'곡');
                 if (data.missing) counts.push('원본 필요 '+data.missing+'곡');
+                byId('batch-missing').hidden=!data.items?.some(item=>item.status==='missing');
                 showPreview(counts.join(' · '),data.eligible+'곡 '+actionLabel[kind]+' 시작',!!data.eligible);
             } catch (e) {if(revision===version) {showPreview(e.message,'대상 다시 확인',true);}}
         },280);
     }
+    function missingSongs(){return (previewData?.items||[]).filter(item=>item.status==='missing');}
+    byId('batch-missing').ontoggle=event=>{
+        if (!event.currentTarget.open)return;
+        const list=event.currentTarget.querySelector('ul'),fragment=document.createDocumentFragment();
+        for(const item of missingSongs())fragment.append(el('li',item.title||index.get(item.key)?.title||item.key));
+        list.replaceChildren(fragment);
+    };
+    byId('batch-missing-upload').onclick=()=>{
+        if(pending)return;
+        const missing=missingSongs();if(!missing.length)return;
+        selected.clear();for(const item of missing)selected.add(item.key);
+        mode.value='upload';renderTree();selectionChanged();files.focus();
+    };
     function rowProblem(row, duplicates) {
         if (!/\.(mp3|wav)$/i.test(row.file.name)||row.file.size>268435456||row.file.size<256) return '256MB 이하의 MP3·WAV 파일을 선택하세요.';
         if (!selected.has(row.key)||!index.has(row.key)) return '연결할 곡을 지정하세요.';
@@ -255,7 +275,7 @@ function mount(panel, {renderTree, fingerprint}) {
     }
     function setPending(value) {
         pending=value;clearTimeout(pollTimer);historyVersion++;
-        run.disabled=value||locked;
+        run.disabled=value||locked||!runAllowed;
         mode.disabled=value;files.disabled=value;
         if(byId('batch-fields'))byId('batch-fields').disabled=value;
         byId('creator-songs').inert=value;

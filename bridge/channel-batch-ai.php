@@ -28,7 +28,7 @@ function ncbai_targets(array $fields, bool $replace, string $type, array $values
 }
 
 /** Project metadata and presence flags; large descriptions and lyrics stay in SQL. */
-function ncbai_items(PDO $db, string $owner, array $selection): array {
+function ncbai_items(PDO $db, string $owner, array $selection, bool $retry = false): array {
     [$keys, $fields, $replace] = $selection;
     $paths = ['youtubeTitle'=>['youtubeTitle'], 'geminiPrompt'=>['geminiPrompt'], 'lyrics'=>['lyricsBlock'],
         'description'=>['youtubeDescription','descriptionBlock','description'], 'communityPost'=>['communityPost','fanLetter']];
@@ -72,8 +72,11 @@ function ncbai_items(PDO $db, string $owner, array $selection): array {
     }
     $items = [];
     foreach ($keys as $key) {
-        if (!isset($rows[$key])) throw new DomainException('own_song_required');
-        $items[] = $rows[$key];
+        if (isset($rows[$key])) {
+            $items[] = $rows[$key];
+        } elseif ($retry) {
+            $items[] = ['key'=>$key,'title'=>'','status'=>'skipped','reason'=>'song_changed'];
+        } else throw new DomainException('own_song_required');
     }
     return $items;
 }
@@ -123,12 +126,15 @@ function ncbai_request(array &$state, string $op, array $body, string $owner, bo
         $batch = ['id'=>$id, 'owner'=>$owner, 'replace'=>$selection[2], 'fields'=>$selection[1], 'items'=>ncbai_items($db, $owner, $selection)];
     } else {
         if (!$batch || $batch['id'] !== ($body['id'] ?? '') || $batch['owner'] !== $owner) throw new DomainException('unknown_batch');
-        foreach ($batch['items'] as &$item) {
-            if ($item['status'] !== 'failed') continue;
-            $item['status'] = 'queued';
-            unset($item['reason'], $item['task']);
+        $indexes = array_keys(array_filter($batch['items'], static fn($item)=>$item['status'] === 'failed'));
+        if ($indexes) {
+            $keys = array_map(static fn($i)=>$batch['items'][$i]['key'], $indexes);
+            $fresh = ncbai_items($db, $owner, [$keys, $batch['fields'], $batch['replace']], true);
+            foreach ($indexes as $position => $index) {
+                if ($fresh[$position]['title'] === '') $fresh[$position]['title'] = $batch['items'][$index]['title'];
+                $batch['items'][$index] = $fresh[$position];
+            }
         }
-        unset($item);
     }
     $state['batch'] = $batch;
     $state['batchRequests'][$id] = [$digest, $batch['id']];
@@ -168,7 +174,8 @@ function ncbai_receipt(PDO $db, string $id): ?array {
 function ncbai_recover_item(array &$batch, string $reason): void {
     $job = $batch['job'];
     $receipt = ncbai_receipt(noa_bridge_pdo(), $job['id']);
-    ncbai_finish($batch, $receipt && $receipt['doc_key'] === $job['key'] ? 'done' : 'failed', $receipt ? '' : $reason);
+    $done = $receipt && $receipt['doc_key'] === $job['key'];
+    ncbai_finish($batch, $done ? 'done' : 'failed', $done ? '' : $reason);
 }
 
 /** A global dispatch failure needs an explicit retry. Never run every remaining song into the same outage. */
@@ -177,5 +184,53 @@ function ncbai_dispatch_error(array &$batch, string $task): void {
     ncbai_finish($batch, 'failed', 'dispatch_failed');
     foreach ($batch['items'] as &$item) {
         if ($item['status'] === 'queued') { $item['status'] = 'failed'; $item['reason'] = 'dispatch_failed'; }
+    }
+}
+
+function ncbai_timeout(array &$batch): void {
+    if (!empty($batch['job']['claimed']) || !empty($batch['items'][$batch['index']]['redispatched'])) {
+        ncbai_recover_item($batch, 'worker_timeout');
+        return;
+    }
+    // A runner never claimed its ID. Give the same song one more delivery before exposing a failure.
+    $batch['items'][$batch['index']]['redispatched'] = true;
+    unset($batch['job'], $batch['index']);
+}
+
+/** Dispatch an already-persisted ID. On ambiguous delivery, only change a still-unclaimed matching job. */
+function ncbai_dispatch($lock, string $dir, string $file, string $task, string $token): ?array {
+    ignore_user_abort(true);
+    flock($lock, LOCK_UN);
+    $status = n80_song_dispatch($task, $token);
+    if ($status >= 200 && $status < 300) return null;
+    if (!flock($lock, LOCK_EX)) throw new RuntimeException('lock');
+    $latest = json_decode(file_get_contents($file), true, 32, JSON_THROW_ON_ERROR);
+    if (($latest['batch']['job']['id'] ?? '') === $task) {
+        ncbai_dispatch_error($latest['batch'], $task);
+        ncbai_write_state($dir, $file, $latest);
+    }
+    return $latest['batch'] ?? null;
+}
+
+/** The existing signed n80 maintenance tick also recovers a runner that never called the site back. */
+function ncbai_watchdog(string $dir, string $owner): void {
+    $file = $dir.'/state.json';
+    if (!is_file($file)) return;
+    $lock = fopen($dir.'/lock', 'c');
+    if (!$lock) throw new RuntimeException('lock');
+    try {
+        if (!flock($lock, LOCK_EX|LOCK_NB)) return;
+        $state = json_decode(file_get_contents($file), true, 32, JSON_THROW_ON_ERROR);
+        $job = $state['batch']['job'] ?? [];
+        if (!$job || $job['expires'] > time() || ($state['owner'] ?? '') !== $owner || ($state['batch']['owner'] ?? '') !== $owner) return;
+        ncbai_timeout($state['batch']);
+        $task = ncbai_next($state['batch']);
+        ncbai_write_state($dir, $file, $state);
+        if ($task !== null) {
+            $token = trim((string)getenv('NOA_GITHUB_DISPATCH_TOKEN')) ?: (string)($state['dispatchToken'] ?? '');
+            ncbai_dispatch($lock, $dir, $file, $task, $token);
+        }
+    } finally {
+        fclose($lock);
     }
 }

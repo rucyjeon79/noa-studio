@@ -83,7 +83,7 @@ try {
         reply(200, ['ok'=>true, 'eligible'=>$eligible, 'skipped'=>count($items)-$eligible]);
     case 'batchStatus':
         if ($batchJob && $batchJob['expires'] <= time()) {
-            ncbai_recover_item($state['batch'], 'worker_timeout');
+            ncbai_timeout($state['batch']);
             $advance = true;
         }
         break;
@@ -277,19 +277,8 @@ try {
         finally { if ($tmp && is_file($tmp)) unlink($tmp); }
     }
     if ($dispatchBatch !== null) {
-        // Forward progress belongs to the server even if the initiating request disappears.
-        ignore_user_abort(true);
-        flock($lock, LOCK_UN);
-        $dispatchStatus = n80_song_dispatch($dispatchBatch, $dispatchToken);
-        if ($dispatchStatus < 200 || $dispatchStatus >= 300) {
-            if (!flock($lock, LOCK_EX)) throw new RuntimeException('lock');
-            $latest = json_decode(file_get_contents($file), true, 32, JSON_THROW_ON_ERROR);
-            if (($latest['batch']['job']['id'] ?? '') === $dispatchBatch) {
-                ncbai_dispatch_error($latest['batch'], $dispatchBatch);
-                ncbai_write_state($dir, $file, $latest);
-                if ($batchApi) $out = ['batch'=>ncbai_public($latest['batch'])];
-            }
-        }
+        $latestBatch = ncbai_dispatch($lock, $dir, $file, $dispatchBatch, $dispatchToken);
+        if ($batchApi && $latestBatch !== null) $out = ['batch'=>ncbai_public($latestBatch)];
     }
     if ($op === 'start' && !empty($state['job']['hosted'])) {
         flock($lock, LOCK_UN);
