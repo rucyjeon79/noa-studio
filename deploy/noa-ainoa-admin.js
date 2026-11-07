@@ -44,7 +44,7 @@ async function generate(){if(busy||!activeTrack)return;busy=true;render();
 function build(){
  dialog=el('dialog',undefined,'ainoa-admin-dialog');dialog.id='ainoa-admin-dialog';dialog.setAttribute('aria-labelledby','ainoa-admin-title');
  const head=el('header'),heading=el('div'),title=el('h2','제작 도우미');title.id='ainoa-admin-title';heading.append(el('small','ChatGPT · N80 AI','ainoa-admin-brand'),title);head.append(heading,button('닫기',()=>dialog.close()));
- const status=el('p','연결 상태 확인 중','ainoa-admin-connection'),settings=el('a','AI 연결 설정');settings.href='/noa-ai-lab.php';
+ const status=el('p','연결 상태 확인 중','ainoa-admin-connection'),settings=el('a','AI 연결 설정');settings.href='/noa-ai-lab.php?tool=settings';
  const connections=el('details');connections.append(el('summary','AI 연결 설정'),status,settings);
  const subscription=el('details',undefined,'ainoa-admin-subscription');subscription.append(el('summary','ChatGPT 구독 한도 연결'),el('p','현재 대화는 별도로 연결한 OpenAI 서비스를 사용합니다. ChatGPT 구독 한도 연결은 온라인 앱 연결 승인 후 별도로 연결해야 하며, 현재 연결되지 않았습니다.'));const official=el('a','공식 연결 안내');official.href='https://developers.openai.com/siwc/quickstart';official.target='_blank';official.rel='noopener noreferrer';subscription.append(official);
  const toolbar=el('div',undefined,'ainoa-admin-toolbar'),threads=el('select',undefined,'ainoa-admin-threads');threads.setAttribute('aria-label','이전 대화');threads.onchange=()=>{thread=threads.value;retry=null;$('.ainoa-admin-input').value='';render();};const fresh=button('새 대화',()=>{thread=crypto.randomUUID();retry=null;$('.ainoa-admin-input').value='';render();});fresh.className='ainoa-admin-new';toolbar.append(threads,fresh,button('새로고침',()=>refresh().catch(e=>notice(e.message))));

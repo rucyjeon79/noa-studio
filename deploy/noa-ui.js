@@ -252,7 +252,7 @@ function wideShell(side){
   ['memo','쪽지','/bbs/memo.php','mail'],
   ['scrap','스크랩','/bbs/scrap.php','book'],
   ['logout','로그아웃','/bbs/logout.php?url=%2F','login'],
-  ['admin','관리자','/noa-library.php','settings']
+  ['admin','홈페이지 설정','/noa-library.php','settings']
  ]){
   const link=document.createElement('a');link.dataset.drawerAction=key;link.href=href;link.innerHTML=icon(mark);
   const text=document.createElement('span');text.textContent=label;link.append(text);
