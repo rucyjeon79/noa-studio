@@ -52,7 +52,7 @@ try{
        &&!str_contains(json_encode($diagnostic),'arbitrary_secret_message'),'diagnose_redacts_unknown_exception');
     n80_test_check(!n80_music_consume($db,$dirs,1,[],$read)['ok'],'disabled_default');
     n80_test_check(!n80_music_consume($db,$dirs,1,['enabled'=>true],$read)['ok'],'server_auth_required');
-    require $root.'/web/noa-app/engine/executor.php';
+    require_once $root.'/web/noa-app/engine/executor.php';
     $event=n80_ready_event_from_job($db,1)['event'];
     $runtime=$ctx+['authenticatedActor'=>true,'durableStoreReady'=>true,'operation'=>'music.verify_availability','db'=>$db,'jobId'=>1,'directories'=>$dirs];
     n80_test_check(!noa_engine_execute($event,'playlist',$runtime,$read)['ok'],'uninstalled_adapter_blocked');

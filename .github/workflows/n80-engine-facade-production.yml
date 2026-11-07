@@ -22,6 +22,7 @@ on:
       - 'scripts/n80_auto.py'
       - 'scripts/noa_n80_ai_worker.py'
       - 'config/n80-automation.json'
+      - 'tests/engine/music_consumer_test.php'
       - 'tests/engine/runtime_ownership_test.php'
       - 'tests/engine/service_runtime_test.php'
       - 'tests/engine/test_auto_dispatch.py'
