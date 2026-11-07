@@ -4,3 +4,5 @@ DEPENDENCIES = {
         'noa-app/engine/explorer.php', 'noa-explorer.css', 'noa-channel-explorer.js',
     )
 }
+
+DEPENDENCIES['noa-bridge/explorer-search.php'] = 'bridge/explorer-search.php'

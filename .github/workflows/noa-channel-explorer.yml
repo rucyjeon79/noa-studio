@@ -35,6 +35,8 @@ jobs:
           node --check deploy/noa-ai-lab.js
           node --check deploy/noa-creator-ai.js
           python tests/member/lab_routes.py
+          node tests/explorer/search_test.cjs
+          php tests/explorer/search_test.php
           node tests/explorer/tree_test.cjs
           node tests/explorer/batch_test.cjs
           php tests/explorer/cover_test.php
@@ -49,9 +51,12 @@ jobs:
           python tests/creator/fixture.py
           python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/explorer" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp tests/explorer/selection.mjs "$RUNNER_TEMP/explorer/selection.mjs"
           cp scripts/qa/noa-channel-explorer.mjs "$RUNNER_TEMP/explorer/check.mjs"
           cp tests/channel-batch/browser.mjs "$RUNNER_TEMP/explorer/batch.mjs"
           php -S 127.0.0.1:18080 -t /tmp/noa-creator-site > "$RUNNER_TEMP/explorer-php.log" 2>&1 &
+      - name: Verify shared N80 identity, scoped selection, paging and retry
+        run: node "$RUNNER_TEMP/explorer/selection.mjs"
       - name: Verify photo replacement, saved form closing, tree expansion and level gates
         run: node "$RUNNER_TEMP/explorer/check.mjs"
       - name: Select two ACTs, preview AI and audio, match and upload three files and reopen their progress
