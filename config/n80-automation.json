@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "authority": "N80 Auto",
+  "operations": {
+    "ai.text": {
+      "module": "ai_lab",
+      "workflow": "noa-ai-worker.yml",
+      "command": [
+        "scripts/noa_n80_ai_worker.py"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
+    },
+    "ai.media_guard": {
+      "module": "ai_lab",
+      "workflow": "noa-ai-worker.yml",
+      "command": [
+        "scripts/noa_lab_worker.py"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
+    },
+    "catalog.index": {
+      "module": "catalog",
+      "workflow": "noa-personal-listening.yml",
+      "command": [
+        "scripts/noa_n80_ai_worker.py",
+        "--listening-index"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
+    },
+    "members.maintain": {
+      "module": "identity",
+      "workflow": "noa-membership-maintenance.yml",
+      "command": [
+        "scripts/noa_membership_control.py",
+        "maintain"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
+    },
+    "notifications.dispatch": {
+      "module": "notifications",
+      "workflow": "noa-push-dispatch.yml",
+      "command": [
+        "scripts/noa_push_dispatch.py"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
+    },
+    "popularity.calculate": {
+      "module": "personalization",
+      "workflow": "noa-popularity-hourly.yml",
+      "command": [
+        "scripts/noa_popularity_release.py"
+      ],
+      "requiredEnv": {
+        "NOA_POPULARITY_PHASE": "hourly"
+      },
+      "concurrency": "workflow_owned"
+    },
+    "covers.refresh": {
+      "module": "catalog",
+      "workflow": "noa-suno-card-auto.yml",
+      "command": [
+        "scripts/noa_suno_card_auto.py"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
+    },
+    "commerce.catalog_sync": {
+      "module": "commerce",
+      "workflow": "noa-marpple-sync.yml",
+      "command": [
+        "scripts/noa_marpple_sync.py"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
+    },
+    "engine.observe": {
+      "module": "admin",
+      "workflow": "n80-live-observer.yml",
+      "command": [
+        "scripts/n80_live_observer.py"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
+    },
+    "engine.audit": {
+      "module": "admin",
+      "workflow": "n80-app-integration.yml",
+      "command": [
+        "scripts/n80_app_integration.py"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
+    },
+    "engine.integrity": {
+      "module": "admin",
+      "workflow": "n80-guardian-production-audit.yml",
+      "command": [
+        "scripts/n80_guardian_remote_audit.py"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
+    },
+    "jukebox.watchdog": {
+      "module": "jukebox",
+      "workflow": "noa-jukebox.yml",
+      "command": [
+        "scripts/noa_jukebox_release.py"
+      ],
+      "requiredEnv": {
+        "NOA_JUKEBOX_RUNTIME_ONLY": "1"
+      },
+      "concurrency": "workflow_owned"
+    },
+    "jukebox.process": {
+      "module": "jukebox",
+      "workflow": "noa-jukebox.yml",
+      "command": [
+        "scripts/noa_jukebox_release.py"
+      ],
+      "requiredEnv": {
+        "NOA_JUKEBOX_RUNTIME_ONLY": "1"
+      },
+      "concurrency": "workflow_owned"
+    }
+  }
+}

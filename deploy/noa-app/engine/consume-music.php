@@ -44,8 +44,13 @@ try{
         if($input['action']==='diagnose_availability')$result=n80_music_diagnose($db,$input['jobId']);
         else{
             $base='/hosting/noastudio/noa-ai-lab/n80-music-consumer';
-            $result=n80_music_consume($db,['events'=>$base.'/events','leases'=>$base.'/leases'],$input['jobId'],
-                ['enabled'=>true,'authenticatedByServer'=>true,'principal'=>'n80_music_consumer','permission'=>'music:verify']);
+            require_once __DIR__.'/executor.php';
+            $ready=n80_ready_event_from_job($db,$input['jobId']);
+            $result=$ready['ok']?noa_engine_execute($ready['event'],'music',[
+                'enabled'=>true,'authenticatedByServer'=>true,'authenticatedActor'=>true,
+                'principal'=>'n80_music_consumer','permission'=>'music:verify','operation'=>'music.verify_availability',
+                'durableStoreReady'=>true,'db'=>$db,'jobId'=>$input['jobId'],
+                'directories'=>['events'=>$base.'/events','leases'=>$base.'/leases']]):$ready;
         }
         $db->commit();
     }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}

@@ -26,6 +26,8 @@ function n80_ai_tasks(PDO $db,string $owner,int $limit=60):array {
 function n80_ai_public(array $task):array {
  $out=array_intersect_key($task,array_flip(['id','requestId','type','state','revision','createdAt','updatedAt','title','conversationId','question','result','error','sourceRevision','field','trackKey','stage','lastSuccessfulStage','usage']));
  if($task['state']==='running'&&time()-($task['startedAt']??0)>120){$out['state']='needs_review';$out['error']='ai_result_unconfirmed';$out['stage']='응답 확인 필요';}
+ if(!function_exists('n80_task_status'))require_once dirname(__DIR__).'/noa-app/engine/task-status.php';
+ $out['taskStatus']=n80_task_status('ai_lab',$task['id'],$out['state'],['updatedAt'=>$task['updatedAt']??null]);
  $out['songSaved']=false;return $out;
 }
 function n80_ai_enqueue(PDO $db,string $owner,string $request,string $type,array $input):array {
@@ -84,7 +86,7 @@ function n80_ai_cancel(PDO $db,string $owner,string $id,int $revision):array {
 }
 function n80_ai_tick(PDO $db,string $superAdmin):array {
  if($superAdmin==='')return ['processed'=>0,'state'=>'admin_unavailable'];
- if(!na_generation_status()['ready'])return ['processed'=>0,'state'=>'connection_required'];
  $q=$db->prepare("SELECT doc_key FROM noa_documents WHERE kind='n80_ai_task' AND updated_by=? AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.state'))='queued' ORDER BY CAST(JSON_EXTRACT(payload,'$.createdOrder') AS DECIMAL(20,6)),doc_key LIMIT 1");$q->execute([$superAdmin]);$id=$q->fetchColumn();if(!$id)return ['processed'=>0,'state'=>'idle'];
+ $readiness=na_generation_status();if(!$readiness['ready'])return ['processed'=>0,'state'=>'connection_required','missing'=>$readiness['missing'],'taskId'=>$id];
  try{$task=n80_ai_run($db,$superAdmin,$id);return ['processed'=>$task['state']==='queued'?0:1,'state'=>$task['state'],'taskId'=>$id];}catch(DomainException $e){if($e->getMessage()==='ai_task_conflict')return ['processed'=>0,'state'=>'claimed_elsewhere'];throw $e;}
 }

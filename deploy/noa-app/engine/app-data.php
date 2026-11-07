@@ -114,7 +114,7 @@ function n80_app_ai_summary(string $path): array {
     $state=json_decode((string)file_get_contents($path),true);
     if(!is_array($state))return ['state'=>'invalid_json'];
     $counts=[];foreach($state['jobs']??[] as $j){$status=(string)($j['state']??'unknown');$counts[$status]=($counts[$status]??0)+1;}
-    return ['state'=>'connected','revision'=>(int)($state['revision']??0),'jobStates'=>$counts,'channels'=>count($state['channels']??[]),'workerEnabled'=>(bool)($state['config']['workerEnabled']??false),'generationEnabled'=>(bool)($state['config']['generationEnabled']??false),'textEnabled'=>(bool)($state['config']['textEnabled']??false),'lastWorkerAt'=>$state['worker']['at']??null];
+    return ['state'=>'connected','revision'=>(int)($state['revision']??0),'jobStates'=>$counts,'channels'=>count($state['channels']??[]),'workerEnabled'=>(bool)($state['config']['workerEnabled']??false),'generationEnabled'=>(bool)($state['config']['generationEnabled']??false),'textEnabled'=>(bool)($state['config']['textEnabled']??false),'lastWorkerAt'=>$state['worker']['at']??null,'operations'=>array_map(static fn($operation)=>is_array($operation)?array_intersect_key($operation,array_flip(['processed','state','missing'])):[],array_intersect_key($state['worker']['operations']??[],array_flip(['n80_text_tick'])))];
 }
 /** Verify every registered file in bounded, canonical service directories. */
 function n80_app_media(PDO $db,array $schema,string $root): array {

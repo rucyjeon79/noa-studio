@@ -1,11 +1,8 @@
 name: N80 Guardian Production Drift Audit
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/n80-guardian-production-audit.yml'
-      - 'scripts/n80_guardian_remote_audit.py'
-      - 'tests/engine/test_remote_audit.py'
+  workflow_run:
+    workflows: [N80 Unified Facade Safe Production]
+    types: [completed]
   workflow_dispatch:
   schedule:
     - cron: '41 3 * * *'
@@ -16,6 +13,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   verify:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 10
@@ -33,7 +31,7 @@ jobs:
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
-        run: python scripts/n80_guardian_remote_audit.py
+        run: python scripts/n80_auto.py engine.integrity
 
       - name: Publish hash-only audit receipt
         if: always()

@@ -2,6 +2,7 @@
 /** Isolated SQL and explicit provider fixtures. No billable generation. */
 declare(strict_types=1);define('_GNUBOARD_',true);
 if(!str_contains((string)getenv('NOA_MYSQL_DSN'),'dbname=noa_inline_edit_test;'))throw new RuntimeException('isolated_database_required');
+require_once __DIR__.'/../../deploy/noa-app/engine/task-status.php';
 require_once __DIR__.'/../../bridge/storage.php';require_once __DIR__.'/../../bridge/ainoa-automation.php';
 $db=noa_bridge_pdo();$other=noa_bridge_pdo();$owner='n80-test-admin';$calls=0;
 function nt_assert(bool $v,string $m):void{if(!$v)throw new RuntimeException($m);}
@@ -27,3 +28,5 @@ $draft=n80_ai_enqueue($db,$owner,$gen['requestId'],'generate',$gen);$draft=n80_a
 nt_assert($source===$db->query("SELECT doc_key,payload,revision FROM noa_documents WHERE kind IN ('single','story','playlist') ORDER BY doc_key")->fetchAll(PDO::FETCH_ASSOC),'existing_songs_preserved');
 nt_assert(!isset(n80_ai_public($draft)['context'])&&!isset(n80_ai_public($draft)['input']),'private_context_not_in_task_projection');
 echo "N80_AI_SQL_QUEUE_OWNER_REPLAY_CONCURRENCY_CONTEXT_FAILURE_CANCEL_DRAFT_PRESERVATION_OK\n";
+
+nt_assert(n80_ai_tick($db,'empty-n80-owner')['state']==='idle','empty_queue_not_connection_failure');

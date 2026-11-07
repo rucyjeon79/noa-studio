@@ -1,14 +1,8 @@
 name: N80 Live Production Observer
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'deploy/noa-app/engine/live-observer.php'
-      - 'deploy/noa-app/engine/observe.php'
-      - 'scripts/n80_live_observer.py'
-      - 'tests/engine/live_observer_test.php'
-      - 'tests/engine/test_live_observer.py'
-      - '.github/workflows/n80-live-observer.yml'
+  workflow_run:
+    workflows: [N80 Unified Facade Safe Production]
+    types: [completed]
   workflow_dispatch:
   schedule:
     - cron: '7,17,27,37,47,57 * * * *'
@@ -19,7 +13,7 @@ jobs:
     concurrency:
       group: noa-production-sftp
       cancel-in-progress: false
-    if: vars.N80_OBSERVER_ENABLED != 'false' && (github.event_name != 'push' || !contains(github.event.head_commit.message, '[category-final]'))
+    if: vars.N80_OBSERVER_ENABLED != 'false' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: production
@@ -48,7 +42,7 @@ jobs:
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
-        run: python scripts/n80_live_observer.py
+        run: python scripts/n80_auto.py engine.observe
       - name: Publish temporary observation receipt
         if: always()
         uses: actions/upload-artifact@v4

@@ -6,7 +6,7 @@ declare(strict_types=1);
  */
 require_once __DIR__.'/workspaces.php';
 function noa_engine_modules(): array {
-    return [
+    $modules = [
         'music' => ['label'=>'MUSIC','owner'=>'music','entry'=>'/noa-music.php','events'=>['audio.ready','playback.started']],
         'jukebox' => ['label'=>'JUKEBOX','owner'=>'jukebox','entry'=>'/noa-app/jukebox/','events'=>['upload.requested','audio.ready','audio.failed']],
         'youtube' => ['label'=>'YOUTUBE','owner'=>'youtube','entry'=>'/noa-youtube.php','events'=>['sync.requested','youtube.synced']],
@@ -18,7 +18,42 @@ function noa_engine_modules(): array {
         'community' => ['label'=>'COMMUNITY','owner'=>'gnuboard','entry'=>'/bbs/board.php?bo_table=free','events'=>[]],
         'database' => ['label'=>'DATABASE','owner'=>'database','entry'=>'/noa-app/database/','events'=>[]],
     ];
+    $modules += [
+        'identity'=>['label'=>'회원·권한','owner'=>'identity','entry'=>'/noa-membership.php','events'=>[]],
+        'commerce'=>['label'=>'결제·포인트·후원','owner'=>'commerce','entry'=>'/noa-support.php','events'=>[]],
+        'notifications'=>['label'=>'알림','owner'=>'notifications','entry'=>'/noa-notifications.php','events'=>[]],
+        'catalog'=>['label'=>'분류·곡 색인','owner'=>'catalog','entry'=>'/noa-app/taxonomy/','events'=>[]],
+        'personalization'=>['label'=>'개인화·추천','owner'=>'personalization','entry'=>'/noa-music.php','events'=>[]],
+        'app_lifecycle'=>['label'=>'앱 업데이트','owner'=>'app_lifecycle','entry'=>'/','events'=>[]],
+    ];
+    $sources=[
+        'music'=>['noa-music.php'],
+        'jukebox'=>['noa-app/jukebox/index.php','noa-app/jukebox/queue-core.php'],
+        'youtube'=>['noa-youtube.php'], 'world'=>['noa-world.php'], 'playlist'=>['noa-playlists.js'],
+        'creator_lab'=>['noa-channel-workspace.php','noa-app/engine/workspaces.php'],
+        'ai_lab'=>array_values(array_unique(array_merge(['noa-ai-lab.php','noa-app/engine/ai-lab.php','noa-app/engine/explorer.php','noa-channel-explorer.js','noa-explorer.css','noa-ai-lab.js','noa-muvy-panel.php'],array_column(n80_lab_tools(),'page')))),
+        'admin'=>['noa-library.php','noa-app/engine/workspaces.php'], 'community'=>['bbs/board.php'],
+        'database'=>['noa-app/database/core.php'],
+        'identity'=>['noa-bridge/member-access.php','noa-bridge/subscription-access.php'],
+        'commerce'=>['noa-bridge/support.php','noa-bridge/ainoa-points.php'],
+        'notifications'=>['noa-bridge/notifications.php'],
+        'catalog'=>['noa-app/taxonomy/index.php','noa-app/engine/personal-song-index.php'],
+        'personalization'=>['noa-app/engine/personal-listening.php'],
+        'app_lifecycle'=>['noa-app/engine/app-lifecycle.php'],
+    ];
+    $observes=[
+        'music'=>['music','media','taxonomy'],'jukebox'=>['jukebox','media'],'playlist'=>['playlist','music'],
+        'youtube'=>['youtube','taxonomy'],'world'=>['world','youtube'],'creator_lab'=>['music','playlist','youtube'],
+        'ai_lab'=>['ai_lab'],'admin'=>['admin','settings','members'],'community'=>['community','members'],
+        'database'=>['database'],'identity'=>['members'],'commerce'=>['commerce'],
+        'notifications'=>['notifications'],'catalog'=>['taxonomy'],'personalization'=>[], 'app_lifecycle'=>[],
+    ];
+    foreach($modules as $id=>&$module){$module['sources']=$sources[$id];$module['observes']=$observes[$id];}
+    unset($module);return $modules;
 }
+/** Every operational audit derives its module links from the same registry as source inventory. */
+function n80_module_links():array {return array_map(static fn(array $module):array=>$module['observes'],noa_engine_modules());}
+
 function noa_engine_registry_snapshot(): array {
     $modules = noa_engine_modules();
     foreach ($modules as $id => &$module) {

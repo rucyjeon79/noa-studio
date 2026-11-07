@@ -9,6 +9,7 @@ on:
 permissions: {contents: read}
 jobs:
   collect:
+    if: ${{ !contains(github.event.head_commit.message, '[n80-runtime]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -51,4 +52,4 @@ jobs:
         if: github.event_name == 'push'
         run: python scripts/noa_marpple_release.py
       - name: Atomically sync full catalog and verify live API
-        run: python scripts/noa_marpple_sync.py
+        run: python scripts/n80_auto.py commerce.catalog_sync

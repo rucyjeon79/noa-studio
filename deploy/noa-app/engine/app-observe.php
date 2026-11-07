@@ -36,7 +36,8 @@ try {
         $result=n80_app_audit($db,$web,$memberTable);
         $result['modules']['media']=n80_app_media($db,n80_app_schema($db),$web);$db->commit();}
     catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
-    $result['moduleLinks']=['music'=>['music','media','taxonomy'],'jukebox'=>['jukebox','media'],'playlist'=>['playlist','music'],'youtube'=>['youtube','taxonomy'],'world'=>['world','youtube'],'ai_lab'=>['ai_lab'],'admin'=>['admin','settings','members'],'community'=>['community','members'],'database'=>['database']];
+    require_once __DIR__.'/registry.php';
+    $result['moduleLinks']=n80_module_links();
     $result['modules']['ai_lab']=n80_app_ai_summary('/hosting/noastudio/noa-ai-lab/state.json');
     require_once __DIR__.'/work-state.php';
     $result['workControl']=n80_work_summary('/hosting/noastudio/noa-ai-lab/n80-workstate');

@@ -25,7 +25,7 @@ jobs:
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_POPULARITY_PHASE: hourly
-        run: python3 scripts/noa_popularity_release.py
+        run: python3 scripts/n80_auto.py popularity.calculate
       - uses: actions/upload-artifact@v4
         if: always()
         with:

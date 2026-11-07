@@ -52,13 +52,21 @@ try{
        &&!str_contains(json_encode($diagnostic),'arbitrary_secret_message'),'diagnose_redacts_unknown_exception');
     n80_test_check(!n80_music_consume($db,$dirs,1,[],$read)['ok'],'disabled_default');
     n80_test_check(!n80_music_consume($db,$dirs,1,['enabled'=>true],$read)['ok'],'server_auth_required');
-    $result=n80_music_consume($db,$dirs,1,$ctx,$read);
+    require $root.'/web/noa-app/engine/executor.php';
+    $event=n80_ready_event_from_job($db,1)['event'];
+    $runtime=$ctx+['authenticatedActor'=>true,'durableStoreReady'=>true,'operation'=>'music.verify_availability','db'=>$db,'jobId'=>1,'directories'=>$dirs];
+    n80_test_check(!noa_engine_execute($event,'playlist',$runtime,$read)['ok'],'uninstalled_adapter_blocked');
+    $wrong=$event;$wrong['subjectId']='wrong-song';
+    n80_test_check((noa_engine_execute($wrong,'music',$runtime,$read)['error']??'')==='event_identity_mismatch','executor_checks_source_identity');
+    $result=noa_engine_execute($event,'music',$runtime,$read);
+    n80_test_check(($result['runtime']['engine']??'')==='N80 Engine','real_consumer_uses_engine');
     n80_test_check($result['ok']&&$result['status']==='acknowledged','verified_ack');
     n80_test_check($result['receipt']['effect']==='music_catalog_availability_verified'&&$result['receipt']['proof']['mutation']===false,'narrow_effect');
     $state=json_decode(file_get_contents(glob($root.'/leases/*.json')[0]),true);
     n80_test_check($state['status']==='succeeded'&&$state['receipt']===$result['receipt'],'receipt_atomic_with_ack');
     $never=static function(){throw new RuntimeException('must_not_reexecute');};
     n80_test_check(n80_music_consume($db,$dirs,1,$ctx,$never)['status']==='already_acknowledged','response_loss_replay');
+    n80_test_check(noa_engine_execute($event,'music',$runtime,$never)['status']==='already_acknowledged','executor_reuses_consumer_receipt');
     // A new committed job is a new event and must not inherit the old receipt.
     $db->prepare('INSERT INTO noa_jukebox_audio_jobs VALUES(?,?,?,?,?)')->execute([2,str_repeat('1',32),$key,'ready','2026-10-24 10:01:00']);
     n80_test_check(!n80_music_consume($db,$dirs,1,$ctx,$read)['ok'],'superseded_job');

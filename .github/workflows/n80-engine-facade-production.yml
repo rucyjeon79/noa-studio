@@ -3,6 +3,29 @@ on:
   push:
     branches: [main]
     paths:
+      - 'deploy/noa-app/engine/registry.php'
+      - 'deploy/noa-app/engine/health.php'
+      - 'deploy/noa-app/engine/adapter-contract.php'
+      - 'deploy/noa-app/engine/dispatch-gate.php'
+      - 'deploy/noa-app/engine/executor.php'
+      - 'deploy/noa-app/engine/readiness.php'
+      - 'deploy/noa-app/engine/service-runtime.php'
+      - 'deploy/noa-app/engine/task-status.php'
+      - 'deploy/noa-app/engine/app-lifecycle.php'
+      - 'deploy/noa-app/engine/app-data.php'
+      - 'deploy/noa-app/engine/app-observe.php'
+      - 'deploy/noa-app/engine/consume-music.php'
+      - 'bridge/worker-*.php'
+      - 'bridge/lab-worker.php'
+      - 'bridge/ainoa-automation.php'
+      - 'scripts/n80_runtime_verify.py'
+      - 'scripts/n80_auto.py'
+      - 'scripts/noa_n80_ai_worker.py'
+      - 'config/n80-automation.json'
+      - 'tests/engine/runtime_ownership_test.php'
+      - 'tests/engine/service_runtime_test.php'
+      - 'tests/engine/test_auto_dispatch.py'
+      - 'tests/catalog/ainoa_automation_mysql_test.php'
       - 'AGENTS.project.md'
       - 'docs/n80-engine-transition.md'
       - 'tests/engine/single_runtime_policy_test.php'
@@ -40,8 +63,17 @@ jobs:
     if: github.event_name != 'push' || (!contains(github.event.head_commit.message, '[n80-data]') && !contains(github.event.head_commit.message, '[category-final]'))
     runs-on: ubuntu-latest
     environment: production
-    timeout-minutes: 12
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: noa-test-only, MYSQL_DATABASE: noa_inline_edit_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -h localhost -pnoa-test-only" --health-interval=5s --health-timeout=5s --health-retries=20
     env:
+      NOA_MYSQL_DSN: mysql:host=127.0.0.1;port=3306;dbname=noa_inline_edit_test;charset=utf8mb4
+      NOA_MYSQL_USER: root
+      NOA_MYSQL_PASSWORD: noa-test-only
       GH_TOKEN: ${{ github.token }}
       N80_DEPLOY_JUKEBOX_CLI: '1'
       NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
@@ -56,39 +88,27 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: pdo_sqlite
-      - name: Validate unified facade and existing contracts
+          extensions: pdo_sqlite,pdo_mysql,mbstring,curl,tokenizer
+      - name: Validate N80 dispatch, ownership, replay and SQL task lifecycle
         run: |
-          php -l deploy/noa-app/engine/n80.php
-          php tests/engine/single_runtime_policy_test.php
-          php tests/engine/integration_audit_test.php
-          php tests/engine/n80_facade_test.php
-          php -l deploy/noa-app/engine/receipt-contract.php
-          php tests/engine/receipt_contract_test.php
-          php -l deploy/noa-app/jukebox/cli.php
-          php tests/engine/cli_producer_static_test.php
-          php -l deploy/noa-app/engine/readonly-pipeline.php
-          php tests/engine/readonly_pipeline_test.php
-          php tests/engine/ready_event_identity_test.php
-          php -l deploy/noa-app/engine/authenticated-probe.php
-          php tests/engine/authenticated_probe_test.php
-          php -l deploy/noa-app/engine/music-adapter.php
-          php tests/engine/music_adapter_test.php
-          php -l deploy/noa-app/engine/lease-state.php
-          php tests/engine/lease_state_test.php
-          php -l deploy/noa-app/engine/policy.php
-          php -l deploy/noa-app/engine/guardian.php
-          php tests/engine/guardian_test.php
-          php -l deploy/noa-app/engine/bridge.php
-          php tests/engine/bridge_test.php
-          python -m py_compile scripts/n80_single_session_deploy.py scripts/n80_readonly_pipeline_safe_deploy.py scripts/n80_engine_facade_safe_deploy.py scripts/n80_authenticated_probe_safe_deploy.py scripts/n80_music_adapter_safe_deploy.py scripts/n80_lease_state_safe_deploy.py scripts/n80_policy_safe_deploy.py scripts/n80_guardian_safe_deploy.py scripts/n80_bridge_safe_deploy.py
+          set -eu
+          for file in deploy/noa-app/engine/*.php bridge/worker-*.php bridge/lab-worker.php bridge/ainoa-automation.php; do php -l "$file"; done
+          for test in tests/engine/*_test.php; do php "$test"; done
+          php tests/sitemap/registry_test.php
+          python -m unittest discover -s tests/engine -p test_auto_dispatch.py -v
+          python -m py_compile scripts/n80_single_session_deploy.py scripts/n80_runtime_verify.py scripts/noa_n80_ai_worker.py scripts/n80_auto.py
+          php scripts/qa/inline-edit-seed.php
+          php tests/catalog/ainoa_generation_mysql_test.php
+          php tests/catalog/ainoa_automation_mysql_test.php
       - run: python -m pip install 'paramiko>=3,<5'
       - name: Verify and install N80 modules in one SSH session
         run: python scripts/n80_single_session_deploy.py
+      - name: Read back N80 status without creating an AI task and update existing journal
+        run: python scripts/n80_runtime_verify.py
       - name: Restore owned sources after failed acceptance
         if: failure()
         run: |
           if [ -f "$RUNNER_TEMP/noa-ainoa-before.json" ]; then python scripts/n80_single_session_deploy.py rollback; fi
       - uses: actions/upload-artifact@v4
         if: always()
-        with: {name: 'n80-single-runtime-${{ github.run_id }}', path: 'ainoa-proof/deployment.json', retention-days: 7}
+        with: {name: 'n80-single-runtime-${{ github.run_id }}', path: 'ainoa-proof/', retention-days: 7}

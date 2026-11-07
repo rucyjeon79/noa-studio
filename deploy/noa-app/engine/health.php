@@ -4,20 +4,8 @@ require_once __DIR__.'/registry.php';
 /** Read-only local source inventory; no DB, external HTTP or execution. */
 function noa_engine_health_snapshot(string $root): array {
     $modules=noa_engine_registry_snapshot()['modules'];
-    $sources=[
-        'music'=>['noa-music.php'],
-        'jukebox'=>['noa-app/jukebox/index.php','noa-app/jukebox/queue-core.php'],
-        'youtube'=>['noa-youtube.php'],
-        'world'=>['noa-world.php'],
-        'playlist'=>['noa-playlists.js'],
-        'ai_lab'=>array_unique(array_merge(['noa-ai-lab.php','noa-app/engine/ai-lab.php','noa-app/engine/explorer.php','noa-channel-explorer.js','noa-explorer.css','noa-ai-lab.js','noa-muvy-panel.php'],array_column(n80_lab_tools(),'page'))),
-        'creator_lab'=>['noa-channel-workspace.php','noa-app/engine/workspaces.php'],
-        'admin'=>['noa-library.php','noa-app/engine/workspaces.php'],
-        'community'=>['bbs/board.php'],
-        'database'=>['noa-app/database/core.php'],
-    ];
     foreach ($modules as &$module) {
-        $paths=$sources[$module['id']]??[];
+        $paths=$module['sources'];
         $present=true;
         foreach ($paths as $relative) {
             if (!is_file(rtrim($root,'/').'/'.$relative)) { $present=false; break; }

@@ -9,7 +9,7 @@ concurrency: {group: 'noa-ainoa-${{ github.sha }}', cancel-in-progress: false}
 jobs:
   candidate:
     # The focused preview repair owns its four-file activation and equivalent targeted checks.
-    if: ${{ !contains(github.event.head_commit.message, '[preview-release]') }}
+    if: (!contains(github.event.head_commit.message, '[preview-release]')) && !contains(github.event.head_commit.message, '[n80-runtime]')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:

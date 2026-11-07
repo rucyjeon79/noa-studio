@@ -44,10 +44,12 @@ def main():
         if os.getenv('NOA_N80_AI_PROOF'):raise RuntimeError('n80_text_release_missing')
         print('N80_AI_TEXT_WAITING_FOR_RELEASE');return
     key=worker_key()
+    try:signed_tick(key,'n80_batch_watchdog')
+    except Exception:print('N80_BATCH_WATCHDOG_UNAVAILABLE')
     output=[]
     for _ in range(3):
-        result=signed_tick(key,'n80_tick')
-        output.append({k:result[k]for k in ['processed','state','taskId']if k in result})
+        result=signed_tick(key,'n80_text_tick')
+        output.append({k:result[k]for k in ['processed','state','taskId','missing','runtime']if k in result})
         if not result.get('processed'):break
     if os.getenv('NOA_N80_AI_PROOF'):
         target=Path(os.environ['NOA_N80_AI_PROOF']);target.parent.mkdir(parents=True,exist_ok=True)
