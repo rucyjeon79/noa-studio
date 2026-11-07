@@ -28,9 +28,13 @@ function nam_requirement(string $path,string $method='GET',array $query=[]):?str
  if(in_array($path,['/noa-subscription.php','/noa-bridge/subscription.php'],true))return 'member';
  if(in_array($path,['/noa-creator-review.php'],true))return 'admin';
  if(in_array($path,['/noa-channel-workspace.php'],true))return 'creator';
- if($path==='/noa-ai-lab.php')return match($query['tool']??''){
-  'batch','song'=>'admin','channel'=>'creatorAI',default=>'member'
- };
+ if($path==='/noa-ai-lab.php'){
+  $tool=$query['tool']??'';
+  if($tool==='')return 'member';
+  $engine=dirname(__DIR__).'/noa-app/engine/ai-lab.php';
+  require_once is_file($engine)?$engine:dirname(__DIR__).'/deploy/noa-app/engine/ai-lab.php';
+  return is_string($tool)?(n80_lab_tools()[$tool]['access']??'member'):'member';
+ }
  if(in_array($path,['/noa-creator-ai.php','/noa-bridge/creator-ai.php'],true))return 'creatorAI';
  if($path==='/noa-channel-rules.php'||$path==='/noa-creator.php'||$path==='/noa-bridge/creator.php')return 'creator';
  if($path==='/noa-bridge/legacy-audio.php')return null;

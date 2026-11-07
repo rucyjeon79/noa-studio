@@ -2,13 +2,11 @@
 if (!defined('_GNUBOARD_') || empty($access['member'])) { http_response_code(403); exit; }
 $listening=$tool==='listen';
 ?><!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AI LAB | NOA STUDIO</title><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-ainoa.css"><link rel="stylesheet" href="/noa-listening.css">
+<title>N80 AI LAB | NOA STUDIO</title><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-ainoa.css"><link rel="stylesheet" href="/noa-listening.css">
 <?php foreach (array_merge(['noa-brand','noa-ui','noa-ainoa'],$listening?['noa-listening-model','noa-listening']:[]) as $asset): ?>
 <script defer src="/<?=$asset?>.js?v=<?=hash_file('sha256',__DIR__.'/'.$asset.'.js')?>"></script>
-<?php endforeach; ?></head><body class="noa-page"><main><h1>AI LAB</h1>
-<nav class="lab-tabs" aria-label="AI LAB 메뉴"><a class="noa-button" href="?tool=chat">곡 이야기</a> <a class="noa-button" href="?tool=listen">AI 음악 추천</a>
-<?php if($access['creatorAI']):?><a class="noa-button" href="?tool=channel">내 채널 초안</a><?php endif;?>
-<?php if($access['admin']):?><a class="noa-button" href="/noa-ai-lab.php">제작 도구 전체</a><?php endif;?></nav>
+<?php endforeach; ?></head><body class="noa-page"><main><h1>N80 AI LAB</h1>
+<?php n80_lab_nav($access,$tool); ?>
 <?php if($listening):?><section id="noa-listening" data-noa-lab-listening data-noa-listening="home" aria-label="AI 음악 추천"></section><?php else:?>
 <h2>곡 이야기</h2><button class="noa-button" id="lab-chat-open" type="button">곡을 골라 대화하기</button>
 <?php if($access['admin']):?><button class="noa-button" id="lab-admin-open" type="button">N80 AI 제작 대화</button><?php endif;?>

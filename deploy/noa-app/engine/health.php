@@ -10,7 +10,7 @@ function noa_engine_health_snapshot(string $root): array {
         'youtube'=>['noa-youtube.php'],
         'world'=>['noa-world.php'],
         'playlist'=>['noa-playlists.js'],
-        'ai_lab'=>['noa-ai-lab.php'],
+        'ai_lab'=>array_unique(array_merge(['noa-ai-lab.php','noa-app/engine/ai-lab.php','noa-ai-lab.js','noa-muvy-panel.php'],array_column(n80_lab_tools(),'page'))),
         'admin'=>['noa-settings.php'],
         'community'=>['bbs/board.php'],
         'database'=>['noa-app/database/core.php'],

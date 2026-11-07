@@ -4,7 +4,7 @@ if (!defined('_GNUBOARD_') || empty($access['admin'])) { http_response_code(403)
 <title>곡별 AI 제작 | AI LAB</title><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-record-form.css">
 <?php foreach (['noa-brand','noa-ui','noa-browse','noa-record-form','noa-browse-edit'] as $asset): ?>
 <script defer src="/<?=$asset?>.js?v=<?=hash_file('sha256',__DIR__.'/'.$asset.'.js')?>"></script>
-<?php endforeach; ?></head><body class="noa-page"><main><a href="/noa-ai-lab.php">AI LAB</a><h1>곡별 AI 제작</h1>
+<?php endforeach; ?></head><body class="noa-page"><main><p>N80 AI LAB</p><?php n80_lab_nav($access,'song'); ?><h1>곡별 AI 제작</h1>
 <label>제작할 곡 <select id="lab-pick"><option value="">곡 선택</option></select></label>
 <button class="noa-button" type="button" id="lab-pick-load">곡 목록 불러오기</button><p id="lab-pick-status" role="status"></p>
 <div class="noa-record-editor" id="lab-record"></div></main>

@@ -13,7 +13,7 @@ function noa_workspace_groups():array{return [
  'creation'=>['title'=>'제작 작업실','intro'=>'가사·영상 제작과 완성 음원 업로드를 구분합니다.','routes'=>[
   ['jukebox','완성 음원 업로드','곡 선택 → MP3 업로드 → 최적화 완료 확인','/noa-app/jukebox/','music'],
   ['taxonomy','카테고리·제작 규칙','내 채널 분류·제작 원칙','/noa-channel-rules.php','playlists'],
-  ['aiLab','AI LAB','제작 종류 선택 → 초안 검토 → 곡정보에 저장','/noa-ai-lab.php','mic'],
+  ['aiLab','N80 AI LAB','제작 종류 선택 → 초안 검토 → 곡정보에 저장','/noa-ai-lab.php','mic'],
   ['youtubeAdmin','YouTube 채널 관리','채널 수집 → 원곡 연결 검토 → 성과 확인','/noa-youtube-admin.php','youtube'],
  ]],
  'operation'=>['title'=>'운영 설정','intro'=>'회원·게시판·화면·연결 정보를 관리합니다.','routes'=>[

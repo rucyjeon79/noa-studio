@@ -32,7 +32,7 @@ function noa_sitemap_registry():array{
             ['creatorApply','크리에이터 가입·전환','본인인증과 승인 후 7레벨·채널 개설','/noa-creator-apply.php','user','public'],
             ['channelWorkspace','내 채널 작업실','소유한 콘텐츠·게시판·제작 관리','/noa-channel-workspace.php','music','member'],
             ['channelRules','카테고리·제작 규칙','내 채널 장르별 제작 원칙','/noa-channel-rules.php','playlists','member'],
-            ['aiLab','AI LAB','AI 대화 · 권한별 음악과 영상 제작','/noa-ai-lab.php','mic','member'],
+            ['aiLab','N80 AI LAB','AI 대화 · 권한별 음악과 영상 제작','/noa-ai-lab.php','mic','member'],
             ['password','아이디·비밀번호 찾기','계정 접근 복구','/bbs/password_lost.php','settings','guest'],
             ['playlists','내 재생목록','나만의 목록 만들기와 편집','/noa-music.php#my-playlists','playlists','member'],
             ['subscription','구독 신청·내역','월 구독 신청과 결제·이용 기간 확인','/noa-subscription.php','user','member'],

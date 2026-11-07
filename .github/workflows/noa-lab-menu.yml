@@ -1,4 +1,4 @@
-name: Verify and publish AI LAB menu separation
+name: Verify and publish N80 AI LAB
 on:
   push:
     branches: [main]
@@ -15,6 +15,9 @@ jobs:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
       - run: |
+          php -l deploy/noa-app/engine/ai-lab.php
+          php -l deploy/noa-app/engine/registry.php
+          php -l deploy/noa-app/engine/health.php
           php -l deploy/noa-lab-chat.php
           php -l deploy/noa-lab-song.php
           php -l bridge/member-access.php
@@ -42,6 +45,9 @@ jobs:
           import sys
           import noa_ainoa_deploy as release
           release.FILES = {
+              'noa-app/engine/ai-lab.php': 'deploy/noa-app/engine/ai-lab.php',
+              'noa-app/engine/registry.php': 'deploy/noa-app/engine/registry.php',
+              'noa-app/engine/health.php': 'deploy/noa-app/engine/health.php',
               'noa-lab-chat.php': 'deploy/noa-lab-chat.php',
               'noa-lab-song.php': 'deploy/noa-lab-song.php',
               'noa-bridge/member-access.php': 'bridge/member-access.php',
@@ -56,7 +62,7 @@ jobs:
               'noa-workspace.php': 'deploy/noa-workspace.php',
               'noa-ai-lab.php': 'deploy/noa-ai-lab.php',
           }
-          release.NEW = {'noa-lab-chat.php','noa-lab-song.php'}
+          release.NEW = {'noa-app/engine/ai-lab.php','noa-lab-chat.php','noa-lab-song.php'}
           try:
               release.main()
           except Exception:
