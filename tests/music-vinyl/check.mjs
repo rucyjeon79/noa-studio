@@ -129,7 +129,7 @@ try{for(const width of (operating?[1280]:[320,390,1280])){
   await title.locator('.lp-title-overflow>.lp-title-text').waitFor();
   assert(await trackName.evaluate(n=>{
    const box=n.getBoundingClientRect(),genre=n.parentElement.querySelector('.noa-track-genre').getBoundingClientRect(),credit=n.parentElement.querySelector('.noa-original-title').getBoundingClientRect();
-   return box.height===24 && Math.abs(box.left-genre.left)<1 && Math.abs(box.left-credit.left)<1 && genre.top>=box.bottom && genre.top-box.bottom<=6 && credit.top>=genre.bottom && credit.top-genre.bottom<=6
+   return Math.abs(box.height-parseFloat(getComputedStyle(n).lineHeight))<1 && Math.abs(box.left-genre.left)<1 && Math.abs(box.left-credit.left)<1 && genre.top>=box.bottom && genre.top-box.bottom<=6 && credit.top>=genre.bottom && credit.top-genre.bottom<=6
     && getComputedStyle(n.firstElementChild).animationName==='noa-title-pan';
   }),'Long title pans on one line with the genre and original credit aligned below it');
   const movingTitle=trackName.locator('.lp-title-text');
