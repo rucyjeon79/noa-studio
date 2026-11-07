@@ -25,9 +25,14 @@ function n80_lab_default(array $access): string {
 
 function n80_lab_nav(array $access, string $current): void {
     echo '<nav class="lab-tabs" aria-label="AI LAB 메뉴"><a href="/noa-ai-lab.php">AI LAB</a>';
-    foreach (n80_lab_tools() as $id => $tool) {
-        if (!empty($tool['hidden']) || empty($access[$tool['access']])) continue;
-        echo '<a href="/noa-ai-lab.php?tool='.$id.'"'.($id===$current?' aria-current="page"':'').'>'.$tool['label'].'</a> ';
+    $tools=n80_lab_tools();
+    if(isset($tools[$current])&&empty($tools[$current]['hidden'])&&!empty($access[$tools[$current]['access']])){
+        echo '<a href="/noa-ai-lab.php?tool='.$current.'" aria-current="page">'.$tools[$current]['label'].'</a>';
     }
-    echo '</nav>';
+    echo '<details class="lab-tool-switch" data-noa-local-disclosure><summary>다른 도구</summary><div class="lab-tool-links">';
+    foreach ($tools as $id => $tool) {
+        if ($id===$current || !empty($tool['hidden']) || empty($access[$tool['access']])) continue;
+        echo '<a href="/noa-ai-lab.php?tool='.$id.'">'.$tool['label'].'</a> ';
+    }
+    echo '</div></details></nav>';
 }

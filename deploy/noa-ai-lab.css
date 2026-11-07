@@ -4,3 +4,5 @@
 .noa-page main>header.lab-heading{display:flex}
 
 .lab-main [hidden]{display:none!important}#lab-config{width:100%;margin:24px 0}.lab-main .lab-tabs{gap:8px 20px}.lab-main .lab-tabs a[aria-current="page"]{color:var(--noa-accent);text-decoration:underline;text-underline-offset:6px}
+/* Keep the selected specialist visible; expand navigation only when changing tools. */
+.lab-main .lab-tabs{align-items:center}.lab-main .lab-tool-switch{margin:0 0 0 auto;max-width:100%}.lab-tool-switch summary{min-height:44px;display:flex;align-items:center;cursor:pointer;color:var(--noa-muted)}.lab-tool-switch summary::after{content:'⌄';margin-left:8px}.lab-tool-switch[open]{flex:1 1 100%;margin:0}.lab-tool-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:4px 20px;border-top:1px solid var(--noa-line);padding-top:8px}.lab-tool-links a{min-width:0;overflow-wrap:anywhere}
