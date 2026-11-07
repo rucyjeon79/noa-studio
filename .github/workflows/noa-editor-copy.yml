@@ -2,10 +2,34 @@ name: Verify and publish song field copying
 on:
   push:
     branches: [main]
-    paths: ['tests/clipboard/**','.github/workflows/noa-editor-copy.yml']
+    paths: &paths ['tests/clipboard/**','.github/workflows/noa-editor-copy.yml']
+  pull_request:
+    paths: *paths
 permissions: {contents: read}
 jobs:
-  verify-and-publish:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: mbstring}
+      - run: |
+          php -l deploy/noa-inline-edit.php
+          php -l bridge/creator.php
+          php tests/download/filename.php
+          node --check deploy/noa-record-form.js
+          node --check deploy/noa-creator.js
+          node --check deploy/noa-browse-edit.js
+          python -m pip install playwright 'paramiko>=3,<5'
+          python tests/clipboard/editor.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'song-naming-${{ github.run_id }}', path: 'clipboard-proof/', retention-days: 7}
+  deploy:
+    if: github.event_name == 'push'
+    needs: verify
     runs-on: ubuntu-latest
     environment: production
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
@@ -13,10 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
-      - run: |
-          node --check deploy/noa-browse-edit.js
-          python -m pip install playwright 'paramiko>=3,<5'
-          python tests/clipboard/editor.py
+      - run: python -m pip install 'paramiko>=3,<5'
       - name: Publish and verify the tested editor
         env:
           GH_TOKEN: ${{ github.token }}
@@ -28,7 +49,12 @@ jobs:
           PYTHONPATH=scripts python - <<'PY'
           import sys
           import noa_ainoa_deploy as release
-          release.FILES = {'noa-browse-edit.js': 'deploy/noa-browse-edit.js'}
+          release.FILES = {
+              'noa-bridge/creator.php': 'bridge/creator.php',
+              **{name: 'deploy/'+name for name in (
+                  'noa-inline-edit.php', 'noa-record-form.css', 'noa-record-form.js',
+                  'noa-creator.js', 'noa-browse-edit.js')},
+          }
           release.NEW = set()
           try:
               release.main()

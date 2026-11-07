@@ -34,7 +34,9 @@ try{
   $song = nc_own($db, (string)($_GET['key'] ?? ''), $member);
   $doc = $song['document'];
   if (!empty($doc['_noaTrash'])) nc_reply(404, ['error'=>'song_not_found']);
-  nc_reply(200, nc_editor_record($db, $song, $doc, $a, nc_record_aliases($db, [$song])[$song['doc_key']]));
+  require_once __DIR__.'/music-download-core.php';
+  nc_reply(200, nc_editor_record($db, $song, $doc, $a, nc_record_aliases($db, [$song])[$song['doc_key']])
+      + ['sunoTitle'=>$song['kind']!=='playlist' ? substr(nmd_filename($doc),0,-4) : '']);
  }
  if($method==='GET'&&$action==='list'){
   $channel=nc_row($db,nc_channel_key($actor));$songs=[];$records=nc_owned_records($db,$actor);$aliases=nc_record_aliases($db,$records);

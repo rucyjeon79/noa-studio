@@ -15,6 +15,9 @@ try{
    nie_reply(200,['key'=>$resolved['writeKey'],'revision'=>$resolved['revision'],'record'=>$resolved['payload'],'original'=>$resolved['original']]);
   }
   $source=noa_sound_suno($resolved['payload']['body']??[]);
+  require_once __DIR__.'/noa-bridge/music-download-core.php';
+  $resolved['sunoTitle']=$resolved['kind']!=='playlist' && ($_GET['type']??'')!=='new'
+      ? substr(nmd_filename($resolved['document']??$resolved['payload']),0,-4) : '';
   $resolved['sunoCover']='';
   if($source && $resolved['kind']!=='playlist'){
    try{$resolved['sunoCover']=nsc_preview(nj_find($db,$resolved['writeKey']),$resolved['writeKey'],$source);}catch(PDOException $e){error_log('[suno-cover] artwork lookup unavailable');}
