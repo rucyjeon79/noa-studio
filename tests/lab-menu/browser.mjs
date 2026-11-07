@@ -33,7 +33,7 @@ try{
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   try{
    await page.goto('https://lab-menu.test/noa-ai-lab.php',{waitUntil:'networkidle'});
-   const expected=role==='admin'?['batch','create','chat','jobs','growth']:['chat'];
+   const expected=role==='admin'?['creative','batch','create','chat','jobs','growth']:(role==='eight'?['creative','chat']:['chat']);
    const links=page.locator('main [data-n80-module]');
    assert.deepEqual(await links.evaluateAll(as=>as.map(a=>a.dataset.n80Module)),expected);
    for(const a of await links.all()){

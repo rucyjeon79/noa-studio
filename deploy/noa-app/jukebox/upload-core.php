@@ -33,7 +33,7 @@ function nu_resume(array $u):array{
  return ['id'=>$u['id'],'chunks'=>$chunks,'chunkHashes'=>(object)$hashes,'status'=>$u['status'],'chunkSize'=>NU_CHUNK];
 }
 function nu_initialize(PDO $db,array $b,string $actor):array{
- $key=(string)($b['key']??'');$doc=nj_document($db,$key);if(!$doc||!in_array($doc['_kind']??'',['single','story','jukebox_qa'],true))throw new DomainException('unknown_song');
+ $key=(string)($b['key']??'');$doc=nj_document($db,$key);if(!$doc||!in_array($doc['_kind']??'',['single','story','jukebox_qa','n80_creative_draft'],true))throw new DomainException('unknown_song');
  $name=(string)($b['filename']??'');$size=$b['bytes']??null;$fp=(string)($b['fingerprint']??'');$ext=strtolower(pathinfo($name,PATHINFO_EXTENSION));
  if(!in_array($ext,['mp3','wav'],true)||!is_int($size)||$size<256||$size>NU_MAX||strlen($name)>1000||!preg_match('/^[a-f0-9]{64}$/D',$fp))throw new InvalidArgumentException('mp3_wav_size_or_identity_invalid');
  $artist=trim((string)($b['originalArtist']??($doc['body']['originalArtist']??$doc['body']['originalSinger']??'')));

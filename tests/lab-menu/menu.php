@@ -4,11 +4,11 @@ require dirname(__DIR__,2).'/deploy/noa-app/engine/workspaces.php';
 require dirname(__DIR__,2).'/bridge/member-access.php';
 function verify(bool $ok,string $why):void {if(!$ok)throw new RuntimeException($why);}
 $tools=n80_lab_tools();
-verify(count($tools)===11,'Existing tool URLs must remain available to contextual callers');
+verify(count($tools)===12,'Existing tool URLs must remain available to contextual callers');
 $excluded=['text','song','channel','muvy','settings'];
 foreach(['admin'=>10,'creator'=>8,'member'=>3,'guest'=>1] as $role=>$level){
     $access=nam_access($level>1?['mb_id'=>'test','mb_level'=>$level]:[],$role==='admin'?'super':'');
-    $expected=$role==='admin'?['batch','create','chat','jobs','growth']:($role==='guest'?[]:['chat']);
+    $expected=$role==='admin'?['creative','batch','create','chat','jobs','growth']:($role==='guest'?[]:($role==='creator'?['creative','chat']:['chat']));
     $menu=array_filter(n80_lab_menu_tools($access),fn($tool)=>!empty($access[$tool['access']]));
     verify(array_keys($menu)===$expected,'Standalone menu for '.$role);
     ob_start();n80_workspace_render('ai_lab',$access);$hub=ob_get_clean();

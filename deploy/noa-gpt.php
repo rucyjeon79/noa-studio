@@ -28,7 +28,7 @@ try {
     $body = [];
     if ($method === 'POST') {
         if (strtolower(trim(explode(';', $_SERVER['CONTENT_TYPE'] ?? '')[0])) !== 'application/json') reply(415, ['error'=>'json_required']);
-        $maxBytes = in_array($op, ['batchPreview','batchStart'], true) ? 600000 : 64000;
+        $maxBytes = in_array($op, ['batchPreview','batchStart'], true) ? 600000 : 1048576;
         $raw = file_get_contents('php://input', false, null, 0, $maxBytes+1);
         if (strlen($raw) > $maxBytes) reply(413, ['error'=>'too_large']);
         $body = json_decode($raw, true, 16, JSON_THROW_ON_ERROR);
@@ -46,6 +46,13 @@ try {
     if ($external && ((!$isWorker && !$isPlugin && !hash_equals($state['hash'] ?? '',hash('sha256',$secret))) || ($state['owner'] ?? '') !== ($config['cf_admin'] ?? null))) reply(401,['error'=>'invalid_key']);
     $workerOp = in_array($op,['workerPoll','workerFail'],true);
     if ($workerOp && !$isWorker) reply(403,['error'=>'worker_key_required']);
+    // Explicit SQL draft tasks share the authenticated N80 song worker, never the global legacy slot.
+    $creativeId=(string)($body['id']??($_GET['id']??''));
+    if($isWorker && in_array($op,['read','save','workerPoll','workerFail'],true) && preg_match('/^[a-f0-9]{32}$/D',$creativeId)){
+        require_once __DIR__.'/noa-app/engine/creative.php';
+        $creativeDb=noa_bridge_pdo();
+        if(ncd_job($creativeDb,$creativeId)){flock($lock,LOCK_UN);fclose($lock);if(session_status()===PHP_SESSION_ACTIVE)session_write_close();reply(200,['ok'=>true]+ncd_worker($creativeDb,$op,$creativeId,$body));}
+    }
     if ($op==='rules') {
         if (!$isPlugin) reply(403,['error'=>'plugin_required']);
         $genre=$body['genre']??'';

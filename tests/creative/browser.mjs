@@ -1,0 +1,17 @@
+import {chromium} from 'playwright';
+import assert from 'node:assert/strict';
+import {mkdirSync,writeFileSync} from 'node:fs';
+const output='creative-proof';mkdirSync(output,{recursive:true});
+const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+try{for(const width of [390,1280]){
+ const context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await context.route('https://noastudio.ai.kr/**',async route=>{const req=route.request(),u=new URL(req.url());if(/ui-preferences|membership/.test(u.pathname))return route.fulfill({json:{member:true,admin:true,level:10,revision:0,settings:null,defaults:{enabled:['noa-studio','noa-ivory']}}});const response=await route.fetch({url:'http://127.0.0.1:8787'+u.pathname+u.search,headers:{...req.headers(),origin:'https://noastudio.ai.kr'}});if(u.pathname==='/noa-bridge/creative.php'&&u.searchParams.get('action')==='generate'&&response.ok()){const data=await response.json();assert(data.job?.id);await context.request.get('http://127.0.0.1:8787/creative-test-worker.php?id='+data.job.id);}
+ await route.fulfill({response});});
+ await page.goto('https://noastudio.ai.kr/noa-ai-lab.php?tool=creative');await page.locator('#creative-new').click();await page.locator('#creative-story').fill('퇴근길 가족을 생각하는 이야기 <img src=x onerror=alert(1)>');await page.waitForFunction(()=>document.querySelector('#creative-save').textContent==='저장 완료');const url=page.url();assert(url.includes('draft='));await page.reload();await page.waitForFunction(()=>document.querySelector('#creative-story').value.includes('퇴근길'));assert(await page.locator('#creative-story').inputValue().then(v=>v.includes('<img')));
+ await page.locator('#creative-analyze').click();await page.waitForSelector('.creative-options button');assert.equal(await page.locator('.creative-options button').count(),4);
+ for(let i=0;i<8;i++){await page.locator('.creative-options button').first().click();await page.waitForFunction(i=>document.querySelector('#creative-questions h2').textContent.includes((i+1)+' / 8'),i);}
+ await page.getByRole('button',{name:'의도 확정하고 곡정보 생성',exact:true}).click();await page.waitForFunction(()=>document.querySelector('[name=title]')?.value==='집으로 가는 마음',{timeout:20000});
+ const lyrics=page.locator('[data-record-field=lyrics]');await lyrics.locator('.creative-request textarea').fill('가사만 더 부드럽게');await page.waitForFunction(()=>document.querySelector('#creative-save').textContent==='저장 완료');await lyrics.getByRole('button',{name:'해당 항목 수정',exact:true}).click();await page.waitForSelector('.creative-compare');assert.equal(await page.locator('[name=title]').inputValue(),'집으로 가는 마음');await lyrics.getByRole('button',{name:'수정안 적용',exact:true}).click();await page.getByRole('button',{name:'게시 미리보기 · 준비 상태 확인',exact:true}).click();assert(await page.locator('#creative-final').isDisabled());await page.waitForSelector('#creative-preview .creative-review');assert(await page.locator('#creative-preview').innerText().then(v=>v.includes('실제 음원')));
+ assert.equal(await page.locator('[name=productionPrompt],[name=characterPrompt],[name=lyricsTranslation],[name=songDescription]').count(),0);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);
+ await page.screenshot({path:`${output}/creative-${width}.png`,fullPage:true});await context.close();console.log('CREATIVE_BROWSER_REAL_SQL_FLOW_OK',width);
+}}finally{await browser.close();}
