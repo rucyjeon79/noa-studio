@@ -2,8 +2,3 @@
 
 .mu-cut summary::after{content:"⌄";margin-left:auto;flex:0 0 auto;color:var(--noa-muted)}.mu-cut[open] summary::after{transform:rotate(180deg)}
 .mu-desk .mu-toolbar button{white-space:nowrap}.mu-toolbar button svg{width:18px;height:18px;flex:0 0 18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}@media(max-width:760px){.mu-toolbar button{flex:1 1 calc(50% - 10px);min-width:126px;font-size:12px;padding:10px 8px}.mu-toolbar button span{white-space:nowrap}}
-
-.mu-picker{border:1px solid var(--noa-line);border-radius:var(--noa-radius,12px);padding:10px 16px;margin:16px 0}
-.mu-picker summary{cursor:pointer;min-height:44px;align-content:center;font-weight:600}
-.mu-picker fieldset{padding:0;border:0;margin:12px 0;min-width:0}
-.mu-picker label{min-width:0}

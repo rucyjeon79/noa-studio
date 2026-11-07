@@ -1,0 +1,8 @@
+.n80-explorer{min-width:0;max-width:100%;margin-block:.75rem;padding:.75rem 1rem;border:1px solid var(--noa-line,currentColor);border-radius:.65rem}
+.n80-explorer summary{cursor:pointer;min-height:44px;align-content:center;overflow-wrap:anywhere;font-weight:600}
+.n80-explorer [data-n80-current]{font-weight:400}
+.n80-explorer fieldset{border:0;padding:0;margin:1rem 0 0;min-width:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:.75rem}
+.n80-explorer label{display:grid;gap:.3rem;min-width:0}
+.n80-explorer input,.n80-explorer select{width:100%;max-width:100%;min-width:0;box-sizing:border-box;min-height:44px}
+.n80-explorer p{margin:.6rem 0 0}
+.n80-explorer [hidden]{display:none}

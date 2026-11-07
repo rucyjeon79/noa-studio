@@ -53,7 +53,7 @@ function songKeys(node){
 function mount(host,{records,title,names={},onEdit,onChannel,onRules,selection=null}){
  const previous=new Set([...host.querySelectorAll('[data-node][aria-expanded="true"]')].map(b=>b.dataset.node));const first=!host.dataset.loaded;host.dataset.loaded='true';host.replaceChildren();
  const tools=document.createElement('div');tools.className='creator-tree-tools';const all=document.createElement('button'),none=document.createElement('button');all.type=none.type='button';all.textContent='모두 펼치기';none.textContent='모두 접기';tools.append(all,none);host.append(tools);
- const tree=document.createElement('ul');tree.className='creator-tree';tree.setAttribute('aria-label','내 채널 음원 탐색기');host.append(tree);let seq=0;
+ const tree=document.createElement('ul');tree.className='creator-tree';tree.setAttribute('aria-label','N80 탐색기 · 내 채널');host.append(tree);let seq=0;
  const checks=[];
  function syncChecks(){
   for(const {box,keys} of checks){
@@ -85,5 +85,74 @@ function mount(host,{records,title,names={},onEdit,onChannel,onRules,selection=n
  }
  draw(build(records,title,{groupActs:!!selection}),tree);const setAll=open=>{for(const toggle of tree.getElementsByClassName('creator-tree-toggle'))if((toggle.getAttribute('aria-expanded')==='true')!==open)toggle.click();};all.onclick=()=>setAll(true);none.onclick=()=>setAll(false);
 }
-root.NoaChannelExplorer={build,mount,groups,songKeys};if(typeof module!=='undefined')module.exports=root.NoaChannelExplorer;
+// The catalog promise belongs to this page and to one access scope.
+// A failed read is discarded so every desk can retry without a page reload.
+const catalogs=new Map();
+async function readRecords(scope){
+ const owner=scope==='channel';
+ const response=await fetch(owner?'/noa-bridge/creator.php?action=choices&view=explorer':'/noa-bridge/catalog.php?view=labChoices',{
+  credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(20000)
+ });
+ if(!response.ok)throw Error('catalog_unavailable');
+ const data=await response.json(),rows=owner?data.songs:data.items;
+ if((!owner&&data.access!=='administrator')||!Array.isArray(rows))throw Error('catalog_unavailable');
+ return rows;
+}
+function catalog(scope){
+ if(!catalogs.has(scope))catalogs.set(scope,readRecords(scope).catch(error=>{catalogs.delete(scope);throw error;}));
+ return catalogs.get(scope);
+}
+function searchText(value){
+ return String(value).normalize('NFKC').toLocaleLowerCase('ko').replace(/(?:^|\b)(ep|act)[.\s-]*0*(\d+)/gi,'$1$2').trim();
+}
+function picker(host,{scope='library',songsOnly=false,onReady,canChoose=()=>true}={}){
+ const fields=host.querySelector('fieldset'),search=fields.querySelector('input'),select=fields.querySelector('select');
+ const status=host.querySelector('[role=status]'),retry=host.querySelector('button'),current=host.querySelector('[data-n80-current]');
+ const placeholder=select.options[0].textContent;
+ const collator=new Intl.Collator('ko',{numeric:true});
+ let entries=null,loading=false;
+ function controls(){fields.disabled=!entries?.length||!canChoose();retry.disabled=loading||!canChoose();}
+ function render(){
+  const key=select.value,terms=searchText(search.value).split(/\s+/).filter(Boolean),groups=new Map();
+  select.replaceChildren(new Option(placeholder,''));
+  let count=0;
+  for(const entry of entries){
+   const matches=terms.every(term=>entry.text.includes(term));
+   // Keep the submitted value while the user searches for a replacement.
+   if(!matches&&entry.key!==key)continue;
+   if(matches)count++;
+   if(!groups.has(entry.group)){
+    const optgroup=document.createElement('optgroup');optgroup.label=entry.group;groups.set(entry.group,optgroup);select.append(optgroup);
+   }
+   groups.get(entry.group).append(new Option(entry.label,entry.key));
+  }
+  select.value=key;
+  status.textContent=count?count+'개 항목':(terms.length?'검색 결과가 없습니다.':'등록된 곡이 없습니다.');
+ }
+ async function open(){
+  if(entries||loading)return;
+  loading=true;retry.hidden=true;controls();status.textContent='목록을 불러오는 중입니다.';
+  try{
+   const [rows]=await Promise.all([catalog(scope),root.NoaBrowse?null:import('/noa-browse.js')]);
+   const items=rows.filter(row=>row.key&&(!songsOnly||['single','story'].includes(row.kind)));
+   const next=items.map(row=>{
+    const path=root.NoaBrowse.classification(row);
+    const group=path.slice(0,3).map(level=>level.value).join(' / '),label=path[3].value;
+    return {key:row.key,label,group,ep:Number(row.ep)||0,text:searchText([group,label,row.genre].join(' '))};
+   }).sort((a,b)=>collator.compare(a.group,b.group)||a.ep-b.ep||collator.compare(a.label,b.label));
+   if(onReady)await onReady(items);
+   entries=next;render();
+  }catch{status.textContent='목록을 불러오지 못했습니다. 다시 시도해 주세요.';retry.hidden=false;}
+  finally{loading=false;controls();}
+ }
+ select.addEventListener('change',()=>{current.textContent=select.value?' · '+select.selectedOptions[0].textContent:'';});
+ search.addEventListener('keydown',event=>{if(event.key==='Enter')event.preventDefault();});
+ search.addEventListener('input',()=>{if(entries)render();});
+ host.addEventListener('toggle',()=>{if(host.open)open();});retry.onclick=open;
+ if(host.open)open();
+ return {controls};
+}
+root.N80Explorer={build,mount,groups,songKeys,picker};
+root.NoaChannelExplorer=root.N80Explorer;
+if(typeof module!=='undefined')module.exports=root.N80Explorer;
 })(typeof window!=='undefined'?window:globalThis);

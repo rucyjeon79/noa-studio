@@ -30,7 +30,7 @@ try{
   if(!$admin&&!$publicVideo)$id='';
   $suno=noa_sound_suno($b);$audio=nj_resolve($jukebox,$row['doc_key'],$suno,'audio')?:noa_sound_audio($b,dirname(__DIR__));$card=nj_resolve($jukebox,$row['doc_key'],$suno,'cover')?:noa_sound_cover($b);
   if(!$admin&&!$id&&!$audio&&!$suno&&$row['kind']!=='playlist')continue;
-  if($labChoices){$items[]=['key'=>$row['doc_key'],'kind'=>$row['kind'],'genre'=>$p['genreId']??'','ep'=>$p['ep']??'','title'=>($b['confirmedTitle']??'')?:($p['title']??''),'cast'=>$b['thumbCast']??'','audioUrl'=>$audio,'youtubeId'=>$id];continue;}
+  if($labChoices){$items[]=['act'=>$p['act']??'','key'=>$row['doc_key'],'kind'=>$row['kind'],'genre'=>$p['genreId']??'','ep'=>$p['ep']??'','title'=>($b['confirmedTitle']??'')?:($p['title']??''),'cast'=>$b['thumbCast']??'','audioUrl'=>$audio,'youtubeId'=>$id];continue;}
   $items[]=['key'=>$row['doc_key'],'kind'=>$row['kind'],'genre'=>$p['genreId']??'',
    'title'=>($b['confirmedTitle']??'')?:($p['title']??''),'ep'=>$p['ep']??'','act'=>$p['act']??'',
    'tracklist'=>$b['tracklist']??'','lyrics'=>noa_sound_lyrics((string)($b['lyricsBlock']??'')),'cast'=>$b['thumbCast']??'','thumbnail'=>$card?:($id?($b['thumbUrl']??''):''),'coverImageUrl'=>$card,'sunoUrl'=>$suno,'audioVerified'=>(bool)$audio,

@@ -65,11 +65,11 @@ function nc_editor_record(PDO $db, array $row, array $doc, array $access, array 
 /** The editor list and AI picker read only the columns they display. */
 function nc_song_index(PDO $db, string $owner, bool $admin, bool $choices = false): array {
     $columns = "owner_id VARCHAR(255) PATH '$.ownerId',
+                genre VARCHAR(191) PATH '$.genreId', ep VARCHAR(64) PATH '$.ep', act VARCHAR(64) PATH '$.act',
                 title TEXT PATH '$.title', display_title TEXT PATH '$.body.displayTitle',
                 confirmed_title TEXT PATH '$.body.confirmedTitle', trash JSON PATH '$._noaTrash'";
     if (!$choices) {
-        $columns .= ", genre VARCHAR(191) PATH '$.genreId', visibility VARCHAR(32) PATH '$.visibility',
-                       ep VARCHAR(64) PATH '$.ep', act VARCHAR(64) PATH '$.act',
+        $columns .= ", visibility VARCHAR(32) PATH '$.visibility',
                        members JSON PATH '$.body.members'";
     }
     $q = $db->prepare("SELECT d.doc_key, d.kind, d.revision, item.*
@@ -85,14 +85,15 @@ function nc_song_index(PDO $db, string $owner, bool $admin, bool $choices = fals
         if (!empty(json_decode($row['trash'] ?? 'null', true))) continue;
         $key = $row['doc_key'];
         $title = nup_text($row, ['display_title', 'confirmed_title', 'title']) ?: ($row['title'] ?? '제목 없음');
-        $song = ['key' => $key, 'title' => $title];
+        $song = ['key'=>$key, 'title'=>$title, 'kind'=>$row['kind'], 'genre'=>$row['genre'] ?? '',
+                 'ep'=>(int)$row['ep'], 'act'=>(int)$row['act']];
         if (!$choices) {
             $managed = $row['kind'] !== 'story' || !str_starts_with($key, 'creator:');
             $members = $row['kind'] === 'playlist' ? json_decode($row['members'] ?? '[]', true) : [];
             $song += [
-                'kind' => $row['kind'], 'managed' => $managed, 'revision' => (int)$row['revision'],
-                'genre' => $row['genre'] ?? '', 'visibility' => $row['visibility'] ?? 'public',
-                'aliases' => $aliases[$key], 'act' => (int)$row['act'], 'ep' => (int)$row['ep'],
+                'managed' => $managed, 'revision' => (int)$row['revision'],
+                'visibility' => $row['visibility'] ?? 'public',
+                'aliases' => $aliases[$key],
                 'members' => array_map(static fn($m) => ['key' => is_array($m) ? ($m['key'] ?? '') : ''], is_array($members) ? $members : []),
                 'editUrl' => $managed && $admin ? '/noa-editor.php?key='.rawurlencode($key) : '',
             ];

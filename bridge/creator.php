@@ -17,7 +17,13 @@ try{
   nc_reply(200,['channel'=>$query->fetch(PDO::FETCH_ASSOC) ?: null]);
  }
  if ($method === 'GET' && in_array($action, ['profile', 'summary', 'choices'], true)) {
-  if ($action === 'choices') nc_reply(200, ['songs' => nc_song_index($db, $actor, $a['admin'], true)]);
+  if ($action === 'choices') {
+   $songs = nc_song_index($db, $actor, $a['admin'], true);
+   if (($_GET['view'] ?? '') !== 'explorer') {
+    $songs = array_map(static fn($song) => ['key'=>$song['key'], 'title'=>$song['title']], $songs);
+   }
+   nc_reply(200, ['songs'=>$songs]);
+  }
   $channel = nc_row($db, nc_channel_key($actor));
   $result = ['channel' => $channel ? ['fields' => $channel['document'], 'revision' => $channel['revision'],
       'href' => '/noa-channel.php?id='.hash('sha256', $actor)] : null];

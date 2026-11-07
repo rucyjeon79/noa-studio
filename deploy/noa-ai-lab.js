@@ -49,35 +49,24 @@ $('lab-text-form').onsubmit=async e=>{e.preventDefault();if(busy)return;busy=tru
 for(const [id,title,kind] of [['lab-config-open','서비스·채널 설정','settings'],['lab-refresh','작업 새로고침','refresh'],['lab-create-button','음원 분석 시작','audio'],['lab-text-submit','AI 제작 시작','create']])iconize($(id),title,kind);const saveConfig=$('lab-config-form').querySelector('button[type=submit]');iconize(saveConfig,'연결 설정 저장','save');$('lab-text-submit').disabled=true;
 setInterval(()=>{if(state&&!busy&&document.visibilityState==='visible'&&!document.querySelector('dialog[open]')&&!['INPUT','TEXTAREA','SELECT','BUTTON'].includes(document.activeElement?.tagName)&&state.jobs.some(j=>j.state.startsWith('queued_')||['analyzing','rendering','uploading','creating_text','mastering_audio','collecting_metrics'].includes(j.state)))refresh().catch(()=>{});},15000);
 let libraryReady=false;
-const libraryButtons=[...document.querySelectorAll('[data-lab-library]')];
+let preparingLibrary=null;
 $('lab-create-button').disabled=true;
-async function loadLibrary(){
- for(const button of libraryButtons)button.disabled=true;
- message('곡과 장르를 불러오는 중입니다.');
- try{
-  await refresh();
-  const response=await fetch('/noa-bridge/catalog.php?view=labChoices',{credentials:'same-origin',signal:AbortSignal.timeout(20000)});
-  if(!response.ok)throw Error('library_unavailable');
-  catalog=(await response.json()).items;
-  const choices=placeholder=>{const option=element('option',placeholder);option.value='';return option;};
-  const tracks=[],sources=[];
-  for(const track of catalog){
-   const option=element('option',track.genre+' · '+track.title);option.value=track.key;tracks.push(option);
-   const source=element('option',track.genre+' · '+(track.ep?'EP.'+track.ep:track.kind)+' · '+track.title);source.value=track.key;sources.push(source);
-  }
-  $('lab-text-track').replaceChildren(choices('새 곡 초안'),...tracks);
-  $('lab-track').replaceChildren(choices('곡을 선택하세요.'),...sources);
-  $('lab-text-genre').replaceChildren(...[...new Set(catalog.map(t=>t.genre).filter(Boolean))].map(genre=>element('option',genre)));
+async function prepareLibrary(items){
+ if(libraryReady)return;
+ if(preparingLibrary)return preparingLibrary;
+ preparingLibrary=(async()=>{
+  if(!state)await refresh();
+  catalog=items;
+  $('lab-text-genre').replaceChildren(...[...new Set(items.map(t=>t.genre).filter(Boolean))].map(genre=>element('option',genre)));
   getCreateOptions=options($('lab-create-options'));
-  libraryReady=true;
-  for(const button of libraryButtons)button.hidden=true;
-  $('lab-create-button').disabled=false;
-  $('lab-text-submit').disabled=!state.config.textEnabled||!state.configured.textAI||state.generation?.ready===false;
-  message('곡 목록을 불러왔습니다.');
   if($('lab-text-genre').value)await loadRules();
- }catch(error){message(errors[error.message]||'목록이나 제작 규칙을 불러오지 못했습니다. 다시 시도해 주세요.',true);}
- finally{for(const button of libraryButtons)button.disabled=false;}
+  libraryReady=true;
+  $('lab-text-submit').disabled=!state.config.textEnabled||!state.configured.textAI||state.generation?.ready===false;
+ })();
+ try{await preparingLibrary;}finally{preparingLibrary=null;}
 }
-for(const button of libraryButtons)button.onclick=loadLibrary;
-refresh().then(()=>{if(!libraryReady&&!libraryButtons[0]?.disabled)message('작업 상태를 확인했습니다.');}).catch(()=>message('작업 상태를 확인하지 못했습니다. 작업 새로고침을 눌러 주세요.',true));
+N80Explorer.picker($('lab-text-picker'),{onReady:prepareLibrary});
+N80Explorer.picker($('lab-audio-picker'),{onReady:prepareLibrary});
+$('lab-track').addEventListener('change',()=>{$('lab-create-button').disabled=!$('lab-track').value;});
+refresh().then(()=>message('작업 상태를 확인했습니다.')).catch(()=>message('작업 상태를 확인하지 못했습니다. 작업 새로고침을 눌러 주세요.',true));
 })();
