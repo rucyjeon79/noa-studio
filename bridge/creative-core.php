@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__.'/package-record.php';
 const NCD_KIND='n80_creative_draft';
 const NCD_TARGETS=['title','lyrics','sunoPrompt','geminiPrompt','youtubeTitle','description','communityPost','creativeFields'];
+const NCD_REVISABLE=[...NCD_TARGETS,'vocal'];
 const NCD_CONDITIONS=['theme','emotion','genre','instruments','vocal','structure','language','prohibitions'];
 function ncd_schema(PDO $db):void {
  $db->exec("CREATE TABLE IF NOT EXISTS noa_creative_drafts (draft_id CHAR(32) CHARACTER SET ascii PRIMARY KEY, owner_id VARCHAR(20) NOT NULL, doc_key VARCHAR(191) CHARACTER SET ascii NOT NULL UNIQUE, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, INDEX owner_created(owner_id,created_at,draft_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
@@ -34,7 +35,7 @@ function ncd_create(PDO $db,string $owner,string $id,string $story):array {
 function ncd_editable(array $r,int $revision):void {if($r['revision']!==$revision)throw new DomainException('revision_conflict');if(!empty($r['document']['_creative']['deletedAt']))throw new DomainException('draft_deleted');if(!empty($r['document']['_creative']['publication']))throw new DomainException('draft_published');}
 function ncd_invalidate(array &$d,string $field):void {
  $c=&$d['_creative'];unset($c['preview']);
- $related=match($field){'title'=>['geminiPrompt','youtubeTitle','description','communityPost'],'lyrics'=>['sunoPrompt','description','communityPost'],'sunoPrompt'=>['lyrics'],default=>[]};
+ $related=match($field){'title'=>['geminiPrompt','youtubeTitle','description','communityPost'],'lyrics'=>['sunoPrompt','description','communityPost'],'sunoPrompt'=>['lyrics'],'vocal'=>['lyrics','sunoPrompt','geminiPrompt','description'],default=>[]};
  foreach($related as $key)if(nup_fields($d)[$key]!=='')$c['needsReview'][$key]=$field.' 변경 후 확인 필요';
 }
 /** Apply canonical aliases, including deliberate clears. No removed editor fields are accepted. */
@@ -55,7 +56,7 @@ function ncd_save(PDO $db,string $owner,array $b):array {
   if(isset($b['fields']))$d=ncd_fields($d,$b['fields']);
   if(isset($b['progress'])){$pos=filter_var($b['progress'],FILTER_VALIDATE_INT);if($pos===false||$pos<0||$pos>count($d['_creative']['questions']))throw new InvalidArgumentException('invalid_progress');$d['_creative']['questionPosition']=$pos;}
   if(isset($b['answerDrafts']))foreach($b['answerDrafts'] as $k=>$v){if(!in_array($k,NCD_CONDITIONS,true))throw new InvalidArgumentException('unknown_condition');$d['_creative']['answerDrafts'][$k]=ncd_text($v,4000);}
-  if(isset($b['requests'])){foreach($b['requests'] as $k=>$v){if(!in_array($k,NCD_TARGETS,true))throw new InvalidArgumentException('unknown_field');$d['_creative']['requests'][$k]=ncd_text($v,4000);}}
+  if(isset($b['requests'])){foreach($b['requests'] as $k=>$v){if(!in_array($k,NCD_REVISABLE,true))throw new InvalidArgumentException('unknown_field');$d['_creative']['requests'][$k]=ncd_text($v,4000);}}
   if(isset($b['location'])){$loc=$b['location'];$genre=$loc['genre']??'';if(!in_array($genre,['kpop-original','your-story'],true))throw new DomainException('new_original_category_required');$ep=(string)($loc['ep']??'');if($ep!==''&&!preg_match('/^[1-9][0-9]{0,3}$/D',$ep))throw new InvalidArgumentException('invalid_ep');if($genre==='your-story')$ep='';if($d['genreId']!==$genre||(string)$d['ep']!==$ep)foreach(['geminiPrompt','youtubeTitle','description','communityPost'] as $key)if(nup_fields($d)[$key]!=='')$d['_creative']['needsReview'][$key]='게시 위치·EP 변경 후 확인 필요';$d['genreId']=$genre;$d['ep']=$ep;$d['act']=$ep!==''?(string)ceil((int)$ep/10):'';$d['packageType']=nup_type($d,'single');$collections=$loc['collections']??[];if(!is_array($collections)||count($collections)>20)throw new InvalidArgumentException('invalid_collections');foreach($collections as $key)if(!is_string($key)||!preg_match('/^playlist:custom:[a-f0-9]{24}$/D',$key))throw new InvalidArgumentException('invalid_collections');$d['_creative']['collections']=array_values(array_unique($collections));}
   if($d['genreId']==='kpop-original'){$f=nup_fields($d);$d['body']['originalInfo']=['ep'=>$d['ep'],'title'=>$f['title'],'lyrics'=>$f['lyrics'],'vocal'=>$f['vocal']];}unset($d['_creative']['preview']);return ncd_put($db,$r,$d,$owner);
  });
@@ -68,11 +69,11 @@ function ncd_action(PDO $db,string $owner,string $action,array $b):array {
    if($action==='answer'){$key=$b['condition']??'';$question=$c['questions'][$key]??null;if(!$question)throw new DomainException('question_not_found');$answer=ncd_text($b['answer']??'',4000);if($answer==='')throw new InvalidArgumentException('answer_required');$c['answers'][$key]=$answer;$c['intent'][$key]=['value'=>$answer,'evidence'=>$answer,'source'=>'answer'];$c['intentConfirmed']=false;}
    elseif($action==='confirmIntent'){foreach(NCD_CONDITIONS as $key)if(empty($c['intent'][$key]['value'])||(isset($c['questions'][$key])&&empty($c['answers'][$key])))throw new DomainException('unanswered_questions');$c['intentConfirmed']=true;$c['intentHash']=ncd_hash($c['intent']);}
    elseif($action==='proposal'){$key=$b['field']??'';$p=$c['proposals'][$key]??null;if(!$p)throw new DomainException('proposal_not_found');if(($b['decision']??'')==='apply'){if(ncd_hash(nup_fields($d)[$key])!==$p['baseHash'])throw new DomainException('field_changed');$d=ncd_fields($d,[$key=>$p['value']]);unset($d['_creative']['needsReview'][$key]);}elseif(($b['decision']??'')!=='cancel')throw new InvalidArgumentException('invalid_decision');unset($d['_creative']['proposals'][$key]);}
-   elseif($action==='review'){$key=$b['field']??'';if(!in_array($key,NCD_TARGETS,true))throw new InvalidArgumentException('unknown_field');unset($c['needsReview'][$key]);}
-   elseif($action==='restoreField'){$key=$b['field']??'';if(!in_array($key,NCD_TARGETS,true))throw new InvalidArgumentException('unknown_field');$q=$db->prepare('SELECT payload FROM noa_document_history WHERE doc_key=? AND revision=?');$q->execute([$r['doc_key'],(int)($b['version']??0)]);$old=$q->fetchColumn();if(!$old)throw new DomainException('version_not_found');$d=ncd_fields($d,[$key=>nup_fields(json_decode($old,true))[$key]]);}
+   elseif($action==='review'){$key=$b['field']??'';if(!in_array($key,NCD_REVISABLE,true))throw new InvalidArgumentException('unknown_field');unset($c['needsReview'][$key]);}
+   elseif($action==='restoreField'){$key=$b['field']??'';if(!in_array($key,NCD_REVISABLE,true))throw new InvalidArgumentException('unknown_field');$q=$db->prepare('SELECT payload FROM noa_document_history WHERE doc_key=? AND revision=?');$q->execute([$r['doc_key'],(int)($b['version']??0)]);$old=$q->fetchColumn();if(!$old)throw new DomainException('version_not_found');$d=ncd_fields($d,[$key=>nup_fields(json_decode($old,true))[$key]]);}
    else throw new InvalidArgumentException('unknown_action');
   }
   unset($d['_creative']['preview']);return ncd_put($db,$r,$d,$owner);
  });
 }
-function ncd_history(PDO $db,array $r,string $field):array {if(!in_array($field,NCD_TARGETS,true))throw new InvalidArgumentException('unknown_field');$q=$db->prepare('SELECT revision,payload FROM noa_document_history WHERE doc_key=? ORDER BY revision DESC LIMIT 150');$q->execute([$r['doc_key']]);$out=[];$last=null;foreach($q as $row){$v=nup_fields(json_decode($row['payload'],true))[$field];$hash=ncd_hash($v);if($last!==$hash){$out[]=['revision'=>(int)$row['revision'],'value'=>$v];$last=$hash;}}return $out;}
+function ncd_history(PDO $db,array $r,string $field):array {if(!in_array($field,NCD_REVISABLE,true))throw new InvalidArgumentException('unknown_field');$q=$db->prepare('SELECT revision,payload FROM noa_document_history WHERE doc_key=? ORDER BY revision DESC LIMIT 150');$q->execute([$r['doc_key']]);$out=[];$last=null;foreach($q as $row){$v=nup_fields(json_decode($row['payload'],true))[$field];$hash=ncd_hash($v);if($last!==$hash){$out[]=['revision'=>(int)$row['revision'],'value'=>$v];$last=$hash;}}return $out;}

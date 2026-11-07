@@ -1,7 +1,7 @@
 /* N80 creative draft client. MySQL acknowledgments are the only saved-state signal. */
 (()=>{'use strict';
 const $=id=>document.getElementById('creative-'+id),csrf=document.querySelector('meta[name=n80-creative-csrf]').content,R=window.NoaRecordForm;
-const targets=['title','lyrics','sunoPrompt','geminiPrompt','youtubeTitle','description','communityPost','creativeFields'];
+const targets=['vocal','title','lyrics','sunoPrompt','geminiPrompt','youtubeTitle','description','communityPost','creativeFields'];
 const invalidFields=new Set();
 const labels={story:'이야기 입력',questions:'질문 답변',intent:'의도 확인',writing:'곡정보 생성',review:'검토 중',published:'등록 완료',deleted:'삭제 보관함'};
 const conditions={theme:'주제',emotion:'감정',genre:'음악 장르',instruments:'악기',vocal:'보컬',structure:'곡 전개',language:'언어',prohibitions:'금지 조건'};
