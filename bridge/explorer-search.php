@@ -26,7 +26,7 @@ function n80_search_matches(array $record,string $query):bool {
         $ep?'EP '.$ep:'', $act?'ACT '.$act:'', $record['key']??''
     ]));
     foreach(preg_split('/\s+/u',n80_search_text($query),-1,PREG_SPLIT_NO_EMPTY) as $term) {
-        if(!str_contains($text,$term))return false;
+        if(!str_contains($text,$term)&&!str_contains((string)preg_replace('/\s+/u','',$text),$term))return false;
     }
     return true;
 }

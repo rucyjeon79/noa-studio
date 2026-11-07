@@ -8,7 +8,7 @@ try{for(const width of [390,1280]){
  page.on('pageerror',e=>errors.push(e.message));
  await page.route('https://explorer.test/**',route=>{
   const path=new URL(route.request().url()).pathname;requests.push(path);
-  if(path==='/')return route.fulfill({contentType:'text/html',body:'<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><button id="open">열기</button><div id="search"></div><div id="tree"></div>'});
+  if(path==='/')return route.fulfill({contentType:'text/html',body:'<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><button id="open">열기</button><div id="search"></div><div id="tree"></div>'});
   if(['/noa-channel-explorer.js','/noa-explorer.css'].includes(path))return route.fulfill({path:'deploy'+path,contentType:path.endsWith('.js')?'text/javascript':'text/css'});
   return route.abort();
  });

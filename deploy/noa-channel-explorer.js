@@ -182,7 +182,7 @@ function index(records){
 
 function filter(entries,query){
  const terms=searchText(query).split(/\s+/).filter(Boolean);
- return entries.filter(entry=>terms.every(term=>entry.text.includes(term)));
+ return entries.filter(entry=>terms.every(term=>entry.text.includes(term)||entry.text.replace(/\s+/g,'').includes(term)));
 }
 function results(host,{records,onSelect,links=false,className='n80-result',selected=()=>false}={}){
  host.replaceChildren();

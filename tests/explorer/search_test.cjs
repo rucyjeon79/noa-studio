@@ -5,7 +5,7 @@ const records=[{key:'a',title:'같은 제목',ep:40,genre:'groovy-airy-pop'},{ke
 const entries=explorer.index(records);
 assert.equal(entries.length,3);
 assert.notEqual(entries[0].context,entries[1].context);
-for(const query of ['EP.040 ACT 04 groovy','ＥＰ．４０','같은 제목'])assert.deepEqual(explorer.filter(entries,query).map(row=>row.key),['a','b']);
+for(const query of ['EP.040 ACT 04 groovy','ＥＰ．４０','같은 제목','같은제목'])assert.deepEqual(explorer.filter(entries,query).map(row=>row.key),['a','b']);
 assert.deepEqual(explorer.filter(entries,'없는'),[]);
 assert.equal(records.length,4);
 console.log('N80_SEARCH_IDENTITIES_OK');
