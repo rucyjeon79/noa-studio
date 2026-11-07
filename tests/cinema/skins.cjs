@@ -16,6 +16,7 @@ async function inspect(browser,width) {
   const page=await browser.newPage({viewport:{width,height:860},reducedMotion:'reduce'});
   page.setDefaultTimeout(7000);
   let embeds=0;
+  const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await page.route('**/*', route=>{
     const u=new URL(route.request().url());
     if(u.hostname==='www.youtube.com'){
@@ -76,11 +77,19 @@ async function inspect(browser,width) {
         for(const [w,h] of [metrics.frame,metrics.art])assert(w>0 && Math.abs(w*9/16-h)<1,note);
         assert(!metrics.wide && metrics.path>=metrics.frameBottom-1 && metrics.details.every(h=>h>=44),note);
         surfaces.push(metrics.card);
-        if(width===390 && mode==='act')await row.screenshot({path:'cinema-proof/video-list-'+theme.id+'.png'});
+        if([390,1280].includes(width) && mode==='act')await row.screenshot({path:'cinema-proof/video-list-'+theme.id+'-'+width+'.png'});
       }
       assert.notEqual(surfaces[0],surfaces[1]);
       assert.equal(embeds,before,'Theme changes must preserve the active iframe');
       assert.equal(await panel.locator('.cinema-badge').innerText(),'상영 중');
+      if(mode==='all'){
+        await page.locator('#yt-videos [data-coming-key]').click();
+        await panel.locator('#yt-coming-preview').waitFor();
+        assert(await panel.locator('#yt-frame').isHidden());
+        assert(await panel.locator('.noa-media-details').isHidden());
+        assert.equal(await panel.locator('.cinema-badge').innerText(),'상영 대기');
+      }
+      assert.deepEqual(errors,[]);
       console.log(width,mode,'light/dark playback, metadata, disclosures and artwork passed');
     }
   } catch(error) {
@@ -88,5 +97,5 @@ async function inspect(browser,width) {
   } finally {await page.close();}
 }
 (async()=>{fs.mkdirSync('cinema-proof',{recursive:true});const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
-  try{for(const width of [320,390,430,1280])await inspect(browser,width);}finally{await browser.close();}
+  try{for(const width of [320,360,390,430,1280])await inspect(browser,width);}finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
