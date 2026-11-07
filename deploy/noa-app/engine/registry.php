@@ -45,8 +45,8 @@ function noa_engine_modules(): array {
         'music'=>['music','media','taxonomy'],'jukebox'=>['jukebox','media'],'playlist'=>['playlist','music'],
         'youtube'=>['youtube','taxonomy'],'world'=>['world','youtube'],'creator_lab'=>['music','playlist','youtube'],
         'ai_lab'=>['ai_lab'],'admin'=>['admin','settings','members'],'community'=>['community','members'],
-        'database'=>['database'],'identity'=>['members'],'commerce'=>['commerce'],
-        'notifications'=>['notifications'],'catalog'=>['taxonomy'],'personalization'=>[], 'app_lifecycle'=>[],
+        'database'=>['database'],'identity'=>['members'],'commerce'=>[],
+        'notifications'=>[],'catalog'=>['taxonomy'],'personalization'=>['ranking'], 'app_lifecycle'=>[],
     ];
     foreach($modules as $id=>&$module){$module['sources']=$sources[$id];$module['observes']=$observes[$id];}
     unset($module);return $modules;
