@@ -4,6 +4,7 @@ REPO=pathlib.Path(__file__).resolve().parents[2]
 with tempfile.TemporaryDirectory(prefix='noa-lab-http-') as root:
  root=pathlib.Path(root);html=root/'html';html.mkdir();private=root/'noa-ai-lab';private.mkdir();(private/'jobs').mkdir();(private/'master.key').write_bytes(secrets.token_bytes(32));key=secrets.token_hex(32);(private/'worker.key').write_text(key)
  shutil.copytree(REPO/'bridge',html/'noa-bridge')
+ shutil.copytree(REPO/'deploy/noa-app/engine',html/'noa-app/engine')
  (html/'common.php').write_text("<?php session_start();define('_GNUBOARD_',true);define('G5_PATH',__DIR__);$is_member=($_SERVER['HTTP_X_TEST_ROLE']??'')==='admin';$is_admin=$is_member?'super':'';$member=['mb_id'=>'test-admin'];")
  with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
  process=subprocess.Popen(['php','-S',f'127.0.0.1:{port}','-t',str(html)],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)

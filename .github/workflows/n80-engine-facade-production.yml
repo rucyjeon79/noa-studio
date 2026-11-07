@@ -18,10 +18,13 @@ on:
       - 'bridge/worker-*.php'
       - 'bridge/lab-worker.php'
       - 'bridge/ainoa-automation.php'
+      - 'scripts/n80_live_observer.py'
+      - 'scripts/n80_app_integration.py'
       - 'scripts/n80_runtime_verify.py'
       - 'scripts/n80_auto.py'
       - 'scripts/noa_n80_ai_worker.py'
       - 'config/n80-automation.json'
+      - 'tests/lab/http_test.py'
       - 'tests/engine/music_consumer_test.php'
       - 'tests/engine/runtime_ownership_test.php'
       - 'tests/engine/service_runtime_test.php'
@@ -96,6 +99,7 @@ jobs:
           for file in deploy/noa-app/engine/*.php bridge/worker-*.php bridge/lab-worker.php bridge/ainoa-automation.php; do php -l "$file"; done
           for test in tests/engine/*_test.php; do php "$test"; done
           php tests/sitemap/registry_test.php
+          python tests/lab/http_test.py
           python -m unittest discover -s tests/engine -p test_auto_dispatch.py -v
           python -m py_compile scripts/n80_single_session_deploy.py scripts/n80_runtime_verify.py scripts/noa_n80_ai_worker.py scripts/n80_auto.py
           php scripts/qa/inline-edit-seed.php

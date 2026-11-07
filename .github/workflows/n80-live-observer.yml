@@ -11,7 +11,7 @@ permissions:
 jobs:
   observe:
     concurrency:
-      group: noa-production-sftp
+      group: n80-live-observer
       cancel-in-progress: false
     if: vars.N80_OBSERVER_ENABLED != 'false' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
@@ -36,7 +36,7 @@ jobs:
           python-version: '3.12'
       - run: python -m unittest discover -s tests/engine -p 'test_live_observer.py' -v
       - run: python -m pip install 'paramiko>=3,<5'
-      - name: Install only missing finished files and observe actual ready jobs
+      - name: Verify installed sources and observe actual ready jobs
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}

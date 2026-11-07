@@ -227,7 +227,11 @@ def main():
                 key = handle.read(256).strip()
             if len(key) != 64:
                 raise RuntimeError('invalid_noa_service_key')
-            deployment = install(sftp)
+            source_audit = compare_sources(sftp)
+            if not source_audit['allMatch']:
+                raise RuntimeError('app_source_drift_requires_n80_deployment')
+            deployment = {'changedFiles': [], 'verifiedFiles': source_audit['requiredCount'],
+                          'hostBackupFiles': 0, 'hostTemporaryFiles': 0, 'mode': 'verify_only'}
         finally:
             sftp.close()
     finally:

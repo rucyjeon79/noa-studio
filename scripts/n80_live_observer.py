@@ -384,7 +384,10 @@ def main():
                 key = source.read(256).strip()
             if len(key) != 64:
                 raise RuntimeError('invalid_noa_service_key')
-            installed, count = install_finished(sftp)
+            source_audit = compare_sources(sftp)
+            if not source_audit['allMatch']:
+                raise RuntimeError('observer_source_drift_requires_n80_deployment')
+            installed, count = [], source_audit['requiredCount']
             policy = music_consumer_policy(sftp)
             unauthorized_check()
             first, second = request_observation(key), request_observation(key)
