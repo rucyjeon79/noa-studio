@@ -10,6 +10,7 @@ const server=createServer((req,res)=>{
  if(files.includes(path.slice(1))){res.setHeader('Content-Type',path.endsWith('.js')?'text/javascript':path.endsWith('.css')?'text/css':'application/json');return res.end(readFileSync('deploy'+path));}
  if(path==='/noa-bridge/ui-preferences.php'){res.setHeader('Content-Type','application/json');return res.end(JSON.stringify({ok:true,member:true,revision:1,settings:{theme:'noa-studio',language:'ko'},displayName:'NOA'}));}
  if(path.startsWith('/noa-bridge/')||path==='/noa-sitemap.php'){res.setHeader('Content-Type','application/json');return res.end(JSON.stringify({ok:true,member:true}));}
+ if(path==='/noa-assets/papa-logo.png'){res.setHeader('Content-Type','image/png');return res.end(readFileSync('public/papa-logo.png'));}
  if(path.startsWith('/noa-assets/')){res.writeHead(204);return res.end();}
  res.setHeader('Content-Type','text/html; charset=utf-8');res.end(`<!doctype html><html lang="ko" data-noa-style="starlight"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/noa-ui.css"><link rel="stylesheet" href="/noa-account.css"><link rel="stylesheet" href="/noa-starlight.css"><body><script id="noa-access" type="application/json">{"home":true,"member":true,"music":true,"admin":false}</script><main class="noa-layout" style="padding:24px;min-height:600px"><h1>NOA STUDIO</h1><p>N80 Engine · 작업 상태</p><a href="/second">다음 화면</a></main><script src="/noa-ui.js"></script><script src="/noa-account.js"></script></body></html>`);
 });await new Promise(r=>server.listen(0,'127.0.0.1',r));
@@ -18,12 +19,12 @@ const browser=await chromium.launch({...(process.env.N80_CHROME?{executablePath:
 try{
  for(const width of [320,390,1440]){
   const page=await browser.newPage({viewport:{width,height:844}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(base+'/second');const home=page.locator('.noa-mobile-nav [data-noa-nav=home]');await home.waitFor();
+  await page.goto(base+'/second');const home=page.locator(width>760?'#noa-account-bar .noa-account-brand':'.noa-mobile-nav [data-noa-nav=home]');await home.waitFor();
   await page.waitForTimeout(300);
   await page.evaluate(()=>N80Activity.clear());
   assert.equal(await home.getAttribute('data-n80-state'),'idle');
   // Old failures/results are history, not new running work or completion pulses.
-  await page.evaluate(()=>N80Activity.snapshot('audio',[{id:1,status:'failed'},{id:2,status:'ready'}]));
+  await page.evaluate(()=>N80Activity.snapshot('audio',[{id:1,status:'failed'},{id:2,status:'ready'},{id:4,status:'awaiting_audio'}]));
   assert.equal(await home.getAttribute('data-n80-state'),'idle');
   await page.evaluate(()=>N80Activity.snapshot('audio',[{id:3,status:'processing'}]));
   assert.equal(await home.getAttribute('data-n80-state'),'running');

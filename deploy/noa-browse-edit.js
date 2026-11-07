@@ -305,15 +305,16 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
        const tab=state.privateWorker?null:window.open('about:blank','_blank');
        if(tab)tab.opener=null;
        let launched=false;
-       state.busy=true;gpt.disabled=true;generating('request',true);tell('생성을 요청하고 있어요.');
+       state.busy=true;gpt.disabled=true;generating('request',true);window.N80Activity?.set('song-gpt-start',key,'waiting');tell('생성을 요청하고 있어요.');
        try{
         const response=await fetch('/noa-gpt.php?op=start',{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify({selector,expectedKey:state.data.writeKey,field:key,revision:state.data.revision,replace,worker:state.privateWorker})});
         const result=await generationReply(response);
-        if(result.error==='setup_required'){
+        if(result.error==='setup_required'){window.N80Activity?.set('song-gpt-start',key,'failed');
          tell('처음 한 번 전용 GPT를 연결해 주세요.');
          const link=iconCommand('a','external','전용 GPT 연결 설정');link.href='/noa-gpt-setup.php';feedback.append(link);return;
         }
         if(!response.ok||!result.ok)throw Error(result.error==='worker_offline'?'비공개 실행기가 오프라인이에요. 연결 후 다시 눌러 주세요.':result.error==='revision_conflict'?'곡이 변경되었습니다. 편집기를 다시 열어 주세요.':'작업을 등록하지 못했습니다. 다시 시도해 주세요.');
+        window.N80Activity?.set('song-gpt-start',key,'idle');
         if(!result.plugin&&!result.worker){if(tab){tab.location.replace(result.url);launched=true;}else location.assign(result.url);return;}
         const title=state.data.fields.title||'선택한 곡';
         const taskId=result.id;window.N80Activity?.set('song-gpt',taskId,'waiting');
@@ -356,7 +357,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
          setTimeout(refreshTask,5000);
         }
         setTimeout(refreshTask,1800);
-       }catch(e){tell(/[가-힣]/.test(e.message)?e.message:'서버에 연결할 수 없습니다. 곡 편집기를 다시 열어 주세요.',true);}finally{generating('request',false);if(tab&&!launched&&!tab.closed)tab.close();state.busy=false;gpt.disabled=false;}
+       }catch(e){window.N80Activity?.set('song-gpt-start',key,'failed');tell(/[가-힣]/.test(e.message)?e.message:'서버에 연결할 수 없습니다. 곡 편집기를 다시 열어 주세요.',true);}finally{generating('request',false);if(tab&&!launched&&!tab.closed)tab.close();state.busy=false;gpt.disabled=false;}
       };heading.append(gpt);
      }
     }

@@ -10,7 +10,7 @@
   if(['complete','completed','succeeded','done','ready','saved','published','audio_ready','creation_review','review_highlights','review_video'].includes(value))return 'complete';
   if(['error','failed','timed_out','expired','unconfirmed'].includes(value))return 'error';
   if(['idle','cancelled','canceled','skipped','paused','blocked','missing'].includes(value))return 'idle';
-  return 'stale';
+  return null;
  }
  function save(){try{sessionStorage.setItem(key,JSON.stringify([...tasks]));}catch{}}
  function state(){
@@ -34,7 +34,7 @@
    }
   }
   current=state();root.dataset.n80Activity=current;root.dataset.n80Hidden=String(document.hidden);
-  const buttons=document.querySelectorAll('.noa-mobile-nav [data-noa-nav="home"],.noa-primary-nav [data-noa-nav="home"]');
+  const buttons=document.querySelectorAll('.noa-mobile-nav [data-noa-nav="home"],.noa-primary-nav [data-noa-nav="home"],#noa-account-bar .noa-account-brand');
   if(buttons.length&&!document.getElementById('n80-home-status')){const text=document.createElement('span');text.id='n80-home-status';text.className='n80-status-accessible';text.setAttribute('role','status');text.setAttribute('aria-live','polite');document.body.append(text);}
   const status=document.getElementById('n80-home-status');
   const message='N80 Engine · '+labels[current]+' · 이 브라우저에서 확인된 작업';
@@ -45,6 +45,7 @@
  function set(source,id,native,{fresh=false,ttl=90000}={}){
   if(!source||id===null||id===undefined)return;
   const name=source+':'+id, previous=tasks.get(name), value=normalize(native), now=Date.now();
+  if(!value)return;
   if(value==='idle'){tasks.delete(name);if(!batching)render();return;}
   // Old history is not a new failure or completion. Repeated terminal receipts do not flash again.
   if(!active.has(value)&&value!=='stale'&&!fresh&&(!previous||previous.state===value))return;

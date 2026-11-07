@@ -94,11 +94,12 @@ function mount(panel, {renderTree, fingerprint}) {
         const ops={preview:'batchPreview',start:'batchStart',status:'batchStatus',retry:'batchRetry'};
         const url=kind==='ai'?'/noa-gpt.php?op='+ops[operation]:'/noa-bridge/channel-batch.php?'+new URLSearchParams({action:operation,...query});
         let response;
+        if(['start','retry'].includes(operation))root.N80Activity?.set('batch-request',kind,'waiting');
         try {
             response=await fetch(url,{method:'POST',credentials:'same-origin',cache:'no-store',
                 headers:{'Content-Type':binary?'application/octet-stream':'application/json','X-NOA-CSRF':csrf,'X-NOA-Bridge-Request':'1'},
                 body:binary?body:JSON.stringify(body)});
-        } catch { throw Error('서버에 연결할 수 없습니다. 연결 후 다시 시도하세요.'); }
+        } catch { if(operation!=='preview')root.N80Activity?.set('batch-request',kind,'failed',{fresh:true});throw Error('서버에 연결할 수 없습니다. 연결 후 다시 시도하세요.'); }
         let data;
         try { data=await response.json(); } catch { throw Error('서버 응답을 확인할 수 없습니다. 잠시 후 다시 시도하세요.'); }
         if(!response.ok||data.ok===false||data.error) {

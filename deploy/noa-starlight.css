@@ -1300,3 +1300,8 @@ html.noa-shell-wide body .noa-mobile-nav>a[data-noa-nav=home][data-n80-state]{ov
 @keyframes n80-home-complete{0%{box-shadow:0 0 0 0 var(--n80-running);opacity:1}100%{box-shadow:0 0 0 7px transparent;opacity:0}}
 html[data-n80-hidden=true] .n80-home-orbit{animation-play-state:paused!important}
 @media(prefers-reduced-motion:reduce){.n80-home-orbit{animation:none!important}.n80-home-orbit::before{display:none}}
+
+/* Desktop uses the existing circular logo/home link; mobile retains the bottom home control. */
+html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-account-brand[data-n80-state]{position:relative}
+#noa-account-bar .noa-account-brand>.n80-home-orbit{width:34px;height:34px;left:15px;margin-left:-17px;margin-top:-17px;border:1px solid var(--n80-orbit-color)}
+@media(max-width:760px){#noa-account-bar .noa-account-brand>.n80-home-orbit{display:none}}
