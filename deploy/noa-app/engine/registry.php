@@ -4,7 +4,7 @@ declare(strict_types=1);
  * NOA ENGINE v1 read-only module registry.
  * No database connections, file writes, network calls or worker execution.
  */
-require_once __DIR__.'/ai-lab.php';
+require_once __DIR__.'/workspaces.php';
 function noa_engine_modules(): array {
     return [
         'music' => ['label'=>'MUSIC','owner'=>'music','entry'=>'/noa-music.php','events'=>['audio.ready','playback.started']],
@@ -12,8 +12,9 @@ function noa_engine_modules(): array {
         'youtube' => ['label'=>'YOUTUBE','owner'=>'youtube','entry'=>'/noa-youtube.php','events'=>['sync.requested','youtube.synced']],
         'world' => ['label'=>'NOA WORLD','owner'=>'world','entry'=>'/noa-world.php','events'=>['youtube.synced','world.updated']],
         'playlist' => ['label'=>'MY PLAYLIST','owner'=>'playlist','entry'=>'/noa-music.php#my-playlists','events'=>['audio.ready','playlist.updated']],
-        'ai_lab' => ['label'=>'N80 AI LAB','tools'=>array_keys(n80_lab_tools()),'owner'=>'ai_lab','entry'=>'/noa-ai-lab.php','events'=>['ai.requested','ai.completed','ai.failed']],
-        'admin' => ['label'=>'ADMIN','owner'=>'admin','entry'=>'/noa-settings.php','events'=>['operation.requested','operation.approved','deploy.verified','work.completed']],
+        'creator_lab'=>['label'=>'CREATOR LAB','owner'=>'creator_lab','entry'=>'/noa-channel-workspace.php','events'=>['audio.ready','playlist.updated']],
+        'ai_lab' => ['label'=>'AI LAB','tools'=>array_keys(n80_lab_tools()),'owner'=>'ai_lab','entry'=>'/noa-ai-lab.php','events'=>['ai.requested','ai.completed','ai.failed']],
+        'admin' => ['label'=>'홈페이지 설정','owner'=>'admin','entry'=>'/noa-library.php','events'=>['operation.requested','operation.approved','deploy.verified','work.completed']],
         'community' => ['label'=>'COMMUNITY','owner'=>'gnuboard','entry'=>'/bbs/board.php?bo_table=free','events'=>[]],
         'database' => ['label'=>'DATABASE','owner'=>'database','entry'=>'/noa-app/database/','events'=>[]],
     ];
@@ -26,5 +27,5 @@ function noa_engine_registry_snapshot(): array {
         $module['health'] = 'not_checked';
     }
     unset($module);
-    return ['schemaVersion'=>1,'engine'=>'NOA ENGINE','controller'=>'Chat Assistant','mode'=>'read_only','modules'=>array_values($modules)];
+    return ['schemaVersion'=>1,'engine'=>'N80 Engine','workspaces'=>n80_workspaces(),'controller'=>'Chat Assistant','mode'=>'read_only','modules'=>array_values($modules)];
 }

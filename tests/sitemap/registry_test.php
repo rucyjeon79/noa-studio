@@ -14,16 +14,15 @@ try{
  $ids=static function(array $groups):array{return array_merge(...array_map(static fn($g)=>array_column(array_filter($g['routes'],static fn($r)=>empty($r[6])),0),array_values($groups)));};
  $guest=noa_sitemap_visible_groups($root,'guest');$member=noa_sitemap_visible_groups($root,'member');$admin=noa_sitemap_visible_groups($root,'admin');
  check(isset($guest['admin'],$member['admin'])&&$guest['admin']['routes'][0][6]!==''&&$member['admin']['routes'][0][6]!=='','administrator routes visible but disabled with conditions');
- check(in_array('popularity',$ids($admin),true)&&!in_array('popularity',$ids($guest),true)&&!in_array('popularity',$ids($member),true),'actual popularity service is administrator-only');
- check(isset($admin['admin-content'],$admin['admin-creation'],$admin['admin-operation'],$admin['admin-advanced'])&&count($admin['admin']['routes'])===1,'administrator task groups and single workspace entry included');
- foreach(noa_workspace_groups() as $g)check(is_string($g['intro']??null)&&count($g['routes'])>0,'task group description and destinations required');
- ob_start();noa_workspace_render();$workspace=ob_get_clean();check(substr_count($workspace,'class="noa-workspace-grid"')===2,'site administration excludes content and creation groups');
- check(!str_contains($workspace,'곡 검색·수정·삭제')&&str_contains($workspace,'크리에이터 가입 심사'),'creator content moved while site approval stays');
- check(!isset($guest['admin-content'])&&!isset($member['admin-content']),'task groups are administrator-only');
- check(in_array('workStatus',$ids($admin),true)&&!in_array('workStatus',$ids($member),true)&&!in_array('workStatus',$ids($guest),true),'work journal highest-admin-only');
- check(in_array('points',$ids($guest),true)&&in_array('payments',$ids($admin),true)&&!in_array('payments',$ids($member),true),'point packs public, payment setup highest-admin-only');
- check(in_array('store',$ids($guest),true)&&in_array('store',$ids($member),true)&&in_array('store',$ids($admin),true),'integrated store browsing is available to every audience');
- check(in_array('subscriptions',$ids($admin),true)&&!in_array('subscriptions',$ids($member),true)&&!in_array('subscriptions',$ids($guest),true),'subscription configuration highest-admin-only');
+ check(count($admin['admin']['routes'])===1 && $admin['admin']['routes'][0][1]==='홈페이지 설정','one administrator entry');
+ require_once dirname(__DIR__,2).'/deploy/noa-workspace.php';
+ $adminModules=[];foreach(noa_workspace_groups() as $g)foreach($g['routes'] as $route){check($route[5]==='admin','administrator module scope');$adminModules[]=$route[0];}
+ foreach(['popularity','workStatus','payments','subscriptions'] as $id)check(in_array($id,$adminModules,true),'specialist remains reachable from homepage settings');
+ ob_start();noa_workspace_render();$workspace=ob_get_clean();check(substr_count($workspace,'class="noa-workspace-grid"')===3,'three focused administrator groups');
+ check(!str_contains($workspace,'/noa-catalog.php')&&str_contains($workspace,'크리에이터 가입 심사'),'content belongs to CREATOR LAB');
+ check(!isset($admin['admin-content'],$admin['admin-creation']),'global directory does not duplicate specialist menus');
+ check(in_array('points',$ids($guest),true),'point packs remain public');
+ check(in_array('store',$ids($guest),true)&&in_array('store',$ids($member),true)&&in_array('store',$ids($admin),true),'store available to every audience');
  check(!in_array('register',$ids($guest),true),'no duplicate signup button; social enrollment stays in the login screen');
  check(in_array('login',$ids($guest),true)&&!in_array('playlists',$ids($guest),true),'guest account destinations');
  check(in_array('playlists',$ids($member),true)&&!in_array('login',$ids($member),true),'member playlist destination');

@@ -6,7 +6,7 @@ require_once __DIR__.'/noa-app/engine/explorer.php';
 <?php n80_explorer_assets(); ?>
 <?php foreach (['noa-brand','noa-ui','noa-browse','noa-record-form','noa-browse-edit'] as $asset): ?>
 <script defer src="/<?=$asset?>.js?v=<?=hash_file('sha256',__DIR__.'/'.$asset.'.js')?>"></script>
-<?php endforeach; ?></head><body class="noa-page"><main><p>N80 AI LAB</p><?php n80_lab_nav($access,'song'); ?><h1>곡별 AI 제작</h1>
+<?php endforeach; ?></head><body class="noa-page"><main><p>AI LAB</p><?php n80_lab_nav($access,'song'); ?><h1>곡별 AI 제작</h1>
 <?php n80_explorer_picker('lab-song','lab-pick','제작할 곡'); ?>
 <div class="noa-record-editor" id="lab-record"></div></main>
 <script>

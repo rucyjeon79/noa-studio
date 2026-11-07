@@ -272,7 +272,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
        const session=await api('/noa-ainoa.php?action=status',{},12000);
        if(session.generation?.ready===false){
         const names={api_key:'OpenAI 서비스 연결 키',text_enabled:'텍스트 AI 활성화',per_request_budget:'요청당 이용 한도',daily_budget:'일일 이용 한도',daily_budget_exhausted:'남은 일일 이용 한도',model:'사용 가능한 모델',settings_unavailable:'서비스 설정 연결'};
-        tell('AI 생성 준비가 필요합니다: '+session.generation.missing.map(k=>names[k]||k).join(' · ')+'.',true);const link=iconCommand('a','external','AI LAB 서비스 설정 열기');link.href='/noa-ai-lab.php';feedback.append(link);return;
+        tell('AI 생성 준비가 필요합니다: '+session.generation.missing.map(k=>names[k]||k).join(' · ')+'.',true);const link=iconCommand('a','external','AI LAB 서비스 설정 열기');link.href='/noa-ai-lab.php?tool=settings';feedback.append(link);return;
        }
        tell(label+' AI 초안을 작성 중입니다. 기존 내용은 유지됩니다.');
        const result=await api('/noa-ainoa.php',{method:'POST',headers:{'Content-Type':'application/json','X-NOA-CSRF':session.csrf},body:JSON.stringify({...payload,requestId})});if(active!==state)return;
@@ -401,8 +401,8 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
       try{
        if(tab)tab.opener=null;
        destination.sessionStorage.setItem('noa-muvy-launch-song',state.data.writeKey);
-       if(tab)tab.location.replace('/noa-ai-lab.php#lab-muvy');
-       else location.assign('/noa-ai-lab.php#lab-muvy');
+       if(tab)tab.location.replace('/noa-ai-lab.php?tool=muvy');
+       else location.assign('/noa-ai-lab.php?tool=muvy');
       }catch{if(tab)tab.close();status.textContent='뮤비 생성기를 열지 못했습니다. 브라우저의 사이트 저장 설정을 확인해 주세요.';status.scrollIntoView({block:'nearest'});}
      };
      heading.append(movie);

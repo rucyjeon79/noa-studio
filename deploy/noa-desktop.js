@@ -21,7 +21,7 @@ function build(){
  const wallet=link('','/noa-subscription.php','noa-desktop-wallet');wallet.append(el('span','보유 포인트'));balance=el('strong','확인 중');wallet.append(balance);subscription=link('구독·포인트 내역','/noa-subscription.php','noa-desktop-subscription');memberBox.append(wallet,subscription);
  const nav=el('nav',undefined,'noa-desktop-menu');nav.setAttribute('aria-label','나의 메뉴');const activity=link('내 활동','/noa-notifications.php'),count=el('span',undefined,'nnt-count');count.dataset.nntCount='';count.hidden=true;activity.append(count);nav.append(activity,link('최근 재생','/noa-my.php#my-recent'));
  if(context.access?.creator)nav.append(link('내 채널 관리','/noa-channel-workspace.php'));
- nav.append(link('나의 설정','/noa-settings.php'));if(context.access?.admin)nav.append(link('홈페이지 관리','/noa-library.php'));memberBox.append(nav);
+ nav.append(link('나의 설정','/noa-settings.php'));if(context.access?.admin)nav.append(link('홈페이지 설정','/noa-library.php'));memberBox.append(nav);
  guestBox=el('div',undefined,'noa-desktop-guest');guestBox.hidden=!!context.access?.member;guestBox.append(el('p','나의 음악과 도착한 소식을 한곳에서.'),link('로그인','/bbs/login.php?url=%2Fnoa-my.php','noa-desktop-login'));
  notice=el('p','','noa-desktop-status');notice.setAttribute('role','status');my.append(memberBox,guestBox,notice);
  const ai=el('section',undefined,'noa-desktop-ai'),aiHead=el('header'),portrait=el('img');portrait.src='/noa-assets/ainoa-symbol.png?v=20261026-portrait-1';portrait.alt='';portrait.width=48;portrait.height=48;

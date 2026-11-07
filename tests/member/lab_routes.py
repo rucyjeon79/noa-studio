@@ -1,6 +1,7 @@
 """Exercise AI LAB page routing with synthetic roles, without creating jobs."""
 from pathlib import Path
 import shutil
+import os
 import subprocess
 import tempfile
 
@@ -23,17 +24,23 @@ $_GET=['tool'=>getenv('TOOL')];
         ('member', 'batch', '권한이 없습니다', 'batch-fields'),
         ('creator', 'listen', 'data-noa-lab-listening', '?tool=batch'),
         ('guest', '', '로그인이 필요', 'lab-config-form'),
-        ('member', '', 'lab-chat-open', 'lab-config-form'),
-        ('creator', '', 'ncai-form', 'lab-config-form'),
+        ('member', '', 'data-n80-hub', '/noa-ai-lab.js'),
+        ('creator', '', 'data-n80-hub', '/noa-creator-ai.js'),
         ('creator', 'song', '권한이 없습니다', 'lab-record'),
         ('member', 'channel', '권한이 없습니다', 'ncai-form'),
         ('member', 'listen', 'data-noa-listening', 'lab-config-form'),
-        ('admin', '', 'lab-config-form', 'id="batch-run"'),
+        ('admin', '', 'data-n80-hub', '/noa-muvy.js'),
+        ('admin', 'settings', 'lab-config-form', '/noa-muvy.js'),
+        ('admin', 'text', '/noa-ai-lab.js', '/noa-muvy.js'),
+        ('admin', 'muvy', '/noa-muvy.js', '/noa-ai-lab.js'),
+        ('member', 'settings', '권한이 없습니다', 'lab-config-form'),
+        ('creator', 'channel', 'ncai-form', 'lab-config-form'),
+        ('member', 'chat', 'lab-chat-open', 'lab-config-form'),
         ('admin', 'song', 'lab-record', 'lab-config-form'),
         ('admin', 'batch', '<option value="ai">', '<option value="audio">'),
     ]:
         result = subprocess.run(['php', str(site / 'noa-ai-lab.php')], cwd=site,
-                                env={'ROLE': role, 'TOOL': tool}, capture_output=True, text=True, check=True)
+                                env={**os.environ, 'ROLE': role, 'TOOL': tool}, capture_output=True, text=True, check=True)
         assert expected in result.stdout and excluded not in result.stdout, (role, tool, result.stderr)
     check = '''
     require 'noa-app/engine/health.php';

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 $root='/tmp/noa-muvy-fixture/html';@mkdir($root,0700,true);@mkdir(dirname($root).'/noa-ai-lab',0700,true);@mkdir($root.'/noa-bridge',0700,true);file_put_contents(dirname($root).'/noa-ai-lab/master.key',random_bytes(32));
-@mkdir($root.'/noa-app/engine',0700,true);foreach(['ai-lab.php','explorer.php'] as $file)copy('deploy/noa-app/engine/'.$file,$root.'/noa-app/engine/'.$file);
+@mkdir($root.'/noa-app/engine',0700,true);foreach(['ai-lab.php','explorer.php','workspaces.php','lab-home.php'] as $file)copy('deploy/noa-app/engine/'.$file,$root.'/noa-app/engine/'.$file);
 $common= <<<'COMMON'
 <?php
 if(defined('_GNUBOARD_'))return;define('_GNUBOARD_',true);define('G5_PATH',__DIR__);session_start();$role=$_COOKIE['qa_role']??'guest';$is_member=$role!=='guest';$is_admin=$role==='admin'?'super':'';$member=$is_member?['mb_id'=>'qa_'.$role,'mb_level'=>$role==='staff'?10:4]:[];
@@ -13,7 +13,7 @@ COMMON;
 file_put_contents($root.'/common.php',$common);
 foreach(['member-access.php','lab-core.php','muvy-core.php','muvy-prompts.php','muvy-rules.php']as $file)copy('bridge/'.$file,$root.'/noa-bridge/'.$file);
 $api=str_replace('mu_provider($task)','mu_fixture_provider($task)',file_get_contents('bridge/muvy.php'));file_put_contents($root.'/noa-bridge/muvy.php',$api);
-foreach(['noa-ai-lab.php','noa-lab-chat.php','noa-ainoa.js','noa-ai-lab.css','noa-ai-lab.js','noa-channel-explorer.js','noa-explorer.css','noa-muvy-panel.php','noa-muvy.css','noa-muvy.js','noa-browse.js','noa-ui.css','noa-ui.js','noa-design.json','noa-ui-words.json','noa-brand.js']as $file)copy('deploy/'.$file,$root.'/'.$file);
+foreach(['noa-lab-router.js','noa-ai-lab.php','noa-lab-chat.php','noa-ainoa.js','noa-ai-lab.css','noa-ai-lab.js','noa-channel-explorer.js','noa-explorer.css','noa-muvy-panel.php','noa-muvy.css','noa-muvy.js','noa-browse.js','noa-ui.css','noa-ui.js','noa-design.json','noa-ui-words.json','noa-brand.js']as $file)copy('deploy/'.$file,$root.'/'.$file);
 // Only the catalog storage boundary is replaced. Selection, prompts and quotas run through the native API.
 file_put_contents($root.'/noa-bridge/storage.php','<?php function noa_bridge_pdo(){return null;}');
 file_put_contents($root.'/noa-bridge/sound-core.php','<?php');

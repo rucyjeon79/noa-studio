@@ -2,7 +2,7 @@
 declare(strict_types=1);
 require_once dirname(__DIR__, 2) . '/deploy/noa-app/engine/registry.php';
 $actual = noa_engine_registry_snapshot();
-if ($actual['mode'] !== 'read_only' || count($actual['modules']) !== 9) {
+if ($actual['mode'] !== 'read_only' || count($actual['modules']) !== 10) {
     fwrite(STDERR, "Engine registry contract failed\n"); exit(1);
 }
 $ids = array_column($actual['modules'], 'id');

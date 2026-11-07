@@ -31,16 +31,7 @@ try{
  }
  // Search and folder navigation incur no paid calls. Only picking a leaf starts production.
  assert.equal(catalogReads,0);
- await page.locator('#lab-text-picker summary').click();
- await page.locator('#lab-text-track').selectOption('original');
- await page.locator('#lab-audio-picker summary').click();
- await page.locator('#lab-audio-search').fill('EP 040 ACT4 Groovy');
- assert.equal(await page.locator('#lab-track option[value=original]').count(),0);
- await page.locator('#lab-track').selectOption('edition');
- await page.locator('#lab-audio-search').fill('존재하지 않는 곡');
- assert.equal(await page.locator('#lab-track').inputValue(),'edition');
- assert.equal(await page.locator('#lab-text-track').inputValue(),'original');
- assert.equal(await page.locator('#lab-audio-picker-state').innerText(),'검색 결과가 없습니다.');
+ assert.equal(await page.locator('script[src*="noa-ai-lab.js"]').count(),0,'MUVY does not boot the other production runtime');
  await page.locator('#mu-picker summary').click();
  await page.waitForFunction(()=>!document.querySelector('#mu-picker-fields').disabled);
  assert.equal(catalogReads,1);

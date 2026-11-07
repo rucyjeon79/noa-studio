@@ -11,7 +11,8 @@ function noa_engine_health_snapshot(string $root): array {
         'world'=>['noa-world.php'],
         'playlist'=>['noa-playlists.js'],
         'ai_lab'=>array_unique(array_merge(['noa-ai-lab.php','noa-app/engine/ai-lab.php','noa-app/engine/explorer.php','noa-channel-explorer.js','noa-explorer.css','noa-ai-lab.js','noa-muvy-panel.php'],array_column(n80_lab_tools(),'page'))),
-        'admin'=>['noa-settings.php'],
+        'creator_lab'=>['noa-channel-workspace.php','noa-app/engine/workspaces.php'],
+        'admin'=>['noa-library.php','noa-app/engine/workspaces.php'],
         'community'=>['bbs/board.php'],
         'database'=>['noa-app/database/core.php'],
     ];

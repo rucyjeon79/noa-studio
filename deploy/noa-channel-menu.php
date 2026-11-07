@@ -7,7 +7,11 @@ function noa_channel_ai_button(array $access):void{
  echo '<div class="creator-ai-access"><button class="noa-button" type="button" data-creator-ai-locked aria-describedby="'.$id.'"><strong>AI 생성</strong><small>8레벨 크레이터 VIP회원 전용 · 최고 관리자 이용 가능</small></button><p id="'.$id.'" role="status" aria-live="polite" hidden></p></div>';
 }
 function noa_channel_menu(array $access):void{
- global $member;require_once __DIR__.'/noa-bridge/storage.php';require_once __DIR__.'/noa-bridge/creator-core.php';$channel=null;try{$channel=nc_row(noa_bridge_pdo(),nc_channel_key((string)$member['mb_id']));}catch(Throwable $e){error_log('[noa-channel-menu] '.get_class($e));}
- $d=$channel['document']??[];$id=hash('sha256',(string)$member['mb_id']);$e=static fn($s)=>htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');
- ?><section class="noa-channel-menu" id="noa-my-channel"><header><img src="/noa-creator-symbol.php?channel=<?=$id?>&amp;v=<?=(int)($channel['revision']??0)?>" alt="내 채널 대표 심볼"><div><h2><?=$e($d['title']??'내 채널')?></h2><p>MY CREATOR CHANNEL</p></div></header><nav aria-label="내 채널 관리"><a href="/noa-channel-workspace.php"><strong>채널 작업실</strong><small>내 콘텐츠·제작·게시판 관리</small></a><a href="/noa-creator.php"><strong>채널·음원 관리</strong><small>곡 정보·업로드·공개 설정</small></a><?php if(!empty($d['boardId'])):?><a href="/bbs/board.php?bo_table=<?=$e($d['boardId'])?>"><strong>채널 게시판</strong><small>내 채널의 소식과 이야기</small></a><?php endif;?><a href="/noa-channel.php?id=<?=$id?>"><strong>내 채널 보기</strong><small>방문자가 보는 채널</small></a><a href="/noa-channel-rules.php"><strong>카테고리·제작 규칙</strong><small>내 채널의 장르별 제작 원칙</small></a><?php noa_channel_ai_button($access);?></nav><p class="noa-ai-notice">AI 기능은 8레벨 크레이터 VIP회원과 최고 관리자가 이용할 수 있습니다. 기능별 포인트가 소모될 수 있으며, 실행 전 이용 조건을 확인해 주세요. <?php if(empty($access['creatorAI'])):?><a href="/noa-subscription.php">크리에이터 구독 보기</a><?php endif;?></p></section><?php
+ require_once __DIR__.'/noa-app/engine/workspaces.php';
+ ?><section class="noa-channel-menu" id="noa-my-channel"><h2>내 작업실</h2><nav aria-label="크리에이터 메뉴"><?php
+ foreach(n80_workspaces() as $id=>$workspace){
+  if($id==='admin'||empty($access[$workspace['access']]))continue;
+  echo '<a href="'.$workspace['entry'].'"><strong>'.$workspace['label'].'</strong><small>'.($id==='creator_lab'?'곡·음원·채널 관리':'AI 제작·대화·음악 추천').'</small></a>';
+ }
+ ?></nav></section><?php
 }

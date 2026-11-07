@@ -30,9 +30,8 @@ function noa_sitemap_registry():array{
         'account'=>['title'=>'회원 서비스','routes'=>[
             ['login','로그인','기존 계정 또는 구글·카카오로 로그인','/noa-login.php','user','guest'],
             ['creatorApply','크리에이터 가입·전환','본인인증과 승인 후 7레벨·채널 개설','/noa-creator-apply.php','user','public'],
-            ['channelWorkspace','내 채널 작업실','소유한 콘텐츠·게시판·제작 관리','/noa-channel-workspace.php','music','member'],
-            ['channelRules','카테고리·제작 규칙','내 채널 장르별 제작 원칙','/noa-channel-rules.php','playlists','member'],
-            ['aiLab','N80 AI LAB','AI 대화 · 권한별 음악과 영상 제작','/noa-ai-lab.php','mic','member'],
+            ['channelWorkspace','CREATOR LAB','소유한 콘텐츠·게시판·제작 관리','/noa-channel-workspace.php','music','member'],
+            ['aiLab','AI LAB','AI 대화 · 권한별 음악과 영상 제작','/noa-ai-lab.php','mic','member'],
             ['password','아이디·비밀번호 찾기','계정 접근 복구','/bbs/password_lost.php','settings','guest'],
             ['playlists','내 재생목록','나만의 목록 만들기와 편집','/noa-music.php#my-playlists','playlists','member'],
             ['subscription','구독 신청·내역','월 구독 신청과 결제·이용 기간 확인','/noa-subscription.php','user','member'],
@@ -40,8 +39,6 @@ function noa_sitemap_registry():array{
             ['vipStore','VIP 이용권','별무리·크레이터 30일·365일 이용권','/noa-vip.php','user','public'],
             ['points','포인트권 구매','카드·카카오페이 · 10,000P부터 10% 추가','/noa-points.php','user','public'],
             ['membership','나의 포인트·이용권','포인트 잔액·적립·이용 기간 확인','/noa-membership.php','user','member'],
-            ['support','받은 후원 · 정산','후원 내역과 개인·사업자 정산 신청','/noa-support.php','user','member'],
-            ['creator','채널 프로필·음원 관리','내 채널 소개와 업로드한 음악 수정','/noa-creator.php','music','member'],
             ['profile','회원정보','내 계정 정보 확인과 수정','/bbs/member_confirm.php?url=register_form.php','user','member'],
             ['notifications','내 활동 알림','AInoa의 소식과 알림 설정','/noa-notifications.php','mail','member'],
         ]],
@@ -50,38 +47,16 @@ function noa_sitemap_registry():array{
             ['store','통합 구매','포인트·VIP 이용권·굿즈 함께 주문','/noa-youngcart.php','disc','public'],
             ['lounge','별무리 라운지','음악과 일상을 나누는 팬 커뮤니티','/noa-lounge.php','community','public'],
             ['loungeDiscovery','라운지 글 찾기','공개 글과 댓글을 검색하고 인기 글을 확인해요','/noa-lounge-discovery.php','community','public'],
-            ['creatorLab','CREATOR LAB','피드백·작품 성장 기록·협업','/noa-creator-lab.php','mic','public'],
+            ['creatorLab','작품·협업','피드백·작품 성장 기록·협업','/noa-creator-lab.php','mic','public'],
             ['search','게시판 검색','공개된 게시글 찾기','/bbs/search.php','search','public'],
         ]],
-        'creatorTools'=>['title'=>'내 채널 · 전문 제작 도구','routes'=>[['taxonomy','공통 카테고리·제작 규칙','최고관리자의 공통 분류 기준','/noa-app/taxonomy/','playlists','admin']]],
         'company'=>['title'=>'제이알 · 서비스 안내','routes'=>[
             ['about-jr','회사소개 · 제이알','람준파파·NOA·NOEL·별무리의 이야기','/noa-about.php','book','public'],
             ['privacy-page','개인정보처리방침','내 정보와 권리 안내','/noa-privacy.php','book','public'],
             ['terms-page','이용약관','함께 지키는 서비스 이용 약속','/noa-terms.php','book','public'],
         ]],
         'legal'=>['title'=>'기존 서비스 안내','routes'=>[]],
-        'admin'=>['title'=>'홈페이지 관리','routes'=>[
-            ['libraryAdmin','라이브러리 관리','음악 문서와 변경 이력','/noa-library.php','library','admin'],
-            ['editor','음악 등록·편집','음악 문서 작성','/noa-editor.php','edit','admin'],
-            ['categoryOrder','사연곡·커버곡 순서','드래그 정렬과 순서 저장','/noa-category-order-admin.php','playlists','admin'],
-            ['jukebox','JUKEBOX','음원 업로드와 처리 대기열','/noa-app/jukebox/','music','admin'],
-            ['quality','곡정보 검사·정리','전체 검사와 중복·충돌 조치','/noa-quality.php','settings','admin'],
-            ['catalogAdmin','원본 가져오기·통합 등록','이전 원본 수집과 등록','/noa-catalog-admin.php','library','admin'],
-            ['recovery','원본 복구','보존된 원본과 복구 상태','/noa-recovery.php','book','admin'],
-            ['youtubeAdmin','YouTube 관리','채널 수집과 분류 검토','/noa-youtube-admin.php','youtube','admin'],
-            ['workStatus','N80 Engine 작업 현황','지시·단계·운영 검증 기록','/noa-work-status.php','settings','admin'],
-            ['themeAdmin','테마 정책','디자인 설정과 변경 이력','/noa-theme-admin.php','settings','admin'],
-            ['database','자료 저장소 관리','운영 데이터 현황','/noa-app/database/','library','admin'],
-            ['popularity','인기순위 관리','집계 상태와 유효 재생 정책','/noa-app/popularity/','playlists','admin'],
-            ['payments','토스 결제 연결','카드·카카오페이 연결과 테스트·운영 설정','/noa-payment-settings.php','settings','admin'],
-            ['kcpTest','KCP 테스트 연결','관리자용 카드 결제창 호출·복귀 테스트','/noa-kcp-test.php','settings','admin'],
-            ['subscriptions','월 구독 설정','요금·포인트·결제 내역 확인','/noa-subscription-admin.php','settings','admin'],
-            ['creatorReview','크리에이터 가입 심사','본인인증·신청 검토와 승인','/noa-creator-review.php','user','admin'],
-            ['members','회원 관리','그누보드 회원 서비스','/adm/member_list.php','user','admin'],
-            ['boards','게시판 관리','그누보드 게시판 서비스','/adm/board_list.php','community','admin'],
-            ['system','시스템 설정','그누보드 기본 설정','/adm/config_form.php','settings','admin'],
-            ['nativeTheme','그누보드 테마','게시판 기반 테마 관리','/adm/theme.php','settings','admin'],
-        ]],
+        'admin'=>['title'=>'홈페이지 설정','routes'=>[['libraryAdmin','홈페이지 설정','회원·결제·화면·서비스 연결','/noa-library.php','settings','admin']]],
     ];
 }
 
@@ -108,6 +83,8 @@ function noa_sitemap_unlisted_pages(string $root):array{
     // The deploy center has no verified production release yet and stays undiscoverable.
     $known=['/noa-lab-song.php'=>true,'/noa-lab-chat.php'=>true,'/noa-creator-ai.php'=>true,'/noa-gpt-setup.php'=>true,'/noa-special-invite.php'=>true, /* private single-use link */ '/noa-sitemap.php'=>true,'/noa-deploy-center.php'=>true,'/noa-channel.php'=>true,'/noa-music-download.php'=>true,'/noa-download.php'=>true]; // Download is reached through the installation page; channel URLs require an owner ID.
     foreach(noa_sitemap_registry() as $group)foreach($group['routes'] as $route)$known[(string)parse_url($route[3],PHP_URL_PATH)]=true;
+    require_once __DIR__.'/noa-app/engine/workspaces.php';
+    foreach(n80_workspaces() as $id=>$workspace)foreach(n80_workspace_groups($id) as $group)foreach($group['routes'] as $route)$known[(string)parse_url($route[3],PHP_URL_PATH)]=true;
     $missing=[];
     foreach(glob(rtrim($root,'/').'/noa-*.php')?:[] as $file){
         $path='/'.basename($file);
@@ -221,7 +198,7 @@ function noa_sitemap_unique_groups(array $groups):array{
 
 function noa_sitemap_visible_groups(string $root,string $role,array $boards=[],array $contents=[]):array{
     $groups=noa_sitemap_registry();
-    if($role==='admin'&&is_file(__DIR__.'/noa-workspace.php')){require_once __DIR__.'/noa-workspace.php';$groups['admin']=['title'=>'홈페이지 관리','routes'=>[['libraryAdmin','홈페이지 관리','회원·화면·시스템 운영','/noa-library.php','settings','admin']]];foreach(noa_workspace_groups() as $id=>$group){$groups['admin-'.$id]=['title'=>in_array($id,['content','creation'],true)?'내 채널 · '.$group['title']:$group['title'],'routes'=>array_map(fn($r)=>array_merge($r,['admin']),$group['routes'])];}}
+
     foreach($boards as $board){
         $id=(string)($board['bo_table']??'');
         if(!preg_match('/^[A-Za-z0-9_]{1,20}$/D',$id))continue;
