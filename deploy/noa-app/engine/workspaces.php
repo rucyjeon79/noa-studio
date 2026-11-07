@@ -12,7 +12,7 @@ function n80_workspaces(): array {
 }
 
 /** A specialist route has one owning workspace. Tuple: id, label, help, URL, icon, access. */
-function n80_workspace_groups(string $workspace): array {
+function n80_workspace_groups(string $workspace, ?array $access=null): array {
     $groups = [
         'creator_lab'=>[
             'channel'=>['title'=>'내 채널','routes'=>[
@@ -62,9 +62,8 @@ function n80_workspace_groups(string $workspace): array {
     ];
     if ($workspace === 'ai_lab') {
         $ai = ['production'=>['title'=>'음악·영상 제작','routes'=>[]], 'conversation'=>['title'=>'대화·음악 추천','routes'=>[]], 'results'=>['title'=>'결과·성과','routes'=>[]]];
-        foreach (n80_lab_tools() as $id=>$tool) {
-            if (!empty($tool['hidden'])) continue;
-            $group = in_array($id,['chat','listen'],true) ? 'conversation' : (in_array($id,['jobs','growth'],true) ? 'results' : 'production');
+        foreach (n80_lab_menu_tools($access) as $id=>$tool) {
+            $group = $tool['section'];
             $ai[$group]['routes'][] = [$id,$tool['label'],$tool['description']??'', '/noa-ai-lab.php?tool='.$id,'mic',$tool['access']];
         }
         return $ai;
@@ -74,7 +73,7 @@ function n80_workspace_groups(string $workspace): array {
 
 function n80_workspace_render(string $workspace, array $access): void {
     $e=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
-    foreach (n80_workspace_groups($workspace) as $id=>$group) {
+    foreach (n80_workspace_groups($workspace,$access) as $id=>$group) {
         $routes=array_filter($group['routes'],static fn($row)=>!empty($access[$row[5]]));
         if (!$routes) continue;
         $advanced=!empty($group['advanced']);

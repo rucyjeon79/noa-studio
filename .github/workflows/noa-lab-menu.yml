@@ -1,39 +1,48 @@
 name: Verify and publish N80 AI LAB
 on:
+  pull_request:
+    paths: ['deploy/noa-app/engine/ai-lab.php','deploy/noa-app/engine/workspaces.php','deploy/noa-app/engine/lab-home.php','tests/lab-menu/**','.github/workflows/noa-lab-menu.yml']
   push:
     branches: [main]
-    paths: ['.github/workflows/noa-lab-menu.yml']
+    paths: ['deploy/noa-app/engine/ai-lab.php','deploy/noa-app/engine/workspaces.php','deploy/noa-app/engine/lab-home.php','tests/lab-menu/**','.github/workflows/noa-lab-menu.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
-  verify-and-publish:
-    runs-on: ubuntu-latest
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'mbstring,pdo_sqlite'}
+      - name: Verify contextual routes, menu ownership and role restrictions
+        run: |
+          for file in deploy/noa-app/engine/ai-lab.php deploy/noa-app/engine/workspaces.php deploy/noa-app/engine/lab-home.php; do php -l "$file"; done
+          php tests/lab-menu/menu.php
+          python tests/member/lab_routes.py
+          php tests/sitemap/registry_test.php
+          python tests/sitemap/menu_tree_fixture.py
+          python tests/lab-menu/fixture.py
+          python scripts/qa/noa-qa-font.py
+          npm install --prefix "$RUNNER_TEMP/lab-menu" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp tests/lab-menu/browser.mjs "$RUNNER_TEMP/lab-menu/check.mjs"
+      - name: Verify mobile and desktop menus, descriptions and navigation
+        run: node "$RUNNER_TEMP/lab-menu/check.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'lab-menu-${{ github.run_id }}', path: 'lab-menu-proof/', retention-days: 7}
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[lab-menu]'))
+    needs: verify
+    runs-on: ubuntu-24.04
     environment: production
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
-      - run: |
-          php -l deploy/noa-app/engine/ai-lab.php
-          php -l deploy/noa-app/engine/registry.php
-          php -l deploy/noa-app/engine/health.php
-          php -l deploy/noa-lab-chat.php
-          php -l deploy/noa-lab-song.php
-          php -l bridge/member-access.php
-          node --check deploy/noa-ainoa.js
-          node --check deploy/noa-browse-edit.js
-          node --check deploy/noa-channel-batch.js
-          php -l deploy/noa-channel-menu.php
-          php -l deploy/noa-creator-ai.php
-          php -l deploy/noa-creator.php
-          node --check deploy/noa-listening.js
-          php -l deploy/noa-sitemap.php
-          php -l deploy/noa-workspace.php
-          php -l deploy/noa-ai-lab.php
-          python tests/member/lab_routes.py
-          python -m pip install 'paramiko>=3,<5'
-      - name: Publish and verify AI LAB entry
+      - run: python -m pip install 'paramiko>=3,<5'
+      - name: Publish only the shared menu definition and hub
         env:
           GH_TOKEN: ${{ github.token }}
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
@@ -46,23 +55,10 @@ jobs:
           import noa_ainoa_deploy as release
           release.FILES = {
               'noa-app/engine/ai-lab.php': 'deploy/noa-app/engine/ai-lab.php',
-              'noa-app/engine/registry.php': 'deploy/noa-app/engine/registry.php',
-              'noa-app/engine/health.php': 'deploy/noa-app/engine/health.php',
-              'noa-lab-chat.php': 'deploy/noa-lab-chat.php',
-              'noa-lab-song.php': 'deploy/noa-lab-song.php',
-              'noa-bridge/member-access.php': 'bridge/member-access.php',
-              'noa-ainoa.js': 'deploy/noa-ainoa.js',
-              'noa-browse-edit.js': 'deploy/noa-browse-edit.js',
-              'noa-channel-batch.js': 'deploy/noa-channel-batch.js',
-              'noa-channel-menu.php': 'deploy/noa-channel-menu.php',
-              'noa-creator-ai.php': 'deploy/noa-creator-ai.php',
-              'noa-creator.php': 'deploy/noa-creator.php',
-              'noa-listening.js': 'deploy/noa-listening.js',
-              'noa-sitemap.php': 'deploy/noa-sitemap.php',
-              'noa-workspace.php': 'deploy/noa-workspace.php',
-              'noa-ai-lab.php': 'deploy/noa-ai-lab.php',
+              'noa-app/engine/workspaces.php': 'deploy/noa-app/engine/workspaces.php',
+              'noa-app/engine/lab-home.php': 'deploy/noa-app/engine/lab-home.php',
           }
-          release.NEW = {'noa-app/engine/ai-lab.php','noa-lab-chat.php','noa-lab-song.php'}
+          release.NEW = set()
           try:
               release.main()
           except Exception:
@@ -71,3 +67,6 @@ jobs:
                   release.main()
               raise
           PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'lab-menu-live-${{ github.run_id }}', path: 'ainoa-proof/deployment.json', retention-days: 7}
