@@ -9,7 +9,7 @@ function n80_lab_tools(): array {
         'muvy' => ['label'=>'대본·장면 프롬프트', 'description'=>'등록된 곡 정보로 뮤비 대본과 장면별 제작 지시문을 만듭니다. 영상 파일 제작은 별도 작업입니다.', 'family'=>'video', 'menuHidden'=>true, 'access'=>'admin', 'panel'=>'lab-muvy'],
         'create' => ['label'=>'영상 파일 제작', 'description'=>'실제 음원을 분석하고 캐릭터·영상 구간을 선택해 MP4를 제작합니다. 외부 영상 서비스 연결이 필요합니다.', 'family'=>'video', 'access'=>'admin', 'panel'=>'lab-create'],
         'song' => ['label'=>'한 곡씩 제작', 'description'=>'N80 탐색기에서 한 곡을 골라 필요한 곡 정보 항목을 생성하고 확인합니다.', 'menuHidden'=>true, 'access'=>'admin', 'page'=>'noa-lab-song.php'],
-        'creative' => ['label'=>'내 창작 보관함','description'=>'이야기를 사지선다로 구체화하고 곡정보·수정 이력을 저장해, 확인 후 새 창작곡으로 등록합니다.','family'=>'creative','access'=>'creatorAI','page'=>'noa-lab-creative.php'],
+        'creative' => ['label'=>'노래 창작하기','description'=>'내 이야기나 오늘의 운세에서 시작해, 단계별 네 가지 중 여러 개를 고르고 노래를 만듭니다.','family'=>'creative','access'=>'creatorAI','page'=>'noa-lab-creative.php'],
         'batch' => ['label'=>'ACT·장르 묶음 제작', 'description'=>'여러 곡·ACT·장르를 선택해 같은 곡 정보 항목을 한 번에 생성하고 처리 상태를 확인합니다.', 'family'=>'batch', 'access'=>'admin', 'page'=>'noa-creator.php'],
         'channel' => ['label'=>'내 채널 곡 초안', 'description'=>'내 채널의 곡을 바탕으로 가사·Suno 지시문·게시 문구를 만듭니다. 이용 포인트 확인 후 요청합니다.', 'menuHidden'=>true, 'access'=>'creatorAI', 'page'=>'noa-creator-ai.php'],
         'chat' => ['label'=>'곡 이야기·AI 대화', 'description'=>'곡을 선택해 이야기를 나누고 제작 아이디어를 정리합니다.', 'family'=>'conversation', 'access'=>'member', 'page'=>'noa-lab-chat.php'],
@@ -22,7 +22,7 @@ function n80_lab_tools(): array {
 /** Menu families only; execution, ownership and tool URLs remain unchanged. */
 function n80_lab_families(): array {
     return [
-        'creative'=>['label'=>'내 창작 보관함','description'=>'사연 입력·사지선다·개별 수정·영구 초안 저장·최종 등록','section'=>'production'],
+        'creative'=>['label'=>'노래 창작하기','description'=>'이야기·오늘의 운세 · 단계별 복수 선택 · 곡정보 완성 후 보관','section'=>'production'],
         'batch'=>['label'=>'ACT·장르 묶음 제작','description'=>'여러 곡·ACT·장르를 선택해 필요한 항목을 한 번에 생성','section'=>'production'],
         'video'=>['label'=>'뮤직비디오 제작','description'=>'음원·캐릭터·구간을 선택해 MP4 영상 파일 제작','section'=>'production'],
         'conversation'=>['label'=>'AI 대화·음악 추천','description'=>'곡 이야기·제작 아이디어 상담과 취향에 맞는 음악 추천','section'=>'conversation'],

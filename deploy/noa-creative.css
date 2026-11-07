@@ -7,7 +7,7 @@
 /* The primary action spans the content column at every screen width. */
 .creative-main .creative-heading{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 .creative-main #creative-new{display:block;width:100%;min-height:52px;background:var(--noa-accent);color:var(--noa-accentText);font-weight:700;border-color:var(--noa-accent)}
-#ainoa-conversation.creative-conversation{width:min(600px,calc(100vw - 24px));height:min(820px,calc(100dvh - 24px))}
+#ainoa-conversation.creative-conversation{--ainoa-chat-width:600px;--ainoa-chat-height:820px}
 #ainoa-conversation.creative-conversation [hidden]{display:none!important}
 #ainoa-conversation.creative-conversation .ainoa-conversation-content{margin-top:0}
 #ainoa-conversation.creative-conversation .ainoa-conversation-log{gap:16px}
@@ -23,14 +23,16 @@
 #ainoa-conversation.creative-conversation .creative-intent-row{grid-template-columns:72px minmax(0,1fr);gap:12px;border-color:var(--noa-line)}
 #ainoa-conversation.creative-conversation .creative-intent-row p{white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
 #ainoa-conversation.creative-conversation #creative-intent:empty,#ainoa-conversation.creative-conversation #creative-questions:empty{display:none}
-#ainoa-conversation.creative-conversation .ainoa-conversation-actions{padding:12px 16px;max-height:42dvh;overflow:auto}
+#ainoa-conversation.creative-conversation .ainoa-conversation-actions{padding:12px 16px}
 #ainoa-conversation.creative-conversation #creative-composer{min-width:0}
 #ainoa-conversation.creative-conversation #creative-story-compose,#ainoa-conversation.creative-conversation #creative-answer-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}
 #ainoa-conversation.creative-conversation .creative-story{grid-column:1/-1;font-size:13px;color:var(--noa-muted);margin:0}
-#ainoa-conversation.creative-conversation textarea{margin:0;min-height:68px;max-height:22dvh;resize:vertical;line-height:1.6}
+#ainoa-conversation.creative-conversation textarea{margin:0;min-height:48px;max-height:calc(var(--ainoa-view-height)*.22);resize:vertical;line-height:1.6;font-size:16px}
 #ainoa-conversation.creative-conversation #creative-analyze,#ainoa-conversation.creative-conversation #creative-answer-send{background:var(--noa-accent);color:var(--noa-accentText);border-color:var(--noa-accent);font-weight:700}
 #ainoa-conversation.creative-conversation .creative-chat-ready{width:100%;margin:16px 0 0;background:var(--noa-accent);color:var(--noa-accentText)}
 #creative-record:focus{outline:none}
 
 .creative-main .creative-recovery-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}.creative-recovery-row>div{min-width:0}.creative-recovery-row p{font-weight:600;overflow-wrap:anywhere}.creative-recovery-row small{display:block;margin-top:6px;color:var(--noa-muted);line-height:1.6}.creative-recovery-row>button{white-space:nowrap}
 .creative-main [inert]{opacity:.65}
+#ainoa-conversation.creative-conversation.ainoa-conversation-compact .ainoa-conversation-actions{padding:8px 12px}
+.creative-title-icon{width:28px;height:28px;vertical-align:-2px;margin-right:10px;fill:none;stroke:currentColor;stroke-width:1.6;color:var(--noa-accent)}

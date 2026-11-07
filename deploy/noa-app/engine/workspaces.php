@@ -79,7 +79,7 @@ function n80_workspace_render(string $workspace, array $access): void {
         $advanced=!empty($group['advanced']);
         echo $advanced ? '<details class="noa-workspace-advanced"><summary>'.$e($group['title']).'</summary>' : '<section class="noa-section"><h2>'.$e($group['title']).'</h2>';
         echo '<nav class="noa-workspace-grid" aria-label="'.$e($group['title']).'">';
-        foreach ($routes as $row) echo '<a data-n80-module="'.$e($row[0]).'" data-noa-icon="'.$e($row[4]).'" href="'.$e($row[3]).'"><span><strong>'.$e($row[1]).'</strong>'.($row[2]!==''?'<small>'.$e($row[2]).'</small>':'').'</span></a>';
+        foreach ($routes as $row) echo '<a data-n80-module="'.$e($row[0]).'" data-noa-icon="'.$e($row[4]).'" href="'.$e($row[3]).'">'.($row[0]==='creative'?'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m12 3 2.4 6.6L21 12l-6.6 2.4L12 21l-2.4-6.6L3 12l6.6-2.4Z M20 2v4m-2-2h4"/></svg>':'').'<span><strong>'.$e($row[1]).'</strong>'.($row[2]!==''?'<small>'.$e($row[2]).'</small>':'').'</span></a>';
         echo '</nav>'.($advanced?'</details>':'</section>');
     }
 }

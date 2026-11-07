@@ -31,6 +31,8 @@ jobs:
         run: |
           for p in bridge/creative*.php deploy/noa-app/engine/creative.php deploy/noa-lab-creative.php deploy/noa-gpt.php; do php -l "$p"; done
           node --check deploy/noa-creative.js
+          node --check deploy/noa-ainoa.js
+          php -l deploy/noa-app/engine/ai-lab.php
           node --check deploy/noa-browse-edit.js
           node --check deploy/noa-record-form.js
           python tests/creative/setup.py
@@ -46,6 +48,7 @@ jobs:
           python tests/creative/browser-setup.py
           npm install --prefix "$RUNNER_TEMP/creative-browser" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp tests/creative/browser.mjs "$RUNNER_TEMP/creative-browser/check.mjs"
+          cp tests/creative/viewport.mjs "$RUNNER_TEMP/creative-browser/viewport.mjs"
       - name: Verify mobile and desktop with actual PHP and MySQL
         run: |
           mkdir -p creative-proof

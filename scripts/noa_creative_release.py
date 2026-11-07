@@ -13,7 +13,7 @@ release.FILES={**{p:v for p,v in release.FILES.items() if p not in last},**{p:re
 release.NEW={'noa-bridge/creative-core.php','noa-bridge/creative-publication.php','noa-bridge/creative.php','noa-app/engine/creative.php','noa-creative.css','noa-creative.js','noa-lab-creative.php'}
 # Presentation-only releases reuse this owner and never activate engine/provider sources.
 if os.environ.get('NOA_CREATIVE_PRESENTATION_ONLY')=='1':
- release.FILES={p:'deploy/'+p for p in ['noa-creative.css','noa-creative.js','noa-lab-creative.php']}
+ release.FILES={p:'deploy/'+p for p in ['noa-ainoa.css','noa-ainoa.js','noa-creative.css','noa-creative.js','noa-lab-creative.php','noa-app/engine/ai-lab.php','noa-app/engine/workspaces.php']}
  release.NEW=set()
 if os.environ.get('NOA_CREATIVE_RETENTION_ONLY')=='1':
  release.FILES={**{'noa-bridge/'+p:'bridge/'+p for p in ['creative-core.php']},'noa-app/engine/creative.php':'deploy/noa-app/engine/creative.php',**{'noa-bridge/'+p:'bridge/'+p for p in ['creative.php','worker-text.php']},**{p:'deploy/'+p for p in ['noa-creative.css','noa-creative.js','noa-lab-creative.php']}}

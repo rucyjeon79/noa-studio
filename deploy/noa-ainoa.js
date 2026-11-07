@@ -97,6 +97,38 @@ sync();
 /* A single, accessible AInoa conversation surface for guided member tasks. */
 (()=>{'use strict';
 let currentRoom=null;
+// Only the open conversation owns these listeners. The keyboard changes the
+// visual viewport, even when 100dvh and the layout viewport stay unchanged.
+function fitConversation(dialog,scroll){
+ const view=window.visualViewport,html=document.documentElement,overflow=html.style.overflow;
+ let frame=0,disposed=false,followEnd=true;
+ html.style.overflow='hidden';
+ const remember=()=>{followEnd=scroll.scrollHeight-scroll.clientHeight-scroll.scrollTop<48;};
+ const update=()=>{
+  frame=0;if(disposed)return;
+  const height=view?.height||window.innerHeight,width=view?.width||window.innerWidth;
+  dialog.style.setProperty('--ainoa-view-height',height+'px');
+  dialog.style.setProperty('--ainoa-view-width',width+'px');
+  dialog.style.setProperty('--ainoa-view-top',(view?.offsetTop||0)+'px');
+  dialog.style.setProperty('--ainoa-view-left',(view?.offsetLeft||0)+'px');
+  dialog.classList.toggle('ainoa-conversation-compact',height<480);
+  if(followEnd)scroll.scrollTop=scroll.scrollHeight;
+  // Scroll the input's own region, never the document behind the modal.
+  const input=document.activeElement;
+  if(dialog.contains(input)&&input.matches('input,textarea,[contenteditable=true]')){
+   const region=input.closest('.ainoa-conversation-actions,.ainoa-conversation-scroll');
+   if(region){const a=input.getBoundingClientRect(),b=region.getBoundingClientRect();
+    if(a.bottom>b.bottom-8)region.scrollTop+=a.bottom-b.bottom+8;
+    else if(a.top<b.top+8)region.scrollTop+=a.top-b.top-8;
+   }
+  }
+ };
+ const schedule=()=>{if(!disposed&&!frame)frame=requestAnimationFrame(update);};
+ view?.addEventListener('resize',schedule);view?.addEventListener('scroll',schedule);
+ window.addEventListener('resize',schedule);dialog.addEventListener('focusin',schedule);
+ scroll.addEventListener('scroll',remember,{passive:true});update();
+ return ()=>{disposed=true;cancelAnimationFrame(frame);view?.removeEventListener('resize',schedule);view?.removeEventListener('scroll',schedule);window.removeEventListener('resize',schedule);dialog.removeEventListener('focusin',schedule);scroll.removeEventListener('scroll',remember);if(html.style.overflow==='hidden')html.style.overflow=overflow;};
+}
 window.NoaAInoa.openConversation=({title='AInoa',onClose}={})=>{
  if(currentRoom?.active())currentRoom.close();
  document.querySelectorAll('#ainoa-conversation:not([open])').forEach(node=>node.remove());
@@ -113,12 +145,12 @@ window.NoaAInoa.openConversation=({title='AInoa',onClose}={})=>{
  const actions=document.createElement('footer');actions.className='ainoa-conversation-actions';actions.hidden=true;
  scroll.append(log,content,status);dialog.append(header,scroll,actions);document.body.append(dialog);
  const follow=()=>requestAnimationFrame(()=>{if(dialog.open)scroll.scrollTo({top:scroll.scrollHeight,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});});
- let closed=false;
- const finish=()=>{if(closed)return;closed=true;if(currentRoom===room)currentRoom=null;onClose?.();const delay=matchMedia('(prefers-reduced-motion: reduce)').matches?0:180;setTimeout(()=>dialog.remove(),delay);if(trigger?.isConnected)trigger.focus({preventScroll:true});};
+ let closed=false,disposeViewport=()=>{};
+ const finish=()=>{if(closed)return;closed=true;disposeViewport();if(currentRoom===room)currentRoom=null;onClose?.();const delay=matchMedia('(prefers-reduced-motion: reduce)').matches?0:180;setTimeout(()=>dialog.remove(),delay);if(trigger?.isConnected)trigger.focus({preventScroll:true});};
  const room={content,actions,active:()=>dialog.open&&!closed,add(text,who='ainoa'){
   if(closed||!text)return;const row=document.createElement('p');row.className='ainoa-conversation-message';row.dataset.speaker=who;row.textContent=text;log.append(row);follow();
  },status(text){status.textContent=text||'';follow();},close(){if(!closed){dialog.close();finish();}},focus(){content.querySelector('button,input,textarea,a')?.focus({preventScroll:true});}};
  dialog.addEventListener('close',finish,{once:true});
- dismiss.onclick=()=>room.close();currentRoom=room;dialog.showModal();return room;
+ dismiss.onclick=()=>room.close();currentRoom=room;disposeViewport=fitConversation(dialog,scroll);dialog.showModal();return room;
 };
 })();

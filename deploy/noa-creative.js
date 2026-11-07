@@ -22,7 +22,7 @@ function fail(e){status(message(e));state('failed','저장 실패 · 입력을 �
 async function flush(){if(invalidFields.size)throw Error('invalid_creative_fields');clearTimeout(timer);if(saving){await saving;if(dirty())return flush();return;}if(conflict)throw Error('revision_conflict');if(!dirty())return;if(!draft&&!meaningful([pending.story,pending.fields,pending.requests])){pending={};state('idle','아직 저장된 내용이 없습니다.');return;}
  const wasNew=!draft,captured=pending;pending={};state('saving','서버에 저장 중');saving=(async()=>{try{let data;if(!draft){const draftId=new URL(location.href).searchParams.get('draft')||id();history.replaceState(null,'',location.pathname+'?tool=creative&draft='+draftId);data=await api('create',{id:draftId,story:captured.story||'',fields:captured.fields||{},requests:captured.requests||{}});draft=data.draft;}
  if(Object.keys(captured).some(k=>!['fields','requests','answerDrafts'].includes(k)||Object.keys(captured[k]).length))data=await api('save',{id:draft.id,revision:draft.revision,...captured});if(data)draft=data.draft;state('saved','저장 완료');$('retry-save').hidden=true;syncMeta();if(wasNew){const focused=document.activeElement,keep=$('record').contains(focused)?{name:focused.name,start:focused.selectionStart,end:focused.selectionEnd}:null;renderRecord();const next=keep&&inputs[keep.name];if(next){next.focus({preventScroll:true});if(typeof keep.start==='number')next.setSelectionRange(keep.start,keep.end);}}}
- catch(e){pending={...captured,...pending,fields:{...(captured.fields||{}),...(pending.fields||{})},requests:{...(captured.requests||{}),...(pending.requests||{})}};throw e;}finally{saving=null;window.N80Runtime?.wake();}})();await saving;if(dirty())await flush();}
+ catch(e){pending={...captured,...pending,answerDrafts:{...(captured.answerDrafts||{}),...(pending.answerDrafts||{})},fields:{...(captured.fields||{}),...(pending.fields||{})},requests:{...(captured.requests||{}),...(pending.requests||{})}};throw e;}finally{saving=null;window.N80Runtime?.wake();}})();await saving;if(dirty())await flush();}
 async function run(fn){if(busy)return;busy=true;syncComposer();try{await fn();}catch(e){fail(e);}finally{busy=false;syncComposer();window.N80Runtime?.wake();}}
 async function mutate(action,body={}){await flush();if(!draft)throw Error('story_required');const data=await api(action,{id:draft.id,revision:draft.revision,...body});if(data.draft){draft=data.draft;render();state('saved','저장 완료');}return data;}
 function syncMeta(){if(!draft)return;$('ep-label').hidden=draft.genre!=='kpop-original';$('location-note').textContent=draft.genre==='kpop-original'?'EP 번호에 따라 ACT '+(Math.ceil(Number($('ep').value)/10)||'—')+'에 배치됩니다.':'사연곡으로 등록됩니다. 아래에서 곡 묶음을 선택할 수 있습니다.';const field=document.querySelector('[data-record-field=sunoTitle] input');if(field)field.value=draft.sunoTitle;}
@@ -51,7 +51,7 @@ async function conversationReady(){
 }
 async function openConversation(){
  if(room?.active()){room.focus();return;}await conversationReady();
- room=window.NoaAInoa.openConversation({title:'새 창작곡 · 이야기를 노래로',onClose:()=>{
+ room=window.NoaAInoa.openConversation({title:'노래 창작하기 · 이야기를 노래로',onClose:()=>{
   room=null;$('guide').hidden=true;$('work').insertBefore($('guide'),$('job'));$('guide').append($('composer'));
   // The same draft stays open in the song-info form, including while AI is running.
   $('library').hidden=true;$('work').hidden=false;
@@ -64,9 +64,9 @@ async function openConversation(){
 }
 function renderChat(){
  const root=$('chat-log');root.replaceChildren();
- chatMessage(root,'안녕하세요, AInoa예요. 어떤 이야기를 노래로 남기고 싶으세요? 정하지 않은 내용은 네 가지 선택지로 하나씩 함께 정할게요.');
+ chatMessage(root,'안녕하세요, AInoa예요. 어떤 이야기를 노래로 남기고 싶으세요? 각 단계에서 네 가지 중 여러 개를 고르고, 다음을 눌러 함께 정해요.');
  const c=draft?.creative,story=pending.story??c?.story??$('story').value;
- if(story)chatMessage(root,story,'user',c?.publication?null:()=>{storyEditing=true;syncComposer();$('story').focus();});
+ if(story)chatMessage(root,story,'user',c?.publication?null:()=>{storyEditing=true;syncComposer();$('story').focus({preventScroll:true});});
  for(const [key,q] of Object.entries(c?.questions||{}))if(c.answers[key]){
   chatMessage(root,q.prompt);chatMessage(root,c.answers[key],'user',c.publication?null:()=>{editingQuestion=true;storyEditing=false;questionIndex=Object.keys(c.questions).indexOf(key);renderQuestions();renderIntent();syncComposer();});
  }
@@ -77,6 +77,9 @@ function syncComposer(){
  for(const key of ['new','back','jobs','retry-save','reload'])$(key).disabled=busy;
  const c=draft?.creative,hasAnalysis=!!Object.keys(c?.intent||{}).length||!!Object.keys(c?.questions||{}).length;
  const storyMode=!c?.publication&&(!hasAnalysis||storyEditing)&&!jobActive;
+ $('fortune-start').hidden=!storyMode;
+ $('fortune-start').disabled=busy||jobActive;
+ $('fortune-options').hidden=!storyMode;
  $('story-compose').hidden=!storyMode;
  $('answer-compose').hidden=storyMode||jobActive||!!c?.publication||!$('answer-compose').childElementCount;
  if(room?.active())room.actions.hidden=$('story-compose').hidden&&$('answer-compose').hidden;
@@ -85,6 +88,8 @@ function syncComposer(){
  const answer=$('answer-send');if(answer)answer.disabled=busy||jobActive||!!c?.publication;
 }
 async function answerQuestion(key,value){
+ if(!value.trim()){room?.status('선택지를 고르거나 추가 설명을 입력해 주세요.');return;}
+ if([...value].length>4000){room?.status('선택과 추가 설명을 합해 4,000자 이내로 줄여 주세요.');return;}
  await mutate('answer',{condition:key,answer:value});editingQuestion=false;
  questionIndex=Math.max(0,Object.keys(draft.creative.questions).findIndex(k=>!draft.creative.answers[k]));
  renderChat();renderQuestions();renderIntent();syncComposer();
@@ -98,11 +103,43 @@ function renderQuestions(){
  if((answered===entries.length&&!editingQuestion)||c.publication){syncComposer();return;}
  questionIndex=Math.min(questionIndex,entries.length-1);
  const [key,q]=entries[questionIndex];chatMessage(root,q.prompt);
- const grid=el('div',undefined,'creative-options');for(const option of q.options){const b=button(option,()=>answerQuestion(key,option));b.setAttribute('aria-pressed',String(c.answers[key]===option));grid.append(b);}root.append(grid);
- const custom=el('textarea');custom.rows=2;custom.maxLength=4000;custom.placeholder='원하는 답이 없다면 직접 입력';custom.setAttribute('aria-label','직접 입력');custom.value=pending.answerDrafts?.[key]??c.answerDrafts?.[key]??(q.options.includes(c.answers[key])?'':c.answers[key]||'');custom.oninput=()=>queue({answerDrafts:{[key]:custom.value}});
- const send=button('전송',()=>answerQuestion(key,custom.value));send.id='creative-answer-send';compose.append(custom,send);
+ const saved=pending.answerDrafts?.[key]??c.answerDrafts?.[key];let restored;
+ try{const parsed=JSON.parse(saved);if(parsed?.version===1&&Array.isArray(parsed.choices)&&typeof parsed.custom==='string')restored=parsed;}catch{}
+ const selected=new Set(restored?restored.choices.filter(v=>q.options.includes(v)):q.options.filter(v=>c.answers[key]===v));
+ const custom=el('textarea');custom.rows=2;custom.maxLength=2500;custom.placeholder='추가 설명 · 선택지와 함께 반영해요';custom.setAttribute('aria-label','직접 입력');custom.value=restored?.custom??saved??(q.options.includes(c.answers[key])?'':c.answers[key]||'');
+ // Versioned UI state stays in the existing recovery checkpoint; AI receives
+ // all selected labels as plain text only after the explicit Next action.
+ const checkpoint=()=>{const value=JSON.stringify({version:1,choices:[...selected],custom:custom.value});if([...value].length>4000){room?.status('추가 설명을 조금 줄여 주세요. 현재 입력은 화면에 유지됩니다.');return;}queue({answerDrafts:{[key]:value}});};
+ root.append(el('p','복수 선택 가능 · 고른 뒤 다음을 눌러 주세요.'));
+ const grid=el('div',undefined,'creative-options');for(const option of q.options){const b=button(option,()=>{selected.has(option)?selected.delete(option):selected.add(option);b.setAttribute('aria-pressed',String(selected.has(option)));checkpoint();});b.setAttribute('aria-pressed',String(selected.has(option)));grid.append(b);}root.append(grid);
+ custom.oninput=checkpoint;
+ const send=button('다음',()=>answerQuestion(key,[...selected,custom.value.trim()].filter(Boolean).join('\n')));send.id='creative-answer-send';compose.append(custom,send);
  const nav=el('div',undefined,'creative-controls');
- nav.append(button('이전 질문',()=>{editingQuestion=true;questionIndex=Math.max(0,questionIndex-1);queue({progress:questionIndex});renderQuestions();}),button('다음 질문',()=>{editingQuestion=true;questionIndex=Math.min(entries.length-1,questionIndex+1);queue({progress:questionIndex});renderQuestions();}));root.append(nav);syncComposer();
+ if(questionIndex>0)nav.append(button('이전 질문',()=>{editingQuestion=true;questionIndex--;queue({progress:questionIndex});renderQuestions();}));root.append(nav);syncComposer();
+}
+async function fortuneStories(){
+ const target=room,capturedEpoch=epoch,root=$('fortune-options');root.replaceChildren(el('p','오늘의 운세를 불러오고 있어요.'));
+ try{
+  const response=await fetch('/noa-bridge/listening.php',{credentials:'same-origin'});
+  if(!response.ok)throw Error('fortune_unavailable');const data=await response.json();
+  if(epoch!==capturedEpoch||room!==target||!room?.active())return;
+  root.replaceChildren();const f=data.fortune;
+  if(!f?.date||!f?.headline||!f?.body){
+   root.append(el('p','오늘의 운세를 만들려면 생년월일 설정이 필요해요. 설정 후 다시 눌러 주세요.'));
+   const link=el('a','생년월일 설정 열기');link.href='/?setup=fortune#noa-daily-fortune';link.target='_blank';link.rel='noopener';root.append(link);return;
+  }
+  const source=[f.headline,f.body,f.tip].filter(v=>typeof v==='string').join('\n');
+  root.append(el('h2',f.date+' · '+f.headline),el('p',f.body),el('p','운세를 소재로 만든 허구의 이야기예요. 네 가지 중 여러 개를 골라 섞을 수 있어요.'));
+  const stories=[['나를 돌보는 하루','주인공은 오늘의 운세 문구를 읽고 자기 마음에 필요한 작은 행동을 고른다. 일상의 한 장면에서 자신을 다독이며 하루를 마친다.'],['마음을 전하는 순간','주인공은 오늘의 운세에서 용기를 얻어 누군가에게 미뤄 둔 말을 전한다. 대화 속에서 서로의 마음을 새롭게 알아간다.'],['새 출발의 첫걸음','주인공은 오늘의 운세를 계기로 망설이던 일에 작은 첫걸음을 내딛는다. 예상 밖의 어려움을 만나도 자신의 속도로 나아간다.'],['추억이 건넨 답','주인공은 오늘의 운세를 읽다가 오래된 기억 하나를 떠올린다. 그때 미처 이해하지 못했던 마음을 오늘의 시선으로 다시 바라본다.']];
+  const selected=new Set(),grid=el('div',undefined,'creative-options');
+  for(const [index,[label,story]] of stories.entries()){const b=button(label+' · '+story,()=>{selected.has(index)?selected.delete(index):selected.add(index);b.setAttribute('aria-pressed',String(selected.has(index)));});b.setAttribute('aria-pressed','false');grid.append(b);}
+  const next=button('선택한 이야기로 다음',async()=>{
+   if(!selected.size){room?.status('이야기 방향을 하나 이상 골라 주세요.');return;}
+   const inspiration='[오늘의 운세에서 얻은 창작 소재 · '+f.date+']\n'+source+'\n\n[선택한 허구의 이야기 방향]\n'+[...selected].map(i=>stories[i][1]).join('\n')+'\n\n선택한 방향을 모두 반영해 하나의 허구 이야기로 엮어 주세요. 실제로 일어난 일이나 미래의 예언으로 표현하지 마세요.';
+   $('story').value=[$('story').value.trim(),inspiration].filter(Boolean).join('\n\n');
+   queue({story:$('story').value});await flush();root.replaceChildren();renderChat();$('story').focus({preventScroll:true});room?.status('선택한 이야기를 담았어요. 내용을 수정하거나 다음을 눌러 창작 조건을 정해요.');
+  });root.append(grid,next);
+ }catch{if(epoch===capturedEpoch&&room===target){root.replaceChildren(el('p','운세를 불러오지 못했어요. 잠시 후 다시 눌러 주세요.'));}}
 }
 function renderIntent(){
  const root=$('intent');root.replaceChildren();const c=draft?.creative;if(!c||!Object.keys(c.intent||{}).length)return;
@@ -138,8 +175,9 @@ $('preview-button').onclick=()=>run(async()=>{const data=await mutate('preview')
 $('rights').onchange=()=>{$('final').disabled=!$('rights').checked||!draft?.creative.preview?.validation.ready||dirty();};
 $('final').onclick=()=>run(async()=>{await mutate('publish',{token:draft.creative.preview?.token||'',rightsConfirmed:$('rights').checked});status('정식 등록을 완료했습니다. 초안 이력은 보관함에 유지됩니다.');});
 $('story').oninput=()=>queue({story:$('story').value});$('story-compose').onsubmit=event=>{event.preventDefault();if(!$('story').value.trim()){room?.status('노래로 만들 이야기를 먼저 입력해 주세요.');return;}run(()=>generate('analyze'));};
+$('fortune-start').onclick=()=>run(fortuneStories);
 $('chat').onclick=()=>openConversation().catch(fail);
-$('new').onclick=()=>run(async()=>{await flush();epoch++;stopWatching();draft=null;pending={};inputs={};conflict=false;assetActive=false;storyEditing=false;editingQuestion=false;invalidFields.clear();history.replaceState(null,'',location.pathname+'?tool=creative');$('library').hidden=true;$('work').hidden=false;$('story').value='';$('story').disabled=false;for(const x of ['questions','intent','record','preview','published'])$(x).replaceChildren();$('assets').hidden=true;$('publish').hidden=true;showJob(null);renderRecord();state('idle','내용을 입력하면 24시간 동안 복구할 수 있습니다.');await openConversation();status('이야기를 입력하고 전송해 주세요.');$('story').focus();});
+$('new').onclick=()=>run(async()=>{await flush();epoch++;stopWatching();draft=null;pending={};inputs={};conflict=false;assetActive=false;storyEditing=false;editingQuestion=false;invalidFields.clear();history.replaceState(null,'',location.pathname+'?tool=creative');$('library').hidden=true;$('work').hidden=false;$('story').value='';$('story').disabled=false;for(const x of ['questions','intent','record','preview','published','fortune-options'])$(x).replaceChildren();$('assets').hidden=true;$('publish').hidden=true;showJob(null);renderRecord();state('idle','내용을 입력하면 24시간 동안 복구할 수 있습니다.');await openConversation();status('이야기를 입력하거나 오늘의 운세에서 시작해 보세요.');});
 $('jobs').onclick=()=>run(async()=>{await flush();if(!draft)return;const data=await api('jobs',undefined,{id:draft.id});const dialog=el('dialog');dialog.append(el('h2','생성 작업 이력'));for(const j of data.jobs){const row=el('div');row.append(el('p',j.operation+' · '+j.state+(j.error?' · '+message(j.error):'')),button('결과 확인',async()=>{const v=await api('jobResult',undefined,{id:draft.id,job:j.id});row.append(el('pre',text(v.result)));}));dialog.append(row);}dialog.append(button('닫기',()=>{dialog.close();dialog.remove();}));document.body.append(dialog);dialog.showModal();});
 $('back').onclick=()=>run(library);$('retry-save').onclick=()=>run(flush);$('reload').onclick=()=>run(async()=>{if(!confirm('현재 입력을 필요한 곳에 복사했나요? 서버에 저장된 버전을 불러옵니다.'))return;pending={};conflict=false;invalidFields.clear();await open(draft.id);});let searchTimer;for(const x of ['search','filter','sort'])$(x).oninput=()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>run(()=>loadList()),250);};$('more').onclick=()=>run(()=>loadList(true));$('category').onchange=()=>{paintCollections();saveLocation();};$('ep').oninput=saveLocation;
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&dirty())flush().catch(fail);});
