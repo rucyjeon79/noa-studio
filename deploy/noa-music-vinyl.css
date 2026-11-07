@@ -405,16 +405,8 @@ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline
  }
 }
 
-#music-browse .lp-view-switch {
- display:flex;align-items:center;justify-content:flex-end;gap:4px;margin:12px 0;
-}
-#music-browse .lp-view-switch h3 {margin:0 auto 0 0}
-#music-browse .lp-view-switch button {
- min-height:44px;padding:0 12px;border:1px solid transparent;border-radius:8px;
- background:transparent;color:var(--noa-muted);font:inherit;font-size:13px;
-}
-#music-browse .lp-view-switch button[aria-pressed=true] {border-color:#867552;color:var(--noa-gold,#cfb783)}
-#music-browse .noa-inline-songs[data-track-view=album] {
+#music-browse .noa-inline-songs[data-track-view=album],
+body.noa-record-room #songs:not([hidden]) {
  display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,max(calc(25% - 9px),min(220px,calc(50% - 6px)))),1fr));
  gap:24px 12px;align-items:stretch;
 }
@@ -495,8 +487,6 @@ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline
 
 /* Palette changes apply to the switch and both track presentations, including completed editions. */
 @media screen {
- html[data-noa-theme] #music-browse .lp-view-switch button{color:var(--noa-text);background:var(--noa-surface);border-color:var(--noa-line)}
- html[data-noa-theme] #music-browse .lp-view-switch button[aria-pressed=true]{color:var(--noa-accentText);background:var(--noa-accent);border-color:var(--noa-accent)}
  html[data-noa-theme][data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view] .noa-inline-song-row{background:var(--noa-surface);color:var(--noa-text);border-color:var(--noa-line)}
  html[data-noa-theme][data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view] .noa-inline-song-row .noa-track-name{color:var(--noa-text);-webkit-text-fill-color:var(--noa-text)}
  html[data-noa-theme][data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view] .noa-inline-song-row:has(.noa-premium-badge){background:linear-gradient(120deg,color-mix(in srgb,var(--noa-surface) 83%,#bb974e),var(--noa-surface) 62%);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--noa-line) 50%,#bb974e)}
@@ -525,3 +515,21 @@ html[data-noa-precision] body.noa-page.noa-record-room #music-browse .noa-inline
  html[data-noa-theme][data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view=list] .noa-inline-song-row{padding-top:12px}
  html[data-noa-theme][data-noa-precision] body.noa-page.noa-record-room #music-browse [data-track-view=list] .noa-inline-song-row:has(.noa-premium-badge){padding-top:36px}
 }
+
+/* Full-catalog and queue results use the same album proportions as an expanded ACT. */
+body.noa-record-room #songs > .song:not([hidden]) {
+ display:flex; flex-direction:column; align-items:stretch; min-width:0; padding:0; overflow:hidden;
+}
+body.noa-record-room #songs .song > .song-select {
+ display:flex; flex-direction:column; align-items:stretch; width:100%; min-width:0; padding:0; gap:0; text-align:start;
+}
+body.noa-record-room #songs .song-select > :is(img,.cover,.lp-track-art):not([hidden]) {
+ width:100%; height:auto; aspect-ratio:1; object-fit:cover; margin:0; flex:none; overflow:hidden;
+}
+body.noa-record-room #songs .song-select > .lp-track-art .lp-track-jacket {
+ position:relative; inset:auto; width:100%; height:100%;
+}
+body.noa-record-room #songs .song-select > .info {padding:8px; min-width:0}
+body.noa-record-room #songs .song > .jukebox-actions {margin-top:auto; justify-content:flex-start; flex-wrap:wrap}
+body.noa-record-room #songs .song > .noa-engagement {flex-wrap:wrap; padding-inline:4px}
+body.noa-record-room #songs > .song[hidden] {display:none}

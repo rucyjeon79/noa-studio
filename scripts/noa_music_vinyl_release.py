@@ -17,6 +17,12 @@ if os.environ.get('NOA_TRACK_FOLLOW') == 'true':
     release.NEW = set()
     release.PROTECTED = [name for name in release.PROTECTED if name != 'noa-music.php']
     release.UNRELATED_PATH_PREFIXES = BUSAN_ONLY_PATH_PREFIXES
+if os.environ.get('NOA_FIXED_CATALOG') == 'true':
+    release.FILES = {name: 'deploy/' + name for name in (
+        'noa-music-vinyl.css', 'noa-music-vinyl.js', 'noa-browse.js', 'noa-youtube.css',
+    )}
+    release.NEW = set()
+    release.UNRELATED_PATH_PREFIXES = BUSAN_ONLY_PATH_PREFIXES
 if __name__=='__main__':
     import sys
     try:release.main()

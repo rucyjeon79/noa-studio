@@ -47,6 +47,8 @@ async function main() {
       const rows = page.locator('.noa-inline-video-row:visible');
       await rows.first().locator('.noa-song-more').waitFor();
       assert.equal(await rows.count(), 2);
+      assert.equal(await rows.first().locator('..').getAttribute('data-track-view'),'list');
+      assert.equal(await page.locator('.lp-view-switch').count(),0);
       await rows.first().getByText('12.3K', {exact: true}).waitFor();
       const samples = await rows.evaluateAll(items => items.map(row => {
         const bounds = selector => row.querySelector(selector).getBoundingClientRect().toJSON();

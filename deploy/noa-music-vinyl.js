@@ -236,61 +236,24 @@
    fitTrackName(viewport);
   }
  }
- const viewChoices=new Map();
- function setTrackViews(buttons){
-  const index=[...buttons].findIndex(button=>button.getAttribute('aria-pressed')==='true');
-  const group=window.NoaBrowse?.groups[index]?.[0];
-  if(!group)return;
-  const storageKey='noa-track-view:'+group;
-  if(!viewChoices.has(group)){
-   let saved;
-   try{saved=localStorage.getItem(storageKey);}catch{}
-   viewChoices.set(group,['album','list'].includes(saved)?saved:['story','cover'].includes(group)?'album':'list');
-  }
-  const mode=viewChoices.get(group);
+ function showCoverCredits(){
   const artists=new Map();
-  if(group==='cover' && mode==='album'){
-   for(const track of document.querySelectorAll('#songs .song[data-original-artist]')){
-    artists.set(track.dataset.key,track.dataset.originalArtist.trim());
-   }
+  for(const track of document.querySelectorAll('#songs .song[data-genre="cover-reborn"][data-original-artist]:not([data-original-artist=""])')){
+   if(track.dataset.originalArtist.trim())artists.set(track.dataset.key,track.dataset.originalArtist.trim());
   }
-  for(const list of browse.querySelectorAll('.noa-inline-songs')){
-   list.dataset.trackView=mode;
-   for(const title of list.querySelectorAll('.noa-inline-title[title]')){
-    const key=title.closest('.noa-inline-song').dataset.inlineKey;
-    const artist=artists.get(key);
-    const full=title.title;
-    const split=artist && full.endsWith(' - '+artist);
-    const text=title.querySelector('.lp-title-text');
-    const name=split?full.slice(0,-(artist.length+3)):full;
-    let credit=title.querySelector('.lp-cover-credit');
-    if((split||credit) && text && text.textContent!==name)text.textContent=name;
-    if(split){
-     if(!credit){credit=make('lp-cover-credit');title.append(credit);}
-     if(credit.textContent!==artist)credit.textContent=artist;
-    }else credit?.remove();
-   }
-   let bar=list.previousElementSibling;
-   if(!bar?.classList.contains('lp-view-switch')){
-    bar=document.createElement('div');
-    bar.className='lp-view-switch';
-    bar.setAttribute('role','group');
-    bar.setAttribute('aria-label','세부 곡목록 보기 방식');
-    const heading=list.previousElementSibling;
-    if(heading?.matches('h3'))bar.append(heading);
-    for(const [value,label] of [['album','앨범'],['list','목록']]){
-     const button=document.createElement('button');
-     button.type='button';button.dataset.mode=value;button.textContent=label;
-     button.addEventListener('click',()=>{
-      viewChoices.set(group,value);
-      try{localStorage.setItem(storageKey,value);}catch{}
-      schedule();
-     });
-     bar.append(button);
-    }
-    list.before(bar);
-   }
-   for(const button of bar.querySelectorAll('[data-mode]'))button.setAttribute('aria-pressed',String(button.dataset.mode===mode));
+  for(const title of browse.querySelectorAll('.noa-inline-song .noa-inline-title[title]')){
+   const key=title.closest('.noa-inline-song').dataset.inlineKey;
+   const artist=artists.get(key);
+   const full=title.title;
+   const split=artist && full.endsWith(' - '+artist);
+   const text=title.querySelector('.lp-title-text');
+   const name=split?full.slice(0,-(artist.length+3)):full;
+   let credit=title.querySelector('.lp-cover-credit');
+   if((split||credit) && text && text.textContent!==name)text.textContent=name;
+   if(split){
+    if(!credit){credit=make('lp-cover-credit');title.append(credit);}
+    if(credit.textContent!==artist)credit.textContent=artist;
+   }else credit?.remove();
   }
  }
  function sync(){
@@ -311,7 +274,7 @@
    const imprint=make('lp-imprint',edition);imprint.setAttribute('aria-hidden','true');
    image.before(sleeve);image.src='/noa-assets/editorial-'+photo+'.webp';face.append(image,imprint);sleeve.append(disc,face);
   });
-  setTrackViews(buttons);
+  showCoverCredits();
   syncPressings(buttons);
   for(const item of document.querySelectorAll('#music-browse .noa-inline-song[data-inline-key],#songs .song[data-key]')){
    const active=(item.dataset.inlineKey||item.dataset.key)===key && !!key;
