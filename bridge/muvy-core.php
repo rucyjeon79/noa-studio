@@ -12,9 +12,25 @@ function mu_read():array{$path=lab_root().'/muvy.json';if(!is_file($path))return
 function mu_config():array{$s=lab_read();$secrets=lab_unseal($s['secrets']??null);$c=$s['muvyConfig']??[];return ['revision'=>$s['muvyConfigRevision']??0,'configured'=>!empty($secrets['xaiKey']),'enabled'=>($c['enabled']??false)===true,'model'=>$c['model']??'grok-4.5','dailyCalls'=>$c['dailyCalls']??20];}
 function mu_status(string $id=''):array{$s=mu_read();$rows=[];foreach(array_reverse($s['projects'],true)as $p)$rows[]=['id'=>$p['id'],'title'=>$p['pack']['title'],'ep'=>$p['pack']['ep'],'updatedAt'=>$p['updatedAt'],'revision'=>$p['revision']];$p=$id!==''?($s['projects'][lab_id($id)]??null):null;if($id!==''&&!$p)throw new InvalidArgumentException('unknown_project');return ['config'=>mu_config(),'projects'=>$rows,'project'=>$p,'callsToday'=>(int)($s['usage'][gmdate('Y-m-d')]??0),'source'=>MU_SOURCE];}
 function mu_settings(array $b):array{return lab_lock(function(&$s)use($b){if(($b['expectedRevision']??null)!==($s['muvyConfigRevision']??0))throw new DomainException('revision_conflict');$secrets=lab_unseal($s['secrets']??null);if(isset($b['key'])&&$b['key']!==''){$key=mu_text($b['key'],4096);if(preg_match('/[\s\r\n]/',$key))throw new InvalidArgumentException('invalid_key');$secrets['xaiKey']=$key;}$model=mu_text($b['model']??'grok-4.5',80);if(!preg_match('/^[A-Za-z0-9._-]+$/D',$model))throw new InvalidArgumentException('invalid_model');$limit=$b['dailyCalls']??20;if(!is_int($limit)||$limit<1||$limit>100)throw new InvalidArgumentException('invalid_limit');$enabled=($b['enabled']??false)===true;if($enabled&&empty($secrets['xaiKey']))throw new DomainException('xai_key_required');$s['secrets']=lab_seal($secrets);$s['muvyConfig']=['model'=>$model,'enabled'=>$enabled,'dailyCalls'=>$limit];$s['muvyConfigRevision']=($s['muvyConfigRevision']??0)+1;lab_event($s,'muvy_settings_updated','',(string)$GLOBALS['member']['mb_id']);return ['ok'=>true];});}
-function mu_save(array $b):array{
+function mu_save(array $b,bool $openExisting=false):array{
  $pack=mu_pack($b['pack']??[]);$id=lab_id((string)($b['id']??''));$expected=$b['expectedRevision']??null;if(!is_int($expected))throw new InvalidArgumentException('revision_required');
- return mu_lock(function(&$s)use($id,$pack,$expected){$old=$s['projects'][$id]??null;if($old&&$old['pack']===$pack&&$expected===$old['revision']-1)return ['project'=>$old,'replayed'=>true];if(($old['revision']??0)!==$expected)throw new DomainException('revision_conflict');if($old&&!empty($old['active']))throw new DomainException('generation_in_progress');if(!$old&&count($s['projects'])>=30)throw new DomainException('project_limit');$p=$old??['id'=>$id,'revision'=>0,'createdAt'=>gmdate('c'),'source'=>MU_SOURCE,'operations'=>[],'active'=>null];$p['pack']=$pack;$p['revision']++;$p['updatedAt']=gmdate('c');$s['projects'][$id]=$p;return ['project'=>$p];});
+ return mu_lock(function(&$s)use($id,$pack,$expected,$openExisting){$old=$s['projects'][$id]??null;if($openExisting&&$old)return ['project'=>$old];if($old&&$old['pack']===$pack&&$expected===$old['revision']-1)return ['project'=>$old,'replayed'=>true];if(($old['revision']??0)!==$expected)throw new DomainException('revision_conflict');if($old&&!empty($old['active']))throw new DomainException('generation_in_progress');if(!$old&&count($s['projects'])>=30)throw new DomainException('project_limit');$p=$old??['id'=>$id,'revision'=>0,'createdAt'=>gmdate('c'),'source'=>MU_SOURCE,'operations'=>[],'active'=>null];$p['pack']=$pack;$p['revision']++;$p['updatedAt']=gmdate('c');$s['projects'][$id]=$p;return ['project'=>$p];});
+}
+/** Resolve once per selection. The project's source is a snapshot of the selected edition. */
+function mu_select_song(array $record):array{
+ if(!in_array($record['kind']??'',['single','story'],true)||!empty($record['payload']['_noaTrash']))throw new DomainException('song_unavailable');
+ $fields=$record['fields'];
+ $lyrics=trim((string)($fields['lyrics']??''));
+ if(mb_strlen($lyrics)<10)throw new DomainException('song_lyrics_required');
+ $ep=trim((string)($record['context']['ep']??''));
+ $song=['key'=>$record['writeKey'],'genre'=>$record['context']['genre']??''];
+ foreach(['vocal'=>1200,'cast'=>1200,'description'=>3000] as $name=>$limit){
+  $song[$name]=mb_substr(trim((string)($fields[$name==='description'?'songDescription':$name]??'')),0,$limit);
+ }
+ $pack=mu_pack(['ep'=>ctype_digit($ep)?((int)$ep>0?'EP.'.$ep:''):$ep,'title'=>$fields['title'],'lyrics'=>$lyrics,'song'=>$song]);
+ // An unrelated catalog edit must not duplicate a paid job. A changed lyric or edition must fork it.
+ $id=substr(hash('sha256',"muvy-song-v1\0".json_encode($pack,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)),0,32);
+ return mu_save(['id'=>$id,'expectedRevision'=>0,'pack'=>$pack],true);
 }
 function mu_begin(array $b):array{
  $id=lab_id((string)($b['id']??''));$request=lab_id((string)($b['requestId']??''));$stage=mu_text($b['stage']??null,12);$batch=(int)($b['batch']??0);$note=mu_text($b['note']??'',400,true);$expected=$b['expectedRevision']??null;$c=mu_config();if(!$c['configured']||!$c['enabled'])throw new DomainException('xai_enable_required');

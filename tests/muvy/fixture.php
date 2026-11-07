@@ -13,11 +13,25 @@ COMMON;
 file_put_contents($root.'/common.php',$common);
 foreach(['member-access.php','lab-core.php','muvy-core.php','muvy-prompts.php','muvy-rules.php']as $file)copy('bridge/'.$file,$root.'/noa-bridge/'.$file);
 $api=str_replace('mu_provider($task)','mu_fixture_provider($task)',file_get_contents('bridge/muvy.php'));file_put_contents($root.'/noa-bridge/muvy.php',$api);
-foreach(['noa-ai-lab.php','noa-lab-chat.php','noa-ainoa.js','noa-ai-lab.css','noa-ai-lab.js','noa-muvy-panel.php','noa-muvy.css','noa-muvy.js','noa-ui.css','noa-ui.js','noa-design.json','noa-ui-words.json','noa-brand.js']as $file)copy('deploy/'.$file,$root.'/'.$file);
+foreach(['noa-ai-lab.php','noa-lab-chat.php','noa-ainoa.js','noa-ai-lab.css','noa-ai-lab.js','noa-muvy-panel.php','noa-muvy.css','noa-muvy.js','noa-browse.js','noa-ui.css','noa-ui.js','noa-design.json','noa-ui-words.json','noa-brand.js']as $file)copy('deploy/'.$file,$root.'/'.$file);
+// Only the catalog storage boundary is replaced. Selection, prompts and quotas run through the native API.
+file_put_contents($root.'/noa-bridge/storage.php','<?php function noa_bridge_pdo(){return null;}');
+file_put_contents($root.'/noa-bridge/sound-core.php','<?php');
+file_put_contents($root.'/noa-bridge/inline-edit.php', <<<'LOOKUP'
+<?php
+function nie_resolve($db,array $selector):array{
+ $key=$selector['key'];
+ if(!in_array($key,['edition','original','missing','story'],true))throw new DomainException('song_unavailable');
+ return ['writeKey'=>$key,'kind'=>'single','payload'=>[],
+  'context'=>['genre'=>$key==='original'?'kpop-original':'groovy-airy-pop','ep'=>$key==='story'?'':'40'],
+  'fields'=>['title'=>'같은 제목','lyrics'=>$key==='missing'?'':($key==='original'?'원곡 가사 원곡 가사 원곡 가사':'선택한 장르의 노랫말을 기억해'),
+    'vocal'=>'여성 솔로','cast'=>'female','songDescription'=>'비 오는 오후의 이야기']];
+}
+LOOKUP);
 $provider= <<<'PROVIDER'
 <?php
 function mu_fixture_provider(array $task):array{
- $path=dirname(G5_PATH).'/provider-calls.json';$calls=is_file($path)?json_decode(file_get_contents($path),true):[];$calls[]=['stage'=>$task['stage'],'batch'=>$task['batch']];file_put_contents($path,json_encode($calls));
+ $path=dirname(G5_PATH).'/provider-calls.json';$calls=is_file($path)?json_decode(file_get_contents($path),true):[];$calls[]=['stage'=>$task['stage'],'batch'=>$task['batch'],'user'=>$task['user']];file_put_contents($path,json_encode($calls));
  if($task['stage']==='script'){$out=['songType'=>'B','emotionalLine'=>'작은 빛이 다시 이어지는 밤','edition'=>'Moonlight Edition','genre'=>'K-POP','outfits'=>[1=>['woman'=>'white linen dress','man'=>'navy shirt'],2=>['woman'=>'blue silk dress','man'=>'black shirt'],3=>['woman'=>'cream dress','man'=>'white shirt']],'cuts'=>[]];for($i=1;$i<=30;$i++)$out['cuts'][]=['n'=>$i,'lyric'=>'가사 구간 '.$i,'script'=>'NOA가 창가의 빛을 바라본다. 천천히 가까워지는 카메라에 표정이 드러난다. 장면 '.$i];}
  elseif(preg_match('/^c([123])$/',$task['stage'],$m)){$out=['cuts'=>[]];for($i=0;$i<5;$i++){$n=((int)$m[1]-1)*10+$task['batch']*5+$i+1;$out['cuts'][]=['n'=>$n,'gemini'=>'aspect ratio 16:9, horizontal cinematic frame, the same NOA, no text. Cut '.$n,'grok'=>'10 seconds, the same NOA, slow camera movement, no subtitle. Cut '.$n];}}
  elseif(str_starts_with($task['stage'],'extra')){$out=['cuts'=>[['label'=>'보충 1','lyric'=>'','script'=>'노아가 조용히 숨을 고른다. 창밖 빛이 움직인다.','gemini'=>'16:9 the same NOA','grok'=>'10 seconds slow camera'],['label'=>'보충 2','lyric'=>'','script'=>'노엘이 같은 공간을 바라본다. 카메라가 천천히 가까워진다.','gemini'=>'16:9 the same NOEL','grok'=>'10 seconds no subtitle']]];}
@@ -29,6 +43,11 @@ file_put_contents($root.'/provider-fixture.php',$provider);
 $router= <<<'ROUTER'
 <?php
 $path=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);
+if($path==='/noa-bridge/catalog.php'){
+ header('Content-Type: application/json');
+ $items=[];foreach(['original','edition','missing','story','playlist'] as $key)$items[]=['key'=>$key,'kind'=>$key==='playlist'?'playlist':'single','title'=>'같은 제목','ep'=>$key==='story'?'':'40','genre'=>$key==='original'?'kpop-original':'groovy-airy-pop'];
+ echo json_encode(['access'=>'administrator','items'=>$items]);return true;
+}
 if($path==='/noa-bridge/lab-api.php'){require __DIR__.'/common.php';header('Content-Type: application/json');echo '{}';return true;}
 if(str_starts_with($path,'/noa-bridge/')&&!is_file(__DIR__.$path)){header('Content-Type: application/json');echo json_encode(['ok'=>true,'items'=>[],'revision'=>0]);return true;}
 return false;
@@ -44,6 +63,13 @@ mu_settings(['expectedRevision'=>0,'key'=>'test-xai-key-not-real','model'=>'grok
 $request=['id'=>$id,'expectedRevision'=>1,'requestId'=>str_repeat('b',32),'stage'=>'script'];$task=mu_begin($request);must(!empty(mu_begin($request)['replayed']),'duplicate_call_reserved_once');must(mu_status()['callsToday']===1,'single_quota_count');reject(fn()=>mu_save(['id'=>$id,'expectedRevision'=>1,'pack'=>$pack]),'generation_in_progress');reject(fn()=>mu_begin(array_replace($request,['requestId'=>str_repeat('c',32)])),'generation_in_progress');
 $result=mu_fixture_provider($task);$p=mu_finish($task,$result)['project'];must(count($p['pack']['cuts'])===30,'thirty_cuts');must(mu_begin($request)['replayed'],'finished_call_idempotent');reject(fn()=>mu_apply($p['pack'],'c1',0,['cuts'=>[]]),'provider_cut_count');
 $bad=$p['pack'];$bad['cuts'][10]['n']=10;reject(fn()=>mu_pack($bad),'cut_sequence');reject(fn()=>mu_publish(['youtubeTitle'=>'wrong','description'=>'a','community'=>'b','thumbnailPrompt'=>'c'],'EP.12','빛이 닿는 순간'),'publish_title_mismatch');
+require $root.'/noa-bridge/inline-edit.php';
+$edition=nie_resolve(null,['key'=>'edition']);$one=mu_select_song($edition)['project'];
+must(mu_select_song($edition)['project']['id']===$one['id'],'reselect_same_edition');
+must(mu_select_song(nie_resolve(null,['key'=>'original']))['project']['id']!==$one['id'],'same_title_other_key');
+$edition['fields']['lyrics'].=' 새로 저장한 가사';must(mu_select_song($edition)['project']['id']!==$one['id'],'changed_song_forks');
+must(mu_select_song(nie_resolve(null,['key'=>'story']))['project']['pack']['ep']==='','unnumbered_song');
+reject(fn()=>mu_select_song(nie_resolve(null,['key'=>'missing'])),'song_lyrics_required');
 @mkdir('muvy-proof',0700,true);file_put_contents('muvy-proof/core-regression.json',json_encode(['ok'=>true,'authEnvironment'=>'isolated native interface fixture','provider'=>'deterministic fixture, zero external calls','encryptedKey'=>true,'optimisticRevision'=>true,'idempotentRequests'=>true,'quotaReservedBeforeCall'=>true,'concurrentWritesBlocked'=>true,'thirtyOrderedCuts'=>true,'malformedOutputsRejected'=>true],JSON_PRETTY_PRINT));
 // Reset only this disposable fixture; browser tests start from a blank native workroom.
 unlink(lab_root().'/muvy.json');unlink(lab_root().'/state.json');unlink(dirname($root).'/provider-calls.json');echo "MUVY_CORE_PRIVATE_STORAGE_AND_IDEMPOTENCY_OK\n";

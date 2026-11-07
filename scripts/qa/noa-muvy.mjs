@@ -29,6 +29,36 @@ try{
  for(const width of [360,768,1440])for(const theme of ['noa-studio','noa-ivory']){
   const c=await browser.newContext({viewport:{width,height:1000},serviceWorkers:'block',reducedMotion:'reduce'});await c.addCookies([{name:'qa_role',value:'admin',url:base}]);await c.addInitScript(theme=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',radius:'soft',design:'ios'})),theme);const p=await c.newPage();await p.goto(base+'/noa-ai-lab.php#lab-muvy');await p.waitForFunction(()=>document.querySelectorAll('#mu-project option').length===3);await p.locator('#mu-project').selectOption(firstId);await p.locator('.mu-cut').first().waitFor();await p.locator('.mu-cut summary').first().click();assert(await p.locator('.mu-cut summary').first().evaluate(e=>e.getBoundingClientRect().width>=e.parentElement.getBoundingClientRect().width*.9),'cut summaries remain full-width title rows');assert.equal(await p.locator('.mu-cut summary.noa-action').count(),0);await p.locator('#mu-heading').scrollIntoViewIfNeeded();assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.equal(await p.locator('.mu-cut').count(),32);for(const id of ['mu-new','mu-import','mu-export','mu-text-export'])assert(await p.locator('#'+id).evaluate(e=>e.getBoundingClientRect().height<=56&&e.scrollWidth<=e.clientWidth+1),'toolbar labels fit on one row');await p.screenshot({path:out+'/'+theme+'-'+width+'.png'});report.browser.push({width,theme,orderedCuts:true,storedProjectResumed:true,noOverflow:true});await c.close();
  }
+ // Search and folder navigation incur no paid calls. Only picking a leaf starts production.
+ await page.locator('#mu-picker summary').click();
+ await page.waitForFunction(()=>!document.querySelector('#mu-picker-fields').disabled);
+ await page.locator('#mu-search').fill('Groovy');
+ assert.equal(await page.locator('#mu-song option[value=original],#mu-song option[value=playlist]').count(),0);
+ await page.locator('#mu-song').selectOption('missing');
+ await page.waitForFunction(()=>document.querySelector('#mu-status').textContent.includes('가사가 10자 미만'));
+ assert.equal(JSON.parse(readFileSync('/tmp/noa-muvy-fixture/provider-calls.json')).length,9);
+ const setLimit=async dailyCalls=>{
+  const cfg=(await(await contexts.admin.request.get(api)).json()).config;
+  assert.equal((await post({action:'config',expectedRevision:cfg.revision,model:cfg.model,dailyCalls,enabled:true})).status,200);
+ };
+ await setLimit(10);
+ await page.locator('#mu-song').selectOption('edition');
+ await page.waitForFunction(()=>document.querySelector('#mu-status').textContent.includes('한도에 도달'));
+ assert.equal(await page.locator('#mu-lyrics').inputValue(),'선택한 장르의 노랫말을 기억해');
+ assert.equal(await page.locator('.mu-cut').count(),30);
+ const songId=await page.locator('#mu-project').inputValue();
+ await setLimit(20);
+ await page.locator('#mu-song').selectOption('edition');
+ await page.waitForFunction(()=>document.querySelector('#mu-status').textContent.includes('모두 저장'));
+ assert.equal(await page.locator('#mu-project').inputValue(),songId);
+ const songCalls=()=>JSON.parse(readFileSync('/tmp/noa-muvy-fixture/provider-calls.json')).slice(9);
+ assert.deepEqual(songCalls().map(c=>c.stage),['script','c1','c1','c2','c2','c3','c3','publish']);
+ assert(songCalls().every(c=>c.user.includes('groovy-airy-pop')&&c.user.includes('여성 솔로')&&!c.user.includes('원곡 가사')));
+ assert(songCalls()[0].user.includes('선택한 장르의 노랫말'));
+ await page.locator('#mu-song').selectOption('edition');
+ await page.waitForFunction(()=>!document.querySelector('#mu-picker-fields').disabled);
+ assert.equal(songCalls().length,8);
+ report.selectSongAutoGeneration=true;report.partialJobResumed=true;report.completedSelectionReused=true;
  assert.deepEqual(errors,[]);report.highestAdminOnly=true;report.csrfAndOriginEnforced=true;report.durableReload=true;report.originalPackImport=true;report.fullThirtyCutFlow=true;report.encryptedKeysNotReturned=true;report.dailyQuotaBeforeProvider=true;report.providerFixtureCalls=calls.length;
 }finally{writeFileSync(out+'/browser-regression.json',JSON.stringify(report,null,2));await browser.close();server.kill();}
 console.log('MUVY_NATIVE_WORKROOM_BROWSER_OK',report.browser.length);
