@@ -35,7 +35,7 @@ function nam_requirement(string $path,string $method='GET',array $query=[]):?str
   require_once is_file($engine)?$engine:dirname(__DIR__).'/deploy/noa-app/engine/ai-lab.php';
   return is_string($tool)?(n80_lab_tools()[$tool]['access']??'member'):'member';
  }
- if(in_array($path,['/noa-creator-ai.php','/noa-bridge/creator-ai.php'],true))return 'creatorAI';
+ if(in_array($path,['/noa-creator-ai.php','/noa-bridge/creator-ai.php','/noa-lab-creative.php','/noa-bridge/creative.php'],true))return 'creatorAI';
  if($path==='/noa-channel-rules.php'||$path==='/noa-creator.php'||$path==='/noa-bridge/creator.php')return 'creator';
  if($path==='/noa-bridge/legacy-audio.php')return null;
  if($path==='/noa-app/jukebox/stream.php'||$path==='/noa-app/jukebox/download.php')return null; // asset ownership checked after loading the record

@@ -5,6 +5,8 @@ const schema={ep:['EP 번호','input','basic'],originalArtist:['원곡 가수','
 const ownerKeys=['originalArtist','title','vocal','songDescription','lyrics','lyricsTranslation','sunoPrompt','productionPrompt','characterPrompt','geminiPrompt','youtubeTitle','description','communityPost','sunoUrl','youtubeUrl','mvUrl','creativeFields'];
 function describe(key,type){const [label,tag,group]=schema[key];return {key,label:key==='title'&&['act','playlist'].includes(type)?'플레이리스트 제목':key==='lyrics'&&type==='ep'?'장르 가사':label,tag,group};}
 function keys(type){const list=Object.keys(schema);return list.filter(k=>k!=='ep'||type==='original').filter(k=>k!=='originalArtist'||type==='cover').filter(k=>!['act','playlist'].includes(type)||!['lyrics','lyricsTranslation','sunoPrompt','productionPrompt','sunoUrl','cardImageLocation','audioFileLocation'].includes(k)).filter(k=>k!=='tracklist'||['act','playlist'].includes(type));}
+const omittedSongFields=new Set(['songDescription','confirmed','lyricsTranslation','productionPrompt','characterPrompt']);
+function visibleKeys(type){return keys(type).filter(k=>!omittedSongFields.has(k));}
 function sections(form){form.classList.add('noa-record-form');const map=new Map();for(const [key,label]of groups){const section=document.createElement('fieldset'),legend=document.createElement('legend');section.className='noa-record-section';section.dataset.recordSection=key;legend.textContent=label;section.append(legend);section.hidden=true;map.set(key,section);form.append(section);}return {add(key,node){const section=map.get(schema[key]?.[2]||key);if(!section)throw Error('Unknown record section');section.hidden=false;section.append(node);},get:key=>map.get(key)};}
 // Measure the address alone: a taller thumbnail must never set the height we measure.
 customElements.define('noa-suno-address', class extends HTMLElement {
@@ -108,4 +110,4 @@ function classificationEditor(form,{genre='unclassified',ep='',inputs,collection
  const note=document.createElement('p');note.className='noa-edit-readonly';note.textContent='저장하면 음원·YouTube·라이브러리의 분류가 함께 바뀝니다. 장르를 바꾸면 이전 장르의 묶음 선택이 해제됩니다.';section.append(note);form.append(section);return {category,detail,setBusy(busy){for(const control of section.querySelectorAll('input,select'))control.disabled=busy;}};
 }
 const link=document.createElement('link');link.rel='stylesheet';link.href='/noa-record-form.css?v=20261107-suno-title';document.head.append(link);
-window.NoaRecordForm={schema,groups,ownerKeys,describe,keys,sections,createField,value,set,render,classificationEditor,sunoTitleField,copyText};})();
+window.NoaRecordForm={schema,groups,ownerKeys,describe,keys,visibleKeys,sections,createField,value,set,render,classificationEditor,sunoTitleField,copyText};})();

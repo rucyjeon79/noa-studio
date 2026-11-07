@@ -19,6 +19,8 @@ with tempfile.TemporaryDirectory() as tmp:
     engine.mkdir(parents=True)
     for module in ('song-generation.php','generation-state.php','auto-dispatch.php'):
         shutil.copy(Path('deploy/noa-app/engine')/module, engine)
+    # This suite isolates legacy transport; the creative SQL specialist is exercised by tests/creative.
+    (engine/'creative.php').write_text("<?php function ncd_job($db,$id){return null;}")
     shutil.copy("deploy/noa-gpt.php", root)
     (root/"common.php").write_text("""<?php
     $config=['cf_admin'=>'test-owner'];$member=['mb_id'=>'test-owner'];

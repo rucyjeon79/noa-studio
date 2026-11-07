@@ -13,6 +13,8 @@ try{
  foreach($uploads as $u)if(!in_array($u['status'],['ready','failed','canceled','cancelled'],true))throw new RuntimeException('upload_active');
  $documents=$db->query('SELECT doc_key,kind,payload FROM noa_documents ORDER BY doc_key')->fetchAll(PDO::FETCH_ASSOC);
  $qa=[];$texts='';foreach($documents as $d){if($d['kind']==='jukebox_qa')$qa[$d['doc_key']]=true;else $texts.="\n".rawurldecode(str_replace('\\/','/',$d['payload']));}
+ // Every retained draft revision pins its referenced files, including soft-deleted and published drafts.
+ foreach($db->query("SELECT h.payload FROM noa_document_history h JOIN noa_documents d ON d.doc_key=h.doc_key WHERE d.kind='n80_creative_draft'") as $h)$texts.="\n".rawurldecode(str_replace('\\/','/',$h['payload']));
  foreach($db->query('SELECT fields_json FROM noa_catalog_versions')as $r)$texts.="\n".rawurldecode(str_replace('\\/','/',$r['fields_json']));
  foreach(array_merge(glob(dirname(__DIR__).'/*.php'),glob(dirname(__DIR__).'/*.js'),glob(dirname(__DIR__).'/*.css'))as $f)$texts.=rawurldecode((string)file_get_contents($f));
  $root=nj_private().'/media';$public=nj_root();$protected=[];$current=[];$bad=[];$candidates=[];$qaAssets=[];
@@ -34,6 +36,7 @@ try{
   if(!$rel||!isset($protected[$privatePath])||!safe_file($publicPath,$public))continue;
   if(filesize($publicPath)!==(int)$a['cover_bytes']||!hash_equals((string)$a['cover_sha256'],hash_file('sha256',$publicPath)))continue;
   $protected[$publicPath]=$protected[$privatePath];unset($protected[$privatePath]);
+  if(str_contains($texts,'"'.$rel.'"'))continue;
   $duplicatePrivate[$privatePath]=['path'=>$privatePath,'sha256'=>$a['cover_sha256'],'bytes'=>(int)$a['cover_bytes'],'reason'=>'duplicate_private_cover'];
  }
  $candidates=$duplicatePrivate;

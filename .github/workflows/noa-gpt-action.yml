@@ -25,7 +25,7 @@ jobs:
           php -r 'define("_GNUBOARD_",true);require "bridge/youtube-store.php";foreach([["songId"=>"a","status"=>"matched"],["songId"=>null,"status"=>"conflict"]] as $m){$r=ny_resolve_video_links($m,["b"=>true],null);if($r["status"]!=="conflict"||$r["songId"]!==null)exit(1);}if(ny_resolve_video_links([],["a"=>true,"b"=>true],["entity_id"=>"b"])["songId"]!=="b")exit(1);'
           python tests/gpt/flow.py
   deploy:
-    if: github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[channel-batch]')
+    if: github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[channel-batch]') && !contains(github.event.head_commit.message, '[creative-drafts]')
     needs: verify
     runs-on: ubuntu-latest
     environment: production
