@@ -1,10 +1,10 @@
 name: NOA channel explorer and profile
 on:
   pull_request:
-    paths: ['bridge/channel-batch*.php','tests/channel-batch/**','bridge/creator*.php','bridge/music-readmodel.php','bridge/sound-core.php','deploy/noa-channel*','deploy/noa-creator.*','deploy/noa-browse-edit.js','tests/explorer/**','scripts/noa_explorer*','scripts/qa/noa-channel-explorer.mjs','.github/workflows/noa-channel-explorer.yml']
+    paths: ['bridge/muvy*.php','deploy/noa-muvy*','tests/muvy/**','scripts/qa/noa-muvy.mjs','.github/workflows/noa-muvy-integration.yml','bridge/channel-batch*.php','tests/channel-batch/**','bridge/creator*.php','bridge/music-readmodel.php','bridge/sound-core.php','deploy/noa-channel*','deploy/noa-creator.*','deploy/noa-browse-edit.js','tests/explorer/**','scripts/noa_explorer*','scripts/qa/noa-channel-explorer.mjs','.github/workflows/noa-channel-explorer.yml']
   push:
     branches: [main]
-    paths: ['bridge/channel-batch*.php','tests/channel-batch/**','deploy/noa-channel-batch*','deploy/noa-channel-explorer.js','deploy/noa-explorer.css','deploy/noa-app/engine/explorer.php','scripts/noa_explorer*','scripts/qa/noa-channel-explorer.mjs','tests/explorer/**','.github/workflows/noa-channel-explorer.yml']
+    paths: ['bridge/muvy*.php','deploy/noa-muvy*','tests/muvy/**','scripts/qa/noa-muvy.mjs','.github/workflows/noa-muvy-integration.yml','bridge/channel-batch*.php','tests/channel-batch/**','deploy/noa-channel-batch*','deploy/noa-channel-explorer.js','deploy/noa-explorer.css','deploy/noa-app/engine/explorer.php','scripts/noa_explorer*','scripts/qa/noa-channel-explorer.mjs','tests/explorer/**','.github/workflows/noa-channel-explorer.yml']
 permissions: {contents: read}
 jobs:
   verify:
@@ -89,7 +89,7 @@ jobs:
           node "$RUNNER_TEMP/explorer/muvy.mjs"
       - name: Preserve isolated diagnostics
         if: always()
-        run: mkdir -p explorer-proof/candidate; cp "$RUNNER_TEMP/explorer-php.log" explorer-proof/candidate/php.log || true
+        run: mkdir -p explorer-proof/candidate; cp "$RUNNER_TEMP/explorer-php.log" explorer-proof/candidate/php.log || true; cp -R muvy-proof explorer-proof/candidate/ || true
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'noa-explorer-candidate-${{ github.run_id }}', path: 'explorer-proof/candidate/', retention-days: 7}

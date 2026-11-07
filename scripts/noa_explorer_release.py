@@ -6,6 +6,11 @@ WORKSPACE_DEPENDENCIES={p:'deploy/'+p for p in ['noa-app/engine/ai-lab.php','noa
 release.FILES={**DEPENDENCIES,**WORKSPACE_DEPENDENCIES,'noa-app/jukebox/queue-core.php':'deploy/noa-app/jukebox/queue-core.php'}
 for p in ['catalog.php','creator-core.php','member-access.php','sound-core.php','music-readmodel.php','creator-ai-core.php','creator.php','channel-batch-ai.php','channel-batch-audio.php','channel-batch.php','lab-worker.php','ainoa-core.php','community-music.php','ecosystem.php','youtube-api.php']:
  release.FILES['noa-bridge/'+p]='bridge/'+p
+# MUVY shares this verified deployment path with the N80 desks.
+for p in ['muvy-rules.php','muvy-prompts.php','muvy-core.php','muvy.php']:
+ release.FILES['noa-bridge/'+p]='bridge/'+p
+for p in ['noa-muvy-panel.php','noa-muvy.css','noa-muvy.js']:
+ release.FILES[p]='deploy/'+p
 for p in ['noa-gpt.php','noa-channel-batch.js','noa-channel-explorer.js','noa-channel-controls.js','noa-channel-rules.js','noa-member-badges.css','noa-creator.css','noa-creator.js','noa-creator-ai.js','noa-ai-lab.js','noa-browse-edit.js','noa-channel-menu.php','noa-channel-rules.php','noa-creator.php','noa-creator-ai.php','noa-lab-song.php','noa-ai-lab.php','noa-app/engine/health.php','noa-channel-workspace.php','noa-editor.php','noa-music.php','noa-workspace.php','noa-sitemap.php','noa-app/taxonomy/index.php','noa-app/taxonomy/ui.js','noa-app/jukebox/explorer.js','noa-app/jukebox/index.php','noa-ainoa.js','noa-catalog.js','noa-catalog.php','noa-community.js','noa-ecosystem.js','noa-playlists.js','noa-browse-order.js','noa-browse.js','noa-youtube.js','noa-youtube-admin.php','noa-library.php','noa-my.php','noa-desktop.js','noa-ui.js','noa-ai-lab.css','noa-lab-chat.php','noa-app/ecosystem-view.php','noa-ecosystem-links.js']:
  release.FILES[p]='deploy/'+p
 release.FILES['noa-ainoa-admin.js']='deploy/noa-ainoa-admin.js'

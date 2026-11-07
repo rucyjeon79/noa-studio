@@ -142,7 +142,8 @@ for(const [id,path]of [['mu-new','M12 5v14M5 12h14'],['mu-import','M12 16V4m-4 4
 controls();
 let opening=false;
 async function openDesk(){
- if(state||opening||location.hash!=='#lab-muvy')return;
+ const selected=document.querySelector('[data-n80-tool="muvy"]')||location.hash==='#lab-muvy';
+ if(state||opening||!selected)return;
  opening=true;
  try{
   await refresh();
