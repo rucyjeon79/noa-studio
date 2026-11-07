@@ -18,3 +18,20 @@
 
 /* A private provider video is a catalog preview, never a playable iframe. */
 .yt-coming{position:relative}.yt-coming-card .yt-play{display:none}.yt-coming-label,#yt-coming-preview[data-overlay=true]::after{position:absolute;inset:0;display:grid;place-items:center;content:'Coming Soon';font-family:Georgia,serif;font-size:clamp(24px,5vw,64px);font-weight:700;color:var(--noa-confirmed);text-shadow:0 2px 8px var(--noa-bg)}.yt-coming[data-coming-overlay=true] img,#yt-coming-preview[data-overlay=true] img{filter:grayscale(1)}#yt-coming-preview{position:relative}#yt-coming-art{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}#yt-coming-preview::after{pointer-events:none;aspect-ratio:16/9;bottom:auto}.noa-inline-song[data-coming-soon=true]>small{margin-left:auto;color:var(--noa-muted);font-size:11px;white-space:nowrap}
+
+/* Search and all-videos results follow the same thumbnail-first list as an expanded ACT. */
+#yt-videos:not([hidden]) {display:grid;grid-template-columns:minmax(0,1fr);gap:0}
+#yt-videos > .yt-card:not([hidden]) {
+ display:grid;grid-template-columns:clamp(80px,26%,112px) minmax(0,1fr);
+ align-content:center;align-items:center;gap:2px 10px;padding:8px;
+ border-bottom:1px solid var(--noa-line);min-width:0;
+}
+#yt-videos > .yt-card > .yt-watch {
+ grid-column:1;grid-row:1/4;align-self:center;min-width:0;width:100%;height:auto;aspect-ratio:16/9;
+}
+#yt-videos .yt-watch > img {width:100%;height:100%;object-fit:cover}
+#yt-videos .yt-coming-label {font-size:clamp(10px,2.5vw,14px)}
+#yt-videos > .yt-card > :is(h2,p,.noa-engagement) {grid-column:2;min-width:0;margin:0}
+#yt-videos > .yt-card > h2 {font-size:15px;line-height:1.4}
+#yt-videos > .yt-card > .noa-engagement {flex-wrap:wrap}
+#yt-videos > .yt-card[hidden] {display:none}

@@ -52,7 +52,7 @@ async function checkEditorProgress(width){
   },rows);
   const list=page.locator('.noa-inline-songs').first();
   await list.locator('.lp-track-art').first().waitFor();
-  await page.locator('.lp-view-switch [data-mode=album]').first().click();
+  assert.equal(await page.locator('.lp-view-switch').count(),0);
   await page.waitForFunction(()=>document.querySelector('.noa-inline-songs')?.dataset.trackView==='album');
   await list.locator('.noa-direct-action').first().waitFor();
   await list.locator('img').evaluateAll(images=>Promise.all(images.map(img=>img.decode().catch(()=>{}))));
@@ -102,10 +102,6 @@ async function checkEditorProgress(width){
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   };
   await checkRows();
-  for(const mode of ['list','album']){
-   await page.locator('.lp-view-switch [data-mode='+mode+']').first().click();
-   await page.waitForTimeout(100);await checkRows();
-  }
   await page.setViewportSize({width:width<600?1280:360,height:844});
   await page.waitForTimeout(100);await checkRows();
   await page.setViewportSize({width,height:844});
@@ -124,11 +120,8 @@ async function checkEditorProgress(width){
   serverJobs.push({id:2,song_key:'fifth',upload_id:'c'.repeat(32),title:'Another queued song',status:'queued'});
   await page.evaluate(()=>window.dispatchEvent(new Event('online')));
   await list.locator('.noa-track-processing[data-song-panel-key=fifth] [data-phase=queued]').waitFor();
-  for(const mode of ['album','list']){
-   await page.locator('.lp-view-switch [data-mode='+mode+']').first().click();
-   await page.waitForTimeout(100);await checkRows();
-   await list.screenshot({path:'upload-buttons-proof/queued-'+mode+'-'+width+'.png'});
-  }
+  await checkRows();
+  await list.screenshot({path:'upload-buttons-proof/queued-album-'+width+'.png'});
   await other.locator('.noa-edit-edit').click();
   await page.locator('[data-audio-progress-key=other]').waitFor();await checkRows();
   await page.getByRole('button',{name:'정보 수정 취소',exact:true}).click();

@@ -20,6 +20,7 @@ const all=(node,predicate)=>[...node.children.flatMap(c=>typeof c==='object'?[c,
 const text=node=>node.textContent+node.children.map(text).join('');
 function fixture(kind='곡',query='',providedRows=null){
  const host=new Element('section'),location={href:'https://noastudio.ai.kr/noa-music.php'+query,search:query};
+ host.id=kind==='영상'?'youtube-browse':'music-browse';
  const sandbox={window:{addEventListener(){}},document:{createElement:tag=>new Element(tag),querySelectorAll:()=>[]},location,history:{replaceState(_a,_b,url){location.href=String(url);}},URL,URLSearchParams,fetch:()=>Promise.resolve({ok:false})};
  vm.runInNewContext(fs.readFileSync(new URL('../../deploy/noa-browse.js',import.meta.url),'utf8'),sandbox);
  const rows=providedRows||[{key:'ten',genre:'kpop-original',title:'Ten',ep:10},{key:'two',genre:'kpop-original',title:'Two',ep:2},{key:'eleven',genre:'kpop-original',title:'Eleven',ep:11},{key:'loose',genre:'kpop-original',title:'Loose'},{key:'foreign',genre:'jpop-original',title:'Foreign',ep:1},{key:'story',genre:'your-story',title:'Story'},{key:'cover',genre:'cover-reborn',title:'Cover'}];
@@ -34,7 +35,8 @@ for(const kind of ['곡','영상'])test(kind+': four persistent levels, genre is
  f.cards(1)[0].click();assert.equal(f.cards(1).length,4);assert.equal(f.cards(2).length,4);assert.equal(f.level(3),undefined);
  f.cards(2)[0].click();assert.equal(f.cards(1).length,4);assert.equal(f.cards(2).length,4);assert.deepEqual(f.cards(3).map(c=>text(c.children[1].children[0])),['ACT 1','ACT 2']);
  assert.match(text(f.level(3)),/Loose/);assert.doesNotMatch(text(f.level(3)),/Foreign/);assert.match(text(f.level(4)),/Loose/);
- f.cards(3)[0].click();assert.deepEqual(all(f.level(4),x=>x.className==='noa-inline-song').map(text),['EP.2 · Two','EP.10 · Ten']);
+ f.cards(3)[0].click();assert.deepEqual(all(f.level(4),x=>x.className==='noa-track-name').map(text),['EP.2 · Two','EP.10 · Ten']);
+ assert.equal(all(f.level(4),x=>x.className==='noa-inline-songs')[0].dataset.trackView,kind==='영상'?'list':'album');
  f.cards(3)[1].click();assert.match(text(f.level(4)),/Eleven/);assert.doesNotMatch(text(f.level(4)),/Two/);
  f.cards(3)[1].click();assert.match(text(f.level(4)),/Loose/);
  assert.equal(all(f.host,x=>x.dataset.unclassified==='true').length,1);

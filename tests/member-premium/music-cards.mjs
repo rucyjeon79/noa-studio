@@ -42,51 +42,49 @@ export async function verifyMusicCards(browser,out,report){
   if(admin){await page.addScriptTag({url:'/noa-browse-edit.js'});await page.evaluate(()=>NoaBrowseEdit.mount({host:document.querySelector('#music-browse'),rows:records}));}
   try{
    assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--noa-surface').trim().toLowerCase()),theme.tokens.surface.toLowerCase(),'fixture must apply the same important theme tokens as NoaUI.apply');
-   const list=page.locator('.noa-inline-songs').first();await list.locator('.lp-track-jacket').first().waitFor();await list.locator('.noa-support-button:not(:disabled)').first().waitFor();
+   const list=page.locator('.noa-inline-songs').first();await list.locator('.lp-track-jacket').first().waitFor();
+   await list.locator('.noa-engagement').first().scrollIntoViewIfNeeded();
+   await list.locator('.noa-support-button:not(:disabled)').first().waitFor();
    assert.equal(await list.locator('.noa-inline-song-row').count(),4);assert.equal(await list.locator('.noa-premium-badge').count(),2);assert.equal(await list.locator('.noa-original-title').count(),2);
-   for(const mode of ['list','album']){
-    await page.locator('.lp-view-switch [data-mode='+mode+']').first().click();await page.waitForFunction(mode=>document.querySelector('.noa-inline-songs')?.dataset.trackView===mode,mode);
-    await list.evaluate(async list=>{await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));await Promise.all(list.getAnimations({subtree:true}).filter(a=>a.effect.getTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})));});
-    const geometry=await list.evaluate(list=>{
-     const box=e=>{const r=e.getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom};};
-     const lum=c=>{const rgb=c.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>(v/=255)<=.04045?v/12.92:((v+.055)/1.055)**2.4);return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;};
-     return {overflow:document.documentElement.scrollWidth>innerWidth+1,cards:[...list.querySelectorAll('.noa-inline-song-row')].map(e=>{
-      const s=getComputedStyle(e),credit=e.querySelector('.noa-original-title'),c=credit&&getComputedStyle(credit),contrast=c?(Math.max(lum(c.color),lum(c.backgroundColor))+.05)/(Math.min(lum(c.color),lum(c.backgroundColor))+.05):null;
-      return {playIconColor:getComputedStyle(e.querySelector('.lp-cover-toggle>svg')).color,toolColors:[...e.querySelectorAll('.noa-direct-action')].map(b=>getComputedStyle(b).color),textColor:getComputedStyle(e.querySelector('.noa-track-name')).color,key:e.dataset.inlineKey,card:box(e),cover:box(e.querySelector('.lp-track-jacket')),art:box(e.querySelector('.lp-track-art')),title:box(e.querySelector('.noa-inline-title')),name:box(e.querySelector('.noa-track-name')),genre:box(e.querySelector('.noa-track-genre')),credit:credit&&box(credit),play:box(e.querySelector('.lp-cover-toggle')),reactions:[...e.querySelectorAll('.noa-engagement>button')].map(box),tools:[...e.querySelectorAll('.noa-direct-action')].map(box),badge:e.querySelector('.noa-premium-badge')&&box(e.querySelector('.noa-premium-badge')),background:s.backgroundImage,border:s.borderColor,radius:s.borderRadius,decoration:getComputedStyle(e,'::before').content,contrast};
-     })};
-    });
-    assert(!geometry.overflow,JSON.stringify({width,theme:theme.id,admin,mode,geometry}));
-    const overlap=(a,b)=>Math.min(a.right,b.right)-Math.max(a.x,b.x)>.5&&Math.min(a.bottom,b.bottom)-Math.max(a.y,b.y)>.5;
-    for(const c of geometry.cards){
-     const note=JSON.stringify({width,theme:theme.id,admin,mode,c});
-     const lum=color=>{const rgb=(color.startsWith('#')?color.slice(1).match(/../g).map(v=>parseInt(v,16)):color.match(/[\d.]+/g).slice(0,3).map(Number)).map(v=>(v/=255)<=.04045?v/12.92:((v+.055)/1.055)**2.4);return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;};
-     for(const color of [...c.toolColors,c.textColor]){const a=lum(color),b=lum(theme.tokens.surface);assert((Math.max(a,b)+.05)/(Math.min(a,b)+.05)>=3,'theme control contrast '+note);}
-     assert.equal(c.playIconColor,'rgb(255, 255, 255)','artwork transport must stay white in both themes');assert(Math.abs(c.cover.w-c.cover.h)<1,note);assert(Math.abs((c.play.x+c.play.right-c.cover.x-c.cover.right)/2)<1,note);assert(Math.abs((c.play.y+c.play.bottom-c.cover.y-c.cover.bottom)/2)<1,note);
-     assert(Math.abs(c.name.x-c.genre.x)<1,note);assert(c.genre.y>=c.name.bottom-1,note);assert.equal(c.tools.length,admin?3:2,note);assert.equal(c.reactions.length,3,note);
-     for(const control of [c.play,...c.tools,...c.reactions])assert(control.w>=43.5&&control.h>=43.5&&control.x>=c.card.x-.5&&control.right<=c.card.right+.5&&control.y>=c.card.y-.5&&control.bottom<=c.card.bottom+.5,note);
-     const controls=[...c.tools,...c.reactions];for(let i=0;i<controls.length;i++)for(let j=i+1;j<controls.length;j++)assert(!overlap(controls[i],controls[j]),note);
-     for(const tool of c.tools){assert(!overlap(tool,c.title)&&!overlap(tool,c.cover),note);if(c.badge)assert(!overlap(tool,c.badge),note);}
-     assert(c.reactions[0].y>=c.title.bottom-1,note);
-     if(c.credit){assert(Math.abs(c.credit.x-c.name.x)<1&&c.credit.y>=c.genre.bottom-1,note);assert(c.contrast>=4.5,note);}
-     if(mode==='list'){
-      assert(c.radius==='12px',note);assert(c.card.h-c.title.h-c.reactions[0].h<=63,note);assert(c.title.x-c.art.right>=11&&c.title.x-c.art.right<=13,note);assert(c.reactions[0].y-c.title.bottom<=5,note);
-      assert(c.card.bottom-c.reactions[0].bottom>=11&&c.card.bottom-c.reactions[0].bottom<=14,note);
-      if(c.badge){assert(c.background.includes('linear-gradient'),note);assert.notEqual(c.decoration,'none',note);assert.notEqual(c.border,geometry.cards[3].border,note);assert(c.badge.bottom<=c.title.y,note);}
-     }else{assert(c.title.y>=c.cover.bottom-1,note);assert(c.tools[0].y>=c.reactions[0].bottom-1,note);}
-    }
-    if([320,390,1440].includes(width)&&admin)await list.screenshot({path:out+'/cards-'+mode+'-'+width+'-'+theme.id+'.jpg',type:'jpeg',quality:90});
-    const first=list.locator('.noa-inline-song-row').first();await first.locator('.lp-cover-toggle').click();await first.locator('.lp-running').waitFor();
-    const playing=await first.locator('.lp-track-jacket').boundingBox();assert.equal(Math.round(playing.width),Math.round(geometry.cards[0].cover.w),'playback must not resize the cover');
-    if(width===390&&admin)await list.screenshot({path:out+'/cards-playing-'+mode+'-'+theme.id+'.jpg',type:'jpeg',quality:90});
-    await first.locator('.lp-cover-toggle').click();await page.waitForFunction(()=>document.querySelector('#sound-player').paused);await first.locator('.lp-running').waitFor({state:'detached'});
-    await first.locator('.noa-song-action[aria-label$=" 담기"]').click();await first.locator('.noa-song-action[aria-label$=" 다운로드"]').click();
-    assert.equal(await page.evaluate(()=>addCalls.at(-1)),'premium-credit');assert.equal(await page.evaluate(()=>downloadCalls.at(-1)),'premium-credit');
-    report.fixtures.push({key:'music-cards',width,theme:theme.id,admin,mode,geometry,nativeActions:true,playPause:true});
+   const mode=await list.getAttribute('data-track-view');
+   assert.equal(mode,'album');
+   assert.equal(await page.locator('.lp-view-switch').count(),0);
+   await list.evaluate(async list=>{await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));await Promise.all(list.getAnimations({subtree:true}).filter(a=>a.effect.getTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})));});
+   const geometry=await list.evaluate(list=>{
+    const box=e=>{const r=e.getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom};};
+    const lum=c=>{const rgb=c.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>(v/=255)<=.04045?v/12.92:((v+.055)/1.055)**2.4);return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;};
+    return {overflow:document.documentElement.scrollWidth>innerWidth+1,cards:[...list.querySelectorAll('.noa-inline-song-row')].map(e=>{
+     const s=getComputedStyle(e),credit=e.querySelector('.noa-original-title'),c=credit&&getComputedStyle(credit),contrast=c?(Math.max(lum(c.color),lum(c.backgroundColor))+.05)/(Math.min(lum(c.color),lum(c.backgroundColor))+.05):null;
+     return {playIconColor:getComputedStyle(e.querySelector('.lp-cover-toggle>svg')).color,toolColors:[...e.querySelectorAll('.noa-direct-action')].map(b=>getComputedStyle(b).color),textColor:getComputedStyle(e.querySelector('.noa-track-name')).color,key:e.dataset.inlineKey,card:box(e),cover:box(e.querySelector('.lp-track-jacket')),art:box(e.querySelector('.lp-track-art')),title:box(e.querySelector('.noa-inline-title')),name:box(e.querySelector('.noa-track-name')),genre:box(e.querySelector('.noa-track-genre')),credit:credit&&box(credit),play:box(e.querySelector('.lp-cover-toggle')),reactions:[...e.querySelectorAll('.noa-engagement>button')].map(box),tools:[...e.querySelectorAll('.noa-direct-action')].map(box),badge:e.querySelector('.noa-premium-badge')&&box(e.querySelector('.noa-premium-badge')),background:s.backgroundImage,border:s.borderColor,radius:s.borderRadius,decoration:getComputedStyle(e,'::before').content,contrast};
+    })};
+   });
+   assert(!geometry.overflow,JSON.stringify({width,theme:theme.id,admin,mode,geometry}));
+   const overlap=(a,b)=>Math.min(a.right,b.right)-Math.max(a.x,b.x)>.5&&Math.min(a.bottom,b.bottom)-Math.max(a.y,b.y)>.5;
+   for(const c of geometry.cards){
+    const note=JSON.stringify({width,theme:theme.id,admin,mode,c});
+    const lum=color=>{const rgb=(color.startsWith('#')?color.slice(1).match(/../g).map(v=>parseInt(v,16)):color.match(/[\d.]+/g).slice(0,3).map(Number)).map(v=>(v/=255)<=.04045?v/12.92:((v+.055)/1.055)**2.4);return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;};
+    for(const color of [...c.toolColors,c.textColor]){const a=lum(color),b=lum(theme.tokens.surface);assert((Math.max(a,b)+.05)/(Math.min(a,b)+.05)>=3,'theme control contrast '+note);}
+    assert.equal(c.playIconColor,'rgb(255, 255, 255)','artwork transport must stay white in both themes');assert(Math.abs(c.cover.w-c.cover.h)<1,note);assert(Math.abs((c.play.x+c.play.right-c.cover.x-c.cover.right)/2)<1,note);assert(Math.abs((c.play.y+c.play.bottom-c.cover.y-c.cover.bottom)/2)<1,note);
+    assert(Math.abs(c.name.x-c.genre.x)<1,note);assert(c.genre.y>=c.name.bottom-1,note);assert.equal(c.tools.length,admin?3:2,note);assert.equal(c.reactions.length,3,note);
+    for(const control of [c.play,...c.tools,...c.reactions])assert(control.w>=43.5&&control.h>=43.5&&control.x>=c.card.x-.5&&control.right<=c.card.right+.5&&control.y>=c.card.y-.5&&control.bottom<=c.card.bottom+.5,note);
+    const controls=[...c.tools,...c.reactions];for(let i=0;i<controls.length;i++)for(let j=i+1;j<controls.length;j++)assert(!overlap(controls[i],controls[j]),note);
+    for(const tool of c.tools){assert(!overlap(tool,c.title)&&!overlap(tool,c.cover),note);if(c.badge)assert(!overlap(tool,c.badge),note);}
+    assert(c.reactions[0].y>=c.title.bottom-1,note);
+    if(c.credit){assert(Math.abs(c.credit.x-c.name.x)<1&&c.credit.y>=c.genre.bottom-1,note);assert(c.contrast>=4.5,note);}
+    assert(c.title.y>=c.cover.bottom-1,note);assert(c.tools[0].y>=c.reactions[0].bottom-1,note);
    }
+   if([320,390,1440].includes(width)&&admin)await list.screenshot({path:out+'/cards-'+mode+'-'+width+'-'+theme.id+'.jpg',type:'jpeg',quality:90});
+   const first=list.locator('.noa-inline-song-row').first();await first.locator('.lp-cover-toggle').click();await first.locator('.lp-running').waitFor();
+   const playing=await first.locator('.lp-track-jacket').boundingBox();assert.equal(Math.round(playing.width),Math.round(geometry.cards[0].cover.w),'playback must not resize the cover');
+   if(width===390&&admin)await list.screenshot({path:out+'/cards-playing-'+mode+'-'+theme.id+'.jpg',type:'jpeg',quality:90});
+   await first.locator('.lp-cover-toggle').click();await page.waitForFunction(()=>document.querySelector('#sound-player').paused);await first.locator('.lp-running').waitFor({state:'detached'});
+   await first.locator('.noa-song-action[aria-label$=" 담기"]').click();await first.locator('.noa-song-action[aria-label$=" 다운로드"]').click();
+   assert.equal(await page.evaluate(()=>addCalls.at(-1)),'premium-credit');assert.equal(await page.evaluate(()=>downloadCalls.at(-1)),'premium-credit');
+   report.fixtures.push({key:'music-cards',width,theme:theme.id,admin,mode,geometry,nativeActions:true,playPause:true});
    if(admin){await list.locator('.noa-edit-edit').first().click();await page.locator('.noa-edit-form').first().waitFor();assert(await page.locator('.noa-edit-form').first().isVisible());}
    await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await list.locator('.lp-spindle').first().evaluate(e=>getComputedStyle(e).animationName),'none');
    assert.deepEqual(errors,[]);assert.deepEqual(writes,[]);
   }catch(error){await page.screenshot({path:out+'/cards-failure-'+width+'-'+theme.id+'-'+admin+'.png',fullPage:true});throw error;}finally{await context.close();}
  }
- console.log('MEMBER_PRODUCTION_MUSIC_CARDS_32_LAYOUTS_AND_PLAYBACK_OK');
+ console.log('MEMBER_PRODUCTION_MUSIC_CARDS_ALBUM_LAYOUTS_AND_PLAYBACK_OK');
 }

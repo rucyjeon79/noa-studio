@@ -32,14 +32,14 @@ try{for(const width of (operating?[1280]:[320,390,1280])){
     const rail=document.createElement('dialog');rail.id='noa-menu-drawer';rail.setAttribute('role','navigation');document.body.append(rail);rail.show();
     const songs=document.querySelector('#songs'),first=songs.querySelector('.song'),second=first.cloneNode(true);
     second.classList.remove('selected');second.dataset.key='b';songs.append(second);
-    first.style.cssText='position:absolute;top:200vh';second.style.cssText='position:absolute;top:420vh';
+    first.style.cssText='position:absolute;top:200vh;width:200px';second.style.cssText='position:absolute;top:420vh;width:200px';
     const audio=document.getElementById('sound-player');audio.loop=true;
     window.dispatchEvent(new Event('wheel'));await audio.play();
    });
    const seen=key=>f.locator('#songs .song[data-key="'+key+'"]').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;});
    await f.clock.fastForward(6500);await f.keyboard.press('Shift');await f.clock.fastForward(9500);
    assert(!await seen('a'),'continue browsing for ten seconds after the most recent input');
-   await f.clock.fastForward(550);await f.clock.runFor(64);assert(await seen('a'),'a pinned navigation dialog permits follow');
+   await f.clock.fastForward(550);await f.clock.runFor(64);assert(await seen('a'),'a pinned navigation dialog permits follow '+JSON.stringify(await f.locator('#songs .song.selected').evaluate(el=>({row:el.getBoundingClientRect().toJSON(),art:el.querySelector('.lp-track-art')?.getBoundingClientRect().toJSON(),scroll:scrollY,running:!!el.querySelector('.lp-running'),now:performance.now(),hidden:document.hidden}))));
    // A natural track change after the idle period follows immediately.
    await f.evaluate(async()=>{const audio=document.getElementById('sound-player');audio.pause();window.dispatchEvent(new CustomEvent('noa-track-selected',{detail:{record:{key:'b'}}}));await audio.play();});
    await f.clock.runFor(120);assert(await seen('b'),'idle listeners see the new playing track');
@@ -113,6 +113,7 @@ try{for(const width of (operating?[1280]:[320,390,1280])){
  const mismatchFixture=html.replace('<body ', '<link rel="stylesheet" href="/noa-engagement.css"><body ')
   .replace('<script src="/noa-browse.js">','<script type="application/json" id="noa-original-titles">'+JSON.stringify({1:'하루의 끝에',2:'작은 떨림'})+'</script><script src="/noa-browse.js">')
   .replace('const tree=','const records='+JSON.stringify(mismatchRows)+',collections=[];const tree=').replace('rows:[]','rows:records');
+ await mismatchPage.addInitScript(()=>{for(const group of ['original','ep','story','cover'])localStorage.setItem('noa-track-view:'+group,'list');});
  await mismatchPage.route('**/mismatch?*',route=>route.fulfill({contentType:'text/html',body:mismatchFixture}));
  try{
   await mismatchPage.goto('http://127.0.0.1:'+server.address().port+'/mismatch?group=original&genre=pop-original&act=1');
@@ -128,12 +129,11 @@ try{for(const width of (operating?[1280]:[320,390,1280])){
   await title.locator('.lp-title-overflow>.lp-title-text').waitFor();
   assert(await trackName.evaluate(n=>{
    const box=n.getBoundingClientRect(),genre=n.parentElement.querySelector('.noa-track-genre').getBoundingClientRect(),credit=n.parentElement.querySelector('.noa-original-title').getBoundingClientRect();
-   return box.height===24 && Math.abs(box.left-genre.left)<1 && Math.abs(box.left-credit.left)<1 && genre.top>=box.bottom && genre.top-box.bottom<=6 && credit.top>=genre.bottom && credit.top-genre.bottom<=6
+   return Math.abs(box.height-parseFloat(getComputedStyle(n).lineHeight))<1 && Math.abs(box.left-genre.left)<1 && Math.abs(box.left-credit.left)<1 && genre.top>=box.bottom && genre.top-box.bottom<=6 && credit.top>=genre.bottom && credit.top-genre.bottom<=6
     && getComputedStyle(n.firstElementChild).animationName==='noa-title-pan';
   }),'Long title pans on one line with the genre and original credit aligned below it');
   const movingTitle=trackName.locator('.lp-title-text');
-  const viewSwitch=trackName.locator('xpath=ancestor::*[contains(@class,"noa-inline-songs")][1]/preceding-sibling::*[1]');
-  await viewSwitch.locator('[data-mode=album]').click();
+  assert.equal(await mismatchPage.locator('.lp-view-switch').count(),0);
   await mismatchPage.waitForFunction(()=>document.querySelector('[data-inline-key="translated"]')?.closest('.noa-inline-songs')?.dataset.trackView==='album');
   assert(await movingTitle.evaluate(n=>!n.closest('.noa-inline-song-row').matches(':focus-within,:has(.lp-running)') && getComputedStyle(n).animationName==='noa-title-pan'));
   const startX=await movingTitle.evaluate(n=>n.getBoundingClientRect().left);
@@ -141,7 +141,6 @@ try{for(const width of (operating?[1280]:[320,390,1280])){
    const n=document.querySelector('[data-inline-key="translated"] .lp-title-text');
    return n&&n.getBoundingClientRect().left<x-8;
   },startX,{timeout:1800});
-  await viewSwitch.locator("[data-mode=list]").click();
   await mismatchPage.emulateMedia({reducedMotion:'reduce'});
   assert.equal(await trackName.locator('.lp-title-text').evaluate(n=>getComputedStyle(n).animationName),'none');
   await trackName.evaluate(n=>n.textContent='봄');
@@ -156,18 +155,14 @@ try{for(const width of (operating?[1280]:[320,390,1280])){
    await mismatchPage.waitForFunction(()=>document.querySelector('.lp-edition'));
    assert.equal(await mismatchPage.locator('.noa-original-title').count(),count);
    const list=mismatchPage.locator('.noa-inline-songs').first();
-   assert.equal(await list.getAttribute('data-track-view'),group==='cover'?'album':'list');
+   assert.equal(await list.getAttribute('data-track-view'),'album');
    if(group==='cover'){
     await mismatchPage.evaluate(()=>{
-     const track=document.createElement('div');track.className='song';track.dataset.key='cover';track.dataset.originalArtist='원곡 가수';document.querySelector('#songs').append(track);
+     const track=document.createElement('div');track.className='song';track.dataset.key='cover';track.dataset.genre='cover-reborn';track.dataset.originalArtist='원곡 가수';document.querySelector('#songs').append(track);
     });
     await mismatchPage.waitForFunction(()=>document.querySelector('.lp-cover-credit')?.textContent==='원곡 가수');
     assert(!(await list.locator('.lp-title-text').first().textContent()).includes('원곡 가수'));
-    await mismatchPage.locator('.lp-view-switch [data-mode=list]').first().evaluate(b=>b.click());
-    await mismatchPage.waitForFunction(()=>document.querySelector('.noa-inline-songs').dataset.trackView==='list');
     await mismatchPage.reload();
-    await mismatchPage.waitForSelector('.noa-inline-songs[data-track-view=list]',{state:'attached'});
-    await mismatchPage.locator('.lp-view-switch [data-mode=album]').first().evaluate(b=>b.click());
     await mismatchPage.waitForSelector('.noa-inline-songs[data-track-view=album]',{state:'attached'});
     const geometry=await list.evaluate(list=>{
      const row=list.querySelector('.noa-inline-song-row');
@@ -212,7 +207,7 @@ try{for(const width of (operating?[1280]:[320,390,1280])){
      const card=list.querySelector('.noa-inline-song-row');
      const other=card.cloneNode(true);card.after(other);
      card.querySelector('.noa-edit-edit')?.remove();
-     window.NoaBrowseEdit.mount({host:list,rows:[{key:card.dataset.inlineKey,title:'곡 정보 검수'}]});
+     window.NoaBrowseEdit.mount({host:list,labGeneration:true,rows:[{key:card.dataset.inlineKey,title:'곡 정보 검수'}]});
     });
     let metadata={ok:true,writeKey:'cover',kind:'single',packageType:'ep',revision:1,original:{status:'linked',ep:'32',title:'작은 떨림',lyrics:'[Intro]\n(oh, 괜찮아요...)'},context:{genre:'pop-original',ep:'32'},fields:{title:'편집 전',lyrics:'가사',cast:'male',geminiPrompt:'prompt',youtubeTitle:'제목',description:'설명',communityPost:'글'}};
     let savedPatch=null, failSave=true;
@@ -224,26 +219,24 @@ try{for(const width of (operating?[1280]:[320,390,1280])){
      }
      await route.fulfill({json:metadata});
     });
-    for(const mode of ['album','list']){
-     await mismatchPage.locator('.lp-view-switch [data-mode='+mode+']').first().evaluate(b=>b.click());
-     await mismatchPage.waitForFunction(mode=>document.querySelector('.noa-inline-songs').dataset.trackView===mode,mode);
+    for(const expectedVocal of ['남자솔로','남녀듀엣']){
      const card=list.locator(':scope>.noa-inline-song-row').first();
      const documentBox=el=>el.evaluate(n=>{const r=n.getBoundingClientRect();return {width:r.width,height:r.height,y:r.y+scrollY};});
      const before=await documentBox(card);
      await card.locator(':scope>.noa-edit-edit').evaluate(b=>b.click());
      const panel=list.locator(':scope>form.noa-edit-form');await panel.waitFor();
      const after=await documentBox(card), box=await documentBox(panel);
-     assert(Math.abs(before.width-after.width)<1 && Math.abs(before.height-after.height)<1 && Math.abs(before.y-after.y)<1,JSON.stringify({width,mode,before,after,box}));
+     assert(Math.abs(before.width-after.width)<1 && Math.abs(before.height-after.height)<1 && Math.abs(before.y-after.y)<1,JSON.stringify({width,before,after,box}));
      assert(box.width>=(await list.boundingBox()).width*.8 && box.y>=after.y+after.height-1);
-     if(mode==='album')assert(Math.abs((await documentBox(list.locator(':scope>.noa-inline-song-row').nth(1))).y-after.y)<1);
+     assert(Math.abs((await documentBox(list.locator(':scope>.noa-inline-song-row').nth(1))).y-after.y)<1);
      const field=panel.locator('[data-record-field=title]'),input=field.locator('input');
      await field.getByRole('button',{name:'곡 제목 수정',exact:true}).waitFor();
      assert(await input.evaluate(e=>e.readOnly));
      const vocal=panel.locator('[data-record-field=vocal]');
      const titlePreview=field.locator('.noa-locked-preview'), vocalPreview=vocal.locator('.noa-locked-preview');
      assert(await titlePreview.isVisible() && await input.isHidden() && await input.isDisabled());
-     assert.equal(await vocalPreview.textContent(),mode==='album'?'남자솔로':'남녀듀엣');
-     if(mode==='album'){
+     assert.equal(await vocalPreview.textContent(),expectedVocal);
+     if(expectedVocal==='남자솔로'){
       const line=await titlePreview.boundingBox(), vocalLine=await vocalPreview.boundingBox();
       assert(Math.abs(line.x-vocalLine.x)<1 && Math.abs(line.width-vocalLine.width)<1);
       await field.getByRole('button',{name:'곡 제목 수정',exact:true}).click();
