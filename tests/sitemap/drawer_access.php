@@ -49,7 +49,7 @@ foreach(['guest'=>1,'member'=>3,'admin'=>10,'two'=>2,'four'=>4,'five'=>5,'six'=>
         if($id==='account'&&isset($ranks['creatorAI']))must(array_key_last($ranks)==='creatorAI','AI creation must be below member and creator entries');
         $html.='</section>';
     }
-    foreach(['creatorApply'=>$level<=4,'storyRequest'=>$access['write'],'my'=>$level>=2,'catalog'=>$access['music'],'playlists'=>$access['music'],'creator'=>$access['creator'],'channel'=>$access['creatorAI'],'channelWorkspace'=>$access['creator'],'aiLab'=>$access['member'],'libraryAdmin'=>$super,'login'=>!$member,'board-fixture_board'=>$super||$role==='five'] as $id=>$allowed){
+    foreach(['creatorApply'=>$level<=4,'storyRequest'=>$access['write'],'my'=>$level>=2,'catalog'=>$access['music'],'playlists'=>$access['music'],'creator'=>$access['creator'],'channel'=>false,'channelWorkspace'=>$access['creator'],'aiLab'=>$access['member'],'libraryAdmin'=>$super,'login'=>!$member,'board-fixture_board'=>$super||$role==='five'] as $id=>$allowed){
         must(array_key_exists($id,$labels)===$allowed,$role.' '.$id);
         if($allowed)must($labels[$id]!=='',$role.' unlabeled '.$id);
     }
