@@ -43,7 +43,7 @@ try{
   await p.addStyleTag({url:'http://127.0.0.1:8093/noa-ainoa.css'});await p.addScriptTag({url:'http://127.0.0.1:8093/noa-ainoa.js'});
   const edit=p.getByRole('button',{name:'모바일 수정 버튼 확인 곡정보 수정',exact:true});await edit.scrollIntoViewIfNeeded();
   assert(await edit.evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return el===hit||el.contains(hit);}),'creator action obscured by floating search');
-  await edit.click();assert(await p.locator('#creator-editor').isVisible());assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.screenshot({path:`${out}/creator-${theme}-${width}.png`});
+  await edit.click();await p.locator('#creator-editor').waitFor({state:'visible'});assert(await p.locator('#creator-editor').isVisible());assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.screenshot({path:`${out}/creator-${theme}-${width}.png`});
   report.push({page:'creator',width,theme,editClickable:true,noOverflow:true});await c.close();
  }
  writeFileSync(out+'/report.json',JSON.stringify({cases:report,approvedPlayerScreenshotComparison:true,content:'isolated fixture; real PHP template and deployed/candidate assets'},null,2));console.log('NOA_DESIGN_GATE_OK',report.length);

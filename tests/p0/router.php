@@ -1,6 +1,13 @@
 <?php
 // Isolated PHP-rendered fixture. Never uploaded to the operating site.
 $root=dirname(__DIR__,2);$path=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);
+// Standalone template fixtures bypass common.php and its design extension.
+// Restore the same shared presentation assets instead of testing an unstyled shell.
+ob_start(static function(string $html):string{
+ if(!preg_match('~^\s*<!doctype html~i',$html)||stripos($html,'</head>')===false)return $html;
+ $html=preg_replace('~<html\b(?![^>]*data-noa-style)~i','<html data-noa-style="starlight"',$html,1);
+ return str_ireplace('</head>','<link rel="stylesheet" href="/noa-policy-20261024.css"><link rel="stylesheet" href="/noa-account.css"><link rel="stylesheet" href="/noa-starlight.css"></head>',$html);
+});
 if($path==='/noa-sitemap.php'){
  echo '<!doctype html><main data-noa-member-directory><section class="noa-site-map"><h2 id="map-explore">둘러보기</h2>';
  foreach(['home'=>['/','홈'],'music'=>['/noa-music.php','음원'],'lounge'=>['/noa-lounge.php','커뮤니티'],'shop'=>['/noa-shop.php','SHOP']] as $key=>[$href,$label])echo '<a class="noa-site-map-link" data-noa-route="'.$key.'" href="'.$href.'"><strong>'.$label.'</strong></a>';

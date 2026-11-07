@@ -8,7 +8,7 @@ $requestId=(string)($b['requestId']??'');if(!preg_match('/^[a-f0-9]{40}$/D',$req
 $db=noa_bridge_pdo();$base=lab_root().'/n80-music-consumer';$directories=['events'=>$base.'/events','leases'=>$base.'/leases'];
 $results=[];$evidence=[];$db->exec('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');$db->exec('SET TRANSACTION READ ONLY');$db->beginTransaction();
 try{foreach(['playlist','world','admin'] as $module){
- $at=gmdate('c');if($module==='admin'){$id='n80-admin-'.hash('sha256','integrity-audit:'.$requestId);$path=$directories['events'].'/'.hash('sha256',$id).'.json';if(is_file($path)&&!is_link($path)){$prior=json_decode(file_get_contents($path),true);$at=$prior['occurredAt']??$at;}}
+ $at=gmdate('c');if($module==='admin'){$id='n80-admin-'.hash('sha256','integrity-audit:'.$requestId);$path=$directories['events'].'/'.hash('sha256',$id).'.json';if(is_file($path)&&!is_link($path)){$prior=json_decode(file_get_contents($path),true);$at=$prior['event']['occurredAt']??$at;}}
  $event=n80_native_event($db,$module,$requestId,$at);$operation=noa_engine_adapter_manifest()[$module]['operation'];
  $ctx=['enabled'=>true,'durableStoreReady'=>true,'authenticatedActor'=>true,'authenticatedByServer'=>true,'principal'=>'n80_lab_worker','permission'=>'native:verify','operation'=>$operation,'db'=>$db,'directories'=>$directories,'web'=>dirname(__DIR__),'requestId'=>$requestId,'requestedAt'=>$at];
  $first=noa_engine_execute($event,$module,$ctx);if(!$first['ok'])throw new RuntimeException('native_verification_failed:'.$module.':'.($first['error']??'unknown'));

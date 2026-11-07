@@ -20,6 +20,10 @@ on:
       - 'tests/engine/runtime.test.mjs'
       - 'tests/lab/muvy.test.mjs'
       - 'tests/engine/native_consumer_test.php'
+      - 'scripts/qa/noa-design-gate.mjs'
+      - 'scripts/qa/noa-shared-navigation.mjs'
+      - 'scripts/qa/n80-runtime-live.mjs'
+      - 'tests/p0/router.php'
       - 'scripts/noa_player_regression.test.mjs'
       - 'deploy/noa-app/engine/registry.php'
       - 'deploy/noa-app/engine/health.php'
@@ -39,6 +43,9 @@ on:
       - 'scripts/n80_live_observer.py'
       - 'scripts/n80_app_integration.py'
       - 'scripts/n80_runtime_verify.py'
+      - 'scripts/n80_runtime_finalize.py'
+      - 'scripts/n80_completion_pipeline.py'
+      - '.github/workflows/noa-quality-gates.yml'
       - 'scripts/n80_auto.py'
       - 'scripts/noa_n80_ai_worker.py'
       - 'config/n80-automation.json'
@@ -74,10 +81,6 @@ on:
       - '.github/workflows/n80-engine-facade-production.yml'
   workflow_dispatch:
   workflow_call:
-    inputs:
-      orbit_dependency:
-        type: boolean
-        default: false
 permissions:
   contents: read
 jobs:
@@ -86,7 +89,7 @@ jobs:
       group: noa-production-sftp
       cancel-in-progress: false
     # Integrated data repairs own installation and forbid legacy host staging.
-    if: inputs.orbit_dependency || github.event_name != 'push' || (!contains(github.event.head_commit.message, '[n80-data]') && !contains(github.event.head_commit.message, '[category-final]') && !contains(github.event.head_commit.message, '[n80-home-orbit]'))
+    if: github.event_name != 'push' || (!contains(github.event.head_commit.message, '[n80-data]') && !contains(github.event.head_commit.message, '[category-final]') && !contains(github.event.head_commit.message, '[n80-home-orbit]'))
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 20
@@ -136,9 +139,13 @@ jobs:
       - name: Verify the asynchronous MUVY flow in desktop and mobile browsers
         run: |
           python scripts/qa/noa-qa-font.py
-          npm install --prefix "$RUNNER_TEMP/n80-browser" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          npm install --prefix "$RUNNER_TEMP/n80-browser" --no-save --ignore-scripts --package-lock=false playwright@1.56.1 pixelmatch@7.1.0 pngjs@7.0.0
           cp scripts/qa/noa-muvy.mjs "$RUNNER_TEMP/n80-browser/muvy.mjs"
+          cp scripts/qa/noa-shared-navigation.mjs "$RUNNER_TEMP/n80-browser/navigation.mjs"
+          cp scripts/qa/noa-design-gate.mjs "$RUNNER_TEMP/n80-browser/design.mjs"
           node "$RUNNER_TEMP/n80-browser/muvy.mjs"
+          node "$RUNNER_TEMP/n80-browser/navigation.mjs"
+          node "$RUNNER_TEMP/n80-browser/design.mjs"
       - name: Verify and install N80 modules in one SSH session
         run: python scripts/n80_single_session_deploy.py
       - name: Read back N80 status without creating an AI task and update existing journal

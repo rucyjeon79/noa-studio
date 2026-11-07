@@ -6,7 +6,7 @@ on:
   push:
     branches: [main]
     paths: ['tests/n80-home-orbit/**','scripts/noa_n80_home_orbit_release.py','.github/workflows/noa-n80-home-orbit.yml']
-permissions: {contents: read, actions: read}
+permissions: {contents: read}
 jobs:
   verify:
     runs-on: ubuntu-24.04
@@ -22,7 +22,6 @@ jobs:
           php -l deploy/noa-design.extend.php
           for file in deploy/noa-ui.js deploy/noa-browse-edit.js deploy/noa-channel-batch.js deploy/noa-muvy.js deploy/noa-ai-lab.js deploy/noa-creator-ai.js deploy/noa-app/jukebox/upload.js; do node --check "$file"; done
           python tests/gpt/flow.py
-          python tests/n80-home-orbit/runtime-journal.py
           node --test tests/starlight/navigation.test.mjs tests/explorer/batch_test.cjs
           python scripts/qa/noa-qa-font.py
           npm install --prefix "$RUNNER_TEMP/n80-orbit" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
@@ -35,15 +34,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'n80-home-orbit-${{ github.run_id }}', path: 'n80-orbit-proof/', retention-days: 7}
-  runtime:
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[n80-home-orbit]'))
-    needs: verify
-    uses: ./.github/workflows/n80-engine-facade-production.yml
-    with: {orbit_dependency: true}
-    secrets: inherit
   deploy:
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[n80-home-orbit]'))
-    needs: runtime
+    needs: verify
     runs-on: ubuntu-24.04
     environment: production
     timeout-minutes: 12

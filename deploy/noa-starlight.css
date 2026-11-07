@@ -1226,8 +1226,9 @@ html.noa-shell-wide #noa-menu-drawer .noa-sidebar-visitors{display:block;margin:
 #noa-menu-drawer .noa-sidebar-visitors dd{margin:0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 /* One shared photographic footer: service links above, topic and controls below. */
 html.noa-shell-wide[data-noa-style] .noa-mobile-footer{grid-template-columns:minmax(0,1fr);align-items:start;gap:0}
-/* The containing page owns the fixed navigation/player clearance exactly once. */
+/* Nested footers use their page clearance; a body-level footer is the final scroll surface. */
 html.noa-shell-wide[data-noa-style] body .noa-mobile-footer{padding-block:0;border-top:0}
+html.noa-shell-wide[data-noa-style] body>.noa-mobile-footer{padding-bottom:calc(var(--noa-nav-space,0px) + var(--noa-player-space,0px) + var(--noa-transfer-space,0px) + 16px)}
 .noa-mobile-footer .noa-footer-scene{--footer-gold:#edd8aa;position:relative;isolation:isolate;display:grid;grid-template-rows:auto minmax(100px,1fr) auto;min-width:0;min-height:280px;border-radius:10px;overflow:hidden;background:#112232;box-shadow:inset 0 0 0 1px rgba(237,216,170,.28)}
 html.noa-shell-wide .noa-footer-scene .noa-footer-landscape{position:absolute;inset:0;z-index:-2;width:100%;height:100%;max-width:none;object-fit:cover;object-position:62% 58%;border-radius:0}
 html[data-noa-theme=noa-studio] .noa-footer-scene .noa-footer-landscape{filter:brightness(1.35);object-position:62% 54%}

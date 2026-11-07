@@ -5,6 +5,7 @@ import paramiko
 from noa_full_inventory import connect,ROOT
 from noa_release_freshness import require_current_candidate
 UNRELATED_PATH_PREFIXES=()
+STALE_CANDIDATES=()  # Explicit failed activations; only exact owned staging bytes may be removed.
 EXTRA_KNOWN={}  # Optional pinned build artifacts supplied by a scoped release.
 FILES={'noa-app/engine/ai-automation.php':'deploy/noa-app/engine/ai-automation.php','noa-work-status.php':'deploy/noa-work-status.php','noa-bridge/lab-worker.php':'bridge/lab-worker.php','noa-bridge/ainoa-automation.php':'bridge/ainoa-automation.php','noa-ainoa-admin.js':'deploy/noa-ainoa-admin.js','noa-bridge/category-order-store.php':'bridge/category-order-store.php','noa-category-order.php':'deploy/noa-category-order.php','noa-category-order-admin.php':'deploy/noa-category-order-admin.php','noa-creator.css':'deploy/noa-creator.css','noa-bridge/lab-core.php':'bridge/lab-core.php','noa-bridge/index.php':'bridge/index.php','noa-bridge/ainoa-generation.php':'bridge/ainoa-generation.php','noa-youtube.php':'deploy/noa-youtube.php','noa-creator.php':'deploy/noa-creator.php','noa-editor.php':'deploy/noa-editor.php','noa-bridge/ainoa-points.php':'bridge/ainoa-points.php','noa-bridge/subscription-core.php':'bridge/subscription-core.php','noa-bridge/youtube-catalog.php':'bridge/youtube-catalog.php','noa-browse-order.js':'deploy/noa-browse-order.js','noa-bridge/lab-api.php':'bridge/lab-api.php','noa-ai-lab.php':'deploy/noa-ai-lab.php','noa-ai-lab.js':'deploy/noa-ai-lab.js','noa-assets/ainoa-symbol.png':'public/ainoa/ainoa-symbol.png','noa-launch.js':'deploy/noa-launch.js','noa-manifest.json':'deploy/noa-manifest.json','noa-sw.js':'deploy/noa-sw.js','noa-bridge/subscription-access.php':'bridge/subscription-access.php','extend/noa.access.php':'deploy/noa-access.extend.php','noa-bridge/ainoa-core.php':'bridge/ainoa-core.php','noa-ainoa.php':'deploy/noa-ainoa.php','noa-ainoa.css':'deploy/noa-ainoa.css','noa-ainoa.js':'deploy/noa-ainoa.js','noa-bridge/package-record.php':'bridge/package-record.php','noa-browse-edit.js':'deploy/noa-browse-edit.js','noa-browse.js':'deploy/noa-browse.js','extend/noa.design.php':'deploy/noa-design.extend.php'}
 # The N80 unified activation owns worker entry and SQL task projection.
@@ -42,6 +43,15 @@ def main():
     with s.open(ROOT+'/'+path,'wx')as f:f.set_pipelined(True);f.write(data)
     s.chmod(ROOT+'/'+path,0o644)
     if read(path)!=data:raise RuntimeError('temporary_readback_mismatch')
+   for candidate in STALE_CANDIDATES:
+    if not __import__('re').fullmatch('[a-f0-9]{40}',candidate):raise RuntimeError('invalid_stale_candidate')
+    for p,source in FILES.items():
+     folder,name=p.rsplit('/',1)if '/'in p else ('',p);temp=(folder+'/'if folder else '')+'.'+name+'.'+candidate[:12]+'.tmp'
+     staged=read(temp)
+     if staged is None:continue
+     expected=subprocess.check_output(['git','show',candidate+':'+source])
+     if staged!=expected:raise RuntimeError('concurrent_staging_preserved:'+p)
+     s.remove(ROOT+'/'+temp)
    if rollback:
     for p,v in reversed(list(json.loads(BACKUP.read_text()).items())):
      old=base64.b64decode(v)if v is not None else None;current=read(p)
@@ -56,16 +66,22 @@ def main():
     if v is None and p not in NEW:raise RuntimeError('missing_existing_target:'+p)
     if v is not None and sha(v)not in known[p]:raise RuntimeError('unknown_operating_version_preserved:'+p)
    BACKUP.write_text(json.dumps({p:base64.b64encode(v).decode()if v is not None else None for p,v in before.items()}));BACKUP.chmod(0o600);temps={}
-   for p,data in desired.items():
-    if before[p]==data:continue
-    folder,name=p.rsplit('/',1)if '/'in p else ('',p);temp=(folder+'/'if folder else '')+'.'+name+'.'+os.environ['GITHUB_SHA'][:12]+'.tmp';put(temp,data);temps[p]=temp
-   check_current_candidate()
-   if any(read(p)!=v for p,v in before.items()):raise RuntimeError('concurrent_operating_change')
-   for p in FILES:
-    if p in temps:s.posix_rename(ROOT+'/'+temps[p],ROOT+'/'+p)
-    if read(p)!=desired[p]:raise RuntimeError('activation_hash_mismatch:'+p)
-   if any(sha(read(p))!=digest for p,digest in protected.items()):raise RuntimeError('protected_source_changed')
-   receipt={'commit':os.environ['GITHUB_SHA'],'changed':list(temps),'sha256':{p:sha(desired[p])for p in FILES},'protectedUnchanged':len(PROTECTED),'databaseWrites':0,'memberRowsChanged':0,'pointDebits':0,'pricesSeeded':False};(out/'deployment.json').write_text(json.dumps(receipt,indent=2));print('NOA_AINOA_SCOPED_DEPLOYED',json.dumps(receipt))
+   try:
+    for p,data in desired.items():
+     if before[p]==data:continue
+     folder,name=p.rsplit('/',1)if '/'in p else ('',p);temp=(folder+'/'if folder else '')+'.'+name+'.'+os.environ['GITHUB_SHA'][:12]+'.tmp';put(temp,data);temps[p]=temp
+    check_current_candidate()
+    if any(read(p)!=v for p,v in before.items()):raise RuntimeError('concurrent_operating_change')
+    for p in FILES:
+     if p in temps:s.posix_rename(ROOT+'/'+temps[p],ROOT+'/'+p)
+     if read(p)!=desired[p]:raise RuntimeError('activation_hash_mismatch:'+p)
+    if any(sha(read(p))!=digest for p,digest in protected.items()):raise RuntimeError('protected_source_changed')
+    receipt={'commit':os.environ['GITHUB_SHA'],'changed':list(temps),'sha256':{p:sha(desired[p])for p in FILES},'protectedUnchanged':len(PROTECTED),'databaseWrites':0,'memberRowsChanged':0,'pointDebits':0,'pricesSeeded':False};(out/'deployment.json').write_text(json.dumps(receipt,indent=2));print('NOA_AINOA_SCOPED_DEPLOYED',json.dumps(receipt))
+   finally:
+    for p,temp in temps.items():
+     staged=read(temp)
+     if staged is not None and staged==desired[p]:s.remove(ROOT+'/'+temp)
+
  finally:t.close()
  for p in FILES:
   if p.endswith(('.js','.css','.png','.json')):

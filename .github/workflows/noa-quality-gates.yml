@@ -121,7 +121,7 @@ jobs:
               print('LIVE_ACCESS',path,r.status)
           PY
   finish-live:
-    if: github.ref == 'refs/heads/main' && needs.engines.outputs.release_scope == 'true' && !contains(github.event.head_commit.message, '[ainoa-release]')
+    if: github.ref == 'refs/heads/main' && (needs.engines.outputs.release_scope == 'true' || contains(github.event.head_commit.message, '[n80-runtime]')) && !contains(github.event.head_commit.message, '[ainoa-release]')
     needs: engines
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -140,7 +140,11 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/noa-finish-proof"
           npm install --prefix "$RUNNER_TEMP/noa-finish-live" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
-          NOA_PLAYWRIGHT_PACKAGE="$RUNNER_TEMP/noa-finish-live/package.json" node scripts/qa/noa-finish-live.mjs
+          if [[ '${{ contains(github.event.head_commit.message, '[n80-runtime]') }}' == 'true' ]]; then
+            NOA_PLAYWRIGHT_PACKAGE="$RUNNER_TEMP/noa-finish-live/package.json" node scripts/qa/n80-runtime-live.mjs
+          else
+            NOA_PLAYWRIGHT_PACKAGE="$RUNNER_TEMP/noa-finish-live/package.json" node scripts/qa/noa-finish-live.mjs
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: noa-finish-live-${{ github.run_id }}

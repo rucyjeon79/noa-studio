@@ -345,7 +345,7 @@ function mount(panel, {renderTree, fingerprint}) {
     mode.onchange=selectionChanged;
     byId('batch-fields')?.addEventListener('change',selectionChanged);
     if (panel.open) queueMicrotask(refreshHistory);
-    document.addEventListener('visibilitychange',()=>{if(visible())refreshHistory();else pollTimer?.();pollTimer=null;});
+    document.addEventListener('visibilitychange',()=>{if(visible())refreshHistory();else{pollTimer?.();pollTimer=null;}});
     window.addEventListener('beforeunload',event=>{if(sending){event.preventDefault();event.returnValue='';}});
     return {
         selection:()=>panel.open?{keys:selected,changed:selectionChanged}:null,

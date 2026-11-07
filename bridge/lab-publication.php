@@ -20,10 +20,11 @@ function lab_final_output(array &$j,array $body,bool $commit):array {
  if($format!=='optimized'&&(!is_numeric($manifest['duration']??null)||$manifest['duration']<=0||$manifest['duration']>60.05))throw new InvalidArgumentException('invalid_output');
  $reservation=['file'=>$file,'sha256'=>$sha,'bytes'=>$bytes,'manifest'=>$manifest];
  if(!$commit){$j['finalReservations'][$format]=$reservation;return ['file'=>$file];}
- if(($j['finalReservations'][$format]??null)!==$reservation)throw new DomainException('publication_reservation_changed');
+ $final=array_replace($manifest,['file'=>$file,'sha256'=>$sha,'format'=>$format]);
+ $prior=$format==='optimized'?($j['pendingMaster']??null):($j['pendingOutputs'][$format]??null);
+ if(($j['finalReservations'][$format]??null)!==$reservation&&$prior!==$final)throw new DomainException('publication_reservation_changed');
  $path=lab_job_dir($j['id']).'/'.$file;
  if(is_link($path)||!is_file($path)||filesize($path)!==$bytes||!hash_equals($sha,hash_file('sha256',$path)))throw new DomainException('output_checksum_mismatch');
- $final=array_replace($manifest,['file'=>$file,'sha256'=>$sha,'format'=>$format]);
  if($format==='optimized')$j['pendingMaster']=$final;else $j['pendingOutputs'][$format]=$final;
  unset($j['finalReservations'][$format]);return ['file'=>$file,'verified'=>true];
 }
