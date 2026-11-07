@@ -2,7 +2,9 @@ name: NOA Grok Movie Workroom Integration
 on:
   push:
     branches: [main]
-    paths: ['bridge/muvy*.php','deploy/noa-muvy*','scripts/noa_muvy*','scripts/qa/noa-muvy.mjs','tests/muvy/**','.github/workflows/noa-muvy-integration.yml']
+    paths: &muvy_paths ['bridge/muvy*.php','deploy/noa-muvy*','scripts/noa_muvy*','scripts/qa/noa-muvy.mjs','tests/muvy/**','.github/workflows/noa-muvy-integration.yml']
+  pull_request:
+    paths: *muvy_paths
 permissions: {contents: read}
 jobs:
   candidate:
@@ -16,6 +18,7 @@ jobs:
       - name: Validate private storage, revisions, provider deduplication and strict packs
         run: |
           for file in bridge/muvy*.php deploy/noa-muvy-panel.php deploy/noa-ai-lab.php tests/muvy/fixture.php; do php -l "$file"; done
+          node --check deploy/noa-browse-edit.js
           node --check deploy/noa-muvy.js
           node --check scripts/qa/noa-muvy.mjs
           python -m py_compile scripts/noa_muvy_release.py scripts/noa_muvy_postflight.py
@@ -29,6 +32,7 @@ jobs:
         if: always()
         with: {name: 'noa-muvy-candidate-${{ github.run_id }}', path: muvy-proof/, retention-days: 7}
   deploy:
+    if: github.event_name == 'push'
     needs: candidate
     runs-on: ubuntu-latest
     environment: production

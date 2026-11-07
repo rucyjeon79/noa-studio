@@ -12,7 +12,7 @@ try{
  const post=async data=>{const r=await contexts.admin.request.post(api,{headers:{Origin:base,'X-NOA-CSRF':csrf},data});return{status:r.status(),body:await r.json()};};
  assert.equal((await contexts.admin.request.post(api,{data:{action:'save'}})).status(),403);assert.equal((await contexts.admin.request.post(api,{headers:{Origin:'https://other.example','X-NOA-CSRF':csrf},data:{action:'save'}})).status(),403);
  const page=await contexts.admin.newPage(),errors=[];let catalogReads=0;page.on('request',r=>{if(r.url().includes('view=labChoices'))catalogReads++;});page.on('pageerror',e=>errors.push(e.message));page.on('dialog',()=>{throw Error('untrusted_markup_executed');});await page.goto(base+'/noa-ai-lab.php#lab-muvy');await page.waitForFunction(()=>document.querySelector('#mu-connection').textContent.includes('AI 서비스 연결 필요'));
- assert(await page.getByRole('link',{name:'뮤비 대본·프롬프트',exact:true}).isVisible());await page.locator('#mu-ep').fill('EP.12');await page.locator('#mu-title').fill('빛이 닿는 순간');await page.locator('#mu-lyrics').fill('밤을 따라 걸어가던 작은 마음이 빛을 만나는 순간, 우리는 다시 웃어요.');await page.locator('#mu-save').click();await page.waitForFunction(()=>document.querySelector('#mu-save-state').textContent.includes('저장됨'));const firstId=await page.locator('#mu-project').inputValue();assert(firstId);
+ assert(await page.getByRole('link',{name:'뮤비 대본·프롬프트',exact:true}).isVisible());await page.locator('#mu-ep').fill('EP.12');await page.locator('#mu-title').fill('빛이 닿는 순간');await page.locator('#mu-lyrics').fill('밤을 따라 걸어가던 작은 마음이 빛을 만나는 순간, 우리는 다시 웃어요.');await page.locator('#mu-save').click();await page.waitForFunction(()=>document.querySelector('#mu-save-state').textContent.includes('저장됨')&&document.querySelector('#mu-project').value!=='');const firstId=await page.locator('#mu-project').inputValue();assert(firstId);
  await page.reload();await page.waitForFunction(()=>document.querySelectorAll('#mu-project option').length===2);await page.locator('#mu-project').selectOption(firstId);await page.waitForFunction(()=>document.querySelector('#mu-title').value==='빛이 닿는 순간');assert(await page.locator('[data-mu-step=script]').isDisabled());
  await page.locator('.mu-settings summary').click();await page.locator('#mu-key').fill('test-xai-key-not-real');await page.locator('#mu-enabled').check();await page.locator('#mu-config-form button[type=submit]').click();await page.waitForFunction(()=>document.querySelector('#mu-connection').textContent.includes('사용 중'));assert.equal(await page.locator('#mu-key').inputValue(),'');
  for(const stage of ['script','c1','c2','c3','publish']){await page.locator('[data-mu-step='+stage+']').click();await page.waitForFunction(stage=>document.querySelector('[data-mu-step='+stage+']').textContent.startsWith('✓'),stage);}
@@ -70,6 +70,34 @@ try{
  await page.locator('#mu-song').selectOption('edition');
  await page.waitForFunction(()=>!document.querySelector('#mu-picker-fields').disabled);
  assert.equal(songCalls().length,8);
+ // Launch from the actual song form; a video catalog key must resolve to its saved song edition.
+ await setLimit(40);
+ const editor=await contexts.admin.newPage();
+ await editor.setViewportSize({width:390,height:844});
+ await editor.route('**/fixture-song-editor',r=>r.fulfill({contentType:'text/html',body:'<meta charset=utf-8><main class="noa-page"></main>'}));
+ await editor.route('**/noa-inline-edit.php?*',r=>r.fulfill({json:{ok:true,kind:'single',packageType:'original',
+  writeKey:'original',fields:{title:'같은 제목',mvUrl:''},context:{}}}));
+ await editor.goto(base+'/fixture-song-editor');
+ for(const name of ['noa-browse','noa-record-form','noa-browse-edit'])await editor.addScriptTag({path:'deploy/'+name+'.js'});
+ await editor.evaluate(()=>NoaBrowseEdit.mount({host:document.querySelector('main'),standalone:true})
+  .openRecord({type:'song',source:'youtube',key:'abcdefghijk'}));
+ const field=editor.locator('[data-record-field="mvUrl"]');
+ const launch=field.getByRole('button',{name:'이 곡으로 뮤비 생성기 열기'});
+ assert(await launch.evaluate(e=>e.previousElementSibling?.getAttribute('aria-label')==='뮤직비디오 주소 수정'));
+ const requests=[];
+ contexts.admin.on('request',r=>{if(r.url()===api&&r.method()==='POST')requests.push(r.postDataJSON());});
+ const [movie]=await Promise.all([editor.waitForEvent('popup'),launch.click()]);
+ await movie.waitForFunction(()=>document.querySelector('#mu-status')?.textContent.includes('모두 저장'));
+ assert.equal(await movie.locator('#mu-lyrics').inputValue(),'원곡 가사 원곡 가사 원곡 가사');
+ assert.deepEqual(requests.filter(r=>r.action==='selectSong').map(r=>r.key),['original']);
+ assert.equal(requests.filter(r=>r.action==='generate').length,8);
+ assert.equal(await movie.evaluate(()=>window.opener===null),true);
+ assert.equal(await field.getByRole('button',{name:'뮤직비디오 주소 수정'}).count(),1);
+ await movie.reload();
+ await movie.waitForFunction(()=>document.querySelector('#mu-status')?.textContent.includes('새 뮤비'));
+ assert.equal(requests.filter(r=>r.action==='selectSong').length,1);
+ assert.equal(requests.filter(r=>r.action==='generate').length,8);
+ report.editorShortcut=true;
  report.selectSongAutoGeneration=true;report.partialJobResumed=true;report.completedSelectionReused=true;
  assert.deepEqual(errors,[]);report.highestAdminOnly=true;report.csrfAndOriginEnforced=true;report.durableReload=true;report.originalPackImport=true;report.fullThirtyCutFlow=true;report.encryptedKeysNotReturned=true;report.dailyQuotaBeforeProvider=true;report.providerFixtureCalls=calls.length;
 }finally{writeFileSync(out+'/browser-regression.json',JSON.stringify(report,null,2));await browser.close();server.kill();}

@@ -5,6 +5,7 @@ release.FILES={'noa-bridge/muvy-rules.php':'bridge/muvy-rules.php','noa-bridge/m
 release.NEW=set(list(release.FILES)[:7])
 release.FILES={**DEPENDENCIES, 'noa-ai-lab.js':'deploy/noa-ai-lab.js', **release.FILES}
 release.NEW.update(DEPENDENCIES)
+release.FILES['noa-browse-edit.js']='deploy/noa-browse-edit.js'
 release.PROTECTED+=['noa-app/home.php','noa-youtube.php','noa-browse.js','noa-bridge/lab-core.php','noa-bridge/lab-api.php','noa-bridge/lab-worker.php','noa-bridge/community-core.php','extend/noa.01-community.php']
 if __name__=='__main__':
  release.main()
