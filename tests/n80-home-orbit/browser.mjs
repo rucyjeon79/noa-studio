@@ -57,6 +57,12 @@ try{
   await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
   assert.equal(await orbit.evaluate(e=>getComputedStyle(e).animationPlayState),'paused');
   await page.evaluate(()=>{delete document.hidden;document.dispatchEvent(new Event('visibilitychange'));});
+  // Existing player iframe shares the top-level indicator and does not create another timer/controller.
+  await page.evaluate(()=>{const f=document.createElement('iframe');f.id='noa-shell-view';f.hidden=true;f.src='/child';document.body.append(f);});
+  await page.waitForFunction(()=>document.querySelector('iframe')?.contentWindow.N80Activity===window.N80Activity);
+  await page.evaluate(()=>{N80Activity.clear();document.querySelector('iframe').contentWindow.N80Activity.set('frame-ai','one','waiting');});
+  assert.equal(await home.getAttribute('data-n80-state'),'waiting');
+  await page.evaluate(()=>{document.querySelector('iframe').remove();N80Activity.clear();N80Activity.set('audio','retry','processing');});
   // Navigation rebuilds the home control without duplicate decoration; receipts survive same-tab navigation.
   await page.evaluate(()=>window.dispatchEvent(new HashChangeEvent('hashchange')));assert.equal(await home.locator('.n80-home-orbit').count(),1);
   await home.click();await page.waitForURL(base+'/');assert.equal(await home.getAttribute('data-n80-state'),'running');

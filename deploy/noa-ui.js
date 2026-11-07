@@ -1,6 +1,8 @@
 /* N80 presentation only: consume native task receipts, never execute or poll work. */
 (()=>{'use strict';
  if(window.N80Activity)return;
+ // The persistent JUKEBOX shell owns activity from its same-origin content frame.
+ try{if(window.parent!==window&&window.parent.location.origin===location.origin&&window.parent.N80Activity){window.N80Activity=window.parent.N80Activity;return;}}catch{}
  const root=document.documentElement, tasks=new Map(), key='noa-n80-activity-v1';
  const active=new Set(['running','waiting']), labels={idle:'대기 · 표시할 작업 없음',running:'작업 실행 중',waiting:'작업·응답 대기',complete:'작업 완료',error:'작업 오류',stale:'작업 상태 갱신 지연'};
  let timer=null, current='idle', batching=false;
