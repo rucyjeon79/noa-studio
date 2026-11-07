@@ -2,7 +2,9 @@
 declare(strict_types=1);define('_GNUBOARD_',true);
 $site=getenv('NCD_SITE')?:'/tmp/noa-creative-test/html';require $site.'/noa-bridge/sound-core.php';require $site.'/noa-app/engine/creative.php';require $site.'/noa-bridge/creative-publication.php';
 $dsn=getenv('NOA_MYSQL_DSN');if(!str_contains((string)$dsn,'dbname=noa_inline_edit_test;'))throw new RuntimeException('isolated_database_required');$db=new PDO($dsn,'root','noa-test-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
-$db->exec('DROP TABLE noa_jukebox_assets');nj_schema($db);ncd_schema($db);
+$db->exec('DROP TABLE noa_jukebox_assets');nj_schema($db);
+// Exercise additive migration from the previously deployed identity-only schema.
+$db->exec("CREATE TABLE IF NOT EXISTS noa_creative_drafts (draft_id CHAR(32) CHARACTER SET ascii PRIMARY KEY,owner_id VARCHAR(20) NOT NULL,doc_key VARCHAR(191) CHARACTER SET ascii NOT NULL UNIQUE,created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,INDEX owner_created(owner_id,created_at,draft_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");ncd_schema($db);
 function check(bool $v,string $why):void{if(!$v)throw new RuntimeException($why);}
 function denied(callable $fn,string $expected):void{try{$fn();}catch(DomainException|InvalidArgumentException $e){check($e->getMessage()===$expected,$expected.' != '.$e->getMessage());return;}throw new RuntimeException('allowed:'.$expected);}
 $counts=fn()=>array_map(fn($table)=>(int)$db->query('SELECT COUNT(*) FROM '.$table)->fetchColumn(),['noa_creative_drafts','noa_documents','noa_document_history']);$initialCounts=$counts();
@@ -11,6 +13,7 @@ $first=ncd_create($db,'creative-owner',str_repeat('a',32),'',['fields'=>['title'
 for($i=0;$i<3;$i++)$first=ncd_save($db,'creative-owner',['id'=>str_repeat('a',32),'revision'=>$first['revision'],'story'=>'진행 내용 '.$i]);
 $historyCount=$db->prepare('SELECT COUNT(*) FROM noa_document_history WHERE doc_key=?');$historyCount->execute([$first['doc_key']]);check((int)$historyCount->fetchColumn()===0,'typing overwrites one checkpoint without history growth');
 $again=ncd_save($db,'creative-owner',['id'=>str_repeat('a',32),'revision'=>$first['revision'],'story'=>'진행 내용 2']);check($again['revision']===$first['revision'],'unchanged checkpoint is not rewritten');ncd_schema($db);check(ncd_row($db,str_repeat('a',32),'creative-owner')['recovery_until']===$first['recovery_until'],'schema retry does not extend checkpoint');
+$db->prepare('UPDATE noa_creative_drafts SET retained_at=NULL,recovery_until=NULL WHERE draft_id=?')->execute([str_repeat('a',32)]);ncd_schema($db);check(ncd_row($db,str_repeat('a',32),'creative-owner')['recovery_until']>=time()+86399,'legacy unfinished work receives full-day migration grace');
 $owner='creative-owner';$id=str_repeat('c',32);$r=ncd_create($db,$owner,$id,'퇴근길에 집으로 돌아오며 가족을 떠올린다.');check($r['revision']===1,'created');check(ncd_create($db,$owner,$id,'재전송')['revision']===1,'create idempotency');denied(fn()=>ncd_row($db,$id,'other'),'draft_not_found');
 $r=ncd_save($db,$owner,['id'=>$id,'revision'=>1,'story'=>'퇴근길에 가족을 떠올리며 따뜻하고 담담하게 부르고 싶다.']);denied(fn()=>ncd_save($db,$owner,['id'=>$id,'revision'=>1,'fields'=>['title'=>'stale']]),'revision_conflict');
 function enqueue_test(PDO $db,string $owner,array $r,string $operation,string $field=''):array {$b=['id'=>$r['document']['_creative']['id'],'revision'=>$r['revision'],'operation'=>$operation,'field'=>$field,'requestId'=>bin2hex(random_bytes(16))];$out=ncd_enqueue($db,$owner,$b,static fn()=>204);$again=ncd_enqueue($db,$owner,$b,static fn()=>throw new RuntimeException('duplicate dispatch'));check($out['job']['id']===$again['job']['id'],'job idempotency');$j=$out['job']['id'];check(ncd_worker($db,'workerPoll',$j)['id']===$j,'claim');check(ncd_worker($db,'workerPoll',$j)===[],'single executor');return [$j,ncd_row($db,$r['document']['_creative']['id'],$owner)];}
@@ -33,6 +36,7 @@ $voice=ncd_create($db,$owner,str_repeat('b',32),'보컬 수정 확인');$vd=$voi
 // Failed and stale AI outputs preserve input and every accepted result.
 $id2=str_repeat('d',32);$r2=ncd_create($db,$owner,$id2,'다른 이야기');[$job2,$r2]=enqueue_test($db,$owner,$r2,'analyze');ncd_worker($db,'save',$job2,['text'=>'invalid json']);check(ncd_job($db,$job2)['document']['state']==='failed','AI failure recorded');check(ncd_row($db,$id2,$owner)['document']['_creative']['story']==='다른 이야기','failure preserves story');
 [$job3,$r2]=enqueue_test($db,$owner,ncd_row($db,$id2,$owner),'analyze');$r2=ncd_save($db,$owner,['id'=>$id2,'revision'=>$r2['revision'],'story'=>'편집된 이야기']);$qs=[];foreach(NCD_CONDITIONS as $k)$qs[$k]=['prompt'=>$k,'options'=>['하나','둘','셋','넷']];ncd_worker($db,'save',$job3,['text'=>ncd_json(['intent'=>[],'questions'=>$qs])]);check(ncd_job($db,$job3)['document']['state']==='review','stale result retained');check(ncd_row($db,$id2,$owner)['document']['_creative']['story']==='편집된 이야기','new input preserved');
+$db->prepare('UPDATE noa_creative_drafts SET retained_at=NULL,recovery_until=NULL WHERE draft_id=?')->execute([$id]);ncd_schema($db);
 check(ncd_view(ncd_row($db,$id,$owner))['storage']['mode']==='draft','completed draft is retained');
 // Expiration removes only unfinished, inactive recovery documents and their job/history rows.
 $db->prepare('UPDATE noa_creative_drafts SET recovery_until=? WHERE draft_id=?')->execute([time()-1,str_repeat('a',32)]);
