@@ -32,14 +32,14 @@ try{for(const width of (operating?[1280]:[320,390,1280])){
     const rail=document.createElement('dialog');rail.id='noa-menu-drawer';rail.setAttribute('role','navigation');document.body.append(rail);rail.show();
     const songs=document.querySelector('#songs'),first=songs.querySelector('.song'),second=first.cloneNode(true);
     second.classList.remove('selected');second.dataset.key='b';songs.append(second);
-    first.style.cssText='position:absolute;top:200vh';second.style.cssText='position:absolute;top:420vh';
+    first.style.cssText='position:absolute;top:200vh;width:200px';second.style.cssText='position:absolute;top:420vh;width:200px';
     const audio=document.getElementById('sound-player');audio.loop=true;
     window.dispatchEvent(new Event('wheel'));await audio.play();
    });
    const seen=key=>f.locator('#songs .song[data-key="'+key+'"]').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;});
    await f.clock.fastForward(6500);await f.keyboard.press('Shift');await f.clock.fastForward(9500);
    assert(!await seen('a'),'continue browsing for ten seconds after the most recent input');
-   await f.clock.fastForward(550);await f.clock.runFor(64);assert(await seen('a'),'a pinned navigation dialog permits follow');
+   await f.clock.fastForward(550);await f.clock.runFor(64);assert(await seen('a'),'a pinned navigation dialog permits follow '+JSON.stringify(await f.locator('#songs .song.selected').evaluate(el=>({row:el.getBoundingClientRect().toJSON(),art:el.querySelector('.lp-track-art')?.getBoundingClientRect().toJSON(),scroll:scrollY,running:!!el.querySelector('.lp-running'),now:performance.now(),hidden:document.hidden}))));
    // A natural track change after the idle period follows immediately.
    await f.evaluate(async()=>{const audio=document.getElementById('sound-player');audio.pause();window.dispatchEvent(new CustomEvent('noa-track-selected',{detail:{record:{key:'b'}}}));await audio.play();});
    await f.clock.runFor(120);assert(await seen('b'),'idle listeners see the new playing track');
