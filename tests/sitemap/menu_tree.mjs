@@ -59,7 +59,7 @@ try{
     const first=drawer.locator('details[data-noa-workspace=creator_lab]');
     await first.locator('summary').scrollIntoViewIfNeeded();
     await page.screenshot({path:`${out}/tree-${role}-${theme}-${width}.png`});
-    for(const [query,workspace,id] of [['음원 최적화','creator_lab','jukebox'],['뮤직비디오','ai_lab','create'],['서비스 연결','admin','aiSettings']]){
+    for(const [query,workspace,id] of [['음원 최적화','creator_lab','jukebox'],['뮤직비디오 제작','ai_lab','create'],['서비스 연결','admin','aiSettings']]){
      await search.fill(query);
      const group=drawer.locator(`details[data-noa-workspace="${workspace}"]`);
      assert(await group.locator(`[data-drawer-route="${id}"]`).isVisible());
@@ -67,7 +67,7 @@ try{
      assert.equal(await drawer.locator('.noa-drawer-branch:not([hidden])').count(),1,'only matching branch remains');
      await search.fill('');assert.equal(await group.evaluate(el=>el.open),false,'clear restores disclosure state');
     }
-    await search.fill('뮤직비디오');
+    await search.fill('뮤직비디오 제작');
     await search.press('Enter');
     assert.equal(await page.locator(':focus').getAttribute('data-drawer-route'),'create','search submission focuses canonical match');
     await page.screenshot({path:`${out}/search-${role}-${theme}-${width}.png`});
@@ -86,7 +86,7 @@ try{
     assert.equal(await page.locator('main .noa-site-map-subheading:not([hidden])').count(),1);
     await page.locator('#noa-menu-search').fill('');
     if(width<1200)await page.locator('#noa-nav-all').click();
-    await search.fill('뮤직비디오');
+    await search.fill('뮤직비디오 제작');
     await drawer.locator('[data-drawer-route=create]').click();
     assert.equal(new URL(page.url()).pathname+new URL(page.url()).search,'/noa-ai-lab.php?tool=create');
    }

@@ -22,7 +22,7 @@ function n80_lab_tools(): array {
 function n80_lab_families(): array {
     return [
         'batch'=>['label'=>'ACT·장르 묶음 제작','description'=>'여러 곡·ACT·장르를 선택해 필요한 항목을 한 번에 생성','section'=>'production'],
-        'video'=>['label'=>'뮤직비디오 제작','description'=>'음원·캐릭터·영상 구간을 선택해 실제 MP4 영상 파일 제작','section'=>'production'],
+        'video'=>['label'=>'뮤직비디오 제작','description'=>'음원·캐릭터·구간을 선택해 MP4 영상 파일 제작','section'=>'production'],
         'conversation'=>['label'=>'AI 대화·음악 추천','description'=>'곡 이야기·제작 아이디어 상담과 취향에 맞는 음악 추천','section'=>'conversation'],
         'jobs'=>['label'=>'작업 결과·이력','description'=>'가사·영상 제작 진행 상황, 생성 결과, 실패 작업 재시도','section'=>'results'],
         'growth'=>['label'=>'채널 성과','description'=>'AI LAB에서 게시한 영상의 조회수·시청 시간 등 성과 확인','section'=>'results'],
@@ -50,17 +50,18 @@ function n80_lab_default(array $access): string {
 function n80_lab_nav(array $access, string $current): void {
     $e=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
     $tools=n80_lab_tools();$active=$tools[$current]??[];$family=$active['family']??'';
-    $families=n80_lab_families();$title=$families[$family]['label']??($active['label']??'');
-    echo '<nav class="lab-tabs" aria-label="AI LAB 메뉴"><a href="/noa-ai-lab.php">AI LAB</a>';
+    $families=n80_lab_families();$title=!empty($active['menuHidden'])?($active['label']??''):($families[$family]['label']??($active['label']??''));
+    echo '<nav class="lab-tabs" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px" aria-label="AI LAB 메뉴"><a href="/noa-ai-lab.php">AI LAB</a>';
     if(isset($tools[$current])&&empty($tools[$current]['hidden'])&&!empty($access[$tools[$current]['access']])){
         echo '<a href="/noa-ai-lab.php?tool='.$e($current).'" aria-current="page">'.$e($title).'</a>';
     }
-    echo '<details class="lab-tool-switch" data-noa-local-disclosure><summary>다른 도구</summary><div class="lab-tool-links">';
-    foreach (n80_lab_menu_tools($access) as $id => $tool) {
-        if ($tool['family']===$family || empty($access[$tool['access']])) continue;
-        echo '<a href="/noa-ai-lab.php?tool='.$e($id).'">'.$e($tool['label']).'</a> ';
+    $otherTools=array_filter(n80_lab_menu_tools($access),static fn($tool)=>$tool['family']!==$family&&!empty($access[$tool['access']]));
+    if($otherTools){
+        echo '<details class="lab-tool-switch" data-noa-local-disclosure><summary>다른 도구</summary><div class="lab-tool-links">';
+        foreach ($otherTools as $id => $tool) echo '<a href="/noa-ai-lab.php?tool='.$e($id).'">'.$e($tool['label']).'</a> ';
+        echo '</div></details>';
     }
-    echo '</div></details></nav>';
+    echo '</nav>';
     $modes=array_filter($tools,static fn($tool)=>$family!==''&&empty($tool['hidden'])&&empty($tool['menuHidden'])&&($tool['family']??'')===$family&&!empty($access[$tool['access']]));
     if(count($modes)>1){
         echo '<nav class="creator-actions" style="display:flex;flex-wrap:wrap;gap:8px" data-n80-lab-modes="'.$e($family).'" aria-label="'.$e($title).' 작업 선택">';
