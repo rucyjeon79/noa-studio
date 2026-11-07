@@ -23,6 +23,7 @@ jobs:
           node --check deploy/noa-creator.js
           node --check deploy/noa-browse-edit.js
           python -m pip install playwright 'paramiko>=3,<5'
+          python scripts/qa/noa-qa-font.py
           python tests/clipboard/editor.py
       - uses: actions/upload-artifact@v4
         if: always()
