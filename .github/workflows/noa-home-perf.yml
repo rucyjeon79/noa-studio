@@ -36,6 +36,8 @@ jobs:
         with: {fetch-depth: 0, persist-credentials: false}
       - run: python -m pip install 'paramiko>=3,<5'
       - run: python scripts/noa_home_perf_release.py
+        env:
+          NOA_HOME_LINK_ONLY: ${{ contains(github.event.head_commit.message, '[home-link-release]') }}
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'home-perf-deploy-${{ github.run_id }}', path: ainoa-proof/deployment.json, retention-days: 7}
