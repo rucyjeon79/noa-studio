@@ -1,9 +1,8 @@
 name: Verify and publish song editor closing
-# Browser fixture diagnostics
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/noa-editor-close.yml']
+    paths: ['.github/workflows/noa-editor-close.yml','tests/catalog/editor-close.cjs']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
