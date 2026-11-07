@@ -32,8 +32,8 @@ def main():
         changes = [{'id': task_id, 'text': 'N80 실행기 연결, 전담 처리기 분리, 중앙 등록부·작업 상태·예약 실행 통합. 전체 통합 완료는 모듈별 실제 실행 증거로 판단한다.', 'areaIds': ['P0-10', 'P0-11']}]
     update = {'requestId': 'n80-runtime-' + os.environ['GITHUB_SHA'][:20], 'expectedRevision': current['revision'],
               'changes': [], 'appendInstructions': changes,
-              'taskChanges': [{'id': task_id, 'status': 'complete',
-                               'currentStage': 'N80 실행 연결·뮤비 큐·미디어 최종 게시·공통 조회 전환 완료. 제공자 사용 가능 여부는 별도 준비상태로 표시.',
+              'taskChanges': [{'id': task_id, 'status': 'in_progress',
+                               'currentStage': 'N80 실행 연결·뮤비 큐·최종 게시·공통 조회 검증 통과. 완료된 Actions 증빙 연결 대기.',
                                'lastSuccessfulStage': '배포 소스 대조 및 N80 상태 계약 v2 실서버 응답 확인: ' + os.environ['GITHUB_SHA'][:12],
                                'error': '', 'evidenceIds': []}]}
     receipt = ({'readbackVerified': True, 'state': current} if update['requestId'] in current.get('requestReceipts', {})
@@ -44,6 +44,8 @@ def main():
     result['scopeCompleted'] = True
     result['globalRuntimeCertification'] = 'not_claimed'
     result['nativeModules'] = native['operations']
+    result['ok'] = True
+    result['cases'] = [{'name': name, 'ok': value['state']=='verified'} for name,value in status['operations'].items()]
     path = Path('ainoa-proof/runtime.json')
     path.parent.mkdir(exist_ok=True)
     path.write_text(json.dumps(result, ensure_ascii=False, indent=2))

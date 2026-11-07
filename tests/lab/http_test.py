@@ -31,8 +31,9 @@ with tempfile.TemporaryDirectory(prefix='noa-lab-http-') as root:
   assert worker('health')[0]==200
   assert request('lab-api.php?action=config',{'expectedRevision':state['configRevision']},admin)[0]==200
   # Exercise completion transitions to catch malformed branches before deploying.
-  state=json.loads((private/'state.json').read_text());state['jobs']={};jobid='a'*32;state['jobs'][jobid]={'id':jobid,'title':'isolated fixture','state':'queued_analysis','revision':1,'attempts':0,'createdAt':'2026-10-20T00:00:00Z','settings':{'mode':'audio','formats':['landscape'],'posting':'save','autoSelect':True,'subtitles':False},'cast':'female','genre':'test','outputs':[]};(private/'state.json').write_text(json.dumps(state))
+  state=json.loads((private/'state.json').read_text());state['worker']={'readiness':{'isolated-proof':{'durableAck':True}}};state['jobs']={};jobid='a'*32;state['jobs'][jobid]={'id':jobid,'title':'isolated fixture','state':'queued_analysis','revision':1,'attempts':0,'createdAt':'2026-10-20T00:00:00Z','settings':{'mode':'audio','formats':['landscape'],'posting':'save','autoSelect':True,'subtitles':False},'cast':'female','genre':'test','outputs':[]};(private/'state.json').write_text(json.dumps(state))
   status,claim=worker('claim',{});assert status==200 and claim['stage']=='analysis'
+  assert json.loads((private/'state.json').read_text())['worker']['readiness']['isolated-proof']['durableAck'] is True
   auth={'id':jobid,'lease':claim['job']['lease']};assert worker('complete',{**auth,'stage':'analysis','analysis':{'duration':5,'candidates':[{'start':0,'end':5}]}})[0]==200
   status,state=request('lab-api.php',headers={'X-Test-Role':'admin'});job=state['jobs'][0];assert job['state']=='review_highlights','Audio-only mode must never auto-render'
   assert request('lab-api.php?action=optimize',{'id':jobid,'expectedRevision':job['revision'],'preset':'transparent','targetLufs':-14,'truePeakCeiling':-1},admin)[0]==200
@@ -48,6 +49,7 @@ with tempfile.TemporaryDirectory(prefix='noa-lab-http-') as root:
   (directory/reservation['file']).write_bytes(data)
   assert worker('commit_final',{**final,'lease':'0'*32})[0]==409
   assert worker('commit_final',final)[0]==200
+  assert worker('commit_final',final)[0]==200,'Lost publication replies must allow exact delivery replay'
   completed={**auth,'stage':'master'};assert worker('complete',completed)[0]==200
   assert worker('complete',completed)[1]['replayed'] is True
   # A separate ambiguous attempt remains protected from an automatic retry.

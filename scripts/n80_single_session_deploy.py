@@ -29,9 +29,10 @@ release.FILES.update({
  'noa-app/engine/runtime.js':'deploy/noa-app/engine/runtime.js',
  'noa-app/jukebox/wake-core.php':'deploy/noa-app/jukebox/wake-core.php',
  **{'noa-bridge/'+name:'bridge/'+name for name in ['muvy.php','lab-api.php','lab-creator.php','lab-file.php']},
- **{name:'deploy/'+name for name in ['noa-muvy.js','noa-ai-lab.php','noa-ai-lab.js','noa-creator.php','noa-channel-batch.js','noa-ainoa-admin.js']},
+ **{name:'deploy/'+name for name in ['noa-muvy.js','noa-ai-lab.php','noa-ai-lab.js','noa-creator.php','noa-channel-batch.js','noa-ainoa-admin.js','noa-starlight.css']},
  'extend/noa.design.php':'deploy/noa-design.extend.php',
 })
+release.STALE_CANDIDATES = ('cd3fe94c9b3dd7d533702283f7792497c91896a9',)
 release.NEW = set(release.FILES)
 release.PROTECTED = [path for path in release.PROTECTED if path not in release.FILES]
 if __name__ == '__main__':

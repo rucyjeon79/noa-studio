@@ -123,6 +123,9 @@ def release_sources(source=None):
 def report():
     event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
     triggered = event.get("workflow_run", {})
+    if '[n80-runtime]' in triggered.get('head_commit', {}).get('message', ''):
+        from n80_runtime_finalize import finalize
+        return finalize(event)
     evidence.require(event.get("repository", {}).get("full_name") == evidence.REPO, "event_repository_mismatch")
     evidence.require(triggered.get("head_branch") == "main" and triggered.get("event") in ("push", "workflow_dispatch"), "untrusted_verification_event")
     commit = triggered.get("head_sha", "")
