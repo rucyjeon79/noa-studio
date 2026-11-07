@@ -31,3 +31,5 @@
 #ainoa-conversation.creative-conversation #creative-analyze,#ainoa-conversation.creative-conversation #creative-answer-send{background:var(--noa-accent);color:var(--noa-accentText);border-color:var(--noa-accent);font-weight:700}
 #ainoa-conversation.creative-conversation .creative-chat-ready{width:100%;margin:16px 0 0;background:var(--noa-accent);color:var(--noa-accentText)}
 #creative-record:focus{outline:none}
+
+.creative-main .creative-recovery-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}.creative-recovery-row>div{min-width:0}.creative-recovery-row p{font-weight:600;overflow-wrap:anywhere}.creative-recovery-row small{display:block;margin-top:6px;color:var(--noa-muted);line-height:1.6}.creative-recovery-row>button{white-space:nowrap}

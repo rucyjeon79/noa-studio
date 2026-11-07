@@ -16,7 +16,7 @@ if os.environ.get('NOA_CREATIVE_PRESENTATION_ONLY')=='1':
  release.FILES={p:'deploy/'+p for p in ['noa-creative.css','noa-creative.js','noa-lab-creative.php']}
  release.NEW=set()
 if os.environ.get('NOA_CREATIVE_RETENTION_ONLY')=='1':
- release.FILES={**{'noa-bridge/'+p:'bridge/'+p for p in ['creative-core.php']},'noa-app/engine/creative.php':'deploy/noa-app/engine/creative.php',**{'noa-bridge/'+p:'bridge/'+p for p in ['creative.php','worker-text.php']},**{p:'deploy/'+p for p in ['noa-creative.js','noa-lab-creative.php']}}
+ release.FILES={**{'noa-bridge/'+p:'bridge/'+p for p in ['creative-core.php']},'noa-app/engine/creative.php':'deploy/noa-app/engine/creative.php',**{'noa-bridge/'+p:'bridge/'+p for p in ['creative.php','worker-text.php']},**{p:'deploy/'+p for p in ['noa-creative.css','noa-creative.js','noa-lab-creative.php']}}
  release.NEW=set()
 if __name__=='__main__':
  try:
