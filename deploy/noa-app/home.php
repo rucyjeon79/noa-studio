@@ -10,7 +10,7 @@ function noa_home_banner(string $kind):void{
  $items=[
   'goods'=>['https://marpple.shop/kr/jr_lifestyle','AI Artist NOA × 람준파파','굿즈 절찬리 판매 중','마플샵에서 노아를 일상으로 만나세요.','굿즈 보러 가기','shop'],
   'youtube'=>['https://youtube.com/@ainoa_ramjunpapa?sub_confirmation=1','AI Artist NOA × 람준파파','유튜브에서 만나요','새 영상과 음악 소식을 구독으로 만나세요.','유튜브 구독하기','youtube'],
-  'amt'=>['https://www.aimusictown.com/creators/ainoa','AI MUSIC TOWN','람준파파의 AMT 스튜디오','노아의 음악을 듣고 따뜻한 응원을 남겨 주세요.','스튜디오 응원하기','music'],
+  'amt'=>['https://www.aimusictown.com/competition/2?entryId=353','AI MUSIC TOWN','람준파파의 AMT 스튜디오','노아의 음악을 듣고 따뜻한 응원을 남겨 주세요.','스튜디오 응원하기','music'],
  ];
  [$url,$eyebrow,$title,$copy,$cta,$icon]=$items[$kind];
  $art=['goods'=>'/noa-assets/ecosystem/shop.jpg','youtube'=>'/noa-assets/editorial-act-3.webp','amt'=>'/noa-assets/editorial-starlight-studio.webp'][$kind];
