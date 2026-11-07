@@ -38,6 +38,11 @@ async function inspect(browser,width) {
         let browse;
         const render=()=>{if(browse)document.querySelector('#yt-videos').hidden=browse.apply(rows).stage!=='songs';};
         browse=NoaBrowse.mount({host:document.querySelector('#youtube-browse'),rows,kind:'영상',onChange:render});render();
+        document.addEventListener('click',event=>{
+          const button=event.target.closest('[data-video],[data-coming-key]');
+          const record=button&&rows.find(r=>r.key===(button.dataset.video||button.dataset.comingKey));
+          if(record)NoaBrowse.renderPath(document.querySelector('#video-classification'),record,{base:'/noa-youtube.php'});
+        });
       },rows);
       const row=page.locator(mode==='act'?'.noa-inline-video-row':'#yt-videos>.yt-card').first();
       await row.locator(mode==='act'?'.noa-track-name':'.yt-watch').click();
@@ -78,6 +83,8 @@ async function inspect(browser,width) {
       assert.equal(await panel.locator('.cinema-badge').innerText(),'상영 중');
       console.log(width,mode,'light/dark playback, metadata, disclosures and artwork passed');
     }
+  } catch(error) {
+    await page.screenshot({path:'cinema-proof/failure-'+width+'.png',fullPage:true});throw error;
   } finally {await page.close();}
 }
 (async()=>{fs.mkdirSync('cinema-proof',{recursive:true});const browser=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
