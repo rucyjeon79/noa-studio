@@ -68,7 +68,7 @@ function noa_policy_script_revision($html){
  $html=preg_replace("~(<link\\b[^>]*\\bhref=[\"'])/noa-ui[.]css(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.css?v='.$css_revision.'$2',$html);
  $ui=dirname(__DIR__).'/noa-ui.js';$ui_revision=is_file($ui)?hash_file('sha256',$ui):'20261025-member-access';
  $html=preg_replace("~(<script\\b[^>]*\\bsrc=[\"'])/noa-ui[.]js(?:[?][^\"']*)?([\"'])~i",'$1/noa-ui.js?v='.$ui_revision.'$2',$html);
- foreach(['noa-listening.js','noa-listening-model.js','noa-listening.css','noa-gnuboard.css','noa-member-badges.css','noa-support.css','noa-gifts.css'] as $name){
+ foreach(['noa-browse-edit.js','noa-channel-batch.js','noa-muvy.js','noa-ai-lab.js','noa-creator-ai.js','noa-app/jukebox/upload.js','noa-listening.js','noa-listening-model.js','noa-listening.css','noa-gnuboard.css','noa-member-badges.css','noa-support.css','noa-gifts.css'] as $name){
   $file=dirname(__DIR__).'/'.$name;
   if(str_contains($html,'/'.$name)&&is_file($file)){
    $pattern="~(/".preg_quote($name,'~').")(?:[?][^\"']*)?~i";

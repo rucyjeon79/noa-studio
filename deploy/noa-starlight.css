@@ -1275,3 +1275,33 @@ html.noa-shell-wide[data-noa-theme] body .noa-footer-heading .noa-footer-themes 
 #noa-menu-drawer .noa-drawer-branch h4{margin:0 0 3px;font-size:12px;line-height:1.5;font-weight:600;color:var(--noa-muted)}
 #noa-menu-drawer .noa-drawer-branch a{padding-left:8px}
 #noa-menu-drawer .noa-drawer-groups [hidden]{display:none!important}
+
+/* N80 native task activity: one compositor rotation, no animation-driven requests. */
+html{--n80-idle:#82909e;--n80-running:#35d88a;--n80-waiting:#559dff;--n80-error:#f16b78}
+html[data-noa-theme=noa-ivory]{--n80-idle:#727c89;--n80-running:#148552;--n80-waiting:#286fd0;--n80-error:#c43449}
+[data-n80-state]{--n80-orbit-color:var(--n80-idle);--n80-orbit-speed:1.8s}
+[data-n80-state=running],[data-n80-state=complete]{--n80-orbit-color:var(--n80-running)}
+[data-n80-state=waiting]{--n80-orbit-color:var(--n80-waiting);--n80-orbit-speed:3.4s}
+[data-n80-state=error],[data-n80-state=stale]{--n80-orbit-color:var(--n80-error)}
+html.noa-shell-wide body .noa-mobile-nav>a[data-noa-nav=home][data-n80-state]{overflow:visible;border-color:var(--n80-orbit-color)}
+.noa-primary-nav [data-noa-nav=home][data-n80-state]{position:relative}
+.n80-home-orbit{display:block;position:absolute;width:48px;height:48px;inset:50% auto auto 50%;margin:-24px 0 0 -24px;border-radius:50%;pointer-events:none;z-index:3;color:var(--n80-orbit-color);opacity:.7}
+.noa-mobile-nav [data-noa-nav=home]>.n80-home-orbit{inset:-1.25px;width:auto;height:auto;margin:0}
+.n80-home-orbit::before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg 250deg,currentColor 358deg,transparent 360deg);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 2.5px),#000 calc(100% - 2px));mask:radial-gradient(farthest-side,transparent calc(100% - 2.5px),#000 calc(100% - 2px));opacity:0}
+.n80-home-orbit::after{content:"";position:absolute;width:6px;height:6px;left:50%;top:1px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 32% 25%,#fff 0 9%,currentColor 55%,currentColor 100%);box-shadow:0 0 5px currentColor,0 0 10px color-mix(in srgb,currentColor 45%,transparent)}
+[data-n80-state=idle]>.n80-home-orbit::after{opacity:0}
+[data-n80-state=running]>.n80-home-orbit,[data-n80-state=waiting]>.n80-home-orbit{opacity:1;animation:n80-home-clockwise var(--n80-orbit-speed) linear infinite}
+[data-n80-state=running]>.n80-home-orbit::before,[data-n80-state=waiting]>.n80-home-orbit::before{opacity:.9}
+[data-n80-state=error]>.n80-home-orbit,[data-n80-state=stale]>.n80-home-orbit{animation:n80-home-warning 2.8s ease-in-out infinite}
+[data-n80-state=complete]>.n80-home-orbit{animation:n80-home-complete 2.2s ease-out both}
+.n80-status-accessible{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+@keyframes n80-home-clockwise{to{transform:rotate(360deg)}}
+@keyframes n80-home-warning{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes n80-home-complete{0%{box-shadow:0 0 0 0 var(--n80-running);opacity:1}100%{box-shadow:0 0 0 7px transparent;opacity:0}}
+html[data-n80-hidden=true] .n80-home-orbit{animation-play-state:paused!important}
+@media(prefers-reduced-motion:reduce){.n80-home-orbit{animation:none!important}.n80-home-orbit::before{display:none}}
+
+/* Desktop uses the existing circular logo/home link; mobile retains the bottom home control. */
+html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-account-brand[data-n80-state]{position:relative}
+#noa-account-bar .noa-account-brand>.n80-home-orbit{width:34px;height:34px;left:15px;margin-left:-17px;margin-top:-17px;border:1px solid var(--n80-orbit-color)}
+@media(max-width:760px){#noa-account-bar .noa-account-brand>.n80-home-orbit{display:none}}
