@@ -130,3 +130,19 @@ body.noa-page #yt-player .noa-media-details details>summary {
   #youtube-browse .noa-inline-video-row, #yt-videos>.yt-card { transition:border-color .18s ease,box-shadow .18s ease }
   #yt-player .noa-media-details details>summary::after { transition:transform .18s ease }
 }
+
+/* A separate text line keeps the original-title note clear of video actions. */
+html body.noa-page #youtube-browse .noa-inline-video-row:has(.noa-original-title) {grid-template-rows:minmax(20px,auto) 44px}
+html body.noa-page #youtube-browse .noa-inline-video-row>.noa-inline-song>.noa-inline-title:has(.noa-original-title) {
+  display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
+  height:auto; min-height:20px; gap:4px; white-space:normal; overflow:visible;
+}
+#youtube-browse .noa-inline-video-row .noa-track-name {max-width:100%}
+#youtube-browse .noa-original-title, #yt-videos .noa-original-title {
+  display:flex; align-items:baseline; gap:5px; width:fit-content; max-width:100%; min-width:0;
+  margin-top:4px; padding:2px 6px; border:1px solid var(--noa-line); border-radius:4px;
+  background:var(--noa-surface); color:var(--noa-muted); font-size:12px; font-weight:400; line-height:1.5;
+  letter-spacing:normal; white-space:normal; overflow-wrap:anywhere; text-align:start;
+}
+#youtube-browse .noa-inline-title>.noa-original-title {margin-top:0}
+#youtube-browse .noa-title-mismatch-icon, #yt-videos .noa-title-mismatch-icon {color:var(--noa-accent); font-size:14px; font-weight:600; flex:none}

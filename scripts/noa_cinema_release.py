@@ -7,6 +7,16 @@ release.NEW={'noa-cinema.js','noa-cinema.css','extend/zz.noa-cinema.php'}
 if os.environ.get('NOA_SCREEN_SKIN') == 'true':
     release.FILES = {name: 'deploy/' + name for name in ('noa-cinema.css', 'noa-cinema.js')}
     release.NEW = set()
+if os.environ.get('NOA_VIDEO_ORIGINAL') == 'true':
+    release.FILES = {
+        'noa-bridge/music-readmodel.php': 'bridge/music-readmodel.php',
+        'noa-bridge/youtube-catalog.php': 'bridge/youtube-catalog.php',
+        'noa-browse.js': 'deploy/noa-browse.js',
+        'noa-cinema.css': 'deploy/noa-cinema.css',
+        'noa-music-vinyl.js': 'deploy/noa-music-vinyl.js',
+        'extend/zz.noa-music-vinyl.php': 'deploy/noa-music-vinyl.extend.php',
+    }
+    release.NEW = set()
 if __name__=='__main__':
     try:release.main()
     except Exception:
