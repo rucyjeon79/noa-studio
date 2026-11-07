@@ -58,6 +58,34 @@ try{
  await page.locator('#mu-song').selectOption('edition');
  await page.waitForFunction(()=>!document.querySelector('#mu-picker-fields').disabled);
  assert.equal(songCalls().length,8);
+ // Launch from the actual song form; a video catalog key must resolve to its saved song edition.
+ await setLimit(40);
+ const editor=await contexts.admin.newPage();
+ await editor.setViewportSize({width:390,height:844});
+ await editor.route('**/fixture-song-editor',r=>r.fulfill({contentType:'text/html',body:'<meta charset=utf-8><main class="noa-page"></main>'}));
+ await editor.route('**/noa-inline-edit.php?*',r=>r.fulfill({json:{ok:true,kind:'single',packageType:'original',
+  writeKey:'original',fields:{title:'같은 제목',mvUrl:''},context:{}}}));
+ await editor.goto(base+'/fixture-song-editor');
+ for(const name of ['noa-browse','noa-record-form','noa-browse-edit'])await editor.addScriptTag({path:'deploy/'+name+'.js'});
+ await editor.evaluate(()=>NoaBrowseEdit.mount({host:document.querySelector('main'),standalone:true})
+  .openRecord({type:'song',source:'youtube',key:'abcdefghijk'}));
+ const field=editor.locator('[data-record-field="mvUrl"]');
+ const launch=field.getByRole('button',{name:'이 곡으로 뮤비 생성기 열기'});
+ assert(await launch.evaluate(e=>e.previousElementSibling?.getAttribute('aria-label')==='뮤직비디오 주소 수정'));
+ const requests=[];
+ contexts.admin.on('request',r=>{if(r.url()===api&&r.method()==='POST')requests.push(r.postDataJSON());});
+ const [movie]=await Promise.all([editor.waitForEvent('popup'),launch.click()]);
+ await movie.waitForFunction(()=>document.querySelector('#mu-status')?.textContent.includes('모두 저장'));
+ assert.equal(await movie.locator('#mu-lyrics').inputValue(),'원곡 가사 원곡 가사 원곡 가사');
+ assert.deepEqual(requests.filter(r=>r.action==='selectSong').map(r=>r.key),['original']);
+ assert.equal(requests.filter(r=>r.action==='generate').length,8);
+ assert.equal(await movie.evaluate(()=>window.opener===null),true);
+ assert.equal(await field.getByRole('button',{name:'뮤직비디오 주소 수정'}).count(),1);
+ await movie.reload();
+ await movie.waitForFunction(()=>document.querySelector('#mu-status')?.textContent.includes('새 뮤비'));
+ assert.equal(requests.filter(r=>r.action==='selectSong').length,1);
+ assert.equal(requests.filter(r=>r.action==='generate').length,8);
+ report.editorShortcut=true;
  report.selectSongAutoGeneration=true;report.partialJobResumed=true;report.completedSelectionReused=true;
  assert.deepEqual(errors,[]);report.highestAdminOnly=true;report.csrfAndOriginEnforced=true;report.durableReload=true;report.originalPackImport=true;report.fullThirtyCutFlow=true;report.encryptedKeysNotReturned=true;report.dailyQuotaBeforeProvider=true;report.providerFixtureCalls=calls.length;
 }finally{writeFileSync(out+'/browser-regression.json',JSON.stringify(report,null,2));await browser.close();server.kill();}

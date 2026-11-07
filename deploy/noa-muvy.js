@@ -107,11 +107,9 @@ async function loadSongs(){
 $('mu-picker').addEventListener('toggle',()=>{if($('mu-picker').open)loadSongs();});
 $('mu-reload').onclick=loadSongs;
 $('mu-search').oninput=showSongs;
-$('mu-song').onchange=()=>{
- const key=$('mu-song').value;
+function selectSong(key){
  if(!key||busy)return;
- $('mu-song').value='';
- deskAction(async()=>{
+ return deskAction(async()=>{
   pendingSong='';
   if(dirty)await save();
   message('선택한 곡의 최신 곡정보를 읽는 중입니다.');
@@ -121,6 +119,11 @@ $('mu-song').onchange=()=>{
   if(current.active){await checkActive();return;}
   await produceSong();
  });
+}
+$('mu-song').onchange=()=>{
+ const key=$('mu-song').value;
+ $('mu-song').value='';
+ selectSong(key);
 };
 $('mu-input-form').onsubmit=e=>{e.preventDefault();deskAction(save);};
 for(const id of ['mu-ep','mu-title','mu-lyrics'])$(id).addEventListener('input',mark);
@@ -165,6 +168,20 @@ $('mu-text-export').onclick=async()=>{try{if(dirty)await save();const p=current.
 for(const [id,path]of [['mu-new','M12 5v14M5 12h14'],['mu-import','M12 16V4m-4 4 4-4 4 4M4 16v4h16v-4'],['mu-export','M12 4v12m-4-4 4 4 4-4M4 16v4h16v-4'],['mu-text-export','M6 3h8l4 4v14H6zM14 3v5h5M9 12h6M9 16h6']]){const b=$(id),label=el('span',b.textContent),svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),line=document.createElementNS('http://www.w3.org/2000/svg','path');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');line.setAttribute('d',path);svg.append(line);b.replaceChildren(svg,label);}
 controls();
 let opening=false;
-async function openDesk(){if(state||opening||location.hash!=='#lab-muvy')return;opening=true;try{await refresh();message(state.config.configured?'저장한 작업을 열거나 새 뮤비 제작을 시작하세요.':'초안 저장·가져오기를 사용할 수 있습니다. Grok 생성은 연결 설정 후 이용하세요.');controls();}catch(e){fail(e);}finally{opening=false;}}
+async function openDesk(){
+ if(state||opening||location.hash!=='#lab-muvy')return;
+ opening=true;
+ try{
+  await refresh();
+  let launchKey='';
+  try{
+   launchKey=sessionStorage.getItem('noa-muvy-launch-song')||'';
+   sessionStorage.removeItem('noa-muvy-launch-song');
+  }catch{/* Manual selection still works when browser storage is disabled. */}
+  if(launchKey){await selectSong(launchKey);return;}
+  message(state.config.configured?'저장한 작업을 열거나 새 뮤비 제작을 시작하세요.':'초안 저장·가져오기를 사용할 수 있습니다. Grok 생성은 연결 설정 후 이용하세요.');
+  controls();
+ }catch(e){fail(e);}finally{opening=false;}
+}
 window.addEventListener('hashchange',openDesk);openDesk();
 })();
