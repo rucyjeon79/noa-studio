@@ -7,6 +7,9 @@ release.FILES={
  **{'noa-app/jukebox/'+p:'deploy/noa-app/jukebox/'+p for p in ['upload-core.php','drive-core.php']},
  **{p:'deploy/'+p for p in ['noa-work-status.php','noa-record-form.js','noa-browse-edit.js','noa-gpt.php','noa-creative.css','noa-creative.js','noa-lab-creative.php']},
 }
+# Dependencies activate before entry points and menu exposure.
+last=['noa-browse-edit.js','noa-gpt.php','noa-bridge/creative.php','noa-lab-creative.php','noa-app/engine/registry.php','noa-app/engine/ai-lab.php']
+release.FILES={**{p:v for p,v in release.FILES.items() if p not in last},**{p:release.FILES[p] for p in last}}
 release.NEW={'noa-bridge/creative-core.php','noa-bridge/creative-publication.php','noa-bridge/creative.php','noa-app/engine/creative.php','noa-creative.css','noa-creative.js','noa-lab-creative.php'}
 if __name__=='__main__':
  try:release.main()
