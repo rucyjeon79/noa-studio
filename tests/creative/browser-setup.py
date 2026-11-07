@@ -20,3 +20,5 @@ print('CREATIVE_HTTP_FIXTURE_READY')
 assets=site/'noa-assets';assets.mkdir(exist_ok=True)
 import shutil
 for scene in Path('public/noa-theme-scenes').glob('*.webp'):shutil.copyfile(scene,assets/('theme-'+scene.name))
+
+shutil.copyfile('public/ainoa/ainoa-symbol.png',assets/'ainoa-symbol.png')
