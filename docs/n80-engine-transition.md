@@ -28,3 +28,14 @@ Workspace entry pages render navigation metadata only. They must not load the ca
 N80 탐색기 is the shared selection surface. Adapters supply authorized candidates and preserve original keys, ownership, ordering, cancellation and scope. Titles are never identity. Metadata browsing must not hash all audio files; media verification runs for the selected song. Creating or saving a job retains the existing server authorization and idempotency checks.
 
 The integrated N80 workflow owns deployment of shared menus, selection and MUVY sources. It requires role, metadata, selection, batch and deterministic MUVY browser checks before source activation. Entry pages and dependencies are released together with preimage checks and rollback; credentials, production data and paid provider jobs are not changed by this migration.
+
+
+## N80-only execution rule (2026-11-07)
+
+The user's explicit rule is binding: no function may run as a separate system outside N80 Engine. `AGENTS.project.md` defines the development contract; `policy.php` publishes the same requirements to the N80 facade and Guardian. A specialist module may execute in its existing PHP/JS process or leased worker, but N80 must own its invocation policy, role checks, task identity, duplicate prevention and result reporting. A single engine does not mean eager loading of every module.
+
+No new standalone engine, parallel legacy worker, independent job queue or duplicated background scheduler is an acceptable shortcut. Preserve active data and queues during a verified adapter migration, then retire the independent initiator. Compatibility URLs must delegate to one owner.
+
+**Evidence boundary:** policy compliance and registry membership are not runtime conformance. The universal executor currently still returns `executor_not_installed`; the readiness contract does not certify all adapters, durable consumer acknowledgments or production replay tests. Existing specialized workers must be traced individually. Do not turn a policy flag into a fabricated completion receipt or enable universal dispatch to bypass these gaps.
+
+The integration audit now compares registry and health module IDs with the N80 registry itself; it no longer assumes a separate fixed list of nine modules after CREATOR LAB was added. The unified N80 facade workflow owns facade, policy, Guardian and integration-audit source activation together. The old integration-audit workflow only delegates a manual request to that workflow.

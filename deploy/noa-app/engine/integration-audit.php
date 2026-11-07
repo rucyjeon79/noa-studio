@@ -16,9 +16,10 @@ function noa_engine_integration_audit(string $root): array {
     $plan=noa_engine_workflow_plan($event);
     $gate=noa_engine_dispatch_gate($event,['enabled'=>true,'durableStoreReady'=>true,'authenticatedActor'=>true]);
     $adapter=noa_engine_adapter_check($event,'music');
+    $registeredIds=array_keys(noa_engine_modules());
     $checks=[
-        'registry_count'=>count($registry['modules'])===9,
-        'source_inventory_count'=>count($health['modules'])===9,
+        'registry_count'=>array_column($registry['modules'],'id')===$registeredIds,
+        'source_inventory_count'=>array_column($health['modules'],'id')===$registeredIds,
         'event_valid'=>noa_engine_validate_event($event)['ok'],
         'routing'=>($route['consumers']??[])===['music','playlist'],
         'workflow_plan'=>count($plan['steps']??[])===2,

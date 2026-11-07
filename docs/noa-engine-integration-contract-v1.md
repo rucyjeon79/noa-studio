@@ -1,6 +1,8 @@
 # NOA ENGINE — Integration Contract v1
 
-Status: foundation specification; **not yet active in production**.
+Status: historical foundation specification; universal execution is **not yet certified in production**.
+
+Current architecture authority: `AGENTS.project.md` and `docs/n80-engine-transition.md`. Every feature must operate beneath N80 Engine; standalone execution and parallel legacy initiators are forbidden. Preserving a legacy implementation means migrating it behind an N80 adapter, not approving a separate runtime.
 
 ## Ownership
 Chat Assistant is the orchestration interface; NOA ENGINE owns shared policies and workflow contracts. Feature modules retain ownership of their data and operations. GnuBoard remains a lower-level identity/community service.
