@@ -59,7 +59,7 @@ async function openConversation(){
  }});
  room.content.closest('dialog').classList.add('creative-conversation');
  room.content.append($('guide'));$('guide').hidden=false;room.actions.append($('composer'));
- renderChat();renderQuestions();renderIntent();syncComposer();room.focus();
+ renderChat();renderQuestions();renderIntent();syncComposer();room.focus();room.status($('status').textContent);
 }
 function renderChat(){
  const root=$('chat-log');root.replaceChildren();
@@ -135,7 +135,7 @@ $('preview-button').onclick=()=>run(async()=>{const data=await mutate('preview')
 $('rights').onchange=()=>{$('final').disabled=!$('rights').checked||!draft?.creative.preview?.validation.ready||dirty();};
 $('final').onclick=()=>run(async()=>{await mutate('publish',{token:draft.creative.preview?.token||'',rightsConfirmed:$('rights').checked});status('정식 등록을 완료했습니다. 초안 이력은 보관함에 유지됩니다.');});
 $('story').oninput=()=>queue({story:$('story').value});$('story-compose').onsubmit=event=>{event.preventDefault();if(!$('story').value.trim()){room?.status('노래로 만들 이야기를 먼저 입력해 주세요.');return;}run(()=>generate('analyze'));};
-$('chat').onclick=()=>run(async()=>{await flush();await openConversation();});
+$('chat').onclick=()=>openConversation().catch(fail);
 $('new').onclick=()=>run(async()=>{await flush();epoch++;stopWatching();draft=null;pending={};inputs={};conflict=false;assetActive=false;storyEditing=false;editingQuestion=false;invalidFields.clear();history.replaceState(null,'',location.pathname+'?tool=creative');$('library').hidden=true;$('work').hidden=false;$('story').value='';$('story').disabled=false;for(const x of ['questions','intent','record','preview','published'])$(x).replaceChildren();$('assets').hidden=true;$('publish').hidden=true;showJob(null);renderRecord();queue({story:''});await openConversation();status('이야기를 입력하고 전송해 주세요.');$('story').focus();});
 $('jobs').onclick=()=>run(async()=>{await flush();if(!draft)return;const data=await api('jobs',undefined,{id:draft.id});const dialog=el('dialog');dialog.append(el('h2','생성 작업 이력'));for(const j of data.jobs){const row=el('div');row.append(el('p',j.operation+' · '+j.state+(j.error?' · '+message(j.error):'')),button('결과 확인',async()=>{const v=await api('jobResult',undefined,{id:draft.id,job:j.id});row.append(el('pre',text(v.result)));}));dialog.append(row);}dialog.append(button('닫기',()=>{dialog.close();dialog.remove();}));document.body.append(dialog);dialog.showModal();});
 $('back').onclick=()=>run(library);$('retry-save').onclick=()=>run(flush);$('reload').onclick=()=>run(async()=>{if(!confirm('현재 입력을 필요한 곳에 복사했나요? 서버에 저장된 버전을 불러옵니다.'))return;pending={};conflict=false;invalidFields.clear();await open(draft.id);});let searchTimer;for(const x of ['search','filter','sort'])$(x).oninput=()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>run(()=>loadList()),250);};$('more').onclick=()=>run(()=>loadList(true));$('category').onchange=()=>{paintCollections();saveLocation();};$('ep').oninput=saveLocation;
