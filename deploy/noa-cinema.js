@@ -71,6 +71,8 @@
   films=rows.filter(r=>{if(r.comingSoon||!sources.has(r.video)||ids.has(r.video))return false;ids.add(r.video);return true;});
   if(!films.length)return;
   focusTrack=focus;const screen=byId('yt-player');
+  const path=byId('video-classification'),details=screen.querySelector('.noa-media-details');
+  if(path&&details)details.before(path);
   const bar=node('div','cinema-screen-status');badge=node('span','cinema-badge');badge.setAttribute('role','status');external=node('a','cinema-external','YouTube에서 보기 ↗');external.target='_blank';external.rel='noopener noreferrer';external.hidden=true;bar.append(badge,external);screen.prepend(bar);state(-1);
   next=node('button','cinema-next');next.type='button';next.hidden=true;screen.append(next);
   document.body.classList.add('noa-screen-room');
