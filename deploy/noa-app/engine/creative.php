@@ -65,3 +65,23 @@ function ncd_worker(PDO $db,string $op,string $id,array $body=[]):array {
   if($unchanged){unset($d['_creative']['preview']);ncd_put($db,$draft,$d,$j['owner']);}ncd_job_put($db,$r,$j);return ['ok'=>true,'saved'=>true,'state'=>$j['state']];
  });
 }
+/** Existing N80 text tick owns bounded recovery cleanup; no browser/menu cleanup work. */
+function ncd_cleanup_recovery(PDO $db,int $limit=20,?int $now=null):array {
+ $now??=time();$limit=max(1,min(50,$limit));$result=['examined'=>0,'removed'=>0,'protected'=>0];
+ $q=$db->prepare('SELECT draft_id,owner_id FROM noa_creative_drafts WHERE retained_at IS NULL AND recovery_until<=? ORDER BY recovery_until,draft_id LIMIT '.$limit);$q->execute([$now]);$candidates=$q->fetchAll(PDO::FETCH_ASSOC);
+ foreach($candidates as $candidate){$result['examined']++;
+  $out=ncd_atomic($db,function()use($db,$candidate,$now){
+   try{$r=ncd_row($db,$candidate['draft_id'],$candidate['owner_id'],true);}catch(DomainException $e){if($e->getMessage()==='draft_not_found')return 'protected';throw $e;}
+   if(!empty($r['retained_at'])||(int)$r['recovery_until']>$now)return 'protected';$d=$r['document'];
+   if(ncd_completion($d)['percent']===100||!empty($d['_creative']['publication'])){$db->prepare('UPDATE noa_creative_drafts SET retained_at=?,recovery_until=NULL WHERE draft_id=?')->execute([$now,$candidate['draft_id']]);return 'protected';}
+   $q=$db->prepare("SELECT doc_key,payload,revision FROM noa_documents WHERE kind='n80_creative_job' AND updated_by=? AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.draftId'))=? FOR UPDATE");$q->execute([$candidate['owner_id'],$candidate['draft_id']]);$jobs=$q->fetchAll(PDO::FETCH_ASSOC);$active=false;
+   foreach($jobs as $job){$job['document']=json_decode($job['payload'],true,64,JSON_THROW_ON_ERROR);$job['revision']=(int)$job['revision'];ncd_expire($db,$job);$current=ncd_job($db,$job['document']['id']);if(in_array($current['document']['state'],['queued','running'],true))$active=true;}
+   // Never orphan an uploaded file, or remove work that an executor still owns.
+   foreach(['noa_jukebox_assets','noa_jukebox_uploads'] as $table){$q=$db->prepare('SELECT 1 FROM '.$table.' WHERE song_key=? LIMIT 1');$q->execute([$r['doc_key']]);if($q->fetchColumn())$active=true;}
+   if($active){$db->prepare('UPDATE noa_creative_drafts SET recovery_until=? WHERE draft_id=?')->execute([$now+86400,$candidate['draft_id']]);return 'protected';}
+   foreach($jobs as $job){$db->prepare('DELETE FROM noa_document_history WHERE doc_key=?')->execute([$job['doc_key']]);$db->prepare("DELETE FROM noa_documents WHERE doc_key=? AND kind='n80_creative_job' AND updated_by=?")->execute([$job['doc_key'],$candidate['owner_id']]);}
+   $db->prepare('DELETE FROM noa_document_history WHERE doc_key=?')->execute([$r['doc_key']]);$db->prepare('DELETE FROM noa_creative_drafts WHERE draft_id=? AND owner_id=?')->execute([$candidate['draft_id'],$candidate['owner_id']]);$db->prepare('DELETE FROM noa_documents WHERE doc_key=? AND kind=?')->execute([$r['doc_key'],NCD_KIND]);return 'removed';
+  });$result[$out]++;
+ }
+ return $result;
+}

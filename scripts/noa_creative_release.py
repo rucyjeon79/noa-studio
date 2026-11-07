@@ -15,8 +15,17 @@ release.NEW={'noa-bridge/creative-core.php','noa-bridge/creative-publication.php
 if os.environ.get('NOA_CREATIVE_PRESENTATION_ONLY')=='1':
  release.FILES={p:'deploy/'+p for p in ['noa-creative.css','noa-creative.js','noa-lab-creative.php']}
  release.NEW=set()
+if os.environ.get('NOA_CREATIVE_RETENTION_ONLY')=='1':
+ release.FILES={**{'noa-bridge/'+p:'bridge/'+p for p in ['creative-core.php']},'noa-app/engine/creative.php':'deploy/noa-app/engine/creative.php',**{'noa-bridge/'+p:'bridge/'+p for p in ['creative.php','worker-text.php']},**{p:'deploy/'+p for p in ['noa-creative.css','noa-creative.js','noa-lab-creative.php']}}
+ release.NEW=set()
 if __name__=='__main__':
- try:release.main()
+ try:
+  retention=os.environ.get('NOA_CREATIVE_RETENTION_ONLY')=='1' and 'rollback' not in sys.argv
+  if retention:
+   import noa_creative_retention
+   release.check_current_candidate();noa_creative_retention.main('prepare')
+  release.main()
+  if retention:noa_creative_retention.main('verify')
  except Exception:
   if release.BACKUP.exists():
    sys.argv.append('rollback');release.main()

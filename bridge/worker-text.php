@@ -6,5 +6,7 @@ require_once __DIR__.'/ainoa-core.php';
 require_once __DIR__.'/ainoa-automation.php';
 if(empty(lab_read()['config']['workerEnabled']))$result=['processed'=>0,'state'=>'paused'];
 else $result=n80_ai_tick(noa_bridge_pdo(),(string)$context['admin']);
-lab_lock(static function(&$s)use($result){$s['worker']['at']=gmdate('c');$s['worker']['version']='n80-2';$s['worker']['operations']['n80_text_tick']=array_intersect_key($result,array_flip(['processed','state','missing']));});
+require_once dirname(__DIR__).'/noa-app/engine/creative.php';
+$result['creativeRecoveryCleanup']=ncd_cleanup_recovery(noa_bridge_pdo());
+lab_lock(static function(&$s)use($result){$s['worker']['at']=gmdate('c');$s['worker']['version']='n80-2';$s['worker']['operations']['n80_text_tick']=array_intersect_key($result,array_flip(['processed','state','missing','creativeRecoveryCleanup']));});
 return ['ok'=>true]+$result;
