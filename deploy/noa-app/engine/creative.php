@@ -3,9 +3,10 @@ declare(strict_types=1);
 /** N80 Engine owns SQL jobs; N80 Auto dispatches the existing private song worker. */
 require_once dirname(__DIR__,2).'/noa-bridge/creative-core.php';
 require_once __DIR__.'/song-generation.php';
+require_once __DIR__.'/task-status.php';
 function ncd_job(PDO $db,string $id,bool $lock=false):?array {$q=$db->prepare("SELECT * FROM noa_documents WHERE doc_key=? AND kind='n80_creative_job'".($lock?' FOR UPDATE':''));$q->execute(['n80:creative-job:'.ncd_id($id)]);$r=$q->fetch(PDO::FETCH_ASSOC);if(!$r)return null;$r['document']=json_decode($r['payload'],true,64,JSON_THROW_ON_ERROR);$r['revision']=(int)$r['revision'];return $r;}
 function ncd_job_put(PDO $db,array $r,array $j):void {nup_store($db,$r['doc_key'],'n80_creative_job',$j,$r['revision'],$j['owner']);}
-function ncd_job_public(?array $r):?array {if(!$r)return null;$j=$r['document'];return array_intersect_key($j,array_flip(['id','operation','field','state','createdAt','startedAt','finishedAt','error','requestId']));}
+function ncd_job_public(?array $r):?array {if(!$r)return null;$j=$r['document'];return array_intersect_key($j,array_flip(['id','operation','field','state','createdAt','startedAt','finishedAt','error','requestId']))+['engineStatus'=>n80_task_status('ai_lab',$j['id'],$j['state'],['operation'=>'creative_'.$j['operation'],'error'=>$j['error']??null])];}
 function ncd_worker_config():array {
  $path=dirname(__DIR__,3).'/noa-ai-lab/gpt-action/state.json';$handle=@fopen(dirname($path).'/lock','c');if(!$handle||!flock($handle,LOCK_SH))throw new DomainException('worker_unavailable');
  try{$s=is_file($path)?json_decode(file_get_contents($path),true):[];$token=trim((string)getenv('NOA_GITHUB_DISPATCH_TOKEN'))?:($s['dispatchToken']??'');if(!$token||empty($s['workerHash']))throw new DomainException('worker_unavailable');return ['token'=>$token];}finally{flock($handle,LOCK_UN);fclose($handle);}

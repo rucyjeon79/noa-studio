@@ -2,7 +2,7 @@ name: N80 creative drafts
 on:
   push:
     branches: [main, work/creative-drafts]
-    paths: ['bridge/creative*.php','deploy/noa-creative.*','deploy/noa-lab-creative.php','deploy/noa-app/engine/creative.php','tests/creative/**','scripts/noa_creative*.py','.github/workflows/noa-creative-drafts.yml']
+    paths: ['bridge/creative*.php','deploy/noa-creative.*','deploy/noa-lab-creative.php','deploy/noa-app/engine/creative.php','tests/creative/**','scripts/noa_creative*','.github/workflows/noa-creative-drafts.yml']
   pull_request:
     paths: ['bridge/creative*.php','deploy/noa-creative.*','deploy/noa-lab-creative.php','deploy/noa-app/engine/creative.php','tests/creative/**']
   workflow_dispatch:
@@ -56,12 +56,14 @@ jobs:
     runs-on: ubuntu-24.04
     environment: production
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
-    timeout-minutes: 15
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
       - run: python -m pip install 'paramiko>=3,<5'
+      - run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
       - name: Activate one guarded source set
+        id: activate
         env: &env
           GH_TOKEN: ${{ github.token }}
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
@@ -71,6 +73,10 @@ jobs:
         run: |
           python scripts/noa_creative_release.py
           python scripts/noa_creative_live.py
+      - name: Restore owned source on failed activation or live verification
+        if: failure() && steps.activate.outcome == 'failure'
+        env: *env
+        run: python scripts/noa_creative_release.py rollback
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'creative-live-${{ github.run_id }}', path: 'ainoa-proof/', retention-days: 7}

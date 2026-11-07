@@ -12,6 +12,7 @@ $workerFile=dirname(__DIR__).'/noa-ai-lab/gpt-action/state.json';
 $workerState=is_file($workerFile)?json_decode((string)file_get_contents($workerFile),true):[];
 $workerStage=is_array($workerState) && ($workerState['owner']??'')===$member['mb_id']
     ? n80_song_stage($workerState['job']??[],time()) : '대기 작업 없음';
+$creativeJobs=[];try{$q=noa_bridge_pdo()->prepare("SELECT payload FROM noa_documents WHERE kind='n80_creative_job' AND updated_by=? ORDER BY updated_at DESC LIMIT 30");$q->execute([(string)$member['mb_id']]);foreach($q as $row){$job=json_decode($row['payload'],true);$creativeJobs[]=array_intersect_key($job,array_flip(['id','draftId','operation','state','error']));}}catch(Throwable $e){error_log('[n80-creative-status] unavailable');}
 $labels=['pending'=>'대기','in_progress'=>'진행 중','needs_review'=>'확인 필요','error'=>'오류','complete'=>'완료'];
 $tasks=array_values(array_filter($summary['instructionQueue']??[],fn($x)=>preg_match('/^NOA-20261026-P0-0[1-7]$/D',$x['id'])));
 $original='';foreach($summary['instructionQueue']??[]as $entry)if(str_starts_with($entry['id'],'NOA-20261026-P0-ORIGINAL-'))$original.=$entry['text'];
@@ -28,6 +29,7 @@ $original='';foreach($summary['instructionQueue']??[]as $entry)if(str_starts_wit
 <details><summary>2026.10.26 추가 지시 원문</summary><pre><?=nws_e($original)?></pre></details>
 <?php endif;?>
 <section><h2>곡 편집기 · ChatGPT 계정 생성</h2><p><?=nws_e($workerStage)?></p></section>
+<section><h2>N80 창작 보관함 작업</h2><?php foreach($creativeJobs as $job):?><p><a href="/noa-ai-lab.php?tool=creative&amp;draft=<?=nws_e($job['draftId'])?>"><?=nws_e(substr($job['id'],0,12))?></a> · <?=nws_e(['analyze'=>'의도 분석','generate'=>'곡정보 생성','revise'=>'항목 수정'][$job['operation']]??'창작 작업')?> · <?=nws_e(['queued'=>'실행 대기','running'=>'생성 중','succeeded'=>'저장 완료','failed'=>'실패','review'=>'변경된 입력 확인 필요','canceled'=>'취소'][$job['state']]??'확인 필요')?><?=!empty($job['error'])?' · '.nws_e($job['error']):''?></p><?php endforeach;?><a href="/noa-ai-lab.php?tool=creative">내 창작 보관함</a></section>
 <section id="ai-automation"><h2>N80 Auto 작업 현황</h2><p>관리자 대화와 곡별 생성 요청을 저장하고, 텍스트 초안을 순서대로 처리합니다. 초안은 검토 후 저장합니다.</p>
 <?php if(isset($ai)&&is_array($ai)):?><p><?=!empty($ai['generation']['ready'])?'AI 생성 이용 가능':'AI 연결 설정 필요 · 대기 요청 보존 중'?></p>
 <?php foreach($ai['tasks']as $job):?><details><summary><?=nws_e($job['title'])?> · <?=nws_e($job['stage'])?></summary><p>작업 <?=nws_e(substr($job['id'],-12))?> · <?=nws_e($job['updatedAt'])?></p><p><?=nws_e($job['lastSuccessfulStage'])?></p><?php if(!empty($job['result'])):?><pre><?=nws_e($job['result'])?></pre><?php endif;?><?php if(!empty($job['error'])):?><p><?=nws_e($job['error'])?></p><?php endif;?></details><?php endforeach;?>
