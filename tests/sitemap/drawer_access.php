@@ -24,12 +24,12 @@ foreach(['guest'=>1,'member'=>3,'admin'=>10,'two'=>2,'four'=>4,'five'=>5,'six'=>
     $groups=noa_sitemap_member_directory($groups,$access,$boards);$labels=[];$destinations=[];$html='<main data-noa-member-directory>';
     foreach($groups as $id=>$group){
         must((bool)$group['routes'],'empty category');
-        $html.='<section class="noa-site-map"><h2 id="map-'.$esc($id).'">'.$esc($group['title']).'</h2>';
+        $html.='<section class="noa-site-map"'.(isset($group['workspace'])?' data-noa-workspace="'.$esc($group['workspace']).'"':'').'><h2 id="map-'.$esc($id).'">'.$esc($group['title']).'</h2>';
         $last=-1;$ranks=[];
         foreach($group['routes'] as $r){
             must($r[6]==='','denied route returned');$labels[$r[0]]=$r[7];
             $destination=noa_sitemap_destination($r[3]);must(!isset($destinations[$destination]),'duplicate destination for '.$role);$destinations[$destination]=true;
-            must($r[8]>=$last,'higher requirement must follow lower requirements in '.$id);$last=$r[8];$ranks[$r[0]]=$r[8];
+            if(empty($group['workspace']))must($r[8]>=$last,'higher requirement must follow lower requirements in '.$id);$last=$r[8];$ranks[$r[0]]=$r[8];
             if($r[8]<4){
                 must(noa_sitemap_access_icon($r[8],$r[7])==='','ordinary member routes must not carry grade badges');
             }elseif($r[7]!==''){
@@ -37,7 +37,7 @@ foreach(['guest'=>1,'member'=>3,'admin'=>10,'two'=>2,'four'=>4,'five'=>5,'six'=>
                 must(str_contains($badge,'role="img"')&&str_contains($badge,'aria-label="'.$esc($r[7]).'"'),'icon needs accessible restrictions');
                 must(trim(strip_tags($badge))==='','grade badge must be an icon, not text');
             }
-            $html.='<a class="noa-site-map-link" data-noa-route="'.$esc($r[0]).'" href="'.$esc($r[3]).'" data-noa-access-label="'.$esc($r[7]).'" data-noa-access-rank="'.$r[8].'"><strong>'.$esc($r[1]).'</strong>'.noa_sitemap_access_icon($r[8],$r[7]).'<small>'.$esc($r[2]).'</small></a>';
+            $html.='<a class="noa-site-map-link" data-noa-route="'.$esc($r[0]).'"'.(isset($r['section'])?' data-noa-branch="'.$esc($r['section']).'" data-noa-branch-title="'.$esc($r['sectionTitle']).'"':'').' href="'.$esc($r[3]).'" data-noa-access-label="'.$esc($r[7]).'" data-noa-access-rank="'.$r[8].'"><strong>'.$esc($r[1]).'</strong>'.noa_sitemap_access_icon($r[8],$r[7]).'<small>'.$esc($r[2]).'</small></a>';
         }
         $original=array_values(array_filter(noa_sitemap_registry()[$id]['routes']??[],fn($r)=>isset($ranks[$r[0]])));
         foreach(array_unique($ranks) as $rank){
@@ -49,7 +49,7 @@ foreach(['guest'=>1,'member'=>3,'admin'=>10,'two'=>2,'four'=>4,'five'=>5,'six'=>
         if($id==='account'&&isset($ranks['creatorAI']))must(array_key_last($ranks)==='creatorAI','AI creation must be below member and creator entries');
         $html.='</section>';
     }
-    foreach(['creatorApply'=>$level<=4,'storyRequest'=>$access['write'],'my'=>$level>=2,'weatherCare'=>in_array($level,[4,5,6,8,9,10],true),'catalog'=>$access['music'],'playlists'=>$access['music'],'creator'=>$access['creator'],'creatorAI'=>$access['creatorAI'],'libraryAdmin'=>$super,'login'=>!$member,'board-fixture_board'=>$super||$role==='five'] as $id=>$allowed){
+    foreach(['creatorApply'=>$level<=4,'storyRequest'=>$access['write'],'my'=>$level>=2,'catalog'=>$access['music'],'playlists'=>$access['music'],'creator'=>$access['creator'],'channel'=>$access['creatorAI'],'channelWorkspace'=>$access['creator'],'aiLab'=>$access['member'],'libraryAdmin'=>$super,'login'=>!$member,'board-fixture_board'=>$super||$role==='five'] as $id=>$allowed){
         must(array_key_exists($id,$labels)===$allowed,$role.' '.$id);
         if($allowed)must($labels[$id]!=='',$role.' unlabeled '.$id);
     }
@@ -57,7 +57,7 @@ foreach(['guest'=>1,'member'=>3,'admin'=>10,'two'=>2,'four'=>4,'five'=>5,'six'=>
     if(isset($labels['board-fixture_board']))must($labels['board-fixture_board']==='Lv.5 이상 · 그룹 승인','board restrictions');
     if(isset($labels['weatherCare']))must($labels['weatherCare']==='Lv.4·5·6·8·9·10','weather levels');
     if(isset($labels['creatorAI']))must($labels['creatorAI']==='Lv.8 / 최고관리자','creator AI levels');
-    if(in_array($role,['guest','member','eight','admin'],true)){
+    if(in_array($role,['guest','member','seven','eight','admin'],true)){
         file_put_contents($out.'/drawer-'.$role.'.html',$html.'</main>');
         file_put_contents($out.'/drawer-'.$role.'-access.json',json_encode($access,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR));
     }

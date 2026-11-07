@@ -252,7 +252,6 @@ function wideShell(side){
   ['memo','쪽지','/bbs/memo.php','mail'],
   ['scrap','스크랩','/bbs/scrap.php','book'],
   ['logout','로그아웃','/bbs/logout.php?url=%2F','login'],
-  ['admin','홈페이지 설정','/noa-library.php','settings']
  ]){
   const link=document.createElement('a');link.dataset.drawerAction=key;link.href=href;link.innerHTML=icon(mark);
   const text=document.createElement('span');text.textContent=label;link.append(text);
@@ -268,7 +267,6 @@ function wideShell(side){
   const name=remote?.member&&remote.displayName;
   identity.textContent=name||'나의 계정';avatar.textContent=name?Array.from(name)[0]:'MY';
   rank.textContent=drawerMember?.rank||access.name||'회원';
-  grid.querySelector('[data-drawer-action=admin]').hidden=!(drawerMember?.admin??access.admin);
  };
  profile.append(guest,memberBox);updateAccount();head.after(profile);
  window.addEventListener('noa-membership-status',updateAccount);window.addEventListener('noa-drawer-identity',updateAccount);
@@ -282,7 +280,7 @@ function wideShell(side){
  const sections=document.createElement('div');sections.className='noa-drawer-groups';nav.append(sections);
  const empty=document.createElement('p');empty.className='noa-menu-empty';empty.setAttribute('role','status');empty.hidden=true;nav.after(empty);
  index.onchange=()=>{
-  const heading=sections.children[index.selectedIndex-1]?.querySelector('h3');if(!heading)return;
+  const group=sections.children[index.selectedIndex-1],heading=group?.querySelector('h3');if(!heading)return;if(group.tagName==='DETAILS')group.open=true;
   heading.focus({preventScroll:true});heading.scrollIntoView({block:'start',behavior:'instant'});index.selectedIndex=0;
  };
  const search=searchBox.querySelector('input');let loaded=false,request=null;
@@ -293,43 +291,51 @@ function wideShell(side){
  function filterMenu(){
   const q=search.value.trim().toLocaleLowerCase();let found=!!matchingShortcut();
   for(const group of sections.children){
-   const wholeGroup=group.firstElementChild.textContent.toLocaleLowerCase().includes(q);let match=false;
+   const wholeGroup=group.dataset.searchTitle.toLocaleLowerCase().includes(q);let match=false;
    for(const link of group.querySelectorAll('a')){
     const visible=wholeGroup||(link.textContent+' '+link.dataset.search).toLocaleLowerCase().includes(q);
     link.hidden=!visible;if(visible)match=true;
    }
+   for(const branch of group.querySelectorAll('.noa-drawer-branch'))branch.hidden=![...branch.querySelectorAll('a')].some(a=>!a.hidden);
    group.hidden=!match;if(match)found=true;
+   if(group.tagName==='DETAILS'){
+    if(q){if(group.dataset.searchWasOpen===undefined)group.dataset.searchWasOpen=String(group.open);group.open=match;}
+    else if(group.dataset.searchWasOpen!==undefined){group.open=group.dataset.searchWasOpen==='true';delete group.dataset.searchWasOpen;}
+   }
   }
   index.hidden=!!q||!loaded;
   if(loaded){empty.textContent='일치하는 메뉴가 없어요.';empty.hidden=found;}
  }
  const categoryIcons={
   'map-explore':'home','map-collections':'disc','map-world':'world','map-account':'user','map-community':'community',
-  'map-creatorTools':'mic','map-company':'book','map-legal':'library','map-admin':'settings',
+  'map-creator_lab':'music','map-ai_lab':'mic','map-creatorTools':'mic','map-company':'book','map-legal':'library','map-admin':'settings',
   'map-admin-content':'library','map-admin-creation':'mic','map-admin-operation':'settings','map-admin-advanced':'sitemap'
  };
  function drawMap(source){
   const groups=document.createDocumentFragment(),jumps=document.createDocumentFragment();
   // These destinations already have a dedicated control in the account card or utility row.
-  const shortcuts=new Set(['download','login',...(access.member?['my','profile','membership',...(access.admin?['libraryAdmin']:[])]:[])]);
+  const shortcuts=new Set(['download','login',...(access.member?['my','profile','membership']:[])]);
   for(const section of source.querySelectorAll('main[data-noa-member-directory] .noa-site-map')){
    const heading=section.querySelector('h2'),items=[...section.querySelectorAll('.noa-site-map-link[data-noa-route][href]:not([aria-disabled=true]):not([data-noa-condition])')].filter(item=>!shortcuts.has(item.dataset.noaRoute));
    if(!heading||!items.length)continue;
-   const group=document.createElement('section');group.className='noa-drawer-category';group.dataset.mapGroup=heading.id;
-   const h=document.createElement('h3');h.textContent=tr(heading.textContent.trim());h.tabIndex=-1;group.append(h);
+   const workspace=section.dataset.noaWorkspace;
+   const group=document.createElement(workspace?'details':'section');group.className='noa-drawer-category';group.dataset.mapGroup=heading.id;group.dataset.searchTitle=heading.textContent.trim();
+   if(workspace){group.dataset.noaWorkspace=workspace;group.dataset.noaLocalDisclosure='';}
+   const h=document.createElement('h3');h.textContent=tr(heading.textContent.trim());h.tabIndex=-1;
+   if(workspace){const summary=document.createElement('summary');summary.append(h);group.append(summary);}else group.append(h);
    const jump=document.createElement('option');jump.textContent=h.textContent;jumps.append(jump);
    h.insertAdjacentHTML('afterbegin',icon(categoryIcons[heading.id]||'sitemap'));
    const count=document.createElement('span');count.className='noa-drawer-route-count';count.textContent=String(items.length);h.append(count);
-   const list=document.createElement('div');list.className='noa-drawer-secondary';
+   const list=document.createElement('div');list.className='noa-drawer-secondary';const branches=new Map();
    for(const item of items){
     const key=item.dataset.noaRoute,label=item.querySelector('strong').textContent.trim();
     const link=document.createElement('a');link.dataset.drawerRoute=key;
     if(['home','youtube','world','music','lounge','shop'].includes(key))link.dataset.noaNav=key==='lounge'?'community':key;
     const name=document.createElement('span');name.className='noa-route-name';name.textContent=tr(({world:'NOA WORLD · 세계관',music:'음원',youtube:'유튜브'})[key]||label);link.append(name);
-    link.dataset.search=label+' '+(item.querySelector('small')?.textContent||'');
+    link.dataset.search=label+' '+(item.dataset.noaBranchTitle||'')+' '+(item.querySelector('small')?.textContent||'');
     const href=item.getAttribute('href');
     if(!href.startsWith('/')||href.startsWith('//'))continue;
-    link.href=href;if(href===location.pathname+location.search+location.hash)link.setAttribute('aria-current','page');
+    link.href=href;if(href===location.pathname+location.search+location.hash){link.setAttribute('aria-current','page');if(workspace)group.open=true;}
     const rank=Number(item.dataset.noaAccessRank)||0;link.dataset.accessRank=String(rank);
     if(item.dataset.noaAccessLabel&&Number.isInteger(rank)&&rank>=4&&rank<=10){
      const badge=document.createElement('span');badge.className='noa-route-level';
@@ -339,7 +345,11 @@ function wideShell(side){
      if(symbol)mark.innerHTML=icon(symbol);frame.append(mark);badge.append(frame);
      link.append(badge);
     }
-    list.append(link);
+    const branchId=item.dataset.noaBranch;
+    if(workspace&&branchId){
+     if(!branches.has(branchId)){const branch=document.createElement('section');branch.className='noa-drawer-branch';branch.dataset.noaBranch=branchId;const name=document.createElement('h4');name.textContent=item.dataset.noaBranchTitle;branch.append(name);branches.set(branchId,branch);list.append(branch);}
+     branches.get(branchId).append(link);
+    }else list.append(link);
    }
    group.append(list);groups.append(group);
   }
@@ -365,7 +375,7 @@ function wideShell(side){
  window.addEventListener('noa-membership-status',event=>{const d=event.detail||{},role=[!!d.member,d.level??access.level,!!d.admin].join('/');if(role!==mapRole){mapRole=role;resetMap();}});
  window.addEventListener('pageshow',event=>{if(event.persisted)resetMap();});
  search.addEventListener('input',filterMenu);
- searchBox.onsubmit=e=>{e.preventDefault();if(!loaded){loadMap();return;}filterMenu();const match=matchingShortcut()||(search.value.trim()&&sections.querySelector('section:not([hidden]) a:not([hidden])'));(match||search).focus();};
+ searchBox.onsubmit=e=>{e.preventDefault();if(!loaded){loadMap();return;}filterMenu();const match=matchingShortcut()||(search.value.trim()&&sections.querySelector('.noa-drawer-category:not([hidden]) a:not([hidden])'));(match||search).focus();};
  let trigger;
  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
  const wide=matchMedia('(min-width:1200px) and (min-height:640px) and (min-aspect-ratio:4/3)');

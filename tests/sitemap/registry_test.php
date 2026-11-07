@@ -14,7 +14,10 @@ try{
  $ids=static function(array $groups):array{return array_merge(...array_map(static fn($g)=>array_column(array_filter($g['routes'],static fn($r)=>empty($r[6])),0),array_values($groups)));};
  $guest=noa_sitemap_visible_groups($root,'guest');$member=noa_sitemap_visible_groups($root,'member');$admin=noa_sitemap_visible_groups($root,'admin');
  check(isset($guest['admin'],$member['admin'])&&$guest['admin']['routes'][0][6]!==''&&$member['admin']['routes'][0][6]!=='','administrator routes visible but disabled with conditions');
- check(count($admin['admin']['routes'])===1 && $admin['admin']['routes'][0][1]==='홈페이지 설정','one administrator entry');
+ check(count(array_filter($admin['admin']['routes'],fn($r)=>$r[3]==='/noa-library.php'))===1 && $admin['admin']['title']==='홈페이지 설정','one administrator workspace root');
+ check(count($admin['admin']['routes'])>10,'administrator specialists are discoverable in the tree');
+ check(isset($admin['creator_lab'],$admin['ai_lab']),'creator workspaces are top-level branches');
+ check(!in_array('channelWorkspace',array_column($admin['account']['routes'],0),true)&&!in_array('aiLab',array_column($admin['account']['routes'],0),true),'workspaces are not buried in account services');
  require_once dirname(__DIR__,2).'/deploy/noa-workspace.php';
  $adminModules=[];foreach(noa_workspace_groups() as $g)foreach($g['routes'] as $route){check($route[5]==='admin','administrator module scope');$adminModules[]=$route[0];}
  foreach(['popularity','workStatus','payments','subscriptions'] as $id)check(in_array($id,$adminModules,true),'specialist remains reachable from homepage settings');

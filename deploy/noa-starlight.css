@@ -1264,3 +1264,14 @@ html.noa-shell-wide[data-noa-theme] body .noa-footer-heading .noa-footer-themes 
  .noa-footer-heading .noa-footer-themes button{min-width:56px;min-height:58px;font-size:11px}
  .noa-footer-theme-label{font-size:11px}
 }
+
+/* N80 workspace tree: one category owner, grouped specialists, native disclosure. */
+.noa-site-map-subheading{grid-column:1/-1;margin:18px 0 0;font-size:15px;color:var(--noa-muted)}
+#noa-menu-drawer details.noa-drawer-category>summary{display:block;list-style:none;cursor:pointer;min-height:44px;padding:5px 0}
+#noa-menu-drawer details.noa-drawer-category>summary::-webkit-details-marker{display:none}
+#noa-menu-drawer details.noa-drawer-category>summary h3::after{content:'⌄';margin-left:auto;font-size:16px;transition:transform .15s}
+#noa-menu-drawer details.noa-drawer-category[open]>summary h3::after{transform:rotate(180deg)}
+#noa-menu-drawer .noa-drawer-branch{min-width:0;margin:12px 0 0;padding:0;border:0;background:transparent}
+#noa-menu-drawer .noa-drawer-branch h4{margin:0 0 3px;font-size:12px;line-height:1.5;font-weight:600;color:var(--noa-muted)}
+#noa-menu-drawer .noa-drawer-branch a{padding-left:8px}
+#noa-menu-drawer .noa-drawer-groups [hidden]{display:none!important}

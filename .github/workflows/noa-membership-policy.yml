@@ -8,7 +8,7 @@ permissions: {contents: read}
 jobs:
   preflight:
     # Scoped monthly and theme releases own their validation and activation workflows.
-    if: ${{ !contains(github.event.head_commit.message, '[creator-release]') && !contains(github.event.head_commit.message, '[preview-release]') && !contains(github.event.head_commit.message, '[monthly-release]') && !contains(github.event.head_commit.message, '[payments-release]') && !contains(github.event.head_commit.message, '[light-theme-release]') }}
+    if: ${{ !contains(github.event.head_commit.message, '[creator-release]') && !contains(github.event.head_commit.message, '[preview-release]') && !contains(github.event.head_commit.message, '[monthly-release]') && !contains(github.event.head_commit.message, '[payments-release]') && !contains(github.event.head_commit.message, '[light-theme-release]') && !contains(github.event.head_commit.message, '[menu-tree]') }}
     runs-on: ubuntu-latest
     environment: production
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
@@ -28,7 +28,7 @@ jobs:
         with: {name: 'noa-membership-audit-${{ github.run_id }}', path: membership-proof/, retention-days: 14}
   native:
     # Scoped monthly and theme releases own their validation and activation workflows.
-    if: ${{ !contains(github.event.head_commit.message, '[creator-release]') && !contains(github.event.head_commit.message, '[preview-release]') && !contains(github.event.head_commit.message, '[monthly-release]') && !contains(github.event.head_commit.message, '[payments-release]') && !contains(github.event.head_commit.message, '[light-theme-release]') }}
+    if: ${{ !contains(github.event.head_commit.message, '[creator-release]') && !contains(github.event.head_commit.message, '[preview-release]') && !contains(github.event.head_commit.message, '[monthly-release]') && !contains(github.event.head_commit.message, '[payments-release]') && !contains(github.event.head_commit.message, '[light-theme-release]') && !contains(github.event.head_commit.message, '[menu-tree]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -88,7 +88,7 @@ jobs:
         with: {name: 'noa-membership-candidate-${{ github.run_id }}', path: membership-proof/, retention-days: 14}
   deploy:
     # Scoped monthly and theme releases own their validation and activation workflows.
-    if: ${{ !contains(github.event.head_commit.message, '[creator-release]') && !contains(github.event.head_commit.message, '[preview-release]') && !contains(github.event.head_commit.message, '[monthly-release]') && !contains(github.event.head_commit.message, '[payments-release]') && !contains(github.event.head_commit.message, '[light-theme-release]') }}
+    if: ${{ !contains(github.event.head_commit.message, '[creator-release]') && !contains(github.event.head_commit.message, '[preview-release]') && !contains(github.event.head_commit.message, '[monthly-release]') && !contains(github.event.head_commit.message, '[payments-release]') && !contains(github.event.head_commit.message, '[light-theme-release]') && !contains(github.event.head_commit.message, '[menu-tree]') }}
     needs: [native, preflight]
     runs-on: ubuntu-latest
     environment: production

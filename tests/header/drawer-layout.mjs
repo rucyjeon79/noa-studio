@@ -109,9 +109,9 @@ try{
      assert.equal(await actions.locator('[data-drawer-action=points]').textContent(),'포인트·이용권');
      assert.equal(await actions.locator('[data-drawer-action=points]').getAttribute('href'),'/noa-membership.php');
      await drawer.locator('.noa-drawer-id strong').filter({hasText:width===320?'아주긴별무리이름테스트':'별무리'}).waitFor();
-     assert.equal(await actions.locator('[data-drawer-action=admin]').isVisible(),width===1440);
+     assert.equal(await actions.locator('[data-drawer-action=admin]').count(),0);
      const grid=await actions.locator('a:visible').evaluateAll(links=>links.slice(0,6).map(link=>{const r=link.getBoundingClientRect();return [r.x,r.y,r.height];}));
-     for(let i=0;i<6;i++){assert(grid[i][2]>=44);assert.equal(grid[i][0],grid[i%2][0]);assert.equal(grid[i][1],grid[i-i%2][1]);}
+     for(let i=0;i<grid.length;i++){assert(grid[i][2]>=44);assert.equal(grid[i][0],grid[i%2][0]);assert.equal(grid[i][1],grid[i-i%2][1]);}
     }else{
      const guest=drawer.locator('.noa-drawer-guest');
      assert(await guest.isVisible());assert(await entry.isHidden());
@@ -151,13 +151,14 @@ try{
     assert.equal(await map.locator('.noa-drawer-map-link').getAttribute('href'),minePath);
     const expected=await page.evaluate(({markup,member,admin})=>{
      const t=document.createElement('template');t.innerHTML=markup;
-     const shortcuts=new Set(['download','login',...(member?['my','profile','membership',...(admin?['libraryAdmin']:[])]:[])]);
+     const shortcuts=new Set(['download','login',...(member?['my','profile','membership']:[])]);
      return [...t.content.querySelectorAll('main[data-noa-member-directory] .noa-site-map')].map(g=>[g.querySelector('h2').id,...[...g.querySelectorAll('[data-noa-route]')].filter(a=>!shortcuts.has(a.dataset.noaRoute)).map(a=>[a.dataset.noaRoute,a.getAttribute('href'),Number(a.dataset.noaAccessRank)>=4?(a.dataset.noaAccessLabel||''):'',Number(a.dataset.noaAccessRank)||0])]).filter(g=>g.length>1);
     },{markup,member,admin:fixtureRole==='admin'});
     assert(expected.length>0);
     const actual=await map.locator('.noa-drawer-category').evaluateAll(gs=>gs.map(g=>[g.dataset.mapGroup,...[...g.querySelectorAll('a')].map(a=>[a.dataset.drawerRoute,a.getAttribute('href'),a.querySelector('.noa-route-level')?.getAttribute('aria-label')||'',Number(a.dataset.accessRank)||0])]));
     assert.deepEqual(actual,expected);
-    for(const [, ...routes] of actual){const ranks=routes.map(r=>r[3]);assert.deepEqual(ranks,[...ranks].sort((a,b)=>a-b),'high-grade menus must follow low-grade menus');}
+    for(const [id, ...routes] of actual){if(['map-creator_lab','map-ai_lab','map-admin'].includes(id))continue;const ranks=routes.map(r=>r[3]);assert.deepEqual(ranks,[...ranks].sort((a,b)=>a-b),'high-grade menus must follow low-grade menus');}
+    await map.locator('details[data-noa-workspace]').evaluateAll(nodes=>nodes.forEach(n=>n.open=true));
     const badges=await map.locator('.noa-route-level').evaluateAll(nodes=>nodes.map(el=>{
      const box=el.getBoundingClientRect(),row=el.closest('a').getBoundingClientRect(),name=el.closest('a').querySelector('.noa-route-name').getBoundingClientRect(),frame=el.querySelector('.noa-rank-badge'),mark=frame.firstElementChild;
      return {text:el.textContent,role:el.getAttribute('role'),label:el.getAttribute('aria-label'),title:el.title,icon:!!mark.querySelector('svg')||getComputedStyle(mark).backgroundImage!=='none',width:box.width,height:box.height,adjacent:box.left-name.right,aligned:box.right<=row.right+1&&box.left>=row.left&&box.top>=row.top&&box.bottom<=row.bottom+1};
@@ -176,9 +177,9 @@ try{
      }
     }
     assert.equal(await map.locator('a[aria-disabled=true],[data-noa-condition]').count(),0);
-    for(const key of ['my','profile','membership','download','login','libraryAdmin'])assert.equal(await map.locator('[data-drawer-route='+key+']').count(),0,'shortcut duplicated in categories: '+key);
+    for(const key of ['my','profile','membership','download','login'])assert.equal(await map.locator('[data-drawer-route='+key+']').count(),0,'shortcut duplicated in categories: '+key);
     const destinations=await links.evaluateAll(xs=>xs.map(a=>a.getAttribute('href')));assert.equal(new Set(destinations).size,destinations.length,'duplicate category destination');
-    assert.equal(await map.locator('[data-drawer-route=creatorAI]').count(),['admin','eight'].includes(fixtureRole)?1:0);
+    assert.equal(await map.locator('[data-drawer-route=channel]').count(),['admin','eight'].includes(fixtureRole)?1:0);
     assert.equal(await map.locator('a[data-access-rank="0"] .noa-route-level,a[data-access-rank="1"] .noa-route-level,a[data-access-rank="2"] .noa-route-level,a[data-access-rank="3"] .noa-route-level').count(),0,'levels 3 and below have no grade icon');
     assert.equal(await drawer.locator('footer .noa-sidebar-legal,footer a[href="/noa-world.php"]').count(),0);
     assert(await drawer.locator('footer .noa-sidebar-visitors').isVisible());

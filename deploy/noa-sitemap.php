@@ -3,14 +3,14 @@ declare(strict_types=1);
 
 /** Role-aware navigation for the existing application. No database writes. */
 function noa_sitemap_registry():array{
-    return [
+    $groups = [
         'explore'=>['title'=>'NOA STUDIO','routes'=>[
             ['home','홈','추천 음악과 최신 소식','/','home','public'],
             ['youtube','YouTube','음악 영상과 컬렉션','/noa-youtube.php','youtube','public'],
             ['world','NOA WORLD','세계관과 공식 EP 뮤직비디오','/noa-world.php','book','public'],
             ['music','MUSIC','음원과 ACT 플레이리스트','/noa-music.php','music','public'],
             ['my','MY','최근 재생과 나의 음악','/noa-my.php','user','public'],
-            ['catalog','통합 라이브러리','곡과 영상의 연결 정보','/noa-catalog.php','library','public'],
+            ['catalog','N80 탐색기','곡과 영상의 연결 정보','/noa-catalog.php','library','public'],
             ['settings','설정','테마와 언어','/noa-settings.php','settings','public'],
             ['download','앱 설치','iPhone · iPad · Android · PC','/noa-install.php','download','public'],
         ]],
@@ -30,8 +30,6 @@ function noa_sitemap_registry():array{
         'account'=>['title'=>'회원 서비스','routes'=>[
             ['login','로그인','기존 계정 또는 구글·카카오로 로그인','/noa-login.php','user','guest'],
             ['creatorApply','크리에이터 가입·전환','본인인증과 승인 후 7레벨·채널 개설','/noa-creator-apply.php','user','public'],
-            ['channelWorkspace','CREATOR LAB','소유한 콘텐츠·게시판·제작 관리','/noa-channel-workspace.php','music','member'],
-            ['aiLab','AI LAB','AI 대화 · 권한별 음악과 영상 제작','/noa-ai-lab.php','mic','member'],
             ['password','아이디·비밀번호 찾기','계정 접근 복구','/bbs/password_lost.php','settings','guest'],
             ['playlists','내 재생목록','나만의 목록 만들기와 편집','/noa-music.php#my-playlists','playlists','member'],
             ['subscription','구독 신청·내역','월 구독 신청과 결제·이용 기간 확인','/noa-subscription.php','user','member'],
@@ -56,8 +54,21 @@ function noa_sitemap_registry():array{
             ['terms-page','이용약관','함께 지키는 서비스 이용 약속','/noa-terms.php','book','public'],
         ]],
         'legal'=>['title'=>'기존 서비스 안내','routes'=>[]],
-        'admin'=>['title'=>'홈페이지 설정','routes'=>[['libraryAdmin','홈페이지 설정','회원·결제·화면·서비스 연결','/noa-library.php','settings','admin']]],
     ];
+    // The tree and the desks project the same N80 registry. No duplicate menu catalogue.
+    require_once __DIR__.'/noa-app/engine/workspaces.php';
+    $workspaces=n80_workspaces();$tree=[];
+    $entries=['creator_lab'=>['channelWorkspace','music'],'ai_lab'=>['aiLab','mic'],'admin'=>['libraryAdmin','settings']];
+    foreach($entries as $id=>[$entryId,$icon]){
+        $workspace=$workspaces[$id];
+        $routes=[[$entryId,$workspace['label'].' 열기','작업실의 전체 도구 보기',$workspace['entry'],$icon,$workspace['access']]];
+        foreach(n80_workspace_groups($id) as $section=>$group)foreach($group['routes'] as $route){
+            $route['section']=$section;$route['sectionTitle']=$group['title'];$routes[]=$route;
+        }
+        foreach($routes as &$route)$route['workspace']=$id;unset($route);
+        $tree[$id]=['title'=>$workspace['label'],'workspace'=>$id,'routes'=>$routes];
+    }
+    return array_slice($groups,0,5,true)+$tree+array_slice($groups,5,null,true);
 }
 
 function noa_sitemap_available(string $href,string $root):bool{
@@ -109,7 +120,7 @@ function noa_sitemap_board_allowed(array $board,int $level,bool $member,bool $su
 }
 
 function noa_sitemap_route_need(array $route):?string{
-    if($route[5]==='admin')return 'admin';
+    if(in_array($route[5],['admin','creator','creatorAI'],true))return $route[5];
     if($route[0]==='weatherCare')return 'weatherVip';
     if($route[0]==='storyRequest')return 'write';
     if($route[0]==='playlists')return nam_requirement('/noa-bridge/user-playlists.php');
@@ -152,7 +163,7 @@ function noa_sitemap_member_directory(array $groups,array $access,array $boards)
         }
         // PHP 8 preserves the original order when requirements have the same rank.
         // Rank is the menu's entry requirement, never the current viewer's grade.
-        usort($allowed,static fn($a,$b)=>$a[8]<=>$b[8]);
+        if(empty($group['workspace']))usort($allowed,static fn($a,$b)=>$a[8]<=>$b[8]);
         if($allowed)$groups[$key]['routes']=$allowed;
         else unset($groups[$key]);
     }
@@ -187,7 +198,8 @@ function noa_sitemap_unique_groups(array $groups):array{
     $chosen=[];
     foreach($groups as $key=>$group)foreach($group['routes'] as $i=>$row){
         $destination=noa_sitemap_destination($row[3]);
-        if(!isset($chosen[$destination])||($chosen[$destination][2]!==''&&($row[6]??'')===''))$chosen[$destination]=[$key,$i,$row[6]??''];
+        $priority=isset($row['workspace'])?1:0;$reason=$row[6]??'';
+        if(!isset($chosen[$destination])||($chosen[$destination][2]!==''&&$reason==='')||(($chosen[$destination][2]==='')===($reason==='')&&$priority>$chosen[$destination][3]))$chosen[$destination]=[$key,$i,$reason,$priority];
     }
     foreach($groups as $key=>$group){
         $routes=[];foreach($group['routes'] as $i=>$row){$pick=$chosen[noa_sitemap_destination($row[3])];if($pick[0]===$key&&$pick[1]===$i)$routes[]=$row;}
@@ -213,7 +225,7 @@ function noa_sitemap_visible_groups(string $root,string $role,array $boards=[],a
         foreach($group['routes'] as &$route){
             $reason=(string)($route[6]??'');$audience=$route[5];
             if($audience==='admin'&&$role!=='admin')$reason='최고관리자 전용 작업실이에요. 관리자 계정으로 로그인해 주세요.';
-            elseif($audience==='member'&&$role==='guest')$reason='로그인한 회원이 이용할 수 있어요. 먼저 로그인해 주세요.';
+            elseif(in_array($audience,['member','creator','creatorAI'],true)&&$role==='guest')$reason='로그인한 회원이 이용할 수 있어요. 먼저 로그인해 주세요.';
             elseif($audience==='guest'&&$role!=='guest')$reason='이미 로그인되어 있어요. 계정을 바꾸려면 MY에서 로그아웃해 주세요.';
             elseif(function_exists('nam_requirement')){
                 $need=noa_sitemap_route_need($route);
@@ -305,8 +317,8 @@ if($memberDirectory){
 function noa_sitemap_escape(string $value):string{return htmlspecialchars($value,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
 ?><!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>전체 메뉴 | NOA STUDIO</title><link rel="stylesheet" href="/noa-ui.css?v=20261024-category-complete"><link rel="stylesheet" href="/noa-policy-20261024.css?v=20261024-approved-ui"><script src="/noa-brand.js?v=20261021-brand1" defer></script><script src="/noa-ui.js?v=20261024-approved-ui" defer></script></head><body class="noa-page"><main<?=$memberDirectory?' data-noa-member-directory':''?>><h1>전체 메뉴</h1><p class="noa-muted">음악·커뮤니티·계정·관리 기능을 찾아 바로 이동하세요.</p>
 <label class="noa-menu-search-label" for="noa-menu-search">메뉴 찾기</label><input id="noa-menu-search" type="search" placeholder="예: 사연, 포인트, 설정" autocomplete="off"><p id="noa-menu-results" role="status" aria-live="polite"></p>
-<?php foreach($groups as $name=>$group):?><section class="noa-section noa-site-map" aria-labelledby="map-<?=noa_sitemap_escape($name)?>"><div class="noa-section-head"><h2 id="map-<?=noa_sitemap_escape($name)?>"><?=noa_sitemap_escape($group['title'])?></h2></div><nav class="noa-site-map-grid" aria-label="<?=noa_sitemap_escape($group['title'])?> 바로가기"><?php foreach($group['routes'] as $route):?><a class="noa-site-map-link" data-noa-route="<?=noa_sitemap_escape($route[0])?>"<?php if(!empty($route[7])):?> data-noa-access-label="<?=noa_sitemap_escape($route[7])?>" data-noa-access-rank="<?=(int)$route[8]?>"<?php endif;?> <?php if($route[6]):?>role="button" tabindex="0" aria-disabled="true" data-noa-condition="<?=noa_sitemap_escape($route[6])?>"<?php else:?>href="<?=noa_sitemap_escape($route[3])?>"<?php endif;?>><span aria-hidden="true"><?=noa_sitemap_icon($route[4])?></span><strong><?=noa_sitemap_escape($route[1])?></strong><?php if(!empty($route[7])):?><?=noa_sitemap_access_icon((int)$route[8],$route[7])?><?php endif;?><small><?=noa_sitemap_escape($route[6]?:$route[2])?></small></a><?php endforeach;?></nav></section><?php endforeach;?>
+<?php foreach($groups as $name=>$group):?><section class="noa-section noa-site-map"<?=isset($group['workspace'])?' data-noa-workspace="'.noa_sitemap_escape($group['workspace']).'"':''?> aria-labelledby="map-<?=noa_sitemap_escape($name)?>"><div class="noa-section-head"><h2 id="map-<?=noa_sitemap_escape($name)?>"><?=noa_sitemap_escape($group['title'])?></h2></div><nav class="noa-site-map-grid" aria-label="<?=noa_sitemap_escape($group['title'])?> 바로가기"><?php $section='';foreach($group['routes'] as $route):if(($route['section']??'')!==$section):$section=$route['section']??'';?><h3 class="noa-site-map-subheading" data-noa-branch="<?=noa_sitemap_escape($section)?>"><?=noa_sitemap_escape($route['sectionTitle']??'')?></h3><?php endif;?><a class="noa-site-map-link" data-noa-route="<?=noa_sitemap_escape($route[0])?>"<?php if(isset($route['section'])):?> data-noa-branch="<?=noa_sitemap_escape($route['section'])?>" data-noa-branch-title="<?=noa_sitemap_escape($route['sectionTitle'])?>"<?php endif;?><?php if(!empty($route[7])):?> data-noa-access-label="<?=noa_sitemap_escape($route[7])?>" data-noa-access-rank="<?=(int)$route[8]?>"<?php endif;?> <?php if($route[6]):?>role="button" tabindex="0" aria-disabled="true" data-noa-condition="<?=noa_sitemap_escape($route[6])?>"<?php else:?>href="<?=noa_sitemap_escape($route[3])?>"<?php endif;?>><span aria-hidden="true"><?=noa_sitemap_icon($route[4])?></span><strong><?=noa_sitemap_escape($route[1])?></strong><?php if(!empty($route[7])):?><?=noa_sitemap_access_icon((int)$route[8],$route[7])?><?php endif;?><small><?=noa_sitemap_escape($route[6]?:$route[2])?></small></a><?php endforeach;?></nav></section><?php endforeach;?>
 </main><script>
 (()=>{'use strict';const search=document.getElementById('noa-menu-search'),status=document.getElementById('noa-menu-results'),sections=[...document.querySelectorAll('.noa-site-map')];
-search.addEventListener('input',()=>{const query=search.value.trim().toLocaleLowerCase();let count=0;for(const section of sections){let shown=0;for(const link of section.querySelectorAll('.noa-site-map-link')){const match=link.textContent.toLocaleLowerCase().includes(query);link.hidden=!match;if(match)shown++;}section.hidden=shown===0;count+=shown;}status.textContent=query?(count?count+'개 메뉴를 찾았습니다.':'일치하는 메뉴가 없습니다. 다른 단어로 찾아보세요.') : '';});})();
+search.addEventListener('input',()=>{const query=search.value.trim().toLocaleLowerCase();let count=0;for(const section of sections){let shown=0;for(const link of section.querySelectorAll('.noa-site-map-link')){const match=(link.textContent+' '+(link.dataset?.noaBranchTitle||'')).toLocaleLowerCase().includes(query);link.hidden=!match;if(match)shown++;}for(const heading of section.querySelectorAll('.noa-site-map-subheading'))heading.hidden=![...section.querySelectorAll('.noa-site-map-link')].some(link=>!link.hidden&&link.dataset?.noaBranch===heading.dataset.noaBranch);section.hidden=shown===0;count+=shown;}status.textContent=query?(count?count+'개 메뉴를 찾았습니다.':'일치하는 메뉴가 없습니다. 다른 단어로 찾아보세요.') : '';});})();
 </script></body></html>
