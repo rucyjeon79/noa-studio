@@ -123,19 +123,19 @@ async function fortuneStories(){
   const response=await fetch('/noa-bridge/listening.php',{credentials:'same-origin'});
   if(!response.ok)throw Error('fortune_unavailable');const data=await response.json();
   if(epoch!==capturedEpoch||room!==target||!room?.active())return;
-  root.replaceChildren();const f=data.fortune;
+  root.replaceChildren();room.status('');const f=data.fortune;
   if(!f?.date||!f?.headline||!f?.body){
    root.append(el('p','오늘의 운세를 만들려면 생년월일 설정이 필요해요. 설정 후 다시 눌러 주세요.'));
    const link=el('a','생년월일 설정 열기');link.href='/?setup=fortune#noa-daily-fortune';link.target='_blank';link.rel='noopener';root.append(link);return;
   }
   const source=[f.headline,f.body,f.tip].filter(v=>typeof v==='string').join('\n');
-  root.append(el('h2',f.date+' · '+f.headline),el('p',f.body),el('p','운세를 소재로 만든 허구의 이야기예요. 네 가지 중 여러 개를 골라 섞을 수 있어요.'));
-  const stories=[['나를 돌보는 하루','주인공은 오늘의 운세 문구를 읽고 자기 마음에 필요한 작은 행동을 고른다. 일상의 한 장면에서 자신을 다독이며 하루를 마친다.'],['마음을 전하는 순간','주인공은 오늘의 운세에서 용기를 얻어 누군가에게 미뤄 둔 말을 전한다. 대화 속에서 서로의 마음을 새롭게 알아간다.'],['새 출발의 첫걸음','주인공은 오늘의 운세를 계기로 망설이던 일에 작은 첫걸음을 내딛는다. 예상 밖의 어려움을 만나도 자신의 속도로 나아간다.'],['추억이 건넨 답','주인공은 오늘의 운세를 읽다가 오래된 기억 하나를 떠올린다. 그때 미처 이해하지 못했던 마음을 오늘의 시선으로 다시 바라본다.']];
+  root.append(el('h2','오늘, 어떤 이야기를 담아볼까요?'),el('p','마음이 가는 이야기를 골라 주세요. 여러 개를 함께 골라도 좋아요.'));
+  const stories=[['나에게 건네는 위로','고단했던 하루 끝에 잠시 쉬어 가며, 내 마음을 다독이는 이야기.'],['미뤄 둔 한마디','쉽게 꺼내지 못했던 마음을 전하고, 서로에게 조금 더 가까워지는 이야기.'],['작은 시작','망설이던 첫걸음을 내딛고, 서툴러도 나만의 속도로 나아가는 이야기.'],['문득 떠오른 너','우연히 들은 노래에 오래된 기억이 떠올라, 그때의 마음을 다시 만나는 이야기.']];
   const selected=new Set(),grid=el('div',undefined,'creative-options');
   for(const [index,[label,story]] of stories.entries()){const b=button(label+' · '+story,()=>{selected.has(index)?selected.delete(index):selected.add(index);b.setAttribute('aria-pressed',String(selected.has(index)));});b.setAttribute('aria-pressed','false');grid.append(b);}
   const next=button('선택한 이야기로 다음',async()=>{
    if(!selected.size){room?.status('이야기 방향을 하나 이상 골라 주세요.');return;}
-   const inspiration='[오늘의 운세에서 얻은 창작 소재 · '+f.date+']\n'+source+'\n\n[선택한 허구의 이야기 방향]\n'+[...selected].map(i=>stories[i][1]).join('\n')+'\n\n선택한 방향을 모두 반영해 하나의 허구 이야기로 엮어 주세요. 실제로 일어난 일이나 미래의 예언으로 표현하지 마세요.';
+   const inspiration=[...selected].map(i=>stories[i][1]).join('\n')+'\n\n이야기에 담고 싶은 마음\n'+source;
    $('story').value=[$('story').value.trim(),inspiration].filter(Boolean).join('\n\n');
    queue({story:$('story').value});await flush();root.replaceChildren();renderChat();$('story').focus({preventScroll:true});room?.status('선택한 이야기를 담았어요. 내용을 수정하거나 다음을 눌러 창작 조건을 정해요.');
   });root.append(grid,next);
