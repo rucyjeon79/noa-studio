@@ -4,7 +4,7 @@ site=Path(os.environ.get('NCD_SITE','/tmp/noa-creative-test/html'))
 (site/'common.php').write_text('''<?php
 define('_GNUBOARD_',true);session_start();$is_member=true;$is_admin='super';$member=['mb_id'=>'browser-owner','mb_level'=>10];$config=['cf_admin'=>'browser-owner'];
 // Match the shared presentation injected by noa-design.extend.php in production.
-ob_start(static fn($html)=>str_replace('</head>','<link rel="stylesheet" href="/noa-starlight.css"></head>',$html));
+ob_start(static fn($html)=>str_replace(['<html lang=', '</head>'],['<html data-noa-style="starlight" lang=', '<link rel="stylesheet" href="/noa-starlight.css"></head>'],$html));
 ''')
 p=site/'noa-bridge/creative.php';s=p.read_text().replace('ncd_enqueue($db,$owner,$b)','ncd_enqueue($db,$owner,$b,static fn()=>204)');s=s.replace("error_log('[n80-creative] '.get_class($e))","error_log('[n80-creative] '.get_class($e).':'.$e->getMessage())");p.write_text(s)
 (site/'creative-test-worker.php').write_text('''<?php
