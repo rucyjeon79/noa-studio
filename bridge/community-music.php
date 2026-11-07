@@ -31,13 +31,11 @@ function nc_music_search(string $term):array{
  global $member;if(!nc_is_creator())throw new DomainException('comment_not_allowed');if(mb_strlen($term)>80)throw new DomainException('invalid_input');
  require_once __DIR__.'/storage.php';require_once __DIR__.'/sound-core.php';require_once __DIR__.'/member-access.php';require_once dirname(__DIR__).'/noa-app/jukebox/core.php';
  // Use the same merged document/catalog identities as the music player.
- $needle=mb_strtolower(preg_replace('/\s+/u','',trim($term)));$out=[];
+ require_once __DIR__.'/explorer-search.php';$out=[];
  foreach(nj_catalog(noa_bridge_pdo()) as $key=>$doc){
   if(!$doc||(!nc_admin()&&!nam_owner($doc,(array)$member))||!noa_sound_visible($doc,false))continue;
-  $title=(string)(($doc['body']['confirmedTitle']??'')?:($doc['title']??''));
-  $haystack=mb_strtolower(preg_replace('/\s+/u','',$title.' '.($doc['title']??'')));
-  if($needle!==''&&!str_contains($haystack,$needle))continue;
-  try{$out[]=nc_music((string)$key,true);}catch(DomainException $e){continue;}
+  $row=n80_search_record((string)$key,$doc);if(!n80_search_matches($row,$term))continue;
+  try{$out[]=nc_music((string)$key,true)+$row;}catch(DomainException $e){continue;}
   if(count($out)>=20)break;
  }
  return $out;

@@ -3,11 +3,11 @@ import os, subprocess
 import noa_ainoa_deploy as release
 from noa_explorer_assets import DEPENDENCIES
 release.FILES={**DEPENDENCIES,'noa-app/jukebox/queue-core.php':'deploy/noa-app/jukebox/queue-core.php'}
-for p in ['catalog.php','creator-core.php','member-access.php','sound-core.php','music-readmodel.php','creator-ai-core.php','creator.php','channel-batch-ai.php','channel-batch-audio.php','channel-batch.php','lab-worker.php']:
+for p in ['catalog.php','creator-core.php','member-access.php','sound-core.php','music-readmodel.php','creator-ai-core.php','creator.php','channel-batch-ai.php','channel-batch-audio.php','channel-batch.php','lab-worker.php','ainoa-core.php','community-music.php','ecosystem.php','youtube-api.php']:
  release.FILES['noa-bridge/'+p]='bridge/'+p
-for p in ['noa-gpt.php','noa-channel-batch.js','noa-channel-explorer.js','noa-channel-controls.js','noa-channel-rules.js','noa-member-badges.css','noa-creator.css','noa-creator.js','noa-creator-ai.js','noa-ai-lab.js','noa-browse-edit.js','noa-channel-menu.php','noa-channel-rules.php','noa-creator.php','noa-creator-ai.php','noa-lab-song.php','noa-ai-lab.php','noa-app/engine/health.php','noa-channel-workspace.php','noa-editor.php','noa-music.php','noa-workspace.php','noa-sitemap.php','noa-app/taxonomy/index.php']:
+for p in ['noa-gpt.php','noa-channel-batch.js','noa-channel-explorer.js','noa-channel-controls.js','noa-channel-rules.js','noa-member-badges.css','noa-creator.css','noa-creator.js','noa-creator-ai.js','noa-ai-lab.js','noa-browse-edit.js','noa-channel-menu.php','noa-channel-rules.php','noa-creator.php','noa-creator-ai.php','noa-lab-song.php','noa-ai-lab.php','noa-app/engine/health.php','noa-channel-workspace.php','noa-editor.php','noa-music.php','noa-workspace.php','noa-sitemap.php','noa-app/taxonomy/index.php','noa-app/taxonomy/ui.js','noa-app/jukebox/explorer.js','noa-app/jukebox/index.php','noa-ainoa.js','noa-catalog.js','noa-catalog.php','noa-community.js','noa-ecosystem.js','noa-playlists.js','noa-browse-order.js','noa-browse.js','noa-youtube.js','noa-youtube-admin.php','noa-library.php']:
  release.FILES[p]='deploy/'+p
-release.NEW=set(DEPENDENCIES)|{'noa-bridge/channel-batch-ai.php','noa-bridge/channel-batch-audio.php','noa-bridge/channel-batch.php','noa-channel-batch.js','noa-channel-explorer.js','noa-channel-controls.js','noa-channel-rules.js','noa-channel-rules.php'}
+release.NEW=set(DEPENDENCIES)|{'noa-app/jukebox/explorer.js','noa-bridge/channel-batch-ai.php','noa-bridge/channel-batch-audio.php','noa-bridge/channel-batch.php','noa-channel-batch.js','noa-channel-explorer.js','noa-channel-controls.js','noa-channel-rules.js','noa-channel-rules.php'}
 before=os.environ.get('NOA_PUSH_BASE')
 if before and before.strip('0'):
  changed=set(subprocess.check_output(['git','diff','--name-only','--no-renames',before,os.environ['GITHUB_SHA'],'--'],text=True).splitlines())

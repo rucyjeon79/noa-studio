@@ -63,10 +63,10 @@ const uid = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.
 function mount(panel, {renderTree, fingerprint}) {
     const byId = id => document.getElementById(id);
     const mode = byId('batch-mode'), run = byId('batch-run'), preview = byId('batch-preview'), feedback = byId('batch-feedback');
-    const files = byId('batch-files'), map = byId('batch-file-map'), matchEditor = byId('batch-match-editor');
-    const choice = byId('batch-song-choice'), history = byId('batch-history'), csrf = document.querySelector('meta[name=noa-creator-csrf]').content;
+    const files = byId('batch-files'), map = byId('batch-file-map');
+    const history = byId('batch-history'), csrf = document.querySelector('meta[name=noa-creator-csrf]').content;
     const admin = panel.dataset.admin === '1', selected = new Set(), last = new Map(), historyLimit=new Map();
-    let index = new Map(), rows = [], editing = null, pending = false, sending = false;
+    let index = new Map(), rows = [], pending = false, sending = false;
     let runAllowed = false;
     let version = 0, previewTimer, pollTimer, previewData = null, requestId = '', historyVersion = 0, polling = false, locked = false;
     const fields = () => Array.from(panel.querySelectorAll('[name=batch-field]:checked'), input => input.value);
@@ -161,23 +161,15 @@ function mount(panel, {renderTree, fingerprint}) {
         if(row.needsArtist&&!row.artist?.trim()) return '원곡 가수를 입력하세요.';
         return '';
     }
-    function bindChoice(row) {
-        editing=row;
-        choice.replaceChildren(new Option('연결할 곡 선택',''));
-        const pool=chosen(), labels=pool.map(songLabel),seen=new Set(),duplicate=new Set();
-        for(const label of labels){if(seen.has(label))duplicate.add(label);seen.add(label);}
-        pool.forEach((song,i)=>choice.add(new Option(labels[i]+(duplicate.has(labels[i])?' · '+song.key.slice(-12):''),song.key)));
-        choice.value=row.key;
-        byId('batch-match-label').textContent=row.file.name+' 연결할 곡';
-        matchEditor.hidden=false;choice.focus();
+    async function bindChoice(row) {
+        if(pending)return;
+        try {
+            const song=await N80Explorer.choose({records:chosen(),title:row.file.name+' · 연결할 곡'});
+            if(!song||pending||!rows.includes(row)||!chosen().some(item=>item.key===song.key))return;
+            row.key=song.key;row.manual=true;row.error='';row.needsArtist=false;selectionChanged();
+        } catch { byId('batch-preview').textContent='N80 탐색기를 불러오지 못했습니다. 다시 시도해 주세요.'; }
     }
-    byId('batch-match-save').onclick=()=>{
-        if(!editing||!choice.value)return;
-        editing.key=choice.value;editing.manual=true;editing.error='';editing.needsArtist=false;
-        editing=null;matchEditor.hidden=true;selectionChanged();
-    };
     function renderFiles() {
-        if (!pending) {editing=null;matchEditor.hidden=true;}
         const pool=chosen();
         for(const row of rows) {
             if(!row.manual&&!row.done&&!pending) row.key=matchFile(row.file.name,pool);
@@ -327,7 +319,7 @@ function mount(panel, {renderTree, fingerprint}) {
         if(pending||locked)return;
         const kind=mode.value;
         if(kind!=='upload'&&!previewData){selectionChanged();return;}
-        setPending(true);matchEditor.hidden=true;run.textContent=kind==='upload'?'파일 전송 중…':'요청 중…';
+        setPending(true);run.textContent=kind==='upload'?'파일 전송 중…':'요청 중…';
         try{
             if(kind==='upload')await uploadRows();
             else {

@@ -32,7 +32,8 @@ function na_text(string $system,array $context,int $tokens=2200,?array &$usage=n
 }
 /** Search only listener text; neighbouring production cues never become result snippets. */
 function na_search_hit(array $song,string $query):?array{
- $title=mb_stripos($song['title'],$query)!==false;$line='';
+ require_once __DIR__.'/explorer-search.php';
+ $title=n80_search_matches($song,$query);$line='';
  foreach(preg_split('/\R/u',$song['lyrics'])as $candidate){$candidate=trim($candidate);if($candidate===''||mb_stripos($candidate,$query)===false)continue;
   if(preg_match('/^\[[^\]\r\n]*\]$/u',$candidate))continue;
   if(preg_match('/^\([^\r\n]*\)$/u',$candidate)&&preg_match('/\b(?:vocal|piano|synth|reverb|fade|gayageum|ajaeng|sogeum|kkwaenggwari|percussion|arpeggio|glissando|bass|groove|pad|guitar|drums?|instrumental|harmony)\b/i',$candidate))continue;

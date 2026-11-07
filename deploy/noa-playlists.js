@@ -65,6 +65,14 @@
   });syncDelete();
  }
 
+ const explore=document.createElement('button');explore.type='button';explore.textContent='N80 탐색기 · 수록곡';el('my-add').after(explore);
+ explore.onclick=async()=>{
+  if(busy)return;explore.disabled=true;
+  try{await import('/noa-channel-explorer.js?v=n80-unified-20261107'); const draftId=id;const records=[...lookup.values()].filter(row=>row.kind!=='playlist');
+   const picked=await N80Explorer.choose({records,multiple:true,selected:(working||[]).map(key=>lookup.get(key)||{key,title:'연결 상태 확인이 필요한 곡'}),title:'내 플레이리스트 수록곡'});
+   if(picked&&!busy&&id===draftId){working=picked.map(row=>row.key);renderOrder();status.textContent=working.length+'개 곡 · 저장하면 반영됩니다.';}
+  }catch{status.textContent='N80 탐색기를 불러오지 못했습니다. 다시 시도해 주세요.';}finally{explore.disabled=false;}
+ };
  el('my-new').onclick=()=>{id=crypto.randomUUID();revision=0;working=filteredQueue.filter(b=>lookup.get(b.dataset.key)?.kind!=='playlist').map(b=>b.dataset.key);picker.value='';title.value='';status.textContent='현재 재생 목록 '+working.length+'개를 담았습니다. 이름을 입력하고 저장해 주세요.';title.focus();renderOrder()};
  // Add the requested key to the current draft without selecting or pausing another track.
  window.addEventListener?.('noa-playlist-add',async event=>{

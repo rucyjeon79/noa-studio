@@ -26,11 +26,18 @@ function mount({host,rows,kind,access,getOrder,getGroup,onSaved,onExpandPlaylist
   const creator=document.createElement('div');creator.className='noa-playlist-creator';creator.hidden=true;
   const title=document.createElement('input');title.type='text';title.maxLength=80;title.setAttribute('aria-label','새 플레이리스트 이름');title.placeholder='플레이리스트 이름';creator.append(title);status.after(creator);
   const createSave=control('save','저장','새 플레이리스트 저장'),createCancel=control('cancel','취소','플레이리스트 생성 취소');createSave.hidden=true;createCancel.hidden=true;controls.append(createSave,createCancel);
-  let chosen=[],requestId='',previousPressed=new Map();
-  function showChoices(){for(const node of nodes()){const row=node.querySelector('.noa-inline-song'),index=chosen.indexOf(canonical(lookup.get(node.dataset.inlineKey)));row.querySelector('.noa-pick-number')?.remove();row.setAttribute('aria-pressed',String(index>=0));if(index>=0){const badge=document.createElement('span');badge.className='noa-pick-number';badge.setAttribute('aria-hidden','true');badge.textContent=String(index+1);row.prepend(badge);}}status.textContent=chosen.length+'개 선택 · 누른 순서대로 저장됩니다.';}
-  function resetCreate(){for(const node of nodes()){const row=node.querySelector('.noa-inline-song');row.querySelector('.noa-pick-number')?.remove();const prior=previousPressed.get(row);if(prior===null)row.removeAttribute('aria-pressed');else row.setAttribute('aria-pressed',prior);}list.classList.remove('noa-create-list');state.editing=false;create.hidden=false;order.hidden=false;createSave.hidden=true;createCancel.hidden=true;creator.hidden=true;}
-  create.onclick=()=>{if(state.busy||savedEditing||isEditing?.())return;onExpandPool?.();state.editing=true;create.hidden=true;order.hidden=true;creator.hidden=false;createSave.hidden=false;createCancel.hidden=false;status.hidden=false;chosen=[];requestId=crypto.randomUUID();title.value='새 플레이리스트';previousPressed=new Map(nodes().map(n=>{const row=n.querySelector('.noa-inline-song');return[row,row.getAttribute('aria-pressed')];}));list.classList.add('noa-create-list');status.textContent='곡을 선택하면 누른 순서대로 번호가 붙습니다.';title.focus();title.select();};
-  list.addEventListener('click',event=>{if(!list.classList.contains('noa-create-list'))return;const row=event.target.closest('.noa-inline-song');if(!row||!list.contains(row))return;event.preventDefault();event.stopImmediatePropagation();if(state.busy)return;const node=row.closest(rowSelector),key=canonical(lookup.get(node.dataset.inlineKey)),index=chosen.indexOf(key);if(index>=0)chosen.splice(index,1);else chosen.push(key);showChoices();},true);
+  let chosen=[],requestId='';
+  const choose=control('create','N80 탐색기','N80 탐색기 · 수록곡 선택');creator.append(choose);
+  function showChoices(){status.textContent=chosen.length+'개 선택 · 선택한 순서대로 저장됩니다.';}
+  function resetCreate(){state.editing=false;create.hidden=false;order.hidden=false;createSave.hidden=true;createCancel.hidden=true;creator.hidden=true;}
+  choose.onclick=async()=>{
+   if(state.busy)return;choose.disabled=true;
+   try{await import('/noa-channel-explorer.js?v=n80-unified-20261107'); const records=nodes().map(node=>lookup.get(node.dataset.inlineKey)).filter(Boolean).map(row=>({...row,key:canonical(row)}));
+    const result=await N80Explorer.choose({records,multiple:true,selected:chosen.map(key=>records.find(row=>row.key===key)||{key,title:key}),title:'새 플레이리스트 수록곡'});
+    if(result&&current===state&&state.editing){chosen=result.map(row=>row.key);showChoices();}
+   }catch{status.textContent='N80 탐색기를 불러오지 못했습니다. 다시 시도해 주세요.';}finally{choose.disabled=false;}
+  };
+  create.onclick=()=>{if(state.busy||savedEditing||isEditing?.())return;onExpandPool?.();state.editing=true;create.hidden=true;order.hidden=true;creator.hidden=false;createSave.hidden=false;createCancel.hidden=false;status.hidden=false;chosen=[];requestId=crypto.randomUUID();title.value='새 플레이리스트';showChoices();title.focus();title.select();};
   createCancel.onclick=()=>{if(state.busy)return;resetCreate();status.textContent='플레이리스트 생성을 취소했습니다.';};
   createSave.onclick=async()=>{
    if(state.busy)return;if(!chosen.length){status.textContent='곡을 한 개 이상 선택해 주세요.';return;}const name=title.value.trim();if(!name){status.textContent='플레이리스트 이름을 입력해 주세요.';title.focus();return;}

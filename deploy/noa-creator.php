@@ -19,8 +19,7 @@ function nc_e(string $s):string{return htmlspecialchars($s,ENT_QUOTES|ENT_SUBSTI
 <div id="batch-upload" hidden><label for="batch-files">MP3 · WAV 파일 선택</label>
 <input type="file" id="batch-files" multiple accept=".mp3,.wav,audio/mpeg,audio/wav">
 <small>파일 전송이 끝날 때까지 이 화면을 열어 두세요. 전송 후 최적화는 서버에서 계속됩니다.</small>
-<ul id="batch-file-map"></ul><div id="batch-match-editor" hidden><label for="batch-song-choice" id="batch-match-label">연결할 곡</label><select id="batch-song-choice"></select>
-<button id="batch-match-save" class="noa-button" type="button">곡 연결</button></div></div>
+<ul id="batch-file-map"></ul></div>
 <p id="batch-preview" role="status" aria-live="polite">아래 목록에서 ACT, 장르 또는 곡을 선택하세요.</p>
 <details id="batch-missing" hidden><summary>원본이 필요한 곡</summary><ul></ul><button id="batch-missing-upload" class="noa-button" type="button">이 곡에 파일 연결</button></details>
 <button id="batch-run" class="noa-button" type="button" disabled>선택한 곡 처리</button>

@@ -75,8 +75,7 @@ try {
   const ambiguous=page.locator('#batch-file-map li').filter({hasText:'[GAP]같은 멜로디.wav'});
   assert(await page.locator('#batch-run').isDisabled());
   await ambiguous.getByRole('button',{name:'곡 지정'}).click();
-  await page.locator('#batch-song-choice').selectOption('single:batch-ui:2');
-  await page.locator('#batch-match-save').click();
+  await page.locator('.n80-dialog [data-n80-key="single:batch-ui:2"]').click();
   await page.waitForFunction(()=>!document.querySelector('#batch-run').disabled);
   const finished = new Set();
   page.on('response',r=>{if(r.url().includes('action=uploadFinish')&&r.ok())finished.add(r.request().postData());});
