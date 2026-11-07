@@ -1,4 +1,4 @@
-# N80 창작 보관함
+# N80 노래 창작하기
 
 작업 지시서 #431의 신규 오리지널·사연곡 흐름. `/noa-ai-lab.php?tool=creative`에서 시작한다. 기존 `creatorAI` 권한(8레벨·최고관리자)을 적용한다. 오리지널 EP 등록은 기존 관리자 권한을 유지한다. EP 재해석·유명곡 커버는 기존 원곡 관계 흐름을 사용한다.
 
@@ -29,7 +29,7 @@
 
 ## 저장·실행
 
-- `noa_creative_drafts`는 draft_id·소유자·문서 키만 색인한다. `owner_created` 인덱스로 소유자별 목록을 제한한다. 생성된 노래는 기존 MySQL `noa_documents`와 `noa_document_history`를 사용한다.
+- `noa_creative_drafts`는 draft_id·소유자·문서 키와 보관·복구 만료 상태를 색인한다. `owner_created` 인덱스로 소유자별 목록을 제한한다. 생성된 노래는 기존 MySQL `noa_documents`와 `noa_document_history`를 사용한다.
 - `kind=n80_creative_draft`, `doc_key=n80:draft:<id>`. 일반 곡과 동일한 canonical `body`에 현재 필드, `_creative`에 이야기·질문·답변·의도·수정 요구·후보·검토 상태·정식 곡 링크를 저장한다. JSON 파일/localStorage를 기준 저장소로 사용하지 않는다.
 - AI 작업은 `kind=n80_creative_job`, immutable 입력 스냅샷과 요청 ID, 실행 상태, 출력, 오류를 보존한다. N80 Engine `creative.php`가 관리하고 N80 Auto가 기존 private `noa-worker.yml`을 호출한다. 기존 worker가 `noa-gpt.php`에서 명시적 작업 ID로 읽고 결과를 같은 작업에 저장한다. 새 실행기·cron·독립 엔진을 추가하지 않는다.
 - 첫 입력, 사지선다 답변, 사용자 지정 답변 작성 중 내용, 필드 값, 수정 요구와 선택을 서버에 저장한다. 응답을 확인한 경우만 저장 완료를 표시한다. 네트워크 실패는 현재 화면 입력을 보존한다. revision 충돌은 덮어쓰지 않으며 서버 버전을 명시적으로 다시 읽을 수 있다.
@@ -48,7 +48,7 @@
 
 ## 보존
 
-초안과 AI 작업에는 TTL이 없다. 삭제는 소유자의 ID 재확인 후 soft delete이며 이력·파일은 유지된다. 삭제 보관함에서 복구한다. 정식 등록 이후에도 초안 이력을 자동 삭제하지 않는다.
+곡정보까지 완성된 초안과 AI 작업은 유지한다. 미완성 입력은 기존 N80 복구 체크포인트 한 건을 갱신하며 마지막 입력부터 24시간 동안 복구할 수 있다. 버튼 클릭·공백만으로 문서를 만들지 않는다. 보관된 초안의 삭제는 소유자의 ID 재확인 후 soft delete이며 이력·파일은 유지된다. 삭제 보관함에서 복구한다. 정식 등록 이후에도 초안 이력을 자동 삭제하지 않는다.
 
 JUKEBOX `nu_cleanup_verified`는 creative draft 원본을 자동 삭제하지 않는다. 기존 미완성 업로드 정리도 만료 삭제가 없다. 미디어 정리 스크립트는 retained draft의 모든 document history를 파일 보호 참조에 포함한다. 파일명 기반 중복 정리는 이 보호 참조를 우선한다.
 
@@ -99,3 +99,15 @@ JUKEBOX `nu_cleanup_verified`는 creative draft 원본을 자동 삭제하지 �
 | 배포·실증·검증 | `.github/workflows/noa-creative-drafts.yml`, `scripts/noa_creative_release.py`, `scripts/noa_creative_live.py`, `scripts/noa_creative_live.php`, `tests/creative/*`, 기존 GPT/메뉴 검사 fixture |
 
 기존 공유 배포 workflow에는 `[creative-drafts]` 변경을 이번 배포 경로에 맡기는 조건을 추가했다. 다른 기존 검사 자체를 통과 처리하거나 삭제하지 않았다. private worker의 실제 `worker.py`도 작업 ID를 명시해 읽도록 갱신했다(`rucyjeon79/noa-private-worker`, `c09084196beaf38a77ffa07591b74c8772c73d9e`).
+
+
+## 창작 대화·키보드·운세 (2026-11-07 추가)
+
+- 메뉴/제목은 AI 아이콘 + **노래 창작하기**, 시작은 **새 노래 만들기**, 완료 초안 목록은 **창작 중인 노래**다. 기존 N80 메뉴 레지스트리와 권한을 그대로 사용한다.
+- 창작 조건은 단계별 네 가지 중 복수 선택과 추가 설명을 함께 반영한다. 선택만으로 넘어가지 않고 **다음**에서 저장·진행한다. 선택 상태와 입력 중 설명은 기존 `answerDrafts` 복구 필드에 버전이 있는 JSON 문자열로 저장한다. AI에는 선택한 문구 전체와 추가 설명을 평문 답변으로 전달한다.
+- **오늘의 운세로 스토리 만들기**는 클릭할 때만 기존 `/noa-bridge/listening.php`를 조회한다. 로그인한 회원의 기존 운세가 소재이며 생년월일을 중복 수집하거나 다른 회원/대화 기억을 사용하지 않는다. 생년월일 미설정은 기존 설정 화면으로 안내한다.
+- 운세 기반 네 가지 이야기 방향은 고정된 창작 출발점이다. 선택한 방향과 그날의 운세 원문을 기존 N80 창작 분석 입력에 함께 담는다. 별도 운세 AI 생성/worker/자동화를 만들지 않는다. 허구의 창작이며 실제 사건이나 예언으로 표현하지 않도록 입력에 명시한다. 조회/선택만으로 빈 초안을 만들지 않고 다음에서 실제 이야기로 저장한다.
+- 공유 `NoaAInoa.openConversation`은 열린 동안만 VisualViewport resize/scroll과 창 resize를 구독한다. 높이·너비·pan offset으로 대화창 크기/위치를 조절하고 메시지 영역과 입력 영역 내부만 스크롤한다. 작은 화면은 헤더를 줄이고 입력 폰트를 16px로 유지한다. 닫을 때 구독/rAF/문서 스크롤 잠금을 해제한다. API가 없으면 innerHeight/innerWidth를 사용한다.
+- 검증은 실제 PHP/MySQL + 브라우저 흐름에 VisualViewport 축소/이동/가로 화면/복원, API 없는 WebView 대체 경로, 재열기 시 구독 해제, 복수 선택·추가 설명 복구, 운세 오류/미설정/정상 흐름을 포함한다. 키보드는 브라우저에서 모사하며 물리 Android/iOS 키보드 실기기 검증과 구분한다. AI/운세 응답은 브라우저 검사에서 fixture로 제공하며 이번 UI 수정 때문에 운영 AI 작업/미디어 처리를 재실행하지 않는다.
+
+검증 브랜치의 [Actions 42425062739](https://github.com/rucyjeon79/noa-studio/actions/runs/42425062739)는 PHP/MySQL 계약과 모바일/PC 전체 창작 흐름을 통과했다. 화면 증거는 해당 실행의 `creative-proof-42425062739`에 보관한다. 운영 배포 완료 여부는 이후 main 실행의 배포 영수증으로 확인한다.
