@@ -9,7 +9,7 @@ const errors={revision_conflict:'다른 창이나 처리 작업에서 내용이 
 let draft=null,items=[],pending={},saving=null,timer=0,poll=null,questionIndex=0,inputs={},collections=[],upload=null,busy=false,epoch=0,conflict=false,assetActive=false,jobActive=false;
 const id=()=>[...crypto.getRandomValues(new Uint8Array(16))].map(x=>x.toString(16).padStart(2,'0')).join('');
 const text=v=>typeof v==='string'?v:JSON.stringify(v,null,2);
-function el(tag,value,cls){const n=document.createElement(tag);if(value!==undefined)n.textContent=value;if(cls)n.className=cls;return n;}
+function el(tag,value,cls){const n=document.createElement(tag);if(value!==undefined)n.textContent=value;if(cls)n.className=cls;if(tag==='dialog')n.classList.add('creative-dialog');return n;}
 function button(label,fn){const b=el('button',label);b.type='button';b.onclick=()=>run(fn);return b;}
 function message(error){return errors[error.message||error]||'요청을 완료하지 못했습니다. '+(error.message||error);}
 function status(s){$('status').textContent=s;}
