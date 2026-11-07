@@ -7,7 +7,7 @@ const player = fs.readFileSync('deploy/noa-youtube.php','utf8').match(/<section 
 const themes = JSON.parse(fs.readFileSync('deploy/noa-design.json')).themes;
 const rows = ['하루의 끝에','세상 끝에서도','다음에 공개할 영상'].map((title,i) => ({
   key:'abcdefghij'+i,video:i<2?'abcdefghij'+i:'',title,ep:i+1,genre:'pop-original',act:1,
-  originalTitle:i===0?'원곡 제목이 아주 길어도 버튼과 겹치지 않는지 확인':title,
+  originalTitle:i===0?'원곡 제목이 아주 길어도 버튼과 겹치지 않는지 확인':'  '+title.replaceAll(' ','   ')+'  ',
   thumb:'/poster.jpg',comingSoon:i===2,
 }));
 const styles = ['noa-ui.css','noa-app/p0-media.css','noa-youtube.css','noa-policy-20261024.css','noa-starlight.css','noa-cinema.css','noa-engagement.css','noa-member-surfaces.css'];
@@ -65,12 +65,12 @@ async function inspect(browser,width) {
         const metrics=await panel.evaluate((el,mode)=>{
           const q=s=>el.querySelector(s),css=e=>getComputedStyle(e),rect=e=>e.getBoundingClientRect();
           const row=document.querySelector(mode==='act'?'.noa-inline-video-row':'#yt-videos>.yt-card');
-          const note=rect(row.querySelector('.noa-original-title')),reaction=row.querySelector('.noa-engagement');
+          const note=rect(row.querySelector('.noa-original-title')),name=mode==='act'?rect(row.querySelector('.noa-track-name')):null,reaction=row.querySelector('.noa-engagement');
           const image=rect(row.querySelector(mode==='act'?'.noa-inline-cover':'.yt-watch img'));
           const frame=rect(q('#yt-frame'));
           const color=t=>{const span=document.createElement('i');span.style.color='var(--noa-'+t+')';el.append(span);const value=css(span).color;span.remove();return value;};
           const selectors={'#yt-playing':'text','#video-classification small':'muted','#video-classification a':'accent','#youtube-description summary':'text','#youtube-lyrics summary':'text','#youtube-description pre':'text','.cinema-badge':'success'};
-          return {noteBeforeActions:!reaction||note.bottom<=rect(reaction).top+1,noteFits:note.right<=rect(row).right,tokens:Object.entries(selectors).map(([s,t])=>[s,css(q(s)).color,color(t)]), surface:css(el).backgroundColor, title:css(q('#yt-playing')).color,
+          return {nameAboveNote:!name||(name.height>=19 && name.bottom<=note.top && name.top>=rect(row).top),noteBeforeActions:!reaction||note.bottom<=rect(reaction).top+1,noteFits:note.right<=rect(row).right,tokens:Object.entries(selectors).map(([s,t])=>[s,css(q(s)).color,color(t)]), surface:css(el).backgroundColor, title:css(q('#yt-playing')).color,
             card:css(row).backgroundImage,edge:css(row).borderLeftColor,accent:color('accent'),frame:[frame.width,frame.height],art:[image.width,image.height],
             path:rect(q('#video-classification')).top,frameBottom:frame.bottom,details:[...el.querySelectorAll('summary')].map(s=>rect(s).height),wide:document.documentElement.scrollWidth>innerWidth+1};
         },mode);
@@ -79,9 +79,13 @@ async function inspect(browser,width) {
         assert.equal(metrics.surface,'rgb('+theme.tokens.surface.slice(1).match(/../g).map(s=>parseInt(s,16)).join(', ')+')',note);
         assert.equal(metrics.edge,metrics.accent,note);
         for(const [w,h] of [metrics.frame,metrics.art])assert(w>0 && Math.abs(w*9/16-h)<1,note);
-        assert(metrics.noteBeforeActions && metrics.noteFits && !metrics.wide && metrics.path>=metrics.frameBottom-1 && metrics.details.every(h=>h>=44),note);
+        assert(metrics.nameAboveNote && metrics.noteBeforeActions && metrics.noteFits && !metrics.wide && metrics.path>=metrics.frameBottom-1 && metrics.details.every(h=>h>=44),note);
         surfaces.push(metrics.card);
-        if([390,1280].includes(width) && mode==='act')await row.screenshot({path:'cinema-proof/video-list-'+theme.id+'-'+width+'.png'});
+        if([390,1280].includes(width) && mode==='act'){
+          await panel.locator('#youtube-description summary').click();await panel.locator('#youtube-lyrics summary').click();
+          await row.screenshot({path:'cinema-proof/video-list-'+theme.id+'-'+width+'.png'});
+          await panel.locator('#youtube-description summary').click();await panel.locator('#youtube-lyrics summary').click();
+        }
       }
       assert.notEqual(surfaces[0],surfaces[1]);
       assert.equal(embeds,before,'Theme changes must preserve the active iframe');
