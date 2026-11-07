@@ -131,7 +131,9 @@ jobs:
       - uses: actions/setup-node@v4
         with: {node-version: '22'}
       - name: Wait for existing category release at this exact SHA
-        env: {GH_TOKEN: '${{ github.token }}'}
+        env:
+          GH_TOKEN: '${{ github.token }}'
+          N80_RELEASE_WORKFLOW: '${{ contains(github.event.head_commit.message, ''[n80-runtime]'') && ''.github/workflows/n80-engine-facade-production.yml'' || ''.github/workflows/noa-category-order-final.yml'' }}'
         run: python scripts/n80_completion_pipeline.py wait --commit "$GITHUB_SHA"
       - name: Verify actual deployed behavior without changing production data
         env: {NOA_FINISH_QA_OUTPUT: '${{ runner.temp }}/noa-finish-proof/verified.json'}

@@ -113,6 +113,7 @@ jobs:
           extensions: pdo_sqlite,pdo_mysql,mbstring,curl,tokenizer,fileinfo
       - uses: actions/setup-node@v4
         with: {node-version: '22'}
+      - run: python -m pip install 'paramiko>=3,<5'
       - name: Validate N80 dispatch, ownership, replay and SQL task lifecycle
         run: |
           set -eu
@@ -123,6 +124,7 @@ jobs:
           php tests/muvy/fixture.php
           python tests/lab/http_test.py
           python -m unittest discover -s tests/engine -p test_auto_dispatch.py -v
+          python -m unittest discover -s tests/engine -p test_final_publication.py -v
           python -m py_compile scripts/n80_single_session_deploy.py scripts/n80_runtime_verify.py scripts/noa_n80_ai_worker.py scripts/n80_auto.py
           php scripts/qa/inline-edit-seed.php
           php tests/catalog/ainoa_generation_mysql_test.php
@@ -133,7 +135,6 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/n80-browser" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-muvy.mjs "$RUNNER_TEMP/n80-browser/muvy.mjs"
           node "$RUNNER_TEMP/n80-browser/muvy.mjs"
-      - run: python -m pip install 'paramiko>=3,<5'
       - name: Verify and install N80 modules in one SSH session
         run: python scripts/n80_single_session_deploy.py
       - name: Read back N80 status without creating an AI task and update existing journal

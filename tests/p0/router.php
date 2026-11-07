@@ -10,7 +10,7 @@ if($path==='/noa-bridge/ui-preferences.php'){header('Content-Type: application/j
 if($path==='/noa-bridge/user-playlists.php'){http_response_code(401);header('Content-Type: application/json');echo '{}';return;}
 if($path==='/noa-music-detail.php'){header('Content-Type: application/json');$key=$_GET['key']??'';if(!in_array($key,['one','two'],true)){http_response_code(404);echo '{}';return;}echo json_encode(['key'=>$key,'rawLyrics'=>"[Verse 1]\n원문 줄\n\n[Chorus]\n후렴",'description'=>$key==='one'?"곡 이야기\n둘째 줄":''],JSON_UNESCAPED_UNICODE);return;}
 if($path==='/noa-creator.php'){
- $_SESSION=['noa_creator_csrf'=>'fixture'];$access=['ownDownload'=>true];define('NC_GENRES',['your-story','cover-reborn']);function nc_e(string $s):string{return htmlspecialchars($s,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
+ define('_GNUBOARD_',true);$_SESSION=['noa_creator_csrf'=>'fixture'];$labBatch=false;$access=['ownDownload'=>true,'admin'=>false,'creatorAI'=>false];define('NC_GENRES',['your-story','cover-reborn']);function nc_e(string $s):string{return htmlspecialchars($s,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
  $src=str_replace('__DIR__',var_export($root.'/deploy',true),file_get_contents($root.'/deploy/noa-creator.php'));eval(substr($src,strpos($src,'?><!doctype html>')));return;
 }
 if($path==='/noa-work-status.php'){

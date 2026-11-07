@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import io
 import json
 from pathlib import Path
@@ -60,7 +61,9 @@ class DirectiveTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             try:
                 os.chdir(tmp)
-                with patch.object(subject,'connect',return_value=Transport()),patch.object(subject.paramiko.SFTPClient,'from_transport',return_value=Client()),patch.object(subject,'request',side_effect=request),patch.object(subject.urllib.request,'urlopen',side_effect=fetch),patch('builtins.print'):
+                # This exercises registration/CAS with an isolated player fixture. The historical
+                # production digest stays pinned in the one-time registration script.
+                with patch.object(subject,'SHA',hashlib.sha256((ROOT/'deploy/noa-app/p0-player.js').read_bytes()).hexdigest()),patch.object(subject,'connect',return_value=Transport()),patch.object(subject.paramiko.SFTPClient,'from_transport',return_value=Client()),patch.object(subject,'request',side_effect=request),patch.object(subject.urllib.request,'urlopen',side_effect=fetch),patch('builtins.print'):
                     subject.main()
             finally: os.chdir(cwd)
         self.assertEqual(state['areas'],original['areas'])
