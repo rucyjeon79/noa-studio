@@ -1,18 +1,21 @@
 const assert = require('node:assert/strict');
 const {chromium} = require('playwright');
 const path = require('node:path');
+const fs = require('node:fs');
 
 (async () => {
  const browser = await chromium.launch({executablePath:process.env.CHROME_PATH||undefined,channel:process.env.CHROME_PATH?undefined:'chrome',args:['--no-sandbox']});
  try {
   const page = await browser.newPage({viewport:{width:390,height:844}});
   const errors=[];
+  page.on('console',msg=>console.log(msg.type(),msg.text()));
   page.on('pageerror',error=>errors.push(error.message));
   await page.route('https://noastudio.ai.kr/**',route=>{
    const url=new URL(route.request().url());
    if(url.pathname==='/fixture')return route.fulfill({contentType:'text/html',body:'<main id="host"><button class="noa-browse-card" id="next">다음 목록</button></main>'});
    if(url.pathname==='/noa-inline-edit.php')return route.fulfill({json:{ok:true,writeKey:'story:fixture',kind:'story',packageType:'story',revision:1,context:{},fields:{title:'Side by Side'}}});
    const file=url.pathname.slice(1);
+   if(file==='noa-browse-edit.js')return route.fulfill({contentType:'application/javascript',body:fs.readFileSync(path.resolve('deploy',file),'utf8').replace("}catch(error){if(active===state)status.textContent","}catch(error){console.error(error.stack);if(active===state)status.textContent")});
    if(['noa-browse-edit.js','noa-record-form.js','noa-record-form.css'].includes(file))return route.fulfill({path:path.resolve('deploy',file)});
    return route.fulfill({json:{ok:true}});
   });
@@ -27,6 +30,7 @@ const path = require('node:path');
   await page.evaluate(()=>{window.editor=NoaBrowseEdit.mount({host:document.getElementById('host'),standalone:true,onClose:()=>closedCount++});});
   const open=()=>page.evaluate(()=>editor.openRecord({type:'song',source:'music',key:'story:fixture'}));
   await open();
+  console.log(await page.locator('#host').innerText());
   await page.getByRole('button',{name:'곡정보창 닫기',exact:true}).click();
   assert.equal(await page.locator('.noa-edit-form').count(),0);
   assert.equal(await page.evaluate(()=>editor.isEditing()),false);

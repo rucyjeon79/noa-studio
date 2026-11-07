@@ -1,4 +1,5 @@
 name: Verify and publish song editor closing
+# Browser fixture diagnostics
 on:
   push:
     branches: [main]
