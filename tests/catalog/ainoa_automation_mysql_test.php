@@ -5,6 +5,13 @@ if(!str_contains((string)getenv('NOA_MYSQL_DSN'),'dbname=noa_inline_edit_test;')
 require_once __DIR__.'/../../deploy/noa-app/engine/task-status.php';
 require_once __DIR__.'/../../bridge/storage.php';require_once __DIR__.'/../../bridge/ainoa-automation.php';
 $db=noa_bridge_pdo();$other=noa_bridge_pdo();$owner='n80-test-admin';$calls=0;
+// Generation resolves the same production-rule schema as the app. This test owns its isolated rule fixture.
+$schema=require __DIR__.'/../../bridge/taxonomy-schema.php';
+$db->exec('CREATE TABLE IF NOT EXISTS noa_production_rules '.$schema['noa_production_rules'].' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
+$rule='{"testGuideline":"Isolated draft generation fixture"}';$ruleHash=hash('sha256',$rule);
+$db->prepare('INSERT INTO noa_production_rules(rule_id,scope,genre_id,format,body,sha256,source_path,source_sha256,updated_by) VALUES(?,?,?,?,?,?,?,?,?)')
+ ->execute(['n80-test:common','common',null,'json',$rule,$ruleHash,'tests/catalog/ainoa_automation_mysql_test.php',$ruleHash,'fixture']);
+
 function nt_assert(bool $v,string $m):void{if(!$v)throw new RuntimeException($m);}
 function nt_deny(callable $fn,string $code):void{try{$fn();}catch(DomainException $e){nt_assert($e->getMessage()===$code,'wrong_error:'.$e->getMessage());return;}throw new RuntimeException('not_denied:'.$code);}
 $source=$db->query("SELECT doc_key,payload,revision FROM noa_documents WHERE kind IN ('single','story','playlist') ORDER BY doc_key")->fetchAll(PDO::FETCH_ASSOC);
