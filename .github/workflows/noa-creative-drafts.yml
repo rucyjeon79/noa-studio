@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
-        with: {php-version: '8.2', extensions: 'pdo_mysql,mbstring,gd,curl,dom,fileinfo'}
+        with: {php-version: '8.2', extensions: 'pdo_mysql,pdo_sqlite,mbstring,gd,curl,dom,fileinfo'}
       - run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
       - name: Check source and SQL lifecycle
         run: |
@@ -38,6 +38,7 @@ jobs:
           ffmpeg -hide_banner -loglevel error -f lavfi -i 'sine=frequency=440:duration=1' -ac 2 -codec:a libmp3lame tests/creative/fixture.mp3
           ffmpeg -hide_banner -loglevel error -f lavfi -i 'color=c=gray:s=64x64' -frames:v 1 tests/creative/fixture.webp
           php tests/creative/core.php
+          python tests/gpt/flow.py
           php tests/lab-menu/menu.php
           python tests/member/lab_routes.py
           python tests/creative/browser-setup.py
@@ -45,7 +46,8 @@ jobs:
           cp tests/creative/browser.mjs "$RUNNER_TEMP/creative-browser/check.mjs"
       - name: Verify mobile and desktop with actual PHP and MySQL
         run: |
-          php -S 127.0.0.1:8787 -t /tmp/noa-creative-test/html > "$RUNNER_TEMP/creative-http.log" 2>&1 &
+          mkdir -p creative-proof
+          php -S 127.0.0.1:8787 -t /tmp/noa-creative-test/html > creative-proof/http.log 2>&1 &
           node "$RUNNER_TEMP/creative-browser/check.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
