@@ -23,7 +23,7 @@ if before and before.strip('0'):
       'deploy/noa-app/jukebox/queue-core.php','deploy/noa-channel-explorer.js',
       'deploy/noa-creator.php','deploy/noa-creator.js','deploy/noa-creator.css','deploy/noa-music.php'})
  # This migration completes the previously blocked integration release as one guarded source set.
- if 'scripts/noa_explorer_release.py' in changed: changed.update(release.FILES.values())
+ if changed & {'scripts/noa_explorer_release.py','.github/workflows/noa-channel-explorer.yml'}: changed.update(release.FILES.values())
  scoped={remote:local for remote,local in release.FILES.items() if local in changed}
  release.FILES={**DEPENDENCIES,**WORKSPACE_DEPENDENCIES,**scoped} if scoped else {}
 release.PROTECTED=[p for p in release.PROTECTED if p not in release.FILES]

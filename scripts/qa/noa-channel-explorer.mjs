@@ -1,8 +1,4 @@
-import {chromium} from 'playwright';import assert from 'node:assert/strict';import {appendFileSync,mkdirSync,writeFileSync} from 'node:fs';
-// Match the shared styles installed by the production design extension.
-appendFileSync('/tmp/noa-creator-site/common.php', `
-ob_start(static fn($html)=>str_replace('</head>', '<link rel="stylesheet" href="/noa-policy-20261024.css"><link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-member-surfaces.css"></head>', $html));
-`);
+import {chromium} from 'playwright';import assert from 'node:assert/strict';import {mkdirSync,writeFileSync} from 'node:fs';
 const base='https://noastudio.ai.kr',out='explorer-proof/candidate';mkdirSync(out,{recursive:true});const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']}),report=[];
 try{for(const theme of ['noa-studio','noa-ivory'])for(const width of [390,1280]){
  const context=await browser.newContext({viewport:{width,height:900},serviceWorkers:'block'});await context.addInitScript(theme=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',radius:'soft',design:'ios'})),theme);

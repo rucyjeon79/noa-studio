@@ -13,7 +13,7 @@ function get_text($s){return htmlspecialchars($s,ENT_QUOTES,'UTF-8');}
 function sql_query($q,$error=true){return $GLOBALS['fixtureDb']->query($q);}function sql_fetch_array($q){return $q->fetch(PDO::FETCH_ASSOC);}function sql_fetch($q){return sql_fetch_array(sql_query($q))?:[];}function sql_escape_string($v){return substr($GLOBALS['fixtureDb']->quote($v),1,-1);}
 function hyphen_hp_number($v){$v=preg_replace('/[^0-9]/','',$v);return preg_replace('/^(01[0-9])([0-9]{3,4})([0-9]{4})$/','$1-$2-$3',$v);}function get_encrypt_string($v){return password_hash($v,PASSWORD_DEFAULT);}
 require __DIR__.'/noa-access.extend.php';require __DIR__.'/noa-creator-membership.extend.php';
-ob_start(static fn($html)=>str_replace('</head>','<link rel="stylesheet" href="/noa-account.css"><link rel="stylesheet" href="/noa-notifications.css"></head>',$html));
+ob_start(static fn($html)=>str_replace('</head>','<link rel="stylesheet" href="/noa-policy-20261024.css"><link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-member-surfaces.css"><link rel="stylesheet" href="/noa-account.css"><link rel="stylesheet" href="/noa-notifications.css"></head>',$html));
 
 '''.replace("require __DIR__.'/noa-creator-membership.extend.php';","require __DIR__.'/extend/noa.creator-membership.php';").replace("require __DIR__.'/noa-access.extend.php';","require __DIR__.'/extend/noa.access.php';"))
 (root/'extend').mkdir(exist_ok=True)
