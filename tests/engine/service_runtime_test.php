@@ -7,6 +7,8 @@ function service_remove(string $p):void {if(!is_dir($p)){unlink($p);return;}fore
 try{
     mkdir($root.'/noa-app/engine',0700,true);mkdir($root.'/noa-bridge',0700,true);
     foreach(glob($source.'/deploy/noa-app/engine/*.php') as $file)copy($file,$root.'/noa-app/engine/'.basename($file));
+    file_put_contents($root.'/noa-app/engine/creative.php','<?php function ncd_cleanup_recovery($db){$GLOBALS["cleanupCalls"]++;return ["examined"=>0,"removed"=>0,"protected"=>0];}');
+    $GLOBALS['cleanupCalls']=0;
     copy($source.'/bridge/worker-text.php',$root.'/noa-bridge/worker-text.php');
     file_put_contents($root.'/noa-bridge/ainoa-core.php','<?php');
     file_put_contents($root.'/noa-bridge/storage.php','<?php function noa_bridge_pdo(){return null;}');
@@ -24,7 +26,7 @@ try{
     service_assert($GLOBALS['state']['worker']['operations']['n80_text_tick']['state']==='idle','operating_state_not_reported');
     $GLOBALS['state']['config']['workerEnabled']=false;
     $paused=n80_service_execute('n80_text_tick',[],$context);
-    service_assert($paused['state']==='paused'&&$GLOBALS['calls']===1,'disabled_worker_called');
+    service_assert($paused['state']==='paused'&&$GLOBALS['calls']===1&&$GLOBALS['cleanupCalls']===2,'disabled_worker_called');
     foreach(get_included_files() as $file)service_assert(!str_ends_with($file,'worker-index.php')&&!str_ends_with($file,'worker-media.php'),'unselected_module_loaded');
     echo "N80_SERVICE_EXECUTION_OK\n";
 }finally{service_remove($root);}
