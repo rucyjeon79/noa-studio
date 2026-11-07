@@ -59,7 +59,7 @@ function ncd_worker(PDO $db,string $op,string $id,array $body=[]):array {
   $unchanged=($c['jobId']??'')===$id&&empty($c['deletedAt'])&&empty($c['publication'])&&$j['inputHash']===ncd_hash([$c['story'],$c['answers'],$c['intent']]);
   if(!$unchanged){$j['state']='review';$j['error']='draft_changed';}
   elseif($j['operation']==='analyze'){$c['intent']=$output['intent'];$c['questions']=$output['questions'];$c['intentConfirmed']=false;}
-  else {foreach($output['fields'] as $key=>$v){$current=nup_fields($d)[$key];$base=$j['input']['fields'][$key];if($j['operation']==='generate'&&($current===''||$current===[])&&$current===$base){$d=ncd_fields($d,[$key=>$v]);unset($d['_creative']['needsReview'][$key]);}else{$d['_creative']['proposals'][$key]=['jobId'=>$id,'value'=>$v,'baseHash'=>ncd_hash($base),'createdAt'=>gmdate('c')];}}if($j['operation']==='generate'&&nup_fields($d)['vocal']==='')$d=ncd_fields($d,['vocal'=>$output['vocal']]);}
+  else {foreach($output['fields'] as $key=>$v){$current=nup_fields($d)[$key];$base=$j['input']['fields'][$key];if($j['operation']==='generate'&&($current===''||$current===[])&&$current===$base){$d=ncd_fields($d,[$key=>$v]);unset($d['_creative']['needsReview'][$key]);}else{$d['_creative']['proposals'][$key]=['jobId'=>$id,'value'=>$v,'baseHash'=>ncd_hash($base),'createdAt'=>gmdate('c')];}}if($j['operation']==='generate')foreach($j['targets'] as $generated)unset($d['_creative']['needsReview'][$generated]);if($j['operation']==='generate'&&nup_fields($d)['vocal']==='')$d=ncd_fields($d,['vocal'=>$output['vocal']]);}
   if($unchanged){unset($d['_creative']['preview']);ncd_put($db,$draft,$d,$j['owner']);}ncd_job_put($db,$r,$j);return ['ok'=>true,'saved'=>true,'state'=>$j['state']];
  });
 }

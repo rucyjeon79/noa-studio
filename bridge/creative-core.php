@@ -56,7 +56,7 @@ function ncd_save(PDO $db,string $owner,array $b):array {
   if(isset($b['answerDrafts']))foreach($b['answerDrafts'] as $k=>$v){if(!in_array($k,NCD_CONDITIONS,true))throw new InvalidArgumentException('unknown_condition');$d['_creative']['answerDrafts'][$k]=ncd_text($v,4000);}
   if(isset($b['requests'])){foreach($b['requests'] as $k=>$v){if(!in_array($k,NCD_TARGETS,true))throw new InvalidArgumentException('unknown_field');$d['_creative']['requests'][$k]=ncd_text($v,4000);}}
   if(isset($b['location'])){$loc=$b['location'];$genre=$loc['genre']??'';if(!in_array($genre,['kpop-original','your-story'],true))throw new DomainException('new_original_category_required');$ep=(string)($loc['ep']??'');if($ep!==''&&!preg_match('/^[1-9][0-9]{0,3}$/D',$ep))throw new InvalidArgumentException('invalid_ep');if($genre==='your-story')$ep='';$d['genreId']=$genre;$d['ep']=$ep;$d['act']=$ep!==''?(string)ceil((int)$ep/10):'';$d['packageType']=nup_type($d,'single');$collections=$loc['collections']??[];if(!is_array($collections)||count($collections)>20)throw new InvalidArgumentException('invalid_collections');foreach($collections as $key)if(!is_string($key)||!preg_match('/^playlist:custom:[a-f0-9]{24}$/D',$key))throw new InvalidArgumentException('invalid_collections');$d['_creative']['collections']=array_values(array_unique($collections));}
-  unset($d['_creative']['preview']);return ncd_put($db,$r,$d,$owner);
+  if($d['genreId']==='kpop-original'){$f=nup_fields($d);$d['body']['originalInfo']=['ep'=>$d['ep'],'title'=>$f['title'],'lyrics'=>$f['lyrics'],'vocal'=>$f['vocal']];}unset($d['_creative']['preview']);return ncd_put($db,$r,$d,$owner);
  });
 }
 function ncd_action(PDO $db,string $owner,string $action,array $b):array {

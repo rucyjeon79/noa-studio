@@ -41,7 +41,7 @@ def save_result(task_id, text):
 
 
 def generate(task_id):
-    task = api("read")
+    task = api("read&id=" + task_id)
     if task.get("id") != task_id:
         return
     prompt = ("Create only the final text for the specified field. Apply rules.common, "
