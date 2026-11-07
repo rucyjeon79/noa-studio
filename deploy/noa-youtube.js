@@ -1,7 +1,10 @@
 (()=>{'use strict';const $=id=>document.getElementById(id),el=(tag,text)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e;};
 let currentVideo=null,detailRevision=0;const detailRequests=new Map(),detailEpochs=new Map();
 const validDetail=(value,id)=>value?.videoId===id&&typeof value.description==='string'&&typeof value.lyrics==='string';
-function showDetail(info){for(const part of ['description','lyrics']){const body=$('youtube-'+part+'-text');if(body)body.textContent=info?.[part]||(part==='lyrics'?'등록된 가사가 없습니다.':'등록된 설명이 없습니다.');}}
+// Historical imports may contain literal newline escapes inside decoded text.
+function displayText(value){return String(value??'').replace(/\\+r\\+n|\\+n|\\+r|\r\n?/g,'\n');}
+window.NoaVideoDisplayText=displayText;
+function showDetail(info){for(const part of ['description','lyrics']){const body=$('youtube-'+part+'-text');if(body)body.textContent=displayText(info?.[part])||(part==='lyrics'?'등록된 가사가 없습니다.':'등록된 설명이 없습니다.');}}
 function ensureDetail(){
  const id=currentVideo,revision=detailRevision;if(!id)return;
  const cached=window.NoaVideoDetails?.[id];if(validDetail(cached,id)){showDetail(cached);return;}

@@ -15,3 +15,16 @@ test('existing World/admin embedded detail contract remains compatible with no n
 test('inline save invalidates an older detail response without restarting the iframe',async()=>{const pending=[];const f=fixture({handler:()=>new Promise(resolve=>pending.push(resolve))});f.buttons[0].onclick();f.open('description');f.emit('noa-inline-video-saved',{detail:{key:'abcdefghijk'}});assert.equal(pending.length,2);pending[1]({ok:true,json:async()=>({ok:true,videoId:'abcdefghijk',description:'Saved description',lyrics:'Saved lyrics'})});await flush();pending[0]({ok:true,json:async()=>({ok:true,videoId:'abcdefghijk',description:'Stale description',lyrics:'Stale lyrics'})});await flush();assert.equal(f.e('youtube-description-text').textContent,'Saved description');assert.equal(f.window.NoaVideoDetails.abcdefghijk.description,'Saved description');assert.equal(f.e('yt-frame').writes,1);});
 
 test('Coming soon selection opens only its genre preview and public selection restores the player',()=>{const f=fixture();f.buttons[0].onclick();f.coming.onclick();assert.equal(f.e('yt-frame').src,'about:blank');assert.equal(f.e('yt-frame').hidden,true);assert.equal(f.e('yt-coming-preview').hidden,false);assert.equal(f.e('yt-coming-art').src,'/noa-assets/coming/kpop-original.jpg');assert.equal(f.requests.length,0);f.buttons[0].onclick();assert.equal(f.e('yt-frame').hidden,false);assert.equal(f.e('yt-coming-preview').hidden,true);assert.match(f.e('yt-frame').src,/embed\/abcdefghijk/);});
+
+test('escaped paragraphs render as lines for fetched and cached text without changing the source',async()=>{
+ const raw='🌙 一日の終わりに\\n\\n歌詞\\r\\n첫 줄\n둘째 줄\\\\n끝';
+ const expected='🌙 一日の終わりに\n\n歌詞\n첫 줄\n둘째 줄\n끝';
+ const f=fixture({handler:async()=>({ok:true,json:async()=>({ok:true,videoId:'abcdefghijk',description:raw,lyrics:raw})})});
+ f.buttons[0].onclick();f.open('description');await flush();
+ assert.equal(f.e('youtube-description-text').textContent,expected);
+ assert.equal(f.e('youtube-lyrics-text').textContent,expected);
+ assert.equal(f.window.NoaVideoDetails.abcdefghijk.description,raw);
+ f.buttons[0].onclick();assert.equal(f.e('youtube-description-text').textContent,expected);
+ assert.equal(f.window.NoaVideoDisplayText('<img src=x>\n日本語'),'<'+'img src=x>\n日本語');
+ assert.equal(f.window.NoaVideoDisplayText(expected),expected);
+});

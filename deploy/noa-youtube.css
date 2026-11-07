@@ -35,3 +35,5 @@
 #yt-videos > .yt-card > h2 {font-size:15px;line-height:1.4}
 #yt-videos > .yt-card > .noa-engagement {flex-wrap:wrap}
 #yt-videos > .yt-card[hidden] {display:none}
+
+#youtube-description-text,#youtube-lyrics-text{white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal}
