@@ -7,11 +7,11 @@ on:
 permissions: {contents: read, actions: read}
 jobs:
   record:
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository && !contains(github.event.workflow_run.head_commit.message, '[n80-runtime]')
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 10
-    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    concurrency: {group: noa-p0-evidence, cancel-in-progress: false}
     steps:
       - uses: actions/checkout@v4
         with: {ref: '${{ github.event.workflow_run.head_sha }}', fetch-depth: 0}
