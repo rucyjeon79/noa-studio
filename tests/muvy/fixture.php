@@ -7,13 +7,15 @@ $common= <<<'COMMON'
 if(defined('_GNUBOARD_'))return;define('_GNUBOARD_',true);define('G5_PATH',__DIR__);session_start();$role=$_COOKIE['qa_role']??'guest';$is_member=$role!=='guest';$is_admin=$role==='admin'?'super':'';$member=$is_member?['mb_id'=>'qa_'.$role,'mb_level'=>$role==='staff'?10:4]:[];
 if(($_SERVER['HTTP_ORIGIN']??'')==='http://127.0.0.1:8077')$_SERVER['HTTP_ORIGIN']='https://noastudio.ai.kr';
 require __DIR__.'/provider-fixture.php';
+// Match the native extension's stylesheet cascade in the isolated site.
+ob_start(static fn($html)=>str_replace('</head>','<link rel="stylesheet" href="/noa-policy-20261024.css"><link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-member-surfaces.css"></head>',$html));
 // Native bootstrap noise must not corrupt JSON.
 if(str_ends_with($_SERVER['SCRIPT_FILENAME']??'','/muvy.php'))echo "\n<!-- isolated native bootstrap -->\n";
 COMMON;
 file_put_contents($root.'/common.php',$common);
 foreach(['member-access.php','lab-core.php','muvy-core.php','muvy-prompts.php','muvy-rules.php']as $file)copy('bridge/'.$file,$root.'/noa-bridge/'.$file);
 $api=str_replace('mu_provider($task)','mu_fixture_provider($task)',file_get_contents('bridge/muvy.php'));file_put_contents($root.'/noa-bridge/muvy.php',$api);
-foreach(['noa-lab-router.js','noa-ai-lab.php','noa-lab-chat.php','noa-ainoa.js','noa-ai-lab.css','noa-ai-lab.js','noa-channel-explorer.js','noa-explorer.css','noa-muvy-panel.php','noa-muvy.css','noa-muvy.js','noa-browse.js','noa-ui.css','noa-ui.js','noa-design.json','noa-ui-words.json','noa-brand.js']as $file)copy('deploy/'.$file,$root.'/'.$file);
+foreach(['noa-policy-20261024.css','noa-starlight.css','noa-member-surfaces.css','noa-lab-router.js','noa-ai-lab.php','noa-lab-chat.php','noa-ainoa.js','noa-ai-lab.css','noa-ai-lab.js','noa-channel-explorer.js','noa-explorer.css','noa-muvy-panel.php','noa-muvy.css','noa-muvy.js','noa-browse.js','noa-ui.css','noa-ui.js','noa-design.json','noa-ui-words.json','noa-brand.js']as $file)copy('deploy/'.$file,$root.'/'.$file);
 // Only the catalog storage boundary is replaced. Selection, prompts and quotas run through the native API.
 file_put_contents($root.'/noa-bridge/storage.php','<?php function noa_bridge_pdo(){return null;}');
 file_put_contents($root.'/noa-bridge/sound-core.php','<?php');
