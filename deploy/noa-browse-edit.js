@@ -262,7 +262,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
      }
      ai.onclick=async()=>{
       if(state.busy){tell('다른 요청을 처리 중입니다. 잠시 기다려 주세요.');return;}
-      state.busy=true;generating('api',true);ai.disabled=true;ai.setAttribute('aria-busy','true');tell(label+' AI 연결을 확인하고 있습니다.');const original=input.value;
+      state.busy=true;generating('api',true);ai.disabled=true;ai.setAttribute('aria-busy','true');tell(label+' AI 연결을 확인하고 있습니다.');const original=input.value;const activityId=state.data.writeKey+':'+key;window.N80Activity?.set('song-api',activityId,'waiting');
       try{
        const fields=Object.fromEntries(Object.entries(inputs).filter(([k])=>aiFields.has(k)||['vocal','originalArtist'].includes(k)).map(([k,v])=>[k,v.value]));
        const payload={action:'generate',selector,field:key,fields,expectedRevision:state.data.revision};
@@ -272,15 +272,15 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
        const session=await api('/noa-ainoa.php?action=status',{},12000);
        if(session.generation?.ready===false){
         const names={api_key:'OpenAI 서비스 연결 키',text_enabled:'텍스트 AI 활성화',per_request_budget:'요청당 이용 한도',daily_budget:'일일 이용 한도',daily_budget_exhausted:'남은 일일 이용 한도',model:'사용 가능한 모델',settings_unavailable:'서비스 설정 연결'};
-        tell('AI 생성 준비가 필요합니다: '+session.generation.missing.map(k=>names[k]||k).join(' · ')+'.',true);const link=iconCommand('a','external','AI LAB 서비스 설정 열기');link.href='/noa-ai-lab.php?tool=settings';feedback.append(link);return;
+        window.N80Activity?.set('song-api',activityId,'failed');tell('AI 생성 준비가 필요합니다: '+session.generation.missing.map(k=>names[k]||k).join(' · ')+'.',true);const link=iconCommand('a','external','AI LAB 서비스 설정 열기');link.href='/noa-ai-lab.php?tool=settings';feedback.append(link);return;
        }
        tell(label+' AI 초안을 작성 중입니다. 기존 내용은 유지됩니다.');
        const result=await api('/noa-ainoa.php',{method:'POST',headers:{'Content-Type':'application/json','X-NOA-CSRF':session.csrf},body:JSON.stringify({...payload,requestId})});if(active!==state)return;
-       tell('AI 초안을 확인한 뒤 적용해 주세요. 저장은 별도로 진행합니다.');
+       window.N80Activity?.set('song-api',activityId,'complete');tell('AI 초안을 확인한 뒤 적용해 주세요. 저장은 별도로 진행합니다.');
        const preview=document.createElement('textarea');preview.value=result.text;preview.readOnly=true;preview.setAttribute('aria-label',label+' AI 초안');const actions=document.createElement('div');actions.className='noa-ai-feedback-actions';
        const apply=iconCommand('button','apply','초안 적용');apply.onclick=()=>{if(state.busy)return;if(input.value!==original){tell('초안을 만드는 동안 입력이 바뀌었습니다. 현재 내용을 보존했습니다. 필요한 부분을 초안에서 복사해 주세요.',true);feedback.append(preview);return;}if(lockedSong){if(state.dirty&&state.editKey!==key){status.textContent='수정 중인 항목을 먼저 저장해 주세요.';return;}locks.get(state.editKey)?.(false);state.editKey=key;locks.get(key)?.(true);}input.value=result.text;input.dispatchEvent(new Event('input',{bubbles:true}));tell('초안을 적용했습니다. 확인 후 저장해 주세요.');input.focus();};
        const discard=iconCommand('button','cancel','초안 닫기');discard.onclick=()=>{tell('초안을 닫았습니다. 입력한 내용은 그대로 유지됩니다.');};actions.append(copyButton(label,()=>preview.value),apply,discard);feedback.append(preview,actions);
-      }catch(e){tell(/[가-힣]/.test(e.message)?e.message:'네트워크 연결을 확인해 주세요. 입력 내용은 유지됩니다. 같은 버튼으로 결과를 다시 확인할 수 있습니다.',true);}
+      }catch(e){window.N80Activity?.set('song-api',activityId,'failed');tell(/[가-힣]/.test(e.message)?e.message:'네트워크 연결을 확인해 주세요. 입력 내용은 유지됩니다. 같은 버튼으로 결과를 다시 확인할 수 있습니다.',true);}
       finally{generating('api',false);state.busy=false;ai.disabled=false;ai.removeAttribute('aria-busy');}
       };if(selector.type!=='song')heading.append(ai);
      if(selector.type==='song'){
@@ -316,10 +316,10 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
         if(!response.ok||!result.ok)throw Error(result.error==='worker_offline'?'비공개 실행기가 오프라인이에요. 연결 후 다시 눌러 주세요.':result.error==='revision_conflict'?'곡이 변경되었습니다. 편집기를 다시 열어 주세요.':'작업을 등록하지 못했습니다. 다시 시도해 주세요.');
         if(!result.plugin&&!result.worker){if(tab){tab.location.replace(result.url);launched=true;}else location.assign(result.url);return;}
         const title=state.data.fields.title||'선택한 곡';
-        const taskId=result.id;
+        const taskId=result.id;window.N80Activity?.set('song-gpt',taskId,'waiting');
         const request='NOA STUDIO Assistant로 선택한 작업을 읽어줘. 작업 ID가 '+taskId+'일 때만 지정된 항목의 결과를 작성해 그 작업에 저장해줘.';
         if(state.gptFeedback && state.gptFeedback!==feedback){state.gptFeedback.hidden=true;state.gptFeedback.replaceChildren();}
-        if(state.gptTask)generationFields.get(state.gptField)?.generating(state.gptTask,false);
+        if(state.gptTask){window.N80Activity?.set('song-gpt',state.gptTask,'cancelled');generationFields.get(state.gptField)?.generating(state.gptTask,false);}
         generating(taskId,true);
         state.gptTask=taskId;state.gptField=key;state.gptFeedback=feedback;
         const chat=new URL('https://chatgpt.com/');chat.searchParams.set('q',request);
@@ -332,13 +332,13 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
         const until=Date.now()+3600000;
         async function refreshTask(){
          if(active!==state||state.gptTask!==taskId)return;
-         if(Date.now()>until){generating(taskId,false);state.gptTask=null;tell('요청 시간이 지났습니다. 생성 버튼을 다시 눌러 주세요.');return;}
+         if(Date.now()>until){window.N80Activity?.set('song-gpt',taskId,'timed_out');generating(taskId,false);state.gptTask=null;tell('요청 시간이 지났습니다. 생성 버튼을 다시 눌러 주세요.');return;}
          if(!document.hidden){
           try{
            const response=await fetch('/noa-gpt.php?op=progress',{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify({id:taskId})});
            if(active!==state||state.gptTask!==taskId)return;
-           if(response.status===409){generating(taskId,false);state.gptTask=null;tell('다른 작업으로 바뀌었거나 작업 시간이 만료됐습니다.');return;}
-           const progress=await generationReply(response);
+           if(response.status===409){window.N80Activity?.set('song-gpt',taskId,'expired');generating(taskId,false);state.gptTask=null;tell('다른 작업으로 바뀌었거나 작업 시간이 만료됐습니다.');return;}
+           const progress=await generationReply(response);window.N80Activity?.set('song-gpt',taskId,progress.failed?'failed':progress.saved?'saved':progress.claimed?'running':'waiting');
            if(progress.failed){generating(taskId,false);state.gptTask=null;tell('생성을 완료하지 못했어요. 다시 시도해 주세요.',true);return;}
            if(progress.saved){
             if(state.dirty){generating(taskId,false);state.gptTask=null;tell('결과가 저장됐어요. 현재 편집 내용은 유지됩니다. 편집기를 다시 열면 결과를 볼 수 있어요.');return;}
@@ -463,7 +463,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
        if(field){field.generating('batch',true);field.tell('AI가 이 항목을 작성하고 있어요.');marked.push(field);}
       }
      }
-     const began=Date.now();
+     const began=Date.now();window.N80Activity?.set('song-publish',state.data.writeKey,'waiting');
      info.textContent='선택한 '+targets.length+'개 항목 · 연결 확인 중';
      try{
       const connection=await post('/noa-gpt.php?op=config',{});
@@ -474,7 +474,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
        while(Date.now()<deadline){
         await new Promise(resolve=>setTimeout(resolve,4000));
         if(active!==state)return;
-        const progress=await post('/noa-gpt.php?op=progress',{id:started.id});
+        const progress=await post('/noa-gpt.php?op=progress',{id:started.id});window.N80Activity?.set('song-publish',state.data.writeKey,progress.failed?'failed':progress.saved?'saved':progress.claimed?'running':'waiting');
         if(progress.failed)throw Error('worker_failed');
         if(!progress.saved){
          const seconds=Math.floor((Date.now()-began)/1000);
@@ -493,10 +493,10 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
        throw Error('worker_timeout');
       }
       const config=await post('/noa-publish-set.php',{...job,mode:'inspect'});
-      if(!config.ready){info.textContent='AI LAB의 서버 키와 텍스트 생성 한도 설정이 필요합니다.';return;}
+      if(!config.ready){window.N80Activity?.set('song-publish',state.data.writeKey,'failed');info.textContent='AI LAB의 서버 키와 텍스트 생성 한도 설정이 필요합니다.';return;}
       const creditMark='noa-free-api-confirm:'+config.keyId;
       if(localStorage.getItem(creditMark)!=='yes'){
-       if(!confirm('AI LAB 키가 Pro 무료 크레딧을 받은 조직의 키이고, 구매 잔액과 자동 충전이 없음을 확인했나요? 확인한 경우에만 생성합니다.'))return;
+       if(!confirm('AI LAB 키가 Pro 무료 크레딧을 받은 조직의 키이고, 구매 잔액과 자동 충전이 없음을 확인했나요? 확인한 경우에만 생성합니다.')){window.N80Activity?.set('song-publish',state.data.writeKey,'cancelled');return;}
        localStorage.setItem(creditMark,'yes');
       }
       info.textContent=config.eligible.map(k=>names[k]).join(' · ')+' 생성 중…';
@@ -506,9 +506,9 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
       const r=await fetch('/noa-inline-edit.php?'+new URLSearchParams(selector),{cache:'no-store'}),fresh=await r.json();
       if(!fresh.ok||fresh.revision!==saved.revision||fresh.writeKey!==state.data.writeKey||Object.entries(result.patch).some(([k,v])=>fresh.fields[k]!==v))throw Error('readback');
       state.data=fresh;for(const k of Object.keys(result.patch)){refreshField(k,fresh.fields);options.get(k).checked=false;}
-      info.textContent=Object.keys(result.patch).map(k=>names[k]).join(' · ')+' 저장 완료';
+      window.N80Activity?.set('song-publish',state.data.writeKey,'complete');info.textContent=Object.keys(result.patch).map(k=>names[k]).join(' · ')+' 저장 완료';
       onSaved({selector,record:displayRow||byKey.get(selector.key),data:fresh});
-     }catch(e){info.textContent=({worker_failed:'N80 Auto에서 생성을 완료하지 못했습니다. 작업 현황을 확인해 주세요.',dispatch_failed:'자동 제작을 시작하지 못했습니다. 관리자 연결 설정을 확인해 주세요.',worker_offline:'N80 Auto 연결 설정을 확인해 주세요.',worker_timeout:'결과 대기 시간이 지났습니다. 곡을 다시 열어 확인해 주세요.',revision_conflict:'곡이 다른 곳에서 수정됐습니다. 다시 열어 최신 내용을 확인해 주세요.',ai_revision_changed:'곡이 변경되었습니다. 편집기를 다시 열어 주세요.',ai_provider_rate_limit:'AI 서비스 이용 한도와 잔액을 확인해 주세요.',ai_budget_exceeded:'AI LAB의 사용 한도에 도달했습니다.',no_enabled_fields:'선택한 항목은 장르 규칙에서 꺼져 있습니다.',readback:'저장 응답을 받았지만 다시 읽어 확인하지 못했습니다. 곡을 다시 열어 주세요.'})[e.message]||'게시 자료 생성을 확인하지 못했습니다. 곡을 다시 열어 저장 상태를 확인해 주세요.';}
+     }catch(e){window.N80Activity?.set('song-publish',state.data.writeKey,'failed');info.textContent=({worker_failed:'N80 Auto에서 생성을 완료하지 못했습니다. 작업 현황을 확인해 주세요.',dispatch_failed:'자동 제작을 시작하지 못했습니다. 관리자 연결 설정을 확인해 주세요.',worker_offline:'N80 Auto 연결 설정을 확인해 주세요.',worker_timeout:'결과 대기 시간이 지났습니다. 곡을 다시 열어 확인해 주세요.',revision_conflict:'곡이 다른 곳에서 수정됐습니다. 다시 열어 최신 내용을 확인해 주세요.',ai_revision_changed:'곡이 변경되었습니다. 편집기를 다시 열어 주세요.',ai_provider_rate_limit:'AI 서비스 이용 한도와 잔액을 확인해 주세요.',ai_budget_exceeded:'AI LAB의 사용 한도에 도달했습니다.',no_enabled_fields:'선택한 항목은 장르 규칙에서 꺼져 있습니다.',readback:'저장 응답을 받았지만 다시 읽어 확인하지 못했습니다. 곡을 다시 열어 주세요.'})[e.message]||'게시 자료 생성을 확인하지 못했습니다. 곡을 다시 열어 저장 상태를 확인해 주세요.';}
      finally{for(const field of marked){field.generating('batch',false);field.feedback.hidden=true;}for(const [el,disabled]of wasDisabled)el.disabled=disabled;publish.disabled=false;state.busy=false;}
     };
    }

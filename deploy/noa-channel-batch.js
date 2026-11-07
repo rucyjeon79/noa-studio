@@ -103,8 +103,9 @@ function mount(panel, {renderTree, fingerprint}) {
         try { data=await response.json(); } catch { throw Error('서버 응답을 확인할 수 없습니다. 잠시 후 다시 시도하세요.'); }
         if(!response.ok||data.ok===false||data.error) {
             const error=Error(errors[data.error]||('요청을 처리하지 못했습니다. '+(data.error||response.status)));
-            error.code=data.error;throw error;
+            error.code=data.error;if(operation!=='preview')root.N80Activity?.set('batch-request',kind,'failed',{fresh:true});throw error;
         }
+        if(operation!=='preview')root.N80Activity?.set('batch-request',kind,'idle');
         return data;
     }
     function songLabel(song) {
@@ -208,6 +209,7 @@ function mount(panel, {renderTree, fingerprint}) {
         files.value='';selectionChanged();
     };
     function renderHistory() {
+        for(const [kind,batch]of last)root.N80Activity?.snapshot('batch-'+kind,(batch?.items||[]).map((item,i)=>({id:batch.id+':'+(item.key||i),state:item.status})));
         const openKinds=new Set(Array.from(history.querySelectorAll('details[open]'),d=>d.dataset.kind));
         const frag=document.createDocumentFragment();
         for(const [kind,batch] of last){
