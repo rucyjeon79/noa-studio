@@ -27,6 +27,7 @@ try{
    if(action==='session')return {ok:true,member:true,admin:true,level:10,creator:true,csrf:'fixture',capabilities:['shop','community']};
    if(action==='shop')return {ok:true,products:[product],managedProducts:[product],state:{wishlist:[],cart:[]},popularity:{},storeUrl:'https://marpple.shop/kr/jr_lifestyle'};
    if(action==='catalog')return {ok:true,items:songs};
+   if(action==='post')return {ok:true,post:{...saved,name:'검증',at:1,revision:1,mine:true},applications:[],versions:[],comments:[],products:[],vote:null};
    if(action==='save'||action==='product-save'){saved=request.postDataJSON();return {ok:true};}
    return {ok:true,items:[],total:0,page:1,pages:1};
   });
