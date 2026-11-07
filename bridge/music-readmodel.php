@@ -64,3 +64,20 @@ function noa_music_browse_project(array $rows,array $sources=[],array $edits=[])
 function noa_music_cover(array $assets,string $key,string $source,array $body,string $owner=''):string{
  return noa_music_asset_url($assets,$key,$source,'cover')?:noa_sound_cover($body)?:('/noa-creator-symbol.php'.($owner!==''?'?channel='.hash('sha256',$owner):''));
 }
+
+
+/** Resolve the existing originalInfo contract once per visible catalog, excluding ambiguous EPs. */
+function noa_music_original_titles(array $sources):array{
+ $originals=[];$conflicts=[];
+ foreach($sources as $source){
+  if(($source['genreId']??'')!=='kpop-original')continue;
+  $info=$source['body']['originalInfo']??[];
+  $ep=(int)($info['ep']??$source['ep']??0);
+  $title=trim((string)($info['title']??''));
+  if($ep<1||$title==='')continue;
+  if(isset($originals[$ep])&&$originals[$ep]!==$title)$conflicts[$ep]=true;
+  $originals[$ep]=$title;
+ }
+ foreach($conflicts as $ep=>$_)unset($originals[$ep]);
+ return $originals;
+}

@@ -16,7 +16,7 @@ $db->prepare('INSERT INTO noa_catalog_songs VALUES(?,?,?,?)')->execute([$b,'[]',
 $catalog=ny_listener_catalog($db,false);check(count($catalog)===2,'same visible MUSIC registry');check($catalog[$a]['title']==='확정 제목','confirmed song title');check(!isset($catalog['song:hidden']),'explicit editorial privacy retained');
 $public=[['key'=>'short000001','orderKey'=>$a,'title'=>'공개 Shorts','genre'=>'kpop-original','ep'=>'1','kind'=>'video','video'=>'short000001','preferredVideo'=>false]];
 $videos=['short000001'=>['status'=>['privacyStatus'=>'public','embeddable'=>true],'match'=>['songId'=>$a]],'private0001'=>['status'=>['privacyStatus'=>'private','embeddable'=>false],'match'=>['songId'=>$a],'snippet'=>['title'=>'PROVIDER_PRIVATE_TITLE','description'=>'PRIVATE_DESCRIPTION']]];
-$expectedPublic = $public[0] + ['originalArtist' => '', 'registeredAt' => 0];
+$expectedPublic = $public[0] + ['musicKey' => $catalog[$a]['key'], 'originalArtist' => '', 'registeredAt' => 0];
 $rows=ny_complete_catalog_rows($public,$videos,$catalog);$pending=array_values(array_filter($rows,fn($r)=>!empty($r['comingSoon'])));check(count($pending)===2,'private canonical plus registered song without a video');check($rows[0]===$expectedPublic,'existing public source preserved');
 foreach($pending as $r){check($r['video']==='','no playable private ID');check($r['musicKey']===$catalog[$r['orderKey']]['key'],'same canonical song source');check($r['preferredVideo']===true,'canonical full video wins over public alternate');check(str_starts_with($r['thumb'],'/noa-assets/coming/'),'genre Coming soon art');}
 $encoded=json_encode($rows);foreach(['PRIVATE_DESCRIPTION','PROVIDER_PRIVATE_TITLE','private0001','EDITORIAL_SECRET'] as $secret)check(!str_contains($encoded,$secret),'metadata-only preview: '.$secret);
@@ -50,3 +50,27 @@ $customRows=ny_complete_catalog_rows([['key'=>'custom00001','orderKey'=>'','titl
 $customSource['custom00001']['status']['privacyStatus']='private';check(ny_act_public_sources($customSource,$registry)===[],'private custom video never restored');$pending=ny_complete_catalog_rows([],$customSource,[$customKey=>$registry[$customKey]]);check(count($pending)===1&&$pending[0]['comingSoon']&&$pending[0]['video']===''&&!str_contains(json_encode($pending),'custom00001'),'private custom URL not exposed in preview');
 $customSource['custom00001']['status']['privacyStatus']='public';$customSource['custom00001']['match']['status']='rejected';check(ny_act_public_sources($customSource,$registry)===[],'rejected custom mapping never restored');
 echo "CUSTOM_PLAYLIST_PUBLIC_SOURCE_PRIVATE_BOUNDARY_AND_URLLESS_FALLBACK_OK\n";
+
+// Both music and video derive original titles from the visible originalInfo contract.
+$source=['genreId'=>'kpop-original','ep'=>'31','body'=>['originalInfo'=>['ep'=>31,'title'=>'사랑이 스며든 날']]];
+check(noa_music_original_titles([$source,$source])===[31=>'사랑이 스며든 날'],'identical original records agree');
+$conflict=$source;$conflict['body']['originalInfo']['title']='충돌하는 제목';
+check(noa_music_original_titles([$source,$conflict])===[],'ambiguous EP original is not guessed');
+check(noa_music_original_titles([['genreId'=>'kpop-original','ep'=>31,'title'=>'추측 금지']])===[],'missing originalInfo is not inferred from a title');
+$insertOriginal=$db->prepare('INSERT INTO noa_documents VALUES(?,?,?)');
+$insertOriginal->execute(['song:original-31','single',json_encode($source)]);
+$insertOriginal->execute(['song:pop-31','single',json_encode(['title'=>'First Glance','genreId'=>'pop-original','ep'=>31,'body'=>['youtubeUrl'=>'https://www.youtube.com/watch?v=original031']])]);
+$hidden=$source;$hidden['ep']=32;$hidden['visibility']='private';$hidden['body']['originalInfo']=['ep'=>32,'title'=>'비공개 원곡'];
+$insertOriginal->execute(['song:hidden-32','single',json_encode($hidden)]);
+$insertOriginal->execute(['song:pop-32','single',json_encode(['title'=>'A Small Tremor','genreId'=>'pop-original','ep'=>32,'body'=>[]])]);
+$registry=ny_listener_catalog($db,false);
+check(($registry['song:pop-31']['originalTitle']??'')==='사랑이 스며든 날','video receives the same stored original title as music');
+check(!isset($registry['song:pop-32']['originalTitle']),'unavailable original is not disclosed');
+$publicRecord=['key'=>'original031','orderKey'=>'song:pop-31','title'=>'First Glance','genre'=>'pop-original','ep'=>31,'kind'=>'video','video'=>'original031'];
+$videoSource=['original031'=>['status'=>['privacyStatus'=>'public','embeddable'=>true],'match'=>['status'=>'approved']]];
+$projected=ny_complete_catalog_rows([$publicRecord],$videoSource,$registry);
+check(($projected[0]['originalTitle']??'')==='사랑이 스며든 날','public video rows carry the original title');
+$videoSource['original031']['match']['status']='rejected';
+$projected=ny_complete_catalog_rows([$publicRecord],$videoSource,$registry);
+check(!isset($projected[0]['originalTitle']),'rejected song mapping cannot annotate a public video');
+echo "MUSIC_AND_VIDEO_ORIGINAL_TITLE_PARITY_OK\n";
