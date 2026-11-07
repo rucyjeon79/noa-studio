@@ -42,7 +42,9 @@ export async function verifyMusicCards(browser,out,report){
   if(admin){await page.addScriptTag({url:'/noa-browse-edit.js'});await page.evaluate(()=>NoaBrowseEdit.mount({host:document.querySelector('#music-browse'),rows:records}));}
   try{
    assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--noa-surface').trim().toLowerCase()),theme.tokens.surface.toLowerCase(),'fixture must apply the same important theme tokens as NoaUI.apply');
-   const list=page.locator('.noa-inline-songs').first();await list.locator('.lp-track-jacket').first().waitFor();await list.locator('.noa-support-button:not(:disabled)').first().waitFor();
+   const list=page.locator('.noa-inline-songs').first();await list.locator('.lp-track-jacket').first().waitFor();
+   await list.locator('.noa-engagement').first().scrollIntoViewIfNeeded();
+   await list.locator('.noa-support-button:not(:disabled)').first().waitFor();
    assert.equal(await list.locator('.noa-inline-song-row').count(),4);assert.equal(await list.locator('.noa-premium-badge').count(),2);assert.equal(await list.locator('.noa-original-title').count(),2);
    const mode=await list.getAttribute('data-track-view');
    assert.equal(mode,'album');

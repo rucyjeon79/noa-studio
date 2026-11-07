@@ -207,7 +207,7 @@ try{for(const width of (operating?[1280]:[320,390,1280])){
      const card=list.querySelector('.noa-inline-song-row');
      const other=card.cloneNode(true);card.after(other);
      card.querySelector('.noa-edit-edit')?.remove();
-     window.NoaBrowseEdit.mount({host:list,rows:[{key:card.dataset.inlineKey,title:'곡 정보 검수'}]});
+     window.NoaBrowseEdit.mount({host:list,labGeneration:true,rows:[{key:card.dataset.inlineKey,title:'곡 정보 검수'}]});
     });
     let metadata={ok:true,writeKey:'cover',kind:'single',packageType:'ep',revision:1,original:{status:'linked',ep:'32',title:'작은 떨림',lyrics:'[Intro]\n(oh, 괜찮아요...)'},context:{genre:'pop-original',ep:'32'},fields:{title:'편집 전',lyrics:'가사',cast:'male',geminiPrompt:'prompt',youtubeTitle:'제목',description:'설명',communityPost:'글'}};
     let savedPatch=null, failSave=true;
