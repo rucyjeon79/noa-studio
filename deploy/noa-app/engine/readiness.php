@@ -11,7 +11,7 @@ function n80_operation_readiness(array $evidence=[],?int $now=null):array {
         $installed=($adapter['installed']??false)===true;
         $verified=$installed&&$fresh&&($proof['authenticated']??false)===true
             &&($proof['durableAck']??false)===true&&($proof['replayVerified']??false)===true
-            &&($proof['effect']??'')==='music_catalog_availability_verified'&&$id==='music';
+            &&($proof['effect']??'')===(['music'=>'music_catalog_availability_verified','playlist'=>'playlist_read_model_verified','world'=>'world_read_model_verified','admin'=>'admin_integrity_audit_verified'][$id]??null);
         $operations[$operation]=['module'=>$id,'installed'=>$installed,'state'=>$verified?'verified':($installed?'runtime_evidence_required':'handler_not_installed'),
             'authenticated'=>$verified,'durableAck'=>$verified,'replayVerified'=>$verified];
     }
@@ -19,6 +19,7 @@ function n80_operation_readiness(array $evidence=[],?int $now=null):array {
 }
 /** N80 operational readiness report. Does not activate workers. */
 function n80_engine_readiness(string $root,array $evidence=[]): array {
+    if(!$evidence){$path=dirname($root).'/noa-ai-lab/state.json';if(is_file($path)&&!is_link($path)&&filesize($path)<16777216){$state=json_decode(file_get_contents($path),true);$evidence=$state['worker']['readiness']??[];}}
     $snapshot=n80_engine_snapshot($root);
     $modules=$snapshot['audit']['modules'];
     $missing=array_values(array_map(

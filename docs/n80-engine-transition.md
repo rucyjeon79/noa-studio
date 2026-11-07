@@ -36,7 +36,7 @@ The user's explicit rule is binding: no function may run as a separate system ou
 
 No new standalone engine, parallel legacy worker, independent job queue or duplicated background scheduler is an acceptable shortcut. Preserve active data and queues during a verified adapter migration, then retire the independent initiator. Compatibility URLs must delegate to one owner.
 
-**Evidence boundary:** policy compliance and registry membership are not runtime conformance. The universal executor currently still returns `executor_not_installed`; the readiness contract does not certify all adapters, durable consumer acknowledgments or production replay tests. Existing specialized workers must be traced individually. Do not turn a policy flag into a fabricated completion receipt or enable universal dispatch to bypass these gaps.
+**Evidence boundary:** policy compliance and registry membership are not runtime conformance. The executor installs exactly four authenticated operations: MUSIC availability, PLAYLIST read-model verification, WORLD read-model verification and ADMIN integrity verification. Each operation requires its own durable receipt and exact replay evidence. General business mutations and arbitrary dispatch remain disabled. Do not turn installation or evidence from another module into a fabricated completion receipt.
 
 The integration audit now compares registry and health module IDs with the N80 registry itself; it no longer assumes a separate fixed list of nine modules after CREATOR LAB was added. The unified N80 facade workflow owns facade, policy, Guardian and integration-audit source activation together. The old integration-audit workflow only delegates a manual request to that workflow.
 
@@ -52,6 +52,12 @@ The integration audit now compares registry and health module IDs with the N80 r
 - 공통 소스 배포는 unified facade가 담당한다. 예전 단일 파일 배포 workflow는 수동 별칭이다. AI 및 운영 점검은 성공한 배포 후 실행한다.
 - 운영 준비상태는 설치와 실행 증거를 구분한다. MUSIC 증거가 있어도 PLAYLIST/WORLD/ADMIN을 자동으로 정상 표시하지 않는다.
 
-### 남은 실제 전환 범위
+### 후속 전환 구현 및 검증 범위
 
-뮤비 생성의 외부 제공자 응답 대기를 runner 작업으로 옮기는 일, 구 미디어 제작의 최종 파일 전용 게시자, PLAYLIST/WORLD/ADMIN의 정의된 처리 효과 및 replay 검증, 화면 간 공통 조회 조정은 아직 완료되지 않았다. API 생성의 비활성 설정과 예산은 이 배포에서 강제로 변경하지 않는다. 이 변경을 전체 런타임 통합 완료로 보고하지 않는다.
+- 뮤비는 기존 `muvy.json` 큐와 프로젝트 식별자를 보존한다. 웹 요청은 등록 후 반환하며 기존 N80 AI runner가 8단계를 이어간다. 제공자 응답이 불명확하거나 lease가 만료되면 자동 유료 재호출 없이 확인 필요 상태로 멈춘다. 완료 전달만 같은 결과로 재시도한다.
+- 미디어 분석·마스터링·렌더 중간 산출물은 runner 임시 공간에서 처리한다. 최종 산출물만 체크섬을 이름에 포함하여 기존 private 작업 폴더에 게시하고, 서버 크기·체크섬·lease 확인 후 완료 상태에서 노출한다. 구 host chunk 게시 경로는 거부한다.
+- PLAYLIST는 실제 곡 참조와 소유자, WORLD는 기존 공식 재생목록 기반 투영, ADMIN은 기존 데이터 무결성 점검을 실행한다. 세 작업은 읽기 전용 DB 트랜잭션과 기존 durable event/lease/receipt를 사용하며 실제 결과와 동일 재호출을 확인한 경우에만 준비상태를 기록한다.
+- `N80Runtime`이 AI LAB·MUVY·묶음 작업·관리 작업실의 반복 조회를 조정한다. 같은 요청은 진행 중 Promise를 공유하고 화면이 숨겨지거나 도구가 닫히면 조회를 멈춘다. 메뉴 진입만으로 생성하거나 큐를 처리하지 않는다.
+- 기존 N80 AI workflow와 dispatch 자격증명을 재사용한다. 새 scheduler·큐·API 키·유료 테스트 요청을 만들지 않는다. 제공자 활성화·예산·승인 규칙은 기존 설정을 유지한다.
+
+배포 검증은 PHP/SQL 권한·중복 방지·lease·receipt 테스트, 플레이어 회귀, 비동기 뮤비 PC/모바일 동작, 실제 서버 소스 대조와 네 작업의 readback/replay를 요구한다. 이 범위의 통과가 모든 가능한 기능이나 외부 제공자 사용 가능 여부를 인증하는 것은 아니다.

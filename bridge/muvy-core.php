@@ -10,7 +10,7 @@ function mu_lock(callable $fn):mixed{
 }
 function mu_read():array{$path=lab_root().'/muvy.json';if(!is_file($path))return mu_defaults();$lock=fopen(lab_root().'/muvy.lock','c+');if(!$lock||!flock($lock,LOCK_SH))throw new RuntimeException('storage_lock');try{return json_decode(file_get_contents($path),true,512,JSON_THROW_ON_ERROR);}finally{flock($lock,LOCK_UN);fclose($lock);}}
 function mu_config():array{$s=lab_read();$secrets=lab_unseal($s['secrets']??null);$c=$s['muvyConfig']??[];return ['revision'=>$s['muvyConfigRevision']??0,'configured'=>!empty($secrets['xaiKey']),'enabled'=>($c['enabled']??false)===true,'model'=>$c['model']??'grok-4.5','dailyCalls'=>$c['dailyCalls']??20];}
-function mu_status(string $id=''):array{$s=mu_read();$rows=[];foreach(array_reverse($s['projects'],true)as $p)$rows[]=['id'=>$p['id'],'title'=>$p['pack']['title'],'ep'=>$p['pack']['ep'],'updatedAt'=>$p['updatedAt'],'revision'=>$p['revision']];$p=$id!==''?($s['projects'][lab_id($id)]??null):null;if($id!==''&&!$p)throw new InvalidArgumentException('unknown_project');return ['config'=>mu_config(),'projects'=>$rows,'project'=>$p,'callsToday'=>(int)($s['usage'][gmdate('Y-m-d')]??0),'source'=>MU_SOURCE];}
+function mu_status(string $id=''):array{$s=mu_read();$rows=[];foreach(array_reverse($s['projects'],true)as $p)$rows[]=['id'=>$p['id'],'title'=>$p['pack']['title'],'ep'=>$p['pack']['ep'],'updatedAt'=>$p['updatedAt'],'revision'=>$p['revision']];$p=$id!==''?($s['projects'][lab_id($id)]??null):null;if($id!==''&&!$p)throw new InvalidArgumentException('unknown_project');return ['config'=>mu_config(),'projects'=>$rows,'project'=>$p?mu_public_project($p):null,'callsToday'=>(int)($s['usage'][gmdate('Y-m-d')]??0),'source'=>MU_SOURCE];}
 function mu_settings(array $b):array{return lab_lock(function(&$s)use($b){if(($b['expectedRevision']??null)!==($s['muvyConfigRevision']??0))throw new DomainException('revision_conflict');$secrets=lab_unseal($s['secrets']??null);if(isset($b['key'])&&$b['key']!==''){$key=mu_text($b['key'],4096);if(preg_match('/[\s\r\n]/',$key))throw new InvalidArgumentException('invalid_key');$secrets['xaiKey']=$key;}$model=mu_text($b['model']??'grok-4.5',80);if(!preg_match('/^[A-Za-z0-9._-]+$/D',$model))throw new InvalidArgumentException('invalid_model');$limit=$b['dailyCalls']??20;if(!is_int($limit)||$limit<1||$limit>100)throw new InvalidArgumentException('invalid_limit');$enabled=($b['enabled']??false)===true;if($enabled&&empty($secrets['xaiKey']))throw new DomainException('xai_key_required');$s['secrets']=lab_seal($secrets);$s['muvyConfig']=['model'=>$model,'enabled'=>$enabled,'dailyCalls'=>$limit];$s['muvyConfigRevision']=($s['muvyConfigRevision']??0)+1;lab_event($s,'muvy_settings_updated','',(string)$GLOBALS['member']['mb_id']);return ['ok'=>true];});}
 function mu_save(array $b,bool $openExisting=false):array{
  $pack=mu_pack($b['pack']??[]);$id=lab_id((string)($b['id']??''));$expected=$b['expectedRevision']??null;if(!is_int($expected))throw new InvalidArgumentException('revision_required');
@@ -32,13 +32,66 @@ function mu_select_song(array $record):array{
  $id=substr(hash('sha256',"muvy-song-v1\0".json_encode($pack,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)),0,32);
  return mu_save(['id'=>$id,'expectedRevision'=>0,'pack'=>$pack],true);
 }
-function mu_begin(array $b):array{
- $id=lab_id((string)($b['id']??''));$request=lab_id((string)($b['requestId']??''));$stage=mu_text($b['stage']??null,12);$batch=(int)($b['batch']??0);$note=mu_text($b['note']??'',400,true);$expected=$b['expectedRevision']??null;$c=mu_config();if(!$c['configured']||!$c['enabled'])throw new DomainException('xai_enable_required');
- return mu_lock(function(&$s)use($id,$request,$stage,$batch,$note,$expected,$c){if(!isset($s['projects'][$id]))throw new InvalidArgumentException('unknown_project');$p=&$s['projects'][$id];$fingerprint=hash('sha256',json_encode([$stage,$batch,$note,$expected]));if(isset($p['operations'][$request])){$op=$p['operations'][$request];if($op['fingerprint']!==$fingerprint)throw new DomainException('request_conflict');return ['replayed'=>true,'project'=>$p,'operation'=>$op];}if($p['revision']!==$expected)throw new DomainException('revision_conflict');if(!empty($p['active']))throw new DomainException('generation_in_progress');[$system,$user,$tokens]=mu_prompt($p['pack'],$stage,$batch,$note);$today=gmdate('Y-m-d');if(($s['usage'][$today]??0)>=$c['dailyCalls'])throw new DomainException('daily_limit');$s['usage']=array_filter($s['usage'],fn($date)=>$date>=gmdate('Y-m-d',time()-31*86400),ARRAY_FILTER_USE_KEY);$s['usage'][$today]=($s['usage'][$today]??0)+1;$p['active']=$request;$p['operations'][$request]=['fingerprint'=>$fingerprint,'state'=>'running','stage'=>$stage,'batch'=>$batch,'startedAt'=>time()];$p['operations']=array_slice($p['operations'],-60,null,true);return ['replayed'=>false,'id'=>$id,'request'=>$request,'pack'=>$p['pack'],'system'=>$system,'user'=>$user,'tokens'=>$tokens,'stage'=>$stage,'batch'=>$batch,'model'=>$c['model']];});
+/** Native project operations are the queue. No second queue or web provider execution. */
+function mu_next_stage(array $pack):?array {
+ if(count($pack['cuts'])!==30)return ['script',0];
+ foreach([1,2,3] as $chapter)foreach([0,1] as $batch){foreach(array_slice($pack['cuts'],($chapter-1)*10+$batch*5,5) as $cut)if(empty($cut['gemini'])||empty($cut['grok']))return ['c'.$chapter,$batch];}
+ return empty($pack['publish'])?['publish',0]:null;
 }
-function mu_provider(array $task):array{
- $secrets=lab_unseal(lab_read()['secrets']??null);$key=$secrets['xaiKey']??'';if(!$key)throw new DomainException('xai_key_required');$body=['model'=>$task['model'],'temperature'=>.6,'max_tokens'=>$task['tokens'],'response_format'=>['type'=>'json_object'],'messages'=>[['role'=>'system','content'=>$task['system']],['role'=>'user','content'=>$task['user']]]];
- $curl=curl_init('https://api.x.ai/v1/chat/completions');$raw='';curl_setopt_array($curl,[CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>json_encode($body,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),CURLOPT_HTTPHEADER=>['Content-Type: application/json','Authorization: Bearer '.$key],CURLOPT_FOLLOWLOCATION=>false,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_CONNECTTIMEOUT=>10,CURLOPT_TIMEOUT=>95,CURLOPT_WRITEFUNCTION=>static function($c,$chunk)use(&$raw){if(strlen($raw)+strlen($chunk)>2097152)return 0;$raw.=$chunk;return strlen($chunk);}]);$ok=curl_exec($curl);$code=(int)curl_getinfo($curl,CURLINFO_RESPONSE_CODE);curl_close($curl);unset($key,$secrets);if(!$ok)throw new RuntimeException('provider_unconfirmed');if($code===401||$code===403)throw new DomainException('provider_access_denied');if($code===429)throw new DomainException('provider_rate_limit');if($code<200||$code>=300)throw new RuntimeException('provider_failed');$data=json_decode($raw,true,512,JSON_THROW_ON_ERROR);$choice=$data['choices'][0]??[];if(($choice['finish_reason']??'')!=='stop')throw new DomainException('provider_incomplete');$text=$choice['message']['content']??'';$start=strpos($text,'{');$end=strrpos($text,'}');if($start===false||$end===false)throw new DomainException('provider_format');$json=json_decode(substr($text,$start,$end-$start+1),true,128,JSON_THROW_ON_ERROR);if(!is_array($json))throw new DomainException('provider_format');return ['output'=>$json,'usage'=>array_intersect_key($data['usage']??[],array_flip(['prompt_tokens','completion_tokens','total_tokens']))];
+function mu_enqueue(array &$s,array &$p,string $request,string $stage,int $batch,string $note,array $config,string $fingerprint,?string $pipeline=null):void {
+ mu_prompt($p['pack'],$stage,$batch,$note); // Validate before reserving the request.
+ $today=gmdate('Y-m-d');if(($s['usage'][$today]??0)>=$config['dailyCalls'])throw new DomainException('daily_limit');
+ $s['usage']=array_filter($s['usage'],fn($date)=>$date>=gmdate('Y-m-d',time()-31*86400),ARRAY_FILTER_USE_KEY);
+ $s['usage'][$today]=($s['usage'][$today]??0)+1;
+ $p['active']=$request;$p['operations'][$request]=['fingerprint'=>$fingerprint,'state'=>'queued','stage'=>$stage,'batch'=>$batch,'note'=>$note,'model'=>$config['model'],'queuedAt'=>time(),'pipeline'=>$pipeline];
+ $p['operations']=array_slice($p['operations'],-60,null,true);$p['updatedAt']=gmdate('c');
 }
-function mu_finish(array $task,?array $result,?string $error=null):array{return mu_lock(function(&$s)use($task,$result,$error){$p=&$s['projects'][$task['id']];if(($p['active']??null)!==$task['request'])throw new DomainException('operation_changed');if($result){$p['pack']=mu_apply($task['pack'],$task['stage'],$task['batch'],$result['output']);$p['operations'][$task['request']]['state']='complete';$p['operations'][$task['request']]['usage']=$result['usage'];}else{$p['operations'][$task['request']]['state']='failed';$p['operations'][$task['request']]['error']=$error??'provider_failed';}$p['active']=null;$p['revision']++;$p['updatedAt']=gmdate('c');return ['project'=>$p];});}
-function mu_recover(array $b):array{return mu_lock(function(&$s)use($b){$id=lab_id((string)($b['id']??''));$p=&$s['projects'][$id];if(!$p||$p['revision']!==($b['expectedRevision']??null))throw new DomainException('revision_conflict');$active=$p['active']??null;if(!$active)return ['project'=>$p];if(($p['operations'][$active]['startedAt']??time())>time()-180)throw new DomainException('generation_in_progress');$p['operations'][$active]['state']='unconfirmed';$p['operations'][$active]['error']='provider_unconfirmed';$p['active']=null;$p['revision']++;return ['project'=>$p];});}
+function mu_begin(array $b):array {
+ $id=lab_id((string)($b['id']??''));$request=lab_id((string)($b['requestId']??''));$stage=mu_text($b['stage']??null,12);$batch=(int)($b['batch']??0);$note=mu_text($b['note']??'',400,true);$expected=$b['expectedRevision']??null;$c=mu_config();$pipeline=($b['pipeline']??false)===true;$modern=($b['runtimeContract']??0)===2;
+ return mu_lock(function(&$s)use($id,$request,$stage,$batch,$note,$expected,$c,$pipeline,$modern){
+  if(!isset($s['projects'][$id]))throw new InvalidArgumentException('unknown_project');$p=&$s['projects'][$id];$fingerprint=hash('sha256',json_encode([$stage,$batch,$note,$expected,$pipeline]));
+  if(isset($p['operations'][$request])){if($p['operations'][$request]['fingerprint']!==$fingerprint)throw new DomainException('request_conflict');return ['replayed'=>true,'project'=>$p];}
+  if(!$c['configured']||!$c['enabled'])throw new DomainException('xai_enable_required');
+  if($p['revision']!==$expected)throw new DomainException('revision_conflict');if(!empty($p['active']))throw new DomainException('generation_in_progress');
+  if($pipeline){$next=mu_next_stage($p['pack']);if(!$next)return ['replayed'=>true,'project'=>$p];[$stage,$batch]=$next;}
+  unset($p['pipelineError']);mu_enqueue($s,$p,$request,$stage,$batch,$note,$c,$fingerprint,$pipeline?$request:null);
+  // The previous endpoint treats replay as an already accepted operation and must not invoke its old provider.
+  return ['replayed'=>!$modern,'queued'=>true,'project'=>$p];
+ });
+}
+function mu_worker_claim():array {
+ $c=mu_config();if(!$c['configured']||!$c['enabled'])return ['ok'=>true,'task'=>null,'state'=>'disabled'];
+ if(empty(lab_read()['config']['workerEnabled']))return ['ok'=>true,'task'=>null,'state'=>'disabled'];
+ $result=mu_lock(function(&$s){
+  foreach($s['projects'] as &$p){$request=$p['active']??null;if(!$request)continue;$op=&$p['operations'][$request];
+   // A provider may have charged after a lost reply. Never call it again automatically.
+   if($op['state']==='running'&&($op['leaseUntil']??($op['startedAt']??time())+300)<time()){$op['state']='unconfirmed';$op['error']='provider_unconfirmed';unset($op['lease']);$p['active']=null;$p['revision']++;continue;}
+   if($op['state']!=='queued')continue;
+   [$system,$user,$tokens]=mu_prompt($p['pack'],$op['stage'],$op['batch'],$op['note']??'');
+   $op['state']='running';$op['lease']=bin2hex(random_bytes(16));$op['startedAt']=time();$op['leaseUntil']=time()+300;
+   return ['ok'=>true,'state'=>'running','task'=>['id'=>$p['id'],'request'=>$request,'lease'=>$op['lease'],'pack'=>$p['pack'],'system'=>$system,'user'=>$user,'tokens'=>$tokens,'stage'=>$op['stage'],'batch'=>$op['batch'],'model'=>$op['model']]];
+  }unset($p);return ['ok'=>true,'task'=>null,'state'=>'idle'];
+ });
+ if($result['task'])$result['credential']=lab_unseal(lab_read()['secrets']??null)['xaiKey'];return $result;
+}
+function mu_finish(array $task,?array $result,?string $error=null):array {
+ $id=lab_id((string)($task['id']??''));$request=lab_id((string)($task['request']??''));$lease=(string)($task['lease']??'');$config=mu_config();
+ return mu_lock(function(&$s)use($id,$request,$lease,$result,$error,$config){
+  if(!isset($s['projects'][$id]['operations'][$request]))throw new DomainException('operation_changed');$p=&$s['projects'][$id];$op=&$p['operations'][$request];
+  $hash=hash('sha256',json_encode([$result,$error],JSON_THROW_ON_ERROR));
+  if(isset($op['completionHash'])){if(!hash_equals($op['completionLease']??'',hash('sha256',$lease))||!hash_equals($op['completionHash'],$hash))throw new DomainException('completion_conflict');return ['project'=>$p,'replayed'=>true];}
+  if(($p['active']??null)!==$request||$op['state']!=='running'||!preg_match('/^[a-f0-9]{32}$/D',$lease)||!hash_equals($op['lease']??'',$lease)||($op['leaseUntil']??0)<time())throw new DomainException('lease_expired');
+  if($result){$p['pack']=mu_apply($p['pack'],$op['stage'],$op['batch'],$result['output']);$op['state']='complete';$op['usage']=array_intersect_key($result['usage']??[],array_flip(['prompt_tokens','completion_tokens','total_tokens']));}
+  else{$op['state']=$error==='provider_unconfirmed'?'unconfirmed':'failed';$op['error']=$error??'provider_failed';}
+  $op['completionHash']=$hash;$op['completionLease']=hash('sha256',$lease);unset($op['lease'],$op['leaseUntil']);
+  $p['active']=null;$p['revision']++;$p['updatedAt']=gmdate('c');
+  if($result&&!empty($op['pipeline'])&&$config['enabled']&&$config['configured']&&($next=mu_next_stage($p['pack']))){
+   [$stage,$batch]=$next;$nextId=substr(hash('sha256',$op['pipeline'].':'.$stage.':'.$batch),0,32);
+   try{mu_enqueue($s,$p,$nextId,$stage,$batch,'',$config,hash('sha256',$nextId),$op['pipeline']);}
+   catch(DomainException $e){$p['pipelineError']=$e->getMessage();}
+  }
+  return ['project'=>$p];
+ });
+}
+function mu_recover(array $b):array{return mu_lock(function(&$s)use($b){$id=lab_id((string)($b['id']??''));if(!isset($s['projects'][$id]))throw new InvalidArgumentException('unknown_project');$p=&$s['projects'][$id];if($p['revision']!==($b['expectedRevision']??null))throw new DomainException('revision_conflict');$active=$p['active']??null;if(!$active)return ['project'=>$p];$op=&$p['operations'][$active];if($op['state']==='queued'||($op['leaseUntil']??($op['startedAt']??time())+300)>time())throw new DomainException('generation_in_progress');$op['state']='unconfirmed';$op['error']='provider_unconfirmed';unset($op['lease']);$p['active']=null;$p['revision']++;return ['project'=>$p];});}
+function mu_public_project(array $p):array {foreach($p['operations'] as &$op)unset($op['lease'],$op['completionLease']);unset($op);return $p;}

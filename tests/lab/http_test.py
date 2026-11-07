@@ -5,6 +5,7 @@ with tempfile.TemporaryDirectory(prefix='noa-lab-http-') as root:
  root=pathlib.Path(root);html=root/'html';html.mkdir();private=root/'noa-ai-lab';private.mkdir();(private/'jobs').mkdir();(private/'master.key').write_bytes(secrets.token_bytes(32));key=secrets.token_hex(32);(private/'worker.key').write_text(key)
  shutil.copytree(REPO/'bridge',html/'noa-bridge')
  shutil.copytree(REPO/'deploy/noa-app/engine',html/'noa-app/engine')
+ (html/'noa-app/jukebox').mkdir();shutil.copy(REPO/'deploy/noa-app/jukebox/wake-core.php',html/'noa-app/jukebox/wake-core.php')
  (html/'common.php').write_text("<?php session_start();define('_GNUBOARD_',true);define('G5_PATH',__DIR__);$is_member=($_SERVER['HTTP_X_TEST_ROLE']??'')==='admin';$is_admin=$is_member?'super':'';$member=['mb_id'=>'test-admin'];")
  with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
  process=subprocess.Popen(['php','-S',f'127.0.0.1:{port}','-t',str(html)],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
@@ -37,6 +38,20 @@ with tempfile.TemporaryDirectory(prefix='noa-lab-http-') as root:
   assert request('lab-api.php?action=optimize',{'id':jobid,'expectedRevision':job['revision'],'preset':'transparent','targetLufs':-14,'truePeakCeiling':-1},admin)[0]==200
   status,claim=worker('claim',{});assert status==200 and claim['stage']=='master';auth['lease']=claim['job']['lease']
   assert worker('complete',{**auth,'stage':'master'})[0]==409,'Missing actual optimized output must fail'
+  # Final publication is invisible until bytes and hash match the leased reservation.
+  data=b'isolated finished audio';digest=hashlib.sha256(data).hexdigest();manifest={'checks':{'valid':True},'sha256':digest,'extension':'wav'}
+  final={**auth,'format':'optimized','bytes':len(data),'sha256':digest,'manifest':manifest}
+  assert worker('output',{**auth,'format':'optimized','part':0,'bytes':'eA=='})[0]==409
+  status,reservation=worker('prepare_final',final);assert status==200
+  assert worker('commit_final',final)[0]==409
+  directory=private/'jobs'/jobid;directory.mkdir(exist_ok=True)
+  (directory/reservation['file']).write_bytes(data)
+  assert worker('commit_final',{**final,'lease':'0'*32})[0]==409
+  assert worker('commit_final',final)[0]==200
+  completed={**auth,'stage':'master'};assert worker('complete',completed)[0]==200
+  assert worker('complete',completed)[1]['replayed'] is True
+  # A separate ambiguous attempt remains protected from an automatic retry.
+  state=json.loads((private/'state.json').read_text());state['jobs'][jobid]['state']='mastering_audio';state['jobs'][jobid]['lease']='b'*32;state['jobs'][jobid]['leaseUntil']=int(time.time())+100;state['jobs'][jobid].pop('completionReceipts',None);(private/'state.json').write_text(json.dumps(state));auth['lease']='b'*32
   assert worker('failed',{**auth,'stage':'master','error':'test_failure','ambiguous':True})[0]==200
   status,state=request('lab-api.php',headers={'X-Test-Role':'admin'});job=state['jobs'][0];assert request('lab-api.php?action=retry',{'id':jobid,'expectedRevision':job['revision']},admin)[0]==409
   print('PHP HTTP: administrator/CSRF/HMAC/replay, audio-only lifecycle, output validation and ambiguous retry protection passed.')

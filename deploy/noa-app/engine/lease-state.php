@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__.'/lease-inbox.php';
+require_once __DIR__.'/native-receipt.php';
 /**
  * N80 durable lease state adapter. Opt-in; no workers are invoked.
  * One private-directory lock serializes state transitions. Callers must keep
@@ -26,17 +27,16 @@ function n80_lease_state_transition(string $directory,string $eventId,string $co
         $result=n80_lease_apply_fenced($state,$action,$now,$generation,$ttl,$maxAttempts);
         if($receipt!==null){
             if(!$result['ok'])return $result;
-            if($action!=='ack'||$consumer!=='music'
-               ||($receipt['eventId']??null)!==$eventId||($receipt['consumer']??null)!==$consumer
-               ||($receipt['generation']??null)!==$generation
-               ||($receipt['effect']??null)!=='music_catalog_availability_verified'
+            $identity=$action==='ack'&&($receipt['eventId']??null)===$eventId&&($receipt['consumer']??null)===$consumer&&($receipt['generation']??null)===$generation&&is_string($receipt['eventSha256']??null)&&preg_match('/^[a-f0-9]{64}$/D',$receipt['eventSha256']);
+            $valid=$consumer==='music'?(!(
+($receipt['effect']??null)!=='music_catalog_availability_verified'
                ||!is_string($receipt['eventSha256']??null)||!preg_match('/^[a-f0-9]{64}$/D',$receipt['eventSha256'])
                ||($receipt['proof']['effect']??null)!=='music_catalog_availability_verified'
                ||($receipt['proof']['mediaIntegrityVerified']??null)!==true
                ||($receipt['proof']['catalogReferenceVerified']??null)!==true
                ||($receipt['proof']['publicDetailVerified']??null)!==true
-               ||($receipt['proof']['mutation']??null)!==false||($receipt['proof']['businessDispatch']??null)!==false)
-                return ['ok'=>false,'error'=>'invalid_completion_receipt'];
+               ||($receipt['proof']['mutation']??null)!==false||($receipt['proof']['businessDispatch']??null)!==false)) : n80_native_receipt_valid($consumer,$receipt);
+            if(!$identity||!$valid)return ['ok'=>false,'error'=>'invalid_completion_receipt'];
             $result['state']['receipt']=$receipt;
         }
         // Exhausted retries transition to dead_letter and must be durable.

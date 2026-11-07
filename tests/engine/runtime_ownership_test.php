@@ -24,7 +24,7 @@ runtime_expect(n80_task_status('ai_lab','one','review')['terminal']===false,'rev
 $proof=['checkedAt'=>1000,'authenticated'=>true,'durableAck'=>true,'replayVerified'=>true,'effect'=>'music_catalog_availability_verified'];
 $readiness=n80_operation_readiness(['music.verify_availability'=>$proof],1000);
 runtime_expect($readiness['music.verify_availability']['state']==='verified','verified_evidence_not_used');
-runtime_expect($readiness['playlist.event']['state']==='handler_not_installed','music_evidence_enabled_playlist');
+runtime_expect($readiness['playlist.verify_read_model']['state']==='runtime_evidence_required','music_evidence_enabled_playlist');
 runtime_expect(n80_operation_readiness(['music.verify_availability'=>$proof],5000)['music.verify_availability']['state']==='runtime_evidence_required','stale_evidence');
 $automation=json_decode(file_get_contents(dirname(__DIR__,2).'/config/n80-automation.json'),true,512,JSON_THROW_ON_ERROR);
 foreach($automation['operations'] as $operation)runtime_expect(isset($modules[$operation['module']]),'automation_owner_missing');

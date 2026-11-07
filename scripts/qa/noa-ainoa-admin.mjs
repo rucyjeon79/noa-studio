@@ -4,6 +4,7 @@ const phase=process.env.NOA_AINOA_PHASE||'candidate',out='ainoa-proof/'+phase;mk
 try{for(const width of [360,390,430])for(const theme of ['noa-studio','noa-ivory']){
  const context=await browser.newContext({viewport:{width,height:844},locale:'ko-KR',timezoneId:'Asia/Seoul',serviceWorkers:'block'}),page=await context.newPage();let admin=false,ready=true,pending=null,runs=0,creates=0,posts=[],tasks=[],loseNext=false,saves=0;const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await context.addInitScript(theme=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',radius:'soft',design:'ios'})),theme);
+ if(phase==='candidate')await context.route('**/noa-app/engine/runtime.js*',r=>r.fulfill({path:'deploy/noa-app/engine/runtime.js',contentType:'text/javascript'}));
  if(phase==='candidate')await context.route(/\/noa-ainoa(?:-admin)?\.(js|css)(\?.*)?$/,r=>r.fulfill({path:'deploy/'+new URL(r.request().url()).pathname.slice(1),contentType:r.request().url().includes('.css')?'text/css':'text/javascript'}));
  await context.route('**/noa-ainoa.php*',async route=>{
   const q=route.request(),u=new URL(q.url()),generation={ready,model:'fixture-model',missing:ready?[]:['api_key']};

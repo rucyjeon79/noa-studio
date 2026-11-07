@@ -5,9 +5,9 @@ require_once __DIR__.'/router.php';
 function noa_engine_adapter_manifest(): array {
     return [
         'music'=>['events'=>['audio.ready'],'mode'=>'availability_verification','enabled'=>false,'installed'=>true,'operation'=>'music.verify_availability'],
-        'playlist'=>['events'=>['audio.ready'],'mode'=>'read_model_refresh','enabled'=>false],
-        'world'=>['events'=>['youtube.synced'],'mode'=>'read_model_refresh','enabled'=>false],
-        'admin'=>['events'=>['operation.requested'],'mode'=>'approval_required','enabled'=>false],
+        'playlist'=>['events'=>['audio.ready'],'mode'=>'read_model_refresh','enabled'=>false,'installed'=>true,'operation'=>'playlist.verify_read_model'],
+        'world'=>['events'=>['youtube.synced'],'mode'=>'read_model_refresh','enabled'=>false,'installed'=>true,'operation'=>'world.verify_read_model'],
+        'admin'=>['events'=>['operation.requested'],'mode'=>'readonly_integrity_audit','enabled'=>false,'installed'=>true,'operation'=>'admin.verify_integrity'],
     ];
 }
 function noa_engine_adapter_check(array $event,string $consumer,array $context=[]): array {
@@ -22,6 +22,13 @@ function noa_engine_adapter_check(array $event,string $consumer,array $context=[
            ||($context['permission']??'')!=='music:verify')return ['ok'=>false,'error'=>'unauthorized'];
         if(($context['enabled']??false)!==true)return ['ok'=>false,'error'=>'adapter_disabled'];
         if($event['source']!=='jukebox')return ['ok'=>false,'error'=>'unsupported_event_source'];
+        return ['ok'=>true,'operation'=>$adapter['operation']];
+    }
+    if(in_array($consumer,['playlist','world','admin'],true)&&($context['operation']??'')===$adapter['operation']){
+        if(($context['authenticatedByServer']??false)!==true||($context['principal']??'')!=='n80_lab_worker'||($context['permission']??'')!=='native:verify')return ['ok'=>false,'error'=>'unauthorized'];
+        if(($context['enabled']??false)!==true)return ['ok'=>false,'error'=>'adapter_disabled'];
+        if($event['source']!==['playlist'=>'jukebox','world'=>'youtube','admin'=>'admin'][$consumer])return ['ok'=>false,'error'=>'unsupported_event_source'];
+        if($consumer==='admin'&&!str_starts_with($event['subjectId'],'integrity-audit:'))return ['ok'=>false,'error'=>'unsupported_admin_operation'];
         return ['ok'=>true,'operation'=>$adapter['operation']];
     }
     if(!$adapter['enabled'])return ['ok'=>false,'error'=>'adapter_disabled'];

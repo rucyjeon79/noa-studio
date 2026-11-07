@@ -11,6 +11,6 @@ try{
   $record=nie_resolve(noa_bridge_pdo(),['type'=>'song','source'=>'music','key'=>$b['key']??'']);
   $result=mu_select_song($record);
  }
- elseif($action==='generate'){$task=mu_begin($b);if($task['replayed'])lab_json(200,['ok'=>true]+$task);if(session_status()===PHP_SESSION_ACTIVE)session_write_close();ignore_user_abort(true);@set_time_limit(120);try{$generated=mu_provider($task);$result=mu_finish($task,$generated);}catch(Throwable $e){$safe=in_array($e->getMessage(),['provider_access_denied','provider_rate_limit','provider_incomplete','provider_unconfirmed','provider_format','provider_failed','xai_key_required'],true)?$e->getMessage():'provider_format';mu_finish($task,null,$safe);throw new DomainException($safe);}}
- else throw new InvalidArgumentException('unknown_action');lab_json(200,['ok'=>true]+$result);
+ elseif($action==='generate'){$b['runtimeContract']=2;$result=mu_begin($b);if(session_status()===PHP_SESSION_ACTIVE)session_write_close();require_once dirname(__DIR__).'/noa-app/engine/worker-wake.php';$result['wake']=n80_ai_wake();}
+ else throw new InvalidArgumentException('unknown_action');if(isset($result['project']))$result['project']=mu_public_project($result['project']);lab_json(200,['ok'=>true]+$result);
 }catch(DomainException $e){lab_json(409,['ok'=>false,'error'=>$e->getMessage()]);}catch(InvalidArgumentException $e){lab_json(400,['ok'=>false,'error'=>$e->getMessage()]);}catch(Throwable $e){error_log('[noa-muvy] '.get_class($e));lab_json(503,['ok'=>false,'error'=>'muvy_unavailable']);}

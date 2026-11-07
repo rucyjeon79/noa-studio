@@ -252,9 +252,9 @@ function mount(panel, {renderTree, fingerprint}) {
     }
     function storeBatch(kind,batch) {historyVersion++;last.set(kind,batch);renderHistory();}
     function schedulePoll() {
-        clearTimeout(pollTimer);
+        pollTimer?.();pollTimer=null;
         if(!visible()||pending)return;
-        if(Array.from(last.values()).some(batch=>batch?.items?.some(active)))pollTimer=setTimeout(refreshHistory,6500);
+        if(Array.from(last.values()).some(batch=>batch?.items?.some(active)))pollTimer=N80Runtime.watch('creator:batch',refreshHistory,()=>{},{interval:6500,immediate:false,active:()=>visible()&&!pending});
     }
     async function refreshHistory(){
         if(!visible()||pending||polling)return;
@@ -271,7 +271,7 @@ function mount(panel, {renderTree, fingerprint}) {
         schedulePoll();
     }
     function setPending(value) {
-        pending=value;clearTimeout(pollTimer);historyVersion++;
+        pending=value;pollTimer?.();pollTimer=null;historyVersion++;
         run.disabled=value||locked||!runAllowed;
         mode.disabled=value;files.disabled=value;
         if(byId('batch-fields'))byId('batch-fields').disabled=value;
@@ -340,12 +340,12 @@ function mount(panel, {renderTree, fingerprint}) {
     };
     panel.ontoggle=()=>{
         renderTree();byId('batch-back').hidden=!panel.open||!selected.size;
-        if(panel.open&&!pending){selectionChanged();refreshHistory();}else{clearTimeout(pollTimer);clearTimeout(previewTimer);version++;}
+        if(panel.open&&!pending){selectionChanged();refreshHistory();}else{pollTimer?.();pollTimer=null;clearTimeout(previewTimer);version++;}
     };
     mode.onchange=selectionChanged;
     byId('batch-fields')?.addEventListener('change',selectionChanged);
     if (panel.open) queueMicrotask(refreshHistory);
-    document.addEventListener('visibilitychange',()=>{if(visible())refreshHistory();else clearTimeout(pollTimer);});
+    document.addEventListener('visibilitychange',()=>{if(visible())refreshHistory();else pollTimer?.();pollTimer=null;});
     window.addEventListener('beforeunload',event=>{if(sending){event.preventDefault();event.returnValue='';}});
     return {
         selection:()=>panel.open?{keys:selected,changed:selectionChanged}:null,

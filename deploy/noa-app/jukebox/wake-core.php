@@ -3,9 +3,10 @@ declare(strict_types=1);
 if (!defined('_GNUBOARD_')) { http_response_code(403); exit; }
 
 /** Only dispatch the installed audio workflow on the production branch. */
-function nw_dispatch(string $token): int {
+function nw_dispatch(string $token,string $workflow='noa-jukebox.yml'): int {
+    if(!in_array($workflow,['noa-jukebox.yml','noa-ai-worker.yml'],true))return 0;
     if (!function_exists('curl_init')) return 0;
-    $request = curl_init('https://api.github.com/repos/rucyjeon79/noa-studio/actions/workflows/noa-jukebox.yml/dispatches');
+    $request = curl_init('https://api.github.com/repos/rucyjeon79/noa-studio/actions/workflows/'.rawurlencode($workflow).'/dispatches');
     curl_setopt_array($request, [
         CURLOPT_POST => true, CURLOPT_POSTFIELDS => '{"ref":"main"}',
         CURLOPT_HTTPHEADER => ['Authorization: Bearer '.$token, 'Accept: application/vnd.github+json',
@@ -18,7 +19,8 @@ function nw_dispatch(string $token): int {
     return (int)curl_getinfo($request, CURLINFO_RESPONSE_CODE);
 }
 
-function nw_request(string $directory, ?callable $send = null, ?int $now = null): string {
+function nw_request(string $directory, ?callable $send = null, ?int $now = null,string $workflow='noa-jukebox.yml'): string {
+    if(!in_array($workflow,['noa-jukebox.yml','noa-ai-worker.yml'],true))return 'invalid_workflow';
     $lock = null;
     try {
         $credential = $directory.'/upload-wake-token';
@@ -39,7 +41,7 @@ function nw_request(string $directory, ?callable $send = null, ?int $now = null)
         }
         if ($token === '') return 'not_configured';
         if (!preg_match('/^[A-Za-z0-9_]{20,255}$/D', $token)) return 'invalid_configuration';
-        $path = $directory.'/upload-wake-state';
+        $path = $directory.($workflow==='noa-jukebox.yml'?'/upload-wake-state':'/n80-ai-wake-state');
         if (is_link($path)) return 'unsafe_state';
         $lock = @fopen($path, 'c+');
         if (!$lock) return 'unavailable';
@@ -50,7 +52,7 @@ function nw_request(string $directory, ?callable $send = null, ?int $now = null)
         $last = (int)($state['at'] ?? 0);
         $delay = !empty($state['accepted']) ? 60 : 10;
         if ($last > 0 && $now >= $last && $now - $last < $delay) return !empty($state['accepted']) ? 'already_requested' : 'recovery_pending';
-        try { $http = ($send ?? 'nw_dispatch')($token); } catch (Throwable $e) { $http = 0; }
+        try { $http = $send?$send($token):nw_dispatch($token,$workflow); } catch (Throwable $e) { $http = 0; }
         $accepted = in_array($http, [200, 204], true);
         rewind($lock);
         ftruncate($lock, 0);

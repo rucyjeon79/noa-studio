@@ -11,7 +11,7 @@ try {
  require_once dirname(__DIR__).'/noa-app/engine/service-runtime.php';
  if(!is_array($b)||array_is_list($b)&&$b!==[])throw new InvalidArgumentException('invalid_body');
  $context=['authenticatedByServer'=>true,'principal'=>'n80_lab_worker',
-   'permissions'=>['ai:read','ai:text','batch:recover','catalog:index','media:worker'],
+   'permissions'=>['native:verify','ai:read','ai:text','ai:muvy','batch:recover','catalog:index','media:worker'],
    'method'=>$_SERVER['REQUEST_METHOD']??'','admin'=>(string)($config['cf_admin']??'')];
  // Compatibility alias: same N80 operations, no independent old executor.
  if($action==='n80_tick'){

@@ -3,6 +3,7 @@ import {spawn} from 'node:child_process';
 import {mkdirSync,readFileSync,writeFileSync,openSync} from 'node:fs';
 import assert from 'node:assert/strict';
 const base='http://127.0.0.1:8077',api=base+'/noa-bridge/muvy.php',out='muvy-proof';mkdirSync(out,{recursive:true});
+const runner=spawn('php',['tests/muvy/runner.php'],{stdio:['ignore',openSync(out+'/runner.log','w'),openSync(out+'/runner-error.log','w')]});
 const server=spawn('php',['-S','127.0.0.1:8077','-t','/tmp/noa-muvy-fixture/html','/tmp/noa-muvy-fixture/html/router.php'],{stdio:['ignore',openSync(out+'/php.log','w'),openSync(out+'/php-error.log','w')]}),browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']}),report={environment:'isolated native session fixture; provider responses deterministic; no paid calls',browser:[]};
 try{
  const contexts={};for(const role of ['guest','member','staff','admin']){contexts[role]=await browser.newContext({serviceWorkers:'block'});await contexts[role].addCookies([{name:'qa_role',value:role,url:base}]);}
@@ -81,15 +82,15 @@ try{
  await movie.waitForFunction(()=>document.querySelector('#mu-status')?.textContent.includes('모두 저장'));
  assert.equal(await movie.locator('#mu-lyrics').inputValue(),'원곡 가사 원곡 가사 원곡 가사');
  assert.deepEqual(requests.filter(r=>r.action==='selectSong').map(r=>r.key),['original']);
- assert.equal(requests.filter(r=>r.action==='generate').length,8);
+ assert.equal(requests.filter(r=>r.action==='generate').length,1);
  assert.equal(await movie.evaluate(()=>window.opener===null),true);
  assert.equal(await field.getByRole('button',{name:'뮤직비디오 주소 수정'}).count(),1);
  await movie.reload();
  await movie.waitForFunction(()=>document.querySelector('#mu-status')?.textContent.includes('새 뮤비'));
  assert.equal(requests.filter(r=>r.action==='selectSong').length,1);
- assert.equal(requests.filter(r=>r.action==='generate').length,8);
+ assert.equal(requests.filter(r=>r.action==='generate').length,1);
  report.editorShortcut=true;
  report.selectSongAutoGeneration=true;report.partialJobResumed=true;report.completedSelectionReused=true;
  assert.deepEqual(errors,[]);report.highestAdminOnly=true;report.csrfAndOriginEnforced=true;report.durableReload=true;report.originalPackImport=true;report.fullThirtyCutFlow=true;report.encryptedKeysNotReturned=true;report.dailyQuotaBeforeProvider=true;report.providerFixtureCalls=calls.length;
-}finally{writeFileSync(out+'/browser-regression.json',JSON.stringify(report,null,2));await browser.close();server.kill();}
+}finally{writeFileSync(out+'/browser-regression.json',JSON.stringify(report,null,2));await browser.close();server.kill();runner.kill();}
 console.log('MUVY_NATIVE_WORKROOM_BROWSER_OK',report.browser.length);

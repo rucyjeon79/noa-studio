@@ -14,7 +14,9 @@ if(str_ends_with($_SERVER['SCRIPT_FILENAME']??'','/muvy.php'))echo "\n<!-- isola
 COMMON;
 file_put_contents($root.'/common.php',$common);
 foreach(['member-access.php','lab-core.php','muvy-core.php','muvy-prompts.php','muvy-rules.php']as $file)copy('bridge/'.$file,$root.'/noa-bridge/'.$file);
-$api=str_replace('mu_provider($task)','mu_fixture_provider($task)',file_get_contents('bridge/muvy.php'));file_put_contents($root.'/noa-bridge/muvy.php',$api);
+$api=file_get_contents('bridge/muvy.php');
+file_put_contents($root.'/noa-app/engine/worker-wake.php', '<?php function n80_ai_wake():string{return "fixture_requested";}');
+copy('deploy/noa-app/engine/runtime.js',$root.'/noa-app/engine/runtime.js');file_put_contents($root.'/noa-bridge/muvy.php',$api);
 foreach(['noa-policy-20261024.css','noa-starlight.css','noa-member-surfaces.css','noa-lab-router.js','noa-ai-lab.php','noa-lab-chat.php','noa-ainoa.js','noa-ai-lab.css','noa-ai-lab.js','noa-channel-explorer.js','noa-explorer.css','noa-muvy-panel.php','noa-muvy.css','noa-muvy.js','noa-browse.js','noa-ui.css','noa-ui.js','noa-design.json','noa-ui-words.json','noa-brand.js']as $file)copy('deploy/'.$file,$root.'/'.$file);
 // Only the catalog storage boundary is replaced. Selection, prompts and quotas run through the native API.
 file_put_contents($root.'/noa-bridge/storage.php','<?php function noa_bridge_pdo(){return null;}');
@@ -63,7 +65,7 @@ $p=mu_save(['id'=>$id,'expectedRevision'=>0,'pack'=>$pack])['project'];must($p['
 reject(fn()=>mu_begin(['id'=>$id,'expectedRevision'=>1,'requestId'=>str_repeat('b',32),'stage'=>'script']),'xai_enable_required');
 mu_settings(['expectedRevision'=>0,'key'=>'test-xai-key-not-real','model'=>'grok-4.5','dailyCalls'=>20,'enabled'=>true]);must(!str_contains(json_encode(mu_status()),'test-xai-key-not-real'),'key_not_public');must(!str_contains(file_get_contents(lab_root().'/state.json'),'test-xai-key-not-real'),'key_encrypted');
 $request=['id'=>$id,'expectedRevision'=>1,'requestId'=>str_repeat('b',32),'stage'=>'script'];$task=mu_begin($request);must(!empty(mu_begin($request)['replayed']),'duplicate_call_reserved_once');must(mu_status()['callsToday']===1,'single_quota_count');reject(fn()=>mu_save(['id'=>$id,'expectedRevision'=>1,'pack'=>$pack]),'generation_in_progress');reject(fn()=>mu_begin(array_replace($request,['requestId'=>str_repeat('c',32)])),'generation_in_progress');
-$result=mu_fixture_provider($task);$p=mu_finish($task,$result)['project'];must(count($p['pack']['cuts'])===30,'thirty_cuts');must(mu_begin($request)['replayed'],'finished_call_idempotent');reject(fn()=>mu_apply($p['pack'],'c1',0,['cuts'=>[]]),'provider_cut_count');
+$task=mu_worker_claim()['task'];must($task!==null,'claim_queued_task');must(mu_worker_claim()['task']===null,'lease_prevents_duplicate_provider');$result=mu_fixture_provider($task);$p=mu_finish($task,$result)['project'];must(count($p['pack']['cuts'])===30,'thirty_cuts');must(mu_finish($task,$result)['replayed'],'completion_replay');reject(fn()=>mu_finish(array_replace($task,['lease'=>str_repeat('0',32)]),$result),'completion_conflict');must(mu_begin($request)['replayed'],'finished_call_idempotent');reject(fn()=>mu_apply($p['pack'],'c1',0,['cuts'=>[]]),'provider_cut_count');
 $bad=$p['pack'];$bad['cuts'][10]['n']=10;reject(fn()=>mu_pack($bad),'cut_sequence');reject(fn()=>mu_publish(['youtubeTitle'=>'wrong','description'=>'a','community'=>'b','thumbnailPrompt'=>'c'],'EP.12','빛이 닿는 순간'),'publish_title_mismatch');
 require $root.'/noa-bridge/inline-edit.php';
 $edition=nie_resolve(null,['key'=>'edition']);$one=mu_select_song($edition)['project'];
@@ -72,6 +74,15 @@ must(mu_select_song(nie_resolve(null,['key'=>'original']))['project']['id']!==$o
 $edition['fields']['lyrics'].=' 새로 저장한 가사';must(mu_select_song($edition)['project']['id']!==$one['id'],'changed_song_forks');
 must(mu_select_song(nie_resolve(null,['key'=>'story']))['project']['pack']['ep']==='','unnumbered_song');
 reject(fn()=>mu_select_song(nie_resolve(null,['key'=>'missing'])),'song_lyrics_required');
+// A pipeline continues through all stages with the browser closed, using the same native queue.
+$pipeline=mu_select_song(nie_resolve(null,['key'=>'story']))['project'];
+mu_begin(['id'=>$pipeline['id'],'expectedRevision'=>$pipeline['revision'],'requestId'=>str_repeat('d',32),'stage'=>'script','pipeline'=>true]);
+$count=0;while(($claim=mu_worker_claim())['task']){$task=$claim['task'];mu_finish($task,mu_fixture_provider($task));$count++;}
+must($count===8&&mu_status($pipeline['id'])['project']['pack']['publish']!==null,'durable_eight_stage_pipeline');
+$pipeline=mu_status($pipeline['id'])['project'];mu_begin(['id'=>$pipeline['id'],'expectedRevision'=>$pipeline['revision'],'requestId'=>str_repeat('e',32),'stage'=>'extra1']);$stale=mu_worker_claim()['task'];
+mu_lock(function(&$s)use($stale){$s['projects'][$stale['id']]['operations'][$stale['request']]['leaseUntil']=time()-1;});
+must(mu_worker_claim()['task']===null,'ambiguous_provider_not_reclaimed');
+reject(fn()=>mu_finish($stale,mu_fixture_provider($stale)),'lease_expired');
 @mkdir('muvy-proof',0700,true);file_put_contents('muvy-proof/core-regression.json',json_encode(['ok'=>true,'authEnvironment'=>'isolated native interface fixture','provider'=>'deterministic fixture, zero external calls','encryptedKey'=>true,'optimisticRevision'=>true,'idempotentRequests'=>true,'quotaReservedBeforeCall'=>true,'concurrentWritesBlocked'=>true,'thirtyOrderedCuts'=>true,'malformedOutputsRejected'=>true],JSON_PRETTY_PRINT));
 // Reset only this disposable fixture; browser tests start from a blank native workroom.
 unlink(lab_root().'/muvy.json');unlink(lab_root().'/state.json');unlink(dirname($root).'/provider-calls.json');echo "MUVY_CORE_PRIVATE_STORAGE_AND_IDEMPOTENCY_OK\n";

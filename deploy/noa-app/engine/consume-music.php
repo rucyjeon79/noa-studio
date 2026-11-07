@@ -55,6 +55,7 @@ try{
         $db->commit();
     }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
     if(!$result['ok'])n80_consume_music_error(422,$result['error'],$result['diagnostic']??null);
+    if($input['action']==='verify_availability'){if(!defined('G5_PATH'))define('G5_PATH',$web);require_once $web.'/noa-bridge/lab-core.php';lab_lock(function(&$state)use($result){$state['worker']['readiness']['music.verify_availability']=['checkedAt'=>time(),'authenticated'=>true,'durableAck'=>true,'replayVerified'=>!empty($result['replayed']),'effect'=>$result['receipt']['effect']];});}
     $response=json_encode(['ok'=>true,'nonce'=>$nonce,'result'=>$result],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
     header('X-N80-Signature: '.hash_hmac('sha256',"N80-MUSIC-CONSUME-RESPONSE-1\n".$nonce."\n".hash('sha256',$response),$key));echo $response;
 }catch(Throwable $e){

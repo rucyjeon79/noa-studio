@@ -1,4 +1,4 @@
-name: NOA AI LAB worker readiness and publication guard
+name: N80 AI LAB specialized worker
 on:
   workflow_run:
     workflows: [N80 Unified Facade Safe Production]
@@ -24,6 +24,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install local media processor
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
       - name: Validate publication guard and install transfer client
         run: |
           python -m unittest discover -s tests/engine -p 'test_ai_publication_guard.py' -v
@@ -35,7 +39,7 @@ jobs:
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
         run: python3 scripts/n80_auto.py ai.text
-      - name: Verify idle state and preserve work until runner-only publication
+      - name: Process queued MUVY and media through N80 with final-only publication
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}

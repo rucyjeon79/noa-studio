@@ -3,6 +3,24 @@ on:
   push:
     branches: [main]
     paths:
+      - 'deploy/noa-app/engine/native-*.php'
+      - 'deploy/noa-app/engine/runtime.js'
+      - 'deploy/noa-app/engine/worker-wake.php'
+      - 'bridge/muvy*.php'
+      - 'bridge/lab-*.php'
+      - 'deploy/noa-muvy.js'
+      - 'deploy/noa-ai-lab.*'
+      - 'deploy/noa-channel-batch.js'
+      - 'deploy/noa-creator.php'
+      - 'deploy/noa-ainoa-admin.js'
+      - 'deploy/noa-design.extend.php'
+      - 'deploy/noa-app/jukebox/wake-core.php'
+      - 'lab/**'
+      - 'scripts/n80_publish_final.py'
+      - 'tests/engine/runtime.test.mjs'
+      - 'tests/lab/muvy.test.mjs'
+      - 'tests/engine/native_consumer_test.php'
+      - 'scripts/noa_player_regression.test.mjs'
       - 'deploy/noa-app/engine/registry.php'
       - 'deploy/noa-app/engine/health.php'
       - 'deploy/noa-app/engine/adapter-contract.php'
@@ -92,19 +110,29 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: pdo_sqlite,pdo_mysql,mbstring,curl,tokenizer
+          extensions: pdo_sqlite,pdo_mysql,mbstring,curl,tokenizer,fileinfo
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
       - name: Validate N80 dispatch, ownership, replay and SQL task lifecycle
         run: |
           set -eu
-          for file in deploy/noa-app/engine/*.php bridge/worker-*.php bridge/lab-worker.php bridge/ainoa-automation.php; do php -l "$file"; done
+          for file in deploy/noa-app/engine/*.php bridge/worker-*.php bridge/lab-*.php bridge/muvy*.php bridge/ainoa-automation.php; do php -l "$file"; done
           for test in tests/engine/*_test.php; do php "$test"; done
           php tests/sitemap/registry_test.php
+          node --test scripts/noa_player_regression.test.mjs tests/engine/runtime.test.mjs tests/lab/muvy.test.mjs
+          php tests/muvy/fixture.php
           python tests/lab/http_test.py
           python -m unittest discover -s tests/engine -p test_auto_dispatch.py -v
           python -m py_compile scripts/n80_single_session_deploy.py scripts/n80_runtime_verify.py scripts/noa_n80_ai_worker.py scripts/n80_auto.py
           php scripts/qa/inline-edit-seed.php
           php tests/catalog/ainoa_generation_mysql_test.php
           php tests/catalog/ainoa_automation_mysql_test.php
+      - name: Verify the asynchronous MUVY flow in desktop and mobile browsers
+        run: |
+          python scripts/qa/noa-qa-font.py
+          npm install --prefix "$RUNNER_TEMP/n80-browser" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp scripts/qa/noa-muvy.mjs "$RUNNER_TEMP/n80-browser/muvy.mjs"
+          node "$RUNNER_TEMP/n80-browser/muvy.mjs"
       - run: python -m pip install 'paramiko>=3,<5'
       - name: Verify and install N80 modules in one SSH session
         run: python scripts/n80_single_session_deploy.py

@@ -10,7 +10,7 @@ class PublicationTest(unittest.TestCase):
         result = publication_preflight({'jobs': {}})
         self.assertEqual(result['state'], 'idle')
         self.assertEqual(result['jobsModified'], 0)
-        self.assertFalse(result['processingEnabled'])
+        self.assertTrue(result['processingEnabled'])
 
     def test_php_empty_array_is_idle(self):
         self.assertEqual(publication_preflight({'jobs': []})['state'], 'idle')
@@ -19,7 +19,7 @@ class PublicationTest(unittest.TestCase):
         jobs = {'one': {'state': 'queued_render'}, 'two': {'state': 'uploading'}}
         original = repr(jobs)
         result = publication_preflight({'jobs': jobs})
-        self.assertEqual(result['state'], 'blocked_publication_policy')
+        self.assertEqual(result['state'], 'ready')
         self.assertEqual((result['queued'], result['active']), (1, 1))
         self.assertEqual(repr(jobs), original)
         self.assertEqual(result['hostTemporaryFiles'], 0)

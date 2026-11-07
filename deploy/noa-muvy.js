@@ -5,7 +5,7 @@ const stages=['script','c1','c2','c3','publish'];
 const labels={script:'30컷 대본',c1:'챕터 1',c2:'챕터 2',c3:'챕터 3',publish:'게시 문구',extra1:'챕터 1 보충컷',extra2:'챕터 2 보충컷',extra3:'챕터 3 보충컷'};
 const errors={song_unavailable:'선택한 곡을 찾을 수 없습니다. 곡 목록을 다시 확인해 주세요.',song_lyrics_required:'선택한 버전에 저장된 가사가 10자 미만입니다. 곡정보에 가사를 저장한 뒤 다시 선택해 주세요.',ambiguous_song:'곡 연결이 여러 개입니다. 곡정보에서 연결을 확인해 주세요.',admin_required:'최고관리자로 로그인해 주세요.',request_verification_failed:'화면을 새로고침한 뒤 다시 시도해 주세요.',revision_conflict:'다른 창에서 작업이 바뀌었습니다. 최신 작업을 다시 열어 주세요.',request_conflict:'요청 내용이 달라졌습니다. 작업을 다시 확인해 주세요.',generation_in_progress:'이 작업을 생성하고 있습니다. 완료 상태를 확인해 주세요.',xai_enable_required:'Grok 연결 설정에서 서비스 연결 키를 저장하고 생성을 켜 주세요.',xai_key_required:'xAI 서비스 연결 키를 입력해 주세요.',daily_limit:'오늘의 생성 요청 한도에 도달했습니다.',provider_access_denied:'xAI 키와 모델 사용 권한을 확인해 주세요.',provider_rate_limit:'xAI 요청 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.',provider_incomplete:'응답이 끝까지 생성되지 않았습니다. 기존 작업은 보존했습니다.',provider_format:'생성된 컷 구성을 검증하지 못했습니다. 기존 작업은 보존했습니다.',provider_failed:'Grok 생성에 실패했습니다. 연결 설정을 확인해 주세요.',provider_unconfirmed:'생성 결과를 확인하지 못했습니다. 작업 상태를 확인한 뒤 다시 시도해 주세요.',invalid_pack:'EP·제목·가사와 컷 내용을 확인해 주세요.',lyrics_too_short:'가사를 10자 이상 입력해 주세요.',thirty_cuts_required:'대본은 1번부터 30번까지 있어야 합니다.',cut_sequence:'컷 순서가 1번부터 30번까지 이어져야 합니다.',extra_limit:'보충컷은 챕터마다 8개까지 보관합니다.',project_limit:'저장 작업이 30개입니다. 기존 작업을 열어 이어가 주세요.',muvy_unavailable:'작업실에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.'};
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};const uid=()=>crypto.randomUUID().replaceAll('-','');const message=(text,error=false)=>{$('mu-status').textContent=text;$('mu-status').dataset.error=String(error);};
-async function request(body,id=''){const activityId=body?.action==='generate'?body.requestId:null;if(activityId)window.N80Activity?.set('muvy',activityId,'waiting',{ttl:130000});const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),115000);try{const r=await fetch(api+(id?'?id='+encodeURIComponent(id):''),{method:body?'POST':'GET',cache:'no-store',credentials:'same-origin',signal:controller.signal,headers:body?{'Content-Type':'application/json','X-NOA-CSRF':csrf}:{},...(body?{body:JSON.stringify(body)}:{})});let data;try{data=await r.json();}catch{throw Error('muvy_unavailable');}if(!r.ok||data.ok===false)throw Error(data.error||'muvy_unavailable');if(data.project)window.N80Activity?.snapshot('muvy',Object.entries(data.project.operations||{}).map(([id,op])=>({id,state:op.state==='running'?'waiting':op.state})));return data;}catch(e){if(activityId)window.N80Activity?.set('muvy',activityId,'failed');if(e.name==='AbortError')throw Error('provider_unconfirmed');throw e;}finally{clearTimeout(timer);}}
+async function request(body,id=''){const activityId=body?.action==='generate'?body.requestId:null;if(activityId)window.N80Activity?.set('muvy',activityId,'waiting',{ttl:130000});const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);try{const r=await fetch(api+(id?'?id='+encodeURIComponent(id):''),{method:body?'POST':'GET',cache:'no-store',credentials:'same-origin',signal:controller.signal,headers:body?{'Content-Type':'application/json','X-NOA-CSRF':csrf}:{},...(body?{body:JSON.stringify(body)}:{})});let data;try{data=await r.json();}catch{throw Error('muvy_unavailable');}if(!r.ok||data.ok===false)throw Error(data.error||'muvy_unavailable');if(data.project)window.N80Activity?.snapshot('muvy',Object.entries(data.project.operations||{}).map(([id,op])=>({id,state:op.state})));return data;}catch(e){if(activityId)window.N80Activity?.set('muvy',activityId,'failed');if(e.name==='AbortError')throw Error('provider_unconfirmed');throw e;}finally{clearTimeout(timer);}}
 function fail(e){message(errors[e.message]||(/[가-힣]/.test(e.message)?e.message:'작업을 완료하지 못했습니다. 입력 내용과 연결 상태를 확인해 주세요.'),true);}function mark(){dirty=true;$('mu-save-state').textContent='저장하지 않은 변경사항';}
 function inputPack(){const base={ep:$('mu-ep').value.trim(),title:$('mu-title').value.trim(),lyrics:$('mu-lyrics').value.trim()};const same=current&&Object.keys(base).every(k=>current.pack[k]===base[k]);return same?structuredClone(current.pack):{...base,meta:null,cuts:[],extras:{1:[],2:[],3:[]},publish:null};}
 function fields(){const p=current?.pack;$('mu-ep').value=p?.ep||'';$('mu-title').value=p?.title||'';$('mu-lyrics').value=p?.lyrics||'';for(const id of ['mu-title','mu-lyrics','mu-ep'])$(id).readOnly=!!p?.song;
@@ -21,7 +21,7 @@ function complete(stage,p){
 }
 function controls(){const p=current?.pack,ready=!!state?.config.enabled&&!!state?.config.configured,active=!!current?.active;for(const b of host.querySelectorAll('[data-mu-step]')){const step=b.dataset.muStep;const done=complete(step,p);b.disabled=busy||active||!ready||done||(step!=='script'&&p?.cuts.length!==30);b.textContent=(done?'✓ ':'')+({script:'01',c1:'02',c2:'03',c3:'04',publish:'05'}[step])+' · '+labels[step];}songPicker.controls();for(const b of $('mu-config-form').elements)b.disabled=busy||!state;for(const id of ['mu-save','mu-new','mu-import','mu-project','mu-ep','mu-title','mu-lyrics'])$(id).disabled=busy||active;for(const id of ['mu-export','mu-text-export'])$(id).disabled=busy||!current;for(const input of host.querySelectorAll('#mu-result textarea,#mu-result input'))input.disabled=busy||active;for(const b of host.querySelectorAll('[data-mu-extra]'))b.disabled=busy||active||!ready||current.pack.extras[b.dataset.muExtra].length>=8;}
 function list(){const select=$('mu-project');select.replaceChildren(new Option('새 작업',''));for(const p of state.projects)select.append(new Option([p.ep,p.title].filter(Boolean).join(' · '),p.id));select.value=current?.id||'';const c=state.config;$('mu-model').value=c.model;$('mu-limit').value=c.dailyCalls;$('mu-enabled').checked=c.enabled;$('mu-connection').textContent=(c.configured?(c.enabled?'사용 중':'키 저장됨 · 생성 꺼짐'):'AI 서비스 연결 필요')+' · 오늘 '+state.callsToday+'/'+c.dailyCalls;}
-async function refresh(id=current?.id||''){const next=await request(null,id);csrf=next.csrf;state=next;if(id)current=next.project;list();controls();return next;}
+async function refresh(id=current?.id||''){const next=await N80Runtime.read('muvy:fetch:'+id,()=>request(null,id));csrf=next.csrf;state=next;if(id)current=next.project;list();controls();return next;}
 async function save(){if(!$('mu-input-form').reportValidity())throw Error('invalid_pack');const pack=inputPack(),changedBase=current&&['ep','title','lyrics'].some(k=>pack[k]!==current.pack[k]),fork=changedBase&&current.pack.cuts.length>0;if(fork)draftId=uid();if(!current||fork)draftId||=uid();const id=!current||fork?draftId:current.id,revision=!current||fork?0:current.revision;const result=await request({action:'save',id,expectedRevision:revision,pack});current=result.project;draftId='';dirty=false;fields();await refresh();render();message(fork?'원래 제작 결과를 보존하고 새 작업으로 저장했습니다.':'작업을 서버에 저장했습니다.');return current;}
 function textField(parent,label,value,onchange){const wrap=el('label',label),area=el('textarea');area.value=value;area.addEventListener('input',()=>{onchange(area.value);mark();});const copy=el('button','복사','mu-copy');copy.type='button';copy.onclick=()=>navigator.clipboard.writeText(area.value).then(()=>message(label+' 복사 완료')).catch(()=>message('복사할 내용을 선택해 직접 복사해 주세요.',true));wrap.append(area,copy);parent.append(wrap);return area;}
 function cutRow(c,extra=false){const d=el('details',undefined,'mu-cut');d.dataset.noaDisclosure='';const sum=el('summary');sum.append(el('strong',extra?c.label:'CUT '+String(c.n).padStart(2,'0')),el('span',c.lyric||c.script));d.append(sum);for(const [key,label]of [['lyric','가사 구간'],['script','장면 대본'],['gemini','Gemini 이미지 프롬프트'],['grok','Grok 영상 프롬프트']])textField(d,label,c[key],v=>{c[key]=v;});return d;}
@@ -29,7 +29,13 @@ function render(){const result=$('mu-result'),p=current?.pack;result.replaceChil
  for(const ch of [1,2,3]){const section=el('section',undefined,'mu-chapter');section.id='mu-chapter-'+ch;section.append(el('h3','챕터 '+ch+' · CUT '+((ch-1)*10+1)+'–'+ch*10),el('p','NOA · '+p.meta.outfits[ch].woman+'\nNOEL · '+p.meta.outfits[ch].man,'mu-outfits'));for(const c of p.cuts.slice((ch-1)*10,ch*10))section.append(cutRow(c));for(const c of p.extras[ch])section.append(cutRow(c,true));const extra=el('div',undefined,'mu-extra'),note=el('input');note.placeholder='보충할 장면이나 감정 · 선택';note.maxLength=400;note.setAttribute('aria-label','챕터 '+ch+' 보충컷 요청');const b=el('button','보충컷 2개 생성');b.type='button';b.dataset.muExtra=String(ch);b.onclick=()=>generate('extra'+ch,note.value);extra.append(note,b);section.append(extra);result.append(section);}
  if(p.publish){const section=el('section',undefined,'mu-publish');section.append(el('h3','게시용 문구와 썸네일'));for(const [k,label]of [['youtubeTitle','YouTube 제목'],['description','설명란'],['community','커뮤니티 글'],['thumbnailPrompt','썸네일 이미지 프롬프트']])textField(section,label,p.publish[k],v=>{p.publish[k]=v;});result.append(section);}
  if(current.active){const b=el('button','생성 상태 확인');b.type='button';b.onclick=()=>checkActive();result.prepend(b);}controls();}
-async function checkActive(){try{await refresh();if(!current.active){fields();render();message('서버에 저장된 최신 작업을 불러왔습니다.');return;}const op=current.operations[current.active];if(Date.now()/1000-op.startedAt>180){const result=await request({action:'recover',id:current.id,expectedRevision:current.revision});current=result.project;render();message('응답을 확인하지 못한 작업을 정리했습니다. 기존 결과는 보존되어 있습니다.',true);return;}message('Grok이 '+labels[op.stage]+'을 생성하고 있습니다.');clearTimeout(poll);poll=setTimeout(checkActive,5000);}catch(e){fail(e);}}
+function waitForProject(){
+ return new Promise((resolve,reject)=>{let stop=N80Runtime.watch('muvy:'+current.id,()=>refresh(),()=>{
+  fields();render();if(current.active){const op=current.operations[current.active];message((op.state==='queued'?'N80 Auto 실행 대기 · ':'N80 AI 생성 중 · ')+labels[op.stage]);return;}
+  stop();poll=null;const failed=Object.values(current.operations).at(-1);if(current.pipelineError)reject(Error(current.pipelineError));else if(['failed','unconfirmed'].includes(failed?.state))reject(Error(failed.error||'provider_unconfirmed'));else resolve();
+ },{interval:3000,error:e=>message('연결을 다시 확인하고 있습니다. 서버 작업은 계속됩니다.',true)});poll=stop;});
+}
+async function checkActive(){try{await refresh();if(current.active)await waitForProject();fields();render();message('서버에 저장된 최신 작업을 불러왔습니다.');}catch(e){fail(e);}}
 async function deskAction(work){
  if(busy)return;
  busy=true;controls();
@@ -37,22 +43,22 @@ async function deskAction(work){
  catch(e){fail(e);}
  finally{busy=false;controls();}
 }
-async function runStage(stage,note=''){
+async function runStage(stage,note='',pipeline=false){
  const chapter=/^c[123]$/.test(stage);
- for(const batch of chapter?[0,1]:[0]){
+ for(const batch of chapter&&!pipeline?[0,1]:[0]){
   if(chapter){
    const start=(Number(stage[1])-1)*10+batch*5;
    if(current.pack.cuts.slice(start,start+5).every(c=>c.gemini&&c.grok))continue;
   }
   message(current.pack.title+' · '+labels[stage]+' 생성 중'+(chapter?' ('+(batch+1)+'/2)':'')+'…');
   let result;
-  try{result=await request({action:'generate',id:current.id,expectedRevision:current.revision,requestId:uid(),stage,batch,note});}
+  try{result=await request({action:'generate',id:current.id,expectedRevision:current.revision,requestId:uid(),stage,batch,note,pipeline});}
   catch(e){
-   try{await refresh();fields();render();if(current.active){clearTimeout(poll);poll=setTimeout(checkActive,5000);}}catch{}
+   try{await refresh();fields();render();if(current.active){poll?.();poll=null;checkActive();}}catch{}
    throw e;
   }
   current=result.project;fields();render();
-  if(current.active){await checkActive();return false;}
+  if(current.active){await waitForProject();}
  }
  return true;
 }
@@ -70,9 +76,7 @@ async function produceSong(){
   return;
  }
  pendingSong='';
- for(const stage of stages){
-  if(!complete(stage,current.pack)&&!await runStage(stage))return;
- }
+ if(!await runStage('script','',true))return;
  await refresh();message(current.pack.title+' · 대본, 챕터별 프롬프트, 게시 문구가 모두 저장되어 있습니다.');
 }
 const songPicker=N80Explorer.picker($('mu-picker'),{
@@ -87,7 +91,7 @@ function selectSong(key){
   if(dirty)await save();
   message('선택한 곡의 최신 곡정보를 읽는 중입니다.');
   const result=await request({action:'selectSong',key});
-  clearTimeout(poll);current=result.project;draftId='';fields();render();
+  poll?.();poll=null;current=result.project;draftId='';fields();render();
   await refresh();fields();render();
   if(current.active){await checkActive();return;}
   await produceSong();
@@ -104,7 +108,7 @@ $('mu-project').onchange=()=>{
  const id=$('mu-project').value;
  deskAction(async()=>{
   try{
-   if(dirty)await save();pendingSong='';clearTimeout(poll);
+   if(dirty)await save();pendingSong='';poll?.();poll=null;
    if(id)await refresh(id);else{current=null;draftId='';}
    fields();list();render();if(current?.active)await checkActive();
   }catch(e){$('mu-project').value=current?.id||'';throw e;}

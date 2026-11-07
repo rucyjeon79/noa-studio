@@ -16,6 +16,9 @@ function noa_engine_dispatch_gate(array $event,array $policy=[]): array {
         $adapter=noa_engine_adapter_check($event,'music',$policy);
         return $adapter+['status'=>$adapter['ok']?'authorized':'blocked','steps'=>$plan['steps']];
     }
-    // Uninstalled operations remain blocked; an installed specialist is not a global enable flag.
+    foreach(['playlist','world','admin'] as $module)if(($policy['operation']??'')===(noa_engine_adapter_manifest()[$module]['operation']??null)){
+        $adapter=noa_engine_adapter_check($event,$module,$policy);return $adapter+['status'=>$adapter['ok']?'authorized':'blocked','steps'=>$plan['steps']];
+    }
+    // Unknown operations remain blocked; an installed specialist is not a global enable flag.
     return ['ok'=>false,'status'=>'blocked','error'=>'consumer_adapters_not_installed','steps'=>$plan['steps']];
 }

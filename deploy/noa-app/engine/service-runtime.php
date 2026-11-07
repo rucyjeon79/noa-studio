@@ -5,6 +5,8 @@ require_once __DIR__.'/task-status.php';
 /** Fixed operation ownership; an HTTP request cannot supply a handler, file or principal. */
 function n80_service_operations():array {
     return [
+        ...array_fill_keys(['muvy_claim','muvy_complete','muvy_failed'],['module'=>'ai_lab','handler'=>'worker-muvy.php','permission'=>'ai:muvy','method'=>'POST','store'=>'lab:muvy.json']),
+        'n80_native_verify'=>['module'=>'admin','handler'=>'worker-native.php','permission'=>'native:verify','method'=>'POST','store'=>'existing_native_stores'],
         'n80_status'=>['module'=>'ai_lab','handler'=>'worker-status.php','permission'=>'ai:read','method'=>'POST','store'=>'existing_native_stores'],
         'n80_text_tick'=>['module'=>'ai_lab','handler'=>'worker-text.php','permission'=>'ai:text','method'=>'POST','store'=>'noa_documents:n80_ai_task'],
         'n80_batch_watchdog'=>['module'=>'creator_lab','handler'=>'worker-batch.php','permission'=>'batch:recover','method'=>'POST','store'=>'gpt-action'],
@@ -12,7 +14,7 @@ function n80_service_operations():array {
         'health'=>['module'=>'ai_lab','handler'=>'worker-media.php','permission'=>'media:worker','method'=>'GET','store'=>'lab:state.json'],
         'claim'=>['module'=>'ai_lab','handler'=>'worker-media.php','permission'=>'media:worker','method'=>'POST','store'=>'lab:state.json'],
         'asset'=>['module'=>'ai_lab','handler'=>'worker-media.php','permission'=>'media:worker','method'=>'GET','store'=>'lab:state.json'],
-        ...array_fill_keys(['authorize_upload','checkpoint','output','finish_output','complete','failed'],
+        ...array_fill_keys(['prepare_final','commit_final','authorize_upload','checkpoint','output','finish_output','complete','failed'],
             ['module'=>'ai_lab','handler'=>'worker-media.php','permission'=>'media:worker','method'=>'POST','store'=>'lab:state.json']),
     ];
 }
