@@ -75,8 +75,6 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
  .noa-edit-form .noa-publish-panel>.noa-publish-options>summary{width:calc((100% - 8px)/2)}
  .noa-edit-form .noa-publish-panel>[role=status]{grid-column:1/-1}
  .noa-edit-form .noa-field-toolbar{position:sticky;top:var(--noa-editor-offset,64px);z-index:8;display:flex;justify-content:flex-end;gap:8px;background:var(--noa-surface,#1a1d20);padding:4px 8px;border-bottom:1px solid var(--noa-line)}
- .noa-edit-form[data-folded=true]>:not(.noa-field-toolbar){display:none!important}
- .noa-edit-form[data-folded=true] .noa-field-toolbar svg{transform:rotate(180deg)}
  .noa-edit-form .noa-edit-field-heading{flex-wrap:wrap;gap:4px}
  .noa-edit-form .noa-edit-field-heading>label{flex:1 1 auto}
  .noa-edit-form .noa-edit-field-heading>.noa-action{min-height:38px}
@@ -519,9 +517,13 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
    if(selector.type!=='new')advanced.append(download);
    form.append(advanced);
    const toolbar=document.createElement('div');toolbar.className='noa-field-toolbar';
-   const fold=iconCommand('button','fold','곡정보창 접기');fold.setAttribute('aria-expanded','true');
-   fold.onclick=()=>{const folded=form.dataset.folded!=='true';form.dataset.folded=String(folded);fold.title=folded?'곡정보창 펼치기':'곡정보창 접기';fold.setAttribute('aria-label',folded?'곡정보창 펼치기':'곡정보창 접기');fold.setAttribute('aria-expanded',String(!folded));};
-   const panelTitle=document.createElement('strong');panelTitle.textContent=data.fields.title||'곡 정보';toolbar.append(panelTitle,fold);form.prepend(toolbar);
+   const dismiss=iconCommand('button','cancel','곡정보창 닫기');
+   dismiss.onclick=()=>{
+    if(state.busy){status.textContent='저장 중입니다. 완료 후 닫아 주세요.';return;}
+    if(state.dirty&&!window.confirm('저장하지 않은 변경 내용을 버리고 닫을까요?'))return;
+    close();
+   };
+   const panelTitle=document.createElement('strong');panelTitle.textContent=data.fields.title||'곡 정보';toolbar.append(panelTitle,dismiss);form.prepend(toolbar);
    const header=document.querySelector('#noa-account-bar');
    if(header){const offset=()=>form.style.setProperty('--noa-editor-offset',Math.ceil(header.getBoundingClientRect().height)+'px');offset();const observer=new ResizeObserver(offset);observer.observe(header);const stop=state.stopLayout;state.stopLayout=()=>{observer.disconnect();stop?.();};}
    const buttons=document.createElement('div');buttons.className='noa-edit-buttons';const save=iconCommand('button','save','정보 수정 저장');save.type='submit';if(lockedSong)save.hidden=true;
@@ -554,7 +556,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
    };
   }catch(error){if(active===state)status.textContent=/[가-힣]/.test(error.message)?error.message:'세부정보를 불러오지 못했습니다. 로그인 상태와 연결을 확인해 주세요.';}
  }
- host.addEventListener('click',event=>{if(active&&event.target.closest('.noa-browse-card,.noa-list-toggle,.noa-browse-crumbs button,.noa-browse-pager button,.noa-order-controls')){event.preventDefault();event.stopImmediatePropagation();message('수정창의 저장 또는 취소를 눌러 편집을 마쳐 주세요.');}},true);
+ host.addEventListener('click',event=>{if(active&&event.target.closest('.noa-browse-card,.noa-list-toggle,.noa-browse-crumbs button,.noa-browse-pager button,.noa-order-controls')){if(!active.busy&&!active.dirty){close();return;}event.preventDefault();event.stopImmediatePropagation();message('수정창의 저장 또는 취소를 눌러 편집을 마쳐 주세요.');}},true);
  window.addEventListener('beforeunload',event=>{if(active?.dirty){event.preventDefault();event.returnValue='';}});
  refresh();return{refresh,isEditing:()=>!!active,openRecord(selector,draftFields=null){const trigger=document.createElement('button');return open(host,trigger,selector,draftFields);}};
 }
