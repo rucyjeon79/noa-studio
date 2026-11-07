@@ -4,7 +4,7 @@ on:
     paths: ['bridge/channel-batch*.php','tests/channel-batch/**','bridge/creator*.php','bridge/music-readmodel.php','bridge/sound-core.php','deploy/noa-channel*','deploy/noa-creator.*','deploy/noa-browse-edit.js','tests/explorer/**','scripts/noa_explorer*','scripts/qa/noa-channel-explorer.mjs','.github/workflows/noa-channel-explorer.yml']
   push:
     branches: [main]
-    paths: ['bridge/channel-batch*.php','tests/channel-batch/**','deploy/noa-channel-batch*','deploy/noa-channel-explorer.js','scripts/noa_explorer*','scripts/qa/noa-channel-explorer.mjs','tests/explorer/**','.github/workflows/noa-channel-explorer.yml']
+    paths: ['bridge/channel-batch*.php','tests/channel-batch/**','deploy/noa-channel-batch*','deploy/noa-channel-explorer.js','deploy/noa-explorer.css','deploy/noa-app/engine/explorer.php','scripts/noa_explorer*','scripts/qa/noa-channel-explorer.mjs','tests/explorer/**','.github/workflows/noa-channel-explorer.yml']
 permissions: {contents: read}
 jobs:
   verify:
@@ -28,6 +28,13 @@ jobs:
         run: |
           for f in bridge/channel-batch*.php bridge/creator*.php bridge/member-access.php bridge/music-readmodel.php bridge/sound-core.php deploy/noa-channel*.php deploy/noa-creator.php deploy/noa-editor.php deploy/noa-music.php deploy/noa-workspace.php deploy/noa-sitemap.php deploy/noa-app/taxonomy/index.php scripts/noa_explorer_audit.php; do php -l "$f"; done
           for f in deploy/noa-channel*.js deploy/noa-creator.js deploy/noa-browse-edit.js; do node --check "$f"; done
+          php -l deploy/noa-app/engine/explorer.php
+          php -l deploy/noa-lab-song.php
+          php -l deploy/noa-creator-ai.php
+          php -l deploy/noa-ai-lab.php
+          node --check deploy/noa-ai-lab.js
+          node --check deploy/noa-creator-ai.js
+          python tests/member/lab_routes.py
           node tests/explorer/tree_test.cjs
           node tests/explorer/batch_test.cjs
           php tests/explorer/cover_test.php

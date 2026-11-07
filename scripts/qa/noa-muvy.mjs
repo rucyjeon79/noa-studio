@@ -11,7 +11,7 @@ try{
  const status=await(await contexts.admin.request.get(api)).json();assert.equal(status.config.configured,false);assert.equal(status.config.enabled,false);const csrf=status.csrf;
  const post=async data=>{const r=await contexts.admin.request.post(api,{headers:{Origin:base,'X-NOA-CSRF':csrf},data});return{status:r.status(),body:await r.json()};};
  assert.equal((await contexts.admin.request.post(api,{data:{action:'save'}})).status(),403);assert.equal((await contexts.admin.request.post(api,{headers:{Origin:'https://other.example','X-NOA-CSRF':csrf},data:{action:'save'}})).status(),403);
- const page=await contexts.admin.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('dialog',()=>{throw Error('untrusted_markup_executed');});await page.goto(base+'/noa-ai-lab.php#lab-muvy');await page.waitForFunction(()=>document.querySelector('#mu-connection').textContent.includes('AI 서비스 연결 필요'));
+ const page=await contexts.admin.newPage(),errors=[];let catalogReads=0;page.on('request',r=>{if(r.url().includes('view=labChoices'))catalogReads++;});page.on('pageerror',e=>errors.push(e.message));page.on('dialog',()=>{throw Error('untrusted_markup_executed');});await page.goto(base+'/noa-ai-lab.php#lab-muvy');await page.waitForFunction(()=>document.querySelector('#mu-connection').textContent.includes('AI 서비스 연결 필요'));
  assert(await page.getByRole('link',{name:'뮤비 대본·프롬프트',exact:true}).isVisible());await page.locator('#mu-ep').fill('EP.12');await page.locator('#mu-title').fill('빛이 닿는 순간');await page.locator('#mu-lyrics').fill('밤을 따라 걸어가던 작은 마음이 빛을 만나는 순간, 우리는 다시 웃어요.');await page.locator('#mu-save').click();await page.waitForFunction(()=>document.querySelector('#mu-save-state').textContent.includes('저장됨'));const firstId=await page.locator('#mu-project').inputValue();assert(firstId);
  await page.reload();await page.waitForFunction(()=>document.querySelectorAll('#mu-project option').length===2);await page.locator('#mu-project').selectOption(firstId);await page.waitForFunction(()=>document.querySelector('#mu-title').value==='빛이 닿는 순간');assert(await page.locator('[data-mu-step=script]').isDisabled());
  await page.locator('.mu-settings summary').click();await page.locator('#mu-key').fill('test-xai-key-not-real');await page.locator('#mu-enabled').check();await page.locator('#mu-config-form button[type=submit]').click();await page.waitForFunction(()=>document.querySelector('#mu-connection').textContent.includes('사용 중'));assert.equal(await page.locator('#mu-key').inputValue(),'');
@@ -30,8 +30,20 @@ try{
   const c=await browser.newContext({viewport:{width,height:1000},serviceWorkers:'block',reducedMotion:'reduce'});await c.addCookies([{name:'qa_role',value:'admin',url:base}]);await c.addInitScript(theme=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',radius:'soft',design:'ios'})),theme);const p=await c.newPage();await p.goto(base+'/noa-ai-lab.php#lab-muvy');await p.waitForFunction(()=>document.querySelectorAll('#mu-project option').length===3);await p.locator('#mu-project').selectOption(firstId);await p.locator('.mu-cut').first().waitFor();await p.locator('.mu-cut summary').first().click();assert(await p.locator('.mu-cut summary').first().evaluate(e=>e.getBoundingClientRect().width>=e.parentElement.getBoundingClientRect().width*.9),'cut summaries remain full-width title rows');assert.equal(await p.locator('.mu-cut summary.noa-action').count(),0);await p.locator('#mu-heading').scrollIntoViewIfNeeded();assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.equal(await p.locator('.mu-cut').count(),32);for(const id of ['mu-new','mu-import','mu-export','mu-text-export'])assert(await p.locator('#'+id).evaluate(e=>e.getBoundingClientRect().height<=56&&e.scrollWidth<=e.clientWidth+1),'toolbar labels fit on one row');await p.screenshot({path:out+'/'+theme+'-'+width+'.png'});report.browser.push({width,theme,orderedCuts:true,storedProjectResumed:true,noOverflow:true});await c.close();
  }
  // Search and folder navigation incur no paid calls. Only picking a leaf starts production.
+ assert.equal(catalogReads,0);
+ await page.locator('#lab-text-picker summary').click();
+ await page.locator('#lab-text-track').selectOption('original');
+ await page.locator('#lab-audio-picker summary').click();
+ await page.locator('#lab-audio-search').fill('EP 040 ACT4 Groovy');
+ assert.equal(await page.locator('#lab-track option[value=original]').count(),0);
+ await page.locator('#lab-track').selectOption('edition');
+ await page.locator('#lab-audio-search').fill('존재하지 않는 곡');
+ assert.equal(await page.locator('#lab-track').inputValue(),'edition');
+ assert.equal(await page.locator('#lab-text-track').inputValue(),'original');
+ assert.equal(await page.locator('#lab-audio-picker-state').innerText(),'검색 결과가 없습니다.');
  await page.locator('#mu-picker summary').click();
  await page.waitForFunction(()=>!document.querySelector('#mu-picker-fields').disabled);
+ assert.equal(catalogReads,1);
  await page.locator('#mu-search').fill('Groovy');
  assert.equal(await page.locator('#mu-song option[value=original],#mu-song option[value=playlist]').count(),0);
  await page.locator('#mu-song').selectOption('missing');
