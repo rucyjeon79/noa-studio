@@ -55,9 +55,39 @@ function createField(key,{type='song',value='',prefix='noa-edit-',readOnly=false
  if(d.tag==='checkbox'){input.type='checkbox';input.checked=value===true;caption.prepend(input);wrap.append(heading);}else{input.value=key==='creativeFields'?JSON.stringify(value||{},null,2):String(value??'');if(d.tag==='input')input.type='text';input.maxLength=key==='title'?500:key==='originalArtist'?200:200000;input.required=key==='title';wrap.append(heading,input);}
  if(key==='sunoUrl')sunoField(input);
  return {wrap,heading,caption,input};}
+// Use the download service's formatted title. This display is never submitted as song data.
+async function copyText(text,button){
+ try{await navigator.clipboard.writeText(text);return true;}catch{}
+ const buffer=document.createElement('textarea');
+ buffer.value=text;buffer.readOnly=true;
+ buffer.style.cssText='position:fixed;top:0;left:-9999px';
+ document.body.append(buffer);
+ try{buffer.focus({preventScroll:true});buffer.select();return document.execCommand('copy');}
+ catch{return false;}
+ finally{buffer.remove();button.focus({preventScroll:true});}
+}
+function sunoTitleField(value=''){
+ const wrap=document.createElement('div'),heading=document.createElement('div'),label=document.createElement('label');
+ const input=document.createElement('input'),button=document.createElement('button'),feedback=document.createElement('p');
+ wrap.className='noa-record-field noa-suno-title';wrap.dataset.recordField='sunoTitle';
+ heading.className='noa-edit-field-heading';label.textContent='Suno 음악 제목 명명 지시문';
+ input.id='noa-suno-title-'+crypto.randomUUID();label.htmlFor=input.id;
+ input.type='text';input.readOnly=true;input.placeholder='곡 정보를 저장하면 제목이 표시됩니다.';
+ button.type='button';button.className='noa-action noa-edit-copy';
+ button.title='Suno 음악 제목 복사하기';button.setAttribute('aria-label',button.title);
+ button.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8h12v13H8z M16 8V3H3v13h5"/></svg>';
+ feedback.className='noa-record-note';feedback.setAttribute('role','status');feedback.hidden=true;
+ function update(title){input.value=title||'';button.disabled=!input.value;feedback.hidden=true;}
+ button.onclick=async()=>{
+  feedback.textContent=await copyText(input.value,button)?'Suno 음악 제목을 복사했습니다.':'복사하지 못했습니다. 제목을 길게 눌러 복사해 주세요.';
+  feedback.hidden=false;
+ };
+ heading.append(label,button);wrap.append(heading,input,feedback);update(value);
+ return {wrap,input,update};
+}
 function value(input){if(input.type==='checkbox')return input.checked;if(['creativeFields','members','collections'].includes(input.name))return JSON.parse(input.value||'{}');return input.value;}
 function set(input,v){if(input.type==='checkbox')input.checked=v===true;else input.value=['creativeFields','members','collections'].includes(input.name)?JSON.stringify(v||{},null,2):String(v??'');}
-function render(form,{type='song',fields={},keys:chosen=keys(type),prefix}={}){const sectionsView=sections(form),inputs={};for(const key of chosen){const f=createField(key,{type,value:fields[key],prefix});sectionsView.add(key,f.wrap);inputs[key]=f.input;}return {inputs,sections:sectionsView};}
+function render(form,{type='song',fields={},keys:chosen=keys(type),prefix,sunoTitle=''}={}){const sectionsView=sections(form),inputs={};for(const key of chosen){if(key==='sunoPrompt')sectionsView.add(key,sunoTitleField(sunoTitle).wrap);const f=createField(key,{type,value:fields[key],prefix});sectionsView.add(key,f.wrap);inputs[key]=f.input;}return {inputs,sections:sectionsView};}
 function classificationEditor(form,{genre='unclassified',ep='',inputs,collections,selected=[]}){
  const browse=window.NoaBrowse,section=document.createElement('fieldset'),legend=document.createElement('legend');legend.textContent='분류 변경';section.className='noa-record-classification';section.append(legend);
  function select(name,label){const wrap=document.createElement('label'),control=document.createElement('select');control.name=name;control.id='noa-edit-'+name;wrap.htmlFor=control.id;wrap.append(document.createTextNode(label),control);section.append(wrap);return control;}
@@ -77,5 +107,5 @@ function classificationEditor(form,{genre='unclassified',ep='',inputs,collection
  category.onchange=()=>{options('');numberState();drawCollections();};detail.onchange=()=>{numberState();drawCollections();};numberState();drawCollections();
  const note=document.createElement('p');note.className='noa-edit-readonly';note.textContent='저장하면 음원·YouTube·라이브러리의 분류가 함께 바뀝니다. 장르를 바꾸면 이전 장르의 묶음 선택이 해제됩니다.';section.append(note);form.append(section);return {category,detail,setBusy(busy){for(const control of section.querySelectorAll('input,select'))control.disabled=busy;}};
 }
-const link=document.createElement('link');link.rel='stylesheet';link.href='/noa-record-form.css?v=20261106-suno-height';document.head.append(link);
-window.NoaRecordForm={schema,groups,ownerKeys,describe,keys,sections,createField,value,set,render,classificationEditor};})();
+const link=document.createElement('link');link.rel='stylesheet';link.href='/noa-record-form.css?v=20261107-suno-title';document.head.append(link);
+window.NoaRecordForm={schema,groups,ownerKeys,describe,keys,sections,createField,value,set,render,classificationEditor,sunoTitleField,copyText};})();

@@ -8,7 +8,7 @@ async function generationReply(response){
  }
  try{return await response.json();}catch{throw Error('생성 응답이 중간에 끊겼습니다. 곡 편집기를 다시 열어 저장 상태를 확인해 주세요.');}
 }
-const formReady=window.NoaRecordForm?Promise.resolve():new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='/noa-record-form.js?v=20261106-suno-height';script.onload=resolve;script.onerror=()=>reject(Error('곡정보 폼을 불러오지 못했습니다. 다시 열어 주세요.'));document.head.append(script);});
+const formReady=window.NoaRecordForm?Promise.resolve():new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='/noa-record-form.js?v=20261107-suno-title';script.onload=resolve;script.onerror=()=>reject(Error('곡정보 폼을 불러오지 못했습니다. 다시 열어 주세요.'));document.head.append(script);});
 const fieldErrors={collection_revision_conflict:'묶음의 수록곡이 다른 곳에서 변경되었습니다. 취소 후 다시 열어 최신 목록을 확인해 주세요.',collection_unavailable:'선택한 묶음의 장르나 공개 상태가 바뀌었습니다. 취소 후 다시 열어 확인해 주세요.',invalid_collections:'곡 묶음 선택을 다시 확인해 주세요.',invalid_genre:'카테고리와 세부 장르를 선택해 주세요.',classification_ep_required:'K-POP 원곡은 EP 번호를 입력해 주세요.',classification_ep_conflict:'선택한 장르에 같은 EP 번호가 있습니다. 기존 곡을 확인해 주세요.',classification_source_linked:'원곡·파생곡 연결이 있는 곡입니다. 연결을 유지하기 위해 분류 변경을 보류했습니다.',classification_playlist_linked:'이 곡이 수록된 곡 묶음이 있습니다. 묶음의 수록곡에서 먼저 제외한 후 분류를 바꿔 주세요.',record_already_exists:'해당 장르·번호의 문서가 이미 있습니다. 곡 검색·수정에서 기존 곡을 열어 주세요.',number_required:'EP 또는 ACT 번호를 입력해 주세요.',original_ep_conflict:'이 EP 번호의 원곡이 이미 있습니다. 다른 번호를 쓰거나 기존 원곡을 수정해 주세요.',invalid_members:'ACT에는 해당 범위의 EP 10곡이 필요합니다. 수록곡 선택을 확인해 주세요.',act_requires_ep_range:'ACT 수록곡은 해당 EP 10곡을 번호순으로 선택해 주세요.',member_missing_or_ambiguous:'수록곡의 원본 연결이 없거나 중복되어 있습니다. 곡 연결을 먼저 확인해 주세요.',member_genre_or_ep_mismatch:'수록곡의 장르 또는 EP 번호가 이 목록과 맞지 않습니다.',invalid_url:'미디어 주소는 https 주소로 입력해 주세요.',invalid_media_host:'Suno 또는 YouTube의 올바른 공유 주소를 입력해 주세요.',title_required:'곡 제목을 입력해 주세요.',ambiguous_song:'같은 곡에 여러 원본이 연결되어 있습니다. 원본 연결을 먼저 검토해 주세요.',restore_required:'휴지통에 있는 곡입니다. 복원 후 수정해 주세요.'};
 const paths={movie:'M3 10h18v10H3zM3 10 2 5l18-3 1 5-18 3Zm4-6 3 4m3-5 3 4m-6 6 4 2-4 2z',upload:'M12 16V3m-5 5 5-5 5 5 M4 15v6h16v-6',replace:'M3 7h15l-3-3m6 13H6l3 3M18 7l-3 3M6 17l3-3',options:'m3 6 2 2 3-4 M11 6h10 M3 13l2 2 3-4 M11 13h10 M11 20h10',download:'M12 3v12m-5-5 5 5 5-5 M4 17v4h16v-4',external:'M13 4h7v7m0-7L9 15 M9 5H4v15h15v-5',apply:'m4 12 5 5L20 6',copy:'M8 8h12v13H8z M16 8V3H3v13h5',fold:'m5 14 7-7 7 7',edit:'m16 3 5 5-12 12-6 1 1-6L16 3ZM13 6l5 5',save:'M5 3h12l4 4v14H3V3h2Zm2 0v6h10V3M7 21v-8h10v8',cancel:'m6 6 12 12M6 18 18 6',ai:'m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z'};
 const omittedSongFields=new Set(['songDescription','confirmed','lyricsTranslation','productionPrompt','characterPrompt']);
@@ -159,6 +159,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
    if(displayRow&&selector.source==='music'&&data.writeKey!==selector.key)throw Error('선택한 곡과 편집 문서가 일치하지 않습니다.');
    state.data=data;state.showCoverNotice=text=>{status.textContent=text;};form.replaceChildren();
    const context=document.createElement('p');context.className='noa-edit-readonly';if(standalone)context.id='editor-classification';form.append(context);window.NoaBrowse.renderPath(context,{...data.context,key:data.writeKey,orderKey:byKey.get(selector.key)?.orderKey,title:data.fields.title},{base:kind==='영상'?'/noa-youtube.php':'/noa-music.php'});
+   let sunoTitleView=null;
    const inputs={};const classification=typeof data.fields.genre==='string'&&data.kind!=='playlist'&&selector.type!=='new'?window.NoaRecordForm.classificationEditor(form,{genre:data.fields.genre,ep:data.context.ep,inputs,collections:data.collections,selected:data.fields.collections||[]}):null;const sections=window.NoaRecordForm.sections(form);const aiFields=new Set(['title','lyrics','sunoPrompt','geminiPrompt','youtubeTitle','description','communityPost']);
    if(!labGeneration&&selector.type!=='new'){
     const link=document.createElement('a');
@@ -170,6 +171,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
    const locks=new Map(),previews=new Map(),generationFields=new Map();
    const vocalFrom=fields=>fields.vocal||({female:'여자솔로',male:'남자솔로',duet:'남녀듀엣'}[fields.cast]||'');
    function refreshField(key,fields){
+    if(key==='title')sunoTitleView?.update(state.data.sunoTitle);
     window.NoaRecordForm.set(inputs[key],key==='vocal'?vocalFrom(fields):fields[key]);
     if(key==='sunoUrl')inputs[key].setSavedCover(fields.sunoUrl,state.data.sunoCover);
     previews.get(key)?.();
@@ -180,20 +182,8 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
      event.stopPropagation();
      const text=read();
      if(!text){status.textContent=label+'에 복사할 내용이 없습니다.';return;}
-     try{
-      await navigator.clipboard.writeText(text);
-     }catch{
-      // WebViews can deny the clipboard API while allowing a selected text control to copy.
-      const buffer=document.createElement('textarea');
-      buffer.value=text;buffer.readOnly=true;
-      buffer.style.cssText='position:fixed;top:0;left:-9999px';
-      form.append(buffer);
-      let copied=false;
-      try{
-       buffer.focus({preventScroll:true});buffer.select();
-       copied=document.execCommand('copy');
-      }catch{}finally{buffer.remove();b.focus({preventScroll:true});}
-      if(!copied){status.textContent=label+' 복사 실패 · 이 칸의 글자를 길게 눌러 복사해 주세요.';return;}
+     if(!await window.NoaRecordForm.copyText(text,b)){
+      status.textContent=label+' 복사 실패 · 이 칸의 글자를 길게 눌러 복사해 주세요.';return;
      }
      status.textContent=label+' 복사 완료';
     };
@@ -246,6 +236,10 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
     const stop=state.stopLayout;state.stopLayout=()=>{observer.disconnect();stop?.();};
    }
    function field(key,label,tag='input'){
+    if(key==='sunoPrompt'){
+     sunoTitleView=window.NoaRecordForm.sunoTitleField(data.sunoTitle);
+     sections.add(key,sunoTitleView.wrap);
+    }
     const value=key==='vocal'?vocalFrom(data.fields):data.fields[key];
     const {wrap,heading,caption,input}=window.NoaRecordForm.createField(key,{type:data.packageType,value});
     if(key==='sunoUrl')input.setSavedCover(value,data.sunoCover);
