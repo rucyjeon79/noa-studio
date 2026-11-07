@@ -1,0 +1,98 @@
+{
+  "run": "https://github.com/rucyjeon79/noa-studio/actions/runs/42369262475",
+  "deployment": {
+    "commit": "df7e806c8d366eec2ab1f1b587640297cf96b6bb",
+    "changed": [
+      "noa-bridge/creative-core.php",
+      "noa-bridge/creative-publication.php",
+      "noa-bridge/member-access.php",
+      "noa-bridge/worker-status.php",
+      "noa-app/engine/creative.php",
+      "noa-app/jukebox/upload-core.php",
+      "noa-app/jukebox/drive-core.php",
+      "noa-work-status.php",
+      "noa-record-form.js",
+      "noa-creative.css",
+      "noa-creative.js",
+      "noa-browse-edit.js",
+      "noa-gpt.php",
+      "noa-bridge/creative.php",
+      "noa-lab-creative.php",
+      "noa-app/engine/registry.php",
+      "noa-app/engine/ai-lab.php"
+    ],
+    "sha256": {
+      "noa-bridge/creative-core.php": "f203ff95d43aa227d7c4e7f9ee40b117d012cfac9771f8a0bbc3db7f1be69dc1",
+      "noa-bridge/creative-publication.php": "a2801b6ee40ef2b7654bea24d6b6a05f0f7cd5410df2b955d88500ac6672437a",
+      "noa-bridge/member-access.php": "2a945fe4b02857aa1f1e57ce412a3a9390eeb71c1731fbedfd3fcacc46d8ff8d",
+      "noa-bridge/worker-status.php": "ea816810d3aaf58335eecc44c57da8e5a649376ddbb6eba087178c9446de8f4f",
+      "noa-app/engine/creative.php": "b5ffa4a145369fd459bc7f13ace0b09e47e429d0c045168ac7124cb7411791eb",
+      "noa-app/jukebox/upload-core.php": "6200afcd254951fef2134fe8a15331aa5d463c9d9a3bbaa9b0a2bfe7e40ca991",
+      "noa-app/jukebox/drive-core.php": "2b5aa21adf01afc24d907bbc38b440a194a1db22b2a9d0414360d4a0802d0efb",
+      "noa-work-status.php": "5273d7b65135e60f6a42b0cb25605af2870ac618f8ca21e7ff67667c3799d786",
+      "noa-record-form.js": "47bcd1ade3ca924f70fbd656746b3701b024fd18993162bb0f97131ffb698c32",
+      "noa-creative.css": "a3853e9bd3fc2f4a141e98af7077aad59f23ac0593a209c46f96e154e4453593",
+      "noa-creative.js": "956263ef9304837b98186a38e5beec68759c181e7aea840e95613a2aefafe83a",
+      "noa-browse-edit.js": "d8f2d4f4af7a18df70e931f3c83dbf30ae91c19922159edf828caa91b3db1040",
+      "noa-gpt.php": "67c351bebaa5228cd3bc7cc7d65217d5b10087ec8e88812dd65be3d2fd780253",
+      "noa-bridge/creative.php": "12f2fe14cf6d964c0925b361621361142bbc80ae6bd0a75bb0e3606b0a9e9b80",
+      "noa-lab-creative.php": "57471ad80515ec30b3d48e0a8001f95b35b2f978495c01008992e775ad90fe77",
+      "noa-app/engine/registry.php": "2e2a18398c60b58d27e78135184f9635c5846169b70d5821f2626a396bbb154e",
+      "noa-app/engine/ai-lab.php": "5f487bffb50eb848f06462014893413360f4b4ec14acf57071d4ce71b90c2c6c"
+    },
+    "protectedUnchanged": 11,
+    "databaseWrites": 0,
+    "memberRowsChanged": 0,
+    "pointDebits": 0,
+    "pricesSeeded": false
+  },
+  "verification": {
+    "draftId": "42ae712fd385ca864b362982a3a00d7f",
+    "checks": [
+      {
+        "step": "intent_analysis",
+        "jobId": "4ed1856bfd3f89f281eb2f7e6431198b",
+        "state": "succeeded"
+      },
+      {
+        "step": "creative_fields",
+        "jobId": "7cc72ffc122ec4a6f7a6ebb019492379",
+        "state": "succeeded"
+      },
+      {
+        "step": "individual_revision",
+        "jobId": "2f471407f72ebc929a5e9afa545329f8",
+        "state": "succeeded"
+      }
+    ],
+    "schema": {
+      "draftId": "42ae712fd385ca864b362982a3a00d7f",
+      "revision": 1
+    },
+    "questionCount": 7,
+    "revision": {
+      "revision": 24,
+      "versions": 3
+    },
+    "publication": {
+      "publication": {
+        "key": "creator:8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918:42ae712fd385ca864b362982a3a00d7f",
+        "category": "당신의 이야기, 우리의 음악",
+        "genre": "your-story",
+        "act": "",
+        "collections": [],
+        "at": "2026-11-07T11:48:28+00:00",
+        "href": "/noa-music.php?genre=your-story&track=creator%3A8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918%3A42ae712fd385ca864b362982a3a00d7f"
+      },
+      "publicProjectionVerified": true,
+      "duplicatePublishSameSong": true,
+      "realAudioVerified": true,
+      "realImageVerified": true
+    },
+    "cleanup": {
+      "softDeleted": true,
+      "draftHistoryRetained": true,
+      "assetsRetained": true
+    }
+  }
+}

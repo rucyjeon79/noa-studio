@@ -59,3 +59,43 @@ JUKEBOX `nu_cleanup_verified`는 creative draft 원본을 자동 삭제하지 �
 운영 검증은 고유 `[N80 운영 검증용, 실제 곡 아님]` 초안에 한정한다. 기존 private AI runner로 분석·곡정보·개별 수정, 실제 합성 음원 업로드와 최적화, 이미지 검증, 게시·재시도·공개 프로젝션을 확인한다. 검증 곡은 확인 즉시 삭제 표시하고 초안은 삭제 보관함으로 옮긴다. 연결 파일·이력은 유지한다. 짧은 수명의 서명된 점검 파일은 검증 후 제거한다. 다른 회원·기존 곡은 변경하지 않는다.
 
 `noa-creative-drafts.yml`만 이번 공유 소스를 배포한다. 다른 배포 경로는 `[creative-drafts]` 커밋에서 제외한다. 배포는 현재 main 검사·운영 preimage·동시 변경 보호·해시 대조·복구를 사용한다. 운영 증거는 Actions의 `creative-live-*`, 화면 증거는 `creative-proof-*` artifact에 남긴다. 검증 실행 결과는 해당 Actions 실행을 기준으로 확인하며 이 문서 자체는 성공 증거를 대신하지 않는다.
+
+
+## 2026-11-07 검수 기록
+
+- 최초 운영 실행: https://github.com/rucyjeon79/noa-studio/actions/runs/42369262475
+- 배포 코드: `df7e806c8d366eec2ab1f1b587640297cf96b6bb`. 운영 파일 17개를 대조하고 보호 대상 11개가 유지되었음을 확인했다.
+- 실제 N80 AI: 이야기 분석 → 부족한 조건 7개에 각각 4개 선택지 → 의도 확정 → 생성 정보 100% → 커뮤니티 글 개별 수정·적용. 분석·생성·수정 3개 작업 모두 succeeded.
+- 실제 기존 음원 처리기: 2초 합성 MP3 업로드·최적화, WebP 카드 연결, 실제 파일 검증, 정식 사연곡 등록, 공개 데이터 투영, 동일 요청 재전송 시 동일 곡 반환을 확인했다.
+- 검증용 곡은 확인 즉시 공개 목록에서 제외했다. 검증용 초안은 삭제 보관함으로 이동했고 이력과 연결 파일은 유지했다. 기존 회원의 곡을 검증 데이터로 사용하지 않았다.
+- CI: PHP 8.2/MySQL 8의 소유권·리비전 충돌·응답 유실 후 재시도·사지선다 검증·작업 중복 방지·후보 적용·이력 복원·명시적 삭제/복구·원본 보존·실제 자산 조건·등록 재시도 검증 통과. 실제 PHP/MySQL을 사용하는 브라우저 흐름은 모바일 320/390px, PC 1280px에서 통과했다. 브라우저 CI의 AI 결과만 고정 fixture이며 운영 검증에서는 실제 AI 응답을 받았다.
+- 사이트맵 보완: AI LAB에 등록된 내부 화면을 동일 레지스트리에서 인식하도록 수정했고 `tests/sitemap/registry_test.php`가 통과했다. 운영 사이트맵에도 ‘내 창작 보관함’과 로그인 조건이 노출된다.
+
+영구 보관한 실행 증거: [최초 운영 검증 JSON](operations/creative-drafts-20261107/first-live-verification.json). 작업 ID·등록 결과·소스 해시·정리 결과를 포함하며 인증정보는 포함하지 않는다.
+
+최종 사이트맵 보완 배포도 [Actions 42369612114](https://github.com/rucyjeon79/noa-studio/actions/runs/42369612114)에서 검증·배포·실제 AI/미디어/게시 점검이 모두 통과했다. 운영 소스 기준 커밋은 `4d387ee350dbd13c4e017bfb5886c3689c248848`이며, [최종 운영 검증 JSON](operations/creative-drafts-20261107/final-live-verification.json)에 전체 소스 해시와 마지막 실행 결과를 보존한다. 이 배포에서 실제 변경한 운영 파일은 `noa-sitemap.php` 한 개다.
+
+### 확인한 범위와 남은 검증
+
+운영 실증은 표시된 각 실행에서 고유한 합성 테스트 사연곡 한 건으로 수행했다. 실제 사용자 Suno/YouTube URL의 외부 응답, 오리지널 EP 신규 번호·사용자 플레이리스트에 대한 운영 게시, 장시간·대용량 실제 음원, 장기간 보관·다중 기기 세션은 이번 운영 점검에서 실증하지 않았다. 구현·서버 검증 조건과 실증한 범위를 구분한다. 외부 서비스 실패 시 초안은 보존하고 성공으로 표시하지 않는다.
+
+저장소 전체의 기존 별도 검사에는 다음 실패가 남았다. 이 창작 모듈의 성공을 저장소 전체 정상화로 해석하지 않는다.
+
+- `tests/youtube/coming_fixture.py`: 기존 음악 페이지가 사용하는 `personal-listening.php`가 격리 fixture에 없어 렌더 중단. 해당 음악 페이지 의존성은 이번 작업 이전에도 존재했다.
+- 기존 AInoa 포인트 검사: `regular_or_creator_required` 기대값 관련 실패. 이번 권한 변경은 창작 페이지/API 경로 추가에 한정되며 회원 등급 기준을 변경하지 않았다.
+- 기존 회원 메뉴 검사: 데스크톱 메뉴 개수 기대값 불일치.
+- 전체 품질 검사: 병행 반영된 AMT 배너 목적지와 `tests/sitemap/home_patch_test.py`의 기존 기대값 불일치.
+- 회원 화면 검사: 기존 ‘음악으로 이어지는 순간’ 제목 대기 시간 초과.
+
+### 변경 파일과 연결
+
+| 구분 | 파일 |
+|---|---|
+| 문서·초안·버전 | `bridge/creative-core.php` |
+| API·권한·자산·확정 | `bridge/creative.php`, `bridge/creative-publication.php`, `bridge/member-access.php` |
+| N80 실행·메뉴·모니터링 | `deploy/noa-app/engine/creative.php`, `registry.php`, `ai-lab.php`, `deploy/noa-sitemap.php`, `bridge/worker-status.php`, `deploy/noa-work-status.php` |
+| 화면·공통 폼 | `deploy/noa-lab-creative.php`, `deploy/noa-creative.js`, `deploy/noa-creative.css`, `deploy/noa-record-form.js`, `deploy/noa-browse-edit.js` |
+| 기존 작업기·보존 | `deploy/noa-gpt.php`, `integrations/private-worker/worker.py`, `deploy/noa-app/jukebox/upload-core.php`, `drive-core.php`, `scripts/noa_media_retention.php` |
+| 배포·실증·검증 | `.github/workflows/noa-creative-drafts.yml`, `scripts/noa_creative_release.py`, `scripts/noa_creative_live.py`, `scripts/noa_creative_live.php`, `tests/creative/*`, 기존 GPT/메뉴 검사 fixture |
+
+기존 공유 배포 workflow에는 `[creative-drafts]` 변경을 이번 배포 경로에 맡기는 조건을 추가했다. 다른 기존 검사 자체를 통과 처리하거나 삭제하지 않았다. private worker의 실제 `worker.py`도 작업 ID를 명시해 읽도록 갱신했다(`rucyjeon79/noa-private-worker`, `c09084196beaf38a77ffa07591b74c8772c73d9e`).

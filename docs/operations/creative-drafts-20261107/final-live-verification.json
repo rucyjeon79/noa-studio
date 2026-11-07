@@ -1,0 +1,83 @@
+{
+  "run": "https://github.com/rucyjeon79/noa-studio/actions/runs/42369612114",
+  "deployment": {
+    "commit": "4d387ee350dbd13c4e017bfb5886c3689c248848",
+    "changed": [
+      "noa-sitemap.php"
+    ],
+    "sha256": {
+      "noa-bridge/creative-core.php": "f203ff95d43aa227d7c4e7f9ee40b117d012cfac9771f8a0bbc3db7f1be69dc1",
+      "noa-bridge/creative-publication.php": "a2801b6ee40ef2b7654bea24d6b6a05f0f7cd5410df2b955d88500ac6672437a",
+      "noa-bridge/member-access.php": "2a945fe4b02857aa1f1e57ce412a3a9390eeb71c1731fbedfd3fcacc46d8ff8d",
+      "noa-bridge/worker-status.php": "ea816810d3aaf58335eecc44c57da8e5a649376ddbb6eba087178c9446de8f4f",
+      "noa-app/engine/creative.php": "b5ffa4a145369fd459bc7f13ace0b09e47e429d0c045168ac7124cb7411791eb",
+      "noa-app/jukebox/upload-core.php": "6200afcd254951fef2134fe8a15331aa5d463c9d9a3bbaa9b0a2bfe7e40ca991",
+      "noa-app/jukebox/drive-core.php": "2b5aa21adf01afc24d907bbc38b440a194a1db22b2a9d0414360d4a0802d0efb",
+      "noa-sitemap.php": "5148c57cfa1d89ca25744e795fb1584397092b07daf81123fe02e13389872864",
+      "noa-work-status.php": "5273d7b65135e60f6a42b0cb25605af2870ac618f8ca21e7ff67667c3799d786",
+      "noa-record-form.js": "47bcd1ade3ca924f70fbd656746b3701b024fd18993162bb0f97131ffb698c32",
+      "noa-creative.css": "a3853e9bd3fc2f4a141e98af7077aad59f23ac0593a209c46f96e154e4453593",
+      "noa-creative.js": "956263ef9304837b98186a38e5beec68759c181e7aea840e95613a2aefafe83a",
+      "noa-browse-edit.js": "d8f2d4f4af7a18df70e931f3c83dbf30ae91c19922159edf828caa91b3db1040",
+      "noa-gpt.php": "67c351bebaa5228cd3bc7cc7d65217d5b10087ec8e88812dd65be3d2fd780253",
+      "noa-bridge/creative.php": "12f2fe14cf6d964c0925b361621361142bbc80ae6bd0a75bb0e3606b0a9e9b80",
+      "noa-lab-creative.php": "57471ad80515ec30b3d48e0a8001f95b35b2f978495c01008992e775ad90fe77",
+      "noa-app/engine/registry.php": "2e2a18398c60b58d27e78135184f9635c5846169b70d5821f2626a396bbb154e",
+      "noa-app/engine/ai-lab.php": "5f487bffb50eb848f06462014893413360f4b4ec14acf57071d4ce71b90c2c6c"
+    },
+    "protectedUnchanged": 11,
+    "databaseWrites": 0,
+    "memberRowsChanged": 0,
+    "pointDebits": 0,
+    "pricesSeeded": false
+  },
+  "verification": {
+    "draftId": "87104ab3f3b590da57e0957918415b34",
+    "checks": [
+      {
+        "step": "intent_analysis",
+        "jobId": "80c3c10b4634702805377f3a7924cb20",
+        "state": "succeeded"
+      },
+      {
+        "step": "creative_fields",
+        "jobId": "7073402f50466713185f8f59751477c0",
+        "state": "succeeded"
+      },
+      {
+        "step": "individual_revision",
+        "jobId": "c6aeaa95e3f9d9b9668c3dc325d3dc6e",
+        "state": "succeeded"
+      }
+    ],
+    "schema": {
+      "draftId": "87104ab3f3b590da57e0957918415b34",
+      "revision": 1
+    },
+    "questionCount": 6,
+    "revision": {
+      "revision": 23,
+      "versions": 3
+    },
+    "publication": {
+      "publication": {
+        "key": "creator:8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918:87104ab3f3b590da57e0957918415b34",
+        "category": "당신의 이야기, 우리의 음악",
+        "genre": "your-story",
+        "act": "",
+        "collections": [],
+        "at": "2026-11-07T11:53:20+00:00",
+        "href": "/noa-music.php?genre=your-story&track=creator%3A8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918%3A87104ab3f3b590da57e0957918415b34"
+      },
+      "publicProjectionVerified": true,
+      "duplicatePublishSameSong": true,
+      "realAudioVerified": true,
+      "realImageVerified": true
+    },
+    "cleanup": {
+      "softDeleted": true,
+      "draftHistoryRetained": true,
+      "assetsRetained": true
+    }
+  }
+}
