@@ -73,6 +73,8 @@ function renderChat(){
  syncComposer();
 }
 function syncComposer(){
+ for(const key of ['record','assets','publish','chat-log','intent'])$(key).inert=busy;
+ for(const key of ['new','back','jobs','retry-save','reload'])$(key).disabled=busy;
  const c=draft?.creative,hasAnalysis=!!Object.keys(c?.intent||{}).length||!!Object.keys(c?.questions||{}).length;
  const storyMode=!c?.publication&&(!hasAnalysis||storyEditing)&&!jobActive;
  $('story-compose').hidden=!storyMode;
