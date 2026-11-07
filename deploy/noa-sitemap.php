@@ -96,6 +96,7 @@ function noa_sitemap_unlisted_pages(string $root):array{
     foreach(noa_sitemap_registry() as $group)foreach($group['routes'] as $route)$known[(string)parse_url($route[3],PHP_URL_PATH)]=true;
     require_once __DIR__.'/noa-app/engine/workspaces.php';
     foreach(n80_workspaces() as $id=>$workspace)foreach(n80_workspace_groups($id) as $group)foreach($group['routes'] as $route)$known[(string)parse_url($route[3],PHP_URL_PATH)]=true;
+    foreach(n80_lab_tools() as $tool)if(isset($tool['page']))$known['/'.$tool['page']]=true;
     $missing=[];
     foreach(glob(rtrim($root,'/').'/noa-*.php')?:[] as $file){
         $path='/'.basename($file);

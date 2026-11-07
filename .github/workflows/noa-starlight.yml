@@ -42,7 +42,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with: {name: 'noa-starlight-render-${{ github.run_id }}', path: starlight-proof/, retention-days: 2}
   deploy:
-    if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[support-release]') && !contains(github.event.head_commit.message, '[theme-clock]') && !contains(github.event.head_commit.message, '[menu-tree]') && !contains(github.event.head_commit.message, '[n80-runtime]')
+    if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[support-release]') && !contains(github.event.head_commit.message, '[theme-clock]') && !contains(github.event.head_commit.message, '[menu-tree]') && !contains(github.event.head_commit.message, '[n80-runtime]') && !contains(github.event.head_commit.message, '[creative-drafts]')
     needs: verify
     environment: production
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
