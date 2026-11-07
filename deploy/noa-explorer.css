@@ -12,7 +12,7 @@
 .n80-dialog h2{font-size:1.15rem;margin:12px 0}
 .n80-search-bar{display:flex;gap:8px;min-width:0}
 .n80-search-bar input{flex:1;min-width:0;width:100%}
-.n80-search input,.n80-search button,.n80-dialog button{box-sizing:border-box;min-height:44px;font:inherit;color:inherit;background:var(--noa-raised,#22252a);border:1px solid var(--noa-line,#555);border-radius:6px;padding:8px 12px}
+.n80-search input,.n80-search button,.n80-dialog button{box-sizing:border-box;min-height:44px;font:inherit;color:inherit;background:var(--noa-surface,#22252a);border:1px solid var(--noa-line,#555);border-radius:6px;padding:8px 12px}
 .n80-search button,.n80-dialog button{cursor:pointer}
 .n80-results{display:grid;gap:6px}
 .n80-result{display:grid;gap:4px;text-align:start;width:100%;overflow-wrap:anywhere}
