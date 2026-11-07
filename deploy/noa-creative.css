@@ -36,3 +36,5 @@
 .creative-main [inert]{opacity:.65}
 #ainoa-conversation.creative-conversation.ainoa-conversation-compact .ainoa-conversation-actions{padding:8px 12px}
 .creative-title-icon{width:28px;height:28px;vertical-align:-2px;margin-right:10px;fill:none;stroke:currentColor;stroke-width:1.6;color:var(--noa-accent)}
+
+#ainoa-conversation.creative-conversation :is(#creative-question-next,#creative-story-next){width:100%;background:var(--noa-accent);color:var(--noa-accentText);font-weight:700}

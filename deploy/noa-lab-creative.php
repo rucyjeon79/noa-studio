@@ -10,8 +10,9 @@ $_SESSION['n80_creative_csrf']??=bin2hex(random_bytes(32));$csrf=$_SESSION['n80_
 <div id="creative-guide" hidden>
 <div id="creative-chat-log" class="ainoa-conversation-log" role="log" aria-label="창작 대화 기록"></div>
 <button type="button" id="creative-fortune-start">오늘의 운세로 스토리 만들기</button><div id="creative-fortune-options"></div>
+<button type="button" id="creative-story-next" hidden>이 이야기로 다음</button>
 <div id="creative-questions"></div><div id="creative-intent"></div>
-<div id="creative-composer"><form id="creative-story-compose"><label class="creative-story" for="creative-story">AInoa에게 이야기하기</label><textarea id="creative-story" maxlength="20000" rows="3" placeholder="노래로 남기고 싶은 이야기를 들려주세요."></textarea><button type="submit" id="creative-analyze">다음</button></form><div id="creative-answer-compose" hidden></div></div>
+<div id="creative-composer"><form id="creative-story-compose"><label class="creative-story" for="creative-story">추가로 전하고 싶은 이야기</label><textarea id="creative-story" maxlength="20000" rows="3" placeholder="추가할 내용이 있을 때만 적어 주세요."></textarea><button type="submit" id="creative-analyze">전송</button></form><div id="creative-answer-compose" hidden></div></div>
 </div>
 <p id="creative-job" role="status"></p><button type="button" id="creative-jobs">생성 작업 이력</button><button id="creative-job-result" type="button" hidden>보존된 생성 결과 확인</button><div id="creative-record" tabindex="-1"></div>
 <section id="creative-assets" hidden><h2>실제 제작 파일 연결</h2><p>MP3·WAV는 업로드 후 음질 최적화가 시작됩니다. 전송이 끊기면 같은 파일을 다시 선택해 이어갈 수 있습니다.</p><div class="creative-filters"><label>음원 파일<input id="creative-audio-file" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav"></label><label>카드 이미지<input id="creative-cover-file" type="file" accept="image/jpeg,image/png,image/webp"></label></div><progress id="creative-upload-progress" max="100" value="0" hidden></progress><p id="creative-asset-state" role="status"></p><button type="button" id="creative-audio-retry" hidden>음원 처리 재시도</button><div id="creative-media-preview"></div></section>
