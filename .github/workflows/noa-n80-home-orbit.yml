@@ -55,19 +55,7 @@ jobs:
         run: python scripts/noa_n80_home_orbit_release.py
       - name: Verify public cache revisions and activity code without starting work
         id: live
-        run: |
-          python - <<'PY'
-          import urllib.request,hashlib
-          from pathlib import Path
-          for name in ['noa-ui.js','noa-starlight.css','noa-browse-edit.js','noa-channel-batch.js','noa-muvy.js','noa-app/jukebox/upload.js']:
-              with urllib.request.urlopen('https://noastudio.ai.kr/'+name+'?n80-orbit=${{ github.sha }}',timeout=30) as r:
-                  assert r.read()==Path('deploy',name).read_bytes(), name
-          with urllib.request.urlopen('https://noastudio.ai.kr/?n80-orbit=${{ github.sha }}',timeout=30) as r:
-              html=r.read().decode()
-              assert 'noa-ui.js?v='+hashlib.sha256(Path('deploy/noa-ui.js').read_bytes()).hexdigest() in html
-              assert 'Fatal error' not in html
-          print('N80_HOME_ORBIT_LIVE_ASSETS_OK')
-          PY
+        run: python tests/n80-home-orbit/live-assets.py
       - name: Restore only owned sources if activation fails
         if: failure()
         run: |
