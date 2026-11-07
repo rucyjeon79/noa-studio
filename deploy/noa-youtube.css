@@ -22,7 +22,7 @@
 /* Search and all-videos results follow the same thumbnail-first list as an expanded ACT. */
 #yt-videos:not([hidden]) {display:grid;grid-template-columns:minmax(0,1fr);gap:0}
 #yt-videos > .yt-card:not([hidden]) {
- display:grid;grid-template-columns:clamp(72px,26%,112px) minmax(0,1fr);
+ display:grid;grid-template-columns:clamp(80px,26%,112px) minmax(0,1fr);
  align-content:center;align-items:center;gap:2px 10px;padding:8px;
  border-bottom:1px solid var(--noa-line);min-width:0;
 }
