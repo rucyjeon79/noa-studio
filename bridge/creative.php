@@ -19,7 +19,7 @@ try{$db=noa_bridge_pdo();
  }
  if($method!=='POST')ncd_reply(405,['error'=>'method_not_allowed']);
  if(in_array($action,['chunk','cover'],true)){
-  require_once __DIR__.'/creative-publication.php';$id=(string)($_GET['id']??'');$r=ncd_row($db,$id,$owner);ncd_editable($r,(int)($_GET['revision']??-1));
+  require_once __DIR__.'/creative-publication.php';$id=(string)($_GET['id']??'');$r=ncd_row($db,$id,$owner);ncd_editable($r,$action==='chunk'?$r['revision']:(int)($_GET['revision']??-1));
   if($action==='chunk'){$u=nu_row($db,(string)($_GET['upload']??''));if($u['song_key']!==$r['doc_key']||$u['requested_by']!==$owner)throw new DomainException('own_upload_required');$index=filter_var($_GET['index']??'',FILTER_VALIDATE_INT);if($index===false)throw new InvalidArgumentException('invalid_chunk');ncd_reply(200,nu_chunk($db,$u['id'],$index,file_get_contents('php://input',false,null,0,ND_CHUNK+1)));}
   $bytes=file_get_contents('php://input',false,null,0,6291457);if(strlen($bytes)>6291456)throw new InvalidArgumentException('image_too_large');ncd_reply(200,['draft'=>ncd_view(ncd_cover($db,$owner,['id'=>$id,'revision'=>$r['revision']],$bytes))]);
  }
@@ -31,7 +31,7 @@ try{$db=noa_bridge_pdo();
  require_once __DIR__.'/creative-publication.php';
  if($action==='preview')ncd_reply(200,ncd_preview($db,$owner,$b,$access['admin']));
  if($action==='publish')ncd_reply(200,ncd_publish($db,$owner,$b,$access['admin']));
- $r=ncd_row($db,(string)($b['id']??''),$owner);ncd_editable($r,(int)($b['revision']??-1));
+ $r=ncd_row($db,(string)($b['id']??''),$owner);ncd_editable($r,in_array($action,['finish','retry'],true)?$r['revision']:(int)($b['revision']??-1));
  if($action==='verifyUrl')ncd_reply(200,['draft'=>ncd_view(ncd_verify_video($db,$owner,$b))]);
  if($action==='sunoCover'){$source=noa_sound_suno($r['document']['body']);$prepared=nsc_prepare($db,$r['doc_key'],$source);if(!$prepared){if($source!==''&&nsc_preview(nj_find($db,$r['doc_key']),$r['doc_key'],$source)){$prepared=['source'=>$source,'bytes'=>file_get_contents(nj_file(nj_find($db,$r['doc_key'])['cover_path']))];}else throw new DomainException('suno_verification_failed');}ncd_reply(200,['draft'=>ncd_view(ncd_cover($db,$owner,$b,$prepared['bytes'],$prepared))]);}
  if($action==='init'){$b['key']=$r['doc_key'];ncd_reply(200,nu_initialize($db,$b,$owner));}
