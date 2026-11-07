@@ -10,7 +10,7 @@ async function check(browser, width, music) {
   const page = await browser.newPage({viewport: {width, height: 850}});
   try {
     const markup = music
-      ? '<section id="music-browse"></section><audio id="sound-player"></audio><div id="songs" class="grid">' + song('첫 곡', true) + song('둘째 곡', false) + '</div>'
+      ? '<section id="music-browse"></section><audio id="sound-player"></audio><div><img id="dock-cover" hidden><span id="dock-cover-empty">♫</span></div><div id="songs" class="grid">' + song('첫 곡', true) + song('둘째 곡', false) + '</div>'
       : '<div id="yt-videos" class="yt-grid">' + video('공개 영상') + video('공개 예정 영상', true) + '</div>';
     await page.setContent(`<!doctype html><html lang="ko" data-noa-precision="ios" data-noa-theme="light"><meta name="viewport" content="width=device-width,initial-scale=1"><body class="noa-page ${music ? 'noa-sound-page' : ''}"><main>${markup}</main></body></html>`);
     const styles = music
