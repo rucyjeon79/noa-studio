@@ -1,6 +1,9 @@
 <?php
 /** Exercise stale edits through the real SQL owner, including persisted legacy jobs. */
 (function()use($db,$owner){
+ $schema=require __DIR__.'/../../bridge/taxonomy-schema.php';$db->exec('CREATE TABLE IF NOT EXISTS noa_production_rules '.$schema['noa_production_rules'].' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
+ $rule='Preserve the selected field and user request.';$digest=hash('sha256',$rule);
+ $db->prepare('INSERT IGNORE INTO noa_production_rules(rule_id,scope,genre_id,format,body,sha256,source_path,source_sha256,updated_by) VALUES(?,?,?,?,?,?,?,?,?)')->execute(['test:creative:common','common',null,'text',$rule,$digest,'test',$digest,'fixture']);
  $id=str_repeat('1',32);$r=ncd_create($db,$owner,$id,'오래된 메모와 추억을 한국어 노래로 만든다.');$d=$r['document'];
  foreach(NCD_CONDITIONS as $key)$d['_creative']['intent'][$key]=['value'=>'한국어 노래','evidence'=>'한국어 노래','source'=>'story'];
  $d['_creative']['intentConfirmed']=true;$d['_creative']['intentHash']=ncd_hash($d['_creative']['intent']);$r=ncd_atomic($db,fn()=>ncd_put($db,$r,$d,$owner));
