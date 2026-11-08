@@ -24,5 +24,21 @@
   "stateOwner": "N80 Engine existing agent_movie job store",
   "executor": "N80 Auto registered ai.daily_shorts runner; persistent browser executor is not connected. Never present schedule registration as completed production.",
   "scheduleOwner": "N80 Auto",
-  "conversationDependent": false
+  "conversationDependent": false,
+  "genrePlaylistIds": {
+    "PLEPMKciKgvch9TGMAcBdKzhVt1QeYsfKB": "your-story",
+    "PLAdcqFdHLsRY": "pop-original",
+    "PLE7YFwPNuiQU": "panpop",
+    "PLZ_iysnwctGY": "joseon-ballad",
+    "PLEPMKciKgvcjYJdD0D6hChEA_xJAcbgIR": "jpop-original",
+    "PLEPMKciKgvchm4RILm2TiZeQyLa2lpXph": "fantasy-ambient-edm",
+    "PLEPMKciKgvchWtAHd4rw9WO-YvEcY1HJa": "groovy-airy-pop",
+    "PLEPMKciKgvcipLVoMW_snd7Sa7ngEeNip": "echoes-of-joseon",
+    "PLEPMKciKgvcieBj5RCB-AUx6xGnoHoX4v": "thai-original",
+    "PLEPMKciKgvcgOQxTglHJwywly7Pn61Lpo": "dreamy-deep-house",
+    "PLEPMKciKgvcjGmuO2ZcqrkHGfD5Qbb_Eb": "cover-reborn",
+    "PLEPMKciKgvcg9kyEaDMnPUwref06gvhMy": "edm-kpop-club",
+    "PLEPMKciKgvcg3UGq6o9QYTwCdZ1QuA4lz": "latin-afrobeats-edm",
+    "PLEPMKciKgvciUneU97pbHPJGmH52Q6hZe": "narrative-piano-indie"
+  }
 }
