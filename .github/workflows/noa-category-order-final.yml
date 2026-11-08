@@ -15,7 +15,7 @@ jobs:
         env: {MYSQL_ROOT_PASSWORD: noa-test-only, MYSQL_DATABASE: noa_catalog_test}
         ports: ['3306:3306']
         options: --health-cmd="mysqladmin ping -h localhost -pnoa-test-only" --health-interval=5s --health-timeout=5s --health-retries=20
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
@@ -105,7 +105,7 @@ jobs:
   production:
     if: (github.event_name != 'pull_request' && !contains(github.event.head_commit.message, '[ainoa-release]')) && !contains(github.event.head_commit.message, '[n80-runtime]')
     needs: candidate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: production
     timeout-minutes: 25
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}

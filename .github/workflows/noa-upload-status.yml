@@ -13,7 +13,7 @@ concurrency: {group: 'noa-upload-status-${{ github.sha }}', cancel-in-progress: 
 jobs:
   candidate:
     if: "!contains(github.event.head_commit.message, '[n80-jukebox]')"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     services:
       mysql:
@@ -65,7 +65,7 @@ jobs:
     needs: candidate
     environment: production
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
