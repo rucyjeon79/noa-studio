@@ -15,6 +15,7 @@ if(($_GET['mode']??'')==='running'){echo json_encode(['ok'=>true]);exit;}
 if(($_GET['mode']??'')==='failed'){echo json_encode(ncd_worker($db,'workerFail',$id,['reason'=>'generation_failed']));exit;}
 if($j['operation']==='analyze'){$questions=[];foreach(NCD_CONDITIONS as $k)$questions[$k]=['prompt'=>$k.' 선택','options'=>['따뜻하고 담담한 선택','밝고 경쾌한 선택','쓸쓸하고 느린 선택','강렬하고 빠른 선택']];$result=['intent'=>[],'questions'=>$questions];}
 else{$fields=[];foreach($j['targets'] as $k)$fields[$k]=$k==='creativeFields'?['storyPlan'=>'퇴근길 가족을 떠올리는 이야기']:($k==='title'?'집으로 가는 마음':$k.' 생성된 내용');$result=['fields'=>$fields,'vocal'=>'여자솔로'];}
+if($j['operation']==='revise'&&$j['field']==='lyrics')$result['fields']['lyrics']=implode(chr(10).chr(10),array_fill(0,9,"[Verse]\\n오늘의 마음을 노래해\\n조용히 네게 전하고 싶어"));
 if($j['operation']==='revise'&&$j['field']==='title'&&isset($_GET['title']))$result['fields']['title']=$_GET['title'];
 echo json_encode(ncd_worker($db,'save',$id,['text'=>ncd_json($result)]));
 ''')

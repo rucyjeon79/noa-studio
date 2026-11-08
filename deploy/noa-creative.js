@@ -211,7 +211,8 @@ function decorateRecordField({key,label,wrap,heading,input,iconCommand,fieldAiBu
   ai.onclick=()=>{entry.userOpen=!entry.userOpen;paintRecordFeedback();};ai.setAttribute('aria-expanded','false');
   feedback.addEventListener('input',e=>e.stopPropagation());feedback.addEventListener('change',e=>e.stopPropagation());
   request.oninput=()=>queue({requests:{[key]:request.value}});
-  Object.assign(entry,{ai,feedback,request,requestLabel,actions,revise,result,userOpen:false});
+  const mark=iconCommand('button','ai','AI').querySelector('svg').cloneNode(true);mark.setAttribute('aria-hidden','true');
+  Object.assign(entry,{ai,feedback,request,requestLabel,actions,revise,result,mark,userOpen:false});
  }
  if(['audioFileLocation','cardImageLocation'].includes(key)){
   heading.querySelector('.noa-edit-edit')?.remove();const audio=key==='audioFileLocation',pick=iconCommand('button','upload',audio?'음원 업로드':'카드 이미지 업로드');
@@ -220,6 +221,28 @@ function decorateRecordField({key,label,wrap,heading,input,iconCommand,fieldAiBu
   if(audio)for(const id of ['upload-progress','asset-state','audio-retry','media-preview'])wrap.append($(id));
  }
 }
+function aiResultHeader(f,title,complete=false){
+ const head=el('div',undefined,'creative-ai-heading'),orb=el('span',undefined,'creative-ai-orb');orb.setAttribute('aria-hidden','true');orb.append(f.mark.cloneNode(true));
+ const copy=el('div',undefined,'creative-ai-heading-copy');copy.append(el('span','AInoa','creative-ai-name'),el('h3',title));head.append(orb,copy);
+ if(complete)head.append(el('span','완성','creative-ai-complete'));
+ else {const wave=el('span',undefined,'creative-ai-wave');wave.setAttribute('aria-hidden','true');for(let i=0;i<4;i++)wave.append(el('i'));head.append(wave);}
+ return head;
+}
+function paintAiResult(f,key,{running,failed,proposal,review}){
+ // Keep the same result node across status reads: no replayed entrance, lost focus or closed comparisons.
+ const signature=JSON.stringify([running,failed,proposal?.jobId,proposal?.value,proposal?draft.fields[key]:null,review]);
+ if(f.resultSignature===signature)return;f.resultSignature=signature;f.result.replaceChildren();
+ if(running){const panel=el('div',undefined,'creative-ai-surface creative-ai-working');panel.setAttribute('role','status');panel.append(aiResultHeader(f,'요청하신 내용을 다듬고 있어요'));const lines=el('div',undefined,'creative-ai-lines');lines.setAttribute('aria-hidden','true');for(let i=0;i<3;i++)lines.append(el('span'));panel.append(lines);f.result.append(panel);}
+ if(proposal){
+  const panel=el('section',undefined,'creative-ai-surface creative-compare');panel.dataset.arrived=String(f.presentedProposal!==proposal.jobId);f.presentedProposal=proposal.jobId;panel.setAttribute('aria-label','AI 수정안');panel.append(aiResultHeader(f,'새 수정안이 준비됐어요',true));
+  const value=el('pre',text(proposal.value),'creative-ai-value');value.tabIndex=0;value.setAttribute('aria-label','새 수정안 내용');panel.append(value);
+  if(text(proposal.value).length>500||text(proposal.value).split('\n').length>8){const expand=el('button','전체 펼치기','creative-ai-expand');expand.type='button';expand.setAttribute('aria-expanded','false');expand.onclick=()=>{const open=panel.toggleAttribute('data-expanded');expand.setAttribute('aria-expanded',String(open));expand.textContent=open?'접어서 보기':'전체 펼치기';};panel.append(expand);}
+  const actions=el('div',undefined,'creative-ai-result-actions'),apply=button('수정안 적용',()=>mutate('proposal',{field:key,decision:'apply'}));apply.className='creative-ai-apply';actions.append(apply,button('현재 내용 유지',()=>mutate('proposal',{field:key,decision:'cancel'})));panel.append(actions);
+  const original=el('details',undefined,'creative-ai-original');original.append(el('summary','현재 내용과 비교하기'),el('pre',text(draft.fields[key])));panel.append(original);f.result.append(panel);
+ }
+ if(failed&&!proposal){const note=el('p',message(currentJob?.error||'generation_failed'),'creative-ai-failed');note.setAttribute('role','status');f.result.append(note);}
+ if(review){const notice=el('div',undefined,'creative-ai-review');notice.append(el('p','관련 내용이 바뀌었어요. 함께 확인해 주세요.'),button('확인했어요',()=>mutate('review',{field:key})));f.result.append(notice);}
+}
 function paintRecordFeedback(){
  const c=draft?.creative,published=!!c?.publication;
  for(const [key,f]of recordFields){
@@ -227,15 +250,14 @@ function paintRecordFeedback(){
   if(published)for(const b of f.heading.querySelectorAll('button:not(.noa-edit-copy)'))b.disabled=true;
   if(!f.ai)continue;
   const running=jobActive&&currentJob?.operation==='revise'&&currentJob.field===key;
+  const failed=currentJob?.operation==='revise'&&currentJob.field===key&&currentJob.state==='failed';
   f.ai.disabled=published||!c?.intentConfirmed||jobActive;f.revise.disabled=f.ai.disabled;f.request.disabled=published||jobActive;
-  f.requestLabel.hidden=!f.userOpen;f.actions.hidden=!f.userOpen;f.feedback.hidden=!f.userOpen&&!running&&!c?.needsReview[key]&&!c?.proposals[key];f.ai.setAttribute('aria-expanded',String(!!f.userOpen));
-  f.wrap.toggleAttribute('data-generating',running);f.input.setAttribute('aria-busy',String(running));f.result.replaceChildren();
-  if(running){f.feedback.hidden=false;f.result.append(el('p','요청하신 내용을 다듬고 있어요.'));}
-  if(c?.needsReview[key])f.result.append(el('p','관련 내용이 바뀌었어요. 함께 확인해 주세요.'),button('확인했어요',()=>mutate('review',{field:key})));
+  f.requestLabel.hidden=!f.userOpen;f.actions.hidden=!f.userOpen;f.ai.setAttribute('aria-expanded',String(!!f.userOpen));
+  f.wrap.toggleAttribute('data-generating',running);f.input.setAttribute('aria-busy',String(running));
   const changedInput=Object.keys(pending.fields||{}).length||Object.hasOwn(pending.requests||{},key);
   const proposal=!running&&!changedInput?c?.proposals[key]:null;
-  if(proposal){f.feedback.hidden=false;const preview=el('div',undefined,'creative-compare');for(const [name,value]of [['현재 내용',draft.fields[key]],['수정안',proposal.value]]){const col=el('div');col.append(el('h3',name),el('pre',text(value)));preview.append(col);}f.result.append(preview,button('수정안 적용',()=>mutate('proposal',{field:key,decision:'apply'})),button('현재 내용 유지',()=>mutate('proposal',{field:key,decision:'cancel'})));}
-  if(c?.needsReview[key])f.feedback.hidden=false;
+  f.feedback.hidden=!f.userOpen&&!running&&!failed&&!c?.needsReview[key]&&!proposal;
+  paintAiResult(f,key,{running,failed,proposal,review:c?.needsReview[key]||''});
  }
 }
 async function fieldHistory(key){
