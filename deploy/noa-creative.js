@@ -4,17 +4,17 @@ const $=id=>document.getElementById('creative-'+id),csrf=document.querySelector(
 const targets=['vocal','title','lyrics','sunoPrompt','geminiPrompt','youtubeTitle','description','communityPost','creativeFields'];
 const invalidFields=new Set();
 const labels={story:'이야기 입력',questions:'질문 답변',intent:'의도 확인',writing:'곡정보 생성',review:'검토 중',published:'등록 완료',deleted:'삭제 보관함'};
-const conditions={theme:'주제',emotion:'감정',genre:'음악 장르',instruments:'악기',vocal:'보컬',structure:'곡 전개',language:'언어',prohibitions:'금지 조건'};
-const errors={content_required:'내용을 입력하면 복구 저장을 시작합니다.',complete_song_info_first:'곡정보 생성을 마친 뒤 제작 파일을 연결해 주세요.',revision_conflict:'다른 창이나 처리 작업에서 내용이 변경되었습니다. 현재 입력은 화면에 남겨 두었습니다. 필요한 내용을 복사한 뒤 서버 버전을 불러와 주세요.',draft_not_found:'초안을 찾을 수 없거나 접근 권한이 없습니다.',generation_busy:'진행 중인 생성 작업이 있습니다.',worker_timeout:'AI 작업 응답 시간이 지났습니다. 저장된 내용은 유지됩니다. 다시 요청해 주세요.',dispatch_failed:'N80 Auto 작업 전달에 실패했습니다. 다시 요청해 주세요.',worker_unavailable:'기존 N80 AI 작업 연결을 확인해야 합니다.',four_choices_required:'선택지 검증에 실패했습니다. 질문을 다시 요청해 주세요.',intent_evidence_required:'입력한 의도와 분석 결과의 근거가 일치하지 않습니다. 다시 분석해 주세요.',draft_changed:'생성 중 입력이 바뀌었습니다. 생성 결과는 작업 이력에 보존했습니다.',field_changed:'수정 요청 후 이 항목이 변경되었습니다. 현재 내용을 기준으로 다시 요청해 주세요.',confirm_intent_first:'창작 의도 요약을 먼저 확정해 주세요.',unanswered_questions:'아직 답하지 않은 질문이 있습니다.',verified_audio_required:'실제 음원 업로드·검증이 필요합니다.',verified_cover_required:'실제 카드 이미지 연결·검증이 필요합니다.',ep_required:'EP 번호를 입력해 주세요.',ep_already_exists:'사용 중인 EP 번호입니다.',review_related_fields:'내용이 바뀐 연관 항목을 확인해 주세요.',resolve_proposals:'항목별 수정안을 적용하거나 취소해 주세요.',verify_sunoUrl:'Suno 주소의 실제 카드 이미지를 확인해 주세요.',verify_youtubeUrl:'YouTube 주소 검증이 필요합니다.',verify_mvUrl:'뮤직비디오 주소 검증이 필요합니다.',collection_unavailable:'선택한 곡 묶음을 확인해 주세요.',suno_verification_failed:'Suno 주소의 실제 곡·이미지를 확인하지 못했습니다. 주소를 확인하고 다시 시도해 주세요.',publication_not_ready:'게시 준비 항목을 먼저 확인해 주세요.',preview_changed:'미리보기 이후 데이터가 바뀌었습니다. 미리보기를 다시 확인해 주세요.',preview_required:'게시 미리보기를 먼저 확인해 주세요.',csrf_required:'로그인 상태가 바뀌었습니다. 입력한 내용을 보관하고 다시 로그인해 주세요.',creative_service_unavailable:'서버 저장을 확인하지 못했습니다. 입력을 유지하고 재시도해 주세요.',suno_prompt_too_long:'Suno 지시문이 1,000자를 넘었습니다. 다시 요청해 주세요.',fields_complete:'생성할 빈 항목이 없습니다. 항목별 수정 기능을 사용해 주세요.'};
-let draft=null,items=[],pending={},saving=null,timer=0,poll=null,questionIndex=0,inputs={},collections=[],upload=null,busy=false,epoch=0,conflict=false,assetActive=false,jobActive=false,room=null,conversationLoading=null,storyEditing=false,editingQuestion=false,storyBase='';
+const conditions={theme:'이야기',emotion:'분위기',genre:'음악 장르',instruments:'악기',vocal:'보컬',structure:'노래의 흐름',language:'언어',prohibitions:'피하고 싶은 표현'};
+const errors={content_required:'내용을 입력하면 복구 저장을 시작합니다.',complete_song_info_first:'곡정보 생성을 마친 뒤 제작 파일을 연결해 주세요.',revision_conflict:'다른 창이나 처리 작업에서 내용이 변경되었습니다. 현재 입력은 화면에 남겨 두었습니다. 필요한 내용을 복사한 뒤 서버 버전을 불러와 주세요.',draft_not_found:'초안을 찾을 수 없거나 접근 권한이 없습니다.',generation_busy:'진행 중인 생성 작업이 있습니다.',worker_timeout:'AI 작업 응답 시간이 지났습니다. 저장된 내용은 유지됩니다. 다시 요청해 주세요.',dispatch_failed:'만들기를 시작하지 못했어요. 다시 시도해 주세요.',worker_unavailable:'지금은 만들기를 시작할 수 없어요. 잠시 후 다시 시도해 주세요.',four_choices_required:'질문을 준비하지 못했어요. 다시 시도해 주세요.',intent_evidence_required:'이야기를 제대로 정리하지 못했어요. 다시 시도해 주세요.',draft_changed:'새로 만든 내용이 있어요. 이전 작업에서 확인할 수 있어요.',field_changed:'수정 요청 후 이 항목이 변경되었습니다. 현재 내용을 기준으로 다시 요청해 주세요.',confirm_intent_first:'창작 의도 요약을 먼저 확정해 주세요.',unanswered_questions:'아직 답하지 않은 질문이 있습니다.',verified_audio_required:'실제 음원 업로드·검증이 필요합니다.',verified_cover_required:'실제 카드 이미지 연결·검증이 필요합니다.',ep_required:'EP 번호를 입력해 주세요.',ep_already_exists:'사용 중인 EP 번호입니다.',review_related_fields:'내용이 바뀐 연관 항목을 확인해 주세요.',resolve_proposals:'항목별 수정안을 적용하거나 취소해 주세요.',verify_sunoUrl:'Suno 주소의 실제 카드 이미지를 확인해 주세요.',verify_youtubeUrl:'YouTube 주소 검증이 필요합니다.',verify_mvUrl:'뮤직비디오 주소 검증이 필요합니다.',collection_unavailable:'선택한 곡 묶음을 확인해 주세요.',suno_verification_failed:'Suno 주소의 실제 곡·이미지를 확인하지 못했습니다. 주소를 확인하고 다시 시도해 주세요.',publication_not_ready:'게시 준비 항목을 먼저 확인해 주세요.',preview_changed:'미리보기 이후 데이터가 바뀌었습니다. 미리보기를 다시 확인해 주세요.',preview_required:'게시 미리보기를 먼저 확인해 주세요.',csrf_required:'로그인 상태가 바뀌었습니다. 입력한 내용을 보관하고 다시 로그인해 주세요.',creative_service_unavailable:'서버 저장을 확인하지 못했습니다. 입력을 유지하고 재시도해 주세요.',suno_prompt_too_long:'Suno 지시문이 1,000자를 넘었습니다. 다시 요청해 주세요.',fields_complete:'내용이 완성됐어요. 곡정보에서 원하는 부분을 다듬어 보세요.',generation_failed:'내용을 완성하지 못했어요. 선택한 내용은 그대로 있어요. 다시 시도해 주세요.'};
+let draft=null,items=[],pending={},saving=null,timer=0,poll=null,questionIndex=0,inputs={},collections=[],upload=null,busy=false,epoch=0,conflict=false,assetActive=false,jobActive=false,currentJob=null,room=null,conversationLoading=null,storyEditing=false,editingQuestion=false,storyBase='';
 const id=()=>[...crypto.getRandomValues(new Uint8Array(16))].map(x=>x.toString(16).padStart(2,'0')).join('');
 const text=v=>typeof v==='string'?v:JSON.stringify(v,null,2);
 function el(tag,value,cls){const n=document.createElement(tag);if(value!==undefined)n.textContent=value;if(cls)n.className=cls;if(tag==='dialog')n.classList.add('creative-dialog');return n;}
 function button(label,fn){const b=el('button',label);b.type='button';b.onclick=()=>run(fn);return b;}
-function message(error){return errors[error.message||error]||'요청을 완료하지 못했습니다. '+(error.message||error);}
+function message(error){return errors[error?.message||error]||'요청을 완료하지 못했어요. 잠시 후 다시 시도해 주세요.';}
 function status(s){$('status').textContent=s;room?.status(s);}
 async function api(action,body,query={}){const url='/noa-bridge/creative.php?'+new URLSearchParams({action,...query});const response=await fetch(url,{method:body===undefined?'GET':'POST',credentials:'same-origin',headers:body===undefined?{}:{'Content-Type':'application/json','X-NOA-CSRF':csrf},body:body===undefined?undefined:JSON.stringify(body)});let data;try{data=await response.json();}catch{throw Error('creative_service_unavailable');}if(!response.ok)throw Error(data.error||'creative_service_unavailable');return data;}
-function state(kind,s){if(kind==='saved'&&draft?.storage?.mode==='recovery')s='진행 내용 복구 저장 · 마지막 입력부터 24시간';$('save').dataset.state=kind;$('save').textContent=s;if(kind==='saved')$('chat-retry')?.remove();if(room?.active()&&!jobActive)room.status(s);}
+function state(kind,s){if(kind==='saved'&&draft?.storage?.mode==='recovery')s='자동 저장됨';$('save').dataset.state=kind;$('save').textContent=s;if(kind==='saved'&&$('chat-retry')){$('chat-retry').remove();room?.status($('job').textContent);}}
 function meaningful(value){return typeof value==='string'?!!value.trim():!!value&&typeof value==='object'&&Object.values(value).some(meaningful);}
 function dirty(){return Object.keys(pending).length>0;}
 function composedStory(){return [storyBase,$('story').value.trim()].filter(Boolean).join('\n\n');}
@@ -28,7 +28,13 @@ async function submitStory(){
  await generate('analyze');
 }
 function queue(part){pending={...pending,...part,answerDrafts:{...(pending.answerDrafts||{}),...(part.answerDrafts||{})},fields:{...(pending.fields||{}),...(part.fields||{})},requests:{...(pending.requests||{}),...(part.requests||{})}};state('saving','저장 대기');$('final').disabled=true;clearTimeout(timer);timer=setTimeout(()=>flush().catch(fail),500);}
-function fail(e){status(message(e));state('failed','저장 실패 · 입력을 유지하고 있습니다.');$('retry-save').hidden=false;if(e.message==='revision_conflict'){conflict=true;$('reload').hidden=false;}if(room?.active()){room.status(message(e)+' 입력은 유지됩니다.');$('chat-retry')?.remove();const retry=button(conflict?'닫고 저장 버전 확인':'저장 재시도',()=>conflict?room?.close():flush());retry.id='creative-chat-retry';$('guide').append(retry);}}
+function fail(e){
+ status(message(e));if(e.message==='revision_conflict'){conflict=true;$('reload').hidden=false;}
+ // Only unsaved input needs a save retry. A failed generation has its own action.
+ if(!dirty()&&!conflict)return;
+ state('failed','저장하지 못했어요. 입력한 내용은 그대로 있어요.');$('retry-save').hidden=false;
+ if(room?.active()){room.status(message(e)+' 입력한 내용은 그대로 있어요.');$('chat-retry')?.remove();const retry=button(conflict?'저장된 내용 확인하기':'다시 저장하기',()=>conflict?room?.close():flush());retry.id='creative-chat-retry';$('guide').append(retry);}
+}
 async function flush(){if(invalidFields.size)throw Error('invalid_creative_fields');clearTimeout(timer);if(saving){await saving;if(dirty())return flush();return;}if(conflict)throw Error('revision_conflict');if(!dirty())return;if(!draft&&!meaningful([pending.story,pending.fields,pending.requests])){pending={};state('idle','아직 저장된 내용이 없습니다.');return;}
  const wasNew=!draft,captured=pending;pending={};state('saving','서버에 저장 중');saving=(async()=>{try{let data;if(!draft){const draftId=new URL(location.href).searchParams.get('draft')||id();history.replaceState(null,'',location.pathname+'?tool=creative&draft='+draftId);data=await api('create',{id:draftId,story:captured.story||'',fields:captured.fields||{},requests:captured.requests||{}});draft=data.draft;}
  if(Object.keys(captured).some(k=>!['fields','requests','answerDrafts'].includes(k)||Object.keys(captured[k]).length))data=await api('save',{id:draft.id,revision:draft.revision,...captured});if(data)draft=data.draft;state('saved','저장 완료');$('retry-save').hidden=true;syncMeta();if(wasNew){const focused=document.activeElement,keep=$('record').contains(focused)?{name:focused.name,start:focused.selectionStart,end:focused.selectionEnd}:null;renderRecord();const next=keep&&inputs[keep.name];if(next){next.focus({preventScroll:true});if(typeof keep.start==='number')next.setSelectionRange(keep.start,keep.end);}}}
@@ -70,7 +76,7 @@ async function openConversation(){
  }});
  room.content.closest('dialog').classList.add('creative-conversation');
  room.content.append($('guide'));$('guide').hidden=false;room.actions.append($('composer'));
- renderChat();renderQuestions();renderIntent();syncComposer();room.focus();room.status($('status').textContent);
+ renderChat();renderQuestions();renderIntent();syncComposer();room.focus();room.status($('job').textContent);
 }
 function renderChat(){
  const root=$('chat-log');root.replaceChildren();
@@ -87,7 +93,7 @@ function syncComposer(){
  for(const key of ['new','back','jobs','retry-save','reload'])$(key).disabled=busy;
  const c=draft?.creative,hasAnalysis=!!Object.keys(c?.intent||{}).length||!!Object.keys(c?.questions||{}).length;
  const storyMode=!c?.publication&&(!hasAnalysis||storyEditing)&&!jobActive;
- $('questions').hidden=storyMode||jobActive;
+ $('questions').hidden=storyMode||jobActive||(!editingQuestion&&hasAnalysis&&Object.keys(c.questions||{}).every(k=>c.answers[k]));
  $('story-next').hidden=!storyMode||!composedStory().trim()||!!$('fortune-options').childElementCount;
  $('story-next').disabled=busy||jobActive;
  $('fortune-start').hidden=!storyMode;
@@ -108,7 +114,7 @@ async function answerQuestion(key,value){
  $('answer-compose').querySelector('textarea')?.blur();await mutate('answer',{condition:key,answer:value});editingQuestion=false;
  questionIndex=Math.max(0,Object.keys(draft.creative.questions).findIndex(k=>!draft.creative.answers[k]));
  renderChat();renderQuestions();renderIntent();syncComposer();
- room?.status('답변을 저장했습니다.');
+ room?.status('');
 }
 function renderQuestions(){
  const root=$('questions'),compose=$('answer-compose');root.replaceChildren();compose.replaceChildren();
@@ -160,12 +166,14 @@ async function fortuneStories(){
  }catch{if(epoch===capturedEpoch&&room===target){root.replaceChildren(el('p','운세를 불러오지 못했어요. 잠시 후 다시 눌러 주세요.'));}}
 }
 function renderIntent(){
- const root=$('intent');root.replaceChildren();const c=draft?.creative;if(!c||!Object.keys(c.intent||{}).length)return;
+ const root=$('intent');root.replaceChildren();const c=draft?.creative;if(jobActive||!c||!Object.keys(c.intent||{}).length)return;
  const complete=Object.keys(conditions).every(k=>c.intent[k]?.value&&(!c.questions[k]||c.answers[k]));if(!complete||editingQuestion||storyEditing)return;
- root.append(el('h2','함께 정한 창작 의도'));for(const key of Object.keys(conditions)){const row=el('div',undefined,'creative-intent-row');row.append(el('strong',conditions[key]),el('p',c.intent[key].value));root.append(row);}
- if(c.intentConfirmed&&draft.completion.percent===100){chatMessage(root,'곡정보를 채웠어요. 대화창을 닫으면 곡정보창에서 내용을 검토하고 항목별로 수정할 수 있어요.');const b=button('곡정보 확인하기',()=>room?.close());b.className='creative-chat-ready';root.append(b);return;}
+ if(c.intentConfirmed&&draft.completion.percent===100){chatMessage(root,'노래에 담을 내용을 완성했어요. 곡정보에서 확인하고 다듬어 보세요.');const b=button('곡정보 확인하기',()=>room?.close());b.className='creative-chat-ready';root.append(b);return;}
  if(c.publication)return;
- const b=button(c.intentConfirmed?'빈 항목 생성 · 실패 항목 재시도':'의도 확정하고 곡정보 생성',async()=>{if(!draft.creative.intentConfirmed)await mutate('confirmIntent');await generate('generate');});b.disabled=jobActive;root.append(b);
+ const review=el('details',undefined,'creative-intent-review');review.append(el('summary','선택한 내용 보기'));
+ for(const key of Object.keys(conditions)){const row=el('div',undefined,'creative-intent-row');row.append(el('strong',conditions[key]),el('p',c.intent[key].value));review.append(row);}root.append(review);
+ const failed=currentJob?.operation==='generate'&&currentJob.state==='failed';
+ const b=button(failed?'다시 만들기':c.intentConfirmed?'계속 만들기':'이대로 노래 만들기',()=>generate('generate'));b.className='creative-chat-ready';root.append(b);
 }
 function renderRecord(){const host=$('record');host.replaceChildren();inputs={};if(!draft){host.append(el('h2','곡정보 · 새 창작곡'));const form=el('div');host.append(form);const view=R.render(form,{type:'song',fields:{},keys:R.visibleKeys('song').filter(k=>k!=='ep'),prefix:'creative-field',sunoTitle:''});inputs=view.inputs;for(const [key,input]of Object.entries(inputs)){input.readOnly=['cardImageLocation','audioFileLocation'].includes(key);input.oninput=()=>{try{const value=R.value(input);invalidFields.delete(key);queue({fields:{[key]:value}});}catch{invalidFields.add(key);state('failed','추가 제작 자료 형식을 확인해 주세요.');}}}return;}host.append(el('h2','곡정보 · 창작 정보 '+draft.completion.percent+'%'));const form=el('div');host.append(form);const keys=R.visibleKeys(draft.type).filter(k=>k!=='ep');const view=R.render(form,{type:draft.type,fields:{...draft.fields,...pending.fields},keys,prefix:'creative-field',sunoTitle:draft.sunoTitle});inputs=view.inputs;for(const [key,input]of Object.entries(inputs)){const wrap=input.closest('[data-record-field]')||input.parentElement;
  input.disabled=!!draft.creative.publication;input.readOnly=input.readOnly||['cardImageLocation','audioFileLocation'].includes(key);input.addEventListener('input',()=>{try{const value=R.value(input);invalidFields.delete(key);queue({fields:{[key]:value}});}catch{invalidFields.add(key);$('final').disabled=true;state('failed','추가 제작 자료 형식을 확인해 주세요.');}});
@@ -179,10 +187,38 @@ function render(){if(!draft)return;const published=!!draft.creative.publication;
 async function loadCollections(){collections=(await api('collections',undefined,{id:draft.id})).collections;paintCollections();}
 function paintCollections(){const root=$('collections');root.replaceChildren();for(const c of collections.filter(c=>c.genre===$('category').value)){const label=el('label'),check=el('input');check.type='checkbox';check.value=c.key;check.checked=(draft?.creative.collections||[]).includes(c.key);check.onchange=saveLocation;label.append(check,document.createTextNode(c.title));root.append(label);}}
 function saveLocation(){queue({location:{genre:$('category').value,ep:$('ep').value,collections:[...$('collections').querySelectorAll('input:checked')].map(i=>i.value)}});$('ep-label').hidden=$('category').value!=='kpop-original';$('location-note').textContent=$('category').value==='kpop-original'?'ACT '+(Math.ceil(Number($('ep').value)/10)||'—')+'에 배치됩니다.':'사연곡으로 등록됩니다.';}
-async function generate(operation,field=''){storyEditing=false;editingQuestion=false;room?.status('N80 AI에 요청을 보내고 있습니다.');await mutate('generate',{operation,field,requestId:id()});const data=await api('get',undefined,{id:draft.id});if(data.draft.revision!==draft.revision){draft=data.draft;render();}showJob(data.job);schedule();}
-function showJob(job){jobActive=['queued','running'].includes(job?.state);if(job)window.N80Activity?.snapshot('creative',[{id:job.id,state:job.state}]);$('job').dataset.busy=String(['queued','running'].includes(job?.state));$('job').textContent=!job?'':({queued:'N80 Auto · 요청 접수, 실행 대기',running:'N80 AI · 생성 중',succeeded:'N80 AI · 생성 결과 저장 완료',review:'입력이 바뀌어 결과를 별도로 보존했습니다.',failed:'N80 AI · '+message(job.error||'generation_failed'),canceled:'작업이 취소되었습니다.'}[job.state]||job.state);if(room?.active())room.status($('job').textContent);syncComposer();for(const b of $('intent').querySelectorAll('button'))b.disabled=jobActive;$('job-result').hidden=!job||!['review','failed'].includes(job.state);$('job-result').onclick=()=>run(async()=>{const data=await api('jobResult',undefined,{id:draft.id});const dialog=el('dialog');dialog.append(el('h2','보존된 생성 결과'),el('pre',text(data.result)),button('닫기',()=>{dialog.close();dialog.remove();}));document.body.append(dialog);dialog.showModal();});}
+async function generate(operation,field=''){
+ storyEditing=false;editingQuestion=false;showJob({operation,field,state:'queued'});let accepted=false;
+ try{
+  if(operation==='generate'&&!draft.creative.intentConfirmed)await mutate('confirmIntent');
+  const submitted=await mutate('generate',{operation,field,requestId:id()});accepted=true;showJob(submitted.job);schedule();
+  const data=await api('get',undefined,{id:draft.id});if(data.draft.revision!==draft.revision){draft=data.draft;render();}showJob(data.job);
+ }catch(e){if(!accepted)showJob({operation,field,state:'failed',error:e.message});throw e;}
+}
+function jobMessage(job){
+ if(!job)return '';
+ if(['queued','running'].includes(job.state))return ({analyze:'다음 질문을 준비하고 있어요.',generate:'노래에 담을 내용을 만들고 있어요.',revise:'요청하신 내용을 다듬고 있어요.'}[job.operation]||'요청하신 내용을 준비하고 있어요.');
+ return {succeeded:'',review:'새로 만든 내용이 있어요. 현재 내용과 비교해 보세요.',failed:message(job.error||'generation_failed'),canceled:'만들기를 취소했어요.'}[job.state]??'진행 상황을 확인하고 있어요.';
+}
+function showJob(job){
+ currentJob=job;jobActive=['queued','running'].includes(job?.state);if(job?.id)window.N80Activity?.snapshot('creative',[{id:job.id,state:job.state}]);
+ $('job').dataset.busy=String(jobActive);$('job').textContent=jobMessage(job);if(room?.active())room.status($('job').textContent);
+ renderIntent();syncComposer();$('job-result').hidden=job?.state!=='review';
+ $('job-result').onclick=()=>run(async()=>{const data=await api('jobResult',undefined,{id:draft.id});const dialog=el('dialog');dialog.append(el('h2','새로 만든 내용'));renderResult(dialog,data.result);dialog.append(button('닫기',()=>{dialog.close();dialog.remove();}));document.body.append(dialog);dialog.showModal();});
+}
+function renderResult(root,result){
+ // Present only creative content. Worker envelopes and unparsed output remain on the server.
+ if(typeof result==='string')try{result=JSON.parse(result.replace(/^```(?:json)?\s*|\s*```$/g,''));}catch{result=null;}
+ let count=0;const add=(label,value)=>{if(typeof value!=='string'||!value.trim())return;root.append(el('h3',label),el('pre',value));count++;};
+ const fields=result?.fields||{};
+ for(const key of targets)if(key!=='creativeFields')add(R.schema[key]?.[0]||'노래 내용',key==='vocal'?result?.vocal||fields[key]:fields[key]);
+ const extras={storyPlan:'이야기 구성',chorusHook:'후렴',englishHook:'영어 후렴',hashtags:'해시태그',localizations:'다른 언어 표현',genreRecommendation:'추천 장르'};
+ for(const [key,label]of Object.entries(extras))add(label,fields.creativeFields?.[key]);
+ for(const [key,label]of Object.entries(conditions)){add(label,result?.intent?.[key]?.value);const q=result?.questions?.[key];if(q?.prompt&&Array.isArray(q.options))add(label,q.prompt+'\n'+q.options.filter(v=>typeof v==='string').join('\n'));}
+ if(!count)root.append(el('p','표시할 수 있는 내용이 아직 없어요.'));
+}
 function stopWatching(){if(poll){poll();poll=null;}}
-function schedule(){stopWatching();const current=epoch;poll=N80Runtime.watch('creative:'+draft.id,()=>N80Runtime.read('creative:get:'+draft.id,()=>api('get',undefined,{id:draft.id})),async data=>{if(current!==epoch)return;if(data.draft.revision!==draft.revision){draft=data.draft;render();state('saved','서버 변경 사항 반영 · 저장 완료');}showJob(data.job);if(!$('assets').hidden)try{await assets();}catch(e){status(message(e));}},{interval:7000,immediate:false,active:()=>current===epoch&&draft&&!$('work').hidden&&!dirty()&&!saving&&!busy&&!conflict&&!invalidFields.size&&(jobActive||assetActive),error:e=>status(message(e))});}
+function schedule(){stopWatching();const current=epoch;poll=N80Runtime.watch('creative:'+draft.id,()=>N80Runtime.read('creative:get:'+draft.id,()=>api('get',undefined,{id:draft.id})),async data=>{if(current!==epoch)return;if(data.draft.revision!==draft.revision){draft=data.draft;render();state('saved','저장 완료');}showJob(data.job);if(!$('assets').hidden)try{await assets();}catch(e){status(message(e));}},{interval:7000,immediate:false,active:()=>current===epoch&&draft&&!$('work').hidden&&!dirty()&&!saving&&!busy&&!conflict&&!invalidFields.size&&(jobActive||assetActive),error:e=>status(message(e))});}
 
 async function assets(){if(!draft)return;const data=await api('assets',undefined,{id:draft.id});const a=data.assets;assetActive=['uploading','queued','retrying','analyzing','processing','verifying'].includes(a.status);$('asset-state').textContent='음원 '+(a.audioReady?'검증 완료':({audio_pending:'파일 연결 필요',ready:'현재 곡의 파일 확인 필요',uploading:'업로드 중',queued:'처리 대기',retrying:'재시도 중',analyzing:'분석 중',processing:'최적화 중',verifying:'검증 중',failed:'처리 실패'}[a.status]||'파일 확인 중'))+' · 이미지 '+(a.coverReady?'검증 완료':'연결 필요');const root=$('media-preview');root.replaceChildren();if(a.cover){const img=el('img');img.className='creative-cover';img.src=a.cover;img.alt='검증한 카드 이미지';root.append(img);inputs.sunoUrl?.setSavedPreview?.(draft.fields.sunoUrl,a.cover);}if(a.audio){const audio=el('audio');audio.controls=true;audio.preload='none';audio.src=a.audio;root.append(audio);}if(a.upload){upload=a.upload;$('audio-retry').hidden=a.status!=='failed';}}
 async function binary(action,file,query){const response=await fetch('/noa-bridge/creative.php?'+new URLSearchParams({action,id:draft.id,revision:String(draft.revision),...query}),{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/octet-stream','X-NOA-CSRF':csrf},body:file});const data=await response.json();if(!response.ok)throw Error(data.error);return data;}
@@ -197,7 +233,7 @@ $('story-next').onclick=()=>run(submitStory);
 $('fortune-start').onclick=()=>run(fortuneStories);
 $('chat').onclick=()=>openConversation().catch(fail);
 $('new').onclick=()=>run(async()=>{await flush();epoch++;stopWatching();draft=null;storyBase='';pending={};inputs={};conflict=false;assetActive=false;storyEditing=false;editingQuestion=false;invalidFields.clear();history.replaceState(null,'',location.pathname+'?tool=creative');$('library').hidden=true;$('work').hidden=false;$('story').value='';$('story').disabled=false;for(const x of ['questions','intent','record','preview','published','fortune-options'])$(x).replaceChildren();$('assets').hidden=true;$('publish').hidden=true;showJob(null);renderRecord();state('idle','내용을 입력하면 24시간 동안 복구할 수 있습니다.');await openConversation();status('이야기를 입력하거나 오늘의 운세에서 시작해 보세요.');});
-$('jobs').onclick=()=>run(async()=>{await flush();if(!draft)return;const data=await api('jobs',undefined,{id:draft.id});const dialog=el('dialog');dialog.append(el('h2','생성 작업 이력'));for(const j of data.jobs){const row=el('div');row.append(el('p',j.operation+' · '+j.state+(j.error?' · '+message(j.error):'')),button('결과 확인',async()=>{const v=await api('jobResult',undefined,{id:draft.id,job:j.id});row.append(el('pre',text(v.result)));}));dialog.append(row);}dialog.append(button('닫기',()=>{dialog.close();dialog.remove();}));document.body.append(dialog);dialog.showModal();});
+$('jobs').onclick=()=>run(async()=>{await flush();if(!draft)return;const data=await api('jobs',undefined,{id:draft.id});const dialog=el('dialog');dialog.append(el('h2','이전 작업'));if(!data.jobs.length)dialog.append(el('p','아직 완료한 작업이 없어요.'));for(const j of data.jobs){const row=el('div'),operation={analyze:'이야기 정리',generate:'노래 만들기',revise:'내용 다듬기'}[j.operation]||'창작',state={queued:'준비 중',running:'만드는 중',succeeded:'완료',review:'확인 필요',failed:'완성하지 못함',canceled:'취소됨'}[j.state]||'확인 중';row.append(el('p',operation+' · '+state));if(j.error)row.append(el('p',message(j.error)));if(['succeeded','review'].includes(j.state))row.append(button('내용 보기',async()=>{const v=await api('jobResult',undefined,{id:draft.id,job:j.id});let result=row.querySelector('.creative-job-content');if(!result){result=el('div',undefined,'creative-job-content');row.append(result);}result.replaceChildren();renderResult(result,v.result);}));dialog.append(row);}dialog.append(button('닫기',()=>{dialog.close();dialog.remove();}));document.body.append(dialog);dialog.showModal();});
 $('back').onclick=()=>run(library);$('retry-save').onclick=()=>run(flush);$('reload').onclick=()=>run(async()=>{if(!confirm('현재 입력을 필요한 곳에 복사했나요? 서버에 저장된 버전을 불러옵니다.'))return;pending={};conflict=false;invalidFields.clear();await open(draft.id);});let searchTimer;for(const x of ['search','filter','sort'])$(x).oninput=()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>run(()=>loadList()),250);};$('more').onclick=()=>run(()=>loadList(true));$('category').onchange=()=>{paintCollections();saveLocation();};$('ep').oninput=saveLocation;
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&dirty())flush().catch(fail);});
 window.addEventListener('beforeunload',event=>{if(dirty()||saving){event.preventDefault();event.returnValue='';}});

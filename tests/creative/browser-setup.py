@@ -10,6 +10,8 @@ p=site/'noa-bridge/creative.php';s=p.read_text().replace('ncd_enqueue($db,$owner
 (site/'creative-test-worker.php').write_text('''<?php
 require __DIR__.'/common.php';require __DIR__.'/noa-bridge/storage.php';require __DIR__.'/noa-bridge/sound-core.php';require __DIR__.'/noa-app/engine/creative.php';
 header('Content-Type: application/json');$db=noa_bridge_pdo();$id=$_GET['id'];$job=ncd_job($db,$id);ncd_worker($db,'workerPoll',$id);$j=$job['document'];
+if(($_GET['mode']??'')==='running'){echo json_encode(['ok'=>true]);exit;}
+if(($_GET['mode']??'')==='failed'){echo json_encode(ncd_worker($db,'workerFail',$id,['reason'=>'generation_failed']));exit;}
 if($j['operation']==='analyze'){$questions=[];foreach(NCD_CONDITIONS as $k)$questions[$k]=['prompt'=>$k.' 선택','options'=>['따뜻하고 담담한 선택','밝고 경쾌한 선택','쓸쓸하고 느린 선택','강렬하고 빠른 선택']];$result=['intent'=>[],'questions'=>$questions];}
 else{$fields=[];foreach($j['targets'] as $k)$fields[$k]=$k==='creativeFields'?['storyPlan'=>'퇴근길 가족을 떠올리는 이야기']:($k==='title'?'집으로 가는 마음':$k.' 생성된 내용');$result=['fields'=>$fields,'vocal'=>'여자솔로'];}
 echo json_encode(ncd_worker($db,'save',$id,['text'=>ncd_json($result)]));

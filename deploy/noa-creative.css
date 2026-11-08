@@ -38,3 +38,7 @@
 .creative-title-icon{width:28px;height:28px;vertical-align:-2px;margin-right:10px;fill:none;stroke:currentColor;stroke-width:1.6;color:var(--noa-accent)}
 
 #ainoa-conversation.creative-conversation :is(#creative-question-next,#creative-story-next){width:100%;background:var(--noa-accent);color:var(--noa-accentText);font-weight:700}
+.creative-intent-review>summary,.creative-history>summary{cursor:pointer;min-height:44px;padding:10px 0;color:var(--noa-muted);line-height:1.5}
+.creative-intent-review>summary:focus-visible,.creative-history>summary:focus-visible{outline:2px solid var(--noa-accent);outline-offset:3px}
+#ainoa-conversation.creative-conversation .creative-intent-review[open]{margin-bottom:16px}
+#creative-job:empty{display:none}
