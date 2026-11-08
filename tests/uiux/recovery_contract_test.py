@@ -64,6 +64,9 @@ class RecoveryContract(unittest.TestCase):
   # 2026-11-09 KST: requested Korean subtitles in the existing N80 movie agent.
   # Keep exact-file scope; native audio processing and other writers stay protected.
   authorized.update({'bridge/session-agent.php','bridge/session-agent-media.php','bridge/session-subtitles.php'})
+  # 2026-11-09 KST: user explicitly requested daily Shorts owned by N80 on the existing host.
+  # These campaign handlers use the existing media:worker gate and leased campaign store.
+  authorized.update({'bridge/session-shorts.php','bridge/session-shorts-prepare.php','bridge/worker-shorts.php'})
   # The 2026-10-27 request explicitly adds post likes/comments to popularity.
   # Limit this authorization to the new reaction service and score calculation;
   # native member/board writers and music processing remain protected.
