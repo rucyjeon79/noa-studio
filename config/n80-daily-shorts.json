@@ -22,5 +22,7 @@
   "relatedVideo": "YouTube Studio native related-video field, pointing to the exact selected genre version.",
   "deduplication": "Current N80 tasks plus actual YouTube scheduled and published content; never create a second upload when an earlier result is ambiguous.",
   "stateOwner": "N80 Engine existing agent_movie job store",
-  "executor": "Scheduled ChatGPT tool session; browser authentication and provider availability are required at execution."
+  "executor": "N80 Auto registered ai.daily_shorts runner; persistent browser executor is not connected. Never present schedule registration as completed production.",
+  "scheduleOwner": "N80 Auto",
+  "conversationDependent": false
 }

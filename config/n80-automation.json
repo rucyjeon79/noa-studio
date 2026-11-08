@@ -126,6 +126,15 @@
         "NOA_JUKEBOX_RUNTIME_ONLY": "1"
       },
       "concurrency": "workflow_owned"
+    },
+    "ai.daily_shorts": {
+      "module": "ai_lab",
+      "workflow": "noa-ai-worker.yml",
+      "command": [
+        "scripts/noa_daily_shorts.py"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
     }
   }
 }

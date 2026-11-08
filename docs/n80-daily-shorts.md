@@ -1,6 +1,6 @@
 # 이 노래가 좋아 — daily Shorts production
 
-The user authorized selecting a song, producing a 9:16 Short lasting 49–59 seconds, publishing one daily at 12:00 Asia/Seoul to the existing playlist, and connecting its exact original video. `config/n80-daily-shorts.json` defines the verified channel, playlist and exclusions. This is an existing N80 session-agent campaign, not another server worker or queue.
+The user authorized selecting a song, producing a 9:16 Short lasting 49–59 seconds, publishing one daily at 12:00 Asia/Seoul to the existing playlist, and connecting its exact original video. `config/n80-daily-shorts.json` defines the verified channel, playlist and exclusions. The schedule is owned by N80 Auto, called inside the registered ai.daily_shorts operation in the existing worker by the existing 15-minute GitHub Actions runner. It is persisted in lab:state.json:campaigns.daily_shorts, independent of a conversation. No ChatGPT automation is enabled for this campaign.
 
 ## One execution
 
@@ -14,4 +14,10 @@ The user authorized selecting a song, producing a 9:16 Short lasting 49–59 sec
 8. Upload the accepted final to the verified channel once. Set appropriate title/description, original link, audience and truthful synthetic-content disclosure. Add the existing destination playlist. Set YouTube Studio's native Related video to the exact selected original, not merely a description URL. Schedule public visibility for 12:00 Asia/Seoul on the intended date; confirm displayed timezone/date. Verify the actual scheduled row, video ID, playlist and related-video field. An upload action without a confirmed result is not completion.
 9. Report the selected song, hook time range, short URL and confirmed publication time. If authentication, provider quota, processing, rights checks or native related-video access blocks completion, preserve the task with a precise reason and report the real blocker; do not silently publish incorrectly or pretend scheduled output exists. If noon has passed, use the next available noon and never backfill multiple public posts on one date.
 
-The automation wakes before noon to do the work; YouTube controls the exact publication time after a successful schedule. A registered automation is not proof that a video has been created or scheduled. Preserve the distinction in user reports.
+## Current execution boundary
+
+The N80 runner persists the policy, next preparation/publication times, last tick and one resumable pending slot. It checks the actual offline YouTube connection without exposing tokens. A missing connection leaves a durable connection_required state and does not create empty production jobs or consume paid API budget.
+
+The currently installed Gemini/Flow and native YouTube related-video operations are ChatGPT session browser tools. They are NOT a persistent server executor. There is no server browser adapter yet. The scheduler therefore explicitly reports productionReady:false and persistent_browser_executor_required until an actual separately connected execution adapter is implemented and verified. It does not claim to have generated, scheduled or published a video. Do not clear this blocker merely by toggling a configuration flag or by creating another conversation automation.
+
+The procedure above remains the authorized production contract for that adapter or an explicitly active operator. A schedule tick is not proof of successful media production. YouTube controls exact public timing only after a real, verified scheduled upload.
