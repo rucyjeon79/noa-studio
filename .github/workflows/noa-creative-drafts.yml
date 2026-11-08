@@ -116,11 +116,8 @@ jobs:
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
         run: python scripts/noa_creative_revision_live.py audit
       - name: Remove only the completed revision probe
-        env:
-          <<: *audit_env
-          NOA_CREATIVE_PROBE_ID: bbe2a3852180e4ffab905ee1a7923710
-          NOA_CREATIVE_PROBE_REQUEST: 63e8d694ef7f2811a545ad25c3f3bf56
-        run: python scripts/noa_creative_revision_live.py cleanup
+        env: *audit_env
+        run: NOA_CREATIVE_PROBE_ID=bbe2a3852180e4ffab905ee1a7923710 NOA_CREATIVE_PROBE_REQUEST=63e8d694ef7f2811a545ad25c3f3bf56 python scripts/noa_creative_revision_live.py cleanup
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'creative-revision-audit-${{ github.run_id }}', path: 'ainoa-proof/', retention-days: 7}
