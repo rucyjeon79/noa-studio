@@ -30,19 +30,30 @@ def prepare_subtitles(dispatch):
             finally:transport.close()
             manifest.write_text(json.dumps({'audio':{'path':str(audio),'sha256':source['audioSha256']},'duration':source['duration'],'lyrics':source['lyrics']},ensure_ascii=False))
             stage='recognition'
-            subprocess.run([sys.executable,str(root/'lab/session-subtitles.py'),str(manifest),str(output),'--model','small','--cache-dir',str(Path(folder)/'model')],
-                           check=True,timeout=720,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            process=subprocess.run([sys.executable,str(root/'lab/session-subtitles.py'),str(manifest),str(output),'--model','small','--cache-dir',str(Path(folder)/'model')],
+                                   check=False,timeout=720,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            if process.returncode and not output.exists():
+                raise ValueError('recognition_process_failed')
             report=json.loads(output.read_text())
+            if process.returncode:
+                reason=report.get('error','recognition_failed')
+                allowed={'audio_checksum_mismatch','invalid_duration','audio_duration_mismatch','korean_lyrics_required','lyrics_too_large',
+                         'invalid_word_timestamps','transcript_too_large','transcript_source_mismatch','recognition_dependency_failed'}
+                error=ValueError(reason if reason in allowed else 'recognition_failed')
+                error.recognizerType=report.get('errorType','')
+                raise error
             stage='subtitle_save'
             result=dispatch('complete_subtitles',lease=lease,subtitles=report['payload'])
         print('N80_SHORTS_SUBTITLES',json.dumps(result),flush=True)
     except Exception as error:
         reason=stage+('_timeout' if isinstance(error,subprocess.TimeoutExpired) else '_failed')
-        if isinstance(error,ValueError) and str(error) in {'source_path_rejected','source_file_rejected','source_size_changed','source_checksum_mismatch'}:
+        if isinstance(error,ValueError) and str(error) in {'source_path_rejected','source_file_rejected','source_size_changed','source_checksum_mismatch',
+            'audio_checksum_mismatch','invalid_duration','audio_duration_mismatch','korean_lyrics_required','lyrics_too_large','invalid_word_timestamps',
+            'transcript_too_large','transcript_source_mismatch','recognition_dependency_failed','recognition_process_failed'}:
             reason=str(error)
         try:dispatch('fail_subtitles',lease=lease,reason=reason)
         except Exception:pass
-        print('N80_SHORTS_SUBTITLES',json.dumps({'state':'subtitle_failed','reason':reason,'errorType':type(error).__name__}),flush=True)
+        print('N80_SHORTS_SUBTITLES',json.dumps({'state':'subtitle_failed','reason':reason,'errorType':type(error).__name__,'recognizerType':getattr(error,'recognizerType','')}),flush=True)
 
 def main():
     key=worker_key()

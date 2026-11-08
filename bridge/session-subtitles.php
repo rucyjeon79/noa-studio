@@ -37,8 +37,11 @@ function sa_subtitle_save(array &$j,array $b):void {
   $previousLine=$n;$last=$stop;
  }
  $present=array_column($cues,'line');foreach($lines as $i=>$line)if(!in_array($i+1,$present,true))$issues[]=['line'=>$i+1,'reason'=>'voice_not_matched'];
+ $discarded=$s['recognitionDiscardedWords']??0;
+ if(!is_int($discarded)||$discarded<0||$discarded>10000)throw new InvalidArgumentException('invalid_recognizer_evidence');
+ if($discarded)$issues[]=['reason'=>'recognizer_words_unusable','count'=>$discarded];
  $a['subtitles']=['enabled'=>true,'status'=>$issues?'needs_review':'ready','cues'=>$cues,'issues'=>$issues,'sha256'=>sa_subtitle_digest($j,$cues),
-  'sourceAudioSha256'=>$j['audioSha256'],'lyricsSha256'=>hash('sha256',$j['source']['lyrics']),'method'=>$s['method'],'model'=>$s['model'],'updatedAt'=>gmdate('c')];
+  'sourceAudioSha256'=>$j['audioSha256'],'lyricsSha256'=>hash('sha256',$j['source']['lyrics']),'method'=>$s['method'],'model'=>$s['model'],'recognitionDiscardedWords'=>$discarded,'updatedAt'=>gmdate('c')];
  $j['state']='agent_ready';
 }
 function sa_subtitle_review(array &$j,array $b):void {

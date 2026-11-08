@@ -1,5 +1,9 @@
 import importlib.util
+import json
 from pathlib import Path
+import subprocess
+import sys
+import tempfile
 import unittest
 
 spec = importlib.util.spec_from_file_location('subtitles', Path(__file__).parents[2] / 'lab/session-subtitles.py')
@@ -8,6 +12,23 @@ spec.loader.exec_module(module)
 
 
 class SubtitleAlignment(unittest.TestCase):
+    def test_unusable_native_words_are_quarantined_without_invented_time(self):
+        words = [self.word('별빛이', 2, 3), self.word('.', 3, 3), self.word('내려와', 3, 3),
+                 self.word('오늘도', 6, 7), self.word('잘못', -1, 8)]
+        usable, discarded = module.usable_recognized_words(words, 10)
+        self.assertEqual(discarded, 2)
+        self.assertEqual(usable, [words[0], words[3]])
+        self.assertFalse(module.match_lyrics('별빛이 내려와\n오늘도 행복해', usable, 10)['ready'])
+
+    def test_cli_failure_receipt_has_a_typed_reason_not_raw_source(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder); audio = root / 'private-audio.mp3'; audio.write_bytes(b'not-the-expected-audio')
+            manifest = root / 'manifest.json'; output = root / 'result.json'
+            manifest.write_text(json.dumps({'audio': {'path': str(audio), 'sha256': '0'*64}, 'duration': 5, 'lyrics': '가사'}))
+            result = subprocess.run([sys.executable, module.__file__, str(manifest), str(output)], capture_output=True)
+            self.assertEqual(result.returncode, 2)
+            self.assertEqual(json.loads(output.read_text()), {'error': 'audio_checksum_mismatch', 'errorType': 'ValueError'})
+
     def test_production_directions_are_not_lyrics(self):
         lyrics = '[Chorus]\n(soft gayageum harmonics, female vocal)\n별빛이 내려와\n(I love you)\n(아~)'
         self.assertEqual(module.lyric_lines(lyrics), ['별빛이 내려와', '(I love you)', '(아~)'])
