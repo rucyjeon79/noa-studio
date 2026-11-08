@@ -26,7 +26,7 @@ jobs:
           python scripts/qa/noa-qa-font.py
           npm --fetch-timeout=60000 --fetch-retries=1 install --prefix "$RUNNER_TEMP/noa-muvy" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-muvy.mjs "$RUNNER_TEMP/noa-muvy/check.mjs"
-      - name: Verify complete thirty-cut workflow, saved imports and six layouts with an isolated provider
+      - name: Verify duration-based scene workflow, saved imports and six layouts with an isolated provider
         run: node "$RUNNER_TEMP/noa-muvy/check.mjs"
       - uses: actions/upload-artifact@v4
         if: always()

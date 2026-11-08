@@ -17,25 +17,26 @@ function mu_save(array $b,bool $openExisting=false):array{
  return mu_lock(function(&$s)use($id,$pack,$expected,$openExisting){$old=$s['projects'][$id]??null;if($openExisting&&$old)return ['project'=>$old];if($old&&$old['pack']===$pack&&$expected===$old['revision']-1)return ['project'=>$old,'replayed'=>true];if(($old['revision']??0)!==$expected)throw new DomainException('revision_conflict');if($old&&!empty($old['active']))throw new DomainException('generation_in_progress');if(!$old&&count($s['projects'])>=30)throw new DomainException('project_limit');$p=$old??['id'=>$id,'revision'=>0,'createdAt'=>gmdate('c'),'source'=>MU_SOURCE,'operations'=>[],'active'=>null];$p['pack']=$pack;$p['revision']++;$p['updatedAt']=gmdate('c');$s['projects'][$id]=$p;return ['project'=>$p];});
 }
 /** Resolve once per selection. The project's source is a snapshot of the selected edition. */
-function mu_select_song(array $record):array{
+function mu_select_song(array $record,?array $timing=null):array{
  if(!in_array($record['kind']??'',['single','story'],true)||!empty($record['payload']['_noaTrash']))throw new DomainException('song_unavailable');
  $fields=$record['fields'];
  $lyrics=trim((string)($fields['lyrics']??''));
  if(mb_strlen($lyrics)<10)throw new DomainException('song_lyrics_required');
  $ep=trim((string)($record['context']['ep']??''));
- $song=['key'=>$record['writeKey'],'genre'=>$record['context']['genre']??''];
+ $song=['key'=>$record['writeKey'],'genre'=>$record['context']['genre']??'','documentKey'=>$record['documentKey']??$record['writeKey'],'revision'=>(int)($record['documentRevision']??0)];
+ if($timing)$song['audioSha256']=$timing['audioSha256']??'';
  foreach(['vocal'=>1200,'cast'=>1200,'description'=>3000] as $name=>$limit){
   $song[$name]=mb_substr(trim((string)($fields[$name==='description'?'songDescription':$name]??'')),0,$limit);
  }
- $pack=mu_pack(['ep'=>ctype_digit($ep)?((int)$ep>0?'EP.'.$ep:''):$ep,'title'=>$fields['title'],'lyrics'=>$lyrics,'song'=>$song]);
+ $pack=mu_pack(['ep'=>ctype_digit($ep)?((int)$ep>0?'EP.'.$ep:''):$ep,'title'=>$fields['title'],'lyrics'=>$lyrics,'song'=>$song]+($timing?['timing'=>$timing]:[]));
  // An unrelated catalog edit must not duplicate a paid job. A changed lyric or edition must fork it.
  $id=substr(hash('sha256',"muvy-song-v1\0".json_encode($pack,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)),0,32);
  return mu_save(['id'=>$id,'expectedRevision'=>0,'pack'=>$pack],true);
 }
 /** Native project operations are the queue. No second queue or web provider execution. */
 function mu_next_stage(array $pack):?array {
- if(count($pack['cuts'])!==30)return ['script',0];
- foreach([1,2,3] as $chapter)foreach([0,1] as $batch){foreach(array_slice($pack['cuts'],($chapter-1)*10+$batch*5,5) as $cut)if(empty($cut['gemini'])||empty($cut['grok']))return ['c'.$chapter,$batch];}
+ if(!mu_expected_cuts($pack)||count($pack['cuts'])<mu_expected_cuts($pack))return ['script',intdiv(count($pack['cuts']),10)];
+ foreach([1,2,3] as $chapter){$range=mu_chapter_range($pack,$chapter);for($batch=0;$batch<ceil($range['count']/5);$batch++)foreach(mu_chapter_cuts($pack,$chapter,$batch) as $cut)if(empty($cut['gemini'])||empty($cut['grok']))return ['c'.$chapter,$batch];}
  return empty($pack['publish'])?['publish',0]:null;
 }
 function mu_enqueue(array &$s,array &$p,string $request,string $stage,int $batch,string $note,array $config,string $fingerprint,?string $pipeline=null):void {
@@ -43,7 +44,7 @@ function mu_enqueue(array &$s,array &$p,string $request,string $stage,int $batch
  $today=gmdate('Y-m-d');if(($s['usage'][$today]??0)>=$config['dailyCalls'])throw new DomainException('daily_limit');
  $s['usage']=array_filter($s['usage'],fn($date)=>$date>=gmdate('Y-m-d',time()-31*86400),ARRAY_FILTER_USE_KEY);
  $s['usage'][$today]=($s['usage'][$today]??0)+1;
- $p['active']=$request;$p['operations'][$request]=['fingerprint'=>$fingerprint,'state'=>'queued','stage'=>$stage,'batch'=>$batch,'note'=>$note,'model'=>$config['model'],'queuedAt'=>time(),'pipeline'=>$pipeline];
+ $p['active']=$request;$p['operations'][$request]=['fingerprint'=>$fingerprint,'state'=>'queued','stage'=>$stage,'batch'=>$batch,'note'=>$note,'model'=>$config['model'],'queuedAt'=>time(),'timingContract'=>1,'pipeline'=>$pipeline];
  $p['operations']=array_slice($p['operations'],-60,null,true);$p['updatedAt']=gmdate('c');
 }
 function mu_begin(array $b):array {
@@ -67,7 +68,7 @@ function mu_worker_claim():array {
    // A provider may have charged after a lost reply. Never call it again automatically.
    if($op['state']==='running'&&($op['leaseUntil']??($op['startedAt']??time())+300)<time()){$op['state']='unconfirmed';$op['error']='provider_unconfirmed';unset($op['lease']);$p['active']=null;$p['revision']++;continue;}
    if($op['state']!=='queued')continue;
-   [$system,$user,$tokens]=mu_prompt($p['pack'],$op['stage'],$op['batch'],$op['note']??'');
+   [$system,$user,$tokens]=mu_prompt($p['pack'],$op['stage'],$op['batch'],$op['note']??'',empty($op['timingContract']));
    $op['state']='running';$op['lease']=bin2hex(random_bytes(16));$op['startedAt']=time();$op['leaseUntil']=time()+300;
    return ['ok'=>true,'state'=>'running','task'=>['id'=>$p['id'],'request'=>$request,'lease'=>$op['lease'],'pack'=>$p['pack'],'system'=>$system,'user'=>$user,'tokens'=>$tokens,'stage'=>$op['stage'],'batch'=>$op['batch'],'model'=>$op['model']]];
   }unset($p);return ['ok'=>true,'task'=>null,'state'=>'idle'];
@@ -81,7 +82,7 @@ function mu_finish(array $task,?array $result,?string $error=null):array {
   $hash=hash('sha256',json_encode([$result,$error],JSON_THROW_ON_ERROR));
   if(isset($op['completionHash'])){if(!hash_equals($op['completionLease']??'',hash('sha256',$lease))||!hash_equals($op['completionHash'],$hash))throw new DomainException('completion_conflict');return ['project'=>$p,'replayed'=>true];}
   if(($p['active']??null)!==$request||$op['state']!=='running'||!preg_match('/^[a-f0-9]{32}$/D',$lease)||!hash_equals($op['lease']??'',$lease)||($op['leaseUntil']??0)<time())throw new DomainException('lease_expired');
-  if($result){$p['pack']=mu_apply($p['pack'],$op['stage'],$op['batch'],$result['output']);$op['state']='complete';$op['usage']=array_intersect_key($result['usage']??[],array_flip(['prompt_tokens','completion_tokens','total_tokens']));}
+  if($result){$p['pack']=mu_apply($p['pack'],$op['stage'],$op['batch'],$result['output'],empty($op['timingContract']));$op['state']='complete';$op['usage']=array_intersect_key($result['usage']??[],array_flip(['prompt_tokens','completion_tokens','total_tokens']));}
   else{$op['state']=$error==='provider_unconfirmed'?'unconfirmed':'failed';$op['error']=$error??'provider_failed';}
   $op['completionHash']=$hash;$op['completionLease']=hash('sha256',$lease);unset($op['lease'],$op['leaseUntil']);
   $p['active']=null;$p['revision']++;$p['updatedAt']=gmdate('c');
@@ -94,4 +95,4 @@ function mu_finish(array $task,?array $result,?string $error=null):array {
  });
 }
 function mu_recover(array $b):array{return mu_lock(function(&$s)use($b){$id=lab_id((string)($b['id']??''));if(!isset($s['projects'][$id]))throw new InvalidArgumentException('unknown_project');$p=&$s['projects'][$id];if($p['revision']!==($b['expectedRevision']??null))throw new DomainException('revision_conflict');$active=$p['active']??null;if(!$active)return ['project'=>$p];$op=&$p['operations'][$active];if($op['state']==='queued'||($op['leaseUntil']??($op['startedAt']??time())+300)>time())throw new DomainException('generation_in_progress');$op['state']='unconfirmed';$op['error']='provider_unconfirmed';unset($op['lease']);$p['active']=null;$p['revision']++;return ['project'=>$p];});}
-function mu_public_project(array $p):array {foreach($p['operations'] as &$op)unset($op['lease'],$op['completionLease']);unset($op);return $p;}
+function mu_public_project(array $p):array {if(isset($p['pack']['timing']))$p['pack']['timeline']=mu_timeline($p['pack']['timing']);foreach($p['operations'] as &$op)unset($op['lease'],$op['completionLease']);unset($op);return $p;}

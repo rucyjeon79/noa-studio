@@ -13,7 +13,7 @@ try{
  const post=async data=>{const r=await contexts.admin.request.post(api,{headers:{Origin:base,'X-NOA-CSRF':csrf},data});return{status:r.status(),body:await r.json()};};
  assert.equal((await contexts.admin.request.post(api,{data:{action:'save'}})).status(),403);assert.equal((await contexts.admin.request.post(api,{headers:{Origin:'https://other.example','X-NOA-CSRF':csrf},data:{action:'save'}})).status(),403);
  const page=await contexts.admin.newPage(),errors=[];let catalogReads=0;page.on('request',r=>{if(r.url().includes('view=labChoices'))catalogReads++;});page.on('pageerror',e=>{errors.push(e.message);console.log('MUVY_BROWSER_ERROR',e.stack);});page.on('dialog',()=>{throw Error('untrusted_markup_executed');});await page.goto(base+'/noa-ai-lab.php#lab-muvy');try{await page.waitForFunction(()=>document.querySelector('#mu-connection')?.textContent.includes('AI 서비스 연결 필요'));}catch(error){writeFileSync(out+'/failure.html',await page.content());console.log('MUVY_INITIAL_STATE',page.url(),await page.locator('body').innerText());throw error;}assert.equal(new URL(page.url()).searchParams.get('tool'),'muvy');
- assert(await page.getByRole('link',{name:'뮤비 대본·프롬프트',exact:true}).isVisible());assert.equal(await page.locator('.lab-tabs a:visible').count(),2);await page.getByText('다른 도구',{exact:true}).click();assert(await page.getByRole('link',{name:'가사·콘텐츠 초안',exact:true}).isVisible());await page.getByText('다른 도구',{exact:true}).click();await page.locator('#mu-ep').fill('EP.12');await page.locator('#mu-title').fill('빛이 닿는 순간');await page.locator('#mu-lyrics').fill('밤을 따라 걸어가던 작은 마음이 빛을 만나는 순간, 우리는 다시 웃어요.');await page.locator('#mu-save').click();await page.waitForFunction(()=>document.querySelector('#mu-save-state').textContent.includes('저장됨')&&document.querySelector('#mu-project').value!=='');const firstId=await page.locator('#mu-project').inputValue();assert(firstId);
+ assert(await page.getByRole('link',{name:'대본·장면 프롬프트',exact:true}).isVisible());assert.equal(await page.locator('.lab-tabs a:visible').count(),2);await page.getByText('다른 도구',{exact:true}).click();assert(await page.getByRole('link',{name:'새 가사·콘텐츠 초안',exact:true}).isVisible());await page.getByText('다른 도구',{exact:true}).click();await page.locator('#mu-ep').fill('EP.12');await page.locator('#mu-title').fill('빛이 닿는 순간');await page.locator('#mu-lyrics').fill('밤을 따라 걸어가던 작은 마음이 빛을 만나는 순간, 우리는 다시 웃어요.');await page.locator('#mu-duration').fill('211');await page.locator('#mu-save').click();await page.waitForFunction(()=>document.querySelector('#mu-save-state').textContent.includes('저장됨')&&document.querySelector('#mu-project').value!=='');const firstId=await page.locator('#mu-project').inputValue();assert(firstId);
  await page.reload();await page.waitForFunction(()=>document.querySelectorAll('#mu-project option').length===2);await page.locator('#mu-project').selectOption(firstId);await page.waitForFunction(()=>document.querySelector('#mu-title').value==='빛이 닿는 순간');assert(await page.locator('[data-mu-step=script]').isDisabled());
  await page.locator('.mu-settings summary').click();await page.locator('#mu-key').fill('test-xai-key-not-real');await page.locator('#mu-enabled').check();await page.locator('#mu-config-form button[type=submit]').click();await page.waitForFunction(()=>document.querySelector('#mu-connection').textContent.includes('사용 중'));assert.equal(await page.locator('#mu-key').inputValue(),'');
  for(const stage of ['script','c1','c2','c3','publish']){await page.locator('[data-mu-step='+stage+']').click();await page.waitForFunction(stage=>document.querySelector('[data-mu-step='+stage+']').textContent.startsWith('✓'),stage);}
@@ -23,9 +23,9 @@ try{
  await page.locator('#mu-import-file').setInputFiles({name:'original-grok-pack.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({state:{pack:exported.pack}}))});await page.waitForFunction(id=>document.querySelector('#mu-project').value!==id,firstId);assert.equal(await page.locator('.mu-cut').count(),32);
  // A malformed import may never replace saved work or quietly reorder cuts.
  const bad=structuredClone(exported.pack);bad.cuts[4].n=4;const rejected=await post({action:'save',id:'f'.repeat(32),expectedRevision:0,pack:bad});assert.equal(rejected.status,400);assert.equal(rejected.body.error,'cut_sequence');
- const calls=JSON.parse(readFileSync('/tmp/noa-muvy-fixture/provider-calls.json','utf8'));assert.equal(calls.length,9);assert.equal(calls.filter(c=>c.stage==='c1').length,2);assert.equal(snapshot.callsToday,9);
+ const calls=JSON.parse(readFileSync('/tmp/noa-muvy-fixture/provider-calls.json','utf8'));assert.equal(calls.length,11);assert.equal(calls.filter(c=>c.stage==='c1').length,2);assert.equal(snapshot.callsToday,11);
  // Enforce configured daily limit before invoking the provider again.
- const liveConfig=(await(await contexts.admin.request.get(api)).json()).config;assert.equal((await post({action:'config',expectedRevision:liveConfig.revision,model:'grok-4.5',dailyCalls:1,enabled:true})).status,200);const denied=await post({action:'generate',id:firstId,expectedRevision:snapshot.project.revision,requestId:'e'.repeat(32),stage:'extra2'});assert.equal(denied.body.error,'daily_limit');assert.equal(JSON.parse(readFileSync('/tmp/noa-muvy-fixture/provider-calls.json','utf8')).length,9);
+ const liveConfig=(await(await contexts.admin.request.get(api)).json()).config;assert.equal((await post({action:'config',expectedRevision:liveConfig.revision,model:'grok-4.5',dailyCalls:1,enabled:true})).status,200);const denied=await post({action:'generate',id:firstId,expectedRevision:snapshot.project.revision,requestId:'e'.repeat(32),stage:'extra2'});assert.equal(denied.body.error,'daily_limit');assert.equal(JSON.parse(readFileSync('/tmp/noa-muvy-fixture/provider-calls.json','utf8')).length,11);
  assert.equal((await post({action:'config',expectedRevision:liveConfig.revision+1,model:'grok-4.5',dailyCalls:20,enabled:true})).status,200);
  for(const width of [360,768,1440])for(const theme of ['noa-studio','noa-ivory']){
   const c=await browser.newContext({viewport:{width,height:1000},serviceWorkers:'block',reducedMotion:'reduce'});await c.addCookies([{name:'qa_role',value:'admin',url:base}]);await c.addInitScript(theme=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',radius:'soft',design:'ios'})),theme);const p=await c.newPage();await p.goto(base+'/noa-ai-lab.php#lab-muvy');await p.waitForFunction(()=>document.querySelectorAll('#mu-project option').length===3);await p.locator('#mu-project').selectOption(firstId);await p.locator('.mu-cut').first().waitFor();await p.locator('.mu-cut summary').first().click();assert(await p.locator('.mu-cut summary').first().evaluate(e=>e.getBoundingClientRect().width>=e.parentElement.getBoundingClientRect().width*.9),'cut summaries remain full-width title rows');assert.equal(await p.locator('.mu-cut summary.noa-action').count(),0);await p.locator('#mu-heading').scrollIntoViewIfNeeded();if(!await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)){await p.screenshot({path:out+'/overflow-'+theme+'-'+width+'.png'});writeFileSync(out+'/overflow.html',await p.content());console.log('MUVY_OVERFLOW',width,theme,await p.locator('body *').evaluateAll(nodes=>nodes.map(n=>({tag:n.tagName,id:n.id,cls:n.className,left:n.getBoundingClientRect().left,right:n.getBoundingClientRect().right,width:n.getBoundingClientRect().width})).filter(n=>n.right>innerWidth+1||n.left<0).slice(0,30)));throw Error('MUVY horizontal overflow');}assert.equal(await p.locator('.mu-cut').count(),32);for(const id of ['mu-new','mu-import','mu-export','mu-text-export'])assert(await p.locator('#'+id).evaluate(e=>e.getBoundingClientRect().height<=56&&e.scrollWidth<=e.clientWidth+1),'toolbar labels fit on one row');await p.screenshot({path:out+'/'+theme+'-'+width+'.png'});report.browser.push({width,theme,orderedCuts:true,storedProjectResumed:true,noOverflow:true});await c.close();
@@ -40,28 +40,28 @@ try{
  assert.equal(await page.locator('#mu-song option[value=original],#mu-song option[value=playlist]').count(),0);
  await page.locator('#mu-song').selectOption('missing');
  await page.waitForFunction(()=>document.querySelector('#mu-status').textContent.includes('가사가 10자 미만'));
- assert.equal(JSON.parse(readFileSync('/tmp/noa-muvy-fixture/provider-calls.json')).length,9);
+ assert.equal(JSON.parse(readFileSync('/tmp/noa-muvy-fixture/provider-calls.json')).length,11);
  const setLimit=async dailyCalls=>{
   const cfg=(await(await contexts.admin.request.get(api)).json()).config;
   assert.equal((await post({action:'config',expectedRevision:cfg.revision,model:cfg.model,dailyCalls,enabled:true})).status,200);
  };
- await setLimit(10);
+ await setLimit(12);
  await page.locator('#mu-song').selectOption('edition');
  await page.waitForFunction(()=>document.querySelector('#mu-status').textContent.includes('한도에 도달'));
  assert.equal(await page.locator('#mu-lyrics').inputValue(),'선택한 장르의 노랫말을 기억해');
- assert.equal(await page.locator('.mu-cut').count(),30);
+ assert.equal(await page.locator('.mu-cut').count(),10);
  const songId=await page.locator('#mu-project').inputValue();
- await setLimit(20);
+ await setLimit(40);
  await page.locator('#mu-song').selectOption('edition');
  await page.waitForFunction(()=>document.querySelector('#mu-status').textContent.includes('모두 저장'));
  assert.equal(await page.locator('#mu-project').inputValue(),songId);
- const songCalls=()=>JSON.parse(readFileSync('/tmp/noa-muvy-fixture/provider-calls.json')).slice(9);
- assert.deepEqual(songCalls().map(c=>c.stage),['script','c1','c1','c2','c2','c3','c3','publish']);
+ const songCalls=()=>JSON.parse(readFileSync('/tmp/noa-muvy-fixture/provider-calls.json')).slice(11);
+ assert.deepEqual(songCalls().map(c=>c.stage),['script','script','script','c1','c1','c2','c2','c3','c3','publish']);
  assert(songCalls().every(c=>c.user.includes('groovy-airy-pop')&&c.user.includes('여성 솔로')&&!c.user.includes('원곡 가사')));
  assert(songCalls()[0].user.includes('선택한 장르의 노랫말'));
  await page.locator('#mu-song').selectOption('edition');
  await page.waitForFunction(()=>!document.querySelector('#mu-picker-fields').disabled);
- assert.equal(songCalls().length,8);
+ assert.equal(songCalls().length,10);
  // Launch from the actual song form; a video catalog key must resolve to its saved song edition.
  await setLimit(40);
  const editor=await contexts.admin.newPage();
@@ -91,6 +91,6 @@ try{
  assert.equal(requests.filter(r=>r.action==='generate').length,1);
  report.editorShortcut=true;
  report.selectSongAutoGeneration=true;report.partialJobResumed=true;report.completedSelectionReused=true;
- assert.deepEqual(errors,[]);report.highestAdminOnly=true;report.csrfAndOriginEnforced=true;report.durableReload=true;report.originalPackImport=true;report.fullThirtyCutFlow=true;report.encryptedKeysNotReturned=true;report.dailyQuotaBeforeProvider=true;report.providerFixtureCalls=calls.length;
+ assert.deepEqual(errors,[]);report.highestAdminOnly=true;report.csrfAndOriginEnforced=true;report.durableReload=true;report.originalPackImport=true;report.durationBasedBatchedFlow=true;report.encryptedKeysNotReturned=true;report.dailyQuotaBeforeProvider=true;report.providerFixtureCalls=calls.length;
 }finally{writeFileSync(out+'/browser-regression.json',JSON.stringify(report,null,2));await browser.close();server.kill();runner.kill();}
 console.log('MUVY_NATIVE_WORKROOM_BROWSER_OK',report.browser.length);

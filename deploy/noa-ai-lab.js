@@ -15,6 +15,7 @@ async function upload(job,file,role='main'){if(!file||file.size>150*1048576)thro
 function renderJob(job){const box=element('article',undefined,'lab-panel');box.id='job-'+job.id;const head=element('div',undefined,'lab-job-head');head.append(element('h3',job.title),element('span',job.type==='browser_clip'?'제작 장면 보관됨':(states[job.state]||job.state),'lab-state'));box.append(head,element('p',job.type==='browser_clip'?(job.trackKey?'선택한 곡의 제작 장면':'곡에 연결하지 않은 테스트 장면'):`${job.cast==='male'?'Noel':job.cast==='duet'?'Noa & Noel':'Noa'} · ${job.genre} · ${new Date(job.createdAt).toLocaleString()} · 원본 v${job.sourceRevision}`,'lab-job-meta'));if(job.error)box.append(element('p',errors[job.error]||'작업을 완료하지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요.','lab-error'));
  if(job.state==='awaiting_audio'){const file=element('input');file.type='file';file.accept='audio/*';box.append(field('원본 음원 이어 올리기',file),button('원본 업로드',async()=>{await upload(job,file.files[0]);await refresh();}));}
  if(job.creation){const draft=element('details');draft.open=true;draft.append(element('summary','OpenAI 제작 초안 · 검토 후 저장'));for(const [key,value] of Object.entries(job.creation.body||{})){const text=typeof value==='string'?value:JSON.stringify(value,null,2);const area=element('textarea');area.value=text;area.readOnly=true;area.setAttribute('aria-label',key);draft.append(element('h4',key),area,button(key+' 복사',()=>navigator.clipboard.writeText(text),'copy'));}const edit=element('a','곡 등록·수정 화면에서 검토','lab-editor-link');edit.href='/noa-editor.php?'+new URLSearchParams({key:job.trackKey||'',draft:job.id});draft.append(edit);box.append(draft);}
+ if(job.scenePlan)box.append(element('p',`전체 곡 구성 · ${job.scenePlan.cutCount}컷 · 8초 생성 / 1초 교차페이드 · 마지막 장면은 곡 끝에 맞춰 조정`,'noa-muted'));
  if(job.analysis){const a=job.analysis;box.append(element('p',`${a.bpm} BPM 추정 · ${a.duration.toFixed(1)}초 · 음량 RMS ${a.rmsDb} dBFS`));if(a.mood)box.append(element('p',a.mood));if(a.interpretation)box.append(element('p',a.interpretation,'noa-muted'));const audio=element('audio');audio.controls=true;audio.preload='none';audio.src='/noa-bridge/lab-file.php?'+new URLSearchParams({id:job.id,format:'input'});box.append(audio);
   if(job.state==='review_highlights'&&job.settings.mode!=='audio'){const candidates=element('div',undefined,'lab-candidates'),start=number(job.selection?.start??a.candidates[0].start),end=number(job.selection?.end??a.candidates[0].end);for(const [i,c] of a.candidates.entries()){const label=element('label',undefined,'lab-candidate'),radio=element('input');radio.type='radio';radio.name='candidate-'+job.id;radio.checked=i===0;radio.onchange=()=>{start.value=c.start;end.value=c.end;audio.currentTime=c.start;};label.append(radio,element('strong',`${formatTime(c.start)}–${formatTime(c.end)} · ${(c.end-c.start).toFixed(0)}초`));for(const reason of c.reasons)label.append(element('p',reason));candidates.append(label);}box.append(candidates);const range=element('div',undefined,'lab-fields');range.append(field('시작 · 초',start),field('종료 · 초',end));box.append(range);const controls=element('div',undefined,'lab-fields'),getSettings=options(controls,job.settings);box.append(controls);
    const timing=element('details'),summary=element('summary','가사 타이밍 검토'+(a.alignmentVerified?' · 확정됨':' · 확인 필요')),text=element('textarea');text.value=JSON.stringify((a.cues||[]).map(c=>({start:c.start,end:c.end,text:c.text})),null,2);text.setAttribute('aria-label','가사별 시작·종료 시간');const verified=check('원본 음원을 들으며 가사·시작·종료 시점을 확인했습니다.');timing.append(summary,element('p','음성 인식 결과는 초안입니다. 실제로 부른 가사와 시점을 확인한 뒤 확정하세요.','noa-muted'),text,verified,button('가사 타이밍 확정',()=>{if(!verified.firstChild.checked)throw Error('시간 확인 항목에 체크하세요.');return action('timing',job,{cues:JSON.parse(text.value),verified:true});}));box.append(timing);
@@ -41,17 +42,31 @@ $('lab-refresh').onclick=()=>refresh().catch(e=>message(errors[e.message]||(/[�
 $('lab-track').onchange=async()=>{
  const version=++mediaVersion;
  const key=$('lab-track').value,track=catalog.find(t=>t.key===key);$('lab-cast').value=track?.cast||'';$('lab-create-button').disabled=true;
- if(!track)return;
+ if($('lab-scene-plan'))$('lab-scene-plan').textContent='음원 길이를 확인 중입니다.';
+ if(!track){if($('lab-scene-plan'))$('lab-scene-plan').textContent='음원을 선택하면 전체 곡에 필요한 장면 수를 계산합니다.';return;}
  $('lab-source-note').textContent='선택한 곡의 음원을 확인 중입니다.';
  try{
   const response=await fetch('/noa-bridge/catalog.php?'+new URLSearchParams({view:'labMedia',key}),{credentials:'same-origin'});
   if(!response.ok)throw Error('media_unavailable');const media=await response.json();if(version!==mediaVersion)return;track.audioUrl=media.audioUrl||'';
   if($('lab-track').value!==key)return;
   $('lab-source-note').textContent=track.audioUrl?'라이브러리에 연결된 음원 파일을 사용합니다.':'이 곡의 원본 음원 파일을 선택하세요.';
+  if($('lab-audio').files[0])await updateScenePlan($('lab-audio').files[0],version);else await updateScenePlan(track.audioUrl,version,media.timing?.durationSeconds);
  }catch{
-  if(version!==mediaVersion||$('lab-track').value!==key)return;track.audioUrl='';$('lab-source-note').textContent='연결된 음원을 확인하지 못했습니다. 원본 파일을 직접 선택하거나 곡을 다시 선택하세요.';
+  if(version!==mediaVersion||$('lab-track').value!==key)return;track.audioUrl='';if($('lab-scene-plan'))$('lab-scene-plan').textContent='음원 길이를 확인한 뒤 장면 수를 계산합니다.';$('lab-source-note').textContent='연결된 음원을 확인하지 못했습니다. 원본 파일을 직접 선택하거나 곡을 다시 선택하세요.';
  }finally{if(version===mediaVersion&&$('lab-track').value===key)$('lab-create-button').disabled=false;}
 };
+
+async function mediaDuration(source){
+ if(!source)throw Error('audio_duration_required');const a=document.createElement('audio'),object=source instanceof File?URL.createObjectURL(source):null;
+ try{return await new Promise((resolve,reject)=>{let timer;const clear=()=>{clearTimeout(timer);a.onloadedmetadata=a.onerror=null;};a.preload='metadata';a.onloadedmetadata=()=>{const n=a.duration;clear();Number.isFinite(n)&&n>0?resolve(n):reject(Error('audio_duration_required'));};a.onerror=()=>{clear();reject(Error('audio_duration_required'));};timer=setTimeout(()=>{clear();reject(Error('audio_duration_required'));},15000);a.src=object||source;});}
+ finally{a.removeAttribute('src');a.load();if(object)URL.revokeObjectURL(object);}
+}
+async function updateScenePlan(source,version,known){
+ const note=$('lab-scene-plan');if(!note)return;
+ try{const duration=known||await mediaDuration(source);if(version!==mediaVersion)return;const {plan}=await api('scene_plan',{durationSeconds:duration});if(version!==mediaVersion)return;note.textContent=`전체 곡 ${plan.durationSeconds.toFixed(2)}초 · ${plan.cutCount}컷 · 컷당 8초 생성 / 1초 교차페이드 · 마지막 컷 ${plan.scenes.at(-1).duration.toFixed(2)}초 사용`;}
+ catch{if(version===mediaVersion)note.textContent='음원 길이를 확인한 뒤 장면 수를 계산합니다. 30컷으로 임의 제한하지 않습니다.';}
+}
+$('lab-audio').onchange=()=>{const version=++mediaVersion,source=$('lab-audio').files[0]||catalog.find(t=>t.key===$('lab-track').value)?.audioUrl;updateScenePlan(source,version);};
 $('lab-browser-import-form').onsubmit=async e=>{
  e.preventDefault();if(busy||!csrf)return;busy=true;const save=$('lab-browser-save'),status=$('lab-browser-status');save.disabled=true;
  try{
