@@ -14,7 +14,7 @@ try{
   });
   await p.route('**/noa-bridge/lab-api.php?*',async r=>{
    const action=new URL(r.request().url()).searchParams.get('action'),b=r.request().postDataJSON();let body;
-   if(action==='agent_start'){writes.push(b);jobs=[{id:'a'.repeat(32),title:'현재 제목',trackKey:b.trackKey,type:'agent_movie',state:'agent_planning',revision:1,outputs:[],agent:{phase:'agent_planning',sceneCount:35,planned:0,images:0,videos:0,duration:240,format:b.format,connected:false}}];body={job:jobs[0]};}
+   if(action==='agent_start'){writes.push(b);jobs=[{id:'a'.repeat(32),title:'현재 제목',trackKey:b.trackKey,type:'agent_movie',state:'agent_planning',revision:1,outputs:[],agent:{phase:'agent_planning',sceneCount:35,planned:0,images:0,videos:0,duration:240,format:b.format,subtitles:{enabled:b.subtitles,status:'pending',count:0},connected:false}}];body={job:jobs[0]};}
    else if(action==='agent_control'){writes.push(b);jobs[0].revision++;jobs[0].state=b.action==='pause'?'agent_paused':b.action==='cancel'?'cancelled':'agent_ready';jobs[0].agent.phase=jobs[0].state;body={job:jobs[0]};}
    else if(action==='scene_plan')body={plan:{durationSeconds:240,cutCount:35,scenes:[{duration:2}]}};
    else body={jobs,config:{textEnabled:false},configured:{textAI:false,fal:false},channels:[],events:[],csrf:'fixture',generation:{ready:false,missing:['api_key']}};
@@ -23,8 +23,8 @@ try{
   await p.goto(base+'/noa-ai-lab.php?tool=create');await p.waitForFunction(()=>document.querySelector('#lab-health')?.textContent.includes('ChatGPT'));
   await p.locator('#lab-audio-picker summary').click();await p.waitForFunction(()=>!document.querySelector('#lab-audio-picker-fields').disabled);
   await p.locator('#lab-track').selectOption('story:test:current');await p.waitForFunction(()=>document.querySelector('#lab-scene-plan').textContent.includes('35컷'));
-  assert(await p.locator('#lab-scene-plan').isVisible());await p.locator('#lab-agent-start').click();await p.locator('.lab-job-list progress').waitFor();
-  assert.equal(writes.length,1);assert.equal(writes[0].sourceRevision,9);assert.equal(writes[0].trackKey,'story:test:current');assert(writes[0].goal.length>0);assert.equal(writes[0].format,'landscape');
+  assert(await p.locator('#lab-scene-plan').isVisible());assert(await p.locator('#lab-agent-subtitles').isChecked());await p.locator('#lab-agent-start').click();await p.locator('.lab-job-list progress').waitFor();
+  assert.equal(writes.length,1);assert.equal(writes[0].sourceRevision,9);assert.equal(writes[0].trackKey,'story:test:current');assert(writes[0].goal.length>0);assert.equal(writes[0].format,'landscape');assert.equal(writes[0].subtitles,true);assert(await p.getByText('보컬 타이밍 분석 대기',{exact:true}).isVisible());
   const link=p.getByRole('link',{name:'ChatGPT에서 이어가기'});assert(new URL(await link.getAttribute('href')).searchParams.get('q').includes('a'.repeat(32)));
   await p.getByRole('button',{name:'잠시 멈추기',exact:true}).click();await p.getByRole('button',{name:'제작 재개',exact:true}).waitFor();await p.getByRole('button',{name:'제작 재개',exact:true}).click();await p.getByRole('button',{name:'잠시 멈추기',exact:true}).waitFor();
   assert.equal(writes[1].expectedRevision,1);assert.equal(writes[2].expectedRevision,2);

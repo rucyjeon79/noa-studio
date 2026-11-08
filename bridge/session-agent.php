@@ -2,6 +2,7 @@
 declare(strict_types=1);
 if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
 require_once __DIR__.'/lab-core.php';
+require_once __DIR__.'/session-subtitles.php';
 
 /** ChatGPT's session executor uses the existing N80 AI LAB store, never a second queue. */
 function sa_source(string $key):array {
@@ -25,7 +26,7 @@ function sa_fingerprint(array $source):string {
 }
 function sa_summary(array $j):array {
  $a=$j['agent'];$scenes=$a['scenes'];
- return ['execution'=>'chatgpt_session','phase'=>$j['state'],'sceneCount'=>$a['target'],
+ return ['subtitles'=>sa_subtitle_summary($j),'execution'=>'chatgpt_session','phase'=>$j['state'],'sceneCount'=>$a['target'],
   'planned'=>count($scenes),'images'=>count(array_filter($scenes,fn($s)=>($s['image']['accepted']??false))),
   'videos'=>count(array_filter($scenes,fn($s)=>($s['video']['accepted']??false))),
   'active'=>$a['active']?array_intersect_key($a['active'],array_flip(['kind','scene','phase'])):null,
@@ -50,6 +51,7 @@ function sa_next(array $j):array {
  if(in_array($j['state'],['saved','cancelled','agent_paused'],true))return ['action'=>$j['state']];
  if($a['active'])return ['action'=>$a['active']['phase']==='received'?'review':'reconcile','operation'=>$a['active']];
  if(count($a['scenes'])<$a['target'])return ['action'=>'plan','start'=>count($a['scenes'])+1,'count'=>min(10,$a['target']-count($a['scenes']))];
+ if(!empty($a['subtitles']['enabled'])&&($a['subtitles']['status']??'pending')!=='ready')return ['action'=>($a['subtitles']['status']??'pending')==='needs_review'?'review_subtitles':'align_subtitles','subtitles'=>sa_subtitle_summary($j)];
  foreach($a['scenes'] as $s)foreach(['image','video'] as $kind)if(empty($s[$kind]['accepted']))return ['action'=>'generate','kind'=>$kind,'scene'=>$s['n']];
  $layout=sa_layout($j);
  if(!$layout['ready'])return ['action'=>'extend_plan','count'=>max(1,(int)ceil($layout['missingSeconds']/max(1,8-$a['timing']['overlapSeconds'])))];
@@ -59,7 +61,9 @@ function sa_view(array $j,bool $detail=false,int $from=1):array {
  $v=lab_public_job($j);$v['agent']=sa_summary($j);
  if($detail){$source=$j['source'];unset($source['audioPath']);$v['source']=$source;$v['next']=sa_next($j);
   $v['scenes']=array_slice($j['agent']['scenes'],max(0,$from-1),10);$v['timing']=$j['agent']['timing'];
-  $v['assemblyTool']=['repository'=>'rucyjeon79/noa-studio','path'=>'lab/session-assemble.mjs','manifest'=>['format'=>$j['agent']['format'],'duration'=>$j['source']['duration'],'audio'=>['path'=>'LOCAL_AUDIO_PATH','sha256'=>$j['audioSha256']],'layout'=>sa_layout($j),'scenes'=>'Download each accepted video to a local path; include n, path and sha256. Run node session-assemble.mjs manifest.json final.mp4. Inspect actual frames and listen to the final audio before review.']];
+  $v['assemblyTool']=['repository'=>'rucyjeon79/noa-studio','path'=>'lab/session-assemble.mjs','manifest'=>['format'=>$j['agent']['format'],'duration'=>$j['source']['duration'],'subtitles'=>$j['agent']['subtitles']??['enabled'=>false],'audio'=>['path'=>'LOCAL_AUDIO_PATH','sha256'=>$j['audioSha256']],'layout'=>sa_layout($j),'scenes'=>'Download each accepted video to a local path; include n, path and sha256. Run node session-assemble.mjs manifest.json final.mp4. Inspect actual frames and listen to the final audio before review.']];
+  $v['subtitles']=$j['agent']['subtitles']??['enabled'=>false];
+  $v['subtitleTool']=['path'=>'lab/session-subtitles.py','manifest'=>['audio'=>['path'=>'LOCAL_AUDIO_PATH','sha256'=>$j['audioSha256']],'duration'=>$j['source']['duration'],'lyrics'=>$j['source']['lyrics']],'instructions'=>'Run the local Korean word recognizer with the original audio, save payload using noa_agent_subtitles, and listen to flagged lines before reviewing. Never invent evenly spaced timings. Read SRT/VTT using agentFile after ready. No paid API or background process.'];
   $v['instructions']='ChatGPT plans and reviews. Use Gemini and Flow through available signed-in browser tools. Persist begin BEFORE generation. A requested operation on resume must be reconciled, never blindly generated again. Upload actual files with agentFile. Review actual images/frames; do not mark unobserved assets accepted. Use source key, current title and lyrics. Preserve watermarks. Use original audio for assembly. No public posting. If a required browser tool or login is missing, pause with a precise reason. Resume in a later conversation; this is not an unattended browser service.';
  }
  return $v;
@@ -91,11 +95,13 @@ function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=n
  if($op==='agentStart'){
   $source=$sourceReader(sa_string($b['trackKey']??null,191));
   if(($b['sourceRevision']??null)!==$source['revision'])throw new DomainException('source_revision_conflict');
+  $subtitleEnabled=($b['subtitles']??false)===true;if($subtitleEnabled&&!preg_match('/[가-힣]/u',implode('',sa_lyric_lines($source['lyrics']))))throw new DomainException('korean_lyrics_required');
   $format=$b['format']??'landscape';if(!in_array($format,['landscape','shorts'],true))throw new InvalidArgumentException('invalid_format');
   $request=lab_id((string)($b['requestId']??''));$brief=sa_string($b['goal']??'현재 곡에 어울리는 영화적 뮤직비디오를 만들어 주세요.',4000);
   $timing=mu_timeline(['durationSeconds'=>$source['duration'],'overlapSeconds'=>$b['overlapSeconds']??1]);
-  $fingerprint=hash('sha256',json_encode([$owner,sa_fingerprint($source),$format,$brief,$timing],JSON_THROW_ON_ERROR));
-  return lab_lock(function(&$s)use($source,$request,$brief,$format,$timing,$fingerprint,$owner){
+  $identity=[$owner,sa_fingerprint($source),$format,$brief,$timing];if($subtitleEnabled)$identity[]='korean_subtitles_v1';
+  $fingerprint=hash('sha256',json_encode($identity,JSON_THROW_ON_ERROR));
+  return lab_lock(function(&$s)use($source,$request,$brief,$format,$timing,$fingerprint,$owner,$subtitleEnabled){
    foreach($s['jobs'] as $j){if(($j['requestId']??'')===$request&&($j['fingerprint']??'')!==$fingerprint)throw new DomainException('request_id_reused');
     if(($j['fingerprint']??'')===$fingerprint&&$j['state']!=='cancelled')return ['job'=>sa_view($j,true),'replayed'=>true];}
    if(count($s['jobs'])>=200)throw new DomainException('job_limit');$id=bin2hex(random_bytes(16));
@@ -105,7 +111,7 @@ function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=n
     'source'=>$source,'goal'=>$brief,'state'=>'agent_planning','revision'=>1,'createdAt'=>$now,'updatedAt'=>$now,
     'audioSha256'=>$source['audioSha256'],'inputReady'=>true,'settings'=>['posting'=>'save','formats'=>[$format]],'outputs'=>[],
     'agent'=>['owner'=>$owner,'sourceFingerprint'=>sa_fingerprint($source),'format'=>$format,'timing'=>array_diff_key($timing,['scenes'=>true]),
-      'target'=>$timing['cutCount'],'scenes'=>[],'active'=>null,'session'=>'','lease'=>'','leaseUntil'=>0,'attempts'=>[],'receipts'=>[]]];
+      'subtitles'=>['enabled'=>$subtitleEnabled,'status'=>$subtitleEnabled?'pending':'off'],'target'=>$timing['cutCount'],'scenes'=>[],'active'=>null,'session'=>'','lease'=>'','leaseUntil'=>0,'attempts'=>[],'receipts'=>[]]];
    $s['jobs'][$id]=$j;lab_event($s,'agent_created',$id,$owner);return ['job'=>sa_view($j,true),'replayed'=>false];
   });
  }
@@ -142,7 +148,9 @@ function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=n
   if(isset($a['receipts'][$request])){if(!hash_equals($a['receipts'][$request],$hash))throw new DomainException('request_id_reused');return ['job'=>sa_view($j,true),'replayed'=>true];}
   sa_lease($j,$b);$a['leaseUntil']=time()+900;
   lab_revision($j,$b);
-  if($action==='plan'){
+  if($action==='subtitles'){sa_subtitle_save($j,$b);
+  }elseif($action==='subtitle_review'){sa_subtitle_review($j,$b);
+  }elseif($action==='plan'){
    $next=sa_next($j);if($next['action']==='extend_plan'){$a['target']+=$next['count'];$next=sa_next($j);}
    if($next['action']!=='plan'||$a['target']>3600)throw new DomainException('plan_not_requested');
    $rows=$b['scenes']??null;if(!is_array($rows)||!array_is_list($rows)||!count($rows)||count($rows)>$next['count'])throw new InvalidArgumentException('invalid_scene_plan');
