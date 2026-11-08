@@ -8,6 +8,8 @@ def render():
  for name in ['noa-premium.js','noa-music.php','noa-youtube.php','noa-youtube.js','noa-youtube.css','noa-browse.js','noa-browse-edit.js','noa-ui.js']:shutil.copyfile(Path('deploy')/name,root/name)
  (root/'extend').mkdir();shutil.copyfile('deploy/noa-design.extend.php',root/'extend/noa.design.php')
  (root/'noa-app/jukebox').mkdir(parents=True)
+ for relative in ('noa-app/playback-recovery.js','noa-app/jukebox/system-media.js','noa-app/jukebox/player.js','noa-app/jukebox/presentation.js','noa-app/engine/personal-listening.php','noa-app/engine/personal-song-index.php','noa-app/engine/personal-genre-model.php','noa-playlists.js','noa-listening-model.js','noa-listening.js'):
+  target=root/relative;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(Path('deploy')/relative,target)
  shutil.copyfile('deploy/noa-app/p0-player.js',root/'noa-app/p0-player.js')
  shutil.copyfile('deploy/noa-app/jukebox/upload.css',root/'noa-app/jukebox/upload.css')
  (root/'noa-app/jukebox/core.php').write_text('<?php function nj_assets(PDO $db):array{return [];}')
