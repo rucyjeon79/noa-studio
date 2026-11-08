@@ -442,7 +442,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
     choices.addEventListener('toggle',()=>summary.setAttribute('aria-expanded',String(choices.open)));
     choices.addEventListener('input',e=>e.stopPropagation());choices.addEventListener('change',e=>e.stopPropagation());
     const options=new Map();
-    for(const k of keys){const line=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.value=k;box.checked=!String(data.fields[k]||'').trim();line.append(box,document.createTextNode(names[k]));if(!box.checked){const hint=document.createElement('small');hint.textContent='기존 내용 교체';line.append(hint);}choices.append(line);options.set(k,box);}
+    for(const k of keys){const line=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.value=k;box.checked=!String(data.fields[k]||'').trim();line.append(box,document.createTextNode(names[k]));if(!box.checked){const hint=document.createElement('small');hint.textContent=draftAdapter?'작성됨':'기존 내용 교체';line.append(hint);}choices.append(line);options.set(k,box);}
     const info=document.createElement('p');info.setAttribute('role','status');
     const area=document.createElement('section');area.className='noa-publish-panel';area.append(choices,publish,info);form.prepend(area);
     draftAdapter?.batchReady?.({area,choices,options,info,publish});
@@ -454,7 +454,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
      if(state.busy)return;
      if(state.dirty){info.textContent='먼저 수정 중인 곡 정보를 저장해 주세요.';return;}
      const targets=keys.filter(k=>options.get(k).checked);
-     if(!targets.length){choices.open=true;info.textContent='빈 항목이 없습니다. 교체할 항목만 선택해 주세요.';return;}
+     if(!targets.length){choices.open=true;info.textContent='생성할 항목을 선택해 주세요.';return;}
      if(draftAdapter){await draftAdapter.generateSet(targets);return;}
      const revision=state.data.revision,job={selector,expectedKey:state.data.writeKey,revision,targets};
      state.busy=true;publish.disabled=true;const wasDisabled=[...form.querySelectorAll('input,textarea,button,select')].map(el=>[el,el.disabled]);for(const [el] of wasDisabled)el.disabled=true;

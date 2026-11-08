@@ -45,6 +45,7 @@
 
 #creative-record .noa-edit-status:empty,#creative-record #creative-asset-state:empty{display:none}
 #creative-record #creative-publish .creative-filters{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}
+#creative-record .creative-batch>.noa-publish-options{padding:0}
 #creative-record .creative-batch-picks{display:flex;gap:8px;margin:10px 0 4px}
 #creative-record .creative-batch-picks button{min-height:44px;padding:8px 12px;background:transparent;border:1px solid var(--noa-line);border-radius:6px;color:var(--noa-text);font-size:12px}
 #creative-record .creative-batch-apply{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}

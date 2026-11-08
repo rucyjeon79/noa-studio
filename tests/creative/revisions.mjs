@@ -36,6 +36,7 @@ export async function checkRevisions(page,context,heldJob,width,output){
 }
 export async function checkBatch(page,context,heldJob,width,output){
  const panel=page.locator('#creative-record .creative-batch');await panel.waitFor();const selected=['title','lyrics','sunoPrompt'];
+ const [menu,generate]=await Promise.all([panel.locator('summary').boundingBox(),panel.getByRole('button',{name:'선택 항목 AI 생성',exact:true}).boundingBox()]);assert(Math.abs(menu.y-generate.y)<2&&Math.abs(menu.height-generate.height)<2,'Shared top AI controls align at mobile and desktop widths');
  await panel.getByRole('button',{name:'선택 항목 AI 생성',exact:true}).click();await panel.locator('details[open]').waitFor();assert.equal(await panel.locator('input[type=checkbox]').count(),9);
  await panel.getByRole('button',{name:'전체 선택',exact:true}).click();assert.equal(await panel.locator('input:checked').count(),9);await panel.getByRole('button',{name:'선택 해제',exact:true}).click();
  for(const key of selected)await panel.locator('input[value="'+key+'"]').check();
