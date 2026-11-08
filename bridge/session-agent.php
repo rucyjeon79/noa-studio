@@ -4,6 +4,33 @@ if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
 require_once __DIR__.'/lab-core.php';
 require_once __DIR__.'/session-subtitles.php';
 
+/** Existing deployed character assets are the identity source, not prose descriptions. */
+function sa_character_references(string $cast,?string $directory=null):array {
+ $ids=match($cast){'male'=>['noel'],'duet'=>['noa','noel'],default=>['noa']};
+ $base=rtrim(defined('G5_URL')?(string)G5_URL:'https://noastudio.ai.kr','/');
+ $relative='noa-assets/characters';
+ if($directory===null){
+  foreach(['noa-assets/characters','noa-bridge/characters'] as $candidate){
+   if(is_dir(G5_PATH.'/'.$candidate)){$directory=G5_PATH.'/'.$candidate;$relative=$candidate;break;}
+  }
+  $directory??=dirname(__DIR__).'/public/characters';
+ }
+ $out=[];
+ foreach($ids as $id){
+  $file=$id.'-sheet.png';$path=$directory.'/'.$file;$available=is_file($path)&&!is_link($path)&&is_readable($path);
+  $out[]=['id'=>$id,'name'=>strtoupper($id),'role'=>$id==='noa'?'여주':'남주','file'=>$file,
+   'url'=>$base.'/'.$relative.'/'.$file,'sha256'=>$available?hash_file('sha256',$path):null,'available'=>$available];
+ }
+ return $out;
+}
+function sa_require_character_references(array $j):array {
+ $current=sa_character_references((string)$j['source']['cast']);
+ foreach($current as $r)if(!$r['available'])throw new DomainException('character_reference_unavailable');
+ $saved=$j['agent']['characterReferences']??$current;
+ if(array_column($saved,'sha256','id')!==array_column($current,'sha256','id'))throw new DomainException('character_reference_changed_replan_required');
+ return $current;
+}
+
 /** ChatGPT's session executor uses the existing N80 AI LAB store, never a second queue. */
 function sa_source(string $key):array {
  require_once __DIR__.'/storage.php';require_once __DIR__.'/inline-edit.php';
@@ -74,6 +101,8 @@ function sa_next(array $j):array {
 function sa_view(array $j,bool $detail=false,int $from=1):array {
  $v=lab_public_job($j);$v['agent']=sa_summary($j);
  if($detail){$source=$j['source'];unset($source['audioPath']);$v['source']=$source;$v['next']=sa_next($j);
+  $v['characterReferences']=$j['agent']['characterReferences']??sa_character_references((string)$source['cast']);
+  $v['characterInstructions']='Attach the actual listed official character-sheet files to image generation for every visible NOA/NOEL character. A URL or prose identity description alone is not an attachment. Match face and body identity; change costume and setting for the genre. Do not reproduce the sheet grid, labels or business suits. Compare generated faces with the sheets before accepting. If a sheet cannot be read or attached, pause; never substitute an arbitrary person. Preserve provider marks. Save original-resolution downloads, not UI previews. Low-resolution video is a motion draft; record actual dimensions and inspect any upscaled delivery.';
   $v['scenes']=array_slice($j['agent']['scenes'],max(0,$from-1),10);$v['timing']=$j['agent']['timing'];
   $v['assemblyTool']=['repository'=>'rucyjeon79/noa-studio','path'=>'lab/session-assemble.mjs','manifest'=>['format'=>$j['agent']['format'],'duration'=>sa_duration($j),'selection'=>$j['agent']['selection']??null,'sourceDuration'=>$j['source']['duration'],'subtitles'=>$j['agent']['subtitles']??['enabled'=>false],'audio'=>['path'=>'LOCAL_AUDIO_PATH','sha256'=>$j['audioSha256']],'layout'=>sa_layout($j),'scenes'=>'Download each accepted video to a local path; include n, path and sha256. Run node session-assemble.mjs manifest.json final.mp4. Inspect actual frames and listen to the final audio before review.']];
   $v['subtitles']=$j['agent']['subtitles']??['enabled'=>false];
@@ -107,7 +136,7 @@ function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=n
  }
  if($op==='agentRead'&&isset($b['trackKey'])){
   $source=$sourceReader(sa_string($b['trackKey'],191));unset($source['audioPath']);
-  return ['source'=>$source,'execution'=>'chatgpt_session'];
+  return ['source'=>$source,'characterReferences'=>sa_character_references((string)$source['cast']),'execution'=>'chatgpt_session'];
  }
  if($op==='agentSourceFile'){
   $source=$sourceReader(sa_string($b['trackKey']??null,191));
@@ -135,6 +164,7 @@ function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=n
     'source'=>$source,'goal'=>$brief,'state'=>'agent_planning','revision'=>1,'createdAt'=>$now,'updatedAt'=>$now,
     'audioSha256'=>$source['audioSha256'],'inputReady'=>true,'settings'=>['posting'=>'save','formats'=>[$format]],'outputs'=>[],
     'agent'=>['owner'=>$owner,'sourceFingerprint'=>sa_fingerprint($source),'format'=>$format,'selection'=>$selection,'timing'=>array_diff_key($timing,['scenes'=>true]),
+      'characterReferences'=>sa_character_references((string)$source['cast']),
       'subtitles'=>['enabled'=>$subtitleEnabled,'status'=>$subtitleEnabled?'pending':'off'],'target'=>$timing['cutCount'],'scenes'=>[],'active'=>null,'session'=>'','lease'=>'','leaseUntil'=>0,'attempts'=>[],'receipts'=>[]]];
    $s['jobs'][$id]=$j;lab_event($s,'agent_created',$id,$owner);return ['job'=>sa_view($j,true),'replayed'=>false];
   });
@@ -191,6 +221,7 @@ function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=n
   }elseif($action==='begin'){
    $next=sa_next($j);$kind=$b['kind']??'';$n=$b['scene']??0;
    if(!(($next['action']==='generate'&&$kind===$next['kind']&&$n===$next['scene'])||($next['action']==='assemble'&&$kind==='final'&&$n===0)))throw new DomainException('unexpected_agent_step');
+   if($kind==='image')$a['characterReferences']=sa_require_character_references($j);
    $key=$kind.':'.$n;$a['attempts'][$key]=($a['attempts'][$key]??0)+1;if($a['attempts'][$key]>3)throw new DomainException('generation_attempt_limit');
    $a['active']=['kind'=>$kind,'scene'=>$n,'requestId'=>$request,'phase'=>'requested','startedAt'=>gmdate('c')];$j['state']='agent_working';
   }elseif($action==='review'){
