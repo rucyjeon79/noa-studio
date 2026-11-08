@@ -95,12 +95,9 @@ def _drain_uploads(sftp,call,mkdir,source_reader=None,idle_seconds=0):
                         context.update(suno_id=metadata['suno_id'],suno_title=metadata['suno_title'])
                         card=media.cover(Path(temp)/'cover.webp',metadata['image_url'])
                     except Exception:card_errors.append('cover:public_card_unavailable')
-                if job.get('cover_path') and not job.get('previous_sha256'):
-                    directory=Path(job['cover_path']).parent
-                else:
-                    directory=media.folder(row)
-                    if job.get('previous_sha256'):directory=directory.with_name(directory.name+' [v-'+job['id'][:12]+']')
-                title=context.get('suno_title') or context['title'];relative=directory/(media.component(title)+'.mp3')
+                directory=Path(context['mediaDirectory']) if context.get('mediaDirectory') else media.folder(row)
+                if job.get('previous_sha256'):directory=directory.with_name(directory.name+' [v-'+job['id'][:12]+']')
+                title=context['title'];relative=directory/(media.component(title)+'.mp3')
                 # Directory identity is immutable for the publication. Never overwrite
                 # unknown bytes or an existing edition, including a stale worker's file.
                 for part in relative.parts:

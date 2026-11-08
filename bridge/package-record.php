@@ -143,11 +143,15 @@ function nup_merge_body(array $old,array $incoming):array{
  return $merged;
 }
 function nup_store(PDO $db,string $key,string $kind,array $payload,int $expected,string $actor):int{
+ $ownsTransaction=!$db->inTransaction();if($ownsTransaction)$db->beginTransaction();
+ try{
+ if(in_array($kind,['single','story','n80_creative_draft'],true)){$mediaFile=dirname(__DIR__).'/noa-app/jukebox/media-location.php';if(!is_file($mediaFile))$mediaFile=dirname(__DIR__).'/deploy/noa-app/jukebox/media-location.php';require_once $mediaFile;$payload=nml_sync($db,$key,$payload,$actor==='media-publisher');}
  $payload=nco_attach($db,$key,$kind,$payload);
  $encoded=json_encode($payload,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
  if($expected===0){$q=$db->prepare("INSERT IGNORE INTO noa_documents(doc_key,kind,payload,revision,updated_by) VALUES(?,?,'{}',0,?)");$q->execute([$key,$kind,$actor]);}
  $q=$db->prepare('UPDATE noa_documents SET payload=?,revision=revision+1,updated_by=? WHERE doc_key=? AND kind=? AND revision=?');$q->execute([$encoded,$actor,$key,$kind,$expected]);if($q->rowCount()!==1)throw new DomainException('revision_conflict');
- $q=$db->prepare('INSERT INTO noa_document_history(doc_key,revision,payload,changed_by) VALUES(?,?,?,?)');$q->execute([$key,$expected+1,$encoded,$actor]);return $expected+1;
+ $q=$db->prepare('INSERT INTO noa_document_history(doc_key,revision,payload,changed_by) VALUES(?,?,?,?)');$q->execute([$key,$expected+1,$encoded,$actor]);if($ownsTransaction)$db->commit();return $expected+1;
+ }catch(Throwable $e){if($ownsTransaction&&$db->inTransaction())$db->rollBack();throw $e;}
 }
 function nup_policy():array{return ['version'=>1,'priority'=>0,'storage'=>'mysql:noa_documents.payload; catalog versions are immutable source snapshots; JSON files are exports only','original'=>'K-POP 원곡의 EP 번호·제목·가사가 모든 EP 장르의 원본이다.','ep'=>'원곡 정보는 읽기 전용이며 장르 규칙에 따라 확정 제목과 장르 가사를 작성한다.','act'=>'ACT n은 EP (n−1)×10+1부터 n×10까지 10곡, EP 번호 오름차순이다.','playlist'=>'사연곡·커버곡 플레이리스트는 수록곡 수 제한 없이 지정 순서를 따른다.','rules'=>'0원칙 → 공통 제작 규칙 → 장르별 제작 규칙. 장르별 규칙도 저장·원곡 잠금·ACT 범위 규칙을 바꿀 수 없다.'];}
 function nup_snapshot(PDO $db,string $key,string $root):array{

@@ -5,7 +5,35 @@ $level=ob_get_level();ob_start();require_once dirname(__DIR__).'/common.php';if(
 try{
  require_once __DIR__.'/storage.php';require_once __DIR__.'/sound-core.php';require_once dirname(__DIR__).'/noa-app/engine/creative.php';
  $db=noa_bridge_pdo();$owner=(string)$config['cf_admin'];$id='__DRAFT_ID__';$nonce='__REQUEST_ID__';$b=json_decode(file_get_contents('php://input'),true,16,JSON_THROW_ON_ERROR);$op=$b['op']??'';$result=[];
- if($op==='audit_titles'){
+ if(in_array($op,['audit_save','recover_save'],true)){
+  require_once __DIR__.'/creative-publication.php';
+  $q=$db->prepare('SELECT c.draft_id FROM noa_creative_drafts c WHERE c.owner_id=?');$q->execute([$owner]);$matches=[];
+  foreach($q->fetchAll(PDO::FETCH_COLUMN) as $draftId){$candidate=ncd_row($db,$draftId,$owner);if(preg_replace('/\s+/u','',nup_fields($candidate['document'])['title'])==='행간의연서(行間戀書)'&&empty($candidate['document']['_creative']['deletedAt']))$matches[]=$candidate;}
+  if(count($matches)!==1)throw new RuntimeException('reported_song_not_unique');
+  $r=$matches[0];$d=$r['document'];$c=$d['_creative'];$a=nj_find($db,$r['doc_key']);
+  $snapshot=['id'=>$c['id'],'revision'=>$r['revision'],'documentHash'=>ncd_hash($d),'assetHash'=>ncd_hash($a),'title'=>nup_fields($d)['title'],'genre'=>$d['genreId'],'collections'=>$c['collections'],'publication'=>$c['publication']??null,'completion'=>ncd_completion($d),'needsReview'=>array_keys($c['needsReview']),'proposals'=>array_keys(ncd_current_proposals($d)),'audioReady'=>nj_verified($a,'audio'),'coverReady'=>nj_verified($a,'cover'),'audioPath'=>$a['audio_path']??null,'coverPath'=>$a['cover_path']??null];
+  if($op==='audit_save')$result=$snapshot+['userDraftWrites'=>0];
+  else{
+   $expected=$b['expected']??[];
+   foreach(['id','revision','documentHash','assetHash'] as $field)if(($expected[$field]??null)!==$snapshot[$field])throw new RuntimeException('reported_song_changed');
+   if(!empty($c['jobId'])){$job=ncd_job($db,$c['jobId']);if(in_array($job['document']['state']??'',['queued','running'],true))throw new RuntimeException('reported_song_busy');}
+   $accepted=nup_fields($d);unset($accepted['audioFileLocation'],$accepted['cardImageLocation'],$accepted['confirmed']);
+   if(empty($c['publication'])){
+    $preview=ncd_preview($db,$owner,['id'=>$c['id'],'revision'=>$r['revision'],'reviewConfirmed'=>true],true);
+    if(!$preview['preview']['validation']['ready'])throw new RuntimeException('reported_song_not_ready:'.implode(',',$preview['preview']['validation']['issues']));
+    $request=['id'=>$c['id'],'revision'=>$preview['draft']['revision'],'token'=>$preview['preview']['token'],'rightsConfirmed'=>true];
+    $published=ncd_publish($db,$owner,$request,true);if(ncd_publish($db,$owner,$request,true)['publication']!==$published['publication'])throw new RuntimeException('publication_replay_changed');
+   }else{
+    $published=['publication'=>$c['publication']];$key=$c['publication']['key'];
+    ncd_atomic($db,function()use($db,$key,$r,$d,$owner){$q=$db->prepare('SELECT kind,payload,revision FROM noa_documents WHERE doc_key=? FOR UPDATE');$q->execute([$key]);$song=$q->fetch(PDO::FETCH_ASSOC);if(!$song)throw new RuntimeException('published_song_missing');$payload=json_decode($song['payload'],true);if(($payload['creativeDraftId']??'')!==$d['_creative']['id'])throw new RuntimeException('published_song_identity');nup_store($db,$key,$song['kind'],$payload,(int)$song['revision'],$owner);ncd_put($db,$r,$d,$owner);});
+   }
+   nml_cleanup($db);$key=$published['publication']['key'];$saved=nj_document($db,$key);$asset=nj_find($db,$key);$current=nup_fields($saved);unset($current['audioFileLocation'],$current['cardImageLocation'],$current['confirmed']);
+   if($accepted!==$current||$saved['genreId']!==$d['genreId'])throw new RuntimeException('saved_content_mismatch');
+   if($a)foreach(['audio','cover'] as $type)if(!empty($a[$type.'_path'])){if(!nj_verified($asset,$type)||$a[$type.'_sha256']!==$asset[$type.'_sha256'])throw new RuntimeException('saved_media_mismatch');}
+   if(!empty($asset['audio_path'])&&!empty($asset['cover_path'])&&dirname($asset['audio_path'])!==dirname($asset['cover_path']))throw new RuntimeException('media_not_together');
+   $result=['publication'=>$published['publication'],'acceptedFieldsPreserved'=>true,'audioReady'=>nj_verified($asset,'audio'),'coverReady'=>nj_verified($asset,'cover'),'audioPath'=>$asset['audio_path']??null,'coverPath'=>$asset['cover_path']??null,'oldPathsRemoved'=>array_map(static fn($type)=>empty($a[$type.'_path'])||$a[$type.'_path']===($asset[$type.'_path']??null)||nj_file($a[$type.'_path'])===null,['audio','cover']),'replaySafe'=>true];
+  }
+ }elseif($op==='audit_titles'){
   $q=$db->prepare("SELECT payload FROM noa_documents WHERE kind='n80_creative_job' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.owner'))=? AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.operation'))='revise' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.input.fields.title'))=? AND CAST(JSON_UNQUOTE(JSON_EXTRACT(payload,'$.createdAt')) AS UNSIGNED)>=? ORDER BY updated_at DESC LIMIT 5");$q->execute([$owner,'Between Lines',time()-86400]);$result=['matchingJobs'=>[],'userDraftWrites'=>0];$keys=['youtubeTitle','description','communityPost'];
   foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){$j=json_decode($row['payload'],true);if(!array_intersect($keys,$j['targets']))continue;$result['matchingJobs'][]=['id'=>$j['id'],'state'=>$j['state'],'createdAt'=>$j['createdAt'],'currentTitle'=>$j['input']['fields']['title'],'targets'=>$j['targets'],'previous'=>array_intersect_key($j['input']['fields'],array_flip($keys)),'result'=>array_intersect_key($j['result']['fields']??[],array_flip($keys))];}
  }elseif($op==='audit'){

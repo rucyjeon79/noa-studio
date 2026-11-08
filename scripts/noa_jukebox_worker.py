@@ -31,6 +31,7 @@ def component(value):
 def folder(row):
     genre = row.get('genre', 'unclassified')
     title = row['title']
+    if genre in ('', 'unclassified', None): return Path('기타') / component(title)
     ep = str(row.get('ep') or '')
     base = {'kpop-original': 'K-POP', 'jpop-original': 'J-POP',
             'pop-original': 'POP', 'thai-original': 'Thai'}

@@ -7,6 +7,7 @@ class WorkerTests(unittest.TestCase):
  def test_paths(self):
   self.assertEqual(str(w.folder({'genre':'kpop-original','title':'별/빛','ep':'1'})),'K-POP/EP.01 별_빛')
   self.assertEqual(str(w.folder({'genre':'your-story','title':'우리'})),'사연곡/우리')
+  self.assertEqual(str(w.folder({'genre':'unclassified','title':'미지정'})),'기타/미지정')
   with self.assertRaises(ValueError):w.folder({'genre':'cover-reborn','title':'우리'})
  def test_url_boundary(self):
   for u in ['https://suno.com.evil.test/a','https://suno.com@localhost/a','file:///etc/passwd','https://cdn2.suno.ai:123/a']:
@@ -102,7 +103,7 @@ class UploadPublicationTests(unittest.TestCase):
    root=Path(t);incoming=root/'incoming'/'abc';incoming.mkdir(parents=True)
    source=incoming/'input.audio'
    subprocess.run(['ffmpeg','-v','error','-f','lavfi','-i','sine=frequency=440:duration=2','-ac','2','-c:a','pcm_s16le','-f','wav',str(source)],check=True)
-   job={'job_id':1,'id':'abc','key':'test:upload','lease':'lease','extension':'wav','bytes':source.stat().st_size,'sha256':w.digest(source),'context':{'title':'등록곡','genre':'kpop-original','ep':'1','suno_id':'known'},'source_url':'https://suno.com/song/known','cover_path':None,'previous_sha256':None}
+   job={'job_id':1,'id':'abc','key':'test:upload','lease':'lease','extension':'wav','bytes':source.stat().st_size,'sha256':w.digest(source),'context':{'title':'등록곡','genre':'kpop-original','ep':'1','suno_id':'known','mediaDirectory':'기타/1234567890abcdef'},'source_url':'https://suno.com/song/known','cover_path':None,'previous_sha256':None}
    class RemoteFile:
     def __init__(self,f):self.f=f
     def __enter__(self):return self
@@ -129,7 +130,7 @@ class UploadPublicationTests(unittest.TestCase):
     if action=='upload_cleanup':return {'input_removed':not source.exists()}
     if action=='upload_commit':
      r=payload['result'];audio=root/'media'/r['audio_path'];cover=root/'media'/r['cover_path']
-     self.assertEqual(audio.parent,cover.parent);self.assertEqual(audio.name,'Suno 등록 제목.mp3')
+     self.assertEqual(audio.parent,cover.parent);self.assertEqual(audio.name,'등록곡.mp3');self.assertEqual(audio.parent,root/'media'/'기타'/'1234567890abcdef')
      self.assertEqual(w.digest(audio),r['audio_sha256']);self.assertEqual(w.digest(cover),r['cover_sha256'])
      self.assertEqual(w.analyze(audio)['codec'],'mp3');source.unlink()
      return {'ready':True,'input_removed':True}

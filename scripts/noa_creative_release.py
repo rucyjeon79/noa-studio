@@ -26,6 +26,14 @@ if os.environ.get('NOA_CREATIVE_BATCH_ONLY')=='1':
  release.NEW=set()
 if os.environ.get('NOA_CREATIVE_TITLE_ONLY')=='1':
  release.FILES['noa-starlight.css']='deploy/noa-starlight.css'
+if os.environ.get('NOA_CREATIVE_SAVE_ONLY')=='1':
+ release.FILES={
+  'noa-app/jukebox/media-location.php':'deploy/noa-app/jukebox/media-location.php',
+  **{'noa-bridge/'+p:'bridge/'+p for p in ['package-record.php','suno-cover.php','creative-core.php','creative-publication.php']},
+  'noa-app/jukebox/upload-core.php':'deploy/noa-app/jukebox/upload-core.php',
+  'noa-creative.js':'deploy/noa-creative.js',
+ }
+ release.NEW={'noa-app/jukebox/media-location.php'}
 if __name__=='__main__':
  try:
   retention=os.environ.get('NOA_CREATIVE_RETENTION_ONLY')=='1' and 'rollback' not in sys.argv

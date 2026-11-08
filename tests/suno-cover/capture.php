@@ -7,6 +7,7 @@ mkdir($base.'/public/noa-bridge', 0700, true);
 mkdir($base.'/public/noa-app/jukebox', 0700, true);
 copy('bridge/suno-cover.php', $base.'/public/noa-bridge/suno-cover.php');
 copy('deploy/noa-app/jukebox/core.php', $base.'/public/noa-app/jukebox/core.php');
+copy('deploy/noa-app/jukebox/media-location.php', $base.'/public/noa-app/jukebox/media-location.php');
 require 'bridge/sound-core.php';
 require $base.'/public/noa-bridge/suno-cover.php';
 register_shutdown_function(static function() use ($base) {

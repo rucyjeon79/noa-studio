@@ -6,7 +6,7 @@ from noa_full_inventory import ROOT,connect
 from n80_live_observer import NoRedirect
 
 def main(phase):
-    if phase not in ('audit','audit_titles','verify','verify_batch','verify_titles','cleanup'):raise ValueError('invalid phase')
+    if phase not in ('audit','audit_titles','verify','verify_batch','verify_titles','audit_save','recover_save','cleanup'):raise ValueError('invalid phase')
     audit_id=os.environ.get('NOA_CREATIVE_AUDIT_JOB','')
     if audit_id and not re.fullmatch('[a-f0-9]{32}',audit_id):raise ValueError('invalid audit job')
     probe_id=os.environ.get('NOA_CREATIVE_PROBE_ID','') if phase=='cleanup' else secrets.token_hex(16)
@@ -16,8 +16,8 @@ def main(phase):
     code=Path('scripts/noa_creative_revision_live.php').read_text()
     for k,v in {'__TITLE_MODE__':'1' if phase=='verify_titles' else '0','__BATCH_MODE__':'1' if phase=='verify_batch' else '0','__AUDIT_JOB_ID__':audit_id,'__EXPIRY__':str(int(time.time())+900),'__TOKEN_SHA__':hashlib.sha256(token.encode()).hexdigest(),'__DRAFT_ID__':probe_id,'__REQUEST_ID__':request_id}.items():code=code.replace(k,v)
     code=code.encode();t=connect();installed=False;created=False;receipt={};opener=urllib.request.build_opener(NoRedirect())
-    def call(op):
-        request=urllib.request.Request('https://noastudio.ai.kr/noa-bridge/'+name,data=json.dumps({'op':op}).encode(),headers={'Content-Type':'application/json','X-NOA-Control':token,'Cache-Control':'no-cache'})
+    def call(op, payload=None):
+        request=urllib.request.Request('https://noastudio.ai.kr/noa-bridge/'+name,data=json.dumps({'op':op,**(payload or {})}).encode(),headers={'Content-Type':'application/json','X-NOA-Control':token,'Cache-Control':'no-cache'})
         try:
             with opener.open(request,timeout=45) as response:data=json.load(response)
         except urllib.error.HTTPError as error:
@@ -32,7 +32,11 @@ def main(phase):
             installed=True;s.chmod(remote,0o644)
             with s.open(remote,'rb') as f:
                 if f.read()!=code:raise RuntimeError('revision_probe_readback')
-        if phase in ('audit','audit_titles'):receipt=call(phase);print('CREATIVE_REVISION_AUDIT',json.dumps(receipt,ensure_ascii=False),flush=True)
+        if phase in ('audit','audit_titles','audit_save'):receipt=call(phase);print('CREATIVE_REVISION_AUDIT',json.dumps(receipt,ensure_ascii=False),flush=True)
+        elif phase=='recover_save':
+            audited=json.loads(Path('ainoa-proof/creative-revision-audit_save.json').read_text())
+            receipt=call('recover_save',{'expected':audited})
+            print('CREATIVE_SAVE_RECOVERY',json.dumps(receipt,ensure_ascii=False),flush=True)
         elif phase=='cleanup':
             receipt['cleanup']=call('cleanup');print('CREATIVE_REVISION_PROBE_CLEANED',json.dumps(receipt),flush=True)
         else:

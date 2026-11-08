@@ -329,9 +329,9 @@ $('cover-file').onchange=()=>run(async()=>{const file=$('cover-file').files[0];i
 $('audio-file').onchange=()=>run(async()=>{const file=$('audio-file').files[0];if(!file)return;await flush();const head=new Uint8Array(await file.slice(0,65536).arrayBuffer()),meta=new TextEncoder().encode(file.name+':'+file.size),bytes=new Uint8Array(head.length+meta.length);bytes.set(head);bytes.set(meta,head.length);const fingerprint=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');const res=await api('init',{id:draft.id,revision:draft.revision,filename:file.name,bytes:file.size,fingerprint});upload={id:res.id};$('upload-progress').hidden=false;const chunks=new Set(res.chunks);for(let index=0;index<Math.ceil(file.size/res.chunkSize);index++){if(!chunks.has(index))await binary('chunk',file.slice(index*res.chunkSize,(index+1)*res.chunkSize),{upload:res.id,index:String(index)});$('upload-progress').value=Math.min(100,(index+1)*res.chunkSize/file.size*100);}$('asset-state').textContent='전송 완료 · 음원 최적화 접수 중';await api('finish',{id:draft.id,revision:draft.revision,upload:res.id});await assets();schedule();});
 $('audio-retry').onclick=()=>run(async()=>{await mutate('retry',{upload:upload.id});await assets();});
 $('final').onclick=()=>run(async()=>{
- await flush();const data=await mutate('preview'),v=data.preview.validation,root=$('preview');root.replaceChildren();
+ await flush();const data=await mutate('preview',{reviewConfirmed:true}),v=data.preview.validation,root=$('preview');root.replaceChildren();
  if(!v.ready){for(const issue of v.issues)root.append(el('p',errors[issue]||(R.schema[issue]?R.schema[issue][0]+'을 확인해 주세요.':'저장할 내용을 확인해 주세요.'),'creative-review'));root.scrollIntoView({block:'nearest'});return;}
- await mutate('publish',{token:data.preview.token,rightsConfirmed:true});status('선택한 위치에 저장했어요.');
+ const saved=await mutate('publish',{token:data.preview.token,rightsConfirmed:true});stopWatching();window.location.assign(saved.publication.href);
 });
 $('story').oninput=()=>{queue({story:composedStory()});syncComposer();};$('story-compose').onsubmit=event=>{event.preventDefault();run(submitStory);};
 $('story-next').onclick=()=>run(submitStory);

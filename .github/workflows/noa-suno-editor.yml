@@ -39,7 +39,7 @@ jobs:
           NODE_PATH="$RUNNER_TEMP/suno-ui/node_modules" node tests/suno-cover/editor.cjs
           NODE_PATH="$RUNNER_TEMP/suno-ui/node_modules" node tests/suno-cover/layout.cjs
   publish:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[creative-drafts]')
     needs: verify
     runs-on: ubuntu-latest
     environment: production

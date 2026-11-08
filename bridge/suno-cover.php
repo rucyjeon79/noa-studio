@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 if (!defined('_GNUBOARD_')) { http_response_code(403); exit; }
-require_once dirname(__DIR__).'/noa-app/jukebox/core.php';
+require_once dirname(__DIR__).'/noa-app/jukebox/media-location.php';
 
 function nsc_allowed(string $url, bool $page): bool {
     $parts = parse_url($url);
@@ -89,9 +89,9 @@ function nsc_prepare(PDO $db, string $key, string $source): ?array {
     } catch (Throwable $e) { error_log('[suno-cover] could not fetch public artwork'); return null; }
 }
 
-function nsc_file(?array $asset, string $key, string $bytes): array {
+function nsc_file(?array $asset, string $key, string $bytes, array $doc=[]): array {
     $audio = !empty($asset['audio_path']) ? nj_file($asset['audio_path']) : null;
-    $relative = $audio ? dirname($asset['audio_path']) : 'cover-only/'.hash('sha256', $key);
+    $relative = $audio ? dirname($asset['audio_path']) : nml_directory($key,$doc);
     $dir = $audio ? dirname($audio) : nj_private().'/media/'.$relative;
     if (!is_dir($dir) && !@mkdir($dir, 0700, true) && !is_dir($dir)) throw new RuntimeException('directory_unavailable');
     $hash = hash('sha256', $bytes);
@@ -122,7 +122,7 @@ function nsc_attach(PDO $db, string $key, array $doc, ?array $prepared): array {
         $q = $db->prepare('SELECT * FROM noa_jukebox_assets WHERE song_key=? FOR UPDATE');
         $q->execute([$key]);
         $old = $q->fetch(PDO::FETCH_ASSOC) ?: null;
-        [$path, $hash] = nsc_file($old, $key, $prepared['bytes']);
+        [$path, $hash] = nsc_file($old, $key, $prepared['bytes'], $doc);
         $evidence = json_decode($old['source_evidence'] ?? 'null', true, 512, JSON_THROW_ON_ERROR) ?? [];
         $evidence['coverSourceUrl'] = $source;
         $evidence['coverSunoId'] = $prepared['id'];
