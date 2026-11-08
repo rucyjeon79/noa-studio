@@ -2,7 +2,8 @@
 (()=>{'use strict';
 const $=id=>document.getElementById('creative-'+id),csrf=document.querySelector('meta[name=n80-creative-csrf]').content,R=window.NoaRecordForm;
 const targets=['vocal','title','lyrics','sunoPrompt','geminiPrompt','youtubeTitle','description','communityPost','creativeFields'];
-const invalidFields=new Set();
+const invalidFields=new Set(),recordFields=new Map();
+let recordEditor=null,recordEpoch=-1,recordSwitching=false,recordOpening=null,recordBusy=false,mediaState=null;
 const labels={story:'이야기 입력',questions:'질문 답변',intent:'의도 확인',writing:'곡정보 생성',review:'검토 중',published:'등록 완료',deleted:'삭제 보관함'};
 const conditions={theme:'이야기',emotion:'분위기',genre:'음악 장르',instruments:'악기',vocal:'보컬',structure:'노래의 흐름',language:'언어',prohibitions:'피하고 싶은 표현'};
 const errors={content_required:'내용을 입력하면 복구 저장을 시작합니다.',complete_song_info_first:'곡정보 생성을 마친 뒤 제작 파일을 연결해 주세요.',revision_conflict:'다른 창이나 처리 작업에서 내용이 변경되었습니다. 현재 입력은 화면에 남겨 두었습니다. 필요한 내용을 복사한 뒤 서버 버전을 불러와 주세요.',draft_not_found:'초안을 찾을 수 없거나 접근 권한이 없습니다.',generation_busy:'진행 중인 생성 작업이 있습니다.',worker_timeout:'AI 작업 응답 시간이 지났습니다. 저장된 내용은 유지됩니다. 다시 요청해 주세요.',dispatch_failed:'만들기를 시작하지 못했어요. 다시 시도해 주세요.',worker_unavailable:'지금은 만들기를 시작할 수 없어요. 잠시 후 다시 시도해 주세요.',four_choices_required:'질문을 준비하지 못했어요. 다시 시도해 주세요.',intent_evidence_required:'이야기를 제대로 정리하지 못했어요. 다시 시도해 주세요.',draft_changed:'새로 만든 내용이 있어요. 이전 작업에서 확인할 수 있어요.',field_changed:'수정 요청 후 이 항목이 변경되었습니다. 현재 내용을 기준으로 다시 요청해 주세요.',confirm_intent_first:'창작 의도 요약을 먼저 확정해 주세요.',unanswered_questions:'아직 답하지 않은 질문이 있습니다.',verified_audio_required:'실제 음원 업로드·검증이 필요합니다.',verified_cover_required:'실제 카드 이미지 연결·검증이 필요합니다.',ep_required:'EP 번호를 입력해 주세요.',ep_already_exists:'사용 중인 EP 번호입니다.',review_related_fields:'내용이 바뀐 연관 항목을 확인해 주세요.',resolve_proposals:'항목별 수정안을 적용하거나 취소해 주세요.',verify_sunoUrl:'Suno 주소의 실제 카드 이미지를 확인해 주세요.',verify_youtubeUrl:'YouTube 주소 검증이 필요합니다.',verify_mvUrl:'뮤직비디오 주소 검증이 필요합니다.',collection_unavailable:'선택한 곡 묶음을 확인해 주세요.',suno_verification_failed:'Suno 주소의 실제 곡·이미지를 확인하지 못했습니다. 주소를 확인하고 다시 시도해 주세요.',publication_not_ready:'게시 준비 항목을 먼저 확인해 주세요.',preview_changed:'미리보기 이후 데이터가 바뀌었습니다. 미리보기를 다시 확인해 주세요.',preview_required:'게시 미리보기를 먼저 확인해 주세요.',csrf_required:'로그인 상태가 바뀌었습니다. 입력한 내용을 보관하고 다시 로그인해 주세요.',creative_service_unavailable:'서버 저장을 확인하지 못했습니다. 입력을 유지하고 재시도해 주세요.',suno_prompt_too_long:'Suno 지시문이 1,000자를 넘었습니다. 다시 요청해 주세요.',fields_complete:'내용이 완성됐어요. 곡정보에서 원하는 부분을 다듬어 보세요.',generation_failed:'내용을 완성하지 못했어요. 선택한 내용은 그대로 있어요. 다시 시도해 주세요.'};
@@ -14,7 +15,7 @@ function button(label,fn){const b=el('button',label);b.type='button';b.onclick=(
 function message(error){return errors[error?.message||error]||'요청을 완료하지 못했어요. 잠시 후 다시 시도해 주세요.';}
 function status(s){$('status').textContent=s;room?.status(s);}
 async function api(action,body,query={}){const url='/noa-bridge/creative.php?'+new URLSearchParams({action,...query});const response=await fetch(url,{method:body===undefined?'GET':'POST',credentials:'same-origin',headers:body===undefined?{}:{'Content-Type':'application/json','X-NOA-CSRF':csrf},body:body===undefined?undefined:JSON.stringify(body)});let data;try{data=await response.json();}catch{throw Error('creative_service_unavailable');}if(!response.ok)throw Error(data.error||'creative_service_unavailable');return data;}
-function state(kind,s){if(kind==='saved'&&draft?.storage?.mode==='recovery')s='자동 저장됨';$('save').dataset.state=kind;$('save').textContent=s;if(kind==='saved'&&$('chat-retry')){$('chat-retry').remove();room?.status($('job').textContent);}}
+function state(kind,s){if(kind==='saved'&&draft?.storage?.mode==='recovery')s='자동 저장됨';if(kind==='saved')document.querySelector('.creative-toolbar').hidden=true;$('save').dataset.state=kind;$('save').textContent=s;if(kind==='saved'&&$('chat-retry')){$('chat-retry').remove();room?.status($('job').textContent);}}
 function meaningful(value){return typeof value==='string'?!!value.trim():!!value&&typeof value==='object'&&Object.values(value).some(meaningful);}
 function dirty(){return Object.keys(pending).length>0;}
 function composedStory(){return [storyBase,$('story').value.trim()].filter(Boolean).join('\n\n');}
@@ -27,19 +28,19 @@ async function submitStory(){
  if($('fortune-options').childElementCount){room?.status('추가사항을 담았어요. 이야기를 고른 뒤 다음으로 진행해 주세요.');return;}
  await generate('analyze');
 }
-function queue(part){pending={...pending,...part,answerDrafts:{...(pending.answerDrafts||{}),...(part.answerDrafts||{})},fields:{...(pending.fields||{}),...(part.fields||{})},requests:{...(pending.requests||{}),...(part.requests||{})}};state('saving','저장 대기');$('final').disabled=true;clearTimeout(timer);timer=setTimeout(()=>flush().catch(fail),500);}
+function queue(part){pending={...pending,...part,answerDrafts:{...(pending.answerDrafts||{}),...(part.answerDrafts||{})},fields:{...(pending.fields||{}),...(part.fields||{})},requests:{...(pending.requests||{}),...(part.requests||{})}};state('saving','저장 대기');syncComposer();clearTimeout(timer);timer=setTimeout(()=>flush().catch(fail),500);}
 function fail(e){
  status(message(e));if(e.message==='revision_conflict'){conflict=true;$('reload').hidden=false;}
  // Only unsaved input needs a save retry. A failed generation has its own action.
  if(!dirty()&&!conflict)return;
- state('failed','저장하지 못했어요. 입력한 내용은 그대로 있어요.');$('retry-save').hidden=false;
+ document.querySelector('.creative-toolbar').hidden=false;state('failed','저장하지 못했어요. 입력한 내용은 그대로 있어요.');$('retry-save').hidden=false;
  if(room?.active()){room.status(message(e)+' 입력한 내용은 그대로 있어요.');$('chat-retry')?.remove();const retry=button(conflict?'저장된 내용 확인하기':'다시 저장하기',()=>conflict?room?.close():flush());retry.id='creative-chat-retry';$('guide').append(retry);}
 }
 async function flush(){if(invalidFields.size)throw Error('invalid_creative_fields');clearTimeout(timer);if(saving){await saving;if(dirty())return flush();return;}if(conflict)throw Error('revision_conflict');if(!dirty())return;if(!draft&&!meaningful([pending.story,pending.fields,pending.requests])){pending={};state('idle','아직 저장된 내용이 없습니다.');return;}
  const wasNew=!draft,captured=pending;pending={};state('saving','서버에 저장 중');saving=(async()=>{try{let data;if(!draft){const draftId=new URL(location.href).searchParams.get('draft')||id();history.replaceState(null,'',location.pathname+'?tool=creative&draft='+draftId);data=await api('create',{id:draftId,story:captured.story||'',fields:captured.fields||{},requests:captured.requests||{}});draft=data.draft;}
  if(Object.keys(captured).some(k=>!['fields','requests','answerDrafts'].includes(k)||Object.keys(captured[k]).length))data=await api('save',{id:draft.id,revision:draft.revision,...captured});if(data)draft=data.draft;state('saved','저장 완료');$('retry-save').hidden=true;syncMeta();if(wasNew){const focused=document.activeElement,keep=$('record').contains(focused)?{name:focused.name,start:focused.selectionStart,end:focused.selectionEnd}:null;renderRecord();const next=keep&&inputs[keep.name];if(next){next.focus({preventScroll:true});if(typeof keep.start==='number')next.setSelectionRange(keep.start,keep.end);}}}
  catch(e){pending={...captured,...pending,answerDrafts:{...(captured.answerDrafts||{}),...(pending.answerDrafts||{})},fields:{...(captured.fields||{}),...(pending.fields||{})},requests:{...(captured.requests||{}),...(pending.requests||{})}};throw e;}finally{saving=null;window.N80Runtime?.wake();}})();await saving;if(dirty())await flush();}
-async function run(fn){if(busy)return;busy=true;syncComposer();try{await fn();}catch(e){fail(e);}finally{busy=false;syncComposer();window.N80Runtime?.wake();}}
+async function run(fn){if(busy||recordBusy)return;busy=true;syncComposer();try{await fn();}catch(e){fail(e);}finally{busy=false;syncComposer();window.N80Runtime?.wake();}}
 async function mutate(action,body={}){await flush();if(!draft)throw Error('story_required');const data=await api(action,{id:draft.id,revision:draft.revision,...body});if(data.draft){draft=data.draft;render();state('saved','저장 완료');}return data;}
 function syncMeta(){if(!draft)return;$('ep-label').hidden=draft.genre!=='kpop-original';$('location-note').textContent=draft.genre==='kpop-original'?'EP 번호에 따라 ACT '+(Math.ceil(Number($('ep').value)/10)||'—')+'에 배치됩니다.':'사연곡으로 등록됩니다. 아래에서 곡 묶음을 선택할 수 있습니다.';const field=document.querySelector('[data-record-field=sunoTitle] input');if(field)field.value=draft.sunoTitle;}
 function paintList(){const rows=items;$('list').replaceChildren();if(!rows.length)$('list').append(el('p','보관된 초안이 없습니다. 새로운 이야기를 시작해 보세요.'));for(const row of rows){const wrap=el('article',undefined,'creative-row'),info=el('div');info.append(el('h3',row.title||'새 창작곡'),el('p',(row.genre==='kpop-original'?'오리지널송':'사연곡')+' · '+labels[row.stage]+' · 창작 정보 '+row.completion+'% · '+new Date(row.updatedAt).toLocaleString('ko-KR')));const controls=el('div',undefined,'creative-controls');controls.append(button(row.stage==='deleted'?'복구':'이어하기',async()=>{await open(row.id);if(row.stage==='deleted')await mutate('restoreDeleted');}));if(row.stage!=='deleted')controls.append(button('삭제',async()=>{if(!confirm('이 초안을 삭제 보관함으로 옮길까요? 이력과 연결 파일은 유지되며 복구할 수 있습니다. 정식 등록한 곡은 삭제되지 않습니다.'))return;await open(row.id);await mutate('delete',{confirm:row.id});await library();}));wrap.append(info,controls);$('list').append(wrap);}}
@@ -89,8 +90,9 @@ function renderChat(){
  syncComposer();
 }
 function syncComposer(){
- for(const key of ['record','assets','publish','chat-log','intent'])$(key).inert=busy;
- for(const key of ['new','back','jobs','retry-save','reload'])$(key).disabled=busy;
+ $('final').disabled=busy||recordBusy||jobActive||conflict||!!invalidFields.size||!!draft?.creative.publication;
+ for(const key of ['record','assets','publish','chat-log','intent'])$(key).inert=busy||recordBusy;
+ for(const key of ['new','back','jobs','retry-save','reload'])$(key).disabled=busy||recordBusy;
  const c=draft?.creative,hasAnalysis=!!Object.keys(c?.intent||{}).length||!!Object.keys(c?.questions||{}).length;
  const storyMode=!c?.publication&&(!hasAnalysis||storyEditing)&&!jobActive;
  $('questions').hidden=storyMode||jobActive||(!editingQuestion&&hasAnalysis&&Object.keys(c.questions||{}).every(k=>c.answers[k]));
@@ -175,17 +177,73 @@ function renderIntent(){
  const failed=currentJob?.operation==='generate'&&currentJob.state==='failed';
  const b=button(failed?'다시 만들기':c.intentConfirmed?'계속 만들기':'이대로 노래 만들기',()=>generate('generate'));b.className='creative-chat-ready';root.append(b);
 }
-function renderRecord(){const host=$('record');host.replaceChildren();inputs={};if(!draft){host.append(el('h2','곡정보 · 새 창작곡'));const form=el('div');host.append(form);const view=R.render(form,{type:'song',fields:{},keys:R.visibleKeys('song').filter(k=>k!=='ep'),prefix:'creative-field',sunoTitle:''});inputs=view.inputs;for(const [key,input]of Object.entries(inputs)){input.readOnly=['cardImageLocation','audioFileLocation'].includes(key);input.oninput=()=>{try{const value=R.value(input);invalidFields.delete(key);queue({fields:{[key]:value}});}catch{invalidFields.add(key);state('failed','추가 제작 자료 형식을 확인해 주세요.');}}}return;}host.append(el('h2','곡정보 · 창작 정보 '+draft.completion.percent+'%'));const form=el('div');host.append(form);const keys=R.visibleKeys(draft.type).filter(k=>k!=='ep');const view=R.render(form,{type:draft.type,fields:{...draft.fields,...pending.fields},keys,prefix:'creative-field',sunoTitle:draft.sunoTitle});inputs=view.inputs;for(const [key,input]of Object.entries(inputs)){const wrap=input.closest('[data-record-field]')||input.parentElement;
- input.disabled=!!draft.creative.publication;input.readOnly=input.readOnly||['cardImageLocation','audioFileLocation'].includes(key);input.addEventListener('input',()=>{try{const value=R.value(input);invalidFields.delete(key);queue({fields:{[key]:value}});}catch{invalidFields.add(key);$('final').disabled=true;state('failed','추가 제작 자료 형식을 확인해 주세요.');}});
- if(targets.includes(key)){const label=el('label','AI 요구사항', 'creative-request'),request=el('textarea');request.rows=2;request.maxLength=4000;request.value=pending.requests?.[key]??draft.creative.requests[key]??'';request.placeholder='이 항목에서 바꾸고 싶은 내용을 적어 주세요.';request.disabled=!!draft.creative.publication;request.oninput=()=>queue({requests:{[key]:request.value}});label.append(request);wrap.append(label);const controls=el('div',undefined,'creative-controls');const revise=button('해당 항목 수정',()=>generate('revise',key));revise.disabled=!draft.creative.intentConfirmed;controls.append(revise,button('수정 이력',async()=>{const data=await api('history',undefined,{id:draft.id,field:key});const dialog=el('dialog');const title=el('h2',R.describe(key,draft.type).label+' 이력');const list=el('select'),value=el('pre');data.versions.forEach((v,i)=>list.add(new Option('버전 '+v.revision,String(i))));const show=()=>value.textContent=text(data.versions[Number(list.value)]?.value||'');list.onchange=show;show();dialog.append(title,list,value,button('이 버전 복원',async()=>{await mutate('restoreField',{field:key,version:data.versions[Number(list.value)].revision});dialog.close();dialog.remove();}),button('닫기',()=>{dialog.close();dialog.remove();}));document.body.append(dialog);dialog.showModal();}));wrap.append(controls);
- if(draft.creative.needsReview[key]){wrap.append(el('p','연관 내용이 변경되었습니다. 이 항목의 일치 여부를 확인해 주세요.','creative-review'),button('내용 확인 완료',()=>mutate('review',{field:key})));}
- const p=draft.creative.proposals[key];if(p){const compare=el('div',undefined,'creative-compare');for(const [name,v]of [['현재 내용',draft.fields[key]],['수정안',p.value]]){const col=el('div');col.append(el('h3',name),el('pre',text(v)));compare.append(col);}wrap.append(compare,button('수정안 적용',()=>mutate('proposal',{field:key,decision:'apply'})),button('취소 · 현재 내용 유지',()=>mutate('proposal',{field:key,decision:'cancel'})));}
+function recordData(){return {ok:true,writeKey:'creative:'+(draft?.id||'new'),revision:draft?.revision||0,kind:'story',packageType:'song',context:{},fields:{...(draft?.fields||{}),...(pending.fields||{})},sunoTitle:draft?.sunoTitle||'',sunoCover:mediaState?.cover||''};}
+function stashRecordParts(){
+ $('work').append($('publish'),$('history'));document.querySelector('.creative-toolbar').append($('chat'));
+ for(const key of ['audio-file','cover-file','upload-progress','asset-state','audio-retry','media-preview'])$('assets').append($(key));
+}
+function renderRecord(){
+ if(recordEpoch===epoch&&recordEditor?.isEditing()){recordEditor.updateRecord(recordData());paintRecordFeedback();return;}
+ if(recordOpening)return;
+ recordSwitching=true;stashRecordParts();recordEditor?.close();recordSwitching=false;
+ const host=$('record');host.replaceChildren();host.classList.add('noa-record-editor');inputs={};recordFields.clear();recordEpoch=epoch;
+ recordEditor??=window.NoaBrowseEdit.mount({host,standalone:true,onClose:()=>{if(!recordSwitching)run(library);},draftAdapter:{
+  load:async()=>recordData(),setBusy(value){recordBusy=value;syncComposer();},beforeClose:()=>{stashRecordParts();flush().catch(fail);},
+  checkpoint(key,value){if(['cardImageLocation','audioFileLocation'].includes(key))return;invalidFields.delete(key);queue({fields:{[key]:value}});},
+  async save(patch){try{queue({fields:patch});await flush();for(const field of ['sunoUrl','youtubeUrl','mvUrl'])if(patch[field])await mutate(field==='sunoUrl'?'sunoCover':'verifyUrl',{field});await assets();return recordData();}catch(e){fail(e);throw e;}},
+  invalid(key){invalidFields.add(key);syncComposer();},
+  decorateField:decorateRecordField,
+  mountFooter(form){form.append($('publish'));},
+  ready(view){inputs=view.inputs;const chat=$('chat'),icon=view.iconCommand('button','ai','AInoa와 대화 이어가기');chat.replaceChildren(...icon.childNodes);chat.className=icon.className;chat.title='AInoa와 대화 이어가기';chat.setAttribute('aria-label',chat.title);view.form.querySelector('.noa-field-toolbar').append(chat);view.form.querySelector('.noa-advanced').append($('history'));paintRecordFeedback();syncComposer();}
+ }});
+ recordOpening=recordEditor.openRecord({type:'song',source:'creative',key:'creative:'+epoch}).finally(()=>{recordOpening=null;});
+}
+function decorateRecordField({key,label,wrap,heading,input,iconCommand,fieldAiButton,refresh}){
+ const entry={wrap,heading,input,refresh};recordFields.set(key,entry);
+ if(targets.includes(key)){
+  const ai=fieldAiButton(label),feedback=el('div',undefined,'noa-ai-feedback');feedback.hidden=true;feedback.setAttribute('aria-live','polite');
+  const request=el('textarea');request.rows=2;request.maxLength=4000;request.placeholder='이 항목에서 바꾸고 싶은 내용을 적어 주세요.';request.setAttribute('aria-label',label+' 추가 요청');request.value=pending.requests?.[key]??draft?.creative.requests[key]??'';
+  const requestLabel=el('label','추가 요청');requestLabel.append(request);
+  const revise=button('다듬기',()=>generate('revise',key));revise.className='noa-action';
+  const history=iconCommand('button','options',label+' 수정 이력');history.onclick=()=>run(()=>fieldHistory(key));
+  const actions=el('div',undefined,'noa-ai-feedback-actions');actions.append(revise,history);
+  const result=el('div');feedback.append(requestLabel,actions,result);wrap.append(feedback);heading.prepend(ai);
+  ai.onclick=()=>{feedback.hidden=!feedback.hidden;ai.setAttribute('aria-expanded',String(!feedback.hidden));};ai.setAttribute('aria-expanded','false');
+  feedback.addEventListener('input',e=>e.stopPropagation());feedback.addEventListener('change',e=>e.stopPropagation());
+  request.oninput=()=>queue({requests:{[key]:request.value}});
+  Object.assign(entry,{ai,feedback,request,revise,result});
  }
- if(['sunoUrl','youtubeUrl','mvUrl'].includes(key))wrap.append(button(key==='sunoUrl'?'실제 곡 확인 · 카드 이미지 연결':'실제 영상 확인',async()=>{await mutate(key==='sunoUrl'?'sunoCover':'verifyUrl',{field:key});await assets();}));
- }if(draft.creative.publication)for(const b of form.querySelectorAll('button'))if(!b.textContent.includes('이력')&&!b.textContent.includes('복사'))b.disabled=true;}
-function render(){if(!draft)return;const published=!!draft.creative.publication;$('story').disabled=published||draft.stage==='deleted';$('analyze').disabled=published||draft.stage==='deleted';renderChat();renderQuestions();renderIntent();renderRecord();$('assets').hidden=published||draft.storage?.mode!=='draft';$('publish').hidden=draft.stage==='deleted'||draft.storage?.mode!=='draft';$('category').value=draft.genre;$('ep').value=draft.fields.ep||'';syncMeta();paintCollections();$('preview').replaceChildren();$('final').disabled=true;$('published').replaceChildren();if(published){const p=draft.creative.publication,a=el('a','등록한 곡 보기');a.href=p.href;$('published').append(el('p','등록 완료 · '+p.category),a);$('final').hidden=true;}else $('final').hidden=false;}
+ if(['audioFileLocation','cardImageLocation'].includes(key)){
+  heading.querySelector('.noa-edit-edit')?.remove();const audio=key==='audioFileLocation',pick=iconCommand('button','upload',audio?'음원 업로드':'카드 이미지 업로드');
+  pick.onclick=()=>{if(draft?.storage?.mode!=='draft'){status('노래 내용을 완성한 뒤 파일을 연결해 주세요.');return;}$(audio?'audio-file':'cover-file').click();};heading.append(pick);entry.pick=pick;
+  const file=$(audio?'audio-file':'cover-file');file.hidden=true;wrap.append(file);
+  if(audio)for(const id of ['upload-progress','asset-state','audio-retry','media-preview'])wrap.append($(id));
+ }
+}
+function paintRecordFeedback(){
+ const c=draft?.creative,published=!!c?.publication;
+ for(const [key,f]of recordFields){
+  if(f.pick)f.pick.disabled=published||draft?.storage?.mode!=='draft';
+  if(published)for(const b of f.heading.querySelectorAll('button:not(.noa-edit-copy)'))b.disabled=true;
+  if(!f.ai)continue;
+  const running=jobActive&&currentJob?.operation==='revise'&&currentJob.field===key;
+  f.ai.disabled=published||!c?.intentConfirmed||jobActive;f.revise.disabled=f.ai.disabled;f.request.disabled=published||jobActive;
+  f.wrap.toggleAttribute('data-generating',running);f.input.setAttribute('aria-busy',String(running));f.result.replaceChildren();
+  if(running){f.feedback.hidden=false;f.result.append(el('p','요청하신 내용을 다듬고 있어요.'));}
+  if(c?.needsReview[key])f.result.append(el('p','관련 내용이 바뀌었어요. 함께 확인해 주세요.'),button('확인했어요',()=>mutate('review',{field:key})));
+  const proposal=c?.proposals[key];
+  if(proposal){f.feedback.hidden=false;const preview=el('div',undefined,'creative-compare');for(const [name,value]of [['현재 내용',draft.fields[key]],['수정안',proposal.value]]){const col=el('div');col.append(el('h3',name),el('pre',text(value)));preview.append(col);}f.result.append(preview,button('수정안 적용',()=>mutate('proposal',{field:key,decision:'apply'})),button('현재 내용 유지',()=>mutate('proposal',{field:key,decision:'cancel'})));}
+  if(c?.needsReview[key])f.feedback.hidden=false;
+ }
+}
+async function fieldHistory(key){
+ const data=await api('history',undefined,{id:draft.id,field:key});const dialog=el('dialog'),list=el('select'),value=el('pre');
+ data.versions.forEach((v,i)=>list.add(new Option('버전 '+v.revision,String(i))));const show=()=>value.textContent=text(data.versions[Number(list.value)]?.value||'');list.onchange=show;show();
+ dialog.append(el('h2',R.describe(key,'song').label+' 이력'),list,value,button('이 버전 복원',async()=>{await mutate('restoreField',{field:key,version:data.versions[Number(list.value)].revision});dialog.close();dialog.remove();}),button('닫기',()=>{dialog.close();dialog.remove();}));document.body.append(dialog);dialog.showModal();
+}
+function render(){if(!draft)return;const published=!!draft.creative.publication;$('story').disabled=published||draft.stage==='deleted';$('analyze').disabled=published||draft.stage==='deleted';renderChat();renderQuestions();renderIntent();renderRecord();$('assets').hidden=true;$('publish').hidden=draft.stage==='deleted'||draft.storage?.mode!=='draft';$('category').value=draft.genre;$('ep').value=draft.fields.ep||'';syncMeta();paintCollections();$('preview').replaceChildren();$('final').disabled=published;$('published').replaceChildren();if(published){const p=draft.creative.publication,a=el('a','등록한 곡 보기');a.href=p.href;$('published').append(el('p','등록 완료 · '+p.category),a);$('final').hidden=true;}else $('final').hidden=false;}
 async function loadCollections(){collections=(await api('collections',undefined,{id:draft.id})).collections;paintCollections();}
-function paintCollections(){const root=$('collections');root.replaceChildren();for(const c of collections.filter(c=>c.genre===$('category').value)){const label=el('label'),check=el('input');check.type='checkbox';check.value=c.key;check.checked=(draft?.creative.collections||[]).includes(c.key);check.onchange=saveLocation;label.append(check,document.createTextNode(c.title));root.append(label);}}
+function paintCollections(){const root=$('collections');root.replaceChildren();for(const c of collections.filter(c=>c.genre===$('category').value)){const label=el('label',undefined,'noa-collection-option'),check=el('input');check.type='checkbox';check.value=c.key;check.checked=(draft?.creative.collections||[]).includes(c.key);check.onchange=saveLocation;label.append(check,el('span',c.title));root.append(label);}}
 function saveLocation(){queue({location:{genre:$('category').value,ep:$('ep').value,collections:[...$('collections').querySelectorAll('input:checked')].map(i=>i.value)}});$('ep-label').hidden=$('category').value!=='kpop-original';$('location-note').textContent=$('category').value==='kpop-original'?'ACT '+(Math.ceil(Number($('ep').value)/10)||'—')+'에 배치됩니다.':'사연곡으로 등록됩니다.';}
 async function generate(operation,field=''){
  storyEditing=false;editingQuestion=false;showJob({operation,field,state:'queued'});let accepted=false;
@@ -203,7 +261,7 @@ function jobMessage(job){
 function showJob(job){
  currentJob=job;jobActive=['queued','running'].includes(job?.state);if(job?.id)window.N80Activity?.snapshot('creative',[{id:job.id,state:job.state}]);
  $('job').dataset.busy=String(jobActive);$('job').textContent=jobMessage(job);if(room?.active())room.status($('job').textContent);
- renderIntent();syncComposer();$('job-result').hidden=job?.state!=='review';
+ renderIntent();paintRecordFeedback();syncComposer();$('job-result').hidden=job?.state!=='review';
  $('job-result').onclick=()=>run(async()=>{const data=await api('jobResult',undefined,{id:draft.id});const dialog=el('dialog');dialog.append(el('h2','새로 만든 내용'));renderResult(dialog,data.result);dialog.append(button('닫기',()=>{dialog.close();dialog.remove();}));document.body.append(dialog);dialog.showModal();});
 }
 function renderResult(root,result){
@@ -218,24 +276,26 @@ function renderResult(root,result){
  if(!count)root.append(el('p','표시할 수 있는 내용이 아직 없어요.'));
 }
 function stopWatching(){if(poll){poll();poll=null;}}
-function schedule(){stopWatching();const current=epoch;poll=N80Runtime.watch('creative:'+draft.id,()=>N80Runtime.read('creative:get:'+draft.id,()=>api('get',undefined,{id:draft.id})),async data=>{if(current!==epoch)return;if(data.draft.revision!==draft.revision){draft=data.draft;render();state('saved','저장 완료');}showJob(data.job);if(!$('assets').hidden)try{await assets();}catch(e){status(message(e));}},{interval:7000,immediate:false,active:()=>current===epoch&&draft&&!$('work').hidden&&!dirty()&&!saving&&!busy&&!conflict&&!invalidFields.size&&(jobActive||assetActive),error:e=>status(message(e))});}
+function schedule(){stopWatching();const current=epoch;poll=N80Runtime.watch('creative:'+draft.id,()=>N80Runtime.read('creative:get:'+draft.id,()=>api('get',undefined,{id:draft.id})),async data=>{if(current!==epoch)return;if(data.draft.revision!==draft.revision){draft=data.draft;render();state('saved','저장 완료');}showJob(data.job);if(draft.storage?.mode==='draft')try{await assets();}catch(e){status(message(e));}},{interval:7000,immediate:false,active:()=>current===epoch&&draft&&!$('work').hidden&&!dirty()&&!saving&&!busy&&!conflict&&!invalidFields.size&&(jobActive||assetActive),error:e=>status(message(e))});}
 
-async function assets(){if(!draft)return;const data=await api('assets',undefined,{id:draft.id});const a=data.assets;assetActive=['uploading','queued','retrying','analyzing','processing','verifying'].includes(a.status);$('asset-state').textContent='음원 '+(a.audioReady?'검증 완료':({audio_pending:'파일 연결 필요',ready:'현재 곡의 파일 확인 필요',uploading:'업로드 중',queued:'처리 대기',retrying:'재시도 중',analyzing:'분석 중',processing:'최적화 중',verifying:'검증 중',failed:'처리 실패'}[a.status]||'파일 확인 중'))+' · 이미지 '+(a.coverReady?'검증 완료':'연결 필요');const root=$('media-preview');root.replaceChildren();if(a.cover){const img=el('img');img.className='creative-cover';img.src=a.cover;img.alt='검증한 카드 이미지';root.append(img);inputs.sunoUrl?.setSavedPreview?.(draft.fields.sunoUrl,a.cover);}if(a.audio){const audio=el('audio');audio.controls=true;audio.preload='none';audio.src=a.audio;root.append(audio);}if(a.upload){upload=a.upload;$('audio-retry').hidden=a.status!=='failed';}}
+async function assets(){if(!draft)return;const data=await api('assets',undefined,{id:draft.id});const a=mediaState=data.assets;assetActive=['uploading','queued','retrying','analyzing','processing','verifying'].includes(a.status);$('asset-state').textContent=assetActive?'음원을 준비하고 있어요.':a.status==='failed'?'음원을 준비하지 못했어요. 다시 시도해 주세요.':'';const root=$('media-preview');root.replaceChildren();inputs.sunoUrl?.setSavedCover(draft.fields.sunoUrl,a.cover);if(a.audio){const audio=el('audio');audio.controls=true;audio.preload='none';audio.src=a.audio;root.append(audio);}if(a.upload)upload=a.upload;$('audio-retry').hidden=a.status!=='failed';}
 async function binary(action,file,query){const response=await fetch('/noa-bridge/creative.php?'+new URLSearchParams({action,id:draft.id,revision:String(draft.revision),...query}),{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/octet-stream','X-NOA-CSRF':csrf},body:file});const data=await response.json();if(!response.ok)throw Error(data.error);return data;}
 $('cover-file').onchange=()=>run(async()=>{const file=$('cover-file').files[0];if(!file)return;await flush();const data=await binary('cover',file,{});draft=data.draft;render();await assets();});
 $('audio-file').onchange=()=>run(async()=>{const file=$('audio-file').files[0];if(!file)return;await flush();const head=new Uint8Array(await file.slice(0,65536).arrayBuffer()),meta=new TextEncoder().encode(file.name+':'+file.size),bytes=new Uint8Array(head.length+meta.length);bytes.set(head);bytes.set(meta,head.length);const fingerprint=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');const res=await api('init',{id:draft.id,revision:draft.revision,filename:file.name,bytes:file.size,fingerprint});upload={id:res.id};$('upload-progress').hidden=false;const chunks=new Set(res.chunks);for(let index=0;index<Math.ceil(file.size/res.chunkSize);index++){if(!chunks.has(index))await binary('chunk',file.slice(index*res.chunkSize,(index+1)*res.chunkSize),{upload:res.id,index:String(index)});$('upload-progress').value=Math.min(100,(index+1)*res.chunkSize/file.size*100);}$('asset-state').textContent='전송 완료 · 음원 최적화 접수 중';await api('finish',{id:draft.id,revision:draft.revision,upload:res.id});await assets();schedule();});
 $('audio-retry').onclick=()=>run(async()=>{await mutate('retry',{upload:upload.id});await assets();});
-$('preview-button').onclick=()=>run(async()=>{const data=await mutate('preview');const v=data.preview.validation,root=$('preview');root.replaceChildren(el('h3',v.title||'곡 제목 확인 필요'),el('p',v.category+(v.act?' · ACT '+v.act:'')),el('p','Suno 제목 · '+v.sunoTitle));if(v.assets.cover){const image=el('img');image.className='creative-cover';image.src=v.assets.cover;image.alt='게시 카드 이미지';root.append(image);}root.append(el('pre',v.lyrics),el('pre',v.description));for(const issue of v.issues)root.append(el('p','• '+(errors[issue]||(R.schema[issue]?R.schema[issue][0]+' 입력 필요':issue)),'creative-review'));$('final').disabled=!v.ready||!$('rights').checked;});
-$('rights').onchange=()=>{$('final').disabled=!$('rights').checked||!draft?.creative.preview?.validation.ready||dirty();};
-$('final').onclick=()=>run(async()=>{await mutate('publish',{token:draft.creative.preview?.token||'',rightsConfirmed:$('rights').checked});status('정식 등록을 완료했습니다. 초안 이력은 보관함에 유지됩니다.');});
+$('final').onclick=()=>run(async()=>{
+ await flush();const data=await mutate('preview'),v=data.preview.validation,root=$('preview');root.replaceChildren();
+ if(!v.ready){for(const issue of v.issues)root.append(el('p',errors[issue]||(R.schema[issue]?R.schema[issue][0]+'을 확인해 주세요.':'저장할 내용을 확인해 주세요.'),'creative-review'));root.scrollIntoView({block:'nearest'});return;}
+ await mutate('publish',{token:data.preview.token,rightsConfirmed:true});status('선택한 위치에 저장했어요.');
+});
 $('story').oninput=()=>{queue({story:composedStory()});syncComposer();};$('story-compose').onsubmit=event=>{event.preventDefault();run(submitStory);};
 $('story-next').onclick=()=>run(submitStory);
 $('fortune-start').onclick=()=>run(fortuneStories);
 $('chat').onclick=()=>openConversation().catch(fail);
-$('new').onclick=()=>run(async()=>{await flush();epoch++;stopWatching();draft=null;storyBase='';pending={};inputs={};conflict=false;assetActive=false;storyEditing=false;editingQuestion=false;invalidFields.clear();history.replaceState(null,'',location.pathname+'?tool=creative');$('library').hidden=true;$('work').hidden=false;$('story').value='';$('story').disabled=false;for(const x of ['questions','intent','record','preview','published','fortune-options'])$(x).replaceChildren();$('assets').hidden=true;$('publish').hidden=true;showJob(null);renderRecord();state('idle','내용을 입력하면 24시간 동안 복구할 수 있습니다.');await openConversation();status('이야기를 입력하거나 오늘의 운세에서 시작해 보세요.');});
+$('new').onclick=()=>run(async()=>{await flush();epoch++;stopWatching();draft=null;mediaState=null;storyBase='';pending={};inputs={};conflict=false;assetActive=false;storyEditing=false;editingQuestion=false;invalidFields.clear();history.replaceState(null,'',location.pathname+'?tool=creative');$('library').hidden=true;$('work').hidden=false;$('story').value='';$('story').disabled=false;for(const x of ['questions','intent','preview','published','fortune-options'])$(x).replaceChildren();$('assets').hidden=true;$('publish').hidden=true;showJob(null);renderRecord();state('idle','내용을 입력하면 24시간 동안 복구할 수 있습니다.');await openConversation();status('이야기를 입력하거나 오늘의 운세에서 시작해 보세요.');});
 $('jobs').onclick=()=>run(async()=>{await flush();if(!draft)return;const data=await api('jobs',undefined,{id:draft.id});const dialog=el('dialog');dialog.append(el('h2','이전 작업'));if(!data.jobs.length)dialog.append(el('p','아직 완료한 작업이 없어요.'));for(const j of data.jobs){const row=el('div'),operation={analyze:'이야기 정리',generate:'노래 만들기',revise:'내용 다듬기'}[j.operation]||'창작',state={queued:'준비 중',running:'만드는 중',succeeded:'완료',review:'확인 필요',failed:'완성하지 못함',canceled:'취소됨'}[j.state]||'확인 중';row.append(el('p',operation+' · '+state));if(j.error)row.append(el('p',message(j.error)));if(['succeeded','review'].includes(j.state))row.append(button('내용 보기',async()=>{const v=await api('jobResult',undefined,{id:draft.id,job:j.id});let result=row.querySelector('.creative-job-content');if(!result){result=el('div',undefined,'creative-job-content');row.append(result);}result.replaceChildren();renderResult(result,v.result);}));dialog.append(row);}dialog.append(button('닫기',()=>{dialog.close();dialog.remove();}));document.body.append(dialog);dialog.showModal();});
 $('back').onclick=()=>run(library);$('retry-save').onclick=()=>run(flush);$('reload').onclick=()=>run(async()=>{if(!confirm('현재 입력을 필요한 곳에 복사했나요? 서버에 저장된 버전을 불러옵니다.'))return;pending={};conflict=false;invalidFields.clear();await open(draft.id);});let searchTimer;for(const x of ['search','filter','sort'])$(x).oninput=()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>run(()=>loadList()),250);};$('more').onclick=()=>run(()=>loadList(true));$('category').onchange=()=>{paintCollections();saveLocation();};$('ep').oninput=saveLocation;
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&dirty())flush().catch(fail);});
-window.addEventListener('beforeunload',event=>{if(dirty()||saving){event.preventDefault();event.returnValue='';}});
+window.addEventListener('beforeunload',event=>{if(dirty()||saving||invalidFields.size){event.preventDefault();event.returnValue='';}});
 const initial=new URL(location.href).searchParams.get('draft');run(()=>initial?open(initial):library());
 })();

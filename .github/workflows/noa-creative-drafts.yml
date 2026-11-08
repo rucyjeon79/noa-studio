@@ -54,6 +54,7 @@ jobs:
           mkdir -p creative-proof
           php -S 127.0.0.1:8787 -t /tmp/noa-creative-test/html > creative-proof/http.log 2>&1 &
           node "$RUNNER_TEMP/creative-browser/check.mjs"
+          NODE_PATH="$RUNNER_TEMP/creative-browser/node_modules" node tests/catalog/editor-close.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'creative-proof-${{ github.run_id }}', path: 'creative-proof/', retention-days: 7}

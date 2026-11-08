@@ -29,7 +29,7 @@ function control(icon,label,name){
  const b=iconCommand('button',icon,name);
  const text=document.createElement('span');text.textContent=label;b.append(text);return b;
 }
-function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standalone=false,labGeneration=false}){
+function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standalone=false,labGeneration=false,draftAdapter=null}){
  const byKey=new Map();for(const r of rows){const key=String(r.key);if(!byKey.has(key)||(byKey.get(key).kind==='playlist'&&r.kind!=='playlist'))byKey.set(key,r);}let active=null;
  const style=document.getElementById('noa-inline-editor-style')||document.createElement('style');style.id='noa-inline-editor-style';style.textContent='html[data-noa-precision] .noa-page .noa-inline-act:is([data-act-number],[data-playlist-id]){position:relative}html[data-noa-precision] .noa-page .noa-inline-act:is([data-act-number],[data-playlist-id]):not(:has(>.noa-collection-tools))>.noa-browse-card{padding-inline-end:52px}.noa-inline-act>.noa-act-edit{position:absolute;right:0;top:10px}.noa-inline-titlebar{display:flex;align-items:center;gap:8px;min-width:0;width:100%}.noa-inline-titlebar>.noa-browse-card{flex:1;min-width:0}.noa-inline-titlebar>.noa-edit-edit{flex:none}.noa-page .noa-edit-edit,.noa-page .noa-edit-form .noa-action{min-width:44px;min-height:52px;padding:4px 6px}.noa-inline-video-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.noa-inline-video-row>.noa-inline-song{flex:1;min-width:0;width:auto}.noa-inline-song-row>.noa-inline-song{min-width:0}.noa-edit-form{flex-basis:100%;width:100%;min-width:0;padding:12px 0 20px;border-top:1px solid var(--noa-line);color:var(--noa-text)}.noa-edit-field-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}.noa-edit-field-heading>label{flex:1;min-width:0;word-break:keep-all;overflow-wrap:break-word}html[data-noa-precision] body:has(#noa-ainoa) .noa-page .noa-edit-field-heading{padding-inline-end:0}html[data-noa-precision] .noa-page .noa-edit-form .noa-edit-field-heading .noa-action{display:inline-flex;flex-direction:row;flex:0 0 auto;align-items:center;justify-content:center;width:44px;max-width:100%;height:44px;min-width:44px;min-height:44px;padding:8px;border-radius:8px}.noa-edit-form label{display:block;margin:10px 0;font-size:14px}.noa-edit-form :is(input,textarea,select){display:block;width:100%;box-sizing:border-box;min-height:44px;margin-top:4px;border:1px solid var(--noa-line);border-radius:var(--noa-control-radius,8px);padding:8px;background:var(--noa-bg);color:var(--noa-text);font:inherit}.noa-edit-form textarea{min-height:120px;resize:vertical}.noa-edit-form .noa-edit-readonly{color:var(--noa-muted);font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}.noa-edit-buttons{display:flex;gap:6px}.noa-edit-status{font-size:13px;min-height:1.5em;overflow-wrap:anywhere}.noa-inline-song-row:has(>.noa-edit-form),.song:has(>.noa-edit-form){flex-wrap:wrap}.noa-order-list .noa-edit-edit,.noa-create-list .noa-edit-edit{display:none}.noa-inline-video-row>.noa-inline-playback{flex-basis:100%;width:100%;order:1}.noa-edit-form{order:2}.noa-inline-titlebar>:is(h2,.song-select){flex:1;min-width:0}'+ 'html[data-noa-precision] .noa-page .noa-edit-form .noa-edit-ai,html[data-noa-precision] .noa-page .noa-edit-form .noa-edit-ai:hover,html[data-noa-precision] .noa-page .noa-edit-form .noa-edit-ai:focus-visible{color:var(--noa-creative);border-color:var(--noa-creative)}html[data-noa-precision] .noa-page .noa-edit-form .noa-edit-ai>svg{color:var(--noa-creative)}.noa-ai-feedback{margin:8px 0 16px;min-width:0}.noa-ai-feedback p{margin:6px 0;font-size:13px;overflow-wrap:anywhere}.noa-ai-feedback[data-error=true]{color:var(--noa-danger)}.noa-ai-feedback textarea{min-height:120px}.noa-ai-feedback-actions{display:flex;flex-wrap:wrap;gap:8px}.noa-ai-feedback-actions button{min-height:44px;padding:8px 12px}.noa-ai-feedback[hidden]{display:none}';style.textContent+=`
  .noa-edit-form [data-generating] :is(.noa-locked-preview,input:not([hidden]),textarea:not([hidden])){
@@ -125,7 +125,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
  .noa-page .noa-edit-form .noa-vocal-choices label:has(:checked){background:var(--noa-bg);border-radius:5px;font-weight:700}
  .noa-page .noa-edit-form .noa-vocal-choices input[type=radio]{appearance:auto;width:14px;height:14px;min-width:14px;min-height:14px;margin:0;padding:0;accent-color:var(--record-gold)}
 `;document.head.append(style);
- function close(){if(!active||active.busy)return;active.button.setAttribute('aria-expanded','false');active.stopLayout?.();active.form.remove();active=null;onClose?.();}
+ function close(){if(!active||active.busy)return;draftAdapter?.beforeClose?.();active.button.setAttribute('aria-expanded','false');active.stopLayout?.();active.form.remove();active=null;onClose?.();}
  function message(text){if(active)active.status.textContent=text;}
  function openSong(node,button,row){
   const music=kind!=='영상'||row.musicKey||row.canonicalRecordKey||row.comingSoon;
@@ -153,13 +153,13 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
    window.NoaBrowse.placeSongPanel(form,node);
   }
   const cancel=iconCommand('button','cancel','정보 수정 취소');cancel.onclick=close;form.append(cancel);
-  try{await formReady;const response=await fetch('/noa-inline-edit.php?'+new URLSearchParams(selector),{credentials:'same-origin',cache:'no-store'});let data=null;try{data=await response.json();}catch{}if(!response.ok||!data?.ok||!data.writeKey)throw Error(fieldErrors[data?.error]||'세부정보를 불러오지 못했습니다. 로그인 상태와 곡 연결을 확인해 주세요.');if(active!==state)return;
+  try{await formReady;const response=draftAdapter?null:await fetch('/noa-inline-edit.php?'+new URLSearchParams(selector),{credentials:'same-origin',cache:'no-store'});let data=null;try{data=draftAdapter?await draftAdapter.load():await response.json();}catch{}if((response&&!response.ok)||!data?.ok||!data.writeKey)throw Error(fieldErrors[data?.error]||'세부정보를 불러오지 못했습니다. 로그인 상태와 곡 연결을 확인해 주세요.');if(active!==state)return;
    if(displayRow&&selector.source==='music'&&data.writeKey!==selector.key)throw Error('선택한 곡과 편집 문서가 일치하지 않습니다.');
    state.data=data;state.showCoverNotice=text=>{status.textContent=text;};form.replaceChildren();
-   const context=document.createElement('p');context.className='noa-edit-readonly';if(standalone)context.id='editor-classification';form.append(context);window.NoaBrowse.renderPath(context,{...data.context,key:data.writeKey,orderKey:byKey.get(selector.key)?.orderKey,title:data.fields.title},{base:kind==='영상'?'/noa-youtube.php':'/noa-music.php'});
+   const context=document.createElement('p');context.className='noa-edit-readonly';if(standalone)context.id='editor-classification';form.append(context);if(draftAdapter)context.hidden=true;else window.NoaBrowse.renderPath(context,{...data.context,key:data.writeKey,orderKey:byKey.get(selector.key)?.orderKey,title:data.fields.title},{base:kind==='영상'?'/noa-youtube.php':'/noa-music.php'});
    let sunoTitleView=null;
-   const inputs={};const classification=typeof data.fields.genre==='string'&&data.kind!=='playlist'&&selector.type!=='new'?window.NoaRecordForm.classificationEditor(form,{genre:data.fields.genre,ep:data.context.ep,inputs,collections:data.collections,selected:data.fields.collections||[]}):null;const sections=window.NoaRecordForm.sections(form);const aiFields=new Set(['title','lyrics','sunoPrompt','geminiPrompt','youtubeTitle','description','communityPost']);
-   if(!labGeneration&&selector.type!=='new'){
+   const inputs={};const classification=!draftAdapter&&typeof data.fields.genre==='string'&&data.kind!=='playlist'&&selector.type!=='new'?window.NoaRecordForm.classificationEditor(form,{genre:data.fields.genre,ep:data.context.ep,inputs,collections:data.collections,selected:data.fields.collections||[]}):null;const sections=window.NoaRecordForm.sections(form);const aiFields=new Set(['title','lyrics','sunoPrompt','geminiPrompt','youtubeTitle','description','communityPost']);
+   if(!draftAdapter&&!labGeneration&&selector.type!=='new'){
     const link=document.createElement('a');
     link.className='noa-button';link.textContent='AI LAB에서 이 곡으로 제작';
     link.href='/noa-ai-lab.php?'+new URLSearchParams({...selector,tool:'song'});
@@ -243,7 +243,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
     if(key==='sunoUrl')input.setSavedCover(value,data.sunoCover);
     label=window.NoaRecordForm.describe(key,data.packageType).label;
     let feedback=null;
-    if(labGeneration&&aiFields.has(key)&&selector.type!=='new'){
+    if(!draftAdapter&&labGeneration&&aiFields.has(key)&&selector.type!=='new'){
      const ai=fieldAiButton(label);feedback=document.createElement('div');feedback.className='noa-ai-feedback';feedback.hidden=true;feedback.setAttribute('aria-live','polite');
      const tell=(text,error=false)=>{feedback.hidden=false;feedback.dataset.error=String(error);feedback.replaceChildren();const p=document.createElement('p');p.textContent=text;feedback.append(p);status.textContent=text;};
      const pending=new Set();
@@ -389,7 +389,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
       updatePreview();
      });
     }
-    if(key==='mvUrl'&&selector.type==='song'&&['single','story'].includes(data.kind)){
+    if(!draftAdapter&&key==='mvUrl'&&selector.type==='song'&&['single','story'].includes(data.kind)){
      const movie=iconCommand('button','movie','이 곡으로 뮤비 생성기 열기');
      movie.onclick=()=>{
       if(state.busy)return;
@@ -415,6 +415,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
      }));
     }
     if(feedback)wrap.append(feedback);sections.add(key,wrap);inputs[key]=input;
+    draftAdapter?.decorateField?.({key,label,wrap,heading,input,iconCommand,fieldAiButton,refresh:()=>previews.get(key)?.()});
    }
    const playlist=['act','playlist'].includes(data.packageType)||selector.type==='act';
    if(data.packageType==='ep'){
@@ -433,7 +434,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
     choose.onclick=async()=>{if(state.busy)return;choose.disabled=true;try{await import('/noa-channel-explorer.js?v=n80-unified-20261107'); const result=await N80Explorer.choose({records:candidates,selected:chosen,multiple:true,title:'수록곡 선택 · 선택 순서대로 저장'});if(result&&active===state){chosen=result;if(data.packageType==='act')chosen.sort((a,b)=>Number(a.ep)-Number(b.ep));hidden.value=JSON.stringify(chosen,null,2);hidden.dispatchEvent(new Event('input',{bubbles:true}));drawMembers();}}catch{status.textContent='N80 탐색기를 불러오지 못했습니다. 다시 시도해 주세요.';}finally{choose.disabled=false;}};
     drawMembers();if(data.packageType==='act'){const range=document.createElement('p');range.className='noa-edit-readonly';range.textContent='ACT '+data.context.act+' · '+data.context.range+' · 해당 EP 10곡을 오름차순으로 저장합니다.';members.append(range);}
    }
-   if(labGeneration&&selector.type==='song'){
+   if(!draftAdapter&&labGeneration&&selector.type==='song'){
     const names={...(data.packageType==='ep'?{title:'장르 곡 제목',lyrics:'장르 가사'}:{}),geminiPrompt:'썸네일 프롬프트',youtubeTitle:'유튜브 제목',description:'영상 설명',communityPost:'커뮤니티 글'};
     const keys=Object.keys(names).filter(k=>inputs[k]);
     const publish=control('ai','AI 생성 묶음','AI 생성 묶음');
@@ -514,13 +515,14 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
    const download=iconCommand('a','download','곡 정보 파일 저장');download.href='/noa-inline-edit.php?'+new URLSearchParams({...selector,download:'1'});download.download='';
    const advanced=document.createElement('details'),advancedLabel=document.createElement('summary');
    advanced.className='noa-advanced';advancedLabel.textContent='추가 자료·파일 저장';advanced.append(advancedLabel,sections.get('extra'));
-   if(selector.type!=='new')advanced.append(download);
+   if(!draftAdapter&&selector.type!=='new')advanced.append(download);
    form.append(advanced);
+   draftAdapter?.mountFooter?.(form);
    const toolbar=document.createElement('div');toolbar.className='noa-field-toolbar';
    const dismiss=iconCommand('button','cancel','곡정보창 닫기');
    dismiss.onclick=()=>{
     if(state.busy){status.textContent='저장 중입니다. 완료 후 닫아 주세요.';return;}
-    if(state.dirty&&!window.confirm('저장하지 않은 변경 내용을 버리고 닫을까요?'))return;
+    if(!draftAdapter&&state.dirty&&!window.confirm('저장하지 않은 변경 내용을 버리고 닫을까요?'))return;
     close();
    };
    const panelTitle=document.createElement('strong');panelTitle.textContent=data.fields.title||'곡 정보';toolbar.append(panelTitle,dismiss);form.prepend(toolbar);
@@ -535,9 +537,12 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
     const edit=iconCommand('button','edit','정보 수정');toolbar.prepend(edit);save.hidden=true;
     edit.onclick=()=>{if(state.busy)return;batchEditing=true;for(const [el,disabled] of previous)el.disabled=disabled;edit.hidden=true;save.hidden=false;toolbar.append(save);};
    }
-   buttons.append(save);buttons.append(cancel);form.append(buttons,status);status.textContent='곡·플레이리스트의 전체 정보를 한 문서에 저장하고 YouTube·음원에서 함께 사용합니다.';
+   buttons.append(save);buttons.append(cancel);if(draftAdapter)buttons.hidden=true;form.append(buttons,status);status.textContent=draftAdapter?'':'곡·플레이리스트의 전체 정보를 한 문서에 저장하고 YouTube·음원에서 함께 사용합니다.';
    if(draftFields){for(const [key,value]of Object.entries(draftFields))if(inputs[key])window.NoaRecordForm.set(inputs[key],value);state.dirty=true;status.textContent='AI 제작 초안입니다. 검토 후 저장하면 곡에 반영됩니다.';}
-   form.addEventListener('input',()=>{state.dirty=true;});form.addEventListener('change',()=>{state.dirty=true;});
+   const changed=event=>{if(!draftAdapter){state.dirty=true;return;}if(!event.target.name||!inputs[event.target.name])return;state.dirty=true;if(draftAdapter){try{draftAdapter.checkpoint(event.target.name,window.NoaRecordForm.value(inputs[event.target.name]));}catch(e){draftAdapter.invalid?.(event.target.name);status.textContent='입력 내용을 확인해 주세요.';}}};
+   form.addEventListener('input',changed);form.addEventListener('change',changed);
+   state.update=next=>{state.data=next;panelTitle.textContent=next.fields.title||'곡 정보';for(const key of Object.keys(inputs))if(!(state.dirty&&state.editKey===key))refreshField(key,next.fields);};
+   draftAdapter?.ready?.({form,inputs,iconCommand});
    form.onsubmit=async event=>{
     event.preventDefault();if(state.busy||(lockedSong?!state.editKey:!batchEditing))return;const patch={};try{for(const[key,input]of Object.entries(inputs)){if(lockedSong && !(state.editKey==='classification'?['genre','ep','collections'].includes(key):key===state.editKey))continue;const value=window.NoaRecordForm.value(input),before=state.data.fields[key]??(key==='creativeFields'?{}:key==='confirmed'?false:'');if(JSON.stringify(value)!==JSON.stringify(before))patch[key]=key==='title'?value.trim():value;}}catch{status.textContent='추가 제작 자료의 입력 형식이 맞지 않습니다. 항목 이름과 내용을 확인해 주세요.';return;}
     for(const key of Object.keys(patch))if(typeof patch[key]==='string'&&!patch[key].trim()&&typeof state.data.fields[key]==='string'&&state.data.fields[key].trim())patch[key]=state.data.fields[key];
@@ -547,17 +552,21 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
     if(selector.type==='new'&&inputs.members)patch.members=window.NoaRecordForm.value(inputs.members);
     const signature=JSON.stringify([state.data.writeKey,state.data.revision,patch]);if(signature!==state.signature){state.signature=signature;state.requestId=crypto.randomUUID();}
     const controlStates=[...new Set([...Object.values(inputs),...form.querySelectorAll('.noa-vocal-choices input')])].map(el=>[el,el.disabled]);
-    let saved=false;state.busy=true;save.disabled=true;cancel.disabled=true;classification?.setBusy(true);for(const [el] of controlStates)el.disabled=true;status.textContent=patch.sunoUrl?'Suno 표지를 가져와 저장하는 중입니다.':'저장 중입니다.';
-    try{const response=await fetch('/noa-inline-edit.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify({selector,expectedKey:state.data.writeKey,expectedRevision:state.data.revision,requestId:state.requestId,patch,...('collections'in patch?{collectionRevisions:state.data.collectionRevisions}:{})})});let result=null;try{result=await response.json();}catch{}if(!response.ok||!result?.ok)throw Error(fieldErrors[result?.error]||(response.status===409?'다른 곳에서 먼저 수정했습니다. 변경 내용은 유지됩니다. 취소 후 다시 열어 최신 정보를 확인해 주세요.':'저장하지 못했습니다. 변경 내용을 유지했으니 다시 시도해 주세요.'));
+    let saved=false;state.busy=true;draftAdapter?.setBusy?.(true);save.disabled=true;cancel.disabled=true;classification?.setBusy(true);for(const [el] of controlStates)el.disabled=true;status.textContent=patch.sunoUrl?'Suno 표지를 가져와 저장하는 중입니다.':'저장 중입니다.';
+    try{if(draftAdapter){
+     const confirmed=await draftAdapter.save(patch);
+     if(!confirmed?.ok||Object.entries(patch).some(([key,value])=>JSON.stringify(confirmed.fields[key])!==JSON.stringify(value)))throw Error('저장 결과를 확인하지 못했습니다. 입력 내용은 그대로 있어요.');
+     saved=true;state.dirty=false;state.update(confirmed);status.textContent='저장했습니다.';onSaved({selector,data:confirmed});return;
+    }const response=await fetch('/noa-inline-edit.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify({selector,expectedKey:state.data.writeKey,expectedRevision:state.data.revision,requestId:state.requestId,patch,...('collections'in patch?{collectionRevisions:state.data.collectionRevisions}:{})})});let result=null;try{result=await response.json();}catch{}if(!response.ok||!result?.ok)throw Error(fieldErrors[result?.error]||(response.status===409?'다른 곳에서 먼저 수정했습니다. 변경 내용은 유지됩니다. 취소 후 다시 열어 최신 정보를 확인해 주세요.':'저장하지 못했습니다. 변경 내용을 유지했으니 다시 시도해 주세요.'));
      const savedSelector=selector.type==='new'?{type:'song',source:'music',key:state.data.writeKey}:selector;
      const check=await fetch('/noa-inline-edit.php?'+new URLSearchParams(savedSelector),{credentials:'same-origin',cache:'no-store'});let confirmed=null;try{confirmed=await check.json();}catch{}if(!check.ok||!confirmed?.ok||confirmed.writeKey!==state.data.writeKey||confirmed.revision!==result.revision||Object.entries(patch).some(([key,value])=>JSON.stringify(confirmed.fields[key])!==JSON.stringify(value)))throw Error('저장 결과를 확인하지 못했습니다. 같은 내용으로 다시 저장해 확인해 주세요.');
      saved=true;selector=savedSelector;state.selector=selector;state.data=confirmed;panelTitle.textContent=confirmed.fields.title||'곡 정보';state.dirty=false;window.NoaBrowse.renderPath(context,{...confirmed.context,key:confirmed.writeKey,orderKey:byKey.get(selector.key)?.orderKey,title:confirmed.fields.title},{base:kind==='영상'?'/noa-youtube.php':'/noa-music.php'});for(const key of Object.keys(inputs))refreshField(key,confirmed.fields);onSaved({selector,record:selector.type==='song'?(displayRow||byKey.get(selector.key)):null,data:confirmed});status.textContent=patch.sunoUrl?(confirmed.sunoCover?'URL과 표지를 저장했습니다.':'URL을 저장했습니다. 표지를 가져오지 못했습니다. URL의 공개 상태를 확인한 뒤 다시 저장하세요.'):'저장했습니다.';button.setAttribute('aria-label',confirmed.fields.title+' 정보 수정');if(!standalone&&('genre'in patch||'collections'in patch)){status.textContent='분류를 저장했습니다. 목록에 반영하는 중입니다.';location.reload();}
-    }catch(error){status.textContent=/[가-힣]/.test(error.message)?error.message:'저장하지 못했습니다. 변경 내용을 유지했으니 다시 시도해 주세요.';}finally{state.busy=false;save.disabled=false;cancel.disabled=false;classification?.setBusy(false);for(const [el,disabled] of controlStates)el.disabled=disabled;if(saved&&active===state){if(lockedSong){locks.get(state.editKey)?.(false);state.editKey=null;}else if(patch.sunoUrl){const notice=status.textContent;close();await open(node,button,selector,null,displayRow);if(active?.selector===selector)active.showCoverNotice?.(notice);}else close();}}
+    }catch(error){status.textContent=/[가-힣]/.test(error.message)?error.message:'저장하지 못했습니다. 변경 내용을 유지했으니 다시 시도해 주세요.';}finally{state.busy=false;draftAdapter?.setBusy?.(false);save.disabled=false;cancel.disabled=false;classification?.setBusy(false);for(const [el,disabled] of controlStates)el.disabled=disabled;if(saved&&active===state){if(lockedSong){locks.get(state.editKey)?.(false);state.editKey=null;}else if(patch.sunoUrl){const notice=status.textContent;close();await open(node,button,selector,null,displayRow);if(active?.selector===selector)active.showCoverNotice?.(notice);}else close();}}
    };
   }catch(error){if(active===state)status.textContent=/[가-힣]/.test(error.message)?error.message:'세부정보를 불러오지 못했습니다. 로그인 상태와 연결을 확인해 주세요.';}
  }
  host.addEventListener('click',event=>{if(active&&event.target.closest('.noa-browse-card,.noa-list-toggle,.noa-browse-crumbs button,.noa-browse-pager button,.noa-order-controls')){if(!active.busy&&!active.dirty){close();return;}event.preventDefault();event.stopImmediatePropagation();message('수정창의 저장 또는 취소를 눌러 편집을 마쳐 주세요.');}},true);
- window.addEventListener('beforeunload',event=>{if(active?.dirty){event.preventDefault();event.returnValue='';}});
- refresh();return{refresh,isEditing:()=>!!active,openRecord(selector,draftFields=null){const trigger=document.createElement('button');return open(host,trigger,selector,draftFields);}};
+ window.addEventListener('beforeunload',event=>{if(!draftAdapter&&active?.dirty){event.preventDefault();event.returnValue='';}});
+ refresh();return{refresh,isEditing:()=>!!active,close,updateRecord(data){active?.update?.(data);},openRecord(selector,draftFields=null){const trigger=document.createElement('button');return open(host,trigger,selector,draftFields);}};
 }
 window.NoaBrowseEdit={mount};})();
