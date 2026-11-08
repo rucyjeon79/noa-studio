@@ -74,11 +74,15 @@ function sa_lease(array $j,array $b):void {
 function sa_string(mixed $v,int $max):string {
  if(!is_string($v)||trim($v)===''||mb_strlen($v)>$max)throw new InvalidArgumentException('invalid_agent_text');return trim($v);
 }
+function sa_canonical(mixed $value):mixed {
+ if(!is_array($value))return $value;if(!array_is_list($value))ksort($value);
+ return array_map('sa_canonical',$value);
+}
 function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=null):array {
  $sourceReader??='sa_source';
  if($op==='agentTasks'){
   $jobs=array_filter(lab_read()['jobs'],fn($j)=>($j['type']??'')==='agent_movie'&&($j['agent']['owner']??'')===$owner);
-  return ['jobs'=>array_map(fn($j)=>sa_view($j),array_values(array_slice($jobs,-50,true))),'execution'=>'chatgpt_session'];
+  return ['jobs'=>array_map(fn($j)=>sa_view($j),array_values(array_slice($jobs,-50,null,true))),'execution'=>'chatgpt_session'];
  }
  if($op==='agentRead'&&isset($b['trackKey'])){
   $source=$sourceReader(sa_string($b['trackKey'],191));unset($source['audioPath']);
@@ -134,7 +138,7 @@ function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=n
   }
   sa_require_current($j,$source);
   $request=lab_id((string)($b['requestId']??''));$canonical=$b;unset($canonical['lease'],$canonical['expectedRevision']);
-  $hash=hash('sha256',json_encode($canonical,JSON_THROW_ON_ERROR));
+  $hash=hash('sha256',json_encode(sa_canonical($canonical),JSON_THROW_ON_ERROR));
   if(isset($a['receipts'][$request])){if(!hash_equals($a['receipts'][$request],$hash))throw new DomainException('request_id_reused');return ['job'=>sa_view($j,true),'replayed'=>true];}
   sa_lease($j,$b);$a['leaseUntil']=time()+900;
   lab_revision($j,$b);
@@ -144,6 +148,13 @@ function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=n
    $rows=$b['scenes']??null;if(!is_array($rows)||!array_is_list($rows)||!count($rows)||count($rows)>$next['count'])throw new InvalidArgumentException('invalid_scene_plan');
    foreach($rows as $i=>$row){$n=$next['start']+$i;if(($row['n']??null)!==$n)throw new InvalidArgumentException('invalid_scene_number');
     $a['scenes'][]=['n'=>$n,'summary'=>sa_string($row['summary']??null,600),'imagePrompt'=>sa_string($row['imagePrompt']??null,5000),'videoPrompt'=>sa_string($row['videoPrompt']??null,5000)];}
+   $j['state']='agent_ready';
+  }elseif($action==='revise'){
+   $n=$b['scene']??0;$patch=$b['changes']??null;
+   if($a['active']||!is_int($n)||!isset($a['scenes'][$n-1])||!is_array($patch)||!$patch||array_diff(array_keys($patch),['summary','imagePrompt','videoPrompt']))throw new DomainException('scene_revision_unavailable');
+   $row=&$a['scenes'][$n-1];
+   if(!empty($row['video']['accepted'])||(isset($patch['imagePrompt'])&&!empty($row['image']['accepted'])))throw new DomainException('accepted_scene_locked');
+   foreach($patch as $key=>$value)$row[$key]=sa_string($value,$key==='summary'?600:5000);unset($row);
    $j['state']='agent_ready';
   }elseif($action==='begin'){
    $next=sa_next($j);$kind=$b['kind']??'';$n=$b['scene']??0;

@@ -43,6 +43,15 @@ try{
  $receipt=json_decode(file_get_contents($fixtures.'/receipt.json'),true,32,JSON_THROW_ON_ERROR);$upload('final',0,$fixtures.'/final.mp4',$receipt['verification']);
  check($job['state']==='saved'&&count($job['outputs'])===1,'Final stored');check($call('agentFile',['id'=>$jobId,'mode'=>'read','kind'=>'final','offset'=>0])['sha256']===$receipt['sha256'],'Final readback');
  $source['duration']=240;$source['title']='Four minute song';$start['requestId']=$id();$long=$call('agentStart',$start)['job'];check($long['agent']['sceneCount']===35,'No 30-cut cap');
+ $longId=$long['id'];$lc=$call('agentStep',['id'=>$longId,'action'=>'claim','sessionId'=>$id()]);
+ $pl=$call('agentStep',['id'=>$longId,'action'=>'plan','lease'=>$lc['lease'],'expectedRevision'=>$lc['job']['revision'],'requestId'=>$id(),'scenes'=>[$scene(1)]]);
+ $revise=['id'=>$longId,'action'=>'revise','lease'=>$lc['lease'],'expectedRevision'=>$pl['job']['revision'],'requestId'=>$id(),'scene'=>1,'changes'=>['videoPrompt'=>'Move the camera more slowly.']];
+ $revised=$call('agentStep',$revise);check($revised['job']['scenes'][0]['videoPrompt']==='Move the camera more slowly.','Adaptive prompt correction');
+ check($call('agentStep',array_reverse($revise,true))['replayed']===true,'Semantic request ordering');
+ $beg=$call('agentStep',['id'=>$longId,'action'=>'pause','expectedRevision'=>$revised['job']['revision']]);
+ $resumed=$call('agentStep',['id'=>$longId,'action'=>'resume','expectedRevision'=>$beg['job']['revision']]);
+ refuses(fn()=>$call('agentStep',['id'=>$longId,'action'=>'plan','lease'=>$lc['lease'],'expectedRevision'=>$resumed['job']['revision'],'requestId'=>$id(),'scenes'=>[$scene(2)]]),'agent_lease_expired');
+ $long=$resumed['job'];
  $source['title']='Changed after plan';check($call('agentRead',['id'=>$long['id']])['sourceCurrent']===false,'Current title fence');
  refuses(fn()=>$call('agentStep',['id'=>$long['id'],'action'=>'claim','sessionId'=>$id()]),'source_changed_replan_required');
  $source=null;$paused=$call('agentStep',['id'=>$long['id'],'action'=>'pause','expectedRevision'=>$long['revision'],'reason'=>'Original unavailable']);check($paused['job']['state']==='agent_paused','Pause when original disappears');
