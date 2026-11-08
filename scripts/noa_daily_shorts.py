@@ -38,7 +38,7 @@ def prepare_subtitles(dispatch):
             if process.returncode:
                 reason=report.get('error','recognition_failed')
                 allowed={'audio_checksum_mismatch','invalid_duration','audio_duration_mismatch','korean_lyrics_required','lyrics_too_large',
-                         'invalid_word_timestamps','transcript_too_large','transcript_source_mismatch','recognition_dependency_failed'}
+                         'invalid_word_timestamps','transcript_too_large','transcript_source_mismatch','recognition_dependency_failed','transcript_alignment_too_large'}
                 error=ValueError(reason if reason in allowed else 'recognition_failed')
                 error.recognizerType=report.get('errorType','')
                 raise error
@@ -49,7 +49,7 @@ def prepare_subtitles(dispatch):
         reason=stage+('_timeout' if isinstance(error,subprocess.TimeoutExpired) else '_failed')
         if isinstance(error,ValueError) and str(error) in {'source_path_rejected','source_file_rejected','source_size_changed','source_checksum_mismatch',
             'audio_checksum_mismatch','invalid_duration','audio_duration_mismatch','korean_lyrics_required','lyrics_too_large','invalid_word_timestamps',
-            'transcript_too_large','transcript_source_mismatch','recognition_dependency_failed','recognition_process_failed'}:
+            'transcript_too_large','transcript_source_mismatch','recognition_dependency_failed','recognition_process_failed','transcript_alignment_too_large'}:
             reason=str(error)
         try:dispatch('fail_subtitles',lease=lease,reason=reason)
         except Exception:pass

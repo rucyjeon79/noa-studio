@@ -4,7 +4,7 @@ No paid API, equal-duration timing, translated lyrics or background queue.
 The caller saves payload through the existing N80 agent lease/revision contract.
 """
 import argparse
-import difflib
+from array import array
 import hashlib
 import json
 import math
@@ -40,6 +40,51 @@ def file_sha(path):
         for chunk in iter(lambda: stream.read(1048576), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def ordered_character_mapping(expected, recognized, owners):
+    """Minimum-edit alignment, rather than a greedy longest repeated chorus.
+
+    Match only characters actually recognized. Keep insertion/deletion evidence,
+    never manufacture a word or a timestamp. A bounded traceback uses one byte
+    per cell and two integer rows, with an explicit limit for long inputs.
+    """
+    n, m = len(expected), len(recognized)
+    if n * m > 8_000_000:
+        raise ValueError('transcript_alignment_too_large')
+    if not n or not m:
+        return {}
+    paths = [bytearray(m + 1)]
+    previous = array('I', range(m + 1))
+    for i, char in enumerate(expected, 1):
+        current = array('I', [i])
+        path = bytearray(m + 1)
+        for j, heard in enumerate(recognized, 1):
+            diagonal = previous[j - 1] + (char != heard)
+            deletion, insertion = previous[j] + 1, current[j - 1] + 1
+            if diagonal <= deletion and diagonal <= insertion:
+                current.append(diagonal)
+            elif deletion <= insertion:
+                current.append(deletion)
+                path[j] = 1
+            else:
+                current.append(insertion)
+                path[j] = 2
+        paths.append(path)
+        previous = current
+    mapping, i, j = {}, n, m
+    while i and j:
+        direction = paths[i][j]
+        if direction == 0:
+            if expected[i - 1] == recognized[j - 1]:
+                mapping[i - 1] = owners[j - 1]
+            i -= 1
+            j -= 1
+        elif direction == 1:
+            i -= 1
+        else:
+            j -= 1
+    return mapping
 
 
 def usable_recognized_words(words, duration):
@@ -82,11 +127,7 @@ def match_lyrics(lyrics, words, duration):
     if len(recognized) > 40000:
         raise ValueError("transcript_too_large")
     expected = "".join(map(clean, lines))
-    # Global, ordered matching keeps repeated chorus occurrences distinct.
-    mapping = {}
-    for block in difflib.SequenceMatcher(None, expected, recognized, autojunk=False).get_matching_blocks():
-        for offset in range(block.size):
-            mapping[block.a + offset] = owners[block.b + offset]
+    mapping = ordered_character_mapping(expected, recognized, owners)
     cues, issues, cursor, previous_end = [], [], 0, 0
     for number, line in enumerate(lines, 1):
         text = clean(line)
@@ -176,7 +217,8 @@ def main():
     except Exception as error:
         # Return typed evidence, never a raw provider exception/URL or file contents.
         reasons = {'audio_checksum_mismatch', 'invalid_duration', 'audio_duration_mismatch', 'korean_lyrics_required',
-                   'lyrics_too_large', 'invalid_word_timestamps', 'transcript_too_large', 'transcript_source_mismatch'}
+                   'lyrics_too_large', 'invalid_word_timestamps', 'transcript_too_large', 'transcript_source_mismatch',
+                   'transcript_alignment_too_large'}
         reason = str(error) if isinstance(error, ValueError) and str(error) in reasons else 'recognition_dependency_failed'
         result = {'error': reason, 'errorType': type(error).__name__}
         failed = True
