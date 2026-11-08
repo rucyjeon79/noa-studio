@@ -31,5 +31,22 @@ export async function checkRevisions(page,context,heldJob,width,output){
  await worker(job,'&title=Lines');await title.locator('.creative-compare').waitFor({timeout:20000});await page.screenshot({path:`${output}/latest-revision-${width}.png`,fullPage:true});
  await title.getByRole('button',{name:'수정안 적용',exact:true}).click();await idle();assert.equal(await title.locator('.noa-locked-preview').innerText(),'Lines');
  job=await submit();snapshot=await worker(job,'&mode=snapshot');assert.equal(snapshot.revisionInput.currentValue,'Lines','Next edit uses the last accepted value');await worker(job,'&mode=failed');await page.waitForFunction(()=>!document.querySelector('[data-record-field=title]').hasAttribute('data-generating'),null,{timeout:20000});
+ await request.fill('');job=await submit();snapshot=await worker(job,'&mode=snapshot');assert.equal(snapshot.revisionInput.request,'','Additional requests are optional');assert.equal(snapshot.revisionInput.currentValue,'Lines');await worker(job,'&title=New%20Lines');await title.locator('.creative-compare').waitFor({timeout:20000});await title.getByRole('button',{name:'현재 내용 유지',exact:true}).click();await idle();
  await edit('집으로 가는 마음 · 수정');console.log('CREATIVE_BROWSER_CURRENT_BASELINE_STALE_PROPOSAL_RETRY_OK',width);
+}
+export async function checkBatch(page,context,heldJob,width,output){
+ const panel=page.locator('#creative-record .creative-batch');await panel.waitFor();const selected=['title','lyrics','sunoPrompt'];
+ await panel.getByRole('button',{name:'선택 항목 AI 생성',exact:true}).click();await panel.locator('details[open]').waitFor();assert.equal(await panel.locator('input[type=checkbox]').count(),9);
+ await panel.getByRole('button',{name:'전체 선택',exact:true}).click();assert.equal(await panel.locator('input:checked').count(),9);await panel.getByRole('button',{name:'선택 해제',exact:true}).click();
+ for(const key of selected)await panel.locator('input[value="'+key+'"]').check();
+ await panel.screenshot({path:`${output}/batch-selection-${width}.png`});const previous=heldJob();await panel.getByRole('button',{name:'선택 항목 AI 생성',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('#creative-record').inert);assert.notEqual(heldJob(),previous);
+ const job=heldJob(),snapshot=await(await context.request.get('http://127.0.0.1:8787/creative-test-worker.php?id='+job+'&mode=snapshot')).json();assert.deepEqual(snapshot.targets,selected);for(const key of selected)assert.equal(snapshot.revisionInputs[key].request,'');
+ assert.equal(await page.locator('#creative-record [data-generating]').count(),3);assert(await panel.getByRole('button',{name:'선택 항목 AI 생성',exact:true}).isDisabled());
+ await context.request.get('http://127.0.0.1:8787/creative-test-worker.php?id='+job+'&title='+encodeURIComponent('함께 만든 제목'));await panel.getByRole('button',{name:'3개 수정안 적용',exact:true}).waitFor({timeout:20000});
+ assert.equal(await page.locator('#creative-record .creative-compare').count(),3);assert.equal(await page.locator('[name=title]').inputValue(),'집으로 가는 마음 · 수정','Generation does not overwrite accepted content');
+ await page.reload();await panel.getByRole('button',{name:'3개 수정안 적용',exact:true}).waitFor();assert.equal(await panel.locator('input:checked').count(),3,'Selected pending batch survives reload');
+ await page.locator('[data-record-field=title]').getByRole('button',{name:'수정안 적용',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('#creative-record').inert);await panel.getByRole('button',{name:'2개 수정안 적용',exact:true}).waitFor();
+ await panel.screenshot({path:`${output}/batch-apply-${width}.png`});await panel.getByRole('button',{name:'2개 수정안 적용',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('#creative-record').inert);assert.equal(await page.locator('#creative-record .creative-compare').count(),0);assert.equal(await page.locator('[name=title]').inputValue(),'함께 만든 제목');assert.equal(await page.locator('[name=vocal]').inputValue(),'여자솔로','Unselected vocal stays unchanged');
+ const title=page.locator('[data-record-field=title]');await title.getByRole('button',{name:'곡 제목 수정',exact:true}).click();await title.locator('[name=title]').fill('집으로 가는 마음 · 수정');await title.getByRole('button',{name:'곡 제목 저장',exact:true}).click();await page.waitForFunction(()=>document.querySelector('[data-record-field=title]').dataset.locked==='true');
+ console.log('CREATIVE_BROWSER_OPTIONAL_REQUEST_SHARED_BATCH_SELECTION_APPLY_OK',width);
 }

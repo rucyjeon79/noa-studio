@@ -21,6 +21,9 @@ if os.environ.get('NOA_CREATIVE_RETENTION_ONLY')=='1':
 if os.environ.get('NOA_CREATIVE_REVISION_ONLY')=='1':
  release.FILES={'noa-bridge/creative-core.php':'bridge/creative-core.php','noa-app/engine/creative.php':'deploy/noa-app/engine/creative.php','noa-creative.js':'deploy/noa-creative.js'}
  release.NEW=set()
+if os.environ.get('NOA_CREATIVE_BATCH_ONLY')=='1':
+ release.FILES={**{'noa-bridge/'+p:'bridge/'+p for p in ['creative-core.php','creative-publication.php']},'noa-app/engine/creative.php':'deploy/noa-app/engine/creative.php',**{p:'deploy/'+p for p in ['noa-browse-edit.js','noa-creative.css','noa-creative.js']}}
+ release.NEW=set()
 if __name__=='__main__':
  try:
   retention=os.environ.get('NOA_CREATIVE_RETENTION_ONLY')=='1' and 'rollback' not in sys.argv

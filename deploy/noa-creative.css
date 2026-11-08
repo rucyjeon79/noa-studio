@@ -45,6 +45,11 @@
 
 #creative-record .noa-edit-status:empty,#creative-record #creative-asset-state:empty{display:none}
 #creative-record #creative-publish .creative-filters{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}
+#creative-record .creative-batch-picks{display:flex;gap:8px;margin:10px 0 4px}
+#creative-record .creative-batch-picks button{min-height:44px;padding:8px 12px;background:transparent;border:1px solid var(--noa-line);border-radius:6px;color:var(--noa-text);font-size:12px}
+#creative-record .creative-batch-apply{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}
+#creative-record .creative-batch-apply button{flex:1;min-height:44px;padding:10px 12px;color:var(--noa-text);border:1px solid var(--noa-line);border-radius:6px;background:var(--noa-surface);font-size:13px;font-weight:600}
+#creative-record .creative-batch-apply button:first-child{background:var(--noa-accent);color:var(--noa-accentText);border-color:var(--noa-accent)}
 
 /* One live presentation follows the existing N80 task; content arrives fully usable. */
 #creative-record .creative-ai-surface{position:relative;display:block;min-width:0;margin-top:18px;padding:20px;border:1px solid color-mix(in srgb,var(--noa-creative,#9170b3) 42%,var(--noa-line));border-radius:8px;background:linear-gradient(135deg,color-mix(in srgb,var(--noa-creative,#9170b3) 7%,transparent),transparent 70%);color:var(--noa-text);}

@@ -25,11 +25,12 @@
  $job=$start();$save(['fields'=>['title'=>'The Last Letter']]);$finish($job,'Song Between Lines');check(ncd_job($db,$job)['document']['state']==='review','manual edit while AI runs is protected');
  $job=$start();$task=ncd_worker($db,'read',$job);check($task['revisionInput']['currentValue']==='The Last Letter','next request uses most recent manual edit');$finish($job,'Last Letter');
  $save(['fields'=>['lyrics'=>'새로운 가사']]);check(empty(ncd_view($r)['creative']['proposals']['title']),'changed context hides stale proposal');
- denied(fn()=>ncd_action($db,$owner,'proposal',['id'=>$id,'revision'=>$r['revision'],'field'=>'title','decision'=>'apply']),'field_changed');
+ denied(fn()=>ncd_action($db,$owner,'proposal',['id'=>$id,'revision'=>$r['revision'],'field'=>'title','decision'=>'apply']),'proposal_not_found');
  $job=$start();$finish($job,'Last Letter');$r=ncd_action($db,$owner,'proposal',['id'=>$id,'revision'=>$r['revision'],'field'=>'title','decision'=>'apply']);
  check(nup_fields($r['document'])['title']==='Last Letter'&&nup_fields($r['document'])['lyrics']==='새로운 가사','only accepted selected field changes');
  $job=$start();check(ncd_worker($db,'read',$job)['revisionInput']['currentValue']==='Last Letter','applied proposal becomes next edit baseline');ncd_worker($db,'workerFail',$job);
  // Legacy proposals without a verifiable submitted context stay in history, not the active UI.
  $d=$r['document'];$d['_creative']['proposals']['title']=array_diff_key($old,['contextHash'=>true]);check(empty(ncd_view(array_replace($r,['document'=>$d]))['creative']['proposals']['title']),'unbound legacy result is not current');
+ require __DIR__.'/batch.php';
  echo "CREATIVE_REVISION_LATEST_INPUT_REQUEST_RACE_FAILED_RETRY_APPLY_GUARDS_OK\n";
 })();

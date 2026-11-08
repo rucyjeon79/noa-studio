@@ -13,7 +13,7 @@ function ncd_cover(PDO $db,string $owner,array $b,string $bytes,?array $source=n
  });
 }
 function ncd_validation(PDO $db,array $r,bool $admin):array {
- $d=$r['document'];$c=$d['_creative'];$f=nup_fields($d);$issues=ncd_completion($d)['missing'];if(empty($c['intentConfirmed']))$issues[]='confirm_intent_first';if(!empty($c['needsReview']))$issues[]='review_related_fields';if(!empty($c['proposals']))$issues[]='resolve_proposals';if(!empty($c['deletedAt']))$issues[]='draft_deleted';
+ $d=$r['document'];$c=$d['_creative'];$f=nup_fields($d);$issues=ncd_completion($d)['missing'];if(empty($c['intentConfirmed']))$issues[]='confirm_intent_first';if(!empty($c['needsReview']))$issues[]='review_related_fields';if(ncd_current_proposals($d))$issues[]='resolve_proposals';if(!empty($c['deletedAt']))$issues[]='draft_deleted';
  if(!in_array($d['genreId'],['kpop-original','your-story'],true))$issues[]='new_original_category_required';if($d['genreId']==='kpop-original'){if(!$admin)$issues[]='original_publish_admin_required';if(!preg_match('/^[1-9][0-9]{0,3}$/D',(string)$d['ep']))$issues[]='ep_required';
  $q=$db->prepare("SELECT 1 FROM noa_documents WHERE kind IN ('single','story') AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.genreId'))='kpop-original' AND CAST(JSON_UNQUOTE(JSON_EXTRACT(payload,'$.ep')) AS UNSIGNED)=? AND JSON_EXTRACT(payload,'$._noaTrash') IS NULL LIMIT 1");$q->execute([(int)$d['ep']]);if($q->fetchColumn())$issues[]='ep_already_exists';}
  $assets=ncd_assets($db,$r);if(!$assets['audioReady'])$issues[]='verified_audio_required';if(!$assets['coverReady'])$issues[]='verified_cover_required';

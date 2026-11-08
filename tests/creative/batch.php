@@ -1,0 +1,22 @@
+<?php
+(function()use($db,$owner){
+ $id=str_repeat('2',32);$r=ncd_create($db,$owner,$id,'가족을 떠올리는 따뜻한 피아노 팝');$d=$r['document'];foreach(NCD_CONDITIONS as $key)$d['_creative']['intent'][$key]=['value'=>'가족을 떠올리는 따뜻한 피아노 팝','source'=>'answer'];$d['_creative']['intentConfirmed']=true;$d['_creative']['intentHash']=ncd_hash($d['_creative']['intent']);$r=ncd_atomic($db,fn()=>ncd_put($db,$r,$d,$owner));
+ $save=function(array $body)use($db,$owner,$id,&$r){$r=ncd_save($db,$owner,['id'=>$id,'revision'=>$r['revision']]+$body);};
+ $save(['fields'=>['title'=>'Warm Way Home','lyrics'=>'현재 가사','sunoPrompt'=>'warm piano pop','vocal'=>'남녀듀엣']]);
+ foreach([[],['title','title'],['sunoUrl'],['unknown'],[42]] as $keys)denied(fn()=>ncd_target_keys($keys),'invalid_targets');
+ $start=function(array $keys)use($db,$owner,$id,&$r){$b=['id'=>$id,'revision'=>$r['revision'],'operation'=>'revise','targets'=>$keys,'requestId'=>bin2hex(random_bytes(16))];$dispatches=0;$transport=function()use(&$dispatches){$dispatches++;return 204;};$out=ncd_enqueue($db,$owner,$b,$transport);$again=ncd_enqueue($db,$owner,$b,$transport);check($dispatches===1&&$out['job']['id']===$again['job']['id'],'one dispatch per batch, including retransmission');$job=$out['job']['id'];ncd_worker($db,'workerPoll',$job);$r=ncd_row($db,$id,$owner);return $job;};
+ $finish=function(string $job,array $fields)use($db,$owner,$id,&$r){ncd_worker($db,'save',$job,['text'=>ncd_json(['fields'=>$fields,'vocal'=>'남녀듀엣'])]);$r=ncd_row($db,$id,$owner);};
+ // A single field with no request uses the latest content; no invented request is stored.
+ $job=$start(['title']);$task=ncd_worker($db,'read',$job);check($task['revisionInput']['request']===''&&$task['revisionInput']['currentValue']==='Warm Way Home','empty additional request is valid');$finish($job,['title'=>'Homeward']);$r=ncd_action($db,$owner,'proposal',['id'=>$id,'revision'=>$r['revision'],'fields'=>['title'],'decision'=>'apply']);
+ $save(['requests'=>['lyrics'=>'후렴만 더 따뜻하게']]);$before=nup_fields($r['document']);
+ $job=$start(['lyrics','title','sunoPrompt']);$task=ncd_worker($db,'read',$job);check($task['targets']===['title','lyrics','sunoPrompt']&&$task['revisionInputs']['title']['request']===''&&$task['revisionInputs']['lyrics']['request']==='후렴만 더 따뜻하게','batch snapshots optional per-field requests');
+ $finish($job,['title'=>'Way Home','lyrics'=>'다듬은 가사','sunoPrompt'=>'warm intimate piano pop']);check(nup_fields($r['document'])===$before&&count(ncd_current_proposals($r['document']))===3,'one batch creates only proposals');
+ // Applying one result must not invalidate its siblings; apply the remaining two atomically.
+ $r=ncd_action($db,$owner,'proposal',['id'=>$id,'revision'=>$r['revision'],'field'=>'title','decision'=>'apply']);check(count(ncd_current_proposals($r['document']))===2,'same-batch siblings remain applicable');
+ $revision=$r['revision'];$r=ncd_action($db,$owner,'proposal',['id'=>$id,'revision'=>$revision,'fields'=>['lyrics','sunoPrompt'],'decision'=>'apply']);check($r['revision']===$revision+1&&nup_fields($r['document'])['vocal']===$before['vocal']&&empty($r['document']['_creative']['proposals']),'selected fields apply in one revision, preserving unselected content');
+ $job=$start(['title','lyrics']);$save(['requests'=>['lyrics'=>'마지막 절만 수정']]);$finish($job,['title'=>'Old response','lyrics'=>'오래된 요청 결과']);check(ncd_job($db,$job)['document']['state']==='review'&&empty(ncd_current_proposals($r['document'])),'request change during batch prevents all stale proposals');
+ $job=$start(['title','lyrics']);$finish($job,['title'=>'New title','lyrics'=>'새 가사']);$stale=$r['document'];$stale['_creative']['proposals']['lyrics']['baseHash']=str_repeat('0',64);denied(fn()=>ncd_accept_proposals($stale,['title','lyrics'],'apply'),'field_changed');check(nup_fields(ncd_row($db,$id,$owner)['document'])['title']!=='New title','mixed invalid selection cannot partially apply');
+ $save(['fields'=>['title'=>'User edit wins']]);check(empty($r['document']['_creative']['proposals']),'obsolete proposals cannot invisibly block confirmation');
+ $job=$start(['title','lyrics']);ncd_worker($db,'workerFail',$job);$r=ncd_row($db,$id,$owner);check(nup_fields($r['document'])['title']==='User edit wins'&&empty(ncd_current_proposals($r['document'])),'failed batch preserves accepted fields');
+ echo "CREATIVE_OPTIONAL_REQUEST_BATCH_SINGLE_DISPATCH_ATOMIC_APPLY_SIBLINGS_STALE_OK\n";
+})();

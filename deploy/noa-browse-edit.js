@@ -434,17 +434,18 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
     choose.onclick=async()=>{if(state.busy)return;choose.disabled=true;try{await import('/noa-channel-explorer.js?v=n80-unified-20261107'); const result=await N80Explorer.choose({records:candidates,selected:chosen,multiple:true,title:'수록곡 선택 · 선택 순서대로 저장'});if(result&&active===state){chosen=result;if(data.packageType==='act')chosen.sort((a,b)=>Number(a.ep)-Number(b.ep));hidden.value=JSON.stringify(chosen,null,2);hidden.dispatchEvent(new Event('input',{bubbles:true}));drawMembers();}}catch{status.textContent='N80 탐색기를 불러오지 못했습니다. 다시 시도해 주세요.';}finally{choose.disabled=false;}};
     drawMembers();if(data.packageType==='act'){const range=document.createElement('p');range.className='noa-edit-readonly';range.textContent='ACT '+data.context.act+' · '+data.context.range+' · 해당 EP 10곡을 오름차순으로 저장합니다.';members.append(range);}
    }
-   if(!draftAdapter&&labGeneration&&selector.type==='song'){
-    const names={...(data.packageType==='ep'?{title:'장르 곡 제목',lyrics:'장르 가사'}:{}),geminiPrompt:'썸네일 프롬프트',youtubeTitle:'유튜브 제목',description:'영상 설명',communityPost:'커뮤니티 글'};
+   if((draftAdapter?.generateSet||(!draftAdapter&&labGeneration))&&selector.type==='song'){
+    const names=draftAdapter?.generationFields||{...(data.packageType==='ep'?{title:'장르 곡 제목',lyrics:'장르 가사'}:{}),geminiPrompt:'썸네일 프롬프트',youtubeTitle:'유튜브 제목',description:'영상 설명',communityPost:'커뮤니티 글'};
     const keys=Object.keys(names).filter(k=>inputs[k]);
     const publish=control('ai','AI 생성 묶음','AI 생성 묶음');
     const choices=document.createElement('details'),summary=iconCommand('summary','options','생성할 항목 선택');choices.className='noa-publish-options';summary.title='AI 생성목록';summary.setAttribute('aria-label',summary.title);summary.append(document.createTextNode(summary.title));choices.append(summary);
     choices.addEventListener('toggle',()=>summary.setAttribute('aria-expanded',String(choices.open)));
     choices.addEventListener('input',e=>e.stopPropagation());choices.addEventListener('change',e=>e.stopPropagation());
     const options=new Map();
-    for(const k of keys){const line=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.checked=!String(data.fields[k]||'').trim();line.append(box,document.createTextNode(names[k]));if(!box.checked){const hint=document.createElement('small');hint.textContent='기존 내용 교체';line.append(hint);}choices.append(line);options.set(k,box);}
+    for(const k of keys){const line=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.value=k;box.checked=!String(data.fields[k]||'').trim();line.append(box,document.createTextNode(names[k]));if(!box.checked){const hint=document.createElement('small');hint.textContent='기존 내용 교체';line.append(hint);}choices.append(line);options.set(k,box);}
     const info=document.createElement('p');info.setAttribute('role','status');
     const area=document.createElement('section');area.className='noa-publish-panel';area.append(choices,publish,info);form.prepend(area);
+    draftAdapter?.batchReady?.({area,choices,options,info,publish});
     async function post(url,body){
      const r=await fetch(url,{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-NOA-Bridge-Request':'1'},body:JSON.stringify(body)});
      const j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw Error(j.error||r.headers.get('X-NOA-Error-Code')||'publish_unavailable');return j;
@@ -454,6 +455,7 @@ function mount({host,rows=[],kind='곡',isOrdering,onSaved=()=>{},onClose,standa
      if(state.dirty){info.textContent='먼저 수정 중인 곡 정보를 저장해 주세요.';return;}
      const targets=keys.filter(k=>options.get(k).checked);
      if(!targets.length){choices.open=true;info.textContent='빈 항목이 없습니다. 교체할 항목만 선택해 주세요.';return;}
+     if(draftAdapter){await draftAdapter.generateSet(targets);return;}
      const revision=state.data.revision,job={selector,expectedKey:state.data.writeKey,revision,targets};
      state.busy=true;publish.disabled=true;const wasDisabled=[...form.querySelectorAll('input,textarea,button,select')].map(el=>[el,el.disabled]);for(const [el] of wasDisabled)el.disabled=true;
      const marked=[];

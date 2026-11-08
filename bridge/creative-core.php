@@ -20,9 +20,27 @@ function ncd_key(string $id):string{return 'n80:draft:'.ncd_id($id);}
 function ncd_json(mixed $v):string{return json_encode($v,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);}
 function ncd_hash(mixed $v):string{return hash('sha256',ncd_json($v));}
 /** The submitted edit is anchored to current content, never a history entry. */
-function ncd_revision_input(array $d,string $field):array {$c=$d['_creative'];return ['story'=>$c['story'],'answers'=>$c['answers'],'intent'=>$c['intent'],'fields'=>nup_fields($d),'request'=>$c['requests'][$field]??'','genre'=>$d['genreId'],'ep'=>$d['ep']];}
+function ncd_target_keys(mixed $keys):array {
+ if(!is_array($keys)||!array_is_list($keys)||!$keys||count($keys)>count(NCD_REVISABLE))throw new InvalidArgumentException('invalid_targets');
+ foreach($keys as $key)if(!is_string($key)||!in_array($key,NCD_REVISABLE,true))throw new InvalidArgumentException('invalid_targets');
+ if(count(array_unique($keys))!==count($keys))throw new InvalidArgumentException('invalid_targets');
+ return array_values(array_intersect(NCD_REVISABLE,$keys));
+}
+function ncd_revision_input(array $d,string $field,array $targets=[]):array {$c=$d['_creative'];$input=['story'=>$c['story'],'answers'=>$c['answers'],'intent'=>$c['intent'],'fields'=>nup_fields($d),'request'=>$c['requests'][$field]??'','genre'=>$d['genreId'],'ep'=>$d['ep']];if(count($targets)>1){$input['requests']=[];foreach($targets as $key)$input['requests'][$key]=$c['requests'][$key]??'';}return $input;}
 function ncd_proposal_current(array $d,string $field,array $p):bool {
  return isset($p['contextHash'])&&hash_equals($p['contextHash'],ncd_hash(ncd_revision_input($d,$field)))&&($p['baseHash']??'')===ncd_hash(nup_fields($d)[$field]);
+}
+function ncd_current_proposals(array $d):array {$out=[];foreach($d['_creative']['proposals'] as $key=>$proposal)if(ncd_proposal_current($d,$key,$proposal))$out[$key]=$proposal;return $out;}
+/** Validate every selected proposal before one atomic patch; accept same-job siblings in either order. */
+function ncd_accept_proposals(array $d,array $keys,string $decision):array {
+ if(!in_array($decision,['apply','cancel'],true))throw new InvalidArgumentException('invalid_decision');
+ $patch=[];$jobs=[];
+ foreach($keys as $key){$p=$d['_creative']['proposals'][$key]??null;if(!$p)throw new DomainException('proposal_not_found');if($decision==='apply'){if(!ncd_proposal_current($d,$key,$p))throw new DomainException('field_changed');$patch[$key]=$p['value'];$jobs[$p['jobId']]=true;}}
+ $siblings=ncd_current_proposals($d);
+ if($patch)$d=ncd_fields($d,$patch);
+ foreach($keys as $key){unset($d['_creative']['proposals'][$key]);if($decision==='apply')unset($d['_creative']['needsReview'][$key]);}
+ foreach($siblings as $key=>$proposal)if(!in_array($key,$keys,true)&&isset($jobs[$proposal['jobId']]))$d['_creative']['proposals'][$key]['contextHash']=ncd_hash(ncd_revision_input($d,$key));
+ return $d;
 }
 function ncd_text(mixed $v,int $max=200000):string {if(!is_string($v)||mb_strlen($v)>$max)throw new InvalidArgumentException('invalid_text');return trim($v);}
 function ncd_atomic(PDO $db,callable $fn):mixed{$db->beginTransaction();try{$r=$fn();$db->commit();return $r;}catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}}
@@ -30,6 +48,7 @@ function ncd_row(PDO $db,string $id,string $owner,bool $lock=false):array {
  $q=$db->prepare('SELECT d.*,c.recovery_until,c.retained_at FROM noa_creative_drafts c JOIN noa_documents d ON d.doc_key=c.doc_key WHERE c.draft_id=? AND c.owner_id=? AND d.kind=?'.($lock?' FOR UPDATE':''));$q->execute([ncd_id($id),$owner,NCD_KIND]);$r=$q->fetch(PDO::FETCH_ASSOC);if(!$r)throw new DomainException('draft_not_found');$r['document']=json_decode($r['payload'],true,64,JSON_THROW_ON_ERROR);$r['revision']=(int)$r['revision'];foreach(['retained_at','recovery_until'] as $field)$r[$field]=$r[$field]===null?null:(int)$r[$field];return $r;
 }
 function ncd_put(PDO $db,array $r,array $d,string $owner):array {
+ $d['_creative']['proposals']=ncd_current_proposals($d);
  $now=time();$retained=(int)($r['retained_at']??0);if(!$retained&&(ncd_completion($d)['percent']===100||!empty($d['_creative']['publication'])))$retained=$now;
  $d['_creative']['hasInput']=true;$d['_creative']['updatedAt']=gmdate('c',$now);$d['visibility']='draft';$d['confirmed']=false;$d['_creative']['summary']=['id'=>$d['_creative']['id'],'title'=>nup_fields($d)['title']?:mb_substr($d['_creative']['story'],0,40),'genre'=>$d['genreId'],'stage'=>ncd_stage($d),'completion'=>ncd_completion($d)['percent'],'updatedAt'=>$d['_creative']['updatedAt'],'createdAt'=>$d['_creative']['createdAt']];
  if($retained)$r['revision']=nup_store($db,$r['doc_key'],NCD_KIND,$d,$r['revision'],$owner);
@@ -45,7 +64,7 @@ function ncd_completion(array $d):array {$f=nup_fields($d);$missing=[];foreach(N
 function ncd_stage(array $d):string {$c=$d['_creative'];if(!empty($c['deletedAt']))return 'deleted';if(!empty($c['publication']))return 'published';if(!empty($c['intentConfirmed']))return ncd_completion($d)['percent']===100?'review':'writing';return !empty($c['questions'])?'questions':(!empty($c['intent'])?'intent':'story');}
 function ncd_view(array $r):array {
  $d=$r['document'];$c=$d['_creative'];$f=nup_fields($d);$f['ep']=(string)($d['ep']??'');
- foreach($c['proposals'] as $key=>$proposal)if(!ncd_proposal_current($d,$key,$proposal))unset($c['proposals'][$key]);
+ $c['proposals']=ncd_current_proposals($d);
  require_once dirname(__DIR__).'/noa-app/jukebox/core.php';require_once __DIR__.'/music-download-core.php';
  return ['id'=>$c['id'],'key'=>$r['doc_key'],'revision'=>$r['revision'],'fields'=>$f,'type'=>nup_type($d,'single'),'genre'=>$d['genreId'],'creative'=>$c,'stage'=>ncd_stage($d),'completion'=>ncd_completion($d),'sunoTitle'=>substr(nmd_filename($d),0,-4),'storage'=>['mode'=>empty($r['retained_at'])?'recovery':'draft','expiresAt'=>empty($r['retained_at'])?(int)$r['recovery_until']:null]];
 }
@@ -94,7 +113,7 @@ function ncd_action(PDO $db,string $owner,string $action,array $b):array {
   else {ncd_editable($r,$r['revision']);
    if($action==='answer'){$key=$b['condition']??'';$question=$c['questions'][$key]??null;if(!$question)throw new DomainException('question_not_found');$answer=ncd_text($b['answer']??'',4000);if($answer==='')throw new InvalidArgumentException('answer_required');$c['answers'][$key]=$answer;$c['questionPosition']=min((int)array_search($key,array_keys($c['questions']),true)+1,count($c['questions'])-1);$c['intent'][$key]=['value'=>$answer,'evidence'=>$answer,'source'=>'answer'];$c['intentConfirmed']=false;}
    elseif($action==='confirmIntent'){foreach(NCD_CONDITIONS as $key)if(empty($c['intent'][$key]['value'])||(isset($c['questions'][$key])&&empty($c['answers'][$key])))throw new DomainException('unanswered_questions');$c['intentConfirmed']=true;$c['intentHash']=ncd_hash($c['intent']);}
-   elseif($action==='proposal'){$key=$b['field']??'';$p=$c['proposals'][$key]??null;if(!$p)throw new DomainException('proposal_not_found');if(($b['decision']??'')==='apply'){if(!ncd_proposal_current($d,$key,$p))throw new DomainException('field_changed');$d=ncd_fields($d,[$key=>$p['value']]);unset($d['_creative']['needsReview'][$key]);}elseif(($b['decision']??'')!=='cancel')throw new InvalidArgumentException('invalid_decision');unset($d['_creative']['proposals'][$key]);}
+   elseif($action==='proposal'){$d=ncd_accept_proposals($d,ncd_target_keys($b['fields']??[$b['field']??'']),$b['decision']??'');}
    elseif($action==='review'){$key=$b['field']??'';if(!in_array($key,NCD_REVISABLE,true))throw new InvalidArgumentException('unknown_field');unset($c['needsReview'][$key]);}
    elseif($action==='restoreField'){$key=$b['field']??'';if(!in_array($key,NCD_REVISABLE,true))throw new InvalidArgumentException('unknown_field');$q=$db->prepare('SELECT payload FROM noa_document_history WHERE doc_key=? AND revision=?');$q->execute([$r['doc_key'],(int)($b['version']??0)]);$old=$q->fetchColumn();if(!$old)throw new DomainException('version_not_found');$d=ncd_fields($d,[$key=>nup_fields(json_decode($old,true))[$key]]);}
    else throw new InvalidArgumentException('unknown_action');

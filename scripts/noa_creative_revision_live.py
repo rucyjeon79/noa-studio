@@ -6,7 +6,7 @@ from noa_full_inventory import ROOT,connect
 from n80_live_observer import NoRedirect
 
 def main(phase):
-    if phase not in ('audit','verify','cleanup'):raise ValueError('invalid phase')
+    if phase not in ('audit','verify','verify_batch','cleanup'):raise ValueError('invalid phase')
     audit_id=os.environ.get('NOA_CREATIVE_AUDIT_JOB','')
     if audit_id and not re.fullmatch('[a-f0-9]{32}',audit_id):raise ValueError('invalid audit job')
     probe_id=os.environ.get('NOA_CREATIVE_PROBE_ID','') if phase=='cleanup' else secrets.token_hex(16)
@@ -14,7 +14,7 @@ def main(phase):
     if not all(re.fullmatch('[a-f0-9]{32}',value) for value in (probe_id,request_id)):raise ValueError('invalid probe identity')
     token=secrets.token_hex(32);name='creative-revision-'+secrets.token_hex(12)+'.php';remote=ROOT+'/noa-bridge/'+name
     code=Path('scripts/noa_creative_revision_live.php').read_text()
-    for k,v in {'__AUDIT_JOB_ID__':audit_id,'__EXPIRY__':str(int(time.time())+900),'__TOKEN_SHA__':hashlib.sha256(token.encode()).hexdigest(),'__DRAFT_ID__':probe_id,'__REQUEST_ID__':request_id}.items():code=code.replace(k,v)
+    for k,v in {'__BATCH_MODE__':'1' if phase=='verify_batch' else '0','__AUDIT_JOB_ID__':audit_id,'__EXPIRY__':str(int(time.time())+900),'__TOKEN_SHA__':hashlib.sha256(token.encode()).hexdigest(),'__DRAFT_ID__':probe_id,'__REQUEST_ID__':request_id}.items():code=code.replace(k,v)
     code=code.encode();t=connect();installed=False;created=False;receipt={};opener=urllib.request.build_opener(NoRedirect())
     def call(op):
         request=urllib.request.Request('https://noastudio.ai.kr/noa-bridge/'+name,data=json.dumps({'op':op}).encode(),headers={'Content-Type':'application/json','X-NOA-Control':token,'Cache-Control':'no-cache'})
@@ -45,9 +45,16 @@ def main(phase):
                 time.sleep(5)
             else:raise RuntimeError('revision_probe_timeout')
             receipt['inference']=status;value=status['result']
-            if not (status['submittedTitle']==status['currentTitle']=='A Song Between the Lines' and status['request']=='더 짧게 줄여죠' and value==status['proposal'] and isinstance(value,str) and 0<len(value)<len(status['currentTitle']) and re.search('[A-Za-z]',value) and not re.search('[가-힣]',value)):
-                raise RuntimeError('revision_latest_english_shortening_failed')
-            print('CREATIVE_REVISION_REAL_AI_VERIFIED',json.dumps(status,ensure_ascii=False),flush=True)
+            if phase=='verify_batch':
+                if not (status['submittedTitle']==status['currentTitle']=='A Song Between the Lines' and status['targets']==['title','sunoPrompt'] and status['requests']=={'title':'','sunoPrompt':''} and set(status['fields'])=={'title','sunoPrompt'} and status['fields']==status['proposals']):raise RuntimeError('batch_optional_request_failed')
+                for key,limit in {'title':500,'sunoPrompt':1000}.items():
+                    if not isinstance(status['fields'][key],str) or not 0<len(status['fields'][key])<=limit:raise RuntimeError('batch_field_invalid')
+                receipt['application']=call('apply')
+                print('CREATIVE_BATCH_EMPTY_REQUEST_REAL_AI_ATOMIC_APPLY_VERIFIED',json.dumps(receipt,ensure_ascii=False),flush=True)
+            else:
+                if not (status['submittedTitle']==status['currentTitle']=='A Song Between the Lines' and status['request']=='더 짧게 줄여죠' and value==status['proposal'] and isinstance(value,str) and 0<len(value)<len(status['currentTitle']) and re.search('[A-Za-z]',value) and not re.search('[가-힣]',value)):
+                    raise RuntimeError('revision_latest_english_shortening_failed')
+                print('CREATIVE_REVISION_REAL_AI_VERIFIED',json.dumps(status,ensure_ascii=False),flush=True)
     finally:
         if created:
             try:receipt['cleanup']=call('cleanup')

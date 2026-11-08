@@ -1,4 +1,4 @@
-import {checkRevisions} from './revisions.mjs';
+import {checkRevisions,checkBatch} from './revisions.mjs';
 import {installViewport,checkKeyboard} from './viewport.mjs';
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
@@ -87,7 +87,7 @@ await page.waitForSelector('.creative-options button');assert.equal(await page.l
  await title.getByRole('button',{name:'곡 제목 저장',exact:true}).click();await page.waitForFunction(()=>document.querySelector('[data-record-field=title]').dataset.locked==='true');
  assert.equal(await title.locator('.noa-locked-preview').innerText(),'집으로 가는 마음 · 수정');
 
- holdRevision=true;await checkRevisions(page,context,()=>heldRevision,width,output);holdRevision=false;
+ holdRevision=true;await checkRevisions(page,context,()=>heldRevision,width,output);await checkBatch(page,context,()=>heldRevision,width,output);holdRevision=false;
  const lyrics=page.locator('[data-record-field=lyrics]');if(!await lyrics.locator('.noa-ai-feedback textarea').isVisible())await lyrics.getByRole('button',{name:'가사 원문 AI 생성',exact:true}).click();await lyrics.locator('.noa-ai-feedback textarea').fill('가사만 더 부드럽게');await page.waitForFunction(()=>document.querySelector('#creative-save').dataset.state==='saved');await lyrics.getByRole('button',{name:'다듬기',exact:true}).click();await page.waitForSelector('.creative-compare');assert.equal(await page.locator('[name=title]').inputValue(),'집으로 가는 마음 · 수정');const lyricResult=lyrics.locator('.creative-compare');assert.equal(await lyricResult.locator('details').getAttribute('open'),null);assert(await lyricResult.locator('.creative-ai-value').evaluate(e=>e.scrollHeight>e.clientHeight),'Long lyrics stay readable within a bounded result');await lyricResult.getByRole('button',{name:'전체 펼치기',exact:true}).click();assert.equal(await lyricResult.locator('.creative-ai-value').evaluate(e=>getComputedStyle(e).maxHeight),'none');await lyricResult.getByRole('button',{name:'접어서 보기',exact:true}).click();await lyricResult.screenshot({path:`${output}/ai-lyrics-${width}.png`});await lyrics.getByRole('button',{name:'수정안 적용',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('#creative-record').inert);while(await page.getByRole('button',{name:'확인했어요',exact:true}).count()){const count=await page.getByRole('button',{name:'확인했어요',exact:true}).count();await page.getByRole('button',{name:'확인했어요',exact:true}).first().click();await page.waitForFunction(()=>!document.querySelector('#creative-record').inert);await page.waitForFunction(count=>[...document.querySelectorAll('#creative-record button')].filter(b=>b.textContent==='확인했어요').length<count,count);}
  await page.getByRole('button',{name:'확정',exact:true}).click();await page.waitForSelector('#creative-preview .creative-review');assert(await page.locator('#creative-preview').innerText().then(v=>v.includes('실제 음원')));
  assert.equal(publishCalls,0,'Confirm still checks required assets before publication');

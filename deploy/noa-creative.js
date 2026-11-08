@@ -3,7 +3,7 @@
 const $=id=>document.getElementById('creative-'+id),csrf=document.querySelector('meta[name=n80-creative-csrf]').content,R=window.NoaRecordForm;
 const targets=['vocal','title','lyrics','sunoPrompt','geminiPrompt','youtubeTitle','description','communityPost','creativeFields'];
 const invalidFields=new Set(),recordFields=new Map();
-let recordEditor=null,recordEpoch=-1,recordSwitching=false,recordOpening=null,recordBusy=false,mediaState=null;
+let recordEditor=null,recordEpoch=-1,recordSwitching=false,recordOpening=null,recordBusy=false,mediaState=null,batchControls=null;
 const labels={story:'이야기 입력',questions:'질문 답변',intent:'의도 확인',writing:'곡정보 생성',review:'검토 중',published:'등록 완료',deleted:'삭제 보관함'};
 const conditions={theme:'이야기',emotion:'분위기',genre:'음악 장르',instruments:'악기',vocal:'보컬',structure:'노래의 흐름',language:'언어',prohibitions:'피하고 싶은 표현'};
 const errors={content_required:'내용을 입력하면 복구 저장을 시작합니다.',complete_song_info_first:'곡정보 생성을 마친 뒤 제작 파일을 연결해 주세요.',revision_conflict:'다른 창이나 처리 작업에서 내용이 변경되었습니다. 현재 입력은 화면에 남겨 두었습니다. 필요한 내용을 복사한 뒤 서버 버전을 불러와 주세요.',draft_not_found:'초안을 찾을 수 없거나 접근 권한이 없습니다.',generation_busy:'진행 중인 생성 작업이 있습니다.',worker_timeout:'AI 작업 응답 시간이 지났습니다. 저장된 내용은 유지됩니다. 다시 요청해 주세요.',dispatch_failed:'만들기를 시작하지 못했어요. 다시 시도해 주세요.',worker_unavailable:'지금은 만들기를 시작할 수 없어요. 잠시 후 다시 시도해 주세요.',four_choices_required:'질문을 준비하지 못했어요. 다시 시도해 주세요.',intent_evidence_required:'이야기를 제대로 정리하지 못했어요. 다시 시도해 주세요.',draft_changed:'새로 만든 내용이 있어요. 이전 작업에서 확인할 수 있어요.',field_changed:'수정 요청 후 이 항목이 변경되었습니다. 현재 내용을 기준으로 다시 요청해 주세요.',confirm_intent_first:'창작 의도 요약을 먼저 확정해 주세요.',unanswered_questions:'아직 답하지 않은 질문이 있습니다.',verified_audio_required:'실제 음원 업로드·검증이 필요합니다.',verified_cover_required:'실제 카드 이미지 연결·검증이 필요합니다.',ep_required:'EP 번호를 입력해 주세요.',ep_already_exists:'사용 중인 EP 번호입니다.',review_related_fields:'내용이 바뀐 연관 항목을 확인해 주세요.',resolve_proposals:'항목별 수정안을 적용하거나 취소해 주세요.',verify_sunoUrl:'Suno 주소의 실제 카드 이미지를 확인해 주세요.',verify_youtubeUrl:'YouTube 주소 검증이 필요합니다.',verify_mvUrl:'뮤직비디오 주소 검증이 필요합니다.',collection_unavailable:'선택한 곡 묶음을 확인해 주세요.',suno_verification_failed:'Suno 주소의 실제 곡·이미지를 확인하지 못했습니다. 주소를 확인하고 다시 시도해 주세요.',publication_not_ready:'게시 준비 항목을 먼저 확인해 주세요.',preview_changed:'미리보기 이후 데이터가 바뀌었습니다. 미리보기를 다시 확인해 주세요.',preview_required:'게시 미리보기를 먼저 확인해 주세요.',csrf_required:'로그인 상태가 바뀌었습니다. 입력한 내용을 보관하고 다시 로그인해 주세요.',creative_service_unavailable:'서버 저장을 확인하지 못했습니다. 입력을 유지하고 재시도해 주세요.',suno_prompt_too_long:'Suno 지시문이 1,000자를 넘었습니다. 다시 요청해 주세요.',fields_complete:'내용이 완성됐어요. 곡정보에서 원하는 부분을 다듬어 보세요.',generation_failed:'내용을 완성하지 못했어요. 선택한 내용은 그대로 있어요. 다시 시도해 주세요.'};
@@ -186,24 +186,42 @@ function renderRecord(){
  if(recordEpoch===epoch&&recordEditor?.isEditing()){recordEditor.updateRecord(recordData());paintRecordFeedback();return;}
  if(recordOpening)return;
  recordSwitching=true;stashRecordParts();recordEditor?.close();recordSwitching=false;
- const host=$('record');host.replaceChildren();host.classList.add('noa-record-editor');inputs={};recordFields.clear();recordEpoch=epoch;
+ const host=$('record');host.replaceChildren();host.classList.add('noa-record-editor');inputs={};recordFields.clear();batchControls=null;recordEpoch=epoch;
  recordEditor??=window.NoaBrowseEdit.mount({host,standalone:true,onClose:()=>{if(!recordSwitching)run(library);},draftAdapter:{
   load:async()=>recordData(),setBusy(value){recordBusy=value;syncComposer();},beforeClose:()=>{stashRecordParts();flush().catch(fail);},
   checkpoint(key,value){if(['cardImageLocation','audioFileLocation'].includes(key))return;invalidFields.delete(key);queue({fields:{[key]:value}});},
   async save(patch){try{queue({fields:patch});await flush();for(const field of ['sunoUrl','youtubeUrl','mvUrl'])if(patch[field])await mutate(field==='sunoUrl'?'sunoCover':'verifyUrl',{field});await assets();return recordData();}catch(e){fail(e);throw e;}},
   invalid(key){invalidFields.add(key);syncComposer();},
+  generationFields:Object.fromEntries(targets.map(key=>[key,R.describe(key,'song').label])),
+  generateSet:keys=>run(()=>generate('revise','',keys)),
+  batchReady:mountBatchControls,
   decorateField:decorateRecordField,
   mountFooter(form){form.append($('publish'));},
   ready(view){inputs=view.inputs;const chat=$('chat'),icon=view.iconCommand('button','ai','AInoa와 대화 이어가기');chat.replaceChildren(...icon.childNodes);chat.className=icon.className;chat.title='AInoa와 대화 이어가기';chat.setAttribute('aria-label',chat.title);const toolbar=view.form.querySelector('.noa-field-toolbar');toolbar.insertBefore(chat,toolbar.querySelector('[aria-label="곡정보창 닫기"]'));view.form.insertBefore(view.form.querySelector('.noa-edit-status'),$('publish')); view.form.querySelector('.noa-advanced').append($('history'));paintRecordFeedback();syncComposer();}
  }});
  recordOpening=recordEditor.openRecord({type:'song',source:'creative',key:'creative:'+epoch}).finally(()=>{recordOpening=null;});
 }
+function mountBatchControls(view){
+ batchControls=view;view.area.classList.add('creative-batch');view.publish.setAttribute('aria-label','선택 항목 AI 생성');view.publish.title='선택 항목 AI 생성';
+ const tools=el('div',undefined,'creative-batch-picks');for(const [label,checked]of [['전체 선택',true],['선택 해제',false]]){const b=el('button',label);b.type='button';b.onclick=()=>{for(const box of view.options.values())box.checked=checked;paintBatchControls();};tools.append(b);}view.choices.insertBefore(tools,view.choices.children[1]);
+ const selection=currentJob?.operation==='revise'&&currentJob.targets?.length>1?currentJob.targets:Object.keys(draft?.creative.proposals||{});if(selection.length)for(const [key,box]of view.options)box.checked=selection.includes(key);
+ const actions=el('div',undefined,'creative-batch-apply');view.apply=button('선택 수정안 적용',()=>applyBatch('apply'));view.keep=button('선택 수정안 유지',()=>applyBatch('cancel'));actions.append(view.apply,view.keep);view.area.append(actions);view.actions=actions;
+ view.choices.addEventListener('change',paintBatchControls);paintBatchControls();
+}
+function batchSelection(){return batchControls?[...batchControls.options].filter(([,box])=>box.checked).map(([key])=>key):[];}
+async function applyBatch(decision){const fields=batchSelection().filter(key=>draft?.creative.proposals[key]);if(!fields.length)return;await mutate('proposal',{fields,decision});}
+function paintBatchControls(){
+ const v=batchControls;if(!v)return;const c=draft?.creative,selected=batchSelection(),ready=selected.filter(key=>c?.proposals[key]);
+ const disabled=jobActive||!c?.intentConfirmed||!!c?.publication;v.publish.disabled=disabled;for(const box of v.options.values())box.disabled=disabled;for(const b of v.choices.querySelectorAll('button'))b.disabled=disabled;
+ v.actions.hidden=!ready.length;v.apply.disabled=disabled;v.keep.disabled=disabled;v.apply.textContent=ready.length+'개 수정안 적용';v.keep.textContent='현재 내용 유지';
+ v.info.textContent=jobActive&&currentJob?.operation==='revise'&&currentJob.targets?.length>1?'선택한 '+currentJob.targets.length+'개 항목을 만들고 있어요.':ready.length?'새 수정안을 확인한 뒤 선택한 항목을 함께 적용할 수 있어요.':'추가 요청 없이도 현재 곡정보에 맞춰 생성합니다.';
+}
 function decorateRecordField({key,label,wrap,heading,input,iconCommand,fieldAiButton,refresh}){
  const entry={wrap,heading,input,refresh};recordFields.set(key,entry);
  if(targets.includes(key)){
   const ai=fieldAiButton(label),feedback=el('div',undefined,'noa-ai-feedback');feedback.hidden=true;feedback.setAttribute('aria-live','polite');
-  const request=el('textarea');request.rows=2;request.maxLength=4000;request.placeholder='이 항목에서 바꾸고 싶은 내용을 적어 주세요.';request.setAttribute('aria-label',label+' 추가 요청');request.value=pending.requests?.[key]??draft?.creative.requests[key]??'';
-  const requestLabel=el('label','추가 요청');requestLabel.append(request);
+  const request=el('textarea');request.rows=2;request.maxLength=4000;request.placeholder='비워 두면 현재 곡정보에 맞춰 생성해요.';request.setAttribute('aria-label',label+' 추가 요청');request.value=pending.requests?.[key]??draft?.creative.requests[key]??'';
+  const requestLabel=el('label','추가 요청 (선택)');requestLabel.append(request);
   const revise=button('다듬기',()=>generate('revise',key));revise.className='noa-action';
   const history=iconCommand('button','options',label+' 수정 이력');history.onclick=()=>run(()=>fieldHistory(key));
   const actions=el('div',undefined,'noa-ai-feedback-actions');actions.append(revise,history);
@@ -249,8 +267,9 @@ function paintRecordFeedback(){
   if(f.pick)f.pick.disabled=published||draft?.storage?.mode!=='draft';
   if(published)for(const b of f.heading.querySelectorAll('button:not(.noa-edit-copy)'))b.disabled=true;
   if(!f.ai)continue;
-  const running=jobActive&&currentJob?.operation==='revise'&&currentJob.field===key;
-  const failed=currentJob?.operation==='revise'&&currentJob.field===key&&currentJob.state==='failed';
+  const included=currentJob?.field===key||currentJob?.targets?.includes(key);
+  const running=jobActive&&currentJob?.operation==='revise'&&included;
+  const failed=currentJob?.operation==='revise'&&included&&currentJob.state==='failed';
   f.ai.disabled=published||!c?.intentConfirmed||jobActive;f.revise.disabled=f.ai.disabled;f.request.disabled=published||jobActive;
   f.requestLabel.hidden=!f.userOpen;f.actions.hidden=!f.userOpen;f.ai.setAttribute('aria-expanded',String(!!f.userOpen));
   f.wrap.toggleAttribute('data-generating',running);f.input.setAttribute('aria-busy',String(running));
@@ -259,6 +278,7 @@ function paintRecordFeedback(){
   f.feedback.hidden=!f.userOpen&&!running&&!failed&&!c?.needsReview[key]&&!proposal;
   paintAiResult(f,key,{running,failed,proposal,review:c?.needsReview[key]||''});
  }
+ paintBatchControls();
 }
 async function fieldHistory(key){
  const data=await api('history',undefined,{id:draft.id,field:key});const dialog=el('dialog'),list=el('select'),value=el('pre');
@@ -269,13 +289,14 @@ function render(){if(!draft)return;const published=!!draft.creative.publication;
 async function loadCollections(){collections=(await api('collections',undefined,{id:draft.id})).collections;paintCollections();}
 function paintCollections(){const root=$('collections');root.replaceChildren();for(const c of collections.filter(c=>c.genre===$('category').value)){const label=el('label',undefined,'noa-collection-option'),check=el('input');check.type='checkbox';check.value=c.key;check.checked=(draft?.creative.collections||[]).includes(c.key);check.onchange=saveLocation;label.append(check,el('span',c.title));root.append(label);}}
 function saveLocation(){queue({location:{genre:$('category').value,ep:$('ep').value,collections:[...$('collections').querySelectorAll('input:checked')].map(i=>i.value)}});$('ep-label').hidden=$('category').value!=='kpop-original';$('location-note').textContent=$('category').value==='kpop-original'?'ACT '+(Math.ceil(Number($('ep').value)/10)||'—')+'에 배치됩니다.':'사연곡으로 등록됩니다.';}
-async function generate(operation,field=''){
- storyEditing=false;editingQuestion=false;if(operation==='revise'&&draft)delete draft.creative.proposals[field];showJob({operation,field,state:'queued'});let accepted=false;
+async function generate(operation,field='',selected=null){
+ const selectedTargets=selected||(field?[field]:[]);
+ storyEditing=false;editingQuestion=false;if(operation==='revise'&&draft)for(const key of selectedTargets)delete draft.creative.proposals[key];showJob({operation,field,targets:selectedTargets,state:'queued'});let accepted=false;
  try{
   if(operation==='generate'&&!draft.creative.intentConfirmed)await mutate('confirmIntent');
-  const submitted=await mutate('generate',{operation,field,requestId:id()});accepted=true;showJob(submitted.job);schedule();
+  const submitted=await mutate('generate',{operation,field,...(selected?{targets:selected}:{}),requestId:id()});accepted=true;showJob(submitted.job);schedule();
   const data=await api('get',undefined,{id:draft.id});if(data.draft.revision!==draft.revision){draft=data.draft;render();}showJob(data.job);
- }catch(e){if(!accepted)showJob({operation,field,state:'failed',error:e.message});throw e;}
+ }catch(e){if(!accepted)showJob({operation,field,targets:selectedTargets,state:'failed',error:e.message});throw e;}
 }
 function jobMessage(job){
  if(!job)return '';
