@@ -51,3 +51,20 @@ budget/deadline, exact save receipts, checkpoint replay, stale lease rejection,
 real PHP transport and real MySQL creative jobs. The private workflow's live
 ChatGPT probe uses explicitly synthetic tools and never edits a production song;
 it proves model decisions, not a live end-to-end production save.
+
+## Verified first activation — 2026-11-08
+
+- Application source: `9f3010db96bb1532bb91312e919ec3bef5cf6040`.
+  [Commander checks and guarded production activation](https://github.com/rucyjeon79/noa-studio/actions/runs/42465163580)
+  succeeded. All four operating files matched their source hashes; eleven protected
+  files were unchanged. This activation made no database or point-balance writes.
+- Python commander tests: ten passed. The real PHP bridge and MySQL creative job
+  tests passed, including invalid-output repair, current-source rejection, lease
+  fencing, idempotency and proposal persistence. The existing creative, N80
+  contract (PHP 8.2/8.3) and feature quality checks also passed.
+- Private consumer source: `789d904da3621a1f3f1572d23e4196e4caaec7bc`.
+  [Existing subscription worker verification](https://github.com/rucyjeon79/noa-private-worker/actions/runs/42465391794)
+  succeeded. Actual ChatGPT inference completed two commander decisions, one
+  validation and a synthetic save acknowledgement. Production song writes: zero.
+- Connected external specialists: none. Broad administrative chat and actual
+  image/video service execution remain outside this first activation's scope.
