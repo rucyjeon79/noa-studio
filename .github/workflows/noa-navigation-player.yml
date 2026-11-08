@@ -20,6 +20,10 @@ jobs:
           php tests/cover-title.php
           for path in deploy/noa-app/jukebox/*.js; do node --check "$path"; done
           php tests/engine/jukebox_test.php
+          php tests/engine/jukebox_references_test.php
+          php tests/engine/live_observer_test.php
+          php tests/engine/app_data_test.php
+          python -m unittest discover -s tests/engine -p 'test_live_music_consumer.py' -v
           python tests/catalog/inline_edit_music_page_test.py
           node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs tests/engine/jukebox_navigation.test.mjs tests/jukebox/playback_recovery.test.cjs tests/engine/jukebox_media.test.cjs tests/android/native_bridge_test.mjs tests/playlists/drag_order_test.cjs tests/popularity/player_tracker_test.cjs tests/pwa/launch_test.cjs
       - run: |
@@ -28,7 +32,7 @@ jobs:
           cp scripts/qa/noa-navigation-player.mjs "$RUNNER_TEMP/noa-navigation/verify.mjs"
           NOA_SOURCE_ROOT="$GITHUB_WORKSPACE" node "$RUNNER_TEMP/noa-navigation/verify.mjs"
           python scripts/qa/noa-qa-font.py
-          git show 48cd1d37d3eb09348f53cca702efe9a7c312bce9:deploy/noa-music.php > "$RUNNER_TEMP/jukebox-before.php"
+          git show "$GITHUB_SHA^:deploy/noa-music.php" > "$RUNNER_TEMP/jukebox-before.php"
           cp scripts/qa/noa-design-gate.mjs "$RUNNER_TEMP/noa-navigation/design.mjs"
           N80_JUKEBOX_BASELINE_TEMPLATE="$RUNNER_TEMP/jukebox-before.php" node "$RUNNER_TEMP/noa-navigation/design.mjs"
       - uses: actions/upload-artifact@v4

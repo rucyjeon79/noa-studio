@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__.'/jukebox-references.php';
 /** Single SELECT-only data contract across existing app stores; no schema helpers. */
 function n80_app_phase(string $phase): void {$GLOBALS['n80_app_phase']=$phase;}
 function n80_app_schema(PDO $db): array {
@@ -56,11 +57,15 @@ function n80_app_audit(PDO $db,string $root,string $memberTable): array {
     ];$modules=[];
     foreach($groups as $id=>$required){$missing=array_values(array_diff($required,array_keys($schema)));$modules[$id]=['state'=>$missing?'missing_schema':'connected','tables'=>$required,'missingTables'=>$missing];if($missing)$issues[]=['code'=>'module_schema_missing','severity'=>'error','module'=>$id];}
     n80_app_phase('catalog_references');
-    $refs=n80_app_references($db,$schema);$keys=$refs['keys'];
+    $refs=n80_app_references($db,$schema);$keys=$refs['keys'];$drafts=n80_jukebox_draft_references($db);
     foreach(['noa_jukebox_assets'=>'song_key','noa_jukebox_uploads'=>'song_key'] as $table=>$column){
-        if(!n80_app_has($schema,$table,[$column]))continue;$missing=0;$recovered=0;$qa=0;
-        foreach($db->query('SELECT DISTINCT `'.$column.'` k FROM `'.$table.'`') as $r){$key=$r['k'];if(str_starts_with($key,'jukebox:qa:')){$qa++;continue;}if(!isset($keys[$key]))$missing++;elseif($keys[$key]==='catalog')$recovered++;}
-        $checks[$table.'_references']=['missing'=>$missing,'recoveredCatalogKeys'=>$recovered,'syntheticQaPreserved'=>$qa];
+        if(!n80_app_has($schema,$table,[$column]))continue;$missing=0;$recovered=0;$qa=0;$private=0;$kinds=[];
+        foreach($db->query('SELECT DISTINCT `'.$column.'` k FROM `'.$table.'`') as $r){$key=$r['k'];if(str_starts_with($key,'jukebox:qa:')){$qa++;continue;}
+            if(isset($drafts[$key])){$private++;continue;}
+            if(!isset($keys[$key])){$missing++;$q=$db->prepare('SELECT kind FROM noa_documents WHERE doc_key=?');$q->execute([$key]);$kind=$q->fetchColumn()?:'missing_document';$kinds[$kind]=($kinds[$kind]??0)+1;}
+            elseif($keys[$key]==='catalog')$recovered++;
+        }
+        $checks[$table.'_references']=['missing'=>$missing,'recoveredCatalogKeys'=>$recovered,'privateDrafts'=>$private,'unresolvedDocumentKinds'=>$kinds,'syntheticQaPreserved'=>$qa];
         if($missing)$issues[]=['code'=>'unresolved_music_reference','severity'=>'error','table'=>$table,'count'=>$missing];
     }
     $relations=[

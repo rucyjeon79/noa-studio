@@ -38,6 +38,20 @@ class Reply(io.BytesIO):
 
 
 class MusicRunnerTest(unittest.TestCase):
+    def test_private_drafts_wait_without_public_music_requests(self):
+        private={'jobId': 7, 'eventId': 'n80-jukebox-'+'a'*64, 'correlationId': 'n80-jukebox-'+'a'*64,
+                 'effect': 'private_draft_media_retained', 'catalogPublished': False, 'ackEligible': False}
+        with patch.object(runtime, 'request_music_consumer') as public, patch.object(runtime, 'request_music_diagnostic') as diagnostic:
+            result=runtime.run_music_consumer(self.host,self.key,{'receipts': [], 'privateDrafts': [private]}, {'enabled': True})
+        self.assertEqual(result['status'],'awaiting_publication')
+        self.assertEqual(result['acknowledged'],0)
+        public.assert_not_called();diagnostic.assert_not_called()
+        for field in ('catalogPublished','ackEligible'):
+            with self.assertRaisesRegex(RuntimeError,'private_draft_observation_invalid'):
+                runtime.validate_private_drafts([private|{field: True}])
+        with self.assertRaisesRegex(RuntimeError,'private_draft_observation_invalid'):
+            runtime.validate_private_drafts([private,private])
+
     def setUp(self):
         self.key = b'a' * 64
         event_id = 'n80-jukebox-' + 'b' * 64

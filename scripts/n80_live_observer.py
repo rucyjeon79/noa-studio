@@ -210,6 +210,12 @@ def music_consumer_readback(sftp, result, observed):
 
 
 def run_music_consumer(sftp, key, observation, policy):
+    # Valid private uploads await publication; never call MUSIC or emit its ACK for them.
+    if observation.get('receipts') == [] and observation.get('privateDrafts'):
+        validate_private_drafts(observation['privateDrafts'])
+        return {'enabled': policy.get('enabled') is True, 'status': 'awaiting_publication',
+                'acknowledged': 0, 'businessAck': False, 'queueMutation': False,
+                'automaticDispatch': False, 'productionDatabaseWrites': 0}
     if os.getenv('N80_MUSIC_CONSUMER_DIAGNOSE_ONLY') == '1':
         rows = observation.get('receipts', [])
         if not isinstance(rows, list) or not 0 < len(rows) <= 25: raise RuntimeError('music_consumer_sample_invalid')
@@ -258,6 +264,23 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
+def validate_private_drafts(rows):
+    import re
+    if not isinstance(rows, list) or len(rows) > 25:
+        raise RuntimeError('private_draft_observation_invalid')
+    seen=set()
+    for row in rows:
+        if (not isinstance(row, dict) or type(row.get('jobId')) is not int or row['jobId'] < 1
+                or not isinstance(row.get('eventId'), str)
+                or not re.fullmatch(r'n80-jukebox-[a-f0-9]{64}', row['eventId'])
+                or row.get('correlationId') != row['eventId']
+                or row.get('effect') != 'private_draft_media_retained'
+                or row.get('catalogPublished') is not False or row.get('ackEligible') is not False
+                or row['jobId'] in seen):
+            raise RuntimeError('private_draft_observation_invalid')
+        seen.add(row['jobId'])
+
+
 def request_observation(key):
     raw = b'{"action":"observe","limit":10}'
     timestamp, nonce = str(int(time.time())), secrets.token_hex(16)
@@ -291,6 +314,7 @@ def request_observation(key):
         raise RuntimeError('observer_safety_contract_failed')
     if observed.get('rejected'):
         raise RuntimeError('observer_catalog_reconciliation_failed')
+    validate_private_drafts(observed.get('privateDrafts', []))
     return observed
 
 
@@ -391,11 +415,11 @@ def main():
             policy = music_consumer_policy(sftp)
             unauthorized_check()
             first, second = request_observation(key), request_observation(key)
-            first_by_id = {row['eventId']: row for row in first['receipts']}
-            for row in second['receipts']:
+            first_by_id = {row['eventId']: row for row in first['receipts'] + first.get('privateDrafts', [])}
+            for row in second['receipts'] + second.get('privateDrafts', []):
                 if row['eventId'] in first_by_id and row != first_by_id[row['eventId']]:
                     raise RuntimeError('unstable_observation_receipt')
-            if first['observed'] < 1:
+            if first['observed'] + len(first.get('privateDrafts', [])) < 1:
                 raise RuntimeError('no_live_canary_evidence')
             consumer = run_music_consumer(sftp, key, second, policy)
         finally:
