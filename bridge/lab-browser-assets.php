@@ -25,6 +25,7 @@ function lab_browser_children(string $data, array $box): array {
     return lab_browser_boxes($data, $box['p'], $box['end']);
 }
 function lab_browser_probe(string $path): array {
+    clearstatcache(true,$path);
     $size = filesize($path);
     if ($size===false || $size<256 || $size>32*1048576 || is_link($path)) throw new InvalidArgumentException('invalid_clip_size');
     if ((new finfo(FILEINFO_MIME_TYPE))->file($path)!=='video/mp4') throw new InvalidArgumentException('invalid_clip_container');
@@ -103,7 +104,7 @@ function lab_browser_import(array &$s, array $input, string $temp, string $owner
         if (!chmod($target,0600) || !hash_equals($probe['sha256'],hash_file('sha256',$target))) throw new RuntimeException('clip_store_failed');
         $now=gmdate('c');
         $j=['id'=>$id,'requestId'=>$request,'type'=>'browser_clip','trackKey'=>$key,'title'=>$source?($source['title'].' · 제작 장면'):'영상 연결 테스트 · 노아 카페',
-            'sourceRevision'=>$source['revision']??0,'genre'=>$source['genre']??'','cast'=>$source['cast']??'female','state'=>'clip_ready','revision'=>1,
+            'sourceRevision'=>$source['revision']??0,'genre'=>$source['genre']??'','cast'=>$source['cast']??'female','state'=>'saved','revision'=>1,
             'createdAt'=>$now,'updatedAt'=>$now,'settings'=>['posting'=>'save','formats'=>[$format]],'attempts'=>0,
             'browser'=>['provider'=>'google_flow','sourceUrl'=>$url,'fingerprint'=>$fingerprint,'receivedBy'=>$owner,'receivedAt'=>$now,'linkedSong'=>$key!==''],
             'outputs'=>[array_merge($probe,['file'=>$name,'format'=>$format])]];

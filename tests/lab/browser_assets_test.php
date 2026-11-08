@@ -13,7 +13,7 @@ try{
  $s=lab_defaults();$source='https://flow.google.com/project/11111111-1111-1111-1111-111111111111/edit/22222222-2222-2222-2222-222222222222';
  $input=['requestId'=>str_repeat('a',32),'sourceUrl'=>$source,'trackKey'=>'','sha256'=>hash_file('sha256',$file)];
  $receipt=lab_browser_import($s,$input,$file,'test');$id=$receipt['job']['id'];
- ok($receipt['fileVerified']&&count($s['jobs'])===1&&$s['jobs'][$id]['state']==='clip_ready','actual private result');
+ ok($receipt['fileVerified']&&count($s['jobs'])===1&&$s['jobs'][$id]['state']==='saved','actual private result');
  ok(!isset($receipt['job']['browser']['receivedBy'])&&!isset($receipt['job']['browser']['fingerprint']),'private receipt metadata');
  ok($s['jobs'][$id]['settings']['posting']==='save'&&!isset($s['jobs'][$id]['lease']),'no independent worker or publication');
  ok(lab_browser_import($s,$input,$file,'test')['replayed'],'response replay');
