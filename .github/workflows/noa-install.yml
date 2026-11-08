@@ -8,6 +8,8 @@ on:
 permissions: {contents: read}
 jobs:
   candidate:
+    # N80 JukeBox verifies the shared launch policy before its single activation.
+    if: ${{ !contains(github.event.head_commit.message, '[n80-jukebox]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -40,7 +42,7 @@ jobs:
         if: always()
         with: {name: 'noa-install-candidate-${{ github.run_id }}', path: install-proof/, retention-days: 7}
   deploy:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[nav-release]') }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[nav-release]') && !contains(github.event.head_commit.message, '[n80-jukebox]') }}
     needs: candidate
     runs-on: ubuntu-latest
     environment: production

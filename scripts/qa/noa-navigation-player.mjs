@@ -19,12 +19,15 @@ try{
   await page.evaluate(()=>window.originalAudio=document.querySelector('audio'));
   for(const path of ['/noa-lounge.php','/noa-shop.php','/']){
    const before=await page.locator('audio').evaluate(a=>a.currentTime);
-   await page.locator('.noa-mobile-nav a[href="'+path+'"]:visible,.noa-menu a[href="'+path+'"]:visible').first().click();
+   const link=page.locator('.noa-mobile-nav a[href="'+path+'"]:visible,.noa-menu a[href="'+path+'"]:visible');
+   if(!await link.count())await page.locator('#noa-nav-all').click();
+   await link.first().click();
    await page.waitForFunction(path=>document.querySelector('#noa-shell-view')?.contentDocument?.location.pathname===path,path);
    await page.waitForFunction(t=>window.originalAudio===document.querySelector('audio')&&!window.originalAudio.paused&&window.originalAudio.currentTime>t+0.2,before);
    assert.equal(new URL(page.url()).pathname,path);
    assert(await page.locator('.noa-two-line').isVisible());
   }
+  assert.equal(await page.evaluate(()=>window.NoaPlayerShell.open('/noa-ai-lab.php?action=delete')),false,'action query must retain its native route');
   // New workspaces were absent from the old static route list. Keep one audio owner.
   for(const path of ['/noa-ai-lab.php?tool=jobs','/noa-library.php','/noa-channel-workspace.php']){
    await page.evaluate(path=>{const a=document.createElement('a');a.id='n80-route-test';a.href=path;a.textContent='Workspace';document.querySelector('.noa-two-line').append(a);},path);

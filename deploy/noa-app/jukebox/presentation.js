@@ -64,7 +64,7 @@ function bind(doc){
   const u=new URL(a.href,doc.URL);
   if(u.origin!==location.origin||!audio.getAttribute('src')||dock.hidden)return;
   if(a.getAttribute('href').startsWith('#'))return;
-  if(!routes.has(u.pathname)){
+  if(!routes.has(u)){
    if(outer&&doc===document){e.preventDefault();window.top.location.assign(u.href);}
    return;
   }
@@ -73,25 +73,25 @@ function bind(doc){
  });
 }
 function navigate(url,push){
- if(!routes.has(url.pathname)||url.origin!==location.origin)return false;
+ if(!routes.has(url)||url.origin!==location.origin)return false;
  const onOriginalHome=outer?.visit(url.href,push);
  if(!outer&&push&&url.href!==location.href)history.pushState({noaMusicShell:true},'',url);
  if(onOriginalHome||url.pathname==='/noa-music.php'){showMusic(url.href,push&&!onOriginalHome);checkpoint();return true;}
  highlight(url);document.body.classList.add('noa-shell-open');if(!frame){frame=document.createElement('iframe');frame.id='noa-shell-view';frame.style.height='calc(100dvh - var(--noa-nav-space,0px) - var(--noa-player-space,0px))';frame.title='NOA STUDIO 콘텐츠';frame.addEventListener('load',()=>{try{const doc=frame.contentDocument;if(!doc||new URL(doc.URL).origin!==location.origin)return;doc.documentElement.dataset.noaShellChild='';const style=doc.createElement('style');style.textContent='html[data-noa-shell-child] body :is(.noa-sidebar,.noa-mobile-nav,.noa-g5-top){display:none!important}html{--noa-rail:0px!important;--noa-nav-space:0px!important}body.noa-page{margin:0!important}body.noa-page main{margin-left:0!important;padding-bottom:24px!important}';doc.head.append(style);doc.defaultView.addEventListener('noa-media-activity',e=>{if(e.detail?.type==='youtube'){if(window.N80JukeBox)window.N80JukeBox.pause();else{pendingAutoplay=false;audio.pause();}}});bind(doc);document.title=doc.title+' · NOA STUDIO';}catch{showMusic(home);}});frame.src=url.href;document.body.append(frame);}else{frame.contentWindow.location.replace(url.href);}checkpoint();return true;}
 audio.addEventListener('play',()=>{try{const win=frame?.contentWindow;if(win){win.dispatchEvent(new win.Event('noa-background'));for(const media of win.document.querySelectorAll('audio,video'))media.pause();}}catch{}});
-try{const returned=JSON.parse(sessionStorage.getItem('noa-playback-return')||'null');sessionStorage.removeItem('noa-playback-return');if(returned&&Date.now()-returned.at>=0&&Date.now()-returned.at<30000){const url=new URL(returned.path,location.origin);if(url.origin===location.origin&&routes.has(url.pathname)&&url.pathname!=='/noa-music.php'&&audio.getAttribute('src')){history.replaceState({noaMusicShell:true},'',url);navigate(url,false);}}}catch{}
+try{const returned=JSON.parse(sessionStorage.getItem('noa-playback-return')||'null');sessionStorage.removeItem('noa-playback-return');if(returned&&Date.now()-returned.at>=0&&Date.now()-returned.at<30000){const url=new URL(returned.path,location.origin);if(url.origin===location.origin&&routes.has(url)&&url.pathname!=='/noa-music.php'&&audio.getAttribute('src')){history.replaceState({noaMusicShell:true},'',url);navigate(url,false);}}}catch{}
 window.NoaPlayerShell={open:(href,push=true)=>navigate(new URL(href,location.href),push),path:publicPath,active:()=>!!audio.getAttribute('src')&&!dock.hidden};
 bind(document);
 if(!outer&&window===window.top&&document.referrer){
  audio.addEventListener('playing',()=>{
   const previous=new URL(document.referrer),current=new URL(location.href);
-  if(history.state?.noaPlaybackBack||current.pathname!=='/noa-music.php'||previous.origin!==current.origin||previous.pathname===current.pathname||!routes.has(previous.pathname))return;
+  if(history.state?.noaPlaybackBack||current.pathname!=='/noa-music.php'||previous.origin!==current.origin||previous.pathname===current.pathname||!routes.has(previous))return;
   history.replaceState({noaMusicShell:true},'',previous);
   history.pushState({noaMusicShell:true,noaPlaybackBack:true},'',current);
  },{once:true});
 }
 if(!outer)history.replaceState({...history.state,noaMusicShell:true},'',location.href);
-if(!outer)window.addEventListener('popstate',()=>{const u=new URL(location.href);if(u.pathname==='/noa-music.php')showMusic(u.href);else if(routes.has(u.pathname))navigate(u,false);});
+if(!outer)window.addEventListener('popstate',()=>{const u=new URL(location.href);if(u.pathname==='/noa-music.php')showMusic(u.href);else if(routes.has(u))navigate(u,false);});
 })();
 
 // Reuse the existing audio element and controls for OS lock-screen media actions.

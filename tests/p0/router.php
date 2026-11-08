@@ -7,7 +7,7 @@ ob_start(static function(string $html):string{
  if(!preg_match('~^\s*<!doctype html~i',$html)||stripos($html,'</head>')===false)return $html;
  $jukebox_policy=str_contains($html,'id="n80-jukebox-data"')?'<script src="/noa-app/jukebox/navigation-policy.js"></script>':'';
  $html=preg_replace('~<html\b(?![^>]*data-noa-style)~i','<html data-noa-style="starlight"',$html,1);
- return str_ireplace('</head>',$jukebox_policy.'<link rel="stylesheet" href="/noa-policy-20261024.css"><link rel="stylesheet" href="/noa-account.css"><link rel="stylesheet" href="/noa-starlight.css"></head>',$html);
+ return str_ireplace('</head>',$jukebox_policy.'<link rel="stylesheet" href="/noa-policy-20261024.css"><link rel="stylesheet" href="/noa-account.css"><script defer src="/noa-account.js"></script><link rel="stylesheet" href="/noa-starlight.css"></head>',$html);
 });
 if($path==='/noa-sitemap.php'){
  echo '<!doctype html><main data-noa-member-directory><section class="noa-site-map"><h2 id="map-explore">둘러보기</h2>';
