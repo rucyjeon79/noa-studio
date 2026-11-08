@@ -120,3 +120,78 @@ Remaining integration: a registered durable browser executor, current-song scene
 planning and sequential generation, original-audio assembly, and full music-video
 review. Mobile live interaction for the new intake has not yet been verified.
 The pilot does not establish any of these as complete.
+
+## Song-duration scene planning — 2026-11-08
+
+Scene planning now uses the current audio duration instead of a fixed 30-cut
+storyboard. The shared `muvy-timeline.php` contract computes
+`max(1, ceil((songSeconds - overlapSeconds) / (clipSeconds - overlapSeconds)))`.
+The initial planning defaults are 8-second clips, 1-second crossfades and
+0.5-second endpoint fades. Endpoint fades do not shorten the timeline. At these
+defaults, three/four/five-minute songs require 26/35/43 scenes. The last scene is
+trimmed in the plan to the exact song endpoint. Planning supports songs up to
+one hour; that is a bounded resource check, not a fixed scene-count cap.
+
+The existing video creation form reads verified current Jukebox metadata or
+the selected audio's browser metadata and previews the whole-song scene count.
+The preview is read-only: it neither uploads the audio nor creates a lab job.
+Unknown duration is not inferred from lyrics. Stale selection responses cannot
+replace the current selection's preview. The storyboard form also accepts an
+explicit duration when no verified asset is available.
+
+Scripts are generated in ten-scene batches; image/video prompts use at most five
+scenes per batch. Partial results are retained in the existing N80 project and
+operation store and resume at the next missing batch. Chapters divide the actual
+scene count rather than hard-coding 1–10, 11–20 and 21–30. Saved legacy projects
+and already accepted legacy operations retain compatibility. New scripts require
+duration. Current title, lyrics, source key, audio hash and timing identify a
+plan; an unrelated document revision does not duplicate an identical project.
+
+New video prompts describe Flow clips without baked-in fades. The legacy `grok`
+JSON field remains readable as a storage compatibility alias, and the legacy
+text-provider configuration is not migrated or invoked by this release. This
+work does not install the unattended browser executor, trigger external AI
+generation, or replace the existing highlight renderer with a full-song mixer.
+The preview is an estimate based on nominal clip duration. Actual returned clip
+durations (the pilot was 7.930 seconds) must be measured and reconciled by the
+future assembler before a final full-length video can be called complete.
+
+Verification covers 3/4/5-minute and overlap boundaries, exact final endpoints,
+a 35-scene script/prompt/publish cycle with serialized batch resume, legacy
+retention, unknown-duration rejection, CSRF and zero-job preview behavior,
+existing native queue/idempotency and media receipt contracts, plus six browser
+layouts (360/768/1440 pixels, light/dark). Provider responses are isolated fixtures;
+these checks spend no external AI credits and do not modify production songs.
+Candidate verification passed in
+[run 42471602717](https://github.com/rucyjeon79/noa-studio/actions/runs/42471602717).
+
+Application source `0eb487a8158a433c23e405bc8238cd666d3ee13e` was activated in
+[run 42471876183](https://github.com/rucyjeon79/noa-studio/actions/runs/42471876183).
+Twelve files changed; all thirteen owned files matched their source hashes and
+eleven protected files were unchanged. The guarded deployment made zero database
+writes or point debits. The dedicated duration and browser checks passed, as did
+the existing feature-quality and movie-workroom workflows.
+
+The live administrator browser session expired before the post-deployment file
+selection check. Therefore an actual four-minute file preview on the live form
+is **not verified**. The six viewport/theme checks above are isolated CI browser
+checks, not live mobile-device tests. The existing saved Flow pilot is unchanged.
+
+Other triggered checks still report the previously observed AInoa entitlement
+assertion (`regular_or_creator_required`, run 42471876266), missing
+`personal-listening.php` in the record fixture (42471876226), and home horizontal
+overflow (42471876219). They are not claimed as passing. The explorer check in
+42471876207 also exposed an outdated fixture without the new revision/timing
+contract; its follow-up now uses the actual timeline helper with selected and
+outdated asset cases, and runs in the dedicated release gate.
+
+Follow-up `4df5dbd87a37131ee3aa396e98818e7b16c3f987` changes only the fixture and
+release verification step. The selected-audio contract and dedicated duration/UI
+checks passed in [run 42472242706](https://github.com/rucyjeon79/noa-studio/actions/runs/42472242706).
+Explorer run 42472242722 passed the corrected metadata check and its first three
+browser groups, then reported a separate workspace navigation visibility assertion
+(`a[href="/noa-ai-lab.php"]` on the creator workspace). That broader navigation
+failure remains unresolved; the workflow is not reported as green.
+The follow-up production readback also passed: all thirteen owned hashes matched
+without rewriting any runtime file; eleven protected files stayed unchanged and
+database writes and point debits were zero.
