@@ -94,16 +94,6 @@ if(!outer)history.replaceState({...history.state,noaMusicShell:true},'',location
 if(!outer)window.addEventListener('popstate',()=>{const u=new URL(location.href);if(u.pathname==='/noa-music.php')showMusic(u.href);else if(routes.has(u))navigate(u,false);});
 })();
 
-// Reuse the existing audio element and controls for OS lock-screen media actions.
-(()=>{'use strict';const audio=document.getElementById('sound-player'),session=navigator.mediaSession;if(!audio||!session)return;
-const actions={play:()=>{if(audio.paused)document.getElementById('pause-play')?.click();},pause:()=>{if(window.N80JukeBox)window.N80JukeBox.pause();else{pendingAutoplay=false;audio.pause();}},previoustrack:()=>document.getElementById('previous')?.click(),nexttrack:()=>document.getElementById('next')?.click(),seekto:d=>{if(Number.isFinite(audio.duration)&&Number.isFinite(d.seekTime))audio.currentTime=Math.max(0,Math.min(audio.duration,d.seekTime));},seekbackward:d=>{audio.currentTime=Math.max(0,audio.currentTime-(d.seekOffset||10));},seekforward:d=>{if(Number.isFinite(audio.duration))audio.currentTime=Math.min(audio.duration,audio.currentTime+(d.seekOffset||10));}};
-for(const [name,handler]of Object.entries(actions))try{session.setActionHandler(name,handler);}catch{}
-function position(){if(!session.setPositionState||!Number.isFinite(audio.duration)||audio.duration<=0)return;try{session.setPositionState({duration:audio.duration,playbackRate:audio.playbackRate,position:Math.min(audio.duration,Math.max(0,audio.currentTime))});}catch{}}
-let last=0;audio.addEventListener('timeupdate',()=>{const now=Date.now();if(now-last>500){last=now;position();}});audio.addEventListener('loadedmetadata',position);audio.addEventListener('seeked',position);
-audio.addEventListener('playing',()=>{session.playbackState='playing';position();});audio.addEventListener('pause',()=>{session.playbackState='paused';position();});
-window.addEventListener('noa-track-selected',e=>{const r=e.detail?.record;if(!r||!window.MediaMetadata)return;try{session.metadata=new MediaMetadata({title:window.NoaBrowse?.displayTitle?.(r)||r.title||'NOA STUDIO',artist:window.NoaBrowse?.genreName?.(r.genre)||'미분류',album:'NOA STUDIO',artwork:r.thumb?[{src:new URL(r.thumb,location.href).href}]:[]});}catch{}});
-})();
-
 /* Always follow jukebox playback in the visible music list and open queue. */
 (() => {
  const audio = document.getElementById('sound-player');

@@ -11,6 +11,7 @@ function n80_jukebox_module(): array {
         'components'=>[
             'playback'=>'noa-app/jukebox/player.js',
             'presentation'=>'noa-app/jukebox/presentation.js',
+            'systemMedia'=>'noa-app/jukebox/system-media.js',
             'navigation'=>'noa-app/jukebox/navigation-policy.js',
             'recovery'=>'noa-app/playback-recovery.js',
             'playlists'=>'noa-playlists.js','counting'=>'noa-playcount.js',

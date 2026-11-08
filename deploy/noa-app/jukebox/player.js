@@ -10,6 +10,14 @@ const collections=data.collections;
 const buttons=[...document.querySelectorAll('.song')],search={value:''},genre={value:''},type={value:''};
 let browse=null,filteredQueue=[];const lookup=new Map(records.map(r=>[r.key,r]));let selected=null,player=document.getElementById('sound-player'),ready=true,repeat=false,shuffle=false,pendingAutoplay=false,activeQueue=null,collectionQueue=null,recommendationQueue=null;
 const status=document.getElementById('player-status');
+let recovery=null,systemMedia=null,playRequest=0;
+player.setAttribute('playsinline','');
+function notifyState(){paintTransport();window.dispatchEvent(new Event('n80-jukebox-state'));}
+function pausePlayback(close=false){
+ pendingAutoplay=false;resumeAfterMetadata=false;playRequest++;recovery?.stop();
+ if(close)document.querySelector('.noa-transport').hidden=true;
+ player.pause();savePlayback();notifyState();
+}
 const buttonsByKey=new Map(buttons.map(b=>[b.dataset.key,b]));let lastPlaybackSave=0;
 let resumePosition=null;
 // Tab-local checkpoint: resolve keys against the current authenticated catalog, never stored media URLs.
@@ -38,7 +46,7 @@ function renderQueueSource(){
   const tag=document.getElementById(id);tag.hidden=!source||id==='dock-listening-source';tag.textContent=source?.label||'';
  }
 }
-function savePlayback(){if(changingTrack||leavingPage||!selected?.dataset.audio)return;try{sessionStorage.setItem(resumeKey,JSON.stringify({key:selected.dataset.key,seconds:Number.isFinite(player.currentTime)?player.currentTime:0,playing:!player.paused&&!player.ended,closed:document.querySelector('.noa-transport').hidden,volume:player.volume,repeat,shuffle,recommendation:!!recommendationQueue&&!activeQueue&&!collectionQueue,collectionLoop:!!collectionQueue&&!activeQueue,listening:listeningSelection(),queue:queue().map(b=>b.dataset.key),path:window.NoaPlayerShell?.path()||(location.pathname+location.search+location.hash),at:Date.now()}));}catch{}}
+function savePlayback(){if(changingTrack||leavingPage||!selected?.dataset.audio)return;const retry=recovery?.snapshot(),seconds=retry?.needsRestore?retry.position:player.currentTime;try{sessionStorage.setItem(resumeKey,JSON.stringify({key:selected.dataset.key,seconds:Number.isFinite(seconds)?seconds:0,playing:(window.NoaNativeBridge?!player.paused:pendingAutoplay)&&!player.ended,closed:document.querySelector('.noa-transport').hidden,volume:player.volume,repeat,shuffle,recommendation:!!recommendationQueue&&!activeQueue&&!collectionQueue,collectionLoop:!!collectionQueue&&!activeQueue,listening:listeningSelection(),queue:queue().map(b=>b.dataset.key),path:window.NoaPlayerShell?.path()||(location.pathname+location.search+location.hash),at:Date.now()}));}catch{}}
 window.addEventListener('noa-player-route',savePlayback);
 window.addEventListener('pagehide',()=>{savePlayback();leavingPage=true;});
 window.addEventListener('pageshow',()=>{leavingPage=false;});
@@ -48,7 +56,18 @@ window.addEventListener('visibilitychange',savePlayback);
 function requestPlayback(){
  if(!selected?.dataset.audio){status.textContent='음원 업로드 대기 중입니다. 업로드한 음원이 연결되면 재생할 수 있습니다.';return;}
  document.querySelector('.noa-transport').hidden=false;pendingAutoplay=true;status.textContent='저장된 음원을 준비하는 중입니다.';
- resumeAfterMetadata=false;const key=selected.dataset.key;if(player.error)player.load();player.preload='auto';const request=player.play();if(request?.catch)request.catch(error=>{if(selected?.dataset.key!==key||error?.name==='AbortError')return;if(error?.name==='NotAllowedError')pendingAutoplay=false;else player.dispatchEvent(new Event('stalled'));status.textContent=error?.name==='NotAllowedError'?'듣던 위치를 복원했어요. 재생 버튼을 누르면 이어집니다.':'음원을 재생하지 못했습니다. 재생 버튼과 파일 연결 상태를 확인해 주세요.';});
+ resumeAfterMetadata=false;const key=selected.dataset.key,requestId=++playRequest,priorRecovery=recovery?.snapshot();
+ const at=priorRecovery?.needsRestore?priorRecovery.position:player.currentTime;
+ if(player.error)player.load();
+ if(Number.isFinite(at)&&at>0&&player.currentTime===0){try{player.currentTime=at;}catch{resumePosition=at;}}
+ recovery?.reset();player.preload='auto';notifyState();
+ let request;try{request=player.play();}catch(error){request=Promise.reject(error);}
+ Promise.resolve(request).catch(error=>{
+  if(requestId!==playRequest||selected?.dataset.key!==key||!pendingAutoplay||error?.name==='AbortError')return;
+  if(error?.name==='NotAllowedError'){pendingAutoplay=false;recovery?.stop();notifyState();savePlayback();}
+  else player.dispatchEvent(new Event('stalled'));
+  status.textContent=error?.name==='NotAllowedError'?'듣던 위치를 복원했어요. 재생 버튼을 누르면 이어집니다.':'음원을 재생하지 못했습니다. 연결이 회복되면 다시 시도합니다.';
+ });
 }
 
 window.addEventListener('noa-collection-queue',event=>{const keys=event.detail?.keys;if(!Array.isArray(keys)||!keys.includes(event.detail?.key))return;recommendationQueue=null;collectionQueue=[...new Set(keys)].filter(key=>lookup.has(key)&&lookup.get(key).kind!=='playlist');activeQueue=null;renderQueueSource();});
@@ -79,11 +98,10 @@ function renderVocal(r){
  document.getElementById('dock-artist').textContent=window.NoaBrowse?.genreName?.(r.genre)||'미분류';
  document.getElementById('cast-noa').hidden=!['female','duet'].includes(r.cast);
  document.getElementById('cast-noel').hidden=!['male','duet'].includes(r.cast);
- if(navigator.mediaSession?.metadata)navigator.mediaSession.metadata.artist=window.NoaBrowse?.genreName?.(r.genre)||'미분류';
 }
 function select(b,autoplay){
  if(selected===b&&ready){if(autoplay)requestPlayback();return;}
- changingTrack=true;resumeAfterMetadata=false;resumePosition=null;selected=b;pendingAutoplay=autoplay;const r=lookup.get(b.dataset.key);document.querySelector('.player').hidden=true;document.querySelector('.noa-transport').hidden=!r.audio;document.querySelector('[aria-label="곡 상세"]').hidden=true;if(browse)filter();buttons.forEach(x=>x.classList.toggle('selected',x===b));
+ playRequest++;recovery?.stop();changingTrack=true;resumeAfterMetadata=false;resumePosition=null;selected=b;pendingAutoplay=autoplay;const r=lookup.get(b.dataset.key);document.querySelector('.player').hidden=true;document.querySelector('.noa-transport').hidden=!r.audio;document.querySelector('[aria-label="곡 상세"]').hidden=true;if(browse)filter();buttons.forEach(x=>x.classList.toggle('selected',x===b));
  document.getElementById('now-title').textContent=musicDisplayTitle(r);document.getElementById('dock-title').textContent=musicDisplayTitle(r);document.getElementById('now-genre').textContent=r.genre.replaceAll('-',' ').toUpperCase();
  document.getElementById('detail-title').textContent=(r.ep?'EP.'+r.ep+' · ':r.act?'ACT.'+r.act+' · ':'')+musicDisplayTitle(r);
  renderMusicInfo(r);
@@ -92,8 +110,8 @@ function select(b,autoplay){
  const members=r.kind==='playlist'?[...r.tracklist.matchAll(/^\s*(?:[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?\s+)?EP[.\s]*([0-9]{1,3})\b/gm)].map(m=>'single:'+r.genre+':'+m[1].padStart(2,'0')):[];const ordered=[...new Set(members)].filter(key=>lookup.has(key));const actButton=document.getElementById('act-play');actButton.hidden=ordered.length===0;actButton.onclick=()=>{activeQueue=ordered;genre.value=r.genre;type.value='single';search.value='';filter();const first=queue()[0];if(first)select(first,true)};
  const watch=document.getElementById('watch');watch.hidden=!r.suno;if(r.suno)watch.href=r.suno;
  player.pause();
- if(!r.audio){player.removeAttribute('src');player.load();changingTrack=false;status.textContent='음원 업로드 대기 중입니다. 관리자에게 음원 파일 업로드를 요청해 주세요.';return;}
- player.preload=autoplay?'auto':'metadata';player.src=r.audio;player.load();changingTrack=false;
+ if(!r.audio){player.removeAttribute('src');player.load();changingTrack=false;notifyState();status.textContent='음원 업로드 대기 중입니다. 관리자에게 음원 파일 업로드를 요청해 주세요.';return;}
+ player.preload=autoplay?'auto':'metadata';player.src=r.audio;player.load();changingTrack=false;recovery?.reset();notifyState();
  try{sessionStorage.setItem('noa-last-song',r.key)}catch{}
  status.textContent='저장된 음원 · 추가 인코딩 없이 재생합니다.';
  if(autoplay)requestPlayback();
@@ -101,20 +119,21 @@ function select(b,autoplay){
 
 function move(direction,ended=false){const q=queue();if(!q.length)return;let i=q.indexOf(selected);if(ended&&repeat&&selected?.dataset.audio){player.currentTime=0;select(selected,true);return}if(shuffle&&q.length>1){const other=q.filter(b=>b!==selected);select(other[Math.floor(Math.random()*other.length)],true);return}if(i<0)i=direction>0?-1:0;let n=i+direction;const target=q[(n+q.length)%q.length];if(ended&&target===selected)player.currentTime=0;select(target,true)}
 document.getElementById('sequential').onclick=()=>{repeat=false;shuffle=false;for(const id of ['repeat','shuffle'])document.getElementById(id).setAttribute('aria-pressed','false');document.getElementById('sequential').setAttribute('aria-pressed','true');};
-document.getElementById('dock-close').onclick=()=>{pendingAutoplay=false;player.pause();document.querySelector('.noa-transport').hidden=true;resumeAfterMetadata=false;savePlayback();};
+document.getElementById('dock-close').onclick=()=>pausePlayback(true);
 function drawDockQueue(){const host=document.getElementById('dock-queue-items');host.replaceChildren();for(const b of queue()){const r=lookup.get(b.dataset.key);if(!r)continue;const item=document.createElement('button');item.type='button';item.className='noa-queue-track';item.dataset.queueKey=r.key;const current=selected===b;item.setAttribute('aria-current',current?'true':'false');const cover=document.createElement(r.thumb?'img':'span');cover.className='noa-queue-cover';if(r.thumb){cover.src=r.thumb;cover.alt='';cover.loading='lazy';}else{cover.textContent='♫';cover.setAttribute('aria-hidden','true');}const label=document.createElement('span');label.className='noa-queue-title';label.textContent=(r.ep?'EP.'+String(r.ep).padStart(2,'0')+' · ':'')+musicDisplayTitle(r);const genreNote=document.createElement('small');genreNote.className='noa-track-genre';genreNote.textContent=window.NoaBrowse?.genreName?.(r.genre)||'미분류';label.append(genreNote);const state=document.createElement('span');state.className='noa-queue-state';state.textContent=current?'현재 곡':'재생';item.append(cover,label,state);item.onclick=()=>{select(b,true);document.getElementById('dock-queue').close();};host.append(item);}if(!host.childElementCount){const empty=document.createElement('p');empty.textContent='재생할 수 있는 곡이 없습니다.';host.append(empty);}}
 document.getElementById('dock-list').onclick=()=>{drawDockQueue();document.getElementById('dock-queue').showModal();};
 window.addEventListener('noa-shell-track',e=>{const b=buttons.find(b=>b.dataset.key===e.detail.key);if(b){if(browse)browse.reveal(lookup.get(b.dataset.key));select(b,!!e.detail.play);}});
 document.getElementById('dock-more').onclick=e=>{const bar=document.querySelector('.noa-transport');const expanded=bar.dataset.expanded!=='true';bar.dataset.expanded=String(expanded);e.currentTarget.setAttribute('aria-expanded',String(expanded));};
-document.getElementById('pause-play').onclick=()=>{resumeAfterMetadata=false;if(!player.paused){pendingAutoplay=false;player.pause();}else requestPlayback();};
+document.getElementById('pause-play').onclick=()=>{if(pendingAutoplay||!player.paused)pausePlayback();else requestPlayback();};
 document.getElementById('seek').oninput=e=>{if(Number.isFinite(player.duration)&&player.duration>0)player.currentTime=player.duration*Number(e.target.value)/1000;};
 document.getElementById('volume').oninput=e=>{player.volume=Number(e.target.value)/100;};player.volume=1;
 const clock=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
 player.addEventListener('loadedmetadata',()=>{const p=resumePosition;resumePosition=null;if(p>0&&p<player.duration)player.currentTime=p;if(resumeAfterMetadata){resumeAfterMetadata=false;requestPlayback();}});
 player.addEventListener('timeupdate',()=>{const now=Date.now();if(now-lastPlaybackSave>=2000){lastPlaybackSave=now;savePlayback();}const seconds=player.currentTime,duration=player.duration;if(duration>0){document.getElementById('seek').value=String(Math.round(1000*seconds/duration));document.getElementById('seek-clock').textContent=clock(seconds)+' / '+clock(duration);document.getElementById('dock-current').textContent=clock(seconds);document.getElementById('dock-duration').textContent=clock(duration);}});
-for(const event of ['playing','pause','waiting','error'])player.addEventListener(event,()=>{if(!lookup.get(selected?.dataset.key)?.audio)return;const playing=event==='playing';if(playing)window.dispatchEvent(new CustomEvent('noa-media-activity',{detail:{type:'audio',key:selected.dataset.key}}));document.getElementById('pause-play').setAttribute('aria-pressed',String(playing));document.getElementById('pause-play').setAttribute('aria-label',playing?'일시정지':'재생');document.getElementById('pause-play').innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="'+(playing?'M8 5v14M16 5v14':'m8 5 11 7-11 7V5Z')+'"/></svg>';status.textContent=({playing:'저장된 음원 재생 중',pause:'일시정지',waiting:'음원을 불러오는 중입니다.',error:'음원 파일을 재생할 수 없습니다. 파일 형식과 접근 권한을 확인해 주세요.'})[event];});
-player.addEventListener('ended',()=>move(1,true));
-window.addEventListener('noa-background',()=>{pendingAutoplay=false;player.pause();});
+function paintTransport(){const playing=window.NoaNativeBridge?!player.paused:pendingAutoplay;document.getElementById('pause-play').setAttribute('aria-pressed',String(playing));document.getElementById('pause-play').setAttribute('aria-label',playing?'일시정지':'재생');document.getElementById('pause-play').innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="'+(playing?'M8 5v14M16 5v14':'m8 5 11 7-11 7V5Z')+'"/></svg>';}
+for(const event of ['playing','pause','waiting','error'])player.addEventListener(event,()=>{if(!lookup.get(selected?.dataset.key)?.audio)return;if(event==='error'&&[3,4].includes(player.error?.code)){pendingAutoplay=false;recovery?.stop();notifyState();savePlayback();}const playing=event==='playing';if(playing)window.dispatchEvent(new CustomEvent('noa-media-activity',{detail:{type:'audio',key:selected.dataset.key}}));paintTransport();status.textContent=({playing:'저장된 음원 재생 중',pause:'일시정지',waiting:'음원을 불러오는 중입니다.',error:'음원 파일을 재생할 수 없습니다. 파일 형식과 접근 권한을 확인해 주세요.'})[event];});
+player.addEventListener('ended',()=>{if(pendingAutoplay&&!leavingPage&&!changingTrack)move(1,true);});
+window.addEventListener('noa-background',()=>pausePlayback());
 buttons.forEach(b=>{b.querySelector('.song-select').addEventListener('click',()=>select(b,false));b.addEventListener('click',e=>{if(e.target.closest('.sound-play'))select(b,true);});});document.getElementById('previous').onclick=()=>move(-1);document.getElementById('next').onclick=()=>move(1);
 for(const id of ['repeat','shuffle'])document.getElementById(id).onclick=e=>{if(id==='repeat')repeat=!repeat;else shuffle=!shuffle;e.currentTarget.setAttribute('aria-pressed',String(id==='repeat'?repeat:shuffle));document.getElementById('sequential').setAttribute('aria-pressed',String(!repeat&&!shuffle))};
 window.addEventListener('noa-jukebox-ready',e=>{const d=e.detail,r=lookup.get(d.key),b=buttons.find(b=>b.dataset.key===d.key);if(r&&b){r.audio=d.audio;b.dataset.audio=d.audio;filter();if(selected===b){selected=null;select(b,false);}}});
@@ -189,17 +208,17 @@ weatherFeedback.querySelector('[data-weather-same]').onclick=()=>changeWeatherTa
 weatherFeedback.querySelector('[data-weather-gentler]').onclick=()=>changeWeatherTail(true);
 
 const api={
- engine:"N80 Engine",module:"jukebox",name:"N80 JukeBox",version:1,
+ engine:"N80 Engine",module:"jukebox",name:"N80 JukeBox",version:2,
  record:key=>{const row=lookup.get(key);return row?{...row}:null;},
  currentKey:()=>selected?.dataset.key||"",
  visibleKeys:()=>filteredQueue.filter(b=>lookup.get(b.dataset.key)?.kind!=="playlist").map(b=>b.dataset.key),
  selectQueue:(keys,autoplay=false)=>{if(!Array.isArray(keys))return 0;activeQueue=[...new Set(keys)].filter(key=>lookup.has(key));filter();const first=queue()[0]||filteredQueue[0];if(first)select(first,autoplay);return queue().length;},
  play:key=>{const row=buttonsByKey.get(key);if(!row||!lookup.get(key)?.audio)return false;select(row,true);return true;},
- pause:()=>{pendingAutoplay=false;resumeAfterMetadata=false;player.pause();savePlayback();},
+ pause:()=>pausePlayback(),
  close:()=>document.getElementById("dock-close").click(),
  next:()=>move(1),previous:()=>move(-1),
- seek:seconds=>{if(Number.isFinite(seconds)&&Number.isFinite(player.duration))player.currentTime=Math.max(0,Math.min(player.duration,seconds));},
- snapshot:()=>({engine:"N80 Engine",module:"jukebox",key:selected?.dataset.key||"",playing:!player.paused&&!player.ended,desiredPlaying:pendingAutoplay,seconds:player.currentTime,repeat,shuffle,queue:queue().map(row=>row.dataset.key),backend:window.NoaNativeBridge?"android":"browser"}),
+ seek:seconds=>{if(Number.isFinite(seconds)&&Number.isFinite(player.duration)&&player.duration>0)player.currentTime=Math.max(0,Math.min(player.duration,seconds));},
+ snapshot:()=>({engine:"N80 Engine",module:"jukebox",key:selected?.dataset.key||"",playing:!player.paused&&!player.ended,desiredPlaying:pendingAutoplay,closed:document.querySelector(".noa-transport").hidden,recovery:recovery?.snapshot()||null,capabilities:systemMedia?.capabilities()||null,seconds:player.currentTime,repeat,shuffle,queue:queue().map(row=>row.dataset.key),backend:window.NoaNativeBridge?"android":"browser"}),
  playWeather:(keys,path)=>{
   if(!weatherVip||!Array.isArray(path)||!path.length||!path.every(m=>Object.hasOwn(musicMoodLabels,m)))return false;
   weatherPath=path.slice();weatherFeedback.querySelector('[role=status]').textContent='';
@@ -218,16 +237,6 @@ const api={
 };
 
 let installPrompt;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;document.getElementById('install').hidden=false});document.getElementById('install').onclick=async()=>{if(installPrompt){await installPrompt.prompt();installPrompt=null;document.getElementById('install').hidden=true}};
-
-// The main player owns play intent; retry logic must not override pause/close/track changes.
-(()=>{
- if(window.NoaNativeBridge||!window.NoaPlaybackRecovery||typeof player==='undefined')return;
- const recovery=window.NoaPlaybackRecovery.attach(player,{wanted:()=>pendingAutoplay&&!leavingPage&&!changingTrack,key:()=>selected?.dataset.key||'',status:message=>{status.textContent=message;}});
- window.addEventListener('noa-track-selected',()=>recovery.reset());
- window.addEventListener('online',()=>recovery.online());
- window.addEventListener('pagehide',()=>recovery.stop());
-})();
-
 
 Object.defineProperties(globalThis,{
  records:{configurable:true,get:()=>records},
@@ -263,6 +272,22 @@ Object.defineProperties(globalThis,{
 });
 window.N80JukeBox=Object.freeze(api);
 window.NoaMusic=window.N80JukeBox; // Compatibility alias, one owner.
+if(!window.NoaNativeBridge){
+ recovery=window.NoaPlaybackRecovery?.attach(player,{
+  wanted:()=>pendingAutoplay&&!leavingPage&&!changingTrack,
+  key:()=>selected?.dataset.key||'',canRecover:()=>!systemMedia?.interrupted(),
+  status:message=>{status.textContent=message;},
+  onBlocked:()=>{pendingAutoplay=false;resumeAfterMetadata=false;notifyState();savePlayback();}
+ });
+ systemMedia=window.N80JukeBoxMedia?.attach(player,api,{
+  onInterrupt:()=>{recovery?.suspend();savePlayback();},onResume:()=>recovery?.resume()
+ });
+ window.addEventListener('offline',()=>recovery?.suspend());
+ window.addEventListener('online',()=>recovery?.online());
+ window.addEventListener('pagehide',()=>recovery?.suspend());
+ window.addEventListener('pageshow',event=>{if(event.persisted)recovery?.resume();systemMedia?.sync();});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden){recovery?.resume();systemMedia?.sync();}});
+}
 window.dispatchEvent(new CustomEvent("n80-jukebox-ready",{detail:{module:"jukebox"}}));
 
 })();
