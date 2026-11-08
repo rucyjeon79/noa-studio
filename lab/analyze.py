@@ -7,7 +7,7 @@ from scipy.signal import correlate, find_peaks
 def lyric_lines(text):
     return [x.strip() for x in text.splitlines() if x.strip() and not re.match(r'^\s*[\[【<].*[\]】>]\s*$',x)]
 
-def analyze(path, lyrics='', feedback=None):
+def analyze(path, lyrics='', feedback=None, lengths=None):
     info=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_format','-show_streams','-of','json',str(path)]))
     duration=float(info['format'].get('duration',0))
     if not 2 <= duration <= 1800 or not any(s['codec_type']=='audio' for s in info['streams']):
@@ -31,7 +31,12 @@ def analyze(path, lyrics='', feedback=None):
     lines=lyric_lines(lyrics);counts=collections.Counter(lines)
     hooks=[{'text':line,'occurrences':n} for line,n in counts.most_common(5) if n>1]
     windows=[]
-    lengths=[x for x in [30.,45.,60.] if x<=duration] or [min(duration,20.)]
+    requested=lengths if lengths is not None else [30.,45.,60.]
+    if not isinstance(requested,list) or not requested or any(not isinstance(x,(float,int)) or not np.isfinite(x) or x<=0 or x>1800 for x in requested): raise ValueError('invalid_window_lengths')
+    lengths=[float(x) for x in requested if x<=duration]
+    if not lengths:
+        if requested==[30.,45.,60.]: lengths=[min(duration,20.)]
+        else: raise ValueError('audio_shorter_than_requested_window')
     prior=[]
     for history in feedback or []:
         metrics=history.get('metrics',{}).get('summary',{})
@@ -59,5 +64,5 @@ def analyze(path, lyrics='', feedback=None):
 
 if __name__=='__main__':
     request=json.load(sys.stdin)
-    result=analyze(sys.argv[1],request.get('lyrics',''),request.get('feedback',[]))
+    result=analyze(sys.argv[1],request.get('lyrics',''),request.get('feedback',[]),request.get('lengths'))
     json.dump(result,sys.stdout,ensure_ascii=False,allow_nan=False)

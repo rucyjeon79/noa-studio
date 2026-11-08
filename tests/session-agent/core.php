@@ -43,6 +43,15 @@ try{
  $receipt=json_decode(file_get_contents($fixtures.'/receipt.json'),true,32,JSON_THROW_ON_ERROR);$upload('final',0,$fixtures.'/final.mp4',$receipt['verification']);
  check($job['state']==='saved'&&count($job['outputs'])===1,'Final stored');check($call('agentFile',['id'=>$jobId,'mode'=>'read','kind'=>'final','offset'=>0])['sha256']===$receipt['sha256'],'Final readback');
  $source['duration']=240;$source['title']='Four minute song';$start['requestId']=$id();$long=$call('agentStart',$start)['job'];check($long['agent']['sceneCount']===35,'No 30-cut cap');
+ $shortStart=array_replace($start,['format'=>'shorts','requestId'=>$id(),'selection'=>['start'=>40,'end'=>95]]);
+ $short=$call('agentStart',$shortStart)['job'];check($short['agent']['duration']===55.0&&$short['source']['duration']===240,'Selected length preserves full source');
+ check($short['agent']['sceneCount']===8&&$short['assemblyTool']['manifest']['selection']['start']===40.0,'Selected scene plan and manifest');
+ check($call('agentStart',$shortStart)['replayed'],'Selected start replay');
+ foreach([['start'=>0,'end'=>48],['start'=>0,'end'=>60],['start'=>-1,'end'=>54],['start'=>220,'end'=>275]] as $bad)refuses(fn()=>$call('agentStart',array_replace($shortStart,['requestId'=>$id(),'selection'=>$bad])),'invalid_short_selection');
+ refuses(fn()=>$call('agentStart',array_replace($shortStart,['format'=>'landscape'])),'invalid_short_selection');
+ $chunk=$call('agentSourceFile',['trackKey'=>$source['key'],'sourceRevision'=>7,'offset'=>0]);check($chunk['sha256']===$source['audioSha256']&&!isset($chunk['audioPath']),'Source audio read before job');
+ refuses(fn()=>$call('agentSourceFile',['trackKey'=>$source['key'],'sourceRevision'=>6,'offset'=>0]),'source_revision_conflict');
+ refuses(fn()=>$call('agentSourceFile',['trackKey'=>$source['key'],'sourceRevision'=>7,'offset'=>-1]),'invalid_file_offset');
  $longId=$long['id'];$lc=$call('agentStep',['id'=>$longId,'action'=>'claim','sessionId'=>$id()]);
  $pl=$call('agentStep',['id'=>$longId,'action'=>'plan','lease'=>$lc['lease'],'expectedRevision'=>$lc['job']['revision'],'requestId'=>$id(),'scenes'=>[$scene(1)]]);
  $revise=['id'=>$longId,'action'=>'revise','lease'=>$lc['lease'],'expectedRevision'=>$pl['job']['revision'],'requestId'=>$id(),'scene'=>1,'changes'=>['videoPrompt'=>'Move the camera more slowly.']];
@@ -55,6 +64,6 @@ try{
  $source['title']='Changed after plan';check($call('agentRead',['id'=>$long['id']])['sourceCurrent']===false,'Current title fence');
  refuses(fn()=>$call('agentStep',['id'=>$long['id'],'action'=>'claim','sessionId'=>$id()]),'source_changed_replan_required');
  $source=null;$paused=$call('agentStep',['id'=>$long['id'],'action'=>'pause','expectedRevision'=>$long['revision'],'reason'=>'Original unavailable']);check($paused['job']['state']==='agent_paused','Pause when original disappears');
- check(count($call('agentTasks')['jobs'])===2,'Durable tasks');
+ check(count($call('agentTasks')['jobs'])===3,'Durable tasks');
  echo "Session agent: ownership, current source, leases, replay, reconcile, upload integrity, review, actual duration, original audio, final receipt and pause passed.\n";
 }finally{restore_error_handler();foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::CHILD_FIRST)as$f){$f->isDir()?rmdir($f->getPathname()):unlink($f->getPathname());}rmdir($root);}

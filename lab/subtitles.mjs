@@ -16,6 +16,13 @@ export function validateSubtitles(subtitles,audioSha,duration){
  if(subtitleDigest(subtitles)!==subtitles.sha256)throw Error('subtitle_checksum_mismatch');
  return subtitles;
 }
+export function selectSubtitleWindow(s,selection){
+ if(!s||!selection)return s;
+ const start=Math.round(selection.start*1000),end=Math.round(selection.end*1000);
+ const cues=s.cues.filter(c=>c.endMs>start&&c.startMs<end).map((c,i)=>({...c,line:i+1,startMs:Math.max(start,c.startMs)-start,endMs:Math.min(end,c.endMs)-start}));
+ if(!cues.length)throw Error('selected_subtitles_empty');
+ return {...s,cues}; // Keep the original reviewed transcript digest in the assembly receipt.
+}
 const units=text=>[...text].reduce((n,c)=>n+(/[\u1100-\u11ff\u2e80-\ua4cf\uac00-\ud7af\uf900-\ufaff]/u.test(c)?2:1),0);
 export function wrapSubtitle(text,format){
  const maximum=format==='shorts'?32:54,chars=[...text];

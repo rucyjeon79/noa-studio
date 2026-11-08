@@ -8,6 +8,7 @@ function n80_service_operations():array {
         ...array_fill_keys(['muvy_claim','muvy_complete','muvy_failed'],['module'=>'ai_lab','handler'=>'worker-muvy.php','permission'=>'ai:muvy','method'=>'POST','store'=>'lab:muvy.json']),
         'n80_native_verify'=>['module'=>'admin','handler'=>'worker-native.php','permission'=>'native:verify','method'=>'POST','store'=>'existing_native_stores'],
         'n80_status'=>['module'=>'ai_lab','handler'=>'worker-status.php','permission'=>'ai:read','method'=>'POST','store'=>'existing_native_stores'],
+        'n80_daily_shorts_tick'=>['module'=>'ai_lab','handler'=>'worker-shorts.php','permission'=>'media:worker','method'=>'POST','store'=>'lab:state.json:campaigns.daily_shorts'],
         'n80_text_tick'=>['module'=>'ai_lab','handler'=>'worker-text.php','permission'=>'ai:text','method'=>'POST','store'=>'noa_documents:n80_ai_task'],
         'n80_batch_watchdog'=>['module'=>'creator_lab','handler'=>'worker-batch.php','permission'=>'batch:recover','method'=>'POST','store'=>'gpt-action'],
         'n80_listening_index'=>['module'=>'catalog','handler'=>'worker-index.php','permission'=>'catalog:index','method'=>'POST','store'=>'mysql'],

@@ -24,17 +24,29 @@ function sa_source(string $key):array {
 function sa_fingerprint(array $source):string {
  unset($source['revision'],$source['audioPath']);return hash('sha256',json_encode($source,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR));
 }
+/** A short keeps the verified full source and records an explicit original-audio window. */
+function sa_selection(mixed $v,string $format,float $duration):?array {
+ if($v===null)return null;
+ if($format!=='shorts'||!is_array($v)||array_diff(array_keys($v),['start','end']))throw new InvalidArgumentException('invalid_short_selection');
+ foreach(['start','end'] as $k)if(!isset($v[$k])||!(is_int($v[$k])||is_float($v[$k]))||!is_finite((float)$v[$k]))throw new InvalidArgumentException('invalid_short_selection');
+ $start=round((float)$v['start'],3);$end=round((float)$v['end'],3);$length=round($end-$start,3);
+ if($start<0||$end>$duration||$length<49||$length>59)throw new InvalidArgumentException('invalid_short_selection');
+ return ['start'=>$start,'end'=>$end];
+}
+function sa_duration(array $j):float {
+ $v=$j['agent']['selection']??null;return $v?round($v['end']-$v['start'],3):(float)$j['source']['duration'];
+}
 function sa_summary(array $j):array {
  $a=$j['agent'];$scenes=$a['scenes'];
  return ['subtitles'=>sa_subtitle_summary($j),'execution'=>'chatgpt_session','phase'=>$j['state'],'sceneCount'=>$a['target'],
   'planned'=>count($scenes),'images'=>count(array_filter($scenes,fn($s)=>($s['image']['accepted']??false))),
   'videos'=>count(array_filter($scenes,fn($s)=>($s['video']['accepted']??false))),
   'active'=>$a['active']?array_intersect_key($a['active'],array_flip(['kind','scene','phase'])):null,
-  'reason'=>$a['reason']??'','format'=>$a['format'],'duration'=>$j['source']['duration'],'connected'=>($a['leaseUntil']??0)>time()];
+  'reason'=>$a['reason']??'','format'=>$a['format'],'duration'=>sa_duration($j),'selection'=>$a['selection']??null,'connected'=>($a['leaseUntil']??0)>time()];
 }
 function sa_layout(array $j):array {
  $a=$j['agent'];$fps=24;$overlap=(int)round($a['timing']['overlapSeconds']*$fps);
- $target=(int)ceil($j['source']['duration']*$fps);$cursor=0;$rows=[];
+ $target=(int)ceil(sa_duration($j)*$fps);$cursor=0;$rows=[];
  foreach($a['scenes'] as $s){
   if(empty($s['video']['accepted']))return ['ready'=>false,'missingScene'=>$s['n']];
   $frames=(int)floor($s['video']['duration']*$fps+1e-5);
@@ -61,10 +73,10 @@ function sa_view(array $j,bool $detail=false,int $from=1):array {
  $v=lab_public_job($j);$v['agent']=sa_summary($j);
  if($detail){$source=$j['source'];unset($source['audioPath']);$v['source']=$source;$v['next']=sa_next($j);
   $v['scenes']=array_slice($j['agent']['scenes'],max(0,$from-1),10);$v['timing']=$j['agent']['timing'];
-  $v['assemblyTool']=['repository'=>'rucyjeon79/noa-studio','path'=>'lab/session-assemble.mjs','manifest'=>['format'=>$j['agent']['format'],'duration'=>$j['source']['duration'],'subtitles'=>$j['agent']['subtitles']??['enabled'=>false],'audio'=>['path'=>'LOCAL_AUDIO_PATH','sha256'=>$j['audioSha256']],'layout'=>sa_layout($j),'scenes'=>'Download each accepted video to a local path; include n, path and sha256. Run node session-assemble.mjs manifest.json final.mp4. Inspect actual frames and listen to the final audio before review.']];
+  $v['assemblyTool']=['repository'=>'rucyjeon79/noa-studio','path'=>'lab/session-assemble.mjs','manifest'=>['format'=>$j['agent']['format'],'duration'=>sa_duration($j),'selection'=>$j['agent']['selection']??null,'sourceDuration'=>$j['source']['duration'],'subtitles'=>$j['agent']['subtitles']??['enabled'=>false],'audio'=>['path'=>'LOCAL_AUDIO_PATH','sha256'=>$j['audioSha256']],'layout'=>sa_layout($j),'scenes'=>'Download each accepted video to a local path; include n, path and sha256. Run node session-assemble.mjs manifest.json final.mp4. Inspect actual frames and listen to the final audio before review.']];
   $v['subtitles']=$j['agent']['subtitles']??['enabled'=>false];
   $v['subtitleTool']=['path'=>'lab/session-subtitles.py','manifest'=>['audio'=>['path'=>'LOCAL_AUDIO_PATH','sha256'=>$j['audioSha256']],'duration'=>$j['source']['duration'],'lyrics'=>$j['source']['lyrics']],'instructions'=>'Run the local Korean word recognizer with the original audio, save payload using noa_agent_subtitles, and listen to flagged lines before reviewing. Never invent evenly spaced timings. Read SRT/VTT using agentFile after ready. No paid API or background process.'];
-  $v['instructions']='ChatGPT plans and reviews. Use Gemini and Flow through available signed-in browser tools. Persist begin BEFORE generation. A requested operation on resume must be reconciled, never blindly generated again. Upload actual files with agentFile. Review actual images/frames; do not mark unobserved assets accepted. Use source key, current title and lyrics. Preserve watermarks. Use original audio for assembly. No public posting. If a required browser tool or login is missing, pause with a precise reason. Resume in a later conversation; this is not an unattended browser service.';
+  $v['instructions']='ChatGPT plans and reviews. Use Gemini and Flow through available signed-in browser tools. Persist begin BEFORE generation. A requested operation on resume must be reconciled, never blindly generated again. Upload actual files with agentFile. Review actual images/frames; do not mark unobserved assets accepted. Use source key, current title and lyrics. Preserve watermarks. Use original audio for assembly. Public posting requires an explicit user request specifying the destination; otherwise save only. If a required browser tool or login is missing, pause with a precise reason. Resume in a later conversation; this is not an unattended browser service.';
  }
  return $v;
 }
@@ -86,11 +98,17 @@ function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=n
  $sourceReader??='sa_source';
  if($op==='agentTasks'){
   $jobs=array_filter(lab_read()['jobs'],fn($j)=>($j['type']??'')==='agent_movie'&&($j['agent']['owner']??'')===$owner);
-  return ['jobs'=>array_map(fn($j)=>sa_view($j),array_values(array_slice($jobs,-50,null,true))),'execution'=>'chatgpt_session'];
+  return ['jobs'=>array_map(fn($j)=>sa_view($j),array_values(array_slice($jobs,-50,null,true))),'campaigns'=>lab_read()['campaigns']??[],'execution'=>'chatgpt_session'];
  }
  if($op==='agentRead'&&isset($b['trackKey'])){
   $source=$sourceReader(sa_string($b['trackKey'],191));unset($source['audioPath']);
   return ['source'=>$source,'execution'=>'chatgpt_session'];
+ }
+ if($op==='agentSourceFile'){
+  $source=$sourceReader(sa_string($b['trackKey']??null,191));
+  if(($b['sourceRevision']??null)!==$source['revision'])throw new DomainException('source_revision_conflict');
+  require_once __DIR__.'/session-agent-media.php';
+  return sa_read_chunk($source['audioPath'],$source['audioSha256'],$b['offset']??null);
  }
  if($op==='agentStart'){
   $source=$sourceReader(sa_string($b['trackKey']??null,191));
@@ -98,10 +116,11 @@ function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=n
   $subtitleEnabled=($b['subtitles']??false)===true;if($subtitleEnabled&&!preg_match('/[가-힣]/u',implode('',sa_lyric_lines($source['lyrics']))))throw new DomainException('korean_lyrics_required');
   $format=$b['format']??'landscape';if(!in_array($format,['landscape','shorts'],true))throw new InvalidArgumentException('invalid_format');
   $request=lab_id((string)($b['requestId']??''));$brief=sa_string($b['goal']??'현재 곡에 어울리는 영화적 뮤직비디오를 만들어 주세요.',4000);
-  $timing=mu_timeline(['durationSeconds'=>$source['duration'],'overlapSeconds'=>$b['overlapSeconds']??1]);
-  $identity=[$owner,sa_fingerprint($source),$format,$brief,$timing];if($subtitleEnabled)$identity[]='korean_subtitles_v1';
+  $selection=sa_selection($b['selection']??null,$format,(float)$source['duration']);
+  $timing=mu_timeline(['durationSeconds'=>$selection?round($selection['end']-$selection['start'],3):$source['duration'],'overlapSeconds'=>$b['overlapSeconds']??1]);
+  $identity=[$owner,sa_fingerprint($source),$format,$brief,$timing];if($subtitleEnabled)$identity[]='korean_subtitles_v1';if($selection)$identity[]=$selection;
   $fingerprint=hash('sha256',json_encode($identity,JSON_THROW_ON_ERROR));
-  return lab_lock(function(&$s)use($source,$request,$brief,$format,$timing,$fingerprint,$owner,$subtitleEnabled){
+  return lab_lock(function(&$s)use($source,$request,$brief,$format,$timing,$fingerprint,$owner,$subtitleEnabled,$selection){
    foreach($s['jobs'] as $j){if(($j['requestId']??'')===$request&&($j['fingerprint']??'')!==$fingerprint)throw new DomainException('request_id_reused');
     if(($j['fingerprint']??'')===$fingerprint&&$j['state']!=='cancelled')return ['job'=>sa_view($j,true),'replayed'=>true];}
    if(count($s['jobs'])>=200)throw new DomainException('job_limit');$id=bin2hex(random_bytes(16));
@@ -110,7 +129,7 @@ function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=n
     'trackKey'=>$source['key'],'sourceRevision'=>$source['revision'],'title'=>$source['title'],'genre'=>$source['genre'],'cast'=>$source['cast'],
     'source'=>$source,'goal'=>$brief,'state'=>'agent_planning','revision'=>1,'createdAt'=>$now,'updatedAt'=>$now,
     'audioSha256'=>$source['audioSha256'],'inputReady'=>true,'settings'=>['posting'=>'save','formats'=>[$format]],'outputs'=>[],
-    'agent'=>['owner'=>$owner,'sourceFingerprint'=>sa_fingerprint($source),'format'=>$format,'timing'=>array_diff_key($timing,['scenes'=>true]),
+    'agent'=>['owner'=>$owner,'sourceFingerprint'=>sa_fingerprint($source),'format'=>$format,'selection'=>$selection,'timing'=>array_diff_key($timing,['scenes'=>true]),
       'subtitles'=>['enabled'=>$subtitleEnabled,'status'=>$subtitleEnabled?'pending':'off'],'target'=>$timing['cutCount'],'scenes'=>[],'active'=>null,'session'=>'','lease'=>'','leaseUntil'=>0,'attempts'=>[],'receipts'=>[]]];
    $s['jobs'][$id]=$j;lab_event($s,'agent_created',$id,$owner);return ['job'=>sa_view($j,true),'replayed'=>false];
   });

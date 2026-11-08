@@ -50,6 +50,8 @@ function sa_subtitle_text(array $j,string $format):string {
  if(!in_array($format,['srt','vtt'],true))throw new InvalidArgumentException('invalid_subtitle_format');
  $stamp=static function(int $ms)use($format):string{return sprintf('%02d:%02d:%02d%s%03d',intdiv($ms,3600000),intdiv($ms,60000)%60,intdiv($ms,1000)%60,$format==='srt'?',':'.',$ms%1000);};
  $out=$format==='vtt'?"WEBVTT\n\n":'';
- foreach($s['cues'] as $i=>$c){$text=strtr($c['text'],['&'=>'&amp;','<'=>'&lt;','>'=>'&gt;']);$out.=($i+1)."\n".$stamp($c['startMs']).' --> '.$stamp($c['endMs'])."\n".$text."\n\n";}
+ $cues=$s['cues'];$selection=$j['agent']['selection']??null;
+ if($selection){$start=(int)round($selection['start']*1000);$end=(int)round($selection['end']*1000);$cues=array_values(array_filter($cues,fn($c)=>$c['endMs']>$start&&$c['startMs']<$end));foreach($cues as &$cue){$cue['startMs']=max($start,$cue['startMs'])-$start;$cue['endMs']=min($end,$cue['endMs'])-$start;}unset($cue);}
+ foreach($cues as $i=>$c){$text=strtr($c['text'],['&'=>'&amp;','<'=>'&lt;','>'=>'&gt;']);$out.=($i+1)."\n".$stamp($c['startMs']).' --> '.$stamp($c['endMs'])."\n".$text."\n\n";}
  return $out;
 }
