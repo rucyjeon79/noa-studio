@@ -1,5 +1,5 @@
 """Read the reported edit, then verify one unpublished edit through the existing N80 worker."""
-import hashlib,json,re,secrets,time,urllib.request,urllib.error
+import hashlib,json,os,re,secrets,time,urllib.request,urllib.error
 from pathlib import Path
 import paramiko
 from noa_full_inventory import ROOT,connect
@@ -7,9 +7,11 @@ from n80_live_observer import NoRedirect
 
 def main(phase):
     if phase not in ('audit','verify'):raise ValueError('invalid phase')
+    audit_id=os.environ.get('NOA_CREATIVE_AUDIT_JOB','')
+    if audit_id and not re.fullmatch('[a-f0-9]{32}',audit_id):raise ValueError('invalid audit job')
     token=secrets.token_hex(32);name='creative-revision-'+secrets.token_hex(12)+'.php';remote=ROOT+'/noa-bridge/'+name
     code=Path('scripts/noa_creative_revision_live.php').read_text()
-    for k,v in {'__EXPIRY__':str(int(time.time())+900),'__TOKEN_SHA__':hashlib.sha256(token.encode()).hexdigest(),'__DRAFT_ID__':secrets.token_hex(16),'__REQUEST_ID__':secrets.token_hex(16)}.items():code=code.replace(k,v)
+    for k,v in {'__AUDIT_JOB_ID__':audit_id,'__EXPIRY__':str(int(time.time())+900),'__TOKEN_SHA__':hashlib.sha256(token.encode()).hexdigest(),'__DRAFT_ID__':secrets.token_hex(16),'__REQUEST_ID__':secrets.token_hex(16)}.items():code=code.replace(k,v)
     code=code.encode();t=connect();installed=False;created=False;receipt={};opener=urllib.request.build_opener(NoRedirect())
     def call(op):
         request=urllib.request.Request('https://noastudio.ai.kr/noa-bridge/'+name,data=json.dumps({'op':op}).encode(),headers={'Content-Type':'application/json','X-NOA-Control':token,'Cache-Control':'no-cache'})
