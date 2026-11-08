@@ -159,12 +159,14 @@ def prepare(call, policy, sftp, analyzer):
                 break
             try:
                 source = call('source', trackKey=row['trackKey'], videoId=row['videoId'])['source']
+                if source['key'] != row['trackKey'] or source['genre'] != row['genre']:
+                    raise ValueError('source_identity_changed')
                 local = Path(folder) / 'source.mp3'
                 source_download(sftp, source, local)
                 measured = analyzer(local, source['lyrics'], lengths=[49, 55, 59])
                 if abs(measured['duration'] - source['duration']) > .25:
                     raise ValueError('source_duration_mismatch')
-                row.update(sourceRevision=source['revision'], audioSha256=source['audioSha256'], audioAnalysis=measured)
+                row.update(title=source['title'], sourceRevision=source['revision'], audioSha256=source['audioSha256'], audioAnalysis=measured)
                 analyzed.append(row)
             except Exception as error:
                 reason = str(error) if isinstance(error, ValueError) and re.fullmatch('[a-z_]{1,100}', str(error)) else 'source_analysis_unavailable'
@@ -172,7 +174,9 @@ def prepare(call, policy, sftp, analyzer):
             finally:
                 (Path(folder) / 'source.mp3').unlink(missing_ok=True)
     if len(analyzed) != 3:
-        raise ValueError('three_measured_sources_required')
+        error = ValueError('three_measured_sources_required')
+        error.diagnostics = {'eligible': len(ranked), 'measured': len(analyzed), 'skipped': skipped}
+        raise error
     return {'checkedAt': datetime.now(timezone.utc).isoformat(), 'candidateCount': len(ranked), 'genrePlaylistCount': len(active_policy['genrePlaylistIds']),
             'sourceMethod': 'registered_track_key_and_exact_public_video', 'rankingMethod': 'smoothed_engagement_and_optional_recent_retention',
             'candidates': analyzed, 'skipped': skipped,

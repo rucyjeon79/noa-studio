@@ -74,7 +74,7 @@ class PreparationTests(unittest.TestCase):
         def call(command, **q):
             calls.append(command)
             if command == 'catalog':return {'items': rows}
-            if command == 'source':return {'source': {'key': q['trackKey'], 'revision': 7, 'audioSha256': digest, 'audioPath': '/hosting/noastudio/html/noa-jukebox/song.mp3', 'duration': 210, 'lyrics': 'registered lyrics'}}
+            if command == 'source':return {'source': {'key': q['trackKey'], 'title': q['trackKey'], 'genre': 'edm-kpop-club', 'revision': 7, 'audioSha256': digest, 'audioPath': '/hosting/noastudio/html/noa-jukebox/song.mp3', 'duration': 210, 'lyrics': 'registered lyrics'}}
             resource = q['resource']
             if resource == 'analytics':raise RuntimeError('not_ready')
             if resource == 'playlists':return {'data': {'items': lists}}

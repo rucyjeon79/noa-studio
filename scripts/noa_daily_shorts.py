@@ -15,7 +15,10 @@ def main():
         print('N80_SHORTS_PREPARATION',json.dumps({'state':claim['state']}),flush=True)
         return
     lease=claim['lease']
-    def call(command,**fields):return dispatch(command,lease=lease,**fields)
+    last_step={}
+    def call(command,**fields):
+        last_step.clear();last_step.update(command=command,resource=fields.get('resource'))
+        return dispatch(command,lease=lease,**fields)
     try:
         import paramiko
         from noa_full_inventory import connect
@@ -33,10 +36,11 @@ def main():
     except Exception as error:
         import re
         reason=str(error) if isinstance(error,ValueError) and re.fullmatch('[a-z_]{1,100}',str(error)) else 'preparation_dependency_failed'
-        try:call('fail_preparation',reason=reason)
+        diagnostic={'step':dict(last_step),'httpStatus':getattr(error,'code',None),**getattr(error,'diagnostics',{})}
+        try:call('fail_preparation',reason=reason,diagnostic=diagnostic)
         except Exception:pass
         # A Shorts/provider failure must not stop unrelated text/music operations.
-        print('N80_SHORTS_PREPARATION',json.dumps({'state':'preparation_failed','reason':reason,'errorType':type(error).__name__}),flush=True)
+        print('N80_SHORTS_PREPARATION',json.dumps({'state':'preparation_failed','reason':reason,'errorType':type(error).__name__,'diagnostic':diagnostic}),flush=True)
 
 if __name__=='__main__':
     main()
