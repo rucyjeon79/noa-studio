@@ -9,6 +9,7 @@ function n80_jukebox_module(): array {
         'runtime'=>['api'=>'N80JukeBox','scope'=>'one_audio_per_document','activation'=>'music_view',
             'state'=>'existing_tab_checkpoint','nativeBackend'=>'existing_android_bridge'],
         'components'=>[
+            'references'=>'noa-app/engine/jukebox-references.php',
             'playback'=>'noa-app/jukebox/player.js',
             'presentation'=>'noa-app/jukebox/presentation.js',
             'navigation'=>'noa-app/jukebox/navigation-policy.js',
