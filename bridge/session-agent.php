@@ -63,10 +63,12 @@ function sa_next(array $j):array {
  if(in_array($j['state'],['saved','cancelled','agent_paused'],true))return ['action'=>$j['state']];
  if($a['active'])return ['action'=>$a['active']['phase']==='received'?'review':'reconcile','operation'=>$a['active']];
  if(count($a['scenes'])<$a['target'])return ['action'=>'plan','start'=>count($a['scenes'])+1,'count'=>min(10,$a['target']-count($a['scenes']))];
- if(!empty($a['subtitles']['enabled'])&&($a['subtitles']['status']??'pending')!=='ready')return ['action'=>($a['subtitles']['status']??'pending')==='needs_review'?'review_subtitles':'align_subtitles','subtitles'=>sa_subtitle_summary($j)];
  foreach($a['scenes'] as $s)foreach(['image','video'] as $kind)if(empty($s[$kind]['accepted']))return ['action'=>'generate','kind'=>$kind,'scene'=>$s['n']];
  $layout=sa_layout($j);
  if(!$layout['ready'])return ['action'=>'extend_plan','count'=>max(1,(int)ceil($layout['missingSeconds']/max(1,8-$a['timing']['overlapSeconds'])))];
+ // Visual creation is independent of lyric timing. Keep subtitle readiness a
+ // mandatory assembly gate, without blocking recoverable image/video work.
+ if(!empty($a['subtitles']['enabled'])&&($a['subtitles']['status']??'pending')!=='ready')return ['action'=>($a['subtitles']['status']??'pending')==='needs_review'?'review_subtitles':'align_subtitles','subtitles'=>sa_subtitle_summary($j)];
  return ['action'=>'assemble','layout'=>$layout];
 }
 function sa_view(array $j,bool $detail=false,int $from=1):array {

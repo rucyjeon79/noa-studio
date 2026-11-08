@@ -12,12 +12,18 @@ try{
  $j=$call('agentStart',['trackKey'=>$source['key'],'sourceRevision'=>1,'requestId'=>$id(),'goal'=>'한글자막 뮤비','format'=>'landscape','subtitles'=>true])['job'];$jobId=$j['id'];
  $claim=$call('agentStep',['id'=>$jobId,'action'=>'claim','sessionId'=>$id()]);$lease=$claim['lease'];$j=$claim['job'];
  $step=function($action,$extra=[])use($call,$id,$jobId,&$lease,&$j){$b=['id'=>$jobId,'action'=>$action,'lease'=>$lease,'requestId'=>$id(),'expectedRevision'=>$j['revision']]+$extra;$r=$call('agentStep',$b);$j=$r['job'];return [$b,$r];};
- $step('plan',['scenes'=>[['n'=>1,'summary'=>'검증','imagePrompt'=>'scene','videoPrompt'=>'motion']]]);check($j['next']['action']==='align_subtitles','Subtitle stage not connected');
+ $step('plan',['scenes'=>[['n'=>1,'summary'=>'검증','imagePrompt'=>'scene','videoPrompt'=>'motion']]]);check($j['next']['action']==='generate','Pending subtitles blocked independent visuals');
+ [$begin]=$step('begin',['kind'=>'image','scene'=>1]);
+ $step('not_created',['operationId'=>$begin['requestId'],'providerHistoryChecked'=>true,'note'=>'Isolated fixture: no provider request was sent.']);
  $payload=json_decode(file_get_contents($fixtures.'/subtitle-payload.json'),true,32,JSON_THROW_ON_ERROR);
  refuses(fn()=>$step('subtitles',['subtitles'=>array_replace($payload,['sourceAudioSha256'=>str_repeat('0',64)])]),'subtitle_source_mismatch');
  $changed=$payload;$changed['cues'][0]['text']='다른 곡의 가사';refuses(fn()=>$step('subtitles',['subtitles'=>$changed]),'invalid_subtitle_cues');
- $partial=$payload;$partial['cues']=array_slice($partial['cues'],0,1);$step('subtitles',['subtitles'=>$partial]);check($j['next']['action']==='review_subtitles','Unmatched lyric hidden');
- refuses(fn()=>$step('begin',['kind'=>'image','scene'=>1]),'unexpected_agent_step');
+ $partial=$payload;$partial['cues']=array_slice($partial['cues'],0,1);$step('subtitles',['subtitles'=>$partial]);check($j['subtitles']['status']==='needs_review'&&$j['next']['action']==='generate','Unmatched lyrics hidden or independent visuals blocked');
+ // Even after every actual visual is accepted, unresolved lyrics block final assembly.
+ $fenced=lab_read()['jobs'][$jobId];$fenced['agent']['scenes']=[['n'=>1,'image'=>['accepted'=>true],'video'=>['accepted'=>true,'duration'=>5,'sha256'=>str_repeat('a',64)]]];
+ check(sa_next($fenced)['action']==='review_subtitles','Incomplete lyrics allowed assembly');
+ $fenced['agent']['subtitles']['status']='pending';check(sa_next($fenced)['action']==='align_subtitles','Missing alignment allowed assembly');
+ refuses(fn()=>$step('begin',['kind'=>'final','scene'=>0]),'unexpected_agent_step');
  refuses(fn()=>$step('subtitle_review',['accepted'=>true,'audioChecked'=>true,'note'=>'Missing line must block.']),'complete_subtitles_required');
  $low=$payload;$low['cues'][0]['probability']=.1;$step('subtitles',['subtitles'=>$low]);
  refuses(fn()=>$step('subtitle_review',['accepted'=>true,'note'=>'Not listened.']),'subtitle_audio_review_required');

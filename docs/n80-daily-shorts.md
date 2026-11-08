@@ -60,3 +60,7 @@ neither sets `audioListeningReviewed` or `publicationReady` to true.
 This stage does not implement automatic English-to-Korean translation, audio
 listening review, portrait generation or the native Related-video adapter.
 Production remains blocked until those required execution/review steps succeed.
+
+Visual work may proceed while subtitle timing awaits review. Both stages remain
+inside the same leased N80 task. Unresolved subtitles still block final assembly,
+file acceptance and publication; creating a scene never counts as audio review.
