@@ -30,10 +30,17 @@ Public LAB projections exclude session leases and private source paths. Source a
 
 ## Verification
 
-- `node tests/session-agent/assembly.mjs /tmp/n80-session-fixture`: actual FFmpeg encode/decode, overlap, exact endpoint, original-audio correlation against a deliberately different clip soundtrack, altered-source and broken-timeline rejection.
+- `node tests/session-agent/assembly.mjs /tmp/n80-session-fixture`: actual 5-second and 61-second FFmpeg encode/decode with exact 120/1464-frame counts, eight overlaps, blended transition pixels, fractional 5.02-second portrait output with 121 frames, exact frame endpoint, original-audio correlation against a deliberately different clip soundtrack, altered-source and broken-timeline rejection.
 - `php tests/session-agent/core.php /tmp/n80-session-fixture`: isolated native store; ownership, leases, current-source fencing, chunk integrity and replay, ambiguous-operation reconciliation, mandatory visual review, shorter-clip plan extension, final receipt/readback, adaptive prompts and pause/resume.
 - `python tests/gpt/flow.py`: existing transport and new plugin-only operation boundary.
 - `scripts/qa/noa-session-agent.mjs`: six mobile/tablet/desktop light/dark layouts, current song/version, empty optional request, continuation link and pause/resume. Provider responses are isolated fixtures, not actual new Gemini/Flow generations.
 - The connector's `scripts/test-agent.mjs` verifies tool discovery, fixed origin/transport, owner boundary and existing tool preservation.
 
 The `[n80-browser]` scoped workflow owns activation and server hash readback; the GPT and other overlapping deployment jobs skip it. Do not equate synthetic media tests, source publication, a prior provider pilot or a task receipt with a newly completed full-song movie.
+
+## Completion resumed on 2026-11-09 (KST)
+
+- Recovered the existing implementation at `1c529b6`; the previous AI LAB activation (`42475003025`) had passed both verification and production publication. Assistant Site version 5 retains its existing identity and owner-only access.
+- Fixed the remaining media defect: each crossfade is blended at the planned frame count, each segment is checked, and normalization/final encoding use explicit 24 fps CFR. Concatenation resets timestamps by frame index. A lost frame or changed final count now rejects the output. Original audio remains the sole audio input.
+- Actual authenticated plugin calls passed: management connection, `noa_agent_tasks`, and `noa_agent_read(trackKey)` returned the current source revision, lyrics, duration and audio checksum. All five new agent tools are discoverable in the current ChatGPT session. No production test task or generated media was created.
+- This completes the pending assembly correction and live tool-connection check. A newly generated full-song Gemini/Flow movie is a separate production execution, not a result of these fixture tests.

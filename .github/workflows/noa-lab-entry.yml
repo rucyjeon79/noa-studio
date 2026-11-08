@@ -1,5 +1,7 @@
 name: Verify and publish AI LAB entry
 on:
+  pull_request:
+    paths: ['lab/session-assemble.mjs','tests/session-agent/**','.github/workflows/noa-lab-entry.yml']
   push:
     branches: [main, work/n80-browser-media, work/n80-duration-cuts, work/n80-session-agent]
     paths: ['bridge/session-agent*.php','lab/session-assemble.mjs','tests/session-agent/**','scripts/qa/noa-session-agent.mjs','deploy/noa-app/engine/ai-lab.php','deploy/noa-gpt.php','.github/workflows/noa-lab-entry.yml','bridge/lab-browser-assets.php','tests/lab/browser_assets_test.php','tests/lab/http_test.py','tests/lab/clip_fixture.b64','bridge/lab-core.php','bridge/lab-api.php','bridge/catalog.php','deploy/noa-ai-lab.js','deploy/noa-ai-lab.php','bridge/muvy*.php','deploy/noa-muvy*','tests/muvy/**','scripts/qa/noa-muvy.mjs']
