@@ -5,7 +5,7 @@ require __DIR__.'/../../bridge/youtube-store.php';
 $db=new PDO($dsn,'root','noa-test-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
 foreach(require __DIR__.'/../../bridge/catalog-schema.php' as $sql)$db->exec($sql);ny_schema($db);
 $db->exec("CREATE TABLE noa_documents(doc_key VARCHAR(191) CHARACTER SET ascii PRIMARY KEY,kind VARCHAR(32),payload LONGTEXT,revision BIGINT UNSIGNED,updated_by VARCHAR(20),updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE noa_document_history(doc_key VARCHAR(191) CHARACTER SET ascii,revision BIGINT UNSIGNED,payload LONGTEXT,changed_by VARCHAR(20),PRIMARY KEY(doc_key,revision)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE noa_document_history(doc_key VARCHAR(191) CHARACTER SET ascii,revision BIGINT UNSIGNED,payload LONGTEXT,changed_by VARCHAR(20),changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY(doc_key,revision)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE noa_request_log(request_id CHAR(36) CHARACTER SET ascii PRIMARY KEY,doc_key VARCHAR(191) CHARACTER SET ascii,request_hash CHAR(64),revision BIGINT UNSIGNED) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 $id=str_repeat('a',64);$batch=str_repeat('b',64);$channel='UCwYy9xsAqDFat6AV5UKrfgA';$video='abcdefghijk';
 $db->prepare('INSERT INTO noa_catalog_batches(batch_id,status,report,source_guard,created_by,applied_at) VALUES(?,?,?,?,?,CURRENT_TIMESTAMP)')->execute([$batch,'applied','{}','guard','fixture']);

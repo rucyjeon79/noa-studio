@@ -25,6 +25,11 @@ check(str_starts_with($ma['audio_path'],'사연곡/')&&dirname($ma['audio_path']
 check(nj_verified($ma,'audio')&&nj_verified($ma,'cover'),'both media hashes and formats preserved');
 check($move['document']['body']['audioFileLocation']===$ma['audio_path']&&$move['document']['body']['cardImageLocation']===$ma['cover_path'],'current record has current paths');
 nml_cleanup($db);foreach($oldPaths as $old)check(nj_file($old)===null,'unreferenced old path removed after commit');
+// An in-flight upload cannot race a classification change.
+$busyId='55555555555555555555555555555555';$db->prepare('INSERT INTO noa_jukebox_uploads(id,song_key,source_url,filename,extension,file_bytes,fingerprint,total_chunks,status,context,requested_by) VALUES(?,?,?,?,?,?,?,?,?,?,?)')->execute([$busyId,$move['doc_key'],'','busy.mp3','mp3',filesize(__DIR__.'/fixture.mp3'),str_repeat('5',64),1,'processing','{}',$owner]);
+$moveRevision=$move['revision'];denied(fn()=>ncd_save($db,$owner,['id'=>$moveId,'revision'=>$moveRevision,'location'=>['genre'=>'kpop-original','ep'=>'88','collections'=>[]]]),'upload_busy');
+check(ncd_row($db,$moveId,$owner)['revision']===$moveRevision&&nj_find($db,$move['doc_key'])['audio_path']===$ma['audio_path'],'active upload leaves record and paths unchanged');
+$db->prepare("UPDATE noa_jukebox_uploads SET status='ready' WHERE id=?")->execute([$busyId]);
 // A SQL rollback preserves old media and removes only this operation\'s unused links.
 $rollbackDoc=$move['document'];$rollbackDoc['_creative']['locationConfirmed']=false;$db->beginTransaction();$rolled=nml_sync($db,$move['doc_key'],$rollbackDoc);$db->rollBack();nml_cleanup($db);
 check(nj_find($db,$move['doc_key'])['audio_path']===$ma['audio_path']&&nj_verified($ma,'audio'),'rollback preserves committed playable media');check(nj_file($rolled['body']['audioFileLocation'])===null,'rollback cleans unused target');

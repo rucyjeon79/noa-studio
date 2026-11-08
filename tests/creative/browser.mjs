@@ -96,7 +96,7 @@ await page.waitForSelector('.creative-options button');assert.equal(await page.l
  if(width===1280){const prepared=await context.request.get('http://127.0.0.1:8787/creative-test-media.php?id='+draftId);assert(prepared.ok());}
  await page.getByRole('button',{name:'확정',exact:true}).click();await page.waitForURL(/noa-music\.php\?genre=your-story&track=/);
  assert.equal(publishCalls,1,'One final click saves once and navigates to its category');
- const savedKey=new URL(page.url()).searchParams.get('track');const card=page.locator('[data-key='+JSON.stringify(savedKey)+']');await card.waitFor({state:'attached'});assert.equal(await card.getAttribute('data-genre'),'your-story');assert((await card.getAttribute('data-title')).length>0);
+ const savedKey=new URL(page.url()).searchParams.get('track');const card=page.locator('[data-key='+JSON.stringify(savedKey)+']');await card.waitFor({state:'attached'});assert.equal(await card.getAttribute('data-genre'),'your-story');assert(!(await page.locator('body').innerText()).includes('음악 목록을 불러오지 못했습니다'),'Saved category loads real song records');assert((await card.getAttribute('data-title')).length>0);
  assert.equal(await card.getAttribute('data-jukebox-status'),width===1280?'ready':'audio_pending');
  await page.screenshot({path:`${output}/saved-category-${width}.png`,fullPage:true});
  await context.close();console.log('CREATIVE_BROWSER_REAL_SQL_FLOW_OK',width);

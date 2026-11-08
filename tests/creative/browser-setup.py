@@ -20,6 +20,7 @@ if($j['operation']==='revise'&&in_array('title',$j['targets'],true)&&isset($_GET
 foreach(['youtubeTitle','description','communityPost'] as $k)if(isset($result['fields'][$k]))$result['fields'][$k]=($result['fields']['title']??$j['input']['fields']['title']).' · '.$result['fields'][$k];
 echo json_encode(ncd_worker($db,'save',$id,['text'=>ncd_json($result)]));
 ''')
+p=site/'noa-music.php';s=p.read_text().replace("error_log('[noa-music] '.get_class($e))","error_log('[noa-music] '.get_class($e).':'.$e->getMessage())");p.write_text(s)
 print('CREATIVE_HTTP_FIXTURE_READY')
 
 # Real shared theme artwork is part of the browser fixture.

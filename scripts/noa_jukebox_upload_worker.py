@@ -109,7 +109,7 @@ def _drain_uploads(sftp,call,mkdir,source_reader=None,idle_seconds=0):
                 if card:
                     target_cover=PRIVATE+'/media/'+(directory/'cover.webp').as_posix()
                     publish_final(sftp,Path(temp)/'cover.webp',target_cover,card['cover_sha256'],mode=0o600,owner=job['id'])
-                result={'song_key':job['key'],'source_url':job['source_url'],'suno_id':context.get('suno_id',''),'suno_title':title,
+                result={'song_key':job['key'],'source_url':job['source_url'],'suno_id':context.get('suno_id',''),'suno_title':context.get('suno_title') or title,
                         'audio_path':relative.as_posix(),'audio_bytes':output.stat().st_size,'audio_sha256':digest,
                         'source_analysis':before,'correction':settings,'final_analysis':after,'errors':card_errors,
                         'audio_discovery':{'permission':('creator_owned_upload' if context.get('authorization')=='creator_owned_upload' else 'administrator_owned_upload'),'download_authorized':True,'provenance':('creator_upload' if context.get('authorization')=='creator_owned_upload' else 'administrator_upload'),'upload_id':job['id']},
