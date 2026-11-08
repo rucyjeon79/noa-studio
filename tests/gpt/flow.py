@@ -40,7 +40,7 @@ with tempfile.TemporaryDirectory() as tmp:
     bridge_src = re.sub(r"\$pluginHash = '[a-f0-9]{64}';", "$pluginHash = '"+hashlib.sha256(plugin_key.encode()).hexdigest()+"';", bridge_src)
     shutil.copy("deploy/noa-plugin-records.php",root)
     target.write_text(bridge_src.replace(' WHERE request_id=? FOR UPDATE',' WHERE request_id=?'))
-    for module in ("session-agent.php","lab-core.php","muvy-timeline.php"):
+    for module in ("session-agent.php","session-subtitles.php","lab-core.php","muvy-timeline.php"):
         shutil.copy(Path("bridge")/module,bridge)
     shutil.copy("bridge/generation-rules.php",bridge)
     shutil.copy("bridge/n80-ai-output.php",bridge)

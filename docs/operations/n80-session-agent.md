@@ -6,7 +6,7 @@ User-selected execution mode (2026-11-08): ChatGPT operates tools in the current
 
 - N80 AI LAB owns `agent_movie` jobs in its existing locked private state. Existing workers ignore `agent_*` states. No second queue, scheduler, paid model API, point debit or public posting path is introduced.
 - `noa-gpt.php` accepts the existing owner-private plugin key for five new operations. Pairing keys and worker keys cannot invoke them. Release the GPT transport lock before entering the LAB lock.
-- The existing NOA STUDIO Assistant identity exposes `noa_agent_tasks`, `noa_agent_start`, `noa_agent_read`, `noa_agent_step`, `noa_agent_file`.
+- The existing NOA STUDIO Assistant identity exposes `noa_agent_tasks`, `noa_agent_start`, `noa_agent_read`, `noa_agent_step`, `noa_agent_file`, `noa_agent_subtitles`.
 - Admin UI uses the same dispatch functions through existing session/CSRF protection. Creation is an explicit button; it records a task and offers ChatGPT continuation. A page cannot start an unattended ChatGPT browser session.
 - Read current source by original key before creating. The current resolved song fields and the verified Jukebox audio checksum define the source fingerprint. A material change blocks subsequent generation and writes. Historical files remain readable by the owner.
 
@@ -30,10 +30,38 @@ Public LAB projections exclude session leases and private source paths. Source a
 
 ## Verification
 
-- `node tests/session-agent/assembly.mjs /tmp/n80-session-fixture`: actual FFmpeg encode/decode, overlap, exact endpoint, original-audio correlation against a deliberately different clip soundtrack, altered-source and broken-timeline rejection.
+- `node tests/session-agent/assembly.mjs /tmp/n80-session-fixture`: actual 5-second and 61-second FFmpeg encode/decode with exact 120/1464-frame counts, eight overlaps, blended transition pixels, fractional 5.02-second portrait output with 121 frames, exact frame endpoint, original-audio correlation against a deliberately different clip soundtrack, altered-source and broken-timeline rejection.
 - `php tests/session-agent/core.php /tmp/n80-session-fixture`: isolated native store; ownership, leases, current-source fencing, chunk integrity and replay, ambiguous-operation reconciliation, mandatory visual review, shorter-clip plan extension, final receipt/readback, adaptive prompts and pause/resume.
 - `python tests/gpt/flow.py`: existing transport and new plugin-only operation boundary.
 - `scripts/qa/noa-session-agent.mjs`: six mobile/tablet/desktop light/dark layouts, current song/version, empty optional request, continuation link and pause/resume. Provider responses are isolated fixtures, not actual new Gemini/Flow generations.
 - The connector's `scripts/test-agent.mjs` verifies tool discovery, fixed origin/transport, owner boundary and existing tool preservation.
 
 The `[n80-browser]` scoped workflow owns activation and server hash readback; the GPT and other overlapping deployment jobs skip it. Do not equate synthetic media tests, source publication, a prior provider pilot or a task receipt with a newly completed full-song movie.
+
+## Completion resumed on 2026-11-09 (KST)
+
+- Recovered the existing implementation at `1c529b6`; the previous AI LAB activation (`42475003025`) had passed both verification and production publication. Assistant Site version 5 retains its existing identity and owner-only access.
+- Fixed the remaining media defect: each crossfade is blended at the planned frame count, each segment is checked, and normalization/final encoding use explicit 24 fps CFR. Concatenation resets timestamps by frame index. A lost frame or changed final count now rejects the output. Original audio remains the sole audio input.
+- Actual authenticated plugin calls passed: management connection, `noa_agent_tasks`, and `noa_agent_read(trackKey)` returned the current source revision, lyrics, duration and audio checksum. All five new agent tools are discoverable in the current ChatGPT session. No production test task or generated media was created.
+- This completes the pending assembly correction and live tool-connection check. A newly generated full-song Gemini/Flow movie is a separate production execution, not a result of these fixture tests.
+
+
+## Automatic Korean lyrics subtitles
+
+The AI LAB movie form enables Korean subtitles by default. Existing jobs and API requests without `subtitles: true` retain their previous behavior. Registered Korean lyrics are the display source; bracketed performance tags are removed. This does not translate foreign-language lyrics.
+
+After planning, `agentRead.next` requests `align_subtitles` before provider generation. Download the hash-bound original audio and use `agentRead.subtitleTool.manifest` with the local path substituted. Install `lab/subtitle-requirements.txt` into an isolated Python environment; FFmpeg, ffprobe, fontconfig and Noto Sans CJK KR are required. Run:
+
+```sh
+python lab/session-subtitles.py manifest.json subtitles.json --model small --cache-dir /path/to/model-cache
+```
+
+The first run downloads the open model weights; subsequent runs reuse them. Recognition uses local CPU/int8 processing with no paid API. FFmpeg decodes the original audio to PCM, so Python media-decoder version differences do not affect recognition input. `--transcript` only accepts measured word times tied to the same audio checksum.
+
+Save the report's `payload` through `noa_agent_subtitles(action=save)` with the current lease, expectedRevision and idempotency requestId. N80 derives its own status: complete lines with strong matches proceed automatically; missing lines, low confidence, overlaps and long internal gaps require correction or audio review. No equal-duration timestamps are invented. Review requires complete exact lyrics, listening to the flagged intervals, `audioChecked`, `accepted` and a note. Retain real measured timing when correcting a report. If audio cannot be checked, pause and report that limitation.
+
+Approved cues and their hashes persist in the existing job. The assembly manifest burns outlined white Korean text into both 16:9 and 9:16 video, wraps to two lines and leaves gaps without text. The source audio and subtitle digest must match the final upload proof. Final visual/audio review still applies. SRT/VTT are derived from the same approved cues through authenticated downloads or `noa_agent_file(kind=srt|vtt)`, avoiding extra server files and queues.
+
+Validation includes Python alignment cases (repeated chorus, silence, missing/uncertain words), actual FFmpeg Korean-pixel and gap checks in both formats, PHP source/lease/replay/review/export/final-proof checks, and six light/dark screen layouts. A local 190.92-second copy of “하루의 끝에” also ran the actual recognizer: all nine supplied excerpt lines received candidate times, with two flagged for review, including a repeated-phrase gap. This was an inference diagnostic, not approval of a full-song subtitle track.
+
+Release the backend and the matching saved Assistant connector version together after production approval. The connector adds one subtitle tool while retaining every existing tool and owner-only access. Source preparation and test fixtures do not mean production activation.

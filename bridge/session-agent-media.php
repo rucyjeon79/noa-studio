@@ -50,6 +50,10 @@ function sa_file(array &$j,array $b):array {
  if(!is_int($offset)||$offset<0||$offset>512*1048576)throw new InvalidArgumentException('invalid_file_offset');
  if($mode==='read'){
   $kind=$b['kind']??'';$n=(int)($b['scene']??0);
+  if(in_array($kind,['srt','vtt'],true)){
+   $text=sa_subtitle_text($j,$kind);$size=strlen($text);if($offset>$size)throw new InvalidArgumentException('invalid_file_offset');$data=substr($text,$offset,524288);
+   return ['data'=>base64_encode($data),'offset'=>$offset,'nextOffset'=>$offset+strlen($data),'bytes'=>$size,'sha256'=>hash('sha256',$text),'done'=>$offset+strlen($data)===$size];
+  }
   if($kind==='audio'){$path=$j['source']['audioPath'];$sha=$j['audioSha256'];}
   else{$asset=$kind==='final'?($j['outputs'][0]??(($a['active']['kind']??'')==='final'?($a['active']['asset']??null):null)):($a['scenes'][$n-1][$kind]??null);
    if(!in_array($kind,['image','video','final'],true)||!$asset)throw new DomainException('asset_not_available');$path=lab_job_dir($j['id']).'/'.$asset['file'];$sha=$asset['sha256'];}
@@ -85,6 +89,10 @@ function sa_file(array &$j,array $b):array {
    if(!$layout['ready']||[$asset['width'],$asset['height']]!==$dims||abs($asset['duration']-$j['source']['duration'])>.125||abs(($asset['audioDuration']??0)-$j['source']['duration'])>.125
     ||($v['decoded']??false)!==true||($v['audioMapped']??false)!==true||($v['sourceAudioSha256']??'')!==$j['audioSha256']
     ||($v['sceneHashes']??[])!==array_column($layout['scenes'],'sha256'))throw new DomainException('final_validation_failed');
+   if(!empty($a['subtitles']['enabled'])){
+    if(($a['subtitles']['status']??'')!=='ready'||($v['subtitleSha256']??'')!==$a['subtitles']['sha256']||($v['subtitlesBurned']??false)!==true)throw new DomainException('subtitle_final_mismatch');
+    $asset['checks']['subtitlesBurned']=true;$asset['checks']['subtitleSha256']=$a['subtitles']['sha256'];
+   }
    $asset['checks']['decodedByAgent']=true;$asset['checks']['originalAudioVerified']=true;$asset['checks']['durationMatched']=true;
   }
  }

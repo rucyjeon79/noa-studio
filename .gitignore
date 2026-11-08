@@ -20,3 +20,7 @@ quality-popularity/
 /deploy/noa-app/engine/personal-korean-months.json
 /deploy/noa-app/engine/personal-calendar-LICENSE.txt
 /listening-proof/
+
+# Local inference and test caches
+__pycache__/
+*.pyc

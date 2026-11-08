@@ -4,7 +4,7 @@ if(!str_contains((string)getenv('NOA_MYSQL_DSN'),'dbname=noa_workspace_test;'))t
 require __DIR__.'/../../bridge/storage.php';require __DIR__.'/../../bridge/catalog-store.php';require __DIR__.'/../../bridge/youtube-store.php';require __DIR__.'/../../bridge/package-record.php';
 $db=noa_bridge_pdo();
 $db->exec('CREATE TABLE noa_documents(doc_key VARCHAR(191) PRIMARY KEY,kind VARCHAR(32),payload LONGTEXT,revision BIGINT,updated_by VARCHAR(20),updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP) ENGINE=InnoDB');
-$db->exec('CREATE TABLE noa_document_history(doc_key VARCHAR(191),revision BIGINT,payload LONGTEXT,changed_by VARCHAR(20),PRIMARY KEY(doc_key,revision)) ENGINE=InnoDB');
+$db->exec('CREATE TABLE noa_document_history(doc_key VARCHAR(191),revision BIGINT,payload LONGTEXT,changed_by VARCHAR(20),changed_at DATETIME DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY(doc_key,revision)) ENGINE=InnoDB');
 $db->exec('CREATE TABLE noa_request_log(request_id CHAR(36) PRIMARY KEY,doc_key VARCHAR(191),request_hash CHAR(64),revision BIGINT) ENGINE=InnoDB');nc_schema($db);ny_schema($db);
 $batch=str_repeat('f',64);nc_insert($db,'noa_catalog_batches',['batch_id'=>$batch,'status'=>'applied','report'=>'{}','source_guard'=>str_repeat('0',64),'created_by'=>'fixture'],['batch_id']);$db->exec('UPDATE noa_catalog_batches SET applied_at=CURRENT_TIMESTAMP');
 foreach([['a','story:test','your-story','검색 검증곡'],['b','single:test','kpop-original','EP 검증곡'],['c','story:private','cover-reborn','비공개 검증곡']] as [$letter,$key,$genre,$title]){

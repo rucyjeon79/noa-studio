@@ -5,6 +5,12 @@ lab_admin();if(empty($_SESSION['noa_lab_csrf']))$_SESSION['noa_lab_csrf']=bin2he
 $method=$_SERVER['REQUEST_METHOD']??'GET';$action=(string)($_GET['action']??'status');
 if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 try {
+ if($method==='GET'&&$action==='agent_subtitle_download'){
+  require_once __DIR__.'/session-agent.php';$id=lab_id((string)($_GET['id']??''));$format=(string)($_GET['format']??'srt');
+  if(!in_array($format,['srt','vtt'],true))throw new InvalidArgumentException('invalid_subtitle_format');
+  $r=sa_dispatch('agentFile',['id'=>$id,'mode'=>'read','kind'=>$format,'offset'=>0],(string)$member['mb_id']);
+  header('Content-Type: '.($format==='vtt'?'text/vtt':'application/x-subrip').'; charset=utf-8');header('Content-Disposition: attachment; filename="subtitles.'.$format.'"');echo base64_decode($r['data'],true);exit;
+ }
  if($method==='GET'&&$action==='status'){
   $snapshot=lab_read();
   lab_json(200,lab_status($snapshot)+['csrf'=>$_SESSION['noa_lab_csrf'],'generation'=>na_generation_status($snapshot),'textUsage'=>array_slice($snapshot['ainoaRecentUsage']??[],-20)]);
