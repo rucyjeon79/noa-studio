@@ -64,3 +64,18 @@ Production remains blocked until those required execution/review steps succeed.
 Visual work may proceed while subtitle timing awaits review. Both stages remain
 inside the same leased N80 task. Unresolved subtitles still block final assembly,
 file acceptance and publication; creating a scene never counts as audio review.
+
+The first concrete 49-second pilot uses source `single:echoes-of-joseon:13`,
+152.24–201.24 seconds, in task `b3479a0ca5aa45692fbcd117c6852e86`.
+Seven scene plans are stored in that task. A local medium-model pass over the
+actual excerpt exposed a greedy repeated-chorus alignment error: recognized
+early words were assigned to a later chorus. Minimum-edit ordered alignment
+recovers 11 of the 12 registered excerpt lines from the same measured transcript,
+instead of seven. The remaining mixed Korean/English line still fails matching
+and must not be approved automatically. No listening review, finished movie or
+scheduled upload is implied by these results.
+
+The matcher uses a bounded eight-million-cell traceback and reports
+`transcript_alignment_too_large` for inputs exceeding that limit. It maps only
+actual matching recognized characters to their measured word intervals; it
+does not fill missing lyrics, interpolate times or waive confidence checks.

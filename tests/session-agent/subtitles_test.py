@@ -53,6 +53,26 @@ class SubtitleAlignment(unittest.TestCase):
         self.assertEqual(len(result['cues']), 1)
         self.assertEqual(result['issues'][0]['reason'], 'voice_not_matched')
 
+    def test_small_errors_do_not_move_first_chorus_to_later_occurrence(self):
+        # Real production failure: the first two hooks were recognized with one
+        # wrong syllable; the greedy matcher selected the later, longer block.
+        chorus = '우물에 빠진 달빛처럼\n너는 내 안에 sink deep\n사랑의 잔해가 남아\n아직도 calling your name'
+        lyrics = chorus + '\n' + chorus + '\n우물에 빠진 달빛처럼\n너는 내 안에 sink deep\n너를 위한 이별이었어\n이제 조용히 피어나'
+        heard = lyrics.splitlines()
+        heard[0] = heard[4] = '눈물에 빠진 달빛처럼'
+        heard[9] = '너로 내 안의 SYNC D'
+        heard[11] = '이제 조용히 피어내'
+        words = [self.word(line, i * 4, i * 4 + 3.5) for i, line in enumerate(heard)]
+        result = module.match_lyrics(lyrics, words, 49)
+        self.assertEqual([c['line'] for c in result['cues']], [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12])
+        self.assertEqual([c['startMs'] for c in result['cues']], [i * 4000 for i in range(12) if i != 9])
+        self.assertFalse(result['ready'])  # Mistranscribed mixed-language line still needs review.
+        self.assertIn({'line': 10, 'reason': 'voice_not_matched'}, result['issues'])
+
+    def test_alignment_has_a_bounded_memory_and_time_budget(self):
+        with self.assertRaisesRegex(ValueError, 'transcript_alignment_too_large'):
+            module.ordered_character_mapping('가' * 3000, '가' * 3000, list(range(3000)))
+
     def test_low_confidence_and_silence_are_reviewed(self):
         result = module.match_lyrics('별빛이 내려와', [self.word('별빛이', 2, 3, .1), self.word('내려와', 8, 9)], 10)
         self.assertFalse(result['ready'])
