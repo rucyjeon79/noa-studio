@@ -1,5 +1,5 @@
 """Native PHP/SQLite rendering fixture, never uploaded to the operating site."""
-import base64,hashlib,json,shutil,subprocess,tempfile
+import base64,hashlib,json,re,shutil,subprocess,tempfile
 from pathlib import Path
 
 def render():
@@ -29,12 +29,14 @@ def render():
  setup="require '"+str(bridge/'storage.php')+"';$d=noa_bridge_pdo();$d->exec(base64_decode('"+base64.b64encode(sql.encode()).decode()+"'));$q=$d->prepare('INSERT INTO noa_documents VALUES(?,?,?)');foreach(json_decode(base64_decode('"+enc(docs)+"'),true) as $r)$q->execute($r);"
  subprocess.run(['php','-r',setup],check=True,capture_output=True)
  out=Path('youtube-coming-proof');out.mkdir(exist_ok=True)
- for page,filename,marker in [('noa-youtube.php','candidate.html','const rows='),('noa-music.php','music.html','const records=')]:
+ for page,filename,marker in [('noa-youtube.php','candidate.html','const rows='),('noa-music.php','music.html','id="n80-jukebox-data"')]:
   code="$_GET=[];$_SERVER['REQUEST_METHOD']='GET';$_SERVER['REQUEST_URI']='/"+page+"';require '"+str(root/page)+"';"
   result=subprocess.run(['php','-d','display_errors=0','-r',code],capture_output=True,text=True)
   if result.returncode or result.stderr:raise RuntimeError(result.stderr)
   assert 'PROVIDER_PRIVATE_SECRET' not in result.stdout and 'PRIVATE_DESCRIPTION_SECRET' not in result.stdout
   assert marker in result.stdout and '불러오지 못했습니다' not in result.stdout.split('<script',1)[0]
+  if page=='noa-music.php':
+   payload=json.loads(re.search(r'<script type="application/json" id="n80-jukebox-data">(.*?)</script>',result.stdout,re.S)[1]);assert len(payload['records'])==len(docs)
   (out/filename).write_text(result.stdout)
  shutil.rmtree(root)
 if __name__=='__main__':render()
