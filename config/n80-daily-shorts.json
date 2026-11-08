@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "series": "이 노래가 좋아",
+  "channelId": "UCwYy9xsAqDFat6AV5UKrfgA",
+  "destinationPlaylistId": "PLEPMKciKgvcgR8RB-jwYRE7modkBJR-em",
+  "destinationPlaylistTitle": "Shorts「이 노래가 좋아」",
+  "timezone": "Asia/Seoul",
+  "publishLocalTime": "12:00",
+  "prepareLocalTime": "08:00",
+  "maxPerLocalDate": 1,
+  "format": "shorts",
+  "minSeconds": 49,
+  "maxSeconds": 59,
+  "preferredSeconds": 55,
+  "excludedPlaylistIds": [
+    "PLEPMKciKgvcjzv6OHXFr4ypXeBT4Ihexb",
+    "PLEPMKciKgvcgR8RB-jwYRE7modkBJR-em",
+    "PLEPMKciKgvci39zJAqPjUVHzntAv3yVB3"
+  ],
+  "excludeAllShorts": true,
+  "sourcePolicy": "Other genre playlists, public full-song videos, current registered MP3 and matching trackKey/genre/EP; no re-upload from user. Recheck playlist membership and metadata each run. Aggregate playlists are not genre candidates.",
+  "relatedVideo": "YouTube Studio native related-video field, pointing to the exact selected genre version.",
+  "deduplication": "Current N80 tasks plus actual YouTube scheduled and published content; never create a second upload when an earlier result is ambiguous.",
+  "stateOwner": "N80 Engine existing agent_movie job store",
+  "executor": "Scheduled ChatGPT tool session; browser authentication and provider availability are required at execution."
+}

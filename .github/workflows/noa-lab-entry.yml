@@ -24,6 +24,7 @@ jobs:
           php -l bridge/session-agent-media.php
           php -l bridge/session-subtitles.php
           node tests/session-agent/assembly.mjs /tmp/n80-session-fixture
+          node tests/session-agent/shorts.mjs /tmp/n80-shorts-fixture
           php tests/session-agent/core.php /tmp/n80-session-fixture
           python tests/session-agent/subtitles_test.py
           node tests/session-agent/subtitles.mjs /tmp/n80-session-fixture

@@ -45,6 +45,12 @@ function sa_media_source(string $kind,string $url):string {
  if(($u['scheme']??'')!=='https'||($u['host']??'')!==$host||isset($u['user'])||isset($u['pass'])||isset($u['port'])||strlen($url)>1000)throw new InvalidArgumentException('invalid_media_source');
  return $url;
 }
+function sa_read_chunk(string $path,string $sha,mixed $offset):array {
+ if(!is_int($offset)||$offset<0||$offset>512*1048576)throw new InvalidArgumentException('invalid_file_offset');
+ if(!is_file($path)||is_link($path)||!hash_equals($sha,hash_file('sha256',$path)))throw new DomainException('asset_checksum_mismatch');
+ $size=filesize($path);if($offset>$size)throw new InvalidArgumentException('invalid_file_offset');$f=fopen($path,'rb');fseek($f,$offset);$data=fread($f,min(524288,max(1,$size-$offset)));fclose($f);
+ return ['data'=>base64_encode($data),'offset'=>$offset,'nextOffset'=>$offset+strlen($data),'bytes'=>$size,'sha256'=>$sha,'done'=>$offset+strlen($data)===$size];
+}
 function sa_file(array &$j,array $b):array {
  $mode=$b['mode']??'';$a=&$j['agent'];$offset=$b['offset']??null;
  if(!is_int($offset)||$offset<0||$offset>512*1048576)throw new InvalidArgumentException('invalid_file_offset');
@@ -57,9 +63,7 @@ function sa_file(array &$j,array $b):array {
   if($kind==='audio'){$path=$j['source']['audioPath'];$sha=$j['audioSha256'];}
   else{$asset=$kind==='final'?($j['outputs'][0]??(($a['active']['kind']??'')==='final'?($a['active']['asset']??null):null)):($a['scenes'][$n-1][$kind]??null);
    if(!in_array($kind,['image','video','final'],true)||!$asset)throw new DomainException('asset_not_available');$path=lab_job_dir($j['id']).'/'.$asset['file'];$sha=$asset['sha256'];}
-  if(!is_file($path)||is_link($path)||!hash_equals($sha,hash_file('sha256',$path)))throw new DomainException('asset_checksum_mismatch');
-  $size=filesize($path);if($offset>$size)throw new InvalidArgumentException('invalid_file_offset');$f=fopen($path,'rb');fseek($f,$offset);$data=fread($f,min(524288,max(1,$size-$offset)));fclose($f);
-  return ['data'=>base64_encode($data),'offset'=>$offset,'nextOffset'=>$offset+strlen($data),'bytes'=>$size,'sha256'=>$sha,'done'=>$offset+strlen($data)===$size];
+  return sa_read_chunk($path,$sha,$offset);
  }
  if($mode!=='write')throw new InvalidArgumentException('invalid_file_mode');
  $active=&$a['active'];if(!$active||($b['operationId']??'')!==$active['requestId'])throw new DomainException('operation_not_requested');
@@ -86,9 +90,10 @@ function sa_file(array &$j,array $b):array {
   if($kind==='video'&&$asset['duration']<=2*$a['timing']['overlapSeconds'])throw new DomainException('clip_too_short');
   if($kind==='final'){
    $layout=sa_layout($j);$v=$b['verification']??[];$dims=$a['format']==='landscape'?[1280,720]:[720,1280];
-   if(!$layout['ready']||[$asset['width'],$asset['height']]!==$dims||abs($asset['duration']-$j['source']['duration'])>.125||abs(($asset['audioDuration']??0)-$j['source']['duration'])>.125
+   if(!$layout['ready']||[$asset['width'],$asset['height']]!==$dims||abs($asset['duration']-sa_duration($j))>.125||abs(($asset['audioDuration']??0)-sa_duration($j))>.125
     ||($v['decoded']??false)!==true||($v['audioMapped']??false)!==true||($v['sourceAudioSha256']??'')!==$j['audioSha256']
     ||($v['sceneHashes']??[])!==array_column($layout['scenes'],'sha256'))throw new DomainException('final_validation_failed');
+   if(($a['selection']??null)!==null&&sa_selection($v['selection']??null,$a['format'],(float)$j['source']['duration'])!==sa_selection($a['selection'],$a['format'],(float)$j['source']['duration']))throw new DomainException('final_selection_mismatch');
    if(!empty($a['subtitles']['enabled'])){
     if(($a['subtitles']['status']??'')!=='ready'||($v['subtitleSha256']??'')!==$a['subtitles']['sha256']||($v['subtitlesBurned']??false)!==true)throw new DomainException('subtitle_final_mismatch');
     $asset['checks']['subtitlesBurned']=true;$asset['checks']['subtitleSha256']=$a['subtitles']['sha256'];
