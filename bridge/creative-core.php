@@ -19,6 +19,11 @@ function ncd_id(string $id):string {if(!preg_match('/^[a-f0-9]{32}$/D',$id))thro
 function ncd_key(string $id):string{return 'n80:draft:'.ncd_id($id);}
 function ncd_json(mixed $v):string{return json_encode($v,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);}
 function ncd_hash(mixed $v):string{return hash('sha256',ncd_json($v));}
+/** The submitted edit is anchored to current content, never a history entry. */
+function ncd_revision_input(array $d,string $field):array {$c=$d['_creative'];return ['story'=>$c['story'],'answers'=>$c['answers'],'intent'=>$c['intent'],'fields'=>nup_fields($d),'request'=>$c['requests'][$field]??'','genre'=>$d['genreId'],'ep'=>$d['ep']];}
+function ncd_proposal_current(array $d,string $field,array $p):bool {
+ return isset($p['contextHash'])&&hash_equals($p['contextHash'],ncd_hash(ncd_revision_input($d,$field)))&&($p['baseHash']??'')===ncd_hash(nup_fields($d)[$field]);
+}
 function ncd_text(mixed $v,int $max=200000):string {if(!is_string($v)||mb_strlen($v)>$max)throw new InvalidArgumentException('invalid_text');return trim($v);}
 function ncd_atomic(PDO $db,callable $fn):mixed{$db->beginTransaction();try{$r=$fn();$db->commit();return $r;}catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}}
 function ncd_row(PDO $db,string $id,string $owner,bool $lock=false):array {
@@ -40,6 +45,7 @@ function ncd_completion(array $d):array {$f=nup_fields($d);$missing=[];foreach(N
 function ncd_stage(array $d):string {$c=$d['_creative'];if(!empty($c['deletedAt']))return 'deleted';if(!empty($c['publication']))return 'published';if(!empty($c['intentConfirmed']))return ncd_completion($d)['percent']===100?'review':'writing';return !empty($c['questions'])?'questions':(!empty($c['intent'])?'intent':'story');}
 function ncd_view(array $r):array {
  $d=$r['document'];$c=$d['_creative'];$f=nup_fields($d);$f['ep']=(string)($d['ep']??'');
+ foreach($c['proposals'] as $key=>$proposal)if(!ncd_proposal_current($d,$key,$proposal))unset($c['proposals'][$key]);
  require_once dirname(__DIR__).'/noa-app/jukebox/core.php';require_once __DIR__.'/music-download-core.php';
  return ['id'=>$c['id'],'key'=>$r['doc_key'],'revision'=>$r['revision'],'fields'=>$f,'type'=>nup_type($d,'single'),'genre'=>$d['genreId'],'creative'=>$c,'stage'=>ncd_stage($d),'completion'=>ncd_completion($d),'sunoTitle'=>substr(nmd_filename($d),0,-4),'storage'=>['mode'=>empty($r['retained_at'])?'recovery':'draft','expiresAt'=>empty($r['retained_at'])?(int)$r['recovery_until']:null]];
 }
@@ -74,7 +80,7 @@ function ncd_patch(array $d,array $b):array {$c=&$d['_creative'];
   if(isset($b['fields']))$d=ncd_fields($d,$b['fields']);
   if(isset($b['progress'])){$pos=filter_var($b['progress'],FILTER_VALIDATE_INT);if($pos===false||$pos<0||$pos>count($d['_creative']['questions']))throw new InvalidArgumentException('invalid_progress');$d['_creative']['questionPosition']=$pos;}
   if(isset($b['answerDrafts']))foreach($b['answerDrafts'] as $k=>$v){if(!in_array($k,NCD_CONDITIONS,true))throw new InvalidArgumentException('unknown_condition');$d['_creative']['answerDrafts'][$k]=ncd_text($v,4000);}
-  if(isset($b['requests'])){foreach($b['requests'] as $k=>$v){if(!in_array($k,NCD_REVISABLE,true))throw new InvalidArgumentException('unknown_field');$d['_creative']['requests'][$k]=ncd_text($v,4000);}}
+  if(isset($b['requests'])){foreach($b['requests'] as $k=>$v){if(!in_array($k,NCD_REVISABLE,true))throw new InvalidArgumentException('unknown_field');$request=ncd_text($v,4000);if(($d['_creative']['requests'][$k]??'')!==$request)unset($d['_creative']['proposals'][$k]);$d['_creative']['requests'][$k]=$request;}}
   if(isset($b['location'])){$loc=$b['location'];$genre=$loc['genre']??'';if(!in_array($genre,['kpop-original','your-story'],true))throw new DomainException('new_original_category_required');$ep=(string)($loc['ep']??'');if($ep!==''&&!preg_match('/^[1-9][0-9]{0,3}$/D',$ep))throw new InvalidArgumentException('invalid_ep');if($genre==='your-story')$ep='';if($d['genreId']!==$genre||(string)$d['ep']!==$ep)foreach(['geminiPrompt','youtubeTitle','description','communityPost'] as $key)if(nup_fields($d)[$key]!=='')$d['_creative']['needsReview'][$key]='게시 위치·EP 변경 후 확인 필요';$d['genreId']=$genre;$d['ep']=$ep;$d['act']=$ep!==''?(string)ceil((int)$ep/10):'';$d['packageType']=nup_type($d,'single');$collections=$loc['collections']??[];if(!is_array($collections)||count($collections)>20)throw new InvalidArgumentException('invalid_collections');foreach($collections as $key)if(!is_string($key)||!preg_match('/^playlist:custom:[a-f0-9]{24}$/D',$key))throw new InvalidArgumentException('invalid_collections');$d['_creative']['collections']=array_values(array_unique($collections));}
   if($d['genreId']==='kpop-original'){$f=nup_fields($d);$d['body']['originalInfo']=['ep'=>$d['ep'],'title'=>$f['title'],'lyrics'=>$f['lyrics'],'vocal'=>$f['vocal']];}unset($d['_creative']['preview']);return $d;
 }
@@ -88,7 +94,7 @@ function ncd_action(PDO $db,string $owner,string $action,array $b):array {
   else {ncd_editable($r,$r['revision']);
    if($action==='answer'){$key=$b['condition']??'';$question=$c['questions'][$key]??null;if(!$question)throw new DomainException('question_not_found');$answer=ncd_text($b['answer']??'',4000);if($answer==='')throw new InvalidArgumentException('answer_required');$c['answers'][$key]=$answer;$c['questionPosition']=min((int)array_search($key,array_keys($c['questions']),true)+1,count($c['questions'])-1);$c['intent'][$key]=['value'=>$answer,'evidence'=>$answer,'source'=>'answer'];$c['intentConfirmed']=false;}
    elseif($action==='confirmIntent'){foreach(NCD_CONDITIONS as $key)if(empty($c['intent'][$key]['value'])||(isset($c['questions'][$key])&&empty($c['answers'][$key])))throw new DomainException('unanswered_questions');$c['intentConfirmed']=true;$c['intentHash']=ncd_hash($c['intent']);}
-   elseif($action==='proposal'){$key=$b['field']??'';$p=$c['proposals'][$key]??null;if(!$p)throw new DomainException('proposal_not_found');if(($b['decision']??'')==='apply'){if(ncd_hash(nup_fields($d)[$key])!==$p['baseHash'])throw new DomainException('field_changed');$d=ncd_fields($d,[$key=>$p['value']]);unset($d['_creative']['needsReview'][$key]);}elseif(($b['decision']??'')!=='cancel')throw new InvalidArgumentException('invalid_decision');unset($d['_creative']['proposals'][$key]);}
+   elseif($action==='proposal'){$key=$b['field']??'';$p=$c['proposals'][$key]??null;if(!$p)throw new DomainException('proposal_not_found');if(($b['decision']??'')==='apply'){if(!ncd_proposal_current($d,$key,$p))throw new DomainException('field_changed');$d=ncd_fields($d,[$key=>$p['value']]);unset($d['_creative']['needsReview'][$key]);}elseif(($b['decision']??'')!=='cancel')throw new InvalidArgumentException('invalid_decision');unset($d['_creative']['proposals'][$key]);}
    elseif($action==='review'){$key=$b['field']??'';if(!in_array($key,NCD_REVISABLE,true))throw new InvalidArgumentException('unknown_field');unset($c['needsReview'][$key]);}
    elseif($action==='restoreField'){$key=$b['field']??'';if(!in_array($key,NCD_REVISABLE,true))throw new InvalidArgumentException('unknown_field');$q=$db->prepare('SELECT payload FROM noa_document_history WHERE doc_key=? AND revision=?');$q->execute([$r['doc_key'],(int)($b['version']??0)]);$old=$q->fetchColumn();if(!$old)throw new DomainException('version_not_found');$d=ncd_fields($d,[$key=>nup_fields(json_decode($old,true))[$key]]);}
    else throw new InvalidArgumentException('unknown_action');

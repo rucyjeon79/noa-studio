@@ -28,7 +28,7 @@ async function submitStory(){
  if($('fortune-options').childElementCount){room?.status('추가사항을 담았어요. 이야기를 고른 뒤 다음으로 진행해 주세요.');return;}
  await generate('analyze');
 }
-function queue(part){pending={...pending,...part,answerDrafts:{...(pending.answerDrafts||{}),...(part.answerDrafts||{})},fields:{...(pending.fields||{}),...(part.fields||{})},requests:{...(pending.requests||{}),...(part.requests||{})}};state('saving','저장 대기');syncComposer();clearTimeout(timer);timer=setTimeout(()=>flush().catch(fail),500);}
+function queue(part){pending={...pending,...part,answerDrafts:{...(pending.answerDrafts||{}),...(part.answerDrafts||{})},fields:{...(pending.fields||{}),...(part.fields||{})},requests:{...(pending.requests||{}),...(part.requests||{})}};state('saving','저장 대기');syncComposer();paintRecordFeedback();clearTimeout(timer);timer=setTimeout(()=>flush().catch(fail),500);}
 function fail(e){
  status(message(e));if(e.message==='revision_conflict'){conflict=true;$('reload').hidden=false;}
  // Only unsaved input needs a save retry. A failed generation has its own action.
@@ -232,7 +232,8 @@ function paintRecordFeedback(){
   f.wrap.toggleAttribute('data-generating',running);f.input.setAttribute('aria-busy',String(running));f.result.replaceChildren();
   if(running){f.feedback.hidden=false;f.result.append(el('p','요청하신 내용을 다듬고 있어요.'));}
   if(c?.needsReview[key])f.result.append(el('p','관련 내용이 바뀌었어요. 함께 확인해 주세요.'),button('확인했어요',()=>mutate('review',{field:key})));
-  const proposal=c?.proposals[key];
+  const changedInput=Object.keys(pending.fields||{}).length||Object.hasOwn(pending.requests||{},key);
+  const proposal=!running&&!changedInput?c?.proposals[key]:null;
   if(proposal){f.feedback.hidden=false;const preview=el('div',undefined,'creative-compare');for(const [name,value]of [['현재 내용',draft.fields[key]],['수정안',proposal.value]]){const col=el('div');col.append(el('h3',name),el('pre',text(value)));preview.append(col);}f.result.append(preview,button('수정안 적용',()=>mutate('proposal',{field:key,decision:'apply'})),button('현재 내용 유지',()=>mutate('proposal',{field:key,decision:'cancel'})));}
   if(c?.needsReview[key])f.feedback.hidden=false;
  }
@@ -247,7 +248,7 @@ async function loadCollections(){collections=(await api('collections',undefined,
 function paintCollections(){const root=$('collections');root.replaceChildren();for(const c of collections.filter(c=>c.genre===$('category').value)){const label=el('label',undefined,'noa-collection-option'),check=el('input');check.type='checkbox';check.value=c.key;check.checked=(draft?.creative.collections||[]).includes(c.key);check.onchange=saveLocation;label.append(check,el('span',c.title));root.append(label);}}
 function saveLocation(){queue({location:{genre:$('category').value,ep:$('ep').value,collections:[...$('collections').querySelectorAll('input:checked')].map(i=>i.value)}});$('ep-label').hidden=$('category').value!=='kpop-original';$('location-note').textContent=$('category').value==='kpop-original'?'ACT '+(Math.ceil(Number($('ep').value)/10)||'—')+'에 배치됩니다.':'사연곡으로 등록됩니다.';}
 async function generate(operation,field=''){
- storyEditing=false;editingQuestion=false;showJob({operation,field,state:'queued'});let accepted=false;
+ storyEditing=false;editingQuestion=false;if(operation==='revise'&&draft)delete draft.creative.proposals[field];showJob({operation,field,state:'queued'});let accepted=false;
  try{
   if(operation==='generate'&&!draft.creative.intentConfirmed)await mutate('confirmIntent');
   const submitted=await mutate('generate',{operation,field,requestId:id()});accepted=true;showJob(submitted.job);schedule();
