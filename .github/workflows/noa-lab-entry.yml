@@ -30,6 +30,7 @@ jobs:
           php tests/lab/browser_assets_test.php /tmp/n80-clip.mp4
           php tests/lab/core_test.php
           python tests/lab/http_test.py
+          python tests/explorer/lab_choices.py
           php tests/engine/service_runtime_test.php
           php tests/engine/single_runtime_policy_test.php
       - name: Verify stored scenes and layouts with an isolated provider

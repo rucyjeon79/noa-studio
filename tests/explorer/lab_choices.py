@@ -12,12 +12,16 @@ with tempfile.TemporaryDirectory() as temp:
     (site / 'noa-bridge').mkdir()
     (site / 'noa-app/jukebox').mkdir(parents=True)
     shutil.copy(root / 'bridge/catalog.php', site / 'noa-bridge/catalog.php')
+    shutil.copy(root / 'bridge/muvy-timeline.php', site / 'noa-bridge/muvy-timeline.php')
     db = sqlite3.connect(site / 'test.sqlite')
-    db.execute('CREATE TABLE noa_documents(doc_key TEXT,kind TEXT,payload TEXT)')
+    db.execute('CREATE TABLE noa_documents(doc_key TEXT,kind TEXT,payload TEXT,revision INTEGER)')
+    db.execute('CREATE TABLE noa_jukebox_assets(song_key TEXT,source_url TEXT,final_analysis TEXT,audio_sha256 TEXT)')
     for key in ['single:one', 'single:two']:
-        db.execute('INSERT INTO noa_documents VALUES(?,?,?)', (key, 'single', json.dumps({'title': key, 'genreId': 'kpop-original', 'ep': '40', 'body': {}})))
+        db.execute('INSERT INTO noa_documents VALUES(?,?,?,?)', (key, 'single', json.dumps({'title': key, 'genreId': 'kpop-original', 'ep': '40', 'body': {}}), 7))
+    db.execute('INSERT INTO noa_jukebox_assets VALUES(?,?,?,?)', ('single:two', '', json.dumps({'duration':240,'decode_errors':False}), 'a'*64))
+    db.execute('INSERT INTO noa_jukebox_assets VALUES(?,?,?,?)', ('single:one', 'outdated-source', json.dumps({'duration':180,'decode_errors':False}), 'b'*64))
     db.commit()
-    (site / 'common.php').write_text("<?php $is_member=getenv('ROLE')!=='guest';$is_admin=$is_member?'super':'';$_GET=['view'=>getenv('VIEW'),'key'=>getenv('KEY')];")
+    (site / 'common.php').write_text("<?php define('_GNUBOARD_',true);$is_member=getenv('ROLE')!=='guest';$is_admin=$is_member?'super':'';$_GET=['view'=>getenv('VIEW'),'key'=>getenv('KEY')];")
     (site / 'noa-bridge/storage.php').write_text("<?php function noa_bridge_pdo(){return new PDO('sqlite:" + str(site / 'test.sqlite') + "');}")
     (site / 'noa-bridge/sound-core.php').write_text("""<?php
     function noa_sound_trash_index($db){return ['ids'=>[]];}
@@ -28,6 +32,7 @@ with tempfile.TemporaryDirectory() as temp:
     (site / 'noa-app/jukebox/core.php').write_text("""<?php
     function nj_assets($db){if(getenv('VIEW')==='labChoices')throw new RuntimeException('picker_must_not_read_media');return [];}
     function nj_resolve($assets,$key,$suno,$kind){return 'verified:'.$key;}
+    function nj_verified($asset,$kind){return $kind==='audio';}
     """)
     import os
     def run(view, key='', role='admin'):
@@ -36,7 +41,8 @@ with tempfile.TemporaryDirectory() as temp:
     choices = run('labChoices')['items']
     assert [row['key'] for row in choices] == ['single:one', 'single:two']
     assert all('audioUrl' not in row for row in choices)
-    assert run('labMedia', 'single:two') == {'key': 'single:two', 'audioUrl': 'verified:single:two'}
+    assert run('labMedia', 'single:two') == {'key': 'single:two', 'revision':7, 'audioUrl': 'verified:single:two', 'timing': {'durationSeconds':240,'audioSha256':'a'*64}}
+    assert run('labMedia', 'single:one')['timing'] is None
     assert run('labMedia', 'single:missing')['error'] == 'song_unavailable'
     assert run('labMedia', 'single:one', 'guest')['error'] == 'admin_required'
     assert run('labMedia', '../invalid')['error'] == 'invalid_key'
