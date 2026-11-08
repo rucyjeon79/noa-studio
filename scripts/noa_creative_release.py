@@ -34,6 +34,9 @@ if os.environ.get('NOA_CREATIVE_SAVE_ONLY')=='1':
   'noa-creative.js':'deploy/noa-creative.js',
  }
  release.NEW={'noa-app/jukebox/media-location.php'}
+if os.environ.get('NOA_CREATIVE_FOLDERS_ONLY')=='1':
+ release.FILES={p:'deploy/'+p for p in ['noa-app/jukebox/media-location.php','noa-app/jukebox/upload-core.php']}
+ release.NEW=set()
 if __name__=='__main__':
  try:
   retention=os.environ.get('NOA_CREATIVE_RETENTION_ONLY')=='1' and 'rollback' not in sys.argv

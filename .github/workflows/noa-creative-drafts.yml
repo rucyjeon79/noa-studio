@@ -33,7 +33,9 @@ jobs:
           for p in bridge/creative*.php bridge/package-record.php bridge/suno-cover.php deploy/noa-app/jukebox/media-location.php deploy/noa-app/jukebox/upload-core.php deploy/noa-app/engine/creative.php deploy/noa-lab-creative.php deploy/noa-gpt.php; do php -l "$p"; done
           sed -e 's/__EXPIRY__/9999999999/g' -e 's/__TITLE_MODE__/0/g' -e 's/__BATCH_MODE__/0/g' scripts/noa_creative_revision_live.php > /tmp/creative-live-check.php
           php -l /tmp/creative-live-check.php
-          python -m py_compile scripts/noa_creative_release.py scripts/noa_creative_revision_live.py scripts/noa_jukebox_upload_worker.py scripts/noa_jukebox_worker.py
+          sed 's/__EXPIRY__/9999999999/g' scripts/noa_creative_folders_live.php > /tmp/folders-live.php
+          php -l /tmp/folders-live.php
+          python -m py_compile scripts/noa_creative_folders_live.py scripts/noa_creative_release.py scripts/noa_creative_revision_live.py scripts/noa_jukebox_upload_worker.py scripts/noa_jukebox_worker.py
           node --check deploy/noa-creative.js
           node --check deploy/noa-ainoa.js
           php -l deploy/noa-app/engine/ai-lab.php
@@ -84,6 +86,7 @@ jobs:
           NOA_CREATIVE_REVISION_ONLY: ${{ (contains(github.event.head_commit.message, '[creative-revision]') || contains(github.event.head_commit.message, '[creative-title]')) && '1' || '0' }}
           NOA_CREATIVE_TITLE_ONLY: ${{ contains(github.event.head_commit.message, '[creative-title]') && '1' || '0' }}
           NOA_CREATIVE_BATCH_ONLY: ${{ contains(github.event.head_commit.message, '[creative-batch]') && '1' || '0' }}
+          NOA_CREATIVE_FOLDERS_ONLY: ${{ contains(github.event.head_commit.message, '[creative-folders]') && '1' || '0' }}
           NOA_CREATIVE_SAVE_ONLY: ${{ contains(github.event.head_commit.message, '[creative-save]') && '1' || '0' }}
           GH_TOKEN: ${{ github.token }}
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
@@ -94,10 +97,11 @@ jobs:
           if [ "$NOA_CREATIVE_TITLE_ONLY" = "1" ]; then python scripts/noa_creative_revision_live.py audit_titles; elif [ "$NOA_CREATIVE_REVISION_ONLY" = "1" ]; then python scripts/noa_creative_revision_live.py audit; fi
           if [ "$NOA_CREATIVE_SAVE_ONLY" = "1" ]; then python scripts/noa_creative_revision_live.py audit_save; fi
           python scripts/noa_creative_release.py
+          if [ "$NOA_CREATIVE_FOLDERS_ONLY" = "1" ]; then python scripts/noa_creative_folders_live.py; fi
           if [ "$NOA_CREATIVE_SAVE_ONLY" = "1" ]; then python scripts/noa_creative_revision_live.py recover_save; fi
           if [ "$NOA_CREATIVE_TITLE_ONLY" = "1" ]; then python scripts/noa_creative_revision_live.py verify_titles; elif [ "$NOA_CREATIVE_REVISION_ONLY" = "1" ]; then python scripts/noa_creative_revision_live.py verify; fi
           if [ "$NOA_CREATIVE_BATCH_ONLY" = "1" ]; then python scripts/noa_creative_revision_live.py verify_batch; fi
-          if [ "$NOA_CREATIVE_PRESENTATION_ONLY" != "1" ] && [ "$NOA_CREATIVE_RETENTION_ONLY" != "1" ] && [ "$NOA_CREATIVE_REVISION_ONLY" != "1" ] && [ "$NOA_CREATIVE_BATCH_ONLY" != "1" ] && [ "$NOA_CREATIVE_SAVE_ONLY" != "1" ]; then python scripts/noa_creative_live.py; fi
+          if [ "$NOA_CREATIVE_PRESENTATION_ONLY" != "1" ] && [ "$NOA_CREATIVE_RETENTION_ONLY" != "1" ] && [ "$NOA_CREATIVE_REVISION_ONLY" != "1" ] && [ "$NOA_CREATIVE_BATCH_ONLY" != "1" ] && [ "$NOA_CREATIVE_SAVE_ONLY" != "1" ] && [ "$NOA_CREATIVE_FOLDERS_ONLY" != "1" ]; then python scripts/noa_creative_live.py; fi
       - name: Restore owned source on failed activation or live verification
         if: failure() && steps.activate.outcome == 'failure'
         env: *env

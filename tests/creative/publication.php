@@ -22,8 +22,8 @@ $audio=dirname($ma['cover_path']).'/song.mp3';copy(__DIR__.'/fixture.mp3',nj_pri
 $db->prepare("UPDATE noa_jukebox_assets SET audio_path=?,audio_bytes=?,audio_sha256=?,status='ready' WHERE song_key=?")->execute([$audio,filesize(__DIR__.'/fixture.mp3'),hash_file('sha256',__DIR__.'/fixture.mp3'),$move['doc_key']]);
 $oldPaths=[$audio,$ma['cover_path']];$move=ncd_save($db,$owner,['id'=>$moveId,'revision'=>$move['revision'],'location'=>['genre'=>'your-story','collections'=>[]]]);$ma=nj_find($db,$move['doc_key']);
 check(str_starts_with($ma['audio_path'],'사연곡/')&&dirname($ma['audio_path'])===dirname($ma['cover_path']),'classification moves both files to one folder');
-check(str_contains($ma['audio_path'],'사연곡/같은 이름의 곡 ['),'folder uses the accepted song title');
-$blankAlias=$move['document'];$blankAlias['body']['displayTitle']='';$blankAlias['body']['confirmedTitle']='';$blankAlias['title']='행간의 연서(行間戀書)';check(str_contains(nml_directory($move['doc_key'],$blankAlias),'사연곡/행간의 연서(行間戀書) ['),'empty aliases cannot hide the current document title');
+check(dirname($ma['audio_path'])==='사연곡/같은 이름의 곡','folder uses the accepted song title');
+$blankAlias=$move['document'];$blankAlias['body']['displayTitle']='';$blankAlias['body']['confirmedTitle']='';$blankAlias['title']='행간의 연서(行間戀書)';check(nml_directory($move['doc_key'],$blankAlias)==='사연곡/행간의 연서(行間戀書)','empty aliases cannot hide the current document title');
 check(nj_verified($ma,'audio')&&nj_verified($ma,'cover'),'both media hashes and formats preserved');
 check($move['document']['body']['audioFileLocation']===$ma['audio_path']&&$move['document']['body']['cardImageLocation']===$ma['cover_path'],'current record has current paths');
 nml_cleanup($db);foreach($oldPaths as $old)check(nj_file($old)===null,'unreferenced old path removed after commit');
@@ -42,3 +42,16 @@ $db->beginTransaction();$classified=nj_document($db,$infoKey);$classified['genre
 check(str_starts_with($classified['audio_path'],'POP/')&&dirname($classified['audio_path'])===dirname($classified['cover_path']),'later genre change moves audio and artwork');
 check(nj_verified(nj_find($db,$move['doc_key']),'audio'),'another record sharing source bytes stays playable');
 echo "CREATIVE_FINAL_ACK_NO_MEDIA_CATEGORY_SAVE_MEDIA_LOCATION_ATOMIC_OK\n";
+
+// Human names remain stable while unrelated same-title songs cannot share a folder.
+$clean=['genreId'=>'your-story','title'=>'행간의 연서(行間戀書)'];
+check(nml_reserve_directory('clean:first',$clean)==='사연곡/행간의 연서(行間戀書)','first song has no identifier suffix');
+check(nml_reserve_directory('clean:second',$clean)==='사연곡/행간의 연서(行間戀書) (2)','only duplicate titles get a short number');
+check(nml_reserve_directory('clean:second',$clean)==='사연곡/행간의 연서(行間戀書) (2)','retry keeps reservation');
+$clean['creativeDraftId']='shared-draft';$reserved=nml_reserve_directory('draft-key',$clean);
+check(nml_reserve_directory('published-key',$clean)===$reserved,'publication aliases keep the same folder');
+check(nml_directory('unknown',['title'=>'아직 분류 전'])==='기타/아직 분류 전','unclassified title stays readable');
+$unsafe=nj_private().'/media/사연곡/이미 있는 폴더';mkdir($unsafe,0700,true);file_put_contents($unsafe.'/keep.txt','untouched');
+check(nml_reserve_directory('clean:foreign',['genreId'=>'your-story','title'=>'이미 있는 폴더'])==='사연곡/이미 있는 폴더 (2)','unowned folder cannot be adopted');
+check(file_get_contents($unsafe.'/keep.txt')==='untouched','unowned bytes preserved');
+echo "MEDIA_READABLE_NAMES_DUPLICATES_RETRY_PUBLICATION_OWNERSHIP_OK\n";
