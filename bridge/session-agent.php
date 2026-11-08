@@ -100,6 +100,7 @@ function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=n
   $jobs=array_filter(lab_read()['jobs'],fn($j)=>($j['type']??'')==='agent_movie'&&($j['agent']['owner']??'')===$owner);
   $campaigns=lab_read()['campaigns']??[];
   if(isset($campaigns['daily_shorts']['preparation']))unset($campaigns['daily_shorts']['preparation']['lease'],$campaigns['daily_shorts']['preparation']['sources'],$campaigns['daily_shorts']['preparation']['connectionReceipt']);
+  if(isset($campaigns['daily_shorts']['preparation']['subtitlePreparation']))unset($campaigns['daily_shorts']['preparation']['subtitlePreparation']['lease'],$campaigns['daily_shorts']['preparation']['subtitlePreparation']['sourceFingerprint']);
   return ['jobs'=>array_map(fn($j)=>sa_view($j),array_values(array_slice($jobs,-50,null,true))),'campaigns'=>$campaigns,'execution'=>'chatgpt_session'];
  }
  if($op==='agentRead'&&isset($b['trackKey'])){

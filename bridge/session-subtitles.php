@@ -4,7 +4,9 @@ if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
 
 /** Subtitle state belongs to the existing leased N80 session task. */
 function sa_lyric_lines(string $lyrics):array {
- $lines=[];foreach(preg_split('/\R/u',$lyrics) as $raw){$line=trim(preg_replace('/\s+/u',' ',preg_replace('/\[[^\]]*\]/u','',$raw)));if($line!=='')$lines[]=$line;}
+ $lines=[];foreach(preg_split('/\R/u',$lyrics) as $raw){$line=trim(preg_replace('/\s+/u',' ',preg_replace('/\[[^\]]*\]/u','',$raw)));
+  if(str_starts_with($line,'(')&&str_ends_with($line,')')&&preg_match('/\b(?:sogeum|gayageum|ajaeng|janggu|kkwaenggwari|taepyeongso|instrumentation|percussion|arpeggio|glissando|harmonics|sub bass|vocal|vocals|whispered)\b/iu',$line))continue;
+  if($line!=='')$lines[]=$line;}
  return $lines;
 }
 function sa_subtitle_digest(array $j,array $cues):string {
