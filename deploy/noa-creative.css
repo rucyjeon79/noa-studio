@@ -63,7 +63,7 @@
 #creative-record .creative-ai-result-actions>button{flex:1;min-height:44px;padding:10px 12px;font-size:13px;font-weight:600;word-break:keep-all}
 #creative-record .creative-ai-result-actions>.creative-ai-apply{background:var(--noa-accent);color:var(--noa-accentText);border-color:var(--noa-accent)}
 #creative-record .creative-ai-original{padding:0;margin-top:18px;border-top:1px solid var(--noa-line)}
-#creative-record .creative-ai-original>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:44px;box-sizing:border-box;padding:14px 0 4px;cursor:pointer;font-size:13px;color:var(--noa-muted);list-style:none;border:0;border-radius:0;background:transparent;box-shadow:none;text-align:left}
+#creative-record .creative-ai-original>summary{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:44px;box-sizing:border-box;padding:14px 0 4px;cursor:pointer;font-size:13px;color:var(--noa-muted);list-style:none;border:0;border-radius:0;background:transparent;box-shadow:none;text-align:left}
 #creative-record .creative-ai-original>summary::before{content:none}
 #creative-record .creative-ai-original>summary::marker{content:""}
 #creative-record .creative-ai-original>summary::-webkit-details-marker{display:none}

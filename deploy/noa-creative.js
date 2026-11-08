@@ -238,7 +238,7 @@ function paintAiResult(f,key,{running,failed,proposal,review}){
   const value=el('pre',text(proposal.value),'creative-ai-value');value.tabIndex=0;value.setAttribute('aria-label','새 수정안 내용');panel.append(value);
   if(text(proposal.value).length>500||text(proposal.value).split('\n').length>8){const expand=el('button','전체 펼치기','creative-ai-expand');expand.type='button';expand.setAttribute('aria-expanded','false');expand.onclick=()=>{const open=panel.toggleAttribute('data-expanded');expand.setAttribute('aria-expanded',String(open));expand.textContent=open?'접어서 보기':'전체 펼치기';};panel.append(expand);}
   const actions=el('div',undefined,'creative-ai-result-actions'),apply=button('수정안 적용',()=>mutate('proposal',{field:key,decision:'apply'}));apply.className='creative-ai-apply';actions.append(apply,button('현재 내용 유지',()=>mutate('proposal',{field:key,decision:'cancel'})));panel.append(actions);
-  const original=el('details',undefined,'creative-ai-original');original.append(el('summary','현재 내용과 비교하기'),el('pre',text(draft.fields[key])));panel.append(original);f.result.append(panel);
+  const original=el('details',undefined,'creative-ai-original'),summary=el('summary','현재 내용과 비교하기');summary.dataset.noaIcon='disclosure';original.append(summary,el('pre',text(draft.fields[key])));panel.append(original);f.result.append(panel);
  }
  if(failed&&!proposal){const note=el('p',message(currentJob?.error||'generation_failed'),'creative-ai-failed');note.setAttribute('role','status');f.result.append(note);}
  if(review){const notice=el('div',undefined,'creative-ai-review');notice.append(el('p','관련 내용이 바뀌었어요. 함께 확인해 주세요.'),button('확인했어요',()=>mutate('review',{field:key})));f.result.append(notice);}
