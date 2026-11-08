@@ -2,6 +2,8 @@
 declare(strict_types=1);
 $fixtures=$argv[1]??'/tmp/n80-session-fixture';$root=sys_get_temp_dir().'/n80-session-'.bin2hex(random_bytes(6));
 mkdir($root,0700);mkdir($root.'/html',0700);mkdir($root.'/noa-ai-lab',0700);mkdir($root.'/noa-ai-lab/jobs',0700);
+$castDir=$root.'/html/noa-assets/characters';mkdir($castDir,0700,true);
+foreach(['noa','noel'] as $castId)copy(__DIR__.'/../../public/characters/'.$castId.'-sheet.png',$castDir.'/'.$castId.'-sheet.png');
 define('_GNUBOARD_',true);define('G5_PATH',$root.'/html');require __DIR__.'/../../bridge/session-agent.php';
 set_error_handler(function($level,$message){throw new ErrorException($message,0,$level);});
 function check(bool $ok,string $why):void{if(!$ok)throw new RuntimeException($why);}
@@ -11,6 +13,11 @@ $reader=function($key)use(&$source){if($source===null)throw new DomainException(
 $call=function($op,$b=[])use($reader){return sa_dispatch($op,$b,'owner',$reader);};$id=fn()=>bin2hex(random_bytes(16));
 try{
  $pre=$call('agentRead',['trackKey'=>$source['key']]);check(!isset($pre['source']['audioPath']),'Private source path exposed');
+ check(array_column($pre['characterReferences'],'id')===['noa'],'Female source resolves official NOA sheet');
+ check(array_column(sa_character_references('male'),'id')===['noel'],'Male source resolves official NOEL sheet');
+ check(array_column(sa_character_references('duet'),'id')===['noa','noel'],'Duet resolves both official sheets');
+ check($pre['characterReferences'][0]['sha256']===hash_file('sha256',$castDir.'/noa-sheet.png'),'Actual reference hash');
+ check(!str_contains(json_encode($pre['characterReferences']),$root),'Reference metadata hides local paths');
  $start=['trackKey'=>$source['key'],'sourceRevision'=>7,'requestId'=>$id(),'goal'=>'Create a test music video.','format'=>'landscape'];
  $result=$call('agentStart',$start);$job=$result['job'];$jobId=$job['id'];check($call('agentStart',$start)['replayed'],'Start replay');
  check($job['agent']['sceneCount']===1,'Nominal scene count');
@@ -20,6 +27,13 @@ try{
  $step=function($action,$extra=[])use($call,$id,$jobId,&$lease,&$job){$b=['id'=>$jobId,'action'=>$action,'lease'=>$lease,'requestId'=>$id(),'expectedRevision'=>$job['revision']]+$extra;$r=$call('agentStep',$b);$job=$r['job'];return [$b,$r];};
  $scene=fn($n)=>['n'=>$n,'summary'=>'Test scene '.$n,'imagePrompt'=>'Test image '.$n,'videoPrompt'=>'Test motion '.$n];
  $step('plan',['scenes'=>[$scene(1)]]);
+ check($job['characterReferences']===$pre['characterReferences'],'Reference identity survives planning and readback');
+ rename($castDir.'/noa-sheet.png',$castDir.'/noa-sheet.held');
+ refuses(fn()=>$step('begin',['kind'=>'image','scene'=>1]),'character_reference_unavailable');
+ rename($castDir.'/noa-sheet.held',$castDir.'/noa-sheet.png');
+ file_put_contents($castDir.'/noa-sheet.png','changed reference',FILE_APPEND);
+ refuses(fn()=>$step('begin',['kind'=>'image','scene'=>1]),'character_reference_changed_replan_required');
+ copy(__DIR__.'/../../public/characters/noa-sheet.png',$castDir.'/noa-sheet.png');
  $step('begin',['kind'=>'image','scene'=>1]);check($call('agentRead',['id'=>$jobId])['job']['next']['action']==='reconcile','Ambiguous request must reconcile');
  $operation=$job['next']['operation']['requestId'];
  refuses(fn()=>$step('not_created',['operationId'=>$operation,'note'=>'unchecked']),'provider_reconciliation_required');
