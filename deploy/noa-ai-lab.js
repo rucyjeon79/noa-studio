@@ -63,7 +63,7 @@ async function mediaDuration(source){
 }
 async function updateScenePlan(source,version,known){
  const note=$('lab-scene-plan');if(!note)return;
- try{const duration=known||await mediaDuration(source);if(version!==mediaVersion)return;const {plan}=await api('scene_plan',{durationSeconds:duration});if(version!==mediaVersion)return;note.textContent=`전체 곡 ${plan.durationSeconds.toFixed(2)}초 · ${plan.cutCount}컷 · 컷당 8초 생성 / 1초 교차페이드 · 마지막 컷 ${plan.scenes.at(-1).duration.toFixed(2)}초 사용`;}
+ try{const duration=known||await mediaDuration(source);if(version!==mediaVersion)return;const {plan}=await api('scene_plan',{durationSeconds:duration});if(version!==mediaVersion)return;note.textContent=`전체 곡 ${plan.durationSeconds.toFixed(2)}초 · 예상 ${plan.cutCount}컷 · 컷당 8초 생성 / 1초 교차페이드 · 마지막 컷 ${plan.scenes.at(-1).duration.toFixed(2)}초 사용`;}
  catch{if(version===mediaVersion)note.textContent='음원 길이를 확인한 뒤 장면 수를 계산합니다. 30컷으로 임의 제한하지 않습니다.';}
 }
 $('lab-audio').onchange=()=>{const version=++mediaVersion,source=$('lab-audio').files[0]||catalog.find(t=>t.key===$('lab-track').value)?.audioUrl;updateScenePlan(source,version);};

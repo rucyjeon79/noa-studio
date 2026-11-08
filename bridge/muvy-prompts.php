@@ -7,7 +7,7 @@ function mu_meta(array $m):array{if(!in_array($m['songType']??'', ['A','B','C','
 function mu_cut(array $c,int $n,bool $extra=false):array{if(!$extra&&($c['n']??0)!==$n)throw new InvalidArgumentException('cut_sequence');$r=['n'=>$n,'lyric'=>mu_text($c['lyric']??'',600,true),'script'=>mu_text($c['script']??null,1800),'gemini'=>mu_text($c['gemini']??'',6000,true),'grok'=>mu_text($c['grok']??'',6000,true)];if($extra)$r['label']=mu_text($c['label']??'보충 '.$n,80);return $r;}
 function mu_pack(array $p):array{
  $r=['ep'=>mu_text($p['ep']??null,40,isset($p['song'])),'title'=>mu_text($p['title']??null,120),'lyrics'=>mu_text($p['lyrics']??null,12000),'meta'=>null,'cuts'=>[],'extras'=>[1=>[],2=>[],3=>[]],'publish'=>null];
- if(isset($p['timing'])){$t=mu_timeline($p['timing']);$r['timing']=array_diff_key($t,['scenes'=>true,'cutCount'=>true,'version'=>true]);}
+ if(isset($p['timing'])){$t=mu_timeline($p['timing'],false);$r['timing']=array_diff_key($t,['scenes'=>true,'cutCount'=>true,'version'=>true]);}
  if(isset($p['song'])){
   $song=$p['song'];
   if(!is_array($song)||!is_string($song['key']??null)||!preg_match('/^[A-Za-z0-9:_-]{1,190}$/D',$song['key']))throw new InvalidArgumentException('invalid_pack');

@@ -30,7 +30,8 @@ function mu_select_song(array $record,?array $timing=null):array{
  }
  $pack=mu_pack(['ep'=>ctype_digit($ep)?((int)$ep>0?'EP.'.$ep:''):$ep,'title'=>$fields['title'],'lyrics'=>$lyrics,'song'=>$song]+($timing?['timing'=>$timing]:[]));
  // An unrelated catalog edit must not duplicate a paid job. A changed lyric or edition must fork it.
- $id=substr(hash('sha256',"muvy-song-v1\0".json_encode($pack,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)),0,32);
+ $identity=$pack;unset($identity['song']['revision']);
+ $id=substr(hash('sha256',"muvy-song-v1\0".json_encode($identity,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)),0,32);
  return mu_save(['id'=>$id,'expectedRevision'=>0,'pack'=>$pack],true);
 }
 /** Native project operations are the queue. No second queue or web provider execution. */
