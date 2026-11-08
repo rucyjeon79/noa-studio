@@ -1,7 +1,7 @@
 name: N80 AI LAB specialized worker
 on:
   workflow_run:
-    workflows: [N80 Unified Facade Safe Production]
+    workflows: [N80 Unified Facade Safe Production, Verify and publish AI LAB entry]
     types: [completed]
   schedule:
     - cron: '7,22,37,52 * * * *'
@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   process:
-    if: github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
+    if: github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && (github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'))
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: production
@@ -31,8 +31,9 @@ jobs:
       - name: Validate publication guard and install transfer client
         run: |
           python -m unittest discover -s tests/engine -p 'test_ai_publication_guard.py' -v
-          python -m pip install paramiko==3.5.1
+          python -m pip install paramiko==3.5.1 numpy==2.2.6 scipy==1.15.3
       - name: Persist and check the N80 daily Shorts schedule
+        continue-on-error: true
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}

@@ -3,6 +3,11 @@ declare(strict_types=1);
 if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
 require_once __DIR__.'/lab-core.php';
 
+function nd_shorts_public(array $c):array {
+ if(isset($c['preparation']))unset($c['preparation']['lease'],$c['preparation']['sources']);
+ return $c;
+}
+
 /** Durable campaign ownership in the existing N80 store; never a conversation timer. */
 function nd_shorts_policy():array {
  $path=dirname(__DIR__).'/noa-app/engine/daily-shorts.json';
@@ -41,5 +46,5 @@ function nd_shorts_tick(array &$s,array $p,int $now,array $readiness):array {
  $s['campaigns']['daily_shorts']=$c;
  $s['worker']['operations']['n80_daily_shorts_tick']=['state'=>$c['state'],'at'=>$c['lastTickAt'],'missing'=>$readiness['missing']??[]];
  if(($previous['state']??null)!==$c['state'])lab_event($s,'daily_shorts_'.$c['state'],'','n80_auto');
- return ['ok'=>true,'state'=>$c['state'],'campaign'=>$c,'processed'=>0,'uploads'=>0];
+ return ['ok'=>true,'state'=>$c['state'],'campaign'=>nd_shorts_public($c),'processed'=>0,'uploads'=>0];
 }
