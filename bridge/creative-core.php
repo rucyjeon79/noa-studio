@@ -27,8 +27,15 @@ function ncd_target_keys(mixed $keys):array {
  return array_values(array_intersect(NCD_REVISABLE,$keys));
 }
 function ncd_revision_input(array $d,string $field,array $targets=[]):array {$c=$d['_creative'];$input=['story'=>$c['story'],'answers'=>$c['answers'],'intent'=>$c['intent'],'fields'=>nup_fields($d),'request'=>$c['requests'][$field]??'','genre'=>$d['genreId'],'ep'=>$d['ep']];if(count($targets)>1){$input['requests']=[];foreach($targets as $key)$input['requests'][$key]=$c['requests'][$key]??'';}return $input;}
+function ncd_title_matches(string $field,mixed $value,string $title):bool {
+ if(!in_array($field,['youtubeTitle','description','communityPost'],true)||trim($title)==='')return true;
+ $normalize=static fn(string $text)=>preg_replace('/\s+/u',' ',trim($text));return is_string($value)&&str_contains($normalize($value),$normalize($title));
+}
 function ncd_proposal_current(array $d,string $field,array $p):bool {
- return isset($p['contextHash'])&&hash_equals($p['contextHash'],ncd_hash(ncd_revision_input($d,$field)))&&($p['baseHash']??'')===ncd_hash(nup_fields($d)[$field]);
+ if(!isset($p['contextHash'])||!hash_equals($p['contextHash'],ncd_hash(ncd_revision_input($d,$field)))||($p['baseHash']??'')!==ncd_hash(nup_fields($d)[$field]))return false;
+ if(ncd_title_matches($field,$p['value'],nup_fields($d)['title']))return true;
+ $title=$d['_creative']['proposals']['title']??null;
+ return $title&&($title['jobId']??'')===($p['jobId']??'')&&ncd_proposal_current($d,'title',$title)&&ncd_title_matches($field,$p['value'],$title['value']);
 }
 function ncd_current_proposals(array $d):array {$out=[];foreach($d['_creative']['proposals'] as $key=>$proposal)if(ncd_proposal_current($d,$key,$proposal))$out[$key]=$proposal;return $out;}
 /** Validate every selected proposal before one atomic patch; accept same-job siblings in either order. */
@@ -36,6 +43,7 @@ function ncd_accept_proposals(array $d,array $keys,string $decision):array {
  if(!in_array($decision,['apply','cancel'],true))throw new InvalidArgumentException('invalid_decision');
  $patch=[];$jobs=[];
  foreach($keys as $key){$p=$d['_creative']['proposals'][$key]??null;if(!$p)throw new DomainException('proposal_not_found');if($decision==='apply'){if(!ncd_proposal_current($d,$key,$p))throw new DomainException('field_changed');$patch[$key]=$p['value'];$jobs[$p['jobId']]=true;}}
+ foreach($patch as $key=>$value)if(!ncd_title_matches($key,$value,$patch['title']??nup_fields($d)['title']))throw new DomainException('apply_title_first');
  $siblings=ncd_current_proposals($d);
  if($patch)$d=ncd_fields($d,$patch);
  foreach($keys as $key){unset($d['_creative']['proposals'][$key]);if($decision==='apply')unset($d['_creative']['needsReview'][$key]);}

@@ -5,7 +5,10 @@ $level=ob_get_level();ob_start();require_once dirname(__DIR__).'/common.php';if(
 try{
  require_once __DIR__.'/storage.php';require_once __DIR__.'/sound-core.php';require_once dirname(__DIR__).'/noa-app/engine/creative.php';
  $db=noa_bridge_pdo();$owner=(string)$config['cf_admin'];$id='__DRAFT_ID__';$nonce='__REQUEST_ID__';$b=json_decode(file_get_contents('php://input'),true,16,JSON_THROW_ON_ERROR);$op=$b['op']??'';$result=[];
- if($op==='audit'){
+ if($op==='audit_titles'){
+  $q=$db->prepare("SELECT payload FROM noa_documents WHERE kind='n80_creative_job' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.owner'))=? AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.operation'))='revise' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.input.fields.title'))=? AND CAST(JSON_UNQUOTE(JSON_EXTRACT(payload,'$.createdAt')) AS UNSIGNED)>=? ORDER BY updated_at DESC LIMIT 5");$q->execute([$owner,'Between Lines',time()-86400]);$result=['matchingJobs'=>[],'userDraftWrites'=>0];$keys=['youtubeTitle','description','communityPost'];
+  foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){$j=json_decode($row['payload'],true);if(!array_intersect($keys,$j['targets']))continue;$result['matchingJobs'][]=['id'=>$j['id'],'state'=>$j['state'],'createdAt'=>$j['createdAt'],'currentTitle'=>$j['input']['fields']['title'],'targets'=>$j['targets'],'previous'=>array_intersect_key($j['input']['fields'],array_flip($keys)),'result'=>array_intersect_key($j['result']['fields']??[],array_flip($keys))];}
+ }elseif($op==='audit'){
   // Read only the exact title reported by the owner, within the last day. No other song content.
   $q=$db->prepare("SELECT payload FROM noa_documents WHERE kind='n80_creative_job' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.owner'))=? AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.operation'))='revise' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.field'))='title' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.input.fields.title'))=? AND CAST(JSON_UNQUOTE(JSON_EXTRACT(payload,'$.createdAt')) AS UNSIGNED)>=? ORDER BY updated_at DESC LIMIT 5");
   $q->execute([$owner,'A Song Between the Lines',time()-86400]);$rows=$q->fetchAll(PDO::FETCH_ASSOC);$auditId='__AUDIT_JOB_ID__';if($auditId!==''){$jr=ncd_job($db,$auditId);if(!$jr||($jr['document']['operation']??'')!=='revise'||($jr['document']['field']??'')!=='title')throw new RuntimeException('reported_revision_not_found');$rows=[['payload'=>ncd_json($jr['document'])]];}$result=['matchingJobs'=>[],'userDraftWrites'=>0];
@@ -19,6 +22,7 @@ try{
   $batch=__BATCH_MODE__===1;
   $r=ncd_save($db,$owner,['id'=>$id,'revision'=>$r['revision'],'fields'=>['title'=>'A Song Between the Lines','sunoPrompt'=>'Warm intimate indie pop, piano and cello, soft male-female duet.'],'requests'=>['title'=>$batch?'':'더 짧게 줄여죠']]);
   $selection=$batch?['targets'=>['title','sunoPrompt']]:['field'=>'title'];
+  if(__TITLE_MODE__===1){$old='메모 사이로 흐르는 노래';$r=ncd_save($db,$owner,['id'=>$id,'revision'=>$r['revision'],'fields'=>['title'=>'Between Lines','youtubeTitle'=>$old.' | 그때 못 한 말을 오늘 꺼내 볼까','description'=>'노래 「'.$old.'」는 오래된 메모와 추억을 담았습니다.','communityPost'=>'오늘의 신곡 「'.$old.'」를 들어 주세요.'],'requests'=>['title'=>'']]);$selection=['targets'=>['youtubeTitle','description','communityPost']];}
   $result=ncd_enqueue($db,$owner,['id'=>$id,'revision'=>$r['revision'],'operation'=>'revise','requestId'=>$nonce]+$selection);$result=['draftId'=>$id,'job'=>$result['job']];
  }else{
   $r=ncd_row($db,$id,$owner);if($r['document']['_creative']['story']!=='[N80 수정 검증 전용 __DRAFT_ID__] 오래된 메모를 떠올리는 한국어 노래.')throw new RuntimeException('probe_scope_changed');
@@ -26,7 +30,7 @@ try{
   if($op==='status'){$result['targets']=$j['targets'];$result['requests']=$j['input']['requests']??[];$result['fields']=$j['result']['fields']??[];$result['proposals']=array_map(static fn($p)=>$p['value'],$v['creative']['proposals']);}
   elseif($op==='apply'){
    $j=ncd_job($db,substr(hash('sha256',$owner.':'.$nonce),0,32))['document'];
-   if(__BATCH_MODE__!==1||$j['state']!=='succeeded'||$j['targets']!==['title','sunoPrompt'])throw new RuntimeException('probe_apply_scope');
+   $expected=__TITLE_MODE__===1?['youtubeTitle','description','communityPost']:['title','sunoPrompt'];if((__BATCH_MODE__!==1&&__TITLE_MODE__!==1)||$j['state']!=='succeeded'||$j['targets']!==$expected)throw new RuntimeException('probe_apply_scope');
    $before=nup_fields($r['document']);$revision=$r['revision'];$r=ncd_action($db,$owner,'proposal',['id'=>$id,'revision'=>$revision,'fields'=>$j['targets'],'decision'=>'apply']);$after=nup_fields($r['document']);
    foreach($before as $key=>$value)if(!in_array($key,$j['targets'],true)&&$after[$key]!==$value)throw new RuntimeException('probe_unselected_changed');
    foreach($j['targets'] as $key)if($after[$key]!==$j['result']['fields'][$key])throw new RuntimeException('probe_apply_mismatch');

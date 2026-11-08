@@ -51,3 +51,13 @@ export async function checkBatch(page,context,heldJob,width,output){
  const title=page.locator('[data-record-field=title]');await title.getByRole('button',{name:'곡 제목 수정',exact:true}).click();await title.locator('[name=title]').fill('집으로 가는 마음 · 수정');await title.getByRole('button',{name:'곡 제목 저장',exact:true}).click();await page.waitForFunction(()=>document.querySelector('[data-record-field=title]').dataset.locked==='true');
  console.log('CREATIVE_BROWSER_OPTIONAL_REQUEST_SHARED_BATCH_SELECTION_APPLY_OK',width);
 }
+export async function checkTitleReferences(page,context,heldJob,width,output){
+ const title=page.locator('[data-record-field=title]'),panel=page.locator('#creative-record .creative-batch'),keys=['youtubeTitle','description','communityPost'];
+ const edit=async value=>{await title.getByRole('button',{name:'곡 제목 수정',exact:true}).click();await title.locator('[name=title]').fill(value);await title.getByRole('button',{name:'곡 제목 저장',exact:true}).click();await page.waitForFunction(()=>document.querySelector('[data-record-field=title]').dataset.locked==='true');};
+ await edit('Between Lines');await panel.locator('summary').click();await panel.getByRole('button',{name:'선택 해제',exact:true}).click();for(const key of keys)await panel.locator('input[value="'+key+'"]').check();
+ const before=heldJob();await panel.getByRole('button',{name:'선택 항목 AI 생성',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('#creative-record').inert);assert.notEqual(heldJob(),before);
+ const snapshot=await(await context.request.get('http://127.0.0.1:8787/creative-test-worker.php?id='+heldJob()+'&mode=snapshot')).json();assert.equal(snapshot.currentSong.title,'Between Lines');assert(snapshot.revisionInputs.youtubeTitle.currentValue.includes('집으로 가는 마음'),'Fixture retains the initial title in old metadata');
+ await context.request.get('http://127.0.0.1:8787/creative-test-worker.php?id='+heldJob());await panel.getByRole('button',{name:'3개 수정안 적용',exact:true}).waitFor({timeout:20000});for(const key of keys)assert((await page.locator('[data-record-field='+key+'] .creative-ai-value').innerText()).includes('Between Lines'));
+ await page.locator('[data-record-field=youtubeTitle]').screenshot({path:`${output}/current-song-title-${width}.png`});await panel.getByRole('button',{name:'3개 수정안 적용',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('#creative-record').inert);for(const key of keys)assert((await page.locator('[name='+key+']').inputValue()).includes('Between Lines'));
+ await edit('집으로 가는 마음 · 수정');console.log('CREATIVE_BROWSER_CURRENT_SONG_TITLE_ALL_METADATA_OK',width);
+}

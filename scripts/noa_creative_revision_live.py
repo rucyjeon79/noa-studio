@@ -6,7 +6,7 @@ from noa_full_inventory import ROOT,connect
 from n80_live_observer import NoRedirect
 
 def main(phase):
-    if phase not in ('audit','verify','verify_batch','cleanup'):raise ValueError('invalid phase')
+    if phase not in ('audit','audit_titles','verify','verify_batch','verify_titles','cleanup'):raise ValueError('invalid phase')
     audit_id=os.environ.get('NOA_CREATIVE_AUDIT_JOB','')
     if audit_id and not re.fullmatch('[a-f0-9]{32}',audit_id):raise ValueError('invalid audit job')
     probe_id=os.environ.get('NOA_CREATIVE_PROBE_ID','') if phase=='cleanup' else secrets.token_hex(16)
@@ -14,7 +14,7 @@ def main(phase):
     if not all(re.fullmatch('[a-f0-9]{32}',value) for value in (probe_id,request_id)):raise ValueError('invalid probe identity')
     token=secrets.token_hex(32);name='creative-revision-'+secrets.token_hex(12)+'.php';remote=ROOT+'/noa-bridge/'+name
     code=Path('scripts/noa_creative_revision_live.php').read_text()
-    for k,v in {'__BATCH_MODE__':'1' if phase=='verify_batch' else '0','__AUDIT_JOB_ID__':audit_id,'__EXPIRY__':str(int(time.time())+900),'__TOKEN_SHA__':hashlib.sha256(token.encode()).hexdigest(),'__DRAFT_ID__':probe_id,'__REQUEST_ID__':request_id}.items():code=code.replace(k,v)
+    for k,v in {'__TITLE_MODE__':'1' if phase=='verify_titles' else '0','__BATCH_MODE__':'1' if phase=='verify_batch' else '0','__AUDIT_JOB_ID__':audit_id,'__EXPIRY__':str(int(time.time())+900),'__TOKEN_SHA__':hashlib.sha256(token.encode()).hexdigest(),'__DRAFT_ID__':probe_id,'__REQUEST_ID__':request_id}.items():code=code.replace(k,v)
     code=code.encode();t=connect();installed=False;created=False;receipt={};opener=urllib.request.build_opener(NoRedirect())
     def call(op):
         request=urllib.request.Request('https://noastudio.ai.kr/noa-bridge/'+name,data=json.dumps({'op':op}).encode(),headers={'Content-Type':'application/json','X-NOA-Control':token,'Cache-Control':'no-cache'})
@@ -32,7 +32,7 @@ def main(phase):
             installed=True;s.chmod(remote,0o644)
             with s.open(remote,'rb') as f:
                 if f.read()!=code:raise RuntimeError('revision_probe_readback')
-        if phase=='audit':receipt=call('audit');print('CREATIVE_REVISION_AUDIT',json.dumps(receipt,ensure_ascii=False),flush=True)
+        if phase in ('audit','audit_titles'):receipt=call(phase);print('CREATIVE_REVISION_AUDIT',json.dumps(receipt,ensure_ascii=False),flush=True)
         elif phase=='cleanup':
             receipt['cleanup']=call('cleanup');print('CREATIVE_REVISION_PROBE_CLEANED',json.dumps(receipt),flush=True)
         else:
@@ -45,7 +45,14 @@ def main(phase):
                 time.sleep(5)
             else:raise RuntimeError('revision_probe_timeout')
             receipt['inference']=status;value=status['result']
-            if phase=='verify_batch':
+            if phase=='verify_titles':
+                keys=['youtubeTitle','description','communityPost']
+                if not (status['submittedTitle']==status['currentTitle']=='Between Lines' and status['targets']==keys and status['requests']==dict.fromkeys(keys,'') and set(status['fields'])==set(keys) and status['fields']==status['proposals']):raise RuntimeError('current_song_title_snapshot_failed')
+                for key in keys:
+                    value=status['fields'][key]
+                    if not isinstance(value,str) or 'Between Lines' not in value or '메모 사이로 흐르는 노래' in value:raise RuntimeError('obsolete_song_title_returned')
+                receipt['application']=call('apply');print('CREATIVE_CURRENT_TITLE_REAL_AI_ALL_METADATA_VERIFIED',json.dumps(receipt,ensure_ascii=False),flush=True)
+            elif phase=='verify_batch':
                 if not (status['submittedTitle']==status['currentTitle']=='A Song Between the Lines' and status['targets']==['title','sunoPrompt'] and status['requests']=={'title':'','sunoPrompt':''} and set(status['fields'])=={'title','sunoPrompt'} and status['fields']==status['proposals']):raise RuntimeError('batch_optional_request_failed')
                 for key,limit in {'title':500,'sunoPrompt':1000}.items():
                     if not isinstance(status['fields'][key],str) or not 0<len(status['fields'][key])<=limit:raise RuntimeError('batch_field_invalid')
