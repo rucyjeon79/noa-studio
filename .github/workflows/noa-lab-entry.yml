@@ -22,7 +22,7 @@ jobs:
           php -l bridge/catalog.php
           php -l deploy/noa-ai-lab.php
           node --check deploy/noa-ai-lab.js
-          ffmpeg -v error -f lavfi -i 'color=c=blue:s=512x288:r=24' -t .5 -an -c:v libx264 -pix_fmt yuv420p /tmp/n80-clip.mp4
+          ffmpeg -v error -f lavfi -i 'color=c=blue:s=512x288:r=24' -t 0.5 -an -c:v libx264 -pix_fmt yuv420p /tmp/n80-clip.mp4
           php tests/lab/browser_assets_test.php /tmp/n80-clip.mp4
           php tests/lab/core_test.php
           python tests/lab/http_test.py

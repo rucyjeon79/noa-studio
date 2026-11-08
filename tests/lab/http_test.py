@@ -31,7 +31,7 @@ with tempfile.TemporaryDirectory(prefix='noa-lab-http-') as root:
   assert worker('health')[0]==200
   assert request('lab-api.php?action=config',{'expectedRevision':state['configRevision']},admin)[0]==200
   # Real browser-result multipart upload, protected by the existing admin and CSRF gates.
-  clip=root/'clip.mp4';subprocess.run(['ffmpeg','-v','error','-f','lavfi','-i','color=c=blue:s=512x288:r=24','-t','.5','-an','-c:v','libx264','-pix_fmt','yuv420p',str(clip)],check=True)
+  clip=root/'clip.mp4';subprocess.run(['ffmpeg','-v','error','-f','lavfi','-i','color=c=blue:s=512x288:r=24','-t','0.5','-an','-c:v','libx264','-pix_fmt','yuv420p',str(clip)],check=True)
   clip_bytes=clip.read_bytes();fields={'requestId':'c'*32,'sourceUrl':'https://flow.google.com/project/11111111-1111-1111-1111-111111111111/edit/22222222-2222-2222-2222-222222222222','sha256':hashlib.sha256(clip_bytes).hexdigest(),'trackKey':''}
   def import_clip(extra_headers,values=fields):
    boundary='n80-'+secrets.token_hex(12);parts=[]
