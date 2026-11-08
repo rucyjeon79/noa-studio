@@ -55,6 +55,38 @@ function ncd_atomic(PDO $db,callable $fn):mixed{$db->beginTransaction();try{$r=$
 function ncd_row(PDO $db,string $id,string $owner,bool $lock=false):array {
  $q=$db->prepare('SELECT d.*,c.recovery_until,c.retained_at FROM noa_creative_drafts c JOIN noa_documents d ON d.doc_key=c.doc_key WHERE c.draft_id=? AND c.owner_id=? AND d.kind=?'.($lock?' FOR UPDATE':''));$q->execute([ncd_id($id),$owner,NCD_KIND]);$r=$q->fetch(PDO::FETCH_ASSOC);if(!$r)throw new DomainException('draft_not_found');$r['document']=json_decode($r['payload'],true,64,JSON_THROW_ON_ERROR);$r['revision']=(int)$r['revision'];foreach(['retained_at','recovery_until'] as $field)$r[$field]=$r[$field]===null?null:(int)$r[$field];return $r;
 }
+/** Read-only library policy; published songs and their files remain canonical. */
+function ncd_list(PDO $db,string $owner,array $options=[],?int $now=null):array {
+ $now??=time();
+ $offset=max(0,min(100000,(int)($options['offset']??0)));
+ $search=ncd_text((string)($options['q']??''),200);
+ $filter=(string)($options['filter']??'');
+ if(!in_array($filter,['','story','questions','intent','writing','review','published','deleted'],true))throw new InvalidArgumentException('invalid_filter');
+ $stage="JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$._creative.summary.stage'))";
+ $title="JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$._creative.summary.title'))";
+ $order=match($options['sort']??'updated'){'title'=>$title.' ASC','created'=>'c.created_at DESC',default=>'d.updated_at DESC'};
+ $where=$filter!==''?$stage.'=?':$stage."<>'deleted'";
+ $where.=' AND c.retained_at IS NOT NULL';
+ // Publication is immutable UTC; hide completed registrations before pagination.
+ $publishedAt="JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$._creative.publication.at'))";
+ $publishedKey="JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$._creative.publication.key'))";
+ $where.=" AND (COALESCE(".$publishedKey.",'')='' OR COALESCE(".$publishedAt.",'')='' OR ".$publishedAt.">?)";
+ $params=[$owner,NCD_KIND];
+ if($filter!=='')$params[]=$filter;
+ $params[]=gmdate('c',$now-86400);
+ if($search!==''){
+ $where.=" AND (LOCATE(LOWER(?),LOWER(".$title."))>0 OR LOCATE(LOWER(?),LOWER(JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$._creative.story'))))>0)";$params[]=$search;$params[]=$search;}
+ $q=$db->prepare("SELECT JSON_EXTRACT(d.payload,'$._creative.summary') AS summary,".$publishedAt." AS published_at,".$publishedKey." AS published_key FROM noa_creative_drafts c JOIN noa_documents d ON d.doc_key=c.doc_key WHERE c.owner_id=? AND d.kind=? AND ".$where." ORDER BY ".$order.",c.draft_id LIMIT 51 OFFSET ".$offset);
+ $q->execute($params);
+ $items=[];
+ foreach($q as $r){$summary=json_decode($r['summary'],true);$at=!empty($r['published_key'])?strtotime($r['published_at']??''):false;$summary['listExpiresAt']=$at===false?null:$at+86400;$items[]=$summary;}
+ $more=count($items)>50;
+ $recovery=$db->prepare("SELECT JSON_EXTRACT(d.payload,'$._creative.summary') AS summary,c.recovery_until FROM noa_creative_drafts c JOIN noa_documents d ON d.doc_key=c.doc_key WHERE c.owner_id=? AND d.kind=? AND c.retained_at IS NULL AND c.recovery_until>? AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$._creative.deletedAt')),'')='' AND (JSON_EXTRACT(d.payload,'$._creative.hasInput')=true OR TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$._creative.story')),''))<>'' OR TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(d.payload,'$._creative.summary.title')),''))<>'' OR d.revision>1) ORDER BY d.updated_at DESC,c.draft_id LIMIT 50");
+ $recovery->execute([$owner,NCD_KIND,$now]);
+ $recoveries=[];
+ foreach($recovery as $row)$recoveries[]=json_decode($row['summary'],true)+['expiresAt'=>(int)$row['recovery_until']];
+ return ['items'=>array_slice($items,0,50),'hasMore'=>$more,'recoveries'=>$recoveries,'serverTime'=>$now];
+}
 function ncd_put(PDO $db,array $r,array $d,string $owner):array {
  require_once dirname(__DIR__).'/noa-app/jukebox/media-location.php';$d=nml_sync($db,$r['doc_key'],$d);
  $d['_creative']['proposals']=ncd_current_proposals($d);

@@ -1,3 +1,4 @@
+import {checkPublishedExpiry} from './list-expiry.mjs';
 import {checkRevisions,checkBatch,checkTitleReferences} from './revisions.mjs';
 import {installViewport,checkKeyboard} from './viewport.mjs';
 import {chromium} from 'playwright';
@@ -99,6 +100,7 @@ await page.waitForSelector('.creative-options button');assert.equal(await page.l
  const savedKey=new URL(page.url()).searchParams.get('track');const card=page.locator('[data-key='+JSON.stringify(savedKey)+']');await card.waitFor({state:'attached'});assert.equal(await card.getAttribute('data-genre'),'your-story');assert(!(await page.locator('body').innerText()).includes('음악 목록을 불러오지 못했습니다'),'Saved category loads real song records');assert((await card.getAttribute('data-title')).length>0);
  assert.equal(await card.getAttribute('data-jukebox-status'),width===1280?'ready':'audio_pending');
  await page.screenshot({path:`${output}/saved-category-${width}.png`,fullPage:true});
+ await checkPublishedExpiry(page,context,draftId,savedKey,width,output);
  await context.close();console.log('CREATIVE_BROWSER_REAL_SQL_FLOW_OK',width);
  }catch(e){await page.screenshot({path:`${output}/failure-${width}.png`,fullPage:true});console.log('CREATIVE_UI_STATE',await page.locator('body').innerText());throw e;}
 }}finally{await browser.close();}
