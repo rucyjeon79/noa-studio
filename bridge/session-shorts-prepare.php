@@ -14,9 +14,9 @@ function nd_prepare_claim(array &$s,array $p,int $now):array {
  if($a&&$a['date']===$date&&$a['state']==='analyzed')return ['ok'=>true,'claimed'=>false,'state'=>'analyzed'];
  // Bootstrap once immediately; following dates use the established morning preparation time.
  if($a&&$a['date']!==$date&&$local<$target->setTime(8,0))return ['ok'=>true,'claimed'=>false,'state'=>'waiting_schedule'];
- if($a&&$a['date']===$date&&($a['attempts']??0)>=3)return ['ok'=>true,'claimed'=>false,'state'=>'preparation_retry_limit'];
- $same=$a&&$a['date']===$date;
- $a=['date'=>$date,'publishAt'=>$target->format(DATE_ATOM),'state'=>'preparing','attempts'=>$same?$a['attempts']+1:1,
+ $same=$a&&$a['date']===$date&&($a['protocolVersion']??1)===2;
+ if($same&&($a['attempts']??0)>=3)return ['ok'=>true,'claimed'=>false,'state'=>'preparation_retry_limit'];
+ $a=['protocolVersion'=>2,'date'=>$date,'publishAt'=>$target->format(DATE_ATOM),'state'=>'preparing','attempts'=>$same?$a['attempts']+1:1,
   'lease'=>bin2hex(random_bytes(24)),'leaseUntil'=>$now+1800,'startedAt'=>gmdate('c',$now),'sources'=>[],
   'report'=>$same?($a['report']??null):null];
  $c['preparation']=$a;
@@ -77,7 +77,20 @@ function nd_prepare_dispatch(array $b,array $p):array {
  if($command==='catalog')return ['ok'=>true,'items'=>nd_prepare_catalog()];
  if($command==='youtube'){
   require_once __DIR__.'/youtube-store.php';[$method,$query]=nd_prepare_youtube_query($b,$p);
-  $data=ny_get(ny_token($state,$p['channelId']),$method,$query);
+  // Hosting replaces HTTP error bodies. Return a bounded, explicit failure receipt
+  // through the already authenticated operation; never expose Google's raw body.
+  $stage='token_refresh';
+  try{$token=ny_token($state,$p['channelId']);$stage='youtube_read';$data=ny_get($token,$method,$query);}
+  catch(Throwable $e){
+   $reason='youtube_dependency_failed';$status=0;
+   if($e instanceof NoaOAuthFailure){$reason=$e->reason;$status=$e->remoteStatus;}
+   elseif($e instanceof DomainException){
+    if(preg_match('/^youtube_[a-z_]{1,70}$/D',$e->getMessage()))$reason=$e->getMessage();
+    elseif(preg_match('/^Google API HTTP (\d+) \/ ([A-Za-z_]{1,64})/',$e->getMessage(),$m)){$status=(int)$m[1];$reason=$m[2];}
+   }
+   if(!preg_match('/^[A-Za-z0-9_.-]{1,80}$/D',$reason))$reason='youtube_dependency_failed';
+   return ['ok'=>true,'dependencyOk'=>false,'reason'=>'youtube_dependency_failed','diagnostic'=>['providerStage'=>$stage,'providerReason'=>$reason,'providerStatus'=>$status,'errorType'=>get_class($e)]];
+  }
   if($method==='playlists'){
    require_once __DIR__.'/taxonomy-core.php';
    foreach($data['items'] as &$item){$title=$item['snippet']['title']??'';$genres=nt_declared_genres($title);

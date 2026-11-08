@@ -6,6 +6,10 @@ function reject_prepare(callable $fn,string $reason):void {try{$fn();}catch(Doma
 $p=json_decode(file_get_contents(__DIR__.'/../../config/n80-daily-shorts.json'),true);
 $s=['config'=>['workerEnabled'=>true],'campaigns'=>['daily_shorts'=>['enabled'=>true]]];$now=strtotime('2026-11-09T03:00:00+09:00');
 $first=nd_prepare_claim($s,$p,$now);check_prepare($first['claimed']&&$first['date']==='2026-11-09','Immediate bootstrap within existing campaign');
+$old=$s;$old['campaigns']['daily_shorts']['preparation']=array_replace($old['campaigns']['daily_shorts']['preparation'],['protocolVersion'=>1,'state'=>'preparation_failed','leaseUntil'=>0,'attempts'=>3]);
+check_prepare(nd_prepare_claim($old,$p,$now+1)['claimed'],'One new bounded attempt budget after deployment of repaired protocol');
+$old['campaigns']['daily_shorts']['preparation']['attempts']=3;$old['campaigns']['daily_shorts']['preparation']['leaseUntil']=0;
+check_prepare(nd_prepare_claim($old,$p,$now+2)['state']==='preparation_retry_limit','Updated protocol still enforces daily retry limit');
 $b=['lease'=>$first['lease']];nd_prepare_authorize($s,$b,$now+1);
 check_prepare(!nd_prepare_claim($s,$p,$now+10)['claimed'],'No overlapping worker');
 reject_prepare(fn()=>nd_prepare_authorize($s,['lease'=>'wrong'],$now+1),'Reject stale worker');
