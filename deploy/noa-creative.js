@@ -194,7 +194,7 @@ function renderRecord(){
   invalid(key){invalidFields.add(key);syncComposer();},
   decorateField:decorateRecordField,
   mountFooter(form){form.append($('publish'));},
-  ready(view){inputs=view.inputs;const chat=$('chat'),icon=view.iconCommand('button','ai','AInoa와 대화 이어가기');chat.replaceChildren(...icon.childNodes);chat.className=icon.className;chat.title='AInoa와 대화 이어가기';chat.setAttribute('aria-label',chat.title);view.form.querySelector('.noa-field-toolbar').append(chat);view.form.querySelector('.noa-advanced').append($('history'));paintRecordFeedback();syncComposer();}
+  ready(view){inputs=view.inputs;const chat=$('chat'),icon=view.iconCommand('button','ai','AInoa와 대화 이어가기');chat.replaceChildren(...icon.childNodes);chat.className=icon.className;chat.title='AInoa와 대화 이어가기';chat.setAttribute('aria-label',chat.title);const toolbar=view.form.querySelector('.noa-field-toolbar');toolbar.insertBefore(chat,toolbar.querySelector('[aria-label="곡정보창 닫기"]'));view.form.insertBefore(view.form.querySelector('.noa-edit-status'),$('publish')); view.form.querySelector('.noa-advanced').append($('history'));paintRecordFeedback();syncComposer();}
  }});
  recordOpening=recordEditor.openRecord({type:'song',source:'creative',key:'creative:'+epoch}).finally(()=>{recordOpening=null;});
 }
@@ -207,11 +207,11 @@ function decorateRecordField({key,label,wrap,heading,input,iconCommand,fieldAiBu
   const revise=button('다듬기',()=>generate('revise',key));revise.className='noa-action';
   const history=iconCommand('button','options',label+' 수정 이력');history.onclick=()=>run(()=>fieldHistory(key));
   const actions=el('div',undefined,'noa-ai-feedback-actions');actions.append(revise,history);
-  const result=el('div');feedback.append(requestLabel,actions,result);wrap.append(feedback);heading.prepend(ai);
-  ai.onclick=()=>{feedback.hidden=!feedback.hidden;ai.setAttribute('aria-expanded',String(!feedback.hidden));};ai.setAttribute('aria-expanded','false');
+  const result=el('div');feedback.append(requestLabel,actions,result);wrap.append(feedback);heading.insertBefore(ai,heading.querySelector('.noa-edit-edit'));
+  ai.onclick=()=>{entry.userOpen=!entry.userOpen;paintRecordFeedback();};ai.setAttribute('aria-expanded','false');
   feedback.addEventListener('input',e=>e.stopPropagation());feedback.addEventListener('change',e=>e.stopPropagation());
   request.oninput=()=>queue({requests:{[key]:request.value}});
-  Object.assign(entry,{ai,feedback,request,revise,result});
+  Object.assign(entry,{ai,feedback,request,requestLabel,actions,revise,result,userOpen:false});
  }
  if(['audioFileLocation','cardImageLocation'].includes(key)){
   heading.querySelector('.noa-edit-edit')?.remove();const audio=key==='audioFileLocation',pick=iconCommand('button','upload',audio?'음원 업로드':'카드 이미지 업로드');
@@ -228,6 +228,7 @@ function paintRecordFeedback(){
   if(!f.ai)continue;
   const running=jobActive&&currentJob?.operation==='revise'&&currentJob.field===key;
   f.ai.disabled=published||!c?.intentConfirmed||jobActive;f.revise.disabled=f.ai.disabled;f.request.disabled=published||jobActive;
+  f.requestLabel.hidden=!f.userOpen;f.actions.hidden=!f.userOpen;f.feedback.hidden=!f.userOpen&&!running&&!c?.needsReview[key]&&!c?.proposals[key];f.ai.setAttribute('aria-expanded',String(!!f.userOpen));
   f.wrap.toggleAttribute('data-generating',running);f.input.setAttribute('aria-busy',String(running));f.result.replaceChildren();
   if(running){f.feedback.hidden=false;f.result.append(el('p','요청하신 내용을 다듬고 있어요.'));}
   if(c?.needsReview[key])f.result.append(el('p','관련 내용이 바뀌었어요. 함께 확인해 주세요.'),button('확인했어요',()=>mutate('review',{field:key})));
