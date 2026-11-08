@@ -85,6 +85,22 @@ generation when a required file is absent or has changed since planning.
 The operator must still attach the actual files and compare the result; the
 metadata check does not prove a provider received a reference or matched a face.
 
+The reference-based Gemini image was recovered only as a 572×1024 preview and
+was rejected as a production base. A subsequent built-in ChatGPT image request
+attached the same official NOA sheet and returned a native 941×1672 PNG. The
+image receiver records `provider:chatgpt` with `https://chatgpt.com/` as the
+provider origin (not a fabricated result URL); the review note records the
+actual tool output filename and reference sheet. Gemini result URLs remain
+supported, and video sources still require Flow. All checksum and review gates
+remain mandatory.
+
+The assembler previously forced every final to 720p. It now supports explicit
+720p or 1080p delivery, with N80 Shorts manifests requesting 1080×1920. Legacy
+manifests retain 720p compatibility. Actual stream dimensions and full decode
+are still checked; higher delivery dimensions never imply the source footage
+was generated natively at that resolution. Approved frames are padded rather
+than cropped so provider marks remain visible.
+
 The matcher uses a bounded eight-million-cell traceback and reports
 `transcript_alignment_too_large` for inputs exceeding that limit. It maps only
 actual matching recognized characters to their measured word intervals; it

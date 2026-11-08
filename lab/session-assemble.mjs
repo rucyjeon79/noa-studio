@@ -11,9 +11,14 @@ async function run(command,args){return new Promise((resolve,reject)=>{const p=s
 async function sha(file){const h=createHash('sha256');for await(const b of createReadStream(file))h.update(b);return h.digest('hex');}
 async function probe(file){return JSON.parse(await run('ffprobe',['-v','error','-show_streams','-show_format','-of','json',file]));}
 const encode=['-an','-c:v','libx264','-preset','fast','-crf','18','-pix_fmt','yuv420p','-threads','2','-r','24','-fps_mode','cfr','-video_track_timescale','12288'];
+export function outputDimensions(format,resolution=720){
+ if(!['landscape','shorts'].includes(format)||![720,1080].includes(resolution))throw Error('invalid_output_resolution');
+ const long=resolution===1080?1920:1280;return format==='shorts'?[resolution,long]:[long,resolution];
+}
 export async function assemble(m,output){
  const fps=24,layout=m.layout,format=m.format;
  if(!layout?.ready||layout.fps!==fps||!['landscape','shorts'].includes(format)||!Array.isArray(m.scenes)||m.scenes.length!==layout.scenes.length||!Number.isFinite(m.duration)||m.duration<=0||m.duration>3600)throw Error('invalid_manifest');
+ const [w,h]=outputDimensions(format,m.outputResolution??720);
  if(await sha(m.audio.path)!==m.audio.sha256)throw Error('audio_checksum_mismatch');
  const selection=m.selection??null,sourceDuration=m.sourceDuration??m.duration;
  if(!Number.isFinite(sourceDuration)||(!selection&&sourceDuration!==m.duration))throw Error('invalid_source_duration');
@@ -24,7 +29,7 @@ export async function assemble(m,output){
  const subtitles=selectSubtitleWindow(validateSubtitles(m.subtitles,m.audio.sha256,sourceDuration),selection);
  const temp=await mkdtemp(path.join(os.tmpdir(),'n80-assemble-'));
  try{
-  const [w,h]=format==='landscape'?[1280,720]:[720,1280],norm=[],parts=[];
+  const norm=[],parts=[];
   let cursor=0;
   for(let i=0;i<m.scenes.length;i++){
    const row=layout.scenes[i],clip=m.scenes[i];
@@ -57,7 +62,7 @@ export async function assemble(m,output){
   if(!v||!a||Number(v.nb_frames)!==layout.targetFrames||v.width!==w||v.height!==h||Math.abs(Number(v.duration)-m.duration)>.125||Math.abs(Number(a.duration)-m.duration)>.125)throw Error('final_validation_failed');
   if((await stat(output)).size>512*1048576)throw Error('final_file_too_large');
   if(subtitles){await writeFile(output+'.srt',subtitleFile(subtitles,'srt'));await writeFile(output+'.vtt',subtitleFile(subtitles,'vtt'));}
-  return {file:output,sha256:await sha(output),bytes:(await stat(output)).size,duration:Number(v.duration),verification:{...(selection?{selection}:{}),...(subtitles?{subtitlesBurned:true,subtitleSha256:subtitles.sha256}:{}),decoded:true,audioMapped:true,sourceAudioSha256:m.audio.sha256,sceneHashes:layout.scenes.map(s=>s.sha256)}};
+  return {file:output,sha256:await sha(output),bytes:(await stat(output)).size,width:w,height:h,duration:Number(v.duration),verification:{...(selection?{selection}:{}),...(subtitles?{subtitlesBurned:true,subtitleSha256:subtitles.sha256}:{}),decoded:true,audioMapped:true,sourceAudioSha256:m.audio.sha256,sceneHashes:layout.scenes.map(s=>s.sha256)}};
  }finally{await rm(temp,{recursive:true,force:true});}
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href){

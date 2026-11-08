@@ -39,7 +39,7 @@ try{
  refuses(fn()=>$step('not_created',['operationId'=>$operation,'note'=>'unchecked']),'provider_reconciliation_required');
  $step('not_created',['operationId'=>$operation,'note'=>'Provider history checked: no generation.','providerHistoryChecked'=>true]);
  $upload=function($kind,$n,$path,$verification=[])use($call,$step,$jobId,&$lease,&$job){
-  [$begin]=$step('begin',['kind'=>$kind,'scene'=>$n]);$op=$begin['requestId'];$data=file_get_contents($path);$base=['id'=>$jobId,'mode'=>'write','lease'=>$lease,'operationId'=>$op,'sha256'=>hash('sha256',$data),'bytes'=>strlen($data),'sourceUrl'=>$kind==='final'?'':($kind==='image'?'https://gemini.google.com/app/test':'https://flow.google.com/project/test'),'verification'=>$verification];
+  [$begin]=$step('begin',['kind'=>$kind,'scene'=>$n]);$op=$begin['requestId'];$data=file_get_contents($path);$base=['id'=>$jobId,'mode'=>'write','lease'=>$lease,'operationId'=>$op,'sha256'=>hash('sha256',$data),'bytes'=>strlen($data),'sourceUrl'=>$kind==='final'?'':($kind==='image'?($n===1?'https://chatgpt.com/':'https://gemini.google.com/app/test'):'https://flow.google.com/project/test'),'verification'=>$verification];
   $first=null;$last=null;
   for($off=0;$off<strlen($data);$off+=1024){$chunk=$base+['offset'=>$off,'data'=>base64_encode(substr($data,$off,1024))];$r=$call('agentFile',$chunk);$first??=$chunk;$last=$chunk;
    if($off===0&&strlen($data)>1024){check($call('agentFile',$chunk)['nextOffset']===1024,'Chunk replay');refuses(fn()=>$call('agentFile',array_replace($chunk,['data'=>base64_encode(str_repeat('X',1024))])),'asset_chunk_conflict');}
@@ -51,7 +51,11 @@ try{
   check($call('agentStep',$review)['replayed']===true,'Review replay, including final completion');
   check(!is_file(lab_job_dir($jobId).'/transfer-'.$op.'.part'),'Transfer duplicate retained');
  };
- $upload('image',1,$fixtures.'/image.png');$upload('video',1,$fixtures.'/clip-1.mp4');
+ $upload('image',1,$fixtures.'/image.png');
+ check($job['scenes'][0]['image']['provider']==='chatgpt','Actual built-in image provider is retained');
+ foreach(['https://chatgpt.com.evil.test/','http://chatgpt.com/','https://someone@chatgpt.com/','https://chatgpt.com:443/'] as $bad)refuses(fn()=>sa_media_source('image',$bad),'invalid_media_source');
+ refuses(fn()=>sa_media_source('video','https://chatgpt.com/'),'invalid_media_source');
+ $upload('video',1,$fixtures.'/clip-1.mp4');
  check($job['next']['action']==='extend_plan','Short actual clip must extend plan');$step('plan',['scenes'=>[$scene(2)]]);
  $upload('image',2,$fixtures.'/image.png');$upload('video',2,$fixtures.'/clip-2.mp4');check($job['next']['action']==='assemble','Ready for assembly');
  $receipt=json_decode(file_get_contents($fixtures.'/receipt.json'),true,32,JSON_THROW_ON_ERROR);$upload('final',0,$fixtures.'/final.mp4',$receipt['verification']);
@@ -59,6 +63,7 @@ try{
  $source['duration']=240;$source['title']='Four minute song';$start['requestId']=$id();$long=$call('agentStart',$start)['job'];check($long['agent']['sceneCount']===35,'No 30-cut cap');
  $shortStart=array_replace($start,['format'=>'shorts','requestId'=>$id(),'selection'=>['start'=>40,'end'=>95]]);
  $short=$call('agentStart',$shortStart)['job'];check($short['agent']['duration']===55.0&&$short['source']['duration']===240,'Selected length preserves full source');
+ check($short['assemblyTool']['manifest']['outputResolution']===1080,'Shorts delivery requests portrait 1080p');
  check($short['agent']['sceneCount']===8&&$short['assemblyTool']['manifest']['selection']['start']===40.0,'Selected scene plan and manifest');
  check($call('agentStart',$shortStart)['replayed'],'Selected start replay');
  foreach([['start'=>0,'end'=>48],['start'=>0,'end'=>60],['start'=>-1,'end'=>54],['start'=>220,'end'=>275]] as $bad)refuses(fn()=>$call('agentStart',array_replace($shortStart,['requestId'=>$id(),'selection'=>$bad])),'invalid_short_selection');

@@ -41,8 +41,8 @@ function sa_video_probe(string $path,bool $final=false):array {
 }
 function sa_media_source(string $kind,string $url):string {
  if($kind==='final'){if($url!=='')throw new InvalidArgumentException('invalid_media_source');return '';}
- $u=parse_url($url);$host=$kind==='image'?'gemini.google.com':'flow.google.com';
- if(($u['scheme']??'')!=='https'||($u['host']??'')!==$host||isset($u['user'])||isset($u['pass'])||isset($u['port'])||strlen($url)>1000)throw new InvalidArgumentException('invalid_media_source');
+ $u=parse_url($url);$hosts=$kind==='image'?['gemini.google.com','chatgpt.com']:['flow.google.com'];
+ if(($u['scheme']??'')!=='https'||!in_array($u['host']??'',$hosts,true)||isset($u['user'])||isset($u['pass'])||isset($u['port'])||strlen($url)>1000)throw new InvalidArgumentException('invalid_media_source');
  return $url;
 }
 function sa_read_chunk(string $path,string $sha,mixed $offset):array {
@@ -89,8 +89,8 @@ function sa_file(array &$j,array $b):array {
  }else{$asset=sa_video_probe($partial,$kind==='final');
   if($kind==='video'&&$asset['duration']<=2*$a['timing']['overlapSeconds'])throw new DomainException('clip_too_short');
   if($kind==='final'){
-   $layout=sa_layout($j);$v=$b['verification']??[];$dims=$a['format']==='landscape'?[1280,720]:[720,1280];
-   if(!$layout['ready']||[$asset['width'],$asset['height']]!==$dims||abs($asset['duration']-sa_duration($j))>.125||abs(($asset['audioDuration']??0)-sa_duration($j))>.125
+   $layout=sa_layout($j);$v=$b['verification']??[];$dims=$a['format']==='landscape'?[[1280,720],[1920,1080]]:[[720,1280],[1080,1920]];
+   if(!$layout['ready']||!in_array([$asset['width'],$asset['height']],$dims,true)||abs($asset['duration']-sa_duration($j))>.125||abs(($asset['audioDuration']??0)-sa_duration($j))>.125
     ||($v['decoded']??false)!==true||($v['audioMapped']??false)!==true||($v['sourceAudioSha256']??'')!==$j['audioSha256']
     ||($v['sceneHashes']??[])!==array_column($layout['scenes'],'sha256'))throw new DomainException('final_validation_failed');
    if(($a['selection']??null)!==null&&sa_selection($v['selection']??null,$a['format'],(float)$j['source']['duration'])!==sa_selection($a['selection'],$a['format'],(float)$j['source']['duration']))throw new DomainException('final_selection_mismatch');
@@ -105,7 +105,9 @@ function sa_file(array &$j,array $b):array {
  if(is_link($target)||(is_file($target)&&!hash_equals($sha,hash_file('sha256',$target))))throw new DomainException('asset_identity_conflict');
  // Keep the resumable transfer until review: a failed state commit must not lose the upload cursor.
  if(!is_file($target)&&!copy($partial,$target))throw new RuntimeException('asset_store_failed');chmod($target,0600);
- $asset+=['file'=>$name,'sourceUrl'=>$source,'accepted'=>false];$active['asset']=$asset;$active['phase']='received';
+ $asset+=['file'=>$name,'sourceUrl'=>$source,'accepted'=>false];
+ if($kind==='image')$asset['provider']=parse_url($source,PHP_URL_HOST)==='chatgpt.com'?'chatgpt':'gemini';
+ $active['asset']=$asset;$active['phase']='received';
  if($kind!=='final')$a['scenes'][$active['scene']-1][$kind]=$asset;
  $j['state']='agent_review';lab_touch($j);return ['nextOffset'=>$bytes,'done'=>true,'asset'=>$asset,'revision'=>$j['revision']];
 }
