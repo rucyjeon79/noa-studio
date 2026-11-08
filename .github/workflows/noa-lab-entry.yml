@@ -26,6 +26,7 @@ jobs:
           php -l bridge/session-shorts.php
           php -l bridge/session-shorts-prepare.php
           php tests/session-agent/preparation.php
+          php tests/lab/oauth_test.php
           python tests/session-agent/preparation_test.py
           php -l bridge/worker-shorts.php
           php tests/session-agent/schedule.php
@@ -97,6 +98,8 @@ jobs:
               'noa-app/engine/daily-shorts.json': 'config/n80-daily-shorts.json',
               'noa-bridge/session-shorts.php': 'bridge/session-shorts.php',
               'noa-bridge/session-shorts-prepare.php': 'bridge/session-shorts-prepare.php',
+              'noa-bridge/youtube-store.php': 'bridge/youtube-store.php',
+              'noa-bridge/lab-oauth-core.php': 'bridge/lab-oauth-core.php',
               'noa-bridge/worker-shorts.php': 'bridge/worker-shorts.php',
               'noa-app/engine/service-runtime.php': 'deploy/noa-app/engine/service-runtime.php',
               'noa-bridge/session-agent-media.php': 'bridge/session-agent-media.php',

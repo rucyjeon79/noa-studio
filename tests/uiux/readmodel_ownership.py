@@ -22,7 +22,9 @@ def verify_youtube_reader_only(root, baseline):
     new=(root/'bridge/youtube-store.php').read_text()
     functions=lambda source:json.loads(subprocess.check_output(['php','-r',TOKENIZE],input=source,text=True))
     before,after=functions(old),functions(new)
-    allowed={'ny_songs','ny_videos','ny_verified_official_members','ny_official_members'}
+    # The N80 daily Shorts request also authorizes renewing the existing YouTube
+    # read credential through the typed OAuth transport. No owner writer changes.
+    allowed={'ny_songs','ny_videos','ny_verified_official_members','ny_official_members','ny_token'}
     for name,value in before.items():
         if name not in allowed and after.get(name)!=value:
             raise AssertionError('Owner writer changed: '+name)

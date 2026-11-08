@@ -18,7 +18,12 @@ def main():
     last_step={}
     def call(command,**fields):
         last_step.clear();last_step.update(command=command,resource=fields.get('resource'))
-        return dispatch(command,lease=lease,**fields)
+        result=dispatch(command,lease=lease,**fields)
+        if result.get('dependencyOk') is False:
+            error=ValueError('youtube_dependency_failed')
+            error.diagnostics=result.get('diagnostic',{})
+            raise error
+        return result
     try:
         import paramiko
         from noa_full_inventory import connect
