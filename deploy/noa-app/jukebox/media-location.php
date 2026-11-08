@@ -39,7 +39,7 @@ function nml_reserve_directory(string $key,array $doc):string {
    if($reserved!==''){if(hash_equals($reserved,$owner))return $directory;continue;}
    // Never claim an existing unowned folder, even when its bytes happen to match.
    $path=nj_private().'/media/'.$directory;
-   if(file_exists($path)||is_link($path))continue;
+   if(file_exists($path)||is_link($path)||file_exists(nj_root().'/'.$directory)||is_link(nj_root().'/'.$directory))continue;
    rewind($lock);if(fwrite($lock,$owner)!==strlen($owner)||!fflush($lock))throw new RuntimeException('media_directory_reservation_failed');
    chmod($file,0600);return $directory;
   }finally{flock($lock,LOCK_UN);fclose($lock);}

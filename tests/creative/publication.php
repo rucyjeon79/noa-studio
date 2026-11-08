@@ -55,3 +55,6 @@ $unsafe=nj_private().'/media/사연곡/이미 있는 폴더';mkdir($unsafe,0700,
 check(nml_reserve_directory('clean:foreign',['genreId'=>'your-story','title'=>'이미 있는 폴더'])==='사연곡/이미 있는 폴더 (2)','unowned folder cannot be adopted');
 check(file_get_contents($unsafe.'/keep.txt')==='untouched','unowned bytes preserved');
 echo "MEDIA_READABLE_NAMES_DUPLICATES_RETRY_PUBLICATION_OWNERSHIP_OK\n";
+
+$legacyPublic=nj_root().'/사연곡/공개 저장소의 곡';mkdir($legacyPublic,0700,true);file_put_contents($legacyPublic.'/keep.txt','original');
+check(nml_reserve_directory('clean:public',['genreId'=>'your-story','title'=>'공개 저장소의 곡'])==='사연곡/공개 저장소의 곡 (2)','legacy public media cannot be shadowed');

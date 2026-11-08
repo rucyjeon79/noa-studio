@@ -7,7 +7,7 @@ try{
  require_once __DIR__.'/storage.php';require_once __DIR__.'/sound-core.php';require_once __DIR__.'/creative-publication.php';
  $db=noa_bridge_pdo();$owner=(string)$config['cf_admin'];$changed=0;$deferred=0;$reported=[];
  $legacy=static function(array $a):bool{foreach(['audio_path','cover_path'] as $f)if(!empty($a[$f])&&preg_match('/ \[[a-f0-9]{16}\]$/D',dirname($a[$f])))return true;return false;};
- $rows=$db->query("SELECT a.song_key,a.audio_path,a.cover_path FROM noa_jukebox_assets a JOIN noa_documents d ON d.doc_key=a.song_key WHERE d.kind IN ('single','story','n80_creative_draft') ORDER BY a.song_key")->fetchAll(PDO::FETCH_ASSOC);
+ $rows=$db->query("SELECT a.song_key,a.audio_path,a.cover_path FROM noa_jukebox_assets a JOIN noa_documents d ON d.doc_key=a.song_key WHERE d.kind IN ('single','story','n80_creative_draft') AND JSON_EXTRACT(d.payload,'$._noaTrash') IS NULL ORDER BY a.song_key")->fetchAll(PDO::FETCH_ASSOC);
  foreach($rows as $row){
   if(!$legacy($row))continue;if($changed>=20)break;
   try{
@@ -25,7 +25,7 @@ try{
    if(($d['title']??'')==='행간의 연서(行間戀書)')$reported[]=['audio'=>$after['audio_path'],'cover'=>$after['cover_path'],'verified'=>true];
   }catch(DomainException $e){if($db->inTransaction())$db->rollBack();nml_cleanup($db);if($e->getMessage()!=='upload_busy')throw $e;$deferred++;}
  }
- $remaining=0;foreach($db->query("SELECT a.audio_path,a.cover_path FROM noa_jukebox_assets a JOIN noa_documents d ON d.doc_key=a.song_key WHERE d.kind IN ('single','story','n80_creative_draft')")->fetchAll(PDO::FETCH_ASSOC) as $a)if($legacy($a))$remaining++;
+ $remaining=0;foreach($db->query("SELECT a.audio_path,a.cover_path FROM noa_jukebox_assets a JOIN noa_documents d ON d.doc_key=a.song_key WHERE d.kind IN ('single','story','n80_creative_draft') AND JSON_EXTRACT(d.payload,'$._noaTrash') IS NULL")->fetchAll(PDO::FETCH_ASSOC) as $a)if($legacy($a))$remaining++;
  $out=['ok'=>true,'result'=>['changed'=>$changed,'remaining'=>$remaining,'activeUploadsDeferred'=>$deferred,'reportedSong'=>$reported]];
 }catch(Throwable $e){if(isset($db)&&$db->inTransaction())$db->rollBack();http_response_code(500);$out=['ok'=>false,'error'=>$e->getMessage()];}
 while(ob_get_level()>$level)ob_end_clean();echo json_encode($out,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
