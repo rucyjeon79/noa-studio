@@ -1,0 +1,158 @@
+/* N80 JukeBox presentation, navigation and OS controls. No second audio engine. */
+(()=>{if(window.__n80JukeboxPresentation)return;window.__n80JukeboxPresentation=true;
+/* Keep the MUSIC document/engine and upload reservations alive while app views change. */
+(()=>{'use strict';
+const audio=document.getElementById('sound-player'),dock=document.querySelector('.noa-two-line');if(!audio||!dock)return;
+// Dock is a sibling of main, so hiding the MUSIC view never destroys its controls.
+document.body.append(dock);const dialog=document.getElementById('dock-queue');document.body.append(dialog);
+const title=document.getElementById('dock-title'),image=document.getElementById('dock-cover'),empty=document.getElementById('dock-cover-empty');
+const moreControl=document.getElementById('dock-more'),addControl=document.getElementById('dock-add'),artist=document.getElementById('dock-artist');
+const compactScreen=window.matchMedia('(max-width:360px)');
+const watch=document.getElementById('watch'),detail=document.querySelector('section[aria-label="곡 상세"]');if(watch&&detail)detail.insertBefore(watch,detail.querySelector('.noa-media-details'));
+if(addControl)addControl.addEventListener('click',()=>{location.hash='my-playlists';const controls=document.getElementById('my-controls');if(controls&&!controls.hidden)document.getElementById('my-add')?.click();document.getElementById('my-playlists')?.scrollIntoView({block:'start'});});
+const narrowScreen=window.matchMedia('(max-width:600px)');
+function updateMoreControl(){if(!moreControl)return;moreControl.hidden=false;if(!narrowScreen.matches){dock.dataset.expanded='false';moreControl.setAttribute('aria-expanded','false');}}
+narrowScreen.addEventListener('change',updateMoreControl);updateMoreControl();
+// Move secondary controls into a true overlay instead of creating a third player row.
+const extras=['repeat','shuffle','sequential','dock-list'].map(id=>document.getElementById(id)).filter(Boolean);
+const originalControls=document.querySelector('.noa-two-line .controls');
+const popup=document.createElement('div');popup.id='noa-dock-popover';popup.hidden=true;popup.setAttribute('role','group');popup.setAttribute('aria-label','추가 재생 조작');document.body.append(popup);
+function closePopup(){popup.hidden=true;dock.dataset.expanded='false';moreControl?.setAttribute('aria-expanded','false');}
+function syncPopup(){closePopup();extras.forEach(b=>popup.append(b));if(addControl){if(compactScreen.matches)popup.prepend(addControl);else{originalControls.prepend(addControl);addControl.querySelector('.noa-mode-label')?.remove();}}for(const b of popup.querySelectorAll('button'))if(!b.querySelector('.noa-mode-label')){const label=document.createElement('span');label.className='noa-mode-label';label.textContent=({repeat:'반복',shuffle:'셔플',sequential:'순차',"dock-list":'재생목록',"dock-add":'담기'})[b.id]||'';b.append(label);}updateMoreControl();}
+narrowScreen.addEventListener('change',syncPopup);compactScreen.addEventListener('change',syncPopup);syncPopup();
+function positionPopup(){if(popup.hidden||!moreControl)return;const rect=moreControl.getBoundingClientRect();const width=popup.offsetWidth||240;const height=popup.offsetHeight||64;const left=Math.max(8,Math.min(innerWidth-width-8,rect.right-width));const top=Math.max(8,Math.min(innerHeight-height-8,rect.top-height-8));popup.style.left=left+'px';popup.style.top=top+'px';popup.style.right='auto';popup.style.bottom='auto';}
+window.addEventListener('resize',positionPopup,{passive:true});
+window.addEventListener('scroll',positionPopup,{passive:true,capture:true});
+if(moreControl){moreControl.setAttribute('aria-controls','noa-dock-popover');moreControl.addEventListener('click',e=>{e.stopImmediatePropagation();if(!popup.hidden){closePopup();return;}popup.hidden=false;positionPopup();dock.dataset.expanded='true';moreControl.setAttribute('aria-expanded','true');},true);}
+document.addEventListener('pointerdown',e=>{if(!popup.hidden&&!popup.contains(e.target)&&!moreControl?.contains(e.target))closePopup();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!popup.hidden){closePopup();moreControl?.focus();}});
+popup.addEventListener('click',e=>{if(e.target.closest('button')){closePopup();moreControl?.focus({preventScroll:true});}});
+// If playback controls are hidden or the page loses visibility, never leave a floating menu behind.
+const dockVisibilityObserver=new MutationObserver(()=>{if(dock.hidden)closePopup();});
+dockVisibilityObserver.observe(dock,{attributes:true,attributeFilter:['hidden']});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)closePopup();});
+// Selecting the current song reopens its closed display without restarting audio.
+document.addEventListener('click',e=>{const button=e.target.closest('.song-select'),card=button?.closest('.song');if(card?.classList.contains('selected')&&card.dataset.audio)dock.hidden=false;});
+
+function marquee(){const width=title.parentElement.clientWidth,extra=title.scrollWidth-width;title.classList.toggle('noa-title-scroll',extra>2);title.style.setProperty('--title-shift',-Math.max(0,extra)+'px');}
+new ResizeObserver(marquee).observe(title.parentElement);document.fonts?.ready.then(marquee);
+let imageRevision=0;
+window.addEventListener('noa-track-selected',e=>{const r=e.detail.record;const revision=++imageRevision;title.textContent=window.NoaBrowse?.displayTitle?.(r)??r.title;title.title=title.textContent;if(artist)artist.textContent=window.NoaBrowse?.genreName?.(r.genre)||'미분류';image.hidden=!r.thumb;empty.hidden=!!r.thumb;image.onload=()=>{if(revision!==imageRevision)return;try{const canvas=document.createElement('canvas');canvas.width=canvas.height=1;const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0,1,1);const [red,green,blue]=ctx.getImageData(0,0,1,1).data;const luminance=(.2126*red+.7152*green+.0722*blue)/255;const usable=luminance>.28&&luminance<.76&&Math.max(red,green,blue)-Math.min(red,green,blue)>25;dock.style.setProperty('--noa-cover-accent',usable?`rgb(${red} ${green} ${blue})`:'var(--noa-accent)');}catch{dock.style.removeProperty('--noa-cover-accent');}};image.onerror=()=>{if(revision===imageRevision){image.hidden=true;empty.hidden=false;dock.style.removeProperty('--noa-cover-accent');}};if(r.thumb)image.src=r.thumb;else{image.removeAttribute('src');dock.style.removeProperty('--noa-cover-accent');}document.getElementById('dock-current').textContent='0:00';document.getElementById('dock-duration').textContent='0:00';marquee();});
+// The initial selected track may precede this deferred script.
+const initial=document.querySelector('.song.selected');if(initial)queueMicrotask(()=>window.dispatchEvent(new CustomEvent('noa-track-selected',{detail:{record:{title:initial.dataset.title,genre:initial.dataset.genre,originalArtist:initial.dataset.originalArtist,thumb:initial.querySelector('img')?.getAttribute('src')||''}}})));
+const routes={has:path=>window.N80JukeBoxRoutes?.allows(new URL(path,location.origin))===true};
+// A recommendation may start in the homepage's preloaded audio document.
+const outer=window.frameElement?.classList.contains('nl-play-shell')?parent.NoaListeningHost:null;
+let frame=null,home=location.href;const baseTitle=document.title;
+const publicPath=()=>{const u=outer?new URL(outer.href()):location;return u.pathname+u.search+u.hash;};
+function checkpoint(){window.dispatchEvent(new Event('noa-player-route'));}
+function highlight(url){for(const a of document.querySelectorAll('.noa-menu a,.noa-mobile-nav a')){if(a.hasAttribute('href')&&new URL(a.getAttribute('href'),location.href).pathname===url.pathname)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');}}
+function showMusic(url,followTrack=false){
+ if(frame){frame.remove();frame=null;}
+ document.body.classList.remove('noa-shell-open');document.title=baseTitle;
+ highlight(new URL(url));window.dispatchEvent(new Event('hashchange'));
+ const target=new URL(url),key=target.searchParams.get('track');
+ if(followTrack&&key)window.dispatchEvent(new CustomEvent('noa-shell-track',{detail:{key,play:target.searchParams.get('play')==='1'}}));
+}
+const boundDocuments=new WeakSet();
+function bind(doc){
+ if(boundDocuments.has(doc))return;boundDocuments.add(doc);
+ if(doc!==document)doc.addEventListener("play",event=>{if(event.target?.matches?.("audio,video")&&!event.target.muted)window.N80JukeBox?.pause();},true);
+ doc.addEventListener('click',e=>{
+  if(e.defaultPrevented||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+  const a=e.target.closest('a[href]');if(!a||(a.target&&a.target!=='_self')||a.hasAttribute('download'))return;
+  const u=new URL(a.href,doc.URL);
+  if(u.origin!==location.origin||!audio.getAttribute('src')||dock.hidden)return;
+  if(a.getAttribute('href').startsWith('#'))return;
+  if(!routes.has(u.pathname)){
+   if(outer&&doc===document){e.preventDefault();window.top.location.assign(u.href);}
+   return;
+  }
+  if(doc!==document&&u.pathname===new URL(doc.URL).pathname&&u.search===new URL(doc.URL).search&&u.hash)return;
+  e.preventDefault();navigate(u,true);
+ });
+}
+function navigate(url,push){
+ if(!routes.has(url.pathname)||url.origin!==location.origin)return false;
+ const onOriginalHome=outer?.visit(url.href,push);
+ if(!outer&&push&&url.href!==location.href)history.pushState({noaMusicShell:true},'',url);
+ if(onOriginalHome||url.pathname==='/noa-music.php'){showMusic(url.href,push&&!onOriginalHome);checkpoint();return true;}
+ highlight(url);document.body.classList.add('noa-shell-open');if(!frame){frame=document.createElement('iframe');frame.id='noa-shell-view';frame.style.height='calc(100dvh - var(--noa-nav-space,0px) - var(--noa-player-space,0px))';frame.title='NOA STUDIO 콘텐츠';frame.addEventListener('load',()=>{try{const doc=frame.contentDocument;if(!doc||new URL(doc.URL).origin!==location.origin)return;doc.documentElement.dataset.noaShellChild='';const style=doc.createElement('style');style.textContent='html[data-noa-shell-child] body :is(.noa-sidebar,.noa-mobile-nav,.noa-g5-top){display:none!important}html{--noa-rail:0px!important;--noa-nav-space:0px!important}body.noa-page{margin:0!important}body.noa-page main{margin-left:0!important;padding-bottom:24px!important}';doc.head.append(style);doc.defaultView.addEventListener('noa-media-activity',e=>{if(e.detail?.type==='youtube'){if(window.N80JukeBox)window.N80JukeBox.pause();else{pendingAutoplay=false;audio.pause();}}});bind(doc);document.title=doc.title+' · NOA STUDIO';}catch{showMusic(home);}});frame.src=url.href;document.body.append(frame);}else{frame.contentWindow.location.replace(url.href);}checkpoint();return true;}
+audio.addEventListener('play',()=>{try{const win=frame?.contentWindow;if(win){win.dispatchEvent(new win.Event('noa-background'));for(const media of win.document.querySelectorAll('audio,video'))media.pause();}}catch{}});
+try{const returned=JSON.parse(sessionStorage.getItem('noa-playback-return')||'null');sessionStorage.removeItem('noa-playback-return');if(returned&&Date.now()-returned.at>=0&&Date.now()-returned.at<30000){const url=new URL(returned.path,location.origin);if(url.origin===location.origin&&routes.has(url.pathname)&&url.pathname!=='/noa-music.php'&&audio.getAttribute('src')){history.replaceState({noaMusicShell:true},'',url);navigate(url,false);}}}catch{}
+window.NoaPlayerShell={open:(href,push=true)=>navigate(new URL(href,location.href),push),path:publicPath,active:()=>!!audio.getAttribute('src')&&!dock.hidden};
+bind(document);
+if(!outer&&window===window.top&&document.referrer){
+ audio.addEventListener('playing',()=>{
+  const previous=new URL(document.referrer),current=new URL(location.href);
+  if(history.state?.noaPlaybackBack||current.pathname!=='/noa-music.php'||previous.origin!==current.origin||previous.pathname===current.pathname||!routes.has(previous.pathname))return;
+  history.replaceState({noaMusicShell:true},'',previous);
+  history.pushState({noaMusicShell:true,noaPlaybackBack:true},'',current);
+ },{once:true});
+}
+if(!outer)history.replaceState({...history.state,noaMusicShell:true},'',location.href);
+if(!outer)window.addEventListener('popstate',()=>{const u=new URL(location.href);if(u.pathname==='/noa-music.php')showMusic(u.href);else if(routes.has(u.pathname))navigate(u,false);});
+})();
+
+// Reuse the existing audio element and controls for OS lock-screen media actions.
+(()=>{'use strict';const audio=document.getElementById('sound-player'),session=navigator.mediaSession;if(!audio||!session)return;
+const actions={play:()=>{if(audio.paused)document.getElementById('pause-play')?.click();},pause:()=>{if(window.N80JukeBox)window.N80JukeBox.pause();else{pendingAutoplay=false;audio.pause();}},previoustrack:()=>document.getElementById('previous')?.click(),nexttrack:()=>document.getElementById('next')?.click(),seekto:d=>{if(Number.isFinite(audio.duration)&&Number.isFinite(d.seekTime))audio.currentTime=Math.max(0,Math.min(audio.duration,d.seekTime));},seekbackward:d=>{audio.currentTime=Math.max(0,audio.currentTime-(d.seekOffset||10));},seekforward:d=>{if(Number.isFinite(audio.duration))audio.currentTime=Math.min(audio.duration,audio.currentTime+(d.seekOffset||10));}};
+for(const [name,handler]of Object.entries(actions))try{session.setActionHandler(name,handler);}catch{}
+function position(){if(!session.setPositionState||!Number.isFinite(audio.duration)||audio.duration<=0)return;try{session.setPositionState({duration:audio.duration,playbackRate:audio.playbackRate,position:Math.min(audio.duration,Math.max(0,audio.currentTime))});}catch{}}
+let last=0;audio.addEventListener('timeupdate',()=>{const now=Date.now();if(now-last>500){last=now;position();}});audio.addEventListener('loadedmetadata',position);audio.addEventListener('seeked',position);
+audio.addEventListener('playing',()=>{session.playbackState='playing';position();});audio.addEventListener('pause',()=>{session.playbackState='paused';position();});
+window.addEventListener('noa-track-selected',e=>{const r=e.detail?.record;if(!r||!window.MediaMetadata)return;try{session.metadata=new MediaMetadata({title:window.NoaBrowse?.displayTitle?.(r)||r.title||'NOA STUDIO',artist:window.NoaBrowse?.genreName?.(r.genre)||'미분류',album:'NOA STUDIO',artwork:r.thumb?[{src:new URL(r.thumb,location.href).href}]:[]});}catch{}});
+})();
+
+/* Always follow jukebox playback in the visible music list and open queue. */
+(() => {
+ const audio = document.getElementById('sound-player');
+ const queueDialog = document.getElementById('dock-queue');
+ if (!audio || !queueDialog) return;
+ let currentKey = document.querySelector('.song.selected')?.dataset.key || '';
+
+ let followedKey = '';
+ function followQueue() {
+  if (!queueDialog.open) return;
+  const current = queueDialog.querySelector('[aria-current="true"]');
+  current?.scrollIntoView({block:'center', behavior:'instant'});
+ }
+
+ function followSong() {
+  if (!currentKey || document.hidden) return;
+  if (queueDialog.open) { followQueue(); return; }
+  if (document.body.classList.contains('noa-shell-open')) return;
+  try {
+   if (window.frameElement?.classList.contains('nl-play-shell') &&
+       !window.parent.document.documentElement.classList.contains('nl-host-open')) return;
+  } catch { return; }
+  if (followedKey === currentKey) return;
+  const key = currentKey;
+  window.dispatchEvent(new CustomEvent('noa-find-song', {detail:{
+   key,
+   allow:() => currentKey === key && !document.hidden &&
+     !document.body.classList.contains('noa-shell-open') && !queueDialog.open,
+   scroll:node => { followedKey = key; node.scrollIntoView({block:'center', behavior:'instant'}); }
+  }}));
+ }
+
+ window.addEventListener('noa-track-selected', event => {
+  if (!event.detail?.record?.key) return;
+  currentKey = event.detail.record.key;
+  if (queueDialog.open && typeof drawDockQueue === 'function') {
+   drawDockQueue();
+   requestAnimationFrame(followQueue);
+  }
+ });
+ audio.addEventListener('playing', followSong);
+ function restoreFollow() {
+  if (audio.paused || document.hidden) return;
+  followedKey = '';
+  followSong();
+ }
+ document.addEventListener('visibilitychange', restoreFollow);
+ window.addEventListener('noa-player-route', restoreFollow);
+ document.getElementById('dock-list')?.addEventListener('click', () => requestAnimationFrame(followQueue));
+})();
+
+})();

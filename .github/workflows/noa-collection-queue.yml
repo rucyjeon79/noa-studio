@@ -19,7 +19,7 @@ jobs:
           cp scripts/qa/noa-collection-queue.mjs "$RUNNER_TEMP/buttons/check.mjs"
           node "$RUNNER_TEMP/buttons/check.mjs"
   deploy:
-    if: github.event_name == 'push'
+    if: (github.event_name == 'push') && !contains(github.event.head_commit.message, '[n80-jukebox]')
     needs: verify
     environment: production
     runs-on: ubuntu-latest

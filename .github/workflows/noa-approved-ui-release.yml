@@ -41,7 +41,7 @@ jobs:
         if: always()
         with: {name: 'noa-approved-ui-candidate-${{ github.run_id }}', path: approved-ui-proof/candidate/, retention-days: 1}
   production:
-    if: github.event_name != 'pull_request' && !contains(github.event.head_commit.message, '[browse-approved]')
+    if: (github.event_name != 'pull_request' && !contains(github.event.head_commit.message, '[browse-approved]')) && !contains(github.event.head_commit.message, '[n80-jukebox]')
     needs: candidate
     runs-on: ubuntu-latest
     environment: production

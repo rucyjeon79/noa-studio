@@ -1,7 +1,7 @@
 name: N80 Live Production Observer
 on:
   workflow_run:
-    workflows: [N80 Unified Facade Safe Production]
+    workflows: [N80 Unified Facade Safe Production, N80 JukeBox integration]
     types: [completed]
   workflow_dispatch:
   schedule:

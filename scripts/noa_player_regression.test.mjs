@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 function openSound(seed={},navigation="navigate",search=""){
  const php=fs.readFileSync(new URL('../deploy/noa-music.php',import.meta.url),'utf8');
- const script=php.match(/<script>\s*([\s\S]*?)<\/script>/)[1];
+ const script=fs.readFileSync(new URL('../deploy/noa-app/jukebox/player.js',import.meta.url),'utf8');
  const nodes=new Map(),events={},audioEvents={};
  const element=()=>({dataset:{},style:{},classList:{toggle(){}},hidden:false,value:'',textContent:'',options:[],addEventListener(){},setAttribute(k,v){this[k]=v},removeAttribute(k){delete this[k]},replaceChildren(){},append(){},querySelector(){return element()}});
  const node=id=>{if(!nodes.has(id))nodes.set(id,element());return nodes.get(id)};
@@ -12,8 +12,9 @@ function openSound(seed={},navigation="navigate",search=""){
  const songs=[{key:'one',title:'Share only',genre:'kpop-original',video:'',suno:'https://suno.com/song/one',audio:'',kind:'single',ep:'1',lyrics:'Original lyrics'},...['two','three'].map((key,i)=>({key,title:key,genre:'kpop-original',video:'',suno:'https://suno.com/song/'+key,audio:'https://noastudio.ai.kr/data/noa-audio/'+key+'.wav',kind:'single',ep:String(i+2),lyrics:'lyrics'}))];
  const buttons=songs.map(s=>Object.assign(element(),{dataset:{key:s.key,audio:s.audio}}));
  const activity=[];const storage=new Map(Object.entries(seed));const context={console,CustomEvent:class {constructor(type,options){this.type=type;this.detail=options.detail}},URLSearchParams,location:{search,pathname:'/noa-music.php',hash:'',origin:'https://noastudio.ai.kr'},sessionStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},navigator:{},document:{getElementById:node,querySelectorAll:()=>buttons,querySelector:()=>element(),createElement:element,head:{append(){}}},window:{performance:{getEntriesByType:()=>[{type:navigation}]},addEventListener:(n,f)=>events[n]=f,dispatchEvent:e=>{if(e.type==='noa-media-activity')activity.push(e)}}};
- vm.createContext(context);vm.runInContext(script.replace(/const records=<\?=[\s\S]*?\?>;/,'const records='+JSON.stringify(songs)+';').replace(/<\?=json_encode\(\$collections,[\s\S]*?\?>/,'[]').replace(/<\?=json_encode\(!empty\(\$musicAccess\['weatherVip'\]\)\)\?>/,'false'),context);
- return {php,context,node,audio,buttons,activity,audioEvents,events,storage,run:code=>vm.runInContext(code,context)};
+ node('n80-jukebox-data').textContent=JSON.stringify({records:songs,collections:[],weatherVip:false});
+ vm.createContext(context);vm.runInContext(script,context);
+ return {php,script,context,node,audio,buttons,activity,audioEvents,events,storage,run:code=>vm.runInContext(code,context)};
 }
 test('share-only record shows original lyrics and Suno link without any audio or YouTube playback',()=>{
  const p=openSound();p.run('select(buttons[0],true)');assert.equal(p.audio.played,0);assert.equal(p.audio.src,undefined);assert.equal(p.node('lyrics').textContent,'Original lyrics');assert.equal(p.node('watch').href,'https://suno.com/song/one');assert.match(p.node('player-status').textContent,/음원 업로드 대기/);assert.doesNotMatch(p.php,/iframe_api|new YT[.]Player|youtube-player/);
@@ -51,3 +52,5 @@ test('fresh play ignores stale seek position and a reload checkpoint is applied 
  fresh.run('select(buttons[1],true)');fresh.audioEvents.loadedmetadata();assert.equal(fresh.audio.currentTime,0);
  const restored=openSound(checkpoint(),'reload');restored.audioEvents.loadedmetadata();restored.audio.currentTime=44;restored.audioEvents.loadedmetadata();assert.equal(restored.audio.currentTime,44);
 });
+
+test("N80 JukeBox owns one player and ignores duplicate initialization",()=>{const p=openSound();const module=p.context.window.N80JukeBox;p.run(p.script);assert.equal(p.context.window.N80JukeBox,module);assert.equal(p.context.window.NoaMusic,module);assert.equal(module.play("missing"),false);assert.equal(module.play("two"),true);assert.equal(p.audio.played,1);module.pause();assert.equal(module.snapshot().desiredPlaying,false);assert.equal(p.audio.paused,true);});

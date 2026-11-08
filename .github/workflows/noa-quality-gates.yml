@@ -121,7 +121,7 @@ jobs:
               print('LIVE_ACCESS',path,r.status)
           PY
   finish-live:
-    if: github.ref == 'refs/heads/main' && (needs.engines.outputs.release_scope == 'true' || contains(github.event.head_commit.message, '[n80-runtime]')) && !contains(github.event.head_commit.message, '[ainoa-release]') && !contains(github.event.head_commit.message, '[creative-drafts]')
+    if: github.ref == 'refs/heads/main' && (needs.engines.outputs.release_scope == 'true' || (contains(github.event.head_commit.message, '[n80-runtime]') || contains(github.event.head_commit.message, '[n80-jukebox]'))) && !contains(github.event.head_commit.message, '[ainoa-release]') && !contains(github.event.head_commit.message, '[creative-drafts]')
     needs: engines
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -133,14 +133,14 @@ jobs:
       - name: Wait for existing category release at this exact SHA
         env:
           GH_TOKEN: '${{ github.token }}'
-          N80_RELEASE_WORKFLOW: '${{ contains(github.event.head_commit.message, ''[n80-runtime]'') && ''.github/workflows/n80-engine-facade-production.yml'' || ''.github/workflows/noa-category-order-final.yml'' }}'
+          N80_RELEASE_WORKFLOW: ${{ contains(github.event.head_commit.message, '[n80-jukebox]') && '.github/workflows/noa-navigation-player.yml' || contains(github.event.head_commit.message, '[n80-runtime]') && '.github/workflows/n80-engine-facade-production.yml' || '.github/workflows/noa-category-order-final.yml' }}
         run: python scripts/n80_completion_pipeline.py wait --commit "$GITHUB_SHA"
       - name: Verify actual deployed behavior without changing production data
         env: {NOA_FINISH_QA_OUTPUT: '${{ runner.temp }}/noa-finish-proof/verified.json'}
         run: |
           mkdir -p "$RUNNER_TEMP/noa-finish-proof"
           npm install --prefix "$RUNNER_TEMP/noa-finish-live" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
-          if [[ '${{ contains(github.event.head_commit.message, '[n80-runtime]') }}' == 'true' ]]; then
+          if [[ '${{ (contains(github.event.head_commit.message, '[n80-runtime]') || contains(github.event.head_commit.message, '[n80-jukebox]')) }}' == 'true' ]]; then
             NOA_PLAYWRIGHT_PACKAGE="$RUNNER_TEMP/noa-finish-live/package.json" node scripts/qa/n80-runtime-live.mjs
           else
             NOA_PLAYWRIGHT_PACKAGE="$RUNNER_TEMP/noa-finish-live/package.json" node scripts/qa/noa-finish-live.mjs

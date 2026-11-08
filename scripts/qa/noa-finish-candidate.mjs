@@ -10,12 +10,8 @@ const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/goog
 function check(name,ok){cases.push({name,ok:!!ok});if(!ok)throw Error(name);}
 try{
  const c=await browser.newContext(),response=await c.request.get(origin+'/noa-music.php'),original=await response.text();
- const start=original.indexOf('const records='),end=original.indexOf('</script>',start);check('isolated_php_fixture_present',start>=0&&end>start);
- const arrayEnd=original.indexOf(';\nconst collections=',start),records=JSON.parse(original.slice(start+14,arrayEnd));
- const collectionStart=arrayEnd+2,collectionEnd=original.indexOf(';\nconst buttons=',collectionStart);const collections=JSON.parse(original.slice(collectionStart+18,collectionEnd));
- const php=readFileSync(resolve(root,'deploy/noa-music.php'),'utf8');let script=php.slice(php.indexOf('const records='),php.indexOf('</script>',php.indexOf('const records=')));
- const slim=records.map(({rawLyrics,lyrics,description,...rest})=>rest);script=script.replace(/^const records=.*;$/m,'const records='+JSON.stringify(slim)+';').replace(/^const collections=.*;$/m,'const collections='+JSON.stringify(collections)+';');check('candidate_inline_php_resolved',!script.includes('<?'));
- let html=original.slice(0,start)+script+original.slice(end);if(!html.includes('id="my-delete"'))html=html.replace('id="my-save"','id="my-delete" type="button" disabled>목록 삭제</button><button id="my-save"');
+ const match=original.match(/<script type="application\/json" id="n80-jukebox-data">([\s\S]*?)<\/script>/);check('isolated_php_fixture_present',!!match);
+ const {records,collections}=JSON.parse(match[1]);let html=original;
  const playable=records.find(r=>r.audio&&r.kind!=='playlist'),a=records.find(r=>r.key!==playable?.key&&r.kind!=='playlist'),b=records.find(r=>r.key!==a?.key&&r.kind!=='playlist');check('isolated_decodable_audio_fixture_available',!!playable&&!!a&&!!b);
  for(const r of [playable,a,b])if(!('rawLyrics'in r)){const response=await c.request.get(origin+'/noa-music-detail.php?key='+encodeURIComponent(r.key));check('existing_detail_endpoint_for_reentrant_fixture',response.ok());Object.assign(r,await response.json());}
  let releaseDetail;const detailGate=new Promise(resolve=>releaseDetail=resolve);

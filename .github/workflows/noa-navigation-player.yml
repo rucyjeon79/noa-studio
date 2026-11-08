@@ -1,7 +1,7 @@
-name: NOA persistent playback across app navigation
+name: N80 JukeBox integration
 on:
   pull_request:
-    paths: &paths ['scripts/noa_navigation_release.py','.github/workflows/noa-navigation-player.yml']
+    paths: &paths ['scripts/noa_navigation_release.py','.github/workflows/noa-navigation-player.yml','deploy/noa-app/jukebox/player.js','deploy/noa-app/jukebox/presentation.js','deploy/noa-app/jukebox/navigation-policy.js','deploy/noa-app/engine/jukebox.php','scripts/qa/noa-navigation-player.mjs','tests/engine/jukebox*']
   push:
     branches: [main]
     paths: *paths
@@ -17,13 +17,17 @@ jobs:
       - run: |
           for path in bridge/music-readmodel.php bridge/youtube-catalog.php bridge/channel-view.php deploy/noa-music.php; do php -l "$path"; done
           php tests/cover-title.php
-          node --check deploy/noa-app/p0-player.js
-          node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs
+          for path in deploy/noa-app/jukebox/*.js; do node --check "$path"; done
+          php tests/engine/jukebox_test.php
+          node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs tests/engine/jukebox_navigation.test.mjs tests/jukebox/playback_recovery.test.cjs tests/android/native_bridge_test.mjs tests/playlists/drag_order_test.cjs tests/popularity/player_tracker_test.cjs
       - run: |
           npm install --prefix "$RUNNER_TEMP/noa-navigation" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
-          "$RUNNER_TEMP/noa-navigation/node_modules/.bin/playwright" install --with-deps chromium
+          "$RUNNER_TEMP/noa-navigation/node_modules/.bin/playwright" install chromium
           cp scripts/qa/noa-navigation-player.mjs "$RUNNER_TEMP/noa-navigation/verify.mjs"
           NOA_SOURCE_ROOT="$GITHUB_WORKSPACE" node "$RUNNER_TEMP/noa-navigation/verify.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'n80-jukebox-${{ github.run_id }}', path: jukebox-proof/, retention-days: 7}
   deploy:
     if: github.event_name == 'push'
     needs: verify
@@ -41,7 +45,12 @@ jobs:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
       - run: python -m pip install 'paramiko>=3,<5'
-      - run: python scripts/noa_navigation_release.py
+      - name: Activate owned JukeBox sources and verify public assets
+        run: python scripts/noa_navigation_release.py
+      - name: Restore only this activation after failed verification
+        if: failure()
+        run: |
+          test ! -f "$RUNNER_TEMP/noa-ainoa-before.json" || python scripts/noa_navigation_release.py rollback
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'navigation-player-deploy-${{ github.run_id }}', path: ainoa-proof/deployment.json, retention-days: 7}

@@ -6,7 +6,7 @@ $root=dirname(__DIR__,2);$path=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);
 ob_start(static function(string $html):string{
  if(!preg_match('~^\s*<!doctype html~i',$html)||stripos($html,'</head>')===false)return $html;
  $html=preg_replace('~<html\b(?![^>]*data-noa-style)~i','<html data-noa-style="starlight"',$html,1);
- return str_ireplace('</head>','<link rel="stylesheet" href="/noa-policy-20261024.css"><link rel="stylesheet" href="/noa-account.css"><link rel="stylesheet" href="/noa-starlight.css"></head>',$html);
+ return str_ireplace('</head>','<script src="/noa-app/jukebox/navigation-policy.js"></script><link rel="stylesheet" href="/noa-policy-20261024.css"><link rel="stylesheet" href="/noa-account.css"><link rel="stylesheet" href="/noa-starlight.css"></head>',$html);
 });
 if($path==='/noa-sitemap.php'){
  echo '<!doctype html><main data-noa-member-directory><section class="noa-site-map"><h2 id="map-explore">둘러보기</h2>';
@@ -64,6 +64,6 @@ if(in_array($path,['/noa-music.php','/noa-youtube.php'])){
  }
  $offset=strpos($src,$path==='/noa-youtube.php'?'function nye(':'?><!doctype html>');eval(substr($src,$offset));return;
 }
-if(in_array($path,['/','/index.php','/noa-my.php','/noa-world.php','/noa-settings.php','/noa-lounge.php','/noa-shop.php','/noa-vip.php','/bbs/board.php'])){echo '<!doctype html><html><head><title>App view</title><link rel="stylesheet" href="/noa-ui.css"></head><body class="noa-page"><main><h1>App view</h1><a href="/noa-music.php">음원 돌아가기</a><a href="/noa-youtube.php">영상으로</a><a href="/bbs/board.php?bo_table=music">게시판</a></main></body></html>';return;}
+if(in_array($path,['/','/index.php','/noa-my.php','/noa-world.php','/noa-settings.php','/noa-ai-lab.php','/noa-library.php','/noa-channel-workspace.php','/noa-lounge.php','/noa-shop.php','/noa-vip.php','/bbs/board.php'])){echo '<!doctype html><html><head><title>App view</title><link rel="stylesheet" href="/noa-ui.css"></head><body class="noa-page"><main><h1>App view</h1><a href="/noa-music.php">음원 돌아가기</a><a href="/noa-youtube.php">영상으로</a><a href="/bbs/board.php?bo_table=music">게시판</a></main></body></html>';return;}
 $file=$root.'/deploy'.$path;if(is_file($file)){header('Content-Type: '.match(pathinfo($file,PATHINFO_EXTENSION)){'js'=>'text/javascript','css'=>'text/css','json'=>'application/json',default=>'application/octet-stream'});readfile($file);return;}http_response_code(404);
 

@@ -16,7 +16,7 @@ import urllib.request
 import n80_report_evidence as evidence
 
 DEPLOY_PATH = os.environ.get('N80_RELEASE_WORKFLOW', '.github/workflows/noa-category-order-final.yml')
-if DEPLOY_PATH not in ('.github/workflows/noa-category-order-final.yml', '.github/workflows/n80-engine-facade-production.yml'):
+if DEPLOY_PATH not in ('.github/workflows/noa-category-order-final.yml', '.github/workflows/n80-engine-facade-production.yml', '.github/workflows/noa-navigation-player.yml'):
     raise RuntimeError('invalid_release_workflow')
 VERIFY_PATH = ".github/workflows/noa-quality-gates.yml"
 ARTIFACT_NAME = "noa-finish-live-"
@@ -123,6 +123,9 @@ def release_sources(source=None):
 def report():
     event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
     triggered = event.get("workflow_run", {})
+    if '[n80-jukebox]' in triggered.get('head_commit', {}).get('message', ''):
+        from n80_runtime_finalize import finalize
+        return finalize(event, 'jukebox')
     if '[n80-runtime]' in triggered.get('head_commit', {}).get('message', ''):
         from n80_runtime_finalize import finalize
         return finalize(event)

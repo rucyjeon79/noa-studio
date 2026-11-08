@@ -89,7 +89,7 @@ jobs:
       group: noa-production-sftp
       cancel-in-progress: false
     # Integrated data repairs own installation and forbid legacy host staging.
-    if: github.event_name != 'push' || (!contains(github.event.head_commit.message, '[n80-data]') && !contains(github.event.head_commit.message, '[category-final]') && !contains(github.event.head_commit.message, '[n80-home-orbit]') && !contains(github.event.head_commit.message, '[creative-drafts]'))
+    if: (github.event_name != 'push' || (!contains(github.event.head_commit.message, '[n80-data]') && !contains(github.event.head_commit.message, '[category-final]') && !contains(github.event.head_commit.message, '[n80-home-orbit]') && !contains(github.event.head_commit.message, '[creative-drafts]'))) && !contains(github.event.head_commit.message, '[n80-jukebox]')
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 20

@@ -1,5 +1,6 @@
 // User-owned references share the same GnuBoard account on web and Android.
 (() => {
+ const jukebox=window.N80JukeBox;if(!jukebox||window.__n80JukeBoxPlaylists)return;window.__n80JukeBoxPlaylists=true;
  const el=id=>document.getElementById(id),status=el('my-status'),picker=el('my-select'),title=el('my-title');
  let csrf='',items=[],id=crypto.randomUUID(),revision=0,working=null,busy=false;
  let drag=null,orderVersion=0;const dragType='application/x-noa-playlist-order';
@@ -9,9 +10,7 @@
  function setBusy(value){busy=value;for(const name of ['my-new','my-add','my-remove','my-save','my-play'])el(name).disabled=value;picker.disabled=value;title.disabled=value;renderOrder();}
  function selectWorking(play=false){
   if(!working?.length){status.textContent='담긴 음악이 없습니다.';return}
-  activeQueue=[...working];filter();
-  const first=queue()[0]||filteredQueue[0];status.textContent='등록 '+working.length+'개 · 현재 재생 가능 '+queue().length+'개';
-  if(first)select(first,play);
+  const count=jukebox.selectQueue(working,play);status.textContent='등록 '+working.length+'개 · 현재 재생 가능 '+count+'개';
  }
  async function refresh(preserveDraft=false){
   try{
@@ -45,7 +44,7 @@
   const valid=()=>!busy&&drag&&drag.playlistId===id&&drag.version===version&&version===orderVersion&&JSON.stringify(working)===drag.snapshot&&working[drag.index]===drag.key;
   (working||[]).forEach((key,index)=>{
    const row=document.createElement('div');row.className='noa-playlist-order-row';
-   const name=document.createElement('span');name.textContent=(index+1)+'. '+(lookup.get(key)?.title||'연결 상태 확인이 필요한 곡');
+   const name=document.createElement('span');name.textContent=(index+1)+'. '+(jukebox.record(key)?.title||'연결 상태 확인이 필요한 곡');
    const up=document.createElement('button'),down=document.createElement('button');up.type=down.type='button';up.textContent='↑';down.textContent='↓';up.setAttribute('aria-label',name.textContent+' 위로');down.setAttribute('aria-label',name.textContent+' 아래로');up.disabled=busy||index===0;down.disabled=busy||index===(working.length-1);
    const move=offset=>{if(busy||version!==orderVersion)return;const next=index+offset;if(next<0||next>=working.length)return;[working[index],working[next]]=[working[next],working[index]];changed();};up.onclick=()=>move(-1);down.onclick=()=>move(1);
    row.draggable=desktopDrag&&!busy;
@@ -68,26 +67,26 @@
  const explore=document.createElement('button');explore.type='button';explore.textContent='N80 탐색기 · 수록곡';el('my-add').after(explore);
  explore.onclick=async()=>{
   if(busy)return;explore.disabled=true;
-  try{await import('/noa-channel-explorer.js?v=n80-unified-20261107'); const draftId=id;const records=[...lookup.values()].filter(row=>row.kind!=='playlist');
-   const picked=await N80Explorer.choose({records,multiple:true,selected:(working||[]).map(key=>lookup.get(key)||{key,title:'연결 상태 확인이 필요한 곡'}),title:'내 플레이리스트 수록곡'});
+  try{await import('/noa-channel-explorer.js?v=n80-unified-20261107'); const draftId=id;const records=jukebox.catalog().filter(row=>row.kind!=='playlist');
+   const picked=await N80Explorer.choose({records,multiple:true,selected:(working||[]).map(key=>jukebox.record(key)||{key,title:'연결 상태 확인이 필요한 곡'}),title:'내 플레이리스트 수록곡'});
    if(picked&&!busy&&id===draftId){working=picked.map(row=>row.key);renderOrder();status.textContent=working.length+'개 곡 · 저장하면 반영됩니다.';}
   }catch{status.textContent='N80 탐색기를 불러오지 못했습니다. 다시 시도해 주세요.';}finally{explore.disabled=false;}
  };
- el('my-new').onclick=()=>{id=crypto.randomUUID();revision=0;working=filteredQueue.filter(b=>lookup.get(b.dataset.key)?.kind!=='playlist').map(b=>b.dataset.key);picker.value='';title.value='';status.textContent='현재 재생 목록 '+working.length+'개를 담았습니다. 이름을 입력하고 저장해 주세요.';title.focus();renderOrder()};
+ el('my-new').onclick=()=>{id=crypto.randomUUID();revision=0;working=jukebox.visibleKeys();picker.value='';title.value='';status.textContent='현재 재생 목록 '+working.length+'개를 담았습니다. 이름을 입력하고 저장해 주세요.';title.focus();renderOrder()};
  // Add the requested key to the current draft without selecting or pausing another track.
  window.addEventListener?.('noa-playlist-add',async event=>{
-  const key=event.detail?.key;if(busy||typeof key!=='string'||!lookup.has(key))return;
+  const key=event.detail?.key;if(busy||typeof key!=='string'||!jukebox.record(key))return;
   const section=el('my-playlists');section.hidden=false;location.hash='my-playlists';
   if(!csrf&&!await refresh(true)){section.scrollIntoView?.({block:'start',behavior:'auto'});return;}
-  working=working||[];if(!working.includes(key))working.push(key);renderOrder();status.textContent=(lookup.get(key).title||key)+' · '+working.length+'개 곡 · 저장하면 반영됩니다.';section.scrollIntoView?.({block:'start',behavior:'auto'});
+  working=working||[];if(!working.includes(key))working.push(key);renderOrder();status.textContent=(jukebox.record(key).title||key)+' · '+working.length+'개 곡 · 저장하면 반영됩니다.';section.scrollIntoView?.({block:'start',behavior:'auto'});
  });
- el('my-add').onclick=()=>{if(!selected)return;working=working||[];if(!working.includes(selected.dataset.key))working.push(selected.dataset.key);status.textContent=working.length+'개 곡 · 저장하면 반영됩니다.';renderOrder()};
- el('my-remove').onclick=()=>{if(!selected)return;working=(working||[]).filter(k=>k!==selected.dataset.key);status.textContent=working.length+'개 곡 · 저장하면 반영됩니다.';renderOrder()};
- el('my-play').onclick=()=>{working=working||filteredQueue.filter(b=>lookup.get(b.dataset.key)?.kind!=='playlist').map(b=>b.dataset.key);selectWorking(true)};
+ el('my-add').onclick=()=>{if(!jukebox.currentKey())return;working=working||[];if(!working.includes(jukebox.currentKey()))working.push(jukebox.currentKey());status.textContent=working.length+'개 곡 · 저장하면 반영됩니다.';renderOrder()};
+ el('my-remove').onclick=()=>{if(!jukebox.currentKey())return;working=(working||[]).filter(k=>k!==jukebox.currentKey());status.textContent=working.length+'개 곡 · 저장하면 반영됩니다.';renderOrder()};
+ el('my-play').onclick=()=>{working=working||jukebox.visibleKeys();selectWorking(true)};
  el('my-save').onclick=async()=>{
   if(busy)return;
   if(!title.value.trim()){status.textContent='목록 이름을 입력해 주세요.';title.focus();return}
-  const requestId=id,requestTitle=title.value.trim(),tracks=working||filteredQueue.filter(b=>lookup.get(b.dataset.key)?.kind!=='playlist').map(b=>b.dataset.key);setBusy(true);
+  const requestId=id,requestTitle=title.value.trim(),tracks=working||jukebox.visibleKeys();setBusy(true);
   try{
    const response=await fetch('/noa-bridge/user-playlists.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-NOA-CSRF':csrf},body:JSON.stringify({id:requestId,title:requestTitle,tracks,expectedRevision:revision})});
    if(response.status===401){status.textContent='로그인 후 다시 저장해 주세요.';el('my-login').hidden=false;return}

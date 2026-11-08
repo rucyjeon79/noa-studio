@@ -5,10 +5,11 @@ declare(strict_types=1);
  * No database connections, file writes, network calls or worker execution.
  */
 require_once __DIR__.'/workspaces.php';
+require_once __DIR__.'/jukebox.php';
 function noa_engine_modules(): array {
     $modules = [
-        'music' => ['label'=>'MUSIC','owner'=>'music','entry'=>'/noa-music.php','events'=>['audio.ready','playback.started']],
-        'jukebox' => ['label'=>'JUKEBOX','owner'=>'jukebox','entry'=>'/noa-app/jukebox/','events'=>['upload.requested','audio.ready','audio.failed']],
+        'music' => ['label'=>'MUSIC','owner'=>'music','entry'=>'/noa-music.php','events'=>['audio.ready']],
+        'jukebox' => n80_jukebox_module(),
         'youtube' => ['label'=>'YOUTUBE','owner'=>'youtube','entry'=>'/noa-youtube.php','events'=>['sync.requested','youtube.synced']],
         'world' => ['label'=>'NOA WORLD','owner'=>'world','entry'=>'/noa-world.php','events'=>['youtube.synced','world.updated']],
         'playlist' => ['label'=>'MY PLAYLIST','owner'=>'playlist','entry'=>'/noa-music.php#my-playlists','events'=>['audio.ready','playlist.updated']],
@@ -28,7 +29,7 @@ function noa_engine_modules(): array {
     ];
     $sources=[
         'music'=>['noa-music.php'],
-        'jukebox'=>['noa-app/jukebox/index.php','noa-app/jukebox/queue-core.php'],
+        'jukebox'=>array_merge(['noa-app/engine/jukebox.php'],array_values(n80_jukebox_module()['components'])),
         'youtube'=>['noa-youtube.php'], 'world'=>['noa-world.php'], 'playlist'=>['noa-playlists.js'],
         'creator_lab'=>['noa-channel-workspace.php','noa-app/engine/workspaces.php'],
         'ai_lab'=>array_values(array_unique(array_merge(['noa-app/engine/creative.php','noa-bridge/creative.php','noa-bridge/creative-core.php','noa-bridge/creative-publication.php','noa-bridge/muvy-core.php','noa-bridge/lab-publication.php','noa-app/engine/service-runtime.php','noa-ai-lab.php','noa-app/engine/ai-lab.php','noa-app/engine/explorer.php','noa-channel-explorer.js','noa-explorer.css','noa-ai-lab.js','noa-muvy-panel.php'],array_column(n80_lab_tools(),'page')))),

@@ -42,7 +42,7 @@ jobs:
         if: always()
         with: {name: 'member-surfaces-candidate', path: 'member-surface-proof/', retention-days: 7}
   publish:
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[member-ui]')
+    if: (github.event_name == 'push' && contains(github.event.head_commit.message, '[member-ui]')) && !contains(github.event.head_commit.message, '[n80-jukebox]')
     needs: candidate
     runs-on: ubuntu-latest
     timeout-minutes: 15

@@ -4,6 +4,7 @@ import noa_ainoa_deploy as release
 
 # Existing libraries remain specialists beneath N80; this script never runs a worker.
 MODULES = (
+    'jukebox.php',
     'native-receipt.php','native-consumer.php','worker-wake.php',
     'task-status.php', 'app-lifecycle.php', 'registry.php', 'health.php',
     'adapter-contract.php', 'dispatch-gate.php', 'executor.php', 'service-runtime.php',

@@ -26,6 +26,7 @@ async function fixture({member=true,confirmed=true,deleteStatus=200,postCsrfOnce
   server=[{playlist_id:body.id,title:body.title,tracks:body.tracks,revision:body.expectedRevision+1}];return response(200,{revision:body.expectedRevision+1});
  };
  const context={document:{getElementById:id=>elements.get(id),createElement:()=>new Element()},Option:class extends Element{constructor(text,value){super();this.text=text;this.value=value;}},crypto:{randomUUID:()=> 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'},window:{confirm:()=>confirmed},fetch,lookup:new Map([[single,{title:'기존 곡',kind:'single'}],[catalog,{title:'복구 곡',kind:'story'}]]),filteredQueue:[{dataset:{key:single}}],selected:{dataset:{key:catalog}},activeQueue:null,filter(){},queue(){return[]},select(){},console};
+ context.window.N80JukeBox={record:key=>context.lookup.get(key),catalog:()=>[...context.lookup.values()],visibleKeys:()=>context.filteredQueue.map(row=>row.dataset.key),currentKey:()=>context.selected?.dataset.key||"",selectQueue:()=>0};
  vm.runInNewContext(source,context);await tick();
  const choose=()=>{elements.get('my-select').value=savedId;elements.get('my-select').events.change();};
  return{elements,requests,choose,getServer:()=>server};

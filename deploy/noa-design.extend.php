@@ -126,6 +126,8 @@ function noa_design_assets(){
  $runtime=dirname(__DIR__).'/noa-app/engine/runtime.js';
  $n80_runtime=is_file($runtime)?'<script src="/noa-app/engine/runtime.js?v='.hash_file('sha256',$runtime).'" defer></script>':'';
  $launch=dirname(__DIR__).'/noa-launch.js';$ainoa=is_file($launch)?'<script src="/noa-launch.js?v='.hash_file('sha256',$launch).'"></script>':'';
+ $jukebox_routes=dirname(__DIR__).'/noa-app/jukebox/navigation-policy.js';
+ if(is_file($jukebox_routes))$ainoa='<script src="/noa-app/jukebox/navigation-policy.js?v='.hash_file('sha256',$jukebox_routes).'"></script>'.$ainoa;
  $ainoa=$n80_runtime.$ainoa;
  $progress=dirname(__DIR__).'/noa-page-progress.js';if(is_file($progress))$ainoa.='<script src="/noa-page-progress.js?v='.hash_file('sha256',$progress).'" defer></script>';
  $voice=dirname(__DIR__).'/noa-voice.js';if(is_file($voice))$ainoa.='<script src="/noa-voice.js?v='.hash_file('sha256',$voice).'" defer></script>';
