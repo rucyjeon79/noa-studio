@@ -17,7 +17,7 @@ function reply(int $code, array $data): never {
 }
 const TARGETS = ['title','lyrics','sunoPrompt','geminiPrompt','youtubeTitle','description','communityPost'];
 $op = $_GET['op'] ?? '';
-$external = in_array($op, ['read','save','health','list','update','rules','workerPoll','workerFail','agentState','agentCheckpoint','agentValidate'], true);
+$external = in_array($op, ['read','save','health','list','update','rules','workerPoll','workerFail','agentState','agentCheckpoint','agentValidate','agentTasks','agentStart','agentRead','agentStep','agentFile'], true);
 $method = $_SERVER['REQUEST_METHOD'] ?? '';
 if ($method !== ($op === 'read' ? 'GET' : 'POST')) reply(405, ['error'=>'method']);
 if (!$external && (empty($is_member) || ($is_admin ?? '') !== 'super')) reply(403, ['error'=>'admin_required']);
@@ -46,6 +46,13 @@ try {
     if ($external && ((!$isWorker && !$isPlugin && !hash_equals($state['hash'] ?? '',hash('sha256',$secret))) || ($state['owner'] ?? '') !== ($config['cf_admin'] ?? null))) reply(401,['error'=>'invalid_key']);
     $workerOp = in_array($op,['workerPoll','workerFail','agentState','agentCheckpoint','agentValidate'],true);
     if ($workerOp && !$isWorker) reply(403,['error'=>'worker_key_required']);
+    if (in_array($op,['agentTasks','agentStart','agentRead','agentStep','agentFile'],true)) {
+        if (!$isPlugin) reply(403,['error'=>'plugin_required']);
+        $owner=(string)$state['owner'];flock($lock,LOCK_UN);fclose($lock);
+        if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
+        require_once __DIR__.'/noa-bridge/session-agent.php';
+        reply(200,['ok'=>true]+sa_dispatch($op,$body,$owner));
+    }
     $agentLease=(string)($_SERVER['HTTP_X_NOA_AGENT_LEASE']??'');
     if($isWorker)$body['_agentLease']=$agentLease;
     // Explicit SQL draft tasks share the authenticated N80 song worker, never the global legacy slot.
