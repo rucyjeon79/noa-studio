@@ -23,7 +23,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (engine/'creative.php').write_text("<?php function ncd_job($db,$id){return null;}")
     shutil.copy("deploy/noa-gpt.php", root)
     (root/"common.php").write_text("""<?php
-    $config=['cf_admin'=>'test-owner'];$member=['mb_id'=>'test-owner'];
+    define('_GNUBOARD_',true);define('G5_PATH',__DIR__);$config=['cf_admin'=>'test-owner'];$member=['mb_id'=>'test-owner'];
     $is_member=($_SERVER['HTTP_COOKIE']??'')==='admin=yes';$is_admin=$is_member?'super':'';
     """)
     (bridge/"storage.php").write_text("""<?php
@@ -40,6 +40,8 @@ with tempfile.TemporaryDirectory() as tmp:
     bridge_src = re.sub(r"\$pluginHash = '[a-f0-9]{64}';", "$pluginHash = '"+hashlib.sha256(plugin_key.encode()).hexdigest()+"';", bridge_src)
     shutil.copy("deploy/noa-plugin-records.php",root)
     target.write_text(bridge_src.replace(' WHERE request_id=? FOR UPDATE',' WHERE request_id=?'))
+    for module in ("session-agent.php","lab-core.php","muvy-timeline.php"):
+        shutil.copy(Path("bridge")/module,bridge)
     shutil.copy("bridge/generation-rules.php",bridge)
     shutil.copy("bridge/n80-ai-output.php",bridge)
     (bridge/"taxonomy-store.php").write_text("""<?php
@@ -129,9 +131,13 @@ with tempfile.TemporaryDirectory() as tmp:
         call('pluginToggle',{'enabled':True},status=403)
         call('pluginToggle',{'enabled':True},admin=True)
         assert call('health',{},key=plugin_key)['managementConnected']
+        assert call('agentTasks',{},key=plugin_key)['execution']=='chatgpt_session'
+        call('agentTasks',{},admin=True,status=401)
+        call('agentTasks',{},status=401)
         call('pluginToggle',{'enabled':False},admin=True)
         call('health',{},key=plugin_key,status=401)
         worker=call('workerPair',{},admin=True)['key']
+        call('agentTasks',{},key=worker,status=403)
         one_tap={**task,'worker':True,'revision':2,'replace':True}
         call('start',one_tap,admin=True,status=503)
         call('workerPoll',{},key=worker)

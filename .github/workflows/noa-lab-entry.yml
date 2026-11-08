@@ -2,7 +2,7 @@ name: Verify and publish AI LAB entry
 on:
   push:
     branches: [main, work/n80-browser-media, work/n80-duration-cuts, work/n80-session-agent]
-    paths: ['bridge/session-agent*.php','lab/session-assemble.mjs','tests/session-agent/**','deploy/noa-gpt.php','.github/workflows/noa-lab-entry.yml','bridge/lab-browser-assets.php','tests/lab/browser_assets_test.php','tests/lab/http_test.py','tests/lab/clip_fixture.b64','bridge/lab-core.php','bridge/lab-api.php','bridge/catalog.php','deploy/noa-ai-lab.js','deploy/noa-ai-lab.php','bridge/muvy*.php','deploy/noa-muvy*','tests/muvy/**','scripts/qa/noa-muvy.mjs']
+    paths: ['bridge/session-agent*.php','lab/session-assemble.mjs','tests/session-agent/**','scripts/qa/noa-session-agent.mjs','deploy/noa-app/engine/ai-lab.php','deploy/noa-gpt.php','.github/workflows/noa-lab-entry.yml','bridge/lab-browser-assets.php','tests/lab/browser_assets_test.php','tests/lab/http_test.py','tests/lab/clip_fixture.b64','bridge/lab-core.php','bridge/lab-api.php','bridge/catalog.php','deploy/noa-ai-lab.js','deploy/noa-ai-lab.php','bridge/muvy*.php','deploy/noa-muvy*','tests/muvy/**','scripts/qa/noa-muvy.mjs']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
@@ -22,6 +22,7 @@ jobs:
           php -l bridge/session-agent-media.php
           node tests/session-agent/assembly.mjs /tmp/n80-session-fixture
           php tests/session-agent/core.php /tmp/n80-session-fixture
+          python tests/gpt/flow.py
           php tests/muvy/timeline.php
           php tests/muvy/fixture.php
           node --check deploy/noa-muvy.js
@@ -44,6 +45,8 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/muvy-check" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-muvy.mjs "$RUNNER_TEMP/muvy-check/check.mjs"
           node "$RUNNER_TEMP/muvy-check/check.mjs"
+          cp scripts/qa/noa-session-agent.mjs "$RUNNER_TEMP/muvy-check/session.mjs"
+          node "$RUNNER_TEMP/muvy-check/session.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'n80-duration-check-${{ github.run_id }}', path: 'muvy-proof/', retention-days: 7}
@@ -85,6 +88,7 @@ jobs:
               'noa-bridge/catalog.php': 'bridge/catalog.php',
               'noa-bridge/lab-api.php': 'bridge/lab-api.php',
               'noa-ai-lab.js': 'deploy/noa-ai-lab.js',
+              'noa-app/engine/ai-lab.php': 'deploy/noa-app/engine/ai-lab.php',
               'noa-ai-lab.php': 'deploy/noa-ai-lab.php',
           }
           release.NEW = {'noa-bridge/session-agent.php','noa-bridge/session-agent-media.php','noa-bridge/lab-browser-assets.php','noa-bridge/muvy-timeline.php'}

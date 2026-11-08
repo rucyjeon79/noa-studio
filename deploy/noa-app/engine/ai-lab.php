@@ -7,7 +7,7 @@ function n80_lab_tools(): array {
         'settings'=>['label'=>'AI·YouTube 연결','description'=>'AI 제공자·YouTube 채널과 사용 한도 설정','access'=>'admin','panel'=>'lab-settings','hidden'=>true],
         'text' => ['label'=>'새 가사·콘텐츠 초안', 'description'=>'제작 요청과 장르 규칙으로 가사·Suno 지시문·게시 문구 초안을 만듭니다. 검토 후 곡에 반영하세요.', 'menuHidden'=>true, 'access'=>'admin', 'panel'=>'lab-text'],
         'muvy' => ['label'=>'대본·장면 프롬프트', 'description'=>'등록된 곡 정보로 뮤비 대본과 장면별 제작 지시문을 만듭니다. 영상 파일 제작은 별도 작업입니다.', 'family'=>'video', 'menuHidden'=>true, 'access'=>'admin', 'panel'=>'lab-muvy'],
-        'create' => ['label'=>'영상 파일 제작', 'description'=>'실제 음원을 분석하고 캐릭터·영상 구간을 선택해 MP4를 제작합니다. 외부 영상 서비스 연결이 필요합니다.', 'family'=>'video', 'access'=>'admin', 'panel'=>'lab-create'],
+        'create' => ['label'=>'영상 파일 제작', 'description'=>'ChatGPT가 현재 곡으로 장면을 기획하고 Gemini·Flow 제작과 검수, 원곡 편집을 이어갑니다.', 'family'=>'video', 'access'=>'admin', 'panel'=>'lab-create'],
         'song' => ['label'=>'한 곡씩 제작', 'description'=>'N80 탐색기에서 한 곡을 골라 필요한 곡 정보 항목을 생성하고 확인합니다.', 'menuHidden'=>true, 'access'=>'admin', 'page'=>'noa-lab-song.php'],
         'creative' => ['label'=>'노래 창작하기','description'=>'내 이야기나 오늘의 운세에서 시작해, 단계별 네 가지 중 여러 개를 고르고 노래를 만듭니다.','family'=>'creative','access'=>'creatorAI','page'=>'noa-lab-creative.php'],
         'batch' => ['label'=>'ACT·장르 묶음 제작', 'description'=>'여러 곡·ACT·장르를 선택해 같은 곡 정보 항목을 한 번에 생성하고 처리 상태를 확인합니다.', 'family'=>'batch', 'access'=>'admin', 'page'=>'noa-creator.php'],
@@ -24,7 +24,7 @@ function n80_lab_families(): array {
     return [
         'creative'=>['label'=>'노래 창작하기','description'=>'이야기·오늘의 운세 · 단계별 복수 선택 · 곡정보 완성 후 보관','section'=>'production'],
         'batch'=>['label'=>'ACT·장르 묶음 제작','description'=>'여러 곡·ACT·장르를 선택해 필요한 항목을 한 번에 생성','section'=>'production'],
-        'video'=>['label'=>'뮤직비디오 제작','description'=>'음원·캐릭터·구간을 선택해 MP4 영상 파일 제작','section'=>'production'],
+        'video'=>['label'=>'뮤직비디오 제작','description'=>'현재 곡으로 장면 기획·이미지·영상·편집까지 함께 제작','section'=>'production'],
         'conversation'=>['label'=>'AI 대화·음악 추천','description'=>'곡 이야기·제작 아이디어 상담과 취향에 맞는 음악 추천','section'=>'conversation'],
         'jobs'=>['label'=>'작업 결과·이력','description'=>'가사·영상 제작 진행 상황, 생성 결과, 실패 작업 재시도','section'=>'results'],
         'growth'=>['label'=>'채널 성과','description'=>'AI LAB에서 게시한 영상의 조회수·시청 시간 등 성과 확인','section'=>'results'],

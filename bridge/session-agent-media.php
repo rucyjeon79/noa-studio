@@ -5,7 +5,7 @@ require_once __DIR__.'/lab-browser-assets.php';
 
 /** Read only bounded MP4 metadata; never load a full-length movie into PHP memory. */
 function sa_video_probe(string $path,bool $final=false):array {
- $size=filesize($path);if($size<256||$size>($final?512:32)*1048576||is_link($path))throw new InvalidArgumentException('invalid_video_size');
+ clearstatcache(true,$path);$size=filesize($path);if($size<256||$size>($final?512:32)*1048576||is_link($path))throw new InvalidArgumentException('invalid_video_size');
  $f=fopen($path,'rb');$offset=0;$moov=null;$ftyp=false;$mdat=false;$atoms=0;
  try{while($offset<$size){
   if(++$atoms>4096||$size-$offset<8)throw new InvalidArgumentException('invalid_clip_container');
