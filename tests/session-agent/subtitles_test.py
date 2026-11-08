@@ -8,6 +8,10 @@ spec.loader.exec_module(module)
 
 
 class SubtitleAlignment(unittest.TestCase):
+    def test_production_directions_are_not_lyrics(self):
+        lyrics = '[Chorus]\n(soft gayageum harmonics, female vocal)\n별빛이 내려와\n(I love you)\n(아~)'
+        self.assertEqual(module.lyric_lines(lyrics), ['별빛이 내려와', '(I love you)', '(아~)'])
+
     def word(self, text, start, end, probability=.95):
         return dict(word=text, start=start, end=end, probability=probability)
 

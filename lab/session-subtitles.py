@@ -16,8 +16,18 @@ import unicodedata
 
 
 def lyric_lines(text):
-    return [line for raw in str(text).splitlines()
-            if (line := re.sub(r"\s+", " ", re.sub(r"\[[^\]]*\]", "", raw)).strip())]
+    lines = []
+    for raw in str(text).splitlines():
+        line = re.sub(r"\s+", " ", re.sub(r"\[[^\]]*\]", "", raw)).strip()
+        # Suno production directions are not sung lyrics. Preserve ordinary
+        # parenthetical lyrics/adlibs; only explicit full-line directions match.
+        if (line.startswith('(') and line.endswith(')') and re.search(
+                r'\b(?:sogeum|gayageum|ajaeng|janggu|kkwaenggwari|taepyeongso|instrumentation|'
+                r'percussion|arpeggio|glissando|harmonics|sub bass|vocal|vocals|whispered)\b', line, re.I)):
+            continue
+        if line:
+            lines.append(line)
+    return lines
 
 
 def clean(text):

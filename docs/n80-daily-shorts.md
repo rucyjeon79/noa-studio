@@ -27,3 +27,36 @@ Measured candidate reports are not a movie approval, listening review, subtitle 
 The currently installed Gemini/Flow and native YouTube related-video operations are ChatGPT session browser tools. They are NOT a persistent server executor. There is no server browser adapter yet. The scheduler therefore explicitly reports productionReady:false and persistent_browser_executor_required until an actual separately connected execution adapter is implemented and verified. It does not claim to have generated, scheduled or published a video. Do not clear this blocker merely by toggling a configuration flag or by creating another conversation automation.
 
 The procedure above remains the authorized production contract for that adapter or an explicitly active operator. A schedule tick is not proof of successful media production. YouTube controls exact public timing only after a real, verified scheduled upload.
+
+## Actual preparation and Korean recognition continuation
+
+Run 42512503071, attempt 2, completed actual preparation after renewing the
+existing YouTube authorization. At 2026-11-08 19:07 UTC the hosting retained
+284 eligible sources, three measured MP3 candidates and their original-video
+identities: `single:echoes-of-joseon:13` / `ovdE-E9Rjm4`,
+`single:narrative-piano-indie:18` / `dUsmsp1ZgbE`, and
+`single:echoes-of-joseon:12` / `arTmkUxdaBU`. These are candidate results,
+not a listening decision or a publication receipt. Google identified the current
+OAuth application as Testing. Its production audience setting could not be
+opened in the available browser; no production-status change is claimed.
+
+Korean recognition now follows preparation inside the same registered worker.
+The highest ranked measured source receives a fenced 20-minute subtitle lease
+in `preparation.subtitlePreparation`, three bounded attempts, source revision
+and audio/lyrics hash checks. Already saved results are reused. A paused campaign,
+expired publication date or changed source cannot proceed. No new media job,
+queue, timer, provider API account or permanent MP3 copy is created.
+
+The runner installs the existing pinned local recognizer only after claiming work,
+with a three-minute installation timeout and twelve-minute recognition timeout.
+It downloads the existing private MP3, verifies the checksum, and runs CPU/int8
+faster-whisper against the actual audio. The existing subtitle validator checks
+the returned timestamps against exact registered lyrics. Explicit parenthetical
+production directions are omitted from both Python and PHP lyric parsing;
+ordinary parenthetical lyrics remain. English-only lyric lines remain identified
+for translation review. Recognition outputs are `aligned` or `needs_review`;
+neither sets `audioListeningReviewed` or `publicationReady` to true.
+
+This stage does not implement automatic English-to-Korean translation, audio
+listening review, portrait generation or the native Related-video adapter.
+Production remains blocked until those required execution/review steps succeed.

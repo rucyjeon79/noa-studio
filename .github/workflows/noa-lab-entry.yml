@@ -25,7 +25,9 @@ jobs:
           php -l bridge/session-subtitles.php
           php -l bridge/session-shorts.php
           php -l bridge/session-shorts-prepare.php
+          php -l bridge/session-shorts-subtitles.php
           php tests/session-agent/preparation.php
+          php tests/session-agent/caption-preparation.php
           php tests/lab/oauth_test.php
           python tests/session-agent/preparation_test.py
           php -l bridge/worker-shorts.php
@@ -98,6 +100,7 @@ jobs:
               'noa-app/engine/daily-shorts.json': 'config/n80-daily-shorts.json',
               'noa-bridge/session-shorts.php': 'bridge/session-shorts.php',
               'noa-bridge/session-shorts-prepare.php': 'bridge/session-shorts-prepare.php',
+              'noa-bridge/session-shorts-subtitles.php': 'bridge/session-shorts-subtitles.php',
               'noa-bridge/youtube-store.php': 'bridge/youtube-store.php',
               'noa-bridge/lab-oauth-core.php': 'bridge/lab-oauth-core.php',
               'noa-bridge/worker-shorts.php': 'bridge/worker-shorts.php',
@@ -113,7 +116,7 @@ jobs:
               'noa-app/engine/ai-lab.php': 'deploy/noa-app/engine/ai-lab.php',
               'noa-ai-lab.php': 'deploy/noa-ai-lab.php',
           }
-          release.NEW = {'noa-bridge/session-shorts-prepare.php','noa-app/engine/daily-shorts.json','noa-bridge/session-shorts.php','noa-bridge/worker-shorts.php','noa-bridge/session-subtitles.php','noa-bridge/session-agent.php','noa-bridge/session-agent-media.php','noa-bridge/lab-browser-assets.php','noa-bridge/muvy-timeline.php'}
+          release.NEW = {'noa-bridge/session-shorts-subtitles.php','noa-bridge/session-shorts-prepare.php','noa-app/engine/daily-shorts.json','noa-bridge/session-shorts.php','noa-bridge/worker-shorts.php','noa-bridge/session-subtitles.php','noa-bridge/session-agent.php','noa-bridge/session-agent-media.php','noa-bridge/lab-browser-assets.php','noa-bridge/muvy-timeline.php'}
           try:
               release.main()
           except Exception:
@@ -129,7 +132,7 @@ jobs:
           campaign=result['campaign']
           assert campaign['stateOwner']=='N80 Engine' and campaign['conversationDependent'] is False
           assert campaign['policy']['publishLocalTime']=='12:00'
-          print('N80_DAILY_SHORTS_PERSISTED',json.dumps(campaign,ensure_ascii=False))
+          print('N80_DAILY_SHORTS_PERSISTED',json.dumps({k:campaign.get(k) for k in ('state','schedulerOwner','stateOwner','conversationDependent','nextPublicationAt','productionReady')},ensure_ascii=False))
           PY
       - uses: actions/upload-artifact@v4
         if: always()
