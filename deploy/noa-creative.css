@@ -63,7 +63,12 @@
 #creative-record .creative-ai-result-actions>button{flex:1;min-height:44px;padding:10px 12px;font-size:13px;font-weight:600;word-break:keep-all}
 #creative-record .creative-ai-result-actions>.creative-ai-apply{background:var(--noa-accent);color:var(--noa-accentText);border-color:var(--noa-accent)}
 #creative-record .creative-ai-original{padding:0;margin-top:18px;border-top:1px solid var(--noa-line)}
-#creative-record .creative-ai-original summary{min-height:44px;box-sizing:border-box;padding:14px 0 4px;cursor:pointer;font-size:13px;color:var(--noa-muted)}
+#creative-record .creative-ai-original>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:44px;box-sizing:border-box;padding:14px 0 4px;cursor:pointer;font-size:13px;color:var(--noa-muted);list-style:none;border:0;border-radius:0;background:transparent;box-shadow:none;text-align:left}
+#creative-record .creative-ai-original>summary::before{content:none}
+#creative-record .creative-ai-original>summary::marker{content:""}
+#creative-record .creative-ai-original>summary::-webkit-details-marker{display:none}
+#creative-record .creative-ai-original>summary::after{content:"";display:block;position:static;flex:none;width:6px;height:6px;margin:0 3px 3px 0;border:0;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);background:none}
+#creative-record .creative-ai-original[open]>summary::after{transform:rotate(225deg);margin-top:5px}
 #creative-record .creative-ai-original pre{margin:12px 0 0;color:var(--noa-muted);max-height:40dvh;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;font-size:14px}
 #creative-record .creative-ai-expand{display:block;min-height:44px;padding:10px 0;margin-top:6px;border:0;background:transparent;color:var(--noa-creative);font-size:13px;text-decoration:underline;text-underline-offset:4px}
 #creative-record :is(.creative-ai-value,.creative-ai-original summary,.creative-ai-expand):focus-visible{outline:2px solid var(--noa-creative);outline-offset:3px}
