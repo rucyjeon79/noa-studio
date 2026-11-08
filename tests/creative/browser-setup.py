@@ -41,3 +41,5 @@ copy(__DIR__.'/fixture.mp3',$path.'/audio.mp3');copy(__DIR__.'/fixture.webp',$pa
 $a=['song_key'=>$r['doc_key'],'source_url'=>'','suno_id'=>'','audio_path'=>$relative.'/audio.mp3','audio_bytes'=>filesize($path.'/audio.mp3'),'audio_sha256'=>hash_file('sha256',$path.'/audio.mp3'),'cover_path'=>$relative.'/cover.webp','cover_bytes'=>filesize($path.'/cover.webp'),'cover_sha256'=>hash_file('sha256',$path.'/cover.webp'),'status'=>'ready','source_evidence'=>'{}'];$cols=array_keys($a);$db->prepare('INSERT INTO noa_jukebox_assets (`'.implode('`,`',$cols).'`) VALUES ('.implode(',',array_fill(0,count($cols),'?')).')')->execute(array_values($a));
 header('Content-Type: application/json');echo json_encode(['ok'=>ncd_assets($db,$r)['audioReady']]);
 ''')
+
+shutil.copyfile('tests/creative/list-expiry-fixture.php',site/'creative-test-expiry.php')

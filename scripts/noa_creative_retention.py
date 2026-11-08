@@ -6,7 +6,7 @@ from noa_full_inventory import ROOT,connect
 from n80_live_observer import NoRedirect
 
 def main(phase):
-    if phase not in ('prepare','verify'):raise ValueError('invalid phase')
+    if phase not in ('prepare','verify','verify_published'):raise ValueError('invalid phase')
     token=secrets.token_hex(32);name='creative-retention-'+secrets.token_hex(12)+'.php';remote=ROOT+'/noa-bridge/'+name
     core=Path('bridge/creative-core.php').read_text();schema=core[core.index('function ncd_schema('):core.index('function ncd_id(')]
     code=Path('scripts/noa_creative_retention.php').read_text()

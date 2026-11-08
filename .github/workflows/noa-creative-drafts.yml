@@ -36,6 +36,12 @@ jobs:
           sed 's/__EXPIRY__/9999999999/g' scripts/noa_creative_folders_live.php > /tmp/folders-live.php
           php -l /tmp/folders-live.php
           python -m py_compile scripts/noa_creative_folders_live.py scripts/noa_creative_release.py scripts/noa_creative_revision_live.py scripts/noa_jukebox_upload_worker.py scripts/noa_jukebox_worker.py
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('scripts/noa_creative_retention.php').read_text().replace('__EXPIRY__','9999999999').replace('__SCHEMA__','')
+          Path('/tmp/creative-retention-check.php').write_text(s)
+          PY
+          php -l /tmp/creative-retention-check.php
           node --check deploy/noa-creative.js
           node --check deploy/noa-ainoa.js
           php -l deploy/noa-app/engine/ai-lab.php
@@ -55,6 +61,7 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/creative-browser" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp tests/creative/browser.mjs "$RUNNER_TEMP/creative-browser/check.mjs"
           cp tests/creative/viewport.mjs "$RUNNER_TEMP/creative-browser/viewport.mjs"
+          cp tests/creative/list-expiry.mjs "$RUNNER_TEMP/creative-browser/list-expiry.mjs"
           cp tests/creative/revisions.mjs "$RUNNER_TEMP/creative-browser/revisions.mjs"
       - name: Verify mobile and desktop with actual PHP and MySQL
         run: |
@@ -76,12 +83,13 @@ jobs:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
       - run: python -m pip install 'paramiko>=3,<5'
-      - if: ${{ !contains(github.event.head_commit.message, '[creative-chat]') && !contains(github.event.head_commit.message, '[creative-retention]') && !contains(github.event.head_commit.message, '[creative-revision]') && !contains(github.event.head_commit.message, '[creative-batch]') && !contains(github.event.head_commit.message, '[creative-title]') && !contains(github.event.head_commit.message, '[creative-save]') }}
+      - if: ${{ !contains(github.event.head_commit.message, '[creative-chat]') && !contains(github.event.head_commit.message, '[creative-retention]') && !contains(github.event.head_commit.message, '[creative-revision]') && !contains(github.event.head_commit.message, '[creative-batch]') && !contains(github.event.head_commit.message, '[creative-title]') && !contains(github.event.head_commit.message, '[creative-save]') && !contains(github.event.head_commit.message, '[creative-list-expiry]') }}
         run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
       - name: Activate one guarded source set
         id: activate
         env: &env
           NOA_CREATIVE_PRESENTATION_ONLY: ${{ contains(github.event.head_commit.message, '[creative-chat]') && '1' || '0' }}
+          NOA_CREATIVE_LIST_EXPIRY_ONLY: ${{ contains(github.event.head_commit.message, '[creative-list-expiry]') && '1' || '0' }}
           NOA_CREATIVE_RETENTION_ONLY: ${{ contains(github.event.head_commit.message, '[creative-retention]') && '1' || '0' }}
           NOA_CREATIVE_REVISION_ONLY: ${{ (contains(github.event.head_commit.message, '[creative-revision]') || contains(github.event.head_commit.message, '[creative-title]')) && '1' || '0' }}
           NOA_CREATIVE_TITLE_ONLY: ${{ contains(github.event.head_commit.message, '[creative-title]') && '1' || '0' }}
@@ -101,7 +109,7 @@ jobs:
           if [ "$NOA_CREATIVE_SAVE_ONLY" = "1" ]; then python scripts/noa_creative_revision_live.py recover_save; fi
           if [ "$NOA_CREATIVE_TITLE_ONLY" = "1" ]; then python scripts/noa_creative_revision_live.py verify_titles; elif [ "$NOA_CREATIVE_REVISION_ONLY" = "1" ]; then python scripts/noa_creative_revision_live.py verify; fi
           if [ "$NOA_CREATIVE_BATCH_ONLY" = "1" ]; then python scripts/noa_creative_revision_live.py verify_batch; fi
-          if [ "$NOA_CREATIVE_PRESENTATION_ONLY" != "1" ] && [ "$NOA_CREATIVE_RETENTION_ONLY" != "1" ] && [ "$NOA_CREATIVE_REVISION_ONLY" != "1" ] && [ "$NOA_CREATIVE_BATCH_ONLY" != "1" ] && [ "$NOA_CREATIVE_SAVE_ONLY" != "1" ] && [ "$NOA_CREATIVE_FOLDERS_ONLY" != "1" ]; then python scripts/noa_creative_live.py; fi
+          if [ "$NOA_CREATIVE_PRESENTATION_ONLY" != "1" ] && [ "$NOA_CREATIVE_RETENTION_ONLY" != "1" ] && [ "$NOA_CREATIVE_REVISION_ONLY" != "1" ] && [ "$NOA_CREATIVE_BATCH_ONLY" != "1" ] && [ "$NOA_CREATIVE_SAVE_ONLY" != "1" ] && [ "$NOA_CREATIVE_FOLDERS_ONLY" != "1" ] && [ "$NOA_CREATIVE_LIST_EXPIRY_ONLY" != "1" ]; then python scripts/noa_creative_live.py; fi
       - name: Restore owned source on failed activation or live verification
         if: failure() && steps.activate.outcome == 'failure'
         env: *env
