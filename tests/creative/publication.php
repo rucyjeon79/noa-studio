@@ -22,6 +22,8 @@ $audio=dirname($ma['cover_path']).'/song.mp3';copy(__DIR__.'/fixture.mp3',nj_pri
 $db->prepare("UPDATE noa_jukebox_assets SET audio_path=?,audio_bytes=?,audio_sha256=?,status='ready' WHERE song_key=?")->execute([$audio,filesize(__DIR__.'/fixture.mp3'),hash_file('sha256',__DIR__.'/fixture.mp3'),$move['doc_key']]);
 $oldPaths=[$audio,$ma['cover_path']];$move=ncd_save($db,$owner,['id'=>$moveId,'revision'=>$move['revision'],'location'=>['genre'=>'your-story','collections'=>[]]]);$ma=nj_find($db,$move['doc_key']);
 check(str_starts_with($ma['audio_path'],'사연곡/')&&dirname($ma['audio_path'])===dirname($ma['cover_path']),'classification moves both files to one folder');
+check(str_contains($ma['audio_path'],'사연곡/같은 이름의 곡 ['),'folder uses the accepted song title');
+$blankAlias=$move['document'];$blankAlias['body']['displayTitle']='';$blankAlias['body']['confirmedTitle']='';$blankAlias['title']='행간의 연서(行間戀書)';check(str_contains(nml_directory($move['doc_key'],$blankAlias),'사연곡/행간의 연서(行間戀書) ['),'empty aliases cannot hide the current document title');
 check(nj_verified($ma,'audio')&&nj_verified($ma,'cover'),'both media hashes and formats preserved');
 check($move['document']['body']['audioFileLocation']===$ma['audio_path']&&$move['document']['body']['cardImageLocation']===$ma['cover_path'],'current record has current paths');
 nml_cleanup($db);foreach($oldPaths as $old)check(nj_file($old)===null,'unreferenced old path removed after commit');

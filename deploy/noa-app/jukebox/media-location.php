@@ -11,7 +11,7 @@ function nml_directory(string $key,array $doc):string {
  $genre=(string)($doc['genreId']??'');
  if(isset($doc['_creative'])&&empty($doc['_creative']['locationConfirmed'])&&empty($doc['_creative']['publication']))$genre='';
  if($genre===''||$genre==='unclassified')return '기타/'.$id;
- $title=nml_component((string)($doc['body']['displayTitle']??$doc['body']['confirmedTitle']??$doc['title']??''));
+ $title='';foreach([$doc['body']['displayTitle']??'',$doc['body']['confirmedTitle']??'',$doc['title']??''] as $candidate)if(is_string($candidate)&&trim($candidate)!==''){$title=$candidate;break;}$title=nml_component($title);
  $ep=(string)($doc['ep']??'');$base=['kpop-original'=>'K-POP','jpop-original'=>'J-POP','pop-original'=>'POP','thai-original'=>'Thai'];
  if($genre==='your-story')$dir='사연곡/'.$title;
  elseif($genre==='cover-reborn')$dir='커버곡/'.$title;

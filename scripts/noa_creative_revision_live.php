@@ -31,6 +31,7 @@ try{
    if($accepted!==$current||$saved['genreId']!==$d['genreId'])throw new RuntimeException('saved_content_mismatch');
    if($a)foreach(['audio','cover'] as $type)if(!empty($a[$type.'_path'])){if(!nj_verified($asset,$type)||$a[$type.'_sha256']!==$asset[$type.'_sha256'])throw new RuntimeException('saved_media_mismatch');}
    if(!empty($asset['audio_path'])&&!empty($asset['cover_path'])&&dirname($asset['audio_path'])!==dirname($asset['cover_path']))throw new RuntimeException('media_not_together');
+   if(!empty($asset['audio_path'])&&!str_contains($asset['audio_path'],'사연곡/'.nml_component($accepted['title']).' ['))throw new RuntimeException('media_folder_title_mismatch');
    $result=['publication'=>$published['publication'],'acceptedFieldsPreserved'=>true,'audioReady'=>nj_verified($asset,'audio'),'coverReady'=>nj_verified($asset,'cover'),'audioPath'=>$asset['audio_path']??null,'coverPath'=>$asset['cover_path']??null,'oldPathsRemoved'=>array_map(static fn($type)=>empty($a[$type.'_path'])||$a[$type.'_path']===($asset[$type.'_path']??null)||nj_file($a[$type.'_path'])===null,['audio','cover']),'replaySafe'=>true];
   }
  }elseif($op==='audit_titles'){
