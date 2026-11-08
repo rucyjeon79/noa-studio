@@ -1,5 +1,8 @@
 name: NOA private song worker
 on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/noa-worker.yml','worker.py','agent.py','verify_agent.py','tests/gpt/test_agent.py']
   workflow_dispatch:
     inputs:
       task_id:
@@ -23,7 +26,7 @@ jobs:
       - name: Select temporary login directory
         run: echo "CODEX_HOME=$RUNNER_TEMP/noa-codex" >> "$GITHUB_ENV"
       - name: Install Codex
-        run: npm install --global @openai/codex@0.116.0
+        run: npm install --global @openai/codex@0.166.0
       - name: Restore private login
         env:
           INITIAL_AUTH: ${{ secrets.NOA_CODEX_AUTH }}
@@ -35,7 +38,13 @@ jobs:
           mkdir -p "$CODEX_HOME"
           printf '%s' "$INITIAL_AUTH" | jq -ce 'select(.tokens.refresh_token | type == "string")' > "$CODEX_HOME/auth.json"
           cp "$CODEX_HOME/auth.json" "$RUNNER_TEMP/noa-auth-original"
+      - name: Verify commander boundaries
+        run: PYTHONPATH=. python3 tests/gpt/test_agent.py
+      - name: Verify hosted ChatGPT commander
+        if: github.event_name == 'push'
+        run: python3 verify_agent.py
       - name: Generate the selected field
+        if: github.event_name == 'workflow_dispatch'
         env:
           NOA_WORKER_KEY: ${{ secrets.NOA_WORKER_KEY }}
           NOA_TASK_ID: ${{ inputs.task_id }}

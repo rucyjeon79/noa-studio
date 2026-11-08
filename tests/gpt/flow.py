@@ -17,7 +17,7 @@ with tempfile.TemporaryDirectory() as tmp:
     bridge.mkdir(parents=True)
     engine = root / 'noa-app/engine'
     engine.mkdir(parents=True)
-    for module in ('song-generation.php','generation-state.php','auto-dispatch.php'):
+    for module in ('song-generation.php','generation-state.php','auto-dispatch.php','agent-runtime.php'):
         shutil.copy(Path('deploy/noa-app/engine')/module, engine)
     # This suite isolates legacy transport; the creative SQL specialist is exercised by tests/creative.
     (engine/'creative.php').write_text("<?php function ncd_job($db,$id){return null;}")
@@ -82,10 +82,11 @@ with tempfile.TemporaryDirectory() as tmp:
         s.bind(('127.0.0.1',0))
         port = s.getsockname()[1]
     server = subprocess.Popen(['php','-S',f'127.0.0.1:{port}','-t',str(root)],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-    def call(op,body=None,admin=False,key=None,status=200):
+    def call(op,body=None,admin=False,key=None,status=200,lease=None):
         headers={'Content-Type':'application/json'}
         if admin: headers.update({'Cookie':'admin=yes','Origin':'https://noastudio.ai.kr','X-NOA-Bridge-Request':'1'})
         if key: headers['X-NOA-Action-Key']=key
+        if lease: headers['X-NOA-Agent-Lease']=lease
         request=urllib.request.Request(f'http://127.0.0.1:{port}/noa-gpt.php?op={op}',headers=headers,data=json.dumps(body).encode() if body is not None else None)
         try: response=urllib.request.urlopen(request)
         except urllib.error.HTTPError as error: response=error
@@ -153,6 +154,35 @@ with tempfile.TemporaryDirectory() as tmp:
         assert call('progress',{'id':failed_job['id']},admin=True)['stage']=='failed'
         assert 'id' not in call('workerPoll',{'id':failed_job['id']},key=worker)
         target.write_text(healthy_dispatch)
+        # The real N80 bridge owns agent checkpoints, validation, leases and stale-input checks.
+        agent=call('start',{**one_tap,'revision':3,'field':'youtubeTitle'},admin=True)
+        claim=call('workerPoll',{'id':agent['id'],'agentVersion':1},key=worker)
+        lease=claim['agentLease']
+        call('agentState',{'id':agent['id']},key=worker,status=409)
+        current=call('agentState',{'id':agent['id']},key=worker,lease=lease)
+        assert current['contract']['brain']=='ChatGPT' and current['contract']['specialists']==[]
+        checkpoint={'id':agent['id'],'sequence':0,'checkpoint':{'plan':['Use the current song title'],'candidate':'x'*101,'decisions':1,'observation':None}}
+        assert call('agentCheckpoint',checkpoint,key=worker,lease=lease)['agent']['sequence']==1
+        assert call('agentCheckpoint',checkpoint,key=worker,lease=lease)['agent']['sequence']==1
+        call('save',{'id':agent['id'],'text':'x'*99},key=worker,lease=lease,status=409)
+        validation=call('agentValidate',{'id':agent['id'],'text':'x'*101},key=worker,lease=lease)
+        assert not validation['validation']['valid']
+        assert call('progress',{'id':agent['id']},admin=True)['stage']=='running'
+        checkpoint['sequence']=1;checkpoint['checkpoint']['candidate']='Current song';checkpoint['checkpoint']['decisions']=2
+        call('agentCheckpoint',checkpoint,key=worker,lease=lease)
+        assert call('agentValidate',{'id':agent['id'],'text':'Current song'},key=worker,lease=lease)['validation']['valid']
+        state=json.loads(state_file.read_text());state['job']['agent']['seenAt']=int(time.time())-241;state_file.write_text(json.dumps(state))
+        resumed=call('workerPoll',{'id':agent['id'],'agentVersion':1,'resume':True},key=worker)
+        assert resumed['agentLease']!=lease and resumed['agent']['checkpoint']['candidate']=='Current song'
+        call('agentState',{'id':agent['id']},key=worker,lease=lease,status=409)
+        lease=resumed['agentLease']
+        import sqlite3
+        with sqlite3.connect(Path(tmp)/'test.sqlite') as changed:
+            changed.execute('UPDATE song SET revision=revision+1')
+        call('agentValidate',{'id':agent['id'],'text':'Current song'},key=worker,lease=lease,status=409)
+        with sqlite3.connect(Path(tmp)/'test.sqlite') as changed:
+            changed.execute('UPDATE song SET revision=revision-1')
+        call('workerFail',{'id':agent['id']},key=worker,lease=lease)
         hosted=call('start',{**one_tap,'revision':3},admin=True)
         call('workerPoll',{'id':'a'*32},key=worker,status=409)
         assert call('workerPoll',{'id':hosted['id']},key=worker)['id']==hosted['id']

@@ -65,11 +65,20 @@ function ncd_parse(array $j,string $text):array {
 }
 function ncd_worker(PDO $db,string $op,string $id,array $body=[]):array {
  $r=ncd_job($db,$id);if(!$r)throw new DomainException('job_not_found');$j=$r['document'];
- if($op==='read') {if($j['state']!=='running')throw new DomainException('job_not_running');require_once dirname(__DIR__,2).'/noa-bridge/generation-rules.php';return ncd_prompt($j,noa_generation_rules($db,$j['input']['genre'],$j['owner']));}
+ if($op==='read') {if($j['state']!=='running')throw new DomainException('job_not_running');n80_agent_assert($j,(string)($body['_agentLease']??''));if(isset($j['agent']))ncd_agent_current($j,ncd_row($db,$j['draftId'],$j['owner'])['document']);require_once dirname(__DIR__,2).'/noa-bridge/generation-rules.php';return ncd_prompt($j,noa_generation_rules($db,$j['input']['genre'],$j['owner']));}
  return ncd_atomic($db,function()use($db,$op,$id,$body,$j){$draft=ncd_row($db,$j['draftId'],$j['owner'],true);$r=ncd_job($db,$id,true);$j=$r['document'];$d=$draft['document'];$c=&$d['_creative'];
-  if($op==='workerPoll'){if($j['state']!=='queued')return [];if(($c['jobId']??'')!==$id||!empty($c['deletedAt'])||!empty($c['publication'])){$j['state']='canceled';$j['finishedAt']=time();ncd_job_put($db,$r,$j);return [];}$j['state']='running';$j['startedAt']=time();ncd_job_put($db,$r,$j);return ['id'=>$id];}
+  if($op==='workerPoll'){
+   if($j['state']==='running'){$resume=n80_agent_resume($j,$body);if($resume){ncd_agent_current($j,$d);ncd_job_put($db,$r,$j);}return $resume;}
+   if($j['state']!=='queued')return [];if(($c['jobId']??'')!==$id||!empty($c['deletedAt'])||!empty($c['publication'])){$j['state']='canceled';$j['finishedAt']=time();ncd_job_put($db,$r,$j);return [];}$j['state']='running';$j['startedAt']=time();$out=['id'=>$id]+n80_agent_claim($j,$body);ncd_job_put($db,$r,$j);return $out;
+  }
+  n80_agent_assert($j,(string)($body['_agentLease']??''));
+  if(in_array($op,['agentState','agentCheckpoint','agentValidate'],true)){
+   if($j['state']!=='running')throw new DomainException('job_not_running');ncd_agent_current($j,$d);
+   $out=n80_agent_operation($j,$op,$body,fn(string $text)=>ncd_parse($j,$text));ncd_agent_put($db,$r,$j);return $out;
+  }
   if($op==='workerFail'){if(in_array($j['state'],['queued','running'],true)){$j['state']='failed';$j['error']=($body['reason']??'')==='dispatch_failed'?'dispatch_failed':'generation_failed';$j['finishedAt']=time();ncd_job_put($db,$r,$j);}return ['ok'=>true];}
   if($op!=='save')throw new InvalidArgumentException('invalid_worker_operation');$text=ncd_text($body['text']??'',200000);$hash=hash('sha256',$text);if(in_array($j['state'],['succeeded','review'],true)){if(($j['outputHash']??'')!==$hash)throw new DomainException('result_changed');return ['ok'=>true,'saved'=>true];}$late=$j['state']==='failed'&&($j['error']??'')==='worker_timeout';if($j['state']!=='running'&&!$late)throw new DomainException('job_not_running');
+  n80_agent_candidate($j,$text);if(isset($j['agent']))ncd_agent_current($j,$d);
   try{$output=ncd_parse($j,$text);}catch(Throwable $e){$j['state']='failed';$j['error']=$e instanceof JsonException?'invalid_ai_json':$e->getMessage();$j['rawResult']=$text;$j['finishedAt']=time();ncd_job_put($db,$r,$j);return ['ok'=>true,'saved'=>false,'error'=>$j['error']];}
   $j['result']=$output;$j['outputHash']=$hash;$j['state']='succeeded';$j['finishedAt']=time();
   $unchanged=!$late&&($c['jobId']??'')===$id&&empty($c['deletedAt'])&&empty($c['publication'])&&$j['inputHash']===ncd_hash([$c['story'],$c['answers'],$c['intent'],$d['genreId']]);
@@ -77,8 +86,21 @@ function ncd_worker(PDO $db,string $op,string $id,array $body=[]):array {
   if(!$unchanged){$j['state']='review';$j['error']='draft_changed';}
   elseif($j['operation']==='analyze'){$c['intent']=$output['intent'];$c['questions']=$output['questions'];$c['intentConfirmed']=false;}
   else {foreach($output['fields'] as $key=>$v){$current=nup_fields($d)[$key];$base=$j['input']['fields'][$key];if($j['operation']==='generate'&&($current===''||$current===[])&&$current===$base){$d=ncd_fields($d,[$key=>$v]);unset($d['_creative']['needsReview'][$key]);}else{$d['_creative']['proposals'][$key]=['jobId'=>$id,'value'=>$v,'baseHash'=>ncd_hash($base),'contextHash'=>ncd_hash(ncd_revision_input($d,$key)),'createdAt'=>gmdate('c')];}}if($j['operation']==='generate')foreach($j['targets'] as $generated)unset($d['_creative']['needsReview'][$generated]);if($j['operation']==='generate'&&nup_fields($d)['vocal']==='')$d=ncd_fields($d,['vocal'=>$output['vocal']]);}
-  if($unchanged){unset($d['_creative']['preview']);ncd_put($db,$draft,$d,$j['owner']);}ncd_job_put($db,$r,$j);return ['ok'=>true,'saved'=>true,'state'=>$j['state']];
+  if($unchanged){unset($d['_creative']['preview']);ncd_put($db,$draft,$d,$j['owner']);}n80_agent_finish($j,['saved'=>true,'state'=>$j['state']]);ncd_job_put($db,$r,$j);return ['ok'=>true,'saved'=>true,'state'=>$j['state']];
  });
+}
+/** Agent reads and proposals must still refer to the user's current accepted inputs. */
+function ncd_agent_current(array $j,array $d):void {
+ $c=$d['_creative'];
+ if(($c['jobId']??'')!==$j['id']||!empty($c['deletedAt'])||!empty($c['publication'])
+    ||ncd_hash($j['input'])!==ncd_hash(ncd_revision_input($d,$j['field'],$j['operation']==='revise'?$j['targets']:[])))
+    throw new DomainException('draft_changed');
+}
+/** Replace one execution checkpoint; do not copy each working draft into song history. */
+function ncd_agent_put(PDO $db,array $r,array $j):void {
+ $q=$db->prepare("UPDATE noa_documents SET payload=?,revision=revision+1 WHERE doc_key=? AND kind='n80_creative_job' AND revision=? AND updated_by=?");
+ $q->execute([ncd_json($j),$r['doc_key'],$r['revision'],$j['owner']]);
+ if($q->rowCount()!==1)throw new DomainException('agent_checkpoint_conflict');
 }
 /** Existing N80 text tick owns bounded recovery cleanup; no browser/menu cleanup work. */
 function ncd_cleanup_recovery(PDO $db,int $limit=20,?int $now=null):array {

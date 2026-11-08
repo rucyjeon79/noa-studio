@@ -17,7 +17,7 @@ function reply(int $code, array $data): never {
 }
 const TARGETS = ['title','lyrics','sunoPrompt','geminiPrompt','youtubeTitle','description','communityPost'];
 $op = $_GET['op'] ?? '';
-$external = in_array($op, ['read','save','health','list','update','rules','workerPoll','workerFail'], true);
+$external = in_array($op, ['read','save','health','list','update','rules','workerPoll','workerFail','agentState','agentCheckpoint','agentValidate'], true);
 $method = $_SERVER['REQUEST_METHOD'] ?? '';
 if ($method !== ($op === 'read' ? 'GET' : 'POST')) reply(405, ['error'=>'method']);
 if (!$external && (empty($is_member) || ($is_admin ?? '') !== 'super')) reply(403, ['error'=>'admin_required']);
@@ -44,11 +44,13 @@ try {
     $isPlugin = $external && !empty($state['pluginEnabled']) && hash_equals($pluginHash,hash('sha256',$secret));
     $isWorker = $external && isset($state['workerHash']) && hash_equals($state['workerHash'],hash('sha256',$secret));
     if ($external && ((!$isWorker && !$isPlugin && !hash_equals($state['hash'] ?? '',hash('sha256',$secret))) || ($state['owner'] ?? '') !== ($config['cf_admin'] ?? null))) reply(401,['error'=>'invalid_key']);
-    $workerOp = in_array($op,['workerPoll','workerFail'],true);
+    $workerOp = in_array($op,['workerPoll','workerFail','agentState','agentCheckpoint','agentValidate'],true);
     if ($workerOp && !$isWorker) reply(403,['error'=>'worker_key_required']);
+    $agentLease=(string)($_SERVER['HTTP_X_NOA_AGENT_LEASE']??'');
+    if($isWorker)$body['_agentLease']=$agentLease;
     // Explicit SQL draft tasks share the authenticated N80 song worker, never the global legacy slot.
     $creativeId=(string)($body['id']??($_GET['id']??''));
-    if($isWorker && in_array($op,['read','save','workerPoll','workerFail'],true) && preg_match('/^[a-f0-9]{32}$/D',$creativeId)){
+    if($isWorker && in_array($op,['read','save','workerPoll','workerFail','agentState','agentCheckpoint','agentValidate'],true) && preg_match('/^[a-f0-9]{32}$/D',$creativeId)){
         require_once __DIR__.'/noa-app/engine/creative.php';
         $creativeDb=noa_bridge_pdo();
         if(ncd_job($creativeDb,$creativeId)){flock($lock,LOCK_UN);fclose($lock);if(session_status()===PHP_SESSION_ACTIVE)session_write_close();reply(200,['ok'=>true]+ncd_worker($creativeDb,$op,$creativeId,$body));}
@@ -84,8 +86,31 @@ try {
     $generationState = n80_engine_generation_state($job, time());
     $singleTimedOut = !$batchWorker && $generationState === 'timed_out';
     $advance = false;
+    if($isWorker&&in_array($op,['read','save','workerFail','agentState','agentCheckpoint','agentValidate'],true)){
+        if(in_array($op,['agentState','agentCheckpoint','agentValidate'],true)
+            &&(!$valid||($body['id']??'')!==($job['id']??'')||empty($job['claimed'])||isset($job['failed'])))
+            reply(409,['error'=>'task_replaced']);
+        // A completed batch receipt is handled below without touching the next job's lease.
+        if(($op==='read'||($body['id']??'')===($job['id']??'')))n80_agent_assert($job,$agentLease);
+    }
     if ($batchJob && in_array($op, ['workerDisable','workerPair'], true)) reply(409,['error'=>'batch_busy']);
     switch ($op) {
+    case 'agentState':
+    case 'agentCheckpoint':
+    case 'agentValidate':
+        $db=noa_bridge_pdo();$record=nie_resolve($db,$job['selector']);
+        if($record['writeKey']!==$job['key']||!empty($record['payload']['_noaTrash'])
+            ||($batchWorker&&($record['payload']['ownerId']??null)!==$state['batch']['owner']))
+            reply(409,['error'=>'song_changed']);
+        if($record['revision']!==$job['revision'])reply(409,['error'=>'revision_conflict']);
+        $out=n80_agent_operation($job,$op,$body,function(string $text)use($job,$record){
+            if(strlen($text)>48000||trim($text)===''||($job['field']==='youtubeTitle'&&mb_strlen($text)>100))
+                throw new DomainException('invalid_text');
+            if($job['field']==='publishSet')n80_ai_validate_publish_set(json_decode($text,true,16,JSON_THROW_ON_ERROR),$job['targets'],$record['fields']['title']);
+            else noa_check_prompt_language($job['field'],$text,$record['fields']['title']);
+        });
+        if($batchWorker)$state['batch']['job']=$job;else $state['job']=$job;
+        break;
     case 'batchPreview':
         $items = ncbai_items(noa_bridge_pdo(), $actor, ncbai_selection($body));
         $eligible = count(array_filter($items, static fn($item)=>$item['status'] === 'queued'));
@@ -119,7 +144,8 @@ try {
         break;
     case 'workerPoll':
         if ($batchWorker) {
-            if (!$valid || isset($job['claimed'])) break;
+            if (!$valid) break;
+            if (isset($job['claimed'])) {$out=n80_agent_resume($state['batch']['job'],$body);break;}
             // Re-check the canonical editor projection, including values promoted from legacy records.
             $db = noa_bridge_pdo();
             try {
@@ -136,7 +162,7 @@ try {
                     $state['batch']['job']['targets'] = $targets;
                     $state['batch']['job']['claimed'] = time();
                     $state['batch']['items'][$state['batch']['index']]['status'] = 'running';
-                    $out = ['id'=>$job['id']];
+                    $out = ['id'=>$job['id']]+n80_agent_claim($state['batch']['job'],$body);
                 }
             } catch (DomainException $e) {
                 ncbai_finish($state['batch'], 'failed', $e->getMessage());
@@ -149,8 +175,9 @@ try {
         if ($pending && !empty($job['hosted']) && ($body['id'] ?? '') !== $job['id']) reply(409,['error'=>'task_replaced']);
         if ($pending && empty($job['claimed'])) {
             $state['job']['claimed'] = time();
-            $out = ['id'=>$job['id']];
+            $out = ['id'=>$job['id']]+n80_agent_claim($state['job'],$body);
         }
+        elseif($pending)$out=n80_agent_resume($state['job'],$body);
         break;
     case 'workerFail':
         if ($batchWorker) {
@@ -238,6 +265,7 @@ try {
         if ($op==='save') {
             $text = $body['text'] ?? null;
             if (!is_string($text) || trim($text)==='' || strlen($text)>48000 || ($job['field']==='youtubeTitle' && mb_strlen($text)>100)) reply(400,['error'=>'invalid_text']);
+            n80_agent_candidate($job,$text);
             $patch=[$job['field']=>$text];
             if ($job['field']==='publishSet') {
                 $patch=json_decode($text,true,16,JSON_THROW_ON_ERROR);
@@ -260,6 +288,8 @@ try {
             }
             $db->commit();
             nup_snapshot($db,$job['key'],dirname(__DIR__).'/noa-ai-lab/packages/records');
+            if($batchWorker)n80_agent_finish($state['batch']['job'],['saved'=>true,'revision'=>$next]);
+            else n80_agent_finish($state['job'],['saved'=>true,'revision'=>$next]);
             if ($batchWorker) {
                 ncbai_finish($state['batch'], 'done');
                 $advance = true;

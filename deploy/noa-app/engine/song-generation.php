@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__.'/generation-state.php';
 require_once __DIR__.'/auto-dispatch.php';
+require_once __DIR__.'/agent-runtime.php';
 
 // Legacy entry point shared with the VIP weather service.
 function n80_song_dispatch(string $taskId, string $dispatchToken, string $workflow='noa-worker.yml'): int {

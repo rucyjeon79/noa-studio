@@ -48,5 +48,6 @@ $cleanup=ncd_cleanup_recovery($db);check($cleanup['removed']===2&&$cleanup['prot
 check(ncd_row($db,str_repeat('f',32),$owner)['recovery_until']>=time()+86399,'legacy attachment never orphaned');check(ncd_cleanup_recovery($db)['removed']===0,'cleanup is idempotent');
 require __DIR__.'/list-expiry.php';
 require __DIR__.'/revisions.php';
+require __DIR__.'/agent.php';
 echo "CREATIVE_RECOVERY_24H_EMPTY_NO_WRITES_HISTORY_BOUNDED_COMPLETION_RETAINED_CLEANUP_OK\n";
 echo "CREATIVE_MYSQL_OWNERSHIP_REVISION_QUESTIONS_GENERATION_HISTORY_RETENTION_PUBLICATION_OK\n";
