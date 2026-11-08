@@ -14,9 +14,12 @@ function nd_prepare_claim(array &$s,array $p,int $now):array {
  if($a&&$a['date']===$date&&$a['state']==='analyzed')return ['ok'=>true,'claimed'=>false,'state'=>'analyzed'];
  // Bootstrap once immediately; following dates use the established morning preparation time.
  if($a&&$a['date']!==$date&&$local<$target->setTime(8,0))return ['ok'=>true,'claimed'=>false,'state'=>'waiting_schedule'];
- $same=$a&&$a['date']===$date&&($a['protocolVersion']??1)===2;
+ // Reauthorization is a new dependency version, so the existing worker can
+ // resume without requiring this conversation or another manual reset.
+ $connection=hash('sha256',(string)($s['channels'][$p['channelId']]['tokens']??''));
+ $same=$a&&$a['date']===$date&&($a['protocolVersion']??1)===2&&($a['connectionReceipt']??'')===$connection;
  if($same&&($a['attempts']??0)>=3)return ['ok'=>true,'claimed'=>false,'state'=>'preparation_retry_limit'];
- $a=['protocolVersion'=>2,'date'=>$date,'publishAt'=>$target->format(DATE_ATOM),'state'=>'preparing','attempts'=>$same?$a['attempts']+1:1,
+ $a=['protocolVersion'=>2,'connectionReceipt'=>$connection,'date'=>$date,'publishAt'=>$target->format(DATE_ATOM),'state'=>'preparing','attempts'=>$same?$a['attempts']+1:1,
   'lease'=>bin2hex(random_bytes(24)),'leaseUntil'=>$now+1800,'startedAt'=>gmdate('c',$now),'sources'=>[],
   'report'=>$same?($a['report']??null):null];
  $c['preparation']=$a;

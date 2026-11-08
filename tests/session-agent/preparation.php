@@ -10,6 +10,8 @@ $old=$s;$old['campaigns']['daily_shorts']['preparation']=array_replace($old['cam
 check_prepare(nd_prepare_claim($old,$p,$now+1)['claimed'],'One new bounded attempt budget after deployment of repaired protocol');
 $old['campaigns']['daily_shorts']['preparation']['attempts']=3;$old['campaigns']['daily_shorts']['preparation']['leaseUntil']=0;
 check_prepare(nd_prepare_claim($old,$p,$now+2)['state']==='preparation_retry_limit','Updated protocol still enforces daily retry limit');
+$old['channels'][$p['channelId']]['tokens']='new-encrypted-authorization';
+check_prepare(nd_prepare_claim($old,$p,$now+3)['claimed'],'A renewed channel connection resumes automatically');
 $b=['lease'=>$first['lease']];nd_prepare_authorize($s,$b,$now+1);
 check_prepare(!nd_prepare_claim($s,$p,$now+10)['claimed'],'No overlapping worker');
 reject_prepare(fn()=>nd_prepare_authorize($s,['lease'=>'wrong'],$now+1),'Reject stale worker');

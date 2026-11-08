@@ -4,7 +4,7 @@ if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
 require_once __DIR__.'/lab-core.php';
 
 function nd_shorts_public(array $c):array {
- if(isset($c['preparation']))unset($c['preparation']['lease'],$c['preparation']['sources']);
+ if(isset($c['preparation']))unset($c['preparation']['lease'],$c['preparation']['sources'],$c['preparation']['connectionReceipt']);
  return $c;
 }
 
