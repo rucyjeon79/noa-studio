@@ -2,7 +2,7 @@ name: Verify and publish AI LAB entry
 on:
   push:
     branches: [main, work/n80-browser-media]
-    paths: ['.github/workflows/noa-lab-entry.yml','bridge/lab-browser-assets.php','tests/lab/browser_assets_test.php']
+    paths: ['.github/workflows/noa-lab-entry.yml','bridge/lab-browser-assets.php','tests/lab/browser_assets_test.php','tests/lab/http_test.py','tests/lab/clip_fixture.b64','bridge/lab-core.php','bridge/lab-api.php','bridge/catalog.php','deploy/noa-ai-lab.js','deploy/noa-ai-lab.php']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

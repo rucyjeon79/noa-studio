@@ -1,5 +1,5 @@
 """Isolated PHP HTTP tests. Uses disposable credentials, no production requests."""
-import tempfile,pathlib,shutil,subprocess,socket,time,urllib.request,urllib.error,json,hashlib,hmac,secrets,http.cookiejar
+import tempfile,pathlib,shutil,subprocess,socket,time,urllib.request,urllib.error,json,hashlib,hmac,secrets,http.cookiejar,base64
 REPO=pathlib.Path(__file__).resolve().parents[2]
 with tempfile.TemporaryDirectory(prefix='noa-lab-http-') as root:
  root=pathlib.Path(root);html=root/'html';html.mkdir();private=root/'noa-ai-lab';private.mkdir();(private/'jobs').mkdir();(private/'master.key').write_bytes(secrets.token_bytes(32));key=secrets.token_hex(32);(private/'worker.key').write_text(key)
@@ -31,8 +31,8 @@ with tempfile.TemporaryDirectory(prefix='noa-lab-http-') as root:
   assert worker('health')[0]==200
   assert request('lab-api.php?action=config',{'expectedRevision':state['configRevision']},admin)[0]==200
   # Real browser-result multipart upload, protected by the existing admin and CSRF gates.
-  clip=root/'clip.mp4';subprocess.run(['ffmpeg','-v','error','-f','lavfi','-i','color=c=blue:s=512x288:r=24','-t','0.5','-an','-c:v','libx264','-pix_fmt','yuv420p',str(clip)],check=True)
-  clip_bytes=clip.read_bytes();fields={'requestId':'c'*32,'sourceUrl':'https://flow.google.com/project/11111111-1111-1111-1111-111111111111/edit/22222222-2222-2222-2222-222222222222','sha256':hashlib.sha256(clip_bytes).hexdigest(),'trackKey':''}
+  # Real 0.5-second H.264 fixture; HTTP contracts do not require an encoder on every runner.
+  clip_bytes=base64.b64decode((REPO/'tests/lab/clip_fixture.b64').read_text());fields={'requestId':'c'*32,'sourceUrl':'https://flow.google.com/project/11111111-1111-1111-1111-111111111111/edit/22222222-2222-2222-2222-222222222222','sha256':hashlib.sha256(clip_bytes).hexdigest(),'trackKey':''}
   def import_clip(extra_headers,values=fields):
    boundary='n80-'+secrets.token_hex(12);parts=[]
    for k,v in values.items():parts.append(('--'+boundary+'\r\nContent-Disposition: form-data; name="'+k+'"\r\n\r\n'+v+'\r\n').encode())
