@@ -29,7 +29,7 @@ if($path==='/noa-music.php'){
   }
  }
  $src=str_replace('__DIR__',var_export($root.'/deploy',true),file_get_contents($root.'/deploy/noa-music.php'));
- $src=str_replace('</head>','<link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-policy-20261024.css"><script defer src="/noa-app/p0-player.js"></script></head>',$src);eval(substr($src,strpos($src,'?><!doctype html>')));return;
+ $src=str_replace('</head>','<link rel="stylesheet" href="/noa-starlight.css"><link rel="stylesheet" href="/noa-policy-20261024.css"><script src="/noa-app/jukebox/navigation-policy.js"></script></head>',$src);eval(substr($src,strpos($src,'?><!doctype html>')));return;
 }
 if($path==='/fixture.wav'){header('Content-Type: audio/wav');$data='';for($i=0;$i<16000*60;$i++)$data.=pack('v',(int)(sin($i*440*2*pi()/16000)*300)&65535);echo 'RIFF'.pack('V',36+strlen($data)).'WAVEfmt '.pack('VvvVVvv',16,1,1,16000,32000,2,16).'data'.pack('V',strlen($data)).$data;return;}
 if(str_starts_with($path,'/noa-bridge/')){header('Content-Type: application/json');echo '{}';return;}

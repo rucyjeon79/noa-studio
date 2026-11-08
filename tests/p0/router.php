@@ -5,8 +5,9 @@ $root=dirname(__DIR__,2);$path=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);
 // Restore the same shared presentation assets instead of testing an unstyled shell.
 ob_start(static function(string $html):string{
  if(!preg_match('~^\s*<!doctype html~i',$html)||stripos($html,'</head>')===false)return $html;
+ $jukebox_policy=str_contains($html,'id="n80-jukebox-data"')?'<script src="/noa-app/jukebox/navigation-policy.js"></script>':'';
  $html=preg_replace('~<html\b(?![^>]*data-noa-style)~i','<html data-noa-style="starlight"',$html,1);
- return str_ireplace('</head>','<script src="/noa-app/jukebox/navigation-policy.js"></script><link rel="stylesheet" href="/noa-policy-20261024.css"><link rel="stylesheet" href="/noa-account.css"><link rel="stylesheet" href="/noa-starlight.css"></head>',$html);
+ return str_ireplace('</head>',$jukebox_policy.'<link rel="stylesheet" href="/noa-policy-20261024.css"><link rel="stylesheet" href="/noa-account.css"><link rel="stylesheet" href="/noa-starlight.css"></head>',$html);
 });
 if($path==='/noa-sitemap.php'){
  echo '<!doctype html><main data-noa-member-directory><section class="noa-site-map"><h2 id="map-explore">둘러보기</h2>';
@@ -34,7 +35,9 @@ if(in_array($path,['/noa-music.php','/noa-youtube.php'])){
  function noa_music_e(string $v):string{return htmlspecialchars($v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
  $songs=[];foreach(['one','two'] as $i=>$key)$songs[]=['key'=>$key,'title'=>$i?'A very long title repeated for marquee testing across small and large screens':'하루의 끝에','genre'=>'kpop-original','video'=>'','suno'=>'','audio'=>'/fixture.wav','audioStatus'=>'ready','audioSha'=>'','audioBytes'=>0,'confirmed'=>true,'ep'=>(string)($i+1),'act'=>'','kind'=>'single','lyrics'=>'display lyrics','rawLyrics'=>"[Verse 1]\n원문 줄\n\n[Chorus]\n후렴",'description'=>$i?'':"곡 이야기\n둘째 줄",'cast'=>'female','thumb'=>'','tracklist'=>'','originalArtist'=>''];
  $videos=[];$playlists=[];$browseRows=[];$mediaDetails=[];foreach(['AAAAAAAAAAA','BBBBBBBBBBB'] as $i=>$id){$videos[$id]=['id'=>$id,'snippet'=>['title'=>'영상 '.($i+1)],'status'=>['privacyStatus'=>'public','embeddable'=>true]];$browseRows[]=['key'=>$id,'title'=>'영상 '.($i+1),'genre'=>'kpop-original','ep'=>(string)($i+1),'act'=>'','kind'=>'video','video'=>$id];$mediaDetails[$id]=['videoId'=>$id,'description'=>'설명 '.($i+1),'lyrics'=>$i?'':"[Verse]\n공식 가사"] ;}
- $src=str_replace('__DIR__',var_export($root.'/deploy',true),file_get_contents($root.'/deploy'.$path));
+ $template=$root.'/deploy'.$path;
+ if($path==='/noa-music.php'&&($_SERVER['HTTP_X_N80_QA_BASELINE']??'')==='1'&&getenv('N80_JUKEBOX_BASELINE_TEMPLATE'))$template=getenv('N80_JUKEBOX_BASELINE_TEMPLATE');
+ $src=str_replace('__DIR__',var_export($root.'/deploy',true),file_get_contents($template));
  if($path==='/noa-youtube.php'&&array_key_exists('detail',$_GET)){
   header('Content-Type: application/json; charset=utf-8');header('Cache-Control: private, no-store');
   if(($_SERVER['REQUEST_METHOD']??'GET')!=='GET'){http_response_code(405);header('Allow: GET');echo '{"ok":false,"error":"method_not_allowed"}';return;}

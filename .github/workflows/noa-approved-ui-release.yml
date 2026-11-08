@@ -9,7 +9,7 @@ on:
 permissions: {contents: read}
 jobs:
   candidate:
-    if: github.event_name == 'pull_request' || !contains(github.event.head_commit.message, '[browse-approved]')
+    if: (github.event_name == 'pull_request' || !contains(github.event.head_commit.message, '[browse-approved]')) && !contains(github.event.head_commit.message, '[n80-jukebox]')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:

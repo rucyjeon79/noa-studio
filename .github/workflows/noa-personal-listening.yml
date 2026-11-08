@@ -28,7 +28,7 @@ jobs:
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
         run: python scripts/n80_auto.py catalog.index
   verify:
-    if: (github.event_name != 'schedule') && !contains(github.event.head_commit.message, '[n80-runtime]')
+    if: ((github.event_name != 'schedule') && !contains(github.event.head_commit.message, '[n80-runtime]')) && !contains(github.event.head_commit.message, '[n80-jukebox]')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:

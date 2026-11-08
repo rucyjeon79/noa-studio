@@ -60,6 +60,6 @@ print('NOA_HOME_NON_HERO_BYTES_PRESERVED_GENRE_VIDEO_SITEMAP_AND_COMMUNITY_CONTR
 
 for kind in [b'goods',b'youtube',b'amt']:
  assert candidate.count(b"<?php noa_home_banner('"+kind+b"');?>") == 1,'one partner banner per requested position'
-for url in [b'https://marpple.shop/kr/jr_lifestyle',b'https://youtube.com/@ainoa_ramjunpapa?sub_confirmation=1',b'https://www.aimusictown.com/creators/ainoa']:
+for url in [b'https://marpple.shop/kr/jr_lifestyle',b'https://youtube.com/@ainoa_ramjunpapa?sub_confirmation=1',b'https://www.aimusictown.com/competition/2?entryId=353']:
  assert candidate.count(url)==1,'exact requested external destination'
 assert b'rel="noopener noreferrer"' in candidate and b'target="_blank"' in candidate

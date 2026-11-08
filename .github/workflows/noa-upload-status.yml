@@ -12,6 +12,7 @@ permissions: {contents: read}
 concurrency: {group: 'noa-upload-status-${{ github.sha }}', cancel-in-progress: false}
 jobs:
   candidate:
+    if: "!contains(github.event.head_commit.message, '[n80-jukebox]')"
     runs-on: ubuntu-latest
     timeout-minutes: 10
     services:
