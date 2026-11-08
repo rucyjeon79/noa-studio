@@ -42,6 +42,22 @@ def file_sha(path):
     return h.hexdigest()
 
 
+def usable_recognized_words(words, duration):
+    """Quarantine unusable native-ASR words; never stretch or invent timings."""
+    usable, discarded, previous = [], 0, 0.0
+    for word in words:
+        if not clean(str(word.get('word', ''))):
+            continue
+        start, end, probability = (word.get(k) for k in ('start', 'end', 'probability'))
+        if (not all(isinstance(x, (int, float)) and math.isfinite(x) for x in (start, end, probability))
+                or start < previous or end <= start or end > duration + .05 or not 0 <= probability <= 1):
+            discarded += 1
+            continue
+        usable.append(word)
+        previous = start
+    return usable, discarded
+
+
 def match_lyrics(lyrics, words, duration):
     lines = lyric_lines(lyrics)
     if not lines or not re.search(r"[가-힣]", "".join(lines)):
@@ -115,6 +131,7 @@ def produce(manifest, transcript=None, model="small", cache_dir=None):
     lyrics = manifest["lyrics"]
     if not re.search(r"[가-힣]", "".join(lyric_lines(lyrics))):
         raise ValueError("korean_lyrics_required")
+    discarded = 0
     if transcript is None:
         from faster_whisper import WhisperModel
         recognizer = WhisperModel(model, device="cpu", compute_type="int8", cpu_threads=4,
@@ -127,6 +144,7 @@ def produce(manifest, transcript=None, model="small", cache_dir=None):
                                            condition_on_previous_text=False)
         words = [{"word": w.word, "start": w.start, "end": w.end, "probability": w.probability}
                  for segment in segments for w in segment.words or []]
+        words, discarded = usable_recognized_words(words, duration)
         method = "faster-whisper"
     else:
         words = transcript["words"]
@@ -134,8 +152,11 @@ def produce(manifest, transcript=None, model="small", cache_dir=None):
             raise ValueError("transcript_source_mismatch")
         method = "timestamped-asr"
     matched = match_lyrics(lyrics, words, duration)
+    if discarded:
+        matched['ready'] = False
+        matched['issues'].append({'reason': 'recognizer_words_unusable', 'count': discarded})
     payload = {"sourceAudioSha256": sha, "lyricsSha256": hashlib.sha256(lyrics.encode()).hexdigest(),
-               "method": method, "model": model, "cues": matched["cues"]}
+               "method": method, "model": model, "cues": matched["cues"], "recognitionDiscardedWords": discarded}
     return {"version": 1, "payload": payload, "diagnostics": {k: v for k, v in matched.items() if k != "cues"}}
 
 
@@ -149,12 +170,23 @@ def main():
     args = parser.parse_args()
     manifest = json.loads(Path(args.manifest).read_text())
     transcript = json.loads(Path(args.transcript).read_text()) if args.transcript else None
-    result = produce(manifest, transcript, args.model, args.cache_dir)
+    failed = False
+    try:
+        result = produce(manifest, transcript, args.model, args.cache_dir)
+    except Exception as error:
+        # Return typed evidence, never a raw provider exception/URL or file contents.
+        reasons = {'audio_checksum_mismatch', 'invalid_duration', 'audio_duration_mismatch', 'korean_lyrics_required',
+                   'lyrics_too_large', 'invalid_word_timestamps', 'transcript_too_large', 'transcript_source_mismatch'}
+        reason = str(error) if isinstance(error, ValueError) and str(error) in reasons else 'recognition_dependency_failed'
+        result = {'error': reason, 'errorType': type(error).__name__}
+        failed = True
     output = Path(args.output)
     temp = output.with_suffix(output.suffix + ".partial")
     temp.write_text(json.dumps(result, ensure_ascii=False, indent=2))
     os.replace(temp, output)
-    print(json.dumps({"file": str(output), **result["diagnostics"]}, ensure_ascii=False))
+    print(json.dumps({"file": str(output), **(result if failed else result["diagnostics"])}, ensure_ascii=False))
+    if failed:
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":

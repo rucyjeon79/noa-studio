@@ -18,10 +18,11 @@ function nd_caption_claim(array &$s,int $now,callable $readSource):array {
  if(!$r)throw new DomainException('analyzed_candidate_required');
  $source=$readSource($r['trackKey']);
  if($source['revision']!==$r['sourceRevision']||$source['audioSha256']!==$r['audioSha256'])return ['ok'=>true,'claimed'=>false,'state'=>'source_changed_replan_required'];
- $fingerprint=nd_caption_identity($source);$same=($a['sourceFingerprint']??'')===$fingerprint&&($a['protocolVersion']??0)===1;
- if($same&&in_array($a['state']??'',['aligned','needs_review','translation_required'],true))return ['ok'=>true,'claimed'=>false,'state'=>$a['state']];
+ $fingerprint=nd_caption_identity($source);$sameSource=($a['sourceFingerprint']??'')===$fingerprint;
+ if($sameSource&&in_array($a['state']??'',['aligned','needs_review','translation_required'],true))return ['ok'=>true,'claimed'=>false,'state'=>$a['state']];
+ $same=$sameSource&&($a['protocolVersion']??0)===2;
  if($same&&($a['attempts']??0)>=3)return ['ok'=>true,'claimed'=>false,'state'=>'subtitle_retry_limit'];
- $a=['protocolVersion'=>1,'trackKey'=>$source['key'],'sourceRevision'=>$source['revision'],'sourceFingerprint'=>$fingerprint,
+ $a=['protocolVersion'=>2,'trackKey'=>$source['key'],'sourceRevision'=>$source['revision'],'sourceFingerprint'=>$fingerprint,
   'videoId'=>$r['videoId'],'state'=>'recognizing','attempts'=>$same?$a['attempts']+1:1,'startedAt'=>gmdate('c',$now),
   'lease'=>bin2hex(random_bytes(24)),'leaseUntil'=>$now+1200,'audioListeningReviewed'=>false,'publicationReady'=>false];
  if(!preg_match('/[가-힣]/u',implode('',sa_lyric_lines($source['lyrics'])))){

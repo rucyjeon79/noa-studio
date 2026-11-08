@@ -8,6 +8,10 @@ $lyrics="[Chorus]\n(soft gayageum harmonics, female vocal)\n별빛이 내려와\
 check_caption(sa_lyric_lines($lyrics)===['별빛이 내려와','(I love you)','(아~)'],'Remove explicit directions while preserving sung parentheses');
 $source=['key'=>'single:test:1','revision'=>2,'audioSha256'=>str_repeat('a',64),'lyrics'=>$lyrics,'duration'=>100,'audioPath'=>'/private/source.mp3'];
 $read=function($key)use(&$source){check_caption($key===$source['key'],'Exact registered key');return $source;};
+$testSource=array_replace($source,['lyrics'=>'별빛이 내려와']);$testJob=['source'=>$testSource,'audioSha256'=>$source['audioSha256'],'agent'=>['active'=>null]];
+sa_subtitle_save($testJob,['subtitles'=>['sourceAudioSha256'=>$source['audioSha256'],'lyricsSha256'=>hash('sha256',$testSource['lyrics']),'method'=>'faster-whisper','model'=>'small','recognitionDiscardedWords'=>1,
+ 'cues'=>[['line'=>1,'text'=>'별빛이 내려와','startMs'=>2000,'endMs'=>4000,'match'=>1,'probability'=>.95,'maxWordGapMs'=>0]]]]);
+check_caption($testJob['agent']['subtitles']['status']==='needs_review','Discarded ASR words never silently become ready');
 $s=['config'=>['workerEnabled'=>true],'campaigns'=>['daily_shorts'=>['enabled'=>true,'preparation'=>['state'=>'analyzed','publishAt'=>'2026-11-09T12:00:00+09:00',
  'report'=>['candidates'=>[['trackKey'=>$source['key'],'sourceRevision'=>2,'audioSha256'=>$source['audioSha256'],'videoId'=>'AAAAAAAAAAA']]]]]]];
 $first=nd_caption_claim($s,$now,$read);check_caption($first['claimed']&&$first['source']['audioPath']==='/private/source.mp3','Claim existing private original');$b=['lease'=>$first['lease']];
@@ -28,4 +32,6 @@ check_caption(!nd_caption_claim($s,$now+1203,$read)['claimed'],'Saved result is 
 check_caption(nd_caption_claim($s,strtotime('2026-11-09T12:00:00+09:00'),$read)['state']==='preparation_date_expired','Never recognize stale publication date');
 $s['campaigns']['daily_shorts']['preparation']['subtitlePreparation']['state']='subtitle_failed';$s['campaigns']['daily_shorts']['preparation']['subtitlePreparation']['attempts']=3;
 check_caption(nd_caption_claim($s,$now+1204,$read)['state']==='subtitle_retry_limit','Bounded retries');
+$s['campaigns']['daily_shorts']['preparation']['subtitlePreparation']['protocolVersion']=1;
+check_caption(nd_caption_claim($s,$now+1205,$read)['claimed'],'Repaired recognizer gets a bounded recovery budget');
 echo "N80 automatic subtitles: existing source, lease recovery, pause, bounded retries, exact-lyric validation, dedup and honest review state passed.\n";
