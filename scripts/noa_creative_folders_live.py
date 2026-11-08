@@ -16,7 +16,7 @@ def main():
             with s.open(remote,'wx') as f:f.write(code)
             installed=True;s.chmod(remote,0o644)
             with s.open(remote,'rb') as f:
-                if f.read()!=code:raise RuntimeError('retention_probe_readback')
+                if f.read()!=code:raise RuntimeError('folder_migration_readback')
         receipts=[]
         for attempt in range(50):
             request=urllib.request.Request('https://noastudio.ai.kr/noa-bridge/'+name,data=b'{}',headers={'Content-Type':'application/json','X-NOA-Control':token,'Cache-Control':'no-cache'})
