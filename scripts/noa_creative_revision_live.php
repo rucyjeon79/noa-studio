@@ -22,9 +22,10 @@ try{
   $r=ncd_row($db,$id,$owner);if($r['document']['_creative']['story']!=='[N80 수정 검증 전용 __DRAFT_ID__] 오래된 메모를 떠올리는 한국어 노래.')throw new RuntimeException('probe_scope_changed');
   if($op==='status'){$j=ncd_job($db,substr(hash('sha256',$owner.':'.$nonce),0,32))['document'];$v=ncd_view($r);$result=['jobId'=>$j['id'],'state'=>$j['state'],'error'=>$j['error']??null,'currentTitle'=>nup_fields($r['document'])['title'],'submittedTitle'=>$j['input']['fields']['title'],'request'=>$j['input']['request'],'result'=>$j['result']['fields']['title']??null,'proposal'=>$v['creative']['proposals']['title']['value']??null,'startedAt'=>$j['startedAt']??null,'finishedAt'=>$j['finishedAt']??null];}
   elseif($op==='cleanup'){
+   require_once dirname(__DIR__).'/noa-app/jukebox/core.php';
    if(!empty($r['document']['_creative']['publication'])||nj_find($db,$r['doc_key']))throw new RuntimeException('probe_cleanup_scope');
-   $jobKey='n80:creative-job:'.substr(hash('sha256',$owner.':'.$nonce),0,32);
-   ncd_atomic($db,function()use($db,$r,$jobKey,$id,$owner){foreach(['noa_document_history','noa_documents'] as $table){$q=$db->prepare('DELETE FROM '.$table.' WHERE doc_key IN (?,?)');$q->execute([$r['doc_key'],$jobKey]);}$db->prepare('DELETE FROM noa_creative_drafts WHERE draft_id=? AND owner_id=?')->execute([$id,$owner]);});$result=['probeRemoved'=>true,'userDraftWrites'=>0,'publishedSongs'=>0];
+   $jobId=substr(hash('sha256',$owner.':'.$nonce),0,32);$jobKey='n80:creative-job:'.$jobId;$job=ncd_job($db,$jobId);if(!$job||$job['document']['draftId']!==$id||$job['document']['owner']!==$owner||in_array($job['document']['state'],['queued','running'],true))throw new RuntimeException('probe_job_scope');
+   ncd_atomic($db,function()use($db,$r,$jobKey,$id,$owner){foreach(['noa_document_history','noa_documents'] as $table){$q=$db->prepare('DELETE FROM '.$table.' WHERE doc_key IN (?,?)');$q->execute([$r['doc_key'],$jobKey]);}$db->prepare('DELETE FROM noa_creative_drafts WHERE draft_id=? AND owner_id=?')->execute([$id,$owner]);});$check=$db->prepare('SELECT COUNT(*) FROM noa_documents WHERE doc_key IN (?,?)');$check->execute([$r['doc_key'],$jobKey]);if((int)$check->fetchColumn()!==0)throw new RuntimeException('probe_removal_failed');$result=['probeRemoved'=>true,'userDraftWrites'=>0,'publishedSongs'=>0];
   }else throw new InvalidArgumentException('invalid_probe_operation');
  }
  $out=['ok'=>true,'result'=>$result];
