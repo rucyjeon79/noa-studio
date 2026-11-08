@@ -10,7 +10,7 @@ permissions: {contents: read}
 jobs:
   candidate:
     if: (github.event_name == 'pull_request' || !contains(github.event.head_commit.message, '[browse-approved]')) && !contains(github.event.head_commit.message, '[n80-jukebox]')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
@@ -43,7 +43,7 @@ jobs:
   production:
     if: (github.event_name != 'pull_request' && !contains(github.event.head_commit.message, '[browse-approved]')) && !contains(github.event.head_commit.message, '[n80-jukebox]')
     needs: candidate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: production
     timeout-minutes: 30
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}

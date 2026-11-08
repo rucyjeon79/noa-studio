@@ -1,7 +1,7 @@
 name: N80 JukeBox integration
 on:
   pull_request:
-    paths: &paths ['scripts/noa_navigation_release.py','.github/workflows/noa-navigation-player.yml','deploy/noa-app/jukebox/player.js','deploy/noa-app/jukebox/presentation.js','deploy/noa-app/jukebox/navigation-policy.js','deploy/noa-app/engine/jukebox.php','scripts/qa/noa-navigation-player.mjs','tests/engine/jukebox*']
+    paths: &paths ['scripts/noa_navigation_release.py','.github/workflows/noa-navigation-player.yml','deploy/noa-app/playback-recovery.js','deploy/noa-app/jukebox/system-media.js','deploy/noa-app/jukebox/player.js','deploy/noa-app/jukebox/presentation.js','deploy/noa-app/jukebox/navigation-policy.js','deploy/noa-app/engine/jukebox.php','scripts/qa/noa-navigation-player.mjs','tests/engine/jukebox*']
   push:
     branches: [main]
     paths: *paths
@@ -25,7 +25,7 @@ jobs:
           php tests/engine/app_data_test.php
           python -m unittest discover -s tests/engine -p 'test_live_music_consumer.py' -v
           python tests/catalog/inline_edit_music_page_test.py
-          node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs tests/engine/jukebox_navigation.test.mjs tests/jukebox/playback_recovery.test.cjs tests/android/native_bridge_test.mjs tests/playlists/drag_order_test.cjs tests/popularity/player_tracker_test.cjs tests/pwa/launch_test.cjs
+          node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs tests/engine/jukebox_navigation.test.mjs tests/jukebox/playback_recovery.test.cjs tests/engine/jukebox_media.test.cjs tests/android/native_bridge_test.mjs tests/playlists/drag_order_test.cjs tests/popularity/player_tracker_test.cjs tests/pwa/launch_test.cjs
       - run: |
           npm install --prefix "$RUNNER_TEMP/noa-navigation" --no-save --ignore-scripts --package-lock=false playwright@1.56.1 pixelmatch@7.1.0 pngjs@7.0.0
           "$RUNNER_TEMP/noa-navigation/node_modules/.bin/playwright" install chromium

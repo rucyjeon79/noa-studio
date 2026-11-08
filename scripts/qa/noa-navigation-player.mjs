@@ -11,6 +11,11 @@ try{
  browser=await chromium.launch();
  for(const width of [360,390,768,1280]){
   const page=await browser.newPage({viewport:{width,height:900},serviceWorkers:'block'});
+  await page.addInitScript(()=>{
+   if(!navigator.mediaSession)return;
+   window.noaSystemActions={};const original=navigator.mediaSession.setActionHandler.bind(navigator.mediaSession);
+   navigator.mediaSession.setActionHandler=(name,handler)=>{window.noaSystemActions[name]=handler;return original(name,handler);};
+  });
   const errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error('BROWSER_ERROR',e.message);});
   await page.goto('http://127.0.0.1:8093/noa-music.php?track=one');
   assert.equal(await page.evaluate(()=>window.N80JukeBox===window.NoaMusic),true);
@@ -54,6 +59,25 @@ try{
   assert(await page.locator('audio').evaluate(a=>a.paused));
   await page.locator('#pause-play').click();
   await page.waitForFunction(()=>!document.querySelector('audio').paused);
+  // Exercise the real adapter registered with this browser's Media Session.
+  assert(await page.evaluate(()=>navigator.mediaSession.metadata?.title===N80JukeBox.record(N80JukeBox.currentKey()).title));
+  await page.evaluate(()=>noaSystemActions.pause());
+  await page.waitForTimeout(2200);
+  assert(await page.evaluate(()=>document.querySelector('audio').paused&&!N80JukeBox.snapshot().desiredPlaying));
+  await page.evaluate(()=>noaSystemActions.play());
+  await page.waitForFunction(()=>!document.querySelector('audio').paused);
+  await page.evaluate(()=>{
+   const audio=document.querySelector('audio');window.recoveryLoads=0;
+   audio.addEventListener('loadstart',()=>window.recoveryLoads++);audio.pause();
+  });
+  await page.waitForFunction(()=>!document.querySelector('audio').paused,{},{timeout:10000});
+  assert.equal(await page.evaluate(()=>window.recoveryLoads),0,'buffered resume must preserve the source');
+  await page.evaluate(()=>noaSystemActions.seekto({seekTime:15}));
+  await page.waitForFunction(()=>document.querySelector('audio').currentTime>=15);
+  await page.evaluate(()=>noaSystemActions.stop());
+  assert(await page.evaluate(()=>N80JukeBox.snapshot().closed&&!N80JukeBox.snapshot().desiredPlaying&&navigator.mediaSession.metadata===null));
+  await page.evaluate(()=>N80JukeBox.play('one'));
+  await page.waitForFunction(()=>!document.querySelector('audio').paused);
   assert.deepEqual(errors,[]);
   await page.addScriptTag({content:readFileSync(root+'/deploy/noa-app/jukebox/player.js','utf8')});
   await page.addScriptTag({content:readFileSync(root+'/deploy/noa-app/jukebox/presentation.js','utf8')});
@@ -64,7 +88,7 @@ try{
   assert(await page.locator('audio').evaluate(a=>a.paused));
   assert.equal(await page.evaluate(()=>window.N80JukeBox.snapshot().desiredPlaying),false);
   assert.equal(await page.locator('audio').count(),1);
-  cases.push({width,ok:true,singleAudio:true,workspacesPreservePlayback:true,duplicateLoadSafe:true});
+  cases.push({width,ok:true,singleAudio:true,workspacesPreservePlayback:true,duplicateLoadSafe:true,systemMediaActions:true,bufferedResumeWithoutReload:true});
   console.log('N80_JUKEBOX_NAVIGATION_VERIFIED',width);
   await page.close();
  }
@@ -80,6 +104,8 @@ try{
  // A pending native play command must first acknowledge its selected key.
  await page.evaluate(()=>{NoaNativeBridge.state({key:'one',queue:['one','two'],position:12,duration:90,playing:true,paused:false,closed:false,volume:.5,repeat:false,shuffle:false});NoaNativeBridge.state({key:'two',queue:['one','two'],position:13,duration:90,playing:true,paused:false,closed:false,volume:.5,repeat:false,shuffle:false});});
  assert.deepEqual(await page.evaluate(()=>({key:N80JukeBox.snapshot().key,seconds:N80JukeBox.snapshot().seconds,backend:N80JukeBox.snapshot().backend})),{key:'two',seconds:13,backend:'android'});
+ assert.equal(await page.evaluate(()=>N80JukeBox.snapshot().recovery),null);
+ assert.equal(await page.evaluate(()=>N80JukeBox.snapshot().capabilities),null);
  assert.deepEqual(nativeErrors,[]);cases.push({ok:true,nativeCompatibility:true});await native.close();
  writeFileSync(out+'/verification.json',JSON.stringify({ok:true,cases},null,2));
 }finally{await browser?.close();server.kill();}

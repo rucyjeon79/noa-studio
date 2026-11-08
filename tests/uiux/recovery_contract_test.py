@@ -5,28 +5,21 @@ ROOT=Path(__file__).resolve().parents[2]
 class RecoveryContract(unittest.TestCase):
  def test_music_processing_and_permission_regions_preserved(self):
   s=(ROOT/'deploy/noa-music.php').read_text()
-  # Reviewed reload restoration (55a63dd) changes two player blocks only.
-  # Require behavioral playback/restore tests as well as exact byte protection;
-  # the database/permission prefix hash remains unchanged.
+  # The approved N80 extraction moved playback out of the PHP view. Keep the
+  # database/permission prefix byte-protected; exercise the actual module behavior.
   import subprocess
-  subprocess.run(['node','--test','scripts/noa_player_regression.test.mjs','tests/pwa/launch_test.cjs'],cwd=ROOT,check=True,capture_output=True)
-  # Approved inline playback and shared-song projection are the current byte baseline.
+  subprocess.run(['node','--test','scripts/noa_player_regression.test.mjs','tests/pwa/launch_test.cjs','tests/jukebox/playback_recovery.test.cjs','tests/engine/jukebox_media.test.cjs'],cwd=ROOT,check=True,capture_output=True)
+  contract=json.loads((ROOT/'tests/uiux/music-processing-contract.json').read_text())
+  prefix=s[:s.index('?><!doctype html>')]
+  self.assertEqual(hashlib.sha256(prefix.encode()).hexdigest(),contract['databaseAndPermissionPrefix'])
+  self.assertNotIn('function requestPlayback()',s)
+  self.assertEqual(s.count('src="/noa-app/jukebox/player.js?'),1)
+  player=(ROOT/'deploy/noa-app/jukebox/player.js').read_text()
   for selector in ['.player','[aria-label="곡 상세"]']:
-   current="document.querySelector('"+selector+"').hidden=true;"
-   self.assertEqual(s.count(current),1)
-   s=s.replace(current,current.replace('hidden=true','hidden=false'),1)
-  # The category breadcrumb is presentation only; retain exact playback hashes.
-  breadcrumb=" renderMusicInfo(r);\n"
-  self.assertEqual(s.count(breadcrumb),1);s=s.replace(breadcrumb,'',1)
-  # Authorized channel artwork projection: keep every permission, SQL and playback
-  # byte outside these two exact read-only call replacements unchanged.
-  for current,previous in [
-   ("$card=noa_music_cover($jukebox,$r['doc_key'],$suno,$b,(string)($p['ownerId']??''));", "$card=noa_music_asset_url($jukebox,$r['doc_key'],$suno,'cover')?:noa_sound_cover($b);"),
-   ("$card=noa_music_cover($jukebox,$key,$suno,$b,(string)($d['ownerId']??''));", "$card=noa_music_asset_url($jukebox,$key,$suno,'cover')?:noa_sound_cover($b);")]:
-   self.assertEqual(s.count(current),1);s=s.replace(current,previous,1)
-  blocks={'databaseAndPermissionPrefix':s[:s.index('?><!doctype html>')],'requestPlaybackAndQueue':s[s.index('function requestPlayback()'):s.index('function filter()')],'playbackAndUploadIntegration':s[s.index('function select('):s.index("// Detail hydration") if "// Detail hydration" in s else s.index("let saved=''")]}
-  actual={k:hashlib.sha256(v.encode()).hexdigest()for k,v in blocks.items()}
-  self.assertEqual(actual,json.loads((ROOT/'tests/uiux/music-processing-contract.json').read_text()))
+   self.assertEqual(player.count("document.querySelector('"+selector+"').hidden=true;"),1)
+  self.assertIn('if(window.N80JukeBox)return;',player)
+  self.assertIn('window.NoaMusic=window.N80JukeBox;',player)
+
  def test_removed_music_controls_are_not_rendered_or_loaded(self):
   s=(ROOT/'deploy/noa-music.php').read_text()
   self.assertNotRegex(s,r'id="(?:noa-taxonomy-browse|search|genre|type)"|class="filters"|noa-taxonomy-browse\.js|NoaTaxonomyFilter')
@@ -66,6 +59,8 @@ class RecoveryContract(unittest.TestCase):
   # Keep this exact-file authorization; FIFO and processing workers remain protected.
   # The 2026-10-27 correction removes title-derived playlist classification.
   authorized={'bridge/catalog-recovery.php','bridge/record-quality.php','bridge/creator-core.php','bridge/catalog.php','bridge/library-records.php','bridge/record-trash.php','bridge/notices.php','bridge/ainoa-automation.php','bridge/lab-worker.php','bridge/category-order-store.php','bridge/ainoa-generation.php','bridge/ainoa-core.php','bridge/ainoa-points.php','bridge/youtube-catalog.php','bridge/lab-api.php','bridge/catalog-store.php','bridge/package-record.php','bridge/package-migration.php','bridge/package-worker.php','bridge/index.php','bridge/lab-creator.php','bridge/taxonomy-store.php','bridge/inline-edit.php','bridge/music-readmodel.php','bridge/user-playlists.php','bridge/world-mv.php','bridge/popularity-events.php','bridge/playcount-policy.php','deploy/noa-app/jukebox/stream.php','deploy/noa-app/jukebox/stream-popularity.php','scripts/noa_jukebox_release.py','scripts/noa_jukebox_upload_worker.py','scripts/noa_jukebox_publish.py'}
+  # 2026-11-08: authorized N80 playback integration. Processing/stream writers remain protected.
+  authorized.update({'deploy/noa-app/jukebox/player.js','deploy/noa-app/jukebox/presentation.js','deploy/noa-app/jukebox/navigation-policy.js','deploy/noa-app/jukebox/system-media.js'})
   # The 2026-10-27 request explicitly adds post likes/comments to popularity.
   # Limit this authorization to the new reaction service and score calculation;
   # native member/board writers and music processing remain protected.
