@@ -16,11 +16,11 @@ try{
   if(!$admin){http_response_code(403);echo json_encode(['error'=>'admin_required']);exit;}
   $key=$_GET['key']??'';
   if(!is_string($key)||!preg_match('/^[a-zA-Z0-9:_-]{1,191}$/D',$key)){http_response_code(400);echo json_encode(['error'=>'invalid_key']);exit;}
-  $q=$db->prepare("SELECT payload FROM noa_documents WHERE doc_key=? AND kind IN ('single','playlist','story')");$q->execute([$key]);$raw=$q->fetchColumn();
-  $document=$raw?json_decode($raw,true,512,JSON_THROW_ON_ERROR):null;
+  $q=$db->prepare("SELECT payload,revision FROM noa_documents WHERE doc_key=? AND kind IN ('single','playlist','story')");$q->execute([$key]);$selectedRow=$q->fetch(PDO::FETCH_ASSOC);
+  $document=$selectedRow?json_decode($selectedRow['payload'],true,512,JSON_THROW_ON_ERROR):null;
   if(!$document||!noa_sound_visible($document,true)){http_response_code(404);echo json_encode(['error'=>'song_unavailable']);exit;}
   $body=$document['body']??[];$audio=nj_resolve(nj_assets($db),$key,noa_sound_suno($body),'audio')?:noa_sound_audio($body,dirname(__DIR__));
-  echo json_encode(['key'=>$key,'audioUrl'=>$audio],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;
+  echo json_encode(['key'=>$key,'revision'=>(int)$selectedRow['revision'],'audioUrl'=>$audio],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;
  }
  $trash=noa_sound_trash_index($db);$jukebox=$labChoices?[]:nj_assets($db);$availability=is_file(__DIR__.'/media-status.php')?require __DIR__.'/media-status.php':[];
  foreach($db->query("SELECT doc_key,kind,payload FROM noa_documents WHERE kind IN ('single','playlist','story') ORDER BY doc_key") as $row){

@@ -118,7 +118,7 @@ jobs:
         if: always()
         with: {name: 'noa-inline-edit-candidate-${{ github.run_id }}', path: inline-edit-proof/, retention-days: 2}
   deploy:
-    if: (((github.event_name != 'pull_request' && needs.candidate.outputs.runtime_changed == 'true' && !contains(github.event.head_commit.message, '[ainoa-release]')) && !contains(github.event.head_commit.message, '[n80-runtime]')) && !contains(github.event.head_commit.message, '[creative-drafts]')) && !contains(github.event.head_commit.message, '[n80-jukebox]')
+    if: (((github.event_name != 'pull_request' && needs.candidate.outputs.runtime_changed == 'true' && !contains(github.event.head_commit.message, '[ainoa-release]')) && !contains(github.event.head_commit.message, '[n80-runtime]')) && !contains(github.event.head_commit.message, '[creative-drafts]')) && !contains(github.event.head_commit.message, '[n80-jukebox]') && !contains(github.event.head_commit.message, '[n80-browser]')
     needs: candidate
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     runs-on: ubuntu-24.04

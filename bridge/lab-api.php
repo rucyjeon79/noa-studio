@@ -10,6 +10,18 @@ try {
   lab_json(200,lab_status($snapshot)+['csrf'=>$_SESSION['noa_lab_csrf'],'generation'=>na_generation_status($snapshot),'textUsage'=>array_slice($snapshot['ainoaRecentUsage']??[],-20)]);
  }
  if($method!=='POST')lab_json(405,['error'=>'method_not_allowed']);lab_csrf();$owner=(string)$member['mb_id'];
+ if($action==='browser_import'){
+  require_once __DIR__.'/lab-browser-assets.php';
+  if(($_FILES['clip']['error']??1)!==UPLOAD_ERR_OK||!is_uploaded_file($_FILES['clip']['tmp_name']??''))throw new InvalidArgumentException('clip_upload_failed');
+  $input=$_POST;$source=null;$key=(string)($input['trackKey']??'');
+  if($key!==''){
+   $q=noa_bridge_pdo()->prepare("SELECT payload,revision FROM noa_documents WHERE doc_key=? AND kind IN ('single','playlist','story')");$q->execute([$key]);$row=$q->fetch(PDO::FETCH_ASSOC);
+   if(!$row)throw new InvalidArgumentException('unknown_track');$p=json_decode($row['payload'],true,512,JSON_THROW_ON_ERROR);$body=$p['body']??[];
+   $source=['key'=>$key,'revision'=>(int)$row['revision'],'title'=>(string)(($body['confirmedTitle']??'')?:($p['title']??$key)),'genre'=>$p['genreId']??'','cast'=>$body['thumbCast']??'female'];
+  }
+  $result=lab_lock(fn(&$s)=>lab_browser_import($s,$input,$_FILES['clip']['tmp_name'],$owner,$source));
+  lab_json(200,$result);
+ }
  if($action==='audio'){
   $id=lab_id((string)($_GET['id']??''));$role=(string)($_GET['role']??'main');if(!in_array($role,['main','female','male'],true))throw new InvalidArgumentException('invalid_audio_role');$part=filter_var($_GET['part']??'',FILTER_VALIDATE_INT);$total=filter_var($_GET['total']??'',FILTER_VALIDATE_INT);
   if($part===false||$total===false||$total<1||$total>150||$part<0||$part>=$total||($_FILES['chunk']['error']??1)!==UPLOAD_ERR_OK||($_FILES['chunk']['size']??0)>1048576)lab_json(400,['error'=>'invalid_audio_chunk']);

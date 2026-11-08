@@ -30,6 +30,28 @@ with tempfile.TemporaryDirectory(prefix='noa-lab-http-') as root:
   assert request('lab-api.php?action=config',{'expectedRevision':state['configRevision']},{**admin,'Origin':'https://evil.example'})[0]==403
   assert worker('health')[0]==200
   assert request('lab-api.php?action=config',{'expectedRevision':state['configRevision']},admin)[0]==200
+  # Real browser-result multipart upload, protected by the existing admin and CSRF gates.
+  clip=root/'clip.mp4';subprocess.run(['ffmpeg','-v','error','-f','lavfi','-i','color=c=blue:s=512x288:r=24','-t','.5','-an','-c:v','libx264','-pix_fmt','yuv420p',str(clip)],check=True)
+  clip_bytes=clip.read_bytes();fields={'requestId':'c'*32,'sourceUrl':'https://flow.google.com/project/11111111-1111-1111-1111-111111111111/edit/22222222-2222-2222-2222-222222222222','sha256':hashlib.sha256(clip_bytes).hexdigest(),'trackKey':''}
+  def import_clip(extra_headers,values=fields):
+   boundary='n80-'+secrets.token_hex(12);parts=[]
+   for k,v in values.items():parts.append(('--'+boundary+'\r\nContent-Disposition: form-data; name="'+k+'"\r\n\r\n'+v+'\r\n').encode())
+   parts.extend([('--'+boundary+'\r\nContent-Disposition: form-data; name="clip"; filename="clip.mp4"\r\nContent-Type: video/mp4\r\n\r\n').encode(),clip_bytes,('\r\n--'+boundary+'--\r\n').encode()])
+   req=urllib.request.Request(base+'lab-api.php?action=browser_import',data=b''.join(parts),headers={'Content-Type':'multipart/form-data; boundary='+boundary,**extra_headers})
+   try:response=opener.open(req,timeout=10)
+   except urllib.error.HTTPError as error:response=error
+   return response.status,json.loads(response.read())
+  assert import_clip({})[0]==403
+  assert import_clip({'X-Test-Role':'admin'})[0]==403
+  assert import_clip({**admin,'Origin':'https://evil.example'})[0]==403
+  assert import_clip(admin,{**fields,'sha256':'0'*64})[0]==409
+  status,received=import_clip(admin);assert status==200 and received['fileVerified'],received
+  status,replay=import_clip(admin);assert status==200 and replay['replayed'] and replay['job']['id']==received['job']['id']
+  file_url=base+'lab-file.php?id='+received['job']['id']+'&format=landscape'
+  response=opener.open(urllib.request.Request(file_url,headers={'X-Test-Role':'admin','Range':'bytes=0-127'}));assert response.status==206 and response.read()==clip_bytes[:128]
+  response=opener.open(urllib.request.Request(file_url,headers={'X-Test-Role':'admin'}));assert response.read()==clip_bytes
+  assert request('lab-file.php?id='+received['job']['id']+'&format=landscape')[0]==403
+  print('Browser clip HTTP: admin, CSRF, checksum, upload replay, private readback and range streaming passed.')
   # Exercise completion transitions to catch malformed branches before deploying.
   state=json.loads((private/'state.json').read_text());state['worker']={'readiness':{'isolated-proof':{'durableAck':True}}};state['jobs']={};jobid='a'*32;state['jobs'][jobid]={'id':jobid,'title':'isolated fixture','state':'queued_analysis','revision':1,'attempts':0,'createdAt':'2026-10-20T00:00:00Z','settings':{'mode':'audio','formats':['landscape'],'posting':'save','autoSelect':True,'subtitles':False},'cast':'female','genre':'test','outputs':[]};(private/'state.json').write_text(json.dumps(state))
   status,claim=worker('claim',{});assert status==200 and claim['stage']=='analysis'
