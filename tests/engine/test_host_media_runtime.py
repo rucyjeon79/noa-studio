@@ -9,10 +9,26 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 from noa_host_media_runtime import interpret, execute, node_result, checksum_result, verify_remote_file, write_evidence
 from unittest.mock import patch
-from noa_host_browser_runtime import browser_result, VERIFY
+from noa_host_browser_runtime import browser_result, VERIFY, START
 
 
 class HostRuntimeTest(unittest.TestCase):
+    def test_browser_spawn_and_signal_failures_keep_safe_diagnostics(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder);starter = root/'start.cjs';starter.write_text(START)
+            def launch(path):
+                run = subprocess.run(['node',str(starter),'/unused/loader','/unused/lib',str(path),str(root/'profile')],capture_output=True,timeout=5)
+                return browser_result(run.stdout,run.returncode)
+            missing = launch(root/'missing')
+            self.assertEqual(missing['spawnError'],'ENOENT')
+            self.assertFalse(missing['browserStarted'])
+            browser = root/'browser';browser.write_text('#!/bin/sh\nkill -TERM $$\n');browser.chmod(0o700)
+            killed = launch(browser)
+            self.assertEqual(killed['signal'],'SIGTERM')
+            self.assertIsNone(killed['exitCode'])
+            self.assertFalse(killed['browserStarted'])
+            self.assertNotIn(folder,json.dumps(killed))
+
     def test_interrupted_startup_retains_the_last_phase_without_claiming_readiness(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder)/'proof/runtime.json'

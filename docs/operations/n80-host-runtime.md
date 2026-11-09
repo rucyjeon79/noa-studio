@@ -85,3 +85,9 @@ A host page-load result is still required before reporting browser readiness.
 Node run `42595643431` verified its binary and source, then failed at the signed
 HTTP roundtrip with `node_network_und_err_connect_timeout`. The latest Node
 changes address that network path separately from this browser recovery.
+
+Browser run `42597521987` completed in about six minutes: Node started, all 114
+browser package files passed integrity verification, and browser launch failed
+with empty stderr. Its old receipt discarded the child exit/signal information.
+The launcher now retains allowlisted spawn errors, exit code, termination signal
+and output byte counts, without exposing paths or weakening sandbox settings.
