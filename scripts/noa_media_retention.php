@@ -21,7 +21,7 @@ try{
  function safe_file(string $p,string $root):bool{return !is_link($p)&&is_file($p)&&realpath($p)===$p&&str_starts_with($p,$root.'/');}
  function candidate(string $p,string $sha,string $why,string $root):void{global $protected,$candidates,$texts;
   if(isset($protected[$p])||!safe_file($p,$root)||!preg_match('/^[a-f0-9]{64}$/D',$sha))return;
-  $relative=substr($p,strlen($root)+1);if(str_contains($texts,'/noa-jukebox/'.$relative)||str_contains($texts,'"'.$relative.'"'))return;
+  $relative=substr($p,strlen($root)+1);if(str_contains($texts,$p)||str_contains($texts,'/noa-jukebox/'.$relative)||str_contains($texts,'"'.$relative.'"'))return;
   if(!hash_equals($sha,hash_file('sha256',$p)))return;
   $candidates[$p]=['path'=>$p,'sha256'=>$sha,'bytes'=>filesize($p),'reason'=>$why];
  }
