@@ -3,6 +3,7 @@
 One bounded N80 operation, using the existing pinned SSH connection. It never
 reads login profiles or installs a second scheduler. A browser is reported as
 started only after a real, local about:blank launch on the hosting machine.
+The same workflow serializes this one-shot installation separately from ticks.
 """
 import json
 import hashlib
