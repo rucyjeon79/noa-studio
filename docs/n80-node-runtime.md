@@ -18,7 +18,9 @@ private loader/libraries, verify source hashes, check the current commit, perfor
 an authenticated host roundtrip and atomically activate `node-current.json`.
 
 Normal Auto ticks read the installed manifest, require the exact source bundle,
-and launch short-lived task processes. There is no HTTP listener, new cron, secondary
+and launch short-lived task processes. Host connections prefer IPv4 and honor
+the hosting account's existing HTTP_PROXY/HTTPS_PROXY/NO_PROXY configuration;
+TLS certificate verification remains enabled. There is no HTTP listener, new cron, secondary
 queue, npm installation on page access, or paid-provider enablement. Credentials
 travel through SSH stdin and remain in memory. Public logs contain only bounded
 receipts. Runtime sources/manifests stay outside the web root.

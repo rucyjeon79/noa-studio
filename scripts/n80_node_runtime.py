@@ -54,7 +54,7 @@ def command_for(manifest):
     args = [node]
     if manifest['privateLibraries']:
         args = [lib + '/ld-linux-x86-64.so.2', '--library-path', lib, node]
-    args += ['--max-old-space-size=128', '--dns-result-order=ipv4first', '--no-network-family-autoselection',
+    args += ['--max-old-space-size=128', '--use-env-proxy', '--dns-result-order=ipv4first', '--no-network-family-autoselection',
              ROOT + '/n80-' + manifest['bundleSha256'][:16] + '/runtime/node/worker.mjs']
     return 'exec ' + shlex.join(args)
 
