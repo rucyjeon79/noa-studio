@@ -14,7 +14,7 @@ def create(folder):
     (html/'extend').mkdir()
     shutil.copy(ROOT/'deploy/noa-design.extend.php',html/'extend/noa-design.extend.php')
     (html/'noa-assets').mkdir()
-    shutil.copy(ROOT/'deploy/noa-assets/papa-logo.png',html/'noa-assets/papa-logo.png')
+    shutil.copy(ROOT/'public/papa-logo.png',html/'noa-assets/papa-logo.png')
     (html/'noa-app/engine/worker-wake.php').write_text('<?php function n80_ai_wake(){return ["fixture"=>true];}')
     (html/'common.php').write_text('''<?php
 session_save_path(dirname(__DIR__).'/sessions');session_start();define('_GNUBOARD_',true);define('G5_PATH',__DIR__);
