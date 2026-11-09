@@ -55,15 +55,21 @@ jobs:
               raise
           PY
       - name: Verify published notice and ranking sections
+        id: sections
         run: |
           curl -fsS "https://noastudio.ai.kr/?notice-check=$GITHUB_SHA" -o /tmp/noa-home-check.html
           python - <<'PY'
           from pathlib import Path
+          from html import unescape
+          from urllib.parse import urlsplit, parse_qs
+          import re
           html = Path('/tmp/noa-home-check.html').read_text()
           assert 'id="noa-notices-heading"' in html and 'id="noa-notice-2"' not in html
           section = html.split('data-home-section="recommendations"', 1)[1].split('</section>', 1)[0]
           assert 'id="noa-ranking-status"' in section and html.count('id="noa-ranking-status"') == 1
-          assert '/noa-amt-fan.js' in html
+          sources = [urlsplit(unescape(src)) for src in re.findall(r'<script\b[^>]*\bsrc="([^"]+)"', html)]
+          # The home transport preserves this module inside its versioned bundle.
+          assert sum(src.path == '/noa-amt-fan.js' or (src.path == '/noa-home-assets.php' and 'noa-amt-fan.js' in parse_qs(src.query).get('files', [''])[0].split(',')) for src in sources) == 1
           PY
       - name: Verify daily fortune and banner positions on the operating homepage
         id: banners
@@ -72,7 +78,7 @@ jobs:
           cp scripts/qa/noa-home-banner-order.mjs "$RUNNER_TEMP/banners/check.mjs"
           node "$RUNNER_TEMP/banners/check.mjs"
       - name: Restore the two homepage files if verification fails
-        if: failure() && steps.banners.outcome == 'failure'
+        if: failure() && (steps.sections.outcome == 'failure' || steps.banners.outcome == 'failure')
         run: |
           PYTHONPATH=scripts python - <<'PYTHON'
           import sys
