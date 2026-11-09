@@ -1,6 +1,7 @@
 """Disposable native OAuth page; dummy credentials only, no Google calls."""
 from pathlib import Path
 import shutil
+import json
 import subprocess
 
 REPO = Path(__file__).resolve().parents[2]
@@ -14,7 +15,9 @@ def create(root):
     (root / 'sessions').mkdir()
     shutil.copytree(REPO / 'bridge', html / 'noa-bridge')
     (html / 'noa-app/engine').mkdir(parents=True)
-    shutil.copy(REPO / 'config/n80-daily-shorts.json', html / 'noa-app/engine/daily-shorts.json')
+    policy = json.loads((REPO / 'config/n80-daily-shorts.json').read_text())
+    policy['mediaStorage'].update(provider='google_drive', temporaryParentFolderId='privateFolder111')
+    (html / 'noa-app/engine/daily-shorts.json').write_text(json.dumps(policy))
     for file in ['noa-ui.css', 'noa-ui.js', 'noa-ai-lab.css', 'noa-design.json', 'noa-ui-words.json']:
         shutil.copy(REPO / 'deploy' / file, html / file)
     (html / 'common.php').write_text("""<?php

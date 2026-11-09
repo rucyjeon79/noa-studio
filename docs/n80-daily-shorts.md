@@ -2,6 +2,37 @@
 
 The user authorized selecting a song, producing a 9:16 Short lasting 49–59 seconds, publishing one every Monday, Wednesday and Friday at 12:00 Asia/Seoul (updated 2026-11-09) to the existing playlist, and connecting its exact original video. `config/n80-daily-shorts.json` defines the verified channel, playlist and exclusions. The schedule is owned by N80 Auto, called inside the registered ai.daily_shorts operation in the existing worker by the existing 15-minute GitHub Actions runner. It is persisted in lab:state.json:campaigns.daily_shorts, independent of a conversation. No ChatGPT automation is enabled for this campaign.
 
+## GitHub execution and storage (2026-11-09)
+
+The user replaced the blocked Drive setup with GitHub. The existing N80 daily
+Shorts worker now transfers only registered generated media to Actions artifacts.
+It derives an asset-bound AES-256-GCM key from the existing worker secret, uploads
+ciphertext, downloads it again, and checks decryption, byte count and source hash
+before committing a receipt. The public repository never receives plaintext media
+or the encryption key. Names are opaque. Source files and Gem knowledge are not
+copied. GitHub retention is at most 90 days here; the authoritative host copy is
+retained. Losing or rotating the worker secret prevents old artifact decryption,
+so artifacts must never become the only surviving copy.
+
+The existing N80 queue, owner, source revision, 15-minute lease and three-attempt
+budget own transfer/recovery. Run identities are reserved before upload and
+reconciled on the next run after an ambiguous response. A storage receipt neither
+accepts a scene nor resumes the paused job. Post-publication deletion is still
+blocked until public video, destination playlist and native related-video evidence
+and a real deletion executor exist. Do not claim cleanup is active.
+
+Gemini text review is registered in the existing private ChatGPT worker. Its
+`NOA_GEMINI_OAUTH` secret must contain a deliberately connected Gemini CLI personal
+login; browser sessions and Gem/Flow credentials are never extracted or assumed.
+The pinned CLI runs in an isolated temporary working directory with all tools
+denied and without N80, SSH, GitHub or Codex credentials. No paid API or Vertex
+fallback is enabled. A real nonce response is required for each worker before it
+advertises the text capability to N80; renewed credentials are retained using the
+existing private secret-rotation path. Missing login leaves ChatGPT operational.
+Gemini only returns feedback; ChatGPT reviews and the existing N80 save validator
+owns completion. This does **not** connect existing Gem image generation or Flow
+motion generation, which remain unverified persistent executors.
+
 ## Current completion requirement (2026-11-09)
 
 The user requires N80 to generate and publish without this conversation or manual

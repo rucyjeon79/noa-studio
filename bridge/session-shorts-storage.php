@@ -26,22 +26,23 @@ function nd_storage_claim(array &$s,string $owner,int $now,callable $readSource)
  if($j['state']==='cancelled')return ['ok'=>true,'claimed'=>false,'state'=>'cancelled'];
  sa_require_current($j,$readSource($j['trackKey']));
  $policy=$s['campaigns']['daily_shorts']['policy']['mediaStorage']??[];
- if(($policy['provider']??'')!=='google_drive'||!preg_match('/^[A-Za-z0-9_-]{10,200}$/D',(string)($policy['temporaryParentFolderId']??'')))throw new DomainException('storage_policy_required');
- $m=&$j['agent']['temporaryMedia'];$m??=['folderId'=>null,'files'=>[]];
+ if(($policy['provider']??'')!=='github_actions_artifact'&&(($policy['provider']??'')!=='google_drive'||!preg_match('/^[A-Za-z0-9_-]{10,200}$/D',(string)($policy['temporaryParentFolderId']??''))))throw new DomainException('storage_policy_required');
+ $slot=($policy['provider']??'')==='github_actions_artifact'?'temporaryGithubMedia':'temporaryMedia';
+ $m=&$j['agent'][$slot];$m??=['folderId'=>null,'files'=>[]];
  if(($m['active']['leaseUntil']??0)>$now&&($m['files'][$m['active']['key']]['state']??'')!=='stored')return ['ok'=>true,'claimed'=>false,'state'=>'storage_busy'];
  foreach(nd_storage_assets($j) as $key=>$row){
   $old=$m['files'][$key]??[];
   if(($old['state']??'')==='stored'||($old['attempts']??0)>=3)continue;
   $m['files'][$key]=array_merge($old,['kind'=>$row['kind'],'scene'=>$row['scene'],'sha256'=>$row['asset']['sha256'],'bytes'=>$row['asset']['bytes'],'sourceUrl'=>$row['asset']['sourceUrl']??'','state'=>'storing','attempts'=>($old['attempts']??0)+1]);
   $m['active']=['key'=>$key,'lease'=>bin2hex(random_bytes(24)),'leaseUntil'=>$now+900];
-  return ['ok'=>true,'claimed'=>true,'id'=>$id,'title'=>$j['title'],'key'=>$key,'lease'=>$m['active']['lease'],'parentFolderId'=>$policy['temporaryParentFolderId'],'folderId'=>$m['folderId'],'fileId'=>$old['fileId']??null,'sourceAudioSha256'=>$j['audioSha256'],'asset'=>$row];
+  return ['ok'=>true,'claimed'=>true,'id'=>$id,'title'=>$j['title'],'key'=>$key,'lease'=>$m['active']['lease'],'provider'=>$policy['provider'],'artifactRuns'=>$old['artifactRuns']??[],'artifactName'=>'n80-media-'.hash('sha256',$id.'|'.$key),'parentFolderId'=>$policy['temporaryParentFolderId']??null,'folderId'=>$m['folderId'],'fileId'=>$old['fileId']??null,'sourceAudioSha256'=>$j['audioSha256'],'asset'=>$row];
  }
  $files=$m['files'];$failed=count(array_filter($files,fn($f)=>($f['state']??'')!=='stored'&&($f['attempts']??0)>=3));
  return ['ok'=>true,'claimed'=>false,'state'=>$failed?'storage_retry_limit':(count($files)?'stored':'no_generated_media'),'stored'=>count(array_filter($files,fn($f)=>($f['state']??'')==='stored'))];
 }
 function nd_storage_operation(array &$s,array $b,string $owner,int $now,callable $readSource):array {
  if(!nd_assembly_enabled($s))throw new DomainException('daily_shorts_paused');
- $snapshot=nd_assembly_job($s,$owner);$j=&$s['jobs'][$snapshot['id']];$m=&$j['agent']['temporaryMedia'];$active=$m['active']??[];
+ $snapshot=nd_assembly_job($s,$owner);$j=&$s['jobs'][$snapshot['id']];$github=($s['campaigns']['daily_shorts']['policy']['mediaStorage']['provider']??'')==='github_actions_artifact';$slot=$github?'temporaryGithubMedia':'temporaryMedia';$m=&$j['agent'][$slot];$active=$m['active']??[];
  if($j['state']==='cancelled'||($b['id']??'')!==$j['id']||($b['key']??'')!==($active['key']??null)||!is_string($b['lease']??null)||!hash_equals($active['lease']??'',$b['lease'])||($active['leaseUntil']??0)<=$now)throw new DomainException('storage_lease_expired');
  sa_require_current($j,$readSource($j['trackKey']));
  $row=nd_storage_assets($j)[$active['key']]??null;if(!$row)throw new DomainException('storage_asset_changed');
@@ -51,7 +52,11 @@ function nd_storage_operation(array &$s,array $b,string $owner,int $now,callable
   $m['active']['leaseUntil']=0;return ['ok'=>true,'state'=>$file['state']];
  }
  $m['active']['leaseUntil']=$now+900;
+ if($command==='storage_credentials'&&$github)throw new DomainException('github_runtime_identity_required');
  if($command==='storage_credentials')return ['ok'=>true,'authorizationAllowed'=>true];
+ if($github&&in_array($command,['storage_reserve','storage_complete'],true)){
+  require_once __DIR__.'/session-shorts-github.php';return nd_github_operation($s,$j,$m,$file,$b,$now);
+ }
  if($command==='storage_reserve'){
   foreach(['folderId','fileId'] as $field)if(!is_string($b[$field]??null)||!preg_match('/^[A-Za-z0-9_-]{10,200}$/D',$b[$field]))throw new InvalidArgumentException('invalid_drive_id');
   $parent=$s['campaigns']['daily_shorts']['policy']['mediaStorage']['temporaryParentFolderId'];

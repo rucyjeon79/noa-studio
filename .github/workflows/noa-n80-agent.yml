@@ -29,6 +29,7 @@ jobs:
       - name: Verify commander, canonical validators and real SQL save boundaries
         run: |
           python tests/gpt/test_agent.py
+          python tests/gpt/test_gemini.py
           python -m py_compile integrations/private-worker/*.py scripts/noa_agent_release.py
           php -l deploy/noa-app/engine/agent-runtime.php
           php -l deploy/noa-app/engine/creative.php
