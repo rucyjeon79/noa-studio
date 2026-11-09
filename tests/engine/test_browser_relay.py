@@ -27,7 +27,10 @@ class BrowserRelay(unittest.TestCase):
     def test_connection_observation_never_discloses_credentials_or_frame(self):
         state={'browserControl':{'state':'active','owner':'PRIVATE_OWNER','lease':'PRIVATE_LEASE','input':'PRIVATE_INPUT','frame':'PRIVATE_IMAGE','url':'https://accounts.google.com/?private=1','frameSeq':3,'leaseUntil':200,'expiresAt':300},'browserProfile':{'sha256':'PRIVATE_POINTER'}}
         result=relay.connection_summary(state,100)
-        self.assertEqual(result,{'state':'active','hasFrame':True,'framesObserved':True,'leaseLive':True,'profileStored':True})
+        self.assertEqual(result,{'state':'active','hasFrame':True,'framesObserved':True,'inputPending':True,'inputAcknowledged':False,'leaseLive':True,'profileStored':True})
+        state['browserControl'].update(input=None,ack=2)
+        self.assertTrue(relay.connection_summary(state,100)['inputAcknowledged'])
+        self.assertFalse(relay.connection_summary(state,100)['inputPending'])
         self.assertNotIn('PRIVATE',str(result))
         self.assertEqual(relay.connection_summary(state,301)['state'],'expired')
     def test_browser_is_served_before_unrelated_media_setup(self):

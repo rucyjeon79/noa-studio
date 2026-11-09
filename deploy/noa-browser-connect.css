@@ -27,6 +27,10 @@
 #browser-app .noa-button.primary{background:var(--noa-accent);border-color:var(--noa-accent);color:var(--noa-accentText)}
 #browser-app #browser-refresh{flex:none;font-size:12px;padding:8px 12px;min-height:44px;background:transparent}
 #browser-app #browser-type{margin:20px 0 0}
+#browser-app .browser-keyboard-row{display:flex;align-items:center;gap:12px;margin-top:16px}
+#browser-app .browser-keyboard-row button{flex:none}
+#browser-app .browser-keyboard-row p,#browser-input-status{margin:0;color:var(--noa-muted);font-size:13px;line-height:1.6;word-break:keep-all}
+#browser-input-status{margin-top:12px}
 #browser-app #browser-type label{display:block;font-size:13px;line-height:1.6;color:var(--noa-muted);margin-bottom:8px}
 #browser-app .browser-input-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
 #browser-text{width:100%;min-width:0;min-height:48px;padding:12px;font:inherit;font-size:16px;background:var(--noa-bg);color:var(--noa-text);border:1px solid var(--noa-line);border-radius:4px}
