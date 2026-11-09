@@ -92,6 +92,8 @@ class RecoveryContract(unittest.TestCase):
   # 2026-10-28: explicit monthly 10x login/write/comment/like point policy.
   # Existing native transaction and per-member receipts remain mandatory.
   authorized.update({'bridge/membership-core.php','bridge/monthly-rewards.php'})
+  # 2026-11-10: hosting-unavailable alternative, owned by the existing N80 AI LAB worker.
+  authorized.update({'bridge/browser-control.php','bridge/worker-browser.php'})
   # 2026-10-28: user authorized Toss card/Kakao checkout; native balance writers remain unchanged.
   authorized.update({'bridge/toss-config.php','bridge/toss-core.php','bridge/toss.php','bridge/toss-webhook.php'})
   # 2026-10-28: explicit Drive spool, FIFO recovery, cancellation and concurrent playback request.

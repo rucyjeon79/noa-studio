@@ -24,7 +24,9 @@ try{
   });
   await page.locator('#browser-text').fill('DUMMY_ONLY');
   await page.waitForFunction(()=>!document.querySelector('#browser-type button').disabled);
+  const posted=page.waitForRequest(r=>r.url().includes('?api=1')&&r.method()==='POST');
   await page.locator('#browser-type button').click();
+  sent=(await posted).postDataJSON();
   await page.waitForFunction(()=>document.querySelector('#browser-text').value==='');
   assert.equal(sent.event.text,'DUMMY_ONLY');assert.equal(sent.frameSeq,7);
   assert.equal(errors.length,0,errors.join('\n'));
