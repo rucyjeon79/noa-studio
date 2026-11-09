@@ -22,6 +22,7 @@ try{
    if(route.request().method()==='POST'){sent=route.request().postDataJSON();return route.fulfill({json:{ok:true}});}
    await route.fulfill({json:{ok:true,state:'active',id:'fixture',frameSeq:7,inputReady:true}});
   });
+  await page.locator('#browser-open').click();
   await page.locator('#browser-text').fill('DUMMY_ONLY');
   await page.waitForFunction(()=>!document.querySelector('#browser-type button').disabled);
   const posted=page.waitForRequest(r=>r.url().includes('?api=1')&&r.method()==='POST');
