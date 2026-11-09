@@ -1327,7 +1327,7 @@ html[data-noa-style] body #noa-menu-drawer details.noa-drawer-category>summary h
 html[data-noa-style] body :is(.noa-notice,.wallet-guide)>summary>svg:last-child,
 html[data-noa-style] body .noa-community-post>summary>span[aria-hidden=true]{display:none}
 /* Preserve the music row's separate play action and full-row title positioning. */
-html[data-noa-style] body :is(main,#noa-menu-drawer,#creative-record,#yt-player,.noa-edit-form) .nl-listen-row>details>summary{position:static;padding:0}
+html[data-noa-style] body :is(main,#noa-menu-drawer,#creative-record,#yt-player,.noa-edit-form) .nl-listen-row>details>summary{position:static;min-height:58px;padding:0}
 html[data-noa-style] body :is(main,#noa-menu-drawer,#creative-record,#yt-player,.noa-edit-form) .nl-listen-row>details>summary::after{top:29px;right:9px}
 @keyframes noa-disclosure-hint{0%,24%,100%{translate:0 0}12%{translate:0 3px}}
 @media(prefers-reduced-motion:reduce){

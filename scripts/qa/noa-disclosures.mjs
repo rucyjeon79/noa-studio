@@ -41,11 +41,13 @@ try{
   assert.equal(await page.locator('.noa-community-post>summary>span[aria-hidden=true]').isVisible(),false);
   assert.equal(await page.locator('.noa-drawer-category h3').evaluate(e=>getComputedStyle(e,'::after').content),'none');
   const title=await page.locator('.nl-discovery-title').boundingBox(),play=await page.locator('.nl-primary').boundingBox();assert(title.width>0&&title.x+title.width<=play.x,'music title stays left of its independent play action');
+  const row=await page.locator('.nl-listen-row').boundingBox();assert(play.y+play.height<=row.y+row.height,'play control stays inside its row');
   assert.equal((await page.locator('#initial>summary').evaluate(cue)).animation,'none');
   await page.evaluate(()=>document.querySelector('main').insertAdjacentHTML('beforeend','<details id="dynamic"><summary>새로 생성된 수정 이력</summary><p>내용</p></details>'));
   assert.match((await page.locator('#dynamic>summary').evaluate(cue)).mask,/svg/);
   await page.locator('#dynamic>summary').focus();await page.keyboard.press('Enter');assert(await page.locator('#dynamic').evaluate(e=>e.open));
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal overflow');
+  await page.waitForTimeout(240);
   await page.screenshot({path:`starlight-proof/disclosures-${width}-dark.png`,fullPage:true});
   await page.emulateMedia({reducedMotion:'reduce'});
   for(const summary of await page.locator('details>summary').all())assert.equal((await summary.evaluate(cue)).animation,'none');

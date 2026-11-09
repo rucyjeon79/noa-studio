@@ -3,6 +3,8 @@ import os
 import sys
 import json
 import urllib.request
+import re
+from html import unescape
 from pathlib import Path
 import noa_ainoa_deploy as release
 # Independent BLOOM visibility maintenance does not change these presentation files.
@@ -64,9 +66,16 @@ def verify():
  if DISCLOSURES_ONLY:
   with urllib.request.urlopen('https://noastudio.ai.kr/',timeout=30) as response:
    html=response.read().decode('utf-8')
-   expected='/noa-starlight.css?v='+release.sha(Path('deploy/noa-starlight.css').read_bytes())
-   if response.status!=200 or expected not in html or 'Fatal error' in html:raise RuntimeError('disclosure_stylesheet_not_active')
-  print('DISCLOSURE_PRESENTATION_PUBLIC_HASH_AND_CACHE_VERSION_VERIFIED')
+   if response.status!=200 or 'Fatal error' in html:raise RuntimeError('disclosure_home_failed')
+  links=[unescape(href) for href in re.findall(r'<link\b[^>]*href=[\"\']([^\"\']+)',html)]
+  sources=[href for href in links if href.startswith(('/noa-starlight.css?', '/noa-home-assets.php?')) and 'noa-starlight.css' in href]
+  if not sources:raise RuntimeError('disclosure_stylesheet_not_linked')
+  expected=Path('deploy/noa-starlight.css').read_bytes()
+  for href in sources:
+   with urllib.request.urlopen('https://noastudio.ai.kr'+href,timeout=30) as response:
+    if expected not in response.read():raise RuntimeError('disclosure_linked_stylesheet_mismatch')
+    if 'immutable' not in response.headers.get('Cache-Control','') and href.startswith('/noa-home-assets.php?'):raise RuntimeError('disclosure_bundle_cache_version_stale')
+  print('DISCLOSURE_PRESENTATION_PUBLIC_HASH_AND_LINKED_ASSET_VERIFIED')
   return
  for path in ['/','/noa-about.php','/noa-privacy.php','/noa-terms.php','/bbs/login.php','/noa-sitemap.php','/bbs/content.php?co_id=privacy','/bbs/content.php?co_id=provision']:
   with urllib.request.urlopen('https://noastudio.ai.kr'+path,timeout=30) as response:

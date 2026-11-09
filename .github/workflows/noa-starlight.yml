@@ -32,6 +32,10 @@ jobs:
           node --check deploy/noa-world.js
           node --test tests/starlight/navigation.test.mjs tests/starlight/theme.test.mjs scripts/qa/noa-card-balance.test.mjs scripts/qa/noa-browse.test.mjs scripts/qa/noa-hero.test.mjs scripts/noa_player_regression.test.mjs
           python -m py_compile scripts/noa_starlight_release.py
+      - name: Install Korean fonts for rendered UI checks
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
       - name: Check shared navigation at mobile and desktop widths
         run: |
           npm install --prefix "$RUNNER_TEMP/noa-nav" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
