@@ -24,4 +24,4 @@ jobs:
           php -l scripts/noa_media_retention.php
           python -m py_compile scripts/noa_media_retention.py
           python -m pip install 'paramiko>=3,<5'
-      - run: python scripts/noa_media_retention.py
+      - run: python scripts/n80_auto.py jukebox.media_retention

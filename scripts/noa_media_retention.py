@@ -3,7 +3,8 @@ import hashlib,json,secrets,time,urllib.request,urllib.parse
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
-PLAN='4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945'
+# Retired one-time plans must never be replayed against a later media inventory.
+PLAN='AUDIT'
 token=secrets.token_hex(32);name='noa-bridge/media-retention-'+secrets.token_hex(8)+'.php'
 raw=Path('scripts/noa_media_retention.php').read_text().replace('__EXPIRY__',str(int(time.time())+600)).replace('__TOKEN_SHA__',hashlib.sha256(token.encode()).hexdigest()).replace('__PLAN_SHA__',PLAN).encode()
 t=connect();s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(30);installed=False

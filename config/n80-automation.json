@@ -197,6 +197,33 @@
       ],
       "requiredEnv": {},
       "concurrency": "workflow_owned"
+    },
+    "jukebox.media_colocate": {
+      "module": "jukebox",
+      "workflow": "noa-media-colocate.yml",
+      "command": [
+        "scripts/noa_media_colocate.py"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
+    },
+    "jukebox.media_paths": {
+      "module": "jukebox",
+      "workflow": "noa-media-paths.yml",
+      "command": [
+        "scripts/noa_media_paths.py"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
+    },
+    "jukebox.media_retention": {
+      "module": "jukebox",
+      "workflow": "noa-media-retention.yml",
+      "command": [
+        "scripts/noa_media_retention.py"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
     }
   },
   "runtimes": {
