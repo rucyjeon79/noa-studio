@@ -255,6 +255,15 @@ def main():
                 result['nodeInstallation'] = install_node(transport)
             except Exception as error:
                 result['nodeInstallation'] = {'state': 'host_install_failed', 'errorType': type(error).__name__}
+            if result['nodeInstallation'].get('started'):
+                try:
+                    from noa_host_browser_runtime import install_browser
+                    browser = install_browser(transport, result['nodeInstallation'])
+                    result['browserInstallation'] = browser
+                    result['browserStarted'] = browser.get('browserStarted') is True
+                    result['state'] = browser['state']
+                except Exception as error:
+                    result['browserInstallation'] = {'state': 'host_browser_install_failed', 'errorType': type(error).__name__}
     except Exception as error:
         result.update(state='host_connection_failed', errorType=type(error).__name__, browserStarted=False)
     finally:

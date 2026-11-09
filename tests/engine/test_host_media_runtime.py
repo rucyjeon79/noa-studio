@@ -4,9 +4,22 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 from noa_host_media_runtime import interpret, execute, node_result
+from noa_host_browser_runtime import browser_result
 
 
 class HostRuntimeTest(unittest.TestCase):
+    def test_browser_receipt_requires_successful_exit_and_real_boolean(self):
+        self.assertTrue(browser_result(b'{"state":"host_browser_started","browserStarted":true}', 0)['browserStarted'])
+        for output, code in [(b'{"state":"host_browser_started","browserStarted":true}', 1),
+                             (b'{"state":"host_browser_started","browserStarted":"true"}', 0),
+                             (b'not JSON', 0)]:
+            self.assertFalse(browser_result(output, code)['browserStarted'])
+
+    def test_browser_sandbox_failure_is_not_retried_with_protection_disabled(self):
+        result = browser_result(b'{"state":"host_browser_sandbox_unavailable","browserStarted":false}', 1)
+        self.assertEqual(result['state'], 'host_browser_sandbox_unavailable')
+        self.assertFalse(result['browserStarted'])
+
     def test_node_install_requires_a_real_successful_version_response(self):
         self.assertTrue(node_result(b'v24.12.0\n', 0)['started'])
         for output, code in [(b'v24.12.0', 1), (b'v20.0.0', 0), (b'permission denied', 0)]:
