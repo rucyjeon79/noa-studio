@@ -15,6 +15,7 @@ SOURCE = Path(__file__).resolve().parents[1]
 ROOT = '/hosting/noastudio/noa-ai-lab/host-runtime'
 POINTER = ROOT + '/media-source-current.json'
 FILES = (
+    'runtime/browser/relay.mjs', 'scripts/n80_browser_relay.py',
     'lab/analysis.mjs', 'lab/analyze.py', 'lab/client.mjs', 'lab/creation.mjs',
     'lab/daily_shorts.py', 'lab/mastering.mjs', 'lab/media.mjs', 'lab/muvy.mjs',
     'lab/providers.mjs', 'lab/session-assemble.mjs', 'lab/session-subtitles.py',

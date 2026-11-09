@@ -236,6 +236,25 @@
         "N80_MEDIA_INSTALL": "1"
       },
       "concurrency": "workflow_owned"
+    },
+    "ai.browser_session": {
+      "module": "ai_lab",
+      "workflow": "noa-ai-worker.yml",
+      "command": [
+        "scripts/n80_browser_relay.py"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
+    },
+    "ai.browser_probe": {
+      "module": "ai_lab",
+      "workflow": "noa-ai-worker.yml",
+      "command": [
+        "scripts/n80_browser_relay.py",
+        "--probe"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
     }
   },
   "runtimes": {
