@@ -1,4 +1,5 @@
 name: N80 login continuity
+# This scoped release owns login changes; membership and presentation deploys skip its tag.
 on:
   push:
     branches: [main]
