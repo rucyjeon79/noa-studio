@@ -122,12 +122,15 @@ def check_host():
         regular(node)
         loader = libs + '/ld-linux-x86-64.so.2'
         regular(loader)
-        prefix = ' '.join(map(shlex.quote, [loader, '--library-path', libs, node]))
+        prefix = ' '.join(map(shlex.quote, [loader, '--library-path', libs, node, '--max-old-space-size=128']))
         version = execute(transport, command=prefix + ' --version', parser=node_result, deadline_seconds=10)
         if version.get('started') is not True:
             raise ValueError('host_node_not_available')
         # Hash on the host, avoiding repeated 127 MB transfers to the build runner.
-        hash_code = "console.log(require('node:crypto').createHash('sha256').update(require('node:fs').readFileSync(process.argv[1])).digest('hex'))"
+        hash_code = ("const f=require('node:fs'),h=require('node:crypto').createHash('sha256');"
+                     "const fd=f.openSync(process.argv[1],'r'),b=Buffer.alloc(65536);let n;"
+                     "try{while((n=f.readSync(fd,b,0,b.length,null))>0)h.update(b.subarray(0,n));}"
+                     "finally{f.closeSync(fd)}console.log(h.digest('hex'))")
         checksum = execute(transport, command=prefix + ' -e ' + shlex.quote(hash_code) + ' ' + shlex.quote(node), deadline_seconds=15,
                            parser=lambda out, code: {'match': code == 0 and out.decode().strip() == NODE_SHA})
         if checksum.get('match') is not True:
