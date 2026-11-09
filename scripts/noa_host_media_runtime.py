@@ -263,7 +263,8 @@ def main():
                     result['browserStarted'] = browser.get('browserStarted') is True
                     result['state'] = browser['state']
                 except Exception as error:
-                    result['browserInstallation'] = {'state': 'host_browser_install_failed', 'errorType': type(error).__name__}
+                    reason = str(error) if isinstance(error, ValueError) and re.fullmatch(r'[a-z_]{1,80}', str(error)) else 'browser_dependency_failed'
+                    result['browserInstallation'] = {'state': 'host_browser_install_failed', 'reason': reason, 'errorType': type(error).__name__}
     except Exception as error:
         result.update(state='host_connection_failed', errorType=type(error).__name__, browserStarted=False)
     finally:

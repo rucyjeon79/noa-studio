@@ -52,6 +52,13 @@ jobs:
         run: |
           npm install --prefix "$RUNNER_TEMP/n80-host-browser" --ignore-scripts --no-save --package-lock=false playwright@1.62.0
           "$RUNNER_TEMP/n80-host-browser/node_modules/.bin/playwright" install --with-deps --only-shell chromium
+          python - <<'PY'
+          import os, sys
+          sys.path.insert(0, 'scripts')
+          from noa_host_browser_runtime import browser_package
+          binary, files = browser_package(os.environ['PLAYWRIGHT_BROWSERS_PATH'])
+          print('N80_BROWSER_PACKAGE_READY', len(files), sum(p.stat().st_size for p in files.values()))
+          PY
       - name: Start a bounded browser process on the existing hosting account
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}

@@ -57,13 +57,12 @@ def remove_profile(sftp, path, expected):
     sftp.rmdir(path)
 
 
-def install_browser(transport, node):
-    from noa_host_media_runtime import execute, runtime_libraries
-    import paramiko
-    cache = Path(os.environ['NOA_HOST_BROWSER_CACHE']).resolve()
+def browser_package(cache):
+    from noa_host_media_runtime import runtime_libraries
+    cache = Path(cache).resolve()
     candidates = [p for name in ('chrome-headless-shell', 'headless_shell') for p in cache.rglob(name) if p.is_file() and not p.is_symlink()]
     if len(candidates) != 1:
-        return {'state': 'runner_browser_package_missing', 'browserStarted': False}
+        raise ValueError('runner_browser_package_missing')
     binary = candidates[0]
     files = {}
     for path in binary.parent.rglob('*'):
@@ -79,6 +78,14 @@ def install_browser(transport, node):
     total = sum(path.stat().st_size for path in files.values())
     if not 1_000_000 < total < 600_000_000 or len(files) > 250:
         raise ValueError('browser_package_limit')
+    return binary, files
+
+
+def install_browser(transport, node):
+    from noa_host_media_runtime import execute
+    import paramiko
+    binary, files = browser_package(os.environ['NOA_HOST_BROWSER_CACHE'])
+    total = sum(path.stat().st_size for path in files.values())
     hashes = {name: hashlib.sha256(path.read_bytes()).hexdigest() for name,path in files.items()}
     bundle_sha = hashlib.sha256(json.dumps(hashes, sort_keys=True).encode()).hexdigest()
     folder = ROOT+'/browser-'+bundle_sha[:16]
