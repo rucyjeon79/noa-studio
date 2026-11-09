@@ -54,7 +54,8 @@ def command_for(manifest):
     args = [node]
     if manifest['privateLibraries']:
         args = [lib + '/ld-linux-x86-64.so.2', '--library-path', lib, node]
-    args += ['--max-old-space-size=128', ROOT + '/n80-' + manifest['bundleSha256'][:16] + '/runtime/node/worker.mjs']
+    args += ['--max-old-space-size=128', '--dns-result-order=ipv4first', '--no-network-family-autoselection',
+             ROOT + '/n80-' + manifest['bundleSha256'][:16] + '/runtime/node/worker.mjs']
     return 'exec ' + shlex.join(args)
 
 
@@ -64,6 +65,11 @@ def parse_receipt(data, code, operation, invocation, manifest):
     except (ValueError, UnicodeError):
         raise RuntimeError('invalid_node_receipt') from None
     if isinstance(value, dict) and value.get('ok') is False:
+        probes = value.get('networkProbe', {})
+        if isinstance(probes, dict):
+            safe = {name: state for name, state in probes.items()
+                    if name in ('ipv4', 'ipv6', 'loopback_tls') and state in ('connected', 'timeout', 'failed')}
+            if safe: print('N80_NODE_NETWORK_PROBE', json.dumps(safe), flush=True)
         error = value.get('error', '')
         if isinstance(error, str) and re.fullmatch(r'(?:node_[a-z_]{1,70}|invalid_[a-z_]{1,50}|lab_api_http_[1-5][0-9]{2}|muvy_result_delivery_unconfirmed)', error):
             raise RuntimeError(error)

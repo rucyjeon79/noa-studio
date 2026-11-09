@@ -6,11 +6,13 @@ from pathlib import Path
 import re
 import shutil
 import stat
+import subprocess
+import tempfile
 
 ROOT = '/hosting/noastudio/noa-ai-lab/host-runtime'
 START = r'''const {spawn}=require('node:child_process');
 const [loader,libs,browser,profile]=process.argv.slice(2);
-const child=spawn(loader,['--library-path',libs,browser,'--headless','--disable-gpu','--disable-dev-shm-usage','--no-first-run','--user-data-dir='+profile,'--dump-dom','about:blank'],{cwd:require('node:path').dirname(browser),detached:true,stdio:['ignore','pipe','pipe']});
+const child=spawn(browser,['--headless','--disable-gpu','--disable-dev-shm-usage','--no-first-run','--user-data-dir='+profile,'--dump-dom','about:blank'],{cwd:require('node:path').dirname(browser),env:{...process.env,LD_LIBRARY_PATH:libs},detached:true,stdio:['ignore','pipe','pipe']});
 let output='',error='',timedOut=false,finished=false;
 const stop=()=>{if(child.pid)try{process.kill(-child.pid,'SIGKILL')}catch{}};
 const timer=setTimeout(()=>{timedOut=true;stop()},20000);
@@ -117,9 +119,32 @@ def install_browser(transport, node):
     import paramiko
     binary, files = browser_package(os.environ['NOA_HOST_BROWSER_CACHE'])
     total = sum(path.stat().st_size for path in files.values())
-    hashes = {name: hashlib.sha256(path.read_bytes()).hexdigest() for name,path in files.items()}
-    bundle_sha = hashlib.sha256(json.dumps(hashes, sort_keys=True).encode()).hexdigest()
+    source_hashes = {name: hashlib.sha256(path.read_bytes()).hexdigest() for name,path in files.items()}
+    bundle_sha = hashlib.sha256(json.dumps({'files':source_hashes,'interpreter':'private-elf-v1'}, sort_keys=True).encode()).hexdigest()
     folder = ROOT+'/browser-'+bundle_sha[:16]
+    # Directly running ld-linux makes /proc/self/exe point at the loader; Chrome
+    # then cannot find ICU/resources or its own subprocess executable. Give each
+    # executable the private interpreter in its ELF header instead.
+    patched = tempfile.TemporaryDirectory(prefix='n80-browser-elf-')
+    for name, path in list(files.items()):
+        if not name.startswith('browser/'):
+            continue
+        with path.open('rb') as source:
+            if source.read(4) != b'\x7fELF':
+                continue
+        check = subprocess.run(['patchelf','--print-interpreter',str(path)], capture_output=True, timeout=10)
+        if check.returncode != 0:
+            continue
+        target = Path(patched.name)/name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, target)
+        subprocess.run(['patchelf','--set-interpreter',folder+'/lib/ld-linux-x86-64.so.2',str(target)], check=True, timeout=30, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        files[name] = target
+    if files['browser/'+binary.name] == binary:
+        patched.cleanup()
+        raise ValueError('browser_interpreter_not_patched')
+    hashes = {name: hashlib.sha256(path.read_bytes()).hexdigest() for name,path in files.items()}
+    total = sum(path.stat().st_size for path in files.values())
     starter = ROOT+'/browser-start-'+hashlib.sha256(START.encode()).hexdigest()[:16]+'.cjs'
     verifier = ROOT+'/browser-verify-'+hashlib.sha256(VERIFY.encode()).hexdigest()[:16]+'.cjs'
     manifest = json.dumps({name: {'bytes': path.stat().st_size, 'sha256': hashes[name]} for name,path in files.items()}, sort_keys=True).encode()
@@ -165,7 +190,7 @@ def install_browser(transport, node):
         sftp.chmod(path, 0o700)
 
     try:
-        print('N80_BROWSER_TRANSFER_STARTED', len(files), total, flush=True)
+        print('N80_HOST_STAGE browser_transfer_started', len(files), total, flush=True)
         mkdir(folder)
         for index, (name, path) in enumerate(sorted(files.items()), 1):
             parts = Path(name).parts[:-1]
@@ -186,11 +211,13 @@ def install_browser(transport, node):
         node_command = node_path
         if node.get('privateLibraries'):
             node_command = node_libs+'/ld-linux-x86-64.so.2 --library-path '+node_libs+' '+node_path
+        print('N80_HOST_STAGE browser_integrity_started', flush=True)
         verified = execute(transport, command=' '.join([node_command, verifier, folder, manifest_path, manifest_sha]), parser=package_result, deadline_seconds=45)
         if verified.get('verified') is not True:
             raise ValueError('host_browser_checksum_mismatch')
         print('N80_BROWSER_BUNDLE_VERIFIED', flush=True)
         command = ' '.join([node_command, starter, folder+'/lib/ld-linux-x86-64.so.2', folder+'/lib', folder+'/browser/'+binary.name, profile])
+        print('N80_HOST_STAGE browser_launch_started', flush=True)
         result = execute(transport, command=command, parser=browser_result, deadline_seconds=30)
         started = result.get('browserStarted') is True
         result.update(bundleSha256=bundle_sha, bytes=total, installed=started)
@@ -204,3 +231,4 @@ def install_browser(transport, node):
             for path in sorted(set(directories), key=len, reverse=True):
                 sftp.rmdir(path)
         sftp.close()
+        patched.cleanup()

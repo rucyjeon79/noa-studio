@@ -62,8 +62,8 @@ the operation ownership test.
 - Browser integrity validation runs on the host against a SHA-256 manifest.
   The tiny verifier and manifest are read back before use. Failed integrity
   checks never start the browser.
-- Run `42594375499` tests the recovered browser changes from `dccaca2`. Check
-  its actual execution receipt before attributing browser or provider readiness.
+- Run `42594375499` tested `dccaca2` and timed out after 15 minutes without
+  producing a final runtime receipt. It does not prove browser readiness.
 - Concurrent Node work added system SHA-256 verification in `667bdc7`, avoiding
   full executable downloads when the host's checksum tool is available.
   `faa9a13` preserves the browser validation tests and Node status flag.
@@ -71,3 +71,17 @@ the operation ownership test.
   browser installation and PHP capability checks, then atomically replaced with
   the final receipt. A timeout can retain the last phase without marking it
   complete. Browser staging counts and final hash verification are separate logs.
+
+## Browser loader correction
+
+A local reproduction showed that invoking Chromium through `ld-linux` directly
+makes `/proc/self/exe` identify the loader, breaking ICU/resource discovery. The
+installer now patches a copy of each browser executable to use the private ELF
+interpreter and launches the browser directly. `LD_LIBRARY_PATH` is scoped to the
+browser child. This keeps resource/subprocess paths correct without disabling
+the sandbox. Uploaded bytes are verified on the host against a hashed manifest.
+A host page-load result is still required before reporting browser readiness.
+
+Node run `42595643431` verified its binary and source, then failed at the signed
+HTTP roundtrip with `node_network_und_err_connect_timeout`. The latest Node
+changes address that network path separately from this browser recovery.

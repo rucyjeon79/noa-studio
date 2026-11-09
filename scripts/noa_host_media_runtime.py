@@ -286,6 +286,7 @@ def main():
             try:
                 write_evidence(result, 'node_verification')
                 result['nodeInstallation'] = install_node(transport)
+                print('N80_HOST_STAGE node_verify_finished', flush=True)
                 result['nodeStarted'] = result['nodeInstallation'].get('started') is True
             except Exception as error:
                 result['nodeInstallation'] = {'state': 'host_install_failed', 'errorType': type(error).__name__}
