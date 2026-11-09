@@ -2,7 +2,7 @@ name: N80 Hub one-time host migration
 on:
   push:
     branches: [work/n80-hub-bootstrap]
-    paths: ['scripts/n80_hub_bootstrap.py', 'deploy/noa-hub*.php', 'deploy/noa-app/engine/hub*.php', 'bridge/hub-worker.php', 'runtime/hub/**', 'tests/hub/**', 'config/n80-hub*.json', '.github/workflows/n80-hub-bootstrap.yml']
+    paths: ['scripts/n80_hub_bootstrap.py', 'deploy/noa-hub*.php', 'deploy/noa-app/engine/hub*.php', 'bridge/hub*.php', 'runtime/hub/**', 'tests/hub/**', 'config/n80-hub*.json', '.github/workflows/n80-hub-bootstrap.yml']
 permissions: {contents: read}
 concurrency:
   group: n80-hub-bootstrap
@@ -18,8 +18,10 @@ jobs:
       - name: Validate native host control before any installation
         run: |
           php tests/hub/core_test.php
+          php tests/engine/registry_test.php
+          php tests/engine/runtime_ownership_test.php
           node --test tests/hub/runner.test.mjs
-          for file in deploy/noa-app/engine/hub*.php deploy/noa-hub*.php bridge/hub-worker.php; do php -l "$file"; done
+          for file in deploy/noa-app/engine/hub*.php deploy/noa-hub*.php bridge/hub*.php; do php -l "$file"; done
           python -m py_compile scripts/n80_hub_bootstrap.py scripts/n80_auto.py
       - run: python -m pip install paramiko==3.5.1
       - name: Install and verify the N80-owned source and execution module

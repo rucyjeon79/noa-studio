@@ -36,9 +36,17 @@ ROOT = '/hosting/noastudio/noa-hub'
 WEB = '/hosting/noastudio/html'
 FILES = {
  'noa-hub.php':'deploy/noa-hub.php', 'noa-hub-owner.php':'deploy/noa-hub-owner.php',
- 'noa-bridge/hub-worker.php':'bridge/hub-worker.php',
+ 'noa-bridge/hub-worker.php':'bridge/hub-worker.php', 'noa-bridge/hub-admin.php':'bridge/hub-admin.php',
  **{'noa-app/engine/'+n:'deploy/noa-app/engine/'+n for n in ['hub.php','hub-release.php','hub-specialists.php']},
 }
+
+def native_call(key,body):
+    raw=json.dumps(body,separators=(',',':')).encode();ts=str(int(time.time()));nonce=secrets.token_hex(16)
+    signature=hmac.new(key,('N80-HUB-1\n'+hashlib.sha256(raw).hexdigest()+'\n'+ts+'\n'+nonce).encode(),hashlib.sha256).hexdigest()
+    req=urllib.request.Request('https://noastudio.ai.kr/noa-bridge/hub-admin.php',data=raw,headers={'Content-Type':'application/json','X-N80-Time':ts,'X-N80-Nonce':nonce,'X-N80-Signature':signature})
+    with urllib.request.urlopen(req,timeout=120)as r:result=json.load(r)
+    if result.get('ok') is not True:raise RuntimeError('native_admin_failed')
+    return result
 
 def install():
     transport=connect()
@@ -54,7 +62,9 @@ def install():
                 try:info=s.lstat(p)
                 except FileNotFoundError:return None
                 if not stat.S_ISREG(info.st_mode) or info.st_size>134217728:raise RuntimeError('unsafe_file')
-                with s.open(p,'rb') as f:return f.read()
+                with s.open(p,'rb') as f:
+                    f.prefetch(info.st_size,max_concurrent_requests=32)
+                    return f.read()
             def put(p,data,mode=0o600):
                 old=read(p)
                 if old==data:return
@@ -64,7 +74,7 @@ def install():
                 if read(temp)!=data:raise RuntimeError('readback_mismatch')
                 if read(p)!=old:raise RuntimeError('concurrent_change')
                 s.posix_rename(temp,p)
-            mkdir(ROOT);mkdir(ROOT+'/runtime')
+            mkdir(ROOT);mkdir(ROOT+'/runtime');print('N80_HUB_STAGE directories',flush=True)
             # New Hub files only. Existing core files use their own guarded owner.
             for target,source in FILES.items():
                 desired=Path(source).read_bytes();old=read(WEB+'/'+target)
@@ -73,6 +83,7 @@ def install():
                     known.add(subprocess.check_output(['git','show',rev+':'+source]))
                 if old is not None and old not in known and old!=desired:raise RuntimeError('unknown_hub_version')
                 put(WEB+'/'+target,desired,0o644)
+            print('N80_HUB_STAGE php_sources',flush=True)
             for name in ['runner.mjs','launch.mjs']:put(ROOT+'/runtime/'+name,Path('runtime/hub/'+name).read_bytes())
             manifest=json.loads(read('/hosting/noastudio/noa-ai-lab/host-runtime/node-current.json'))
             digest=manifest['nodeSha256']
@@ -83,9 +94,11 @@ def install():
             if manifest['privateLibraries']:
                 lib='/hosting/noastudio/noa-ai-lab/host-runtime/lib-'+digest[:16]
                 args=[lib+'/ld-linux-x86-64.so.2','--library-path',lib,node]
+            print('N80_HUB_STAGE node_verified',flush=True)
             put(ROOT+'/node-command.json',json.dumps(args).encode())
             put(ROOT+'/operations.json',Path('config/n80-hub-operations.json').read_bytes())
             put(ROOT+'/dependencies.json',Path('config/n80-hub-dependencies.json').read_bytes())
+            if read(ROOT+'/access.key') is None:put(ROOT+'/access.key',secrets.token_hex(32).encode())
             if read(ROOT+'/control.json') is None:
                 put(ROOT+'/control.json',json.dumps({'revision':1,'paused':False,'activeOperations':['hub.verify']}).encode())
             # The initial full source snapshot moves out of GitHub, never into public media.
@@ -96,17 +109,43 @@ def install():
                     for name in members:archive.add(name,arcname=name,recursive=False)
                 data=out.getvalue();put(ROOT+'/source-initial.tar.gz',data)
                 put(ROOT+'/source.json',json.dumps({'revision':1,'files':len(members),'sourceCommit':os.environ['GITHUB_SHA'],'sha256':hashlib.sha256(data).hexdigest(),'bytes':len(data),'provider':'N80 Hub'}).encode())
+            print('N80_HUB_STAGE source_stored',flush=True)
             channel=transport.open_session(timeout=20);channel.settimeout(25)
             channel.exec_command(shlex.join(args+[ROOT+'/runtime/launch.mjs']))
             output=channel.makefile('r').read(1024).decode();code=channel.recv_exit_status();channel.close()
             if code!=0 or 'N80_HUB_' not in output:raise RuntimeError('hub_launch_failed')
-            key=read('/hosting/noastudio/noa-ai-lab/worker.key').strip()
+            key=read(ROOT+'/access.key').strip()
             for attempt in range(10):
                 state=json.loads(read(ROOT+'/status.json') or b'{}')
                 receipts=json.loads(read(ROOT+'/receipts.json') or b'[]')
                 if any(r['operation']=='hub.verify' and r['state']=='succeeded' for r in receipts) and time.time()-state.get('heartbeatAt',0)<120:break
                 time.sleep(3)
             else:raise RuntimeError('hub_execution_unverified')
+            # Integrate navigation and registry through the new native deployment path itself.
+            package={'version':1,'id':secrets.token_hex(16),'files':[]}
+            for name in ['registry.php','workspaces.php']:
+                source='deploy/noa-app/engine/'+name;target='noa-app/engine/'+name;old=read(WEB+'/'+target);desired=Path(source).read_bytes()
+                if old==desired:continue
+                known=[subprocess.check_output(['git','show',rev+':'+source])for rev in subprocess.check_output(['git','log','--format=%H','--',source],text=True).splitlines()]
+                if old not in known:raise RuntimeError('integration_preimage_changed')
+                package['files'].append({'path':target,'beforeSha256':hashlib.sha256(old).hexdigest(),'sha256':hashlib.sha256(desired).hexdigest(),'bytes':len(desired),'data':base64.b64encode(desired).decode()})
+            if package['files']:
+                current=native_call(key,{'action':'status'})
+                receipt=native_call(key,{'action':'release','revision':current['source']['revision'],'package':package})
+                for row in package['files']:
+                    if hashlib.sha256(read(WEB+'/'+row['path'])).hexdigest()!=row['sha256']:raise RuntimeError('native_release_readback_failed')
+                print('N80_HUB_NATIVE_RELEASE',json.dumps({'revision':receipt['revision'],'files':len(package['files']),'githubRequiredByRelease':False}),flush=True)
+            if os.getenv('N80_HUB_CUTOVER')=='1':
+                current=native_call(key,{'action':'status'})
+                active=['hub.verify','ai.text','ai.batch','catalog.index','notifications.dispatch','popularity.calculate']
+                native_call(key,{'action':'control','revision':current['revision'],'activeOperations':active})
+                for attempt in range(35):
+                    current=native_call(key,{'action':'status'})
+                    states={r['id']:r['last'] for r in current['operations'] if r['id'] in active}
+                    if all(r and r['state']=='succeeded' for r in states.values()):break
+                    time.sleep(4)
+                else:raise RuntimeError('cutover_not_verified:'+','.join(k+':'+(v or {}).get('state','waiting')+':'+(v or {}).get('error','')for k,v in states.items()))
+                print('N80_HUB_CUTOVER',json.dumps({'activeOperations':active,'verifiedReceipts':len(states)}),flush=True)
             print('N80_HUB_INSTALLED',json.dumps({'sourceStored':True,'hostNodeRunning':True,'nativeVerification':True,'activeOperations':['hub.verify'],'githubRequiredForHubTick':False,'files':len(FILES)}))
     finally:transport.close()
 

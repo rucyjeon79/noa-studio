@@ -50,9 +50,9 @@ function n80_hub_request(string $operation,?string $root=null):string {
   $s=n80_hub_read($root,'requests.json');$s[$operation]=time();n80_hub_write($root,'requests.json',$s);return 'requested';
  });
 }
-function n80_hub_auth(string $raw,array $headers,string $key,int $now):bool {
+function n80_hub_auth(string $raw,array $headers,string $key,int $now,int $limit=65536):bool {
  $ts=$headers['time']??'';$nonce=$headers['nonce']??'';$sig=$headers['signature']??'';
- return strlen($raw)<=65536&&strlen($key)===64&&is_string($ts)&&ctype_digit($ts)&&abs($now-(int)$ts)<=180
+ return $limit<=12582912&&strlen($raw)<=$limit&&strlen($key)===64&&is_string($ts)&&ctype_digit($ts)&&abs($now-(int)$ts)<=180
  &&is_string($nonce)&&preg_match('/^[a-f0-9]{32}$/D',$nonce)&&is_string($sig)&&preg_match('/^[a-f0-9]{64}$/D',$sig)
  &&hash_equals(hash_hmac('sha256',"N80-HUB-1\n".hash('sha256',$raw)."\n".$ts."\n".$nonce,$key),$sig);
 }

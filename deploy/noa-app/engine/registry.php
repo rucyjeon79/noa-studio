@@ -31,7 +31,7 @@ function noa_engine_modules(): array {
     ];
     $sources=[
         'music'=>['noa-music.php'],
-        'hub'=>['noa-hub.php','noa-hub-owner.php','noa-app/engine/hub.php','noa-app/engine/hub-release.php','noa-app/engine/hub-specialists.php','noa-bridge/hub-worker.php'],
+        'hub'=>['noa-hub.php','noa-hub-owner.php','noa-app/engine/hub.php','noa-app/engine/hub-release.php','noa-app/engine/hub-specialists.php','noa-bridge/hub-worker.php','noa-bridge/hub-admin.php'],
         'jukebox'=>array_merge(['noa-app/engine/jukebox.php'],array_values(n80_jukebox_module()['components'])),
         'youtube'=>['noa-youtube.php'], 'world'=>['noa-world.php'], 'playlist'=>['noa-playlists.js'],
         'creator_lab'=>['noa-channel-workspace.php','noa-app/engine/workspaces.php'],
