@@ -28,6 +28,9 @@ def prepare():
     release.EXTRA_KNOWN[remote]=[expected,hashlib.sha256(candidate).hexdigest()]
  finally:t.close()
 release.FILES={'noa-app/engine/registry.php':'deploy/noa-app/engine/registry.php','noa-app/engine/session-policy.php':'deploy/noa-app/engine/session-policy.php','noa-login.php':'deploy/noa-login.php'}
+# Concurrent media-only releases do not change login sources or dependencies.
+# Native preimages and every owned file are still checked immediately before activation.
+release.UNRELATED_PATH_PREFIXES=('scripts/noa_creative_release.py','scripts/noa_media_colocate.php','scripts/noa_media_colocate.py','scripts/noa_media_paths.php','deploy/noa-app/jukebox/media-location.php','tests/creative/media-stage.php','.github/workflows/noa-creative-drafts.yml','.github/workflows/noa-upload-status.yml')
 release.NEW={'noa-app/engine/session-policy.php'}
 release.PROTECTED=[p for p in release.PROTECTED if p not in PATCHES]
 release.PROTECTED+=['bbs/logout.php','extend/zz.noa-social.php','noa-bridge/social-policy.php']
