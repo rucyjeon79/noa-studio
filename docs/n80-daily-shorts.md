@@ -210,3 +210,20 @@ Protocol reference: https://developers.google.com/workspace/drive/api/guides/cre
 https://developers.google.com/workspace/drive/api/guides/manage-uploads
 (resumable binary upload). Missing credentials, ambiguous metadata and different
 bytes fail closed without deleting the existing generated source.
+
+### Observed deployment and connection blocker
+
+PR #452 was deployed by Actions run 42552846448 at commit
+`168e594c405771c40e7d35fac3d42f61da24779a`. The host verified the two
+changed bridge files and preserved all 11 protected sources. The existing N80
+worker then ran automatically (42553364560), but its Drive credential setting
+was empty. Its first storage attempt stopped before reserving any Drive IDs;
+no Drive storage receipt or public video exists. Do not call this a successful
+Drive connection. ChatGPT's connected Drive tools do not supply this worker's
+credential. Never export browser cookies or connector credentials as a shortcut.
+
+The worker now checks that its existing Drive credential configuration is
+present before claiming media. Missing configuration reports
+`storage_connection_required / drive_credentials_missing` without using another
+asset retry or changing the production job. Actual token refresh, upload and
+readback must still pass after the approved worker connection is configured.

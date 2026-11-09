@@ -6,6 +6,7 @@ timeouts. No source duplication, model approval, publication or deletion here.
 import base64
 import hashlib
 import json
+import os
 import re
 import tempfile
 import time
@@ -195,6 +196,12 @@ def transfer(dispatch, claim, drive):
 
 def run_storage(dispatch, drive=None):
     results = []
+    # A missing deployment credential is not an asset failure. Check before
+    # claiming so unattended ticks cannot exhaust an untouched asset's budget.
+    if drive is None and not os.environ.get('NOA_DRIVE_RCLONE_CONFIG_B64', '').strip():
+        results.append({'state': 'storage_connection_required', 'reason': 'drive_credentials_missing'})
+        print('N80_SHORTS_STORAGE', json.dumps(results), flush=True)
+        return results
     try:
         # Existing worker invocation owns this bounded loop, never another timer.
         for _ in range(3):

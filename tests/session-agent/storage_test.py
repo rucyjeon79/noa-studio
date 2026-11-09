@@ -3,6 +3,7 @@ import hashlib
 import io
 import sys
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 from noa_shorts_storage import MediaDrive, transfer, run_storage
@@ -83,6 +84,20 @@ class StorageTest(unittest.TestCase):
                 raise AssertionError('idle connection')
         self.assertEqual(run_storage(lambda _: {'claimed': False, 'state': 'no_generated_media'}, NoDrive()),
                          [{'state': 'no_generated_media'}])
+
+    def test_missing_credentials_do_not_claim_or_spend_asset_retry(self):
+        def no_claim(*args, **kwargs):
+            self.fail('missing credentials must not claim or mutate a job')
+        for value in ('', '  '):
+            with patch.dict('os.environ', {'NOA_DRIVE_RCLONE_CONFIG_B64': value}):
+                self.assertEqual(run_storage(no_claim), [{
+                    'state': 'storage_connection_required', 'reason': 'drive_credentials_missing'}])
+
+    def test_configured_idle_tick_does_not_initialize_drive(self):
+        with patch.dict('os.environ', {'NOA_DRIVE_RCLONE_CONFIG_B64': 'configured'}), \
+                patch('noa_shorts_storage.MediaDrive', side_effect=AssertionError('idle connection')):
+            self.assertEqual(run_storage(lambda _: {'claimed': False, 'state': 'no_generated_media'}),
+                             [{'state': 'no_generated_media'}])
 
     def test_existing_remote_after_lost_receipt_is_verified_without_upload(self):
         self.claim.update(folderId='driveFolder111', fileId='driveFileId111')
