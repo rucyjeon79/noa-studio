@@ -7,7 +7,9 @@ import path from 'node:path';
 import os from 'node:os';
 import {pathToFileURL} from 'node:url';
 import {validateSubtitles,selectSubtitleWindow,subtitleAss,subtitleFile} from './subtitles.mjs';
-async function run(command,args){return new Promise((resolve,reject)=>{const p=spawn(command,args,{stdio:['ignore','pipe','pipe']});let out='',err='';p.stdout.on('data',b=>out+=b);p.stderr.on('data',b=>err=(err+b).slice(-8000));p.on('error',reject);p.on('close',code=>code===0?resolve(out):reject(Error(command+': '+err)));});}
+async function run(command,args){
+ if(process.env.N80_HOST_MEDIA==='1')args=command==='ffprobe'?['-protocol_whitelist','file,pipe',...args]:['-filter_threads','1','-filter_complex_threads','1',...args.flatMap(arg=>arg==='-i'?['-protocol_whitelist','file,pipe','-i']:[arg])];
+ return new Promise((resolve,reject)=>{const p=spawn(command,args,{stdio:['ignore','pipe','pipe']});let out='',err='';p.stdout.on('data',b=>out+=b);p.stderr.on('data',b=>err=(err+b).slice(-8000));p.on('error',reject);p.on('close',code=>code===0?resolve(out):reject(Error(command+': '+err)));});}
 async function sha(file){const h=createHash('sha256');for await(const b of createReadStream(file))h.update(b);return h.digest('hex');}
 async function probe(file){return JSON.parse(await run('ffprobe',['-v','error','-show_streams','-show_format','-of','json',file]));}
 const encode=['-an','-c:v','libx264','-preset','fast','-crf','18','-pix_fmt','yuv420p','-threads','2','-r','24','-fps_mode','cfr','-video_track_timescale','12288'];

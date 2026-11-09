@@ -2,7 +2,6 @@
 import base64
 import hashlib
 import json
-import os
 import subprocess
 import tempfile
 import time
@@ -59,16 +58,8 @@ def download(call, kind, scene, sha, target):
 
 
 def render(manifest, folder):
-    root = Path(__file__).resolve().parents[1]
-    file = folder / 'manifest.json'
-    output = folder / 'final.mp4'
-    file.write_text(json.dumps(manifest, ensure_ascii=False))
-    # Media processes do not need the hosting/GitHub credentials from this runner.
-    environment = {key: os.environ[key] for key in ('PATH', 'LANG', 'LC_ALL', 'TMPDIR') if key in os.environ}
-    subprocess.run(['node', str(root / 'lab/session-assemble.mjs'), str(file), str(output)],
-                   check=True, timeout=600, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                   env=environment)
-    return output, json.loads(Path(str(output) + '.receipt.json').read_text())
+    from n80_media_runtime import render as host_render
+    return host_render(manifest, folder)
 
 
 def assemble_claim(dispatch, claim, renderer=render):
@@ -92,6 +83,7 @@ def assemble_claim(dispatch, claim, renderer=render):
                 download(call, 'video', row['n'], row['sha256'], target)
                 row['path'] = str(target)
             stage = 'assembly_render'
+            manifest['n80Execution'] = {key: auth[key] for key in ('id', 'operationId')}
             output, receipt = renderer(manifest, folder)
             if (output != folder / 'final.mp4' or output.is_symlink()
                     or not 256 <= output.stat().st_size <= MAX_BYTES
@@ -113,6 +105,11 @@ def assemble_claim(dispatch, claim, renderer=render):
                 raise ValueError('assembly_receipt_missing')
         return {'state': 'final_review_required', 'sha256': receipt['sha256'], 'publicationReady': False}
     except Exception as error:
+        from n80_media_runtime import HostRenderUnconfirmed
+        if isinstance(error, HostRenderUnconfirmed):
+            # The host process has its own deadline. Retain the existing lease
+            # until it expires instead of starting an overlapping/local render.
+            return {'state': 'host_render_unconfirmed', 'leaseRetained': True, 'publicationReady': False}
         reason = stage + ('_timeout' if isinstance(error, subprocess.TimeoutExpired) else '_failed')
         try:
             call('assembly_fail', reason=reason)

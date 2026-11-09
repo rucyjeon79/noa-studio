@@ -224,6 +224,18 @@
       ],
       "requiredEnv": {},
       "concurrency": "workflow_owned"
+    },
+    "ai.media_install": {
+      "module": "ai_lab",
+      "workflow": "noa-ai-worker.yml",
+      "command": [
+        "scripts/n80_media_runtime.py",
+        "install"
+      ],
+      "requiredEnv": {
+        "N80_MEDIA_INSTALL": "1"
+      },
+      "concurrency": "workflow_owned"
     }
   },
   "runtimes": {
@@ -252,6 +264,19 @@
         "muvy_complete",
         "muvy_failed"
       ]
+    },
+    "media": {
+      "authority": "N80 Engine",
+      "module": "ai_lab",
+      "executor": "existing_noa_host",
+      "entry": "runtime/media/host-runner.mjs",
+      "queue": "existing_session_shorts_assembly",
+      "permission": "existing_signed_lab_worker",
+      "completion": "existing_assembly_lease_and_receipt",
+      "deadlineSeconds": 600,
+      "maxTasksPerInvocation": 1,
+      "daemon": false,
+      "transport": "existing_n80_auto_ssh"
     }
   }
 }

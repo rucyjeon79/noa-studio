@@ -3,9 +3,11 @@ import hashlib
 import importlib.util
 import tempfile
 import unittest
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / 'scripts'))
 spec = importlib.util.spec_from_file_location('auto_edit', ROOT / 'scripts/noa_shorts_assembly.py')
 edit = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(edit)
@@ -82,6 +84,19 @@ class AutomaticEditing(unittest.TestCase):
             receipt['sha256'] = '0'*64
             return output, receipt
         self.assertEqual(edit.assemble_claim(self.dispatch, self.claim, bad)['state'], 'assembly_failed')
+        self.assertNotIn('assembly_write', self.calls)
+
+    def test_lost_host_response_keeps_lease_and_never_runs_local_fallback(self):
+        from n80_media_runtime import HostRenderUnconfirmed
+        calls = []
+        def uncertain(manifest, folder):
+            calls.append('host')
+            raise HostRenderUnconfirmed()
+        result = edit.assemble_claim(self.dispatch, self.claim, uncertain)
+        self.assertEqual(result['state'], 'host_render_unconfirmed')
+        self.assertTrue(result['leaseRetained'])
+        self.assertEqual(calls, ['host'])
+        self.assertNotIn('assembly_fail', self.calls)
         self.assertNotIn('assembly_write', self.calls)
 
 
