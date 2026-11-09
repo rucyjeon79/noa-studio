@@ -204,7 +204,7 @@ def main(probe=False):
         nonlocal frame_logged
         payload = {**body, 'id': session['id'], 'lease': session['lease']}
         result = signed_tick(key, 'n80_browser_tick', json.dumps(payload, separators=(',', ':')).encode(), timeout=40)
-        if body.get('frame') and not frame_logged:
+        if body.get('frame') and not frame_logged and not result.get('stop'):
             frame_logged = True
             print('N80_BROWSER_FIRST_FRAME_ACCEPTED', json.dumps({'host': urlparse(body['frame']['url']).hostname}), flush=True)
         return result
