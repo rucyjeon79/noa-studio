@@ -2,7 +2,7 @@ name: NOA STUDIO Android
 # Production PWA owns navigation and layout; Android provides background media only.
 on:
   push:
-    branches: [main, work/android-background-20261022, work/n80-release-final-20261029, work/android-live-failures-20261030, work/android-live-pwa-only-20261030, work/android-pwa-parity-20261105]
+    branches: [main, work/android-background-20261022, work/n80-release-final-20261029, work/android-live-failures-20261030, work/android-live-pwa-only-20261030, work/android-pwa-parity-20261105, work/android-node-20261109]
     paths: ['.github/workflows/noa-android.yml', 'android/**', 'scripts/noa_android_*.py', 'scripts/noa_apk_*.py', 'tests/android/**', 'tests/n80/android_update_test.php', 'public/icon-512.png']
   workflow_dispatch:
     inputs:
@@ -16,6 +16,9 @@ jobs:
   apk:
     runs-on: ubuntu-latest
     environment: production
+    concurrency:
+      group: n80-android-host-bridge
+      cancel-in-progress: false
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -28,10 +31,27 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.22.2'
       - name: Verify native bridge and administrator preview fallback
         run: node --test tests/android/native_bridge_test.mjs tests/android/live_web_contract_test.mjs
       - name: Verify APK publication failure safety
         run: python3 tests/android/apk_deploy_test.py
+      - name: Verify host Node evidence and N80 operation ownership
+        run: |
+          python3 tests/android/host_node_test.py
+          python3 -m unittest discover -s tests/engine -p 'test_auto_dispatch.py' -v
+      - name: Verify the APK bridge with Node on the existing NOA host
+        if: github.ref == 'refs/heads/main'
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          NOA_ANDROID_HOST_NODE: '1'
+        run: |
+          python3 -m pip install --user 'paramiko==3.5.1'
+          python3 scripts/n80_auto.py jukebox.android_bridge
       - name: Verify n80 Android release contract
         run: php tests/n80/android_update_test.php
       - name: Check APK signing and deployment scripts
@@ -40,6 +60,8 @@ jobs:
         run: echo "NOA_RELEASE_VERSION_CODE=$(git show -s --format=%ct "$GITHUB_SHA")" >> "$GITHUB_ENV"
       - name: Compile installable APK and lint
         working-directory: android
+        env:
+          NOA_ANDROID_HOST_NODE: ${{ github.ref == 'refs/heads/main' && '1' || '0' }}
         run: GITHUB_RUN_NUMBER="$NOA_RELEASE_VERSION_CODE" gradle --no-daemon :app:assembleRelease :app:bundleRelease :app:assembleDebugAndroidTest :app:lintRelease
       - name: Sign release and instrumentation with permanent identity
         env:
@@ -49,6 +71,9 @@ jobs:
         run: |
           python3 -m pip install --user 'paramiko==3.5.1'
           python3 scripts/qa/noa-sign-release.py
+      - name: Verify the signed APK contains the host-tested bridge
+        if: github.ref == 'refs/heads/main'
+        run: python3 scripts/noa_android_host_bridge.py --verify-release
       - name: Retain APK
         uses: actions/upload-artifact@v4
         with:
@@ -147,6 +172,7 @@ jobs:
             android/noa-host-kernel.txt
             android/noa-emulator-host.log
             android/noa-restore-instrumentation.txt
+            android/host-node-proof.json
             android/app/build/reports/lint-results-release.html
           retention-days: 14
 

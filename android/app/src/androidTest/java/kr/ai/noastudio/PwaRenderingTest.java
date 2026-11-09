@@ -25,12 +25,12 @@ public class PwaRenderingTest {
   WebParityTest.js(w,"window.__noaQaPreviousDocument=true;return true;");
   if(route.equals("/noa-music.php"))WebParityTest.js(w,"document.querySelector('.noa-mobile-nav a[href=\"/noa-music.php\"]').click();return true;");
   else WebParityTest.js(w,"location.assign("+JSONObject.quote(route)+");return true;");
-  WebParityTest.until(w,"!window.__noaQaPreviousDocument&&location.pathname==="+JSONObject.quote(route)+"&&document.readyState==='complete'");
+  WebParityTest.until(w,"!window.__noaQaPreviousDocument&&location.pathname+location.search==="+JSONObject.quote(route)+"&&document.readyState==='complete'");
  }
  private static String asset(String name)throws Exception{
   try(InputStream in=InstrumentationRegistry.getInstrumentation().getContext().getAssets().open(name)){ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] block=new byte[4096];int count;while((count=in.read(block))!=-1)out.write(block,0,count);return out.toString(StandardCharsets.UTF_8.name());}
  }
- @Test public void liveScreensAndHomeRecommendation()throws Exception{
+ @Test public void liveScreensAndLabRecommendation()throws Exception{
   MemberTestSession.install();Context c=InstrumentationRegistry.getInstrumentation().getTargetContext();
   c.startActivity(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
   for(int i=0;i<80&&WebParityTest.activity()==null;i++)SystemClock.sleep(250);
@@ -55,17 +55,21 @@ public class PwaRenderingTest {
    try(FileWriter out=new FileWriter(new File(c.getExternalFilesDir(null),"layout-"+name+".json"))){out.write(data.toString());}
    assertTrue(device.takeScreenshot(new File(c.getExternalFilesDir(null),"layout-"+name+".png")));
   }
-  // The actual production homepage hosts its recommendation player in a same-origin frame.
+  // Follow the live PWA entry: recommendations now belong to AI LAB.
   navigate(w,"/");
+  WebParityTest.until(w,"document.querySelector('a[href=\"/noa-ai-lab.php?tool=listen\"]')");
+  String recommendationRoute=(String)WebParityTest.js(w,"return document.querySelector('a[href=\"/noa-ai-lab.php?tool=listen\"]').getAttribute('href');");
+  navigate(w,recommendationRoute);
+  WebParityTest.until(w,"document.querySelector('[data-noa-lab-listening]')");
   WebParityTest.until(w,"document.querySelector('iframe.nl-play-shell')?.contentWindow?.NoaNativeBridge?.ready()");
   AtomicReference<ListenableFuture<MediaController>> future=new AtomicReference<>();
   WebParityTest.main(()->future.set(new MediaController.Builder(c,new SessionToken(c,new ComponentName(c,PlaybackService.class))).buildAsync()));
   MediaController controller=future.get().get(20,TimeUnit.SECONDS);
   try{
-   assertEquals(Boolean.TRUE,WebParityTest.js(w,"const music=document.querySelector('iframe.nl-play-shell').contentWindow.NoaMusic;const rows=music.catalog().filter(r=>r.audio&&r.genre==='kpop-original').slice(0,2);return music.playRecommendedMix(rows.map(r=>r.key));"));
+   assertEquals(Boolean.TRUE,WebParityTest.js(w,"const music=document.querySelector('iframe.nl-play-shell').contentWindow.N80JukeBox;const rows=music.catalog().filter(r=>r.audio&&r.genre==='kpop-original').slice(0,2);return music.playRecommendedMix(rows.map(r=>r.key));"));
    WebParityTest.playing(controller,true);long before=WebParityTest.position(controller);
    device.pressHome();SystemClock.sleep(2000);device.sleep();SystemClock.sleep(2000);
-   assertTrue("Home recommendation must use background native playback",WebParityTest.position(controller)>before+2000);
+   assertTrue("AI LAB recommendation must use background native playback",WebParityTest.position(controller)>before+2000);
    device.wakeUp();device.executeShellCommand("wm dismiss-keyguard");
    c.startActivity(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP));
    for(int i=0;i<80&&WebParityTest.activity()==null;i++)SystemClock.sleep(250);

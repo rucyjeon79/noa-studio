@@ -4,6 +4,7 @@ android {
     namespace 'kr.ai.noastudio'
     compileSdk 35
     sourceSets.main.res.srcDir layout.buildDirectory.dir("generated/noaBrandResources")
+    sourceSets.main.assets.srcDir layout.buildDirectory.dir("generated/n80BridgeAssets")
     defaultConfig { applicationId 'kr.ai.noastudio'; minSdk 26; targetSdk 35; versionCode noaBuildNumber; versionName '2.0.' + noaBuildNumber; testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner' }
     buildTypes { debug { crunchPngs false }; release { crunchPngs false } }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
@@ -25,3 +26,30 @@ tasks.register('copyNoaSymbol', Copy) {
     into layout.buildDirectory.dir('generated/noaBrandResources/drawable-nodpi')
 }
 tasks.named('preBuild').configure { dependsOn 'copyNoaSymbol' }
+
+// Production APKs carry the receipt from the actual NOA host, bound to this bridge.
+// Local debug builds remain possible without pretending they passed the host gate.
+tasks.register('verifyN80HostBridge') {
+    outputs.upToDateWhen { false }
+    doLast {
+        def output = layout.buildDirectory.dir('generated/n80BridgeAssets').get().asFile
+        delete(output)
+        def proofFile = rootProject.file('host-node-proof.json')
+        if (!proofFile.exists()) {
+            if (System.getenv('NOA_ANDROID_HOST_NODE') == '1') throw new GradleException('N80 host Node proof is required')
+            return
+        }
+        def proof = new groovy.json.JsonSlurper().parse(proofFile)
+        def bridgeHash = java.security.MessageDigest.getInstance('SHA-256').digest(file('src/main/assets/noa-native-bridge.js').bytes).encodeHex().toString()
+        if (proof.authority != 'N80 Engine' || proof.operation != 'jukebox.android_bridge' ||
+            proof.executionTarget != 'existing_noa_host' || proof.passed != true ||
+            proof.sourceCommit != System.getenv('GITHUB_SHA') || proof.bridgeSha256 != bridgeHash ||
+            proof.tests.tests < 16 || proof.tests.pass != proof.tests.tests ||
+            ['fail','cancelled','skipped','todo'].any { proof.tests[it] != 0 }) {
+            throw new GradleException('N80 host Node proof does not match this APK')
+        }
+        output.mkdirs()
+        new File(output, 'n80-android-bridge.json').text = proofFile.text
+    }
+}
+tasks.named('preBuild').configure { dependsOn 'verifyN80HostBridge' }

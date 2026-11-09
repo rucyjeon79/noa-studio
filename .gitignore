@@ -24,3 +24,6 @@ quality-popularity/
 # Local inference and test caches
 __pycache__/
 *.pyc
+
+# Per-build receipt from the private N80 host; embedded only in verified APKs.
+/android/host-node-proof.json
