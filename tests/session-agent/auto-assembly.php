@@ -29,7 +29,7 @@ $first=nd_assembly_claim($s,'owner',$now,$read);check_edit($first['claimed']&&$f
 check_edit(nd_assembly_claim($s,'owner',$now+1,$read)['state']==='executor_busy','One executor');
 $b=array_intersect_key($first,array_flip(['id','lease','operationId']));
 reject_edit(fn()=>nd_assembly_authorize($s,array_replace($b,['lease'=>'stale']),'owner',$now+1),'Fence stale worker');
-$changed=$source;$source['revision']=8;reject_edit(function()use(&$s,$b,$now,$read){nd_assembly_operation($s,$b+['command'=>'assembly_read','kind'=>'audio','offset'=>0],'owner',$now+1,$read);},'Recheck live source every operation');$source=$changed;
+$changed=$source;$source['title']='Changed source';reject_edit(function()use(&$s,$b,$now,$read){nd_assembly_operation($s,$b+['command'=>'assembly_read','kind'=>'audio','offset'=>0],'owner',$now+1,$read);},'Recheck live source every operation');$source=$changed;
 $chunk=nd_assembly_operation($s,$b+['command'=>'assembly_read','kind'=>'audio','offset'=>0],'owner',$now+1,$read);check_edit($chunk['sha256']===$source['audioSha256'],'Existing original returned');
 reject_edit(function()use(&$s,$b,$now,$read){nd_assembly_operation($s,$b+['command'=>'assembly_read','kind'=>'image','scene'=>1,'offset'=>0],'owner',$now+1,$read);},'Bounded inputs only');
 $second=nd_assembly_claim($s,'owner',$now+1202,$read);check_edit($second['claimed']&&$second['lease']!==$first['lease']&&$second['operationId']===$first['operationId'],'Lost runner resumes same output operation');

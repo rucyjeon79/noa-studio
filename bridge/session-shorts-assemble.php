@@ -38,6 +38,7 @@ function nd_assembly_claim(array &$s,string $owner,int $now,callable $readSource
  if($next['action']!=='assemble'&&!$resume)return ['ok'=>true,'claimed'=>false,'state'=>$next['action']];
  if(($a['leaseUntil']??0)>$now)return ['ok'=>true,'claimed'=>false,'state'=>'executor_busy'];
  sa_require_current($j,$readSource($j['trackKey']));
+ sa_require_character_references($j);
  if($resume&&($prior['attempts']??0)>=3)return ['ok'=>true,'claimed'=>false,'state'=>'assembly_retry_limit'];
  if(!$resume){
   if(($a['attempts']['final:0']??0)>=3)return ['ok'=>true,'claimed'=>false,'state'=>'assembly_retry_limit'];
