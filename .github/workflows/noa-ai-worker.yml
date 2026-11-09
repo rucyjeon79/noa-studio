@@ -2,9 +2,9 @@ name: N80 AI LAB specialized worker
 on:
   push:
     branches: [main]
-    paths: ['scripts/n80_media_handoff.py', 'tests/engine/test_media_handoff.py', 'lab/**', 'scripts/noa_host_media_runtime.py', 'scripts/noa_host_browser_runtime.py', 'tests/engine/test_host_media_runtime.py', 'runtime/node/**', 'lab/client.mjs', 'lab/muvy.mjs', 'scripts/n80_node_runtime.py', 'scripts/noa_lab_worker.py', 'tests/engine/test_node_runtime.py', 'tests/engine/node_runtime.test.mjs']
+    paths: ['scripts/n80_media_handoff.py', 'tests/engine/test_media_handoff.py', 'lab/**', 'integrations/chatgpt-assistant/**', 'scripts/noa_host_media_runtime.py', 'scripts/noa_host_browser_runtime.py', 'tests/engine/test_host_media_runtime.py', 'runtime/node/**', 'lab/client.mjs', 'lab/muvy.mjs', 'scripts/n80_node_runtime.py', 'scripts/noa_lab_worker.py', 'tests/engine/test_node_runtime.py', 'tests/engine/node_runtime.test.mjs']
   pull_request:
-    paths: ['scripts/n80_media_handoff.py', 'tests/engine/test_media_handoff.py', 'lab/**', 'scripts/noa_host_media_runtime.py', 'scripts/noa_host_browser_runtime.py', 'tests/engine/test_host_media_runtime.py', 'runtime/node/**', 'lab/client.mjs', 'lab/muvy.mjs', 'scripts/n80_node_runtime.py', 'scripts/noa_lab_worker.py', 'tests/engine/test_node_runtime.py', 'tests/engine/node_runtime.test.mjs']
+    paths: ['scripts/n80_media_handoff.py', 'tests/engine/test_media_handoff.py', 'lab/**', 'integrations/chatgpt-assistant/**', 'scripts/noa_host_media_runtime.py', 'scripts/noa_host_browser_runtime.py', 'tests/engine/test_host_media_runtime.py', 'runtime/node/**', 'lab/client.mjs', 'lab/muvy.mjs', 'scripts/n80_node_runtime.py', 'scripts/noa_lab_worker.py', 'tests/engine/test_node_runtime.py', 'tests/engine/node_runtime.test.mjs']
   workflow_run:
     workflows: [N80 Unified Facade Safe Production, Verify and publish AI LAB entry]
     types: [completed]

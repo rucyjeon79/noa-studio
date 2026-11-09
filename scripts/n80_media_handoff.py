@@ -20,6 +20,7 @@ FILES = (
     'lab/providers.mjs', 'lab/session-assemble.mjs', 'lab/session-subtitles.py',
     'lab/subtitle-requirements.txt', 'lab/subtitles.mjs', 'lab/usage.mjs',
     'lab/worker.mjs', 'lab/youtube.mjs',
+    'integrations/chatgpt-assistant/worker.mjs', 'integrations/chatgpt-assistant/provenance.json',
 )
 
 

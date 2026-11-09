@@ -1,0 +1,14 @@
+{
+  "authority": "N80 Engine",
+  "module": "ai_lab",
+  "role": "authenticated_transport_to_existing_host",
+  "siteProjectId": "appgprj_6ae5867f20cc81919ebf2b62dfcc6103",
+  "siteVersion": 8,
+  "sourceCommit": "03717d6c2d6a5afd2cadf62228fd4b8b12235c00",
+  "sourcePath": "worker/index.js",
+  "sourceSha256": "a40511acab4afb84343a02a1de1891ee2aa43e7c570f805d5a84260ab73c089a",
+  "upstream": "https://noastudio.ai.kr/noa-gpt.php",
+  "scheduler": false,
+  "separateJobStore": false,
+  "hostExecutionReady": false
+}
