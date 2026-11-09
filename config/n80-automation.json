@@ -2,6 +2,13 @@
   "version": 1,
   "authority": "N80 Auto",
   "operations": {
+    "ai.host_runtime": {
+      "module": "ai_lab",
+      "workflow": "noa-ai-worker.yml",
+      "command": ["scripts/noa_host_media_runtime.py"],
+      "requiredEnv": {"NOA_HOST_MEDIA_RUNTIME": "1"},
+      "concurrency": "workflow_owned"
+    },
     "ai.text": {
       "module": "ai_lab",
       "workflow": "noa-ai-worker.yml",
