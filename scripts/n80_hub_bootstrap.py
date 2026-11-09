@@ -91,15 +91,16 @@ def install():
             digest=manifest['nodeSha256']
             if not re.fullmatch('[a-f0-9]{64}',digest):raise RuntimeError('node_manifest_invalid')
             node='/hosting/noastudio/noa-ai-lab/host-runtime/node-'+digest[:16]
-            channel=transport.open_session(timeout=20);channel.settimeout(45)
-            channel.exec_command('sha256sum '+shlex.quote(node))
-            output=channel.makefile('r').read(512).decode(errors='replace');code=channel.recv_exit_status();channel.close()
-            actual=output.split()[0] if code==0 and output.split() else hashlib.sha256(read(node)).hexdigest()
-            if actual!=digest:raise RuntimeError('node_hash_mismatch')
             args=[node]
             if manifest['privateLibraries']:
                 lib='/hosting/noastudio/noa-ai-lab/host-runtime/lib-'+digest[:16]
                 args=[lib+'/ld-linux-x86-64.so.2','--library-path',lib,node]
+            # Use the already installed N80 Node to hash its local file. Do not transfer the large runtime over SFTP.
+            js="const f=require('fs'),c=require('crypto');process.stdout.write(c.createHash('sha256').update(f.readFileSync(process.argv[1])).digest('hex'))"
+            channel=transport.open_session(timeout=20);channel.settimeout(45)
+            channel.exec_command(shlex.join(args+['-e',js,node]))
+            actual=channel.makefile('r').read(512).decode().strip();code=channel.recv_exit_status();channel.close()
+            if code!=0 or actual!=digest:raise RuntimeError('node_hash_mismatch')
             print('N80_HUB_STAGE node_verified',flush=True)
             put(ROOT+'/node-command.json',json.dumps(args).encode())
             put(ROOT+'/operations.json',Path('config/n80-hub-operations.json').read_bytes())
