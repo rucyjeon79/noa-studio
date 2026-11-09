@@ -11,12 +11,15 @@ try{
  $db->beginTransaction();$assets=$db->query('SELECT * FROM noa_jukebox_assets ORDER BY song_key FOR UPDATE')->fetchAll(PDO::FETCH_ASSOC);
  foreach($db->query('SELECT status FROM noa_jukebox_uploads FOR UPDATE')as $u)if(!in_array($u['status'],['ready','failed','canceled','cancelled'],true))throw new RuntimeException('active_upload');
  $docs=$db->query('SELECT doc_key,kind,payload,revision FROM noa_documents ORDER BY doc_key FOR UPDATE')->fetchAll(PDO::FETCH_ASSOC);
- $moves=[];$updates=[];$map=[];$targets=[];$verified=0;
+ $moves=[];$updates=[];$map=[];$targets=[];$verified=0;$blocked=[];$apply=($_POST['apply']??'')==='1';
  foreach($assets as $a){$new=$a;
   foreach(['audio','cover']as $type){$rel=(string)($a[$type.'_path']??'');if(!$rel)continue;if(!nj_verified($a,$type))throw new RuntimeException('current_asset_invalid');$verified++;
    $next=clean_media_path($rel);if($next===$rel)continue;$src=nj_file($rel);$root=str_starts_with($src,nj_private().'/media/')?nj_private().'/media':nj_root();$dst=$root.'/'.$next;
    if(is_link($src)||realpath($src)!==$src||str_contains($next,'..'))throw new RuntimeException('unsafe_path');
-   if(file_exists($dst)||is_link($dst))throw new RuntimeException('destination_exists');
+   if(file_exists($dst)||is_link($dst)){
+    if($apply)throw new RuntimeException('destination_exists');
+    $blocked[]=['key'=>$a['song_key'],'type'=>$type,'source'=>$src,'target'=>$dst,'expectedSha256'=>$a[$type.'_sha256'],'destinationSha256'=>is_file($dst)&&!is_link($dst)?hash_file('sha256',$dst):null];continue;
+   }
    if(isset($targets[$dst])&&$targets[$dst]!==$src)throw new RuntimeException('destination_collision');$targets[$dst]=$src;
    $moves[$src]=['source'=>$src,'target'=>$dst,'bytes'=>(int)$a[$type.'_bytes'],'sha256'=>$a[$type.'_sha256']];$new[$type.'_path']=$next;
    $map[$rel]=$next;$map[$src]=$dst;
@@ -45,5 +48,5 @@ try{
   foreach($moves as $m)if(file_exists($m['source'])||!is_file($m['target'])||!hash_equals($m['sha256'],hash_file('sha256',$m['target'])))throw new RuntimeException('final_path_verification_failed');
  }else $db->commit();
  $remaining=[];foreach([nj_private().'/media',nj_root()]as $root){$it=new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::SELF_FIRST);foreach($it as $f)if($f->isDir()&&preg_match('/ \[v-[a-f0-9]{12}\]$/D',$f->getFilename()))$remaining[]=$f->getPathname();}
- echo json_encode(['ok'=>true,'mode'=>$apply?'apply':'audit','planSha256'=>$digest,'moves'=>$moves,'filesMoved'=>$apply?count($moves):0,'assetRows'=>count($updates),'documentRows'=>$docChanges,'verifiedAssets'=>$verified,'remainingVersionFolders'=>$remaining,'backupCreated'=>false],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
+ echo json_encode(['ok'=>true,'mode'=>$apply?'apply':'audit','planSha256'=>$digest,'moves'=>$moves,'filesMoved'=>$apply?count($moves):0,'assetRows'=>count($updates),'documentRows'=>$docChanges,'verifiedAssets'=>$verified,'remainingVersionFolders'=>$remaining,'blockedDestinations'=>$blocked,'backupCreated'=>false],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
 }catch(Throwable $e){if($db->inTransaction())$db->rollBack();if(!$committed){foreach(array_reverse($links)as $p)if(is_file($p))unlink($p);foreach(array_reverse($createdDirs)as $p)if(is_dir($p)&&count(scandir($p))===2)rmdir($p);}echo json_encode(['ok'=>false,'committed'=>$committed,'error'=>$e instanceof PDOException?'database_error':$e->getMessage()]);}

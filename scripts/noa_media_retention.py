@@ -1,10 +1,11 @@
 """Bounded no-backup retention cleanup explicitly authorized on 2026-10-30."""
-import hashlib,json,secrets,time,urllib.request,urllib.parse
+import hashlib,json,os,secrets,time,urllib.request,urllib.parse
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
 # Retired one-time plans must never be replayed against a later media inventory.
 PLAN='AUDIT'
+if os.environ.get('NOA_MEDIA_READ_ONLY')=='1' and PLAN!='AUDIT':raise RuntimeError('read_only_media_operation_required')
 token=secrets.token_hex(32);name='noa-bridge/media-retention-'+secrets.token_hex(8)+'.php'
 raw=Path('scripts/noa_media_retention.php').read_text().replace('__EXPIRY__',str(int(time.time())+600)).replace('__TOKEN_SHA__',hashlib.sha256(token.encode()).hexdigest()).replace('__PLAN_SHA__',PLAN).encode()
 t=connect();s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(30);installed=False
