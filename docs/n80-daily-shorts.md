@@ -152,3 +152,29 @@ review. This editor cannot call review, publish, or waive provider-policy holds.
 The subscription browser executor, original image/video recovery, final quality
 review and native related-video publication still require their actual runtime
 integration; automatic editing alone is not complete unattended production.
+
+## User-confirmed source and temporary media ownership (2026-11-09)
+
+N80 must own execution from the M/W/F schedule through publication and cleanup.
+The existing hosted ChatGPT worker is the intended planner and reviewer, with
+the user's existing `Music Drama MV Creator` Gem (`21f716bf5427`) handling images.
+Opening Gemini in a ChatGPT conversation is not a verified server executor.
+Do not replace this with manual one-off production and call it automation.
+
+Read current MP3, title, lyrics and genre image rules from the host by track key.
+Use the character knowledge already stored in the Gem. Do not copy these source
+assets to a new Drive folder or rebuild the song information or character setup.
+Only newly generated images, video clips and editing outputs belong in the
+existing private `NOA STUDIO/업로드 임시저장` Drive area. Keep each temporary file ID
+associated with its owning N80 job, source hash and provider result.
+
+After actual public YouTube publication, membership in the specified Shorts
+playlist and the exact native related original video are all verified, delete
+that job's registered temporary Drive media and local generated caches. An
+upload request, scheduled/private video, model assertion or incomplete check is
+not publication. Failed/ambiguous jobs retain their media for recovery. Never
+delete the original host MP3/metadata/rules, Gem knowledge or unrelated files.
+
+The policy now records these constraints. The Drive executor, deletion executor
+and persistent Gem executor flags remain **false**: policy persistence does not
+prove those adapters are implemented, connected or exercised.

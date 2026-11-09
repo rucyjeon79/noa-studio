@@ -26,6 +26,30 @@
   "executor": "N80 Auto registered ai.daily_shorts runner; persistent browser executor is not connected. Never present schedule registration as completed production.",
   "scheduleOwner": "N80 Auto",
   "conversationDependent": false,
+  "mediaStorage": {
+    "provider": "google_drive",
+    "temporaryParentFolderId": "1hR8n8sH7d7ekoWqiwK11bAIYY3m9C6-l",
+    "scope": "Newly generated scene images, motion clips and editing outputs only; private, one folder per N80 job. Reuse host MP3, title, lyrics and genre rules and the existing Gem character knowledge without making duplicate source copies.",
+    "workerConnectionVerified": false,
+    "requireVerifiedReadbackBeforeLocalCleanup": true,
+    "deleteAfterPublication": true,
+    "deletionRequires": ["youtube_publication_verified", "destination_playlist_verified", "original_related_video_verified"],
+    "deleteScope": "Only this job's registered temporary Drive file IDs and generated local cache files. Never source MP3, song data, genre rules, Gem character knowledge or unrelated Drive files.",
+    "retainOnFailure": true,
+    "deletionExecutorVerified": false
+  },
+  "creationWorkflow": {
+    "owner": "N80 Engine",
+    "commander": "existing_hosted_ChatGPT_worker",
+    "imageProvider": "existing_Gemini_Gem",
+    "gemId": "21f716bf5427",
+    "gemTitle": "Music Drama MV Creator",
+    "sourceOfTruth": "Current host trackKey/revision/audio hash, title, lyrics and genre image rules; existing character knowledge inside the Gem",
+    "reuseExistingSources": true,
+    "duplicateSourceCopies": false,
+    "manualChatProductionIsAutomation": false,
+    "persistentGemExecutorVerified": false
+  },
   "genrePlaylistIds": {
     "PLEPMKciKgvch9TGMAcBdKzhVt1QeYsfKB": "your-story",
     "PLAdcqFdHLsRY": "pop-original",
