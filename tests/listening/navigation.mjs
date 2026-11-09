@@ -21,7 +21,7 @@ try{
   await link.waitFor({timeout:30000});
   await page.waitForFunction(()=>document.querySelector('a[href="/noa-ai-lab.php?tool=listen"]')?.target==='_self');
   assert.equal(await link.getAttribute('target'),'_self');
-  assert.equal(await link.getAttribute('href'),'/noa-ai-lab.php?tool=listen');
+  assert.equal(new URL(await link.getAttribute('href'),base).href,base+'/noa-ai-lab.php?tool=listen');
   await link.click();
   await page.waitForURL(url=>url.pathname==='/noa-ai-lab.php'||(live&&/login/.test(url.pathname)),{timeout:60000});
   assert.equal(popups,0);assert.equal(context.pages().length,1);
