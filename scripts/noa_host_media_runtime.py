@@ -143,6 +143,26 @@ def verify_remote_file(transport, sftp, target, size, expected):
     result = execute(transport, command=command, parser=checksum_result, deadline_seconds=30)
     if result.get('available'):
         return result['sha256'] == expected
+    # Reuse the already installed official private Node runtime when this jailed
+    # account has no coreutils. This is the same host-side streaming hash used by
+    # the browser bundle verifier; a failed start still falls back to SFTP bytes.
+    root = '/hosting/noastudio/noa-ai-lab/host-runtime'
+    match = re.fullmatch(re.escape(root) + r'/(?:node-|lib-)([a-f0-9]{16})(?:/[a-zA-Z0-9_+.\-]+)?', target)
+    if match:
+        node = root + '/node-' + match[1]
+        library = root + '/lib-' + match[1]
+        loader = library + '/ld-linux-x86-64.so.2'
+        try:
+            available = all(stat.S_ISREG(sftp.lstat(path).st_mode) for path in (node, loader))
+        except FileNotFoundError:
+            available = False
+        if available:
+            script = "const f=require('node:fs'),c=require('node:crypto'),h=c.createHash('sha256');const s=f.createReadStream(process.argv[1]);s.on('data',b=>h.update(b));s.on('error',()=>process.exit(1));s.on('end',()=>console.log(h.digest('hex')+'  runtime'));"
+            command = shlex.join([loader, '--library-path', library, node, '-e', script, target])
+            result = execute(transport, command=command, parser=checksum_result, deadline_seconds=30)
+            if result.get('available'):
+                print('N80_HOST_HASH_VERIFIED', json.dumps({'method':'private_node_stream','bytes':size}), flush=True)
+                return result['sha256'] == expected
     # Hosts without coreutils retain the original byte-for-byte verification.
     actual = hashlib.sha256()
     with sftp.open(target, 'rb') as source:

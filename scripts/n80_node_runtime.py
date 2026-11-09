@@ -117,6 +117,12 @@ def invoke(transport, manifest, operation, key, *, deadline_seconds=260):
                 receipt['elapsedMs'] = round((time.monotonic() - started) * 1000)
                 return receipt
             if time.monotonic() - started > deadline_seconds:
+                try:
+                    failed = json.loads(data)
+                except (ValueError, UnicodeError):
+                    failed = None
+                if isinstance(failed, dict) and failed.get('ok') is False:
+                    parse_receipt(bytes(data), 1, operation, invocation, manifest)
                 raise RuntimeError('node_response_unconfirmed')
             time.sleep(.05)
     finally:

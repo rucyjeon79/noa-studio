@@ -13,6 +13,18 @@ from noa_host_browser_runtime import browser_result, VERIFY, START
 
 
 class HostRuntimeTest(unittest.TestCase):
+    def test_existing_private_node_hash_avoids_full_binary_download_without_coreutils(self):
+        from types import SimpleNamespace
+        import stat
+        class Sftp:
+            def lstat(self, path): return SimpleNamespace(st_mode=stat.S_IFREG)
+            def open(self, *args): raise AssertionError('unexpected_binary_download')
+        path='/hosting/noastudio/noa-ai-lab/host-runtime/node-'+'a'*16
+        with patch('noa_host_media_runtime.execute',side_effect=[{'available':False},{'available':True,'sha256':'a'*64}]) as calls:
+            self.assertTrue(verify_remote_file(None,Sftp(),path,126881248,'a'*64))
+            self.assertEqual(calls.call_count,2)
+            self.assertIn('createReadStream',calls.call_args.kwargs['command'])
+
     def test_browser_spawn_and_signal_failures_keep_safe_diagnostics(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder);starter = root/'start.cjs';starter.write_text(START)

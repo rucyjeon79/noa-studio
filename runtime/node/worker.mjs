@@ -40,12 +40,15 @@ export function errorCode(error) {
 
 async function networkProbe() {
   const probe=(family,local=false)=>new Promise(resolve=>{
-    const options={method:'HEAD',family,signal:AbortSignal.timeout(3000)};
+    let settled=false;
+    const finish=value=>{if(!settled){settled=true;clearTimeout(timer);resolve(value);}};
+    const options={method:'HEAD',family};
     if(local)options.lookup=(_hostname,_options,callback)=>callback(null,'127.0.0.1',4);
     const request=https.request('https://noastudio.ai.kr/',options,response=>{
-      response.destroy();resolve('connected');
+      response.destroy();finish('connected');
     });
-    request.on('error',error=>resolve(error.name==='AbortError'?'timeout':'failed'));
+    const timer=setTimeout(()=>{finish('timeout');request.destroy();},3000);
+    request.on('error',()=>finish('failed'));
     request.end();
   });
   const [ipv4,ipv6,loopback_tls]=await Promise.all([probe(4),probe(6),probe(4,true)]);
@@ -77,4 +80,8 @@ export async function main(input=process.stdin, output=process.stdout) {
     process.exitCode=1;
   } finally {clearTimeout(timer);if(request)delete request.key;}
 }
-if (process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href) await main();
+if (process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href) {
+  await main();
+  // A completed one-shot task must not wait for DNS threads or proxy keepalive sockets.
+  process.stdout.write('',()=>process.exit(process.exitCode || 0));
+}
