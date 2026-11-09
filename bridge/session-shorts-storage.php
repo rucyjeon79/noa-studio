@@ -51,6 +51,7 @@ function nd_storage_operation(array &$s,array $b,string $owner,int $now,callable
   $m['active']['leaseUntil']=0;return ['ok'=>true,'state'=>$file['state']];
  }
  $m['active']['leaseUntil']=$now+900;
+ if($command==='storage_credentials')return ['ok'=>true,'authorizationAllowed'=>true];
  if($command==='storage_reserve'){
   foreach(['folderId','fileId'] as $field)if(!is_string($b[$field]??null)||!preg_match('/^[A-Za-z0-9_-]{10,200}$/D',$b[$field]))throw new InvalidArgumentException('invalid_drive_id');
   $parent=$s['campaigns']['daily_shorts']['policy']['mediaStorage']['temporaryParentFolderId'];
@@ -76,12 +77,22 @@ function nd_storage_operation(array &$s,array $b,string $owner,int $now,callable
   // No receipt from a model, schedule or private upload can authorize deletion.
   $m['cleanup']=['state'=>'publication_verification_required','deleted'=>0];
   $s['campaigns']['daily_shorts']['storage']=['jobId'=>$j['id'],'state'=>'stored','stored'=>count(array_filter($m['files'],fn($f)=>$f['state']==='stored')),'lastVerifiedAt'=>gmdate('c',$now),'cleanupState'=>'publication_verification_required','deletionExecutorVerified'=>false];
+  if(($s['driveConnection']['owner']??'')===$owner&&($file['driveConnectionId']??'')===($s['driveConnection']['id']??''))$s['driveConnection']['workerVerifiedAt']=gmdate('c',$now);
   return ['ok'=>true,'state'=>'stored','fileId'=>$file['fileId'],'publicationReady'=>false];
  }
  throw new InvalidArgumentException('unknown_storage_command');
 }
 function nd_storage_dispatch(array $b,string $owner):array {
  if($owner==='')throw new DomainException('campaign_owner_required');
+ if(($b['command']??'')==='storage_credentials'){
+  require_once __DIR__.'/session-shorts-drive.php';
+  lab_lock(fn(&$s)=>nd_storage_operation($s,$b,$owner,time(),'sa_source'));
+  $snapshot=lab_read();$policy=nd_shorts_policy();$access=nsd_access($snapshot,$policy,$owner,time());
+  return lab_lock(function(&$s)use($b,$owner,$policy,$access){
+   nd_storage_operation($s,$b,$owner,time(),'sa_source');$result=nsd_access_commit($s,$policy,$owner,$access);
+   $s['jobs'][$b['id']]['agent']['temporaryMedia']['files'][$b['key']]['driveConnectionId']=$access['connectionId'];return $result;
+  });
+ }
  if(($b['command']??'')==='storage_claim')return lab_lock(fn(&$s)=>nd_storage_claim($s,$owner,time(),'sa_source'));
  return lab_lock(fn(&$s)=>nd_storage_operation($s,$b,$owner,time(),'sa_source'));
 }

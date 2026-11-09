@@ -1,10 +1,10 @@
 name: Verify and publish AI LAB entry
 on:
   pull_request:
-    paths: ['lab/daily_shorts.py','bridge/worker-shorts.php','deploy/noa-app/engine/service-runtime.php','scripts/noa_daily_shorts.py','scripts/noa_shorts_assembly.py','scripts/noa_shorts_storage.py','config/n80-automation.json','.github/workflows/noa-ai-worker.yml','config/n80-daily-shorts.json','bridge/session*.php','bridge/lab-api.php','deploy/noa-ai-lab.*','lab/session-subtitles.py','lab/subtitle-requirements.txt','lab/subtitles.mjs','lab/session-assemble.mjs','tests/session-agent/**','tests/gpt/flow.py','scripts/qa/noa-session-agent.mjs','.github/workflows/noa-lab-entry.yml']
+    paths: ['bridge/lab-oauth.php','scripts/qa/noa-drive-connect.mjs','lab/daily_shorts.py','bridge/worker-shorts.php','deploy/noa-app/engine/service-runtime.php','scripts/noa_daily_shorts.py','scripts/noa_shorts_assembly.py','scripts/noa_shorts_storage.py','config/n80-automation.json','.github/workflows/noa-ai-worker.yml','config/n80-daily-shorts.json','bridge/session*.php','bridge/lab-api.php','deploy/noa-ai-lab.*','lab/session-subtitles.py','lab/subtitle-requirements.txt','lab/subtitles.mjs','lab/session-assemble.mjs','tests/session-agent/**','tests/gpt/flow.py','scripts/qa/noa-session-agent.mjs','.github/workflows/noa-lab-entry.yml']
   push:
     branches: [main, work/n80-browser-media, work/n80-duration-cuts, work/n80-session-agent]
-    paths: ['lab/daily_shorts.py','bridge/worker-shorts.php','deploy/noa-app/engine/service-runtime.php','scripts/noa_daily_shorts.py','scripts/noa_shorts_assembly.py','scripts/noa_shorts_storage.py','config/n80-automation.json','.github/workflows/noa-ai-worker.yml','config/n80-daily-shorts.json','bridge/session-subtitles.php','lab/session-subtitles.py','lab/subtitles.mjs','bridge/session*.php','lab/session-assemble.mjs','tests/session-agent/**','scripts/qa/noa-session-agent.mjs','deploy/noa-app/engine/ai-lab.php','deploy/noa-gpt.php','.github/workflows/noa-lab-entry.yml','bridge/lab-browser-assets.php','tests/lab/browser_assets_test.php','tests/lab/http_test.py','tests/lab/clip_fixture.b64','bridge/lab-core.php','bridge/lab-api.php','bridge/catalog.php','deploy/noa-ai-lab.js','deploy/noa-ai-lab.php','bridge/muvy*.php','deploy/noa-muvy*','tests/muvy/**','scripts/qa/noa-muvy.mjs']
+    paths: ['bridge/lab-oauth.php','scripts/qa/noa-drive-connect.mjs','lab/daily_shorts.py','bridge/worker-shorts.php','deploy/noa-app/engine/service-runtime.php','scripts/noa_daily_shorts.py','scripts/noa_shorts_assembly.py','scripts/noa_shorts_storage.py','config/n80-automation.json','.github/workflows/noa-ai-worker.yml','config/n80-daily-shorts.json','bridge/session-subtitles.php','lab/session-subtitles.py','lab/subtitles.mjs','bridge/session*.php','lab/session-assemble.mjs','tests/session-agent/**','scripts/qa/noa-session-agent.mjs','deploy/noa-app/engine/ai-lab.php','deploy/noa-gpt.php','.github/workflows/noa-lab-entry.yml','bridge/lab-browser-assets.php','tests/lab/browser_assets_test.php','tests/lab/http_test.py','tests/lab/clip_fixture.b64','bridge/lab-core.php','bridge/lab-api.php','bridge/catalog.php','deploy/noa-ai-lab.js','deploy/noa-ai-lab.php','bridge/muvy*.php','deploy/noa-muvy*','tests/muvy/**','scripts/qa/noa-muvy.mjs']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
@@ -28,6 +28,11 @@ jobs:
           php -l bridge/session-shorts-subtitles.php
           php -l bridge/session-shorts-assemble.php
           php -l bridge/session-shorts-storage.php
+          php -l bridge/lab-oauth.php
+          php -l bridge/session-shorts-drive.php
+          php -l bridge/session-shorts-drive-view.php
+          php tests/session-agent/drive.php
+          python tests/session-agent/drive_http_test.py
           php tests/session-agent/storage.php
           python tests/session-agent/storage_test.py
           php tests/session-agent/preparation.php
@@ -69,6 +74,8 @@ jobs:
           node "$RUNNER_TEMP/muvy-check/check.mjs"
           cp scripts/qa/noa-session-agent.mjs "$RUNNER_TEMP/muvy-check/session.mjs"
           node "$RUNNER_TEMP/muvy-check/session.mjs"
+          cp scripts/qa/noa-drive-connect.mjs "$RUNNER_TEMP/muvy-check/drive.mjs"
+          node "$RUNNER_TEMP/muvy-check/drive.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'n80-duration-check-${{ github.run_id }}', path: 'muvy-proof/', retention-days: 7}
@@ -108,6 +115,9 @@ jobs:
               'noa-bridge/session-shorts-prepare.php': 'bridge/session-shorts-prepare.php',
               'noa-bridge/session-shorts-subtitles.php': 'bridge/session-shorts-subtitles.php',
               'noa-bridge/session-shorts-assemble.php': 'bridge/session-shorts-assemble.php',
+              'noa-bridge/session-shorts-drive.php': 'bridge/session-shorts-drive.php',
+              'noa-bridge/session-shorts-drive-view.php': 'bridge/session-shorts-drive-view.php',
+              'noa-bridge/lab-oauth.php': 'bridge/lab-oauth.php',
               'noa-bridge/session-shorts-storage.php': 'bridge/session-shorts-storage.php',
               'noa-bridge/youtube-store.php': 'bridge/youtube-store.php',
               'noa-bridge/lab-oauth-core.php': 'bridge/lab-oauth-core.php',
@@ -124,7 +134,7 @@ jobs:
               'noa-app/engine/ai-lab.php': 'deploy/noa-app/engine/ai-lab.php',
               'noa-ai-lab.php': 'deploy/noa-ai-lab.php',
           }
-          release.NEW = {'noa-bridge/session-shorts-storage.php','noa-bridge/session-shorts-assemble.php','noa-bridge/session-shorts-subtitles.php','noa-bridge/session-shorts-prepare.php','noa-app/engine/daily-shorts.json','noa-bridge/session-shorts.php','noa-bridge/worker-shorts.php','noa-bridge/session-subtitles.php','noa-bridge/session-agent.php','noa-bridge/session-agent-media.php','noa-bridge/lab-browser-assets.php','noa-bridge/muvy-timeline.php'}
+          release.NEW = {'noa-bridge/session-shorts-drive.php','noa-bridge/session-shorts-drive-view.php','noa-bridge/session-shorts-storage.php','noa-bridge/session-shorts-assemble.php','noa-bridge/session-shorts-subtitles.php','noa-bridge/session-shorts-prepare.php','noa-app/engine/daily-shorts.json','noa-bridge/session-shorts.php','noa-bridge/worker-shorts.php','noa-bridge/session-subtitles.php','noa-bridge/session-agent.php','noa-bridge/session-agent-media.php','noa-bridge/lab-browser-assets.php','noa-bridge/muvy-timeline.php'}
           try:
               release.main()
           except Exception:

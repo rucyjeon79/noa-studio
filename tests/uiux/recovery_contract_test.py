@@ -73,6 +73,8 @@ class RecoveryContract(unittest.TestCase):
   # 2026-11-09: explicitly approved generated-media Drive storage under N80.
   # Exact media:worker handler only; source audio and unrelated writers remain protected.
   authorized.add('bridge/session-shorts-storage.php')
+  # Approved host-owned Drive OAuth using the existing callback; no new scheduler.
+  authorized.update({'bridge/lab-oauth.php','bridge/session-shorts-drive.php','bridge/session-shorts-drive-view.php'})
   # The 2026-10-27 request explicitly adds post likes/comments to popularity.
   # Limit this authorization to the new reaction service and score calculation;
   # native member/board writers and music processing remain protected.

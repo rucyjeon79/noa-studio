@@ -27,9 +27,28 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         raise ValueError('drive_redirect_rejected')
 
 
+class HostedDriveLogin:
+    """The host retains OAuth refresh credentials; the runner gets an expiring token."""
+    def __init__(self, dispatch, claim):
+        self.dispatch = dispatch
+        self.auth = {k: claim[k] for k in ('id', 'key', 'lease')}
+        self.parent = claim['parentFolderId']
+
+    def token(self):
+        result = self.dispatch('storage_credentials', **self.auth)
+        token = result.get('access_token')
+        expiry = result.get('expires_at')
+        if (not isinstance(token, str) or not re.fullmatch(r'[A-Za-z0-9._~+/-]{1,8192}', token)
+                or not isinstance(expiry, int) or not time.time() + 100 < expiry <= time.time() + 3600
+                or result.get('folder_id') != self.parent
+                or 'refresh_token' in result or 'client_secret' in result):
+            raise ValueError('drive_authorization_receipt_invalid')
+        return {'access_token': token, 'expires_at': expiry}
+
+
 class MediaDrive:
-    def __init__(self):
-        self.login = UploadDrive()
+    def __init__(self, login=None):
+        self.login = login or UploadDrive()
         self.credentials = None
         self.opener = urllib.request.build_opener(NoRedirect())
 
@@ -196,20 +215,21 @@ def transfer(dispatch, claim, drive):
 
 def run_storage(dispatch, drive=None):
     results = []
-    # A missing deployment credential is not an asset failure. Check before
-    # claiming so unattended ticks cannot exhaust an untouched asset's budget.
-    if drive is None and not os.environ.get('NOA_DRIVE_RCLONE_CONFIG_B64', '').strip():
-        results.append({'state': 'storage_connection_required', 'reason': 'drive_credentials_missing'})
-        print('N80_SHORTS_STORAGE', json.dumps(results), flush=True)
-        return results
     try:
+        # Missing authorization is not an asset failure and must not spend its
+        # retry budget. Keep the existing rclone connection when configured.
+        hosted = drive is None and not os.environ.get('NOA_DRIVE_RCLONE_CONFIG_B64', '').strip()
+        if hosted and dispatch('storage_connection').get('connected') is not True:
+            results.append({'state': 'storage_connection_required', 'reason': 'drive_authorization_required'})
+            print('N80_SHORTS_STORAGE', json.dumps(results), flush=True)
+            return results
         # Existing worker invocation owns this bounded loop, never another timer.
         for _ in range(3):
             claim = dispatch('storage_claim')
             if not claim.get('claimed'):
                 results.append({'state': claim['state']}); break
-            drive = drive or MediaDrive()
-            result = transfer(dispatch, claim, drive); results.append(result)
+            active_drive = drive or MediaDrive(HostedDriveLogin(dispatch, claim) if hosted else None)
+            result = transfer(dispatch, claim, active_drive); results.append(result)
             if result['state'] != 'stored':
                 break
     except Exception as error:

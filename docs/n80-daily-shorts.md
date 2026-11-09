@@ -227,3 +227,40 @@ present before claiming media. Missing configuration reports
 `storage_connection_required / drive_credentials_missing` without using another
 asset retry or changing the production job. Actual token refresh, upload and
 readback must still pass after the approved worker connection is configured.
+
+
+### Host-owned Drive authorization
+
+`/noa-bridge/lab-oauth.php?action=drive` is an administrator-only connection page,
+linked from AI LAB settings. It reuses the existing Google OAuth client and
+registered callback; YouTube tokens and channel settings are unchanged. Starting
+consent requires a POST with exact-origin CSRF validation. OAuth state and PKCE
+are tied to the administrator, session, destination, client and current connection,
+expire after ten minutes, and cannot replace a connection changed concurrently.
+
+This route requests the full Drive scope to access the existing fixed parent;
+`drive.file` would require separately selecting that existing folder through a
+Picker. The page discloses the requested permission. Google approval is explicit;
+merging or deploying this code does not grant access. Never automate consent to
+broader or persistent account permissions without the user's confirmation.
+
+The host verifies an actual refresh and the exact private, owned, writable parent
+before committing encrypted credentials outside the web root. An encrypted,
+session-bound pending receipt permits retry after a folder/provider failure;
+rotated refresh credentials are retained before the folder lookup. Public status
+and HTML never contain tokens or client secrets. OAuth projects in Testing may
+issue time-limited offline authorization; this connection does not guarantee
+indefinite access or change the project's publishing status.
+
+When the existing runner has no rclone configuration, it checks host authorization
+before claiming an asset. Each claimed asset receives only an expiring access
+token, following owner/source/lease validation before and after refresh and a
+connection-identity check at commit. Refresh tokens and the OAuth client secret
+remain on the host. The bearer token itself has the granted Drive scope; N80's
+fixed-folder and job-ownership checks constrain this trusted runner's operations,
+not the token's Google permissions. Tokens stay in memory and are not logged.
+The existing rclone path remains compatible. No extra worker or paid service is
+added. Only a verified stored-file receipt marks the current connection as
+worker-tested. Deployment, consent, token refresh and successful file storage
+are separate evidence states. Persistent Gemini/Flow execution, reviewed final
+production, publication and deletion remain unimplemented until actually proven.
