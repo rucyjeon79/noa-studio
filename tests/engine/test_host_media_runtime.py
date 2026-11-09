@@ -3,10 +3,20 @@ from pathlib import Path
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
-from noa_host_media_runtime import interpret, execute
+from noa_host_media_runtime import interpret, execute, node_result
 
 
 class HostRuntimeTest(unittest.TestCase):
+    def test_node_install_requires_a_real_successful_version_response(self):
+        self.assertTrue(node_result(b'v24.12.0\n', 0)['started'])
+        for output, code in [(b'v24.12.0', 1), (b'v20.0.0', 0), (b'permission denied', 0)]:
+            self.assertFalse(node_result(output, code)['started'])
+
+    def test_node_start_error_never_exposes_remote_paths(self):
+        result = node_result(b'/private/path/node: Permission denied', 126)
+        self.assertEqual(result['reason'], 'execution_denied')
+        self.assertNotIn('/private/path', str(result))
+
     def test_sftp_access_is_not_shell_execution(self):
         result = interpret(b'This service allows sftp connections only.\n', 1)
         self.assertEqual(result['state'], 'host_sftp_only')

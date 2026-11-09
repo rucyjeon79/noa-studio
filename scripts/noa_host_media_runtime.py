@@ -10,7 +10,10 @@ import hmac
 import os
 from pathlib import Path
 import secrets
+import re
+import shutil
 import socket
+import stat
 import time
 import urllib.request
 
@@ -56,12 +59,12 @@ def interpret(output, exit_code):
     }
 
 
-def execute(transport, *, deadline_seconds=25):
+def execute(transport, *, deadline_seconds=25, command=COMMAND, parser=interpret):
     channel = None
     try:
         channel = transport.open_session(timeout=10)
         channel.settimeout(10)
-        channel.exec_command(COMMAND)
+        channel.exec_command(command)
         deadline = time.monotonic() + deadline_seconds
         data = bytearray()
         while True:
@@ -72,7 +75,7 @@ def execute(transport, *, deadline_seconds=25):
             if len(data) > 16384:
                 return {'state': 'host_output_limit', 'shellExecuted': False, 'browserStarted': False}
             if channel.exit_status_ready() and not channel.recv_ready() and not channel.recv_stderr_ready():
-                return interpret(bytes(data), channel.recv_exit_status())
+                return parser(bytes(data), channel.recv_exit_status())
             if time.monotonic() >= deadline:
                 return {'state': 'host_command_timeout', 'shellExecuted': MARKER.encode() in data, 'browserStarted': False}
             time.sleep(0.05)
@@ -84,6 +87,80 @@ def execute(transport, *, deadline_seconds=25):
     finally:
         if channel is not None:
             channel.close()
+
+
+def node_result(output, exit_code):
+    version = output.decode('utf-8', errors='replace').strip()
+    if exit_code == 0 and re.fullmatch(r'v24\.\d+\.\d+', version):
+        return {'state': 'host_node_started', 'version': version, 'started': True}
+    errors = output.decode('utf-8', errors='replace')
+    reason = 'startup_failed'
+    for text, code in [('Permission denied', 'execution_denied'), ('GLIBC_', 'glibc_incompatible'),
+                       ('shared libraries', 'shared_library_missing'), ('No such file', 'executable_loader_unavailable'),
+                       ('not found', 'executable_loader_unavailable')]:
+        if text in errors:
+            reason = code
+            break
+    return {'state': 'host_node_start_failed', 'started': False, 'reason': reason, 'exitCode': exit_code}
+
+
+def install_node(transport):
+    """Stage the official Node 24 binary from setup-node and execute it on host.
+
+    Never replace an existing runtime or retain a failed installation.
+    """
+    import paramiko
+    local = Path(shutil.which('node') or '')
+    if not local.is_file() or not 1_000_000 <= local.stat().st_size <= 200_000_000:
+        return {'state': 'runner_node_unavailable', 'started': False}
+    with local.open('rb') as f:
+        header = f.read(20)
+    if header[:5] != b'\x7fELF\x02' or header[18:20] != b'>\x00':
+        return {'state': 'runner_node_platform_unsupported', 'started': False}
+    digest = hashlib.sha256(local.read_bytes()).hexdigest()
+    folder = '/hosting/noastudio/noa-ai-lab/host-runtime'
+    target = folder + '/node-' + digest[:16]
+    sftp = paramiko.SFTPClient.from_transport(transport)
+    sftp.get_channel().settimeout(45)
+    created = False
+    uploaded = False
+    started = False
+    try:
+        try:
+            info = sftp.lstat(folder)
+            if not stat.S_ISDIR(info.st_mode) or sftp.normalize(folder) != folder:
+                raise ValueError('unsafe_runtime_directory')
+        except FileNotFoundError:
+            sftp.mkdir(folder, 0o700)
+            created = True
+        try:
+            sftp.lstat(target)
+        except FileNotFoundError:
+            with local.open('rb') as source, sftp.open(target, 'wx') as destination:
+                uploaded = True
+                destination.set_pipelined(True)
+                shutil.copyfileobj(source, destination, length=262144)
+        info = sftp.lstat(target)
+        if not stat.S_ISREG(info.st_mode) or info.st_size != local.stat().st_size:
+            raise ValueError('runtime_size_mismatch')
+        remote_digest = hashlib.sha256()
+        with sftp.open(target, 'rb') as source:
+            source.prefetch(file_size=info.st_size, max_concurrent_requests=16)
+            while block := source.read(262144):
+                remote_digest.update(block)
+        if remote_digest.hexdigest() != digest:
+            raise ValueError('runtime_checksum_mismatch')
+        sftp.chmod(target, 0o700)
+        result = execute(transport, command=target+' --version', parser=node_result)
+        started = result.get('started') is True
+        result.update(sha256=digest, bytes=info.st_size, installed=started)
+        return result
+    finally:
+        if uploaded and not started:
+            sftp.remove(target)
+        if created and not started:
+            sftp.rmdir(folder)
+        sftp.close()
 
 
 def web_runtime_capabilities():
@@ -113,6 +190,11 @@ def main():
     try:
         transport = connect()
         result.update(execute(transport))
+        if result.get('shellExecuted') is True and not result.get('browserStarted'):
+            try:
+                result['nodeInstallation'] = install_node(transport)
+            except Exception as error:
+                result['nodeInstallation'] = {'state': 'host_install_failed', 'errorType': type(error).__name__}
     except Exception as error:
         result.update(state='host_connection_failed', errorType=type(error).__name__, browserStarted=False)
     finally:
