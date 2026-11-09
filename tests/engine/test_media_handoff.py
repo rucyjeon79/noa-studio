@@ -32,6 +32,9 @@ class Sftp:
     def mkdir(self, name, mode): self.path(name).mkdir(mode=mode)
     def remove(self, name): self.path(name).unlink()
     def posix_rename(self, a, b): os.replace(self.path(a), self.path(b))
+    def rename(self, a, b):
+        if self.path(b).exists(): raise FileExistsError(b)
+        self.path(a).rename(self.path(b))
 
 
 class MediaHandoff(unittest.TestCase):

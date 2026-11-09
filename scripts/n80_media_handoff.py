@@ -94,10 +94,20 @@ def transfer(sftp, files, commit, run_id):
         try:
             installed = read(sftp, path)
         except FileNotFoundError:
-            with sftp.open(path, 'wx') as target:
-                target.write(data)
-            sftp.chmod(path, 0o600)
-            installed = read(sftp, path)
+            staging = path + '.' + secrets.token_hex(8) + '.upload'
+            try:
+                with sftp.open(staging, 'wx') as target:
+                    target.write(data)
+                sftp.chmod(staging, 0o600)
+                if read(sftp, staging) != data:
+                    raise ValueError('media_source_readback_mismatch')
+                sftp.rename(staging, path)
+                installed = read(sftp, path)
+            finally:
+                try:
+                    sftp.remove(staging)
+                except FileNotFoundError:
+                    pass
         if installed != data:
             raise ValueError('media_source_readback_mismatch')
     receipt = {'schemaVersion': 1, 'authority': 'N80 Engine', 'module': 'ai_lab',
