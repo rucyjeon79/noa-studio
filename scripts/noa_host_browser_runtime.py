@@ -190,6 +190,7 @@ def install_browser(transport, node):
         sftp.chmod(path, 0o700)
 
     try:
+        print('N80_HOST_STAGE browser_transfer_started', len(files), total, flush=True)
         mkdir(folder)
         for name, path in sorted(files.items()):
             parts = Path(name).parts[:-1]
@@ -208,10 +209,12 @@ def install_browser(transport, node):
         node_command = node_path
         if node.get('privateLibraries'):
             node_command = node_libs+'/ld-linux-x86-64.so.2 --library-path '+node_libs+' '+node_path
+        print('N80_HOST_STAGE browser_integrity_started', flush=True)
         verified = execute(transport, command=' '.join([node_command, verifier, folder, manifest_path, manifest_sha]), parser=package_result, deadline_seconds=45)
         if verified.get('verified') is not True:
             raise ValueError('host_browser_checksum_mismatch')
         command = ' '.join([node_command, starter, folder+'/lib/ld-linux-x86-64.so.2', folder+'/lib', folder+'/browser/'+binary.name, profile])
+        print('N80_HOST_STAGE browser_launch_started', flush=True)
         result = execute(transport, command=command, parser=browser_result, deadline_seconds=30)
         started = result.get('browserStarted') is True
         result.update(bundleSha256=bundle_sha, bytes=total, installed=started)
