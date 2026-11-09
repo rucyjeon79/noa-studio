@@ -102,3 +102,29 @@ check enables stderr logging without disabling the sandbox. Verified binaries
 are reused for diagnosis instead of retransferring 241 MB on every failed launch;
 package verification, executable startup, page startup and provider authentication
 remain separate results.
+
+## Confirmed host boundary — 2026-11-09 10:44 UTC
+
+- N80 host Node was activated and independently verified through the existing
+  N80 Auto tool channel: [activation run](https://github.com/rucyjeon79/noa-studio/actions/runs/42601221535).
+  This performed one signed status tool call and zero generation requests. The
+  active runtime is documented separately in `docs/n80-node-runtime.md`.
+- The browser executable's version check succeeded, but the real `about:blank`
+  page launch exited with `SIGTRAP`, with zero stdout/stderr bytes:
+  [separated executable/page evidence](https://github.com/rucyjeon79/noa-studio/actions/runs/42600957015).
+- The account is not root. The subsequent fixed, read-only filesystem check
+  returned `ENOENT` for `/proc`, `/proc/self/exe`, and `/proc/self/status`:
+  [host prerequisite evidence](https://github.com/rucyjeon79/noa-studio/actions/runs/42602885132).
+  The final state is `host_proc_unavailable`; Node started, browser did not start,
+  provider authentication and production readiness remain false.
+- The installer now stops before browser staging/launch when this prerequisite
+  is unavailable. The last verified browser bundle remains available for repair;
+  temporary profiles are removed. Ordinary Node Auto execution is preserved.
+
+The existing hosting account needs a provider-supported browser execution
+configuration that exposes the required procfs and browser sandbox facilities.
+This is a prerequisite, not a guarantee that all subsequent browser/provider
+requirements are satisfied. Do not manufacture a fake `/proc`, disable the
+browser sandbox, or mark an authenticated Gemini/Flow session as available.
+No new music-video generation or publication was completed by this runtime repair.
+The existing MV remains the continuation target.
