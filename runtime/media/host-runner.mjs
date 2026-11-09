@@ -27,6 +27,32 @@ export async function verifyPackage(folder,manifestFile,expected){
  return {verified:true,files:Object.keys(entries).length,bytes};
 }
 
+export async function reusePackage(root,folder,manifestFile,expected){
+ if(!hashPattern.test(expected)||await sha(manifestFile)!==expected||await fs.realpath(folder)!==folder)throw Error('media_reuse_manifest');
+ const entries=await json(manifestFile);
+ const previous=(await fs.readdir(root)).filter(name=>/^ffmpeg-[a-f0-9]{64}$/.test(name)&&root+'/'+name!==folder).slice(0,4);
+ let reused=0;
+ for(const [name,item]of Object.entries(entries)){
+  // Only immutable system libraries/fonts are reused. Executables contain the
+  // new installation's absolute loader path and source is transferred anew.
+  if(!/^(?:lib|fonts)\/[A-Za-z0-9+_.-]+$/.test(name))continue;
+  if(!item||!hashPattern.test(item.sha256)||!Number.isSafeInteger(item.bytes)||item.bytes<1)throw Error('media_reuse_entry');
+  const target=folder+'/'+name,parent=path.dirname(target);
+  await fs.mkdir(parent,{recursive:true,mode:0o700});
+  if(await fs.realpath(parent)!==parent)throw Error('media_reuse_directory');
+  try{await fs.lstat(target);continue;}catch(error){if(error.code!=='ENOENT')throw error;}
+  for(const candidate of previous){
+   const source=root+'/'+candidate+'/'+name;
+   try{
+    const info=await fs.lstat(source);
+    if(!info.isFile()||info.size!==item.bytes||await fs.realpath(source)!==source||await sha(source)!==item.sha256)continue;
+    await fs.link(source,target);reused++;break;
+   }catch(error){if(!['ENOENT','EXDEV'].includes(error.code))throw error;}
+  }
+ }
+ return {ok:true,reused};
+}
+
 function fontConfig(bundle,job){
  return `<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "fonts.dtd"><fontconfig><dir>${bundle}/fonts</dir><cachedir>${job}/font-cache</cachedir></fontconfig>`;
 }
@@ -57,6 +83,9 @@ async function worker(settingsFile){
  const timer=setTimeout(()=>process.kill(-process.pid,'SIGKILL'),settings.kind==='check'?180000:600000);
  try{
   process.env.PATH=bundle+'/bin';
+  // Some system libraries carry their own RUNPATH (e.g. PulseAudio). Pass the
+  // verified private library directory to media children as well as ELF RPATH.
+  process.env.LD_LIBRARY_PATH=bundle+'/lib';
   process.env.TMPDIR=job;
   process.env.FONTCONFIG_FILE=job+'/fonts.conf';
   process.env.FONTCONFIG_PATH=job;
@@ -111,7 +140,8 @@ async function parent(settingsFile){
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  try{
   const [mode,...args]=process.argv.slice(2);
-  const result=mode==='verify'?await verifyPackage(...args):mode==='run'?await parent(args[0]):mode==='worker'?await worker(args[0]):null;
+  if(mode==='reuse'&&!new RegExp('^'+ROOT+'/ffmpeg-[a-f0-9]{64}$').test(args[0]))throw Error('media_reuse_scope');
+  const result=mode==='verify'?await verifyPackage(...args):mode==='reuse'?await reusePackage(ROOT,...args):mode==='run'?await parent(args[0]):mode==='worker'?await worker(args[0]):null;
   if(!result)throw Error('media_operation_unknown');
   console.log(JSON.stringify(result));if(result.ok===false)process.exitCode=1;
  }catch(error){console.log(JSON.stringify({ok:false,state:'media_execution_failed',diagnostic:String(error.message).replace(/\/[^\s"']+/g,'<path>').slice(-1500)}));process.exitCode=1;}

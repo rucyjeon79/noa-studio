@@ -210,11 +210,39 @@ def install():
             except FileNotFoundError:
                 before = None
             mkdir(sftp, folder)
-            for index, (name, local) in enumerate(sorted(files.items()), 1):
+            # The prior package remains immutable. Reuse only individually
+            # hashed libraries/fonts, then verify the complete new installation.
+            for name in SOURCES:
                 parent = folder
                 for part in Path(name).parts[:-1]:
                     parent += '/' + part
                     mkdir(sftp, parent)
+                try:
+                    previous_source = read(sftp, folder + '/' + name)
+                except FileNotFoundError:
+                    put(sftp, folder + '/' + name, local=files[name])
+                    previous_source = read(sftp, folder + '/' + name)
+                if previous_source != files[name].read_bytes():
+                    raise ValueError('host_media_source_drift')
+            try:
+                existing = read(sftp, folder + '/package.json')
+            except FileNotFoundError:
+                put(sftp, folder + '/package.json', data=raw)
+                existing = read(sftp, folder + '/package.json')
+            if existing != raw:
+                raise ValueError('host_media_manifest_mismatch')
+            reused = execute(transport, node + [folder + '/runtime/media/host-runner.mjs', 'reuse', folder, folder + '/package.json', manifest_sha], 90)
+            print('N80_MEDIA_FILES_REUSED', json.dumps(reused), flush=True)
+            if reused.get('ok') is not True:
+                raise ValueError('host_media_reuse_unverified')
+            directories = set()
+            for index, (name, local) in enumerate(sorted(files.items()), 1):
+                parent = folder
+                for part in Path(name).parts[:-1]:
+                    parent += '/' + part
+                    if parent not in directories:
+                        mkdir(sftp, parent)
+                        directories.add(parent)
                 target = folder + '/' + name
                 try:
                     info = sftp.lstat(target)
