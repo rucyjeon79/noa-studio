@@ -1,13 +1,34 @@
 import sys
+import hashlib
+import json
 from pathlib import Path
+import subprocess
+import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 from noa_host_media_runtime import interpret, execute, node_result
-from noa_host_browser_runtime import browser_result
+from noa_host_browser_runtime import browser_result, VERIFY
 
 
 class HostRuntimeTest(unittest.TestCase):
+    def test_remote_integrity_verifier_rejects_modified_bytes_and_path_escape(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root/'verify.cjs').write_text(VERIFY)
+            (root/'bundle').mkdir()
+            (root/'bundle/asset').write_bytes(b'actual bytes')
+            def verify(name):
+                body = json.dumps({name: {'bytes': 12, 'sha256': hashlib.sha256(b'actual bytes').hexdigest()}}).encode()
+                (root/'manifest').write_bytes(body)
+                run = subprocess.run(['node', str(root/'verify.cjs'), str(root/'bundle'), str(root/'manifest'), hashlib.sha256(body).hexdigest()], capture_output=True, text=True, timeout=5)
+                return run.returncode, json.loads(run.stdout)['verified']
+            self.assertEqual(verify('asset'), (0, True))
+            (root/'bundle/asset').write_bytes(b'changed data')
+            self.assertEqual(verify('asset'), (1, False))
+            (root/'escape').write_bytes(b'actual bytes')
+            self.assertEqual(verify('../escape'), (1, False))
+
     def test_browser_receipt_requires_successful_exit_and_real_boolean(self):
         self.assertTrue(browser_result(b'{"state":"host_browser_started","browserStarted":true}', 0)['browserStarted'])
         for output, code in [(b'{"state":"host_browser_started","browserStarted":true}', 1),
