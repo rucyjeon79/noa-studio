@@ -14,11 +14,38 @@ import subprocess
 import sys
 import tempfile
 import time
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 PRIVATE = '/hosting/noastudio/noa-ai-lab'
 AAD = b'N80_BROWSER_PROFILE_v1'
 LIMIT = 4 * 1024 * 1024
+
+
+def connection_summary(state, now):
+    """Operational evidence only: never emit the owner, lease, input, frame or profile."""
+    row = state.get('browserControl') or {}
+    allowed = {'queued', 'active', 'closing', 'closed', 'saved', 'failed'}
+    phase = row.get('state') if row.get('state') in allowed else 'disconnected'
+    if phase in {'queued', 'active', 'closing'} and row.get('expiresAt', 0) <= now:
+        phase = 'expired'
+    return {'state': phase, 'hasFrame': bool(row.get('frame')),
+            'framesObserved': isinstance(row.get('frameSeq'), int) and row['frameSeq'] > 0,
+            'leaseLive': row.get('leaseUntil', 0) > now,
+            'profileStored': bool(state.get('browserProfile'))}
+
+
+def observe_connection():
+    import paramiko
+    from noa_full_inventory import connect
+    transport = connect()
+    try:
+        with paramiko.SFTPClient.from_transport(transport) as sftp:
+            sftp.get_channel().settimeout(30)
+            data = read_private(sftp, PRIVATE + '/state.json', 16 * 1024 * 1024)
+            return connection_summary(json.loads(data), int(time.time()))
+    finally:
+        transport.close()
 
 
 def encode_profile(key, value):
@@ -172,9 +199,15 @@ def main(probe=False):
         if not session.get('claimed'):
             print('N80_BROWSER_IDLE')
             return
+    frame_logged = False
     def exchange(body):
+        nonlocal frame_logged
         payload = {**body, 'id': session['id'], 'lease': session['lease']}
-        return signed_tick(key, 'n80_browser_tick', json.dumps(payload, separators=(',', ':')).encode(), timeout=40)
+        result = signed_tick(key, 'n80_browser_tick', json.dumps(payload, separators=(',', ':')).encode(), timeout=40)
+        if body.get('frame') and not frame_logged and not result.get('stop'):
+            frame_logged = True
+            print('N80_BROWSER_FIRST_FRAME_ACCEPTED', json.dumps({'host': urlparse(body['frame']['url']).hostname}), flush=True)
+        return result
     def store(value):
         pointer = transfer_private(data=encode_profile(key, value))
         return exchange({'command': 'finish', 'profile': pointer})
@@ -191,6 +224,7 @@ def main(probe=False):
         if probe:
             result.update(authority='N80 Engine', operation='ai.browser_probe', sourceCommit=os.environ['GITHUB_SHA'],
                           runId=os.environ['GITHUB_RUN_ID'], stateOwner='existing_noa_host', renderer='host_ffmpeg')
+            result['connectionObservation'] = observe_connection()
             receipt = transfer_private(data=json.dumps(result, sort_keys=True).encode(), proof=True)
             print('N80_BROWSER_PROOF', json.dumps({**result, 'hostReceipt': receipt}))
             if not all(result['providers'][p]['reachable'] for p in ('gemini', 'flow')):

@@ -38,7 +38,7 @@ if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 <div class="browser-state"><span class="browser-state-dot" aria-hidden="true"></span><p id="browser-status" role="status" aria-live="polite">연결 상태를 확인하고 있습니다.</p><button type="button" class="noa-button" id="browser-refresh" hidden>상태 다시 확인</button></div>
 <p id="browser-feedback" role="alert" hidden></p>
 <div id="browser-stage" class="browser-stage" aria-busy="true">
-<div id="browser-placeholder" class="browser-placeholder"><span class="browser-loader" aria-hidden="true"></span><strong id="browser-placeholder-title">연결 상태 확인 중</strong><p id="browser-placeholder-help">잠시만 기다려 주세요.</p></div>
+<div id="browser-placeholder" class="browser-placeholder"><span class="browser-loader" aria-hidden="true"></span><strong id="browser-placeholder-title">연결 상태 확인 중</strong><p id="browser-placeholder-help">잠시만 기다려 주세요.</p><p id="browser-elapsed" hidden></p></div>
 <img id="browser-screen" class="browser-screen" width="1280" height="900" alt="Google 연결 브라우저 화면. 입력란을 누른 후 아래 입력 도구를 사용하세요." hidden>
 </div>
 <p id="browser-url" hidden></p>

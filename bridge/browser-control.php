@@ -11,7 +11,9 @@ function nb_view(array $s,string $owner,int $now):array {
  $out=array_intersect_key($r,array_flip(['id','state','expiresAt','frameSeq','url','geminiConnected','flowConnected','error']));
  if(($r['expiresAt']??0)<=$now&&!in_array($r['state']??'',['saved','closed','failed'],true))$out['state']='expired';
  if(($out['state']??'')==='active'&&($r['leaseUntil']??0)<=$now)$out['state']='connection_lost';
- $out['inputReady']=($out['state']??'')==='active'&&empty($r['input']);
+ $out['phase']=(($out['state']??'')==='active'&&empty($r['frame']))?'starting':($out['state']??'disconnected');
+ $out['inputReady']=($out['state']??'')==='active'&&!empty($r['frame'])&&empty($r['input']);
+ $out['waitSeconds']=isset($r['requestedAt'])?max(0,$now-$r['requestedAt']):null;
  if(($out['state']??'')==='active'&&!empty($r['frame']))$out['frame']=lab_unseal($r['frame'])['image']??null;
  $out['profileStored']=!empty($s['browserProfile']);
  $out['productionReady']=false;
@@ -25,7 +27,7 @@ function nb_admin(array &$s,array $b,string $owner,int $now):array {
    if(($prior['owner']??'')!==$owner)throw new DomainException('browser_in_use');
    return ['ok'=>true]+nb_view($s,$owner,$now);
   }
-  $s['browserControl']=['id'=>bin2hex(random_bytes(16)),'owner'=>$owner,'state'=>'queued','expiresAt'=>$now+1200,
+  $s['browserControl']=['id'=>bin2hex(random_bytes(16)),'owner'=>$owner,'state'=>'queued','requestedAt'=>$now,'expiresAt'=>$now+1200,
    'frameSeq'=>0,'nextInput'=>0,'ack'=>0,'input'=>null,'geminiConnected'=>false,'flowConnected'=>false];
   return ['ok'=>true]+nb_view($s,$owner,$now);
  }
@@ -33,6 +35,7 @@ function nb_admin(array &$s,array $b,string $owner,int $now):array {
  if(!$r||($r['owner']??'')!==$owner||($b['id']??'')!==$r['id'])throw new DomainException('browser_session_changed');
  if($command==='close'){$r['state']='closed';unset($r['frame'],$r['input']);return ['ok'=>true,'state'=>'closed'];}
  if($r['expiresAt']<=$now||$r['state']!=='active'||($r['leaseUntil']??0)<=$now)throw new DomainException('browser_not_connected');
+ if(empty($r['frame']))throw new DomainException('browser_not_ready');
  if($command==='save'){$r['state']='closing';$r['input']=null;return ['ok'=>true,'state'=>'closing'];}
  if($command!=='input'||!empty($r['input'])||($b['frameSeq']??null)!==$r['frameSeq'])throw new DomainException('browser_frame_changed');
  $event=$b['event']??[];$kind=$event['kind']??'';
@@ -59,7 +62,7 @@ function nb_worker(array &$s,array $b,int $now):array {
  $command=$b['command']??'';$r=&$s['browserControl'];
  if($command==='claim'){
   if(!$r||$r['state']!=='queued'||$r['expiresAt']<=$now)return ['ok'=>true,'claimed'=>false,'state'=>'idle'];
-  $r['state']='active';$r['lease']=bin2hex(random_bytes(24));$r['leaseUntil']=$now+180;$r['expiresAt']=min($r['expiresAt'],$now+900);
+  $r['state']='active';$r['startedAt']=$now;$r['lease']=bin2hex(random_bytes(24));$r['leaseUntil']=$now+180;$r['expiresAt']=min($r['expiresAt'],$now+900);
   return ['ok'=>true,'claimed'=>true,'id'=>$r['id'],'lease'=>$r['lease'],'expiresAt'=>$r['expiresAt'],'profile'=>$s['browserProfile']??null];
  }
  if(!$r||($b['id']??'')!==$r['id']||!is_string($b['lease']??null)||!hash_equals($r['lease']??'',$b['lease']))throw new DomainException('browser_lease_changed');
@@ -88,6 +91,7 @@ function nb_worker(array &$s,array $b,int $now):array {
   $digest=hash('sha256',$frame['url']."\n".$frame['image']);
   if(($r['frameDigest']??'')!==$digest){$r['frameSeq']++;$r['frameDigest']=$digest;}
   $r['url']=$frame['url'];$r['frame']=lab_seal(['image'=>$frame['image']]);
+  $r['firstFrameAt']??=$now;
   foreach(['gemini','flow'] as $provider)if(($frame[$provider.'Connected']??false)===true)$r[$provider.'Connected']=true;
  }
  return ['ok'=>true,'stop'=>false,'input'=>empty($r['input'])?null:lab_unseal($r['input'])];

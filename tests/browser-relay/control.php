@@ -11,10 +11,14 @@ try{
  check(nb_view($s,'other',101)===['state'=>'disconnected'],'owner_leak');
  $claim=nb_worker($s,['command'=>'claim'],101);$auth=['id'=>$id,'lease'=>$claim['lease']];
  check(!nb_worker($s,['command'=>'claim'],102)['claimed'],'double_claim');
+ $starting=nb_view($s,'owner',102);check($starting['state']==='active'&&$starting['phase']==='starting'&&!$starting['inputReady']&&!isset($starting['frame']),'blank_browser_marked_ready');
+ check($starting['waitSeconds']===2,'startup_elapsed_time');
+ refuses(function()use(&$s,$id){nb_admin($s,['command'=>'save','id'=>$id],'owner',102);},'browser_not_ready');
+
  $frame=['url'=>'https://accounts.google.com/','image'=>'data:image/jpeg;base64,ZmFrZQ=='];
  nb_worker($s,$auth+['command'=>'exchange','ack'=>0,'frame'=>$frame],103);
  $view=nb_view($s,'owner',104);check(!isset($view['lease'])&&!isset($view['input']),'private_state_leak');
- check($view['inputReady']&&$view['frameSeq']===1&&$view['productionReady']===false,'screen_missing');
+ check($view['phase']==='active'&&$s['browserControl']['firstFrameAt']===103&&$view['inputReady']&&$view['frameSeq']===1&&$view['productionReady']===false,'screen_missing');
  nb_worker($s,$auth+['command'=>'exchange','ack'=>0,'frame'=>$frame],104);check($s['browserControl']['frameSeq']===1,'unchanged_frame_invalidated');
  $input=['command'=>'input','id'=>$id,'frameSeq'=>1,'event'=>['kind'=>'type','text'=>'DUMMY_PASSWORD']];
  nb_admin($s,$input,'owner',105);check(!str_contains(json_encode($s),'DUMMY_PASSWORD'),'input_not_encrypted');
