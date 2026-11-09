@@ -1,0 +1,44 @@
+<?php
+declare(strict_types=1);
+$root=sys_get_temp_dir().'/n80-storage-'.bin2hex(random_bytes(6));
+mkdir($root.'/html',0700,true);mkdir($root.'/noa-ai-lab/jobs',0700,true);
+define('_GNUBOARD_',true);define('G5_PATH',$root.'/html');require __DIR__.'/../../bridge/session-shorts-storage.php';
+set_error_handler(function($level,$message){throw new ErrorException($message,0,$level);});
+function check_storage(bool $ok,string $why):void{if(!$ok)throw new RuntimeException($why);}
+function reject_storage(callable $fn,string $why):void{try{$fn();}catch(DomainException|InvalidArgumentException $e){return;}throw new RuntimeException($why);}
+$id=str_repeat('a',32);$now=10000;mkdir(lab_job_dir($id),0700);
+$bytes=str_repeat('x',600);file_put_contents(lab_job_dir($id).'/image.webp',$bytes);$sha=hash('sha256',$bytes);
+$source=['key'=>'single:test:1','revision'=>7,'title'=>'Fixture','lyrics'=>'lyrics','description'=>'','imageGuidance'=>'','cast'=>'female','genre'=>'test','duration'=>70.0,'audioSha256'=>str_repeat('b',64)];
+$read=function($key)use(&$source){check_storage($key===$source['key'],'exact source');return $source;};
+$job=['id'=>$id,'type'=>'agent_movie','title'=>'Fixture','trackKey'=>$source['key'],'sourceRevision'=>7,'audioSha256'=>$source['audioSha256'],'source'=>$source,'state'=>'agent_paused','revision'=>1,'outputs'=>[],
+ 'agent'=>['owner'=>'owner','format'=>'shorts','sourceFingerprint'=>sa_fingerprint($source),'scenes'=>[['n'=>1,'image'=>['file'=>'image.webp','bytes'=>600,'sha256'=>$sha,'accepted'=>false,'sourceUrl'=>'https://gemini.google.com/example']]],'active'=>null]];
+$p=json_decode(file_get_contents(__DIR__.'/../../config/n80-daily-shorts.json'),true);
+$s=['config'=>['workerEnabled'=>true],'jobs'=>[$id=>$job],'campaigns'=>['daily_shorts'=>['enabled'=>true,'policy'=>$p,'current'=>['jobId'=>$id]]]];
+$base=$s;
+reject_storage(function()use(&$s,$now,$read){nd_storage_claim($s,'other',$now,$read);},'wrong owner');
+$first=nd_storage_claim($s,'owner',$now,$read);check_storage($first['claimed'],'paused media can be preserved without resuming production');
+check_storage(nd_storage_claim($s,'owner',$now+1,$read)['state']==='storage_busy','one worker');
+$auth=array_intersect_key($first,array_flip(['id','key','lease']));
+$call=function($command,$fields=[])use(&$s,&$now,$auth,$read){return nd_storage_operation($s,$auth+['command'=>$command]+$fields,'owner',$now+1,$read);};
+reject_storage(fn()=>$call('storage_reserve',['folderId'=>$p['mediaStorage']['temporaryParentFolderId'],'fileId'=>'driveFileId111']),'cannot reuse parent');
+$reserved=$call('storage_reserve',['folderId'=>'driveFolder111','fileId'=>'driveFileId111']);
+check_storage($call('storage_reserve',$reserved)['fileId']==='driveFileId111','reservation replay');
+reject_storage(fn()=>$call('storage_reserve',['folderId'=>'driveFolder111','fileId'=>'driveFileId222']),'no new ID after timeout');
+$chunk=$call('storage_read',['offset'=>0,'kind'=>'audio']);check_storage(base64_decode($chunk['data'])===$bytes,'caller cannot switch to source audio');
+$receipt=['folderId'=>'driveFolder111','fileId'=>'driveFileId111','sha256'=>$sha,'bytes'=>600,'readbackVerified'=>true,'privateVerified'=>true];
+reject_storage(fn()=>$call('storage_complete',['receipt'=>array_replace($receipt,['sha256'=>str_repeat('c',64)])]),'reject wrong content');
+reject_storage(fn()=>$call('storage_complete',['receipt'=>array_replace($receipt,['readbackVerified'=>false])]),'readback required');
+$call('storage_complete',['receipt'=>$receipt]);$call('storage_complete',['receipt'=>$receipt]);
+check_storage(nd_storage_claim($s,'owner',$now+2,$read)['state']==='stored','no duplicate transfer');
+check_storage($s['jobs'][$id]['state']==='agent_paused'&&!$s['jobs'][$id]['agent']['scenes'][0]['image']['accepted']&&$s['jobs'][$id]['revision']===1,'no fake approval or generation state changes');
+check_storage(is_file(lab_job_dir($id).'/image.webp')&&$s['jobs'][$id]['agent']['temporaryMedia']['cleanup']['deleted']===0,'no premature deletion');
+$s=$base;$first=nd_storage_claim($s,'owner',$now,$read);$auth=array_intersect_key($first,array_flip(['id','key','lease']));
+$second=nd_storage_claim($s,'owner',$now+901,$read);
+reject_storage(function()use(&$s,$auth,$now,$read){nd_storage_operation($s,$auth+['command'=>'storage_read','offset'=>0],'owner',$now+902,$read);},'expired worker fenced');
+$newauth=array_intersect_key($second,array_flip(['id','key','lease']));$source['title']='changed';
+reject_storage(function()use(&$s,$newauth,$now,$read){nd_storage_operation($s,$newauth+['command'=>'storage_read','offset'=>0],'owner',$now+902,$read);},'source changed');$source['title']='Fixture';
+nd_storage_claim($s,'owner',$now+1802,$read);check_storage(nd_storage_claim($s,'owner',$now+2703,$read)['state']==='storage_retry_limit','bounded retries');
+$s=$base;$s['jobs'][$id]['state']='cancelled';check_storage(nd_storage_claim($s,'owner',$now,$read)['state']==='cancelled','cancel respected');
+$s=$base;$s['jobs'][$id]['agent']['scenes']=[];check_storage(nd_storage_claim($s,'owner',$now,$read)['state']==='no_generated_media','never copy originals');
+unlink(lab_job_dir($id).'/image.webp');rmdir(lab_job_dir($id));rmdir($root.'/noa-ai-lab/jobs');rmdir($root.'/noa-ai-lab');rmdir($root.'/html');rmdir($root);
+echo "N80 Drive storage: scope, durable IDs, readback, private receipts, lease recovery, source changes, retry limits and no premature cleanup passed.\n";

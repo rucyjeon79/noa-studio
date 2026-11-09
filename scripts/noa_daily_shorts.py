@@ -62,6 +62,8 @@ def main():
     result=dispatch()
     c=result['campaign']
     print('N80_DAILY_SHORTS',json.dumps({k:c.get(k) for k in ('state','lastTickAt','nextPreparationAt','nextPublicationAt','productionReady','conversationDependent','readiness')}),flush=True)
+    from noa_shorts_storage import run_storage
+    run_storage(dispatch)
     claim=dispatch('claim_preparation')
     if not claim.get('claimed'):
         print('N80_SHORTS_PREPARATION',json.dumps({'state':claim['state']}),flush=True)
