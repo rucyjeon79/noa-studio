@@ -53,9 +53,21 @@ release.FILES={
 }
 release.NEW={'noa-starlight.css'}|{p for p in release.FILES if p.endswith('.webp')}
 release.PROTECTED=['common.php','data/dbconfig.php','bbs/login.php','bbs/login_check.php','bbs/board.php','noa-music.php','noa-world.php','noa-hero.js','noa-app/engine/n80.php','noa-app/jukebox/stream.php','noa-app/jukebox/download.php']
+# Reuse the same guarded presentation owner for the disclosure-only release.
+DISCLOSURES_ONLY=os.getenv('NOA_STARLIGHT_SCOPE')=='disclosures'
+if DISCLOSURES_ONLY:
+ release.FILES={'noa-starlight.css':'deploy/noa-starlight.css'}
+ release.NEW=set()
 release.BACKUP=Path(os.environ.get('RUNNER_TEMP','/tmp'))/'noa-starlight-before.json'
 
 def verify():
+ if DISCLOSURES_ONLY:
+  with urllib.request.urlopen('https://noastudio.ai.kr/',timeout=30) as response:
+   html=response.read().decode('utf-8')
+   expected='/noa-starlight.css?v='+release.sha(Path('deploy/noa-starlight.css').read_bytes())
+   if response.status!=200 or expected not in html or 'Fatal error' in html:raise RuntimeError('disclosure_stylesheet_not_active')
+  print('DISCLOSURE_PRESENTATION_PUBLIC_HASH_AND_CACHE_VERSION_VERIFIED')
+  return
  for path in ['/','/noa-about.php','/noa-privacy.php','/noa-terms.php','/bbs/login.php','/noa-sitemap.php','/bbs/content.php?co_id=privacy','/bbs/content.php?co_id=provision']:
   with urllib.request.urlopen('https://noastudio.ai.kr'+path,timeout=30) as response:
    html=response.read().decode('utf-8')
