@@ -2,7 +2,7 @@ name: NOA private song worker
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/noa-worker.yml','worker.py','agent.py','gemini.py','verify_agent.py','tests/gpt/test_gemini.py','tests/gpt/test_agent.py']
+    paths: ['.github/workflows/noa-worker.yml','worker.py','agent.py','gemini.py','gemini_connect.py','gemini-connection.json','tests/gpt/test_gemini_connect.py','verify_agent.py','tests/gpt/test_gemini.py','tests/gpt/test_agent.py']
   workflow_dispatch:
     inputs:
       task_id:
@@ -38,6 +38,13 @@ jobs:
           mkdir -p "$CODEX_HOME"
           printf '%s' "$INITIAL_AUTH" | jq -ce 'select(.tokens.refresh_token | type == "string")' > "$CODEX_HOME/auth.json"
           cp "$CODEX_HOME/auth.json" "$RUNNER_TEMP/noa-auth-original"
+      - name: Verify Gemini connection delivery
+        run: PYTHONPATH=. python3 tests/gpt/test_gemini_connect.py
+      - name: Process the requested Gemini connection
+        if: github.event_name == 'push' && hashFiles('gemini-connection.json') != ''
+        env:
+          GH_TOKEN: ${{ secrets.NOA_SECRET_ROTATION_TOKEN }}
+        run: python3 gemini_connect.py
       - name: Prepare optional Gemini subscription login
         env:
           GEMINI_AUTH: ${{ secrets.NOA_GEMINI_OAUTH }}
@@ -62,7 +69,7 @@ jobs:
       - name: Verify commander boundaries
         run: PYTHONPATH=. python3 tests/gpt/test_agent.py
       - name: Verify hosted ChatGPT commander
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && hashFiles('gemini-connection.json') == ''
         run: python3 verify_agent.py
       - name: Generate the selected field
         if: github.event_name == 'workflow_dispatch'
