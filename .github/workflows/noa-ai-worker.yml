@@ -38,10 +38,12 @@ jobs:
     needs: host_candidate
     runs-on: ubuntu-latest
     environment: production
-    timeout-minutes: 3
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
       - run: python -m pip install paramiko==3.5.1
       - name: Start a bounded browser process on the existing hosting account
         env:
