@@ -10,7 +10,7 @@ import stat
 ROOT = '/hosting/noastudio/noa-ai-lab/host-runtime'
 START = r'''const {spawn}=require('node:child_process');
 const [loader,libs,browser,profile]=process.argv.slice(2);
-const child=spawn(loader,['--library-path',libs,browser,'--headless','--disable-gpu','--disable-dev-shm-usage','--no-first-run','--user-data-dir='+profile,'--dump-dom','about:blank'],{detached:true,stdio:['ignore','pipe','pipe']});
+const child=spawn(loader,['--library-path',libs,browser,'--headless','--disable-gpu','--disable-dev-shm-usage','--no-first-run','--user-data-dir='+profile,'--dump-dom','about:blank'],{cwd:require('node:path').dirname(browser),detached:true,stdio:['ignore','pipe','pipe']});
 let output='',error='',timedOut=false,finished=false;
 const stop=()=>{if(child.pid)try{process.kill(-child.pid,'SIGKILL')}catch{}};
 const timer=setTimeout(()=>{timedOut=true;stop()},20000);
@@ -18,15 +18,41 @@ child.stdout.on('data',b=>{output+=b.toString();if(output.length>32768)stop()});
 child.stderr.on('data',b=>{error+=b.toString();if(error.length>32768)stop()});
 const done=code=>{if(finished)return;finished=true;clearTimeout(timer);stop();
  let reason=timedOut?'browser_start_timeout':'browser_start_failed';
- if(/No usable sandbox|namespace.*(?:failed|permitted)|Operation not permitted|Running as root/.test(error))reason='host_browser_sandbox_unavailable';
+ if(/No usable sandbox|sandbox helper|namespace.*(?:failed|permitted)|Operation not permitted|Running as root/.test(error))reason='host_browser_sandbox_unavailable';
  else if(/shared libraries|GLIBC_/.test(error))reason='browser_library_missing';
  else if(/Permission denied/.test(error))reason='browser_execution_denied';
  const started=code===0&&output.includes('<html')&&output.includes('</html>');
- console.log(JSON.stringify({state:started?'host_browser_started':reason,browserStarted:started,exitCode:code}));
+ const diagnostic=error.replace(/\/[^\s:]+/g,'<path>').replace(/\b\d{6,}\b/g,'<number>').slice(-1200);
+ console.log(JSON.stringify({state:started?'host_browser_started':reason,browserStarted:started,exitCode:code,diagnostic}));
  process.exitCode=started?0:1;
 };
 child.on('error',()=>done(null));child.on('close',done);
 '''
+VERIFY = r'''const fs=require('node:fs'),crypto=require('node:crypto'),path=require('node:path');
+(async()=>{try{
+ const [folder,manifest,expected]=process.argv.slice(2),raw=fs.readFileSync(manifest);
+ if(crypto.createHash('sha256').update(raw).digest('hex')!==expected)throw Error();
+ const files=JSON.parse(raw),root=fs.realpathSync(folder);
+ if(Object.keys(files).length>250)throw Error();
+ for(const [name,meta] of Object.entries(files)){
+  if(!/^[a-zA-Z0-9_./+\-]+$/.test(name)||name.startsWith('/')||name.split('/').includes('..'))throw Error();
+  const file=path.join(root,name),info=fs.lstatSync(file);
+  if(!info.isFile()||info.size!==meta.bytes||!fs.realpathSync(file).startsWith(root+'/'))throw Error();
+  const hash=crypto.createHash('sha256');for await(const block of fs.createReadStream(file))hash.update(block);
+  if(hash.digest('hex')!==meta.sha256)throw Error();
+ }
+ console.log(JSON.stringify({verified:true,files:Object.keys(files).length}));
+}catch{console.log(JSON.stringify({verified:false}));process.exitCode=1}})();
+'''
+
+
+def package_result(output, exit_code):
+    try:
+        value = json.loads(output)
+        valid = isinstance(value, dict) and value.get('verified') is True and exit_code == 0
+    except (ValueError, UnicodeError):
+        valid = False
+    return {'verified': valid}
 
 
 def browser_result(output, exit_code):
@@ -39,8 +65,11 @@ def browser_result(output, exit_code):
     if not isinstance(value, dict) or value.get('state') not in allowed:
         return {'state': 'host_browser_result_invalid', 'browserStarted': False}
     started = exit_code == 0 and value.get('browserStarted') is True and value.get('state') == 'host_browser_started'
-    return {'state': 'host_browser_started' if started else (value['state'] if value['state'] != 'host_browser_started' else 'browser_start_failed'),
-            'browserStarted': started}
+    result = {'state': 'host_browser_started' if started else (value['state'] if value['state'] != 'host_browser_started' else 'browser_start_failed'),
+              'browserStarted': started}
+    if isinstance(value.get('diagnostic'), str):
+        result['diagnostic'] = value['diagnostic'][:1200]
+    return result
 
 
 def remove_profile(sftp, path, expected):
@@ -92,6 +121,10 @@ def install_browser(transport, node):
     bundle_sha = hashlib.sha256(json.dumps(hashes, sort_keys=True).encode()).hexdigest()
     folder = ROOT+'/browser-'+bundle_sha[:16]
     starter = ROOT+'/browser-start-'+hashlib.sha256(START.encode()).hexdigest()[:16]+'.cjs'
+    verifier = ROOT+'/browser-verify-'+hashlib.sha256(VERIFY.encode()).hexdigest()[:16]+'.cjs'
+    manifest = json.dumps({name: {'bytes': path.stat().st_size, 'sha256': hashes[name]} for name,path in files.items()}, sort_keys=True).encode()
+    manifest_sha = hashlib.sha256(manifest).hexdigest()
+    manifest_path = ROOT+'/browser-manifest-'+manifest_sha[:16]+'.json'
     profile = ROOT+'/browser-check-'+os.urandom(8).hex()
     sftp = paramiko.SFTPClient.from_transport(transport)
     sftp.get_channel().settimeout(45)
@@ -125,13 +158,10 @@ def install_browser(transport, node):
         info = sftp.lstat(path)
         if not stat.S_ISREG(info.st_mode) or info.st_size != size:
             raise ValueError('browser_size_mismatch')
-        actual = hashlib.sha256()
-        with sftp.open(path, 'rb') as source:
-            source.prefetch(file_size=size, max_concurrent_requests=16)
-            while block := source.read(262144):
-                actual.update(block)
-        if actual.hexdigest() != expected:
-            raise ValueError('browser_checksum_mismatch')
+        if local is None:
+            with sftp.open(path, 'rb') as source:
+                if hashlib.sha256(source.read(size+1)).hexdigest() != expected:
+                    raise ValueError('browser_checksum_mismatch')
         sftp.chmod(path, 0o700)
 
     try:
@@ -144,6 +174,8 @@ def install_browser(transport, node):
                 mkdir(parent)
             put(folder+'/'+name, local=(name,path))
         put(starter, content=START.encode())
+        put(verifier, content=VERIFY.encode())
+        put(manifest_path, content=manifest)
         sftp.mkdir(profile, 0o700)
         profile_created = True
         node_path = ROOT+'/node-'+node['sha256'][:16]
@@ -151,6 +183,9 @@ def install_browser(transport, node):
         node_command = node_path
         if node.get('privateLibraries'):
             node_command = node_libs+'/ld-linux-x86-64.so.2 --library-path '+node_libs+' '+node_path
+        verified = execute(transport, command=' '.join([node_command, verifier, folder, manifest_path, manifest_sha]), parser=package_result, deadline_seconds=45)
+        if verified.get('verified') is not True:
+            raise ValueError('host_browser_checksum_mismatch')
         command = ' '.join([node_command, starter, folder+'/lib/ld-linux-x86-64.so.2', folder+'/lib', folder+'/browser/'+binary.name, profile])
         result = execute(transport, command=command, parser=browser_result, deadline_seconds=30)
         started = result.get('browserStarted') is True
