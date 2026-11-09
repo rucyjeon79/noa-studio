@@ -6,7 +6,10 @@
       "enabledTools": [
         "noa_connection_status",
         "noa_agent_tasks",
-        "noa_agent_read"
+        "noa_agent_read",
+        "noa_list_songs",
+        "noa_agent_source_file",
+        "noa_production_brief"
       ],
       "timeoutSeconds": 180
     }

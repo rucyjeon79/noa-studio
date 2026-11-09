@@ -8,6 +8,13 @@ function check(bool $ok,string $why):void{if(!$ok)throw new RuntimeException($wh
 function reject(callable $call,string $why):void{try{$call();}catch(NoaOAuthFailure $e){check($e->reason===$why,'wrong failure:'.$e->reason);return;}throw new RuntimeException('missing failure:'.$why);}
 $now=time();$s=lab_defaults();$s['config']['oauthClientId']='fixture-client';$s['secrets']=lab_seal(['oauthClientSecret'=>'PRIVATE_SECRET']);
 $s['channels']=['fixture'=>['title'=>'Existing channel','tokens'=>lab_seal(['refresh_token'=>'YOUTUBE_REFRESH']),'autoEnabled'=>true,'connectedAt'=>'existing']];
+$configuredPolicy=json_decode((string)file_get_contents(__DIR__.'/../../config/n80-daily-shorts.json'),true,32,JSON_THROW_ON_ERROR);
+$configuredState=$s;$beforePolicy=$configuredPolicy;
+$configuredStart=nsd_start($configuredState,$configuredPolicy,'owner','session',$now);
+nsd_request($configuredStart['request'],$configuredState,$configuredPolicy,'owner','session',$configuredStart['request']['state'],$now);
+check($configuredStart['request']['parent']!=='','deployed policy must permit starting Drive OAuth before switching storage');
+check($configuredState===$s&&$configuredPolicy===$beforePolicy,'preparing Drive must not switch storage, mutate jobs or authorize a connection');
+check(!nsd_status($configuredState,$configuredPolicy,'owner')['connected'],'configured folder does not imply Drive authorization');
 $channels=$s['channels'];$p=['mediaStorage'=>['temporaryParentFolderId'=>'privateFolder111']];
 $start=nsd_start($s,$p,'owner','session',$now);$request=$start['request'];parse_str(parse_url($start['url'],PHP_URL_QUERY),$query);
 check($query['redirect_uri']===NOA_LAB_ORIGIN.'/noa-bridge/lab-oauth.php'&&$query['scope']===NSD_SCOPE&&$query['access_type']==='offline','reuse callback with explicit scope');

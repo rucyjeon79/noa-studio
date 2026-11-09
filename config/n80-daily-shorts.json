@@ -32,6 +32,7 @@
   "conversationDependent": false,
   "mediaStorage": {
     "provider": "github_actions_artifact",
+    "temporaryParentFolderId": "1hR8n8sH7d7ekoWqiwK11bAIYY3m9C6-l",
     "scope": "Only registered generated media, encrypted before GitHub upload. Existing host originals and Gem knowledge remain authoritative.",
     "workerConnectionVerified": false,
     "requireVerifiedReadbackBeforeLocalCleanup": true,
@@ -60,7 +61,7 @@
     "duplicateSourceCopies": false,
     "manualChatProductionIsAutomation": false,
     "persistentGemExecutorVerified": false,
-    "githubSpecialist": "Gemini CLI in the existing private N80 worker; text review only after actual OAuth verification. Existing Gem and Flow are separate executors."
+    "githubSpecialist": "Official Antigravity client using the GitHub repository and existing N80 MCP tools; external authentication and actual tool execution remain unverified. Retired personal Gemini CLI is disabled. Existing Gem and Flow require separate execution verification."
   },
   "genrePlaylistIds": {
     "PLEPMKciKgvch9TGMAcBdKzhVt1QeYsfKB": "your-story",
