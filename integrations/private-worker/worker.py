@@ -58,8 +58,8 @@ def transport(op, data=None):
                 raise
 
 
-def generate(task_id):
-    result = Commander(task_id, transport, complete).run()
+def generate(task_id, specialists=None):
+    result = Commander(task_id, transport, complete, specialists=specialists).run()
     print("N80_AGENT_RESULT", json.dumps(result))
 
 
@@ -90,14 +90,18 @@ def main():
     task_id = os.environ["NOA_TASK_ID"]
     if not re.fullmatch("[a-f0-9]{32}", task_id):
         raise ValueError("Invalid task ID")
-    claimed = api("workerPoll", {"id": task_id, "agentVersion": 1, "resume": True})
+    from gemini import verify, review, SPECIALIST
+    verified = verify()
+    print("N80_GEMINI_STATUS", json.dumps(verified))
+    specialists = {SPECIALIST: review} if verified["connected"] else {}
+    claimed = api("workerPoll", {"id": task_id, "agentVersion": 1, "resume": True, "specialists": list(specialists)})
     if claimed.get("id") != task_id:
         return
     LEASE = claimed.get("agentLease", "")
     if not re.fullmatch("[a-f0-9]{48}", LEASE):
         raise RuntimeError("N80 agent bridge activation required")
     try:
-        generate(task_id)
+        generate(task_id, specialists)
     except Exception:
         try:
             api("workerFail", {"id": task_id})

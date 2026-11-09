@@ -2,7 +2,7 @@ name: NOA private song worker
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/noa-worker.yml','worker.py','agent.py','verify_agent.py','tests/gpt/test_agent.py']
+    paths: ['.github/workflows/noa-worker.yml','worker.py','agent.py','gemini.py','verify_agent.py','tests/gpt/test_gemini.py','tests/gpt/test_agent.py']
   workflow_dispatch:
     inputs:
       task_id:
@@ -38,6 +38,27 @@ jobs:
           mkdir -p "$CODEX_HOME"
           printf '%s' "$INITIAL_AUTH" | jq -ce 'select(.tokens.refresh_token | type == "string")' > "$CODEX_HOME/auth.json"
           cp "$CODEX_HOME/auth.json" "$RUNNER_TEMP/noa-auth-original"
+      - name: Prepare optional Gemini subscription login
+        env:
+          GEMINI_AUTH: ${{ secrets.NOA_GEMINI_OAUTH }}
+        run: |
+          set -eu
+          if test -z "$GEMINI_AUTH"; then
+            echo 'N80_GEMINI_STATUS: gemini_login_required'
+            exit 0
+          fi
+          umask 077
+          mkdir -p "$RUNNER_TEMP/noa-gemini/.gemini"
+          printf '%s' "$GEMINI_AUTH" | jq -ce 'select(.refresh_token | type == "string" and length > 0)' > "$RUNNER_TEMP/noa-gemini/.gemini/oauth_creds.json"
+          cp "$RUNNER_TEMP/noa-gemini/.gemini/oauth_creds.json" "$RUNNER_TEMP/noa-gemini-original"
+          printf '%s' '{"security":{"auth":{"selectedType":"oauth-personal","enforcedType":"oauth-personal"}},"telemetry":{"enabled":false},"mcpServers":{}}' > "$RUNNER_TEMP/noa-gemini/.gemini/settings.json"
+          echo "GEMINI_CLI_HOME=$RUNNER_TEMP/noa-gemini" >> "$GITHUB_ENV"
+          npm install --global @google/gemini-cli@0.67.0
+      - name: Verify Gemini adapter boundaries
+        run: PYTHONPATH=. python3 tests/gpt/test_gemini.py
+      - name: Verify connected Gemini subscription
+        if: github.event_name == 'push'
+        run: python3 gemini.py
       - name: Verify commander boundaries
         run: PYTHONPATH=. python3 tests/gpt/test_agent.py
       - name: Verify hosted ChatGPT commander
@@ -59,4 +80,15 @@ jobs:
           if test -s "$RUNNER_TEMP/noa-auth-original" && ! cmp -s "$CODEX_HOME/auth.json" "$RUNNER_TEMP/noa-auth-original"; then
             jq -e '.tokens.refresh_token | type == "string"' "$CODEX_HOME/auth.json" >/dev/null
             gh secret set NOA_CODEX_AUTH --repo "$GITHUB_REPOSITORY" < "$CODEX_HOME/auth.json"
+          fi
+      - name: Persist refreshed Gemini login
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.NOA_SECRET_ROTATION_TOKEN }}
+        run: |
+          set -eu
+          trap 'rm -rf "$RUNNER_TEMP/noa-gemini" "$RUNNER_TEMP/noa-gemini-original"' EXIT
+          if test -s "$RUNNER_TEMP/noa-gemini-original" && ! cmp -s "$RUNNER_TEMP/noa-gemini/.gemini/oauth_creds.json" "$RUNNER_TEMP/noa-gemini-original"; then
+            jq -e '.refresh_token | type == "string" and length > 0' "$RUNNER_TEMP/noa-gemini/.gemini/oauth_creds.json" >/dev/null
+            gh secret set NOA_GEMINI_OAUTH --repo "$GITHUB_REPOSITORY" < "$RUNNER_TEMP/noa-gemini/.gemini/oauth_creds.json"
           fi

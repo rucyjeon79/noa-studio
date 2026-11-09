@@ -4,16 +4,17 @@ declare(strict_types=1);
 /** N80 AI commander protocol. Uses the existing song/creative job and its lock. */
 const N80_AGENT_VERSION = 1;
 const N80_AGENT_LEASE_SECONDS = 240;
-function n80_agent_contract(): array {
+function n80_agent_contract(array $job=[]): array {
     return ['version'=>N80_AGENT_VERSION,'module'=>'ai_lab','brain'=>'ChatGPT',
         'execution'=>'existing_subscription_worker','maxDecisions'=>6,
         'tools'=>['song.read','result.validate','result.save'],
-        'specialists'=>[], 'directFirst'=>true];
+        'specialists'=>in_array('gemini_text',$job['agent']['specialists']??[],true)?[['id'=>'gemini_text','connected'=>true,'capabilities'=>['text_review'],'execution'=>'github_private_worker','imageGeneration'=>false,'videoGeneration'=>false]]:[], 'directFirst'=>true];
 }
 function n80_agent_claim(array &$job, array $body, ?int $now=null): array {
     if (($body['agentVersion']??null)!==N80_AGENT_VERSION) return [];
     $now??=time();
     $job['agent']=['version'=>N80_AGENT_VERSION,'lease'=>bin2hex(random_bytes(24)),
+        'specialists'=>(is_array($body['specialists']??null)&&in_array('gemini_text',$body['specialists'],true)?['gemini_text']:[]),
         'seenAt'=>$now,'deadline'=>$now+480,'sequence'=>0,'phase'=>'planning',
         'checkpoint'=>['plan'=>[],'candidate'=>'','decisions'=>0,'observation'=>null]];
     return ['agentLease'=>$job['agent']['lease'],'agent'=>n80_agent_public($job)];
@@ -27,6 +28,7 @@ function n80_agent_resume(array &$job,array $body,?int $now=null): array {
     if (($body['agentVersion']??null)!==N80_AGENT_VERSION||empty($body['resume'])||!$a
         ||$now<=(int)$a['seenAt']+N80_AGENT_LEASE_SECONDS||$now>=(int)$a['deadline']
         ||in_array($a['phase'],['saved','failed'],true)) return [];
+    $job['agent']['specialists']=(is_array($body['specialists']??null)&&in_array('gemini_text',$body['specialists'],true)?['gemini_text']:[]);
     $job['agent']['lease']=bin2hex(random_bytes(24));$job['agent']['seenAt']=$now;
     return ['id'=>$job['id'],'agentLease'=>$job['agent']['lease'],'agent'=>n80_agent_public($job)];
 }
@@ -63,7 +65,7 @@ function n80_agent_operation(array &$job,string $op,array $body,callable $valida
     if(!isset($job['agent']))throw new DomainException('agent_not_claimed');
     n80_agent_assert($job,(string)($body['_agentLease']??''));
     $a=&$job['agent'];$a['seenAt']=time();
-    if($op==='agentState')return ['contract'=>n80_agent_contract(),'agent'=>n80_agent_public($job)];
+    if($op==='agentState')return ['contract'=>n80_agent_contract($job),'agent'=>n80_agent_public($job)];
     if($op==='agentCheckpoint'){
         $c=n80_agent_checkpoint($body);$seq=$body['sequence']??null;
         if(!is_int($seq))throw new InvalidArgumentException('invalid_agent_sequence');

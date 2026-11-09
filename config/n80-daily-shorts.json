@@ -6,7 +6,11 @@
   "destinationPlaylistTitle": "Shorts「이 노래가 좋아」",
   "timezone": "Asia/Seoul",
   "publishLocalTime": "12:00",
-  "publishIsoWeekdays": [1, 3, 5],
+  "publishIsoWeekdays": [
+    1,
+    3,
+    5
+  ],
   "prepareLocalTime": "08:00",
   "maxPerLocalDate": 1,
   "format": "shorts",
@@ -27,16 +31,23 @@
   "scheduleOwner": "N80 Auto",
   "conversationDependent": false,
   "mediaStorage": {
-    "provider": "google_drive",
-    "temporaryParentFolderId": "1hR8n8sH7d7ekoWqiwK11bAIYY3m9C6-l",
-    "scope": "Newly generated scene images, motion clips and editing outputs only; private, one folder per N80 job. Reuse host MP3, title, lyrics and genre rules and the existing Gem character knowledge without making duplicate source copies.",
+    "provider": "github_actions_artifact",
+    "scope": "Only registered generated media, encrypted before GitHub upload. Existing host originals and Gem knowledge remain authoritative.",
     "workerConnectionVerified": false,
     "requireVerifiedReadbackBeforeLocalCleanup": true,
     "deleteAfterPublication": true,
-    "deletionRequires": ["youtube_publication_verified", "destination_playlist_verified", "original_related_video_verified"],
-    "deleteScope": "Only this job's registered temporary Drive file IDs and generated local cache files. Never source MP3, song data, genre rules, Gem character knowledge or unrelated Drive files.",
+    "deletionRequires": [
+      "youtube_publication_verified",
+      "destination_playlist_verified",
+      "original_related_video_verified"
+    ],
+    "deleteScope": "Only registered generated GitHub artifacts and generated local cache after verified publication; never originals.",
     "retainOnFailure": true,
-    "deletionExecutorVerified": false
+    "deletionExecutorVerified": false,
+    "repository": "rucyjeon79/noa-studio",
+    "retentionDays": 90,
+    "encryption": "AES-256-GCM; per-asset key derived from existing N80 worker secret; never stored in artifact",
+    "retentionNote": "GitHub expires artifacts at 90 days; the authoritative host copy remains until verified publication cleanup."
   },
   "creationWorkflow": {
     "owner": "N80 Engine",
@@ -48,7 +59,8 @@
     "reuseExistingSources": true,
     "duplicateSourceCopies": false,
     "manualChatProductionIsAutomation": false,
-    "persistentGemExecutorVerified": false
+    "persistentGemExecutorVerified": false,
+    "githubSpecialist": "Gemini CLI in the existing private N80 worker; text review only after actual OAuth verification. Existing Gem and Flow are separate executors."
   },
   "genrePlaylistIds": {
     "PLEPMKciKgvch9TGMAcBdKzhVt1QeYsfKB": "your-story",

@@ -5,6 +5,7 @@ require_once __DIR__.'/session-shorts.php';
 require_once __DIR__.'/session-shorts-prepare.php';
 $policy=nd_shorts_policy();$ready=nd_shorts_readiness(lab_read(),$policy);
 if(($b['command']??'')==='storage_connection'){
+ if(($policy['mediaStorage']['provider']??'')==='github_actions_artifact')return ['ok'=>true,'provider'=>'github_actions_artifact','connected'=>false,'state'=>'github_runtime_check_required'];
  require_once __DIR__.'/session-shorts-drive.php';return nsd_status(lab_read(),$policy,(string)($context['admin']??''));
 }
 if(in_array($b['command']??'',['storage_claim','storage_reserve','storage_read','storage_complete','storage_fail','storage_credentials'],true)){

@@ -1,0 +1,5 @@
+name: N80 daily Shorts runtime
+description: Runs the existing registered N80 operation with the Actions artifact runtime
+runs:
+  using: node24
+  main: index.cjs

@@ -26,3 +26,11 @@ acheck(n80_agent_resume($job,['agentVersion'=>1,'resume'=>true],$now)===[],'acti
 n80_agent_finish($job,['saved'=>true,'revision'=>2]);n80_agent_candidate($job,'valid');
 acheck($job['agent']['checkpoint']['candidate']===''&&$job['agent']['receipt']['revision']===2,'real receipt owns completion, duplicate text released');
 echo "N80_AGENT_PROTOCOL_FENCING_REPAIR_RECEIPT_OK\n";
+
+$special=['id'=>str_repeat('d',32)];
+n80_agent_claim($special,['agentVersion'=>1,'specialists'=>['gemini_text','fake_video']]);
+$inventory=n80_agent_contract($special)['specialists'];
+acheck(count($inventory)===1&&$inventory[0]['id']==='gemini_text'&&!$inventory[0]['imageGeneration']&&!$inventory[0]['videoGeneration'],'only verified installed text specialist');
+$special['agent']['seenAt']=time()-241;
+n80_agent_resume($special,['agentVersion'=>1,'resume'=>true]);
+acheck(n80_agent_contract($special)['specialists']===[],'replacement runner must reverify Gemini');

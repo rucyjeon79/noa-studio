@@ -213,13 +213,18 @@ def transfer(dispatch, claim, drive):
                 'httpStatus': getattr(error, 'code', None)}
 
 
-def run_storage(dispatch, drive=None):
+def run_storage(dispatch, drive=None, worker_key=None):
     results = []
     try:
+        if drive is None:
+            connection = dispatch('storage_connection')
+            if connection.get('provider') == 'github_actions_artifact':
+                from noa_shorts_github import run_github_storage
+                return run_github_storage(dispatch, worker_key)
         # Missing authorization is not an asset failure and must not spend its
         # retry budget. Keep the existing rclone connection when configured.
         hosted = drive is None and not os.environ.get('NOA_DRIVE_RCLONE_CONFIG_B64', '').strip()
-        if hosted and dispatch('storage_connection').get('connected') is not True:
+        if hosted and connection.get('connected') is not True:
             results.append({'state': 'storage_connection_required', 'reason': 'drive_authorization_required'})
             print('N80_SHORTS_STORAGE', json.dumps(results), flush=True)
             return results

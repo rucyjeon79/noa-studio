@@ -13,6 +13,7 @@ $read=function($key)use(&$source){check_storage($key===$source['key'],'exact sou
 $job=['id'=>$id,'type'=>'agent_movie','title'=>'Fixture','trackKey'=>$source['key'],'sourceRevision'=>7,'audioSha256'=>$source['audioSha256'],'source'=>$source,'state'=>'agent_paused','revision'=>1,'outputs'=>[],
  'agent'=>['owner'=>'owner','format'=>'shorts','sourceFingerprint'=>sa_fingerprint($source),'scenes'=>[['n'=>1,'image'=>['file'=>'image.webp','bytes'=>600,'sha256'=>$sha,'accepted'=>false,'sourceUrl'=>'https://gemini.google.com/example']]],'active'=>null]];
 $p=json_decode(file_get_contents(__DIR__.'/../../config/n80-daily-shorts.json'),true);
+$p['mediaStorage']['provider']='google_drive';$p['mediaStorage']['temporaryParentFolderId']='driveParentFixture111';
 $s=['config'=>['workerEnabled'=>true],'jobs'=>[$id=>$job],'campaigns'=>['daily_shorts'=>['enabled'=>true,'policy'=>$p,'current'=>['jobId'=>$id]]]];
 $base=$s;
 reject_storage(function()use(&$s,$now,$read){nd_storage_claim($s,'other',$now,$read);},'wrong owner');
