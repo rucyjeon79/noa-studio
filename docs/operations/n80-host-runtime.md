@@ -53,6 +53,25 @@ failure redaction, successful Node version parsing, browser sandbox failure, and
 N80 operation ownership. The local action used by daily Shorts is included in
 the operation ownership test.
 
+## Recovery checkpoint — 2026-11-09
+
+- Continue the existing movie `8491b2cebbdb452ac654d152f3455685`, current source
+  `single:echoes-of-joseon:13`, revision 5. The source was checked current during
+  takeover. The paused plan is 49 seconds / 7 scenes; no replacement movie or
+  generation request was created by the runtime repair.
+- Browser integrity validation runs on the host against a SHA-256 manifest.
+  The tiny verifier and manifest are read back before use. Failed integrity
+  checks never start the browser.
+- Run `42594375499` tested `dccaca2` and timed out after 15 minutes without
+  producing a final runtime receipt. It does not prove browser readiness.
+- Concurrent Node work added system SHA-256 verification in `667bdc7`, avoiding
+  full executable downloads when the host's checksum tool is available.
+  `faa9a13` preserves the browser validation tests and Node status flag.
+- `runtime.json` is now checkpointed before connection, Node verification,
+  browser installation and PHP capability checks, then atomically replaced with
+  the final receipt. A timeout can retain the last phase without marking it
+  complete. Browser staging counts and final hash verification are separate logs.
+
 ## Browser loader correction
 
 A local reproduction showed that invoking Chromium through `ld-linux` directly
@@ -62,3 +81,13 @@ interpreter and launches the browser directly. `LD_LIBRARY_PATH` is scoped to th
 browser child. This keeps resource/subprocess paths correct without disabling
 the sandbox. Uploaded bytes are verified on the host against a hashed manifest.
 A host page-load result is still required before reporting browser readiness.
+
+Node run `42595643431` verified its binary and source, then failed at the signed
+HTTP roundtrip with `node_network_und_err_connect_timeout`. The latest Node
+changes address that network path separately from this browser recovery.
+
+Browser run `42597521987` completed in about six minutes: Node started, all 114
+browser package files passed integrity verification, and browser launch failed
+with empty stderr. Its old receipt discarded the child exit/signal information.
+The launcher now retains allowlisted spawn errors, exit code, termination signal
+and output byte counts, without exposing paths or weakening sandbox settings.

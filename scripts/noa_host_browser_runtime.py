@@ -13,22 +13,22 @@ ROOT = '/hosting/noastudio/noa-ai-lab/host-runtime'
 START = r'''const {spawn}=require('node:child_process');
 const [loader,libs,browser,profile]=process.argv.slice(2);
 const child=spawn(browser,['--headless','--disable-gpu','--disable-dev-shm-usage','--no-first-run','--user-data-dir='+profile,'--dump-dom','about:blank'],{cwd:require('node:path').dirname(browser),env:{...process.env,LD_LIBRARY_PATH:libs},detached:true,stdio:['ignore','pipe','pipe']});
-let output='',error='',timedOut=false,finished=false;
+let output='',error='',timedOut=false,finished=false,spawnError=null;
 const stop=()=>{if(child.pid)try{process.kill(-child.pid,'SIGKILL')}catch{}};
 const timer=setTimeout(()=>{timedOut=true;stop()},20000);
 child.stdout.on('data',b=>{output+=b.toString();if(output.length>32768)stop()});
 child.stderr.on('data',b=>{error+=b.toString();if(error.length>32768)stop()});
-const done=code=>{if(finished)return;finished=true;clearTimeout(timer);stop();
+const done=(code,signal=null)=>{if(finished)return;finished=true;clearTimeout(timer);stop();
  let reason=timedOut?'browser_start_timeout':'browser_start_failed';
  if(/No usable sandbox|sandbox helper|namespace.*(?:failed|permitted)|Operation not permitted|Running as root/.test(error))reason='host_browser_sandbox_unavailable';
  else if(/shared libraries|GLIBC_/.test(error))reason='browser_library_missing';
  else if(/Permission denied/.test(error))reason='browser_execution_denied';
  const started=code===0&&output.includes('<html')&&output.includes('</html>');
  const diagnostic=error.replace(/\/[^\s:]+/g,'<path>').replace(/\b\d{6,}\b/g,'<number>').slice(-1200);
- console.log(JSON.stringify({state:started?'host_browser_started':reason,browserStarted:started,exitCode:code,diagnostic}));
+ console.log(JSON.stringify({state:started?'host_browser_started':reason,browserStarted:started,exitCode:code,signal,spawnError,stdoutBytes:Buffer.byteLength(output),stderrBytes:Buffer.byteLength(error),diagnostic}));
  process.exitCode=started?0:1;
 };
-child.on('error',()=>done(null));child.on('close',done);
+child.on('error',failure=>{spawnError=['EACCES','ENOENT','ENOEXEC','ENOMEM','EAGAIN','ETXTBSY'].includes(failure.code)?failure.code:'spawn_failed';done(null)});child.on('close',done);
 '''
 VERIFY = r'''const fs=require('node:fs'),crypto=require('node:crypto'),path=require('node:path');
 (async()=>{try{
@@ -71,6 +71,16 @@ def browser_result(output, exit_code):
               'browserStarted': started}
     if isinstance(value.get('diagnostic'), str):
         result['diagnostic'] = value['diagnostic'][:1200]
+    code = value.get('exitCode')
+    if code is None or type(code) is int and -255 <= code <= 255:
+        result['exitCode'] = code
+    if value.get('signal') in {'SIGABRT','SIGBUS','SIGILL','SIGKILL','SIGSEGV','SIGSYS','SIGTERM'}:
+        result['signal'] = value['signal']
+    if value.get('spawnError') in {'EACCES','ENOENT','ENOEXEC','ENOMEM','EAGAIN','ETXTBSY','spawn_failed'}:
+        result['spawnError'] = value['spawnError']
+    for name in ('stdoutBytes', 'stderrBytes'):
+        if type(value.get(name)) is int and 0 <= value[name] <= 262144:
+            result[name] = value[name]
     return result
 
 
@@ -192,13 +202,15 @@ def install_browser(transport, node):
     try:
         print('N80_HOST_STAGE browser_transfer_started', len(files), total, flush=True)
         mkdir(folder)
-        for name, path in sorted(files.items()):
+        for index, (name, path) in enumerate(sorted(files.items()), 1):
             parts = Path(name).parts[:-1]
             parent = folder
             for part in parts:
                 parent += '/'+part
                 mkdir(parent)
             put(folder+'/'+name, local=(name,path))
+            if index % 10 == 0 or index == len(files):
+                print('N80_BROWSER_FILES_STAGED', index, len(files), flush=True)
         put(starter, content=START.encode())
         put(verifier, content=VERIFY.encode())
         put(manifest_path, content=manifest)
@@ -213,6 +225,7 @@ def install_browser(transport, node):
         verified = execute(transport, command=' '.join([node_command, verifier, folder, manifest_path, manifest_sha]), parser=package_result, deadline_seconds=45)
         if verified.get('verified') is not True:
             raise ValueError('host_browser_checksum_mismatch')
+        print('N80_BROWSER_BUNDLE_VERIFIED', flush=True)
         command = ' '.join([node_command, starter, folder+'/lib/ld-linux-x86-64.so.2', folder+'/lib', folder+'/browser/'+binary.name, profile])
         print('N80_HOST_STAGE browser_launch_started', flush=True)
         result = execute(transport, command=command, parser=browser_result, deadline_seconds=30)

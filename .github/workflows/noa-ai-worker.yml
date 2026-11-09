@@ -20,8 +20,9 @@ permissions:
   contents: read
   actions: read
 concurrency:
-  # A scheduled workflow_run must not replace a pending host installation.
-  group: ${{ (github.event_name == 'push' || github.event_name == 'pull_request' || inputs.host_runtime == true) && 'noa-host-media-runtime' || 'noa-ai-lab-worker' }}
+  # Read-only PR checks must not replace pending host installations.
+  # Production installations share one lane, separate from scheduled ticks.
+  group: ${{ github.event_name == 'pull_request' && format('noa-host-candidate-{0}', github.event.pull_request.number) || ((github.event_name == 'push' || inputs.host_runtime == true) && 'noa-host-media-runtime' || 'noa-ai-lab-worker') }}
   cancel-in-progress: false
 jobs:
   host_candidate:

@@ -260,18 +260,31 @@ def web_runtime_capabilities():
     return {name: result.get(name) is True for name in ('shell_exec_callable', 'proc_open_callable')}
 
 
+def write_evidence(result, phase, path=Path('host-media-proof/runtime.json')):
+    """Keep the last bounded phase even when the workflow terminates the process."""
+    result['phase'] = phase
+    result['checkedAt'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+    result['sourceCommit'] = os.getenv('GITHUB_SHA', '')
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix('.tmp')
+    temporary.write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n')
+    temporary.replace(path)
+    print('N80_HOST_MEDIA_PHASE', phase, flush=True)
+
+
 def main():
     from noa_full_inventory import connect
     result = {'authority': 'N80 Engine', 'executionTarget': 'existing_noa_host',
               'authenticatedProvider': False, 'productionReady': False,
               'applicationFilesChanged': False, 'providerGenerationRequested': False}
     transport = None
+    write_evidence(result, 'host_connection')
     try:
         transport = connect()
         result.update(execute(transport))
         if result.get('shellExecuted') is True and not result.get('browserStarted'):
             try:
-                print('N80_HOST_STAGE node_verify_started', flush=True)
+                write_evidence(result, 'node_verification')
                 result['nodeInstallation'] = install_node(transport)
                 print('N80_HOST_STAGE node_verify_finished', flush=True)
                 result['nodeStarted'] = result['nodeInstallation'].get('started') is True
@@ -280,6 +293,7 @@ def main():
             if result['nodeInstallation'].get('started'):
                 try:
                     from noa_host_browser_runtime import install_browser
+                    write_evidence(result, 'browser_installation')
                     browser = install_browser(transport, result['nodeInstallation'])
                     result['browserInstallation'] = browser
                     result['browserStarted'] = browser.get('browserStarted') is True
@@ -292,15 +306,12 @@ def main():
     finally:
         if transport is not None:
             transport.close()
+    write_evidence(result, 'php_capabilities')
     try:
         result['phpExecution'] = web_runtime_capabilities()
     except Exception as error:
         result['phpExecution'] = {'state': 'unverified', 'errorType': type(error).__name__}
-    result['checkedAt'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
-    result['sourceCommit'] = os.getenv('GITHUB_SHA', '')
-    path = Path('host-media-proof/runtime.json')
-    path.parent.mkdir(exist_ok=True)
-    path.write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n')
+    write_evidence(result, 'finished')
     print('N80_HOST_MEDIA_RUNTIME', json.dumps(result, ensure_ascii=False), flush=True)
     # A connected SFTP service is not a successfully started media runtime.
     return 0 if result.get('browserStarted') else 1
