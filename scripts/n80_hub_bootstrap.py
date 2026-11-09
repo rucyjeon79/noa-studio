@@ -49,7 +49,7 @@ def native_call(key,body):
     return result
 
 def install():
-    transport=connect()
+    transport=connect();args=None
     try:
         with paramiko.SFTPClient.from_transport(transport,window_size=8388608) as s:
             s.get_channel().settimeout(60)
@@ -65,14 +65,28 @@ def install():
                 with s.open(p,'rb') as f:
                     f.prefetch(info.st_size,max_concurrent_requests=32)
                     return f.read()
+            def present(p):
+                try:info=s.lstat(p)
+                except FileNotFoundError:return False
+                if not stat.S_ISREG(info.st_mode) or info.st_size>134217728:raise RuntimeError('unsafe_file')
+                return True
+            def remote_hash(p):
+                js="const f=require('fs'),c=require('crypto');process.stdout.write(c.createHash('sha256').update(f.readFileSync(process.argv[1])).digest('hex'))"
+                channel=transport.open_session(timeout=20);channel.settimeout(60);channel.exec_command(shlex.join(args+['-e',js,p]))
+                result=channel.makefile('r').read(512).decode().strip();code=channel.recv_exit_status();channel.close()
+                if code!=0 or not re.fullmatch('[a-f0-9]{64}',result):raise RuntimeError('host_hash_failed')
+                return result
             def put(p,data,mode=0o600):
-                old=read(p)
-                if old==data:return
+                large=len(data)>1048576 and args is not None
+                old=(remote_hash(p) if present(p) else None) if large else read(p)
+                desired=hashlib.sha256(data).hexdigest() if large else data
+                if old==desired:return
                 temp=p+'.stage-'+secrets.token_hex(8)
                 with s.open(temp,'wx') as f:f.set_pipelined(True);f.write(data)
                 s.chmod(temp,mode)
-                if read(temp)!=data:raise RuntimeError('readback_mismatch')
-                if read(p)!=old:raise RuntimeError('concurrent_change')
+                if (remote_hash(temp) if large else read(temp))!=desired:raise RuntimeError('readback_mismatch')
+                current=(remote_hash(p) if present(p) else None) if large else read(p)
+                if current!=old:raise RuntimeError('concurrent_change')
                 s.posix_rename(temp,p)
             mkdir(ROOT);mkdir(ROOT+'/runtime');print('N80_HUB_STAGE directories',flush=True)
             # New Hub files only. Existing core files use their own guarded owner.
@@ -116,7 +130,7 @@ def install():
                     for name in members:archive.add(name,arcname=name,recursive=False)
                 data=out.getvalue();put(ROOT+'/source-initial.tar.gz',data)
                 put(ROOT+'/source.json',json.dumps({'revision':1,'files':len(members),'sourceCommit':os.environ['GITHUB_SHA'],'sha256':hashlib.sha256(data).hexdigest(),'bytes':len(data),'provider':'N80 Hub'}).encode())
-            if read(ROOT+'/source.bundle') is None:
+            if not present(ROOT+'/source.bundle'):
                 with tempfile.TemporaryDirectory(prefix='n80-hub-')as folder:
                     bundle=Path(folder)/'source.bundle'
                     subprocess.run(['git','bundle','create',str(bundle),'HEAD'],check=True,capture_output=True)
