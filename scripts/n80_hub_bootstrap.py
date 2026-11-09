@@ -76,9 +76,11 @@ def install():
                 result=channel.makefile('r').read(512).decode().strip();code=channel.recv_exit_status();channel.close()
                 if code!=0 or not re.fullmatch('[a-f0-9]{64}',result):raise RuntimeError('host_hash_failed')
                 return result
-            def put(p,data,mode=0o600):
+            unchanged=object()
+            def put(p,data,mode=0o600,expected_old=unchanged):
                 large=len(data)>1048576 and args is not None
                 old=(remote_hash(p) if present(p) else None) if large else read(p)
+                if expected_old is not unchanged and old!=expected_old:raise RuntimeError('concurrent_change')
                 desired=hashlib.sha256(data).hexdigest() if large else data
                 if old==desired:return
                 temp=p+'.stage-'+secrets.token_hex(8)
@@ -89,6 +91,19 @@ def install():
                 if current!=old:raise RuntimeError('concurrent_change')
                 s.posix_rename(temp,p)
             mkdir(ROOT);mkdir(ROOT+'/runtime');print('N80_HUB_STAGE directories',flush=True)
+            # Quiesce the previous fixed runner before changing its protocol or public handlers.
+            if read(ROOT+'/runtime/runner.mjs') not in (None,Path('runtime/hub/runner.mjs').read_bytes()):
+                previous=read(ROOT+'/control.json')
+                if previous:
+                    control=json.loads(previous);control['stop']=True;control['revision']=control.get('revision',0)+1
+                    put(ROOT+'/control.json',json.dumps(control).encode(),expected_old=previous)
+                    for attempt in range(40):
+                        try:s.lstat(ROOT+'/runner.lock')
+                        except FileNotFoundError:break
+                        heartbeat=json.loads(read(ROOT+'/status.json') or b'{}').get('heartbeatAt',0)
+                        if time.time()-heartbeat>180:break
+                        time.sleep(4)
+                    else:raise RuntimeError('runner_quiescence_unconfirmed')
             # New Hub files only. Existing core files use their own guarded owner.
             for target,source in FILES.items():
                 desired=Path(source).read_bytes();old=read(WEB+'/'+target)
@@ -139,6 +154,10 @@ def install():
                     source=json.loads(read(ROOT+'/source.json'));source['bundleSha256']=hashlib.sha256(data).hexdigest();source['bundleCommit']=os.environ['GITHUB_SHA']
                     put(ROOT+'/source.json',json.dumps(source).encode())
             print('N80_HUB_STAGE source_stored',flush=True)
+            previous=read(ROOT+'/control.json');control=json.loads(previous)
+            if control.get('stop'):
+                control['stop']=False;control['revision']=control.get('revision',0)+1
+                put(ROOT+'/control.json',json.dumps(control).encode(),expected_old=previous)
             channel=transport.open_session(timeout=20);channel.settimeout(25)
             channel.exec_command(shlex.join(args+[ROOT+'/runtime/launch.mjs']))
             output=channel.makefile('r').read(1024).decode();code=channel.recv_exit_status();channel.close()
