@@ -32,7 +32,7 @@ if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 <script src="/noa-browser-connect.js?v=<?=hash_file('sha256',__DIR__.'/noa-browser-connect.js')?>" defer></script>
 </head><body class="noa-page">
 <main class="lab-main" id="browser-app" data-csrf="<?=htmlspecialchars($csrf,ENT_QUOTES,'UTF-8')?>">
-<a class="browser-back" href="/noa-ai-lab.php?tool=settings">← AI·YouTube 연결</a>
+<nav aria-label="상위 메뉴"><a class="browser-back" href="/noa-ai-lab.php?tool=settings">← AI·YouTube 연결</a></nav>
 <header class="lab-heading browser-heading"><div><p class="noa-eyebrow">AI LAB</p><h1>Gemini·Flow 연결</h1><p class="browser-intro">Google에 로그인한 뒤 두 서비스의 연결을 확인해 주세요.</p></div></header>
 <section class="browser-connection" aria-label="Google 연결 화면">
 <div class="browser-state"><span class="browser-state-dot" aria-hidden="true"></span><p id="browser-status" role="status" aria-live="polite">연결 상태를 확인하고 있습니다.</p><button type="button" class="noa-button" id="browser-refresh" hidden>상태 다시 확인</button></div>

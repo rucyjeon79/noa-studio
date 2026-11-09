@@ -16,6 +16,12 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with: {php-version: '8.2', extensions: 'pdo_mysql,pdo_sqlite,mbstring,curl,fileinfo'}
       - run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg fonts-noto-cjk
+      - name: Verify connection layouts with the operating site shell
+        run: |
+          python scripts/qa/noa-qa-font.py
+          npm install --prefix "$RUNNER_TEMP/muvy-check" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          cp tests/browser-relay/ui.mjs "$RUNNER_TEMP/muvy-check/browser-ui.mjs"
+          node "$RUNNER_TEMP/muvy-check/browser-ui.mjs"
       - name: Verify native clip receipt and existing worker contracts
         run: |
           for f in bridge/muvy*.php deploy/noa-muvy-panel.php; do php -l "$f"; done
@@ -78,16 +84,12 @@ jobs:
           php tests/engine/single_runtime_policy_test.php
       - name: Verify stored scenes and layouts with an isolated provider
         run: |
-          python scripts/qa/noa-qa-font.py
-          npm install --prefix "$RUNNER_TEMP/muvy-check" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
           cp scripts/qa/noa-muvy.mjs "$RUNNER_TEMP/muvy-check/check.mjs"
           node "$RUNNER_TEMP/muvy-check/check.mjs"
           cp scripts/qa/noa-session-agent.mjs "$RUNNER_TEMP/muvy-check/session.mjs"
           node "$RUNNER_TEMP/muvy-check/session.mjs"
           cp scripts/qa/noa-drive-connect.mjs "$RUNNER_TEMP/muvy-check/drive.mjs"
           node "$RUNNER_TEMP/muvy-check/drive.mjs"
-          cp tests/browser-relay/ui.mjs "$RUNNER_TEMP/muvy-check/browser-ui.mjs"
-          node "$RUNNER_TEMP/muvy-check/browser-ui.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'n80-duration-check-${{ github.run_id }}', path: 'muvy-proof/', retention-days: 7}
