@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const host=document.querySelector('[data-noa-listening]');if(!host||!window.NoaListeningModel)return;
+const host=document.querySelector('[data-noa-listening]');if(!host)return;
 const labListening=!!document.querySelector('[data-noa-lab-listening]');
 const model=window.NoaListeningModel;const home=host.dataset.noaListening==='home';let state,records=[],musicWindow=null,frame=null,mode='now',mood='auto',scope='all',genre='kpop-original',loadSequence=0;
 let videoReady=false,videoLoadFailed=false,videoDialog=null,videoRequest=0;
@@ -10,6 +10,34 @@ const iconPaths={calm:'M20 4C10 3 4 7 5 14c1 4 6 5 10 2 4-3 5-7 5-12z M4 21l11-1
 const icon=(name)=>{const svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),path=document.createElementNS(svg.namespaceURI,'path');svg.classList.add('nl-icon');svg.setAttribute('aria-hidden','true');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.5');svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');path.setAttribute('d',iconPaths[name]||iconPaths.star);svg.append(path);return svg;};
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 const button=(text,name,fn)=>{const b=el('button','nl-button');b.type='button';b.append(icon(name),document.createTextNode(text));b.onclick=fn;return b;};
+// Home only advertises the N80 AI LAB entry; recommendation work starts in the lab.
+if(!labListening){
+ const link=el('a',home?'nl-listen-banner':'noa-button');
+ link.href='/noa-ai-lab.php?tool=listen';link.target='_self';
+ link.setAttribute('aria-label','AI LAB에서 맞춤 음악 듣기');
+ if(home){
+  if(!document.getElementById('noa-listening-banner-style')){
+   const style=el('link');style.id='noa-listening-banner-style';style.rel='stylesheet';
+   style.href='/noa-listening-banner.css?v=20261110-1';document.head.append(style);
+  }
+  host.classList.add('nl-banner-host');
+  const image=el('img','nl-listen-art');image.src='/noa-assets/banner-ai-listening.webp';
+  image.alt='';image.width=1440;image.height=480;image.loading='lazy';image.decoding='async';
+  const copy=el('span','nl-listen-copy'),title=el('strong','nl-listen-title');
+  title.append(el('span','','맞춤 음악'),el('span','','듣기'));
+  const action=el('span','nl-listen-action','지금 들어보기');
+  const arrow=el('span','','→');arrow.setAttribute('aria-hidden','true');action.append(arrow);
+  copy.append(el('span','nl-listen-eyebrow','AI LAB'),title,el('span','nl-listen-note','오늘의 기분에 어울리는 음악'),action);
+  link.append(image,copy);
+ }else link.textContent='AI LAB에서 맞춤 음악 듣기';
+ const discovery=host.closest('.nl-music-discovery');
+ if(discovery){discovery.parentElement.replaceWith(link);return;}
+ host.replaceChildren(link);
+ const hero=document.querySelector('[data-noa-listen-now]');
+ if(hero){hero.href=link.href;hero.target='_self';hero.removeAttribute('rel');}
+ return;
+}
+if(!model)return;
 host.innerHTML='<div class="nl-heading"><div><p class="nl-kicker">YOUR MUSIC, YOUR MOMENT</p><h2>지금, 나에게 맞는 음악</h2></div></div><p class="nl-status" role="status" aria-live="polite">추천 음악을 준비하고 있어요.</p>';
 const heading=host.querySelector('.nl-heading'),status=host.querySelector('.nl-status');
 const settings=button('추천 설정','settings',()=>openSettings());heading.append(settings);
@@ -591,14 +619,5 @@ function openSettings(fortuneSetup=false){const trigger=document.activeElement;i
  form.onsubmit=e=>{e.preventDefault();submit('POST');};dialog.append(form);document.body.append(dialog);dialog.addEventListener('close',()=>{dialog.remove();(trigger?.isConnected?trigger:settings).focus();},{once:true});dialog.showModal();
 }
 setInterval(()=>{if(!document.hidden&&!document.querySelector('.nl-dialog')&&state?.theme?.validUntil*1000<Date.now())load();},60000);
-if(!labListening){
- const link=el('a','noa-button','AI LAB에서 맞춤 음악 듣기');
- link.href='/noa-ai-lab.php?tool=listen';link.target='_self';
- const discovery=host.closest('.nl-music-discovery');
- if(discovery){discovery.parentElement.replaceWith(link);return;}
- host.replaceChildren(link);
- const hero=document.querySelector('[data-noa-listen-now]');
- if(hero){hero.href=link.href;hero.target='_self';hero.removeAttribute('rel');}
-}
 load();document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state?.theme?.validUntil*1000<Date.now())load();});
 })();
