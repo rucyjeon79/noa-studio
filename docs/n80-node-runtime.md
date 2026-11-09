@@ -43,3 +43,23 @@ Installation hashes run on the host with coreutils or the existing private Node
 streaming hash; first-time unavailable runtimes retain SFTP byte verification.
 Browser installation remains separately verified. Node integration alone does not
 prove Gemini/Flow login, Android SDK availability or a completed music video.
+
+## Production verification — 2026-11-09
+
+Activated source: `f067056357b548e5da8244838a3d67db9601300c`.
+Runtime: Node `v24.22.2`, existing NOA host, N80 Auto tool transport.
+Bundle SHA-256: `bc0439003acd8a4cc7c630f96dc78eeec1b4f59489bcb7932b8aef1d8625addf`.
+
+| Check | Observed result | Evidence |
+| --- | --- | --- |
+| Private activation and readback | Success; 36.6-second installation; no new queue/scheduler | [Activation run](https://github.com/rucyjeon79/noa-studio/actions/runs/42601221535) |
+| Independent execution after activation | `engine.status=verified`; one signed tool call; zero generation requests | Same run, `engine.node_verify` |
+| Ordinary N80 Auto execution | Host Node `ai.muvy=disabled`, processed 0; Auto finished successfully | [Automatic worker](https://github.com/rucyjeon79/noa-studio/actions/runs/42601698841) |
+| Existing feature quality | Success, including actual audio/SQL checks | [Quality gates](https://github.com/rucyjeon79/noa-studio/actions/runs/42601221503) |
+| N80 contracts | Success | [Contract gates](https://github.com/rucyjeon79/noa-studio/actions/runs/42601221591) |
+
+The existing disabled MUVY provider setting was preserved. These results verify
+installed Node execution, authenticated tool routing, queue access and ordinary
+Auto operation. They do not claim a newly generated or published music video.
+Provider replay protection was verified with isolated failure cases without a
+paid provider request. Activation did not change PHP pages, menus or player assets.
