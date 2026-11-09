@@ -10,7 +10,7 @@ let browser,activePage;
 try{
  browser=await chromium.launch({channel:'chrome',headless:true,chromiumSandbox:true});
  for(const theme of ['noa-ivory','noa-studio'])for(const width of [360,390,768,1440]){
-  const context=await browser.newContext({viewport:{width,height:900}});await context.addCookies([{name:'qa_role',value:'admin',url:base}]);
+  const context=await browser.newContext({viewport:{width,height:900},isMobile:width<768,hasTouch:width<768});await context.addCookies([{name:'qa_role',value:'admin',url:base}]);
   await context.addInitScript(theme=>localStorage.setItem('noa-ui-selection-v2',JSON.stringify({theme,language:'ko'})),theme);
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));activePage=page;
   // Only disposable fixtures. No production account or Google data is requested.
@@ -20,7 +20,7 @@ try{
   await page.route('**/noa-sitemap.php?*',r=>r.fulfill({json:{ok:true,groups:[]}}));
   let view={state:'disconnected'},sent,failRead=false,failPost=false,posts=0;
   await page.route('**/noa-browser-connect.php?api=1',async r=>{
-   if(r.request().method()==='POST'){posts++;sent=r.request().postDataJSON();return r.fulfill({status:failPost?409:200,json:failPost?{error:'browser_frame_changed'}:{ok:true}});}
+   if(r.request().method()==='POST'){posts++;sent=r.request().postDataJSON();if(sent.event?.kind==='click'&&!failPost)view={...view,inputReady:false};return r.fulfill({status:failPost?409:200,json:failPost?{error:'browser_frame_changed'}:{ok:true}});}
    return r.fulfill({status:failRead?503:200,json:failRead?{error:'unavailable'}:{ok:true,...view}});
   });
   failRead=width===360;
@@ -56,7 +56,22 @@ try{
   const frame=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=1280;c.height=900;const x=c.getContext('2d');x.fillStyle='#fafafa';x.fillRect(0,0,1280,900);x.fillStyle='#333';x.font='32px sans-serif';x.fillText('ISOLATED BROWSER FIXTURE',60,100);return c.toDataURL('image/jpeg');});
   view={...view,phase:'active',inputReady:true,frame,url:'https://accounts.google.com/'};
   await page.locator('#browser-interaction').waitFor({state:'visible'});
-  await page.locator('#browser-text').fill('DUMMY_ONLY');
+  await page.locator('#browser-screen').click({position:{x:30,y:30}});
+  await page.locator('#browser-input-status').waitFor({state:'visible'});
+  const keyboard=page.locator('#browser-keyboard');
+  if(width<768)await keyboard.tap();else await keyboard.click();
+  assert(await page.locator('#browser-text').isEnabled(),'pending click must not disable the local keyboard');
+  assert(await page.locator('#browser-text').evaluate(e=>document.activeElement===e),'keyboard button must focus the input in its gesture');
+  await page.keyboard.type('DUMMY_ONLY');
+  const beforePending=posts;await page.keyboard.press('Enter');
+  assert.equal(posts,beforePending,'no duplicate command while remote click is pending');
+  if(width===360){
+   await page.waitForTimeout(3200);
+   assert(await page.locator('#browser-text').evaluate(e=>document.activeElement===e),'polling dismissed the keyboard');
+   assert.equal(await page.locator('#browser-text').inputValue(),'DUMMY_ONLY');
+  }
+  view={...view,inputReady:true};
+  await page.waitForFunction(()=>!document.querySelector('#browser-type button').disabled);
   const posted=page.waitForRequest(r=>r.url().includes('?api=1')&&r.method()==='POST');
   await page.locator('#browser-type button').click();sent=(await posted).postDataJSON();
   await page.waitForFunction(()=>document.querySelector('#browser-text').value==='');
@@ -66,8 +81,9 @@ try{
   await page.getByRole('button',{name:'다음 입력란',exact:true}).waitFor({state:'visible'});
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'active overflow');
   await page.screenshot({path:`muvy-proof/browser-active-${theme}-${width}.png`,fullPage:true});
-  failPost=true;await page.locator('[data-key=Tab]').click();
+  failPost=true;await page.locator('#browser-text').fill('RETAIN_ON_REJECTION');await page.locator('#browser-type button').click();
   await page.getByText('화면이 바뀌었습니다. 새 화면에서 다시 눌러 주세요.',{exact:true}).waitFor();
+  assert.equal(await page.locator('#browser-text').inputValue(),'RETAIN_ON_REJECTION','failed input must remain available for correction');
   failPost=false;failRead=true;await page.locator('#browser-save').click();
   await page.getByText('연결 상태를 불러오지 못했습니다. 상태 다시 확인을 눌러 주세요.',{exact:true}).waitFor();
   assert(!await page.locator('#browser-text').isEnabled());
@@ -76,7 +92,7 @@ try{
   assert(!await page.locator('#browser-screen').isVisible());assert(await page.locator('#browser-open').isEnabled());
   assert.equal(errors.length,0,errors.join('\n'));await context.close();
  }
- console.log('N80_BROWSER_UI_OK real-shell light dark mobile desktop idle queued frameless active retry input-cleared no-overflow');
+ console.log('N80_BROWSER_UI_OK real-shell light dark mobile desktop pending-click-keyboard-focus polling-focus-preserved rejected-text-retained input-cleared no-overflow');
 }catch(error){
  if(activePage&&!activePage.isClosed()){
   await activePage.screenshot({path:'muvy-proof/browser-failure.png',fullPage:true});
