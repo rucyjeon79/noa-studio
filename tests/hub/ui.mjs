@@ -15,7 +15,7 @@ fs.writeFileSync(path.join(root,'source.json'),JSON.stringify({revision:1,files:
 const server=spawn('php',['-S','127.0.0.1:8139','-t',web],{stdio:'ignore'});let browser;
 try{
  for(let i=0;i<30;i++){try{await fetch('http://127.0.0.1:8139/noa-hub.php');break;}catch{await new Promise(r=>setTimeout(r,100));}}
- browser=await chromium.launch({headless:true});const context=await browser.newContext();const page=await context.newPage();
+ browser=await chromium.launch({channel:'chrome',headless:true,chromiumSandbox:true});const context=await browser.newContext();const page=await context.newPage();
  assert.equal((await page.goto('http://127.0.0.1:8139/noa-hub.php')).status(),403);
  await context.addCookies([{name:'fixture',value:'admin',domain:'127.0.0.1',path:'/'}]);
  await page.goto('http://127.0.0.1:8139/noa-hub.php');assert.equal(await page.getByRole('heading',{name:'N80 Hub',exact:true}).count(),1);
