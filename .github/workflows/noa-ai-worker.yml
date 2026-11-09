@@ -35,6 +35,7 @@ jobs:
       - name: Persist and check the N80 daily Shorts schedule
         continue-on-error: true
         env:
+          NOA_DRIVE_RCLONE_CONFIG_B64: ${{ secrets.NOA_DRIVE_RCLONE_CONFIG_B64 }}
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}

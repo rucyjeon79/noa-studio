@@ -178,3 +178,35 @@ delete the original host MP3/metadata/rules, Gem knowledge or unrelated files.
 The policy now records these constraints. The Drive executor, deletion executor
 and persistent Gem executor flags remain **false**: policy persistence does not
 prove those adapters are implemented, connected or exercised.
+
+
+## Generated media Drive spool (2026-11-09 continuation)
+
+The existing `ai.daily_shorts` worker now archives registered generated images,
+scene clips and final edits through `session-shorts-storage.php` and
+`noa_shorts_storage.py`. It reuses the existing private Drive credential and
+configured temporary parent. It never copies source audio, metadata, genre rules
+or Gem knowledge. Each job owns one folder and records each generated file ID,
+source audio hash, provider URL and byte hash in its existing N80 record.
+
+The worker persists pre-generated Drive IDs before any external creation, reuses
+those identities on interrupted attempts, and validates ownership, private
+visibility, parentage, size, provider checksum and a full downloaded SHA-256.
+An expired lease fences the old worker; three attempts per immutable asset and
+three assets per tick bound retries and work. Idle ticks do not open Drive.
+Storage preservation can run for a paused production job without resuming
+creation, accepting an image or approving subtitles. Cancelled jobs are excluded.
+
+Only disposable transfer copies are removed locally. The registered host media
+and Drive files are retained; cleanup remains `publication_verification_required`.
+This change has no deletion endpoint. Actual public visibility, destination
+playlist and native related-video verification plus a deletion executor still
+must be connected before automatic cleanup can run. Gemini/Flow persistent
+execution and final review/publication are also still incomplete. Storage
+receipts are not generation, review or publication receipts.
+
+Protocol reference: https://developers.google.com/workspace/drive/api/guides/create-file
+(pre-generated IDs make create retries conflict instead of duplicate) and
+https://developers.google.com/workspace/drive/api/guides/manage-uploads
+(resumable binary upload). Missing credentials, ambiguous metadata and different
+bytes fail closed without deleting the existing generated source.
