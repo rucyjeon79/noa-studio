@@ -18,7 +18,13 @@ class AutoDispatch(unittest.TestCase):
                    **row['requiredEnv']}
             self.assertEqual(runtime.plan(operation, env), row)
             self.assertTrue((ROOT / row['command'][0]).is_file())
-            self.assertIn('scripts/n80_auto.py ' + operation, (ROOT / '.github/workflows' / row['workflow']).read_text())
+            workflow = (ROOT / '.github/workflows' / row['workflow']).read_text()
+            if operation == 'ai.daily_shorts':
+                self.assertIn('uses: ./.github/actions/n80-daily-shorts', workflow)
+                action = (ROOT / '.github/actions/n80-daily-shorts/index.cjs').read_text()
+                self.assertIn("['scripts/n80_auto.py', 'ai.daily_shorts']", action)
+            else:
+                self.assertIn('scripts/n80_auto.py ' + operation, workflow)
             with self.assertRaisesRegex(RuntimeError, 'owner_mismatch'):
                 runtime.plan(operation, {**env, 'GITHUB_WORKFLOW_REF': env['GITHUB_WORKFLOW_REF'].replace('@refs/heads/main', '@refs/heads/other')})
             for key in row['requiredEnv']:
