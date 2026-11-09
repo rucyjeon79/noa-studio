@@ -7,12 +7,24 @@ from pathlib import Path
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
-from noa_host_media_runtime import interpret, execute, node_result, checksum_result, verify_remote_file
+from noa_host_media_runtime import interpret, execute, node_result, checksum_result, verify_remote_file, write_evidence
 from unittest.mock import patch
 from noa_host_browser_runtime import browser_result, VERIFY
 
 
 class HostRuntimeTest(unittest.TestCase):
+    def test_interrupted_startup_retains_the_last_phase_without_claiming_readiness(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder)/'proof/runtime.json'
+            result = {'productionReady':False, 'authenticatedProvider':False}
+            write_evidence(result, 'host_connection', path)
+            write_evidence(result, 'node_verification', path)
+            saved = json.loads(path.read_text())
+            self.assertEqual(saved['phase'], 'node_verification')
+            self.assertFalse(saved['productionReady'])
+            self.assertFalse(saved['authenticatedProvider'])
+            self.assertFalse(path.with_suffix('.tmp').exists())
+
     def test_remote_integrity_verifier_rejects_modified_bytes_and_path_escape(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)

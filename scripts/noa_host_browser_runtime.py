@@ -165,14 +165,17 @@ def install_browser(transport, node):
         sftp.chmod(path, 0o700)
 
     try:
+        print('N80_BROWSER_TRANSFER_STARTED', len(files), total, flush=True)
         mkdir(folder)
-        for name, path in sorted(files.items()):
+        for index, (name, path) in enumerate(sorted(files.items()), 1):
             parts = Path(name).parts[:-1]
             parent = folder
             for part in parts:
                 parent += '/'+part
                 mkdir(parent)
             put(folder+'/'+name, local=(name,path))
+            if index % 10 == 0 or index == len(files):
+                print('N80_BROWSER_FILES_STAGED', index, len(files), flush=True)
         put(starter, content=START.encode())
         put(verifier, content=VERIFY.encode())
         put(manifest_path, content=manifest)
@@ -186,6 +189,7 @@ def install_browser(transport, node):
         verified = execute(transport, command=' '.join([node_command, verifier, folder, manifest_path, manifest_sha]), parser=package_result, deadline_seconds=45)
         if verified.get('verified') is not True:
             raise ValueError('host_browser_checksum_mismatch')
+        print('N80_BROWSER_BUNDLE_VERIFIED', flush=True)
         command = ' '.join([node_command, starter, folder+'/lib/ld-linux-x86-64.so.2', folder+'/lib', folder+'/browser/'+binary.name, profile])
         result = execute(transport, command=command, parser=browser_result, deadline_seconds=30)
         started = result.get('browserStarted') is True

@@ -52,3 +52,22 @@ Validation currently covers SSH/SFTP-only distinctions, actual process receipts,
 failure redaction, successful Node version parsing, browser sandbox failure, and
 N80 operation ownership. The local action used by daily Shorts is included in
 the operation ownership test.
+
+## Recovery checkpoint — 2026-11-09
+
+- Continue the existing movie `8491b2cebbdb452ac654d152f3455685`, current source
+  `single:echoes-of-joseon:13`, revision 5. The source was checked current during
+  takeover. The paused plan is 49 seconds / 7 scenes; no replacement movie or
+  generation request was created by the runtime repair.
+- Browser integrity validation runs on the host against a SHA-256 manifest.
+  The tiny verifier and manifest are read back before use. Failed integrity
+  checks never start the browser.
+- Run `42594375499` tests the recovered browser changes from `dccaca2`. Check
+  its actual execution receipt before attributing browser or provider readiness.
+- Concurrent Node work added system SHA-256 verification in `667bdc7`, avoiding
+  full executable downloads when the host's checksum tool is available.
+  `faa9a13` preserves the browser validation tests and Node status flag.
+- `runtime.json` is now checkpointed before connection, Node verification,
+  browser installation and PHP capability checks, then atomically replaced with
+  the final receipt. A timeout can retain the last phase without marking it
+  complete. Browser staging counts and final hash verification are separate logs.
