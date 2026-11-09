@@ -66,6 +66,8 @@ def main():
     if not claim.get('claimed'):
         print('N80_SHORTS_PREPARATION',json.dumps({'state':claim['state']}),flush=True)
         prepare_subtitles(dispatch)
+        from noa_shorts_assembly import run_assembly
+        run_assembly(dispatch)
         return
     lease=claim['lease']
     last_step={}
@@ -100,6 +102,8 @@ def main():
         # A Shorts/provider failure must not stop unrelated text/music operations.
         print('N80_SHORTS_PREPARATION',json.dumps({'state':'preparation_failed','reason':reason,'errorType':type(error).__name__,'diagnostic':diagnostic}),flush=True)
     prepare_subtitles(dispatch)
+    from noa_shorts_assembly import run_assembly
+    run_assembly(dispatch)
 
 if __name__=='__main__':
     main()

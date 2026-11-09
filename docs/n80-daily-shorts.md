@@ -123,3 +123,32 @@ The matcher uses a bounded eight-million-cell traceback and reports
 `transcript_alignment_too_large` for inputs exceeding that limit. It maps only
 actual matching recognized characters to their measured word intervals; it
 does not fill missing lyrics, interpolate times or waive confidence checks.
+
+## Automatic editing inside the existing worker (2026-11-09)
+
+The registered `ai.daily_shorts` execution now calls the automatic assembler after
+preparation and recognition. A campaign must explicitly attach an existing,
+owner-matching Shorts job with an exact analyzed original video/source revision
+and hash. Attachment does not resume a paused job, create a replacement song,
+accept generated scenes or alter its source window.
+
+Once all actual scene videos are accepted and required subtitles are ready, N80
+claims that same job with an exclusive, expiring lease. The existing authenticated
+worker automatically downloads the original and accepted clips from bounded
+N80 file operations, verifies each checksum, builds the 1080×1920 manifest, runs
+the existing full-decode assembler, and returns the actual final file and receipt
+in bounded chunks. Hosting credentials are not inherited by media subprocesses.
+No person needs to download or transfer these files.
+
+A lost worker can retry the same final operation at most three times; stale
+leases are fenced. Identical partial transfers resume, and conflicting bytes
+stop rather than overwriting prior output. A completed receipt is never rendered
+again. Paused jobs, missing motion footage, changed originals and unresolved
+subtitles remain blocked. No extra scheduler, provider API or SQL queue is added.
+
+The received final remains `agent_review`, with `accepted:false`. Full decode and
+correct original-audio mapping are technical checks, not visual or listening
+review. This editor cannot call review, publish, or waive provider-policy holds.
+The subscription browser executor, original image/video recovery, final quality
+review and native related-video publication still require their actual runtime
+integration; automatic editing alone is not complete unattended production.
