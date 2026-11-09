@@ -20,6 +20,9 @@ $first=nd_storage_claim($s,'owner',$now,$read);check_storage($first['claimed'],'
 check_storage(nd_storage_claim($s,'owner',$now+1,$read)['state']==='storage_busy','one worker');
 $auth=array_intersect_key($first,array_flip(['id','key','lease']));
 $call=function($command,$fields=[])use(&$s,&$now,$auth,$read){return nd_storage_operation($s,$auth+['command'=>$command]+$fields,'owner',$now+1,$read);};
+check_storage($call('storage_credentials')['authorizationAllowed']===true,'valid lease authorizes credential lookup');
+$s['driveConnection']=['owner'=>'owner','id'=>'current-connection','workerVerifiedAt'=>null];
+$s['jobs'][$id]['agent']['temporaryMedia']['files'][$first['key']]['driveConnectionId']='older-connection';
 reject_storage(fn()=>$call('storage_reserve',['folderId'=>$p['mediaStorage']['temporaryParentFolderId'],'fileId'=>'driveFileId111']),'cannot reuse parent');
 $reserved=$call('storage_reserve',['folderId'=>'driveFolder111','fileId'=>'driveFileId111']);
 check_storage($call('storage_reserve',$reserved)['fileId']==='driveFileId111','reservation replay');
@@ -29,12 +32,14 @@ $receipt=['folderId'=>'driveFolder111','fileId'=>'driveFileId111','sha256'=>$sha
 reject_storage(fn()=>$call('storage_complete',['receipt'=>array_replace($receipt,['sha256'=>str_repeat('c',64)])]),'reject wrong content');
 reject_storage(fn()=>$call('storage_complete',['receipt'=>array_replace($receipt,['readbackVerified'=>false])]),'readback required');
 $call('storage_complete',['receipt'=>$receipt]);$call('storage_complete',['receipt'=>$receipt]);
+check_storage($s['driveConnection']['workerVerifiedAt']===null,'old connection cannot verify replacement');
 check_storage(nd_storage_claim($s,'owner',$now+2,$read)['state']==='stored','no duplicate transfer');
 check_storage($s['jobs'][$id]['state']==='agent_paused'&&!$s['jobs'][$id]['agent']['scenes'][0]['image']['accepted']&&$s['jobs'][$id]['revision']===1,'no fake approval or generation state changes');
 check_storage(is_file(lab_job_dir($id).'/image.webp')&&$s['jobs'][$id]['agent']['temporaryMedia']['cleanup']['deleted']===0,'no premature deletion');
 $s=$base;$first=nd_storage_claim($s,'owner',$now,$read);$auth=array_intersect_key($first,array_flip(['id','key','lease']));
 $second=nd_storage_claim($s,'owner',$now+901,$read);
 reject_storage(function()use(&$s,$auth,$now,$read){nd_storage_operation($s,$auth+['command'=>'storage_read','offset'=>0],'owner',$now+902,$read);},'expired worker fenced');
+reject_storage(function()use(&$s,$auth,$now,$read){nd_storage_operation($s,$auth+['command'=>'storage_credentials'],'owner',$now+902,$read);},'expired worker cannot get credentials');
 $newauth=array_intersect_key($second,array_flip(['id','key','lease']));$source['title']='changed';
 reject_storage(function()use(&$s,$newauth,$now,$read){nd_storage_operation($s,$newauth+['command'=>'storage_read','offset'=>0],'owner',$now+902,$read);},'source changed');$source['title']='Fixture';
 nd_storage_claim($s,'owner',$now+1802,$read);check_storage(nd_storage_claim($s,'owner',$now+2703,$read)['state']==='storage_retry_limit','bounded retries');

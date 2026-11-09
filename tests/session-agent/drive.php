@@ -1,0 +1,43 @@
+<?php
+declare(strict_types=1);
+$root=sys_get_temp_dir().'/n80-drive-'.bin2hex(random_bytes(6));mkdir($root.'/html',0700,true);mkdir($root.'/noa-ai-lab',0700,true);
+define('_GNUBOARD_',true);define('G5_PATH',$root.'/html');file_put_contents($root.'/noa-ai-lab/master.key',random_bytes(32));
+require __DIR__.'/../../bridge/session-shorts-drive.php';
+set_error_handler(function($level,$message){throw new ErrorException($message,0,$level);});
+function check(bool $ok,string $why):void{if(!$ok)throw new RuntimeException($why);}
+function reject(callable $call,string $why):void{try{$call();}catch(NoaOAuthFailure $e){check($e->reason===$why,'wrong failure:'.$e->reason);return;}throw new RuntimeException('missing failure:'.$why);}
+$now=time();$s=lab_defaults();$s['config']['oauthClientId']='fixture-client';$s['secrets']=lab_seal(['oauthClientSecret'=>'PRIVATE_SECRET']);
+$s['channels']=['fixture'=>['title'=>'Existing channel','tokens'=>lab_seal(['refresh_token'=>'YOUTUBE_REFRESH']),'autoEnabled'=>true,'connectedAt'=>'existing']];
+$channels=$s['channels'];$p=['mediaStorage'=>['temporaryParentFolderId'=>'privateFolder111']];
+$start=nsd_start($s,$p,'owner','session',$now);$request=$start['request'];parse_str(parse_url($start['url'],PHP_URL_QUERY),$query);
+check($query['redirect_uri']===NOA_LAB_ORIGIN.'/noa-bridge/lab-oauth.php'&&$query['scope']===NSD_SCOPE&&$query['access_type']==='offline','reuse callback with explicit scope');
+check($query['code_challenge']===rtrim(strtr(base64_encode(hash('sha256',$request['verifier'],true)),'+/','-_'),'='),'PKCE mismatch');
+nsd_request($request,$s,$p,'owner','session',$request['state'],$now);
+foreach([['other','session',$request['state'],$now],['owner','other',$request['state'],$now],['owner','session','drive_'.str_repeat('0',64),$now],['owner','session',$request['state'],$now+600]] as $bad)reject(fn()=>nsd_request($request,$s,$p,...$bad),'oauth_state_invalid');
+reject(fn()=>nsd_request($request,array_replace($s,['driveConnection'=>['id'=>'changed']]),$p,'owner','session',$request['state'],$now),'drive_connection_changed');
+$token=['access_token'=>'PRIVATE_ACCESS','refresh_token'=>'PRIVATE_REFRESH','scope'=>NSD_SCOPE,'expires_in'=>3600];
+reject(fn()=>nsd_token(array_replace($token,['scope'=>NSD_SCOPE.'.file'])),'drive_scope_missing');
+reject(fn()=>nsd_token(array_replace($token,['refresh_token'=>''])),'offline_authorization_required');
+$folder=['id'=>'privateFolder111','name'=>'업로드 임시저장','mimeType'=>'application/vnd.google-apps.folder','trashed'=>false,'shared'=>false,'ownedByMe'=>true,'capabilities'=>['canAddChildren'=>true]];
+foreach([['id'=>'other'],['shared'=>true],['trashed'=>true],['ownedByMe'=>false],['capabilities'=>['canAddChildren'=>false]]] as $bad)reject(fn()=>nsd_folder(array_replace($folder,$bad),'privateFolder111'),'drive_folder_unavailable');
+$calls=[];$remote=function($url,$options)use(&$calls,$token,$folder){$calls[]=$url;if(str_ends_with($url,'/token')){parse_str($options[CURLOPT_POSTFIELDS],$body);check($body['grant_type']==='refresh_token'&&$body['refresh_token']==='PRIVATE_REFRESH'&&$body['client_secret']==='PRIVATE_SECRET','refresh parameters');return array_replace($token,['access_token'=>'FRESH_ACCESS','refresh_token'=>'ROTATED_REFRESH']);}check($options[CURLOPT_HTTPHEADER]===['Authorization: Bearer FRESH_ACCESS'],'Drive bearer header');return $folder;};
+$preserved=null;$verified=nsd_verify(nsd_client($s),$token,nsd_parent($p),$now,$remote,function($saved)use(&$preserved){$preserved=$saved;});
+check(count($calls)===2&&$preserved['refresh_token']==='ROTATED_REFRESH','verify real refresh and preserve rotation before folder check');
+$s['driveOAuthPending'][hash('sha256',$request['state'])]=['tokens'=>lab_seal($token)];
+nsd_commit($s,$p,$request,$verified,'owner','session',$now);check(nsd_status($s,$p,'owner')['connected'],'connection committed');
+check(!nsd_status($s,$p,'other')['connected'],'owner isolation');check(!$s['driveConnection']['workerVerifiedAt'],'no fake upload proof');
+check($s['channels']===$channels,'YouTube connection unchanged');check(!$s['driveOAuthPending'],'consume pending receipt');
+$public=json_encode(lab_status($s));check(!str_contains($public,'FRESH_ACCESS')&&!str_contains($public,'ROTATED_REFRESH'),'no credential in public status');
+$access=nsd_access($s,$p,'owner',$now,fn()=>throw new RuntimeException('unneeded refresh'));
+$receipt=nsd_access_commit($s,$p,'owner',$access);check(array_keys($receipt)===['ok','access_token','expires_at','folder_id'],'short token only');
+check(!str_contains(json_encode($s),'ROTATED_REFRESH')&&!str_contains(json_encode($s),'FRESH_ACCESS'),'tokens encrypted');
+$stale=$s;$stale['driveConnection']['id']='changed';reject(fn()=>nsd_access_commit($stale,$p,'owner',$access),'drive_connection_changed');
+$saved=lab_unseal($s['driveConnection']['tokens']);$saved['expires_at']=$now;$s['driveConnection']['tokens']=lab_seal($saved);
+$renewed=nsd_access($s,$p,'owner',$now,function($url,$options)use($now){parse_str($options[CURLOPT_POSTFIELDS],$body);check($body['refresh_token']==='ROTATED_REFRESH','use rotated refresh');return ['access_token'=>'RENEWED_ACCESS','expires_in'=>3600];});
+check($renewed['tokens']['access_token']==='RENEWED_ACCESS'&&$renewed['tokens']['scope']===NSD_SCOPE,'refresh omitting unchanged scope');
+reject(fn()=>nsd_access($s,$p,'owner',$now,fn()=>throw new NoaOAuthFailure('invalid_grant',400)),'invalid_grant');
+nsd_form_check(['noa_lab_csrf'=>'csrf'],['REQUEST_METHOD'=>'POST','HTTP_ORIGIN'=>NOA_LAB_ORIGIN],['csrf'=>'csrf']);
+reject(fn()=>nsd_form_check(['noa_lab_csrf'=>'csrf'],['REQUEST_METHOD'=>'POST','HTTP_ORIGIN'=>'https://other.test'],['csrf'=>'csrf']),'request_verification_failed');
+reject(fn()=>nsd_form_check(['noa_lab_csrf'=>'csrf'],['REQUEST_METHOD'=>'POST','HTTP_ORIGIN'=>NOA_LAB_ORIGIN],['csrf'=>'bad']),'request_verification_failed');
+unlink($root.'/noa-ai-lab/master.key');rmdir($root.'/noa-ai-lab');rmdir($root.'/html');rmdir($root);
+echo "N80 Drive OAuth: PKCE, consent scope, owner/session/expiry, encrypted refresh, private folder, token rotation, unchanged YouTube, CSRF and stale connection fencing passed.\n";

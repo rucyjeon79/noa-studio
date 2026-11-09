@@ -1,7 +1,8 @@
 <?php
 declare(strict_types=1);
 require_once dirname(__DIR__).'/common.php';require_once __DIR__.'/lab-core.php';require_once __DIR__.'/lab-oauth-core.php';
-if(empty($is_member)&&($_GET['action']??'')==='start'){header('Location: /bbs/login.php?url='.rawurlencode('/noa-bridge/lab-oauth.php?action=start'));exit;}lab_admin();header('Cache-Control: no-store');header('Referrer-Policy: no-referrer');header('X-Content-Type-Options: nosniff');
+if(empty($is_member)&&in_array($_GET['action']??'',['start','drive'],true)){header('Location: /bbs/login.php?url='.rawurlencode('/noa-bridge/lab-oauth.php?action='.$_GET['action']));exit;}lab_admin();header('Cache-Control: no-store');header('Referrer-Policy: no-referrer');header('X-Content-Type-Options: nosniff');
+if(($_GET['action']??'')==='drive'||(is_string($_GET['state']??null)&&str_starts_with($_GET['state'],'drive_'))){require_once __DIR__.'/session-shorts-drive.php';nsd_page();}
 $action=(string)($_GET['action']??'');$phase='configuration';$actor=(string)$member['mb_id'];$notice='';$reason='';$remoteStatus=0;
 if(empty($_SESSION['noa_lab_csrf']))$_SESSION['noa_lab_csrf']=bin2hex(random_bytes(32));
 try{

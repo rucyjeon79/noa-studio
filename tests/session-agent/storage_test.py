@@ -2,11 +2,12 @@ import base64
 import hashlib
 import io
 import sys
+import time
 import unittest
 from unittest.mock import patch
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
-from noa_shorts_storage import MediaDrive, transfer, run_storage
+from noa_shorts_storage import HostedDriveLogin, MediaDrive, transfer, run_storage
 
 
 class StorageTest(unittest.TestCase):
@@ -86,12 +87,52 @@ class StorageTest(unittest.TestCase):
                          [{'state': 'no_generated_media'}])
 
     def test_missing_credentials_do_not_claim_or_spend_asset_retry(self):
-        def no_claim(*args, **kwargs):
-            self.fail('missing credentials must not claim or mutate a job')
+        def no_claim(command, **kwargs):
+            self.assertEqual(command, 'storage_connection', 'missing authorization must not mutate a job')
+            return {'connected': False}
         for value in ('', '  '):
             with patch.dict('os.environ', {'NOA_DRIVE_RCLONE_CONFIG_B64': value}):
                 self.assertEqual(run_storage(no_claim), [{
-                    'state': 'storage_connection_required', 'reason': 'drive_credentials_missing'}])
+                    'state': 'storage_connection_required', 'reason': 'drive_authorization_required'}])
+
+    def test_hosted_idle_never_requests_access_token(self):
+        calls = []
+        def dispatch(command):
+            calls.append(command)
+            return {'connected': True} if command == 'storage_connection' else {'claimed': False, 'state': 'stored'}
+        with patch.dict('os.environ', {'NOA_DRIVE_RCLONE_CONFIG_B64': ''}):
+            self.assertEqual(run_storage(dispatch), [{'state': 'stored'}])
+        self.assertEqual(calls, ['storage_connection', 'storage_claim'])
+
+    def test_hosted_token_bound_to_claim_and_validated(self):
+        receipt = {'access_token': 'temporary.token-123', 'expires_at': int(time.time())+300,
+                   'folder_id': self.claim['parentFolderId']}
+        def dispatch(command, **auth):
+            self.assertEqual(command, 'storage_credentials')
+            self.assertEqual(auth, {k: self.claim[k] for k in ('id', 'key', 'lease')})
+            return receipt
+        login = HostedDriveLogin(dispatch, self.claim)
+        self.assertEqual(login.token()['access_token'], receipt['access_token'])
+        for bad in ({'expires_at': 0}, {'expires_at': int(time.time())+7200},
+                    {'folder_id': 'other'}, {'access_token': 'bad\r\nheader'},
+                    {'refresh_token': 'never-export'}, {'client_secret': 'never-export'}):
+            original = receipt.copy(); receipt.update(bad)
+            with self.assertRaises(ValueError): login.token()
+            receipt.clear(); receipt.update(original)
+
+    def test_hosted_login_is_rebound_for_each_asset(self):
+        claims = [dict(self.claim, key=f'image:{i}:hash', lease=f'lease-{i}', claimed=True) for i in (1, 2)]
+        def dispatch(command, **fields):
+            if command == 'storage_connection': return {'connected': True}
+            if command == 'storage_claim': return claims.pop(0) if claims else {'claimed': False, 'state': 'stored'}
+            self.fail(command)
+        auths = []
+        def save(dispatch, claim, drive):
+            auths.append(drive.login.auth)
+            return {'state': 'stored'}
+        with patch.dict('os.environ', {'NOA_DRIVE_RCLONE_CONFIG_B64': ''}), patch('noa_shorts_storage.transfer', save):
+            run_storage(dispatch)
+        self.assertEqual([a['lease'] for a in auths], ['lease-1', 'lease-2'])
 
     def test_configured_idle_tick_does_not_initialize_drive(self):
         with patch.dict('os.environ', {'NOA_DRIVE_RCLONE_CONFIG_B64': 'configured'}), \
