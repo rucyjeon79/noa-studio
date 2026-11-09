@@ -47,6 +47,8 @@ jobs:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
       - run: python -m pip install 'paramiko>=3,<5'
+      - name: Verify candidate is current before creating QA data
+        run: PYTHONPATH=scripts python -c "from noa_ainoa_deploy import check_current_candidate; check_current_candidate()"
       - name: Prepare isolated real login before activation
         run: python scripts/noa_login_session_live.py prepare
       - name: Activate N80 continuity through guarded native hooks
