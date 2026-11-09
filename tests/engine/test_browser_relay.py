@@ -24,6 +24,20 @@ class BrowserRelay(unittest.TestCase):
     def test_rejects_malformed_or_oversized_profile(self):
         for value in [[], {'cookies': []}, {'cookies': [], 'origins': [], 'large': 'x'*relay.LIMIT}]:
             with self.assertRaises(ValueError): relay.encode_profile(b'k'*64, value)
+    def test_connection_observation_never_discloses_credentials_or_frame(self):
+        state={'browserControl':{'state':'active','owner':'PRIVATE_OWNER','lease':'PRIVATE_LEASE','input':'PRIVATE_INPUT','frame':'PRIVATE_IMAGE','url':'https://accounts.google.com/?private=1','frameSeq':3,'leaseUntil':200,'expiresAt':300},'browserProfile':{'sha256':'PRIVATE_POINTER'}}
+        result=relay.connection_summary(state,100)
+        self.assertEqual(result,{'state':'active','hasFrame':True,'framesObserved':True,'leaseLive':True,'profileStored':True})
+        self.assertNotIn('PRIVATE',str(result))
+        self.assertEqual(relay.connection_summary(state,301)['state'],'expired')
+    def test_browser_is_served_before_unrelated_media_setup(self):
+        workflow=(ROOT/'.github/workflows/noa-ai-worker.yml').read_text().split('  process:',1)[1]
+        transport=workflow.index('name: Prepare the N80 browser transport')
+        browser=workflow.index('name: Serve one administrator-requested browser connection through N80')
+        media=workflow.index('name: Install local media processor')
+        schedule=workflow.index('name: Persist and check the N80 daily Shorts schedule')
+        self.assertLess(transport,browser);self.assertLess(browser,media);self.assertLess(browser,schedule)
+        self.assertEqual(workflow.count('scripts/n80_auto.py ai.browser_session'),1)
     def test_private_read_rejects_symlinks_and_public_permissions(self):
         class Sftp:
             def lstat(self, p): return Path(p).lstat()
