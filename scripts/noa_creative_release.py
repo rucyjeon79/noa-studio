@@ -40,6 +40,9 @@ if os.environ.get('NOA_CREATIVE_FOLDERS_ONLY')=='1':
 if os.environ.get('NOA_CREATIVE_MEDIA_STAGE_ONLY')=='1':
  release.FILES={'noa-app/jukebox/media-location.php':'deploy/noa-app/jukebox/media-location.php'}
  release.NEW=set()
+ # Bounded maintenance/audit receipts do not replace this tested single-file source.
+ # Runtime, shared dependencies and this release workflow still invalidate a candidate.
+ release.UNRELATED_PATH_PREFIXES=('.github/workflows/noa-login-session.yml','scripts/noa_login_session_audit.py','scripts/noa_media_','.github/workflows/noa-media-','docs/operations/n80-media-resume-20261110.md')
 if os.environ.get('NOA_CREATIVE_LIST_EXPIRY_ONLY')=='1':
  release.FILES={**{'noa-bridge/'+p:'bridge/'+p for p in ['creative-core.php','creative.php']},'noa-creative.js':'deploy/noa-creative.js'}
  release.NEW=set()
