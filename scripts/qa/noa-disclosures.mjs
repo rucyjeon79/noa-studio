@@ -10,6 +10,7 @@ const html=`<!doctype html><html lang="ko" data-noa-style="starlight"><head><met
 <section id="creative-record"><details class="creative-ai-original"><summary>현재 내용과 비교하기</summary><p>기존 곡 정보</p></details></section>
 <div id="noa-menu-drawer"><details class="noa-drawer-category"><summary><h3>CREATOR LAB</h3></summary><p>작업실 메뉴</p></details></div>
 <details class="noa-notice"><summary><span class="noa-notice-summary"><strong>등록 완료된 곡은 24시간 후 창작 목록에서 자동 정리됩니다</strong></span>${svg}</summary><p>등록된 곡은 그대로 보관됩니다.</p></details>
+<details class="noa-notice noa-community-post"><summary><strong>노아의 일기</strong><span aria-hidden="true">⌄</span></summary><p>새로운 이야기</p></details>
 <details class="wallet-guide"><summary><span>포인트 적립·사용 내역 보기</span>${svg}</summary><p>적립 내역</p></details>
 <section id="yt-player"><div class="noa-media-details"><details><summary>가사 펼치기</summary><p>하루의 끝에</p></details></div></section>
 <details class="mu-cut"><summary><strong>CUT 01</strong><span>달빛 아래 바닷가를 걷는 장면</span></summary><p>장면 내용</p></details>
@@ -25,9 +26,10 @@ try{
  for(const width of [320,390,1280]){
   const page=await browser.newPage({viewport:{width,height:1000},serviceWorkers:'block'});
   await page.goto(`http://127.0.0.1:${server.address().port}/`);
+  await page.screenshot({path:`starlight-proof/disclosures-${width}-before.png`,fullPage:true});
   // The small arrow region itself must toggle the native details, with no JS handler.
   for(const summary of await page.locator('details:not(#initial)>summary').all()){
-   const before=await summary.evaluate(cue);assert.match(before.mask,/svg/);assert.equal(before.animation,'noa-disclosure-hint');assert.equal(before.width,'26px');assert.equal(before.marker,'""');
+   const before=await summary.evaluate(cue);assert.match(before.mask,/svg/);assert.equal(before.animation,'noa-disclosure-hint');assert.equal(before.width,'26px',await summary.innerText());assert.equal(before.marker,'""');
    const box=await summary.boundingBox();assert(box.height>=44);
    await summary.click({position:{x:box.width-16,y:box.height/2}});
    assert(await summary.evaluate(e=>e.parentElement.open));await page.waitForTimeout(240);
@@ -36,6 +38,7 @@ try{
   }
   assert.equal(await page.locator('.noa-notice>summary>svg').isVisible(),false);
   assert.equal(await page.locator('.wallet-guide>summary>svg').isVisible(),false);
+  assert.equal(await page.locator('.noa-community-post>summary>span[aria-hidden=true]').isVisible(),false);
   assert.equal(await page.locator('.noa-drawer-category h3').evaluate(e=>getComputedStyle(e,'::after').content),'none');
   const title=await page.locator('.nl-discovery-title').boundingBox(),play=await page.locator('.nl-primary').boundingBox();assert(title.width>0&&title.x+title.width<=play.x,'music title stays left of its independent play action');
   assert.equal((await page.locator('#initial>summary').evaluate(cue)).animation,'none');
