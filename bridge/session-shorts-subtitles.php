@@ -2,6 +2,7 @@
 declare(strict_types=1);
 if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
 require_once __DIR__.'/session-agent.php';
+require_once __DIR__.'/session-shorts.php';
 
 /** Actual recognition is a bounded stage of the same N80 campaign/worker. */
 function nd_caption_identity(array $source):string {
@@ -11,6 +12,7 @@ function nd_caption_claim(array &$s,int $now,callable $readSource):array {
  $c=&$s['campaigns']['daily_shorts'];$p=$c['preparation']??[];
  if(empty($c['enabled'])||empty($s['config']['workerEnabled']))return ['ok'=>true,'claimed'=>false,'state'=>'paused'];
  if(($p['state']??'')!=='analyzed')return ['ok'=>true,'claimed'=>false,'state'=>'analysis_required'];
+ if(!nd_shorts_slot_allowed($c['policy']??nd_shorts_policy(),(string)($p['publishAt']??'')))return ['ok'=>true,'claimed'=>false,'state'=>'preparation_schedule_changed'];
  if(strtotime($p['publishAt']??'')<=$now)return ['ok'=>true,'claimed'=>false,'state'=>'preparation_date_expired'];
  $a=$p['subtitlePreparation']??[];
  if(($a['leaseUntil']??0)>$now)return ['ok'=>true,'claimed'=>false,'state'=>'recognizing'];

@@ -1,11 +1,12 @@
 {
-  "version": 1,
+  "version": 2,
   "series": "이 노래가 좋아",
   "channelId": "UCwYy9xsAqDFat6AV5UKrfgA",
   "destinationPlaylistId": "PLEPMKciKgvcgR8RB-jwYRE7modkBJR-em",
   "destinationPlaylistTitle": "Shorts「이 노래가 좋아」",
   "timezone": "Asia/Seoul",
   "publishLocalTime": "12:00",
+  "publishIsoWeekdays": [1, 3, 5],
   "prepareLocalTime": "08:00",
   "maxPerLocalDate": 1,
   "format": "shorts",

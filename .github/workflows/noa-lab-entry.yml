@@ -132,7 +132,10 @@ jobs:
           campaign=result['campaign']
           assert campaign['stateOwner']=='N80 Engine' and campaign['conversationDependent'] is False
           assert campaign['policy']['publishLocalTime']=='12:00'
-          print('N80_DAILY_SHORTS_PERSISTED',json.dumps({k:campaign.get(k) for k in ('state','schedulerOwner','stateOwner','conversationDependent','nextPublicationAt','productionReady')},ensure_ascii=False))
+          assert campaign['policy']['publishIsoWeekdays']==[1,3,5]
+          from datetime import datetime
+          assert datetime.fromisoformat(campaign['nextPublicationAt']).isoweekday() in (1,3,5)
+          print('N80_DAILY_SHORTS_PERSISTED',json.dumps({k:campaign.get(k) for k in ('state','schedulerOwner','stateOwner','conversationDependent','nextPreparationAt','nextPublicationAt','policy','productionReady')},ensure_ascii=False))
           PY
       - uses: actions/upload-artifact@v4
         if: always()

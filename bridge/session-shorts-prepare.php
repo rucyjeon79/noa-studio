@@ -7,13 +7,12 @@ require_once __DIR__.'/session-shorts.php';
 function nd_prepare_claim(array &$s,array $p,int $now):array {
  $c=&$s['campaigns']['daily_shorts'];
  if(empty($c['enabled'])||empty($s['config']['workerEnabled']))return ['ok'=>true,'claimed'=>false,'state'=>'paused'];
- $local=(new DateTimeImmutable('@'.$now))->setTimezone(new DateTimeZone($p['timezone']));
- $target=$local->setTime(12,0);if($local>=$target)$target=$target->modify('+1 day');$date=$target->format('Y-m-d');
+ ['local'=>$local,'target'=>$target,'due'=>$due]=nd_shorts_schedule($p,$now);$date=$target->format('Y-m-d');
  $a=$c['preparation']??null;
  if($a&&($a['leaseUntil']??0)>$now)return ['ok'=>true,'claimed'=>false,'state'=>'preparing'];
  if($a&&$a['date']===$date&&$a['state']==='analyzed')return ['ok'=>true,'claimed'=>false,'state'=>'analyzed'];
- // Bootstrap once immediately; following dates use the established morning preparation time.
- if($a&&$a['date']!==$date&&$local<$target->setTime(8,0))return ['ok'=>true,'claimed'=>false,'state'=>'waiting_schedule'];
+ // No off-day bootstrap or premature retries after a schedule change.
+ if($local<$due)return ['ok'=>true,'claimed'=>false,'state'=>'waiting_schedule'];
  // Reauthorization is a new dependency version, so the existing worker can
  // resume without requiring this conversation or another manual reset.
  $connection=hash('sha256',(string)($s['channels'][$p['channelId']]['tokens']??''));

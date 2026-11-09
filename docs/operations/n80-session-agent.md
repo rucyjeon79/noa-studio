@@ -1,6 +1,6 @@
 # N80 ChatGPT session executor
 
-User-selected execution mode (2026-11-08): ChatGPT operates tools in the current conversation; N80 retains the task for the next conversation. This is not an unattended browser worker. Do not register Gemini or Flow as background-worker specialists or claim a browser login is available without inspecting it.
+Current implementation: ChatGPT operates tools in the current conversation; N80 retains the task for the next conversation. The 2026-11-09 user requirement is an unattended N80 Shorts system, with no manual download or file handoff; this session implementation does not fulfill that requirement. This is not an unattended browser worker. Do not register Gemini or Flow as background-worker specialists or claim a browser login is available without inspecting it.
 
 ## Ownership and entry
 

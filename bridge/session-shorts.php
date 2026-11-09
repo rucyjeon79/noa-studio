@@ -14,7 +14,29 @@ function nd_shorts_policy():array {
  $path=dirname(__DIR__).'/noa-app/engine/daily-shorts.json';
  $p=json_decode((string)file_get_contents($path),true,32,JSON_THROW_ON_ERROR);
  if(($p['timezone']??'')!=='Asia/Seoul'||($p['publishLocalTime']??'')!=='12:00'||($p['prepareLocalTime']??'')!=='08:00'||($p['maxPerLocalDate']??0)!==1||($p['minSeconds']??0)!==49||($p['maxSeconds']??0)!==59)throw new DomainException('invalid_daily_shorts_policy');
+ nd_shorts_weekdays($p);
  return $p;
+}
+function nd_shorts_weekdays(array $p):array {
+ $days=$p['publishIsoWeekdays']??null;
+ if(!is_array($days)||!array_is_list($days)||!count($days)||count($days)>7||count(array_unique($days))!==count($days))throw new DomainException('invalid_shorts_weekdays');
+ foreach($days as $day)if(!is_int($day)||$day<1||$day>7)throw new DomainException('invalid_shorts_weekdays');
+ return $days;
+}
+/** The tick and all preparation stages use the same timezone-aware calendar. */
+function nd_shorts_schedule(array $p,int $now):array {
+ $days=nd_shorts_weekdays($p);$zone=new DateTimeZone($p['timezone']);
+ $local=(new DateTimeImmutable('@'.$now))->setTimezone($zone);
+ [$hour,$minute]=array_map('intval',explode(':',$p['publishLocalTime']));
+ $target=$local->setTime($hour,$minute);
+ while($target<=$local||!in_array((int)$target->format('N'),$days,true))$target=$target->modify('+1 day');
+ [$hour,$minute]=array_map('intval',explode(':',$p['prepareLocalTime']));
+ return ['local'=>$local,'target'=>$target,'due'=>$target->setTime($hour,$minute)];
+}
+function nd_shorts_slot_allowed(array $p,string $publishAt):bool {
+ try{$target=new DateTimeImmutable($publishAt);}catch(Exception $e){return false;}
+ $target=$target->setTimezone(new DateTimeZone($p['timezone']));
+ return in_array((int)$target->format('N'),nd_shorts_weekdays($p),true)&&$target->format('H:i:s')===$p['publishLocalTime'].':00';
 }
 function nd_shorts_readiness(array $s,array $p):array {
  $channel=$s['channels'][$p['channelId']]??[];$secrets=lab_unseal($s['secrets']??null);
@@ -29,11 +51,12 @@ function nd_shorts_readiness(array $s,array $p):array {
   'nativeRelatedVideoAdapterReady'=>false];
 }
 function nd_shorts_tick(array &$s,array $p,int $now,array $readiness):array {
- $zone=new DateTimeZone($p['timezone']);$local=(new DateTimeImmutable('@'.$now))->setTimezone($zone);
- $target=$local->setTime(12,0);if($local>=$target)$target=$target->modify('+1 day');
- $due=$target->setTime(8,0);$previous=$s['campaigns']['daily_shorts']??[];
+ ['local'=>$local,'target'=>$target,'due'=>$due]=nd_shorts_schedule($p,$now);$previous=$s['campaigns']['daily_shorts']??[];
  $c=$previous+['enabled'=>true,'createdAt'=>gmdate('c',$now),'current'=>null,'history'=>[]];
  $c['policy']=$p;$c['lastTickAt']=gmdate('c',$now);$c['nextPreparationAt']=$due->format(DATE_ATOM);$c['nextPublicationAt']=$target->format(DATE_ATOM);$c['readiness']=$readiness;
+ // Reconcile only an unstarted slot. Never relabel existing media or an upload.
+ if($c['current']&&empty($c['current']['jobId'])&&empty($c['current']['videoId'])&&
+    !nd_shorts_slot_allowed($p,(string)($c['current']['publishAt']??'')))$c['current']=null;
  if(!$c['enabled']||empty($s['config']['workerEnabled']))$c['state']='paused';
  elseif(empty($readiness['ready'])){$c['state']='connection_required';$c['reason']=implode(',',$readiness['missing']);}
  else{$c['state']=$local<$due?'waiting_schedule':'ready';$c['reason']='';}
