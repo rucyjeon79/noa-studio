@@ -57,8 +57,10 @@ if os.environ.get('NOA_MOOD_COLLECTIONS') == 'true':
     release.FILES = {p: release.FILES[p] for p in paths}
     release.NEW = set()
 if os.environ.get('NOA_LISTENING_NAVIGATION') == 'true':
-    release.FILES = {'noa-listening.js':'deploy/noa-listening.js'}
-    release.NEW = set()
+    # Upload banner dependencies before the entry script. Keep one release owner.
+    paths = ('noa-assets/banner-ai-listening.webp', 'noa-listening-banner.css', 'noa-listening.js')
+    release.FILES = {p: 'deploy/' + p for p in paths}
+    release.NEW = set(paths[:2])
 release.PROTECTED=[p for p in release.PROTECTED if p not in release.FILES]
 release.EXTRA_KNOWN={p:{hashlib.sha256(Path(local).read_bytes()).hexdigest()} for p,local in release.FILES.items() if 'calendar-vendor' in p or 'korean-months' in p or 'calendar-LICENSE' in p}
 if __name__=='__main__':release.main()

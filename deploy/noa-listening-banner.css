@@ -1,0 +1,43 @@
+/* The home entry shares N80 AI LAB navigation; no nested card or player. */
+html body #noa-listening.nl-banner-host{
+ --nl-banner-bg:#09111d;--nl-banner-gold:#ecd397;--nl-banner-text:#fff9ed;
+ --nl-banner-muted:#d5d8df;
+ padding:0!important;border:0;background:transparent;border-radius:var(--noa-card-radius,8px)
+}
+html body #noa-listening .nl-listen-banner{
+ position:relative;isolation:isolate;display:flex;align-items:center;overflow:hidden;
+ width:100%;min-height:260px;padding:32px 36px;box-sizing:border-box;
+ border:1px solid var(--nl-banner-gold);border-radius:inherit;
+ background:var(--nl-banner-bg);color:var(--nl-banner-text);text-decoration:none;
+ text-align:left;cursor:pointer;transition:border-color .2s,box-shadow .2s
+}
+html body #noa-listening .nl-listen-art{
+ position:absolute;inset:0;z-index:-2;width:100%;height:100%;max-width:none;
+ object-fit:cover;object-position:right center;border-radius:0
+}
+html body #noa-listening .nl-listen-banner::before{
+ content:"";position:absolute;inset:0;z-index:-1;
+ background:linear-gradient(90deg,rgba(9,17,29,.7),rgba(9,17,29,.15) 55%,transparent 80%)
+}
+html body #noa-listening .nl-listen-copy{display:grid;justify-items:start;gap:12px;max-width:65%;min-width:0}
+html body #noa-listening .nl-listen-eyebrow{font-size:12px;line-height:1.3;font-weight:700;letter-spacing:.18em;color:var(--nl-banner-gold)}
+html body #noa-listening .nl-listen-title{display:flex;flex-wrap:wrap;gap:0 .23em;font-size:clamp(26px,3vw,38px);line-height:1.2;font-weight:800;letter-spacing:-.045em;color:var(--nl-banner-text)}
+html body #noa-listening .nl-listen-title>span{white-space:nowrap}
+html body #noa-listening .nl-listen-note{font-size:14px;line-height:1.5;word-break:keep-all;color:var(--nl-banner-muted)}
+html body #noa-listening .nl-listen-action{
+ display:inline-flex;align-items:center;justify-content:space-between;gap:20px;
+ min-height:44px;margin-top:8px;padding:10px 16px;border-radius:var(--noa-control-radius,6px);
+ background:var(--nl-banner-gold);color:var(--nl-banner-bg);font-size:13px;line-height:1.3;font-weight:800
+}
+html body #noa-listening .nl-listen-action>span{font-size:20px;line-height:1}
+html body #noa-listening .nl-listen-banner:focus-visible{outline:3px solid var(--nl-banner-gold);outline-offset:4px}
+@media(hover:hover){html body #noa-listening .nl-listen-banner:hover{box-shadow:0 0 0 1px var(--nl-banner-gold),0 8px 28px #0003}}
+@media(max-width:600px){
+ html body #noa-listening .nl-listen-banner{min-height:228px;padding:24px 20px}
+ html body #noa-listening .nl-listen-copy{max-width:66%;gap:10px}
+ html body #noa-listening .nl-listen-title{display:grid;font-size:28px;line-height:1.18}
+ html body #noa-listening .nl-listen-note{font-size:12px}
+ html body #noa-listening .nl-listen-banner::before{background:linear-gradient(90deg,rgba(9,17,29,.94),rgba(9,17,29,.65) 44%,rgba(9,17,29,.08) 76%)}
+ html body #noa-listening .nl-listen-action{margin-top:4px;padding:10px 12px;gap:16px}
+}
+@media(prefers-reduced-motion:reduce){html body #noa-listening .nl-listen-banner{transition:none}}
