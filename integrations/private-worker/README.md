@@ -11,13 +11,17 @@
 읽기·API 자동 전환을 하지 않는다. 연결 파일 수집과 토큰 갱신 단계는 제거했다.
 기존 ChatGPT 지휘관 및 N80 작업 처리는 계속 유지한다.
 
-후속 공식 제품은 Antigravity이다. 개인 구독은 최초 대화형 로그인과 OS 키링을
-사용하며, headless 실행도 사전 인증이 필요하다. 현재 GitHub hosted runner에서
-그 인증을 지속시키는 방식은 검증되지 않았다. 새 실행자는 실제 인증·응답 검증,
-N80 작업 소유권 및 비용 조건을 충족하기 전까지 활성화하지 않는다. 텍스트 실행
-지원만으로 기존 Gem 이미지 생성이나 Flow 영상 생성 연결을 선언하지 않는다.
+후속 공식 제품은 Antigravity이다. 공식 FAQ는 개인 구독의 `agy`를 다른 에이전트나
+앱 안에 감싸 사용하는 방식을 지원하지 않는다고 명시한다. 따라서 GitHub worker가
+Antigravity 로그인 정보를 복제해 모델 실행용 하위 프로세스로 호출하지 않는다.
+
+공식 Antigravity 클라이언트가 기존 N80 MCP 도구를 사용하는 연결 설정과 현재
+검증 상태는 [`.agents/README.md`](../../.agents/README.md)에 기록한다. 해당 설정은
+외부 인증·실제 응답 검증 전까지 비활성 상태다. MCP 읽기 연결만으로 기존 Gem
+이미지 생성이나 Flow 영상 생성 또는 N80 자동화 연결을 선언하지 않는다.
 
 공식 근거:
 - https://developers.google.com/gemini-code-assist/docs/deprecations/code-assist-individuals
 - https://antigravity.google/docs/install
 - https://antigravity.google/docs/cli/headless/
+- https://antigravity.google/docs/faq
