@@ -272,6 +272,7 @@ def main():
         if result.get('shellExecuted') is True and not result.get('browserStarted'):
             try:
                 result['nodeInstallation'] = install_node(transport)
+                result['nodeStarted'] = result['nodeInstallation'].get('started') is True
             except Exception as error:
                 result['nodeInstallation'] = {'state': 'host_install_failed', 'errorType': type(error).__name__}
             if result['nodeInstallation'].get('started'):
