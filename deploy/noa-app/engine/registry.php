@@ -6,10 +6,12 @@ declare(strict_types=1);
  */
 require_once __DIR__.'/workspaces.php';
 require_once __DIR__.'/jukebox.php';
+require_once __DIR__.'/hub.php';
 function noa_engine_modules(): array {
     $modules = [
         'music' => ['label'=>'MUSIC','owner'=>'music','entry'=>'/noa-music.php','events'=>['audio.ready']],
         'jukebox' => n80_jukebox_module(),
+        'hub' => n80_hub_module(),
         'youtube' => ['label'=>'YOUTUBE','owner'=>'youtube','entry'=>'/noa-youtube.php','events'=>['sync.requested','youtube.synced']],
         'world' => ['label'=>'NOA WORLD','owner'=>'world','entry'=>'/noa-world.php','events'=>['youtube.synced','world.updated']],
         'playlist' => ['label'=>'MY PLAYLIST','owner'=>'playlist','entry'=>'/noa-music.php#my-playlists','events'=>['audio.ready','playlist.updated']],
@@ -29,6 +31,7 @@ function noa_engine_modules(): array {
     ];
     $sources=[
         'music'=>['noa-music.php'],
+        'hub'=>['noa-hub.php','noa-hub-owner.php','noa-app/engine/hub.php','noa-app/engine/hub-release.php','noa-app/engine/hub-specialists.php','noa-bridge/hub-worker.php'],
         'jukebox'=>array_merge(['noa-app/engine/jukebox.php'],array_values(n80_jukebox_module()['components'])),
         'youtube'=>['noa-youtube.php'], 'world'=>['noa-world.php'], 'playlist'=>['noa-playlists.js'],
         'creator_lab'=>['noa-channel-workspace.php','noa-app/engine/workspaces.php'],
@@ -43,7 +46,7 @@ function noa_engine_modules(): array {
         'app_lifecycle'=>['noa-app/engine/app-lifecycle.php'],
     ];
     $observes=[
-        'music'=>['music','media','taxonomy'],'jukebox'=>['jukebox','media'],'playlist'=>['playlist','music'],
+        'hub'=>['admin'],'music'=>['music','media','taxonomy'],'jukebox'=>['jukebox','media'],'playlist'=>['playlist','music'],
         'youtube'=>['youtube','taxonomy'],'world'=>['world','youtube'],'creator_lab'=>['music','playlist','youtube'],
         'ai_lab'=>['ai_lab'],'admin'=>['admin','settings','members'],'community'=>['community','members'],
         'database'=>['database'],'identity'=>['members'],'commerce'=>[],

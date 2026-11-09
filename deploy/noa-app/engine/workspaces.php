@@ -50,6 +50,7 @@ function n80_workspace_groups(string $workspace, ?array $access=null): array {
                 ['kcpTest','KCP 연결 확인','관리자용 결제창 테스트','/noa-kcp-test.php','settings','admin'],
             ]],
             'advanced'=>['title'=>'시스템·점검','advanced'=>true,'routes'=>[
+                ['hub','N80 Hub','소스·배포·자동화·실행 기록','/noa-hub.php','settings','admin'],
                 ['workStatus','N80 Engine 작업 현황','지시·처리 단계·검증 결과','/noa-work-status.php','settings','admin'],
                 ['documents','문서·변경 이력','저장 버전과 변경 기록','/noa-library.php?view=documents','book','admin'],
                 ['recovery','원본 복구','보존 자료와 복구 상태','/noa-recovery.php','book','admin'],
