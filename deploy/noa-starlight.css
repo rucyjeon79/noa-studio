@@ -1306,3 +1306,30 @@ html[data-n80-hidden=true] .n80-home-orbit{animation-play-state:paused!important
 html.noa-shell-wide[data-noa-theme] body #noa-account-bar .noa-account-brand[data-n80-state]{position:relative}
 #noa-account-bar .noa-account-brand>.n80-home-orbit{width:34px;height:34px;left:15px;margin-left:-17px;margin-top:-17px;border:1px solid var(--n80-orbit-color)}
 @media(max-width:760px){#noa-account-bar .noa-account-brand>.n80-home-orbit{display:none}}
+
+/* Shared native disclosures: a visible tap cue at rest, one arrow per summary. */
+html[data-noa-style] body :is(main,#noa-menu-drawer,#creative-record,#yt-player,.noa-edit-form) details>summary{
+ position:relative;box-sizing:border-box;min-height:44px;padding-block:12px;padding-right:42px;list-style:none;cursor:pointer;
+}
+html[data-noa-style] body :is(main,#noa-menu-drawer,#creative-record,#yt-player,.noa-edit-form) details>summary::marker{content:""}
+html[data-noa-style] body :is(main,#noa-menu-drawer,#creative-record,#yt-player,.noa-edit-form) details>summary::-webkit-details-marker{display:none}
+html[data-noa-style] body :is(main,#noa-menu-drawer,#creative-record,#yt-player,.noa-edit-form) details>summary::after{
+ content:"";display:block;position:absolute;inset:50% 4px auto auto;flex:none;width:26px;height:26px;margin:0;padding:0;border:0;border-radius:0;
+ color:var(--noa-accent);background:currentColor;
+ --noa-disclosure-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none' stroke='black'%3E%3Ccircle cx='14' cy='14' r='12' stroke-width='1' opacity='.55'/%3E%3Cpath d='m9 12 5 5 5-5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+ -webkit-mask:var(--noa-disclosure-mask) center/contain no-repeat;mask:var(--noa-disclosure-mask) center/contain no-repeat;
+ transform:translateY(-50%) rotate(0deg);translate:0 0;transition:transform .2s ease;pointer-events:none;
+}
+html[data-noa-style] body :is(main,#noa-menu-drawer,#creative-record,#yt-player,.noa-edit-form) details:not([open])>summary::after{animation:noa-disclosure-hint 3.6s ease-in-out 1s infinite}
+html[data-noa-style] body :is(main,#noa-menu-drawer,#creative-record,#yt-player,.noa-edit-form) details[open]>summary::after{transform:translateY(-50%) rotate(180deg);animation:none}
+html[data-noa-style] body :is(main,#noa-menu-drawer,#creative-record,#yt-player,.noa-edit-form) details>summary:focus-visible{outline:2px solid var(--noa-accent);outline-offset:3px}
+html[data-noa-style] body #noa-menu-drawer details.noa-drawer-category>summary h3::after{content:none}
+html[data-noa-style] body :is(.noa-notice,.wallet-guide)>summary>svg:last-child,
+html[data-noa-style] body .noa-community-post>summary>span[aria-hidden=true]{display:none}
+/* Preserve the music row's separate play action and full-row title positioning. */
+html[data-noa-style] body :is(main,#noa-menu-drawer,#creative-record,#yt-player,.noa-edit-form) .nl-listen-row>details>summary{position:static;min-height:58px;padding:0}
+html[data-noa-style] body :is(main,#noa-menu-drawer,#creative-record,#yt-player,.noa-edit-form) .nl-listen-row>details>summary::after{top:29px;right:9px}
+@keyframes noa-disclosure-hint{0%,24%,100%{translate:0 0}12%{translate:0 3px}}
+@media(prefers-reduced-motion:reduce){
+ html[data-noa-style] body :is(main,#noa-menu-drawer,#creative-record,#yt-player,.noa-edit-form) details>summary::after{animation:none!important;transition:none!important}
+}
