@@ -70,6 +70,8 @@ def browser_package(cache):
             raise ValueError('browser_package_symlink')
         if path.is_file():
             rel = path.relative_to(binary.parent).as_posix()
+            if Path(rel).parts[0] == 'locales' and not path.name.startswith(('en-US.', 'ko.')):
+                continue
             if not re.fullmatch(r'[a-zA-Z0-9_./+\-]+', rel) or '..' in Path(rel).parts:
                 raise ValueError('invalid_browser_package_name')
             files['browser/'+rel] = path
@@ -77,7 +79,7 @@ def browser_package(cache):
         files['lib/'+name] = path
     total = sum(path.stat().st_size for path in files.values())
     if not 1_000_000 < total < 600_000_000 or len(files) > 250:
-        raise ValueError('browser_package_limit')
+        raise ValueError(f'browser_package_limit: files={len(files)}, bytes={total}')
     return binary, files
 
 
