@@ -5,10 +5,14 @@ reads login profiles or installs a second scheduler. A browser is reported as
 started only after a real, local about:blank launch on the hosting machine.
 """
 import json
+import hashlib
+import hmac
 import os
 from pathlib import Path
+import secrets
 import socket
 import time
+import urllib.request
 
 MARKER = 'N80_HOST_EXEC_V1'
 COMMAND = r'''printf 'N80_HOST_EXEC_V1\n'
@@ -82,6 +86,24 @@ def execute(transport, *, deadline_seconds=25):
             channel.close()
 
 
+def web_runtime_capabilities():
+    # Reuse the existing host's signed, read-only capabilities operation.
+    from noa_n80_ai_worker import worker_key
+    key = worker_key()
+    body = b'{"action":"capabilities","payload":{}}'
+    timestamp, nonce = str(int(time.time())), secrets.token_hex(16)
+    message = '\n'.join(['NOA-JUKEBOX-1', 'POST', hashlib.sha256(body).hexdigest(), timestamp, nonce])
+    request = urllib.request.Request('https://noastudio.ai.kr/noa-app/jukebox/service.php', data=body, headers={
+        'Content-Type': 'application/json', 'X-NOA-Timestamp': timestamp, 'X-NOA-Nonce': nonce,
+        'X-NOA-Signature': hmac.new(key, message.encode(), hashlib.sha256).hexdigest()})
+    with urllib.request.urlopen(request, timeout=10) as response:
+        envelope = json.loads(response.read(16384))
+    if envelope.get('ok') is not True or not isinstance(envelope.get('result'), dict):
+        raise ValueError('invalid_host_capabilities')
+    result = envelope['result']
+    return {name: result.get(name) is True for name in ('shell_exec_callable', 'proc_open_callable')}
+
+
 def main():
     from noa_full_inventory import connect
     result = {'authority': 'N80 Engine', 'executionTarget': 'existing_noa_host',
@@ -96,6 +118,10 @@ def main():
     finally:
         if transport is not None:
             transport.close()
+    try:
+        result['phpExecution'] = web_runtime_capabilities()
+    except Exception as error:
+        result['phpExecution'] = {'state': 'unverified', 'errorType': type(error).__name__}
     result['checkedAt'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
     result['sourceCommit'] = os.getenv('GITHUB_SHA', '')
     path = Path('host-media-proof/runtime.json')
