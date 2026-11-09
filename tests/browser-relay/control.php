@@ -24,7 +24,8 @@ try{
  nb_worker($s,$auth+['command'=>'exchange','ack'=>1],108);check(nb_view($s,'owner',108)['inputReady'],'ack_not_cleared');
  refuses(function()use(&$s,$auth){nb_worker($s,$auth+['command'=>'exchange','ack'=>0],109);},'browser_ack_invalid');
  refuses(function()use(&$s,$auth){nb_worker($s,$auth+['command'=>'exchange','ack'=>2],109);},'browser_ack_invalid');
- foreach(['http://gemini.google.com','https://gemini.google.com.evil.test','https://x@gemini.google.com','https://gemini.google.com:443','file:///etc/passwd'] as $url)check(!nb_url($url),'unsafe_url');
+ check(nb_url('https://flow.google.com/'),'official_flow_origin');
+ foreach(['https://flow.google.com.evil.test','http://gemini.google.com','https://gemini.google.com.evil.test','https://x@gemini.google.com','https://gemini.google.com:443','file:///etc/passwd'] as $url)check(!nb_url($url),'unsafe_url');
  nb_admin($s,['command'=>'save','id'=>$id],'owner',110);
  $stop=nb_worker($s,$auth+['command'=>'exchange','ack'=>1],111);check($stop['stop']&&$stop['save'],'save_not_requested');
  $data=random_bytes(40);$sha=hash('sha256',$data);$profile=['sha256'=>$sha,'bytes'=>40];

@@ -7,9 +7,9 @@ const {chromium}=require('playwright');
 const lines=createInterface({input:process.stdin,crlfDelay:Infinity})[Symbol.asyncIterator]();
 const read=async()=>{const v=await lines.next();if(v.done||v.value.length>6000000)throw Error('pipe_closed');return JSON.parse(v.value);};
 const emit=v=>process.stdout.write(JSON.stringify(v)+'\n');
-const hosts=new Set(['gemini.google.com','accounts.google.com','labs.google','labs.google.com']);
+const hosts=new Set(['gemini.google.com','accounts.google.com','labs.google','labs.google.com','flow.google.com']);
 const allowed=url=>{try{const u=new URL(url);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&hosts.has(u.hostname);}catch{return false;}};
-const targets={gemini:'https://gemini.google.com/gem/21f716bf5427/ed7d123a536aafda',flow:'https://labs.google/fx/tools/flow'};
+const targets={gemini:'https://gemini.google.com/gem/21f716bf5427/ed7d123a536aafda',flow:'https://flow.google.com/'};
 let browser;
 try{
  const init=await read();

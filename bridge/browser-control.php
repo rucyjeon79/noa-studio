@@ -3,7 +3,7 @@ declare(strict_types=1);
 /** N80 AI LAB owns one bounded, administrator-operated browser connection. */
 function nb_url(string $url):bool {
  $p=parse_url($url);return ($p['scheme']??'')==='https'&&!isset($p['user'])&&!isset($p['pass'])&&!isset($p['port'])
-  &&in_array($p['host']??'',['gemini.google.com','accounts.google.com','labs.google','labs.google.com'],true);
+  &&in_array($p['host']??'',['gemini.google.com','accounts.google.com','labs.google','labs.google.com','flow.google.com'],true);
 }
 function nb_view(array $s,string $owner,int $now):array {
  $r=$s['browserControl']??[];
