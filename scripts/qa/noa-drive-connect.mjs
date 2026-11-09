@@ -15,6 +15,7 @@ try{
   await context.addInitScript(theme=>localStorage.setItem('noa-ui-selection',JSON.stringify({theme,language:'ko',radius:'soft',design:'ios'})),theme);
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(base+'/noa-bridge/lab-oauth.php?action=drive');
+  await page.screenshot({path:`${out}/drive-${theme}-${width}.png`,fullPage:true});
   assert(await page.getByRole('heading',{name:'Drive 임시저장 연결'}).isVisible());
   const button=page.getByRole('button',{name:'Google Drive 연결',exact:true});assert(await button.isVisible());
   assert((await button.boundingBox()).height>=44);
@@ -22,7 +23,6 @@ try{
   assert.equal(await page.locator('input:not([type=hidden])').count(),0,'no manual credential input');
   await button.focus();assert(await button.evaluate(el=>el===document.activeElement));
   assert.equal(errors.length,0,errors.join('\n'));
-  await page.screenshot({path:`${out}/drive-${theme}-${width}.png`,fullPage:true});
   report.push({width,theme,visibleConnection:true,noCredentialInput:true,noOverflow:true,keyboardAccess:true});await context.close();
  }
  writeFileSync(out+'/drive-connect.json',JSON.stringify({provider:'not contacted',checks:report},null,2));
