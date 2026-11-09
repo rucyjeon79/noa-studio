@@ -16,6 +16,7 @@ function atomic(name, value) {
   const target = path.join(root, name), temp = target + '.tmp-' + crypto.randomBytes(8).toString('hex');
   fs.writeFileSync(temp, JSON.stringify(value), {mode:0o600, flag:'wx'});fs.renameSync(temp,target);
 }
+function problem(error,stage){const code=String(error?.code||error?.message||'hub_failed');atomic('runner-error.json',{error:/^(?:hub_[a-z_]+|[A-Z_]+)$/.test(code)?code:'hub_failed',stage,at:Math.floor(Date.now()/1000)});}
 function read(name, fallback={}) {try{return JSON.parse(fs.readFileSync(path.join(root,name),'utf8'));}catch(e){if(e.code==='ENOENT')return fallback;throw e;}}
 function call(body, timeout=20000) {
   const data=JSON.stringify(body), key=fs.readFileSync('/hosting/noastudio/noa-ai-lab/worker.key','utf8').trim();
@@ -52,11 +53,11 @@ export async function run() {
           if(reply.receipt.state==='running') {s.unconfirmed=true;s.nextAt=now+60;} else {s.lastState=reply.receipt.state;s.pending=null;s.unconfirmed=false;s.nextAt=now+(reply.receipt.state==='succeeded'?row.interval:Math.max(row.interval,300));s.requestedAt=beat.requests[op]||0;}
           atomic('scheduler.json',state);
           await call({action:'heartbeat'});
-        }catch{ s.nextAt=now+60;atomic('scheduler.json',state);break; }
+        }catch(error){problem(error,'execute');s.nextAt=now+60;atomic('scheduler.json',state);break; }
       }
-    }catch{ /* No second executor or credential fallback on an ambiguous response. */ }
+    }catch(error){problem(error,'heartbeat'); /* No second executor or credential fallback on an ambiguous response. */ }
     await new Promise(resolve=>setTimeout(resolve,10000));
   }
   stop();
 }
-if(process.argv[1]===fileURLToPath(import.meta.url))run().catch(()=>{process.exitCode=1;});
+if(process.argv[1]===fileURLToPath(import.meta.url))run().catch(error=>{problem(error,'startup');process.exitCode=1;});

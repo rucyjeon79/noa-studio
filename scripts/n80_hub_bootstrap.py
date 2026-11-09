@@ -139,7 +139,7 @@ def install():
                 receipts=json.loads(read(ROOT+'/receipts.json') or b'[]')
                 if any(r['operation']=='hub.verify' and r['state']=='succeeded' for r in receipts) and time.time()-state.get('heartbeatAt',0)<120:break
                 time.sleep(3)
-            else:raise RuntimeError('hub_execution_unverified')
+            else:raise RuntimeError('hub_execution_unverified:'+json.dumps(json.loads(read(ROOT+'/runner-error.json') or b'{}')))
             # Integrate navigation and registry through the new native deployment path itself.
             package={'version':1,'id':secrets.token_hex(16),'files':[]}
             for name in ['registry.php','workspaces.php']:
