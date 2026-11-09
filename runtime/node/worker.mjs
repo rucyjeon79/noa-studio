@@ -1,5 +1,6 @@
 /** N80's one-shot host executor. No listener, scheduler, queue or stored credentials. */
 import {pathToFileURL} from 'node:url';
+import https from 'node:https';
 import {LabClient} from '../../lab/client.mjs';
 import {runMuvy} from '../../lab/muvy.mjs';
 
@@ -37,6 +38,20 @@ export function errorCode(error) {
   return network.includes(code)?'node_network_'+code.toLowerCase():'node_operation_failed';
 }
 
+async function networkProbe() {
+  const probe=(family,local=false)=>new Promise(resolve=>{
+    const options={method:'HEAD',family,signal:AbortSignal.timeout(3000)};
+    if(local)options.lookup=(_hostname,_options,callback)=>callback(null,'127.0.0.1',4);
+    const request=https.request('https://noastudio.ai.kr/',options,response=>{
+      response.destroy();resolve('connected');
+    });
+    request.on('error',error=>resolve(error.name==='AbortError'?'timeout':'failed'));
+    request.end();
+  });
+  const [ipv4,ipv6,loopback_tls]=await Promise.all([probe(4),probe(6),probe(4,true)]);
+  return {ipv4,ipv6,loopback_tls};
+}
+
 export async function main(input=process.stdin, output=process.stdout) {
   const started = Date.now();
   let request, done=false;
@@ -57,7 +72,8 @@ export async function main(input=process.stdin, output=process.stdout) {
     const result=await execute(request);
     receipt(true,{result});
   } catch(error) {
-    receipt(false,{error:errorCode(error)});
+    const network = request?.operation==='engine.status' ? await networkProbe() : undefined;
+    receipt(false,{error:errorCode(error),...(network?{networkProbe:network}:{})});
     process.exitCode=1;
   } finally {clearTimeout(timer);if(request)delete request.key;}
 }
