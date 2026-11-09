@@ -12,8 +12,7 @@ jobs:
     timeout-minutes: 10
     concurrency: {group: noa-media-path-normalization, cancel-in-progress: false}
     env:
-      # PHP locks current assets/uploads and rejects every active upload before applying.
-      NOA_MEDIA_READ_ONLY: '0'
+      NOA_MEDIA_READ_ONLY: '1'
       NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
       NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
       NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
