@@ -1,4 +1,4 @@
-name: NOA home section placement
+name: NOA home section placement # Hero followed by daily fortune
 on:
   pull_request:
     paths: ['.github/workflows/noa-home-notice-placement.yml', 'scripts/qa/noa-home-banner-order.mjs']
@@ -65,7 +65,7 @@ jobs:
           assert 'id="noa-ranking-status"' in section and html.count('id="noa-ranking-status"') == 1
           assert '/noa-amt-fan.js' in html
           PY
-      - name: Verify the three banner positions on the operating homepage
+      - name: Verify daily fortune and banner positions on the operating homepage
         id: banners
         run: |
           npm install --prefix "$RUNNER_TEMP/banners" --no-save --ignore-scripts --package-lock=false playwright@1.56.1

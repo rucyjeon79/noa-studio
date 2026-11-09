@@ -13,6 +13,12 @@ baseline=args.host_source.read_bytes()if args.host_source else subprocess.check_
 # Exact user-authorized banner include; every other non-hero byte remains guarded.
 MONTHLY_INCLUDE=b"<?php if(is_file(__DIR__.'/monthly-banner.php'))require __DIR__.'/monthly-banner.php';?>\n"
 def outside_approved_hero(source):
+ # Normalize only the user-approved fortune move back to its former position.
+ move=re.search(rb'(<section class="noa-hero".*?</section>)\n(<section id="noa-daily-fortune"[^>]*>.*?</section>)',source,re.S)
+ if move:
+  fortune=move.group(2)
+  source=source[:move.start(2)-1]+source[move.end(2):]
+  source=source.replace(MONTHLY_INCLUDE,MONTHLY_INCLUDE+fortune,1)
  source=source.replace(b'</section>\n'+MONTHLY_INCLUDE+b'<section id="noa-daily-fortune"',b'</section><section id="noa-daily-fortune"')
  source=source.replace(MONTHLY_INCLUDE,b'')
  # Approved ownership verification tags (#270 and Google registration), not layout.
@@ -46,8 +52,10 @@ addition=re.findall(rb"<\?php if\(is_file\(dirname\(__DIR__\)\.'/noa-sitemap[.]p
 assert len(addition)==1 and hero_start<candidate.index(addition[0])<hero_end,'guarded sitemap must remain inside hero'
 community=re.findall(rb'<section class="noa-section noa-home-community" data-home-section="community"[^>]*>[^\n]*</section>\n',candidate)
 assert candidate.count(MONTHLY_INCLUDE)==1,'one guarded monthly banner include required'
-assert len(community)==1 and candidate[hero_end+len(b'</section>'):].startswith(b'\n<section class="noa-section noa-notices"'),'native notices follow the hero in the initial HTML'
-assert MONTHLY_INCLUDE+b'<section id="noa-daily-fortune"' in candidate
+assert len(community)==1 and candidate[hero_end+len(b'</section>'):].startswith(b'\n<section id="noa-daily-fortune"'),'daily fortune follows the hero in the initial HTML'
+fortune_pattern=rb'<section id="noa-daily-fortune"[^>]*>.*?</section>'
+assert re.findall(fortune_pattern,candidate,re.S)==re.findall(fortune_pattern,baseline,re.S),'fortune content must remain unchanged'
+assert b'</section>\n'+MONTHLY_INCLUDE in candidate,'monthly banner remains after listening'
 assert b"<?php noa_home_banner('youtube');?>\n<section class=\"noa-section noa-story-entrance\"" in candidate
 assert b"<?php noa_home_banner('amt');?>\n<section class=\"noa-section\" data-home-section=\"collections\"" in candidate
 assert candidate.index(b"<?php noa_home_banner('amt');?>")<candidate.index(community[0]),'community must follow the AMT banner'
