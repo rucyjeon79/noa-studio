@@ -1,8 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {execute} from '../../runtime/node/worker.mjs';
+import {execute,errorCode} from '../../runtime/node/worker.mjs';
 import {runMuvy} from '../../lab/muvy.mjs';
 const request={version:1,operation:'engine.status',key:'a'.repeat(64),invocation:'b'.repeat(32)};
+
+test('network diagnosis exposes only fixed error codes, never remote text or credentials',()=>{
+  assert.equal(errorCode(new Error('secret URL',{cause:{code:'ENOTFOUND'}})),'node_network_enotfound');
+  assert.equal(errorCode(new Error('secret URL')),'node_operation_failed');
+  assert.equal(errorCode(new Error('lab_api_http_401')),'lab_api_http_401');
+});
 
 test('host probe verifies the signed existing N80 route without claiming or generating',async()=>{
   const calls=[];

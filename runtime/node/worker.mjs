@@ -24,6 +24,19 @@ export async function execute(request, clientFactory=key=>new LabClient(key, und
   return result;
 }
 
+export function errorCode(error) {
+  const allowed=['invalid_node_request','node_version_unsupported','node_input_limit','invalid_n80_status',
+    'invalid_muvy_receipt','muvy_result_delivery_unconfirmed'];
+  if(allowed.includes(error?.message))return error.message;
+  if(/^lab_api_http_[1-5][0-9]{2}$/.test(error?.message || ''))return error.message;
+  if(error?.name==='TimeoutError')return 'node_http_timeout';
+  const network=['ENOTFOUND','EAI_AGAIN','ECONNREFUSED','ECONNRESET','ETIMEDOUT','UND_ERR_CONNECT_TIMEOUT',
+    'CERT_HAS_EXPIRED','UNABLE_TO_VERIFY_LEAF_SIGNATURE','UNABLE_TO_GET_ISSUER_CERT_LOCALLY',
+    'DEPTH_ZERO_SELF_SIGNED_CERT','ERR_TLS_CERT_ALTNAME_INVALID'];
+  const code=error?.cause?.code || error?.code;
+  return network.includes(code)?'node_network_'+code.toLowerCase():'node_operation_failed';
+}
+
 export async function main(input=process.stdin, output=process.stdout) {
   const started = Date.now();
   let request, done=false;
@@ -44,9 +57,7 @@ export async function main(input=process.stdin, output=process.stdout) {
     const result=await execute(request);
     receipt(true,{result});
   } catch(error) {
-    const allowed=['invalid_node_request','node_version_unsupported','node_input_limit','invalid_n80_status',
-      'invalid_muvy_receipt','muvy_result_delivery_unconfirmed'];
-    receipt(false,{error:allowed.includes(error.message)?error.message:'node_operation_failed'});
+    receipt(false,{error:errorCode(error)});
     process.exitCode=1;
   } finally {clearTimeout(timer);if(request)delete request.key;}
 }

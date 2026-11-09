@@ -63,6 +63,10 @@ def parse_receipt(data, code, operation, invocation, manifest):
         value = json.loads(data)
     except (ValueError, UnicodeError):
         raise RuntimeError('invalid_node_receipt') from None
+    if isinstance(value, dict) and value.get('ok') is False:
+        error = value.get('error', '')
+        if isinstance(error, str) and re.fullmatch(r'(?:node_[a-z_]{1,70}|invalid_[a-z_]{1,50}|lab_api_http_[1-5][0-9]{2}|muvy_result_delivery_unconfirmed)', error):
+            raise RuntimeError(error)
     if not isinstance(value, dict) or code != 0 or value.get('ok') is not True:
         raise RuntimeError('node_execution_failed')
     if (value.get('version') != 1 or value.get('authority') != 'N80 Engine' or value.get('runtime') != 'node'
@@ -177,6 +181,7 @@ def install():
         node = install_node(transport)
         if node.get('started') is not True:
             raise RuntimeError('host_node_unavailable')
+        print('N80_NODE_BINARY_VERIFIED', node['version'], flush=True)
         manifest = {'version':1, 'authority':'N80 Engine', 'nodeSha256':node['sha256'],
                     'nodeVersion':node['version'], 'privateLibraries':bool(node.get('privateLibraries')),
                     'bundleSha256':digest, 'sourceCommit':os.environ['GITHUB_SHA']}
@@ -211,6 +216,7 @@ def install():
                     if read_file(sftp, target, 65536) != data:
                         raise RuntimeError('node_source_readback_mismatch')
                 # Read-only authenticated roundtrip before activation; no paid generation.
+                print('N80_NODE_SOURCE_VERIFIED', digest, flush=True)
                 receipt = invoke(transport, manifest, 'engine.status', key, deadline_seconds=80)
                 check_current_candidate()
                 try: current = read_file(sftp, MANIFEST, 4096)

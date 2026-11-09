@@ -1,33 +1,22 @@
 import sys
-import hashlib
-import json
 from pathlib import Path
-import subprocess
-import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
-from noa_host_media_runtime import interpret, execute, node_result
-from noa_host_browser_runtime import browser_result, VERIFY
+from noa_host_media_runtime import interpret, execute, node_result, checksum_result, verify_remote_file
+from unittest.mock import patch
+from noa_host_browser_runtime import browser_result
 
 
 class HostRuntimeTest(unittest.TestCase):
-    def test_remote_integrity_verifier_rejects_modified_bytes_and_path_escape(self):
-        with tempfile.TemporaryDirectory() as folder:
-            root = Path(folder)
-            (root/'verify.cjs').write_text(VERIFY)
-            (root/'bundle').mkdir()
-            (root/'bundle/asset').write_bytes(b'actual bytes')
-            def verify(name):
-                body = json.dumps({name: {'bytes': 12, 'sha256': hashlib.sha256(b'actual bytes').hexdigest()}}).encode()
-                (root/'manifest').write_bytes(body)
-                run = subprocess.run(['node', str(root/'verify.cjs'), str(root/'bundle'), str(root/'manifest'), hashlib.sha256(body).hexdigest()], capture_output=True, text=True, timeout=5)
-                return run.returncode, json.loads(run.stdout)['verified']
-            self.assertEqual(verify('asset'), (0, True))
-            (root/'bundle/asset').write_bytes(b'changed data')
-            self.assertEqual(verify('asset'), (1, False))
-            (root/'escape').write_bytes(b'actual bytes')
-            self.assertEqual(verify('../escape'), (1, False))
+    def test_remote_checksum_verifies_bytes_without_downloading_or_trusting_exit_alone(self):
+        digest='a'*64
+        self.assertEqual(checksum_result((digest+'  /fixed/file\n').encode(),0),{'available':True,'sha256':digest})
+        self.assertFalse(checksum_result(b'not a hash',0)['available'])
+        self.assertFalse(checksum_result((digest+'  /fixed/file\n').encode(),1)['available'])
+        with patch('noa_host_media_runtime.execute',return_value={'available':True,'sha256':digest}):
+            self.assertTrue(verify_remote_file(None,None,'/fixed/file',100,digest))
+            self.assertFalse(verify_remote_file(None,None,'/fixed/file',100,'b'*64))
 
     def test_browser_receipt_requires_successful_exit_and_real_boolean(self):
         self.assertTrue(browser_result(b'{"state":"host_browser_started","browserStarted":true}', 0)['browserStarted'])

@@ -126,6 +126,32 @@ def runtime_libraries(local):
     return libraries
 
 
+def checksum_result(output, exit_code):
+    if exit_code == 0:
+        match = re.fullmatch(rb'([a-f0-9]{64}) [ *][^\r\n]+\n?', output)
+        if match:
+            return {'available': True, 'sha256': match.group(1).decode()}
+    return {'available': False}
+
+
+def verify_remote_file(transport, sftp, target, size, expected):
+    """Prefer the host's coreutils hash; avoid downloading a 127 MB binary again."""
+    import shlex
+    path = shlex.quote(target)
+    command = ('if [ -x /usr/bin/sha256sum ]; then /usr/bin/sha256sum -- ' + path +
+               '; elif [ -x /bin/sha256sum ]; then /bin/sha256sum -- ' + path + '; else exit 127; fi')
+    result = execute(transport, command=command, parser=checksum_result, deadline_seconds=30)
+    if result.get('available'):
+        return result['sha256'] == expected
+    # Hosts without coreutils retain the original byte-for-byte verification.
+    actual = hashlib.sha256()
+    with sftp.open(target, 'rb') as source:
+        source.prefetch(file_size=size, max_concurrent_requests=16)
+        while block := source.read(262144):
+            actual.update(block)
+    return actual.hexdigest() == expected
+
+
 def install_node(transport):
     """Stage the official Node 24 binary from setup-node and execute it on host.
 
@@ -167,12 +193,7 @@ def install_node(transport):
         info = sftp.lstat(target)
         if not stat.S_ISREG(info.st_mode) or info.st_size != local.stat().st_size:
             raise ValueError('runtime_size_mismatch')
-        remote_digest = hashlib.sha256()
-        with sftp.open(target, 'rb') as source:
-            source.prefetch(file_size=info.st_size, max_concurrent_requests=16)
-            while block := source.read(262144):
-                remote_digest.update(block)
-        if remote_digest.hexdigest() != digest:
+        if not verify_remote_file(transport, sftp, target, info.st_size, digest):
             raise ValueError('runtime_checksum_mismatch')
         sftp.chmod(target, 0o700)
         result = execute(transport, command=target+' --version', parser=node_result)
@@ -199,10 +220,8 @@ def install_node(transport):
                 info = sftp.lstat(destination)
                 if not stat.S_ISREG(info.st_mode) or info.st_size != len(content):
                     raise ValueError('library_size_mismatch')
-                with sftp.open(destination, 'rb') as source:
-                    source.prefetch(file_size=info.st_size, max_concurrent_requests=16)
-                    if hashlib.sha256(source.read(info.st_size+1)).digest() != hashlib.sha256(content).digest():
-                        raise ValueError('library_checksum_mismatch')
+                if not verify_remote_file(transport, sftp, destination, info.st_size, hashlib.sha256(content).hexdigest()):
+                    raise ValueError('library_checksum_mismatch')
                 sftp.chmod(destination, 0o700)
             loader = library_dir + '/ld-linux-x86-64.so.2'
             result = execute(transport, command=loader+' --library-path '+library_dir+' '+target+' --version', parser=node_result)
@@ -253,7 +272,6 @@ def main():
         if result.get('shellExecuted') is True and not result.get('browserStarted'):
             try:
                 result['nodeInstallation'] = install_node(transport)
-                result['nodeStarted'] = result['nodeInstallation'].get('started') is True
             except Exception as error:
                 result['nodeInstallation'] = {'state': 'host_install_failed', 'errorType': type(error).__name__}
             if result['nodeInstallation'].get('started'):
