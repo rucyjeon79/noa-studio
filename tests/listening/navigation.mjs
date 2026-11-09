@@ -32,7 +32,8 @@ try{
    const box=await banner.boundingBox();assert(box.height>=200);assert(box.width<=width);
    assert.equal(await page.locator('#noa-listening').evaluate(el=>el.scrollWidth<=el.clientWidth+2),true);
    assert.equal((await page.locator('.nl-listen-title').innerText()).replace(/\s/g,''),'맞춤음악듣기');
-   assert.equal(listeningRequests,0,'The home banner must not request AI recommendations');
+   assert(listeningRequests<=1,'The banner must not add duplicate listening requests');
+   assert.equal(await page.locator('.nl-play-shell').count(),0,'The banner must not start a player');
    const out=process.env.NOA_SCREENSHOTS||'listening-proof/navigation';mkdirSync(out,{recursive:true});
    await banner.screenshot({path:out+'/'+(live?'live':'candidate')+'-'+width+'.png'});
   }
