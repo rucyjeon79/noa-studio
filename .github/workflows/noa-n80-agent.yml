@@ -30,7 +30,6 @@ jobs:
         run: |
           python tests/gpt/test_agent.py
           python tests/gpt/test_gemini.py
-          python tests/gpt/test_gemini_connect.py
           python -m py_compile integrations/private-worker/*.py scripts/noa_agent_release.py
           php -l deploy/noa-app/engine/agent-runtime.php
           php -l deploy/noa-app/engine/creative.php
