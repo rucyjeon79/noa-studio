@@ -19,6 +19,9 @@ try{
   assert(await page.getByRole('heading',{name:'Drive 임시저장 연결'}).isVisible());
   const button=page.getByRole('button',{name:'Google Drive 연결',exact:true});assert(await button.isVisible());
   assert((await button.boundingBox()).height>=44);
+  assert(await page.locator('#noa-drive-main').evaluate(el=>el.getBoundingClientRect().width<=760),'bounded readable width');
+  const contrast=await button.evaluate(el=>{const c=getComputedStyle(el),l=s=>{const v=s.match(/[\d.]+/g).slice(0,3).map(x=>{x=Number(x)/255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4});return v[0]*.2126+v[1]*.7152+v[2]*.0722},a=l(c.color),b=l(c.backgroundColor);return (Math.max(a,b)+.05)/(Math.min(a,b)+.05)});
+  assert(contrast>=4.5,'readable connection button');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'horizontal overflow');
   assert.equal(await page.locator('input:not([type=hidden])').count(),0,'no manual credential input');
   await button.focus();assert(await button.evaluate(el=>el===document.activeElement));
