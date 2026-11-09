@@ -5,7 +5,7 @@ import { chromium } from 'playwright';
 const origin='https://noastudio.ai.kr';
 const candidate=process.env.NOA_BANNER_CANDIDATE;
 const pairs=[
- ['.noa-monthly-benefits','#noa-daily-fortune'],
+ ['[data-home-section=hero]','#noa-daily-fortune'],
  ['[data-home-banner=youtube]','[data-home-section=world]'],
  ['[data-home-banner=amt]','[data-home-section=collections]']
 ];
@@ -22,7 +22,7 @@ try {
     await page.goto(origin+'/?home-banner-order='+Date.now(),{waitUntil:'domcontentloaded'});
     if(scripts){
      await page.waitForSelector('[data-home-section=notices] [data-home-banner=goods]',{state:'attached'});
-     // A late policy response must place the existing monthly banner back above the fortune card.
+     // A late policy response must preserve the fortune card immediately below the hero.
      if(candidate)await page.locator('.noa-monthly-benefits').evaluate(node=>node.parentElement.append(node));
     }
     const read=()=>page.evaluate(pairs=>pairs.map(([selector,target])=>{
