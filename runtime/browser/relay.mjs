@@ -36,6 +36,7 @@ try{
   let ack=0;
   while(Date.now()<deadline+20000){
    if(!page||page.isClosed())throw Error('browser_closed');
+   if(page.url()==='about:blank')await page.waitForURL(u=>allowed(u.href),{timeout:15000});
    const actual=page.url();if(!allowed(actual))throw Error('navigation_blocked');
    const u=new URL(actual),url=u.origin+u.pathname;
    const image='data:image/jpeg;base64,'+(await page.screenshot({type:'jpeg',quality:50,timeout:15000})).toString('base64');
