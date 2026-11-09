@@ -51,6 +51,15 @@ function nml_replace(mixed $value,array $map):mixed {
  if(is_array($value))foreach($value as $key=>$item)$value[$key]=nml_replace($item,$map);
  return $value;
 }
+/** Stage without replacing an existing file; caller verifies before changing SQL. */
+function nml_stage(string $source,string $target):bool {
+ if(function_exists('link'))return @link($source,$target);
+ $out=@fopen($target,'xb');if(!$out)return false;$in=@fopen($source,'rb');
+ if(!$in){fclose($out);unlink($target);return false;}
+ $ok=false;
+ try{$ok=stream_copy_to_stream($in,$out)!==false&&fflush($out)&&chmod($target,0600);return $ok;}
+ finally{fclose($in);fclose($out);if(!$ok)unlink($target);}
+}
 /** Runs after commit (or rollback); only exact, now-unreferenced owned bytes are removed. */
 function nml_cleanup(PDO $db):void {
  if($db->inTransaction())return;
@@ -89,7 +98,7 @@ function nml_sync(PDO $db,string $key,array $doc,bool $uploadCommit=false):array
   $dir=$root;foreach(explode('/',$directory) as $part){$dir.='/'.$part;if(is_link($dir))throw new DomainException('unsafe_media_path');if(!is_dir($dir)&&!mkdir($dir,0700))throw new RuntimeException('media_directory_failed');if(realpath($dir)!==$dir)throw new DomainException('unsafe_media_path');}
   foreach($moves as [$old,$target,$source,$sha,$bytes]){
    $dest=$root.'/'.$target;if(is_link($dest))throw new DomainException('unsafe_media_path');
-   if(!file_exists($dest)){if(!link($source,$dest))throw new RuntimeException('media_move_failed');nml_track($db,$target,$dest,$sha);}
+   if(!file_exists($dest)){if(!nml_stage($source,$dest))throw new RuntimeException('media_move_failed');nml_track($db,$target,$dest,$sha);}
    if(!is_file($dest)||filesize($dest)!==$bytes||!hash_equals($sha,hash_file('sha256',$dest)))throw new DomainException('media_destination_conflict');
    nml_track($db,$old,$source,$sha);
   }

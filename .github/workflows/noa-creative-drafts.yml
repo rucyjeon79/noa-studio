@@ -2,9 +2,9 @@ name: N80 creative drafts
 on:
   push:
     branches: [main, work/creative-drafts]
-    paths: ['bridge/creative*.php','deploy/noa-creative.*','deploy/noa-lab-creative.php','deploy/noa-app/engine/creative.php','tests/creative/**','scripts/noa_creative*','.github/workflows/noa-creative-drafts.yml']
+    paths: ['bridge/creative*.php','deploy/noa-creative.*','deploy/noa-lab-creative.php','deploy/noa-app/engine/creative.php','tests/creative/**','deploy/noa-app/jukebox/media-location.php','scripts/noa_creative*','.github/workflows/noa-creative-drafts.yml']
   pull_request:
-    paths: ['bridge/creative*.php','deploy/noa-creative.*','deploy/noa-lab-creative.php','deploy/noa-app/engine/creative.php','tests/creative/**']
+    paths: ['bridge/creative*.php','deploy/noa-creative.*','deploy/noa-lab-creative.php','deploy/noa-app/engine/creative.php','tests/creative/**','deploy/noa-app/jukebox/media-location.php']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
@@ -51,6 +51,8 @@ jobs:
           php scripts/qa/inline-edit-seed.php
           ffmpeg -hide_banner -loglevel error -f lavfi -i 'sine=frequency=440:duration=1' -ac 2 -codec:a libmp3lame tests/creative/fixture.mp3
           ffmpeg -hide_banner -loglevel error -f lavfi -i 'color=c=gray:s=64x64' -frames:v 1 tests/creative/fixture.webp
+          php tests/creative/media-stage.php
+          php -d disable_functions=link tests/creative/media-stage.php
           php tests/creative/core.php
           php tests/engine/service_runtime_test.php
           python tests/gpt/flow.py
@@ -95,6 +97,7 @@ jobs:
           NOA_CREATIVE_TITLE_ONLY: ${{ contains(github.event.head_commit.message, '[creative-title]') && '1' || '0' }}
           NOA_CREATIVE_BATCH_ONLY: ${{ contains(github.event.head_commit.message, '[creative-batch]') && '1' || '0' }}
           NOA_CREATIVE_FOLDERS_ONLY: ${{ contains(github.event.head_commit.message, '[creative-folders]') && '1' || '0' }}
+          NOA_CREATIVE_MEDIA_STAGE_ONLY: ${{ contains(github.event.head_commit.message, '[creative-media-stage]') && '1' || '0' }}
           NOA_CREATIVE_SAVE_ONLY: ${{ contains(github.event.head_commit.message, '[creative-save]') && '1' || '0' }}
           GH_TOKEN: ${{ github.token }}
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
@@ -109,7 +112,7 @@ jobs:
           if [ "$NOA_CREATIVE_SAVE_ONLY" = "1" ]; then python scripts/noa_creative_revision_live.py recover_save; fi
           if [ "$NOA_CREATIVE_TITLE_ONLY" = "1" ]; then python scripts/noa_creative_revision_live.py verify_titles; elif [ "$NOA_CREATIVE_REVISION_ONLY" = "1" ]; then python scripts/noa_creative_revision_live.py verify; fi
           if [ "$NOA_CREATIVE_BATCH_ONLY" = "1" ]; then python scripts/noa_creative_revision_live.py verify_batch; fi
-          if [ "$NOA_CREATIVE_PRESENTATION_ONLY" != "1" ] && [ "$NOA_CREATIVE_RETENTION_ONLY" != "1" ] && [ "$NOA_CREATIVE_REVISION_ONLY" != "1" ] && [ "$NOA_CREATIVE_BATCH_ONLY" != "1" ] && [ "$NOA_CREATIVE_SAVE_ONLY" != "1" ] && [ "$NOA_CREATIVE_FOLDERS_ONLY" != "1" ] && [ "$NOA_CREATIVE_LIST_EXPIRY_ONLY" != "1" ]; then python scripts/noa_creative_live.py; fi
+          if [ "$NOA_CREATIVE_PRESENTATION_ONLY" != "1" ] && [ "$NOA_CREATIVE_RETENTION_ONLY" != "1" ] && [ "$NOA_CREATIVE_REVISION_ONLY" != "1" ] && [ "$NOA_CREATIVE_BATCH_ONLY" != "1" ] && [ "$NOA_CREATIVE_SAVE_ONLY" != "1" ] && [ "$NOA_CREATIVE_FOLDERS_ONLY" != "1" ] && [ "$NOA_CREATIVE_LIST_EXPIRY_ONLY" != "1" ] && [ "$NOA_CREATIVE_MEDIA_STAGE_ONLY" != "1" ]; then python scripts/noa_creative_live.py; fi
       - name: Restore owned source on failed activation or live verification
         if: failure() && steps.activate.outcome == 'failure'
         env: *env

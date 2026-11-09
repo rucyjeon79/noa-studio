@@ -37,6 +37,9 @@ if os.environ.get('NOA_CREATIVE_SAVE_ONLY')=='1':
 if os.environ.get('NOA_CREATIVE_FOLDERS_ONLY')=='1':
  release.FILES={p:'deploy/'+p for p in ['noa-app/jukebox/media-location.php','noa-app/jukebox/upload-core.php']}
  release.NEW=set()
+if os.environ.get('NOA_CREATIVE_MEDIA_STAGE_ONLY')=='1':
+ release.FILES={'noa-app/jukebox/media-location.php':'deploy/noa-app/jukebox/media-location.php'}
+ release.NEW=set()
 if os.environ.get('NOA_CREATIVE_LIST_EXPIRY_ONLY')=='1':
  release.FILES={**{'noa-bridge/'+p:'bridge/'+p for p in ['creative-core.php','creative.php']},'noa-creative.js':'deploy/noa-creative.js'}
  release.NEW=set()
