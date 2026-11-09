@@ -114,6 +114,7 @@ jobs:
           import sys
           import noa_ainoa_deploy as release
           release.FILES = {
+              'noa-browser-connect.css': 'deploy/noa-browser-connect.css',
               'noa-browser-connect.php': 'deploy/noa-browser-connect.php',
               'noa-browser-connect.js': 'deploy/noa-browser-connect.js',
               'noa-bridge/browser-control.php': 'bridge/browser-control.php',
@@ -151,7 +152,7 @@ jobs:
               'noa-app/engine/ai-lab.php': 'deploy/noa-app/engine/ai-lab.php',
               'noa-ai-lab.php': 'deploy/noa-ai-lab.php',
           }
-          release.NEW = {'noa-browser-connect.php','noa-browser-connect.js','noa-bridge/browser-control.php','noa-bridge/worker-browser.php','noa-bridge/session-shorts-github.php','noa-bridge/session-shorts-drive.php','noa-bridge/session-shorts-drive-view.php','noa-bridge/session-shorts-storage.php','noa-bridge/session-shorts-assemble.php','noa-bridge/session-shorts-subtitles.php','noa-bridge/session-shorts-prepare.php','noa-app/engine/daily-shorts.json','noa-bridge/session-shorts.php','noa-bridge/worker-shorts.php','noa-bridge/session-subtitles.php','noa-bridge/session-agent.php','noa-bridge/session-agent-media.php','noa-bridge/lab-browser-assets.php','noa-bridge/muvy-timeline.php'}
+          release.NEW = {'noa-browser-connect.css','noa-browser-connect.php','noa-browser-connect.js','noa-bridge/browser-control.php','noa-bridge/worker-browser.php','noa-bridge/session-shorts-github.php','noa-bridge/session-shorts-drive.php','noa-bridge/session-shorts-drive-view.php','noa-bridge/session-shorts-storage.php','noa-bridge/session-shorts-assemble.php','noa-bridge/session-shorts-subtitles.php','noa-bridge/session-shorts-prepare.php','noa-app/engine/daily-shorts.json','noa-bridge/session-shorts.php','noa-bridge/worker-shorts.php','noa-bridge/session-subtitles.php','noa-bridge/session-agent.php','noa-bridge/session-agent-media.php','noa-bridge/lab-browser-assets.php','noa-bridge/muvy-timeline.php'}
           try:
               release.main()
           except Exception:
