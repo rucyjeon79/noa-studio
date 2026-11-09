@@ -15,6 +15,7 @@ import re
 import shutil
 import socket
 import stat
+import subprocess
 import time
 import urllib.request
 
@@ -105,6 +106,26 @@ def node_result(output, exit_code):
     return {'state': 'host_node_start_failed', 'started': False, 'reason': reason, 'exitCode': exit_code}
 
 
+def runtime_libraries(local):
+    """Copy only linked system libraries of the official runner executable."""
+    output = subprocess.check_output(['ldd', str(local)], text=True, stderr=subprocess.DEVNULL, timeout=10)
+    libraries = {}
+    for line in output.splitlines():
+        match = re.search(r'(?:=>\s+|^\s*)(/[^\s]+)\s+\(', line)
+        if not match:
+            continue
+        path = Path(match.group(1))
+        real = path.resolve()
+        if not str(real).startswith(('/usr/lib/', '/lib/')) or not re.fullmatch(r'[a-zA-Z0-9_+.\-]+', path.name):
+            raise ValueError('untrusted_runtime_library')
+        if not real.is_file() or not 0 < real.stat().st_size <= 32_000_000:
+            raise ValueError('invalid_runtime_library')
+        libraries[path.name] = real
+    if 'ld-linux-x86-64.so.2' not in libraries or 'libc.so.6' not in libraries:
+        raise ValueError('incomplete_runtime_libraries')
+    return libraries
+
+
 def install_node(transport):
     """Stage the official Node 24 binary from setup-node and execute it on host.
 
@@ -126,6 +147,8 @@ def install_node(transport):
     created = False
     uploaded = False
     started = False
+    added_libraries = []
+    libraries_created = False
     try:
         try:
             info = sftp.lstat(folder)
@@ -153,10 +176,46 @@ def install_node(transport):
             raise ValueError('runtime_checksum_mismatch')
         sftp.chmod(target, 0o700)
         result = execute(transport, command=target+' --version', parser=node_result)
+        if result.get('reason') in {'shared_library_missing', 'glibc_incompatible'}:
+            libraries = runtime_libraries(local)
+            library_dir = folder + '/lib-' + digest[:16]
+            try:
+                existing = sftp.lstat(library_dir)
+                if not stat.S_ISDIR(existing.st_mode) or sftp.normalize(library_dir) != library_dir:
+                    raise ValueError('unsafe_library_directory')
+            except FileNotFoundError:
+                sftp.mkdir(library_dir, 0o700)
+                libraries_created = True
+            for name, path in libraries.items():
+                content = path.read_bytes()
+                destination = library_dir + '/' + name
+                try:
+                    sftp.lstat(destination)
+                except FileNotFoundError:
+                    with sftp.open(destination, 'wx') as output:
+                        added_libraries.append(destination)
+                        output.set_pipelined(True)
+                        output.write(content)
+                info = sftp.lstat(destination)
+                if not stat.S_ISREG(info.st_mode) or info.st_size != len(content):
+                    raise ValueError('library_size_mismatch')
+                with sftp.open(destination, 'rb') as source:
+                    source.prefetch(file_size=info.st_size, max_concurrent_requests=16)
+                    if hashlib.sha256(source.read(info.st_size+1)).digest() != hashlib.sha256(content).digest():
+                        raise ValueError('library_checksum_mismatch')
+                sftp.chmod(destination, 0o700)
+            loader = library_dir + '/ld-linux-x86-64.so.2'
+            result = execute(transport, command=loader+' --library-path '+library_dir+' '+target+' --version', parser=node_result)
+            result['privateLibraries'] = sorted(libraries)
         started = result.get('started') is True
-        result.update(sha256=digest, bytes=info.st_size, installed=started)
+        result.update(sha256=digest, bytes=local.stat().st_size, installed=started)
         return result
     finally:
+        if not started:
+            for destination in reversed(added_libraries):
+                sftp.remove(destination)
+            if libraries_created:
+                sftp.rmdir(library_dir)
         if uploaded and not started:
             sftp.remove(target)
         if created and not started:
