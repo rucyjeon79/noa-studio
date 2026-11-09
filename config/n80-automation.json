@@ -5,8 +5,12 @@
     "jukebox.android_bridge": {
       "module": "jukebox",
       "workflow": "noa-android.yml",
-      "command": ["scripts/noa_android_host_bridge.py"],
-      "requiredEnv": {"NOA_ANDROID_HOST_NODE": "1"},
+      "command": [
+        "scripts/noa_android_host_bridge.py"
+      ],
+      "requiredEnv": {
+        "NOA_ANDROID_HOST_NODE": "1"
+      },
       "concurrency": "workflow_owned"
     },
     "ai.host_runtime": {
@@ -172,6 +176,24 @@
       "command": [
         "scripts/n80_node_runtime.py",
         "verify"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
+    },
+    "ai.media_handoff": {
+      "module": "ai_lab",
+      "workflow": "noa-ai-worker.yml",
+      "command": [
+        "scripts/n80_media_handoff.py"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
+    },
+    "jukebox.android_publish": {
+      "module": "jukebox",
+      "workflow": "noa-android.yml",
+      "command": [
+        "scripts/noa_apk_deploy.py"
       ],
       "requiredEnv": {},
       "concurrency": "workflow_owned"

@@ -2,9 +2,9 @@ name: N80 AI LAB specialized worker
 on:
   push:
     branches: [main]
-    paths: ['scripts/noa_host_media_runtime.py', 'scripts/noa_host_browser_runtime.py', 'tests/engine/test_host_media_runtime.py', 'runtime/node/**', 'lab/client.mjs', 'lab/muvy.mjs', 'scripts/n80_node_runtime.py', 'scripts/noa_lab_worker.py', 'tests/engine/test_node_runtime.py', 'tests/engine/node_runtime.test.mjs']
+    paths: ['scripts/n80_media_handoff.py', 'tests/engine/test_media_handoff.py', 'lab/**', 'scripts/noa_host_media_runtime.py', 'scripts/noa_host_browser_runtime.py', 'tests/engine/test_host_media_runtime.py', 'runtime/node/**', 'lab/client.mjs', 'lab/muvy.mjs', 'scripts/n80_node_runtime.py', 'scripts/noa_lab_worker.py', 'tests/engine/test_node_runtime.py', 'tests/engine/node_runtime.test.mjs']
   pull_request:
-    paths: ['scripts/noa_host_media_runtime.py', 'scripts/noa_host_browser_runtime.py', 'tests/engine/test_host_media_runtime.py', 'runtime/node/**', 'lab/client.mjs', 'lab/muvy.mjs', 'scripts/n80_node_runtime.py', 'scripts/noa_lab_worker.py', 'tests/engine/test_node_runtime.py', 'tests/engine/node_runtime.test.mjs']
+    paths: ['scripts/n80_media_handoff.py', 'tests/engine/test_media_handoff.py', 'lab/**', 'scripts/noa_host_media_runtime.py', 'scripts/noa_host_browser_runtime.py', 'tests/engine/test_host_media_runtime.py', 'runtime/node/**', 'lab/client.mjs', 'lab/muvy.mjs', 'scripts/n80_node_runtime.py', 'scripts/noa_lab_worker.py', 'tests/engine/test_node_runtime.py', 'tests/engine/node_runtime.test.mjs']
   workflow_run:
     workflows: [N80 Unified Facade Safe Production, Verify and publish AI LAB entry]
     types: [completed]
@@ -38,9 +38,35 @@ jobs:
           python -m unittest discover -s tests/engine -p 'test_host_media_runtime.py' -v
           python -m unittest discover -s tests/engine -p 'test_auto_dispatch.py' -v
           python -m unittest discover -s tests/engine -p 'test_node_runtime.py' -v
+          python -m unittest discover -s tests/engine -p 'test_media_handoff.py' -v
           node --test tests/engine/node_runtime.test.mjs tests/lab/muvy.test.mjs
+  host_handoff:
+    if: github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && github.event_name == 'push'
+    needs: host_candidate
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 4
+    concurrency:
+      group: n80-media-source-handoff
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python -m pip install paramiko==3.5.1
+      - name: Hand the existing media implementation to host N80
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+        run: python scripts/n80_auto.py ai.media_handoff
+      - uses: actions/upload-artifact@v4
+        with:
+          name: n80-media-source-handoff
+          path: host-media-proof/media-handoff.json
+          if-no-files-found: error
+          retention-days: 7
   host_runtime:
-    if: github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && ((github.event_name == 'push' && !contains(github.event.head_commit.message, '[n80-node]')) || (github.event_name == 'workflow_dispatch' && inputs.host_runtime == true))
+    if: github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && ((github.event_name == 'push' && !contains(github.event.head_commit.message, '[n80-node]') && !contains(github.event.head_commit.message, '[n80-handoff]')) || (github.event_name == 'workflow_dispatch' && inputs.host_runtime == true))
     needs: host_candidate
     runs-on: ubuntu-latest
     environment: production
