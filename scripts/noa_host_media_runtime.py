@@ -279,8 +279,12 @@ def main():
                 result['nodeInstallation'] = {'state': 'host_install_failed', 'errorType': type(error).__name__}
             if result['nodeInstallation'].get('started'):
                 try:
-                    from noa_host_browser_runtime import install_browser
-                    browser = install_browser(transport, result['nodeInstallation'])
+                    from noa_host_browser_runtime import install_browser, check_child_process
+                    result['childExecution'] = check_child_process(transport, result['nodeInstallation'])
+                    print('N80_HOST_CHILD_EXECUTION', json.dumps(result['childExecution']), flush=True)
+                    browser = (install_browser(transport, result['nodeInstallation'])
+                               if result['childExecution'].get('supported') is True
+                               else {'state': 'host_child_process_unavailable', 'browserStarted': False, 'installed': False})
                     result['browserInstallation'] = browser
                     result['browserStarted'] = browser.get('browserStarted') is True
                     result['state'] = browser['state']

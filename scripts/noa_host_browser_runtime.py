@@ -13,23 +13,95 @@ ROOT = '/hosting/noastudio/noa-ai-lab/host-runtime'
 START = r'''const {spawn}=require('node:child_process');
 const [loader,libs,browser,profile]=process.argv.slice(2);
 const child=spawn(browser,['--headless','--disable-gpu','--disable-dev-shm-usage','--no-first-run','--user-data-dir='+profile,'--dump-dom','about:blank'],{cwd:require('node:path').dirname(browser),env:{...process.env,LD_LIBRARY_PATH:libs},detached:true,stdio:['ignore','pipe','pipe']});
-let output='',error='',timedOut=false,finished=false;
+let output='',error='',spawnError=null,timedOut=false,finished=false;
 const stop=()=>{if(child.pid)try{process.kill(-child.pid,'SIGKILL')}catch{}};
 const timer=setTimeout(()=>{timedOut=true;stop()},20000);
 child.stdout.on('data',b=>{output+=b.toString();if(output.length>32768)stop()});
 child.stderr.on('data',b=>{error+=b.toString();if(error.length>32768)stop()});
-const done=code=>{if(finished)return;finished=true;clearTimeout(timer);stop();
+const done=(code,signal=null)=>{if(finished)return;finished=true;clearTimeout(timer);stop();
  let reason=timedOut?'browser_start_timeout':'browser_start_failed';
  if(/No usable sandbox|sandbox helper|namespace.*(?:failed|permitted)|Operation not permitted|Running as root/.test(error))reason='host_browser_sandbox_unavailable';
  else if(/shared libraries|GLIBC_/.test(error))reason='browser_library_missing';
  else if(/Permission denied/.test(error))reason='browser_execution_denied';
  const started=code===0&&output.includes('<html')&&output.includes('</html>');
  const diagnostic=error.replace(/\/[^\s:]+/g,'<path>').replace(/\b\d{6,}\b/g,'<number>').slice(-1200);
- console.log(JSON.stringify({state:started?'host_browser_started':reason,browserStarted:started,exitCode:code,diagnostic}));
+ console.log(JSON.stringify({state:started?'host_browser_started':reason,browserStarted:started,exitCode:code,signal,spawnError,diagnostic}));
  process.exitCode=started?0:1;
 };
-child.on('error',()=>done(null));child.on('close',done);
+child.on('error',e=>{spawnError=['EPERM','EACCES','ENOENT','ENOEXEC','EAGAIN','ENOMEM','ETXTBSY'].includes(e.code)?e.code:'UNKNOWN';done(null)});child.on('close',done);
 '''
+CHILD_CHECK = r'''const {spawn}=require('node:child_process');
+const [loader,libs,node,binary]=process.argv.slice(2);
+const run=(kind,command,args)=>new Promise(resolve=>{
+ let output='',error=null,finished=false;
+ const child=spawn(command,args,{env:{...process.env,...(libs?{LD_LIBRARY_PATH:libs}:{})},stdio:['ignore','pipe','pipe']});
+ const timer=setTimeout(()=>{error='TIMEOUT';child.kill('SIGKILL')},5000);
+ const done=(exitCode,signal=null)=>{if(finished)return;finished=true;clearTimeout(timer);resolve({kind,ok:exitCode===0&&(kind!=='node'||/^v24\.\d+\.\d+\s*$/.test(output)),exitCode,signal,error})};
+ child.stdout.on('data',b=>{output+=b.toString();if(output.length>4096)child.kill('SIGKILL')});
+ child.stderr.on('data',()=>{});
+ child.on('error',e=>{error=['EPERM','EACCES','ENOENT','ENOEXEC','EAGAIN','ENOMEM','ETXTBSY'].includes(e.code)?e.code:'UNKNOWN';done(null)});
+ child.on('close',done);
+});
+(async()=>{const results=[await run('node',loader||node,loader?['--library-path',libs,node,'--version']:['--version']),await run('elf',binary,[])];
+ console.log(JSON.stringify({supported:results.every(r=>r.ok),results}));process.exitCode=results.every(r=>r.ok)?0:1})();
+'''
+
+
+def check_child_process(transport, node):
+    """Prove child execution with a tiny verified ELF before transferring Chromium."""
+    from noa_host_media_runtime import execute
+    import paramiko
+    import shlex
+    libs = ROOT+'/lib-'+node['sha256'][:16] if node.get('privateLibraries') else ''
+    node_path = ROOT+'/node-'+node['sha256'][:16]
+    with tempfile.TemporaryDirectory(prefix='n80-child-check-') as temporary:
+        binary = Path(temporary)/'true'
+        shutil.copy2('/usr/bin/true', binary)
+        if libs:
+            subprocess.run(['patchelf','--set-interpreter',libs+'/ld-linux-x86-64.so.2',str(binary)], check=True, timeout=30, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        contents = {'exec-check': binary.read_bytes(), 'process-check': CHILD_CHECK.encode()}
+        paths = {name:ROOT+'/'+name+'-'+hashlib.sha256(body).hexdigest()[:16]+('.cjs' if name=='process-check' else '') for name,body in contents.items()}
+        added = []
+        with paramiko.SFTPClient.from_transport(transport) as sftp:
+            sftp.get_channel().settimeout(20)
+            try:
+                for name,body in contents.items():
+                    path = paths[name]
+                    try:
+                        sftp.lstat(path)
+                    except FileNotFoundError:
+                        with sftp.open(path,'wx') as target:
+                            added.append(path)
+                            target.write(body)
+                    info=sftp.lstat(path)
+                    if not stat.S_ISREG(info.st_mode) or info.st_size!=len(body):
+                        raise ValueError('child_probe_size_mismatch')
+                    with sftp.open(path,'rb') as source:
+                        if source.read(len(body)+1)!=body:
+                            raise ValueError('child_probe_checksum_mismatch')
+                    sftp.chmod(path,0o700)
+                def receipt(output, code):
+                    value=json.loads(output)
+                    if not isinstance(value,dict) or type(value.get('supported')) is not bool or not isinstance(value.get('results'),list) or len(value['results'])!=2:
+                        raise ValueError('invalid_child_probe_receipt')
+                    results=[]
+                    for row,kind in zip(value['results'],['node','elf']):
+                        if not isinstance(row,dict) or row.get('kind')!=kind or type(row.get('ok')) is not bool:
+                            raise ValueError('invalid_child_probe_receipt')
+                        results.append({'kind':kind,'ok':row['ok'] is True and row.get('exitCode')==0,
+                                        'exitCode':row.get('exitCode') if type(row.get('exitCode')) is int and 0<=row['exitCode']<=255 else None,
+                                        'signal':row.get('signal') if row.get('signal') in {'SIGABRT','SIGBUS','SIGILL','SIGKILL','SIGSEGV','SIGSYS','SIGTERM','SIGTRAP'} else None,
+                                        'error':row.get('error') if row.get('error') in {'EPERM','EACCES','ENOENT','ENOEXEC','EAGAIN','ENOMEM','ETXTBSY','UNKNOWN','TIMEOUT'} else None})
+                    return {'supported':value['supported'] is True and code==0 and all(r['ok'] for r in results),'results':results}
+                loader=libs+'/ld-linux-x86-64.so.2' if libs else ''
+                prefix=[loader,'--library-path',libs,node_path] if libs else [node_path]
+                command=shlex.join(prefix+[paths['process-check'],loader,libs,node_path,paths['exec-check']])
+                result=execute(transport,command=command,parser=receipt,deadline_seconds=15)
+                result['state']='host_child_process_started' if result.get('supported') is True else 'host_child_process_unavailable'
+                return result
+            finally:
+                for path in reversed(added):
+                    sftp.remove(path)
 VERIFY = r'''const fs=require('node:fs'),crypto=require('node:crypto'),path=require('node:path');
 (async()=>{try{
  const [folder,manifest,expected]=process.argv.slice(2),raw=fs.readFileSync(manifest);
@@ -71,6 +143,12 @@ def browser_result(output, exit_code):
               'browserStarted': started}
     if isinstance(value.get('diagnostic'), str):
         result['diagnostic'] = value['diagnostic'][:1200]
+    if type(value.get('exitCode')) is int:
+        result['exitCode'] = value['exitCode']
+    if value.get('signal') in {'SIGABRT','SIGBUS','SIGILL','SIGKILL','SIGSEGV','SIGSYS','SIGTERM','SIGTRAP'}:
+        result['signal'] = value['signal']
+    if value.get('spawnError') in {'EPERM','EACCES','ENOENT','ENOEXEC','EAGAIN','ENOMEM','ETXTBSY','UNKNOWN'}:
+        result['spawnError'] = value['spawnError']
     return result
 
 

@@ -62,3 +62,13 @@ interpreter and launches the browser directly. `LD_LIBRARY_PATH` is scoped to th
 browser child. This keeps resource/subprocess paths correct without disabling
 the sandbox. Uploaded bytes are verified on the host against a hashed manifest.
 A host page-load result is still required before reporting browser readiness.
+
+## Latest host execution evidence
+
+[Run 42597521987](https://github.com/rucyjeon79/noa-studio/actions/runs/42597521987)
+verified Node 24.22.2 and all 114 browser files (241,097,066 bytes) on the host.
+The patched browser failed at process startup; no Google request was sent and
+no browser readiness was claimed. Its new files were removed. Because the
+receipt lacked a spawn error/signal, the installer now retains those fixed codes
+and checks child-process/private-interpreter execution with a tiny verified ELF
+before transferring the browser again. Sandbox flags remain unchanged.

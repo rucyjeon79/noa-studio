@@ -51,6 +51,13 @@ class HostRuntimeTest(unittest.TestCase):
         self.assertEqual(result['state'], 'host_browser_sandbox_unavailable')
         self.assertFalse(result['browserStarted'])
 
+    def test_browser_start_failure_retains_only_fixed_process_diagnostics(self):
+        result=browser_result(b'{"state":"browser_start_failed","browserStarted":false,"spawnError":"EPERM","signal":"SIGSYS","exitCode":159}',1)
+        self.assertEqual((result['spawnError'],result['signal'],result['exitCode']),('EPERM','SIGSYS',159))
+        unknown=browser_result(b'{"state":"browser_start_failed","browserStarted":false,"spawnError":"private path","signal":"private text"}',1)
+        self.assertNotIn('spawnError',unknown)
+        self.assertNotIn('signal',unknown)
+
     def test_node_install_requires_a_real_successful_version_response(self):
         self.assertTrue(node_result(b'v24.12.0\n', 0)['started'])
         for output, code in [(b'v24.12.0', 1), (b'v20.0.0', 0), (b'permission denied', 0)]:
