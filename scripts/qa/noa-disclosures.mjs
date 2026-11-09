@@ -17,7 +17,7 @@ const html=`<!doctype html><html lang="ko" data-noa-style="starlight"><head><met
 <div class="nl-listen-row"><details class="nl-music-discovery"><summary><span class="nl-discovery-title">맞춤 추천으로 듣기</span></summary><p>추천 설정</p></details><button class="nl-primary" type="button">추천 재생</button></div>
 <details id="initial" open><summary>이전 작업</summary><p>처음부터 열린 항목</p></details>
 </main></body></html>`;
-const server=createServer((req,res)=>{const path=req.url.split('?')[0];if(path==='/'){res.setHeader('Content-Type','text/html; charset=utf-8');return res.end(html);}try{res.setHeader('Content-Type','text/css');res.end(readFileSync('deploy'+path));}catch{res.statusCode=404;res.end();}});
+const server=createServer((req,res)=>{const path=req.url.split('?')[0];if(path==='/'){res.setHeader('Content-Type','text/html; charset=utf-8');return res.end(html);}try{if(/\.(jpg|png|webp)$/.test(path)){res.setHeader('Content-Type','image/jpeg');return res.end(readFileSync('public/splash/rain-g2-c.jpg'));}res.setHeader('Content-Type',path.endsWith('.js')?'text/javascript':'text/css');res.end(readFileSync('deploy'+path));}catch{res.statusCode=404;res.end();}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const browser=await chromium.launch({...(process.env.NOA_CHROMIUM?{executablePath:process.env.NOA_CHROMIUM}:{channel:'chrome'}),args:['--no-sandbox']});
 mkdirSync('starlight-proof',{recursive:true});
@@ -57,4 +57,46 @@ try{
   console.log('PASS disclosure arrow click, keyboard, dynamic content, duplicate arrows, reduced motion, layout:',width);
   await page.close();
  }
+ await verifyCollectionArrows(browser,`http://127.0.0.1:${server.address().port}`);
 }finally{await browser.close();await new Promise(r=>server.close(r));}
+
+
+// Exercise the actual ACT renderer and editor controls, not a reconstructed summary.
+async function verifyCollectionArrows(browser,base){
+ const musicStyles=[...readFileSync('deploy/noa-music.php','utf8').matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m=>m[1]).join('\n');
+ const themes=JSON.parse(readFileSync('deploy/noa-design.json','utf8')).themes;
+ const css=['noa-music','noa-ui','noa-policy-20261024','noa-starlight','noa-listening','noa-engagement','noa-support','noa-music-vinyl','noa-member-surfaces'];
+ for(const width of [320,390,1280])for(const theme of themes){
+  const page=await browser.newPage({viewport:{width,height:1000},serviceWorkers:'block'});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto(base+'/?group=original&genre=pop-original');
+  const tokens=Object.entries(theme.tokens).map(([k,v])=>'--noa-'+k+':'+v+' !important').join(';');
+  await page.setContent(`<!doctype html><html lang="ko" class="noa-member-ui noa-shell-wide" data-noa-style="starlight" data-noa-precision="1" data-noa-theme="${theme.id}" style="${tokens}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${musicStyles}</style>${css.map(f=>'<link rel="stylesheet" href="/'+f+'.css">').join('')}</head><body class="noa-page noa-sound-page"><main><section id="music-browse"></section><audio id="sound-player"></audio><div hidden><img id="dock-cover"><span id="dock-cover-empty">♫</span></div></main></body></html>`);
+  await page.addScriptTag({url:'/noa-browse.js'});
+  await page.evaluate(()=>{
+   window.records=Array.from({length:34},(_,i)=>({key:'act-song-'+i,title:'별무리의 노래 '+(i+1),genre:'pop-original',ep:i+1,thumb:'/cover.jpg'}));
+   let tree;tree=NoaBrowse.mount({host:document.querySelector('#music-browse'),rows:records,onChange:()=>tree.apply([]),onSelect:()=>{}});tree.apply([]);
+  });
+  for(const file of ['noa-music-vinyl.js','noa-browse-edit.js'])await page.addScriptTag({url:'/'+file});
+  await page.evaluate(()=>NoaBrowseEdit.mount({host:document.querySelector('#music-browse'),rows:records}));
+  const acts=page.locator('.noa-inline-act[data-act-number]');assert.equal(await acts.count(),4);
+  const first=acts.first(),toggle=first.locator('.noa-list-toggle'),arrow=toggle.locator('svg'),edit=first.locator('.noa-act-edit');
+  const closed=await arrow.evaluate(e=>{const c=getComputedStyle(e);return{border:c.borderTopWidth,radius:c.borderRadius,color:c.color,animation:c.animationName,transform:c.transform,width:c.width};});
+  assert.equal(closed.width,'28px');assert.equal(closed.border,'1px');assert.equal(closed.radius,'50%');assert.equal(closed.animation,'noa-disclosure-hint');
+  assert.equal(await edit.locator('svg').evaluate(e=>getComputedStyle(e).animationName),'none','edit pencil must not pulse');
+  const a=await toggle.boundingBox(),b=await edit.boundingBox();assert(a.width>=44&&a.height>=44);assert(a.x+a.width<=b.x+.5,'arrow and pencil remain separate');
+  assert(await first.locator('[data-browse-level="4"]').isHidden());
+  await toggle.click();assert.equal(await toggle.getAttribute('aria-expanded'),'true');assert(await first.locator('[data-browse-level="4"]').isVisible());await page.waitForTimeout(240);
+  const opened=await arrow.evaluate(e=>({animation:getComputedStyle(e).animationName,transform:getComputedStyle(e).transform}));assert.equal(opened.animation,'none');assert.notEqual(opened.transform,closed.transform);
+  await first.screenshot({path:`starlight-proof/act-open-${width}-${theme.id}.png`});
+  await toggle.press('Space');assert.equal(await toggle.getAttribute('aria-expanded'),'false');assert(await first.locator('[data-browse-level="4"]').isHidden());
+  await toggle.press('Enter');assert.equal(await toggle.getAttribute('aria-expanded'),'true');
+  // Opening another ACT must return the first arrow to its collapsed state.
+  await acts.nth(1).locator('.noa-list-toggle').click();assert.equal(await toggle.getAttribute('aria-expanded'),'false');
+  await acts.nth(1).locator('.noa-list-toggle').click();await page.waitForTimeout(240);
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'actual ACT screen must not overflow');
+  await page.locator('[data-browse-level="3"]').screenshot({path:`starlight-proof/act-closed-${width}-${theme.id}.png`});
+  await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await arrow.evaluate(e=>getComputedStyle(e).animationName),'none');assert.equal(await arrow.evaluate(e=>getComputedStyle(e).transitionDuration),'0s');
+  await toggle.click();assert(await first.locator('[data-browse-level="4"]').isVisible(),'reduced motion keeps expansion working');
+  assert.deepEqual(errors,[]);console.log('PASS actual ACT renderer: static cue, open/close, keyboard, sibling collapse, pencil separation, reduced motion',width,theme.id);await page.close();
+ }
+}

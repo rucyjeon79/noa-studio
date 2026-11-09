@@ -1333,3 +1333,15 @@ html[data-noa-style] body :is(main,#noa-menu-drawer,#creative-record,#yt-player,
 @media(prefers-reduced-motion:reduce){
  html[data-noa-style] body :is(main,#noa-menu-drawer,#creative-record,#yt-player,.noa-edit-form) details>summary::after{animation:none!important;transition:none!important}
 }
+
+/* ACT and saved playlist lists use buttons, not native details summaries. */
+html[data-noa-style] body .noa-collection-tools>.noa-list-toggle>svg{
+ box-sizing:border-box;width:28px;height:28px;padding:4px;border:1px solid color-mix(in srgb,var(--noa-accent) 55%,transparent);border-radius:50%;
+ color:var(--noa-accent);background:color-mix(in srgb,var(--noa-accent) 8%,transparent);transform:rotate(0deg);translate:0 0;transition:transform .2s ease;
+}
+html[data-noa-style] body .noa-collection-tools>.noa-list-toggle[aria-expanded=false]>svg{animation:noa-disclosure-hint 3.6s ease-in-out 1s infinite}
+html[data-noa-style] body .noa-collection-tools>.noa-list-toggle[aria-expanded=true]>svg{transform:rotate(180deg);animation:none}
+html[data-noa-style] body .noa-collection-tools>.noa-list-toggle:focus-visible{outline:2px solid var(--noa-accent);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){
+ html[data-noa-style] body .noa-collection-tools>.noa-list-toggle>svg{animation:none!important;transition:none!important}
+}
