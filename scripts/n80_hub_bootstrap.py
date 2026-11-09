@@ -91,7 +91,11 @@ def install():
             digest=manifest['nodeSha256']
             if not re.fullmatch('[a-f0-9]{64}',digest):raise RuntimeError('node_manifest_invalid')
             node='/hosting/noastudio/noa-ai-lab/host-runtime/node-'+digest[:16]
-            if hashlib.sha256(read(node)).hexdigest()!=digest:raise RuntimeError('node_hash_mismatch')
+            channel=transport.open_session(timeout=20);channel.settimeout(45)
+            channel.exec_command('sha256sum '+shlex.quote(node))
+            output=channel.makefile('r').read(512).decode(errors='replace');code=channel.recv_exit_status();channel.close()
+            actual=output.split()[0] if code==0 and output.split() else hashlib.sha256(read(node)).hexdigest()
+            if actual!=digest:raise RuntimeError('node_hash_mismatch')
             args=[node]
             if manifest['privateLibraries']:
                 lib='/hosting/noastudio/noa-ai-lab/host-runtime/lib-'+digest[:16]
