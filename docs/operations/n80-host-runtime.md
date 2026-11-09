@@ -30,8 +30,9 @@ host installation. The normal AI worker schedule is unchanged.
 `scripts/noa_host_media_runtime.py` transfers the official `setup-node` executable
 and required libraries over the existing pinned SFTP connection. Private files
 are checksum verified before execution. Existing runtimes are not overwritten;
-failed newly installed files are removed. Successful runtime files remain on the
-host. No Google login profiles or browser cookies are copied from ChatGPT.
+unverified new files are removed. Verified browser packages may remain for
+diagnostic reuse, with browser readiness still false. Temporary profiles are
+always removed. Successful runtime files remain on the host. No Google login profiles or browser cookies are copied from ChatGPT.
 
 `scripts/noa_host_browser_runtime.py` prepares the official Playwright 1.62.0
 headless browser and its linked libraries. Only English/Korean browser locales
@@ -91,3 +92,13 @@ browser package files passed integrity verification, and browser launch failed
 with empty stderr. Its old receipt discarded the child exit/signal information.
 The launcher now retains allowlisted spawn errors, exit code, termination signal
 and output byte counts, without exposing paths or weakening sandbox settings.
+
+## Distinguish executable startup from page startup
+
+The browser installer now runs a bounded `--version` check before the isolated
+`about:blank` test. A version response does not set `browserStarted`. It retains
+SIGTRAP and other fixed termination signals, plus EPERM spawn errors. The page
+check enables stderr logging without disabling the sandbox. Verified binaries
+are reused for diagnosis instead of retransferring 241 MB on every failed launch;
+package verification, executable startup, page startup and provider authentication
+remain separate results.

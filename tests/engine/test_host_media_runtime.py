@@ -40,6 +40,17 @@ class HostRuntimeTest(unittest.TestCase):
             self.assertIsNone(killed['exitCode'])
             self.assertFalse(killed['browserStarted'])
             self.assertNotIn(folder,json.dumps(killed))
+            browser.write_text('#!/bin/sh\nkill -TRAP $$\n')
+            trapped = launch(browser)
+            self.assertEqual(trapped['signal'],'SIGTRAP')
+            self.assertFalse(trapped['browserStarted'])
+
+    def test_browser_version_does_not_claim_a_page_loaded(self):
+        value=browser_result(b'{"state":"host_browser_executable_started","executableStarted":true,"browserStarted":false,"exitCode":0}',0)
+        self.assertTrue(value['executableStarted'])
+        self.assertFalse(value['browserStarted'])
+        failed=browser_result(b'{"state":"host_browser_executable_started","executableStarted":true,"browserStarted":false,"exitCode":0}',1)
+        self.assertFalse(failed['executableStarted'])
 
     def test_interrupted_startup_retains_the_last_phase_without_claiming_readiness(self):
         with tempfile.TemporaryDirectory() as folder:

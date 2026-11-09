@@ -11,8 +11,9 @@ import tempfile
 
 ROOT = '/hosting/noastudio/noa-ai-lab/host-runtime'
 START = r'''const {spawn}=require('node:child_process');
-const [loader,libs,browser,profile]=process.argv.slice(2);
-const child=spawn(browser,['--headless','--disable-gpu','--disable-dev-shm-usage','--no-first-run','--user-data-dir='+profile,'--dump-dom','about:blank'],{cwd:require('node:path').dirname(browser),env:{...process.env,LD_LIBRARY_PATH:libs},detached:true,stdio:['ignore','pipe','pipe']});
+const [loader,libs,browser,profile,mode='page']=process.argv.slice(2);
+const args=mode==='version'?['--version']:['--headless','--enable-logging=stderr','--disable-gpu','--disable-dev-shm-usage','--no-first-run','--user-data-dir='+profile,'--dump-dom','about:blank'];
+const child=spawn(browser,args,{cwd:require('node:path').dirname(browser),env:{...process.env,LD_LIBRARY_PATH:libs},detached:true,stdio:['ignore','pipe','pipe']});
 let output='',error='',timedOut=false,finished=false,spawnError=null;
 const stop=()=>{if(child.pid)try{process.kill(-child.pid,'SIGKILL')}catch{}};
 const timer=setTimeout(()=>{timedOut=true;stop()},20000);
@@ -23,12 +24,13 @@ const done=(code,signal=null)=>{if(finished)return;finished=true;clearTimeout(ti
  if(/No usable sandbox|sandbox helper|namespace.*(?:failed|permitted)|Operation not permitted|Running as root/.test(error))reason='host_browser_sandbox_unavailable';
  else if(/shared libraries|GLIBC_/.test(error))reason='browser_library_missing';
  else if(/Permission denied/.test(error))reason='browser_execution_denied';
- const started=code===0&&output.includes('<html')&&output.includes('</html>');
+ const executableStarted=mode==='version'&&code===0&&/\b(?:Chromium|Chrome|HeadlessChrome)\b.*\b\d+\.\d+\.\d+\.\d+\b/.test(output);
+ const started=mode==='page'&&code===0&&output.includes('<html')&&output.includes('</html>');
  const diagnostic=error.replace(/\/[^\s:]+/g,'<path>').replace(/\b\d{6,}\b/g,'<number>').slice(-1200);
- console.log(JSON.stringify({state:started?'host_browser_started':reason,browserStarted:started,exitCode:code,signal,spawnError,stdoutBytes:Buffer.byteLength(output),stderrBytes:Buffer.byteLength(error),diagnostic}));
- process.exitCode=started?0:1;
+ console.log(JSON.stringify({state:started?'host_browser_started':executableStarted?'host_browser_executable_started':reason,browserStarted:started,executableStarted,exitCode:code,signal,spawnError,stdoutBytes:Buffer.byteLength(output),stderrBytes:Buffer.byteLength(error),diagnostic}));
+ process.exitCode=started||executableStarted?0:1;
 };
-child.on('error',failure=>{spawnError=['EACCES','ENOENT','ENOEXEC','ENOMEM','EAGAIN','ETXTBSY'].includes(failure.code)?failure.code:'spawn_failed';done(null)});child.on('close',done);
+child.on('error',failure=>{spawnError=['EPERM','EACCES','ENOENT','ENOEXEC','ENOMEM','EAGAIN','ETXTBSY'].includes(failure.code)?failure.code:'spawn_failed';done(null)});child.on('close',done);
 '''
 VERIFY = r'''const fs=require('node:fs'),crypto=require('node:crypto'),path=require('node:path');
 (async()=>{try{
@@ -62,21 +64,22 @@ def browser_result(output, exit_code):
         value = json.loads(output)
     except (ValueError, UnicodeError):
         return {'state': 'host_browser_result_invalid', 'browserStarted': False}
-    allowed = {'host_browser_started', 'browser_start_timeout', 'browser_start_failed',
+    allowed = {'host_browser_started', 'host_browser_executable_started', 'browser_start_timeout', 'browser_start_failed',
                'host_browser_sandbox_unavailable', 'browser_library_missing', 'browser_execution_denied'}
     if not isinstance(value, dict) or value.get('state') not in allowed:
         return {'state': 'host_browser_result_invalid', 'browserStarted': False}
     started = exit_code == 0 and value.get('browserStarted') is True and value.get('state') == 'host_browser_started'
     result = {'state': 'host_browser_started' if started else (value['state'] if value['state'] != 'host_browser_started' else 'browser_start_failed'),
               'browserStarted': started}
+    result['executableStarted'] = exit_code == 0 and value.get('executableStarted') is True and value['state'] == 'host_browser_executable_started'
     if isinstance(value.get('diagnostic'), str):
         result['diagnostic'] = value['diagnostic'][:1200]
     code = value.get('exitCode')
     if code is None or type(code) is int and -255 <= code <= 255:
         result['exitCode'] = code
-    if value.get('signal') in {'SIGABRT','SIGBUS','SIGILL','SIGKILL','SIGSEGV','SIGSYS','SIGTERM'}:
+    if value.get('signal') in {'SIGABRT','SIGBUS','SIGILL','SIGKILL','SIGSEGV','SIGSYS','SIGTERM','SIGTRAP','SIGXCPU','SIGXFSZ','SIGQUIT','SIGHUP','SIGINT','SIGPIPE'}:
         result['signal'] = value['signal']
-    if value.get('spawnError') in {'EACCES','ENOENT','ENOEXEC','ENOMEM','EAGAIN','ETXTBSY','spawn_failed'}:
+    if value.get('spawnError') in {'EPERM','EACCES','ENOENT','ENOEXEC','ENOMEM','EAGAIN','ETXTBSY','spawn_failed'}:
         result['spawnError'] = value['spawnError']
     for name in ('stdoutBytes', 'stderrBytes'):
         if type(value.get(name)) is int and 0 <= value[name] <= 262144:
@@ -166,6 +169,7 @@ def install_browser(transport, node):
     added, directories = [], []
     profile_created = False
     started = False
+    package_verified = False
 
     def mkdir(path):
         try:
@@ -225,17 +229,25 @@ def install_browser(transport, node):
         verified = execute(transport, command=' '.join([node_command, verifier, folder, manifest_path, manifest_sha]), parser=package_result, deadline_seconds=45)
         if verified.get('verified') is not True:
             raise ValueError('host_browser_checksum_mismatch')
+        package_verified = True
         print('N80_BROWSER_BUNDLE_VERIFIED', flush=True)
         command = ' '.join([node_command, starter, folder+'/lib/ld-linux-x86-64.so.2', folder+'/lib', folder+'/browser/'+binary.name, profile])
-        print('N80_HOST_STAGE browser_launch_started', flush=True)
-        result = execute(transport, command=command, parser=browser_result, deadline_seconds=30)
+        print('N80_HOST_STAGE browser_version_started', flush=True)
+        version = execute(transport, command=command+' version', parser=browser_result, deadline_seconds=30)
+        print('N80_BROWSER_VERSION_RESULT', json.dumps(version), flush=True)
+        if version.get('executableStarted') is True:
+            print('N80_HOST_STAGE browser_launch_started', flush=True)
+            result = execute(transport, command=command, parser=browser_result, deadline_seconds=30)
+            result['versionProbe'] = version
+        else:
+            result = dict(version, stage='executable_version')
         started = result.get('browserStarted') is True
-        result.update(bundleSha256=bundle_sha, bytes=total, installed=started)
+        result.update(bundleSha256=bundle_sha, bytes=total, installed=started, packageVerified=True, retainedForDiagnostics=not started)
         return result
     finally:
         if profile_created:
             remove_profile(sftp, profile, profile)
-        if not started:
+        if not package_verified:
             for path in reversed(added):
                 sftp.remove(path)
             for path in sorted(set(directories), key=len, reverse=True):
