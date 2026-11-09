@@ -207,7 +207,7 @@ jobs:
           NOA_SSH_ROOT: ${{ vars.NOA_FTP_ROOT || '/hosting/noastudio/html' }}
         run: |
           python3 -m pip install --user 'paramiko==3.5.1'
-          python3 scripts/noa_apk_deploy.py
+          python3 scripts/n80_auto.py jukebox.android_publish
       - name: Retain verified n80 Android publication receipt
         uses: actions/upload-artifact@v4
         with:

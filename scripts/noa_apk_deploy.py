@@ -11,6 +11,10 @@ import zipfile
 import time
 import paramiko
 from noa_android_host_bridge import verify_apk
+from n80_auto import plan
+
+# The existing Android workflow is a build helper for N80, not another publisher.
+plan('jukebox.android_publish', os.environ)
 
 apk=Path('artifact/app-debug.apk')
 with zipfile.ZipFile(apk) as archive:
@@ -25,6 +29,12 @@ if not re.fullmatch('[a-f0-9]{40}',commit) or not re.fullmatch('[1-9][0-9]*',run
 verify_apk(apk, proof.get('hostNode'), commit)
 data=apk.read_bytes();sha=hashlib.sha256(data).hexdigest()
 if proof.get('certificateSha256')!='f77427fe2f2e174aeac75e6734875b9106ee13072c49cfc8146b43075764271b' or proof.get('debuggable') is not False or proof['files']['noa-studio-release.apk']['sha256']!=sha:raise RuntimeError('Invalid signed release proof')
+aab_path=Path('artifact/noa-studio-release.aab')
+if aab_path.is_symlink() or not aab_path.is_file() or not 0<aab_path.stat().st_size<=150*1048576:raise RuntimeError('Invalid Play bundle')
+aab=aab_path.read_bytes();aab_sha=hashlib.sha256(aab).hexdigest()
+if proof.get('files',{}).get('noa-studio-release.aab')!={'sha256':aab_sha,'bytes':len(aab)}:raise RuntimeError('Play bundle proof mismatch')
+with zipfile.ZipFile(aab_path) as archive:
+ if not {'BundleConfig.pb','base/manifest/AndroidManifest.xml'}.issubset(archive.namelist()):raise RuntimeError('Invalid Play bundle structure')
 transport=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022))
 transport.get_security_options().key_types=('ssh-ed25519',)
 try:
@@ -72,13 +82,34 @@ try:
   if digest(path+'.upload')!=sha:raise RuntimeError('APK transfer mismatch')
   sftp.chmod(path+'.upload',0o644);sftp.rename(path+'.upload',path)
  if digest(path)!=sha:raise RuntimeError('Published APK hash mismatch')
+ # Keep the signed Play build in the host's private N80-owned area, not only CI.
+ bundle_root='/hosting/noastudio/noa-android-builds'
+ if not exists(bundle_root):sftp.mkdir(bundle_root,0o700)
+ bundle_info=sftp.lstat(bundle_root)
+ if not stat.S_ISDIR(bundle_info.st_mode) or bundle_info.st_mode&0o077 or sftp.normalize(bundle_root)!=bundle_root:raise RuntimeError('Unsafe host build directory')
+ bundle_name='noa-studio-android-build-'+number+'.aab'
+ bundle_path=bundle_root+'/'+bundle_name
+ if exists(bundle_path):
+  if not stat.S_ISREG(sftp.lstat(bundle_path).st_mode) or sftp.normalize(bundle_path)!=bundle_path or digest(bundle_path)!=aab_sha:raise RuntimeError('Existing host Play bundle differs')
+ else:
+  temporary=bundle_path+'.'+run_id+'.upload'
+  try:
+   with sftp.open(temporary,'wx') as f:f.set_pipelined(True);f.write(aab)
+   sftp.chmod(temporary,0o600)
+   if digest(temporary)!=aab_sha:raise RuntimeError('Play bundle transfer mismatch')
+   sftp.rename(temporary,bundle_path)
+  finally:
+   if exists(temporary):sftp.remove(temporary)
+ if digest(bundle_path)!=aab_sha:raise RuntimeError('Host Play bundle readback mismatch')
  # Verify public APK before advertising it to installed apps.
  url='https://noastudio.ai.kr/'+name
  with urllib.request.urlopen(url+'?verify='+run_id,timeout=45) as response:
   if response.status!=200 or hashlib.sha256(response.read()).hexdigest()!=sha:raise RuntimeError('HTTP APK verification failed')
  metadata=json.dumps({'schemaVersion':1,'app':'NOA STUDIO','applicationId':'kr.ai.noastudio','file':name,'sha256':sha,
   'build':number,'versionCode':int(number),'versionName':'2.0.'+number,'type':'release-apk','certificateSha256':proof['certificateSha256'],'requiresMigrationFromDebugBuild13':True,
-  'engine':'n80','commit':commit,'runId':run_id,'publishedAt':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())},separators=(',',':')).encode()
+  'engine':'n80','authority':'N80 Engine','module':'jukebox','operation':'jukebox.android_publish',
+  'hostBuild':{'destination':'existing_noa_host','aabFile':bundle_name,'aabSha256':aab_sha,'aabBytes':len(aab),'state':'verified_on_host','playPublication':'not_connected'},
+  'commit':commit,'runId':run_id,'publishedAt':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())},separators=(',',':')).encode()
  def replace_checked(target,content,before):
   if exists(target):
    if not stat.S_ISREG(sftp.lstat(target).st_mode) or digest(target)!=before:raise RuntimeError('Concurrent release change')
