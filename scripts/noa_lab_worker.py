@@ -1,4 +1,4 @@
-"""Run the existing N80 MUVY/media queues with runner-only intermediate processing."""
+"""Run the existing N80 MUVY/media queues with N80-owned host Node and final-only media processing."""
 import json
 
 
@@ -27,8 +27,18 @@ def main():
     from noa_n80_ai_worker import worker_key
     # The existing queue, leases, flags, cost limits and approval rules remain authoritative.
     key=worker_key().decode()
-    for entry in ('lab/muvy.mjs','lab/worker.mjs'):
-        subprocess.run(['node',entry],input=json.dumps({'key':key}),text=True,check=True)
+    from n80_node_runtime import execute_muvy
+    failed = False
+    try:
+        execute_muvy(key)
+    except Exception:
+        # Unknown host completion must never start a second provider invocation.
+        print('N80_NODE_UNCONFIRMED no_local_retry', flush=True)
+        failed = True
+    # Existing media executor keeps its own N80 queue and final-publication guard.
+    subprocess.run(['node','lab/worker.mjs'],input=json.dumps({'key':key}),text=True,check=True)
+    if failed:
+        raise RuntimeError('n80_node_execution_unconfirmed')
 
 if __name__ == '__main__':
     main()

@@ -5,8 +5,12 @@
     "ai.host_runtime": {
       "module": "ai_lab",
       "workflow": "noa-ai-worker.yml",
-      "command": ["scripts/noa_host_media_runtime.py"],
-      "requiredEnv": {"NOA_HOST_MEDIA_RUNTIME": "1"},
+      "command": [
+        "scripts/noa_host_media_runtime.py"
+      ],
+      "requiredEnv": {
+        "NOA_HOST_MEDIA_RUNTIME": "1"
+      },
       "concurrency": "workflow_owned"
     },
     "ai.text": {
@@ -142,6 +146,48 @@
       ],
       "requiredEnv": {},
       "concurrency": "workflow_owned"
+    },
+    "engine.node_install": {
+      "module": "ai_lab",
+      "workflow": "noa-ai-worker.yml",
+      "command": [
+        "scripts/n80_node_runtime.py",
+        "install"
+      ],
+      "requiredEnv": {
+        "N80_NODE_INSTALL": "1"
+      },
+      "concurrency": "workflow_owned"
+    },
+    "engine.node_verify": {
+      "module": "ai_lab",
+      "workflow": "noa-ai-worker.yml",
+      "command": [
+        "scripts/n80_node_runtime.py",
+        "verify"
+      ],
+      "requiredEnv": {},
+      "concurrency": "workflow_owned"
+    }
+  },
+  "runtimes": {
+    "node": {
+      "authority": "N80 Engine",
+      "module": "ai_lab",
+      "executor": "existing_noa_host",
+      "entry": "runtime/node/worker.mjs",
+      "operations": [
+        "engine.status",
+        "ai.muvy"
+      ],
+      "queue": "existing_muvy_operations",
+      "permission": "existing_signed_lab_worker",
+      "completion": "existing_lease_and_completion_hash",
+      "deadlineSeconds": 240,
+      "maxTasksPerTick": 24,
+      "daemon": false,
+      "maxTasksPerInvocation": 1,
+      "tickBudgetSeconds": 1200
     }
   }
 }

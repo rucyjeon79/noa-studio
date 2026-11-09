@@ -1,3 +1,5 @@
+import {LabClient} from './client.mjs';
+export {LabClient} from './client.mjs';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -11,10 +13,6 @@ import {measureLoudness,masterAudio} from './mastering.mjs';
 import {createMusic} from './creation.mjs';
 import {accessToken,uploadVideo,verifyChannelVideo,videoAnalytics} from './youtube.mjs';
 const ORIGIN='https://noastudio.ai.kr';
-export class LabClient {
- constructor(key,base=ORIGIN){this.key=key;this.base=base;}
- async call(action,body=null,query={},binary=false){const params=new URLSearchParams({action,...query}),method=body===null?'GET':'POST',raw=body===null?'':JSON.stringify(body),ts=String(Math.floor(Date.now()/1000)),nonce=crypto.randomBytes(16).toString('hex');const signed=[method,params.toString(),crypto.createHash('sha256').update(raw).digest('hex'),ts,nonce].join('\n');const response=await fetch(this.base+'/noa-bridge/lab-worker.php?'+params,{method,body:body===null?undefined:raw,redirect:'error',signal:AbortSignal.timeout(binary?120000:60000),headers:{'Content-Type':'application/json','X-NOA-Timestamp':ts,'X-NOA-Nonce':nonce,'X-NOA-Signature':crypto.createHmac('sha256',this.key).update(signed).digest('hex')}});if(!response.ok)throw Error('lab_api_http_'+response.status);return binary?Buffer.from(await response.arrayBuffer()):response.json();}
-}
 export async function publishFinal(client,auth,format,file,manifest){
  const bytes=(await fs.stat(file)).size,body={...auth,format,sha256:manifest.sha256,bytes,manifest};
  const reservation=await client.call('prepare_final',body);
