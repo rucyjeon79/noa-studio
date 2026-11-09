@@ -35,7 +35,7 @@ function noa_engine_modules(): array {
         'ai_lab'=>array_values(array_unique(array_merge(['noa-app/engine/creative.php','noa-bridge/creative.php','noa-bridge/creative-core.php','noa-bridge/creative-publication.php','noa-bridge/muvy-core.php','noa-bridge/lab-publication.php','noa-app/engine/service-runtime.php','noa-ai-lab.php','noa-app/engine/ai-lab.php','noa-app/engine/explorer.php','noa-channel-explorer.js','noa-explorer.css','noa-ai-lab.js','noa-muvy-panel.php'],array_column(n80_lab_tools(),'page')))),
         'admin'=>['noa-library.php','noa-app/engine/workspaces.php'], 'community'=>['bbs/board.php'],
         'database'=>['noa-app/database/core.php'],
-        'identity'=>['noa-bridge/member-access.php','noa-bridge/subscription-access.php'],
+        'identity'=>['noa-bridge/member-access.php','noa-bridge/subscription-access.php','noa-app/engine/session-policy.php'],
         'commerce'=>['noa-bridge/support.php','noa-bridge/ainoa-points.php'],
         'notifications'=>['noa-bridge/notifications.php'],
         'catalog'=>['noa-app/taxonomy/index.php','noa-app/engine/personal-song-index.php'],

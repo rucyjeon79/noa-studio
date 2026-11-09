@@ -1,13 +1,17 @@
 <?php
 declare(strict_types=1);require_once __DIR__.'/common.php';require_once __DIR__.'/noa-bridge/social-policy.php';
 header('Cache-Control: private, no-store');header('Content-Type: text/html; charset=utf-8');
+if(!empty($member['mb_id'])){
+ if(($_GET['view']??'')==='drawer'){echo '<div class="noa-social-options"><a href="/" target="_top">로그인되었습니다. 홈으로 이동</a></div>';exit;}
+ header('Location: /',true,303);exit;
+}
 $return='/';$providers=nsp_status((array)$config);$esc=static fn($s)=>htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');
 function noa_login_options(array $providers,string $return,string $prefix='noa'):void { ?>
 <div class="noa-social-options">
 <?php foreach($providers as $provider=>$p): ?>
 <div class="noa-social-option">
 <?php if($p['ready']): ?>
-<a class="noa-social-provider noa-social-<?=$provider?>" href="/bbs/login.php?provider=<?=ucfirst($provider)?>&amp;redirect_to_idp=1&amp;url=<?=rawurlencode($return)?>">
+<a class="noa-social-provider noa-social-<?=$provider?>" target="_top" href="/bbs/login.php?provider=<?=ucfirst($provider)?>&amp;redirect_to_idp=1&amp;url=<?=rawurlencode($return)?>">
 <?php else: ?>
 <button class="noa-social-provider noa-social-<?=$provider?>" type="button" disabled aria-describedby="<?=$prefix?>-<?=$provider?>-status">
 <?php endif; ?>
@@ -32,7 +36,7 @@ if(($_GET['view']??'')==='drawer'){
 <p class="noa-social-note">처음 방문하셨나요? 소셜 계정으로 가입할 수 있어요.</p>
 </section>
 <div class="noa-login-divider"><span>또는 아이디로 로그인</span></div>
-<form class="noa-login-form" name="flogin" action="/bbs/login_check.php" method="post">
+<form class="noa-login-form" name="flogin" target="_top" action="/bbs/login_check.php" method="post">
 <input type="hidden" name="url" value="<?=$esc($return)?>">
 <label for="login_id">아이디 또는 가입 이메일</label><input id="login_id" name="mb_id" type="text" required maxlength="254" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="아이디 또는 이메일">
 <label for="login_pw">비밀번호</label><input id="login_pw" name="mb_password" type="password" required autocomplete="current-password" placeholder="NOA STUDIO 비밀번호" aria-describedby="noa-login-help">

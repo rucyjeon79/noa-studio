@@ -26,7 +26,7 @@ jobs:
         if: always()
         with: {name: login-candidate, path: login-proof/candidate/, retention-days: 7}
   deploy:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[login-continuity]')
     needs: verify
     environment: production
     runs-on: ubuntu-latest
