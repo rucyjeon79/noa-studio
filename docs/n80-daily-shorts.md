@@ -1,6 +1,24 @@
-# 이 노래가 좋아 — daily Shorts production
+# 이 노래가 좋아 — N80 automatic Shorts production
 
-The user authorized selecting a song, producing a 9:16 Short lasting 49–59 seconds, publishing one daily at 12:00 Asia/Seoul to the existing playlist, and connecting its exact original video. `config/n80-daily-shorts.json` defines the verified channel, playlist and exclusions. The schedule is owned by N80 Auto, called inside the registered ai.daily_shorts operation in the existing worker by the existing 15-minute GitHub Actions runner. It is persisted in lab:state.json:campaigns.daily_shorts, independent of a conversation. No ChatGPT automation is enabled for this campaign.
+The user authorized selecting a song, producing a 9:16 Short lasting 49–59 seconds, publishing one every Monday, Wednesday and Friday at 12:00 Asia/Seoul (updated 2026-11-09) to the existing playlist, and connecting its exact original video. `config/n80-daily-shorts.json` defines the verified channel, playlist and exclusions. The schedule is owned by N80 Auto, called inside the registered ai.daily_shorts operation in the existing worker by the existing 15-minute GitHub Actions runner. It is persisted in lab:state.json:campaigns.daily_shorts, independent of a conversation. No ChatGPT automation is enabled for this campaign.
+
+## Current completion requirement (2026-11-09)
+
+The user requires N80 to generate and publish without this conversation or manual
+image/video downloading, uploading or handoff. The session executor is a temporary
+operator interface, not the requested finished automation. Existing MP3s, song
+metadata, character sheets and generation receipts must be reused. A working
+subscription browser executor and original-file recovery are still missing;
+registering this schedule must never imply those stages are complete.
+
+`publishIsoWeekdays` uses ISO weekdays `[1,3,5]`. Preparation starts at 08:00 KST
+on those same days for the noon publication target. The existing N80 worker clock
+is unchanged; it does not provide second-accurate publication. A verified upload
+must be scheduled ahead in YouTube for noon. At or after a missed noon, select
+the next configured weekday, never backdate or compensate with duplicate uploads.
+Unstarted off-day slots are cleared. Existing job/upload identities and evidence
+are retained; they are not silently re-dated. Empty startup and subtitle claims
+cannot create work on a removed weekday.
 
 ## One execution
 

@@ -1,8 +1,9 @@
 <?php
 declare(strict_types=1);
-define('_GNUBOARD_',true);require __DIR__.'/../../bridge/session-shorts-subtitles.php';require __DIR__.'/../../bridge/session-shorts.php';
+define('_GNUBOARD_',true);require __DIR__.'/../../bridge/session-shorts-subtitles.php';require_once __DIR__.'/../../bridge/session-shorts.php';
 function check_caption(bool $ok,string $why):void{if(!$ok)throw new RuntimeException($why);}
 function reject_caption(callable $f,string $why):void{try{$f();}catch(DomainException|InvalidArgumentException $e){return;}throw new RuntimeException($why);}
+$policy=json_decode(file_get_contents(__DIR__.'/../../config/n80-daily-shorts.json'),true);
 $now=strtotime('2026-11-09T08:00:00+09:00');
 $lyrics="[Chorus]\n(soft gayageum harmonics, female vocal)\n별빛이 내려와\n(I love you)\n(아~)";
 check_caption(sa_lyric_lines($lyrics)===['별빛이 내려와','(I love you)','(아~)'],'Remove explicit directions while preserving sung parentheses');
@@ -12,8 +13,10 @@ $testSource=array_replace($source,['lyrics'=>'별빛이 내려와']);$testJob=['
 sa_subtitle_save($testJob,['subtitles'=>['sourceAudioSha256'=>$source['audioSha256'],'lyricsSha256'=>hash('sha256',$testSource['lyrics']),'method'=>'faster-whisper','model'=>'small','recognitionDiscardedWords'=>1,
  'cues'=>[['line'=>1,'text'=>'별빛이 내려와','startMs'=>2000,'endMs'=>4000,'match'=>1,'probability'=>.95,'maxWordGapMs'=>0]]]]);
 check_caption($testJob['agent']['subtitles']['status']==='needs_review','Discarded ASR words never silently become ready');
-$s=['config'=>['workerEnabled'=>true],'campaigns'=>['daily_shorts'=>['enabled'=>true,'preparation'=>['state'=>'analyzed','publishAt'=>'2026-11-09T12:00:00+09:00',
+$s=['config'=>['workerEnabled'=>true],'campaigns'=>['daily_shorts'=>['enabled'=>true,'policy'=>$policy,'preparation'=>['state'=>'analyzed','publishAt'=>'2026-11-09T12:00:00+09:00',
  'report'=>['candidates'=>[['trackKey'=>$source['key'],'sourceRevision'=>2,'audioSha256'=>$source['audioSha256'],'videoId'=>'AAAAAAAAAAA']]]]]]];
+$removed=$s;$removed['campaigns']['daily_shorts']['preparation']['publishAt']='2026-11-10T12:00:00+09:00';
+check_caption(nd_caption_claim($removed,$now,$read)['state']==='preparation_schedule_changed','Do not continue a removed Tuesday slot');
 $first=nd_caption_claim($s,$now,$read);check_caption($first['claimed']&&$first['source']['audioPath']==='/private/source.mp3','Claim existing private original');$b=['lease'=>$first['lease']];
 check_caption(nd_caption_claim($s,$now+1,$read)['state']==='recognizing','No overlapping recognition');
 reject_caption(fn()=>nd_caption_authorize($s,['lease'=>'stale'],$now+1),'Reject stale executor');
