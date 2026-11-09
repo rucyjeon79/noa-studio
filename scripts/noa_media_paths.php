@@ -7,6 +7,15 @@ require_once __DIR__.'/storage.php';require_once __DIR__.'/sound-core.php';requi
 $db=noa_bridge_pdo();$links=[];$createdDirs=[];$committed=false;
 function clean_media_path(string $p):string{$dir=dirname($p);$dir=preg_replace('/ \[v-[a-f0-9]{12}\]$/D','',$dir);return $dir.'/'.basename($p);}
 function replace_paths($v,array $map){if(is_string($v))return $map[$v]??$v;if(is_array($v))foreach($v as $k=>$x)$v[$k]=replace_paths($x,$map);return $v;}
+function stage_media_path(string $source,string $target):bool{
+ if(function_exists('link'))return link($source,$target);
+ // Some shared hosts disable link(). Keep the source readable until SQL commits.
+ $out=fopen($target,'xb');if(!$out)return false;$in=fopen($source,'rb');
+ if(!$in){fclose($out);unlink($target);return false;}
+ try{$ok=stream_copy_to_stream($in,$out)!==false&&fflush($out);chmod($target,0600);}
+ finally{fclose($in);fclose($out);}
+ if(!$ok)unlink($target);return $ok;
+}
 try{
  $db->beginTransaction();$assets=$db->query('SELECT * FROM noa_jukebox_assets ORDER BY song_key FOR UPDATE')->fetchAll(PDO::FETCH_ASSOC);
  foreach($db->query('SELECT status FROM noa_jukebox_uploads FOR UPDATE')as $u)if(!in_array($u['status'],['ready','failed','canceled','cancelled'],true))throw new RuntimeException('active_upload');
@@ -33,7 +42,7 @@ try{
   // Hard links keep the old path readable until the database transaction commits.
   // They do not copy audio bytes and are removed after the switch.
   foreach($moves as $m){$dir=dirname($m['target']);if(!is_dir($dir)){if(!mkdir($dir,0700))throw new RuntimeException('mkdir_failed');$createdDirs[]=$dir;}if(realpath($dir)!==$dir)throw new RuntimeException('unsafe_directory');
-   if(!link($m['source'],$m['target']))throw new RuntimeException('link_failed');$links[]=$m['target'];
+   if(!stage_media_path($m['source'],$m['target']))throw new RuntimeException('stage_failed');$links[]=$m['target'];
    if(filesize($m['target'])!==$m['bytes']||!hash_equals($m['sha256'],hash_file('sha256',$m['target'])))throw new RuntimeException('target_verification_failed');
   }
   $q=$db->prepare('UPDATE noa_jukebox_assets SET audio_path=?,cover_path=? WHERE song_key=?');foreach($updates as $u)$q->execute([$u['audio_path'],$u['cover_path'],$u['key']]);

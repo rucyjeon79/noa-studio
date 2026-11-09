@@ -30,6 +30,13 @@ try{
  ksort($moves);ksort($updates);$plan=array_values($moves);$digest=hash('sha256',json_encode([$plan,$updates],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR));
  $apply=($_POST['apply']??'')==='1';$changedDocs=0;$removed=0;
  if($apply){if(!hash_equals('__PLAN_SHA__',$digest))throw new RuntimeException('plan_changed');
+  // The current cleanup removes only the reviewed public duplicates of private covers.
+  // Direct access is already denied; the authorized stream remains the public entry.
+  $publicDuplicates=[];foreach($assets as $a){$rel=$a['cover_path']??'';if(!$rel)continue;$chosen=nj_file($rel);$p=nj_root().'/'.$rel;
+   if($chosen!==$p&&str_starts_with((string)$chosen,nj_private().'/media/')&&is_file($p)&&!is_link($p)&&hash_equals($a['cover_sha256'],hash_file('sha256',$p)))$publicDuplicates[$p]=$a['cover_sha256'];
+  }ksort($publicDuplicates);
+  if(!hash_equals('__DUPLICATES_SHA__',hash('sha256',json_encode($publicDuplicates,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR))))throw new RuntimeException('duplicate_plan_changed');
+  if($publicDuplicates&&trim((string)file_get_contents(nj_root().'/.htaccess'))!=='Require all denied')throw new RuntimeException('public_media_policy_changed');
   foreach($plan as $m){if(!file_exists($m['target'])){if(!link($m['source'],$m['target']))throw new RuntimeException('link_failed');$links[]=$m['target'];}
    if(filesize($m['target'])!==$m['bytes']||!hash_equals($m['sha256'],hash_file('sha256',$m['target'])))throw new RuntimeException('target_verification_failed');
   }

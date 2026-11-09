@@ -4,9 +4,11 @@ from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
 # Retired one-time plans must never be replayed against a later media inventory.
-PLAN='AUDIT'
+PLAN='643d5437104296e21d906ecb15b2c96ad278f20cfc4af53b12bb6069bd853726'
+if time.time()>1794254400:raise RuntimeError('reviewed_media_plan_expired')
+DUPLICATES='87d51f065d5dcbd633185647abe08b6c9bbd86a2d080aee4418405e5cbc935a3'
 token=secrets.token_hex(32);name='noa-bridge/media-colocate-'+secrets.token_hex(8)+'.php'
-raw=Path('scripts/noa_media_colocate.php').read_text().replace('__EXPIRY__',str(int(time.time())+600)).replace('__TOKEN_SHA__',hashlib.sha256(token.encode()).hexdigest()).replace('__PLAN_SHA__',PLAN).encode()
+raw=Path('scripts/noa_media_colocate.php').read_text().replace('__EXPIRY__',str(int(time.time())+600)).replace('__TOKEN_SHA__',hashlib.sha256(token.encode()).hexdigest()).replace('__PLAN_SHA__',PLAN).replace('__DUPLICATES_SHA__',DUPLICATES).encode()
 t=connect();s=paramiko.SFTPClient.from_transport(t);s.get_channel().settimeout(30);installed=False
 try:
  if s.normalize(ROOT)!=ROOT:raise RuntimeError('wrong_root')
