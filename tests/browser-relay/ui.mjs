@@ -22,7 +22,14 @@ try{
    if(r.request().method()==='POST'){posts++;sent=r.request().postDataJSON();return r.fulfill({status:failPost?409:200,json:failPost?{error:'browser_frame_changed'}:{ok:true}});}
    return r.fulfill({status:failRead?503:200,json:failRead?{error:'unavailable'}:{ok:true,...view}});
   });
+  failRead=width===360;
   await page.goto(base+'/noa-browser-connect.php');
+  if(failRead){
+   await page.getByText('연결 상태 확인 필요',{exact:true}).waitFor();
+   assert.equal(await page.locator('#browser-stage').getAttribute('aria-busy'),'false');
+   assert(!await page.locator('#browser-open').isEnabled());
+   failRead=false;await page.locator('#browser-refresh').click();
+  }
   await page.getByText('연결 화면을 열어 Google 로그인을 진행하세요.',{exact:true}).waitFor();
   await page.waitForFunction(()=>document.documentElement.classList.contains('noa-shell-wide')&&document.querySelector('#noa-account-bar'));
   assert(await page.getByRole('heading',{name:'Gemini·Flow 연결',exact:true}).isVisible());

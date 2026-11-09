@@ -9,17 +9,17 @@ async function api(body){
  try{const r=await fetch('/noa-browser-connect.php?api=1',{credentials:'same-origin',cache:'no-store',signal:abort.signal,...(body?{method:'POST',headers:{'Content-Type':'application/json','X-NOA-CSRF':app.dataset.csrf},body:JSON.stringify(body)}:{})});const v=await r.json();if(!r.ok)throw Error(v.error||'connection_failed');return v;}finally{clearTimeout(timeout);}
 }
 function draw(v){
- state=v;app.dataset.state=v.state||'loading';
- const m=messages[v.state]||['연결 상태를 확인하고 있습니다.','연결 상태 확인 중','잠시만 기다려 주세요.'];
+ state=v;app.dataset.state=available?v.state||'loading':'unavailable';
+ const m=!available?['연결 상태를 확인하지 못했습니다.','연결 상태 확인 필요','상태 다시 확인을 눌러 연결 상태를 불러와 주세요.']:(messages[v.state]||['연결 상태를 확인하고 있습니다.','연결 상태 확인 중','잠시만 기다려 주세요.']);
  const delayed=v.state==='queued'&&Number.isFinite(v.expiresAt)&&v.expiresAt*1000-Date.now()<18*60*1000;
  $('browser-status').textContent=delayed?'연결 준비가 지연되고 있습니다. 상태를 다시 확인하거나 연결을 취소할 수 있습니다.':m[0];
  $('browser-placeholder-title').textContent=delayed?'연결 준비 지연':m[1];
  $('browser-placeholder-help').textContent=delayed?'아직 로그인 화면이 도착하지 않았습니다. 준비가 끝나면 자동으로 표시됩니다.':m[2];
- const hasFrame=v.state==='active'&&!!v.frame,ready=available&&!busy&&hasFrame&&v.inputReady;
+ const hasFrame=available&&v.state==='active'&&!!v.frame,ready=available&&!busy&&hasFrame&&v.inputReady;
  const screen=$('browser-screen');screen.hidden=!hasFrame;
  if(hasFrame){if(screen.getAttribute('src')!==v.frame)screen.src=v.frame;}else screen.removeAttribute('src');
  $('browser-placeholder').hidden=hasFrame;
- $('browser-stage').setAttribute('aria-busy',String(!v.state||v.state==='queued'||v.state==='closing'||v.state==='active'&&!hasFrame));
+ $('browser-stage').setAttribute('aria-busy',String(available&&(!v.state||v.state==='queued'||v.state==='closing'||v.state==='active'&&!hasFrame)));
  $('browser-url').textContent=hasFrame?v.url||'':'';$('browser-url').hidden=!hasFrame||!v.url;
  $('browser-interaction').hidden=!hasFrame;
  for(const b of app.querySelectorAll('[data-target],[data-key],[data-scroll],#browser-type button,#browser-text,#browser-save'))b.disabled=!ready;
