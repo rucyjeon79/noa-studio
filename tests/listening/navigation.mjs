@@ -8,6 +8,7 @@ try{
   const context=await browser.newContext({viewport:{width,height:844}}),page=await context.newPage();
   console.log('CHECK',live?'live':'fixture',width,entry);page.on('pageerror',error=>console.error('PAGE_ERROR',error.message));
   let popups=0;page.on('popup',()=>popups++);
+  if(live)await page.addLocatorHandler(page.getByRole('button',{name:'응원 안내 닫기',exact:true}),button=>button.click());
   if(!live)await context.route(base+'/**',route=>{
    const path=new URL(route.request().url()).pathname;
    if(path==='/noa-listening.js'||path==='/noa-listening-model.js')return route.fulfill({contentType:'application/javascript',body:readFileSync('deploy'+path,'utf8')});
