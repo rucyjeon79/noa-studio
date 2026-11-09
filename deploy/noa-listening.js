@@ -593,12 +593,12 @@ function openSettings(fortuneSetup=false){const trigger=document.activeElement;i
 setInterval(()=>{if(!document.hidden&&!document.querySelector('.nl-dialog')&&state?.theme?.validUntil*1000<Date.now())load();},60000);
 if(!labListening){
  const link=el('a','noa-button','AI LAB에서 맞춤 음악 듣기');
- link.href='/noa-ai-lab.php?tool=listen';link.target='_blank';link.rel='noopener';
+ link.href='/noa-ai-lab.php?tool=listen';link.target='_self';
  const discovery=host.closest('.nl-music-discovery');
  if(discovery){discovery.parentElement.replaceWith(link);return;}
  host.replaceChildren(link);
  const hero=document.querySelector('[data-noa-listen-now]');
- if(hero){hero.href=link.href;hero.target='_blank';hero.rel='noopener';}
+ if(hero){hero.href=link.href;hero.target='_self';hero.removeAttribute('rel');}
 }
 load();document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state?.theme?.validUntil*1000<Date.now())load();});
 })();

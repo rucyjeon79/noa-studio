@@ -56,6 +56,9 @@ if os.environ.get('NOA_MOOD_COLLECTIONS') == 'true':
     paths = ('noa-listening-model.js','noa-listening.js','noa-app/engine/personal-listening.php','noa-app/home.php','noa-music.php','noa-interface-labels.json','noa-ui.js','noa-bridge/lab-worker.php')
     release.FILES = {p: release.FILES[p] for p in paths}
     release.NEW = set()
+if os.environ.get('NOA_LISTENING_NAVIGATION') == 'true':
+    release.FILES = {'noa-listening.js':'deploy/noa-listening.js'}
+    release.NEW = set()
 release.PROTECTED=[p for p in release.PROTECTED if p not in release.FILES]
 release.EXTRA_KNOWN={p:{hashlib.sha256(Path(local).read_bytes()).hexdigest()} for p,local in release.FILES.items() if 'calendar-vendor' in p or 'korean-months' in p or 'calendar-LICENSE' in p}
 if __name__=='__main__':release.main()
