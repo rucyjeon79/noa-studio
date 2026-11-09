@@ -40,7 +40,7 @@ with tempfile.TemporaryDirectory(prefix='n80-drive-http-') as root:
             except urllib.error.URLError: time.sleep(.05)
         else: raise AssertionError('fixture did not start')
         assert status == 200 and 'Google Drive 연결' in body
-        assert headers['Cache-Control'] == 'no-store' and headers['Referrer-Policy'] == 'no-referrer', (dict(headers), body[:2000])
+        assert headers['Cache-Control'] == 'no-store' and headers['Referrer-Policy'] == 'same-origin', (dict(headers), body[:2000])
         assert headers['X-Frame-Options'] == 'DENY' and 'DUMMY_NOT_REAL_SECRET' not in body
         csrf = re.search(r'name="csrf" value="([a-f0-9]+)"', body).group(1)
         before = (Path(root)/'noa-ai-lab/state.json').read_bytes()
@@ -58,7 +58,7 @@ with tempfile.TemporaryDirectory(prefix='n80-drive-http-') as root:
         assert query['code_challenge_method'] == ['S256'] and query['access_type'] == ['offline']
         # Provider cancellation is sanitized and redirected to a clean URL.
         status, headers, body = request('/noa-bridge/lab-oauth.php?state='+query['state'][0]+'&error=access_denied')
-        assert status == 302 and headers['Location'] == path
+        assert status == 302 and headers['Location'] == path and headers['Referrer-Policy'] == 'no-referrer'
         assert 'Google 연결 승인이 취소' in request()[2]
         assert (Path(root)/'noa-ai-lab/state.json').read_bytes() == before
         # Existing YouTube route still requests only its existing permissions.
