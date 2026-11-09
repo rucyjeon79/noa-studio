@@ -50,7 +50,7 @@ class NodeRuntimeTest(unittest.TestCase):
             def shutdown_write(self): pass
             def recv_ready(self): return True
             def recv_stderr_ready(self): return False
-            def recv(self, _): return b'x'*20000
+            def recv(self, _): return b'x'*4194305
             def close(self): self.closed=True
         class Transport:
             def open_session(self, **_): return channel
@@ -60,7 +60,38 @@ class NodeRuntimeTest(unittest.TestCase):
         self.assertTrue(channel.closed)
         self.assertEqual(channel.calls,1)
         self.assertNotIn('f'*64,channel.command)
-        self.assertEqual(json.loads(channel.data)['key'],'f'*64)
+        self.assertNotIn('f'*64,channel.data.decode())
+        self.assertEqual(json.loads(channel.data)['transport'],'n80_auto')
+
+    def test_tools_preserve_the_existing_claim_and_never_repeat_provider_generation(self):
+        task={'id':'a','request':'b','lease':'c','model':'existing','tokens':500,'system':'rules','user':'song'}
+        actions=[]
+        def service(action,body):
+            actions.append(action)
+            return {'ok':True,'task':task,'credential':'private-provider-key'} if action=='muvy_claim' else {'ok':True}
+        provider_calls=[]
+        relay=node.NodeTools('ai.muvy','f'*64,service=service,provider=lambda:provider_calls.append(1) or {'status':200,'body':'{}'})
+        def call(i,action,body={}): return relay.handle({'type':'tool','id':i,'action':action,'body':body})
+        self.assertEqual(call(1,'muvy_claim')['credential'],'n80_tool_transport')
+        call(2,'muvy_provider')
+        with self.assertRaisesRegex(RuntimeError,'node_tool_limit'): call(3,'muvy_provider')
+        self.assertEqual(provider_calls,[1])
+        with self.assertRaisesRegex(RuntimeError,'identity_mismatch'): call(4,'muvy_complete',{'id':'other'})
+        self.assertEqual(actions,['muvy_claim'])
+
+    def test_read_only_probe_cannot_claim_a_task_or_invoke_a_provider(self):
+        relay=node.NodeTools('engine.status','f'*64,service=lambda *args: {'ok':True})
+        with self.assertRaisesRegex(RuntimeError,'not_allowed'):
+            relay.handle({'type':'tool','id':1,'action':'muvy_claim','body':{}})
+
+    def test_lost_provider_reply_cannot_be_resubmitted(self):
+        def fail(): raise TimeoutError('private URL')
+        task={'id':'a','request':'b','lease':'c'}
+        relay=node.NodeTools('ai.muvy','f'*64,service=lambda *args:{'task':task,'credential':'key'},provider=fail)
+        relay.handle({'type':'tool','id':1,'action':'muvy_claim','body':{}})
+        with self.assertRaises(TimeoutError): relay.handle({'type':'tool','id':2,'action':'muvy_provider','body':{}})
+        with self.assertRaisesRegex(RuntimeError,'tool_limit'):
+            relay.handle({'type':'tool','id':3,'action':'muvy_provider','body':{}})
 
     def test_host_failure_does_not_retry_locally_or_block_unrelated_media_queue(self):
         import noa_lab_worker

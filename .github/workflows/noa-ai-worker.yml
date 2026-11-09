@@ -32,6 +32,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.22.2'}
       - run: |
           python -m unittest discover -s tests/engine -p 'test_host_media_runtime.py' -v
           python -m unittest discover -s tests/engine -p 'test_auto_dispatch.py' -v

@@ -16,13 +16,13 @@ def worker_key():
     if len(key)!=64:raise RuntimeError('invalid_worker_key')
     return key
 
-def signed_tick(key,action,body=b'{}'):
+def signed_tick(key,action,body=b'{}',timeout=60):
     query='action='+action
     ts=str(int(time.time()));nonce=secrets.token_hex(16)
     signed='\n'.join(['POST',query,hashlib.sha256(body).hexdigest(),ts,nonce]).encode()
     signature=hmac.new(key,signed,hashlib.sha256).hexdigest()
     request=urllib.request.Request(ORIGIN+'/noa-bridge/lab-worker.php?'+query,data=body,headers={'Content-Type':'application/json','X-NOA-Timestamp':ts,'X-NOA-Nonce':nonce,'X-NOA-Signature':signature})
-    with urllib.request.urlopen(request,timeout=60) as r:result=json.load(r)
+    with urllib.request.urlopen(request,timeout=timeout) as r:result=json.load(r)
     if not result.get('ok'):raise RuntimeError('n80_tick_unavailable')
     return result
 

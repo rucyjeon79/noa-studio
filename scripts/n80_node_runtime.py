@@ -18,7 +18,7 @@ import time
 SOURCE = Path(__file__).resolve().parents[1]
 ROOT = '/hosting/noastudio/noa-ai-lab/host-runtime'
 MANIFEST = ROOT + '/node-current.json'
-FILES = ('runtime/node/worker.mjs', 'lab/client.mjs', 'lab/muvy.mjs')
+FILES = ('runtime/node/worker.mjs', 'lab/muvy.mjs')
 OPERATIONS = {'engine.status', 'ai.muvy'}
 
 
@@ -54,7 +54,7 @@ def command_for(manifest):
     args = [node]
     if manifest['privateLibraries']:
         args = [lib + '/ld-linux-x86-64.so.2', '--library-path', lib, node]
-    args += ['--max-old-space-size=128', '--use-env-proxy', '--dns-result-order=ipv4first', '--no-network-family-autoselection',
+    args += ['--max-old-space-size=128',
              ROOT + '/n80-' + manifest['bundleSha256'][:16] + '/runtime/node/worker.mjs']
     return 'exec ' + shlex.join(args)
 
@@ -65,11 +65,6 @@ def parse_receipt(data, code, operation, invocation, manifest):
     except (ValueError, UnicodeError):
         raise RuntimeError('invalid_node_receipt') from None
     if isinstance(value, dict) and value.get('ok') is False:
-        probes = value.get('networkProbe', {})
-        if isinstance(probes, dict):
-            safe = {name: state for name, state in probes.items()
-                    if name in ('ipv4', 'ipv6', 'loopback_tls') and state in ('connected', 'timeout', 'failed')}
-            if safe: print('N80_NODE_NETWORK_PROBE', json.dumps(safe), flush=True)
         error = value.get('error', '')
         if isinstance(error, str) and re.fullmatch(r'(?:node_[a-z_]{1,70}|invalid_[a-z_]{1,50}|lab_api_http_[1-5][0-9]{2}|muvy_result_delivery_unconfirmed)', error):
             raise RuntimeError(error)
@@ -93,40 +88,127 @@ def parse_receipt(data, code, operation, invocation, manifest):
             'bundleSha256':manifest['bundleSha256'], 'result':result}
 
 
+class NodeTools:
+    """Fixed N80 tool transport. No URL, command or provider selection from Node."""
+    def __init__(self, operation, key, service=None, provider=None):
+        self.operation, self.key = operation, key
+        self.service = service or self.signed_service
+        self.provider = provider or self.provider_request
+        self.task = None
+        self.credential = None
+        self.provider_used = False
+        self.sequence = 0
+        self.counts = {}
+        self.completion = None
+
+    def signed_service(self, action, body):
+        from noa_n80_ai_worker import signed_tick
+        return signed_tick(self.key.encode(), action, json.dumps(body,ensure_ascii=False).encode(), timeout=20)
+
+    def provider_request(self):
+        import urllib.request
+        import urllib.error
+        task = self.task
+        body = {'model':task['model'], 'temperature':.6, 'max_tokens':task['tokens'],
+                'response_format':{'type':'json_object'}, 'messages':[
+                    {'role':'system','content':task['system']}, {'role':'user','content':task['user']}]}
+        request = urllib.request.Request('https://api.x.ai/v1/chat/completions',
+            data=json.dumps(body,ensure_ascii=False).encode(), headers={
+                'Content-Type':'application/json', 'Authorization':'Bearer '+self.credential})
+        class NoRedirect(urllib.request.HTTPRedirectHandler):
+            def redirect_request(self, *args, **kwargs): return None
+        try:
+            response = urllib.request.build_opener(NoRedirect).open(request,timeout=95)
+        except urllib.error.HTTPError as error:
+            response = error
+        with response:
+            status = response.code
+            if status != 200: return {'status':status, 'body':''}
+            data = response.read(2097153)
+        if len(data)>2097152: raise RuntimeError('node_provider_output_limit')
+        return {'status':status,'body':data.decode('utf-8')}
+
+    def handle(self, message):
+        if not isinstance(message,dict) or message.get('type')!='tool' or type(message.get('id')) is not int \
+                or message['id']!=self.sequence+1 or message['id']>8 or not isinstance(message.get('body'),dict):
+            raise RuntimeError('invalid_node_tool')
+        self.sequence=message['id']
+        action, body = message.get('action'), message['body']
+        limits = {'n80_status':1} if self.operation=='engine.status' else {'muvy_claim':1,'muvy_provider':1,'muvy_complete':3,'muvy_failed':1}
+        if action not in limits: raise RuntimeError('node_tool_not_allowed')
+        self.counts[action]=self.counts.get(action,0)+1
+        if self.counts[action]>limits[action]: raise RuntimeError('node_tool_limit')
+        if action in ('n80_status','muvy_claim'):
+            if body: raise RuntimeError('invalid_node_tool_body')
+            result = self.service(action,body)
+            if action=='muvy_claim' and result.get('task'):
+                self.task=result['task'];self.credential=result['credential']
+                result={**result,'credential':'n80_tool_transport'}
+            return result
+        if not self.task: raise RuntimeError('node_claim_required')
+        if action=='muvy_provider':
+            if body or self.provider_used: raise RuntimeError('node_provider_replay_blocked')
+            self.provider_used=True
+            return self.provider()
+        if not self.provider_used or any(body.get(name)!=self.task.get(name) for name in ('id','request','lease')):
+            raise RuntimeError('node_task_identity_mismatch')
+        if action=='muvy_complete':
+            digest=hashlib.sha256(json.dumps(body,sort_keys=True,ensure_ascii=False).encode()).hexdigest()
+            if self.completion is not None and self.completion!=digest: raise RuntimeError('node_completion_changed')
+            self.completion=digest
+        return self.service(action,body)
+
+
 def invoke(transport, manifest, operation, key, *, deadline_seconds=260):
     if operation not in OPERATIONS or not re.fullmatch('[a-f0-9]{64}', key):
         raise RuntimeError('invalid_node_operation')
     invocation = secrets.token_hex(16)
-    request = {'version':1, 'operation':operation, 'invocation':invocation, 'key':key}
+    request = {'version':1, 'operation':operation, 'invocation':invocation, 'transport':'n80_auto'}
+    relay = NodeTools(operation,key)
     channel = transport.open_session(timeout=15)
     started = time.monotonic()
     try:
         channel.settimeout(20)
         channel.exec_command(command_for(manifest))
-        # Credentials travel in SSH stdin, not argv, environment, source or disk.
-        channel.sendall(json.dumps(request).encode())
-        channel.shutdown_write()
+        channel.sendall(json.dumps(request).encode()+b'\n')
         data, errors = bytearray(), bytearray()
+        total, final = 0, None
         while True:
-            if channel.recv_ready(): data.extend(channel.recv(4096))
+            if channel.recv_ready():
+                block=channel.recv(32768);data.extend(block);total+=len(block)
             if channel.recv_stderr_ready(): errors.extend(channel.recv_stderr(4096))
-            if len(data) + len(errors) > 16384:
+            if len(data)>4194304 or total>16777216 or len(errors)>16384:
                 raise RuntimeError('node_output_limit')
+            while b'\n' in data:
+                line, _, rest=data.partition(b'\n');data=bytearray(rest)
+                message=json.loads(line)
+                if isinstance(message,dict) and message.get('type')=='tool':
+                    if final is not None: raise RuntimeError('node_tool_after_receipt')
+                    try:
+                        result=relay.handle(message)
+                        reply={'type':'tool_result','id':message['id'],'ok':True,'result':result}
+                        wire=json.dumps(reply,ensure_ascii=False).encode()+b'\n'
+                        if len(wire)>4194304: raise RuntimeError('node_tool_output_limit')
+                    except Exception as error:
+                        # Ambiguous provider execution is never retried; Node records the existing failed/unconfirmed state.
+                        from urllib.error import HTTPError
+                        code='lab_api_http_'+str(error.code) if isinstance(error,HTTPError) and 100<=error.code<=599 else 'node_transport_failed'
+                        wire=json.dumps({'type':'tool_result','id':message.get('id'),'ok':False,'error':code}).encode()+b'\n'
+                    channel.sendall(wire)
+                else:
+                    if final is not None: raise RuntimeError('duplicate_node_receipt')
+                    final=line
             if channel.exit_status_ready() and not channel.recv_ready() and not channel.recv_stderr_ready():
-                receipt = parse_receipt(bytes(data), channel.recv_exit_status(), operation, invocation, manifest)
-                receipt['elapsedMs'] = round((time.monotonic() - started) * 1000)
+                receipt=parse_receipt(final or b'',channel.recv_exit_status(),operation,invocation,manifest)
+                if data: raise RuntimeError('invalid_node_trailing_output')
+                receipt.update(elapsedMs=round((time.monotonic()-started)*1000),transport='N80 Auto',toolCalls=relay.sequence)
                 return receipt
-            if time.monotonic() - started > deadline_seconds:
-                try:
-                    failed = json.loads(data)
-                except (ValueError, UnicodeError):
-                    failed = None
-                if isinstance(failed, dict) and failed.get('ok') is False:
-                    parse_receipt(bytes(data), 1, operation, invocation, manifest)
+            if time.monotonic()-started>deadline_seconds:
+                if final: parse_receipt(final,1,operation,invocation,manifest)
                 raise RuntimeError('node_response_unconfirmed')
             time.sleep(.05)
     finally:
-        request.pop('key', None)
+        relay.credential=None
         channel.close()
 
 
@@ -176,7 +258,15 @@ def execute_muvy(key):
 
 
 def install():
-    from noa_ainoa_deploy import check_current_candidate
+    import noa_ainoa_deploy as release
+    from noa_release_freshness import BUSAN_ONLY_PATH_PREFIXES
+    # Browser-only changes share this repo but do not change the Node bundle or
+    # installer. Node, shared media-runtime, manifest and workflow changes still block.
+    release.UNRELATED_PATH_PREFIXES = BUSAN_ONLY_PATH_PREFIXES + (
+        'scripts/noa_host_browser_runtime.py', 'docs/operations/n80-host-runtime.md',
+        'tests/engine/test_host_media_runtime.py',
+    )
+    check_current_candidate = release.check_current_candidate
     from noa_full_inventory import connect
     from noa_host_media_runtime import install_node
     from noa_n80_ai_worker import worker_key

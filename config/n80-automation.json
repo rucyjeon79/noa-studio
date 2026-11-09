@@ -187,7 +187,15 @@
       "maxTasksPerTick": 24,
       "daemon": false,
       "maxTasksPerInvocation": 1,
-      "tickBudgetSeconds": 1200
+      "tickBudgetSeconds": 1200,
+      "transport": "existing_n80_auto_tool_channel",
+      "tools": [
+        "n80_status",
+        "muvy_claim",
+        "muvy_provider",
+        "muvy_complete",
+        "muvy_failed"
+      ]
     }
   }
 }

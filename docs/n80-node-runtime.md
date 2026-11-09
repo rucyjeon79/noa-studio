@@ -1,40 +1,45 @@
 # N80 host Node integration
 
-Node is an execution capability of N80 Engine's `ai_lab` module. PHP/MySQL still
-own application requests, permissions, jobs and results. `config/n80-automation.json`
-registers the runtime and fixed installation/verification operations.
+Node is an execution capability of N80 Engine's `ai_lab` module. PHP/MySQL retain
+application requests, permissions, jobs and results. `config/n80-automation.json`
+registers the runtime, tool permissions and fixed installation/verification operations.
 
 | Operation | Executor | Authority and stored result |
 | --- | --- | --- |
-| `engine.status` | Host Node → signed N80 service | Existing `n80_status`; read-only, no generation |
-| `ai.muvy` | Host Node → existing MUVY worker | Existing `muvy_claim`, lease, `muvy_complete` completion hash |
+| `engine.status` | Host Node → N80 Auto tool channel → signed N80 service | Existing `n80_status`; read-only, no generation |
+| `ai.muvy` | Host Node → existing MUVY tools | Existing claim, lease and completion hash |
 | Media analysis/render/publication | Existing N80 media worker | Existing media queue and final-only publication checks |
 
-`noa-ai-worker.yml` remains the single scheduling owner. Its existing installation
-lane activates Node separately from the browser startup attempt. `[n80-node]`
-commits run the candidate tests and activate only the private runtime; they do not
-redeploy PHP, menus or player assets. Installations pin Node 24.22.2, use the existing
-private loader/libraries, verify source hashes, check the current commit, perform
-an authenticated host roundtrip and atomically activate `node-current.json`.
+`noa-ai-worker.yml` remains the scheduling owner. Its existing installation lane
+activates Node separately from browser startup. `[n80-node]` commits run candidate
+tests and activate only the private runtime; PHP, menus and player assets are not
+redeployed. Node 24.22.2 uses the host's existing private loader/libraries. Each
+activation checks runtime/source hashes, current source ownership, an authenticated
+N80 tool roundtrip and the atomic `node-current.json` readback.
 
-Normal Auto ticks read the installed manifest, require the exact source bundle,
-and launch short-lived task processes. Host connections prefer IPv4 and honor
-the hosting account's existing HTTP_PROXY/HTTPS_PROXY/NO_PROXY configuration;
-TLS certificate verification remains enabled. There is no HTTP listener, new cron, secondary
-queue, npm installation on page access, or paid-provider enablement. Credentials
-travel through SSH stdin and remain in memory. Public logs contain only bounded
-receipts. Runtime sources/manifests stay outside the web root.
+Host Node's direct public HTTPS connection timed out in actual testing. Production
+therefore reuses N80 Auto's existing signed communication through the same private
+SSH stdin/stdout channel. Node sends only five registered tool names, never a URL
+or command. The parent validates sequence, operation, claim identity and completion
+replays. The provider endpoint, model, prompt, credentials and enablement come from
+the existing authorized claim. Provider invocation is allowed once per claim;
+unknown responses never cause another paid invocation. Credentials remain in the
+existing Auto transport and are omitted from Node requests and public receipts.
 
-Each host invocation claims at most one MUVY task. The existing Auto tick drains
-up to 24 tasks on one SSH connection, stopping before a new task once its 20-minute
-budget is reached. Remaining work stays in the existing queue. It uses the existing server approval,
-provider settings, job lock, lease and replay-safe completion. Lost replies never
-fall back to local generation. The Node process is limited to 128 MiB JS heap and
-240 seconds; HTTP calls are bounded to 20 seconds (provider generation retains
-its existing 95-second limit). The 300-second canonical lease remains authoritative.
-Media queue processing continues independently within the same N80 Auto invocation
-if the Node operation fails; the overall invocation reports failure.
+There is no HTTP listener, new cron, second queue, npm installation on page access,
+new provider or paid-provider enablement. Normal ticks require the installed source
+bundle, verify its files and launch short-lived processes. Each process handles one
+existing MUVY lease, with a 128 MiB JS heap and a 240-second hard deadline. Completed
+processes flush their receipt and exit, even while stdin remains open.
 
-Activation proves Node execution and signed N80 access, not Gemini/Flow login,
-browser sandbox availability, Android SDK availability or a completed music video.
-Provider/browser operations require their own actual verification.
+The Auto tick drains at most 24 tasks on one SSH connection, stopping before another
+task once its 20-minute budget expires. Remaining work stays in the original queue.
+N80 service calls use a 20-second timeout; provider transport retains its existing
+95-second limit. The original 300-second lease and canonical validators remain in
+force. Unconfirmed Node execution never falls back to local regeneration. The
+separate existing media queue is still processed, and Auto reports the Node failure.
+
+Installation hashes run on the host with coreutils or the existing private Node
+streaming hash; first-time unavailable runtimes retain SFTP byte verification.
+Browser installation remains separately verified. Node integration alone does not
+prove Gemini/Flow login, Android SDK availability or a completed music video.

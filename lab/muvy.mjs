@@ -1,4 +1,3 @@
-import {LabClient} from './client.mjs';
 /** Credentials stay in memory. A lost provider reply is never automatically resubmitted. */
 export async function generateMuvy(task,key,request=fetch){
  let response;try{response=await request('https://api.x.ai/v1/chat/completions',{method:'POST',redirect:'error',signal:AbortSignal.timeout(95000),headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:task.model,temperature:.6,max_tokens:task.tokens,response_format:{type:'json_object'},messages:[{role:'system',content:task.system},{role:'user',content:task.user}]})});}catch{throw Error('provider_unconfirmed');}

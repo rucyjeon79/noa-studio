@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {spawn} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {execute,errorCode} from '../../runtime/node/worker.mjs';
 import {runMuvy} from '../../lab/muvy.mjs';
-const request={version:1,operation:'engine.status',key:'a'.repeat(64),invocation:'b'.repeat(32)};
+const request={version:1,operation:'engine.status',transport:'n80_auto',invocation:'b'.repeat(32)};
 
 test('network diagnosis exposes only fixed error codes, never remote text or credentials',()=>{
   assert.equal(errorCode(new Error('secret URL',{cause:{code:'ENOTFOUND'}})),'node_network_enotfound');
@@ -20,10 +22,28 @@ test('host probe verifies the signed existing N80 route without claiming or gene
 });
 test('reject arbitrary actions, credentials and unauthenticated status envelopes',async()=>{
   let calls=0;const factory=()=>{calls++;return {call:async()=>({ok:true})};};
-  for(const row of [{...request,operation:'shell.run'},{...request,key:'bad'},{...request,invocation:''}])
+  for(const row of [{...request,operation:'shell.run'},{...request,transport:'bad'},{...request,invocation:''}])
     await assert.rejects(execute(row,factory),/invalid_node_request/);
   assert.equal(calls,0);
   await assert.rejects(execute(request,factory),/invalid_n80_status/);
+});
+test('real Node process uses the N80 tool channel and exits with stdin still open',{timeout:5000,skip:!process.version.startsWith('v24.')},async()=>{
+  const child=spawn(process.execPath,[fileURLToPath(new URL('../../runtime/node/worker.mjs',import.meta.url))],{stdio:['pipe','pipe','pipe']});
+  const messages=[];let pending='',error='';
+  child.stderr.on('data',b=>{error+=b;});
+  child.stdout.on('data',b=>{
+    pending+=b;
+    while(pending.includes('\n')){
+      const end=pending.indexOf('\n'),message=JSON.parse(pending.slice(0,end));pending=pending.slice(end+1);messages.push(message);
+      if(message.type==='tool'){
+        assert.equal(message.action,'n80_status');
+        child.stdin.write(JSON.stringify({type:'tool_result',id:message.id,ok:true,result:{ok:true,generationRequests:0,runtime:{engine:'N80 Engine',operation:'n80_status'}}})+'\n');
+      }
+    }
+  });
+  child.stdin.write(JSON.stringify(request)+'\n');
+  const code=await new Promise((resolve,reject)=>{child.on('error',reject);child.on('close',resolve);});
+  assert.equal(code,0,error);assert.equal(messages.length,2);assert.equal(messages[1].result.state,'verified');
 });
 test('one existing MUVY lease per host invocation; an idle queue does not create work',async()=>{
   let claims=0,generated=0,completed=0;
