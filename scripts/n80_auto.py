@@ -20,8 +20,6 @@ def host_owned(operation):
         with urllib.request.urlopen(url, timeout=15) as response:
             state = json.load(response)
     except urllib.error.HTTPError as error:
-        if error.code == 404:
-            return False  # Initial migration has not installed Hub yet.
         raise RuntimeError("n80_hub_ownership_unconfirmed") from None
     if state.get("ok") is not True or state.get("operation") != operation or state.get("owner") not in ("n80_hub", "legacy"):
         raise RuntimeError("n80_hub_ownership_unconfirmed")

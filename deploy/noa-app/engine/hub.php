@@ -73,6 +73,7 @@ function n80_hub_execute(string $root,string $operation,string $id,callable $exe
  $prior=n80_hub_locked($root,function()use($root,$operation,$id){
   $c=n80_hub_read($root,'control.json');if(!in_array($operation,$c['activeOperations']??[],true)||(!empty($c['paused'])&&$operation!=='hub.verify'))throw new DomainException('hub_operation_not_active');
   $s=n80_hub_read($root,'receipts.json');foreach($s as $r)if($r['id']===$id){if($r['operation']!==$operation)throw new DomainException('hub_identity_conflict');return $r;}
+  $issued=(int)hexdec(substr($id,0,8));if($issued>time()+30||$issued<time()-180)throw new DomainException('hub_invocation_expired');
   foreach($s as $r)if($r['operation']===$operation&&$r['state']==='running')throw new DomainException('hub_previous_execution_unconfirmed');
   $s[]=['id'=>$id,'operation'=>$operation,'state'=>'running','startedAt'=>time()];
   // Never prune unresolved execution evidence.

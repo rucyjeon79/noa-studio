@@ -47,7 +47,7 @@ export async function run() {
       for(const [op,row] of Object.entries(operations)){
         if(!beat.control.activeOperations.includes(op)||(beat.control.paused&&op!=='hub.verify'))continue;
         const s=state[op]??={};if(!due(op,row,s,beat.requests[op],now))continue;
-        s.pending??=crypto.randomBytes(16).toString('hex');atomic('scheduler.json',state);
+        s.pending??=Math.floor(Date.now()/1000).toString(16).padStart(8,'0')+crypto.randomBytes(12).toString('hex');atomic('scheduler.json',state);
         try{
           const reply=await call({action:'execute',operation:op,id:s.pending},(row.timeout+10)*1000);
           if(reply.receipt.state==='running') {s.unconfirmed=true;s.nextAt=now+60;} else {s.lastState=reply.receipt.state;s.pending=null;s.unconfirmed=false;s.nextAt=now+(reply.receipt.state==='succeeded'?row.interval:Math.max(row.interval,300));s.requestedAt=beat.requests[op]||0;}

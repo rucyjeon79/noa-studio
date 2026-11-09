@@ -11,12 +11,13 @@ try{
  must(!n80_hub_auth('{"x":1}',['time'=>$ts,'nonce'=>$nonce,'signature'=>$sig],$key,time()),'body alteration rejected');
  must(!n80_hub_auth($raw,['time'=>$ts,'nonce'=>$nonce,'signature'=>$sig],$key,time()+181),'expired authentication rejected');
  n80_hub_nonce($root,$nonce,time());rejects(fn()=>n80_hub_nonce($root,$nonce,time()),'hub_replay');
- $calls=0;$id=str_repeat('2',32);$fn=function()use(&$calls){$calls++;return ['ok'=>true];};
+ rejects(fn()=>n80_hub_execute($root,'hub.verify',str_repeat('1',32),fn()=>['ok'=>true]),'hub_invocation_expired');
+ $calls=0;$invocation=fn($c)=>str_pad(dechex(time()),8,'0',STR_PAD_LEFT).str_repeat($c,24);$id=$invocation('2');$fn=function()use(&$calls){$calls++;return ['ok'=>true];};
  $one=n80_hub_execute($root,'hub.verify',$id,$fn);$two=n80_hub_execute($root,'hub.verify',$id,$fn);
  must($calls===1&&$one['receipt']['state']==='succeeded'&&!empty($two['duplicate']),'lost response idempotency');
- rejects(fn()=>n80_hub_execute($root,'ai.text',str_repeat('3',32),$fn),'not_active');
+ rejects(fn()=>n80_hub_execute($root,'ai.text',$invocation('3'),$fn),'not_active');
  n80_hub_write($root,'receipts.json',[['id'=>str_repeat('3',32),'operation'=>'hub.verify','state'=>'running','startedAt'=>1]]);
- rejects(fn()=>n80_hub_execute($root,'hub.verify',str_repeat('4',32),$fn),'unconfirmed');
+ rejects(fn()=>n80_hub_execute($root,'hub.verify',$invocation('4'),$fn),'unconfirmed');
  foreach(['../common.php','data/dbconfig.php','noa-app/../common.php','noa-bridge//a.php','common.php']as $p)rejects(fn()=>n80_hub_target($web,$p),'not_allowed');
  symlink($base,$web.'/noa-app/linked');rejects(fn()=>n80_hub_target($web,'noa-app/linked/test.php'),'unsafe');
  $data='<?php echo "valid";';$package=['version'=>1,'id'=>str_repeat('5',32),'files'=>[['path'=>'noa-hub-test.php','beforeSha256'=>null,'bytes'=>strlen($data),'sha256'=>hash('sha256',$data),'data'=>base64_encode($data)]]];
