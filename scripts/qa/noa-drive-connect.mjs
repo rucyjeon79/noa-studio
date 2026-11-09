@@ -26,7 +26,13 @@ try{
   assert.equal(await page.locator('input:not([type=hidden])').count(),0,'no manual credential input');
   await button.focus();assert(await button.evaluate(el=>el===document.activeElement));
   assert.equal(errors.length,0,errors.join('\n'));
-  report.push({width,theme,visibleConnection:true,noCredentialInput:true,noOverflow:true,keyboardAccess:true});await context.close();
+  let requestOrigin=null;page.on('request',request=>{if(request.method()==='POST')requestOrigin=request.headers()['origin']});
+  await page.route('https://accounts.google.com/**',route=>route.fulfill({contentType:'text/html',body:'<h1>Isolated Google consent destination</h1>'}));
+  // Model the production origin in the disposable server while letting Chromium
+  // produce the actual Origin header; do not synthesize that request header.
+  await button.click();await page.waitForURL('https://accounts.google.com/**');
+  assert.equal(requestOrigin,base);const target=new URL(page.url());assert.equal(target.searchParams.get('scope'),'https://www.googleapis.com/auth/drive');
+  report.push({width,theme,visibleConnection:true,noCredentialInput:true,noOverflow:true,keyboardAccess:true,nativePostOrigin:true,consentRedirect:true});await context.close();
  }
  writeFileSync(out+'/drive-connect.json',JSON.stringify({provider:'not contacted',checks:report},null,2));
  console.log('Drive connection UI: six layouts, keyboard access, readable consent and no manual credentials passed.');

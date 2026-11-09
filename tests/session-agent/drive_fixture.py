@@ -19,6 +19,7 @@ def create(root):
         shutil.copy(REPO / 'deploy' / file, html / file)
     (html / 'common.php').write_text("""<?php
 session_save_path(dirname(__DIR__).'/sessions');session_start();define('_GNUBOARD_',true);define('G5_PATH',__DIR__);
+if(($_SERVER['HTTP_ORIGIN']??'')==='http://127.0.0.1:8079')$_SERVER['HTTP_ORIGIN']='https://noastudio.ai.kr';
 $role=$_COOKIE['qa_role']??'guest';$is_member=$role!=='guest';$is_admin=$role==='admin'?'super':'';$member=['mb_id'=>'fixture-owner'];
 """)
     subprocess.run(['php', '-r', """define('_GNUBOARD_',true);define('G5_PATH',$argv[1].'/html');

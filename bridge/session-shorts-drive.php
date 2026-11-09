@@ -100,7 +100,10 @@ function nsd_form_check(array $session,array $server,array $post):void {
 /** Admin-only page, served through the already registered OAuth callback URL. */
 function nsd_page():never {
  global $member;$owner=(string)$member['mb_id'];$reason='';$notice='';$p=nd_shorts_policy();
- header('Cache-Control: no-store');header('Referrer-Policy: no-referrer');header('X-Frame-Options: DENY');
+ header('Cache-Control: no-store');
+ // no-referrer makes a browser's same-origin form POST carry Origin: null.
+ // Retain strict Origin+CSRF validation; hide callback codes on the clean redirect.
+ header('Referrer-Policy: '.(isset($_GET['state'])?'no-referrer':'same-origin'));header('X-Frame-Options: DENY');
  $_SESSION['noa_lab_csrf']??=bin2hex(random_bytes(32));$url='/noa-bridge/lab-oauth.php?action=drive';
  try{
   $s=lab_read();$now=time();
