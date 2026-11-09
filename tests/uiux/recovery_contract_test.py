@@ -67,6 +67,9 @@ class RecoveryContract(unittest.TestCase):
   # 2026-11-09 KST: user explicitly requested daily Shorts owned by N80 on the existing host.
   # These campaign handlers use the existing media:worker gate and leased campaign store.
   authorized.update({'bridge/session-shorts.php','bridge/session-shorts-prepare.php','bridge/session-shorts-subtitles.php','bridge/worker-shorts.php'})
+  # 2026-11-09: user requires N80 automatic production with no manual file handoff.
+  # Automatic editing shares that campaign, its media:worker authorization and existing job.
+  authorized.add('bridge/session-shorts-assemble.php')
   # The 2026-10-27 request explicitly adds post likes/comments to popularity.
   # Limit this authorization to the new reaction service and score calculation;
   # native member/board writers and music processing remain protected.
