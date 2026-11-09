@@ -26,12 +26,19 @@ try{
   assert.equal(await page.locator('input:not([type=hidden])').count(),0,'no manual credential input');
   await button.focus();assert(await button.evaluate(el=>el===document.activeElement));
   assert.equal(errors.length,0,errors.join('\n'));
-  let requestOrigin=null;page.on('request',request=>{if(request.method()==='POST')requestOrigin=request.headers()['origin']});
-  await page.route('https://accounts.google.com/**',route=>route.fulfill({contentType:'text/html',body:'<h1>Isolated Google consent destination</h1>'}));
-  // Model the production origin in the disposable server while letting Chromium
-  // produce the actual Origin header; do not synthesize that request header.
-  await button.click();await page.waitForURL('https://accounts.google.com/**');
-  assert.equal(requestOrigin,base);const target=new URL(page.url());assert.equal(target.searchParams.get('scope'),'https://www.googleapis.com/auth/drive');
+  let requestOrigin=null,consentLocation=null;
+  await page.route('**/noa-bridge/lab-oauth.php?action=drive',async route=>{
+   if(route.request().method()!=='POST'){await route.continue();return;}
+   requestOrigin=route.request().headers()['origin'];
+   // Send Chromium's native form body/Origin to the real isolated PHP handler,
+   // capture its first redirect, and never follow it to an external provider.
+   const response=await route.fetch({maxRedirects:0});
+   assert.equal(response.status(),302);consentLocation=response.headers()['location'];
+   await route.fulfill({status:200,contentType:'text/html',body:'<h1>Consent redirect captured</h1>'});
+  });
+  await button.click();await page.getByRole('heading',{name:'Consent redirect captured',exact:true}).waitFor();
+  assert.equal(requestOrigin,base);const target=new URL(consentLocation);
+  assert.equal(target.origin,'https://accounts.google.com');assert.equal(target.searchParams.get('scope'),'https://www.googleapis.com/auth/drive');
   report.push({width,theme,visibleConnection:true,noCredentialInput:true,noOverflow:true,keyboardAccess:true,nativePostOrigin:true,consentRedirect:true});await context.close();
  }
  writeFileSync(out+'/drive-connect.json',JSON.stringify({provider:'not contacted',checks:report},null,2));
