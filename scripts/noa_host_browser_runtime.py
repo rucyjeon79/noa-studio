@@ -11,6 +11,12 @@ import tempfile
 
 ROOT = '/hosting/noastudio/noa-ai-lab/host-runtime'
 START = r'''const {spawn}=require('node:child_process');
+const fs=require('node:fs');
+const hostEnvironment={rootUser:process.getuid?.()===0};
+for(const [name,file] of [['userNamespaceLimit','/proc/sys/user/max_user_namespaces'],['unprivilegedUsernsClone','/proc/sys/kernel/unprivileged_userns_clone'],['apparmorUsernsRestricted','/proc/sys/kernel/apparmor_restrict_unprivileged_userns']]){
+ try{const value=fs.readFileSync(file,'utf8').trim();if(/^\d{1,10}$/.test(value))hostEnvironment[name]=Number(value)}catch{}
+}
+try{const status=fs.readFileSync('/proc/self/status','utf8');for(const name of ['Seccomp','NoNewPrivs']){const value=status.match(new RegExp('^'+name+':\\s*(\\d+)$','m'));if(value)hostEnvironment[name]=Number(value[1])}}catch{}
 const [loader,libs,browser,profile,mode='page']=process.argv.slice(2);
 const args=mode==='version'?['--version']:['--headless','--enable-logging=stderr','--disable-gpu','--disable-dev-shm-usage','--no-first-run','--user-data-dir='+profile,'--dump-dom','about:blank'];
 const child=spawn(browser,args,{cwd:require('node:path').dirname(browser),env:{...process.env,LD_LIBRARY_PATH:libs},detached:true,stdio:['ignore','pipe','pipe']});
@@ -27,7 +33,7 @@ const done=(code,signal=null)=>{if(finished)return;finished=true;clearTimeout(ti
  const executableStarted=mode==='version'&&code===0&&/\b(?:Chromium|Chrome|HeadlessChrome)\b.*\b\d+\.\d+\.\d+\.\d+\b/.test(output);
  const started=mode==='page'&&code===0&&output.includes('<html')&&output.includes('</html>');
  const diagnostic=error.replace(/\/[^\s:]+/g,'<path>').replace(/\b\d{6,}\b/g,'<number>').slice(-1200);
- console.log(JSON.stringify({state:started?'host_browser_started':executableStarted?'host_browser_executable_started':reason,browserStarted:started,executableStarted,exitCode:code,signal,spawnError,stdoutBytes:Buffer.byteLength(output),stderrBytes:Buffer.byteLength(error),diagnostic}));
+ console.log(JSON.stringify({state:started?'host_browser_started':executableStarted?'host_browser_executable_started':reason,browserStarted:started,executableStarted,exitCode:code,signal,spawnError,stdoutBytes:Buffer.byteLength(output),stderrBytes:Buffer.byteLength(error),diagnostic,hostEnvironment}));
  process.exitCode=started||executableStarted?0:1;
 };
 child.on('error',failure=>{spawnError=['EPERM','EACCES','ENOENT','ENOEXEC','ENOMEM','EAGAIN','ETXTBSY'].includes(failure.code)?failure.code:'spawn_failed';done(null)});child.on('close',done);
@@ -84,6 +90,13 @@ def browser_result(output, exit_code):
     for name in ('stdoutBytes', 'stderrBytes'):
         if type(value.get(name)) is int and 0 <= value[name] <= 262144:
             result[name] = value[name]
+    environment = value.get('hostEnvironment')
+    if isinstance(environment, dict):
+        safe = {name: environment[name] for name in ('userNamespaceLimit', 'unprivilegedUsernsClone', 'apparmorUsernsRestricted', 'Seccomp', 'NoNewPrivs')
+                if type(environment.get(name)) is int and 0 <= environment[name] <= 4294967295}
+        if type(environment.get('rootUser')) is bool:
+            safe['rootUser'] = environment['rootUser']
+        result['hostEnvironment'] = safe
     return result
 
 

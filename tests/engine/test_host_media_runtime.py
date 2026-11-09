@@ -52,6 +52,12 @@ class HostRuntimeTest(unittest.TestCase):
         failed=browser_result(b'{"state":"host_browser_executable_started","executableStarted":true,"browserStarted":false,"exitCode":0}',1)
         self.assertFalse(failed['executableStarted'])
 
+    def test_host_environment_evidence_keeps_only_fixed_execution_conditions(self):
+        evidence={'state':'browser_start_failed','browserStarted':False,'hostEnvironment':{
+            'rootUser':False,'userNamespaceLimit':0,'Seccomp':2,'unprivilegedUsernsClone':'private text','credential':'must not escape'}}
+        result=browser_result(json.dumps(evidence).encode(),1)
+        self.assertEqual(result['hostEnvironment'],{'rootUser':False,'userNamespaceLimit':0,'Seccomp':2})
+
     def test_interrupted_startup_retains_the_last_phase_without_claiming_readiness(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder)/'proof/runtime.json'
