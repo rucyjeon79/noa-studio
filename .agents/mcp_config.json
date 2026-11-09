@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "noa-studio": {
+      "serverUrl": "https://noa-studio-assistant.rucyjeon79.chatgpt.site/mcp",
+      "disabled": true,
+      "enabledTools": [
+        "noa_connection_status",
+        "noa_agent_tasks",
+        "noa_agent_read"
+      ],
+      "timeoutSeconds": 180
+    }
+  }
+}
