@@ -3,7 +3,7 @@ import hashlib,json,os,secrets,time,urllib.request,urllib.parse
 from pathlib import Path
 import paramiko
 from noa_full_inventory import connect,ROOT
-# Retired one-time plans must never be replayed against a later media inventory.
+# Cleanup completed 2026-11-10 KST; only a fresh reviewed plan may enable another apply.
 PLAN='AUDIT'
 if os.environ.get('NOA_MEDIA_READ_ONLY')=='1' and PLAN!='AUDIT':raise RuntimeError('read_only_media_operation_required')
 token=secrets.token_hex(32);name='noa-bridge/media-retention-'+secrets.token_hex(8)+'.php'
