@@ -5,7 +5,7 @@ import json
 import os
 import paramiko
 from pathlib import Path
-import io, re, shlex, stat, subprocess, tarfile, time, hmac, secrets, urllib.request
+import io, re, shlex, stat, subprocess, tarfile, time, hmac, secrets, tempfile, urllib.request, urllib.error
 
 
 def connect():
@@ -85,6 +85,8 @@ def install():
                 put(WEB+'/'+target,desired,0o644)
             print('N80_HUB_STAGE php_sources',flush=True)
             for name in ['runner.mjs','launch.mjs']:put(ROOT+'/runtime/'+name,Path('runtime/hub/'+name).read_bytes())
+            put(ROOT+'/client.py',Path('scripts/n80_hub_client.py').read_bytes())
+            put(ROOT+'/operations-guide.md',Path('docs/operations/n80-hub.md').read_bytes())
             manifest=json.loads(read('/hosting/noastudio/noa-ai-lab/host-runtime/node-current.json'))
             digest=manifest['nodeSha256']
             if not re.fullmatch('[a-f0-9]{64}',digest):raise RuntimeError('node_manifest_invalid')
@@ -109,12 +111,25 @@ def install():
                     for name in members:archive.add(name,arcname=name,recursive=False)
                 data=out.getvalue();put(ROOT+'/source-initial.tar.gz',data)
                 put(ROOT+'/source.json',json.dumps({'revision':1,'files':len(members),'sourceCommit':os.environ['GITHUB_SHA'],'sha256':hashlib.sha256(data).hexdigest(),'bytes':len(data),'provider':'N80 Hub'}).encode())
+            if read(ROOT+'/source.bundle') is None:
+                with tempfile.TemporaryDirectory(prefix='n80-hub-')as folder:
+                    bundle=Path(folder)/'source.bundle'
+                    subprocess.run(['git','bundle','create',str(bundle),'HEAD'],check=True,capture_output=True)
+                    subprocess.run(['git','bundle','verify',str(bundle)],check=True,capture_output=True)
+                    data=bundle.read_bytes();put(ROOT+'/source.bundle',data)
+                    source=json.loads(read(ROOT+'/source.json'));source['bundleSha256']=hashlib.sha256(data).hexdigest();source['bundleCommit']=os.environ['GITHUB_SHA']
+                    put(ROOT+'/source.json',json.dumps(source).encode())
             print('N80_HUB_STAGE source_stored',flush=True)
             channel=transport.open_session(timeout=20);channel.settimeout(25)
             channel.exec_command(shlex.join(args+[ROOT+'/runtime/launch.mjs']))
             output=channel.makefile('r').read(1024).decode();code=channel.recv_exit_status();channel.close()
             if code!=0 or 'N80_HUB_' not in output:raise RuntimeError('hub_launch_failed')
             key=read(ROOT+'/access.key').strip()
+            # Prove automation credentials cannot obtain deployment authority.
+            try:native_call(read('/hosting/noastudio/noa-ai-lab/worker.key').strip(),{'action':'status'})
+            except urllib.error.HTTPError as error:
+                if error.code!=401:raise
+            else:raise RuntimeError('automation_key_accepted_for_admin')
             for attempt in range(10):
                 state=json.loads(read(ROOT+'/status.json') or b'{}')
                 receipts=json.loads(read(ROOT+'/receipts.json') or b'[]')
@@ -129,6 +144,9 @@ def install():
                 known=[subprocess.check_output(['git','show',rev+':'+source])for rev in subprocess.check_output(['git','log','--format=%H','--',source],text=True).splitlines()]
                 if old not in known:raise RuntimeError('integration_preimage_changed')
                 package['files'].append({'path':target,'beforeSha256':hashlib.sha256(old).hexdigest(),'sha256':hashlib.sha256(desired).hexdigest(),'bytes':len(desired),'data':base64.b64encode(desired).decode()})
+            for target,source in FILES.items():
+                desired=Path(source).read_bytes();digest=hashlib.sha256(desired).hexdigest()
+                package['files'].append({'path':target,'beforeSha256':digest,'sha256':digest,'bytes':len(desired),'data':base64.b64encode(desired).decode()})
             if package['files']:
                 current=native_call(key,{'action':'status'})
                 receipt=native_call(key,{'action':'release','revision':current['source']['revision'],'package':package})

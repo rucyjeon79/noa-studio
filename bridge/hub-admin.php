@@ -15,6 +15,10 @@ try{
  if(!is_array($body))throw new InvalidArgumentException('hub_body_invalid');
  switch($body['action']??''){
   case 'status':$result=n80_hub_status($root);break;
+  case 'manifest':
+   $paths=$body['paths']??[];if(!is_array($paths)||!array_is_list($paths)||count($paths)>100)throw new InvalidArgumentException('hub_invalid_paths');
+   $files=[];foreach($paths as $path){if(!is_string($path))throw new InvalidArgumentException('hub_invalid_paths');$p=n80_hub_target(dirname(__DIR__),$path);$files[$path]=is_file($p)?['sha256'=>hash_file('sha256',$p),'bytes'=>filesize($p)]:null;}
+   $result=['ok'=>true,'revision'=>n80_hub_read($root,'source.json')['revision']??0,'files'=>$files];break;
   case 'release':$result=n80_hub_release_apply($root,dirname(__DIR__),$body['package']??[],(int)($body['revision']??-1));break;
   case 'recover':$result=['ok'=>n80_hub_release_recover($root,dirname(__DIR__))];break;
   case 'control':
