@@ -52,3 +52,13 @@ Validation currently covers SSH/SFTP-only distinctions, actual process receipts,
 failure redaction, successful Node version parsing, browser sandbox failure, and
 N80 operation ownership. The local action used by daily Shorts is included in
 the operation ownership test.
+
+## Browser loader correction
+
+A local reproduction showed that invoking Chromium through `ld-linux` directly
+makes `/proc/self/exe` identify the loader, breaking ICU/resource discovery. The
+installer now patches a copy of each browser executable to use the private ELF
+interpreter and launches the browser directly. `LD_LIBRARY_PATH` is scoped to the
+browser child. This keeps resource/subprocess paths correct without disabling
+the sandbox. Uploaded bytes are verified on the host against a hashed manifest.
+A host page-load result is still required before reporting browser readiness.
