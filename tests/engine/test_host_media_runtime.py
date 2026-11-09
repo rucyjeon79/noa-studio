@@ -9,10 +9,17 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 from noa_host_media_runtime import interpret, execute, node_result, checksum_result, verify_remote_file, write_evidence
 from unittest.mock import patch
-from noa_host_browser_runtime import browser_result, VERIFY, START
+from noa_host_browser_runtime import browser_result, VERIFY, START, host_prerequisite_result
 
 
 class HostRuntimeTest(unittest.TestCase):
+    def test_missing_proc_is_a_real_host_prerequisite_failure_without_private_details(self):
+        value={'procDirectory':False,'procSelfExecutable':False,'procStatusReadable':False,'errors':{'procDirectory':'ENOENT','procSelfExecutable':'ENOENT','procStatusReadable':'private detail'},'credential':'secret'}
+        result=host_prerequisite_result(json.dumps(value).encode(),0)
+        self.assertEqual(result['state'],'host_proc_unavailable')
+        self.assertEqual(result['errors'],{'procDirectory':'ENOENT','procSelfExecutable':'ENOENT'})
+        self.assertNotIn('credential',result)
+        self.assertEqual(host_prerequisite_result(b'{}',0)['state'],'host_filesystem_unverified')
     def test_existing_private_node_hash_avoids_full_binary_download_without_coreutils(self):
         from types import SimpleNamespace
         import stat

@@ -65,6 +65,34 @@ def package_result(output, exit_code):
     return {'verified': valid}
 
 
+def host_prerequisite_result(output, exit_code):
+    value = json.loads(output)
+    if exit_code != 0 or not isinstance(value, dict):
+        raise ValueError('host_prerequisite_result_invalid')
+    names = ('procDirectory', 'procSelfExecutable', 'procStatusReadable')
+    result = {name:value[name] for name in names if type(value.get(name)) is bool}
+    errors = value.get('errors', {})
+    result['errors'] = {name:errors[name] for name in names if isinstance(errors, dict) and errors.get(name) in {'ENOENT','EACCES','EPERM','ENOTDIR','EINVAL'}}
+    result['state'] = ('host_proc_unavailable' if any(result.get(name) is False for name in names)
+                       else 'host_filesystem_verified' if all(result.get(name) is True for name in names)
+                       else 'host_filesystem_unverified')
+    return result
+
+
+def host_prerequisites(transport, node):
+    from noa_host_media_runtime import execute
+    import shlex
+    # Read only fixed procfs prerequisites; never change the host's mounts or policy.
+    script = r'''const fs=require('node:fs'),result={errors:{}};
+for(const [name,read] of [['procDirectory',()=>fs.statSync('/proc').isDirectory()],['procSelfExecutable',()=>!!fs.readlinkSync('/proc/self/exe')],['procStatusReadable',()=>fs.readFileSync('/proc/self/status').length>0]]){
+ try{result[name]=read()}catch(error){result[name]=false;result.errors[name]=['ENOENT','EACCES','EPERM','ENOTDIR','EINVAL'].includes(error.code)?error.code:'UNKNOWN'}
+}console.log(JSON.stringify(result));'''
+    path = ROOT+'/node-'+node['sha256'][:16]
+    libs = ROOT+'/lib-'+node['sha256'][:16]
+    args = [libs+'/ld-linux-x86-64.so.2','--library-path',libs,path] if node.get('privateLibraries') else [path]
+    return execute(transport, command=shlex.join(args+['-e',script]), parser=host_prerequisite_result, deadline_seconds=15)
+
+
 def browser_result(output, exit_code):
     try:
         value = json.loads(output)

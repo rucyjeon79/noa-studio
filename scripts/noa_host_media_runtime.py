@@ -312,9 +312,14 @@ def main():
                 result['nodeInstallation'] = {'state': 'host_install_failed', 'errorType': type(error).__name__}
             if result['nodeInstallation'].get('started'):
                 try:
-                    from noa_host_browser_runtime import install_browser
-                    write_evidence(result, 'browser_installation')
-                    browser = install_browser(transport, result['nodeInstallation'])
+                    from noa_host_browser_runtime import install_browser, host_prerequisites
+                    write_evidence(result, 'browser_prerequisites')
+                    result['browserPrerequisites'] = host_prerequisites(transport, result['nodeInstallation'])
+                    if result['browserPrerequisites'].get('state') == 'host_proc_unavailable':
+                        browser = {'state':'host_proc_unavailable','browserStarted':False,'installed':False}
+                    else:
+                        write_evidence(result, 'browser_installation')
+                        browser = install_browser(transport, result['nodeInstallation'])
                     result['browserInstallation'] = browser
                     result['browserStarted'] = browser.get('browserStarted') is True
                     result['state'] = browser['state']
