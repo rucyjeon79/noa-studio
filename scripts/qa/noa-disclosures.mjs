@@ -80,6 +80,7 @@ async function verifyCollectionArrows(browser,base){
   await page.evaluate(()=>NoaBrowseEdit.mount({host:document.querySelector('#music-browse'),rows:records}));
   const acts=page.locator('.noa-inline-act[data-act-number]');assert.equal(await acts.count(),4);
   const first=acts.first(),toggle=first.locator('.noa-list-toggle'),arrow=toggle.locator('svg'),edit=first.locator('.noa-act-edit');
+  await page.locator('[data-browse-level="3"]').screenshot({path:`starlight-proof/act-initial-${width}-${theme.id}.png`});
   const closed=await arrow.evaluate(e=>{const c=getComputedStyle(e);return{border:c.borderTopWidth,radius:c.borderRadius,color:c.color,animation:c.animationName,transform:c.transform,width:c.width};});
   assert.equal(closed.width,'28px');assert.equal(closed.border,'1px');assert.equal(closed.radius,'50%');assert.equal(closed.animation,'noa-disclosure-hint');
   assert.equal(await edit.locator('svg').evaluate(e=>getComputedStyle(e).animationName),'none','edit pencil must not pulse');
