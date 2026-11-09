@@ -11,13 +11,16 @@ import types
 import unittest
 from unittest.mock import patch
 import zipfile
+import sys
 
 REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO / 'scripts'))
+from noa_android_host_bridge import NODE_SHA
 ROOT = '/hosting/noastudio/html'
 
 
 class DeploymentTest(unittest.TestCase):
-    def deploy(self, previous=13, conflict=False, corrupt_http=False):
+    def deploy(self, previous=13, conflict=False, corrupt_http=False, missing_host_proof=False):
         files = {ROOT+'/'+p: b'protected' for p in ['index.php','common.php','config.php','data/dbconfig.php']}
         facade = (REPO/'deploy/noa-app/engine/n80.php').read_bytes()
         files[ROOT+'/noa-app/engine/n80.php'] = b'unknown-change' if conflict else facade
@@ -74,12 +77,19 @@ class DeploymentTest(unittest.TestCase):
                 os.chdir(tmp);Path('artifact').mkdir();Path('deploy/noa-app/engine').mkdir(parents=True)
                 Path('deploy/noa-app/engine/n80.php').write_bytes(facade)
                 Path('deploy/noa-download.php').write_bytes(download)
+                host_proof = {'schemaVersion':1,'authority':'N80 Engine','module':'jukebox',
+                    'operation':'jukebox.android_bridge','executionTarget':'existing_noa_host',
+                    'sourceCommit':env['GITHUB_SHA'],'nodeVersion':'v24.22.2','nodeSha256':NODE_SHA,
+                    'bridgeSha256':hashlib.sha256(b'bridge').hexdigest(),'passed':True,
+                    'tests':{'tests':16,'pass':16,'fail':0,'cancelled':0,'skipped':0,'todo':0}}
                 with zipfile.ZipFile('artifact/app-debug.apk','w') as z:
                     z.writestr('AndroidManifest.xml',b'manifest');z.writestr('classes.dex',b'dex')
-                Path('artifact/verification.json').write_text(json.dumps({'versionCode':42,'certificateSha256':'f77427fe2f2e174aeac75e6734875b9106ee13072c49cfc8146b43075764271b','debuggable':False,'files':{'noa-studio-release.apk':{'sha256':hashlib.sha256(Path('artifact/app-debug.apk').read_bytes()).hexdigest()}}}))
+                    z.writestr('assets/noa-native-bridge.js',b'bridge')
+                    z.writestr('assets/n80-android-bridge.json',json.dumps(host_proof))
+                Path('artifact/verification.json').write_text(json.dumps({'versionCode':42,'certificateSha256':'f77427fe2f2e174aeac75e6734875b9106ee13072c49cfc8146b43075764271b','debuggable':False,'hostNode':None if missing_host_proof else host_proof,'files':{'noa-studio-release.apk':{'sha256':hashlib.sha256(Path('artifact/app-debug.apk').read_bytes()).hexdigest()}}}))
                 with patch.dict(os.environ,env), patch.dict('sys.modules',{'paramiko':types.SimpleNamespace(Transport=Transport,SFTPClient=types.SimpleNamespace(from_transport=lambda t:sftp))}), patch('urllib.request.urlopen',fetch):
                     try: runpy.run_path(str(REPO/'scripts/noa_apk_deploy.py'))
-                    except RuntimeError:
+                    except (RuntimeError,ValueError):
                         self.assertEqual(files[release],old)
                         raise
                 self.assertTrue(Path('artifact/n80-android-release.json').exists())
@@ -94,5 +104,7 @@ class DeploymentTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError,'conflict'): self.deploy(conflict=True)
     def test_http_hash_failure_preserves_pointer(self):
         with self.assertRaisesRegex(RuntimeError,'HTTP APK'): self.deploy(corrupt_http=True)
+    def test_missing_host_proof_preserves_pointer(self):
+        with self.assertRaisesRegex(ValueError,'host_node_proof'): self.deploy(missing_host_proof=True)
 
 if __name__=='__main__': unittest.main()

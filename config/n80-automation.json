@@ -2,6 +2,13 @@
   "version": 1,
   "authority": "N80 Auto",
   "operations": {
+    "jukebox.android_bridge": {
+      "module": "jukebox",
+      "workflow": "noa-android.yml",
+      "command": ["scripts/noa_android_host_bridge.py"],
+      "requiredEnv": {"NOA_ANDROID_HOST_NODE": "1"},
+      "concurrency": "workflow_owned"
+    },
     "ai.host_runtime": {
       "module": "ai_lab",
       "workflow": "noa-ai-worker.yml",

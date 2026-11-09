@@ -10,6 +10,7 @@ import urllib.request
 import zipfile
 import time
 import paramiko
+from noa_android_host_bridge import verify_apk
 
 apk=Path('artifact/app-debug.apk')
 with zipfile.ZipFile(apk) as archive:
@@ -21,6 +22,7 @@ if not 0<int(number)<=2100000000:raise RuntimeError('Invalid version code')
 name='noa-studio-android-build-'+number+'.apk'
 commit=os.environ['GITHUB_SHA'];run_id=os.environ['GITHUB_RUN_ID']
 if not re.fullmatch('[a-f0-9]{40}',commit) or not re.fullmatch('[1-9][0-9]*',run_id):raise RuntimeError('Invalid release identity')
+verify_apk(apk, proof.get('hostNode'), commit)
 data=apk.read_bytes();sha=hashlib.sha256(data).hexdigest()
 if proof.get('certificateSha256')!='f77427fe2f2e174aeac75e6734875b9106ee13072c49cfc8146b43075764271b' or proof.get('debuggable') is not False or proof['files']['noa-studio-release.apk']['sha256']!=sha:raise RuntimeError('Invalid signed release proof')
 transport=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022))
