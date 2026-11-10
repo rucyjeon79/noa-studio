@@ -18,8 +18,9 @@ try{
   await page.route('**/noa-ainoa.php?*',r=>r.fulfill({json:{ok:true,member:true,conversation:false}}));
   await page.route('**/noa-login.php?*',r=>r.fulfill({contentType:'text/html',body:'<p>테스트 계정</p>'}));
   await page.route('**/noa-sitemap.php?*',r=>r.fulfill({json:{ok:true,groups:[]}}));
-  let view={state:'disconnected'},sent,failRead=false,failPost=false,posts=0,csrfToken='a'.repeat(64),csrfRejects=0,changeSession=false,failTransport=false;
+  let view={state:'disconnected'},sent,failRead=false,failPost=false,posts=0,csrfToken='a'.repeat(64),csrfRejects=0,changeSession=false,failTransport=false,denyAdmin=false;
   await page.route('**/noa-browser-connect.php?api=1',async r=>{
+   if(r.request().method()==='POST'&&denyAdmin){posts++;return r.fulfill({status:403,json:{error:'admin_required'}});}
    if(r.request().method()==='POST'){posts++;sent=r.request().postDataJSON();if(csrfRejects>0){csrfRejects--;csrfToken='b'.repeat(64);if(changeSession)view={...view,id:'new-session'};return r.fulfill({status:403,json:{error:'request_verification_failed'}});}if(failTransport)return r.abort('timedout');assert.equal(r.request().headers()['x-noa-csrf'],csrfToken,'fresh session token required');if(sent.command==='retry'&&!failPost)view={...view,retryAllowed:false};if(sent.event?.kind==='click'&&!failPost)view={...view,inputReady:false};return r.fulfill({status:failPost?409:200,json:failPost?{error:'browser_frame_changed'}:{ok:true}});}
    return r.fulfill({status:failRead?503:200,json:failRead?{error:'unavailable'}:{ok:true,csrf:csrfToken,...view}});
   });
@@ -116,6 +117,11 @@ try{
    await page.getByText('요청을 전달하지 못했습니다. 상태 다시 확인을 눌러 주세요.',{exact:true}).waitFor();
    assert.equal(posts,beforeTransport+1,'never replay uncertain transport failure');
    assert.equal(await page.locator('#browser-text').inputValue(),'KEEP_REJECTED');failTransport=false;
+   denyAdmin=true;const beforeAdmin=posts;
+   await page.locator('#browser-type button').click();
+   await page.getByText('NOA STUDIO 관리자 로그인을 다시 확인해 주세요.',{exact:true}).waitFor();
+   assert.equal(posts,beforeAdmin+1,'administrator denial must not trigger a CSRF retry');
+   assert.equal(await page.locator('#browser-text').inputValue(),'KEEP_REJECTED');denyAdmin=false;
   }
   failRead=true;await page.locator('#browser-save').click();
   await page.getByText('연결 상태를 불러오지 못했습니다. 상태 다시 확인을 눌러 주세요.',{exact:true}).waitFor();
