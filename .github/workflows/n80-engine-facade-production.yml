@@ -140,11 +140,10 @@ jobs:
           python -m unittest discover -s tests/engine -p test_auto_dispatch.py -v
           python -m unittest discover -s tests/engine -p test_node_runtime.py -v
           python -m py_compile scripts/n80_single_session_deploy.py
+      - uses: ./.github/actions/jukebox-tools
       - name: Verify notification crypto and migrated audio FIFO with isolated data
         run: |
           python -m pip install pillow pywebpush paramiko
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg
           python tests/notifications/push_test.py
           mysql -h127.0.0.1 -uroot -pisolated-noa-ci -e 'CREATE DATABASE jukebox_test'
           python tests/jukebox/make_fixture.py
