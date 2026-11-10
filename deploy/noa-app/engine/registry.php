@@ -21,7 +21,6 @@ function noa_engine_modules(): array {
         'community' => ['label'=>'COMMUNITY','owner'=>'gnuboard','entry'=>'/bbs/board.php?bo_table=free','events'=>[]],
     ];
     $modules += [
-        'notifications'=>['label'=>'알림','owner'=>'notifications','entry'=>'/noa-notifications.php','events'=>[]],
         'catalog'=>['label'=>'분류·곡 색인','owner'=>'catalog','entry'=>'/noa-app/taxonomy/','events'=>[]],
         'personalization'=>['label'=>'개인화·추천','owner'=>'personalization','entry'=>'/noa-music.php','events'=>[]],
     ];
@@ -29,18 +28,17 @@ function noa_engine_modules(): array {
         'music'=>['noa-music.php'],
         'jukebox'=>array_merge(['noa-app/engine/jukebox.php'],array_values(n80_jukebox_module()['components'])),
         'youtube'=>['noa-youtube.php'], 'world'=>['noa-world.php'], 'playlist'=>['noa-playlists.js'],
-        'creator_lab'=>['noa-channel-workspace.php','noa-app/engine/workspaces.php'],
+        'creator_lab'=>['noa-app/engine/creator-lab.php','noa-channel-workspace.php','noa-app/engine/workspaces.php'],
         'admin'=>['noa-library.php','noa-app/engine/workspaces.php'], 'community'=>['bbs/board.php'],
-        'notifications'=>['noa-bridge/notifications.php'],
-        'catalog'=>['noa-app/taxonomy/index.php','noa-app/engine/personal-song-index.php'],
-        'personalization'=>['noa-app/engine/personal-listening.php'],
+        'catalog'=>['noa-app/engine/catalog.php','noa-app/taxonomy/index.php','noa-app/engine/personal-song-index.php'],
+        'personalization'=>['noa-app/engine/personalization.php','noa-app/engine/personal-listening.php'],
     ];
     $observes=[
         'music'=>['music','media','taxonomy'],'jukebox'=>['jukebox','media'],'playlist'=>['playlist','music'],
         'youtube'=>['youtube','taxonomy'],'world'=>['world','youtube'],'creator_lab'=>['music','playlist','youtube'],
         'admin'=>['admin','settings','members'],'community'=>['community','members'],
-        'notifications'=>[],'catalog'=>['taxonomy'],'personalization'=>['ranking'],
     ];
+    $observes+=['catalog'=>['taxonomy'],'personalization'=>['ranking']];
     if(function_exists('n80_hub_module')){
         $modules['hub']=n80_hub_module();
         $sources['hub']=['noa-hub.php','noa-hub-owner.php','noa-app/engine/hub.php','noa-app/engine/hub-release.php','noa-app/engine/hub-specialists.php','noa-bridge/hub-worker.php','noa-bridge/hub-admin.php'];

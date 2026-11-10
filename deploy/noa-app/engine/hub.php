@@ -6,15 +6,15 @@ function n80_hub_module():array {
 }
 function n80_hub_operations():array {
  return [
-  'hub.verify'=>['module'=>'hub','label'=>'호스트 연결 점검','interval'=>60,'timeout'=>20],
-  'ai.text'=>['module'=>'lab','label'=>'AI 텍스트 작업','interval'=>60,'timeout'=>110],
-  'ai.batch'=>['module'=>'creator_lab','label'=>'묶음 작업 복구','interval'=>300,'timeout'=>30],
-  'catalog.index'=>['module'=>'catalog','label'=>'곡 색인 갱신','interval'=>900,'timeout'=>110],
-  'notifications.dispatch'=>['module'=>'notifications','label'=>'알림 전달','interval'=>60,'timeout'=>30],
-  'popularity.calculate'=>['module'=>'personalization','label'=>'인기 집계','interval'=>3600,'timeout'=>110],
-  'members.maintain'=>['module'=>'sign','label'=>'회원 등급·갱신 정리','interval'=>900,'timeout'=>110],
-  'covers.refresh'=>['module'=>'jukebox','label'=>'누락된 곡 카드 이미지 보완','interval'=>180,'timeout'=>90],
-  'ai.daily_shorts_clock'=>['module'=>'lab','label'=>'쇼츠 일정·준비 상태','interval'=>900,'timeout'=>30],
+  'hub.verify'=>['handler'=>'hub.php','module'=>'hub','label'=>'호스트 연결 점검','interval'=>60,'timeout'=>20],
+  'ai.text'=>['handler'=>'lab.php','module'=>'lab','label'=>'AI 텍스트 작업','interval'=>60,'timeout'=>110],
+  'ai.batch'=>['handler'=>'creator-lab.php','module'=>'creator_lab','label'=>'묶음 작업 복구','interval'=>300,'timeout'=>30],
+  'catalog.index'=>['handler'=>'catalog.php','module'=>'catalog','label'=>'곡 색인 갱신','interval'=>900,'timeout'=>110],
+  'notifications.dispatch'=>['handler'=>'notify.php','module'=>'notify','label'=>'알림 전달','interval'=>60,'timeout'=>30],
+  'popularity.calculate'=>['handler'=>'personalization.php','module'=>'personalization','label'=>'인기 집계','interval'=>3600,'timeout'=>110],
+  'members.maintain'=>['handler'=>'sign.php','module'=>'sign','label'=>'회원 등급·갱신 정리','interval'=>900,'timeout'=>110],
+  'covers.refresh'=>['handler'=>'media.php','module'=>'media','label'=>'누락된 곡 카드 이미지 보완','interval'=>180,'timeout'=>90],
+  'ai.daily_shorts_clock'=>['handler'=>'lab.php','module'=>'lab','label'=>'쇼츠 일정·준비 상태','interval'=>900,'timeout'=>30],
  ];
 }
 function n80_hub_root():string { return dirname(__DIR__,3).'/noa-hub'; }
@@ -68,7 +68,7 @@ function n80_hub_nonce(string $root,string $nonce,int $now):void {
 function n80_hub_status(string $root):array {
  $c=n80_hub_read($root,'control.json');$s=n80_hub_read($root,'status.json');$last=(int)($s['heartbeatAt']??0);
  $ops=[];$history=n80_hub_read($root,'receipts.json');
- foreach(n80_hub_operations()as $id=>$row){$recent=array_values(array_filter($history,fn($r)=>($r['operation']??'')===$id));$ops[]=['id'=>$id,'label'=>$row['label'],'owner'=>in_array($id,$c['activeOperations']??[],true)?'n80_hub':'legacy','last'=>$recent?end($recent):null];}
+ foreach(n80_hub_operations()as $id=>$row){$recent=array_values(array_filter($history,fn($r)=>($r['operation']??'')===$id));$ops[]=['id'=>$id,'label'=>$row['label'],'module'=>$row['module'],'owner'=>in_array($id,$c['activeOperations']??[],true)?'n80_hub':'legacy','last'=>$recent?end($recent):null];}
  return ['ok'=>true,'module'=>'N80 Hub','revision'=>(int)($c['revision']??0),'paused'=>!empty($c['paused']),'heartbeatAt'=>$last,
   'runnerState'=>$last&&time()-$last<180?'running':'not_verified','source'=>n80_hub_read($root,'source.json'),
   'operations'=>$ops,'dependencies'=>n80_hub_read($root,'dependencies.json'),'receipts'=>array_slice($history,-30)];
@@ -81,7 +81,7 @@ function n80_hub_execute(string $root,string $operation,string $id,callable $exe
   $s=n80_hub_read($root,'receipts.json');foreach($s as $r)if($r['id']===$id){if($r['operation']!==$operation)throw new DomainException('hub_identity_conflict');return $r;}
   $issued=(int)hexdec(substr($id,0,8));if($issued>time()+30||$issued<time()-180)throw new DomainException('hub_invocation_expired');
   foreach($s as $r)if($r['operation']===$operation&&$r['state']==='running')throw new DomainException('hub_previous_execution_unconfirmed');
-  $s[]=['id'=>$id,'operation'=>$operation,'state'=>'running','startedAt'=>time()];
+  $s[]=['id'=>$id,'operation'=>$operation,'module'=>n80_hub_operations()[$operation]['module'],'state'=>'running','startedAt'=>time()];
   // Never prune unresolved execution evidence.
   if(count($s)>500){$running=array_values(array_filter($s,fn($r)=>$r['state']==='running'));$done=array_values(array_filter($s,fn($r)=>$r['state']!=='running'));if(count($running)>100)throw new DomainException('hub_receipt_limit');$s=array_merge(array_slice($done,-(500-count($running))),$running);}
   n80_hub_write($root,'receipts.json',$s);return null;

@@ -53,3 +53,20 @@ function n80_sign_requirement(string $path,string $method='GET',array $query=[])
  return null;
 }
 function n80_sign_allowed(array $access,?string $need):bool{return $need===null||!empty($access[$need]);}
+
+/** Existing membership renewal, fan credits and maintenance receipt; scheduled by Hub. */
+function n80_sign_maintain():array {
+ $bridge=dirname(__DIR__,2).'/noa-bridge';
+  require_once $bridge.'/subscription-core.php';require_once $bridge.'/membership-core.php';
+  if(empty(nr_policy()['enabled']))throw new RuntimeException('hub_membership_not_active');
+  $rows=ns_q('SELECT mb_id FROM '.ns_table('member_table').' WHERE mb_level BETWEEN 2 AND 4 ORDER BY mb_id');$owners=[];
+  while($row=sql_fetch_array($rows)){$owners[]=$row['mb_id'];if(count($owners)>10000)throw new RuntimeException('hub_maintenance_batch_limit');}
+  $counts=[];foreach($owners as $owner){$r=nr_renew($owner,time());nr_refresh($owner,time());$counts[$r['state']]=($counts[$r['state']]??0)+1;}
+  if(is_file($bridge.'/fan-membership.php')){
+   require_once $bridge.'/fan-membership.php';$fans=ns_q('SELECT mb_id FROM '.ns_table('member_table')." WHERE mb_level IN (5,6) AND mb_leave_date='' AND mb_intercept_date=''");
+   while($fan=sql_fetch_array($fans))if(nfan_monthly($fan['mb_id'],time())>0)$counts['fanCredits']=1+($counts['fanCredits']??0);
+  }
+  $result=['membersChecked'=>count($owners),'results'=>$counts];
+  ns_atomic('membership-maintenance',false,function()use($result){$key='membership:maintenance';$old=ns_doc($key,true);ns_put($key,'membership_maintenance',['checkedAt'=>time()]+$result,$old['revision']??0,'n80-membership-worker');});
+  return ['ok'=>true]+$result;
+}

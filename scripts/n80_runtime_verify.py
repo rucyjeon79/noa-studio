@@ -23,6 +23,11 @@ def main():
     if (status.get('contractVersion') != 2 or status.get('generationRequests') != 0
             or status.get('runtime', {}).get('operation') != 'n80_status'):
         raise RuntimeError('n80_runtime_contract_readback_failed')
+    if os.getenv('N80_DEPLOY_COMMON_MODULES') == '1':
+        owners=status.get('moduleOwnership',{})
+        if not {'guard','notify','media'}.issubset(owners.get('modules',[])) or owners.get('hub',{}).get('notifications.dispatch')!='notify' or owners.get('services',{}).get('complete')!='media':
+            raise RuntimeError('specialist_ownership_readback_failed')
+        print('N80_SPECIALIST_OWNERSHIP_VERIFIED',json.dumps(owners))
     result = {name: status[name] for name in ['contractVersion', 'workerEnabled', 'generation', 'taskCounts', 'checkedAt', 'runtime', 'generationRequests','operations','muvy','mediaPublication']}
     result['commit'] = os.environ['GITHUB_SHA']
     current = request(key, {'action': 'read'})['state']

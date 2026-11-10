@@ -20,7 +20,7 @@
     "timeout": 110
   },
   "notifications.dispatch": {
-    "module": "notifications",
+    "module": "notify",
     "interval": 60,
     "timeout": 30
   },
@@ -40,7 +40,7 @@
     "timeout": 110
   },
   "covers.refresh": {
-    "module": "jukebox",
+    "module": "media",
     "interval": 180,
     "timeout": 90
   }

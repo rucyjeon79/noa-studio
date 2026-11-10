@@ -5,7 +5,7 @@ $root=dirname(__DIR__,2);
 require_once $root.'/deploy/noa-app/engine/registry.php';
 function specialist_expect(bool $ok,string $why):void {if(!$ok)throw new RuntimeException($why);}
 $modules=noa_engine_modules();
-foreach(['node','setup','install','lab','db','sign','pay']as $id) {
+foreach(['node','setup','install','lab','db','sign','pay','guard','notify','media']as $id) {
     specialist_expect(isset($modules[$id])&&$modules[$id]['owner']===$id,'owner:'.$id);
     foreach($modules[$id]['dependencies'] as $dependency)specialist_expect(isset($modules[$dependency]),'dependency:'.$id);
     foreach($modules[$id]['sources']as $source) {
@@ -19,7 +19,7 @@ foreach(n80_module_aliases()as $old=>$id) {
 }
 specialist_expect(n80_module('../../arbitrary')===null,'unknown_module');
 foreach(get_included_files()as $file)
-    specialist_expect(!in_array(basename($file),['db.php','pay.php','sign.php','lab.php','node.php','install.php'],true),'eager_implementation:'.$file);
+    specialist_expect(!in_array(basename($file),['db.php','pay.php','sign.php','lab.php','node.php','install.php','guard.php','notify.php','media.php','media-worker.php'],true),'eager_implementation:'.$file);
 require_once $root.'/bridge/member-access.php';
 specialist_expect(!nam_access(['mb_id'=>'staff','mb_level'=>10])['admin'],'numeric_admin_escalation');
 specialist_expect(nam_access(['mb_id'=>'admin','mb_level'=>10],'super')['admin'],'super_admin_lost');
