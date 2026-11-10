@@ -15,7 +15,8 @@ try{
   }
   lab_csrf();$b=lab_json_body(8192);if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
   $r=lab_lock(fn(&$s)=>nb_admin($s,$b,$owner,time()));
-  if(($b['command']??'')==='open'){require_once __DIR__.'/noa-app/engine/worker-wake.php';$r['wake']=n80_ai_wake();}
+  $dispatch=!empty($r['dispatchWake']);unset($r['dispatchWake']);
+  if($dispatch){require_once __DIR__.'/noa-app/engine/worker-wake.php';$r['wake']=n80_ai_wake();}
   lab_json(200,$r);
  }
 }catch(DomainException $e){lab_json(409,['error'=>$e->getMessage()]);}catch(InvalidArgumentException $e){lab_json(400,['error'=>$e->getMessage()]);}catch(Throwable $e){lab_json(503,['error'=>'browser_connection_unavailable']);}

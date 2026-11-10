@@ -18,7 +18,7 @@ def create(folder):
         shutil.copy(ROOT/'public'/name,html/'noa-assets'/name)
     shutil.copy(ROOT/'public/ainoa/ainoa-symbol.png',html/'noa-assets/ainoa-symbol.png')
     shutil.copytree(ROOT/'public/noa-theme-scenes',html/'noa-theme-scenes')
-    (html/'noa-app/engine/worker-wake.php').write_text('<?php function n80_ai_wake(){return ["fixture"=>true];}')
+    (html/'noa-app/engine/worker-wake.php').write_text('<?php function n80_ai_wake(){file_put_contents(dirname(G5_PATH)."/wake-count", "wake\\n", FILE_APPEND);return ["fixture"=>true];}')
     (html/'common.php').write_text('''<?php
 session_save_path(dirname(__DIR__).'/sessions');session_start();define('_GNUBOARD_',true);define('G5_PATH',__DIR__);
 $role=$_COOKIE['qa_role']??'guest';$is_member=$role!=='guest';$is_admin=$role==='admin'?'super':'';$member=['mb_id'=>'fixture-owner'];

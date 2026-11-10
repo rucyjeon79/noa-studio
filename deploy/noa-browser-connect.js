@@ -16,7 +16,7 @@ function draw(v){
  $('browser-elapsed').textContent=Number.isInteger(v.waitSeconds)?v.waitSeconds+'초 경과':'';
  $('browser-status').textContent=delayed?'연결 준비가 지연되고 있습니다. 상태를 다시 확인하거나 연결을 취소할 수 있습니다.':m[0];
  $('browser-placeholder-title').textContent=delayed?'연결 준비 지연':m[1];
- $('browser-placeholder-help').textContent=delayed?'아직 로그인 화면이 도착하지 않았습니다. 준비가 끝나면 자동으로 표시됩니다.':m[2];
+ $('browser-placeholder-help').textContent=v.error==='browser_start_timeout'?'3분 안에 로그인 화면을 시작하지 못했습니다. 아래 버튼으로 다시 연결해 주세요.':delayed?'로그인 화면을 다시 요청하고 있습니다. 시작하지 못하면 3분 안에 재연결 버튼을 표시합니다.':m[2];
  const hasFrame=available&&v.state==='active'&&!!v.frame,ready=available&&!busy&&hasFrame&&v.inputReady;
  const screen=$('browser-screen');screen.hidden=!hasFrame;
  if(hasFrame){if(screen.getAttribute('src')!==v.frame)screen.src=v.frame;}else screen.removeAttribute('src');
@@ -39,7 +39,7 @@ async function refresh(){
  clearTimeout(timer);if(document.hidden||busy)return;if(refreshing){refreshAgain=true;return;}refreshing=true;const version=operation;
  try{const next=await api();if(!busy&&version===operation){available=true;draw(next);}}
  catch{if(!busy&&version===operation){available=false;draw(state);feedback('연결 상태를 불러오지 못했습니다. 상태 다시 확인을 눌러 주세요.');}}
- finally{refreshing=false;$('browser-refresh').disabled=busy;if(refreshAgain){refreshAgain=false;void refresh();}else if(pending.includes(state.state))timer=setTimeout(refresh,3000);}
+ finally{refreshing=false;$('browser-refresh').disabled=busy;if(available&&state.state==='queued'&&state.retryAllowed&&!busy){timer=setTimeout(()=>send('retry'),3000);}else if(refreshAgain){refreshAgain=false;void refresh();}else if(pending.includes(state.state))timer=setTimeout(refresh,3000);}
 }
 async function send(command,extra={},onAccepted=()=>{}){
  if(busy||!available)return false;operation++;busy=true;feedback();draw(state);let accepted=false;
