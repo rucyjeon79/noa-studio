@@ -19,6 +19,7 @@ foreach(['noa-gifts.css','noa-channel-menu.php','noa-member-badges.css','noa-mem
 @mkdir($root.'/noa-assets',0700,true);copy('public/ainoa/ainoa-symbol.png',$root.'/noa-assets/ainoa-symbol.png');
 foreach(['papa-logo.png','icon-180.png']as $asset)copy('public/'.$asset,$root.'/noa-assets/'.$asset);
 foreach(['gift-core.php','vip-store-core.php','membership-core.php','subscription-core.php','subscription-access.php','monthly-rewards.php','member-badges.php','creator-core.php','channel-ownership.php','package-record.php','notifications-inline.php','notifications-core.php','notifications-sources.php','notifications.php','notification-worker.php']as $file)copy('bridge/'.$file,$root.'/noa-bridge/'.$file);
+@mkdir($root.'/noa-app/engine',0700,true);copy('deploy/noa-app/engine/notify.php',$root.'/noa-app/engine/notify.php');
 require $root.'/common.php';require 'bridge/notifications-sources.php';
 $db=new PDO('mysql:host=127.0.0.1;dbname=noa_community;charset=utf8mb4','root','fixture-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_EMULATE_PREPARES=>false]);
 $db->exec("SET SESSION sql_mode=''");

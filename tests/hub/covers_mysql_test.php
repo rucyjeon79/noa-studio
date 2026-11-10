@@ -2,11 +2,11 @@
 declare(strict_types=1);define('_GNUBOARD_',true);
 function check(bool $ok,string $label):void{if(!$ok)throw new RuntimeException($label);echo "PASS $label\n";}
 $repo=dirname(__DIR__,2);$base=sys_get_temp_dir().'/n80-covers-test-'.bin2hex(random_bytes(8));$web=$base.'/html';$root=$base.'/noa-hub';mkdir($root,0700,true);
-foreach(['noa-app/engine/hub.php','noa-app/engine/hub-covers.php','noa-app/jukebox/core.php','noa-app/jukebox/media-location.php'] as $name){@mkdir(dirname($web.'/'.$name),0700,true);copy($repo.'/deploy/'.$name,$web.'/'.$name);}
+foreach(['noa-app/engine/hub.php','noa-app/engine/hub-covers.php','noa-app/engine/media-covers.php','noa-app/jukebox/core.php','noa-app/jukebox/media-location.php'] as $name){@mkdir(dirname($web.'/'.$name),0700,true);copy($repo.'/deploy/'.$name,$web.'/'.$name);}
 foreach(['suno-cover.php','sound-core.php','music-readmodel.php','package-record.php','channel-ownership.php'] as $name){@mkdir($web.'/noa-bridge',0700,true);copy($repo.'/bridge/'.$name,$web.'/noa-bridge/'.$name);}
 require $web.'/noa-app/engine/hub.php';require $web.'/noa-app/engine/hub-covers.php';
 require $web.'/noa-bridge/sound-core.php';require $web.'/noa-bridge/music-readmodel.php';require $web.'/noa-bridge/package-record.php';require $web.'/noa-bridge/suno-cover.php';
-$db=new PDO('mysql:host=127.0.0.1;port=3306;dbname=noa_hub_test;charset=utf8mb4','root','hub-test-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+$db=new PDO('mysql:host=127.0.0.1;port=3306;dbname=noa_hub_test;charset=utf8mb4','root',getenv('NOA_HUB_TEST_PASSWORD')?:'hub-test-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
 $db->exec('CREATE TABLE noa_documents(doc_key VARCHAR(191) PRIMARY KEY,kind VARCHAR(32),payload JSON,revision INT,updated_by VARCHAR(32))');
 $db->exec('CREATE TABLE noa_document_history(doc_key VARCHAR(191),revision INT,payload JSON,changed_by VARCHAR(32),PRIMARY KEY(doc_key,revision))');nj_schema($db);
 $source='https://suno.com/song/12345678-1234-1234-1234-123456789abc';

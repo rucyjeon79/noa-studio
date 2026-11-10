@@ -62,6 +62,18 @@ class RecoveryContract(unittest.TestCase):
   # The 2026-10-27 correction removes title-derived playlist classification.
   authorized={'bridge/catalog-recovery.php','bridge/record-quality.php','bridge/creator-core.php','bridge/catalog.php','bridge/library-records.php','bridge/record-trash.php','bridge/notices.php','bridge/ainoa-automation.php','bridge/lab-worker.php','bridge/category-order-store.php','bridge/ainoa-generation.php','bridge/ainoa-core.php','bridge/ainoa-points.php','bridge/youtube-catalog.php','bridge/lab-api.php','bridge/catalog-store.php','bridge/package-record.php','bridge/package-migration.php','bridge/package-worker.php','bridge/index.php','bridge/lab-creator.php','bridge/taxonomy-store.php','bridge/inline-edit.php','bridge/music-readmodel.php','bridge/user-playlists.php','bridge/world-mv.php','bridge/popularity-events.php','bridge/playcount-policy.php','deploy/noa-app/jukebox/stream.php','deploy/noa-app/jukebox/stream-popularity.php','scripts/noa_jukebox_release.py','scripts/noa_jukebox_upload_worker.py','scripts/noa_jukebox_publish.py'}
   authorized.update(specialist_bridges)
+  # Explicit 2026-11-10 specialization: only compatibility delegation changes here.
+  authorized.update({'deploy/noa-app/jukebox/queue-core.php','bridge/worker-media.php'})
+  for old_path,new_path,markers in [
+   ('deploy/noa-app/jukebox/queue-core.php','deploy/noa-app/engine/media-queue.php',{'recovery-core.php':'jukebox','wake-core.php':'jukebox'}),
+   ('bridge/worker-media.php','deploy/noa-app/engine/media-worker.php',{'storage.php':'noa-bridge','lab-publication.php':'noa-bridge','youtube-store.php':'noa-bridge'}),
+  ]:
+   old=subprocess.check_output(['git','show',baseline+':'+old_path],cwd=ROOT,text=True)
+   if ('function nq_atomic' in old) or ("$action==='claim'" in old):
+    for name,folder in markers.items():
+     target="dirname(__DIR__).'/jukebox/"+name+"'" if folder=='jukebox' else "dirname(__DIR__,2).'/noa-bridge/"+name+"'"
+     old=old.replace("__DIR__.'/"+name+"'",target)
+    self.assertEqual(old,(ROOT/new_path).read_text(),'migrated implementation must preserve existing processing')
   # 2026-11-08: authorized N80 playback integration. Processing/stream writers remain protected.
   authorized.update({'deploy/noa-app/jukebox/player.js','deploy/noa-app/jukebox/presentation.js','deploy/noa-app/jukebox/navigation-policy.js','deploy/noa-app/jukebox/system-media.js'})
   # 2026-11-09 KST: requested Korean subtitles in the existing N80 movie agent.

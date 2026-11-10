@@ -12,4 +12,5 @@ shutil.copyfile('deploy/noa-inline-edit.php',root/'noa-inline-edit.php')
 (root/'common.php').write_text("<?php define('_GNUBOARD_',true);session_start();if(($_GET['auth']??'')==='admin')$_SESSION['fixture_admin']=true;$is_member=!empty($_SESSION['fixture_admin']);$is_admin=$is_member?'super':'';$member=['mb_id'=>'isolated-admin'];")
 
 (root/'noa-app/engine').mkdir(exist_ok=True)
-shutil.copyfile('deploy/noa-app/engine/task-status.php',root/'noa-app/engine/task-status.php')
+for name in ['task-status.php','db.php','sign.php']:
+ shutil.copyfile('deploy/noa-app/engine/'+name,root/'noa-app/engine'/name)

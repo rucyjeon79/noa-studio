@@ -45,7 +45,7 @@ jobs:
         if: always()
         with: {name: 'noa-notifications-candidate-${{ github.run_id }}', path: notifications-proof/, retention-days: 7}
   deploy:
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[conversation-release]') && !contains(github.event.head_commit.message, '[daily-fortune-release]')) && !contains(github.event.head_commit.message, '[n80-runtime]')
+    if: ((github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[conversation-release]') && !contains(github.event.head_commit.message, '[daily-fortune-release]')) && !contains(github.event.head_commit.message, '[n80-runtime]')) && !contains(github.event.head_commit.message, '[n80-common]')
     needs: verify
     runs-on: ubuntu-latest
     environment: production
