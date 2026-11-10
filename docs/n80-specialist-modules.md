@@ -67,3 +67,11 @@ separate acceptance items; ownership assignment does not mark them complete.
 The `[n80-common]` unified source release owns this cutover, installs dependencies
 before compatibility callers, validates exact preimages and supports rollback.
 It does not run the Hub bootstrap or change active operations and intervals.
+
+## Verified direct activation
+
+On 2026-11-10, the ChatGPT → N80 Hub direct release `bb52593a6215d446b33e639606b8d591` activated the 23 reviewed source files at source revision 11. All 23 remote hashes matched. The live Hub connection source references added concurrently at revision 10 were retained. The obsolete Actions publisher stopped before changing any operating files.
+
+Specialist acceptance job `129570244159` in run `42737513738` passed PHP/MySQL ownership, authorization and settlement checks, notification crypto, the migrated audio FIFO, zero-pixel shared design comparison and Hub mobile/desktop interaction checks. Host acceptance job `129575328301` in run `42739058685` independently verified all 23 source files and the signed live status: 21 canonical modules, Notify ownership of notification dispatch, and Media ownership of final completion. This verification created zero generation requests and no new scheduler.
+
+The existing host runner had stopped reporting before this release. Its installed launcher was resumed with the same control state and queue. The eight already active Hub operations then produced successful receipts naming their specialized owners. `ai.daily_shorts_clock` remains assigned to Lab but is not activated; browser login, external media runtimes, Android publication and full Shorts production remain separately unverified. Details are recorded in `docs/operations/n80-common-cutover-20261110.json`.
