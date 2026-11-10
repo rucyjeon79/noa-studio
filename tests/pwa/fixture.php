@@ -1,6 +1,7 @@
 <?php
 /** Disposable native-bootstrap interface fixture; never copied to production. */
 $root='/tmp/noa-pwa-fixture';@mkdir($root,0700,true);foreach(['noa-bridge','extend','bbs','noa-app','noa-assets']as $folder)@mkdir($root.'/'.$folder,0700,true);
+@mkdir($root.'/noa-app/engine',0700,true);foreach(glob(__DIR__.'/../../deploy/noa-app/engine/*.php')as $engineFile)copy($engineFile,$root.'/noa-app/engine/'.basename($engineFile));
 foreach(['noa-install.php','noa-install.js','noa-install.css','noa-launch.js','noa-brand.js','noa-ui.js','noa-ui.css','noa-account.js','noa-account.css','noa-design.json','noa-ui-words.json','noa-manifest.json','noa-sw.js','noa-download.php','index.php']as $file)copy('deploy/'.$file,$root.'/'.$file);
 copy('bridge/member-access.php',$root.'/noa-bridge/member-access.php');copy('deploy/noa-access.extend.php',$root.'/extend/noa.access.php');copy('deploy/noa-design.extend.php',$root.'/extend/noa.design.php');copy('deploy/noa-app/home.php',$root.'/noa-app/home.php');
 foreach(['noa-assets/icon-touch-180.png','noa-assets/icon-maskable-192.png','noa-assets/icon-maskable-512.png','noa-assets/icon-180.png','noa-assets/icon-192.png','noa-assets/icon-512.png','noa-assets/favicon.png','noa-assets/papa-logo.png']as $file){$source='public/'.basename($file);if(is_file($source))copy($source,$root.'/'.$file);}

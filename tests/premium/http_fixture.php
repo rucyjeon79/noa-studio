@@ -1,6 +1,7 @@
 <?php
 require __DIR__.'/../subscription/native_fixture.php';require __DIR__.'/../../bridge/storage.php';
 $site='/tmp/noa-download-fixture';@mkdir($site.'/noa-app/jukebox',0700,true);@mkdir($site.'/noa-bridge',0700,true);@mkdir('/tmp/noa-jukebox-private/media',0700,true);
+@mkdir($site.'/noa-app/engine',0700,true);foreach(glob(__DIR__.'/../../deploy/noa-app/engine/*.php')as $engineFile)copy($engineFile,$site.'/noa-app/engine/'.basename($engineFile));
 foreach(['subscription-access.php','subscription-core.php','music-download-core.php','storage.php','sound-core.php','member-access.php']as $f)copy('bridge/'.$f,$site.'/noa-bridge/'.$f);
 foreach(['core.php','download.php']as $f)copy('deploy/noa-app/jukebox/'.$f,$site.'/noa-app/jukebox/'.$f);copy('deploy/noa-music-download.php',$site.'/noa-music-download.php');
 file_put_contents($site.'/noa-bridge/subscription-core.php','<?php require_once '.var_export(realpath('bridge/subscription-core.php'),true).';');

@@ -1,28 +1,16 @@
 <?php
 declare(strict_types=1);
 if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
+$n80=dirname(__DIR__).'/noa-app/engine/pay.php';
+require_once is_file($n80)?$n80:dirname(__DIR__).'/deploy/noa-app/engine/pay.php';
+unset($n80);
 require_once __DIR__.'/membership-core.php';require_once __DIR__.'/toss-config.php';
 function nt_products():array{
  return array_map(static fn($p)=>['id'=>'p'.$p,'priceWon'=>$p,'paidPoints'=>$p,'bonusPoints'=>$p>=10000?intdiv($p,10):0,'totalPoints'=>$p+($p>=10000?intdiv($p,10):0)],[1000,3000,5000,10000,30000,50000]);
 }
 function nt_quote(string $id):array{foreach(nt_products()as $p)if($p['id']===$id)return $p;throw new InvalidArgumentException('invalid_product');}
 /** Canonical cart quote: only server product prices enter the payment ledger. */
-function nt_cart_quote(string|array $cart):array{
- if(is_string($cart))$cart=[['productId'=>$cart,'quantity'=>1]];
- if(!array_is_list($cart)||count($cart)<1||count($cart)>6)throw new InvalidArgumentException('invalid_cart');
- $rows=[];
- foreach($cart as $line){
-  if(!is_array($line)||!is_string($line['productId']??null)||!is_int($line['quantity']??null)||$line['quantity']<1||$line['quantity']>10)throw new InvalidArgumentException('invalid_cart');
-  $p=nt_quote($line['productId']);if(isset($rows[$p['id']]))throw new InvalidArgumentException('invalid_cart');
-  $rows[$p['id']]=['productId'=>$p['id'],'quantity'=>$line['quantity'],'unitPriceWon'=>$p['priceWon'],'paidPoints'=>$p['paidPoints'],'bonusPoints'=>$p['bonusPoints']];
- }
- ksort($rows,SORT_STRING);$items=array_values($rows);$q=['priceWon'=>0,'paidPoints'=>0,'bonusPoints'=>0,'totalPoints'=>0,'items'=>$items];
- foreach($items as $item){$n=$item['quantity'];$q['priceWon']+=$item['unitPriceWon']*$n;$q['paidPoints']+=$item['paidPoints']*$n;$q['bonusPoints']+=$item['bonusPoints']*$n;}
- $q['totalPoints']=$q['paidPoints']+$q['bonusPoints'];
- $identity=array_map(static fn($p)=>[$p['productId'],$p['quantity']],$items);
- $q['id']=count($items)===1&&$items[0]['quantity']===1?$items[0]['productId']:'cart_'.hash('sha256',json_encode($identity,JSON_THROW_ON_ERROR));
- return $q;
-}
+function nt_cart_quote(string|array $cart):array{return n80_pay_cart_quote($cart);}
 function nt_key(string $id):string{ns_order_key($id);return 'toss:order:'.$id;}
 function nt_payment_key(string $key):string{if(!preg_match('/^[A-Za-z0-9_-]{1,200}$/D',$key))throw new InvalidArgumentException('invalid_payment');return $key;}
 function nt_order(string $id,?string $owner=null):array{$r=ns_doc(nt_key($id));if(!$r||($owner!==null&&!hash_equals($owner,$r['data']['ownerId'])))throw new DomainException('order_not_found');return $r['data'];}

@@ -40,11 +40,12 @@ export async function run() {
   fs.writeFileSync(path.join(lock,'pid'),String(process.pid),{mode:0o600});
   const stop=()=>{try{fs.unlinkSync(path.join(lock,'pid'));fs.rmdirSync(lock);}catch{};process.exit(0);};
   process.on('SIGTERM',stop);process.on('SIGINT',stop);
-  const operations=read('operations.json'), state=read('scheduler.json');
+  const state=read('scheduler.json');
   let stopping=false;
   process.on('uncaughtException',()=>{atomic('runner-error.json',{error:'hub_runner_failed',at:Date.now()});stop();});
   while(!stopping){
     if(read('control.json').stop===true)break;
+    const operations=read('operations.json');
     try{
       const beat=await call({action:'heartbeat'}), now=Math.floor(Date.now()/1000);
       if(beat.control.stop===true){stopping=true;break;}

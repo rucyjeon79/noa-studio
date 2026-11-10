@@ -4,6 +4,8 @@ import noa_ainoa_deploy as release
 
 # Existing libraries remain specialists beneath N80; this script never runs a worker.
 MODULES = (
+    'module-contract.php','node.php','setup.php','install.php','lab.php','db.php','sign.php','pay.php',
+    'workspaces.php','agent-runtime.php','completion-receipt.php',
     'jukebox-references.php', 'jukebox.php',
     'native-receipt.php','native-consumer.php','worker-wake.php',
     'task-status.php', 'app-lifecycle.php', 'registry.php', 'health.php',
@@ -16,10 +18,12 @@ MODULES = (
 release.FILES = {'noa-app/engine/' + name: 'deploy/noa-app/engine/' + name for name in MODULES}
 
 release.FILES.update({'noa-bridge/'+name:'bridge/'+name for name in (
+    'storage.php','member-access.php','toss-core.php','youngcart-core.php',
     'lab-publication.php','muvy-core.php','lab-core.php',
     'ainoa-automation.php', 'worker-text.php', 'worker-batch.php', 'worker-index.php', 'worker-media.php', 'worker-status.php','worker-native.php','worker-muvy.php',
 )})
 release.FILES.update({
+    'noa-app/database/core.php':'deploy/noa-app/database/core.php',
     'noa-app/engine/app-observe.php':'deploy/noa-app/engine/app-observe.php',
     'noa-app/engine/consume-music.php':'deploy/noa-app/engine/consume-music.php',
     'noa-bridge/lab-worker.php':'bridge/lab-worker.php',
@@ -33,6 +37,23 @@ release.FILES.update({
  **{name:'deploy/'+name for name in ['noa-muvy.js','noa-ai-lab.php','noa-ai-lab.js','noa-creator.php','noa-channel-batch.js','noa-ainoa-admin.js','noa-starlight.css']},
  'extend/noa.design.php':'deploy/noa-design.extend.php',
 })
+# The specialist refactor owns only its changed sources. In particular, do not
+# redeploy the Hub-owned lab-worker entry or unrelated frontend/media sources.
+if os.environ.get('N80_DEPLOY_SPECIALISTS') == '1':
+    specialist_sources = {
+        'noa-app/engine/'+name for name in (
+            'module-contract.php','node.php','setup.php','install.php','lab.php','db.php','sign.php','pay.php',
+            'workspaces.php','agent-runtime.php','completion-receipt.php','app-lifecycle.php','registry.php','service-runtime.php',
+        )
+    } | {'noa-app/database/core.php'} | {
+        'noa-bridge/'+name for name in ('storage.php','member-access.php','toss-core.php','youngcart-core.php','worker-status.php')
+    }
+    if specialist_sources - release.FILES.keys():
+        raise RuntimeError('missing_specialist_activation_source')
+    release.FILES = {path:source for path,source in release.FILES.items() if path in specialist_sources}
+
+# Preserve Hub registration/navigation from reviewed commit cd6e94e when it is installed.
+release.EXTRA_KNOWN.update({'noa-app/engine/registry.php': ['79d71d6b9d35f6353ab67390be33dfbe2511fb2fc6295f9b10bd45a46b70ca8a'], 'noa-app/engine/workspaces.php': ['3f8dc95c7325983f8c68cae845a71066e65200782eb8eddd4520151fa19f634b']})
 release.STALE_CANDIDATES = ('cd3fe94c9b3dd7d533702283f7792497c91896a9',)
 release.NEW = set(release.FILES)
 release.PROTECTED = [path for path in release.PROTECTED if path not in release.FILES]

@@ -24,7 +24,11 @@ function draw(v){
  $('browser-stage').setAttribute('aria-busy',String(available&&(!v.state||waiting.includes(v.state)||v.state==='closing'||v.state==='active'&&!hasFrame)));
  $('browser-url').textContent=hasFrame?v.url||'':'';$('browser-url').hidden=!hasFrame||!v.url;
  $('browser-interaction').hidden=!hasFrame;
- for(const b of app.querySelectorAll('[data-target],[data-key],[data-scroll],#browser-type button,#browser-text,#browser-save'))b.disabled=!ready;
+ // Local typing must keep its focus/keyboard while the remote click is being acknowledged.
+ $('browser-text').disabled=!hasFrame;$('browser-keyboard').disabled=!hasFrame;
+ $('browser-input-status').textContent=hasFrame&&!v.inputReady?'화면 조작을 처리하고 있습니다. 문자는 먼저 입력할 수 있으며, 처리가 끝나면 입력하기를 누르세요.':'';
+ $('browser-input-status').hidden=!hasFrame||v.inputReady;
+ for(const b of app.querySelectorAll('[data-target],[data-key],[data-scroll],#browser-type button,#browser-save'))b.disabled=!ready;
  $('browser-open').hidden=pending.includes(v.state)||v.state==='connection_lost';$('browser-open').disabled=busy||!available;
  $('browser-save').hidden=!hasFrame;
  $('browser-close').hidden=!pending.includes(v.state)&&v.state!=='connection_lost';$('browser-close').disabled=busy||!available;
@@ -37,18 +41,20 @@ async function refresh(){
  catch{if(!busy&&version===operation){available=false;draw(state);feedback('연결 상태를 불러오지 못했습니다. 상태 다시 확인을 눌러 주세요.');}}
  finally{refreshing=false;$('browser-refresh').disabled=busy;if(refreshAgain){refreshAgain=false;void refresh();}else if(pending.includes(state.state))timer=setTimeout(refresh,3000);}
 }
-async function send(command,extra={}){
- if(busy||!available)return;operation++;busy=true;feedback();draw(state);
- try{await api({command,id:state.id,frameSeq:state.frameSeq,...extra});}
+async function send(command,extra={},onAccepted=()=>{}){
+ if(busy||!available)return false;operation++;busy=true;feedback();draw(state);let accepted=false;
+ try{await api({command,id:state.id,frameSeq:state.frameSeq,...extra});accepted=true;onAccepted();}
  catch(e){feedback(e.message==='browser_frame_changed'?'화면이 바뀌었습니다. 새 화면에서 다시 눌러 주세요.':'연결 요청을 확인하지 못했습니다. 상태를 확인한 뒤 다시 시도해 주세요.');}
  finally{busy=false;await refresh();}
+ return accepted;
 }
 $('browser-refresh').onclick=()=>{feedback();refresh();};
 $('browser-open').onclick=()=>send('open');$('browser-save').onclick=()=>send('save');$('browser-close').onclick=()=>send('close');
+$('browser-keyboard').onclick=()=>{if(!available||state.state!=='active'||!state.frame)return;$('browser-text').focus();};
 $('browser-screen').onclick=e=>{if(!available||!state.inputReady||!state.frame)return;const r=e.currentTarget.getBoundingClientRect();send('input',{event:{kind:'click',x:Math.max(0,Math.min(1279,Math.floor((e.clientX-r.left)*1280/r.width))),y:Math.max(0,Math.min(899,Math.floor((e.clientY-r.top)*900/r.height)))}});};
 for(const b of app.querySelectorAll('[data-target]'))b.onclick=()=>send('input',{event:{kind:'navigate',target:b.dataset.target}});
 for(const b of app.querySelectorAll('[data-key]'))b.onclick=()=>send('input',{event:{kind:'key',key:b.dataset.key}});
 for(const b of app.querySelectorAll('[data-scroll]'))b.onclick=()=>send('input',{event:{kind:'scroll',y:Number(b.dataset.scroll)}});
-$('browser-type').onsubmit=e=>{e.preventDefault();if(!available||busy||!state.inputReady||!state.frame)return;const text=$('browser-text').value;if(!text)return;$('browser-text').value='';send('input',{event:{kind:'type',text}});};
+$('browser-type').onsubmit=e=>{e.preventDefault();if(!available||busy||!state.inputReady||!state.frame)return;const field=$('browser-text'),text=field.value;if(!text)return;send('input',{event:{kind:'type',text}},()=>{if(field.value===text)field.value='';});};
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();else clearTimeout(timer);});refresh();
 })();

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 /** Disposable CI database/site. Never installed or addressed as a production login mechanism. */
 $root='/tmp/noa-community-fixture';@mkdir($root,0700,true);foreach(['noa-bridge','extend','bbs','noa-app']as $dir)@mkdir($root.'/'.$dir,0700,true);
+@mkdir($root.'/noa-app/engine',0700,true);foreach(glob(__DIR__.'/../../deploy/noa-app/engine/*.php')as $engineFile)copy($engineFile,$root.'/noa-app/engine/'.basename($engineFile));
 $common= <<<'PHP'
 <?php
 if(defined('_GNUBOARD_'))return;define('_GNUBOARD_',true);define('G5_TIME_YMDHIS',date('Y-m-d H:i:s'));define('G5_BBS_PATH',__DIR__.'/bbs');session_start();

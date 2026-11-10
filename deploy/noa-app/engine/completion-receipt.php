@@ -34,7 +34,7 @@ function n80_completion_validate(array $event,int $now): array {
     if(!n80_completion_keys($event,['id','type','source','subjectId','occurredAt','schemaVersion','correlationId','evidence']))return $bad('invalid_envelope');
     $base=noa_engine_validate_event($event);if(!$base['ok'])return $base;
     if(!in_array($event['type'],['deploy.verified','work.completed'],true)||$event['source']!=='deployment')return $bad('unsupported_completion');
-    if(!isset(noa_engine_modules()[$event['subjectId']]))return $bad('unknown_module');
+    if(n80_module($event['subjectId'])===null)return $bad('unknown_module');
     if(!preg_match('/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:Z|\+00:00)$/D',$event['occurredAt'])
        ||strtotime($event['occurredAt'])>$now+180||strtotime($event['occurredAt'])<$now-86400)return $bad('stale_or_invalid_evidence_time');
     $e=$event['evidence'];

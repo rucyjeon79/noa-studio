@@ -31,6 +31,8 @@ def connection_summary(state, now):
         phase = 'expired'
     return {'state': phase, 'hasFrame': bool(row.get('frame')),
             'framesObserved': isinstance(row.get('frameSeq'), int) and row['frameSeq'] > 0,
+            'inputPending': bool(row.get('input')),
+            'inputAcknowledged': isinstance(row.get('ack'), int) and row['ack'] > 0,
             'leaseLive': row.get('leaseUntil', 0) > now,
             'profileStored': bool(state.get('browserProfile'))}
 

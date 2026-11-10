@@ -5,7 +5,7 @@
     "timeout": 20
   },
   "ai.text": {
-    "module": "ai_lab",
+    "module": "lab",
     "interval": 60,
     "timeout": 110
   },
@@ -30,12 +30,12 @@
     "timeout": 110
   },
   "ai.daily_shorts_clock": {
-    "module": "ai_lab",
+    "module": "lab",
     "interval": 900,
     "timeout": 30
   },
   "members.maintain": {
-    "module": "identity",
+    "module": "sign",
     "interval": 900,
     "timeout": 110
   }

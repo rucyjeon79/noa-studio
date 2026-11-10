@@ -43,8 +43,10 @@ if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 </div>
 <p id="browser-url" hidden></p>
 <div id="browser-interaction" hidden>
+<div class="browser-keyboard-row"><button type="button" class="noa-button" id="browser-keyboard" disabled>키보드 열기</button><p>Google 화면에서 입력란을 선택한 뒤 키보드를 열어 주세요.</p></div>
+<p id="browser-input-status" role="status" hidden></p>
 <div class="browser-services" aria-label="서비스 확인"><button type="button" class="noa-button" data-target="gemini" disabled>Gemini 확인</button><button type="button" class="noa-button" data-target="flow" disabled>Flow 확인</button></div>
-<form id="browser-type"><label for="browser-text">화면에서 입력란을 누른 뒤 내용을 입력하세요.</label><div class="browser-input-row"><input id="browser-text" type="password" autocomplete="off" aria-label="선택한 입력란에 넣을 내용" placeholder="선택한 입력란에 넣을 내용" maxlength="2048" disabled><button class="noa-button" type="submit" disabled>입력하기</button></div></form>
+<form id="browser-type"><label for="browser-text">여기에 입력한 뒤 입력하기를 누르면 선택한 Google 입력란에 전달됩니다.</label><div class="browser-input-row"><input id="browser-text" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="send" aria-label="선택한 입력란에 넣을 내용" placeholder="이메일 또는 비밀번호 입력" maxlength="2048" disabled><button class="noa-button" type="submit" disabled>입력하기</button></div></form>
 <details class="browser-tools"><summary>키보드·스크롤 도구</summary><div class="browser-keys"><button type="button" class="noa-button" data-key="Tab" disabled>다음 입력란</button><button type="button" class="noa-button" data-key="Control+a" disabled>전체 선택</button><button type="button" class="noa-button" data-key="Backspace" disabled>지우기</button><button type="button" class="noa-button" data-key="Enter" disabled>Enter</button><button type="button" class="noa-button" data-scroll="-600" disabled>위로</button><button type="button" class="noa-button" data-scroll="600" disabled>아래로</button></div></details>
 </div>
 <div class="browser-actions"><button type="button" class="noa-button primary" id="browser-open" disabled>연결 화면 열기</button><button type="button" class="noa-button primary" id="browser-save" hidden disabled>연결 저장 후 닫기</button><button type="button" class="noa-button" id="browser-close" hidden disabled>저장 없이 닫기</button></div>

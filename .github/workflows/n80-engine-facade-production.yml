@@ -1,9 +1,17 @@
 name: N80 Unified Facade Safe Production
 on:
+  pull_request:
+    paths: ['deploy/noa-app/engine/**','bridge/**','deploy/noa-app/database/**','config/n80-automation.json','tests/engine/**','scripts/n80_single_session_deploy.py','.github/workflows/n80-engine-facade-production.yml']
   push:
     branches: [main]
     paths:
-      - 'deploy/noa-app/engine/native-*.php'
+      - 'deploy/noa-app/engine/*.php'
+      - 'deploy/noa-app/database/core.php'
+      - 'bridge/member-access.php'
+      - 'bridge/storage.php'
+      - 'bridge/toss-core.php'
+      - 'bridge/youngcart-core.php'
+      - 'tests/engine/specialists_test.php'
       - 'deploy/noa-app/engine/runtime.js'
       - 'deploy/noa-app/engine/worker-wake.php'
       - 'bridge/muvy*.php'
@@ -84,13 +92,67 @@ on:
 permissions:
   contents: read
 jobs:
+  specialists:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: isolated-noa-ci, MYSQL_DATABASE: noa_subscription_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -pisolated-noa-ci" --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      NOA_MYSQL_DSN: mysql:host=127.0.0.1;port=3306;dbname=noa_subscription_test;charset=utf8mb4
+      NOA_MYSQL_USER: root
+      NOA_MYSQL_PASSWORD: isolated-noa-ci
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'mysqli,pdo_mysql,pdo_sqlite,mbstring,curl'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Verify specialist ownership, real permissions and settlement invariants
+        run: |
+          set -eu
+          for file in deploy/noa-app/engine/*.php bridge/member-access.php bridge/storage.php bridge/toss-core.php bridge/youngcart-core.php deploy/noa-app/database/core.php; do php -l "$file"; done
+          for test in tests/engine/*_test.php; do php "$test"; done
+          php tests/member/access_test.php
+          php tests/sitemap/registry_test.php
+          php tests/database/grammar.php
+          php tests/database/drive_policy.php
+          php tests/subscription/core_test.php
+          php tests/subscription/mysql_test.php
+          php tests/payments/mysql.php
+          php tests/youngcart_mysql.php
+          php tests/kcp/core.php
+          php tests/kcp/mysql.php
+          python tests/payments/race_test.py
+          php tests/payments/http_fixture.php
+          python tests/payments/http_test.py
+          node --test tests/engine/node_runtime.test.mjs tests/lab/muvy.test.mjs
+          python -m unittest discover -s tests/engine -p test_auto_dispatch.py -v
+          python -m unittest discover -s tests/engine -p test_node_runtime.py -v
+          python -m py_compile scripts/n80_single_session_deploy.py
+      - name: Verify shared browser gates before production activation
+        run: |
+          php tests/muvy/fixture.php
+          python scripts/qa/noa-qa-font.py
+          npm install --prefix "$RUNNER_TEMP/n80-browser" --no-save --ignore-scripts --package-lock=false playwright@1.56.1 pixelmatch@7.1.0 pngjs@7.0.0
+          cp scripts/qa/noa-muvy.mjs "$RUNNER_TEMP/n80-browser/muvy.mjs"
+          cp scripts/qa/noa-shared-navigation.mjs "$RUNNER_TEMP/n80-browser/navigation.mjs"
+          cp scripts/qa/noa-design-gate.mjs "$RUNNER_TEMP/n80-browser/design.mjs"
+          node "$RUNNER_TEMP/n80-browser/muvy.mjs"
+          node "$RUNNER_TEMP/n80-browser/navigation.mjs"
+          node "$RUNNER_TEMP/n80-browser/design.mjs"
   deploy:
+    needs: specialists
     concurrency:
       group: noa-production-sftp
       cancel-in-progress: false
     # Integrated data repairs own installation and forbid legacy host staging.
-    if: (github.event_name != 'push' || (!contains(github.event.head_commit.message, '[n80-data]') && !contains(github.event.head_commit.message, '[category-final]') && !contains(github.event.head_commit.message, '[n80-home-orbit]') && !contains(github.event.head_commit.message, '[creative-drafts]'))) && !contains(github.event.head_commit.message, '[n80-jukebox]') && !contains(github.event.head_commit.message, '[n80-browser]') && !contains(github.event.head_commit.message, '[n80-node]') && !contains(github.event.head_commit.message, '[login-continuity]')
-    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' && (github.event_name != 'push' || (!contains(github.event.head_commit.message, '[n80-data]') && !contains(github.event.head_commit.message, '[category-final]') && !contains(github.event.head_commit.message, '[n80-home-orbit]') && !contains(github.event.head_commit.message, '[creative-drafts]'))) && !contains(github.event.head_commit.message, '[n80-jukebox]') && !contains(github.event.head_commit.message, '[n80-browser]') && !contains(github.event.head_commit.message, '[n80-node]') && !contains(github.event.head_commit.message, '[login-continuity]')
+    runs-on: ubuntu-24.04
     environment: production
     timeout-minutes: 20
     services:
@@ -105,6 +167,7 @@ jobs:
       NOA_MYSQL_PASSWORD: noa-test-only
       GH_TOKEN: ${{ github.token }}
       N80_DEPLOY_JUKEBOX_CLI: '1'
+      N80_DEPLOY_SPECIALISTS: ${{ contains(github.event.head_commit.message, '[n80-specialists]') && '1' || '0' }}
       NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
       NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
       NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}

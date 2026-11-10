@@ -116,6 +116,9 @@ def install():
                     channel=transport.open_session(timeout=20);channel.settimeout(15);channel.exec_command(shlex.join(args+[ROOT+'/runtime/stop.mjs']))
                     output=channel.makefile('r').read(512).decode();code=channel.recv_exit_status();channel.close()
                     if code!=0 or 'N80_HUB_STOPPED' not in output:raise RuntimeError('runner_quiescence_unconfirmed')
+            # Another N80 release owns these shared modules; never install a registry with missing dependencies.
+            for name in ['module-contract.php','setup.php','lab.php']:
+                if read(WEB+'/noa-app/engine/'+name) is None:raise RuntimeError('specialist_release_not_installed')
             # New Hub files only. Existing core files use their own guarded owner.
             for target,source in FILES.items():
                 desired=Path(source).read_bytes();old=read(WEB+'/'+target)
@@ -157,6 +160,16 @@ def install():
                     data=bundle.read_bytes();put(ROOT+'/source.bundle',data)
                     source=json.loads(read(ROOT+'/source.json'));source['bundleSha256']=hashlib.sha256(data).hexdigest();source['bundleCommit']=os.environ['GITHUB_SHA']
                     put(ROOT+'/source.json',json.dumps(source).encode())
+            # Keep later source history as small native incremental bundles, with no remote repository dependency.
+            previous=read(ROOT+'/source.json');source=json.loads(previous);base=source.get('historyHead',source.get('bundleCommit'))
+            if base and base!=os.environ['GITHUB_SHA']:
+                subprocess.run(['git','merge-base','--is-ancestor',base,'HEAD'],check=True,capture_output=True)
+                with tempfile.TemporaryDirectory(prefix='n80-hub-history-')as folder:
+                    bundle=Path(folder)/'update.bundle';subprocess.run(['git','bundle','create',str(bundle),base+'..HEAD'],check=True,capture_output=True)
+                    subprocess.run(['git','bundle','verify',str(bundle)],check=True,capture_output=True)
+                    data=bundle.read_bytes();name='history-'+os.environ['GITHUB_SHA']+'.bundle';put(ROOT+'/'+name,data)
+                    source.setdefault('history',[]).append({'commit':os.environ['GITHUB_SHA'],'base':base,'file':name,'sha256':hashlib.sha256(data).hexdigest(),'bytes':len(data)})
+                    source['historyHead']=os.environ['GITHUB_SHA'];put(ROOT+'/source.json',json.dumps(source).encode(),expected_old=previous)
             print('N80_HUB_STAGE source_stored',flush=True)
             previous=read(ROOT+'/control.json');control=json.loads(previous)
             if control.get('stop'):
@@ -203,7 +216,7 @@ def install():
                 for attempt in range(35):
                     current=native_call(key,{'action':'status'})
                     states={r['id']:r['last'] for r in current['operations'] if r['id'] in active}
-                    if all(r and r['state']=='succeeded' for r in states.values()):break
+                    if len(states)==len(active) and all(r and r['state']=='succeeded' for r in states.values()):break
                     time.sleep(4)
                 else:raise RuntimeError('cutover_not_verified:'+','.join(k+':'+(v or {}).get('state','waiting')+':'+(v or {}).get('error','')for k,v in states.items()))
                 print('N80_HUB_CUTOVER',json.dumps({'activeOperations':active,'verifiedReceipts':len(states)}),flush=True)
@@ -211,7 +224,7 @@ def install():
             for entry in s.listdir_attr(ROOT):
                 if re.fullmatch(r'(?:source-initial\.tar\.gz|source\.bundle)\.stage-[a-f0-9]{16}',entry.filename) and stat.S_ISREG(entry.st_mode):
                     s.remove(ROOT+'/'+entry.filename)
-            print('N80_HUB_INSTALLED',json.dumps({'sourceStored':True,'hostNodeRunning':True,'nativeVerification':True,'activeOperations':['hub.verify'],'githubRequiredForHubTick':False,'files':len(FILES)}))
+            print('N80_HUB_INSTALLED',json.dumps({'sourceStored':True,'hostNodeRunning':True,'nativeVerification':True,'activeOperations':native_call(key,{'action':'status'})['operations'],'githubRequiredForHubTick':False,'files':len(FILES)}))
     finally:transport.close()
 
 if __name__ == '__main__':

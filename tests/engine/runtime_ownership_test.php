@@ -4,7 +4,7 @@ require_once dirname(__DIR__,2).'/deploy/noa-app/engine/service-runtime.php';
 require_once dirname(__DIR__,2).'/deploy/noa-app/engine/readiness.php';
 function runtime_expect(bool $condition,string $message):void {if(!$condition)throw new RuntimeException($message);}
 $modules=noa_engine_modules();
-foreach(['creator_lab','identity','commerce','notifications','catalog','personalization','app_lifecycle'] as $id)
+foreach(['creator_lab','sign','pay','notifications','catalog','personalization','install','lab','node','setup','db'] as $id)
     runtime_expect(isset($modules[$id])&&$modules[$id]['sources']!==[],'missing_owner:'.$id);
 runtime_expect(array_keys(n80_module_links())===array_keys($modules),'audit_registry_drift');
 runtime_expect(n80_module_links()['creator_lab']!==[],'creator_lab_not_observed');

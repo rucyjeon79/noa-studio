@@ -7,13 +7,13 @@ function n80_hub_module():array {
 function n80_hub_operations():array {
  return [
   'hub.verify'=>['module'=>'hub','label'=>'호스트 연결 점검','interval'=>60,'timeout'=>20],
-  'ai.text'=>['module'=>'ai_lab','label'=>'AI 텍스트 작업','interval'=>60,'timeout'=>110],
+  'ai.text'=>['module'=>'lab','label'=>'AI 텍스트 작업','interval'=>60,'timeout'=>110],
   'ai.batch'=>['module'=>'creator_lab','label'=>'묶음 작업 복구','interval'=>300,'timeout'=>30],
   'catalog.index'=>['module'=>'catalog','label'=>'곡 색인 갱신','interval'=>900,'timeout'=>110],
   'notifications.dispatch'=>['module'=>'notifications','label'=>'알림 전달','interval'=>60,'timeout'=>30],
   'popularity.calculate'=>['module'=>'personalization','label'=>'인기 집계','interval'=>3600,'timeout'=>110],
-  'members.maintain'=>['module'=>'identity','label'=>'회원 등급·갱신 정리','interval'=>900,'timeout'=>110],
-  'ai.daily_shorts_clock'=>['module'=>'ai_lab','label'=>'쇼츠 일정·준비 상태','interval'=>900,'timeout'=>30],
+  'members.maintain'=>['module'=>'sign','label'=>'회원 등급·갱신 정리','interval'=>900,'timeout'=>110],
+  'ai.daily_shorts_clock'=>['module'=>'lab','label'=>'쇼츠 일정·준비 상태','interval'=>900,'timeout'=>30],
  ];
 }
 function n80_hub_root():string { return dirname(__DIR__,3).'/noa-hub'; }

@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 if(!defined('_GNUBOARD_')&&PHP_SAPI!=='cli'){http_response_code(403);exit;}
+$n80=dirname(__DIR__).'/noa-app/engine/pay.php';
+require_once is_file($n80)?$n80:dirname(__DIR__).'/deploy/noa-app/engine/pay.php';
+unset($n80);
 require_once __DIR__.'/toss-core.php';require_once __DIR__.'/vip-store-core.php';
 function ny_id(string $kind,string $id):string{return 'N'.substr(hash('sha256',$kind.':'.$id),0,19);}
 function ny_catalog():array{
@@ -9,17 +12,8 @@ function ny_catalog():array{
  foreach(nv_products()as $p){$id=ny_id('vip',$p['id']);$out[$id]=['id'=>$id,'source'=>'vip','sourceId'=>$p['id'],'title'=>$p['name'],'price'=>$p['points'],'plan'=>$p['plan'],'days'=>$p['durationDays'],'image'=>$p['image'],'description'=>$p['durationDays'].'일 이용권','orderable'=>true];}
  require_once __DIR__.'/ecosystem-shop.php';foreach(eco_products()as $p){$id=ny_id('goods',$p['id']);$out[$id]=['id'=>$id,'source'=>'goods','sourceId'=>$p['id'],'title'=>$p['title'],'price'=>$p['priceWon'],'image'=>$p['image'],'description'=>$p['description']??'','orderable'=>false,'sourceUrl'=>$p['url'],'optionNote'=>$p['optionNote']??'','shippingNote'=>$p['shippingNote']??''];$native=ns_one('SELECT it_use,it_stock_qty,it_10 FROM '.ns_table('g5_shop_item_table').' WHERE it_id='.ns_e($id));if($native&&$native['it_10']==='noa:goods:'.$p['id']&&(int)$native['it_use']===1&&(int)$native['it_stock_qty']>0)$out[$id]['orderable']=true;}return $out;
 }
-function ny_benefits(array $catalog,array $lines):array{
- if(!$lines||count($lines)>50)throw new DomainException('invalid_cart');$out=['amount'=>0,'points'=>0,'plan'=>null,'days'=>0,'items'=>[]];$seen=[];
- foreach($lines as $r){$id=$r['id']??'';$n=$r['quantity']??0;$price=$r['price']??-1;
- if(!is_string($id)||!isset($catalog[$id])||isset($seen[$id])||!is_int($n)||$n<1||$n>10||!is_int($price)||$price!==$catalog[$id]['price'])throw new DomainException('cart_changed');
- $p=$catalog[$id];if(!$p['orderable']||$p['source']==='goods')throw new DomainException('goods_options_shipping_required');$seen[$id]=true;$out['amount']+=$price*$n;$out['points']+=($p['points']??0)*$n;
- if($p['source']==='vip'){if($out['plan']!==null&&$out['plan']!==$p['plan'])throw new DomainException('mixed_membership');$out['plan']=$p['plan'];$out['days']+=$p['days']*$n;}$out['items'][]=['id'=>$id,'quantity'=>$n,'price'=>$price];}return $out;
-}
-function ny_validate_paid(array $o,array $s):void{
- if(($s['mode']??'')==='points'){if($s['benefits']['points']!==0||$s['benefits']['plan']===null||($o['mb_id']??'')!==$s['owner']||($o['od_id']??'')!==$s['order']||!in_array($o['od_status']??'',['입금','준비','배송','완료'],true)||(int)($o['od_receipt_price']??-1)!==0||(int)($o['od_receipt_point']??-1)!==$s['benefits']['amount']||(int)($o['od_cancel_price']??-1)!==0||(int)($o['od_misu']??-1)!==0)throw new DomainException('payment_unverified');return;}if(($s['mode']??'')!=='live')throw new DomainException('test_no_fulfillment');
- if(($o['mb_id']??'')!==$s['owner']||($o['od_id']??'')!==$s['order']||($o['od_pg']??'')!=='kcp'||!in_array($o['od_status']??'',['입금','준비','배송','완료'],true)||!preg_match('/^[0-9]{14}$/D',(string)($o['od_tno']??''))||(int)($o['od_receipt_price']??-1)!==$s['benefits']['amount']||(int)($o['od_receipt_point']??-1)!==0||(int)($o['od_cancel_price']??-1)!==0||(int)($o['od_misu']??-1)!==0)throw new DomainException('payment_unverified');
-}
+function ny_benefits(array $catalog,array $lines):array{return n80_pay_benefits($catalog,$lines);}
+function ny_validate_paid(array $o,array $s):void{n80_pay_validate_paid($o,$s);}
 function ny_capture():void{
  global $member,$default,$config;$owner=(string)($member['mb_id']??'');$id=(string)get_session('ss_order_id');$cart=(string)get_session(!empty($_POST['sw_direct'])?'ss_cart_direct':'ss_cart_id');$catalog=ny_catalog();
  if(!preg_match('/^[A-Za-z0-9_-]{1,64}$/D',$cart))return;
