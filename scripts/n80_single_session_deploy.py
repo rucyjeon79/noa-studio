@@ -58,6 +58,9 @@ if os.environ.get('N80_DEPLOY_SPECIALISTS') == '1':
 
 # The common-module cutover includes Hub adapters after their specialized dependencies.
 if os.environ.get('N80_DEPLOY_COMMON_MODULES') == '1':
+    # Reviewed UI-test-only commits cannot change any activated source or runtime dependency.
+    # Ancestor, exact preimage, protected-source and concurrent-change checks remain mandatory.
+    release.UNRELATED_PATH_PREFIXES = ('tests/browser-relay/ui.mjs', 'tests/hub/ui.mjs')
     release.FILES = {
         'noa-app/engine/'+name:'deploy/noa-app/engine/'+name for name in (
             'guard.php','notify.php','media-covers.php','media-queue.php','media-worker.php','media.php','creator-lab.php','catalog.php','personalization.php',
