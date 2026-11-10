@@ -1,4 +1,6 @@
 import importlib.util
+import io
+from urllib.error import HTTPError, URLError
 import os
 from pathlib import Path
 import tempfile
@@ -14,6 +16,27 @@ class BrowserRelay(unittest.TestCase):
             result=relay.failure_summary(error,'profile_decode')
             self.assertNotIn('PRIVATE',str(result))
         self.assertEqual(relay.failure_summary(relay.BrowserFailure('profile_restore','operation_failed'),'browser_run'),{'phase':'profile_restore','reason':'operation_failed'})
+    def test_host_http_diagnostics_are_bounded_and_credential_free(self):
+        for body, expected in [(b'{"error":"browser_frame_invalid","token":"PRIVATE"}', 'browser_frame_invalid'),
+                               (b'{"error":"PRIVATE_COOKIE"}', None),
+                               (b'<html>PRIVATE</html>', None),
+                               (b'{"error":[]}', None),
+                               (b'[]', None)]:
+            error = HTTPError('https://private/?SECRET', 409, 'PRIVATE', {'Set-Cookie':'PRIVATE'}, io.BytesIO(body))
+            result = relay.failure_summary(error, 'control_exchange')
+            self.assertEqual(result['phase'], 'control_exchange')
+            self.assertEqual(result['httpStatus'], 409)
+            self.assertEqual(result.get('hostError'), expected)
+            self.assertNotIn('PRIVATE', str(result)); self.assertNotIn('SECRET', str(result))
+        error = HTTPError('https://private', 503, 'PRIVATE', {}, io.BytesIO(b'x'*20000))
+        relay.failure_summary(error, 'control_exchange')
+        self.assertEqual(error.fp.tell(), 4097)
+    def test_local_and_network_diagnostics_do_not_leak_values(self):
+        self.assertEqual(relay.failure_summary(RuntimeError('browser_result_missing'), 'browser_run')['reason'], 'browser_result_missing')
+        self.assertEqual(relay.failure_summary(URLError('PRIVATE'), 'control_exchange')['reason'], 'host_network_unavailable')
+        self.assertEqual(relay.failure_summary(RuntimeError('PRIVATE'), 'PRIVATE'), {'phase':'browser_run','reason':'operation_failed'})
+        self.assertEqual(relay.failure_summary(TimeoutError('PRIVATE'), 'launch')['reason'], 'timeout')
+        self.assertEqual(relay.failure_summary(RuntimeError({'PRIVATE': 1}), 'browser_run')['reason'], 'operation_failed')
     def test_profile_authenticated_encryption_and_isolation(self):
         value = {'cookies': [{'name': 'fixture', 'value': 'PRIVATE_COOKIE'}], 'origins': []}
         cipher = relay.encode_profile(b'k'*64, value)

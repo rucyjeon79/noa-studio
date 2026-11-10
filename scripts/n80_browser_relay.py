@@ -15,12 +15,22 @@ import sys
 import tempfile
 import time
 from urllib.parse import urlparse
+from urllib.error import HTTPError, URLError
 
 ROOT = Path(__file__).resolve().parents[1]
 PRIVATE = '/hosting/noastudio/noa-ai-lab'
 AAD = b'N80_BROWSER_PROFILE_v1'
 LIMIT = 4 * 1024 * 1024
-PHASES = {'launch', 'profile_restore', 'provider_navigation', 'frame_capture', 'control_exchange', 'input', 'profile_save', 'proof'}
+PHASES = {'launch', 'profile_restore', 'provider_navigation', 'frame_capture', 'control_exchange', 'input', 'profile_save', 'proof',
+          'dependency_prepare', 'profile_lookup', 'profile_read', 'profile_decode', 'browser_run'}
+LOCAL_FAILURES = {'runner_browser_dependency_missing', 'browser_response_timeout', 'browser_message_limit',
+                  'browser_connection_failed', 'browser_result_missing', 'browser_exit_failed', 'n80_tick_unavailable',
+                  'profile_pointer', 'profile_checksum', 'profile_shape', 'profile_size', 'unsafe_private_file',
+                  'private_file_changed', 'private_readback', 'private_readback_mismatch'}
+WORKER_ERRORS = {'worker_auth_required', 'worker_unavailable', 'replayed_request', 'invalid_body',
+                 'browser_lease_changed', 'browser_lease_expired', 'browser_not_active', 'browser_ack_invalid',
+                 'browser_frame_invalid', 'browser_profile_unverified', 'browser_profile_checksum',
+                 'method_not_allowed', 'permission_required', 'service_not_registered'}
 
 
 class BrowserFailure(RuntimeError):
@@ -31,14 +41,33 @@ class BrowserFailure(RuntimeError):
 
 
 def failure_summary(error, phase):
-    """Fixed diagnostics only; exception messages can contain cookies, paths or input."""
+    """Whitelist diagnostics; never return a URL, headers, body, profile or exception text."""
+    phase = phase if phase in PHASES else 'browser_run'
     if isinstance(error, BrowserFailure):
         return {'phase': error.phase, 'reason': error.reason}
-    reason = 'operation_failed'
-    if isinstance(error, subprocess.TimeoutExpired): reason = 'timeout'
-    elif isinstance(error, subprocess.CalledProcessError): reason = 'dependency_install_failed'
-    elif isinstance(error, (ValueError, KeyError, TypeError)): reason = 'invalid_saved_state' if phase.startswith('profile') else 'invalid_response'
-    return {'phase': phase, 'reason': reason}
+    result = {'phase': phase, 'reason': 'operation_failed'}
+    if isinstance(error, HTTPError):
+        result['reason'] = 'host_http_rejected'
+        if type(error.code) is int and 400 <= error.code <= 599:
+            result['httpStatus'] = error.code
+        try:
+            reply = json.loads(error.read(4097))
+            code = reply.get('error') if isinstance(reply, dict) else None
+            if isinstance(code, str) and code in WORKER_ERRORS:
+                result['hostError'] = code
+        except Exception:
+            pass
+    elif isinstance(error, (TimeoutError, subprocess.TimeoutExpired)):
+        result['reason'] = 'timeout'
+    elif isinstance(error, URLError):
+        result['reason'] = 'host_network_unavailable'
+    elif isinstance(error, subprocess.CalledProcessError):
+        result['reason'] = 'dependency_install_failed'
+    elif isinstance(error, (ValueError, KeyError, TypeError)):
+        result['reason'] = 'invalid_saved_state' if phase.startswith('profile') else 'invalid_response'
+    elif type(error) is RuntimeError and len(error.args) == 1 and isinstance(error.args[0], str) and error.args[0] in LOCAL_FAILURES:
+        result['reason'] = error.args[0]
+    return result
 
 
 def connection_summary(state, now):
@@ -230,14 +259,18 @@ def main(probe=False):
             return
     frame_logged = False
     def exchange(body):
-        nonlocal frame_logged
+        nonlocal frame_logged, phase
+        phase = 'profile_save' if body.get('command') == 'finish' else 'control_exchange'
         payload = {**body, 'id': session['id'], 'lease': session['lease']}
         result = signed_tick(key, 'n80_browser_tick', json.dumps(payload, separators=(',', ':')).encode(), timeout=40)
         if body.get('frame') and not frame_logged and not result.get('stop'):
             frame_logged = True
             print('N80_BROWSER_FIRST_FRAME_ACCEPTED', json.dumps({'host': urlparse(body['frame']['url']).hostname}), flush=True)
+        phase = 'browser_run'
         return result
     def store(value):
+        nonlocal phase
+        phase = 'profile_save'
         pointer = transfer_private(data=encode_profile(key, value))
         return exchange({'command': 'finish', 'profile': pointer})
     phase = 'dependency_prepare'
