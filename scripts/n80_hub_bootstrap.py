@@ -180,8 +180,9 @@ def install():
             else:raise RuntimeError('hub_execution_unverified:'+json.dumps(json.loads(read(ROOT+'/runner-error.json') or b'{}')))
             # Integrate navigation and registry through the new native deployment path itself.
             package={'version':1,'id':secrets.token_hex(16),'files':[]}
-            for name in ['registry.php','workspaces.php']:
-                source='deploy/noa-app/engine/'+name;target='noa-app/engine/'+name;old=read(WEB+'/'+target);desired=Path(source).read_bytes()
+            integrations=[('deploy/noa-app/engine/'+n,'noa-app/engine/'+n)for n in ['registry.php','workspaces.php']]+[('bridge/lab-worker.php','noa-bridge/lab-worker.php')]
+            for source,target in integrations:
+                old=read(WEB+'/'+target);desired=Path(source).read_bytes()
                 if old==desired:continue
                 known=[subprocess.check_output(['git','show',rev+':'+source])for rev in subprocess.check_output(['git','log','--format=%H','--',source],text=True).splitlines()]
                 if old not in known:raise RuntimeError('integration_preimage_changed')
@@ -197,7 +198,7 @@ def install():
                 print('N80_HUB_NATIVE_RELEASE',json.dumps({'revision':receipt['revision'],'files':len(package['files']),'githubRequiredByRelease':False}),flush=True)
             if os.getenv('N80_HUB_CUTOVER')=='1':
                 current=native_call(key,{'action':'status'})
-                active=['hub.verify','ai.text','ai.batch','catalog.index','notifications.dispatch','popularity.calculate']
+                active=['hub.verify','ai.text','ai.batch','catalog.index','notifications.dispatch','popularity.calculate','members.maintain']
                 native_call(key,{'action':'control','revision':current['revision'],'activeOperations':active})
                 for attempt in range(35):
                     current=native_call(key,{'action':'status'})

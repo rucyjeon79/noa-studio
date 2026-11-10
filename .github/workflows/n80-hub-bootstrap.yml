@@ -20,6 +20,8 @@ jobs:
           php tests/hub/core_test.php
           php tests/engine/registry_test.php
           php tests/engine/runtime_ownership_test.php
+          php tests/subscription/core_test.php
+          php -l bridge/lab-worker.php
           node --test tests/hub/runner.test.mjs
           for file in deploy/noa-app/engine/hub*.php deploy/noa-hub*.php bridge/hub*.php; do php -l "$file"; done
           python -m py_compile scripts/n80_hub_bootstrap.py scripts/n80_auto.py

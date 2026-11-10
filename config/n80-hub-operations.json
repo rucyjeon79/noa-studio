@@ -33,5 +33,10 @@
     "module": "ai_lab",
     "interval": 900,
     "timeout": 30
+  },
+  "members.maintain": {
+    "module": "identity",
+    "interval": 900,
+    "timeout": 110
   }
 }

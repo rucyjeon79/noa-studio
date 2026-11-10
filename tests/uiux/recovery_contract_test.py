@@ -92,6 +92,8 @@ class RecoveryContract(unittest.TestCase):
   # 2026-10-28: explicit monthly 10x login/write/comment/like point policy.
   # Existing native transaction and per-member receipts remain mandatory.
   authorized.update({'bridge/membership-core.php','bridge/monthly-rewards.php'})
+  # 2026-11-10: user-authorized N80 Hub migration; fixed worker and separate deployment identity.
+  authorized.update({'bridge/hub-worker.php','bridge/hub-admin.php'})
   # 2026-11-10: hosting-unavailable alternative, owned by the existing N80 AI LAB worker.
   authorized.update({'bridge/browser-control.php','bridge/worker-browser.php'})
   # 2026-10-28: user authorized Toss card/Kakao checkout; native balance writers remain unchanged.

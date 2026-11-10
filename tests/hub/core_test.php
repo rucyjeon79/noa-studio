@@ -5,6 +5,8 @@ function must(bool $v,string $label):void{if(!$v)throw new RuntimeException($lab
 function rejects(callable $fn,string $needle):void{try{$fn();}catch(Throwable $e){must(str_contains($e->getMessage(),$needle),$needle);return;}throw new RuntimeException('expected rejection: '.$needle);}
 $base=sys_get_temp_dir().'/hub-test-'.bin2hex(random_bytes(6));$root=$base.'/private';$web=$base.'/html';mkdir($root,0700,true);mkdir($web,0700);mkdir($web.'/noa-app',0700);mkdir($web.'/noa-app/engine',0700);
 try{
+ $manifest=json_decode(file_get_contents(dirname(__DIR__,2).'/config/n80-hub-operations.json'),true);
+ must(!array_diff_key($manifest,n80_hub_operations())&&!array_diff_key(n80_hub_operations(),$manifest),'fixed scheduler and PHP operation lists agree');
  n80_hub_write($root,'control.json',['revision'=>1,'activeOperations'=>['hub.verify'],'paused'=>false]);
  $key=str_repeat('a',64);$raw='{}';$ts=(string)time();$nonce=str_repeat('1',32);$sig=hash_hmac('sha256',"N80-HUB-1\n".hash('sha256',$raw)."\n".$ts."\n".$nonce,$key);
  must(n80_hub_auth($raw,['time'=>$ts,'nonce'=>$nonce,'signature'=>$sig],$key,time()),'valid scoped HMAC');
@@ -36,6 +38,8 @@ try{
  must(!n80_hub_release_recover($root,$web)&&file_get_contents($web.'/noa-hub-test.php')==='concurrent edit'&&count(n80_hub_read($root,'journal.json'))>0,'recovery preserves concurrent source');
  must(n80_hub_owner('hub.verify',$root)==='n80_hub'&&n80_hub_owner('ai.text',$root)==='legacy','single execution ownership');
  must(n80_hub_request('hub.verify',$root)==='requested','wake is host metadata only');
+ n80_hub_write($root,'control.json',['revision'=>2,'paused'=>true,'activeOperations'=>['hub.verify','ai.text','ai.batch']]);
+ must(n80_hub_legacy_action('n80_tick',$root)==='n80_hub'&&n80_hub_legacy_action('n80_batch_watchdog',$root)==='n80_hub'&&n80_hub_legacy_action('claim',$root)===null,'old workflow fenced even when paused; media owner unchanged');
  echo "N80_HUB_TESTS_PASSED\n";
 }finally{
  $it=new RecursiveIteratorIterator(new RecursiveDirectoryIterator($base,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::CHILD_FIRST);foreach($it as $f){if($f->isDir()&&!$f->isLink())rmdir($f->getPathname());else unlink($f->getPathname());}rmdir($base);

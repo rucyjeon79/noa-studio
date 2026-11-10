@@ -12,6 +12,7 @@ function n80_hub_operations():array {
   'catalog.index'=>['module'=>'catalog','label'=>'곡 색인 갱신','interval'=>900,'timeout'=>110],
   'notifications.dispatch'=>['module'=>'notifications','label'=>'알림 전달','interval'=>60,'timeout'=>30],
   'popularity.calculate'=>['module'=>'personalization','label'=>'인기 집계','interval'=>3600,'timeout'=>110],
+  'members.maintain'=>['module'=>'identity','label'=>'회원 등급·갱신 정리','interval'=>900,'timeout'=>110],
   'ai.daily_shorts_clock'=>['module'=>'ai_lab','label'=>'쇼츠 일정·준비 상태','interval'=>900,'timeout'=>30],
  ];
 }
@@ -42,6 +43,10 @@ function n80_hub_locked(string $root,callable $fn):mixed {
 function n80_hub_owner(string $operation,?string $root=null):string {
  $s=n80_hub_read($root??n80_hub_root(),'control.json');
  return in_array($operation,$s['activeOperations']??[],true)?'n80_hub':'legacy';
+}
+function n80_hub_legacy_action(string $action,?string $root=null):?string {
+ $op=['n80_tick'=>'ai.text','n80_text_tick'=>'ai.text','n80_batch_watchdog'=>'ai.batch'][$action]??null;
+ return $op===null?null:n80_hub_owner($op,$root);
 }
 function n80_hub_request(string $operation,?string $root=null):string {
  $root??=n80_hub_root();if(!isset(n80_hub_operations()[$operation]))return 'unsupported';
