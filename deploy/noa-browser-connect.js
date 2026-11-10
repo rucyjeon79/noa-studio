@@ -66,7 +66,9 @@ async function send(command,extra={},onAccepted=()=>{}){
 }
 $('browser-refresh').onclick=()=>{feedback();refresh();};
 $('browser-open').onclick=()=>send('open');$('browser-save').onclick=()=>send('save');$('browser-close').onclick=()=>send('close');
-$('browser-keyboard').onclick=()=>{if(!available||state.state!=='active'||!state.frame)return;$('browser-text').focus();};
+const openKeyboard=()=>{if(!available||state.state!=='active'||!state.frame)return;$('browser-text').focus();};
+$('browser-keyboard').onclick=openKeyboard;
+$('browser-keyboard').addEventListener('pointerup',e=>{if(e.isPrimary&&e.pointerType!=='mouse')openKeyboard();});
 $('browser-screen').onclick=e=>{if(!available||!state.inputReady||!state.frame)return;const r=e.currentTarget.getBoundingClientRect();send('input',{event:{kind:'click',x:Math.max(0,Math.min(1279,Math.floor((e.clientX-r.left)*1280/r.width))),y:Math.max(0,Math.min(899,Math.floor((e.clientY-r.top)*900/r.height)))}});};
 for(const b of app.querySelectorAll('[data-target]'))b.onclick=()=>send('input',{event:{kind:'navigate',target:b.dataset.target}});
 for(const b of app.querySelectorAll('[data-key]'))b.onclick=()=>send('input',{event:{kind:'key',key:b.dataset.key}});

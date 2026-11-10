@@ -67,11 +67,11 @@ try{
   await page.locator('#browser-screen').click({position:{x:30,y:30}});
   await page.locator('#browser-input-status').waitFor({state:'visible'});
   const keyboard=page.locator('#browser-keyboard');
-  await keyboard.evaluate(button=>button.addEventListener('click',()=>{window.keyboardGestureFocused=document.activeElement===document.querySelector('#browser-text');},{once:true}));
+  await keyboard.evaluate((button,event)=>button.addEventListener(event,e=>{window.keyboardGestureTrusted=e.isTrusted;window.keyboardGestureFocused=document.activeElement===document.querySelector('#browser-text');},{once:true}),width<768?'pointerup':'click');
   if(width<768)await keyboard.tap();else await keyboard.click();
-  // Touchend can return before the browser dispatches its compatibility click.
-  // Inspect focus inside that click, never focus the field from the test itself.
+  // Inspect focus within the actual touch release or desktop click, never from a test focus call.
   await page.waitForFunction(()=>typeof window.keyboardGestureFocused==='boolean');
+  assert(await page.evaluate(()=>window.keyboardGestureTrusted),'keyboard focus requires a real user gesture');
   assert(await page.locator('#browser-text').isEnabled(),'pending click must not disable the local keyboard');
   assert(await page.evaluate(()=>window.keyboardGestureFocused),'keyboard button must focus the input in its gesture');
   await page.keyboard.type('DUMMY_ONLY');
