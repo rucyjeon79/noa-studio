@@ -1,6 +1,41 @@
 const assert = require('node:assert/strict');
-const { chromium, devices } = require('playwright-core');
+const { chromium, devices, request } = require('playwright-core');
 const origin = 'https://skhnslu-busan.com';
+const checkHeaders = {'X-Busan-News-Check': '1'};
+
+async function verifyCheckViews(browser, article) {
+  const listing = await browser.newPage();
+  const listURL = new URL('/bbs/board.php', origin);
+  listURL.search = new URLSearchParams({bo_table:'busan_news', sfl:'wr_subject', stx:article.title});
+  const readHits = async () => {
+    await listing.goto(listURL.href, {waitUntil:'domcontentloaded'});
+    const row = listing.locator('.cardBox').filter({
+      has:listing.locator('.bo_tit a[href*="wr_id=' + article.id + '"]')
+    });
+    assert.equal(await row.count(), 1, 'exact article counter');
+    return Number((await row.locator('.col-hit').innerText()).replaceAll(',', ''));
+  };
+  try {
+    const before = await readHits();
+    for (const device of ['pc', 'mobile']) {
+      // Separate sessions also catch a guard that only suppresses repeat views.
+      const client = await request.newContext({extraHTTPHeaders:checkHeaders});
+      try {
+        const url = new URL(article.url);
+        url.searchParams.set('device', device);
+        for (let repeat = 0; repeat < 2; repeat++) {
+          const response = await client.get(url.href);
+          assert.equal(response.status(), 200);
+          assert.equal(response.headers()['x-busan-news-view'], 'excluded');
+        }
+      } finally { await client.dispose(); }
+    }
+    const after = await readHits();
+    assert.equal(after, before, 'diagnostic visits changed the article counter');
+    console.log('PASS diagnostic views', article.id, 'before', before, 'after', after, 'four requests in two sessions');
+  } finally { await listing.close(); }
+}
+
 // Read physical positions so a running timer or an animation name cannot pass a frozen ticker.
 async function assertMoves(page) {
   const selector = '.bn-news-group a';
@@ -19,7 +54,7 @@ async function assertMoves(page) {
       {viewport:{width:1440,height:920}}
     ]) {
       const width=options.viewport.width, touch=!!options.hasTouch;
-      const page=await browser.newPage(options);
+      const page=await browser.newPage({...options, extraHTTPHeaders:checkHeaders});
       await page.goto(origin+'/',{waitUntil:'domcontentloaded'});
       const strip=page.locator('#contentsWrap > .kvWrap + #bn-news-strip');
       await strip.waitFor({state:'visible'});
@@ -32,6 +67,7 @@ async function assertMoves(page) {
         el.parentElement.querySelector('.grid-container')?.getBoundingClientRect().top>=el.getBoundingClientRect().bottom-1);
       assert(fits,'home strip alignment');
       if (feed.length) {
+        if (!touch) await verifyCheckViews(browser, feed.reduce((a,b) => Number(a.id)>Number(b.id) ? a : b));
         const links=strip.locator('.bn-news-group:not([aria-hidden]) a');
         await links.first().waitFor({state:'visible'});
         assert.deepEqual(await links.allTextContents(),feed.map(x=>x.title));
@@ -77,7 +113,8 @@ async function assertMoves(page) {
           await assertMoves(page);
         }
         const link=article.url;
-        await page.goto(link,{waitUntil:'domcontentloaded'});
+        const articleResponse = await page.goto(link,{waitUntil:'domcontentloaded'});
+        assert.equal(articleResponse.headers()['x-busan-news-view'], 'excluded');
         await page.getByRole('heading',{name:'OpenAI 뉴스룸',exact:true}).first().waitFor({state:'visible'});
         const card=page.locator('#bo_v_con a.bn-source-card');
         await card.waitFor({state:'visible'});

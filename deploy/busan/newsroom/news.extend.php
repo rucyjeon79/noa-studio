@@ -1,6 +1,40 @@
 <?php
 if (!defined('_GNUBOARD_') || (defined('G5_IS_ADMIN') && G5_IS_ADMIN)) return;
 
+// Mark only this request as viewed before the native counter runs. Restore the
+// original session value before rendering so a later ordinary visit still counts.
+function busan_news_exclude_check_view() {
+    global $bo_table, $wr_id, $board;
+    if (($_SERVER['HTTP_X_BUSAN_NEWS_CHECK'] ?? '') !== '1'
+        || basename($_SERVER['SCRIPT_NAME'] ?? '') !== 'board.php'
+        || $bo_table !== 'busan_news' || (int)$wr_id <= 0
+        || !isset($board['bo_read_point']) || (int)$board['bo_read_point'] !== 0) return;
+
+    // The native viewed-session guard also wraps reading points. Fail closed if
+    // this free newsroom ever starts charging or awarding points for reading.
+    $key = 'ss_view_'.$bo_table.'_'.$wr_id;
+    $existed = array_key_exists($key, $_SESSION);
+    $previous = $_SESSION[$key] ?? null;
+    $restored = false;
+    $restore = static function () use ($key, $existed, $previous, &$restored) {
+        if ($restored) return;
+        $restored = true;
+        if ($existed) $_SESSION[$key] = $previous;
+        else unset($_SESSION[$key]);
+    };
+    $restore_header = static function ($header) use ($restore) {
+        $restore();
+        return $header;
+    };
+    set_session($key, true);
+    add_replace('board_content_head', $restore_header, 1, 1);
+    add_replace('board_mobile_content_head', $restore_header, 1, 1);
+    register_shutdown_function($restore); // Also restore on redirects or errors.
+    header('X-Busan-News-View: excluded');
+    header('Cache-Control: private, no-store');
+}
+busan_news_exclude_check_view();
+
 function busan_news_home_strip() {
     if (!defined('_INDEX_') || !_INDEX_) return;
     $root = G5_URL . '/busan-assistant/newsroom';

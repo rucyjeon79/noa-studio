@@ -26,6 +26,7 @@ jobs:
       - name: Validate newsroom files
         run: |
           php -l deploy/busan/newsroom/news.extend.php
+          php scripts/busan_news/check_views_test.php
           php -l deploy/busan/newsroom/recent.php
           php -l scripts/busan_news/publish.php
           php -l deploy/busan/newsroom/account.php
