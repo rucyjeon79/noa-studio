@@ -48,6 +48,8 @@ def connection_summary(state, now):
     phase = row.get('state') if row.get('state') in allowed else 'disconnected'
     if phase in {'queued', 'active', 'closing'} and row.get('expiresAt', 0) <= now:
         phase = 'expired'
+    elif phase == 'queued' and isinstance(row.get('requestedAt'), int) and row['requestedAt'] + 180 <= now:
+        phase = 'start_timeout'
     return {'state': phase, 'hasFrame': bool(row.get('frame')),
             'framesObserved': isinstance(row.get('frameSeq'), int) and row['frameSeq'] > 0,
             'inputPending': bool(row.get('input')),

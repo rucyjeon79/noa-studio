@@ -38,6 +38,8 @@ class BrowserRelay(unittest.TestCase):
         self.assertFalse(relay.connection_summary(state,100)['inputPending'])
         self.assertNotIn('PRIVATE',str(result))
         self.assertEqual(relay.connection_summary(state,301)['state'],'expired')
+        state['browserControl'].update(state='queued',requestedAt=100,expiresAt=1300)
+        self.assertEqual(relay.connection_summary(state,280)['state'],'start_timeout')
     def test_browser_is_served_before_unrelated_media_setup(self):
         workflow=(ROOT/'.github/workflows/noa-ai-worker.yml').read_text().split('  process:',1)[1]
         transport=workflow.index('name: Prepare the N80 browser transport')
