@@ -175,6 +175,9 @@ jobs:
               browser_files = {'noa-browser-connect.css', 'noa-browser-connect.php', 'noa-browser-connect.js', 'noa-bridge/browser-control.php', 'noa-bridge/worker-browser.php'}
               release.FILES = {path: source for path, source in release.FILES.items() if path in browser_files}
               release.NEW &= browser_files
+              # Reviewed parallel Hub changes do not supply this browser release.
+              # Browser/common sources, this workflow and its publisher stay protected.
+              release.UNRELATED_PATH_PREFIXES = ('docs/', 'tests/hub/', '.github/workflows/n80-engine-facade-production.yml', 'scripts/n80_single_session_deploy.py')
           try:
               release.main()
           except Exception:
