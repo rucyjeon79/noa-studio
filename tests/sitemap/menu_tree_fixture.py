@@ -8,6 +8,7 @@ out.mkdir(parents=True, exist_ok=True)
 php = os.environ.get('PHP_BIN', 'php')
 subprocess.run([php, str(repo/'tests/sitemap/drawer_access.php'), str(out)], check=True)
 root = out/'drawer-root'
+shutil.copytree(repo/'deploy/noa-app/engine',root/'noa-app/engine',dirs_exist_ok=True)
 for src, dest in {
     'deploy/noa-sitemap.php': 'noa-sitemap.php',
     'deploy/noa-app/engine/workspaces.php': 'noa-app/engine/workspaces.php',

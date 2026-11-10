@@ -28,6 +28,7 @@ echo "MySQL 8: read-only enforcement, 1000 row cap, Unicode bound search, aggreg
 // Exercise the separately approved CLI procedure against disposable test data only.
 $base=nd_backup($ro,null);$db->exec('DELETE FROM songs WHERE id=1100');$approval=nd_restore_plan($ro,$base);
 mkdir(G5_PATH.'/noa-app');mkdir(G5_PATH.'/noa-app/database');
+mkdir(G5_PATH.'/noa-app/engine');copy(__DIR__.'/../../deploy/noa-app/engine/db.php',G5_PATH.'/noa-app/engine/db.php');
 foreach(['core.php','restore-cli.php'] as $file)copy(__DIR__.'/../../deploy/noa-app/database/'.$file,G5_PATH.'/noa-app/database/'.$file);
 $bootstrap="<?php define('_GNUBOARD_',true);define('G5_PATH',__DIR__);";
 foreach(['G5_MYSQL_HOST','G5_MYSQL_DB','G5_MYSQL_USER','G5_MYSQL_PASSWORD'] as $c)$bootstrap.='define('.var_export($c,true).','.var_export(constant($c),true).');';

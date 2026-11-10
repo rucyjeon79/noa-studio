@@ -22,7 +22,7 @@ try{
     service_assert(!n80_service_execute('n80_listening_index',[],$context)['ok']&&$GLOBALS['calls']===0,'other_module_execution');
     $result=n80_service_execute('n80_text_tick',[],$context);
     service_assert($result['ok']&&$GLOBALS['calls']===1&&$result['taskStatus']['state']==='idle','specialist_not_executed_once');
-    service_assert($result['runtime']['operation']==='n80_text_tick'&&$result['runtime']['module']==='ai_lab','operation_identity_lost');
+    service_assert($result['runtime']['operation']==='n80_text_tick'&&$result['runtime']['module']==='lab','operation_identity_lost');
     service_assert($GLOBALS['state']['worker']['operations']['n80_text_tick']['state']==='idle','operating_state_not_reported');
     $GLOBALS['state']['config']['workerEnabled']=false;
     $paused=n80_service_execute('n80_text_tick',[],$context);

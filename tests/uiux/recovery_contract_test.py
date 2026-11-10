@@ -55,10 +55,13 @@ class RecoveryContract(unittest.TestCase):
    from readmodel_ownership import verify_shared_catalog_readers_only
    verify_shared_catalog_readers_only(ROOT,baseline)
    paths=[p for p in paths if p not in shared]
+  # 2026-11-10: explicit N80 DB/Sign/Pay specialization and Node status reporting.
+  specialist_bridges={'bridge/storage.php','bridge/member-access.php','bridge/toss-core.php','bridge/youngcart-core.php','bridge/worker-status.php'}
   # The 2026-10-26 directives authorize SQL ordering and N80 text-only automation.
   # Keep this exact-file authorization; FIFO and processing workers remain protected.
   # The 2026-10-27 correction removes title-derived playlist classification.
   authorized={'bridge/catalog-recovery.php','bridge/record-quality.php','bridge/creator-core.php','bridge/catalog.php','bridge/library-records.php','bridge/record-trash.php','bridge/notices.php','bridge/ainoa-automation.php','bridge/lab-worker.php','bridge/category-order-store.php','bridge/ainoa-generation.php','bridge/ainoa-core.php','bridge/ainoa-points.php','bridge/youtube-catalog.php','bridge/lab-api.php','bridge/catalog-store.php','bridge/package-record.php','bridge/package-migration.php','bridge/package-worker.php','bridge/index.php','bridge/lab-creator.php','bridge/taxonomy-store.php','bridge/inline-edit.php','bridge/music-readmodel.php','bridge/user-playlists.php','bridge/world-mv.php','bridge/popularity-events.php','bridge/playcount-policy.php','deploy/noa-app/jukebox/stream.php','deploy/noa-app/jukebox/stream-popularity.php','scripts/noa_jukebox_release.py','scripts/noa_jukebox_upload_worker.py','scripts/noa_jukebox_publish.py'}
+  authorized.update(specialist_bridges)
   # 2026-11-08: authorized N80 playback integration. Processing/stream writers remain protected.
   authorized.update({'deploy/noa-app/jukebox/player.js','deploy/noa-app/jukebox/presentation.js','deploy/noa-app/jukebox/navigation-policy.js','deploy/noa-app/jukebox/system-media.js'})
   # 2026-11-09 KST: requested Korean subtitles in the existing N80 movie agent.

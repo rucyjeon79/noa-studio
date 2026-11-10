@@ -48,11 +48,11 @@ $_GET=['tool'=>getenv('TOOL')];
     $modules=noa_engine_modules();
     foreach(n80_lab_tools() as $id=>$tool){
         if(nam_requirement('/noa-ai-lab.php','GET',['tool'=>$id])!==$tool['access'])exit(1);
-        if(!in_array($id,$modules['ai_lab']['tools'],true))exit(2);
+        if(!in_array($id,$modules['lab']['tools'],true))exit(2);
         if(isset($tool['page'])&&!is_file($tool['page']))exit(3);
     }
     $health=array_column(noa_engine_health_snapshot(getcwd())['modules'],null,'id');
-    if($health['ai_lab']['sourcePresence']!=='present')exit(4);
+    if($health['lab']['sourcePresence']!=='present')exit(4);
     '''
     subprocess.run(['php','-r',check],cwd=site,check=True)
     print('AI LAB registry, role and tool routes passed')

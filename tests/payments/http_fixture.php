@@ -1,6 +1,7 @@
 <?php
 require __DIR__.'/../subscription/native_fixture.php';
 $site='/tmp/noa-toss-http/site';@mkdir($site.'/noa-bridge',0700,true);@mkdir(dirname($site).'/noa-private',0700,true);
+@mkdir($site.'/noa-app/engine',0700,true);foreach(glob(__DIR__.'/../../deploy/noa-app/engine/*.php')as $engineFile)copy($engineFile,$site.'/noa-app/engine/'.basename($engineFile));
 foreach(['toss-config.php','toss-core.php','toss.php','toss-webhook.php','membership-core.php','monthly-rewards.php','member-access.php']as $f)copy('bridge/'.$f,$site.'/noa-bridge/'.$f);
 file_put_contents($site.'/noa-bridge/subscription-core.php','<?php require_once '.var_export(realpath('bridge/subscription-core.php'),true).';');
 copy('deploy/noa-payment-settings.php',$site.'/noa-payment-settings.php');
