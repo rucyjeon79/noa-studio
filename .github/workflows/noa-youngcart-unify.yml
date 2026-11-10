@@ -36,7 +36,7 @@ jobs:
           node --check deploy/noa-ecosystem.js
           python -m py_compile scripts/noa_youngcart_unify.py
   deploy:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[n80-specialists]')
     needs: verify
     runs-on: ubuntu-latest
     environment: production

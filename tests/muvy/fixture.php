@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 $root='/tmp/noa-muvy-fixture/html';@mkdir($root,0700,true);@mkdir(dirname($root).'/noa-ai-lab',0700,true);@mkdir($root.'/noa-bridge',0700,true);file_put_contents(dirname($root).'/noa-ai-lab/master.key',random_bytes(32));
-@mkdir($root.'/noa-app/engine',0700,true);foreach(['ai-lab.php','explorer.php','workspaces.php','lab-home.php'] as $file)copy('deploy/noa-app/engine/'.$file,$root.'/noa-app/engine/'.$file);
+@mkdir($root.'/noa-app/engine',0700,true);foreach(glob('deploy/noa-app/engine/*.php')as $file)copy($file,$root.'/noa-app/engine/'.basename($file));
 $common= <<<'COMMON'
 <?php
 if(defined('_GNUBOARD_'))return;define('_GNUBOARD_',true);define('G5_PATH',__DIR__);session_start();$role=$_COOKIE['qa_role']??'guest';$is_member=$role!=='guest';$is_admin=$role==='admin'?'super':'';$member=$is_member?['mb_id'=>'qa_'.$role,'mb_level'=>$role==='staff'?10:4]:[];

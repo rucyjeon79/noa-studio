@@ -3,7 +3,7 @@
   "authority": "N80 Auto",
   "operations": {
     "jukebox.android_bridge": {
-      "module": "jukebox",
+      "module": "install",
       "workflow": "noa-android.yml",
       "command": [
         "scripts/noa_android_host_bridge.py"
@@ -14,7 +14,7 @@
       "concurrency": "workflow_owned"
     },
     "ai.host_runtime": {
-      "module": "ai_lab",
+      "module": "install",
       "workflow": "noa-ai-worker.yml",
       "command": [
         "scripts/noa_host_media_runtime.py"
@@ -25,7 +25,7 @@
       "concurrency": "workflow_owned"
     },
     "ai.text": {
-      "module": "ai_lab",
+      "module": "lab",
       "workflow": "noa-ai-worker.yml",
       "command": [
         "scripts/noa_n80_ai_worker.py"
@@ -34,7 +34,7 @@
       "concurrency": "workflow_owned"
     },
     "ai.media_guard": {
-      "module": "ai_lab",
+      "module": "lab",
       "workflow": "noa-ai-worker.yml",
       "command": [
         "scripts/noa_lab_worker.py"
@@ -53,7 +53,7 @@
       "concurrency": "workflow_owned"
     },
     "members.maintain": {
-      "module": "identity",
+      "module": "sign",
       "workflow": "noa-membership-maintenance.yml",
       "command": [
         "scripts/noa_membership_control.py",
@@ -92,7 +92,7 @@
       "concurrency": "workflow_owned"
     },
     "commerce.catalog_sync": {
-      "module": "commerce",
+      "module": "pay",
       "workflow": "noa-marpple-sync.yml",
       "command": [
         "scripts/noa_marpple_sync.py"
@@ -150,7 +150,7 @@
       "concurrency": "workflow_owned"
     },
     "ai.daily_shorts": {
-      "module": "ai_lab",
+      "module": "lab",
       "workflow": "noa-ai-worker.yml",
       "command": [
         "scripts/noa_daily_shorts.py"
@@ -159,7 +159,7 @@
       "concurrency": "workflow_owned"
     },
     "engine.node_install": {
-      "module": "ai_lab",
+      "module": "install",
       "workflow": "noa-ai-worker.yml",
       "command": [
         "scripts/n80_node_runtime.py",
@@ -171,7 +171,7 @@
       "concurrency": "workflow_owned"
     },
     "engine.node_verify": {
-      "module": "ai_lab",
+      "module": "node",
       "workflow": "noa-ai-worker.yml",
       "command": [
         "scripts/n80_node_runtime.py",
@@ -181,7 +181,7 @@
       "concurrency": "workflow_owned"
     },
     "ai.media_handoff": {
-      "module": "ai_lab",
+      "module": "install",
       "workflow": "noa-ai-worker.yml",
       "command": [
         "scripts/n80_media_handoff.py"
@@ -190,7 +190,7 @@
       "concurrency": "workflow_owned"
     },
     "jukebox.android_publish": {
-      "module": "jukebox",
+      "module": "install",
       "workflow": "noa-android.yml",
       "command": [
         "scripts/noa_apk_deploy.py"
@@ -226,7 +226,7 @@
       "concurrency": "workflow_owned"
     },
     "ai.media_install": {
-      "module": "ai_lab",
+      "module": "install",
       "workflow": "noa-ai-worker.yml",
       "command": [
         "scripts/n80_media_runtime.py",
@@ -238,7 +238,7 @@
       "concurrency": "workflow_owned"
     },
     "ai.browser_session": {
-      "module": "ai_lab",
+      "module": "lab",
       "workflow": "noa-ai-worker.yml",
       "command": [
         "scripts/n80_browser_relay.py"
@@ -247,7 +247,7 @@
       "concurrency": "workflow_owned"
     },
     "ai.browser_probe": {
-      "module": "ai_lab",
+      "module": "lab",
       "workflow": "noa-ai-worker.yml",
       "command": [
         "scripts/n80_browser_relay.py",
@@ -260,7 +260,7 @@
   "runtimes": {
     "node": {
       "authority": "N80 Engine",
-      "module": "ai_lab",
+      "module": "node",
       "executor": "existing_noa_host",
       "entry": "runtime/node/worker.mjs",
       "operations": [
@@ -282,11 +282,12 @@
         "muvy_provider",
         "muvy_complete",
         "muvy_failed"
-      ]
+      ],
+      "workloadModule": "lab"
     },
     "media": {
       "authority": "N80 Engine",
-      "module": "ai_lab",
+      "module": "lab",
       "executor": "existing_noa_host",
       "entry": "runtime/media/host-runner.mjs",
       "queue": "existing_session_shorts_assembly",

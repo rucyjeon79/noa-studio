@@ -2,6 +2,8 @@
 declare(strict_types=1);
 if (!defined('_GNUBOARD_')) { http_response_code(403); exit; }
 
+require_once dirname(__DIR__).'/engine/db.php';
+
 /** A deliberately small SELECT grammar: it never forwards unparsed SQL. */
 final class NoaSelect {
     private array $tokens = []; private int $i = 0; private array $params = [];
@@ -87,14 +89,7 @@ final class NoaSelect {
         return ['sql'=>$sql.' LIMIT '.$limit.' OFFSET '.$offset,'params'=>$this->params,'limit'=>$limit,'table'=>$table];
     }
 }
-function nd_db(): PDO {
-    foreach(['G5_MYSQL_HOST','G5_MYSQL_DB','G5_MYSQL_USER','G5_MYSQL_PASSWORD'] as $k)if(!defined($k))throw new RuntimeException('db_config_missing');
-    $db=new PDO('mysql:host='.G5_MYSQL_HOST.';dbname='.G5_MYSQL_DB.';charset=utf8mb4',G5_MYSQL_USER,G5_MYSQL_PASSWORD,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_EMULATE_PREPARES=>false,PDO::MYSQL_ATTR_MULTI_STATEMENTS=>false,PDO::MYSQL_ATTR_USE_BUFFERED_QUERY=>false]);
-    $db->exec("SET SESSION sql_mode='STRICT_TRANS_TABLES,NO_BACKSLASH_ESCAPES'");$db->exec("SET SESSION time_zone='+00:00'");
-    $db->exec('SET SESSION max_execution_time=3000');$db->exec('SET SESSION lock_wait_timeout=3');
-    $db->exec('SET SESSION innodb_lock_wait_timeout=3');
-    $db->exec('SET SESSION TRANSACTION READ ONLY');return $db;
-}
+function nd_db(): PDO {return n80_db_readonly_connection();}
 function nd_rows(PDO $db,string $sql,array $params=[]): array { $q=$db->prepare($sql);$q->execute($params);$r=$q->fetchAll(PDO::FETCH_ASSOC);$q->closeCursor();return $r; }
 function nd_tables(PDO $db): array { return nd_rows($db,"SELECT TABLE_NAME,ENGINE,TABLE_ROWS,DATA_LENGTH,INDEX_LENGTH FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME"); }
 function nd_names(PDO $db): array { return array_column(nd_tables($db),'TABLE_NAME'); }

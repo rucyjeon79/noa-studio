@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 $root=sys_get_temp_dir().'/noa-membership-render';@mkdir($root.'/noa-bridge',0700,true);
+@mkdir($root.'/noa-app/engine',0700,true);foreach(glob(__DIR__.'/../../deploy/noa-app/engine/*.php')as $engineFile)copy($engineFile,$root.'/noa-app/engine/'.basename($engineFile));
 file_put_contents($root.'/common.php',"<?php define('_GNUBOARD_',true);\$member=['mb_id'=>'qa','mb_level'=>3];\$is_admin='';\$config=[];");
 foreach(['noa-membership.php','noa-login.php','noa-membership.js','noa-account.css']as $file)copy(__DIR__.'/../../deploy/'.$file,$root.'/'.$file);
 foreach(['social-policy.php','member-access.php']as $file)copy(__DIR__.'/../../bridge/'.$file,$root.'/noa-bridge/'.$file);

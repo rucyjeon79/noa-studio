@@ -5,7 +5,7 @@ declare(strict_types=1);
 const N80_AGENT_VERSION = 1;
 const N80_AGENT_LEASE_SECONDS = 240;
 function n80_agent_contract(array $job=[]): array {
-    return ['version'=>N80_AGENT_VERSION,'module'=>'ai_lab','brain'=>'ChatGPT',
+    return ['version'=>N80_AGENT_VERSION,'module'=>'lab','brain'=>'ChatGPT',
         'execution'=>'existing_subscription_worker','maxDecisions'=>6,
         'tools'=>['song.read','result.validate','result.save'],
         'specialists'=>in_array('gemini_text',$job['agent']['specialists']??[],true)?[['id'=>'gemini_text','connected'=>true,'capabilities'=>['text_review'],'execution'=>'github_private_worker','imageGeneration'=>false,'videoGeneration'=>false]]:[], 'directFirst'=>true];

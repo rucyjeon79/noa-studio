@@ -3,6 +3,7 @@ import tempfile,subprocess,pathlib,shutil,urllib.request,urllib.error,http.cooki
 repo=pathlib.Path(__file__).resolve().parents[2]
 with tempfile.TemporaryDirectory(prefix='noa-ecosystem-http-') as temp:
  root=pathlib.Path(temp);shutil.copytree(repo/'bridge',root/'noa-bridge');shutil.copy(repo/'deploy/noa-products.json',root/'noa-products.json');(root/'data').mkdir()
+ shutil.copytree(repo/'deploy/noa-app/engine',root/'noa-app/engine')
  fixture=(repo/'tests/subscription/native_fixture.php').read_text().replace("__DIR__.'/../../bridge/subscription-core.php'",repr(str(root/'noa-bridge/subscription-core.php')))
  (root/'fixture.php').write_text(fixture)
  common="<?php\nrequire "+repr(str(root/'fixture.php'))+";session_start();define('G5_DATA_PATH',"+repr(str(root/'data'))+");$who=$_SERVER['HTTP_X_FIXTURE_USER']??'';$member=$who===''?[]:['mb_id'=>$who,'mb_level'=>5,'mb_nick'=>$who];$is_admin='';"
