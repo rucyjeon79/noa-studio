@@ -416,7 +416,7 @@
     },
     {
       "file": "noa-category-order-final.yml",
-      "sha256": "7c8038f12035a25cb661855fbc3425e98d151d5dd6a9bf6a2d0c59d8fb7ee2e6",
+      "sha256": "8f5f2e76a8a9f5a5a58a1a4cb3428b5137f56c16a68d48e87b23990df1eecb03",
       "scheduled": false,
       "manual": true,
       "operations": [],
@@ -1572,7 +1572,7 @@
     },
     {
       "file": "noa-navigation-player.yml",
-      "sha256": "bdd7ee632d6a086a4fc42b3482ef3cc3b768e0df2debe49bf9594cd15270dbf5",
+      "sha256": "10fd820c6d49b4afddb8e8ea160891e52dad0be1e797f6032b3abc5dec3a75a8",
       "scheduled": false,
       "manual": false,
       "operations": [],
@@ -1612,7 +1612,7 @@
     },
     {
       "file": "noa-notifications.yml",
-      "sha256": "63e56e727a2b3ca11050a62de58d625cb8da6792e0a14f6346fb2e2407340a06",
+      "sha256": "29c34aa5819fb3543c051b29e9562e8f6bc66feb439f62fc81173fa23298626c",
       "scheduled": false,
       "manual": false,
       "operations": [],
@@ -2204,7 +2204,7 @@
     },
     {
       "file": "noa-store-gifts.yml",
-      "sha256": "a9f1b1d09f64c47f537e9525b3b561ff9fd1043a3dddd54bff3bbc24475586f0",
+      "sha256": "41e8824a747e368b746d58d5b912e1e1a8af02c6d9ceb6c648669495718f63a1",
       "scheduled": false,
       "manual": false,
       "operations": [],
@@ -2408,7 +2408,7 @@
     },
     {
       "file": "noa-upload-status.yml",
-      "sha256": "82fec10d213ede9a72986b17614f62944f2c9244d23ecf40098c234b3b5baf2e",
+      "sha256": "4ae035738d384010ddaee0cdecbef5bd078acd1c11a7f96d6d9f5ed5958b48c1",
       "scheduled": false,
       "manual": true,
       "operations": [],
@@ -2418,7 +2418,7 @@
     },
     {
       "file": "noa-upload-wake.yml",
-      "sha256": "6b11637f9ecb75e441a240592fed812ddf22aa1ebc347ab81dd8382616a9ab33",
+      "sha256": "aae019202dc8a43fe8bf175c52d97a07990a38c93f5fb3fba677914be5d0e092",
       "scheduled": false,
       "manual": true,
       "operations": [],
@@ -2478,7 +2478,7 @@
     },
     {
       "file": "noa-workspace.yml",
-      "sha256": "71e3723d502bf2045f32b7cde5fa94cb87f9519c61a7d30eb990aade1fbe4170",
+      "sha256": "7d3828ee6523d262441fbfb4ab58d4ca7319c8552937c63a95cb5ce99ce8cd64",
       "scheduled": false,
       "manual": false,
       "operations": [],
