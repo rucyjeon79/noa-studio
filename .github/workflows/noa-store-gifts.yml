@@ -44,7 +44,7 @@ jobs:
           python tests/payments/gift_http.py
   publish:
     needs: verify
-    if: (github.event_name == 'push' && !contains(github.event.head_commit.message, '[daily-fortune-release]')) && !contains(github.event.head_commit.message, '[n80-specialists]')
+    if: ((github.event_name == 'push' && !contains(github.event.head_commit.message, '[daily-fortune-release]')) && !contains(github.event.head_commit.message, '[n80-specialists]')) && !contains(github.event.head_commit.message, '[n80-common]')
     runs-on: ubuntu-latest
     environment: production
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}

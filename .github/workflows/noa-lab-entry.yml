@@ -1,21 +1,42 @@
 name: Verify and publish AI LAB entry
 on:
   pull_request:
-    paths: ['deploy/noa-browser-connect.*','bridge/browser-control.php','bridge/worker-browser.php','tests/browser-relay/**','.github/actions/n80-daily-shorts/**','scripts/noa_shorts_github.py','bridge/lab-oauth.php','scripts/qa/noa-drive-connect.mjs','lab/daily_shorts.py','bridge/worker-shorts.php','deploy/noa-app/engine/service-runtime.php','scripts/noa_daily_shorts.py','scripts/noa_shorts_assembly.py','scripts/noa_shorts_storage.py','config/n80-automation.json','.github/workflows/noa-ai-worker.yml','config/n80-daily-shorts.json','bridge/session*.php','bridge/lab-api.php','deploy/noa-ai-lab.*','lab/session-subtitles.py','lab/subtitle-requirements.txt','lab/subtitles.mjs','lab/session-assemble.mjs','tests/session-agent/**','tests/gpt/flow.py','scripts/qa/noa-session-agent.mjs','.github/workflows/noa-lab-entry.yml']
+    paths: ['scripts/noa_browser_release_scope.py','tests/engine/test_browser_release_scope.py','deploy/noa-browser-connect.*','bridge/browser-control.php','bridge/worker-browser.php','tests/browser-relay/**','.github/actions/n80-daily-shorts/**','scripts/noa_shorts_github.py','bridge/lab-oauth.php','scripts/qa/noa-drive-connect.mjs','lab/daily_shorts.py','bridge/worker-shorts.php','deploy/noa-app/engine/service-runtime.php','scripts/noa_daily_shorts.py','scripts/noa_shorts_assembly.py','scripts/noa_shorts_storage.py','config/n80-automation.json','.github/workflows/noa-ai-worker.yml','config/n80-daily-shorts.json','bridge/session*.php','bridge/lab-api.php','deploy/noa-ai-lab.*','lab/session-subtitles.py','lab/subtitle-requirements.txt','lab/subtitles.mjs','lab/session-assemble.mjs','tests/session-agent/**','tests/gpt/flow.py','scripts/qa/noa-session-agent.mjs','.github/workflows/noa-lab-entry.yml']
   push:
     branches: [main, work/n80-browser-media, work/n80-duration-cuts, work/n80-session-agent]
-    paths: ['deploy/noa-browser-connect.*','bridge/browser-control.php','bridge/worker-browser.php','tests/browser-relay/**','.github/actions/n80-daily-shorts/**','scripts/noa_shorts_github.py','bridge/lab-oauth.php','scripts/qa/noa-drive-connect.mjs','lab/daily_shorts.py','bridge/worker-shorts.php','deploy/noa-app/engine/service-runtime.php','scripts/noa_daily_shorts.py','scripts/noa_shorts_assembly.py','scripts/noa_shorts_storage.py','config/n80-automation.json','.github/workflows/noa-ai-worker.yml','config/n80-daily-shorts.json','bridge/session-subtitles.php','lab/session-subtitles.py','lab/subtitles.mjs','bridge/session*.php','lab/session-assemble.mjs','tests/session-agent/**','scripts/qa/noa-session-agent.mjs','deploy/noa-app/engine/ai-lab.php','deploy/noa-gpt.php','.github/workflows/noa-lab-entry.yml','bridge/lab-browser-assets.php','tests/lab/browser_assets_test.php','tests/lab/http_test.py','tests/lab/clip_fixture.b64','bridge/lab-core.php','bridge/lab-api.php','bridge/catalog.php','deploy/noa-ai-lab.js','deploy/noa-ai-lab.php','bridge/muvy*.php','deploy/noa-muvy*','tests/muvy/**','scripts/qa/noa-muvy.mjs']
+    paths: ['scripts/noa_browser_release_scope.py','tests/engine/test_browser_release_scope.py','deploy/noa-browser-connect.*','bridge/browser-control.php','bridge/worker-browser.php','tests/browser-relay/**','.github/actions/n80-daily-shorts/**','scripts/noa_shorts_github.py','bridge/lab-oauth.php','scripts/qa/noa-drive-connect.mjs','lab/daily_shorts.py','bridge/worker-shorts.php','deploy/noa-app/engine/service-runtime.php','scripts/noa_daily_shorts.py','scripts/noa_shorts_assembly.py','scripts/noa_shorts_storage.py','config/n80-automation.json','.github/workflows/noa-ai-worker.yml','config/n80-daily-shorts.json','bridge/session-subtitles.php','lab/session-subtitles.py','lab/subtitles.mjs','bridge/session*.php','lab/session-assemble.mjs','tests/session-agent/**','scripts/qa/noa-session-agent.mjs','deploy/noa-app/engine/ai-lab.php','deploy/noa-gpt.php','.github/workflows/noa-lab-entry.yml','bridge/lab-browser-assets.php','tests/lab/browser_assets_test.php','tests/lab/http_test.py','tests/lab/clip_fixture.b64','bridge/lab-core.php','bridge/lab-api.php','bridge/catalog.php','deploy/noa-ai-lab.js','deploy/noa-ai-lab.php','bridge/muvy*.php','deploy/noa-muvy*','tests/muvy/**','scripts/qa/noa-muvy.mjs']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    outputs:
+      browser_only: ${{ steps.scope.outputs.browser_only }}
     steps:
       - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - name: Select checks for the changed N80 module
+        id: scope
+        env:
+          N80_COMPARE_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          python -m unittest discover -s tests/engine -p 'test_browser_release_scope.py' -v
+          python scripts/noa_browser_release_scope.py
       - uses: shivammathur/setup-php@v2
         with: {php-version: '8.2', extensions: 'pdo_mysql,pdo_sqlite,mbstring,curl,fileinfo'}
       - run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg fonts-noto-cjk
+        if: steps.scope.outputs.browser_only != 'true'
+      - name: Verify browser ownership, session renewal and real HTTP input
+        run: |
+          php -l bridge/browser-control.php
+          php -l bridge/worker-browser.php
+          php -l deploy/noa-browser-connect.php
+          node --check deploy/noa-browser-connect.js
+          php tests/browser-relay/control.php
+          python tests/browser-relay/http_test.py
+          php tests/engine/service_runtime_test.php
+          php tests/engine/single_runtime_policy_test.php
       - name: Verify connection layouts with the operating site shell
         run: |
           python scripts/qa/noa-qa-font.py
@@ -23,6 +44,7 @@ jobs:
           cp tests/browser-relay/ui.mjs "$RUNNER_TEMP/muvy-check/browser-ui.mjs"
           node "$RUNNER_TEMP/muvy-check/browser-ui.mjs"
       - name: Verify native clip receipt and existing worker contracts
+        if: steps.scope.outputs.browser_only != 'true'
         run: |
           for f in bridge/muvy*.php deploy/noa-muvy-panel.php; do php -l "$f"; done
           php -l deploy/noa-gpt.php
@@ -74,15 +96,8 @@ jobs:
           php tests/lab/core_test.php
           python tests/lab/http_test.py
           python tests/explorer/lab_choices.py
-          php -l bridge/browser-control.php
-          php -l bridge/worker-browser.php
-          php -l deploy/noa-browser-connect.php
-          node --check deploy/noa-browser-connect.js
-          php tests/browser-relay/control.php
-          python tests/browser-relay/http_test.py
-          php tests/engine/service_runtime_test.php
-          php tests/engine/single_runtime_policy_test.php
       - name: Verify stored scenes and layouts with an isolated provider
+        if: steps.scope.outputs.browser_only != 'true'
         run: |
           cp scripts/qa/noa-muvy.mjs "$RUNNER_TEMP/muvy-check/check.mjs"
           node "$RUNNER_TEMP/muvy-check/check.mjs"
@@ -111,9 +126,10 @@ jobs:
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
+          N80_BROWSER_ONLY: ${{ needs.verify.outputs.browser_only }}
         run: |
           PYTHONPATH=scripts python - <<'PY'
-          import sys
+          import os, sys
           import noa_ainoa_deploy as release
           release.FILES = {
               'noa-browser-connect.css': 'deploy/noa-browser-connect.css',
@@ -155,6 +171,10 @@ jobs:
               'noa-ai-lab.php': 'deploy/noa-ai-lab.php',
           }
           release.NEW = {'noa-browser-connect.css','noa-browser-connect.php','noa-browser-connect.js','noa-bridge/browser-control.php','noa-bridge/worker-browser.php','noa-bridge/session-shorts-github.php','noa-bridge/session-shorts-drive.php','noa-bridge/session-shorts-drive-view.php','noa-bridge/session-shorts-storage.php','noa-bridge/session-shorts-assemble.php','noa-bridge/session-shorts-subtitles.php','noa-bridge/session-shorts-prepare.php','noa-app/engine/daily-shorts.json','noa-bridge/session-shorts.php','noa-bridge/worker-shorts.php','noa-bridge/session-subtitles.php','noa-bridge/session-agent.php','noa-bridge/session-agent-media.php','noa-bridge/lab-browser-assets.php','noa-bridge/muvy-timeline.php'}
+          if os.getenv('N80_BROWSER_ONLY') == 'true':
+              browser_files = {'noa-browser-connect.css', 'noa-browser-connect.php', 'noa-browser-connect.js', 'noa-bridge/browser-control.php', 'noa-bridge/worker-browser.php'}
+              release.FILES = {path: source for path, source in release.FILES.items() if path in browser_files}
+              release.NEW &= browser_files
           try:
               release.main()
           except Exception:
@@ -164,7 +184,9 @@ jobs:
               raise
           PY
           PYTHONPATH=scripts python - <<'PY'
-          import json
+          import json, os, sys
+          if os.getenv('N80_BROWSER_ONLY') == 'true':
+              sys.exit(0)
           from noa_n80_ai_worker import worker_key,signed_tick
           result=signed_tick(worker_key(),'n80_daily_shorts_tick')
           campaign=result['campaign']

@@ -34,7 +34,7 @@
       "concurrency": "workflow_owned"
     },
     "ai.media_guard": {
-      "module": "lab",
+      "module": "media",
       "workflow": "noa-ai-worker.yml",
       "command": [
         "scripts/noa_lab_worker.py"
@@ -63,7 +63,7 @@
       "concurrency": "workflow_owned"
     },
     "notifications.dispatch": {
-      "module": "notifications",
+      "module": "notify",
       "workflow": "noa-push-dispatch.yml",
       "command": [
         "scripts/noa_push_dispatch.py"
@@ -83,7 +83,7 @@
       "concurrency": "workflow_owned"
     },
     "covers.refresh": {
-      "module": "catalog",
+      "module": "media",
       "workflow": "noa-suno-card-auto.yml",
       "command": [
         "scripts/noa_suno_card_auto.py"
@@ -101,7 +101,7 @@
       "concurrency": "workflow_owned"
     },
     "engine.observe": {
-      "module": "admin",
+      "module": "guard",
       "workflow": "n80-live-observer.yml",
       "command": [
         "scripts/n80_live_observer.py"
@@ -110,7 +110,7 @@
       "concurrency": "workflow_owned"
     },
     "engine.audit": {
-      "module": "admin",
+      "module": "guard",
       "workflow": "n80-app-integration.yml",
       "command": [
         "scripts/n80_app_integration.py"
@@ -119,7 +119,7 @@
       "concurrency": "workflow_owned"
     },
     "engine.integrity": {
-      "module": "admin",
+      "module": "guard",
       "workflow": "n80-guardian-production-audit.yml",
       "command": [
         "scripts/n80_guardian_remote_audit.py"
@@ -139,7 +139,7 @@
       "concurrency": "workflow_owned"
     },
     "jukebox.process": {
-      "module": "jukebox",
+      "module": "media",
       "workflow": "noa-jukebox.yml",
       "command": [
         "scripts/noa_jukebox_release.py"
@@ -199,7 +199,7 @@
       "concurrency": "workflow_owned"
     },
     "jukebox.media_colocate": {
-      "module": "jukebox",
+      "module": "media",
       "workflow": "noa-media-colocate.yml",
       "command": [
         "scripts/noa_media_colocate.py"
@@ -208,7 +208,7 @@
       "concurrency": "workflow_owned"
     },
     "jukebox.media_paths": {
-      "module": "jukebox",
+      "module": "media",
       "workflow": "noa-media-paths.yml",
       "command": [
         "scripts/noa_media_paths.py"
@@ -217,7 +217,7 @@
       "concurrency": "workflow_owned"
     },
     "jukebox.media_retention": {
-      "module": "jukebox",
+      "module": "media",
       "workflow": "noa-media-retention.yml",
       "command": [
         "scripts/noa_media_retention.py"

@@ -33,15 +33,7 @@ function nnt_inline_send(array $job,array $cfg):int{
  try{curl_exec($curl);return (int)curl_getinfo($curl,CURLINFO_RESPONSE_CODE);}finally{curl_close($curl);}
 }
 function nnt_inline_drain(PDO $db,array $cfg,?callable $send=null):array{
- $result=['claimed'=>0,'accepted'=>0,'retry'=>0];if(($cfg['inlineDispatch']??true)!==true||$db->inTransaction())return $result;
- // Cross-request lock bounds load; SQL leases also exclude the scheduled worker.
- if(!(int)nnt_one($db,"SELECT GET_LOCK('noa_notification_inline',0) acquired")['acquired'])return $result;
- try{
-  nnt_collect($db,time());$jobs=nnt_claim($db,time(),2);$result['claimed']=count($jobs);
-  foreach($jobs as $job){try{$code=$send?$send($job,$cfg):nnt_inline_send($job,$cfg);}catch(Throwable $e){$code=0;}
-   nnt_ack($db,[['id'=>$job['id'],'device'=>$job['device'],'lease'=>$job['lease'],'http'=>$code]],time());$result[$code>=200&&$code<300?'accepted':'retry']++;
-  }
-  nnt_exec($db,"INSERT INTO noa_notification_cursor VALUES ('inline_last_run',?) ON DUPLICATE KEY UPDATE position=VALUES(position)",[time()]);
-  return $result;
- }finally{nnt_one($db,"SELECT RELEASE_LOCK('noa_notification_inline') released");}
+ $module=dirname(__DIR__).'/noa-app/engine/notify.php';
+ require_once is_file($module)?$module:dirname(__DIR__).'/deploy/noa-app/engine/notify.php';
+ return n80_notify_drain($db,$cfg,$send);
 }

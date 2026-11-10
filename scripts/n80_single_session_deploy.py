@@ -4,6 +4,7 @@ import noa_ainoa_deploy as release
 
 # Existing libraries remain specialists beneath N80; this script never runs a worker.
 MODULES = (
+    'guard.php','notify.php','media-covers.php','media-queue.php','media-worker.php','media.php','creator-lab.php','catalog.php','personalization.php',
     'module-contract.php','node.php','setup.php','install.php','lab.php','db.php','sign.php','pay.php',
     'workspaces.php','agent-runtime.php','completion-receipt.php',
     'jukebox-references.php', 'jukebox.php',
@@ -18,7 +19,7 @@ MODULES = (
 release.FILES = {'noa-app/engine/' + name: 'deploy/noa-app/engine/' + name for name in MODULES}
 
 release.FILES.update({'noa-bridge/'+name:'bridge/'+name for name in (
-    'storage.php','member-access.php','toss-core.php','youngcart-core.php',
+    'storage.php','member-access.php','toss-core.php','youngcart-core.php','notifications-inline.php',
     'lab-publication.php','muvy-core.php','lab-core.php',
     'ainoa-automation.php', 'worker-text.php', 'worker-batch.php', 'worker-index.php', 'worker-media.php', 'worker-status.php','worker-native.php','worker-muvy.php',
 )})
@@ -54,6 +55,15 @@ if os.environ.get('N80_DEPLOY_SPECIALISTS') == '1':
     if specialist_sources - release.FILES.keys():
         raise RuntimeError('missing_specialist_activation_source')
     release.FILES = {path:source for path,source in release.FILES.items() if path in specialist_sources}
+
+# The common-module cutover includes Hub adapters after their specialized dependencies.
+if os.environ.get('N80_DEPLOY_COMMON_MODULES') == '1':
+    release.FILES = {
+        'noa-app/engine/'+name:'deploy/noa-app/engine/'+name for name in (
+            'guard.php','notify.php','media-covers.php','media-queue.php','media-worker.php','media.php','creator-lab.php','catalog.php','personalization.php',
+            'module-contract.php','sign.php','registry.php','lab.php','guardian.php','jukebox.php','hub.php','hub-specialists.php','hub-covers.php',
+        )
+    } | {'noa-hub.php':'deploy/noa-hub.php'} | {'noa-app/jukebox/queue-core.php':'deploy/noa-app/jukebox/queue-core.php'} | {'noa-bridge/'+name:'bridge/'+name for name in ('notifications-inline.php','worker-media.php','worker-status.php')}
 
 # Preserve Hub registration/navigation from reviewed commit cd6e94e when it is installed.
 release.EXTRA_KNOWN.update({'noa-app/engine/registry.php': ['79d71d6b9d35f6353ab67390be33dfbe2511fb2fc6295f9b10bd45a46b70ca8a'], 'noa-app/engine/workspaces.php': ['3f8dc95c7325983f8c68cae845a71066e65200782eb8eddd4520151fa19f634b']})

@@ -3,7 +3,7 @@ declare(strict_types=1);define('_GNUBOARD_',true);define('NOA_DRIVE_TEST',true);
 require dirname(__DIR__,2).'/bridge/sound-core.php';require dirname(__DIR__,2).'/deploy/noa-app/jukebox/operations.php';
 function check(bool $ok,string $why):void{if(!$ok)throw new RuntimeException($why);}
 function rejects(callable $fn,string $code):void{try{$fn();}catch(Throwable $e){check($e->getMessage()===$code,'expected '.$code.' got '.$e->getMessage());return;}throw new RuntimeException('expected rejection '.$code);}
-$db=new PDO('mysql:host=127.0.0.1;port=3306;dbname=jukebox_test;charset=utf8mb4','root','jukebox-test-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+$db=new PDO('mysql:host=127.0.0.1;port=3306;dbname=jukebox_test;charset=utf8mb4','root',getenv('NOA_JUKEBOX_TEST_PASSWORD')?:'jukebox-test-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
 check(nj_download_name('별/빛:あ"')==='별_빛_あ_.mp3','unicode download filename');
 $db->exec('CREATE TABLE noa_documents(doc_key VARCHAR(191) PRIMARY KEY,kind VARCHAR(32),payload JSON,revision INT,updated_by VARCHAR(32))');nj_schema($db);
 $key='single:upload-fixture:01';$doc=['title'=>'업로드 검증곡','genreId'=>'kpop-original','ep'=>'1','body'=>['sunoUrl'=>'https://suno.com/song/12345678-1234-1234-1234-123456789abc']];$raw=json_encode($doc,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);$db->prepare('INSERT INTO noa_documents VALUES(?,?,?,1,?)')->execute([$key,'single',$raw,'fixture']);$stored=$db->query('SELECT payload FROM noa_documents')->fetchColumn();
@@ -63,7 +63,7 @@ $ids=[];foreach(['A','B','C'] as $label){$k='single:fifo:'.$label;$db->prepare('
 foreach(['B','C','A'] as $label)nu_finish($db,$ids[$label]);
 $ordered=$db->query("SELECT upload_id FROM noa_jukebox_audio_jobs WHERE status='queued' ORDER BY id")->fetchAll(PDO::FETCH_COLUMN);check($ordered===[$ids['B'],$ids['C'],$ids['A']],'FIFO is transfer completion order, not upload initialization');
 $first=nj_operation($db,'upload_claim')['uploads'][0];check($first['id']===$ids['B'],'first completed transfer claims first');
-$other=new PDO('mysql:host=127.0.0.1;port=3306;dbname=jukebox_test;charset=utf8mb4','root','jukebox-test-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);check(nj_operation($other,'upload_claim')['uploads']===[],'another worker connection cannot run a second song');
+$other=new PDO('mysql:host=127.0.0.1;port=3306;dbname=jukebox_test;charset=utf8mb4','root',getenv('NOA_JUKEBOX_TEST_PASSWORD')?:'jukebox-test-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);check(nj_operation($other,'upload_claim')['uploads']===[],'another worker connection cannot run a second song');
 $stale=['id'=>$first['id'],'job_id'=>$first['job_id'],'lease'=>$first['lease']];nj_operation($db,'upload_heartbeat',$stale);
 $db->exec("UPDATE noa_jukebox_audio_jobs SET lease_until=CURRENT_TIMESTAMP()-INTERVAL 1 MINUTE WHERE id=".$first['job_id']);
 $second=nj_operation($db,'upload_claim')['uploads'][0];check($second['id']===$ids['C'],'expired job retries behind new uploads');rejects(fn()=>nj_operation($db,'upload_state',$stale+['status'=>'processing','source_analysis'=>$fixture['source_analysis']]),'upload_lease_changed');

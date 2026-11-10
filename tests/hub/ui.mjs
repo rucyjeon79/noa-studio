@@ -7,7 +7,7 @@ import {spawn} from 'node:child_process';
 import assert from 'node:assert/strict';
 const repo=process.cwd(),base=fs.mkdtempSync(path.join(os.tmpdir(),'hub-ui-')),web=path.join(base,'html'),root=path.join(base,'noa-hub');
 fs.mkdirSync(path.join(web,'noa-app','engine'),{recursive:true});fs.mkdirSync(root,{mode:0o700});
-for(const name of ['hub.php','hub-release.php'])fs.copyFileSync(path.join(repo,'deploy/noa-app/engine',name),path.join(web,'noa-app/engine',name));
+for(const name of fs.readdirSync(path.join(repo,'deploy/noa-app/engine')).filter(n=>n.endsWith('.php')))fs.copyFileSync(path.join(repo,'deploy/noa-app/engine',name),path.join(web,'noa-app/engine',name));
 for(const name of ['noa-hub.php','noa-ui.css','noa-ui.js','noa-brand.js'])fs.copyFileSync(path.join(repo,'deploy',name),path.join(web,name));
 fs.writeFileSync(path.join(web,'common.php'),"<?php session_start(); $is_member=($_COOKIE['fixture']??'')==='admin';$is_admin=$is_member?'super':'';");
 fs.writeFileSync(path.join(root,'control.json'),JSON.stringify({revision:1,paused:false,activeOperations:['hub.verify']}));
@@ -22,6 +22,9 @@ try{
  assert.equal((await page.goto('http://127.0.0.1:8139/noa-hub.php')).status(),403);
  await context.addCookies([{name:'fixture',value:'admin',domain:'127.0.0.1',path:'/'}]);
  await page.goto('http://127.0.0.1:8139/noa-hub.php');assert.equal(await page.getByRole('heading',{name:'N80 Hub',exact:true}).count(),1);
+ fs.mkdirSync('hub-proof',{recursive:true});await page.screenshot({path:'hub-proof/initial.png',fullPage:true});
+ assert.equal(await page.getByText('N80 Notify',{exact:true}).count(),1);
+ assert.equal(await page.getByText('N80 Media',{exact:true}).count(),1);
  assert.equal(await page.getByText('카드 이미지: 최근 보완 2개 · 대기 1개',{exact:true}).count(),1);
  await page.getByRole('button',{name:'일시정지',exact:true}).click();assert.equal(JSON.parse(fs.readFileSync(path.join(root,'control.json'))).paused,true);
  await page.getByRole('button',{name:'재개',exact:true}).click();assert.equal(JSON.parse(fs.readFileSync(path.join(root,'control.json'))).paused,false);

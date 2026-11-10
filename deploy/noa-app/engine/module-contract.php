@@ -2,12 +2,21 @@
 declare(strict_types=1);
 /** Canonical owners. Legacy identifiers resolve to these owners without another executor. */
 function n80_module_aliases():array {
-    return ['ai_lab'=>'lab','database'=>'db','identity'=>'sign','commerce'=>'pay','app_lifecycle'=>'install'];
+    return ['notifications'=>'notify','guardian'=>'guard','ai_lab'=>'lab','database'=>'db','identity'=>'sign','commerce'=>'pay','app_lifecycle'=>'install'];
 }
 function n80_module_id(string $id):string {return n80_module_aliases()[$id]??$id;}
 /** Metadata only. Do not load implementations, connect storage or run installation here. */
 function n80_specialist_modules():array {
     $rows=[
+        'guard'=>['N80 Guard','/noa-work-status.php',[],['operation.failed'],
+            ['noa-app/engine/guard.php','noa-app/engine/guardian.php','noa-app/engine/dispatch-gate.php','noa-app/engine/lease-state.php'],[],
+            ['engine.audit','engine.integrity','engine.observe','service.authorize'],'Existing policy, execution gates and recovery evidence; no second scheduler'],
+        'notify'=>['N80 Notify','/noa-notifications.php',['sign','db'],[],
+            ['noa-app/engine/notify.php','noa-bridge/notifications.php','noa-bridge/notifications-inline.php','noa-bridge/notifications-core.php','noa-bridge/notifications-sources.php'],[],
+            ['notifications.dispatch'],'Existing notification outbox, leases and bounded delivery'],
+        'media'=>['N80 Media','/noa-ai-lab.php',['db','guard'],['audio.ready'],
+            ['noa-app/engine/media.php','noa-app/engine/media-covers.php','noa-app/engine/hub-covers.php','noa-app/engine/media-worker.php','noa-app/engine/media-queue.php','noa-app/jukebox/queue-core.php','noa-bridge/worker-media.php','noa-bridge/lab-publication.php'],['media'],
+            ['media.claim','media.complete','media.failed','media.publish'],'Existing media jobs, verified file publication and processing; playback stays with JukeBox'],
         'node'=>['N80 Node','/noa-work-status.php',['install'],[],
             ['noa-app/engine/node.php'],[],
             ['engine.status','ai.muvy'],'Verified host process execution; no independent queue'],
