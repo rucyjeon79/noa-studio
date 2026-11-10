@@ -20,6 +20,25 @@ ROOT = Path(__file__).resolve().parents[1]
 PRIVATE = '/hosting/noastudio/noa-ai-lab'
 AAD = b'N80_BROWSER_PROFILE_v1'
 LIMIT = 4 * 1024 * 1024
+PHASES = {'launch', 'profile_restore', 'provider_navigation', 'frame_capture', 'control_exchange', 'input', 'profile_save', 'proof'}
+
+
+class BrowserFailure(RuntimeError):
+    def __init__(self, phase, reason):
+        self.phase = phase if phase in PHASES else 'browser_run'
+        self.reason = reason if reason in {'navigation_blocked', 'network_unavailable', 'navigation_failed', 'timeout', 'operation_failed'} else 'operation_failed'
+        super().__init__('browser_operation_failed')
+
+
+def failure_summary(error, phase):
+    """Fixed diagnostics only; exception messages can contain cookies, paths or input."""
+    if isinstance(error, BrowserFailure):
+        return {'phase': error.phase, 'reason': error.reason}
+    reason = 'operation_failed'
+    if isinstance(error, subprocess.TimeoutExpired): reason = 'timeout'
+    elif isinstance(error, subprocess.CalledProcessError): reason = 'dependency_install_failed'
+    elif isinstance(error, (ValueError, KeyError, TypeError)): reason = 'invalid_saved_state' if phase.startswith('profile') else 'invalid_response'
+    return {'phase': phase, 'reason': reason}
 
 
 def connection_summary(state, now):
@@ -37,7 +56,7 @@ def connection_summary(state, now):
             'profileStored': bool(state.get('browserProfile'))}
 
 
-def observe_connection():
+def read_state():
     import paramiko
     from noa_full_inventory import connect
     transport = connect()
@@ -45,9 +64,13 @@ def observe_connection():
         with paramiko.SFTPClient.from_transport(transport) as sftp:
             sftp.get_channel().settimeout(30)
             data = read_private(sftp, PRIVATE + '/state.json', 16 * 1024 * 1024)
-            return connection_summary(json.loads(data), int(time.time()))
+            return json.loads(data)
     finally:
         transport.close()
+
+
+def observe_connection():
+    return connection_summary(read_state(), int(time.time()))
 
 
 def encode_profile(key, value):
@@ -171,6 +194,8 @@ def run_browser(directory, initial, exchange=None, store=None):
                     result = store(message['storageState'])
                 elif kind in ('proof', 'closed'):
                     result = message
+                elif kind == 'error':
+                    raise BrowserFailure(message.get('phase'), message.get('reason'))
                 else:
                     raise RuntimeError('browser_connection_failed')
         if result is None:
@@ -213,15 +238,24 @@ def main(probe=False):
     def store(value):
         pointer = transfer_private(data=encode_profile(key, value))
         return exchange({'command': 'finish', 'profile': pointer})
+    phase = 'dependency_prepare'
     try:
         with tempfile.TemporaryDirectory(prefix='n80-browser-') as tmp:
             directory = Path(tmp)
             browser_ready(directory)
             initial = {'mode': 'probe' if probe else 'connect'}
+            profile = session.get('profile') if session else None
+            if probe:
+                phase = 'profile_lookup'
+                profile = read_state().get('browserProfile')
             if session:
                 initial['expiresAt'] = session['expiresAt']
-                if session.get('profile'):
-                    initial['storageState'] = decode_profile(key, transfer_private(pointer=session['profile']))
+            if profile:
+                phase = 'profile_read'
+                data = transfer_private(pointer=profile)
+                phase = 'profile_decode'
+                initial['storageState'] = decode_profile(key, data)
+            phase = 'browser_run'
             result = run_browser(directory, initial, exchange if session else None, store if session else None)
         if probe:
             result.update(authority='N80 Engine', operation='ai.browser_probe', sourceCommit=os.environ['GITHUB_SHA'],
@@ -233,7 +267,8 @@ def main(probe=False):
                 raise RuntimeError('provider_page_unreachable')
         else:
             print('N80_BROWSER_CONNECTION', json.dumps({'state': result.get('state', 'closed'), 'productionReady': False}))
-    except Exception:
+    except Exception as error:
+        print('N80_BROWSER_FAILURE', json.dumps(failure_summary(error, phase)), flush=True)
         # Child termination above is confirmed before reporting failure; no retry/reclaim.
         if session:
             try:

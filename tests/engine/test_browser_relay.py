@@ -9,6 +9,11 @@ spec = importlib.util.spec_from_file_location('browser_relay', ROOT / 'scripts/n
 relay = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(relay)
 class BrowserRelay(unittest.TestCase):
+    def test_diagnostics_never_emit_remote_exception_text(self):
+        for error in [RuntimeError('PRIVATE_COOKIE password account'),ValueError('PRIVATE_EMAIL'),relay.BrowserFailure('PRIVATE_PHASE','PRIVATE_REASON')]:
+            result=relay.failure_summary(error,'profile_decode')
+            self.assertNotIn('PRIVATE',str(result))
+        self.assertEqual(relay.failure_summary(relay.BrowserFailure('profile_restore','operation_failed'),'browser_run'),{'phase':'profile_restore','reason':'operation_failed'})
     def test_profile_authenticated_encryption_and_isolation(self):
         value = {'cookies': [{'name': 'fixture', 'value': 'PRIVATE_COOKIE'}], 'origins': []}
         cipher = relay.encode_profile(b'k'*64, value)
