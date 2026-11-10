@@ -3,15 +3,18 @@ env:
 name: NOA full reviewed runtime release
 # P0: preserve active music work; fail closed before any unbacked replacement.
 on:
+  push:
+    branches: [main]
   pull_request:
     paths:
       - '.github/workflows/noa-full-runtime-release.yml'
       - 'scripts/noa_full_runtime_deploy.py'
+      - 'scripts/noa_release_identity.py'
       - 'tests/deploy_guard_test.py'
   workflow_dispatch:
   release:
     types: [published]
-permissions: {contents: read}
+permissions: {contents: read, pull-requests: read}
 concurrency: {group: noa-dothome-production, cancel-in-progress: false}
 jobs:
   candidate:
@@ -23,7 +26,7 @@ jobs:
       - name: Verify deploy safety without production credentials
         run: |
           python3 -m pip install PyYAML==6.0.2
-          python3 -m py_compile scripts/noa_full_runtime_deploy.py scripts/noa_full_inventory.py scripts/noa_deploy_guard.py
+          python3 -m py_compile scripts/noa_full_runtime_deploy.py scripts/noa_full_inventory.py scripts/noa_deploy_guard.py scripts/noa_release_identity.py
           python3 -m unittest discover -s tests -p deploy_guard_test.py -v
   runtime:
     if: github.event_name != 'pull_request'
@@ -32,32 +35,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false, fetch-depth: 0, ref: main}
-      - name: Require reviewed main and explicit release authorization
+      - name: Verify merged PR provenance or explicit release approval
         env:
-          NOA_RELEASE_SHA: ${{ vars.NOA_APPROVED_RELEASE_SHA }}
-          NOA_RELEASE_TAG: ${{ github.event.release.tag_name }}
-          NOA_RELEASE_DRAFT: ${{ github.event.release.draft }}
-          NOA_RELEASE_PRERELEASE: ${{ github.event.release.prerelease }}
-        run: |
-          set -eu
-          test "${GITHUB_REF_NAME}" = main || test "${GITHUB_EVENT_NAME}" = release || { echo 'Manual release must run from main'; exit 1; }
-          test -n "${NOA_RELEASE_SHA}" || { echo 'Approved SHA is not configured'; exit 1; }
-          if [ "${GITHUB_EVENT_NAME}" != release ]; then
-            test "${GITHUB_SHA}" = "${NOA_RELEASE_SHA}" || { echo 'SHA is not approved'; exit 1; }
-          fi
-          test "$(git rev-parse HEAD)" = "${NOA_RELEASE_SHA}" || { echo 'Checkout is not approved SHA'; exit 1; }
-          test "$(git rev-parse origin/main)" = "${NOA_RELEASE_SHA}" || { echo 'Main advanced since approval'; exit 1; }
-          if [ "${GITHUB_EVENT_NAME}" = release ]; then
-            test "${NOA_RELEASE_DRAFT}" = false && test "${NOA_RELEASE_PRERELEASE}" = false || { echo 'Draft/prerelease forbidden'; exit 1; }
-            test -n "${NOA_RELEASE_TAG}" || exit 1
-            git fetch --no-tags origin "refs/tags/${NOA_RELEASE_TAG}:refs/tags/${NOA_RELEASE_TAG}"
-            test "$(git rev-list -n 1 "${NOA_RELEASE_TAG}")" = "${NOA_RELEASE_SHA}" || { echo 'Tag is not approved SHA'; exit 1; }
-          fi
+          GITHUB_TOKEN: ${{ github.token }}
+          NOA_APPROVED_RELEASE_SHA: ${{ vars.NOA_APPROVED_RELEASE_SHA }}
+        run: python3 scripts/noa_release_identity.py
       - name: Verify approved commit and release manifest
-        env:
-          NOA_RELEASE_SHA: ${{ vars.NOA_APPROVED_RELEASE_SHA }}
         run: |
-          test "$(git rev-parse HEAD)" = "${NOA_RELEASE_SHA}"
+          test "$(git rev-parse HEAD)" = "${NOA_RELEASE_COMMIT}"
           git diff --exit-code
       - name: Verify release gate rejects unapproved candidates
         run: |
@@ -76,7 +61,7 @@ jobs:
       - name: Validate deployment workflow syntax
         run: |
           python3 -m pip install --user PyYAML==6.0.2
-          python3 -c 'import yaml; d=yaml.safe_load(open(".github/workflows/noa-full-runtime-release.yml")); assert "jobs" in d and "runtime" in d["jobs"]; t=d.get("on",d.get(True)); assert "release" in t and "workflow_dispatch" in t and "push" not in t'
+          python3 -c 'import yaml; d=yaml.safe_load(open(".github/workflows/noa-full-runtime-release.yml")); assert "jobs" in d and "runtime" in d["jobs"]; t=d.get("on",d.get(True)); assert "release" in t and "workflow_dispatch" in t and "push" in t'
       - name: Validate deployment script syntax
         run: |
           python3 -m pip install --user PyYAML==6.0.2
@@ -84,8 +69,8 @@ jobs:
           python3 -m unittest discover -s tests -p deploy_guard_test.py -v
       - name: Verify production release is not a draft or pull request
         run: |
-          test "${GITHUB_EVENT_NAME}" = release || test "${GITHUB_EVENT_NAME}" = workflow_dispatch
-          test "$(git rev-parse HEAD)" = "${{ vars.NOA_APPROVED_RELEASE_SHA }}"
+          test "${GITHUB_EVENT_NAME}" = release || test "${GITHUB_EVENT_NAME}" = workflow_dispatch || test "${GITHUB_EVENT_NAME}" = push
+          test "$(git rev-parse HEAD)" = "${NOA_RELEASE_COMMIT}"
       - name: Validate all active runtime sources and read-only feature tests
         run: |
           find bridge deploy/noa-app deploy/theme/noa_studio -type f -name '*.php' -print0 | xargs -0 -n1 php -l
@@ -114,10 +99,7 @@ jobs:
           NOA_SSH_HOST: ${{ secrets.NOA_FTP_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_FTP_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_FTP_PASSWORD }}
-          NOA_APPROVED_RELEASE_SHA: ${{ vars.NOA_APPROVED_RELEASE_SHA }}
-          NOA_RELEASE_COMMIT: ${{ vars.NOA_APPROVED_RELEASE_SHA }}
           NOA_INCLUDE_MUSIC_VIEW: '1'
-          NOA_RELEASE_SHA_VALIDATED: '1'
         run: |
           python3 scripts/noa_full_runtime_deploy.py
           python3 scripts/noa_p0_storage_check.py
