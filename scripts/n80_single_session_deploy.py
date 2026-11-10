@@ -63,7 +63,7 @@ if os.environ.get('N80_DEPLOY_COMMON_MODULES') == '1':
             'guard.php','notify.php','media-covers.php','media-queue.php','media-worker.php','media.php','creator-lab.php','catalog.php','personalization.php',
             'module-contract.php','sign.php','registry.php','lab.php','guardian.php','jukebox.php','hub.php','hub-specialists.php','hub-covers.php',
         )
-    } | {'noa-app/jukebox/queue-core.php':'deploy/noa-app/jukebox/queue-core.php'} | {'noa-bridge/'+name:'bridge/'+name for name in ('notifications-inline.php','worker-media.php','worker-status.php')}
+    } | {'noa-hub.php':'deploy/noa-hub.php'} | {'noa-app/jukebox/queue-core.php':'deploy/noa-app/jukebox/queue-core.php'} | {'noa-bridge/'+name:'bridge/'+name for name in ('notifications-inline.php','worker-media.php','worker-status.php')}
 
 # Preserve Hub registration/navigation from reviewed commit cd6e94e when it is installed.
 release.EXTRA_KNOWN.update({'noa-app/engine/registry.php': ['79d71d6b9d35f6353ab67390be33dfbe2511fb2fc6295f9b10bd45a46b70ca8a'], 'noa-app/engine/workspaces.php': ['3f8dc95c7325983f8c68cae845a71066e65200782eb8eddd4520151fa19f634b']})

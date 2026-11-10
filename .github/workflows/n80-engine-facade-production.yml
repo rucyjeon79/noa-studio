@@ -162,6 +162,8 @@ jobs:
           node "$RUNNER_TEMP/n80-browser/muvy.mjs"
           node "$RUNNER_TEMP/n80-browser/navigation.mjs"
           node "$RUNNER_TEMP/n80-browser/design.mjs"
+          cp tests/hub/ui.mjs "$RUNNER_TEMP/n80-browser/hub.mjs"
+          node "$RUNNER_TEMP/n80-browser/hub.mjs"
   deploy:
     needs: specialists
     concurrency:
@@ -227,6 +229,8 @@ jobs:
           node "$RUNNER_TEMP/n80-browser/muvy.mjs"
           node "$RUNNER_TEMP/n80-browser/navigation.mjs"
           node "$RUNNER_TEMP/n80-browser/design.mjs"
+          cp tests/hub/ui.mjs "$RUNNER_TEMP/n80-browser/hub.mjs"
+          node "$RUNNER_TEMP/n80-browser/hub.mjs"
       - name: Verify and install N80 modules in one SSH session
         run: python scripts/n80_single_session_deploy.py
       - name: Read back N80 status without creating an AI task and update existing journal
