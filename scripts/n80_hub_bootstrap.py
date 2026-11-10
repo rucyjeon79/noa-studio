@@ -138,6 +138,15 @@ def install():
             put(ROOT+'/node-command.json',json.dumps(args).encode())
             put(ROOT+'/operations.json',Path('config/n80-hub-operations.json').read_bytes())
             put(ROOT+'/dependencies.json',Path('config/n80-hub-dependencies.json').read_bytes())
+            retry=Path('cover-proof/retry.json')
+            if read(ROOT+'/covers-retry.json') is None and retry.exists():
+                if retry.stat().st_size>1048576:raise RuntimeError('cover_retry_inventory_too_large')
+                cache=json.loads(retry.read_text())
+                if not isinstance(cache,dict) or len(cache)>10000:raise RuntimeError('cover_retry_inventory_invalid')
+                for identity,row in cache.items():
+                    if not re.fullmatch('[a-f0-9]{64}',identity) or not isinstance(row,dict) or type(row.get('attempts')) is not int or not 1<=row['attempts']<=10 or type(row.get('next')) not in (int,float) or not 0<=row['next']<=time.time()+172800:raise RuntimeError('cover_retry_entry_invalid')
+                put(ROOT+'/covers-retry.json',json.dumps(cache).encode(),expected_old=None)
+                print('N80_HUB_COVER_RETRIES_IMPORTED',len(cache),flush=True)
             if read(ROOT+'/access.key') is None:put(ROOT+'/access.key',secrets.token_hex(32).encode())
             if read(ROOT+'/control.json') is None:
                 put(ROOT+'/control.json',json.dumps({'revision':1,'paused':False,'activeOperations':['hub.verify']}).encode())
@@ -221,7 +230,7 @@ def install():
                 print('N80_HUB_NATIVE_RELEASE',json.dumps({'revision':receipt['revision'],'files':len(package['files']),'githubRequiredByRelease':False}),flush=True)
             if os.getenv('N80_HUB_CUTOVER')=='1':
                 current=native_call(key,{'action':'status'})
-                active=['hub.verify','ai.text','ai.batch','catalog.index','notifications.dispatch','popularity.calculate','members.maintain']
+                active=['hub.verify','ai.text','ai.batch','catalog.index','notifications.dispatch','popularity.calculate','members.maintain','covers.refresh']
                 native_call(key,{'action':'control','revision':current['revision'],'activeOperations':active})
                 for attempt in range(35):
                     current=native_call(key,{'action':'status'})
@@ -230,6 +239,9 @@ def install():
                     time.sleep(4)
                 else:raise RuntimeError('cutover_not_verified:'+','.join(k+':'+(v or {}).get('state','waiting')+':'+(v or {}).get('error','')for k,v in states.items()))
                 print('N80_HUB_CUTOVER',json.dumps({'activeOperations':active,'verifiedReceipts':len(states)}),flush=True)
+                cover=json.loads(read(ROOT+'/covers-result.json') or b'{}')
+                if cover.get('ok') is not True or cover.get('githubRequired') is not False or cover.get('audioFilesChanged')!=0:raise RuntimeError('native_cover_publication_unverified')
+                print('N80_HUB_COVERS',json.dumps(cover),flush=True)
                 from noa_n80_ai_worker import signed_tick
                 catalog=signed_tick(read('/hosting/noastudio/noa-ai-lab/worker.key').strip(),'n80_listening_index',b'{"verifyCatalog":true}')
                 if not catalog.get('readOnly') or catalog.get('indexed',0)<1 or catalog.get('publicVideos',0)<1:raise RuntimeError('catalog_readonly_verification_failed')

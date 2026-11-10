@@ -72,7 +72,7 @@
     },
     {
       "file": "n80-hub-bootstrap.yml",
-      "sha256": "c740ae7515ad67ffdf3f649c194615bf16f10d4f2f796316450f8730179044b8",
+      "sha256": "11e54dbb1792f8047cd9f14040bc610ccc31536b275711db8ddd214bf7772b2b",
       "scheduled": false,
       "manual": false,
       "operations": [],
@@ -2234,8 +2234,8 @@
     },
     {
       "file": "noa-suno-card-auto.yml",
-      "sha256": "d683617dd5b62a29beddf7a0e92278c52ebfc57bf9cfd2a37bd2ebfa27a1daf1",
-      "scheduled": true,
+      "sha256": "492e7d11fd44ecc9a6463c0986c3887ca9d5bbe4eba65ffc15b3ecc90db54aab",
+      "scheduled": false,
       "manual": true,
       "operations": [
         "covers.refresh"
@@ -2590,8 +2590,8 @@
   "remaining": [
     {
       "module": "media",
-      "label": "음원 최적화·카드 처리",
-      "reason": "기존 Python·FFmpeg 작업 실행기를 호스트 Node·미디어 실행기로 옮기는 작업과 실제 음원 검증이 남았습니다. 기존 대기열을 유지합니다."
+      "label": "음원 최적화",
+      "reason": "기존 Python·FFmpeg 음원 실행기를 호스트 Node·미디어 실행기로 옮기는 작업과 실제 음원 검증이 남았습니다. 곡 카드 이미지는 N80 Media가 기존 PHP 수집·변환·저장 기능을 담당하고 Hub가 호출합니다."
     },
     {
       "module": "lab",

@@ -71,7 +71,7 @@ function n80_hub_status(string $root):array {
  foreach(n80_hub_operations()as $id=>$row){$recent=array_values(array_filter($history,fn($r)=>($r['operation']??'')===$id));$ops[]=['id'=>$id,'label'=>$row['label'],'module'=>$row['module'],'owner'=>in_array($id,$c['activeOperations']??[],true)?'n80_hub':'legacy','last'=>$recent?end($recent):null];}
  return ['ok'=>true,'module'=>'N80 Hub','revision'=>(int)($c['revision']??0),'paused'=>!empty($c['paused']),'heartbeatAt'=>$last,
   'runnerState'=>$last&&time()-$last<180?'running':'not_verified','source'=>n80_hub_read($root,'source.json'),
-  'operations'=>$ops,'dependencies'=>n80_hub_read($root,'dependencies.json'),'receipts'=>array_slice($history,-30)];
+  'operations'=>$ops,'dependencies'=>n80_hub_read($root,'dependencies.json'),'covers'=>n80_hub_read($root,'covers-result.json'),'receipts'=>array_slice($history,-30)];
 }
 /** One request identifier cannot run twice, including after an interrupted response. */
 function n80_hub_execute(string $root,string $operation,string $id,callable $execute):array {
