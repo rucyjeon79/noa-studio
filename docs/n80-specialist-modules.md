@@ -20,7 +20,7 @@ N80 Auto operation IDs, scripts, authorization and workflow ownership are unchan
 
 ## Activation and verification
 
-The existing N80 single-session deployment installs new dependencies before compatibility callers, requires exact known preimages, checks protected source hashes, and rolls back only its own bytes. `[n80-specialists]` releases retain member/payment checks and use this one activation instead of overlapping legacy deployments. The two reviewed Hub preimages are accepted only because both Hub registration and its menu route are explicitly preserved; other drift still fails closed.
+For `[n80-specialists]` commits, the existing N80 single-session deployment limits activation to the 20 changed module/caller sources and installs new dependencies before compatibility callers, requires exact known preimages, checks protected source hashes, and rolls back only its own bytes. `[n80-specialists]` releases retain member/payment checks and use this one activation instead of overlapping legacy deployments. The two reviewed Hub preimages are accepted only because both Hub registration and its menu route are explicitly preserved; other drift still fails closed.
 
 Candidate checks cover PHP syntax, all engine tests, permissions, SELECT-only database grammar, Drive-only backup policy, MySQL settlement/point idempotency and concurrent callbacks, signed service execution, and Node contract/runtime tests. Candidate success does not prove host activation. Production completion additionally requires the existing deploy receipt and signed runtime verification.
 
