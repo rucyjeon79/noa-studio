@@ -29,6 +29,7 @@ on:
       - 'tests/lab/muvy.test.mjs'
       - 'tests/engine/native_consumer_test.php'
       - 'scripts/qa/noa-design-gate.mjs'
+      - 'scripts/n80_design_baseline.py'
       - 'scripts/qa/noa-shared-navigation.mjs'
       - 'scripts/qa/n80-runtime-live.mjs'
       - 'tests/p0/router.php'
@@ -150,6 +151,17 @@ jobs:
           mkdir -p deploy/noa-bridge
           cp bridge/package-record.php bridge/channel-ownership.php deploy/noa-bridge/
           NOA_JUKEBOX_TEST_PASSWORD=isolated-noa-ci php tests/jukebox/upload_mysql_test.php
+      - name: Read operating visual baseline through the pinned host connection
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          N80_BASELINE_ASSETS: ${{ runner.temp }}/n80-operating-assets
+        run: |
+          python -m unittest discover -s tests/engine -p test_design_baseline.py -v
+          python scripts/n80_design_baseline.py
+          echo "N80_BASELINE_ASSETS=$RUNNER_TEMP/n80-operating-assets" >> "$GITHUB_ENV"
       - name: Verify shared browser gates before production activation
         run: |
           php tests/muvy/fixture.php
@@ -160,9 +172,9 @@ jobs:
           cp scripts/qa/noa-design-gate.mjs "$RUNNER_TEMP/n80-browser/design.mjs"
           node "$RUNNER_TEMP/n80-browser/muvy.mjs"
           node "$RUNNER_TEMP/n80-browser/navigation.mjs"
-          node "$RUNNER_TEMP/n80-browser/design.mjs"
           cp tests/hub/ui.mjs "$RUNNER_TEMP/n80-browser/hub.mjs"
           node "$RUNNER_TEMP/n80-browser/hub.mjs"
+          node "$RUNNER_TEMP/n80-browser/design.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'n80-specialist-ui-${{ github.run_id }}', path: 'hub-proof/', retention-days: 3}
@@ -221,6 +233,17 @@ jobs:
           php scripts/qa/inline-edit-seed.php
           php tests/catalog/ainoa_generation_mysql_test.php
           php tests/catalog/ainoa_automation_mysql_test.php
+      - name: Read operating visual baseline through the pinned host connection
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          N80_BASELINE_ASSETS: ${{ runner.temp }}/n80-operating-assets
+        run: |
+          python -m unittest discover -s tests/engine -p test_design_baseline.py -v
+          python scripts/n80_design_baseline.py
+          echo "N80_BASELINE_ASSETS=$RUNNER_TEMP/n80-operating-assets" >> "$GITHUB_ENV"
       - name: Verify the asynchronous MUVY flow in desktop and mobile browsers
         run: |
           python scripts/qa/noa-qa-font.py
@@ -230,9 +253,9 @@ jobs:
           cp scripts/qa/noa-design-gate.mjs "$RUNNER_TEMP/n80-browser/design.mjs"
           node "$RUNNER_TEMP/n80-browser/muvy.mjs"
           node "$RUNNER_TEMP/n80-browser/navigation.mjs"
-          node "$RUNNER_TEMP/n80-browser/design.mjs"
           cp tests/hub/ui.mjs "$RUNNER_TEMP/n80-browser/hub.mjs"
           node "$RUNNER_TEMP/n80-browser/hub.mjs"
+          node "$RUNNER_TEMP/n80-browser/design.mjs"
       - name: Verify and install N80 modules in one SSH session
         run: python scripts/n80_single_session_deploy.py
       - name: Read back N80 status without creating an AI task and update existing journal
