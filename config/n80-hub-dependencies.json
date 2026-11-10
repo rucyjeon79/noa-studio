@@ -50,7 +50,7 @@
     },
     {
       "file": "n80-hub-bootstrap.yml",
-      "sha256": "9a7346287477e9e4b356f70d8a9a29fd1f1425e51b7faf8235b2188727274378",
+      "sha256": "5e7eb9191e74575c8f98d0408f1e2d23bc8d0c5b7a71fb351c9d06959b58745d",
       "scheduled": false,
       "manual": false,
       "operations": []
@@ -1823,7 +1823,7 @@
     },
     {
       "label": "기타 배포·유지관리 작업",
-      "reason": "과거 배포 및 감사 워크플로는 기능별 대체 검증 후 종료합니다. 신규 Hub 패키지 배포는 GitHub 없이 실행됩니다."
+      "reason": "과거 배포·감사 워크플로와 GitHub 이슈·PR·실행 메타데이터는 별도 이관·검증이 남았습니다. 신규 Hub 패키지 배포는 GitHub 없이 실행됩니다."
     }
   ]
 }
