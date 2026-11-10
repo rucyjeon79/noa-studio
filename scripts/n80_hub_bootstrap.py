@@ -218,11 +218,24 @@ def install():
                     time.sleep(4)
                 else:raise RuntimeError('cutover_not_verified:'+','.join(k+':'+(v or {}).get('state','waiting')+':'+(v or {}).get('error','')for k,v in states.items()))
                 print('N80_HUB_CUTOVER',json.dumps({'activeOperations':active,'verifiedReceipts':len(states)}),flush=True)
+                from noa_n80_ai_worker import signed_tick
+                catalog=signed_tick(read('/hosting/noastudio/noa-ai-lab/worker.key').strip(),'n80_listening_index',b'{"verifyCatalog":true}')
+                if not catalog.get('readOnly') or catalog.get('indexed',0)<1 or catalog.get('publicVideos',0)<1:raise RuntimeError('catalog_readonly_verification_failed')
+                print('N80_HUB_CATALOG_READBACK',json.dumps({k:catalog[k]for k in ['readOnly','indexed','written','publicVideos']}),flush=True)
+                proof={'commit':os.environ['GITHUB_SHA'],'verifiedAt':int(time.time()),'operations':states,'sourceRevision':current['source']['revision']}
+                put(ROOT+'/migration.json',json.dumps(proof).encode())
             # Remove only abandoned staging files created by this bootstrap, never source archives or user data.
             for entry in s.listdir_attr(ROOT):
                 if re.fullmatch(r'(?:source-initial\.tar\.gz|source\.bundle)\.stage-[a-f0-9]{16}',entry.filename) and stat.S_ISREG(entry.st_mode):
                     s.remove(ROOT+'/'+entry.filename)
             print('N80_HUB_INSTALLED',json.dumps({'sourceStored':True,'hostNodeRunning':True,'nativeVerification':True,'activeOperations':native_call(key,{'action':'status'})['operations'],'githubRequiredForHubTick':False,'files':len(FILES)}))
+            transport.close()
+            if os.getenv('N80_HUB_CUTOVER')=='1':
+                before=native_call(key,{'action':'status'})['heartbeatAt']
+                time.sleep(65)
+                after=native_call(key,{'action':'status'})
+                if after['heartbeatAt']<=before or after['runnerState']!='running':raise RuntimeError('detached_host_scheduler_unverified')
+                print('N80_HUB_DETACHED_VERIFIED',json.dumps({'sshClosed':True,'previousHeartbeat':before,'heartbeatAt':after['heartbeatAt'],'runnerState':after['runnerState']}),flush=True)
     finally:transport.close()
 
 if __name__ == '__main__':

@@ -1,7 +1,6 @@
 name: NOA membership expiry and consented renewal
 on:
-  schedule:
-    - cron: '7,22,37,52 * * * *'
+  # Scheduled execution moved to the verified N80 Hub host owner.
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

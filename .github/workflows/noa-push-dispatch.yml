@@ -1,8 +1,6 @@
 name: NOA personal push dispatch
 on:
-  schedule:
-    - cron: '0 23 * * *' # 08:00 Asia/Seoul; regular dispatch also catches delayed starts
-    - cron: '2-59/5 * * * *'
+  # Scheduled execution moved to the verified N80 Hub host owner.
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-personal-push, cancel-in-progress: false}

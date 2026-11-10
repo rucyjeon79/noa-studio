@@ -5,8 +5,7 @@ on:
   push:
     branches: [main]
     paths: ['.github/workflows/noa-popularity-hourly.yml']
-  schedule:
-    - cron: '0 * * * *'
+  # Scheduled execution moved to the verified N80 Hub host owner.
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-popularity-hourly, cancel-in-progress: false}
