@@ -68,7 +68,7 @@ def main():
                 error = {}
             print('N80_HUB_DIAGNOSTIC ' + json.dumps({k: error.get(k) for k in ('error','stage','at')}), flush=True)
             raise RuntimeError('hub_heartbeat_not_verified')
-        key = read('/hosting/noastudio/noa-ai-lab/worker.key').strip().decode()
+        key = read('/hosting/noastudio/noa-ai-lab/worker.key').strip()
         status = signed_tick(key, 'n80_status')
         ownership = status.get('moduleOwnership', {})
         if not {'guard', 'notify', 'media'}.issubset(ownership.get('modules', [])) or ownership.get('hub', {}).get('notifications.dispatch') != 'notify' or ownership.get('services', {}).get('complete') != 'media':
