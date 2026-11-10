@@ -19,7 +19,7 @@ function n80_hub_specialist(string $operation):array {
   return ['ok'=>true]+$totals;
  }
  if($operation==='popularity.calculate'){
-  require_once $bridge.'/storage.php';require_once $bridge.'/popularity-store.php';$db=noa_bridge_pdo();
+  require_once $bridge.'/storage.php';require_once $bridge.'/popularity-store.php';$db=noa_bridge_pdo();$db->exec("SET time_zone='+00:00'");
   if(!np_ready($db))throw new RuntimeException('hub_popularity_not_installed');return ['ok'=>true,'result'=>np_calculate($db)];
  }
  if($operation==='members.maintain'){

@@ -40,6 +40,9 @@ release.FILES.update({
 # The specialist refactor owns only its changed sources. In particular, do not
 # redeploy the Hub-owned lab-worker entry or unrelated frontend/media sources.
 if os.environ.get('N80_DEPLOY_SPECIALISTS') == '1':
+    # Reviewed browser diagnosis a709107 changes no source or dependency activated here.
+    # Keep ancestor, exact preimage, protected-file and concurrent-write checks intact.
+    release.UNRELATED_PATH_PREFIXES = ('runtime/browser/relay.mjs', 'scripts/n80_browser_relay.py', 'tests/engine/test_browser_relay.py')
     specialist_sources = {
         'noa-app/engine/'+name for name in (
             'module-contract.php','node.php','setup.php','install.php','lab.php','db.php','sign.php','pay.php',

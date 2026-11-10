@@ -37,6 +37,7 @@ jobs:
       - name: Install and verify the N80-owned source and execution module
         env:
           N80_HUB_INSTALL: '1'
+          N80_HUB_CUTOVER: '1'
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
