@@ -53,7 +53,6 @@ try{
   const retried=await page.waitForResponse(r=>r.url().includes('?api=1')&&r.request().method()==='POST'&&r.request().postDataJSON().command==='retry');
   assert.equal(retried.request().postDataJSON().id,'fixture');assert.equal(posts,beforeRetry+1,'bounded same-session retry');
   view={state:'failed',error:'browser_start_timeout'};
-  await page.locator('#browser-refresh').click();
   await page.getByText('3분 안에 로그인 화면을 시작하지 못했습니다. 아래 버튼으로 다시 연결해 주세요.',{exact:true}).waitFor();
   assert(await page.locator('#browser-open').isEnabled());
   // A lease alone is not a visible browser. Keep controls hidden until a frame arrives.
