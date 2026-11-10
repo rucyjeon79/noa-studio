@@ -12,12 +12,22 @@ jobs:
     runs-on: ubuntu-24.04
     environment: production
     timeout-minutes: 12
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: hub-test-only, MYSQL_DATABASE: noa_hub_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -phub-test-only" --health-interval=5s --health-timeout=5s --health-retries=20
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false, fetch-depth: 0}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'pdo_mysql,mbstring,gd,curl,dom,fileinfo'}
       - name: Validate native host control before any installation
         run: |
           php tests/hub/core_test.php
+          php tests/hub/covers_mysql_test.php
           php tests/engine/registry_test.php
           php tests/engine/runtime_ownership_test.php
           php tests/subscription/core_test.php

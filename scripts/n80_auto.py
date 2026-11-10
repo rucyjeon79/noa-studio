@@ -13,7 +13,7 @@ import urllib.error
 
 
 def host_owned(operation):
-    if operation not in {"ai.text", "catalog.index", "notifications.dispatch", "popularity.calculate", "members.maintain"}:
+    if operation not in {"ai.text", "catalog.index", "notifications.dispatch", "popularity.calculate", "members.maintain", "covers.refresh"}:
         return False
     url = "https://noastudio.ai.kr/noa-hub-owner.php?operation=" + operation
     try:

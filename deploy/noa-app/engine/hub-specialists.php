@@ -5,6 +5,11 @@ function n80_hub_specialist(string $operation):array {
  global $config;
  $web=dirname(__DIR__,2);$bridge=$web.'/noa-bridge';
  if($operation==='hub.verify')return ['ok'=>true,'hostExecution'=>true,'phpVersion'=>PHP_VERSION_ID,'githubRequired'=>false];
+ if($operation==='covers.refresh'){
+  require_once $bridge.'/storage.php';require_once $bridge.'/sound-core.php';require_once $bridge.'/music-readmodel.php';
+  require_once $bridge.'/package-record.php';require_once $bridge.'/suno-cover.php';require_once __DIR__.'/hub-covers.php';
+  return n80_hub_covers(noa_bridge_pdo(),n80_hub_root());
+ }
  $actions=['ai.text'=>'n80_text_tick','ai.batch'=>'n80_batch_watchdog','catalog.index'=>'n80_listening_index','ai.daily_shorts_clock'=>'n80_daily_shorts_tick'];
  if(isset($actions[$operation])){
   require_once __DIR__.'/service-runtime.php';require_once $bridge.'/lab-core.php';
