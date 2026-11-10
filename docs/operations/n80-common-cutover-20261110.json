@@ -1,0 +1,290 @@
+{
+  "date": "2026-11-10",
+  "sourceCommit": "9f6f2921069f2eb44534c0bcd6b9759e316c702a",
+  "release": {
+    "ok": true,
+    "id": "bb52593a6215d446b33e639606b8d591",
+    "packageSha256": "85f598000147369432e1420255921b8b7bfb74b0d00d19fccbf2cbb92f5bd3e8",
+    "revision": 11,
+    "verifiedAt": 1794275300,
+    "files": [
+      {
+        "path": "noa-app/engine/guard.php",
+        "sha256": "c70064ea9c22109edf3cef7d71407a3c8a2ef6f03ecaee5fa80507e50d941350",
+        "bytes": 2569
+      },
+      {
+        "path": "noa-app/engine/notify.php",
+        "sha256": "21046d98e18fbd5de983564010a35c7f17d4cc6e4f12b584f1194b70c3e1c3e6",
+        "bytes": 1848
+      },
+      {
+        "path": "noa-app/engine/media-covers.php",
+        "sha256": "09befd1f5ed90f446bedeff45075a6d6c4b10e175664b9a427d80a6016653c1a",
+        "bytes": 5816
+      },
+      {
+        "path": "noa-app/engine/media-queue.php",
+        "sha256": "9bbbbbffb278ebbbca37397ce0af7b2c072851feaf7db164c4290b3eb6b58ce8",
+        "bytes": 10512
+      },
+      {
+        "path": "noa-app/engine/media-worker.php",
+        "sha256": "e3ae60188d86d6e540bdbe9082a0055b7c4dd8c7182652b512f7cce473abe258",
+        "bytes": 9153
+      },
+      {
+        "path": "noa-app/engine/media.php",
+        "sha256": "bfeb2835a13cfbca3e21cad18c5385de9ef34dfe44a273712cc3edf2601e78c8",
+        "bytes": 1658
+      },
+      {
+        "path": "noa-app/engine/creator-lab.php",
+        "sha256": "97951f31e402e78db3c1c506e541fcb73b0bb35cfa708e9c572e4c9d20b9a5b0",
+        "bytes": 227
+      },
+      {
+        "path": "noa-app/engine/catalog.php",
+        "sha256": "e44bfcaf28568b2dcfc9a9984cb96e7e2dcedd639dc5bbccaac2704e114cdad1",
+        "bytes": 1053
+      },
+      {
+        "path": "noa-app/engine/personalization.php",
+        "sha256": "09b0e6a23b1d494ce1c7044f25ff0d64c66db8c330675a71e35bda9d4d843a12",
+        "bytes": 461
+      },
+      {
+        "path": "noa-app/engine/module-contract.php",
+        "sha256": "cdfeb0a34cf7b7ab5ac7251af2d05b04b74190027e1f6e993bd87811c47a0ed5",
+        "bytes": 4773
+      },
+      {
+        "path": "noa-app/engine/sign.php",
+        "sha256": "ee7876309f552d23aec34fa1ecf5bd14b25ae643222f1e672daf820ec660445d",
+        "bytes": 5838
+      },
+      {
+        "path": "noa-app/engine/registry.php",
+        "sha256": "cd2fd0cc7913186add166ddc26cb907398f01d640b01b43c73e33b16eb77d648",
+        "bytes": 4312
+      },
+      {
+        "path": "noa-app/engine/lab.php",
+        "sha256": "21d572a223bede6455f0bae4797ccd8439fddba43cfec18265fb71ae4c490764",
+        "bytes": 3819
+      },
+      {
+        "path": "noa-app/engine/guardian.php",
+        "sha256": "736a49c0eb743931f1030c46314108a7075a97e4fd1154e3788a830af9cea9e8",
+        "bytes": 270
+      },
+      {
+        "path": "noa-app/engine/jukebox.php",
+        "sha256": "f72880932a0168493c19ccb131e2e7b963598fb1a6c35c38d46697115f72ffcf",
+        "bytes": 1186
+      },
+      {
+        "path": "noa-app/engine/hub.php",
+        "sha256": "f024a47a05ce8988126681653e86513d56ffee0746b27689393733a4a6a31aff",
+        "bytes": 9755
+      },
+      {
+        "path": "noa-app/engine/hub-specialists.php",
+        "sha256": "ebe24a7bea620394303bd4bd56e46aef1e29bd9a209e64d512917646fb0800b7",
+        "bytes": 1424
+      },
+      {
+        "path": "noa-app/engine/hub-covers.php",
+        "sha256": "8f3db2f60ad459e8a9b51e222891575b7de3bbf2475fb4b07bde213202d9e969",
+        "bytes": 698
+      },
+      {
+        "path": "noa-hub.php",
+        "sha256": "c53b27b3e4a2e52ab5343f758d8b473c6754cb26bf0dc29c7f146e4a23b1076e",
+        "bytes": 11732
+      },
+      {
+        "path": "noa-app/jukebox/queue-core.php",
+        "sha256": "788351a4948ed726b0fca07c36cfcbdd91009a5c28e07d5c89fa4af31f67a9d5",
+        "bytes": 177
+      },
+      {
+        "path": "noa-bridge/notifications-inline.php",
+        "sha256": "a7c1705ac905437c568098fca864c831138dc4a04b88daa14419f8c76f9a010c",
+        "bytes": 4064
+      },
+      {
+        "path": "noa-bridge/worker-media.php",
+        "sha256": "aabbfd0cd8b95afd7dec08eae5b13893c6c0c430886cd9bd5f53603c28050d93",
+        "bytes": 303
+      },
+      {
+        "path": "noa-bridge/worker-status.php",
+        "sha256": "93fabb70214c1a280d313788c98013e0352bf7f951ed7f91317b5516eaa21b2c",
+        "bytes": 1836
+      }
+    ],
+    "githubRequired": false,
+    "transport": "chatgpt_direct"
+  },
+  "readback": {
+    "all23FilesVerified": true,
+    "managementConnected": true,
+    "runnerState": "running",
+    "heartbeatAt": 1794275675,
+    "recoveryRequired": false,
+    "operations": [
+      {
+        "id": "hub.verify",
+        "label": "호스트 연결 점검",
+        "module": "hub",
+        "owner": "n80_hub",
+        "last": {
+          "id": "6af2792740afdae838af39bb8e5052ca",
+          "operation": "hub.verify",
+          "module": "hub",
+          "state": "succeeded",
+          "startedAt": 1794275623,
+          "finishedAt": 1794275623,
+          "resultSha256": "e9944952469198c78f48ede0c999a1cec12e33db3517404f2ef597c831c40555"
+        }
+      },
+      {
+        "id": "ai.text",
+        "label": "AI 텍스트 작업",
+        "module": "lab",
+        "owner": "n80_hub",
+        "last": {
+          "id": "6af2792736984271d34a88355f4212f4",
+          "operation": "ai.text",
+          "module": "lab",
+          "state": "succeeded",
+          "startedAt": 1794275623,
+          "finishedAt": 1794275623,
+          "resultSha256": "a242965622ef528b536e055c9dc15ff4764e2f6492151e76ccb45e1bffe698e1"
+        }
+      },
+      {
+        "id": "ai.batch",
+        "label": "묶음 작업 복구",
+        "module": "creator_lab",
+        "owner": "n80_hub",
+        "last": {
+          "id": "6af278e6fbade9fa674af0e249d5177c",
+          "operation": "ai.batch",
+          "module": "creator_lab",
+          "state": "succeeded",
+          "startedAt": 1794275558,
+          "finishedAt": 1794275558,
+          "resultSha256": "cea480e6dbae8d623e20ba5a4e5ceee1f7509df453b1d24d0b51648a1b635056"
+        }
+      },
+      {
+        "id": "catalog.index",
+        "label": "곡 색인 갱신",
+        "module": "catalog",
+        "owner": "n80_hub",
+        "last": {
+          "id": "6af278e6374b594fb318b9b4e8957ccd",
+          "operation": "catalog.index",
+          "module": "catalog",
+          "state": "succeeded",
+          "startedAt": 1794275558,
+          "finishedAt": 1794275559,
+          "resultSha256": "1c5c894bc5f522a63e0dadcfb21cfbd812f63fdadfe23e38e03b29dc887a5612"
+        }
+      },
+      {
+        "id": "notifications.dispatch",
+        "label": "알림 전달",
+        "module": "notify",
+        "owner": "n80_hub",
+        "last": {
+          "id": "6af27927158cf18940c171cf52391e2f",
+          "operation": "notifications.dispatch",
+          "module": "notify",
+          "state": "succeeded",
+          "startedAt": 1794275623,
+          "finishedAt": 1794275625,
+          "resultSha256": "6645c31ee38cd01d92c35e032878255256ddfd4c55d9f274e4b9309eba92f3b9"
+        }
+      },
+      {
+        "id": "popularity.calculate",
+        "label": "인기 집계",
+        "module": "personalization",
+        "owner": "n80_hub",
+        "last": {
+          "id": "6af278e96df031b73a8d5f5fc6331cc7",
+          "operation": "popularity.calculate",
+          "module": "personalization",
+          "state": "succeeded",
+          "startedAt": 1794275561,
+          "finishedAt": 1794275561,
+          "resultSha256": "d70a9e683f2351467a892add506d10ebae844f91ea5c3537faa12d88c3bff437"
+        }
+      },
+      {
+        "id": "members.maintain",
+        "label": "회원 등급·갱신 정리",
+        "module": "sign",
+        "owner": "n80_hub",
+        "last": {
+          "id": "6af278e9786d365a17a34d591d4b7b1e",
+          "operation": "members.maintain",
+          "module": "sign",
+          "state": "succeeded",
+          "startedAt": 1794275561,
+          "finishedAt": 1794275562,
+          "resultSha256": "0752b6bff616449d5c0a5ffb33e7ab8693f9302d362ce78f2c0162e7e8e6c9df"
+        }
+      },
+      {
+        "id": "covers.refresh",
+        "label": "누락된 곡 카드 이미지 보완",
+        "module": "media",
+        "owner": "n80_hub",
+        "last": {
+          "id": "6af278ea7236d5053f1ccca91513e473",
+          "operation": "covers.refresh",
+          "module": "media",
+          "state": "succeeded",
+          "startedAt": 1794275562,
+          "finishedAt": 1794275562,
+          "resultSha256": "3a249921158b26f9a97905293b746604f85783849c9f015dfda726f4cb8964f7"
+        }
+      },
+      {
+        "id": "ai.daily_shorts_clock",
+        "label": "쇼츠 일정·준비 상태",
+        "module": "lab",
+        "owner": "legacy",
+        "last": null
+      }
+    ]
+  },
+  "tests": {
+    "runId": 42737513738,
+    "specialistsJobId": 129570244159,
+    "phpMysql": true,
+    "notificationAudioQueue": true,
+    "zeroPixelDesignComparison": true,
+    "hubMobileDesktop": true
+  },
+  "legacyPublisher": {
+    "runId": 42737513738,
+    "jobId": 129572372914,
+    "result": "obsolete_candidate_no_operating_files_changed"
+  },
+  "nativeAcceptance": {
+    "runId": 42739058685,
+    "jobId": 129575328301,
+    "ok": true,
+    "verifiedSources": 23,
+    "sourceRevision": 11,
+    "canonicalModules": 21,
+    "generationRequests": 0,
+    "controlUnchanged": true,
+    "newSchedulers": 0
+  }
+}
