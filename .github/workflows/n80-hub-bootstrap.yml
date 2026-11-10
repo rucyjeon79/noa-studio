@@ -57,6 +57,7 @@ jobs:
         env:
           N80_HUB_INSTALL: '1'
           N80_HUB_DIAGNOSE: '1'
+          N80_HUB_REPAIR_TRAVERSE: '1'
           N80_HUB_CUTOVER: '1'
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}

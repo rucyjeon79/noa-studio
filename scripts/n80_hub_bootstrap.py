@@ -40,6 +40,23 @@ def access_diagnosis():
         channel.exec_command('id; pwd; ls -ld / /hosting /hosting/noastudio /hosting/noastudio/html /hosting/noastudio/noa-hub; stat -c "%n mode=%a uid=%u gid=%g" /hosting/noastudio /hosting/noastudio/html /hosting/noastudio/noa-hub; test -r /hosting/noastudio/html/noa-gpt.php; printf "gpt_readable=%s\\n" "$?"')
         output=channel.makefile('r').read(8192).decode(errors='replace');error=channel.makefile_stderr('r').read(2048).decode(errors='replace')
         print('N80_HOST_ACCESS_DIAGNOSIS',json.dumps({'output':output,'error':error,'exitCode':channel.recv_exit_status()}),flush=True)
+        if os.environ.get('N80_HUB_REPAIR_TRAVERSE')=='1':
+            # Exactly one owner-authorized repair of the observed 0600 directory.
+            # No recursive chmod, new read/write grant, symlink traversal or retry loop.
+            channel=transport.open_session(timeout=20);channel.settimeout(10)
+            channel.exec_command('printf "%s\\n" "$UID"')
+            uid=channel.makefile('r').read(100).decode().strip();code=channel.recv_exit_status();channel.close()
+            if code!=0 or not uid.isdecimal():raise RuntimeError('host_uid_unverified')
+            with paramiko.SFTPClient.from_transport(transport) as s:
+                home='/hosting/noastudio';info=s.lstat(home);mode=stat.S_IMODE(info.st_mode)
+                if not stat.S_ISDIR(info.st_mode) or info.st_uid!=int(uid):raise RuntimeError('home_owner_unverified')
+                if mode!=0o600:raise RuntimeError('home_mode_changed_do_not_modify')
+                s.chmod(home,mode|0o111)
+                after=s.lstat(home)
+                if stat.S_IMODE(after.st_mode)!=0o711 or after.st_uid!=info.st_uid:raise RuntimeError('home_traversal_repair_unverified')
+                # Verify only fixed account paths. Do not read credentials or user records.
+                access={p:stat.S_ISDIR(s.lstat(home+'/'+p).st_mode) for p in ['html','noa-hub']}
+                print('N80_HOST_TRAVERSAL_REPAIRED',json.dumps({'before':'0600','after':'0711','ownerVerified':True,'directoriesAccessible':access}),flush=True)
     finally:transport.close()
 
 
