@@ -23,14 +23,14 @@ function call(body, timeout=20000) {
   const data=JSON.stringify(body), key=fs.readFileSync('/hosting/noastudio/noa-ai-lab/worker.key','utf8').trim();
   if(!/^[a-f0-9]{64}$/.test(key))throw new Error('hub_key_invalid');
   const ts=String(Math.floor(Date.now()/1000)), nonce=crypto.randomBytes(16).toString('hex');
-  const route=read('transport.json',{route:'https_ipv4'}).route;if(!['https_ipv4','loopback'].includes(route))throw new Error('hub_transport_invalid');
-  const local=route==='loopback',client=local?http:https;
+  const route=read('transport.json',{route:'https_ipv4'}).route;if(!['https_ipv4','https_loopback','loopback'].includes(route))throw new Error('hub_transport_invalid');
+  const local=route==='loopback',client=local?http:https;const hostname=route==='https_ipv4'?'noastudio.ai.kr':'127.0.0.1';
   return new Promise((resolve,reject)=>{
-    const req=client.request({hostname:local?'127.0.0.1':'noastudio.ai.kr',family:4,path:'/noa-bridge/hub-worker.php',method:'POST',timeout,
+    const req=client.request({hostname,...(!local?{servername:'noastudio.ai.kr'}:{}),family:4,path:'/noa-bridge/hub-worker.php',method:'POST',timeout,
       headers:{Host:'noastudio.ai.kr','Content-Type':'application/json','Content-Length':Buffer.byteLength(data),'X-N80-Time':ts,'X-N80-Nonce':nonce,'X-N80-Signature':signature(data,key,ts,nonce)}},res=>{
       let chunks=[],bytes=0;res.on('data',chunk=>{bytes+=chunk.length;if(bytes>262144){res.destroy();reject(new Error('hub_output_limit'));}else chunks.push(chunk);});
       res.on('end',()=>{try{const result=JSON.parse(Buffer.concat(chunks).toString());if(res.statusCode!==200||result.ok!==true)throw new Error(result.error||'hub_http_failed');resolve(result);}catch(e){reject(e);}});res.on('error',reject);
-    });req.on('timeout',()=>req.destroy(new Error('hub_timeout')));req.on('error',reject);req.end(data);
+    });const deadline=setTimeout(()=>req.destroy(new Error('hub_timeout')),timeout);req.once('close',()=>clearTimeout(deadline));req.on('timeout',()=>req.destroy(new Error('hub_timeout')));req.on('error',reject);req.end(data);
   });
 }
 export async function run() {
@@ -44,6 +44,7 @@ export async function run() {
   let stopping=false;
   process.on('uncaughtException',()=>{atomic('runner-error.json',{error:'hub_runner_failed',at:Date.now()});stop();});
   while(!stopping){
+    if(read('control.json').stop===true)break;
     try{
       const beat=await call({action:'heartbeat'}), now=Math.floor(Date.now()/1000);
       if(beat.control.stop===true){stopping=true;break;}

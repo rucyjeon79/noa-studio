@@ -91,31 +91,6 @@ def install():
                 if current!=old:raise RuntimeError('concurrent_change')
                 s.posix_rename(temp,p)
             mkdir(ROOT);mkdir(ROOT+'/runtime');print('N80_HUB_STAGE directories',flush=True)
-            # Quiesce the previous fixed runner before changing its protocol or public handlers.
-            if read(ROOT+'/runtime/runner.mjs') not in (None,Path('runtime/hub/runner.mjs').read_bytes()):
-                previous=read(ROOT+'/control.json')
-                if previous:
-                    control=json.loads(previous);control['stop']=True;control['revision']=control.get('revision',0)+1
-                    put(ROOT+'/control.json',json.dumps(control).encode(),expected_old=previous)
-                    for attempt in range(40):
-                        try:s.lstat(ROOT+'/runner.lock')
-                        except FileNotFoundError:break
-                        heartbeat=json.loads(read(ROOT+'/status.json') or b'{}').get('heartbeatAt',0)
-                        if time.time()-heartbeat>180:break
-                        time.sleep(4)
-                    else:raise RuntimeError('runner_quiescence_unconfirmed')
-            # New Hub files only. Existing core files use their own guarded owner.
-            for target,source in FILES.items():
-                desired=Path(source).read_bytes();old=read(WEB+'/'+target)
-                known=set()
-                for rev in subprocess.check_output(['git','log','--format=%H','--',source],text=True).splitlines():
-                    known.add(subprocess.check_output(['git','show',rev+':'+source]))
-                if old is not None and old not in known and old!=desired:raise RuntimeError('unknown_hub_version')
-                put(WEB+'/'+target,desired,0o644)
-            print('N80_HUB_STAGE php_sources',flush=True)
-            for name in ['runner.mjs','launch.mjs','probe.mjs']:put(ROOT+'/runtime/'+name,Path('runtime/hub/'+name).read_bytes())
-            put(ROOT+'/client.py',Path('scripts/n80_hub_client.py').read_bytes())
-            put(ROOT+'/operations-guide.md',Path('docs/operations/n80-hub.md').read_bytes())
             manifest=json.loads(read('/hosting/noastudio/noa-ai-lab/host-runtime/node-current.json'))
             digest=manifest['nodeSha256']
             if not re.fullmatch('[a-f0-9]{64}',digest):raise RuntimeError('node_manifest_invalid')
@@ -131,11 +106,33 @@ def install():
             actual=channel.makefile('r').read(512).decode().strip();code=channel.recv_exit_status();channel.close()
             if code!=0 or actual!=digest:raise RuntimeError('node_hash_mismatch')
             print('N80_HUB_STAGE node_verified',flush=True)
+            put(ROOT+'/runtime/stop.mjs',Path('runtime/hub/stop.mjs').read_bytes())
+            # Quiesce the previous fixed runner before changing its protocol or public handlers.
+            if read(ROOT+'/runtime/runner.mjs') not in (None,Path('runtime/hub/runner.mjs').read_bytes()):
+                previous=read(ROOT+'/control.json')
+                if previous:
+                    control=json.loads(previous);control['stop']=True;control['revision']=control.get('revision',0)+1
+                    put(ROOT+'/control.json',json.dumps(control).encode(),expected_old=previous)
+                    channel=transport.open_session(timeout=20);channel.settimeout(15);channel.exec_command(shlex.join(args+[ROOT+'/runtime/stop.mjs']))
+                    output=channel.makefile('r').read(512).decode();code=channel.recv_exit_status();channel.close()
+                    if code!=0 or 'N80_HUB_STOPPED' not in output:raise RuntimeError('runner_quiescence_unconfirmed')
+            # New Hub files only. Existing core files use their own guarded owner.
+            for target,source in FILES.items():
+                desired=Path(source).read_bytes();old=read(WEB+'/'+target)
+                known=set()
+                for rev in subprocess.check_output(['git','log','--format=%H','--',source],text=True).splitlines():
+                    known.add(subprocess.check_output(['git','show',rev+':'+source]))
+                if old is not None and old not in known and old!=desired:raise RuntimeError('unknown_hub_version')
+                put(WEB+'/'+target,desired,0o644)
+            print('N80_HUB_STAGE php_sources',flush=True)
+            for name in ['runner.mjs','launch.mjs','probe.mjs','stop.mjs']:put(ROOT+'/runtime/'+name,Path('runtime/hub/'+name).read_bytes())
+            put(ROOT+'/client.py',Path('scripts/n80_hub_client.py').read_bytes())
+            put(ROOT+'/operations-guide.md',Path('docs/operations/n80-hub.md').read_bytes())
             channel=transport.open_session(timeout=20);channel.settimeout(35);channel.exec_command(shlex.join(args+[ROOT+'/runtime/probe.mjs']))
             raw=channel.makefile('r').read(4096).decode();code=channel.recv_exit_status();channel.close()
             if code!=0:raise RuntimeError('host_route_probe_failed')
             routes=json.loads(raw);print('N80_HUB_ROUTES',json.dumps(routes),flush=True)
-            route=next((r['name'] for r in routes if r.get('verified') and r['name'] in ['https_ipv4','loopback']),None)
+            route=next((r['name'] for r in routes if r.get('verified') and r['name'] in ['https_ipv4','https_loopback','loopback']),None)
             if route is None:raise RuntimeError('host_route_unavailable')
             put(ROOT+'/transport.json',json.dumps({'route':route}).encode())
             put(ROOT+'/node-command.json',json.dumps(args).encode())
