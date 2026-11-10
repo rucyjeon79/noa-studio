@@ -134,6 +134,17 @@ jobs:
           python -m unittest discover -s tests/engine -p test_auto_dispatch.py -v
           python -m unittest discover -s tests/engine -p test_node_runtime.py -v
           python -m py_compile scripts/n80_single_session_deploy.py
+      - name: Verify shared browser gates before production activation
+        run: |
+          php tests/muvy/fixture.php
+          python scripts/qa/noa-qa-font.py
+          npm install --prefix "$RUNNER_TEMP/n80-browser" --no-save --ignore-scripts --package-lock=false playwright@1.56.1 pixelmatch@7.1.0 pngjs@7.0.0
+          cp scripts/qa/noa-muvy.mjs "$RUNNER_TEMP/n80-browser/muvy.mjs"
+          cp scripts/qa/noa-shared-navigation.mjs "$RUNNER_TEMP/n80-browser/navigation.mjs"
+          cp scripts/qa/noa-design-gate.mjs "$RUNNER_TEMP/n80-browser/design.mjs"
+          node "$RUNNER_TEMP/n80-browser/muvy.mjs"
+          node "$RUNNER_TEMP/n80-browser/navigation.mjs"
+          node "$RUNNER_TEMP/n80-browser/design.mjs"
   deploy:
     needs: specialists
     concurrency:

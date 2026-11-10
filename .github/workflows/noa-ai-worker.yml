@@ -26,7 +26,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   host_candidate:
-    if: (github.event_name == 'push' || github.event_name == 'pull_request' || inputs.host_runtime == true) && !contains(github.event.head_commit.message, '[n80-specialists]')
+    if: github.event_name == 'push' || github.event_name == 'pull_request' || inputs.host_runtime == true
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
@@ -71,7 +71,7 @@ jobs:
           if-no-files-found: error
           retention-days: 7
   host_runtime:
-    if: github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && ((github.event_name == 'push' && !contains(github.event.head_commit.message, '[n80-node]') && !contains(github.event.head_commit.message, '[n80-handoff]') && !contains(github.event.head_commit.message, '[n80-media]') && !contains(github.event.head_commit.message, '[n80-browser-remote]')) || (github.event_name == 'workflow_dispatch' && inputs.host_runtime == true))
+    if: (github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && ((github.event_name == 'push' && !contains(github.event.head_commit.message, '[n80-node]') && !contains(github.event.head_commit.message, '[n80-handoff]') && !contains(github.event.head_commit.message, '[n80-media]') && !contains(github.event.head_commit.message, '[n80-browser-remote]')) || (github.event_name == 'workflow_dispatch' && inputs.host_runtime == true))) && !contains(github.event.head_commit.message, '[n80-specialists]')
     needs: host_candidate
     runs-on: ubuntu-latest
     environment: production
