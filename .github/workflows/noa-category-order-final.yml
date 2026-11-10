@@ -65,20 +65,10 @@ jobs:
         env:
           N80_MUSIC_HTTP_LIVE_TEST: '1'
         run: php -d allow_url_fopen=0 tests/engine/music_http_client_test.php
-      - name: Read exact previous policy metadata for isolated restore
-        uses: actions/download-artifact@v4
-        with:
-          artifact-ids: '12556464389'
-          run-id: '40085464057'
-          github-token: ${{ github.token }}
-          repository: rucyjeon79/noa-studio
-          path: ${{ runner.temp }}/noa-policy-artifact
-          merge-multiple: true
-      - name: Verify real audio and restore the exact Drive-backed policy in isolated MySQL
+      - name: Verify real audio and restore the exact archived policy in isolated MySQL
         env:
           NOA_PLAYCOUNT_TEST_MYSQL: '1'
           NOA_PLAYWRIGHT_PACKAGE: ${{ runner.temp }}/noa-category/package.json
-          NOA_POLICY_ARTIFACT: ${{ runner.temp }}/noa-policy-artifact
           NOA_POLICY_BACKUP_FILE: ${{ runner.temp }}/noa-policy-before.json
         run: |
           python scripts/noa_playcount_backup_fixture.py

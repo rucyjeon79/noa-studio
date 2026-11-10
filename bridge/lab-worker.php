@@ -13,6 +13,9 @@ try {
  $context=['authenticatedByServer'=>true,'principal'=>'n80_lab_worker',
    'permissions'=>['native:verify','ai:read','ai:text','ai:muvy','batch:recover','catalog:index','media:worker'],
    'method'=>$_SERVER['REQUEST_METHOD']??'','admin'=>(string)($config['cf_admin']??'')];
+ // A workflow checked out before cutover cannot become a second executor.
+ $hub=dirname(__DIR__).'/noa-app/engine/hub.php';
+ if(is_file($hub)){require_once $hub;if(($context['method']??'')==='POST'&&n80_hub_legacy_action($action)==='n80_hub')lab_json(200,['ok'=>true,'state'=>'host_owned','processed'=>0]);}
  // Compatibility alias: same N80 operations, no independent old executor.
  if($action==='n80_tick'){
    try{n80_service_execute('n80_batch_watchdog',[],$context);}

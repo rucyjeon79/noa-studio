@@ -1,0 +1,21 @@
+{
+  "table": "noa_popularity_settings",
+  "id": 1,
+  "policy": {
+    "values": {
+      "minimumSeconds": 30,
+      "heartbeatMaxGap": 20,
+      "actorHourlyLimit": 20,
+      "sessionMaxSeconds": 1800,
+      "songCooldownSeconds": 1800,
+      "youtubeStaleSeconds": 172800,
+      "actorStartHourlyLimit": 60,
+      "playbackIntegrationEnabled": false
+    },
+    "revision": 1
+  },
+  "policySha256": "bd0d6771a98c7757e4363a3b603da52378375fb926a5dc6119af3d1bbea6e998",
+  "sourceRun": 40085464057,
+  "sourceArtifact": 12556464389,
+  "restoreScope": "policy values and revision, no catalog/member/queue mutation"
+}

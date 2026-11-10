@@ -1,0 +1,42 @@
+{
+  "hub.verify": {
+    "module": "hub",
+    "interval": 60,
+    "timeout": 20
+  },
+  "ai.text": {
+    "module": "lab",
+    "interval": 60,
+    "timeout": 110
+  },
+  "ai.batch": {
+    "module": "creator_lab",
+    "interval": 300,
+    "timeout": 30
+  },
+  "catalog.index": {
+    "module": "catalog",
+    "interval": 900,
+    "timeout": 110
+  },
+  "notifications.dispatch": {
+    "module": "notifications",
+    "interval": 60,
+    "timeout": 30
+  },
+  "popularity.calculate": {
+    "module": "personalization",
+    "interval": 3600,
+    "timeout": 110
+  },
+  "ai.daily_shorts_clock": {
+    "module": "lab",
+    "interval": 900,
+    "timeout": 30
+  },
+  "members.maintain": {
+    "module": "sign",
+    "interval": 900,
+    "timeout": 110
+  }
+}

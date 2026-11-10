@@ -1,0 +1,50 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__.'/common.php';
+header('Cache-Control: private, no-store');header('X-Content-Type-Options: nosniff');
+if(empty($is_member)||($is_admin??'')!=='super'){http_response_code(403);exit('관리자 로그인이 필요합니다.');}
+require_once __DIR__.'/noa-app/engine/hub.php';
+$root=n80_hub_root();$message='';$failed=false;
+if(empty($_SESSION['n80_hub_csrf']))$_SESSION['n80_hub_csrf']=bin2hex(random_bytes(32));
+$csrf=$_SESSION['n80_hub_csrf'];
+try{
+ if(($_SERVER['REQUEST_METHOD']??'')==='POST'){
+  if(!is_string($_POST['csrf']??null)||!hash_equals($csrf,$_POST['csrf']))throw new DomainException('인증 정보가 바뀌었습니다. 화면을 새로 열어 주세요.');
+  $action=$_POST['action']??'';$revision=filter_var($_POST['revision']??null,FILTER_VALIDATE_INT);
+  if(in_array($action,['source_download','history_download','increment_download','package_download'],true)){
+   $source=n80_hub_read($root,'source.json');
+   if($action==='increment_download'){
+    $index=filter_var($_POST['index']??null,FILTER_VALIDATE_INT);$row=$index!==false&&$index>=0?($source['history'][$index]??null):null;
+    if(!$row||!preg_match('/^history-[a-f0-9]{40}[.]bundle$/D',$row['file']??''))throw new DomainException('hub_source_missing');
+    $name=$row['file'];$expected=$row['sha256'];
+   }elseif($action==='package_download'){
+    $index=filter_var($_POST['index']??null,FILTER_VALIDATE_INT);$releases=n80_hub_read($root,'releases.json');$row=$index!==false&&$index>=0?($releases[$index]??null):null;
+    if(!$row||!preg_match('/^[a-f0-9]{32}$/D',$row['id']??''))throw new DomainException('hub_source_missing');
+    $name='releases/'.$row['id'].'.json';$expected=$row['packageSha256'];
+   }else{$history=$action==='history_download';$name=$history?'source.bundle':'source-initial.tar.gz';$expected=$source[$history?'bundleSha256':'sha256']??'';}
+   $archive=$root.'/'.$name;if(is_link($archive)||!is_file($archive)||realpath($archive)!==$archive||hash_file('sha256',$archive)!==$expected)throw new DomainException('hub_source_checksum');
+   header('Content-Type: application/octet-stream');header('Content-Disposition: attachment; filename="N80-Hub-'.basename($name).'"');header('Content-Length: '.filesize($archive));readfile($archive);exit;
+  }elseif($action==='release'){
+   if(($_FILES['package']['error']??UPLOAD_ERR_NO_FILE)!==UPLOAD_ERR_OK||!is_uploaded_file($_FILES['package']['tmp_name'])||$_FILES['package']['size']>12582912)throw new DomainException('패키지 파일을 확인해 주세요.');
+   require_once __DIR__.'/noa-app/engine/hub-release.php';
+   $package=json_decode((string)file_get_contents($_FILES['package']['tmp_name']),true,32,JSON_THROW_ON_ERROR);
+   $receipt=n80_hub_release_apply($root,__DIR__,$package,(int)($_POST['sourceRevision']??-1));$message='배포 완료 · '.$receipt['revision'].'번째 소스 · 파일 '.count($receipt['files']).'개 검증';
+  }elseif($action==='recover'){require_once __DIR__.'/noa-app/engine/hub-release.php';if(!n80_hub_release_recover($root,__DIR__))throw new DomainException('hub_concurrent_source_change');$message='중단된 배포를 복구했습니다.';}elseif(in_array($action,['pause','resume'],true)){
+   n80_hub_locked($root,function()use($root,$revision,$action){$c=n80_hub_read($root,'control.json');if(($c['revision']??0)!==$revision)throw new DomainException('hub_state_changed');$c['paused']=$action==='pause';$c['revision']++;n80_hub_write($root,'control.json',$c);});$message=$action==='pause'?'새 작업 실행을 일시정지했습니다.':'새 작업 실행을 재개했습니다.';
+  }elseif($action==='start'){n80_hub_start($root);$message='호스트 실행 상태를 확인하고 시작을 요청했습니다.';}elseif($action==='wake'){$r=n80_hub_request((string)($_POST['operation']??''),$root);$message=$r==='requested'?'실행 요청을 저장했습니다.':'아직 이식되지 않은 작업입니다.';}
+  else throw new DomainException('허용되지 않은 요청입니다.');
+ }
+ $status=n80_hub_status($root);$releases=n80_hub_read($root,'releases.json');
+}catch(Throwable $e){$failed=true;$message=preg_match('/^hub_[a-z_]+$/D',$e->getMessage())?'처리하지 못했습니다. 기존 상태를 보존했습니다. ('.$e->getMessage().')':'요청을 처리하지 못했습니다.';$status=['revision'=>0,'paused'=>true,'runnerState'=>'not_verified','source'=>[],'operations'=>[],'dependencies'=>[],'receipts'=>[]];}
+function nh_e($s):string{return htmlspecialchars((string)$s,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
+?><!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>N80 Hub | NOA STUDIO</title><link rel="stylesheet" href="/noa-ui.css"><script src="/noa-brand.js" defer></script><script src="/noa-ui.js" defer></script><style>
+.hub{max-width:1050px;margin:auto;padding:24px 16px}.hub-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.hub h1{margin:8px 0;font-size:32px}.hub p{color:var(--noa-muted)}.hub section{padding:24px 0;border-bottom:1px solid var(--noa-line)}.hub h2{font-size:18px}.hub table{border-collapse:collapse;width:100%;font-size:14px}.hub td,.hub th{text-align:left;padding:12px 8px;border-bottom:1px solid var(--noa-line)}.hub th{color:var(--noa-muted)}.hub form{margin:0}.hub button,.hub input{font:inherit;min-height:44px;border:1px solid var(--noa-line);border-radius:6px;background:var(--noa-surface);color:var(--noa-text);padding:8px 14px}.hub button{cursor:pointer}.hub .ok{color:var(--noa-success)}.hub .wait{color:var(--noa-warning)}.hub .error{color:var(--noa-danger)}.hub-scroll{overflow:auto}.hub-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.hub details{margin:14px 0}.hub summary{cursor:pointer;min-height:44px}.hub small{color:var(--noa-muted)}@media(max-width:600px){.hub-head{align-items:flex-start}.hub h1{font-size:26px}.hub th,.hub td{padding:10px 5px}.hub button{padding:8px}.hub .hide-mobile{display:none}}</style></head><body class="noa-page"><main class="hub">
+<div class="hub-head"><div><p class="noa-eyebrow">홈페이지 설정</p><h1>N80 Hub</h1><p>소스·배포·자동화·실행 기록을 한곳에서 관리합니다.</p></div><a href="/noa-library.php">홈페이지 설정</a></div>
+<?php if($message):?><p role="status" class="<?=$failed?'error':'ok'?>"><?=nh_e($message)?></p><?php endif;?>
+<section><h2>실행 상태</h2><div class="hub-bar"><strong class="<?=$status['runnerState']==='running'?'ok':'wait'?>"><?=$status['runnerState']==='running'?'호스트 실행 중':'실행 확인 필요'?></strong><span><?=$status['paused']?'일시정지':'자동화 활성'?></span><form method="post"><input type="hidden" name="csrf" value="<?=nh_e($csrf)?>"><input type="hidden" name="revision" value="<?=nh_e($status['revision'])?>"><button name="action" value="<?=$status['paused']?'resume':'pause'?>"><?=$status['paused']?'재개':'일시정지'?></button></form><form method="post"><input type="hidden" name="csrf" value="<?=nh_e($csrf)?>"><button name="action" value="start" <?=function_exists('proc_open')?'':'disabled'?>><?=function_exists('proc_open')?'시작·복구':'SSH 재시작 필요'?></button></form><a href="/noa-hub.php">상태 새로고침</a></div><p>페이지를 열거나 새로고침해도 작업을 중복 실행하지 않습니다.</p></section>
+<section><h2>호스트 자동화</h2><div class="hub-scroll"><table><thead><tr><th>기능</th><th>실행 담당</th><th>마지막 결과</th><th>요청</th></tr></thead><tbody>
+<?php foreach($status['operations'] as $op):?><tr><td><?=nh_e($op['label'])?></td><td><?=$op['owner']==='n80_hub'?'N80 Hub':'이식 대기'?></td><td><?=nh_e(['succeeded'=>'처리 확인','failed'=>'확인 필요','running'=>'실행 중'][$op['last']['state']??'']??'검증 대기')?></td><td><form method="post"><input type="hidden" name="csrf" value="<?=nh_e($csrf)?>"><input type="hidden" name="operation" value="<?=nh_e($op['id'])?>"><button name="action" value="wake" <?=$op['owner']!=='n80_hub'?'disabled':''?>>실행</button></form></td></tr><?php endforeach;?></tbody></table></div></section>
+<section><h2>소스·배포</h2><p>소스 버전 <?=nh_e($status['source']['revision']??0)?> · 원본 파일 <?=nh_e($status['source']['files']??0)?>개 보관</p><p>패키지의 원본 해시와 PHP 문법을 검사한 뒤 적용하고, 서버 파일을 다시 검증합니다.</p><form method="post"><input type="hidden" name="csrf" value="<?=nh_e($csrf)?>"><button name="action" value="source_download">초기 전체 소스 내려받기</button><button name="action" value="history_download">초기 변경 이력 내려받기</button></form><details><summary>후속 변경·배포 소스</summary><p>초기 변경 이력에 아래 후속 이력을 순서대로 적용하면 최신 소스를 복원할 수 있습니다.</p><?php foreach($status['source']['history']??[] as $i=>$row):?><form method="post"><input type="hidden" name="csrf" value="<?=nh_e($csrf)?>"><input type="hidden" name="index" value="<?=nh_e($i)?>"><button name="action" value="increment_download">후속 이력 <?=nh_e($i+1)?> · <?=nh_e(substr($row['commit'],0,8))?></button></form><?php endforeach;?><?php foreach($releases??[] as $i=>$row):?><form method="post"><input type="hidden" name="csrf" value="<?=nh_e($csrf)?>"><input type="hidden" name="index" value="<?=nh_e($i)?>"><button name="action" value="package_download">배포 소스 <?=nh_e($row['revision'])?></button></form><?php endforeach;?></details><form method="post" enctype="multipart/form-data" class="hub-bar"><input type="hidden" name="csrf" value="<?=nh_e($csrf)?>"><input type="hidden" name="sourceRevision" value="<?=nh_e($status['source']['revision']??0)?>"><input type="file" name="package" accept="application/json,.json" required aria-label="배포 패키지"><button name="action" value="release">검증 후 배포</button></form><form method="post"><input type="hidden" name="csrf" value="<?=nh_e($csrf)?>"><button name="action" value="recover">중단된 배포 복구</button></form></section>
+<section><h2>남은 이식 항목</h2><p>실행 환경과 결과 검증이 끝난 기능만 전환 완료로 표시합니다.</p><?php foreach($status['dependencies']['remaining']??[] as $row):?><details><summary><?=nh_e($row['label'])?> <small>· 이식 대기</small></summary><p><?=nh_e($row['reason'])?></p></details><?php endforeach;?></section>
+<section><h2>최근 실행 기록</h2><?php foreach(array_reverse(array_slice($status['receipts'],-12))as $r):?><p><?=nh_e(n80_hub_operations()[$r['operation']]['label']??$r['operation'])?> · <?=nh_e(['succeeded'=>'처리 확인','failed'=>'실패','running'=>'실행 중'][$r['state']]??'확인 필요')?> <small><?=nh_e(gmdate('m-d H:i',(int)$r['startedAt']+9*3600))?> KST</small><?php if(!empty($r['error'])):?><br><small><?=nh_e($r['error'])?></small><?php endif;?></p><?php endforeach;?></section>
+</main></body></html>

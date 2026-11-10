@@ -8,6 +8,22 @@ from pathlib import Path
 import subprocess
 import sys
 import time
+import urllib.request
+import urllib.error
+
+
+def host_owned(operation):
+    if operation not in {"ai.text", "catalog.index", "notifications.dispatch", "popularity.calculate", "members.maintain"}:
+        return False
+    url = "https://noastudio.ai.kr/noa-hub-owner.php?operation=" + operation
+    try:
+        with urllib.request.urlopen(url, timeout=15) as response:
+            state = json.load(response)
+    except urllib.error.HTTPError as error:
+        raise RuntimeError("n80_hub_ownership_unconfirmed") from None
+    if state.get("ok") is not True or state.get("operation") != operation or state.get("owner") not in ("n80_hub", "legacy"):
+        raise RuntimeError("n80_hub_ownership_unconfirmed")
+    return state["owner"] == "n80_hub"
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -31,6 +47,9 @@ def main():
         raise RuntimeError('one_n80_operation_required')
     operation = sys.argv[1]
     row = plan(operation, os.environ)
+    if host_owned(operation):
+        print("N80_AUTO_HOST_OWNED", json.dumps({"operation": operation, "owner": "N80 Hub", "executed": False}))
+        return
     started = time.monotonic()
     print('N80_AUTO_STARTED', json.dumps({'operation': operation, 'module': row['module']}), flush=True)
     code = 1
