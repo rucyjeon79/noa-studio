@@ -17,6 +17,7 @@ try{
  if(($body['action']??'')==='heartbeat'){
   n80_hub_locked($root,function()use($root){n80_hub_write($root,'status.json',['heartbeatAt'=>time(),'runner'=>'host_node']);});$result=['ok'=>true,'control'=>n80_hub_read($root,'control.json'),'requests'=>n80_hub_read($root,'requests.json')];
  }elseif(($body['action']??'')==='execute'){
+  set_time_limit(120);
   require_once dirname(__DIR__).'/noa-app/engine/hub-specialists.php';
   $result=n80_hub_execute($root,(string)($body['operation']??''),(string)($body['id']??''),'n80_hub_specialist');
  }else throw new InvalidArgumentException('hub_unknown_action');

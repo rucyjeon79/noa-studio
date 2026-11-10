@@ -45,7 +45,7 @@ function n80_hub_owner(string $operation,?string $root=null):string {
  return in_array($operation,$s['activeOperations']??[],true)?'n80_hub':'legacy';
 }
 function n80_hub_legacy_action(string $action,?string $root=null):?string {
- $op=['n80_tick'=>'ai.text','n80_text_tick'=>'ai.text','n80_batch_watchdog'=>'ai.batch'][$action]??null;
+ $op=['n80_tick'=>'ai.text','n80_text_tick'=>'ai.text','n80_batch_watchdog'=>'ai.batch','n80_listening_index'=>'catalog.index'][$action]??null;
  return $op===null?null:n80_hub_owner($op,$root);
 }
 function n80_hub_request(string $operation,?string $root=null):string {

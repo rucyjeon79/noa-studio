@@ -116,9 +116,6 @@ def install():
                     channel=transport.open_session(timeout=20);channel.settimeout(15);channel.exec_command(shlex.join(args+[ROOT+'/runtime/stop.mjs']))
                     output=channel.makefile('r').read(512).decode();code=channel.recv_exit_status();channel.close()
                     if code!=0 or 'N80_HUB_STOPPED' not in output:raise RuntimeError('runner_quiescence_unconfirmed')
-            # Another N80 release owns these shared modules; never install a registry with missing dependencies.
-            for name in ['module-contract.php','setup.php','lab.php']:
-                if read(WEB+'/noa-app/engine/'+name) is None:raise RuntimeError('specialist_release_not_installed')
             # New Hub files only. Existing core files use their own guarded owner.
             for target,source in FILES.items():
                 desired=Path(source).read_bytes();old=read(WEB+'/'+target)
@@ -191,9 +188,10 @@ def install():
                 if any(r['operation']=='hub.verify' and r['state']=='succeeded' for r in receipts) and time.time()-state.get('heartbeatAt',0)<120:break
                 time.sleep(3)
             else:raise RuntimeError('hub_execution_unverified:'+json.dumps(json.loads(read(ROOT+'/runner-error.json') or b'{}')))
-            # Integrate navigation and registry through the new native deployment path itself.
+            # N80 Setup/registry are owned by the specialist release and already preserve Hub.
+            # Only the legacy execution fence is installed through Hub here.
             package={'version':1,'id':secrets.token_hex(16),'files':[]}
-            integrations=[('deploy/noa-app/engine/'+n,'noa-app/engine/'+n)for n in ['registry.php','workspaces.php']]+[('bridge/lab-worker.php','noa-bridge/lab-worker.php')]
+            integrations=[('bridge/lab-worker.php','noa-bridge/lab-worker.php')]
             for source,target in integrations:
                 old=read(WEB+'/'+target);desired=Path(source).read_bytes()
                 if old==desired:continue

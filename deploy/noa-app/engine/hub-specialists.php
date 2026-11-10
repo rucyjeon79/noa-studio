@@ -13,6 +13,7 @@ function n80_hub_specialist(string $operation):array {
  if($operation==='notifications.dispatch'){
   require_once $bridge.'/storage.php';require_once $bridge.'/notifications-sources.php';require_once $bridge.'/notifications-inline.php';
   $db=noa_bridge_pdo();if(!nnt_ready($db)||!nnt_inline_capable())throw new RuntimeException('hub_notification_runtime_unavailable');
+  nnt_fortune_morning($db,time());nnt_prune($db,time());
   $cfg=nnt_config();$cfg['inlineDispatch']=true;$totals=['claimed'=>0,'accepted'=>0,'retry'=>0];$start=microtime(true);
   for($i=0;$i<10&&microtime(true)-$start<20;$i++){$r=nnt_inline_drain($db,$cfg);foreach($totals as $k=>$_)$totals[$k]+=$r[$k];if($r['claimed']<2)break;}
   return ['ok'=>true]+$totals;
