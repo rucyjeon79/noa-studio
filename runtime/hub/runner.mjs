@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import https from 'node:https';
+import http from 'node:http';
 import {fileURLToPath} from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export function signature(body, key, timestamp, nonce) {
@@ -22,9 +23,11 @@ function call(body, timeout=20000) {
   const data=JSON.stringify(body), key=fs.readFileSync('/hosting/noastudio/noa-ai-lab/worker.key','utf8').trim();
   if(!/^[a-f0-9]{64}$/.test(key))throw new Error('hub_key_invalid');
   const ts=String(Math.floor(Date.now()/1000)), nonce=crypto.randomBytes(16).toString('hex');
+  const route=read('transport.json',{route:'https_ipv4'}).route;if(!['https_ipv4','loopback'].includes(route))throw new Error('hub_transport_invalid');
+  const local=route==='loopback',client=local?http:https;
   return new Promise((resolve,reject)=>{
-    const req=https.request({hostname:'noastudio.ai.kr',path:'/noa-bridge/hub-worker.php',method:'POST',timeout,
-      headers:{'Content-Type':'application/json','Content-Length':Buffer.byteLength(data),'X-N80-Time':ts,'X-N80-Nonce':nonce,'X-N80-Signature':signature(data,key,ts,nonce)}},res=>{
+    const req=client.request({hostname:local?'127.0.0.1':'noastudio.ai.kr',family:4,path:'/noa-bridge/hub-worker.php',method:'POST',timeout,
+      headers:{Host:'noastudio.ai.kr','Content-Type':'application/json','Content-Length':Buffer.byteLength(data),'X-N80-Time':ts,'X-N80-Nonce':nonce,'X-N80-Signature':signature(data,key,ts,nonce)}},res=>{
       let chunks=[],bytes=0;res.on('data',chunk=>{bytes+=chunk.length;if(bytes>262144){res.destroy();reject(new Error('hub_output_limit'));}else chunks.push(chunk);});
       res.on('end',()=>{try{const result=JSON.parse(Buffer.concat(chunks).toString());if(res.statusCode!==200||result.ok!==true)throw new Error(result.error||'hub_http_failed');resolve(result);}catch(e){reject(e);}});res.on('error',reject);
     });req.on('timeout',()=>req.destroy(new Error('hub_timeout')));req.on('error',reject);req.end(data);

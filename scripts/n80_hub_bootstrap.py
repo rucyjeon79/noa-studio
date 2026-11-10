@@ -113,7 +113,7 @@ def install():
                 if old is not None and old not in known and old!=desired:raise RuntimeError('unknown_hub_version')
                 put(WEB+'/'+target,desired,0o644)
             print('N80_HUB_STAGE php_sources',flush=True)
-            for name in ['runner.mjs','launch.mjs']:put(ROOT+'/runtime/'+name,Path('runtime/hub/'+name).read_bytes())
+            for name in ['runner.mjs','launch.mjs','probe.mjs']:put(ROOT+'/runtime/'+name,Path('runtime/hub/'+name).read_bytes())
             put(ROOT+'/client.py',Path('scripts/n80_hub_client.py').read_bytes())
             put(ROOT+'/operations-guide.md',Path('docs/operations/n80-hub.md').read_bytes())
             manifest=json.loads(read('/hosting/noastudio/noa-ai-lab/host-runtime/node-current.json'))
@@ -131,6 +131,13 @@ def install():
             actual=channel.makefile('r').read(512).decode().strip();code=channel.recv_exit_status();channel.close()
             if code!=0 or actual!=digest:raise RuntimeError('node_hash_mismatch')
             print('N80_HUB_STAGE node_verified',flush=True)
+            channel=transport.open_session(timeout=20);channel.settimeout(35);channel.exec_command(shlex.join(args+[ROOT+'/runtime/probe.mjs']))
+            raw=channel.makefile('r').read(4096).decode();code=channel.recv_exit_status();channel.close()
+            if code!=0:raise RuntimeError('host_route_probe_failed')
+            routes=json.loads(raw);print('N80_HUB_ROUTES',json.dumps(routes),flush=True)
+            route=next((r['name'] for r in routes if r.get('verified') and r['name'] in ['https_ipv4','loopback']),None)
+            if route is None:raise RuntimeError('host_route_unavailable')
+            put(ROOT+'/transport.json',json.dumps({'route':route}).encode())
             put(ROOT+'/node-command.json',json.dumps(args).encode())
             put(ROOT+'/operations.json',Path('config/n80-hub-operations.json').read_bytes())
             put(ROOT+'/dependencies.json',Path('config/n80-hub-dependencies.json').read_bytes())
@@ -202,6 +209,10 @@ def install():
                     time.sleep(4)
                 else:raise RuntimeError('cutover_not_verified:'+','.join(k+':'+(v or {}).get('state','waiting')+':'+(v or {}).get('error','')for k,v in states.items()))
                 print('N80_HUB_CUTOVER',json.dumps({'activeOperations':active,'verifiedReceipts':len(states)}),flush=True)
+            # Remove only abandoned staging files created by this bootstrap, never source archives or user data.
+            for entry in s.listdir_attr(ROOT):
+                if re.fullmatch(r'(?:source-initial\.tar\.gz|source\.bundle)\.stage-[a-f0-9]{16}',entry.filename) and stat.S_ISREG(entry.st_mode):
+                    s.remove(ROOT+'/'+entry.filename)
             print('N80_HUB_INSTALLED',json.dumps({'sourceStored':True,'hostNodeRunning':True,'nativeVerification':True,'activeOperations':['hub.verify'],'githubRequiredForHubTick':False,'files':len(FILES)}))
     finally:transport.close()
 
