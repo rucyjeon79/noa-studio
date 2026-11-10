@@ -25,5 +25,5 @@ test('offline source restoration keeps history, rejects tampering and preserves 
   const saved=fs.readFileSync(path.join(root,file));fs.appendFileSync(path.join(root,file),'tamper');assert.throws(()=>restoreRepository(root),/bundle_checksum/);fs.writeFileSync(path.join(root,file),saved);
   fs.writeFileSync(path.join(source,'app.txt'),'three');git('commit','-am','three');const third=git('rev-parse','HEAD');git('push',path.join(root,'repository.git'),'HEAD:refs/heads/main');
   assert.throws(()=>restoreRepository(root),/concurrent_head/);assert.equal(git('--git-dir='+path.join(root,'repository.git'),'rev-parse','HEAD'),third);
- }finally{fs.rmSync(root,{recursive:true,force:true});}
+ }catch(error){console.error('ISOLATED_GIT_DIAGNOSTIC',error.cause||error.message);throw error;}finally{fs.rmSync(root,{recursive:true,force:true});}
 });

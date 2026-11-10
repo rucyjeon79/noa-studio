@@ -10,7 +10,7 @@ const sha256=v=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);
 function fail(code){throw new Error('hub_repository_'+code);}
 function git(root,args,allowFailure=false){
  const r=spawnSync('/usr/bin/git',['-c','core.hooksPath=/dev/null',...args],{cwd:root,encoding:'utf8',timeout:120000,maxBuffer:1048576,env:{...process.env,GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null',GIT_TERMINAL_PROMPT:'0'}});
- if(r.status!==0&&!allowFailure)fail('git_command_failed');return {status:r.status,text:(r.stdout||'').trim()};
+ if(r.status!==0&&!allowFailure)throw new Error('hub_repository_git_command_failed',{cause:{status:r.status,operation:args.filter(a=>!a.startsWith('--git-dir='))[0],diagnostic:(r.stderr||r.error?.code||'').slice(0,1200)}});return {status:r.status,text:(r.stdout||'').trim()};
 }
 function regular(root,name,digest){
  const file=path.join(root,name);if(!sha256(digest)||!fs.existsSync(file)||!fs.lstatSync(file).isFile()||fs.realpathSync(file)!==file)fail('unsafe_bundle');
