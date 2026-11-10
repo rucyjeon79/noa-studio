@@ -83,6 +83,13 @@ if(name==='noa_production_brief'){
  else try{const production=await studio(name,a,req,env);out=result({request:a,brandDefaults:rules,production,instruction:'운영 공통 규칙과 지정 장르 규칙을 우선 적용하세요. 장르가 없으면 공통 규칙만 적용했다고 명시하세요. 썸네일 지시문은 영어, 이미지에 들어갈 제목은 큰따옴표 안에 원문 그대로 작성하세요.'});}
  catch(e){out=result({error:e.message},true);}
 }
-else {try{out=result(await studio(name,a,req,env));}catch(e){out=result({error:e.message},true);}}
+else {try{
+ const data=await studio(name,a,req,env);
+ if(name==='noa_connection_status'){
+  try{data.n80Hub=await studio('noa_hub_status',{},req,env);}
+  catch(e){data.n80Hub={ok:false,error:e.message};}
+ }
+ out=result(data);
+}catch(e){out=result({error:e.message},true);}}
 }else return Response.json({jsonrpc:'2.0',id:rpc.id??null,error:{code:-32601,message:'Method not found'}});
 return Response.json({jsonrpc:'2.0',id:rpc.id,result:out});}};

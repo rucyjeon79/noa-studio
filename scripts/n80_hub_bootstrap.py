@@ -32,6 +32,17 @@ def probe():
         transport.close()
 
 
+def access_diagnosis():
+    """Read-only evidence when the hosting account denies both HTTP and SFTP."""
+    transport=connect()
+    try:
+        channel=transport.open_session(timeout=20);channel.settimeout(25)
+        channel.exec_command('id; pwd; ls -ld / /hosting /hosting/noastudio /hosting/noastudio/html /hosting/noastudio/noa-hub; stat -c "%n mode=%a uid=%u gid=%g" /hosting/noastudio /hosting/noastudio/html /hosting/noastudio/noa-hub; test -r /hosting/noastudio/html/noa-gpt.php; printf "gpt_readable=%s\\n" "$?"')
+        output=channel.makefile('r').read(8192).decode(errors='replace');error=channel.makefile_stderr('r').read(2048).decode(errors='replace')
+        print('N80_HOST_ACCESS_DIAGNOSIS',json.dumps({'output':output,'error':error,'exitCode':channel.recv_exit_status()}),flush=True)
+    finally:transport.close()
+
+
 ROOT = '/hosting/noastudio/noa-hub'
 WEB = '/hosting/noastudio/html'
 FILES = {
@@ -263,5 +274,6 @@ def install():
     finally:transport.close()
 
 if __name__ == '__main__':
-    if os.environ.get('N80_HUB_INSTALL')=='1':install()
+    if os.environ.get('N80_HUB_DIAGNOSE')=='1':access_diagnosis()
+    elif os.environ.get('N80_HUB_INSTALL')=='1':install()
     else:probe()

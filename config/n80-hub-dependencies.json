@@ -72,7 +72,7 @@
     },
     {
       "file": "n80-hub-bootstrap.yml",
-      "sha256": "f5d94b8e9f127397ff3bb7e9fa278776a817c793f7b4cfb52047e53aa6061742",
+      "sha256": "96dc1ce6881f03190ef60e4b067651baae83350dd3ea7888b3b8e45a778094bb",
       "scheduled": false,
       "manual": false,
       "operations": [],
