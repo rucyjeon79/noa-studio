@@ -37,7 +37,7 @@ WEB = '/hosting/noastudio/html'
 FILES = {
  'noa-hub.php':'deploy/noa-hub.php', 'noa-hub-owner.php':'deploy/noa-hub-owner.php',
  'noa-bridge/hub-worker.php':'bridge/hub-worker.php', 'noa-bridge/hub-admin.php':'bridge/hub-admin.php',
- **{'noa-app/engine/'+n:'deploy/noa-app/engine/'+n for n in ['hub.php','hub-release.php','hub-specialists.php']},
+ **{'noa-app/engine/'+n:'deploy/noa-app/engine/'+n for n in ['hub.php','hub-release.php','hub-specialists.php','hub-covers.php']},
 }
 
 def native_call(key,body):

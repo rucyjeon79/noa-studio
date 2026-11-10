@@ -31,6 +31,10 @@ class Ownership(unittest.TestCase):
         with patch.object(runtime.urllib.request, 'urlopen', return_value=self.response({'ok': True, 'operation': 'members.maintain', 'owner': 'legacy'})):
             self.assertFalse(runtime.host_owned('members.maintain'))
 
+    def test_cover_owner_gate_uses_same_authoritative_host(self):
+        with patch.object(runtime.urllib.request, 'urlopen', return_value=self.response({'ok': True, 'operation': 'covers.refresh', 'owner': 'n80_hub'})):
+            self.assertTrue(runtime.host_owned('covers.refresh'))
+
     def test_unmigrated_media_keeps_existing_owner(self):
         with patch.object(runtime.urllib.request, 'urlopen') as request:
             self.assertFalse(runtime.host_owned('ai.media_guard'))

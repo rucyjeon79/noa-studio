@@ -13,6 +13,7 @@ function n80_hub_operations():array {
   'notifications.dispatch'=>['module'=>'notifications','label'=>'알림 전달','interval'=>60,'timeout'=>30],
   'popularity.calculate'=>['module'=>'personalization','label'=>'인기 집계','interval'=>3600,'timeout'=>110],
   'members.maintain'=>['module'=>'sign','label'=>'회원 등급·갱신 정리','interval'=>900,'timeout'=>110],
+  'covers.refresh'=>['module'=>'jukebox','label'=>'누락된 곡 카드 이미지 보완','interval'=>180,'timeout'=>90],
   'ai.daily_shorts_clock'=>['module'=>'lab','label'=>'쇼츠 일정·준비 상태','interval'=>900,'timeout'=>30],
  ];
 }

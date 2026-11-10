@@ -38,5 +38,10 @@
     "module": "sign",
     "interval": 900,
     "timeout": 110
+  },
+  "covers.refresh": {
+    "module": "jukebox",
+    "interval": 180,
+    "timeout": 90
   }
 }
