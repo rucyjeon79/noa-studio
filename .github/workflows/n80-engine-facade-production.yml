@@ -93,7 +93,7 @@ permissions:
   contents: read
 jobs:
   specialists:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 12
     services:
       mysql:
@@ -141,7 +141,7 @@ jobs:
       cancel-in-progress: false
     # Integrated data repairs own installation and forbid legacy host staging.
     if: github.event_name != 'pull_request' && (github.event_name != 'push' || (!contains(github.event.head_commit.message, '[n80-data]') && !contains(github.event.head_commit.message, '[category-final]') && !contains(github.event.head_commit.message, '[n80-home-orbit]') && !contains(github.event.head_commit.message, '[creative-drafts]'))) && !contains(github.event.head_commit.message, '[n80-jukebox]') && !contains(github.event.head_commit.message, '[n80-browser]') && !contains(github.event.head_commit.message, '[n80-node]') && !contains(github.event.head_commit.message, '[login-continuity]')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: production
     timeout-minutes: 20
     services:

@@ -60,6 +60,7 @@ def main():
             web = top/'html'
             for p in ['noa-bridge', 'noa-app/jukebox', 'sessions']:
                 (web/p).mkdir(parents=True)
+            shutil.copytree(ROOT/'deploy/noa-app/engine',web/'noa-app/engine')
             (top/'noa-ai-lab').mkdir()
             (top/'noa-ai-lab/worker.key').write_text('a'*64)
             media = top/'noa-jukebox-private/media'
