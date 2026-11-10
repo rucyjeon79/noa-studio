@@ -1,7 +1,7 @@
 name: N80 Unified Facade Safe Production
 on:
   pull_request:
-    paths: ['deploy/noa-app/engine/**','bridge/**','deploy/noa-app/database/**','config/n80-automation.json','tests/engine/**','scripts/n80_single_session_deploy.py','.github/workflows/n80-engine-facade-production.yml']
+    paths: ['deploy/noa-app/engine/**','bridge/**','deploy/noa-app/database/**','config/n80-automation.json','tests/engine/**','tests/hub/**','scripts/n80_single_session_deploy.py','.github/workflows/n80-engine-facade-production.yml']
   push:
     branches: [main]
     paths:
