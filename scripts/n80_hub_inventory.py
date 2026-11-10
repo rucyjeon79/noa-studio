@@ -14,7 +14,7 @@ def inventory():
     'scheduled':bool(re.search(r'^  schedule:',text,re.M)),
     'manual':bool(re.search(r'^  workflow_dispatch:',text,re.M)),
     'operations':operations,'modules':owners,'sourceCustodian':'hub',
-    'handoffState':'operation_owners_assigned' if owners else 'archived_source_only'})
+    'handoffState':'operation_owners_assigned' if owners else 'source_custody_only'})
  return {'version':1,'authority':'N80 Hub','workflows':rows,'remaining':[
   {'module':'media','label':'음원 최적화','reason':'기존 Python·FFmpeg 음원 실행기를 호스트 Node·미디어 실행기로 옮기는 작업과 실제 음원 검증이 남았습니다. 곡 카드 이미지는 N80 Media가 기존 PHP 수집·변환·저장 기능을 담당하고 Hub가 호출합니다.'},
   {'module':'lab','label':'ChatGPT 계정 생성 실행기','reason':'비공개 실행기의 로그인 저장·갱신과 Codex 실행 환경을 호스트로 이전해야 합니다. 인증 자료를 공개 소스에 넣지 않습니다.'},

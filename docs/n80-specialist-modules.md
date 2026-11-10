@@ -63,8 +63,8 @@ The existing table names, jobs, leases, consent, retry and publication checks ar
 preserved. No schema/data reset, new queue, scheduler, key or provider is added.
 
 `config/n80-hub-dependencies.json` assigns owners to registered operations and
-remaining runtime migrations. Archived workflows with no registered operation
-are marked `archived_source_only`: storing their source in Hub is not proof that
+remaining runtime migrations. Workflow sources with no registered operation
+are marked `source_custody_only`: storing their source in Hub is not proof that
 their former execution has migrated. Browser authentication, external media
 runtime transfer, Android build/signing and end-to-end shorts proof remain
 separate acceptance items; ownership assignment does not mark them complete.

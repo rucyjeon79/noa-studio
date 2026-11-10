@@ -10,7 +10,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "n80-app-integration.yml",
@@ -34,17 +34,17 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "n80-engine-facade-production.yml",
-      "sha256": "d81d40248e2358fc983bc357db225a3b5c833f7081cb1a23298c40c61d0436bd",
+      "sha256": "b0666976eb3bd54dd02716cc30591ff51601bbf3d90a7fb90267810f4ba0ac95",
       "scheduled": false,
       "manual": true,
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "n80-engine-readiness-production.yml",
@@ -54,7 +54,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "n80-guardian-production-audit.yml",
@@ -78,7 +78,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "n80-live-observer.yml",
@@ -102,7 +102,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "n80-music-retry.yml",
@@ -112,7 +112,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "n80-readonly-pipeline-recovery.yml",
@@ -122,7 +122,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-account-recovery.yml",
@@ -132,7 +132,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-act-reaction-read.yml",
@@ -142,7 +142,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-activity.yml",
@@ -152,7 +152,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-admin-link.yml",
@@ -162,7 +162,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-admin-maintenance.yml",
@@ -172,7 +172,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-ai-lab.yml",
@@ -182,7 +182,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-ai-worker.yml",
@@ -217,7 +217,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-amt-fan.yml",
@@ -227,7 +227,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-android-live-diagnosis.yml",
@@ -237,7 +237,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-android-publication-recovery.yml",
@@ -247,7 +247,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-android-release-key.yml",
@@ -257,7 +257,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-android.yml",
@@ -282,7 +282,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-approved-jukebox.yml",
@@ -292,7 +292,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-approved-three-tier.yml",
@@ -302,7 +302,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-approved-ui-release.yml",
@@ -312,7 +312,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-audio-onset.yml",
@@ -322,7 +322,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-backend-check.yml",
@@ -332,7 +332,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-backup-migration-cleanup.yml",
@@ -342,7 +342,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-backup-migration-inspect.yml",
@@ -352,7 +352,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-badge-style.yml",
@@ -362,7 +362,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-bloom-publish.yml",
@@ -372,7 +372,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-browse-production.yml",
@@ -382,7 +382,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-catalog.yml",
@@ -392,7 +392,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-category-autoselect.yml",
@@ -402,7 +402,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-category-checkpoint.yml",
@@ -412,7 +412,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-category-order-final.yml",
@@ -422,7 +422,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-channel-explorer.yml",
@@ -432,7 +432,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-channel-ownership.yml",
@@ -442,7 +442,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-channel-view.yml",
@@ -452,7 +452,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-chat-layout.yml",
@@ -462,7 +462,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-cinema.yml",
@@ -472,7 +472,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-collection-queue.yml",
@@ -482,7 +482,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-community-diagnostic.yml",
@@ -492,7 +492,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-community-finish.yml",
@@ -502,7 +502,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-community-navigation.yml",
@@ -512,7 +512,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-community-polish.yml",
@@ -522,7 +522,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-continuous-playback.yml",
@@ -532,7 +532,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-cover-fill.yml",
@@ -542,7 +542,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-cover-master-probe.yml",
@@ -552,7 +552,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-cover-save-audit.yml",
@@ -562,7 +562,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-cover-save.yml",
@@ -572,7 +572,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-cover-title.yml",
@@ -582,7 +582,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-creative-drafts.yml",
@@ -592,7 +592,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-creator-enrollment.yml",
@@ -602,7 +602,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-current-backup-proof.yml",
@@ -612,7 +612,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-database-backup-proof.yml",
@@ -622,7 +622,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-database-backup-result.yml",
@@ -632,7 +632,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-database.yml",
@@ -642,7 +642,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-db-drive-only-policy.yml",
@@ -652,7 +652,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-db-private-audit.yml",
@@ -662,7 +662,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-design-live.yml",
@@ -672,7 +672,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-desktop.yml",
@@ -682,7 +682,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-display-names.yml",
@@ -692,7 +692,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-dothome-candidate.yml",
@@ -702,7 +702,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-dothome.yml",
@@ -712,7 +712,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-ecosystem.yml",
@@ -722,7 +722,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-editor-close.yml",
@@ -732,7 +732,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-editor-copy.yml",
@@ -742,7 +742,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-editorial.yml",
@@ -752,7 +752,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-encrypted-courier.yml",
@@ -762,7 +762,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-engagement-network.yml",
@@ -772,7 +772,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-engagement.yml",
@@ -782,7 +782,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-engine-adapter-contract-production.yml",
@@ -792,7 +792,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-engine-catalog.yml",
@@ -802,7 +802,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-engine-contract-gates.yml",
@@ -812,7 +812,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-engine-dispatch-gate-production.yml",
@@ -822,7 +822,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-engine-durable-store-production.yml",
@@ -832,7 +832,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-engine-event-contract-production.yml",
@@ -842,7 +842,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-engine-executor-production.yml",
@@ -852,7 +852,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-engine-health-production.yml",
@@ -862,7 +862,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-engine-inbox-production.yml",
@@ -872,7 +872,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-engine-integration-audit-production.yml",
@@ -882,7 +882,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-engine-lease-inbox-production.yml",
@@ -892,7 +892,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-engine-outbox-production.yml",
@@ -902,7 +902,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-engine-registry-production.yml",
@@ -912,7 +912,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-engine-router-production.yml",
@@ -922,7 +922,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-engine-workflow-production.yml",
@@ -932,7 +932,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-ep-reservation-audit.yml",
@@ -942,7 +942,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-fan-ranks.yml",
@@ -952,7 +952,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-fast-sql-courier.yml",
@@ -962,7 +962,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-finish-checkpoint.yml",
@@ -972,7 +972,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-five-destinations.yml",
@@ -982,7 +982,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-four-level-check.yml",
@@ -992,7 +992,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-full-inventory.yml",
@@ -1002,7 +1002,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-full-live-check.yml",
@@ -1012,7 +1012,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-full-runtime-release.yml",
@@ -1022,7 +1022,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-gnuboard-theme.yml",
@@ -1032,7 +1032,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-gpt-action.yml",
@@ -1042,7 +1042,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-home-ainoa.yml",
@@ -1052,7 +1052,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-home-check.yml",
@@ -1062,7 +1062,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-home-data-check.yml",
@@ -1072,7 +1072,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-home-hero.yml",
@@ -1082,7 +1082,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-home-notice-placement.yml",
@@ -1092,7 +1092,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-home-payload.yml",
@@ -1102,7 +1102,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-home-perf.yml",
@@ -1112,7 +1112,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-home-runtime.yml",
@@ -1122,7 +1122,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-host-backup-courier.yml",
@@ -1132,7 +1132,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-illustrated-check.yml",
@@ -1142,7 +1142,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-initial-catalog-flash.yml",
@@ -1152,7 +1152,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-inline-edit.yml",
@@ -1162,7 +1162,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-inline-final.yml",
@@ -1172,7 +1172,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-inline-order.yml",
@@ -1182,7 +1182,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-install.yml",
@@ -1192,7 +1192,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-jukebox-genre.yml",
@@ -1202,7 +1202,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-jukebox-upload-css-production.yml",
@@ -1212,7 +1212,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-jukebox.yml",
@@ -1238,7 +1238,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-lab-entry.yml",
@@ -1248,7 +1248,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-lab-menu.yml",
@@ -1258,7 +1258,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-legacy-route-cleanup.yml",
@@ -1268,7 +1268,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-light-theme.yml",
@@ -1278,7 +1278,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-login-home.yml",
@@ -1288,7 +1288,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-login-presentation.yml",
@@ -1298,7 +1298,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-login-session.yml",
@@ -1308,7 +1308,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-logout.yml",
@@ -1318,7 +1318,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-lounge-channel.yml",
@@ -1328,7 +1328,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-lounge-discovery.yml",
@@ -1338,7 +1338,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-marpple-sync.yml",
@@ -1404,7 +1404,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-member-live.yml",
@@ -1414,7 +1414,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-member-premium.yml",
@@ -1424,7 +1424,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-membership-evidence.yml",
@@ -1434,7 +1434,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-membership-maintenance.yml",
@@ -1458,7 +1458,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-menu-audit.yml",
@@ -1468,7 +1468,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-menu-tree.yml",
@@ -1478,7 +1478,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-monthly-benefits.yml",
@@ -1488,7 +1488,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-music-player-activate.yml",
@@ -1498,7 +1498,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-music-proof.yml",
@@ -1508,7 +1508,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-music-save.yml",
@@ -1518,7 +1518,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-music-vinyl.yml",
@@ -1528,7 +1528,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-muvy-integration.yml",
@@ -1538,7 +1538,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-n80-agent.yml",
@@ -1548,7 +1548,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-n80-home-orbit.yml",
@@ -1558,7 +1558,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-naver-verification.yml",
@@ -1568,7 +1568,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-navigation-player.yml",
@@ -1578,7 +1578,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-navigation.yml",
@@ -1588,7 +1588,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-new-song-order.yml",
@@ -1598,7 +1598,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-notice-overlay.yml",
@@ -1608,7 +1608,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-notifications.yml",
@@ -1618,7 +1618,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-oauth.yml",
@@ -1628,7 +1628,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-p0-audit.yml",
@@ -1638,7 +1638,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-p0-cache-release.yml",
@@ -1648,7 +1648,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-p0-current-audit.yml",
@@ -1658,7 +1658,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-p0-data-postflight.yml",
@@ -1668,7 +1668,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-p0-evidence.yml",
@@ -1678,7 +1678,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-p0-hero.yml",
@@ -1688,7 +1688,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-p0-live.yml",
@@ -1698,7 +1698,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-p0-media-release.yml",
@@ -1708,7 +1708,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-p0-storage.yml",
@@ -1718,7 +1718,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-page-speed.yml",
@@ -1728,7 +1728,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-payments.yml",
@@ -1738,7 +1738,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-personal-listening.yml",
@@ -1762,7 +1762,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-playback-check.yml",
@@ -1772,7 +1772,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-playback-reload.yml",
@@ -1782,7 +1782,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-playback-stability.yml",
@@ -1792,7 +1792,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-player-css-safe-production.yml",
@@ -1802,7 +1802,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-playlist-pr-check.yml",
@@ -1812,7 +1812,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-playlist-remote-audit.yml",
@@ -1822,7 +1822,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-playlist-safe-production.yml",
@@ -1832,7 +1832,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-points-guide.yml",
@@ -1842,7 +1842,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-policy-ui.yml",
@@ -1852,7 +1852,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-popularity-check.yml",
@@ -1862,7 +1862,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-popularity-hourly.yml",
@@ -1886,7 +1886,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-premium.yml",
@@ -1896,7 +1896,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-preview-fix.yml",
@@ -1906,7 +1906,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-push-dispatch.yml",
@@ -1930,7 +1930,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-quality-gates.yml",
@@ -1940,7 +1940,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-quality-release.yml",
@@ -1950,7 +1950,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-rank-inventory.yml",
@@ -1960,7 +1960,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-rank-music-probe.yml",
@@ -1970,7 +1970,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-recommendation-follow.yml",
@@ -1980,7 +1980,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-record-library.yml",
@@ -1990,7 +1990,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-recovery.yml",
@@ -2000,7 +2000,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-referral.yml",
@@ -2010,7 +2010,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-request-music.yml",
@@ -2020,7 +2020,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-response.yml",
@@ -2030,7 +2030,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-responsive-presentation.yml",
@@ -2040,7 +2040,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-rhythm.yml",
@@ -2050,7 +2050,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-room-themes.yml",
@@ -2060,7 +2060,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-root-entrypoint-audit.yml",
@@ -2070,7 +2070,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-root-release.yml",
@@ -2080,7 +2080,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-scroll-release.yml",
@@ -2090,7 +2090,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-secure-transport.yml",
@@ -2100,7 +2100,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-semantic-theme-production.yml",
@@ -2110,7 +2110,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-shop.yml",
@@ -2120,7 +2120,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-social-signup.yml",
@@ -2130,7 +2130,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-source-url-check.yml",
@@ -2140,7 +2140,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-sql-set-restore.yml",
@@ -2150,7 +2150,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-sql-to-drive.yml",
@@ -2160,7 +2160,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-staging-cleanup.yml",
@@ -2170,7 +2170,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-staging-courier.yml",
@@ -2180,7 +2180,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-starlight.yml",
@@ -2190,7 +2190,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-storage-inventory.yml",
@@ -2200,7 +2200,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-store-gifts.yml",
@@ -2210,7 +2210,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-subscription-backup.yml",
@@ -2220,7 +2220,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-subscription.yml",
@@ -2230,7 +2230,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-suno-card-auto.yml",
@@ -2254,7 +2254,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-support.yml",
@@ -2264,7 +2264,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-taxonomy-audit.yml",
@@ -2274,7 +2274,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-taxonomy-check.yml",
@@ -2284,7 +2284,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-taxonomy-maintenance.yml",
@@ -2294,7 +2294,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-taxonomy-probe.yml",
@@ -2304,7 +2304,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-taxonomy-release.yml",
@@ -2314,7 +2314,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-theme-audit.yml",
@@ -2324,7 +2324,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-ui-audit-release.yml",
@@ -2334,7 +2334,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-ui-audit.yml",
@@ -2344,7 +2344,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-ui-safe-production.yml",
@@ -2354,7 +2354,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-uiux-audit.yml",
@@ -2364,7 +2364,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-uiux-release.yml",
@@ -2374,7 +2374,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-upload-buttons.yml",
@@ -2384,7 +2384,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-upload-commit-diagnosis.yml",
@@ -2394,7 +2394,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-upload-first-link-repair.yml",
@@ -2404,7 +2404,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-upload-status.yml",
@@ -2414,7 +2414,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-upload-wake.yml",
@@ -2424,7 +2424,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-vip-store.yml",
@@ -2434,7 +2434,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-vocal-record.yml",
@@ -2444,7 +2444,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-voice.yml",
@@ -2454,7 +2454,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-welcome-notice.yml",
@@ -2464,7 +2464,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-workspace-layout.yml",
@@ -2474,7 +2474,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-workspace.yml",
@@ -2484,7 +2484,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-world-assets.yml",
@@ -2494,7 +2494,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-world-diary-check.yml",
@@ -2504,7 +2504,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-writing-forms.yml",
@@ -2514,7 +2514,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-youngcart-install.yml",
@@ -2524,7 +2524,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-youngcart-theme.yml",
@@ -2534,7 +2534,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-youngcart-unify.yml",
@@ -2544,7 +2544,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-youtube-coming.yml",
@@ -2554,7 +2554,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-youtube-linebreak.yml",
@@ -2564,7 +2564,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-youtube-role.yml",
@@ -2574,7 +2574,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     },
     {
       "file": "noa-youtube.yml",
@@ -2584,7 +2584,7 @@
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
-      "handoffState": "archived_source_only"
+      "handoffState": "source_custody_only"
     }
   ],
   "remaining": [

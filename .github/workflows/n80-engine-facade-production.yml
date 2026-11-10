@@ -164,6 +164,9 @@ jobs:
           node "$RUNNER_TEMP/n80-browser/design.mjs"
           cp tests/hub/ui.mjs "$RUNNER_TEMP/n80-browser/hub.mjs"
           node "$RUNNER_TEMP/n80-browser/hub.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'n80-specialist-ui-${{ github.run_id }}', path: 'hub-proof/', retention-days: 3}
   deploy:
     needs: specialists
     concurrency:
