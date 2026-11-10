@@ -66,9 +66,13 @@ try{
   await page.locator('#browser-screen').click({position:{x:30,y:30}});
   await page.locator('#browser-input-status').waitFor({state:'visible'});
   const keyboard=page.locator('#browser-keyboard');
+  await keyboard.evaluate(button=>button.addEventListener('click',()=>{window.keyboardGestureFocused=document.activeElement===document.querySelector('#browser-text');},{once:true}));
   if(width<768)await keyboard.tap();else await keyboard.click();
+  // Touchend can return before the browser dispatches its compatibility click.
+  // Inspect focus inside that click, never focus the field from the test itself.
+  await page.waitForFunction(()=>typeof window.keyboardGestureFocused==='boolean');
   assert(await page.locator('#browser-text').isEnabled(),'pending click must not disable the local keyboard');
-  assert(await page.locator('#browser-text').evaluate(e=>document.activeElement===e),'keyboard button must focus the input in its gesture');
+  assert(await page.evaluate(()=>window.keyboardGestureFocused),'keyboard button must focus the input in its gesture');
   await page.keyboard.type('DUMMY_ONLY');
   const beforePending=posts;await page.keyboard.press('Enter');
   assert.equal(posts,beforePending,'no duplicate command while remote click is pending');
