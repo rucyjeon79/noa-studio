@@ -125,7 +125,7 @@ def install():
                 if old is not None and old not in known and old!=desired:raise RuntimeError('unknown_hub_version')
                 put(WEB+'/'+target,desired,0o644)
             print('N80_HUB_STAGE php_sources',flush=True)
-            for name in ['runner.mjs','launch.mjs','probe.mjs','stop.mjs']:put(ROOT+'/runtime/'+name,Path('runtime/hub/'+name).read_bytes())
+            for name in ['runner.mjs','launch.mjs','probe.mjs','stop.mjs','repository.mjs']:put(ROOT+'/runtime/'+name,Path('runtime/hub/'+name).read_bytes())
             put(ROOT+'/client.py',Path('scripts/n80_hub_client.py').read_bytes())
             put(ROOT+'/operations-guide.md',Path('docs/operations/n80-hub.md').read_bytes())
             channel=transport.open_session(timeout=20);channel.settimeout(35);channel.exec_command(shlex.join(args+[ROOT+'/runtime/probe.mjs']))
@@ -168,6 +168,18 @@ def install():
                     source.setdefault('history',[]).append({'commit':os.environ['GITHUB_SHA'],'base':base,'file':name,'sha256':hashlib.sha256(data).hexdigest(),'bytes':len(data)})
                     source['historyHead']=os.environ['GITHUB_SHA'];put(ROOT+'/source.json',json.dumps(source).encode(),expected_old=previous)
             print('N80_HUB_STAGE source_stored',flush=True)
+            channel=transport.open_session(timeout=20);channel.settimeout(300)
+            channel.exec_command(shlex.join(args+[ROOT+'/runtime/repository.mjs']))
+            output=channel.makefile('r').read(4096).decode();errors=channel.makefile_stderr('r').read(1024).decode();code=channel.recv_exit_status();channel.close()
+            if code!=0:
+                safe=re.search(r'hub_repository_[a-z_]+',errors)
+                raise RuntimeError(safe.group() if safe else 'native_repository_unverified')
+            prefix='N80_HUB_REPOSITORY '
+            if not output.startswith(prefix):raise RuntimeError('native_repository_response')
+            repository=json.loads(output[len(prefix):]);previous=read(ROOT+'/source.json');source=json.loads(previous)
+            if repository['commit']!=os.environ['GITHUB_SHA'] or repository.get('githubRequired') is not False:raise RuntimeError('native_repository_head_mismatch')
+            source['repository']=repository;put(ROOT+'/source.json',json.dumps(source).encode(),expected_old=previous)
+            print(prefix+json.dumps(repository),flush=True)
             previous=read(ROOT+'/control.json');control=json.loads(previous)
             if control.get('stop'):
                 control['stop']=False;control['revision']=control.get('revision',0)+1
@@ -218,11 +230,24 @@ def install():
                     time.sleep(4)
                 else:raise RuntimeError('cutover_not_verified:'+','.join(k+':'+(v or {}).get('state','waiting')+':'+(v or {}).get('error','')for k,v in states.items()))
                 print('N80_HUB_CUTOVER',json.dumps({'activeOperations':active,'verifiedReceipts':len(states)}),flush=True)
+                from noa_n80_ai_worker import signed_tick
+                catalog=signed_tick(read('/hosting/noastudio/noa-ai-lab/worker.key').strip(),'n80_listening_index',b'{"verifyCatalog":true}')
+                if not catalog.get('readOnly') or catalog.get('indexed',0)<1 or catalog.get('publicVideos',0)<1:raise RuntimeError('catalog_readonly_verification_failed')
+                print('N80_HUB_CATALOG_READBACK',json.dumps({k:catalog[k]for k in ['readOnly','indexed','written','publicVideos']}),flush=True)
+                proof={'commit':os.environ['GITHUB_SHA'],'verifiedAt':int(time.time()),'operations':states,'sourceRevision':current['source']['revision']}
+                put(ROOT+'/migration.json',json.dumps(proof).encode())
             # Remove only abandoned staging files created by this bootstrap, never source archives or user data.
             for entry in s.listdir_attr(ROOT):
                 if re.fullmatch(r'(?:source-initial\.tar\.gz|source\.bundle)\.stage-[a-f0-9]{16}',entry.filename) and stat.S_ISREG(entry.st_mode):
                     s.remove(ROOT+'/'+entry.filename)
             print('N80_HUB_INSTALLED',json.dumps({'sourceStored':True,'hostNodeRunning':True,'nativeVerification':True,'activeOperations':native_call(key,{'action':'status'})['operations'],'githubRequiredForHubTick':False,'files':len(FILES)}))
+            transport.close()
+            if os.getenv('N80_HUB_CUTOVER')=='1':
+                before=native_call(key,{'action':'status'})['heartbeatAt']
+                time.sleep(65)
+                after=native_call(key,{'action':'status'})
+                if after['heartbeatAt']<=before or after['runnerState']!='running':raise RuntimeError('detached_host_scheduler_unverified')
+                print('N80_HUB_DETACHED_VERIFIED',json.dumps({'sshClosed':True,'previousHeartbeat':before,'heartbeatAt':after['heartbeatAt'],'runnerState':after['runnerState']}),flush=True)
     finally:transport.close()
 
 if __name__ == '__main__':

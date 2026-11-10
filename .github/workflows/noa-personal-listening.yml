@@ -1,8 +1,7 @@
 name: N80 personal listening
 on:
   workflow_dispatch: {}
-  schedule:
-    - cron: '12,27,42,57 * * * *'
+  # Scheduled execution moved to the verified N80 Hub host owner.
   push:
     branches: [main, codex/n80-personal-listening]
     paths: ['deploy/noa-app/p0-player.js','tests/room-themes/player.mjs','deploy/noa-listening*','deploy/noa-app/engine/personal-*','bridge/listening*.php','scripts/noa_personal*','scripts/qa/noa-personal-listening.mjs','scripts/qa/noa-mood-queue-audit.cjs','tests/listening/**','.github/workflows/noa-personal-listening.yml']
@@ -28,7 +27,7 @@ jobs:
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
         run: python scripts/n80_auto.py catalog.index
   verify:
-    if: ((github.event_name != 'schedule') && !contains(github.event.head_commit.message, '[n80-runtime]')) && !contains(github.event.head_commit.message, '[n80-jukebox]') && !contains(github.event.head_commit.message, '[listening-navigation]')
+    if: ((github.event_name != 'schedule') && !contains(github.event.head_commit.message, '[n80-runtime]')) && !contains(github.event.head_commit.message, '[n80-jukebox]') && !contains(github.event.head_commit.message, '[listening-navigation]') && !contains(github.event.head_commit.message, '[n80-hub]')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -74,7 +73,7 @@ jobs:
         if: always()
         with: {name: listening-candidate, path: listening-proof/candidate/, retention-days: 7}
   deploy:
-    if: ((github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && (!contains(github.event.head_commit.message, '[unified-shell-release]') || contains(github.event.head_commit.message, '[listening-copy]'))) && !contains(github.event.head_commit.message, '[n80-jukebox]') && !contains(github.event.head_commit.message, '[listening-navigation]')
+    if: ((github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && (!contains(github.event.head_commit.message, '[unified-shell-release]') || contains(github.event.head_commit.message, '[listening-copy]'))) && !contains(github.event.head_commit.message, '[n80-jukebox]') && !contains(github.event.head_commit.message, '[listening-navigation]') && !contains(github.event.head_commit.message, '[n80-hub]')
     needs: verify
     environment: production
     runs-on: ubuntu-latest

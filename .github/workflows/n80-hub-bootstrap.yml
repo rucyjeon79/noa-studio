@@ -22,7 +22,8 @@ jobs:
           php tests/engine/runtime_ownership_test.php
           php tests/subscription/core_test.php
           php -l bridge/lab-worker.php
-          node --test tests/hub/runner.test.mjs
+          node --test tests/hub/runner.test.mjs tests/hub/repository.test.mjs
+          python tests/hub/dispatch_test.py
           for file in deploy/noa-app/engine/hub*.php deploy/noa-hub*.php bridge/hub*.php; do php -l "$file"; done
           python -m py_compile scripts/n80_hub_bootstrap.py scripts/n80_auto.py
       - name: Verify administrator UI on mobile and desktop
@@ -37,6 +38,7 @@ jobs:
       - name: Install and verify the N80-owned source and execution module
         env:
           N80_HUB_INSTALL: '1'
+          N80_HUB_CUTOVER: '1'
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}

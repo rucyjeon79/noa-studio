@@ -41,3 +41,15 @@ config/n80-hub-dependencies.json은 기존 워크플로 목록과 아직 검증�
 ## 확인된 호스트 통신
 
 공개 도메인으로의 호스트 자체 호출은 시간 초과를 반환했다. HTTPS loopback은 실제 응답을 검증했으며 원래 도메인의 SNI·인증서 검사와 HMAC 인증을 유지한다. 새 전용 포트나 외부 스케줄러는 없다. 실행기는 고정 작업 목록을 갱신하고, 프로토콜 업그레이드 시 기존 PID를 종료한 뒤 같은 저장소로 재시작한다.
+
+## 업무 전환 검증 — 2026-11-10
+
+작업 실행 42728824359에서 hub.verify, ai.text, ai.batch, catalog.index, notifications.dispatch, popularity.calculate, members.maintain의 호스트 영수증이 모두 succeeded로 확인됐다. 공개 소유권 조회도 n80_hub를 반환한다. 텍스트 영수증은 대기열 점검의 성공이며 ChatGPT 계정 생성 실행기의 완전 이관을 뜻하지 않는다.
+
+회원 정리·알림·인기 집계·곡 색인의 GitHub schedule을 해제한다. 수동 진입은 호스트 소유권을 확인하고 중복 실행을 거절한다. 미디어·브라우저를 함께 맡는 기존 worker는 유지하되 텍스트·묶음·색인은 서버에서 차단한다. 기존 곡 색인 배포 검사는 새로 생성하지 않고 저장된 색인과 공개 영상 수만 조회한다.
+
+Hub 배포에는 [n80-hub] 표시를 사용한다. 해당 변경을 전체 사이트 배포 workflow가 다시 적용하지 않는다. 초기 변경 이력·후속 bundle·native 배포 패키지는 관리자 화면에서 각각 내려받을 수 있다.
+
+## 독립 버전 저장소
+
+호스트의 `/hosting/noastudio/noa-hub/repository.git`은 로컬 bundle만 사용해 복원하는 비공개 bare Git 저장소다. SSH를 통한 Git 접근을 사용할 수 있으며 배포는 별도의 검증 패키지 절차를 따른다. 저장소 복원은 전체 bundle 해시, 순서, commit, fast-forward, fsck, 최종 HEAD를 검사한다. 사용자가 만든 후속 commit이 발견되면 덮어쓰지 않는다. Git 저장소에는 GitHub 이슈·PR·Actions 실행 메타데이터나 GitHub에만 있는 계정 인증 자료가 포함되지 않는다.

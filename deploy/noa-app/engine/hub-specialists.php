@@ -19,7 +19,7 @@ function n80_hub_specialist(string $operation):array {
   return ['ok'=>true]+$totals;
  }
  if($operation==='popularity.calculate'){
-  require_once $bridge.'/storage.php';require_once $bridge.'/popularity-store.php';$db=noa_bridge_pdo();
+  require_once $bridge.'/storage.php';require_once $bridge.'/popularity-store.php';$db=noa_bridge_pdo();$db->exec("SET time_zone='+00:00'");
   if(!np_ready($db))throw new RuntimeException('hub_popularity_not_installed');return ['ok'=>true,'result'=>np_calculate($db)];
  }
  if($operation==='members.maintain'){
@@ -37,4 +37,16 @@ function n80_hub_specialist(string $operation):array {
   return ['ok'=>true]+$result;
  }
  throw new InvalidArgumentException('hub_specialist_not_installed');
+}
+
+/** Existing release checks can inspect the index without becoming a second executor. */
+function n80_hub_catalog_readback(bool $moods=false):array {
+ $bridge=dirname(__DIR__,2).'/noa-bridge';
+ require_once $bridge.'/storage.php';require_once $bridge.'/youtube-store.php';
+ require_once __DIR__.'/personal-song-index.php';require_once $bridge.'/listening-video-catalog.php';
+ $db=noa_bridge_pdo();$indexed=(int)$db->query('SELECT COUNT(*) FROM noa_listening_song_index')->fetchColumn();
+ $videos=n80_read_listening_videos($db);
+ $result=['ok'=>true,'state'=>'host_owned','readOnly'=>true,'indexed'=>$indexed,'analyzed'=>0,'reused'=>$indexed,'written'=>0,'removed'=>0,'publicVideos'=>count($videos)];
+ if($moods){$fields=array_flip(['key','browseIdentity','publicVideoId','genre','moodScores','moodAffinity']);$result['moodCatalog']=array_map(static fn($v)=>array_intersect_key($v,$fields),$videos);}
+ return $result;
 }
