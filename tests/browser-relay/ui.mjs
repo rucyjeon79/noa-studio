@@ -50,8 +50,8 @@ try{
   await page.screenshot({path:`muvy-proof/browser-queued-${theme}-${width}.png`,fullPage:true});
   const beforeRetry=posts;view={...view,retryAllowed:true};
   await page.locator('#browser-refresh').click();
-  await page.waitForRequest(r=>r.url().includes('?api=1')&&r.method()==='POST'&&r.postDataJSON().command==='retry');
-  assert.equal(sent.id,'fixture');assert.equal(posts,beforeRetry+1,'bounded same-session retry');
+  const retried=await page.waitForResponse(r=>r.url().includes('?api=1')&&r.request().method()==='POST'&&r.request().postDataJSON().command==='retry');
+  assert.equal(retried.request().postDataJSON().id,'fixture');assert.equal(posts,beforeRetry+1,'bounded same-session retry');
   view={state:'failed',error:'browser_start_timeout'};
   await page.locator('#browser-refresh').click();
   await page.getByText('3분 안에 로그인 화면을 시작하지 못했습니다. 아래 버튼으로 다시 연결해 주세요.',{exact:true}).waitFor();
