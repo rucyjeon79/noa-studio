@@ -39,6 +39,19 @@ with tempfile.TemporaryDirectory(prefix='n80-browser-http-') as root:
         code,headers,body=request(api=True,body={'command':'open'},csrf=csrf)
         assert code==200 and json.loads(body)['state']=='queued',body
         public=json.loads(request(api=True)[2]);assert 'lease' not in public and 'input' not in public
+        wake=Path(root)/'wake-count'; assert wake.exists()
+        count=wake.read_bytes()
+        for command in ('open','retry'):
+            assert request(api=True,body={'command':command,'id':public['id']},csrf=csrf)[0]==200
+        assert wake.read_bytes()==count,'duplicate wake'
+        state_path=Path(root)/'noa-ai-lab/state.json'; state=json.loads(state_path.read_text()); state['browserControl']['retryAt']=int(time.time())-1;state_path.write_text(json.dumps(state))
+        assert json.loads(request(api=True)[2])['retryAllowed']
+        assert wake.read_bytes()==count,'GET woke worker'
+        for token,origin in [('bad','https://noastudio.ai.kr'),(csrf,'https://other.test')]:
+            assert request(api=True,body={'command':'retry','id':public['id']},csrf=token,origin=origin)[0]==403
+        assert wake.read_bytes()==count
+        assert request(api=True,body={'command':'retry','id':public['id']},csrf=csrf)[0]==200
+        assert len(wake.read_bytes())==2*len(count),'retry wake missing'
         assert request(api=True,body={'command':'close','id':public['id']},csrf=csrf)[0]==200
         print('N80_BROWSER_HTTP_OK admin-only origin CSRF no-store single-session')
     finally:

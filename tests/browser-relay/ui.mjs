@@ -20,7 +20,7 @@ try{
   await page.route('**/noa-sitemap.php?*',r=>r.fulfill({json:{ok:true,groups:[]}}));
   let view={state:'disconnected'},sent,failRead=false,failPost=false,posts=0;
   await page.route('**/noa-browser-connect.php?api=1',async r=>{
-   if(r.request().method()==='POST'){posts++;sent=r.request().postDataJSON();if(sent.event?.kind==='click'&&!failPost)view={...view,inputReady:false};return r.fulfill({status:failPost?409:200,json:failPost?{error:'browser_frame_changed'}:{ok:true}});}
+   if(r.request().method()==='POST'){posts++;sent=r.request().postDataJSON();if(sent.command==='retry'&&!failPost)view={...view,retryAllowed:false};if(sent.event?.kind==='click'&&!failPost)view={...view,inputReady:false};return r.fulfill({status:failPost?409:200,json:failPost?{error:'browser_frame_changed'}:{ok:true}});}
    return r.fulfill({status:failRead?503:200,json:failRead?{error:'unavailable'}:{ok:true,...view}});
   });
   failRead=width===360;
@@ -48,9 +48,17 @@ try{
   await page.getByText('연결 준비 지연',{exact:true}).waitFor();
   assert(!await page.locator('#browser-interaction').isVisible());assert(await page.getByRole('button',{name:'연결 취소',exact:true}).isEnabled());
   await page.screenshot({path:`muvy-proof/browser-queued-${theme}-${width}.png`,fullPage:true});
+  const beforeRetry=posts;view={...view,retryAllowed:true};
+  await page.locator('#browser-refresh').click();
+  await page.waitForRequest(r=>r.url().includes('?api=1')&&r.method()==='POST'&&r.postDataJSON().command==='retry');
+  assert.equal(sent.id,'fixture');assert.equal(posts,beforeRetry+1,'bounded same-session retry');
+  view={state:'failed',error:'browser_start_timeout'};
+  await page.locator('#browser-refresh').click();
+  await page.getByText('3분 안에 로그인 화면을 시작하지 못했습니다. 아래 버튼으로 다시 연결해 주세요.',{exact:true}).waitFor();
+  assert(await page.locator('#browser-open').isEnabled());
   // A lease alone is not a visible browser. Keep controls hidden until a frame arrives.
   view={state:'active',phase:'starting',id:'fixture',frameSeq:7,inputReady:false,waitSeconds:8};
-  await page.locator('#browser-refresh').click();
+  await page.locator('#browser-open').click();
   await page.getByText('브라우저 시작 중',{exact:true}).waitFor();
   assert(!await page.locator('#browser-interaction').isVisible());
   const frame=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=1280;c.height=900;const x=c.getContext('2d');x.fillStyle='#fafafa';x.fillRect(0,0,1280,900);x.fillStyle='#333';x.font='32px sans-serif';x.fillText('ISOLATED BROWSER FIXTURE',60,100);return c.toDataURL('image/jpeg');});

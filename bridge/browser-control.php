@@ -5,12 +5,22 @@ function nb_url(string $url):bool {
  $p=parse_url($url);return ($p['scheme']??'')==='https'&&!isset($p['user'])&&!isset($p['pass'])&&!isset($p['port'])
   &&in_array($p['host']??'',['gemini.google.com','accounts.google.com','labs.google','labs.google.com','flow.google.com'],true);
 }
+function nb_queue_expired(array $r,int $now):bool {
+ return ($r['state']??'')==='queued'&&($r['requestedAt']??0)+180<=$now;
+}
+/** Reserve a bounded wake under the existing state lock; dispatch happens after unlock. */
+function nb_reserve_wake(array &$r,int $now):bool {
+ if(($r['state']??'')!=='queued'||nb_queue_expired($r,$now)||($r['wakeAttempts']??0)>=3||($r['retryAt']??0)>$now)return false;
+ $r['wakeAttempts']=($r['wakeAttempts']??0)+1;$r['retryAt']=$now+60;return true;
+}
 function nb_view(array $s,string $owner,int $now):array {
  $r=$s['browserControl']??[];
  if(($r['owner']??'')!==$owner)return ['state'=>'disconnected'];
  $out=array_intersect_key($r,array_flip(['id','state','expiresAt','frameSeq','url','geminiConnected','flowConnected','error']));
  if(($r['expiresAt']??0)<=$now&&!in_array($r['state']??'',['saved','closed','failed'],true))$out['state']='expired';
  if(($out['state']??'')==='active'&&($r['leaseUntil']??0)<=$now)$out['state']='connection_lost';
+ if(nb_queue_expired($r,$now)){$out['state']='failed';$out['error']='browser_start_timeout';}
+ $out['retryAllowed']=($out['state']??'')==='queued'&&($r['wakeAttempts']??0)<3&&($r['retryAt']??0)<=$now;
  $out['phase']=(($out['state']??'')==='active'&&empty($r['frame']))?'starting':($out['state']??'disconnected');
  $out['inputReady']=($out['state']??'')==='active'&&!empty($r['frame'])&&empty($r['input']);
  $out['waitSeconds']=isset($r['requestedAt'])?max(0,$now-$r['requestedAt']):null;
@@ -23,16 +33,18 @@ function nb_admin(array &$s,array $b,string $owner,int $now):array {
  $command=$b['command']??'';
  if($command==='open'){
   $prior=$s['browserControl']??[];
-  if(($prior['expiresAt']??0)>$now&&in_array($prior['state']??'',['queued','active','closing'],true)){
+  if(($prior['expiresAt']??0)>$now&&!nb_queue_expired($prior,$now)&&in_array($prior['state']??'',['queued','active','closing'],true)){
    if(($prior['owner']??'')!==$owner)throw new DomainException('browser_in_use');
    return ['ok'=>true]+nb_view($s,$owner,$now);
   }
   $s['browserControl']=['id'=>bin2hex(random_bytes(16)),'owner'=>$owner,'state'=>'queued','requestedAt'=>$now,'expiresAt'=>$now+1200,
    'frameSeq'=>0,'nextInput'=>0,'ack'=>0,'input'=>null,'geminiConnected'=>false,'flowConnected'=>false];
-  return ['ok'=>true]+nb_view($s,$owner,$now);
+  $dispatch=nb_reserve_wake($s['browserControl'],$now);
+  return ['ok'=>true,'dispatchWake'=>$dispatch]+nb_view($s,$owner,$now);
  }
  $r=&$s['browserControl'];
  if(!$r||($r['owner']??'')!==$owner||($b['id']??'')!==$r['id'])throw new DomainException('browser_session_changed');
+ if($command==='retry')return ['ok'=>true,'dispatchWake'=>nb_reserve_wake($r,$now)]+nb_view($s,$owner,$now);
  if($command==='close'){$r['state']='closed';unset($r['frame'],$r['input']);return ['ok'=>true,'state'=>'closed'];}
  if($r['expiresAt']<=$now||$r['state']!=='active'||($r['leaseUntil']??0)<=$now)throw new DomainException('browser_not_connected');
  if(empty($r['frame']))throw new DomainException('browser_not_ready');
@@ -61,7 +73,7 @@ function nb_admin(array &$s,array $b,string $owner,int $now):array {
 function nb_worker(array &$s,array $b,int $now):array {
  $command=$b['command']??'';$r=&$s['browserControl'];
  if($command==='claim'){
-  if(!$r||$r['state']!=='queued'||$r['expiresAt']<=$now)return ['ok'=>true,'claimed'=>false,'state'=>'idle'];
+  if(!$r||$r['state']!=='queued'||$r['expiresAt']<=$now||nb_queue_expired($r,$now))return ['ok'=>true,'claimed'=>false,'state'=>'idle'];
   $r['state']='active';$r['startedAt']=$now;$r['lease']=bin2hex(random_bytes(24));$r['leaseUntil']=$now+180;$r['expiresAt']=min($r['expiresAt'],$now+900);
   return ['ok'=>true,'claimed'=>true,'id'=>$r['id'],'lease'=>$r['lease'],'expiresAt'=>$r['expiresAt'],'profile'=>$s['browserProfile']??null];
  }

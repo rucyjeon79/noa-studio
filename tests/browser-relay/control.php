@@ -42,5 +42,22 @@ try{
  check(nb_view($s2,'owner',282)['state']==='connection_lost','dead_worker_hidden');
  refuses(function()use(&$s2,$c){nb_worker($s2,['command'=>'exchange','ack'=>0,'id'=>$c['id'],'lease'=>$c['lease']],282);},'browser_lease_expired');
  nb_admin($s2,['command'=>'close','id'=>$c['id']],'owner',283);$stop=nb_worker($s2,['command'=>'exchange','ack'=>0,'id'=>$c['id'],'lease'=>$c['lease']],284);check($stop['stop']&&!$stop['save'],'cancel_saved_profile');
+ $q=lab_defaults();$first=nb_admin($q,['command'=>'open'],'owner',100);$qid=$first['id'];
+ check($first['dispatchWake']&&!$first['retryAllowed'],'initial_wake_not_reserved');
+ check(empty(nb_admin($q,['command'=>'open'],'owner',101)['dispatchWake']),'duplicate_open_wakes');
+ $retry=['command'=>'retry','id'=>$qid];
+ check(!nb_admin($q,$retry,'owner',159)['dispatchWake'],'early_retry');
+ refuses(function()use(&$q,$retry){nb_admin($q,$retry,'other',160);},'browser_session_changed');
+ check(nb_view($q,'owner',160)['retryAllowed'],'retry_not_available');
+ check(nb_admin($q,$retry,'owner',160)['dispatchWake'],'retry_missing');
+ check(!nb_admin($q,$retry,'owner',160)['dispatchWake'],'replayed_retry');
+ check(nb_admin($q,$retry,'owner',220)['dispatchWake'],'last_retry_missing');
+ check(!nb_admin($q,$retry,'owner',279)['dispatchWake'],'retry_limit');
+ $timeout=nb_view($q,'owner',280);check($timeout['state']==='failed'&&$timeout['error']==='browser_start_timeout'&&!$timeout['retryAllowed'],'queue_timeout');
+ check(!nb_worker($q,['command'=>'claim'],280)['claimed'],'stale_claim');
+ $next=nb_admin($q,['command'=>'open'],'owner',281);check($next['id']!==$qid&&$next['dispatchWake'],'reopen_stale_queue');
+ refuses(function()use(&$q,$retry){nb_admin($q,$retry,'owner',282);},'browser_session_changed');
+ $live=nb_worker($q,['command'=>'claim'],282);check(!nb_admin($q,['command'=>'retry','id'=>$next['id']],'owner',283)['dispatchWake'],'active_retry');
+ check($live['expiresAt']===1182,'queue_timeout_shortened_live_session');
  echo "N80_BROWSER_CONTROL_OK ownership lease encryption replay expiry profile-checksum\n";
 }finally{foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::CHILD_FIRST) as $f){$f->isDir()?rmdir($f->getPathname()):unlink($f->getPathname());}rmdir($root);}
