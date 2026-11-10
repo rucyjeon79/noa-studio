@@ -22,6 +22,7 @@ try{
  assert.equal((await page.goto('http://127.0.0.1:8139/noa-hub.php')).status(),403);
  await context.addCookies([{name:'fixture',value:'admin',domain:'127.0.0.1',path:'/'}]);
  await page.goto('http://127.0.0.1:8139/noa-hub.php');assert.equal(await page.getByRole('heading',{name:'N80 Hub',exact:true}).count(),1);
+ fs.mkdirSync('hub-proof',{recursive:true});await page.screenshot({path:'hub-proof/initial.png',fullPage:true});
  assert.equal(await page.getByText('N80 Notify',{exact:true}).count(),1);
  assert.equal(await page.getByText('N80 Media',{exact:true}).count(),1);
  assert.equal(await page.getByText('카드 이미지: 최근 보완 2개 · 대기 1개',{exact:true}).count(),1);
