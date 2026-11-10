@@ -9,7 +9,7 @@ const sha40=v=>typeof v==='string'&&/^[a-f0-9]{40}$/.test(v);
 const sha256=v=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);
 function fail(code){throw new Error('hub_repository_'+code);}
 function git(root,args,allowFailure=false){
- const r=spawnSync('/usr/bin/git',['-c','core.hooksPath=/dev/null',...args],{cwd:root,encoding:'utf8',timeout:120000,maxBuffer:1048576,env:{...process.env,GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null',GIT_TERMINAL_PROMPT:'0'}});
+ const r=spawnSync('/usr/bin/git',['-c','core.hooksPath=/dev/null','-c','fetch.unpackLimit=0','-c','transfer.unpackLimit=0',...args],{cwd:root,encoding:'utf8',timeout:120000,maxBuffer:1048576,env:{...process.env,GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null',GIT_TERMINAL_PROMPT:'0'}});
  if(r.status!==0&&!allowFailure)throw new Error('hub_repository_git_command_failed',{cause:{status:r.status,operation:args.filter(a=>!a.startsWith('--git-dir='))[0],diagnostic:(r.stderr||r.error?.code||'').slice(0,1200)}});return {status:r.status,text:(r.stdout||'').trim()};
 }
 function regular(root,name,digest){
@@ -52,7 +52,8 @@ export function restoreRepository(root){
   }
   if(previous&&git(root,['--git-dir='+repo,'merge-base','--is-ancestor',previous,head],true).status!==0)fail('not_fast_forward');
   at('update-ref','refs/heads/main',head,previous||'0'.repeat(40));at('symbolic-ref','HEAD','refs/heads/main');
-  at('fsck','--full','--no-dangling');
+  // Materialize complete pack indexes before the full connectivity/integrity check.
+  at('repack','-a','-d');at('fsck','--full','--no-dangling');
   if(!exists){fs.renameSync(staging,target);staging=null;}
   const actual=git(root,['--git-dir='+target,'rev-parse','refs/heads/main']).text;if(actual!==head)fail('readback');
   return {commit:head,bare:true,bundles:chain.length,gitVersion:version,githubRequired:false};
