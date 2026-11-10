@@ -148,6 +148,8 @@ jobs:
           python tests/notifications/push_test.py
           mysql -h127.0.0.1 -uroot -pisolated-noa-ci -e 'CREATE DATABASE jukebox_test'
           python tests/jukebox/make_fixture.py
+          mkdir -p deploy/noa-bridge
+          cp bridge/package-record.php bridge/channel-ownership.php deploy/noa-bridge/
           NOA_JUKEBOX_TEST_PASSWORD=isolated-noa-ci php tests/jukebox/upload_mysql_test.php
       - name: Verify shared browser gates before production activation
         run: |
