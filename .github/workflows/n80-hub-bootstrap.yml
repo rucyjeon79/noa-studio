@@ -27,6 +27,9 @@ jobs:
       - name: Validate native host control before any installation
         run: |
           php tests/hub/core_test.php
+          python tests/hub/chatgpt_test.py
+          node tests/hub/connector.mjs
+          php -l deploy/noa-gpt.php
           php tests/hub/covers_mysql_test.php
           php tests/engine/registry_test.php
           php tests/engine/runtime_ownership_test.php

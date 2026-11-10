@@ -37,7 +37,7 @@ WEB = '/hosting/noastudio/html'
 FILES = {
  'noa-hub.php':'deploy/noa-hub.php', 'noa-hub-owner.php':'deploy/noa-hub-owner.php',
  'noa-bridge/hub-worker.php':'bridge/hub-worker.php', 'noa-bridge/hub-admin.php':'bridge/hub-admin.php',
- **{'noa-app/engine/'+n:'deploy/noa-app/engine/'+n for n in ['hub.php','hub-release.php','hub-specialists.php','hub-covers.php']},
+ **{'noa-app/engine/'+n:'deploy/noa-app/engine/'+n for n in ['hub.php','hub-release.php','hub-specialists.php','hub-covers.php','hub-chatgpt.php']},
 }
 
 def native_call(key,body):
@@ -212,7 +212,7 @@ def install():
             # N80 Setup/registry are owned by the specialist release and already preserve Hub.
             # Only the legacy execution fence is installed through Hub here.
             package={'version':1,'id':secrets.token_hex(16),'files':[]}
-            integrations=[('bridge/lab-worker.php','noa-bridge/lab-worker.php')]
+            integrations=[('bridge/lab-worker.php','noa-bridge/lab-worker.php'),('deploy/noa-gpt.php','noa-gpt.php'),('deploy/noa-app/engine/registry.php','noa-app/engine/registry.php')]
             for source,target in integrations:
                 old=read(WEB+'/'+target);desired=Path(source).read_bytes()
                 if old==desired:continue

@@ -43,7 +43,7 @@ function noa_engine_modules(): array {
     ];
     if(function_exists('n80_hub_module')){
         $modules['hub']=n80_hub_module();
-        $sources['hub']=['noa-hub.php','noa-hub-owner.php','noa-app/engine/hub.php','noa-app/engine/hub-release.php','noa-app/engine/hub-specialists.php','noa-bridge/hub-worker.php','noa-bridge/hub-admin.php'];
+        $sources['hub']=['noa-hub.php','noa-hub-owner.php','noa-app/engine/hub.php','noa-app/engine/hub-release.php','noa-app/engine/hub-specialists.php','noa-app/engine/hub-covers.php','noa-app/engine/hub-chatgpt.php','noa-bridge/hub-worker.php','noa-bridge/hub-admin.php'];
         $observes['hub']=['admin'];
     }
     foreach($modules as $id=>&$module){$module['sources']=$sources[$id];$module['observes']=$observes[$id];}
