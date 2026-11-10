@@ -1,12 +1,16 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id),app=$('browser-app');if(!app)return;
-let state={},busy=false,refreshing=false,refreshAgain=false,available=false,operation=0,timer;
+let state={},busy=false,refreshing=false,refreshAgain=false,available=false,operation=0,timer,lastFailure=null;
 const pending=['queued','starting','active','closing'],waiting=['queued','starting'];
 const messages={disconnected:['연결 화면을 열어 Google 로그인을 진행하세요.','Google 연결을 시작하세요','아래 버튼을 누르면 로그인할 화면을 준비합니다.'],queued:['연결 화면을 준비하고 있습니다.','연결 화면 준비 중','준비가 끝나면 여기에 Google 로그인 화면이 나타납니다.'],starting:['브라우저를 열고 첫 화면을 불러오고 있습니다.','브라우저 시작 중','첫 화면을 받으면 여기에 표시합니다.'],active:['Google에 로그인한 뒤 Gemini와 Flow를 각각 확인해 주세요.','첫 화면을 불러오는 중','브라우저가 준비되는 동안 잠시 기다려 주세요.'],closing:['연결 정보를 저장하고 있습니다.','연결 저장 중','저장이 끝날 때까지 잠시 기다려 주세요.'],saved:['연결 정보를 저장했습니다.','연결 저장 완료','필요할 때 연결 화면을 다시 열 수 있습니다.'],closed:['연결을 닫았습니다.','연결 종료','다시 연결하려면 아래 버튼을 눌러 주세요.'],expired:['연결 시간이 만료되었습니다.','연결 시간 만료','연결 화면을 다시 열어 주세요.'],connection_lost:['연결 응답이 끊겼습니다.','연결 응답 없음','연결을 닫은 뒤 다시 열어 주세요.'],failed:['연결 화면을 열지 못했습니다.','연결 확인 필요','잠시 후 연결 화면을 다시 열어 주세요.']};
-function feedback(text=''){$('browser-feedback').textContent=text;$('browser-feedback').hidden=!text;}
+function feedback(text=''){$('browser-feedback').textContent=text;$('browser-feedback').hidden=!text;if(text)$('browser-refresh').hidden=false;}
+function requestMessage(error){
+ const messages={browser_frame_changed:'화면이 바뀌었습니다. 새 화면에서 다시 눌러 주세요.',request_verification_failed:'요청 인증을 확인하지 못했습니다. 페이지를 새로고침해 주세요.',admin_required:'NOA STUDIO 관리자 로그인을 다시 확인해 주세요.',browser_session_changed:'연결 화면이 바뀌었습니다. 현재 연결 화면에서 다시 눌러 주세요.',browser_not_connected:'브라우저 연결이 끝났습니다. 연결 화면을 다시 열어 주세요.',browser_not_ready:'첫 화면을 불러오고 있습니다. 화면이 나타난 뒤 다시 눌러 주세요.',response_unreadable:'서버 응답을 읽지 못했습니다. 상태 다시 확인을 눌러 주세요.'};
+ return messages[error.message]||(error.name==='AbortError'?'요청 응답이 늦어지고 있습니다. 상태를 확인한 뒤 다시 눌러 주세요.':'요청을 전달하지 못했습니다. 상태 다시 확인을 눌러 주세요.');
+}
 async function api(body){
  const abort=new AbortController(),timeout=setTimeout(()=>abort.abort(),12000);
- try{const r=await fetch('/noa-browser-connect.php?api=1',{credentials:'same-origin',cache:'no-store',signal:abort.signal,...(body?{method:'POST',headers:{'Content-Type':'application/json','X-NOA-CSRF':app.dataset.csrf},body:JSON.stringify(body)}:{})});const v=await r.json();if(!r.ok)throw Error(v.error||'connection_failed');return v;}finally{clearTimeout(timeout);}
+ try{const r=await fetch('/noa-browser-connect.php?api=1',{credentials:'same-origin',cache:'no-store',signal:abort.signal,headers:{Accept:'application/json',...(body?{'Content-Type':'application/json','X-NOA-CSRF':app.dataset.csrf}:{})},...(body?{method:'POST',body:JSON.stringify(body)}:{})});let v;try{v=await r.json();}catch{throw Error('response_unreadable');}if(!r.ok){const e=Error(v.error||'connection_failed');e.status=r.status;throw e;}if(!body&&typeof v.csrf==='string'&&/^[a-f0-9]{64}$/.test(v.csrf))app.dataset.csrf=v.csrf;return v;}finally{clearTimeout(timeout);}
 }
 function draw(v){
  v={...v,state:v.phase||v.state};state=v;app.dataset.state=available?v.state||'loading':'unavailable';
@@ -18,6 +22,7 @@ function draw(v){
  $('browser-placeholder-title').textContent=delayed?'연결 준비 지연':m[1];
  $('browser-placeholder-help').textContent=v.error==='browser_start_timeout'?'3분 안에 로그인 화면을 시작하지 못했습니다. 아래 버튼으로 다시 연결해 주세요.':delayed?'로그인 화면을 다시 요청하고 있습니다. 시작하지 못하면 3분 안에 재연결 버튼을 표시합니다.':m[2];
  const hasFrame=available&&v.state==='active'&&!!v.frame,ready=available&&!busy&&hasFrame&&v.inputReady;
+ if(available&&lastFailure&&(lastFailure.command==='read'||(['open','retry'].includes(lastFailure.command)&&hasFrame&&(!lastFailure.id||lastFailure.id===v.id)))){lastFailure=null;feedback();}
  const screen=$('browser-screen');screen.hidden=!hasFrame;
  if(hasFrame){if(screen.getAttribute('src')!==v.frame)screen.src=v.frame;}else screen.removeAttribute('src');
  $('browser-placeholder').hidden=hasFrame;
@@ -33,18 +38,29 @@ function draw(v){
  $('browser-save').hidden=!hasFrame;
  $('browser-close').hidden=!pending.includes(v.state)&&v.state!=='connection_lost';$('browser-close').disabled=busy||!available;
  $('browser-close').textContent=waiting.includes(v.state)?'연결 취소':'저장 없이 닫기';
- $('browser-refresh').hidden=available&&!delayed;$('browser-refresh').disabled=busy||refreshing;
+ $('browser-refresh').hidden=available&&!delayed&&!$('browser-feedback').textContent;$('browser-refresh').disabled=busy||refreshing;
 }
 async function refresh(){
  clearTimeout(timer);if(document.hidden||busy)return;if(refreshing){refreshAgain=true;return;}refreshing=true;const version=operation;
  try{const next=await api();if(!busy&&version===operation){available=true;draw(next);}}
- catch{if(!busy&&version===operation){available=false;draw(state);feedback('연결 상태를 불러오지 못했습니다. 상태 다시 확인을 눌러 주세요.');}}
+ catch{if(!busy&&version===operation){available=false;lastFailure={command:'read'};draw(state);feedback('연결 상태를 불러오지 못했습니다. 상태 다시 확인을 눌러 주세요.');}}
  finally{refreshing=false;$('browser-refresh').disabled=busy;if(available&&state.state==='queued'&&state.retryAllowed&&!busy){timer=setTimeout(()=>send('retry'),3000);}else if(refreshAgain){refreshAgain=false;void refresh();}else if(pending.includes(state.state))timer=setTimeout(refresh,3000);}
 }
 async function send(command,extra={},onAccepted=()=>{}){
- if(busy||!available)return false;operation++;busy=true;feedback();draw(state);let accepted=false;
- try{await api({command,id:state.id,frameSeq:state.frameSeq,...extra});accepted=true;onAccepted();}
- catch(e){feedback(e.message==='browser_frame_changed'?'화면이 바뀌었습니다. 새 화면에서 다시 눌러 주세요.':'연결 요청을 확인하지 못했습니다. 상태를 확인한 뒤 다시 시도해 주세요.');}
+ if(busy||!available)return false;operation++;busy=true;lastFailure=null;feedback();draw(state);let accepted=false;
+ const body={command,id:state.id,frameSeq:state.frameSeq,...extra};
+ try{
+  try{await api(body);}catch(e){
+   // Only an explicit pre-execution CSRF rejection is safe to resend. Never replay a timeout.
+   if(e.status!==403||e.message!=='request_verification_failed')throw e;
+   const next=await api();
+   if(command!=='open'&&next.id!==body.id)throw Error('browser_session_changed');
+   if(command==='input'&&next.frameSeq!==body.frameSeq)throw Error('browser_frame_changed');
+   await api(body);
+  }
+  accepted=true;onAccepted();
+ }
+ catch(e){lastFailure={command,id:body.id};feedback(requestMessage(e));}
  finally{busy=false;await refresh();}
  return accepted;
 }

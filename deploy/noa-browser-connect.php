@@ -11,7 +11,7 @@ try{
  if(isset($_GET['api'])){
   if(($_SERVER['REQUEST_METHOD']??'GET')==='GET'){
    if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
-   lab_json(200,['ok'=>true]+nb_view(lab_read(),$owner,time()));
+   lab_json(200,['ok'=>true,'csrf'=>$csrf]+nb_view(lab_read(),$owner,time()));
   }
   lab_csrf();$b=lab_json_body(8192);if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
   $r=lab_lock(fn(&$s)=>nb_admin($s,$b,$owner,time()));

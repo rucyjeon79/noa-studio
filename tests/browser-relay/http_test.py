@@ -39,6 +39,7 @@ with tempfile.TemporaryDirectory(prefix='n80-browser-http-') as root:
         code,headers,body=request(api=True,body={'command':'open'},csrf=csrf)
         assert code==200 and json.loads(body)['state']=='queued',body
         public=json.loads(request(api=True)[2]);assert 'lease' not in public and 'input' not in public
+        assert public['csrf']==csrf
         wake=Path(root)/'wake-count'; assert wake.exists()
         count=wake.read_bytes()
         for command in ('open','retry'):
@@ -52,7 +53,19 @@ with tempfile.TemporaryDirectory(prefix='n80-browser-http-') as root:
         assert wake.read_bytes()==count
         assert request(api=True,body={'command':'retry','id':public['id']},csrf=csrf)[0]==200
         assert len(wake.read_bytes())==2*len(count),'retry wake missing'
+        # Rotate only the disposable administrator HTTP session; connection ownership stays the same.
+        cookies.clear()
+        assert request(api=True,body={'command':'retry','id':public['id']},csrf=csrf)[0]==403
+        renewed=json.loads(request(api=True)[2]);assert renewed['csrf']!=csrf and renewed['id']==public['id']
+        csrf=renewed['csrf']
+        # Exercise the real public HTTP input boundary after an isolated worker provides a frame.
+        subprocess.run(['php','-r',"define('_GNUBOARD_',true);define('G5_PATH',$argv[1]);require G5_PATH.'/noa-bridge/lab-core.php';require G5_PATH.'/noa-bridge/browser-control.php';lab_lock(function(&$s){$c=nb_worker($s,['command'=>'claim'],time());nb_worker($s,['command'=>'exchange','id'=>$c['id'],'lease'=>$c['lease'],'ack'=>0,'frame'=>['url'=>'https://accounts.google.com/','image'=>'data:image/jpeg;base64,ZmFrZQ==']],time());});",str(html)],check=True)
+        frame=json.loads(request(api=True)[2]);assert frame['inputReady']
+        click={'command':'input','id':frame['id'],'frameSeq':frame['frameSeq'],'event':{'kind':'click','x':1200,'y':32}}
+        assert request(api=True,body=click,csrf=csrf)[0]==200
+        assert not json.loads(request(api=True)[2])['inputReady']
+        assert request(api=True,body=click,csrf=csrf)[0]==409
         assert request(api=True,body={'command':'close','id':public['id']},csrf=csrf)[0]==200
-        print('N80_BROWSER_HTTP_OK admin-only origin CSRF no-store single-session')
+        print('N80_BROWSER_HTTP_OK admin-only origin CSRF session-renewal real-HTTP-input no-store single-session')
     finally:
         server.terminate();server.wait(timeout=5)

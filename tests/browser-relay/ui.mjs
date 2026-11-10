@@ -18,10 +18,10 @@ try{
   await page.route('**/noa-ainoa.php?*',r=>r.fulfill({json:{ok:true,member:true,conversation:false}}));
   await page.route('**/noa-login.php?*',r=>r.fulfill({contentType:'text/html',body:'<p>테스트 계정</p>'}));
   await page.route('**/noa-sitemap.php?*',r=>r.fulfill({json:{ok:true,groups:[]}}));
-  let view={state:'disconnected'},sent,failRead=false,failPost=false,posts=0;
+  let view={state:'disconnected'},sent,failRead=false,failPost=false,posts=0,csrfToken='a'.repeat(64),csrfRejects=0,changeSession=false,failTransport=false;
   await page.route('**/noa-browser-connect.php?api=1',async r=>{
-   if(r.request().method()==='POST'){posts++;sent=r.request().postDataJSON();if(sent.command==='retry'&&!failPost)view={...view,retryAllowed:false};if(sent.event?.kind==='click'&&!failPost)view={...view,inputReady:false};return r.fulfill({status:failPost?409:200,json:failPost?{error:'browser_frame_changed'}:{ok:true}});}
-   return r.fulfill({status:failRead?503:200,json:failRead?{error:'unavailable'}:{ok:true,...view}});
+   if(r.request().method()==='POST'){posts++;sent=r.request().postDataJSON();if(csrfRejects>0){csrfRejects--;csrfToken='b'.repeat(64);if(changeSession)view={...view,id:'new-session'};return r.fulfill({status:403,json:{error:'request_verification_failed'}});}if(failTransport)return r.abort('timedout');assert.equal(r.request().headers()['x-noa-csrf'],csrfToken,'fresh session token required');if(sent.command==='retry'&&!failPost)view={...view,retryAllowed:false};if(sent.event?.kind==='click'&&!failPost)view={...view,inputReady:false};return r.fulfill({status:failPost?409:200,json:failPost?{error:'browser_frame_changed'}:{ok:true}});}
+   return r.fulfill({status:failRead?503:200,json:failRead?{error:'unavailable'}:{ok:true,csrf:csrfToken,...view}});
   });
   failRead=width===360;
   await page.goto(base+'/noa-browser-connect.php');
@@ -95,7 +95,29 @@ try{
   failPost=true;await page.locator('#browser-text').fill('RETAIN_ON_REJECTION');await page.locator('#browser-type button').click();
   await page.getByText('화면이 바뀌었습니다. 새 화면에서 다시 눌러 주세요.',{exact:true}).waitFor();
   assert.equal(await page.locator('#browser-text').inputValue(),'RETAIN_ON_REJECTION','failed input must remain available for correction');
-  failPost=false;failRead=true;await page.locator('#browser-save').click();
+  failPost=false;
+  if(width===360&&theme==='noa-ivory'){
+   csrfRejects=1;const beforeRenewal=posts;
+   await page.locator('#browser-text').fill('SESSION_RENEWAL_FIXTURE');await page.locator('#browser-type button').click();
+   await page.waitForFunction(()=>document.querySelector('#browser-text').value==='');
+   assert.equal(posts,beforeRenewal+2,'one retry only after an explicit CSRF rejection');
+   csrfRejects=2;const beforeDenied=posts;
+   await page.locator('#browser-text').fill('KEEP_REJECTED');await page.locator('#browser-type button').click();
+   await page.getByText('요청 인증을 확인하지 못했습니다. 페이지를 새로고침해 주세요.',{exact:true}).waitFor();
+   assert.equal(posts,beforeDenied+2,'renewal cannot loop');
+   assert.equal(await page.locator('#browser-text').inputValue(),'KEEP_REJECTED');
+   assert(await page.locator('#browser-refresh').isVisible(),'error recovery control missing');
+   csrfRejects=1;changeSession=true;const beforeChanged=posts;
+   await page.locator('#browser-type button').click();
+   await page.getByText('연결 화면이 바뀌었습니다. 현재 연결 화면에서 다시 눌러 주세요.',{exact:true}).waitFor();
+   assert.equal(posts,beforeChanged+1,'never replay input into a replacement connection');
+   changeSession=false;failTransport=true;const beforeTransport=posts;
+   await page.locator('#browser-type button').click();
+   await page.getByText('요청을 전달하지 못했습니다. 상태 다시 확인을 눌러 주세요.',{exact:true}).waitFor();
+   assert.equal(posts,beforeTransport+1,'never replay uncertain transport failure');
+   assert.equal(await page.locator('#browser-text').inputValue(),'KEEP_REJECTED');failTransport=false;
+  }
+  failRead=true;await page.locator('#browser-save').click();
   await page.getByText('연결 상태를 불러오지 못했습니다. 상태 다시 확인을 눌러 주세요.',{exact:true}).waitFor();
   assert(!await page.locator('#browser-text').isEnabled());
   failRead=false;view={state:'saved'};const before=posts;await page.locator('#browser-refresh').click();
@@ -103,7 +125,7 @@ try{
   assert(!await page.locator('#browser-screen').isVisible());assert(await page.locator('#browser-open').isEnabled());
   assert.equal(errors.length,0,errors.join('\n'));await context.close();
  }
- console.log('N80_BROWSER_UI_OK real-shell light dark mobile desktop pending-click-keyboard-focus polling-focus-preserved rejected-text-retained input-cleared no-overflow');
+ console.log('N80_BROWSER_UI_OK real-shell light dark mobile desktop pending-click-keyboard-focus polling-focus-preserved rejected-text-retained session-renewal bounded-retry no-uncertain-replay input-cleared no-overflow');
 }catch(error){
  if(activePage&&!activePage.isClosed()){
   await activePage.screenshot({path:'muvy-proof/browser-failure.png',fullPage:true});
