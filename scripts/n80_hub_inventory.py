@@ -12,7 +12,7 @@ def inventory():
     'manual':bool(re.search(r'^  workflow_dispatch:',text,re.M)),
     'operations':sorted(set(re.findall(r'scripts/n80_auto.py ([a-z_.]+)',text)))})
  return {'version':1,'authority':'N80 Hub','workflows':rows,'remaining':[
-  {'label':'음원 최적화·카드 처리','reason':'기존 Python·FFmpeg 작업 실행기를 호스트 Node·미디어 실행기로 옮기는 작업과 실제 음원 검증이 남았습니다. 기존 대기열을 유지합니다.'},
+  {'label':'음원 최적화','reason':'기존 Python·FFmpeg 음원 실행기를 호스트 Node·미디어 실행기로 옮기는 작업과 실제 음원 검증이 남았습니다. 곡 카드 이미지는 기존 PHP 수집·변환·저장 기능을 N80 Hub에 연결했습니다.'},
   {'label':'ChatGPT 계정 생성 실행기','reason':'비공개 실행기의 로그인 저장·갱신과 Codex 실행 환경을 호스트로 이전해야 합니다. 인증 자료를 공개 소스에 넣지 않습니다.'},
   {'label':'Gemini·Flow 브라우저','reason':'현재 호스트에 /proc 및 브라우저 sandbox 실행 환경이 없습니다. 검증된 대체 실행 환경이 마련되기 전까지 기존 경로를 유지합니다.'},
   {'label':'Android 빌드·서명','reason':'호스트에 Java·Android SDK·Gradle 빌드 환경이 없으며 기존 서명키를 안전하게 이전해야 합니다. 현재 배포 APK는 그대로 이용할 수 있습니다.'},

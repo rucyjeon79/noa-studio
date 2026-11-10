@@ -1,7 +1,5 @@
 name: NOA automatic missing Suno card images
 on:
-  schedule:
-    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
   pull_request:
     paths: ['scripts/noa_suno_card_auto.*','tests/jukebox/test_card_auto.py','tests/jukebox/card_target_test.php','.github/workflows/noa-suno-card-auto.yml']

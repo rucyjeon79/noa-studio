@@ -47,7 +47,10 @@ export function restoreRepository(root){
   for(const row of chain){
    const file=path.join(root,row.file),heads=at('bundle','list-heads',file).text.split('\n');
    if(!heads.includes(row.commit+' HEAD'))fail('bundle_head');
-   at('bundle','verify',file);at('fetch','--no-tags',file,'HEAD');
+   at('bundle','verify',file);
+   // Existing verified history is local; import only missing commits instead of
+   // repeatedly unpacking the initial full archive for every small Hub update.
+   if(git(root,['--git-dir='+repo,'cat-file','-e',row.commit+'^{commit}'],true).status!==0)at('fetch','--no-tags',file,'HEAD');
    if(at('cat-file','-t',row.commit).text!=='commit')fail('commit_missing');
   }
   if(previous&&git(root,['--git-dir='+repo,'merge-base','--is-ancestor',previous,head],true).status!==0)fail('not_fast_forward');

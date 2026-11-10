@@ -45,6 +45,11 @@ jobs:
         if: always()
         with: {name: n80-hub-ui, path: hub-proof/, retention-days: 3}
       - run: python -m pip install paramiko==3.5.1
+      - uses: actions/cache/restore@v4
+        with:
+          path: cover-proof/retry.json
+          key: suno-card-retry-v1-${{ github.run_id }}
+          restore-keys: suno-card-retry-v1-
       - name: Install and verify the N80-owned source and execution module
         env:
           N80_HUB_INSTALL: '1'
