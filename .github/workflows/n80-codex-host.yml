@@ -1,0 +1,27 @@
+name: N80 subscription runtime host setup
+on:
+  push:
+    branches: [work/n80-codex-host]
+    paths: ['scripts/n80_codex_host.py', 'runtime/hub/codex-*.mjs', '.github/workflows/n80-codex-host.yml']
+permissions: {contents: read}
+concurrency: {group: n80-codex-host-setup, cancel-in-progress: false}
+jobs:
+  host:
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 5
+    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python -m pip install paramiko==3.5.1
+      - run: python -m py_compile scripts/n80_codex_host.py
+      - name: Check existing host without AI requests
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+        run: python scripts/n80_codex_host.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: n80-codex-host-proof, path: codex-proof/, retention-days: 14}
