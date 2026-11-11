@@ -42,3 +42,35 @@ separate verification stages.
 
 Changing this connection request ID is an operator action, not a retry strategy.
 First reconcile any running process, persisted host state, and encrypted vault.
+
+## Verified subscription execution — 2026-11-11
+
+The operator completed device login. Run 42932778459 verified ChatGPT authentication
+and encrypted credential readback on the host. The temporary credential file was
+removed from that runner; reconnecting is not required.
+
+N80 Hub native release 72 installed only `noa-app/engine/codex.php` and the signed
+`noa-bridge/hub-worker.php` adapter. The existing SQL `n80_ai_task` queue owns the
+trial; no new business queue or scheduler was created. An insert and claim share
+one SQL transaction, preventing the legacy API worker from seeing a queued trial.
+
+Run 42934425096 executed one real Codex subscription task and verified an independent
+host SQL readback. A repeated claim returned the stored result without another
+generation. Ten Python checks and the MySQL claim/result/replay tests passed.
+
+- Request: `0dfa27a9a1d5800d2badb1e9d689589b`
+- SQL task: `n80:ai:bbb455b30e1fa6308818e0a91037cca98d042426cff869c45d9a8580a3f3a629`
+- State: `succeeded`, revision 3.
+- Result SHA-256: `228cb0b56d4959b655eb9757725444e41d5e7389c010844594a461b1defb9358`
+- Auth: ChatGPT subscription. Model: gpt-6.1-sol. Actual recorded usage: 9,173 input
+  tokens, 67 output tokens. This is usage evidence, not a dollar charge estimate.
+- One model invocation, no paid API fallback, no media generation or publication.
+
+The current adapter deliberately permits this one host-authorized trial. General
+automatic SQL task dispatch is not activated (`workerActivated=false`). This is
+not full unattended N80, Flow, or YouTube completion. The next implementation is
+to connect regular eligible N80 SQL tasks to the same bounded subordinate worker,
+with daily invocation limits and reconciliation of ambiguous results. Do not
+repeat the successful trial or create a replacement request merely to re-prove it.
+
+Evidence: https://github.com/rucyjeon79/noa-studio/actions/runs/42934425096
