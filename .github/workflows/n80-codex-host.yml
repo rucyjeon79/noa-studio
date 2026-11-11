@@ -19,7 +19,9 @@ jobs:
       - run: node --check runtime/hub/codex-install.mjs
       - name: Check existing host without AI requests
         env:
-          N80_CODEX_INSTALL: '1'
+          N80_CODEX_INSTALL: '0'
+          N80_CODEX_DOCTOR: '1'
+          N80_CODEX_LOGIN: '1'
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}

@@ -97,6 +97,51 @@ def install(transport,sftp,args):
                 try:sftp.remove(path)
                 except FileNotFoundError:pass
 
+def doctor(transport,sftp,args):
+    script=r'''
+const fs=require('node:fs'),{spawnSync}=require('node:child_process');
+const root='/hosting/noastudio/noa-hub/codex',file=root+'/status.json';
+const s=JSON.parse(fs.readFileSync(file,'utf8'));
+if(!s.nativeVersion||s.version!=='0.167.1')throw new Error('codex_not_verified');
+const allowed=new Set(['PATH','HOME','LANG','LC_ALL','TMPDIR','SSL_CERT_FILE','SSL_CERT_DIR']);
+const env=Object.fromEntries(Object.entries(process.env).filter(([k])=>allowed.has(k)));
+const run=args=>{const r=spawnSync(root+'/0.167.1/codex',['--no-daemon',...args],{env,timeout:20000,maxBuffer:262144,encoding:'utf8'});return {code:r.status,signal:r.signal,error:r.error?.code||null,text:(r.stdout||'')+(r.stderr||'')};};
+const auth=run(['-c','forced_login_method="chatgpt"','login','status']);
+const feature=run(['features','list']);
+const featureNames=feature.text.split('\n').filter(x=>/^\w+\s+(?:stable|experimental|under development|removed|deprecated)\s/.test(x)).map(x=>x.split(/\s+/)[0]);
+s.loginState=auth.code===0&&/logged in using chatgpt/i.test(auth.text)?'chatgpt':/not logged in/i.test(auth.text)?'login_required':'unconfirmed';
+s.disabledFeaturesAvailable=['shell_tool','apps','plugins','hooks','memories','browser_use','computer_use','fast_mode','ultrafast_mode'].filter(k=>featureNames.includes(k));
+s.featureCommandExitCode=feature.code;s.authCommandExitCode=auth.code;s.noDaemon=true;
+fs.writeFileSync(file+'.tmp',JSON.stringify(s),{mode:0o600});fs.renameSync(file+'.tmp',file);
+const redact=t=>t.replace(/sk-[a-zA-Z0-9_-]+/g,'[REDACTED]').replace(/[A-Za-z0-9_-]{80,}/g,'[REDACTED]').replace(/\S+@\S+/g,'[REDACTED]').slice(0,4096);
+console.log(JSON.stringify({receipt:s,featureNames,diagnostic:feature.code!==0?redact(feature.text):null,authDiagnostic:s.loginState==='unconfirmed'?redact(auth.text):null,homeAvailable:Boolean(process.env.HOME)}));
+'''
+    channel=transport.open_session(timeout=20);channel.settimeout(60)
+    channel.exec_command(shlex.join(args+['-e',script]))
+    out=channel.makefile('r').read(32768);errors=channel.makefile_stderr('r').read(1024)
+    code=channel.recv_exit_status();channel.close()
+    if code!=0:raise RuntimeError('codex_doctor_failed_'+str(code))
+    result=json.loads(out)
+    Path('codex-proof/codex-doctor.json').write_text(json.dumps(result,indent=2)+'\n')
+    print('N80_CODEX_DOCTOR '+json.dumps(result),flush=True)
+    return result['receipt']['loginState']
+
+def login(transport,sftp,args):
+    script=Path('runtime/hub/codex-login.mjs').read_bytes()
+    remote=ROOT+'/codex/login-'+hashlib.sha256(script).hexdigest()[:16]+'.mjs'
+    with sftp.open(remote,'wx') as f:f.write(script)
+    sftp.chmod(remote,0o600)
+    if read(sftp,remote)!=script:raise RuntimeError('login_helper_readback_mismatch')
+    public_key=Path('config/n80-codex-device-public.pem').read_text()
+    channel=transport.open_session(timeout=20);channel.settimeout(50)
+    channel.exec_command(shlex.join(args+[remote,'start',public_key]))
+    out=channel.makefile('r').read(16384);errors=channel.makefile_stderr('r').read(1024)
+    code=channel.recv_exit_status();channel.close()
+    if code!=0:raise RuntimeError('codex_login_start_failed_'+str(code))
+    result=json.loads(out)
+    Path('codex-proof/device-challenge-encrypted.json').write_text(json.dumps(result,indent=2)+'\n')
+    print('N80_CODEX_LOGIN '+json.dumps(result),flush=True)
+
 def main():
     transport=connect()
     try:
@@ -128,6 +173,9 @@ def main():
             if os.environ.get('N80_CODEX_INSTALL')=='1':
                 install(transport,sftp,args)
                 if read(sftp,ROOT+'/control.json')!=before:raise RuntimeError('host_control_changed_during_install')
+            if os.environ.get('N80_CODEX_DOCTOR')=='1':
+                state=doctor(transport,sftp,args)
+                if state=='login_required' and os.environ.get('N80_CODEX_LOGIN')=='1':login(transport,sftp,args)
     finally:
         transport.close()
 
