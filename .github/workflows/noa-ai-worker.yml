@@ -2,7 +2,7 @@ name: N80 AI LAB specialized worker
 on:
   push:
     branches: [main, work/n80-subscription-connect]
-    paths: ['scripts/n80_codex_subscription_connect.py', 'tests/engine/test_codex_subscription_connect.py', 'config/n80-codex-connect-request.json', 'runtime/browser/**', 'scripts/n80_browser_relay.py', 'tests/engine/test_browser_relay.py', '.github/workflows/noa-ai-worker.yml', 'runtime/media/**', 'scripts/n80_media_runtime.py', 'scripts/noa_shorts_assembly.py', 'tests/engine/test_media_runtime.py', 'tests/engine/media_runtime.test.mjs', 'tests/session-agent/auto_assembly_test.py', 'scripts/n80_media_handoff.py', 'tests/engine/test_media_handoff.py', 'lab/**', 'integrations/chatgpt-assistant/**', 'scripts/noa_host_media_runtime.py', 'scripts/noa_host_browser_runtime.py', 'tests/engine/test_host_media_runtime.py', 'runtime/node/**', 'lab/client.mjs', 'lab/muvy.mjs', 'scripts/n80_node_runtime.py', 'scripts/noa_lab_worker.py', 'tests/engine/test_node_runtime.py', 'tests/engine/node_runtime.test.mjs']
+    paths: ['deploy/noa-app/engine/codex.php', 'bridge/hub-worker.php', 'scripts/n80_codex_subscription_probe.py', 'tests/hub/codex_mysql_test.php', 'tests/engine/test_codex_subscription_probe.py', 'config/n80-codex-probe-request.json', 'scripts/n80_codex_subscription_connect.py', 'tests/engine/test_codex_subscription_connect.py', 'config/n80-codex-connect-request.json', 'runtime/browser/**', 'scripts/n80_browser_relay.py', 'tests/engine/test_browser_relay.py', '.github/workflows/noa-ai-worker.yml', 'runtime/media/**', 'scripts/n80_media_runtime.py', 'scripts/noa_shorts_assembly.py', 'tests/engine/test_media_runtime.py', 'tests/engine/media_runtime.test.mjs', 'tests/session-agent/auto_assembly_test.py', 'scripts/n80_media_handoff.py', 'tests/engine/test_media_handoff.py', 'lab/**', 'integrations/chatgpt-assistant/**', 'scripts/noa_host_media_runtime.py', 'scripts/noa_host_browser_runtime.py', 'tests/engine/test_host_media_runtime.py', 'runtime/node/**', 'lab/client.mjs', 'lab/muvy.mjs', 'scripts/n80_node_runtime.py', 'scripts/noa_lab_worker.py', 'tests/engine/test_node_runtime.py', 'tests/engine/node_runtime.test.mjs']
   pull_request:
     paths: ['runtime/browser/**', 'scripts/n80_browser_relay.py', 'tests/engine/test_browser_relay.py', '.github/workflows/noa-ai-worker.yml', 'runtime/media/**', 'scripts/n80_media_runtime.py', 'scripts/noa_shorts_assembly.py', 'tests/engine/test_media_runtime.py', 'tests/engine/media_runtime.test.mjs', 'tests/session-agent/auto_assembly_test.py', 'scripts/n80_media_handoff.py', 'tests/engine/test_media_handoff.py', 'lab/**', 'integrations/chatgpt-assistant/**', 'scripts/noa_host_media_runtime.py', 'scripts/noa_host_browser_runtime.py', 'tests/engine/test_host_media_runtime.py', 'runtime/node/**', 'lab/client.mjs', 'lab/muvy.mjs', 'scripts/n80_node_runtime.py', 'scripts/noa_lab_worker.py', 'tests/engine/test_node_runtime.py', 'tests/engine/node_runtime.test.mjs']
   workflow_run:
@@ -12,6 +12,10 @@ on:
     - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
     inputs:
+      subscription_probe:
+        description: 'Execute only the host-authorized single subscription trial'
+        type: boolean
+        default: false
       subscription_connect:
         description: 'Connect a single N80-owned ChatGPT subscription request; no model generation'
         type: boolean
@@ -195,7 +199,7 @@ jobs:
           retention-days: 7
           if-no-files-found: error
   process:
-    if: github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && github.event_name != 'push' && github.event_name != 'pull_request' && inputs.host_runtime != true && inputs.subscription_connect != true && (github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'))
+    if: github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && github.event_name != 'push' && github.event_name != 'pull_request' && inputs.host_runtime != true && inputs.subscription_connect != true && inputs.subscription_probe != true && (github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'))
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: production
@@ -253,7 +257,7 @@ jobs:
 
 
   subscription_connect:
-    if: github.repository == 'rucyjeon79/noa-studio' && ((github.ref == 'refs/heads/work/n80-subscription-connect' && github.event_name == 'push') || (github.event_name == 'workflow_dispatch' && inputs.subscription_connect == true))
+    if: github.repository == 'rucyjeon79/noa-studio' && ((github.ref == 'refs/heads/work/n80-subscription-connect' && github.event_name == 'push' && contains(github.event.head_commit.message, '[n80-connect]')) || (github.event_name == 'workflow_dispatch' && inputs.subscription_connect == true))
     runs-on: ubuntu-24.04
     environment: production
     timeout-minutes: 15
@@ -284,3 +288,46 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: n80-codex-connection-result, path: codex-proof/connection-result.json, retention-days: 7, if-no-files-found: warn}
+
+  subscription_candidate:
+    if: github.ref == 'refs/heads/work/n80-subscription-connect' && github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ROOT_PASSWORD: hub-test-only, MYSQL_DATABASE: noa_hub_test}
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -phub-test-only" --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'pdo_mysql,mbstring'}
+      - run: python -m pip install cryptography==46.0.3
+      - name: Verify same-queue claim, replay and stored result
+        run: |
+          php -l deploy/noa-app/engine/codex.php
+          php -l bridge/hub-worker.php
+          php tests/hub/codex_mysql_test.php
+          python -m unittest discover -s tests/engine -p 'test_codex_subscription*.py' -v
+  subscription_probe:
+    if: github.repository == 'rucyjeon79/noa-studio' && github.ref == 'refs/heads/work/n80-subscription-connect' && github.event_name == 'push' && contains(github.event.head_commit.message, '[n80-probe]')
+    needs: subscription_candidate
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 8
+    concurrency: {group: n80-subscription-account, cancel-in-progress: false}
+    env:
+      NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+      NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+      NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python -m pip install paramiko==3.5.1 cryptography==46.0.3
+      - name: Execute the single N80-authorized task and verify host SQL readback
+        run: python scripts/n80_codex_subscription_probe.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: n80-subscription-probe, path: codex-proof/subscription-probe.json, retention-days: 7, if-no-files-found: error}

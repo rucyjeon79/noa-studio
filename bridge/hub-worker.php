@@ -15,11 +15,21 @@ try{
  $root=n80_hub_root();n80_hub_nonce($root,$headers['nonce'],time());
  $body=json_decode($raw,true,16,JSON_THROW_ON_ERROR);if(!is_array($body))throw new InvalidArgumentException('hub_body_invalid');
  if(($body['action']??'')==='heartbeat'){
-  n80_hub_locked($root,function()use($root){n80_hub_write($root,'status.json',['heartbeatAt'=>time(),'runner'=>'host_node']);});$result=['ok'=>true,'control'=>n80_hub_read($root,'control.json'),'requests'=>n80_hub_read($root,'requests.json')];
+  require_once dirname(__DIR__).'/noa-app/engine/hub-shorts.php';
+  n80_hub_locked($root,function()use($root){n80_hub_migrate_shorts_clock($root,dirname(__DIR__));n80_hub_sync_scheduler_owners($root);n80_hub_write($root,'status.json',['heartbeatAt'=>time(),'runner'=>'host_node']);});$result=['ok'=>true,'control'=>n80_hub_read($root,'control.json'),'requests'=>n80_hub_read($root,'requests.json')];
+  // The authenticated, persistent N80 heartbeat emits work requests. Page reads never do.
+  if(empty($result['control']['paused'])){
+   try{require_once __DIR__.'/session-shorts-control.php';nsc_heartbeat();}
+   catch(Throwable $e){error_log('[n80-shorts-control] request dispatch failed');}
+  }
  }elseif(($body['action']??'')==='execute'){
   set_time_limit(120);
   require_once dirname(__DIR__).'/noa-app/engine/hub-specialists.php';
   $result=n80_hub_execute($root,(string)($body['operation']??''),(string)($body['id']??''),'n80_hub_specialist');
+ }elseif(in_array($body['action']??'',['codex.claim','codex.complete','codex.failed','codex.read'],true)){
+  require_once __DIR__.'/storage.php';
+  require_once dirname(__DIR__).'/noa-app/engine/codex.php';
+  $result=n80_codex_handle(noa_bridge_pdo(),(string)($config['cf_admin']??''),$root,$body);
  }else throw new InvalidArgumentException('hub_unknown_action');
  echo json_encode($result,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
 }catch(Throwable $e){$code=$e->getMessage();http_response_code($code==='hub_auth_required'?401:409);echo json_encode(['ok'=>false,'error'=>preg_match('/^hub_[a-z_]{1,90}$/D',$code)?$code:'hub_unavailable']);}
