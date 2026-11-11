@@ -9,15 +9,17 @@ jobs:
   host:
     runs-on: ubuntu-24.04
     environment: production
-    timeout-minutes: 5
+    timeout-minutes: 12
     concurrency: {group: noa-production-sftp, cancel-in-progress: false}
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
       - run: python -m pip install paramiko==3.5.1
       - run: python -m py_compile scripts/n80_codex_host.py
+      - run: node --check runtime/hub/codex-install.mjs
       - name: Check existing host without AI requests
         env:
+          N80_CODEX_INSTALL: '1'
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}

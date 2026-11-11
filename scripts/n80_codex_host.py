@@ -1,14 +1,23 @@
 """Bounded, zero-generation prerequisite check on the existing N80 host."""
 import json
+import gzip
+import hashlib
+import os
 from pathlib import Path
 import re
 import shlex
 import stat
 import time
+import tarfile
+import tempfile
+import urllib.request
 import paramiko
 from n80_hub_bootstrap import connect
 
 ROOT = '/hosting/noastudio/noa-hub'
+VERSION='0.167.1'
+ASSET='https://github.com/openai/codex/releases/download/rust-v0.167.1/codex-x86_64-unknown-linux-musl.tar.gz'
+ASSET_SHA='64bcc99c32e434b4bcb0508a97df9b7aeecdb97e956d976fb13661096ec4e3e2'
 PROBE = r'''
 const fs=require('node:fs'),https=require('node:https'),dns=require('node:dns');
 const names=['github.com','auth.openai.com','chatgpt.com'];
@@ -33,6 +42,60 @@ def read(sftp, path):
         raise RuntimeError('host_source_invalid')
     with sftp.open(path,'rb') as stream:
         return stream.read()
+
+def install(transport,sftp,args):
+    """Only the checksum-pinned OpenAI binary enters the private N80 directory."""
+    with tempfile.TemporaryDirectory(prefix='n80-codex-') as temp:
+        archive=Path(temp)/'official.tar.gz';digest=hashlib.sha256();total=0
+        with urllib.request.urlopen(ASSET,timeout=30) as response,archive.open('wb') as output:
+            started=time.monotonic()
+            while chunk:=response.read(1048576):
+                total+=len(chunk)
+                if total>180000000 or time.monotonic()-started>120:raise RuntimeError('download_limit')
+                digest.update(chunk);output.write(chunk)
+        if digest.hexdigest()!=ASSET_SHA:raise RuntimeError('official_asset_hash_mismatch')
+        compressed=Path(temp)/'codex.gz';digest=hashlib.sha256();total=0
+        with tarfile.open(archive,'r:gz') as tar:
+            members=[m for m in tar.getmembers() if m.isfile() and m.name.rsplit('/',1)[-1]=='codex-x86_64-unknown-linux-musl']
+            if len(members)!=1 or not 1000000<members[0].size<600000000:raise RuntimeError('official_asset_member_invalid')
+            with tar.extractfile(members[0]) as stream,gzip.open(compressed,'wb',compresslevel=6) as output:
+                while chunk:=stream.read(1048576):digest.update(chunk);total+=len(chunk);output.write(chunk)
+        manifest={'version':VERSION,'sha256':digest.hexdigest(),'bytes':total}
+        print('N80_CODEX_STAGE official_binary_verified '+json.dumps(manifest),flush=True)
+        for path in (ROOT+'/codex',ROOT+'/codex/'+VERSION):
+            try:sftp.mkdir(path,0o700)
+            except OSError:pass
+            if not stat.S_ISDIR(sftp.lstat(path).st_mode) or sftp.normalize(path)!=path:raise RuntimeError('private_directory_invalid')
+            sftp.chmod(path,0o700)
+        script=Path('runtime/hub/codex-install.mjs').read_bytes()
+        remote_script=ROOT+'/codex/install-'+hashlib.sha256(script).hexdigest()[:16]+'.mjs'
+        remote_archive=ROOT+'/codex/'+VERSION+'/codex.stage.gz'
+        with sftp.open(remote_script,'wx') as stream:stream.write(script)
+        sftp.chmod(remote_script,0o600)
+        if read(sftp,remote_script)!=script:raise RuntimeError('installer_readback_mismatch')
+        try:
+            started=time.monotonic();reported=[0]
+            def progress(sent,size):
+                if time.monotonic()-started>360:raise RuntimeError('transfer_deadline')
+                step=int(sent/25000000)
+                if step>reported[0]:reported[0]=step;print('N80_CODEX_STAGE transfer_bytes '+str(sent),flush=True)
+            with compressed.open('rb') as source,sftp.open(remote_archive,'wx') as target:
+                target.set_pipelined(True);sent=0
+                while chunk:=source.read(1048576):target.write(chunk);sent+=len(chunk);progress(sent,compressed.stat().st_size)
+            sftp.chmod(remote_archive,0o600)
+            print('N80_CODEX_STAGE host_verification',flush=True)
+            channel=transport.open_session(timeout=20);channel.settimeout(160)
+            channel.exec_command(shlex.join(args+[remote_script,json.dumps(manifest,separators=(',',':'))]))
+            output=channel.makefile('r').read(16384);errors=channel.makefile_stderr('r').read(2048)
+            code=channel.recv_exit_status();channel.close()
+            if code!=0:raise RuntimeError('codex_install_exit_'+str(code))
+            result=json.loads(output)
+            Path('codex-proof/codex-install.json').write_text(json.dumps(result,indent=2)+'\n')
+            print('N80_CODEX_INSTALL '+json.dumps(result),flush=True)
+        finally:
+            for path in (remote_archive,remote_script):
+                try:sftp.remove(path)
+                except FileNotFoundError:pass
 
 def main():
     transport=connect()
@@ -62,6 +125,9 @@ def main():
             Path('codex-proof').mkdir(exist_ok=True)
             Path('codex-proof/host-prerequisites.json').write_text(json.dumps(result,indent=2)+'\n')
             print('N80_CODEX_HOST '+json.dumps(result),flush=True)
+            if os.environ.get('N80_CODEX_INSTALL')=='1':
+                install(transport,sftp,args)
+                if read(sftp,ROOT+'/control.json')!=before:raise RuntimeError('host_control_changed_during_install')
     finally:
         transport.close()
 
