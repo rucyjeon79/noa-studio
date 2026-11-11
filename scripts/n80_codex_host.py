@@ -13,13 +13,15 @@ PROBE = r'''
 const fs=require('node:fs'),https=require('node:https');
 const names=['github.com','auth.openai.com','chatgpt.com'];
 const probe=hostname=>new Promise(resolve=>{
-  const req=https.request({hostname,method:'HEAD',path:'/',family:4,timeout:12000},res=>{res.resume();resolve({host:hostname,tls:true,status:res.statusCode});});
-  const timer=setTimeout(()=>req.destroy(Object.assign(new Error('timeout'),{code:'TIMEOUT'})),15000);
-  req.on('close',()=>clearTimeout(timer));req.on('error',e=>resolve({host:hostname,tls:false,error:/^[A-Z_0-9]+$/.test(e.code||'')?e.code:'NETWORK_ERROR'}));req.end();
+  let done=false;const finish=result=>{if(!done){done=true;clearTimeout(timer);resolve(result);}};
+  const req=https.request({hostname,method:'HEAD',path:'/',family:4,timeout:12000,agent:false},res=>{res.resume();finish({host:hostname,tls:true,status:res.statusCode});});
+  const timer=setTimeout(()=>{finish({host:hostname,tls:false,error:'TIMEOUT'});req.destroy();},15000);
+  req.on('error',e=>finish({host:hostname,tls:false,error:/^[A-Z_0-9]+$/.test(e.code||'')?e.code:'NETWORK_ERROR'}));req.end();
 });
+setTimeout(()=>process.exit(124),25000).unref();
 Promise.all(names.map(probe)).then(network=>{
 const disk=fs.statfsSync('/hosting/noastudio/noa-hub');
-console.log(JSON.stringify({node:process.version,platform:process.platform,arch:process.arch,proc:fs.existsSync('/proc/self/exe'),freeBytes:Number(disk.bavail)*Number(disk.bsize),network,generationRequests:0}));
+process.stdout.write(JSON.stringify({node:process.version,platform:process.platform,arch:process.arch,proc:fs.existsSync('/proc/self/exe'),freeBytes:Number(disk.bavail)*Number(disk.bsize),network,generationRequests:0})+'\n',()=>process.exit(0));
 });
 '''
 
