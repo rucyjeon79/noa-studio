@@ -10,18 +10,20 @@ from n80_hub_bootstrap import connect
 
 ROOT = '/hosting/noastudio/noa-hub'
 PROBE = r'''
-const fs=require('node:fs'),https=require('node:https');
+const fs=require('node:fs'),https=require('node:https'),dns=require('node:dns');
 const names=['github.com','auth.openai.com','chatgpt.com'];
 const probe=hostname=>new Promise(resolve=>{
-  let done=false;const finish=result=>{if(!done){done=true;clearTimeout(timer);resolve(result);}};
+  let done=false,stage='dns';const finish=result=>{if(!done){done=true;clearTimeout(timer);resolve({...result,stage});}};
   const req=https.request({hostname,method:'HEAD',path:'/',family:4,timeout:12000,agent:false},res=>{res.resume();finish({host:hostname,tls:true,status:res.statusCode});});
+  req.on('socket',s=>{s.on('lookup',err=>{stage=err?'dns_error':'tcp';});s.on('connect',()=>{stage='tls';});s.on('secureConnect',()=>{stage='http';});});
   const timer=setTimeout(()=>{finish({host:hostname,tls:false,error:'TIMEOUT'});req.destroy();},15000);
   req.on('error',e=>finish({host:hostname,tls:false,error:/^[A-Z_0-9]+$/.test(e.code||'')?e.code:'NETWORK_ERROR'}));req.end();
 });
 setTimeout(()=>process.exit(124),25000).unref();
 Promise.all(names.map(probe)).then(network=>{
 const disk=fs.statfsSync('/hosting/noastudio/noa-hub');
-process.stdout.write(JSON.stringify({node:process.version,platform:process.platform,arch:process.arch,proc:fs.existsSync('/proc/self/exe'),freeBytes:Number(disk.bavail)*Number(disk.bsize),network,generationRequests:0})+'\n',()=>process.exit(0));
+const readable=p=>{try{fs.accessSync(p,fs.constants.R_OK);return true;}catch{return false;}};
+process.stdout.write(JSON.stringify({node:process.version,platform:process.platform,arch:process.arch,proc:fs.existsSync('/proc/self/exe'),freeBytes:Number(disk.bavail)*Number(disk.bsize),resolverConfigReadable:readable('/etc/resolv.conf'),hostsFileReadable:readable('/etc/hosts'),configuredResolverCount:dns.getServers().length,proxyConfigured:['HTTPS_PROXY','HTTP_PROXY','https_proxy','http_proxy'].some(k=>Boolean(process.env[k])),network,generationRequests:0})+'\n',()=>process.exit(0));
 });
 '''
 
