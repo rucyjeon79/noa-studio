@@ -142,6 +142,37 @@ def login(transport,sftp,args):
     Path('codex-proof/device-challenge-encrypted.json').write_text(json.dumps(result,indent=2)+'\n')
     print('N80_CODEX_LOGIN '+json.dumps(result),flush=True)
 
+def finalize_blocked(transport,sftp,args):
+    """Remove only this attempt's exact binary; preserve the existing N80 runtime."""
+    script=r'''
+const fs=require('node:fs'),crypto=require('node:crypto');
+const root='/hosting/noastudio/noa-hub/codex',file=root+'/status.json',bin=root+'/0.167.1/codex';
+const s=JSON.parse(fs.readFileSync(file,'utf8'));
+if(s.version!=='0.167.1'||s.sha256!=='dd5bfdf19d794dcc6fb482d2d5a2d9fb31d11f6caa44b303bb72890d461e8a02'||s.loginState!=='unconfirmed'||s.authCommandExitCode!==1||s.workerActivated!==false)throw new Error('cleanup_precondition_changed');
+let removed=0;
+if(fs.existsSync(bin)){
+ const st=fs.lstatSync(bin);if(!st.isFile()||st.isSymbolicLink()||st.size!==320186856)throw new Error('binary_changed');
+ const h=crypto.createHash('sha256'),fd=fs.openSync(bin,'r'),buf=Buffer.alloc(1048576);let n;
+ try{while((n=fs.readSync(fd,buf,0,buf.length,null))>0)h.update(buf.subarray(0,n));}finally{fs.closeSync(fd);}
+ const hash=h.digest('hex');
+ if(hash!==s.sha256)throw new Error('binary_changed');
+ fs.unlinkSync(bin);removed=st.size;
+}
+try{fs.rmdirSync(root+'/0.167.1');}catch(e){if(e.code!=='ENOTEMPTY'&&e.code!=='ENOENT')throw e;}
+s.binaryInstalled=false;s.state='blocked';s.blockedReason='host_proc_self_exe_unavailable';s.generationRequests=0;s.apiFallback=false;s.automaticRetry=false;s.finalizedAt=Math.floor(Date.now()/1000);
+fs.writeFileSync(file+'.tmp',JSON.stringify(s),{mode:0o600});fs.renameSync(file+'.tmp',file);
+console.log(JSON.stringify({state:s.state,blockedReason:s.blockedReason,removedBytes:removed,binaryInstalled:false,generationRequests:0,workerActivated:false,automaticRetry:false}));
+'''
+    channel=transport.open_session(timeout=20);channel.settimeout(40)
+    channel.exec_command(shlex.join(args+['-e',script]))
+    output=channel.makefile('r').read(4096);errors=channel.makefile_stderr('r').read(1024)
+    code=channel.recv_exit_status();channel.close()
+    if code!=0:raise RuntimeError('blocked_cleanup_failed_'+str(code))
+    result=json.loads(output)
+    Path('codex-proof').mkdir(exist_ok=True)
+    Path('codex-proof/blocked-final.json').write_text(json.dumps(result,indent=2)+'\n')
+    print('N80_CODEX_FINAL '+json.dumps(result),flush=True)
+
 def main():
     transport=connect()
     try:
@@ -154,6 +185,10 @@ def main():
             args=json.loads(read(sftp,ROOT+'/node-command.json'))
             if not isinstance(args,list) or not 1<=len(args)<=4 or any(not isinstance(a,str) or (a!='--library-path' and not re.fullmatch(r'/hosting/noastudio/noa-ai-lab/host-runtime/(?:node-[a-f0-9]{16}|lib-[a-f0-9]{16}(?:/ld-linux-x86-64[.]so[.]2)?)',a)) for a in args):
                 raise RuntimeError('host_node_command_invalid')
+            if os.environ.get('N80_CODEX_FINALIZE')=='1':
+                finalize_blocked(transport,sftp,args)
+                if read(sftp,ROOT+'/control.json')!=before:raise RuntimeError('host_control_changed_during_cleanup')
+                return
             channel=transport.open_session(timeout=20)
             channel.settimeout(40)
             channel.exec_command(shlex.join(args+['-e',PROBE]))
