@@ -1,0 +1,9 @@
+{
+  "id": "acd246e7e9ac90ab3efaf3faae14a79f",
+  "action": "connect_chatgpt",
+  "owner": "n80_hub",
+  "executor": "github_subordinate",
+  "approvedAt": "2026-11-11",
+  "generationRequests": 0,
+  "automaticRetry": false
+}
