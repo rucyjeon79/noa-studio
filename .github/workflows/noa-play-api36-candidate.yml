@@ -1,0 +1,80 @@
+name: NOA Play API 36 candidate build (no publication)
+on:
+  push:
+    branches: [work/play-api36-payment-gate-20261114]
+    paths:
+      - '.github/workflows/noa-play-api36-candidate.yml'
+      - 'android/**'
+      - 'tests/android/**'
+      - 'tests/kcp/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: noa-play-api36-candidate-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  compile-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - uses: android-actions/setup-android@v3
+      - name: Install Android 16 compile platform
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Verify isolated Android unit contracts
+        run: node --test tests/android/native_bridge_test.mjs tests/android/live_web_contract_test.mjs
+      - name: Check KCP test-only code contract
+        run: |
+          node tests/kcp/window.cjs
+          php tests/kcp/core.php
+      - name: Assert API 36 manifest configuration and Play version code range
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re
+          gradle = Path('android/app/build.gradle').read_text()
+          assert re.search(r'\bcompileSdk\s+36\b', gradle), 'compileSdk 36 required'
+          assert re.search(r'\btargetSdk\s+36\b', gradle), 'targetSdk 36 required'
+          assert re.search(r"applicationId\s+'kr\.ai\.noastudio'", gradle)
+          version = int(os.environ['GITHUB_RUN_NUMBER'])
+          assert 0 < version < 2100000000
+          print('API 36 config and unique applicationId verified; not a Play publication receipt.')
+          PY
+      - name: Build unsigned AAB candidate and perform lint
+        working-directory: android
+        env:
+          NOA_ANDROID_HOST_NODE: '0'
+        run: gradle --no-daemon :app:bundleRelease :app:lintRelease
+      - name: Assert bundle has expected app payload
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          import hashlib
+          aab = Path('android/app/build/outputs/bundle/release/app-release.aab')
+          assert aab.is_file() and aab.stat().st_size > 100000
+          with ZipFile(aab) as z:
+              names = z.namelist()
+              assert 'base/manifest/AndroidManifest.xml' in names
+              assert any(x.startswith('base/dex/') and x.endswith('.dex') for x in names)
+          print('Unsigned AAB candidate verified:',aab.stat().st_size,hashlib.sha256(aab.read_bytes()).hexdigest())
+          PY
+      - name: Retain validation candidate only (unsigned, not Play-ready)
+        uses: actions/upload-artifact@v4
+        with:
+          name: NOA-API36-UNSIGNED-REVIEW-ONLY
+          path: |
+            android/app/build/outputs/bundle/release/app-release.aab
+            android/app/build/reports/lint-results-release.html
+          retention-days: 7
+          if-no-files-found: error
