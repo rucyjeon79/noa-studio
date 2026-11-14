@@ -1,15 +1,18 @@
 plugins { id 'com.android.application' }
-def noaBuildNumber = Integer.parseInt(System.getenv('GITHUB_RUN_NUMBER') ?: '14')
+def noaVersionSource = System.getenv('NOA_RELEASE_VERSION_CODE') ?: System.getenv('GITHUB_RUN_NUMBER') ?: '14'
+def noaBuildNumber = Integer.parseInt(noaVersionSource)
+if (noaBuildNumber < 1 || noaBuildNumber >= 2100000000) throw new GradleException('Invalid Google Play versionCode')
 android {
     namespace 'kr.ai.noastudio'
-    compileSdk 35
+    compileSdk 36
     sourceSets.main.res.srcDir layout.buildDirectory.dir("generated/noaBrandResources")
     sourceSets.main.assets.srcDir layout.buildDirectory.dir("generated/n80BridgeAssets")
-    defaultConfig { applicationId 'kr.ai.noastudio'; minSdk 26; targetSdk 35; versionCode noaBuildNumber; versionName '2.0.' + noaBuildNumber; testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner' }
+    defaultConfig { applicationId 'kr.ai.noastudio'; minSdk 26; targetSdk 36; versionCode noaBuildNumber; versionName '2.0.' + noaBuildNumber; testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner' }
     buildTypes { debug { crunchPngs false }; release { crunchPngs false } }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }
 dependencies {
+    implementation 'com.android.billingclient:billing:9.1.0'
     implementation 'androidx.media3:media3-exoplayer:1.8.0'
     implementation 'androidx.media3:media3-session:1.8.0'
     implementation 'androidx.media3:media3-datasource-okhttp:1.8.0'
