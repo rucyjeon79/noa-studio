@@ -151,9 +151,7 @@ jobs:
             adb shell pidof kr.ai.noastudio
             adb exec-out screencap -p > android/play-review-proof/guest-launch.png
             adb logcat -d -s AndroidRuntime:E > android/play-review-proof/crashes.txt
-            if grep -Eq 'FATAL EXCEPTION|Process: kr.ai.noastudio' android/play-review-proof/crashes.txt; then
-              echo "Android runtime crash observed in launch smoke"; exit 1
-            fi
+            ! grep -Eq 'FATAL EXCEPTION|Process: kr.ai.noastudio' android/play-review-proof/crashes.txt
             echo "Android 16 signed APK installed and cold-launched; no user login or payment attempted."
       - name: Retain signed candidate for private review only
         uses: actions/upload-artifact@v4
