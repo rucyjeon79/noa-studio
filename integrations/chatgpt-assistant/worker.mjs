@@ -24,7 +24,14 @@ const agentTools=[
   verification:{type:'object',properties:{selection:shortSelection,decoded:{type:'boolean'},audioMapped:{type:'boolean'},sourceAudioSha256:{type:'string'},sceneHashes:{type:'array',items:{type:'string'}},subtitleSha256:sha256,subtitlesBurned:{type:'boolean'}},required:['decoded','audioMapped','sourceAudioSha256','sceneHashes'],additionalProperties:false}
  },['id','mode','offset'])
 ];
+const hubTools=[
+ agentTool('noa_hub_status','GitHub 없이 N80 호스트의 연결·소스 리비전·최근 배포 결과를 읽습니다. releaseId 지정 시 해당 배포 영수증만 조회합니다. 전송 실패 시 새 배포를 만들지 말고 동일 ID의 결과부터 확인하세요.',{releaseId:agentId},[],true),
+ agentTool('noa_hub_source','N80 운영 앱 소스를 직접 조회합니다. list로 디렉터리, manifest로 배포 직전 해시·리비전, read로 파일을 읽습니다. data는 base64이므로 출력하지 말고 로컬 파일로 저장·검증하세요. 다음 청크는 nextOffset과 같은 sha256을 전달합니다. 운영 데이터·회원·비밀키 경로는 제외됩니다.',{action:{type:'string',enum:['list','manifest','read']},directory:{type:'string'},after:{type:'string'},paths:{type:'array',maxItems:100,items:{type:'string'}},path:{type:'string'},offset:{type:'integer',minimum:0},sha256},['action'],true),
+ agentTool('noa_hub_release','사용자가 요청한 앱 변경을 GitHub 없이 N80 호스트에 직접 배포합니다. 현재 source의 manifest 리비전·beforeSha256과 검증된 파일을 사용하세요. 100개/총 8MiB 이하. PHP 문법·체크섬·동시 수정 검사를 통과한 변경만 반영하며 실제 해시 영수증을 반환합니다. 재전송은 같은 package.id와 내용으로 하고 충돌이면 최신 소스를 다시 읽으세요.',{revision:{type:'integer',minimum:0},package:{type:'object',properties:{version:{type:'integer',const:1},id:agentId,files:{type:'array',minItems:1,maxItems:100,items:{type:'object',properties:{path:{type:'string'},beforeSha256:{type:['string','null'],pattern:'^[a-f0-9]{64}$'},sha256,bytes:{type:'integer',minimum:1,maximum:4194304},data:{type:'string',maxLength:5592408}},required:['path','beforeSha256','sha256','bytes','data'],additionalProperties:false}}},required:['version','id','files'],additionalProperties:false}},['revision','package']),
+ agentTool('noa_hub_recover','중단된 N80 배포를 원래 상태로 복구합니다. 먼저 hub_status의 recoveryRequired를 확인하세요. 나중에 수정된 파일은 덮어쓰지 않으며 복구 완료가 확인된 경우에만 성공합니다.',{})
+];
 const tools=[
+...hubTools,
 ...agentTools,
 {name:'noa_connection_status',description:'NOA STUDIO 실제 관리 연결 상태를 확인합니다.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true}},
 {name:'noa_production_brief',description:'노아 음악 제작 지침과 사용자 주제를 반환합니다. 이 지침에 따라 ChatGPT가 가사·Suno 프롬프트·썸네일 프롬프트·게시용 문구를 작성합니다. 음원이나 이미지를 생성했다고 주장하지 않습니다.',inputSchema:{type:'object',properties:{topic:{type:'string'},genre:{type:'string',description:'NOA 장르 ID. 사연곡은 your-story, 커버는 cover-reborn. 장르 미지정 시 공통 규칙만 조회.'},title:{type:'string'},vocal:{type:'string',enum:['female','male','duet']},mood:{type:'string'},lyrics:{type:'string'}},required:['topic'],additionalProperties:false},annotations:{readOnlyHint:true}},
@@ -42,12 +49,19 @@ async function studio(name,a,req,env){
  if(!email || email.toLowerCase()!==env.NOA_OWNER_EMAIL?.toLowerCase() || !env.NOA_SITE_BRIDGE)throw Error('owner_connection_required');
  const selected=name==='noa_selected_task'||name==='noa_save_task';
  const agentOps={noa_agent_source_file:'agentSourceFile',noa_agent_tasks:'agentTasks',noa_agent_start:'agentStart',noa_agent_read:'agentRead',noa_agent_step:'agentStep',noa_agent_file:'agentFile',noa_agent_subtitles:'agentStep'};
- const op=agentOps[name]??(name==='noa_production_brief'?'rules':selected?(name==='noa_selected_task'?'read':'save'):name==='noa_connection_status'?'health':name.startsWith('noa_list_')?'list':'update');
+ const hub=hubTools.some(t=>t.name===name);
+ const op=hub?'hub':agentOps[name]??(name==='noa_production_brief'?'rules':selected?(name==='noa_selected_task'?'read':'save'):name==='noa_connection_status'?'health':name.startsWith('noa_list_')?'list':'update');
+ if(hub){
+  if(name==='noa_hub_status')a=a.releaseId?{action:'receipt',id:a.releaseId}:{action:'status'};
+  else if(name==='noa_hub_release')a={action:'release',revision:a.revision,package:a.package};
+  else if(name==='noa_hub_recover')a={action:'recover'};
+  else if(!['list','manifest','read'].includes(a.action))throw Error('invalid_source_action');
+ }
  if(name==='noa_agent_subtitles'){if(!['save','review'].includes(a.action))throw Error('invalid_subtitle_action');a={...a,action:a.action==='save'?'subtitles':'subtitle_review'};}
  const resource=name.split('_').pop();
  const url=new URL('/noa-gpt.php',origin);url.searchParams.set('op',op);
  const headers={'X-NOA-Action-Key':env.NOA_SITE_BRIDGE};
- const options={headers,redirect:'manual',signal:AbortSignal.timeout(12000)};
+ const options={headers,redirect:'manual',signal:AbortSignal.timeout(hub?25000:12000)};
  if(op!=='read'){options.method='POST';headers['Content-Type']='application/json';options.body=JSON.stringify({...a,resource});}
  const r=await fetch(url,options);
  if(r.status>=300&&r.status<400)throw Error('NOA 연결 주소가 변경되었습니다.');
@@ -69,6 +83,13 @@ if(name==='noa_production_brief'){
  else try{const production=await studio(name,a,req,env);out=result({request:a,brandDefaults:rules,production,instruction:'운영 공통 규칙과 지정 장르 규칙을 우선 적용하세요. 장르가 없으면 공통 규칙만 적용했다고 명시하세요. 썸네일 지시문은 영어, 이미지에 들어갈 제목은 큰따옴표 안에 원문 그대로 작성하세요.'});}
  catch(e){out=result({error:e.message},true);}
 }
-else {try{out=result(await studio(name,a,req,env));}catch(e){out=result({error:e.message},true);}}
+else {try{
+ const data=await studio(name,a,req,env);
+ if(name==='noa_connection_status'){
+  try{data.n80Hub=await studio('noa_hub_status',{},req,env);}
+  catch(e){data.n80Hub={ok:false,error:e.message};}
+ }
+ out=result(data);
+}catch(e){out=result({error:e.message},true);}}
 }else return Response.json({jsonrpc:'2.0',id:rpc.id??null,error:{code:-32601,message:'Method not found'}});
 return Response.json({jsonrpc:'2.0',id:rpc.id,result:out});}};
