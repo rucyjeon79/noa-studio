@@ -32,9 +32,14 @@ jobs:
       # setup-android@v3 currently calls the removed "tools" package and fails before compiling.
       - name: Install Android 16 compile platform
         run: |
-          command -v sdkmanager
-          sdkmanager --version
-          sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+          SDK="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          SDKMANAGER="$SDK/cmdline-tools/16.0/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER="$(find "$SDK/cmdline-tools" -type f -name sdkmanager -print -quit)"
+          fi
+          test -n "$SDKMANAGER" && test -x "$SDKMANAGER"
+          "$SDKMANAGER" --version
+          "$SDKMANAGER" --sdk_root="$SDK" 'platforms;android-36' 'build-tools;36.0.0'
       - name: Verify isolated Android unit contracts
         run: node --test tests/android/native_bridge_test.mjs tests/android/live_web_contract_test.mjs
       - name: Check KCP test-only code contract
