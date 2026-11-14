@@ -46,6 +46,12 @@ jobs:
         run: |
           node tests/kcp/window.cjs
           php tests/kcp/core.php
+      - name: Use a versionCode newer than the existing NOA production Android build
+        run: |
+          code="$(git show -s --format=%ct "$GITHUB_SHA")"
+          test "$code" -gt 1794222381
+          test "$code" -lt 2100000000
+          echo "NOA_RELEASE_VERSION_CODE=$code" >> "$GITHUB_ENV"
       - name: Assert API 36 manifest configuration and Play version code range
         run: |
           python3 - <<'PY'
@@ -55,8 +61,8 @@ jobs:
           assert re.search(r'\bcompileSdk\s+36\b', gradle), 'compileSdk 36 required'
           assert re.search(r'\btargetSdk\s+36\b', gradle), 'targetSdk 36 required'
           assert re.search(r"applicationId\s+'kr\.ai\.noastudio'", gradle)
-          version = int(os.environ['GITHUB_RUN_NUMBER'])
-          assert 0 < version < 2100000000
+          version = int(os.environ['NOA_RELEASE_VERSION_CODE'])
+          assert 1794222381 < version < 2100000000
           print('API 36 config and unique applicationId verified; not a Play publication receipt.')
           PY
       - name: Build unsigned AAB candidate and perform lint
