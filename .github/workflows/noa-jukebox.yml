@@ -71,7 +71,7 @@ jobs:
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
           NOA_JUKEBOX_RUNTIME_ONLY: '1'
-          NOA_JUKEBOX_KEEPALIVE_SECONDS: '900'
+          NOA_JUKEBOX_KEEPALIVE_SECONDS: '120'
         run: python3 scripts/n80_auto.py jukebox.process
       - uses: actions/upload-artifact@v4
         if: always()
