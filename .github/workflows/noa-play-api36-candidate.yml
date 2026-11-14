@@ -5,6 +5,11 @@ on:
     paths:
       - '.github/workflows/noa-play-api36-candidate.yml'
       - 'android/**'
+      - '!android/GOOGLE_PLAY_RELEASE_CHECKLIST.md'
+      - 'public/icon-512.png'
+      - 'scripts/qa/noa-sign-release.py'
+      - 'scripts/noa_apk_signing_check.py'
+      - 'scripts/noa_full_inventory.py'
       - 'tests/android/**'
       - 'tests/kcp/**'
   workflow_dispatch:
