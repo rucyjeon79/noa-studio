@@ -28,9 +28,13 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
-      - uses: android-actions/setup-android@v3
+      # Ubuntu GitHub runners already supply the Android SDK command-line manager.
+      # setup-android@v3 currently calls the removed "tools" package and fails before compiling.
       - name: Install Android 16 compile platform
-        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+        run: |
+          command -v sdkmanager
+          sdkmanager --version
+          sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
       - name: Verify isolated Android unit contracts
         run: node --test tests/android/native_bridge_test.mjs tests/android/live_web_contract_test.mjs
       - name: Check KCP test-only code contract
