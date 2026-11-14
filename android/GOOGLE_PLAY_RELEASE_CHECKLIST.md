@@ -122,3 +122,23 @@ NOA STUDIO는 AI Artist NOA의 음악과 이야기를 만나고 즐기는 음악
 7. 심사 결과 확인 후 승인된 앱만 정식 출시. 출시 전에는 운영 APK·프로덕션 결제 내역을 변경하지 않음
 
 정책 안내: [앱 생성](https://support.google.com/googleplay/android-developer/answer/9859152) · [스토어 이미지](https://support.google.com/googleplay/android-developer/answer/9866151) · [개인정보/계정 삭제](https://support.google.com/googleplay/android-developer/answer/10144311) · [개인 계정 테스트](https://support.google.com/googleplay/android-developer/answer/14151465)
+
+## 등록 대기 후보 최종 검증 (2026-11-14)
+
+**패키지 빌드·서명·Android 16 에뮬레이터 검수 통과 / Google Play 등록 대기 후보. Google Play 상용 결제·최종 심사 완료와 구분.**
+
+- 검증 워크플로: https://github.com/rucyjeon79/noa-studio/actions/runs/43560185673
+- 커밋: `13d1f4cf19a4bda1be623c1ff9a9f4c781afe98f`
+- 앱 ID: `kr.ai.noastudio`, versionCode: `1794632996`, 기존 운영 버전: `1794222381`
+- 기존 영구 서명 인증서 SHA-256 일치: `f77427fe2f2e174aeac75e6734875b9106ee13072c49cfc8146b43075764271b`
+- 서명 APK: `noa-studio-release.apk`, 6,024,316 bytes, SHA-256 `611ac811a39f80baf4cab4f92f6b4ef7cc1cff567d371bbd0c4542fe9393c257`
+- 서명 AAB: `noa-studio-release.aab`, 5,807,832 bytes, SHA-256 `09a11fc7d042cdc77e84bfba33737beb675d2a5532a89dfafe6e9e43e6d26d79`
+- Android 16 API 36 에뮬레이터 설치, 비로그인 콜드 실행, 보안 계측 테스트 **5/5 통과**, 충돌 로그 없음
+- Android API 36 컴파일·린트, 기존 기능 테스트, KCP 테스트 전용 검사, 기존 설치본과 서명·버전 연속성 확인 통과
+- 서명 패키지와 테스트 리포트가 포함된 ZIP (NOA STUDIO / Backup / Android_Play_등록대기_20261114): https://drive.google.com/file/d/1vZugvMI7xzOjLEDKApnxIx0bmqE_-Ktv/view?usp=drivesdk
+- 기존 운영 APK·회원·포인트·정산·결제 데이터 변경 없음. 새 앱이나 서명키를 생성하지 않았음
+- 기존 N80 Hub 리비전 **299**의 앱 등록 준비 화면에 검증 상태 반영
+
+**아직 남은 필수 확인**: Play Console 신원 인증 승인, 기존 앱 존재 여부/업로드 인증서 확인, Android 실물 기기 사용성, Google Play Billing 구매 검증·포인트·환불과 KCP 운영 연동, Google Play 계정 삭제(계정 연관 데이터 처리) 실동작 검증, 개인정보·데이터 보안 양식/스토어 이미지·문의 이메일/테스트 계정 및 Play 심사.
+
+**현재 PR은 Draft, 미병합이며 스토어에 업로드·게시하지 않았음.** 기존 APK는 그대로이며 업로드 대상은 해당 AAB 파일임.
