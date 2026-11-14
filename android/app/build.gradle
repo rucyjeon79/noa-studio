@@ -1,5 +1,7 @@
 plugins { id 'com.android.application' }
-def noaBuildNumber = Integer.parseInt(System.getenv('GITHUB_RUN_NUMBER') ?: '14')
+def noaVersionSource = System.getenv('NOA_RELEASE_VERSION_CODE') ?: System.getenv('GITHUB_RUN_NUMBER') ?: '14'
+def noaBuildNumber = Integer.parseInt(noaVersionSource)
+if (noaBuildNumber < 1 || noaBuildNumber >= 2100000000) throw new GradleException('Invalid Google Play versionCode')
 android {
     namespace 'kr.ai.noastudio'
     compileSdk 36
