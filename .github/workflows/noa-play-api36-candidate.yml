@@ -65,11 +65,11 @@ jobs:
           assert 1794222381 < version < 2100000000
           print('API 36 config and unique applicationId verified; not a Play publication receipt.')
           PY
-      - name: Build unsigned AAB candidate and perform lint
+      - name: Build release APK and AAB candidates and perform lint
         working-directory: android
         env:
           NOA_ANDROID_HOST_NODE: '0'
-        run: gradle --no-daemon :app:bundleRelease :app:lintRelease
+        run: gradle --no-daemon :app:assembleRelease :app:bundleRelease :app:lintRelease
       - name: Assert bundle has expected app payload
         run: |
           python3 - <<'PY'
@@ -84,12 +84,46 @@ jobs:
               assert any(x.startswith('base/dex/') and x.endswith('.dex') for x in names)
           print('Unsigned AAB candidate verified:',aab.stat().st_size,hashlib.sha256(aab.read_bytes()).hexdigest())
           PY
-      - name: Retain validation candidate only (unsigned, not Play-ready)
+      # Native build is the only approved GitHub exception to the N80 Hub workflow.
+      # Read the already-pinned release identity; never generate a key or deploy to NOA host.
+      - name: Sign candidates with the existing NOA permanent certificate (no publication)
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+        run: |
+          test -n "$NOA_SSH_HOST" && test -n "$NOA_SSH_USER" && test -n "$NOA_SSH_PASSWORD"
+          python3 -m pip install --user 'paramiko==3.5.1'
+          python3 scripts/qa/noa-sign-release.py
+      - name: Verify existing installed APK signing continuity and versionCode
+        run: |
+          mkdir -p artifact
+          cp release-artifact/noa-studio-release.apk artifact/app-debug.apk
+          cp release-artifact/verification.json artifact/verification.json
+          python3 scripts/noa_apk_signing_check.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os
+          manifest=json.loads(Path('release-artifact/verification.json').read_text())
+          assert manifest['certificateSha256']=='f77427fe2f2e174aeac75e6734875b9106ee13072c49cfc8146b43075764271b'
+          assert int(manifest['versionCode'])==int(os.environ['NOA_RELEASE_VERSION_CODE'])
+          assert manifest['published'] is False
+          for filename, receipt in manifest['files'].items():
+              path=Path('release-artifact')/filename
+              assert path.is_file()
+              assert hashlib.sha256(path.read_bytes()).hexdigest()==receipt['sha256']
+              assert path.stat().st_size==receipt['bytes']
+          assert set(manifest['files'])=={'noa-studio-release.apk','noa-studio-release.aab'}
+          print('Signed APK/AAB validation completed. No host update or Play upload attempted.')
+          PY
+      - name: Retain signed candidate for private review only
         uses: actions/upload-artifact@v4
         with:
-          name: NOA-API36-UNSIGNED-REVIEW-ONLY
+          name: NOA-API36-SIGNED-REVIEW-ONLY
           path: |
-            android/app/build/outputs/bundle/release/app-release.aab
+            release-artifact/noa-studio-release.apk
+            release-artifact/noa-studio-release.aab
+            release-artifact/verification.json
             android/app/build/reports/lint-results-release.html
           retention-days: 7
           if-no-files-found: error
