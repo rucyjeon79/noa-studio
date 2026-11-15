@@ -31,6 +31,7 @@ jobs:
           php -l scripts/busan_news/publish.php
           php -l deploy/busan/newsroom/account.php
           node --check deploy/busan/newsroom/ticker.js
+          node --check deploy/busan/newsroom/share.js
           python -m pip install -q paramiko==3.5.1
       - name: Publish only Busan news and register its native menu
         env:
@@ -43,3 +44,12 @@ jobs:
         run: |
           npm install --prefix /tmp/busan-news-qa --no-audit --no-fund --ignore-scripts playwright-core@1.56.1
           NODE_PATH=/tmp/busan-news-qa/node_modules node scripts/busan_news/verify.cjs
+      - name: Keep newsroom layout verification
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: busan-newsroom-layout
+          path: /tmp/busan-news-share-*.png
+          retention-days: 3
+          if-no-files-found: ignore
+

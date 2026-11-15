@@ -37,3 +37,21 @@
 #bo_v_con .bn-source-title{font-size:17px;overflow-wrap:anywhere;word-break:keep-all}
 #bo_v_con .bn-source-host{font-size:12px;overflow-wrap:anywhere}
 @media(max-width:600px){#bn-news-strip{gap:6px;padding-inline:10px}#bn-news-strip .bn-news-all{font-size:11px}#bn-news-strip .bn-news-link{font-size:13px}}
+
+.boardViewWrap .boardViewHeader .btnGroup .bn-article-share {
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
+  box-sizing:border-box;width:44px;min-width:44px;height:44px;min-height:44px;padding:0;
+  color:var(--bb-accent,#176a80);cursor:pointer;
+}
+.bn-article-share svg{display:block;width:20px;height:20px;flex:none;pointer-events:none}
+.bn-article-share:focus-visible{outline:2px solid var(--bb-accent,#176a80);outline-offset:3px}
+.bn-article-share:disabled{opacity:.6;cursor:wait}
+.bn-share-feedback {
+  position:fixed;z-index:10000;left:50%;bottom:calc(28px + env(safe-area-inset-bottom,0px));
+  transform:translateX(-50%);box-sizing:border-box;max-width:calc(100vw - 32px);
+  padding:12px 18px;border-radius:12px;background:#203846;color:#fff;
+  box-shadow:0 4px 20px #0002;font-size:14px;line-height:1.5;text-align:center;
+  white-space:normal;word-break:keep-all;pointer-events:none;
+}
+.bn-share-feedback[hidden]{display:none}
+

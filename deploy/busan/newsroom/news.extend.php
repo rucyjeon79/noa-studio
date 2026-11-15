@@ -78,5 +78,29 @@ function busan_news_prepare_source_card($header, $board) {
 
 add_replace('board_content_head', 'busan_news_prepare_source_card', 10, 2);
 add_replace('board_mobile_content_head', 'busan_news_prepare_source_card', 10, 2);
-add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=3">', 115);
+add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=4">', 115);
 add_event('tail_sub', 'busan_news_home_strip');
+
+function busan_news_article_share() {
+    global $bo_table, $wr_id, $write;
+    if (basename($_SERVER['SCRIPT_NAME'] ?? '') !== 'board.php'
+        || $bo_table !== 'busan_news' || (int)$wr_id <= 0
+        || (int)($write['wr_id'] ?? 0) !== (int)$wr_id
+        || !empty($write['wr_is_comment'])
+        || strpos($write['wr_option'] ?? '', 'secret') !== false) return;
+    $escape = static function ($text) { return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); };
+    $title = html_entity_decode(strip_tags($write['wr_subject'] ?? ''), ENT_QUOTES, 'UTF-8');
+    $url = G5_BBS_URL.'/board.php?bo_table=busan_news&wr_id='.(int)$wr_id;
+    ?>
+    <template id="bn-share-template">
+      <button type="button" class="button bg-wh shadowline-de round-s bxicon color-gray-800 sBtn bn-article-share"
+        aria-label="기사 공유" title="기사 공유" data-title="<?=$escape($title)?>" data-url="<?=$escape($url)?>">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg>
+      </button>
+      <span id="bn-share-feedback" class="bn-share-feedback" role="status" aria-live="polite" aria-atomic="true" hidden></span>
+    </template>
+    <script src="<?=$escape(G5_URL.'/busan-assistant/newsroom/share.js?v=1')?>" defer></script>
+    <?php
+}
+add_event('tail_sub', 'busan_news_article_share');
+

@@ -19,7 +19,7 @@ ORIGIN = 'https://skhnslu-busan.com'
 PRIVATE = '/hosting/rucyjeon79/busan-assistant-private'
 ASSETS = Path('deploy/busan/newsroom')
 MODULE = 'busan-assistant/newsroom'
-FILES = {MODULE+'/'+name: ASSETS/name for name in ['news.css', 'ticker.js', 'recent.php']}
+FILES = {MODULE+'/'+name: ASSETS/name for name in ['news.css', 'ticker.js', 'share.js', 'recent.php']}
 FILES['extend/busan-news.extend.php'] = ASSETS/'news.extend.php'
 FILES['busan-assistant/newsroom-account-import.php'] = Path('scripts/busan_news/publish.php')
 FILES['busan-assistant/newsroom-account.php'] = ASSETS/'account.php'
@@ -133,3 +133,4 @@ if __name__ == '__main__':
         with paramiko.SFTPClient.from_transport(t) as s:
             s.get_channel().settimeout(35)
             main(s)
+
