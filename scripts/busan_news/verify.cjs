@@ -3,6 +3,65 @@ const { chromium, devices, request } = require('playwright-core');
 const origin = 'https://skhnslu-busan.com';
 const checkHeaders = {'X-Busan-News-Check': '1'};
 
+async function verifyArticleShare(page, article, width) {
+  const button=page.getByRole('button',{name:'기사 공유',exact:true});
+  assert.equal(await button.count(),1,'one share action');
+  await button.waitFor({state:'visible'});
+  assert.equal(await button.getAttribute('data-url'),article.url,'share the local article, not its source');
+  const box=await button.boundingBox();
+  assert(box.width>=44 && box.height>=44,'share touch target');
+  assert(await button.evaluate(el=>{
+    const r=el.getBoundingClientRect();
+    return r.left>=0 && r.right<=innerWidth && !!el.closest('.boardViewHeader');
+  }),'share action stays within the header');
+  await page.locator('.boardViewWrap').screenshot({path:'/tmp/busan-news-share-'+width+'.png'});
+
+  // Stub only device APIs: test the real deployed click handler without sending a message.
+  await page.evaluate(()=>{
+    window.__bnShares=[]; window.__bnCopies=[]; window.__bnPrompts=[];
+    Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true});
+    Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>window.__bnCopies.push(text)}});
+    Object.defineProperty(navigator,'share',{configurable:true,value:data=>{
+      window.__bnShares.push({data,active:navigator.userActivation.isActive});
+      return new Promise(resolve=>{window.__bnFinishShare=resolve;});
+    }});
+    window.prompt=(message,url)=>{window.__bnPrompts.push({message,url});return null;};
+    history.replaceState(null,'',location.href+'&device=mobile&stx=private-search#reading');
+  });
+  await button.click();
+  assert.equal(await button.isDisabled(),true,'prevent duplicate share while the sheet is open');
+  await button.evaluate(el=>el.click());
+  assert.deepEqual(await page.evaluate(()=>window.__bnShares),[
+    {data:{title:article.title,text:article.title,url:article.url},active:true}
+  ],'native share gets title and a clean canonical URL in the tap gesture');
+  await page.evaluate(()=>window.__bnFinishShare());
+  await page.waitForFunction(()=>!document.querySelector('.bn-article-share').disabled);
+
+  await page.evaluate(()=>Object.defineProperty(navigator,'share',{configurable:true,value:async()=>{
+    throw new DOMException('cancelled','AbortError');
+  }}));
+  await button.click();
+  await page.waitForFunction(()=>!document.querySelector('.bn-article-share').disabled);
+  assert.deepEqual(await page.evaluate(()=>[window.__bnCopies,window.__bnPrompts]),[[],[]],'cancel has no clipboard or dialog side effect');
+
+  await page.evaluate(()=>Object.defineProperty(navigator,'share',{configurable:true,value:undefined}));
+  await button.focus();
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(()=>window.__bnCopies.length===1);
+  assert.deepEqual(await page.evaluate(()=>window.__bnCopies),[article.url]);
+  assert.match(await page.getByRole('status').filter({hasText:'기사 링크를 복사했습니다'}).innerText(),/붙여넣어/);
+
+  await page.evaluate(()=>{
+    Object.defineProperty(navigator,'share',{configurable:true,value:async()=>{throw new DOMException('blocked','NotAllowedError');}});
+    Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw new Error('denied');}}});
+  });
+  await button.click();
+  await page.waitForFunction(()=>window.__bnPrompts.length===1);
+  assert.equal(await page.evaluate(()=>window.__bnPrompts[0].url),article.url);
+  assert.equal(await button.isEnabled(),true,'the action remains usable after failure');
+  console.log('PASS native share payload, tap activation, duplicate guard, cancellation, keyboard copy and denied-permission fallback',width);
+}
+
 async function verifyCheckViews(browser, article) {
   const listing = await browser.newPage();
   const listURL = new URL('/bbs/board.php', origin);
@@ -127,6 +186,7 @@ async function assertMoves(page) {
         assert.equal(await card.evaluate(el=>getComputedStyle(el).display),'grid');
         assert.equal(await page.locator('.linkBox a').filter({hasText:url.href}).count(),0,'duplicate raw link');
         assert(await page.locator('.footerWrap').count(),'board footer missing');
+        await verifyArticleShare(page,article,width);
         console.log('PASS scrolling titles and source card',width,feed.length,link,url.hostname);
       } else {
         await strip.getByText('최근 한 달 새 소식이 없습니다').waitFor();
@@ -134,8 +194,10 @@ async function assertMoves(page) {
       await page.goto(boardURL,{waitUntil:'domcontentloaded'});
       await page.getByRole('heading',{name:'OpenAI 뉴스룸',exact:true}).first().waitFor({state:'visible'});
       assert((await page.title()).includes('OpenAI 뉴스룸'));
+      assert.equal(await page.locator('.bn-article-share').count(),0,'article sharing is absent on the list');
       console.log('PASS newsroom menu and board title',width,boardURL);
       await page.close();
     }
   } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
+
