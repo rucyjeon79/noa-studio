@@ -36,7 +36,7 @@ jobs:
           import tinycss2
           from pathlib import Path
           package=json.loads(Path('n80-ui-repair-candidate/hub-package.json').read_text())
-          assert package['version']==1 and len(package['files'])==2
+          assert package['version']==1 and len(package['files'])==4
           for f in package['files']:
               css=base64.b64decode(f['data']).decode('utf-8')
               errors=[e for e in tinycss2.parse_stylesheet(css,skip_whitespace=True,skip_comments=True) if e.type=='error']
