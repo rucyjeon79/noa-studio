@@ -1,8 +1,12 @@
 <?php
 declare(strict_types=1);
 if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
-/** Reuse the existing dispatch credential, with a fixed N80 AI workflow and separate debounce. */
+/**
+ * Legacy host-to-GitHub AI worker wake is retired by the owner policy.
+ * GitHub Actions may only send an authenticated scheduled wake INTO N80.
+ * This compatibility handler must neither contact GitHub nor claim a task.
+ * Returning a non-success status preserves the original N80 job for review.
+ */
 function n80_ai_wake():string {
- require_once dirname(__DIR__).'/jukebox/wake-core.php';
- return nw_request(dirname(G5_PATH).'/noa-jukebox-private',null,null,'noa-ai-worker.yml');
+ return 'github_worker_retired';
 }
