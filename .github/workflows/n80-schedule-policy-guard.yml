@@ -27,3 +27,5 @@ jobs:
           persist-credentials: false
       - name: Verify no unapproved recurring NOA work can start
         run: python3 scripts/qa/n80_schedule_policy_guard.py
+      - name: List remaining GitHub production-host contacts (read-only)
+        run: python3 scripts/qa/n80_workflow_host_audit.py
