@@ -1,0 +1,29 @@
+name: N80 user-authorized schedule guard
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+      - 'config/n80-approved-schedules.json'
+      - 'scripts/qa/n80_schedule_policy_guard.py'
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'config/n80-approved-schedules.json'
+      - 'scripts/qa/n80_schedule_policy_guard.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: n80-schedule-policy-guard
+  cancel-in-progress: true
+jobs:
+  prove:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify no unapproved recurring NOA work can start
+        run: python3 scripts/qa/n80_schedule_policy_guard.py
