@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__.'/host-load-policy.php';
+require_once __DIR__.'/hub-retirement-status.php';
 /** N80 Hub owns host-side execution metadata; business queues stay with their modules. */
 function n80_hub_module():array {
  return ['label'=>'N80 Hub','owner'=>'hub','entry'=>'/noa-hub.php','events'=>['operation.requested','deploy.verified','work.completed']];
@@ -97,11 +98,18 @@ function n80_hub_nonce(string $root,string $nonce,int $now):void {
 }
 function n80_hub_status(string $root):array {
  $c=n80_hub_read($root,'control.json');$s=n80_hub_read($root,'status.json');$last=(int)($s['heartbeatAt']??0);
+ $retirement=n80_hub_resident_retirement($root);
+ $runnerState=$retirement['verified']?'retired':($retirement['state']==='needs_review'?'needs_review':($last>0&&$last<=time()&&time()-$last<180?'running':'not_verified'));
+ // Read-only one-shot checklist; never reads secret bytes or runs a worker.
+ require_once __DIR__.'/wake-preflight.php';
+ $wakePreflight=n80_wake_preflight($root,dirname(__DIR__,2),n80_host_load_policy(),$c,
+     n80_hub_read($root,'scheduled-wake-control.json'),$retirement);
  $ops=[];$history=n80_hub_read($root,'receipts.json');$latest=[];
  foreach($history as $receipt)$latest[$receipt['operation']??'']=$receipt;
  foreach(n80_hub_operations()as $id=>$row)$ops[]=['id'=>$id,'label'=>$row['label'],'module'=>$row['module'],'owner'=>in_array($id,$c['activeOperations']??[],true)?'n80_hub':'legacy','last'=>$latest[$id]??null];
  return ['ok'=>true,'module'=>'N80 Hub','revision'=>(int)($c['revision']??0),'paused'=>!empty($c['paused']),'heartbeatAt'=>$last,
-  'runnerState'=>$last>0&&$last<=time()&&time()-$last<180?'running':'not_verified','source'=>n80_hub_read($root,'source.json'),
+  'runnerState'=>$runnerState,'residentRetirement'=>$retirement,'source'=>n80_hub_read($root,'source.json'),
+  'wakePreflight'=>$wakePreflight,
   'operations'=>$ops,'dependencies'=>n80_hub_read($root,'dependencies.json'),'covers'=>n80_hub_read($root,'covers-result.json'),'receipts'=>array_slice($history,-30)];
 }
 /** One request identifier cannot run twice, including after an interrupted response. */
