@@ -1,10 +1,9 @@
-name: N80 scheduled wake only (activation pending)
-# Owner policy 2026-11-16: GitHub is a clock signal ONLY.
-# No AI, media, Codex, database, queue, SFTP, host process or publication work.
-# Preserve the historical cadence, but DO NOT send any signal until a dedicated
-# signed N80 ingress and host-side bounded execution are verified.
+name: N80 signed scheduled wake (activation pending)
+# GitHub is a clock ONLY: no media, AI, DB, queue, SSH or publishing work.
+# Activation requires verified N80 bounded executor and hosting approval,
+# private 0600 N80 HMAC key, signed canary, approved cron and CI gates.
+# Deliberately NO schedule trigger until those conditions are proven.
 on:
-  # Reserved for a future user-approved scheduled N80 wake.
   workflow_dispatch:
 permissions:
   contents: read
@@ -13,8 +12,16 @@ concurrency:
   cancel-in-progress: true
 jobs:
   wake:
-    if: ${{ false }}
-    runs-on: ubuntu-latest
+    if: ${{ false }} # Physical N80 runner retired; no wake before approvals
+    runs-on: ubuntu-24.04
     timeout-minutes: 1
     steps:
-      - run: echo "N80 signed scheduled wake not activated; no GitHub worker permitted."
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Send exactly one bounded N80 signed clock signal
+        env:
+          N80_WAKE_ACTIVATED: ${{ vars.N80_WAKE_ACTIVATED }}
+          N80_HOSTING_APPROVAL_VERIFIED: ${{ vars.N80_HOSTING_APPROVAL_VERIFIED }}
+          N80_SCHEDULED_WAKE_KEY: ${{ secrets.N80_SCHEDULED_WAKE_KEY }}
+        run: python3 scripts/n80_signed_wake_signal.py
