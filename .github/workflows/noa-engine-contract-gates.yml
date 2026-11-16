@@ -21,8 +21,7 @@ on:
       - 'scripts/noa_lab_worker.py'
       - '.github/workflows/noa-engine-contract-gates.yml'
   workflow_dispatch:
-  schedule:
-    - cron: '23 2 * * *'
+  # Disabled unapproved recurring polling; only explicit and event-triggered checks remain.
 permissions:
   contents: read
 jobs:
