@@ -19,11 +19,11 @@ try{for(const file of files){
  const page=await context.newPage();page.setDefaultTimeout(45000);
  await page.goto('https://noastudio.ai.kr/',{waitUntil:'load'});
  if(new URL(expected.url).pathname==='/noa-music.php'){
-  await page.locator('#noa-nav-all').click();
+  await page.locator('#noa-nav-all:visible,.noa-pwa-menu:visible').first().click();
   await page.locator('#noa-menu-drawer[open] a[href="/noa-music.php"]').click();
   await page.waitForURL(expected.url,{waitUntil:'load'});
  }
- await page.waitForFunction(()=>window.NoaUI?.getState()&&document.fonts.status==='loaded'&&document.querySelector('#noa-nav-all')?.getBoundingClientRect().height>0);
+ await page.waitForFunction(()=>window.NoaUI?.getState()&&document.fonts.status==='loaded'&&[...document.querySelectorAll('#noa-nav-all,.noa-pwa-menu')].some(el=>el.getBoundingClientRect().height>0));
  await page.waitForTimeout(1500);
  await page.evaluate(theme=>{NoaUI.apply({...NoaUI.getState(),theme});document.querySelector('#noa-amt-fan button[aria-label]')?.click();document.querySelector('[aria-label="AInoa 말풍선 닫기"]')?.click();scrollTo(0,0);},expected.theme);
  await page.waitForTimeout(1000);
