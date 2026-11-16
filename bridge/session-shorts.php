@@ -54,8 +54,8 @@ function nd_shorts_tick(array &$s,array $p,int $now,array $readiness):array {
  ['local'=>$local,'target'=>$target,'due'=>$due]=nd_shorts_schedule($p,$now);$previous=$s['campaigns']['daily_shorts']??[];
  $c=$previous+['enabled'=>true,'createdAt'=>gmdate('c',$now),'current'=>null,'history'=>[]];
  $c['policy']=$p;$c['lastTickAt']=gmdate('c',$now);$c['nextPreparationAt']=$due->format(DATE_ATOM);$c['nextPublicationAt']=$target->format(DATE_ATOM);$c['readiness']=$readiness;
- // Archive only a previous-date explicitly cancelled job with no verified upload.
- // Never replay an unconfirmed provider call or erase the original N80 job.
+ // Retire only an older *explicitly cancelled* job with no verified upload.
+ // Preserve every cancelled job and its provider history for manual reconciliation.
  $slot=$c['current']??null;
  if(is_array($slot)&&preg_match('/^\d{4}-\d{2}-\d{2}$/D',(string)($slot['date']??''))&&
     (string)$slot['date']<$local->format('Y-m-d')&&!empty($slot['jobId'])){
