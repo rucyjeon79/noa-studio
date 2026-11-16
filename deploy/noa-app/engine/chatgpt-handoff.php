@@ -53,7 +53,9 @@ function n80_handoff_submit(
             || ($task['sourceRevision'] ?? null) !== $request['sourceRevision']
             || ($task['sourceSha256'] ?? null) !== $request['sourceSha256']
             || ($task['origin'] ?? null) !== 'user_action'
-            || !in_array(($task['state'] ?? ''), ['running','blocked','needs_review'], true))
+            || !in_array(($task['state'] ?? ''), ['running','blocked','needs_review','failed'], true)
+            || (($task['state'] ?? null) === 'failed'
+                && ($task['error'] ?? null) !== 'dispatch_failed'))
             return ['ok'=>false,'error'=>'handoff_source_not_verified'];
         $store = n80_hub_read($root, N80_HANDOFF_STATE, ['version'=>1,'items'=>[]]);
         if (($store['version'] ?? null) !== 1 || !is_array($store['items'] ?? null))
