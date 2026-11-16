@@ -20,10 +20,10 @@ ROOT = '/hosting/noastudio/html'
 
 
 class DeploymentTest(unittest.TestCase):
-    def deploy(self, previous=13, conflict=False, corrupt_http=False, missing_host_proof=False, corrupt_aab=False, wrong_owner=False):
+    def deploy(self, previous=13, conflict=False, corrupt_http=False, missing_host_proof=False, corrupt_aab=False, wrong_owner=False, preserved_facade=None):
         files = {ROOT+'/'+p: b'protected' for p in ['index.php','common.php','config.php','data/dbconfig.php']}
         facade = (REPO/'deploy/noa-app/engine/n80.php').read_bytes()
-        files[ROOT+'/noa-app/engine/n80.php'] = b'unknown-change' if conflict else facade
+        files[ROOT+'/noa-app/engine/n80.php'] = b'unknown-change' if conflict else (preserved_facade or facade)
         release = ROOT+'/noa-android-release.json'
         files[release] = json.dumps({'app':'NOA STUDIO','file':f'noa-studio-android-build-{previous}.apk','build':str(previous),'sha256':'old'}).encode()
         old = files[release]
@@ -102,9 +102,14 @@ class DeploymentTest(unittest.TestCase):
                         self.assertEqual(files[release],old)
                         raise
                 self.assertTrue(Path('artifact/n80-android-release.json').exists())
+                if preserved_facade is not None:
+                    self.assertEqual(files[ROOT+'/noa-app/engine/n80.php'], preserved_facade)
                 self.assertEqual(files['/hosting/noastudio/noa-android-builds/noa-studio-android-build-42.aab'], aab)
             finally: os.chdir(cwd)
         return json.loads(files[release])
+
+    def test_newer_reviewed_n80_facade_is_preserved(self):
+        self.deploy(preserved_facade=(REPO/'tests/android/fixtures/n80-live-facade-20261117.php').read_bytes())
 
     def test_verified_publication(self):
         result=self.deploy()
