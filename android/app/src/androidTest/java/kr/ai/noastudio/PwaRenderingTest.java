@@ -23,7 +23,12 @@ import static org.junit.Assert.*;
 public class PwaRenderingTest {
  private static void navigate(WebView w,String route)throws Exception{
   WebParityTest.js(w,"window.__noaQaPreviousDocument=true;return true;");
-  if(route.equals("/noa-music.php"))WebParityTest.js(w,"document.querySelector('.noa-mobile-nav a[href=\"/noa-music.php\"]').click();return true;");
+  if(route.equals("/noa-music.php")){
+   WebParityTest.until(w,"document.querySelector('#noa-nav-all')?.getBoundingClientRect().height>0");
+   WebParityTest.js(w,"document.getElementById('noa-nav-all').click();return true;");
+   WebParityTest.until(w,"document.querySelector('#noa-menu-drawer[open] a[href=\"/noa-music.php\"]')?.getBoundingClientRect().height>0");
+   WebParityTest.js(w,"document.querySelector('#noa-menu-drawer[open] a[href=\"/noa-music.php\"]').click();return true;");
+  }
   else WebParityTest.js(w,"location.assign("+JSONObject.quote(route)+");return true;");
   WebParityTest.until(w,"!window.__noaQaPreviousDocument&&location.pathname+location.search==="+JSONObject.quote(route)+"&&document.readyState==='complete'");
  }
@@ -41,7 +46,7 @@ public class PwaRenderingTest {
   for(String route:new String[]{"/","/noa-music.php"})for(String theme:new String[]{"noa-ivory","noa-studio"}){
    android.util.Log.i("TestRunner","Capturing "+route+" "+theme);
    if(route.equals("/noa-music.php")&&theme.equals("noa-ivory"))navigate(w,route);
-   WebParityTest.until(w,"document.readyState==='complete'&&window.NoaUI?.getState()&&document.fonts.status==='loaded'&&document.querySelector('.noa-mobile-nav a')");
+   WebParityTest.until(w,"document.readyState==='complete'&&window.NoaUI?.getState()&&document.fonts.status==='loaded'&&document.querySelector('#noa-nav-all')?.getBoundingClientRect().height>0");
    // Wait for authenticated theme preferences, then exercise the PWA's own theme control.
    SystemClock.sleep(1500);
    WebParityTest.js(w,"localStorage.setItem('noa-device-theme',"+JSONObject.quote(theme)+");NoaUI.apply({...NoaUI.getState(),theme:"+JSONObject.quote(theme)+"});document.querySelector('#noa-amt-fan button[aria-label]')?.click();document.querySelector('[aria-label=\"AInoa 말풍선 닫기\"]')?.click();scrollTo(0,0);return true;");
@@ -50,7 +55,7 @@ public class PwaRenderingTest {
    WebParityTest.until(w,"window.__noaQaImages!==null");assertEquals(Boolean.TRUE,WebParityTest.js(w,"return window.__noaQaImages;"));
    WebParityTest.paint(w);SystemClock.sleep(700);
    JSONObject data=(JSONObject)WebParityTest.js(w,"return "+probe+";");assertEquals("https://noastudio.ai.kr"+route,data.getString("url"));assertEquals(theme,data.getString("theme"));assertFalse(data.getBoolean("overflow"));
-   assertEquals(5,data.getJSONObject("nodes").getJSONArray(".noa-mobile-nav a").length());
+   assertEquals("The current PWA menu control must be visible",1,data.getJSONObject("nodes").getJSONArray("#noa-nav-all").length());
    String name=(route.equals("/")?"home":"music")+"-"+theme;
    try(FileWriter out=new FileWriter(new File(c.getExternalFilesDir(null),"layout-"+name+".json"))){out.write(data.toString());}
    assertTrue(device.takeScreenshot(new File(c.getExternalFilesDir(null),"layout-"+name+".png")));

@@ -1,5 +1,5 @@
 (()=>{
- const selectors=['#noa-account-bar','.noa-mobile-nav','.noa-mobile-nav a','main','#music-browse','.noa-section-navigation'];
+ const selectors=['#noa-account-bar','#noa-nav-all','.noa-mobile-nav','.noa-mobile-nav a','main','#music-browse','.noa-section-navigation'];
  const props=['display','fontFamily','fontSize','fontWeight','lineHeight','color','backgroundColor','borderRadius','paddingTop','paddingRight','paddingBottom','paddingLeft','gap'];
  const nodes={};
  for(const selector of selectors)nodes[selector]=[...document.querySelectorAll(selector)].filter(el=>el.getBoundingClientRect().height>0).map(el=>{

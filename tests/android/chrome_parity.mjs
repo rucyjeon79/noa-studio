@@ -13,17 +13,17 @@ const probe=readFileSync('android/app/src/androidTest/assets/pwa-layout-probe.js
 const browser=await chromium.launch({channel:'chrome',headless:true});const report=[];
 try{for(const file of files){
  const expected=JSON.parse(readFileSync(file,'utf8')),name=path.basename(file,'.json');
- const context=await browser.newContext({viewport:{width:expected.viewport.width,height:expected.viewport.height},deviceScaleFactor:expected.viewport.dpr,isMobile:true,hasTouch:true,locale:'ko-KR',timezoneId:'Asia/Seoul',userAgent:'Mozilla/5.0 (Linux; Android 15; Pixel 2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36'});
+ const context=await browser.newContext({viewport:{width:expected.viewport.width,height:expected.viewport.height},deviceScaleFactor:expected.viewport.dpr,isMobile:true,hasTouch:true,locale:'ko-KR',timezoneId:'Asia/Seoul',userAgent:'Mozilla/5.0 (Linux; Android 16; Pixel 2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36'});
  await context.addCookies([{name:'PHPSESSID',value:cookie.slice(10),domain:'noastudio.ai.kr',path:'/',secure:true,httpOnly:true}]);
  await context.addInitScript(theme=>{localStorage.setItem('noa-device-theme',theme);sessionStorage.setItem('noa-amt2-fan-2026','1');},expected.theme);
  const page=await context.newPage();page.setDefaultTimeout(45000);
  await page.goto('https://noastudio.ai.kr/',{waitUntil:'load'});
  if(new URL(expected.url).pathname==='/noa-music.php'){
-  await page.waitForFunction(()=>document.querySelector('.noa-mobile-nav a[href="/noa-music.php"]'));
-  await page.evaluate(()=>document.querySelector('.noa-mobile-nav a[href="/noa-music.php"]').click());
+  await page.locator('#noa-nav-all').click();
+  await page.locator('#noa-menu-drawer[open] a[href="/noa-music.php"]').click();
   await page.waitForURL(expected.url,{waitUntil:'load'});
  }
- await page.waitForFunction(()=>window.NoaUI?.getState()&&document.fonts.status==='loaded'&&document.querySelectorAll('.noa-mobile-nav a').length===5);
+ await page.waitForFunction(()=>window.NoaUI?.getState()&&document.fonts.status==='loaded'&&document.querySelector('#noa-nav-all')?.getBoundingClientRect().height>0);
  await page.waitForTimeout(1500);
  await page.evaluate(theme=>{NoaUI.apply({...NoaUI.getState(),theme});document.querySelector('#noa-amt-fan button[aria-label]')?.click();document.querySelector('[aria-label="AInoa 말풍선 닫기"]')?.click();scrollTo(0,0);},expected.theme);
  await page.waitForTimeout(1000);
