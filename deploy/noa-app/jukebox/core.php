@@ -71,7 +71,18 @@ function nj_asset_source(array $asset,string $type):string{
 }
 function nj_resolve(array $assets,string $key,string $source,string $type):string{
  $r=$assets[$key]??null;
- return $r&&hash_equals(nj_asset_source($r,$type),$source)&&nj_verified($r,$type)?nj_url($key,$type):'';
+ if(!$r||!hash_equals(nj_asset_source($r,$type),$source))return '';
+  // Catalogue URLs check metadata only; deep content verification stays at
+  // import/publication and the authenticated stream endpoint.
+  if(!in_array($type,['audio','cover'],true)||
+     ($type==='audio'&&($r['status']??'')!=='ready'))return '';
+  $path=nj_file((string)($r[$type.'_path']??''));
+  $digest=$r[$type.'_sha256']??null;
+  $bytes=$r[$type.'_bytes']??null;
+  if(!$path||!is_string($digest)||preg_match('/^[a-f0-9]{64}$/D',$digest)!==1
+     ||(!is_int($bytes)&&(!is_string($bytes)||!ctype_digit($bytes)))
+     ||(int)$bytes<1||filesize($path)!==(int)$bytes)return '';
+  return nj_url($key,$type);
 }
 function nj_range(?string $header,int $size):array{
  if($size<=0)throw new InvalidArgumentException('empty');
@@ -127,6 +138,10 @@ function nj_import(PDO $db,array $r,bool $replace=false,?string $expected=null):
   $db->prepare($sql)->execute(array_values($new));
   // Keep the complete record in the same transaction as verified media publication.
   require_once dirname(__DIR__,2).'/noa-bridge/package-record.php';nup_attach_asset($db,$key,$new);
-  $db->prepare('INSERT INTO noa_jukebox_history(song_key,result) VALUES(?,?)')->execute([$key,json_encode($r,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)]);if($ownsTransaction)$db->commit();
+  $db->prepare('INSERT INTO noa_jukebox_history(song_key,result) VALUES(?,?)')->execute([$key,json_encode($r,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)]);
+  $historyId=(int)$db->lastInsertId();
+  require_once __DIR__.'/new-song-event.php';
+  if(nj_new_song_event_eligible($key,$doc,$new,$old?:null,$r))nj_new_song_event($db,$key,$historyId);
+  if($ownsTransaction)$db->commit();
  }catch(Throwable $e){if($ownsTransaction&&$db->inTransaction())$db->rollBack();throw $e;}
 }
