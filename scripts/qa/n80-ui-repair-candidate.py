@@ -21,36 +21,33 @@ CHECKED_SOURCE_HASHES={
 SAFE_HASHES={k:v for k,v in CHECKED_SOURCE_HASHES.items() if len(v)==64}
 SCOPED_PATCHES={
  'noa-account.css': r'''
-/* N80 MOBILE ACCOUNT STRUCTURE — 2026-11-16.
-   Prevent the long membership entitlement from splitting in a narrow half-column. */
-@media (max-width: 640px) {
-  html.noa-member-ui body.noa-page #noa-my-account .noa-my-account-grid,
-  html body.noa-page #noa-my-account .noa-my-account-grid {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 16px;
-    column-gap: 0;
-  }
-  html body.noa-page #noa-my-account .noa-my-account-grid > * {
-    min-inline-size: 0;
-    max-inline-size: 100%;
-  }
-  html body.noa-page #noa-my-account .noa-my-account-grid dd {
-    white-space: normal;
-    word-break: keep-all;
-    overflow-wrap: anywhere;
-    line-height: 1.5;
-  }
-  html body.noa-page #noa-my-account .noa-my-account-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 12px;
-    align-items: stretch;
-  }
-  html body.noa-page #noa-my-account .noa-my-account-actions > a {
-    flex: 1 1 140px;
-    min-width: 0;
-    min-height: 44px;
-  }
+/* N80 INTRINSIC ACCOUNT GRID — 2026-11-16.
+   Track actual membership-content width instead of viewport width;
+   sidebar and short-landscape screens stay eligible for one column. */
+html body.noa-page #noa-my-account .noa-my-account-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 16px;
+}
+html body.noa-page #noa-my-account .noa-my-account-grid > * {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+html body.noa-page #noa-my-account .noa-my-account-grid dd {
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+html body.noa-page #noa-my-account .noa-my-account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: stretch;
+}
+html body.noa-page #noa-my-account .noa-my-account-actions > a {
+  flex: 1 1 140px;
+  min-width: 0;
+  min-height: 44px;
 }
 ''',
  'noa-creator.css': r'''
@@ -133,7 +130,7 @@ def main():
         rows=[];patches=[];safe_source_paths=[]
         for name,patch in SCOPED_PATCHES.items():
             before=read_exact(sftp,name)
-            if 'N80 MOBILE ACCOUNT STRUCTURE' in before.decode('utf-8') or 'N80 MOBILE CREATOR HIERARCHY' in before.decode('utf-8'):
+            if 'N80 INTRINSIC ACCOUNT GRID' in before.decode('utf-8') or 'N80 MOBILE CREATOR HIERARCHY' in before.decode('utf-8'):
                 raise RuntimeError('patch_already_present:'+name)
             # Append-only to protect the original source and preserve all functions.
             candidate=before.rstrip(b'\n')+b'\n\n'+patch.strip().encode('utf-8')+b'\n'
