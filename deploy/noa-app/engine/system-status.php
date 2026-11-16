@@ -92,6 +92,7 @@ function n80_system_project(array $modules,array $hub,array $connections,array $
         'pendingOperationCount'=>count($pending),'unconfirmedOperationCount'=>count($unconfirmed),
         'guardTriage'=>n80_guard_unconfirmed_diagnostics($hub['operations']??[],$runtime['pending']??[],$now),
         'wakePreflight'=>$hub['wakePreflight']??['ok'=>false,'mode'=>'not_verified','productionReady'=>false],
+        'wakeTicketAudit'=>$hub['wakeTicketAudit']??['ok'=>false,'state'=>'not_verified','signalCount'=>0,'businessExecutionVerified'=>false],
         'mediaRecoveryAssessment'=>n80_guard_media_recovery_assessment($hub['operations']??[],$hub['covers']??[]),
         'mediaCoverEvidence'=>[
             'checkedAt'=>isset($hub['covers']['checkedAt'])?(int)$hub['covers']['checkedAt']:null,
