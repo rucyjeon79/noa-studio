@@ -11,11 +11,12 @@ SOURCES={
  'one-shot-adapter.php':'3b126e2b4dcdb97810bb5cd45ddb355596042f43a3424aa76c37457b18d5bd9d',
  'lowload-transition.php':'ecd82dec6ac731dfcd28c0dabc626c90ca342500d5820b8bc2ee040022c4ed51',
  'lease-inbox.php':'9af7a7356f786faf86f6e20f319d3d474a647b472f72009d65c9704d54a33d0d',
- 'host-load-policy.php':'119cfcbdeaa031134fe07ab55c66aa5c02090f7196b5485df186297b0ed6cb55'
+ 'host-load-policy.php':'119cfcbdeaa031134fe07ab55c66aa5c02090f7196b5485df186297b0ed6cb55',
+ 'one-shot-preflight.php':'b56f2c507238fa08ac2c269ecedc6068bfbd85e9b7123f083ad71567a4abc138'
 }
 PHP=r'''<?php
 declare(strict_types=1);
-require __DIR__.'/one-shot-adapter.php';
+require __DIR__.'/one-shot-preflight.php';
 function prove(bool $ok,string $name):void {if(!$ok)throw new RuntimeException($name);}
 $now=1000000;
 $ops=[
@@ -46,7 +47,14 @@ $r=n80_external_one_shot_readiness($ops,['stop'=>true,'paused'=>true]);
 prove($r['mode']==='plan_only'&&$r['legacyStop']&&$r['legacyPaused'],'paused_preview');
 prove(!$r['liveDispatchAllowed']&&!$r['externalQueueActive'],'external_not_activated');
 prove(count($r['unconfirmedReceipts'])===1&&$r['unconfirmedReceipts'][0]['operation']==='ai.batch','pending_receipt_visible');
-echo "N80_ONESHOT_CONTRACT_PASS tests=14 dispatches=0 host_writes=0\n";
+$external=n80_external_one_shot_preflight($task,$ops,['stop'=>true,'paused'=>true],$now);
+prove($external['reason']==='external_worker_not_activated','paused_host_is_not_external_blocker');
+prove($external['legacyRunnerSuspended']===true,'legacy_runner_stays_stopped');
+prove(!in_array('host_legacy_runner_not_suspended',$external['blockers'],true),'separate_control_planes');
+$unpaused=n80_external_one_shot_preflight($task,$ops,['stop'=>false,'paused'=>true],$now);
+prove($unpaused['reason']==='host_legacy_runner_not_suspended','unpaused_host_is_unsafe');
+prove(!$external['executionAllowed']&&!$external['dispatchPerformed']&&$external['hostWrites']===0,'external_still_disabled');
+echo "N80_ONESHOT_CONTRACT_PASS tests=19 dispatches=0 host_writes=0\n";
 ''';
 connection=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022))
 try:
