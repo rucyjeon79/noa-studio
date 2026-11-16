@@ -105,7 +105,7 @@ html body.noa-page #noa-my-account .noa-my-account-actions > a {
  'noa-ui.css': r'''
 /* N80 PROSE ACTION SEPARATION 2026-11-16.
    Payment setup action links must not interrupt readable instructions. */
-html body.noa-page .noa-payment-readiness p > a.noa-button {
+html body.noa-page main.noa-payment-settings p > a.noa-button {
   box-sizing: border-box;
   display: flex;
   align-items: center;
