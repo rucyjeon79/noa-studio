@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "approved": [],
+  "note": "Schedules are empty until the owner explicitly approves a time and N80 signed wake intake is verified. GitHub must not perform AI, media, DB, queue or housekeeping work as a scheduled job."
+}
