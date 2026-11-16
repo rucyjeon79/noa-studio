@@ -47,8 +47,8 @@ jobs:
           python -m unittest discover -s tests/session-agent -p 'auto_assembly_test.py' -v
           node --test tests/engine/node_runtime.test.mjs tests/lab/muvy.test.mjs tests/engine/media_runtime.test.mjs
   host_handoff:
-    if: (github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && github.event_name == 'push') && !contains(github.event.head_commit.message, '[n80-specialists]') && !contains(github.event.head_commit.message, '[n80-safety-only]')
-    needs: host_candidate
+    if: (github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && github.event_name == 'push') && !contains(github.event.head_commit.message, '[n80-specialists]') && !contains(github.event.head_commit.message, '[n80-safety-only]') && needs.preflight.outputs.allow == 'true'
+    needs: [host_candidate, preflight]
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 4
@@ -72,8 +72,8 @@ jobs:
           if-no-files-found: error
           retention-days: 7
   host_runtime:
-    if: (github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && ((github.event_name == 'push' && !contains(github.event.head_commit.message, '[n80-node]') && !contains(github.event.head_commit.message, '[n80-handoff]') && !contains(github.event.head_commit.message, '[n80-media]') && !contains(github.event.head_commit.message, '[n80-browser-remote]') && !contains(github.event.head_commit.message, '[n80-safety-only]')) || (github.event_name == 'workflow_dispatch' && inputs.host_runtime == true))) && !contains(github.event.head_commit.message, '[n80-specialists]')
-    needs: host_candidate
+    if: (github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && ((github.event_name == 'push' && !contains(github.event.head_commit.message, '[n80-node]') && !contains(github.event.head_commit.message, '[n80-handoff]') && !contains(github.event.head_commit.message, '[n80-media]') && !contains(github.event.head_commit.message, '[n80-browser-remote]') && !contains(github.event.head_commit.message, '[n80-safety-only]')) || (github.event_name == 'workflow_dispatch' && inputs.host_runtime == true))) && !contains(github.event.head_commit.message, '[n80-specialists]') && needs.preflight.outputs.allow == 'true'
+    needs: [host_candidate, preflight]
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 15
@@ -115,8 +115,8 @@ jobs:
           retention-days: 7
           if-no-files-found: error
   browser_probe:
-    if: github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && github.event_name == 'push' && contains(github.event.head_commit.message, '[n80-browser-remote]')
-    needs: host_candidate
+    if: github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && github.event_name == 'push' && contains(github.event.head_commit.message, '[n80-browser-remote]') && needs.preflight.outputs.allow == 'true'
+    needs: [host_candidate, preflight]
     runs-on: ubuntu-24.04
     environment: production
     timeout-minutes: 6
@@ -134,8 +134,8 @@ jobs:
           NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
         run: python scripts/n80_auto.py ai.browser_probe
   host_media:
-    if: github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && github.event_name == 'push' && contains(github.event.head_commit.message, '[n80-media]')
-    needs: host_candidate
+    if: github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && github.event_name == 'push' && contains(github.event.head_commit.message, '[n80-media]') && needs.preflight.outputs.allow == 'true'
+    needs: [host_candidate, preflight]
     runs-on: ubuntu-24.04
     environment: production
     timeout-minutes: 20
@@ -162,8 +162,8 @@ jobs:
           retention-days: 7
           if-no-files-found: error
   host_node:
-    if: github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && github.event_name == 'push' && contains(github.event.head_commit.message, '[n80-node]')
-    needs: host_candidate
+    if: github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && github.event_name == 'push' && contains(github.event.head_commit.message, '[n80-node]') && needs.preflight.outputs.allow == 'true'
+    needs: [host_candidate, preflight]
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 12
@@ -192,8 +192,9 @@ jobs:
           retention-days: 7
           if-no-files-found: error
   preflight:
-    # The web host's owner control must allow the external one-shot worker.
-    if: github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && github.event_name != 'push' && github.event_name != 'pull_request' && inputs.host_runtime != true && (github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'))
+    # Same SFTP owner stop check guards ALL host installations and the scheduled runner.
+    # A failed/unreachable preflight is never permission to start a resident host process.
+    if: github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio' && github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     environment: production
