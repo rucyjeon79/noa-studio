@@ -134,14 +134,7 @@ jobs:
             adb shell am instrument -w -e class kr.ai.noastudio.WebPlaybackRestoreTest kr.ai.noastudio.test/androidx.test.runner.AndroidJUnitRunner > android/noa-restore-instrumentation.txt
             cat android/noa-restore-instrumentation.txt
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/ android/device-proof/ || true
-            if [ "${{ inputs.capture_review_demo }}" = "true" ]; then
-              curl --fail --location --max-time 120 https://noastudio.ai.kr/noa-studio-android-build-1794853670.apk -o "$RUNNER_TEMP/noa-play-review.apk"
-              echo 'be8ad4f82a285be3c7b29718a5331fbb5cafabce0036199f82d91d27b0a9bbfb  '"$RUNNER_TEMP/noa-play-review.apk" | sha256sum --check
-              adb uninstall kr.ai.noastudio
-              adb install "$RUNNER_TEMP/noa-play-review.apk"
-              adb shell am instrument -w -e class kr.ai.noastudio.FgsDeclarationTest kr.ai.noastudio.test/androidx.test.runner.AndroidJUnitRunner > android/noa-fgs-instrumentation.txt
-              cat android/noa-fgs-instrumentation.txt
-            fi
+            if [ "${{ inputs.capture_review_demo }}" = "true" ]; then curl --fail --location --max-time 120 https://noastudio.ai.kr/noa-studio-android-build-1794853670.apk -o "$RUNNER_TEMP/noa-play-review.apk" && echo 'be8ad4f82a285be3c7b29718a5331fbb5cafabce0036199f82d91d27b0a9bbfb  '"$RUNNER_TEMP/noa-play-review.apk" | sha256sum --check && adb uninstall kr.ai.noastudio && adb install "$RUNNER_TEMP/noa-play-review.apk" && adb shell am instrument -w -e class kr.ai.noastudio.FgsDeclarationTest kr.ai.noastudio.test/androidx.test.runner.AndroidJUnitRunner > android/noa-fgs-instrumentation.txt && cat android/noa-fgs-instrumentation.txt; fi
             adb pull /sdcard/Android/data/kr.ai.noastudio/files/ android/device-proof/ || true
             adb logcat -d -s AndroidRuntime:E NoaApi:E > android/noa-runtime-errors.txt
             python3 -c "from pathlib import Path; import json; assert 'OK (7 tests)' in Path('android/noa-instrumentation.txt').read_text(); assert 'OK (1 test)' in Path('android/noa-restore-instrumentation.txt').read_text(); p=next(Path('android/device-proof').rglob('noa-pwa-proof.json')); proof=json.loads(p.read_text()); assert proof['completed'] and proof['livePwaDocumentLoaded'] and proof['backgroundAndScreenOff']; assert 'FATAL EXCEPTION' not in Path('android/noa-runtime-errors.txt').read_text(); print(proof)"
