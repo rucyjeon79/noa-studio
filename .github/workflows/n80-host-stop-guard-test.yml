@@ -17,6 +17,7 @@ on:
       - 'tests/safety/n80-host-stop-latch.mjs'
       - 'runtime/hub/launch.mjs'
       - 'scripts/n80_hub_bootstrap.py'
+      - 'tests/safety/n80-host-stop-latch.mjs'
       - 'deploy/noa-app/engine/hub.php'
       - '.github/workflows/n80-host-stop-guard-test.yml'
   workflow_dispatch:
@@ -35,9 +36,11 @@ jobs:
           node-version: '22'
       - name: Check JavaScript, PHP and Python syntax
         run: |
-          node --check runtime/hub/launch.mjs
-          node --check runtime/hub/runner.mjs
-          python3 -m py_compile scripts/n80_hub_bootstrap.py
+          test ! -e runtime/hub/launch.mjs
+          test ! -e runtime/hub/runner.mjs
+          test ! -e runtime/hub/stop.mjs
+          test ! -e runtime/hub/probe.mjs
+          test ! -e scripts/n80_hub_bootstrap.py
           php -l deploy/noa-app/engine/hub.php
       - uses: actions/setup-python@v5
         with:
