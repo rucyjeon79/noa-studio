@@ -90,6 +90,13 @@ def install():
                 current=(remote_hash(p) if present(p) else None) if large else read(p)
                 if current!=old:raise RuntimeError('concurrent_change')
                 s.posix_rename(temp,p)
+            # A hosting safety stop must never be cleared by an automated migration.
+            # Verify before writing any files into an existing installation.
+            previous_control=read(ROOT+'/control.json')
+            if previous_control is not None:
+                owner_state=json.loads(previous_control)
+                if owner_state.get('stop') is True or owner_state.get('paused') is True:
+                    raise RuntimeError('hub_owner_stop_latched')
             mkdir(ROOT);mkdir(ROOT+'/runtime');print('N80_HUB_STAGE directories',flush=True)
             manifest=json.loads(read('/hosting/noastudio/noa-ai-lab/host-runtime/node-current.json'))
             digest=manifest['nodeSha256']
@@ -189,10 +196,10 @@ def install():
             if repository['commit']!=os.environ['GITHUB_SHA'] or repository.get('githubRequired') is not False:raise RuntimeError('native_repository_head_mismatch')
             source['repository']=repository;put(ROOT+'/source.json',json.dumps(source).encode(),expected_old=previous)
             print(prefix+json.dumps(repository),flush=True)
+            # Re-check immediately before launch without resetting owner-approved stop state.
             previous=read(ROOT+'/control.json');control=json.loads(previous)
-            if control.get('stop'):
-                control['stop']=False;control['revision']=control.get('revision',0)+1
-                put(ROOT+'/control.json',json.dumps(control).encode(),expected_old=previous)
+            if control.get('stop') is True or control.get('paused') is True:
+                raise RuntimeError('hub_owner_stop_latched')
             channel=transport.open_session(timeout=20);channel.settimeout(25)
             channel.exec_command(shlex.join(args+[ROOT+'/runtime/launch.mjs']))
             output=channel.makefile('r').read(1024).decode();code=channel.recv_exit_status();channel.close()
