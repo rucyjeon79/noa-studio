@@ -2,10 +2,10 @@ name: NOA upload completion wake verification
 on:
   workflow_dispatch:
   pull_request:
-    paths: ['deploy/noa-app/jukebox/wake-core.php', 'deploy/noa-app/jukebox/queue-core.php', 'deploy/noa-app/jukebox/upload-core.php', 'scripts/noa_upload_wake_acceptance.py', 'tests/jukebox/wake_test.php', '.github/workflows/noa-upload-wake.yml', 'scripts/noa_upload_wake_release.py']
+    paths: ['deploy/noa-app/jukebox/wake-core.php', 'deploy/noa-app/jukebox/queue-core.php', 'deploy/noa-app/jukebox/upload-core.php', 'deploy/noa-app/jukebox/new-song-event.php', 'scripts/noa_upload_wake_acceptance.py', 'tests/jukebox/wake_test.php', '.github/workflows/noa-upload-wake.yml', 'scripts/noa_upload_wake_release.py']
   push:
     branches: [main]
-    paths: ['deploy/noa-app/jukebox/wake-core.php', 'deploy/noa-app/jukebox/queue-core.php', 'deploy/noa-app/jukebox/upload-core.php', 'scripts/noa_upload_wake_acceptance.py', 'tests/jukebox/wake_test.php', '.github/workflows/noa-upload-wake.yml', 'scripts/noa_upload_wake_release.py']
+    paths: ['deploy/noa-app/jukebox/wake-core.php', 'deploy/noa-app/jukebox/queue-core.php', 'deploy/noa-app/jukebox/upload-core.php', 'deploy/noa-app/jukebox/new-song-event.php', 'scripts/noa_upload_wake_acceptance.py', 'tests/jukebox/wake_test.php', '.github/workflows/noa-upload-wake.yml', 'scripts/noa_upload_wake_release.py']
 permissions: {contents: read}
 jobs:
   verify:
