@@ -9,6 +9,8 @@ from pathlib import Path
 with tempfile.TemporaryDirectory(prefix='noa-status-session-') as tmp:
  root=Path(tmp);(root/'noa-app').mkdir();(root/'noa-bridge').mkdir()
  shutil.copytree('deploy/noa-app/jukebox',root/'noa-app/jukebox')
+ (root/'noa-app/engine').mkdir()
+ shutil.copyfile('deploy/noa-app/engine/media-queue.php',root/'noa-app/engine/media-queue.php')
  (root/'common.php').write_text("<?php define('_GNUBOARD_',true);session_start();if(($_GET['auth']??'')==='fixture')$_SESSION['admin']=true;$is_member=!empty($_SESSION['admin']);$is_admin=$is_member?'super':'';$_SESSION['noa_jukebox_csrf']='fixture-csrf';")
  (root/'noa-bridge/sound-core.php').write_text('<?php')
  marker=root/'db-started'
