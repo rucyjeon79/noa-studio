@@ -15,6 +15,8 @@ on:
       - 'tests/n80/signed_wake_hmac_test.php'
       - 'scripts/n80_signed_wake_signal.py'
       - 'tests/n80/test_n80_signed_wake_signal.py'
+      - 'tests/n80/test_host_activation_fence.py'
+      - '.github/workflows/noa-ai-worker.yml'
       - 'deploy/noa-app/engine/scheduled-wake.php'
       - 'deploy/noa-app/engine/host-load-policy.php'
       - '.github/workflows/n80-shorts-safety.yml'
@@ -31,6 +33,8 @@ on:
       - 'tests/n80/signed_wake_hmac_test.php'
       - 'scripts/n80_signed_wake_signal.py'
       - 'tests/n80/test_n80_signed_wake_signal.py'
+      - 'tests/n80/test_host_activation_fence.py'
+      - '.github/workflows/noa-ai-worker.yml'
       - 'deploy/noa-app/engine/scheduled-wake.php'
       - 'deploy/noa-app/engine/host-load-policy.php'
       - '.github/workflows/n80-shorts-safety.yml'
@@ -76,3 +80,4 @@ jobs:
           php tests/n80/scheduled_wake_ticket_test.php
           php tests/n80/signed_wake_hmac_test.php
           python3 -m unittest discover -s tests/n80 -p 'test_n80_signed_wake_signal.py' -v
+          python3 -m unittest discover -s tests/n80 -p 'test_host_activation_fence.py' -v
