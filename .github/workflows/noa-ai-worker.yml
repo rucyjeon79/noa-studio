@@ -4,8 +4,8 @@ name: N80 scheduled wake only (activation pending)
 # Preserve the historical cadence, but DO NOT send any signal until a dedicated
 # signed N80 ingress and host-side bounded execution are verified.
 on:
-  schedule:
-    - cron: '7,22,37,52 * * * *'
+  # Reserved for a future user-approved scheduled N80 wake.
+  workflow_dispatch:
 permissions:
   contents: read
 concurrency:
