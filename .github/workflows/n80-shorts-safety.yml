@@ -1,0 +1,54 @@
+name: N80 Shorts isolated safety gates
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'bridge/session-shorts*.php'
+      - 'lab/daily_shorts.py'
+      - 'tests/lab/daily_shorts_test.py'
+      - 'tests/session-agent/schedule.php'
+      - 'tests/session-agent/preparation.php'
+      - 'tests/session-agent/preparation_test.py'
+      - '.github/workflows/n80-shorts-safety.yml'
+  pull_request:
+    paths:
+      - 'bridge/session-shorts*.php'
+      - 'lab/daily_shorts.py'
+      - 'tests/lab/daily_shorts_test.py'
+      - 'tests/session-agent/schedule.php'
+      - 'tests/session-agent/preparation.php'
+      - 'tests/session-agent/preparation_test.py'
+      - '.github/workflows/n80-shorts-safety.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring,pdo_sqlite
+      - name: Validate Shorts PHP syntax
+        run: |
+          php -l bridge/session-shorts.php
+          php -l bridge/session-shorts-prepare.php
+          php -l tests/session-agent/schedule.php
+          php -l tests/session-agent/preparation.php
+      - name: Verify exact original, posted video, measured clips and schedule
+        run: |
+          python -m unittest discover -s tests/lab -p 'daily_shorts_test.py' -v
+          python -m unittest discover -s tests/session-agent -p 'preparation_test.py' -v
+          php tests/session-agent/schedule.php
+          php tests/session-agent/preparation.php

@@ -54,6 +54,32 @@ function nd_shorts_tick(array &$s,array $p,int $now,array $readiness):array {
  ['local'=>$local,'target'=>$target,'due'=>$due]=nd_shorts_schedule($p,$now);$previous=$s['campaigns']['daily_shorts']??[];
  $c=$previous+['enabled'=>true,'createdAt'=>gmdate('c',$now),'current'=>null,'history'=>[]];
  $c['policy']=$p;$c['lastTickAt']=gmdate('c',$now);$c['nextPreparationAt']=$due->format(DATE_ATOM);$c['nextPublicationAt']=$target->format(DATE_ATOM);$c['readiness']=$readiness;
+ // Retire only an older *explicitly cancelled* job with no verified upload.
+ // Preserve every cancelled job and its provider history for manual reconciliation.
+ $slot=$c['current']??null;
+ if(is_array($slot)&&preg_match('/^\d{4}-\d{2}-\d{2}$/D',(string)($slot['date']??''))&&
+    (string)$slot['date']<$local->format('Y-m-d')&&!empty($slot['jobId'])){
+  $oldJob=$s['jobs'][$slot['jobId']]??null;
+  if(is_array($oldJob)&&($oldJob['state']??'')==='cancelled'&&
+      empty($slot['videoId'])&&empty($oldJob['outputs'])&&
+      empty($oldJob['agent']['publication']['uploadVerified'])){
+    $fp=hash('sha256',json_encode([$slot['date'],$slot['jobId'],$slot['publishAt']??''],JSON_THROW_ON_ERROR));
+    $seen=false;
+    foreach($c['history']??[] as $prev)
+      if(is_array($prev)&&($prev['closureFingerprint']??'')===$fp){$seen=true;break;}
+    if(!$seen){
+      $entry=$slot;$entry['closureFingerprint']=$fp;
+      $entry['archivedAt']=gmdate('c',$now);
+      $entry['closureReason']='explicitly_cancelled_without_verified_upload';
+      $entry['publicationVerified']=false;$entry['noAutomaticReplay']=true;
+      $entry['sourceJobPreserved']=true;
+      $entry['providerHistoryReconciliationRequired']=!empty($oldJob['agent']['active']);
+      $c['history']=array_slice(array_merge($c['history']??[],[$entry]),-80);
+    }
+    $c['current']=null;
+    $c['slotReconciliation']='cancelled_previous_slot_archived';
+  }
+ }
  // Reconcile only an unstarted slot. Never relabel existing media or an upload.
  if($c['current']&&empty($c['current']['jobId'])&&empty($c['current']['videoId'])&&
     !nd_shorts_slot_allowed($p,(string)($c['current']['publishAt']??'')))$c['current']=null;
