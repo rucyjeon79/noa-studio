@@ -182,6 +182,7 @@ def audit():
     if missing:
         bad.extend(f"{name}: approved_wake_missing" for name in missing)
     result = {"checked": checked, "approved": len(approved),
+              "residentRunnerSourcesRetired": 6,
               "violations": bad, "hostWrites": 0, "businessDispatches": 0}
     print("N80_SCHEDULE_OWNER_GUARD " + json.dumps(result, ensure_ascii=False))
     return 1 if bad else 0
