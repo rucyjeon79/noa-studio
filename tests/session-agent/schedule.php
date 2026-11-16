@@ -58,7 +58,8 @@ verify_schedule($campaign['history'][0]['jobId']==='cancelled-old'&&
  $campaign['history'][0]['sourceJobPreserved']===true,'Preserved cancelled provenance');
 verify_schedule($cancelled['jobs']['cancelled-old']['state']==='cancelled'&&
  ($campaign['current']['date']??'')==='2026-11-16'&&
- ($campaign['current']['jobId']??'not-empty')===null,'Old job preserved, new unstarted slot only');
+ array_key_exists('jobId',$campaign['current'])&&
+ $campaign['current']['jobId']===null,'Old job preserved, new unstarted slot only');
 nd_shorts_tick($cancelled,$p,$t('2026-11-16 08:01:00'),$blocked);
 verify_schedule(count($cancelled['campaigns']['daily_shorts']['history'])===1,
  'Repeated tick must not duplicate archived records');
