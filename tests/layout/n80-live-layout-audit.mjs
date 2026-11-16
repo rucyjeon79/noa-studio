@@ -12,6 +12,8 @@ const pages = [
   { id: 'youtube', route: '/noa-youtube.php' },
   { id: 'world', route: '/noa-world.php' },
   { id: 'sitemap', route: '/noa-sitemap.php' },
+  { id: 'about', route: '/noa-about.php' },
+  { id: 'catalog', route: '/noa-catalog.php' },
 ];
 const viewports = [
   { id: 'phone-small', width: 320, height: 740 },
@@ -33,6 +35,7 @@ async function inspect(tab) {
     const root = document.documentElement, body = document.body;
     const vw = window.innerWidth;
     const scrollWidth = Math.max(root.scrollWidth, body?.scrollWidth || 0);
+    if (!document.querySelector('main, #container, .noa-main')) issues.push({type:'main_content_missing'});
     const overflow = Math.max(0, scrollWidth - vw);
     if (overflow > 2) issues.push({ type: 'horizontal_overflow', px: Math.round(overflow) });
 
@@ -133,7 +136,7 @@ try {
     });
     const tab = await context.newPage();
     for (const p of pages) {
-      const entry = { page: p.id, route: p.route, viewport: v.id, requestedSize: [v.width, v.height], issues: [] };
+      const entry = { page: p.id, route: p.route, viewportId: v.id, requestedSize: [v.width, v.height], coverage: 'unverified', issues: [] };
       try {
         const response = await tab.goto(base + p.route, { waitUntil: 'domcontentloaded', timeout: 25000 });
         entry.httpStatus = response?.status() ?? null;
@@ -146,7 +149,17 @@ try {
         }, { timeout: 5000 }).catch(() => {});
         await tab.evaluate(() => document.fonts?.ready).catch(() => {});
         await tab.waitForTimeout(450);
-        Object.assign(entry, await inspect(tab));
+        const layout = await inspect(tab);
+        const measuredIssues = layout.issues;
+        delete layout.issues;
+        const actualViewport = layout.viewport;
+        delete layout.viewport;
+        Object.assign(entry, layout, { actualViewport });
+        entry.issues.push(...measuredIssues);
+        const observed = new URL(tab.url()).pathname;
+        entry.observedRoute = observed;
+        entry.coverage = observed === p.route ? 'verified' :
+          /\/(?:noa-login\.php|bbs\/login\.php)$/.test(observed) ? 'login_required' : 'unexpected_redirect';
         const filename = p.id + '-' + v.id;
         await tab.screenshot({
           path: path.join(out, filename + '-top.jpg'),
@@ -169,11 +182,17 @@ try {
 } finally {
   await browser.close();
 }
-const failures = results.filter(r => r.issues.length);
+const verified = results.filter(r => r.coverage === 'verified');
+const gaps = results.filter(r => r.coverage !== 'verified');
+const failures = verified.filter(r => r.issues.length);
 const summary = {
   scope: 'public pages, unauthenticated browser, read-only',
-  base, checked: results.length, viewportCount: viewports.length,
-  pageCount: pages.length, failures: failures.length,
+  base, attempted: results.length, verified: verified.length, coverageGaps: gaps.length,
+  redirected: results.filter(r => r.coverage === 'unexpected_redirect').length,
+  loginRequired: results.filter(r => r.coverage === 'login_required').length,
+  viewportCount: viewports.length, pageCount: pages.length,
+  failures: failures.length,
+  acceptance: gaps.length ? 'incomplete_route_coverage' : failures.length ? 'layout_failures' : 'verified_public_pass',
   issueCounts: Object.fromEntries(
     [...new Set(results.flatMap(r => r.issues.map(i => i.type)))].map(type =>
       [type, results.reduce((n, r) => n + r.issues.filter(i => i.type === type).length, 0)]
@@ -183,4 +202,5 @@ const summary = {
 };
 await fs.writeFile(path.join(out, 'report.json'), JSON.stringify({ summary, results }, null, 2));
 console.log('N80_LAYOUT_REPORT', JSON.stringify(summary));
-if (failures.length) process.exitCode = 1;
+// A redirected page is not proof of the requested page's layout. Never report it as pass.
+if (failures.length || gaps.length) process.exitCode = 1;
