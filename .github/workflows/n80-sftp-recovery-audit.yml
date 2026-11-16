@@ -1,0 +1,38 @@
+name: N80 SFTP recovery audit (read-only)
+
+on:
+  push:
+    branches: [n80/sftp-recovery-20261116]
+    paths:
+      - '.github/workflows/n80-sftp-recovery-audit.yml'
+      - 'scripts/qa/n80_sftp_recovery_audit.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: n80-sftp-recovery-readonly
+  cancel-in-progress: false
+
+jobs:
+  recovery-audit:
+    if: github.repository == 'rucyjeon79/noa-studio'
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned SFTP reader
+        run: python -m pip install 'paramiko>=3,<5'
+      - name: Verify host identity, six files and N80 stop state without changing anything
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+        run: python scripts/qa/n80_sftp_recovery_audit.py
