@@ -7,12 +7,14 @@ on:
       - 'config/n80-approved-schedules.json'
       - 'config/n80-github-cleanup.json'
       - 'scripts/qa/n80_schedule_policy_guard.py'
+      - 'deploy/noa-app/engine/scheduled-wake.php'
   pull_request:
     paths:
       - '.github/workflows/**'
       - 'config/n80-approved-schedules.json'
       - 'config/n80-github-cleanup.json'
       - 'scripts/qa/n80_schedule_policy_guard.py'
+      - 'deploy/noa-app/engine/scheduled-wake.php'
   workflow_dispatch:
 permissions:
   contents: read
