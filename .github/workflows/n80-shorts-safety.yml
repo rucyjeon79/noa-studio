@@ -13,6 +13,8 @@ on:
       - 'tests/n80/scheduled_wake_contract_test.php'
       - 'tests/n80/scheduled_wake_ticket_test.php'
       - 'tests/n80/signed_wake_hmac_test.php'
+      - 'scripts/n80_signed_wake_signal.py'
+      - 'tests/n80/test_n80_signed_wake_signal.py'
       - 'deploy/noa-app/engine/scheduled-wake.php'
       - 'deploy/noa-app/engine/host-load-policy.php'
       - '.github/workflows/n80-shorts-safety.yml'
@@ -27,6 +29,8 @@ on:
       - 'tests/n80/scheduled_wake_contract_test.php'
       - 'tests/n80/scheduled_wake_ticket_test.php'
       - 'tests/n80/signed_wake_hmac_test.php'
+      - 'scripts/n80_signed_wake_signal.py'
+      - 'tests/n80/test_n80_signed_wake_signal.py'
       - 'deploy/noa-app/engine/scheduled-wake.php'
       - 'deploy/noa-app/engine/host-load-policy.php'
       - '.github/workflows/n80-shorts-safety.yml'
@@ -61,6 +65,7 @@ jobs:
           php -l tests/n80/scheduled_wake_contract_test.php
           php -l tests/n80/scheduled_wake_ticket_test.php
           php -l tests/n80/signed_wake_hmac_test.php
+          python3 -m py_compile scripts/n80_signed_wake_signal.py tests/n80/test_n80_signed_wake_signal.py
       - name: Verify exact original, posted video, measured clips and schedule
         run: |
           python -m unittest discover -s tests/lab -p 'daily_shorts_test.py' -v
@@ -70,3 +75,4 @@ jobs:
           php tests/n80/scheduled_wake_contract_test.php
           php tests/n80/scheduled_wake_ticket_test.php
           php tests/n80/signed_wake_hmac_test.php
+          python3 -m unittest discover -s tests/n80 -p 'test_n80_signed_wake_signal.py' -v
