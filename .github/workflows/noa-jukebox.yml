@@ -1,80 +1,17 @@
-env:
-  NOA_DRIVE_RCLONE_CONFIG_B64: ${{ secrets.NOA_DRIVE_RCLONE_CONFIG_B64 }}
-name: NOA JUKEBOX public cards and authorized audio
-# Runtime workers consume existing signed APIs. They never deploy interface files.
+name: NOA JUKEBOX legacy business worker (retired)
+# N80 operating rule 2026-11-17:
+# GitHub Actions can ONLY issue an approved, signed, scheduled one-shot wake.
+# This legacy business workflow is retired. No queue claims, host processing,
+# database work, media, AI, notifications or direct host SSH are permitted.
+# The prior implementation is retained in Git commit history for recovery.
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-jukebox.yml', 'scripts/noa_jukebox_release.py', 'scripts/noa_jukebox_upload_worker.py', 'scripts/noa_upload_drive.py', 'scripts/noa_jukebox_publish.py', 'scripts/noa_jukebox_worker.py', 'scripts/noa_jukebox_recovery.py', 'tests/jukebox/**', '.github/actions/jukebox-tools/**']
-  pull_request:
-    paths: ['.github/workflows/noa-jukebox.yml', 'scripts/noa_jukebox*.py', 'tests/jukebox/**', '.github/actions/jukebox-tools/**']
-  # No self-starting cron. Uploads wake this workflow only after a user action.
   workflow_dispatch:
-permissions: {contents: read}
+permissions:
+  contents: read
 jobs:
-  validate:
-    if: github.event_name != 'workflow_dispatch'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-        with: {persist-credentials: false}
-      - uses: ./.github/actions/jukebox-tools
-      - name: Validate existing optimization, recovery and immutable publication
-        run: |
-          python3 -m pip install --user paramiko==3.5.1 Pillow==11.3.0
-          python3 -m py_compile scripts/noa_jukebox_release.py scripts/noa_jukebox_upload_worker.py scripts/noa_jukebox_publish.py
-          python3 -m unittest discover -s tests/jukebox -p 'test_*.py'
-  watchdog:
-    needs: validate
-    if: github.event_name == 'workflow_dispatch'
+  retired:
+    if: ${{ false }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    environment: production
-    concurrency: {group: noa-jukebox-watchdog, cancel-in-progress: false}
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with: {persist-credentials: false}
-      - run: python3 -m pip install --user paramiko==3.5.1 Pillow==11.3.0
-      - name: Observe and reconcile without terminating active workers
-        env:
-          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
-          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
-          NOA_JUKEBOX_RUNTIME_ONLY: '1'
-          NOA_JUKEBOX_WATCHDOG: '1'
-        run: python3 scripts/n80_auto.py jukebox.watchdog
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: noa-jukebox-watchdog-${{ github.run_id }}
-          path: jukebox-proof/watchdog.json
-          retention-days: 14
-  release:
-    needs: validate
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 120
-    environment: production
-    concurrency: {group: noa-jukebox-upload-processing, cancel-in-progress: false}
-    steps:
-      - uses: actions/checkout@v4
-        with: {persist-credentials: false}
-      - run: python3 -m pip install --user paramiko==3.5.1 Pillow==11.3.0
-      - uses: ./.github/actions/jukebox-tools
-      - name: Process FIFO uploads and publish verified completed media only
-        env:
-          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
-          NOA_SSH_HOST_FINGERPRINT: ${{ secrets.NOA_SSH_HOST_FINGERPRINT }}
-          NOA_JUKEBOX_RUNTIME_ONLY: '1'
-          NOA_JUKEBOX_KEEPALIVE_SECONDS: '120'
-        run: python3 scripts/n80_auto.py jukebox.process
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: noa-jukebox-summary-${{ github.run_id }}
-          path: jukebox-proof/summary.json
-          retention-days: 14
+      - run: echo "Retired by N80 wake-only policy; no business work executed."
