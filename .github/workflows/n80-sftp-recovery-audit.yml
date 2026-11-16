@@ -1,6 +1,10 @@
 name: N80 SFTP recovery audit (read-only)
 
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/n80-sftp-recovery-audit.yml'
+      - 'scripts/qa/n80_sftp_recovery_audit.py'
   push:
     branches: [n80/sftp-recovery-20261116]
     paths:
