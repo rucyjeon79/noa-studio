@@ -83,6 +83,54 @@ def rank_candidates(catalog, videos, members, policy, prior_ids=(), now=None):
     return sorted(out, key=lambda r: (-r['engagementScore'], r['videoId']))
 
 
+def verify_source_identity(source, candidate):
+    """Fail closed when the original MP3 or its posted full-song video changed.
+
+    N80's host owns the authoritative track revision and media; this check
+    protects the external analysis worker against stale or swapped inputs.
+    It does not perform a new publication or assume a successful MV.
+    """
+    if not isinstance(source, dict) or source.get('key') != candidate['trackKey'] or source.get('genre') != candidate['genre']:
+        raise ValueError('source_identity_changed')
+    if source.get('videoId') != candidate['videoId']:
+        raise ValueError('source_video_id_mismatch')
+    if type(source.get('revision')) is not int or source['revision'] < 1:
+        raise ValueError('source_revision_invalid')
+    digest = source.get('audioSha256')
+    if not isinstance(digest, str) or not re.fullmatch(r'[a-f0-9]{64}', digest):
+        raise ValueError('source_audio_hash_invalid')
+    duration = source.get('duration')
+    if isinstance(duration, bool) or not isinstance(duration, (int, float)) or not math.isfinite(duration) or not 59 <= duration <= 1800:
+        raise ValueError('source_duration_invalid')
+    if not isinstance(source.get('lyrics'), str) or not source['lyrics'].strip():
+        raise ValueError('source_lyrics_required')
+
+
+def validate_measured_audio(source, measured):
+    """Require measured Shorts windows, never fabricated vocal alignment."""
+    if not isinstance(measured, dict):
+        raise ValueError('measured_audio_required')
+    duration = measured.get('duration')
+    if isinstance(duration, bool) or not isinstance(duration, (int, float)) or not math.isfinite(duration) or abs(duration - source['duration']) > .25:
+        raise ValueError('source_duration_mismatch')
+    # This analyzer measures audio energy; it does not recognize words.
+    if measured.get('alignmentVerified') is not False:
+        raise ValueError('vocal_alignment_not_verified')
+    windows = measured.get('candidates')
+    if not isinstance(windows, list) or not 1 <= len(windows) <= 4:
+        raise ValueError('measured_short_windows_required')
+    for window in windows:
+        if not isinstance(window, dict):
+            raise ValueError('invalid_measured_window')
+        values = [window.get(key) for key in ('start', 'end', 'score')]
+        if any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) for v in values):
+            raise ValueError('invalid_measured_window')
+        start, end, score = values
+        if start < 0 or end > duration + .001 or not 48.999 <= end - start <= 59.001 or score < 0:
+            raise ValueError('invalid_measured_window')
+    return measured
+
+
 def source_download(sftp, source, target):
     remote = source['audioPath']
     roots = ('/hosting/noastudio/noa-jukebox-private/media/', '/hosting/noastudio/html/noa-jukebox/')
@@ -159,13 +207,11 @@ def prepare(call, policy, sftp, analyzer):
                 break
             try:
                 source = call('source', trackKey=row['trackKey'], videoId=row['videoId'])['source']
-                if source['key'] != row['trackKey'] or source['genre'] != row['genre']:
-                    raise ValueError('source_identity_changed')
+                verify_source_identity(source, row)
                 local = Path(folder) / 'source.mp3'
                 source_download(sftp, source, local)
                 measured = analyzer(local, source['lyrics'], lengths=[49, 55, 59])
-                if abs(measured['duration'] - source['duration']) > .25:
-                    raise ValueError('source_duration_mismatch')
+                validate_measured_audio(source, measured)
                 row.update(title=source['title'], sourceRevision=source['revision'], audioSha256=source['audioSha256'], audioAnalysis=measured)
                 analyzed.append(row)
             except Exception as error:
