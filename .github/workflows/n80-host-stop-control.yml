@@ -1,0 +1,30 @@
+name: N80 emergency stop of suspended-host resident scheduler
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/n80-host-stop-control.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: n80-host-stop-control-exclusive
+  cancel-in-progress: false
+jobs:
+  stop:
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install pinned SSH client
+        run: python -m pip install 'paramiko>=3,<5'
+      - name: Apply reversible stop latch only with original SHA and Drive backup
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          N80_PREIMAGE_DRIVE_ID: 1Z8g8c--FHvlloTqn0kKvuWOgJYvLFUk6
+        run: python scripts/qa/n80-host-stop-control.py
