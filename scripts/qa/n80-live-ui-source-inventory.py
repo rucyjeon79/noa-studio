@@ -16,7 +16,9 @@ CSS_CANDIDATES=[
  'noa-gnuboard.css','noa-music-vinyl.css','noa-ecosystem.css',
  'noa-ai-lab.css','noa-support.css','noa-pay.css','noa-checkout.css',
  'noa-channel-view.css','noa-record-form.css','noa-app/jukebox/upload.css',
- 'noa-creator.css','noa-settings.css','noa-taxonomy-browse.css','noa-app/engine/system.css'
+ 'noa-creator.css','noa-settings.css','noa-taxonomy-browse.css','noa-app/engine/system.css',
+ 'noa-member-surfaces.css','noa-member-badges.css','noa-notebooklm.css',
+ 'noa-membership-wallet.css','noa-creator-apply.css'
 ]
 PHP_CANDIDATES=[
  'noa-my.php','noa-support.php','noa-settings.php','noa-ai-lab.php',
@@ -26,7 +28,9 @@ PHP_CANDIDATES=[
 ]
 JS_CANDIDATES=[
  'noa-ui.js','noa-account.js','noa-my.js','noa-kcp-test.js',
- 'noa-ai-lab.js','noa-creator.js','noa-lab-chat.js','noa-browse-edit.js'
+ 'noa-ai-lab.js','noa-creator.js','noa-lab-chat.js','noa-browse-edit.js','noa-notebooklm.js',
+ 'noa-channel-batch.js','noa-channel-explorer.js','noa-member-surfaces.js',
+ 'noa-creator-apply.js','noa-membership.js'
 ]
 NAME_PATTERN=re.compile(r'(noa|studio|pay|kcp|toss|music|my|lab|settle|creator|batch|channel|setting|account|hub|css)',re.I)
 SEL_PATTERN=re.compile(r'(noa|np-|nl-|creator|payment|checkout|kcp|toss|pay-|settings|batch|bulk|tree|my-|channel|action|button|field|account|float)',re.I)
