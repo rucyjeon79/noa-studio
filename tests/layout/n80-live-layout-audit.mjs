@@ -152,6 +152,34 @@ try {
         }, { timeout: 5000 }).catch(() => {});
         await tab.evaluate(() => document.fonts?.ready).catch(() => {});
         await tab.waitForTimeout(p.id === 'home' && v.width < 1024 ? 1200 : 450);
+
+        // Read-only public version contract: no stale hard-coded "v2.0" on the header or guide.
+        if (p.expectPublic && new URL(tab.url()).pathname === p.route) {
+          try {
+            const versionResponse = await tab.request.get(base + '/noa-version.php', { timeout: 12000 });
+            if (!versionResponse.ok()) throw Error('public_version_http_' + versionResponse.status());
+            const release = await versionResponse.json();
+            if (release.ok !== true || !/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,12}$/.test(release.version))
+              throw Error('public_version_invalid');
+            await tab.waitForFunction(expected =>
+              [...document.querySelectorAll('[data-noa-studio-guide] span')].some(el => el.textContent.trim() === expected),
+              release.version, { timeout: 7500 });
+            entry.displayVersion = release.version;
+            entry.versionBound = true;
+            if (p.id === 'home' && ['phone', 'desktop'].includes(v.id)) {
+              const button = tab.locator('[data-noa-studio-guide]:visible').first();
+              await button.click({ timeout: 6000 });
+              await tab.waitForFunction(expected =>
+                document.querySelector('#noa-studio-guide[open] .noa-guide-kicker strong')?.textContent.trim() === expected,
+                release.version, { timeout: 6000 });
+              await tab.locator('#noa-studio-guide .noa-guide-close').click({ timeout: 6000 });
+              entry.guideVersionVerified = true;
+            }
+          } catch (error) {
+            entry.issues.push({ type: 'version_ui_mismatch', reason: String(error.message || error).slice(0, 150) });
+          }
+        }
+
         const layout = await inspect(tab);
         const measuredIssues = layout.issues;
         delete layout.issues;
