@@ -11,6 +11,7 @@ on:
       - 'tests/session-agent/preparation.php'
       - 'tests/session-agent/preparation_test.py'
       - 'tests/n80/scheduled_wake_contract_test.php'
+      - 'tests/n80/scheduled_wake_ticket_test.php'
       - 'deploy/noa-app/engine/scheduled-wake.php'
       - 'deploy/noa-app/engine/host-load-policy.php'
       - '.github/workflows/n80-shorts-safety.yml'
@@ -23,6 +24,7 @@ on:
       - 'tests/session-agent/preparation.php'
       - 'tests/session-agent/preparation_test.py'
       - 'tests/n80/scheduled_wake_contract_test.php'
+      - 'tests/n80/scheduled_wake_ticket_test.php'
       - 'deploy/noa-app/engine/scheduled-wake.php'
       - 'deploy/noa-app/engine/host-load-policy.php'
       - '.github/workflows/n80-shorts-safety.yml'
@@ -55,6 +57,7 @@ jobs:
           php -l deploy/noa-app/engine/scheduled-wake.php
           php -l deploy/noa-app/engine/host-load-policy.php
           php -l tests/n80/scheduled_wake_contract_test.php
+          php -l tests/n80/scheduled_wake_ticket_test.php
       - name: Verify exact original, posted video, measured clips and schedule
         run: |
           python -m unittest discover -s tests/lab -p 'daily_shorts_test.py' -v
@@ -62,3 +65,4 @@ jobs:
           php tests/session-agent/schedule.php
           php tests/session-agent/preparation.php
           php tests/n80/scheduled_wake_contract_test.php
+          php tests/n80/scheduled_wake_ticket_test.php
