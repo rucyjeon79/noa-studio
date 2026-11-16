@@ -15,19 +15,25 @@ CSS_CANDIDATES=[
  'noa-my.css','noa-creative.css','noa-music.css','noa-listening.css',
  'noa-gnuboard.css','noa-music-vinyl.css','noa-ecosystem.css',
  'noa-ai-lab.css','noa-support.css','noa-pay.css','noa-checkout.css',
- 'noa-channel-view.css','noa-record-form.css','noa-app/jukebox/upload.css'
+ 'noa-channel-view.css','noa-record-form.css','noa-app/jukebox/upload.css',
+ 'noa-creator.css','noa-settings.css','noa-taxonomy-browse.css','noa-app/engine/system.css'
 ]
 PHP_CANDIDATES=[
  'noa-my.php','noa-support.php','noa-settings.php','noa-ai-lab.php',
  'noa-creator.php','noa-music.php','noa-hub.php','noa-work-status.php',
- 'noa-channel-explorer.php'
+ 'noa-channel-explorer.php','noa-payment-settings.php','noa-kcp-test.php',
+ 'noa-creator-lab.php','noa-notebooklm.php','noa-lab-song.php','noa-library.php'
+]
+JS_CANDIDATES=[
+ 'noa-ui.js','noa-account.js','noa-my.js','noa-kcp-test.js',
+ 'noa-ai-lab.js','noa-creator.js','noa-lab-chat.js','noa-browse-edit.js'
 ]
 NAME_PATTERN=re.compile(r'(noa|studio|pay|kcp|toss|music|my|lab|settle|creator|batch|channel|setting|account|hub|css)',re.I)
 SEL_PATTERN=re.compile(r'(noa|np-|nl-|creator|payment|checkout|kcp|toss|pay-|settings|batch|bulk|tree|my-|channel|action|button|field|account|float)',re.I)
 PROP_PATTERN=re.compile(r'^\s*(display|position|inset|left|right|top|bottom|z-index|(?:min-|max-)?(?:inline-|block-)?(?:width|height|size)|margin(?:-[a-z]+)?|padding(?:-[a-z]+)?|gap|row-gap|column-gap|grid-template-(?:columns|rows)|grid-auto-flow|flex(?:-[a-z]+)?|align-items|justify-content|align-self|white-space|word-break|overflow(?:-[xy])?|overflow-wrap|text-overflow|font-size|line-height|box-sizing|border-radius|transform|translate|scroll-padding(?:-[a-z]+)?|scroll-margin(?:-[a-z]+)?|visibility)\s*:',re.I)
 HINTS=('토스페이먼츠','결제','KCP','Google Play','일괄 처리','YouTube 채널','NOA STUDIO Assistant','NotebookLM','ChatGPT에서','구독','플레이리스트','MY MEMBERSHIP','OpenAI','작업','카테고리','설정')
 
-def sanitized_css_rules(css,limit=110):
+def sanitized_css_rules(css,limit=350):
     # This extracts geometry/property names and excludes color, URLs, content, and JS.
     css=re.sub(r'/\*.*?\*/',' ',css,flags=re.S)
     found=[]
@@ -64,6 +70,19 @@ def select_tags(text,limit=95):
         if len(out)>=limit:break
     return out
 
+def select_js_classes(text,limit=130):
+    matches=[]
+    for i,line in enumerate(text.splitlines(),1):
+        names=[]
+        for pat in (r'\bclassName\s*=\s*[\'"]([^\'"]{1,100})',
+                    r'classList\.(?:add|toggle)\(\s*[\'"]([^\'"]{1,100})',
+                    r'\b(?:getElementById|querySelector)\(\s*[\'"]([^\'"]{1,100})'):
+            names.extend(re.findall(pat,line))
+        names=[name[:100] for name in names if SEL_PATTERN.search(name)]
+        if names:matches.append({'line':i,'selectors':names[:9]})
+        if len(matches)>=limit:break
+    return matches
+
 def main():
     host=os.environ['NOA_SSH_HOST'];user=os.environ['NOA_SSH_USER'];password=os.environ['NOA_SSH_PASSWORD']
     transport=paramiko.Transport((host,2022))
@@ -86,7 +105,7 @@ def main():
                         files.append({'dir':folder,'name':item.filename,'size':item.st_size})
             except OSError:
                 pass
-        report={'read_only':True,'root_verified':True,'css':{},'templates':{},
+        report={'read_only':True,'root_verified':True,'css':{},'templates':{},'client':{},
                 'available_file_names':files[:500]}
         def read(name,maxbytes=260000):
             p=ROOT+'/'+name
@@ -111,12 +130,20 @@ def main():
                   'bytes':len(b),'related_tags':select_tags(b.decode('utf-8'))}
             except (OSError,ValueError,UnicodeDecodeError):
                 report['templates'][name]={'available':False}
+        for name in JS_CANDIDATES:
+            try:
+                b=read(name)
+                report['client'][name]={'sha256':hashlib.sha256(b).hexdigest(),
+                  'bytes':len(b),'selectors':select_js_classes(b.decode('utf-8'))}
+            except (OSError,ValueError,UnicodeDecodeError):
+                report['client'][name]={'available':False}
         OUT.mkdir(parents=True,exist_ok=True)
         (OUT/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
         print('N80_READONLY_INVENTORY '+json.dumps({
-            'files_scanned':len(report['css'])+len(report['templates']),
+            'files_scanned':len(report['css'])+len(report['templates'])+len(report['client']),
             'css_readable':sum(bool(x.get('sha256')) for x in report['css'].values()),
             'templates_readable':sum(bool(x.get('sha256')) for x in report['templates'].values()),
+            'js_readable':sum(bool(x.get('sha256')) for x in report['client'].values()),
             'geometries':sum(len(x.get('geometry',[])) for x in report['css'].values()),
             'production_writes':0,'credentials_in_report':False},ensure_ascii=False))
     finally:
