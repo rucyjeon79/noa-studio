@@ -1,81 +1,15 @@
-name: N80 Hub one-time host migration
+name: N80 legacy shared-host bootstrap retired
+# Permanent 2026-11-16 Dothome safety cutover. No branch push may install or start detached Node runners, even after control flag changes.
+# Historical implementation remains in git history and Google Drive backups.
+# This workflow is intentionally inert; do not re-enable host deployment here.
 on:
-  push:
-    branches: [work/n80-hub-bootstrap, work/n80-specialist-acceptance]
-    paths: ['scripts/n80_specialist_host_acceptance.py', 'scripts/n80_hub_bootstrap.py', 'deploy/noa-hub*.php', 'deploy/noa-app/engine/hub*.php', 'bridge/hub*.php', 'runtime/hub/**', 'tests/hub/**', 'config/n80-hub*.json', '.github/workflows/n80-hub-bootstrap.yml']
-permissions: {contents: read}
-concurrency:
-  group: n80-hub-bootstrap
-  cancel-in-progress: false
+  workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  host:
-    if: github.ref != 'refs/heads/work/n80-specialist-acceptance'
+  retired:
+    if: ${{ false }}
     runs-on: ubuntu-24.04
-    environment: production
-    timeout-minutes: 12
-    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
-    services:
-      mysql:
-        image: mysql:8.0
-        env: {MYSQL_ROOT_PASSWORD: hub-test-only, MYSQL_DATABASE: noa_hub_test}
-        ports: ['3306:3306']
-        options: --health-cmd="mysqladmin ping -phub-test-only" --health-interval=5s --health-timeout=5s --health-retries=20
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with: {persist-credentials: false, fetch-depth: 0}
-      - uses: shivammathur/setup-php@v2
-        with: {php-version: '8.2', extensions: 'pdo_mysql,mbstring,gd,curl,dom,fileinfo'}
-      - name: Validate native host control before any installation
-        run: |
-          php tests/hub/core_test.php
-          php tests/hub/covers_mysql_test.php
-          php tests/engine/registry_test.php
-          php tests/engine/runtime_ownership_test.php
-          php tests/subscription/core_test.php
-          php -l bridge/lab-worker.php
-          node --test tests/hub/runner.test.mjs tests/hub/repository.test.mjs
-          python tests/hub/dispatch_test.py
-          for file in deploy/noa-app/engine/hub*.php deploy/noa-hub*.php bridge/hub*.php; do php -l "$file"; done
-          python -m py_compile scripts/n80_hub_bootstrap.py scripts/n80_auto.py
-      - name: Verify administrator UI on mobile and desktop
-        run: |
-          npm install --prefix "$RUNNER_TEMP/hub-ui" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
-          cp tests/hub/ui.mjs "$RUNNER_TEMP/hub-ui/check.mjs"
-          node "$RUNNER_TEMP/hub-ui/check.mjs"
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with: {name: n80-hub-ui, path: hub-proof/, retention-days: 3}
-      - run: python -m pip install paramiko==3.5.1
-      - uses: actions/cache/restore@v4
-        with:
-          path: cover-proof/retry.json
-          key: suno-card-retry-v1-${{ github.run_id }}
-          restore-keys: suno-card-retry-v1-
-      - name: Install and verify the N80-owned source and execution module
-        env:
-          N80_HUB_INSTALL: '1'
-          N80_HUB_CUTOVER: '1'
-          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
-        run: python scripts/n80_hub_bootstrap.py
-
-  specialist_acceptance:
-    if: github.ref == 'refs/heads/work/n80-specialist-acceptance'
-    runs-on: ubuntu-24.04
-    environment: production
-    timeout-minutes: 5
-    concurrency: {group: noa-production-sftp, cancel-in-progress: false}
-    steps:
-      - uses: actions/checkout@v4
-        with: {persist-credentials: false}
-      - run: python -m pip install 'paramiko>=3,<5'
-      - name: Verify the direct release and resume only its existing host runner
-        env:
-          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
-        run: python scripts/n80_specialist_host_acceptance.py
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with: {name: n80-direct-specialist-acceptance, path: specialist-proof/, retention-days: 14}
+      - run: echo "Legacy host deployment disabled after Dothome resource suspension"
