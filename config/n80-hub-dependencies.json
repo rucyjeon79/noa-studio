@@ -72,7 +72,7 @@
     },
     {
       "file": "n80-hub-bootstrap.yml",
-      "sha256": "11e54dbb1792f8047cd9f14040bc610ccc31536b275711db8ddd214bf7772b2b",
+      "sha256": "081ab372634a309531ccfe71be7b26cd9f3a340ecb9f70bda86a74cc8762e50e",
       "scheduled": false,
       "manual": false,
       "operations": [],
@@ -1036,7 +1036,7 @@
     },
     {
       "file": "noa-gpt-action.yml",
-      "sha256": "713282cab18d290c3579f564b8786d5c38f1000684f08f5bb05b66b681f31063",
+      "sha256": "850b76364360dc002b80d75b97128db4472d67d00b47882ffcb6f4750d0ae16e",
       "scheduled": false,
       "manual": true,
       "operations": [],
@@ -1242,7 +1242,7 @@
     },
     {
       "file": "noa-lab-entry.yml",
-      "sha256": "586009fdd4c245e85d2b76142eb4540681eb57e8112961af4d6001a8db639f33",
+      "sha256": "cd99fb9076a4f44018f6461941a9ed24be8d1593023874430a10927cfe6dce1a",
       "scheduled": false,
       "manual": true,
       "operations": [],

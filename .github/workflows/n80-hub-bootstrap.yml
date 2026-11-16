@@ -28,6 +28,9 @@ jobs:
       - name: Validate native host control before any installation
         run: |
           php tests/hub/core_test.php
+          python tests/hub/chatgpt_test.py
+          node tests/hub/connector.mjs
+          php -l deploy/noa-gpt.php
           php tests/hub/covers_mysql_test.php
           php tests/engine/registry_test.php
           php tests/engine/runtime_ownership_test.php
@@ -54,6 +57,8 @@ jobs:
       - name: Install and verify the N80-owned source and execution module
         env:
           N80_HUB_INSTALL: '1'
+          N80_HUB_DIAGNOSE: '1'
+          N80_HUB_REPAIR_TRAVERSE: '1'
           N80_HUB_CUTOVER: '1'
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}

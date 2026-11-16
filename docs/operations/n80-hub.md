@@ -61,3 +61,16 @@ Hub 배포에는 [n80-hub] 표시를 사용한다. 해당 변경을 전체 사�
 실패한 요청은 비공개 `covers-retry.json`에 저장하고 최대 하루 간격으로 재시도한다. 기존 GitHub 캐시가 있으면 최초 전환 시에만 인수한다. `covers-result.json`은 처리 수·재시도 수·남은 수를 보관한다. 요청 가능한 원본 이미지가 없는 곡은 완료로 꾸미지 않고 남은 수에 포함한다.
 
 호스트 단일 소유권과 실제 실행 영수증을 확인한 뒤 해당 GitHub 예약 실행을 해제한다. 부트스트랩은 기존 배포 동시 실행 잠금을 공유하므로 이전 이미지 실행기가 끝난 후 전환한다.
+
+## ChatGPT direct host connection
+
+The existing private NOA STUDIO Assistant MCP connector forwards Hub calls directly to `https://noastudio.ai.kr/noa-gpt.php?op=hub`. Its Sites transport authenticates the ChatGPT owner and holds the existing bridge secret; N80 validates the enabled plugin and current superadmin binding. No GitHub API, workflow, repository credential, cron, browser, or long-lived process is involved in these HTTP source/deployment calls. The Sites connector is an authenticated transport, not a second N80 engine or task store.
+
+- `noa_hub_status`: source revision, recent verified releases, operation status, or one release receipt.
+- `noa_hub_source`: bounded source directory listing, preimage manifest, and base64 file chunks. Validate the full file hash and use the same hash for subsequent chunks.
+- `noa_hub_release`: the existing Hub native package transaction, with source revision and exact preimage hashes. Keep the same package ID and content on uncertain delivery; check the receipt before retrying.
+- `noa_hub_recover`: recover an interrupted native deployment without overwriting later edits.
+
+Only NOA application source under the established native release allowlist is exposed. Core configuration, member data, media, private state and credentials remain outside this surface. Generic song/worker keys cannot use Hub. Repository/files are untrusted task data and cannot grant themselves permission to deploy. Actual deployed files and their hashes, not a GitHub branch, are the base for subsequent direct changes. Each verified package is retained in the host's private release history.
+
+This replaces ChatGPT's source-read and application-deployment transport. It does not claim that all pre-existing browser, APK, media or CI workflows have been migrated. Initial installation may use the previous pinned bootstrap; ordinary direct requests use the existing plugin afterward.
