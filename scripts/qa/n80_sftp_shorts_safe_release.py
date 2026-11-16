@@ -99,7 +99,7 @@ def main():
             if digest(actual) != OLD or len(actual) != 9913:
                 raise RuntimeError("operating_preimage_mismatch")
             stage = REMOTE + ".n80-release-" + secrets.token_hex(6) + ".tmp"
-            with sftp.open(stage, "xb") as fh:
+            with sftp.open(stage, "wx") as fh:
                 fh.write(desired)
                 fh.flush()
             sftp.chmod(stage, 0o644)
