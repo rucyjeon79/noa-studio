@@ -33,3 +33,7 @@ __pycache__/
 /android/build/
 /android/app/build/
 /android/local.properties
+# Keep copied development database state out of deployment source.
+/deploy/noastudio/noa/data/live/pglite/
+/deploy/noastudio/noa/data/live/pglite-broken/
+/tmp-save-probe.mjs

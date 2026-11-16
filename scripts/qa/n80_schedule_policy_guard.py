@@ -8,6 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOWS = ROOT / ".github" / "workflows"
 CONFIG = ROOT / "config" / "n80-approved-schedules.json"
+CLEANUP = ROOT / "config" / "n80-github-cleanup.json"
 CRON = re.compile(r"(?m)^\s*-\s*cron:\s*['\"]?([^'\"\n#]+)")
 WAKE_MODE = "signed_n80_wake_only"
 
@@ -87,6 +88,12 @@ def audit():
             raise ValueError("duplicate_schedule_entry")
         approved[workflow] = cron.strip()
     seen, bad, checked = set(), [], 0
+    # Deleted legacy executors are retired, not missing deployment dependencies.
+    # Reject their restoration so cleanup cannot reopen an old execution path.
+    cleanup = json.loads(CLEANUP.read_text(encoding="utf-8"))
+    for relative in cleanup["retiredWorkflows"]:
+        if (WORKFLOWS / Path(relative).name).exists():
+            bad.append(f"{Path(relative).name}: retired_workflow_restored")
     for path in sorted(WORKFLOWS.glob("*.y*ml")):
         if path.name.startswith("busan-"):
             continue  # Separate project, not governed by NOA policy.
@@ -107,6 +114,8 @@ def audit():
     # a resident Node process. Old code is retained in Git history only.
     for name in ("n80-hub-bootstrap.yml", "n80-engine-facade-production.yml"):
         path = WORKFLOWS / name
+        if not path.exists():
+            continue
         body = path.read_text(encoding="utf-8")
         if ("if: ${{ false }}" not in body or
              "retired" not in body.lower() or
@@ -127,7 +136,10 @@ def audit():
         bad.append("resident_n80_execution_reintroduced")
     # Reject any future commit that brings an old SSH or host-deploy job back.
     for name, job in RETIRED_HOST_JOBS:
-        content = (WORKFLOWS / name).read_text(encoding="utf-8")
+        path = WORKFLOWS / name
+        if not path.exists():
+            continue
+        content = path.read_text(encoding="utf-8")
         required = f"\n  {job}:\n" + "    if: ${{ false }}"
         if required not in content:
             bad.append(f"{name}: unauthorized_host_job_reactivated")
@@ -147,7 +159,10 @@ def audit():
     # A future legacy deployment or GitHub Actions reactivation must fail CI.
     # Require exactly one inert job and no host, media or queue work.
     for name in RETIRED_N80_BUSINESS_WORKFLOWS:
-        content = (WORKFLOWS / name).read_text(encoding="utf-8")
+        path = WORKFLOWS / name
+        if not path.exists():
+            continue
+        content = path.read_text(encoding="utf-8")
         if (not re.search(r"(?m)^on:\n  workflow_dispatch:\n", content)
                 or not re.search(
                     r"(?m)^jobs:\n  retired:\n    if: \$\{\{ false \}\}\n", content)

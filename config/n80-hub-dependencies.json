@@ -13,34 +13,10 @@
       "handoffState": "source_custody_only"
     },
     {
-      "file": "n80-app-integration.yml",
-      "sha256": "990f537d4610ce8348ee8a25cfaade6d70419b6ca42605d034a3d32071987f73",
-      "scheduled": true,
-      "manual": true,
-      "operations": [
-        "engine.audit"
-      ],
-      "modules": [
-        "guard"
-      ],
-      "sourceCustodian": "hub",
-      "handoffState": "operation_owners_assigned"
-    },
-    {
       "file": "n80-completion-report.yml",
       "sha256": "a84295242bb2c3849b3450d4283694d6a259160fe402f4d325eba29014ace6f7",
       "scheduled": false,
       "manual": false,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "n80-engine-facade-production.yml",
-      "sha256": "b0666976eb3bd54dd02716cc30591ff51601bbf3d90a7fb90267810f4ba0ac95",
-      "scheduled": false,
-      "manual": true,
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
@@ -55,44 +31,6 @@
       "modules": [],
       "sourceCustodian": "hub",
       "handoffState": "source_custody_only"
-    },
-    {
-      "file": "n80-guardian-production-audit.yml",
-      "sha256": "9d2a1c2df3f1935916780c51080dbe5567c400a87a793b1d0169c1332c5732ec",
-      "scheduled": true,
-      "manual": true,
-      "operations": [
-        "engine.integrity"
-      ],
-      "modules": [
-        "guard"
-      ],
-      "sourceCustodian": "hub",
-      "handoffState": "operation_owners_assigned"
-    },
-    {
-      "file": "n80-hub-bootstrap.yml",
-      "sha256": "11e54dbb1792f8047cd9f14040bc610ccc31536b275711db8ddd214bf7772b2b",
-      "scheduled": false,
-      "manual": false,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "n80-live-observer.yml",
-      "sha256": "9a98795f04222dfb56e0ff5d193b0cdee498caf6da20e4663eda498fde1fccea",
-      "scheduled": true,
-      "manual": true,
-      "operations": [
-        "engine.observe"
-      ],
-      "modules": [
-        "guard"
-      ],
-      "sourceCustodian": "hub",
-      "handoffState": "operation_owners_assigned"
     },
     {
       "file": "n80-music-diagnostic.yml",
@@ -137,16 +75,6 @@
     {
       "file": "noa-act-reaction-read.yml",
       "sha256": "ae5961fc73fd927e661b40a60aae3b7918eac870a97ad67298e33e9ff2c45882",
-      "scheduled": false,
-      "manual": false,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-activity.yml",
-      "sha256": "3c0f73bb1fd7e6d09b13a65a9120d2e60197878f7d9d6b322867cafdba9a4e9a",
       "scheduled": false,
       "manual": false,
       "operations": [],
@@ -285,26 +213,6 @@
       "handoffState": "source_custody_only"
     },
     {
-      "file": "noa-approved-jukebox.yml",
-      "sha256": "7f029823ba23474b37dcc4d961f853972261d1df20a5c26815401ba9d61d7291",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-approved-three-tier.yml",
-      "sha256": "f275167180aad6cb1f270386e47e7dca90a09402967bb454e03055da03842b9c",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
       "file": "noa-approved-ui-release.yml",
       "sha256": "8a2b723350c44bdc4dfbfe328060433c66ed927a00aa55c7e6584d214a431828",
       "scheduled": false,
@@ -335,26 +243,6 @@
       "handoffState": "source_custody_only"
     },
     {
-      "file": "noa-backup-migration-cleanup.yml",
-      "sha256": "3142a5a4bd5da847f7260d6a25425bbf83e20a32c9017601277a455f80b933f1",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-backup-migration-inspect.yml",
-      "sha256": "49f211667ec2089422443c3a5b2fffa7d528a555efcac38d329d3ff5152d791f",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
       "file": "noa-badge-style.yml",
       "sha256": "dd0d01e47795707809e8bd0baaa8292e0a774a419d856e031fea71e200715745",
       "scheduled": false,
@@ -369,16 +257,6 @@
       "sha256": "46124cf6f10327acbe68688054f7ffc74734b73af1b8edb58b2a2db7118880c1",
       "scheduled": false,
       "manual": false,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-browse-production.yml",
-      "sha256": "f8575050636a3842086ee3bba72504ef5526cd2f1e38a5668c175ed946be06a8",
-      "scheduled": false,
-      "manual": true,
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
@@ -527,16 +405,6 @@
     {
       "file": "noa-continuous-playback.yml",
       "sha256": "6637b2543609feda0363595627cf70ebe9df6074b465b55c4f7304d71ff52ee1",
-      "scheduled": false,
-      "manual": false,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-cover-fill.yml",
-      "sha256": "643f00f56ea078e449b9381b18c6012b4687da814f2f87cc9e196d5e84574d40",
       "scheduled": false,
       "manual": false,
       "operations": [],
@@ -825,26 +693,6 @@
       "handoffState": "source_custody_only"
     },
     {
-      "file": "noa-engine-durable-store-production.yml",
-      "sha256": "7c9acc8ac55b7529f3e871de80cb9474dc96f06b3eb2a20d7e3122e53b415a9b",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-engine-event-contract-production.yml",
-      "sha256": "665f9ede0eaa3cc6ab333a1354fedfa6029ea9d7fd6fbb94d3529cf6888b60f5",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
       "file": "noa-engine-executor-production.yml",
       "sha256": "9792d3a8531d1e7994398e498f0b7570cac276581a4d93fa06b79956b48ef04c",
       "scheduled": false,
@@ -865,16 +713,6 @@
       "handoffState": "source_custody_only"
     },
     {
-      "file": "noa-engine-inbox-production.yml",
-      "sha256": "a8b57a51d9a0266ffa54245a8bbd3e697ef828ca45072434070cfc1cea05aa0e",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
       "file": "noa-engine-integration-audit-production.yml",
       "sha256": "4095e623dea788af6e606553892ff6b43da11e741f00b4c858a763cafd7a6386",
       "scheduled": false,
@@ -885,48 +723,8 @@
       "handoffState": "source_custody_only"
     },
     {
-      "file": "noa-engine-lease-inbox-production.yml",
-      "sha256": "1128bd65eba97bc3b8d873c532aef7ee3073804dbe5c132060fbe8b4c6cb2c8c",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-engine-outbox-production.yml",
-      "sha256": "65c7ab5ba1c124094cd74e1fc6f12a3bea13bd8ad1bb289b026c8e295dbd593d",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
       "file": "noa-engine-registry-production.yml",
       "sha256": "f7919f8892c512b21572f07c57400a5b79e5bb9eed25d2ed0baca8683ada4861",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-engine-router-production.yml",
-      "sha256": "6bc028fb5750b2ef71f12ed59fcc29cd31cc12f0cdd47038a1ce712bc21abda4",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-engine-workflow-production.yml",
-      "sha256": "2afcc72bd876e5249fcc7bc5292adb5068e46e34f24fc7d490566167bf50fddc",
       "scheduled": false,
       "manual": true,
       "operations": [],
@@ -1205,32 +1003,6 @@
       "handoffState": "source_custody_only"
     },
     {
-      "file": "noa-jukebox-upload-css-production.yml",
-      "sha256": "c93063db40a1259f4c362af5ed0f93dfb36993c9944c0b1234d29344616b948f",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-jukebox.yml",
-      "sha256": "9cc0084d247769f77434269d69f1fb56c20b2324a00d2fdf635efb9e28ab5cba",
-      "scheduled": true,
-      "manual": true,
-      "operations": [
-        "jukebox.process",
-        "jukebox.watchdog"
-      ],
-      "modules": [
-        "jukebox",
-        "media"
-      ],
-      "sourceCustodian": "hub",
-      "handoffState": "operation_owners_assigned"
-    },
-    {
       "file": "noa-kcp-test.yml",
       "sha256": "4cc378af7afb7086a0f9c5fe57f34922a125fe562e1a125796ff5966bbf5ed23",
       "scheduled": false,
@@ -1341,20 +1113,6 @@
       "handoffState": "source_custody_only"
     },
     {
-      "file": "noa-marpple-sync.yml",
-      "sha256": "c3d15cce1fce09e693b276111da7d070f4a549befcebb9d49d4cac8df02def08",
-      "scheduled": true,
-      "manual": true,
-      "operations": [
-        "commerce.catalog_sync"
-      ],
-      "modules": [
-        "pay"
-      ],
-      "sourceCustodian": "hub",
-      "handoffState": "operation_owners_assigned"
-    },
-    {
       "file": "noa-media-colocate.yml",
       "sha256": "f4ce53c1d0bcf70d406035364efd9f1a7035ad1b4fff6f4b1b2b6d24a46f74c1",
       "scheduled": false,
@@ -1375,20 +1133,6 @@
       "manual": false,
       "operations": [
         "jukebox.media_paths"
-      ],
-      "modules": [
-        "media"
-      ],
-      "sourceCustodian": "hub",
-      "handoffState": "operation_owners_assigned"
-    },
-    {
-      "file": "noa-media-retention.yml",
-      "sha256": "2ca1885b6573988a389478d2af971f1f5d11e9844c93bb0a28a28156ffea39aa",
-      "scheduled": false,
-      "manual": false,
-      "operations": [
-        "jukebox.media_retention"
       ],
       "modules": [
         "media"
@@ -1437,20 +1181,6 @@
       "handoffState": "source_custody_only"
     },
     {
-      "file": "noa-membership-maintenance.yml",
-      "sha256": "0510a7627a4b9838f5ed7ea2d3ad97be966923d4700354a62087112ca53628bb",
-      "scheduled": false,
-      "manual": true,
-      "operations": [
-        "members.maintain"
-      ],
-      "modules": [
-        "sign"
-      ],
-      "sourceCustodian": "hub",
-      "handoffState": "operation_owners_assigned"
-    },
-    {
       "file": "noa-membership-policy.yml",
       "sha256": "845ec604b69216acfc28c5b3c63b13d1ece764b7af55abc84868919aac837193",
       "scheduled": false,
@@ -1485,16 +1215,6 @@
       "sha256": "2272c978c05afda4c5f88bd00173483ca25847c011b6d65fd478849037c6a174",
       "scheduled": false,
       "manual": false,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-music-player-activate.yml",
-      "sha256": "bec01991444be89343cbd2ad1d9890649ca1f887b6f9b3d827450d42966dca38",
-      "scheduled": false,
-      "manual": true,
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
@@ -1611,16 +1331,6 @@
       "handoffState": "source_custody_only"
     },
     {
-      "file": "noa-notifications.yml",
-      "sha256": "29c34aa5819fb3543c051b29e9562e8f6bc66feb439f62fc81173fa23298626c",
-      "scheduled": false,
-      "manual": false,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
       "file": "noa-oauth.yml",
       "sha256": "a84c4cc2da0d1f9727dfa00446b89e147be8001dc37eb368183089c37b410d62",
       "scheduled": false,
@@ -1633,16 +1343,6 @@
     {
       "file": "noa-p0-audit.yml",
       "sha256": "7354eb2945bf6a1eab147cfefee47f170ac524c3b314c1415293dc3e977a25d4",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-p0-cache-release.yml",
-      "sha256": "48561a0c71bddce009ac6d0cfcb1620da07f816b7f47cfec578e7fc3a9f90bb3",
       "scheduled": false,
       "manual": true,
       "operations": [],
@@ -1741,20 +1441,6 @@
       "handoffState": "source_custody_only"
     },
     {
-      "file": "noa-personal-listening.yml",
-      "sha256": "674cef0d284f17d140ea390517c01b012ba729fbae880606f2ca9ec13d3ca9e1",
-      "scheduled": false,
-      "manual": true,
-      "operations": [
-        "catalog.index"
-      ],
-      "modules": [
-        "catalog"
-      ],
-      "sourceCustodian": "hub",
-      "handoffState": "operation_owners_assigned"
-    },
-    {
       "file": "noa-plain-language.yml",
       "sha256": "1483c82a7442f74c86f9fdb3945da51c36cff2bacd1a9e169265e30808cf13c1",
       "scheduled": false,
@@ -1795,16 +1481,6 @@
       "handoffState": "source_custody_only"
     },
     {
-      "file": "noa-player-css-safe-production.yml",
-      "sha256": "4d20c24918df27c8dcdd0f3387901a7ca38ab8db64ee9ab54e00c626a8b69a6e",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
       "file": "noa-playlist-pr-check.yml",
       "sha256": "be0f3aa7b17bed7e4aa1c2c400e8d6c81db11c970743e6690cc7d2ce94c28c01",
       "scheduled": false,
@@ -1817,16 +1493,6 @@
     {
       "file": "noa-playlist-remote-audit.yml",
       "sha256": "19197ee4ecf3c290aef1690c3f12297ca49573b6e147df38fc3975758ec01bc4",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-playlist-safe-production.yml",
-      "sha256": "c670beef41f9a47d8941e85c8fe43836118e1e2478b3d8efd9b488ac8d36415e",
       "scheduled": false,
       "manual": true,
       "operations": [],
@@ -1865,30 +1531,6 @@
       "handoffState": "source_custody_only"
     },
     {
-      "file": "noa-popularity-hourly.yml",
-      "sha256": "babee7cf220345ab6817a05c1ad394c19fc653047eb529bd738ee9e85bafc593",
-      "scheduled": false,
-      "manual": true,
-      "operations": [
-        "popularity.calculate"
-      ],
-      "modules": [
-        "personalization"
-      ],
-      "sourceCustodian": "hub",
-      "handoffState": "operation_owners_assigned"
-    },
-    {
-      "file": "noa-popularity-release.yml",
-      "sha256": "4fea17306cc6b7024d4cc45e4347e2df6b4e9aedc8a9ccc23368aa9f6b6ef8d3",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
       "file": "noa-premium.yml",
       "sha256": "62805ce0cf610701ba9e7d874b10c2a92695aac384ca02c59bcb781c4abe241e",
       "scheduled": false,
@@ -1907,20 +1549,6 @@
       "modules": [],
       "sourceCustodian": "hub",
       "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-push-dispatch.yml",
-      "sha256": "39c61149c405f446cd8be15599b1ce965ddb84e53ff7b31f9c601ea2fc92f207",
-      "scheduled": false,
-      "manual": true,
-      "operations": [
-        "notifications.dispatch"
-      ],
-      "modules": [
-        "notify"
-      ],
-      "sourceCustodian": "hub",
-      "handoffState": "operation_owners_assigned"
     },
     {
       "file": "noa-quality-audit.yml",
@@ -1967,26 +1595,6 @@
       "sha256": "2c523079c4abd0aeab54d9380fba5e6e349474fe8aab5103abe0de5f9e257655",
       "scheduled": false,
       "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-recommendation-follow.yml",
-      "sha256": "ff2fe4ecf649be6136f947fa674e42a82354c4e9cbc8a8475b394117dc53ccb4",
-      "scheduled": false,
-      "manual": false,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-record-library.yml",
-      "sha256": "fb376be800d187eb18c72b0b9fe4166dfc6e212ca911c7e8ecf5a3a9659bcb82",
-      "scheduled": false,
-      "manual": false,
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
@@ -2083,28 +1691,8 @@
       "handoffState": "source_custody_only"
     },
     {
-      "file": "noa-scroll-release.yml",
-      "sha256": "433c7998c2073a0af544950e56b7a4243c3096d1f56795f3686b54078d7dc81e",
-      "scheduled": false,
-      "manual": false,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
       "file": "noa-secure-transport.yml",
       "sha256": "36f16166e7f29edd89180a93c55718cd5bc89c59a81e5552a05578316b914c32",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-semantic-theme-production.yml",
-      "sha256": "2178b8329777a112732b897c7f1aceccd858f735869d802d0e59dcc0ab1c6ca0",
       "scheduled": false,
       "manual": true,
       "operations": [],
@@ -2233,20 +1821,6 @@
       "handoffState": "source_custody_only"
     },
     {
-      "file": "noa-suno-card-auto.yml",
-      "sha256": "492e7d11fd44ecc9a6463c0986c3887ca9d5bbe4eba65ffc15b3ecc90db54aab",
-      "scheduled": false,
-      "manual": true,
-      "operations": [
-        "covers.refresh"
-      ],
-      "modules": [
-        "media"
-      ],
-      "sourceCustodian": "hub",
-      "handoffState": "operation_owners_assigned"
-    },
-    {
       "file": "noa-suno-editor.yml",
       "sha256": "50d1712d0df81987892c80af635b05a005421ea36cd41084fbe7fb5f33964b99",
       "scheduled": false,
@@ -2307,16 +1881,6 @@
       "handoffState": "source_custody_only"
     },
     {
-      "file": "noa-taxonomy-release.yml",
-      "sha256": "c3e0e748adab4ecf4a0762e9cde15fe8b3e52a93bc6289adeccc141a8a36fee4",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
       "file": "noa-theme-audit.yml",
       "sha256": "d4acef59939db683213ef26e5110c8c1af74032184b7229fd4b52d5e85ec333e",
       "scheduled": false,
@@ -2347,16 +1911,6 @@
       "handoffState": "source_custody_only"
     },
     {
-      "file": "noa-ui-safe-production.yml",
-      "sha256": "ba085547f825cfa3ba6dfbf5c687fdc00a92d9b75e2c24a4656b5f1169a49038",
-      "scheduled": false,
-      "manual": true,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
       "file": "noa-uiux-audit.yml",
       "sha256": "49720a3e95b74b0c3430deb90f829c57051a98a73bf99de3eb20e10909f12edf",
       "scheduled": false,
@@ -2381,16 +1935,6 @@
       "sha256": "da0c65d5f33d5dc33c45ad0ede01b3aa279c593e40cc836a219f634bd6585349",
       "scheduled": false,
       "manual": false,
-      "operations": [],
-      "modules": [],
-      "sourceCustodian": "hub",
-      "handoffState": "source_custody_only"
-    },
-    {
-      "file": "noa-upload-commit-diagnosis.yml",
-      "sha256": "5ab23d5b075bd6fffb4efccaa077e416cda67c18a1b0c6c6cec016c71bc8d765",
-      "scheduled": false,
-      "manual": true,
       "operations": [],
       "modules": [],
       "sourceCustodian": "hub",
