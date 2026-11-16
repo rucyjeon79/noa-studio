@@ -195,6 +195,11 @@ def transfer(dispatch, claim, drive):
             if digest(path) != asset['sha256']:
                 raise ValueError('storage_input_checksum_mismatch')
             stage = 'storage_drive'
+            # A lease claimed before emergency stop is not approval to create
+            # a new external Drive upload after the stop latch has changed.
+            owner_check = getattr(dispatch, 'require_owner', None)
+            if callable(owner_check):
+                owner_check()
             receipt = drive.store(claim, path)
             stage = 'storage_receipt'
             result = retry(call, 'storage_complete', receipt=receipt)

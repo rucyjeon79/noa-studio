@@ -83,6 +83,11 @@ def assemble_claim(dispatch, claim, renderer=render):
                 download(call, 'video', row['n'], row['sha256'], target)
                 row['path'] = str(target)
             stage = 'assembly_render'
+            # The owner may stop N80 while large source clips are being read.
+            # Verify fresh permission before invoking the expensive renderer.
+            owner_check = getattr(dispatch, 'require_owner', None)
+            if callable(owner_check):
+                owner_check()
             manifest['n80Execution'] = {key: auth[key] for key in ('id', 'operationId')}
             output, receipt = renderer(manifest, folder)
             if (output != folder / 'final.mp4' or output.is_symlink()

@@ -3,6 +3,7 @@ import json, sys, os
 from pathlib import Path
 from noa_n80_ai_worker import worker_key, signed_tick
 from n80_host_pause_gate import remote_gate
+from n80_shorts_owner_fence import make_guarded_dispatch
 
 def prepare_subtitles(dispatch):
     claim=dispatch('claim_subtitles')
@@ -72,8 +73,11 @@ def main():
         },ensure_ascii=False),flush=True)
         return
     key=worker_key()
-    def dispatch(command='', **fields):
+    def send_tick(command='', **fields):
         return signed_tick(key,'n80_daily_shorts_tick',json.dumps({'command':command,**fields},ensure_ascii=False).encode())
+    # Recheck the owner stop latch DURING a long job, not only at startup.
+    # A bounded interval avoids an SFTP reconnect on every media chunk.
+    dispatch=make_guarded_dispatch(send_tick,lambda:remote_gate(os.environ))
     result=dispatch()
     c=result['campaign']
     print('N80_DAILY_SHORTS',json.dumps({k:c.get(k) for k in ('state','lastTickAt','nextPreparationAt','nextPublicationAt','productionReady','conversationDependent','readiness')}),flush=True)
