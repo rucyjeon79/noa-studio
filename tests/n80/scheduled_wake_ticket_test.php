@@ -52,7 +52,8 @@ $schedule=[
     'prepareLocalTime'=>'08:00',
     'publishLocalTime'=>'12:00',
 ];
-$control=['stop'=>true,'paused'=>true,'activeOperations'=>['ai.daily_shorts_clock']];
+// The retired scheduler has no active operations; new one-shot control is separate.
+$control=['stop'=>true,'paused'=>true,'activeOperations'=>[]];
 $wakeControl=[
     'version'=>1,'enabled'=>true,'stop'=>false,'paused'=>false,
     'hostingApproved'=>true,'boundedExecutorVerified'=>true,
