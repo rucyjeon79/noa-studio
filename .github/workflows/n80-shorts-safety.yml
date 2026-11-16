@@ -1,6 +1,16 @@
 name: N80 Shorts isolated safety gates
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'bridge/session-shorts*.php'
+      - 'lab/daily_shorts.py'
+      - 'tests/lab/daily_shorts_test.py'
+      - 'tests/session-agent/schedule.php'
+      - 'tests/session-agent/preparation.php'
+      - 'tests/session-agent/preparation_test.py'
+      - '.github/workflows/n80-shorts-safety.yml'
   pull_request:
     paths:
       - 'bridge/session-shorts*.php'
