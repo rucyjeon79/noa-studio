@@ -47,8 +47,8 @@ function n80_scheduled_wake_contract(array $body, array $schedule, array $hostPo
         return $reject('wake_activation_not_approved');
     // A scheduled one-shot wake has its own control plane. The retired resident
     // runner MUST stay paused and stopped, including during signal admission.
-    if (($control['paused']??null)!==true || ($control['stop']??null)!==true
-        || !in_array('ai.daily_shorts_clock',$control['activeOperations']??[],true))
+    // The new one-shot controller is independent of retired legacy activeOperations.
+    if (($control['paused']??null)!==true || ($control['stop']??null)!==true)
         return $reject('wake_legacy_runner_not_suspended');
     // Separate N80 one-shot emergency stop and owner/hosting approval.
     // Missing private control is DENIED; the public endpoint cannot set it.
@@ -106,7 +106,6 @@ function n80_scheduled_wake_admit(string $root, array $admission, string $nonce,
         $liveWake=n80_hub_read($root,'scheduled-wake-control.json');
         $livePolicy=n80_host_load_policy();
         if (($liveControl['stop']??null)!==true || ($liveControl['paused']??null)!==true
-            || !in_array('ai.daily_shorts_clock',$liveControl['activeOperations']??[],true)
             || ($liveWake['version']??null)!==1
             || ($liveWake['enabled']??false)!==true
             || ($liveWake['paused']??true)!==false
