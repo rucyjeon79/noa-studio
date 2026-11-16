@@ -55,7 +55,7 @@ def audit():
         path = WORKFLOWS / name
         body = path.read_text(encoding="utf-8")
         if ("if: ${{ false }}" not in body or
-             "hub" not in body.lower() or
+             "retired" not in body.lower() or
              any(word in body for word in ("NOA_SSH_HOST", "N80_HUB_INSTALL",
                                            "scripts/n80_hub_bootstrap.py",
                                            "scripts/n80_single_session_deploy.py"))):
