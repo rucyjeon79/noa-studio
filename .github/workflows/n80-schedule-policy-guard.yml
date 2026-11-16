@@ -5,11 +5,13 @@ on:
     paths:
       - '.github/workflows/**'
       - 'config/n80-approved-schedules.json'
+      - 'config/n80-github-cleanup.json'
       - 'scripts/qa/n80_schedule_policy_guard.py'
   pull_request:
     paths:
       - '.github/workflows/**'
       - 'config/n80-approved-schedules.json'
+      - 'config/n80-github-cleanup.json'
       - 'scripts/qa/n80_schedule_policy_guard.py'
   workflow_dispatch:
 permissions:
