@@ -15,7 +15,8 @@ $schedule=[
 ];
 $body=['action'=>'scheduled_wake','operation'=>'ai.daily_shorts_clock',
        'phase'=>'prepare','slot'=>'2026-11-18'];
-$control=['stop'=>true,'paused'=>true,'activeOperations'=>['ai.daily_shorts_clock']];
+// The retired scheduler has no active operations; new one-shot control is separate.
+$control=['stop'=>true,'paused'=>true,'activeOperations'=>[]];
 $oneShot=['version'=>1,'enabled'=>true,'paused'=>false,'stop'=>false,
           'hostingApproved'=>true,'boundedExecutorVerified'=>true];
 $blocked=n80_host_load_policy();
