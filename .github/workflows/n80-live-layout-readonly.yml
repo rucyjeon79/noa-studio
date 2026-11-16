@@ -6,9 +6,7 @@ on:
       - '.github/workflows/n80-live-layout-readonly.yml'
       - 'tests/layout/n80-live-layout-audit.mjs'
   workflow_dispatch:
-  schedule:
-    # 08:15 KST every day. Read-only and separate from N80 Hub deployments.
-    - cron: '15 23 * * *'
+  # Recurring visual audits require an approved schedule; manual/commit checks remain.
 permissions:
   contents: read
 concurrency:
