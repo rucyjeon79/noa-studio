@@ -1,0 +1,53 @@
+name: N80 scoped UI repair candidate (no deployment)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/n80-ui-repair-candidate.yml'
+      - 'scripts/qa/n80-ui-repair-candidate.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: n80-ui-repair-candidate
+  cancel-in-progress: true
+jobs:
+  candidate:
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Prepare read-only SSH and scoped CSS validation
+        run: python -m pip install 'paramiko>=3,<5' 'tinycss2>=1.3,<2'
+      - name: Generate source-hash guarded candidate from live CSS only
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+        run: python scripts/qa/n80-ui-repair-candidate.py
+      - name: Validate every candidate CSS with an independent parser
+        run: |
+          python - <<'PY'
+          import base64,json
+          import tinycss2
+          from pathlib import Path
+          package=json.loads(Path('n80-ui-repair-candidate/hub-package.json').read_text())
+          assert package['version']==1 and len(package['files'])==2
+          for f in package['files']:
+              css=base64.b64decode(f['data']).decode('utf-8')
+              errors=[e for e in tinycss2.parse_stylesheet(css,skip_whitespace=True,skip_comments=True) if e.type=='error']
+              if errors:
+                  raise RuntimeError(f["path"]+": css parse error "+str(errors[:2]))
+              assert '2026-11-16' in css
+              assert not f['path'].endswith('.php')
+              print('PASS',f['path'],f['bytes'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: n80-scoped-ui-candidate-${{ github.run_id }}
+          path: n80-ui-repair-candidate/
+          retention-days: 3
