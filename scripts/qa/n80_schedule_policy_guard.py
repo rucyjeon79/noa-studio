@@ -123,16 +123,20 @@ def audit():
                                            "scripts/n80_hub_bootstrap.py",
                                            "scripts/n80_single_session_deploy.py"))):
             bad.append(f"{name}: legacy_host_deployment_not_retired")
-    launch = (ROOT / "runtime/hub/launch.mjs").read_text(encoding="utf-8")
-    runner = (ROOT / "runtime/hub/runner.mjs").read_text(encoding="utf-8")
-    bootstrap = (ROOT / "scripts/n80_hub_bootstrap.py").read_text(encoding="utf-8")
+    # A retired resident executable must be PHYSICALLY ABSENT, not just disabled.
+    # Git history/verified backups preserve the source; active main cannot hold it.
+    for relative in (
+        "runtime/hub/launch.mjs",
+        "runtime/hub/runner.mjs",
+        "runtime/hub/stop.mjs",
+        "runtime/hub/probe.mjs",
+        "scripts/n80_hub_bootstrap.py",
+        "tests/hub/runner.test.mjs",
+    ):
+        if (ROOT / relative).exists():
+            bad.append(f"{relative}: retired_resident_executable_still_present")
     hub = (ROOT / "deploy/noa-app/engine/hub.php").read_text(encoding="utf-8")
-    if ("hub_resident_runner_retired" not in launch or
-            "hub_resident_runner_retired" not in runner or
-            "hub_resident_runner_retired" not in bootstrap or
-            "hub_resident_runner_retired" not in hub or
-            "spawn(" in launch or "proc_open(" in hub or
-            "while(" in runner or "transport.open_session" in bootstrap):
+    if "hub_resident_runner_retired" not in hub or "proc_open(" in hub:
         bad.append("resident_n80_execution_reintroduced")
     # Reject any future commit that brings an old SSH or host-deploy job back.
     for name, job in RETIRED_HOST_JOBS:
