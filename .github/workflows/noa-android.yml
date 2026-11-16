@@ -58,6 +58,19 @@ jobs:
         run: python3 -m py_compile scripts/noa_android_sign_candidate.py scripts/noa_apk_signing_check.py scripts/noa_apk_deploy.py
       - name: Set permanent release version
         run: echo "NOA_RELEASE_VERSION_CODE=$(git show -s --format=%ct "$GITHUB_SHA")" >> "$GITHUB_ENV"
+      - name: Check Play API 36 target and versionCode limit
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+          import re
+          config = Path('android/app/build.gradle').read_text()
+          assert re.search(r'\bcompileSdk\s+36\b', config), 'compileSdk must be 36'
+          assert re.search(r'\btargetSdk\s+36\b', config), 'targetSdk must be 36'
+          version = int(os.environ['NOA_RELEASE_VERSION_CODE'])
+          assert 0 < version < 2100000000, 'Play versionCode out of range'
+          print('Play build candidate: API 36, versionCode in range. No Play publication attempted.')
+          PY
       - name: Compile installable APK and lint
         working-directory: android
         env:
@@ -108,7 +121,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           # Use modern ANGLE software rendering; legacy GLES SwiftShader segfaulted on the live homepage.
-          api-level: 35
+          api-level: 36
           target: google_apis
           arch: x86_64
           profile: pixel_2

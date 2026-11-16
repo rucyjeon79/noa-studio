@@ -17,3 +17,14 @@ test('APK contains no alternate web design or playlist screen',()=>{
  assert(activity.includes('browser.loadUrl(BASE+"/")'));
  assert(!/loadDataWithBaseURL|file:\/\/\/android_asset|new PlaylistPanel/.test(activity));
 });
+
+test('Google Play Billing 9.1 capability is linked but account credits remain server owned',()=>{
+ const gradle=read('android/app/build.gradle');
+ const activity=read('android/app/src/main/java/kr/ai/noastudio/MainActivity.java');
+ assert.ok(gradle.includes("com.android.billingclient:billing:9.1.0"));
+ assert.ok(activity.includes('BillingClient.newBuilder(this)'));
+ assert.ok(activity.includes('enablePendingPurchases(PendingPurchasesParams'));
+ assert.ok(activity.includes('enableAutoServiceReconnection()'));
+ assert.ok(activity.includes('playBillingClient.endConnection()'));
+ assert.doesNotMatch(activity,/\b(?:launchBillingFlow|acknowledgePurchase|consumeAsync)\s*\(/);
+});

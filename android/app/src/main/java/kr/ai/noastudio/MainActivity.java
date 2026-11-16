@@ -11,6 +11,10 @@ import android.widget.Toast;
 import androidx.webkit.WebViewCompat;
 import androidx.webkit.WebViewFeature;
 import androidx.webkit.WebSettingsCompat;
+import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.BillingClientStateListener;
+import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.PendingPurchasesParams;
 import androidx.media3.common.*;
 import androidx.media3.session.*;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -33,6 +37,7 @@ public class MainActivity extends Activity {
  private ListenableFuture<MediaController> controllerFuture;
  private PlaybackStateStore playbackStore;
  private AppUpdateChecker appUpdates;
+ private BillingClient playBillingClient;
  private ValueCallback<Uri[]> fileSelection;
  private final Handler handler=new Handler(Looper.getMainLooper());
  private String sessionCookie,bridge="";
@@ -98,6 +103,7 @@ public class MainActivity extends Activity {
    try{((DownloadManager)getSystemService(DOWNLOAD_SERVICE)).enqueue(request);notice("다운로드를 시작했습니다.");}catch(RuntimeException e){notice("다운로드를 시작하지 못했습니다.");}
   });
   setContentView(browser);browser.loadUrl(BASE+"/");
+   connectPlayBillingForReadiness();
   controllerFuture=new MediaController.Builder(this,new SessionToken(this,new ComponentName(this,PlaybackService.class))).buildAsync();
   controllerFuture.addListener(()->{try{controller=controllerFuture.get();controller.addListener(new Player.Listener(){@Override public void onEvents(Player p,Player.Events e){publishState();}});drain();publishState();}catch(Exception e){notice("음악 재생기를 연결하지 못했습니다.");}},this::runOnUiThread);
   handler.post(tick);
@@ -218,5 +224,25 @@ public class MainActivity extends Activity {
  @Override public void onBackPressed(){if(browser.canGoBack())browser.goBack();else moveTaskToBack(true);}
  @Override protected void onPause(){if(browser!=null)browser.onPause();CookieManager.getInstance().flush();super.onPause();}
  @Override protected void onResume(){super.onResume();if(browser!=null){browser.onResume();syncSession();publishState();}if(appUpdates!=null)handler.postDelayed(()->{if(!isFinishing()&&!isDestroyed())appUpdates.check(false);},1500);}
- @Override protected void onDestroy(){handler.removeCallbacksAndMessages(null);if(appUpdates!=null)appUpdates.close();if(fileSelection!=null)fileSelection.onReceiveValue(null);if(browser!=null)browser.destroy();if(controllerFuture!=null)MediaController.releaseFuture(controllerFuture);super.onDestroy();}
+ // The existing N80 Pay specialist remains the only owner of Play entitlements.
+ // Never enable a purchase or credit from local SDK state alone. Server-side
+ // Play Developer API verification, signed-in account binding and refunds come first.
+ private void connectPlayBillingForReadiness(){
+  playBillingClient=BillingClient.newBuilder(this)
+   .setListener((result,purchases)->{
+    // No acknowledgement, consumption, credit or token forwarding from this probe.
+   })
+   .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
+   .enableAutoServiceReconnection()
+   .build();
+  playBillingClient.startConnection(new BillingClientStateListener(){
+   @Override public void onBillingSetupFinished(BillingResult result){
+    // Play service availability is NOT purchase authorization.
+   }
+   @Override public void onBillingServiceDisconnected(){
+    // Play Store can be missing on emulator; the original PWA remains functional.
+   }
+  });
+ }
+ @Override protected void onDestroy(){handler.removeCallbacksAndMessages(null);if(appUpdates!=null)appUpdates.close();if(playBillingClient!=null)playBillingClient.endConnection();if(fileSelection!=null)fileSelection.onReceiveValue(null);if(browser!=null)browser.destroy();if(controllerFuture!=null)MediaController.releaseFuture(controllerFuture);super.onDestroy();}
 }
