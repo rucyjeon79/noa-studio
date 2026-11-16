@@ -54,7 +54,7 @@ def audit():
     for name in ("n80-hub-bootstrap.yml", "n80-engine-facade-production.yml"):
         path = WORKFLOWS / name
         body = path.read_text(encoding="utf-8")
-        if (("if: ${{ false }}" not in body or
+        if ("if: ${{ false }}" not in body or
              "hub" not in body.lower() or
              any(word in body for word in ("NOA_SSH_HOST", "N80_HUB_INSTALL",
                                            "scripts/n80_hub_bootstrap.py",
