@@ -23,6 +23,8 @@ on:
       - 'deploy/noa-app/engine/hub-retirement-status.php'
       - 'deploy/noa-app/engine/system-status.php'
       - 'tests/n80/wake_preflight_test.php'
+      - 'deploy/noa-hub.php'
+      - 'tests/n80/test_wake_admin_dashboard.py'
       - 'deploy/noa-app/engine/host-load-policy.php'
       - '.github/workflows/n80-shorts-safety.yml'
   pull_request:
@@ -46,6 +48,8 @@ on:
       - 'deploy/noa-app/engine/hub-retirement-status.php'
       - 'deploy/noa-app/engine/system-status.php'
       - 'tests/n80/wake_preflight_test.php'
+      - 'deploy/noa-hub.php'
+      - 'tests/n80/test_wake_admin_dashboard.py'
       - 'deploy/noa-app/engine/host-load-policy.php'
       - '.github/workflows/n80-shorts-safety.yml'
   workflow_dispatch:
@@ -78,6 +82,7 @@ jobs:
           php -l deploy/noa-app/engine/wake-preflight.php
           php -l deploy/noa-app/engine/hub-retirement-status.php
           php -l deploy/noa-app/engine/system-status.php
+          php -l deploy/noa-hub.php
           php -l tests/n80/wake_preflight_test.php
           php -l deploy/noa-app/engine/host-load-policy.php
           php -l tests/n80/scheduled_wake_contract_test.php
@@ -94,5 +99,6 @@ jobs:
           php tests/n80/scheduled_wake_ticket_test.php
           php tests/n80/signed_wake_hmac_test.php
           php tests/n80/wake_preflight_test.php
+          python3 -m unittest discover -s tests/n80 -p 'test_wake_admin_dashboard.py' -v
           python3 -m unittest discover -s tests/n80 -p 'test_n80_signed_wake_signal.py' -v
           python3 -m unittest discover -s tests/n80 -p 'test_host_activation_fence.py' -v
