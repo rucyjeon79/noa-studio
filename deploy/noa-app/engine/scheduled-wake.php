@@ -47,7 +47,7 @@ function n80_scheduled_wake_contract(array $body, array $schedule, array $hostPo
         return $reject('wake_activation_not_approved');
     // A scheduled one-shot wake has its own control plane. The retired resident
     // runner MUST stay paused and stopped, including during signal admission.
-    // The new one-shot controller is independent of retired legacy activeOperations.
+    // The new one-shot controller is independent of the retired scheduler list.
     if (($control['paused']??null)!==true || ($control['stop']??null)!==true)
         return $reject('wake_legacy_runner_not_suspended');
     // Separate N80 one-shot emergency stop and owner/hosting approval.
