@@ -8,13 +8,12 @@ on:
     paths: ['.github/workflows/noa-jukebox.yml', 'scripts/noa_jukebox_release.py', 'scripts/noa_jukebox_upload_worker.py', 'scripts/noa_upload_drive.py', 'scripts/noa_jukebox_publish.py', 'scripts/noa_jukebox_worker.py', 'scripts/noa_jukebox_recovery.py', 'tests/jukebox/**', '.github/actions/jukebox-tools/**']
   pull_request:
     paths: ['.github/workflows/noa-jukebox.yml', 'scripts/noa_jukebox*.py', 'tests/jukebox/**', '.github/actions/jukebox-tools/**']
-  schedule:
-    - cron: '*/5 * * * *'
+  # No self-starting cron. Uploads wake this workflow only after a user action.
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
   validate:
-    if: github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -28,7 +27,7 @@ jobs:
           python3 -m unittest discover -s tests/jukebox -p 'test_*.py'
   watchdog:
     needs: validate
-    if: always() && github.event_name != 'pull_request' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || needs.validate.result == 'success')
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: production
@@ -54,7 +53,7 @@ jobs:
           retention-days: 14
   release:
     needs: validate
-    if: always() && github.event_name != 'pull_request' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || needs.validate.result == 'success')
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     environment: production
