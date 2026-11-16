@@ -1,8 +1,6 @@
 name: Inspect Android publication conflict
 on:
-  push:
-    branches: [work/android-publication-recovery-20261029]
-    paths: ['.github/workflows/noa-android-publication-recovery.yml']
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:

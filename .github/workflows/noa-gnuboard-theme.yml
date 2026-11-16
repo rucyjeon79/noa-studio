@@ -1,15 +1,5 @@
 name: NOA GnuBoard Theme Production
 on:
-  push:
-    branches: [main]
-    paths: &paths
-      - 'deploy/noa-gnuboard.css'
-      - 'deploy/noa-design.extend.php'
-      - 'scripts/noa_gnuboard_theme_deploy.py'
-      - 'scripts/qa/noa-gnuboard-theme.mjs'
-      - '.github/workflows/noa-gnuboard-theme.yml'
-  pull_request:
-    paths: *paths
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-gnuboard-theme, cancel-in-progress: false}

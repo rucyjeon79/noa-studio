@@ -2,11 +2,6 @@ name: N80 personal listening
 on:
   workflow_dispatch: {}
   # Scheduled execution moved to the verified N80 Hub host owner.
-  push:
-    branches: [main, codex/n80-personal-listening]
-    paths: ['deploy/noa-app/p0-player.js','tests/room-themes/player.mjs','deploy/noa-listening*','deploy/noa-app/engine/personal-*','bridge/listening*.php','scripts/noa_personal*','scripts/qa/noa-personal-listening.mjs','scripts/qa/noa-mood-queue-audit.cjs','tests/listening/**','.github/workflows/noa-personal-listening.yml']
-  pull_request:
-    paths: ['deploy/noa-app/p0-player.js','tests/room-themes/player.mjs','deploy/noa-listening*','deploy/noa-app/engine/personal-*','bridge/listening*.php','scripts/noa_personal*','scripts/qa/noa-personal-listening.mjs','scripts/qa/noa-mood-queue-audit.cjs','tests/listening/**']
 permissions: {contents: read}
 jobs:
   song-index:

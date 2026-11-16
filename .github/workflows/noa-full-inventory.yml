@@ -1,9 +1,6 @@
 name: NOA full production deployment inventory
 # P0 2026-10-22: compare WORLD recovery, Android web player and latest production bytes.
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-full-inventory.yml', 'scripts/noa_full_inventory.py']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-production-readonly-inventory, cancel-in-progress: false}

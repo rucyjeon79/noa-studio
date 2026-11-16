@@ -1,8 +1,5 @@
 name: NOA administrator confirmation button hotfix
 on:
-  push:
-    branches: [main]
-    paths: ['deploy/noa-app/database/admin-link.js','deploy/noa-database.extend.php','scripts/noa_admin_link_deploy.py','scripts/qa/noa-admin-link.mjs','.github/workflows/noa-admin-link.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

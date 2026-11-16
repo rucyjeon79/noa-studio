@@ -1,10 +1,6 @@
 name: NOA Premium download and in-card mastering
 on:
-  pull_request:
-    paths: &paths ['bridge/music-download-core.php','deploy/noa-premium.js','deploy/noa-music-download.php','tests/premium/**','scripts/noa_premium*','scripts/qa/noa-premium.mjs','.github/workflows/noa-premium.yml']
-  push:
-    branches: [main]
-    paths: *paths
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

@@ -1,10 +1,5 @@
 name: N80 host safe-stop inspection (read-only)
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/n80-host-stop-inspect.yml'
-      - 'scripts/qa/n80-host-stop-inspect.py'
   workflow_dispatch:
 permissions:
   contents: read

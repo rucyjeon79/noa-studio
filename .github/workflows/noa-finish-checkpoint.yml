@@ -1,8 +1,6 @@
 name: NOA Integration Finish Readonly Checkpoint
 on:
-  push:
-    branches: ['codex/integration-finish-20261024']
-    paths: ['scripts/noa_finish_checkpoint.py','.github/workflows/noa-finish-checkpoint.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   checkpoint:

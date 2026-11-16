@@ -1,10 +1,6 @@
 name: NOA live design polish
 on:
-  pull_request:
-    paths: ['deploy/noa-engagement.css', 'tests/youtube/thumbnail-layout.cjs', '.github/workflows/noa-design-live.yml']
-  push:
-    branches: [main]
-    paths: ['deploy/noa-engagement.css', 'tests/youtube/thumbnail-layout.cjs', 'scripts/noa_design_live_release.py', 'tests/engagement/counts.test.mjs', '.github/workflows/noa-design-live.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   thumbnails:

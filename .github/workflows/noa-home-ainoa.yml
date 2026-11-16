@@ -1,9 +1,7 @@
 name: NOA Home AInoa integration
 # Isolated release after the shared presentation checks have been queued.
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_home_ainoa_release.py', 'tests/navigation/home-ainoa.mjs', '.github/workflows/noa-home-ainoa.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-production-sftp, cancel-in-progress: false}
 jobs:

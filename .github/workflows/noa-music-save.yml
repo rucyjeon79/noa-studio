@@ -1,10 +1,6 @@
 name: NOA device download location
 on:
-  pull_request:
-    paths: &paths ['deploy/noa-music-save.js','scripts/noa_music_save_release.py','tests/download/**','.github/workflows/noa-music-save.yml']
-  push:
-    branches: [main]
-    paths: *paths
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

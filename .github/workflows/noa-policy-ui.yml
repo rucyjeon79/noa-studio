@@ -1,25 +1,5 @@
 name: NOA Common UI Policy Correction
 on:
-  pull_request:
-    paths:
-      - 'deploy/noa-policy-20261024.css'
-      - 'deploy/noa-ui.js'
-      - 'deploy/noa-design.extend.php'
-      - 'scripts/noa_policy_ui_deploy.py'
-      - 'scripts/noa_policy_ui_drive_receipt.json'
-      - 'scripts/qa/noa-policy.mjs'
-      - 'tests/uiux/policy_assets.php'
-      - '.github/workflows/noa-policy-ui.yml'
-  push:
-    branches: [main]
-    paths:
-      - 'deploy/noa-policy-20261024.css'
-      - 'deploy/noa-ui.js'
-      - 'deploy/noa-design.extend.php'
-      - 'scripts/noa_policy_ui_deploy.py'
-      - 'scripts/noa_policy_ui_drive_receipt.json'
-      - 'scripts/qa/noa-policy.mjs'
-      - '.github/workflows/noa-policy-ui.yml'
   workflow_dispatch:
 permissions:
   contents: read

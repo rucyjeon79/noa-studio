@@ -1,10 +1,6 @@
 name: NOA MY account recovery and collection diagnostic
 on:
-  pull_request:
-    paths: ['deploy/noa-account.js','scripts/noa_account_recovery_release.py','scripts/noa_collection_diagnostic*','scripts/qa/noa-account-recovery.mjs','.github/workflows/noa-account-recovery.yml']
-  push:
-    branches: [main]
-    paths: ['scripts/noa_account_recovery_release.py','scripts/noa_collection_diagnostic*','scripts/qa/noa-account-recovery.mjs','.github/workflows/noa-account-recovery.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

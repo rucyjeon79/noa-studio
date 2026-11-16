@@ -1,8 +1,5 @@
 name: NOA secure transport check
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-secure-transport.yml']
   workflow_dispatch:
 permissions:
   contents: read

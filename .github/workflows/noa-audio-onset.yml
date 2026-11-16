@@ -1,10 +1,6 @@
 name: NOA audio onset and player level
 on:
-  pull_request:
-    paths: &paths ['scripts/noa_audio_onset_release.py','scripts/noa_audio_onset_audit.php','.github/workflows/noa-audio-onset.yml']
-  push:
-    branches: [main]
-    paths: *paths
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

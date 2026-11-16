@@ -1,8 +1,5 @@
 name: N80 MUSIC read-only diagnosis
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/n80_music_diagnostic.py','.github/workflows/n80-music-diagnostic.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

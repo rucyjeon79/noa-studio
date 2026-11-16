@@ -1,10 +1,6 @@
 name: NOA N80 menu tree
 on:
-  pull_request:
-    paths: ['tests/sitemap/**','deploy/noa-app/engine/workspaces.php','deploy/noa-app/engine/ai-lab.php','deploy/noa-sitemap.php','deploy/noa-ui.js','deploy/noa-starlight.css','scripts/noa_menu_tree_release.py','.github/workflows/noa-menu-tree.yml']
-  push:
-    branches: [main]
-    paths: ['tests/sitemap/**','scripts/noa_menu_tree_release.py','.github/workflows/noa-menu-tree.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

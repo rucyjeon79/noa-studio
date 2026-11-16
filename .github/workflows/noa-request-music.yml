@@ -1,8 +1,6 @@
 name: NOA Community song replies
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-request-music.yml','scripts/noa_request_music_release.py','tests/navigation/request-music.mjs','bridge/community-music.php','bridge/community.php','bridge/community-core.php','tests/community/music-flow.php']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

@@ -1,8 +1,6 @@
 name: NOA authorized latest media retention
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_media_retention.*','.github/workflows/noa-media-retention.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   cleanup:

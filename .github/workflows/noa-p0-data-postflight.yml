@@ -1,9 +1,5 @@
 name: NOA P0 deployment data postflight
 on:
-  workflow_run:
-    workflows: ['NOA UIUX visual gates and scoped production release']
-    types: [completed]
-    branches: [main]
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-p0-data-postflight-readonly, cancel-in-progress: false}

@@ -1,10 +1,5 @@
 name: N80 protected scheduler control preimage (read-only)
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/n80-host-control-preimage.yml'
-      - 'scripts/qa/n80-host-control-preimage.py'
   workflow_dispatch:
 permissions:
   contents: read

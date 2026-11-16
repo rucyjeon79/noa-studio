@@ -1,10 +1,6 @@
 name: NOA home section placement # Hero followed by daily fortune
 on:
-  pull_request:
-    paths: ['.github/workflows/noa-home-notice-placement.yml', 'scripts/qa/noa-home-banner-order.mjs']
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-home-notice-placement.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

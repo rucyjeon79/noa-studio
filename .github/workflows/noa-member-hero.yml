@@ -1,22 +1,5 @@
 name: NOA Membership Creator and Genre Hero Production
 on:
-  push:
-    branches: [main]
-    paths: &paths
-      - 'bridge/member-access.php'
-      - 'bridge/creator*.php'
-      - 'bridge/legacy-audio.php'
-      - 'deploy/noa-access.extend.php'
-      - 'deploy/noa-design.extend.php'
-      - 'deploy/noa-creator*'
-      - 'deploy/noa-channel.php'
-      - 'tests/member/**'
-      - 'scripts/noa_member_deploy.py'
-      - 'scripts/qa/noa-member.mjs'
-      - 'scripts/qa/noa-home-hero-layout.mjs'
-      - '.github/workflows/noa-member-hero.yml'
-  pull_request:
-    paths: *paths
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-member-hero, cancel-in-progress: false}

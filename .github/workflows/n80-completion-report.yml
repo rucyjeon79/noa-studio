@@ -1,9 +1,6 @@
 name: N80 current task production evidence report
 on:
-  workflow_run:
-    workflows: ['NOA existing feature quality gates']
-    types: [completed]
-    branches: [main]
+  workflow_dispatch:
 permissions:
   contents: read
   actions: read

@@ -1,8 +1,6 @@
 name: NOA fan ranks and praise ledger
 on:
-  push:
-    branches: [main, noa-fan-ranks]
-    paths: ['.github/workflows/noa-fan-ranks.yml','scripts/noa_rank_release.py','tests/membership/fan.php','bridge/fan-membership.php']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

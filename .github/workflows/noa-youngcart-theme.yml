@@ -1,8 +1,6 @@
 name: NOA Youngcart missing theme dependencies
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_youngcart_theme.py','.github/workflows/noa-youngcart-theme.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   repair:

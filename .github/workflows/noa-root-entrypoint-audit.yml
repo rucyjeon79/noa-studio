@@ -1,8 +1,6 @@
 name: NOA root entrypoint production inspection
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-root-entrypoint-audit.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-dothome-production, cancel-in-progress: false}
 jobs:

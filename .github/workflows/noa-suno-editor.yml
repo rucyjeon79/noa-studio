@@ -1,10 +1,6 @@
 name: NOA instant Suno editor artwork
 on:
-  pull_request:
-    paths: &paths ['bridge/suno-cover.php','tests/suno-cover/**','scripts/noa_suno_editor_*.py','.github/workflows/noa-suno-editor.yml']
-  push:
-    branches: [main]
-    paths: *paths
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

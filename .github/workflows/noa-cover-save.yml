@@ -1,10 +1,6 @@
 name: NOA cover metadata save
 on:
-  pull_request:
-    paths: ['scripts/noa_cover_save_release.py','scripts/qa/noa-cover-save.mjs','.github/workflows/noa-cover-save.yml']
-  push:
-    branches: [main]
-    paths: ['scripts/noa_cover_save_release.py','scripts/qa/noa-cover-save.mjs','.github/workflows/noa-cover-save.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

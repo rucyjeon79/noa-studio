@@ -1,8 +1,6 @@
 name: NOA Account Navigation and Four-Level Collections
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_navigation_release.py','scripts/qa/noa-navigation.mjs','tests/navigation/**','.github/workflows/noa-navigation.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify-and-deploy:

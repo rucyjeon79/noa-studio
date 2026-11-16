@@ -1,8 +1,5 @@
 name: NOA Stale Staging Encrypted Courier
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-staging-courier.yml']
   workflow_dispatch:
 permissions:
   contents: read

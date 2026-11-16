@@ -1,8 +1,6 @@
 name: Home feed transfer and catalog read
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-home-payload.yml','scripts/noa_home_payload_check.py']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   publish:

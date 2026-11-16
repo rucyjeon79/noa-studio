@@ -1,8 +1,6 @@
 name: NOA community response diagnosis
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_community_diagnostic.py','.github/workflows/noa-community-diagnostic.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   diagnose:

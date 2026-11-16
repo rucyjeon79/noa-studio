@@ -1,11 +1,5 @@
 name: NOA Naver Verification Production
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'deploy/noa-app/home.php'
-      - 'scripts/noa_naver_home_deploy.py'
-      - '.github/workflows/noa-naver-verification.yml'
   workflow_dispatch:
 permissions:
   contents: read

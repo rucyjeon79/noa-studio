@@ -1,8 +1,6 @@
 name: Jukebox continuous playback
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_continuous_playback_manifest.json','.github/workflows/noa-continuous-playback.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   publish:

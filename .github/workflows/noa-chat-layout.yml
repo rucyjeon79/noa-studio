@@ -1,8 +1,5 @@
 name: N80 chat panel layout
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-chat-layout.yml','scripts/qa/noa-chat-layout.mjs']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

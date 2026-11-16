@@ -1,10 +1,6 @@
 name: NOA playback stall recovery
 on:
-  pull_request:
-    paths: ['scripts/noa_playback_stability_release.py','scripts/qa/noa-playback-stability.mjs','deploy/noa-app/playback-recovery.js','tests/jukebox/playback_recovery.test.cjs','.github/workflows/noa-playback-stability.yml']
-  push:
-    branches: [main]
-    paths: ['scripts/noa_playback_stability_release.py','scripts/qa/noa-playback-stability.mjs','deploy/noa-app/playback-recovery.js','tests/jukebox/playback_recovery.test.cjs','.github/workflows/noa-playback-stability.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

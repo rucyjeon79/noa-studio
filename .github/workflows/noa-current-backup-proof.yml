@@ -1,8 +1,5 @@
 name: NOA current full database isolated restore proof
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-current-backup-proof.yml']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-current-backup-isolated-proof, cancel-in-progress: false}

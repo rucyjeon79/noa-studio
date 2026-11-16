@@ -1,10 +1,6 @@
 name: NOA shared page performance
 on:
-  pull_request:
-    paths: &paths ['scripts/noa_page_speed_release.py','scripts/noa_page_speed_probe.php','.github/workflows/noa-page-speed.yml']
-  push:
-    branches: [main]
-    paths: *paths
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

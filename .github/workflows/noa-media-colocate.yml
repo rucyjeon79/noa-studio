@@ -1,8 +1,6 @@
 name: NOA colocated audio and card images
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_media_colocate.*','.github/workflows/noa-media-colocate.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   cleanup:

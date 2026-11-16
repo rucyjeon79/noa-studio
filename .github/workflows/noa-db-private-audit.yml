@@ -1,10 +1,5 @@
 name: NOA Private DB Folder Audit
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/noa_db_private_audit.py'
-      - '.github/workflows/noa-db-private-audit.yml'
   workflow_dispatch:
 permissions:
   contents: read

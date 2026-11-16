@@ -1,8 +1,6 @@
 name: NOA member badges and operating rules
 on:
-  push:
-    branches: [main]
-    paths: ['deploy/noa-member-badges.css', 'deploy/noa-membership.php', '.github/workflows/noa-badge-style.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-production-sftp, cancel-in-progress: false}
 jobs:

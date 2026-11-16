@@ -1,6 +1,5 @@
 name: NOA personal push dispatch
 on:
-  # Scheduled execution moved to the verified N80 Hub host owner.
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-personal-push, cancel-in-progress: false}

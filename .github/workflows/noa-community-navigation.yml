@@ -1,9 +1,7 @@
 name: NOA Community navigation
 # Isolated release after the shared presentation checks have been queued.
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_community_navigation_release.py', 'tests/navigation/community-navigation.mjs', '.github/workflows/noa-community-navigation.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-production-sftp, cancel-in-progress: false}
 jobs:

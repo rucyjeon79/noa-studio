@@ -1,8 +1,6 @@
 name: NOA premium rooms and theme selection
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_room_theme_release.py','tests/room-themes/**','.github/workflows/noa-room-themes.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   publish:

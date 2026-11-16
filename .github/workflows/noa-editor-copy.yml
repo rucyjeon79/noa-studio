@@ -1,10 +1,6 @@
 name: Verify and publish song field copying
 on:
-  push:
-    branches: [main]
-    paths: &paths ['tests/clipboard/**','.github/workflows/noa-editor-copy.yml']
-  pull_request:
-    paths: *paths
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

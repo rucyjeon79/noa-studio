@@ -1,10 +1,6 @@
 name: NOA Site rhythm and home discovery
 on:
-  pull_request:
-    paths: ['deploy/noa-app/home.php','bridge/home*.php','deploy/noa-home.js','deploy/noa-browse.js','deploy/noa-engagement.js','deploy/noa-ui.css','deploy/noa-engagement.css','deploy/noa-world.css','deploy/noa-my.php','scripts/noa_rhythm_release.py','scripts/qa/noa-rhythm.mjs','scripts/qa/noa-alignment.mjs','tests/rhythm/**','.github/workflows/noa-rhythm.yml']
-  push:
-    branches: [main]
-    paths: ['deploy/noa-app/home.php','bridge/home*.php','deploy/noa-home.js','deploy/noa-browse.js','deploy/noa-engagement.js','deploy/noa-ui.css','deploy/noa-engagement.css','deploy/noa-world.css','deploy/noa-my.php','scripts/noa_rhythm_release.py','scripts/qa/noa-rhythm.mjs','scripts/qa/noa-alignment.mjs','tests/rhythm/**','.github/workflows/noa-rhythm.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

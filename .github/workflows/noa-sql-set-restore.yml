@@ -1,8 +1,5 @@
 name: NOA Five SQL Isolated Restoration Proof
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-sql-set-restore.yml']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-five-sql-readonly-restore, cancel-in-progress: false}

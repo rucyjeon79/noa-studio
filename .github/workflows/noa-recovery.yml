@@ -1,9 +1,6 @@
 name: NOA recovery verification and player repair
 # Verify deployed files; report the hosting DB inspection limit explicitly.
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-recovery.yml']
   workflow_dispatch:
 permissions:
   contents: read

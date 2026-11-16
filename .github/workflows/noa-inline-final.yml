@@ -1,10 +1,5 @@
 name: NOA Inline Final Paging Guard
 on:
-  pull_request:
-    paths: ['scripts/noa_inline_final_deploy.py','scripts/noa_inline_final_drive_receipt.json','scripts/qa/noa-inline-final.mjs','.github/workflows/noa-inline-final.yml']
-  push:
-    branches: [main]
-    paths: ['scripts/noa_inline_final_deploy.py','scripts/noa_inline_final_drive_receipt.json','scripts/qa/noa-inline-final.mjs','.github/workflows/noa-inline-final.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

@@ -1,8 +1,6 @@
 name: NOA ecosystem complete release
 on:
-  push:
-    branches: [main, noa-ecosystem-complete]
-    paths: ['bridge/ecosystem*.php','bridge/support*.php','deploy/noa-ecosystem*','deploy/noa-app/ecosystem-view.php','deploy/noa-shop.php','deploy/noa-lounge.php','deploy/noa-creator-lab.php','deploy/noa-products.json','deploy/noa-settlement.js','tests/ecosystem/**','tests/navigation/menu*','scripts/noa_ecosystem_release.py','.github/workflows/noa-ecosystem.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

@@ -1,8 +1,6 @@
 name: NOA UI and point support audit
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-ui-audit.yml','scripts/noa_ui_audit_release.py','tests/navigation/ui-audit.mjs']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

@@ -1,8 +1,5 @@
 name: NOA Encrypted Point Ledger Preimage
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_subscription_backup.py','scripts/noa_subscription_backup_public.pem','.github/workflows/noa-subscription-backup.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

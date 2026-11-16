@@ -1,8 +1,6 @@
 name: NOA referral signup
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-referral.yml','scripts/noa_referral_release.py','scripts/noa_referral_inventory.py','bridge/referral*.php','deploy/noa-referral.*','tests/referral/**']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

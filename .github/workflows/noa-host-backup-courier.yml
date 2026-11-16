@@ -1,8 +1,5 @@
 name: NOA Deployment Backup Encrypted Courier
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-host-backup-courier.yml']
   workflow_dispatch:
 permissions:
   contents: read

@@ -1,8 +1,5 @@
 name: Verify and publish YouTube line breaks
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-youtube-linebreak.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

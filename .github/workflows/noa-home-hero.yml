@@ -1,16 +1,5 @@
 name: NOA Home Hero Orientation Production
 on:
-  push:
-    branches: [main]
-    paths: &paths
-      - 'deploy/noa-app/home.php'
-      - 'deploy/noa-hero.js'
-      - 'scripts/qa/noa-hero.test.mjs'
-      - 'scripts/qa/noa-home-hero-layout.mjs'
-      - 'scripts/noa_home_label_deploy.py'
-      - '.github/workflows/noa-home-hero.yml'
-  pull_request:
-    paths: *paths
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-home-hero-orientation, cancel-in-progress: false}

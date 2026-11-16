@@ -1,9 +1,5 @@
 name: N80 emergency stop of suspended-host resident scheduler
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/n80-host-stop-control.yml'
   workflow_dispatch:
 permissions:
   contents: read

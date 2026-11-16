@@ -1,10 +1,6 @@
 name: NOA reload playback restoration
 on:
-  pull_request:
-    paths: ['scripts/noa_playback_release.py','scripts/qa/noa-playback-reload.mjs','.github/workflows/noa-playback-reload.yml']
-  push:
-    branches: [main]
-    paths: ['scripts/noa_playback_release.py','scripts/qa/noa-playback-reload.mjs','.github/workflows/noa-playback-reload.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

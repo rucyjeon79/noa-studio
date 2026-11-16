@@ -1,8 +1,6 @@
 name: NOA AMT fan campaign
 on:
-  push:
-    branches: [main]
-    paths: ['deploy/noa-amt-fan*','scripts/noa_amt_release.py','docs/notices/NOA_AMT2_SUPPORT.json','.github/workflows/noa-amt-fan.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   publish:

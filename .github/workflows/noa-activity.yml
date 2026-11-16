@@ -1,10 +1,6 @@
 name: NOA activity context and transparent profile
 on:
-  pull_request:
-    paths: ['scripts/noa_activity*','.github/workflows/noa-activity.yml']
-  push:
-    branches: [main]
-    paths: ['scripts/noa_activity*','.github/workflows/noa-activity.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

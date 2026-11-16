@@ -1,10 +1,6 @@
 name: NOA post likes comments and popularity
 on:
-  pull_request:
-    paths: ['bridge/engagement*.php','deploy/noa-engagement.*','bridge/popularity-core.php','bridge/popularity-store.php','scripts/noa_engagement*','scripts/qa/noa-engagement.mjs','tests/engagement/**','.github/workflows/noa-engagement.yml']
-  push:
-    branches: [main, noa-ecosystem-complete]
-    paths: ['bridge/engagement*.php','deploy/noa-engagement.*','bridge/popularity-core.php','bridge/popularity-store.php','scripts/noa_engagement*','scripts/qa/noa-engagement.mjs','tests/engagement/**','.github/workflows/noa-engagement.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

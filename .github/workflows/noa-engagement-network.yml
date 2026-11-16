@@ -1,8 +1,6 @@
 name: NOA engagement network recovery
 on:
-  push:
-    branches: [main, work/android-live-failures-20261030]
-    paths: ['deploy/noa-voice.js', 'tests/voice/composer_test.cjs', 'deploy/noa-engagement.js', 'tests/engagement/network_test.mjs', 'scripts/qa/noa-engagement-network-release.py', '.github/workflows/noa-engagement-network.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

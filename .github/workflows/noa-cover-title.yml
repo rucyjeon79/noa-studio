@@ -1,10 +1,6 @@
 name: NOA cover song title display
 on:
-  pull_request:
-    paths: &paths ['scripts/noa_cover_title_release.py','.github/workflows/noa-cover-title.yml']
-  push:
-    branches: [main]
-    paths: *paths
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

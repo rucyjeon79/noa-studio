@@ -1,9 +1,6 @@
 name: NOA AI LAB validation and production release
 # Keep configuration revisions independent of worker heartbeats and show disabled AI controls.
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-ai-lab.yml']
   workflow_dispatch:
 permissions:
   contents: read

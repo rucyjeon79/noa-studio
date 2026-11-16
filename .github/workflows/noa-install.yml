@@ -1,10 +1,6 @@
 name: NOA Home Entry and Apple Installation
 on:
-  pull_request:
-    paths: ['deploy/noa-install.*','deploy/noa-brand.js','deploy/noa-manifest.json','public/icon-maskable-*.png','public/icon-touch-180.png','scripts/noa_install_*','scripts/qa/noa-install.mjs','tests/pwa/**','.github/workflows/noa-install.yml']
-  push:
-    branches: [main]
-    paths: ['deploy/noa-install.*','deploy/noa-brand.js','deploy/noa-manifest.json','public/icon-maskable-*.png','public/icon-touch-180.png','scripts/noa_install_*','scripts/qa/noa-install.mjs','tests/pwa/**','.github/workflows/noa-install.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   candidate:

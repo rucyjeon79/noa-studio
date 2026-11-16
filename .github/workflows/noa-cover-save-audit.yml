@@ -1,10 +1,6 @@
 name: NOA cover save read-only audit
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_cover_save_audit.py','.github/workflows/noa-cover-save-audit.yml']
-  pull_request:
-    paths: ['scripts/noa_cover_save_audit.py','.github/workflows/noa-cover-save-audit.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   validate:

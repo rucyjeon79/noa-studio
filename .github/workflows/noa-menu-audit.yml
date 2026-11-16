@@ -1,14 +1,6 @@
 name: NOA public menu surface audit
 on:
-  workflow_call:
-    inputs:
-      deployed: {type: boolean, default: false}
   workflow_dispatch:
-  pull_request:
-    paths: ['tests/header/drawer-layout.mjs', '.github/workflows/noa-menu-audit.yml']
-  push:
-    branches: [main]
-    paths: ['tests/header/drawer-layout.mjs','tests/room-themes/menu-surfaces.mjs', '.github/workflows/noa-menu-audit.yml']
 permissions: {contents: read}
 jobs:
   check:

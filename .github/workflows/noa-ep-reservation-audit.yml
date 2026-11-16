@@ -1,10 +1,6 @@
 name: NOA EP reservation read-only audit
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_ep_reservation_audit.py','.github/workflows/noa-ep-reservation-audit.yml']
-  pull_request:
-    paths: ['scripts/noa_ep_reservation_audit.py','.github/workflows/noa-ep-reservation-audit.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   validate:

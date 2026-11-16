@@ -1,10 +1,6 @@
 name: NOA monthly benefits and mastered cards
 on:
-  pull_request:
-    paths: &paths ['bridge/monthly-rewards.php','tests/monthly/**','scripts/noa_monthly*','scripts/qa/noa-monthly.mjs','deploy/noa-app/monthly-banner.php','.github/workflows/noa-monthly-benefits.yml']
-  push:
-    branches: [main]
-    paths: *paths
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

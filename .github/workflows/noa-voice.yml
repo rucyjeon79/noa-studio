@@ -1,10 +1,6 @@
 name: NOA AInoa speech and menu conditions
 on:
-  pull_request:
-    paths: ['deploy/noa-voice*','scripts/noa_voice_release.py','scripts/qa/noa-voice.mjs','tests/voice/**','.github/workflows/noa-voice.yml']
-  push:
-    branches: [main]
-    paths: ['deploy/noa-voice*','scripts/noa_voice_release.py','scripts/qa/noa-voice.mjs','tests/voice/**','.github/workflows/noa-voice.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

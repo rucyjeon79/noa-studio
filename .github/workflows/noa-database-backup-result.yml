@@ -1,9 +1,6 @@
 name: NOA record verified private backup result
 on:
-  workflow_run:
-    workflows: ['NOA private database backup isolated restore verification']
-    types: [completed]
-    branches: [main]
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   record:

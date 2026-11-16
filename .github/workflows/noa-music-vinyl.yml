@@ -1,10 +1,6 @@
 name: NOA music vinyl playback
 on:
-  pull_request:
-    paths: ['deploy/noa-music-vinyl.*','deploy/noa-browse.js','deploy/noa-youtube.css','tests/music-vinyl/**','.github/workflows/noa-music-vinyl.yml']
-  push:
-    branches: [main]
-    paths: ['scripts/noa_music_vinyl_release.py','tests/music-vinyl/**','deploy/noa-music-vinyl.*','.github/workflows/noa-music-vinyl.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   catalog-layout:

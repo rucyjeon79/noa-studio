@@ -1,8 +1,5 @@
 name: Login home destination
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-login-home.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

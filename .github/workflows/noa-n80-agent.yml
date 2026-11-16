@@ -1,10 +1,6 @@
 name: N80 ChatGPT commander
 on:
-  push:
-    branches: [main, work/n80-agent-upgrade]
-    paths: ['deploy/noa-app/engine/agent-runtime.php','integrations/private-worker/**','tests/gpt/**','tests/creative/agent.php','scripts/noa_agent_release.py','.github/workflows/noa-n80-agent.yml']
-  pull_request:
-    paths: ['deploy/noa-app/engine/agent-runtime.php','integrations/private-worker/**','tests/gpt/**','tests/creative/agent.php']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

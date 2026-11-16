@@ -1,8 +1,5 @@
 name: NOA read-only UI production inventory
 on:
-  pull_request:
-    branches: [main]
-    paths: ['scripts/noa_uiux_audit.py', '.github/workflows/noa-uiux-audit.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

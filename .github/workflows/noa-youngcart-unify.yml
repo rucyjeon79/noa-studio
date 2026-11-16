@@ -1,10 +1,6 @@
 name: NOA unified Youngcart catalog and receipts
 on:
-  push:
-    branches: [main]
-    paths: &paths ['bridge/youngcart-core.php','deploy/noa-youngcart*','scripts/noa_youngcart_unify.py','tests/youngcart_mysql.php','.github/workflows/noa-youngcart-unify.yml']
-  pull_request:
-    paths: *paths
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

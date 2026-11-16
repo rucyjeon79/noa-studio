@@ -1,10 +1,6 @@
 name: NOA missing Suno covers and premium gold sheen
 on:
-  pull_request:
-    paths: ['scripts/noa_cover*','scripts/qa/noa-cover-shine.mjs','.github/workflows/noa-cover-fill.yml']
-  push:
-    branches: [main]
-    paths: ['scripts/noa_cover*','scripts/qa/noa-cover-shine.mjs','.github/workflows/noa-cover-fill.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

@@ -1,11 +1,6 @@
 name: NOA N80 home activity orbit
 on:
   workflow_dispatch:
-  pull_request:
-    paths: ['tests/n80-home-orbit/**','scripts/noa_n80_home_orbit_release.py','.github/workflows/noa-n80-home-orbit.yml']
-  push:
-    branches: [main]
-    paths: ['tests/n80-home-orbit/**','scripts/noa_n80_home_orbit_release.py','.github/workflows/noa-n80-home-orbit.yml']
 permissions: {contents: read}
 jobs:
   verify:

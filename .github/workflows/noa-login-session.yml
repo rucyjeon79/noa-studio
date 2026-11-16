@@ -1,9 +1,6 @@
 name: N80 login continuity
 # This scoped release owns login changes; membership and presentation deploys skip its tag.
 on:
-  push:
-    branches: [main]
-    paths: ['deploy/noa-app/engine/session-policy.php','scripts/noa_login_session_*.py','tests/login-session/**','.github/workflows/noa-login-session.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

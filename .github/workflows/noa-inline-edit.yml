@@ -1,38 +1,5 @@
 name: NOA Unified Record Production
 on:
-  push:
-    branches: [main]
-    paths: &paths
-      - 'deploy/noa-browse.js'
-      - 'deploy/noa-music.php'
-      - 'deploy/noa-youtube.php'
-      - 'deploy/noa-youtube.js'
-      - 'deploy/noa-music-detail.php'
-      - 'tests/catalog/inline_edit_projection_test.php'
-      - 'tests/catalog/inline_edit_music_page_test.py'
-      - 'bridge/package-*.php'
-      - 'bridge/lab-api.php'
-      - 'bridge/index.php'
-      - 'bridge/catalog-store.php'
-      - 'bridge/taxonomy-store.php'
-      - 'bridge/lab-creator.php'
-      - 'deploy/noa-app/jukebox/core.php'
-      - 'deploy/noa-category-order.php'
-      - 'deploy/noa-app/taxonomy/**'
-      - 'tests/catalog/package*'
-      - 'tests/uiux/readmodel_ownership.py'
-      - 'tests/uiux/recovery_contract_test.py'
-      - 'scripts/noa_package_release.py'
-      - 'scripts/qa/package-*'
-      - 'bridge/inline-edit.php'
-      - 'deploy/noa-inline-edit.php'
-      - 'deploy/noa-browse-edit.js'
-      - 'scripts/noa_inline_edit_deploy.py'
-      - 'scripts/qa/inline-edit-*'
-      - 'scripts/qa/noa-inline-edit.mjs'
-      - '.github/workflows/noa-inline-edit.yml'
-  pull_request:
-    paths: *paths
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-inline-metadata-editor, cancel-in-progress: false}

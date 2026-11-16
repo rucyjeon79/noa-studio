@@ -1,9 +1,6 @@
 name: NOA OAuth callback validation and production release
 # Retain session-bound issued-token receipts within provider expiry while API activation propagates.
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-oauth.yml']
   workflow_dispatch:
 permissions:
   contents: read

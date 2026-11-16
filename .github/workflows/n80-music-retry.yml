@@ -1,8 +1,5 @@
 name: N80 verified MUSIC retry recovery
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/n80_music_retry*','tests/engine/music_retry_repair_test.php','.github/workflows/n80-music-retry.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

@@ -1,8 +1,6 @@
 name: NOA rank transition inventory
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_rank_audit.py','.github/workflows/noa-rank-inventory.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   inventory:

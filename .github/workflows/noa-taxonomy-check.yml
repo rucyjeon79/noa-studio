@@ -1,8 +1,5 @@
 name: NOA SQL taxonomy isolated validation
 on:
-  push:
-    branches: [main]
-    paths: ['bridge/taxonomy*.php','tests/taxonomy/**','scripts/noa_taxonomy_seed.py','.github/workflows/noa-taxonomy-check.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

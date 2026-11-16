@@ -1,8 +1,6 @@
 name: NOA original character portrait correction
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-world-assets.yml']
+  workflow_dispatch:
 permissions:
   contents: read
 concurrency:

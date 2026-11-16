@@ -1,8 +1,6 @@
 name: NOA five destination navigation
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_five_destinations_release.py', 'tests/starlight/sections.test.mjs', '.github/workflows/noa-five-destinations.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-production-sftp, cancel-in-progress: false}
 jobs:

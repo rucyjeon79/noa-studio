@@ -29,3 +29,5 @@ jobs:
         run: python3 scripts/qa/n80_schedule_policy_guard.py
       - name: List remaining GitHub production-host contacts (read-only)
         run: python3 scripts/qa/n80_workflow_host_audit.py
+      - name: Block unsolicited DotHome connections from legacy workflows
+        run: python3 scripts/qa/n80_host_trigger_guard.py

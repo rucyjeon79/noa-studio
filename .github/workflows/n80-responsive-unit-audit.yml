@@ -1,10 +1,5 @@
 name: N80 responsive unit audit (read-only)
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/qa/n80-responsive-unit-audit.py'
-      - '.github/workflows/n80-responsive-unit-audit.yml'
   workflow_dispatch:
 permissions:
   contents: read

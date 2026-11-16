@@ -1,16 +1,5 @@
 name: NOA Inline Playlist Order Production
 on:
-  push:
-    branches: [main]
-    paths: &paths
-      - 'deploy/noa-browse.js'
-      - 'deploy/noa-browse-order.js'
-      - 'deploy/noa-category-order.php'
-      - 'scripts/noa_inline_order_deploy.py'
-      - 'scripts/qa/noa-inline-order.mjs'
-      - '.github/workflows/noa-inline-order.yml'
-  pull_request:
-    paths: *paths
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-inline-playlist-order, cancel-in-progress: false}

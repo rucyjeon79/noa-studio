@@ -1,9 +1,6 @@
 name: NOA production quality audit
 # Read-only final comparison; viewport checks live in noa-quality-release.yml.
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-quality-audit.yml']
   workflow_dispatch:
 permissions:
   contents: read

@@ -1,10 +1,5 @@
 name: N80 live one-shot contract test (read-only)
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/qa/n80-one-shot-host-contract-test.py'
-      - '.github/workflows/n80-one-shot-host-contract-test.yml'
   workflow_dispatch:
 permissions:
   contents: read

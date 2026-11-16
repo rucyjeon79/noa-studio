@@ -1,10 +1,5 @@
 name: NOA P0 current operating audit
 on:
-  pull_request:
-    paths: ['scripts/noa_p0_current_audit.py','scripts/noa_p0_register_20261029.py','tests/engine/test_p0_directive_20261029.py','.github/workflows/noa-p0-current-audit.yml']
-  push:
-    branches: [main]
-    paths: ['scripts/noa_p0_current_audit.py','scripts/noa_p0_register_20261029.py','tests/engine/test_p0_directive_20261029.py','.github/workflows/noa-p0-current-audit.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

@@ -1,10 +1,6 @@
 name: NOA independent popup notices
 on:
-  pull_request:
-    paths: ['scripts/noa_notice_overlay_release.py','.github/workflows/noa-notice-overlay.yml']
-  push:
-    branches: [main]
-    paths: ['scripts/noa_notice_overlay_release.py','.github/workflows/noa-notice-overlay.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

@@ -1,10 +1,6 @@
 name: NOA company and legal pages
 on:
-  pull_request:
-    paths: ['deploy/noa-about.php','deploy/noa-privacy.php','deploy/noa-terms.php','deploy/noa-editorial*','deploy/noa-app/editorial*','deploy/noa-assets/editorial/**','tests/editorial/**','scripts/noa_editorial_release.py','.github/workflows/noa-editorial.yml']
-  push:
-    branches: [main]
-    paths: ['deploy/noa-about.php','deploy/noa-privacy.php','deploy/noa-terms.php','deploy/noa-editorial*','deploy/noa-app/editorial*','deploy/noa-assets/editorial/**','tests/editorial/**','scripts/noa_editorial_release.py','.github/workflows/noa-editorial.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

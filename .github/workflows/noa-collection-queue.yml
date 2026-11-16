@@ -1,10 +1,6 @@
 name: NOA collection playback queue
 on:
-  pull_request:
-    paths: ['scripts/noa_collection_queue_release.py','scripts/qa/noa-collection-queue.mjs','.github/workflows/noa-collection-queue.yml']
-  push:
-    branches: [main]
-    paths: ['scripts/noa_collection_queue_release.py','scripts/qa/noa-collection-queue.mjs','.github/workflows/noa-collection-queue.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

@@ -1,10 +1,6 @@
 name: NOA screening room
 on:
-  pull_request:
-    paths: ['scripts/noa_cinema_release.py','tests/cinema/**','deploy/noa-cinema.*','.github/workflows/noa-cinema.yml']
-  push:
-    branches: [main]
-    paths: ['scripts/noa_cinema_release.py','tests/cinema/**','deploy/noa-cinema.*','.github/workflows/noa-cinema.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

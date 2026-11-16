@@ -1,8 +1,5 @@
 name: NOA premium day and night theme release
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_light_theme_release.py', '.github/workflows/noa-light-theme.yml', 'tests/room-themes/live.mjs', 'tests/header/drawer-live.mjs']
   workflow_dispatch:
     inputs:
       theme_clock:

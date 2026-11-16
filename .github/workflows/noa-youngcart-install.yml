@@ -1,10 +1,6 @@
 name: NOA Youngcart installation audit
 on:
-  pull_request:
-    paths: ['.github/workflows/noa-youngcart-install.yml','scripts/noa_youngcart_install.py']
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-youngcart-install.yml','scripts/noa_youngcart_install.py']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   audit:

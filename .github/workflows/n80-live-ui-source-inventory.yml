@@ -1,10 +1,5 @@
 name: N80 live UI geometry inventory (read-only)
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/n80-live-ui-source-inventory.yml'
-      - 'scripts/qa/n80-live-ui-source-inventory.py'
   workflow_dispatch:
 permissions:
   contents: read

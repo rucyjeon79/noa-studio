@@ -2,9 +2,6 @@ name: NOA Dothome Deployment
 # Share original and extended UI translations with Android; verify responsive navigation
 
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-dothome.yml']
   workflow_dispatch:
     inputs:
       confirm_live:

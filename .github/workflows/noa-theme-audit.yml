@@ -1,8 +1,6 @@
 name: NOA original design and GnuBoard audit
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-theme-audit.yml']
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:

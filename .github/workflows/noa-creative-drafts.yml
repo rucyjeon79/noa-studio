@@ -1,10 +1,5 @@
 name: N80 creative drafts
 on:
-  push:
-    branches: [main, work/creative-drafts]
-    paths: ['bridge/creative*.php','deploy/noa-creative.*','deploy/noa-lab-creative.php','deploy/noa-app/engine/creative.php','tests/creative/**','deploy/noa-app/jukebox/media-location.php','scripts/noa_creative*','.github/workflows/noa-creative-drafts.yml']
-  pull_request:
-    paths: ['bridge/creative*.php','deploy/noa-creative.*','deploy/noa-lab-creative.php','deploy/noa-app/engine/creative.php','tests/creative/**','deploy/noa-app/jukebox/media-location.php']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

@@ -1,10 +1,5 @@
 name: Verify and publish N80 AI LAB
 on:
-  pull_request:
-    paths: ['deploy/noa-app/engine/ai-lab.php','deploy/noa-app/engine/workspaces.php','deploy/noa-app/engine/lab-home.php','tests/lab-menu/**','.github/workflows/noa-lab-menu.yml']
-  push:
-    branches: [main]
-    paths: ['deploy/noa-app/engine/ai-lab.php','deploy/noa-app/engine/workspaces.php','deploy/noa-app/engine/lab-home.php','tests/lab-menu/**','.github/workflows/noa-lab-menu.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

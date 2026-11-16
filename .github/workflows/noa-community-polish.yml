@@ -1,8 +1,6 @@
 name: NOA Community readability
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-community-polish.yml','scripts/noa_community_polish_release.py','tests/navigation/community-polish.mjs']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

@@ -1,8 +1,6 @@
 name: NOA Android reported media failure diagnosis
 on:
-  push:
-    branches: [work/android-live-failures-20261030]
-    paths: ['scripts/qa/noa-android-live-diagnosis.py','.github/workflows/noa-android-live-diagnosis.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   diagnose:

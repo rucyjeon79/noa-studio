@@ -1,8 +1,5 @@
 name: NOA permanent Android release identity
 on:
-  push:
-    branches: [work/n80-apk-update-20261029]
-    paths: ['.github/workflows/noa-android-release-key.yml']
   workflow_dispatch:
 permissions:
   contents: read

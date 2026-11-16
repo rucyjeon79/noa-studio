@@ -1,8 +1,5 @@
 name: NOA P0 storage diagnosis only
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-p0-storage.yml']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-work-deploy-storage-observation, cancel-in-progress: false}

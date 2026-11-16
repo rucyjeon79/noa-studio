@@ -1,10 +1,6 @@
 name: NOA branded login presentation
 on:
-  pull_request:
-    paths: ['deploy/noa-login.php','deploy/noa-login.css','deploy/noa-assets/google-login-g.png','scripts/noa_login_presentation_release.py','scripts/qa/noa-login-presentation.mjs','tests/login-presentation/**','.github/workflows/noa-login-presentation.yml']
-  push:
-    branches: [main]
-    paths: ['deploy/noa-login.php','deploy/noa-login.css','deploy/noa-assets/google-login-g.png','scripts/noa_login_presentation_release.py','scripts/qa/noa-login-presentation.mjs','tests/login-presentation/**','.github/workflows/noa-login-presentation.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

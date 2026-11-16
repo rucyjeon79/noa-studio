@@ -1,10 +1,6 @@
 name: NOA member experience refinement
 on:
-  pull_request:
-    paths: ['deploy/noa-ui.js','deploy/noa-starlight.css','deploy/noa-ainoa.*','deploy/noa-voice.js','deploy/noa-listening.js','deploy/noa-music-vinyl.css','deploy/noa-member-surfaces.*','deploy/noa-design.extend.php','tests/member-premium/**','scripts/noa_member_surfaces_release.py','.github/workflows/noa-member-premium.yml']
-  push:
-    branches: [main]
-    paths: ['deploy/noa-ui.js','deploy/noa-starlight.css','deploy/noa-ainoa.*','deploy/noa-voice.js','deploy/noa-listening.js','deploy/noa-music-vinyl.css','deploy/noa-member-surfaces.*','deploy/noa-design.extend.php','tests/member-premium/**','scripts/noa_member_surfaces_release.py','.github/workflows/noa-member-premium.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   candidate:

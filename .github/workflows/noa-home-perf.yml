@@ -1,10 +1,6 @@
 name: NOA home response performance
 on:
-  pull_request:
-    paths: &paths ['scripts/noa_home_perf_release.py','.github/workflows/noa-home-perf.yml']
-  push:
-    branches: [main]
-    paths: *paths
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

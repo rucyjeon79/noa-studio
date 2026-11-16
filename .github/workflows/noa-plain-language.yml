@@ -1,8 +1,5 @@
 name: NOA plain language production release
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_plain_language_manifest.json', 'scripts/noa_plain_language_release.py', '.github/workflows/noa-plain-language.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

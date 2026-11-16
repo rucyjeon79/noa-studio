@@ -1,10 +1,5 @@
 name: NOA Playlist Remote Audit
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/noa_playlist_remote_audit.py'
-      - '.github/workflows/noa-playlist-remote-audit.yml'
   workflow_dispatch:
 permissions:
   contents: read

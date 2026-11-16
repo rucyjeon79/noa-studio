@@ -1,8 +1,5 @@
 name: NOA Fast Encrypted SQL Courier
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-fast-sql-courier.yml']
   workflow_dispatch:
 permissions:
   contents: read

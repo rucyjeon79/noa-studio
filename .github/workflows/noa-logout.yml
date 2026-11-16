@@ -1,10 +1,6 @@
 name: NOA Logout Return and Session Verification
 on:
-  pull_request:
-    paths: ['deploy/noa-membership.extend.php','tests/membership/extension_scope.php','scripts/noa_logout_*.py','scripts/qa/noa-logout.mjs','.github/workflows/noa-logout.yml']
-  push:
-    branches: [main]
-    paths: ['deploy/noa-membership.extend.php','tests/membership/extension_scope.php','scripts/noa_logout_*.py','scripts/qa/noa-logout.mjs','.github/workflows/noa-logout.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   candidate:

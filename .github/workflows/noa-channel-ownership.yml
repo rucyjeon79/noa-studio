@@ -1,10 +1,6 @@
 name: NOA channel ownership repair
 on:
-  pull_request:
-    paths: ['bridge/channel-ownership.php','scripts/noa_channel*','.github/workflows/noa-channel-ownership.yml','tests/member/**','bridge/creator*.php','deploy/noa-creator*','deploy/noa-channel.php']
-  push:
-    branches: [main]
-    paths: ['bridge/channel-ownership.php','scripts/noa_channel*','.github/workflows/noa-channel-ownership.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

@@ -1,10 +1,6 @@
 name: NOA desktop MY and AInoa companion
 on:
-  pull_request:
-    paths: ['deploy/noa-desktop.*','deploy/noa-voice.js','deploy/noa-ainoa.css','deploy/noa-account.js','deploy/noa-notifications.js','deploy/noa-ainoa*.js','deploy/noa-design.extend.php','tests/desktop/**','scripts/noa_desktop*','scripts/qa/noa-desktop.mjs','.github/workflows/noa-desktop.yml']
-  push:
-    branches: [main]
-    paths: ['deploy/noa-desktop.*','tests/desktop/**','scripts/noa_desktop*','scripts/qa/noa-desktop.mjs','.github/workflows/noa-desktop.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

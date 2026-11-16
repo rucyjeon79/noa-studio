@@ -1,10 +1,6 @@
 name: NOA public channel view and transparency
 on:
-  pull_request:
-    paths: ['bridge/channel-view.php','bridge/creator*.php','deploy/noa-channel-view.*','deploy/noa-channel.php','deploy/noa-creator*','tests/channel-view/**','scripts/noa_channel_view*','scripts/qa/noa-channel-view*.mjs','.github/workflows/noa-channel-view.yml']
-  push:
-    branches: [main]
-    paths: ['bridge/channel-view.php','deploy/noa-channel-view.*','tests/channel-view/**','scripts/noa_channel_view*','scripts/qa/noa-channel-view*.mjs','.github/workflows/noa-channel-view.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

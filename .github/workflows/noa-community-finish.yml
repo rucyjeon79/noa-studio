@@ -1,10 +1,6 @@
 name: NOA Home and Community Completion
 on:
-  pull_request:
-    paths: ['scripts/noa_community_*','.github/workflows/noa-community-finish.yml','scripts/qa/noa-community*','tests/community/**','bridge/community*.php','deploy/noa-community*']
-  push:
-    branches: [main]
-    paths: ['scripts/noa_community_*','.github/workflows/noa-community-finish.yml','scripts/qa/noa-community*','tests/community/**','bridge/community*.php','deploy/noa-community*']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   candidate:

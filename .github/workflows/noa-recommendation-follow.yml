@@ -1,8 +1,6 @@
 name: Recommendation current song follow
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-recommendation-follow.yml','scripts/qa/noa-recommendation-follow.mjs']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   publish:

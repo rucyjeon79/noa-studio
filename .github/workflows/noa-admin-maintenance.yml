@@ -1,8 +1,6 @@
 name: NOA administrator document navigation repair
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-admin-maintenance.yml']
+  workflow_dispatch:
 permissions:
   contents: read
 concurrency:

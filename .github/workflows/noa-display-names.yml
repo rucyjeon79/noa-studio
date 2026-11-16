@@ -1,8 +1,5 @@
 name: Verify and publish N80 display names
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-display-names.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

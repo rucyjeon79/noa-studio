@@ -1,10 +1,6 @@
 name: NOA new song order
 on:
-  pull_request:
-    paths: &paths ['scripts/noa_song_order_release.py','scripts/qa/noa-new-song-order.mjs','.github/workflows/noa-new-song-order.yml']
-  push:
-    branches: [main]
-    paths: *paths
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

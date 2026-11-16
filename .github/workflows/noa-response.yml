@@ -1,10 +1,6 @@
 name: NOA account responsiveness and artist guidance
 on:
-  pull_request:
-    paths: ['scripts/noa_response_release.py','scripts/qa/noa-response.mjs','.github/workflows/noa-response.yml']
-  push:
-    branches: [main]
-    paths: ['scripts/noa_response_release.py','scripts/qa/noa-response.mjs','.github/workflows/noa-response.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

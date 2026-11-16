@@ -1,9 +1,6 @@
 name: NOA P0 Operating Evidence and Task Links
 on:
-  workflow_run:
-    workflows: ['NOA AInoa and Song Editor Production']
-    types: [completed]
-    branches: [main]
+  workflow_dispatch:
 permissions: {contents: read, actions: read}
 jobs:
   record:

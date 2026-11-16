@@ -1,8 +1,5 @@
 name: NOA cover master read-only check
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_cover_master_probe.*','.github/workflows/noa-cover-master-probe.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

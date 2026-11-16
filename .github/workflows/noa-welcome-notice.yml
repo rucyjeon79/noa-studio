@@ -1,8 +1,6 @@
 name: NOA first welcome notice publication
 on:
-  push:
-    branches: [main]
-    paths: ['docs/notices/NOA_20261026_WELCOME.*','scripts/noa_notice_publish.*','scripts/qa/noa-notice-published.mjs','.github/workflows/noa-welcome-notice.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   publish:

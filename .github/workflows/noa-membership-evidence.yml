@@ -1,9 +1,6 @@
 name: NOA membership N80 evidence
 on:
-  workflow_run:
-    workflows: ['NOA membership rewards and account bar']
-    types: [completed]
-    branches: [main]
+  workflow_dispatch:
 permissions: {contents: read, actions: read}
 jobs:
   record:

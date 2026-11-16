@@ -2,10 +2,6 @@ env:
   NOA_DRIVE_RCLONE_CONFIG_B64: ${{ secrets.NOA_DRIVE_RCLONE_CONFIG_B64 }}
 name: NOA hourly integrated popularity snapshot
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-popularity-hourly.yml']
-  # Scheduled execution moved to the verified N80 Hub host owner.
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-popularity-hourly, cancel-in-progress: false}

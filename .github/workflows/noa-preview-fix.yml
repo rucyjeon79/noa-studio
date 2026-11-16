@@ -1,8 +1,6 @@
 name: NOA Preview and Logout Repair
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_preview_audit.*','scripts/noa_preview_release.py','scripts/qa/noa-preview-regression.mjs','scripts/qa/noa-recommendation-position.mjs','.github/workflows/noa-preview-fix.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

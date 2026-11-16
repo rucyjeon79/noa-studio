@@ -1,11 +1,5 @@
 name: N80 scoped UI repair candidate (no deployment)
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/n80-ui-repair-candidate.yml'
-      - 'scripts/qa/n80-ui-repair-candidate.py'
-      - 'tests/layout/n80-responsive-grid-smoke.mjs'
   workflow_dispatch:
 permissions:
   contents: read

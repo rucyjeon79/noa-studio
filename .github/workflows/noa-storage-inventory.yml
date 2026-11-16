@@ -1,10 +1,5 @@
 name: NOA Storage Read Only Inventory
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_storage_readonly_inventory.py','tests/test_storage_readonly_inventory.py','.github/workflows/noa-storage-inventory.yml']
-  pull_request:
-    paths: ['scripts/noa_storage_readonly_inventory.py','tests/test_storage_readonly_inventory.py','.github/workflows/noa-storage-inventory.yml']
   workflow_dispatch:
     inputs:
       sftp_channels:

@@ -1,8 +1,6 @@
 name: NOA writing form layout
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-writing-forms.yml','scripts/qa/noa-writing-forms.mjs','scripts/qa/noa-public-layout.mjs']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   publish:

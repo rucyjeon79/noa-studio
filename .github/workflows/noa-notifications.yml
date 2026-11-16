@@ -1,10 +1,6 @@
 name: NOA AInoa personal activity notifications
 on:
-  pull_request:
-    paths: ['bridge/notification*.php','deploy/noa-notifications.*','deploy/noa-sw.js','scripts/noa_notification*','scripts/noa_push_dispatch.py','scripts/qa/noa-notifications.mjs','tests/notifications/**','.github/workflows/noa-notifications.yml','.github/workflows/noa-push-dispatch.yml']
-  push:
-    branches: [main]
-    paths: ['bridge/notification*.php','deploy/noa-notifications.*','deploy/noa-sw.js','scripts/noa_notification*','scripts/noa_push_dispatch.py','scripts/qa/noa-notifications.mjs','tests/notifications/**','.github/workflows/noa-notifications.yml','.github/workflows/noa-push-dispatch.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

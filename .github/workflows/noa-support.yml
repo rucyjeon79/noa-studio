@@ -1,8 +1,6 @@
 name: NOA creator support and settlement
 on:
-  push:
-    branches: [main, noa-support-finish]
-    paths: ['bridge/support*.php','deploy/noa-support.*','scripts/noa_support_release.py','tests/support/**','.github/workflows/noa-support.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

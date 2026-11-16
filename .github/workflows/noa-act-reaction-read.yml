@@ -1,8 +1,6 @@
 name: ACT music reaction read check
 on:
-  push:
-    branches: [main]
-    paths: ['bridge/engagement-targets.php','scripts/act_reaction_release.py','scripts/act_reaction_read.py','scripts/qa/act-reaction-read.php','.github/workflows/noa-act-reaction-read.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   read:

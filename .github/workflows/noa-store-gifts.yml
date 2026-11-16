@@ -1,10 +1,6 @@
 name: NOA store gifts
 on:
-  pull_request:
-    paths: &paths ['bridge/special-invite.php','deploy/noa-special-invite.*','deploy/noa-invite-resume.extend.php','bridge/gift-core.php','bridge/toss-core.php','bridge/notifications-*.php','deploy/noa-gifts.*','deploy/noa-membership.php','deploy/noa-membership-wallet.css','tests/payments/*gift*','scripts/noa_gifts_release.py','.github/workflows/noa-store-gifts.yml']
-  push:
-    branches: [main]
-    paths: *paths
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

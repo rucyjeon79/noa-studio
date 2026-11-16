@@ -1,8 +1,5 @@
 name: NOA SQL taxonomy current read-only audit
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-taxonomy-audit.yml', 'scripts/noa_taxonomy_audit.py']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-dothome-production, cancel-in-progress: false}

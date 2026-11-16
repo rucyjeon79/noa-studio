@@ -1,10 +1,6 @@
 name: NOA single-child category navigation
 on:
-  pull_request:
-    paths: &paths ['scripts/noa_category_autoselect_release.py','scripts/qa/noa-category-autoselect.mjs','.github/workflows/noa-category-autoselect.yml']
-  push:
-    branches: [main]
-    paths: *paths
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

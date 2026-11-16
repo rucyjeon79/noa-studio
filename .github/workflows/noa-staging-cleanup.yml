@@ -1,8 +1,5 @@
 name: NOA Verified Stale Staging Cleanup
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-staging-cleanup.yml']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-backup-migration-control, cancel-in-progress: false}

@@ -1,11 +1,6 @@
 name: NOA lounge discovery
 on:
   workflow_dispatch: {}
-  pull_request:
-    paths: ['bridge/lounge-discovery.php','deploy/noa-lounge-discovery.*','scripts/noa_lounge_discovery_release.py','tests/lounge-discovery/**','.github/workflows/noa-lounge-discovery.yml']
-  push:
-    branches: [main]
-    paths: ['bridge/lounge-discovery.php','deploy/noa-lounge-discovery.*','scripts/noa_lounge_discovery_release.py','tests/lounge-discovery/**','.github/workflows/noa-lounge-discovery.yml']
 permissions: {contents: read}
 jobs:
   verify:

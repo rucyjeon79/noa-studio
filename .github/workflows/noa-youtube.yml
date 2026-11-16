@@ -1,9 +1,6 @@
 name: NOA YouTube channel validation and release
 # Use the documented descending metric sort for channel Analytics video reports.
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-youtube.yml']
   workflow_dispatch:
 permissions:
   contents: read

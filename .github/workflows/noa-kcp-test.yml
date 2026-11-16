@@ -1,10 +1,6 @@
 name: NOA KCP test window
 on:
-  pull_request:
-    paths: ['bridge/kcp-test*','deploy/noa-kcp-test*','tests/kcp/**','scripts/noa_kcp_test_release.py','.github/workflows/noa-kcp-test.yml']
-  push:
-    branches: [main]
-    paths: ['bridge/kcp-test*','deploy/noa-kcp-test*','tests/kcp/**','scripts/noa_kcp_test_release.py','.github/workflows/noa-kcp-test.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

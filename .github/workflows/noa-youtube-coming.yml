@@ -1,21 +1,5 @@
 name: NOA YouTube Coming Soon Production
 on:
-  push:
-    branches: [main]
-    paths: &paths
-      - 'bridge/youtube-catalog.php'
-      - 'deploy/noa-youtube.php'
-      - 'deploy/noa-youtube.js'
-      - 'deploy/noa-youtube.css'
-      - 'deploy/noa-browse.js'
-      - 'deploy/noa-browse-edit.js'
-      - 'public/coming/**'
-      - 'tests/youtube/coming*'
-      - 'scripts/qa/noa-youtube-coming.mjs'
-      - 'scripts/noa_youtube_coming_deploy.py'
-      - '.github/workflows/noa-youtube-coming.yml'
-  pull_request:
-    paths: *paths
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: noa-youtube-coming, cancel-in-progress: false}

@@ -1,10 +1,5 @@
 name: NOA Legacy Route Cleanup Production
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/noa_navigation_safe_deploy.py'
-      - '.github/workflows/noa-legacy-route-cleanup.yml'
   workflow_dispatch:
 permissions:
   contents: read

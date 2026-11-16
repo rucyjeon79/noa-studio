@@ -1,10 +1,6 @@
 name: N80 JukeBox integration
 on:
-  pull_request:
-    paths: &paths ['scripts/noa_navigation_release.py','.github/workflows/noa-navigation-player.yml','deploy/noa-app/playback-recovery.js','deploy/noa-app/jukebox/system-media.js','deploy/noa-app/jukebox/player.js','deploy/noa-app/jukebox/presentation.js','deploy/noa-app/jukebox/navigation-policy.js','deploy/noa-app/engine/jukebox.php','scripts/qa/noa-navigation-player.mjs','tests/engine/jukebox*']
-  push:
-    branches: [main]
-    paths: *paths
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify:

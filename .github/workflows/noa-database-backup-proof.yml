@@ -1,8 +1,6 @@
 name: NOA private database backup isolated restore verification
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-database-backup-proof.yml','scripts/noa_verify_private_backup.py']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   verify-private-backup:

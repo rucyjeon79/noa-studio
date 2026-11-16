@@ -1,8 +1,6 @@
 name: NOA community channel and events
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_lounge_channel_release.py','deploy/noa-lounge-channel*','bridge/lounge-channel.php','.github/workflows/noa-lounge-channel.yml']
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   publish:

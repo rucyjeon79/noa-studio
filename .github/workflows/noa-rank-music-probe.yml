@@ -1,8 +1,5 @@
 name: NOA ranking to music count verification
 on:
-  push:
-    branches: [main]
-    paths: ['scripts/noa_rank_music_probe.*','.github/workflows/noa-rank-music-probe.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

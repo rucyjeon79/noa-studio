@@ -1,10 +1,6 @@
 name: NOA home runtime performance
 on:
-  pull_request:
-    paths: &paths ['deploy/noa-home-assets.php','deploy/noa-app/home-assets.php','deploy/noa-home-performance.extend.php','tests/home-runtime/**','scripts/noa_home_runtime_release.py','scripts/qa/noa-home-runtime.mjs','.github/workflows/noa-home-runtime.yml']
-  push:
-    branches: [main]
-    paths: *paths
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
   candidate:

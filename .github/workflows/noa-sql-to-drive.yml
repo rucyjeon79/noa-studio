@@ -1,12 +1,5 @@
 name: NOA SQL Backup to Google Drive
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/noa_sql_backup_to_runner.py'
-      - '.github/workflows/noa-sql-to-drive.yml'
-      - 'scripts/noa_verify_drive_sql.py'
-      - 'scripts/noa_verify_private_backup.py'
   workflow_dispatch:
 permissions:
   contents: read
