@@ -4,8 +4,7 @@ on:
     workflows: [N80 Unified Facade Safe Production, N80 JukeBox integration]
     types: [completed]
   workflow_dispatch:
-  schedule:
-    - cron: '19 * * * *'
+  # Disabled unapproved recurring polling; only explicit and event-triggered checks remain.
 permissions:
   contents: read
 jobs:
