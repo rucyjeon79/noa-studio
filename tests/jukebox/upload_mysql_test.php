@@ -6,6 +6,8 @@ function rejects(callable $fn,string $code):void{try{$fn();}catch(Throwable $e){
 $db=new PDO('mysql:host=127.0.0.1;port=3306;dbname=jukebox_test;charset=utf8mb4','root',getenv('NOA_JUKEBOX_TEST_PASSWORD')?:'jukebox-test-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
 check(nj_download_name('별/빛:あ"')==='별_빛_あ_.mp3','unicode download filename');
 $db->exec('CREATE TABLE noa_documents(doc_key VARCHAR(191) PRIMARY KEY,kind VARCHAR(32),payload JSON,revision INT,updated_by VARCHAR(32))');nj_schema($db);
+// This isolated MySQL fixture includes the transactional new-song outbox.
+$db->exec('CREATE TABLE noa_notification_cursor (source VARCHAR(100) PRIMARY KEY,position BIGINT NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
 $key='single:upload-fixture:01';$doc=['title'=>'업로드 검증곡','genreId'=>'kpop-original','ep'=>'1','body'=>['sunoUrl'=>'https://suno.com/song/12345678-1234-1234-1234-123456789abc']];$raw=json_encode($doc,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);$db->prepare('INSERT INTO noa_documents VALUES(?,?,?,1,?)')->execute([$key,'single',$raw,'fixture']);$stored=$db->query('SELECT payload FROM noa_documents')->fetchColumn();
 $coverRel='K-POP/EP.01 업로드 검증곡/cover.webp';$coverDir=nj_root().'/K-POP/EP.01 업로드 검증곡';mkdir($coverDir,0700,true);copy('/tmp/noa-jukebox-fixture/cover.webp',$coverDir.'/cover.webp');$coverHash=hash_file('sha256',$coverDir.'/cover.webp');nj_import($db,['song_key'=>$key,'source_url'=>$doc['body']['sunoUrl'],'suno_title'=>'원본제목','cover_path'=>$coverRel,'cover_bytes'=>filesize($coverDir.'/cover.webp'),'cover_sha256'=>$coverHash]);
 $bytes=file_get_contents('/tmp/noa-jukebox-fixture/uploaded.wav');$b=['key'=>$key,'filename'=>'원본 음원.wav','bytes'=>strlen($bytes),'fingerprint'=>hash('sha256',$bytes),'originalArtist'=>''];
