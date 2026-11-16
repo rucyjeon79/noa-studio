@@ -40,13 +40,21 @@ jobs:
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
         run: python scripts/qa/n80_sftp_recovery_audit.py
-      - name: Verify existing Google Drive backup destination without writing
-        env:
-          NOA_DRIVE_RCLONE_CONFIG_B64: ${{ secrets.NOA_DRIVE_RCLONE_CONFIG_B64 }}
+      - name: Package known-identical live preimage for Google Drive courier
+        shell: bash
         run: |
-          python - <<'PY'
-          from scripts.noa_drive_snapshot import DriveStore, DRIVE_FOLDER
-          store = DriveStore()
-          store.require()
-          print('N80_GOOGLE_DRIVE_BACKUP_READY_READONLY', DRIVE_FOLDER)
-          PY
+          set -euo pipefail
+          actual="$(sha256sum bridge/session-shorts-prepare.php | cut -d' ' -f1)"
+          test "$actual" = '0be99712546f55272c28ecef5c4605cf0acd06827b4874b6f33e00defa3e22a8'
+          test "$(wc -c < bridge/session-shorts-prepare.php)" -eq 9913
+          mkdir -p "$RUNNER_TEMP/noa-preimage-courier"
+          cp bridge/session-shorts-prepare.php "$RUNNER_TEMP/noa-preimage-courier/preimage-session-shorts-prepare.php"
+          printf '%s\n' '{"path":"/hosting/noastudio/html/noa-bridge/session-shorts-prepare.php","bytes":9913,"sha256":"0be99712546f55272c28ecef5c4605cf0acd06827b4874b6f33e00defa3e22a8","source":"exact_SHA256_match_to_readonly_SFTP_live_preimage","restoreOnly":true}' > "$RUNNER_TEMP/noa-preimage-courier/manifest.json"
+          echo "N80_PREIMAGE_COURIER_READY"
+      - name: Transfer verified preimage to temporary Drive-upload courier
+        uses: actions/upload-artifact@v4
+        with:
+          name: n80-sftp-preimage-courier-${{ github.run_id }}
+          path: ${{ runner.temp }}/noa-preimage-courier/
+          retention-days: 1
+          if-no-files-found: error
