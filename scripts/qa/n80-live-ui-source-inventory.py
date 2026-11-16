@@ -93,7 +93,8 @@ def markup_layout_risks(text,limit=90):
                         self.risks.append({
                             'pattern':'action_inside_prose',
                             'parentTag':p['tag'],'parentClass':p['class'],
-                            'actionTag':tag,'actionClass':label,'actionId':ident
+                            'actionTag':tag,'actionClass':label,'actionId':ident,
+                            'ancestors':[{'tag':a['tag'],'id':a['id'],'class':a['class']} for a in self.stack[-8:]]
                         })
                         break
             if tag not in ('area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'):
