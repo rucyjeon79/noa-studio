@@ -39,7 +39,8 @@ try {
     $headers=['time'=>$_SERVER['HTTP_X_N80_TIME']??'','nonce'=>$_SERVER['HTTP_X_N80_NONCE']??'',
         'signature'=>$_SERVER['HTTP_X_N80_SIGNATURE']??''];
     if (!n80_hub_auth($raw,$headers,$key,time(),512)) $reply(401,'wake_auth_required');
-    $body=json_decode($raw,true,8,JSON_THROW_ON_ERROR);
+    try {$body=json_decode($raw,true,8,JSON_THROW_ON_ERROR);}
+    catch (JsonException $e) {$reply(400,'wake_request_invalid');}
     if (!is_array($body)||array_is_list($body))$reply(400,'wake_request_invalid');
     $control=n80_hub_read($root,'control.json');
     $wakeControl=n80_hub_read($root,'scheduled-wake-control.json');
@@ -53,6 +54,11 @@ try {
     $result=n80_scheduled_wake_admit($root,$admit,(string)$headers['nonce'],time());
     http_response_code($result['state']==='duplicate_signal'?200:202);
     echo json_encode($result,JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
+} catch (DomainException $e) {
+    // A signed replay or revoked stop gate is a conflict, not a server outage.
+    $code=$e->getMessage();
+    if ($code==='wake_replay' || $code==='wake_revoked_before_commit') $reply(409,$code);
+    $reply(503,'wake_unavailable');
 } catch (Throwable $e) {
     $reply(503,'wake_unavailable');
 }
