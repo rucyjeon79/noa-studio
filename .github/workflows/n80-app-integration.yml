@@ -9,6 +9,7 @@ permissions:
   contents: read
 jobs:
   integrate:
+    if: ${{ false }} # Retired GitHub host SSH / background automation; N80 owns request-based work
     concurrency:
       group: n80-app-data-audit
       cancel-in-progress: false

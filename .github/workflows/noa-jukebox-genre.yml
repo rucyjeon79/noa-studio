@@ -27,7 +27,7 @@ jobs:
         if: always()
         with: {name: jukebox-genre-browser, path: room-theme-proof/player/, retention-days: 7}
   publish:
-    if: github.event_name == 'push'
+    if: ${{ false }} # N80 owner-authenticated releases only; DotHome protection
     needs: verify
     runs-on: ubuntu-latest
     environment: production

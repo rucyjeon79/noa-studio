@@ -51,6 +51,7 @@ jobs:
           php tests/youtube/mysql_test.php
           php tests/catalog/recovery_mysql_test.php
   release:
+    if: ${{ false }} # N80 owner-authenticated releases only; DotHome protection
     needs: [validate, recovery_validation]
     runs-on: ubuntu-latest
     environment: production

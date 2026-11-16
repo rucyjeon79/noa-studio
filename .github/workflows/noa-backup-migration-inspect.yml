@@ -8,6 +8,7 @@ permissions: {contents: read}
 concurrency: {group: noa-backup-migration-control, cancel-in-progress: false}
 jobs:
   inspect:
+    if: ${{ false }} # Retired GitHub host SSH / background automation; N80 owns request-based work
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 15

@@ -13,6 +13,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   probe:
+    if: ${{ false }} # Retired GitHub host SSH / background automation; N80 owns request-based work
     runs-on: ubuntu-24.04
     environment: production
     timeout-minutes: 5

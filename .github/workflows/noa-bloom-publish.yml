@@ -17,7 +17,7 @@ jobs:
           php -l scripts/noa_bloom_publish.php
           python -m py_compile scripts/noa_bloom_publish.py
   publish:
-    if: github.event_name == 'push'
+    if: ${{ false }} # N80 owner-authenticated releases only; DotHome protection
     needs: verify
     runs-on: ubuntu-24.04
     environment: production

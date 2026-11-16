@@ -35,6 +35,7 @@ jobs:
           NOA_TEST_MYSQL_DSN: mysql:host=127.0.0.1;port=3306;dbname=noa_catalog_test;charset=utf8mb4
         run: php -d memory_limit=256M tests/catalog/mysql_test.php
   release:
+    if: ${{ false }} # N80 owner-authenticated releases only; DotHome protection
     needs: validate
     runs-on: ubuntu-latest
     environment: production

@@ -26,7 +26,7 @@ jobs:
           python3 -m py_compile scripts/noa_full_runtime_deploy.py scripts/noa_full_inventory.py scripts/noa_deploy_guard.py
           python3 -m unittest discover -s tests -p deploy_guard_test.py -v
   runtime:
-    if: github.event_name != 'pull_request'
+    if: ${{ false }} # N80 owner-authenticated releases only; DotHome protection
     runs-on: ubuntu-latest
     environment: production
     steps:

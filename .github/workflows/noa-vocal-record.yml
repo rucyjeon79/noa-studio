@@ -20,7 +20,7 @@ jobs:
           node --check deploy/noa-app/p0-player.js
           node --test scripts/noa_player_regression.test.mjs scripts/qa/noa-browse.test.mjs
   deploy:
-    if: github.event_name == 'push'
+    if: ${{ false }} # Retired GitHub host SSH / background automation; N80 owns request-based work
     needs: verify
     runs-on: ubuntu-24.04
     environment: production

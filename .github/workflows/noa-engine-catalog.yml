@@ -20,7 +20,7 @@ jobs:
           php tests/workspace/duplicates_test.php
           php tests/workspace/classification_test.php
   deploy:
-    if: github.event_name == 'push'
+    if: ${{ false }} # N80 owner-authenticated releases only; DotHome protection
     needs: verify
     runs-on: ubuntu-24.04
     environment: production

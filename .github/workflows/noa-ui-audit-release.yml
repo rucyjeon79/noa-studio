@@ -11,6 +11,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   release:
+    if: ${{ false }} # Retired GitHub host SSH / background automation; N80 owns request-based work
     runs-on: ubuntu-latest
     environment: production
     steps:

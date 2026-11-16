@@ -32,6 +32,7 @@ jobs:
           php tests/jukebox/upload_mysql_test.php
           python -m py_compile scripts/noa_upload_first_link_repair.py
   recover:
+    if: ${{ false }} # Retired GitHub host SSH / background automation; N80 owns request-based work
     needs: validate
     runs-on: ubuntu-latest
     environment: production

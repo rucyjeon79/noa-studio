@@ -11,6 +11,46 @@ CONFIG = ROOT / "config" / "n80-approved-schedules.json"
 CRON = re.compile(r"(?m)^\s*-\s*cron:\s*['\"]?([^'\"\n#]+)")
 WAKE_MODE = "signed_n80_wake_only"
 
+# Former unattended GitHub/SSH business or deploy jobs may never own DotHome.
+RETIRED_HOST_JOBS = [
+    ("noa-approved-browse-release.yml", "production"),
+    ("noa-approved-ui-release.yml", "production"),
+    ("noa-backup-migration-cleanup.yml", "cleanup"),
+    ("noa-bloom-publish.yml", "publish"),
+    ("noa-catalog.yml", "release"),
+    ("noa-engine-catalog.yml", "deploy"),
+    ("noa-engine-durable-store-production.yml", "deploy"),
+    ("noa-engine-event-contract-production.yml", "deploy"),
+    ("noa-engine-inbox-production.yml", "deploy"),
+    ("noa-engine-lease-inbox-production.yml", "deploy"),
+    ("noa-engine-outbox-production.yml", "deploy"),
+    ("noa-engine-router-production.yml", "deploy"),
+    ("noa-engine-workflow-production.yml", "deploy"),
+    ("noa-full-runtime-release.yml", "runtime"),
+    ("noa-initial-catalog-flash.yml", "deploy"),
+    ("noa-jukebox-genre.yml", "publish"),
+    ("noa-jukebox-upload-css-production.yml", "verify-and-deploy"),
+    ("noa-p0-cache-release.yml", "release"),
+    ("noa-popularity-release.yml", "release"),
+    ("noa-quality-release.yml", "release"),
+    ("noa-record-library.yml", "publish"),
+    ("noa-root-release.yml", "release"),
+    ("noa-scroll-release.yml", "deploy"),
+    ("noa-taxonomy-release.yml", "release"),
+    ("noa-ui-audit-release.yml", "release"),
+    ("noa-upload-buttons.yml", "deploy"),
+    ("noa-upload-first-link-repair.yml", "recover"),
+    ("noa-upload-status.yml", "deploy"),
+    ("noa-upload-wake.yml", "deploy"),
+    ("noa-vocal-record.yml", "deploy"),
+    ("noa-playlist-safe-production.yml", "verify-and-deploy"),
+    ("noa-upload-commit-diagnosis.yml", "diagnose"),
+    ("n80-app-integration.yml", "integrate"),
+    ("n80-guardian-production-audit.yml", "verify"),
+    ("noa-backup-migration-inspect.yml", "inspect"),
+    ("n80-ssh-release-capability.yml", "probe"),
+]
+
 
 def audit():
     config = json.loads(CONFIG.read_text(encoding="utf-8"))
@@ -71,6 +111,12 @@ def audit():
             "spawn(" in launch or "proc_open(" in hub or
             "while(" in runner or "transport.open_session" in bootstrap):
         bad.append("resident_n80_execution_reintroduced")
+    # Reject any future commit that brings an old SSH or host-deploy job back.
+    for name, job in RETIRED_HOST_JOBS:
+        content = (WORKFLOWS / name).read_text(encoding="utf-8")
+        required = f"\n  {job}:\n" + "    if: ${{ false }}"
+        if required not in content:
+            bad.append(f"{name}: unauthorized_host_job_reactivated")
     missing = sorted(set(approved) - seen)
     if missing:
         bad.extend(f"{name}: approved_wake_missing" for name in missing)

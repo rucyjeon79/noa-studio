@@ -11,6 +11,7 @@ permissions: {contents: read}
 concurrency: {group: noa-dothome-production, cancel-in-progress: false}
 jobs:
   release:
+    if: ${{ false }} # N80 owner-authenticated releases only; DotHome protection
     runs-on: ubuntu-latest
     timeout-minutes: 25
     environment: production

@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   verify:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    if: ${{ false }} # Retired GitHub host SSH / background automation; N80 owns request-based work
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 10

@@ -6,6 +6,7 @@ on:
 permissions: {contents: read}
 jobs:
   publish:
+    if: ${{ false }} # N80 owner-authenticated releases only; DotHome protection
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 15
