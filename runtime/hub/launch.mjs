@@ -2,6 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {spawn} from 'node:child_process';
 const root='/hosting/noastudio/noa-hub',lock=path.join(root,'runner.lock');
+// Dothome shared hosting may prohibit a resident runner. Honor the owner stop latch
+// before inspecting locks or spawning any detached process.
+const controlPath=path.join(root,'control.json');
+const control=JSON.parse(fs.readFileSync(controlPath,'utf8'));
+if(control.stop===true||control.paused===true)throw new Error('hub_owner_stop_latched');
 if(fs.existsSync(lock)){
  if(fs.lstatSync(lock).isSymbolicLink())throw new Error('hub_lock_unsafe');
  const pid=Number(fs.readFileSync(path.join(lock,'pid'),'utf8'));
