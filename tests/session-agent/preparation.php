@@ -3,6 +3,31 @@ declare(strict_types=1);
 define('_GNUBOARD_',true);require __DIR__.'/../../bridge/session-shorts-prepare.php';
 function check_prepare(bool $ok,string $reason):void {if(!$ok)throw new RuntimeException($reason);}
 function reject_prepare(callable $fn,string $reason):void {try{$fn();}catch(DomainException|InvalidArgumentException $e){return;}throw new RuntimeException($reason);}
+// Read-only completed-release eligibility is required before selecting Shorts sources.
+$source=['key'=>'single:edm-kpop-club:31','genre'=>'edm-kpop-club'];
+$candidate=['key'=>'single:edm-kpop-club:31','genre'=>'edm-kpop-club','ep'=>31];
+$record=['context'=>['ep'=>31],'fields'=>[
+ 'sunoUrl'=>'https://suno.com/song/original-music-id',
+ 'youtubeUrl'=>'https://www.youtube.com/watch?v=AbCdEfGhIjK']];
+nd_prepare_validate_completed_source($record,'AbCdEfGhIjK',$candidate,$source);
+$bad=$record;$bad['fields']['sunoUrl']='';
+reject_prepare(fn()=>nd_prepare_validate_completed_source($bad,'AbCdEfGhIjK',$candidate,$source),
+ 'Reject incomplete Suno release');
+$bad=$record;$bad['fields']['youtubeUrl']='';
+reject_prepare(fn()=>nd_prepare_validate_completed_source($bad,'AbCdEfGhIjK',$candidate,$source),
+ 'Reject song not posted on YouTube');
+$bad=$record;$bad['fields']['youtubeUrl']='https://youtu.be/12345678901';
+reject_prepare(fn()=>nd_prepare_validate_completed_source($bad,'AbCdEfGhIjK',$candidate,$source),
+ 'Reject a different uploaded song video');
+$bad=$record;$bad['context']['ep']=32;
+reject_prepare(fn()=>nd_prepare_validate_completed_source($bad,'AbCdEfGhIjK',$candidate,$source),
+ 'Reject a different edition EP');
+$bad=$candidate;$bad['genre']='pop-original';
+reject_prepare(fn()=>nd_prepare_validate_completed_source($record,'AbCdEfGhIjK',$bad,$source),
+ 'Reject wrong genre');
+$bad=$source;$bad['key']='single:edm-kpop-club:32';
+reject_prepare(fn()=>nd_prepare_validate_completed_source($record,'AbCdEfGhIjK',$candidate,$bad),
+ 'Reject wrong song key');
 $p=json_decode(file_get_contents(__DIR__.'/../../config/n80-daily-shorts.json'),true);
 $s=['config'=>['workerEnabled'=>true],'campaigns'=>['daily_shorts'=>['enabled'=>true]]];$now=strtotime('2026-11-09T08:00:00+09:00');
 foreach(['2026-11-09T07:59:00+09:00','2026-11-10T08:00:00+09:00','2026-11-14T08:00:00+09:00'] as $at){
