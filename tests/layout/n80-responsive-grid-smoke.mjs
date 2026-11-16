@@ -22,6 +22,8 @@ function getStage(name,marker){
 }
 const account=getStage('noa-account.css','/* N80 INTRINSIC ACCOUNT GRID');
 const creator=getStage('noa-creator.css','/* N80 MOBILE CREATOR HIERARCHY');
+const baseUi=getStage('noa-ui.css','/* N80 PROSE ACTION SEPARATION');
+const aiLab=getStage('noa-ai-lab.css','/* N80 PROSE ACTION SEPARATION');
 const testHtml='<!doctype html><html lang="ko" class="noa-member-ui" data-noa-precision>'+
  '<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'+
  '<body class="noa-page" style="margin:0;font:15px/1.5 system-ui">'+
@@ -35,7 +37,10 @@ const testHtml='<!doctype html><html lang="ko" class="noa-member-ui" data-noa-pr
  '<ul class="creator-tree" style="list-style:none;padding:0;margin:0">'+
  '<li><div class="creator-tree-line creator-row"><button class="creator-tree-toggle">+</button><span class="creator-tree-label">AI Artist NOA x 람준파파</span><small>5개</small></div></li>'+
  '<li><div class="creator-tree-line creator-row"><button class="creator-tree-toggle">+</button><span class="creator-tree-label">당신의 이야기, 우리의 음악</span><small>12개</small></div></li>'+
- '</ul></section></main></body></html>';
+ '</ul></section>'+
+ '<section id="lab-config"><p>Google 연결은 <a href="#" class="noa-button">NotebookLM 통합관리</a>에서 관리합니다.</p></section>'+
+ '<section class="noa-payment-readiness"><p>결제 연결 확인 <a href="#" class="noa-button">Google Play · KCP 등록 준비 점검</a>을 먼저 수행하세요.</p></section>'+
+ '</main></body></html>';
 const emulateSidebar='@media(min-width:761px) and (max-width:1023px){#test-main{margin-left:190px!important;width:calc(100% - 190px)!important}}'+
  '@media(min-width:1024px){#test-main{margin-left:280px!important;width:calc(100% - 280px)!important}}';
 const viewports=[
@@ -56,6 +61,8 @@ try{
    await page.setContent(testHtml,{waitUntil:'domcontentloaded'});
    await page.addStyleTag({content:account[stage]});
    await page.addStyleTag({content:creator[stage]});
+   await page.addStyleTag({content:baseUi[stage]});
+   await page.addStyleTag({content:aiLab[stage]});
    await page.addStyleTag({content:emulateSidebar});
    const measure=await page.evaluate(()=>{
     const grid=document.querySelector('.noa-my-account-grid'),children=[...grid.children];
@@ -63,6 +70,18 @@ try{
     const first=children[0],dd=first.querySelector('dd');
     const toggle=[...document.querySelectorAll('.creator-tree-toggle')];
     const tree=document.querySelector('.creator-tree');
+    const actions=[...document.querySelectorAll('#lab-config p>a.noa-button,.noa-payment-readiness p>a.noa-button')];
+    const actionMeasure=actions.map(link=>{
+      const r=link.getBoundingClientRect();const parent=link.parentElement.getBoundingClientRect();
+      const nodeBefore=link.previousSibling,nodeAfter=link.nextSibling;
+      const rangeRect=node=>{if(!node||!node.textContent?.trim())return null;
+        const range=document.createRange();range.selectNodeContents(node);return range.getBoundingClientRect()};
+      const before=rangeRect(nodeBefore),after=rangeRect(nodeAfter);
+      return {display:getComputedStyle(link).display,width:r.width,height:r.height,
+        withinParent:r.left>=parent.left-2&&r.right<=parent.right+2,
+        separatedBefore:!before||r.top>=before.bottom-2,
+        separatedAfter:!after||after.top>=r.bottom-2};
+    });
     return {
      columns:columns.length,containerWidth:Math.round(grid.getBoundingClientRect().width),
      cellWidth:Math.round(first.getBoundingClientRect().width),
@@ -71,13 +90,16 @@ try{
      clippedText:[...grid.querySelectorAll('dd')].some(el=>el.scrollWidth>el.clientWidth+2),
      treeOverflow:tree.scrollWidth>tree.clientWidth+2,
      toggleMinWidth:Math.min(...toggle.map(el=>el.getBoundingClientRect().width)),
-     toggleMinHeight:Math.min(...toggle.map(el=>el.getBoundingClientRect().height))
+     toggleMinHeight:Math.min(...toggle.map(el=>el.getBoundingClientRect().height)),
+     actionMeasure
     };
    });
    results.push({viewport:name,width,height,stage,...measure});
    if(stage==='candidate'){
     if(measure.overflow>2||measure.clippedText||measure.treeOverflow)
       throw Error('overlap or overflow at '+name+' '+JSON.stringify(measure));
+    if(measure.actionMeasure.length!==2||measure.actionMeasure.some(a=>a.display!=='flex'||a.height<44||!a.withinParent||!a.separatedBefore||!a.separatedAfter))
+      throw Error('prose/action separation failed at '+name+' '+JSON.stringify(measure.actionMeasure));
     if(measure.toggleMinWidth<40||measure.toggleMinHeight<42)
       throw Error('toggle hit area regression at '+name);
     if(['phone320','phone390','phone412','mid541','tablet768','landscape891'].includes(name)&&measure.columns!==1)
