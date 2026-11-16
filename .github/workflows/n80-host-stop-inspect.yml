@@ -1,0 +1,30 @@
+name: N80 host safe-stop inspection (read-only)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/n80-host-stop-inspect.yml'
+      - 'scripts/qa/n80-host-stop-inspect.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: n80-host-stop-inspect
+  cancel-in-progress: true
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install SSH inspection dependency
+        run: python -m pip install 'paramiko>=3,<5'
+      - name: Read current N80 stop flag and runtime compatibility (no writes)
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+        run: python scripts/qa/n80-host-stop-inspect.py
