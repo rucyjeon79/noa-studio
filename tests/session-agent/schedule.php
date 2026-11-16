@@ -42,4 +42,45 @@ foreach(['jobId','videoId'] as $field){
  nd_shorts_tick($keep,$p,$t('2026-11-10 08:00:00'),$blocked);
  verify_schedule($keep['campaigns']['daily_shorts']['current']===$original,'Do not relabel existing work or upload');
 }
+// A cancelled old Shorts job must never hold the next scheduled publication slot.
+$oldSlot=['date'=>'2026-11-09','publishAt'=>'2026-11-09T12:00:00+09:00',
+ 'jobId'=>'cancelled-old','videoId'=>null];
+$base=['config'=>['workerEnabled'=>true],'jobs'=>[
+ 'cancelled-old'=>['state'=>'cancelled','outputs'=>[],'agent'=>[]]
+ ],'events'=>[],'campaigns'=>['daily_shorts'=>[
+ 'enabled'=>true,'current'=>$oldSlot,'history'=>[]]]];
+$cancelled=$base;
+nd_shorts_tick($cancelled,$p,$t('2026-11-16 08:00:00'),$blocked);
+$campaign=$cancelled['campaigns']['daily_shorts'];
+verify_schedule(count($campaign['history'])===1,'Archived a single cancelled slot');
+verify_schedule($campaign['history'][0]['jobId']==='cancelled-old'&&
+ $campaign['history'][0]['noAutomaticReplay']===true&&
+ $campaign['history'][0]['sourceJobPreserved']===true,'Preserved cancelled provenance');
+verify_schedule($cancelled['jobs']['cancelled-old']['state']==='cancelled'&&
+ ($campaign['current']['date']??'')==='2026-11-16'&&
+ array_key_exists('jobId',$campaign['current'])&&
+ $campaign['current']['jobId']===null,'Old job preserved, new unstarted slot only');
+nd_shorts_tick($cancelled,$p,$t('2026-11-16 08:01:00'),$blocked);
+verify_schedule(count($cancelled['campaigns']['daily_shorts']['history'])===1,
+ 'Repeated tick must not duplicate archived records');
+
+// An in-progress job or any publication evidence must NOT be archived.
+$working=$base;$working['jobs']['cancelled-old']['state']='agent_paused';
+nd_shorts_tick($working,$p,$t('2026-11-16 08:00:00'),$blocked);
+verify_schedule($working['campaigns']['daily_shorts']['current']['jobId']==='cancelled-old'&&
+ count($working['campaigns']['daily_shorts']['history'])===0,'Keep paused recoverable work');
+$uploaded=$base;$uploaded['campaigns']['daily_shorts']['current']['videoId']='aBcDEfgHI12';
+nd_shorts_tick($uploaded,$p,$t('2026-11-16 08:00:00'),$blocked);
+verify_schedule($uploaded['campaigns']['daily_shorts']['current']['jobId']==='cancelled-old'&&
+ count($uploaded['campaigns']['daily_shorts']['history'])===0,'Keep old uploaded media');
+$output=$base;$output['jobs']['cancelled-old']['outputs']=[['sha256'=>str_repeat('a',64)]];
+nd_shorts_tick($output,$p,$t('2026-11-16 08:00:00'),$blocked);
+verify_schedule($output['campaigns']['daily_shorts']['current']['jobId']==='cancelled-old',
+ 'Keep cancelled job with output asset evidence');
+$uncertain=$base;$uncertain['jobs']['cancelled-old']['agent']['active']=[
+ 'kind'=>'video','phase'=>'requested'];
+nd_shorts_tick($uncertain,$p,$t('2026-11-16 08:00:00'),$blocked);
+verify_schedule($uncertain['campaigns']['daily_shorts']['history'][0]['providerHistoryReconciliationRequired']===true,
+ 'Preserve provider uncertainty for reconciliation without automatic replay');
+
 echo "N80 Shorts: M/W/F KST noon, weekends, UTC/year boundaries, invalid policy, slot migration, resume and dedup passed.\n";
