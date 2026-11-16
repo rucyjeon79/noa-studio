@@ -40,3 +40,13 @@ jobs:
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
           NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
         run: python scripts/qa/n80_sftp_recovery_audit.py
+      - name: Verify existing Google Drive backup destination without writing
+        env:
+          NOA_DRIVE_RCLONE_CONFIG_B64: ${{ secrets.NOA_DRIVE_RCLONE_CONFIG_B64 }}
+        run: |
+          python - <<'PY'
+          from scripts.noa_drive_snapshot import DriveStore, DRIVE_FOLDER
+          store = DriveStore()
+          store.require()
+          print('N80_GOOGLE_DRIVE_BACKUP_READY_READONLY', DRIVE_FOLDER)
+          PY
