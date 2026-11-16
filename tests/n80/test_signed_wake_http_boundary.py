@@ -249,5 +249,33 @@ class SignedWakeHttpBoundaryTest(unittest.TestCase):
         self.assertFalse((self.private/"scheduled-wakes.json").exists())
 
 
+    def test_malformed_json_with_valid_hmac_returns_bad_request(self):
+        self.approved_fixture()
+        raw=b'{"action":'
+        stamp=str(int(time.time()))
+        nonce="d"*32
+        msg=("N80-HUB-1\n"+hashlib.sha256(raw).hexdigest()+"\n"+stamp+"\n"+nonce).encode()
+        signature=hmac.new(KEY.encode(),msg,hashlib.sha256).hexdigest()
+        headers={
+            "Content-Type":"application/json","X-N80-Time":stamp,
+            "X-N80-Nonce":nonce,"X-N80-Signature":signature,
+        }
+        code,_,result=self.fetch(raw=raw,headers=headers)
+        self.assertEqual((code,result["error"],result["executionAllowed"]),
+                         (400,"wake_request_invalid",False))
+        self.assertFalse((self.private/"scheduled-wakes.json").exists())
+
+    def test_replayed_signed_nonce_reports_conflict_without_second_ticket(self):
+        body=self.approved_fixture()
+        raw,headers=self.signed(body,nonce="e"*32)
+        self.assertEqual(self.fetch(raw=raw,headers=headers)[0],202)
+        code,_,reply=self.fetch(raw=raw,headers=headers)
+        self.assertEqual((code,reply["error"],reply["executionAllowed"]),
+                         (409,"wake_replay",False))
+        store=json.loads((self.private/"scheduled-wakes.json").read_text())
+        nonces=json.loads((self.private/"scheduled-wake-nonces.json").read_text())
+        self.assertEqual((len(store["slots"]),len(nonces)),(1,1))
+
+
 if __name__=="__main__":
     unittest.main()
