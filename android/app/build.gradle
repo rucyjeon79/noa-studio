@@ -1,19 +1,32 @@
 plugins { id 'com.android.application' }
-def noaBuildNumber = Integer.parseInt(System.getenv('GITHUB_RUN_NUMBER') ?: '14')
+def noaReleaseVersion = System.getenv('NOA_RELEASE_VERSION_CODE')
+def noaReleaseRequested = gradle.startParameter.taskNames.any { it.toLowerCase(java.util.Locale.ROOT).contains('release') }
+def noaUnsignedBuild = System.getenv('NOA_UNSIGNED_BUILD') == '1'
+if (noaReleaseRequested && (noaReleaseVersion == null ||
+    !(noaReleaseVersion ==~ /[0-9]{1,10}/) ||
+    Long.parseLong(noaReleaseVersion) <= 1794632996L ||
+    Long.parseLong(noaReleaseVersion) > 2100000000L)) {
+    throw new GradleException('NOA Play release requires explicit NOA_RELEASE_VERSION_CODE between 1794632997 and 2100000000')
+}
+def noaBuildNumber = Integer.parseInt(noaReleaseVersion ?: System.getenv('GITHUB_RUN_NUMBER') ?: '14')
 android {
     namespace 'kr.ai.noastudio'
-    compileSdk 35
+    compileSdk 36
     sourceSets.main.res.srcDir layout.buildDirectory.dir("generated/noaBrandResources")
     sourceSets.main.assets.srcDir layout.buildDirectory.dir("generated/n80BridgeAssets")
-    defaultConfig { applicationId 'kr.ai.noastudio'; minSdk 26; targetSdk 35; versionCode noaBuildNumber; versionName '2.0.' + noaBuildNumber; testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner' }
+    defaultConfig { applicationId 'kr.ai.noastudio'; minSdk 26; targetSdk 36; versionCode noaBuildNumber; versionName '2.0.' + noaBuildNumber; testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner' }
     buildTypes { debug { crunchPngs false }; release { crunchPngs false } }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    testOptions { unitTests.includeAndroidResources = true }
 }
 dependencies {
     implementation 'androidx.media3:media3-exoplayer:1.8.0'
     implementation 'androidx.media3:media3-session:1.8.0'
     implementation 'androidx.media3:media3-datasource-okhttp:1.8.0'
     implementation 'androidx.webkit:webkit:1.14.0'
+    implementation 'com.google.android.play:app-update:2.1.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.16.1'
     androidTestImplementation 'androidx.test:runner:1.6.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.3.0'
@@ -23,12 +36,14 @@ dependencies {
 
 tasks.register('copyNoaSymbol', Copy) {
     from(rootProject.file('../public/icon-512.png')) { rename { 'noa_symbol.png' } }
+    // Reuse the PWA's opaque, full-bleed launcher artwork without a second crop.
+    from(rootProject.file('../public/icon-maskable-512.png')) { rename { 'noa_launcher_symbol.png' } }
     into layout.buildDirectory.dir('generated/noaBrandResources/drawable-nodpi')
 }
 tasks.named('preBuild').configure { dependsOn 'copyNoaSymbol' }
 
 // Production APKs carry the receipt from the actual NOA host, bound to this bridge.
-// Local debug builds remain possible without pretending they passed the host gate.
+// Local debug and explicitly unsigned review builds cannot stand in for this receipt.
 tasks.register('verifyN80HostBridge') {
     outputs.upToDateWhen { false }
     doLast {
@@ -36,14 +51,32 @@ tasks.register('verifyN80HostBridge') {
         delete(output)
         def proofFile = rootProject.file('host-node-proof.json')
         if (!proofFile.exists()) {
-            if (System.getenv('NOA_ANDROID_HOST_NODE') == '1') throw new GradleException('N80 host Node proof is required')
+            if ((noaReleaseRequested && !noaUnsignedBuild) || System.getenv('NOA_ANDROID_HOST_NODE') == '1')
+                throw new GradleException('Fresh N80 host proof is required. NOA_UNSIGNED_BUILD=1 permits review artifacts only.')
             return
         }
         def proof = new groovy.json.JsonSlurper().parse(proofFile)
         def bridgeHash = java.security.MessageDigest.getInstance('SHA-256').digest(file('src/main/assets/noa-native-bridge.js').bytes).encodeHex().toString()
-        if (proof.authority != 'N80 Engine' || proof.operation != 'jukebox.android_bridge' ||
+        def sourceCommit = System.getenv('NOA_SOURCE_COMMIT') ?: System.getenv('GITHUB_SHA')
+        def inputPaths = ['android/app/src/main/assets/noa-native-bridge.js',
+            'tests/android/native_bridge_test.mjs', 'tests/android/live_web_contract_test.mjs',
+            'android/app/build.gradle', '.github/workflows/noa-android.yml']
+        inputPaths += fileTree('src/main/java/kr/ai/noastudio').matching { include '*.java' }.files.collect {
+            'android/app/src/main/java/kr/ai/noastudio/' + it.name
+        }
+        def currentInputs = inputPaths.collectEntries { path ->
+            def input = rootProject.file('../' + path)
+            if (!input.isFile() || java.nio.file.Files.isSymbolicLink(input.toPath()))
+                throw new GradleException('Invalid N80 bridge input: ' + path)
+            [(path): java.security.MessageDigest.getInstance('SHA-256').digest(input.bytes).encodeHex().toString()]
+        }
+        if (proof.schemaVersion != 1 || proof.module != 'jukebox' ||
+            !(sourceCommit ==~ /[a-f0-9]{40}/) || proof.inputs != currentInputs ||
+            proof.nodeSha256 != '904a6d3484241d466989f9df9ba3aab822b1496191bdb28230eb491a55c32a52' ||
+            !(proof.nodeVersion ==~ /v24\.[0-9]+\.[0-9]+/) ||
+            proof.authority != 'N80 Engine' || proof.operation != 'jukebox.android_bridge' ||
             proof.executionTarget != 'existing_noa_host' || proof.passed != true ||
-            proof.sourceCommit != System.getenv('GITHUB_SHA') || proof.bridgeSha256 != bridgeHash ||
+            proof.sourceCommit != sourceCommit || proof.bridgeSha256 != bridgeHash ||
             proof.tests.tests < 16 || proof.tests.pass != proof.tests.tests ||
             ['fail','cancelled','skipped','todo'].any { proof.tests[it] != 0 }) {
             throw new GradleException('N80 host Node proof does not match this APK')

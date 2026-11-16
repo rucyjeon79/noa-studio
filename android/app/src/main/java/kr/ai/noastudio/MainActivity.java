@@ -5,6 +5,10 @@ import android.content.*;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.*;
+import android.view.View;
+import android.view.WindowInsets;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 import android.webkit.*;
 import android.webkit.CookieManager;
 import android.widget.Toast;
@@ -35,14 +39,15 @@ public class MainActivity extends Activity {
  private AppUpdateChecker appUpdates;
  private ValueCallback<Uri[]> fileSelection;
  private final Handler handler=new Handler(Looper.getMainLooper());
+ private OnBackInvokedCallback backCallback;
  private String sessionCookie,bridge="";
  private JSONObject pending;
  private final Runnable tick=new Runnable(){public void run(){publishState();handler.postDelayed(this,500);}};
 
  @Override public void onCreate(Bundle saved){
-  super.onCreate(saved);if(saved!=null){musicUrl=saved.getString("musicUrl");musicName=saved.getString("musicName");}playbackStore=new PlaybackStateStore(this);appUpdates=new AppUpdateChecker(this);
+  super.onCreate(saved);if(saved!=null){musicUrl=saved.getString("musicUrl");musicName=saved.getString("musicName");}playbackStore=new PlaybackStateStore(this);appUpdates=new AppUpdateChecker(this,this::checkpointBeforeUpdate);
   getWindow().setStatusBarColor(Color.rgb(17,19,22));getWindow().setNavigationBarColor(Color.rgb(17,19,22));
-  getWindow().getDecorView().setOnApplyWindowInsetsListener((v,i)->{findViewById(android.R.id.content).setPadding(i.getSystemWindowInsetLeft(),i.getSystemWindowInsetTop(),i.getSystemWindowInsetRight(),i.getSystemWindowInsetBottom());return i.consumeSystemWindowInsets();});
+  setupSystemInsets();
   try(InputStream in=getAssets().open("noa-native-bridge.js")){bridge=read(in);}catch(IOException e){throw new IllegalStateException("Media bridge missing",e);}
   browser=new WebView(this);WebSettings settings=browser.getSettings();settings.setJavaScriptEnabled(true);settings.setCacheMode(WebSettings.LOAD_NO_CACHE);settings.setDomStorageEnabled(true);settings.setAllowFileAccess(false);settings.setAllowContentAccess(true);settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);settings.setMediaPlaybackRequiresUserGesture(true);
   // Honor the live page's viewport and CSS rather than WebView defaults.
@@ -97,10 +102,46 @@ public class MainActivity extends Activity {
    DownloadManager.Request request=new DownloadManager.Request(u);String cookie=CookieManager.getInstance().getCookie(url);if(cookie!=null)request.addRequestHeader("Cookie",cookie);request.addRequestHeader("User-Agent",agent);request.setMimeType(mime);String name=URLUtil.guessFileName(url,disposition,mime).replaceAll("[^\\p{L}\\p{N}._-]","_");request.setTitle(name);request.setDestinationInExternalFilesDir(this,Environment.DIRECTORY_DOWNLOADS,name);request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
    try{((DownloadManager)getSystemService(DOWNLOAD_SERVICE)).enqueue(request);notice("다운로드를 시작했습니다.");}catch(RuntimeException e){notice("다운로드를 시작하지 못했습니다.");}
   });
-  setContentView(browser);browser.loadUrl(BASE+"/");
+  setContentView(browser);setupSystemBack();browser.loadUrl(BASE+"/");
   controllerFuture=new MediaController.Builder(this,new SessionToken(this,new ComponentName(this,PlaybackService.class))).buildAsync();
   controllerFuture.addListener(()->{try{controller=controllerFuture.get();controller.addListener(new Player.Listener(){@Override public void onEvents(Player p,Player.Events e){publishState();}});drain();publishState();}catch(Exception e){notice("음악 재생기를 연결하지 못했습니다.");}},this::runOnUiThread);
   handler.post(tick);
+ }
+ private void setupSystemInsets(){
+  // Android 16 always draws edge-to-edge for targetSdk 36: reserve actual safe
+  // system-bar/display-cutout space around the production PWA WebView.
+  if(Build.VERSION.SDK_INT>=30)getWindow().setDecorFitsSystemWindows(false);
+  getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+  getWindow().getDecorView().setOnApplyWindowInsetsListener((v,insets)->{
+   View content=findViewById(android.R.id.content);
+   if(content!=null){
+    if(Build.VERSION.SDK_INT>=30){
+     android.graphics.Insets safe=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout());
+     android.graphics.Insets ime=insets.getInsets(WindowInsets.Type.ime());
+     content.setPadding(safe.left,safe.top,safe.right,Math.max(safe.bottom,ime.bottom));
+    }else{
+     content.setPadding(insets.getSystemWindowInsetLeft(),insets.getSystemWindowInsetTop(),insets.getSystemWindowInsetRight(),insets.getSystemWindowInsetBottom());
+    }
+   }
+   // The WebView is already inside the safe area; do not apply it a second time.
+   return Build.VERSION.SDK_INT>=30?WindowInsets.CONSUMED:insets.consumeSystemWindowInsets();
+  });
+ }
+ private void handleNoaBack(){
+  if(browser!=null&&browser.canGoBack())browser.goBack();
+  else moveTaskToBack(true); // Background media continues when leaving the root screen.
+ }
+ private void checkpointBeforeUpdate(){
+  if(controller!=null&&!playbackStore.closed()&&!playbackStore.saveForUpdate(controller))
+   throw new IllegalStateException("Playback checkpoint could not be saved");
+  CookieManager.getInstance().flush();
+ }
+ private void setupSystemBack(){
+  // Android 16 no longer dispatches Activity.onBackPressed() to targetSdk 36.
+  if(Build.VERSION.SDK_INT>=33){
+   backCallback=this::handleNoaBack;
+   getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT,backCallback);
+  }
  }
  private static String read(InputStream in)throws IOException{ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] block=new byte[8192];int n;while((n=in.read(block))!=-1){if(out.size()+n>4*1024*1024)throw new IOException("Response too large");out.write(block,0,n);}return out.toString(StandardCharsets.UTF_8.name());}
  private void external(Uri uri){try{startActivity(new Intent(Intent.ACTION_VIEW,uri));}catch(ActivityNotFoundException e){notice("링크를 열 수 있는 앱이 없습니다.");}}
@@ -215,8 +256,9 @@ public class MainActivity extends Activity {
   }else musicUrl=null;
   return;
  }if(requestCode==FILE_PICK&&fileSelection!=null){List<Uri> uris=new ArrayList<>();if(resultCode==RESULT_OK&&data!=null){if(data.getClipData()!=null)for(int i=0;i<data.getClipData().getItemCount();i++)uris.add(data.getClipData().getItemAt(i).getUri());else if(data.getData()!=null)uris.add(data.getData());}uris.removeIf(u->!"content".equals(u.getScheme()));fileSelection.onReceiveValue(uris.isEmpty()?null:uris.toArray(new Uri[0]));fileSelection=null;}}
- @Override public void onBackPressed(){if(browser.canGoBack())browser.goBack();else moveTaskToBack(true);}
+ @Override public void onBackPressed(){handleNoaBack();}
+ @Override public void onWindowFocusChanged(boolean focused){super.onWindowFocusChanged(focused);if(focused&&appUpdates!=null)appUpdates.onForeground();}
  @Override protected void onPause(){if(browser!=null)browser.onPause();CookieManager.getInstance().flush();super.onPause();}
  @Override protected void onResume(){super.onResume();if(browser!=null){browser.onResume();syncSession();publishState();}if(appUpdates!=null)handler.postDelayed(()->{if(!isFinishing()&&!isDestroyed())appUpdates.check(false);},1500);}
- @Override protected void onDestroy(){handler.removeCallbacksAndMessages(null);if(appUpdates!=null)appUpdates.close();if(fileSelection!=null)fileSelection.onReceiveValue(null);if(browser!=null)browser.destroy();if(controllerFuture!=null)MediaController.releaseFuture(controllerFuture);super.onDestroy();}
+ @Override protected void onDestroy(){if(Build.VERSION.SDK_INT>=33&&backCallback!=null)getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);handler.removeCallbacksAndMessages(null);if(appUpdates!=null)appUpdates.close();if(fileSelection!=null)fileSelection.onReceiveValue(null);if(browser!=null)browser.destroy();if(controllerFuture!=null)MediaController.releaseFuture(controllerFuture);super.onDestroy();}
 }

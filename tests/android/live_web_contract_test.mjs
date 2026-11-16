@@ -4,9 +4,11 @@ import {readFileSync,existsSync} from 'node:fs';
 const read=p=>readFileSync(new URL('../../'+p,import.meta.url),'utf8');
 test('web-only deploys cannot rebuild the APK',()=>{
  const workflow=read('.github/workflows/noa-android.yml');
- const paths=workflow.match(/paths: \[([^\n]+)\]/)[1];
- for(const file of ['deploy/noa-design.json','deploy/noa-ui-words.json','deploy/noa-app/engine/n80.php','deploy/noa-ui.js','deploy/noa-music.php'])assert(!paths.includes(file),file);
- assert(paths.includes('android/**'));
+ const triggers=workflow.match(/^on:\n([\s\S]*?)^permissions:/m)?.[1];
+ assert(triggers, 'workflow triggers must be explicit');
+ assert.match(triggers, /^  workflow_dispatch:/m);
+ assert.doesNotMatch(triggers, /^  (push|pull_request|schedule|workflow_run|repository_dispatch):/m,
+   'website changes and scheduled jobs must not rebuild the APK');
 });
 test('APK contains no alternate web design or playlist screen',()=>{
  const gradle=read('android/app/build.gradle');

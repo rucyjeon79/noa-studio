@@ -27,3 +27,9 @@ __pycache__/
 
 # Per-build receipt from the private N80 host; embedded only in verified APKs.
 /android/host-node-proof.json
+
+# One-shot Android build outputs and machine-local SDK configuration.
+/android/.gradle/
+/android/build/
+/android/app/build/
+/android/local.properties

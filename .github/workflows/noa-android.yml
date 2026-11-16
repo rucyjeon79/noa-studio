@@ -1,5 +1,6 @@
 name: NOA STUDIO Android
 # Production PWA owns navigation and layout; Android provides background media only.
+# User-requested Android releases are separate from the automatic Shorts wake policy.
 on:
   workflow_dispatch:
     inputs:
@@ -16,7 +17,7 @@ jobs:
     concurrency:
       group: n80-android-host-bridge
       cancel-in-progress: false
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,14 +32,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24.22.2'
+      - name: Install the Android 16 build platform
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
       - name: Verify native bridge and administrator preview fallback
         run: node --test tests/android/native_bridge_test.mjs tests/android/live_web_contract_test.mjs
       - name: Verify APK publication failure safety
         run: python3 tests/android/apk_deploy_test.py
-      - name: Verify host Node evidence and N80 operation ownership
-        run: |
-          python3 tests/android/host_node_test.py
-          python3 -m unittest discover -s tests/engine -p 'test_auto_dispatch.py' -v
+      - name: Verify Android host Node evidence
+        run: python3 tests/android/host_node_test.py
       - name: Verify the APK bridge with Node on the existing NOA host
         if: github.ref == 'refs/heads/main'
         env:
@@ -59,7 +60,7 @@ jobs:
         working-directory: android
         env:
           NOA_ANDROID_HOST_NODE: ${{ github.ref == 'refs/heads/main' && '1' || '0' }}
-        run: GITHUB_RUN_NUMBER="$NOA_RELEASE_VERSION_CODE" gradle --no-daemon :app:assembleRelease :app:bundleRelease :app:assembleDebugAndroidTest :app:lintRelease
+        run: GITHUB_RUN_NUMBER="$NOA_RELEASE_VERSION_CODE" gradle --no-daemon :app:testReleaseUnitTest :app:assembleRelease :app:bundleRelease :app:assembleDebugAndroidTest :app:lintRelease
       - name: Sign release and instrumentation with permanent identity
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
@@ -105,7 +106,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           # Use modern ANGLE software rendering; legacy GLES SwiftShader segfaulted on the live homepage.
-          api-level: 35
+          api-level: 36
           target: google_apis
           arch: x86_64
           profile: pixel_2
@@ -174,8 +175,8 @@ jobs:
           retention-days: 14
 
   publish:
-    # Native-scoped main pushes automatically publish after all device gates pass.
-    if: (github.event_name == 'workflow_dispatch' && inputs.publish) || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    # Publish only an explicitly requested release from the registered main workflow.
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish
     needs: apk
     concurrency:
       group: noa-dothome-production

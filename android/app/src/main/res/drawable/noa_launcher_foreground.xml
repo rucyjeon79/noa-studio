@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive layers are 150% of their visible viewport. A proportional 1/6
+     inset maps the complete PWA canvas to that viewport at every icon size.
+     Keep the launch-screen resource separate so its sizing remains unchanged. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:inset="16.666667%">
+    <bitmap android:src="@drawable/noa_launcher_symbol" android:gravity="fill"/>
+</inset>
