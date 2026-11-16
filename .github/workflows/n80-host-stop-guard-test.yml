@@ -1,0 +1,32 @@
+name: N80 owner stop latch regression guard
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tests/safety/n80-host-stop-latch.mjs'
+      - 'runtime/hub/launch.mjs'
+      - 'scripts/n80_hub_bootstrap.py'
+      - 'deploy/noa-app/engine/hub.php'
+      - '.github/workflows/n80-host-stop-guard-test.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  guard:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript, PHP and Python syntax
+        run: |
+          node --check runtime/hub/launch.mjs
+          node --check runtime/hub/runner.mjs
+          python3 -m py_compile scripts/n80_hub_bootstrap.py
+          php -l deploy/noa-app/engine/hub.php
+      - name: Verify stop latch refuses spawn in isolated runner
+        run: node tests/safety/n80-host-stop-latch.mjs
