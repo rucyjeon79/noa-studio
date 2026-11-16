@@ -12,7 +12,7 @@ FINGERPRINT='SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU'
 OUT=Path('n80-ui-repair-candidate')
 CHECKED_SOURCE_HASHES={
  'noa-account.css':'e145a81663ba38279fada1de09548f8ec38a717e8e58bc6ecf538a01f4b78b98',
- 'noa-creator.css':'9b32071f88a8ea9c009c150f1fcb674cab3d2a0f4488a1d8b2ac4bf20ff5574',
+ 'noa-creator.css':'9b32071f88a8ea95f0ac66e0a2e4bd06118cd0ad841849d32db40d285489c884',
  'noa-notebooklm.css':'12af9233d5b7a48',
  'noa-ai-lab.css':'cb66b2199f0aaa6'
 }
