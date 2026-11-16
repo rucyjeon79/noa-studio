@@ -11,6 +11,20 @@ CONFIG = ROOT / "config" / "n80-approved-schedules.json"
 CRON = re.compile(r"(?m)^\s*-\s*cron:\s*['\"]?([^'\"\n#]+)")
 WAKE_MODE = "signed_n80_wake_only"
 
+RETIRED_N80_BUSINESS_WORKFLOWS = (
+    "noa-jukebox.yml",
+    "noa-popularity-hourly.yml",
+    "noa-push-dispatch.yml",
+    "noa-membership-maintenance.yml",
+    "noa-media-retention.yml",
+    "noa-suno-card-auto.yml",
+    "noa-personal-listening.yml",
+    "noa-notifications.yml",
+    "noa-cover-fill.yml",
+    "noa-recommendation-follow.yml",
+    "noa-activity.yml",
+)
+
 # Former unattended GitHub/SSH business or deploy jobs may never own DotHome.
 RETIRED_HOST_JOBS = [
     ("noa-approved-browse-release.yml", "production"),
@@ -130,6 +144,21 @@ def audit():
                 bad.append(f"{name}: duplicate_or_missing_job_condition")
         except (IndexError, ValueError):
             bad.append(f"{name}: retired_job_block_missing")
+    # A future legacy deployment or GitHub Actions reactivation must fail CI.
+    # Require exactly one inert job and no host, media or queue work.
+    for name in RETIRED_N80_BUSINESS_WORKFLOWS:
+        content = (WORKFLOWS / name).read_text(encoding="utf-8")
+        if (not re.search(r"(?m)^on:\\n  workflow_dispatch:\\n", content)
+                or not re.search(
+                    r"(?m)^jobs:\\n  retired:\\n    if: \\$\\{\\{ false \\}\\}\\n", content)
+                or re.search(
+                    r"(?m)^  (?!retired:)[a-zA-Z_][\\w-]*:\\s*$",
+                    content.split("jobs:\\n", 1)[-1])
+                or any(token in content for token in (
+                    "NOA_SSH_", "NOA_FTP_", "scripts/n80_auto.py",
+                    "api.github.com", "curl ", "paramiko",
+                    "workflow_run:", "schedule:", "repository_dispatch:"))):
+            bad.append(f"{name}: retired_github_business_worker_reactivated")
     missing = sorted(set(approved) - seen)
     if missing:
         bad.extend(f"{name}: approved_wake_missing" for name in missing)
