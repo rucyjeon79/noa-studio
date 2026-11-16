@@ -5,7 +5,7 @@ declare(strict_types=1);
  * This module NEVER executes a job, launches a process, sends a network
  * request, or changes the existing paused/stop control. GitHub is only a clock.
  */
-function n80_scheduled_wake_contract(array $body, array $schedule, array $hostPolicy, array $control, int $now): array {
+function n80_scheduled_wake_contract(array $body, array $schedule, array $hostPolicy, array $control, int $now, array $wakeControl=[]): array {
     $reject=static fn(string $code): array => ['ok'=>false, 'reason'=>$code, 'executionAllowed'=>false];
     $required=['action','operation','phase','slot'];
     if (count($body)!==4 || array_diff(array_keys($body),$required) || array_diff($required,array_keys($body))
@@ -47,8 +47,18 @@ function n80_scheduled_wake_contract(array $body, array $schedule, array $hostPo
         return $reject('wake_activation_not_approved');
     // A scheduled one-shot wake has its own control plane. The retired resident
     // runner MUST stay paused and stopped, including during signal admission.
-    if (($control['paused']??null)!==true || ($control['stop']??null)!==true)
+    if (($control['paused']??null)!==true || ($control['stop']??null)!==true
+        || !in_array('ai.daily_shorts_clock',$control['activeOperations']??[],true))
         return $reject('wake_legacy_runner_not_suspended');
+    // Separate N80 one-shot emergency stop and owner/hosting approval.
+    // Missing private control is DENIED; the public endpoint cannot set it.
+    if (($wakeControl['version']??null)!==1
+        || ($wakeControl['enabled']??false)!==true
+        || ($wakeControl['paused']??true)!==false
+        || ($wakeControl['stop']??true)!==false
+        || ($wakeControl['hostingApproved']??false)!==true
+        || ($wakeControl['boundedExecutorVerified']??false)!==true)
+        return $reject('wake_one_shot_suspended');
     return ['ok'=>true,'reason'=>'admitted_signal_only','executionAllowed'=>false,
         'operation'=>'ai.daily_shorts_clock','phase'=>$body['phase'],
         'slot'=>$body['slot'],'slotId'=>$body['slot'].'|'.$body['phase'],
@@ -56,14 +66,25 @@ function n80_scheduled_wake_contract(array $body, array $schedule, array $hostPo
 }
 
 /** Read-only safe status. Installed source is NOT proof of receiver activation. */
-function n80_scheduled_wake_snapshot(array $hostPolicy, array $control): array {
+function n80_scheduled_wake_snapshot(array $hostPolicy, array $control, array $wakeControl=[]): array {
     return [
         'ok'=>true,'mode'=>'read_only','sourceInstalled'=>true,
         'endpoint'=>'/noa-bridge/n80-scheduled-wake.php',
-        'activated'=>($hostPolicy['githubWakeActivated']??false)===true,
+        'activated'=>($hostPolicy['githubWakeActivated']??false)===true
+            && ($hostPolicy['requiresHostingApproval']??true)===false
+            && ($hostPolicy['n80BoundedExecutorVerified']??false)===true
+            && ($wakeControl['enabled']??false)===true
+            && ($wakeControl['stop']??true)===false
+            && ($wakeControl['paused']??true)===false
+            && ($wakeControl['hostingApproved']??false)===true
+            && ($wakeControl['boundedExecutorVerified']??false)===true
+            && ($control['paused']??null)===true && ($control['stop']??null)===true,
         'hostingApprovalRequired'=>($hostPolicy['requiresHostingApproval']??true)===true,
         'boundedExecutorVerified'=>($hostPolicy['n80BoundedExecutorVerified']??false)===true,
         'legacyRunnerPaused'=>($control['paused']??null)===true,
+        'oneShotEnabled'=>($wakeControl['enabled']??false)===true,
+        'oneShotPaused'=>($wakeControl['paused']??true)!==false,
+        'oneShotStopped'=>($wakeControl['stop']??true)!==false,
         'signedRequestCanaryVerified'=>false,'githubScheduleEnabledVerified'=>false,
         'tasksExecuted'=>0,'uploads'=>0,'providerCalls'=>0,
         'activationNotPerformed'=>true,
@@ -82,8 +103,20 @@ function n80_scheduled_wake_admit(string $root, array $admission, string $nonce,
     return n80_hub_locked($root, static function() use ($root,$admission,$nonce,$now): array {
         // Re-read under the same lock: an administrator pause must win races.
         $liveControl=n80_hub_read($root,'control.json');
+        $liveWake=n80_hub_read($root,'scheduled-wake-control.json');
         $livePolicy=n80_host_load_policy();
         if (($liveControl['stop']??null)!==true || ($liveControl['paused']??null)!==true
+            || !in_array('ai.daily_shorts_clock',$liveControl['activeOperations']??[],true)
+            || ($liveWake['version']??null)!==1
+            || ($liveWake['enabled']??false)!==true
+            || ($liveWake['paused']??true)!==false
+            || ($liveWake['stop']??true)!==false
+            || ($liveWake['hostingApproved']??false)!==true
+            || ($liveWake['boundedExecutorVerified']??false)!==true
+            || ($livePolicy['githubActionsRole']??null)!=='scheduled_wake_signal_only'
+            || ($livePolicy['githubWorkerDispatchAllowed']??true)!==false
+            || ($livePolicy['githubBusinessExecutionAllowed']??true)!==false
+            || ($livePolicy['hostResidentRunnerAllowed']??true)!==false
             || ($livePolicy['githubWakeActivated']??false)!==true
             || ($livePolicy['requiresHostingApproval']??true)!==false
             || ($livePolicy['n80BoundedExecutorVerified']??false)!==true)
