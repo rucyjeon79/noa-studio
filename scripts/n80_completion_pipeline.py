@@ -26,6 +26,13 @@ def release_patterns(workflow):
     # Read the existing release's actual push filter instead of maintaining a
     # second list which can drift. Fail closed if its reviewed flow-list changes.
     match = re.search(r"^  push:\n(?:(?:    [^\n]*\n))*?    paths: (\[[^\n]*\])$", workflow, re.MULTILINE)
+    if match is None:
+        # The legacy integrated release now has no automatic push trigger.
+        # A manually callable retired route must not be reported as live.
+        manual_only = bool(re.search(r"(?m)^on:\n  workflow_dispatch:\n", workflow))
+        other_events = re.search(r"(?m)^  (?:push|pull_request|schedule|workflow_run|release):", workflow)
+        if manual_only and not other_events:
+            return []
     evidence.require(match is not None, "release_push_filter_unrecognized")
     patterns = ast.literal_eval(match.group(1))
     evidence.require(isinstance(patterns, list) and patterns and all(isinstance(p, str) and p and not p.startswith("!") for p in patterns), "release_push_filter_invalid")
@@ -33,6 +40,9 @@ def release_patterns(workflow):
 
 
 def release_scope(event_name, event, ref, commit, patterns, repository="."):
+    if not patterns:
+        # No automatic deployment exists; even manual quality gates are local-only.
+        return False
     if ref != "refs/heads/main" or event_name == "pull_request":
         return False
     if event_name == "workflow_dispatch":

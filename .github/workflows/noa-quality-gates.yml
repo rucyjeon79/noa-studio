@@ -103,6 +103,7 @@ jobs:
           php tests/popularity/policy_mysql_test.php
           python tests/popularity/real_stream_mysql_test.py
       - name: Verify live public and protected routes without modifying data
+        if: github.event_name == 'workflow_dispatch'
         run: |
           python3 - <<'PY'
           import urllib.request,urllib.error,urllib.parse,json

@@ -27,8 +27,9 @@ class CompletionPipelineTests(unittest.TestCase):
 
     def test_scope_uses_actual_release_push_paths(self):
         workflow = (SCRIPTS.parent / pipeline.DEPLOY_PATH).read_text()
-        patterns = pipeline.release_patterns(workflow)
-        self.assertIn('deploy/noa-app/engine/consume-music.php', patterns)
+        self.assertEqual(pipeline.release_patterns(workflow), [])
+        # Historical filters remain testable without re-enabling GitHub deployment.
+        patterns = pipeline.release_patterns("on:\n  push:\n    paths: ['deploy/noa-app/engine/music-availability.php','deploy/noa-app/engine/consume-music.php']\n")
         self.assertNotIn('deploy/noa-sitemap.php', patterns)  # Owned by the scoped membership release.
         self.assertNotIn('tests/deployment/test_finish_release.py', patterns)  # PR-only path.
         sha, before = 'a' * 40, 'b' * 40
@@ -41,6 +42,14 @@ class CompletionPipelineTests(unittest.TestCase):
                 self.assertEqual(pipeline.release_scope('push', {'before': before}, 'refs/heads/main', sha, patterns), expected)
                 self.assertEqual(git.call_args.args[0][-4:], ['-z', before, sha, '--'])
                 self.assertIn('--no-renames', git.call_args.args[0])
+
+    def test_retired_manual_release_never_claims_deployment(self):
+        workflow = (SCRIPTS.parent / pipeline.DEPLOY_PATH).read_text()
+        self.assertEqual(pipeline.release_patterns(workflow), [])
+        with patch.object(pipeline.subprocess, 'run') as git:
+            self.assertFalse(pipeline.release_scope('push', {'before':'b'*40}, 'refs/heads/main', 'a'*40, []))
+            self.assertFalse(pipeline.release_scope('workflow_dispatch', {}, 'refs/heads/main', 'a'*40, []))
+            git.assert_not_called()
 
     def test_scope_pr_false_and_manual_main_true_without_diff(self):
         with patch.object(pipeline.subprocess, 'run') as git:
