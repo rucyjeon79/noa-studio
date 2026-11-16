@@ -148,12 +148,12 @@ def audit():
     # Require exactly one inert job and no host, media or queue work.
     for name in RETIRED_N80_BUSINESS_WORKFLOWS:
         content = (WORKFLOWS / name).read_text(encoding="utf-8")
-        if (not re.search(r"(?m)^on:\\n  workflow_dispatch:\\n", content)
+        if (not re.search(r"(?m)^on:\n  workflow_dispatch:\n", content)
                 or not re.search(
-                    r"(?m)^jobs:\\n  retired:\\n    if: \\$\\{\\{ false \\}\\}\\n", content)
+                    r"(?m)^jobs:\n  retired:\n    if: \$\{\{ false \}\}\n", content)
                 or re.search(
-                    r"(?m)^  (?!retired:)[a-zA-Z_][\\w-]*:\\s*$",
-                    content.split("jobs:\\n", 1)[-1])
+                    r"(?m)^  (?!retired:)[a-zA-Z_][\w-]*:\s*$",
+                    content.split("jobs:\n", 1)[-1])
                 or any(token in content for token in (
                     "NOA_SSH_", "NOA_FTP_", "scripts/n80_auto.py",
                     "api.github.com", "curl ", "paramiko",
