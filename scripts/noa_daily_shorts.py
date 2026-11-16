@@ -1,7 +1,8 @@
 """N80 Auto campaign tick; existing workflow owns the clock and concurrency."""
-import json, sys
+import json, sys, os
 from pathlib import Path
 from noa_n80_ai_worker import worker_key, signed_tick
+from n80_host_pause_gate import remote_gate
 
 def prepare_subtitles(dispatch):
     claim=dispatch('claim_subtitles')
@@ -56,6 +57,20 @@ def prepare_subtitles(dispatch):
         print('N80_SHORTS_SUBTITLES',json.dumps({'state':'subtitle_failed','reason':reason,'errorType':type(error).__name__,'recognizerType':getattr(error,'recognizerType','')}),flush=True)
 
 def main():
+    # This job runs on a temporary GitHub worker, NEVER a resident web-host
+    # process. The owner's private N80 stop/pause latch is authoritative.
+    # Fail closed before reading worker credentials or attempting any provider
+    # operation, even if invoked directly outside the scheduled workflow.
+    try:
+        allowed,reason=remote_gate(os.environ)
+    except Exception:
+        allowed,reason=False,'host_control_unreachable'
+    if not allowed:
+        print('N80_DAILY_SHORTS',json.dumps({
+            'state':'blocked_by_owner_control','reason':reason,
+            'hostProcessLaunches':0,'providerCalls':0,'publicationAttempts':0,
+        },ensure_ascii=False),flush=True)
+        return
     key=worker_key()
     def dispatch(command='', **fields):
         return signed_tick(key,'n80_daily_shorts_tick',json.dumps({'command':command,**fields},ensure_ascii=False).encode())
