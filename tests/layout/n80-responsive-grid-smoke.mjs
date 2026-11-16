@@ -27,7 +27,7 @@ const aiLab=getStage('noa-ai-lab.css','/* N80 PROSE ACTION SEPARATION');
 const testHtml='<!doctype html><html lang="ko" class="noa-member-ui" data-noa-precision>'+
  '<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'+
  '<body class="noa-page" style="margin:0;font:15px/1.5 system-ui">'+
- '<main id="test-main" style="padding:16px;width:100%;box-sizing:border-box">'+
+ '<main id="test-main" class="noa-points-page noa-payment-settings" style="padding:16px;width:100%;box-sizing:border-box">'+
  '<section id="noa-my-account" style="box-sizing:border-box;width:100%"><div class="noa-membership-card">'+
  '<dl class="noa-my-account-grid">'+
  '<div><dt>현재 구독상태</dt><dd>관리자 이용 권한 · 유료 구독 없음</dd></div>'+
