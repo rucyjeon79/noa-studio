@@ -49,6 +49,28 @@ def audit():
         if expressions != ([approved[path.name]] if path.name in approved else []):
             if expressions:
                 bad.append(f"{path.name}: cron_without_matching_owner_approval={expressions}")
+    # Never silently reintroduce legacy GitHub jobs that install or restart
+    # a resident Node process. Old code is retained in Git history only.
+    for name in ("n80-hub-bootstrap.yml", "n80-engine-facade-production.yml"):
+        path = WORKFLOWS / name
+        body = path.read_text(encoding="utf-8")
+        if (("if: ${{ false }}" not in body or
+             "hub" not in body.lower() or
+             any(word in body for word in ("NOA_SSH_HOST", "N80_HUB_INSTALL",
+                                           "scripts/n80_hub_bootstrap.py",
+                                           "scripts/n80_single_session_deploy.py"))):
+            bad.append(f"{name}: legacy_host_deployment_not_retired")
+    launch = (ROOT / "runtime/hub/launch.mjs").read_text(encoding="utf-8")
+    runner = (ROOT / "runtime/hub/runner.mjs").read_text(encoding="utf-8")
+    bootstrap = (ROOT / "scripts/n80_hub_bootstrap.py").read_text(encoding="utf-8")
+    hub = (ROOT / "deploy/noa-app/engine/hub.php").read_text(encoding="utf-8")
+    if ("hub_resident_runner_retired" not in launch or
+            "hub_resident_runner_retired" not in runner or
+            "hub_resident_runner_retired" not in bootstrap or
+            "hub_resident_runner_retired" not in hub or
+            "spawn(" in launch or "proc_open(" in hub or
+            "while(" in runner or "transport.open_session" in bootstrap):
+        bad.append("resident_n80_execution_reintroduced")
     missing = sorted(set(approved) - seen)
     if missing:
         bad.extend(f"{name}: approved_wake_missing" for name in missing)
