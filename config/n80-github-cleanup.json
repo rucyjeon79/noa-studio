@@ -86,5 +86,34 @@
     "wakePlaceholderUnchanged": true,
     "androidWorkflowUnchanged": true,
     "retainedDatabaseUnchanged": true
+  },
+  "residentRunnerRetirement": {
+    "policy": "physical_retirement_not_pause_only",
+    "repositoryDeletionVerified": true,
+    "repositoryRemovedFiles": [
+      "runtime/hub/launch.mjs",
+      "runtime/hub/runner.mjs",
+      "runtime/hub/stop.mjs",
+      "runtime/hub/probe.mjs",
+      "scripts/n80_hub_bootstrap.py",
+      "tests/hub/runner.test.mjs"
+    ],
+    "runtimeHostRoot": "/hosting/noastudio/noa-hub/runtime",
+    "hostPhysicalDeletionVerified": false,
+    "hostRemainingFiles": [
+      "launch.mjs",
+      "runner.mjs",
+      "stop.mjs",
+      "probe.mjs"
+    ],
+    "hostResidentLockPresent": false,
+    "hostCleanupOutcome": "pending_direct_authorized_sftp_cleanup",
+    "retained": [
+      "noa-hub source and admin controls",
+      "N80 Hub receipts",
+      "existing song, media, member, database records",
+      "one-shot event-based execution"
+    ],
+    "githubActionsUsedForRetirement": false
   }
 }
