@@ -68,3 +68,11 @@ No automatic reactivation of the host runner, no GitHub business worker, no blan
 4. **New automations**: GitHub signed scheduled wake and an external bounded task worker remain inactive pending an explicit approval and compatible hosting. User action work must remain available through authenticated N80 routes; no old 10-second host poller.
 5. **Completion evidence**: A 24-hour or suitable monitoring window with DotHome resource/account evidence plus a verified single-user task test is required before declaring the entire recurrence-prevention programme finished.
 
+
+## Physical retirement follow-up — 2026-11-17
+
+- The earlier disabled-stub stage is superseded: all four resident runtime files are now physically absent from the host and current repository. The authenticated Hub performed backup/apply/verify; no SFTP connection, GitHub Actions SSH, or host process startup was used for this retirement.
+- The private Drive ZIP was fully downloaded and compared byte for byte. The provided v2 `check_drive_proof` passed independently. Archive SHA-256: `75a993afe2ccc4d072000d5ca7df4156cb3f01a40ff3c0067ac0a01561244cb0`.
+- Independent Hub status returned `ok=true`, all four `present=false`, `launcherInstalled=false`, `residentLockPresent=false`, and `paused=true`. The stale historical `runnerState=not_verified` does not authorize a restart.
+- The obsolete specialist acceptance script now refuses without opening a connection. Its former SSH start and heartbeat loop remain in Git history only. The policy guard and isolated refusal test prevent reintroduction.
+- Existing one-shot requests, Android exception, member/music/database data and task history remain unchanged. Private backup addresses and detailed receipts are retained outside this public repository.

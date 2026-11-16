@@ -138,6 +138,12 @@ def audit():
     hub = (ROOT / "deploy/noa-app/engine/hub.php").read_text(encoding="utf-8")
     if "hub_resident_runner_retired" not in hub or "proc_open(" in hub:
         bad.append("resident_n80_execution_reintroduced")
+    acceptance = (ROOT / "scripts/n80_specialist_host_acceptance.py").read_text(encoding="utf-8")
+    if ('raise SystemExit("resident_runner_retired_use_noa_hub_status")' not in acceptance
+            or any(token in acceptance for token in (
+                "import paramiko", "exec_command", "runtime/launch.mjs",
+                "connect()", "time.sleep", "open_session"))):
+        bad.append("resident_acceptance_restart_reintroduced")
     # An approved signed one-shot must never depend on the retired scheduler.
     # Check source text as well as behavior tests: this dependency was once
     # unintentionally restored by a simultaneous production release.
