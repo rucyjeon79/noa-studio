@@ -42,12 +42,13 @@ try {
     $body=json_decode($raw,true,8,JSON_THROW_ON_ERROR);
     if (!is_array($body)||array_is_list($body))$reply(400,'wake_request_invalid');
     $control=n80_hub_read($root,'control.json');
+    $wakeControl=n80_hub_read($root,'scheduled-wake-control.json');
     $schedulePath=dirname(__DIR__).'/noa-app/engine/daily-shorts.json';
     if (is_link($schedulePath)||!is_file($schedulePath)||filesize($schedulePath)>32768)
         $reply(503,'wake_schedule_unavailable');
     $schedule=json_decode((string)file_get_contents($schedulePath),true,32,JSON_THROW_ON_ERROR);
     if (!is_array($schedule))$reply(503,'wake_schedule_unavailable');
-    $admit=n80_scheduled_wake_contract($body,$schedule,$policy,$control,time());
+    $admit=n80_scheduled_wake_contract($body,$schedule,$policy,$control,time(),$wakeControl);
     if (!$admit['ok'])$reply(409,$admit['reason']);
     $result=n80_scheduled_wake_admit($root,$admit,(string)$headers['nonce'],time());
     http_response_code($result['state']==='duplicate_signal'?200:202);
