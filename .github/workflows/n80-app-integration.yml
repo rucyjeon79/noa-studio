@@ -13,7 +13,6 @@ jobs:
     concurrency:
       group: n80-app-data-audit
       cancel-in-progress: false
-    if: vars.N80_OBSERVER_ENABLED != 'false' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: production

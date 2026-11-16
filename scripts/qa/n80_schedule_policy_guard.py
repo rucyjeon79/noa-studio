@@ -117,6 +117,19 @@ def audit():
         required = f"\n  {job}:\n" + "    if: ${{ false }}"
         if required not in content:
             bad.append(f"{name}: unauthorized_host_job_reactivated")
+        try:
+            section = content.split("\n"+"jobs:"+"\n", 1)[1]
+            block = section.split(f"  {job}:\n", 1)[1]
+            job_lines = block.splitlines()
+            stop = next((i for i, line in enumerate(job_lines)
+                         if line.startswith("  ") and not line.startswith("    ")
+                         and line.rstrip().endswith(":")), len(job_lines))
+            conditions = [line for line in job_lines[:stop]
+                          if line.startswith("    if:")]
+            if len(conditions) != 1:
+                bad.append(f"{name}: duplicate_or_missing_job_condition")
+        except (IndexError, ValueError):
+            bad.append(f"{name}: retired_job_block_missing")
     missing = sorted(set(approved) - seen)
     if missing:
         bad.extend(f"{name}: approved_wake_missing" for name in missing)
