@@ -118,6 +118,17 @@ $batchReview=array_values(array_filter($system['guardTriage']['items']??[],stati
   <?php endforeach; ?>
   </tbody>
  </table></div>
+ <?php
+ $ticketAudit=is_array($system['wakeTicketAudit']??null)?$system['wakeTicketAudit']:[];
+ $ticketAuditVerified=($ticketAudit['ok']??false)===true;
+ ?>
+ <p role="status"><strong>서명된 예약 신호:</strong>
+ <?php if($ticketAuditVerified): ?>
+  <?=nh_e((int)($ticketAudit['signalCount']??0))?>건 수신 기록 ·
+  <?=nh_e((int)($ticketAudit['staleCount']??0))?>건 검토 필요
+ <?php else: ?>수신 기록 확인 필요<?php endif; ?>
+ </p>
+ <p>예약 신호는 작업 실행 증거가 아닙니다. 신호 미확정·지연 시 자동 재실행하지 않고 원본 기록과 실제 제작 결과를 별도로 확인합니다.</p>
  <?php if($batchReview): ?>
  <p role="status"><strong>미확정 묶음 작업 <?=nh_e(count($batchReview))?>건:</strong> 실행 결과가 확인되지 않았습니다. 기존 기록을 보존하고 중복 생성을 막기 위해 자동 재시도하지 않습니다.</p>
  <?php endif; ?>
