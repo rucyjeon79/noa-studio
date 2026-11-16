@@ -8,6 +8,8 @@ on:
       - 'config/n80-github-cleanup.json'
       - 'scripts/qa/n80_schedule_policy_guard.py'
       - 'deploy/noa-app/engine/scheduled-wake.php'
+      - 'scripts/n80_specialist_host_acceptance.py'
+      - 'tests/n80/test_resident_acceptance_retired.py'
   pull_request:
     paths:
       - '.github/workflows/**'
@@ -15,6 +17,8 @@ on:
       - 'config/n80-github-cleanup.json'
       - 'scripts/qa/n80_schedule_policy_guard.py'
       - 'deploy/noa-app/engine/scheduled-wake.php'
+      - 'scripts/n80_specialist_host_acceptance.py'
+      - 'tests/n80/test_resident_acceptance_retired.py'
   workflow_dispatch:
 permissions:
   contents: read
@@ -31,6 +35,8 @@ jobs:
           persist-credentials: false
       - name: Verify no unapproved recurring NOA work can start
         run: python3 scripts/qa/n80_schedule_policy_guard.py
+      - name: Verify retired acceptance cannot connect or start a process
+        run: python3 -m unittest discover -s tests/n80 -p 'test_resident_acceptance_retired.py' -v
       - name: List remaining GitHub production-host contacts (read-only)
         run: python3 scripts/qa/n80_workflow_host_audit.py
       - name: Block unsolicited DotHome connections from legacy workflows

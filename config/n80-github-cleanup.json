@@ -99,21 +99,29 @@
       "tests/hub/runner.test.mjs"
     ],
     "runtimeHostRoot": "/hosting/noastudio/noa-hub/runtime",
-    "hostPhysicalDeletionVerified": false,
-    "hostRemainingFiles": [
-      "launch.mjs",
-      "runner.mjs",
-      "stop.mjs",
-      "probe.mjs"
-    ],
+    "hostPhysicalDeletionVerified": true,
+    "hostRemainingFiles": [],
     "hostResidentLockPresent": false,
-    "hostCleanupOutcome": "pending_direct_authorized_sftp_cleanup",
+    "hostCleanupOutcome": "physically_removed_and_independently_verified",
     "retained": [
       "noa-hub source and admin controls",
       "N80 Hub receipts",
       "existing song, media, member, database records",
       "one-shot event-based execution"
     ],
-    "githubActionsUsedForRetirement": false
+    "githubActionsUsedForRetirement": false,
+    "hostCleanupTransport": "authenticated_n80_hub_direct",
+    "hostVerifiedAtKST": "2026-11-17T05:19:12+09:00",
+    "hostDeletedFiles": [
+      "launch.mjs",
+      "runner.mjs",
+      "stop.mjs",
+      "probe.mjs"
+    ],
+    "backupZipSha256": "75a993afe2ccc4d072000d5ca7df4156cb3f01a40ff3c0067ac0a01561244cb0",
+    "driveFullByteReadbackVerified": true,
+    "providedV2BackupProofVerified": true,
+    "hubApiRespondedAfterDeletion": true,
+    "hostProcessesStarted": 0
   }
 }

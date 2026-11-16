@@ -104,3 +104,10 @@
 - 사용자가 “그 예약실행은 자동쇼츠인데?”라고 범위를 정정했다. 위 예약 깨우기 제한을 사용자가 요청한 Android 앱 개발·검증·서명·배포까지 확대해서 적용하지 않는다.
 - Android는 기존 `noa-android.yml`의 수동 실행 경로, 기존 SSH 인증정보와 영구 서명키, `jukebox.android_bridge` 및 `jukebox.android_publish`를 사용한다. 앱 검증을 마친 결과만 배포한다.
 - 이 정정으로 자동쇼츠 스케줄, 중지된 상주 실행기 또는 다른 폐기된 업무 워크플로를 재활성화하지 않는다.
+
+## 구형 상주 실행기 물리적 폐기 완료 — 2026-11-17
+
+- `/hosting/noastudio/noa-hub/runtime/`의 `launch.mjs`, `runner.mjs`, `stop.mjs`, `probe.mjs`는 원본 ZIP의 비공개 Google Drive 저장·전체 재다운로드 바이트 비교와 제공된 v2 검증을 거쳐 물리적으로 삭제했다. Hub `verify` 및 별도 상태 조회에서 4개 파일 부재와 관리 API 정상 응답을 확인했다.
+- 이후 heartbeat 지연·`runnerState=not_verified`·과거 오류 기록은 상주 실행기 재설치나 재시작 사유가 아니다. 삭제 영수증과 현재 파일 부재를 기준으로 폐기를 확인하고, 기존 작업 기록은 보존한다.
+- 과거의 Node launcher 시작·재개·반복 heartbeat 대기·SSH bootstrap 안내는 폐기됐다. `n80_specialist_host_acceptance.py`는 호스트 연결 없이 거절하는 호환 진입점이다.
+- N80 Hub 관리·직접 배포와 전문 모듈의 인증된 단발 실행은 보존한다. 기존 stop/paused 플래그를 변경하거나 자동쇼츠·Android 등 별도 작업 범위를 임의로 재설정하지 않는다.
