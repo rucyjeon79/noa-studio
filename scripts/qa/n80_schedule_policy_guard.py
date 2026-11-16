@@ -138,6 +138,14 @@ def audit():
     hub = (ROOT / "deploy/noa-app/engine/hub.php").read_text(encoding="utf-8")
     if "hub_resident_runner_retired" not in hub or "proc_open(" in hub:
         bad.append("resident_n80_execution_reintroduced")
+    # An approved signed one-shot must never depend on the retired scheduler.
+    # Check source text as well as behavior tests: this dependency was once
+    # unintentionally restored by a simultaneous production release.
+    wake = (ROOT / "deploy/noa-app/engine/scheduled-wake.php").read_text(encoding="utf-8")
+    if any(token in wake for token in (
+        "activeOperations", "n80_hub_start(", "proc_open(", "shell_exec(",
+        "api.github.com", "githubActionsRole' => 'business_worker'")):
+        bad.append("one_shot_rebound_to_retired_resident_scheduler")
     # Reject any future commit that brings an old SSH or host-deploy job back.
     for name, job in RETIRED_HOST_JOBS:
         path = WORKFLOWS / name
