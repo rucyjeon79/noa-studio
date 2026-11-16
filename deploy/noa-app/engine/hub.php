@@ -97,7 +97,9 @@ function n80_hub_execute(string $root,string $operation,string $id,callable $exe
 
 /** Administrator starts the installed fixed runtime; HTTP cannot supply executable arguments. */
 function n80_hub_start(string $root):string {
- n80_hub_directory($root);$args=n80_hub_read($root,'node-command.json');
+ n80_hub_directory($root);$control=n80_hub_read($root,'control.json');
+ if(($control['stop']??false)===true||($control['paused']??false)===true)throw new DomainException('hub_owner_stop_latched');
+ $args=n80_hub_read($root,'node-command.json');
  if(count($args)<1||count($args)>4||!is_file($root.'/runtime/launch.mjs')||is_link($root.'/runtime/launch.mjs'))throw new RuntimeException('hub_runtime_not_installed');
  foreach($args as $value)if(!is_string($value)||($value!=='--library-path'&&!preg_match('~^/hosting/noastudio/noa-ai-lab/host-runtime/(?:node-[a-f0-9]{16}|lib-[a-f0-9]{16}(?:/ld-linux-x86-64[.]so[.]2)?)$~D',$value)))throw new RuntimeException('hub_runtime_command_invalid');
  if(!function_exists('proc_open'))throw new RuntimeException('hub_process_start_unavailable');
