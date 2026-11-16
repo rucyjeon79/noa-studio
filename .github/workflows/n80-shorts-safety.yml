@@ -18,6 +18,9 @@ on:
       - 'tests/n80/test_host_activation_fence.py'
       - '.github/workflows/noa-ai-worker.yml'
       - 'deploy/noa-app/engine/scheduled-wake.php'
+      - 'deploy/noa-app/engine/wake-preflight.php'
+      - 'deploy/noa-app/engine/hub.php'
+      - 'tests/n80/wake_preflight_test.php'
       - 'deploy/noa-app/engine/host-load-policy.php'
       - '.github/workflows/n80-shorts-safety.yml'
   pull_request:
@@ -36,6 +39,9 @@ on:
       - 'tests/n80/test_host_activation_fence.py'
       - '.github/workflows/noa-ai-worker.yml'
       - 'deploy/noa-app/engine/scheduled-wake.php'
+      - 'deploy/noa-app/engine/wake-preflight.php'
+      - 'deploy/noa-app/engine/hub.php'
+      - 'tests/n80/wake_preflight_test.php'
       - 'deploy/noa-app/engine/host-load-policy.php'
       - '.github/workflows/n80-shorts-safety.yml'
   workflow_dispatch:
@@ -65,6 +71,8 @@ jobs:
           php -l tests/session-agent/schedule.php
           php -l tests/session-agent/preparation.php
           php -l deploy/noa-app/engine/scheduled-wake.php
+          php -l deploy/noa-app/engine/wake-preflight.php
+          php -l tests/n80/wake_preflight_test.php
           php -l deploy/noa-app/engine/host-load-policy.php
           php -l tests/n80/scheduled_wake_contract_test.php
           php -l tests/n80/scheduled_wake_ticket_test.php
@@ -79,5 +87,6 @@ jobs:
           php tests/n80/scheduled_wake_contract_test.php
           php tests/n80/scheduled_wake_ticket_test.php
           php tests/n80/signed_wake_hmac_test.php
+          php tests/n80/wake_preflight_test.php
           python3 -m unittest discover -s tests/n80 -p 'test_n80_signed_wake_signal.py' -v
           python3 -m unittest discover -s tests/n80 -p 'test_host_activation_fence.py' -v
