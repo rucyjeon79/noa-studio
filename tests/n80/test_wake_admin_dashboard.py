@@ -21,6 +21,9 @@ class WakeAdminDashboardTests(unittest.TestCase):
 
     def test_read_only_report_uses_authoritative_snapshot(self):
         self.assertIn("$system['wakePreflight']",self.source)
+        self.assertIn("$system['wakeTicketAudit']",self.source)
+        self.assertIn("$ticketAuditVerified",self.panel)
+        self.assertIn("자동 재실행하지 않고",self.panel)
         self.assertIn("$system['guardTriage']['items']",self.source)
         self.assertIn("empty($wakeChecks)?'사전검증 조회 불가'",self.panel)
         self.assertIn("$wakeChecks[$key]===true",self.source)
