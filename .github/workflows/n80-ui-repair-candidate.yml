@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/n80-ui-repair-candidate.yml'
       - 'scripts/qa/n80-ui-repair-candidate.py'
+      - 'tests/layout/n80-responsive-grid-smoke.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -15,7 +16,7 @@ jobs:
   candidate:
     runs-on: ubuntu-24.04
     environment: production
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -45,6 +46,13 @@ jobs:
               assert not f['path'].endswith('.php')
               print('PASS',f['path'],f['bytes'])
           PY
+      - name: Browser-check responsive MY grid and creator hit targets
+        run: |
+          mkdir -p "$RUNNER_TEMP/n80-ui-browser"
+          npm install --prefix "$RUNNER_TEMP/n80-ui-browser" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/n80-ui-browser/node_modules/.bin/playwright" install --with-deps chromium
+          cp tests/layout/n80-responsive-grid-smoke.mjs "$RUNNER_TEMP/n80-ui-browser/check.mjs"
+          node "$RUNNER_TEMP/n80-ui-browser/check.mjs" "$GITHUB_WORKSPACE/n80-ui-repair-candidate/hub-package.json" "$GITHUB_WORKSPACE/n80-ui-repair-candidate"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
