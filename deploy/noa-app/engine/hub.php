@@ -104,12 +104,16 @@ function n80_hub_status(string $root):array {
  require_once __DIR__.'/wake-preflight.php';
  $wakePreflight=n80_wake_preflight($root,dirname(__DIR__,2),n80_host_load_policy(),$c,
      n80_hub_read($root,'scheduled-wake-control.json'),$retirement);
+ // Read-only signed-clock ticket history; never a job or a replay trigger.
+ require_once __DIR__.'/wake-ticket-audit.php';
+ $wakeTicketAudit=n80_wake_ticket_audit($root);
  $ops=[];$history=n80_hub_read($root,'receipts.json');$latest=[];
  foreach($history as $receipt)$latest[$receipt['operation']??'']=$receipt;
  foreach(n80_hub_operations()as $id=>$row)$ops[]=['id'=>$id,'label'=>$row['label'],'module'=>$row['module'],'owner'=>in_array($id,$c['activeOperations']??[],true)?'n80_hub':'legacy','last'=>$latest[$id]??null];
  return ['ok'=>true,'module'=>'N80 Hub','revision'=>(int)($c['revision']??0),'paused'=>!empty($c['paused']),'heartbeatAt'=>$last,
   'runnerState'=>$runnerState,'residentRetirement'=>$retirement,'source'=>n80_hub_read($root,'source.json'),
   'wakePreflight'=>$wakePreflight,
+  'wakeTicketAudit'=>$wakeTicketAudit,
   'operations'=>$ops,'dependencies'=>n80_hub_read($root,'dependencies.json'),'covers'=>n80_hub_read($root,'covers-result.json'),'receipts'=>array_slice($history,-30)];
 }
 /** One request identifier cannot run twice, including after an interrupted response. */
