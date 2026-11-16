@@ -21,6 +21,7 @@ on:
       - 'deploy/noa-app/engine/wake-preflight.php'
       - 'deploy/noa-app/engine/hub.php'
       - 'deploy/noa-app/engine/hub-retirement-status.php'
+      - 'deploy/noa-app/engine/system-status.php'
       - 'tests/n80/wake_preflight_test.php'
       - 'deploy/noa-app/engine/host-load-policy.php'
       - '.github/workflows/n80-shorts-safety.yml'
@@ -43,6 +44,7 @@ on:
       - 'deploy/noa-app/engine/wake-preflight.php'
       - 'deploy/noa-app/engine/hub.php'
       - 'deploy/noa-app/engine/hub-retirement-status.php'
+      - 'deploy/noa-app/engine/system-status.php'
       - 'tests/n80/wake_preflight_test.php'
       - 'deploy/noa-app/engine/host-load-policy.php'
       - '.github/workflows/n80-shorts-safety.yml'
@@ -75,6 +77,7 @@ jobs:
           php -l deploy/noa-app/engine/scheduled-wake.php
           php -l deploy/noa-app/engine/wake-preflight.php
           php -l deploy/noa-app/engine/hub-retirement-status.php
+          php -l deploy/noa-app/engine/system-status.php
           php -l tests/n80/wake_preflight_test.php
           php -l deploy/noa-app/engine/host-load-policy.php
           php -l tests/n80/scheduled_wake_contract_test.php
