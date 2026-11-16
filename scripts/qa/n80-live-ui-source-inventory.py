@@ -74,6 +74,45 @@ def select_tags(text,limit=95):
         if len(out)>=limit:break
     return out
 
+def markup_layout_risks(text,limit=90):
+    """Expose only parent tag/class + nested action tag/class, never raw content."""
+    from html.parser import HTMLParser
+    scrubbed=re.sub(r'<\?(?:php|=)?[\s\S]*?\?>','',text,flags=re.I)
+    class Reader(HTMLParser):
+        def __init__(self):
+            super().__init__(convert_charrefs=True)
+            self.stack=[];self.risks=[]
+        def handle_starttag(self,tag,attrs):
+            attrs=dict(attrs)
+            label=(attrs.get('class') or '')[:110]
+            ident=(attrs.get('id') or '')[:80]
+            if tag in ('a','button','input','select'):
+                parents=self.stack[-5:]
+                for p in parents:
+                    if p['tag'] in ('p','label','h1','h2','h3','h4') and tag in ('a','button'):
+                        self.risks.append({
+                            'pattern':'action_inside_prose',
+                            'parentTag':p['tag'],'parentClass':p['class'],
+                            'actionTag':tag,'actionClass':label,'actionId':ident
+                        })
+                        break
+            if tag not in ('area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'):
+                self.stack.append({'tag':tag,'class':label,'id':ident})
+        def handle_endtag(self,tag):
+            for i in range(len(self.stack)-1,-1,-1):
+                if self.stack[i]['tag']==tag:
+                    self.stack=self.stack[:i]
+                    break
+    p=Reader()
+    try:p.feed(scrubbed)
+    except Exception:return []
+    uniq={}
+    for row in p.risks:
+        key=(row['pattern'],row['parentTag'],row['parentClass'],row['actionTag'],row['actionClass'],row['actionId'])
+        uniq[key]=row
+        if len(uniq)>=limit:break
+    return list(uniq.values())
+
 def select_js_classes(text,limit=130):
     matches=[]
     for i,line in enumerate(text.splitlines(),1):
@@ -131,7 +170,8 @@ def main():
             try:
                 b=read(name)
                 report['templates'][name]={'sha256':hashlib.sha256(b).hexdigest(),
-                  'bytes':len(b),'related_tags':select_tags(b.decode('utf-8'))}
+                  'bytes':len(b),'related_tags':select_tags(b.decode('utf-8')),
+                  'markup_layout_risks':markup_layout_risks(b.decode('utf-8'))}
             except (OSError,ValueError,UnicodeDecodeError):
                 report['templates'][name]={'available':False}
         for name in JS_CANDIDATES:
