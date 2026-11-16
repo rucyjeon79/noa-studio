@@ -1,29 +1,31 @@
 <?php
 declare(strict_types=1);
-define('_GNUBOARD_',true);
+define('_GNUBOARD_', true);
 require __DIR__.'/../../deploy/noa-app/jukebox/wake-core.php';
-function check($value,$expected):void{if($value!==$expected)throw new RuntimeException('wake assertion failed: '.json_encode([$value,$expected]));}
-$dir=sys_get_temp_dir().'/noa-wake-'.bin2hex(random_bytes(8));mkdir($dir,0700);$calls=0;
-$send=function($token)use(&$calls){$calls++;return 204;};
-try{
- check(nw_request($dir,$send,100),'not_configured');check($calls,0);
- file_put_contents($dir.'/upload-wake-token',str_repeat('a',40));chmod($dir.'/upload-wake-token',0600);
- check(nw_request($dir,$send,100),'requested');check($calls,1);
- check(nw_request($dir,$send,101),'already_requested');check($calls,1);
- check(nw_request($dir,fn($token)=>403,161),'recovery_pending');
- check(nw_request($dir,$send,162),'recovery_pending');
- check(nw_request($dir,$send,172),'requested');check($calls,2);
- check(nw_request($dir,fn($token)=>throw new RuntimeException('offline'),233),'recovery_pending');
- check(nw_request($dir,$send,234),'recovery_pending');check($calls,2);
- check(nw_request($dir,$send,244),'requested');check($calls,3);
- check(nw_request($dir,fn($token)=>200,305),'requested');
- $lock=fopen($dir.'/upload-wake-state','c+');flock($lock,LOCK_EX);
- check(nw_request($dir,$send,400),'already_requested');check($calls,3);fclose($lock);
- check(str_contains(file_get_contents($dir.'/upload-wake-state'),str_repeat('a',40)),false);
- unlink($dir.'/upload-wake-token');
- putenv('NOA_GITHUB_DISPATCH_TOKEN='.str_repeat('b',40));
- check(nw_request($dir,fn($token)=>$token===str_repeat('b',40)?204:403,500),'requested');
- check(str_contains(file_get_contents($dir.'/upload-wake-state'),str_repeat('b',40)),false);
- putenv('NOA_GITHUB_DISPATCH_TOKEN');
- echo "wake: dispatch, deduplication, failure fallback, lock and secret isolation passed\n";
-}finally{foreach(glob($dir.'/*')as $p)unlink($p);rmdir($dir);}
+
+/**
+ * N80 wake-only GitHub policy regression test:
+ * no legacy upload, retry, or credential path may dispatch GitHub Actions.
+ * Keep the durable media FIFO untouched for a verified N80 executor.
+ */
+function check($actual,$expected):void {
+    if ($actual !== $expected) {
+        throw new RuntimeException('retired wake assertion failed: '.json_encode([$actual,$expected]));
+    }
+}
+$dir = sys_get_temp_dir().'/noa-retired-wake-'.bin2hex(random_bytes(8));
+$calls = 0;
+$send = static function($token) use (&$calls) { $calls++; return 204; };
+putenv('NOA_GITHUB_DISPATCH_TOKEN='.str_repeat('x',40));
+try {
+    check(nw_dispatch(str_repeat('x',40)),0);
+    check(nw_request($dir,$send,100),'github_worker_retired');
+    check(nw_request($dir,$send,101,'noa-ai-worker.yml'),'github_worker_retired');
+    check(nw_request($dir,$send,102,'unapproved.yml'),'invalid_workflow');
+    nw_after_enqueue();
+    check($calls,0);
+    check(file_exists($dir),false);
+    echo "wake: GitHub business dispatch retired, no credentials read, no spool writes\n";
+} finally {
+    putenv('NOA_GITHUB_DISPATCH_TOKEN');
+}
