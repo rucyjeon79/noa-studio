@@ -16,7 +16,7 @@ SOURCES={
 }
 PHP=r'''<?php
 declare(strict_types=1);
-require __DIR__.'/one-shot-adapter.php';
+require __DIR__.'/one-shot-preflight.php';
 function prove(bool $ok,string $name):void {if(!$ok)throw new RuntimeException($name);}
 $now=1000000;
 $ops=[
@@ -54,7 +54,7 @@ prove(!in_array('host_legacy_runner_not_suspended',$external['blockers'],true),'
 $unpaused=n80_external_one_shot_preflight($task,$ops,['stop'=>false,'paused'=>true],$now);
 prove($unpaused['reason']==='host_legacy_runner_not_suspended','unpaused_host_is_unsafe');
 prove(!$external['executionAllowed']&&!$external['dispatchPerformed']&&$external['hostWrites']===0,'external_still_disabled');
-echo "N80_ONESHOT_CONTRACT_PASS tests=19 dispatches=0 host_writes=0\\n";
+echo "N80_ONESHOT_CONTRACT_PASS tests=19 dispatches=0 host_writes=0\n";
 ''';
 connection=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022))
 try:
