@@ -20,12 +20,18 @@ import java.util.concurrent.Executors;
 final class AppUpdateChecker {
     static final String ORIGIN = "https://noastudio.ai.kr";
     private final Activity activity;
+    private final Runnable beforeInstall;
+    private PlayStoreUpdateChecker playChecker;
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
     private boolean busy, closed;
     private long lastAttempt = -1;
     private AlertDialog dialog;
 
-    AppUpdateChecker(Activity activity) { this.activity = activity; }
+    AppUpdateChecker(Activity activity) { this(activity, () -> {}); }
+    AppUpdateChecker(Activity activity, Runnable beforeInstall) {
+        this.activity = activity;
+        this.beforeInstall = beforeInstall;
+    }
 
     static long newerVersion(JSONObject release, long installed) throws Exception {
         long version = release.getLong("versionCode");
@@ -41,15 +47,24 @@ final class AppUpdateChecker {
 
     @SuppressWarnings("deprecation")
     private boolean fromPlay() {
-        return "com.android.vending".equals(activity.getPackageManager()
-                .getInstallerPackageName(activity.getPackageName()));
+        try {
+            return "com.android.vending".equals(activity.getPackageManager()
+                    .getInstallerPackageName(activity.getPackageName()));
+        } catch (RuntimeException error) {
+            // An unknown installer must not route a possible Play install to an APK.
+            return true;
+        }
     }
 
     void check(boolean manual) {
         if (closed || busy) return;
         // A website release is not evidence that Google Play has approved that release.
         if (fromPlay()) {
-            if (manual) open("https://play.google.com/store/apps/details?id=" + activity.getPackageName());
+            if (playChecker == null) {
+                try { playChecker = new PlayStoreUpdateChecker(activity, beforeInstall); }
+                catch (RuntimeException error) { if (manual) open("https://play.google.com/store/apps/details?id=" + activity.getPackageName()); return; }
+            }
+            playChecker.check(manual);
             return;
         }
         long now = SystemClock.elapsedRealtime();
@@ -59,6 +74,7 @@ final class AppUpdateChecker {
         worker.execute(() -> {
             JSONObject release = null;
             long version = -1;
+            boolean needsMigration = false;
             HttpURLConnection connection = null;
             try {
                 connection = (HttpURLConnection) new URL(ORIGIN + "/noa-android-release.json?t="
@@ -81,10 +97,11 @@ final class AppUpdateChecker {
                 android.content.pm.PackageInfo info = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
                 long installed = android.os.Build.VERSION.SDK_INT >= 28 ? info.getLongVersionCode() : info.versionCode;
                 version = newerVersion(release, installed);
+                needsMigration = installed <= 13L && release.optBoolean("requiresMigrationFromDebugBuild13", false);
             } catch (Exception ignored) {
                 // Offline/invalid metadata must never interrupt playback or prompt installation.
             } finally { if (connection != null) connection.disconnect(); }
-            JSONObject result = release; long available = version;
+            JSONObject result = release; long available = version; boolean migration = needsMigration;
             activity.runOnUiThread(() -> {
                 busy = false;
                 if (closed || activity.isFinishing() || activity.isDestroyed()) return;
@@ -99,12 +116,19 @@ final class AppUpdateChecker {
                 if (!manual && !activity.hasWindowFocus()) { lastAttempt = -1; return; }
                 preferences.edit().putLong("prompt-" + available, System.currentTimeMillis()).apply();
                 dialog = new AlertDialog.Builder(activity).setTitle("NOA STUDIO 업데이트")
-                        .setMessage("새 버전 2.0." + available + "이 준비되었습니다. 다운로드 후 설치를 완료해 주세요. 기존 앱을 삭제할 필요는 없습니다.")
-                        .setPositiveButton("업데이트", (d, which) -> open(ORIGIN + "/" + result.optString("file")))
+                        .setMessage(migration
+                          ? "초기 테스트 APK는 정식 버전과 서명이 달라 덮어쓰기 설치가 어려울 수 있습니다. 앱 삭제 전 중요한 데이터를 백업하고 안내를 확인해 주세요."
+                          : "새 버전 2.0." + available + "이 준비되었습니다. 기존 정식 APK와 서명이 일치하면 앱 삭제 없이 업데이트할 수 있습니다.")
+                        .setPositiveButton("업데이트", (d, which) -> {
+                            try { beforeInstall.run(); open(ORIGIN + "/" + result.optString("file")); }
+                            catch (RuntimeException error) { Toast.makeText(activity, "재생 상태를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.", Toast.LENGTH_LONG).show(); }
+                        })
                         .setNegativeButton("나중에", null).show();
             });
         });
     }
+
+    void onForeground() { if (!closed && playChecker != null) playChecker.onForeground(); }
 
     private void open(String url) {
         try { activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); }
@@ -113,5 +137,5 @@ final class AppUpdateChecker {
         }
     }
 
-    void close() { closed = true; if (dialog != null) dialog.dismiss(); worker.shutdownNow(); }
+    void close() { closed = true; if (playChecker != null) playChecker.close(); if (dialog != null) dialog.dismiss(); worker.shutdownNow(); }
 }

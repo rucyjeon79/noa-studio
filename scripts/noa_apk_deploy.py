@@ -73,7 +73,10 @@ try:
  facade_sha=hashlib.sha256(candidate).hexdigest()
  if not stat.S_ISREG(sftp.lstat(facade).st_mode) or sftp.normalize(facade)!=facade:raise RuntimeError('Invalid n80 facade path')
  before_facade=digest(facade)
- if before_facade not in ('296443c5f348717bbae872f18450f970a359d74e0e021d2d635dcf7cc0776bc8',facade_sha):raise RuntimeError('N80 facade conflict; production preserved')
+ # The reviewed live facade includes newer N80 system-status integration.
+ # Android publication must preserve that source instead of downgrading it.
+ preserve_live_facade=before_facade=='7f7bf99f6bf1b8f9f5d6136d370ca97b55a240f3b871de28dfe056e2642e0d4d'
+ if not preserve_live_facade and before_facade not in ('296443c5f348717bbae872f18450f970a359d74e0e021d2d635dcf7cc0776bc8',facade_sha):raise RuntimeError('N80 facade conflict; production preserved')
  path=root+'/'+name
  if exists(path):
   if not stat.S_ISREG(sftp.lstat(path).st_mode) or digest(path)!=sha:raise RuntimeError('Existing APK differs')
@@ -125,7 +128,9 @@ try:
   else:sftp.rename(temporary,target)
   if digest(target)!=expected:raise RuntimeError('Replacement hash mismatch')
  if before_download!=download_sha:replace_checked(download,download_candidate,before_download)
- if before_facade!=facade_sha:replace_checked(facade,candidate,before_facade)
+ if preserve_live_facade:
+  if digest(facade)!=before_facade:raise RuntimeError('Concurrent N80 facade change; production preserved')
+ elif before_facade!=facade_sha:replace_checked(facade,candidate,before_facade)
  replace_checked(release,metadata,hashlib.sha256(old_bytes).hexdigest() if old_bytes is not None else None)
  with urllib.request.urlopen('https://noastudio.ai.kr/noa-android-release.json?verify='+run_id,timeout=30) as response:
   if response.status!=200 or response.read()!=metadata:raise RuntimeError('Public release pointer verification failed')
