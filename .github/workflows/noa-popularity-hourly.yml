@@ -1,29 +1,17 @@
-env:
-  NOA_DRIVE_RCLONE_CONFIG_B64: ${{ secrets.NOA_DRIVE_RCLONE_CONFIG_B64 }}
-name: NOA hourly integrated popularity snapshot
+name: NOA popularity GitHub worker (retired)
+# N80 operating rule 2026-11-17:
+# GitHub Actions can ONLY issue an approved, signed, scheduled one-shot wake.
+# This legacy business workflow is retired. No queue claims, host processing,
+# database work, media, AI, notifications or direct host SSH are permitted.
+# The prior implementation is retained in Git commit history for recovery.
 on:
   workflow_dispatch:
-permissions: {contents: read}
-concurrency: {group: noa-popularity-hourly, cancel-in-progress: false}
+permissions:
+  contents: read
 jobs:
-  aggregate:
+  retired:
+    if: ${{ false }}
     runs-on: ubuntu-latest
-    timeout-minutes: 6
-    environment: production
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with: {persist-credentials: false}
-      - run: python3 -m pip install --user paramiko==3.5.1
-      - name: Calculate current UTC hour once and verify durable MySQL result
-        env:
-          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
-          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
-          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
-          NOA_POPULARITY_PHASE: hourly
-        run: python3 scripts/n80_auto.py popularity.calculate
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: noa-popularity-hourly
-          path: quality-popularity/hourly.json
-          retention-days: 7
+      - run: echo "Retired by N80 wake-only policy; no business work executed."
