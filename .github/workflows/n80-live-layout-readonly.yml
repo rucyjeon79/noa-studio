@@ -1,0 +1,42 @@
+name: N80 live layout regression (read-only)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/n80-live-layout-readonly.yml'
+      - 'tests/layout/n80-live-layout-audit.mjs'
+  workflow_dispatch:
+  schedule:
+    # 08:15 KST every day. Read-only and separate from N80 Hub deployments.
+    - cron: '15 23 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: n80-live-layout-readonly
+  cancel-in-progress: true
+jobs:
+  visual_audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated browser; no production or credential access
+        run: |
+          npm install --prefix "$RUNNER_TEMP/n80-layout-browser" --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+          "$RUNNER_TEMP/n80-layout-browser/node_modules/.bin/playwright" install --with-deps chromium
+          cp tests/layout/n80-live-layout-audit.mjs "$RUNNER_TEMP/n80-layout-browser/audit.mjs"
+      - name: Compare live public screens, 7 viewports and 5 routes
+        env:
+          NOA_LAYOUT_BASE: https://noastudio.ai.kr
+        run: node "$RUNNER_TEMP/n80-layout-browser/audit.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: n80-live-layout-proof-${{ github.run_id }}
+          path: layout-proof/live/
+          retention-days: 7
