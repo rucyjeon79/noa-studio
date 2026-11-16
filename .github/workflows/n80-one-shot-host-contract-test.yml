@@ -1,0 +1,30 @@
+name: N80 live one-shot contract test (read-only)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/qa/n80-one-shot-host-contract-test.py'
+      - '.github/workflows/n80-one-shot-host-contract-test.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: n80-oneshot-contract-readonly
+  cancel-in-progress: true
+jobs:
+  prove:
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install SFTP client
+        run: python -m pip install 'paramiko>=3,<5'
+      - name: Test actual deployed PHP contract locally without host writes
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+        run: python scripts/qa/n80-one-shot-host-contract-test.py
