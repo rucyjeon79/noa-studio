@@ -38,6 +38,24 @@ function nd_prepare_catalog():array {
   $out[]=array_intersect_key($r,array_flip(['key','title','genre','ep','canonicalVideo']));}
  return $out;
 }
+/** Fail closed before a Shorts request can use another song's published video.
+ * This is a pure metadata check: no provider requests or content updates.
+ */
+function nd_prepare_validate_completed_source(array $record,string $videoId,array $candidate,array $source):void {
+ require_once __DIR__.'/youtube-core.php';
+ $fields=$record['fields']??[];
+ $suno=trim((string)($fields['sunoUrl']??''));
+ $postedUrl=trim((string)($fields['youtubeUrl']??''));
+ if($suno===''||$postedUrl==='')throw new DomainException('completed_suno_and_youtube_required');
+ if(ny_video_id($postedUrl)!==$videoId)
+  throw new DomainException('posted_video_does_not_match_selected_song');
+ if(($source['key']??'')!==($candidate['key']??'')||
+    ($source['genre']??'')!==($candidate['genre']??'')||
+    (($candidate['ep']??null)!==null&&(int)$candidate['ep']>0&&
+     (int)($record['context']['ep']??0)!==(int)$candidate['ep']))
+  throw new DomainException('selected_genre_or_ep_mismatch');
+}
+
 /** A fixed read-only YouTube surface. OAuth secrets never leave the hosting server. */
 function nd_prepare_youtube_query(array $b,array $p):array {
  $kind=$b['resource']??'';$page=$b['pageToken']??'';
@@ -105,22 +123,11 @@ function nd_prepare_dispatch(array $b,array $p):array {
   require_once __DIR__.'/session-agent.php';$key=$b['trackKey']??'';$video=$b['videoId']??'';
   $matching=array_values(array_filter(nd_prepare_catalog(),fn($r)=>$r['key']===$key&&$r['canonicalVideo']===$video));
   if(count($matching)!==1||$matching[0]['genre']==='kpop-original')throw new DomainException('source_video_mismatch');
-  // Shorts must reuse the already completed Suno recording and its exact
-  // posted full-song YouTube version. These URL fields are read-only evidence.
+  // Read the published-edition identity without rewriting any finished media.
   $db=noa_bridge_pdo();
   $record=nie_resolve($db,['type'=>'song','source'=>'music','key'=>$key]);
-  $fields=$record['fields']??[];
-  $suno=trim((string)($fields['sunoUrl']??''));
-  $youtube=trim((string)($fields['youtubeUrl']??''));
-  if($suno===''||$youtube===''||noa_sound_suno($record['payload']['body']??[])==='')
-   throw new DomainException('completed_suno_and_youtube_required');
-  if(ny_video_id($youtube)!==$video)
-   throw new DomainException('posted_video_does_not_match_selected_song');
   $source=sa_source($key);
-  if($source['genre']!==$matching[0]['genre']||
-      ((int)($matching[0]['ep']??0)>0 &&
-      (int)($record['context']['ep']??0)!==(int)$matching[0]['ep']))
-   throw new DomainException('selected_genre_or_ep_mismatch');
+  nd_prepare_validate_completed_source($record,$video,$matching[0],$source);
   // Do not spend image/Flow attempts until the official character sheets exist.
   foreach(sa_character_references((string)$source['cast']) as $reference)
    if(empty($reference['available']))throw new DomainException('character_reference_unavailable');
