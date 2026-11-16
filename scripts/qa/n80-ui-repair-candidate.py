@@ -14,7 +14,8 @@ CHECKED_SOURCE_HASHES={
  'noa-account.css':'e145a81663ba38279fada1de09548f8ec38a717e8e58bc6ecf538a01f4b78b98',
  'noa-creator.css':'9b32071f88a8ea95f0ac66e0a2e4bd06118cd0ad841849d32db40d285489c884',
  'noa-notebooklm.css':'12af9233d5b7a48',
- 'noa-ai-lab.css':'cb66b2199f0aaa6'
+ 'noa-ui.css':'0151d481d7e7d46b6da7768632f3f765f6b8277f1151bd015f54d4b875534c6c',
+ 'noa-ai-lab.css':'cb66b2199f0aaa639d7566f6d805e033ed6c63a350ecaa60ecd5b4c1e63f91f6'
 }
 # The shorter hashes above are only discovery hints. For safety, verify full hashes
 # through the read-only N80 audit report when adding those files to the actual package.
@@ -101,6 +102,47 @@ html body.noa-page #noa-my-account .noa-my-account-actions > a {
   }
 }
 '''
+ ,
+ 'noa-ui.css': r'''
+/* N80 PROSE ACTION SEPARATION 2026-11-16.
+   Payment setup action links must not interrupt readable instructions. */
+html body.noa-page .noa-payment-readiness p > a.noa-button {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  margin-block: 8px;
+  padding: 10px 14px;
+  white-space: normal;
+  line-height: 1.45;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+''',
+ 'noa-ai-lab.css': r'''
+/* N80 PROSE ACTION SEPARATION 2026-11-16.
+   Separate user guidance and administrator navigation inside AI LAB setup. */
+html body.noa-page #lab-config p > a.noa-button {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  margin-block: 8px;
+  padding: 10px 14px;
+  white-space: normal;
+  line-height: 1.45;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+'''
 }
 def sha(data):return hashlib.sha256(data).hexdigest()
 def read_exact(sftp,name):
@@ -130,7 +172,7 @@ def main():
         rows=[];patches=[];safe_source_paths=[]
         for name,patch in SCOPED_PATCHES.items():
             before=read_exact(sftp,name)
-            if 'N80 INTRINSIC ACCOUNT GRID' in before.decode('utf-8') or 'N80 MOBILE CREATOR HIERARCHY' in before.decode('utf-8'):
+            if any(marker in before.decode('utf-8') for marker in ('N80 INTRINSIC ACCOUNT GRID','N80 MOBILE CREATOR HIERARCHY','N80 PROSE ACTION SEPARATION')):
                 raise RuntimeError('patch_already_present:'+name)
             # Append-only to protect the original source and preserve all functions.
             candidate=before.rstrip(b'\n')+b'\n\n'+patch.strip().encode('utf-8')+b'\n'
