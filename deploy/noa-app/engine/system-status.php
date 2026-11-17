@@ -6,6 +6,7 @@ require_once __DIR__.'/versioning.php';
 require_once __DIR__.'/health.php';
 require_once __DIR__.'/hub-connections.php';
 require_once __DIR__.'/guard.php';
+require_once __DIR__.'/runtime-prerequisites.php';
 
 /** Project trusted server observations. Do not accept this evidence from an HTTP body. */
 function n80_system_project(array $modules,array $hub,array $connections,array $runtime,array $releases,bool $recovery,?int $now=null):array {
@@ -87,6 +88,7 @@ function n80_system_project(array $modules,array $hub,array $connections,array $
         'sourceRevision'=>(int)($hub['source']['revision']??0),'version'=>n80_display_version($hub['source']??[]),'state'=>$state,'versionReadiness'=>$versionReadiness,'versionTransitionPreview'=>n80_version_transition_preview($hub['source']??[]),'hostAutomationHealthy'=>$healthy,
         'runnerState'=>$runnerState,'residentRetirement'=>$retirement,'heartbeatAgeSeconds'=>$heartbeatAge,'paused'=>$paused,'recoveryRequired'=>$recovery,
         'runtime'=>['errorState'=>$runtimeError,'lastError'=>$runtime['lastError']??null,'recoveredAt'=>$runtime['recoveredAt']??null],
+        'runtimePrerequisites'=>n80_runtime_prerequisites(),
         'counts'=>['modules'=>count($moduleRows),'services'=>count($services),'hostOperations'=>count($routes),'hostOwned'=>$owned,'hostVerified'=>$verified],
         'modules'=>$moduleRows,'operations'=>$operations,'missingModules'=>$missing,'connectionIssues'=>$issues,
         'pendingOperationCount'=>count($pending),'unconfirmedOperationCount'=>count($unconfirmed),

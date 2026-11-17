@@ -29,7 +29,8 @@ channel's automatic/scheduled publication. The administrator screen confirmed
 that publication setting is enabled. This does not activate the scheduled wake
 receiver or prove a completed production run.
 
-The latest authenticated Hub inventory reports production revision 491:
+The authenticated Hub inventory after the runtime metadata patch reports production
+revision 496. This patch is diagnostic, not a production executor:
 
 - The legacy resident is retired; its four files remain absent. It must not be
   reinstated to satisfy a missing-executor check.
@@ -48,8 +49,25 @@ The existing host's earlier real browser trial returned `SIGTRAP` on page
 startup. A subsequent read-only probe returned `ENOENT` for `/proc`,
 `/proc/self/exe` and `/proc/self/status`; the saved result was
 `host_proc_unavailable`. See [the host runtime evidence](n80-host-runtime.md).
-This is historical execution evidence, not a fresh OS probe in this session.
+This is historical SSH execution evidence. A fresh read-only observation from
+the PHP-FPM web request on November 17 returned **true** for `/proc` directory,
+`/proc/self/exe` accessibility and `/proc/self/status` readability. It returned
+**false** for `proc_open` availability and **true** for `shell_exec` availability.
+The SSH and PHP views must not be conflated: these results neither prove the old
+SSH failure persists in the web context nor prove Node/Chromium can launch there.
 The host's prior successful Node and FFmpeg trials are separate capabilities.
+
+The metadata probe took 0.096 ms and launched zero processes or provider calls.
+PHP reported execution limit `0` and memory limit `-1`; these settings are **not**
+a resource budget, hosting authorization or evidence of safe workload termination.
+Actual bounded subprocess termination, browser sandbox startup and provider login
+still need verification in the intended execution context before activation.
+
+Release `294d558ea7d71cc3a0db8f077c35e949` installed only
+`runtime-prerequisites.php` and its system-status integration, with verified
+preimage and release Drive backups. Fresh Hub readback exposed the observations
+under `system.runtimePrerequisites`; the resident remains retired and wake remains
+inactive. No new executor, provider authorization or generation was completed.
 
 The previous browser relay used GitHub Actions. The November 16 policy now
 allows GitHub only to send scheduled wake signals, so that historical relay is
@@ -79,7 +97,8 @@ automations were changed.
 - Record policy adoption, code deployment, signed admission, actual production
   and process/resource acceptance as separate facts.
 
-No new server, subscription, paid API, provider session, source deployment,
-media-generation request or public video was created during this investigation.
+No new server, subscription, paid API, provider session, media-generation request
+or public video was created during this investigation. The only subsequent
+deployment was the read-only runtime metadata check described above.
 The continuation is the confirmed N80 scheduled one-shot route. There is no
 pending request for a separate always-on execution environment.
