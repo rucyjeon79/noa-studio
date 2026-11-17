@@ -18,7 +18,24 @@ function lab_lock(callable $fn,?int $waitMs=null):mixed {
  }
  try{$file=$root.'/state.json';$state=is_file($file)?json_decode((string)file_get_contents($file),true,512,JSON_THROW_ON_ERROR):lab_defaults();$result=$fn($state);$state['revision']++;$temp=tempnam($root,'.state-');if($temp===false)throw new RuntimeException('storage_write');chmod($temp,0600);$raw=json_encode($state,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);if(file_put_contents($temp,$raw)!==strlen($raw)||!rename($temp,$file))throw new RuntimeException('storage_write');return $result;}finally{flock($lock,LOCK_UN);fclose($lock);}
 }
-function lab_read():array { $lock=fopen(lab_root().'/state.lock','c+');if(!$lock||!flock($lock,LOCK_SH))throw new RuntimeException('storage_lock');try{$path=lab_root().'/state.json';return is_file($path)?json_decode((string)file_get_contents($path),true,512,JSON_THROW_ON_ERROR):lab_defaults();}finally{flock($lock,LOCK_UN);fclose($lock);} }
+function lab_read(?int $waitMs=null):array {
+ if($waitMs!==null&&($waitMs<0||$waitMs>2000))throw new InvalidArgumentException('storage_lock_wait_invalid');
+ $root=lab_root();$lock=fopen($root.'/state.lock','c+');if(!$lock)throw new RuntimeException('storage_lock');
+ if($waitMs===null){if(!flock($lock,LOCK_SH)){fclose($lock);throw new RuntimeException('storage_lock');}}
+ else{
+  $deadline=hrtime(true)+$waitMs*1000000;
+  while(!flock($lock,LOCK_SH|LOCK_NB)){
+   $remaining=$deadline-hrtime(true);
+   if($remaining<=0){fclose($lock);throw new DomainException('storage_busy');}
+   usleep((int)min(10000,max(1,intdiv($remaining,1000))));
+  }
+ }
+ try{
+  $path=$root.'/state.json';
+  if($waitMs!==null&&(is_link($path)||(is_file($path)&&filesize($path)>16777216)))throw new RuntimeException('storage_snapshot_unavailable');
+  return is_file($path)?json_decode((string)file_get_contents($path),true,512,JSON_THROW_ON_ERROR):lab_defaults();
+ }finally{flock($lock,LOCK_UN);fclose($lock);}
+}
 function lab_seal(array $value):string { $key=file_get_contents(lab_root().'/master.key');if(strlen($key)!==32)throw new RuntimeException('key_unavailable');$iv=random_bytes(12);$tag='';$cipher=openssl_encrypt(json_encode($value,JSON_THROW_ON_ERROR),'aes-256-gcm',$key,OPENSSL_RAW_DATA,$iv,$tag,'NOA-AI-LAB-v1');if($cipher===false)throw new RuntimeException('encryption_failed');return base64_encode($iv.$tag.$cipher); }
 function lab_unseal(?string $sealed):array {if(!$sealed)return [];$raw=base64_decode($sealed,true);if($raw===false||strlen($raw)<28)throw new RuntimeException('invalid_secrets');$text=openssl_decrypt(substr($raw,28),'aes-256-gcm',file_get_contents(lab_root().'/master.key'),OPENSSL_RAW_DATA,substr($raw,0,12),substr($raw,12,16),'NOA-AI-LAB-v1');if($text===false)throw new RuntimeException('invalid_secrets');return json_decode($text,true,512,JSON_THROW_ON_ERROR);}
 function lab_event(array &$s,string $type,string $job='',string $actor='worker'):void {$s['events'][]=['at'=>gmdate('c'),'type'=>$type,'job'=>$job,'actor'=>$actor];$s['events']=array_slice($s['events'],-1000);}

@@ -13,6 +13,26 @@ ROOT=Path(__file__).resolve().parents[2]
 
 @unittest.skipUnless(shutil.which("php"),"native PHP required for OS lock contention")
 class BoundedLabLockTest(unittest.TestCase):
+    def test_shared_snapshot_read_times_out_without_writing(self):
+        with tempfile.TemporaryDirectory(prefix="n80-lab-read-") as temp:
+            base=Path(temp);private=base/"noa-ai-lab";private.mkdir();web=base/"www";web.mkdir()
+            state=private/"state.json";state.write_text('{"revision":19,"preserve":"original"}')
+            code="""define('_GNUBOARD_',true);define('G5_PATH',$argv[1]);require $argv[2];
+try{echo json_encode(lab_read(750));}catch(DomainException $e){echo $e->getMessage();}
+"""
+            command=["php","-r",code,str(web),str(ROOT/"bridge/lab-core.php")]
+            before=state.read_bytes()
+            with open(private/"state.lock","w") as lock:
+                fcntl.flock(lock,fcntl.LOCK_EX);start=time.monotonic()
+                result=subprocess.run(command,capture_output=True,text=True,timeout=3,check=True)
+                self.assertEqual(result.stdout,"storage_busy")
+                self.assertLess(time.monotonic()-start,2.5)
+                self.assertEqual(state.read_bytes(),before)
+                fcntl.flock(lock,fcntl.LOCK_UN)
+            result=subprocess.run(command,capture_output=True,text=True,timeout=3,check=True)
+            self.assertEqual(json.loads(result.stdout),{"revision":19,"preserve":"original"})
+            self.assertEqual(state.read_bytes(),before)
+
     def test_contention_timeout_release_and_legacy_default(self):
         with tempfile.TemporaryDirectory(prefix="n80-lab-lock-") as temp:
             base=Path(temp);private=base/"noa-ai-lab";private.mkdir()

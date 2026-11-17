@@ -4,6 +4,16 @@ if(!isset($context,$action)||$action!=='n80_daily_shorts_tick')throw new Runtime
 require_once __DIR__.'/session-shorts.php';
 require_once __DIR__.'/session-shorts-prepare.php';
 $policy=nd_shorts_policy();
+// Server-owned diagnostic context only; no body field enables this branch.
+// Exercise the existing clock on a copy without lab_lock or any provider call.
+if(($context['readOnlyClockCheck']??false)===true){
+ if($b!==[]||($context['hostOperation']??null)!=='ai.daily_shorts_clock')throw new DomainException('clock_check_scope_invalid');
+ $snapshot=lab_read(750);$sourceRevision=(int)($snapshot['revision']??0);
+ $result=nd_shorts_tick($snapshot,$policy,time(),nd_shorts_readiness($snapshot,$policy));
+ $result['readOnlyCheck']=['scope'=>'existing_clock_on_snapshot','sourceRevision'=>$sourceRevision,
+  'businessStateWritten'=>false,'providerCalls'=>0,'productionVerified'=>false];
+ return $result;
+}
 if(($b['command']??'')==='storage_connection'){
  if(($policy['mediaStorage']['provider']??'')==='github_actions_artifact')return ['ok'=>true,'provider'=>'github_actions_artifact','connected'=>false,'state'=>'github_runtime_check_required'];
  require_once __DIR__.'/session-shorts-drive.php';return nsd_status(lab_read(),$policy,(string)($context['admin']??''));
