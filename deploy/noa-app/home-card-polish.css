@@ -1,0 +1,55 @@
+/* Home discovery cards only. Source images, counts and links remain untouched. */
+html[data-noa-precision] body .noa-main [data-home-section] .noa-music-card{
+  position:relative;
+}
+html[data-noa-precision] body .noa-main [data-home-section] .noa-music-card .noa-card-heading:has(>.noa-rank-badge){
+  grid-template-columns:minmax(0,1fr);
+  gap:0;
+}
+html[data-noa-precision] body .noa-main [data-home-section] .noa-rank-badge[data-state=same]{display:none}
+html[data-noa-precision] body .noa-main [data-home-section] .noa-rank-badge:not([data-state=same]){
+  position:absolute;inset-block-start:8px;inset-inline-end:8px;z-index:2;
+  min-height:22px;max-width:calc(100% - 16px);
+  padding:2px 6px;gap:3px;border:1px solid var(--noa-line);
+  border-radius:4px;background:var(--noa-surface);font-size:10px;
+  color:var(--noa-accent);line-height:1.25;box-shadow:0 2px 8px #0002;
+}
+html[data-noa-precision] body .noa-main [data-home-section] .noa-rank-badge:not([data-state=same]) svg{
+  inline-size:14px;block-size:14px;
+}
+/* A known genre portrait is a fallback, not the video's original thumbnail. */
+html body .noa-main [data-home-section] .noa-art[data-fallback=genre]::after,
+html body .noa-main [data-home-section] .noa-art[data-fallback=identity]::after{
+  content:'장르 대표 이미지';position:absolute;inset:auto auto 6px 6px;
+  min-height:0;padding:3px 6px;border:0;border-radius:4px;
+  display:block;background:var(--noa-surface);color:var(--noa-text);
+  font-size:10px;line-height:1.4;max-width:calc(100% - 12px);
+}
+html body .noa-main [data-home-section] .noa-art[data-fallback=identity]::after{content:'기본 이미지'}
+html body .noa-main [data-home-section] .noa-art[data-unavailable=true]::after{
+  content:'커버 이미지 준비 중';display:grid;place-items:center;
+  position:absolute;inset:0;min-height:0;text-align:center;
+  font-size:12px;line-height:1.5;padding:12px;
+  color:var(--noa-muted);background:var(--noa-raised);
+}
+@media(max-width:760px) and (orientation:portrait){
+  html[data-noa-precision] body .noa-main #noa-featured .noa-card-heading{
+    grid-template-columns:minmax(0,1fr);min-width:0;gap:0;
+    min-height:44px;
+  }
+  html[data-noa-precision] body .noa-main #noa-featured .noa-card-heading strong{
+    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+    overflow:hidden;block-size:44px;min-height:44px;max-inline-size:100%;
+    margin:0;font-size:14px;line-height:22px;word-break:normal;overflow-wrap:anywhere;
+  }
+  html[data-noa-precision] body .noa-main #noa-featured .noa-card-meta{
+    display:block;block-size:auto;min-height:36px;line-height:18px;
+    overflow:hidden;overflow-wrap:anywhere;
+  }
+  html[data-noa-precision] body .noa-main #noa-featured .noa-engagement-card{
+    min-width:0;
+  }
+  html[data-noa-precision] body .noa-main #noa-featured .noa-engagement-card>.noa-engagement{
+    margin-top:3px;min-height:44px;
+  }
+}
