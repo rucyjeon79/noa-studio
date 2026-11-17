@@ -1,0 +1,49 @@
+name: NOA home music card mobile polish
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/noa-home.js'
+      - 'deploy/noa-app/home.php'
+      - 'deploy/noa-app/home-card-polish.css'
+      - 'tests/home/metadata_test.cjs'
+      - 'tests/home/card_polish_test.cjs'
+      - '.github/workflows/noa-home-card-polish.yml'
+  pull_request:
+    paths:
+      - 'deploy/noa-home.js'
+      - 'deploy/noa-app/home.php'
+      - 'deploy/noa-app/home-card-polish.css'
+      - 'tests/home/metadata_test.cjs'
+      - 'tests/home/card_polish_test.cjs'
+      - '.github/workflows/noa-home-card-polish.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - name: Verify home source, thumbnail recovery and responsive cards
+        run: |
+          node --check deploy/noa-home.js
+          node --test tests/home/metadata_test.cjs tests/home/card_polish_test.cjs
+          php -l deploy/noa-app/home.php
+          python3 - <<'PY'
+          from pathlib import Path
+          home=Path('deploy/noa-app/home.php').read_text()
+          css=Path('deploy/noa-app/home-card-polish.css').read_text()
+          assert 'home-card-polish.css?v=' in home
+          assert css.count('{')==css.count('}')
+          assert '!important' not in css
+          assert 'data-fallback=genre' in css
+          assert 'data-state=same' in css
+          print('NOA_HOME_POLISH_SOURCE_PASS')
+          PY
