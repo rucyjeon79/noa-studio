@@ -96,6 +96,7 @@ jobs:
           php -l deploy/noa-app/engine/wake-preflight.php
           php -l deploy/noa-app/engine/wake-ticket-audit.php
           php -l deploy/noa-app/engine/one-shot-host-canary.php
+          php -l deploy/noa-app/engine/hub.php
           php -l tests/n80/one_shot_host_canary_test.php
           php -l tests/n80/wake_ticket_audit_test.php
           php -l deploy/noa-app/engine/hub-retirement-status.php
