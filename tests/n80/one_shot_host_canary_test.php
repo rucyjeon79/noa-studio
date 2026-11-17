@@ -28,4 +28,10 @@ must($r['ok']===false&&$r['state']==='needs_review'
     &&$r['businessOperationsExecuted']===0,'synthetic_canary_never_activates');
 $r=n80_one_shot_host_canary([],$legacy,$wake);
 must($r['ok']===false&&$r['businessOperationsExecuted']===0,'missing_policy_fails_closed');
+$hub=file_get_contents(__DIR__.'/../../deploy/noa-app/engine/hub.php');
+$system=file_get_contents(__DIR__.'/../../deploy/noa-app/engine/system-status.php');
+must(is_string($hub)&&is_string($system),'source_check_available');
+must(substr_count($hub,"require_once __DIR__.'/one-shot-host-canary.php';")===1,'host_canary_wired_once');
+must(substr_count($hub,"'wakeHostCanary'=>$wakeHostCanary")===1,'hub_status_projection');
+must(substr_count($system,"'wakeHostCanary'=>$hub['wakeHostCanary']")===1,'system_status_projection');
 echo "N80_SYNTHETIC_HOST_CANARY_PASS: policy gate, stop latch, no execution, no approval\n";
