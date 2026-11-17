@@ -1,4 +1,47 @@
-# Shorts YouTube connection check — implementation ready, deployment blocked
+# Shorts YouTube connection check — Drive reauthorization blocks deployment
+
+## Follow-up diagnosis, 2026-11-17
+
+At **16:50:37 KST**, the existing administrator Google integration page ran its
+real, bounded **Google Drive API check**. It reported that account authorization
+had expired and reconnection was required. The check calls the existing OAuth
+refresh endpoint before reading the fixed private folder, and records a sanitized
+`google_reconnect_required` outcome. This supplies current evidence that was
+missing from the earlier deployment investigation; the old storage-check receipt
+from November 10 was not current access verification.
+
+The deployment manifest remained revision **483**, with all four preimages
+unchanged and the new YouTube adapter absent. The newest Drive release backups
+listed by the connected Drive service were still the successful revision-483
+package and preimage. Mandatory Drive preimage backup occurs before activation;
+do not bypass it or retry deployment until account access is restored.
+
+The administrator opened the existing Drive reconnection flow and selected the
+saved account. Google displayed its **unverified / testing app** warning. The
+requested scope is the pre-existing full Drive scope, which permits viewing,
+editing, creating and deleting all Drive files; the app's fixed-folder behavior
+does not narrow Google's granted scope. Automatic approval review rejected the
+Continue action because explicit approval for that broad access was absent.
+No consent was granted, no replacement authorization was saved, and no new
+release was attempted during this diagnosis. User approval for this precise
+scope is required before continuing; account selection alone is not that approval.
+
+The earlier saved connection date and current testing warning are consistent with
+Google's documented seven-day testing refresh-token expiry, but are not proof of
+the exact token invalidation reason. See
+[Google OAuth token expiration](https://developers.google.com/identity/protocols/oauth2#expiration).
+The OAuth app publishing configuration has not been changed. Reauthorization can
+restore current access without resolving the recurring testing-state lifetime.
+
+Continuation after explicit approval: restart the existing reconnection flow if
+its ten-minute state has expired, use the already selected account, inspect the
+actual consent scope, finish the same-scope renewal, verify the server's real
+Drive response, obtain a fresh deployment manifest, and submit the preserved
+five-file package only if revision and preimages still match. Then perform one
+live YouTube diagnostic and preserve its actual outcome. Do not claim either
+deployment or YouTube verification is complete yet.
+
+## Earlier implementation and deployment investigation
 
 As of 2026-11-17 16:35 KST, production remains **2.1.483**. No new YouTube
 diagnostic was executed against the live Google account. The change below is in
