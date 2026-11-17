@@ -4,9 +4,10 @@ Notice content and disclosure geometry are checked by the native and browser sui
 import argparse,re,subprocess
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
-# Home immediately before repositioning the three existing banners.
-# Preserve the current accepted page instead of comparing against the superseded layout.
-BASE_COMMIT='61a9eaaee11983cecef4c3948ee9a76495a8c7c9'
+# Latest explicitly approved HOME page includes the artist presence and scoped
+# mobile-card fixes. Pin an immutable reviewed commit; never compare to HEAD.
+# All non-hero source bytes must match this approved checkpoint.
+BASE_COMMIT='c4eed829a2163332208d2fbe24435411f94eca60'
 parser=argparse.ArgumentParser();parser.add_argument('--host-source',type=Path);args=parser.parse_args()
 candidate=(ROOT/'deploy/noa-app/home.php').read_bytes()
 baseline=args.host_source.read_bytes()if args.host_source else subprocess.check_output(['git','show',BASE_COMMIT+':deploy/noa-app/home.php'],cwd=ROOT)
