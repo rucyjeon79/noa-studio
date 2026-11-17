@@ -77,6 +77,20 @@ test('home-only CSS honors two-line title and distinct placeholder labels',()=>{
  assert.match(css,/max-width:760px/);
  assert.doesNotMatch(css,/!important/);
 });
+test('mobile home shell floats fit along the lower gutter rather than stacking across content',()=>{
+ const shell=fs.readFileSync(path.join(root,'deploy/noa-ui.css'),'utf8');
+ const section=shell.split('/* NOA home portrait: keep navigation reachable')[1];
+ assert.ok(section,'dedicated mobile home shell boundary');
+ assert.match(section,/max-width:760px/);
+ assert.match(section,/orientation:portrait/);
+ assert.match(section,/html\[data-noa-area="home"\]\.noa-has-sidebar #noa-pwa-float-nav/);
+ assert.match(section,/flex-direction:row/);
+ assert.match(section,/width:48px;height:48px/);
+ assert.match(section,/width:44px;height:44px/);
+ assert.match(section,/html\[data-noa-area="home"\]:not\(\[data-noa-home-ainoa\]\) body #noa-ainoa/);
+ assert.match(section,/--ainoa-size:52px/);
+ assert.doesNotMatch(section,/!important/);
+});
 test('home page loads dedicated card styles with a content hash',()=>{
  assert.match(php,/home-card-polish\.css\?v=/);
  assert.match(php,/hash_file\('sha256',__DIR__\.'\/home-card-polish\.css'\)/);
