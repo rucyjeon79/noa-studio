@@ -63,8 +63,11 @@ assert candidate.index(b"<?php noa_home_banner('amt');?>")<candidate.index(commu
 assert candidate.count(b'data-noa-community-home')==1,'one native per-board title projection required'
 assert not re.search(rb'TOP\s*10',candidate,re.I),'removed TOP 10 labels returned'
 assert len(re.findall(rb'<script src="/noa-home[.]js[?]v=[^"]+" defer></script>',candidate))==1,'reviewed metrics cache revision changed'
-for marker in [b'id="noa-hero-video"',b'id="noa-hero-genre"',b'id="noa-hero-play"',b'id="noa-featured"',b'id="noa-ep"',b'id="noa-stories"',b'id="noa-covers"',b'id="noa-acts"']:
+for marker in [b'id="noa-hero-video"',b'id="noa-hero-genre"',b'id="noa-featured"',b'id="noa-ep"',b'id="noa-stories"',b'id="noa-covers"',b'id="noa-acts"']:
  assert candidate.count(marker)==1,'missing/duplicate HOME section '+marker.decode()
+# The approved first-encounter hero no longer needs a separate play control.
+# Match its exact approved presence/absence instead of resurrecting it.
+assert candidate.count(b'id="noa-hero-play"')==baseline.count(b'id="noa-hero-play"'),'unreviewed hero player control change'
 print('NOA_HOME_NON_HERO_BYTES_PRESERVED_GENRE_VIDEO_SITEMAP_AND_COMMUNITY_CONTRACT_OK')
 
 for kind in [b'goods',b'youtube',b'amt']:
