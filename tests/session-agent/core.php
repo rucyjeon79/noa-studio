@@ -54,7 +54,8 @@ try{
  $upload('image',1,$fixtures.'/image.png');
  check($job['scenes'][0]['image']['provider']==='chatgpt','Actual built-in image provider is retained');
  foreach(['https://chatgpt.com.evil.test/','http://chatgpt.com/','https://someone@chatgpt.com/','https://chatgpt.com:443/'] as $bad)refuses(fn()=>sa_media_source('image',$bad),'invalid_media_source');
- refuses(fn()=>sa_media_source('video','https://chatgpt.com/'),'invalid_media_source');
+ check(sa_media_source('video','https://chatgpt.com/')==='https://chatgpt.com/','ChatGPT-directed image motion source');
+ foreach(['https://chatgpt.com.evil.test/','http://chatgpt.com/','https://someone@chatgpt.com/','https://chatgpt.com:443/'] as $bad)refuses(fn()=>sa_media_source('video',$bad),'invalid_media_source');
  $upload('video',1,$fixtures.'/clip-1.mp4');
  check($job['next']['action']==='extend_plan','Short actual clip must extend plan');$step('plan',['scenes'=>[$scene(2)]]);
  $upload('image',2,$fixtures.'/image.png');$upload('video',2,$fixtures.'/clip-2.mp4');check($job['next']['action']==='assemble','Ready for assembly');
