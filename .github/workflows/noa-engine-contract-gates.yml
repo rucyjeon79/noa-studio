@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'deploy/noa-app/engine/**'
+      - 'deploy/noa-notebooklm.php'
       - 'tests/engine/**'
       - 'scripts/n80_guardian_remote_audit.py'
       - 'scripts/n80_live_observer.py'
@@ -14,6 +15,7 @@ on:
     branches: [main]
     paths:
       - 'deploy/noa-app/engine/**'
+      - 'deploy/noa-notebooklm.php'
       - 'tests/engine/**'
       - 'scripts/n80_guardian_remote_audit.py'
       - 'scripts/n80_live_observer.py'
