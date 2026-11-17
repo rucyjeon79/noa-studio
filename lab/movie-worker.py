@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
 import tempfile
 import time
 import urllib.error
@@ -37,6 +38,8 @@ def decode_json(text):
 
 def codex(prompt, directory, images=(), generate=False):
     directory.mkdir(parents=True, exist_ok=True)
+    artifact_root = Path(os.environ.get('CODEX_HOME', str(directory))) / 'generated_images'
+    prior_artifacts = set(artifact_root.glob('**/*.png')) if generate else set()
     output = directory / 'answer.txt'
     args = ['codex', 'exec', '--skip-git-repo-check', '--ephemeral', '--disable',
             'shell_tool', '--sandbox', 'workspace-write' if generate else 'read-only', '-o', str(output)]
@@ -58,7 +61,8 @@ def codex(prompt, directory, images=(), generate=False):
         raise RuntimeError('generation_result_unconfirmed')
     if not generate:
         return decode_json(answer)
-    files = [f for f in directory.rglob('*.png') if f.stat().st_size > 1024]
+    candidates = set(directory.rglob('*.png')) | (set(artifact_root.glob('**/*.png')) - prior_artifacts)
+    files = [f for f in candidates if f.stat().st_size > 1024]
     if len(files) != 1:
         raise RuntimeError('generation_result_unconfirmed')
     run(['ffmpeg', '-v', 'error', '-xerror', '-i', str(files[0]), '-f', 'null', '-'])
@@ -100,7 +104,8 @@ class Movie:
         if not re.fullmatch('[a-f0-9]{32}', dispatch) or not re.fullmatch('[a-f0-9]{64}', key):
             raise RuntimeError('invalid_execution_configuration')
         self.dispatch, self.key, self.root = dispatch, key, directory
-        self.session = uuid.uuid4().hex
+        run_identity = os.environ.get('GITHUB_RUN_ID', '') + ':' + os.environ.get('GITHUB_RUN_ATTEMPT', '')
+        self.session = hashlib.sha256((dispatch+':'+run_identity).encode()).hexdigest()[:32] if os.environ.get('GITHUB_RUN_ID') else uuid.uuid4().hex
         self.job, self.lease, self.goal = None, '', ''
         self.deadline = time.monotonic() + 6600
         self.refs = []
@@ -209,7 +214,22 @@ class Movie:
                 if len(rows) != count or [r['n'] for r in rows] != list(range(start, start+count)):
                     raise RuntimeError('scene_plan_invalid')
                 self.step('plan', scenes=rows); continue
-            if action in ('reconcile', 'review'):
+            if action == 'review':
+                active = nxt['operation']; kind = active['kind']; number = active['scene']
+                folder = self.root / ('recovered-' + active['requestId']); folder.mkdir()
+                asset = self.download(kind, folder / ('result.png' if kind == 'image' else 'result.mp4'), number)
+                files = [asset] + self.refs if kind == 'image' else self.frames(asset, active['asset']['duration'], folder / 'frames')
+                proof = visual_check(files, 'Review the recovered actual '+kind+' output. For images, the first attachment is the result and the rest are official identity references.', folder / 'review')
+                note = 'Recovered stored result; no generation repeated. '+proof['note']
+                if kind == 'final':
+                    score = audio_check(audio, asset, job['agent']['selection'], job['agent']['duration'])
+                    note += '; original-audio PCM correlation='+str(score)
+                self.step('review', operationId=active['requestId'], accepted=proof['accepted'], visualChecked=True,
+                          audioChecked=kind == 'final', note=note[:1400])
+                if not proof['accepted']:
+                    raise RuntimeError('character_or_image_review_failed' if kind == 'image' else 'video_review_failed')
+                continue
+            if action == 'reconcile':
                 raise RuntimeError('previous_generation_requires_reconciliation')
             if action == 'generate':
                 kind, number = nxt['kind'], nxt['scene']; self.read(number)
@@ -224,20 +244,24 @@ class Movie:
                         'Use a ' + ('9:16 vertical' if job['agent']['format'] == 'shorts' else '16:9 horizontal') + ' frame. '
                         'No shell, no API scripts, no additional images. Creative scene data:\n' + scene['imagePrompt'])
                     image = codex(prompt, folder / 'generation', self.refs, generate=True)
+                    self.upload(image, kind, operation)
                     proof = visual_check([image] + self.refs, 'First attachment is the generated scene; remaining attachments are identity references. '
                         'Compare facial identity carefully. Scene: ' + scene['summary'], folder / 'review')
-                    self.upload(image, kind, operation)
                     self.step('review', operationId=operation, accepted=proof['accepted'], visualChecked=True,
                         note=('ChatGPT image_gen; official sheets attached; actual image reviewed. ' + proof['note'])[:1400])
                     if not proof['accepted']:
+                        if self.job['next']['action'] == 'generate':
+                            improved = (scene['imagePrompt'][:3300] + '\nCorrect the actual visual-review defects: ' + proof['note'][:1100])
+                            self.step('revise', scene=number, changes={'imagePrompt': improved})
+                            continue
                         raise RuntimeError('character_or_image_review_failed')
                 else:
                     image = self.download('image', folder / 'accepted.png', number)
                     video = folder / 'motion.mp4'
                     receipt = json.loads(run(['node', str(ROOT / 'session-motion.mjs'), str(image), sha(image), job['agent']['format'], str(video)]))
+                    self.upload(video, kind, operation)
                     frames = self.frames(video, receipt['duration'], folder / 'frames')
                     proof = visual_check(frames, 'Actual first/middle/last frames of a gentle image-motion shot. Check framing and visible defects. Scene: ' + scene['summary'], folder / 'review')
-                    self.upload(video, kind, operation)
                     self.step('review', operationId=operation, accepted=proof['accepted'], visualChecked=True,
                         note=('method=image_motion; generativeVideo=false; input='+sha(image)+'; full decode verified. '+proof['note'])[:1400])
                     if not proof['accepted']:
@@ -264,9 +288,9 @@ class Movie:
                 video = folder / 'final.mp4'
                 receipt = json.loads(run(['node', str(ROOT / 'session-assemble.mjs'), str(source), str(video)], timeout=1800))
                 correlation = audio_check(audio, video, manifest['selection'], manifest['duration'])
+                self.upload(video, 'final', operation, receipt['verification'])
                 proof = visual_check(self.frames(video, manifest['duration'], folder / 'frames'),
                     'Actual final movie frames. Check composition, blank frames, visual corruption and legibility of subtitles when present.', folder / 'review')
-                self.upload(video, 'final', operation, receipt['verification'])
                 self.step('review', operationId=operation, accepted=proof['accepted'], visualChecked=True, audioChecked=True,
                     note=('Automated original-audio PCM comparison='+str(correlation)+'; full video/audio decode and duration verified; actual frames inspected. '+proof['note'])[:1400])
                 if not proof['accepted']:
@@ -293,6 +317,12 @@ def main():
     dispatch = os.environ.pop('NOA_TASK_ID', '')
     with tempfile.TemporaryDirectory(prefix='noa-movie-') as directory:
         movie = Movie(dispatch, key, Path(directory))
+        if '--notify-failure' in sys.argv:
+            try:
+                movie.api('fail', reason='제작 실행기가 종료되어 멈췄습니다. 저장된 결과를 보존했으며 제작 재개로 이어갈 수 있습니다.')
+            except Exception:
+                pass
+            return 0
         try:
             movie.produce()
         except Exception as error:

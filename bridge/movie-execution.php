@@ -58,7 +58,6 @@ function nm_worker(string $op,array $b,string $owner,?callable $sourceReader=nul
   });
   return sa_dispatch('agentStep',['id'=>$id,'action'=>'claim','sessionId'=>$session],$owner,$sourceReader);
  }
- if(($w['sessionId']??null)!==$session)throw new DomainException('movie_claim_required');
  if($op==='fail'){
   $reason=sa_string($b['reason']??null,500);
   return lab_lock(function(&$s)use($id,$dispatch,$reason,$owner){
@@ -67,6 +66,7 @@ function nm_worker(string $op,array $b,string $owner,?callable $sourceReader=nul
    return ['job'=>sa_view($j,true)];
   });
  }
+ if(($w['sessionId']??null)!==$session)throw new DomainException('movie_claim_required');
  $mapped=match($op){'read'=>'agentRead','step'=>'agentStep','file'=>'agentFile',default=>throw new InvalidArgumentException('unknown_movie_operation')};
  if($op==='step'&&in_array($b['action']??'',['claim','resume','cancel'],true))throw new DomainException('movie_worker_action_forbidden');
  unset($b['dispatchId'],$b['sessionId']);$b['id']=$id;

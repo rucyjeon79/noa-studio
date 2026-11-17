@@ -264,7 +264,7 @@ function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=n
    if($accepted&&($b['visualChecked']??false)!==true)throw new DomainException('visual_review_required');
    $asset['accepted']=$accepted;$asset['review']=$note;
    if($active['kind']==='final'){
-    if($accepted){if(($b['audioChecked']??false)!==true)throw new DomainException('original_audio_review_required');$j['outputs']=[array_merge($asset,['format'=>$a['format']])];$j['state']='saved';}
+    if($accepted){if(($b['audioChecked']??false)!==true)throw new DomainException('original_audio_review_required');$j['outputs']=[array_merge($asset,['format'=>$a['format']])];$j['state']='saved';if(isset($a['worker'])){$a['worker']['state']='completed';$a['worker']['finishedAt']=time();$a['reason']='';}}
     else $j['state']='agent_ready';
    }else{$a['scenes'][$active['scene']-1][$active['kind']]=$asset;$j['state']='agent_ready';}
    $a['history'][]=array_intersect_key($active,array_flip(['kind','scene','requestId','startedAt']))+['accepted'=>$accepted,'sha256'=>$asset['sha256'],'note'=>$note];$a['active']=null;

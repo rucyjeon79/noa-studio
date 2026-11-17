@@ -2,7 +2,7 @@ name: N80 explicit movie execution checks
 on:
   push:
     branches: [main]
-    paths: ['bridge/movie-*.php', 'lab/movie-worker.py', 'tests/session-agent/movie.php', '.github/workflows/n80-movie-on-demand-check.yml']
+    paths: ['bridge/movie-*.php', 'lab/movie-worker.py', 'tests/session-agent/movie*', '.github/workflows/n80-movie-on-demand-check.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
@@ -13,6 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with: {php-version: '8.2', extensions: 'mbstring'}
+      - run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
       - run: |
           php -l bridge/movie-execution.php
           php -l bridge/movie-worker.php
@@ -22,4 +23,5 @@ jobs:
           php -l deploy/noa-app/engine/github-runtime.php
           php tests/session-agent/movie.php
           python3 -m py_compile lab/movie-worker.py
+          python3 tests/session-agent/movie-worker-test.py
           node --check deploy/noa-ai-lab.js
