@@ -43,13 +43,27 @@ function lab_id(string $id):string {if(!preg_match('/^[a-f0-9]{32}$/D',$id))thro
 function lab_job_dir(string $id):string {return lab_root().'/jobs/'.lab_id($id);}
 require_once __DIR__.'/muvy-timeline.php';
 function lab_public_job(array $j):array { $out=array_intersect_key($j,array_flip(['id','trackKey','title','cast','genre','sourceRevision','state','revision','createdAt','updatedAt','analysis','selection','settings','promotion','outputs','metrics','error','attempts','inputReady','audioSha256','approvedAt','retryAt','costReservedUsd','rights','review','history','stems','creation','usage','mastering','masterOptions','type','browser']));foreach($out['outputs']??[] as $i=>$o)$out['outputs'][$i]=array_intersect_key($o,array_flip(['format','duration','width','height','sha256','videoId','url','publishedAt','checks']));if(isset($out['browser']))$out['browser']=array_intersect_key($out['browser'],array_flip(['provider','sourceUrl','receivedAt','linkedSong']));if(isset($j['analysis']['duration'])){try{$out['scenePlan']=mu_timeline(['durationSeconds'=>$j['analysis']['duration']],false);}catch(InvalidArgumentException $e){$out['scenePlanError']=$e->getMessage();}}if(($j['type']??'')==='agent_movie'){require_once __DIR__.'/session-agent.php';$out['agent']=sa_summary($j);}return $out;}
-function lab_status(?array $s=null):array {$s??=lab_read();$secrets=lab_unseal($s['secrets']??null);$channels=[];foreach($s['channels'] as $id=>$c)$channels[]=['id'=>$id,'title'=>$c['title'],'autoEnabled'=>$c['autoEnabled']??false,'connectedAt'=>$c['connectedAt']];return ['configRevision'=>$s['configRevision']??0,'config'=>$s['config'],'configured'=>['fal'=>!empty($secrets['falKey']),'textAI'=>!empty($secrets['openaiKey']),'oauth'=>!empty($s['config']['oauthClientId'])&&!empty($secrets['oauthClientSecret'])],'channels'=>$channels,'jobs'=>array_map('lab_public_job',array_values($s['jobs'])),'events'=>array_slice($s['events'],-40),'worker'=>$s['worker']??null,'revision'=>$s['revision']];}
+function lab_status(?array $s=null):array {$s??=lab_read();$secrets=lab_unseal($s['secrets']??null);$channels=[];foreach($s['channels'] as $id=>$c)$channels[]=['id'=>$id,'title'=>$c['title'],'autoEnabled'=>$c['autoEnabled']??false,'connectedAt'=>$c['connectedAt']];return ['configRevision'=>$s['configRevision']??0,'config'=>$s['config'],'configured'=>['fal'=>!empty($secrets['falKey']),'textAI'=>!empty($secrets['openaiKey']),'oauth'=>!empty($s['config']['oauthClientId'])&&!empty($secrets['oauthClientSecret'])],'channels'=>$channels,'jobs'=>array_map('lab_public_job',array_values(array_filter($s['jobs'],fn($j)=>empty($j['removedAt'])))),'events'=>array_slice($s['events'],-40),'worker'=>$s['worker']??null,'revision'=>$s['revision']];}
 function lab_json(int $code,array $body):never {http_response_code($code);header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');header('X-Content-Type-Options: nosniff');echo json_encode($body,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;}
 function lab_admin():void {global $is_member,$is_admin;if(empty($is_member)||($is_admin??'')!=='super')lab_json(403,['error'=>'admin_required']);}
 function lab_csrf():void {if(($_SERVER['HTTP_ORIGIN']??'')!==NOA_LAB_ORIGIN||empty($_SESSION['noa_lab_csrf'])||!hash_equals($_SESSION['noa_lab_csrf'],$_SERVER['HTTP_X_NOA_CSRF']??''))lab_json(403,['error'=>'request_verification_failed']);}
 function lab_json_body(int $limit=262144):array {if(strtolower(trim(explode(';',$_SERVER['CONTENT_TYPE']??'')[0]))!=='application/json')lab_json(415,['error'=>'json_required']);$raw=file_get_contents('php://input',false,null,0,$limit+1);if($raw===false||strlen($raw)>$limit)lab_json(413,['error'=>'too_large']);$b=json_decode($raw,true);if(!is_array($b)||array_is_list($b))lab_json(400,['error'=>'invalid_json']);return $b;}
 function lab_revision(array $job,array $body):void {if(!is_int($body['expectedRevision']??null)||$body['expectedRevision']!==$job['revision'])throw new DomainException('revision_conflict');}
 function lab_touch(array &$j):void {$j['revision']++;$j['updatedAt']=gmdate('c');}
+/** Remove a cancelled movie from visible lists while retaining its recoverable record and assets. */
+function lab_remove_cancelled_movie(array &$s,array $b,string $owner):array {
+ $id=lab_id((string)($b['id']??''));
+ if(!isset($s['jobs'][$id]))throw new InvalidArgumentException('unknown_job');
+ $j=&$s['jobs'][$id];
+ if(($j['state']??'')!=='cancelled'||!(($j['type']??'')==='agent_movie'||in_array($j['settings']['mode']??'',['cinematic','lipsync'],true)))throw new DomainException('cancelled_movie_required');
+ if(!empty($j['removedAt'])){
+  if(($b['expectedRevision']??null)!==($j['removedFromRevision']??null))throw new DomainException('revision_conflict');
+  return ['ok'=>true,'removed'=>true,'id'=>$id,'replayed'=>true];
+ }
+ lab_revision($j,$b);$j['removedFromRevision']=$j['revision'];$j['removedAt']=gmdate('c');$j['removedBy']=$owner;lab_touch($j);
+ lab_event($s,'cancelled_movie_removed',$id,$owner);
+ return ['ok'=>true,'removed'=>true,'id'=>$id,'replayed'=>false];
+}
 function lab_https(string $url,array $options=[]):array {
  $c=curl_init($url);curl_setopt_array($c,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>10,CURLOPT_TIMEOUT=>30,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS]+$options);$raw=curl_exec($c);$code=curl_getinfo($c,CURLINFO_RESPONSE_CODE);curl_close($c);if($raw===false||$code<200||$code>=300)throw new RuntimeException('remote_request_failed');return json_decode($raw,true,512,JSON_THROW_ON_ERROR);
 }

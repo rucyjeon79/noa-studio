@@ -11,8 +11,23 @@ function iconize(b,label,kind='check'){b.classList.add('lab-icon-button');b.setA
 function button(text,fn,kind){const b=element('button',undefined,'noa-button');iconize(b,text,kind||(text.includes('복사')?'copy':text.includes('취소')?'cancel':text.includes('업로드')?'upload':text.includes('제작')?'create':text.includes('재시도')?'refresh':'check'));b.type='button';b.onclick=()=>Promise.resolve().then(fn).catch(e=>message(errors[e.message]||(/[가-힣]/.test(e.message)?e.message:'요청을 완료하지 못했습니다. 입력 내용과 연결 상태를 확인한 뒤 다시 시도해 주세요.'),true));return b;}
 async function stableRequestId(payload){const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(payload))))).map(b=>b.toString(16).padStart(2,'0')).join(''),key='noa-lab-request-'+hash;let value;try{value=sessionStorage.getItem(key);}catch{}if(!value){value=crypto.randomUUID().replaceAll('-','');try{sessionStorage.setItem(key,value);}catch{}}return value;}
 async function upload(job,file,role='main'){if(!file||file.size>150*1048576)throw Error('150 MiB 이하의 음원 파일을 선택하세요.');const total=Math.ceil(file.size/1048576);for(let part=0;part<total;part++){const data=new FormData();data.append('chunk',file.slice(part*1048576,(part+1)*1048576),'chunk');const response=await fetch('/noa-bridge/lab-api.php?'+new URLSearchParams({action:'audio',id:job.id,part:String(part),total:String(total),role}),{method:'POST',credentials:'same-origin',headers:{'X-NOA-CSRF':csrf},body:data});const result=await response.json();if(!response.ok)throw Error(result.error);message(`음원 업로드 ${Math.round((part+1)/total*100)}%`);}}
+function addCancelledDelete(box,job){
+ if(job.state!=='cancelled'||!(job.type==='agent_movie'||['cinematic','lipsync'].includes(job.settings?.mode)))return;
+ box.classList.add('lab-cancelled-movie');
+ const remove=button('취소된 뮤비 삭제',async()=>{
+  if(busy)return;busy=true;remove.disabled=true;
+  try{
+   const result=await api('delete_cancelled_movie',{id:job.id,expectedRevision:job.revision});
+   if(!result.removed||result.id!==job.id)throw Error('삭제 결과를 확인하지 못했습니다.');
+   await refresh();
+   if(state.jobs.some(j=>j.id===job.id))throw Error('목록에서 삭제 결과를 확인하지 못했습니다.');
+   message('취소된 뮤비를 삭제했습니다.');
+  }finally{busy=false;remove.disabled=false;}
+ },'cancel');
+ remove.classList.add('lab-movie-delete');box.append(remove);
+}
 function renderAgentJob(job){
- const a=job.agent,box=element('article',undefined,'lab-panel');box.id='job-'+job.id;
+ const a=job.agent,box=element('article',undefined,'lab-panel');box.id='job-'+job.id;addCancelledDelete(box,job);
  const labels={agent_planning:'장면 기획 대기',agent_ready:'다음 장면 준비',agent_working:'장면 제작 중',agent_review:'결과 검수 중',agent_paused:'잠시 멈춤',saved:'뮤직비디오 완성',cancelled:'취소됨'};
  const head=element('div',undefined,'lab-job-head');head.append(element('h3',job.title),element('span',labels[job.state]||'제작 준비','lab-state'));box.append(head);
  box.append(element('p',`${a.format==='shorts'?'9:16 선택 구간':'16:9 전곡'} ${formatTime(a.duration)} · ${a.sceneCount}장면 · 이미지 ${a.images} / 영상 ${a.videos} 완료`,'noa-muted'));
@@ -27,7 +42,7 @@ function renderAgentJob(job){
  }
  return box;
 }
-function renderJob(job){if(job.type==='agent_movie')return renderAgentJob(job);const box=element('article',undefined,'lab-panel');box.id='job-'+job.id;const head=element('div',undefined,'lab-job-head');head.append(element('h3',job.title),element('span',job.type==='browser_clip'?'제작 장면 보관됨':(states[job.state]||'상태 확인 필요'),'lab-state'));box.append(head,element('p',job.type==='browser_clip'?(job.trackKey?'선택한 곡의 제작 장면':'곡에 연결하지 않은 테스트 장면'):`${job.cast==='male'?'Noel':job.cast==='duet'?'Noa & Noel':'Noa'} · ${job.genre} · ${new Date(job.createdAt).toLocaleString()} · 원본 v${job.sourceRevision}`,'lab-job-meta'));if(job.error)box.append(element('p',errors[job.error]||'작업을 완료하지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요.','lab-error'));
+function renderJob(job){if(job.type==='agent_movie')return renderAgentJob(job);const box=element('article',undefined,'lab-panel');box.id='job-'+job.id;addCancelledDelete(box,job);const head=element('div',undefined,'lab-job-head');head.append(element('h3',job.title),element('span',job.type==='browser_clip'?'제작 장면 보관됨':(states[job.state]||'상태 확인 필요'),'lab-state'));box.append(head,element('p',job.type==='browser_clip'?(job.trackKey?'선택한 곡의 제작 장면':'곡에 연결하지 않은 테스트 장면'):`${job.cast==='male'?'Noel':job.cast==='duet'?'Noa & Noel':'Noa'} · ${job.genre} · ${new Date(job.createdAt).toLocaleString()} · 원본 v${job.sourceRevision}`,'lab-job-meta'));if(job.error)box.append(element('p',errors[job.error]||'작업을 완료하지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요.','lab-error'));
  if(job.state==='awaiting_audio'){const file=element('input');file.type='file';file.accept='audio/*';box.append(field('원본 음원 이어 올리기',file),button('원본 업로드',async()=>{await upload(job,file.files[0]);await refresh();}));}
  if(job.creation){const draft=element('details');draft.open=true;draft.append(element('summary','OpenAI 제작 초안 · 검토 후 저장'));for(const [key,value] of Object.entries(job.creation.body||{})){const text=typeof value==='string'?value:JSON.stringify(value,null,2);const area=element('textarea');area.value=text;area.readOnly=true;area.setAttribute('aria-label',NoaDisplay.labels[key]||'제작 결과');draft.append(element('h4',NoaDisplay.labels[key]||'제작 결과'),area,button((NoaDisplay.labels[key]||'제작 결과')+' 복사',()=>navigator.clipboard.writeText(text),'copy'));}const edit=element('a','곡 등록·수정 화면에서 검토','lab-editor-link');edit.href='/noa-editor.php?'+new URLSearchParams({key:job.trackKey||'',draft:job.id});draft.append(edit);box.append(draft);}
  if(job.scenePlan)box.append(element('p',`전체 곡 구성 · ${job.scenePlan.cutCount}컷 · 8초 생성 / 1초 교차페이드 · 마지막 장면은 곡 끝에 맞춰 조정`,'noa-muted'));

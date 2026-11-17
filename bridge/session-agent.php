@@ -151,7 +151,7 @@ function sa_canonical(mixed $value):mixed {
 function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=null):array {
  $sourceReader??='sa_source';
  if($op==='agentTasks'){
-  $jobs=array_filter(lab_read()['jobs'],fn($j)=>($j['type']??'')==='agent_movie'&&($j['agent']['owner']??'')===$owner);
+  $jobs=array_filter(lab_read()['jobs'],fn($j)=>empty($j['removedAt'])&&($j['type']??'')==='agent_movie'&&($j['agent']['owner']??'')===$owner);
   $campaigns=lab_read()['campaigns']??[];
   if(isset($campaigns['daily_shorts'])){require_once __DIR__.'/session-shorts.php';$campaigns['daily_shorts']=nd_shorts_public($campaigns['daily_shorts']);}
   if(isset($campaigns['daily_shorts']['preparation']))unset($campaigns['daily_shorts']['preparation']['lease'],$campaigns['daily_shorts']['preparation']['sources'],$campaigns['daily_shorts']['preparation']['connectionReceipt']);

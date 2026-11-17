@@ -34,6 +34,23 @@ with tempfile.TemporaryDirectory(prefix='noa-lab-http-') as root:
   status,planned=request('lab-api.php?action=scene_plan',{'durationSeconds':240},admin);assert status==200 and planned['plan']['cutCount']==35 and planned['plan']['scenes'][-1]['end']==240
   assert request('lab-api.php?action=scene_plan',{'durationSeconds':0},admin)[0]==400
   assert request('lab-api.php',headers={'X-Test-Role':'admin'})[1]['jobs']==[], 'planning creates no paid jobs'
+  # Remove only a cancelled movie; keep recoverable records, files and audit history.
+  state=json.loads((private/'state.json').read_text());movie='d'*32;active='e'*32;audio='f'*32
+  fixture={'id':movie,'state':'cancelled','revision':3,'title':'cancelled movie','settings':{'mode':'cinematic'},'outputs':[]}
+  state['jobs']={movie:fixture,active:{**fixture,'id':active,'state':'queued_render'},audio:{**fixture,'id':audio,'settings':{'mode':'audio'}}};(private/'state.json').write_text(json.dumps(state))
+  request_body={'id':movie,'expectedRevision':3};endpoint='lab-api.php?action=delete_cancelled_movie'
+  assert request(endpoint,request_body)[0]==403
+  assert request(endpoint,request_body,{'X-Test-Role':'admin'})[0]==403
+  assert request(endpoint,request_body,{**admin,'Origin':'https://evil.example'})[0]==403
+  assert request(endpoint,{**request_body,'expectedRevision':2},admin)[0]==409
+  for target in [active,audio]:assert request(endpoint,{**request_body,'id':target},admin)[0]==409
+  status,removed=request(endpoint,request_body,admin);assert status==200 and removed['removed'] and not removed['replayed'],removed
+  status,replay=request(endpoint,request_body,admin);assert status==200 and replay['replayed'],replay
+  assert movie not in [j['id'] for j in request('lab-api.php',headers={'X-Test-Role':'admin'})[1]['jobs']]
+  retained=json.loads((private/'state.json').read_text());assert retained['jobs'][movie]['state']=='cancelled' and retained['jobs'][movie]['revision']==4 and retained['jobs'][movie]['removedAt']
+  assert sum(e['type']=='cancelled_movie_removed' for e in retained['events'])==1
+  retained['jobs']={};(private/'state.json').write_text(json.dumps(retained))
+  print('Cancelled movie removal: admin/CSRF/revision gates, active/audio rejection, idempotency, hidden readback and retained records passed.')
   # Real browser-result multipart upload, protected by the existing admin and CSRF gates.
   # Real 0.5-second H.264 fixture; HTTP contracts do not require an encoder on every runner.
   clip_bytes=base64.b64decode((REPO/'tests/lab/clip_fixture.b64').read_text());fields={'requestId':'c'*32,'sourceUrl':'https://flow.google.com/project/11111111-1111-1111-1111-111111111111/edit/22222222-2222-2222-2222-222222222222','sha256':hashlib.sha256(clip_bytes).hexdigest(),'trackKey':''}
