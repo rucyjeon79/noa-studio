@@ -3,6 +3,15 @@ declare(strict_types=1);
 if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
 require_once __DIR__.'/session-agent.php';
 
+function nm_dispatch_token():string {
+ $token=trim((string)getenv('NOA_GITHUB_DISPATCH_TOKEN'));if($token!=='')return $token;
+ // Use the existing selected-text worker's dispatch credential, not upload/browser tokens.
+ $file=dirname(G5_PATH).'/noa-ai-lab/gpt-action/state.json';
+ if(is_link($file)||!is_file($file)||(fileperms($file)&0077)!==0||filesize($file)>16777216)return '';
+ $state=json_decode((string)file_get_contents($file),true);
+ return is_array($state)&&!empty($state['workerHash'])&&is_string($state['dispatchToken']??null)?$state['dispatchToken']:'';
+}
+
 /** One explicit movie request, one bounded external worker. No clock or resident process. */
 function nm_dispatch(string $id,string $owner,?callable $sender=null):array {
  $ticket=lab_lock(function(&$s)use($id,$owner){
@@ -17,7 +26,7 @@ function nm_dispatch(string $id,string $owner,?callable $sender=null):array {
   return ['send'=>true,'dispatchId'=>$w['id']];
  });
  if(!$ticket['send'])return ['job'=>$ticket['job'],'replayed'=>true];
- if($sender===null){require_once dirname(__DIR__).'/noa-app/engine/github-runtime.php';$sender=fn($dispatchId)=>n80_github_request('movie_generation',$dispatchId,n80_github_dispatch_token());}
+ if($sender===null){require_once dirname(__DIR__).'/noa-app/engine/github-runtime.php';$sender=fn($dispatchId)=>n80_github_request('movie_generation',$dispatchId,nm_dispatch_token());}
  $code=$sender($ticket['dispatchId']);
  return lab_lock(function(&$s)use($id,$ticket,$code,$owner){
   $j=&$s['jobs'][$id];$w=&$j['agent']['worker'];
