@@ -24,7 +24,8 @@ export async function assemble(m,output){
  if(await sha(m.audio.path)!==m.audio.sha256)throw Error('audio_checksum_mismatch');
  const selection=m.selection??null,sourceDuration=m.sourceDuration??m.duration;
  if(!Number.isFinite(sourceDuration)||(!selection&&sourceDuration!==m.duration))throw Error('invalid_source_duration');
- if(selection&&(format!=='shorts'||!Number.isFinite(selection.start)||!Number.isFinite(selection.end)||selection.start<0||selection.end>sourceDuration||m.duration<49||m.duration>59||Math.abs(selection.end-selection.start-m.duration)>.00001))throw Error('invalid_short_selection');
+ if(format==='shorts'&&m.duration>59)throw Error('invalid_short_selection');
+ if(selection&&(format!=='shorts'||!Number.isFinite(selection.start)||!Number.isFinite(selection.end)||selection.start<0||selection.end>sourceDuration||m.duration<=0||m.duration>59||Math.abs(selection.end-selection.start-m.duration)>.00001))throw Error('invalid_short_selection');
  const audio=await probe(m.audio.path);if(!audio.streams.some(s=>s.codec_type==='audio')||Math.abs(Number(audio.format.duration)-sourceDuration)>.15)throw Error('audio_duration_mismatch');
  const overlap=layout.overlapFrames;
  if(!Number.isInteger(overlap)||overlap<0||overlap>48||layout.targetFrames!==Math.ceil(m.duration*fps))throw Error('invalid_timeline');

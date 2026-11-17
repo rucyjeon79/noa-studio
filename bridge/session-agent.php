@@ -53,11 +53,15 @@ function sa_fingerprint(array $source):string {
 }
 /** A short keeps the verified full source and records an explicit original-audio window. */
 function sa_selection(mixed $v,string $format,float $duration):?array {
- if($v===null)return null;
+ if(!is_finite($duration)||$duration<=0)throw new InvalidArgumentException('invalid_source_duration');
+ // Landscape always consumes the entire verified source. Portrait defaults to 0–59s.
+ if($format==='landscape'){if($v!==null)throw new InvalidArgumentException('invalid_short_selection');return null;}
+ if($format!=='shorts')throw new InvalidArgumentException('invalid_format');
+ if($v===null)$v=['start'=>0,'end'=>min(59,$duration)];
  if($format!=='shorts'||!is_array($v)||array_diff(array_keys($v),['start','end']))throw new InvalidArgumentException('invalid_short_selection');
  foreach(['start','end'] as $k)if(!isset($v[$k])||!(is_int($v[$k])||is_float($v[$k]))||!is_finite((float)$v[$k]))throw new InvalidArgumentException('invalid_short_selection');
  $start=round((float)$v['start'],3);$end=round((float)$v['end'],3);$length=round($end-$start,3);
- if($start<0||$end>$duration||$length<49||$length>59)throw new InvalidArgumentException('invalid_short_selection');
+ if($start<0||$end>$duration||$length<=0||$length>59)throw new InvalidArgumentException('invalid_short_selection');
  return ['start'=>$start,'end'=>$end];
 }
 function sa_duration(array $j):float {
@@ -69,7 +73,8 @@ function sa_summary(array $j):array {
   'planned'=>count($scenes),'images'=>count(array_filter($scenes,fn($s)=>($s['image']['accepted']??false))),
   'videos'=>count(array_filter($scenes,fn($s)=>($s['video']['accepted']??false))),
   'active'=>$a['active']?array_intersect_key($a['active'],array_flip(['kind','scene','phase'])):null,
-  'reason'=>$a['reason']??'','format'=>$a['format'],'duration'=>sa_duration($j),'selection'=>$a['selection']??null,'connected'=>($a['leaseUntil']??0)>time()];
+  'reason'=>$a['reason']??'','format'=>$a['format'],'duration'=>sa_duration($j),'selection'=>$a['selection']??null,'connected'=>($a['leaseUntil']??0)>time(),
+  'controller'=>$a['controller']??null];
 }
 function sa_layout(array $j):array {
  $a=$j['agent'];$fps=24;$overlap=(int)round($a['timing']['overlapSeconds']*$fps);
@@ -85,7 +90,7 @@ function sa_layout(array $j):array {
  return ['ready'=>$cursor>=$target,'fps'=>$fps,'overlapFrames'=>$overlap,'targetFrames'=>$target,
   'missingSeconds'=>max(0,($target-$cursor)/$fps),'scenes'=>$rows];
 }
-function sa_next(array $j):array {
+function sa_next_candidate(array $j):array {
  $a=$j['agent'];
  if(in_array($j['state'],['saved','cancelled','agent_paused'],true))return ['action'=>$j['state']];
  if($a['active'])return ['action'=>$a['active']['phase']==='received'?'review':'reconcile','operation'=>$a['active']];
@@ -98,16 +103,34 @@ function sa_next(array $j):array {
  if(!empty($a['subtitles']['enabled'])&&($a['subtitles']['status']??'pending')!=='ready')return ['action'=>($a['subtitles']['status']??'pending')==='needs_review'?'review_subtitles':'align_subtitles','subtitles'=>sa_subtitle_summary($j)];
  return ['action'=>'assemble','layout'=>$layout];
 }
+/** Read the same bounded generation checks used by begin, without consuming a try. */
+function sa_generation_gate(array $j,array $next):?array {
+ if(!in_array($next['action']??'',['generate','assemble'],true))return null;
+ $kind=$next['action']==='assemble'?'final':$next['kind'];$n=$next['action']==='assemble'?0:$next['scene'];
+ $attempts=(int)($j['agent']['attempts'][$kind.':'.$n]??0);$reason=null;
+ if($kind==='image')try{sa_require_character_references($j);}catch(DomainException $e){$reason=$e->getMessage();}
+ $limit=max(3,min(6,(int)($j['agent']['retryLimits'][$kind.':'.$n]??3)));
+ if($reason===null&&$attempts>=$limit)$reason='generation_attempt_limit';
+ return ['allowed'=>$reason===null,'reason'=>$reason,'kind'=>$kind,'scene'=>$n,
+  'attempts'=>$attempts,'maxAttempts'=>$limit,'remaining'=>max(0,$limit-$attempts)];
+}
+function sa_next(array $j):array {
+ $next=sa_next_candidate($j);$gate=sa_generation_gate($j,$next);
+ if($gate!==null&&!$gate['allowed'])return ['action'=>'blocked','reason'=>$gate['reason'],'kind'=>$gate['kind'],'scene'=>$gate['scene'],'generationGate'=>$gate];
+ return $next;
+}
 function sa_view(array $j,bool $detail=false,int $from=1):array {
  $v=lab_public_job($j);$v['agent']=sa_summary($j);
  if($detail){$source=$j['source'];unset($source['audioPath']);$v['source']=$source;$v['next']=sa_next($j);
+  $v['generationGate']=$v['next']['generationGate']??sa_generation_gate($j,$v['next']);
   $v['characterReferences']=$j['agent']['characterReferences']??sa_character_references((string)$source['cast']);
   $v['characterInstructions']='Attach the actual listed official character-sheet files to image generation for every visible NOA/NOEL character. A URL or prose identity description alone is not an attachment. Match face and body identity; change costume and setting for the genre. Do not reproduce the sheet grid, labels or business suits. Compare generated faces with the sheets before accepting. If a sheet cannot be read or attached, pause; never substitute an arbitrary person. Preserve provider marks. Save original-resolution downloads, not UI previews. Low-resolution video is a motion draft; record actual dimensions and inspect any upscaled delivery.';
   $v['scenes']=array_slice($j['agent']['scenes'],max(0,$from-1),10);$v['timing']=$j['agent']['timing'];
   $v['assemblyTool']=['repository'=>'rucyjeon79/noa-studio','path'=>'lab/session-assemble.mjs','manifest'=>['format'=>$j['agent']['format'],'outputResolution'=>$j['agent']['format']==='shorts'?1080:720,'duration'=>sa_duration($j),'selection'=>$j['agent']['selection']??null,'sourceDuration'=>$j['source']['duration'],'subtitles'=>$j['agent']['subtitles']??['enabled'=>false],'audio'=>['path'=>'LOCAL_AUDIO_PATH','sha256'=>$j['audioSha256']],'layout'=>sa_layout($j),'scenes'=>'Download each accepted video to a local path; include n, path and sha256. Run node session-assemble.mjs manifest.json final.mp4. Inspect actual frames and listen to the final audio before review.']];
+  $v['motionTool']=['path'=>'lab/session-motion.mjs','method'=>'image_motion','instructions'=>'Run node lab/session-motion.mjs image-path image-sha256 landscape-or-shorts output.mp4. Use the accepted image, inspect actual frames, upload the real MP4, and record the returned receipt. No paid API or Google login is required.'];
   $v['subtitles']=$j['agent']['subtitles']??['enabled'=>false];
   $v['subtitleTool']=['path'=>'lab/session-subtitles.py','manifest'=>['audio'=>['path'=>'LOCAL_AUDIO_PATH','sha256'=>$j['audioSha256']],'duration'=>$j['source']['duration'],'lyrics'=>$j['source']['lyrics']],'instructions'=>'Run the local Korean word recognizer with the original audio, save payload using noa_agent_subtitles, and listen to flagged lines before reviewing. Never invent evenly spaced timings. Read SRT/VTT using agentFile after ready. No paid API or background process.'];
-  $v['instructions']='ChatGPT plans and reviews. Create images with the available ChatGPT image-generation tool or signed-in Gemini, and videos through signed-in Flow. Record the actual image provider: use https://chatgpt.com/ for a built-in tool output (provider origin, not an asset URL), or the actual Gemini result URL. Include the tool result filename and official reference attachments in the review note. Never relabel a ChatGPT image as Gemini. Persist begin BEFORE generation. A requested operation on resume must be reconciled, never blindly generated again. Upload actual files with agentFile. Review actual images/frames; do not mark unobserved assets accepted. Use source key, current title and lyrics. Preserve watermarks. Use original audio for assembly. Public posting requires an explicit user request specifying the destination; otherwise save only. If a required browser tool or login is missing, pause with a precise reason. Resume in a later conversation; this is not an unattended browser service.';
+  $v['instructions']='ChatGPT plans and reviews. Create images with the available ChatGPT image-generation tool or signed-in Gemini, and videos through an available signed-in video tool OR the local lab/session-motion.mjs renderer using each accepted image. The local renderer creates image motion (pan/zoom), not generative character animation; label that method honestly. Use https://chatgpt.com/ as the directing-tool origin for local motion, and record the input image hash and renderer receipt in the review note. Never wait on unavailable Google login when image-motion editing can fulfill the request. Record the actual image provider: use https://chatgpt.com/ for a built-in tool output (provider origin, not an asset URL), or the actual Gemini result URL. Include the tool result filename and official reference attachments in the review note. Never relabel a ChatGPT image as Gemini. Persist begin BEFORE generation. A requested operation on resume must be reconciled, never blindly generated again. Upload actual files with agentFile. Review actual images/frames; do not mark unobserved assets accepted. Use source key, current title and lyrics. Preserve watermarks. Use original audio for assembly. Public posting requires an explicit user request specifying the destination; otherwise save only. If a required browser tool or login is missing, pause with a precise reason. Resume in a later conversation; this is not an unattended browser service.';
  }
  return $v;
 }
@@ -181,16 +204,22 @@ function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=n
   $a=&$j['agent'];$action=$b['action']??'';
   if($op==='agentFile'){if(($b['mode']??'')!=='read'){sa_require_current($j,$source);sa_lease($j,$b);$a['leaseUntil']=time()+900;}require_once __DIR__.'/session-agent-media.php';return sa_file($j,$b);}
   if($op!=='agentStep')throw new InvalidArgumentException('unknown_agent_operation');
+  if(!empty($a['controller']['enabled'])&&!in_array($action,['pause','resume','cancel'],true)){
+   require_once __DIR__.'/session-shorts-control.php';nsc_require_request($j,$action,$b);
+  }
   if($action==='claim'){
    sa_require_current($j,$source);$session=lab_id((string)($b['sessionId']??''));
    if(in_array($j['state'],['saved','cancelled','agent_paused'],true))throw new DomainException('agent_not_active');
    if($a['leaseUntil']>time()&&$a['session']!==$session)throw new DomainException('agent_already_claimed');
    if($a['session']!==$session||$a['leaseUntil']<=time())$a['lease']=bin2hex(random_bytes(24));
-   $a['session']=$session;$a['leaseUntil']=time()+900;lab_touch($j);
+   $a['session']=$session;$a['leaseUntil']=time()+900;
+   if(!empty($a['controller']['enabled'])){$a['controller']['request']['receivedAt']=time();$a['controller']['request']['state']='received';}
+   lab_touch($j);
    return ['job'=>sa_view($j,true),'lease'=>$a['lease'],'leaseSeconds'=>900];
   }
   // Administrative controls use revision fencing and revoke the current session lease.
   if(in_array($action,['pause','resume','cancel'],true)){
+   if($action==='resume'&&!empty($a['controller']['enabled']))throw new DomainException('n80_recovery_required');
    lab_revision($j,$b);if(in_array($j['state'],['saved','cancelled'],true))throw new DomainException('agent_finished');
    if($action==='resume'){sa_require_current($j,$source);$j['state']='agent_ready';$a['reason']='';}
    else{$j['state']=$action==='cancel'?'cancelled':'agent_paused';$a['reason']=sa_string($b['reason']??'사용자 요청',500);}
@@ -220,9 +249,11 @@ function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=n
    $j['state']='agent_ready';
   }elseif($action==='begin'){
    $next=sa_next($j);$kind=$b['kind']??'';$n=$b['scene']??0;
+   if($next['action']==='blocked')throw new DomainException($next['reason']);
    if(!(($next['action']==='generate'&&$kind===$next['kind']&&$n===$next['scene'])||($next['action']==='assemble'&&$kind==='final'&&$n===0)))throw new DomainException('unexpected_agent_step');
+   $gate=sa_generation_gate($j,$next);if(!$gate['allowed'])throw new DomainException($gate['reason']);
    if($kind==='image')$a['characterReferences']=sa_require_character_references($j);
-   $key=$kind.':'.$n;$a['attempts'][$key]=($a['attempts'][$key]??0)+1;if($a['attempts'][$key]>3)throw new DomainException('generation_attempt_limit');
+   $key=$kind.':'.$n;$a['attempts'][$key]=($a['attempts'][$key]??0)+1;
    $a['active']=['kind'=>$kind,'scene'=>$n,'requestId'=>$request,'phase'=>'requested','startedAt'=>gmdate('c')];$j['state']='agent_working';
   }elseif($action==='review'){
    $active=$a['active'];if(!$active||$active['phase']!=='received'||($b['operationId']??'')!==$active['requestId'])throw new DomainException('received_asset_required');

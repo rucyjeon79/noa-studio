@@ -16,7 +16,6 @@ function n80_hub_operations():array {
   'popularity.calculate'=>['handler'=>'personalization.php','module'=>'personalization','label'=>'인기 집계','interval'=>3600,'timeout'=>110],
   'members.maintain'=>['handler'=>'sign.php','module'=>'sign','label'=>'회원 등급·갱신 정리','interval'=>900,'timeout'=>110],
   'covers.refresh'=>['handler'=>'media.php','module'=>'media','label'=>'누락된 곡 카드 이미지 보완','interval'=>180,'timeout'=>90],
-  'ai.daily_shorts_clock'=>['service'=>'n80_daily_shorts_tick','handler'=>'lab.php','module'=>'lab','label'=>'쇼츠 일정·준비 상태','interval'=>900,'timeout'=>30],
  ];
 }
 function n80_hub_root():string { return dirname(__DIR__,3).'/noa-hub'; }

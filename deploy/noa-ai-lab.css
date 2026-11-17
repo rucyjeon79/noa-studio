@@ -6,3 +6,24 @@
 .lab-main [hidden]{display:none!important}#lab-config{width:100%;margin:24px 0}.lab-main .lab-tabs{gap:8px 20px}.lab-main .lab-tabs a[aria-current="page"]{color:var(--noa-accent);text-decoration:underline;text-underline-offset:6px}
 /* Keep the selected specialist visible; expand navigation only when changing tools. */
 .lab-main .lab-tabs{align-items:center}.lab-main .lab-tool-switch{margin:0 0 0 auto;max-width:100%}.lab-tool-switch summary{min-height:44px;display:flex;align-items:center;cursor:pointer;color:var(--noa-muted)}.lab-tool-switch summary::after{content:'⌄';margin-left:8px}.lab-tool-switch[open]{flex:1 1 100%;margin:0}.lab-tool-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:4px 20px;border-top:1px solid var(--noa-line);padding-top:8px}.lab-tool-links a{min-width:0;overflow-wrap:anywhere}
+
+/* N80 PROSE ACTION SEPARATION 2026-11-16.
+   Separate user guidance and administrator navigation inside AI LAB setup. */
+html body.noa-page #lab-config p > a.noa-button {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  margin-block: 8px;
+  padding: 10px 14px;
+  white-space: normal;
+  line-height: 1.45;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+#lab-agent-range{border:1px solid #76644166;border-radius:16px;padding:18px;margin:20px 0;min-width:0}#lab-agent-range[hidden]{display:none}#lab-agent-range legend{padding:0 8px;color:#d7bb7c}#lab-agent-range audio{width:100%;margin-top:14px}#lab-agent-range button{min-height:44px}

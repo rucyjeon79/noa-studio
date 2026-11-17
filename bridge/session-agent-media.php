@@ -41,7 +41,8 @@ function sa_video_probe(string $path,bool $final=false):array {
 }
 function sa_media_source(string $kind,string $url):string {
  if($kind==='final'){if($url!=='')throw new InvalidArgumentException('invalid_media_source');return '';}
- $u=parse_url($url);$hosts=$kind==='image'?['gemini.google.com','chatgpt.com']:['flow.google.com'];
+ // chatgpt.com denotes the directing tool for an explicitly labelled local image-motion clip.
+ $u=parse_url($url);$hosts=$kind==='image'?['gemini.google.com','chatgpt.com']:['flow.google.com','chatgpt.com'];
  if(($u['scheme']??'')!=='https'||!in_array($u['host']??'',$hosts,true)||isset($u['user'])||isset($u['pass'])||isset($u['port'])||strlen($url)>1000)throw new InvalidArgumentException('invalid_media_source');
  return $url;
 }

@@ -47,7 +47,8 @@
     ".github/workflows/noa-suno-card-auto.yml",
     ".github/workflows/noa-taxonomy-release.yml",
     ".github/workflows/noa-ui-safe-production.yml",
-    ".github/workflows/noa-upload-commit-diagnosis.yml"
+    ".github/workflows/noa-upload-commit-diagnosis.yml",
+    ".github/workflows/noa-ai-worker.yml"
   ],
   "duplicateDatabase": {
     "removedDirectory": "deploy/noastudio/noa/data/live/pglite",

@@ -14,6 +14,8 @@ function nd_shorts_policy():array {
  $path=dirname(__DIR__).'/noa-app/engine/daily-shorts.json';
  $p=json_decode((string)file_get_contents($path),true,32,JSON_THROW_ON_ERROR);
  if(($p['timezone']??'')!=='Asia/Seoul'||($p['publishLocalTime']??'')!=='12:00'||($p['prepareLocalTime']??'')!=='08:00'||($p['maxPerLocalDate']??0)!==1||($p['minSeconds']??0)!==49||($p['maxSeconds']??0)!==59)throw new DomainException('invalid_daily_shorts_policy');
+ $storage=$p['mediaStorage']??[];
+ if(($storage['provider']??'')!=='google_drive'||!preg_match('/^[A-Za-z0-9_-]{10,200}$/D',(string)($storage['temporaryParentFolderId']??'')))throw new DomainException('shorts_google_drive_required');
  nd_shorts_weekdays($p);
  return $p;
 }
@@ -41,12 +43,30 @@ function nd_shorts_slot_allowed(array $p,string $publishAt):bool {
 function nd_shorts_readiness(array $s,array $p):array {
  $channel=$s['channels'][$p['channelId']]??[];$secrets=lab_unseal($s['secrets']??null);
  $youtube=!empty($channel['tokens'])&&!empty($s['config']['oauthClientId'])&&!empty($secrets['oauthClientSecret']);
- // Session browser tools are not a server adapter. Do not infer one from a login or API key.
- $missing=['persistent_browser_executor_required'];
+ // A ChatGPT/Drive browser session is not an N80 host Drive connection.
+ $storage=$p['mediaStorage']??[];$drive=$s['driveConnection']??[];$folder=$storage['temporaryParentFolderId']??'';
+ $driveAuthorized=($storage['provider']??'')==='google_drive'&&is_string($folder)&&
+  preg_match('/^[A-Za-z0-9_-]{10,200}$/D',$folder)===1&&!empty($drive['owner'])&&
+  !empty($drive['tokens'])&&!empty($s['config']['oauthClientId'])&&
+  ($drive['parent']??'')===$folder&&($drive['clientId']??'')===$s['config']['oauthClientId'];
+ $receipt=$drive['storageCheck']??[];
+ $driveReadback=$driveAuthorized&&($receipt['state']??'')==='verified'&&
+  ($receipt['connectionId']??'')===($drive['id']??null)&&
+  ($receipt['parent']??'')===$folder&&
+  ($receipt['cleanup']??'')==='trashed'&&
+  (int)($receipt['readbackVerifiedAt']??0)>0;
+ // A cron tick or saved OAuth token cannot prove real production readiness.
+ $missing=['persistent_browser_executor_required','chatgpt_unattended_dispatch_not_verified'];
+ if(!$driveAuthorized)$missing[]='google_drive_authorization_required';
+ elseif(!$driveReadback)$missing[]='google_drive_readback_verification_required';
  if(!$youtube)$missing[]='youtube_offline_connection_required';
  elseif(empty($channel['autoEnabled']))$missing[]='youtube_auto_publication_not_enabled';
- return ['ready'=>false,'missing'=>$missing,'youtubeConnected'=>$youtube,'channelAutoEnabled'=>!empty($channel['autoEnabled']),
-  'sessionBrowserIsServerExecutor'=>false,'paidGenerationEnabled'=>!empty($s['config']['generationEnabled']),
+ $missing[]='youtube_related_video_adapter_not_verified';
+ return ['ready'=>false,'missing'=>$missing,'youtubeConnected'=>$youtube,
+  'channelAutoEnabled'=>!empty($channel['autoEnabled']),
+  'storageProvider'=>'google_drive','driveAuthorized'=>$driveAuthorized,'driveReadbackVerified'=>$driveReadback,
+  'githubWorkerAllowed'=>false,'sessionBrowserIsServerExecutor'=>false,
+  'paidGenerationEnabled'=>!empty($s['config']['generationEnabled']),
   'apiGenerationConfigured'=>!empty($secrets['falKey'])&&!empty($secrets['openaiKey']),
   'nativeRelatedVideoAdapterReady'=>false];
 }

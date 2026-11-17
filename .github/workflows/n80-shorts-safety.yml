@@ -10,7 +10,13 @@ on:
       - 'tests/session-agent/schedule.php'
       - 'tests/session-agent/preparation.php'
       - 'tests/session-agent/preparation_test.py'
-      - 'tests/n80/scheduled_wake_contract_test.php'
+      - 'tests/n80/manual_production_retirement.php'
+      - 'tests/session-agent/manual-production.mjs'
+      - 'bridge/session-agent.php'
+      - 'bridge/session-agent-media.php'
+      - 'lab/session-motion.mjs'
+      - 'lab/session-assemble.mjs'
+      - 'deploy/noa-ai-lab.js'
       - 'tests/n80/scheduled_wake_ticket_test.php'
       - 'deploy/noa-app/engine/wake-ticket-audit.php'
       - 'deploy/noa-app/engine/one-shot-host-canary.php'
@@ -53,7 +59,13 @@ on:
       - 'tests/session-agent/schedule.php'
       - 'tests/session-agent/preparation.php'
       - 'tests/session-agent/preparation_test.py'
-      - 'tests/n80/scheduled_wake_contract_test.php'
+      - 'tests/n80/manual_production_retirement.php'
+      - 'tests/session-agent/manual-production.mjs'
+      - 'bridge/session-agent.php'
+      - 'bridge/session-agent-media.php'
+      - 'lab/session-motion.mjs'
+      - 'lab/session-assemble.mjs'
+      - 'deploy/noa-ai-lab.js'
       - 'tests/n80/scheduled_wake_ticket_test.php'
       - 'deploy/noa-app/engine/wake-ticket-audit.php'
       - 'deploy/noa-app/engine/one-shot-host-canary.php'
@@ -107,7 +119,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: mbstring,pdo_sqlite
+          extensions: mbstring,pdo_sqlite,gd,fileinfo
       - name: Validate Shorts PHP syntax
         run: |
           php -l bridge/session-shorts.php
@@ -139,25 +151,11 @@ jobs:
           php -l tests/n80/scheduled_wake_ticket_test.php
           php -l tests/n80/signed_wake_hmac_test.php
           python3 -m py_compile scripts/n80_signed_wake_signal.py tests/n80/test_n80_signed_wake_signal.py
-      - name: Verify exact original, posted video, measured clips and schedule
+      - run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - name: Verify owner retirement and manual production
         run: |
-          python -m unittest discover -s tests/lab -p 'daily_shorts_test.py' -v
-          python -m unittest discover -s tests/session-agent -p 'preparation_test.py' -v
-          php tests/session-agent/schedule.php
-          php tests/session-agent/preparation.php
-          php tests/n80/scheduled_wake_contract_test.php
-          php tests/n80/scheduled_wake_ticket_test.php
-          php tests/n80/signed_wake_hmac_test.php
-          php tests/n80/wake_preflight_test.php
-          php tests/n80/wake_ticket_audit_test.php
-          php tests/n80/one_shot_host_canary_test.php
-          php tests/n80/one_shot_clock_test.php
-          php tests/n80/shorts_monitor_check_test.php
-          php tests/n80/shorts_youtube_check_test.php
-          php tests/n80/shorts_clock_snapshot_test.php
-          node tests/n80/shorts_control_ui_test.mjs
-          python3 -m unittest discover -s tests/n80 -p 'test_bounded_lab_lock.py' -v
-          python3 -m unittest discover -s tests/n80 -p 'test_wake_admin_dashboard.py' -v
-          python3 -m unittest discover -s tests/n80 -p 'test_n80_signed_wake_signal.py' -v
-          python3 -m unittest discover -s tests/n80 -p 'test_signed_wake_http_boundary.py' -v
-          python3 -m unittest discover -s tests/n80 -p 'test_host_activation_fence.py' -v
+          php tests/n80/manual_production_retirement.php
+          python3 scripts/qa/n80_schedule_policy_guard.py
+          node tests/session-agent/manual-production.mjs
+          node tests/session-agent/assembly.mjs
+          php tests/session-agent/core.php

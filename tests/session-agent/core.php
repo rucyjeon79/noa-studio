@@ -61,12 +61,16 @@ try{
  $receipt=json_decode(file_get_contents($fixtures.'/receipt.json'),true,32,JSON_THROW_ON_ERROR);$upload('final',0,$fixtures.'/final.mp4',$receipt['verification']);
  check($job['state']==='saved'&&count($job['outputs'])===1,'Final stored');check($call('agentFile',['id'=>$jobId,'mode'=>'read','kind'=>'final','offset'=>0])['sha256']===$receipt['sha256'],'Final readback');
  $source['duration']=240;$source['title']='Four minute song';$start['requestId']=$id();$long=$call('agentStart',$start)['job'];check($long['agent']['sceneCount']===35,'No 30-cut cap');
+ check(sa_selection(null,'landscape',240)===null,'landscape always full source');
+ check(sa_selection(null,'shorts',240)===['start'=>0.0,'end'=>59.0],'portrait default 0–59');
+ check(sa_selection(null,'shorts',12)===['start'=>0.0,'end'=>12.0],'short source default');
+ check(sa_selection(['start'=>30,'end'=>31],'shorts',240)===['start'=>30.0,'end'=>31.0],'one second selection');
  $shortStart=array_replace($start,['format'=>'shorts','requestId'=>$id(),'selection'=>['start'=>40,'end'=>95]]);
  $short=$call('agentStart',$shortStart)['job'];check($short['agent']['duration']===55.0&&$short['source']['duration']===240,'Selected length preserves full source');
  check($short['assemblyTool']['manifest']['outputResolution']===1080,'Shorts delivery requests portrait 1080p');
  check($short['agent']['sceneCount']===8&&$short['assemblyTool']['manifest']['selection']['start']===40.0,'Selected scene plan and manifest');
  check($call('agentStart',$shortStart)['replayed'],'Selected start replay');
- foreach([['start'=>0,'end'=>48],['start'=>0,'end'=>60],['start'=>-1,'end'=>54],['start'=>220,'end'=>275]] as $bad)refuses(fn()=>$call('agentStart',array_replace($shortStart,['requestId'=>$id(),'selection'=>$bad])),'invalid_short_selection');
+ foreach([['start'=>0,'end'=>0],['start'=>0,'end'=>60],['start'=>-1,'end'=>54],['start'=>220,'end'=>275]] as $bad)refuses(fn()=>$call('agentStart',array_replace($shortStart,['requestId'=>$id(),'selection'=>$bad])),'invalid_short_selection');
  refuses(fn()=>$call('agentStart',array_replace($shortStart,['format'=>'landscape'])),'invalid_short_selection');
  $chunk=$call('agentSourceFile',['trackKey'=>$source['key'],'sourceRevision'=>7,'offset'=>0]);check($chunk['sha256']===$source['audioSha256']&&!isset($chunk['audioPath']),'Source audio read before job');
  refuses(fn()=>$call('agentSourceFile',['trackKey'=>$source['key'],'sourceRevision'=>6,'offset'=>0]),'source_revision_conflict');

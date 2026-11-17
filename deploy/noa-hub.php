@@ -103,37 +103,7 @@ $wakeReady=!empty($wakeReport['eligibleForSignedCanary'])&&count($wakeChecks)===
 $batchReview=array_values(array_filter($system['guardTriage']['items']??[],static fn($row):bool=>
  is_array($row)&&($row['operation']??'')==='ai.batch'&&($row['unconfirmed']??false)===true));
 ?>
-<section id="n80-wake-preflight" aria-labelledby="n80-wake-preflight-heading">
- <h2 id="n80-wake-preflight-heading">예약 단발 실행 · 사전검증</h2>
- <p role="status"><strong><?= $wakeReady?'신호 수신 시험 대상 · 실전 검증 미완료':(empty($wakeChecks)?'사전검증 조회 불가':'연결 준비 중 · 예약 실행 비활성') ?></strong></p>
- <p>실제 운영 상태를 읽은 결과입니다. 점검 통과는 자동쇼츠 제작·게시 성공을 의미하지 않습니다.</p>
- <div class="hub-scroll"><table>
-  <caption>구형 상주 실행기는 영구 폐기되며 GitHub는 승인된 예약 신호만 전송합니다.</caption>
-  <thead><tr><th scope="col">검증 항목</th><th scope="col">현재 상태</th></tr></thead>
-  <tbody>
-  <?php foreach($wakeCheckLabels as $key=>$label):
-   $observed=array_key_exists($key,$wakeChecks);
-   $pass=$observed&&$wakeChecks[$key]===true; ?>
-   <tr><th scope="row"><?=nh_e($label)?></th><td><span class="<?=$pass?'ok':'error'?>"><?= $pass?'통과':($observed?'미충족':'확인 불가') ?></span></td></tr>
-  <?php endforeach; ?>
-  </tbody>
- </table></div>
- <?php
- $ticketAudit=is_array($system['wakeTicketAudit']??null)?$system['wakeTicketAudit']:[];
- $ticketAuditVerified=($ticketAudit['ok']??false)===true;
- ?>
- <p role="status"><strong>서명된 예약 신호:</strong>
- <?php if($ticketAuditVerified): ?>
-  <?=nh_e((int)($ticketAudit['signalCount']??0))?>건 수신 기록 ·
-  <?=nh_e((int)($ticketAudit['staleCount']??0))?>건 검토 필요
- <?php else: ?>수신 기록 확인 필요<?php endif; ?>
- </p>
- <p>예약 신호는 작업 실행 증거가 아닙니다. 신호 미확정·지연 시 자동 재실행하지 않고 원본 기록과 실제 제작 결과를 별도로 확인합니다.</p>
- <?php if($batchReview): ?>
- <p role="status"><strong>미확정 묶음 작업 <?=nh_e(count($batchReview))?>건:</strong> 실행 결과가 확인되지 않았습니다. 기존 기록을 보존하고 중복 생성을 막기 위해 자동 재시도하지 않습니다.</p>
- <?php endif; ?>
- <p>이 화면은 조회 전용입니다. 승인·인증키 설정·무인 제작·게시·예약 활성화 작업을 실행하지 않습니다.</p>
-</section>
+<section id="n80-wake-preflight"><h2>자동쇼츠·GitHub 예약 실행 폐기</h2><p>2026년 11월 17일부터 예약 실행을 사용하지 않습니다. 기존 제작 이력은 유지됩니다.</p><a class="noa-button" href="/noa-ai-lab.php?tool=create">ChatGPT와 영상 제작</a></section>
 
 <section><h2>N80 작업 연결 현황</h2><div class="hub-scroll"><table><thead><tr><th>기능</th><th>실행 담당</th><th>마지막 결과</th><th>처리 방식</th></tr></thead><tbody>
 <?php foreach($status['operations'] as $op):?><tr><td><?=nh_e($op['label'])?></td><td><span><?=nh_e(n80_module($op['module'])['label']??$op['module'])?></span><br><small><?=$op['owner']==='n80_hub'?'구형 실행 차단':'연결 대기'?></small></td><td><?=nh_e(n80_system_label($operationStates[$op['id']]??'not_verified'))?></td><td><small>개별 요청 시 검증 후 처리</small></td></tr><?php endforeach;?></tbody></table></div><?php if(!empty($status['covers']['checkedAt'])&&($status['covers']['ok']??false)===true):?><p>카드 이미지: 최근 보완 <?=nh_e($status['covers']['recovered']??0)?>개 · 대기 <?=nh_e($status['covers']['remaining']??0)?>개</p><?php endif;?></section>

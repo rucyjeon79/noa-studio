@@ -71,6 +71,8 @@ def audit():
     config = json.loads(CONFIG.read_text(encoding="utf-8"))
     if config.get("version") != 1 or not isinstance(config.get("approved"), list):
         raise ValueError("invalid_schedule_allowlist")
+    if config.get("retired") is not True or config["approved"]:
+        raise ValueError("scheduled_wake_retired")
     approved = {}
     for row in config["approved"]:
         if not isinstance(row, dict):
