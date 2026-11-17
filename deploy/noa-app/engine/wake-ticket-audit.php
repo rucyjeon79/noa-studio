@@ -11,6 +11,7 @@ function n80_wake_ticket_audit(string $root,?int $now=null):array {
         'ok'=>true,'mode'=>'read_only','source'=>'scheduled-wakes.json',
         'state'=>'no_signed_signal_recorded','signalCount'=>0,
         'unresolvedCount'=>0,'staleCount'=>0,
+        'clockCheckedCount'=>0,'clockUnconfirmedCount'=>0,
         'retentionLimit'=>32,'remainingCapacity'=>32,'newSignalsBlocked'=>false,
         'nextAction'=>'wait_for_approved_signal',
         'businessExecutionVerified'=>false,'canAutomaticallyRetry'=>false,
@@ -42,12 +43,22 @@ function n80_wake_ticket_audit(string $root,?int $now=null):array {
             $age=max(0,$now-$ticket['receivedAt']);
             $pending=($ticket['state']==='signal_admitted_not_executed'
                 && ($ticket['executionVerified']??false)===false);
+            $clockState='not_attempted';
+            if(array_key_exists('clockDispatch',$ticket)){
+                $dispatch=$ticket['clockDispatch'];
+                $clockState=is_array($dispatch)?($dispatch['state']??'clock_outcome_unconfirmed'):'clock_outcome_unconfirmed';
+                if(!in_array($clockState,['clock_checked_not_produced','cancelled_before_clock'],true)){
+                    $clockState='clock_outcome_unconfirmed';$result['clockUnconfirmedCount']++;
+                }elseif($clockState==='clock_checked_not_produced')$result['clockCheckedCount']++;
+                $pending=false;
+            }
             $rows[]=[
                 'slot'=>$slotId,'receivedAt'=>$ticket['receivedAt'],
                 'state'=>$pending?'signal_received_not_executed':'needs_independent_proof',
                 'ageSeconds'=>$age,
                 'needsReview'=>!$pending||$age>1200,
                 'safeToReplay'=>false,
+                'clockState'=>$clockState,
             ];
         }
         usort($rows,static fn(array $a,array $b):int=>

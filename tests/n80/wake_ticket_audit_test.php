@@ -33,6 +33,17 @@ must($s['staleCount']===0&&$s['latest']['slot']==='2026-11-18|prepare'
  && !$s['latest']['safeToReplay'],'no_duplicate_replay');
 must($s['latest']['state']==='signal_received_not_executed','not_production');
 must(json_encode($fixture,JSON_THROW_ON_ERROR)===$initial,'read_only');
+$fixture['scheduled-wakes.json']['slots']['2026-11-18|prepare']['clockDispatch']=[
+ 'state'=>'clock_checked_not_produced','private'=>'not_for_response'];
+$s=n80_wake_ticket_audit('/fixture',$now);
+must($s['clockCheckedCount']===1&&$s['clockUnconfirmedCount']===0
+ &&!$s['businessExecutionVerified']&&$s['unresolvedCount']===1,'clock_is_not_business_proof');
+must(!str_contains(json_encode($s),'not_for_response'),'no_raw_dispatch_details');
+$fixture['scheduled-wakes.json']['slots']['2026-11-18|prepare']['clockDispatch']['state']='started_unconfirmed';
+$s=n80_wake_ticket_audit('/fixture',$now);
+must($s['clockUnconfirmedCount']===1&&$s['latest']['needsReview']
+ &&!$s['canAutomaticallyRetry'],'uncertain_clock_needs_review');
+unset($fixture['scheduled-wakes.json']['slots']['2026-11-18|prepare']['clockDispatch']);
 $s=n80_wake_ticket_audit('/fixture',$now+1400);
 must($s['staleCount']===1&&$s['latest']['needsReview'],'stale_review_no_retry');
 $fixture['scheduled-wakes.json']['slots']['2026-11-18|prepare']['executionVerified']=true;

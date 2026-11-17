@@ -4,8 +4,18 @@ if (!defined('_GNUBOARD_')) { http_response_code(403); exit; }
 const NOA_LAB_ORIGIN='https://noastudio.ai.kr';
 function lab_root():string { $path=dirname(G5_PATH).'/noa-ai-lab'; if(!is_dir($path)||is_link($path))throw new RuntimeException('private_storage_unavailable'); return $path; }
 function lab_defaults():array {return ['revision'=>0,'configRevision'=>0,'jobs'=>[],'channels'=>[],'config'=>['generationEnabled'=>false,'textEnabled'=>false,'model'=>'gpt-5-mini','creativeRules'=>'','maxJobUsd'=>0,'dailyBudgetUsd'=>0,'oauthClientId'=>'','workerEnabled'=>true],'events'=>[],'nonces'=>[]];}
-function lab_lock(callable $fn):mixed {
- $root=lab_root();$lock=fopen($root.'/state.lock','c+');if(!$lock||!flock($lock,LOCK_EX))throw new RuntimeException('storage_lock');
+function lab_lock(callable $fn,?int $waitMs=null):mixed {
+ if($waitMs!==null&&($waitMs<0||$waitMs>2000))throw new InvalidArgumentException('storage_lock_wait_invalid');
+ $root=lab_root();$lock=fopen($root.'/state.lock','c+');if(!$lock)throw new RuntimeException('storage_lock');
+ if($waitMs===null){if(!flock($lock,LOCK_EX)){fclose($lock);throw new RuntimeException('storage_lock');}}
+ else{
+  $deadline=hrtime(true)+$waitMs*1000000;
+  while(!flock($lock,LOCK_EX|LOCK_NB)){
+   $remaining=$deadline-hrtime(true);
+   if($remaining<=0){fclose($lock);throw new DomainException('storage_busy');}
+   usleep((int)min(10000,max(1,intdiv($remaining,1000))));
+  }
+ }
  try{$file=$root.'/state.json';$state=is_file($file)?json_decode((string)file_get_contents($file),true,512,JSON_THROW_ON_ERROR):lab_defaults();$result=$fn($state);$state['revision']++;$temp=tempnam($root,'.state-');if($temp===false)throw new RuntimeException('storage_write');chmod($temp,0600);$raw=json_encode($state,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);if(file_put_contents($temp,$raw)!==strlen($raw)||!rename($temp,$file))throw new RuntimeException('storage_write');return $result;}finally{flock($lock,LOCK_UN);fclose($lock);}
 }
 function lab_read():array { $lock=fopen(lab_root().'/state.lock','c+');if(!$lock||!flock($lock,LOCK_SH))throw new RuntimeException('storage_lock');try{$path=lab_root().'/state.json';return is_file($path)?json_decode((string)file_get_contents($path),true,512,JSON_THROW_ON_ERROR):lab_defaults();}finally{flock($lock,LOCK_UN);fclose($lock);} }

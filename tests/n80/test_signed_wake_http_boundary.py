@@ -79,6 +79,26 @@ class SignedWakeHttpBoundaryTest(unittest.TestCase):
                         cls.web / "noa-bridge/n80-scheduled-wake.php")
         shutil.copyfile(REPO / "deploy/noa-app/engine/scheduled-wake.php",
                         cls.web / "noa-app/engine/scheduled-wake.php")
+        shutil.copyfile(REPO / "deploy/noa-app/engine/one-shot-clock.php",
+                        cls.web / "noa-app/engine/one-shot-clock.php")
+        (cls.web / "common.php").write_text('''<?php
+file_put_contents(dirname(__DIR__).'/private/bootstrap-count', '1', FILE_APPEND);
+// Simulate bootstrap globals and output. Neither may corrupt the signed receipt.
+$result=['unrelated'=>'bootstrap'];$root='unrelated';$claim=[];$body=[];$bufferLevel=999;
+echo 'bootstrap output must not leak';
+if(is_file(dirname(__DIR__).'/private/revoke-at-bootstrap')){
+ $p=dirname(__DIR__).'/private/scheduled-wake-control.json';
+ $v=json_decode(file_get_contents($p),true);$v['stop']=true;file_put_contents($p,json_encode($v));
+}
+''', encoding="utf8")
+        (cls.web / "noa-app/engine/hub-specialists.php").write_text('''<?php
+function n80_hub_specialist(string $operation,?string $id=null):array {
+ if($operation!=='ai.daily_shorts_clock'||!preg_match('/^[a-f0-9]{32}$/D',$id??''))throw new RuntimeException('wrong_route');
+ file_put_contents(n80_hub_root().'/clock-call-count','1',FILE_APPEND);
+ if(is_file(n80_hub_root().'/fail-clock'))throw new RuntimeException('fixture_only_failure');
+ return ['ok'=>true,'module'=>'lab','state'=>'connection_required','processed'=>0,'uploads'=>0];
+}
+''', encoding="utf8")
         (cls.web / "noa-app/engine/hub.php").write_text(
             STUB + "\n" + copy_actual_php_auth() + "\n", encoding="utf8")
         cls.listener = port()
@@ -211,6 +231,7 @@ class SignedWakeHttpBoundaryTest(unittest.TestCase):
         status,_,response=self.fetch(raw=raw,headers=headers)
         self.assertEqual((status,response["error"]),(503,"wake_key_not_configured"))
         self.assertFalse((self.private/"scheduled-wakes.json").exists())
+        self.assertFalse((self.private/"bootstrap-count").exists())
 
     def test_corrupt_signature_and_content_type_denied(self):
         body=self.approved_fixture()
@@ -237,6 +258,38 @@ class SignedWakeHttpBoundaryTest(unittest.TestCase):
         self.assertFalse(slot["youtubePublished"])
         self.assertFalse(slot["executionVerified"])
         self.assertFalse((self.private/"business-work.json").exists())
+        self.assertEqual(first["clockDispatch"]["state"],"clock_checked_not_produced")
+        self.assertEqual((self.private/"clock-call-count").read_text(),"1")
+        self.assertEqual((self.private/"bootstrap-count").read_text(),"1")
+        self.assertEqual(slot["clockDispatch"]["state"],"clock_checked_not_produced")
+
+    def test_failed_clock_and_duplicate_preserve_uncertain_receipt(self):
+        body=self.approved_fixture()
+        (self.private/"fail-clock").touch()
+        raw,headers=self.signed(body,nonce="1"*32)
+        status,_,reply=self.fetch(raw=raw,headers=headers)
+        self.assertEqual((status,reply["clockDispatch"]["state"]),(202,"clock_outcome_unconfirmed"))
+        before=(self.private/"scheduled-wakes.json").read_bytes()
+        raw,headers=self.signed(body,nonce="2"*32)
+        self.assertEqual(self.fetch(raw=raw,headers=headers)[0],200)
+        self.assertEqual((self.private/"clock-call-count").read_text(),"1")
+        self.assertEqual((self.private/"scheduled-wakes.json").read_bytes(),before)
+
+    def test_publish_signal_cannot_call_preparation_or_publish(self):
+        body=self.approved_fixture();body["phase"]="publish"
+        raw,headers=self.signed(body)
+        status,_,reply=self.fetch(raw=raw,headers=headers)
+        self.assertEqual((status,reply["clockDispatch"]["state"]),(202,"publish_handler_not_verified"))
+        self.assertFalse((self.private/"bootstrap-count").exists())
+        self.assertFalse((self.private/"clock-call-count").exists())
+
+    def test_stop_after_bootstrap_prevents_clock(self):
+        body=self.approved_fixture()
+        (self.private/"revoke-at-bootstrap").touch()
+        raw,headers=self.signed(body)
+        status,_,reply=self.fetch(raw=raw,headers=headers)
+        self.assertEqual((status,reply["clockDispatch"]["state"]),(202,"cancelled_before_clock"))
+        self.assertFalse((self.private/"clock-call-count").exists())
 
     def test_latched_emergency_stop_blocks_second_request(self):
         body=self.approved_fixture()

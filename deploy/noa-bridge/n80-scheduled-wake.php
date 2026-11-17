@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-/** Public, bounded, signed N80 wake endpoint. Not a job executor. */
+/** Signed admission plus one fixed N80 schedule/readiness call; no media or upload. */
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
@@ -52,6 +52,43 @@ try {
     $admit=n80_scheduled_wake_contract($body,$schedule,$policy,$control,time(),$wakeControl);
     if (!$admit['ok'])$reply(409,$admit['reason']);
     $result=n80_scheduled_wake_admit($root,$admit,(string)$headers['nonce'],time());
+    // Duplicate admission never bootstraps the app or retries a missing receipt.
+    // The top-level state is the admission receipt; clockDispatch is its outcome.
+    if($result['state']==='signal_admitted_not_executed'){
+        require_once dirname(__DIR__).'/noa-app/engine/one-shot-clock.php';
+        $claim=n80_one_shot_clock_claim($root,$body,time());
+        if($claim['claimed']){
+            $clockResult=null;$cancelled=false;
+            $bufferLevel=ob_get_level();ob_start();
+            // GnuBoard bootstrap uses top-level variables such as $result.
+            // Keep the authenticated context immutable across that include.
+            define('N80_SCHEDULED_CLOCK_CONTEXT',[
+                'root'=>$root,'body'=>$body,'claim'=>$claim,'admission'=>$result,'bufferLevel'=>$bufferLevel]);
+            try{
+                set_time_limit(30);
+                define('N80_SCHEDULED_CLOCK_ONCE',true);
+                // Loaded only after authentication, activation and a durable claim.
+                require_once dirname(__DIR__).'/common.php';
+                set_time_limit(30);
+                if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
+                require_once dirname(__DIR__).'/noa-app/engine/hub-specialists.php';
+                $root=N80_SCHEDULED_CLOCK_CONTEXT['root'];$body=N80_SCHEDULED_CLOCK_CONTEXT['body'];
+                $claim=N80_SCHEDULED_CLOCK_CONTEXT['claim'];$clockResult=null;$cancelled=false;
+                if(n80_one_shot_clock_recheck($root,$body,$claim,time()))
+                    $clockResult=n80_hub_specialist('ai.daily_shorts_clock',$claim['id']);
+                else $cancelled=true;
+            }catch(Throwable $error){
+                // Do not replay, expose exception details or invent a success.
+                $clockResult=null;$cancelled=false;
+            }finally{
+                while(ob_get_level()>N80_SCHEDULED_CLOCK_CONTEXT['bufferLevel'])ob_end_clean();
+                $root=N80_SCHEDULED_CLOCK_CONTEXT['root'];$claim=N80_SCHEDULED_CLOCK_CONTEXT['claim'];
+                $result=N80_SCHEDULED_CLOCK_CONTEXT['admission'];
+                header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');
+            }
+            $result['clockDispatch']=n80_one_shot_clock_finish($root,$claim,$clockResult,time(),$cancelled);
+        }else $result['clockDispatch']=['state'=>$claim['state'],'businessExecutionVerified'=>false];
+    }
     http_response_code($result['state']==='duplicate_signal'?200:202);
     echo json_encode($result,JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
 } catch (DomainException $e) {

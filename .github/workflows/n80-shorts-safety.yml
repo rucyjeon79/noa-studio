@@ -15,6 +15,11 @@ on:
       - 'deploy/noa-app/engine/wake-ticket-audit.php'
       - 'deploy/noa-app/engine/one-shot-host-canary.php'
       - 'tests/n80/one_shot_host_canary_test.php'
+      - 'deploy/noa-app/engine/one-shot-clock.php'
+      - 'tests/n80/one_shot_clock_test.php'
+      - 'tests/n80/test_bounded_lab_lock.py'
+      - 'bridge/lab-core.php'
+      - 'bridge/worker-shorts.php'
       - 'tests/n80/wake_ticket_audit_test.php'
       - 'tests/n80/signed_wake_hmac_test.php'
       - 'tests/n80/test_signed_wake_http_boundary.py'
@@ -46,6 +51,11 @@ on:
       - 'deploy/noa-app/engine/wake-ticket-audit.php'
       - 'deploy/noa-app/engine/one-shot-host-canary.php'
       - 'tests/n80/one_shot_host_canary_test.php'
+      - 'deploy/noa-app/engine/one-shot-clock.php'
+      - 'tests/n80/one_shot_clock_test.php'
+      - 'tests/n80/test_bounded_lab_lock.py'
+      - 'bridge/lab-core.php'
+      - 'bridge/worker-shorts.php'
       - 'tests/n80/wake_ticket_audit_test.php'
       - 'tests/n80/signed_wake_hmac_test.php'
       - 'tests/n80/test_signed_wake_http_boundary.py'
@@ -96,6 +106,9 @@ jobs:
           php -l deploy/noa-app/engine/wake-preflight.php
           php -l deploy/noa-app/engine/wake-ticket-audit.php
           php -l deploy/noa-app/engine/one-shot-host-canary.php
+          php -l deploy/noa-app/engine/one-shot-clock.php
+          php -l bridge/lab-core.php
+          php -l bridge/worker-shorts.php
           php -l deploy/noa-app/engine/hub.php
           php -l tests/n80/one_shot_host_canary_test.php
           php -l tests/n80/wake_ticket_audit_test.php
@@ -120,6 +133,8 @@ jobs:
           php tests/n80/wake_preflight_test.php
           php tests/n80/wake_ticket_audit_test.php
           php tests/n80/one_shot_host_canary_test.php
+          php tests/n80/one_shot_clock_test.php
+          python3 -m unittest discover -s tests/n80 -p 'test_bounded_lab_lock.py' -v
           python3 -m unittest discover -s tests/n80 -p 'test_wake_admin_dashboard.py' -v
           python3 -m unittest discover -s tests/n80 -p 'test_n80_signed_wake_signal.py' -v
           python3 -m unittest discover -s tests/n80 -p 'test_signed_wake_http_boundary.py' -v
