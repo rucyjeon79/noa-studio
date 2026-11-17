@@ -107,6 +107,9 @@ function n80_hub_status(string $root):array {
  // Read-only signed-clock ticket history; never a job or a replay trigger.
  require_once __DIR__.'/wake-ticket-audit.php';
  $wakeTicketAudit=n80_wake_ticket_audit($root);
+ // Perform a synthetic, read-only contract call on this very PHP host request.
+ require_once __DIR__.'/one-shot-host-canary.php';
+ $wakeHostCanary=n80_one_shot_host_canary(n80_host_load_policy(),$c,n80_hub_read($root,'scheduled-wake-control.json'));
  $ops=[];$history=n80_hub_read($root,'receipts.json');$latest=[];
  foreach($history as $receipt)$latest[$receipt['operation']??'']=$receipt;
  foreach(n80_hub_operations()as $id=>$row)$ops[]=['id'=>$id,'label'=>$row['label'],'module'=>$row['module'],'owner'=>in_array($id,$c['activeOperations']??[],true)?'n80_hub':'legacy','last'=>$latest[$id]??null];
@@ -114,6 +117,7 @@ function n80_hub_status(string $root):array {
   'runnerState'=>$runnerState,'residentRetirement'=>$retirement,'source'=>n80_hub_read($root,'source.json'),
   'wakePreflight'=>$wakePreflight,
   'wakeTicketAudit'=>$wakeTicketAudit,
+  'wakeHostCanary'=>$wakeHostCanary,
   'operations'=>$ops,'dependencies'=>n80_hub_read($root,'dependencies.json'),'covers'=>n80_hub_read($root,'covers-result.json'),'receipts'=>array_slice($history,-30)];
 }
 /** One request identifier cannot run twice, including after an interrupted response. */
