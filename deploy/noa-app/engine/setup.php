@@ -53,6 +53,7 @@ function n80_workspace_groups(string $workspace, ?array $access=null): array {
                 ...(is_file(__DIR__.'/hub.php')?[[
                     'hub','N80 Hub','소스·배포·자동화·실행 기록','/noa-hub.php','settings','admin'
                 ]]:[]),
+                ['shortsControl','쇼츠 관제·호스트 점검','현재 상태와 읽기 전용 단발 점검','/noa-shorts-control.php','settings','admin'],
                 ['workStatus','N80 Engine 작업 현황','지시·처리 단계·검증 결과','/noa-work-status.php','settings','admin'],
                 ['documents','문서·변경 이력','저장 버전과 변경 기록','/noa-library.php?view=documents','book','admin'],
                 ['recovery','원본 복구','보존 자료와 복구 상태','/noa-recovery.php','book','admin'],
