@@ -1,0 +1,22 @@
+name: N80 runtime contract verification
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/n80-runtime-contracts.yml', '.github/workflows/n80-browser-connect.yml', 'scripts/n80_browser_relay.py', 'runtime/browser/relay.mjs', 'tests/engine/test_browser_relay.py', 'tests/browser-relay/control.php', 'bridge/browser-control.php', 'deploy/noa-app/engine/github-runtime.php']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: {persist-credentials: false}
+      - run: python3 -m pip install cryptography==46.0.3
+      - run: |
+          python3 -m unittest discover -s tests/engine -p test_browser_relay.py -v
+          php tests/browser-relay/control.php
+          php -l deploy/noa-app/engine/github-runtime.php
+          php -l deploy/noa-app/engine/auto-dispatch.php
+          php -l deploy/noa-browser-connect.php
+          node --check runtime/browser/relay.mjs

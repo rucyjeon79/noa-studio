@@ -7,9 +7,6 @@ on:
         description: N80 administrator connection ID
         required: true
         type: string
-  push:
-    branches: [main]
-    paths: ['.github/workflows/n80-browser-connect.yml', 'scripts/n80_browser_relay.py', 'runtime/browser/relay.mjs', 'tests/engine/test_browser_relay.py', 'tests/browser-relay/control.php', 'bridge/browser-control.php', 'deploy/noa-app/engine/github-runtime.php']
 permissions:
   contents: read
 concurrency:
