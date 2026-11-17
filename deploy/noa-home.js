@@ -10,12 +10,41 @@ function metadata(row,playlist,integrated,exact=false){
  if(integrated||(plays!==null&&plays>0))return '인기 점수 '+number(row.score)+' · YouTube '+number(row.youtubeViews??row.views)+' · 음원 '+number(row.jukeboxPlays);
  return (playlist&&row.playlistId?'수록 영상 조회 ':'조회 ')+number(playlist?(row.youtubeViews??row.views??row.score):(row.youtubeViews??row.views));
 }
+/** Prefer the original thumbnail, then the verified video, then a clearly labeled genre cover. */
+function homeThumbnailSources(row){
+ const list=[],seen=new Set();
+ const add=(value,kind)=>{
+  if(typeof value!=='string')return;
+  const url=value.trim();
+  if(!url||seen.has(url)||!(url.startsWith('/')&&!url.startsWith('//')||/^https:\/\//i.test(url)))return;
+  seen.add(url);list.push({url,kind});
+ };
+ add(row.thumbnail,'original');
+ const id=typeof row.videoId==='string'&&/^[A-Za-z0-9_-]{11}$/.test(row.videoId)?row.videoId:'';
+ if(id)add('/noa-bridge/youtube-thumbnail.php?id='+encodeURIComponent(id),'verified');
+ const poster=window.NoaBrowse?.genreArt?.(row.genre);
+ if(typeof poster==='string'&&poster.startsWith('/noa-assets/'))add(poster,'genre');
+ add('/noa-assets/papa-logo.png','identity');
+ return list;
+}
+
 function card(row,playlist=false,integrated=false){
  const a=document.createElement('a');a.className='noa-music-card';a.href=row.href;a.dataset.video=row.videoId;if(playlist&&row.playlistId)a.dataset.playlist=row.playlistId;else a.dataset.views=String(row.views);
- const art=document.createElement('div');art.className='noa-art';const image=document.createElement('img');image.loading='lazy';image.src=row.thumbnail;image.alt='';art.append(image);
- image.onerror=()=>{image.hidden=true;art.dataset.unavailable='true';};
+ const art=document.createElement('div');art.className='noa-art';
+ const image=document.createElement('img');image.loading='lazy';image.decoding='async';image.width=640;image.height=360;image.alt='';art.append(image);
+ const sources=homeThumbnailSources(row);let sourceIndex=0;
+ const nextImage=()=>{
+  const item=sources[sourceIndex++];
+  if(!item){image.hidden=true;art.dataset.unavailable='true';art.setAttribute('role','img');art.setAttribute('aria-label','이미지 준비 중');return;}
+  if(item.kind==='genre'||item.kind==='identity'){
+   art.dataset.fallback=item.kind;art.setAttribute('role','img');
+   art.setAttribute('aria-label',item.kind==='genre'?'원곡 썸네일 대신 장르 대표 이미지':'기본 이미지');
+  }else{art.removeAttribute('data-fallback');art.removeAttribute('role');art.removeAttribute('aria-label');}
+  image.src=item.url;
+ };
+ image.onerror=nextImage;nextImage();
  const title=document.createElement('strong');title.textContent=row.title;const note=document.createElement('small');
- note.className='noa-card-meta';const context=document.createElement('span');context.className='noa-card-context';context.textContent=[window.NoaBrowse.names[row.genre]||'',row.language&&row.language!=='und'?({ko:'한국어',ja:'日本語',en:'English',th:'ไทย'}[row.language]||row.language):'',row.version&&!/^(?:unspecified|unknown|default|und)$/i.test(row.version)?row.version:''].filter(Boolean).join(' · ');note.textContent=metadata(row,playlist,integrated);note.title=metadata(row,playlist,integrated,true);if(context.textContent)note.append(context);a.append(art,title,note);window.NoaCardLayout?.prepare(a,row);if(row.recommendationLabel){const reason=document.createElement('span');reason.className='noa-discovery-reason';reason.textContent=row.recommendationLabel;a.append(reason);}return a;
+ note.className='noa-card-meta';const context=document.createElement('span');context.className='noa-card-context';context.textContent=[window.NoaBrowse.names[row.genre]||'',row.language&&row.language!=='und'?({ko:'한국어',ja:'日本語',en:'English',th:'ไทย'}[row.language]||row.language):'',row.version&&!/^(?:unspecified|unknown|default|und)$/i.test(row.version)?row.version:''].filter(Boolean).join(' · ');note.textContent=metadata(row,playlist,integrated);note.title=metadata(row,playlist,integrated,true);if(context.textContent)note.append(context);a.append(art,title,note);window.NoaCardLayout?.prepare(a,row.rankState==='same'?{...row,rankState:null}:row);if(row.recommendationLabel){const reason=document.createElement('span');reason.className='noa-discovery-reason';reason.textContent=row.recommendationLabel;a.append(reason);}return a;
 }
 const homeLists=new Map();
 function homePageSize(width,height=800,cardHeight=240,chrome=160,columnGap=width<=600?12:16,rowGap=columnGap){
@@ -45,7 +74,7 @@ function renderList(state){
  const size=listSize(state);if(state.size&&state.size!==size)state.page=Math.floor(state.page*state.size/size);state.size=size;
  const pages=Math.max(1,Math.ceil(rows.length/size));state.page=Math.min(state.page,pages-1);
  host.replaceChildren();
- if(!rows.length){const empty=document.createElement('p');empty.className='noa-empty';empty.textContent=playlist?'조건에 맞는 공개 연속듣기 목록이 없습니다.':'음악을 준비하고 있습니다.';host.append(empty);}
+ if(!rows.length){const empty=document.createElement('p');empty.className='noa-empty';empty.textContent=playlist?'지금은 이 분위기에 맞는 연속듣기가 없어요. 다른 느낌을 골라보세요.':'아직 이곳에 머문 노래가 없어요. 새로운 멜로디가 오면 들려드릴게요.';host.append(empty);}
  for(const row of rows.slice(state.page*size,(state.page+1)*size))host.append(card(row,playlist,integrated));
  pager.replaceChildren();pager.hidden=pages<=1;
  if(pages>1){for(const [label,delta]of [['이전',-1],['다음',1]]){const button=document.createElement('button');button.type='button';button.className='noa-button';button.textContent=label;button.disabled=delta<0?state.page===0:state.page===pages-1;button.onclick=()=>{state.page+=delta;renderList(state);};pager.append(button);if(delta<0){const status=document.createElement('span');status.textContent=(state.page+1)+' / '+pages;status.setAttribute('aria-live','polite');pager.append(status);}}}
@@ -113,14 +142,40 @@ renderRecordLibrary();
  if(discovery){
   const tabs=document.createElement('div');tabs.className='noa-discovery-tabs';tabs.setAttribute('role','group');tabs.setAttribute('aria-label','추천 음악 기준');
   const description=featured.parentElement.querySelector('p.noa-muted');
-  const select=kind=>{for(const b of tabs.children)b.setAttribute('aria-pressed',String(b.dataset.kind===kind));fill('noa-featured',discovery[kind]||[],false,integrated);const selectedIds=new Set((discovery[kind]||[]).map(row=>row.videoId));for(const [id,key]of [['noa-ep','ep'],['noa-stories','stories'],['noa-covers','covers']])fill(id,(data[key]||[]).filter(row=>!selectedIds.has(row.videoId)),false,integrated);if(description)description.textContent=kind==='rising'?(discovery.comparisonHours?'약 '+discovery.comparisonHours+'시간 동안 조회수가 늘어난 음악이에요.':'상승세를 비교할 기록을 모으고 있어요.'):kind==='new'?'실제 공개일이 최근인 영상부터 만나보세요.':kind==='popular'?'조회수와 유효 재생, 좋아요·댓글이 반영된 인기 음악이에요.':'인기 음악, 조회수 상승, 최근 공개 영상을 골고루 만나보세요.';if(!(discovery[kind]||[]).length)featured.querySelector('p').textContent=kind==='rising'?'확인된 상승 영상이 생기면 여기에 소개할게요.':'조건에 맞는 공개 영상을 준비하고 있어요.';};
+  const select=kind=>{for(const b of tabs.children)b.setAttribute('aria-pressed',String(b.dataset.kind===kind));fill('noa-featured',discovery[kind]||[],false,integrated);const selectedIds=new Set((discovery[kind]||[]).map(row=>row.videoId));for(const [id,key]of [['noa-ep','ep'],['noa-stories','stories'],['noa-covers','covers']])fill(id,(data[key]||[]).filter(row=>!selectedIds.has(row.videoId)),false,integrated);if(description)description.textContent=kind==='rising'?(discovery.comparisonHours?'약 '+discovery.comparisonHours+'시간 동안 조회수가 늘어난 음악이에요.':'상승세를 비교할 기록을 모으고 있어요.'):kind==='new'?'실제 공개일이 최근인 영상부터 만나보세요.':kind==='popular'?'조회수와 유효 재생, 좋아요·댓글이 반영된 인기 음악이에요.':'인기 음악, 조회수 상승, 최근 공개 영상을 골고루 만나보세요.';if(!(discovery[kind]||[]).length)featured.querySelector('p').textContent=kind==='rising'?'확인된 상승 영상이 생기면 여기에 소개할게요.':'지금은 이 조건에 맞는 영상이 없어요. 다른 노래도 만나보세요.';};
   for(const [kind,label]of [['mixed','골고루'],['popular','인기'],['rising','상승세'],['new','새 영상']]){const b=document.createElement('button');b.type='button';b.dataset.kind=kind;b.textContent=label;b.onclick=()=>select(kind);tabs.append(b);}featured.before(tabs);select('mixed');
  }else{fill('noa-featured',data.featured||[],false,integrated);for(const [id,key]of [['noa-ep','ep'],['noa-stories','stories'],['noa-covers','covers']])fill(id,data[key],false,integrated);}
 
- document.getElementById('noa-playlist-basis').textContent='플레이리스트를 골라 음악을 이어 들어보세요.';
+ document.getElementById('noa-playlist-basis').textContent='마음에 닿는 플레이리스트를 골라, 노래를 이어 들어보세요.';
  const date=new Date(data.popularity?.aggregatedAt||data.collectedAt);document.getElementById('noa-ranking-status').textContent=(data.popularity?'인기 음악':'YouTube 조회수 기준')+(Number.isFinite(date.getTime())?' · '+date.toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'}):'');
 
  document.body.dataset.noaHomeReady='true';
  }catch{for(const id of ['noa-featured','noa-ep','noa-stories','noa-covers','noa-acts']){const host=document.getElementById(id);host.replaceChildren();const p=document.createElement('p');p.className='noa-empty';p.textContent='공개 영상 순위를 불러오지 못했습니다. 잠시 후 다시 열어 주세요.';host.append(p);}document.getElementById('noa-ranking-status').textContent='잠시 후 다시 이용해 주세요.';document.body.dataset.noaHomeReady='error';}
 })();})();
 
+
+
+/* N80 home: mirror the footer's working theme controls without a second theme state. */
+(()=>{'use strict';
+ const host=document.getElementById('noa-home-theme-switcher');
+ if(!host)return;
+ const attach=()=>{
+  if(host.dataset.noaThemeCopy==='ready')return;
+  const original=document.querySelector('.noa-mobile-footer .noa-footer-themes');
+  if(!original)return;
+  const cloned=original.cloneNode(true);
+  cloned.classList.add('noa-home-themes');
+  for(const button of cloned.querySelectorAll('button[data-footer-theme]')){
+   const choice=button.dataset.footerTheme;
+   button.addEventListener('click',()=>{
+    const footerButton=original.querySelector('button[data-footer-theme="'+choice+'"]');
+    if(footerButton&&!footerButton.disabled)footerButton.click();
+   });
+  }
+  host.replaceChildren(cloned);
+  host.dataset.noaThemeCopy='ready';
+ };
+ attach();
+ document.addEventListener('DOMContentLoaded',attach,{once:true});
+ window.addEventListener('noa-shell-ready',attach);
+})();
