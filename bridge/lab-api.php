@@ -52,7 +52,9 @@ try {
  if($action==='agent_start'||$action==='agent_control'){
   require_once __DIR__.'/session-agent.php';
   if($action==='agent_control'&&!in_array($b['action']??'',['pause','resume','cancel'],true))throw new InvalidArgumentException('unknown_agent_action');
-  lab_json(200,sa_dispatch($action==='agent_start'?'agentStart':'agentStep',$b,$owner));
+  $result=sa_dispatch($action==='agent_start'?'agentStart':'agentStep',$b,$owner);
+  if($action==='agent_start'||($b['action']??'')==='resume'){require_once __DIR__.'/movie-execution.php';$result=nm_dispatch($result['job']['id'],$owner);}
+  lab_json(200,$result);
  }
  $id=lab_id((string)($b['id']??''));
  if($action==='attach_audio'){

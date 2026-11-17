@@ -69,7 +69,7 @@ function sa_duration(array $j):float {
 }
 function sa_summary(array $j):array {
  $a=$j['agent'];$scenes=$a['scenes'];
- return ['subtitles'=>sa_subtitle_summary($j),'execution'=>'chatgpt_session','phase'=>$j['state'],'sceneCount'=>$a['target'],
+ return ['subtitles'=>sa_subtitle_summary($j),'execution'=>isset($a['worker'])?'chatgpt_worker':'chatgpt_session','worker'=>isset($a['worker'])?array_intersect_key($a['worker'],array_flip(['state','requestedAt','startedAt','expiresAt'])):null,'phase'=>$j['state'],'sceneCount'=>$a['target'],
   'planned'=>count($scenes),'images'=>count(array_filter($scenes,fn($s)=>($s['image']['accepted']??false))),
   'videos'=>count(array_filter($scenes,fn($s)=>($s['video']['accepted']??false))),
   'active'=>$a['active']?array_intersect_key($a['active'],array_flip(['kind','scene','phase'])):null,
@@ -224,6 +224,7 @@ function sa_dispatch(string $op,array $b,string $owner,?callable $sourceReader=n
    lab_revision($j,$b);if(in_array($j['state'],['saved','cancelled'],true))throw new DomainException('agent_finished');
    if($action==='resume'){sa_require_current($j,$source);$j['state']='agent_ready';$a['reason']='';}
    else{$j['state']=$action==='cancel'?'cancelled':'agent_paused';$a['reason']=sa_string($b['reason']??'사용자 요청',500);}
+   if(isset($a['worker'])){$a['worker']['state']='stopped';$a['worker']['expiresAt']=time();}
    $a['lease']='';$a['leaseUntil']=0;lab_touch($j);lab_event($s,'agent_'.$action,$id,$owner);return ['job'=>sa_view($j,true)];
   }
   sa_require_current($j,$source);

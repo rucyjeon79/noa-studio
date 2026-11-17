@@ -5,6 +5,7 @@ if(!defined('_GNUBOARD_')){http_response_code(403);exit;}
 function n80_github_request(string $operation,string $id,string $token):int {
  $target=match($operation){
   'browser_connection'=>['noa-studio','n80-browser-connect.yml','connection_id'],
+  'movie_generation'=>['noa-private-worker','noa-movie.yml','task_id'],
   'song_generation'=>['noa-private-worker','noa-worker.yml','task_id'],
   default=>null
  };

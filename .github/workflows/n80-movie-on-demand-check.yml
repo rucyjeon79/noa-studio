@@ -1,0 +1,25 @@
+name: N80 explicit movie execution checks
+on:
+  push:
+    branches: [main]
+    paths: ['bridge/movie-*.php', 'lab/movie-worker.py', 'tests/session-agent/movie.php', '.github/workflows/n80-movie-on-demand-check.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2', extensions: 'mbstring'}
+      - run: |
+          php -l bridge/movie-execution.php
+          php -l bridge/movie-worker.php
+          php -l bridge/session-agent.php
+          php -l bridge/lab-api.php
+          php -l deploy/noa-ai-lab.php
+          php -l deploy/noa-app/engine/github-runtime.php
+          php tests/session-agent/movie.php
+          python3 -m py_compile lab/movie-worker.py
+          node --check deploy/noa-ai-lab.js
