@@ -17,7 +17,7 @@ try{
     function lab_read(){return $GLOBALS['state'];}
     function lab_lock(callable $fn){return $fn($GLOBALS['state']);}
     require $root.'/noa-app/engine/service-runtime.php';
-    $context=['authenticatedByServer'=>true,'principal'=>'n80_lab_worker','permissions'=>['ai:text'],'method'=>'POST','admin'=>'fixture'];
+    $context=['authenticatedByServer'=>true,'principal'=>'n80_lab_worker','permissions'=>['ai:text'],'method'=>'POST','admin'=>'fixture','hostOperation'=>'ai.text'];
     service_assert(!n80_service_execute('n80_text_tick',[],[])['ok']&&$GLOBALS['calls']===0,'unauthenticated_execution');
     service_assert(!n80_service_execute('n80_listening_index',[],$context)['ok']&&$GLOBALS['calls']===0,'other_module_execution');
     $result=n80_service_execute('n80_text_tick',[],$context);
