@@ -21,6 +21,7 @@ on:
       - 'deploy/noa-shorts-control.php'
       - 'deploy/noa-shorts-control.js'
       - 'tests/n80/shorts_monitor_check_test.php'
+      - 'tests/n80/shorts_youtube_check_test.php'
       - 'tests/n80/shorts_clock_snapshot_test.php'
       - 'tests/n80/shorts_control_ui_test.mjs'
       - 'tests/n80/test_bounded_lab_lock.py'
@@ -63,6 +64,7 @@ on:
       - 'deploy/noa-shorts-control.php'
       - 'deploy/noa-shorts-control.js'
       - 'tests/n80/shorts_monitor_check_test.php'
+      - 'tests/n80/shorts_youtube_check_test.php'
       - 'tests/n80/shorts_clock_snapshot_test.php'
       - 'tests/n80/shorts_control_ui_test.mjs'
       - 'tests/n80/test_bounded_lab_lock.py'
@@ -121,6 +123,7 @@ jobs:
           php -l deploy/noa-app/engine/one-shot-clock.php
           php -l bridge/lab-core.php
           php -l bridge/worker-shorts.php
+          php -l bridge/session-shorts-youtube.php
           php -l deploy/noa-app/engine/shorts-monitor.php
           php -l deploy/noa-shorts-control.php
           node --check deploy/noa-shorts-control.js
@@ -150,6 +153,7 @@ jobs:
           php tests/n80/one_shot_host_canary_test.php
           php tests/n80/one_shot_clock_test.php
           php tests/n80/shorts_monitor_check_test.php
+          php tests/n80/shorts_youtube_check_test.php
           php tests/n80/shorts_clock_snapshot_test.php
           node tests/n80/shorts_control_ui_test.mjs
           python3 -m unittest discover -s tests/n80 -p 'test_bounded_lab_lock.py' -v

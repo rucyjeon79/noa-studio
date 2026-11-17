@@ -24,10 +24,11 @@ function n80_hub_write(string $root,string $name,array $value):void {
 function n80_hub_locked(string $root,callable $fn,int $waitMs=750):mixed {return $fn();}
 function n80_hub_status(string $root):array {return ['operations'=>[],'receipts'=>[],'paused'=>true,'runnerState'=>'retired'];}
 function n80_service_execute(string $action,array $body,array $context):array {
- global $calls,$serviceResult;
+ global $calls,$serviceResult,$expectedKind;
+ $flag=($expectedKind??'clock')==='youtube'?'readOnlyYouTubeCheck':'readOnlyClockCheck';
  if($action!=='n80_daily_shorts_tick'||$body!==[]||$context!==[
   'authenticatedByServer'=>true,'principal'=>'n80_lab_worker','permissions'=>['media:worker'],'method'=>'POST','admin'=>'admin',
-  'hostOperation'=>'ai.daily_shorts_clock','readOnlyClockCheck'=>true])throw new RuntimeException('wrong_dispatch_scope');
+  'hostOperation'=>'ai.daily_shorts_clock',$flag=>true])throw new RuntimeException('wrong_dispatch_scope');
  $calls++;return $serviceResult;
 }
 function must(bool $ok,string $why):void {if(!$ok)throw new RuntimeException($why);}
@@ -65,4 +66,23 @@ $store=$baseline;$serviceResult['uploads']=1;
 $r=n80_shorts_monitor_start($root,'admin',$id);
 must($r['state']==='check_failed'&&!$r['productionVerified'],'production result is not a diagnostic success');
 must(array_unique($writes)===['shorts-trial.json'],'only diagnostic history written');
+$store=$baseline;$calls=0;$expectedKind='youtube';
+$serviceResult=['ok'=>true,'state'=>'checked','processed'=>0,'uploads'=>0,
+ 'runtime'=>['module'=>'lab','operation'=>'n80_daily_shorts_tick'],
+ 'readOnlyCheck'=>['scope'=>'existing_youtube_connection','sourceRevision'=>42,'businessStateWritten'=>false,'providerCalls'=>3,'productionVerified'=>false,
+ 'channelId'=>'UC'.str_repeat('a',22),'channelTitle'=>'Fixture','destinationPlaylistId'=>'PL'.str_repeat('b',20),'playlistTitle'=>'Fixture playlist',
+ 'channelOwnerVerified'=>true,'destinationOwnerVerified'=>true,'uploadScopeRecorded'=>false,'access_token'=>'must_not_be_stored']];
+$r=n80_shorts_monitor_start($root,'admin',$id,'youtube');
+must($calls===1&&$r['state']==='checked'&&!$r['productionVerified'],'youtube route and result');
+must(!str_contains(json_encode($store),'must_not_be_stored'),'youtube raw fields excluded');
+$before=$store;must(n80_shorts_monitor_start($root,'admin',$id,'youtube')===$r&&$calls===1&&$before===$store,'youtube replay no network');
+rejects(fn()=>n80_shorts_monitor_start($root,'admin',$id),'check_kind_mismatch');
+$snap=n80_shorts_monitor_snapshot(n80_hub_status($root),[],$store['shorts-trial.json'],'admin',time());
+must($snap['moduleCheck']===null&&$snap['youtubeCheck']['state']==='checked'&&!$snap['needsPolling'],'separate YouTube evidence');
+must(n80_shorts_monitor_snapshot(n80_hub_status($root),[],$store['shorts-trial.json'],'other',time())['youtubeCheck']===null,'youtube receipt owner scoped');
+$store=$baseline;$calls=0;$failFinal=true;
+rejects(fn()=>n80_shorts_monitor_start($root,'admin',$id,'youtube'),'simulated_receipt_failure');$failFinal=false;
+must(n80_shorts_monitor_start($root,'admin',$id,'youtube')['state']==='checking'&&$calls===1,'youtube uncertain receipt never replayed');
+$store=$baseline;$calls=0;$serviceResult['readOnlyCheck']['providerCalls']=4;
+$r=n80_shorts_monitor_start($root,'admin',$id,'youtube');must($r['state']==='check_failed','over-budget proof refused');
 echo "N80_SHORTS_MONITOR_CHECK_PASS fixed route, duplicate/lost-receipt protection, legacy preservation, no GET writes\n";

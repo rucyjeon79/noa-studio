@@ -41,6 +41,9 @@ function render(s){
   $('events').prepend(row(`${time(check.requestedAt)} · 현재 데이터 읽기 전용 점검 · ${checked?'검증 완료':check.state==='checking'?'결과 미확정':'검증 실패'}${Number.isFinite(check.elapsedMs)?' · '+check.elapsedMs+' ms':''}`));
   $('clock-capability').textContent=checked?`실제 모듈 계산 확인 · ${check.elapsedMs} ms · 원본 데이터 변경 없음`:'점검 결과 확인 필요';
  }
+ const yt=s.youtubeCheck;
+ const ytErrors={youtube_reauthorize_required:'Google 인증이 만료되었거나 철회되어 다시 연결해야 합니다.',youtube_offline_connection_required:'YouTube 오프라인 인증이 필요합니다.',youtube_client_configuration_invalid:'Google 연결 설정 확인이 필요합니다.',youtube_api_disabled:'YouTube Data API 활성화가 필요합니다.',youtube_quota_limited:'YouTube 조회 한도에 도달했습니다. 자동 재시도하지 않습니다.',youtube_permission_required:'YouTube 조회 권한이 부족합니다.',youtube_channel_owner_mismatch:'현재 인증의 채널이 쇼츠 대상 채널과 다릅니다.',youtube_channel_page_unverified:'대상 채널이 첫 조회에 없어 추가 확인이 필요합니다.',youtube_destination_playlist_missing:'게시 대상 재생목록을 확인할 수 없습니다.',youtube_playlist_owner_mismatch:'게시 재생목록의 소유 채널이 다릅니다.',youtube_uploads_playlist_missing:'채널의 업로드 목록을 확인할 수 없습니다.',youtube_target_invalid:'쇼츠 대상 채널·재생목록 설정을 확인해야 합니다.'};
+ if($('youtube-check'))$('youtube-check').textContent=!yt?'아직 실제 연결을 확인하지 않았습니다.':yt.state==='checking'?'YouTube 확인 결과 미확정 · 같은 요청을 자동 재실행하지 않습니다.':yt.state==='checked'?`${time(yt.finishedAt)} · 채널 ${yt.channelTitle} · 재생목록 ${yt.playlistTitle} · 소유권 조회 확인 · 업로드 권한 기록 ${yt.uploadScopeRecorded?'있음':'미확인'} · 실제 업로드 미검증`:`${time(yt.finishedAt)} · ${ytErrors[yt.error]||'YouTube 연결 확인에 실패했습니다. 설정과 연결 상태를 확인해 주세요.'}`;
  const ready=s.campaign.readiness||{};
  $('publish-capability').textContent=`YouTube 인증 ${ready.youtubeConnected?'저장됨':'필요'} · 자동 게시 ${ready.channelAutoEnabled?'활성':'비활성'} · 관련 동영상 연결 ${ready.nativeRelatedVideoAdapterReady?'준비됨':'검증 필요'}`;
  const blockers=(check?.missing||ready.missing||[]).map(k=>row(missing[k]||'실행 연결 확인 필요'));

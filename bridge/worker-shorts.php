@@ -4,6 +4,12 @@ if(!isset($context,$action)||$action!=='n80_daily_shorts_tick')throw new Runtime
 require_once __DIR__.'/session-shorts.php';
 require_once __DIR__.'/session-shorts-prepare.php';
 $policy=nd_shorts_policy();
+// Explicit administrator diagnostic, through the same N80 Lab route.
+if(($context['readOnlyYouTubeCheck']??false)===true){
+ if($b!==[]||($context['hostOperation']??null)!=='ai.daily_shorts_clock'||!empty($context['readOnlyClockCheck']))throw new DomainException('youtube_check_scope_invalid');
+ require_once __DIR__.'/session-shorts-youtube.php';
+ return nd_shorts_youtube_check(lab_read(750),$policy);
+}
 // Server-owned diagnostic context only; no body field enables this branch.
 // Exercise the existing clock on a copy without lab_lock or any provider call.
 if(($context['readOnlyClockCheck']??false)===true){

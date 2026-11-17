@@ -30,12 +30,14 @@ function n80_shorts_monitor_snapshot(array $hub,array $lab,array $trial,string $
  $state='not_started';
  if($trial)$state=$matching?($receipt['state']==='running'?'checking':($receipt['state']==='failed'?'check_failed':(($receipt['outcome']['productionReady']??false)?'readiness_passed':'blocked_before_production'))):'requested';
  if(($trial['owner']??$owner)!==$owner){$trial=[];$state='not_started';$matching=false;}
- $moduleCheck=null;
- foreach($checks as $check)if(is_array($check)&&($check['owner']??null)===$owner)
-  $moduleCheck=array_intersect_key($check,array_flip(['id','requestedAt','finishedAt','state','elapsedMs','clockState','sourceRevision','businessStateWritten','providerCalls','productionVerified','error','missing','nextPreparationAt','nextPublicationAt']));
+ $moduleCheck=null;$youtubeCheck=null;
+ foreach($checks as $check)if(is_array($check)&&($check['owner']??null)===$owner){
+  $public=array_intersect_key($check,array_flip(['id','requestedAt','finishedAt','state','elapsedMs','clockState','sourceRevision','businessStateWritten','providerCalls','productionVerified','error','missing','nextPreparationAt','nextPublicationAt','channelId','channelTitle','destinationPlaylistId','playlistTitle','channelOwnerVerified','destinationOwnerVerified','uploadScopeRecorded']));
+  if(($check['kind']??'clock')==='youtube')$youtubeCheck=$public;else $moduleCheck=$public;
+ }
  $activeJob=$job&&!in_array($job['state'],['cancelled','failed','completed','published'],true)&&!empty($job['controller']['enabled']);
  return ['ok'=>true,'checkedAt'=>$now,'heartbeatAt'=>$hub['heartbeatAt']??0,'runnerState'=>$hub['runnerState']??'not_verified','paused'=>!empty($hub['paused']),
-  'moduleCheck'=>$moduleCheck,'needsPolling'=>(bool)$activeJob,
+  'moduleCheck'=>$moduleCheck,'youtubeCheck'=>$youtubeCheck,'needsPolling'=>(bool)$activeJob,
   'trial'=>$trial?['id'=>$trial['id'],'requestedAt'=>$trial['requestedAt'],'state'=>$state]:null,
   'receipt'=>$receipt,'trialReceiptMatched'=>$matching,'job'=>$job,
   'campaign'=>array_intersect_key($campaign,array_flip(['state','lastTickAt','nextPreparationAt','nextPublicationAt','readiness','productionReady'])),
@@ -51,9 +53,10 @@ function n80_shorts_monitor_observe(string $root):array {
 }
 
 /** Explicit administrator POST: one read-only specialist call, never a wake request. */
-function n80_shorts_monitor_start(string $root,string $owner,string $requestId):array {
+function n80_shorts_monitor_start(string $root,string $owner,string $requestId,string $kind='clock'):array {
+ if(!in_array($kind,['clock','youtube'],true))throw new DomainException('invalid_check_kind');
  if($owner===''||!preg_match('/^[a-f0-9]{32}$/D',$requestId))throw new DomainException('invalid_trial_id');
- $claim=n80_hub_locked($root,function()use($root,$owner,$requestId){
+ $claim=n80_hub_locked($root,function()use($root,$owner,$requestId,$kind){
   $control=n80_hub_read($root,'control.json');
   if(($control['paused']??null)!==true||($control['stop']??null)!==true)throw new DomainException('clock_check_requires_retired_runner');
   $old=n80_hub_read($root,'shorts-trial.json');
@@ -61,6 +64,7 @@ function n80_shorts_monitor_start(string $root,string $owner,string $requestId):
   if(!is_array($checks))throw new DomainException('clock_check_store_invalid');
   if(isset($checks[$requestId])){
    if(($checks[$requestId]['owner']??null)!==$owner)throw new DomainException('clock_check_owner_mismatch');
+   if(($checks[$requestId]['kind']??'clock')!==$kind)throw new DomainException('check_kind_mismatch');
    return ['new'=>false,'record'=>$checks[$requestId]];
   }
   if(count($checks)>=32)throw new DomainException('clock_check_history_full');
@@ -69,7 +73,7 @@ function n80_shorts_monitor_start(string $root,string $owner,string $requestId):
    if(($check['requestedAt']??0)>time()-30)throw new DomainException('trial_recently_requested');
   }
   $record=['id'=>$requestId,'owner'=>$owner,'requestedAt'=>time(),'state'=>'checking',
-   'scope'=>'existing_clock_on_snapshot','productionVerified'=>false];
+   'kind'=>$kind,'scope'=>$kind==='youtube'?'existing_youtube_connection':'existing_clock_on_snapshot','productionVerified'=>false];
   $old['readOnlyChecks'][$requestId]=$record;n80_hub_write($root,'shorts-trial.json',$old);
   return ['new'=>true,'record'=>$record];
  });
@@ -77,10 +81,14 @@ function n80_shorts_monitor_start(string $root,string $owner,string $requestId):
  $start=hrtime(true);$summary=['state'=>'check_failed','error'=>'clock_check_failed','productionVerified'=>false];
  try{
   require_once __DIR__.'/service-runtime.php';
-  $r=n80_service_execute('n80_daily_shorts_tick',[],['authenticatedByServer'=>true,
+  $context=['authenticatedByServer'=>true,
    'principal'=>'n80_lab_worker','permissions'=>['media:worker'],'method'=>'POST','admin'=>$owner,
-   'hostOperation'=>'ai.daily_shorts_clock','readOnlyClockCheck'=>true]);
+   'hostOperation'=>'ai.daily_shorts_clock'];
+  $context[$kind==='youtube'?'readOnlyYouTubeCheck':'readOnlyClockCheck']=true;
+  $r=n80_service_execute('n80_daily_shorts_tick',[],$context);
   $check=$r['readOnlyCheck']??[];
+  if($kind==='youtube')$summary=n80_shorts_youtube_summary($r);
+  else{
   if(($r['ok']??null)!==true||($r['processed']??null)!==0||($r['uploads']??null)!==0
    ||($r['runtime']['module']??null)!=='lab'||($r['runtime']['operation']??null)!=='n80_daily_shorts_tick'
    ||($check['scope']??null)!=='existing_clock_on_snapshot'||($check['businessStateWritten']??null)!==false
@@ -97,7 +105,9 @@ function n80_shorts_monitor_start(string $root,string $owner,string $requestId):
    $date=$r['campaign'][$field]??null;
    if(is_string($date)&&preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+]09:00$/D',$date))$summary[$field]=$date;
   }
+  }
  }catch(Throwable $e){
+  if($kind==='youtube')$summary['error']='youtube_connection_failed';
   if($e->getMessage()==='storage_busy')$summary['error']='clock_check_storage_busy';
  }
  $summary['elapsedMs']=round((hrtime(true)-$start)/1000000,3);$summary['finishedAt']=time();
@@ -107,4 +117,32 @@ function n80_shorts_monitor_start(string $root,string $owner,string $requestId):
   $record=array_replace($record,$summary);$old['readOnlyChecks'][$requestId]=$record;
   n80_hub_write($root,'shorts-trial.json',$old);return $record;
  });
+}
+
+/** Store a narrow verified receipt; raw Google responses and credentials stay out. */
+function n80_shorts_youtube_summary(array $r):array {
+ $c=$r['readOnlyCheck']??[];
+ if(($r['ok']??null)!==true||($r['processed']??null)!==0||($r['uploads']??null)!==0
+  ||($r['runtime']['module']??null)!=='lab'||($r['runtime']['operation']??null)!=='n80_daily_shorts_tick'
+  ||($c['scope']??null)!=='existing_youtube_connection'||($c['businessStateWritten']??null)!==false
+  ||($c['productionVerified']??null)!==false||!is_int($c['sourceRevision']??null)||$c['sourceRevision']<0
+  ||!is_int($c['providerCalls']??null)||$c['providerCalls']<0||$c['providerCalls']>3
+  ||!in_array($r['state']??null,['checked','check_failed'],true))throw new RuntimeException('youtube_check_result_invalid');
+ $out=['state'=>$r['state'],'sourceRevision'=>$c['sourceRevision'],'businessStateWritten'=>false,
+  'providerCalls'=>$c['providerCalls'],'productionVerified'=>false];
+ if($r['state']==='checked'){
+  if($c['providerCalls']!==3||($c['channelOwnerVerified']??null)!==true||($c['destinationOwnerVerified']??null)!==true
+   ||!preg_match('/^UC[A-Za-z0-9_-]{22}$/D',(string)($c['channelId']??''))
+   ||!preg_match('/^PL[A-Za-z0-9_-]{10,80}$/D',(string)($c['destinationPlaylistId']??''))
+   ||!is_bool($c['uploadScopeRecorded']??null))throw new RuntimeException('youtube_check_result_invalid');
+  foreach(['channelId','destinationPlaylistId','channelOwnerVerified','destinationOwnerVerified','uploadScopeRecorded'] as $field)$out[$field]=$c[$field];
+  foreach(['channelTitle','playlistTitle'] as $field)$out[$field]=mb_substr((string)($c[$field]??''),0,150);
+ }else{
+  $allowed=['youtube_target_invalid','youtube_offline_connection_required','youtube_reauthorize_required',
+   'youtube_channel_page_unverified','youtube_channel_owner_mismatch','youtube_uploads_playlist_missing',
+   'youtube_destination_playlist_missing','youtube_playlist_owner_mismatch','youtube_client_configuration_invalid',
+   'youtube_api_disabled','youtube_quota_limited','youtube_permission_required','youtube_connection_failed'];
+  $out['error']=in_array($c['error']??null,$allowed,true)?$c['error']:'youtube_connection_failed';
+ }
+ return $out;
 }

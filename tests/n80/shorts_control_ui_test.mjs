@@ -27,6 +27,9 @@ assert.match(f.nodes.get('live-state').textContent,/점검 완료/);
 assert.match(f.nodes.get('clock-capability').textContent,/1.234 ms/);
 assert.match(f.nodes.get('blockers').children.map(x=>x.textContent).join(' '),/ChatGPT 무인 호출/);
 assert.equal(f.timers.size,0,'retired idle state must not poll');
+const yt=structuredClone(seed);yt.youtubeCheck={state:'checked',finishedAt:1794890000,channelTitle:'<b>Channel</b>',playlistTitle:'Shorts',uploadScopeRecorded:true};
+f=fixture(yt);assert.match(f.nodes.get('youtube-check').textContent,/<b>Channel<\/b>/);assert.match(f.nodes.get('youtube-check').textContent,/실제 업로드 미검증/);assert.equal(f.timers.size,0);
+yt.youtubeCheck={state:'check_failed',error:'youtube_reauthorize_required'};f=fixture(yt);assert.match(f.nodes.get('youtube-check').textContent,/다시 연결/);assert.equal(f.timers.size,0);
 const active=structuredClone(seed);active.needsPolling=true;active.job.state='running';
 f=fixture(active);
 for(let n=0;n<20;n++){

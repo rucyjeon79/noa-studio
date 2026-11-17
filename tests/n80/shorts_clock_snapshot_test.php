@@ -4,7 +4,7 @@ declare(strict_types=1);
 $base=sys_get_temp_dir().'/n80-snapshot-'.bin2hex(random_bytes(8));
 mkdir($base,0700);mkdir($base.'/www',0700);mkdir($base.'/www/noa-bridge',0700);
 mkdir($base.'/www/noa-app',0700);mkdir($base.'/www/noa-app/engine',0700);mkdir($base.'/noa-ai-lab',0700);
-$files=['worker-shorts.php','lab-core.php','session-shorts.php','session-shorts-prepare.php','muvy-timeline.php'];
+$files=['worker-shorts.php','lab-core.php','session-shorts.php','session-shorts-prepare.php','muvy-timeline.php','session-shorts-youtube.php','lab-oauth-core.php'];
 foreach($files as $f)copy(__DIR__.'/../../bridge/'.$f,$base.'/www/noa-bridge/'.$f);
 copy(__DIR__.'/../../config/n80-daily-shorts.json',$base.'/www/noa-app/engine/daily-shorts.json');
 $initial=['revision'=>17,'jobs'=>['existing'=>['state'=>'cancelled','outputs'=>[]]],
@@ -27,4 +27,13 @@ $b=['command'=>'storage_claim'];$denied=false;
 try{require $base.'/www/noa-bridge/worker-shorts.php';}catch(DomainException $e){$denied=$e->getMessage()==='clock_check_scope_invalid';}
 if(!$denied)throw new RuntimeException('command_injection_not_denied');
 if(file_get_contents($base.'/noa-ai-lab/state.json')!==$raw)throw new RuntimeException('rejected_call_wrote_state');
+$context=['hostOperation'=>'ai.daily_shorts_clock','readOnlyYouTubeCheck'=>true];$b=[];
+$r=require $base.'/www/noa-bridge/worker-shorts.php';
+if($r['state']!=='check_failed'||$r['readOnlyCheck']['error']!=='youtube_offline_connection_required'||$r['readOnlyCheck']['providerCalls']!==0)throw new RuntimeException('youtube_missing_connection_boundary');
+foreach([['command'=>'storage_claim'],['readOnlyYouTubeCheck'=>true],['channelId'=>'wrong']] as $body){
+ $b=$body;$denied=false;
+ try{require $base.'/www/noa-bridge/worker-shorts.php';}catch(DomainException $e){$denied=$e->getMessage()==='youtube_check_scope_invalid';}
+ if(!$denied)throw new RuntimeException('youtube_command_injection_not_denied');
+}
+if(file_get_contents($base.'/noa-ai-lab/state.json')!==$raw)throw new RuntimeException('youtube_check_changed_original');
 echo "N80_SHORTS_SNAPSHOT_PASS real module computed, original state byte-identical, provider calls zero\n";

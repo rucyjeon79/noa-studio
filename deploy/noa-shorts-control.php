@@ -12,10 +12,10 @@ try{
  if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
   if(!is_string($_POST['csrf']??null)||!hash_equals($csrf,$_POST['csrf']))throw new DomainException('request_verification_failed');
   $action=$_POST['action']??'';
-  if($action==='start'){
+  if(in_array($action,['start','youtube_check'],true)){
    if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
-   set_time_limit(15);
-   n80_shorts_monitor_start($root,$owner,(string)($_POST['requestId']??''));
+   set_time_limit($action==='youtube_check'?30:15);
+   n80_shorts_monitor_start($root,$owner,(string)($_POST['requestId']??''),$action==='youtube_check'?'youtube':'clock');
   }
   elseif(in_array($action,['production_start','recover'],true)){
    require_once __DIR__.'/noa-bridge/session-shorts-control.php';
@@ -37,6 +37,7 @@ main{max-width:1050px;margin:auto;padding:28px 18px}header,.control-bar{display:
 <p>현재 상태와 실제 점검 결과를 확인합니다. 진행 중인 제작 작업이 있을 때만 최대 1분 동안 자동 조회하며, 화면을 여는 것만으로 제작을 시작하지 않습니다.</p>
 <?php if($message):?><p role="alert"><?=nsc_e($message)?></p><?php endif;?>
 <section aria-labelledby="trial-heading"><h2 id="trial-heading">호스트 단발 점검</h2><p id="live-state" aria-live="polite">상태 확인 중</p><p id="last-checked" class="muted"></p><div class="control-bar"><form method="post"><input type="hidden" name="csrf" value="<?=nsc_e($csrf)?>"><input type="hidden" name="requestId" value="<?=bin2hex(random_bytes(16))?>"><button type="submit" name="action" value="start" class="noa-button">현재 데이터로 읽기 전용 점검</button></form><button id="refresh" class="noa-button" type="button">상태 새로고침</button></div><p class="muted">실제 N80 쇼츠 모듈로 현재 일정과 준비 상태를 계산합니다. 점검 기록만 저장하며 원본 데이터·작업·파일은 변경하지 않습니다. 영상 제작·게시와 예약 활성화는 실행하지 않습니다.</p><ol id="events"></ol></section>
+<section aria-labelledby="youtube-heading"><h2 id="youtube-heading">YouTube 연결 확인</h2><p id="youtube-check" aria-live="polite">아직 실제 연결을 확인하지 않았습니다.</p><form method="post"><input type="hidden" name="csrf" value="<?=nsc_e($csrf)?>"><input type="hidden" name="requestId" value="<?=bin2hex(random_bytes(16))?>"><button type="submit" name="action" value="youtube_check" class="noa-button">채널·재생목록 연결 확인</button></form><p class="muted">현재 인증으로 쇼츠 대상 채널과 게시 재생목록의 소유권을 확인합니다. 최대 3회 요청하고 결과만 기록합니다. 영상 업로드·게시 설정 변경은 하지 않으며, 이 결과는 확인 시점의 조회 권한을 나타냅니다.</p></section>
 <section><h2>현재 쇼츠 제작</h2><p id="job-title"></p><div class="metrics" id="job-progress"></div><p id="job-block" class="warning"></p><p id="schedule" class="muted"></p></section>
 <section><h2>N80 → 챗지 요청</h2><p id="chat-request"></p><p>유효한 N80 요청이 도착하기 전에는 챗지가 기획·이미지·영상 제작을 독자적으로 시작하지 않습니다. 현재 시험은 활성 대화를 수신기로 사용하며, 대화 종료 후 자동 깨우기는 아직 검증되지 않았습니다.</p>
 <form method="post"><input type="hidden" name="csrf" value="<?=nsc_e($csrf)?>"><button name="action" value="production_start" class="noa-button">최종 업로드까지 제작 시험 시작</button></form>
