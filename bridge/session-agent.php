@@ -73,7 +73,7 @@ function sa_summary(array $j):array {
   'planned'=>count($scenes),'images'=>count(array_filter($scenes,fn($s)=>($s['image']['accepted']??false))),
   'videos'=>count(array_filter($scenes,fn($s)=>($s['video']['accepted']??false))),
   'active'=>$a['active']?array_intersect_key($a['active'],array_flip(['kind','scene','phase'])):null,
-  'reason'=>$a['reason']??'','format'=>$a['format'],'duration'=>sa_duration($j),'selection'=>$a['selection']??null,'connected'=>($a['leaseUntil']??0)>time(),
+  'reason'=>$a['reason']??'','format'=>$a['format'],'duration'=>sa_duration($j),'selection'=>$a['selection']??null,'connected'=>!in_array($j['state'],['saved','cancelled','agent_paused'],true)&&($a['leaseUntil']??0)>time(),
   'controller'=>$a['controller']??null];
 }
 function sa_layout(array $j):array {
