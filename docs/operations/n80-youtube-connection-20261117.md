@@ -1,0 +1,104 @@
+# Shorts YouTube connection check — implementation ready, deployment blocked
+
+As of 2026-11-17 16:35 KST, production remains **2.1.483**. No new YouTube
+diagnostic was executed against the live Google account. The change below is in
+source commit `36a553ac3a1c1533d2e3d4423edd7bf758eac3a2`, but is **not deployed**.
+
+## Implemented behavior
+
+The existing administrator Shorts control page gains an explicit channel and
+destination-playlist check. It uses the existing authenticated N80 Lab service
+route and diagnostic receipt store, without another queue, scheduler or worker.
+The server chooses the diagnostic context; request-body flags or targets cannot
+select or expand it.
+
+One request refreshes the already-authorized YouTube credential in memory, reads
+`channels.list(mine=true)` and checks the fixed policy channel ID, then reads the
+fixed destination playlist and checks its owning channel. At most three calls
+use the existing HTTPS transport with eight-second per-call timeouts. There is
+no automatic retry or pagination. A successful read does not assert upload,
+publication, related-video support or unattended execution.
+
+The existing diagnostic store records the request before any provider call.
+Repeating a request ID returns its receipt; a lost final response stays
+unconfirmed and blocks another check. Request IDs also bind the diagnostic kind
+and owner. Existing clock checks remain separate. Only approved result fields
+are recorded; OAuth tokens, provider response bodies and raw exception messages
+are excluded. The original Lab state, jobs, publication settings and stopped
+resident flags are not changed by this diagnostic.
+
+The UI reports verified channel/playlist titles, the observation time and whether
+an upload scope was recorded. It distinguishes reauthorization, missing API
+permission, quota limits, channel mismatch and playlist mismatch. It never
+promotes the production-readiness flag. The result is explicitly a point-in-time
+read-access observation.
+
+References used for the fixed API queries:
+
+- [YouTube channels.list](https://developers.google.com/youtube/v3/docs/channels/list)
+- [YouTube channel resource](https://developers.google.com/youtube/v3/docs/channels)
+
+## Verification
+
+- PHP 8.2 local tests exercised the actual adapter with isolated transport:
+  channel and playlist identity, bounded calls, no mutation, absent credentials,
+  expired grant, quota rejection and credential redaction.
+- Actual worker/snapshot tests rejected injected body commands and preserved the
+  original state bytes. Monitor tests covered kind/owner scoping, exact replay,
+  lost receipt and invalid/over-budget result rejection.
+- JavaScript checks rendered success and reauthorization states without HTML
+  insertion and without enabling idle polling.
+- [Shorts safety gates](https://github.com/rucyjeon79/noa-studio/actions/runs/44037973383): passed.
+- [Schedule guard](https://github.com/rucyjeon79/noa-studio/actions/runs/44037973120): passed.
+- [Engine contracts](https://github.com/rucyjeon79/noa-studio/actions/runs/44037973131): passed.
+- [Existing feature quality gates](https://github.com/rucyjeon79/noa-studio/actions/runs/44037973117): passed.
+- The current live release package validator and UI/payment gates were downloaded,
+  hash-verified and exercised locally against all five candidate files: passed.
+- Live rendering of the **new** section and live Google access remain unverified
+  because deployment did not complete. The existing production screen still
+  renders and does not contain the new button.
+
+## Deployment blocker and preserved state
+
+The full five-file package ID is `6ec04cc6544c24d2c4a33eee16a7c017`, prepared from
+fresh production revision 483 with exact preimage hashes. The connector returned
+`INVALID_ARGUMENT`; repeated status checks reported `found=false` and
+`recoveryRequired=false`. Uploading the same package through the existing N80 Hub
+administrator form also displayed a generic request failure. It did not return
+a new revision or completed release receipt.
+
+Two narrower diagnostic package attempts also returned `INVALID_ARGUMENT` and
+had no receipt: new-module-only `16dab5b5d354303181cf39d19247707c` and the
+worker-only `9f95a16db6716be403754e88a842eee5`. No file from either package
+was activated. Do not assume the error identifies the new file, null preimage,
+package size or a PHP syntax problem.
+
+An exact replay of already completed package
+`587b86dbae6873b1474ca27d317f1646` returned its historical revision-479 receipt with
+`duplicate=true`. This replay did not redeploy or downgrade production. It proves
+the existing authenticated tool can reach the idempotent receipt path; it does
+not prove that new deployment, backup or activation is working.
+
+The final manifest still reported revision **483**, all four existing target
+files unchanged, and the new file absent. The last-release-error field still
+contained an older unrelated checksum error, so it is not evidence for this
+failure. No Drive-authentication failure, hosting denial or automatic approval
+rejection was explicitly returned; do not invent one as the cause.
+
+Candidate hashes:
+
+| Host path | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `noa-bridge/worker-shorts.php` | 3111 | `64c3768032c83eb33ab4bf3d05eb1a2c176530eb0ee7df84b8c27c3242731b68` |
+| `noa-bridge/session-shorts-youtube.php` | 4874 | `3ac428e23b7f7434d712f66936f19e8ef899136f9463c699fb5dff18d6e6a880` |
+| `noa-app/engine/shorts-monitor.php` | 11032 | `f2448374e743ea21cfb5bce09828316e846321f8c692d5238f867faace183b7c` |
+| `noa-shorts-control.php` | 8607 | `7cb942c3e6bcd974d40199fd21a81835d0965a00ef75d0b0913c94f3785e230a` |
+| `noa-shorts-control.js` | 10320 | `2c97bf29db14f1416befa9d1b4205e64997fdad18d47db19864300f09964bc65` |
+
+Next continuation: diagnose the new-release failure through the existing N80
+deployment/backup path, preserving mandatory preimage backups, hash checks and
+revision checks. Do not bypass these gates or use a retired GitHub production
+workflow. Once deployment succeeds, submit exactly one live diagnostic through
+the new administrator button, inspect the actual receipt, and verify the rendered
+desktop/mobile result. The existing unresolved `ai.batch` receipt and cancelled
+media job must remain untouched.
