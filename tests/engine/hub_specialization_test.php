@@ -47,7 +47,8 @@ MEMBERS);
   if($id==='covers.refresh'){owners_assert($row['module']==='media','artwork_owner');continue;}
   $r=n80_hub_specialist($id);owners_assert($r['ok']&&$r['module']===$row['module'],'wrong_actual_owner:'.$id);
  }
- owners_assert(count($GLOBALS['handlerCalls'])===4&&count(array_unique($GLOBALS['handlerCalls']))===4,'business_handler_not_once');
+ owners_assert(count($GLOBALS['handlerCalls'])===3&&count(array_unique($GLOBALS['handlerCalls']))===3,'business_handler_not_once');
+ owners_assert(!in_array('n80_daily_shorts_tick',$GLOBALS['handlerCalls'],true),'retired_shorts_called');
  owners_assert($GLOBALS['popularityCalls']===1&&count($GLOBALS['membershipReceipts'])===1,'business_logic_not_delegated');
  try{n80_hub_specialist('../../arbitrary');throw new RuntimeException('arbitrary_route_accepted');}catch(InvalidArgumentException $expected){}
  // Notification success, failure and transaction boundaries retain the same leases.

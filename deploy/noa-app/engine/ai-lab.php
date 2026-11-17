@@ -4,11 +4,12 @@ declare(strict_types=1);
 /** A tool is either a panel in the production desk or a separate, lazy-loaded page. */
 function n80_lab_tools(): array {
     return [
+        'google'=>['label'=>'NotebookLM · Google 통합관리','description'=>'Google 서비스 연결·상태·제작 자료','access'=>'admin','page'=>'noa-notebooklm.php','hidden'=>true],
         'browser'=>['label'=>'Gemini·Flow 연결','description'=>'Google 구독 계정을 N80 브라우저에 연결','access'=>'admin','page'=>'noa-browser-connect.php','hidden'=>true],
-        'settings'=>['label'=>'AI·YouTube 연결','description'=>'AI 제공자·YouTube 채널과 사용 한도 설정','access'=>'admin','panel'=>'lab-settings','hidden'=>true],
+        'settings'=>['label'=>'AI 서비스 설정','description'=>'AI 제공자·사용 한도 · Google 연결은 NotebookLM 통합관리','access'=>'admin','panel'=>'lab-settings','hidden'=>true],
         'text' => ['label'=>'새 가사·콘텐츠 초안', 'description'=>'제작 요청과 장르 규칙으로 가사·Suno 지시문·게시 문구 초안을 만듭니다. 검토 후 곡에 반영하세요.', 'menuHidden'=>true, 'access'=>'admin', 'panel'=>'lab-text'],
         'muvy' => ['label'=>'대본·장면 프롬프트', 'description'=>'등록된 곡 정보로 뮤비 대본과 장면별 제작 지시문을 만듭니다. 영상 파일 제작은 별도 작업입니다.', 'family'=>'video', 'menuHidden'=>true, 'access'=>'admin', 'panel'=>'lab-muvy'],
-        'create' => ['label'=>'영상 파일 제작', 'description'=>'ChatGPT가 현재 곡으로 장면을 기획하고 Gemini·Flow 제작과 검수, 원곡 편집을 이어갑니다.', 'family'=>'video', 'access'=>'admin', 'panel'=>'lab-create'],
+        'create' => ['label'=>'영상 파일 제작', 'description'=>'ChatGPT가 이미지·영상 제작과 검수를 지휘합니다. 16:9는 전곡, 9:16은 직접 선택한 최대 59초 구간을 원곡으로 편집합니다.', 'family'=>'video', 'access'=>'admin', 'panel'=>'lab-create'],
         'song' => ['label'=>'한 곡씩 제작', 'description'=>'N80 탐색기에서 한 곡을 골라 필요한 곡 정보 항목을 생성하고 확인합니다.', 'menuHidden'=>true, 'access'=>'admin', 'page'=>'noa-lab-song.php'],
         'creative' => ['label'=>'노래 창작하기','description'=>'내 이야기나 오늘의 운세에서 시작해, 단계별 네 가지 중 여러 개를 고르고 노래를 만듭니다.','family'=>'creative','access'=>'creatorAI','page'=>'noa-lab-creative.php'],
         'batch' => ['label'=>'ACT·장르 묶음 제작', 'description'=>'여러 곡·ACT·장르를 선택해 같은 곡 정보 항목을 한 번에 생성하고 처리 상태를 확인합니다.', 'family'=>'batch', 'access'=>'admin', 'page'=>'noa-creator.php'],

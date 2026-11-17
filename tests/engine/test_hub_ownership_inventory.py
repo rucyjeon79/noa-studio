@@ -23,6 +23,6 @@ class OwnershipInventory(unittest.TestCase):
   self.assertEqual(auto['notifications.dispatch']['module'],'notify')
  def test_hub_schedule_keeps_existing_nine_operations(self):
   rows=json.loads((ROOT/'config/n80-hub-operations.json').read_text())
-  self.assertEqual(set(rows),{'hub.verify','ai.text','ai.batch','catalog.index','notifications.dispatch','popularity.calculate','members.maintain','ai.daily_shorts_clock','covers.refresh'})
+  self.assertEqual(set(rows),{'hub.verify','ai.text','ai.batch','catalog.index','notifications.dispatch','popularity.calculate','members.maintain','covers.refresh'})
   self.assertEqual(rows['notifications.dispatch']['interval'],60)
 if __name__=='__main__':unittest.main()
