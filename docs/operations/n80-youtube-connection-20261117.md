@@ -1,4 +1,48 @@
-# Shorts YouTube connection check — Drive reauthorization blocks deployment
+# Shorts YouTube connection check — deployed; YouTube reauthorization remains
+
+## Current result after explicit Drive approval, 2026-11-17
+
+The user explicitly approved renewing NOA STUDIO's full Drive access. The
+existing account reconnection completed, including the unverified-testing-app
+warning and the consent screen. No OAuth client configuration or app publishing
+state was changed.
+
+- **17:25:16 KST:** the existing server storage check saved its synthetic file,
+  read it back with matching contents, and moved that test file to trash. The
+  page confirmed the new check; this was not the old November 10 receipt.
+- **17:26:21 KST:** N80 Hub deployed preserved package
+  `6ec04cc6544c24d2c4a33eee16a7c017`, advancing production to **2.1.484**.
+  Package SHA-256 is
+  `36d55b1e1bfce3471325b2bae883cf551c450be8d444aef06dc39e6909c331f9`.
+  Both mandatory Drive backups were verified: 597,943-byte preimage transaction
+  (`5d81f107bc724e19fba9634c76df31b67b3e7eb3bf9471bb304646eeb498a8de`)
+  and 51,815-byte package. The authenticated release receipt retains their
+  private Drive locations. A fresh manifest independently matched all five
+  candidate file hashes below; recovery was not required.
+- **17:26:47 KST:** exactly one live channel/playlist check ran through the new
+  administrator button. It returned `youtube_reauthorize_required`, and the UI
+  displayed that Google authorization had expired or been revoked. The channel
+  and playlist ownership checks did not pass. This is a confirmed diagnostic
+  failure, not an unknown/lost result, and was not automatically replayed.
+
+Thus the **deployment error is resolved**. The remaining issue is the separately
+stored YouTube authorization. The existing YouTube connection-management link
+opened Google's account/brand chooser, but no YouTube account or consent was
+submitted. This renewal requests `youtube.upload`, `youtube.readonly`, and
+`yt-analytics.readonly`, which are outside the user's latest Drive-only approval.
+Obtain explicit approval for those permissions and the intended account before
+renewal. After renewal, confirm the channel ID still matches policy, then make
+one new channel/playlist diagnostic request; do not replay the old failed ID.
+
+The original cancelled media job remains cancelled with 7 planned scenes,
+3 accepted images, 2 accepted videos, and no final file. The resident remains
+retired, `paused=true`, scheduled execution remains off, and production readiness
+remains false. No video was uploaded or published. Desktop rendering of the new
+section and the real authorization error was verified. A live mobile viewport
+check and successful YouTube ownership check remain outstanding.
+
+The following sections retain earlier diagnosis and validation history; their
+revision-483 deployment block was superseded by the successful release above.
 
 ## Follow-up diagnosis, 2026-11-17
 
