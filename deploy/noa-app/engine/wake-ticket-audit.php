@@ -11,6 +11,8 @@ function n80_wake_ticket_audit(string $root,?int $now=null):array {
         'ok'=>true,'mode'=>'read_only','source'=>'scheduled-wakes.json',
         'state'=>'no_signed_signal_recorded','signalCount'=>0,
         'unresolvedCount'=>0,'staleCount'=>0,
+        'retentionLimit'=>32,'remainingCapacity'=>32,'newSignalsBlocked'=>false,
+        'nextAction'=>'wait_for_approved_signal',
         'businessExecutionVerified'=>false,'canAutomaticallyRetry'=>false,
         'latest'=>null,'recent'=>[],
         'hostWrites'=>0,'processStarts'=>0,'providerCalls'=>0,
@@ -54,6 +56,11 @@ function n80_wake_ticket_audit(string $root,?int $now=null):array {
                 :($a['receivedAt']<=>$b['receivedAt']));
         $result['signalCount']=count($rows);
         $result['unresolvedCount']=count($rows);
+        $result['remainingCapacity']=32-count($rows);
+        $result['newSignalsBlocked']=count($rows)>=32;
+        $result['nextAction']=$result['newSignalsBlocked']
+            ?'reconcile_preserved_signals_before_new_admission'
+            :($rows?'verify_business_effects_before_retry':'wait_for_approved_signal');
         $result['staleCount']=count(array_filter($rows,
             static fn(array $r):bool=>$r['needsReview']));
         $result['state']=$rows?'signal_only_not_execution':'no_signed_signal_recorded';
@@ -63,6 +70,9 @@ function n80_wake_ticket_audit(string $root,?int $now=null):array {
         // Do not leak filesystem details or sensitive raw ticket contents.
         $result['ok']=false;
         $result['state']='needs_review';
+        $result['remainingCapacity']=null;
+        $result['newSignalsBlocked']=true;
+        $result['nextAction']='review_ticket_store_without_replay';
     }
     return $result;
 }

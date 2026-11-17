@@ -116,6 +116,8 @@ function n80_scheduled_wake_admit(string $root, array $admission, string $nonce,
             || ($livePolicy['githubWorkerDispatchAllowed']??true)!==false
             || ($livePolicy['githubBusinessExecutionAllowed']??true)!==false
             || ($livePolicy['hostResidentRunnerAllowed']??true)!==false
+            || ($livePolicy['hostLegacyHeartbeatAllowed']??true)!==false
+            || ($livePolicy['hostLegacyBatchExecuteAllowed']??true)!==false
             || ($livePolicy['githubWakeActivated']??false)!==true
             || ($livePolicy['requiresHostingApproval']??true)!==false
             || ($livePolicy['n80BoundedExecutorVerified']??false)!==true)
@@ -128,6 +130,11 @@ function n80_scheduled_wake_admit(string $root, array $admission, string $nonce,
         if (isset($nonces[$nonce])) throw new DomainException('wake_replay');
         if (isset($state['slots'][$slot]))
             return ['ok'=>true,'state'=>'duplicate_signal','executionAllowed'=>false,'slot'=>$slot];
+        // Every recorded slot is still unverified. Never evict an older slot to
+        // accept a new one: that loses pending work and its duplicate barrier.
+        // Reconciliation/archival is a separate, explicitly verified operation.
+        if (count($state['slots'])>=32)
+            throw new DomainException('wake_store_full_review_required');
         // Nonces are recorded only for accepted, new time slots.
         $nonces=array_filter($nonces,static fn($t)=>is_int($t)&&$t>$now-360);
         if (count($nonces)>256) throw new DomainException('wake_nonce_limit');
@@ -138,8 +145,6 @@ function n80_scheduled_wake_admit(string $root, array $admission, string $nonce,
             'state'=>'signal_admitted_not_executed','executionVerified'=>false,
             'mediaCreated'=>false,'youtubePublished'=>false
         ];
-        if (count($state['slots'])>32)
-            $state['slots']=array_slice($state['slots'],-32,null,true);
         n80_hub_write($root,'scheduled-wakes.json',$state);
         n80_hub_write($root,'scheduled-wake-nonces.json',$nonces);
         return ['ok'=>true,'state'=>'signal_admitted_not_executed',

@@ -57,7 +57,8 @@ try {
 } catch (DomainException $e) {
     // A signed replay or revoked stop gate is a conflict, not a server outage.
     $code=$e->getMessage();
-    if ($code==='wake_replay' || $code==='wake_revoked_before_commit') $reply(409,$code);
+    if (in_array($code,['wake_replay','wake_revoked_before_commit',
+        'wake_store_full_review_required'],true)) $reply(409,$code);
     $reply(503,'wake_unavailable');
 } catch (Throwable $e) {
     $reply(503,'wake_unavailable');
