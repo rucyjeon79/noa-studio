@@ -21,7 +21,7 @@ function getCard(row){
  const start=js.indexOf('function homeThumbnailSources(row){'),end=js.indexOf('const homeLists=new Map();');
  assert.ok(start>=0&&end>start);
  const source=js.slice(start,end);
- const fn=vm.runInNewContext(source+';card',{document:doc,window:win,encodeURIComponent});
+ const fn=vm.runInNewContext(source+';card',{document:doc,window:win,encodeURIComponent,metadata:()=> '조회 0'});
  const link=fn(row);
  return {link,art:link.children[0],img:link.children[0].children[0],title:link.children[1],meta:link.children[2]};
 }
