@@ -1,6 +1,45 @@
-# Shorts YouTube connection check — deployed; YouTube reauthorization remains
+# Shorts YouTube connection check — deployed and live ownership verified
 
-## Current result after explicit Drive approval, 2026-11-17
+## Current result after explicit YouTube approval, 2026-11-17
+
+The user explicitly approved renewing the same account's YouTube upload,
+channel-read and analytics-read permissions. The existing OAuth flow completed
+with those three requested permissions selected. The administrator connection
+page returned with the expected channel saved. OAuth client configuration and
+Google's app publishing state were not changed.
+
+At **17:43:34 KST**, exactly one new diagnostic request through the deployed
+Shorts administrator button succeeded:
+
+- Channel: **AI Artist NOA x 람준파파**, matching the fixed policy channel.
+- Destination playlist: **Shorts「이 노래가 좋아」**, with its owner matching
+  that same channel.
+- The UI reported ownership-read verification and a recorded upload scope.
+- Actual video upload, publication and analytics queries were not exercised.
+
+Both the deployment blocker and the current YouTube reauthorization blocker
+are resolved. Production remains **2.1.484**; no additional code or deployment
+was needed for the authorization renewal. The existing N80 diagnostic store
+retains the new result. The old failed request was not replayed.
+
+The live desktop result was visually checked. The cancelled media job still
+shows 7 planned scenes, 3 accepted images, 2 accepted videos and no final file.
+Scheduled execution and automatic publication remain disabled; no media was
+created or published. A live mobile viewport check, actual upload and unattended
+execution remain unverified. Do not promote production readiness from this
+point-in-time read-access result.
+
+Google displayed the app's testing/unverified warning during renewal. The
+seven-day testing refresh-token limitation documented below remains a possible
+recurrence cause, not a proven explanation of the previous invalidation. The
+OAuth publishing configuration requires separate review; this repair did not
+change it.
+
+The sections below are historical evidence. Their pending-approval and
+authorization-failure statements were superseded by the successful renewal and
+ownership check above.
+
+## Earlier result after explicit Drive approval, 2026-11-17
 
 The user explicitly approved renewing NOA STUDIO's full Drive access. The
 existing account reconnection completed, including the unverified-testing-app
