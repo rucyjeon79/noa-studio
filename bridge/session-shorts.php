@@ -6,6 +6,7 @@ require_once __DIR__.'/lab-core.php';
 function nd_shorts_public(array $c):array {
  if(isset($c['preparation']))unset($c['preparation']['lease'],$c['preparation']['sources'],$c['preparation']['connectionReceipt']);
  if(isset($c['preparation']['subtitlePreparation']))unset($c['preparation']['subtitlePreparation']['lease'],$c['preparation']['subtitlePreparation']['sourceFingerprint']);
+ $c['enabled']=false;$c['state']='retired';$c['productionReady']=false;$c['nextPreparationAt']=null;$c['nextPublicationAt']=null;
  return $c;
 }
 
@@ -41,80 +42,9 @@ function nd_shorts_slot_allowed(array $p,string $publishAt):bool {
  return in_array((int)$target->format('N'),nd_shorts_weekdays($p),true)&&$target->format('H:i:s')===$p['publishLocalTime'].':00';
 }
 function nd_shorts_readiness(array $s,array $p):array {
- $channel=$s['channels'][$p['channelId']]??[];$secrets=lab_unseal($s['secrets']??null);
- $youtube=!empty($channel['tokens'])&&!empty($s['config']['oauthClientId'])&&!empty($secrets['oauthClientSecret']);
- // A ChatGPT/Drive browser session is not an N80 host Drive connection.
- $storage=$p['mediaStorage']??[];$drive=$s['driveConnection']??[];$folder=$storage['temporaryParentFolderId']??'';
- $driveAuthorized=($storage['provider']??'')==='google_drive'&&is_string($folder)&&
-  preg_match('/^[A-Za-z0-9_-]{10,200}$/D',$folder)===1&&!empty($drive['owner'])&&
-  !empty($drive['tokens'])&&!empty($s['config']['oauthClientId'])&&
-  ($drive['parent']??'')===$folder&&($drive['clientId']??'')===$s['config']['oauthClientId'];
- $receipt=$drive['storageCheck']??[];
- $driveReadback=$driveAuthorized&&($receipt['state']??'')==='verified'&&
-  ($receipt['connectionId']??'')===($drive['id']??null)&&
-  ($receipt['parent']??'')===$folder&&
-  ($receipt['cleanup']??'')==='trashed'&&
-  (int)($receipt['readbackVerifiedAt']??0)>0;
- // A cron tick or saved OAuth token cannot prove real production readiness.
- $missing=['persistent_browser_executor_required','chatgpt_unattended_dispatch_not_verified'];
- if(!$driveAuthorized)$missing[]='google_drive_authorization_required';
- elseif(!$driveReadback)$missing[]='google_drive_readback_verification_required';
- if(!$youtube)$missing[]='youtube_offline_connection_required';
- elseif(empty($channel['autoEnabled']))$missing[]='youtube_auto_publication_not_enabled';
- $missing[]='youtube_related_video_adapter_not_verified';
- return ['ready'=>false,'missing'=>$missing,'youtubeConnected'=>$youtube,
-  'channelAutoEnabled'=>!empty($channel['autoEnabled']),
-  'storageProvider'=>'google_drive','driveAuthorized'=>$driveAuthorized,'driveReadbackVerified'=>$driveReadback,
-  'githubWorkerAllowed'=>false,'sessionBrowserIsServerExecutor'=>false,
-  'paidGenerationEnabled'=>!empty($s['config']['generationEnabled']),
-  'apiGenerationConfigured'=>!empty($secrets['falKey'])&&!empty($secrets['openaiKey']),
-  'nativeRelatedVideoAdapterReady'=>false];
+ return ['ready'=>false,'retired'=>true,'missing'=>[],'reason'=>'automatic_shorts_retired','sessionBrowserIsServerExecutor'=>false];
 }
 function nd_shorts_tick(array &$s,array $p,int $now,array $readiness):array {
- ['local'=>$local,'target'=>$target,'due'=>$due]=nd_shorts_schedule($p,$now);$previous=$s['campaigns']['daily_shorts']??[];
- $c=$previous+['enabled'=>true,'createdAt'=>gmdate('c',$now),'current'=>null,'history'=>[]];
- $c['policy']=$p;$c['lastTickAt']=gmdate('c',$now);$c['nextPreparationAt']=$due->format(DATE_ATOM);$c['nextPublicationAt']=$target->format(DATE_ATOM);$c['readiness']=$readiness;
- // Retire only an older *explicitly cancelled* job with no verified upload.
- // Preserve every cancelled job and its provider history for manual reconciliation.
- $slot=$c['current']??null;
- if(is_array($slot)&&preg_match('/^\d{4}-\d{2}-\d{2}$/D',(string)($slot['date']??''))&&
-    (string)$slot['date']<$local->format('Y-m-d')&&!empty($slot['jobId'])){
-  $oldJob=$s['jobs'][$slot['jobId']]??null;
-  if(is_array($oldJob)&&($oldJob['state']??'')==='cancelled'&&
-      empty($slot['videoId'])&&empty($oldJob['outputs'])&&
-      empty($oldJob['agent']['publication']['uploadVerified'])){
-    $fp=hash('sha256',json_encode([$slot['date'],$slot['jobId'],$slot['publishAt']??''],JSON_THROW_ON_ERROR));
-    $seen=false;
-    foreach($c['history']??[] as $prev)
-      if(is_array($prev)&&($prev['closureFingerprint']??'')===$fp){$seen=true;break;}
-    if(!$seen){
-      $entry=$slot;$entry['closureFingerprint']=$fp;
-      $entry['archivedAt']=gmdate('c',$now);
-      $entry['closureReason']='explicitly_cancelled_without_verified_upload';
-      $entry['publicationVerified']=false;$entry['noAutomaticReplay']=true;
-      $entry['sourceJobPreserved']=true;
-      $entry['providerHistoryReconciliationRequired']=!empty($oldJob['agent']['active']);
-      $c['history']=array_slice(array_merge($c['history']??[],[$entry]),-80);
-    }
-    $c['current']=null;
-    $c['slotReconciliation']='cancelled_previous_slot_archived';
-  }
- }
- // Reconcile only an unstarted slot. Never relabel existing media or an upload.
- if($c['current']&&empty($c['current']['jobId'])&&empty($c['current']['videoId'])&&
-    !nd_shorts_slot_allowed($p,(string)($c['current']['publishAt']??'')))$c['current']=null;
- if(!$c['enabled']||empty($s['config']['workerEnabled']))$c['state']='paused';
- elseif(empty($readiness['ready'])){$c['state']='connection_required';$c['reason']=implode(',',$readiness['missing']);}
- else{$c['state']=$local<$due?'waiting_schedule':'ready';$c['reason']='';}
- // One durable pending slot, not an empty media job created on every cron tick or day.
- if($c['enabled']&&!empty($s['config']['workerEnabled'])&&$local>=$due){
-  if(!$c['current'])$c['current']=['date'=>$target->format('Y-m-d'),'publishAt'=>$target->format(DATE_ATOM),'createdAt'=>gmdate('c',$now),'jobId'=>null,'videoId'=>null,'state'=>$c['state']];
-  elseif(empty($c['current']['videoId'])&&empty($c['current']['jobId'])){$c['current']['date']=$target->format('Y-m-d');$c['current']['publishAt']=$target->format(DATE_ATOM);$c['current']['state']=$c['state'];}
- }
- // No adapter exists yet: queued state or timestamps must never masquerade as production.
- $c['productionReady']=!empty($readiness['ready']);$c['schedulerOwner']='N80 Auto';$c['stateOwner']='N80 Engine';$c['conversationDependent']=false;
- $s['campaigns']['daily_shorts']=$c;
- $s['worker']['operations']['n80_daily_shorts_tick']=['state'=>$c['state'],'at'=>$c['lastTickAt'],'missing'=>$readiness['missing']??[]];
- if(($previous['state']??null)!==$c['state'])lab_event($s,'daily_shorts_'.$c['state'],'','n80_auto');
- return ['ok'=>true,'state'=>$c['state'],'campaign'=>nd_shorts_public($c),'processed'=>0,'uploads'=>0];
+ // Preserve the complete historical campaign; no new slot, lease or media operation.
+ return ['ok'=>true,'state'=>'retired','campaign'=>nd_shorts_public($s['campaigns']['daily_shorts']??[]),'processed'=>0,'uploads'=>0,'executionAllowed'=>false];
 }
