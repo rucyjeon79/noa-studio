@@ -8,6 +8,14 @@ function nb_url(string $url):bool {
 function nb_queue_expired(array $r,int $now):bool {
  return ($r['state']??'')==='queued'&&($r['requestedAt']??0)+180<=$now;
 }
+function nb_google_rejected(array $r):bool {
+ $p=parse_url((string)($r['url']??''));
+ return ($r['error']??'')==='google_browser_rejected'||(($p['host']??'')==='accounts.google.com'&&($p['path']??'')==='/v3/signin/rejected');
+}
+function nb_stop_rejected(array &$r):array {
+ $r['state']='failed';$r['error']='google_browser_rejected';unset($r['frame'],$r['input']);
+ return ['ok'=>true,'stop'=>true,'save'=>false,'state'=>'authorization_blocked'];
+}
 /** Reserve a bounded wake under the existing state lock; dispatch happens after unlock. */
 function nb_reserve_wake(array &$r,int $now):bool {
  if(($r['state']??'')!=='queued'||nb_queue_expired($r,$now)||($r['wakeAttempts']??0)>=3||($r['retryAt']??0)>$now)return false;
@@ -20,12 +28,16 @@ function nb_view(array $s,string $owner,int $now):array {
  if(($r['expiresAt']??0)<=$now&&!in_array($r['state']??'',['saved','closed','failed'],true))$out['state']='expired';
  if(($out['state']??'')==='active'&&($r['leaseUntil']??0)<=$now)$out['state']='connection_lost';
  if(nb_queue_expired($r,$now)){$out['state']='failed';$out['error']='browser_start_timeout';}
+ if(nb_google_rejected($r)){$out['state']='authorization_blocked';$out['error']='google_browser_rejected';}
  $out['retryAllowed']=($out['state']??'')==='queued'&&($r['wakeAttempts']??0)<3&&($r['retryAt']??0)<=$now;
  $out['phase']=(($out['state']??'')==='active'&&empty($r['frame']))?'starting':($out['state']??'disconnected');
  $out['inputReady']=($out['state']??'')==='active'&&!empty($r['frame'])&&empty($r['input']);
  $out['waitSeconds']=isset($r['requestedAt'])?max(0,$now-$r['requestedAt']):null;
  if(($out['state']??'')==='active'&&!empty($r['frame']))$out['frame']=lab_unseal($r['frame'])['image']??null;
  $out['profileStored']=!empty($s['browserProfile']);
+ $out['serverNow']=$now;
+ // A non-secret receipt lets a client reconcile a lost POST response without replaying input.
+ if(isset($r['inputReceipt']))$out['inputReceipt']=$r['inputReceipt']+['ack'=>(int)($r['ack']??0)];
  $out['productionReady']=false;
  return $out;
 }
@@ -46,9 +58,13 @@ function nb_admin(array &$s,array $b,string $owner,int $now):array {
  if(!$r||($r['owner']??'')!==$owner||($b['id']??'')!==$r['id'])throw new DomainException('browser_session_changed');
  if($command==='retry')return ['ok'=>true,'dispatchWake'=>nb_reserve_wake($r,$now)]+nb_view($s,$owner,$now);
  if($command==='close'){$r['state']='closed';unset($r['frame'],$r['input']);return ['ok'=>true,'state'=>'closed'];}
+ if(nb_google_rejected($r))throw new DomainException('google_browser_rejected');
  if($r['expiresAt']<=$now||$r['state']!=='active'||($r['leaseUntil']??0)<=$now)throw new DomainException('browser_not_connected');
  if(empty($r['frame']))throw new DomainException('browser_not_ready');
  if($command==='save'){$r['state']='closing';$r['input']=null;return ['ok'=>true,'state'=>'closing'];}
+ $requestId=$b['requestId']??null;
+ if($requestId!==null&&(!is_string($requestId)||!preg_match('/^[a-f0-9]{32}$/D',$requestId)))throw new InvalidArgumentException('browser_request_id');
+ if($command==='input'&&$requestId!==null&&($r['inputReceipt']['id']??null)===$requestId)return ['ok'=>true,'state'=>'input_accepted','replayed'=>true];
  if($command!=='input'||!empty($r['input'])||($b['frameSeq']??null)!==$r['frameSeq'])throw new DomainException('browser_frame_changed');
  $event=$b['event']??[];$kind=$event['kind']??'';
  if($kind==='click'){
@@ -68,17 +84,21 @@ function nb_admin(array &$s,array $b,string $owner,int $now):array {
   $event=['kind'=>$kind,'y'=>$event['y']];
  }else throw new InvalidArgumentException('browser_input');
  $r['nextInput']++;$r['input']=lab_seal(['seq'=>$r['nextInput'],'event'=>$event]);
+ if($requestId!==null)$r['inputReceipt']=['id'=>$requestId,'seq'=>$r['nextInput']];else unset($r['inputReceipt']);
  return ['ok'=>true,'state'=>'input_pending'];
 }
 function nb_worker(array &$s,array $b,int $now):array {
  $command=$b['command']??'';$r=&$s['browserControl'];
  if($command==='claim'){
+  // A delayed dispatch must never consume a newer administrator session.
+  if(!is_string($b['id']??null)||!preg_match('/^[a-f0-9]{32}$/D',$b['id'])||!$r||!hash_equals((string)($r['id']??''),$b['id']))return ['ok'=>true,'claimed'=>false,'state'=>'session_changed'];
   if(!$r||$r['state']!=='queued'||$r['expiresAt']<=$now||nb_queue_expired($r,$now))return ['ok'=>true,'claimed'=>false,'state'=>'idle'];
   $r['state']='active';$r['startedAt']=$now;$r['lease']=bin2hex(random_bytes(24));$r['leaseUntil']=$now+180;$r['expiresAt']=min($r['expiresAt'],$now+900);
   return ['ok'=>true,'claimed'=>true,'id'=>$r['id'],'lease'=>$r['lease'],'expiresAt'=>$r['expiresAt'],'profile'=>$s['browserProfile']??null];
  }
  if(!$r||($b['id']??'')!==$r['id']||!is_string($b['lease']??null)||!hash_equals($r['lease']??'',$b['lease']))throw new DomainException('browser_lease_changed');
  if($r['state']==='closed')return ['ok'=>true,'stop'=>true,'save'=>false];
+ if(nb_google_rejected($r))return nb_stop_rejected($r);
  if($r['expiresAt']+60<=$now||($r['leaseUntil']??0)<=$now)throw new DomainException('browser_lease_expired');
  if($command==='fail'){if(in_array($r['state'],['saved','failed'],true))return ['ok'=>true,'state'=>$r['state']];$r['state']='failed';$r['error']='browser_connection_failed';unset($r['frame'],$r['input']);return ['ok'=>true,'state'=>'failed'];}
  if($command==='finish'){
@@ -103,6 +123,7 @@ function nb_worker(array &$s,array $b,int $now):array {
   $digest=hash('sha256',$frame['url']."\n".$frame['image']);
   if(($r['frameDigest']??'')!==$digest){$r['frameSeq']++;$r['frameDigest']=$digest;}
   $r['url']=$frame['url'];$r['frame']=lab_seal(['image'=>$frame['image']]);
+  if(nb_google_rejected($r))return nb_stop_rejected($r);
   $r['firstFrameAt']??=$now;
   foreach(['gemini','flow'] as $provider)if(($frame[$provider.'Connected']??false)===true)$r[$provider.'Connected']=true;
  }

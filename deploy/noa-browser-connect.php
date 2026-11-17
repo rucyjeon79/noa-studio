@@ -16,7 +16,7 @@ try{
   lab_csrf();$b=lab_json_body(8192);if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
   $r=lab_lock(fn(&$s)=>nb_admin($s,$b,$owner,time()));
   $dispatch=!empty($r['dispatchWake']);unset($r['dispatchWake']);
-  if($dispatch){require_once __DIR__.'/noa-app/engine/worker-wake.php';$r['wake']=n80_ai_wake();}
+  if($dispatch){require_once __DIR__.'/noa-app/engine/github-runtime.php';$r['wake']=n80_github_browser_wake((string)$r['id']);}
   lab_json(200,$r);
  }
 }catch(DomainException $e){lab_json(409,['error'=>$e->getMessage()]);}catch(InvalidArgumentException $e){lab_json(400,['error'=>$e->getMessage()]);}catch(Throwable $e){lab_json(503,['error'=>'browser_connection_unavailable']);}
@@ -29,12 +29,13 @@ if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 <link rel="stylesheet" href="/noa-ai-lab.css">
 <link rel="stylesheet" href="/noa-browser-connect.css?v=<?=hash_file('sha256',__DIR__.'/noa-browser-connect.css')?>">
 <script src="/noa-brand.js" defer></script>
-<script src="/noa-ui.js" defer></script>
+<script src="/noa-ui.js?v=20261111-copy1" defer></script>
 <script src="/noa-browser-connect.js?v=<?=hash_file('sha256',__DIR__.'/noa-browser-connect.js')?>" defer></script>
 </head><body class="noa-page">
 <main class="lab-main" id="browser-app" data-csrf="<?=htmlspecialchars($csrf,ENT_QUOTES,'UTF-8')?>">
-<nav aria-label="상위 메뉴"><a class="browser-back" href="/noa-ai-lab.php?tool=settings">← AI·YouTube 연결</a></nav>
-<header class="lab-heading browser-heading"><div><p class="noa-eyebrow">AI LAB</p><h1>Gemini·Flow 연결</h1><p class="browser-intro">Google에 로그인한 뒤 두 서비스의 연결을 확인해 주세요.</p></div></header>
+<nav aria-label="상위 메뉴"><a class="browser-back" href="/noa-notebooklm.php#google-connections">← NotebookLM 통합관리</a></nav>
+<header class="lab-heading browser-heading"><div><p class="noa-eyebrow">NOTEBOOKLM · GOOGLE 연결</p><h1>Gemini·Flow 무인 실행 연결</h1><p class="browser-intro">N80의 무인 실행용 브라우저 상태입니다. ChatGPT 대화 중 사용하는 브라우저의 로그인과 별도로 관리합니다.</p></div></header>
+<p class="browser-note">대화 중 생성한 이미지·영상의 N80 전달 기록은 <a href="/noa-notebooklm.php#google-connections">Google 통합관리</a>에서 확인할 수 있습니다. 파일 전달 성공만으로 상시 무인 실행이 연결되지는 않습니다.</p>
 <section class="browser-connection" aria-label="Google 연결 화면">
 <div class="browser-state"><span class="browser-state-dot" aria-hidden="true"></span><p id="browser-status" role="status" aria-live="polite">연결 상태를 확인하고 있습니다.</p><button type="button" class="noa-button" id="browser-refresh" hidden>상태 다시 확인</button></div>
 <p id="browser-feedback" role="alert" hidden></p>
@@ -46,7 +47,7 @@ if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 <div id="browser-interaction" hidden>
 <div class="browser-keyboard-row"><button type="button" class="noa-button" id="browser-keyboard" disabled>키보드 열기</button><p>Google 화면에서 입력란을 선택한 뒤 키보드를 열어 주세요.</p></div>
 <p id="browser-input-status" role="status" hidden></p>
-<div class="browser-services" aria-label="서비스 확인"><button type="button" class="noa-button" data-target="gemini" disabled>Gemini 확인</button><button type="button" class="noa-button" data-target="flow" disabled>Flow 확인</button></div>
+<div class="browser-services" aria-label="서비스 화면 이동"><button type="button" class="noa-button" data-target="gemini" disabled>Gemini 화면</button><button type="button" class="noa-button" data-target="flow" disabled>Flow 화면</button></div>
 <form id="browser-type"><label for="browser-text">여기에 입력한 뒤 입력하기를 누르면 선택한 Google 입력란에 전달됩니다.</label><div class="browser-input-row"><input id="browser-text" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="send" aria-label="선택한 입력란에 넣을 내용" placeholder="이메일 또는 비밀번호 입력" maxlength="2048" disabled><button class="noa-button" type="submit" disabled>입력하기</button></div></form>
 <details class="browser-tools"><summary>키보드·스크롤 도구</summary><div class="browser-keys"><button type="button" class="noa-button" data-key="Tab" disabled>다음 입력란</button><button type="button" class="noa-button" data-key="Control+a" disabled>전체 선택</button><button type="button" class="noa-button" data-key="Backspace" disabled>지우기</button><button type="button" class="noa-button" data-key="Enter" disabled>Enter</button><button type="button" class="noa-button" data-scroll="-600" disabled>위로</button><button type="button" class="noa-button" data-scroll="600" disabled>아래로</button></div></details>
 </div>

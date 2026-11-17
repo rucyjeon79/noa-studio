@@ -1,0 +1,59 @@
+name: N80 bounded browser connection
+# One explicit administrator connection; no scheduler, host shell or production media.
+on:
+  workflow_dispatch:
+    inputs:
+      connection_id:
+        description: N80 administrator connection ID
+        required: true
+        type: string
+  push:
+    branches: [main]
+    paths: ['.github/workflows/n80-browser-connect.yml', 'scripts/n80_browser_relay.py', 'runtime/browser/relay.mjs', 'tests/engine/test_browser_relay.py', 'tests/browser-relay/control.php', 'bridge/browser-control.php', 'deploy/noa-app/engine/github-runtime.php']
+permissions:
+  contents: read
+concurrency:
+  group: n80-browser-${{ github.event_name }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: {persist-credentials: false}
+      - run: python3 -m pip install cryptography==46.0.3
+      - run: |
+          python3 -m unittest discover -s tests/engine -p test_browser_relay.py -v
+          php tests/browser-relay/control.php
+          php -l deploy/noa-app/engine/github-runtime.php
+          php -l deploy/noa-app/engine/auto-dispatch.php
+          php -l deploy/noa-browser-connect.php
+          node --check runtime/browser/relay.mjs
+  connect:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.repository == 'rucyjeon79/noa-studio'
+    needs: verify
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: {persist-credentials: false}
+      - name: Validate the exact requested connection
+        env:
+          N80_CONNECTION_ID: ${{ inputs.connection_id }}
+        run: |
+          python3 - <<'PY'
+          import os, sys
+          sys.path.insert(0, 'scripts')
+          from n80_browser_relay import bounded_connection_request
+          bounded_connection_request(os.environ['N80_CONNECTION_ID'], os.environ)
+          PY
+      - run: python3 -m pip install paramiko==3.5.1 cryptography==46.0.3
+      - name: Serve one N80 connection then terminate
+        env:
+          N80_CONNECTION_ID: ${{ inputs.connection_id }}
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+        run: timeout --signal=TERM --kill-after=10s 1000s python3 scripts/n80_browser_relay.py --connection-id "$N80_CONNECTION_ID"

@@ -246,14 +246,28 @@ def run_browser(directory, initial, exchange=None, store=None):
         process.stdout.close()
 
 
-def main(probe=False):
-    from n80_auto import plan
-    plan('ai.browser_probe' if probe else 'ai.browser_session', os.environ)
+def bounded_connection_request(connection_id, env):
+    if not isinstance(connection_id, str) or not re.fullmatch('[a-f0-9]{32}', connection_id):
+        raise RuntimeError('browser_connection_id_required')
+    if env.get('GITHUB_REPOSITORY') != 'rucyjeon79/noa-studio' or env.get('GITHUB_EVENT_NAME') != 'workflow_dispatch' or env.get('GITHUB_WORKFLOW_REF') != 'rucyjeon79/noa-studio/.github/workflows/n80-browser-connect.yml@refs/heads/main':
+        raise RuntimeError('browser_workflow_owner_mismatch')
+    return {'command': 'claim', 'id': connection_id}
+
+
+def main(probe=False, connection_id=None):
+    if connection_id is not None:
+        if probe:
+            raise RuntimeError('browser_mode_conflict')
+        claim = bounded_connection_request(connection_id, os.environ)
+    else:
+        from n80_auto import plan
+        plan('ai.browser_probe' if probe else 'ai.browser_session', os.environ)
+        claim = {'command': 'claim'}
     from noa_n80_ai_worker import worker_key, signed_tick
     key = worker_key()
     session = None
     if not probe:
-        session = signed_tick(key, 'n80_browser_tick', b'{"command":"claim"}')
+        session = signed_tick(key, 'n80_browser_tick', json.dumps(claim, separators=(',', ':')).encode())
         if not session.get('claimed'):
             print('N80_BROWSER_IDLE')
             return
@@ -314,4 +328,9 @@ def main(probe=False):
 
 
 if __name__ == '__main__':
-    main('--probe' in sys.argv)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--probe', action='store_true')
+    parser.add_argument('--connection-id')
+    args = parser.parse_args()
+    main(args.probe, args.connection_id)

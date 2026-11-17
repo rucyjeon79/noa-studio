@@ -63,14 +63,13 @@ class BrowserRelay(unittest.TestCase):
         self.assertEqual(relay.connection_summary(state,301)['state'],'expired')
         state['browserControl'].update(state='queued',requestedAt=100,expiresAt=1300)
         self.assertEqual(relay.connection_summary(state,280)['state'],'start_timeout')
-    def test_browser_is_served_before_unrelated_media_setup(self):
-        workflow=(ROOT/'.github/workflows/noa-ai-worker.yml').read_text().split('  process:',1)[1]
-        transport=workflow.index('name: Prepare the N80 browser transport')
-        browser=workflow.index('name: Serve one administrator-requested browser connection through N80')
-        media=workflow.index('name: Install local media processor')
-        schedule=workflow.index('name: Persist and check the N80 daily Shorts schedule')
-        self.assertLess(transport,browser);self.assertLess(browser,media);self.assertLess(browser,schedule)
-        self.assertEqual(workflow.count('scripts/n80_auto.py ai.browser_session'),1)
+    def test_explicit_connection_is_fenced_to_its_workflow(self):
+        env = {'GITHUB_REPOSITORY':'rucyjeon79/noa-studio','GITHUB_EVENT_NAME':'workflow_dispatch','GITHUB_WORKFLOW_REF':'rucyjeon79/noa-studio/.github/workflows/n80-browser-connect.yml@refs/heads/main'}
+        self.assertEqual(relay.bounded_connection_request('a'*32, env), {'command':'claim','id':'a'*32})
+        for value in ['', 'a'*31, 'a'*33, 'a'*32+'\n', '$(echo injection)', None]:
+            with self.assertRaises(RuntimeError): relay.bounded_connection_request(value, env)
+        for key in env:
+            with self.assertRaises(RuntimeError): relay.bounded_connection_request('a'*32, {**env,key:'other'})
     def test_private_read_rejects_symlinks_and_public_permissions(self):
         class Sftp:
             def lstat(self, p): return Path(p).lstat()

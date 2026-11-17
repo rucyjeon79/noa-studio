@@ -9,8 +9,10 @@ try{
  check(nb_admin($s,['command'=>'open'],'owner',101)['id']===$id,'duplicate_session');
  refuses(function()use(&$s){nb_admin($s,['command'=>'open'],'other',101);},'browser_in_use');
  check(nb_view($s,'other',101)===['state'=>'disconnected'],'owner_leak');
- $claim=nb_worker($s,['command'=>'claim'],101);$auth=['id'=>$id,'lease'=>$claim['lease']];
- check(!nb_worker($s,['command'=>'claim'],102)['claimed'],'double_claim');
+ check(!nb_worker($s,['command'=>'claim'],101)['claimed'],'missing_id_claim');
+ check(!nb_worker($s,['command'=>'claim','id'=>str_repeat('0',32)],101)['claimed'],'wrong_id_claim');
+ $claim=nb_worker($s,['command'=>'claim','id'=>$id],101);$auth=['id'=>$id,'lease'=>$claim['lease']];
+ check(!nb_worker($s,['command'=>'claim','id'=>$id],102)['claimed'],'double_claim');
  $starting=nb_view($s,'owner',102);check($starting['state']==='active'&&$starting['phase']==='starting'&&!$starting['inputReady']&&!isset($starting['frame']),'blank_browser_marked_ready');
  check($starting['waitSeconds']===2,'startup_elapsed_time');
  refuses(function()use(&$s,$id){nb_admin($s,['command'=>'save','id'=>$id],'owner',102);},'browser_not_ready');
@@ -38,7 +40,7 @@ try{
  $finish=nb_worker($s,$auth+['command'=>'finish','profile'=>$profile],112);check($finish['state']==='saved'&&!$finish['productionReady'],'profile_finish');
  check(!isset($s['browserControl']['frame'])&&!isset($s['browserControl']['input']),'ephemeral_frame_retained');
  nb_worker($s,$auth+['command'=>'fail'],113);check($s['browserControl']['state']==='saved','late_failure_replaced_success');
- $s2=lab_defaults();nb_admin($s2,['command'=>'open'],'owner',100);$c=nb_worker($s2,['command'=>'claim'],101);
+ $s2=lab_defaults();nb_admin($s2,['command'=>'open'],'owner',100);$c=nb_worker($s2,['command'=>'claim','id'=>$s2['browserControl']['id']],101);
  check(nb_view($s2,'owner',282)['state']==='connection_lost','dead_worker_hidden');
  refuses(function()use(&$s2,$c){nb_worker($s2,['command'=>'exchange','ack'=>0,'id'=>$c['id'],'lease'=>$c['lease']],282);},'browser_lease_expired');
  nb_admin($s2,['command'=>'close','id'=>$c['id']],'owner',283);$stop=nb_worker($s2,['command'=>'exchange','ack'=>0,'id'=>$c['id'],'lease'=>$c['lease']],284);check($stop['stop']&&!$stop['save'],'cancel_saved_profile');
@@ -54,10 +56,15 @@ try{
  check(nb_admin($q,$retry,'owner',220)['dispatchWake'],'last_retry_missing');
  check(!nb_admin($q,$retry,'owner',279)['dispatchWake'],'retry_limit');
  $timeout=nb_view($q,'owner',280);check($timeout['state']==='failed'&&$timeout['error']==='browser_start_timeout'&&!$timeout['retryAllowed'],'queue_timeout');
- check(!nb_worker($q,['command'=>'claim'],280)['claimed'],'stale_claim');
+ check(!nb_worker($q,['command'=>'claim','id'=>$qid],280)['claimed'],'stale_claim');
  $next=nb_admin($q,['command'=>'open'],'owner',281);check($next['id']!==$qid&&$next['dispatchWake'],'reopen_stale_queue');
  refuses(function()use(&$q,$retry){nb_admin($q,$retry,'owner',282);},'browser_session_changed');
- $live=nb_worker($q,['command'=>'claim'],282);check(!nb_admin($q,['command'=>'retry','id'=>$next['id']],'owner',283)['dispatchWake'],'active_retry');
+ check(!nb_worker($q,['command'=>'claim','id'=>$qid],282)['claimed'],'old_dispatch_consumed_new_connection');
+ $live=nb_worker($q,['command'=>'claim','id'=>$next['id']],282);check(!nb_admin($q,['command'=>'retry','id'=>$next['id']],'owner',283)['dispatchWake'],'active_retry');
  check($live['expiresAt']===1182,'queue_timeout_shortened_live_session');
+ $blocked=lab_defaults();$bo=nb_admin($blocked,['command'=>'open'],'owner',100);$bc=nb_worker($blocked,['command'=>'claim','id'=>$bo['id']],101);
+ $rejected=nb_worker($blocked,['command'=>'exchange','id'=>$bc['id'],'lease'=>$bc['lease'],'ack'=>0,'frame'=>['url'=>'https://accounts.google.com/v3/signin/rejected','image'=>'data:image/jpeg;base64,ZmFrZQ==']],102);
+ check($rejected['stop']&&!$rejected['save']&&nb_view($blocked,'owner',103)['state']==='authorization_blocked','google_rejection_ignored');
+ check(!isset($blocked['browserControl']['frame']),'rejected_frame_retained');
  echo "N80_BROWSER_CONTROL_OK ownership lease encryption replay expiry profile-checksum\n";
 }finally{foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::CHILD_FIRST) as $f){$f->isDir()?rmdir($f->getPathname()):unlink($f->getPathname());}rmdir($root);}

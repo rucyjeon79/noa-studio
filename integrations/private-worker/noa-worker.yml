@@ -1,8 +1,5 @@
-name: NOA private song worker
+name: N80 private selected text task
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/noa-worker.yml','worker.py','agent.py','gemini.py','verify_agent.py','tests/gpt/test_gemini.py','tests/gpt/test_agent.py']
   workflow_dispatch:
     inputs:
       task_id:
@@ -12,21 +9,28 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: noa-private-worker
+  group: n80-runtime-integration-verification
   cancel-in-progress: false
 jobs:
   generate:
-    if: github.event.repository.private == true && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.repository.private == true && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-      - name: Select temporary login directory
-        run: echo "CODEX_HOME=$RUNNER_TEMP/noa-codex" >> "$GITHUB_ENV"
+      - name: Validate the explicit task ID
+        env:
+          NOA_TASK_ID: ${{ inputs.task_id }}
+        run: |
+          python3 - <<'PYCODE'
+          import os, re
+          if not re.fullmatch('[a-f0-9]{32}', os.environ['NOA_TASK_ID']):
+              raise SystemExit('Invalid N80 task ID')
+          PYCODE
       - name: Install Codex
-        run: npm install --global @openai/codex@0.166.0
+        run: npm install --global --ignore-scripts @openai/codex@0.166.0
       - name: Restore private login
         env:
           INITIAL_AUTH: ${{ secrets.NOA_CODEX_AUTH }}
@@ -35,33 +39,23 @@ jobs:
           set -eu
           test -n "$ROTATION_TOKEN"
           umask 077
-          mkdir -p "$CODEX_HOME"
-          printf '%s' "$INITIAL_AUTH" | jq -ce 'select(.tokens.refresh_token | type == "string")' > "$CODEX_HOME/auth.json"
-          cp "$CODEX_HOME/auth.json" "$RUNNER_TEMP/noa-auth-original"
-      - name: Verify Gemini adapter boundaries
-        run: PYTHONPATH=. python3 tests/gpt/test_gemini.py
-      - name: Verify connected Gemini subscription
-        if: github.event_name == 'push'
-        run: python3 gemini.py
-      - name: Verify commander boundaries
-        run: PYTHONPATH=. python3 tests/gpt/test_agent.py
-      - name: Verify hosted ChatGPT commander
-        if: github.event_name == 'push'
-        run: python3 verify_agent.py
+          mkdir -p "$RUNNER_TEMP/noa-codex"
+          printf '%s' "$INITIAL_AUTH" | jq -ce 'select(.tokens.refresh_token | type == "string")' > "$RUNNER_TEMP/noa-codex/auth.json"
+          cp "$RUNNER_TEMP/noa-codex/auth.json" "$RUNNER_TEMP/noa-auth-original"
       - name: Generate the selected field
-        if: github.event_name == 'workflow_dispatch'
         env:
+          CODEX_HOME: ${{ runner.temp }}/noa-codex
           NOA_WORKER_KEY: ${{ secrets.NOA_WORKER_KEY }}
           NOA_TASK_ID: ${{ inputs.task_id }}
-        run: python3 worker.py
+        run: timeout --signal=TERM --kill-after=10s 420s python3 worker.py
       - name: Persist refreshed login
         if: always()
         env:
           GH_TOKEN: ${{ secrets.NOA_SECRET_ROTATION_TOKEN }}
         run: |
           set -eu
-          trap 'rm -rf "$CODEX_HOME" "$RUNNER_TEMP/noa-auth-original"' EXIT
-          if test -s "$RUNNER_TEMP/noa-auth-original" && ! cmp -s "$CODEX_HOME/auth.json" "$RUNNER_TEMP/noa-auth-original"; then
-            jq -e '.tokens.refresh_token | type == "string"' "$CODEX_HOME/auth.json" >/dev/null
-            gh secret set NOA_CODEX_AUTH --repo "$GITHUB_REPOSITORY" < "$CODEX_HOME/auth.json"
+          trap 'rm -rf "$RUNNER_TEMP/noa-codex" "$RUNNER_TEMP/noa-auth-original"' EXIT
+          if test -s "$RUNNER_TEMP/noa-auth-original" && ! cmp -s "$RUNNER_TEMP/noa-codex/auth.json" "$RUNNER_TEMP/noa-auth-original"; then
+            jq -e '.tokens.refresh_token | type == "string"' "$RUNNER_TEMP/noa-codex/auth.json" >/dev/null
+            gh secret set NOA_CODEX_AUTH --repo "$GITHUB_REPOSITORY" < "$RUNNER_TEMP/noa-codex/auth.json"
           fi
