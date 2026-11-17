@@ -1,6 +1,17 @@
 # 이 노래가 좋아 — N80 automatic Shorts production
 
-The user authorized selecting a song, producing a 9:16 Short lasting 49–59 seconds, publishing one every Monday, Wednesday and Friday at 12:00 Asia/Seoul (updated 2026-11-09) to the existing playlist, and connecting its exact original video. `config/n80-daily-shorts.json` defines the verified channel, playlist and exclusions. The schedule is owned by N80 Auto, called inside the registered ai.daily_shorts operation in the existing worker by the existing 15-minute GitHub Actions runner. It is persisted in lab:state.json:campaigns.daily_shorts, independent of a conversation. No ChatGPT automation is enabled for this campaign.
+## Current execution authority — 2026-11-17
+
+The current owner instruction is **GitHub scheduled signal → bounded N80 work
+on the host → saved result/state → exit**. N80 must not run continuously; no
+idle heartbeat or polling runner may be restored. GitHub does not perform
+production work. The older GitHub worker/artifact arrangements documented below
+are historical and do not authorize execution. Current hosting permissions,
+provider authentication and real production adapters remain independently
+verified gates. See `AGENTS.project.md` and
+`docs/operations/n80-unattended-execution-20261117.md` for the latest boundary.
+
+The user authorized selecting a song, producing a 9:16 Short lasting 49–59 seconds, publishing one every Monday, Wednesday and Friday at 12:00 Asia/Seoul (updated 2026-11-09) to the existing playlist, and connecting its exact original video. The live N80 policy defines the channel, playlist, exclusions and storage destination; older repository configuration must not overwrite a newer host policy. N80 Auto owns the schedule in `lab:state.json:campaigns.daily_shorts`, independent of a conversation. The former 15-minute GitHub business runner is retired; only the signed scheduled wake is an authorized target. No ChatGPT automation is enabled for this campaign.
 
 ## GitHub execution and storage (2026-11-09)
 

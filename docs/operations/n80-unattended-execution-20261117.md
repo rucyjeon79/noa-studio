@@ -1,4 +1,26 @@
-# N80 unattended Shorts execution — deployment boundary
+# N80 unattended Shorts execution — scheduled one-shot ownership
+
+## Owner clarification, 2026-11-17
+
+The owner reaffirmed: **N80 must not run continuously because hosting sanctions
+must not recur. GitHub wakes N80 at the scheduled time; N80 processes the
+scheduled work.** The previously proposed separate production execution
+environment was not accepted and is withdrawn as the continuation plan.
+
+The authorized lifecycle is one signed scheduled signal, N80 admission and
+duplicate checks, bounded execution of the existing task, durable result/state
+storage, then exit. There is no idle daemon, heartbeat loop, second queue or
+GitHub business execution. At timeout or quota exhaustion preserve the task and
+exit; a later approved wake must reconcile the original result before resuming.
+Do not retry an unconfirmed provider operation just because a wake reappears.
+
+This is the owner execution contract, not proof that hosting permits a specific
+workload or that browser generation works. The next implementation target is
+the missing bounded N80 production adapter on this route. The currently installed
+route dispatches only a schedule/readiness check; its publication phase has no
+verified handler. Historical browser and Google authorization failures below
+remain separate implementation blockers. No production activation was performed
+as part of this instruction correction.
 
 ## Verified current state
 
@@ -42,28 +64,22 @@ its environment and actual unattended execution are unverified. Do not use it
 as a duplicate scheduler or call its registration a production fix. No other
 automations were changed.
 
-## Scoped execution-environment proposal
+## Continuation under the confirmed contract
 
-To preserve the current hosting site and GitHub signal-only policy, the remaining
-candidate is one N80-controlled execution environment with supported browser
-sandbox/procfs facilities. This is a proposed change of execution location, not
-an installed service or an approval to purchase one.
-
-- Existing N80 retains schedule, source versions, task IDs, fenced leases,
-  retries, cancellation, provider receipts and publication decisions.
-- The execution environment accepts only an authenticated, fixed N80 task;
-  one task runs at a time with bounded duration. It does not add a queue,
-  independent scheduler or unrestricted remote-command interface.
-- Existing subscriptions remain preferred. Credentials are connected explicitly
-  in the intended environment; no ChatGPT browser profiles/cookies are exported.
-- Google authentication and actual Gemini/Flow generation must pass there.
-  Changing the machine alone does not prove that Google will accept it.
-- After environment authorization, first verify browser startup and provider
-  login, then one leased scene with actual file readback, then a complete Short
-  with audio/subtitle review, upload and native related-video verification.
-- Keep the signed production schedule inactive until those receipts support it.
+- Keep existing N80 ownership of schedules, source versions, task IDs, fenced
+  leases, cancellation, provider receipts and publication decisions.
+- Preserve the retired resident, existing queue and source media. Do not
+  reactivate the paused conversation automation or the old GitHub browser relay.
+- Verify the host's actual bounded execution and each required provider call;
+  do not replace an OS/authentication failure with a successful readiness flag.
+- Existing subscriptions remain preferred. No profile/cookie export, browser
+  sandbox relaxation or paid API switch is authorized by this clarification.
+- Validate the real lifecycle through an existing task and saved file receipts,
+  then assembly, audio/subtitle review, upload and native related-video checks.
+- Record policy adoption, code deployment, signed admission, actual production
+  and process/resource acceptance as separate facts.
 
 No new server, subscription, paid API, provider session, source deployment,
 media-generation request or public video was created during this investigation.
-The remaining decision is permission for the new execution location; provider,
-cost, credential grants and any purchase need concrete review before commitment.
+The continuation is the confirmed N80 scheduled one-shot route. There is no
+pending request for a separate always-on execution environment.
