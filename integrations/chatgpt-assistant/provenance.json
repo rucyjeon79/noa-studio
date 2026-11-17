@@ -3,12 +3,15 @@
   "module": "ai_lab",
   "role": "authenticated_transport_to_existing_host",
   "siteProjectId": "appgprj_6ae5867f20cc81919ebf2b62dfcc6103",
-  "siteVersion": 8,
-  "sourceCommit": "03717d6c2d6a5afd2cadf62228fd4b8b12235c00",
+  "sourceCommit": "50375f9928ff7109ad08c278a4df6ea94593cafa",
   "sourcePath": "worker/index.js",
-  "sourceSha256": "a40511acab4afb84343a02a1de1891ee2aa43e7c570f805d5a84260ab73c089a",
+  "sourceSha256": "dbe11023436deccc7212c03d4eb5ea676e06dccaecccad41c503d47a2ffdc582",
   "upstream": "https://noastudio.ai.kr/noa-gpt.php",
   "scheduler": false,
   "separateJobStore": false,
-  "hostExecutionReady": false
+  "hostExecutionReady": false,
+  "siteDeploymentId": "appgdep_6afc3c1dd5088191bae00da8e95d80dd",
+  "mode": "manual_chatgpt_production",
+  "scheduledProductionRetired": true,
+  "siteVersionId": "appgprj_6ae5867f20cc81919ebf2b62dfcc6103~appgver_81d193b815208191b2edcc8f43cf5979"
 }
