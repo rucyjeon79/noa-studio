@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'deploy/noa-home.js'
+      - 'deploy/noa-ui.css'
       - 'deploy/noa-app/home.php'
       - 'deploy/noa-app/home-card-polish.css'
       - 'tests/home/metadata_test.cjs'
@@ -12,6 +13,7 @@ on:
   pull_request:
     paths:
       - 'deploy/noa-home.js'
+      - 'deploy/noa-ui.css'
       - 'deploy/noa-app/home.php'
       - 'deploy/noa-app/home-card-polish.css'
       - 'tests/home/metadata_test.cjs'
