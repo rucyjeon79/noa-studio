@@ -13,6 +13,8 @@ on:
       - 'tests/n80/scheduled_wake_contract_test.php'
       - 'tests/n80/scheduled_wake_ticket_test.php'
       - 'deploy/noa-app/engine/wake-ticket-audit.php'
+      - 'deploy/noa-app/engine/one-shot-host-canary.php'
+      - 'tests/n80/one_shot_host_canary_test.php'
       - 'tests/n80/wake_ticket_audit_test.php'
       - 'tests/n80/signed_wake_hmac_test.php'
       - 'tests/n80/test_signed_wake_http_boundary.py'
@@ -42,6 +44,8 @@ on:
       - 'tests/n80/scheduled_wake_contract_test.php'
       - 'tests/n80/scheduled_wake_ticket_test.php'
       - 'deploy/noa-app/engine/wake-ticket-audit.php'
+      - 'deploy/noa-app/engine/one-shot-host-canary.php'
+      - 'tests/n80/one_shot_host_canary_test.php'
       - 'tests/n80/wake_ticket_audit_test.php'
       - 'tests/n80/signed_wake_hmac_test.php'
       - 'tests/n80/test_signed_wake_http_boundary.py'
@@ -91,6 +95,8 @@ jobs:
           python3 -m py_compile tests/n80/test_signed_wake_http_boundary.py
           php -l deploy/noa-app/engine/wake-preflight.php
           php -l deploy/noa-app/engine/wake-ticket-audit.php
+          php -l deploy/noa-app/engine/one-shot-host-canary.php
+          php -l tests/n80/one_shot_host_canary_test.php
           php -l tests/n80/wake_ticket_audit_test.php
           php -l deploy/noa-app/engine/hub-retirement-status.php
           php -l deploy/noa-app/engine/system-status.php
@@ -112,6 +118,7 @@ jobs:
           php tests/n80/signed_wake_hmac_test.php
           php tests/n80/wake_preflight_test.php
           php tests/n80/wake_ticket_audit_test.php
+          php tests/n80/one_shot_host_canary_test.php
           python3 -m unittest discover -s tests/n80 -p 'test_wake_admin_dashboard.py' -v
           python3 -m unittest discover -s tests/n80 -p 'test_n80_signed_wake_signal.py' -v
           python3 -m unittest discover -s tests/n80 -p 'test_signed_wake_http_boundary.py' -v
