@@ -2,6 +2,15 @@
   "items": [
     {
       "topic": 2,
+      "date": "2026-11-20",
+      "title": "SK브로드밴드, 부산~싱가포르 해저케이블에 양자보안 시험망 구축",
+      "publisher": "양자신문",
+      "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTE5DbzdBb1NBUW54UmNGSUNiX3BmZ0ZCVXJjV1lPaGoxelVwLWhBM0x3WWlfbWMtemZKOURIZ1NIT0g0TTk1dlVBSTVUamtFZjF5c2RiRzJoNU5DbzNUQkl2WV9mMG5JT2FQMDYya2FqMA?oc=5",
+      "published_at": "2026-11-20T08:10:00+09:00",
+      "publisher_host": "www.quantumtimes.net"
+    },
+    {
+      "topic": 2,
       "date": "2026-11-19",
       "title": "SKT, AIDC 사업 분할에…SKB 노조 “매각대금 재투자해야”",
       "publisher": "서울경제TV",
@@ -64,84 +73,103 @@
       "publisher_host": "www.m-i.kr"
     },
     {
-      "topic": 2,
-      "date": "2026-11-19",
-      "title": "SK브로드밴드, 국제 '양자보안 실증' 가속",
-      "publisher": "파이낸셜포스트",
-      "url": "https://news.google.com/rss/articles/CBMidEFVX3lxTE0wZ1Q2QzhrRXJhLTZGY3lqQW9NdlhLNXFHckhValNYemx3VUxOeU5PMjJ3OWNRMnlRTWFBdklBRVpWeGVxRnlyZk84Vnh1TEhETnF3WEpoQTUzTVBSeUpwd0lBcGNMX1dBWGdOY2VkTnFyaWsx?oc=5",
-      "published_at": "2026-11-19T13:08:27+09:00",
-      "publisher_host": "www.financialpost.co.kr"
+      "topic": 3,
+      "date": "2026-11-20",
+      "title": "[포토뉴스] SK텔레콤, T 팩토리 성수에서 ‘화이트 보물트리’ 선보인다",
+      "publisher": "CNB뉴스",
+      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE9HRlRKNy1RcVc3dXhfeGd1Rk5CTnBpbFRVck5Sb2JCNFhnbHgzMXBRX19BZzhwdVpWYWRTR2o2cy16ZlMwaTItc1dvQUNCUFVDWFF1UkttVXdZY3M2QU1nVHV4ZmN1c09KcWEw?oc=5",
+      "published_at": "2026-11-20T17:07:55+09:00",
+      "publisher_host": "www.cnbnews.com"
     },
     {
       "topic": 3,
       "date": "2026-11-20",
-      "title": "[리포트 브리핑]SK텔레콤, 'SK텔레콤, 앤트로픽 상장으로 지분가치 반영 필요' Not Rated - 유안타증권",
-      "publisher": "뉴스핌",
-      "url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE1XREVJVlR4SVVSd3I4UlJfaWJJaHVCNEM5N09Gb0VsWFJXTUQ2c0owbmRhZTR2c0daU3FuS1JSLXdDc0NrNWQ4RmxpcWsyajlxRnA4aHZocXVLSHJm?oc=5",
-      "published_at": "2026-11-20T10:30:00+09:00",
-      "publisher_host": "www.newspim.com"
+      "title": "앤트로픽 상장 '5조 잭팟'에도…SK텔레콤 주가 12% 급락",
+      "publisher": "아이뉴스24",
+      "url": "https://news.google.com/rss/articles/CBMiS0FVX3lxTE54R2Y5TFA0LU1ORlA1S0V3OG1MMkVJVG13TEZGcDZyUDZxNTFsdmRJS2pXMFBaSVk5X0hWVndmMjF2UlJmTEZ0Vm1raw?oc=5",
+      "published_at": "2026-11-20T16:42:22+09:00",
+      "publisher_host": "www.inews24.com"
     },
     {
       "topic": 3,
       "date": "2026-11-20",
-      "title": "[특징주] SK텔레콤, 앤스로픽 상장 후 차익실현 매물에 9%대 '급락'",
-      "publisher": "글로벌이코노믹",
-      "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxQSFBLT2w5RUpHSUdtcFhQdERmNGRKa1RtM2lkSy1NOU5ZdmVIUG4wbko3cGU0RmJ1aHB0Z18xMU1mdmcyUnZHUVZvVEJxR3pWTFd1Y09qTjlfdTVyUktoclJyN3ZxTTN1Qk91ZVhTUXJ3dkFwM2ZMaDFyNEE3TlJYTTZQbW5yLUhI?oc=5",
-      "published_at": "2026-11-20T10:19:15+09:00",
-      "publisher_host": "www.g-enews.com"
-    },
-    {
-      "topic": 3,
-      "date": "2026-11-20",
-      "title": "SK텔레콤, 앤트로픽 지분가치 5조원 평가…저평가 매력 부각-유안타 By 인포스탁데일리",
+      "title": "[특징주] SK텔레콤, 앤트로픽 나스닥 입성에도 11%대 약세 By EBN",
       "publisher": "Investing.com 한국어",
-      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTFAxY3pnWTl6S1g2QWdBZWdjUy1kVWhqSnZmOFFHNGhWRzFENkpJdERTLUNLOFlPdnhsOGJJaThxZ3l0QlpSaVAxVHozWWlrcWt0YVd2QnZ5cjhJbVRjRmZ0ZkJuNVpZS0VxMjZFOG95dEQ?oc=5",
-      "published_at": "2026-11-20T10:18:00+09:00",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTFBtanVMZk1HXzBfUnkwSUkxS2h2SnRTR09zYkRkeFlCdTFrZ2Q1V1lOOFVac2dqUjBKRUZiT25PUzFTU2IxNU1oUGo5N1ZoajlWN3FVbHNDZzhQbzBfaWFnb2hRV2lPZU1CWTN5NnB4cFE?oc=5",
+      "published_at": "2026-11-20T14:47:00+09:00",
       "publisher_host": "kr.investing.com"
     },
     {
       "topic": 3,
       "date": "2026-11-20",
-      "title": "앤트로픽 지분가치 5조원 평가에도…SK텔레콤 8% 급락[핫종목]",
-      "publisher": "뉴스1",
-      "url": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE90WjhRYWFUWmlfOHFMa2V0X1U3WUJTZmc2dFBQdGY2ZFdxU0JVM0hFUS1SeVVWWkhicHM3R05wVm5YaXExZ1lkbzFuenVNWWZKUFhsZUNIS0lCMkpVdFdn?oc=5",
-      "published_at": "2026-11-20T09:37:04+09:00",
-      "publisher_host": "www.news1.kr"
+      "title": "SK텔레콤, T 팩토리 성수서 AI로 '올해의 나' 돌아보는 연말 전시",
+      "publisher": "스트레이트뉴스",
+      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE0yME5vOTM1NTJVbmIxSHZ4dDc1Z1hEeXVGcURNX2hhWmluVkFaT3JVcklHV0hEbGs1RlB2WXhXLWREa2xUZ2ZFX3BJQkZqenBkOWx5RHpiRm9HVFFPLS16aVFDdDZtTnJ6OGFRczFuN2VJSDQ?oc=5",
+      "published_at": "2026-11-20T14:40:45+09:00",
+      "publisher_host": "www.straightnews.co.kr"
     },
     {
       "topic": 3,
       "date": "2026-11-20",
-      "title": "[특징주] 앤트로픽 상장 기대감 식었나…SK텔레콤 장 초반 8%대 하락",
-      "publisher": "Chosunbiz",
-      "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxQRGdfNGkxR2p5VFhmRlFDM0pTR3k5czZGTEwxTkNRYks0dUk4RGZPb085RmZOQzRPZFhRLVdmSWJTaGlwTlBsMXV4MFFIbmIyV2FEWGhxdWJxMVZ4dl95cEFnXy1CTDF2Q0pKMHdkaFRqNlJqN0Y5Z1FUYTYzVXFxb21jNmVRanZp?oc=5",
-      "published_at": "2026-11-20T09:33:00+09:00",
-      "publisher_host": "biz.chosun.com"
+      "title": "SK텔레콤, AI로 한 해의 기억 결산…성수서 참여형 유물 트리 선봬",
+      "publisher": "https://www.moneystorm.kr/",
+      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE4xT2U4eFBuck94S1U2TkdvMzRRQ3doeUVlMzREbk9CVWZkRExwMWpvMXdDaGNndVhhV2RXVlNVdGc2S2tyTFk3ZWdOMzQ2SmtZZUFpRmVNb1hZZGZZUVhkOExveUJ3aFk4dmc?oc=5",
+      "published_at": "2026-11-20T14:13:51+09:00",
+      "publisher_host": "www.moneystorm.kr"
     },
     {
       "topic": 3,
       "date": "2026-11-20",
-      "title": "AI가 정리해주는 ‘올해의 나’… SKT, T 팩토리 성수에서 연말 전시",
-      "publisher": "SK텔레콤 뉴스룸",
-      "url": "https://news.sktelecom.com/233259",
-      "published_at": "2026-11-20T09:02:31+09:00"
+      "title": "SK텔레콤, 앤트로픽 지분 5조 원 됐지만∙∙∙팔아도 순이익엔 안 잡힌다",
+      "publisher": "한국M&A경제신문",
+      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE9nYlM4a3JQZmgwcUN1NTVvSElvMEU0SFQ5VWFrVzVIOHlMY3VMeXU5QmlpcWdnTnJkazJtd0hsWDY5M01uajFTNWxFWk1KR3RKcFJKMmswR3N1bk81NjJ1ZTkzUkdVMFM1VHc?oc=5",
+      "published_at": "2026-11-20T14:00:05+09:00",
+      "publisher_host": "www.kmnanews.com"
     },
     {
       "topic": 3,
       "date": "2026-11-20",
-      "title": "\"SK텔레콤, 앤트로픽 보유 지분가치 5조 추정\"-유안타 - 머니투데이",
-      "publisher": "머니투데이",
-      "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE9XejVucUZZNVhfYjNBYUotQS1oazk0ajEwZE9LZGtreWxWNW45WWRJWVoyVVJ3eUFGOGJsYUxsVXZ4bUptaEEyQXNiWWZYUzJiMm5ZcmRjYkJhZlNzUHFteUVpbmdsU3ZXSHNxT1hoWE16VjV4ZmfSAXtBVV95cUxOVVQ0dzFQMEV4TlBvcy1OZlJ2WkVaVkFBOUFkczdRbWNkb0JPeTg1b2ZSdy0yYmtDM0wxVjF1UWxkMXJXZlNRY1d5a1JKQnR4T1JKUV90M2ZZVHNqLVJ6SHRoQ3ZlNWg0WU1UcngyZ0N0NGRpT3h0TE85SG8?oc=5",
-      "published_at": "2026-11-20T08:57:38+09:00",
-      "publisher_host": "www.mt.co.kr"
+      "title": "SK텔레콤, T 팩토리 성수서 ‘AI 기억 결산’·국중박 유물 전시",
+      "publisher": "라이센스뉴스",
+      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE9VN040aHNDQms1R0kwazkxYjNqdzJMeHZNRHAyeW1xcjJpZkJKcExvRkVtcEIxZTRoQUVJRjlGSDhxdmYyUmJtYXh0Z29iaW8tWGRsb3k2ZmNOWEhCUnVpNEMxVEFsc2doSkhR?oc=5",
+      "published_at": "2026-11-20T12:43:27+09:00",
+      "publisher_host": "www.lcnews.co.kr"
     },
     {
       "topic": 3,
       "date": "2026-11-20",
-      "title": "SK텔레콤, 민관 협력 'K-보물길 프로젝트' 첫 연말 전시 개최",
-      "publisher": "뉴스드림",
-      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE5rUVJ2T0JwbnJTRGUxVHI5UVZrNW04QlZMWVY2T0RPWHRNcUFKQUhYTDV2X3FJUWRma0FDN25CSjVLanpQMllPQ3Z1R3U2cFczaDlWYnJQMEpmS0tqd1YwXzBEdDVTMnM5Ulhn0gFuQVVfeXFMUGJON0IzNWF1cFB0NmMyRDh6QXhhYXAzVGtsbk1hNGxESWNfNjJoTkNfdmtUd3dSd0N5TUcyNlZpZGlkY0dwRkhtNXRwc1pJZmdHNnJ3VlcwOHA0U0pRWmhSaHo1UzRaRU9SbGNRRkE?oc=5",
-      "published_at": "2026-11-20T08:55:36+09:00",
-      "publisher_host": "www.newsdream.kr"
+      "title": "SK텔레콤, 한 해의 기억 AI로 정리하는 참여형 전시 ‘시드볼트 26’ 운영",
+      "publisher": "디지털경제뉴스",
+      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTFBnOHVWZDlmQ0t1WE9ITlJIUXpCcnNEbzBwYjJaWVVBNkJkbG9aUnBOdzlwWGpkWkVjX0w1eGFXR3F1SWNVdTdpZVJyTzRnTHZIdnljRWZUeXgycmU2VS0tdHRFYTNPazBwcUE?oc=5",
+      "published_at": "2026-11-20T12:06:18+09:00",
+      "publisher_host": "www.denews.co.kr"
+    },
+    {
+      "topic": 4,
+      "date": "2026-11-20",
+      "title": "삼성전자 사장단 인사, LG·SK그룹 마무리...현대차는?",
+      "publisher": "초이스경제",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE1ibDYwZ2g0MEhHRml0Ynd6UmtMN01EZ2dkbU1nZlRLZ1BVQ05CUzd3cEN5NER5LVkwYldPb2JGV0NZdVlvS1FUTHI5djRrQ2tCYkQwYlljTTNHaTd6RUpCcVZLNnZYMUZXZnNnZHhxVTHSAXNBVV95cUxOaEtNbW9XNndBZ0FKclpVSzRyV3NzSk1lYS1zczNEMldYM0hzaHpjcTdBRTlaX3RDUkFmRUVpUTRsZC1iN1FDWEZoTFJMUU5BenFvQ1FlMkE2OGRTY3hFUVpOTWZzRldmc3pwZ3lvS2Z2QUFB?oc=5",
+      "published_at": "2026-11-20T11:15:57+09:00",
+      "publisher_host": "www.choicenews.co.kr"
+    },
+    {
+      "topic": 4,
+      "date": "2026-11-20",
+      "title": "[주간 기업동향] 최태원 SK그룹 회장, AI 사업 확대 속 이사회 독립성 강조 外",
+      "publisher": "반론보도닷컴",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTFBpbWR4b0E0RmJMcmU1T05xR3J4VGh4ekNQbXdOcEFJcFlpVDRTczF5cjJkQlVHbUtyak03ZWhaVU1UbG13WVJoMmZpQTlLZDlES1ZyWlpQNlRDeHd1dVp5X2Q0Yk1tYzFEb05QWlB5NlfSAXBBVV95cUxQaW1keG9BNEZiTHJlNU9OcUdyeFRoeHpDUG13TnBBSXBZaVQ0U3MxeXIyZEJVR21LcmpNN2VoWlVNVGxtd1lSaDJmaUE5S2Q5REtWclpaUDZUQ3h3dXVaeV9kNGJNbWMxRG9OUFpQeTZX?oc=5",
+      "published_at": "2026-11-20T08:00:00+09:00",
+      "publisher_host": "www.banronbodo.com"
+    },
+    {
+      "topic": 4,
+      "date": "2026-11-19",
+      "title": "SK그룹, 앤트로픽 IPO로 4조원대 잭팟…투자 15배 결실",
+      "publisher": "www.dt.co.kr",
+      "url": "https://news.google.com/rss/articles/CBMiTkFVX3lxTFBDYnI0Nkl3bjE0MkZTVW1Pb2ZYWXF2LThhMVcxdEQ3anVmY1IySEZRczZncktackVjVmNXUG5mMEdMRGcxU0o5bk5OTEp4Zw?oc=5",
+      "published_at": "2026-11-19T19:13:57+09:00",
+      "publisher_host": "www.dt.co.kr"
     },
     {
       "topic": 4,
@@ -151,6 +179,15 @@
       "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE1EWWQ1cHJXR2JUZkF6YnVPLVozYnJ3OVpnTXBrNURKTmNKQWFTU25saTIwTjR3UFoyZTRYTlRaaXB2Tm9IUlVQeUxzemRKYk50TGRWMkx4Qm85ZzdKaUpZeEhqcU55YUFiVDd3?oc=5",
       "published_at": "2026-11-19T14:55:32+09:00",
       "publisher_host": "news.bbsi.co.kr"
+    },
+    {
+      "topic": 4,
+      "date": "2026-11-19",
+      "title": "앤트로픽 상장으로 최태원 SK그룹 4조 4천억 원 '잭폿'",
+      "publisher": "SBS 뉴스",
+      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE94S3FPTXZTaVVETlo2WFZxb0hYUjM2NzVTZWNhdmVmeTRLR3N4XzVKVTFteS1vRkR4UUZwRm1PalpHdU9MTE9RX01LWldIZ3E4N1JkSlhWclpYWjB6R25HZ1FpQ3RoUDk0ZFE?oc=5",
+      "published_at": "2026-11-19T14:39:44+09:00",
+      "publisher_host": "news.sbs.co.kr"
     },
     {
       "topic": 4,
@@ -180,40 +217,40 @@
       "publisher_host": "www.intn.co.kr"
     },
     {
-      "topic": 4,
-      "date": "2026-11-19",
-      "title": "앤트로픽 상장으로 최태원 SK그룹 4조3천억원 '잭폿'",
-      "publisher": "연합뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE96LWFueGFrQmlJMzF2ZFZuTG5zTG9obEI0a2hhVUUzNXZ6bC13azRwLXNTLWJwM1ludGtHdkdLaW9kZXRkcTNhQl9uSjFNMDZETUc4TVRZSHpFTFHSAWBBVV95cUxNZnc2WGJHOFZjTHFHa0JnZ3dyUDlEVFJZSFBOZ0toUjlvbFNsOUtUVXVHd09XQjFSeUpRM3BqVE5xZXJsWXVCTUF0RWRpelp4Qzg3T1k5bnUyalpNWTJ0YnY?oc=5",
-      "published_at": "2026-11-19T14:27:13+09:00",
-      "publisher_host": "www.yna.co.kr"
+      "topic": 5,
+      "date": "2026-11-20",
+      "title": "송금희 보건의료노조 위원장 당선 … “현장 중심 산별노조”",
+      "publisher": "매일노동뉴스",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE9INzFBNnFpSUpHaXFPSl9La1N6QTZjcE1QSW9Fb3FFZTF5aTNocWYxX3ZqZVNlYjBwVHhReUxReDNNeTRlWlpVRlpmVWRQcmFvVGJ4eG9WUHYwTmJKTGxCZmZjaEtUX1p2NnFpRjRaYTI?oc=5",
+      "published_at": "2026-11-20T14:32:12+09:00",
+      "publisher_host": "www.labortoday.co.kr"
     },
     {
-      "topic": 4,
-      "date": "2026-11-19",
-      "title": "SK그룹, 이사회 중심 경영 고도화...전·현직 독립이사와 거버넌스 성과 점검",
-      "publisher": "레디앙",
-      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE1RUnprcFJfRU9rdmlWeWF3bS1sOG1DREpfaDFEdDlid2J1TlJiTUpPMXEzQnpIU0Jxa2E2MW13d0dpQUozUkwxREZfS2hXUzRVMUFESXZEV1M4U1ZMdTRJYXhGMlhoSHBT?oc=5",
-      "published_at": "2026-11-19T13:32:33+09:00",
-      "publisher_host": "www.redian.org"
+      "topic": 5,
+      "date": "2026-11-20",
+      "title": "한국마사회 노동조합, 25일 청와대 인근서 총력투쟁 결의대회 예고",
+      "publisher": "경기일보",
+      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE9tYUZYbTljLTZHMDNsNVhvUTgxeVF5MEVVZzMzSFA3cjlQUzdPdE9sY0QtTE83VEMtbUplQ19mV0NwQ2dWSURUTXBMTWJjMWZhd1F0QVBnNXRJZkE?oc=5",
+      "published_at": "2026-11-20T13:08:20+09:00",
+      "publisher_host": "www.kyeonggi.com"
     },
     {
-      "topic": 4,
-      "date": "2026-11-19",
-      "title": "SK, 이사회 중심 경영 강화…최태원 “거버넌스 한 단계 격상”",
-      "publisher": "부산일보",
-      "url": "https://news.google.com/rss/articles/CBMidEFVX3lxTE1KT1RNcnA4OEw0TkRGYVZXeGRrTnVEbUZmc3NoSWdVcTZ1bndqay1YeF9ldkpTaW9XYU5lb0hTVW5xRWJsV01OWUpKeGYyZlpZWUFuRGdYTUhOU2V6ellxWUsxMmJBUVdOVE5fcklwdVpHQ2sx?oc=5",
-      "published_at": "2026-11-19T13:06:30+09:00",
-      "publisher_host": "www.busan.com"
+      "topic": 5,
+      "date": "2026-11-20",
+      "title": "전국금속노동조합 기아자동차지부 정비지회, 화성시 아동·청소년 위해 후원금과 차량 기탁",
+      "publisher": "화성시민신문",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE9LSncxbE5WUDRLN3hqUHlxT0NkVFhwd2MwZ0pCN2ZzZk9Md1A2YUt1eFAzR3dDTE1VSjNqVDRZS3ZRTE9RX0pxbXFHQ1hDak1pTThxLWZQRjM1ekNRWVZ1RDdCbGRLSkR1WGR5VWJSdGk?oc=5",
+      "published_at": "2026-11-20T11:24:59+09:00",
+      "publisher_host": "www.hspublicpress.com"
     },
     {
-      "topic": 4,
-      "date": "2026-11-19",
-      "title": "SK그룹, 이사회 중심 경영 성과 점검...최태원 회장, 변함없는 조언자·동행자 역할 당부",
-      "publisher": "소비자가 만드는 신문",
-      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE9XZmVLenBjWFZyV09KMUR1UXRYWDFnSnI2Wjl6SXJ1MWJfYnZnM2puZ1Q5ZFB6d19fYTBKX2dmblhTbWpfZTdOYzN4aVVrZGc2NlhYYUVPcnE5UUFCZE10dmpXTEt2Z2dYSzVsZElWX3JLSmM?oc=5",
-      "published_at": "2026-11-19T11:14:47+09:00",
-      "publisher_host": "www.consumernews.co.kr"
+      "topic": 5,
+      "date": "2026-11-20",
+      "title": "민주노총 5기 지도부 선거 투표 시작…97만 조합원 참여",
+      "publisher": "참세상",
+      "url": "https://news.google.com/rss/articles/CBMiQkFVX3lxTE9EaV85M2RDdHI2SW83bE96SUplVUxVblJtbUhPM3pSQnJ5bDBDN1djTEFQU21CVnFBV2wxNS1YcmtrUQ?oc=5",
+      "published_at": "2026-11-20T11:11:10+09:00",
+      "publisher_host": "newscham.net"
     },
     {
       "topic": 5,
@@ -223,6 +260,15 @@
       "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE5HekhPb3lnWUpLZk55bjlVZGp4ZjlzNkk1SklycjdVYnVVb3lIdFAtbmFQaEVZQVFDSnlMcWhJMS1HRzRfMk5lVXlsT0R5dDE1eldEMWRvQVlEM0ZLUG9pMHE0Z2VNMmRqWlV5Z3FFeHVZZk0?oc=5",
       "published_at": "2026-11-20T07:53:12+09:00",
       "publisher_host": "www.dongbangilbo.co.kr"
+    },
+    {
+      "topic": 5,
+      "date": "2026-11-20",
+      "title": "쿠팡이츠 콜센터 노조설립 배경엔 수당 일방 폐지",
+      "publisher": "매일노동뉴스",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE1paTZxVXRzaDNaOFA0TVBHZW8wQUZkUEI0Slc2VnRzYVl3OFpqT05IcnR6YlJHYURFbTZnWDRoOW9sbTRvRkRNME81c2xhaHRrcUdlTW1JMjRIMWhTOE9iQndSdFZMZmFNMjRCRXNMWjM?oc=5",
+      "published_at": "2026-11-20T06:30:05+09:00",
+      "publisher_host": "www.labortoday.co.kr"
     },
     {
       "topic": 5,
@@ -243,49 +289,22 @@
       "publisher_host": "www.daehanilbo.co.kr"
     },
     {
-      "topic": 5,
-      "date": "2026-11-19",
-      "title": "해양교통안전공단 노조 창립 38주년 기념식…제17대 집행부 출범식도 가져",
-      "publisher": "부산일보",
-      "url": "https://news.google.com/rss/articles/CBMidEFVX3lxTE93VVJWYVJKdmNqZWJqanBWUGpQYlBFUXNhUmt5X3M0YkNlX3JVQU9QRWZ2NmsxcEk0SnFPODlKUzdPZlA4dTBWSXgzdDdVUVlwYTVkT2hzQXhxSTF3cHlDa201UUIxRndCRGlPMlg5bGhRSWtZ?oc=5",
-      "published_at": "2026-11-19T20:14:56+09:00",
-      "publisher_host": "www.busan.com"
+      "topic": 6,
+      "date": "2026-11-20",
+      "title": "시용기간 끝나면 이유 없이 내보내도 될까?",
+      "publisher": "매일노동뉴스",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE9qQ2JTOU5XSmhuMTBjSHdpZWd0OVdQVnRzZkNyaTBqSzR3YktwVHpUWU9BdUpla3FOYWp0ZjZScHJkOVhncnVTdll6cnVoa3Nkb2VyUmtJRW9LYWFLZjVDT0FHR3phcGdTU2VISDlIcFU?oc=5",
+      "published_at": "2026-11-20T15:04:07+09:00",
+      "publisher_host": "www.labortoday.co.kr"
     },
     {
-      "topic": 5,
-      "date": "2026-11-19",
-      "title": "포스코노동조합, 포항 취약계층 청소년·학대피해아동에 1억 원 지원",
-      "publisher": "NSP통신",
-      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE1CZ2Z5bUQ4bU5QakxPazFCUW1QMTJYMWtWY1NsS3ZQcjFMQWJlaEZieUw3RDVMOGVWRTFQSUdvRXZHM2YyRXF4Z3RCaWlaamF0N0NwVTdPVDNwdjdTNVZ0bQ?oc=5",
-      "published_at": "2026-11-19T19:29:15+09:00",
-      "publisher_host": "www.nspna.com"
-    },
-    {
-      "topic": 5,
-      "date": "2026-11-19",
-      "title": "[포토] 서울대 3개 병원 노조, 서울대병원도 보건복지부로 이관해야",
-      "publisher": "참여와혁신",
-      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE00ZmxWZ3gzOXhmeUNRRWNFSGh1OFl0cVdVa1BXTWg5YWRzeVlTbEhKLXk1T19iRUd3TmZYcC1kS3JmNlNsQWNZLWN5eURZY3Z0bllvOS1vZFRxU2lBT3JLdnpDWVZCYVItYVZQV2hB?oc=5",
-      "published_at": "2026-11-19T18:11:40+09:00",
-      "publisher_host": "www.laborplus.co.kr"
-    },
-    {
-      "topic": 5,
-      "date": "2026-11-19",
-      "title": "해운노동계, 12년 만에 통합…산별노조 추진 기반 마련",
-      "publisher": "해양한국",
-      "url": "https://news.google.com/rss/articles/CBMiekFVX3lxTE1FM2J1enNQUXVfaUZtUkdJMUExMUNWTDI1ejNQZVZYQ1NPUjhZN2JPOFZ0Zy0waW0zZ2FINnpyclNCZ2ExaDVzMnh4blVXV0RQTEliZEt6NzI5elRxQWQ4VnExUGEtUmlEalNYa2U4cVpib25oUHVtQTdR?oc=5",
-      "published_at": "2026-11-19T16:59:55+09:00",
-      "publisher_host": "www.monthlymaritimekorea.com"
-    },
-    {
-      "topic": 5,
-      "date": "2026-11-19",
-      "title": "서울지하철 노조, 20일부터 준법투쟁…출퇴근길 열차 지연 우려",
-      "publisher": "한국경제",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE9jejZCUzhLbmotMG9ILUFCSFd6YjJLQlJ2R1RnUUpTaTFFRlN3bm9aWnFfaWp2eTZ2TVF1QzB3eVNsakVHbWFFWlRseXJKOWlxTEtlUDZieHhPZw?oc=5",
-      "published_at": "2026-11-19T16:56:21+09:00",
-      "publisher_host": "www.hankyung.com"
+      "topic": 6,
+      "date": "2026-11-20",
+      "title": "베트남 “연휴 조성 위한 근무일 교환 법제화 불가”…노동법 개정안",
+      "publisher": "인사이드비나",
+      "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTE45ZmVvbTVBN3hUZGRNeVZrX3RVTUV4OXhXaVNVUFhQb1lma05EU052dnZCSW4tTWpzcHh5WURwZy1EbER6Rk5ZVWRyNlZtZncySzdpd245NEJ5Tm9EUHRiV1Q2bmFPT2hjMHk3NA?oc=5",
+      "published_at": "2026-11-20T11:00:00+09:00",
+      "publisher_host": "www.insidevina.com"
     },
     {
       "topic": 6,
@@ -342,22 +361,22 @@
       "publisher_host": "www.yna.co.kr"
     },
     {
-      "topic": 6,
-      "date": "2026-11-19",
-      "title": "물가 올라 월급 가치 떨어지는데…노동법이 중요하다고? [율촌의 노동법 라운지]",
-      "publisher": "한국경제",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE50NWdQM29JZ0RVYjktOTlMbGRGQTdMTkRSZ0pCSDBqYksweFdPcTR1bXpNWGozSXdfTEpyam1QWGNHcDc2RDFPbzJBd0hEbVJEaDllWU9ETTNHZw?oc=5",
-      "published_at": "2026-11-19T07:00:04+09:00",
-      "publisher_host": "www.hankyung.com"
+      "topic": 7,
+      "date": "2026-11-20",
+      "title": "ILO project generates over 8,600 workdays in southern Haiti",
+      "publisher": "International Labour Organization",
+      "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxOQ1VwX3hZbVFEMmc2V0d0STgtTzRhcHEyUi1iN0xqWmtYOVdVbnZtRzNhMFRTLUhmTlNnbjVsVkg1eHhCMzQ4ejNzcXFnb0VtclRuWUZCWnhneGo2aklVYlR2V2c5TUZRMGJLTWRSVFVuYlNBQUJramlGZlZJaEhOWEFjOTdQbjA5ZFdpVjMtVG5reVk?oc=5",
+      "published_at": "2026-11-20T12:13:11+09:00",
+      "publisher_host": "www.ilo.org"
     },
     {
-      "topic": 6,
-      "date": "2026-11-19",
-      "title": "“거짓말” “노동법 부정”…‘초광역특구법’ 놓고 與 안팎 파열음",
-      "publisher": "미주중앙일보",
-      "url": "https://news.google.com/rss/articles/CBMiYkFVX3lxTE5CbzdDSHUtWE1hS1NyYzJ5MXhzdmtoUV80NjQ0RnY3UXNiNHdDZE1TRk5jRVJBMlRzWFNMUWhNTHlKOEFmR3ZLYS15b3Vjd1hkYjFJbWhfR1ozOXV6WndMQ2NR?oc=5",
-      "published_at": "2026-11-19T05:00:00+09:00",
-      "publisher_host": "www.koreadaily.com"
+      "topic": 7,
+      "date": "2026-11-20",
+      "title": "Credhos participates in national strike in Barrancabermeja, Colombia called by the trade union movement and social organizations",
+      "publisher": "Peace Brigades International-Canada",
+      "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxQaS1FakR4dktqV0dfT3RCdFZiUDBfQmlmZVp3RHpxUGU5SkQ1QzlUWXlXa0d5amFCNldlb1I1YlhwVktxVUZ0OGFJckFsblJDV1Frb2FpRWx4R1VPQm5GeVRicjdGcHdMalpKZEY1SUhFcmlxOHE2TzQ4bUdoTFFZMmJUbXVDZzF6aWZZZ3c2a3RlQ2RfRHQtcGxTUGV6eUpMTUVpSU1FcU5nWmlaR3NLM0VJMWp4UUVEWFJFS1R0R1VLUk5kX25wN3Rud1B1MXJUOFZXU1hPSW9COC1wTThrdXJXaw?oc=5",
+      "published_at": "2026-11-20T11:28:15+09:00",
+      "publisher_host": "pbicanada.org"
     },
     {
       "topic": 7,
@@ -376,6 +395,15 @@
       "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE9LMHk4Z2tmWC1uTFpYSzJVVm5OTU9mSGhjSHN2Rnh5Z29MLTZydVlLUFVMbm9ud2FuVVpQaXduZUV2VW9lTENYeDdzQ216SXh6cW84LXBDME9ubG8?oc=5",
       "published_at": "2026-11-20T03:00:00+09:00",
       "publisher_host": "www.daily-sun.com"
+    },
+    {
+      "topic": 7,
+      "date": "2026-11-20",
+      "title": "The Netherlands ratifies ILO Convention on violence and harassment in the world of work",
+      "publisher": "International Labour Organization",
+      "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPd0tLNlZ6dE5FdndWajJPUFJaWHRnZHFXWkwyTWVGRHRSbWNQYks3YkdCMXFXRTZxYXYyRTJ4WlBWS01RTmZsQXlJMGNfWGtRdFJHWjVvMVY5andneDFvVHRTQk8xamhrWWJJUlN0S2p6bEFyUGJOOWk2ZXRRNXZ0SW1zd0pPcDVJWUVRbEFCZTlyOFF6NTU3ZmwwcDkxTUdVbHdRSDE4dw?oc=5",
+      "published_at": "2026-11-20T01:56:44+09:00",
+      "publisher_host": "www.ilo.org"
     },
     {
       "topic": 7,
@@ -403,33 +431,6 @@
       "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQVkUxWWZpUFVmcGw5OUFuVTZieHcxZFpwZzdhbmZtR0luaThyQ1JMYkFyaWxYbTRUVWhDUTdvSzNwTURPMVBNa0xzY3FpeExCdDUzTzd0NG53NmJCbi1lREEtU0Q3aHV1QmdidEREM05oMjh3MnkwcENhWVlQeHpiVnFoem1zRTdSMDRTdGZHMkFlLVFGaHBv?oc=5",
       "published_at": "2026-11-20T01:11:28+09:00",
       "publisher_host": "tradersunion.com"
-    },
-    {
-      "topic": 7,
-      "date": "2026-11-19",
-      "title": "ILO calls for evidence-based talks to restore RMG sector peace",
-      "publisher": "The Financial Express",
-      "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxQVW1BWEV0YkxOQmxEczNReW5fQ3BQOGFEeHN6OGFlWVpaaVJNLW5ucDFaTzJROVdsR21pUkE2bGVvNlowTi15d3VMVEI3YUlkTVJTRVg4OEZhT2JDUWRCZVRVNVhscFNsRnpsM1hsUl9paDhRZFpLNHRmUGJORWtHa1REMUw5RGJDRkR1QmtuMXdDR18xS1kwYUgzWjFCWkZRM2FISFdORVMwRUVlajBfbw?oc=5",
-      "published_at": "2026-11-19T23:25:52+09:00",
-      "publisher_host": "thefinancialexpress.com.bd"
-    },
-    {
-      "topic": 7,
-      "date": "2026-11-19",
-      "title": "Employment & Pensions Blog: Government publishes Trade Union Rights Statement ahead of new Employer Duty",
-      "publisher": "Devonshires Solicitors",
-      "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOcW1DdGhLR0N6RnpXTVlDaGRwWDU0UzhISllnRDN0eG52NXJYV3NaSFIycjZLSlo4U1FmcDgzbVRvTDJ5MzA3R3dFNllaYWlPQ3hzUGdjaDNjMHhfZ3h6Q1VzbEFtaWE0NVh4TjlZNGFfbDI5SmZ3b1pJSm1nMEMxR0xlbmlUZzE0d090U3VYSzFSSjI2dmlZSUFPd2JZNVhqMVUwSGpkUHZJSWp2RXlZd2s5eXN3d214a1FMSHIwWGJVQQ?oc=5",
-      "published_at": "2026-11-19T22:05:39+09:00",
-      "publisher_host": "insights.devonshires.com"
-    },
-    {
-      "topic": 7,
-      "date": "2026-11-19",
-      "title": "Saudi Arabia agrees to five-year labour reforms — ITUC-Africa",
-      "publisher": "Vanguard News",
-      "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQRGF0QWVodzl0TTk0ZU81UmUweUhSWVJTWEZ1YzdHcXlXUmNQVW8xRlVTWUthXzItRzBKelFWckgtMXktS2twSWdYWEIzbWJIZmJDNEtlUjVjM0hIRElEVTZrV0RjYWdiV1dVNVBnOTZOMUdYaEt4VDB5TGtZWmY0cTRqOXRTOFlIUWlrWXVuaUdQNHhKSzdQLUtMcHHSAaIBQVVfeXFMTkEzYi1rM1pucU1ydTJ6dXBQRDFvTmtYZkNyenctQXZyR1RET3d2MGk1QmpvWC1LMkRyTzVHVmZvYm9pdWRQOWg2WDJnc2NSUjctR2FOQWJER1Y0Wk15UzhKNHRqNG9rd204UElJMWhnNXhScUdSdENiQW5DZDVxMDJ6b0JOZUZUM0c0bC1sTjcta0c5bEh3UERLWlAxN3JiWUhB?oc=5",
-      "published_at": "2026-11-19T21:45:00+09:00",
-      "publisher_host": "www.vanguardngr.com"
     }
   ]
 }
