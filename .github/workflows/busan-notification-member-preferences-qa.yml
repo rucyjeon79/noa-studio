@@ -1,0 +1,24 @@
+name: Busan member push preference post-release verification
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/busan-notification-member-preferences-qa.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: busan-readonly-sftp, cancel-in-progress: false}
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python3 -m pip install --disable-pip-version-check paramiko==3.5.1
+      - name: Confirm live files and synthetic durable on/off without touching real members
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: python3 scripts/busan_push_prefs_verify.py
