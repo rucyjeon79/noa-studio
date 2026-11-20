@@ -1,0 +1,57 @@
+name: Busan member notification preference verified release
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/busan-notification-member-preferences.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: busan-readonly-sftp, cancel-in-progress: false}
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - run: python3 -m pip install --disable-pip-version-check paramiko==3.5.1
+      - name: Confirm original file hashes, patched PHP JS and backup safety
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+          BUSAN_PREFS_MODE: preflight
+        run: python3 scripts/busan_push_prefs_release.py
+  release:
+    needs: preflight
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - run: python3 -m pip install --disable-pip-version-check paramiko==3.5.1
+      - name: Back up verified original, install preference table and apply scoped patch
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: python3 scripts/busan_push_prefs_release.py
+      - name: Confirm unauthenticated capability check remains isolated
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,urllib.request
+          url='https://skhnslu-busan.com/busan-assistant/notification-api.php'
+          with urllib.request.urlopen(urllib.request.Request(url,headers={'Cache-Control':'no-cache'}),timeout=20) as r:
+              data=json.loads(r.read(10000))
+          if data.get('can_subscribe') is not False or data.get('ready') is not False:
+              raise SystemExit('guest_capability_isolation_failed')
+          print(json.dumps({'guest_isolation_verified':True,'live_endpoint_json':True,'member_or_subscription_rows_changed':0}))
+          PY
