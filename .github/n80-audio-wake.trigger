@@ -1,3 +1,4 @@
-N80 Audio Wake — uncached host HTTP signal
-Host rev: 2.1.848
-GitHub wakes only; all audio and FFmpeg remain exclusively on the N80 host.
+N80 bounded audio wake signal
+Target release: N80 2.1.853
+Task: once-only EP.01 retry after verified FFprobe wrapper
+GitHub must not execute audio or media jobs.
