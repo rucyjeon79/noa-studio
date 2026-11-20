@@ -1,7 +1,13 @@
 name: Busan reporter source watch
 on:
-  # Regular collection runs before generation in the private newsroom worker.
+  # Public-source collection only, 20 minutes before each KST 4-hour ChatGPT edition.
+  # No Codex, model inference, publishing, or resident host processes here.
+  schedule:
+    - cron: '40 2,6,10,14,18,22 * * *'
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/busan-news-sources.yml', 'scripts/busan_sources/collect.py']
 permissions: {contents: write}
 concurrency: {group: busan-news-source-watch, cancel-in-progress: false}
 jobs:
