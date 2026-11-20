@@ -1,3 +1,3 @@
-N80 EP.01 PHP error line diagnostic wake
-N80 revision 2.1.857
-GitHub sends site HTTP GET only; N80 keeps the entire media job.
+N80 HTTP-only wake: retry EP.01 after worker-io.php disabled-link() repair
+Production revision: 2.1.859
+Operation: trigger existing site-owned one-shot upload recovery only; no GitHub audio/media work.
