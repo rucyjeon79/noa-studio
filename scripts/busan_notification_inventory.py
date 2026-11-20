@@ -7,6 +7,8 @@ PRIVATE='/hosting/rucyjeon79/busan-assistant-private'
 BASE=ROOT+'/busan-assistant'
 SAFE_NAMES=[
     BASE+'/notification-api.php',
+    BASE+'/notification-lib.php',
+    BASE+'/notification-client.js',
     BASE+'/notification.js',
     BASE+'/notifications.js',
     BASE+'/push.js',
