@@ -61,7 +61,8 @@ def main():
                     for number,line in enumerate(lines,1):
                         if not IMPORTANT.search(line) or SECRET.search(line):continue
                         line=line.strip()
-                        if len(line)>300:line=line[:300]+'…'
+                        maximum=1800 if p.endswith(('notification-client.js','notification-api.php','notification-lib.php')) else 300
+                        if len(line)>maximum:line=line[:maximum]+'…'
                         fragments.append({'line':number,'code':line})
                     report['paths'][p]={'sha256':hashlib.sha256(content).hexdigest(),
                                          'bytes':len(content),'lines':len(lines),
