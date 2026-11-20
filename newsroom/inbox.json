@@ -39,6 +39,15 @@
     {
       "topic": 2,
       "date": "2026-11-19",
+      "title": "SK브로드밴드, 한·싱가포르 해저케이블 양자보안 강화",
+      "publisher": "한스경제",
+      "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTE5ZWHhHSUFmdHJGUGlid0JDR25NRmg0cHJVUDVPWktFTzVEN0oycnN2aHplM01DcVlBblRRRWFidHNBWEVYY0d3bTB3LWZRVjAzVkNOT0UwVEdadVlGUDR1WGdPZ2ZzUVRQUEw2VQ?oc=5",
+      "published_at": "2026-11-19T16:40:00+09:00",
+      "publisher_host": "www.hansbiz.co.kr"
+    },
+    {
+      "topic": 2,
+      "date": "2026-11-19",
       "title": "SK브로드밴드, 부산-싱가포르 해저케이블에 양자보안 입힌다",
       "publisher": "스페셜경제",
       "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTE1mVHQtNUMtbEwyeHcwUmI4bnpweF9CQjFONW1mSWcwRm1Mbmg5UzVWSEZVdHlRRkJCSkoxU0trQkc1WjdpZTR2THBfS3FnTDFLQ19xWU5PQ05Yd2RfYVM0X2pNbGtvbXMtU3BpNg?oc=5",
@@ -64,13 +73,13 @@
       "publisher_host": "stock.mk.co.kr"
     },
     {
-      "topic": 2,
-      "date": "2026-11-19",
-      "title": "SK브로드밴드, 한·싱가포르 해저케이블에 양자보안 시험망 구축",
-      "publisher": "매일일보",
-      "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE1VaTJPcDV2Q2Z4c0NSM3lQbmVpZDRnSUpJc1FYLUpMYW1uTWJNcGRxRE9fMnJoWm9PT0xwU1YyUXh4RlFRVUhic2JNNHNPdkpybFZFamhfQU9MQW5ONXFxT016VVk?oc=5",
-      "published_at": "2026-11-19T14:42:50+09:00",
-      "publisher_host": "www.m-i.kr"
+      "topic": 3,
+      "date": "2026-11-20",
+      "title": "SK텔레콤, 디지털헬스학회 추계학술대회서 A.X 모델 발표",
+      "publisher": "MEDI:GATE NEWS",
+      "url": "https://news.google.com/rss/articles/CBMiV0FVX3lxTE9YSWg5UDBlVFZVT1dKbzNTejhPYXhrcTkzLVFCN0xVeHAzT0QyMG1uWExZVWJJdk1KUGdnbnA2Q0dvM01OamZmMnEtdEI0Z3R1TzhWdjVBNA?oc=5",
+      "published_at": "2026-11-20T21:41:00+09:00",
+      "publisher_host": "www.medigatenews.com"
     },
     {
       "topic": 3,
@@ -111,6 +120,15 @@
     {
       "topic": 3,
       "date": "2026-11-20",
+      "title": "앤트로픽 ‘재료 소진’에 주가 뚝…정재헌 SK텔레콤 대표, 반등 해법 시험대",
+      "publisher": "일요신문",
+      "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTFBnaFcyUEFWTGJJR1V5bHVpZFJKOEFDcEFtZ1RPOE5KNEdWR3U4R0tVRDJQRmtmelpaWUdQSTFhNzNpVDFnM3l1M1pGSG5lYU82NF93cDM0VU1CbnB4MnNYWnZmRTlxdw?oc=5",
+      "published_at": "2026-11-20T14:31:28+09:00",
+      "publisher_host": "www.ilyo.co.kr"
+    },
+    {
+      "topic": 3,
+      "date": "2026-11-20",
       "title": "SK텔레콤, AI로 한 해의 기억 결산…성수서 참여형 유물 트리 선봬",
       "publisher": "https://www.moneystorm.kr/",
       "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE4xT2U4eFBuck94S1U2TkdvMzRRQ3doeUVlMzREbk9CVWZkRExwMWpvMXdDaGNndVhhV2RXVlNVdGc2S2tyTFk3ZWdOMzQ2SmtZZUFpRmVNb1hZZGZZUVhkOExveUJ3aFk4dmc?oc=5",
@@ -127,22 +145,22 @@
       "publisher_host": "www.kmnanews.com"
     },
     {
-      "topic": 3,
+      "topic": 4,
       "date": "2026-11-20",
-      "title": "SK텔레콤, T 팩토리 성수서 ‘AI 기억 결산’·국중박 유물 전시",
-      "publisher": "라이센스뉴스",
-      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE9VN040aHNDQms1R0kwazkxYjNqdzJMeHZNRHAyeW1xcjJpZkJKcExvRkVtcEIxZTRoQUVJRjlGSDhxdmYyUmJtYXh0Z29iaW8tWGRsb3k2ZmNOWEhCUnVpNEMxVEFsc2doSkhR?oc=5",
-      "published_at": "2026-11-20T12:43:27+09:00",
-      "publisher_host": "www.lcnews.co.kr"
+      "title": "[CMG중국통신] SK그룹, 중국 장시성서 한·중 청년 교류 행사",
+      "publisher": "중앙일보",
+      "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE5Tc2NlWWZ6WHN5cjlVVDFJMnlNTHdpaFJjLXducXlORk1fbVkxVGlFMW1kWmF5Q055QWdGWnA3cFhadWVYYzNBLVhqOXF2bFVKS2YyZEhR?oc=5",
+      "published_at": "2026-11-20T17:41:54+09:00",
+      "publisher_host": "www.joongang.co.kr"
     },
     {
-      "topic": 3,
+      "topic": 4,
       "date": "2026-11-20",
-      "title": "SK텔레콤, 한 해의 기억 AI로 정리하는 참여형 전시 ‘시드볼트 26’ 운영",
-      "publisher": "디지털경제뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTFBnOHVWZDlmQ0t1WE9ITlJIUXpCcnNEbzBwYjJaWVVBNkJkbG9aUnBOdzlwWGpkWkVjX0w1eGFXR3F1SWNVdTdpZVJyTzRnTHZIdnljRWZUeXgycmU2VS0tdHRFYTNPazBwcUE?oc=5",
-      "published_at": "2026-11-20T12:06:18+09:00",
-      "publisher_host": "www.denews.co.kr"
+      "title": "[CMG중국통신] SK그룹, 중국 장시성서 한·중 청년 교류 행사",
+      "publisher": "미주중앙일보",
+      "url": "https://news.google.com/rss/articles/CBMiYkFVX3lxTE1RcjE5YmY2alBPOENLUUtZQXhvaHVZOWhFRnVfMlRVLUxpNXJpV1RsLVpVQnJ3WV9iZ0FwaDVVOTcyOVVIVEUxYjVSMjgyazV6b1BhZGZoRElrQ3l4SU5rcXN3?oc=5",
+      "published_at": "2026-11-20T17:41:00+09:00",
+      "publisher_host": "www.koreadaily.com"
     },
     {
       "topic": 4,
@@ -161,6 +179,15 @@
       "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTFBpbWR4b0E0RmJMcmU1T05xR3J4VGh4ekNQbXdOcEFJcFlpVDRTczF5cjJkQlVHbUtyak03ZWhaVU1UbG13WVJoMmZpQTlLZDlES1ZyWlpQNlRDeHd1dVp5X2Q0Yk1tYzFEb05QWlB5NlfSAXBBVV95cUxQaW1keG9BNEZiTHJlNU9OcUdyeFRoeHpDUG13TnBBSXBZaVQ0U3MxeXIyZEJVR21LcmpNN2VoWlVNVGxtd1lSaDJmaUE5S2Q5REtWclpaUDZUQ3h3dXVaeV9kNGJNbWMxRG9OUFpQeTZX?oc=5",
       "published_at": "2026-11-20T08:00:00+09:00",
       "publisher_host": "www.banronbodo.com"
+    },
+    {
+      "topic": 4,
+      "date": "2026-11-20",
+      "title": "앤트로픽 상장으로 최태원 SK그룹 4조3천억원 \"잭폿\"",
+      "publisher": "라디오코리아",
+      "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTFBxMDhXLWY5VHd1MDZRRU5McWZpSHViNW5KUWFXcUlPTHdsZjBBNzhka3VZNWx4bFFNdFhvNHhaek9tRVNKYU9BN3NTMHFTbzlQQXM3SGpUOW4zcDBSdHBFa3g4Ul8?oc=5",
+      "published_at": "2026-11-20T02:08:56+09:00",
+      "publisher_host": "www.radiokorea.com"
     },
     {
       "topic": 4,
@@ -190,31 +217,22 @@
       "publisher_host": "news.sbs.co.kr"
     },
     {
-      "topic": 4,
-      "date": "2026-11-19",
-      "title": "“주주 신뢰로 AI 격변 넘는다”...SK그룹, 디렉터스 서밋·거버넌스 데이 열어",
-      "publisher": "매일경제",
-      "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTFBWMkd6cTdZV0NrVkNGRDI3RlpEWTR1bGVEYjR2WVhHVjJNTzBpUE0tSVBUeHhqNHczekFMdEt0V3lnQmlzR0JrTG9YdUNyYkd4MHc1WmFR?oc=5",
-      "published_at": "2026-11-19T14:32:50+09:00",
-      "publisher_host": "www.mk.co.kr"
+      "topic": 5,
+      "date": "2026-11-20",
+      "title": "홈플러스, 8월 월급 겨우 다 줬는데 11월도 체불…노조, 민주당에 정상화 대책 촉구",
+      "publisher": "뉴스필드",
+      "url": "https://news.google.com/rss/articles/CBMirAJBVV95cUxObEhoVzB0YVdadDJCVDVrZ1NZcDRuSmhZdlM0ZjJZc2c2MVAxLWttQkZtdWhSYUQ2NFFpcXFsV1NDUDBEVkRGZW45cjVaTUhKMVJkbFVUd3lEdUZYbXAyOU9kakNLY2E0aU10N2FYd2xEQU4wQV8yR1ZQVDM3OGpPR2xKOEZRaU85WjQ0UUxIbjl2YWFOQm5QeExTMWx2dHNvUkVIWGFmQ0Z5OV9xMEswUkI5V1J5N1dMWC1pUEFyQkV3YUVGVHIzN0hPbU1OVUVnM3JFT25PTmgyTnNUdmhxSHhVMHdaNnlLTk9vdE94STNCT1duRk1aYkJBYWZKRWJqaE9ocGNMN1N5TEJyeGdMNlh2czQxYmdHWENfOVBLZGphSUl1WUl6SkV1Zm0?oc=5",
+      "published_at": "2026-11-20T17:39:51+09:00",
+      "publisher_host": "newsfield.net"
     },
     {
-      "topic": 4,
-      "date": "2026-11-19",
-      "title": "SK그룹, 앤트로픽 상장으로 4조 4천억원 수익",
-      "publisher": "연합뉴스TV",
-      "url": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTE9PTzFVcGt1NW1ORnBtSEduV05yM2NTUFNNLUFFVEVUQ0wzUjZJVVhrV0dxbzZ3RjdndkJiUjQwdjRhT0RIMWNGR0JTM29GQTctVE5RYjAwSGZoYnlwR0cxVDk4SDhjbDA?oc=5",
-      "published_at": "2026-11-19T14:32:00+09:00",
-      "publisher_host": "www.yonhapnewstv.co.kr"
-    },
-    {
-      "topic": 4,
-      "date": "2026-11-19",
-      "title": "SK그룹, 이사회 중심 경영 강화…독립이사들과 거버넌스 발전 방향 논의",
-      "publisher": "Daily NTN",
-      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE1PejV6aGF6VGNYSWxOSTltNVdOR1dxVWsxcjQwUUNYeThZQWY1YVdUaURwbVBiMVAwWmx5bVBiSnJWeDFHNHdWSGhIVWVfYXRlZ3d1MmpPT3BMM2dtYmV1ZDI4QmpLTmlfWWc?oc=5",
-      "published_at": "2026-11-19T14:30:55+09:00",
-      "publisher_host": "www.intn.co.kr"
+      "topic": 5,
+      "date": "2026-11-20",
+      "title": "31년 인국공노조 “공항 이용료 현실화, 제5단계 사업 추진해야“",
+      "publisher": "참여와혁신",
+      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTFBuWHpLSEtlYVE5UVRrWmFiNkNlTWdqNVUzd1pXVEhDSDIwcGJHYzBXODJjck9UUkJSVGFwQ1F5UUZPTm85MUpOUzV6ZTBzd2xOekhOWE5sekRxUmYzU0FxVVJhWDVTVlZRZzMtSjN3?oc=5",
+      "published_at": "2026-11-20T17:08:24+09:00",
+      "publisher_host": "www.laborplus.co.kr"
     },
     {
       "topic": 5,
@@ -255,38 +273,20 @@
     {
       "topic": 5,
       "date": "2026-11-20",
+      "title": "평택 지역경제살리기 비대위, 민주노총 전국건설노동조합과 간담회",
+      "publisher": "경인매일",
+      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE80UVBOT2dwN1k2VklMODh6RjRnbmt4MFVvMkZ2MV84ZzNKX0pGb293bWN4V1RCVS0tbGxicmJoZzQyc1RXQnl5dnhsZnVFMGVtNFRxYXkzdWNIWHBZTlBmemZUR1NuRkYz?oc=5",
+      "published_at": "2026-11-20T09:09:14+09:00",
+      "publisher_host": "www.kmaeil.com"
+    },
+    {
+      "topic": 5,
+      "date": "2026-11-20",
       "title": "전국금속노동조합 기아자동차지부 정비지회, 화성시 아동·청소년 위해 후원금 1,000만 원 및 차량 기탁",
       "publisher": "동방일보",
       "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE5HekhPb3lnWUpLZk55bjlVZGp4ZjlzNkk1SklycjdVYnVVb3lIdFAtbmFQaEVZQVFDSnlMcWhJMS1HRzRfMk5lVXlsT0R5dDE1eldEMWRvQVlEM0ZLUG9pMHE0Z2VNMmRqWlV5Z3FFeHVZZk0?oc=5",
       "published_at": "2026-11-20T07:53:12+09:00",
       "publisher_host": "www.dongbangilbo.co.kr"
-    },
-    {
-      "topic": 5,
-      "date": "2026-11-20",
-      "title": "쿠팡이츠 콜센터 노조설립 배경엔 수당 일방 폐지",
-      "publisher": "매일노동뉴스",
-      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE1paTZxVXRzaDNaOFA0TVBHZW8wQUZkUEI0Slc2VnRzYVl3OFpqT05IcnR6YlJHYURFbTZnWDRoOW9sbTRvRkRNME81c2xhaHRrcUdlTW1JMjRIMWhTOE9iQndSdFZMZmFNMjRCRXNMWjM?oc=5",
-      "published_at": "2026-11-20T06:30:05+09:00",
-      "publisher_host": "www.labortoday.co.kr"
-    },
-    {
-      "topic": 5,
-      "date": "2026-11-19",
-      "title": "보건의료노조 제11대 지도부에 송금희 위원장 후보 당선",
-      "publisher": "병원신문",
-      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE5rZFJYTEt4X1JMMGNrWXAzLWFvMXhjd21ZZ3JFZ1NWaHJRM2NCR1JhejYyUE5xVXQ4dXpCdTg2VGVyYkhqeUJ3QlBvbGFMb0FvYW8xYXNxWmtOdXJqdFo1OFM3OGdvUldtNFE?oc=5",
-      "published_at": "2026-11-19T23:40:57+09:00",
-      "publisher_host": "www.khanews.com"
-    },
-    {
-      "topic": 5,
-      "date": "2026-11-19",
-      "title": "해양교통안전공단 노동조합, 창립 38주년 기념식 및 제17대 집행부 출범식 개최",
-      "publisher": "대한일보",
-      "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTE0xSEdFdFl6YkZKMndUMHJWSmNQOUlLYmZGcnVYazNKbDl5dHRkc0V1QUhMTHNnYjM2NmZHWXhjdmctYURMeFE5OV85R1BlZUVLaHdPUnUxT2xSekRqS0hvaFFkVjM5LU5PSTJ1bEJoWQ?oc=5",
-      "published_at": "2026-11-19T21:27:29+09:00",
-      "publisher_host": "www.daehanilbo.co.kr"
     },
     {
       "topic": 6,
@@ -362,6 +362,51 @@
     },
     {
       "topic": 7,
+      "date": "2026-11-21",
+      "title": "ILO and China reaffirm commitment to South-South cooperation for decent work and social justice",
+      "publisher": "International Labour Organization",
+      "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxQNjlVUFN6aDU4aVFFUzFVUzF5dFp2c0sweW5HZ3pNOXR6U0lwcmpFNExvNzNNU0VkdHRRUWY5aFVhaGgxY0VUOEZJbHYzZ3ZkaE9mTk5GXzh2aVhDb29EbGFLSXlyZG5ma005SUI1anZJMk5RRjlzSEpVdlBVb00weDlOUjRGc3ZkYUJUTWw4NmJrX3hySjQ0MU9uUlhKUzV1UGFJZlRQNVdpVG8?oc=5",
+      "published_at": "2026-11-21T00:43:31+09:00",
+      "publisher_host": "www.ilo.org"
+    },
+    {
+      "topic": 7,
+      "date": "2026-11-21",
+      "title": "Trade union information duty: government publishes guidance and standardised statement",
+      "publisher": "Farrer & Co",
+      "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxQQTcteHo1eEdnZlBXd2tDZGY4WlpxUU1FV3BwT1JKQ0lrZHBmdEhTbzl2ZnhLaG1ETmc0ZkVxcmtBQUhBZmtvcHhIT1BFV1E4cWZNNTJ4SmJGOGR5UUhzVWwzRUJuNkFIeUNxUkxpektHbFpNWDNRcGdhNTVNOXVqNnNJallkd1lkWW1FQk5QUGJiODI3QW5kNHZleXdMZFRhWGc1aHhpUVhBdE15bTNVTEdDOEV2MGZHcVZCWnJCb21TSGVPdjBpQQ?oc=5",
+      "published_at": "2026-11-21T00:12:27+09:00",
+      "publisher_host": "www.farrer.co.uk"
+    },
+    {
+      "topic": 7,
+      "date": "2026-11-20",
+      "title": "Haiti - South : An ILO project creates more than 8,600 workdays",
+      "publisher": "HaitiLibre.com",
+      "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNbm1ON205SmFBREo0Q2dQZFdXV09VWExKdGlZajBhME5KNG5qQWJFbzVmeFpmdjBfenBycXl4bkhINl9KZ0lxMUtHdkhJbHFrUGh3Si1ReFdvS2gzYU5EWkt3M3FKLTZLcDlxM2hZOVNBYTA0ZTVTdnVmcXpQMU5EOHVtd09uaWRZZzk3S2JyXzRXaEJiTU5QMkNINU9OcnlYQ3gzU3FWTE8?oc=5",
+      "published_at": "2026-11-20T21:27:11+09:00",
+      "publisher_host": "www.haitilibre.com"
+    },
+    {
+      "topic": 7,
+      "date": "2026-11-20",
+      "title": "Young trade union leaders seek to advance fair recruitment and protect migrant workers in India",
+      "publisher": "International Labour Organization",
+      "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPalYwM29PMEs2b0Q1R3FDYkR6eGFiNklIY0RXOVVGSWxRM2NXbXpyVFZHclJ2ODBoRkR3eE9rdUtrekQ2OUREbHJkd3pJMnB3bUNSTjEwaXMtTWlMaU5NYnY0OTZJQlRidnQ5a1lwMWxCamZMQ1hGQ2hBQWZqZHRpQlJmbkxjd0VqUHRCbVp5eDdDRUQtMDNEWWVHbHlkSEZPUjdabE13QURrSmZqU1E?oc=5",
+      "published_at": "2026-11-20T20:48:32+09:00",
+      "publisher_host": "www.ilo.org"
+    },
+    {
+      "topic": 7,
+      "date": "2026-11-20",
+      "title": "DOLE's Acharon named to ILO freedom of association panel",
+      "publisher": "Daily Tribune",
+      "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxNbUc5VjJoSjlGQVVqaWFSV2lYNk03STBScGZWeFZwcGFwaE5MdHc0R0RYRkRtaXkxX1o0VzB4T0RNU090VFI3Mmc2dHdYeGkyb21rVXFtTkhZeTVFQWFRSVpaUWgwUlRRM0poRjllSUV5VmpyNk9KYktRZ1FXSWhYbnlTNC1hQXlWbW00MGJlX3NoRE0?oc=5",
+      "published_at": "2026-11-20T17:53:22+09:00",
+      "publisher_host": "tribune.net.ph"
+    },
+    {
+      "topic": 7,
       "date": "2026-11-20",
       "title": "ILO project generates over 8,600 workdays in southern Haiti",
       "publisher": "International Labour Organization",
@@ -386,51 +431,6 @@
       "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxPcjdqVVZaVmxtaktxVlR3X1B2Sm1SNS14eWhuMGJJNDIzVnU0VENDVFRnTWl6enItX25jMzE0N2QzNmZlUTN0VHF6UXJUcTZ5VWt1V3dFR1RKclp1Y0JGVXdjdE5vTFNhTF90cDNOY25YdTNyRzFEYmM5Uk5PZlpKOVRuR1VsZkwyVzkzMTd6NXAwcWxEa0U1WEp4U3hVN3RnYnlpNmJiMUg?oc=5",
       "published_at": "2026-11-20T08:47:02+09:00",
       "publisher_host": "dailyasianage.com"
-    },
-    {
-      "topic": 7,
-      "date": "2026-11-20",
-      "title": "ILO urges dialogue, fair wage deal to end RMG unrest",
-      "publisher": "www.daily-sun.com",
-      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE9LMHk4Z2tmWC1uTFpYSzJVVm5OTU9mSGhjSHN2Rnh5Z29MLTZydVlLUFVMbm9ud2FuVVpQaXduZUV2VW9lTENYeDdzQ216SXh6cW84LXBDME9ubG8?oc=5",
-      "published_at": "2026-11-20T03:00:00+09:00",
-      "publisher_host": "www.daily-sun.com"
-    },
-    {
-      "topic": 7,
-      "date": "2026-11-20",
-      "title": "The Netherlands ratifies ILO Convention on violence and harassment in the world of work",
-      "publisher": "International Labour Organization",
-      "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPd0tLNlZ6dE5FdndWajJPUFJaWHRnZHFXWkwyTWVGRHRSbWNQYks3YkdCMXFXRTZxYXYyRTJ4WlBWS01RTmZsQXlJMGNfWGtRdFJHWjVvMVY5andneDFvVHRTQk8xamhrWWJJUlN0S2p6bEFyUGJOOWk2ZXRRNXZ0SW1zd0pPcDVJWUVRbEFCZTlyOFF6NTU3ZmwwcDkxTUdVbHdRSDE4dw?oc=5",
-      "published_at": "2026-11-20T01:56:44+09:00",
-      "publisher_host": "www.ilo.org"
-    },
-    {
-      "topic": 7,
-      "date": "2026-11-20",
-      "title": "ILO expresses concern over violence, labour unrest",
-      "publisher": "The Daily Star",
-      "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxNUWpDWnRTNlotN1VfUUhDLS1WajQzVW1IT3ZmYy1WbjlGMHZ0b2s3MXFjUW94X2tEMjhXVkFnTmpSeHNJY2kyaGNkUE5lZFZZcXA5OVF2SWVFTTRSU1BSd1A5MVlVdklHbVZZNlFqMDE3Uzk1SFU1RGpfblU3bWJQNFV2a3dZMDJKZUpjNlBIb3E5eXlsMEt3UGZBT01LN1Y2V3c?oc=5",
-      "published_at": "2026-11-20T01:45:24+09:00",
-      "publisher_host": "www.thedailystar.net"
-    },
-    {
-      "topic": 7,
-      "date": "2026-11-20",
-      "title": "Victory for migrant workers as Saudi Arabia agrees to 5-year labour reforms — ITUC-Africa",
-      "publisher": "Vanguard News",
-      "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxQWkJmcGRhSlJkWUtROElSLU1oNGs0RVctWV9PNmVvVTVPOF9tUFVqUkZmWlgyMDMxY2FjbVdub25WbC1OeGJ3NjlXd0IwdDNfZUpLd0lLMTd4OGpseEZFeEtvY1BMd2R4QnBMRVI4QW1FazFvYl9rSHRSaS1ncm8zM1dmeVQ5ZldiVzZXdDJ3Q1U5dzdoWXUzcmhtSjJlOXZGQ2U5R09QVHJMcXRHb1RQemxiUTNva09zdzRaNzVyQkZqQdIBxwFBVV95cUxOeDdRU0Jxekwtc2tvaXU0VDBhRGV0a0hTT284cUlUd1FDejBSTHcwLTdlWEFULTh0RTlzMXl3TmZDTzdwNUhuSnRXRURhWUhYcllDeU5mQ3VkS0NQY2JONmpWZTdSRkozcUFUbmZPVVh2aFBJMDJqbDdLRU1mUzQ2azBQZk9oM2F0ck53U0M2ZHJ4NmNiQlJ4RnJHYm56dnlOeWVHak02eTFET2FDTkhVYmVnQ2tVQXh5S0VlMjF2cW5DRkIwV093?oc=5",
-      "published_at": "2026-11-20T01:38:28+09:00",
-      "publisher_host": "www.vanguardngr.com"
-    },
-    {
-      "topic": 7,
-      "date": "2026-11-20",
-      "title": "ILO calls for evidence-based Bangladesh garment wage review amid labour unrest",
-      "publisher": "Traders Union",
-      "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQVkUxWWZpUFVmcGw5OUFuVTZieHcxZFpwZzdhbmZtR0luaThyQ1JMYkFyaWxYbTRUVWhDUTdvSzNwTURPMVBNa0xzY3FpeExCdDUzTzd0NG53NmJCbi1lREEtU0Q3aHV1QmdidEREM05oMjh3MnkwcENhWVlQeHpiVnFoem1zRTdSMDRTdGZHMkFlLVFGaHBv?oc=5",
-      "published_at": "2026-11-20T01:11:28+09:00",
-      "publisher_host": "tradersunion.com"
     }
   ]
 }
