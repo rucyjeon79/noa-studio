@@ -171,6 +171,11 @@ def main():
                     'busan-on.extend.php':patch_extend(live[EXTEND].decode()).encode(),
                     'notification-member-preferences.php':helper}
                 check_candidate(candidate)
+                if os.environ.get('BUSAN_PREFS_MODE')=='preflight':
+                    print(json.dumps({'status':'candidate_verified','syntax_checked':True,
+                                      'source_sha_verified':True,'site_files_changed':0,
+                                      'db_changes':0,'member_rows_read':0}))
+                    return
 
                 # Back up source under a private path; each backup is individually SHA verified.
                 backup=PRIVATE+'/backup-member-notification-pref-20261120'
