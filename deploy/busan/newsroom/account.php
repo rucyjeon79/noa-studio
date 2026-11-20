@@ -33,7 +33,8 @@ function bn_identity(string $token, string $body): bool {
         ($claims['iss']??'')!==$issuer || ($claims['aud']??'')!=='https://skhnslu-busan.com/newsroom/'.hash('sha256',$body) ||
         ($claims['repository_id']??'')!=='1442403680' || ($claims['repository']??'')!==$repo ||
         ($claims['ref']??'')!=='refs/heads/main' || ($claims['workflow_ref']??'')!==$repo.'/.github/workflows/busan-newsroom.yml@refs/heads/main' ||
-        !in_array($claims['event_name']??'',['schedule','workflow_dispatch','push'],true) ||
+        !in_array($claims['event_name']??'',['schedule','workflow_dispatch','push','issue_comment'],true) ||
+        (($claims['event_name']??'')==='issue_comment' && ($claims['actor']??'')!=='rucyjeon79') ||
         ($claims['iat']??0)<$now-600 || ($claims['iat']??PHP_INT_MAX)>$now+30 ||
         ($claims['nbf']??PHP_INT_MAX)>$now+30 || ($claims['exp']??0)<=$now) return false;
     $ch=curl_init($issuer.'/.well-known/jwks');
