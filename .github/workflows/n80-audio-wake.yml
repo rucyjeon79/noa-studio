@@ -1,0 +1,36 @@
+name: N80 Audio Wake Signal Only
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'
+  push:
+    paths:
+      - '.github/n80-audio-wake.trigger'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: n80-audio-wake-signal
+  cancel-in-progress: true
+
+jobs:
+  wake:
+    name: Wake N80 queue (no audio processing on GitHub)
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: HTTP signal to NOA STUDIO N80
+        shell: bash
+        run: |
+          set -euo pipefail
+          # This action does NOT download, transcode, master or upload audio.
+          # The existing N80 site PHP exclusively owns queued jobs and FFmpeg.
+          curl --location --fail --silent --show-error \
+            --connect-timeout 10 --max-time 30 \
+            --retry 1 --retry-delay 2 \
+            -H 'Cache-Control: no-cache' \
+            -H 'Pragma: no-cache' \
+            -A 'NOA-N80-Audio-Wake/1.0' \
+            'https://noastudio.ai.kr/' > /dev/null
