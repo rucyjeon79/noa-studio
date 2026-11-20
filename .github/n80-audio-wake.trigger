@@ -1,2 +1,4 @@
-N80 Audio Wake — initial activation signal
-This file has no worker or audio content. GitHub Actions only performs a site HTTP GET; all FFmpeg/mastering stays inside NOA STUDIO N80.
+N80 Audio Wake — loader-preflight retry signal
+Target N80 release: 2.1.847
+Time: 2026-11-20 20:55 KST
+Only the N80 host performs FFmpeg; this GitHub commit generates one HTTP wake signal.
