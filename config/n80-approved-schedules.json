@@ -1,14 +1,6 @@
 {
   "version": 1,
-  "approved": [
-    {
-      "workflow": "n80-audio-wake.yml",
-      "cron": "27 3,7,11,15,19,23 * * *",
-      "ownerActionReference": "2026-11-21: 모든 예약시간 4시간 단위, N80 기동은 언제나 GitHub 전담, 호스트 상주 금지",
-      "mode": "github_audio_wake_signal_only",
-      "githubBusinessWorkAllowed": false
-    }
-  ],
-  "note": "Resident N80 runner remains physically retired. Owner authorized only four-hour GitHub-origin signal wakes on 2026-11-21; host never runs as daemon. Manual workflow_dispatch remains on demand.",
+  "approved": [],
+  "note": "Audio optimization must wake on each uploaded source event, never via GitHub cron; N80 resident host runner retired. Four-hour schedules apply only to periodic work.",
   "retired": true
 }
